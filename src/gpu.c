@@ -15,14 +15,54 @@ extern s32 D_80015D70;
 /* --- Functions 0x8007A28C - 0x8007B234 --- */
 
 INCLUDE_ASM("asm/funcs", func_8007A28C);
-INCLUDE_ASM("asm/funcs", func_8007A2F8);
-INCLUDE_ASM("asm/funcs", func_8007A308);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_8007A2F8\n"
+    "    addiu $t2, $zero, 0xA0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0xAB\n"
+    "    nop\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_8007A308\n"
+    "    addiu $t2, $zero, 0xA0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0xAC\n"
+    "    nop\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 void func_8007A318(s32 a0) {
     func_8007A360(a0);
     func_8007A350(a0, 0x3F, 0);
 }
-INCLUDE_ASM("asm/funcs", func_8007A350);
-INCLUDE_ASM("asm/funcs", func_8007A360);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_8007A350\n"
+    "    addiu $t2, $zero, 0xB0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0x4E\n"
+    "    nop\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_8007A360\n"
+    "    addiu $t2, $zero, 0xB0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0x50\n"
+    "    nop\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 void func_8007A370(s32 a0) {
     func_80078A58(0);
     func_800789B8();
@@ -44,9 +84,39 @@ void func_8007A400(void) {
     func_8007A458();
 }
 
-INCLUDE_ASM("asm/funcs", func_8007A428);
-INCLUDE_ASM("asm/funcs", func_8007A438);
-INCLUDE_ASM("asm/funcs", func_8007A448);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_8007A428\n"
+    "    addiu $t2, $zero, 0xB0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0x4A\n"
+    "    nop\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_8007A438\n"
+    "    addiu $t2, $zero, 0xB0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0x4B\n"
+    "    nop\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_8007A448\n"
+    "    addiu $t2, $zero, 0xB0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0x4C\n"
+    "    nop\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 INCLUDE_ASM("asm/funcs", func_8007A458);
 INCLUDE_ASM("asm/funcs", func_8007A4D8);
 u16 func_8007A5C4(s32 a0, s32 a1, s32 a2) {
