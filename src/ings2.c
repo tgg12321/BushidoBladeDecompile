@@ -68,9 +68,19 @@ INCLUDE_ASM("asm/funcs", func_80083200);
 INCLUDE_ASM("asm/funcs", func_80083210);
 INCLUDE_ASM("asm/funcs", func_80083220);
 INCLUDE_ASM("asm/funcs", func_800832A0);
-INCLUDE_ASM("asm/funcs", func_8008339C);
+void func_8008339C(s32 *a0, s32 a1) {
+    s32 i;
+    for (i = a1 - 1; i != -1; i--) {
+        *a0++ = 0;
+    }
+}
 INCLUDE_ASM("asm/funcs", func_800833C8);
-INCLUDE_ASM("asm/funcs", func_80083644);
+void func_80083644(s32 *a0, s32 a1) {
+    s32 i;
+    for (i = a1 - 1; i != -1; i--) {
+        *a0++ = 0;
+    }
+}
 
 s32 func_80083670(s32 a0) {
     s32 old = D_800A2664;

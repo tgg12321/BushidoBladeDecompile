@@ -136,7 +136,18 @@ s32 func_80081718(u8 *a0) {
 }
 INCLUDE_ASM("asm/funcs", func_800817A0);
 INCLUDE_ASM("asm/funcs", func_80081880);
-INCLUDE_ASM("asm/funcs", func_80081974);
+extern s32 D_800A11C8;
+extern void func_80082AC0(void);
+extern void func_80082AF0(s32, void *);
+extern u8 D_80081F1C;
+void func_80081974(void) {
+    D_800A11B8 = 0;
+    D_800A11B4 = 0;
+    D_800A11C8 = 0;
+    *(s32 *)&D_800A11C4 = 0;
+    func_80082AC0();
+    func_80082AF0(2, &D_80081F1C);
+}
 INCLUDE_ASM("asm/funcs", func_800819C4);
 INCLUDE_ASM("asm/funcs", func_80081BB0);
 INCLUDE_ASM("asm/funcs", func_80081D1C);

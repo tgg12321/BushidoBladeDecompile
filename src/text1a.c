@@ -169,7 +169,17 @@ void func_80042ED8(u16 *a0) {
 INCLUDE_ASM("asm/funcs", func_80042F10);
 INCLUDE_ASM("asm/funcs", func_80042FA0);
 INCLUDE_ASM("asm/funcs", func_800430E4);
-INCLUDE_ASM("asm/funcs", func_80043244);
+s32 func_80043244(s32 a0) {
+    s32 ret;
+    if (a0 > 0x16A09) {
+        ret = 3;
+    } else if (a0 > (s32)0xB500) {
+        ret = 2;
+    } else {
+        ret = a0 >= 0x5A01;
+    }
+    return ret;
+}
 INCLUDE_ASM("asm/funcs", func_80043278);
 INCLUDE_ASM("asm/funcs", func_800432A0);
 extern void func_800432A0(s16, s16, s16, s16, s16);
