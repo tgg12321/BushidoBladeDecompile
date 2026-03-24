@@ -80,7 +80,15 @@ void func_80087F24(void) {
     D_800FF578 = 0;
 }
 
-INCLUDE_ASM("asm/funcs", func_80087F34);
+extern u8 D_80101BCC;
+s32 func_80087F34(s32 a0) {
+    u8 v = (u8)a0;
+    if (v >= 0x19 || v == 0) {
+        return 0xFF;
+    }
+    D_80101BCC = a0;
+    return v;
+}
 INCLUDE_ASM("asm/funcs", func_80087F64);
 INCLUDE_ASM("asm/funcs", func_80087FE8);
 
