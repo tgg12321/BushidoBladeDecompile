@@ -1277,7 +1277,42 @@ void func_8006E8CC(s32 *a0) {
     func_8007B600(rect, data);
     func_8007B33C(0);
 }
-INCLUDE_ASM("asm/funcs", func_8006E950);
+void func_8006E950(s32 *a0, s32 *a1) {
+    s32 *s1 = a1;
+    s32 s2;
+    s32 s3;
+    s32 s0;
+    s32 s0_addr;
+    s32 v0;
+    s16 rect[4];
+
+    s0_addr = (s32)a0;
+    func_80036F40();
+    v0 = func_80036EA8(2, s0_addr);
+    func_80036D98(v0, (s32)s1);
+    func_80036F40();
+    s2 = 0x280;
+    func_8006E440(s1);
+
+    s3 = ((s32 *)((unsigned char *)s1 + 8))[0];
+    s0 = 0x1DC;
+
+    rect[0] = (s16)s2;
+    rect[1] = 0;
+    rect[2] = 0x180;
+    rect[3] = (s16)s0;
+    func_8007B33C(0);
+    func_8007B600(rect, s3);
+
+    rect[2] = 0x170;
+    rect[0] = (s16)s2;
+    rect[1] = (s16)s0;
+    rect[3] = 0x24;
+    func_8007B33C(0);
+    func_8007B600(rect, s3 + 0x59400);
+
+    func_8006E8CC(s1);
+}
 void func_8006920C(s32 *, s32);
 void func_8005C2A8(s32, s32, s32);
 s32 func_8006EA28(s32 *a0) {
