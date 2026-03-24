@@ -124,7 +124,19 @@ void func_8007C1D8(u8 *a0, s16 *a1) {
     *(u32 *)(a0 + 4) = func_8007C938(a1[0], a1[1]);
     *(u32 *)(a0 + 8) = 0;
 }
-INCLUDE_ASM("asm/funcs", func_8007C21C);
+void func_8007C21C(u8 *a0, s32 a1, s32 a2) {
+    u32 v0;
+    a0[3] = 2;
+    v0 = 0xE6000000;
+    if (a1) {
+        v0 = 0xE6000002;
+    }
+    if (a2) {
+        v0 |= 1;
+    }
+    *(u32 *)(a0 + 4) = v0;
+    *(u32 *)(a0 + 8) = 0;
+}
 extern u32 func_8007C748(s32, s32, u16);
 void func_8007C248(u8 *a0, s32 a1, s32 a2, u16 a3, s32 a4) {
     a0[3] = 2;

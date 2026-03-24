@@ -11,7 +11,15 @@ s32 func_8004046C(s32 a0, s32 a1) {
     s32 *base = (s32 *)func_8004153C(a0);
     return *(s32 *)((u8 *)base + a1 * 4 + 0x1A34);
 }
-INCLUDE_ASM("asm/funcs", func_800404A0);
+void func_800404A0(s16 *a0, s32 a1) {
+    if (a0[1] == -1) {
+        return;
+    }
+    do {
+        *(s32 *)((u8 *)a0 + 0x58) = a1;
+        a0 = (s16 *)((u8 *)a0 + 0x68);
+    } while (a0[1] != -1);
+}
 extern s32 D_800A9A10[];
 extern s32 D_80094B88[];
 void func_800404D8(void) {
