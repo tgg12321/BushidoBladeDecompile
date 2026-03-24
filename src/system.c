@@ -119,7 +119,21 @@ INCLUDE_ASM("asm/funcs", func_80080828);
 INCLUDE_ASM("asm/funcs", func_80080DB0);
 INCLUDE_ASM("asm/funcs", func_80081030);
 INCLUDE_ASM("asm/funcs", func_800812FC);
-INCLUDE_ASM("asm/funcs", func_80081718);
+extern u8 *D_800A147C;
+extern u8 *D_800A1484;
+extern u8 *D_800A1488;
+extern u8 *D_800A1480;
+
+s32 func_80081718(u8 *a0) {
+    *D_800A147C = 2;
+    *D_800A1484 = a0[0];
+    *D_800A1488 = a0[1];
+    *D_800A147C = 3;
+    *D_800A1480 = a0[2];
+    *D_800A1484 = a0[3];
+    *D_800A1488 = 0x20;
+    return 0;
+}
 INCLUDE_ASM("asm/funcs", func_800817A0);
 INCLUDE_ASM("asm/funcs", func_80081880);
 INCLUDE_ASM("asm/funcs", func_80081974);
