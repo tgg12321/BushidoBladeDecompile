@@ -82,7 +82,19 @@ s32 func_80041650(s32 a0) {
 }
 INCLUDE_ASM("asm/funcs", func_80041688);
 INCLUDE_ASM("asm/funcs", func_800417D0);
-INCLUDE_ASM("asm/funcs", func_800418D0);
+typedef struct { s32 w[4]; } Block16;
+extern s32 D_800F66A0[];
+void func_800418D0(s32 *a0) {
+    s16 sp10[4];
+    void (*func)(s16 *, s32 *);
+    sp10[0] = -(u16)((u16 *)a0)[8];
+    sp10[1] = -(u16)((u16 *)a0)[9];
+    sp10[2] = -(u16)((u16 *)a0)[10];
+    func = (void (*)(s16 *, s32 *))D_800F66A0[((s16 *)a0)[4]];
+    func(sp10, a0 + 14);
+    ((Block16 *)(a0 + 6))[0] = ((Block16 *)(a0 + 14))[0];
+    ((Block16 *)(a0 + 6))[1] = ((Block16 *)(a0 + 14))[1];
+}
 INCLUDE_ASM("asm/funcs", func_80041988);
 INCLUDE_ASM("asm/funcs", func_80041AC8);
 INCLUDE_ASM("asm/funcs", func_80041BF4);
@@ -102,7 +114,32 @@ extern void func_80041EB0(s32, s32);
 void func_800421A4(void) {
     func_80041EB0(0, 0);
 }
-INCLUDE_ASM("asm/funcs", func_800421C8);
+extern void func_800422BC(s32, s32, s32, s32);
+extern void func_80042478(s32);
+extern s16 D_800F6462;
+extern s16 D_800F6342;
+extern s16 D_800F62E2;
+extern s16 D_800F6460;
+extern s16 D_800F6340;
+extern s16 D_800F62E0;
+extern s32 D_80094E48[];
+void func_800421C8(s32 a0) {
+    s32 *p = (s32 *)((u8 *)D_80094E48 + a0 * 24);
+    s32 val;
+    func_800422BC(a0, *p++, 0, 0);
+    func_800422BC(a0, *p++, 0, 1);
+    func_800422BC(a0, *p++, 1, 0);
+    func_800422BC(a0, *p++, 1, 1);
+    val = *p;
+    D_800F6462 = val & 0xFFF;
+    D_800F6342 = val & 0xFFF;
+    D_800F62E2 = val & 0xFFF;
+    val = *(s16 *)((u8 *)p + 2);
+    D_800F6460 = val & 0xFFF;
+    D_800F6340 = val & 0xFFF;
+    D_800F62E0 = val & 0xFFF;
+    func_80042478(*(s32 *)((u8 *)p + 4));
+}
 INCLUDE_ASM("asm/funcs", func_800422BC);
 extern s32 func_800486FC(s32);
 extern s32 func_8004881C(s32, s32, s32);
@@ -166,7 +203,22 @@ void func_80042ED8(u16 *a0) {
     a0[7] = t3;
     a0[5] = t0;
 }
-INCLUDE_ASM("asm/funcs", func_80042F10);
+extern s16 D_800973FC[];
+void func_80042F10(s32 *a0, s32 *a1, s32 a2) {
+    s16 sin_val, cos_val;
+    s32 x, y;
+    s32 sin_x, cos_x, sin_y, cos_y;
+    sin_val = D_800973FC[(a2 + 0x400) & 0xFFF];
+    x = *a0;
+    cos_val = D_800973FC[a2 & 0xFFF];
+    y = *a1;
+    sin_x = sin_val * x;
+    cos_x = cos_val * x;
+    sin_y = sin_val * y;
+    cos_y = cos_val * y;
+    *a1 = (cos_x + sin_y) >> 12;
+    *a0 = (sin_x - cos_y) >> 12;
+}
 INCLUDE_ASM("asm/funcs", func_80042FA0);
 INCLUDE_ASM("asm/funcs", func_800430E4);
 s32 func_80043244(s32 a0) {
@@ -192,8 +244,20 @@ INCLUDE_ASM("asm/funcs", func_80043BD0);
 INCLUDE_ASM("asm/funcs", func_80043C7C);
 INCLUDE_ASM("asm/funcs", func_80043D34);
 INCLUDE_ASM("asm/funcs", func_80043DE0);
-INCLUDE_ASM("asm/funcs", func_80043E98);
-INCLUDE_ASM("asm/funcs", func_80043F0C);
+void func_80043E98(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
+    s16 r1;
+    r1 = func_80043F80(a0[0], a1, a2);
+    a0[0] = r1;
+    a0[2] = func_80043FCC(a0[2], a3, a4);
+}
+extern s16 func_80043F80(s16, s16, s16);
+extern s16 func_80043FCC(s16, s16, s16);
+void func_80043F0C(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
+    s16 r1;
+    r1 = func_80043F80(a0[3], a1, a2);
+    a0[3] = r1;
+    a0[1] = func_80043FCC(a0[1], a3, a4);
+}
 INCLUDE_ASM("asm/funcs", func_80043F80);
 INCLUDE_ASM("asm/funcs", func_80043FCC);
 INCLUDE_ASM("asm/funcs", func_80044010);
@@ -231,7 +295,20 @@ void func_80044C70(s32 a0) {
     D_800A9D00 += a0;
 }
 INCLUDE_ASM("asm/funcs", func_80044CCC);
-INCLUDE_ASM("asm/funcs", func_80044DE4);
+extern void func_8007E1AC(s32 *, s32 *, s32, s32, s32);
+void func_80044DE4(s16 *a0, s16 *a1, s32 a2, s32 a3) {
+    s32 sp18[4];
+    s32 sp28[4];
+    sp18[0] = a0[0];
+    a0++;
+    sp18[1] = -a0[0];
+    sp18[2] = -a0[1];
+    sp28[0] = a1[0];
+    a1++;
+    sp28[1] = -a1[0];
+    sp28[2] = -a1[1];
+    func_8007E1AC(sp18, sp28, 0x1000 - a2, a2, a3);
+}
 s32 func_80044E64(void) {
     return 0x25;
 }
