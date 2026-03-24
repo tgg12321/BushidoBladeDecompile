@@ -1,4 +1,5 @@
 #include "common.h"
+#define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 
 /* Forward declarations */
@@ -93,3 +94,23 @@ void func_80080684(void) {
 }
 
 INCLUDE_ASM("asm/funcs", func_800806A4);
+
+/* --- text3 segment functions (0x800807A8-0x800827D0, 17 funcs) --- */
+
+INCLUDE_ASM("asm/funcs", func_800807A8);
+INCLUDE_ASM("asm/funcs", func_80080828);
+INCLUDE_ASM("asm/funcs", func_80080DB0);
+INCLUDE_ASM("asm/funcs", func_80081030);
+INCLUDE_ASM("asm/funcs", func_800812FC);
+INCLUDE_ASM("asm/funcs", func_80081718);
+INCLUDE_ASM("asm/funcs", func_800817A0);
+INCLUDE_ASM("asm/funcs", func_80081880);
+INCLUDE_ASM("asm/funcs", func_80081974);
+INCLUDE_ASM("asm/funcs", func_800819C4);
+INCLUDE_ASM("asm/funcs", func_80081BB0);
+INCLUDE_ASM("asm/funcs", func_80081D1C);
+INCLUDE_ASM("asm/funcs", func_80081E1C);
+INCLUDE_ASM("asm/funcs", func_80082000);
+INCLUDE_ASM("asm/funcs", func_8008241C);
+INCLUDE_ASM("asm/funcs", func_800826CC);
+INCLUDE_ASM("asm/funcs", func_800827D0);
