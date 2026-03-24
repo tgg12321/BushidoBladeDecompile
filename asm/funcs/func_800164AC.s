@@ -1,0 +1,21 @@
+glabel func_800164AC
+    /* 6CAC 800164AC 9CC40880 */  lb         $t0, -0x3B64($zero)
+    /* 6CB0 800164B0 B4C50880 */  lb         $t0, -0x3A4C($zero)
+    /* 6CB4 800164B4 50C70880 */  lb         $t0, -0x38B0($zero)
+    /* 6CB8 800164B8 A0C80880 */  lb         $t0, -0x3760($zero)
+    /* 6CBC 800164BC 30C90880 */  lb         $t0, -0x36D0($zero)
+    /* 6CC0 800164C0 4CC90880 */  lb         $t0, -0x36B4($zero)
+    /* 6CC4 800164C4 C0C40880 */  lb         $t0, -0x3B40($zero)
+    /* 6CC8 800164C8 D8C40880 */  lb         $t0, -0x3B28($zero)
+    /* 6CCC 800164CC 04C50880 */  lb         $t0, -0x3AFC($zero)
+    /* 6CD0 800164D0 18C50880 */  lb         $t0, -0x3AE8($zero)
+    /* 6CD4 800164D4 28C90880 */  lb         $t0, -0x36D8($zero)
+    /* 6CD8 800164D8 60C50880 */  lb         $t0, -0x3AA0($zero)
+    /* 6CDC 800164DC 90C50880 */  lb         $t0, -0x3A70($zero)
+    /* 6CE0 800164E0 00000000 */  nop
+    /* 6CE4 800164E4 5CC90880 */  lb         $t0, -0x36A4($zero)
+    /* 6CE8 800164E8 D8C50880 */  lb         $t0, -0x3A28($zero)
+    /* 6CEC 800164EC 58C60880 */  lb         $t0, -0x39A8($zero)
+    /* 6CF0 800164F0 80C60880 */  lb         $t0, -0x3980($zero)
+    /* 6CF4 800164F4 DCC60880 */  lb         $t0, -0x3924($zero)
+endlabel func_800164AC

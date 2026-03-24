@@ -1,0 +1,20 @@
+# Build artifacts
+build/
+
+# Disc image and extracted disc contents (copyrighted game data)
+disc/
+*.bin
+*.cue
+*.iso
+
+# Python virtual environment
+.venv/
+
+# Compiler toolchain (large binary, downloaded separately)
+tools/gcc-2.7.2/
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+*.swp
+*~
