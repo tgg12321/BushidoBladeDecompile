@@ -35,7 +35,7 @@ glabel func_80085544
     /* 75DC0 800855C0 00000000 */  nop
     /* 75DC4 800855C4 08004000 */  jr         $v0
     /* 75DC8 800855C8 00000000 */   nop
-  jlabel .L800855CC
+  jlabel .L800855CC, global
     /* 75DCC 800855CC 32000324 */  addiu      $v1, $zero, 0x32
     /* 75DD0 800855D0 1080013C */  lui        $at, %hi(D_80104E80)
     /* 75DD4 800855D4 804E23AC */  sw         $v1, %lo(D_80104E80)($at)
@@ -46,7 +46,7 @@ glabel func_80085544
     /* 75DE8 800855E8 CC2623AC */  sw         $v1, %lo(D_800A26CC)($at)
     /* 75DEC 800855EC A7150208 */  j          .L8008569C
     /* 75DF0 800855F0 00000000 */   nop
-  jlabel .L800855F4
+  jlabel .L800855F4, global
     /* 75DF4 800855F4 3C000224 */  addiu      $v0, $zero, 0x3C
     /* 75DF8 800855F8 1080013C */  lui        $at, %hi(D_80104E80)
     /* 75DFC 800855FC 804E22AC */  sw         $v0, %lo(D_80104E80)($at)
