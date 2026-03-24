@@ -78,8 +78,8 @@ extern u8 D_8008D9EC;
 extern u8 D_800A37B0;
 extern s32 D_800A3894;
 extern s32 D_800A3878;
-extern s16 D_800A390C;
-extern s32 D_800A385C;
+extern u8 D_800A390C;
+extern u8 *D_800A385C;
 extern u8 D_800A3817;
 extern u8 D_800A3929;
 extern s16 D_800A3756;
@@ -1555,7 +1555,11 @@ void func_8003B534(s32 a0) {
     D_800A3834 = 6;
     D_800A3878 = D_800A3894 + (a0 * 4 + 1);
 }
-INCLUDE_ASM("asm/funcs", func_8003B56C);
+void func_8003B56C(s32 arg0) {
+    D_800A390C = arg0;
+    D_800A3834 = 6;
+    D_800A3878 = D_800A385C + (arg0 * 4 - 4);
+}
 INCLUDE_ASM("asm/funcs", func_8003B5A4);
 void func_8003B870(void) {
     func_80041604(0, D_800A376A);
