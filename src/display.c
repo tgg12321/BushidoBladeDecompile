@@ -238,7 +238,20 @@ INCLUDE_ASM("asm/funcs", func_8007E4DC);
 PAD_NOPS_1; /* 1 NOP after func_8007E4DC */
 INCLUDE_ASM("asm/funcs", func_8007E5EC);
 INCLUDE_ASM("asm/funcs", func_8007E74C);
-INCLUDE_ASM("asm/funcs", func_8007E8AC);
+s32 *func_8007E8AC(s32 *a0, s32 *a1, s32 *a2) {
+    register s32 t0 asm("t0") = a0[0];
+    register s32 t1 asm("t1") = a0[1];
+    register s32 *v0 asm("v0");
+    __asm__ volatile (".word 0x48880000" :: "r"(t0));  /* mtc2 $t0, $0 */
+    __asm__ volatile (".word 0x48890800" :: "r"(t1));  /* mtc2 $t1, $1 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A486012");              /* mvmva 1,0,0,3,0 */
+    __asm__ volatile (".word 0xE8A90000" :: "r"(a1));  /* swc2 $9, 0($a1) */
+    __asm__ volatile (".word 0xE8AA0004" :: "r"(a1));  /* swc2 $10, 4($a1) */
+    __asm__ volatile (".word 0xE8AB0008" :: "r"(a1));  /* swc2 $11, 8($a1) */
+    __asm__ volatile ("addu %0,%1,$zero" : "=r"(v0) : "r"(a2));
+    return v0;
+}
 INCLUDE_ASM("asm/funcs", func_8007E8DC);
 PAD_NOPS_3; /* 3 NOPs after func_8007E8DC */
 INCLUDE_ASM("asm/funcs", func_8007EA0C);
@@ -250,25 +263,101 @@ PAD_NOPS_1; /* 1 NOP after func_8007EC5C */
 INCLUDE_ASM("asm/funcs", func_8007ED6C);
 INCLUDE_ASM("asm/funcs", func_8007EDBC);
 PAD_NOPS_3; /* 3 NOPs after func_8007EDBC */
-INCLUDE_ASM("asm/funcs", func_8007EEEC);
-INCLUDE_ASM("asm/funcs", func_8007EF1C);
-INCLUDE_ASM("asm/funcs", func_8007EF4C);
-INCLUDE_ASM("asm/funcs", func_8007EF6C);
+void func_8007EEEC(s32 *a0) {
+    register s32 t0 asm("t0") = a0[0];
+    register s32 t1 asm("t1") = a0[1];
+    register s32 t2 asm("t2") = a0[2];
+    register s32 t3 asm("t3") = a0[3];
+    register s32 t4 asm("t4") = a0[4];
+    __asm__ volatile (".word 0x48C80000" :: "r"(t0));  /* ctc2 $t0, $0 */
+    __asm__ volatile (".word 0x48C90800" :: "r"(t1));  /* ctc2 $t1, $1 */
+    __asm__ volatile (".word 0x48CA1000" :: "r"(t2));  /* ctc2 $t2, $2 */
+    __asm__ volatile (".word 0x48CB1800" :: "r"(t3));  /* ctc2 $t3, $3 */
+    __asm__ volatile (".word 0x48CC2000" :: "r"(t4));  /* ctc2 $t4, $4 */
+}
+void func_8007EF1C(s32 *a0) {
+    register s32 t0 asm("t0") = a0[0];
+    register s32 t1 asm("t1") = a0[1];
+    register s32 t2 asm("t2") = a0[2];
+    register s32 t3 asm("t3") = a0[3];
+    register s32 t4 asm("t4") = a0[4];
+    __asm__ volatile (".word 0x48C88000" :: "r"(t0));  /* ctc2 $t0, $16 */
+    __asm__ volatile (".word 0x48C98800" :: "r"(t1));  /* ctc2 $t1, $17 */
+    __asm__ volatile (".word 0x48CA9000" :: "r"(t2));  /* ctc2 $t2, $18 */
+    __asm__ volatile (".word 0x48CB9800" :: "r"(t3));  /* ctc2 $t3, $19 */
+    __asm__ volatile (".word 0x48CCA000" :: "r"(t4));  /* ctc2 $t4, $20 */
+}
+void func_8007EF4C(s32 *a0) {
+    register s32 t0 asm("t0") = a0[5];
+    register s32 t1 asm("t1") = a0[6];
+    register s32 t2 asm("t2") = a0[7];
+    __asm__ volatile (".word 0x48C82800" :: "r"(t0));  /* ctc2 $t0, $5 */
+    __asm__ volatile (".word 0x48C93000" :: "r"(t1));  /* ctc2 $t1, $6 */
+    __asm__ volatile (".word 0x48CA3800" :: "r"(t2));  /* ctc2 $t2, $7 */
+}
+void func_8007EF6C(s32 *a0, s32 *a1, s32 *a2) {
+    __asm__ volatile (".word 0xE8910000" :: "r"(a0));  /* swc2 $17, 0($a0) */
+    __asm__ volatile (".word 0xE8B20000" :: "r"(a1));  /* swc2 $18, 0($a1) */
+    __asm__ volatile (".word 0xE8D30000" :: "r"(a2));  /* swc2 $19, 0($a2) */
+}
 PAD_NOPS_3; /* 3 NOPs after func_8007EF6C */
-INCLUDE_ASM("asm/funcs", func_8007EF8C);
+s32 func_8007EF8C(void) { s32 ret; __asm__ volatile (".word 0x4842D000" : "=r" (ret)); return ret; }
 PAD_NOPS_1; /* 1 NOP after func_8007EF8C */
-INCLUDE_ASM("asm/funcs", func_8007EF9C);
-INCLUDE_ASM("asm/funcs", func_8007EFBC);
-INCLUDE_ASM("asm/funcs", func_8007EFDC);
+void func_8007EF9C(s32 a0, s32 a1, s32 a2) {
+    a0 <<= 4;
+    a1 <<= 4;
+    a2 <<= 4;
+    __asm__ volatile (".word 0x48C46800" :: "r"(a0));  /* ctc2 $a0, $13 */
+    __asm__ volatile (".word 0x48C57000" :: "r"(a1));  /* ctc2 $a1, $14 */
+    __asm__ volatile (".word 0x48C67800" :: "r"(a2));  /* ctc2 $a2, $15 */
+}
+void func_8007EFBC(s32 a0, s32 a1, s32 a2) {
+    a0 <<= 4;
+    a1 <<= 4;
+    a2 <<= 4;
+    __asm__ volatile (".word 0x48C4A800" :: "r"(a0));  /* ctc2 $a0, $21 */
+    __asm__ volatile (".word 0x48C5B000" :: "r"(a1));  /* ctc2 $a1, $22 */
+    __asm__ volatile (".word 0x48C6B800" :: "r"(a2));  /* ctc2 $a2, $23 */
+}
+void func_8007EFDC(s32 a0, s32 a1) {
+    a0 <<= 16;
+    a1 <<= 16;
+    __asm__ volatile (".word 0x48C4C000" :: "r"(a0));  /* ctc2 $a0, $24 */
+    __asm__ volatile (".word 0x48C5C800" :: "r"(a1));  /* ctc2 $a1, $25 */
+}
 PAD_NOPS_2; /* 2 NOPs after func_8007EFDC */
 INCLUDE_ASM("asm/funcs", func_8007EFFC);
 INCLUDE_ASM("asm/funcs", func_8007F0BC);
 PAD_NOPS_1; /* 1 NOP after func_8007F0BC */
-INCLUDE_ASM("asm/funcs", func_8007F21C);
+s32 func_8007F21C(s32 *a0, s32 *a1, s32 *a2, s32 *a3) {
+    register s32 v1 asm("v1");
+    register s32 v0 asm("v0");
+    __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
+    __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A180001");              /* rtps */
+    __asm__ volatile (".word 0xE8AE0000" :: "r"(a1));  /* swc2 $14, 0($a1) */
+    __asm__ volatile (".word 0xE8C80000" :: "r"(a2));  /* swc2 $8, 0($a2) */
+    __asm__ volatile (".word 0x4843F800" : "=r"(v1));  /* cfc2 $v1, $31 */
+    __asm__ volatile (".word 0x48029800" : "=r"(v0));  /* mfc2 $v0, $19 */
+    *a3 = v1;
+    return v0 >> 2;
+}
 PAD_NOPS_1; /* 1 NOP after func_8007F21C */
 INCLUDE_ASM("asm/funcs", func_8007F24C);
 PAD_NOPS_3; /* 3 NOPs after func_8007F24C */
-INCLUDE_ASM("asm/funcs", func_8007F2AC);
+void func_8007F2AC(s32 *a0, s32 *a1, s32 *a2) {
+    register s32 v0 asm("v0");
+    __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
+    __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A480012");              /* mvmva 1,0,0,0,0 */
+    __asm__ volatile (".word 0xE8B90000" :: "r"(a1));  /* swc2 $25, 0($a1) */
+    __asm__ volatile (".word 0xE8BA0004" :: "r"(a1));  /* swc2 $26, 4($a1) */
+    __asm__ volatile (".word 0xE8BB0008" :: "r"(a1));  /* swc2 $27, 8($a1) */
+    __asm__ volatile (".word 0x4842F800" : "=r"(v0));  /* cfc2 $v0, $31 */
+    *a2 = v0;
+}
 PAD_NOPS_2; /* 2 NOPs after func_8007F2AC */
 INCLUDE_ASM("asm/funcs", func_8007F2DC);
 PAD_NOPS_2; /* 2 NOPs after func_8007F2DC */
