@@ -13,6 +13,7 @@ CC1          := tools/gcc-2.7.2/build/cc1
 # maspsx ASPSX compatibility layer
 MASPSX       := python3 tools/maspsx/maspsx.py
 MASPSX_FLAGS := --expand-div --aspsx-version=2.34
+MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --dont-force-G0 --sdata-syms=sdata_syms.txt -G8
 
 # GNU MIPS cross-tools
 AS           := mipsel-linux-gnu-as
@@ -22,10 +23,12 @@ CPP          := mipsel-linux-gnu-cpp
 
 # -- Compiler Flags --
 # -O2: standard optimization level for PsyQ games
-# -G0: disable GP-relative addressing (tune later if needed)
+# -G0: disable GP-relative addressing (default for most files)
+# -G8: enable GP-relative for files that need it (uses sdata_syms.txt filtering)
 # -funsigned-char: common PsyQ convention
 # -mcpu=3000: target R3000A
 CC_FLAGS     := -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w
+CC_FLAGS_GP  := -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w
 AS_FLAGS     := -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0
 CPP_FLAGS    := -Iinclude -undef -Wall -lang-c -fno-builtin
 CPP_DEFS     := -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx \
@@ -86,11 +89,20 @@ $(BIN): $(ELF)
 $(EXE): $(BIN)
 	python3 tools/make_psexe.py $(TARGET_EXE) $< $@
 
+# -- Per-file GP-relative opt-in --
+# List C files (without path/extension) that need GP-relative addressing.
+# These are compiled with -G8 and use sdata_syms.txt for selective GP-rel.
+GP_FILES :=
+
+# Helper: resolve CC/MASPSX flags based on whether file needs GP-relative
+cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))
+maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))
+
 # -- Compile C source (decompiled functions) --
 # Pipeline: cpp | cc1 | maspsx | as -> .o
 $(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(CC_FLAGS) | $(MASPSX) $(MASPSX_FLAGS) | $(AS) $(AS_FLAGS) -o $@
+	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(MASPSX) $(call maspsx_flags_for,$*) | $(AS) $(AS_FLAGS) -o $@
 
 # -- Assemble .s files (non-decompiled asm) --
 $(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s

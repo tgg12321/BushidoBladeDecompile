@@ -1,0 +1,77 @@
+diff --git a/maspsx.py b/maspsx.py
+index e52462c..5fe1350 100644
+--- a/maspsx.py
++++ b/maspsx.py
+@@ -21,6 +21,8 @@ def main() -> None:
+     parser.add_argument("--force-stdin", action="store_true")
+     parser.add_argument("--use-comm-section", action="store_true")
+     parser.add_argument("--use-comm-for-lcomm", action="store_true")
++    parser.add_argument("--sdata-syms", type=str, default=None,
++                        help="Path to file listing external .sdata symbol names (one per line)")
+     # decomp.me debugging
+     parser.add_argument("--print-output", action="store_true")
+     parser.add_argument("--print-input", action="store_true")
+@@ -115,6 +117,12 @@ def main() -> None:
+     if args.dont_expand_li and expand_li:
+         expand_li = False
+ 
++    # Load external .sdata symbol list if provided
++    sdata_sym_list = []
++    if args.sdata_syms:
++        with open(args.sdata_syms, "r", encoding="utf") as f:
++            sdata_sym_list = [line.strip() for line in f if line.strip() and not line.startswith("#")]
++
+     maspsx_processor = MaspsxProcessor(
+         in_lines,
+         sdata_limit=sdata_limit,
+@@ -129,6 +137,7 @@ def main() -> None:
+         gp_allow_la=gp_allow_la,
+         use_comm_section=args.use_comm_section,
+         use_comm_for_lcomm=args.use_comm_for_lcomm,
++        sdata_sym_list=sdata_sym_list,
+     )
+     try:
+         out_lines = maspsx_processor.process_lines()
+diff --git a/maspsx/__init__.py b/maspsx/__init__.py
+index 19284f2..3506a52 100644
+--- a/maspsx/__init__.py
++++ b/maspsx/__init__.py
+@@ -219,7 +219,9 @@ def expand_load_immediate(line: str) -> List[str]:
+     r_dest = match.group(1)
+     operand = int(match.group(2), 0)
+ 
+-    if 0 < operand < 0x10000:
++    if 0 < operand <= 0x7FFF:
++        res.append(f"addiu\t{r_dest},$zero,{operand}")
++    elif 0x7FFF < operand < 0x10000:
+         res.append(f"ori\t{r_dest},$zero,{operand}")
+     elif operand >= 0x10000:
+         res.append(f"lui\t{r_dest},({operand} >> 16) & 0xFFFF")
+@@ -393,6 +395,7 @@ class MaspsxProcessor:
+         gp_allow_la=False,
+         use_comm_section=False,
+         use_comm_for_lcomm=False,
++        sdata_sym_list=None,
+     ):
+         self.lines = [x.strip() for x in lines]
+ 
+@@ -419,6 +422,7 @@ class MaspsxProcessor:
+         self.sdata_entries: dict[str, int] = {}
+ 
+         self.comm_symbols: set[str] = set()
++        self.sdata_sym_list = sdata_sym_list or []
+ 
+     def preprocess_lines(self) -> None:
+         in_sdata = False
+@@ -526,6 +530,11 @@ class MaspsxProcessor:
+ 
+         self.preprocess_lines()
+ 
++        # Inject external .sdata symbols (for GP-relative addressing of externs)
++        for sym in self.sdata_sym_list:
++            if sym not in self.sdata_entries:
++                self.sdata_entries[sym] = 4  # default size; exact size doesn't matter for GP-rel
++
+         res = []
+         in_include_asm_hack = False
+         for i, line in enumerate(self.lines):
