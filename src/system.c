@@ -180,16 +180,14 @@ extern volatile u8 D_800A1495;
 extern volatile u8 D_800A1496;
 void func_800817A0(void) {
     u8 v0;
-    u32 v1;
     volatile u8 *p94;
     *D_800A147C = 1;
     v0 = *D_800A1488 & 7;
     if (v0 != 0) {
-        v1 = 7;
         do {
             *D_800A147C = 1;
-            *D_800A1488 = v1;
-            *D_800A1484 = v1;
+            *D_800A1488 = 7;
+            *D_800A1484 = 7;
             v0 = *D_800A1488 & 7;
         } while (v0 != 0);
     }
@@ -217,11 +215,11 @@ s32 func_80081880(void) {
     v1[0xD8] = 0x3FFF;
     v1[0xD9] = 0x3FFF;
     v1[0xD5] = 0xC001;
-    *D_800A147C = 2;
     buf[2] = 0x80;
     buf[0] = 0x80;
     buf[3] = 0;
     buf[1] = 0;
+    *D_800A147C = 2;
     *D_800A1484 = buf[0];
     *D_800A1488 = buf[1];
     *D_800A147C = 3;
@@ -252,56 +250,7 @@ extern void *D_800F19C0;
 extern s32 D_800161B8;
 extern s32 D_800161C8;
 extern void D_800162C0;
-s32 func_80081BB0(s32 a0) {
-    s32 v0, v1;
-    s32 *s0;
-    u8 *s1;
-    s32 s2;
-    s32 *s3;
-    s2 = a0;
-    v0 = func_800828CC(-1);
-    s3 = D_800A11DC;
-    s1 = (u8 *)&D_800A1494;
-    s0 = D_800A125C;
-    v0 += 0x3C0;
-    D_800F19B8 = v0;
-    D_800F19BC = 0;
-    D_800F19C0 = &D_800162C0;
-loop:
-    v0 = func_800828CC(-1);
-    v1 = D_800F19B8;
-    if (v1 < v0) goto work;
-    v1 = D_800F19BC;
-    D_800F19BC = v1 + 1;
-    if ((s32)0x3C0000 >= v1) goto done_zero;
-work:
-    func_80082000(&D_800161B8);
-    {
-        u32 idx1 = s1[0];
-        u32 idx2 = s1[1];
-        void *a1 = D_800F19C0;
-        s32 val2 = s0[idx2];
-        u32 idx3 = D_800A11D5;
-        s32 val1 = s0[idx1];
-        s32 val3 = s3[idx3];
-        func_80079208(&D_800161C8, a1, val3, val1, val2);
-    }
-    func_800817A0();
-    v0 = -1;
-    goto check;
-done_zero:
-    v0 = 0;
-check:
-    if (v0 != 0) goto epilogue;
-    v1 = (s32)*D_800A14C0;
-    v0 = v1 & 0x1000000;
-    if (v0 == 0) goto epilogue;
-    v0 = 0;
-    if (s2 == 0) { v0 = 1; goto loop; }
-    v0 = 1;
-epilogue:
-    return v0;
-}
+INCLUDE_ASM("asm/funcs", func_80081BB0);
 extern volatile u32 *D_800A148C;
 extern volatile u32 *D_800A14B0;
 extern volatile u32 *D_800A14B4;
