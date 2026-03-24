@@ -95,6 +95,85 @@ All objects linked with `mipsel-linux-gnu-ld`, stripped to binary via `objcopy`,
 - `tools/maspsx/` — ASPSX compatibility layer (cloned from mkst/maspsx)
 - `tools/gcc-2.7.2/` — PsyQ-era GCC cross-compiler (built from decompals/mips-gcc-2.7.2)
 
+## Cross-Session Coordination
+
+Multiple Claude Code sessions may work on this project at the same time. To prevent conflicts, all sessions use `CLAIMS.md` as a shared coordination ledger.
+
+### Before Starting Work
+
+1. **Read `CLAIMS.md`** to see what files/scopes are already claimed by other sessions.
+2. **Do not work on claimed files.** If the file you need is claimed, either:
+   - Pick a different file to work on
+   - Ask the user if the other session is still active
+3. **Register your claim** by adding a row to the table in `CLAIMS.md`:
+   ```
+   | src/main.c | decompile Tier 1-2 stubs | 2026-03-24 18:30 | active |
+   ```
+4. **Shared files** (`bb2.ld`, `Makefile`, `undefined_syms_auto.txt`, `undefined_funcs_auto.txt`) should be claimed as `scaffolding:bb2.ld` etc. Only one session may hold a scaffolding claim at a time.
+
+### While Working
+
+- If you spawn sub-agents via worktrees, list each agent's file in your claim (e.g., `src/gpu.c, src/ings.c` under one session).
+- Update the status column if your scope changes.
+
+### When Done
+
+- Update your claim status to `done` or remove the row.
+- If you created branches that need merging, note them:
+  ```
+  | src/gpu.c | 5 funcs decompiled | 2026-03-24 19:00 | done — branch: decomp/gpu-c |
+  ```
+
+### Stale Claims
+
+If a claim has no matching active session (e.g., the terminal was closed), it is stale. Before claiming a file held by a stale entry:
+1. Check `git status` and `git branch` for in-progress work from that session
+2. If there are uncommitted changes or unmerged branches, ask the user before overwriting
+3. Remove the stale claim row
+
+## Parallel Agent Protocol
+
+When spawning multiple agents to work on this project simultaneously, follow these rules to prevent conflicts.
+
+### Architecture: Worktree Isolation
+
+Each agent runs in its own git worktree (`isolation: "worktree"`), giving it an independent copy of the repo on its own branch. This means:
+- Agents cannot corrupt each other's files
+- Each agent can build and verify independently
+- Results are merged one branch at a time by the orchestrator
+
+### Two-Phase Workflow
+
+**Phase A — Scaffolding (sequential, orchestrator only):**
+Changes to shared infrastructure — `bb2.ld`, `Makefile`, `undefined_syms_auto.txt`, `undefined_funcs_auto.txt`, `splat.yaml`, or creating new C files — must be done by the orchestrator on main BEFORE spawning parallel agents. Never let multiple agents modify these files.
+
+**Phase B — Decompilation (parallel, isolated agents):**
+Each agent owns exactly ONE C source file. It decompiles INCLUDE_ASM stubs into C, builds, and verifies. Multiple agents can run in parallel because they're in separate worktrees.
+
+### Agent Rules
+
+1. **WSL-only file writes.** All file modifications must go through WSL (e.g., `python3 -c` or `sed -i` via `wsl bash -c`). The Windows-side Edit/Write tools introduce CRLF line endings that break the build.
+2. **One C file per agent.** Each agent declares which `.c` file it owns. It may only modify that file.
+3. **No destructive git commands.** Agents must NEVER run `git checkout`, `git restore`, `git stash`, `git clean`, or `git reset`. To undo a change, rewrite the specific file content.
+4. **No `make clean`.** Agents use incremental builds only (`make`). Only the orchestrator runs `make clean` for final verification.
+5. **Add missing symbols to `undefined_syms_auto.txt` if needed.** If a decompiled function references a global not yet in the symbol files, the agent should note it in its report. The orchestrator adds it on main before merging.
+
+### Merge Workflow
+
+After agents complete:
+1. Orchestrator verifies each branch builds independently
+2. Merge branches into main one at a time with `git merge --no-ff`
+3. After each merge, run `make clean && make` to verify combined build
+4. If a merge causes a mismatch, investigate that branch's changes before proceeding
+
+### Build Verification Command
+
+Agents should use incremental builds for speed:
+```bash
+wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && source .venv/bin/activate && make 2>&1 | tail -5'
+```
+Expected success output: `OK: bb2 matches!`
+
 ## Key Conventions for PS1 Decomp
 
 - All addresses are MIPS virtual addresses in KSEG0 (`0x80000000`+)
