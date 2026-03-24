@@ -9,7 +9,6 @@ extern void func_800892F8(void);
 
 /* Externs for globals */
 extern s32 D_800A14CC;
-extern s32 D_800A1500;
 extern s32 D_800A2664;
 extern u16 D_800A157A;
 extern u16 *D_800A2608;
