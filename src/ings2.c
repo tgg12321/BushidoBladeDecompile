@@ -14,6 +14,8 @@ extern s32 D_800A2664;
 extern u16 D_800A157A;
 extern u16 *D_800A2608;
 extern s32 *D_800A2600;
+extern s32 D_800A2634;
+extern void func_8008AF9C(s32 *);
 
 /* --- Functions 0x8008289C - 0x80083BE4 --- */
 
@@ -102,4 +104,28 @@ void func_80083B30(void) {
     func_800892F8();
 }
 
-INCLUDE_ASM("asm/funcs", func_80083B50);
+void func_80083B50(s32 a0, s32 a1, s32 a2) {
+    s32 buf[10];
+
+    if ((a0 & 0xFF) == 0) {
+        if ((a1 & 0xFF) == 0) {
+            buf[0] = 0x200;
+            buf[6] = a2 & 0xFF;
+        }
+        if ((a1 & 0xFF) == 1) {
+            buf[0] = 0x100;
+            buf[5] = a2 & 0xFF;
+        }
+    }
+    if ((a0 & 0xFF) == 1) {
+        if ((a1 & 0xFF) == 0) {
+            buf[0] = 0x2000;
+            buf[9] = a2 & 0xFF;
+        }
+        if ((a1 & 0xFF) == 1) {
+            buf[0] = 0x1000;
+            buf[8] = a2 & 0xFF;
+        }
+    }
+    func_8008AF9C(buf);
+}
