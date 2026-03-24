@@ -23,13 +23,13 @@ glabel func_8008AF9C
     /* 7B7EC 8008AFEC 00000000 */  nop
     /* 7B7F0 8008AFF0 08004000 */  jr         $v0
     /* 7B7F4 8008AFF4 00000000 */   nop
-  jlabel .L8008AFF8
+  jlabel .L8008AFF8, global
     /* 7B7F8 8008AFF8 0E2C0208 */  j          .L8008B038
     /* 7B7FC 8008AFFC 00800534 */   ori       $a1, $zero, 0x8000
-  jlabel .L8008B000
+  jlabel .L8008B000, global
     /* 7B800 8008B000 0E2C0208 */  j          .L8008B038
     /* 7B804 8008B004 00900534 */   ori       $a1, $zero, 0x9000
-  jlabel .L8008B008
+  jlabel .L8008B008, global
     /* 7B808 8008B008 0E2C0208 */  j          .L8008B038
     /* 7B80C 8008B00C 00A00534 */   ori       $a1, $zero, 0xA000
   jlabel .L8008B010

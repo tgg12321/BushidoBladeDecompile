@@ -89,25 +89,25 @@ glabel func_8008B488
     /* 7BDC0 8008B5C0 00000000 */  nop
     /* 7BDC4 8008B5C4 08004000 */  jr         $v0
     /* 7BDC8 8008B5C8 00000000 */   nop
-  jlabel .L8008B5CC
+  jlabel .L8008B5CC, global
     /* 7BDCC 8008B5CC 802D0208 */  j          .L8008B600
     /* 7BDD0 8008B5D0 00800434 */   ori       $a0, $zero, 0x8000
-  jlabel .L8008B5D4
+  jlabel .L8008B5D4, global
     /* 7BDD4 8008B5D4 802D0208 */  j          .L8008B600
     /* 7BDD8 8008B5D8 00900434 */   ori       $a0, $zero, 0x9000
-  jlabel .L8008B5DC
+  jlabel .L8008B5DC, global
     /* 7BDDC 8008B5DC 802D0208 */  j          .L8008B600
     /* 7BDE0 8008B5E0 00A00434 */   ori       $a0, $zero, 0xA000
-  jlabel .L8008B5E4
+  jlabel .L8008B5E4, global
     /* 7BDE4 8008B5E4 802D0208 */  j          .L8008B600
     /* 7BDE8 8008B5E8 00B00434 */   ori       $a0, $zero, 0xB000
-  jlabel .L8008B5EC
+  jlabel .L8008B5EC, global
     /* 7BDEC 8008B5EC 802D0208 */  j          .L8008B600
     /* 7BDF0 8008B5F0 00C00434 */   ori       $a0, $zero, 0xC000
-  jlabel .L8008B5F4
+  jlabel .L8008B5F4, global
     /* 7BDF4 8008B5F4 802D0208 */  j          .L8008B600
     /* 7BDF8 8008B5F8 00D00434 */   ori       $a0, $zero, 0xD000
-  jlabel .L8008B5FC
+  jlabel .L8008B5FC, global
     /* 7BDFC 8008B5FC 00E00434 */  ori        $a0, $zero, 0xE000
   .L8008B600:
     /* 7BE00 8008B600 0B008010 */  beqz       $a0, .L8008B630
@@ -158,25 +158,25 @@ glabel func_8008B488
     /* 7BEA0 8008B6A0 00000000 */  nop
     /* 7BEA4 8008B6A4 08004000 */  jr         $v0
     /* 7BEA8 8008B6A8 00000000 */   nop
-  jlabel .L8008B6AC
+  jlabel .L8008B6AC, global
     /* 7BEAC 8008B6AC B82D0208 */  j          .L8008B6E0
     /* 7BEB0 8008B6B0 00800434 */   ori       $a0, $zero, 0x8000
-  jlabel .L8008B6B4
+  jlabel .L8008B6B4, global
     /* 7BEB4 8008B6B4 B82D0208 */  j          .L8008B6E0
     /* 7BEB8 8008B6B8 00900434 */   ori       $a0, $zero, 0x9000
-  jlabel .L8008B6BC
+  jlabel .L8008B6BC, global
     /* 7BEBC 8008B6BC B82D0208 */  j          .L8008B6E0
     /* 7BEC0 8008B6C0 00A00434 */   ori       $a0, $zero, 0xA000
-  jlabel .L8008B6C4
+  jlabel .L8008B6C4, global
     /* 7BEC4 8008B6C4 B82D0208 */  j          .L8008B6E0
     /* 7BEC8 8008B6C8 00B00434 */   ori       $a0, $zero, 0xB000
-  jlabel .L8008B6CC
+  jlabel .L8008B6CC, global
     /* 7BECC 8008B6CC B82D0208 */  j          .L8008B6E0
     /* 7BED0 8008B6D0 00C00434 */   ori       $a0, $zero, 0xC000
-  jlabel .L8008B6D4
+  jlabel .L8008B6D4, global
     /* 7BED4 8008B6D4 B82D0208 */  j          .L8008B6E0
     /* 7BED8 8008B6D8 00D00434 */   ori       $a0, $zero, 0xD000
-  jlabel .L8008B6DC
+  jlabel .L8008B6DC, global
     /* 7BEDC 8008B6DC 00E00434 */  ori        $a0, $zero, 0xE000
   .L8008B6E0:
     /* 7BEE0 8008B6E0 0B008010 */  beqz       $a0, .L8008B710
