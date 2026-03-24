@@ -23,6 +23,8 @@ extern s32 func_800789B8(void);
 extern void func_800789C8(void);
 extern void func_8008D050(s32 *);
 extern s32 D_800A307C;
+extern void func_80088F9C(s32, s32);
+
 /* --- Functions 0x80083BE4 - 0x8008D060 (text4 segment) --- */
 
 INCLUDE_ASM("asm/funcs", func_80083BE4);
@@ -161,7 +163,16 @@ s32 func_8008AD64(s32 a0, s32 a1) {
     }
     return a1;
 }
-INCLUDE_ASM("asm/funcs", func_8008ADC4);
+s32 func_8008ADC4(s32 a0, s32 a1) {
+    if ((u32)a1 > 0x7EFF0u) {
+        a1 = 0x7EFF0;
+    }
+    func_80088F9C(a0, a1);
+    if (D_800A2D14 == 0) {
+        D_800A2D10 = 0;
+    }
+    return a1;
+}
 INCLUDE_ASM("asm/funcs", func_8008AE24);
 INCLUDE_ASM("asm/funcs", func_8008AE7C);
 INCLUDE_ASM("asm/funcs", func_8008AEB0);

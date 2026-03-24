@@ -40,7 +40,24 @@ void *func_800800CC(void) {
     return &D_800A11D0;
 }
 
-INCLUDE_ASM("asm/funcs", func_800800DC);
+extern s32 func_80081974(void);
+extern s32 func_800819C4(void);
+extern s32 func_80081880(void);
+s32 func_800800DC(s32 a0) {
+    if (a0 == 2) {
+        func_80081974();
+        return 1;
+    }
+    if (func_800819C4() != 0) {
+        return 0;
+    }
+    if (a0 == 1) {
+        if (func_80081880() != 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 void func_80080148(void) {
     func_800817A0();
