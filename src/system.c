@@ -270,6 +270,7 @@ s32 func_80081D1C(s32 a0, s32 a1) {
     *D_800A14BC = a1 | 0x10000;
     v1 = D_800A147C;
     do {
+        __asm__ volatile("nop");
         v0 = *v1 & 0x40;
     } while (v0 == 0);
     *D_800A14C0 = 0x11000000;
