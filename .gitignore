@@ -13,6 +13,9 @@ disc/
 # Compiler toolchain (large binary, downloaded separately)
 tools/gcc-2.7.2/
 
+# Cross-session coordination (ephemeral, not source)
+CLAIMS.md
+
 # OS/editor junk
 .DS_Store
 Thumbs.db
