@@ -103,8 +103,20 @@ void func_8007D2CC(u32 a0) {
 u32 func_8007D2F4(s32 a0) {
     return D_800F189C[a0];
 }
-INCLUDE_ASM("asm/funcs", func_8007D308);
-INCLUDE_ASM("asm/funcs", func_8007D358);
+s32 func_8007D308(u32 *a0, s32 a1) {
+    s32 i;
+    *(volatile u32 *)D_8009BF48 = 0x04000000;
+    for (i = a1 - 1; i != -1; i--) {
+        *(volatile u32 *)D_8009BF44 = *a0++;
+    }
+    return 0;
+}
+void func_8007D358(u32 a0) {
+    *(volatile u32 *)D_8009BF48 = 0x04000002;
+    *(volatile u32 *)D_8009BF4C = a0;
+    *(volatile u32 *)D_8009BF50 = 0;
+    *(volatile u32 *)D_8009BF54 = 0x01000401;
+}
 u32 func_8007D3A4(u32 a0) {
     *D_8009BF48 = a0 | 0x10000000;
     return *D_8009BF44 & 0xFFFFFF;
@@ -122,7 +134,12 @@ void func_8007DC68(void) {
 }
 INCLUDE_ASM("asm/funcs", func_8007DC9C);
 INCLUDE_ASM("asm/funcs", func_8007DE08);
-INCLUDE_ASM("asm/funcs", func_8007DEE4);
+void func_8007DEE4(u8 *a0, u8 a1, s32 a2) {
+    s32 i;
+    for (i = a2 - 1; i != -1; i--) {
+        *a0++ = a1;
+    }
+}
 INCLUDE_ASM("asm/funcs", func_8007DF10);
 PAD_NOPS_1; /* 1 NOP after func_8007DF10 */
 extern s32 func_8007DF5C(s32);
