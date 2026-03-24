@@ -1248,7 +1248,11 @@ void func_8006E440(s32 *a0) {
         p++;
     }
 }
-INCLUDE_ASM("asm/funcs", func_8006E480);
+s32 func_8006E480(u8 *a0, s32 a1) {
+    s32 v0 = a0[0] & 0xFE1F;
+    s32 v1 = a0[1] << 7;
+    return v0 + v1 + a1;
+}
 INCLUDE_ASM("asm/funcs", func_8006E49C);
 INCLUDE_ASM("asm/funcs", func_8006E534);
 INCLUDE_ASM("asm/funcs", func_8006E8AC);
