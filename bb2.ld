@@ -24,6 +24,8 @@ SECTIONS
         main_RODATA_START = .;
         build/asm/data/800.rodata.o(.rodata);
         build/asm/6CAC.o(.rodata);
+        build/src/config.o(.rodata);
+        build/asm/text1a.o(.rodata);
         build/src/sound.o(.rodata);
         build/asm/text1b.o(.rodata);
         build/src/gpu.o(.rodata);
@@ -37,6 +39,8 @@ SECTIONS
         main_TEXT_START = .;
         build/src/ings.o(.text);
         build/asm/6CAC.o(.text);
+        build/src/config.o(.text);
+        build/asm/text1a.o(.text);
         build/src/sound.o(.text);
         build/asm/text1b.o(.text);
         build/src/gpu.o(.text);
@@ -50,6 +54,8 @@ SECTIONS
         main_DATA_START = .;
         build/asm/data/800.rodata.o(.data);
         build/asm/6CAC.o(.data);
+        build/src/config.o(.data);
+        build/asm/text1a.o(.data);
         build/src/sound.o(.data);
         build/asm/text1b.o(.data);
         build/src/gpu.o(.data);
@@ -64,6 +70,8 @@ SECTIONS
         main_BSS_START = .;
         build/asm/data/800.rodata.o(.bss);
         build/asm/6CAC.o(.bss);
+        build/src/config.o(.bss);
+        build/asm/text1a.o(.bss);
         build/src/sound.o(.bss);
         build/asm/text1b.o(.bss);
         build/src/gpu.o(.bss);
