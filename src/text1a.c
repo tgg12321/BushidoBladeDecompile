@@ -240,7 +240,16 @@ s32 func_80043244(s32 a0) {
     }
     return ret;
 }
-INCLUDE_ASM("asm/funcs", func_80043278);
+s32 func_80043278(s32 a0) {
+    register s32 v0 __asm__("$2");
+    register s32 v1 __asm__("$3");
+    v0 = *(s32 *)0x1F800008;
+    v1 = -0x1000;
+    v0 = a0 >> v0;
+    a0 = v0 >> 11;
+    v0 = (v0 & 0x7FF) | v1;
+    return (v0 >> a0) & 0xFFF;
+}
 INCLUDE_ASM("asm/funcs", func_800432A0);
 extern void func_800432A0(s16, s16, s16, s16, s16);
 void func_80043398(s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
