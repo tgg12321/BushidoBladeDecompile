@@ -27,11 +27,46 @@ extern u8 D_80010000;
 extern void func_80079208(s32);
 extern void func_800164F8(void);
 extern s16 D_800973FC[];
+extern s32 func_80083698(s32, s32, s32);
+extern s32 func_800836C8(s32, s32, s32);
+extern s32 func_8008387C(s32, u8 *, s32);
+extern void func_80078A18(s32);
+extern void func_800836B8(s32);
+
 
 /* --- Non-decompiled functions (INCLUDE_ASM) --- */
 INCLUDE_ASM("asm/funcs", func_800164AC);
 INCLUDE_ASM("asm/funcs", func_800164F8);
-INCLUDE_ASM("asm/funcs", func_80016514);
+s32 func_80016514(s32 a0, u8 *dest) {
+    s32 fd;
+    s32 total;
+    s32 remaining;
+    s32 chunk;
+
+    fd = func_80083698(a0 + 4, 0, 0);
+    if (fd == -1) {
+        return -2;
+    }
+    total = func_800836C8(fd, 0, 2);
+    remaining = total;
+    func_800836C8(fd, 0, 0);
+    if (total > 0) {
+        do {
+            chunk = 0x4000;
+            if (remaining < 0x4001) {
+                chunk = remaining;
+            }
+            if (func_8008387C(fd, dest, chunk) != chunk) {
+                func_80078A18(fd);
+                return -1;
+            }
+            remaining -= chunk;
+            dest += chunk;
+        } while (remaining > 0);
+    }
+    func_800836B8(fd);
+    return total;
+}
 INCLUDE_ASM("asm/funcs", func_800165F8);
 s32 func_800166C4(s32 a0) {
     s32 tmp = (a0 << 12) / 360;
@@ -97,7 +132,30 @@ void func_800168F8(void) {
     func_80046AE8();
 }
 
-INCLUDE_ASM("asm/funcs", func_80016918);
+extern void func_8007B114(s32);
+extern void func_8007E094(void);
+extern void func_8007EFDC(s32, s32);
+extern void func_8007EFFC(s32);
+extern void func_8007A694(u8 *, s32, s32, s32, s32);
+extern void func_8007A74C(u8 *, s32, s32, s32, s32);
+void func_80016918(void) {
+    u8 *base;
+
+    func_8007AE7C(0);
+    func_8007B114(0);
+    func_8007B2A0(0);
+    func_8007E094();
+    func_8007EFDC(0x140, 0x78);
+    func_8007EFFC(func_800166C4(0x2D));
+    base = &D_800F7438;
+    func_8007A694(base, 0, 0, 0x280, 0xF0);
+    func_8007A694(base + 0x4090, 0, 0xF0, 0x280, 0xF0);
+    func_8007A74C(base + 0x5C, 0, 0xF0, 0x280, 0xF0);
+    func_8007A74C(base + 0x40EC, 0, 0, 0x280, 0xF0);
+    func_80016768(1, 0, 0, 0);
+    func_8007B4D0(&D_800A30CC, 0, 0, 0);
+    func_8007B33C(0);
+}
 INCLUDE_ASM("asm/funcs", func_80016A18);
 INCLUDE_ASM("asm/funcs", func_80016A8C);
 void func_80016C3C(void) {
