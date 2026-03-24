@@ -239,7 +239,17 @@ s32 func_80044E6C(void) {
     return 0x26;
 }
 extern void func_80036F40(void);
-INCLUDE_ASM("asm/funcs", func_80044E74);
+extern void func_80036F40(void);
+extern void func_80036E34(s32, s32, s32, s32);
+
+typedef struct { s16 x; s16 y; } Coord;
+extern Coord D_800963EC[];
+
+void func_80044E74(s32 a0, s32 a1) {
+    func_80036F40();
+    func_80036E34(0, a1, D_800963EC[a0].x, D_800963EC[a0].y);
+    func_80036F40();
+}
 extern s32 func_800450F4(s32, s32);
 void func_80044ED8(s32 a0, s32 a1) {
     if (a0 >= 0x1F) {

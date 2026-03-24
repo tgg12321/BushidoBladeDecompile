@@ -49,8 +49,24 @@ INCLUDE_ASM("asm/funcs", func_8007A438);
 INCLUDE_ASM("asm/funcs", func_8007A448);
 INCLUDE_ASM("asm/funcs", func_8007A458);
 INCLUDE_ASM("asm/funcs", func_8007A4D8);
-INCLUDE_ASM("asm/funcs", func_8007A5C4);
-INCLUDE_ASM("asm/funcs", func_8007A62C);
+u16 func_8007A5C4(s32 a0, s32 a1, s32 a2) {
+    s16 buf[4];
+    buf[0] = a1;
+    buf[1] = a2;
+    buf[2] = 0x100;
+    buf[3] = 1;
+    func_8007B600((s32)buf, a0);
+    return func_8007A7C4(a1, a2);
+}
+u16 func_8007A62C(s32 a0, s32 a1, s32 a2) {
+    s16 buf[4];
+    buf[0] = a1;
+    buf[1] = a2;
+    buf[2] = 0x10;
+    buf[3] = 1;
+    func_8007B600((s32)buf, a0);
+    return func_8007A7C4(a1, a2);
+}
 INCLUDE_ASM("asm/funcs", func_8007A694);
 s16 *func_8007A74C(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
     a0[0] = a1;
