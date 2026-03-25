@@ -271,6 +271,7 @@ void *func_800472B0(void) {
 }
 
 INCLUDE_ASM("asm/funcs", func_800472C0);
+
 INCLUDE_ASM("asm/funcs", func_80047384);
 
 void func_8004746C(void) {
@@ -344,8 +345,26 @@ void func_800477DC(s32 a0) {
 }
 INCLUDE_ASM("asm/funcs", func_800477E8);
 INCLUDE_ASM("asm/funcs", func_80047A90);
+
 INCLUDE_ASM("asm/funcs", func_80047BE0);
-INCLUDE_ASM("asm/funcs", func_80047D94);
+extern s32 D_800EF7BC[];
+
+s32 func_80047D94(s32 a0) {
+    s32 a1 = (a0 + 0x7D00) / 3200;
+    s32 a0_div = a0 / 3200;
+    s32 remainder = a0 - a0_div * 3200;
+    s32 odd = remainder & 1;
+    D_800A33D4 = a1;
+    D_800A33D8 = odd;
+    if ((u32)a1 >= 18) {
+        return (s32)0xFFFE7960;
+    }
+    {
+        s32 val1 = D_800EF7BC[a1] * odd;
+        s32 val2 = D_800EF7BC[a1 + 1] * (0x1000 - odd);
+        return ((val1 + val2) >> 12) - 0x3F48;
+    }
+}
 s32 func_80047E5C(void) {
     s32 v1 = D_800A33D4;
     if ((u32)v1 >= 18) {
