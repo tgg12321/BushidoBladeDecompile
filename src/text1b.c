@@ -1466,39 +1466,204 @@ INCLUDE_ASM("asm/funcs", func_80078634);
 INCLUDE_ASM("asm/funcs", func_80078654);
 INCLUDE_ASM("asm/funcs", func_80078824);
 INCLUDE_ASM("asm/funcs", func_800788B0);
-INCLUDE_ASM("asm/funcs", func_80078948);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078948\n"
+    "addiu $t2, $zero, 0xA0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x43\n"
+    "endlabel func_80078948\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078948 */
-INCLUDE_ASM("asm/funcs", func_80078958);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078958\n"
+    "addiu $t2, $zero, 0xA0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x70\n"
+    "endlabel func_80078958\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078958 */
-INCLUDE_ASM("asm/funcs", func_80078968);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078968\n"
+    "addiu $t2, $zero, 0xA0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x9F\n"
+    "endlabel func_80078968\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078968 */
-INCLUDE_ASM("asm/funcs", func_80078978);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078978\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x8\n"
+    "endlabel func_80078978\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078978 */
-INCLUDE_ASM("asm/funcs", func_80078988);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078988\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x9\n"
+    "endlabel func_80078988\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078988 */
-INCLUDE_ASM("asm/funcs", func_80078998);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078998\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0xB\n"
+    "endlabel func_80078998\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078998 */
-INCLUDE_ASM("asm/funcs", func_800789A8);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_800789A8\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0xC\n"
+    "endlabel func_800789A8\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_800789A8 */
 INCLUDE_ASM("asm/funcs", func_800789B8);
 INCLUDE_ASM("asm/funcs", func_800789C8);
 INCLUDE_ASM("asm/funcs", func_800789D8);
 PAD_NOPS_1; /* padding after func_800789D8 */
-INCLUDE_ASM("asm/funcs", func_800789E8);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_800789E8\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x32\n"
+    "endlabel func_800789E8\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_800789E8 */
-INCLUDE_ASM("asm/funcs", func_800789F8);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_800789F8\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x34\n"
+    "endlabel func_800789F8\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_800789F8 */
-INCLUDE_ASM("asm/funcs", func_80078A08);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A08\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x35\n"
+    "endlabel func_80078A08\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078A08 */
-INCLUDE_ASM("asm/funcs", func_80078A18);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A18\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x36\n"
+    "endlabel func_80078A18\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078A18 */
-INCLUDE_ASM("asm/funcs", func_80078A28);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A28\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x41\n"
+    "endlabel func_80078A28\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078A28 */
-INCLUDE_ASM("asm/funcs", func_80078A38);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A38\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x42\n"
+    "endlabel func_80078A38\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078A38 */
-INCLUDE_ASM("asm/funcs", func_80078A48);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A48\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x43\n"
+    "endlabel func_80078A48\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078A48 */
-INCLUDE_ASM("asm/funcs", func_80078A58);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A58\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x5B\n"
+    "endlabel func_80078A58\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078A58 */
 INCLUDE_ASM("asm/funcs", func_80078A68);
 INCLUDE_ASM("asm/funcs", func_80078B04);
@@ -1606,17 +1771,83 @@ s32 func_80078E20(void) {
 }
 INCLUDE_ASM("asm/funcs", func_80078E58);
 INCLUDE_ASM("asm/funcs", func_80078EC0);
-INCLUDE_ASM("asm/funcs", func_80078F00);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F00\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x12\n"
+    "endlabel func_80078F00\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078F00 */
-INCLUDE_ASM("asm/funcs", func_80078F10);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F10\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x13\n"
+    "endlabel func_80078F10\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078F10 */
-INCLUDE_ASM("asm/funcs", func_80078F20);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F20\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x14\n"
+    "endlabel func_80078F20\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078F20 */
-INCLUDE_ASM("asm/funcs", func_80078F30);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F30\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x15\n"
+    "endlabel func_80078F30\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078F30 */
-INCLUDE_ASM("asm/funcs", func_80078F40);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F40\n"
+    "addiu $t2, $zero, 0xC0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x2\n"
+    "endlabel func_80078F40\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078F40 */
-INCLUDE_ASM("asm/funcs", func_80078F50);
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F50\n"
+    "addiu $t2, $zero, 0xC0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x3\n"
+    "endlabel func_80078F50\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* padding after func_80078F50 */
 INCLUDE_ASM("asm/funcs", func_80078F60);
 INCLUDE_ASM("asm/funcs", func_80078F74);
