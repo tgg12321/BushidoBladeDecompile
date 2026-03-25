@@ -1,0 +1,237 @@
+// ============================================================
+// Bushido Blade 2 (SLUS-00663) - Symbol Address Table
+// Generated from decompiled C source analysis
+// Format: symbol_name = 0xADDRESS; // context
+// ============================================================
+
+// === RODATA: Strings and Constants ===
+g_str_overflow = 0x80010000; // "OVER FLOW"
+g_str_eff_init = 0x8001000C; // "eff_init:%08x size:%08x"
+g_str_limit = 0x80010028; // "LIMIT:%08x"
+g_str_prim_overflow = 0x80010034; // "common prim over flow"
+g_str_build_date = 0x8001004C; // "Fri Aug  7 22:26:32 1998"
+g_str_sound_id_fmt = 0x800100B4; // "SOUND ID:%d"
+g_str_win = 0x800100FC; // animation name: WIN
+g_str_chanbara = 0x8001081C; // game mode: CHANBARA
+g_str_practice = 0x80010828; // game mode: PRACTICE
+g_str_memcard_fmt = 0x800109B0; // memory card path format
+g_str_setdispmask = 0x80015F04; // PsyQ debug: SetDispMask
+g_str_drawsync = 0x80015F18; // PsyQ debug: DrawSync
+g_str_bad_rect = 0x80015F2C; // PsyQ debug: bad RECT
+g_str_clearimage = 0x80015F50; // PsyQ: ClearImage
+g_str_loadimage = 0x80015F5C; // PsyQ: LoadImage
+g_str_storeimage = 0x80015F68; // PsyQ: StoreImage
+g_str_clearotag = 0x80015F80; // PsyQ: ClearOTag
+g_str_drawotag = 0x80015FB0; // PsyQ: DrawOTag
+g_str_cdinit_fail = 0x8001605C; // CD init failure message
+g_str_none = 0x80016074; // default CD command name
+g_str_cd_timeout = 0x800161B8; // CD timeout message
+g_str_sio_console = 0x8001649C; // SIO console string
+g_str_sio = 0x800164A8; // sio string
+
+// === RODATA: PsyQ Library Version Strings ===
+g_str_bios_id = 0x80016274; // libcd version: bios.c v1.86
+g_str_intr_id = 0x80016328; // libapi version: intr.c v1.76
+
+// === RODATA: Jump Tables ===
+jtbl_80010068 = 0x80010068; // jump table (8 entries)
+jtbl_80010088 = 0x80010088; // jump table (7 entries)
+jtbl_800100C4 = 0x800100C4; // jump table (8 entries)
+jtbl_800100E4 = 0x800100E4; // jump table (6 entries)
+
+// === Trig/Math Lookup Table ===
+g_sin_table = 0x800973FC; // sine lookup table (4096 entries, s16)
+
+// === GPU Subsystem (gpu.c / display.c) ===
+g_gpu_debug_func = 0x8009BE70; // GPU debug printf callback
+g_gpu_dev_table = 0x8009BE6C; // GPU device function vtable
+g_gpu_type = 0x8009BE74; // GPU hardware type
+g_gpu_interlace = 0x8009BE75; // interlace mode flag
+g_gpu_debug_level = 0x8009BE76; // GPU debug verbosity (>=2 prints)
+g_gpu_dither = 0x8009BE77; // GPU dither enable
+g_gpu_disp_x = 0x8009BE78; // display offset X
+g_gpu_disp_y = 0x8009BE7A; // display offset Y
+g_gpu_draw_mode = 0x8009BE80; // GPU draw mode state
+g_gpu_draw_env = 0x8009BE84; // DrawEnv structure (0x5C bytes)
+g_gpu_disp_env = 0x8009BEE0; // DispEnv structure (0x14 bytes)
+g_gpu_ot_end = 0x8009BF30; // OT list terminator
+g_gpu_stat_reg = 0x8009BF48; // GPU status register ptr
+g_gpu_data_reg = 0x8009BF44; // GPU data register ptr
+g_gpu_dma_madr = 0x8009BF4C; // GPU DMA base addr reg ptr
+g_gpu_dma_bcr = 0x8009BF50; // GPU DMA block count reg ptr
+g_gpu_dma_chcr = 0x8009BF54; // GPU DMA channel ctrl reg ptr
+g_gpu_vcount = 0x8009BF8C; // VSync counter
+g_gpu_draw_count = 0x8009BF90; // draw call counter
+g_gpu_color_table = 0x800F189C; // GPU color index table
+
+// === GPU: Sine/Cosine LUTs (display.c) ===
+g_sin_lut_q1 = 0x8009BF94; // sine LUT quadrant 1
+g_sin_lut_q3 = 0x8009AF94; // sine LUT quadrant 3
+g_cos_lut_q2 = 0x8009B794; // cosine LUT quadrant 2
+g_cos_lut_q4 = 0x8009A794; // cosine LUT quadrant 4
+
+// === GTE Tables (display.c) ===
+g_gte_sqrt_table = 0x8009C7A8; // GTE square root lookup
+g_gte_saved_ra = 0x8009C798; // saved RA in GTE init
+
+// === CD-ROM Subsystem (system.c) ===
+g_cd_index_reg = 0x800A147C; // CD-ROM index register ptr
+g_cd_param_fifo = 0x800A1480; // CD-ROM parameter FIFO ptr
+g_cd_req_reg = 0x800A1484; // CD-ROM request register ptr
+g_cd_irq_reg = 0x800A1488; // CD-ROM interrupt register ptr
+g_cd_dma_madr = 0x800A148C; // CD DMA MADR register ptr
+g_cd_spu_voice = 0x800A1490; // SPU voice register base ptr
+g_cd_status_a = 0x800A1494; // CD status byte A
+g_cd_status_b = 0x800A1495; // CD status byte B
+g_cd_status_c = 0x800A1496; // CD status byte C
+g_cd_debug_level = 0x800A11C0; // CD debug output level
+g_cd_mode = 0x800A11C4; // CD operating mode
+g_cd_param = 0x800A11D0; // CD command parameter
+g_cd_ready_flag = 0x800A11D4; // CD ready status
+g_cd_ready_flag2 = 0x800A11D5; // CD ready status 2
+g_cd_callback_a = 0x800A11B4; // CD callback A
+g_cd_callback_b = 0x800A11B8; // CD callback B
+g_cd_init_flag = 0x800A11C8; // CD initialized flag
+g_cd_dma_bcr = 0x800A14B0; // CD DMA BCR ptr
+g_cd_dma_ctrl_b4 = 0x800A14B4; // CD DMA control B4 ptr
+g_cd_dma_dest = 0x800A14B8; // CD DMA destination ptr
+g_cd_dma_size = 0x800A14BC; // CD DMA transfer size ptr
+g_cd_dma_ctrl = 0x800A14C0; // CD DMA control reg ptr
+g_cd_cmd_table = 0x800A11DC; // CD command dispatch table
+g_cd_result_table = 0x800A125C; // CD result handler table
+g_cd_sector_buf = 0x800A112C; // CD sector buffer
+
+// === Sound / SPU Subsystem ===
+g_spu_base_addr = 0x800A2CDC; // SPU register base address
+g_spu_dma_ctrl = 0x800A2CF0; // SPU DMA control register ptr
+g_spu_xfer_addr = 0x800A2CF4; // SPU transfer address (shifted)
+g_spu_reverb_mode = 0x800A2CF8; // SPU reverb mode (0=off)
+g_spu_addr_shift = 0x800A2D04; // SPU address shift factor
+g_spu_busy = 0x800A2D10; // SPU busy/transfer state
+g_spu_init_flag = 0x800A2D14; // SPU initialized flag
+g_spu_timer = 0x800A2D18; // SPU timer
+g_spu_voice_key_a = 0x800A2D38; // SPU voice key A
+g_spu_voice_key_b = 0x800A2D3C; // SPU voice key B
+g_spu_voice_key_c = 0x800A2D40; // SPU voice key C
+g_snd_init_flag = 0x800A2CD8; // sound system init flag
+g_snd_irq_handle = 0x800A2870; // sound IRQ handler handle
+g_snd_reverb_flag = 0x800A2878; // sound reverb enable
+g_snd_callback = 0x800A307C; // sound completion callback
+
+// === Sound: Channels and Playback ===
+g_snd_ch_status = 0x80102A68; // per-channel status array
+g_snd_ch_addr = 0x80107810; // per-channel SPU address
+g_snd_ch_count = 0x80107808; // active sound channel count
+g_snd_irq_data = 0x80088BA0; // sound IRQ callback data
+
+// === System / IRQ ===
+g_sys_irq_vtable = 0x800A2600; // interrupt handler vtable
+g_sys_irq_counter = 0x800A2608; // interrupt counter register
+g_sys_vblank_count = 0x800A157A; // VBlank counter
+g_sys_vsync_mode = 0x800A14CC; // VSync wait mode
+g_sys_timer = 0x800A1500; // system timer value
+g_sys_video_mode = 0x800A2664; // video mode (0=NTSC)
+g_sys_dma_region = 0x800A2634; // DMA memory region
+
+// === Player / Character ===
+g_player_ptrs = 0x800A9A10; // player struct pointers [3]
+g_player_char_ids = 0x80094B88; // character IDs [3]
+
+// === Camera ===
+g_cam_matrix = 0x800EEDB0; // camera rotation matrix base
+g_cam_bone_data = 0x800EEDD0; // camera bone data
+g_cam_bone_data2 = 0x800EEDF0; // camera bone data 2
+g_cam_interp = 0x800EEDF8; // camera interpolation timer
+g_cam_fov_x = 0x800F62F8; // camera FOV X
+g_cam_fov_div = 0x800F62FA; // camera FOV divisor
+g_cam_fov_z = 0x800F62FC; // camera FOV Z
+
+// === Stage ===
+g_stage_id = 0x80099478; // current stage index
+g_stage_variant = 0x8009947A; // stage variant
+g_stage_data = 0x8009947C; // stage data byte
+g_stage_collision = 0x800A8FB0; // collision grid 32x32
+g_stage_light_pos = 0x800A93B0; // light position [3]
+g_stage_light_dir = 0x800A93BC; // light direction [3]
+g_stage_init_tbl = 0x800948BC; // per-stage init functions
+
+// === Game State ===
+g_game_mode = 0x800A336C; // game mode/state
+g_game_player_count = 0x800A322C; // player count
+g_game_mirror_mode = 0x800F665C; // player count mirror
+g_game_p1_ctrl = 0x800F6656; // P1 controller port
+g_game_p2_ctrl = 0x800F6658; // P2 controller port
+g_game_flag_a = 0x800A3370; // game flag A
+g_game_flag_b = 0x800A3374; // game flag B
+g_game_pause = 0x800F6654; // pause state flag
+g_game_timer = 0x800A3790; // game timer
+
+// === Sound Config ===
+g_snd_bgm_id = 0x800A33B0; // current BGM track
+g_snd_se_id = 0x800A33B4; // current SE id
+g_snd_stage_bgm = 0x800A33C0; // stage BGM id
+g_snd_volume = 0x800A33D0; // master volume
+g_snd_fade_pos = 0x800A33D4; // fade position
+g_snd_fade_amt = 0x800A33D8; // fade amount
+g_snd_play_count = 0x800A33E4; // sound play counter
+g_snd_se_bank = 0x80099C34; // SE bank param table
+g_snd_ch_data = 0x800EF848; // channel data blocks
+g_snd_fade_curve = 0x800EF800; // volume fade curve
+g_snd_config_tbl = 0x800EF7BC; // sound config table
+
+// === Color Mode ===
+g_color_mode = 0x800F6652; // grayscale flag
+
+// === Input ===
+g_pad_data = 0x800FF580; // pad data buffer
+g_pad_selection = 0x800A324A; // active pad/selection
+
+// === Display ===
+g_disp_fb_base = 0x800F7438; // framebuffer base
+g_disp_fb_flag = 0x800F7450; // framebuffer flag
+g_disp_gp_base = 0x800A30CC; // GP register base
+g_disp_enable = 0x800A3768; // display enable
+g_disp_fade = 0x800A36A8; // display fade
+
+// === File I/O ===
+g_file_flags = 0x80106A73; // disc config flags
+g_file_disc_type = 0x80106A54; // disc type
+g_file_disc_size = 0x80106A50; // disc data size
+g_file_vram_timer = 0x800A3710; // VRAM transfer timer
+g_file_dma_flag = 0x800A3716; // file DMA flag
+g_file_heap_base = 0x800A38BC; // file heap base
+g_file_data_buf = 0x800F6740; // file data buffer
+
+// === Animation ===
+g_anim_func_table = 0x800F66A0; // rotation func ptrs
+g_anim_hit_flags = 0x800A3380; // hit flags [2]
+g_anim_hit_data = 0x800A3384; // hit data [2]
+g_anim_select = 0x800A3238; // animation selection
+g_anim_counter = 0x800A3382; // frame counter
+
+// === Character Data ===
+g_char_data = 0x800A6690; // character data region
+g_char_setup_tbl = 0x80094E48; // character setup table
+
+// === Memory Card ===
+g_memcard_busy = 0x800FF578; // memcard busy flag
+g_memcard_slot = 0x80101BCC; // memcard slot
+g_memcard_data = 0x80103600; // memcard data byte
+
+// === Debug Format Strings ===
+g_str_putdrawenv = 0x80015FC4; // PutDrawEnv debug
+g_str_putdispenv = 0x80015FF8; // PutDispEnv debug
+g_str_gpu_timeout = 0x80016010; // GPU timeout debug
+g_str_spu_timeout = 0x800163D8; // SPU timeout debug
+
+// === Data Section ===
+g_data_start = 0x8008D070; // .data section start
+g_module_func_tbl = 0x8008D090; // module init/cleanup pairs
+g_module_type_tbl = 0x8008D118; // module type indices
+
+// === BBM File Names (animation bundles) ===
+g_str_bbm_y123 = 0x8001036C; // Y123.BBM
+g_str_bbm_n123 = 0x80010378; // N123.BBM
+g_str_bbm_k123 = 0x80010384; // K123.BBM
+g_str_bbm_t123 = 0x80010390; // T123.BBM
+g_str_bbm_s123 = 0x800103C0; // S123.BBM
