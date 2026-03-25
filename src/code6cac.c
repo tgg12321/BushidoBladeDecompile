@@ -35,12 +35,10 @@ extern u32 D_80101E44;
 extern u8 D_800A3928;
 
 /* Extern function declarations */
-extern void func_80023CB4(s32, s32);
 extern s32 func_80037110(s32);
 extern void func_80036EC0(void);
 extern void func_80036F40(void);
 extern void func_80016868(void);
-extern void func_800194F4(void);
 extern void func_80045188(void);
 extern s32 func_8008C464(s32, s32, s32);
 extern void func_8003A39C(void);
@@ -116,8 +114,6 @@ extern void func_8005B868(void);
 extern void func_800826CC(s32);
 extern s32 func_800827D0(s32, s32);
 extern void func_80041604(s32, s32);
-extern void func_80021974(s32);
-extern void func_80021A98(s32, s32, s32);
 extern void func_80036940(void);
 extern void func_8003D52C(s32, s32, s32, s32);
 extern s32 D_800100A4;
@@ -196,7 +192,6 @@ extern s16 D_800F661A;
 extern s16 D_800F661C;
 extern s32 D_800F6620;
 extern void func_80016C3C(void);
-extern s32 func_80020D38(void);
 extern s32 func_8005B9FC(s32);
 extern s32 D_800A37C0;
 extern s32 D_800A38B4;
@@ -230,7 +225,6 @@ extern u8 D_8008EB1C;
 extern u8 D_8008DB1C;
 extern s32 D_800F5328;
 extern s32 func_8007FD5C(s32, s32);
-extern void func_8001B748(s32 *, s32 *, s32 *, s32 *, s32, s32);
 extern u8 D_8008F13C;
 extern s16 D_80101E74;
 
@@ -241,7 +235,6 @@ extern s32 D_800A3844;
 extern u8 D_800A376C;
 extern u8 D_8008D578;
 extern void func_80016C80(void);
-extern void func_80022580(s32, s32, s32, s32, s32);
 extern void func_80040510(s32, s32, s32);
 extern void func_8003AE5C(s32);
 extern void func_80046F14(void);
@@ -692,8 +685,6 @@ void func_8001C444(void) {
 }
 extern u16 D_80101F32;
 extern s16 D_80101F26;
-extern s32 func_80021974(s32);
-extern void func_80021A98(s32, s32, s32);
 void func_8001C4C0(void) {
     u16 v = D_80101F32;
     if (v == 0x32 || v == 0x11) {
@@ -877,7 +868,6 @@ extern s32 D_800A3888;
 extern s32 D_800A3830;
 extern s32 D_800A3860;
 extern s32 D_800A3864;
-extern void func_80020CDC(void);
 
 INCLUDE_ASM("asm/funcs", func_80020D70);
 INCLUDE_ASM("asm/funcs", func_80020DDC);
@@ -887,7 +877,6 @@ extern u16 D_800A38C4;
 extern s32 D_801027C0;
 extern u16 D_800A38C6;
 extern s32 D_801027D4;
-extern void func_8001979C(s32, s32);
 void func_80021210(void) {
     func_8001979C(0, D_80102770);
     if (D_800A38C4) {
