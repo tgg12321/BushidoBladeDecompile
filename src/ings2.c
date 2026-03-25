@@ -206,7 +206,34 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-INCLUDE_ASM("asm/funcs", func_8008387C);
+extern s32 func_8008393C(s32, s32, s32, s32);
+
+s32 func_8008387C(s32 addr, s32 dest, s32 len) {
+    register s32 total asm("s2");
+    s32 chunk;
+    s32 result;
+
+    total = 0;
+    if (len != 0) {
+        do {
+            chunk = len;
+            if ((u32)0x8000 < (u32)len) {
+                chunk = 0x8000;
+            }
+            result = func_8008393C(0, addr, chunk, dest);
+            total += result;
+            if (result == -1) {
+                return -1;
+            }
+            dest += result;
+            len -= result;
+            if (result < chunk) {
+                break;
+            }
+        } while (len != 0);
+    }
+    return total;
+}
 __asm__(
     ".section .text\n"
     "    .set noat\n"
@@ -223,7 +250,35 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-INCLUDE_ASM("asm/funcs", func_80083954);
+extern s32 D_800A26D0;
+extern u8 D_800A26DD;
+extern u8 D_800A26DE;
+extern u8 D_800A26DC;
+extern s32 D_800A26D8;
+extern void func_800789B8(void);
+extern void func_800789C8(void);
+
+void func_80083954(void) {
+    if (D_800A26D0 != 0) {
+        return;
+    }
+    D_800A26DD = 0;
+    if (D_800A26DE == 0x7F) {
+        return;
+    }
+    func_800789B8();
+    if (D_800A26DC != 0) {
+        func_80082B50(0);
+        D_800A26DC = 0;
+    } else if (D_800A26DE == 0) {
+        ((void (*)(s32, s32))func_80082AF0)(0, D_800A26D8);
+        D_800A26D8 = 0;
+    } else {
+        ((void (*)(s32, s32))func_80082AF0)(6, 0);
+    }
+    func_800789C8();
+    D_800A26DE = 0x7F;
+}
 
 void func_80083A18(void) {
     func_80082AC0();
