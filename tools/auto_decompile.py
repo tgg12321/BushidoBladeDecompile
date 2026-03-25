@@ -109,6 +109,62 @@ def run_m2c(func_name, asm_path):
     return result.stdout.strip(), None
 
 
+def postprocess_m2c(c_code):
+    """Fix common m2c output issues that GCC 2.7.2 rejects."""
+    lines = c_code.split("\n")
+    out = []
+    declared = set()
+    func_body_started = False
+
+    for line in lines:
+        # Track when we enter a function body
+        if re.match(r'.*\)\s*\{', line):
+            func_body_started = True
+            out.append(line)
+            # Scan ahead for undeclared sp/saved_reg/subroutine_arg vars
+            all_code = "\n".join(lines)
+            for m in re.finditer(r'\b(sp[0-9A-Fa-f]*|saved_reg_\w+|subroutine_arg\d+)\b', all_code):
+                var = m.group(1)
+                if var not in declared:
+                    declared.add(var)
+                    out.append("    s32 %s;" % var)
+            continue
+        out.append(line)
+
+    result = "\n".join(out)
+
+    # Fix undeclared D_XXXX externs: find used but not declared
+    used_globals = set(re.findall(r'\bD_[0-9A-Fa-f]{8}\b', result))
+    declared_globals = set(re.findall(r'extern\s+\w+\s+(D_[0-9A-Fa-f]{8})', result))
+    for g in used_globals - declared_globals:
+        result = ("extern M2C_UNK %s;\n" % g) + result
+
+    # Fix "invalid type argument of unary *": cast integer expressions
+    # used as pointers. Pattern: *(arithmetic_expr) where the expr is not
+    # already a pointer type. We cast to (void *) which GCC 2.7.2 accepts.
+    # Match: *( followed by complex expression that's likely integer arithmetic
+    # This handles patterns like *(a + b), *(a * N + b), *((expr >> N) + expr)
+    def fix_deref(m):
+        inner = m.group(1)
+        # Skip if already has a pointer cast like *(s32 *) or *(type *)
+        if re.match(r'\s*\([^)]*\*\)', inner):
+            return m.group(0)
+        # Skip simple variable dereferences that are likely already pointers
+        if re.match(r'\s*\w+\s*$', inner):
+            return m.group(0)
+        return "*(s32 *)(%s)" % inner
+
+    # Replace *(complex_expr) with *(s32 *)(complex_expr)
+    # Be careful: only match dereferences that involve arithmetic
+    result = re.sub(
+        r'\*\(([^;{}]+?(?:[+\-*/<>|&^]|<<|>>)[^;{}]*?)\)',
+        fix_deref,
+        result
+    )
+
+    return result
+
+
 def compile_and_diff(c_code, func_name, func_addr, func_size):
     tmpdir = tempfile.mkdtemp(prefix="bb2_m2c_")
     try:
@@ -263,7 +319,13 @@ def main():
              "status": "m2c_ok", "instr": num_instr}
 
         if args.compile:
+            # Try raw m2c first; only apply postprocessor if raw fails
             match, total, diff, err = compile_and_diff(m2c_output, func, addr, size)
+            if err:
+                processed = postprocess_m2c(m2c_output)
+                match2, total2, diff2, err2 = compile_and_diff(processed, func, addr, size)
+                if not err2:
+                    match, total, diff, err = match2, total2, diff2, err2
             if err:
                 r["status"] = "compile_fail"
                 r["error"] = err
