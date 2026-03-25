@@ -1852,7 +1852,28 @@ PAD_NOPS_1; /* padding after func_80078F50 */
 INCLUDE_ASM("asm/funcs", func_80078F60);
 INCLUDE_ASM("asm/funcs", func_80078F74);
 INCLUDE_ASM("asm/funcs", func_80078F88);
-INCLUDE_ASM("asm/funcs", func_80078FF0);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_80078FF0\n"
+    "    addiu $t2, $zero, 0xA0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0x44\n"
+    "    nop\n"
+    "    lui   $t1, %hi(D_800A362C)\n"
+    "    lw    $t1, %lo(D_800A362C)($t1)\n"
+    "    addiu $sp, $sp, -24\n"
+    "    sw    $ra, 20($sp)\n"
+    "    jalr  $t1\n"
+    "    nop\n"
+    "    lw    $ra, 20($sp)\n"
+    "    addiu $sp, $sp, 24\n"
+    "    jr    $ra\n"
+    "    nop\n"
+    "endlabel func_80078FF0\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 INCLUDE_ASM("asm/funcs", func_80079028);
 INCLUDE_ASM("asm/funcs", func_800790A4);
 PAD_NOPS_3; /* padding after func_800790A4 */
