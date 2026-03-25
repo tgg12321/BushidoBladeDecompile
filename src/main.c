@@ -223,7 +223,18 @@ extern s32 D_800A2D18;
 extern s32 D_800A2D18;
 
 INCLUDE_ASM("asm/funcs", func_800892F8);
-INCLUDE_ASM("asm/funcs", func_80089374);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_80089374\n"
+    "    addiu $t2, $zero, 0xB0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0xD\n"
+    "    nop\n"
+    "endlabel func_80089374\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 extern s32 D_800A2D38;
 extern s32 D_800A2D3C;
 extern s32 D_800A2D40;
@@ -268,7 +279,18 @@ void func_8008A904(s32 a0, s32 a1) {
 }
 
 INCLUDE_ASM("asm/funcs", func_8008A928);
-INCLUDE_ASM("asm/funcs", func_8008AAC4);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_8008AAC4\n"
+    "    addiu $t2, $zero, 0xB0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0xA\n"
+    "    nop\n"
+    "endlabel func_8008AAC4\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 INCLUDE_ASM("asm/funcs", func_8008AAD4);
 INCLUDE_ASM("asm/funcs", func_8008ACD0);
 s32 func_8008AD64(s32 a0, s32 a1) {
@@ -344,5 +366,17 @@ INCLUDE_ASM("asm/funcs", func_8008BF04);
 INCLUDE_ASM("asm/funcs", func_8008C184);
 INCLUDE_ASM("asm/funcs", func_8008C1E8);
 INCLUDE_ASM("asm/funcs", func_8008C464);
-INCLUDE_ASM("asm/funcs", func_8008D050);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_8008D050\n"
+    "    addiu $t2, $zero, 0xB0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0x47\n"
+    "    nop\n"
+    "endlabel func_8008D050\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+
 INCLUDE_ASM("asm/funcs", func_8008D060);
