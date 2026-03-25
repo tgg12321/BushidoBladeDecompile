@@ -252,7 +252,15 @@ s32 func_80043244(s32 a0) {
     }
     return ret;
 }
-INCLUDE_ASM("asm/funcs", func_80043278);
+s32 func_80043278(s32 a0) {
+    s32 mask = (s32)0xFFFFF000;
+    volatile s32 *sp = (volatile s32 *)0x1F800000;
+    s32 v0 = a0 >> sp[2];
+    s32 a0_new = v0 >> 11;
+    v0 = (v0 & 0x7FF) | mask;
+    v0 = v0 >> a0_new;
+    return v0 & 0xFFF;
+}
 INCLUDE_ASM("asm/funcs", func_800432A0);
 extern void func_800432A0(s16, s16, s16, s16, s16);
 void func_80043398(s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
