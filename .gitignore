@@ -29,3 +29,9 @@ debug_compiled_object.o
 
 # decomp-permuter tool (cloned separately)
 tools/decomp-permuter/
+tools/m2c/
+
+# m2c auto-decompile outputs
+m2c_out/
+m2c_report.csv
+include/m2c_context.h
