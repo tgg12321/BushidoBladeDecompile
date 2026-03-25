@@ -94,6 +94,52 @@ All objects linked with `mipsel-linux-gnu-ld`, stripped to binary via `objcopy`,
 - `tools/setup_wsl.sh` — automated WSL toolchain installer
 - `tools/maspsx/` — ASPSX compatibility layer (cloned from mkst/maspsx)
 - `tools/gcc-2.7.2/` — PsyQ-era GCC cross-compiler (built from decompals/mips-gcc-2.7.2)
+- `tools/decomp-permuter/` — [decomp-permuter](https://github.com/simonlindholm/decomp-permuter) for auto-matching C code
+- `tools/permuter_compile.sh` — BB2 compilation script for the permuter
+- `tools/permuter_setup.sh` — helper to set up a permuter run for a given function
+
+## Using decomp-permuter
+
+The permuter automatically tries thousands of C code permutations to find byte-matching output. It is useful when your decompilation is structurally correct but GCC's register allocation or instruction ordering differs.
+
+### Quick Start (in WSL)
+
+```bash
+cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile"
+source .venv/bin/activate
+
+# 1. Set up a permuter directory for a function
+bash tools/permuter_setup.sh func_80048A7C src/text1b.c
+
+# 2. Edit permuter/func_80048A7C/base.c with your decompilation attempt
+
+# 3. Run the permuter (use -j4 for 4 threads, --stop-on-zero to halt on match)
+python3 tools/decomp-permuter/permuter.py permuter/func_80048A7C -j4 --stop-on-zero
+
+# 4. Debug mode (shows side-by-side diff and score breakdown)
+python3 tools/decomp-permuter/permuter.py permuter/func_80048A7C --debug
+```
+
+### Directory Structure
+
+Each permuter run lives in `permuter/<func_name>/` with:
+- `base.c` — your decompilation attempt (edit this)
+- `target.s` / `target.o` — the original assembly to match against
+- `compile.sh` — compilation script (auto-copied from tools/)
+- `settings.toml` — permuter settings
+
+### Manual Permutation Macros
+
+Add these to `base.c` to guide the search:
+- `PERM_GENERAL(a, b, ...)` — try each alternative
+- `PERM_RANDOMIZE(code)` — allow random mutations within a block
+- `PERM_LINESWAP(lines)` — try all orderings of lines
+- `PERM_VAR(name, value)` / `PERM_VAR(name)` — define/use meta-variables
+
+### Notes
+- The `PERMUTER` preprocessor define is set during compilation, which makes `INCLUDE_ASM` expand to nothing (see `include/include_asm.h`)
+- `permuter/` directories are gitignored
+- Override compiler flags: `CC_FLAGS="-O2 -G8 ..." permuter/func_XXX/compile.sh ...`
 
 ## Cross-Session Coordination
 
