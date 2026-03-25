@@ -247,7 +247,16 @@ void func_8007DEE4(u8 *a0, u8 a1, s32 a2) {
         *a0++ = a1;
     }
 }
-INCLUDE_ASM("asm/funcs", func_8007DF10);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_8007DF10\n"
+    "    addiu $t2, $zero, 0xA0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0x49\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* 1 NOP after func_8007DF10 */
 extern s32 func_8007DF5C(s32);
 s32 func_8007DF20(s32 a0) {
