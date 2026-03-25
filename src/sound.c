@@ -3,7 +3,7 @@
 
 /* Forward declarations for called functions */
 extern void func_800453E0(s32);
-extern void func_800455AC(s32);
+extern s32 *func_800455AC(s32);
 extern void func_80045510(s32, s32);
 extern void func_80045230(s32);
 extern void func_80054FDC(s32);
@@ -31,8 +31,18 @@ extern void func_8004668C(void);
 extern void func_80046020(void);
 extern void func_80049E1C(void);
 extern void func_800472C0(u8 *);
+extern void func_8004211C(void);
+extern void func_800444BC(void);
 
 /* Externs for globals */
+extern s32 D_800A33B0;
+extern s32 D_800A33B4;
+extern s32 D_800A33D0;
+extern s32 D_800A33C0;
+extern s32 D_800A33D4;
+extern s32 D_800A33D8;
+extern s32 D_800EF7BC[];
+extern s32 D_800EF800[];
 extern s16 D_80099478;
 extern s16 D_8009947A;
 extern u8 D_8009947C;
@@ -44,8 +54,12 @@ extern s16 D_800EEDF8;
 
 /* --- Functions 0x80046780 - 0x80047EC8 --- */
 
-INCLUDE_ASM("asm/funcs", func_80046780);
-INCLUDE_ASM("asm/funcs", func_8004678C);
+s32 func_80046780(void) {
+    return D_800A33B0;
+}
+s32 func_8004678C(void) {
+    return D_800A33B4;
+}
 
 s32 func_80046798(void) {
     return D_80099478;
@@ -118,7 +132,13 @@ void func_80046B20(void) {
 
 INCLUDE_ASM("asm/funcs", func_80046B44);
 INCLUDE_ASM("asm/funcs", func_80046BF4);
-INCLUDE_ASM("asm/funcs", func_80046DA8);
+void func_80046DA8(s32 a0) {
+    if (a0 & 1) {
+        func_80046EA0(D_800A33C0);
+    }
+    func_8004211C();
+    func_800444BC();
+}
 
 s32 func_80046DE4(void) {
     return 0;
@@ -256,12 +276,27 @@ void func_800477CC(void) {
 void func_800477D4(void) {
 }
 
-INCLUDE_ASM("asm/funcs", func_800477DC);
+void func_800477DC(s32 a0) {
+    D_800A33D0 = a0;
+}
 INCLUDE_ASM("asm/funcs", func_800477E8);
 INCLUDE_ASM("asm/funcs", func_80047A90);
 INCLUDE_ASM("asm/funcs", func_80047BE0);
 INCLUDE_ASM("asm/funcs", func_80047D94);
-INCLUDE_ASM("asm/funcs", func_80047E5C);
+s32 func_80047E5C(void) {
+    s32 v1 = D_800A33D4;
+    if ((u32)v1 >= 18) {
+        return 0;
+    }
+    {
+        s32 v0 = D_800EF800[v1];
+        s32 a0 = D_800A33D8;
+        s32 val1 = v0 * a0;
+        s32 v3 = D_800EF800[v1 + 1];
+        s32 val2 = v3 * (0x1000 - a0);
+        return (val1 + val2) >> 12;
+    }
+}
 
 s32 func_80047EC8(void) {
     return 0xD00;
