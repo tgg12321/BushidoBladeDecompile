@@ -21,3 +21,11 @@ CLAIMS.md
 Thumbs.db
 *.swp
 *~
+
+# Permuter working directories
+permuter/
+debug_source.c
+debug_compiled_object.o
+
+# decomp-permuter tool (cloned separately)
+tools/decomp-permuter/
