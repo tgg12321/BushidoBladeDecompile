@@ -2,6 +2,32 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 
+
+extern s16 D_800EED10[];
+extern s32 D_800EED1C[];
+extern s32 D_800EED18;
+extern s32 D_800A33AC;
+extern s32 D_800A33A0;
+extern s32 D_800A33A4;
+extern s32 D_800A33A8;
+extern u8 D_800A9D10;
+extern void func_80049E1C(void);
+extern void func_80045294(s32, s32);
+extern void func_80052C10(void);
+extern void func_80044098(s16);
+extern void func_80044010(s32 *, s16);
+extern s32 D_800A33B0;
+extern s32 D_800A33B4;
+extern s32 D_800A3240;
+extern s32 D_800A3398;
+extern s32 D_800A3244;
+extern s16 D_800963EC[];
+extern s16 D_800963EE;
+extern void func_8003EDC0(s32 *, s32);
+extern void func_80054410(s32 *);
+extern s32 func_800457A0(s32);
+extern void func_80041430(s32, s32);
+extern s32 func_8004019C(s32 *, s32);
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
 INCLUDE_ASM("asm/funcs", func_800401CC);
@@ -148,7 +174,21 @@ void func_800420E8(s32 a0, s32 a1) {
         D_800A3384[a0] = a1;
     }
 }
-INCLUDE_ASM("asm/funcs", func_8004211C);
+extern s32 D_800A3388;
+void func_8004211C(void) {
+    s32 val = D_800A3380[0] * 2 + D_800A3382;
+    switch (val) {
+    case 1:
+        func_80041EB0(0, D_800A3388);
+        break;
+    case 2:
+        func_80041EB0(D_800A3384[0], 0);
+        break;
+    case 3:
+        func_80041EB0(D_800A3384[0], D_800A3388);
+        break;
+    }
+}
 extern void func_80041EB0(s32, s32);
 void func_800421A4(void) {
     func_80041EB0(0, 0);
@@ -340,7 +380,9 @@ extern s32 D_800A378C;
 void func_800444BC(void) {
     func_80044504(D_800A378C);
 }
-INCLUDE_ASM("asm/funcs", func_800444E0);
+void func_800444E0(void) {
+    func_80044504(D_800A378C);
+}
 INCLUDE_ASM("asm/funcs", func_80044504);
 extern void func_80052C10(void);
 void func_80044650(void) {
@@ -421,7 +463,11 @@ s32 func_80045080(s32 a0) {
     s32 val = (s32)*(s16 *)((u8 *)&D_800963EE + a0 * 4) << 11;
     return func_800457DC() - val;
 }
-INCLUDE_ASM("asm/funcs", func_800450BC);
+void func_800450BC(s32 a0, s32 a1) {
+    func_80044E74(a0 + 0x25, a1);
+    D_800A3398 = a1;
+    D_800A3244 = 1;
+}
 INCLUDE_ASM("asm/funcs", func_800450F4);
 extern s32 D_800A3244;
 void func_80045188(void) {
@@ -433,15 +479,68 @@ s32 func_80045194(void) {
 void func_800451A0(void) {
     func_80036E34(1, (s32)D_800963EC, 0, 2);
 }
-INCLUDE_ASM("asm/funcs", func_800451D0);
-INCLUDE_ASM("asm/funcs", func_80045230);
+void func_800451D0(void) {
+    s32 v1 = -1;
+    s32 v0 = 0x90;
+L_loop:
+    *(s16 *)((u8 *)D_800EED10 + v0) = v1;
+    v0 -= 0x10;
+    if (v0 >= 0) goto L_loop;
+    D_800A33A0 = (s32)&D_800A9D10;
+    D_800A33A4 = 0x45000;
+    D_800A33AC = 0;
+    D_800A33A8 = 0;
+    func_80049E1C();
+}
+void func_80045230(s32 a0) {
+    s32 v1;
+    if (!a0) {
+        a0 = D_800A33A0;
+    }
+    a0 -= (s32)&D_800A9D10;
+    v1 = a0;
+    if (a0 < D_800A33A8) {
+        v1 = D_800A33A8;
+    }
+    D_800A33A8 = v1;
+    if (a0 > 0x44FFF) {
+        func_80052C10();
+    }
+}
 INCLUDE_ASM("asm/funcs", func_80045294);
 INCLUDE_ASM("asm/funcs", func_800453E0);
 INCLUDE_ASM("asm/funcs", func_80045510);
 INCLUDE_ASM("asm/funcs", func_800455AC);
 INCLUDE_ASM("asm/funcs", func_80045600);
-INCLUDE_ASM("asm/funcs", func_80045694);
-INCLUDE_ASM("asm/funcs", func_800456F0);
+extern s16 D_800EED10[];
+extern s32 D_800EED1C[];
+extern s32 D_800A33AC;
+void func_80045694(s32 a0, s32 a1) {
+    s32 i;
+    s32 count = D_800A33AC;
+    if (count <= 0) return;
+    i = 0;
+    do {
+        if (*(s16 *)((u8 *)D_800EED10 + i) == a0) {
+            *(s32 *)((u8 *)D_800EED1C + i) = a1;
+            return;
+        }
+        i += 0x10;
+    } while (i < count * 16);
+}
+void func_800456F0(s32 a0) {
+    s32 i;
+    s32 count = D_800A33AC;
+    if (count <= 0) return;
+    i = 0;
+    do {
+        if (*(s16 *)((u8 *)D_800EED10 + i) == a0) {
+            *(s32 *)((u8 *)D_800EED1C + i) = 0;
+            return;
+        }
+        i += 0x10;
+    } while (i < count * 16);
+}
 INCLUDE_ASM("asm/funcs", func_8004574C);
 extern s32 *func_8004574C(void);
 s32 func_800457A0(void) {
