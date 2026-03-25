@@ -97,8 +97,8 @@ def ensure_m2c_context():
 
 def run_m2c(func_name, asm_path):
     ensure_m2c_context()
-    cmd = [sys.executable, str(M2C_SCRIPT), "-t", "mips-gcc-c",
-           "--context", str(M2C_CONTEXT), str(asm_path)]
+    cmd = [sys.executable, str(M2C_SCRIPT), "-t", "mipsel-gcc-c",
+           "--context", str(M2C_CONTEXT), "--valid-syntax", str(asm_path)]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True,
                                 cwd=str(PROJECT_ROOT), timeout=60)
@@ -119,7 +119,8 @@ def compile_and_diff(c_code, func_name, func_addr, func_size):
         elf_path = os.path.join(tmpdir, func_name + ".elf")
 
         with open(c_path, "w") as f:
-            f.write('#include "common.h"\n\n')
+            f.write('#include "common.h"\n')
+            f.write('#include "m2c_macros.h"\n\n')
             f.write(c_code)
 
         # cpp -> cc1 -> maspsx -> as
