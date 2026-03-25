@@ -12,7 +12,7 @@ SPLAT_YAML   := splat.yaml
 CC1          := tools/gcc-2.7.2/build/cc1
 # maspsx ASPSX compatibility layer
 MASPSX       := python3 tools/maspsx/maspsx.py
-MASPSX_FLAGS := --expand-div --aspsx-version=2.34
+MASPSX_FLAGS := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt
 MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --dont-force-G0 --sdata-syms=sdata_syms.txt -G8
 
 # GNU MIPS cross-tools
