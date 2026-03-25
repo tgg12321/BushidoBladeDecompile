@@ -33,11 +33,15 @@ extern void func_80049E1C(void);
 extern void func_800472C0(u8 *);
 extern void func_8004211C(void);
 extern void func_800444BC(void);
+extern void func_80052930(void *, void *, void *);
 extern void func_80044FA0(s32, s32 *);
 extern s16 D_800A324A;
 
 /* Externs for globals */
 extern s32 D_800A33B0;
+extern s16 D_800EEDB0;
+extern s16 D_800EEDB2;
+extern s16 D_800EEDBE;
 extern s32 D_800A33B4;
 extern s32 D_800A33D0;
 extern s32 D_800A33C0;
@@ -54,6 +58,15 @@ extern u8 D_800EEDD0;
 extern u8 D_800EEDF0;
 
 extern s16 D_800EEDF8;
+extern s16 D_800F62F8;
+extern s16 D_800F62FA;
+extern s16 D_800F62FC;
+extern s16 D_800EEDB4;
+extern s16 D_800EEDB6;
+extern s16 D_800EEDB8;
+extern s16 D_800EEDBA;
+extern s16 D_800EEDBC;
+extern s16 D_800EEDC0;
 
 /* --- Functions 0x80046780 - 0x80047EC8 --- */
 
@@ -218,8 +231,38 @@ void *func_80046F14(void) {
     return &D_8009947C;
 }
 
-INCLUDE_ASM("asm/funcs", func_80046F24);
-INCLUDE_ASM("asm/funcs", func_8004700C);
+void func_80046F24(void) {
+    s32 num = (s32)D_800F62F8 << 12;
+    s32 div = D_800F62FA;
+    s32 v0 = num / div;
+    s32 v1 = ((s32)D_800F62FC << 12) / div;
+    D_800EEDB4 = 0;
+    div = 0;
+    num = v0;
+    D_800EEDB6 = 0;
+    v1 = -(s16)v1;
+    D_800EEDB8 = 0;
+    D_800EEDBA = 0;
+    D_800EEDBC = div;
+    D_800EEDB0 = 0x1000;
+    D_800EEDC0 = 0x1000;
+    v0 = -(s16)num;
+    D_800EEDB2 = v0;
+    D_800EEDBE = v1;
+}
+void func_8004700C(s32 *a0, s32 *a1, s32 a2) {
+    s32 new_var;
+    s32 diff, prod;
+    func_80052930(&D_800EEDB0, a0, a1);
+    new_var = a0[5];
+    diff = a0[6] - a2;
+    prod = diff * D_800EEDB2;
+    a1[6] = a2;
+    a1[5] = new_var + (prod >> 12);
+    diff = a0[6] - a2;
+    prod = diff * D_800EEDBE;
+    a1[7] = a0[7] + (prod >> 12);
+}
 INCLUDE_ASM("asm/funcs", func_800470B0);
 INCLUDE_ASM("asm/funcs", func_80047210);
 
