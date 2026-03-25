@@ -274,15 +274,28 @@ void func_80043E98(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
     a0[2] = func_80043FCC(a0[2], a3, a4);
 }
 extern s16 func_80043F80(s16, s16, s16);
-extern s16 func_80043FCC(s16, s16, s16);
+extern s16 func_80043FCC(s16, s16, s32);
 void func_80043F0C(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
     s16 r1;
     r1 = func_80043F80(a0[3], a1, a2);
     a0[3] = r1;
     a0[1] = func_80043FCC(a0[1], a3, a4);
 }
-INCLUDE_ASM("asm/funcs", func_80043F80);
-INCLUDE_ASM("asm/funcs", func_80043FCC);
+s16 func_80043F80(s16 a0, s16 a1, s16 a2) {
+    s32 low = (a0 & 0xF) + (a1 >> 6);
+    s32 mid;
+    low &= 0xF;
+    mid = ((a0 >> 4) & 1) + (a2 >> 8);
+    mid &= 1;
+    return (s16)(low | ((a0 & ~0x1F) | (mid << 4)));
+}
+s16 func_80043FCC(s16 a0, s16 a1, s32 a2) {
+    s32 low = (a1 >> 4) + (a0 & 0x3F);
+    s32 mid;
+    low &= 0x3F;
+    mid = (a2 + (((u32)(a0 << 17)) >> 23)) & 0x1FF;
+    return (s16)(low | ((a0 & (s16)0x8000) | (mid << 6)));
+}
 INCLUDE_ASM("asm/funcs", func_80044010);
 INCLUDE_ASM("asm/funcs", func_80044098);
 INCLUDE_ASM("asm/funcs", func_80044100);
