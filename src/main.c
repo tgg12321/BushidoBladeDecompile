@@ -20,6 +20,7 @@ extern void func_80082B20(s32, s32);
 extern s32 func_80089024(s32, s32);
 extern s32 D_800A2D14;
 extern s32 D_800A2874;
+extern s32 D_800A2878;
 extern s32 D_800A2CF8;
 extern u16 D_800A2CF4;
 extern s32 D_800A2D04;
@@ -333,7 +334,22 @@ s32 func_8008AE24(s32 a0) {
     D_800A2CF4 = (u16)v0;
     return (u32)(u16)v0 << D_800A2D04;
 }
-INCLUDE_ASM("asm/funcs", func_8008AE7C);
+void func_8008AE7C(s32 a0) {
+    int new_var;
+    s32 v0;
+    new_var = 1;
+    if (a0 == 0) {
+        v0 = 0;
+    } else if (new_var == a0) {
+        v0 = new_var;
+    } else {
+        v0 = 0;
+        v0++;
+        v0--;
+    }
+    D_800A2878 = a0;
+    D_800A2CF8 = v0;
+}
 INCLUDE_ASM("asm/funcs", func_8008AEB0);
 void func_8008AF58(s32 a0) {
     if (a0 == 1) {
