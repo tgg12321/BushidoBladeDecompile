@@ -233,6 +233,7 @@ extern s32 D_800A3844;
 extern u8 D_800A376C;
 extern u8 D_8008D578;
 extern void func_80016C80(void);
+extern void func_8003AE5C(s32);
 extern void func_80022580(s32, s32, s32, s32, s32);
 extern void func_80040510(s32, s32, s32);
 extern void func_80046F14(void);
@@ -247,6 +248,11 @@ extern void func_8007AE7C(s32);
 extern void func_80078D68(void);
 extern void func_80082BB4(void);
 extern s32 func_800789B8(void);
+extern void func_8007A370(s32);
+extern void func_8007A3C8(void);
+extern void func_80078958(void);
+extern void func_80078A58(s32);
+extern s32 func_80078978(u32, s32, s32, s32);
 extern void func_80078948(s32 *, s32, s32 *);
 extern void func_80016A18(void);
 extern void func_80016CF8(void);
@@ -627,7 +633,30 @@ extern u8 D_80101EC8;
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-INCLUDE_ASM("asm/funcs", func_800375EC);
+void func_800375EC(void) {
+    func_8007A370(1);
+    func_8007A3C8();
+    func_80078958();
+    func_80078A58(0);
+    func_800789B8();
+    D_800A37DC = func_80078978(0xF4000001, 4, 0x2000, 0);
+    D_800A37F0 = func_80078978(0xF4000001, 0x8000, 0x2000, 0);
+    D_800A37FC = func_80078978(0xF4000001, 0x100, 0x2000, 0);
+    D_800A3800 = func_80078978(0xF4000001, 0x2000, 0x2000, 0);
+    D_800A3838 = func_80078978(0xF0000011, 4, 0x2000, 0);
+    D_800A383C = func_80078978(0xF0000011, 0x8000, 0x2000, 0);
+    D_800A3848 = func_80078978(0xF0000011, 0x100, 0x2000, 0);
+    D_800A3850 = func_80078978(0xF0000011, 0x2000, 0x2000, 0);
+    func_800789C8();
+    func_800789A8(D_800A37DC);
+    func_800789A8(D_800A37F0);
+    func_800789A8(D_800A37FC);
+    func_800789A8(D_800A3800);
+    func_800789A8(D_800A3838);
+    func_800789A8(D_800A383C);
+    func_800789A8(D_800A3848);
+    func_800789A8(D_800A3850);
+}
 void func_80037774(void) {
     func_800789B8();
     func_80078988(D_800A37DC);
@@ -660,7 +689,29 @@ void func_8003791C(void) {
     func_80078998(D_800A37FC);
     func_80078998(D_800A3800);
 }
-INCLUDE_ASM("asm/funcs", func_80037964);
+s32 func_80037964(void) {
+    s32 one = 1;
+    s32 result;
+loop:
+    if (func_80078998(D_800A3838) == one) {
+        result = 1;
+        goto done;
+    }
+    if (func_80078998(D_800A383C) == one) {
+        result = 2;
+        goto done;
+    }
+    if (func_80078998(D_800A3848) == one) {
+        result = 3;
+        goto done;
+    }
+    if (func_80078998(D_800A3850) != one) {
+        goto loop;
+    }
+    result = 4;
+done:
+    return result;
+}
 void func_800379D8(void) {
     func_80078998(D_800A3838);
     func_80078998(D_800A383C);
@@ -736,7 +787,29 @@ INCLUDE_ASM("asm/funcs", func_80038C70);
 s32 *func_800392B8(void) {
     return &D_800F33D8;
 }
-INCLUDE_ASM("asm/funcs", func_800392C8);
+void func_800392C8(void) {
+    u8 val;
+    int new_var;
+    s32 i;
+    s32 j;
+
+    val = 0xFF;
+    i = 0x1F0;
+    D_800A36EC = (u8 *)&D_800F33D8;
+    D_800A36F8 = 0;
+    D_800A3782 = 0;
+loop1:
+    *(&D_80101BF0 + i) = val;
+    i -= 0x10;
+    if (i >= 0) goto loop1;
+
+    new_var = -1;
+    j = 0xB30;
+loop2:
+    *((s16 *)((u8 *)&D_800F68E0 + j)) = new_var;
+    j -= (0, 0x10);
+    if (j >= 0) goto loop2;
+}
 INCLUDE_ASM("asm/funcs", func_80039320);
 INCLUDE_ASM("asm/funcs", func_800393C8);
 INCLUDE_ASM("asm/funcs", func_800395B4);
@@ -750,7 +823,20 @@ void func_800397A0(void) {
         D_800A36F8 = val + 1;
     }
 }
-INCLUDE_ASM("asm/funcs", func_800397D4);
+void func_800397D4(void) {
+    s32 v;
+    func_80016868();
+    func_8003E22C();
+    func_8003F218(0);
+    v = func_800166C4(0x2D);
+    func_8007EFFC(v);
+    func_80041688(0, 0);
+    func_80041688(1, 0);
+    func_8001B6F4();
+    func_80061178();
+    D_800A37D0 = 0;
+    D_800A3834 = 5;
+}
 INCLUDE_ASM("asm/funcs", func_8003984C);
 INCLUDE_ASM("asm/funcs", func_8003993C);
 INCLUDE_ASM("asm/funcs", func_8003A174);
@@ -782,7 +868,14 @@ void func_8003A360(void) {
     D_800A320C = 1;
     D_800A3730 = 0;
 }
-INCLUDE_ASM("asm/funcs", func_8003A39C);
+void func_8003A39C(void) {
+    D_800A320C = 0;
+    D_800A3730 = 0;
+    func_8008C464(2, 0, 0);
+    func_8008C464(1, 1, 0);
+    func_8003A264();
+    D_800A3834 = 8;
+}
 void func_8003A3F0(void) {
     func_8003A39C();
     D_800A3928 = 1;
