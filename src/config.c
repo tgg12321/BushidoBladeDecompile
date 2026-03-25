@@ -220,25 +220,7 @@ void func_800400B0(s32 *a0, s32 a1) {
         }
     }
 }
-void func_800400F8(s32 *a0) {
-    s16 *base;
-    s32 pad[2];
-    s16 *ptr;
-    s32 i;
-
-    base = (s16 *)a0[9];
-    if (base != 0) {
-        if (base[0] > 0) {
-            i = 0;
-            ptr = base;
-            do {
-                func_80017E8C(ptr[4]);
-                ptr = (s16 *)((u8 *)ptr + 0xD0);
-                i++;
-            } while (i < base[0]);
-        }
-    }
-}
+INCLUDE_ASM("asm/funcs", func_800400F8);
 
 void func_8004016C(void) {
     void *v0 = func_8004153C();
