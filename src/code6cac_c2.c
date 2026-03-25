@@ -660,7 +660,28 @@ void func_8003D2C4(void) {
 INCLUDE_ASM("asm/funcs", func_8003D2F4);
 INCLUDE_ASM("asm/funcs", func_8003D330);
 INCLUDE_ASM("asm/funcs", func_8003D39C);
-INCLUDE_ASM("asm/funcs", func_8003D478);
+void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
+    s32 ch;
+    s32 start_x = x;
+
+    ch = *str++;
+    if (ch == 0) return;
+
+    do {
+        if (ch == 0x20) {
+            /* space - advance */
+        } else if (ch == 0x0A) {
+            x = start_x;
+            y += 8;
+            goto next_char;
+        } else {
+            func_8003D39C(x, y, ch, color);
+        }
+        x += 8;
+    next_char:
+        ch = *str++;
+    } while (ch != 0);
+}
 INCLUDE_ASM("asm/funcs", func_8003D52C);
 void func_8003D774(s32 arg0, s32 arg1) {
     s32 *ptr = (s32 *)((u8 *)&D_800A3D40 + arg1 * 24);
