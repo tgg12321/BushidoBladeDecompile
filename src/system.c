@@ -22,7 +22,17 @@ extern s32 D_800A11B8;
 
 /* --- Functions 0x8008008C - 0x800807A8 --- */
 
-INCLUDE_ASM("asm/funcs", func_8008008C);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_8008008C\n"
+    "    addiu $t2, $zero, 0xB0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0x7\n"
+    "    nop\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 
 u32 func_8008009C(void) {
     return D_800A11C4;
@@ -153,7 +163,21 @@ extern s32 func_800812FC(s32, void *, void *, s32);
 extern s32 func_80080DB0_ret(s32, void *);
 /* --- text3 segment functions (0x800807A8-0x800827D0, 17 funcs) --- */
 
-INCLUDE_ASM("asm/funcs", func_800807A8);
+s32 func_800807A8(u8 *a0) {
+    u8 b0 = a0[0];
+    u8 b1 = a0[1];
+    s32 min, sec, frm;
+    min = (b0 >> 4) * 10 + (b0 & 0xF);
+    sec = min * 60;
+    sec += (b1 >> 4) * 10 + (b1 & 0xF);
+    {
+        s32 total = sec * 75;
+        u8 b2 = a0[2];
+        frm = (b2 >> 4) * 10 + (b2 & 0xF);
+        total += frm;
+        return total - 150;
+    }
+}
 INCLUDE_ASM("asm/funcs", func_80080828);
 INCLUDE_ASM("asm/funcs", func_80080DB0);
 INCLUDE_ASM("asm/funcs", func_80081030);
