@@ -282,21 +282,7 @@ extern s32 D_800A2D38;
 extern s32 D_800A2D3C;
 extern s32 D_800A2D40;
 
-s32 func_80089384(s32 arg0, s32 *arg1) {
-    int new_var;
-    if (arg0 <= 0) {
-        return 0;
-    }
-    if ((arg1 && arg1) && arg1) {
-    }
-    new_var = 0;
-    arg1[new_var] = 0x40001010;
-    D_800A2D40 = (s32)arg1;
-    D_800A2D3C = 0;
-    D_800A2D38 = arg0;
-    arg1[1] = (0x10000 << D_800A2D04) - 0x1010;
-    return arg0;
-}
+INCLUDE_ASM("asm/funcs", func_80089384);
 INCLUDE_ASM("asm/funcs", func_800893D8);
 INCLUDE_ASM("asm/funcs", func_800896A0);
 INCLUDE_ASM("asm/funcs", func_800899A8);
@@ -409,32 +395,7 @@ INCLUDE_ASM("asm/funcs", func_8008AF9C);
 INCLUDE_ASM("asm/funcs", func_8008B400);
 INCLUDE_ASM("asm/funcs", func_8008B488);
 INCLUDE_ASM("asm/funcs", func_8008BB24);
-void func_8008BD88(s32 arg0, u16 *arg1, u16 *arg2) {
-    u16 *temp_a0;
-    u16 temp_v1;
-    u16 temp_a0_2;
-    u32 temp_a3;
-    u32 temp_v1_2;
-    int new_var2;
-    int new_var;
-    temp_a0 = (u16 *)((arg0 << 4) + D_800A2CDC);
-    temp_v1 = temp_a0[0];
-    new_var2 = 0x8000;
-    temp_a0_2 = temp_a0[1];
-    temp_a3 = (u32)((u16)temp_v1);
-    if (temp_a3 >= 0x4000U) {
-        *arg1 = (u16)(temp_a3 - new_var2);
-    } else {
-        *arg1 = temp_v1;
-    }
-    temp_v1_2 = (u32)((u16)temp_a0_2);
-    new_var = 0x8000;
-    if (temp_v1_2 >= 0x4000U) {
-        *arg2 = (u16)(temp_v1_2 - new_var);
-        return;
-    }
-    *arg2 = temp_a0_2;
-}
+INCLUDE_ASM("asm/funcs", func_8008BD88);
 
 void func_8008BDE8(s32 a0, u16 *a1) {
     a0 = (a0 << 4) + D_800A2CDC;
