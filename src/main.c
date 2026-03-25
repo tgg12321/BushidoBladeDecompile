@@ -245,7 +245,13 @@ void func_80089214(void) {
 void func_80089240(void) {
     *D_800A2CF0 = (*D_800A2CF0 & 0xF0FFFFFF) | 0x22000000;
 }
-INCLUDE_ASM("asm/funcs", func_8008926C);
+void func_8008926C(void) {
+    volatile s32 i;
+    volatile s32 v = 0xD;
+    for (i = 0; i < 0x3C; i++) {
+        v = v * 13;
+    }
+}
 void func_800892D4(s32 a0) {
     func_80082B20(4, a0);
 }

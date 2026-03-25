@@ -811,7 +811,32 @@ INCLUDE_ASM("asm/funcs", func_800338CC);
 INCLUDE_ASM("asm/funcs", func_80033BC0);
 INCLUDE_ASM("asm/funcs", func_80033D38);
 INCLUDE_ASM("asm/funcs", func_80033DF4);
-INCLUDE_ASM("asm/funcs", func_80033FE4);
+void func_80033FE4(void) {
+    s32 v1;
+    if (D_800A36F0 != 0) {
+        v1 = 6;
+        if (*((u8 *)&D_8008D9EC + D_80101ED2) != 0) {
+            v1 = 7;
+        }
+        D_800A38A4 = v1;
+        D_800A3834 = 0x12;
+        return;
+    }
+    if (D_800A3781 != 0) {
+        v1 = 8;
+        if (*((u8 *)&D_8008D9EC + D_80101ED2) != 0) {
+            v1 = 9;
+        }
+        D_800A38A4 = v1;
+        D_800A3834 = 0x12;
+        return;
+    }
+    if (D_800A38E9 < 3) {
+        D_800A3834 = 0x1A;
+    } else {
+        D_800A3834 = 8;
+    }
+}
 
 
 INCLUDE_ASM("asm/funcs", func_800340A0);
