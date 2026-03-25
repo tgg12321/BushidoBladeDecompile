@@ -165,7 +165,29 @@ s16 func_800880B8(s32 a0, s16 a1, s32 a2) {
     return func_800880E8(a0, a1, 1, a2);
 }
 INCLUDE_ASM("asm/funcs", func_800880E8);
-INCLUDE_ASM("asm/funcs", func_800884C4);
+extern u8 D_80102A68[];
+extern s32 D_80107810[];
+extern s32 D_801077C8[];
+extern s32 func_8008AE24(s32);
+extern s32 func_8008ADC4(s32, s32);
+s16 func_800884C4(s32 a0, s16 a1) {
+    if ((u16)a1 >= 0x11) {
+        func_8008AF58(0);
+        return -1;
+    }
+    if (D_80102A68[a1] != 2) {
+        func_8008AF58(0);
+        return -1;
+    }
+    {
+        s32 s0 = D_80107810[a1];
+        func_8008AE7C(0);
+        func_8008AE24(s0);
+        func_8008ADC4(a0, D_801077C8[a1]);
+        D_80102A68[a1] = 1;
+    }
+    return a1;
+}
 
 s16 func_80088584(s16 a0) {
     return func_8008AEB0(a0);
