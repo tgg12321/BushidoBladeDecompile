@@ -35,6 +35,13 @@ extern u32 D_80015F18;
 extern u32 D_80015EE8;
 extern u32 D_8009BE80;
 
+extern u8 D_8009BE74;
+extern s16 D_8009BE78;
+extern s16 D_8009BE7A;
+extern u8 D_8009BE77;
+extern u32 D_80015F04;
+extern u32 D_80015F50;
+
 /* --- Functions 0x8007B244 - 0x8007FF7C (text2 segment) --- */
 
 u32 func_8007B244(s32 a0) {
@@ -46,7 +53,23 @@ u32 func_8007B244(s32 a0) {
     D_8009BE80 = a0;
     return old;
 }
-INCLUDE_ASM("asm/funcs", func_8007B2A0);
+void func_8007B2A0(s32 a0) {
+    u8 *p = &D_8009BE76;
+    if (*p >= 2) {
+        D_8009BE70(&D_80015F04, a0);
+    }
+    if (!a0) {
+        func_8007DEE4(p + 0x6A, -1, 0x14);
+    }
+    {
+        u32 cmd = 0x03000001;
+        u32 *v0 = D_8009BE6C;
+        if (a0) {
+            cmd = 0x03000000;
+        }
+        ((void (*)(u32))v0[4])(cmd);
+    }
+}
 void func_8007B33C(s32 a0) {
     if (D_8009BE76 >= 2) {
         D_8009BE70(&D_80015F18, a0);
