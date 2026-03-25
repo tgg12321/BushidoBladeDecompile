@@ -35,9 +35,101 @@ extern void func_80078A18(s32);
 extern void func_800836B8(s32);
 
 
+extern u8 D_800A30E8;
+extern u8 D_800A30D4;
+extern u8 D_800FB524;
+extern s16 D_800A38DC;
+extern u8 D_800A389A;
+extern s32 D_800A36AC;
+extern u8 D_800A3788;
+extern u8 *D_800A374C;
+extern u32 D_800A38B4;
+extern u32 D_80102794;
+extern u8 D_800A31DA;
+extern s16 D_800A3834;
+extern s32 D_800A30DC;
+extern u8 D_80010034;
+extern u8 D_800A390D;
+extern u8 D_800A3713;
+extern u32 D_8008D090[];
+extern u8 D_800F33D8;
+extern u8 D_800A37A0;
+extern u8 D_800A38F8;
+extern s32 D_800A37C0;
+extern u8 D_800A37A8[];
+extern s32 func_80036EA8(s32, s32);
+extern void func_80036D98(s32, s32);
+extern void func_80036F40(void);
+extern void func_8007BC08(u8 *);
+extern void func_8007B600(u8 *, u8 *);
+extern void func_800828CC(s32);
+extern void func_8007B844(u8 *, s32);
+extern void func_80036940(void);
+extern void func_8005C6D0(void);
+extern void func_80019568(s32);
+extern void func_8005C8A8(s32, s32, u32, s32);
+extern void func_8005C650(s32, s32, s32);
+extern void func_8007B9B0(u8 *);
+extern void func_8007B93C(u8 *);
+extern void func_80078BA8(u32);
+extern s32 func_80078B04(u32);
+extern s32 func_80079154(void);
+extern void func_800372C0(void);
+extern void func_80083794(void);
+extern void func_800789D8(u32);
+extern void func_80078968(s32);
+extern void func_80060E04(s32);
+extern void func_8003D2F4(void);
+extern void func_8003D330(void);
+extern u8 *func_8005D46C(u8 *);
+extern u8 *func_8005D554(u8 *, u8);
+extern void func_8005E54C(s32, u8 *, s32);
+extern void func_80060414(s32, u8 *, s32);
+extern void func_8007EEEC(u8 *);
+extern void func_8007EF4C(u8 *);
+extern void func_8007F2AC(u8 *, s32 *, s32 *);
+
 /* --- Non-decompiled functions (INCLUDE_ASM) --- */
-INCLUDE_ASM("asm/funcs", func_800164AC);
-INCLUDE_ASM("asm/funcs", func_800164F8);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_800164AC\n"
+    "    .word 0x8008C49C\n"
+    "    .word 0x8008C5B4\n"
+    "    .word 0x8008C750\n"
+    "    .word 0x8008C8A0\n"
+    "    .word 0x8008C930\n"
+    "    .word 0x8008C94C\n"
+    "    .word 0x8008C4C0\n"
+    "    .word 0x8008C4D8\n"
+    "    .word 0x8008C504\n"
+    "    .word 0x8008C518\n"
+    "    .word 0x8008C928\n"
+    "    .word 0x8008C560\n"
+    "    .word 0x8008C590\n"
+    "    .word 0x00000000\n"
+    "    .word 0x8008C95C\n"
+    "    .word 0x8008C5D8\n"
+    "    .word 0x8008C658\n"
+    "    .word 0x8008C680\n"
+    "    .word 0x8008C6DC\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel func_800164F8\n"
+    "    .word 0x2402270F\n"
+    "    .word 0x0001000D\n"
+    "    .word 0x2442FFFF\n"
+    "    .word 0x0441FFFD\n"
+    "    .word 0x00000000\n"
+    "    .word 0x03E00008\n"
+    "    .word 0x00000000\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 s32 func_80016514(s32 a0, u8 *dest) {
     s32 fd;
     s32 total;
