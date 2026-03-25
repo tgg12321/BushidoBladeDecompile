@@ -567,7 +567,20 @@ extern u8 D_801077B0;
 extern u8 D_801077BA;
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-INCLUDE_ASM("asm/funcs", func_80035438);
+extern void func_80035280(void);
+extern void func_80068ECC(s32);
+extern u8 D_800A3740;
+void func_80035438(void) {
+    s32 a0;
+    D_800A3740 = 1;
+    func_80035280();
+    if (D_80106A54 == 0x3F) {
+        a0 = 0xFF;
+    } else {
+        a0 = 0xF7;
+    }
+    func_80068ECC(a0);
+}
 INCLUDE_ASM("asm/funcs", func_80035480);
 INCLUDE_ASM("asm/funcs", func_8003553C);
 void func_800355E8(void) {
@@ -631,13 +644,47 @@ s32 func_80035EDC(s32 a0) {
     } while (i < 0x1B);
     return result;
 }
-INCLUDE_ASM("asm/funcs", func_80035F30);
-INCLUDE_ASM("asm/funcs", func_80035F78);
+extern void func_80080600(u8 *);
+extern u8 D_800A3718;
+extern u8 D_800A3719;
+extern u8 D_800A371A;
+extern u8 D_800A371B;
+extern s16 D_800A3854;
+void func_80035F30(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    D_800A3718 = (u8)arg0;
+    D_800A3719 = (u8)arg1;
+    D_800A371A = (u8)arg2;
+    D_800A371B = (u8)arg3;
+    func_80080600(&D_800A3718);
+    D_800A3854 = 0;
+}
+extern u8 D_800A36B8;
+extern u8 D_800A36B9;
+extern u8 D_800A36BA;
+extern u8 D_800A36BB;
+extern s16 D_800A3840;
+void func_80035F78(s16 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    D_800A36B8 = (u8)arg1;
+    D_800A36B9 = (u8)arg2;
+    D_800A36BA = (u8)arg3;
+    D_800A3854 = arg0;
+    D_800A3840 = 0;
+    D_800A36BB = (u8)arg4;
+}
 void func_80035FA8(void) {
     func_80083B50(0, 0, 1);
     func_80085448(0, 0x7F, 0x7F);
 }
-INCLUDE_ASM("asm/funcs", func_80035FE0);
+extern u8 D_800A31E4;
+void func_80035FE0(void) {
+    func_8007FF7C();
+    func_80080168(0);
+    func_80035F30(0, 0, 0, 0);
+    D_80101E62 = 0;
+    if (D_800A31E4 == 0) {
+        D_800A31E4 = 1;
+    }
+}
 void func_80036034(void) {
     func_80080148();
     func_8007FF7C();
