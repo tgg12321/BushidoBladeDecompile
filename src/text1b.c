@@ -76,7 +76,25 @@ void func_80048F58(s32 a0, s32 a1) {
     } while (i < 7);
 }
 INCLUDE_ASM("asm/funcs", func_80048FFC);
-INCLUDE_ASM("asm/funcs", func_8004939C);
+extern s16 D_800EF9F2;
+extern s16 D_800EF9F4;
+extern s16 D_800A33EA;
+extern s16 D_800A33E8;
+extern s32 D_800A33EC;
+void func_8004939C(void) {
+    s16 val = -1;
+    s32 i = 0x39;
+    s16 *p = &D_800EF9F2;
+    do {
+        *p = val;
+        i--;
+        p--;
+    } while (i >= 0);
+    D_800EF9F4 = -2;
+    D_800A33EA = -1;
+    D_800A33E8 = -1;
+    D_800A33EC = -1;
+}
 INCLUDE_ASM("asm/funcs", func_800493E4);
 INCLUDE_ASM("asm/funcs", func_800494D4);
 INCLUDE_ASM("asm/funcs", func_8004954C);
@@ -86,7 +104,19 @@ void func_80049710(void) {
 INCLUDE_ASM("asm/funcs", func_80049718);
 INCLUDE_ASM("asm/funcs", func_80049A2C);
 INCLUDE_ASM("asm/funcs", func_80049C24);
-INCLUDE_ASM("asm/funcs", func_80049E1C);
+extern s16 D_80099CC2;
+extern s32 D_800A324C;
+void func_80049E1C(void) {
+    s16 val = -1;
+    s32 i = 0x39;
+    s16 *p = &D_80099CC2;
+    do {
+        *p = val;
+        i--;
+        p--;
+    } while (i >= 0);
+    D_800A324C = -1;
+}
 INCLUDE_ASM("asm/funcs", func_80049E4C);
 INCLUDE_ASM("asm/funcs", func_80049F4C);
 INCLUDE_ASM("asm/funcs", func_8004A09C);
@@ -9327,20 +9357,146 @@ INCLUDE_ASM("asm/funcs", func_80063E10);
 INCLUDE_ASM("asm/funcs", func_800644FC);
 INCLUDE_ASM("asm/funcs", func_800645B0);
 INCLUDE_ASM("asm/funcs", func_800646E8);
-INCLUDE_ASM("asm/funcs", func_80064E90);
-INCLUDE_ASM("asm/funcs", func_80064ED8);
-INCLUDE_ASM("asm/funcs", func_80064F20);
+extern volatile s32 D_800A347C;
+extern volatile s32 D_800F0CA0;
+extern volatile s32 D_800F0CA4;
+extern volatile s32 D_800F0CA8;
+extern volatile s32 D_800F10E0;
+extern volatile s16 D_800F0BA8;
+void func_80064E90(void) {
+    volatile s32 *p = (volatile s32 *)D_800A347C;
+    D_800F0CA0 = p[0];
+    D_800F0CA4 = p[1];
+    p = (volatile s32 *)p[2];
+    D_800F10E0 = 1;
+    D_800F0BA8 = 0;
+    D_800F0CA8 = (s32)p;
+}
+extern volatile s32 D_800A347C;
+extern volatile s32 D_800F0CAC;
+extern volatile s32 D_800F0CB0;
+extern volatile s32 D_800F0CB4;
+extern volatile s32 D_800F10E4;
+extern volatile s16 D_800F0BAA;
+void func_80064ED8(void) {
+    volatile s32 *p = (volatile s32 *)D_800A347C;
+    D_800F0CAC = p[0];
+    D_800F0CB0 = p[1];
+    p = (volatile s32 *)p[2];
+    D_800F10E4 = 1;
+    D_800F0BAA = 0;
+    D_800F0CB4 = (s32)p;
+}
+extern volatile s32 D_800A347C;
+extern volatile s32 D_800F0CB8;
+extern volatile s32 D_800F0CBC;
+extern volatile s32 D_800F0CC0;
+extern volatile s32 D_800F10E8;
+extern volatile s16 D_800F0BAC;
+void func_80064F20(void) {
+    volatile s32 *p = (volatile s32 *)D_800A347C;
+    D_800F0CB8 = p[0];
+    D_800F0CBC = p[1];
+    p = (volatile s32 *)p[2];
+    D_800F10E8 = 1;
+    D_800F0BAC = 0;
+    D_800F0CC0 = (s32)p;
+}
 INCLUDE_ASM("asm/funcs", func_80064F68);
 INCLUDE_ASM("asm/funcs", func_80064FB4);
 INCLUDE_ASM("asm/funcs", func_80065000);
-INCLUDE_ASM("asm/funcs", func_8006505C);
-INCLUDE_ASM("asm/funcs", func_800650A4);
-INCLUDE_ASM("asm/funcs", func_800650EC);
-INCLUDE_ASM("asm/funcs", func_80065134);
+extern volatile s32 D_800A347C;
+extern volatile s32 D_800F0CE8;
+extern volatile s32 D_800F0CEC;
+extern volatile s32 D_800F0CF0;
+extern volatile s32 D_800F1100;
+extern volatile s16 D_800F0BB4;
+void func_8006505C(void) {
+    volatile s32 *p = (volatile s32 *)D_800A347C;
+    D_800F0CE8 = p[0];
+    D_800F0CEC = p[1];
+    p = (volatile s32 *)p[2];
+    D_800F1100 = 1;
+    D_800F0BB4 = 0;
+    D_800F0CF0 = (s32)p;
+}
+extern volatile s32 D_800A347C;
+extern volatile s32 D_800F0CF4;
+extern volatile s32 D_800F0CF8;
+extern volatile s32 D_800F0CFC;
+extern volatile s32 D_800F1104;
+extern volatile s16 D_800F0BB6;
+void func_800650A4(void) {
+    volatile s32 *p = (volatile s32 *)D_800A347C;
+    D_800F0CF4 = p[0];
+    D_800F0CF8 = p[1];
+    p = (volatile s32 *)p[2];
+    D_800F1104 = 1;
+    D_800F0BB6 = 0;
+    D_800F0CFC = (s32)p;
+}
+extern volatile s32 D_800A347C;
+extern volatile s32 D_800F0D18;
+extern volatile s32 D_800F0D1C;
+extern volatile s32 D_800F0D20;
+extern volatile s32 D_800F1108;
+extern volatile s16 D_800F0BBC;
+void func_800650EC(void) {
+    volatile s32 *p = (volatile s32 *)D_800A347C;
+    D_800F0D18 = p[0];
+    D_800F0D1C = p[1];
+    p = (volatile s32 *)p[2];
+    D_800F1108 = 1;
+    D_800F0BBC = 0;
+    D_800F0D20 = (s32)p;
+}
+extern volatile s32 D_800A347C;
+extern volatile s32 D_800F0D24;
+extern volatile s32 D_800F0D28;
+extern volatile s32 D_800F0D2C;
+extern volatile s32 D_800F110C;
+extern volatile s16 D_800F0BBE;
+void func_80065134(void) {
+    volatile s32 *p = (volatile s32 *)D_800A347C;
+    D_800F0D24 = p[0];
+    D_800F0D28 = p[1];
+    p = (volatile s32 *)p[2];
+    D_800F110C = 1;
+    D_800F0BBE = 0;
+    D_800F0D2C = (s32)p;
+}
 INCLUDE_ASM("asm/funcs", func_8006517C);
 INCLUDE_ASM("asm/funcs", func_800651F0);
-INCLUDE_ASM("asm/funcs", func_80065264);
-INCLUDE_ASM("asm/funcs", func_800652AC);
+extern volatile s32 D_800A347C;
+extern volatile s32 D_800F0D60;
+extern volatile s32 D_800F0D64;
+extern volatile s32 D_800F0D68;
+extern volatile s32 D_800F1118;
+extern volatile s16 D_800F0BC8;
+void func_80065264(void) {
+    volatile s32 *p = (volatile s32 *)D_800A347C;
+    D_800F0D60 = p[0];
+    D_800F0D64 = p[1];
+    p = (volatile s32 *)p[2];
+    D_800F1118 = 1;
+    D_800F0BC8 = 0;
+    D_800F0D68 = (s32)p;
+}
+extern volatile s32 D_800A347C;
+extern volatile s32 D_800F0D6C;
+extern volatile s32 D_800F0D70;
+extern volatile s32 D_800F0D74;
+extern volatile s32 D_800F111C;
+extern volatile s16 D_800F0BCA;
+void func_800652AC(void) {
+    volatile s32 *p = (volatile s32 *)D_800A347C;
+    D_800F0D6C = p[0];
+    D_800F0D70 = p[1];
+    p = (volatile s32 *)p[2];
+    D_800F111C = 1;
+    D_800F0BCA = 0;
+    D_800F0D74 = (s32)p;
+}
 extern s16 D_800F0BA8;
 u8 func_80065800(s32);
 u8 func_800652F4(void) {
