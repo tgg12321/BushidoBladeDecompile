@@ -199,7 +199,7 @@ extern u8 D_800A390D;
 extern s32 func_80079120(s32 *, s32, s32);
 extern void func_8005BA6C(s32);
 extern s32 D_80104F38;
-extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
+extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern void func_80048BA4(s32, s32, s32);
 extern u8 D_80101EC8;
 
@@ -237,7 +237,7 @@ extern u8 D_8008D578;
 extern void func_80016C80(void);
 extern void func_80040510(s32, s32, s32);
 extern void func_8003AE5C(s32);
-extern void func_80046F14(void);
+extern s32 func_80046F14(void);
 extern s16 D_800A36A4;
 
 extern u8 D_800A3768;
@@ -700,7 +700,11 @@ void func_8001B6F4(void) {
 }
 INCLUDE_ASM("asm/funcs", func_8001B748);
 INCLUDE_ASM("asm/funcs", func_8001BAE4);
-INCLUDE_ASM("asm/funcs", func_8001BBD8);
+void func_8001BBD8(s32 *arg0, s32 *arg1, s32 *arg2) {
+    s32 temp_s0;
+    temp_s0 = (D_800A387C < 0x2711) << 0xB;
+    func_8001B748((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
+}
 INCLUDE_ASM("asm/funcs", func_8001BC70);
 INCLUDE_ASM("asm/funcs", func_8001BCF0);
 void func_8001BE08(s32 *arg0) {
@@ -858,7 +862,24 @@ void func_8001EA04(void) {
 INCLUDE_ASM("asm/funcs", func_8001EA84);
 INCLUDE_ASM("asm/funcs", func_8001EEB4);
 INCLUDE_ASM("asm/funcs", func_8001EFA0);
-INCLUDE_ASM("asm/funcs", func_8001F1C4);
+void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
+    s16 temp_v1;
+    if (!(*(u8 *)(arg1 + 0x18) & 0x80)) {
+        func_80027334((s32 *)arg2);
+        func_80027334((s32 *)arg3);
+    }
+    func_8002F770((s32 *)(arg2 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
+    func_8002F770((s32 *)(arg3 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
+    temp_v1 = *(s16 *)(arg0 + 0xC);
+    if ((temp_v1 == 0x1D) || (temp_v1 == 0xE)) {
+        *(u16 *)(arg2 + 0x7E) = (u16)(*(u16 *)(arg2 + 0x7E) + (*(s8 *)(arg1 + 0x16) * 4));
+        *(u16 *)(arg3 + 0x7E) = (u16)(*(u16 *)(arg3 + 0x7E) + (*(s8 *)(arg1 + 0x16) * 4));
+    }
+    if ((u32)(*(u16 *)(arg0 + 0xE) - 6) < 2U) {
+        *(u16 *)(arg2 + 0x72) = (u16)(*(u16 *)(arg2 + 0x72) + (*(s8 *)(arg1 + 0x16) * 4));
+        *(u16 *)(arg3 + 0x72) = (u16)(*(u16 *)(arg3 + 0x72) + (*(s8 *)(arg1 + 0x16) * 4));
+    }
+}
 INCLUDE_ASM("asm/funcs", func_8001F2E4);
 void func_8001F860(s16 *arg0, s32 arg1) {
     arg1 = (arg1 - *(s16 *)((u8 *)arg0 + 0x1CA)) & 0xFFF;
@@ -1015,7 +1036,13 @@ s32 func_80021A3C(s32 a0, s32 a1) {
     return D_80102760 + idx * 2;
 }
 INCLUDE_ASM("asm/funcs", func_80021A98);
-INCLUDE_ASM("asm/funcs", func_80021D10);
+void func_80021D10(s32 arg0, s32 *arg1, s32 arg2) {
+    s16 *temp_v0;
+    temp_v0 = (s16 *)(func_80046F14() + (((D_800A36A4 * 0x18) + (arg2 * 6) + (arg0 * 3)) * 2));
+    arg1[0] = (s32)temp_v0[0];
+    arg1[1] = (s32)temp_v0[1];
+    arg1[2] = (s32)temp_v0[2];
+}
 INCLUDE_ASM("asm/funcs", func_80021DB0);
 INCLUDE_ASM("asm/funcs", func_80022224);
 INCLUDE_ASM("asm/funcs", func_80022408);
@@ -1064,7 +1091,26 @@ void func_80023CB4(s16 *arg0, s16 arg1) {
 void func_80023D08(s32 arg0) {
     func_80023CB4(arg0, 0x200);
 }
-INCLUDE_ASM("asm/funcs", func_80023D28);
-INCLUDE_ASM("asm/funcs", func_80023DB8);
+void func_80023D28(u8 *arg0) {
+    if (*(s32 *)(arg0 + 0x108) < 0) {
+        *(s16 *)(arg0 + 0x1DC) = 0;
+        return;
+    }
+    *(s32 *)0x1F8001E0 = *(s32 *)(arg0 + 0xB8);
+    *(s32 *)0x1F8001E4 = *(s32 *)(arg0 + 0xBC) + 0x1F4;
+    *(s32 *)0x1F8001E8 = *(s32 *)(arg0 + 0xC0);
+    *(s16 *)(arg0 + 0x1DC) = func_8005344C((s32 *)(arg0 + 0xB8), (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s32 *)0x1F8001C0, 0x1F8002B8);
+}
+s32 func_80023DB8(u8 *arg0) {
+    *(s32 *)0x1F8001E0 = *(s32 *)(arg0 + 0xB8);
+    *(s32 *)0x1F8001E4 = *(s32 *)(arg0 + 0xBC) + 5;
+    *(s32 *)0x1F8001E8 = *(s32 *)(arg0 + 0xC0);
+    if (func_8005344C((s32 *)(arg0 + 0xB8), (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s32 *)0x1F8001C0, 0x1F8002B8) != 0) {
+        if ((arg0 && arg0) && arg0) {
+        }
+        return *(s16 *)0x1F8001C2 < -0x800;
+    }
+    return 0;
+}
 INCLUDE_ASM("asm/funcs", func_80023E40);
 INCLUDE_ASM("asm/funcs", func_80023F08);
