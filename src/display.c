@@ -76,7 +76,29 @@ void func_8007B664(s32 a0, s32 a1) {
     ((void (*)(u32, s32, s32, s32))v0[2])(v0[7], a0, 8, a1);
 }
 INCLUDE_ASM("asm/funcs", func_8007B6C8);
-INCLUDE_ASM("asm/funcs", func_8007B78C);
+extern u32 D_80015F80;
+extern u32 D_8009BF30;
+
+u32 *func_8007B78C(u32 *a0, s32 a1) {
+    if (D_8009BE76 >= 2) {
+        D_8009BE70(&D_80015F80, a0, a1);
+    }
+    a1--;
+    if (a1) {
+        u32 mask = 0xFFFFFF;
+        u32 himask = 0xFF000000;
+        do {
+            u32 *next;
+            a1--;
+            next = a0 + 1;
+            ((u8 *)a0)[3] = 0;
+            *a0 = (*a0 & himask) | ((u32)next & mask);
+            a0 = next;
+        } while (a1);
+    }
+    *a0 = (u32)&D_8009BF30 & 0xFFFFFF;
+    return a0;
+}
 INCLUDE_ASM("asm/funcs", func_8007B844);
 void func_8007B8DC(u8 *a0) {
     u32 *dev = D_8009BE6C;
@@ -213,8 +235,39 @@ s32 func_8007DF20(s32 a0) {
     }
     return func_8007DF5C(a0 & 0xFFF);
 }
-INCLUDE_ASM("asm/funcs", func_8007DF5C);
-INCLUDE_ASM("asm/funcs", func_8007DFEC);
+extern s16 D_8009BF94[];
+extern s16 D_8009AF94[];
+extern s16 D_8009B794[];
+extern s16 D_8009A794[];
+
+s32 func_8007DF5C(s32 a0) {
+    if (a0 < 0x801) {
+        if (a0 < 0x401) {
+            return D_8009BF94[a0];
+        }
+        return D_8009BF94[0x800 - a0];
+    }
+    if (a0 < 0xC01) {
+        return -D_8009AF94[a0];
+    }
+    return -D_8009BF94[0x1000 - a0];
+}
+s32 func_8007DFEC(s32 a0) {
+    if (a0 < 0) {
+        a0 = -a0;
+    }
+    a0 = a0 & 0xFFF;
+    if (a0 < 0x801) {
+        if (a0 < 0x401) {
+            return D_8009BF94[0x400 - a0];
+        }
+        return -D_8009B794[a0];
+    }
+    if (a0 < 0xC01) {
+        return -D_8009BF94[0xC00 - a0];
+    }
+    return D_8009A794[a0];
+}
 
 /* Data blob D_8007E08C between func_8007DFEC and func_8007E094 */
 __asm__(
@@ -249,7 +302,7 @@ s32 *func_8007E8AC(s32 *a0, s32 *a1, s32 *a2) {
     __asm__ volatile (".word 0xE8A90000" :: "r"(a1));  /* swc2 $9, 0($a1) */
     __asm__ volatile (".word 0xE8AA0004" :: "r"(a1));  /* swc2 $10, 4($a1) */
     __asm__ volatile (".word 0xE8AB0008" :: "r"(a1));  /* swc2 $11, 8($a1) */
-    __asm__ volatile ("addu %0,%1,$zero" : "=r"(v0) : "r"(a2));
+    __asm__ volatile ("addu %0,%1,$0" : "=r"(v0) : "r"(a2));
     return v0;
 }
 INCLUDE_ASM("asm/funcs", func_8007E8DC);
@@ -260,7 +313,28 @@ INCLUDE_ASM("asm/funcs", func_8007EB4C);
 PAD_NOPS_1; /* 1 NOP after func_8007EB4C */
 INCLUDE_ASM("asm/funcs", func_8007EC5C);
 PAD_NOPS_1; /* 1 NOP after func_8007EC5C */
-INCLUDE_ASM("asm/funcs", func_8007ED6C);
+s32 *func_8007ED6C(s32 *a0, s32 *a1, s32 *a2) {
+    register s32 t0 asm("t0") = a0[0];
+    register s32 t1 asm("t1") = a0[1];
+    register s32 t2 asm("t2") = a0[2];
+    register s32 t3 asm("t3") = a0[3];
+    register s32 t4 asm("t4") = a0[4];
+    register s32 *v0 asm("v0");
+    __asm__ volatile (".word 0x48C80000" :: "r"(t0));  /* ctc2 */
+    __asm__ volatile (".word 0x48C90800" :: "r"(t1));  /* ctc2 */
+    __asm__ volatile (".word 0x48CA1000" :: "r"(t2));  /* ctc2 */
+    __asm__ volatile (".word 0x48CB1800" :: "r"(t3));  /* ctc2 */
+    __asm__ volatile (".word 0x48CC2000" :: "r"(t4));  /* ctc2 */
+    __asm__ volatile (".word 0xC8A00000" :: "r"(a1));  /* lwc2 */
+    __asm__ volatile (".word 0xC8A10004" :: "r"(a1));  /* lwc2 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A486012");              /* mvmva 1,0,0,3,0 */
+    __asm__ volatile (".word 0xE8D90000" :: "r"(a2));  /* swc2 */
+    __asm__ volatile (".word 0xE8DA0004" :: "r"(a2));  /* swc2 */
+    __asm__ volatile (".word 0xE8DB0008" :: "r"(a2));  /* swc2 */
+    __asm__ volatile ("addu %0,%1,$0" : "=r"(v0) : "r"(a2));
+    return v0;
+}
 INCLUDE_ASM("asm/funcs", func_8007EDBC);
 PAD_NOPS_3; /* 3 NOPs after func_8007EDBC */
 void func_8007EEEC(s32 *a0) {
