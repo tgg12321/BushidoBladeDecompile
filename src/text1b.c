@@ -159,10 +159,7 @@ INCLUDE_ASM("asm/funcs", func_80052B00);
 INCLUDE_ASM("asm/funcs", func_80052B44);
 INCLUDE_ASM("asm/funcs", func_80052B7C);
 INCLUDE_ASM("asm/funcs", func_80052BE4);
-void func_80052C10(void) {
-    register volatile s32 *p asm("t9") = (volatile s32 *)0x1F800400;
-    *p = 0;
-}
+INCLUDE_ASM("asm/funcs", func_80052C10);
 PAD_NOPS_1; /* padding after func_80052C10 */
 INCLUDE_ASM("asm/funcs", func_80052C28);
 INCLUDE_ASM("asm/funcs", func_80052C4C);
