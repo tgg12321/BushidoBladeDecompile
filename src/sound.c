@@ -33,6 +33,8 @@ extern void func_80049E1C(void);
 extern void func_800472C0(u8 *);
 extern void func_8004211C(void);
 extern void func_800444BC(void);
+extern void func_80044FA0(s32, s32 *);
+extern s16 D_800A324A;
 
 /* Externs for globals */
 extern s32 D_800A33B0;
@@ -50,6 +52,7 @@ extern s16 D_800F6654;
 extern s32 D_800A3790;
 extern u8 D_800EEDD0;
 extern u8 D_800EEDF0;
+
 extern s16 D_800EEDF8;
 
 /* --- Functions 0x80046780 - 0x80047EC8 --- */
@@ -102,7 +105,24 @@ void func_800469A0(s32 a0) {
     func_80045510(9, a0);
 }
 
-INCLUDE_ASM("asm/funcs", func_800469C4);
+void func_80046A80(s32, s32);
+
+s32 *func_800469C4(s32 a0) {
+    s32 *v0;
+    s32 offset;
+
+    v0 = func_800455AC(0xA);
+    func_80044FA0(a0, v0);
+    offset = (u32)v0[v0[0] + 1] >> 2 << 2;
+    {
+        s32 *s0 = (s32 *)((u8 *)v0 + offset);
+        func_80045230((s32)s0);
+        func_80045600(0xA, (s32)s0);
+    }
+    D_800A324A = (s16)a0;
+    func_80045694(0xA, func_80046A80);
+    return v0;
+}
 
 void func_80046A60(void) {
     func_800453E0(0xA);
