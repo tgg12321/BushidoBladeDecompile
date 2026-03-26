@@ -1069,7 +1069,35 @@ s32 func_8001F888(void) {
     }
 }
 INCLUDE_ASM("asm/funcs", func_8001F938);
-INCLUDE_ASM("asm/funcs", func_8001FAE4);
+s32 func_8001FAE4(s32 *arg0) {
+    s32 v0;
+    u16 v1;
+    s32 *a0;
+    char new_var;
+
+    v1 = *(u16 *)((s32)arg0 + 0xA);
+    a0 = (s32 *)((s32)arg0 + 0xA);
+    if (v1 == 0) goto ret_zero;
+    v0 = v1 & 0x4000;
+loop:
+    if (v0 != 0) {
+        v0 = (s32)a0;
+        goto end;
+    }
+    new_var = 0;
+    if ((v1 & 0xC000) != new_var) {
+        a0 = (s32 *)((s32)a0 + 8);
+    } else {
+        a0 = (s32 *)((s32)a0 + 4);
+    }
+    v1 = *(u16 *)a0;
+    v0 = v1 & 0x4000;
+    if (v1 != new_var) goto loop;
+ret_zero:
+    v0 = 0;
+end:
+    return v0;
+}
 s32 func_8001FB34(s32 *arg0, s32 arg1) {
     s16 v1;
     s32 v0;
