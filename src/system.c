@@ -365,7 +365,77 @@ s32 func_80081D1C(s32 a0, s32 a1) {
     *D_800A148C = 0x1325;
     return 0;
 }
-INCLUDE_ASM("asm/funcs", func_80081E1C);
+s32 func_80081E1C(s32 a0, s32 a1) {
+    volatile u8 *v1;
+    u32 v0;
+    *D_800A147C = 0;
+    *D_800A1488 = 0x80;
+    *D_800A14B0 = 0x21020843;
+    *D_800A148C = 0x1325;
+    *D_800A14B4 = *D_800A14B4 | 0x8000;
+    *D_800A14B8 = a0;
+    *D_800A14BC = a1 | 0x10000;
+    v1 = D_800A147C;
+    v0 = *v1 & 0x40;
+    if (v0 == 0) {
+        do {
+            v0 = *v1 & 0x40;
+        } while (v0 == 0);
+    }
+    *D_800A14C0 = 0x11400100;
+    {
+        volatile s32 tmp;
+        tmp = *D_800A14C0;
+    }
+    return 0;
+}
+
+extern s32 D_800A1460;
+void func_80081F0C(s32 a0) {
+    D_800A1460 = a0;
+}
+
+extern volatile u8 D_800A1494;
+extern volatile u8 D_800A1495;
+extern s32 D_800A11B4;
+extern s32 D_800A11B8;
+extern void D_800F19A8;
+extern void D_800F19A0;
+extern s32 func_80080828(void);
+
+__asm__(
+    ".set noreorder
+"
+    ".set noat
+"
+    "glabel D_80081F1C
+"
+    ".set reorder
+"
+    ".set at
+"
+);
+
+void func_80081F1C(void) {
+    volatile u8 *s1 = &D_800A1495;
+    volatile u8 *s3 = s1 - 1;
+    u8 s2;
+    s32 s0;
+    s2 = *D_800A147C & 3;
+    do {
+        s0 = func_80080828();
+        if (s0 == 0) break;
+        if (s0 & 4) {
+            if (D_800A11B8 != 0) {
+                ((void (*)(u8, void *))D_800A11B8)(*s1, &D_800F19A8);
+            }
+        }
+        if (!(s0 & 2)) continue;
+        if (D_800A11B4 == 0) continue;
+        ((void (*)(u8, void *))D_800A11B4)(*s3, &D_800F19A0);
+    } while (1);
+    *D_800A147C = s2;
+}
 INCLUDE_ASM("asm/funcs", func_80082000);
 INCLUDE_ASM("asm/funcs", func_8008241C);
 INCLUDE_ASM("asm/funcs", func_800826CC);
