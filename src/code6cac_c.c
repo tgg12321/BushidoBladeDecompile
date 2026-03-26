@@ -725,7 +725,33 @@ void func_800379D8(void) {
     func_80078998(D_800A3850);
 }
 INCLUDE_ASM("asm/funcs", func_80037A20);
-INCLUDE_ASM("asm/funcs", func_80037AA4);
+s32 func_80037AA4(void) {
+    s32 var_a1;
+    register s32 var_a2 asm("a2");
+    register s32 var_a0 asm("a0");
+    s8 *var_v1;
+    register s32 var_v0 asm("v0");
+    s32 sp_dummy[2];
+
+    var_a1 = 0;
+    var_a0 = 0;
+    var_a2 = D_800A38C8;
+    if (var_a2 > 0) {
+        var_v1 = (s8 *)&D_80102810;
+        do {
+            var_v0 = *(s32 *)(var_v1 + 0x18);
+            var_a1 += 1;
+            var_a0 += var_v0;
+            var_v1 += 0x28;
+        } while (var_a1 < var_a2);
+    }
+    var_v0 = var_a0;
+    if (var_a0 < 0) {
+        var_v0 = var_a0 + 0x1FFF;
+    }
+    var_a0 = var_v0 >> 0xD;
+    return 0xF - var_a0;
+}
 INCLUDE_ASM("asm/funcs", func_80037B00);
 extern s32 func_800789E8(s32 *, s32);
 typedef void (*Func79A30_5)(s32 *, s32 *, s32, s32, s32);
