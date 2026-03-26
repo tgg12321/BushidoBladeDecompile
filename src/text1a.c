@@ -145,7 +145,31 @@ extern s32 func_800545F4;
 extern s32 D_800545F8;
 extern s32 D_800545FC;
 extern s32 D_80054600;
-INCLUDE_ASM("asm/funcs", func_80041398);
+void func_80041398(s32 a0) {
+    register s32 **t0 asm("t0") = D_80015820;
+    register s32 t1 asm("t1") = 0;
+    s32 mask8 = ~0xFF;
+    s32 a1 = (a0 >> 16) & 0xFF;
+    s32 mask16 = (s32)0xFFFF0000;
+    s32 a0lo = a0 & 0xFFFF;
+    s32 t3 = (func_800545F4 & mask8) | a1;
+    s32 t2 = (D_800545F8 & mask16) | a0lo;
+    s32 v1 = (D_800545FC & mask8) | a1;
+    s32 a4 = (D_80054600 & mask16) | a0lo;
+    do {
+        s32 *v0 = *t0;
+        t0++;
+        t1++;
+        v0[0] = t3;
+        v0[1] = t2;
+        {
+            s32 *v0b = *t0;
+            v0b[0] = v1;
+            v0b[1] = a4;
+        }
+        t0++;
+    } while (t1 < 4);
+}
 void func_80041430(s32 a0, s32 a1) {
     s32 *base;
     s32 *s0;
@@ -266,7 +290,16 @@ void func_800418D0(s32 *a0) {
 INCLUDE_ASM("asm/funcs", func_80041988);
 INCLUDE_ASM("asm/funcs", func_80041AC8);
 INCLUDE_ASM("asm/funcs", func_80041BF4);
-INCLUDE_ASM("asm/funcs", func_80041E10);
+extern s16 D_800A3238;
+extern s16 D_800A323A;
+extern s16 D_800A323C;
+extern Block16 D_800A9B28;
+void func_80041E10(Block16 *a0, s32 a1) {
+    D_800A3238 = (s16)((((a1 >> 16) & 0xFF) << 12) / 255);
+    D_800A323A = (s16)((((a1 >> 8) & 0xFF) << 12) / 255);
+    D_800A323C = (s16)(((a1 & 0xFF) << 12) / 255);
+    D_800A9B28 = *a0;
+}
 INCLUDE_ASM("asm/funcs", func_80041EB0);
 extern s16 D_800A3382;
 extern s16 D_800A3238;
@@ -473,7 +506,27 @@ s16 func_80043FCC(s16 a0, s16 a1, s32 a2) {
     return (s16)(low | ((a0 & (s16)0x8000) | (mid << 6)));
 }
 INCLUDE_ASM("asm/funcs", func_80044010);
-INCLUDE_ASM("asm/funcs", func_80044098);
+void func_80044098(s16 a0) {
+    register s32 *v1 asm("v1");
+    register s32 a4 asm("a0");
+    s32 *a6;
+
+    v1 = D_80103608[a0];
+    a4 = *(v1 - 1);
+    a6 = v1 - 1;
+    if (a4 & 0x8000) {
+        a4 = a4 & 0x7FFF;
+        *(v1 - 1) = a4;
+        a4 = a4 - 1;
+        if (a4 != -1) {
+            do {
+                *v1 -= (s32)a6;
+                v1++;
+                a4--;
+            } while (a4 != -1);
+        }
+    }
+}
 void func_80044100(s32 a0, s32 a1) {
     s32 *ptr = D_80103608[a0];
     s32 count = D_80103658[a0];
