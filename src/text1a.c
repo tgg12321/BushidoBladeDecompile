@@ -505,7 +505,30 @@ s16 func_80043FCC(s16 a0, s16 a1, s32 a2) {
     mid = (a2 + (((u32)(a0 << 17)) >> 23)) & 0x1FF;
     return (s16)(low | ((a0 & (s16)0x8000) | (mid << 6)));
 }
-INCLUDE_ASM("asm/funcs", func_80044010);
+void func_80044010(s32 *a0, s16 a1) {
+    s32 new_var;
+    volatile s32 sp_pad;
+    s32 *a2 = a0;
+    s32 v1 = *a0;
+    unsigned short v0;
+    *a0 = (v1 | 0x8000) & 0xFFFF;
+    a0 = a0 + 1;
+    D_80103608[a1] = a0;
+    D_80103658[a1] = v1 & 0x7FFF;
+    v0 = v1;
+    if (!(v1 & 0x8000)) {
+        v1 = v0 & 0xFFFF;
+        new_var = v1;
+        if (new_var > 0) {
+            s32 i = 0;
+            do {
+                *a0 += (s32)a2;
+                i++;
+                a0++;
+            } while (i < new_var);
+        }
+    }
+}
 void func_80044098(s16 a0) {
     register s32 *v1 asm("v1");
     register s32 a4 asm("a0");
@@ -773,7 +796,17 @@ void func_80045510(s32 a0, s32 a1) {
         } while (i < count);
     }
 }
-INCLUDE_ASM("asm/funcs", func_800455AC);
+void func_800455AC(s32 a0) {
+    register s32 v1 asm("v1");
+    s16 (*new_var)[];
+    func_800453E0(a0);
+    v1 = D_800A33AC;
+    new_var = &D_800EED10;
+    D_800A33AC = v1 + 1;
+    *((s32 *)((u8 *)(*new_var) + v1 * 16 + 4)) = D_800A33A0;
+    *((s16 *)((u8 *)(*new_var) + v1 * 16)) = a0;
+    *((s32 *)((u8 *)(*new_var) + v1 * 16 + 0xC)) = 0;
+}
 void func_80045600(s32 a0, s32 a1) {
     volatile s32 sp_pad;
     s32 i = 0;
