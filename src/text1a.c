@@ -273,7 +273,34 @@ s32 func_80041650(s32 a0) {
     return -1;
 }
 INCLUDE_ASM("asm/funcs", func_80041688);
-INCLUDE_ASM("asm/funcs", func_800417D0);
+typedef struct { s32 w[4]; } Block16;
+extern s32 D_800F66A0[];
+extern void func_80052930(void *, void *, void *);
+extern void func_80052A88(void *, void *, void *);
+void func_800417D0(s32 *a0) {
+    void (*func)(s32 *, s32 *);
+    s32 *child;
+
+    if (((s16 *)a0)[3] == 1) {
+        return;
+    }
+    if (((s16 *)a0)[3] != 2) {
+        func = (void (*)(s32 *, s32 *))D_800F66A0[((s16 *)a0)[4]];
+        func(a0 + 4, a0 + 14);
+    }
+    child = (s32 *)a0[3];
+    if (child != 0) {
+        if (((s16 *)child)[3] == 0) {
+            func_800417D0(child);
+        }
+        func_80052930((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x38), (void *)((u8 *)a0 + 0x18));
+        func_80052A88((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x4C), (void *)((u8 *)a0 + 0x2C));
+    } else {
+        ((Block16 *)(a0 + 6))[0] = ((Block16 *)(a0 + 14))[0];
+        ((Block16 *)(a0 + 6))[1] = ((Block16 *)(a0 + 14))[1];
+    }
+    ((s16 *)a0)[3] = 1;
+}
 typedef struct { s32 w[4]; } Block16;
 extern s32 D_800F66A0[];
 void func_800418D0(s32 *a0) {
@@ -470,7 +497,10 @@ void func_80043398(s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
 extern s32 *D_80103608[];
 extern u16 D_80103658[];
 extern void func_80043454(s32, s16, s16, s16);
-INCLUDE_ASM("asm/funcs", func_800433E4);
+void func_800433E4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
+    *(s32 *)0x1F800000 = D_80103608[arg0][arg1];
+    func_80043454(arg2, arg3, arg4, arg5);
+}
 INCLUDE_ASM("asm/funcs", func_80043454);
 INCLUDE_ASM("asm/funcs", func_80043BD0);
 INCLUDE_ASM("asm/funcs", func_80043C7C);
@@ -691,7 +721,39 @@ void func_80044F50(s32 a0, s32 a1, s32 a2) {
 void func_80044F80(s32 a0, s32 a1) {
     func_80044E74(a0 + 0x4D, a1);
 }
-INCLUDE_ASM("asm/funcs", func_80044FA0);
+extern s32 D_800A3240;
+extern char D_8001528C[];
+s32 func_80044FA0(s32 a0, s32 a1) {
+    s32 v0;
+    s32 s0;
+
+    s0 = a1 - (s32)func_80045814();
+    if (s0 < 0) {
+        goto set_from_table;
+    }
+    v0 = func_80045808();
+    if (s0 >= v0) {
+        goto set_from_table;
+    }
+    if (D_800A3240 != 0) {
+        s0 = (s32)*(s16 *)((u8 *)&D_800963EE + a0 * 4) << 11;
+    } else {
+        s0 = 0;
+    }
+    v0 = func_800457DC();
+    if (v0 < s0) {
+        func_80079208(D_8001528C, a0, s0 - v0);
+        while (1) {
+            func_800164F8();
+        }
+    }
+    goto do_return;
+set_from_table:
+    s0 = (s32)*(s16 *)((u8 *)&D_800963EE + a0 * 4) << 11;
+do_return:
+    func_80044E74(a0, a1);
+    return s0;
+}
 extern s16 D_800963EE;
 extern s32 func_800457DC(void);
 s32 func_80045080(s32 a0) {
@@ -989,7 +1051,36 @@ void func_80046048(s32 a0, s32 a1) {
     } while (count != -1);
 }
 INCLUDE_ASM("asm/funcs", func_800460E4);
-INCLUDE_ASM("asm/funcs", func_800464C4);
+extern s16 D_80099478;
+extern s16 D_8009947A;
+void func_800464C4(void) {
+    s32 *s0;
+    s32 *s1;
+    s32 *a0;
+    s32 v0;
+
+    if (D_8009947A == 0) {
+        return;
+    }
+    s0 = (s32 *)func_800457A0(7);
+    v0 = ((u32)s0[1] >> 2) << 2;
+    a0 = (s32 *)((u8 *)s0 + v0);
+    switch (D_80099478) {
+    case 0xD:
+        v0 = ((u32)s0[6] >> 2) << 2;
+        s1 = (s32 *)((u8 *)s0 + v0);
+        break;
+    case 3:
+    case 0x22:
+        v0 = ((u32)s0[5] >> 2) << 2;
+        s1 = (s32 *)((u8 *)s0 + v0);
+        break;
+    }
+    func_80044010(a0, 7);
+    func_8003EDC0(s1, 7);
+    func_80045510(7, (s32)((u8 *)s1 - (u8 *)s0));
+    D_8009947A = 0;
+}
 INCLUDE_ASM("asm/funcs", func_8004659C);
 extern s16 D_80099478;
 extern s16 D_8009947A;
@@ -1000,3 +1091,4 @@ void func_8004668C(void) {
     D_8009947A = 0;
 }
 INCLUDE_ASM("asm/funcs", func_800466C0);
+}
