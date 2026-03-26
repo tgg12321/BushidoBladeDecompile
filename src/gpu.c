@@ -540,7 +540,45 @@ void func_8007ADD0(s16 *a0) {
     D_8009BE70(&D_80015E10, ((u8 *)a0)[0x10]);
     D_8009BE70(&D_80015E1C, ((u8 *)a0)[0x11]);
 }
-INCLUDE_ASM("asm/funcs", func_8007AE7C);
+typedef struct {
+    u8 mode;
+    u8 active;
+    u8 level;
+    u8 flag;
+    s16 width;
+    s16 height;
+} GpuConfig;
+u32 func_8007AE7C(s32 a0) {
+    GpuConfig *s0;
+    int new_var;
+    u32 idx;
+    switch (a0 & 7) {
+    case 0:
+    case 3:
+        func_80079208(&D_80015E5C, &D_8009BE2C, &D_8009BE74);
+        /* fallthrough */
+    case 5:
+        s0 = (GpuConfig *)&D_8009BE74;
+        func_8007DEE4(s0, 0, 0x80);
+        func_80082AC0();
+        func_8007DF10((u32)D_8009BE6C & 0xFFFFFF);
+        s0->mode = (idx = func_8007D9C4(a0));
+        idx = (u8)idx;
+        s0->active = 1;
+        s0->width = D_8009BEF4[idx];
+        new_var = -1;
+        s0->height = D_8009BF08[idx];
+        func_8007DEE4((u8 *)s0 + 0x10, new_var, 0x5C);
+        func_8007DEE4((u8 *)s0 + 0x6C, -1, 0x14);
+        return s0->mode;
+    default:
+        if (D_8009BE76 >= 2) {
+            D_8009BE70(&D_80015E7C, a0);
+        }
+        ((void (*)(s32))D_8009BE6C[0x34 / 4])(1);
+        break;
+    }
+}
 u32 func_8007B000(s32 a0) {
     u8 *p = &D_8009BE77;
     u32 old = *p;
