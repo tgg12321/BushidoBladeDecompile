@@ -76,7 +76,39 @@ s32 *func_80040510(s32 a0) {
 }
 INCLUDE_ASM("asm/funcs", func_80040594);
 INCLUDE_ASM("asm/funcs", func_800408F8);
-INCLUDE_ASM("asm/funcs", func_80040A78);
+void func_80040A78(s32 arg0) {
+    register s32 var_a1 asm("a1");
+    register s32 var_v1 asm("v1");
+
+    var_a1 = 0;
+    var_v1 = arg0 + 0x94;
+    *(s32 *)(arg0 + 0x18F4) = arg0 + 0x2B4;
+    *(s32 *)(arg0 + 0x18F8) = arg0 + 0x24C;
+    *(s32 *)(arg0 + 0x18FC) = arg0 + 0x1E4;
+    *(s32 *)(arg0 + 0x1900) = arg0 + 0x454;
+    *(s32 *)(arg0 + 0x1904) = arg0 + 0x3EC;
+    *(s32 *)(arg0 + 0x1908) = arg0 + 0x384;
+    *(s32 *)(arg0 + 0x190C) = arg0 + 0x17C;
+    *(s32 *)(arg0 + 0x1910) = arg0 + 0x114;
+    *(s32 *)(arg0 + 0x1914) = arg0 + 0x72C;
+    *(s32 *)(arg0 + 0x1918) = arg0 + 0x6C4;
+    *(s32 *)(arg0 + 0x191C) = arg0 + 0x5F4;
+    *(s32 *)(arg0 + 0x1920) = arg0 + 0x58C;
+    *(s32 *)(arg0 + 0x1924) = arg0 + 0x524;
+    *(s32 *)(arg0 + 0x1928) = arg0 + 0xAC;
+    *(s32 *)(arg0 + 0x192C) = arg0 + 0x31C;
+    *(s32 *)(arg0 + 0x1930) = arg0 + 0x4BC;
+    *(s32 *)(arg0 + 0x1934) = arg0 + 0x794;
+    *(s32 *)(arg0 + 0x1938) = arg0 + 0x65C;
+    *(s32 *)(arg0 + 0x193C) = arg0 + 0x7FC;
+    *(s32 *)(arg0 + 0x1940) = arg0 + 0x864;
+    do {
+        *(s32 *)(arg0 + 0x1994) = var_v1 + 0x18;
+        var_v1 += 0x68;
+        var_a1 += 1;
+        arg0 += 4;
+    } while (var_a1 < 0x14);
+}
 INCLUDE_ASM("asm/funcs", func_80040B44);
 extern s16 D_80094B9E[];
 INCLUDE_ASM("asm/funcs", func_80040CB8);
@@ -541,8 +573,25 @@ void func_800456F0(s32 a0) {
         i += 0x10;
     } while (i < count * 16);
 }
-INCLUDE_ASM("asm/funcs", func_8004574C);
-extern s32 *func_8004574C(void);
+s32 *func_8004574C(s32 arg0) {
+    s32 *var_a1;
+    s32 var_v1;
+    s32 limit;
+
+    if (D_800A33AC > 0) {
+        var_a1 = (s32 *)&D_800EED10;
+        var_v1 = 0;
+        limit = D_800A33AC << 4;
+        do {
+            if (*(s16 *)((s32)&D_800EED10 + var_v1) == arg0) {
+                return var_a1;
+            }
+            var_v1 += 0x10;
+            var_a1 = (s32 *)((s32)var_a1 + 0x10);
+        } while (var_v1 < limit);
+    }
+    return NULL;
+}
 s32 func_800457A0(void) {
     s32 *v0 = func_8004574C();
     if (v0) {
