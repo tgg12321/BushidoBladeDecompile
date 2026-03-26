@@ -989,7 +989,36 @@ void func_80046048(s32 a0, s32 a1) {
     } while (count != -1);
 }
 INCLUDE_ASM("asm/funcs", func_800460E4);
-INCLUDE_ASM("asm/funcs", func_800464C4);
+extern s16 D_80099478;
+extern s16 D_8009947A;
+void func_800464C4(void) {
+    s32 *s0;
+    s32 *s1;
+    s32 *a0;
+    s32 v0;
+
+    if (D_8009947A == 0) {
+        return;
+    }
+    s0 = (s32 *)func_800457A0(7);
+    v0 = ((u32)s0[1] >> 2) << 2;
+    a0 = (s32 *)((u8 *)s0 + v0);
+    switch (D_80099478) {
+    case 0xD:
+        v0 = ((u32)s0[6] >> 2) << 2;
+        s1 = (s32 *)((u8 *)s0 + v0);
+        break;
+    case 3:
+    case 0x22:
+        v0 = ((u32)s0[5] >> 2) << 2;
+        s1 = (s32 *)((u8 *)s0 + v0);
+        break;
+    }
+    func_80044010(a0, 7);
+    func_8003EDC0(s1, 7);
+    func_80045510(7, (s32)((u8 *)s1 - (u8 *)s0));
+    D_8009947A = 0;
+}
 INCLUDE_ASM("asm/funcs", func_8004659C);
 extern s16 D_80099478;
 extern s16 D_8009947A;
