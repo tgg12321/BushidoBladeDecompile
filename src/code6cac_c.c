@@ -53,6 +53,7 @@ extern void func_8007B600(s32, s32);
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
 extern void func_80079A30(s32 *, s32, s32, s32);
+extern s32 D_800109BC;
 extern void func_80078A28(s32 *);
 extern void func_8003DE14(s32 *, s32);
 extern void func_80016888(void);
@@ -337,6 +338,7 @@ extern u8 D_800A36B9;
 extern u8 D_800A36BA;
 extern u8 D_800A36BB;
 extern s16 D_800A36C2;
+extern s32 D_800A36C0;
 extern s32 D_800A36C4;
 extern s16 D_800A36C6;
 extern u16 D_800A36CA;
@@ -725,8 +727,47 @@ void func_800379D8(void) {
 INCLUDE_ASM("asm/funcs", func_80037A20);
 INCLUDE_ASM("asm/funcs", func_80037AA4);
 INCLUDE_ASM("asm/funcs", func_80037B00);
-INCLUDE_ASM("asm/funcs", func_80037B90);
-INCLUDE_ASM("asm/funcs", func_80037C34);
+extern s32 func_800789E8(s32 *, s32);
+typedef void (*Func79A30_5)(s32 *, s32 *, s32, s32, s32);
+s32 func_80037B90(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    s32 sp18[8];
+    register s32 temp_v0;
+
+    ((Func79A30_5)func_80079A30)(sp18, &D_800109BC, arg0, arg1, arg2);
+    temp_v0 = func_800789E8(sp18, 0x8001);
+    if (temp_v0 == -1) {
+        return -1;
+    }
+    D_800A3794 = temp_v0;
+    func_8003791C();
+    func_800379D8();
+    func_800789F8(temp_v0, arg3, arg4);
+    return -(func_80037964() != 1);
+}
+extern void func_80078A18(s32);
+extern void func_80078A08(s32, s32, s32);
+s32 func_80037C34(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
+    s32 sp18[8];
+    s32 temp_v0;
+
+    ((Func79A30_5)func_80079A30)(sp18, &D_800109BC, arg0, arg1, arg2);
+    if (arg6 != 0) {
+        temp_v0 = func_800789E8(sp18, (arg4 << 16) | 0x200);
+        if (temp_v0 == -1) {
+            return -1;
+        }
+        func_80078A18(temp_v0);
+    }
+    temp_v0 = func_800789E8(sp18, 0x8002);
+    if (temp_v0 == -1) {
+        return -1;
+    }
+    D_800A3794 = temp_v0;
+    func_8003791C();
+    func_800379D8();
+    func_80078A08(temp_v0, arg3, arg5);
+    return -(func_80037964() != 1);
+}
 INCLUDE_ASM("asm/funcs", func_80037D14);
 extern void func_80078A28(s32 *);
 extern s32 D_800109C8;
