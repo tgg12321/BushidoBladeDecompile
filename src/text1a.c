@@ -544,7 +544,6 @@ void func_80044E74(s32 a0, s32 a1) {
     func_80036E34(0, a1, D_800963EC[a0].x, D_800963EC[a0].y);
     func_80036F40();
 }
-extern s32 func_800450F4(s32, s32);
 void func_80044ED8(s32 a0, s32 a1) {
     if (a0 >= 0x1F) {
         a0 -= 0x1B;
@@ -553,6 +552,8 @@ void func_80044ED8(s32 a0, s32 a1) {
         func_80044E74(a0, a1);
     }
 }
+extern void func_80044E74(s32, s32);
+extern s32 func_800450F4(s32, s32);
 extern void func_80044E74(s32, s32);
 void func_80044F30(s32 a0) {
     ((void (*)(s32))func_80044E74)(a0 + 0x27);
