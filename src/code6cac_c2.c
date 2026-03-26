@@ -644,7 +644,70 @@ void func_8003BE10(void) {
     D_800A3834 = 0xB;
     func_800168D0();
 }
-INCLUDE_ASM("asm/funcs", func_8003BEA8);
+void func_8003BEA8(void) {
+    s32 s0 = 0;
+    s32 v0;
+    s32 v1;
+
+    v0 = func_800788B0();
+    v1 = D_80102794 & 0x40;
+    v0 = (u32)v0 > 0u;
+    if (v1 != 0) {
+        v0 = 1;
+    }
+    if (v0 != 0) {
+        func_800372C0();
+        {
+            s32 *ptr = &D_80106A50;
+            s32 old_val = *ptr;
+            s32 new_val = old_val | D_800A37A4;
+            if (new_val != old_val) {
+                *ptr = new_val;
+                s0 = 1;
+            }
+        }
+        {
+            s32 stage_u = (s32)(u16)D_80101ED2;
+            s16 stage;
+            if ((u32)stage_u < 2u) {
+                goto check_bit;
+            }
+            stage = (s16)stage_u;
+            if (stage == 2) {
+                goto check_bit;
+            }
+            if ((u32)(stage_u - 0xC) < 2u) {
+                goto check_bit;
+            }
+            if (stage == 0xE) {
+                goto check_bit;
+            }
+            goto skip_bit;
+        }
+    check_bit:
+        {
+            s32 bit = (s16)D_80101ED2;
+            u8 val;
+            if (bit >= 0xC) {
+                bit = bit - 9;
+            }
+            {
+                u8 *vptr = &D_80106A54;
+                val = *vptr;
+                if (!((val >> bit) & 1)) {
+                    *vptr = val | (1 << bit);
+                    s0 = 1;
+                }
+            }
+        }
+    skip_bit:
+        if (s0 != 0) {
+            D_800A3834 = 0x1A;
+        } else {
+            D_800A3834 = 8;
+        }
+    }
+}
 void func_8003BFC4(void) {
     s32 v;
     func_80016868();
@@ -658,7 +721,47 @@ void func_8003BFC4(void) {
     D_800A3834 = 8;
 }
 INCLUDE_ASM("asm/funcs", func_8003C040);
-INCLUDE_ASM("asm/funcs", func_8003C2C0);
+void func_8003C2C0(void) {
+    s32 ret;
+
+    D_800A37B8 = D_800A37B8 + 1;
+    ret = func_8005FC9C(D_800A38B4, 1);
+    D_800A38B4 = D_800A38B4 + ret * 4;
+    if (func_80054F68() == 0 || (D_80102794 & 0x400040) != 0) {
+        if ((u32)(D_800A38A4 - 6) < 2u && D_800A3781 != 0) {
+            s32 stage = (s16)D_80101ED2;
+            s32 newval = 8;
+            if (*((u8 *)&D_8008D9EC + stage) != 0) {
+                newval = 9;
+            }
+            D_800A38A4 = newval;
+            D_800A3834 = 0x12;
+        } else {
+            u8 a4val = D_800A38A4;
+            if ((u32)(a4val - 4) < 2u) {
+                D_800A3834 = 0x18;
+            } else if ((u32)(a4val - 6) < 2u) {
+                D_800A3834 = 0x1A;
+            } else if ((u32)(a4val - 8) < 2u) {
+                D_800A3834 = 0x1A;
+            } else if (a4val < 2u) {
+                D_800A3834 = 0xA;
+            } else {
+                D_800A3834 = 8;
+            }
+        }
+    }
+    {
+        s16 state = D_800A3834;
+        if (state != 0x13) {
+            func_800372C0();
+            state = D_800A3834;
+            if (state != 0x12) {
+                func_800548DC();
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/funcs", func_8003C42C);
 INCLUDE_ASM("asm/funcs", func_8003C560);
 INCLUDE_ASM("asm/funcs", func_8003C714);
