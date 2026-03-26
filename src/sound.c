@@ -313,7 +313,51 @@ void *func_800472B0(void) {
     return &D_800EEDD0;
 }
 
-INCLUDE_ASM("asm/funcs", func_800472C0);
+extern s32 D_800F66A0[];
+void func_800472C0(u8 *a0) {
+    u8 *s0 = a0;
+    *(s16 *)(s0 + 4) = 8;
+    {
+        s16 v0 = 4;
+        *(volatile s16 *)(s0 + 8) = 0;
+        {
+            s32 idx = *(s16 *)(s0 + 8);
+            u8 *a0_arg = s0 + 0x10;
+            *(s16 *)(s0 + 2) = 0;
+            s0[0] = 0;
+            s0[1] = 0;
+            *(s32 *)(s0 + 0xC) = 0;
+            *(s16 *)(s0 + 0xA) = v0;
+            *(s16 *)(s0 + 0x10) = 0;
+            *(s16 *)(s0 + 0x12) = 0;
+            *(s16 *)(s0 + 0x14) = 0;
+            ((void (*)(u8 *, u8 *))D_800F66A0[idx])(a0_arg, s0 + 0x38);
+        }
+    }
+    *(volatile s32 *)(s0 + 0x54) = 0;
+    *(volatile s32 *)(s0 + 0x50) = 0;
+    *(volatile s32 *)(s0 + 0x4C) = 0;
+    {
+        s32 v0 = *(volatile s32 *)(s0 + 0x38);
+        s32 v1 = *(volatile s32 *)(s0 + 0x3C);
+        s32 a0t = *(volatile s32 *)(s0 + 0x40);
+        s32 a1t = *(volatile s32 *)(s0 + 0x44);
+        *(volatile s32 *)(s0 + 0x18) = v0;
+        *(volatile s32 *)(s0 + 0x1C) = v1;
+        *(volatile s32 *)(s0 + 0x20) = a0t;
+        *(volatile s32 *)(s0 + 0x24) = a1t;
+    }
+    {
+        s32 v0 = *(volatile s32 *)(s0 + 0x48);
+        s32 v1 = *(volatile s32 *)(s0 + 0x4C);
+        s32 a0t = *(volatile s32 *)(s0 + 0x50);
+        s32 a1t = *(volatile s32 *)(s0 + 0x54);
+        *(volatile s32 *)(s0 + 0x28) = v0;
+        *(volatile s32 *)(s0 + 0x2C) = v1;
+        *(volatile s32 *)(s0 + 0x30) = a0t;
+        *(volatile s32 *)(s0 + 0x34) = a1t;
+    }
+}
 
 INCLUDE_ASM("asm/funcs", func_80047384);
 
