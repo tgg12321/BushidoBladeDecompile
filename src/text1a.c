@@ -475,7 +475,22 @@ s16 func_80043FCC(s16 a0, s16 a1, s32 a2) {
 }
 INCLUDE_ASM("asm/funcs", func_80044010);
 INCLUDE_ASM("asm/funcs", func_80044098);
-INCLUDE_ASM("asm/funcs", func_80044100);
+void func_80044100(s32 a0, s32 a1) {
+    s32 *ptr = D_80103608[a0];
+    s32 count = D_80103658[a0];
+    D_80103608[a0] = (ptr = ptr + (a1 / 4));
+    count--;
+    if (count != -1) {
+        if (1) {
+            do { } while (0);
+        }
+        do {
+            *ptr += a1;
+            ptr++;
+            count--;
+        } while (count != -1);
+    }
+}
 INCLUDE_ASM("asm/funcs", func_80044170);
 INCLUDE_ASM("asm/funcs", func_8004428C);
 INCLUDE_ASM("asm/funcs", func_80044378);
@@ -580,7 +595,36 @@ void func_800450BC(s32 a0, s32 a1) {
     D_800A3398 = a1;
     D_800A3244 = 1;
 }
-INCLUDE_ASM("asm/funcs", func_800450F4);
+extern s16 D_800973EC[];
+s32 func_800450F4(s32 a0, s32 a1) {
+    s32 *a2_ptr;
+    s32 v1;
+    s32 *v0_ptr;
+    if (D_800A3244 == 0) {
+        return 0;
+    }
+    a0 -= 0x1E;
+    if ((u32)a0 >= 7) {
+        return 0;
+    }
+    a0 = D_800973EC[a0];
+    if (a0 == -1) {
+        return 0;
+    }
+    a2_ptr = (s32 *)D_800A3398;
+    if (*a2_ptr != 5) {
+        D_800A3244 = 0;
+        return 0;
+    }
+    v0_ptr = (s32 *)(a0 * 4 + (s32)a2_ptr + 4);
+    v1 = *v0_ptr;
+    {
+        s32 a0_new = (s32)a2_ptr + (((u32)v1 >> 2) << 2);
+        s32 a2_val = v0_ptr[1] - v1;
+        func_800520B8(a0_new, a1, a2_val);
+    }
+    return 1;
+}
 extern s32 D_800A3244;
 void func_80045188(void) {
     D_800A3244 = 0;
