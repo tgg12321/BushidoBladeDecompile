@@ -174,7 +174,48 @@ void func_8003F7F4(void) {
 }
 INCLUDE_ASM("asm/funcs", func_8003F824);
 INCLUDE_ASM("asm/funcs", func_8003FA24);
-INCLUDE_ASM("asm/funcs", func_8003FE40);
+s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2) {
+    register s32 i asm("a3");
+    i = 0;
+    if (a1 > i) {
+        register s16 t0 asm("t0") = -256;
+        register s16 *v1 asm("v1") = a0;
+        for (i = 0; i < a1; i++) {
+            *(s16 *)((u8 *)v1 + 6) = t0;
+            v1 = (s16 *)((u8 *)v1 + 8);
+        }
+    }
+
+    {
+        register s32 count asm("v1");
+        count = a2[0];
+        a2++;
+        if (count >= 0) {
+            register s32 neg1 asm("t1") = -1;
+            do {
+                register int val asm("a1");
+                val = a2[0];
+                do { count--; } while(0);
+                a2++;
+                if (count != neg1) {
+                    register s32 neg1b asm("t0") = -1;
+                    do {
+                        register s32 addr asm("v0");
+                        i = a2[0];
+                        a2++;
+                        count--;
+                        addr = (i << 3) + (s32)a0;
+                        *(s16 *)(addr + 6) = val;
+                    } while (count != neg1b);
+                }
+                count = a2[0];
+                a2++;
+            } while (count >= 0);
+        }
+    }
+    return (s16 *)a2;
+}
+
 INCLUDE_ASM("asm/funcs", func_8003FECC);
 s32 func_8003FFA8(s32 a0) {
     if (a0 & 3) {
