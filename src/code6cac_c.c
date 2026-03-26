@@ -628,6 +628,7 @@ extern void func_8001B6F4(void);
 extern void func_80022568(u8 *);
 extern s32 D_800109B0;
 extern s32 D_80102810;
+extern s32 D_800F34D8;
 extern u8 D_80101EC8;
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
@@ -871,7 +872,60 @@ void func_80038148(void) {
 }
 INCLUDE_ASM("asm/funcs", func_80038170);
 INCLUDE_ASM("asm/funcs", func_800383A4);
-INCLUDE_ASM("asm/funcs", func_80038658);
+extern s32 func_8003800C(s32 *);
+void func_80038658(void) {
+    register s32 var_v1 asm("v1");
+    register s32 var_v0 asm("v0");
+    s32 var_s0;
+
+    var_v1 = D_800A31F4;
+    if (var_v1 == 4) {
+        goto block_4;
+    }
+    if (var_v1 == 6) {
+        goto block_6;
+    }
+    return;
+block_4:
+    var_s0 = func_800378A8();
+    var_v0 = 1;
+    if (var_s0 == 0) {
+        goto block_store;
+    }
+    func_80078A18(D_800A3794);
+    var_v0 = 1;
+    if (var_s0 != var_v0) {
+        var_v0 = 3;
+        goto block_store_clear;
+    }
+    var_v0 = 2;
+    goto block_store_clear;
+block_6:
+    var_s0 = func_800378A8();
+    var_v0 = 4;
+    if (var_s0 == 0) {
+        goto block_store;
+    }
+    func_80078A18(D_800A3794);
+    var_v0 = 1;
+    if (var_s0 != var_v0) {
+        var_v0 = 6;
+        goto block_store_clear;
+    }
+    var_v0 = 5;
+    D_800A379E = (s16)var_v0;
+    if (func_8003800C(&D_800F34D8) != 0) {
+        goto block_clear;
+    }
+    var_v0 = 0xF;
+block_store_clear:
+    D_800A379E = (s16)var_v0;
+block_clear:
+    D_800A31F4 = 0;
+    return;
+block_store:
+    D_800A379E = (s16)var_v0;
+}
 s32 func_80038734(void) {
     if ((u32)D_800A31F4 < 2) {
         D_800A31F8 = func_80037D14(0, 0);
