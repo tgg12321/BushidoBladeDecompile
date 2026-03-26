@@ -66,7 +66,18 @@ INCLUDE_ASM("asm/funcs", func_80083C34);
 INCLUDE_ASM("asm/funcs", func_80083E9C);
 INCLUDE_ASM("asm/funcs", func_800841E0);
 INCLUDE_ASM("asm/funcs", func_80084500);
-INCLUDE_ASM("asm/funcs", func_800848AC);
+void func_800848AC(s16 a0, s16 a1) {
+    s32 shifted = a0 << 16;
+    s32 *addr = (s32 *)&D_80106F28;
+    s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
+    s32 offset = (s16)a1 * 0xB0;
+    u8 *entry;
+    entry = (u8 *)(*base_ptr + offset);
+    func_80087DA0((s16)(a0 | (a1 << 8)));
+    entry[0x14] = 0;
+    offset += *base_ptr;
+    *(s32 *)(offset + 0x98) &= ~2;
+}
 
 void func_80084948(s16 a0, s16 a1) {
     func_80084974(a0, a1);
