@@ -246,6 +246,8 @@ extern void func_80037348(s32 *);
 extern void func_8007AE7C(s32);
 extern void func_80078D68(void);
 extern void func_80082BB4(void);
+extern s32 D_800A3210;
+extern void func_8008BE04(void);
 extern s32 func_800789B8(void);
 extern void func_80078948(s32 *, s32, s32 *);
 extern void func_80016A18(void);
@@ -664,7 +666,29 @@ void func_80037774(void) {
     func_800789C8();
     func_8007A400();
 }
-INCLUDE_ASM("asm/funcs", func_80037804);
+s32 func_80037804(void) {
+    extern s32 D_800A3924;
+    s32 result;
+    s32 one;
+    s32 temp;
+    result = (func_80078998(D_800A37DC) == 1);
+    one = 1;
+    if (func_80078998(D_800A37F0) == one) {
+        result = 2;
+    }
+    if (func_80078998(D_800A37FC) == one) {
+        result = 3;
+    }
+    if (func_80078998(D_800A3800) == one) {
+        result = 4;
+    }
+    temp = D_800A3924;
+    D_800A3924 = temp + 1;
+    if (temp >= 0x78) {
+        result = 2;
+    }
+    return result;
+}
 s32 func_800378A8(void) {
     if (func_80078998(D_800A37DC) == 1) {
         return 1;
@@ -790,7 +814,45 @@ loop2:
     j -= (0, 0x10);
     if (j >= 0) goto loop2;
 }
-INCLUDE_ASM("asm/funcs", func_80039320);
+void func_80039320(void) {
+    extern u8 D_800A379C;
+    extern s16 D_800A3714;
+    s32 i;
+    u8 *p;
+    s16 *q;
+    s16 val;
+    s16 newval;
+
+    i = 0;
+    newval = 0xFF;
+    p = &D_80101BF0;
+
+    do {
+        if (*p == D_800A36F8) {
+            *p = newval;
+        }
+        i++;
+        p += 0x10;
+    } while (i < 0x20);
+
+    q = (s16 *)&D_800F68E0;
+    i = 0;
+    do {
+        val = *q;
+        if (val != -1) {
+            newval = val + 1;
+            *q = newval;
+            if ((s16)newval - *(u8 *)((u8 *)q + 2) >= 0x101) {
+                *q = -1;
+            }
+        }
+        i++;
+        q = (s16 *)((u8 *)q + 0x10);
+    } while (i < 0xB4);
+
+    D_800A379C = 0;
+    D_800A3714 = 0;
+}
 INCLUDE_ASM("asm/funcs", func_800393C8);
 INCLUDE_ASM("asm/funcs", func_800395B4);
 INCLUDE_ASM("asm/funcs", func_80039680);
@@ -817,7 +879,32 @@ void func_800397D4(void) {
 }
 INCLUDE_ASM("asm/funcs", func_8003984C);
 INCLUDE_ASM("asm/funcs", func_8003993C);
-INCLUDE_ASM("asm/funcs", func_8003A174);
+void func_8003A174(void) {
+    s32 neg1;
+    func_800789B8();
+    neg1 = -1;
+    do {
+        D_800A3738 = func_80078978(0xF000000B, 0x400, 0x2000, 0);
+    } while (D_800A3738 == neg1);
+    neg1 = -1;
+    do {
+        D_800A3810 = func_80078978(0xF000000B, 0x8000, 0x2000, 0);
+    } while (D_800A3810 == neg1);
+    func_800789C8();
+    neg1 = -1;
+    func_800828CC(2);
+    func_8008BE04();
+    do {
+        D_800A373C = func_800789E8(&D_800A3210, 2);
+    } while (D_800A373C == neg1);
+    neg1 = -1;
+    do {
+        D_800A3734 = func_800789E8(&D_800A3210, 0x8001);
+    } while (D_800A3734 == neg1);
+    func_8008C464(2, 0, 0);
+    func_8008C464(1, 3, 0xE100);
+    func_8008C464(1, 4, 1);
+}
 void func_8003A264(void) {
     func_80078A18(D_800A3734);
     func_80078A18(D_800A373C);
@@ -896,7 +983,25 @@ void func_8003AA78(void) {
     func_8003AA48();
     func_800828CC(2);
 }
-INCLUDE_ASM("asm/funcs", func_8003AAB0);
+void func_8003AAB0(void) {
+    s32 val;
+    D_800A3870 = 2;
+    func_800828CC(2);
+    val = 2;
+    do {
+        func_8003AA48();
+        if (D_800A320C == 0) {
+            goto end;
+        }
+        func_80078BA8(0xF2000001);
+        do {
+        } while (func_80078B04(0xF2000001) < 0x100);
+    } while (D_800A3870 == val);
+end:
+    func_800828CC(2);
+    func_8003AA48();
+    func_800828CC(2);
+}
 INCLUDE_ASM("asm/funcs", func_8003AB44);
 INCLUDE_ASM("asm/funcs", func_8003ACB8);
 INCLUDE_ASM("asm/funcs", func_8003AE5C);
