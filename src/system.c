@@ -310,4 +310,34 @@ INCLUDE_ASM("asm/funcs", func_80081E1C);
 INCLUDE_ASM("asm/funcs", func_80082000);
 INCLUDE_ASM("asm/funcs", func_8008241C);
 INCLUDE_ASM("asm/funcs", func_800826CC);
-INCLUDE_ASM("asm/funcs", func_800827D0);
+extern s32 D_800A14EC;
+extern s32 D_800A14E8;
+extern s32 D_800A14E4;
+extern s32 D_800A14D0;
+
+s32 func_800827D0(s32 a0, s32 a1) {
+    s32 *p = &D_800A14EC;
+    s32 result;
+
+    do {
+        s32 tick = func_800828CC(-1);
+        if (*p + 0x4B0 < tick) {
+            result = -1;
+        } else {
+            if (p[-2] < 0) {
+                goto do_seek;
+            }
+            tick = func_800828CC(-1);
+            if (p[-1] + 0x3C < tick) {
+do_seek:
+                func_8008241C(1);
+                result = p[-7];
+            } else {
+                result = p[-2];
+            }
+        }
+        if (a0 != 0) break;
+    } while (result > 0);
+    ((void (*)(s32, s32))func_80080208)(1, a1);
+    return result;
+}
