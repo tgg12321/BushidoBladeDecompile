@@ -220,7 +220,7 @@ extern u8 D_800A3671;
 extern u8 D_800A37B4;
 extern u8 D_800A37B5;
 extern u8 D_800A37B6;
-extern s32 D_800A384C;
+extern u8 D_800A384C;
 extern u8 D_8008EB1C;
 extern u8 D_8008DB1C;
 extern s32 D_800F5328;
@@ -1295,7 +1295,42 @@ loop:
     }
     return best;
 }
-INCLUDE_ASM("asm/funcs", func_800224E0);
+s32 func_800224E0(s32 *arg0) {
+    u8 *new_var2;
+    u8 *p;
+    u8 *end;
+    u8 *base;
+    u32 pad;
+    s32 val;
+    s32 i;
+    s32 *new_var;
+    s32 *ptr;
+
+    p = (&D_8008EB1C) + (D_800A384C * 2);
+    new_var2 = &D_8008DB1C;
+    new_var = (s32 *)(*arg0);
+    if ((!i) && (!i) && (!i)) {
+    }
+    end = p + 2;
+    ptr = new_var;
+    base = new_var2 + (*(s16 *)((u8 *)ptr + 0xA) * 16);
+    val = *(u16 *)(base + *(s16 *)((u8 *)ptr + 0xE) * 2);
+loop:
+    i = 0;
+    do {
+        if (*p == ((val >> (i * 4)) & 0xF)) {
+            return i;
+        }
+        i++;
+        if ((val && val) && val) {
+        }
+    } while (i < 3);
+    p++;
+    if ((s32)p < (s32)end) {
+        goto loop;
+    }
+    return 0;
+}
 void func_80022568(s16 *arg0) {
     arg0[0x136] = 1;
     arg0[0x137] = 0;
