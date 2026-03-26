@@ -18,7 +18,7 @@ extern s32 D_800A2CDC;
 
 extern void func_80082B20(s32, s32);
 extern s32 func_80089024(s32, s32);
-extern s32 D_800A2D14;
+extern volatile s32 D_800A2D14;
 extern s32 D_800A2874;
 extern s32 D_800A2878;
 extern s32 D_800A2CF8;
@@ -124,6 +124,9 @@ s32 func_800859F0(s16 a0) {
 }
 INCLUDE_ASM("asm/funcs", func_80085A40);
 INCLUDE_ASM("asm/funcs", func_80085E4C);
+extern s32 D_800F5750;
+extern s16 D_800F5758;
+extern s16 D_800F575A;
 INCLUDE_ASM("asm/funcs", func_80085EE4);
 
 void func_80085F98(void) {
@@ -347,7 +350,18 @@ extern s32 D_800A2D18;
 
 extern s32 D_800A2D18;
 
-INCLUDE_ASM("asm/funcs", func_800892F8);
+void func_800892F8(void) {
+    if (D_800A2CD8 == 1) {
+        D_800A2CD8 = 0;
+        func_800789B8();
+        D_800A2D14 = 0;
+        D_800A2D18 = 0;
+        func_800892D4(0);
+        func_80078988(D_800A2870);
+        func_80089374(D_800A2870);
+        func_800789C8();
+    }
+}
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
@@ -368,7 +382,24 @@ extern s32 D_800A2D38;
 extern s32 D_800A2D3C;
 extern s32 D_800A2D40;
 
-INCLUDE_ASM("asm/funcs", func_80089384);
+s32 func_80089384(s32 a0, s32 *a1) {
+    int new_var2;
+    int new_var;
+    s32 v0 = a0;
+    if (v0 <= 0) {
+        new_var2 = 1;
+        if (new_var2) {
+            return 0;
+        }
+    }
+    new_var = 0x10000 << D_800A2D04;
+    *a1 = 0x40001010;
+    D_800A2D40 = (s32)a1;
+    D_800A2D3C = 0;
+    D_800A2D38 = v0;
+    a1[1] = new_var - 0x1010;
+    return v0;
+}
 INCLUDE_ASM("asm/funcs", func_800893D8);
 INCLUDE_ASM("asm/funcs", func_800896A0);
 INCLUDE_ASM("asm/funcs", func_800899A8);
@@ -499,7 +530,34 @@ s32 func_8008AF84(void) {
 }
 
 INCLUDE_ASM("asm/funcs", func_8008AF9C);
-INCLUDE_ASM("asm/funcs", func_8008B400);
+void func_8008B400(u8 *a0) {
+    s32 limit = 24;
+    s32 i = 0;
+    s32 one = 1;
+    s32 three = 3;
+    s32 two = 2;
+    u8 *buf = a0;
+    do {
+        s32 off = i << 4;
+        u16 data;
+        s32 bit;
+        data = *((u16 *)((off + D_800A2CDC) + 0xC));
+        bit = D_800A2874 & (one << i);
+        if (bit) {
+            if (data != 0) {
+                *buf = one;
+            } else {
+                *buf = three;
+            }
+        } else if (data != 0) {
+            *buf = two;
+        } else {
+            *buf = 0;
+        }
+        i++;
+        buf++;
+    } while (i < limit);
+}
 INCLUDE_ASM("asm/funcs", func_8008B488);
 INCLUDE_ASM("asm/funcs", func_8008BB24);
 INCLUDE_ASM("asm/funcs", func_8008BD88);
