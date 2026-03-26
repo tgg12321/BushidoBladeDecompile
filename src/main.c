@@ -32,7 +32,7 @@ extern s32 D_80106F28;
 extern s32 func_80078998(s32);
 extern void func_80082AC0(void);
 extern void func_80088740(s32);
-extern void func_8008908C(s32, s32, s32);
+extern void func_8008908C(s32, u32, s32);
 extern s32 D_800A287C;
 extern s32 D_800A2880;
 extern s32 D_800A2884;
@@ -421,7 +421,21 @@ s32 func_80089024(s32 a0, s32 a1) {
     func_80088D0C(3, a0, a1);
     return a1;
 }
-INCLUDE_ASM("asm/funcs", func_8008908C);
+void func_8008908C(s32 arg0, u32 arg1, s32 arg2) {
+    register s32 temp_v0 asm("v0");
+    register s32 temp_a0 asm("a0");
+    s32 temp_v1;
+
+    temp_v0 = arg0 * 2;
+    if (arg2 == 0) {
+        *(u16 *)(temp_v0 + D_800A2CDC) = arg1;
+        __asm__("" ::: "memory");
+        return;
+    }
+    temp_a0 = D_800A2CDC;
+    temp_v1 = D_800A2D04;
+    *(u16 *)(temp_v0 + temp_a0) = arg1 >> temp_v1;
+}
 INCLUDE_ASM("asm/funcs", func_800890D4);
 extern volatile u32 *D_800A2CF0;
 void func_80089214(void) {
