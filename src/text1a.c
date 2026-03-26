@@ -691,7 +691,39 @@ void func_80044F50(s32 a0, s32 a1, s32 a2) {
 void func_80044F80(s32 a0, s32 a1) {
     func_80044E74(a0 + 0x4D, a1);
 }
-INCLUDE_ASM("asm/funcs", func_80044FA0);
+extern s32 D_800A3240;
+extern char D_8001528C[];
+s32 func_80044FA0(s32 a0, s32 a1) {
+    s32 v0;
+    s32 s0;
+
+    s0 = a1 - (s32)func_80045814();
+    if (s0 < 0) {
+        goto set_from_table;
+    }
+    v0 = func_80045808();
+    if (s0 >= v0) {
+        goto set_from_table;
+    }
+    if (D_800A3240 != 0) {
+        s0 = (s32)*(s16 *)((u8 *)&D_800963EE + a0 * 4) << 11;
+    } else {
+        s0 = 0;
+    }
+    v0 = func_800457DC();
+    if (v0 < s0) {
+        func_80079208(D_8001528C, a0, s0 - v0);
+        while (1) {
+            func_800164F8();
+        }
+    }
+    goto do_return;
+set_from_table:
+    s0 = (s32)*(s16 *)((u8 *)&D_800963EE + a0 * 4) << 11;
+do_return:
+    func_80044E74(a0, a1);
+    return s0;
+}
 extern s16 D_800963EE;
 extern s32 func_800457DC(void);
 s32 func_80045080(s32 a0) {
