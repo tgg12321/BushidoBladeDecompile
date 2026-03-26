@@ -785,7 +785,36 @@ void func_800387E8(void) {
     D_800A31F4 = 1;
 }
 INCLUDE_ASM("asm/funcs", func_8003880C);
-INCLUDE_ASM("asm/funcs", func_800388A8);
+s32 func_800388A8(void) {
+    extern u8 D_800A3204;
+    extern u8 D_800A3318;
+    s32 result = 0;
+    u32 buttons;
+    if (D_800A3204 != 0) {
+        D_800A3204 = 0;
+        D_800A3318 = 0;
+    }
+    buttons = D_80102794;
+    if (buttons & 0x400040) {
+        result = -1;
+        func_8005C650(1, 0x7F, 0x7F);
+        if (D_800A3318 != 0) {
+        } else {
+            result = 1;
+        }
+    } else if (buttons & (u32)0x80008000) {
+        func_8005C650(0, 0x7F, 0x7F);
+        D_800A3318 = 0;
+    } else if (buttons & 0x20002000) {
+        func_8005C650(0, 0x7F, 0x7F);
+        D_800A3318 = 1;
+    }
+    func_8006BEC4(0x13, D_800A3318);
+    if (result != 0) {
+        D_800A3204 = 1;
+    }
+    return result;
+}
 INCLUDE_ASM("asm/funcs", func_80038988);
 INCLUDE_ASM("asm/funcs", func_80038C70);
 s32 *func_800392B8(void) {
