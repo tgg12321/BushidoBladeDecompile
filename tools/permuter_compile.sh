@@ -35,4 +35,5 @@ mipsel-linux-gnu-cpp \
   | python3 "$MASPSX" --expand-div --aspsx-version=2.34 \
       "--sdata-syms=$ROOT/sdata_syms.txt" \
       "--sdata-funcs=$ROOT/sdata_funcs.txt" \
+      "--sdata-exclude=$ROOT/sdata_exclude.txt" \
   | mipsel-linux-gnu-as "-I$ROOT/include" -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0 -o "$OUTPUT"

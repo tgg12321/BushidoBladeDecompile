@@ -627,7 +627,30 @@ extern u8 D_80101EC8;
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-INCLUDE_ASM("asm/funcs", func_800375EC);
+void func_800375EC(void) {
+    func_8007A370(1);
+    func_8007A3C8();
+    func_80078958();
+    func_80078A58(0);
+    func_800789B8();
+    D_800A37DC = func_80078978(0xF4000001, 4, 0x2000, 0);
+    D_800A37F0 = func_80078978(0xF4000001, 0x8000, 0x2000, 0);
+    D_800A37FC = func_80078978(0xF4000001, 0x100, 0x2000, 0);
+    D_800A3800 = func_80078978(0xF4000001, 0x2000, 0x2000, 0);
+    D_800A3838 = func_80078978(0xF0000011, 4, 0x2000, 0);
+    D_800A383C = func_80078978(0xF0000011, 0x8000, 0x2000, 0);
+    D_800A3848 = func_80078978(0xF0000011, 0x100, 0x2000, 0);
+    D_800A3850 = func_80078978(0xF0000011, 0x2000, 0x2000, 0);
+    func_800789C8();
+    func_800789A8(D_800A37DC);
+    func_800789A8(D_800A37F0);
+    func_800789A8(D_800A37FC);
+    func_800789A8(D_800A3800);
+    func_800789A8(D_800A3838);
+    func_800789A8(D_800A383C);
+    func_800789A8(D_800A3848);
+    func_800789A8(D_800A3850);
+}
 void func_80037774(void) {
     func_800789B8();
     func_80078988(D_800A37DC);
@@ -744,7 +767,29 @@ INCLUDE_ASM("asm/funcs", func_80038C70);
 s32 *func_800392B8(void) {
     return &D_800F33D8;
 }
-INCLUDE_ASM("asm/funcs", func_800392C8);
+void func_800392C8(void) {
+    u8 val;
+    int new_var;
+    s32 i;
+    s32 j;
+
+    val = 0xFF;
+    i = 0x1F0;
+    D_800A36EC = (u8 *)&D_800F33D8;
+    D_800A36F8 = 0;
+    D_800A3782 = 0;
+loop1:
+    *(&D_80101BF0 + i) = val;
+    i -= 0x10;
+    if (i >= 0) goto loop1;
+
+    new_var = -1;
+    j = 0xB30;
+loop2:
+    *((s16 *)((u8 *)&D_800F68E0 + j)) = new_var;
+    j -= (0, 0x10);
+    if (j >= 0) goto loop2;
+}
 INCLUDE_ASM("asm/funcs", func_80039320);
 INCLUDE_ASM("asm/funcs", func_800393C8);
 INCLUDE_ASM("asm/funcs", func_800395B4);
