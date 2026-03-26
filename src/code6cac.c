@@ -873,7 +873,27 @@ void func_8001C820(void) {
     func_800325E0(a0, (s32)((u8 *)s0 + 0x536));
 }
 INCLUDE_ASM("asm/funcs", func_8001C8DC);
-INCLUDE_ASM("asm/funcs", func_8001CD68);
+void func_8001CD68(s16 *arg0) {
+    s32 val = D_800A3858;
+
+    if (val > 0x2BF1F) {
+        *(s16 *)arg0 = 99;
+        *((u8 *)arg0 + 2) = 59;
+        *((u8 *)arg0 + 3) = 99;
+        return;
+    }
+    {
+        s32 minutes = val / 1800;
+        s32 seconds = val / 30 - minutes * 60;
+        *((u8 *)arg0 + 2) = seconds;
+        {
+            s32 frames;
+            s32 centiseconds = (D_800A3858 % 30) * 100 / 30;
+            *(s16 *)arg0 = minutes;
+            *((u8 *)arg0 + 3) = centiseconds;
+        }
+    }
+}
 INCLUDE_ASM("asm/funcs", func_8001CE60);
 INCLUDE_ASM("asm/funcs", func_8001D790);
 void func_8001D904(void) {
