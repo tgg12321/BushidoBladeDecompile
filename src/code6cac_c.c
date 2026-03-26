@@ -598,6 +598,7 @@ extern u8 D_800A3782;
 extern u8 D_800A3203;
 extern u8 D_800A31FC;
 extern s32 D_800A38C8;
+extern u8 D_80102810;
 extern s32 D_800A3870;
 extern s32 D_800A3688;
 extern u8 D_800A37D0;
@@ -725,8 +726,88 @@ void func_800379D8(void) {
     func_80078998(D_800A3850);
 }
 INCLUDE_ASM("asm/funcs", func_80037A20);
-INCLUDE_ASM("asm/funcs", func_80037AA4);
-INCLUDE_ASM("asm/funcs", func_80037B00);
+s32 func_80037AA4(void) {
+    s32 var_a1;
+    register s32 var_a2 asm("a2");
+    register s32 var_a0 asm("a0");
+    s8 *var_v1;
+    register s32 var_v0 asm("v0");
+    s32 sp_dummy[2];
+
+    var_a1 = 0;
+    var_a0 = 0;
+    var_a2 = D_800A38C8;
+    if (var_a2 > 0) {
+        var_v1 = (s8 *)&D_80102810;
+        do {
+            var_v0 = *(s32 *)(var_v1 + 0x18);
+            var_a1 += 1;
+            var_a0 += var_v0;
+            var_v1 += 0x28;
+        } while (var_a1 < var_a2);
+    }
+    var_v0 = var_a0;
+    if (var_a0 < 0) {
+        var_v0 = var_a0 + 0x1FFF;
+    }
+    var_a0 = var_v0 >> 0xD;
+    return 0xF - var_a0;
+}
+s32 func_80037B00(u8 *arg0) {
+    s32 sp_dummy[2];
+    register s32 var_t1 asm("t1");
+    register s32 var_t3 asm("t3");
+    register s32 var_t2 asm("t2");
+    register s8 *var_a3 asm("a3");
+    register s8 *var_a1 asm("a1");
+    register s8 *var_a2 asm("a2");
+    register s8 *var_t0 asm("t0");
+    register s32 var_v1 asm("v1");
+    register s32 var_v0 asm("v0");
+
+    var_t1 = 0;
+    var_v0 = D_800A38C8;
+    if (var_v0 <= 0) {
+        goto block_end;
+    }
+    var_t3 = var_v0;
+    var_a3 = (s8 *)&D_80102810;
+loop_outer:
+    var_t2 = 0;
+    var_a1 = var_a3;
+    var_a2 = (s8 *)arg0;
+    var_t0 = var_a3 + 0x15;
+loop_inner:
+    var_v1 = (u8)*var_a2;
+    if (var_v1 == 0) {
+        goto block_5c;
+    }
+    var_v0 = (u8)*var_a1;
+    if (var_v1 != var_v0) {
+        goto block_6c;
+    }
+    var_a1 += 1;
+    var_a2 += 1;
+    if ((s32)var_a1 < (s32)var_t0) {
+        goto loop_inner;
+    }
+block_5c:
+    var_t1 += 1;
+    if (var_t2 != 0) {
+        goto block_74;
+    }
+    return 1;
+block_6c:
+    var_t2 = 1;
+    goto block_5c;
+block_74:
+    if (var_t1 < var_t3) {
+        var_a3 += 0x28;
+        goto loop_outer;
+    }
+block_end:
+    return 0;
+}
 extern s32 func_800789E8(s32 *, s32);
 typedef void (*Func79A30_5)(s32 *, s32 *, s32, s32, s32);
 s32 func_80037B90(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
