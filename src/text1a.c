@@ -273,7 +273,34 @@ s32 func_80041650(s32 a0) {
     return -1;
 }
 INCLUDE_ASM("asm/funcs", func_80041688);
-INCLUDE_ASM("asm/funcs", func_800417D0);
+typedef struct { s32 w[4]; } Block16;
+extern s32 D_800F66A0[];
+extern void func_80052930(void *, void *, void *);
+extern void func_80052A88(void *, void *, void *);
+void func_800417D0(s32 *a0) {
+    void (*func)(s32 *, s32 *);
+    s32 *child;
+
+    if (((s16 *)a0)[3] == 1) {
+        return;
+    }
+    if (((s16 *)a0)[3] != 2) {
+        func = (void (*)(s32 *, s32 *))D_800F66A0[((s16 *)a0)[4]];
+        func(a0 + 4, a0 + 14);
+    }
+    child = (s32 *)a0[3];
+    if (child != 0) {
+        if (((s16 *)child)[3] == 0) {
+            func_800417D0(child);
+        }
+        func_80052930((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x38), (void *)((u8 *)a0 + 0x18));
+        func_80052A88((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x4C), (void *)((u8 *)a0 + 0x2C));
+    } else {
+        ((Block16 *)(a0 + 6))[0] = ((Block16 *)(a0 + 14))[0];
+        ((Block16 *)(a0 + 6))[1] = ((Block16 *)(a0 + 14))[1];
+    }
+    ((s16 *)a0)[3] = 1;
+}
 typedef struct { s32 w[4]; } Block16;
 extern s32 D_800F66A0[];
 void func_800418D0(s32 *a0) {
