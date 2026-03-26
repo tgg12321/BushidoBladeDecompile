@@ -346,7 +346,27 @@ void func_8004700C(s32 *a0, s32 *a1, s32 a2) {
     a1[7] = a0[7] + (prod >> 12);
 }
 INCLUDE_ASM("asm/funcs", func_800470B0);
-INCLUDE_ASM("asm/funcs", func_80047210);
+typedef struct {
+    s32 w[8];
+} Block32;
+extern Block32 D_80101E08;
+extern s16 D_800EEDD6;
+extern s16 D_800EEDD8;
+void func_80047210(void) {
+    s16 *new_var;
+    do { *(Block32 *)&D_800EEDD0 = D_80101E08; } while (0);
+    new_var = &D_800EEDD8;
+    {
+        s16 h0 = D_800EEDD6;
+        s16 h1 = D_800EEDD8;
+        D_800EEDD6 = h0 >> 1;
+        {
+            s16 h2;
+            D_800EEDD8 = h1 >> 1;
+            *(new_var + 1) = (*((&D_800EEDD8) + 1)) >> 1;
+        }
+    }
+}
 
 void *func_800472B0(void) {
     return &D_800EEDD0;
