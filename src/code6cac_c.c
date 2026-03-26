@@ -413,7 +413,7 @@ extern u8 D_800A38EC;
 extern u8 D_800A38ED;
 extern u8 D_800A38EE;
 extern s32 D_800A38F4;
-extern u16 D_800A3904;
+extern s16 D_800A3904;
 extern u8 D_800A3907;
 extern s8 D_800A390E;
 extern u8 D_800A390F;
@@ -1069,8 +1069,74 @@ end:
     func_8003AA48();
     func_800828CC(2);
 }
+extern void func_80077AE0(void);
+extern void func_80077B00(void);
+extern u16 func_80035E88(s32);
+extern s32 func_80035EDC(s16);
+extern u16 func_80019488(void);
+extern void func_800194C0(s16);
+extern u16 func_80079154(void);
+extern void func_80019568(s32);
+extern u8 D_800A38AC;
+extern s32 D_800A38D0;
+extern s32 D_800A3908;
+extern s32 D_800A38FC;
+extern u16 D_800A37C4;
+
 INCLUDE_ASM("asm/funcs", func_8003AB44);
-INCLUDE_ASM("asm/funcs", func_8003ACB8);
+s32 func_8003ACB8(void) {
+    s32 temp_s0;
+
+    func_80077AE0();
+    func_8007B2A0(0);
+    D_800A37B8 = 0;
+    D_800A38AC = 0;
+    D_800A38D0 = 0;
+    D_800A3908 = 0;
+    D_800A38FC = 0;
+    func_8003A174();
+    do {
+        func_80019568(1);
+        func_8005C6D0();
+        temp_s0 = func_8003AB44();
+        func_800828CC(2);
+    } while (temp_s0 == 0);
+    func_80077B00();
+    func_800194F4();
+    D_800A37C4 = func_80035E88(D_80106A50);
+    func_8003AA48();
+    func_800828CC(1);
+    func_8003AA48();
+    D_800A38E4 = func_80035EDC(D_800A36C6);
+    D_800A37C4 = func_80019488();
+    func_800828CC(1);
+    func_8003AA48();
+    func_800828CC(1);
+    func_8003AA48();
+    func_800828CC(1);
+    func_8003AA48();
+    func_800194C0(D_800A36C6);
+    D_800A37C4 = func_80079154();
+    func_800828CC(1);
+    func_8003AA48();
+    func_800828CC(1);
+    func_8003AA48();
+    func_800828CC(1);
+    func_8003AA48();
+    {
+        s32 var_v0;
+        if (D_800A38A0 == 0) {
+            var_v0 = (u16)D_800A37C4;
+        } else {
+            var_v0 = D_800A36C6;
+        }
+        D_800A3904 = var_v0;
+    }
+    func_80016888();
+    func_800168D0();
+    func_80078BA8(0xF2000001);
+    return temp_s0;
+}
 INCLUDE_ASM("asm/funcs", func_8003AE5C);
 void func_8003AF40(s32 arg0) {
     if ((&D_8010277E)[arg0] == 0xFF) {
