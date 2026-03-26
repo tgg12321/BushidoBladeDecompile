@@ -614,7 +614,54 @@ INCLUDE_ASM("asm/funcs", func_80027438);
 INCLUDE_ASM("asm/funcs", func_800274BC);
 INCLUDE_ASM("asm/funcs", func_80027640);
 INCLUDE_ASM("asm/funcs", func_800278C0);
-INCLUDE_ASM("asm/funcs", func_8002798C);
+s32 func_8002798C(u8 *a0) {
+    s32 ret = 0;
+    u16 v1 = *(u16 *)(a0 + 0x6A);
+    
+    if (v1 == 6 || v1 == 0x25 || v1 == 0x33 || v1 == 4 || v1 == 0x14) {
+        goto check_88;
+    }
+    {
+        s16 v40 = *(s16 *)(a0 + 0x40);
+        if (v40 < *(u8 *)(a0 + 0xA5)) {
+            goto check_88;
+        }
+        if (!(*(u8 *)(a0 + 0xA6) < v40)) {
+            goto final_1;
+        }
+    }
+    
+check_88:
+    {
+        s16 v88 = *(s16 *)(a0 + 0x88);
+        s32 a0_6a;
+        if (v88 == -1) {
+            goto done;
+        }
+        a0_6a = *(u16 *)(a0 + 0x6A);
+        if ((u16)a0_6a == 0xF) {
+            goto final_1;
+        }
+        if ((u32)(a0_6a - 0x1C) < 2) {
+            goto final_1;
+        }
+        if ((u32)(a0_6a - 0x1E) < 2) {
+            goto final_1;
+        }
+        if ((u32)(a0_6a - 0x20) < 2) {
+            goto final_1;
+        }
+        if ((u16)a0_6a == 0x2B) {
+            goto final_1;
+        }
+        goto done;
+    }
+    
+final_1:
+    ret = 1;
+done:
+    return ret;
+}
 
 
 
