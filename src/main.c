@@ -454,7 +454,38 @@ s32 func_80089384(s32 a0, s32 *a1) {
 }
 INCLUDE_ASM("asm/funcs", func_800893D8);
 INCLUDE_ASM("asm/funcs", func_800896A0);
-INCLUDE_ASM("asm/funcs", func_800899A8);
+extern s32 D_800A2D38;
+extern s32 *D_800A2D40;
+extern void func_800896A0(void);
+void func_800899A8(s32 a0) {
+    s32 count;
+    s32 i;
+    volatile s32 pad;
+    count = D_800A2D38;
+    i = 0;
+    if (count > 0) {
+        u32 stopbit = 0x40000000;
+        u32 highbit = 0x80000000;
+        s32 marked = a0 | highbit;
+        s32 n = count;
+        s32 *ptr = D_800A2D40;
+        do {
+            s32 val;
+            __asm__("nop");
+            val = *ptr;
+            if (val & stopbit) {
+                break;
+            }
+            if (val == a0) {
+                *ptr = marked;
+                break;
+            }
+            i++;
+            ptr = (s32 *)((u8 *)ptr + 8);
+        } while (i < n);
+    }
+    func_800896A0();
+}
 
 void func_80089A24(s32 a0, s32 a1) {
     func_80089A48(a0, a1, 0xCA, 0xCB);
