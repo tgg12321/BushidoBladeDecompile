@@ -712,7 +712,34 @@ INCLUDE_ASM("asm/funcs", func_8002E6B0);
 INCLUDE_ASM("asm/funcs", func_8002E838);
 INCLUDE_ASM("asm/funcs", func_8002EA24);
 INCLUDE_ASM("asm/funcs", func_8002EBDC);
-INCLUDE_ASM("asm/funcs", func_8002EECC);
+void func_8002EECC(void *arg0, void *arg1) {
+    s16 temp_a3;
+    s16 temp_t0;
+    s16 temp_t1;
+    s16 temp_t2;
+    s16 temp_v0;
+    s16 temp_v1;
+    s32 temp_a2;
+    s32 temp_v1_2;
+
+    temp_t2 = *(s16 *)((u8 *)arg0 + 0xA);
+    temp_t1 = *(s16 *)((u8 *)arg0 + 0xE);
+    temp_t0 = *(s16 *)((u8 *)arg0 + 8);
+    temp_a3 = *(s16 *)((u8 *)arg0 + 0x10);
+    temp_a2 = (temp_t2 * temp_t1) - (temp_t0 * temp_a3);
+    temp_v1 = *(s16 *)((u8 *)arg0 + 2);
+    temp_v0 = *(s16 *)((u8 *)arg0 + 4);
+    temp_v1_2 = (s32) ((*(s16 *)((u8 *)arg0 + 0) * (temp_a2 >> 0xC)) + (*(s16 *)((u8 *)arg0 + 6) * ((s32) ((temp_v1 * temp_a3) - (temp_v0 * temp_t1)) >> 0xC)) + (*(s16 *)((u8 *)arg0 + 0xC) * ((s32) ((temp_v0 * temp_t0) - (temp_v1 * temp_t2)) >> 0xC))) >> 0xC;
+    *(s16 *)((u8 *)arg1 + 0) = (s16) (temp_a2 / temp_v1_2);
+    *(s16 *)((u8 *)arg1 + 2) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 0x10)) - (*(s16 *)((u8 *)arg0 + 4) * *(s16 *)((u8 *)arg0 + 0xE))) / temp_v1_2);
+    *(s16 *)((u8 *)arg1 + 4) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 4) * *(s16 *)((u8 *)arg0 + 8)) - (*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 0xA))) / temp_v1_2);
+    *(s16 *)((u8 *)arg1 + 6) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 6) * *(s16 *)((u8 *)arg0 + 0x10)) - (*(s16 *)((u8 *)arg0 + 0xA) * *(s16 *)((u8 *)arg0 + 0xC))) / temp_v1_2);
+    *(s16 *)((u8 *)arg1 + 8) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 4) * *(s16 *)((u8 *)arg0 + 0xC)) - (*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 0x10))) / temp_v1_2);
+    *(s16 *)((u8 *)arg1 + 0xA) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 0xA)) - (*(s16 *)((u8 *)arg0 + 4) * *(s16 *)((u8 *)arg0 + 6))) / temp_v1_2);
+    *(s16 *)((u8 *)arg1 + 0xC) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 8) * *(s16 *)((u8 *)arg0 + 0xC)) - (*(s16 *)((u8 *)arg0 + 6) * *(s16 *)((u8 *)arg0 + 0xE))) / temp_v1_2);
+    *(s16 *)((u8 *)arg1 + 0xE) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 0xE)) - (*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 0xC))) / temp_v1_2);
+    *(s16 *)((u8 *)arg1 + 0x10) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 6)) - (*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 8))) / temp_v1_2);
+}
 INCLUDE_ASM("asm/funcs", func_8002F2D0);
 INCLUDE_ASM("asm/funcs", func_8002F770);
 INCLUDE_ASM("asm/funcs", func_8002FC80);
