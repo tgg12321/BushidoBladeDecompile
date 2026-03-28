@@ -765,13 +765,41 @@ extern u8 D_8008E338;
 extern u8 D_800A36F2;
 extern u8 D_8008E338;
 extern u8 D_800A36F2;
-extern u8 D_8008E338;
-extern u8 D_800A36F2;
-extern u8 D_8008E338;
-extern u8 D_800A36F2;
-extern u8 D_8008E338;
-extern u8 D_800A36F2;
-INCLUDE_ASM("asm/funcs", func_8003047C);
+
+void func_8003047C(u8 *a0) {
+    s32 i;
+    u8 *table;
+    s32 neg1;
+    u8 *a2;
+    s16 val;
+    s16 idx;
+
+    *(u16 *)(a0 + 0x330) = 0;
+    i = 0;
+    table = &D_8008E338;
+    neg1 = -1;
+    a2 = a0;
+    goto loop_start;
+loop_start:
+    idx = *(s16 *)(a0 + 0xA);
+    val = (s8)*(table + idx * 5 + i);
+    *(s16 *)(a2 + 0x332) = val;
+    if (val != neg1) {
+        u16 cnt = *(u16 *)(a0 + 0x330);
+        *(u16 *)(a0 + 0x330) = cnt + 1;
+    }
+    i++;
+    if (i < 5) {
+        a2 += 2;
+        goto loop_start;
+    }
+
+    idx = *(s16 *)(a0 + 0xA);
+    {
+        s16 idx2 = *(s16 *)(a0 + 0x4);
+        *(&D_800A36F2 + idx2) = *(&D_8008E338 + idx * 5);
+    }
+}
 
 
 
