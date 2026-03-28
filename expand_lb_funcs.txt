@@ -1,0 +1,2 @@
+# Functions that need lb->lbu+sll+sra expansion (ASPSX behavior)
+func_8003047C
