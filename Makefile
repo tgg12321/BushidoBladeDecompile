@@ -94,9 +94,15 @@ $(EXE): $(BIN)
 # These are compiled with -G8 and use sdata_syms.txt for selective GP-rel.
 GP_FILES :=
 
+# -- Per-file lb/lh expansion opt-in --
+# ASPSX expands lb→lbu+sll+sra and lh→lhu+sll+sra in certain contexts.
+# These flags replicate that behavior via maspsx for files that need it.
+EXPAND_LB_FILES := code6cac_b
+EXPAND_LH_FILES :=
+
 # Helper: resolve CC/MASPSX flags based on whether file needs GP-relative
 cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))
-maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))
+maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(EXPAND_LB_FILES)), --expand-lb)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)
 
 # -- Compile C source (decompiled functions) --
 # Pipeline: cpp | cc1 | maspsx | as -> .o
