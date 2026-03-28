@@ -1120,7 +1120,41 @@ void func_800397D4(void) {
     D_800A37D0 = 0;
     D_800A3834 = 5;
 }
-INCLUDE_ASM("asm/funcs", func_8003984C);
+extern s32 func_80053584(s32 *, s32 *, s32 *, s32 *);
+extern s32 func_80054434(void);
+void func_8003984C(s32 *arg0, s32 *arg1, s32 *arg2) {
+    s32 sp10[3];
+    s32 sp20[3];
+    s32 sp30[4];
+    s32 sp40[2];
+    s32 mid_x, mid_y, mid_z;
+    s32 result;
+
+    mid_x = (s32)(arg0[0x198 / 4] + arg0[0x1A4 / 4]) / 2;
+    sp10[0] = mid_x;
+    mid_y = (s32)(arg0[0x19C / 4] + arg0[0x1A8 / 4]) / 2;
+    sp10[1] = mid_y - 0x190;
+    mid_z = (s32)(arg0[0x1A0 / 4] + arg0[0x1AC / 4]) / 2;
+    sp20[0] = mid_x;
+    sp20[1] = mid_y + 0x190;
+    sp10[2] = mid_z;
+    sp20[2] = mid_z;
+    if (func_80053584(sp10, sp20, sp30, sp40) != 0) {
+        result = func_80054434();
+        *arg1 = result;
+        if (result == 7) {
+            goto neg;
+        }
+        if (result == 0) {
+            goto neg;
+        }
+        *arg2 = ((0x2A >> result) ^ 1) & 1;
+    } else {
+        *arg1 = -1;
+neg:
+        *arg2 = -1;
+    }
+}
 INCLUDE_ASM("asm/funcs", func_8003993C);
 void func_8003A174(void) {
     s32 neg1;
