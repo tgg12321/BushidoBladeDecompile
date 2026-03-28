@@ -873,7 +873,31 @@ void func_80033510(void) {
         } while (i >= 0);
     }
 }
-INCLUDE_ASM("asm/funcs", func_80033550);
+void func_80033550(s32 *arg0)
+{
+  int new_var;
+  register s32 *a3_arg asm("a3") = arg0;
+  s32 i;
+  s32 w0;
+  s32 w1;
+  s32 w2;
+  s32 idx;
+  i = 0;
+  loop:;
+  if ((*(&D_800A3918 + i)) == 0) goto found;
+  i++;
+  if (i < 6) goto loop;
+  found:;
+  if (i == 6) return;
+  *(&D_800A3918 + i) = 1;
+  new_var = i * 12;
+  do { idx = new_var; w0 = a3_arg[0]; } while (0);
+  w1 = a3_arg[1];
+  w2 = a3_arg[2];
+  *((s32 *) (((u8 *) (&D_80107850)) + idx)) = w0;
+  *((s32 *) (((u8 *) (&D_80107854)) + idx)) = w1;
+  *((s32 *) (((u8 *) (&D_80107858)) + idx)) = w2;
+}
 
 INCLUDE_ASM("asm/funcs", func_800335D8);
 void func_80033898(void) {
