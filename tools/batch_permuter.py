@@ -56,7 +56,8 @@ CPP_DEFS = ("-Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx "
             "-D_LANGUAGE_C -DLANGUAGE_C -DPERMUTER").split()
 AS_FLAGS = "-Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0".split()
 MASPSX_FLAGS = ("--expand-div --aspsx-version=2.34 "
-                "--sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt").split()
+                "--sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt "
+                "--sdata-exclude=sdata_exclude.txt").split()
 
 LOAD_ADDR = 0x80010000
 EXE_HEADER = 0x800
@@ -192,6 +193,12 @@ def postprocess_m2c(c_code, func_name, src_file):
     declared = set()
     func_body_started = False
 
+    # Pre-scan existing declarations to avoid redeclarations
+    for line in lines:
+        dm = re.match(r'\s+(?:s32|u32|s16|u16|s8|u8|void\s*\*)\s+(sp[0-9A-Fa-f]+|saved_reg_\w+|subroutine_arg\d+)\b', line)
+        if dm:
+            declared.add(dm.group(1))
+
     for line in lines:
         if re.match(r'.*\)\s*\{', line) and not func_body_started:
             func_body_started = True
@@ -209,7 +216,7 @@ def postprocess_m2c(c_code, func_name, src_file):
 
     # Step 5: Fix undeclared D_XXXX externs
     used_globals = set(re.findall(r'\bD_[0-9A-Fa-f]{8}\b', result))
-    declared_globals = set(re.findall(r'extern\s+\w+\s+(D_[0-9A-Fa-f]{8})', result))
+    declared_globals = set(re.findall(r'extern\s+.*?(D_[0-9A-Fa-f]{8})', result))
     for g in sorted(used_globals - declared_globals):
         result = ("extern s32 %s;\n" % g) + result
 
@@ -233,7 +240,13 @@ def postprocess_m2c(c_code, func_name, src_file):
         fix_deref, result
     )
 
-    # Step 8: Inline type definitions (permuter can't find common.h)
+    # Step 8: Strip function prototypes to K&R style (avoids arg count mismatches)
+    # m2c may infer wrong arg counts; K&R func() accepts any args in C89
+    result = re.sub(
+        r'^((?:extern\s+)?(?:s32|u32|void|s16|u16|s8|u8)\s+\*?\s*func_[0-9A-Fa-f]{8})\s*\([^)]+\)\s*;(.*)',
+        r'\1();\2', result, flags=re.MULTILINE)
+
+    # Step 9: Inline type definitions (permuter can't find common.h)
     # Remove any #include "common.h" since permuter preprocesses base.c standalone
     result = re.sub(r'#include\s+"common\.h"\s*\n?', '', result)
     result = re.sub(r'#include\s+"include_asm\.h"\s*\n?', '', result)
