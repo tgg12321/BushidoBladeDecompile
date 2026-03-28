@@ -1,149 +1,88 @@
 diff --git a/maspsx.py b/maspsx.py
-index e52462c..0816cd7 100644
+index 0816cd7..93940f2 100644
 --- a/maspsx.py
 +++ b/maspsx.py
-@@ -21,6 +21,12 @@ def main() -> None:
+@@ -16,6 +16,7 @@ def main() -> None:
+     parser.add_argument("--gnu-as-path", default="mipsel-linux-gnu-as")
+     parser.add_argument("--dont-force-G0", action="store_true")
+     parser.add_argument("--expand-div", action="store_true")
++    parser.add_argument("--expand-lb", action="store_true")
+     parser.add_argument("--macro-inc", action="store_true")
+     parser.add_argument("--dont-expand-li", action="store_true")
      parser.add_argument("--force-stdin", action="store_true")
-     parser.add_argument("--use-comm-section", action="store_true")
-     parser.add_argument("--use-comm-for-lcomm", action="store_true")
-+    parser.add_argument("--sdata-syms", type=str, default=None,
-+                        help="Path to file listing external .sdata symbol names (one per line)")
-+    parser.add_argument("--sdata-funcs", type=str, default=None,
-+                        help="Path to file listing function names that should use GP-relative sdata addressing")
-+    parser.add_argument("--sdata-exclude", type=str, default=None,
-+                        help="Path to file listing per-function sdata symbol exclusions (func: sym1, sym2)")
-     # decomp.me debugging
-     parser.add_argument("--print-output", action="store_true")
-     parser.add_argument("--print-input", action="store_true")
-@@ -115,6 +121,36 @@ def main() -> None:
-     if args.dont_expand_li and expand_li:
-         expand_li = False
- 
-+    # Load external .sdata symbol list if provided
-+    sdata_sym_list = []
-+    if args.sdata_syms:
-+        with open(args.sdata_syms, "r", encoding="utf") as f:
-+            sdata_sym_list = [line.strip() for line in f if line.strip() and not line.startswith("#")]
-+
-+    # Load per-function sdata list if provided
-+    sdata_func_list = []
-+    if args.sdata_funcs:
-+        with open(args.sdata_funcs, "r", encoding="utf") as f:
-+            sdata_func_list = [line.strip() for line in f if line.strip() and not line.startswith("#")]
-+
-+    # Load per-function sdata exclusions if provided
-+    # Format: func_name: sym1, sym2, sym3
-+    sdata_exclude_map = {}
-+    if args.sdata_exclude:
-+        with open(args.sdata_exclude, "r", encoding="utf") as f:
-+            for line in f:
-+                line = line.strip()
-+                if not line or line.startswith("#"):
-+                    continue
-+                if ":" in line:
-+                    func_name, syms = line.split(":", 1)
-+                    func_name = func_name.strip()
-+                    sym_set = set(s.strip() for s in syms.split(",") if s.strip())
-+                    if func_name in sdata_exclude_map:
-+                        sdata_exclude_map[func_name].update(sym_set)
-+                    else:
-+                        sdata_exclude_map[func_name] = sym_set
-+
-     maspsx_processor = MaspsxProcessor(
+@@ -155,6 +156,7 @@ def main() -> None:
          in_lines,
          sdata_limit=sdata_limit,
-@@ -129,6 +165,9 @@ def main() -> None:
-         gp_allow_la=gp_allow_la,
-         use_comm_section=args.use_comm_section,
-         use_comm_for_lcomm=args.use_comm_for_lcomm,
-+        sdata_sym_list=sdata_sym_list,
-+        sdata_func_list=sdata_func_list,
-+        sdata_exclude_map=sdata_exclude_map,
-     )
-     try:
-         out_lines = maspsx_processor.process_lines()
+         expand_div=args.expand_div,
++        expand_lb=args.expand_lb,
+         expand_li=expand_li,
+         nop_at_expansion=nop_at_expansion,
+         nop_mflo_mfhi=nop_mflo_mfhi,
 diff --git a/maspsx/__init__.py b/maspsx/__init__.py
-index 19284f2..eb2d7ec 100644
+index eb2d7ec..5b747fa 100644
 --- a/maspsx/__init__.py
 +++ b/maspsx/__init__.py
-@@ -219,7 +219,9 @@ def expand_load_immediate(line: str) -> List[str]:
-     r_dest = match.group(1)
-     operand = int(match.group(2), 0)
+@@ -385,6 +385,7 @@ class MaspsxProcessor:
+         lines: List[str],
+         sdata_limit=0,
+         expand_div=False,
++        expand_lb=False,
+         expand_li=False,
+         nop_at_expansion=False,
+         nop_mflo_mfhi=True,
+@@ -404,6 +405,7 @@ class MaspsxProcessor:
+         self.sdata_limit = sdata_limit
  
--    if 0 < operand < 0x10000:
-+    if 0 < operand <= 0x7FFF:
-+        res.append(f"addiu\t{r_dest},$zero,{operand}")
-+    elif 0x7FFF < operand < 0x10000:
-         res.append(f"ori\t{r_dest},$zero,{operand}")
-     elif operand >= 0x10000:
-         res.append(f"lui\t{r_dest},({operand} >> 16) & 0xFFFF")
-@@ -393,6 +395,9 @@ class MaspsxProcessor:
-         gp_allow_la=False,
-         use_comm_section=False,
-         use_comm_for_lcomm=False,
-+        sdata_sym_list=None,
-+        sdata_func_list=None,
-+        sdata_exclude_map=None,
-     ):
-         self.lines = [x.strip() for x in lines]
+         self.expand_div = expand_div
++        self.expand_lb = expand_lb
+         self.expand_li = expand_li
  
-@@ -419,6 +424,21 @@ class MaspsxProcessor:
-         self.sdata_entries: dict[str, int] = {}
+         self.nop_at_expansion = nop_at_expansion
+@@ -631,7 +633,7 @@ class MaspsxProcessor:
+         return ""  # warn user?
  
-         self.comm_symbols: set[str] = set()
-+        self.sdata_sym_list = sdata_sym_list or []
-+        self.sdata_func_set = set(sdata_func_list) if sdata_func_list else set()
-+        self.sdata_exclude_map = sdata_exclude_map or {}
-+        self.current_func = None
-+
-+    def _sdata_allowed_for_current_func(self, symbol=None) -> bool:
-+        if not self.sdata_func_set:
-+            return True
-+        if self.current_func not in self.sdata_func_set:
-+            return False
-+        # Check per-function symbol exclusions
-+        if symbol and self.current_func in self.sdata_exclude_map:
-+            if symbol in self.sdata_exclude_map[self.current_func]:
-+                return False
-+        return True
+     def _uses_gp(self, line: str) -> bool:
+-        if self.sdata_limit == 0:
++        if self.sdata_limit == 0 and not self.sdata_sym_list:
+             return False
  
-     def preprocess_lines(self) -> None:
-         in_sdata = False
-@@ -526,6 +546,11 @@ class MaspsxProcessor:
- 
-         self.preprocess_lines()
- 
-+        # Inject external .sdata symbols (for GP-relative addressing of externs)
-+        for sym in self.sdata_sym_list:
-+            if sym not in self.sdata_entries:
-+                self.sdata_entries[sym] = 4  # default size; exact size doesn't matter for GP-rel
-+
-         res = []
-         in_include_asm_hack = False
-         for i, line in enumerate(self.lines):
-@@ -851,6 +876,7 @@ class MaspsxProcessor:
- 
-             elif line.startswith(".ent\t"):
-                 # enforce noreorder for each function
-+                self.current_func = line.split("\t")[1].strip()
-                 res.append(line)
-                 res.append(".set\tnoreorder")
- 
-@@ -918,7 +944,7 @@ class MaspsxProcessor:
-                     gp_rel = f"%gp_rel({symbol})($gp)"
+         line = strip_comments(line)
+@@ -653,7 +655,7 @@ class MaspsxProcessor:
+                     symbol = operand
                      gp_allowed = True
  
 -                if gp_allowed and (
 +                if gp_allowed and self._sdata_allowed_for_current_func(symbol) and (
-                     symbol in self.sdata_entries or symbol in self.sbss_entries
+                     symbol in self.sbss_entries or symbol in self.sdata_entries
                  ):
-                     res.append(f"{op}\t{r_dest},{gp_rel}")
-@@ -1008,7 +1034,7 @@ class MaspsxProcessor:
-                 if op == "la" and not self.gp_allow_la:
-                     gp_allowed = False
+                     return True
+@@ -912,6 +914,15 @@ class MaspsxProcessor:
  
--                if gp_allowed and (
-+                if gp_allowed and self._sdata_allowed_for_current_func(symbol) and (
-                     symbol in self.sdata_entries or symbol in self.sbss_entries
-                 ):
-                     res.append(f"{op}\t{r_dest},{gp_rel}")
+         op, *rest = line.split()
+ 
++        # --expand-lb: transform lb/lh into lbu/lhu + sign extension
++        expand_lb_shift = 0
++        if self.expand_lb and op in ("lb", "lh"):
++            expand_lb_shift = 24 if op == "lb" else 16
++            unsigned_op = "lbu" if op == "lb" else "lhu"
++            # Transform op and line for downstream processing
++            line = unsigned_op + line[len(op):]
++            op = unsigned_op
++
+         if op in load_mnemonics:
+             rest = " ".join(rest)
+             r_source, r_dest, operand, is_addend, needs_expanding = parse_load_or_store(
+@@ -1016,6 +1027,13 @@ class MaspsxProcessor:
+                 )
+                 res.extend(extra_nops)
+ 
++            # --expand-lb: append sign extension after the load + nop handling
++            if expand_lb_shift:
++                res.extend([
++                    f"sll	{r_dest},{r_dest},{expand_lb_shift}",
++                    f"sra	{r_dest},{r_dest},{expand_lb_shift}",
++                ])
++
+         elif op in store_mnemonics or (op == "la" and self.sdata_limit > 0):
+             rest = " ".join(rest)
+             r_source, r_dest, operand, is_addend, _ = parse_load_or_store(rest)
