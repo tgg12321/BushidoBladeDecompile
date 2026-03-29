@@ -39,6 +39,9 @@ include/m2c_context.h
 # Local model drafts (generated, not source)
 local_drafts/
 
+# m2c triage compile tests
+m2c_triage/
+
 # Triage/analysis outputs
 *_results.csv
 *.log
