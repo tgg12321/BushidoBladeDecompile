@@ -14,6 +14,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 ROOT = Path(__file__).resolve().parent.parent
 M2C = ROOT / "tools" / "m2c" / "m2c.py"
+M2C_CONTEXT = ROOT / "include" / "m2c_context.h"
 CC1 = ROOT / "tools" / "gcc-2.7.2" / "build" / "cc1"
 MASPSX = ROOT / "tools" / "maspsx" / "maspsx.py"
 PERMUTER = ROOT / "tools" / "decomp-permuter" / "permuter.py"
@@ -28,6 +29,98 @@ typedef unsigned short u16;
 typedef signed short s16;
 typedef unsigned int u32;
 typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
+
+typedef struct GameObj {
+    /* 0x00 */ u8 field_00;
+    /* 0x01 */ u8 field_01;
+    /* 0x02 */ s16 field_02;
+    /* 0x04 */ s16 field_04;
+    /* 0x06 */ s16 field_06;
+    /* 0x08 */ s16 field_08;
+    /* 0x0A */ s16 field_0A;
+    /* 0x0C */ s16 field_0C;
+    /* 0x0E */ s16 field_0E;
+    /* 0x10 */ s16 field_10;
+    /* 0x12 */ s16 field_12;
+    /* 0x14 */ s16 field_14;
+    /* 0x16 */ s16 field_16;
+    /* 0x18 */ s32 field_18;
+    /* 0x1C */ s32 field_1C;
+    /* 0x20 */ s32 field_20;
+    /* 0x24 */ s32 field_24;
+    /* 0x28 */ s32 field_28;
+    /* 0x2C */ s32 field_2C;
+    /* 0x30 */ s16 field_30;
+    /* 0x32 */ s16 field_32;
+    /* 0x34 */ s16 field_34;
+    /* 0x36 */ s16 field_36;
+    /* 0x38 */ s16 field_38;
+    /* 0x3A */ s16 field_3A;
+    /* 0x3C */ s16 field_3C;
+    /* 0x3E */ s16 field_3E;
+    /* 0x40 */ s16 field_40;
+    /* 0x42 */ s16 field_42;
+    /* 0x44 */ s32 field_44;
+    /* 0x48 */ s32 field_48;
+    /* 0x4C */ s32 field_4C;
+    /* 0x50 */ s32 field_50;
+    /* 0x54 */ s16 field_54;
+    /* 0x56 */ s16 field_56;
+    /* 0x58 */ s32 field_58;
+    /* 0x5C */ s16 field_5C;
+    /* 0x5E */ s16 field_5E;
+    /* 0x60 */ s32 field_60;
+    /* 0x64 */ s32 field_64;
+    /* 0x68 */ s32 field_68;
+    /* 0x6C */ s32 field_6C;
+    /* 0x70 */ s32 field_70;
+    /* 0x74 */ s32 field_74;
+    /* 0x78 */ s32 field_78;
+    /* 0x7C */ s32 field_7C;
+    /* 0x80 */ s32 field_80;
+    /* 0x84 */ s16 field_84;
+    /* 0x86 */ s16 field_86;
+    /* 0x88 */ s16 field_88;
+    /* 0x8A */ s16 field_8A;
+    /* 0x8C */ s32 field_8C;
+    /* 0x90 */ s32 field_90;
+    /* 0x94 */ s32 field_94;
+    /* 0x98 */ s32 field_98;
+    /* 0x9C */ s32 field_9C;
+    /* 0xA0 */ s32 field_A0;
+    /* 0xA4 */ s32 field_A4;
+    /* 0xA8 */ s32 field_A8;
+    /* 0xAC */ s32 field_AC;
+    /* 0xB0 */ s32 field_B0;
+    /* 0xB4 */ s32 field_B4;
+    /* 0xB8 */ s32 field_B8;
+    /* 0xBC */ s32 field_BC;
+    /* 0xC0 */ s32 field_C0;
+    /* 0xC4 */ s32 field_C4;
+    /* 0xC8 */ s32 field_C8;
+    /* 0xCC */ s32 field_CC;
+    /* 0xD0 */ s32 field_D0;
+    /* 0xD4 */ s32 field_D4;
+    /* 0xD8 */ s32 field_D8;
+    /* 0xDC */ s32 field_DC;
+    /* 0xE0 */ s32 field_E0;
+    /* 0xE4 */ s32 field_E4;
+    /* 0xE8 */ s32 field_E8;
+    /* 0xEC */ s32 field_EC;
+    /* 0xF0 */ s32 field_F0;
+    /* 0xF4 */ s32 field_F4;
+    /* 0xF8 */ s16 field_F8;
+    /* 0xFA */ s16 field_FA;
+    /* 0xFC */ s32 field_FC;
+} GameObj;
+
+typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
+typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
+typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
+
+extern s16 D_800973FC[];
 """
 
 
@@ -75,7 +168,8 @@ def run_m2c(func):
         return None
     try:
         result = subprocess.run(
-            [sys.executable, str(M2C), "--valid-syntax", "--target", "mips-gcc-c", str(asm_file)],
+            [sys.executable, str(M2C), "--valid-syntax", "--target", "mips-gcc-c",
+             "--context", str(M2C_CONTEXT), str(asm_file)],
             capture_output=True, text=True, timeout=30
         )
         if result.returncode == 0 and result.stdout.strip():
@@ -146,7 +240,9 @@ def compile_to_obj(c_code, output_path):
         p_cpp.stdin.close()
 
         p_as.wait(timeout=30)
-        return p_as.returncode == 0 and output_path.exists()
+        # Also check cc1 succeeded (otherwise as gets empty input and "succeeds")
+        p_cc1.wait(timeout=5)
+        return p_as.returncode == 0 and p_cc1.returncode == 0 and output_path.exists()
     except Exception:
         return False
 
@@ -185,43 +281,68 @@ def build_target_obj(func, output_path):
         return False
 
 
-def score_function(func, c_code, tmpdir):
-    """Set up permuter dir and score. Returns score or 99999."""
-    perm_dir = Path(tmpdir) / func
-    perm_dir.mkdir(parents=True, exist_ok=True)
+def disasm_function(obj_path, func_name):
+    """Disassemble a .o file and extract instruction mnemonics."""
+    try:
+        result = subprocess.run(
+            ["mipsel-linux-gnu-objdump", "-d", "-j", ".text", str(obj_path)],
+            capture_output=True, text=True, timeout=10
+        )
+        if result.returncode != 0:
+            return []
+        instrs = []
+        for line in result.stdout.split('\n'):
+            # Match disassembly lines: "   0:  27bdffe0    addiu   sp,sp,-32"
+            m = re.match(r'\s+[0-9a-f]+:\s+[0-9a-f]+\s+(\w+)', line)
+            if m:
+                instrs.append(m.group(1))
+        return instrs
+    except Exception:
+        return []
 
-    # Write base.c
-    base_c = perm_dir / "base.c"
-    with open(base_c, 'w') as f:
-        f.write(c_code)
+
+def score_function(func, c_code, tmpdir):
+    """Score by comparing disassembly of compiled vs target. Lower = better."""
+    work_dir = Path(tmpdir) / func
+    work_dir.mkdir(parents=True, exist_ok=True)
 
     # Build target.o
-    target_o = perm_dir / "target.o"
+    target_o = work_dir / "target.o"
     if not build_target_obj(func, target_o):
         return 99999
 
     # Compile base.c
-    compiled_o = perm_dir / "compiled.o"
+    compiled_o = work_dir / "compiled.o"
     if not compile_to_obj(c_code, compiled_o):
         return 99999
 
-    # Copy compile.sh
-    compile_sh = perm_dir / "compile.sh"
-    shutil.copy2(COMPILE_SH, compile_sh)
-    compile_sh.chmod(0o755)
+    # Disassemble both and compare
+    target_instrs = disasm_function(target_o, func)
+    compiled_instrs = disasm_function(compiled_o, func)
 
-    # Run permuter in debug mode
-    try:
-        result = subprocess.run(
-            [sys.executable, str(PERMUTER), str(perm_dir), "--debug"],
-            capture_output=True, text=True, timeout=60, cwd=str(ROOT)
-        )
-        m = re.search(r'base score = (\d+)', result.stdout + result.stderr)
-        if m:
-            return int(m.group(1))
-    except Exception:
-        pass
-    return 99999
+    if not target_instrs or not compiled_instrs:
+        return 99999
+
+    # Simple diff score: count mismatched instructions
+    # Uses LCS-like approach for instruction alignment
+    n, m = len(target_instrs), len(compiled_instrs)
+    size_diff = abs(n - m)
+
+    # Count matching instructions (in order)
+    matches = 0
+    j = 0
+    for i in range(n):
+        while j < m and compiled_instrs[j] != target_instrs[i]:
+            j += 1
+        if j < m:
+            matches += 1
+            j += 1
+
+    # Score: total instructions - 2*matches + size difference
+    # (0 = perfect match, higher = worse)
+    total = n + m
+    score = total - 2 * matches + size_diff * 5
+    return score
 
 
 def process_one(args):
