@@ -1059,7 +1059,44 @@ void func_80039320(void) {
     D_800A3714 = 0;
 }
 INCLUDE_ASM("asm/funcs", func_800393C8);
-INCLUDE_ASM("asm/funcs", func_800395B4);
+void func_800395B4(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
+    extern u8 D_800A3208;
+    extern u8 D_800A379C;
+    u8 *slot;
+    u8 idx;
+    u8 sentinel;
+
+    if (D_800A3208 == 0) {
+        idx = D_800A379C;
+        slot = &D_80101BF0 + (u32)(idx & 0xFF) * 0x10;
+        if ((u32)(idx & 0xFF) < 0x20U) {
+            sentinel = 0xFF;
+loop:
+            if (*slot != sentinel) {
+                D_800A379C = idx + 1;
+                idx = idx + 1;
+                slot += 0x10;
+                if ((u32)(idx & 0xFF) < 0x20U) {
+                    goto loop;
+                }
+            }
+        }
+        if (D_800A379C != 0x20) {
+            u8 tmp = D_800A36F8;
+            slot[1] = arg0;
+            slot[2] = arg1;
+            slot[0] = tmp;
+            *(s16 *)&slot[4] = (s16)arg2[0];
+            *(s16 *)&slot[6] = (s16)arg2[1];
+            *(s16 *)&slot[8] = (s16)arg2[2];
+            if (arg3 != NULL) {
+                *(u16 *)&slot[0xA] = arg3[0];
+                *(u16 *)&slot[0xC] = arg3[1];
+                *(u16 *)&slot[0xE] = arg3[2];
+            }
+        }
+    }
+}
 void func_80039680(u8 *a0) {
     s16 idx;
     u8 *base;
