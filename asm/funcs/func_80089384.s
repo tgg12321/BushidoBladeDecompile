@@ -1,4 +1,4 @@
-glabel func_80089384
+glabel spu_IrqHandler
     /* 79B84 80089384 21108000 */  addu       $v0, $a0, $zero
     /* 79B88 80089388 0300401C */  bgtz       $v0, .L80089398
     /* 79B8C 8008938C 0040033C */   lui       $v1, (0x40001010 >> 16)
@@ -22,4 +22,4 @@ glabel func_80089384
   .L800893D0:
     /* 79BD0 800893D0 0800E003 */  jr         $ra
     /* 79BD4 800893D4 00000000 */   nop
-endlabel func_80089384
+endlabel spu_IrqHandler

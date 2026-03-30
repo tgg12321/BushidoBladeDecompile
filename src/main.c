@@ -4,7 +4,7 @@
 
 /* Forward declarations */
 extern void func_80089D60(s32);
-extern void func_800885CC(s32);
+extern void spu_InitEx(s32);
 extern s32 func_8008AEB0(s32);
 extern void func_80084974(s16, s16);
 extern s16 func_800880E8(s32, s16, s32, s32);
@@ -17,7 +17,7 @@ extern s32 D_800A2D10;
 extern s32 D_800A2CDC;
 
 extern void func_80082B20(s32, s32);
-extern s32 func_80089024(s32, s32);
+extern s32 spu_TransferDirect(s32, s32);
 extern volatile s32 D_800A2D14;
 extern s32 D_800A2874;
 extern s32 D_800A2878;
@@ -32,7 +32,7 @@ extern s32 D_80106F28;
 extern s32 func_80078998(s32);
 extern void func_80082AC0(void);
 extern void func_80088740(s32);
-extern void func_8008908C(s32, u32, s32);
+extern void spu_WriteReg(s32, u32, s32);
 extern s32 D_800A287C;
 extern s32 D_800A2880;
 extern s32 D_800A2884;
@@ -50,7 +50,7 @@ extern s32 D_800A2D38;
 extern s32 D_800A2D3C;
 extern s32 D_800A2D40;
 extern s32 D_800A2D44;
-extern s32 func_80088F9C(s32, s32);
+extern s32 spu_TransferData(s32, s32);
 
 /* --- Functions 0x80083BE4 - 0x8008D060 (text4 segment) --- */
 
@@ -66,27 +66,27 @@ INCLUDE_ASM("asm/funcs", func_80083C34);
 INCLUDE_ASM("asm/funcs", func_80083E9C);
 INCLUDE_ASM("asm/funcs", func_800841E0);
 INCLUDE_ASM("asm/funcs", func_80084500);
-void func_800848AC(s16 a0, s16 a1) {
+void spu_SetMotionState(s16 a0, s16 a1) {
     s32 shifted = a0 << 16;
     s32 *addr = (s32 *)&D_80106F28;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
     s32 offset = (s16)a1 * 0xB0;
     u8 *entry;
     entry = (u8 *)(*base_ptr + offset);
-    func_80087DA0((s16)(a0 | (a1 << 8)));
+    spu_NotifyChannel((s16)(a0 | (a1 << 8)));
     entry[0x14] = 0;
     offset += *base_ptr;
     *(s32 *)(offset + 0x98) &= ~2;
 }
 
-void func_80084948(s16 a0, s16 a1) {
+void spu_SetMotionCallback(s16 a0, s16 a1) {
     func_80084974(a0, a1);
 }
 
 INCLUDE_ASM("asm/funcs", func_80084974);
 INCLUDE_ASM("asm/funcs", func_80084A7C);
 INCLUDE_ASM("asm/funcs", func_80084CC0);
-s32 func_80085064(s32 arg0, s16 arg1) {
+s32 spu_ReadMotionFrame(s32 arg0, s16 arg1) {
     s32 result;
     u8 *ptr;
     u8 **base;
@@ -115,7 +115,7 @@ s32 func_80085064(s32 arg0, s16 arg1) {
     *(s32 *)((u8 *)base + 0x88) += result;
     return result;
 }
-void func_80085114(s32 a0, s16 a1) {
+void spu_ResetMotionEntry(s32 a0, s16 a1) {
     s32 shifted = a0 << 16;
     s32 *addr = (s32 *)&D_80106F28;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
@@ -133,7 +133,7 @@ void func_80085114(s32 a0, s16 a1) {
     entry[0x14] = 1;
     *(s32 *)((u8 *)*base_ptr + (s16)a1 * 0xB0 + 0x98) |= 1;
 }
-void func_80085210(s32 a0, s16 a1) {
+void spu_SetMotionActive(s32 a0, s16 a1) {
     s32 shifted = a0 << 16;
     s32 *addr = (s32 *)&D_80106F28;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
@@ -221,7 +221,7 @@ s16 func_80085EE4(s16 a0) {
     }
     return -1;
 }
-s16 func_80085F88(void) {
+s16 spu_GetReverbMode(void) {
     return *(s16 *)&D_800F5754;
 }
 
@@ -241,7 +241,7 @@ extern u8 D_800F65E0[];
 INCLUDE_ASM("asm/funcs", func_80086130);
 INCLUDE_ASM("asm/funcs", func_800861BC);
 
-void func_800863CC(void) {
+void spu_ResetCounter(void) {
     D_800F66F8 = 0;
 }
 
@@ -256,7 +256,7 @@ INCLUDE_ASM("asm/funcs", func_80087CAC);
 extern u8 D_80101BCC;
 extern s16 D_800F4E28[];
 extern s16 D_8010280A;
-void func_80087DA0(s16 a0) {
+void spu_NotifyChannel(s16 a0) {
     s32 s0 = 0;
     s16 s1;
     if (D_80101BCC == 0) {
@@ -278,7 +278,7 @@ extern u8 D_80103600;
 void func_80087F00(u8 a0) {
     D_80103600 = a0;
 }
-void func_80087F10(void) {
+void memcard_SetBusy(void) {
     D_800FF578 = 1;
 }
 
@@ -298,12 +298,12 @@ s32 func_80087F34(s32 a0) {
 extern u8 D_80102A68[];
 extern s32 D_80107810[];
 extern u16 D_80107808;
-extern void func_800899A8(s32);
+extern void spu_DmaTransfer(s32);
 void func_80087F64(s16 a0) {
     if ((u16)a0 < 0x10) {
         s16 idx = a0;
         if (D_80102A68[idx] == 1) {
-            func_800899A8(D_80107810[idx]);
+            spu_DmaTransfer(D_80107810[idx]);
             D_80102A68[idx] = 0;
             D_80107808--;
         }
@@ -363,10 +363,10 @@ s16 func_80088584(s16 a0) {
 }
 
 void func_800885AC(void) {
-    func_800885CC(0);
+    spu_InitEx(0);
 }
 
-void func_800885CC(s32 arg0) {
+void spu_InitEx(s32 arg0) {
     u16 *var_v0;
     s32 var_v1;
     s32 val;
@@ -383,7 +383,7 @@ void func_800885CC(s32 arg0) {
             var_v0 -= 1;
         } while (var_v1 >= 0);
     }
-    func_800886C4();
+    spu_InitIrq();
     D_800A287C = 0;
     D_800A2880 = 0;
     D_800A288C = 0;
@@ -392,7 +392,7 @@ void func_800885CC(s32 arg0) {
     D_800A2894 = 0;
     D_800A2898 = 0;
     D_800A2884 = D_800A2D44;
-    func_8008908C(0xD1, D_800A2D44, 0);
+    spu_WriteReg(0xD1, D_800A2D44, 0);
     D_800A2D38 = 0;
     D_800A2D3C = 0;
     D_800A2D40 = 0;
@@ -407,12 +407,12 @@ extern s32 D_800A2CD8;
 extern s32 D_800A2870;
 extern s32 D_80088BA0;
 
-void func_800886C4(void) {
+void spu_InitIrq(void) {
     s32 v0;
     if (D_800A2CD8 == 0) {
         D_800A2CD8 = 1;
         func_800789B8();
-        func_800892D4((s32)&D_80088BA0);
+        spu_SetCallback((s32)&D_80088BA0);
         v0 = func_80078978((s32)0xF0000009, 0x20, 0x2000, 0);
         D_800A2870 = v0;
         func_800789A8(v0);
@@ -424,7 +424,7 @@ INCLUDE_ASM("asm/funcs", func_800889D4);
 INCLUDE_ASM("asm/funcs", func_80088D0C);
 extern void func_80088D0C(s32, ...);
 extern void func_800889D4(s32, s32);
-s32 func_80088F9C(s32 a0, s32 a1) {
+s32 spu_TransferData(s32 a0, s32 a1) {
     if (D_800A2CF8 == 0) {
         func_80088D0C(2, D_800A2CF4 << D_800A2D04);
         func_80088D0C(1);
@@ -434,13 +434,13 @@ s32 func_80088F9C(s32 a0, s32 a1) {
     }
     return a1;
 }
-s32 func_80089024(s32 a0, s32 a1) {
+s32 spu_TransferDirect(s32 a0, s32 a1) {
     func_80088D0C(2, D_800A2CF4 << D_800A2D04);
     func_80088D0C(0);
     func_80088D0C(3, a0, a1);
     return a1;
 }
-void func_8008908C(s32 arg0, u32 arg1, s32 arg2) {
+void spu_WriteReg(s32 arg0, u32 arg1, s32 arg2) {
     register s32 temp_v0 asm("v0");
     register s32 temp_a0 asm("a0");
     s32 temp_v1;
@@ -457,20 +457,20 @@ void func_8008908C(s32 arg0, u32 arg1, s32 arg2) {
 }
 INCLUDE_ASM("asm/funcs", func_800890D4);
 extern volatile u32 *D_800A2CF0;
-void func_80089214(void) {
+void spu_ReadStatus(void) {
     *D_800A2CF0 = (*D_800A2CF0 & 0xF0FFFFFF) | 0x20000000;
 }
-void func_80089240(void) {
+void spu_ReadReg(void) {
     *D_800A2CF0 = (*D_800A2CF0 & 0xF0FFFFFF) | 0x22000000;
 }
-void func_8008926C(void) {
+void spu_WriteReg16(void) {
     volatile s32 i;
     volatile s32 v = 0xD;
     for (i = 0; i < 0x3C; i++) {
         v = v * 13;
     }
 }
-void func_800892D4(s32 a0) {
+void spu_SetCallback(s32 a0) {
     func_80082B20(4, a0);
 }
 extern s32 D_800A2D18;
@@ -485,7 +485,7 @@ void func_800892F8(void) {
         func_800789B8();
         D_800A2D14 = 0;
         D_800A2D18 = 0;
-        func_800892D4(0);
+        spu_SetCallback(0);
         func_80078988(D_800A2870);
         func_80089374(D_800A2870);
         func_800789C8();
@@ -511,7 +511,7 @@ extern s32 D_800A2D38;
 extern s32 D_800A2D3C;
 extern s32 D_800A2D40;
 
-s32 func_80089384(s32 a0, s32 *a1) {
+s32 spu_IrqHandler(s32 a0, s32 *a1) {
     int new_var2;
     int new_var;
     s32 v0 = a0;
@@ -533,7 +533,7 @@ INCLUDE_ASM("asm/funcs", func_800893D8);
 INCLUDE_ASM("asm/funcs", func_800896A0);
 extern s32 D_800A2D38;
 extern void func_800896A0(void);
-void func_800899A8(s32 a0) {
+void spu_DmaTransfer(s32 a0) {
     s32 count;
     s32 i;
     volatile s32 pad;
@@ -563,7 +563,7 @@ void func_800899A8(s32 a0) {
     func_800896A0();
 }
 
-void func_80089A24(s32 a0, s32 a1) {
+void spu_WaitReady(s32 a0, s32 a1) {
     func_80089A48(a0, a1, 0xCA, 0xCB);
 }
 
@@ -648,7 +648,7 @@ s32 func_8008AD64(s32 a0, s32 a1) {
     if ((u32)a1 > 0x7EFF0u) {
         a1 = 0x7EFF0;
     }
-    func_80089024(a0, a1);
+    spu_TransferDirect(a0, a1);
     if (D_800A2D14 == 0) {
         D_800A2D10 = 0;
     }
@@ -658,7 +658,7 @@ s32 func_8008ADC4(s32 a0, s32 a1) {
     if ((u32)a1 > 0x7EFF0u) {
         a1 = 0x7EFF0;
     }
-    func_80088F9C(a0, a1);
+    spu_TransferData(a0, a1);
     if (D_800A2D14 == 0) {
         D_800A2D10 = 0;
     }

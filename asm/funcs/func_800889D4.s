@@ -13,7 +13,7 @@ glabel func_800889D4
     /* 79200 80088A00 AE014594 */  lhu        $a1, 0x1AE($v0)
     /* 79204 80088A04 21908000 */  addu       $s2, $a0, $zero
     /* 79208 80088A08 A60143A4 */  sh         $v1, 0x1A6($v0)
-    /* 7920C 80088A0C 9B24020C */  jal        func_8008926C
+    /* 7920C 80088A0C 9B24020C */  jal        spu_WriteReg16
     /* 79210 80088A10 FF07B330 */   andi      $s3, $a1, 0x7FF
     /* 79214 80088A14 3B002012 */  beqz       $s1, .L80088B04
     /* 79218 80088A18 4100222E */   sltiu     $v0, $s1, 0x41
@@ -43,7 +43,7 @@ glabel func_800889D4
     /* 79268 80088A68 CFFF8230 */  andi       $v0, $a0, 0xFFCF
     /* 7926C 80088A6C 10004434 */  ori        $a0, $v0, 0x10
     /* 79270 80088A70 AA0164A4 */  sh         $a0, 0x1AA($v1)
-    /* 79274 80088A74 9B24020C */  jal        func_8008926C
+    /* 79274 80088A74 9B24020C */  jal        spu_WriteReg16
     /* 79278 80088A78 00000000 */   nop
     /* 7927C 80088A7C 0A80023C */  lui        $v0, %hi(D_800A2CDC)
     /* 79280 80088A80 DC2C428C */  lw         $v0, %lo(D_800A2CDC)($v0)
@@ -76,9 +76,9 @@ glabel func_800889D4
     /* 792E4 80088AE4 EEFF4014 */  bnez       $v0, .L80088AA0
     /* 792E8 80088AE8 01006324 */   addiu     $v1, $v1, 0x1
   .L80088AEC:
-    /* 792EC 80088AEC 9B24020C */  jal        func_8008926C
+    /* 792EC 80088AEC 9B24020C */  jal        spu_WriteReg16
     /* 792F0 80088AF0 23883002 */   subu      $s1, $s1, $s0
-    /* 792F4 80088AF4 9B24020C */  jal        func_8008926C
+    /* 792F4 80088AF4 9B24020C */  jal        spu_WriteReg16
     /* 792F8 80088AF8 00000000 */   nop
     /* 792FC 80088AFC C7FF2016 */  bnez       $s1, .L80088A1C
     /* 79300 80088B00 4100222E */   sltiu     $v0, $s1, 0x41
@@ -131,7 +131,7 @@ glabel func_800889D4
     /* 793A8 80088BA8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 793AC 80088BAC 03004014 */  bnez       $v0, .L80088BBC
     /* 793B0 80088BB0 1000BFAF */   sw        $ra, 0x10($sp)
-    /* 793B4 80088BB4 9B24020C */  jal        func_8008926C
+    /* 793B4 80088BB4 9B24020C */  jal        spu_WriteReg16
     /* 793B8 80088BB8 00000000 */   nop
   .L80088BBC:
     /* 793BC 80088BBC 0A80043C */  lui        $a0, %hi(D_800A2CDC)
@@ -187,7 +187,7 @@ glabel func_800889D4
     /* 79474 80088C74 1000B0AF */  sw         $s0, 0x10($sp)
     /* 79478 80088C78 1800BFAF */  sw         $ra, 0x18($sp)
     /* 7947C 80088C7C A60145A4 */  sh         $a1, 0x1A6($v0)
-    /* 79480 80088C80 9B24020C */  jal        func_8008926C
+    /* 79480 80088C80 9B24020C */  jal        spu_WriteReg16
     /* 79484 80088C84 2180C000 */   addu      $s0, $a2, $zero
     /* 79488 80088C88 0A80033C */  lui        $v1, %hi(D_800A2CDC)
     /* 7948C 80088C8C DC2C638C */  lw         $v1, %lo(D_800A2CDC)($v1)
@@ -196,9 +196,9 @@ glabel func_800889D4
     /* 79498 80088C98 00000000 */  nop
     /* 7949C 80088C9C 30004234 */  ori        $v0, $v0, 0x30
     /* 794A0 80088CA0 AA0162A4 */  sh         $v0, 0x1AA($v1)
-    /* 794A4 80088CA4 9B24020C */  jal        func_8008926C
+    /* 794A4 80088CA4 9B24020C */  jal        spu_WriteReg16
     /* 794A8 80088CA8 00841000 */   sll       $s0, $s0, 16
-    /* 794AC 80088CAC 9024020C */  jal        func_80089240
+    /* 794AC 80088CAC 9024020C */  jal        spu_ReadReg
     /* 794B0 80088CB0 00000000 */   nop
     /* 794B4 80088CB4 0001043C */  lui        $a0, (0x1000200 >> 16)
     /* 794B8 80088CB8 00028434 */  ori        $a0, $a0, (0x1000200 & 0xFFFF)
