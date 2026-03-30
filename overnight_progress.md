@@ -1,7 +1,7 @@
 # Overnight Run — 2026-03-30 01:31
-Updated: 2026-03-30 04:43:32
+Updated: 2026-03-30 06:53:24
 
-**Progress:** 30 processed, 15 compiled, 0 matched
+**Progress:** 50 processed, 23 compiled, 0 matched
 
 ## Near-misses (score 1-200, review manually)
 
@@ -16,6 +16,12 @@ Updated: 2026-03-30 04:43:32
 - func_80022F34 score=3  `local_drafts/bb2-deepseek/func_80022F34.c`
 - func_800274BC score=3  `local_drafts/bb2-deepseek/func_800274BC.c`
 - func_800278C0 score=3  `local_drafts/bb2-deepseek/func_800278C0.c`
+- func_8002BEA0 score=3  `local_drafts/bb2-deepseek/func_8002BEA0.c`
+- func_80030208 score=3  `local_drafts/bb2-deepseek/func_80030208.c`
+- func_8003032C score=3  `local_drafts/bb2-deepseek/func_8003032C.c`
+- func_80030580 score=3  `local_drafts/bb2-deepseek/func_80030580.c`
+- func_800307D0 score=3  `local_drafts/bb2-deepseek/func_800307D0.c`
+- func_80030900 score=3  `local_drafts/bb2-deepseek/func_80030900.c`
 
 ## Full log
 
@@ -51,3 +57,23 @@ Updated: 2026-03-30 04:43:32
 | func_800274BC | 107 | Y | 3 | near-miss |
 | func_80027640 | 168 | N | — | no compile |
 | func_800278C0 | 61 | Y | 3 | near-miss |
+| func_8002872C | 108 | N | — | no compile |
+| func_8002BC68 | 156 | N | — | no compile |
+| func_8002BEA0 | 157 | Y | 3 | near-miss |
+| func_8002C0DC | 89 | N | — | no compile |
+| func_8002CA8C | 190 | N | — | no compile |
+| func_8002D320 | 137 | N | — | no compile |
+| func_8002D518 | 170 | N | — | no compile |
+| func_8002E6B0 | 101 | N | — | no compile |
+| func_8002E838 | 128 | N | — | no compile |
+| func_8002EA24 | 118 | N | — | no compile |
+| func_8002EBDC | 196 | Y | — | compiled |
+| func_8002FC80 | 79 | N | — | no compile |
+| func_8002FDB0 | 94 | N | — | no compile |
+| func_8002FF20 | 103 | N | — | no compile |
+| func_800300B4 | 87 | Y | — | compiled |
+| func_80030208 | 82 | Y | 3 | near-miss |
+| func_8003032C | 71 | Y | 3 | near-miss |
+| func_80030580 | 158 | Y | 3 | near-miss |
+| func_800307D0 | 86 | Y | 3 | near-miss |
+| func_80030900 | 81 | Y | 3 | near-miss |
