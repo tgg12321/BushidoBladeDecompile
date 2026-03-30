@@ -1,7 +1,7 @@
 # Overnight Run — 2026-03-30 01:31
-Updated: 2026-03-30 08:08:37
+Updated: 2026-03-30 08:10:27
 
-**Progress:** 190 processed, 162 compiled, 0 matched
+**Progress:** 197 processed, 169 compiled, 0 matched
 
 ## Near-misses (score 1-200, review manually)
 
@@ -145,6 +145,12 @@ Updated: 2026-03-30 08:08:37
 - func_80044170 score=3  `local_drafts/bb2-deepseek/func_80044170.c`
 - func_8004428C score=3  `local_drafts/bb2-deepseek/func_8004428C.c`
 - func_80044378 score=3  `local_drafts/bb2-deepseek/func_80044378.c`
+- func_8004473C score=3  `local_drafts/bb2-deepseek/func_8004473C.c`
+- func_80044B30 score=3  `local_drafts/bb2-deepseek/func_80044B30.c`
+- func_80044CCC score=3  `local_drafts/bb2-deepseek/func_80044CCC.c`
+- func_80045294 score=3  `local_drafts/bb2-deepseek/func_80045294.c`
+- func_800453E0 score=3  `local_drafts/bb2-deepseek/func_800453E0.c`
+- func_80045878 score=3  `local_drafts/bb2-deepseek/func_80045878.c`
 
 ## Full log
 
@@ -340,3 +346,10 @@ Updated: 2026-03-30 08:08:37
 | func_80044170 | 76 | Y | 3 | near-miss |
 | func_8004428C | 64 | Y | 3 | near-miss |
 | func_80044378 | 80 | Y | 3 | near-miss |
+| func_8004473C | 53 | Y | 3 | near-miss |
+| func_80044B30 | 87 | Y | 3 | near-miss |
+| func_80044CCC | 72 | Y | 3 | near-miss |
+| func_80045294 | 90 | Y | 3 | near-miss |
+| func_800453E0 | 83 | Y | 3 | near-miss |
+| func_80045878 | 117 | Y | 3 | near-miss |
+| func_800466C0 | 55 | Y | — | compiled |
