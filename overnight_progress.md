@@ -1,7 +1,7 @@
 # Overnight Run — 2026-03-30 08:10
-Updated: 2026-03-30 10:39:03
+Updated: 2026-03-30 11:42:15
 
-**Progress:** 130 processed, 124 compiled, 0 matched
+**Progress:** 150 processed, 142 compiled, 0 matched
 
 ## Near-misses (score 1-200, review manually)
 
@@ -102,6 +102,24 @@ Updated: 2026-03-30 10:39:03
 - func_800858D0 score=3  `local_drafts/bb2-deepseek/func_800858D0.c`
 - func_80085FB8 score=3  `local_drafts/bb2-deepseek/func_80085FB8.c`
 - func_80086130 score=3  `local_drafts/bb2-deepseek/func_80086130.c`
+- func_800861BC score=3  `local_drafts/bb2-deepseek/func_800861BC.c`
+- func_80086BFC score=3  `local_drafts/bb2-deepseek/func_80086BFC.c`
+- func_800871D4 score=3  `local_drafts/bb2-deepseek/func_800871D4.c`
+- func_80087CAC score=3  `local_drafts/bb2-deepseek/func_80087CAC.c`
+- func_80087E3C score=3  `local_drafts/bb2-deepseek/func_80087E3C.c`
+- func_80088740 score=3  `local_drafts/bb2-deepseek/func_80088740.c`
+- func_80088D0C score=3  `local_drafts/bb2-deepseek/func_80088D0C.c`
+- func_800890D4 score=3  `local_drafts/bb2-deepseek/func_800890D4.c`
+- func_800893D8 score=3  `local_drafts/bb2-deepseek/func_800893D8.c`
+- func_80089D60 score=3  `local_drafts/bb2-deepseek/func_80089D60.c`
+- func_80089EB0 score=3  `local_drafts/bb2-deepseek/func_80089EB0.c`
+- func_8008AAD4 score=3  `local_drafts/bb2-deepseek/func_8008AAD4.c`
+- func_8008ACD0 score=3  `local_drafts/bb2-deepseek/func_8008ACD0.c`
+- func_8008BB24 score=3  `local_drafts/bb2-deepseek/func_8008BB24.c`
+- func_8008BF04 score=3  `local_drafts/bb2-deepseek/func_8008BF04.c`
+- func_8008C1E8 score=3  `local_drafts/bb2-deepseek/func_8008C1E8.c`
+- func_80046BF4 score=3  `local_drafts/bb2-deepseek/func_80046BF4.c`
+- func_800470B0 score=3  `local_drafts/bb2-deepseek/func_800470B0.c`
 
 ## Full log
 
@@ -237,3 +255,23 @@ Updated: 2026-03-30 10:39:03
 | func_800858D0 | 76 | Y | 3 | near-miss |
 | func_80085FB8 | 102 | Y | 3 | near-miss |
 | func_80086130 | 39 | Y | 3 | near-miss |
+| func_800861BC | 137 | Y | 3 | near-miss |
+| func_80086BFC | 69 | Y | 3 | near-miss |
+| func_800871D4 | 56 | Y | 3 | near-miss |
+| func_80087CAC | 63 | Y | 3 | near-miss |
+| func_80087E3C | 54 | Y | 3 | near-miss |
+| func_80088740 | 174 | Y | 3 | near-miss |
+| func_80088D0C | 182 | Y | 3 | near-miss |
+| func_800890D4 | 91 | Y | 3 | near-miss |
+| func_800893D8 | 191 | Y | 3 | near-miss |
+| func_80089A48 | 194 | N | — | no compile |
+| func_80089D60 | 96 | Y | 3 | near-miss |
+| func_80089EB0 | 42 | Y | 3 | near-miss |
+| func_8008A928 | 116 | N | — | no compile |
+| func_8008AAD4 | 136 | Y | 3 | near-miss |
+| func_8008ACD0 | 45 | Y | 3 | near-miss |
+| func_8008BB24 | 171 | Y | 3 | near-miss |
+| func_8008BF04 | 173 | Y | 3 | near-miss |
+| func_8008C1E8 | 174 | Y | 3 | near-miss |
+| func_80046BF4 | 112 | Y | 3 | near-miss |
+| func_800470B0 | 94 | Y | 3 | near-miss |
