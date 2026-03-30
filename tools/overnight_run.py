@@ -2,8 +2,10 @@
 
 For each remaining INCLUDE_ASM stub:
   1. Always regenerate with DeepSeek (prior drafts fed as context, not reused as-is)
-  2. Standalone compile test
-  3. If compiles + permuter dir exists: score it
+  2. Standalone compile test (up to 10 DeepSeek fix attempts on error)
+  3. If compiles: run permuter+DeepSeek babysit loop (--babysit-rounds, default 5)
+       - Each round: run permuter → score best output → ask DeepSeek to improve → repeat
+       - Stops early on exact match (score 0)
   4. If score == 0 (exact match): apply to src, verify full build, commit immediately
   5. Save draft to local_drafts/bb2-deepseek/ regardless
 
@@ -13,9 +15,12 @@ Commits:
 
 Usage (from project root in Git Bash):
     python tools/overnight_run.py
-    python tools/overnight_run.py --limit 50        # test run
-    python tools/overnight_run.py --min-score 200   # also apply near-misses (risky)
-    python tools/overnight_run.py --skip-compile    # draft only, no compile/score
+    python tools/overnight_run.py --limit 50             # test run
+    python tools/overnight_run.py --min-lines 201        # large stubs only
+    python tools/overnight_run.py --babysit-rounds 0     # disable babysit, draft+compile only
+    python tools/overnight_run.py --babysit-rounds 8     # more rounds per function
+    python tools/overnight_run.py --babysit-timeout 120  # longer permuter runs
+    python tools/overnight_run.py --skip-compile         # draft only, no compile/score
 """
 import argparse
 import json
@@ -43,6 +48,27 @@ BATCH_SIZE    = 10   # commit progress log every N functions
 
 WSL_ROOT = '/mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile"'
 WSL_VENV = "source .venv/bin/activate"
+
+# ---------------------------------------------------------------------------
+# Import babysit utilities (scoring + permuter+DeepSeek loop)
+# ---------------------------------------------------------------------------
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    from permuter_babysit import (
+        ensure_permuter_dir,
+        write_base_c,
+        run_permuter       as _perm_run,
+        get_best_permuter_output,
+        score_code,
+        generate_improved,
+        apply_and_verify,
+        get_insn_diff,
+    )
+    _BABYSIT_OK = True
+except ImportError as _e:
+    _BABYSIT_OK = False
+    print(f"WARNING: could not import permuter_babysit ({_e}) — babysit disabled")
 
 # ---------------------------------------------------------------------------
 # Symbol table
@@ -467,6 +493,134 @@ class ProgressLog:
             f.write("\n".join(lines) + "\n")
 
 # ---------------------------------------------------------------------------
+# Babysit loop (permuter + DeepSeek feedback after successful compile)
+# ---------------------------------------------------------------------------
+
+def _ensure_target_o(func_name):
+    """Build target.o from target.s if missing (needed for accurate scoring)."""
+    perm_dir  = os.path.join(PERMUTER_DIR, func_name)
+    target_s  = os.path.join(perm_dir, "target.s")
+    target_o  = os.path.join(perm_dir, "target.o")
+    compile_sh = os.path.join(perm_dir, "compile.sh")
+    if os.path.exists(target_o) or not os.path.exists(target_s):
+        return
+    try:
+        subprocess.run(["bash", compile_sh, target_s, "-o", target_o],
+                       capture_output=True, timeout=30)
+    except Exception:
+        pass
+
+
+def babysit_compiled(func_name, code, max_rounds, perm_timeout, perm_jobs):
+    """
+    Permuter+DeepSeek feedback loop starting from a compiled draft.
+
+    Each round:
+      1. Run permuter for perm_timeout seconds
+      2. Score best permuter output with accurate objdump diff
+      3. If score == 0: apply to src, verify build, commit → return True
+      4. Ask DeepSeek to improve using permuter best + instruction diff
+      5. If new draft compiles and scores better (within +10): update base.c
+
+    Returns (matched: bool, best_score: int | None)
+    """
+    if not _BABYSIT_OK:
+        return False, None
+
+    asm_path = os.path.join(ASM_DIR, f"{func_name}.s")
+    asm_text = open(asm_path).read() if os.path.exists(asm_path) else ""
+
+    # Set up permuter dir if needed
+    if not ensure_permuter_dir(func_name):
+        print(f"  [babysit] no permuter dir — skipping")
+        return False, None
+
+    _ensure_target_o(func_name)
+
+    # Seed base.c with our freshly compiled draft
+    write_base_c(func_name, code)
+
+    # Initial accurate score
+    print(f"  [babysit] scoring initial draft...", end=" ", flush=True)
+    best_score, info = score_code(func_name, code)
+    if best_score is None:
+        print(f"FAIL ({info}) — skipping babysit")
+        return False, None
+    print(f"{best_score} ({info})")
+
+    if best_score == 0:
+        return True, 0
+
+    best_code = code
+
+    for rnd in range(1, max_rounds + 1):
+        print(f"  [babysit] round {rnd}/{max_rounds}", flush=True)
+
+        # Run permuter
+        stopped_on_zero = _perm_run(func_name, timeout=perm_timeout, jobs=perm_jobs)
+
+        # Score best permuter output
+        perm_dir_score, perm_code = get_best_permuter_output(func_name)
+        if perm_code:
+            actual_score, info = score_code(func_name, perm_code)
+            if actual_score is not None:
+                print(f"  [babysit] permuter best: {actual_score} ({info})")
+                if actual_score == 0 or stopped_on_zero:
+                    return True, 0
+                if actual_score < best_score:
+                    best_score = actual_score
+                    best_code  = perm_code
+                    # Save improvement to drafts dir
+                    with open(os.path.join(DRAFTS_DIR, f"{func_name}.c"), "w", newline="\n") as f:
+                        f.write(perm_code + "\n")
+
+        if rnd == max_rounds:
+            break
+
+        # Ask DeepSeek to synthesize an improved version
+        print(f"  [babysit] asking DeepSeek to improve...", end=" ", flush=True)
+        t0 = time.time()
+        diff_text = get_insn_diff(func_name, best_code) if best_code else ""
+        improved = generate_improved(
+            func_name, perm_code, perm_dir_score, best_score, asm_text, diff_text
+        )
+        elapsed = time.time() - t0
+
+        if not improved:
+            print(f"FAILED ({elapsed:.1f}s)")
+            continue
+
+        print(f"done ({elapsed:.1f}s)")
+
+        # Score the new DeepSeek draft
+        print(f"  [babysit] scoring new draft...", end=" ", flush=True)
+        new_score, info = score_code(func_name, improved)
+        if new_score is None:
+            print(f"FAIL ({info}) — keeping current base.c")
+            continue
+        print(f"{new_score} ({info})")
+
+        if new_score == 0:
+            return True, 0
+
+        # Accept if within +10 of best (don't regress badly)
+        accept_threshold = best_score + 10 if best_score is not None else 100
+        if new_score <= accept_threshold:
+            write_base_c(func_name, improved)
+            if new_score < best_score:
+                best_score = new_score
+                best_code  = improved
+                print(f"  [babysit] updated base.c (score={new_score})")
+            with open(os.path.join(DRAFTS_DIR, f"{func_name}.c"), "w", newline="\n") as f:
+                f.write(improved + "\n")
+        else:
+            print(f"  [babysit] new draft worse ({new_score} vs best {best_score}) — keeping old base.c")
+
+    print(f"  [babysit] done. Best score: {best_score}")
+    return False, best_score
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -478,6 +632,12 @@ def main():
     parser.add_argument("--skip-compile", action="store_true", help="Skip compile/score step")
     parser.add_argument("--min-score", type=int, default=0,
                         help="Auto-apply if score <= this (default 0 = exact match only)")
+    parser.add_argument("--babysit-rounds", type=int, default=5,
+                        help="Permuter+DeepSeek feedback rounds after compile (0=disable, default 5)")
+    parser.add_argument("--babysit-timeout", type=int, default=60,
+                        help="Permuter seconds per babysit round (default 60)")
+    parser.add_argument("--babysit-jobs", type=int, default=4,
+                        help="Permuter parallel jobs per round (default 4)")
     args = parser.parse_args()
 
     os.makedirs(DRAFTS_DIR, exist_ok=True)
@@ -498,10 +658,26 @@ def main():
     if args.limit:
         stubs = stubs[:args.limit]
 
+    babysit_enabled = _BABYSIT_OK and args.babysit_rounds > 0
+
+    # Load previous best scores so we only commit when we actually improve
+    prev_scores = {}
+    rescore_log = "rescore_output.log"
+    if os.path.exists(rescore_log):
+        for line in open(rescore_log, errors="replace"):
+            m = re.search(r'\] (func_[0-9A-Fa-f]+)\.\.\. score=(\d+)', line)
+            if m:
+                prev_scores[m.group(1)] = int(m.group(2))
+        print(f"  Loaded {len(prev_scores)} prior scores from {rescore_log}")
+
     print(f"  {len(stubs)} stubs to process (size {args.min_lines}-{args.max_lines} lines)")
     print(f"  Model: {MODEL}")
     print(f"  Auto-apply threshold: score <= {args.min_score}")
     print(f"  Compile testing: {'disabled' if args.skip_compile else 'enabled'}")
+    if babysit_enabled:
+        print(f"  Babysit: {args.babysit_rounds} rounds × {args.babysit_timeout}s, -j{args.babysit_jobs}")
+    else:
+        print(f"  Babysit: disabled")
     print()
 
     log = ProgressLog()
@@ -566,61 +742,82 @@ def main():
                        f"compile failed after {MAX_RETRIES} attempts")
             continue
 
-        # --- Score ---
-        score = None
-        has_perm = os.path.isdir(os.path.join(PERMUTER_DIR, func_name))
-        if has_perm:
-            print(f"  score: checking...", end=" ", flush=True)
-            score = get_permuter_score(func_name, code)
-            print(f"{score}" if score is not None else "unknown")
-        else:
-            print(f"  score: no permuter dir, skipping")
-
-        # --- Apply if match ---
+        # --- Babysit loop (permuter + DeepSeek feedback) or fallback score ---
+        score   = None
         matched = False
-        if score is not None and score <= args.min_score:
-            print(f"  MATCH (score={score})! Applying to {src_file}...")
 
-            src_path = find_src_file(func_name)
-            orig_content = open(src_path).read() if src_path else ""
-
-            applied, src_path = apply_to_src(func_name, code)
-            if not applied:
-                print(f"  apply: FAILED to write src")
-                log.record(func_name, src_file, asm_lines, True, score, False, "apply failed")
-                continue
-
-            print(f"  build: verifying...", end=" ", flush=True)
-            if verify_build():
-                print("OK!")
-                matched = True
-                msg = f"overnight: match {func_name} (score 0)\n\nDeepSeek overnight run — exact byte match."
-                if git_commit(msg):
+        if babysit_enabled:
+            # Full permuter+DeepSeek loop: tries up to babysit_rounds × perm_timeout seconds
+            matched, score = babysit_compiled(
+                func_name, code,
+                max_rounds   = args.babysit_rounds,
+                perm_timeout = args.babysit_timeout,
+                perm_jobs    = args.babysit_jobs,
+            )
+            if matched:
+                # babysit found score=0; apply to src, build verify, commit
+                print(f"  MATCH! Applying {func_name} to {src_file}...")
+                if apply_and_verify(func_name, code):
+                    msg = (f"overnight: match {func_name} (babysit score 0)\n\n"
+                           f"DeepSeek+permuter babysit loop — exact byte match.")
+                    git_commit(msg)
                     print(f"  committed!")
                 else:
-                    print(f"  commit FAILED (saved on disk)")
+                    matched = False  # build verification failed; revert already done by apply_and_verify
+        else:
+            # Legacy path: single --debug score check (no search)
+            has_perm = os.path.isdir(os.path.join(PERMUTER_DIR, func_name))
+            if has_perm:
+                print(f"  score: checking...", end=" ", flush=True)
+                score = get_permuter_score(func_name, code)
+                print(f"{score}" if score is not None else "unknown")
             else:
-                print("FAIL — reverting")
-                revert_src(func_name, src_path, orig_content)
+                print(f"  score: no permuter dir, skipping")
+
+            if score is not None and score <= args.min_score:
+                print(f"  MATCH (score={score})! Applying to {src_file}...")
+                src_path = find_src_file(func_name)
+                orig_content = open(src_path).read() if src_path else ""
+                applied, src_path = apply_to_src(func_name, code)
+                if not applied:
+                    print(f"  apply: FAILED to write src")
+                    log.record(func_name, src_file, asm_lines, True, score, False, "apply failed")
+                    continue
+                print(f"  build: verifying...", end=" ", flush=True)
+                if verify_build():
+                    print("OK!")
+                    matched = True
+                    msg = f"overnight: match {func_name} (score 0)\n\nDeepSeek overnight run — exact byte match."
+                    git_commit(msg)
+                    print(f"  committed!")
+                else:
+                    print("FAIL — reverting")
+                    revert_src(func_name, src_path, orig_content)
 
         log.record(func_name, src_file, asm_lines, True, score, matched)
 
-        # --- Checkpoint commit every BATCH_SIZE ---
-        if (i + 1) % BATCH_SIZE == 0:
+        # --- Commit only if we made real progress ---
+        # Progress = matched (score 0) OR score improved vs prior best
+        prior = prev_scores.get(func_name)
+        made_progress = matched or (
+            score is not None and score > 0 and (prior is None or score < prior)
+        )
+        if made_progress:
+            if score is not None:
+                prev_scores[func_name] = score  # update for this session
             log.save()
             processed = i + 1
             matched_count = len(log.matches)
             compiled_count = sum(1 for e in log.entries if e["compiled"])
+            note = f"score {score}" if score else "match"
             msg = (
-                f"overnight: checkpoint {processed}/{total} "
-                f"({compiled_count} compiled, {matched_count} matched)"
+                f"overnight: {func_name} {note} "
+                f"[{processed}/{total}]"
             )
             if git_commit(msg):
-                print(f"\n  [checkpoint {processed}/{total} committed]\n")
-            else:
-                print(f"\n  [checkpoint {processed}/{total} — nothing new to commit]\n")
+                print(f"  [committed: {note}]")
 
-    # Final save and commit
+    # Final save — always commit summary
     log.save()
     matched_count = len(log.matches)
     compiled_count = sum(1 for e in log.entries if e["compiled"])
