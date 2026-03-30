@@ -246,12 +246,15 @@ def get_permuter_score(func_name, code):
     # Backup original
     orig = open(base_c).read() if os.path.exists(base_c) else ""
 
+    # Wrap with headers (same as try_compile) so the permuter can compile it
+    wrapped = COMPILE_WRAPPER.format(code=code)
+
     # Write new base via WSL
     wsl_cmd = (
         f'cd {WSL_ROOT} && '
-        f'printf \'%s\' {json.dumps(code)} > {json.dumps("permuter/" + func_name + "/base.c")} && '
+        f'printf \'%s\' {json.dumps(wrapped)} > {json.dumps("permuter/" + func_name + "/base.c")} && '
         f'{WSL_VENV} && '
-        f'python3 tools/decomp-permuter/permuter.py permuter/{func_name}/ --debug 2>&1 | head -10'
+        f'python3 tools/decomp-permuter/permuter.py permuter/{func_name}/ --debug 2>&1 | head -20'
     )
     try:
         result = subprocess.run(
@@ -259,9 +262,17 @@ def get_permuter_score(func_name, code):
             capture_output=True, text=True, timeout=60
         )
         output = result.stdout
-        # Parse score — permuter outputs "score X" or "X" on first line
+        # Parse score — permuter outputs "score X" on its own line, e.g. "323" or "score: 323"
+        # Skip error/syntax lines which may contain incidental numbers
         for line in output.split('\n'):
-            m = re.search(r'\b(\d+)\b', line)
+            if 'error' in line.lower() or 'syntax' in line.lower() or 'warning' in line.lower():
+                continue
+            m = re.match(r'^\s*(\d+)\s*$', line)
+            if m:
+                return int(m.group(1))
+        # Fallback: look for "score X" pattern
+        for line in output.split('\n'):
+            m = re.search(r'\bscore[:\s]+(\d+)', line, re.IGNORECASE)
             if m:
                 return int(m.group(1))
     except Exception:
