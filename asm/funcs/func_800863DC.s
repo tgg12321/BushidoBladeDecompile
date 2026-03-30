@@ -91,7 +91,7 @@ glabel func_800863DC
     /* 76D2C 8008652C 04005314 */  bne        $v0, $s3, .L80086540
     /* 76D30 80086530 21200000 */   addu      $a0, $zero, $zero
     /* 76D34 80086534 FF00053C */  lui        $a1, (0xFFFFFF >> 16)
-    /* 76D38 80086538 8926020C */  jal        func_80089A24
+    /* 76D38 80086538 8926020C */  jal        spu_WaitReady
     /* 76D3C 8008653C FFFFA534 */   ori       $a1, $a1, (0xFFFFFF & 0xFFFF)
   .L80086540:
     /* 76D40 80086540 0F80013C */  lui        $at, %hi(D_800F4E35)

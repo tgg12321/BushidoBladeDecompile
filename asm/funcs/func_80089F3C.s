@@ -320,7 +320,7 @@ glabel func_80089F3C
     /* 7ABC4 8008A3C4 D1000424 */   addiu     $a0, $zero, 0xD1
     /* 7ABC8 8008A3C8 0A80053C */  lui        $a1, %hi(D_800A2884)
     /* 7ABCC 8008A3CC 8428A58C */  lw         $a1, %lo(D_800A2884)($a1)
-    /* 7ABD0 8008A3D0 2324020C */  jal        func_8008908C
+    /* 7ABD0 8008A3D0 2324020C */  jal        spu_WriteReg
     /* 7ABD4 8008A3D4 21300000 */   addu      $a2, $zero, $zero
     /* 7ABD8 8008A3D8 0900E012 */  beqz       $s7, .L8008A400
     /* 7ABDC 8008A3DC 21100000 */   addu      $v0, $zero, $zero

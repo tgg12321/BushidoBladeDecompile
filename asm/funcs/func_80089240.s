@@ -1,4 +1,4 @@
-glabel func_80089240
+glabel spu_ReadReg
     /* 79A40 80089240 0A80043C */  lui        $a0, %hi(D_800A2CF0)
     /* 79A44 80089244 F02C848C */  lw         $a0, %lo(D_800A2CF0)($a0)
     /* 79A48 80089248 FFF0033C */  lui        $v1, (0xF0FFFFFF >> 16)
@@ -10,4 +10,4 @@ glabel func_80089240
     /* 79A60 80089260 000082AC */  sw         $v0, 0x0($a0)
     /* 79A64 80089264 0800E003 */  jr         $ra
     /* 79A68 80089268 00000000 */   nop
-endlabel func_80089240
+endlabel spu_ReadReg

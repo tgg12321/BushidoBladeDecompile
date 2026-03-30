@@ -1,4 +1,4 @@
-glabel func_8008908C
+glabel spu_WriteReg
     /* 7988C 8008908C 0800C014 */  bnez       $a2, .L800890B0
     /* 79890 80089090 40100400 */   sll       $v0, $a0, 1
     /* 79894 80089094 0A80033C */  lui        $v1, %hi(D_800A2CDC)
@@ -19,4 +19,4 @@ glabel func_8008908C
   .L800890CC:
     /* 798CC 800890CC 0800E003 */  jr         $ra
     /* 798D0 800890D0 00000000 */   nop
-endlabel func_8008908C
+endlabel spu_WriteReg

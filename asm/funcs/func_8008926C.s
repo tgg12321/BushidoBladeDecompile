@@ -1,4 +1,4 @@
-glabel func_8008926C
+glabel spu_WriteReg16
     /* 79A6C 8008926C F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 79A70 80089270 0D000224 */  addiu      $v0, $zero, 0xD
     /* 79A74 80089274 0400A2AF */  sw         $v0, 0x4($sp)
@@ -27,4 +27,4 @@ glabel func_8008926C
     /* 79AC8 800892C8 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 79ACC 800892CC 0800E003 */  jr         $ra
     /* 79AD0 800892D0 00000000 */   nop
-endlabel func_8008926C
+endlabel spu_WriteReg16

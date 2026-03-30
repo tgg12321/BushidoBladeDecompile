@@ -1,4 +1,4 @@
-glabel func_80089214
+glabel spu_ReadStatus
     /* 79A14 80089214 0A80043C */  lui        $a0, %hi(D_800A2CF0)
     /* 79A18 80089218 F02C848C */  lw         $a0, %lo(D_800A2CF0)($a0)
     /* 79A1C 8008921C FFF0033C */  lui        $v1, (0xF0FFFFFF >> 16)
@@ -10,4 +10,4 @@ glabel func_80089214
     /* 79A34 80089234 000082AC */  sw         $v0, 0x0($a0)
     /* 79A38 80089238 0800E003 */  jr         $ra
     /* 79A3C 8008923C 00000000 */   nop
-endlabel func_80089214
+endlabel spu_ReadStatus
