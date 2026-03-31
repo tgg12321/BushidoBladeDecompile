@@ -615,7 +615,8 @@ void func_800355E8(void) {
     func_80037110(1);
     func_800371E8(1);
 }
-INCLUDE_ASM("asm/funcs", func_80035618);
+INCLUDE_ASM("asm/funcs", replay_camera_rob_back_loose2);
+/* kengo:MED  |  nm_replay_cam/replay_camera_rob_back_loose2  |  126i  |  -6 4.8% */
 INCLUDE_ASM("asm/funcs", func_80035828);
 void func_80035DC8(void) {
     gpu_EnableDisplay();

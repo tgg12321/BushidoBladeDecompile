@@ -52,7 +52,7 @@ glabel func_8002C0DC
     /* 1C9A0 8002C1A0 00000000 */  nop
     /* 1C9A4 8002C1A4 03006214 */  bne        $v1, $v0, .L8002C1B4
     /* 1C9A8 8002C1A8 00000000 */   nop
-    /* 1C9AC 8002C1AC C2AA000C */  jal        func_8002AB08
+    /* 1C9AC 8002C1AC C2AA000C */  jal        calc_loc_mat_fw
     /* 1C9B0 8002C1B0 01000424 */   addiu     $a0, $zero, 0x1
   .L8002C1B4:
     /* 1C9B4 8002C1B4 40000386 */  lh         $v1, 0x40($s0)

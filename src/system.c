@@ -5,7 +5,7 @@
 /* Forward declarations */
 extern void func_800817A0(void);
 extern void cpu_side_move_dir_4(void);
-extern void func_80081030(void);
+extern void marionation_Exec(void);
 extern s32 func_80081718();
 extern s32 func_80081D1C();
 extern s32 func_80081E1C(void);
@@ -113,7 +113,7 @@ void func_800801E8(void) {
 }
 
 void func_80080208(void) {
-    func_80081030();
+    marionation_Exec();
 }
 
 s32 func_80080228(s32 a0) {
@@ -182,7 +182,8 @@ s32 func_800807A8(u8 *a0) {
 INCLUDE_ASM("asm/funcs", func_80080828);
 INCLUDE_ASM("asm/funcs", cpu_side_move_dir_4);
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir_4  |  160i  |  x4 size collision */
-INCLUDE_ASM("asm/funcs", func_80081030);
+INCLUDE_ASM("asm/funcs", marionation_Exec);
+/* kengo:HIGH  |  nm_mario/marionation_Exec  |  180i  |  +1 near-exact */
 INCLUDE_ASM("asm/funcs", tslTm2LoadImage);
 /* kengo:MED  |  tsl_tm2/tslTm2LoadImage  |  253i  |  -10 x2 size collision */
 extern volatile u8 *D_800A147C;
