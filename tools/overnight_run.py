@@ -279,13 +279,25 @@ def generate_draft(func_name, globals_by_addr, funcs_by_addr, verbose=False):
     return ollama_call(prompt, verbose=verbose)
 
 
+_MIPS_REGS = (
+    'v0', 'v1',
+    'a0', 'a1', 'a2', 'a3',
+    't0', 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9',
+    's0', 's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8',
+    'at', 'k0', 'k1',
+)
+
 def clean_draft(text):
     text = text.strip()
     text = re.sub(r'^```[a-zA-Z]*\n', '', text)
     text = re.sub(r'\n```\s*$', '', text)
     # Strip any #include lines (GCC 2.7.2 needs none for standalone test)
     lines = [l for l in text.split('\n') if not l.strip().startswith('#include')]
-    return '\n'.join(lines).strip()
+    text = '\n'.join(lines).strip()
+    # Rename MIPS register names used as C variables (DeepSeek habit)
+    for reg in _MIPS_REGS:
+        text = re.sub(r'\b' + reg + r'\b', '_' + reg, text)
+    return text
 
 # ---------------------------------------------------------------------------
 # Compile test
