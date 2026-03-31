@@ -15,7 +15,7 @@ glabel func_8005B8B8
     /* 4C0EC 8005B8EC D0DB000C */  jal        func_80036F40
     /* 4C0F0 8005B8F0 21804000 */   addu      $s0, $v0, $zero
     /* 4C0F4 8005B8F4 21200002 */  addu       $a0, $s0, $zero
-    /* 4C0F8 8005B8F8 66DB000C */  jal        func_80036D98
+    /* 4C0F8 8005B8F8 66DB000C */  jal        replay_camera_Init
     /* 4C0FC 8005B8FC 21286002 */   addu      $a1, $s3, $zero
     /* 4C100 8005B900 CADB000C */  jal        func_80036F28
     /* 4C104 8005B904 21200002 */   addu      $a0, $s0, $zero
@@ -33,7 +33,7 @@ glabel func_8005B8B8
     /* 4C134 8005B934 21884000 */   addu      $s1, $v0, $zero
     /* 4C138 8005B938 21202002 */  addu       $a0, $s1, $zero
     /* 4C13C 8005B93C 21907002 */  addu       $s2, $s3, $s0
-    /* 4C140 8005B940 66DB000C */  jal        func_80036D98
+    /* 4C140 8005B940 66DB000C */  jal        replay_camera_Init
     /* 4C144 8005B944 21284002 */   addu      $a1, $s2, $zero
     /* 4C148 8005B948 CADB000C */  jal        func_80036F28
     /* 4C14C 8005B94C 21202002 */   addu      $a0, $s1, $zero

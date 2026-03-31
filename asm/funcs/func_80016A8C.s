@@ -31,7 +31,7 @@ glabel func_80016A8C
     /* 7300 80016B00 AADB000C */  jal        func_80036EA8
     /* 7304 80016B04 61000524 */   addiu     $a1, $zero, 0x61
     /* 7308 80016B08 21204000 */  addu       $a0, $v0, $zero
-    /* 730C 80016B0C 66DB000C */  jal        func_80036D98
+    /* 730C 80016B0C 66DB000C */  jal        replay_camera_Init
     /* 7310 80016B10 21282002 */   addu      $a1, $s1, $zero
     /* 7314 80016B14 D0DB000C */  jal        func_80036F40
     /* 7318 80016B18 00000000 */   nop

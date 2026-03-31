@@ -45,7 +45,7 @@ glabel coli_HitPauseKatana
     /* 79C78 80089478 41250208 */  j          .L80089504
     /* 79C7C 8008947C 21900000 */   addu      $s2, $zero, $zero
   .L80089480:
-    /* 79C80 80089480 A825020C */  jal        func_800896A0
+    /* 79C80 80089480 A825020C */  jal        exec_game
     /* 79C84 80089484 00000000 */   nop
     /* 79C88 80089488 0A80033C */  lui        $v1, %hi(D_800A2D38)
     /* 79C8C 8008948C 382D638C */  lw         $v1, %lo(D_800A2D38)($v1)
@@ -125,7 +125,7 @@ glabel coli_HitPauseKatana
     /* 79DA4 800895A4 3C2D24AC */  sw         $a0, %lo(D_800A2D3C)($at)
     /* 79DA8 800895A8 0400D1AC */  sw         $s1, 0x4($a2)
     /* 79DAC 800895AC 24104500 */  and        $v0, $v0, $a1
-    /* 79DB0 800895B0 A825020C */  jal        func_800896A0
+    /* 79DB0 800895B0 A825020C */  jal        exec_game
     /* 79DB4 800895B4 0000C2AC */   sw        $v0, 0x0($a2)
     /* 79DB8 800895B8 0A80023C */  lui        $v0, %hi(D_800A2D40)
     /* 79DBC 800895BC 402D428C */  lw         $v0, %lo(D_800A2D40)($v0)
@@ -172,7 +172,7 @@ glabel coli_HitPauseKatana
     /* 79E58 80089658 FFFF8434 */  ori        $a0, $a0, (0xFFFFFFF & 0xFFFF)
     /* 79E5C 8008965C 040071AC */  sw         $s1, 0x4($v1)
     /* 79E60 80089660 24104400 */  and        $v0, $v0, $a0
-    /* 79E64 80089664 A825020C */  jal        func_800896A0
+    /* 79E64 80089664 A825020C */  jal        exec_game
     /* 79E68 80089668 000062AC */   sw        $v0, 0x0($v1)
     /* 79E6C 8008966C 0A80023C */  lui        $v0, %hi(D_800A2D40)
     /* 79E70 80089670 402D428C */  lw         $v0, %lo(D_800A2D40)($v0)

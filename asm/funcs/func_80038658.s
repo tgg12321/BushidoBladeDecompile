@@ -42,7 +42,7 @@ glabel func_80038658
     /* 28EF0 800386F0 D20682A7 */  sh         $v0, %gp_rel(D_800A379E)($gp)
     /* 28EF4 800386F4 0F80043C */  lui        $a0, %hi(D_800F34D8)
     /* 28EF8 800386F8 D8348424 */  addiu      $a0, $a0, %lo(D_800F34D8)
-    /* 28EFC 800386FC 03E0000C */  jal        func_8003800C
+    /* 28EFC 800386FC 03E0000C */  jal        damage_DebugDisp
     /* 28F00 80038700 00000000 */   nop
     /* 28F04 80038704 02004014 */  bnez       $v0, .L80038710
     /* 28F08 80038708 0F000224 */   addiu     $v0, $zero, 0xF

@@ -27,7 +27,7 @@ glabel func_8001BBD8
     /* C43C 8001BC3C 21304002 */  addu       $a2, $s2, $zero
     /* C440 8001BC40 21386002 */  addu       $a3, $s3, $zero
     /* C444 8001BC44 1000B0AF */  sw         $s0, 0x10($sp)
-    /* C448 8001BC48 D26D000C */  jal        func_8001B748
+    /* C448 8001BC48 D26D000C */  jal        DispPracticeMenuTex_A
     /* C44C 8001BC4C 1400A3AF */   sw        $v1, 0x14($sp)
     /* C450 8001BC50 2800BF8F */  lw         $ra, 0x28($sp)
     /* C454 8001BC54 2400B38F */  lw         $s3, 0x24($sp)

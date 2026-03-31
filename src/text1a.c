@@ -29,7 +29,8 @@ extern void func_80041430(s32, s32);
 extern s32 func_8004019C(s32 *, s32);
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
-INCLUDE_ASM("asm/funcs", func_800401CC);
+INCLUDE_ASM("asm/funcs", PutShadowRmd);
+/* kengo:MED  |  am_rmd/PutShadowRmd  |  78i */
 INCLUDE_ASM("asm/funcs", func_80040304);
 void func_80040400(s32 *a0, s16 *a1, s16 a2) {
     s32 v0;
@@ -82,8 +83,8 @@ void func_800404D8(void) {
     }
 }
 extern void func_80040594(s32 *);
-extern void func_800408F8(s32 *);
-extern void func_80040B44(s32 *);
+extern void rob_life_ctrl(s32 *);
+extern void rob_calc_2d_position(s32 *);
 extern s32 *func_80045878(s32);
 extern void func_8003F824(s32 *, s32);
 extern void func_8003FFC4(s32 *);
@@ -94,14 +95,15 @@ s32 *func_80040510(s32 a0) {
     ptr = func_80045878(a0);
     D_800A9A10[idx] = (s32)ptr;
     func_80040594(ptr);
-    do { func_800408F8(ptr); func_80040B44(ptr); func_8003F824(ptr, 1); } while (0);
+    do { rob_life_ctrl(ptr); rob_calc_2d_position(ptr); func_8003F824(ptr, 1); } while (0);
     func_8003FFC4(ptr);
     func_80040CB8(ptr);
     func_8003E120();
     return ptr;
 }
 INCLUDE_ASM("asm/funcs", func_80040594);
-INCLUDE_ASM("asm/funcs", func_800408F8);
+INCLUDE_ASM("asm/funcs", rob_life_ctrl);
+/* kengo:MED  |  my_rob/rob_life_ctrl  |  96i  |  x2 size collision */
 void func_80040A78(s32 arg0) {
     register s32 var_a1 asm("a1");
     register s32 var_v1 asm("v1");
@@ -135,11 +137,13 @@ void func_80040A78(s32 arg0) {
         arg0 += 4;
     } while (var_a1 < 0x14);
 }
-INCLUDE_ASM("asm/funcs", func_80040B44);
+INCLUDE_ASM("asm/funcs", rob_calc_2d_position);
+/* kengo:MED  |  my_rob/rob_calc_2d_position  |  93i */
 extern s16 D_80094B9E[];
 INCLUDE_ASM("asm/funcs", func_80040CB8);
 INCLUDE_ASM("asm/funcs", func_80040D48);
-INCLUDE_ASM("asm/funcs", func_80041188);
+INCLUDE_ASM("asm/funcs", hirahira_w_ctrl);
+/* kengo:MED  |  my_hirahira/hirahira_w_ctrl  |  132i  |  x2 size collision */
 extern s32 *D_80015820[];
 extern s32 func_800545F4;
 extern s32 D_800545F8;
@@ -406,8 +410,10 @@ void func_80042478(s32 a0) {
     disp_SetFramebufferMode(1, r, g, b);
     func_8007EFBC(r, g, b);
 }
-INCLUDE_ASM("asm/funcs", func_80042504);
-INCLUDE_ASM("asm/funcs", func_80042684);
+INCLUDE_ASM("asm/funcs", rob_life_ctrl_2);
+/* kengo:MED  |  my_rob/rob_life_ctrl_2  |  96i  |  x2 size collision */
+INCLUDE_ASM("asm/funcs", mot_data_set);
+/* kengo:MED  |  se_fc/mot_data_set  |  110i */
 extern s16 D_800F6650;
 void func_8004283C(s32 a0) {
     if (a0) {
@@ -422,11 +428,12 @@ s32 func_80042864(void) {
 }
 INCLUDE_ASM("asm/funcs", func_80042874);
 INCLUDE_ASM("asm/funcs", func_80042A88);
-INCLUDE_ASM("asm/funcs", func_80042C80);
+INCLUDE_ASM("asm/funcs", hirahira_w_ctrl_2);
+/* kengo:MED  |  my_hirahira/hirahira_w_ctrl_2  |  132i  |  x2 size collision */
 extern void func_8004A348(void);
 extern void func_80042874(void);
 extern void func_80042A88(void);
-extern void func_80042C80(void);
+extern void hirahira_w_ctrl_2(void);
 extern s32 D_800F66A8;
 extern s32 D_800F66B0;
 extern s32 D_800F66B4;
@@ -434,7 +441,7 @@ void func_80042E90(void) {
     D_800F66A0[0] = (s32)func_8004A348;
     D_800F66A8 = (s32)func_80042874;
     D_800F66B0 = (s32)func_80042A88;
-    D_800F66B4 = (s32)func_80042C80;
+    D_800F66B4 = (s32)hirahira_w_ctrl_2;
 }
 void func_80042ED8(u16 *a0) {
     u16 t0, t1, t2, t3;
@@ -597,8 +604,10 @@ void func_80044100(s32 a0, s32 a1) {
     }
 }
 INCLUDE_ASM("asm/funcs", func_80044170);
-INCLUDE_ASM("asm/funcs", func_8004428C);
-INCLUDE_ASM("asm/funcs", func_80044378);
+INCLUDE_ASM("asm/funcs", hirahira_w_frie);
+/* kengo:MED  |  my_hirahira/hirahira_w_frie  |  59i */
+INCLUDE_ASM("asm/funcs", calc_fc_frame);
+/* kengo:MED  |  se_fc/calc_fc_frame  |  72i */
 extern s16 D_8010367E;
 void func_80044498(void) {
     s32 i = 0x13;

@@ -46,6 +46,62 @@ PS2_ONLY_MODULES = frozenset({
     "init",
 })
 
+# Per-BB2-file preferred Kengo module substrings for --use-affinity.
+# Based on which Marionation subsystems are known or likely to appear in each
+# BB2 source file.  A Kengo module is "preferred" if any entry here is a
+# substring of its name (e.g. "sa_tan" matches sa_tan0, sa_tan1, …).
+#
+# When --use-affinity is active, candidates are first filtered to preferred
+# modules.  If that leaves 0 results the tool falls back to all modules so
+# nothing is silently dropped.
+FILE_MODULE_AFFINITY = {
+    "code6cac_b.c": [
+        "is_motion", "is_pad", "is_action", "is_tanren",
+        "nm_cpu", "nm_single_game",
+        "is_coli", "is_ki_control",
+        "sa_tan", "sa_se", "am_rmd",
+    ],
+    "code6cac.c": [
+        "nm_camera", "nm_single_game", "nm_cpu",
+        "md_game", "nm_mario", "is_motion",
+    ],
+    "code6cac_b2.c": [
+        "nm_special_cam", "nm_mario_cam", "nm_replay_cam",
+    ],
+    "code6cac_c.c": [
+        "is_coli", "is_ki_control", "is_damage_calc",
+        "is_action", "is_motion", "is_pad",
+    ],
+    "code6cac_c2.c": [
+        "nm_replay_cam", "nm_katinuki_game", "nm_single_game",
+        "md_game", "am_rmd", "nm_cpu",
+    ],
+    "text1a.c": [
+        "is_efc", "my_rob", "my_eff", "my_hirahira",
+        "se_fc", "se_qt", "am_rmd",
+    ],
+    "main.c": [
+        "md_game", "md_dummy", "is_learn", "is_league",
+        "is_stats", "is_status", "is_replay", "is_rob_test",
+        "am_rmd", "is_action", "is_coli", "sa_tan",
+    ],
+    "system.c": [
+        "tsl_", "sa_se", "sa_load", "sa_main", "sa_eft",
+    ],
+    "ings.c": [
+        "hi_curpad", "hi_gnd", "hi_landhit", "hi_gview", "hi_kgm", "common",
+    ],
+    "ings2.c": [
+        "common",
+    ],
+    "config.c": [
+        "md_option", "fade", "game_2d", "common",
+    ],
+    "sound.c": [
+        "sa_se", "sa_load", "sa_main", "sa_tan",
+    ],
+}
+
 
 def get_asm_insn_count(func_name):
     """Count real instructions in asm/funcs/<func_name>.s.
@@ -186,6 +242,16 @@ def main():
         help="Only show stubs with exactly one Kengo candidate (highest confidence)",
     )
     parser.add_argument(
+        "--use-affinity",
+        action="store_true",
+        help=(
+            "Filter candidates to preferred Kengo modules for each BB2 file "
+            "(see FILE_MODULE_AFFINITY). Falls back to all modules if no "
+            "preferred candidate exists. Combine with --single-match to find "
+            "stubs that become unambiguous after affinity filtering."
+        ),
+    )
+    parser.add_argument(
         "--include-ps2-only",
         action="store_true",
         help="Include PS2-only Kengo modules (mpc, pack, eecdvd, tty, init) — excluded by default",
@@ -250,6 +316,21 @@ def main():
 
         # Sort by absolute difference, then name for stability
         candidates.sort(key=lambda x: (abs(x[1] - bb2_insns), x[0]))
+
+        # Apply module affinity filter if requested
+        affinity_applied = False
+        if args.use_affinity:
+            preferred = FILE_MODULE_AFFINITY.get(bb2_file, [])
+            if preferred:
+                affinity_filtered = [
+                    c for c in candidates
+                    if any(p in c[3] for p in preferred)
+                ]
+                if affinity_filtered:
+                    candidates = affinity_filtered
+                    affinity_applied = True
+                # else: no preferred candidates — fall back to all (candidates unchanged)
+
         candidates = candidates[: args.top]
 
         if args.single_match and len(candidates) != 1:
@@ -259,7 +340,8 @@ def main():
 
         if candidates:
             match_count += 1
-            print(f"{func_name}  [{bb2_file}]  {bb2_insns} insns")
+            affinity_tag = "  [affinity]" if affinity_applied else ""
+            print(f"{func_name}  [{bb2_file}]  {bb2_insns} insns{affinity_tag}")
             for name, insns, src_file, module in candidates:
                 diff = insns - bb2_insns
                 print(f"  → {name:<44} {insns:5d} insns ({format_diff(diff):>4})  [{module}]")

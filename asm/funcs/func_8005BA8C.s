@@ -46,7 +46,7 @@ glabel func_8005BA8C
     /* 4C338 8005BB38 D0DB000C */  jal        func_80036F40
     /* 4C33C 8005BB3C 21804000 */   addu      $s0, $v0, $zero
     /* 4C340 8005BB40 21200002 */  addu       $a0, $s0, $zero
-    /* 4C344 8005BB44 66DB000C */  jal        func_80036D98
+    /* 4C344 8005BB44 66DB000C */  jal        replay_camera_Init
     /* 4C348 8005BB48 21286002 */   addu      $a1, $s3, $zero
     /* 4C34C 8005BB4C CADB000C */  jal        func_80036F28
     /* 4C350 8005BB50 21200002 */   addu      $a0, $s0, $zero

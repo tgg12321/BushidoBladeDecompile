@@ -59,7 +59,7 @@ glabel func_800826CC
     /* 72FA4 800827A4 04004010 */  beqz       $v0, .L800827B8
     /* 72FA8 800827A8 09000424 */   addiu     $a0, $zero, 0x9
     /* 72FAC 800827AC 21280000 */  addu       $a1, $zero, $zero
-    /* 72FB0 800827B0 2F01020C */  jal        func_800804BC
+    /* 72FB0 800827B0 2F01020C */  jal        tslPolyF4Init
     /* 72FB4 800827B4 21300000 */   addu      $a2, $zero, $zero
   .L800827B8:
     /* 72FB8 800827B8 0709020C */  jal        func_8008241C

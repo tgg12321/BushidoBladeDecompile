@@ -32,7 +32,7 @@ glabel func_8006E10C
     /* 5E97C 8006E17C F0001124 */   addiu     $s1, $zero, 0xF0
     /* 5E980 8006E180 21804000 */  addu       $s0, $v0, $zero
     /* 5E984 8006E184 3404858F */  lw         $a1, %gp_rel(D_800A3500)($gp)
-    /* 5E988 8006E188 66DB000C */  jal        func_80036D98
+    /* 5E988 8006E188 66DB000C */  jal        replay_camera_Init
     /* 5E98C 8006E18C 21200002 */   addu      $a0, $s0, $zero
     /* 5E990 8006E190 D0DB000C */  jal        func_80036F40
     /* 5E994 8006E194 00000000 */   nop

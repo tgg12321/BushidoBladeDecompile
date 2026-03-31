@@ -12,10 +12,10 @@ func_800174F4
 func_80017D84
 func_800198D0
 DispPracticeMenuTex_A
-func_8001D790
+se_data_set
 func_8002AB08
 func_8002DE20
-func_800307D0
+cpu_check_tubazeri_2
 func_80030BA8
 func_80030D7C
 func_80031B24
@@ -42,9 +42,9 @@ func_80037B00
 func_80037B90
 func_80037C34
 func_80037D14
-func_8003800C
+damage_DebugDisp
 func_80038170
-func_800383A4
+pad_FuncAnalog
 func_80038658
 func_80038734
 func_8003877C
@@ -71,7 +71,7 @@ func_8003A41C
 func_8003A42C
 func_8003A450
 func_8003A574
-func_8003A5A0
+pad_ClearAppliBuffer
 func_8003A728
 func_8003AA78
 func_8003AAB0
@@ -94,7 +94,7 @@ func_8003F218
 func_8003F268
 func_8003F568
 func_8003F7F4
-func_800401CC
+PutShadowRmd
 func_80041E10
 func_80041EB0
 func_800420D0

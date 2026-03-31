@@ -35,7 +35,7 @@ glabel AllocBukiRmd
     /* 762C0 80085AC0 00240500 */   sll       $a0, $a1, 16
     /* 762C4 80085AC4 03240400 */  sra        $a0, $a0, 16
     /* 762C8 80085AC8 002C0600 */  sll        $a1, $a2, 16
-    /* 762CC 80085ACC 8F1F020C */  jal        func_80087E3C
+    /* 762CC 80085ACC 8F1F020C */  jal        AddTbpOfst
     /* 762D0 80085AD0 032C0500 */   sra       $a1, $a1, 16
     /* 762D4 80085AD4 6E004014 */  bnez       $v0, .L80085C90
     /* 762D8 80085AD8 21000224 */   addiu     $v0, $zero, 0x21

@@ -10,7 +10,7 @@ extern s32 func_80081718();
 extern s32 func_80081D1C();
 extern s32 func_80081E1C(void);
 extern void irq_AcknowledgeVblank(s32, s32);
-extern s32 func_80081BB0(s32);
+extern s32 saEft01Init(s32);
 
 /* Externs for globals */
 extern u8 D_800A11C4;
@@ -133,7 +133,8 @@ extern s32 func_800812FC(s32, void *, void *, s32);
 
 INCLUDE_ASM("asm/funcs", func_80080258);
 INCLUDE_ASM("asm/funcs", func_80080390);
-INCLUDE_ASM("asm/funcs", func_800804BC);
+INCLUDE_ASM("asm/funcs", tslPolyF4Init);
+/* kengo:MED  |  tsl_pkt/tslPolyF4Init  |  81i */
 
 s32 func_80080600(void) {
     func_80081718();
@@ -153,7 +154,7 @@ void func_80080660(s32 a0) {
 }
 
 void func_80080684(s32 a0) {
-    func_80081BB0(a0);
+    saEft01Init(a0);
 }
 
 INCLUDE_ASM("asm/funcs", func_800806A4);
@@ -334,7 +335,8 @@ extern void *D_800F19C0;
 extern s32 D_800161B8;
 extern s32 D_800161C8;
 extern void D_800162C0;
-INCLUDE_ASM("asm/funcs", func_80081BB0);
+INCLUDE_ASM("asm/funcs", saEft01Init);
+/* kengo:MED  |  sa_eft/saEft01Init  |  91i */
 extern volatile u32 *D_800A148C;
 extern volatile u32 *D_800A14B0;
 extern volatile u32 *D_800A14B4;

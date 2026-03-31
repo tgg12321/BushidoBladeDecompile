@@ -12,7 +12,7 @@ glabel func_8006E950
     /* 5F178 8006E978 AADB000C */  jal        func_80036EA8
     /* 5F17C 8006E97C 21280002 */   addu      $a1, $s0, $zero
     /* 5F180 8006E980 21204000 */  addu       $a0, $v0, $zero
-    /* 5F184 8006E984 66DB000C */  jal        func_80036D98
+    /* 5F184 8006E984 66DB000C */  jal        replay_camera_Init
     /* 5F188 8006E988 21282002 */   addu      $a1, $s1, $zero
     /* 5F18C 8006E98C D0DB000C */  jal        func_80036F40
     /* 5F190 8006E990 80021224 */   addiu     $s2, $zero, 0x280

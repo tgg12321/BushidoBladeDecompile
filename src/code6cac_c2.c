@@ -228,7 +228,7 @@ extern u8 D_8008EB1C;
 extern u8 D_8008DB1C;
 extern s32 D_800F5328;
 extern s32 func_8007FD5C(s32, s32);
-extern void func_8001B748(s32 *, s32 *, s32 *, s32 *, s32, s32);
+extern void DispPracticeMenuTex_A(s32 *, s32 *, s32 *, s32 *, s32, s32);
 extern u8 D_8008F13C;
 extern s16 D_80101E74;
 
@@ -612,7 +612,8 @@ extern u8 D_801077BA;
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 INCLUDE_ASM("asm/funcs", func_8003B9D0);
-INCLUDE_ASM("asm/funcs", func_8003BCB4);
+INCLUDE_ASM("asm/funcs", md_game_check_change_sub_mode);
+/* kengo:HIGH  |  md_game/md_game_check_change_sub_mode  |  87i */
 
 extern void gpu_EnableDisplay(void);
 extern void gpu_InitDisplay(void);
@@ -824,7 +825,7 @@ void func_8003C42C(void) {
     D_800A3834 = 0x15;
 }
 INCLUDE_ASM("asm/funcs", func_8003C560);
-INCLUDE_ASM("asm/funcs", func_8003C714);
+INCLUDE_ASM("asm/funcs", SetCurrentCursor);
 /* kengo:LOW  |  su_menu_edit/_SetCurrentCursor  |  104i  |  PS2 UI — reverted */
 void func_8003C8B4(void) {
     s32 ret;
@@ -985,7 +986,7 @@ void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
         ch = *str++;
     } while (ch != 0);
 }
-INCLUDE_ASM("asm/funcs", func_8003D52C);
+INCLUDE_ASM("asm/funcs", DispSleepMenuTex);
 /* kengo:LOW  |  su_menu_home/_DispSleepMenuTex  |  146i  |  PS2 UI — reverted */
 void func_8003D774(s32 arg0, s32 arg1) {
     s32 *ptr = (s32 *)((u8 *)&D_800A3D40 + arg1 * 24);

@@ -1663,7 +1663,7 @@ glabel func_80023F08
   .L80025744:
     /* 15F44 80025744 928D000C */  jal        func_80023648
     /* 15F48 80025748 21202002 */   addu      $a0, $s1, $zero
-    /* 15F4C 8002574C 318E000C */  jal        func_800238C4
+    /* 15F4C 8002574C 318E000C */  jal        camera_set_zoom
     /* 15F50 80025750 21202002 */   addu      $a0, $s1, $zero
     /* 15F54 80025754 6A002396 */  lhu        $v1, 0x6A($s1)
     /* 15F58 80025758 08000224 */  addiu      $v0, $zero, 0x8
@@ -2035,7 +2035,7 @@ glabel func_80023F08
     /* 164A4 80025CA4 1800A527 */  addiu      $a1, $sp, 0x18
     /* 164A8 80025CA8 68002786 */  lh         $a3, 0x68($s1)
     /* 164AC 80025CAC 9C00A627 */  addiu      $a2, $sp, 0x9C
-    /* 164B0 80025CB0 6204010C */  jal        func_80041188
+    /* 164B0 80025CB0 6204010C */  jal        hirahira_w_ctrl
     /* 164B4 80025CB4 1000A2AF */   sw        $v0, 0x10($sp)
     /* 164B8 80025CB8 CA5F000C */  jal        scratchpad_Save
     /* 164BC 80025CBC 00000000 */   nop
@@ -2742,7 +2742,7 @@ glabel func_80023F08
     /* 16EF8 800266F8 3C02238E */  lw         $v1, 0x23C($s1)
     /* 16EFC 800266FC 21202002 */  addu       $a0, $s1, $zero
     /* 16F00 80026700 23104300 */  subu       $v0, $v0, $v1
-    /* 16F04 80026704 6CBF000C */  jal        func_8002FDB0
+    /* 16F04 80026704 6CBF000C */  jal        coli_check_circle_hit_line
     /* 16F08 80026708 2C0122AE */   sw        $v0, 0x12C($s1)
     /* 16F0C 8002670C 6A002396 */  lhu        $v1, 0x6A($s1)
     /* 16F10 80026710 DA0122A6 */  sh         $v0, 0x1DA($s1)
@@ -2960,7 +2960,7 @@ glabel func_80023F08
     /* 1720C 80026A0C 21104500 */  addu       $v0, $v0, $a1
     /* 17210 80026A10 21104300 */  addu       $v0, $v0, $v1
     /* 17214 80026A14 00004590 */  lbu        $a1, 0x0($v0)
-    /* 17218 80026A18 8BC2000C */  jal        func_80030A2C
+    /* 17218 80026A18 8BC2000C */  jal        cpu_set_move_command_and_dir
     /* 1721C 80026A1C 1400C624 */   addiu     $a2, $a2, 0x14
   .L80026A20:
     /* 17220 80026A20 0A80033C */  lui        $v1, %hi(D_800A3748)
@@ -3037,7 +3037,7 @@ glabel func_80023F08
     /* 1732C 80026B2C 00000000 */  nop
     /* 17330 80026B30 08004010 */  beqz       $v0, .L80026B54
     /* 17334 80026B34 00000000 */   nop
-    /* 17338 80026B38 F4C1000C */  jal        func_800307D0
+    /* 17338 80026B38 F4C1000C */  jal        cpu_check_tubazeri_2
     /* 1733C 80026B3C 21202002 */   addu      $a0, $s1, $zero
     /* 17340 80026B40 14002386 */  lh         $v1, 0x14($s1)
     /* 17344 80026B44 00000000 */  nop
@@ -3155,7 +3155,7 @@ glabel func_80023F08
     /* 174DC 80026CDC 62002292 */  lbu        $v0, 0x62($s1)
     /* 174E0 80026CE0 21202002 */  addu       $a0, $s1, $zero
     /* 174E4 80026CE4 40004234 */  ori        $v0, $v0, 0x40
-    /* 174E8 80026CE8 E7CC000C */  jal        func_8003339C
+    /* 174E8 80026CE8 E7CC000C */  jal        cpu_check_same_dir_timer
     /* 174EC 80026CEC 620022A2 */   sb        $v0, 0x62($s1)
   .L80026CF0:
     /* 174F0 80026CF0 6C022286 */  lh         $v0, 0x26C($s1)
@@ -3190,7 +3190,7 @@ glabel func_80023F08
     /* 17554 80026D54 B3002592 */  lbu        $a1, 0xB3($s1)
     /* 17558 80026D58 C100010C */  jal        func_80040304
     /* 1755C 80026D5C 21206002 */   addu      $a0, $s3, $zero
-    /* 17560 80026D60 3081000C */  jal        func_800204C0
+    /* 17560 80026D60 3081000C */  jal        single_game_SetAbilityData
     /* 17564 80026D64 21202002 */   addu      $a0, $s1, $zero
     /* 17568 80026D68 7A002386 */  lh         $v1, 0x7A($s1)
     /* 1756C 80026D6C 02000224 */  addiu      $v0, $zero, 0x2

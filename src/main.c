@@ -6,7 +6,7 @@
 extern void func_80089D60(s32);
 extern void spu_InitEx(s32);
 extern s32 func_8008AEB0(s32);
-extern void func_80084974(s16, s16);
+extern void saTan4GaugeInit(s16, s16);
 extern s16 saTan2Main(s32, s16, s32, s32);
 extern void coli_HitPauseKatana_2(s32, s32, s32, s32);
 
@@ -62,8 +62,9 @@ void func_80083BE4(s16 a0, s16 a1) {
     *((s16 *)&buf[1] + 1) = (s16)(a1 * 129);
     func_8008AF9C(buf);
 }
-INCLUDE_ASM("asm/funcs", func_80083C34);
-INCLUDE_ASM("asm/funcs", func_80083E9C);
+INCLUDE_ASM("asm/funcs", saTan5TakeAnim2_2);
+/* kengo:MED  |  sa_tan5/saTan5TakeAnim2_2  |  154i  |  x2 size collision */
+INCLUDE_ASM("asm/funcs", DispStuff);
 /* kengo:LOW  |  su_menu_ending/_DispStuff  |  209i  |  PS2 UI — reverted */
 INCLUDE_ASM("asm/funcs", func_800841E0);
 INCLUDE_ASM("asm/funcs", func_80084500);
@@ -81,12 +82,14 @@ void spu_SetMotionState(s16 a0, s16 a1) {
 }
 
 void spu_SetMotionCallback(s16 a0, s16 a1) {
-    func_80084974(a0, a1);
+    saTan4GaugeInit(a0, a1);
 }
 
-INCLUDE_ASM("asm/funcs", func_80084974);
+INCLUDE_ASM("asm/funcs", saTan4GaugeInit);
+/* kengo:MED  |  sa_tan4/saTan4GaugeInit  |  66i */
 INCLUDE_ASM("asm/funcs", func_80084A7C);
-INCLUDE_ASM("asm/funcs", func_80084CC0);
+INCLUDE_ASM("asm/funcs", saTan0Main);
+/* kengo:MED  |  sa_tan0/saTan0Main  |  233i */
 s32 spu_ReadMotionFrame(s32 arg0, s16 arg1) {
     s32 result;
     u8 *ptr;
@@ -166,7 +169,8 @@ void func_80085448(s16 a0, s16 a1, s16 a2) {
     }
     func_8008AF9C(buf);
 }
-INCLUDE_ASM("asm/funcs", func_80085544);
+INCLUDE_ASM("asm/funcs", SetBloodSpot);
+/* kengo:MED  |  am_rmd/SetBloodSpot  |  91i */
 INCLUDE_ASM("asm/funcs", func_800856B0);
 INCLUDE_ASM("asm/funcs", func_800858D0);
 extern u8 D_80102A68[];
@@ -277,7 +281,8 @@ void spu_NotifyChannel(s16 a0) {
         s0++;
     } while ((u8)s0 < D_80101BCC);
 }
-INCLUDE_ASM("asm/funcs", func_80087E3C);
+INCLUDE_ASM("asm/funcs", AddTbpOfst);
+/* kengo:MED  |  am_rmd/AddTbpOfst  |  49i */
 extern u8 D_80103600;
 void func_80087F00(u8 a0) {
     D_80103600 = a0;
@@ -425,19 +430,19 @@ void spu_InitIrq(void) {
     }
 }
 INCLUDE_ASM("asm/funcs", func_80088740);
-INCLUDE_ASM("asm/funcs", func_800889D4);
+INCLUDE_ASM("asm/funcs", DispUpdateStatusMessage);
 /* kengo:LOW  |  su_menu_home/_DispUpdateStatusMessage  |  206i  |  PS2 UI — reverted */
 INCLUDE_ASM("asm/funcs", saTan0GaugeDraw);
 /* kengo:MED  |  sa_tan0/saTan0GaugeDraw  |  164i */
 extern void saTan0GaugeDraw(s32, ...);
-extern void func_800889D4(s32, s32);
+extern void DispUpdateStatusMessage(s32, s32);
 s32 spu_TransferData(s32 a0, s32 a1) {
     if (D_800A2CF8 == 0) {
         saTan0GaugeDraw(2, D_800A2CF4 << D_800A2D04);
         saTan0GaugeDraw(1);
         saTan0GaugeDraw(3, a0, a1);
     } else {
-        func_800889D4(a0, a1);
+        DispUpdateStatusMessage(a0, a1);
     }
     return a1;
 }
@@ -538,9 +543,10 @@ s32 spu_IrqHandler(s32 a0, s32 *a1) {
 }
 INCLUDE_ASM("asm/funcs", coli_HitPauseKatana);
 /* kengo:HIGH  |  is_coli/coli_HitPauseKatana  |  178i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", func_800896A0);
+INCLUDE_ASM("asm/funcs", exec_game);
+/* kengo:HIGH  |  md_game/exec_game  |  194i */
 extern s32 D_800A2D38;
-extern void func_800896A0(void);
+extern void exec_game(void);
 void spu_DmaTransfer(s32 a0) {
     s32 count;
     s32 i;
@@ -568,7 +574,7 @@ void spu_DmaTransfer(s32 a0) {
             ptr = (s32 *)((u8 *)ptr + 8);
         } while (i < n);
     }
-    func_800896A0();
+    exec_game();
 }
 
 void spu_WaitReady(s32 a0, s32 a1) {
@@ -638,7 +644,8 @@ void func_8008A904(s32 a0, s32 a1) {
     coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD);
 }
 
-INCLUDE_ASM("asm/funcs", func_8008A928);
+INCLUDE_ASM("asm/funcs", md_game_check_change_main_mode_katinuki);
+/* kengo:HIGH  |  md_game/md_game_check_change_main_mode_katinuki  |  103i */
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
@@ -867,7 +874,8 @@ s32 func_8008C184(int a0, int a1) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/funcs", func_8008C1E8);
+INCLUDE_ASM("asm/funcs", SetPacketData);
+/* kengo:MED  |  am_rmd/SetPacketData  |  159i */
 INCLUDE_ASM("asm/funcs", func_8008C464);
 __asm__(
     ".set noreorder\n"

@@ -118,7 +118,7 @@ extern void func_80041604(s32, s32);
 extern void func_80021974(s32);
 extern void func_80021A98(s32, s32, s32);
 extern void special_camera_Exec(void);
-extern void func_8003D52C(s32, s32, s32, s32);
+extern void DispSleepMenuTex(s32, s32, s32, s32);
 extern s32 D_800100A4;
 extern void func_800415C4(s32);
 extern void file_ResetDmaFlag(void);
@@ -223,7 +223,7 @@ extern u8 D_8008EB1C;
 extern u8 D_8008DB1C;
 extern s32 D_800F5328;
 extern s32 func_8007FD5C(s32, s32);
-extern void func_8001B748(s32 *, s32 *, s32 *, s32 *, s32, s32);
+extern void DispPracticeMenuTex_A(s32 *, s32 *, s32 *, s32 *, s32, s32);
 extern u8 D_8008F13C;
 extern s16 D_80101E74;
 
@@ -859,7 +859,8 @@ void func_80037F08(s32 a0, s32 a1) {
     func_80078A28(buf);
 }
 INCLUDE_ASM("asm/funcs", func_80037F40);
-INCLUDE_ASM("asm/funcs", func_8003800C);
+INCLUDE_ASM("asm/funcs", damage_DebugDisp);
+/* kengo:HIGH  |  is_damage_calc/damage_DebugDisp  |  79i */
 
 void func_80038148(void) {
     u8 *p = &D_800F33D8;
@@ -871,8 +872,9 @@ void func_80038148(void) {
     } while ((u32)i < 0x200);
 }
 INCLUDE_ASM("asm/funcs", func_80038170);
-INCLUDE_ASM("asm/funcs", func_800383A4);
-extern s32 func_8003800C(s32 *);
+INCLUDE_ASM("asm/funcs", pad_FuncAnalog);
+/* kengo:HIGH  |  is_pad/pad_FuncAnalog  |  173i */
+extern s32 damage_DebugDisp(s32 *);
 void func_80038658(void) {
     register s32 var_v1 asm("v1");
     register s32 var_v0 asm("v0");
@@ -914,7 +916,7 @@ block_6:
     }
     var_v0 = 5;
     D_800A379E = (s16)var_v0;
-    if (func_8003800C(&D_800F34D8) != 0) {
+    if (damage_DebugDisp(&D_800F34D8) != 0) {
         goto block_clear;
     }
     var_v0 = 0xF;
@@ -930,7 +932,7 @@ s32 func_80038734(void) {
     if ((u32)D_800A31F4 < 2) {
         D_800A31F8 = func_80037D14(0, 0);
     }
-    func_800383A4();
+    pad_FuncAnalog();
     func_80038658();
     return D_800A379E;
 }
@@ -1274,7 +1276,8 @@ INCLUDE_ASM("asm/funcs", func_8003A450);
 void func_8003A574(void) {
     func_800789F8(D_800A3734, &D_800A3688, 8);
 }
-INCLUDE_ASM("asm/funcs", func_8003A5A0);
+INCLUDE_ASM("asm/funcs", pad_ClearAppliBuffer);
+/* kengo:HIGH  |  is_pad/pad_ClearAppliBuffer  |  87i */
 s32 func_8003A6FC(u32 arg0) {
     s32 count = 0;
     s32 i;
@@ -1535,7 +1538,7 @@ void func_8003B8E4(void) {
         D_800A37C0 = 500;
         D_800A38F8 = 0;
         D_800A3768 = 0x14;
-        func_8001D790();
+        se_data_set();
         func_8003B5A4();
         disp_SetFramebufferMode(1, 0, 0, 0);
         D_800A390D = 1;

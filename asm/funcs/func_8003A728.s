@@ -61,7 +61,7 @@ glabel func_8003A728
     /* 2B010 8003A810 3DEA0008 */  j          .L8003A8F4
     /* 2B014 8003A814 00000000 */   nop
   .L8003A818:
-    /* 2B018 8003A818 68E9000C */  jal        func_8003A5A0
+    /* 2B018 8003A818 68E9000C */  jal        pad_ClearAppliBuffer
     /* 2B01C 8003A81C 00000000 */   nop
     /* 2B020 8003A820 16004010 */  beqz       $v0, .L8003A87C
     /* 2B024 8003A824 01000224 */   addiu     $v0, $zero, 0x1

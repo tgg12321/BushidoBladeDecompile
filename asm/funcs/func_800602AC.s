@@ -9,7 +9,7 @@ glabel func_800602AC
     /* 50AC8 800602C8 3400B1AF */   sw        $s1, 0x34($sp)
     /* 50ACC 800602CC 21884000 */  addu       $s1, $v0, $zero
     /* 50AD0 800602D0 21202002 */  addu       $a0, $s1, $zero
-    /* 50AD4 800602D4 66DB000C */  jal        func_80036D98
+    /* 50AD4 800602D4 66DB000C */  jal        replay_camera_Init
     /* 50AD8 800602D8 21280002 */   addu      $a1, $s0, $zero
     /* 50ADC 800602DC D0DB000C */  jal        func_80036F40
     /* 50AE0 800602E0 00000000 */   nop

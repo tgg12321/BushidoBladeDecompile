@@ -111,7 +111,7 @@ extern s32 func_800827D0(s32, s32);
 extern void func_80041604(s32, s32);
 extern void func_80021974(s32);
 extern void func_80021A98(s32, s32, s32);
-extern void func_8003D52C(s32, s32, s32, s32);
+extern void DispSleepMenuTex(s32, s32, s32, s32);
 extern s32 D_800100A4;
 extern void func_800415C4(s32);
 extern void file_ResetDmaFlag(void);
@@ -220,7 +220,7 @@ extern u8 D_8008EB1C;
 extern u8 D_8008DB1C;
 extern s32 D_800F5328;
 extern s32 func_8007FD5C(s32, s32);
-extern void func_8001B748(s32 *, s32 *, s32 *, s32 *, s32, s32);
+extern void DispPracticeMenuTex_A(s32 *, s32 *, s32 *, s32 *, s32, s32);
 extern u8 D_8008F13C;
 extern s32 D_80101E74;
 
@@ -755,9 +755,10 @@ INCLUDE_ASM("asm/funcs", special_camera_Exec);
 s32 func_80036D88(void) {
     return D_80101E62 == 0;
 }
-INCLUDE_ASM("asm/funcs", func_80036D98);
+INCLUDE_ASM("asm/funcs", replay_camera_Init);
+/* kengo:HIGH  |  nm_replay_cam/replay_camera_Init  |  39i */
 s32 func_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    if (func_80036D98(arg0, arg1) == 0) {
+    if (replay_camera_Init(arg0, arg1) == 0) {
         return 0;
     }
     func_800806A4(func_800807A8((s32)&D_80101E6C) + arg2, (s32)&D_80101E6C);

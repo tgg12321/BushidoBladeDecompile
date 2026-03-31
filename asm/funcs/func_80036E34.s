@@ -5,7 +5,7 @@ glabel func_80036E34
     /* 27640 80036E40 1800B2AF */  sw         $s2, 0x18($sp)
     /* 27644 80036E44 2190E000 */  addu       $s2, $a3, $zero
     /* 27648 80036E48 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* 2764C 80036E4C 66DB000C */  jal        func_80036D98
+    /* 2764C 80036E4C 66DB000C */  jal        replay_camera_Init
     /* 27650 80036E50 1000B0AF */   sw        $s0, 0x10($sp)
     /* 27654 80036E54 0C004010 */  beqz       $v0, .L80036E88
     /* 27658 80036E58 00000000 */   nop
