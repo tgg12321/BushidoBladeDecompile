@@ -59,7 +59,7 @@ FILE_MODULE_AFFINITY = {
         "is_motion", "is_pad", "is_action", "is_tanren",
         "nm_cpu", "nm_single_game",
         "is_coli", "is_ki_control",
-        "sa_tan", "sa_se", "am_rmd",
+        "sa_tan", "sa_se", "am_rmd", "se_fc",
     ],
     "code6cac.c": [
         "nm_camera", "nm_single_game", "nm_cpu",

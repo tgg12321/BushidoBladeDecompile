@@ -1,4 +1,4 @@
-glabel func_8002AB08
+glabel calc_loc_mat_fw
     /* 1B308 8002AB08 40FFBD27 */  addiu      $sp, $sp, -0xC0
     /* 1B30C 8002AB0C A000B2AF */  sw         $s2, 0xA0($sp)
     /* 1B310 8002AB10 801F123C */  lui        $s2, (0x1F8002B8 >> 16)
@@ -1199,4 +1199,4 @@ glabel func_8002AB08
     /* 1C45C 8002BC5C C000BD27 */  addiu      $sp, $sp, 0xC0
     /* 1C460 8002BC60 0800E003 */  jr         $ra
     /* 1C464 8002BC64 00000000 */   nop
-endlabel func_8002AB08
+endlabel calc_loc_mat_fw
