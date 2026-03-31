@@ -51,6 +51,8 @@ from permuter_babysit import (
     OLLAMA_URL,
 )
 
+DEEPSEEK_CUTOFF = 30  # auto-disable DeepSeek below this score when insn counts match
+
 ASM_DIR    = os.path.join("asm", "funcs")
 DRAFTS_DIR = os.path.join("local_drafts", "bb2-deepseek")
 SRC_DIR    = "src"
@@ -128,10 +130,12 @@ def main():
 
     best_score = init_score
     best_code = base_code
+    best_info = init_info
     stale_rounds = 0
     improvements = 0
     uncommitted_improvements = 0
     total_rounds = 0
+    use_deepseek = not args.no_deepseek
     start_time = time.time()
 
     print(f"\n{'='*60}")
@@ -175,11 +179,20 @@ def main():
                         print(f"  [permuter] IMPROVED: {best_score} → {actual_score}", flush=True)
                         best_score = actual_score
                         best_code = perm_code
+                        best_info = info
                         write_base_c(func_name, perm_code)
                         improved_this_round = True
 
+            # --- Auto-switch: disable DeepSeek when it can't help ---
+            if use_deepseek and best_info:
+                m = re.match(r'(\d+)vs(\d+)', best_info)
+                if m and int(m.group(1)) == int(m.group(2)) and best_score <= DEEPSEEK_CUTOFF:
+                    print(f"  [auto] instruction counts match ({best_info}) and score ≤ {DEEPSEEK_CUTOFF}"
+                          f" — switching to permuter-only", flush=True)
+                    use_deepseek = False
+
             # --- Phase 2: DeepSeek feedback ---
-            if not args.no_deepseek:
+            if use_deepseek:
                 print(f"  [deepseek] generating improvement...", end=" ", flush=True)
                 t0 = time.time()
                 diff_text = get_insn_diff(func_name, best_code)
@@ -212,6 +225,7 @@ def main():
                             return
                         if new_score < best_score:
                             print(f"  [deepseek] IMPROVED: {best_score} → {new_score}", flush=True)
+                            best_info = info
                             best_score = new_score
                             best_code = improved
                             write_base_c(func_name, improved)
