@@ -28,7 +28,7 @@ glabel func_8007D3F8
     /* 6DC58 8007D458 3F004230 */  andi       $v0, $v0, 0x3F
     /* 6DC5C 8007D45C F3FF4310 */  beq        $v0, $v1, .L8007D42C
     /* 6DC60 8007D460 00000000 */   nop
-    /* 6DC64 8007D464 0F0B020C */  jal        func_80082C3C
+    /* 6DC64 8007D464 0F0B020C */  jal        motion_make_table
     /* 6DC68 8007D468 21200000 */   addu      $a0, $zero, $zero
     /* 6DC6C 8007D46C 0A80033C */  lui        $v1, %hi(D_8009BE75)
     /* 6DC70 8007D470 75BE6390 */  lbu        $v1, %lo(D_8009BE75)($v1)
@@ -81,7 +81,7 @@ glabel func_8007D3F8
     /* 6DD24 8007D524 6CBF30AC */  sw         $s0, %lo(D_8009BF6C)($at)
     /* 6DD28 8007D528 0A80013C */  lui        $at, %hi(D_8009BF70)
     /* 6DD2C 8007D52C 70BF32AC */  sw         $s2, %lo(D_8009BF70)($at)
-    /* 6DD30 8007D530 0F0B020C */  jal        func_80082C3C
+    /* 6DD30 8007D530 0F0B020C */  jal        motion_make_table
     /* 6DD34 8007D534 00000000 */   nop
     /* 6DD38 8007D538 AEF50108 */  j          .L8007D6B8
     /* 6DD3C 8007D53C 21100000 */   addu      $v0, $zero, $zero
@@ -174,7 +174,7 @@ glabel func_8007D3F8
     /* 6DE80 8007D680 3F004230 */  andi       $v0, $v0, 0x3F
     /* 6DE84 8007D684 0A80013C */  lui        $at, %hi(D_8009BF78)
     /* 6DE88 8007D688 78BF22AC */  sw         $v0, %lo(D_8009BF78)($at)
-    /* 6DE8C 8007D68C 0F0B020C */  jal        func_80082C3C
+    /* 6DE8C 8007D68C 0F0B020C */  jal        motion_make_table
     /* 6DE90 8007D690 00000000 */   nop
     /* 6DE94 8007D694 B6F5010C */  jal        func_8007D6D8
     /* 6DE98 8007D698 00000000 */   nop

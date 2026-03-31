@@ -1,4 +1,4 @@
-glabel func_80082C3C
+glabel motion_make_table
     /* 7343C 80082C3C 0A80033C */  lui        $v1, %hi(D_800A2608)
     /* 73440 80082C40 0826638C */  lw         $v1, %lo(D_800A2608)($v1)
     /* 73444 80082C44 00000000 */  nop
@@ -48,7 +48,7 @@ glabel func_80082C3C
     /* 734F0 80082CF0 C4FF02A6 */   sh        $v0, -0x3C($s0)
     /* 734F4 80082CF4 0A80033C */  lui        $v1, %hi(D_800A2600)
     /* 734F8 80082CF8 0026638C */  lw         $v1, %lo(D_800A2600)($v1)
-    /* 734FC 80082CFC F20C020C */  jal        func_800833C8
+    /* 734FC 80082CFC F20C020C */  jal        conv_matrix_rotation
     /* 73500 80082D00 140062AC */   sw        $v0, 0x14($v1)
     /* 73504 80082D04 0A80043C */  lui        $a0, %hi(D_800A2600)
     /* 73508 80082D08 0026848C */  lw         $a0, %lo(D_800A2600)($a0)
@@ -63,4 +63,4 @@ glabel func_80082C3C
     /* 73528 80082D28 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 7352C 80082D2C 0800E003 */  jr         $ra
     /* 73530 80082D30 00000000 */   nop
-endlabel func_80082C3C
+endlabel motion_make_table

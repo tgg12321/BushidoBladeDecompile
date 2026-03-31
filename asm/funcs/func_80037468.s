@@ -21,7 +21,7 @@ glabel func_80037468
     /* 27CB4 800374B4 00000000 */   nop
     /* 27CB8 800374B8 DFFF010C */  jal        func_8007FF7C
     /* 27CBC 800374BC 00000000 */   nop
-    /* 27CC0 800374C0 D2DC000C */  jal        func_80037348
+    /* 27CC0 800374C0 D2DC000C */  jal        special_camera_get_rot_dir
     /* 27CC4 800374C4 1000A427 */   addiu     $a0, $sp, 0x10
     /* 27CC8 800374C8 CFEC010C */  jal        func_8007B33C
     /* 27CCC 800374CC 21200000 */   addu      $a0, $zero, $zero

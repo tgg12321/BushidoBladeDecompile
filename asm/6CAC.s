@@ -33677,7 +33677,7 @@ glabel func_80035828
     /* 263D0 80035BD0 21200000 */  addu       $a0, $zero, $zero
     /* 263D4 80035BD4 7FB0010C */  jal        func_8006C1FC
     /* 263D8 80035BD8 21280000 */   addu      $a1, $zero, $zero
-    /* 263DC 80035BDC 1CE3000C */  jal        func_80038C70
+    /* 263DC 80035BDC 1CE3000C */  jal        motion_SetMotion
     /* 263E0 80035BE0 00000000 */   nop
     /* 263E4 80035BE4 6D004010 */  beqz       $v0, .L80035D9C
     /* 263E8 80035BE8 00000000 */   nop
@@ -33857,7 +33857,7 @@ glabel func_80035E38
     /* 26648 80035E48 F13622A0 */  sb         $v0, %lo(D_800A36F1)($at)
     /* 2664C 80035E4C 4FD5000C */  jal        func_8003553C
     /* 26650 80035E50 00000000 */   nop
-    /* 26654 80035E54 1CE3000C */  jal        func_80038C70
+    /* 26654 80035E54 1CE3000C */  jal        motion_SetMotion
     /* 26658 80035E58 00000000 */   nop
     /* 2665C 80035E5C 06004010 */  beqz       $v0, .L80035E78
     /* 26660 80035E60 08000224 */   addiu     $v0, $zero, 0x8
@@ -35437,7 +35437,7 @@ glabel func_800372F4
     /* 27B44 80037344 00000000 */   nop
 endlabel func_800372F4
 
-nonmatching func_80037348, 0x120
+nonmatching special_camera_get_rot_dir, 0x120
 
 glabel func_80037348
     /* 27B48 80037348 C8F7BD27 */  addiu      $sp, $sp, -0x838
@@ -35541,7 +35541,7 @@ glabel func_80037468
     /* 27CB4 800374B4 00000000 */   nop
     /* 27CB8 800374B8 DFFF010C */  jal        func_8007FF7C
     /* 27CBC 800374BC 00000000 */   nop
-    /* 27CC0 800374C0 D2DC000C */  jal        func_80037348
+    /* 27CC0 800374C0 D2DC000C */  jal        special_camera_get_rot_dir
     /* 27CC4 800374C4 1000A427 */   addiu     $a0, $sp, 0x10
     /* 27CC8 800374C8 CFEC010C */  jal        func_8007B33C
     /* 27CCC 800374CC 21200000 */   addu      $a0, $zero, $zero
@@ -37333,7 +37333,7 @@ glabel func_80038988
     /* 2946C 80038C6C 00000000 */   nop
 endlabel func_80038988
 
-nonmatching func_80038C70, 0x648
+nonmatching motion_SetMotion, 0x648
 
 glabel func_80038C70
     /* 29470 80038C70 3B018293 */  lbu        $v0, %gp_rel(D_800A3204 + 0x3)($gp)

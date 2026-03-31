@@ -1,4 +1,4 @@
-glabel func_80083794
+glabel motion_Open
     /* 73F94 80083794 0A80083C */  lui        $t0, %hi(D_800A2668)
     /* 73F98 80083798 6826088D */  lw         $t0, %lo(D_800A2668)($t0)
     /* 73F9C 8008379C F0FFBD27 */  addiu      $sp, $sp, -0x10
@@ -57,4 +57,4 @@ glabel func_80083794
     /* 74060 80083860 1000BD27 */  addiu      $sp, $sp, 0x10
     /* 74064 80083864 0800E003 */  jr         $ra
     /* 74068 80083868 00000000 */   nop
-endlabel func_80083794
+endlabel motion_Open

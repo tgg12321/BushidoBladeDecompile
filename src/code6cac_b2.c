@@ -171,7 +171,7 @@ extern s32 file_GetFlag2(void);
 extern void func_80041688(s32, s32);
 extern void func_8003F1E4(s32);
 extern s16 *snd_GetSeId(void);
-extern s32 func_80038C70(void);
+extern s32 motion_SetMotion(void);
 extern void func_8003AF40(s32);
 extern void func_8003AFFC(void);
 extern s32 D_800109C8;
@@ -632,7 +632,7 @@ void func_80035DC8(void) {
 void func_80035E38(void) {
     D_800A36F1 = 1;
     func_8003553C();
-    if (func_80038C70() != 0) {
+    if (motion_SetMotion() != 0) {
         D_800A3834 = 8;
         D_800A36F1 = 2;
     }
@@ -868,7 +868,8 @@ void func_800372F4(s32 arg0) {
         }
     } while (v > 0);
 }
-INCLUDE_ASM("asm/funcs", func_80037348);
+INCLUDE_ASM("asm/funcs", special_camera_get_rot_dir);
+/* kengo:MED  |  nm_special_cam/special_camera_get_rot_dir  |  66i  |  +6 9.1% */
 void func_80037468(s32 a0, s32 *a1, s32 a2) {
     s32 sp[16];
     func_800828CC(0);
@@ -878,7 +879,7 @@ void func_80037468(s32 a0, s32 *a1, s32 a2) {
     func_80037774();
     irq_DisableInterrupts();
     func_8007FF7C();
-    func_80037348(sp);
+    special_camera_get_rot_dir(sp);
     func_8007B33C(0);
     func_8007AE7C(0);
     func_80078D68();

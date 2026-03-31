@@ -54,7 +54,7 @@ func_800387E8
 func_8003880C
 func_800388A8
 func_80038988
-func_80038C70
+motion_SetMotion
 func_800392C8
 func_80039320
 saSeInit_2

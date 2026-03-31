@@ -243,7 +243,7 @@ extern u8 D_800A3768;
 extern u8 D_800A38F8;
 extern void func_8005B50C(void);
 extern void irq_DisableInterrupts(void);
-extern void func_80037348(s32 *);
+extern void special_camera_get_rot_dir(s32 *);
 extern void func_8007AE7C(s32);
 extern void func_80078D68(void);
 extern void irq_Reset(void);
@@ -994,7 +994,8 @@ s32 func_800388A8(void) {
     return result;
 }
 INCLUDE_ASM("asm/funcs", func_80038988);
-INCLUDE_ASM("asm/funcs", func_80038C70);
+INCLUDE_ASM("asm/funcs", motion_SetMotion);
+/* kengo:MED  |  is_motion/motion_SetMotion  |  425i  |  -23 5.4% */
 s32 *func_800392B8(void) {
     return &D_800F33D8;
 }

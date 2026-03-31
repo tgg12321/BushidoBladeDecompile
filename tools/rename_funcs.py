@@ -219,6 +219,14 @@ RENAMES = {
     "func_800812FC": "tslTm2LoadImage",
     "func_80082000": "tslTm2LoadImage_2",
     "func_8001DCB0": "mario_test_Exec",
+    # Kengo near-miss batch LOW confidence (±10%, 2026-03-30)
+    "func_80038C70": "motion_SetMotion",
+    "func_80037348": "special_camera_get_rot_dir",
+    "func_800836C8": "ang_hosei",
+    "func_800833C8": "conv_matrix_rotation",
+    # Expanded affinity batch (exact matches unlocked by new module entries)
+    "func_80082C3C": "motion_make_table",
+    "func_80083794": "motion_Open",
 }
 
 dry_run = "--apply" not in sys.argv

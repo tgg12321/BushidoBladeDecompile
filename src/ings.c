@@ -29,7 +29,7 @@ extern void func_80079208();
 extern void func_800164F8(void);
 extern s16 D_800973FC[];
 extern s32 func_80083698(s32, s32, s32);
-extern s32 func_800836C8(s32, s32, s32);
+extern s32 ang_hosei(s32, s32, s32);
 extern s32 bios_FileRead(s32, u8 *, s32);
 extern void func_80078A18(s32);
 extern void func_800836B8(s32);
@@ -75,7 +75,7 @@ extern void func_80078BA8(u32);
 extern s32 func_80078B04(u32);
 extern s32 func_80079154(void);
 extern void func_800372C0(void);
-extern void func_80083794(void);
+extern void motion_Open(void);
 extern void func_800789D8(u32);
 extern void func_80078968(s32);
 extern void func_80060E04(s32);
@@ -140,9 +140,9 @@ s32 file_LoadAll(s32 a0, u8 *dest) {
     if (fd == -1) {
         return -2;
     }
-    total = func_800836C8(fd, 0, 2);
+    total = ang_hosei(fd, 0, 2);
     remaining = total;
-    func_800836C8(fd, 0, 0);
+    ang_hosei(fd, 0, 0);
     if (total > 0) {
         do {
             chunk = 0x4000;
@@ -169,7 +169,7 @@ s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
     if (fd == -1) {
         return -2;
     }
-    func_800836C8(fd, sector << 11, 0);
+    ang_hosei(fd, sector << 11, 0);
     i = 0;
     if (count > 0) {
         do {

@@ -63,10 +63,11 @@ FILE_MODULE_AFFINITY = {
     ],
     "code6cac.c": [
         "nm_camera", "nm_single_game", "nm_cpu",
-        "md_game", "nm_mario", "is_motion",
+        "md_game", "nm_mario", "nm_mario_test", "is_motion",
     ],
     "code6cac_b2.c": [
         "nm_special_cam", "nm_mario_cam", "nm_replay_cam",
+        "nm_tanren_cam",
     ],
     "code6cac_c.c": [
         "is_coli", "is_ki_control", "is_damage_calc",
@@ -81,18 +82,19 @@ FILE_MODULE_AFFINITY = {
         "se_fc", "se_qt", "am_rmd",
     ],
     "main.c": [
-        "md_game", "md_dummy", "is_learn", "is_league",
+        "md_game", "md_dummy", "md_sel", "is_learn", "is_league",
         "is_stats", "is_status", "is_replay", "is_rob_test",
         "am_rmd", "is_action", "is_coli", "sa_tan",
     ],
     "system.c": [
         "tsl_", "sa_se", "sa_load", "sa_main", "sa_eft",
+        "nm_mario", "am_rmd",
     ],
     "ings.c": [
         "hi_curpad", "hi_gnd", "hi_landhit", "hi_gview", "hi_kgm", "common",
     ],
     "ings2.c": [
-        "common",
+        "common", "is_motion",
     ],
     "config.c": [
         "md_option", "fade", "game_2d", "common",

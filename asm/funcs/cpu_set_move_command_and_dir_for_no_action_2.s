@@ -5,7 +5,7 @@ glabel cpu_set_move_command_and_dir_for_no_action_2
     /* 7A0C 8001720C 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 7A10 80017210 1800B2AF */  sw         $s2, 0x18($sp)
     /* 7A14 80017214 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 7A18 80017218 E50D020C */  jal        func_80083794
+    /* 7A18 80017218 E50D020C */  jal        motion_Open
     /* 7A1C 8001721C 1000B0AF */   sw        $s0, 0x10($sp)
     /* 7A20 80017220 1F80043C */  lui        $a0, (0x801FFF00 >> 16)
     /* 7A24 80017224 76E2010C */  jal        func_800789D8

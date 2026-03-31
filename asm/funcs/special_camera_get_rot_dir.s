@@ -1,4 +1,4 @@
-glabel func_80037348
+glabel special_camera_get_rot_dir
     /* 27B48 80037348 C8F7BD27 */  addiu      $sp, $sp, -0x838
     /* 27B4C 8003734C 1808B0AF */  sw         $s0, 0x818($sp)
     /* 27B50 80037350 21808000 */  addu       $s0, $a0, $zero
@@ -73,4 +73,4 @@ glabel func_80037348
     /* 27C5C 8003745C 3808BD27 */  addiu      $sp, $sp, 0x838
     /* 27C60 80037460 0800E003 */  jr         $ra
     /* 27C64 80037464 00000000 */   nop
-endlabel func_80037348
+endlabel special_camera_get_rot_dir
