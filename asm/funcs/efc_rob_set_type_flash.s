@@ -19,8 +19,8 @@ glabel efc_rob_set_type_flash
     /* 35044 80044844 21A00000 */   addu      $s4, $zero, $zero
     /* 35048 80044848 F6FF7524 */  addiu      $s5, $v1, -0xA
     /* 3504C 8004484C 1800B727 */  addiu      $s7, $sp, 0x18
-    /* 35050 80044850 09801E3C */  lui        $fp, %hi(D_800973FC)
-    /* 35054 80044854 FC73DE27 */  addiu      $fp, $fp, %lo(D_800973FC)
+    /* 35050 80044850 09801E3C */  lui        $fp, %hi(Judge)
+    /* 35054 80044854 FC73DE27 */  addiu      $fp, $fp, %lo(Judge)
     /* 35058 80044858 21B00000 */  addu       $s6, $zero, $zero
   .L8004485C:
     /* 3505C 8004485C 5800538E */  lw         $s3, 0x58($s2)

@@ -80,8 +80,8 @@ glabel func_80033DF4
     /* 24718 80033F18 80280500 */  sll        $a1, $a1, 2
     /* 2471C 80033F1C 0A80013C */  lui        $at, %hi(D_800A38E2)
     /* 24720 80033F20 E23822A0 */  sb         $v0, %lo(D_800A38E2)($at)
-    /* 24724 80033F24 0980023C */  lui        $v0, %hi(D_8008E778)
-    /* 24728 80033F28 78E74224 */  addiu      $v0, $v0, %lo(D_8008E778)
+    /* 24724 80033F24 0980023C */  lui        $v0, %hi(cpu_practice_honmokuroku_data_tbl)
+    /* 24728 80033F28 78E74224 */  addiu      $v0, $v0, %lo(cpu_practice_honmokuroku_data_tbl)
     /* 2472C 80033F2C 2128A200 */  addu       $a1, $a1, $v0
     /* 24730 80033F30 0A80013C */  lui        $at, %hi(D_800A376B)
     /* 24734 80033F34 6B3720A0 */  sb         $zero, %lo(D_800A376B)($at)

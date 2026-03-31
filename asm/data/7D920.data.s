@@ -1148,9 +1148,9 @@ dlabel D_8008DB1C
     /* 7E4C8 8008DCC8 21032103 */ .word 0x03210321
 enddlabel D_8008DB1C
 
-nonmatching D_8008DCCC
+nonmatching menuDat
 
-dlabel D_8008DCCC
+dlabel menuDat
     /* 7E4CC 8008DCCC 21030000 */ .word 0x00000321
     /* 7E4D0 8008DCD0 08040180 */ .word 0x80010408
     /* 7E4D4 8008DCD4 21040000 */ .word 0x00000421
@@ -1187,7 +1187,7 @@ dlabel D_8008DCCC
     /* 7E550 8008DD50 14310A80 */ .word D_800A3114
     /* 7E554 8008DD54 00000000 */ .word 0x00000000
     /* 7E558 8008DD58 00000000 */ .word 0x00000000
-enddlabel D_8008DCCC
+enddlabel menuDat
 
 nonmatching D_8008DD5C
 
@@ -2201,9 +2201,9 @@ dlabel D_8008E75C
     /* 7EF77 8008E777 */ .byte 0x00
 enddlabel D_8008E75C
 
-nonmatching D_8008E778
+nonmatching cpu_practice_honmokuroku_data_tbl
 
-dlabel D_8008E778
+dlabel cpu_practice_honmokuroku_data_tbl
     /* 7EF78 8008E778 */ .byte 0x00
     /* 7EF79 8008E779 */ .byte 0xFF
     /* 7EF7A 8008E77A */ .byte 0x40
@@ -2604,7 +2604,7 @@ dlabel D_8008E778
     /* 7F105 8008E905 */ .byte 0x00
     /* 7F106 8008E906 */ .byte 0x00
     /* 7F107 8008E907 */ .byte 0x00
-enddlabel D_8008E778
+enddlabel cpu_practice_honmokuroku_data_tbl
 
 nonmatching D_8008E908
 
@@ -2913,9 +2913,9 @@ dlabel D_8008EB54
     /* 7F354 8008EB54 */ .short 0x0000
 enddlabel D_8008EB54
 
-nonmatching D_8008EB56
+nonmatching single_dojo_yaburi_char_id_tbl
 
-dlabel D_8008EB56
+dlabel single_dojo_yaburi_char_id_tbl
     /* 7F356 8008EB56 */ .short 0xFB00
     /* 7F358 8008EB58 */ .short 0xFF6B
     /* 7F35A 8008EB5A */ .short 0xFD58
@@ -2927,7 +2927,7 @@ dlabel D_8008EB56
     /* 7F366 8008EB66 */ .short 0xFB00
     /* 7F368 8008EB68 */ .short 0x0095
     /* 7F36A 8008EB6A */ .short 0xFD58
-enddlabel D_8008EB56
+enddlabel single_dojo_yaburi_char_id_tbl
 
 nonmatching D_8008EB6C
 
@@ -3119,11 +3119,11 @@ dlabel D_8008EC30
     /* 7F433 8008EC33 */ .byte 0x00
 enddlabel D_8008EC30
 
-nonmatching D_8008EC34
+nonmatching SpecialCam
 
-dlabel D_8008EC34
+dlabel SpecialCam
     /* 7F434 8008EC34 01086800 */ .word 0x00680801
-enddlabel D_8008EC34
+enddlabel SpecialCam
 
 nonmatching D_8008EC38
 
@@ -5054,9 +5054,9 @@ dlabel D_800906A4
     /* 80EA4 800906A4 */ .short 0x0001
 enddlabel D_800906A4
 
-nonmatching D_800906A6
+nonmatching StatusUpBuf
 
-dlabel D_800906A6
+dlabel StatusUpBuf
     /* 80EA6 800906A6 */ .short 0x0000
     /* 80EA8 800906A8 */ .short 0x0001
     /* 80EAA 800906AA */ .short 0x0000
@@ -5134,7 +5134,7 @@ dlabel D_800906A6
     /* 80F3A 8009073A */ .short 0x0000
     /* 80F3C 8009073C */ .short 0x0000
     /* 80F3E 8009073E */ .short 0x0000
-enddlabel D_800906A6
+enddlabel StatusUpBuf
 
 nonmatching D_80090740
 
@@ -10051,9 +10051,9 @@ dlabel D_80094E08
     /* 85647 80094E47 */ .byte 0xFF
 enddlabel D_80094E08
 
-nonmatching D_80094E48
+nonmatching StageLight
 
-dlabel D_80094E48
+dlabel StageLight
     /* 85648 80094E48 B5A79800 */ .word 0x0098A7B5
     /* 8564C 80094E4C 715D5F00 */ .word 0x005F5D71
     /* 85650 80094E50 A3849A00 */ .word 0x009A84A3
@@ -10282,7 +10282,7 @@ dlabel D_80094E48
     /* 859CC 800951CC 3F251F00 */ .word 0x001F253F
     /* 859D0 800951D0 5006000E */ .word 0x0E000650
     /* 859D4 800951D4 00000000 */ .word 0x00000000
-enddlabel D_80094E48
+enddlabel StageLight
 
 nonmatching D_800951D8
 
@@ -14463,9 +14463,9 @@ dlabel D_800973EC
     /* 87BFA 800973FA */ .short 0x0000
 enddlabel D_800973EC
 
-nonmatching D_800973FC
+nonmatching Judge
 
-dlabel D_800973FC
+dlabel Judge
     /* 87BFC 800973FC */ .short 0x0000
     /* 87BFE 800973FE */ .short 0x0006
     /* 87C00 80097400 */ .short 0x000C
@@ -18562,7 +18562,7 @@ dlabel D_800973FC
     /* 89BF6 800993F6 */ .short 0xFFEE
     /* 89BF8 800993F8 */ .short 0xFFF4
     /* 89BFA 800993FA */ .short 0xFFFA
-enddlabel D_800973FC
+enddlabel Judge
 
 nonmatching D_800993FC
 
@@ -19396,9 +19396,9 @@ dlabel D_80099D3C
     /* 8A550 80099D50 19045502 */ .word 0x02550419
 enddlabel D_80099D3C
 
-nonmatching D_80099D54
+nonmatching InfoPosYTbl1
 
-dlabel D_80099D54
+dlabel InfoPosYTbl1
     /* 8A554 80099D54 */ .short 0x0131
     /* 8A556 80099D56 */ .short 0x0151
     /* 8A558 80099D58 */ .short 0x0171
@@ -19425,7 +19425,7 @@ dlabel D_80099D54
     /* 8A582 80099D82 */ .short 0xFFFF
     /* 8A584 80099D84 */ .short 0xFFFF
     /* 8A586 80099D86 */ .short 0x0000
-enddlabel D_80099D54
+enddlabel InfoPosYTbl1
 
 nonmatching D_80099D88
 
@@ -21803,9 +21803,9 @@ dlabel D_8009ADC0
     /* 8B5D4 8009ADD4 D000300C */ .word 0x0C3000D0
 enddlabel D_8009ADC0
 
-nonmatching D_8009ADD8
+nonmatching UesrWorkDef
 
-dlabel D_8009ADD8
+dlabel UesrWorkDef
     /* 8B5D8 8009ADD8 00005000 */ .word 0x00500000
     /* 8B5DC 8009ADDC 0000200C */ .word 0x0C200000
     /* 8B5E0 8009ADE0 20005000 */ .word 0x00500020
@@ -21917,7 +21917,7 @@ dlabel D_8009ADD8
     /* 8B788 8009AF88 00005000 */ .word 0x00500000
     /* 8B78C 8009AF8C 8018200C */ .word 0x0C201880
     /* 8B790 8009AF90 20005000 */ .word 0x00500020
-enddlabel D_8009ADD8
+enddlabel UesrWorkDef
 
 nonmatching D_8009AF94
 
@@ -23341,9 +23341,9 @@ dlabel D_8009BA60
     /* 8C27B 8009BA7B */ .byte 0x00
 enddlabel D_8009BA60
 
-nonmatching D_8009BA7C
+nonmatching chractar_use_pset_combo_id_table
 
-dlabel D_8009BA7C
+dlabel chractar_use_pset_combo_id_table
     /* 8C27C 8009BA7C F03A0680 */ .word func_80063AF0
     /* 8C280 8009BA80 783B0680 */ .word func_80063B78
     /* 8C284 8009BA84 343B0680 */ .word func_80063B34
@@ -23406,7 +23406,7 @@ dlabel D_8009BA7C
     /* 8C368 8009BB68 6C780680 */ .word func_8006786C
     /* 8C36C 8009BB6C 8C280680 */ .word func_8006288C
     /* 8C370 8009BB70 5C290680 */ .word func_8006295C
-enddlabel D_8009BA7C
+enddlabel chractar_use_pset_combo_id_table
 
 nonmatching D_8009BB74
 

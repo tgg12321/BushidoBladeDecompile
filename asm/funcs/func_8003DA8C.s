@@ -63,20 +63,20 @@ glabel func_8003DA8C
     /* 2E368 8003DB68 0C061026 */  addiu      $s0, $s0, %lo(D_8009060C)
     /* 2E36C 8003DB6C 0980013C */  lui        $at, %hi(D_80090608)
     /* 2E370 8003DB70 080622A4 */  sh         $v0, %lo(D_80090608)($at)
-    /* 2E374 8003DB74 0980013C */  lui        $at, %hi(D_800906A6)
+    /* 2E374 8003DB74 0980013C */  lui        $at, %hi(StatusUpBuf)
     /* 2E378 8003DB78 21083100 */  addu       $at, $at, $s1
-    /* 2E37C 8003DB7C A6062284 */  lh         $v0, %lo(D_800906A6)($at)
+    /* 2E37C 8003DB7C A6062284 */  lh         $v0, %lo(StatusUpBuf)($at)
     /* 2E380 8003DB80 21803002 */  addu       $s0, $s1, $s0
     /* 2E384 8003DB84 1000A2AF */  sw         $v0, 0x10($sp)
     /* 2E388 8003DB88 0000078E */  lw         $a3, 0x0($s0)
-    /* 2E38C 8003DB8C 0A80063C */  lui        $a2, %hi(D_800A3D70)
-    /* 2E390 8003DB90 703DC624 */  addiu      $a2, $a2, %lo(D_800A3D70)
+    /* 2E38C 8003DB8C 0A80063C */  lui        $a2, %hi(light_effect_col)
+    /* 2E390 8003DB90 703DC624 */  addiu      $a2, $a2, %lo(light_effect_col)
     /* 2E394 8003DB94 F9F6000C */  jal        func_8003DBE4
     /* 2E398 8003DB98 1F000524 */   addiu     $a1, $zero, 0x1F
     /* 2E39C 8003DB9C 21204002 */  addu       $a0, $s2, $zero
-    /* 2E3A0 8003DBA0 0980013C */  lui        $at, %hi(D_800906A6)
+    /* 2E3A0 8003DBA0 0980013C */  lui        $at, %hi(StatusUpBuf)
     /* 2E3A4 8003DBA4 21083100 */  addu       $at, $at, $s1
-    /* 2E3A8 8003DBA8 A6062284 */  lh         $v0, %lo(D_800906A6)($at)
+    /* 2E3A8 8003DBA8 A6062284 */  lh         $v0, %lo(StatusUpBuf)($at)
     /* 2E3AC 8003DBAC 00000000 */  nop
     /* 2E3B0 8003DBB0 1000A2AF */  sw         $v0, 0x10($sp)
     /* 2E3B4 8003DBB4 0000078E */  lw         $a3, 0x0($s0)

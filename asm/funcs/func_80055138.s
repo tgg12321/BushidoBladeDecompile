@@ -174,9 +174,9 @@ glabel func_80055138
     /* 45BC4 800553C4 00000000 */  nop
     /* 45BC8 800553C8 FFFF4224 */  addiu      $v0, $v0, -0x1
     /* 45BCC 800553CC 80100200 */  sll        $v0, $v0, 2
-    /* 45BD0 800553D0 0980013C */  lui        $at, %hi(D_8008E778)
+    /* 45BD0 800553D0 0980013C */  lui        $at, %hi(cpu_practice_honmokuroku_data_tbl)
     /* 45BD4 800553D4 21082200 */  addu       $at, $at, $v0
-    /* 45BD8 800553D8 78E72290 */  lbu        $v0, %lo(D_8008E778)($at)
+    /* 45BD8 800553D8 78E72290 */  lbu        $v0, %lo(cpu_practice_honmokuroku_data_tbl)($at)
     /* 45BDC 800553DC 00000000 */  nop
     /* 45BE0 800553E0 1B004224 */  addiu      $v0, $v0, 0x1B
     /* 45BE4 800553E4 430402A2 */  sb         $v0, 0x443($s0)

@@ -1037,9 +1037,9 @@ __asm__(
     "    sll  $v0,$v0,1\n"
     "    sh  $zero,50($sp)\n"
     "    sh  $zero,52($sp)\n"
-    "    lui  $at,%hi(D_800973FC)\n"
+    "    lui  $at,%hi(Judge)\n"
     "    addu  $at,$at,$v0\n"
-    "    lh  $v0,%lo(D_800973FC)($at)\n"
+    "    lh  $v0,%lo(Judge)($at)\n"
     "    addiu  $v1,$zero,6000\n"
     "    mult  $v0,$v1\n"
     "    mflo  $t3\n"
@@ -1048,9 +1048,9 @@ __asm__(
     "    addiu  $v0,$s4,1024\n"
     "    andi  $v0,$v0,4095\n"
     "    sll  $v0,$v0,1\n"
-    "    lui  $at,%hi(D_800973FC)\n"
+    "    lui  $at,%hi(Judge)\n"
     "    addu  $at,$at,$v0\n"
-    "    lh  $v0,%lo(D_800973FC)($at)\n"
+    "    lh  $v0,%lo(Judge)($at)\n"
     "    nop\n"
     "    mult  $v0,$v1\n"
     "    addiu  $s1,$sp,48\n"
@@ -2732,8 +2732,8 @@ __asm__(
     "    sw     $s2, 24($sp)\n"
     "    sw     $s1, 20($sp)\n"
     "    sw     $s0, 16($sp)\n"
-    "    lui    $v0, %hi(D_800973FC)\n"
-    "    addiu  $v0, $v0, %lo(D_800973FC)\n"
+    "    lui    $v0, %hi(Judge)\n"
+    "    addiu  $v0, $v0, %lo(Judge)\n"
     "    lhu    $t0, 0($a0)\n"
     "    lhu    $t1, 2($a0)\n"
     "    lhu    $t2, 4($a0)\n"
@@ -14483,10 +14483,10 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-extern s16 D_80099D54[];
+extern s16 InfoPosYTbl1[];
 extern void func_80054604(s32, s32, s32, s32, s32, s32, s32);
 void func_80054884(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
-    func_80054604(D_80099D54[a0] + a1 - 0x131, a2, a3, a4, a5, a6, a7);
+    func_80054604(InfoPosYTbl1[a0] + a1 - 0x131, a2, a3, a4, a5, a6, a7);
 }
 void func_8007B33C(s32);
 void func_8004659C(s32);
@@ -14619,17 +14619,17 @@ __asm__(
     "    andi  $v1,$v1,4095\n"
     "    sll  $v1,$v1,1\n"
     "    sw  $a1,32($sp)\n"
-    "    lui  $at,%hi(D_800973FC)\n"
+    "    lui  $at,%hi(Judge)\n"
     "    addu  $at,$at,$v1\n"
-    "    lh  $t0,%lo(D_800973FC)($at)\n"
+    "    lh  $t0,%lo(Judge)($at)\n"
     "    nop\n"
     "    mult  $a1,$t0\n"
     "    andi  $a0,$a0,4095\n"
     "    sll  $a0,$a0,1\n"
     "    mflo  $t1\n"
-    "    lui  $at,%hi(D_800973FC)\n"
+    "    lui  $at,%hi(Judge)\n"
     "    addu  $at,$at,$a0\n"
-    "    lh  $v1,%lo(D_800973FC)($at)\n"
+    "    lh  $v1,%lo(Judge)($at)\n"
     "    nop\n"
     "    mult  $a2,$v1\n"
     "    mflo  $t2\n"
@@ -14726,8 +14726,8 @@ __asm__(
     "    addu  $s1,$zero,$zero\n"
     ".L80054C60:\n"
     "    addiu  $s6,$sp,40\n"
-    "    lui  $s5,%hi(D_800973FC)\n"
-    "    addiu  $s5,$s5,%lo(D_800973FC)\n"
+    "    lui  $s5,%hi(Judge)\n"
+    "    addiu  $s5,$s5,%lo(Judge)\n"
     "    addu  $s2,$s3,$zero\n"
     "    lui  $v0,%hi(D_80101E00)\n"
     "    lhu  $v0,%lo(D_80101E00)($v0)\n"
@@ -15225,9 +15225,9 @@ __asm__(
     "    nop\n"
     "    addiu  $v0,$v0,-1\n"
     "    sll  $v0,$v0,2\n"
-    "    lui  $at,%hi(D_8008E778)\n"
+    "    lui  $at,%hi(cpu_practice_honmokuroku_data_tbl)\n"
     "    addu  $at,$at,$v0\n"
-    "    lbu  $v0,%lo(D_8008E778)($at)\n"
+    "    lbu  $v0,%lo(cpu_practice_honmokuroku_data_tbl)($at)\n"
     "    nop\n"
     "    addiu  $v0,$v0,27\n"
     "    sb  $v0,1091($s0)\n"
@@ -17066,8 +17066,8 @@ __asm__(
     ".L80056D94:\n"
     "    andi  $v0,$s0,4095\n"
     "    sll  $v0,$v0,1\n"
-    "    lui  $t3,%hi(D_800973FC)\n"
-    "    addiu  $t3,$t3,%lo(D_800973FC)\n"
+    "    lui  $t3,%hi(Judge)\n"
+    "    addiu  $t3,$t3,%lo(Judge)\n"
     "    addu  $s5,$v0,$t3\n"
     "    lui  $at,%hi(D_8009A820)\n"
     "    addu  $at,$at,$fp\n"
@@ -17426,8 +17426,8 @@ __asm__(
     "    lw  $a3,0($s0)\n"
     "    nop\n"
     "    lh  $v0,472($a3)\n"
-    "    lui  $t1,%hi(D_800973FC)\n"
-    "    addiu  $t1,$t1,%lo(D_800973FC)\n"
+    "    lui  $t1,%hi(Judge)\n"
+    "    addiu  $t1,$t1,%lo(Judge)\n"
     "    addu  $a2,$v0,$s1\n"
     "    andi  $v0,$a2,4095\n"
     "    sll  $v0,$v0,1\n"
@@ -17496,8 +17496,8 @@ __asm__(
     "    lw  $a3,0($s0)\n"
     "    nop\n"
     "    lh  $v0,472($a3)\n"
-    "    lui  $t1,%hi(D_800973FC)\n"
-    "    addiu  $t1,$t1,%lo(D_800973FC)\n"
+    "    lui  $t1,%hi(Judge)\n"
+    "    addiu  $t1,$t1,%lo(Judge)\n"
     "    subu  $a2,$v0,$s1\n"
     "    andi  $v0,$a2,4095\n"
     "    sll  $v0,$v0,1\n"
@@ -17608,8 +17608,8 @@ __asm__(
     "    addiu  $s1,$zero,512\n"
     "    sll  $v0,$s6,24\n"
     "    sra  $t0,$v0,24\n"
-    "    lui  $a3,%hi(D_800973FC)\n"
-    "    addiu  $a3,$a3,%lo(D_800973FC)\n"
+    "    lui  $a3,%hi(Judge)\n"
+    "    addiu  $a3,$a3,%lo(Judge)\n"
     ".L80057530:\n"
     "    lw  $v0,0($s0)\n"
     "    nop\n"
@@ -18257,9 +18257,9 @@ __asm__(
     "    addu  $v1,$v1,$v0\n"
     "    andi  $v0,$a0,4095\n"
     "    sll  $v0,$v0,1\n"
-    "    lui  $at,%hi(D_800973FC)\n"
+    "    lui  $at,%hi(Judge)\n"
     "    addu  $at,$at,$v0\n"
-    "    lh  $v0,%lo(D_800973FC)($at)\n"
+    "    lh  $v0,%lo(Judge)($at)\n"
     "    sll  $v1,$v1,3\n"
     "    mult  $v1,$v0\n"
     "    mflo  $t0\n"
@@ -18271,9 +18271,9 @@ __asm__(
     "    addiu  $v0,$v0,1024\n"
     "    andi  $v0,$v0,4095\n"
     "    sll  $v0,$v0,1\n"
-    "    lui  $at,%hi(D_800973FC)\n"
+    "    lui  $at,%hi(Judge)\n"
     "    addu  $at,$at,$v0\n"
-    "    lh  $v0,%lo(D_800973FC)($at)\n"
+    "    lh  $v0,%lo(Judge)($at)\n"
     "    nop\n"
     "    mult  $v1,$v0\n"
     "    mflo  $t0\n"
@@ -22163,8 +22163,8 @@ void func_800858D0(s32);
 void func_80087F64(s32);
 extern s32 D_800EFC38;
 extern s32 D_80015470;
-extern u8 D_8008E778;
-extern s16 D_800973FC;
+extern u8 cpu_practice_honmokuroku_data_tbl;
+extern s16 Judge;
 extern u8 D_80099BCC;
 extern u8 D_80099CC8;
 extern u8 D_80099CC9;
@@ -22202,7 +22202,7 @@ extern u16 D_8009B452;
 extern u8 D_8009B48E;
 extern u8 D_8009B58C;
 extern u8 D_8009BA60;
-extern s32 D_8009BA7C;
+extern s32 chractar_use_pset_combo_id_table;
 extern s32 D_8009BC04;
 extern s32 D_8009BC08;
 extern u8 D_8009BC0C;
@@ -22345,7 +22345,7 @@ extern s32 D_800F0D70;
 extern s32 D_800F0D74;
 extern s32 D_800F0D78;
 extern s32 D_800F0D7C;
-extern s32 D_800F0D80;
+extern s32 videoDec;
 extern s32 D_800F0E38;
 extern s32 D_800F0E3C;
 extern s32 D_800F0E40;
@@ -26169,8 +26169,8 @@ __asm__(
     "    sll  $v0,$a0,1\n"
     "    addu  $v0,$v0,$a0\n"
     "    sll  $v0,$v0,3\n"
-    "    lui  $v1,%hi(D_8009ADD8)\n"
-    "    addiu  $v1,$v1,%lo(D_8009ADD8)\n"
+    "    lui  $v1,%hi(UesrWorkDef)\n"
+    "    addiu  $v1,$v1,%lo(UesrWorkDef)\n"
     "    addu  $v0,$v0,$v1\n"
     "    sw  $v0,44($sp)\n"
     "    sll  $v0,$a1,6\n"
@@ -28266,9 +28266,9 @@ __asm__(
     "    nop\n"
     "    addu  $v0,$v0,$v1\n"
     "    sll  $v0,$v0,2\n"
-    "    lui  $at,%hi(D_8009BA7C)\n"
+    "    lui  $at,%hi(chractar_use_pset_combo_id_table)\n"
     "    addu  $at,$at,$v0\n"
-    "    lw  $v0,%lo(D_8009BA7C)($at)\n"
+    "    lw  $v0,%lo(chractar_use_pset_combo_id_table)($at)\n"
     "    nop\n"
     "    jalr  $v0\n"
     "    nop\n"
@@ -28348,9 +28348,9 @@ __asm__(
     "    nop\n"
     "    addu  $v0,$v0,$v1\n"
     "    sll  $v0,$v0,2\n"
-    "    lui  $at,%hi(D_8009BA7C)\n"
+    "    lui  $at,%hi(chractar_use_pset_combo_id_table)\n"
     "    addu  $at,$at,$v0\n"
-    "    lw  $v0,%lo(D_8009BA7C)($at)\n"
+    "    lw  $v0,%lo(chractar_use_pset_combo_id_table)($at)\n"
     "    nop\n"
     "    jalr  $v0\n"
     "    nop\n"
@@ -32519,9 +32519,9 @@ __asm__(
     "    andi  $v0,$v0,255\n"
     "    addu  $v1,$v1,$v0\n"
     "    addiu  $v1,$v1,-127\n"
-    "    lui  $at,%hi(D_800F0D80)\n"
+    "    lui  $at,%hi(videoDec)\n"
     "    addu  $at,$at,$s0\n"
-    "    sw  $v1,%lo(D_800F0D80)($at)\n"
+    "    sw  $v1,%lo(videoDec)($at)\n"
     "    jal  func_80079154\n"
     "    nop\n"
     "    .word 0x8F830378\n"
@@ -32666,9 +32666,9 @@ __asm__(
     "    addu  $a0,$s5,$zero\n"
     "    subu  $v0,$v0,$v1\n"
     "    sw  $v0,4($s5)\n"
-    "    lui  $at,%hi(D_800F0D80)\n"
+    "    lui  $at,%hi(videoDec)\n"
     "    addu  $at,$at,$a1\n"
-    "    lw  $v0,%lo(D_800F0D80)($at)\n"
+    "    lw  $v0,%lo(videoDec)($at)\n"
     "    lw  $v1,8($a2)\n"
     "    lw  $a1,24($sp)\n"
     "    subu  $v0,$v0,$v1\n"

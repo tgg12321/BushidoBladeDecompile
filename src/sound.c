@@ -34,7 +34,7 @@ extern void camera_InitRotation(u8 *);
 extern void func_80042A88(s32 *, s32 *);
 extern void func_8007ED6C(s32 *, s16 *, s32 *);
 extern s16 func_8007FD5C(s32, s32);
-extern s16 D_800973FC[];
+extern s16 Judge[];
 extern s16 D_800A33C8;
 extern s16 D_800A33CA;
 extern s32 D_800A3708;
@@ -438,8 +438,8 @@ s16 *camera_CalcAngles(void) {
     rot[2] = 0x1000;
     func_8007ED6C(pos, rot, sp18);
     s0 = func_8007FD5C(sp18[0], sp18[2]);
-    a1 = ((s32)D_800973FC[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
-         + (s32)D_800973FC[s0 & 0xFFF] * sp18[0]) >> 12;
+    a1 = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
+         + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
     sp18[2] = a1;
     D_800A33C8 = -func_8007FD5C(sp18[1], a1);
     D_800A33CA = s0;

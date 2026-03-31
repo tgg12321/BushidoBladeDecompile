@@ -61,8 +61,8 @@ glabel func_80056CB8
   .L80056D94:
     /* 47594 80056D94 FF0F0232 */  andi       $v0, $s0, 0xFFF
     /* 47598 80056D98 40100200 */  sll        $v0, $v0, 1
-    /* 4759C 80056D9C 09800B3C */  lui        $t3, %hi(D_800973FC)
-    /* 475A0 80056DA0 FC736B25 */  addiu      $t3, $t3, %lo(D_800973FC)
+    /* 4759C 80056D9C 09800B3C */  lui        $t3, %hi(Judge)
+    /* 475A0 80056DA0 FC736B25 */  addiu      $t3, $t3, %lo(Judge)
     /* 475A4 80056DA4 21A84B00 */  addu       $s5, $v0, $t3
     /* 475A8 80056DA8 0A80013C */  lui        $at, %hi(D_8009A820)
     /* 475AC 80056DAC 21083E00 */  addu       $at, $at, $fp

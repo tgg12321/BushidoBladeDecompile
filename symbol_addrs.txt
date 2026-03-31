@@ -235,3 +235,17 @@ g_str_bbm_n123 = 0x80010378; // N123.BBM
 g_str_bbm_k123 = 0x80010384; // K123.BBM
 g_str_bbm_t123 = 0x80010390; // T123.BBM
 g_str_bbm_s123 = 0x800103C0; // S123.BBM
+
+// === Kengo-derived data symbol names ===
+menuDat = 0x8008DCCC;
+cpu_practice_honmokuroku_data_tbl = 0x8008E778;
+single_dojo_yaburi_char_id_tbl = 0x8008EB56;
+SpecialCam = 0x8008EC34;
+StatusUpBuf = 0x800906A6;
+InfoPosYTbl1 = 0x80099D54;
+UesrWorkDef = 0x8009ADD8;
+chractar_use_pset_combo_id_table = 0x8009BA7C;
+light_effect_col = 0x800A3D70;
+videoDec = 0x800F0D80;
+MarioCam_str = 0x800F19D0;
+selCharaID = 0x80102092;

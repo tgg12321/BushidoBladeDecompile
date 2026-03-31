@@ -149,14 +149,14 @@ glabel DispPracticeMenuTex_B
     /* 11888 80021088 00000000 */  nop
     /* 1188C 8002108C 4E006010 */  beqz       $v1, .L800211C8
     /* 11890 80021090 00000000 */   nop
-    /* 11894 80021094 0980023C */  lui        $v0, %hi(D_8008DCCC)
-    /* 11898 80021098 CCDC428C */  lw         $v0, %lo(D_8008DCCC)($v0)
+    /* 11894 80021094 0980023C */  lui        $v0, %hi(menuDat)
+    /* 11898 80021098 CCDC428C */  lw         $v0, %lo(menuDat)($v0)
     /* 1189C 8002109C 00000000 */  nop
     /* 118A0 800210A0 0C004010 */  beqz       $v0, .L800210D4
     /* 118A4 800210A4 21800000 */   addu      $s0, $zero, $zero
     /* 118A8 800210A8 21206000 */  addu       $a0, $v1, $zero
-    /* 118AC 800210AC 0980033C */  lui        $v1, %hi(D_8008DCCC)
-    /* 118B0 800210B0 CCDC6324 */  addiu      $v1, $v1, %lo(D_8008DCCC)
+    /* 118AC 800210AC 0980033C */  lui        $v1, %hi(menuDat)
+    /* 118B0 800210B0 CCDC6324 */  addiu      $v1, $v1, %lo(menuDat)
     /* 118B4 800210B4 0000628C */  lw         $v0, 0x0($v1)
   .L800210B8:
     /* 118B8 800210B8 00000000 */  nop

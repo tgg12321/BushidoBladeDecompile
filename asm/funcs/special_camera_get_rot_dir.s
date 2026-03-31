@@ -13,8 +13,8 @@ glabel special_camera_get_rot_dir
     /* 27B74 80037374 AADB000C */  jal        func_80036EA8
     /* 27B78 80037378 1C08B1AF */   sw        $s1, 0x81C($sp)
     /* 27B7C 8003737C C0900200 */  sll        $s2, $v0, 3
-    /* 27B80 80037380 0980133C */  lui        $s3, %hi(D_8008EC34)
-    /* 27B84 80037384 34EC7326 */  addiu      $s3, $s3, %lo(D_8008EC34)
+    /* 27B80 80037380 0980133C */  lui        $s3, %hi(SpecialCam)
+    /* 27B84 80037384 34EC7326 */  addiu      $s3, $s3, %lo(SpecialCam)
     /* 27B88 80037388 5000B527 */  addiu      $s5, $sp, 0x50
     /* 27B8C 8003738C 1008B127 */  addiu      $s1, $sp, 0x810
     /* 27B90 80037390 02000424 */  addiu      $a0, $zero, 0x2

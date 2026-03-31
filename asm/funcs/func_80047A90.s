@@ -1,7 +1,7 @@
 glabel func_80047A90
     /* 38290 80047A90 21400000 */  addu       $t0, $zero, $zero
-    /* 38294 80047A94 0980063C */  lui        $a2, %hi(D_800973FC)
-    /* 38298 80047A98 FC73C624 */  addiu      $a2, $a2, %lo(D_800973FC)
+    /* 38294 80047A94 0980063C */  lui        $a2, %hi(Judge)
+    /* 38298 80047A98 FC73C624 */  addiu      $a2, $a2, %lo(Judge)
     /* 3829C 80047A9C 0F80043C */  lui        $a0, %hi(D_800EF558)
     /* 382A0 80047AA0 58F58424 */  addiu      $a0, $a0, %lo(D_800EF558)
     /* 382A4 80047AA4 0F80053C */  lui        $a1, %hi(D_800EF59C)

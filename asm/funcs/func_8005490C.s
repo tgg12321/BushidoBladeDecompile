@@ -116,17 +116,17 @@ glabel func_8005490C
     /* 452B4 80054AB4 FF0F6330 */  andi       $v1, $v1, 0xFFF
     /* 452B8 80054AB8 40180300 */  sll        $v1, $v1, 1
     /* 452BC 80054ABC 2000A5AF */  sw         $a1, 0x20($sp)
-    /* 452C0 80054AC0 0980013C */  lui        $at, %hi(D_800973FC)
+    /* 452C0 80054AC0 0980013C */  lui        $at, %hi(Judge)
     /* 452C4 80054AC4 21082300 */  addu       $at, $at, $v1
-    /* 452C8 80054AC8 FC732884 */  lh         $t0, %lo(D_800973FC)($at)
+    /* 452C8 80054AC8 FC732884 */  lh         $t0, %lo(Judge)($at)
     /* 452CC 80054ACC 00000000 */  nop
     /* 452D0 80054AD0 1800A800 */  mult       $a1, $t0
     /* 452D4 80054AD4 FF0F8430 */  andi       $a0, $a0, 0xFFF
     /* 452D8 80054AD8 40200400 */  sll        $a0, $a0, 1
     /* 452DC 80054ADC 12480000 */  mflo       $t1
-    /* 452E0 80054AE0 0980013C */  lui        $at, %hi(D_800973FC)
+    /* 452E0 80054AE0 0980013C */  lui        $at, %hi(Judge)
     /* 452E4 80054AE4 21082400 */  addu       $at, $at, $a0
-    /* 452E8 80054AE8 FC732384 */  lh         $v1, %lo(D_800973FC)($at)
+    /* 452E8 80054AE8 FC732384 */  lh         $v1, %lo(Judge)($at)
     /* 452EC 80054AEC 00000000 */  nop
     /* 452F0 80054AF0 1800C300 */  mult       $a2, $v1
     /* 452F4 80054AF4 12500000 */  mflo       $t2
@@ -223,8 +223,8 @@ glabel func_8005490C
     /* 4545C 80054C5C 21880000 */  addu       $s1, $zero, $zero
   .L80054C60:
     /* 45460 80054C60 2800B627 */  addiu      $s6, $sp, 0x28
-    /* 45464 80054C64 0980153C */  lui        $s5, %hi(D_800973FC)
-    /* 45468 80054C68 FC73B526 */  addiu      $s5, $s5, %lo(D_800973FC)
+    /* 45464 80054C64 0980153C */  lui        $s5, %hi(Judge)
+    /* 45468 80054C68 FC73B526 */  addiu      $s5, $s5, %lo(Judge)
     /* 4546C 80054C6C 21906002 */  addu       $s2, $s3, $zero
     /* 45470 80054C70 1080023C */  lui        $v0, %hi(D_80101E00)
     /* 45474 80054C74 001E4294 */  lhu        $v0, %lo(D_80101E00)($v0)
