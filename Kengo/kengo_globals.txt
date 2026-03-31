@@ -1,0 +1,2127 @@
+    27: 00100008     0 NOTYPE  LOCAL  DEFAULT    1 zerobss
+    28: 0035a600     0 NOTYPE  LOCAL  DEFAULT   10 _args
+    30: 001000c0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    31: 001000c0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    32: 0035a280     0 NOTYPE  LOCAL  DEFAULT    9 FileNo.96
+    33: 0035a284     0 NOTYPE  LOCAL  DEFAULT    9 L3Cnt.97
+    34: 00100a18     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    35: 00100a18     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    36: 00101020     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    37: 00101020     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    39: 001015f0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    40: 001015f0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    41: 00101830     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    42: 00101830     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    43: 00104ab0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    44: 00104ab0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    45: 00104ff0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    46: 00104ff0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    47: 001a6868     0 OBJECT  LOCAL  DEFAULT    4 BOOLEAN.78
+    48: 00105978     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    49: 00105978     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    50: 001a6890    24 OBJECT  LOCAL  DEFAULT    4 puse_menue_cpos_[...]
+    51: 001a68a8    19 OBJECT  LOCAL  DEFAULT    4 fire_alph_tbl
+    52: 00106a98     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    53: 00106a98     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    54: 0035a750     0 NOTYPE  LOCAL  DEFAULT   10 fadeDat
+    55: 00106cc8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    56: 00106cc8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    57: 0035a900     0 NOTYPE  LOCAL  DEFAULT   10 si
+    58: 00106d60     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    59: 00106d60     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    61: 00106f28     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+    62: 00106f28     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+    63: 001e0440  1496 OBJECT  LOCAL  DEFAULT    4 buki_load_info
+    64: 001e0a18    24 OBJECT  LOCAL  DEFAULT    4 tex_bp_tbl
+    65: 001e0a30    76 OBJECT  LOCAL  DEFAULT    4 disp_hakimono_tbl
+    66: 001e0a80  5328 OBJECT  LOCAL  DEFAULT    4 rob_load_info
+   106: 0010a544     0 NOTYPE  LOCAL  DEFAULT    1 _Vu0ApplyMatrixN[...]
+   108: 0010a588     0 NOTYPE  LOCAL  DEFAULT    1 _Vu0RotTransPers[...]
+   110: 0010a5d8     0 NOTYPE  LOCAL  DEFAULT    1 _Vu0RotTransN_loop
+   130: 00359d04     4 OBJECT  LOCAL  DEFAULT    8 disp_parts_mode.273
+   131: 0010de70     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   132: 0010de70     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   133: 001e1f50  1488 OBJECT  LOCAL  DEFAULT    4 light_effect_col
+   137: 0035ac40     0 NOTYPE  LOCAL  DEFAULT   10 light_effect
+   139: 0010e300     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   140: 0010e300     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   141: 001e2520  2816 OBJECT  LOCAL  DEFAULT    4 intro_str
+   142: 001e3020   220 OBJECT  LOCAL  DEFAULT    4 intro_jimaku_tbl
+   143: 001e3100   640 OBJECT  LOCAL  DEFAULT    4 mario_yaburi_s_str
+   144: 001e3380   120 OBJECT  LOCAL  DEFAULT    4 mario_yaburi_s_j[...]
+   145: 001e33f8   384 OBJECT  LOCAL  DEFAULT    4 mario_yaburi_e_str
+   146: 001e3578   100 OBJECT  LOCAL  DEFAULT    4 mario_yaburi_e_j[...]
+   147: 001e35e0   512 OBJECT  LOCAL  DEFAULT    4 mario_adauchi_s_str
+   148: 001e37e0   120 OBJECT  LOCAL  DEFAULT    4 mario_adauchi_s_[...]
+   149: 001e3858   256 OBJECT  LOCAL  DEFAULT    4 mario_adauchi_e_str
+   150: 001e3958    80 OBJECT  LOCAL  DEFAULT    4 mario_adauchi_e_[...]
+   151: 001e39a8   384 OBJECT  LOCAL  DEFAULT    4 mario_shihan_s_str
+   152: 001e3b28    80 OBJECT  LOCAL  DEFAULT    4 mario_shihan_s_j[...]
+   153: 001e3b78   512 OBJECT  LOCAL  DEFAULT    4 mario_shihan_e_str
+   154: 001e3d78    60 OBJECT  LOCAL  DEFAULT    4 mario_shihan_e_j[...]
+   155: 001e3db8   768 OBJECT  LOCAL  DEFAULT    4 mario_yaburare_s_str
+   156: 001e40b8   140 OBJECT  LOCAL  DEFAULT    4 mario_yaburare_s[...]
+   157: 001e4148    56 OBJECT  LOCAL  DEFAULT    4 mario_jimaku_tbl
+   158: 0035a288     0 NOTYPE  LOCAL  DEFAULT    9 intro_jimaku
+   159: 0035acd0     0 NOTYPE  LOCAL  DEFAULT   10 mario_jimaku
+   160: 0010e540     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   161: 0010e540     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   162: 0010e568     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   163: 0010e568     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   164: 0010e638     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   165: 0010e638     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   166: 001e4180    12 OBJECT  LOCAL  DEFAULT    4 gnd_hit_proc.72
+   173: 0010fd38     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   174: 0010fd38     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   175: 001e4fd0    38 OBJECT  LOCAL  DEFAULT    4 gnd_stage_data_tbl
+   176: 00110b60     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   177: 00110b60     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   178: 001e5000    28 OBJECT  LOCAL  DEFAULT    4 kgm_map_ctg
+   179: 001e5020    24 OBJECT  LOCAL  DEFAULT    4 kgm_init_ctg
+   180: 001e5038    24 OBJECT  LOCAL  DEFAULT    4 kgm_exec_ctg
+   181: 001e5050    24 OBJECT  LOCAL  DEFAULT    4 kgm_disp_ctg
+   182: 001e5068    16 OBJECT  LOCAL  DEFAULT    4 kgm_map_gnd_plane.93
+   183: 001e5078     8 OBJECT  LOCAL  DEFAULT    4 kgm_interp.130
+   184: 001121f0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   185: 001121f0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   186: 00112260     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   187: 00112260     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   202: 00113d58     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   203: 00113d58     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   204: 00113fb0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   205: 00113fb0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   206: 00114300     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   207: 00114300     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   208: 001147d8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   209: 001147d8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   211: 0035a298     0 NOTYPE  LOCAL  DEFAULT    9 CsrY
+   212: 0035a290     0 NOTYPE  LOCAL  DEFAULT    9 CsrX
+   213: 00115228     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   214: 00115228     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   215: 001e6c30   216 OBJECT  LOCAL  DEFAULT    4 motion_data_load_tbl
+   216: 0035a29c     0 NOTYPE  LOCAL  DEFAULT    9 lmp.9
+   220: 00359de0     4 OBJECT  LOCAL  DEFAULT    8 lmp.76
+   221: 00351ad0   124 OBJECT  LOCAL  DEFAULT    6 motion_move_atta[...]
+   222: 00351b50   124 OBJECT  LOCAL  DEFAULT    6 motion_kawashi_type
+   224: 0011a200     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   225: 0011a200     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   226: 0035a2c8     0 NOTYPE  LOCAL  DEFAULT    9 SeVol
+   227: 0035a2c5     0 NOTYPE  LOCAL  DEFAULT    9 CharSeNo
+   228: 0035a2c6     0 NOTYPE  LOCAL  DEFAULT    9 BukiSeNo
+   232: 0035a2c4     0 NOTYPE  LOCAL  DEFAULT    9 BlurFlag
+   234: 0035ace0     0 NOTYPE  LOCAL  DEFAULT   10 MTCamRot
+   235: 0035acf0     0 NOTYPE  LOCAL  DEFAULT   10 MTCamZoom
+   236: 0035a2a0     0 NOTYPE  LOCAL  DEFAULT    9 MotTestDebugCamera
+   237: 0035a2c3     0 NOTYPE  LOCAL  DEFAULT    9 DispDebugPrint
+   244: 0035a2a8     0 NOTYPE  LOCAL  DEFAULT    9 prg_auto
+   245: 0035a2b0     0 NOTYPE  LOCAL  DEFAULT    9 prg_flag
+   246: 0035a2b8     0 NOTYPE  LOCAL  DEFAULT    9 prg_max
+   247: 0035a2c2     0 NOTYPE  LOCAL  DEFAULT    9 DispColiBall
+   248: 0035ad50     0 NOTYPE  LOCAL  DEFAULT   10 prg_lst
+   249: 0035a2c0     0 NOTYPE  LOCAL  DEFAULT    9 prg_cnt
+   251: 0035ad00     0 NOTYPE  LOCAL  DEFAULT   10 prg_num
+   252: 0035ad28     0 NOTYPE  LOCAL  DEFAULT   10 prg_end
+   253: 0011b558     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   254: 0011b558     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   255: 0011bbf8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   256: 0011bbf8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   267: 0011e030     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   268: 0011e030     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   278: 0011f3f0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   279: 0011f3f0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   288: 0011f818     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   289: 0011f818     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   290: 00351f08   104 OBJECT  LOCAL  DEFAULT    6 damage_body_plac[...]
+   291: 00351f70    24 OBJECT  LOCAL  DEFAULT    6 damage_attack_no[...]
+   292: 00351f88    24 OBJECT  LOCAL  DEFAULT    6 damage_attack_ou[...]
+   301: 0011fec8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   302: 0011fec8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   303: 00359f38     6 OBJECT  LOCAL  DEFAULT    8 ReplayEncodeFrame
+   307: 001212a0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   308: 001212a0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   309: 00121310     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   310: 00121310     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   311: 003520e0    60 OBJECT  LOCAL  DEFAULT    6 status_up_char_rate
+   313: 00121c20     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   314: 00121c20     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   315: 003521b8    12 OBJECT  LOCAL  DEFAULT    6 mn_group_00
+   316: 003521c8    12 OBJECT  LOCAL  DEFAULT    6 mn_group_01
+   317: 003521d8     8 OBJECT  LOCAL  DEFAULT    6 mn_group_02
+   318: 003521e0     8 OBJECT  LOCAL  DEFAULT    6 mn_group_03
+   319: 003521e8     8 OBJECT  LOCAL  DEFAULT    6 mn_group_04
+   320: 003521f0    12 OBJECT  LOCAL  DEFAULT    6 mn_group_05
+   321: 00352200     8 OBJECT  LOCAL  DEFAULT    6 mn_group_06
+   322: 00352208     8 OBJECT  LOCAL  DEFAULT    6 mn_group_07
+   323: 00352210     8 OBJECT  LOCAL  DEFAULT    6 mn_group_08
+   324: 00352218     8 OBJECT  LOCAL  DEFAULT    6 mn_group_09
+   325: 00352220     8 OBJECT  LOCAL  DEFAULT    6 mn_group_10
+   326: 00352228    12 OBJECT  LOCAL  DEFAULT    6 mi_group_00
+   327: 00352238    12 OBJECT  LOCAL  DEFAULT    6 mi_group_01
+   328: 00352248    12 OBJECT  LOCAL  DEFAULT    6 mi_group_02
+   329: 00352258     8 OBJECT  LOCAL  DEFAULT    6 mi_group_03
+   330: 00352260     8 OBJECT  LOCAL  DEFAULT    6 mi_group_04
+   331: 00352268     8 OBJECT  LOCAL  DEFAULT    6 mi_group_05
+   332: 00352270    12 OBJECT  LOCAL  DEFAULT    6 mi_group_06
+   333: 00352280     8 OBJECT  LOCAL  DEFAULT    6 mi_group_07
+   334: 00352288     8 OBJECT  LOCAL  DEFAULT    6 mi_group_08
+   335: 00352290     8 OBJECT  LOCAL  DEFAULT    6 mj_group_00
+   336: 00352298    12 OBJECT  LOCAL  DEFAULT    6 mj_group_01
+   337: 003522a8     8 OBJECT  LOCAL  DEFAULT    6 mj_group_02
+   338: 003522b0     8 OBJECT  LOCAL  DEFAULT    6 mj_group_03
+   339: 003522b8    12 OBJECT  LOCAL  DEFAULT    6 mj_group_04
+   340: 003522c8     8 OBJECT  LOCAL  DEFAULT    6 mj_group_05
+   341: 003522d0     8 OBJECT  LOCAL  DEFAULT    6 mj_group_06
+   342: 003522d8     8 OBJECT  LOCAL  DEFAULT    6 mj_group_07
+   343: 003522e0     8 OBJECT  LOCAL  DEFAULT    6 mj_group_08
+   344: 003522e8     8 OBJECT  LOCAL  DEFAULT    6 mj_group_09
+   345: 003522f0     8 OBJECT  LOCAL  DEFAULT    6 mj_group_10
+   346: 003522f8     8 OBJECT  LOCAL  DEFAULT    6 fd_group_00
+   347: 00352300     8 OBJECT  LOCAL  DEFAULT    6 fd_group_01
+   348: 00352308     8 OBJECT  LOCAL  DEFAULT    6 fd_group_02
+   349: 00352310    12 OBJECT  LOCAL  DEFAULT    6 fd_group_03
+   350: 00352320     8 OBJECT  LOCAL  DEFAULT    6 fd_group_04
+   351: 00352328     8 OBJECT  LOCAL  DEFAULT    6 fd_group_05
+   352: 00352330     8 OBJECT  LOCAL  DEFAULT    6 fd_group_06
+   353: 00352338     8 OBJECT  LOCAL  DEFAULT    6 un_group_00
+   354: 00352340     8 OBJECT  LOCAL  DEFAULT    6 un_group_01
+   355: 00352348     8 OBJECT  LOCAL  DEFAULT    6 un_group_02
+   356: 00352350     8 OBJECT  LOCAL  DEFAULT    6 un_group_03
+   357: 00352358     8 OBJECT  LOCAL  DEFAULT    6 un_group_04
+   358: 00352360     8 OBJECT  LOCAL  DEFAULT    6 un_group_05
+   359: 00352368    12 OBJECT  LOCAL  DEFAULT    6 un_group_06
+   360: 00352378     8 OBJECT  LOCAL  DEFAULT    6 un_group_07
+   361: 00352380    12 OBJECT  LOCAL  DEFAULT    6 un_group_08
+   362: 00352390     8 OBJECT  LOCAL  DEFAULT    6 un_group_09
+   363: 00352398     8 OBJECT  LOCAL  DEFAULT    6 un_group_10
+   364: 003523a0     8 OBJECT  LOCAL  DEFAULT    6 si_group_00
+   365: 003523a8    12 OBJECT  LOCAL  DEFAULT    6 si_group_01
+   366: 003523b8    12 OBJECT  LOCAL  DEFAULT    6 si_group_02
+   367: 003523c8     8 OBJECT  LOCAL  DEFAULT    6 si_group_03
+   368: 003523d0     8 OBJECT  LOCAL  DEFAULT    6 si_group_04
+   369: 003523d8     8 OBJECT  LOCAL  DEFAULT    6 si_group_05
+   370: 003523e0    12 OBJECT  LOCAL  DEFAULT    6 si_group_06
+   371: 003523f0     8 OBJECT  LOCAL  DEFAULT    6 si_group_07
+   372: 003523f8     8 OBJECT  LOCAL  DEFAULT    6 si_group_08
+   373: 00352400    24 OBJECT  LOCAL  DEFAULT    6 ko_group_00
+   374: 00352418    12 OBJECT  LOCAL  DEFAULT    6 ko_group_01
+   375: 00352428     8 OBJECT  LOCAL  DEFAULT    6 ko_group_02
+   376: 00352430     8 OBJECT  LOCAL  DEFAULT    6 ko_group_03
+   377: 00352438     8 OBJECT  LOCAL  DEFAULT    6 ko_group_04
+   378: 00352440    12 OBJECT  LOCAL  DEFAULT    6 ko_group_05
+   379: 00352450     8 OBJECT  LOCAL  DEFAULT    6 ko_group_06
+   380: 00352458    16 OBJECT  LOCAL  DEFAULT    6 ko_group_07
+   381: 00352468     8 OBJECT  LOCAL  DEFAULT    6 is_group_00
+   382: 00352470     8 OBJECT  LOCAL  DEFAULT    6 is_group_01
+   383: 00352478     8 OBJECT  LOCAL  DEFAULT    6 is_group_02
+   384: 00352480    16 OBJECT  LOCAL  DEFAULT    6 is_group_03
+   385: 00352490    16 OBJECT  LOCAL  DEFAULT    6 is_group_04
+   386: 003524a0     8 OBJECT  LOCAL  DEFAULT    6 is_group_05
+   387: 003524a8     8 OBJECT  LOCAL  DEFAULT    6 is_group_06
+   388: 003524b0     8 OBJECT  LOCAL  DEFAULT    6 is_group_07
+   389: 001e8208    48 OBJECT  LOCAL  DEFAULT    4 mn_search_tbl
+   390: 001e8238    40 OBJECT  LOCAL  DEFAULT    4 mi_search_tbl
+   391: 001e8260    48 OBJECT  LOCAL  DEFAULT    4 mj_search_tbl
+   392: 001e8290    32 OBJECT  LOCAL  DEFAULT    4 fd_search_tbl
+   393: 001e82b0    48 OBJECT  LOCAL  DEFAULT    4 un_search_tbl
+   394: 001e82e0    40 OBJECT  LOCAL  DEFAULT    4 si_search_tbl
+   395: 001e8308    36 OBJECT  LOCAL  DEFAULT    4 ko_search_tbl
+   396: 001e8330    36 OBJECT  LOCAL  DEFAULT    4 is_search_tbl
+   397: 00121fa0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   398: 00121fa0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   399: 003524b8    96 OBJECT  LOCAL  DEFAULT    6 tanren_tan5_star[...]
+   400: 00352518    96 OBJECT  LOCAL  DEFAULT    6 tanren_tan5_star[...]
+   401: 00352578    32 OBJECT  LOCAL  DEFAULT    6 tanren_tan5_star[...]
+   402: 00352598    32 OBJECT  LOCAL  DEFAULT    6 tanren_tan5_star[...]
+   403: 0035ad80     0 NOTYPE  LOCAL  DEFAULT   10 TanCamRot
+   404: 0035ada0     0 NOTYPE  LOCAL  DEFAULT   10 TanCamZoom
+   409: 0035a2d0     0 NOTYPE  LOCAL  DEFAULT    9 TanCamRotX
+   410: 0035a2d4     0 NOTYPE  LOCAL  DEFAULT    9 TanCamRotY
+   411: 0035ad90     0 NOTYPE  LOCAL  DEFAULT   10 TanCamTpos
+   418: 0035a2cc     0 NOTYPE  LOCAL  DEFAULT    9 TanDebugCamera
+   426: 00124218     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   427: 00124218     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   428: 003525b8   308 OBJECT  LOCAL  DEFAULT    6 BukiZanzouInfoTable
+   429: 003526f0    16 OBJECT  LOCAL  DEFAULT    6 BukiZanzouDefaul[...]
+   430: 00352700    16 OBJECT  LOCAL  DEFAULT    6 BukiZanzouDefaul[...]
+   435: 00125198     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   436: 00125198     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   441: 00125410     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   442: 00125410     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   443: 00352710    64 OBJECT  LOCAL  DEFAULT    6 efc_rob_buki_hit[...]
+   457: 00352750   608 OBJECT  LOCAL  DEFAULT    6 efc_rob_stage_sa[...]
+   458: 00126c50     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   459: 00126c50     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   464: 0035adb0     0 NOTYPE  LOCAL  DEFAULT   10 RTCamRot
+   465: 0035adc0     0 NOTYPE  LOCAL  DEFAULT   10 RTCamZoom
+   466: 0035a2d8     0 NOTYPE  LOCAL  DEFAULT    9 RobTestDebugCamera
+   467: 0035a2da     0 NOTYPE  LOCAL  DEFAULT    9 DispDebugPrint
+   474: 0035a2d9     0 NOTYPE  LOCAL  DEFAULT    9 DispColiBall
+   475: 0035a2db     0 NOTYPE  LOCAL  DEFAULT    9 ChrIDold
+   477: 001277f8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   478: 001277f8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   479: 00127810     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   480: 00127810     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   481: 00127860     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   482: 00127860     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   483: 00352ab8   124 OBJECT  LOCAL  DEFAULT    6 rob_scale_tbl
+   484: 00129bc8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   485: 00129bc8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   486: 00129bc8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   487: 00129bc8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   488: 00129bc8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   489: 00129bc8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   490: 0012a470     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   491: 0012a470     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   492: 00296dd0    16 OBJECT  LOCAL  DEFAULT    4 amb.84
+   493: 0012a930     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   494: 0012a930     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   495: 0035a2e0     0 NOTYPE  LOCAL  DEFAULT    9 RetTypeNow
+   496: 0035a2e8     0 NOTYPE  LOCAL  DEFAULT    9 RetType
+   497: 0035a2f0     0 NOTYPE  LOCAL  DEFAULT    9 RetTypeOld
+   498: 0035a2f8     0 NOTYPE  LOCAL  DEFAULT    9 ChgType
+   499: 0012eb48     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   500: 0012eb48     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   501: 00131958     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   502: 00131958     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   503: 00135488     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   504: 00135488     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   505: 001358e0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   506: 001358e0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   507: 0035a301     0 NOTYPE  LOCAL  DEFAULT    9 mario_stage_id
+   508: 0035a308     0 NOTYPE  LOCAL  DEFAULT    9 mario_chr_id
+   509: 0035a30a     0 NOTYPE  LOCAL  DEFAULT    9 mario_camera_id
+   510: 0035a300     0 NOTYPE  LOCAL  DEFAULT    9 mario_test_id
+   511: 001362b8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   512: 001362b8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   513: 00136528     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   514: 00136528     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   515: 00353050   100 OBJECT  LOCAL  DEFAULT    6 sg_montei_mj_off[...]
+   516: 003530b8   100 OBJECT  LOCAL  DEFAULT    6 sg_montei_si_off[...]
+   517: 00353120   100 OBJECT  LOCAL  DEFAULT    6 sg_montei_ko_off[...]
+   518: 00353188   100 OBJECT  LOCAL  DEFAULT    6 sg_montei_mn_off[...]
+   519: 003531f0   100 OBJECT  LOCAL  DEFAULT    6 sg_montei_mi_off[...]
+   520: 00353258   100 OBJECT  LOCAL  DEFAULT    6 sg_montei_is_off[...]
+   521: 003532c0   100 OBJECT  LOCAL  DEFAULT    6 sg_montei_un_off[...]
+   522: 00353328   100 OBJECT  LOCAL  DEFAULT    6 sg_montei_fd_off[...]
+   523: 00299690    36 OBJECT  LOCAL  DEFAULT    4 get_attack_kind_tbl
+   524: 0013bf58     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   525: 0013bf58     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   526: 001404c8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   527: 001404c8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   528: 00141070     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   529: 00141070     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   530: 00299cc0    16 OBJECT  LOCAL  DEFAULT    4 mario_first_moti[...]
+   531: 00299cd0    38 OBJECT  LOCAL  DEFAULT    4 gozen_final_taik[...]
+   532: 00299cf8    14 OBJECT  LOCAL  DEFAULT    4 gozen_taiko_time_tbl
+   533: 00141838     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   534: 00141838     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   535: 0035a314     0 NOTYPE  LOCAL  DEFAULT    9 tslGlobalMemSize
+   536: 0035a310     0 NOTYPE  LOCAL  DEFAULT    9 tslGlobalMemTopTag
+   537: 0035a318     0 NOTYPE  LOCAL  DEFAULT    9 tslGlobalMemCnt
+   538: 0035a31c     0 NOTYPE  LOCAL  DEFAULT    9 tslGlobalMemUseSize
+   539: 0035a320     0 NOTYPE  LOCAL  DEFAULT    9 MemCnt
+   540: 00141c58     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   541: 00141c58     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   542: 0035a330     0 NOTYPE  LOCAL  DEFAULT    9 tslCDMode
+   543: 0035a328     0 NOTYPE  LOCAL  DEFAULT    9 tslCDReadFlag
+   544: 00141e60     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   545: 00141e60     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   546: 0035add0     0 NOTYPE  LOCAL  DEFAULT   10 tslDmaCh
+   547: 00299d20    12 OBJECT  LOCAL  DEFAULT    4 tslDn_QWC
+   548: 00299d30    12 OBJECT  LOCAL  DEFAULT    4 tslDn_TADR
+   549: 00299d40    12 OBJECT  LOCAL  DEFAULT    4 tslDn_CHCR
+   551: 0035adf8     0 NOTYPE  LOCAL  DEFAULT   10 tslDmaListTbl
+   552: 0035a348     0 NOTYPE  LOCAL  DEFAULT    9 tslDmaListDrawBuffId
+   553: 0035a350     0 NOTYPE  LOCAL  DEFAULT    9 tslDmaListDrawCnt
+   554: 0035a34c     0 NOTYPE  LOCAL  DEFAULT    9 tslDmaListDrawFlag
+   555: 0035a340     0 NOTYPE  LOCAL  DEFAULT    9 tslDmaListCnt
+   556: 0035a338     0 NOTYPE  LOCAL  DEFAULT    9 tslDmaListActiveBuff
+   557: 001423b0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   558: 001423b0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   559: 0035a0d4     4 OBJECT  LOCAL  DEFAULT    8 tslPktOffsetX
+   560: 0035a0d8     4 OBJECT  LOCAL  DEFAULT    8 tslPktOffsetY
+   561: 0035a360     0 NOTYPE  LOCAL  DEFAULT    9 tslPktBuffTopPtr
+   562: 0035a358     0 NOTYPE  LOCAL  DEFAULT    9 tslPktDmaTag
+   563: 0035a368     0 NOTYPE  LOCAL  DEFAULT    9 tslPktBuffSize
+   564: 0035a36c     0 NOTYPE  LOCAL  DEFAULT    9 tslPktActiveBuff
+   565: 00143fc8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   566: 00143fc8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   567: 00144540     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   568: 00144540     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   569: 0035a0dc     4 OBJECT  LOCAL  DEFAULT    8 OffsetX
+   570: 0035a0e0     4 OBJECT  LOCAL  DEFAULT    8 OffsetY
+   571: 0036ae00     0 NOTYPE  LOCAL  DEFAULT   10 tslDispDB
+   572: 0035a370     0 NOTYPE  LOCAL  DEFAULT    9 tslDispActiveBuff
+   573: 0035a374     0 NOTYPE  LOCAL  DEFAULT    9 tslDispActiveLine
+   574: 001447b8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   575: 001447b8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   576: 0036b130     0 NOTYPE  LOCAL  DEFAULT   10 tslBraPkt
+   577: 0035a390     0 NOTYPE  LOCAL  DEFAULT    9 BraUW
+   578: 0035a394     0 NOTYPE  LOCAL  DEFAULT    9 BraVH
+   579: 0035a378     0 NOTYPE  LOCAL  DEFAULT    9 tslBraWidth
+   580: 0035a37c     0 NOTYPE  LOCAL  DEFAULT    9 tslBraHeight
+   581: 0035a380     0 NOTYPE  LOCAL  DEFAULT    9 BraX
+   582: 0035a384     0 NOTYPE  LOCAL  DEFAULT    9 BraY
+   583: 0035a388     0 NOTYPE  LOCAL  DEFAULT    9 BraU
+   584: 0035a38c     0 NOTYPE  LOCAL  DEFAULT    9 BraV
+   585: 0035a398     0 NOTYPE  LOCAL  DEFAULT    9 BraSizeX
+   586: 0035a39c     0 NOTYPE  LOCAL  DEFAULT    9 BraSizeY
+   587: 00144e90     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   588: 00144e90     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   589: 001453c8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   590: 001453c8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   592: 0035a3a0     0 NOTYPE  LOCAL  DEFAULT    9 tslSmdAddr
+   593: 0035a3a8     0 NOTYPE  LOCAL  DEFAULT    9 tslSmdObjNum
+   594: 0035a3a4     0 NOTYPE  LOCAL  DEFAULT    9 tslSmdAlphaAddr
+   595: 0036b410     0 NOTYPE  LOCAL  DEFAULT   10 tslSmdVu1EnvPacket
+   596: 0035a3ac     0 NOTYPE  LOCAL  DEFAULT    9 tslSmdActiveBuff
+   597: 00145b18     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   598: 00145b18     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   599: 00145ed0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   600: 00145ed0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   601: 0035a0e4     4 OBJECT  LOCAL  DEFAULT    8 tslHSyncMode
+   602: 0035a0e8     4 OBJECT  LOCAL  DEFAULT    8 tslHSyncCnt
+   603: 00145f00     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   604: 00145f00     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   605: 00299d50    48 OBJECT  LOCAL  DEFAULT    4 LightN
+   606: 00299d80    64 OBJECT  LOCAL  DEFAULT    4 LightColor
+   607: 00299dc0   788 OBJECT  LOCAL  DEFAULT    4 saSeTbl
+   608: 0035a3b4     0 NOTYPE  LOCAL  DEFAULT    9 WorkBuff
+   609: 0035a3b0     0 NOTYPE  LOCAL  DEFAULT    9 SmdBuff
+   610: 0036b900     0 NOTYPE  LOCAL  DEFAULT   10 Tex0RegTbl
+   611: 0036c900     0 NOTYPE  LOCAL  DEFAULT   10 Eft01
+   612: 0036d6c0     0 NOTYPE  LOCAL  DEFAULT   10 Eft02
+   613: 0036b710     0 NOTYPE  LOCAL  DEFAULT   10 Mat
+   614: 0036b750     0 NOTYPE  LOCAL  DEFAULT   10 ScreenMat
+   615: 0036b790     0 NOTYPE  LOCAL  DEFAULT   10 ClipMat
+   616: 0036b810     0 NOTYPE  LOCAL  DEFAULT   10 CameraTra
+   617: 0035a3b8     0 NOTYPE  LOCAL  DEFAULT    9 SaEndCnt
+   618: 0036e750     0 NOTYPE  LOCAL  DEFAULT   10 Eft03
+   619: 0036b6d0     0 NOTYPE  LOCAL  DEFAULT   10 Blood.72
+   620: 0036b820     0 NOTYPE  LOCAL  DEFAULT   10 CameraRot
+   621: 0036b830     0 NOTYPE  LOCAL  DEFAULT   10 ObjRot
+   622: 0036b8c0     0 NOTYPE  LOCAL  DEFAULT   10 NormalLight
+   623: 0036b840     0 NOTYPE  LOCAL  DEFAULT   10 WorldScreen
+   624: 0036b7d0     0 NOTYPE  LOCAL  DEFAULT   10 CameraMat
+   625: 0036b880     0 NOTYPE  LOCAL  DEFAULT   10 WorldClip
+   626: 0035a3c8     0 NOTYPE  LOCAL  DEFAULT    9 saSeNo
+   627: 0035a3cc     0 NOTYPE  LOCAL  DEFAULT    9 saStageNo
+   628: 0035a3c4     0 NOTYPE  LOCAL  DEFAULT    9 SaBraFlag
+   629: 0035a3bc     0 NOTYPE  LOCAL  DEFAULT    9 SaBraX
+   630: 0035a3c0     0 NOTYPE  LOCAL  DEFAULT    9 SaBraY
+   631: 00146bf8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   632: 00146bf8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   633: 0029a0d8    24 OBJECT  LOCAL  DEFAULT    4 GndFileNo
+   634: 0029a0f0    24 OBJECT  LOCAL  DEFAULT    4 saTan2DTmlFile
+   635: 0029a108    24 OBJECT  LOCAL  DEFAULT    4 MotionLoadTbl
+   636: 0029a120    24 OBJECT  LOCAL  DEFAULT    4 LightStageNo
+   637: 0037d9d0     0 NOTYPE  LOCAL  DEFAULT   10 Status
+   638: 0029a138    32 OBJECT  LOCAL  DEFAULT    4 InfoPosYTbl0
+   639: 0029a158    52 OBJECT  LOCAL  DEFAULT    4 InfoPosYTbl1
+   640: 0029a190    72 OBJECT  LOCAL  DEFAULT    4 InfoPosYTbl2
+   641: 0029a1d8    40 OBJECT  LOCAL  DEFAULT    4 InfoPosYTbl3
+   642: 0029a200    48 OBJECT  LOCAL  DEFAULT    4 InfoPosYTbl4
+   643: 0029a230    32 OBJECT  LOCAL  DEFAULT    4 InfoPosYTbl5
+   644: 0029a250    12 OBJECT  LOCAL  DEFAULT    4 InfoPageTbl0
+   645: 0029a260    12 OBJECT  LOCAL  DEFAULT    4 InfoPageTbl1
+   646: 0029a270    16 OBJECT  LOCAL  DEFAULT    4 InfoPageTbl2
+   647: 0029a280    12 OBJECT  LOCAL  DEFAULT    4 InfoPageTbl3
+   648: 0029a290    12 OBJECT  LOCAL  DEFAULT    4 InfoPageTbl4
+   649: 0029a2a0    12 OBJECT  LOCAL  DEFAULT    4 InfoPageTbl5
+   650: 0029a2b0    24 OBJECT  LOCAL  DEFAULT    4 InfoPosYTbl
+   651: 0029a2c8    24 OBJECT  LOCAL  DEFAULT    4 InfoPageTbl
+   652: 0035a3d4     0 NOTYPE  LOCAL  DEFAULT    9 InfoY
+   653: 0035a3d8     0 NOTYPE  LOCAL  DEFAULT    9 InfoPage
+   654: 0035a3d0     0 NOTYPE  LOCAL  DEFAULT    9 InfoCursorCnt.99
+   655: 0037d9f0     0 NOTYPE  LOCAL  DEFAULT   10 ScissorPrim
+   656: 0035a3e0     0 NOTYPE  LOCAL  DEFAULT    9 sa2DClipActiveBuff
+   657: 00147dc8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   658: 00147dc8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   659: 0029a2e0     8 OBJECT  LOCAL  DEFAULT    4 saTan0Tati
+   660: 0029a2e8    20 OBJECT  LOCAL  DEFAULT    4 saTan0Walk
+   661: 0029a300     8 OBJECT  LOCAL  DEFAULT    4 saTan0Kamae
+   662: 0029a308     8 OBJECT  LOCAL  DEFAULT    4 saTan0KiruL
+   663: 0029a310     8 OBJECT  LOCAL  DEFAULT    4 saTan0KiruR
+   664: 0029a318     8 OBJECT  LOCAL  DEFAULT    4 saTan0Noutou
+   665: 0029a320    48 OBJECT  LOCAL  DEFAULT    4 LightN
+   666: 0029a350    64 OBJECT  LOCAL  DEFAULT    4 LightC
+   667: 0029a390    24 OBJECT  LOCAL  DEFAULT    4 ObjSmdFile
+   668: 0029a3a8    76 OBJECT  LOCAL  DEFAULT    4 saTan0KiAnimTbl
+   669: 0029a3f8   384 OBJECT  LOCAL  DEFAULT    4 GameModeTbl
+   670: 0029a578    32 OBJECT  LOCAL  DEFAULT    4 saTan0CPAnimTbl0
+   671: 0029a598    48 OBJECT  LOCAL  DEFAULT    4 saTan0CTAnimTbl0
+   672: 0029a5c8    48 OBJECT  LOCAL  DEFAULT    4 saTan0CPAnimTbl2
+   673: 0029a5f8    32 OBJECT  LOCAL  DEFAULT    4 saTan0CTAnimTbl2
+   674: 0029a618    48 OBJECT  LOCAL  DEFAULT    4 saTan0KeyTbl
+   675: 0029a648    12 OBJECT  LOCAL  DEFAULT    4 saTan0KeyRegs
+   676: 0029a658   480 OBJECT  LOCAL  DEFAULT    4 saTan0KeyTypeTbl
+   677: 0037dab0     0 NOTYPE  LOCAL  DEFAULT   10 saTan0
+   678: 0037dc80     0 NOTYPE  LOCAL  DEFAULT   10 ObjBuff
+   679: 0037dca0     0 NOTYPE  LOCAL  DEFAULT   10 ObjHandle
+   681: 0035a3e8     0 NOTYPE  LOCAL  DEFAULT    9 EndCnt.72
+   682: 0035a3ec     0 NOTYPE  LOCAL  DEFAULT    9 RetCode.73
+   690: 0037dc00     0 NOTYPE  LOCAL  DEFAULT   10 NormalLight
+   691: 0037dc40     0 NOTYPE  LOCAL  DEFAULT   10 LightColor
+   692: 0037db80     0 NOTYPE  LOCAL  DEFAULT   10 WorldScreen
+   693: 0037dbc0     0 NOTYPE  LOCAL  DEFAULT   10 WorldClip
+   694: 0037db50     0 NOTYPE  LOCAL  DEFAULT   10 CameraTra
+   695: 0037db70     0 NOTYPE  LOCAL  DEFAULT   10 CameraRot
+   701: 0037db60     0 NOTYPE  LOCAL  DEFAULT   10 TargetTra
+   708: 0037f800     0 NOTYPE  LOCAL  DEFAULT   10 saTan0CPHandle
+   709: 0037f810     0 NOTYPE  LOCAL  DEFAULT   10 saTan0CTHandle
+   710: 0037f820     0 NOTYPE  LOCAL  DEFAULT   10 KiMoveA
+   711: 0035a3f0     0 NOTYPE  LOCAL  DEFAULT    9 KiMoveStsA
+   712: 0035a3f4     0 NOTYPE  LOCAL  DEFAULT    9 KiMoveZA
+   713: 0035a3f8     0 NOTYPE  LOCAL  DEFAULT    9 GaugeY
+   714: 0035a3fc     0 NOTYPE  LOCAL  DEFAULT    9 HajimeCnt
+   715: 0035a400     0 NOTYPE  LOCAL  DEFAULT    9 SyuryoCnt
+   716: 001498e0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   717: 001498e0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   718: 0029a840     8 OBJECT  LOCAL  DEFAULT    4 saTan1Tati
+   719: 0029a848    12 OBJECT  LOCAL  DEFAULT    4 saTan1Suwari
+   720: 0029a858     8 OBJECT  LOCAL  DEFAULT    4 saTan1Zazen
+   721: 0029a860     8 OBJECT  LOCAL  DEFAULT    4 saTan1TatiOsyo
+   722: 0029a868     8 OBJECT  LOCAL  DEFAULT    4 saTan1Nemuke0
+   723: 0029a870     8 OBJECT  LOCAL  DEFAULT    4 saTan1Nemuke1
+   724: 0029a878     8 OBJECT  LOCAL  DEFAULT    4 saTan1Tataku
+   725: 0029a880     8 OBJECT  LOCAL  DEFAULT    4 saTan1Tatakare
+   726: 0029a888    12 OBJECT  LOCAL  DEFAULT    4 saTan1TatiEnd
+   727: 0029a8a0    48 OBJECT  LOCAL  DEFAULT    4 LightN
+   728: 0029a8d0    64 OBJECT  LOCAL  DEFAULT    4 LightC
+   729: 0029a910    48 OBJECT  LOCAL  DEFAULT    4 saTan1CPAnimTbl0
+   730: 0029a940    32 OBJECT  LOCAL  DEFAULT    4 saTan1CTAnimTbl0
+   731: 0029a960    48 OBJECT  LOCAL  DEFAULT    4 saTan1CPAnimTbl1
+   732: 0029a990    48 OBJECT  LOCAL  DEFAULT    4 saTan1CTAnimTbl1
+   733: 0037f830     0 NOTYPE  LOCAL  DEFAULT   10 saTan1
+   735: 0035a404     0 NOTYPE  LOCAL  DEFAULT    9 EndCnt.72
+   736: 0035a408     0 NOTYPE  LOCAL  DEFAULT    9 RetCode.73
+   742: 0037f960     0 NOTYPE  LOCAL  DEFAULT   10 NormalLight
+   743: 0037f9a0     0 NOTYPE  LOCAL  DEFAULT   10 LightColor
+   744: 0037f8b0     0 NOTYPE  LOCAL  DEFAULT   10 CameraTra
+   745: 0037f8d0     0 NOTYPE  LOCAL  DEFAULT   10 CameraRot
+   746: 0037f8e0     0 NOTYPE  LOCAL  DEFAULT   10 WorldScreen
+   747: 0037f920     0 NOTYPE  LOCAL  DEFAULT   10 WorldClip
+   757: 0037f9e0     0 NOTYPE  LOCAL  DEFAULT   10 saTan1CPHandle
+   758: 0037f9f0     0 NOTYPE  LOCAL  DEFAULT   10 saTan1CTHandle
+   759: 0037f8c0     0 NOTYPE  LOCAL  DEFAULT   10 TargetTra
+   763: 0037fa00     0 NOTYPE  LOCAL  DEFAULT   10 Mark
+   764: 0035a40c     0 NOTYPE  LOCAL  DEFAULT    9 GaugeY
+   765: 0035a410     0 NOTYPE  LOCAL  DEFAULT    9 GaugeX
+   766: 0035a414     0 NOTYPE  LOCAL  DEFAULT    9 GaugeKeyPower
+   767: 0035a418     0 NOTYPE  LOCAL  DEFAULT    9 GaugePower
+   768: 0035a41c     0 NOTYPE  LOCAL  DEFAULT    9 GaugeCnt
+   769: 0035a420     0 NOTYPE  LOCAL  DEFAULT    9 GaugePos
+   770: 0035a424     0 NOTYPE  LOCAL  DEFAULT    9 GaugeSw
+   771: 0035a428     0 NOTYPE  LOCAL  DEFAULT    9 MarkCnt
+   772: 0035a42c     0 NOTYPE  LOCAL  DEFAULT    9 HajimeCnt
+   773: 0035a430     0 NOTYPE  LOCAL  DEFAULT    9 SyuryoCnt
+   774: 0014afc0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   775: 0014afc0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   776: 0029a9c0     8 OBJECT  LOCAL  DEFAULT    4 saTan2Tati
+   777: 0029a9c8     8 OBJECT  LOCAL  DEFAULT    4 saTan2Tati2
+   778: 0029a9d0    12 OBJECT  LOCAL  DEFAULT    4 saTan2Nuku
+   779: 0029a9e0     8 OBJECT  LOCAL  DEFAULT    4 saTan2Kamae
+   780: 0029a9e8     8 OBJECT  LOCAL  DEFAULT    4 saTan2Kiru
+   781: 0029a9f0     8 OBJECT  LOCAL  DEFAULT    4 saTan2Fail
+   782: 0029a9f8     8 OBJECT  LOCAL  DEFAULT    4 saTan2FailLoop
+   783: 0029aa00     8 OBJECT  LOCAL  DEFAULT    4 saTan2Hajikare
+   784: 0029aa08     8 OBJECT  LOCAL  DEFAULT    4 saTan2Noutou
+   785: 0029aa10    48 OBJECT  LOCAL  DEFAULT    4 LightN
+   786: 0029aa40    64 OBJECT  LOCAL  DEFAULT    4 LightC
+   787: 0029aa80    16 OBJECT  LOCAL  DEFAULT    4 SmdFile
+   788: 0029aa90    32 OBJECT  LOCAL  DEFAULT    4 saTan2CPAnimTbl0
+   789: 0029aab0    32 OBJECT  LOCAL  DEFAULT    4 saTan2CTAnimTbl0
+   790: 0029aad0    32 OBJECT  LOCAL  DEFAULT    4 saTan2CPAnimTbl1
+   791: 0029aaf0    32 OBJECT  LOCAL  DEFAULT    4 saTan2CTAnimTbl1
+   792: 0037fa80     0 NOTYPE  LOCAL  DEFAULT   10 saTan2
+   793: 00380eb0     0 NOTYPE  LOCAL  DEFAULT   10 ObjBuff
+   794: 0037fc50     0 NOTYPE  LOCAL  DEFAULT   10 ObjHandle
+   796: 0035a434     0 NOTYPE  LOCAL  DEFAULT    9 EndCnt.72
+   797: 0035a438     0 NOTYPE  LOCAL  DEFAULT    9 RetCode.73
+   799: 0037fbd0     0 NOTYPE  LOCAL  DEFAULT   10 NormalLight
+   808: 0037fc10     0 NOTYPE  LOCAL  DEFAULT   10 LightColor
+   809: 0037fb50     0 NOTYPE  LOCAL  DEFAULT   10 WorldScreen
+   810: 0037fb90     0 NOTYPE  LOCAL  DEFAULT   10 WorldClip
+   811: 0037fb20     0 NOTYPE  LOCAL  DEFAULT   10 CameraTra
+   812: 0037fb40     0 NOTYPE  LOCAL  DEFAULT   10 CameraRot
+   827: 00380e90     0 NOTYPE  LOCAL  DEFAULT   10 saTan2CPHandle
+   828: 00380ea0     0 NOTYPE  LOCAL  DEFAULT   10 saTan2CTHandle
+   829: 0037fb30     0 NOTYPE  LOCAL  DEFAULT   10 TargetTra
+   831: 00380ec0     0 NOTYPE  LOCAL  DEFAULT   10 HahenMove
+   832: 0029ab10   192 OBJECT  LOCAL  DEFAULT    4 KabutoYureTbl
+   833: 0035a43c     0 NOTYPE  LOCAL  DEFAULT    9 KabutoYureCnt
+   834: 00380ed0     0 NOTYPE  LOCAL  DEFAULT   10 KabutoMove
+   835: 0035a440     0 NOTYPE  LOCAL  DEFAULT    9 KabutoMoveSts
+   836: 0035a444     0 NOTYPE  LOCAL  DEFAULT    9 KabutoMoveCnt
+   838: 0035a448     0 NOTYPE  LOCAL  DEFAULT    9 EndInfoCnt
+   839: 0035a450     0 NOTYPE  LOCAL  DEFAULT    9 GaugeCnt
+   840: 0035a44c     0 NOTYPE  LOCAL  DEFAULT    9 GaugeY
+   841: 00381360     0 NOTYPE  LOCAL  DEFAULT   10 PolyF4
+   842: 003811e0     0 NOTYPE  LOCAL  DEFAULT   10 Line5
+   843: 00380ee0     0 NOTYPE  LOCAL  DEFAULT   10 Line2
+   844: 0035a46c     0 NOTYPE  LOCAL  DEFAULT    9 LineX
+   845: 0035a478     0 NOTYPE  LOCAL  DEFAULT    9 CorTime
+   846: 0035a460     0 NOTYPE  LOCAL  DEFAULT    9 LineD
+   847: 0035a45c     0 NOTYPE  LOCAL  DEFAULT    9 LineU
+   848: 0035a458     0 NOTYPE  LOCAL  DEFAULT    9 LineR
+   849: 0035a454     0 NOTYPE  LOCAL  DEFAULT    9 LineL
+   850: 0035a470     0 NOTYPE  LOCAL  DEFAULT    9 LineY
+   851: 0035a474     0 NOTYPE  LOCAL  DEFAULT    9 LineMark
+   852: 0035a464     0 NOTYPE  LOCAL  DEFAULT    9 LineCSX
+   853: 0035a468     0 NOTYPE  LOCAL  DEFAULT    9 LineCSY
+   854: 0035a47c     0 NOTYPE  LOCAL  DEFAULT    9 HajimeCnt
+   855: 0035a480     0 NOTYPE  LOCAL  DEFAULT    9 SyuryoCnt
+   856: 0014d6e0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   857: 0014d6e0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   858: 0029abd0     8 OBJECT  LOCAL  DEFAULT    4 saTan3Tati
+   859: 0029abd8    20 OBJECT  LOCAL  DEFAULT    4 saTan3Aruki
+   860: 0029abf0    12 OBJECT  LOCAL  DEFAULT    4 saTan3ArukiEnd
+   861: 0029ac00     8 OBJECT  LOCAL  DEFAULT    4 saTan3Utare1
+   862: 0029ac08     8 OBJECT  LOCAL  DEFAULT    4 saTan3Utare2
+   863: 0029ac10     8 OBJECT  LOCAL  DEFAULT    4 saTan3Utare3
+   864: 0029ac18     8 OBJECT  LOCAL  DEFAULT    4 saTan3Fail
+   865: 0029ac20    48 OBJECT  LOCAL  DEFAULT    4 LightN
+   866: 0029ac50    64 OBJECT  LOCAL  DEFAULT    4 LightC
+   867: 0029ac90    32 OBJECT  LOCAL  DEFAULT    4 saTan3CPAnimTbl0
+   868: 0029acb0    32 OBJECT  LOCAL  DEFAULT    4 saTan3CTAnimTbl0
+   869: 0029acd0    32 OBJECT  LOCAL  DEFAULT    4 saTan3CPAnimTbl1
+   870: 0029acf0    32 OBJECT  LOCAL  DEFAULT    4 saTan3CTAnimTbl1
+   871: 0029ad10    32 OBJECT  LOCAL  DEFAULT    4 saTan3CPAnimTbl2
+   872: 0029ad30    32 OBJECT  LOCAL  DEFAULT    4 saTan3CTAnimTbl2
+   873: 00381520     0 NOTYPE  LOCAL  DEFAULT   10 saTan3
+   874: 0035a48c     0 NOTYPE  LOCAL  DEFAULT    9 Sibuki
+   875: 0035a490     0 NOTYPE  LOCAL  DEFAULT    9 CharaSibuki
+   877: 0035a484     0 NOTYPE  LOCAL  DEFAULT    9 EndCnt.72
+   878: 0035a488     0 NOTYPE  LOCAL  DEFAULT    9 RetCode.73
+   887: 00381670     0 NOTYPE  LOCAL  DEFAULT   10 NormalLight
+   888: 003816b0     0 NOTYPE  LOCAL  DEFAULT   10 LightColor
+   889: 003815c0     0 NOTYPE  LOCAL  DEFAULT   10 CameraTra
+   890: 003815e0     0 NOTYPE  LOCAL  DEFAULT   10 CameraRot
+   891: 003815f0     0 NOTYPE  LOCAL  DEFAULT   10 WorldScreen
+   892: 00381630     0 NOTYPE  LOCAL  DEFAULT   10 WorldClip
+   904: 003816f0     0 NOTYPE  LOCAL  DEFAULT   10 saTan3CPHandle
+   905: 00381700     0 NOTYPE  LOCAL  DEFAULT   10 saTan3CTHandle
+   906: 003815d0     0 NOTYPE  LOCAL  DEFAULT   10 TargetTra
+   912: 0035a494     0 NOTYPE  LOCAL  DEFAULT    9 GaugeY
+   913: 0035a49c     0 NOTYPE  LOCAL  DEFAULT    9 GaugeS
+   914: 0035a4a0     0 NOTYPE  LOCAL  DEFAULT    9 GaugeType
+   915: 0035a4a4     0 NOTYPE  LOCAL  DEFAULT    9 GaugeTypeB
+   916: 0035a4a8     0 NOTYPE  LOCAL  DEFAULT    9 GaugeSw
+   917: 0035a498     0 NOTYPE  LOCAL  DEFAULT    9 GaugeAdd
+   918: 0035a4ac     0 NOTYPE  LOCAL  DEFAULT    9 HajimeCnt
+   919: 0035a4b0     0 NOTYPE  LOCAL  DEFAULT    9 SyuryoCnt
+   920: 0014f700     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   921: 0014f700     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   922: 0029ad50     8 OBJECT  LOCAL  DEFAULT    4 saTan4Tati
+   923: 0029ad58     8 OBJECT  LOCAL  DEFAULT    4 saTan4Kiri
+   924: 0029ad60    48 OBJECT  LOCAL  DEFAULT    4 LightN
+   925: 0029ad90    64 OBJECT  LOCAL  DEFAULT    4 LightC
+   926: 0035a0f0     8 OBJECT  LOCAL  DEFAULT    8 ObjSmdFile
+   927: 0029add0    48 OBJECT  LOCAL  DEFAULT    4 saTan4CPAnimTbl0
+   928: 0029ae00    32 OBJECT  LOCAL  DEFAULT    4 saTan4CTAnimTbl0
+   929: 0029ae20    48 OBJECT  LOCAL  DEFAULT    4 saTan4CPAnimTbl1
+   930: 0029ae50    32 OBJECT  LOCAL  DEFAULT    4 saTan4CTAnimTbl1
+   931: 00381710     0 NOTYPE  LOCAL  DEFAULT   10 saTan4
+   932: 0035a4c0     0 NOTYPE  LOCAL  DEFAULT    9 ObjBuff
+   933: 00382ef0     0 NOTYPE  LOCAL  DEFAULT   10 ObjHandle
+   935: 0035a4b8     0 NOTYPE  LOCAL  DEFAULT    9 EndCnt.72
+   936: 0035a4bc     0 NOTYPE  LOCAL  DEFAULT    9 RetCode.73
+   938: 00381850     0 NOTYPE  LOCAL  DEFAULT   10 NormalLight
+   942: 003818f0     0 NOTYPE  LOCAL  DEFAULT   10 Fire
+   944: 00381890     0 NOTYPE  LOCAL  DEFAULT   10 LightColor
+   945: 003817d0     0 NOTYPE  LOCAL  DEFAULT   10 WorldScreen
+   946: 00381810     0 NOTYPE  LOCAL  DEFAULT   10 WorldClip
+   947: 003817a0     0 NOTYPE  LOCAL  DEFAULT   10 CameraTra
+   948: 003817c0     0 NOTYPE  LOCAL  DEFAULT   10 CameraRot
+   958: 003818d0     0 NOTYPE  LOCAL  DEFAULT   10 saTan4CPHandle
+   959: 003818e0     0 NOTYPE  LOCAL  DEFAULT   10 saTan4CTHandle
+   960: 003817b0     0 NOTYPE  LOCAL  DEFAULT   10 TargetTra
+   962: 00383810     0 NOTYPE  LOCAL  DEFAULT   10 GaugeOkFlag
+   963: 0035a4cc     0 NOTYPE  LOCAL  DEFAULT    9 GaugeAdd
+   964: 0035a4c8     0 NOTYPE  LOCAL  DEFAULT    9 GaugeJump
+   965: 0035a4d0     0 NOTYPE  LOCAL  DEFAULT    9 GaugeRot
+   966: 0035a4d4     0 NOTYPE  LOCAL  DEFAULT    9 GaugeObjRot
+   967: 0035a4d8     0 NOTYPE  LOCAL  DEFAULT    9 GaugeRotCnt
+   968: 0035a4dc     0 NOTYPE  LOCAL  DEFAULT    9 GaugeCnt
+   969: 0035a4e0     0 NOTYPE  LOCAL  DEFAULT    9 GaugeAlpha
+   970: 0035a4e4     0 NOTYPE  LOCAL  DEFAULT    9 CRot
+   971: 0035a4e8     0 NOTYPE  LOCAL  DEFAULT    9 CRotCnt
+   973: 0035a4ec     0 NOTYPE  LOCAL  DEFAULT    9 HajimeCnt
+   974: 0035a4f0     0 NOTYPE  LOCAL  DEFAULT    9 SyuryoCnt
+   975: 0029ae70    32 OBJECT  LOCAL  DEFAULT    4 FireTexAnimTblA
+   976: 0029ae90    64 OBJECT  LOCAL  DEFAULT    4 FireTexAnimTblB
+   977: 00151590     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+   978: 00151590     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+   979: 0029aed0  1600 OBJECT  LOCAL  DEFAULT    4 saTan5TakePos
+   980: 0029b510     8 OBJECT  LOCAL  DEFAULT    4 saTan5Tati
+   981: 0029b520    48 OBJECT  LOCAL  DEFAULT    4 LightN
+   982: 0029b550    64 OBJECT  LOCAL  DEFAULT    4 LightC
+   983: 0029b590    64 OBJECT  LOCAL  DEFAULT    4 LightCAnim
+   984: 0029b5d0    28 OBJECT  LOCAL  DEFAULT    4 ObjSmdFile
+   985: 0035a4fc     0 NOTYPE  LOCAL  DEFAULT    9 Take
+   986: 00383970     0 NOTYPE  LOCAL  DEFAULT   10 ObjBuff
+   987: 00383990     0 NOTYPE  LOCAL  DEFAULT   10 ObjHandle
+   988: 0035a504     0 NOTYPE  LOCAL  DEFAULT    9 TakeSin
+   989: 0035a500     0 NOTYPE  LOCAL  DEFAULT    9 TakeHikariNo
+   990: 00383830     0 NOTYPE  LOCAL  DEFAULT   10 saTan5
+   991: 00383930     0 NOTYPE  LOCAL  DEFAULT   10 NormalLight
+   992: 003838b0     0 NOTYPE  LOCAL  DEFAULT   10 LightColorMat
+   993: 003838f0     0 NOTYPE  LOCAL  DEFAULT   10 LightColorMat2
+   995: 0035a4f4     0 NOTYPE  LOCAL  DEFAULT    9 EndCnt.120
+   996: 0035a4f8     0 NOTYPE  LOCAL  DEFAULT    9 RetCode.121
+  1010: 0035a508     0 NOTYPE  LOCAL  DEFAULT    9 HajimeCnt
+  1011: 0035a50c     0 NOTYPE  LOCAL  DEFAULT    9 SyuryoCnt
+  1012: 00153468     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1013: 00153468     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1014: 0029b5f0  1120 OBJECT  LOCAL  DEFAULT    4 saKeyIndexTbl
+  1015: 0029ba50   700 OBJECT  LOCAL  DEFAULT    4 saSeFile
+  1016: 00385980     0 NOTYPE  LOCAL  DEFAULT   10 saSeMemCtrl
+  1017: 0035a520     0 NOTYPE  LOCAL  DEFAULT    9 saIopHeapTop
+  1018: 0035a528     0 NOTYPE  LOCAL  DEFAULT    9 saSeqTblAddr
+  1019: 003866d8     0 NOTYPE  LOCAL  DEFAULT   10 saVhAddr
+  1020: 003866a8     0 NOTYPE  LOCAL  DEFAULT   10 saSeqAddr
+  1021: 003859b8     0 NOTYPE  LOCAL  DEFAULT   10 saVabTbl
+  1022: 0035a524     0 NOTYPE  LOCAL  DEFAULT    9 saVbAddr
+  1023: 00385a48     0 NOTYPE  LOCAL  DEFAULT   10 saSeKeyTbl
+  1024: 0035a510     0 NOTYPE  LOCAL  DEFAULT    9 Jump.75
+  1025: 0035a514     0 NOTYPE  LOCAL  DEFAULT    9 Jump.79
+  1026: 0035a51c     0 NOTYPE  LOCAL  DEFAULT    9 VabOpenFlag
+  1027: 0035a518     0 NOTYPE  LOCAL  DEFAULT    9 saSeAddCnt
+  1028: 003864c8     0 NOTYPE  LOCAL  DEFAULT   10 saSeAddBuff
+  1029: 00154138     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1030: 00154138     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1031: 0035a0f8     4 OBJECT  LOCAL  DEFAULT    8 saFileReadFlag
+  1032: 0035a52c     0 NOTYPE  LOCAL  DEFAULT    9 saFileID
+  1033: 003866f8     0 NOTYPE  LOCAL  DEFAULT   10 FilePos.12
+  1034: 003874e0     0 NOTYPE  LOCAL  DEFAULT   10 FidTop
+  1035: 00386738     0 NOTYPE  LOCAL  DEFAULT   10 FidTbl
+  1036: 00386718     0 NOTYPE  LOCAL  DEFAULT   10 FilePos.25
+  1037: 00154790     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1038: 00154790     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1039: 0035a108     8 OBJECT  LOCAL  DEFAULT    8 saEft00LinePtr
+  1040: 00387500     0 NOTYPE  LOCAL  DEFAULT   10 saEft00LineBuff
+  1041: 003ef500     0 NOTYPE  LOCAL  DEFAULT   10 saEft00Tbl
+  1042: 0035a530     0 NOTYPE  LOCAL  DEFAULT    9 saEft00ActiveBuff
+  1043: 0029bd10    84 OBJECT  LOCAL  DEFAULT    4 Eft01TexAnimTbl
+  1044: 00155e40     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1045: 00155e40     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1046: 0015a778     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1047: 0015a778     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1048: 0015add8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1049: 0015add8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1050: 0035a11c     4 OBJECT  LOCAL  DEFAULT    8 menuCounter
+  1051: 002d5b00   104 OBJECT  LOCAL  DEFAULT    4 md_2d_tbl
+  1052: 0015b048     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1053: 0015b048     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1054: 003541e0    64 OBJECT  LOCAL  DEFAULT    6 contentsTable
+  1055: 00354220    64 OBJECT  LOCAL  DEFAULT    6 indexTable
+  1071: 0015c7e0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1072: 0015c7e0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1073: 00354310    72 OBJECT  LOCAL  DEFAULT    6 dataBG
+  1075: 0015cb38     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1076: 0015cb38     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1081: 0015de40     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1082: 0015de40     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1083: 0041b500     0 NOTYPE  LOCAL  DEFAULT   10 data2DLib
+  1084: 00161290     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1085: 00161290     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1086: 00354948    80 OBJECT  LOCAL  DEFAULT    6 numberUV
+  1087: 00354998    12 OBJECT  LOCAL  DEFAULT    6 change_win_to_sw
+  1088: 0035a158     3 OBJECT  LOCAL  DEFAULT    8 change_sw_to_win
+  1095: 00161d70     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1096: 00161d70     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1097: 003549c0   276 OBJECT  LOCAL  DEFAULT    6 charTexID
+  1098: 00354ad8   440 OBJECT  LOCAL  DEFAULT    6 samnailTexTbl
+  1099: 00354c90   104 OBJECT  LOCAL  DEFAULT    6 charNamePictTbl
+  1100: 00354cf8   124 OBJECT  LOCAL  DEFAULT    6 nameTbl
+  1101: 00354d78    46 OBJECT  LOCAL  DEFAULT    6 selCharaID
+  1102: 00354da8    16 OBJECT  LOCAL  DEFAULT    6 selMonteiCharaID
+  1125: 00164b50     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1126: 00164b50     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1127: 00354df8    12 OBJECT  LOCAL  DEFAULT    6 selStageID
+  1128: 00354e08    96 OBJECT  LOCAL  DEFAULT    6 stageTexTbl
+  1129: 0035a534     0 NOTYPE  LOCAL  DEFAULT    9 dma_wait.81
+  1135: 00165a90     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1136: 00165a90     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1139: 001661f0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1140: 001661f0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1141: 00354e70    12 OBJECT  LOCAL  DEFAULT    6 charIDTbl
+  1142: 0035a170     8 OBJECT  LOCAL  DEFAULT    8 motionTbl
+  1143: 0034e110    72 OBJECT  LOCAL  DEFAULT    4 robST
+  1144: 0034e158   192 OBJECT  LOCAL  DEFAULT    4 bgTexTbl
+  1157: 001673b8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1158: 001673b8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1159: 00354ea0   160 OBJECT  LOCAL  DEFAULT    6 numberTex
+  1160: 0034e220     8 OBJECT  LOCAL  DEFAULT    4 motionTbl
+  1161: 0034e228    72 OBJECT  LOCAL  DEFAULT    4 robST
+  1162: 0034e270    36 OBJECT  LOCAL  DEFAULT    4 cameraDat
+  1163: 00354f40    64 OBJECT  LOCAL  DEFAULT    6 schoolBGTbl
+  1164: 0034e2a0    80 OBJECT  LOCAL  DEFAULT    4 homeLight
+  1165: 00354f80    12 OBJECT  LOCAL  DEFAULT    6 bgmID
+  1206: 0016cc10     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1207: 0016cc10     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1208: 00355110   192 OBJECT  LOCAL  DEFAULT    6 bgTexTbl
+  1209: 003551d0    16 OBJECT  LOCAL  DEFAULT    6 practiceBitTbl
+  1210: 003551e0    28 OBJECT  LOCAL  DEFAULT    6 testBitTbl
+  1220: 0016dd10     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1221: 0016dd10     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1222: 00355568  2340 OBJECT  LOCAL  DEFAULT    6 enableMoves
+  1223: 0034e2f0   816 OBJECT  LOCAL  DEFAULT    4 motionTbl
+  1224: 0034e620    24 OBJECT  LOCAL  DEFAULT    4 robST
+  1225: 0041b518     0 NOTYPE  LOCAL  DEFAULT   10 editBack
+  1226: 0035a538     0 NOTYPE  LOCAL  DEFAULT    9 curWork
+  1253: 00170e28     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1254: 00170e28     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1257: 001715e0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1258: 001715e0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1260: 00171a80     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1261: 00171a80     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1262: 0035a540     0 NOTYPE  LOCAL  DEFAULT    9 select
+  1263: 0035a53c     0 NOTYPE  LOCAL  DEFAULT    9 yesNo
+  1264: 0035a544     0 NOTYPE  LOCAL  DEFAULT    9 menu
+  1265: 0035a548     0 NOTYPE  LOCAL  DEFAULT    9 endCounter
+  1266: 0035a1ac     4 OBJECT  LOCAL  DEFAULT    8 counter.87
+  1267: 00171f28     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1268: 00171f28     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1269: 0041b620     0 NOTYPE  LOCAL  DEFAULT   10 movieDat
+  1270: 0035a56c     0 NOTYPE  LOCAL  DEFAULT    9 audioBuff
+  1271: 0035a568     0 NOTYPE  LOCAL  DEFAULT    9 mpegWork
+  1272: 0035a560     0 NOTYPE  LOCAL  DEFAULT    9 defStack
+  1273: 0035a564     0 NOTYPE  LOCAL  DEFAULT    9 videoDecStack
+  1274: 0035a55c     0 NOTYPE  LOCAL  DEFAULT    9 readBuf
+  1275: 0035a570     0 NOTYPE  LOCAL  DEFAULT    9 timeStamp
+  1276: 0035a554     0 NOTYPE  LOCAL  DEFAULT    9 voBufTag
+  1277: 0035a558     0 NOTYPE  LOCAL  DEFAULT    9 voBufData
+  1278: 0035a54c     0 NOTYPE  LOCAL  DEFAULT    9 viBufTag
+  1279: 0035a550     0 NOTYPE  LOCAL  DEFAULT    9 viBufData
+  1284: 00172d68     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1285: 00172d68     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1286: 00173510     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1287: 00173510     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1292: 001749c0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1293: 001749c0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1294: 00175b10     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1295: 00175b10     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1296: 0041b680   320 OBJECT  LOCAL  DEFAULT   10 localTags
+  1297: 0041b7c0   320 OBJECT  LOCAL  DEFAULT   10 clearTags
+  1298: 00176cb0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1299: 00176cb0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1300: 003560c0   124 OBJECT  LOCAL  DEFAULT    6 cvtTbl
+  1301: 00356140    48 OBJECT  LOCAL  DEFAULT    6 frameTexTbl
+  1302: 0041b900     0 NOTYPE  LOCAL  DEFAULT   10 game2DDat
+  1310: 0017d178     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1311: 0017d178     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1312: 00356210    32 OBJECT  LOCAL  DEFAULT    6 masterTbl
+  1313: 00356230    32 OBJECT  LOCAL  DEFAULT    6 subMasterTbl
+  1314: 00356250    32 OBJECT  LOCAL  DEFAULT    6 studentTbl
+  1315: 00356270    12 OBJECT  LOCAL  DEFAULT    6 vipTbl
+  1316: 0041b968     0 NOTYPE  LOCAL  DEFAULT   10 leagueDat
+  1322: 0017e210     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1323: 0017e210     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1324: 003562e0   512 OBJECT  LOCAL  DEFAULT    6 crc_table
+  1325: 003564e0    24 OBJECT  LOCAL  DEFAULT    6 unformat_err_mess
+  1326: 0034e8b0   128 OBJECT  LOCAL  DEFAULT    4 iconName
+  1328: 0041ba00     0 NOTYPE  LOCAL  DEFAULT   10 proDat
+  1329: 0035a574     0 NOTYPE  LOCAL  DEFAULT    9 cardType.114
+  1363: 0041ba80   192 OBJECT  LOCAL  DEFAULT   10 dirTable
+  1379: 001811d4     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1380: 001811d4     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1381: 001811d8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1382: 001811d8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1383: 0034e930    16 OBJECT  LOCAL  DEFAULT    4 __ps2_libinfo__
+  1384: 0034e944     4 OBJECT  LOCAL  DEFAULT    4 scmd_sema_keep_cmd
+  1385: 0034e948     4 OBJECT  LOCAL  DEFAULT    4 ncmd_sema_keep_cmd
+  1386: 0034e94c     4 OBJECT  LOCAL  DEFAULT    4 cb_thid
+  1389: 0041bb40     0 NOTYPE  LOCAL  DEFAULT   10 my_thid
+  1390: 0041bb48     0 NOTYPE  LOCAL  DEFAULT   10 my_th_info
+  1391: 0041bb78     0 NOTYPE  LOCAL  DEFAULT   10 cb_tp
+  1395: 0034e964     4 OBJECT  LOCAL  DEFAULT    4 _icmd_bind
+  1396: 0041bc20     0 NOTYPE  LOCAL  DEFAULT   10 icmdcd
+  1397: 0041bc48     0 NOTYPE  LOCAL  DEFAULT   10 func_num
+  1398: 0034e968     4 OBJECT  LOCAL  DEFAULT    4 _sf_bind
+  1399: 0041be68     0 NOTYPE  LOCAL  DEFAULT   10 cdrdsf
+  1400: 0041bcc0     0 NOTYPE  LOCAL  DEFAULT   10 _sf_data
+  1401: 0041be00     0 NOTYPE  LOCAL  DEFAULT   10 sfrdata
+  1402: 0034e96c     4 OBJECT  LOCAL  DEFAULT    4 _rd_bind
+  1404: 0041be40     0 NOTYPE  LOCAL  DEFAULT   10 cdrd
+  1405: 0041bbc0     0 NOTYPE  LOCAL  DEFAULT   10 ncmdrdata
+  1406: 0041c300     0 NOTYPE  LOCAL  DEFAULT   10 _Read_cur_pos
+  1407: 0041bfc0     0 NOTYPE  LOCAL  DEFAULT   10 _rdc_data
+  1408: 0041bf80     0 NOTYPE  LOCAL  DEFAULT   10 _rd_data
+  1409: 0041bec0     0 NOTYPE  LOCAL  DEFAULT   10 _rd_intr_data
+  1410: 0041c340     0 NOTYPE  LOCAL  DEFAULT   10 tocbf
+  1411: 0041c310     0 NOTYPE  LOCAL  DEFAULT   10 _gt_data
+  1412: 0034e970     4 OBJECT  LOCAL  DEFAULT    4 _ncmd_bind
+  1413: 0041cb50     0 NOTYPE  LOCAL  DEFAULT   10 _lbn_prm
+  1414: 0034e974     4 OBJECT  LOCAL  DEFAULT    4 _scmd_bind
+  1415: 0034e978     4 OBJECT  LOCAL  DEFAULT    4 _scmd_dr_bind
+  1416: 0034e97c     4 OBJECT  LOCAL  DEFAULT    4 _scmd_bk_bind
+  1417: 0041cfa0     0 NOTYPE  LOCAL  DEFAULT   10 cdrc
+  1419: 0034e980     4 OBJECT  LOCAL  DEFAULT    4 _it_bind
+  1420: 0034e984     4 OBJECT  LOCAL  DEFAULT    4 c_cnt.78
+  1421: 0041d090     0 NOTYPE  LOCAL  DEFAULT   10 _i_mode
+  1422: 0041cfc8     0 NOTYPE  LOCAL  DEFAULT   10 cdit
+  1423: 0041cb80     0 NOTYPE  LOCAL  DEFAULT   10 scmdrdata
+  1424: 0041cff0     0 NOTYPE  LOCAL  DEFAULT   10 cddr
+  1425: 0041d0a0     0 NOTYPE  LOCAL  DEFAULT   10 _dr_mode
+  1426: 0041d0b0     0 NOTYPE  LOCAL  DEFAULT   10 _mmode
+  1427: 0041d0c0     0 NOTYPE  LOCAL  DEFAULT   10 TrayReq
+  1428: 0034e988     4 OBJECT  LOCAL  DEFAULT    4 stm_status
+  1429: 0041d0d0     0 NOTYPE  LOCAL  DEFAULT   10 _rs_data
+  1430: 0041bc80     0 NOTYPE  LOCAL  DEFAULT   10 icmdrdata
+  1431: 0041d018     0 NOTYPE  LOCAL  DEFAULT   10 cddr1
+  1432: 0041d040     0 NOTYPE  LOCAL  DEFAULT   10 cdbk
+  1433: 0041d068     0 NOTYPE  LOCAL  DEFAULT   10 cddr2
+  1434: 00183c10     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1435: 00183c10     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1437: 0034e9d0    16 OBJECT  LOCAL  DEFAULT    4 __ps2_libinfo__
+  1438: 0034e9e0    40 OBJECT  LOCAL  DEFAULT    4 isclr
+  1439: 0034ea08    10 OBJECT  LOCAL  DEFAULT    4 ststbl
+  1440: 0034ea18    10 OBJECT  LOCAL  DEFAULT    4 stdtbl
+  1441: 0034ea28    10 OBJECT  LOCAL  DEFAULT    4 mfdtbl
+  1442: 00184738     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1443: 00184738     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1444: 0034ea50    16 OBJECT  LOCAL  DEFAULT    4 __ps2_libinfo__
+  1445: 0034ea60    16 OBJECT  LOCAL  DEFAULT    4 gp.6
+  1446: 00184858     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1447: 00184858     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1448: 0034ea70    32 OBJECT  LOCAL  DEFAULT    4 init_vif_regs.3
+  1449: 001848c8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1450: 001848c8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1451: 00184b38     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1452: 00184b38     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1453: 00184bf8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1454: 00184bf8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1455: 00184ce0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1456: 00184ce0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1457: 00184d78     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1458: 00184d78     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1459: 001850b8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1460: 001850b8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1461: 001851c8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1462: 001851c8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1463: 00185228     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1464: 00185228     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1465: 00185410     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1466: 00185410     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1467: 00185550     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1468: 00185550     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1469: 001856d0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1470: 001856d0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1471: 0034ea90    16 OBJECT  LOCAL  DEFAULT    4 init_mp3.3
+  1472: 00185d60     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1473: 00185d60     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1474: 00185de8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1475: 00185de8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1476: 00185e70     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1477: 00185e70     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1478: 00186148     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1479: 00186148     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1480: 001861a8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1481: 001861a8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1482: 00186270     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1483: 00186270     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1484: 00186458     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1485: 00186458     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1486: 00186560     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1487: 00186560     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1492: 00186fd0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1493: 00186fd0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1494: 0034eab0     4 OBJECT  LOCAL  DEFAULT    4 ttyinit
+  1495: 0034eab4     4 OBJECT  LOCAL  DEFAULT    4 heap_ptr.27
+  1496: 00187368     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1497: 00187368     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1498: 001876a0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1499: 001876a0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1500: 0041d100     0 NOTYPE  LOCAL  DEFAULT   10 q.3
+  1505: 0041d210     0 NOTYPE  LOCAL  DEFAULT   10 tinfo
+  1506: 0041d240     0 NOTYPE  LOCAL  DEFAULT   10 wbuf
+  1507: 0041d380     0 NOTYPE  LOCAL  DEFAULT   10 rbuf
+  1508: 00187bc0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1509: 00187bc0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1510: 0034eab8     4 OBJECT  LOCAL  DEFAULT    4 count
+  1513: 0041d4c0     0 NOTYPE  LOCAL  DEFAULT   10 linebuf
+  1515: 0034eabc     4 OBJECT  LOCAL  DEFAULT    4 _putchar
+  1516: 00188610     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1517: 00188610     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1520: 0041d740     0 NOTYPE  LOCAL  DEFAULT   10 soft_reg
+  1521: 0041d618     0 NOTYPE  LOCAL  DEFAULT   10 _data_table
+  1522: 0041d5c0     0 NOTYPE  LOCAL  DEFAULT   10 _send_buffer
+  1523: 0041d640     0 NOTYPE  LOCAL  DEFAULT   10 _sys_buffer
+  1524: 0041d540     0 NOTYPE  LOCAL  DEFAULT   10 _packet_buffer
+  1526: 0041d614     0 NOTYPE  LOCAL  DEFAULT   10 sif0_handleid
+  1527: 0041d600     0 NOTYPE  LOCAL  DEFAULT   10 _csdata
+  1529: 00188d34     0 NOTYPE  LOCAL  DEFAULT    1 last
+  1530: 00188ce0     0 NOTYPE  LOCAL  DEFAULT    1 eight
+  1531: 00188cc4     0 NOTYPE  LOCAL  DEFAULT    1 loop1
+  1532: 00188ce4     0 NOTYPE  LOCAL  DEFAULT    1 loop8
+  1533: 00188d40     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1534: 00188d40     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1535: 0034eac0     4 OBJECT  LOCAL  DEFAULT    4 _sceSifInitCheck
+  1536: 0041efc0     0 NOTYPE  LOCAL  DEFAULT   10 _data_table
+  1537: 0041d7c0     0 NOTYPE  LOCAL  DEFAULT   10 _packet_buffer
+  1538: 0041dfc0     0 NOTYPE  LOCAL  DEFAULT   10 _free_buffer
+  1539: 0041e7c0     0 NOTYPE  LOCAL  DEFAULT   10 _free_buffer2
+  1549: 00189bd8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1550: 00189bd8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1551: 0034eac4     4 OBJECT  LOCAL  DEFAULT    4 _fs_init
+  1553: 0041f510     0 NOTYPE  LOCAL  DEFAULT   10 _iob
+  1555: 0041f610     0 NOTYPE  LOCAL  DEFAULT   10 _cd
+  1556: 0041f480     0 NOTYPE  LOCAL  DEFAULT   10 _intr_data
+  1557: 0041f000     0 NOTYPE  LOCAL  DEFAULT   10 _send_data
+  1558: 0041f440     0 NOTYPE  LOCAL  DEFAULT   10 _rcv_data
+  1560: 0018a440     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1561: 0018a440     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1562: 0034eac8     4 OBJECT  LOCAL  DEFAULT    4 _bind
+  1563: 0041f640     0 NOTYPE  LOCAL  DEFAULT   10 cd
+  1564: 0041f6c0     0 NOTYPE  LOCAL  DEFAULT   10 _aih_data
+  1565: 0041f680     0 NOTYPE  LOCAL  DEFAULT   10 rdata
+  1566: 0041f700     0 NOTYPE  LOCAL  DEFAULT   10 _fih_data
+  1567: 0041f740     0 NOTYPE  LOCAL  DEFAULT   10 _lih_data
+  1568: 0018a6a0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1569: 0018a6a0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1570: 0034eacc     4 OBJECT  LOCAL  DEFAULT    4 _bind_check
+  1572: 0041fa40     0 NOTYPE  LOCAL  DEFAULT   10 cd
+  1574: 0041f840     0 NOTYPE  LOCAL  DEFAULT   10 _senddata
+  1576: 0018ac70     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1577: 0018ac70     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1578: 0041fa80     0 NOTYPE  LOCAL  DEFAULT   10 rdata
+  1579: 0018af10     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1580: 0018af10     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1581: 0018afb0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1582: 0018afb0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1583: 0041fae8     0 NOTYPE  LOCAL  DEFAULT   10 userarea
+  1584: 0018b190     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1585: 0018b190     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1586: 0034ead0    16 OBJECT  LOCAL  DEFAULT    4 __ps2_libinfo__
+  1587: 0034eae0     4 OBJECT  LOCAL  DEFAULT    4 mcRunCmdNo
+  1588: 0041fb40     0 NOTYPE  LOCAL  DEFAULT   10 mcClientID
+  1589: 0041fbc0     0 NOTYPE  LOCAL  DEFAULT   10 sifParamOrd
+  1590: 00421100     0 NOTYPE  LOCAL  DEFAULT   10 retval
+  1591: 0041fbf0     0 NOTYPE  LOCAL  DEFAULT   10 sifParamFname
+  1593: 00420040     0 NOTYPE  LOCAL  DEFAULT   10 sifParamNext
+  1595: 0041fb68     0 NOTYPE  LOCAL  DEFAULT   10 typeAddr
+  1596: 0041fb6c     0 NOTYPE  LOCAL  DEFAULT   10 freeAddr
+  1597: 0041fb70     0 NOTYPE  LOCAL  DEFAULT   10 formAddr
+  1599: 00420100     0 NOTYPE  LOCAL  DEFAULT   10 currentDir
+  1600: 0041fb80     0 NOTYPE  LOCAL  DEFAULT   10 buffFileInfo
+  1601: 0018c270     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1602: 0018c270     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1603: 0034eae8   160 OBJECT  LOCAL  DEFAULT    4 _strmap
+  1604: 0034eb88     0 OBJECT  LOCAL  DEFAULT    4 ES_DSM_trick_mod[...]
+  1605: 0018d048     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1606: 0018d048     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1607: 0034eb98    16 OBJECT  LOCAL  DEFAULT    4 __ps2_libinfo__
+  1612: 0018dbb0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1613: 0018dbb0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1614: 0034eba8     4 OBJECT  LOCAL  DEFAULT    4 _buffbase
+  1615: 00421140   512 OBJECT  LOCAL  DEFAULT   10 _sprtagdata
+  1616: 00421340  2064 OBJECT  LOCAL  DEFAULT   10 _bstag
+  1620: 0018e738     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1621: 0018e738     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1622: 0018e754     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1623: 0018e754     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1624: 0018e760     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1625: 0018e760     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1627: 0034f488    32 OBJECT  LOCAL  DEFAULT    4 _rix
+  1628: 0034f4a8    32 OBJECT  LOCAL  DEFAULT    4 _ri0
+  1637: 001904b0     0 NOTYPE  LOCAL  DEFAULT    1 _maxval
+  1642: 0034f4c8    40 OBJECT  LOCAL  DEFAULT    4 _isDirty
+  1644: 0034f500    44 OBJECT  LOCAL  DEFAULT    4 ext_func.183
+  1645: 0034f52c     4 OBJECT  LOCAL  DEFAULT    4 tempRefWrap.193
+  1646: 0034f530     4 OBJECT  LOCAL  DEFAULT    4 tempRefOld.194
+  1650: 00193490     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1651: 00193490     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1655: 00193940     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1656: 00193940     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1658: 00193b50     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1659: 00193b50     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1660: 0034f590    16 OBJECT  LOCAL  DEFAULT    4 __ps2_libinfo__
+  1661: 0034f5a0     4 OBJECT  LOCAL  DEFAULT    4 isInit
+  1663: 00421bd0     0 NOTYPE  LOCAL  DEFAULT   10 PadData
+  1664: 00421b80     0 NOTYPE  LOCAL  DEFAULT   10 padsif
+  1667: 00422200     0 NOTYPE  LOCAL  DEFAULT   10 buffer
+  1669: 0034f5a8    32 OBJECT  LOCAL  DEFAULT    4 PadStateStr
+  1671: 0034f5c8    12 OBJECT  LOCAL  DEFAULT    4 ReqStateStr
+  1676: 00194be0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1677: 00194be0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1678: 00194c24     0 NOTYPE  LOCAL  DEFAULT    1 _loopMulMatrix
+  1679: 0034f5e0     0 NOTYPE  LOCAL  DEFAULT    4 S5432
+  1681: 00194f90     0 NOTYPE  LOCAL  DEFAULT    1 _ecossin_01
+  1682: 00194f94     0 NOTYPE  LOCAL  DEFAULT    1 _ecossin_02
+  1683: 00194fcc     0 NOTYPE  LOCAL  DEFAULT    1 _RotMatrixZ_01
+  1684: 00194fd4     0 NOTYPE  LOCAL  DEFAULT    1 _RotMatrixZ_02
+  1685: 00195018     0 NOTYPE  LOCAL  DEFAULT    1 _loopRotMatrixZ
+  1686: 0019507c     0 NOTYPE  LOCAL  DEFAULT    1 _RotMatrixX_01
+  1687: 00195084     0 NOTYPE  LOCAL  DEFAULT    1 _RotMatrixX_02
+  1688: 001950cc     0 NOTYPE  LOCAL  DEFAULT    1 _loopRotMatrixX
+  1689: 0019512c     0 NOTYPE  LOCAL  DEFAULT    1 _RotMatrixY_01
+  1690: 00195134     0 NOTYPE  LOCAL  DEFAULT    1 _RotMatrixY_02
+  1691: 0019517c     0 NOTYPE  LOCAL  DEFAULT    1 _loopRotMatrixY
+  1692: 001956a8     0 NOTYPE  LOCAL  DEFAULT    1 _rotTPN_loop
+  1693: 001956d4     0 NOTYPE  LOCAL  DEFAULT    1 _rotTPN
+  1694: 00195734     0 NOTYPE  LOCAL  DEFAULT    1 _rotTP
+  1695: 00195884     0 NOTYPE  LOCAL  DEFAULT    1 loop_clip_all
+  1696: 001958e4     0 NOTYPE  LOCAL  DEFAULT    1 end_clip_all
+  1697: 0034f5f0    32 OBJECT  LOCAL  DEFAULT    4 init_vif_regs.126
+  1698: 00195950     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1699: 00195950     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1700: 00195ba8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1701: 00195ba8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1702: 0034f610    16 OBJECT  LOCAL  DEFAULT    4 __ps2_libinfo__
+  1703: 0034f620    80 OBJECT  LOCAL  DEFAULT    4 iqval
+  1704: 0034f670    32 OBJECT  LOCAL  DEFAULT    4 vqval
+  1705: 00195de0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1706: 00195de0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1707: 0034f690    16 OBJECT  LOCAL  DEFAULT    4 __ps2_libinfo__
+  1708: 00422280     0 NOTYPE  LOCAL  DEFAULT   10 c_attr.3
+  1709: 004223c0     0 NOTYPE  LOCAL  DEFAULT   10 sbuff
+  1710: 004222b0     0 NOTYPE  LOCAL  DEFAULT   10 stack
+  1711: 00196138     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1712: 00196138     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1713: 00422400     0 NOTYPE  LOCAL  DEFAULT   10 stack.3
+  1716: 00423500     0 NOTYPE  LOCAL  DEFAULT   10 gEECBData
+  1717: 00423400     0 NOTYPE  LOCAL  DEFAULT   10 stack
+  1718: 001962f0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1719: 001962f0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1720: 001963f8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1721: 001963f8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1722: 001964f0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1723: 001964f0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1724: 00357b98     4 OBJECT  LOCAL  DEFAULT    6 one
+  1725: 001965d8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1726: 001965d8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1727: 001966c8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1728: 001966c8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1729: 001967e0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1730: 001967e0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1731: 001968f0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1732: 001968f0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1733: 00357bb8     8 OBJECT  LOCAL  DEFAULT    6 tiny
+  1734: 00357bc0     8 OBJECT  LOCAL  DEFAULT    6 zero
+  1735: 00357bc8     8 OBJECT  LOCAL  DEFAULT    6 pi_o_4
+  1736: 00357bd0     8 OBJECT  LOCAL  DEFAULT    6 pi_o_2
+  1737: 00357bd8     8 OBJECT  LOCAL  DEFAULT    6 pi
+  1738: 00357be0     8 OBJECT  LOCAL  DEFAULT    6 pi_lo
+  1739: 00196c28     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1740: 00196c28     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1741: 00357c68   264 OBJECT  LOCAL  DEFAULT    6 two_over_pi
+  1742: 00357d70   128 OBJECT  LOCAL  DEFAULT    6 npio2_hw
+  1743: 00357df0     8 OBJECT  LOCAL  DEFAULT    6 zero
+  1744: 00357df8     8 OBJECT  LOCAL  DEFAULT    6 half
+  1745: 00357e00     8 OBJECT  LOCAL  DEFAULT    6 two24
+  1746: 00357e08     8 OBJECT  LOCAL  DEFAULT    6 invpio2
+  1747: 00357e10     8 OBJECT  LOCAL  DEFAULT    6 pio2_1
+  1748: 00357e18     8 OBJECT  LOCAL  DEFAULT    6 pio2_1t
+  1749: 00357e20     8 OBJECT  LOCAL  DEFAULT    6 pio2_2
+  1750: 00357e28     8 OBJECT  LOCAL  DEFAULT    6 pio2_2t
+  1751: 00357e30     8 OBJECT  LOCAL  DEFAULT    6 pio2_3
+  1752: 00357e38     8 OBJECT  LOCAL  DEFAULT    6 pio2_3t
+  1753: 00197148     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1754: 00197148     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1755: 00357eb8     8 OBJECT  LOCAL  DEFAULT    6 one
+  1756: 00357ec0     8 OBJECT  LOCAL  DEFAULT    6 tiny
+  1757: 00197450     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1758: 00197450     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1759: 00357ec8   792 OBJECT  LOCAL  DEFAULT    6 two_over_pi
+  1760: 003581e0   128 OBJECT  LOCAL  DEFAULT    6 npio2_hw
+  1761: 00358260     4 OBJECT  LOCAL  DEFAULT    6 zero
+  1762: 00358264     4 OBJECT  LOCAL  DEFAULT    6 half
+  1763: 00358268     4 OBJECT  LOCAL  DEFAULT    6 two8
+  1764: 0035826c     4 OBJECT  LOCAL  DEFAULT    6 invpio2
+  1765: 00358270     4 OBJECT  LOCAL  DEFAULT    6 pio2_1
+  1766: 00358274     4 OBJECT  LOCAL  DEFAULT    6 pio2_1t
+  1767: 00358278     4 OBJECT  LOCAL  DEFAULT    6 pio2_2
+  1768: 0035827c     4 OBJECT  LOCAL  DEFAULT    6 pio2_2t
+  1769: 00358280     4 OBJECT  LOCAL  DEFAULT    6 pio2_3
+  1770: 00358284     4 OBJECT  LOCAL  DEFAULT    6 pio2_3t
+  1771: 00197830     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1772: 00197830     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1773: 00358288     8 OBJECT  LOCAL  DEFAULT    6 one
+  1774: 00358290     8 OBJECT  LOCAL  DEFAULT    6 C1
+  1775: 00358298     8 OBJECT  LOCAL  DEFAULT    6 C2
+  1776: 003582a0     8 OBJECT  LOCAL  DEFAULT    6 C3
+  1777: 003582a8     8 OBJECT  LOCAL  DEFAULT    6 C4
+  1778: 003582b0     8 OBJECT  LOCAL  DEFAULT    6 C5
+  1779: 003582b8     8 OBJECT  LOCAL  DEFAULT    6 C6
+  1780: 00197a80     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1781: 00197a80     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1782: 003582f0    16 OBJECT  LOCAL  DEFAULT    6 init_jk
+  1783: 00358300    64 OBJECT  LOCAL  DEFAULT    6 PIo2
+  1784: 00358340     8 OBJECT  LOCAL  DEFAULT    6 zero
+  1785: 00358348     8 OBJECT  LOCAL  DEFAULT    6 one
+  1786: 00358350     8 OBJECT  LOCAL  DEFAULT    6 two24
+  1787: 00358358     8 OBJECT  LOCAL  DEFAULT    6 twon24
+  1788: 001985e8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1789: 001985e8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1790: 00358360     8 OBJECT  LOCAL  DEFAULT    6 half
+  1791: 00358368     8 OBJECT  LOCAL  DEFAULT    6 S1
+  1792: 00358370     8 OBJECT  LOCAL  DEFAULT    6 S2
+  1793: 00358378     8 OBJECT  LOCAL  DEFAULT    6 S3
+  1794: 00358380     8 OBJECT  LOCAL  DEFAULT    6 S4
+  1795: 00358388     8 OBJECT  LOCAL  DEFAULT    6 S5
+  1796: 00358390     8 OBJECT  LOCAL  DEFAULT    6 S6
+  1797: 001987c0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1798: 001987c0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1799: 003583d0     4 OBJECT  LOCAL  DEFAULT    6 one
+  1800: 003583d4     4 OBJECT  LOCAL  DEFAULT    6 C1
+  1801: 003583d8     4 OBJECT  LOCAL  DEFAULT    6 C2
+  1802: 003583dc     4 OBJECT  LOCAL  DEFAULT    6 C3
+  1803: 003583e0     4 OBJECT  LOCAL  DEFAULT    6 C4
+  1804: 003583e4     4 OBJECT  LOCAL  DEFAULT    6 C5
+  1805: 003583e8     4 OBJECT  LOCAL  DEFAULT    6 C6
+  1806: 00198918     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1807: 00198918     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1808: 003583f0    12 OBJECT  LOCAL  DEFAULT    6 init_jk
+  1809: 00358400    44 OBJECT  LOCAL  DEFAULT    6 PIo2
+  1810: 0035842c     4 OBJECT  LOCAL  DEFAULT    6 zero
+  1811: 00358430     4 OBJECT  LOCAL  DEFAULT    6 one
+  1812: 00358434     4 OBJECT  LOCAL  DEFAULT    6 two8
+  1813: 00358438     4 OBJECT  LOCAL  DEFAULT    6 twon8
+  1814: 00199268     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1815: 00199268     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1816: 0035843c     4 OBJECT  LOCAL  DEFAULT    6 half
+  1817: 00358440     4 OBJECT  LOCAL  DEFAULT    6 S1
+  1818: 00358444     4 OBJECT  LOCAL  DEFAULT    6 S2
+  1819: 00358448     4 OBJECT  LOCAL  DEFAULT    6 S3
+  1820: 0035844c     4 OBJECT  LOCAL  DEFAULT    6 S4
+  1821: 00358450     4 OBJECT  LOCAL  DEFAULT    6 S5
+  1822: 00358454     4 OBJECT  LOCAL  DEFAULT    6 S6
+  1823: 00199370     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1824: 00199370     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1825: 00358458    32 OBJECT  LOCAL  DEFAULT    6 atanhi
+  1826: 00358478    32 OBJECT  LOCAL  DEFAULT    6 atanlo
+  1827: 00358498    88 OBJECT  LOCAL  DEFAULT    6 aT
+  1828: 003584f0     8 OBJECT  LOCAL  DEFAULT    6 one
+  1829: 003584f8     8 OBJECT  LOCAL  DEFAULT    6 huge
+  1830: 00199780     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1831: 00199780     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1832: 001997b8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1833: 001997b8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1834: 00358508     8 OBJECT  LOCAL  DEFAULT    6 huge
+  1835: 00199990     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1836: 00199990     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1837: 001999c8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1838: 001999c8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1839: 001999c8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1840: 001999c8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1841: 001999f0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1842: 001999f0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1843: 00358520     8 OBJECT  LOCAL  DEFAULT    6 two54
+  1844: 00358528     8 OBJECT  LOCAL  DEFAULT    6 twom54
+  1845: 00358530     8 OBJECT  LOCAL  DEFAULT    6 huge
+  1846: 00358538     8 OBJECT  LOCAL  DEFAULT    6 tiny
+  1847: 00199ba8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1848: 00199ba8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1849: 00199bc8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1850: 00199bc8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1851: 00358550     4 OBJECT  LOCAL  DEFAULT    6 huge
+  1852: 00199cb0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1853: 00199cb0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1854: 00358554     4 OBJECT  LOCAL  DEFAULT    6 two25
+  1855: 00358558     4 OBJECT  LOCAL  DEFAULT    6 twom25
+  1856: 0035855c     4 OBJECT  LOCAL  DEFAULT    6 huge
+  1857: 00358560     4 OBJECT  LOCAL  DEFAULT    6 tiny
+  1858: 00199e10     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1859: 00199e10     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1860: 00199e58     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1861: 00199e58     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1862: 00199e88     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1863: 00199e88     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1864: 0034f6e8     4 OBJECT  LOCAL  DEFAULT    4 p.3
+  1865: 00423540     0 NOTYPE  LOCAL  DEFAULT   10 initialized.10
+  1866: 00199fb0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1867: 00199fb0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1868: 00199fb0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1869: 00199fb0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1870: 00358568   256 OBJECT  LOCAL  DEFAULT    6 __clz_tab
+  1871: 0019a6a0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1872: 0019a6a0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1873: 0019a790     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1874: 0019a790     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1875: 0019a828     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1876: 0019a828     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1877: 0019a908     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1878: 0019a908     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1879: 00358668   256 OBJECT  LOCAL  DEFAULT    6 __clz_tab
+  1880: 0019af70     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1881: 0019af70     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1882: 0019afd0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1883: 0019afd0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1884: 00358768   256 OBJECT  LOCAL  DEFAULT    6 __clz_tab
+  1885: 0019b5a0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1886: 0019b5a0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1887: 00358868   256 OBJECT  LOCAL  DEFAULT    6 __clz_tab
+  1888: 0019bae0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1889: 0019bae0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1890: 00423548     0 NOTYPE  LOCAL  DEFAULT   10 thenan.3
+  1892: 0019c7d8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1893: 0019c7d8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1894: 00423560     0 NOTYPE  LOCAL  DEFAULT   10 thenan.3
+  1896: 0019d3b8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1897: 0019d3b8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1898: 0019d3c4     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1899: 0019d3c4     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1900: 0034f6f0   748 OBJECT  LOCAL  DEFAULT    4 impure_data
+  1902: 0019d440     0 NOTYPE  LOCAL  DEFAULT    1 $L2
+  1903: 0019d444     0 NOTYPE  LOCAL  DEFAULT    1 $L20
+  1904: 0019d3e8     0 NOTYPE  LOCAL  DEFAULT    1 $L5
+  1905: 0019d420     0 NOTYPE  LOCAL  DEFAULT    1 $L9
+  1906: 0019d46c     0 NOTYPE  LOCAL  DEFAULT    1 $L12
+  1907: 0019d450     0 NOTYPE  LOCAL  DEFAULT    1 $L13
+  1909: 0019d4f4     0 NOTYPE  LOCAL  DEFAULT    1 $L2
+  1910: 0019d4e0     0 NOTYPE  LOCAL  DEFAULT    1 $L31
+  1911: 0019d4b0     0 NOTYPE  LOCAL  DEFAULT    1 $L12
+  1912: 0019d4d4     0 NOTYPE  LOCAL  DEFAULT    1 $L16
+  1913: 0019d52c     0 NOTYPE  LOCAL  DEFAULT    1 $L19
+  1914: 0019d510     0 NOTYPE  LOCAL  DEFAULT    1 $L20
+  1915: 0019d538     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1916: 0019d538     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1917: 0019d5c8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1918: 0019d5c8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1919: 0019d608     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1920: 0019d608     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1922: 0019d7d0     0 NOTYPE  LOCAL  DEFAULT    1 $L7
+  1923: 0019d790     0 NOTYPE  LOCAL  DEFAULT    1 $L3
+  1924: 0019d7cc     0 NOTYPE  LOCAL  DEFAULT    1 $L4
+  1925: 0019d75c     0 NOTYPE  LOCAL  DEFAULT    1 $L2
+  1926: 0019d7a8     0 NOTYPE  LOCAL  DEFAULT    1 $L5
+  1928: 0019d908     0 NOTYPE  LOCAL  DEFAULT    1 $L15
+  1929: 0019d898     0 NOTYPE  LOCAL  DEFAULT    1 $L12
+  1930: 0019d86c     0 NOTYPE  LOCAL  DEFAULT    1 $L14
+  1931: 0019d8e8     0 NOTYPE  LOCAL  DEFAULT    1 $L16
+  1932: 0019d908     0 NOTYPE  LOCAL  DEFAULT    1 $L9
+  1934: 0019da98     0 NOTYPE  LOCAL  DEFAULT    1 $L9
+  1935: 0019da04     0 NOTYPE  LOCAL  DEFAULT    1 $L17
+  1936: 0019d958     0 NOTYPE  LOCAL  DEFAULT    1 $L31
+  1937: 0019da94     0 NOTYPE  LOCAL  DEFAULT    1 $L5
+  1938: 0019d9c0     0 NOTYPE  LOCAL  DEFAULT    1 $L39
+  1939: 0019da60     0 NOTYPE  LOCAL  DEFAULT    1 $L19
+  1940: 0019dae4     0 NOTYPE  LOCAL  DEFAULT    1 $L18
+  1941: 0019dac0     0 NOTYPE  LOCAL  DEFAULT    1 $L20
+  1942: 0019dac8     0 NOTYPE  LOCAL  DEFAULT    1 $L16
+  1943: 0019daf0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1944: 0019daf0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1945: 0019db48     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1946: 0019db48     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1949: 00358970    16 OBJECT  LOCAL  DEFAULT    6 blanks.12
+  1950: 00358980    16 OBJECT  LOCAL  DEFAULT    6 zeroes.13
+  1953: 0019f468     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1954: 0019f468     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1955: 0019f574     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1956: 0019f574     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1957: 0019f578     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1958: 0019f578     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1960: 001a0960     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1961: 001a0960     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1962: 001a0a68     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1963: 001a0a68     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1965: 001a0cc0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1966: 001a0cc0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1967: 001a1150     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1968: 001a1150     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1969: 001a1528     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1970: 001a1528     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1971: 001a15c0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1972: 001a15c0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1973: 00358cd8    48 OBJECT  LOCAL  DEFAULT    6 lconv
+  1974: 0034f9e8     8 OBJECT  LOCAL  DEFAULT    4 lc_ctype.3
+  1975: 0034f9f0     8 OBJECT  LOCAL  DEFAULT    4 last_lc_ctype.4
+  1976: 001a16b0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1977: 001a16b0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1978: 001a1800     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1979: 001a1800     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1981: 001a21d0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  1982: 001a21d0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  1984: 001a22ac     0 NOTYPE  LOCAL  DEFAULT    1 $L2
+  1985: 001a2224     0 NOTYPE  LOCAL  DEFAULT    1 $L6
+  1986: 001a226c     0 NOTYPE  LOCAL  DEFAULT    1 $L10
+  1987: 001a22dc     0 NOTYPE  LOCAL  DEFAULT    1 $L20
+  1988: 001a22c8     0 NOTYPE  LOCAL  DEFAULT    1 $L21
+  1989: 001a22e4     0 NOTYPE  LOCAL  DEFAULT    1 $L31
+  1991: 001a2344     0 NOTYPE  LOCAL  DEFAULT    1 $L2
+  1992: 001a23e8     0 NOTYPE  LOCAL  DEFAULT    1 $L7
+  1993: 001a2320     0 NOTYPE  LOCAL  DEFAULT    1 $L5
+  1994: 001a23c0     0 NOTYPE  LOCAL  DEFAULT    1 $L29
+  1995: 001a2364     0 NOTYPE  LOCAL  DEFAULT    1 $L11
+  1996: 001a23bc     0 NOTYPE  LOCAL  DEFAULT    1 $L30
+  1997: 001a239c     0 NOTYPE  LOCAL  DEFAULT    1 $L15
+  1998: 001a23cc     0 NOTYPE  LOCAL  DEFAULT    1 $L19
+  1999: 001a23f0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2000: 001a23f0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2001: 001a2400     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2002: 001a2400     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2003: 00358d20    12 OBJECT  LOCAL  DEFAULT    6 p05.27
+  2004: 001a3420     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2005: 001a3420     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2006: 001a3468     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2007: 001a3468     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2008: 001a34c8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2009: 001a34c8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2011: 001a3768     0 NOTYPE  LOCAL  DEFAULT    1 $L20
+  2012: 001a36fc     0 NOTYPE  LOCAL  DEFAULT    1 $L18
+  2013: 001a36b0     0 NOTYPE  LOCAL  DEFAULT    1 $L2
+  2014: 001a36d4     0 NOTYPE  LOCAL  DEFAULT    1 $L5
+  2015: 001a3768     0 NOTYPE  LOCAL  DEFAULT    1 $L19
+  2016: 001a3710     0 NOTYPE  LOCAL  DEFAULT    1 $L21
+  2017: 001a372c     0 NOTYPE  LOCAL  DEFAULT    1 $L6
+  2018: 001a3748     0 NOTYPE  LOCAL  DEFAULT    1 $L12
+  2019: 001a3770     0 NOTYPE  LOCAL  DEFAULT    1 $L22
+  2020: 001a3780     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2021: 001a3780     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2022: 001a37e0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2023: 001a37e0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2024: 001a38a0     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2025: 001a38a0     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2026: 001a38f8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2027: 001a38f8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2028: 001a3958     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2029: 001a3958     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2030: 001a39b8     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2031: 001a39b8     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2032: 001a3a18     0 NOTYPE  LOCAL  DEFAULT    1 gcc2_compiled.
+  2033: 001a3a18     0 NOTYPE  LOCAL  DEFAULT    1 __gnu_compiled_c
+  2034: 001a3c90     0 NOTYPE  LOCAL  DEFAULT [<other>: e8]     2 .dma.1
+  2035: 001a3c98     0 NOTYPE  LOCAL  INTERNAL [<other>: e8]     2 .vif.2
+  2036: 00000000     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    16 __start_.DVP.ove[...]
+  2043: 001a3ca0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.5
+  2044: 00000088     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    16 PUT_RMD_VU1
+  2045: 001a3d28     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$PUT_RMD_VU1
+  2046: 001a3d28     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.6
+  2047: 00000218     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    16 TEX_POLY
+  2048: 000000e0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    16 NO_TEX_POLY_LOOP_0
+  2049: 001a3d80     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NO_TEX_POLY_LOOP_0
+  2050: 001a3d80     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.7
+  2051: 00000118     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    16 NO_TEX_POLY_LOOP_1
+  2052: 001a3db8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NO_TEX_POLY_LOOP_1
+  2053: 001a3db8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.8
+  2054: 000001d0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    16 NO_TEX_POLY_NOT_[...]
+  2055: 001a3e70     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NO_TEX_POLY_NO[...]
+  2056: 001a3e70     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.9
+  2057: 001a3eb8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$TEX_POLY
+  2058: 001a3eb8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.10
+  2059: 00000368     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    16 SEND_GIF
+  2060: 00000228     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    16 TEX_POLY_LOOP_0
+  2061: 001a3ec8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$TEX_POLY_LOOP_0
+  2062: 001a3ec8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.11
+  2063: 00000268     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    16 TEX_POLY_LOOP_1
+  2064: 001a3f08     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$TEX_POLY_LOOP_1
+  2065: 001a3f08     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.12
+  2066: 00000320     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    16 TEX_POLY_NOT_SET_ADC
+  2067: 001a3fc0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$TEX_POLY_NOT_S[...]
+  2068: 001a3fc0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.13
+  2069: 001a4008     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$SEND_GIF
+  2070: 001a4008     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.14
+  2071: 001a4050     0 NOTYPE  LOCAL  DEFAULT    2 gnd_mpg
+  2072: 001a4030     0 NOTYPE  LOCAL  DEFAULT [<other>: e8]     2 .dma.0
+  2073: 001a4038     0 NOTYPE  LOCAL  INTERNAL [<other>: e8]     2 .vif.1
+  2074: 001a4040     0 NOTYPE  LOCAL  DEFAULT [<other>: e8]     2 .dma.3
+  2075: 001a4048     0 NOTYPE  LOCAL  INTERNAL [<other>: e8]     2 .vif.4
+  2076: 001a4050     0 NOTYPE  LOCAL  INTERNAL [<other>: e8]     2 .vif.5
+  2077: 00000000     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 __start_.DVP.ove[...]
+  2155: 001a4058     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.8
+  2156: 00000048     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 MATRIX_LOOP
+  2157: 001a40a0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$MATRIX_LOOP
+  2158: 001a40a0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.9
+  2159: 00000c38     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    19 MAKE_LVM
+  2160: 00000120     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 PLANESET_TOP
+  2161: 001a4178     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$PLANESET_TOP
+  2162: 001a4178     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.10
+  2163: 00000138     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 PLANE_LOOP
+  2164: 001a4190     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$PLANE_LOOP
+  2165: 001a4190     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.11
+  2166: 00000a80     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    19 MUL_MATRIX
+  2167: 00000170     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 BLK_LOOP
+  2168: 001a41c8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$BLK_LOOP
+  2169: 001a41c8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.12
+  2170: 00000188     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 POLY_LOOP
+  2171: 001a41e0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$POLY_LOOP
+  2172: 001a41e0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.13
+  2173: 00000850     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    19 NS_MAIN
+  2174: 00000640     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 NTS_MAIN
+  2175: 00000248     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 NSTS_MAIN
+  2176: 001a42a0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NSTS_MAIN
+  2177: 001a42a0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.14
+  2178: 00000298     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 NSTS_LEFT_STRIP
+  2179: 001a42f0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NSTS_LEFT_STRIP
+  2180: 001a42f0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.15
+  2181: 00000310     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 NSTS_VTX_LOOP
+  2182: 001a4368     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NSTS_VTX_LOOP
+  2183: 001a4368     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.16
+  2184: 00000488     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 NSTS_SPEC_DECAY
+  2185: 001a44e0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NSTS_SPEC_DECAY
+  2186: 001a44e0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.17
+  2187: 00000538     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 NSTS_NOADC
+  2188: 001a4590     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NSTS_NOADC
+  2189: 001a4590     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.18
+  2190: 000005b8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 POLY_LOOP_END
+  2191: 001a4610     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$POLY_LOOP_END
+  2192: 001a4610     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.19
+  2193: 000005e0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 BLK_LOOP_END
+  2194: 001a4638     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$BLK_LOOP_END
+  2195: 001a4638     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.20
+  2196: 00000a60     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    19 TEST_LOOP
+  2197: 001a4698     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NTS_MAIN
+  2198: 001a4698     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.21
+  2199: 00000690     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 NTS_LEFT_STRIP
+  2200: 001a46e8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NTS_LEFT_STRIP
+  2201: 001a46e8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.22
+  2202: 000006f8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 NTS_VTX_LOOP
+  2203: 001a4750     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NTS_VTX_LOOP
+  2204: 001a4750     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.23
+  2205: 000007c8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    18 NTS_NOADC
+  2206: 001a4820     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NTS_NOADC
+  2207: 001a4820     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.24
+  2208: 001a4858     0 NOTYPE  LOCAL  INTERNAL [<other>: e8]     2 .vif.25
+  2209: 00000800     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    19 __start_.DVP.ove[...]
+  2210: 001a4860     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.28
+  2211: 001a48b0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NS_MAIN
+  2212: 001a48b0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.29
+  2213: 000008a0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    19 NS_LEFT_STRIP
+  2214: 001a4900     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NS_LEFT_STRIP
+  2215: 001a4900     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.30
+  2216: 00000908     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    19 NS_VTX_LOOP
+  2217: 001a4968     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NS_VTX_LOOP
+  2218: 001a4968     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.31
+  2219: 000009d8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    19 NS_NOADC
+  2220: 001a4a38     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NS_NOADC
+  2221: 001a4a38     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.32
+  2222: 001a4ac0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$TEST_LOOP
+  2223: 001a4ac0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.33
+  2224: 001a4ae0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$MUL_MATRIX
+  2225: 001a4ae0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.34
+  2226: 001a4c98     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$MAKE_LVM
+  2227: 001a4c98     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.35
+  2228: 001a4e90     0 NOTYPE  LOCAL  DEFAULT    2 gnd_mpg
+  2229: 001a4e70     0 NOTYPE  LOCAL  DEFAULT [<other>: e8]     2 .dma.0
+  2230: 001a4e78     0 NOTYPE  LOCAL  INTERNAL [<other>: e8]     2 .vif.1
+  2231: 001a4e80     0 NOTYPE  LOCAL  DEFAULT [<other>: e8]     2 .dma.3
+  2232: 001a4e88     0 NOTYPE  LOCAL  INTERNAL [<other>: e8]     2 .vif.4
+  2233: 001a4e90     0 NOTYPE  LOCAL  INTERNAL [<other>: e8]     2 .vif.5
+  2234: 00000000     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 __start_.DVP.ove[...]
+  2312: 001a4e98     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.8
+  2313: 00000048     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 MATRIX_LOOP
+  2314: 001a4ee0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$MATRIX_LOOP
+  2315: 001a4ee0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.9
+  2316: 00000110     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 PLANESET_TOP
+  2317: 001a4fa8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$PLANESET_TOP
+  2318: 001a4fa8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.10
+  2319: 00000128     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 PLANE_LOOP
+  2320: 001a4fc0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$PLANE_LOOP
+  2321: 001a4fc0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.11
+  2322: 00000948     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    21 MUL_MATRIX
+  2323: 00000b00     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    21 MAKE_LVM
+  2324: 00000170     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 BLK_LOOP
+  2325: 001a5008     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$BLK_LOOP
+  2326: 001a5008     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.12
+  2327: 00000188     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 POLY_LOOP
+  2328: 001a5020     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$POLY_LOOP
+  2329: 001a5020     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.13
+  2330: 00000718     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 NS_MAIN
+  2331: 00000228     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 NTS_MAIN
+  2332: 001a50c0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NTS_MAIN
+  2333: 001a50c0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.14
+  2334: 00000278     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 NTS_LEFT_STRIP
+  2335: 001a5110     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NTS_LEFT_STRIP
+  2336: 001a5110     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.15
+  2337: 000002f8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 NTS_VTX_LOOP
+  2338: 001a5190     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NTS_VTX_LOOP
+  2339: 001a5190     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.16
+  2340: 00000618     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 NTS_NOADC
+  2341: 001a54b0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NTS_NOADC
+  2342: 001a54b0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.17
+  2343: 00000690     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 POLY_LOOP_END
+  2344: 001a5528     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$POLY_LOOP_END
+  2345: 001a5528     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.18
+  2346: 000006b8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 BLK_LOOP_END
+  2347: 001a5550     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$BLK_LOOP_END
+  2348: 001a5550     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.19
+  2349: 00000928     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    21 TEST_LOOP
+  2350: 001a55b0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NS_MAIN
+  2351: 001a55b0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.20
+  2352: 00000768     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 NS_LEFT_STRIP
+  2353: 001a5600     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NS_LEFT_STRIP
+  2354: 001a5600     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.21
+  2355: 000007d0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    20 NS_VTX_LOOP
+  2356: 001a5668     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NS_VTX_LOOP
+  2357: 001a5668     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.22
+  2358: 001a5698     0 NOTYPE  LOCAL  INTERNAL [<other>: e8]     2 .vif.23
+  2359: 00000800     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    21 __start_.DVP.ove[...]
+  2360: 001a56a0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.26
+  2361: 000008a0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    21 NS_NOADC
+  2362: 001a5740     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NS_NOADC
+  2363: 001a5740     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.27
+  2364: 001a57c8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$TEST_LOOP
+  2365: 001a57c8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.28
+  2366: 001a57e8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$MUL_MATRIX
+  2367: 001a57e8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.29
+  2368: 001a59a0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$MAKE_LVM
+  2369: 001a59a0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.30
+  2370: 001a5cc0     0 NOTYPE  LOCAL  DEFAULT [<other>: e8]     2 .dma.1
+  2371: 001a5cc8     0 NOTYPE  LOCAL  INTERNAL [<other>: e8]     2 .vif.2
+  2372: 00000000     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 __start_.DVP.ove[...]
+  2373: 001a5cd0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.5
+  2374: 000003e0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 MulMatrix
+  2375: 00000038     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 START0
+  2376: 001a5d08     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$START0
+  2377: 001a5d08     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.6
+  2378: 00000080     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 NOT_LEFT
+  2379: 001a5d50     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NOT_LEFT
+  2380: 001a5d50     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.7
+  2381: 00000218     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 TEX
+  2382: 00000090     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 NOT_TEX
+  2383: 001a5d60     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NOT_TEX
+  2384: 001a5d60     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.8
+  2385: 000000e8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 NOT_TEX_LOOP
+  2386: 001a5db8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NOT_TEX_LOOP
+  2387: 001a5db8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.9
+  2388: 000001e0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 NOT_TEX_XYZ2
+  2389: 000001d8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 NOT_TEX_XYZ3
+  2390: 001a5ea8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NOT_TEX_XYZ3
+  2391: 001a5ea8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.10
+  2392: 001a5eb0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$NOT_TEX_XYZ2
+  2393: 001a5eb0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.11
+  2394: 001a5ee8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$TEX
+  2395: 001a5ee8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.12
+  2396: 00000278     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 TEX_LOOP
+  2397: 001a5f48     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$TEX_LOOP
+  2398: 001a5f48     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.13
+  2399: 000003a8     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 TEX_XYZ2
+  2400: 000003a0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]    22 TEX_XYZ3
+  2401: 001a6070     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$TEX_XYZ3
+  2402: 001a6070     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.14
+  2403: 001a6078     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$TEX_XYZ2
+  2404: 001a6078     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.15
+  2405: 001a60b0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 _$MulMatrix
+  2406: 001a60b0     0 NOTYPE  LOCAL  PROTECTED [<other>: e8]     2 .vu.16
+  2407: 0034edcc     4 OBJECT  GLOBAL DEFAULT    4 _original_or_copy
+  2408: 00296e00    16 OBJECT  GLOBAL DEFAULT    4 Camera_Rot_def
+  2412: 00359f60     1 OBJECT  GLOBAL DEFAULT    8 Tan5PadDisableFlag
+  2415: 00298288    76 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_pat[...]
+  2418: 00359b40     8 OBJECT  GLOBAL DEFAULT    8 demo_game_stage_id
+  2421: 001a6460    32 OBJECT  GLOBAL DEFAULT    4 structBlur
+  2422: 00299928    80 OBJECT  GLOBAL DEFAULT    4 single_get_muish[...]
+  2424: 00296890  1332 OBJECT  GLOBAL DEFAULT    4 UserWork
+  2427: 0034ec80    64 OBJECT  GLOBAL DEFAULT    4 defNIQM
+  2430: 00358e20    40 OBJECT  GLOBAL DEFAULT    6 __mprec_tinytens
+  2435: 001e8be0   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  2437: 0034ebf4     4 OBJECT  GLOBAL DEFAULT    4 _ipubp
+  2444: 002998d8    80 OBJECT  GLOBAL DEFAULT    4 single_get_muni_[...]
+  2446: 00359d58     4 OBJECT  GLOBAL DEFAULT    8 tim
+  2447: 001e5280  1032 OBJECT  GLOBAL DEFAULT    4 Act_tbl
+  2450: 00359b38     4 OBJECT  GLOBAL DEFAULT    8 GameSe
+  2452: 0034ecdc     4 OBJECT  GLOBAL DEFAULT    4 _isSecondField
+  2459: 00359b10     8 OBJECT  GLOBAL DEFAULT    8 TimerMain
+  2464: 0034ed48     4 OBJECT  GLOBAL DEFAULT    4 _forward_f_code
+  2465: 0034e958     4 OBJECT  GLOBAL DEFAULT    4 cb_semid
+  2467: 00299d08    24 OBJECT  GLOBAL DEFAULT    4 Marionation_str
+  2469: 0034f6a0     4 OBJECT  GLOBAL DEFAULT    4 gEnd_func
+  2473: 001e6b08    72 OBJECT  GLOBAL DEFAULT    4 MOT_OUGI_5_TBL
+  2476: 0034ebcc     4 OBJECT  GLOBAL DEFAULT    4 _forwTop
+  2477: 0034ebc8     4 OBJECT  GLOBAL DEFAULT    4 _zFrame
+  2479: 0034edd8     4 OBJECT  GLOBAL DEFAULT    4 _copyright_number_3
+  2482: 002999c8    80 OBJECT  GLOBAL DEFAULT    4 single_get_kumom[...]
+  2484: 00299638    36 OBJECT  GLOBAL DEFAULT    4 ryuha_waza_adress_tbl
+  2486: 0034f458     4 OBJECT  GLOBAL DEFAULT    4 _top32
+  2495: 0034ee10   104 OBJECT  GLOBAL DEFAULT    4 _refFrame0
+  2502: 001e5688   516 OBJECT  GLOBAL DEFAULT    4 act_str
+  2505: 0034f4f4     4 OBJECT  GLOBAL DEFAULT    4 _trFrameNumberA
+  2510: 0034ed6c     4 OBJECT  GLOBAL DEFAULT    4 _picture_structure
+  2515: 00359fc4     4 OBJECT  GLOBAL DEFAULT    8 MarioCam
+  2520: 00359dec     4 OBJECT  GLOBAL DEFAULT    8 SetMotionSwMask
+  2522: 00298878   288 OBJECT  GLOBAL DEFAULT    4 miss_attack_enab[...]
+  2523: 0034f478     4 OBJECT  GLOBAL DEFAULT    4 _alternate_scan
+  2524: 00359f90     1 OBJECT  GLOBAL DEFAULT    8 DebugModelDBSW
+  2527: 0034edc8     4 OBJECT  GLOBAL DEFAULT    4 _copyright_identifier
+  2532: 00359b30     4 OBJECT  GLOBAL DEFAULT    8 Judge
+  2559: 00299b30   216 OBJECT  GLOBAL DEFAULT    4 single_game_keik[...]
+  2567: 0034ee00     4 OBJECT  GLOBAL DEFAULT    4 _qscqsc
+  2580: 001a5cc0     0 NOTYPE  GLOBAL DEFAULT    2 SaSmdVu1Code
+  2589: 001e8ff0   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  2593: 001e6a80    32 OBJECT  GLOBAL DEFAULT    4 MOT_OUGI_1_TBL
+  2606: 0034ea38    20 OBJECT  GLOBAL DEFAULT    4 sceDmaCurrentEnv
+  2607: 0034ed70     4 OBJECT  GLOBAL DEFAULT    4 _top_field_first
+  2611: 0034ebf8     4 OBJECT  GLOBAL DEFAULT    4 _iputop
+  2612: 0029bdd0    64 OBJECT  GLOBAL DEFAULT    4 BaseMatrix
+  2618: 0035a0a8     8 OBJECT  GLOBAL DEFAULT    8 single_dojo_stag[...]
+  2623: 0034efb0   104 OBJECT  GLOBAL DEFAULT    4 _refTop1
+  2626: 0034eccc     4 OBJECT  GLOBAL DEFAULT    4 _picWidth
+  2637: 002989d8   128 OBJECT  GLOBAL DEFAULT    4 ukenagasi_enable[...]
+  2641: 00359df0     4 OBJECT  GLOBAL DEFAULT    8 mt_gnd
+  2643: 00296df0    16 OBJECT  GLOBAL DEFAULT    4 Camera_Tpos_def
+  2657: 0035a120     4 OBJECT  GLOBAL DEFAULT    8 menuFlash
+  2659: 0035a0cc     4 OBJECT  GLOBAL DEFAULT    8 Mario
+  2665: 00359f94     4 OBJECT  GLOBAL DEFAULT    8 CpuPP
+  2667: 001a64e0   160 OBJECT  GLOBAL DEFAULT    4 texenv
+  2688: 001a65f0    38 OBJECT  GLOBAL DEFAULT    4 stage_se_number_tbl
+  2689: 0034e960     4 OBJECT  GLOBAL DEFAULT    4 Init_seq
+  2710: 00299838    80 OBJECT  GLOBAL DEFAULT    4 single_get_suige[...]
+  2718: 0034ed94     4 OBJECT  GLOBAL DEFAULT    4 _field_sequence
+  2719: 001e6aa0    28 OBJECT  GLOBAL DEFAULT    4 MOT_OUGI_2_TBL
+  2721: 0034ed2c     4 OBJECT  GLOBAL DEFAULT    4 _matrix_coefficients
+  2724: 00299ac8    48 OBJECT  GLOBAL DEFAULT    4 mar05_serif_data_tbl
+  2725: 00299778    54 OBJECT  GLOBAL DEFAULT    4 single_taryu_mat[...]
+  2731: 0035a588     4 OBJECT  GLOBAL DEFAULT    9 errno
+  2736: 001e69d0    12 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_KAW_B_TBL
+  2737: 00298518   288 OBJECT  GLOBAL DEFAULT    4 mao_dist_attack_[...]
+  2742: 0034f6e4     4 OBJECT  GLOBAL DEFAULT    4 gIRQCB
+  2749: 0034ed38     4 OBJECT  GLOBAL DEFAULT    4 _temporal_reference
+  2750: 00359b4c     1 OBJECT  GLOBAL DEFAULT    8 CallGameMode
+  2769: 0034edf0     4 OBJECT  GLOBAL DEFAULT    4 _closed_gop
+  2773: 0034ebb8     4 OBJECT  GLOBAL DEFAULT    4 _bsDatap
+  2779: 001e8aa8   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  2790: 00299c80    48 OBJECT  GLOBAL DEFAULT    4 KatinukiGame_str
+  2796: 0034e98c     4 OBJECT  GLOBAL DEFAULT    4 sceCdCbfunc
+  2799: 0034ed08     4 OBJECT  GLOBAL DEFAULT    4 _progressive_sequence
+  2800: 001e5150    24 OBJECT  GLOBAL DEFAULT    4 act_sinpaku_o0
+  2807: 001e7e48    80 OBJECT  GLOBAL DEFAULT    4 BukiSeStr
+  2808: 0034ed1c     4 OBJECT  GLOBAL DEFAULT    4 _video_format
+  2811: 00359da8     4 OBJECT  GLOBAL DEFAULT    8 MOT_EX_GO_SIK01_TBL
+  2814: 0029bed0    64 OBJECT  GLOBAL DEFAULT    4 waki_l_mat
+  2816: 002983f8   288 OBJECT  GLOBAL DEFAULT    4 atk_dist_attack_[...]
+  2821: 00299600    18 OBJECT  GLOBAL DEFAULT    4 kunomusin_pset_a[...]
+  2822: 0034e994     4 OBJECT  GLOBAL DEFAULT    4 sceCdCbfunc_number
+  2824: 00298998    32 OBJECT  GLOBAL DEFAULT    4 attack_enemy_dir[...]
+  2826: 00359f48     8 OBJECT  GLOBAL DEFAULT    8 Stats
+  2835: 001e6930    10 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_PRE_TBL
+  2836: 00297400   912 OBJECT  GLOBAL DEFAULT    4 StageLight
+  2837: 00359b08     1 OBJECT  GLOBAL DEFAULT    8 ModeSub
+  2853: 001a6370   236 OBJECT  GLOBAL DEFAULT    4 mode_str
+  2858: 001e8b78   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  2864: 002e7810  4096 OBJECT  GLOBAL DEFAULT    4 u_menuTexTbl
+  2871: 0035a0c4     4 OBJECT  GLOBAL DEFAULT    8 KatinukiGame
+  2872: 0029be90    64 OBJECT  GLOBAL DEFAULT    4 kao_mat
+  2874: 001e7ea0   104 OBJECT  GLOBAL DEFAULT    4 colli_parts_str
+  2877: 001e5198    24 OBJECT  GLOBAL DEFAULT    4 act_sinpaku_o3
+  2878: 00359b03     1 OBJECT  GLOBAL DEFAULT    8 ComaFlag
+  2894: 001e8d80   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  2898: 0034ebac     4 OBJECT  GLOBAL DEFAULT    4 _sprtag
+  2899: 00299af8    16 OBJECT  GLOBAL DEFAULT    4 mar06_serif_data_tbl
+  2901: 0034f6d8     4 OBJECT  GLOBAL DEFAULT    4 gStFinishCB
+  2904: 00359b20     8 OBJECT  GLOBAL DEFAULT    8 TimerSub
+  2907: 001a6630    24 OBJECT  GLOBAL DEFAULT    4 md_game_exec_func_tbl
+  2914: 001e6970    30 OBJECT  GLOBAL DEFAULT    4 MOT_EX_DAMAGE_TBL
+  2916: 0034ecf8     4 OBJECT  GLOBAL DEFAULT    4 _bit_rate_value
+  2917: 0034e860    20 OBJECT  GLOBAL DEFAULT    4 voBuf
+  2923: 0034ece8     4 OBJECT  GLOBAL DEFAULT    4 _widthMB
+  2927: 00359f98     1 OBJECT  GLOBAL DEFAULT    8 DispCpuPower
+  2929: 00359b06     1 OBJECT  GLOBAL DEFAULT    8 ModeMainOld
+  2936: 0034ee78   104 OBJECT  GLOBAL DEFAULT    4 _refFrame1
+  2939: 00358d30   200 OBJECT  GLOBAL DEFAULT    6 __mprec_tens
+  2943: 00359de4     4 OBJECT  GLOBAL DEFAULT    8 MotHeadStartAddress
+  2944: 002993e8   248 OBJECT  GLOBAL DEFAULT    4 chractar_use_pse[...]
+  2945: 0035a1cc     4 OBJECT  GLOBAL DEFAULT    8 handler_error
+  2948: 00359f78     4 OBJECT  GLOBAL DEFAULT    8 rt_gnd
+  2950: 00359b50     4 OBJECT  GLOBAL DEFAULT    8 ModeSubTimer
+  2952: 0034ebdc     4 OBJECT  GLOBAL DEFAULT    4 _backBot
+  2968: 0034ed9c     4 OBJECT  GLOBAL DEFAULT    4 _burst_amplitude
+  2971: 0034fe08     8 OBJECT  GLOBAL DEFAULT    4 __malloc_top_pad
+  2972: 0034edf4     4 OBJECT  GLOBAL DEFAULT    4 _broken_link
+  2982: 0034ece0     4 OBJECT  GLOBAL DEFAULT    4 _horizontal_size
+  2986: 001e6900    10 OBJECT  GLOBAL DEFAULT    4 MOT_EX_BAT_KAM_TBL
+  2992: 00298ad8   128 OBJECT  GLOBAL DEFAULT    4 avoid_enable_num[...]
+  2995: 0034f9e0     4 OBJECT  GLOBAL DEFAULT    4 __mb_cur_max
+  2996: 001e6bb0    44 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_OUGI_TBL
+  2997: 001e5220    16 OBJECT  GLOBAL DEFAULT    4 act_attack_00
+  2998: 002980f8    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_out[...]
+  2999: 00298148    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_out[...]
+  3000: 00297c90    64 OBJECT  GLOBAL DEFAULT    4 DefaultLightMat
+  3002: 0034ed74     4 OBJECT  GLOBAL DEFAULT    4 _frame_pred_frame_dct
+  3012: 001a67c0    12 OBJECT  GLOBAL DEFAULT    4 dopt_chr_kind_str
+  3018: 001e9128   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  3024: 001e8840    48 OBJECT  GLOBAL DEFAULT    4 rob_default_position
+  3032: 0034ecc4     4 OBJECT  GLOBAL DEFAULT    4 _totalFrames
+  3035: 00359d28     1 OBJECT  GLOBAL DEFAULT    8 PadDebugSw
+  3036: 0034f474     4 OBJECT  GLOBAL DEFAULT    4 _q_scale_type
+  3040: 0035a0c8     4 OBJECT  GLOBAL DEFAULT    8 VsGame
+  3041: 001e9190   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  3043: 0034e9a0    40 OBJECT  GLOBAL DEFAULT    4 dch
+  3048: 00359fb0     8 OBJECT  GLOBAL DEFAULT    8 PlayRobPointerOld
+  3051: 00359f54     4 OBJECT  GLOBAL DEFAULT    8 Tan5BambooNum
+  3067: 00359fc0     4 OBJECT  GLOBAL DEFAULT    8 SpecialCam
+  3068: 0034ede0     4 OBJECT  GLOBAL DEFAULT    4 _time_code_hours
+  3074: 001e90c0   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  3075: 0034f480     4 OBJECT  GLOBAL DEFAULT    4 _intra_slice
+  3081: 0034fe18     8 OBJECT  GLOBAL DEFAULT    4 __malloc_max_sbr[...]
+  3082: 00297e90   256 OBJECT  GLOBAL DEFAULT    4 Light_str
+  3085: 001a6618    24 OBJECT  GLOBAL DEFAULT    4 mode_sub_game_str
+  3088: 0034ede4     4 OBJECT  GLOBAL DEFAULT    4 _time_code_minutes
+  3090: 00299708     9 OBJECT  GLOBAL DEFAULT    4 single_practice_[...]
+  3097: 0034ed28     4 OBJECT  GLOBAL DEFAULT    4 _transfer_charac[...]
+  3102: 00299070    32 OBJECT  GLOBAL DEFAULT    4 sg_montei_offset_tbl
+  3104: 00359f88     8 OBJECT  GLOBAL DEFAULT    8 DebugModelMax
+  3111: 0034ed90     4 OBJECT  GLOBAL DEFAULT    4 _v_axis
+  3122: 00297328   124 OBJECT  GLOBAL DEFAULT    4 mtst_chr_id_str
+  3124: 00358518     4 OBJECT  GLOBAL DEFAULT    6 __fdlib_version
+  3127: 0034ef48   104 OBJECT  GLOBAL DEFAULT    4 _refTop0
+  3128: 001e6950    10 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_DEAD_TBL
+  3139: 00298008    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_maa[...]
+  3140: 00299978    80 OBJECT  GLOBAL DEFAULT    4 single_get_issin[...]
+  3141: 001e58c0  1024 OBJECT  GLOBAL DEFAULT    4 Pad
+  3146: 0034e878    56 OBJECT  GLOBAL DEFAULT    4 display
+  3154: 00359db0     8 OBJECT  GLOBAL DEFAULT    8 MOT_EX_GO_DEF_TBL
+  3155: 0034f6a8    40 OBJECT  GLOBAL DEFAULT    4 gCd
+  3158: 0034e950     4 OBJECT  GLOBAL DEFAULT    4 ncmd_semid
+  3159: 0034ed58    16 OBJECT  GLOBAL DEFAULT    4 _f_code
+  3166: 00359b55     1 OBJECT  GLOBAL DEFAULT    8 StageNum
+  3168: 00298b58    24 OBJECT  GLOBAL DEFAULT    4 offense_status_a[...]
+  3169: 002980a8    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_maa[...]
+  3172: 0035a0a0     3 OBJECT  GLOBAL DEFAULT    8 gozen_pset_attack_tbl
+  3173: 00358df8    40 OBJECT  GLOBAL DEFAULT    6 __mprec_bigtens
+  3177: 0034f150   104 OBJECT  GLOBAL DEFAULT    4 _refBot2
+  3189: 0034ed68     4 OBJECT  GLOBAL DEFAULT    4 _intra_dc_precision
+  3192: 0034edd4     4 OBJECT  GLOBAL DEFAULT    4 _copyright_number_2
+  3200: 00299c70     9 OBJECT  GLOBAL DEFAULT    4 katinuki_montei_tbl
+  3205: 002989b8    32 OBJECT  GLOBAL DEFAULT    4 run_attack_enemy[...]
+  3213: 001a65b0    19 OBJECT  GLOBAL DEFAULT    4 demo_game_chr_id
+  3214: 0034f448     8 OBJECT  GLOBAL DEFAULT    4 _headerPts
+  3226: 00298058    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_maa[...]
+  3227: 001e8c48   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  3228: 0034ec00     4 OBJECT  GLOBAL DEFAULT    4 _d4madr
+  3235: 0034ed7c     4 OBJECT  GLOBAL DEFAULT    4 _intra_vlc_format
+  3239: 002982d8   288 OBJECT  GLOBAL DEFAULT    4 move_atk_dist_at[...]
+  3240: 0034ebe8     4 OBJECT  GLOBAL DEFAULT    4 _tmp_flag
+  3243: 0034ed4c     4 OBJECT  GLOBAL DEFAULT    4 _full_pel_backwa[...]
+  3250: 001e6e40    68 OBJECT  GLOBAL DEFAULT    4 MotDataBaseAddress
+  3254: 002981e8    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_no_[...]
+  3256: 001e5cc0  1024 OBJECT  GLOBAL DEFAULT    4 BukiMatrix
+  3260: 00359dc8     8 OBJECT  GLOBAL DEFAULT    8 MOT_EX_TAM_AT_TBL
+  3262: 001e6ba0    12 OBJECT  GLOBAL DEFAULT    4 MOT_OUGI_8_TBL
+  3290: 0034ecfc     4 OBJECT  GLOBAL DEFAULT    4 _vbv_buffer_size[...]
+  3293: 0034e95c     4 OBJECT  GLOBAL DEFAULT    4 c_cb_sem
+  3294: 00359b05     1 OBJECT  GLOBAL DEFAULT    8 ModeMainLast
+  3296: 0034ed18     4 OBJECT  GLOBAL DEFAULT    4 _frame_rate_exte[...]
+  3301: 0034ebfc     4 OBJECT  GLOBAL DEFAULT    4 _d4tadr
+  3307: 0034ecc8     4 OBJECT  GLOBAL DEFAULT    4 _isError
+  3312: 0034ece4     4 OBJECT  GLOBAL DEFAULT    4 _vertical_size
+  3315: 00359d18     6 OBJECT  GLOBAL DEFAULT    8 ActDefaultAlign
+  3318: 0034f580    16 OBJECT  GLOBAL DEFAULT    4 _cscDma
+  3319: 0034ecf4     4 OBJECT  GLOBAL DEFAULT    4 _frame_rate_code
+  3323: 0034ecd4     4 OBJECT  GLOBAL DEFAULT    4 _cWidth
+  3324: 0035a248     4 OBJECT  GLOBAL DEFAULT    8 MakeDate
+  3326: 0035a0ec     4 OBJECT  GLOBAL DEFAULT    8 TanGnd
+  3335: 00296e40    16 OBJECT  GLOBAL DEFAULT    4 Camera_Pos_def3
+  3339: 001e6a58    40 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_TAM_TBL
+  3350: 00359b28     8 OBJECT  GLOBAL DEFAULT    8 TimerSubR
+  3355: 0035a1c0     4 OBJECT  GLOBAL DEFAULT    8 vblankCount
+  3357: 001a6800    20 OBJECT  GLOBAL DEFAULT    4 dopt_wep_kind_str
+  3366: 00359de8     4 OBJECT  GLOBAL DEFAULT    8 ShiftMotionSwMask
+  3368: 00296de0    16 OBJECT  GLOBAL DEFAULT    4 Camera_Pos_def
+  3369: 001a6818    76 OBJECT  GLOBAL DEFAULT    4 dopt_stage_str
+  3383: 0034ebc4     4 OBJECT  GLOBAL DEFAULT    4 _backFrame
+  3392: 0034ed50     4 OBJECT  GLOBAL DEFAULT    4 _backward_f_code
+  3395: 001e5140    16 OBJECT  GLOBAL DEFAULT    4 act_dummy
+  3402: 001e8f88   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  3404: 0035a09c     4 OBJECT  GLOBAL DEFAULT    8 Light
+  3405: 00359dd0     8 OBJECT  GLOBAL DEFAULT    8 MOT_EX_GO_WALK_TBL
+  3407: 001e8870    48 OBJECT  GLOBAL DEFAULT    4 rob_default_angle
+  3408: 001e9058   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  3410: 00298b70    24 OBJECT  GLOBAL DEFAULT    4 defense_status_a[...]
+  3421: 002e7368   144 OBJECT  GLOBAL DEFAULT    4 menuDat
+  3439: 001e7e08    64 OBJECT  GLOBAL DEFAULT    4 CharSeStr
+  3445: 001e89d8   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  3446: 00296e10    16 OBJECT  GLOBAL DEFAULT    4 Camera_Spd_def
+  3455: 0034ed78     4 OBJECT  GLOBAL DEFAULT    4 _concealment_mot[...]
+  3460: 001e9480 0xad1c0 OBJECT  GLOBAL DEFAULT    4 Rob
+  3466: 00298170    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_out[...]
+  3468: 00299670    31 OBJECT  GLOBAL DEFAULT    4 cahractar_use_we[...]
+  3483: 001e6ae0    36 OBJECT  GLOBAL DEFAULT    4 MOT_OUGI_4_TBL
+  3485: 0034e808    84 OBJECT  GLOBAL DEFAULT    4 audioDec
+  3490: 001e50e0    40 OBJECT  GLOBAL DEFAULT    4 FontPalBuf
+  3495: 0035a578     8 OBJECT  GLOBAL DEFAULT    9 __CTOR_LIST__
+  3498: 0034ecd8     4 OBJECT  GLOBAL DEFAULT    4 _cHeight
+  3501: 001e8eb8   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  3508: 00296e50    16 OBJECT  GLOBAL DEFAULT    4 Camera_Tpos_def3
+  3509: 0034f018   104 OBJECT  GLOBAL DEFAULT    4 _refTop2
+  3511: 001e5250    16 OBJECT  GLOBAL DEFAULT    4 act_buki_hit_00
+  3513: 001e7f10   128 OBJECT  GLOBAL DEFAULT    4 ColiWork
+  3514: 00359b0b     1 OBJECT  GLOBAL DEFAULT    8 ModeSubReq
+  3518: 00359b48     4 OBJECT  GLOBAL DEFAULT    8 gnd
+  3524: 002997e8    80 OBJECT  GLOBAL DEFAULT    4 single_get_mujya[...]
+  3526: 00297fe0    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_att[...]
+  3527: 00296e30    16 OBJECT  GLOBAL DEFAULT    4 Camera_Zom_def2
+  3529: 0034ec04     4 OBJECT  GLOBAL DEFAULT    4 _d4chcr
+  3533: 00298b88    12 OBJECT  GLOBAL DEFAULT    4 waza_check_pset_[...]
+  3538: 0034ebb0     4 OBJECT  GLOBAL DEFAULT    4 _refBlockp
+  3542: 00297cd0    64 OBJECT  GLOBAL DEFAULT    4 DefaultColorMat
+  3553: 00298638   288 OBJECT  GLOBAL DEFAULT    4 out_dist_attack_[...]
+  3555: 0034f578     4 OBJECT  GLOBAL DEFAULT    4 isCSCerror
+  3556: 00299750    36 OBJECT  GLOBAL DEFAULT    4 single_revenge_m[...]
+  3558: 001e5260    16 OBJECT  GLOBAL DEFAULT    4 act_damage_00
+  3561: 001a4030     0 NOTYPE  GLOBAL DEFAULT    2 kgm_vu1_gnd_mpg0
+  3563: 001e8f20   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  3564: 0034ed10     4 OBJECT  GLOBAL DEFAULT    4 _low_delay
+  3567: 00359b0a     1 OBJECT  GLOBAL DEFAULT    8 ModeSubOld
+  3570: 0034fe10     4 OBJECT  GLOBAL DEFAULT    4 __malloc_sbrk_base
+  3578: 00359b58     4 OBJECT  GLOBAL DEFAULT    8 GameSe_Str
+  3584: 001a6480    96 OBJECT  GLOBAL DEFAULT    4 gs_limage
+  3588: 0034f440     4 OBJECT  GLOBAL DEFAULT    4 _isOutputPicture
+  3595: 002995c8    30 OBJECT  GLOBAL DEFAULT    4 muishinjin_pset_[...]
+  3601: 0034edc4     4 OBJECT  GLOBAL DEFAULT    4 _copyright_flag
+  3612: 00298238    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_near_tbl
+  3623: 001e8d18   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  3629: 00359f80     4 OBJECT  GLOBAL DEFAULT    8 DebugModelCnt
+  3633: 00299258   400 OBJECT  GLOBAL DEFAULT    4 cpu_practice_hon[...]
+  3636: 0034f6dc     4 OBJECT  GLOBAL DEFAULT    4 gDMA0CB
+  3639: 0034f6d4     4 OBJECT  GLOBAL DEFAULT    4 gStTransCB
+  3641: 001e88a0   312 OBJECT  GLOBAL DEFAULT    4 rob_colli_status
+  3645: 00359b09     1 OBJECT  GLOBAL DEFAULT    8 ModeSubLast
+  3648: 0034f4f0     4 OBJECT  GLOBAL DEFAULT    4 _tmpRefBase
+  3653: 001e51b0    24 OBJECT  GLOBAL DEFAULT    4 act_sinpaku_i0
+  3667: 0035a1c8     4 OBJECT  GLOBAL DEFAULT    8 isUp
+  3671: 001e6990    10 OBJECT  GLOBAL DEFAULT    4 MOT_EX_DAMAGE_DE[...]
+  3672: 00359b56     1 OBJECT  GLOBAL DEFAULT    8 MarioModeFlag
+  3677: 0034fe28    40 OBJECT  GLOBAL DEFAULT    4 __malloc_current[...]
+  3679: 002973a8    76 OBJECT  GLOBAL DEFAULT    4 mtst_stage_str
+  3682: 0034ed14     4 OBJECT  GLOBAL DEFAULT    4 _frame_rate_exte[...]
+  3689: 002966c0    10 OBJECT  GLOBAL DEFAULT    4 UesrWorkOptionDef
+  3690: 0034ed00     4 OBJECT  GLOBAL DEFAULT    4 _constrained_par[...]
+  3692: 00359f5c     4 OBJECT  GLOBAL DEFAULT    8 Tan5TagBambooID
+  3695: 0029bf10   136 OBJECT  GLOBAL DEFAULT    4 jnt_dat
+  3698: 00298210    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_stop_tbl
+  3703: 0029be50    64 OBJECT  GLOBAL DEFAULT    4 kosi_mat
+  3704: 002d5b68 71680 OBJECT  GLOBAL DEFAULT    4 memCardBuffer
+  3705: 001e51e0    24 OBJECT  GLOBAL DEFAULT    4 act_sinpaku_i2
+  3707: 001e4190  3648 OBJECT  GLOBAL DEFAULT    4 gnd_scene_tbl
+  3709: 001e8720    14 OBJECT  GLOBAL DEFAULT    4 structEfcOugi
+  3721: 0034edd0     4 OBJECT  GLOBAL DEFAULT    4 _copyright_number_1
+  3728: 0034ebd0     4 OBJECT  GLOBAL DEFAULT    4 _backTop
+  3731: 002994e0   124 OBJECT  GLOBAL DEFAULT    4 cpu_kamaekae_id_tbl
+  3732: 00299a98    16 OBJECT  GLOBAL DEFAULT    4 mar02_serif_data_tbl
+  3740: 001e6940    10 OBJECT  GLOBAL DEFAULT    4 MOT_EX_SIK_KAM_TBL
+  3745: 00359f70     8 OBJECT  GLOBAL DEFAULT    8 RobEffect
+  3751: 00359f58     4 OBJECT  GLOBAL DEFAULT    8 Tan5HitBambooID
+  3759: 001e6be0    80 OBJECT  GLOBAL DEFAULT    4 DebugMot
+  3762: 001e6a00    16 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_UKE_TBL
+  3764: 001e69b0    10 OBJECT  GLOBAL DEFAULT    4 MOT_EX_TAM_KAM_TBL
+  3770: 0034ed84     4 OBJECT  GLOBAL DEFAULT    4 _chroma_420_type
+  3772: 00299618    27 OBJECT  GLOBAL DEFAULT    4 fudo_pset_attack_tbl
+  3775: 001e69a0    16 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_TAME_D[...]
+  3777: 001e91f8   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  3778: 0034f4f8     4 OBJECT  GLOBAL DEFAULT    4 _tmpRefGOPreset
+  3780: 002981c0    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_out[...]
+  3787: 001e8378   808 OBJECT  GLOBAL DEFAULT    4 Learn
+  3789: 001a6740   124 OBJECT  GLOBAL DEFAULT    4 dopt_chr_id_str
+  3807: 0034f9f8  1032 OBJECT  GLOBAL DEFAULT    4 __malloc_av_
+  3808: 001e7998  1130 OBJECT  GLOBAL DEFAULT    4 MotPreCalc
+  3812: 00359b61     1 OBJECT  GLOBAL DEFAULT    8 sel_menu_pg
+  3813: 001e68a8    32 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_TURN_TBL
+  3815: 0034ec0c     4 OBJECT  GLOBAL DEFAULT    4 _d3madr
+  3817: 00297220   264 OBJECT  GLOBAL DEFAULT    4 MarioCam_str
+  3818: 0035a0b0     8 OBJECT  GLOBAL DEFAULT    8 single_outside_s[...]
+  3820: 001e5890    24 OBJECT  GLOBAL DEFAULT    4 pad_function_tbl
+  3822: 0035a1c4     4 OBJECT  GLOBAL DEFAULT    8 isFrameEnd
+  3828: 001e8168   154 OBJECT  GLOBAL DEFAULT    4 StatusUpBuf
+  3830: 00100008     0 OBJECT  GLOBAL DEFAULT    1 ENTRYPOINT
+  3834: 001e7760   565 OBJECT  GLOBAL DEFAULT    4 MotDataBankID
+  3835: 0034ecd0     4 OBJECT  GLOBAL DEFAULT    4 _picHeight
+  3838: 001a65c8    38 OBJECT  GLOBAL DEFAULT    4 stage_bgm_number_tbl
+  3844: 002980d0    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_maa[...]
+  3855: 0034ed0c     4 OBJECT  GLOBAL DEFAULT    4 _chroma_format
+  3859: 0034f538    64 OBJECT  GLOBAL DEFAULT    4 _showCount
+  3863: 00298b98  1240 OBJECT  GLOBAL DEFAULT    4 cpu_personal_data_tbl
+  3864: 0034f470     4 OBJECT  GLOBAL DEFAULT    4 _isMpeg2
+  3866: 002996f8     9 OBJECT  GLOBAL DEFAULT    4 single_practice_[...]
+  3874: 0034ed98     4 OBJECT  GLOBAL DEFAULT    4 _sub_carrier
+  3878: 00299c50    31 OBJECT  GLOBAL DEFAULT    4 katinuki_chra_ki[...]
+  3879: 001e6a30    24 OBJECT  GLOBAL DEFAULT    4 MOT_EX_RUN_AT_TBL
+  3881: 00359d50     2 OBJECT  GLOBAL DEFAULT    8 sel
+  3887: 001e5240    16 OBJECT  GLOBAL DEFAULT    4 act_o_hit_00
+  3889: 001e6b80    28 OBJECT  GLOBAL DEFAULT    4 MOT_OUGI_7_TBL
+  3898: 0034e954     4 OBJECT  GLOBAL DEFAULT    4 scmd_semid
+  3900: 001e86a0   128 OBJECT  GLOBAL DEFAULT    4 structBukiZanzou
+  3902: 00299a18    80 OBJECT  GLOBAL DEFAULT    4 single_get_fudo_[...]
+  3910: 001e5270    16 OBJECT  GLOBAL DEFAULT    4 act_dead_00
+  3912: 0034fe20     8 OBJECT  GLOBAL DEFAULT    4 __malloc_max_tot[...]
+  3913: 001e68c8    50 OBJECT  GLOBAL DEFAULT    4 MOT_EX_KAM_KAM_TBL
+  3916: 0029bd80    69 OBJECT  GLOBAL DEFAULT    4 lf_or_ch_flag
+  3917: 00359f50     1 OBJECT  GLOBAL DEFAULT    8 StatusBufCnt
+  3927: 00359d60     8 OBJECT  GLOBAL DEFAULT    8 kan
+  3928: 0034e640   272 OBJECT  GLOBAL DEFAULT    4 menuRob
+  3930: 00359db8     8 OBJECT  GLOBAL DEFAULT    8 MOT_EX_GO_TUBAZE[...]
+  3931: 0034ee04     4 OBJECT  GLOBAL DEFAULT    4 _curFrame
+  3944: 0034ee08     4 OBJECT  GLOBAL DEFAULT    4 _curTop
+  3957: 002997d0    22 OBJECT  GLOBAL DEFAULT    4 single_dojo_yabu[...]
+  3958: 001a68c0    12 OBJECT  GLOBAL DEFAULT    4 PauseMenue
+  3959: 00359fa8     8 OBJECT  GLOBAL DEFAULT    8 PlayRobPointer
+  3967: 0034f450     8 OBJECT  GLOBAL DEFAULT    4 _headerDts
+  3971: 0034f6e0     4 OBJECT  GLOBAL DEFAULT    4 gDMA1CB
+  3985: 0034f080   104 OBJECT  GLOBAL DEFAULT    4 _refBot0
+  3992: 00359d14     4 OBJECT  GLOBAL DEFAULT    8 Console
+  3994: 00359d24     4 OBJECT  GLOBAL DEFAULT    8 Pad2
+  3995: 00359d20     4 OBJECT  GLOBAL DEFAULT    8 Pad1
+  3996: 0029bfc0 0x39b40 OBJECT  GLOBAL DEFAULT    4 rob
+  4006: 001e8730   266 OBJECT  GLOBAL DEFAULT    4 CpuPower
+  4008: 00359b02     1 OBJECT  GLOBAL DEFAULT    8 PauseKey
+  4017: 0034ebe4     4 OBJECT  GLOBAL DEFAULT    4 _isTop32dirty
+  4019: 00359d98     8 OBJECT  GLOBAL DEFAULT    8 MOT_EX_GO_RUN_DE[...]
+  4023: 001e9418    48 OBJECT  GLOBAL DEFAULT    4 rob_se_buki_hit_tbl
+  4024: 001e92c8   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  4026: 0034e750   184 OBJECT  GLOBAL DEFAULT    4 videoDec
+  4029: 001e80c8    60 OBJECT  GLOBAL DEFAULT    4 structReplay
+  4030: 0035a0c0     4 OBJECT  GLOBAL DEFAULT    8 SingleGame
+  4033: 0034f464     4 OBJECT  GLOBAL DEFAULT    4 _load_non_intra_[...]
+  4035: 00359d68     4 OBJECT  GLOBAL DEFAULT    8 vol
+  4039: 001e6ac0    28 OBJECT  GLOBAL DEFAULT    4 MOT_OUGI_3_TBL
+  4041: 001e9260   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius_zion
+  4044: 00296e70   640 OBJECT  GLOBAL DEFAULT    4 Camera_str
+  4048: 0034ebd8     4 OBJECT  GLOBAL DEFAULT    4 _forwBot
+  4055: 00359f32     1 OBJECT  GLOBAL DEFAULT    8 coliEditStatus
+  4060: 00298260    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_side_tbl
+  4062: 0035a580     8 OBJECT  GLOBAL DEFAULT    9 __DTOR_LIST__
+  4066: 0034ed40     4 OBJECT  GLOBAL DEFAULT    4 _vbv_delay
+  4068: 00296640    93 OBJECT  GLOBAL DEFAULT    4 ChrId2Mdl
+  4071: 0035a0b8     8 OBJECT  GLOBAL DEFAULT    8 single_change_st[...]
+  4075: 00299718    54 OBJECT  GLOBAL DEFAULT    4 single_dojo_brea[...]
+  4080: 00299560    27 OBJECT  GLOBAL DEFAULT    4 mujya_pset_attack_tbl
+  4087: 00299aa8    16 OBJECT  GLOBAL DEFAULT    4 mar03_serif_data_tbl
+  4088: 002970f0   304 OBJECT  GLOBAL DEFAULT    4 SpecialCam_str
+  4090: 002e73f8    12 OBJECT  GLOBAL DEFAULT    4 menuBackup
+  4099: 00359bb2     1 OBJECT  GLOBAL DEFAULT    8 sel_menu_pgm
+  4100: 0034ecf0     4 OBJECT  GLOBAL DEFAULT    4 _aspect_ratio_in[...]
+  4110: 0034ed88     4 OBJECT  GLOBAL DEFAULT    4 _progressive_frame
+  4118: 002996b8    48 OBJECT  GLOBAL DEFAULT    4 single_game_time[...]
+  4124: 0035a1bc     4 OBJECT  GLOBAL DEFAULT    8 isCountVblank
+  4133: 001e8de8   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  4140: 001e69f0    12 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_KAW_L_TBL
+  4149: 00298758   288 OBJECT  GLOBAL DEFAULT    4 ougi_attack_enab[...]
+  4161: 001e5210    16 OBJECT  GLOBAL DEFAULT    4 act_pre_00
+  4164: 00359f68     8 OBJECT  GLOBAL DEFAULT    8 BukiZanzou
+  4173: 0034f9dc     4 OBJECT  GLOBAL DEFAULT    4 _impure_ptr
+  4175: 0034f460     4 OBJECT  GLOBAL DEFAULT    4 _load_intra_quan[...]
+  4176: 001a6720    26 OBJECT  GLOBAL DEFAULT    4 DebugOptionDefault
+  4178: 00359f40     4 OBJECT  GLOBAL DEFAULT    8 Replay
+  4181: 00299cb0    16 OBJECT  GLOBAL DEFAULT    4 VsGame_str
+  4190: 0034ed20     4 OBJECT  GLOBAL DEFAULT    4 _color_description
+  4192: 0034ecc0     4 OBJECT  GLOBAL DEFAULT    4 _bsDataSize
+  4196: 00298080    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_maa[...]
+  4203: 002966a0    31 OBJECT  GLOBAL DEFAULT    4 ChrId2Category
+  4209: 001e8b10   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  4211: 0035a0d0     1 OBJECT  GLOBAL DEFAULT    8 taiko_counter
+  4213: 001e69c0    12 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_KAW_F_TBL
+  4217: 001e6d08   312 OBJECT  GLOBAL DEFAULT    4 shift_prog_tbl
+  4226: 001e5080    96 OBJECT  GLOBAL DEFAULT    4 kgm_clamp
+  4241: 0034edfc     4 OBJECT  GLOBAL DEFAULT    4 _sp_dcr
+  4253: 00299888    80 OBJECT  GLOBAL DEFAULT    4 single_get_kyosh[...]
+  4269: 0034ec14     4 OBJECT  GLOBAL DEFAULT    4 _d3qwc
+  4275: 0034ebb4     4 OBJECT  GLOBAL DEFAULT    4 _theSceMpeg
+  4278: 0034ecec     4 OBJECT  GLOBAL DEFAULT    4 _heightMB
+  4283: 002997b0    31 OBJECT  GLOBAL DEFAULT    4 single_char_ryuh[...]
+  4284: 0034ed80     4 OBJECT  GLOBAL DEFAULT    4 _repeat_first_field
+  4287: 0034edf8     4 OBJECT  GLOBAL DEFAULT    4 _trFrameNumber
+  4297: 001e69e0    12 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_KAW_R_TBL
+  4298: 00298120    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_out[...]
+  4299: 00296e60    16 OBJECT  GLOBAL DEFAULT    4 Camera_Zom_def3
+  4307: 001e6a10    32 OBJECT  GLOBAL DEFAULT    4 MOT_EX_TAM_RUN_TBL
+  4308: 001a6280   236 OBJECT  GLOBAL DEFAULT    4 md_prog_tbl
+  4310: 001a6870    26 OBJECT  GLOBAL DEFAULT    4 DebugOption_str
+  4311: 00359b18     8 OBJECT  GLOBAL DEFAULT    8 TimerMainR
+  4321: 0034ed30     4 OBJECT  GLOBAL DEFAULT    4 _display_horizon[...]
+  4328: 0034ebd4     4 OBJECT  GLOBAL DEFAULT    4 _zTop
+  4331: 001e5230    16 OBJECT  GLOBAL DEFAULT    4 act_e_hit_00
+  4336: 00298a58   128 OBJECT  GLOBAL DEFAULT    4 guard_enable_num[...]
+  4338: 001a6580    48 OBJECT  GLOBAL DEFAULT    4 Judge_str
+  4345: 0029be10    64 OBJECT  GLOBAL DEFAULT    4 PsMatrix
+  4360: 001e6e88  2260 OBJECT  GLOBAL DEFAULT    4 MotDataOffset
+  4364: 00296e20    16 OBJECT  GLOBAL DEFAULT    4 Camera_Zom_def
+  4365: 001e6a48    16 OBJECT  GLOBAL DEFAULT    4 MOT_EX_TM_KE_TBL
+  4372: 001e8a40   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  4376: 00359b57     1 OBJECT  GLOBAL DEFAULT    8 ModeEndWait
+  4386: 0034ed24     4 OBJECT  GLOBAL DEFAULT    4 _color_primaries
+  4390: 002995e8    18 OBJECT  GLOBAL DEFAULT    4 issin_pset_attack_tbl
+  4392: 001e5180    24 OBJECT  GLOBAL DEFAULT    4 act_sinpaku_o2
+  4400: 001e5168    24 OBJECT  GLOBAL DEFAULT    4 act_sinpaku_o1
+  4420: 00359dc0     8 OBJECT  GLOBAL DEFAULT    8 MOT_EX_GO_HAJI_TBL
+  4423: 00297f90    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_att[...]
+  4424: 00299090    96 OBJECT  GLOBAL DEFAULT    4 player_default_d[...]
+  4425: 001e8108    96 OBJECT  GLOBAL DEFAULT    4 structSTATS
+  4426: 00359f7c     4 OBJECT  GLOBAL DEFAULT    8 MoveSpd
+  4428: 001e6b50    48 OBJECT  GLOBAL DEFAULT    4 MOT_OUGI_6_TBL
+  4430: 001e6910    10 OBJECT  GLOBAL DEFAULT    4 MOT_EX_BAT_KAM_B[...]
+  4433: 00359b04     1 OBJECT  GLOBAL DEFAULT    8 ModeMain
+  4436: 002990f0   360 OBJECT  GLOBAL DEFAULT    4 cpu_practice_data_tbl
+  4441: 0034ec08     4 OBJECT  GLOBAL DEFAULT    4 _d4qwc
+  4442: 0034e990     4 OBJECT  GLOBAL DEFAULT    4 sceCdCbfunc_num
+  4444: 002966d0   444 OBJECT  GLOBAL DEFAULT    4 UesrWorkDef
+  4445: 001a6900 0x39b40 OBJECT  GLOBAL DEFAULT    4 test_rob
+  4450: 00359fc8     4 OBJECT  GLOBAL DEFAULT    8 mr_gnd
+  4451: 0034eda8    12 OBJECT  GLOBAL DEFAULT    4 _frame_center_ho[...]
+  4452: 0034f1b8   648 OBJECT  GLOBAL DEFAULT    4 _mbcont
+  4459: 0034ed3c     4 OBJECT  GLOBAL DEFAULT    4 _picture_coding_type
+  4461: 0034fe00     8 OBJECT  GLOBAL DEFAULT    4 __malloc_trim_th[...]
+  4464: 0034eee0   104 OBJECT  GLOBAL DEFAULT    4 _refFrame2
+  4468: 00299b08     6 OBJECT  GLOBAL DEFAULT    4 mar07_serif_data_tbl
+  4469: 00359f30     2 OBJECT  GLOBAL DEFAULT    8 coliCurParts
+  4481: 00299580    21 OBJECT  GLOBAL DEFAULT    4 suigetsu_pset_at[...]
+  4483: 001a3c90     0 NOTYPE  GLOBAL DEFAULT    2 rmd_vu1_code
+  4499: 00297790    64 OBJECT  GLOBAL DEFAULT    4 StageLightColor
+  4502: 001e8cb0   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  4503: 001a4e70     0 NOTYPE  GLOBAL DEFAULT    2 kgm_vu1_gnd_mpg1
+  4507: 00351ea0   104 OBJECT  GLOBAL DEFAULT    6 damage_body_place
+  4508: 0034e940     4 OBJECT  GLOBAL DEFAULT    4 CD_debug
+  4513: 00299b10    28 OBJECT  GLOBAL DEFAULT    4 marionation_seri[...]
+  4516: 0034edb8    12 OBJECT  GLOBAL DEFAULT    4 _frame_center_ve[...]
+  4517: 0034ec10     4 OBJECT  GLOBAL DEFAULT    4 _d3chcr
+  4520: 00359d00     4 OBJECT  GLOBAL DEFAULT    8 DebugOption
+  4531: 00358b78   257 OBJECT  GLOBAL DEFAULT    6 _ctype_
+  4537: 00359fbc     4 OBJECT  GLOBAL DEFAULT    8 Camera
+  4542: 00299660     9 OBJECT  GLOBAL DEFAULT    4 ryuha_default_co[...]
+  4545: 001e6920    10 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_WIN_TBL
+  4556: 001a67d0    44 OBJECT  GLOBAL DEFAULT    4 dopt_wep_id_str
+  4559: 00359fb8     4 OBJECT  GLOBAL DEFAULT    8 BukiHitCnt
+  4566: 002977d0  1216 OBJECT  GLOBAL DEFAULT    4 RobLightColor
+  4579: 00359b00     1 OBJECT  GLOBAL DEFAULT    8 PauseFlag
+  4583: 00299ab8    16 OBJECT  GLOBAL DEFAULT    4 mar04_serif_data_tbl
+  4585: 0034f46c     4 OBJECT  GLOBAL DEFAULT    4 _load_chroma_non[...]
+  4588: 001e51c8    24 OBJECT  GLOBAL DEFAULT    4 act_sinpaku_i1
+  4589: 0034ede8     4 OBJECT  GLOBAL DEFAULT    4 _time_code_seconds
+  4590: 0034f47c     4 OBJECT  GLOBAL DEFAULT    4 _priority_breakpoint
+  4595: 00298198    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_out[...]
+  4598: 0034eddc     4 OBJECT  GLOBAL DEFAULT    4 _drop_frame_flag
+  4610: 001e6960    16 OBJECT  GLOBAL DEFAULT    4 MOT_EX_GO_TAME_TBL
+  4616: 0034ec40    64 OBJECT  GLOBAL DEFAULT    4 defIQM
+  4619: 00299598    24 OBJECT  GLOBAL DEFAULT    4 kyoshin_pset_att[...]
+  4624: 001e8358    32 OBJECT  GLOBAL DEFAULT    4 ryuha_waza_group[...]
+  4631: 0034ee0c     4 OBJECT  GLOBAL DEFAULT    4 _curBot
+  4639: 0034f6d0     4 OBJECT  GLOBAL DEFAULT    4 gStPrepareCB
+  4642: 00299a68    32 OBJECT  GLOBAL DEFAULT    4 single_get_ryuha[...]
+  4650: 001e51f8    24 OBJECT  GLOBAL DEFAULT    4 act_sinpaku_i3
+  4659: 00299c08    68 OBJECT  GLOBAL DEFAULT    4 SingleGame_str
+  4660: 0034eda0     4 OBJECT  GLOBAL DEFAULT    4 _sub_carrier_phase
+  4662: 00355240   808 OBJECT  GLOBAL DEFAULT    6 editMoveTbl
+  4666: 002996e8     9 OBJECT  GLOBAL DEFAULT    4 single_practice_[...]
+  4669: 00297fb8    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_att[...]
+  4670: 0034ebc0     4 OBJECT  GLOBAL DEFAULT    4 _forwFrame
+  4684: 002e8810 0x65900 OBJECT  GLOBAL DEFAULT    4 paket2D
+  4687: 00359d70     4 OBJECT  GLOBAL DEFAULT    8 len
+  4694: 00359b01     1 OBJECT  GLOBAL DEFAULT    8 PauseReq
+  4699: 0034f45c     4 OBJECT  GLOBAL DEFAULT    4 _top32len
+  4703: 00359b54     1 OBJECT  GLOBAL DEFAULT    8 ModeEndMode
+  4709: 00359b60     1 OBJECT  GLOBAL DEFAULT    8 sel_menu_csr
+  4711: 0034ed44     4 OBJECT  GLOBAL DEFAULT    4 _full_pel_forwar[...]
+  4716: 00359da0     4 OBJECT  GLOBAL DEFAULT    8 MOT_EX_GO_SIK00_TBL
+  4721: 0034edec     4 OBJECT  GLOBAL DEFAULT    4 _time_code_pictures
+  4722: 0034f0e8   104 OBJECT  GLOBAL DEFAULT    4 _refBot1
+  4723: 0034e9c8     4 OBJECT  GLOBAL DEFAULT    4 sceDmaDebugMode
+  4725: 0034ebe0     4 OBJECT  GLOBAL DEFAULT    4 _zBot
+  4726: 00359bb3     1 OBJECT  GLOBAL DEFAULT    8 sel_menu_mod
+  4728: 00299a88    16 OBJECT  GLOBAL DEFAULT    4 mar01_serif_data_tbl
+  4730: 0034ed8c     4 OBJECT  GLOBAL DEFAULT    4 _composite_displ[...]
+  4734: 001e8e50   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]
+  4739: 001e60c0  2020 OBJECT  GLOBAL DEFAULT    4 MOT_EX_ZAN_TBL
+  4743: 002995b0    21 OBJECT  GLOBAL DEFAULT    4 muni_pset_attack_tbl
+  4745: 001e7f90   312 OBJECT  GLOBAL DEFAULT    4 coliStatusBuf
+  4746: 0035a280     0 OBJECT  GLOBAL DEFAULT    9 _fbss
+  4750: 0034ebec     4 OBJECT  GLOBAL DEFAULT    4 _ipucmd
+  4752: 0034ed34     4 OBJECT  GLOBAL DEFAULT    4 _display_vertica[...]
+  4754: 001e9398   124 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius_char
+  4755: 0034e998     4 OBJECT  GLOBAL DEFAULT    4 dum_mode
+  4760: 0034ed04     4 OBJECT  GLOBAL DEFAULT    4 _profile_and_lev[...]
+  4768: 0034ebf0     4 OBJECT  GLOBAL DEFAULT    4 _ipuctrl
+  4769: 00359b07     1 OBJECT  GLOBAL DEFAULT    8 ModeMainReq
+  4779: 00297d10   372 OBJECT  GLOBAL DEFAULT    4 chara_ambient_ra[...]
+  4789: 002e7410  1024 OBJECT  GLOBAL DEFAULT    4 c_menuTexTbl
+  4790: 001a6648   216 OBJECT  GLOBAL DEFAULT    4 sel_menu
+  4808: 0034f468     4 OBJECT  GLOBAL DEFAULT    4 _load_chroma_int[...]
+  4813: 00298030    36 OBJECT  GLOBAL DEFAULT    4 cpu_move_dir_maa[...]
+  4820: 001e9330   104 OBJECT  GLOBAL DEFAULT    4 rob_colli_radius[...]

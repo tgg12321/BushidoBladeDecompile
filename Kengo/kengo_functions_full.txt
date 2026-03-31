@@ -1,0 +1,4169 @@
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/lib/crt0.s
+// *****************************************************************************
+
+/* 00100008 000000a4 */ _start() {}
+/* 001000b0 00000008 */ _exit() {}
+/* 001000b8 00000008 */ static _root() {}
+
+// *****************************************************************************
+// FILE -- src/common/main.c
+// *****************************************************************************
+
+/* 001000c0 00000284 */ main() {}
+/* 00100348 000001cc */ SystemInitialize() {}
+/* 00100518 000000a0 */ ApplicationInitialize() {}
+/* 001005b8 00000008 */ debug_print() {}
+/* 001005c0 00000008 */ debug_pause_print() {}
+/* 001005c8 00000108 */ loadIopModule() {}
+/* 001006d0 0000007c */ SaScreenShot() {}
+/* 00100750 00000034 */ BlurInit() {}
+/* 00100788 0000001c */ BlurReset() {}
+/* 001007a8 0000011c */ BlurSet() {}
+/* 001008c8 00000124 */ BlurControl() {}
+/* 001009f0 00000024 */ main_EnablePlayer2Pad() {}
+
+// *****************************************************************************
+// FILE -- src/common/common.c
+// *****************************************************************************
+
+/* 00100a18 00000124 */ ang_near_dif() {}
+/* 00100b40 00000180 */ ang_move_rot() {}
+/* 00100cc0 000000bc */ ang_hosei() {}
+/* 00100d80 00000244 */ conv_matrix_rotation() {}
+/* 00100fc8 00000058 */ GetTime() {}
+
+// *****************************************************************************
+// FILE -- src/common/judge.c
+// *****************************************************************************
+
+/* 00101020 000000b8 */ judge_Init() {}
+/* 001010d8 00000270 */ judge_Exec() {}
+/* 00101348 00000120 */ judge_CheckSituation() {}
+/* 00101468 00000108 */ judge_get_win_id() {}
+/* 00101570 0000007c */ static judge_sundome_control() {}
+
+// *****************************************************************************
+// FILE -- src/common/md_dummy.c
+// *****************************************************************************
+
+/* 001015f0 00000014 */ md_ueda_init() {}
+/* 00101608 00000018 */ md_ueda_exec() {}
+/* 00101620 00000014 */ md_myama_init() {}
+/* 00101638 00000018 */ md_myama_exec() {}
+/* 00101650 00000014 */ md_seki_init() {}
+/* 00101668 00000018 */ md_seki_exec() {}
+/* 00101680 00000014 */ md_hide_init() {}
+/* 00101698 00000018 */ md_hide_exec() {}
+/* 001016b0 00000014 */ md_p_set_init() {}
+/* 001016c8 00000018 */ md_p_set_exec() {}
+/* 001016e0 00000014 */ md_trn_taki_init() {}
+/* 001016f8 00000018 */ md_trn_taki_exec() {}
+/* 00101710 00000014 */ md_trn_zazen_init() {}
+/* 00101728 00000018 */ md_trn_zazen_exec() {}
+/* 00101740 00000014 */ md_trn_take_init() {}
+/* 00101758 00000018 */ md_trn_take_exec() {}
+/* 00101770 00000014 */ md_trn_tatigi_init() {}
+/* 00101788 00000018 */ md_trn_tatigi_exec() {}
+/* 001017a0 00000014 */ md_trn_kabuto_init() {}
+/* 001017b8 00000018 */ md_trn_kabuto_exec() {}
+/* 001017d0 00000014 */ md_trn_genei_init() {}
+/* 001017e8 00000018 */ md_trn_genei_exec() {}
+/* 00101800 00000014 */ md_tuto_init() {}
+/* 00101818 00000018 */ md_tuto_exec() {}
+
+// *****************************************************************************
+// FILE -- src/common/md_game.c
+// *****************************************************************************
+
+/* 00101830 00000128 */ md_game_init() {}
+/* 00101958 0000013c */ md_game_mode_data_init() {}
+/* 00101a98 0000057c */ md_game_rob_data_init() {}
+/* 00102018 0000011c */ md_game_restart_init() {}
+/* 00102138 000000cc */ md_game_restart_stage_init() {}
+/* 00102208 000003c0 */ md_game_rob_data_restart_init() {}
+/* 001025c8 000001ac */ md_game_mode_data_restart_init() {}
+/* 00102778 00000114 */ md_game_restart() {}
+/* 00102890 0000017c */ md_game_exec() {}
+/* 00102a10 00000008 */ md_game_sub_demo_exec() {}
+/* 00102a18 00000048 */ md_game_sub_game_exec() {}
+/* 00102a60 00000114 */ md_game_sub_replay_exec() {}
+/* 00102b78 0000001c */ md_game_sub_win_exec() {}
+/* 00102b98 00000090 */ md_game_sub_mario_top_exec() {}
+/* 00102c28 0000006c */ md_game_sub_mario_end_exec() {}
+/* 00102c98 000003a8 */ md_game_check_mode() {}
+/* 00103040 000001b8 */ md_game_check_change_main_mode_single() {}
+/* 001031f8 0000019c */ md_game_check_change_main_mode_katinuki() {}
+/* 00103398 00000230 */ md_game_check_change_main_mode_vs() {}
+/* 001035c8 000000a8 */ md_game_check_change_main_mode_demo() {}
+/* 00103670 00000094 */ md_game_check_change_main_mode_genei() {}
+/* 00103708 000000e8 */ md_game_check_change_main_mode_default() {}
+/* 001037f0 00000150 */ md_game_check_change_main_mode() {}
+/* 00103940 0000015c */ md_game_check_change_sub_mode() {}
+/* 00103aa0 00000388 */ md_game_sub_end() {}
+/* 00103e28 000003e4 */ md_game_end() {}
+/* 00104210 00000308 */ exec_game() {}
+/* 00104518 00000170 */ exec_replay() {}
+/* 00104688 000000d8 */ md_game_sound_contorol() {}
+/* 00104760 0000002c */ se_data_init() {}
+/* 00104790 00000174 */ se_data_set() {}
+/* 00104908 000000c0 */ se_data_vol_control() {}
+/* 001049c8 00000014 */ md_ending_init() {}
+/* 001049e0 000000a8 */ md_ending_exec() {}
+/* 00104a88 00000028 */ md_game_debug_print() {}
+
+// *****************************************************************************
+// FILE -- src/common/md_sel.c
+// *****************************************************************************
+
+/* 00104ab0 0000012c */ md_sel_init() {}
+/* 00104be0 00000410 */ md_sel_exec() {}
+
+// *****************************************************************************
+// FILE -- src/common/md_option.c
+// *****************************************************************************
+
+/* 00104ff0 00000010 */ md_option_Init() {}
+/* 00105000 00000054 */ md_option_Open() {}
+/* 00105058 00000048 */ md_option_reset() {}
+/* 001050a0 000008d4 */ md_option_Exec() {}
+
+// *****************************************************************************
+// FILE -- src/common/game_2d.c
+// *****************************************************************************
+
+/* 00105978 00000234 */ game_2d_StartLogoInit() {}
+/* 00105bb0 000008cc */ game_2d_Disp() {}
+/* 00106480 00000024 */ game_2d_CheckSuccessLogoDisp() {}
+/* 001064a8 00000028 */ game_2d_CheckVictoryLogoDisp() {}
+/* 001064d0 00000054 */ game_2d_CheckKiGaugeNoDisp() {}
+/* 00106528 00000064 */ game_2d_CheckLifeGaugeNoDisp() {}
+/* 00106590 00000040 */ pause_menue_Init() {}
+/* 001065d0 000000f8 */ pause_menue_open_check() {}
+/* 001066c8 00000024 */ pause_menue_close_check() {}
+/* 001066f0 00000190 */ pause_menue_control() {}
+/* 00106880 00000090 */ pause_check_save() {}
+/* 00106910 0000008c */ pause_check_restart() {}
+/* 001069a0 000000f4 */ pause_menue_CheckModeChange() {}
+
+// *****************************************************************************
+// FILE -- src/common/fade.c
+// *****************************************************************************
+
+/* 00106a98 00000014 */ InitFadePanel() {}
+/* 00106ab0 000001c8 */ DispFadePanel() {}
+/* 00106c78 00000020 */ FadeIn() {}
+/* 00106c98 0000001c */ FadeOut() {}
+/* 00106cb8 0000000c */ CheckFadeEnd() {}
+
+// *****************************************************************************
+// FILE -- src/common/clip.c
+// *****************************************************************************
+
+/* 00106cc8 00000098 */ DispSetOptionClip() {}
+
+// *****************************************************************************
+// FILE -- src/amami/am_test.c
+// *****************************************************************************
+
+/* 00106d60 0000010c */ static MakePutTestMatrix() {}
+/* 00106e70 00000070 */ md_amami_init() {}
+/* 00106ee0 00000044 */ md_amami_exec() {}
+
+// *****************************************************************************
+// FILE -- src/amami/am_rmd.c
+// *****************************************************************************
+
+/* 00106f28 00000094 */ static TmlLoadImage() {}
+/* 00106fc0 0000007c */ static SetOfstVcolTbl() {}
+/* 00107040 00000224 */ static CheckRmdPtr() {}
+/* 00107268 0000006c */ static GetAllocPacketSize() {}
+/* 001072d8 00000038 */ static GetAllocVertColSize() {}
+/* 00107310 000000c4 */ static AddTbpOfst() {}
+/* 001073d8 0000008c */ static HiraRmdAddTbpOfst() {}
+/* 00107468 0000018c */ static SetHiraPacketData() {}
+/* 001075f8 00000084 */ static GetAllocHiraDataSize() {}
+/* 00107680 00000178 */ static InitPartsVertColData() {}
+/* 001077f8 00000114 */ static InitHiraRmd() {}
+/* 00107910 000000f4 */ static SetHiraDataToHiraBody() {}
+/* 00107a08 00000a48 */ static SetHiraDataToRob() {}
+/* 00108450 00000084 */ static SetHiraDataToShadowRob() {}
+/* 001084d8 00000150 */ static SetHiraBaseVertex() {}
+/* 00108628 000000a0 */ static SetHiraVertex() {}
+/* 001086c8 00000074 */ static SetHiraVertexShadow() {}
+/* 00108740 0000021c */ static CalcHiraNormal() {}
+/* 00108960 0000009c */ static GetAllocPartsDataSize() {}
+/* 00108a00 0000010c */ static InitPartsRmd() {}
+/* 00108b10 0000008c */ static PartsRmdAddTbpOfst() {}
+/* 00108ba0 0000018c */ static SetPartsPacketData() {}
+/* 00108d30 000001a4 */ static InitVertColData() {}
+/* 00108ed8 0000007c */ static CtrlVertCol() {}
+/* 00108f58 0000016c */ static SetBloodSpot() {}
+/* 001090c8 000000b8 */ static CtrlBloodSpot() {}
+/* 00109180 000000a4 */ static SetTexReg() {}
+/* 00109228 000000b8 */ static SetShadowTexReg() {}
+/* 001092e0 0000027c */ static SetPacketData() {}
+/* 00109560 000000d4 */ static SetColorToPacket() {}
+/* 00109638 000000bc */ static SetColorToRmd() {}
+/* 001096f8 0000005c */ static SetColorToHiraPacket() {}
+/* 00109758 00000370 */ static AllocRobRmd() {}
+/* 00109ac8 00000310 */ static InitVertColDataVu1() {}
+/* 00109dd8 00000190 */ static AddTbpOfstVu1() {}
+/* 00109f68 00000558 */ static AllocRobRmdVu1() {}
+/* 0010a4c0 00000020 */ static Vu0SetLightColMatrix() {}
+/* 0010a4e0 00000054 */ static Vu0CalcVertCol() {}
+/* 0010a538 0000003c */ static Vu0ApplyMatrixNormalN() {}
+/* 0010a578 0000004c */ static Vu0RotTransPersN() {}
+/* 0010a5c8 00000040 */ static Vu0RotTransN() {}
+/* 0010a608 00000168 */ static MakeNoTexRmdPacket() {}
+/* 0010a770 00000168 */ static MakeTexRmdPacket() {}
+/* 0010a8d8 00000220 */ static MakeNoTexRmdPacketClip() {}
+/* 0010aaf8 00000220 */ static MakeTexRmdPacketClip() {}
+/* 0010ad18 000000dc */ static MakeShadowRmdPacket() {}
+/* 0010adf8 000001d4 */ static PutHiraRmd() {}
+/* 0010afd0 000000dc */ static PutHiraShadowRmd() {}
+/* 0010b0b0 000004ac */ static DispHira() {}
+/* 0010b560 00000200 */ static PutRmd() {}
+/* 0010b760 0000044c */ static PutPartsRmd() {}
+/* 0010bbb0 000005e4 */ static PutRobVu1() {}
+/* 0010c198 00000074 */ static CheckBukiPtr() {}
+/* 0010c210 0000040c */ static AllocBukiRmd() {}
+/* 0010c620 000003f0 */ static PutRobShadow() {}
+/* 0010ca10 00000138 */ static PutShadowRmd() {}
+/* 0010cb48 00000168 */ static PutBukiShadow() {}
+/* 0010ccb0 0000018c */ static PutBuki() {}
+/* 0010ce40 000000e8 */ static SetSaveVcCtrl() {}
+/* 0010cf28 00000078 */ static ResetVertexColor() {}
+/* 0010cfa0 000004bc */ init_rob_rmd() {}
+/* 0010d460 000000a4 */ disp_rob() {}
+/* 0010d508 000000c0 */ disp_shadow() {}
+/* 0010d5c8 00000084 */ close_rob_rmd() {}
+/* 0010d650 00000038 */ change_shadow_tex_reg() {}
+/* 0010d688 000000b0 */ reset_rob_rmd() {}
+/* 0010d738 0000003c */ save_vc_ctrl() {}
+/* 0010d778 000000c0 */ set_vc_save() {}
+/* 0010d838 00000638 */ change_rob_rmd() {}
+
+// *****************************************************************************
+// FILE -- src/amami/am_light_eff.c
+// *****************************************************************************
+
+/* 0010de70 00000068 */ static SetLightEffect() {}
+/* 0010ded8 0000002c */ static SetSaveLightCol() {}
+/* 0010df08 000000e8 */ static SetLightEffectSpd() {}
+/* 0010dff0 000000a4 */ static CheckLightEffect() {}
+/* 0010e098 00000014 */ init_light_effect() {}
+/* 0010e0b0 0000024c */ ctrl_light_effect() {}
+
+// *****************************************************************************
+// FILE -- src/amami/am_jimaku.c
+// *****************************************************************************
+
+/* 0010e300 00000010 */ init_intro_jimaku() {}
+/* 0010e310 000000e0 */ disp_intro_jimaku() {}
+/* 0010e3f0 0000004c */ init_mario_jimaku() {}
+/* 0010e440 000000fc */ disp_mario_jimaku() {}
+
+// *****************************************************************************
+// FILE -- src/hide/hi_gview.c
+// *****************************************************************************
+
+/* 0010e540 00000010 */ md_gview_init() {}
+/* 0010e550 00000018 */ md_gview_exec() {}
+
+// *****************************************************************************
+// FILE -- src/hide/hi_curpad.c
+// *****************************************************************************
+
+/* 0010e568 00000034 */ curpad_init() {}
+/* 0010e5a0 00000094 */ curpad_exec() {}
+
+// *****************************************************************************
+// FILE -- src/hide/hi_landhit.c
+// *****************************************************************************
+
+/* 0010e638 00000060 */ gnd_land_hit_floor() {}
+/* 0010e698 0000004c */ gnd_land_hit_char() {}
+/* 0010e6e8 00000088 */ static gnd_land_hit_char_rect() {}
+/* 0010e770 00000278 */ static gnd_land_hit_char_poly() {}
+/* 0010e9e8 000000b8 */ static gnd_land_hit_float() {}
+/* 0010eaa0 00000114 */ static gnd_land_hit_char_poly_hoken() {}
+/* 0010ebb8 00000024 */ gnd_land_hit_char2() {}
+/* 0010ebe0 000001b8 */ static gnd_land_hit_char_poly2() {}
+/* 0010ed98 00000024 */ gnd_land_hit_char_die() {}
+/* 0010edc0 000001bc */ static gnd_land_hit_char_die_main() {}
+/* 0010ef80 000002bc */ gnd_land_hit_char_tsuba() {}
+/* 0010f240 00000638 */ gnd_land_hit() {}
+/* 0010f878 000004c0 */ gnd_land_hit_one_block() {}
+
+// *****************************************************************************
+// FILE -- src/hide/hi_gnd.c
+// *****************************************************************************
+
+/* 0010fd38 0000007c */ gnd_open() {}
+/* 0010fdb8 00000134 */ gnd_init() {}
+/* 0010fef0 00000018 */ gnd_exec() {}
+/* 0010ff08 00000230 */ gnd_disp_loop_ctrl() {}
+/* 00110138 00000080 */ gnd_disp() {}
+/* 001101b8 0000004c */ gnd_close() {}
+/* 00110208 00000110 */ gnd_init_hit() {}
+/* 00110318 000000d8 */ gnd_load_data() {}
+/* 001103f0 00000098 */ gnd_load_tex() {}
+/* 00110488 00000018 */ gnd_get_looptype() {}
+/* 001104a0 00000018 */ gnd_set_color() {}
+/* 001104b8 00000018 */ gnd_get_scenedata() {}
+/* 001104d0 00000128 */ gnd_set_scene() {}
+/* 001105f8 00000050 */ gnd_get_scene() {}
+/* 00110648 00000044 */ gnd_set_speed() {}
+/* 00110690 00000018 */ gnd_get_speed() {}
+/* 001106a8 00000060 */ gnd_set_rgb() {}
+/* 00110708 0000001c */ gnd_get_rgb() {}
+/* 00110728 000000b8 */ gnd_set_fog() {}
+/* 001107e0 00000030 */ gnd_get_fog() {}
+/* 00110810 000001f8 */ gnd_set_lights() {}
+/* 00110a08 00000048 */ gnd_get_lights() {}
+/* 00110a50 00000110 */ gnd_set_light_point() {}
+
+// *****************************************************************************
+// FILE -- src/hide/hi_kgm.c
+// *****************************************************************************
+
+/* 00110b60 00000104 */ kgm_map() {}
+/* 00110c68 000000d4 */ kgm_map_packet() {}
+/* 00110d40 00000094 */ kgm_map_anim() {}
+/* 00110dd8 0000002c */ kgm_map_anim_ctrl() {}
+/* 00110e08 000000ac */ kgm_map_gnd() {}
+/* 00110eb8 00000098 */ kgm_map_materialset() {}
+/* 00110f50 000001f4 */ kgm_map_material() {}
+/* 00111148 000000b4 */ kgm_map_anim_material() {}
+/* 00111200 000000c8 */ kgm_map_gnd_planeset() {}
+/* 001112c8 000000c0 */ kgm_map_gnd_near() {}
+/* 00111388 00000064 */ kgm_map_gnd_block() {}
+/* 001113f0 000000b0 */ kgm_map_gnd_hitset() {}
+/* 001114a0 000001f4 */ kgm_init() {}
+/* 00111698 00000100 */ kgm_init_hitrect() {}
+/* 00111798 0000000c */ kgm_init_anim() {}
+/* 001117a8 0000007c */ kgm_set_motion() {}
+/* 00111828 00000104 */ kgm_set_motion_ctrl() {}
+/* 00111930 000000a0 */ kgm_exec() {}
+/* 001119d0 0000007c */ kgm_exec_anim() {}
+/* 00111a50 0000019c */ kgm_exec_anim_ctrl() {}
+/* 00111bf0 0000004c */ kgm_anim_interp_ctrl() {}
+/* 00111c40 0000000c */ kgm_anim_interp_const() {}
+/* 00111c50 00000050 */ kgm_anim_interp_linear() {}
+/* 00111ca0 000000c4 */ kgm_disp() {}
+/* 00111d68 000001d0 */ kgm_disp_scene() {}
+/* 00111f38 000000a8 */ kgm_disp_gnd() {}
+/* 00111fe0 00000168 */ kgm_set_fog() {}
+/* 00112148 00000088 */ kgm_clamp_patch_init() {}
+/* 001121d0 0000001c */ kgm_clamp_patch_exec() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_font.c
+// *****************************************************************************
+
+/* 001121f0 00000008 */ font_Init() {}
+/* 001121f8 00000008 */ font_Reset() {}
+/* 00112200 00000008 */ font_Start() {}
+/* 00112208 00000008 */ font_End() {}
+/* 00112210 00000008 */ font_setColorTable() {}
+/* 00112218 00000008 */ font_setColorTableEx() {}
+/* 00112220 00000008 */ font_setColor() {}
+/* 00112228 00000008 */ font_setPresetColorTable() {}
+/* 00112230 00000028 */ fnt_print() {}
+/* 00112258 00000008 */ fnt_locate() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_pad.c
+// *****************************************************************************
+
+/* 00112260 00000108 */ pad_Init() {}
+/* 00112368 0000015c */ pad_ClearAppliBuffer() {}
+/* 001124c8 00000198 */ pad_ClearAllBuffer() {}
+/* 00112660 00000030 */ pad_ResetAct() {}
+/* 00112690 00000048 */ pad_End() {}
+/* 001126d8 0000014c */ pad_Read() {}
+/* 00112828 00000064 */ pad_FuncNormal() {}
+/* 00112890 000002b4 */ pad_FuncAnalog() {}
+/* 00112b48 0000008c */ pad_SetMainMode() {}
+/* 00112bd8 000000f4 */ pad_SetPressMode() {}
+/* 00112cd0 0000004c */ pad_SetActAlign() {}
+/* 00112d20 0000005c */ pad_SetActDirect() {}
+/* 00112d80 00000054 */ pad_SetActData() {}
+/* 00112dd8 00000300 */ pad_ChangePadAng() {}
+/* 001130d8 000000a8 */ Pad_Rpt() {}
+/* 00113180 0000008c */ Pad_Dcl() {}
+/* 00113210 000001bc */ Pad_Prs() {}
+/* 001133d0 00000068 */ static pad_open() {}
+/* 00113438 0000005c */ static pad_close() {}
+/* 00113498 00000030 */ static pad_clear() {}
+/* 001134c8 00000018 */ static pad_button_info_clear() {}
+/* 001134e0 0000006c */ static pad_get_pad_id() {}
+/* 00113550 000000cc */ static pad_get_pad_kind() {}
+/* 00113620 0000014c */ static pad_get_information() {}
+/* 00113770 0000005c */ static pad_call_function() {}
+/* 001137d0 00000050 */ static pad_select_function() {}
+/* 00113820 00000080 */ static pad_set_act_align() {}
+/* 001138a0 00000080 */ static pad_set_act_direct() {}
+/* 00113920 00000188 */ static pad_main_control() {}
+/* 00113aa8 00000100 */ static pad_actuate_control() {}
+/* 00113ba8 0000019c */ static pad_press_control() {}
+/* 00113d48 00000008 */ pad_StatusPrint() {}
+/* 00113d50 00000008 */ pad_DebugPrint() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_mathfunc.c
+// *****************************************************************************
+
+/* 00113d58 00000060 */ IsRotMatrix() {}
+/* 00113db8 00000008 */ IsRotMatrixX() {}
+/* 00113dc0 00000008 */ IsRotMatrixY() {}
+/* 00113dc8 00000008 */ IsRotMatrixZ() {}
+/* 00113dd0 00000088 */ IsPrintVector() {}
+/* 00113e58 00000154 */ IsPrintMatrix() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_util.c
+// *****************************************************************************
+
+/* 00113fb0 000001e0 */ util_CalcBukiMatrix() {}
+/* 00114190 000000dc */ util_SetBukiMatrix() {}
+/* 00114270 00000038 */ util_CalcDist() {}
+/* 001142a8 0000000c */ util_CopyVector() {}
+/* 001142b8 00000018 */ util_CrossProduct() {}
+/* 001142d0 0000002c */ util_ApplyMatrix() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_hedit.c
+// *****************************************************************************
+
+/* 00114300 0000007c */ md_hedit_init() {}
+/* 00114380 00000454 */ md_hedit_exec() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_preset.c
+// *****************************************************************************
+
+/* 001147d8 00000014 */ preset_Init() {}
+/* 001147f0 0000002c */ preset_Exec() {}
+/* 00114820 00000a04 */ static preset_control() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_motion.c
+// *****************************************************************************
+
+/* 00115228 00000048 */ motion_Init() {}
+/* 00115270 00000008 */ motion_SetSwMask() {}
+/* 00115278 000000d8 */ motion_Open() {}
+/* 00115350 00000088 */ motion_Close() {}
+/* 001153d8 000000b4 */ motion_PreCalc() {}
+/* 00115490 0000002c */ motion_SavePreCalcData() {}
+/* 001154c0 00000038 */ motion_LoadPreCalcData() {}
+/* 001154f8 000006a4 */ motion_SetMotion() {}
+/* 00115ba0 00000080 */ motion_SetMotionFrame() {}
+/* 00115c20 000014dc */ motion_SetExMotion() {}
+/* 00117100 00000094 */ motion_CalcMotion() {}
+/* 00117198 0000009c */ motion_CalcColliMotion() {}
+/* 00117238 00000074 */ motion_CalcMotionOnly() {}
+/* 001172b0 0000019c */ motion_GameCalcMotion() {}
+/* 00117450 0000004c */ motion_IncFrame() {}
+/* 001174a0 0000008c */ motion_SeControl() {}
+/* 00117530 000002a8 */ motion_CheckSituation() {}
+/* 001177d8 00000060 */ motion_GetZangekiTable() {}
+/* 00117838 000000c4 */ motion_GetPresetAttackShiftFrame() {}
+/* 00117900 00000060 */ motion_GetAttackAfterKamaeNum() {}
+/* 00117960 00000054 */ motion_GetOugiHeadPtr() {}
+/* 001179b8 0000010c */ motion_GetTableNum() {}
+/* 00117ac8 00000008 */ motion_ShiftInit() {}
+/* 00117ad0 00000c00 */ motion_ShiftControl() {}
+/* 001186d0 00000040 */ motion_load_mot_head_data() {}
+/* 00118710 000000f8 */ motion_make_table() {}
+/* 00118808 00000080 */ motion_precalc_rob_init() {}
+/* 00118888 0000018c */ motion_precalc_calc_attack_dist() {}
+/* 00118a18 00000244 */ motion_precalc_calc_dead_dist() {}
+/* 00118c60 0000001c */ motion_shift_check_m_rfoot_front() {}
+/* 00118c80 0000001c */ motion_shift_check_e_rfoot_front() {}
+/* 00118ca0 0000001c */ motion_shift_check_m_katana_mrl() {}
+/* 00118cc0 0000001c */ motion_shift_check_e_katana_mrl() {}
+/* 00118ce0 0000001c */ motion_shift_check_m_katana_udrl() {}
+/* 00118d00 0000001c */ motion_shift_check_e_katana_udrl() {}
+/* 00118d20 00000034 */ motion_shift_check_m_kamae_req() {}
+/* 00118d58 00000034 */ motion_shift_check_e_kamae_req() {}
+/* 00118d90 00000094 */ motion_shift_check_m_kawashi() {}
+/* 00118e28 00000098 */ motion_shift_check_e_kawashi() {}
+/* 00118ec0 00000098 */ motion_shift_check_m_kawashi_not() {}
+/* 00118f58 0000009c */ motion_shift_check_e_kawashi_not() {}
+/* 00118ff8 00000060 */ motion_shift_check_m_maai_in() {}
+/* 00119058 00000064 */ motion_shift_check_e_maai_in() {}
+/* 001190c0 00000084 */ motion_shift_check_m_maai_out() {}
+/* 00119148 00000088 */ motion_shift_check_e_maai_out() {}
+/* 001191d0 00000040 */ motion_shift_check_m_pre_start() {}
+/* 00119210 00000044 */ motion_shift_check_e_pre_start() {}
+/* 00119258 00000040 */ motion_shift_check_m_pre_end() {}
+/* 00119298 00000044 */ motion_shift_check_e_pre_end() {}
+/* 001192e0 0000009c */ motion_shift_check_m_turn() {}
+/* 00119380 000000a4 */ motion_shift_check_e_turn() {}
+/* 00119428 00000008 */ motion_shift_check_m_attack_end() {}
+/* 00119430 00000008 */ motion_shift_check_e_attack_end() {}
+/* 00119438 00000028 */ motion_shift_check_m_attack_now() {}
+/* 00119460 0000002c */ motion_shift_check_e_attack_now() {}
+/* 00119490 0000002c */ motion_shift_check_m_attack_not() {}
+/* 001194c0 00000030 */ motion_shift_check_e_attack_not() {}
+/* 001194f0 00000060 */ motion_shift_check_m_attack_cancel() {}
+/* 00119550 00000060 */ motion_shift_check_e_attack_cancel() {}
+/* 001195b0 00000030 */ motion_shift_check_m_sikiri_start() {}
+/* 001195e0 00000034 */ motion_shift_check_e_sikiri_start() {}
+/* 00119618 0000003c */ motion_shift_check_m_maitta() {}
+/* 00119658 00000040 */ motion_shift_check_e_maitta() {}
+/* 00119698 00000038 */ motion_shift_check_m_taihi() {}
+/* 001196d0 0000003c */ motion_shift_check_e_taihi() {}
+/* 00119710 00000024 */ motion_shift_check_m_ecolli() {}
+/* 00119738 00000028 */ motion_shift_check_e_ecolli() {}
+/* 00119760 0000005c */ motion_shift_check_m_dcolli() {}
+/* 001197c0 00000060 */ motion_shift_check_e_dcolli() {}
+/* 00119820 00000038 */ motion_shift_check_m_dncolli() {}
+/* 00119858 0000003c */ motion_shift_check_e_dncolli() {}
+/* 00119898 00000024 */ motion_shift_check_m_situation() {}
+/* 001198c0 00000028 */ motion_shift_check_e_situation() {}
+/* 001198e8 0000003c */ motion_shift_check_m_win() {}
+/* 00119928 00000040 */ motion_shift_check_e_win() {}
+/* 00119968 00000010 */ motion_shift_check_m_attack_dist() {}
+/* 00119978 00000010 */ motion_shift_check_e_attack_dist() {}
+/* 00119988 00000028 */ motion_shift_check_m_analog_r_no() {}
+/* 001199b0 0000002c */ motion_shift_check_e_analog_r_no() {}
+/* 001199e0 00000028 */ motion_shift_check_m_analog_l_no() {}
+/* 00119a08 0000002c */ motion_shift_check_e_analog_l_no() {}
+/* 00119a38 00000028 */ motion_shift_check_m_analog_r_low() {}
+/* 00119a60 0000002c */ motion_shift_check_e_analog_r_low() {}
+/* 00119a90 00000028 */ motion_shift_check_m_analog_l_low() {}
+/* 00119ab8 0000002c */ motion_shift_check_e_analog_l_low() {}
+/* 00119ae8 0000002c */ motion_shift_check_m_analog_r_high() {}
+/* 00119b18 00000030 */ motion_shift_check_e_analog_r_high() {}
+/* 00119b48 0000002c */ motion_shift_check_m_analog_l_high() {}
+/* 00119b78 00000030 */ motion_shift_check_e_analog_l_high() {}
+/* 00119ba8 00000038 */ motion_shift_check_m_ougi_continue() {}
+/* 00119be0 00000038 */ motion_shift_check_e_ougi_continue() {}
+/* 00119c18 00000020 */ motion_shift_check_m_hit_stop() {}
+/* 00119c38 00000024 */ motion_shift_check_e_hit_stop() {}
+/* 00119c60 00000038 */ motion_shift_check_m_pre_hit() {}
+/* 00119c98 0000003c */ motion_shift_check_e_pre_hit() {}
+/* 00119cd8 0000003c */ motion_shift_check_m_attack_normal_now() {}
+/* 00119d18 00000040 */ motion_shift_check_e_attack_normal_now() {}
+/* 00119d58 0000003c */ motion_shift_check_m_attack_ougi_now() {}
+/* 00119d98 00000040 */ motion_shift_check_e_attack_ougi_now() {}
+/* 00119dd8 00000028 */ motion_shift_check_m_ma_to_attack() {}
+/* 00119e00 0000002c */ motion_shift_check_e_ma_to_attack() {}
+/* 00119e30 00000064 */ motion_shift_check_m_dead_damage() {}
+/* 00119e98 00000064 */ motion_shift_check_e_dead_damage() {}
+/* 00119f00 00000040 */ motion_shift_check_m_ukenagashi() {}
+/* 00119f40 00000044 */ motion_shift_check_e_ukenagashi() {}
+/* 00119f88 00000058 */ motion_shift_check_m_walk_start() {}
+/* 00119fe0 00000058 */ motion_shift_check_e_walk_start() {}
+/* 0011a038 0000001c */ motion_check_move_attack_type() {}
+/* 0011a058 0000001c */ static motion_check_kawashi_type() {}
+/* 0011a078 00000068 */ static motion_check_miss_ukenagashi() {}
+/* 0011a0e0 0000008c */ static motion_check_enable_shift_to_dead() {}
+/* 0011a170 00000084 */ static motion_check_die() {}
+/* 0011a1f8 00000008 */ motion_DispPara() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_mottest.c
+// *****************************************************************************
+
+/* 0011a200 000000a8 */ mottest_Init() {}
+/* 0011a2a8 00000118 */ mottest_Exec() {}
+/* 0011a3c0 0000013c */ static mottest_rob_init() {}
+/* 0011a500 0000007c */ static mottest_camera_control() {}
+/* 0011a580 00000034 */ static mottest_camera_set_target_position() {}
+/* 0011a5b8 00000028 */ static mottest_camera_set_zoom() {}
+/* 0011a5e0 00000068 */ static mottest_camera_set_rot() {}
+/* 0011a648 000000a4 */ static mottest_camera_set_position() {}
+/* 0011a6f0 000000b8 */ static mottest_camera_set_matrix() {}
+/* 0011a7a8 000000a4 */ static mottest_camera_get_rot_from_real_rot() {}
+/* 0011a850 000000e8 */ static mottest_init() {}
+/* 0011a938 00000aa4 */ static mottest_control() {}
+/* 0011b3e0 00000178 */ static mottest_disp() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_motutil.c
+// *****************************************************************************
+
+/* 0011b558 000000d0 */ motutil_CheckRightFootFront() {}
+/* 0011b628 000000c8 */ motutil_CheckKatanaMidPosition() {}
+/* 0011b6f0 000000e4 */ motutil_CheckKatanaPosition() {}
+/* 0011b7d8 00000034 */ motutil_CheckOugi() {}
+/* 0011b810 000000bc */ motutil_CheckKamaeReq() {}
+/* 0011b8d0 000000d0 */ motutil_GetAngTableNum() {}
+/* 0011b9a0 00000258 */ motutil_GetWalkDir() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_coli.c
+// *****************************************************************************
+
+/* 0011bbf8 0000006c */ coli_InitColliStatus() {}
+/* 0011bc68 000001cc */ coli_MakeRobColliBall() {}
+/* 0011be38 0000033c */ coli_MakeKatanaVec() {}
+/* 0011c178 000002c8 */ coli_HitPauseKatana() {}
+/* 0011c440 0000006c */ coli_CheckBukiHit() {}
+/* 0011c4b0 00000034 */ coli_CheckBukiPreHit() {}
+/* 0011c4e8 0000007c */ coli_CheckRobEnemy() {}
+/* 0011c568 00000044 */ coli_CheckRobLimit() {}
+/* 0011c5b0 00000318 */ coli_CalcRobPos() {}
+/* 0011c8c8 0000029c */ coli_MakeMatrixTransXZ() {}
+/* 0011cb68 000000a0 */ coli_TriangleMoveXZ() {}
+/* 0011cc08 00000164 */ coli_CheckBallHitSurface() {}
+/* 0011cd70 000000ec */ coli_CheckCircleHitLine() {}
+/* 0011ce60 000001c0 */ static coli_trans_kao() {}
+/* 0011d020 00000250 */ static coli_hit_body_weapon() {}
+/* 0011d270 00000100 */ static coli_check_point_inside_triangle() {}
+/* 0011d370 00000170 */ static coli_check_circle_hit_line() {}
+/* 0011d4e0 00000058 */ static coli_cancel_hit_pause_katana() {}
+/* 0011d538 000002bc */ static coli_calc_oshidashi_speed() {}
+/* 0011d7f8 0000036c */ static coli_calc_oshidashi_dist() {}
+/* 0011db68 00000008 */ coli_DispRobColliBall() {}
+/* 0011db70 00000008 */ coli_DispKataColli() {}
+/* 0011db78 00000008 */ coli_DebugDisp() {}
+/* 0011db80 00000034 */ coli_RobColliScaleEditInit() {}
+/* 0011dbb8 0000000c */ coli_RobColliScaleEditReset() {}
+/* 0011dbc8 00000184 */ coli_RobColliScaleEditExec() {}
+/* 0011dd50 00000074 */ static coli_copy_init_scale_edit_buf() {}
+/* 0011ddc8 000001cc */ static coli_make_edit_colli_ball() {}
+/* 0011df98 00000094 */ static coli_calc_motion() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_action.c
+// *****************************************************************************
+
+/* 0011e030 0000043c */ action_CheckHitZangeki() {}
+/* 0011e470 000000cc */ action_CheckHitZangekiForReplay() {}
+/* 0011e540 000000d4 */ action_TubazeriaiControl() {}
+/* 0011e618 00000080 */ action_UkenagashiCheck() {}
+/* 0011e698 0000011c */ action_UkenagashiControl() {}
+/* 0011e7b8 0000004c */ action_TubazeriHit() {}
+/* 0011e808 00000080 */ static action_check_fatal_damage() {}
+/* 0011e888 000000c0 */ static action_defense_decision() {}
+/* 0011e948 0000008c */ static action_check_defense() {}
+/* 0011e9d8 00000220 */ static action_defense_failed() {}
+/* 0011ebf8 000001f8 */ static action_defense_success_normal() {}
+/* 0011edf0 000001b0 */ static action_defense_success_hajiki() {}
+/* 0011efa0 00000194 */ static action_check_tubazeriai() {}
+/* 0011f138 000000f4 */ static action_check_ukenagashi() {}
+/* 0011f230 000001c0 */ static action_set_force_maai() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_ki_control.c
+// *****************************************************************************
+
+/* 0011f3f0 00000040 */ ki_EveryControl() {}
+/* 0011f430 00000038 */ ki_MotionControl() {}
+/* 0011f468 00000038 */ static ki_limit() {}
+/* 0011f4a0 00000044 */ static ki_danger() {}
+/* 0011f4e8 0000005c */ static ki_lv_seisin() {}
+/* 0011f548 0000009c */ static ki_every_special() {}
+/* 0011f5e8 00000090 */ static ki_every_little_thing() {}
+/* 0011f678 000000e8 */ static ki_normal() {}
+/* 0011f760 00000078 */ static ki_attack_ougi() {}
+/* 0011f7d8 0000003c */ static ki_single_mode_special() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_damage_calc.c
+// *****************************************************************************
+
+/* 0011f818 0000009c */ damage_CalcHitDamage() {}
+/* 0011f8b8 00000108 */ damage_CheckBackAttack() {}
+/* 0011f9c0 00000058 */ damage_CheckCounterAttack() {}
+/* 0011fa18 00000178 */ static damage_attack_norm_calc() {}
+/* 0011fb90 000000a0 */ static damage_attack_move_calc() {}
+/* 0011fc30 00000090 */ static damage_attack_ougi_calc() {}
+/* 0011fcc0 0000001c */ static damage_get_hit_place_damage() {}
+/* 0011fce0 00000014 */ static damage_lv_gouwan() {}
+/* 0011fcf8 00000024 */ static damage_check_danger() {}
+/* 0011fd20 00000024 */ static damage_check_henahena() {}
+/* 0011fd48 00000040 */ static damage_set_level() {}
+/* 0011fd88 0000013c */ damage_DebugDisp() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_replay.c
+// *****************************************************************************
+
+/* 0011fec8 00000038 */ replay_Open() {}
+/* 0011ff00 00000068 */ replay_EncodeInit() {}
+/* 0011ff68 00000488 */ replay_EncodeExec() {}
+/* 001203f0 00000284 */ replay_EncodeEnd() {}
+/* 00120678 000002d8 */ replay_DecodeInit() {}
+/* 00120950 000000e0 */ static replay_back_check() {}
+/* 00120a30 000005e8 */ replay_DecodeExec() {}
+/* 00121018 00000044 */ replay_DecodeEnd() {}
+/* 00121060 00000058 */ replay_Close() {}
+/* 001210b8 00000078 */ replay_GetStartFrame() {}
+/* 00121130 00000168 */ static replay_malloc() {}
+/* 00121298 00000008 */ static replay_rate_control() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_stats.c
+// *****************************************************************************
+
+/* 001212a0 0000001c */ stats_Init() {}
+/* 001212c0 00000048 */ stats_Reset() {}
+/* 00121308 00000008 */ stats_DebugDisp() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_status.c
+// *****************************************************************************
+
+/* 00121310 00000018 */ status_Init() {}
+/* 00121328 000001f4 */ status_Record() {}
+/* 00121520 00000208 */ status_Calc() {}
+/* 00121728 000004f0 */ static status_last_calc() {}
+/* 00121c18 00000008 */ status_DebugDisp() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_learn.c
+// *****************************************************************************
+
+/* 00121c20 00000014 */ learn_Init() {}
+/* 00121c38 00000034 */ learn_GameCounterClear() {}
+/* 00121c70 00000094 */ learn_TotalCounterUp() {}
+/* 00121d08 000001b8 */ learn_CheckGameCounterUp() {}
+/* 00121ec0 000000e0 */ learn_master_waza() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_tanren.c
+// *****************************************************************************
+
+/* 00121fa0 000002dc */ tanren_Tan5Init() {}
+/* 00122280 00000038 */ tanren_Tan5ExpDispControl() {}
+/* 001222b8 00000010 */ tanren_Tan5StartInit() {}
+/* 001222c8 00000080 */ tanren_Tan5StartControl() {}
+/* 00122348 00000184 */ tanren_Tan5MainInit() {}
+/* 001224d0 00000148 */ tanren_Tan5MainControl() {}
+/* 00122618 000000a0 */ tanren_Tan5EndInit() {}
+/* 001226b8 000000c8 */ tanren_Tan5EndControl() {}
+/* 00122780 00000360 */ tanren_CameraControl() {}
+/* 00122ae0 00000098 */ static tanren_target_control() {}
+/* 00122b78 0000003c */ static tanren_check_stage_colli() {}
+/* 00122bb8 000000d4 */ static tanren_check_bamboo_colli() {}
+/* 00122c90 000001e4 */ static tanren_calc_rob_pos() {}
+/* 00122e78 00000204 */ static tanren_check_bamboo_hit() {}
+/* 00123080 00000194 */ static tanren_get_bamboo_anim_info() {}
+/* 00123218 0000005c */ static tanren_target_change() {}
+/* 00123278 00000050 */ static tanren_camera_control() {}
+/* 001232c8 00000224 */ static tanren_camera_set_target_position() {}
+/* 001234f0 00000028 */ static tanren_camera_set_zoom() {}
+/* 00123518 0000022c */ static tanren_camera_set_rot() {}
+/* 00123748 00000134 */ static tanren_camera_set_position() {}
+/* 00123880 000000a4 */ static tanren_camera_get_rot_from_real_rot() {}
+/* 00123928 0000055c */ static tanren_camera_calc_speed() {}
+/* 00123e88 000000dc */ static tanren_camera_get_rot_counter() {}
+/* 00123f68 000001b4 */ static tanren_camera_get_spline_pos() {}
+/* 00124120 000000f4 */ static tanren_camera_get_liner_pos() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_efc_buki.c
+// *****************************************************************************
+
+/* 00124218 0000002c */ efc_buki_ZanzouInit() {}
+/* 00124248 00000238 */ efc_buki_ZanzouOpen() {}
+/* 00124480 0000009c */ efc_buki_ZanzouClose() {}
+/* 00124520 0000021c */ efc_buki_ZanzouControl() {}
+/* 00124740 00000034 */ efc_buki_ZanzouDispInit() {}
+/* 00124778 000005b8 */ efc_buki_ZanzouDisp() {}
+/* 00124d30 000000dc */ static efc_buki_zanzou_entry() {}
+/* 00124e10 00000238 */ static efc_buki_zanzou_record() {}
+/* 00125048 00000108 */ static efc_buki_draw_zanzou() {}
+/* 00125150 00000044 */ static efc_buki_get_vertex_color() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_efc_ougi.c
+// *****************************************************************************
+
+/* 00125198 0000000c */ efc_ougi_Init() {}
+/* 001251a8 00000074 */ efc_ougi_Control() {}
+/* 00125220 00000184 */ static efc_ougi_blur_check_status() {}
+/* 001253a8 0000002c */ static efc_ougi_blur_init() {}
+/* 001253d8 0000001c */ static efc_ougi_blur_start() {}
+/* 001253f8 00000018 */ static efc_ougi_blur_end() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_efc_rob.c
+// *****************************************************************************
+
+/* 00125410 00000068 */ efc_rob_Open() {}
+/* 00125478 00000070 */ efc_rob_Close() {}
+/* 001254e8 00000108 */ efc_rob_Init() {}
+/* 001255f0 0000001c */ efc_rob_Reset() {}
+/* 00125610 000000e0 */ efc_rob_SetPara() {}
+/* 001256f0 00000078 */ efc_rob_Control() {}
+/* 00125768 00000078 */ efc_rob_Disp() {}
+/* 001257e0 000000d0 */ static efc_rob_set_type_line() {}
+/* 001258b0 00000330 */ static efc_rob_set_type_flash() {}
+/* 00125be0 000001e8 */ static efc_rob_set_type_smoke() {}
+/* 00125dc8 0000046c */ static efc_rob_set_type_particle() {}
+/* 00126238 000003bc */ static efc_rob_control_type_line() {}
+/* 001265f8 00000094 */ static efc_rob_control_type_flash() {}
+/* 00126690 00000048 */ static efc_rob_control_type_smoke() {}
+/* 001266d8 00000060 */ static efc_rob_control_type_particle() {}
+/* 00126738 00000084 */ static efc_rob_disp_type_flash() {}
+/* 001267c0 00000060 */ static efc_rob_disp_type_smoke() {}
+/* 00126820 00000070 */ static efc_rob_disp_type_particle() {}
+/* 00126890 000002b4 */ static efc_rob_set_sand_smoke() {}
+/* 00126b48 00000108 */ static efc_rob_ougi_control() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_rob_test.c
+// *****************************************************************************
+
+/* 00126c50 00000060 */ robtest_Init() {}
+/* 00126cb0 000000a8 */ robtest_Exec() {}
+/* 00126d58 0000013c */ static robtest_rob_init() {}
+/* 00126e98 0000007c */ static robtest_camera_control() {}
+/* 00126f18 00000034 */ static robtest_camera_set_target_position() {}
+/* 00126f50 00000028 */ static robtest_camera_set_zoom() {}
+/* 00126f78 00000068 */ static robtest_camera_set_rot() {}
+/* 00126fe0 000000a4 */ static robtest_camera_set_position() {}
+/* 00127088 000000b8 */ static robtest_camera_set_matrix() {}
+/* 00127140 000000a4 */ static robtest_camera_get_rot_from_real_rot() {}
+/* 001271e8 000000a0 */ static robtest_init() {}
+/* 00127288 00000410 */ static robtest_control() {}
+/* 00127698 00000160 */ static robtest_disp() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_league.c
+// *****************************************************************************
+
+/* 001277f8 00000008 */ league_Init() {}
+/* 00127800 00000008 */ league_Control() {}
+/* 00127808 00000008 */ league_ResultDisp() {}
+
+// *****************************************************************************
+// FILE -- src/ishito/is_debug.c
+// *****************************************************************************
+
+/* 00127810 00000008 */ dmodel_Init() {}
+/* 00127818 00000008 */ dmodel_MakeObj() {}
+/* 00127820 00000008 */ dmodel_PutObj() {}
+/* 00127828 00000008 */ dmodel_SendPacket() {}
+/* 00127830 00000008 */ dmodel_FreeObj() {}
+/* 00127838 00000008 */ cpu_power_Init() {}
+/* 00127840 00000008 */ cpu_power_StartInit() {}
+/* 00127848 00000008 */ cpu_power_Start() {}
+/* 00127850 00000008 */ cpu_power_Disp() {}
+/* 00127858 00000008 */ cpu_power_TotalDisp() {}
+
+// *****************************************************************************
+// FILE -- src/myama/my_rob.c
+// *****************************************************************************
+
+/* 00127860 00000654 */ rob_Init() {}
+/* 00127eb8 000003d0 */ rob_game_init() {}
+/* 00128288 000000c4 */ rob_set_pset_attack_id_for_mode() {}
+/* 00128350 000000a8 */ rob_setPsetAttackID() {}
+/* 001283f8 00000070 */ rob_set_game_position() {}
+/* 00128468 00000084 */ rob_setUserWorkPsetAttackID() {}
+/* 001284f0 0000008c */ rob_set_current_pset_kamae_id_for_mode() {}
+/* 00128580 00000044 */ rob_set_current_pset_kamae_id() {}
+/* 001285c8 00000020 */ rob_permit_pset_kamae_req() {}
+/* 001285e8 00000054 */ rob_SetPersonalAbility() {}
+/* 00128640 0000006c */ rob_SetUserWorkPersonalAbility() {}
+/* 001286b0 000000bc */ rob_set_personal_ability_id_for_mode() {}
+/* 00128770 00000038 */ rob_set_personal_ability_id_for_mode_cpu() {}
+/* 001287a8 00000174 */ rob_calc_2d_position() {}
+/* 00128920 0000007c */ rob_angle_target() {}
+/* 001289a0 0000008c */ rob_angle_camera() {}
+/* 00128a30 00000288 */ rob_yang_cntrl() {}
+/* 00128cb8 00000180 */ rob_life_ctrl() {}
+/* 00128e38 00000038 */ rob_life_danger_ctrl() {}
+/* 00128e70 0000005c */ rob_sinpaku_ctrl() {}
+/* 00128ed0 00000018 */ rob_dead_ctrl() {}
+/* 00128ee8 000001c0 */ rob_se_vol_control() {}
+/* 001290a8 000002b4 */ rob_set_se() {}
+/* 00129360 00000084 */ rob_calc_preset_area() {}
+/* 001293e8 0000001c */ rob_calc_4way_wall_dist() {}
+/* 00129408 0000030c */ rob_kaomuke_ctrl() {}
+/* 00129718 000000cc */ rob_SetAttackDist() {}
+/* 001297e8 000000d8 */ rob_CheckClearPadData() {}
+/* 001298c0 00000020 */ rob_ScaleInit() {}
+/* 001298e0 00000010 */ rob_ScaleMarioInit() {}
+/* 001298f0 0000023c */ rob_Scale() {}
+/* 00129b30 00000098 */ rob_ScaleEdit() {}
+
+// *****************************************************************************
+// FILE -- src/myama/my_hirahira.c
+// *****************************************************************************
+
+/* 00129bc8 000002c0 */ hirahira_w_init() {}
+/* 00129e88 00000210 */ hirahira_w_ctrl() {}
+/* 0012a098 00000164 */ hirahira_w_rcol() {}
+/* 0012a200 000000ec */ hirahira_w_frie() {}
+/* 0012a2f0 00000134 */ hirahira_w_gpos() {}
+/* 0012a428 00000048 */ hirahira_w_exec() {}
+
+// *****************************************************************************
+// FILE -- src/myama/my_eff.c
+// *****************************************************************************
+
+/* 0012a470 00000010 */ myRobGeneiOpen() {}
+/* 0012a480 00000008 */ myRobGeneiClose() {}
+/* 0012a488 000000d4 */ myRobGeneiInit() {}
+/* 0012a560 00000218 */ myRobGeneiMove() {}
+/* 0012a778 0000012c */ myRobGeneiDraw() {}
+/* 0012a8a8 00000088 */ myRobNormalDraw() {}
+
+// *****************************************************************************
+// FILE -- src/numata/nm_camera.c
+// *****************************************************************************
+
+/* 0012a930 00000200 */ camera_Open() {}
+/* 0012ab30 000002bc */ camera_Init() {}
+/* 0012adf0 00000144 */ camera_Exec() {}
+/* 0012af38 00000084 */ camera_game_mode_exec() {}
+/* 0012afc0 000000f4 */ getScreenPosition() {}
+/* 0012b0b8 000000cc */ camera_SetMatrix() {}
+/* 0012b188 00000100 */ camera_set_target_position() {}
+/* 0012b288 000001dc */ camera_pers_contorol() {}
+/* 0012b468 00000100 */ camera_set_position() {}
+/* 0012b568 0000010c */ camera_set_position_limit() {}
+/* 0012b678 00000550 */ camera_set_rot() {}
+/* 0012bbc8 0000032c */ camera_set_sundome_rot() {}
+/* 0012bef8 00000bf4 */ camera_get_rot_type() {}
+/* 0012caf0 0000018c */ camera_calc_4way_limit_dist() {}
+/* 0012cc80 00000198 */ camera_check_line_cross() {}
+/* 0012ce18 00000388 */ camera_check_line_cross_3d() {}
+/* 0012d1a0 000000cc */ camera_get_rot_from_rot_type() {}
+/* 0012d270 000000dc */ camera_get_rot_counter() {}
+/* 0012d350 000000a4 */ camera_get_rot_from_real_rot() {}
+/* 0012d3f8 00000074 */ camera_check_inside_screen_rob_dpos() {}
+/* 0012d470 00000040 */ camera_check_outside_screen_rob_dpos() {}
+/* 0012d4b0 0000036c */ camera_set_zoom() {}
+/* 0012d820 000000cc */ camera_set_sundome_zoom() {}
+/* 0012d8f0 00000944 */ camera_set_target_zoom() {}
+/* 0012e238 00000608 */ camera_calc_speed() {}
+/* 0012e840 000000e0 */ camera_check_not_move() {}
+/* 0012e920 00000068 */ camera_check_sundome_camera() {}
+/* 0012e988 0000007c */ camera_get_rot_normal_rad() {}
+/* 0012ea08 000000a4 */ camera_GetScreenZ() {}
+/* 0012eab0 00000094 */ camera_CloseTag() {}
+
+// *****************************************************************************
+// FILE -- src/numata/nm_special_cam.c
+// *****************************************************************************
+
+/* 0012eb48 000005c8 */ special_camera_Init() {}
+/* 0012f110 000007d8 */ special_camera_set_win_cam() {}
+/* 0012f8e8 00000278 */ special_camera_get_win_cam_num() {}
+/* 0012fb60 00000534 */ special_camera_set_los_cam() {}
+/* 00130098 00000244 */ special_camera_get_los_cam_num() {}
+/* 001302e0 00000538 */ special_camera_set_mario_cam() {}
+/* 00130818 00000258 */ special_camera_set_start_cam() {}
+/* 00130a70 000001e8 */ special_camera_set_start_cam2() {}
+/* 00130c58 00000448 */ special_camera_Exec() {}
+/* 001310a0 00000270 */ special_camera_set_data() {}
+/* 00131310 0000015c */ special_camera_set_data_draw() {}
+/* 00131470 000000f4 */ special_camera_check_pos_outside_wall() {}
+/* 00131568 00000074 */ special_camera_check_pos_outside_ground() {}
+/* 001315e0 00000108 */ special_camera_get_rot_dir() {}
+/* 001316e8 000000f4 */ special_camera_get_rot_dir2() {}
+/* 001317e0 00000174 */ special_camera_move_rot() {}
+
+// *****************************************************************************
+// FILE -- src/numata/nm_replay_cam.c
+// *****************************************************************************
+
+/* 00131958 0000009c */ replay_camera_Init() {}
+/* 001319f8 00000360 */ replay_camera_check_mode() {}
+/* 00131d58 000000bc */ replay_camera_set_change_mode() {}
+/* 00131e18 000002c4 */ replay_camera_check_keep_mode() {}
+/* 001320e0 00000408 */ replay_camera_get_normal_mode() {}
+/* 001324e8 000000b4 */ replay_camera_check_use_special_mode() {}
+/* 001325a0 00000650 */ replay_camera_get_number() {}
+/* 00132bf0 0000017c */ replay_camera_get_back_number() {}
+/* 00132d70 000003c8 */ replay_camera_get_attack_number() {}
+/* 00133138 0000027c */ replay_camera_get_frame_rate() {}
+/* 001333b8 000000a0 */ replay_camera_check_position_in_ground() {}
+/* 00133458 00000010 */ replay_camera_check_stage() {}
+/* 00133468 0000045c */ replay_camera_SetPosition() {}
+/* 001338c8 000001a4 */ replay_camera_rob_back_loose() {}
+/* 00133a70 000001a4 */ replay_camera_rob_back_loose_near() {}
+/* 00133c18 000001f8 */ replay_camera_rob_back_loose2() {}
+/* 00133e10 000001b4 */ replay_camera_rob_back_win() {}
+/* 00133fc8 000001b4 */ replay_camera_rob_back_win_near() {}
+/* 00134180 000002e0 */ replay_camera_upper() {}
+/* 00134460 000001c4 */ replay_camera_side() {}
+/* 00134628 00000acc */ replay_camera_attack() {}
+/* 001350f8 000001dc */ replay_camera_kawasi() {}
+/* 001352d8 000001b0 */ replay_camera_rob_upper() {}
+
+// *****************************************************************************
+// FILE -- src/numata/nm_mario_cam.c
+// *****************************************************************************
+
+/* 00135488 000000d8 */ marionation_camera_Init() {}
+/* 00135560 0000026c */ marionation_camera_Exec() {}
+/* 001357d0 00000064 */ marionation_camera_GetMaxFrame() {}
+/* 00135838 000000a4 */ marionation_camera_get_mot_set_pos() {}
+
+// *****************************************************************************
+// FILE -- src/numata/nm_mario_test.c
+// *****************************************************************************
+
+/* 001358e0 000001ac */ mario_test_Init() {}
+/* 00135a90 00000708 */ mario_test_Exec() {}
+/* 00136198 000000b0 */ mario_getMarioVoiceData() {}
+/* 00136248 0000006c */ mario_CheckMarioVoiceStart() {}
+
+// *****************************************************************************
+// FILE -- src/numata/nm_light.c
+// *****************************************************************************
+
+/* 001362b8 00000010 */ light_Open() {}
+/* 001362c8 00000034 */ light_Init() {}
+/* 00136300 00000228 */ light_SetGameLight() {}
+
+// *****************************************************************************
+// FILE -- src/numata/nm_cpu.c
+// *****************************************************************************
+
+/* 00136528 0000008c */ cpu_Init() {}
+/* 001365b8 00000088 */ cpu_act_data_init() {}
+/* 00136640 000000f0 */ cpu_personal_data_init() {}
+/* 00136730 00000148 */ cpu_single_personal_data_init() {}
+/* 00136878 00000054 */ cpu_get_button_response_frame() {}
+/* 001368d0 00000020 */ cpu_reset_timer() {}
+/* 001368f0 00000014 */ cpu_reset_dir() {}
+/* 00136908 00000034 */ cpu_parameter_limit() {}
+/* 00136940 00000050 */ cpu_Control() {}
+/* 00136990 000000a4 */ cpu_set_parameter() {}
+/* 00136a38 00000074 */ cpu_get_status() {}
+/* 00136ab0 00000110 */ cpu_get_dist() {}
+/* 00136bc0 00000048 */ cpu_get_weapon_dif_dist() {}
+/* 00136c08 00000154 */ cpu_get_dir() {}
+/* 00136d60 00000234 */ cpu_set_command() {}
+/* 00136f98 000000d4 */ cpu_check_no_action() {}
+/* 00137070 00000064 */ cpu_check_freeze() {}
+/* 001370d8 0000002c */ cpu_check_continue_def_act() {}
+/* 00137108 0000009c */ cpu_check_continue_off_act() {}
+/* 001371a8 000000d4 */ cpu_check_defense() {}
+/* 00137280 000002ec */ cpu_check_guard() {}
+/* 00137570 00000130 */ cpu_check_tubazeri() {}
+/* 001376a0 0000030c */ cpu_check_ukenagasi() {}
+/* 001379b0 00000228 */ cpu_check_avoid() {}
+/* 00137bd8 00000084 */ cpu_check_no_attack() {}
+/* 00137c60 000003b0 */ cpu_check_miss_attack() {}
+/* 00138010 000002a0 */ cpu_check_attack_combo() {}
+/* 001382b0 00000298 */ cpu_check_attack() {}
+/* 00138548 00000034 */ cpu_check_eneble_move_attack() {}
+/* 00138580 0000011c */ cpu_get_move_attack_mot_num() {}
+/* 001386a0 00000308 */ cpu_check_move_attack() {}
+/* 001389a8 00000508 */ cpu_check_run_attack() {}
+/* 00138eb0 0000007c */ cpu_get_attack_kind() {}
+/* 00138f30 00000394 */ cpu_check_ougi_attack() {}
+/* 001392c8 00000148 */ cpu_check_ougi_cancel() {}
+/* 00139410 00000348 */ cpu_check_kamaekae() {}
+/* 00139758 000002b0 */ cpu_move_dir_kabe_check() {}
+/* 00139a08 0000007c */ cpu_kawasi_check() {}
+/* 00139a88 00000068 */ cpu_get_scale_agility_rate() {}
+/* 00139af0 00000068 */ cpu_get_scale_maai_rate() {}
+/* 00139b58 000000e4 */ cpu_set_move_command_and_dir() {}
+/* 00139c40 000000a0 */ cpu_check_renew_move_pattern_table_number() {}
+/* 00139ce0 00000424 */ cpu_get_move_pattern_table_number() {}
+/* 0013a108 00000038 */ cpu_get_move_pattern() {}
+/* 0013a140 00000024 */ cpu_check_move_dir_pattern_no_attack() {}
+/* 0013a168 0000008c */ cpu_check_move_dir_pattern_enemy_attack() {}
+/* 0013a1f8 000003cc */ cpu_set_move_command_and_dir_for_action() {}
+/* 0013a5c8 00000058 */ cpu_check_dash_commnd() {}
+/* 0013a620 000002f4 */ cpu_set_move_command_and_dir_for_no_action() {}
+/* 0013a918 0000009c */ cpu_chase_move_dir() {}
+/* 0013a9b8 000000a4 */ cpu_escape_move_dir() {}
+/* 0013aa60 00000280 */ cpu_side_move_dir() {}
+/* 0013ace0 000000c0 */ cpu_check_run_start() {}
+/* 0013ada0 000001f8 */ cpu_check_run_stop() {}
+/* 0013af98 000000fc */ cpu_check_same_dir_timer() {}
+/* 0013b098 0000007c */ cpu_check_pos_outside_ground() {}
+/* 0013b118 0000064c */ cpu_make_pad_data() {}
+/* 0013b768 0000004c */ cpu_get_dash_timer() {}
+/* 0013b7b8 00000094 */ cpu_get_run_timer() {}
+/* 0013b850 00000040 */ cpu_get_guard_cont_timer() {}
+/* 0013b890 00000028 */ cpu_get_attack_after_timer() {}
+/* 0013b8b8 00000650 */ cpu_check_reset_act_timer() {}
+/* 0013bf08 0000004c */ cpu_set_pad_data() {}
+
+// *****************************************************************************
+// FILE -- src/numata/nm_single_game.c
+// *****************************************************************************
+
+/* 0013bf58 00000058 */ single_game_Init() {}
+/* 0013bfb0 00000140 */ single_game_InitWazaData() {}
+/* 0013c0f0 000001b0 */ single_game_SetWazaData() {}
+/* 0013c2a0 00000070 */ single_game_ResetStatusUpData() {}
+/* 0013c310 000000b0 */ single_game_setData() {}
+/* 0013c3c0 00000084 */ single_game_setRestartData() {}
+/* 0013c448 000000a8 */ single_game_get_mode() {}
+/* 0013c4f0 00000044 */ single_game_CheckGozenMatch() {}
+/* 0013c538 000000e8 */ single_game_CheckDojoYaburare() {}
+/* 0013c620 0000002c */ single_game_get_practice_mode() {}
+/* 0013c650 0000001c */ single_game_setMode() {}
+/* 0013c670 00000a5c */ single_game_setModeRequest() {}
+/* 0013d0d0 00000070 */ single_game_check_practice_mode() {}
+/* 0013d140 00000054 */ single_game_get_clear_dojo_num() {}
+/* 0013d198 00000140 */ single_game_checkTimeLimit() {}
+/* 0013d2d8 00000088 */ single_game_getWinId() {}
+/* 0013d360 00000054 */ single_game_checkModeChange() {}
+/* 0013d3b8 00000048 */ single_game_checkReplayCut() {}
+/* 0013d400 0000003c */ single_game_checkSundomeMode() {}
+/* 0013d440 00000064 */ single_game_checkSundome() {}
+/* 0013d4a8 00000078 */ single_game_checkMarioStart() {}
+/* 0013d520 000000b4 */ single_game_GetMarioID() {}
+/* 0013d5d8 00000054 */ single_game_GetMarioCameraID() {}
+/* 0013d630 000000ac */ single_game_getMarioVoiceDataNum() {}
+/* 0013d6e0 000000bc */ single_game_CheckMarioVoiceStart() {}
+/* 0013d7a0 000001ac */ single_game_getCpuLevel() {}
+/* 0013d950 00000068 */ single_game_getCpuMode() {}
+/* 0013d9b8 000000a4 */ single_game_getGeneiCpuLevel() {}
+/* 0013da60 000002b0 */ single_game_SetCpuEnemyAbility() {}
+/* 0013dd10 00000558 */ single_game_SetMyDefaultAbility() {}
+/* 0013e268 00000088 */ single_game_getStageId() {}
+/* 0013e2f0 0000000c */ single_game_SetStageId() {}
+/* 0013e300 00000024 */ single_game_getMyCharKind() {}
+/* 0013e328 00000034 */ single_game_getEnemyCharKind() {}
+/* 0013e360 0000000c */ single_game_getMyCharId() {}
+/* 0013e370 0000016c */ single_game_getEnemyCharId() {}
+/* 0013e4e0 000000ac */ single_game_get_dojo_yaburi_char_id() {}
+/* 0013e590 00000084 */ single_game_getWeapon() {}
+/* 0013e618 00000104 */ single_game_SetLife() {}
+/* 0013e720 00000048 */ single_game_NoReduceLife() {}
+/* 0013e768 000001f0 */ single_game_SetAbilityData() {}
+/* 0013e958 00000484 */ single_game_CheckStatusUpDataTotalOver() {}
+/* 0013ede0 00000040 */ single_game_SetTmpStatusUpData() {}
+/* 0013ee20 00000040 */ single_game_SetTmpStatusUpDataGenei() {}
+/* 0013ee60 000000f4 */ single_game_MinLimitStatusUpData() {}
+/* 0013ef58 0000011c */ single_game_MinLimitStatusUpDataGenei() {}
+/* 0013f078 000008b0 */ single_game_SetStatusUpData() {}
+/* 0013f928 00000148 */ single_game_AddStatusUpAmari() {}
+/* 0013fa70 00000140 */ single_game_SubStatusUpAmari() {}
+/* 0013fbb0 00000060 */ single_game_CheckStatusUpTotalMaxNum() {}
+/* 0013fc10 000001f4 */ single_game_AddDay() {}
+/* 0013fe08 00000070 */ single_game_GetWazaGetRate() {}
+/* 0013fe78 000000bc */ single_game_get_lost_weapon_id() {}
+/* 0013ff38 000000b0 */ single_game_get_gozensiai_get_weapon_id() {}
+/* 0013ffe8 00000034 */ single_game_LoadKeikoVoiceNum() {}
+/* 00140020 00000234 */ single_game_VoiceContorol() {}
+/* 00140258 0000005c */ single_game_CheckLosCamera() {}
+/* 001402b8 0000020c */ single_game_getLeagWinID() {}
+
+// *****************************************************************************
+// FILE -- src/numata/nm_katinuki_game.c
+// *****************************************************************************
+
+/* 001404c8 0000005c */ katinuki_game_Init() {}
+/* 00140528 0000002c */ katinuki_game_setData() {}
+/* 00140558 0000002c */ katinuki_game_Reset() {}
+/* 00140588 000000a8 */ katinuki_game_IncTimer() {}
+/* 00140630 000002fc */ katinuki_game_set_katinuki_enemy_buffer() {}
+/* 00140930 00000020 */ katinuki_game_get_katinuki_max_num() {}
+/* 00140950 0000002c */ katinuki_game_getMyCharId() {}
+/* 00140980 00000014 */ katinuki_game_getEnemyCharId() {}
+/* 00140998 00000088 */ katinuki_game_getStageId() {}
+/* 00140a20 00000050 */ katinuki_game_getMyWeaponId() {}
+/* 00140a70 0000003c */ katinuki_game_getCpuLevel() {}
+/* 00140ab0 00000308 */ katinuki_game_checkRecordTime() {}
+/* 00140db8 00000078 */ katinuki_game_VoiceContorol() {}
+/* 00140e30 00000030 */ vs_game_Init() {}
+/* 00140e60 00000014 */ vs_game_Reset() {}
+/* 00140e78 0000002c */ vs_game_SetData() {}
+/* 00140ea8 00000040 */ vs_game_getCharId() {}
+/* 00140ee8 00000030 */ vs_game_getCharKind() {}
+/* 00140f18 00000074 */ vs_game_getWeaponId() {}
+/* 00140f90 000000dc */ vs_game_VoiceContorol() {}
+
+// *****************************************************************************
+// FILE -- src/numata/nm_mario.c
+// *****************************************************************************
+
+/* 00141070 000001d0 */ marionation_Init() {}
+/* 00141240 000001c0 */ marionation_start() {}
+/* 00141400 000002d0 */ marionation_Exec() {}
+/* 001416d0 000000c8 */ marionation_SetWepKind() {}
+/* 00141798 0000009c */ marionation_SetVoice() {}
+
+// *****************************************************************************
+// FILE -- src/sato/tsl_mem.c
+// *****************************************************************************
+
+/* 00141838 00000060 */ tslGlobalMemInit() {}
+/* 00141898 00000114 */ tslGlobalMemAlloc() {}
+/* 001419b0 00000228 */ tslGlobalMemFree() {}
+/* 00141bd8 00000008 */ tslGlobalMemGetUseSize() {}
+/* 00141be0 00000078 */ tslGlobalMemTagPrint() {}
+
+// *****************************************************************************
+// FILE -- src/sato/tsl_load.c
+// *****************************************************************************
+
+/* 00141c58 0000002c */ tslCDInit() {}
+/* 00141c88 00000084 */ tslCDFileSearch() {}
+/* 00141d10 000000a8 */ tslCDFileRead() {}
+/* 00141db8 0000001c */ tslFileOpen() {}
+/* 00141dd8 00000028 */ tslFileClose() {}
+/* 00141e00 0000001c */ tslFileRead() {}
+/* 00141e20 0000001c */ tslFileWrite() {}
+/* 00141e40 0000001c */ tslFileSeek() {}
+
+// *****************************************************************************
+// FILE -- src/sato/tsl_dma.c
+// *****************************************************************************
+
+/* 00141e60 000000a4 */ tslDmaInit() {}
+/* 00141f08 00000058 */ tslDmaSend() {}
+/* 00141f60 00000078 */ tslDmaSendVif1() {}
+/* 00141fd8 00000078 */ tslDmaSendGif() {}
+/* 00142050 0000005c */ tslDmaSendIop() {}
+/* 001420b0 000000d4 */ static tslDmaDrawInt() {}
+/* 00142188 00000050 */ tslDmaDrawListInit() {}
+/* 001421d8 0000015c */ tslDmaDrawListDraw() {}
+/* 00142338 00000060 */ tslDmaDrawListAdd() {}
+/* 00142398 00000010 */ tslDmaDrawListDelAll() {}
+/* 001423a8 00000008 */ tslDmaDrawListEndCheck() {}
+
+// *****************************************************************************
+// FILE -- src/sato/tsl_pkt.c
+// *****************************************************************************
+
+/* 001423b0 0000002c */ tslPktSetDispEnv() {}
+/* 001423e0 00000010 */ tslPktConvPosX() {}
+/* 001423f0 00000010 */ tslPktConvPosY() {}
+/* 00142400 00000070 */ tslPktBuffInit() {}
+/* 00142470 0000003c */ tslPktBuffClear() {}
+/* 001424b0 0000007c */ tslPktBuffGetPtr() {}
+/* 00142530 00000018 */ tslPktBuffGetTopAddr() {}
+/* 00142548 000000d4 */ tslDrAlphaInit() {}
+/* 00142620 0000009c */ tslDrFogcolInit() {}
+/* 001426c0 000000a4 */ tslDrPabeInit() {}
+/* 00142768 000000a4 */ tslDrPrmodecontInit() {}
+/* 00142810 0000009c */ tslDrScissorInit() {}
+/* 001428b0 00000108 */ tslDrTestInit() {}
+/* 001429b8 0000009c */ tslDrTex0Init() {}
+/* 00142a58 000000ac */ tslDrTex1Init() {}
+/* 00142b08 0000009c */ tslDrTexaInit() {}
+/* 00142ba8 0000009c */ tslDrTexflushInit() {}
+/* 00142c48 00000128 */ tslPolyF3Init() {}
+/* 00142d70 00000144 */ tslPolyF4Init() {}
+/* 00142eb8 00000128 */ tslPolyG3Init() {}
+/* 00142fe0 00000140 */ tslPolyG4Init() {}
+/* 00143120 0000019c */ tslPolyFT3STInit() {}
+/* 001432c0 000001f4 */ tslPolyFT4STInit() {}
+/* 001434b8 00000170 */ tslPolyGT3STInit() {}
+/* 00143628 00000198 */ tslPolyGT4STInit() {}
+/* 001437c0 00000190 */ tslPolyGT4UVInit() {}
+/* 00143950 0000015c */ tslSpriteSTInit() {}
+/* 00143ab0 00000170 */ tslSpriteUVInit() {}
+/* 00143c20 00000110 */ tslLineG2Init() {}
+/* 00143d30 00000140 */ tslLineG4Init() {}
+/* 00143e70 00000158 */ tslLineG5Init() {}
+
+// *****************************************************************************
+// FILE -- src/sato/tsl_tm2.c
+// *****************************************************************************
+
+/* 00143fc8 00000094 */ tslTm2GetHeda() {}
+/* 00144060 000003f4 */ tslTm2LoadImage() {}
+/* 00144458 00000024 */ tslTmlGetHeda() {}
+/* 00144480 000000bc */ tslTmlLoadImage() {}
+
+// *****************************************************************************
+// FILE -- src/sato/tsl_disp.c
+// *****************************************************************************
+
+/* 00144540 00000074 */ tslDispInit() {}
+/* 001445b8 000000b8 */ tslDispClearFrameBuff() {}
+/* 00144670 00000010 */ tslDispSwapBuff() {}
+/* 00144680 0000009c */ tslDispDraw() {}
+/* 00144720 00000010 */ tslDispSetOffsetXY() {}
+/* 00144730 00000008 */ tslDispGetActiveBuff() {}
+/* 00144738 00000008 */ tslDispGetActiveLine() {}
+/* 00144740 00000074 */ tslDispSetClearFlag() {}
+
+// *****************************************************************************
+// FILE -- src/sato/tsl_etc.c
+// *****************************************************************************
+
+/* 001447b8 00000354 */ tslBraSet() {}
+/* 00144b10 00000014 */ tslBraSetXYWH() {}
+/* 00144b28 00000014 */ tslBraSetUVWH() {}
+/* 00144b40 00000140 */ tslBraGet() {}
+/* 00144c80 0000000c */ tslBraSetSize() {}
+/* 00144c90 00000200 */ tslPrintScreen() {}
+
+// *****************************************************************************
+// FILE -- src/sato/tsl_vec.c
+// *****************************************************************************
+
+/* 00144e90 000001a8 */ tslSetScreenMatrix() {}
+/* 00145038 000000ac */ tslSetRotTransCameraMatrix() {}
+/* 001450e8 00000084 */ tslSetRotTransMatrix() {}
+/* 00145170 000000b0 */ tslSetRotTransScaleMatrix() {}
+/* 00145220 0000005c */ tslSetRotMatrixZXY() {}
+/* 00145280 0000001c */ tslSetTransMatrix() {}
+/* 001452a0 000000bc */ tslSetNormalLightMatrix() {}
+/* 00145360 00000068 */ tslSetLightColorMatrix() {}
+
+// *****************************************************************************
+// FILE -- src/sato/tsl_smd.c
+// *****************************************************************************
+
+/* 001453c8 0000001c */ tslSmdSendVu1Code() {}
+/* 001453e8 000001d4 */ static tslSmdAddTbp() {}
+/* 001455c0 00000074 */ tslSmdInit() {}
+/* 00145638 000001a8 */ tslSmdDrawAll() {}
+/* 001457e0 00000094 */ tslSmdInitObj() {}
+/* 00145878 00000200 */ tslSmdDrawObj() {}
+/* 00145a78 00000048 */ tslSmdEnvPacketSetCode() {}
+/* 00145ac0 00000054 */ tslSmdObjPacketSetCode() {}
+
+// *****************************************************************************
+// FILE -- src/sato/tsl_snd.c
+// *****************************************************************************
+
+/* 00145b18 00000074 */ tslSsSpu2Init() {}
+/* 00145b90 00000028 */ tslSsSpu2Exit() {}
+/* 00145bb8 00000018 */ tslSsSpu2SetSeqTbl() {}
+/* 00145bd0 000000a0 */ tslSsSpu2VabTrans() {}
+/* 00145c70 00000028 */ tslSsSpu2OpenSeq() {}
+/* 00145c98 00000010 */ tslSsSpu2CloseSeq() {}
+/* 00145ca8 00000010 */ tslSsSpu2CloseVab() {}
+/* 00145cb8 0000006c */ tslSsSpu2PlaySeq() {}
+/* 00145d28 00000028 */ tslSsSpu2PlaySeqVolCnt() {}
+/* 00145d50 00000010 */ tslSsSpu2StopSeq() {}
+/* 00145d60 000000ac */ tslSsSpu2KeyOn() {}
+/* 00145e10 000000ac */ tslSsSpu2KeyOff() {}
+/* 00145ec0 0000000c */ tslSsSpu2Int() {}
+
+// *****************************************************************************
+// FILE -- src/sato/tsl_regs.c
+// *****************************************************************************
+
+/* 00145ed0 00000010 */ tslHSyncCountInit() {}
+/* 00145ee0 0000000c */ tslHSyncCountClear() {}
+/* 00145ef0 0000000c */ tslHSyncCountGet() {}
+
+// *****************************************************************************
+// FILE -- src/sato/sa_main.c
+// *****************************************************************************
+
+/* 00145f00 00000190 */ SaMainInit() {}
+/* 00146090 00000b68 */ SaMainExec() {}
+
+// *****************************************************************************
+// FILE -- src/sato/sa_tan_m.c
+// *****************************************************************************
+
+/* 00146bf8 000001f0 */ saTanMainLoadSnd() {}
+/* 00146de8 000002d0 */ saTanMainDataCreate() {}
+/* 001470b8 000000b0 */ saTanMainDataDelete() {}
+/* 00147168 00000020 */ saTanMainStatusSet() {}
+/* 00147188 00000018 */ saTanMainStatusGet() {}
+/* 001471a0 00000024 */ saTanMainDispGnd() {}
+/* 001471c8 00000008 */ saTanMainSetGndSpeed() {}
+/* 001471d0 0000001c */ saTanMainGetTex0Reg() {}
+/* 001471f0 0000001c */ saTanMainGetStageTex0Reg() {}
+/* 00147210 0000000c */ saTanMainInfoInit() {}
+/* 00147220 000002d8 */ saTanMainInfoDraw() {}
+/* 001474f8 0000000c */ saTanMainStsInfoInit() {}
+/* 00147508 000000e8 */ saTanMainStsInfoDraw() {}
+/* 001475f0 00000024 */ saRobInit() {}
+/* 00147618 0000001c */ saMotionSet() {}
+/* 00147638 000000dc */ saMotionCtrl() {}
+/* 00147718 00000008 */ saMotionEndCheck() {}
+/* 00147720 0000005c */ saDrawCharacter() {}
+/* 00147780 00000050 */ saRobDraw() {}
+/* 001477d0 00000260 */ saMoveDebugCamera() {}
+/* 00147a30 00000100 */ saGetTargetRot() {}
+/* 00147b30 00000014 */ saPointInit() {}
+/* 00147b48 000000f8 */ saPointMove() {}
+/* 00147c40 000000d4 */ sa2DClipInit() {}
+/* 00147d18 0000002c */ sa2DClipSet() {}
+/* 00147d48 00000040 */ sa2DClipDraw() {}
+/* 00147d88 00000040 */ sa2DClipDrawDef() {}
+
+// *****************************************************************************
+// FILE -- src/sato/sa_tan0.c
+// *****************************************************************************
+
+/* 00147dc8 0000014c */ saTan0Init() {}
+/* 00147f18 000000dc */ saTan0Exec() {}
+/* 00147ff8 000003a4 */ static saTan0Main() {}
+/* 001483a0 000008a0 */ static saTan0MainJump() {}
+/* 00148c40 0000009c */ static saTan0GetPushKey() {}
+/* 00148ce0 00000064 */ static saTan0KiWareInitA() {}
+/* 00148d48 00000350 */ static saTan0KiWareMoveA() {}
+/* 00149098 00000008 */ static saTan0InitPrim() {}
+/* 001490a0 00000008 */ static saTan0InfoInit() {}
+/* 001490a8 000001d8 */ static saTan0InfoDraw() {}
+/* 00149280 00000060 */ static saTan0EndInfoMove() {}
+/* 001492e0 0000004c */ static saTan0EndInfoDraw() {}
+/* 00149330 0000000c */ static saTan0GaugeInit() {}
+/* 00149340 0000001c */ static saTan0GaugeMove() {}
+/* 00149360 00000290 */ static saTan0GaugeDraw() {}
+/* 001495f0 00000008 */ static saTan0HajimeInit() {}
+/* 001495f8 00000038 */ static saTan0HajimeMove() {}
+/* 00149630 00000140 */ static saTan0HajimeDraw() {}
+/* 00149770 00000008 */ static saTan0SyuryoInit() {}
+/* 00149778 00000028 */ static saTan0SyuryoMove() {}
+/* 001497a0 00000140 */ static saTan0SyuryoDraw() {}
+
+// *****************************************************************************
+// FILE -- src/sato/sa_tan1.c
+// *****************************************************************************
+
+/* 001498e0 000000d0 */ saTan1Init() {}
+/* 001499b0 000000ac */ saTan1Exec() {}
+/* 00149a60 000001dc */ static saTan1Main() {}
+/* 00149c40 00000674 */ static saTan1MainJump() {}
+/* 0014a2b8 00000008 */ static saTan1PrimInit() {}
+/* 0014a2c0 00000008 */ static saTan1InfoInit() {}
+/* 0014a2c8 000001d8 */ static saTan1InfoDraw() {}
+/* 0014a4a0 00000060 */ static saTan1EndInfoMove() {}
+/* 0014a500 0000004c */ static saTan1EndInfoDraw() {}
+/* 0014a550 00000054 */ static saTan1GaugeInit() {}
+/* 0014a5a8 00000024 */ static saTan1GaugeUp() {}
+/* 0014a5d0 00000024 */ static saTan1GaugeDown() {}
+/* 0014a5f8 000002d4 */ static saTan1GaugeMain() {}
+/* 0014a8d0 00000400 */ static saTan1GaugeDraw() {}
+/* 0014acd0 00000008 */ static saTan1HajimeInit() {}
+/* 0014acd8 00000038 */ static saTan1HajimeMove() {}
+/* 0014ad10 00000140 */ static saTan1HajimeDraw() {}
+/* 0014ae50 00000008 */ static saTan1SyuryoInit() {}
+/* 0014ae58 00000028 */ static saTan1SyuryoMove() {}
+/* 0014ae80 00000140 */ static saTan1SyuryoDraw() {}
+
+// *****************************************************************************
+// FILE -- src/sato/sa_tan2.c
+// *****************************************************************************
+
+/* 0014afc0 00000178 */ saTan2Init() {}
+/* 0014b138 000000d8 */ saTan2Exec() {}
+/* 0014b210 000003dc */ static saTan2Main() {}
+/* 0014b5f0 00000898 */ static saTan2MainJump() {}
+/* 0014be88 00000054 */ static saTan2HahenInit() {}
+/* 0014bee0 00000100 */ static saTan2HahenMove() {}
+/* 0014bfe0 00000030 */ static saTan2KabutoYureInit() {}
+/* 0014c010 00000100 */ static saTan2KabutoYureMove() {}
+/* 0014c110 00000064 */ static saTan2KabutoWareInit() {}
+/* 0014c178 0000035c */ static saTan2KabutoWareMove() {}
+/* 0014c4d8 00000008 */ static saTan2InitPrim() {}
+/* 0014c4e0 00000020 */ static saTan2InfoInit() {}
+/* 0014c500 000001d8 */ static saTan2DrawInfo() {}
+/* 0014c6d8 00000060 */ static saTan2EndInfoMove() {}
+/* 0014c738 0000004c */ static saTan2EndInfoDraw() {}
+/* 0014c788 00000010 */ static saTan2GaugeInit() {}
+/* 0014c798 00000028 */ static saTan2GaugeMove() {}
+/* 0014c7c0 0000022c */ static saTan2GaugeDraw() {}
+/* 0014c9f0 000001b8 */ static saTan2LinePrimInit() {}
+/* 0014cba8 00000030 */ static saTan2LineInit() {}
+/* 0014cbd8 000002d4 */ static saTan2LineMove() {}
+/* 0014ceb0 00000540 */ static saTan2LineDraw() {}
+/* 0014d3f0 00000008 */ static saTan2HajimeInit() {}
+/* 0014d3f8 00000038 */ static saTan2HajimeMove() {}
+/* 0014d430 00000140 */ static saTan2HajimeDraw() {}
+/* 0014d570 00000008 */ static saTan2SyuryoInit() {}
+/* 0014d578 00000028 */ static saTan2SyuryoMove() {}
+/* 0014d5a0 00000140 */ static saTan2SyuryoDraw() {}
+
+// *****************************************************************************
+// FILE -- src/sato/sa_tan3.c
+// *****************************************************************************
+
+/* 0014d6e0 000000b8 */ saTan3Init() {}
+/* 0014d798 000000cc */ saTan3Exec() {}
+/* 0014d868 00000288 */ static saTan3Main() {}
+/* 0014daf0 000007b0 */ static saTan3MainJump() {}
+/* 0014e2a0 0000001c */ static saTan3PrimInit() {}
+/* 0014e2c0 00000008 */ static saTan3InfoInit() {}
+/* 0014e2c8 000001d8 */ static saTan3InfoDraw() {}
+/* 0014e4a0 00000060 */ static saTan3EndInfoMove() {}
+/* 0014e500 0000004c */ static saTan3EndInfoDraw() {}
+/* 0014e550 00000058 */ static saTan3GaugeInit() {}
+/* 0014e5a8 00000024 */ static saTan3GaugeUp() {}
+/* 0014e5d0 00000024 */ static saTan3GaugeDown() {}
+/* 0014e5f8 000002e0 */ static saTan3GaugeMain() {}
+/* 0014e8d8 00000378 */ static saTan3GaugeDraw() {}
+/* 0014ec50 00000174 */ static saTan3TakiMove() {}
+/* 0014edc8 000000bc */ static saTan3SibukiInit() {}
+/* 0014ee88 000002b0 */ static saTan3SibukiMove() {}
+/* 0014f138 00000050 */ static saTan3SibukiDraw() {}
+/* 0014f188 000000bc */ static saTan3CharaSibukiInit() {}
+/* 0014f248 00000174 */ static saTan3CharaSibukiMove() {}
+/* 0014f3c0 00000050 */ static saTan3CharaSibukiDraw() {}
+/* 0014f410 00000008 */ static saTan3HajimeInit() {}
+/* 0014f418 00000038 */ static saTan3HajimeMove() {}
+/* 0014f450 00000140 */ static saTan3HajimeDraw() {}
+/* 0014f590 00000008 */ static saTan3SyuryoInit() {}
+/* 0014f598 00000028 */ static saTan3SyuryoMove() {}
+/* 0014f5c0 00000140 */ static saTan3SyuryoDraw() {}
+
+// *****************************************************************************
+// FILE -- src/sato/sa_tan4.c
+// *****************************************************************************
+
+/* 0014f700 00000140 */ saTan4Init() {}
+/* 0014f840 000000f0 */ saTan4Exec() {}
+/* 0014f930 00000298 */ static saTan4Main() {}
+/* 0014fbc8 00000434 */ static saTan4MainJump() {}
+/* 00150000 00000104 */ static saTan4PrimInit() {}
+/* 00150108 00000008 */ static saTan4InfoInit() {}
+/* 00150110 000001d8 */ static saTan4InfoDraw() {}
+/* 001502e8 00000068 */ static saTan4EndInfoMove() {}
+/* 00150350 00000064 */ static saTan4EndInfoDraw() {}
+/* 001503b8 00000108 */ static saTan4GaugeInit() {}
+/* 001504c0 000009cc */ static saTan4GaugeMain() {}
+/* 00150e90 00000008 */ static saTan4GaugeDraw() {}
+/* 00150e98 00000008 */ static saTan4HajimeInit() {}
+/* 00150ea0 00000038 */ static saTan4HajimeMove() {}
+/* 00150ed8 00000140 */ static saTan4HajimeDraw() {}
+/* 00151018 00000010 */ static saTan4HajimeGetSts() {}
+/* 00151028 00000008 */ static saTan4SyuryoInit() {}
+/* 00151030 00000028 */ static saTan4SyuryoMove() {}
+/* 00151058 00000140 */ static saTan4SyuryoDraw() {}
+/* 00151198 00000198 */ saTan4FireInit() {}
+/* 00151330 00000040 */ saTan4FireMove() {}
+/* 00151370 0000021c */ saTan4FireDisp() {}
+
+// *****************************************************************************
+// FILE -- src/sato/sa_tan5.c
+// *****************************************************************************
+
+/* 00151590 00000018 */ saTan5GetTakeCutAnimType() {}
+/* 001515a8 0000018c */ saTan5TakeCreate() {}
+/* 00151738 0000000c */ saTan5TakeDelete() {}
+/* 00151748 0000001c */ saTan5TakeLinkSmdObj() {}
+/* 00151768 0000014c */ saTan5TakeInit() {}
+/* 001518b8 00000060 */ saTan5TakeGetPos() {}
+/* 00151918 000001b8 */ saTan5TakeSetAnim() {}
+/* 00151ad0 00000010 */ saTan5TakeSetHikari() {}
+/* 00151ae0 000000d0 */ saTan5TakeAnim1() {}
+/* 00151bb0 00000268 */ saTan5TakeAnim2() {}
+/* 00151e18 00000150 */ saTan5TakeAnim3() {}
+/* 00151f68 000001f4 */ saTan5TakeAnim4() {}
+/* 00152160 000001e8 */ saTan5TakeAnim5() {}
+/* 00152348 00000150 */ saTan5TakeMove() {}
+/* 00152498 00000178 */ saTan5TakeDraw() {}
+/* 00152610 00000034 */ saTan5TakeGetCnt() {}
+/* 00152648 000000a8 */ saTan5Init() {}
+/* 001526f0 000000f4 */ saTan5Exec() {}
+/* 001527e8 00000154 */ static saTan5Main() {}
+/* 00152940 00000324 */ static saTan5MainJump() {}
+/* 00152c68 00000008 */ static saTan5PrimInit() {}
+/* 00152c70 00000008 */ static saTan5InfoInit() {}
+/* 00152c78 00000228 */ static saTan5InfoDraw() {}
+/* 00152ea0 00000060 */ static saTan5EndInfoMove() {}
+/* 00152f00 0000004c */ static saTan5EndInfoDraw() {}
+/* 00152f50 00000228 */ static saTan5TimeDraw() {}
+/* 00153178 00000008 */ static saTan5HajimeInit() {}
+/* 00153180 00000038 */ static saTan5HajimeMove() {}
+/* 001531b8 00000140 */ static saTan5HajimeDraw() {}
+/* 001532f8 00000008 */ static saTan5SyuryoInit() {}
+/* 00153300 00000028 */ static saTan5SyuryoMove() {}
+/* 00153328 00000140 */ static saTan5SyuryoDraw() {}
+
+// *****************************************************************************
+// FILE -- src/sato/sa_se.c
+// *****************************************************************************
+
+/* 00153468 000001ec */ saSeInit() {}
+/* 00153658 0000045c */ saSeLoadForIop() {}
+/* 00153ab8 000000bc */ saSeLoadSysData() {}
+/* 00153b78 00000080 */ saSeLoad() {}
+/* 00153bf8 00000078 */ saSeVabAllClose() {}
+/* 00153c70 00000080 */ saSeVabAllOpen() {}
+/* 00153cf0 0000015c */ saSeKeyOn() {}
+/* 00153e50 000000a0 */ saSeKeyOff() {}
+/* 00153ef0 0000006c */ saSeStopVabAllSeq() {}
+/* 00153f60 00000074 */ saSeCloseVabAllSeq() {}
+/* 00153fd8 00000040 */ saSePlaySeq() {}
+/* 00154018 0000003c */ saSePlaySeqVolCnt() {}
+/* 00154058 0000003c */ saSeStopSeq() {}
+/* 00154098 000000a0 */ saSeMain() {}
+
+// *****************************************************************************
+// FILE -- src/sato/sa_load.c
+// *****************************************************************************
+
+/* 00154138 00000098 */ saSetTargetFilename() {}
+/* 001541d0 00000038 */ saFileLoad() {}
+/* 00154208 00000098 */ saFileLoadHost() {}
+/* 001542a0 00000084 */ saFileLoadCD() {}
+/* 00154328 00000124 */ saLoadModule() {}
+/* 00154450 00000030 */ saGetFileSize() {}
+/* 00154480 00000128 */ saFidInit() {}
+/* 001545a8 000000f0 */ saFidLoad() {}
+/* 00154698 00000018 */ saFidGetSize() {}
+/* 001546b0 00000018 */ saFidGetAddr() {}
+/* 001546c8 000000c8 */ saFidGetLsn() {}
+
+// *****************************************************************************
+// FILE -- src/sato/sa_eft.c
+// *****************************************************************************
+
+/* 00154790 0000015c */ saEft00Init() {}
+/* 001548f0 000002a4 */ saEft00Add() {}
+/* 00154b98 000000ec */ saEft00Move() {}
+/* 00154c88 00000204 */ saEft00Disp() {}
+/* 00154e90 00000034 */ saEft00DeleteAll() {}
+/* 00154ec8 0000016c */ saEft01Init() {}
+/* 00155038 00000010 */ saEft01Start() {}
+/* 00155048 00000044 */ saEft01Move() {}
+/* 00155090 00000220 */ saEft01Disp() {}
+/* 001552b0 000001e8 */ saEft02Init() {}
+/* 00155498 000000a4 */ saEft02Start() {}
+/* 00155540 000000b8 */ saEft02Move() {}
+/* 001555f8 00000258 */ saEft02Disp() {}
+/* 00155850 000001dc */ saEft03Init() {}
+/* 00155a30 00000150 */ saEft03Start() {}
+/* 00155b80 0000008c */ saEft03Move() {}
+/* 00155c10 00000230 */ saEft03Disp() {}
+
+// *****************************************************************************
+// FILE -- src/sekikawa/se_fc.c
+// *****************************************************************************
+
+/* 00155e40 00000074 */ get_point_value() {}
+/* 00155eb8 0000012c */ calc_fc() {}
+/* 00155fe8 0000005c */ interp_hara_y() {}
+/* 00156048 000002c0 */ mk_leaf_newpos() {}
+/* 00156308 00000128 */ mk_leaf_glopos() {}
+/* 00156430 00000028 */ rob_action() {}
+/* 00156458 000001b8 */ mot_data_set() {}
+/* 00156610 000000c8 */ mk_g2l() {}
+/* 001566d8 00000234 */ mk_pos2ang() {}
+/* 00156910 00000024 */ leaf_muki_awase() {}
+/* 00156938 00000848 */ calc_teasi_loc() {}
+/* 00157180 00000864 */ calc_teasi_loc_fw() {}
+/* 001579e8 00000f78 */ calc_parts_mat_loc() {}
+/* 00158960 000002b0 */ calc_parts_mat() {}
+/* 00158c10 00000080 */ katana_saya_cont() {}
+/* 00158c90 00000120 */ calc_fc_frame() {}
+/* 00158db0 000003f8 */ calc_katana_mat_frame() {}
+/* 001591a8 000010c8 */ calc_loc_mat_fw() {}
+/* 0015a270 00000110 */ interp_loc_mat() {}
+/* 0015a380 0000016c */ print_mat() {}
+/* 0015a4f0 0000008c */ rob_init() {}
+/* 0015a580 00000160 */ rob_cont() {}
+/* 0015a6e0 0000004c */ md_mtest_init() {}
+/* 0015a730 00000044 */ md_mtest_exec() {}
+
+// *****************************************************************************
+// FILE -- src/sekikawa/se_qt.c
+// *****************************************************************************
+
+/* 0015a778 00000160 */ mk_mat_from_quaternion() {}
+/* 0015a8d8 000002d4 */ mk_quaternion_from_mat() {}
+/* 0015abb0 00000224 */ quaternion_slerp() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_glb.c
+// *****************************************************************************
+
+/* 0015add8 00000200 */ md_menu_exec() {}
+/* 0015afd8 00000038 */ StartupMenuInit() {}
+/* 0015b010 00000034 */ pow_DWORD() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_title.c
+// *****************************************************************************
+
+/* 0015b048 00000038 */ GotoTopTitleMenu() {}
+/* 0015b080 000000b0 */ ReturnTitleFromMenu() {}
+/* 0015b130 00000080 */ TitleMenuInit() {}
+/* 0015b1b0 0000011c */ TitleMenuExec() {}
+/* 0015b2d0 0000004c */ static _PushStartSection() {}
+/* 0015b320 000001e4 */ static _SelectContentsSection() {}
+/* 0015b508 000000e0 */ static _SelectSingleModeSection() {}
+/* 0015b5e8 000000c0 */ static _GotoGameSection() {}
+/* 0015b6a8 000001b4 */ static _MemoryCardSection() {}
+/* 0015b860 00000054 */ static _CheckMCStatus() {}
+/* 0015b8b8 00000178 */ static _DrawTitlePrim() {}
+/* 0015ba30 00000228 */ static _AcceptContensAction() {}
+/* 0015bc58 000000f0 */ InitTitleContensData() {}
+/* 0015bd48 000001d4 */ static _SetContensAnimetion() {}
+/* 0015bf20 000000e8 */ static _DoContentsAnimetion() {}
+/* 0015c008 00000090 */ static _CountMovieTimer() {}
+/* 0015c098 00000040 */ static _DispPushStart() {}
+/* 0015c0d8 000002d0 */ static _DispSelectMode() {}
+/* 0015c3a8 000001b4 */ static _SetContentsRGB() {}
+/* 0015c560 00000100 */ static _DispSingleSelect() {}
+/* 0015c660 00000154 */ DrawTitleBG() {}
+/* 0015c7b8 00000024 */ SetSoundMode() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_logo.c
+// *****************************************************************************
+
+/* 0015c7e0 00000034 */ md_menu_logo_init() {}
+/* 0015c818 00000110 */ md_menu_logo_exec() {}
+/* 0015c928 0000020c */ static _DispLogo() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_mc.c
+// *****************************************************************************
+
+/* 0015cb38 000002c4 */ CopyUserWorkData() {}
+/* 0015ce00 000005d4 */ DispMemoryCardMessage() {}
+/* 0015d3d8 00000008 */ static _FreeMemCardBuffer() {}
+/* 0015d3e0 0000007c */ md_boot_card_init() {}
+/* 0015d460 000000e4 */ md_boot_card_exec() {}
+/* 0015d548 000001f8 */ static _SelectStartGame() {}
+/* 0015d740 000000c0 */ static _BootMemoryAccessSection() {}
+/* 0015d800 000001c4 */ static _DispSelectStartMessage() {}
+/* 0015d9c8 00000064 */ suGameMemoryCardInit() {}
+/* 0015da30 00000410 */ suGameMemoryCardExec() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_tex.c
+// *****************************************************************************
+
+/* 0015de40 00000028 */ su2DLibInit() {}
+/* 0015de68 000000bc */ suLoadCommon2DFile() {}
+/* 0015df28 000000c0 */ suLoad2DFile() {}
+/* 0015dfe8 000000c0 */ suLoad2DFileName() {}
+/* 0015e0a8 00000108 */ suSendTexToFrameBuffer() {}
+/* 0015e1b0 0000003c */ suFree2DFile() {}
+/* 0015e1f0 00000048 */ suClear2DLib() {}
+/* 0015e238 0000006c */ suDraw2DLib() {}
+/* 0015e2a8 0000002c */ suGetPacket2DLib() {}
+/* 0015e2d8 00000034 */ suGetTexReg2DLib() {}
+/* 0015e310 0000003c */ suGet2DDataValuePtr() {}
+/* 0015e350 0000067c */ suSetPrim() {}
+/* 0015e9d0 00000738 */ suSetPrimXY() {}
+/* 0015f108 0000073c */ suSetPrimRGB() {}
+/* 0015f848 000007dc */ suSetPrimRGBXY() {}
+/* 00160028 000007c4 */ suSetPrimXYWH() {}
+/* 001607f0 0000018c */ SetMenuPrimTex_SPST() {}
+/* 00160980 00000190 */ SetMenuPrimTex_SPUV() {}
+/* 00160b10 00000194 */ SetMenuPrimTex_SPUV_RV() {}
+/* 00160ca8 0000018c */ SetMenuPrimTex_GT4UV() {}
+/* 00160e38 00000124 */ SetMenuPrimTex_F4() {}
+/* 00160f60 000000e4 */ SetMenuPrimTex_G4() {}
+/* 00161048 00000104 */ SetMenuPrimTex_LINE() {}
+/* 00161150 00000064 */ SetMenuPrimScissor() {}
+/* 001611b8 0000003c */ SetMenuPrimScissorDefault() {}
+/* 001611f8 0000000c */ AllocateTitleMenuTex() {}
+/* 00161208 0000000c */ AllocateIntroMenuTex() {}
+/* 00161218 0000000c */ AllocateVSMenuTex() {}
+/* 00161228 0000000c */ AllocateSingleMenuTex() {}
+/* 00161238 00000038 */ AllocateHomeMenuTex() {}
+/* 00161270 0000000c */ AllocateTutorialMenuTex() {}
+/* 00161280 0000000c */ AllocateEndingMenuTex() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_opt.c
+// *****************************************************************************
+
+/* 00161290 00000048 */ md_menu_option_init() {}
+/* 001612d8 00000038 */ md_menu_option_exec() {}
+/* 00161310 000002ec */ static _OptionCommand1() {}
+/* 00161600 00000050 */ static _SaveOptionData() {}
+/* 00161650 00000058 */ static _LoadOptionData() {}
+/* 001616a8 000003d0 */ static _OptionDisp() {}
+/* 00161a78 000001c4 */ static _OptionCommand2() {}
+/* 00161c40 00000130 */ static _OptionDisp2() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_vs.c
+// *****************************************************************************
+
+/* 00161d70 0000002c */ ReturnVSMode() {}
+/* 00161da0 0000002c */ ReturnTNMode() {}
+/* 00161dd0 000000b0 */ static _GetEnableChar() {}
+/* 00161e80 0000013c */ static _HideCharAppearCommand() {}
+/* 00161fc0 00000074 */ static _GetHideCharId() {}
+/* 00162038 0000006c */ InitVSData() {}
+/* 001620a8 0000003c */ md_vs_init() {}
+/* 001620e8 000000cc */ md_vs_exec() {}
+/* 001621b8 0000006c */ InitTNData() {}
+/* 00162228 0000003c */ md_tarnament_init() {}
+/* 00162268 000000dc */ md_tarnament_exec() {}
+/* 00162348 000006e8 */ static _CharSelectSection() {}
+/* 00162a30 000003a0 */ static _TypeSelectSection() {}
+/* 00162dd0 00000160 */ static _CheckMCStatus() {}
+/* 00162f30 00000208 */ static _McAccessCommand() {}
+/* 00163138 000000dc */ static _McAccessSection() {}
+/* 00163218 00000154 */ static _DispBG() {}
+/* 00163370 00000254 */ static _DispSamnailWindow() {}
+/* 001635c8 00000358 */ static _DispCharacterListWindow() {}
+/* 00163920 00000404 */ static _DispSelectFrame() {}
+/* 00163d28 000001f4 */ static _DispGradetionPanel() {}
+/* 00163f20 00000138 */ static _DispCharacterName() {}
+/* 00164058 000001b0 */ static _DispMoveType() {}
+/* 00164208 0000018c */ static _DispSelectCharTex() {}
+/* 00164398 000001e4 */ static _DispPlayerFace() {}
+/* 00164580 00000288 */ static _DispTarnamentRecord() {}
+/* 00164808 0000002c */ static _DispRecordName() {}
+/* 00164838 000000a0 */ static _DispNumber2() {}
+/* 001648d8 000000a8 */ static _DispRecordTime() {}
+/* 00164980 000001cc */ static _DispWinCount() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_stage.c
+// *****************************************************************************
+
+/* 00164b50 0000006c */ ReturnVTMenu() {}
+/* 00164bc0 000000c8 */ md_stage_sel_init() {}
+/* 00164c88 000000bc */ md_stage_sel_exec() {}
+/* 00164d48 00000214 */ static _SelectSection() {}
+/* 00164f60 000001d0 */ static _DispStageName() {}
+/* 00165130 000007b4 */ static _DispStagePICT() {}
+/* 001658e8 0000004c */ static _DispTexData() {}
+/* 00165938 00000154 */ static _DispBG() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_intro.c
+// *****************************************************************************
+
+/* 00165a90 00000068 */ md_intro_init() {}
+/* 00165af8 00000124 */ md_intro_exec() {}
+/* 00165c20 000004d0 */ static _DispBG() {}
+/* 001660f0 000000fc */ static _DispMessage() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_single.c
+// *****************************************************************************
+
+/* 001661f0 0000016c */ md_single_init() {}
+/* 00166360 00000198 */ md_single_exec() {}
+/* 001664f8 0000002c */ static _SetRobotShadowMode() {}
+/* 00166528 000001e4 */ static _SelectCharacterSection() {}
+/* 00166710 00000380 */ static _SetRobotData() {}
+/* 00166a90 00000054 */ static _ScrollAction() {}
+/* 00166ae8 00000034 */ static _SetScrool() {}
+/* 00166b20 00000128 */ static _SelectSchoolSecton() {}
+/* 00166c48 00000054 */ static _DispTexData() {}
+/* 00166ca0 0000024c */ static _DispCharSelTex() {}
+/* 00166ef0 000000a8 */ static _DispSchoolMessage() {}
+/* 00166f98 000000dc */ static _DispSchoolCursor() {}
+/* 00167078 000002f0 */ static _DispSchoolBG() {}
+/* 00167368 0000004c */ static _DispSchoolTex() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_home.c
+// *****************************************************************************
+
+/* 001673b8 000000a0 */ static _GetBattleSwichData() {}
+/* 00167458 00000044 */ GotoHomeMenu() {}
+/* 001674a0 000002bc */ InitHomeData() {}
+/* 00167760 00000084 */ static _SetSwordInfo() {}
+/* 001677e8 00000038 */ md_home_init() {}
+/* 00167820 00000024 */ static _EndHomeMenu() {}
+/* 00167848 000001f0 */ md_home_exec() {}
+/* 00167a38 000001a4 */ static _UpdateParamSection() {}
+/* 00167be0 000002cc */ static _TopMenuSection() {}
+/* 00167eb0 000001a8 */ static _StatusInfoSection() {}
+/* 00168058 0000015c */ static _MemorycardSection() {}
+/* 001681b8 0000023c */ static _BattleSection() {}
+/* 001683f8 00000174 */ static _TrainingSection() {}
+/* 00168570 000001a8 */ static _SleepSection() {}
+/* 00168718 000000f4 */ static _FormSection() {}
+/* 00168810 0000016c */ static _FormSelectSection() {}
+/* 00168980 000001b4 */ static _SwordSection() {}
+/* 00168b38 0000018c */ static _SetUpdateMoveData() {}
+/* 00168cc8 0000038c */ static _CheckUpdateParam() {}
+/* 00169058 000001b0 */ static _UpdateParamAction() {}
+/* 00169208 00000048 */ static _CharrangerSEOn() {}
+/* 00169250 00000020 */ static _ScroolAction() {}
+/* 00169270 0000021c */ static _DispBG() {}
+/* 00169490 000002ec */ static _DispDay() {}
+/* 00169780 000002c0 */ static _DispTopMenu() {}
+/* 00169a40 000002ac */ static _DispStatusInfoMenuTex() {}
+/* 00169cf0 000002a8 */ static _DispFormMenuTex() {}
+/* 00169f98 000005e0 */ static _DispFormSelectMenuTex() {}
+/* 0016a578 00000348 */ static _DispSwordMenuTex() {}
+/* 0016a8c0 00000248 */ static _DispSleepMenuTex() {}
+/* 0016ab08 00000884 */ static _DispBattleMenu() {}
+/* 0016b390 00000354 */ static _DispCharStatus() {}
+/* 0016b6e8 000002d4 */ static _DispTrainingMenu() {}
+/* 0016b9c0 00000068 */ static _DispSkillPercent() {}
+/* 0016ba28 000000e0 */ static _DispSword() {}
+/* 0016bb08 00000260 */ static _DispNumber() {}
+/* 0016bd68 00000024 */ static _DispMessage() {}
+/* 0016bd90 0000020c */ static _DispHomeTex() {}
+/* 0016bfa0 00000130 */ static _DispCharnanger() {}
+/* 0016c0d0 000001a4 */ static _DispTarnamentOpen() {}
+/* 0016c278 00000260 */ static _DispAsummMaster() {}
+/* 0016c4d8 00000338 */ static _DispUpdateStatusMessage() {}
+/* 0016c810 00000238 */ static _DispUpdateSwordMessage() {}
+/* 0016ca48 000001c4 */ static _DispUpdateMovesMessage() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_tuto.c
+// *****************************************************************************
+
+/* 0016cc10 00000114 */ md_tutorial_init() {}
+/* 0016cd28 000000a0 */ md_tutorial_exec() {}
+/* 0016cdc8 000000dc */ static _TopMenuSection() {}
+/* 0016cea8 00000200 */ static _PracticeSection() {}
+/* 0016d0a8 0000014c */ static _TestSection() {}
+/* 0016d1f8 00000020 */ static _ScroolAction() {}
+/* 0016d218 000000e4 */ static _DispTexData() {}
+/* 0016d300 000001e4 */ static _DispTopMenu() {}
+/* 0016d4e8 0000039c */ static _DispPracticeMenuTex() {}
+/* 0016d888 00000308 */ static _DispTestMenuTex() {}
+/* 0016db90 0000017c */ static _DispBG() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_edit.c
+// *****************************************************************************
+
+/* 0016dd10 000001d0 */ md_edit_init() {}
+/* 0016dee0 0000013c */ md_edit_exec() {}
+/* 0016e020 0000019c */ static _ContentsSelectSection() {}
+/* 0016e1c0 00000068 */ static _CheckQuitSection() {}
+/* 0016e228 00000140 */ static _ErrorQuitSection() {}
+/* 0016e368 00000324 */ static _EditMoveSection() {}
+/* 0016e690 0000036c */ static _Select2WindowSection() {}
+/* 0016ea00 000002fc */ static _Select1WindowSection() {}
+/* 0016ed00 00000114 */ static _PlayTestSection() {}
+/* 0016ee18 00000090 */ static _SelectYesNoAction() {}
+/* 0016eea8 00000270 */ static _SelectFormAction() {}
+/* 0016f118 0000005c */ static _ScroolAction() {}
+/* 0016f178 00000070 */ static _CheckAllDeleteMoves() {}
+/* 0016f1e8 000000dc */ static _CheckEnableCntMoves() {}
+/* 0016f2c8 00000168 */ static _GetDispMovesNum() {}
+/* 0016f430 000001a0 */ static _SetCurrentCursor() {}
+/* 0016f5d0 00000018 */ static _ChangeAttackMotion() {}
+/* 0016f5e8 00000128 */ static _DispTexData() {}
+/* 0016f710 00000050 */ static _DispEditType1() {}
+/* 0016f760 00000024 */ static _DispEditType2() {}
+/* 0016f788 00000024 */ static _DispEditType3() {}
+/* 0016f7b0 000001bc */ static _DispSelectContentsMenu() {}
+/* 0016f970 00000268 */ static _DispSelectForm() {}
+/* 0016fbd8 000005d0 */ static _DispPresetWindow() {}
+/* 001701a8 00000374 */ static _DispPresetWindow2() {}
+/* 00170520 00000398 */ static _DispMovesListWindow() {}
+/* 001708b8 00000268 */ static _DispAskMessage() {}
+/* 00170b20 00000304 */ static _DispBG() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_rob.c
+// *****************************************************************************
+
+/* 00170e28 00000014 */ InitMenuRobot() {}
+/* 00170e40 0000029c */ MenuStartRobot() {}
+/* 001710e0 00000084 */ MenuEndRobot() {}
+/* 00171168 00000048 */ MenuRobCloseMotion() {}
+/* 001711b0 00000144 */ MenuControlRobot() {}
+/* 001712f8 00000090 */ SetMenuRobotMotion() {}
+/* 00171388 00000064 */ CheckMenuRobotMotionEnd() {}
+/* 001713f0 00000018 */ SetMotionLoopMode() {}
+/* 00171408 000000a4 */ static _CalcCameraRotate() {}
+/* 001714b0 00000130 */ static _SetCamera() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_menu_ending.c
+// *****************************************************************************
+
+/* 001715e0 00000028 */ GotoTopEndingMenu() {}
+/* 00171608 00000048 */ md_menu_ending_init() {}
+/* 00171650 000000e8 */ md_menu_ending_exec() {}
+/* 00171738 00000344 */ static _DispStuff() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_mctest.c
+// *****************************************************************************
+
+/* 00171a80 00000120 */ DispStateMessage() {}
+/* 00171ba0 00000068 */ md_mc_init() {}
+/* 00171c08 00000008 */ md_mc_end() {}
+/* 00171c10 00000314 */ md_mc_exec() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_movie_main.c
+// *****************************************************************************
+
+/* 00171f28 000000fc */ ClearScreen() {}
+/* 00172028 000000cc */ title_mv_init() {}
+/* 001720f8 000000a4 */ title_mv_end() {}
+/* 001721a0 00000120 */ title_mv_exec() {}
+/* 001722c0 0000025c */ static _ReadMpeg() {}
+/* 00172520 00000208 */ static _InitAll() {}
+/* 00172728 000000a8 */ static _TermAll() {}
+/* 001727d0 00000018 */ static _DefaultCallback() {}
+/* 001727e8 00000014 */ InitADSSoundSystem() {}
+/* 00172800 0000010c */ StartADRSound() {}
+/* 00172910 00000034 */ EndADRSound() {}
+/* 00172948 0000004c */ StopADRSound() {}
+/* 00172998 0000006c */ FreeADRSoundData() {}
+/* 00172a08 00000060 */ RestartADRSound() {}
+/* 00172a68 0000000c */ IsPlayADRSound() {}
+/* 00172a78 0000000c */ IsEndADRSound() {}
+/* 00172a88 00000060 */ PauseADRSound() {}
+/* 00172ae8 0000005c */ ResumeADRSound() {}
+/* 00172b48 00000220 */ PlayADRSound() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_movie_read.c
+// *****************************************************************************
+
+/* 00172d68 00000124 */ videoCallback() {}
+/* 00172e90 000000e0 */ pcmCallback() {}
+/* 00172f70 00000134 */ CopyToArea() {}
+/* 001730a8 00000040 */ ReadBufInit() {}
+/* 001730e8 00000030 */ ReadBufBeginPut() {}
+/* 00173118 00000048 */ ReadBufEndPut() {}
+/* 00173160 00000048 */ ReadBufBeginGet() {}
+/* 001731a8 00000024 */ ReadBufEndGet() {}
+/* 001731d0 000000c8 */ strFileOpen() {}
+/* 00173298 00000028 */ strFileClose() {}
+/* 001732c0 00000028 */ strFileRead() {}
+/* 001732e8 00000084 */ ADSFileOpen() {}
+/* 00173370 00000008 */ ADSFileClose() {}
+/* 00173378 000000c4 */ ADSFileRead() {}
+/* 00173440 000000cc */ SetADSData() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_movie_decode.c
+// *****************************************************************************
+
+/* 00173510 000000f8 */ videoDecCreate() {}
+/* 00173608 00000008 */ videoDecSetDecodeMode() {}
+/* 00173610 00000008 */ videoDecSetStream() {}
+/* 00173618 00000008 */ videoDecBeginPut() {}
+/* 00173620 00000008 */ videoDecEndPut() {}
+/* 00173628 00000008 */ videoDecReset() {}
+/* 00173630 0000002c */ videoDecDelete() {}
+/* 00173660 0000000c */ videoDecAbort() {}
+/* 00173670 00000008 */ videoDecGetState() {}
+/* 00173678 0000000c */ videoDecSetState() {}
+/* 00173688 0000003c */ videoDecPutTs() {}
+/* 001736c8 0000001c */ videoDecInputCount() {}
+/* 001736e8 00000034 */ videoDecInputSpaceCount() {}
+/* 00173720 000000cc */ videoDecFlush() {}
+/* 001737f0 00000048 */ videoDecIsFlushed() {}
+/* 00173838 00000094 */ videoDecMain() {}
+/* 001738d0 00000220 */ decBs0() {}
+/* 00173af0 00000028 */ mpegError() {}
+/* 00173b18 0000002c */ mpegNodata() {}
+/* 00173b48 00000024 */ mpegStopDMA() {}
+/* 00173b70 00000024 */ mpegRestartDMA() {}
+/* 00173b98 00000044 */ mpegTS() {}
+/* 00173be0 00000088 */ audioDecCreate() {}
+/* 00173c68 000000bc */ audioDecReset() {}
+/* 00173d28 00000038 */ audioDecDelete() {}
+/* 00173d60 00000090 */ audioDecBeginPut() {}
+/* 00173df0 00000070 */ audioDecEndPut() {}
+/* 00173e60 00000014 */ audioDecIsPreset() {}
+/* 00173e78 00000094 */ audioDecStart() {}
+/* 00173f10 00000198 */ audioDecSendToIOPMono() {}
+/* 001740a8 0000018c */ audioDecSendToIOP() {}
+/* 00174238 0000008c */ static iopGetArea() {}
+/* 001742c8 000003d4 */ static sendToIOP2areaMono() {}
+/* 001746a0 0000015c */ static sendToIOP2area() {}
+/* 00174800 00000074 */ static sendToIOP() {}
+/* 00174878 00000098 */ audioDecPause() {}
+/* 00174910 00000008 */ audioDecResume() {}
+/* 00174918 0000000c */ audioSetStereo() {}
+/* 00174928 0000000c */ audioSetMono() {}
+/* 00174938 00000084 */ audioSetVolume() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_movie_buf.c
+// *****************************************************************************
+
+/* 001749c0 00000040 */ getFIFOindex() {}
+/* 00174a00 0000006c */ setD3_CHCR() {}
+/* 00174a70 0000006c */ setD4_CHCR() {}
+/* 00174ae0 00000024 */ scTag2() {}
+/* 00174b08 00000078 */ viBufCreate() {}
+/* 00174b80 00000148 */ viBufReset() {}
+/* 00174cc8 000000e8 */ viBufBeginPut() {}
+/* 00174db0 00000050 */ viBufEndPut() {}
+/* 00174e00 000001f0 */ viBufAddDMA() {}
+/* 00174ff0 00000100 */ viBufStopDMA() {}
+/* 001750f0 00000320 */ viBufRestartDMA() {}
+/* 00175410 00000058 */ viBufDelete() {}
+/* 00175468 00000040 */ viBufIsActive() {}
+/* 001754a8 0000004c */ viBufCount() {}
+/* 001754f8 00000050 */ viBufFlush() {}
+/* 00175548 0000016c */ viBufModifyPts() {}
+/* 001756b8 000000ec */ viBufPutTs() {}
+/* 001757a8 0000018c */ viBufGetTs() {}
+/* 00175938 00000048 */ voBufCreate() {}
+/* 00175980 00000008 */ voBufDelete() {}
+/* 00175988 0000000c */ voBufReset() {}
+/* 00175998 00000014 */ voBufIsFull() {}
+/* 001759b0 0000007c */ voBufIncCount() {}
+/* 00175a30 00000020 */ voBufDecCount() {}
+/* 00175a50 00000044 */ voBufGetData() {}
+/* 00175a98 0000000c */ voBufIsEmpty() {}
+/* 00175aa8 00000064 */ voBufGetTag() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_movie_disp.c
+// *****************************************************************************
+
+/* 00175b10 00000260 */ MovieDispInit() {}
+/* 00175d70 00000484 */ MovieDispSetTags() {}
+/* 001761f8 00000034 */ MovieDispSwitch() {}
+/* 00176230 000000f4 */ MovieDispClear() {}
+/* 00176328 000000bc */ setTexRect() {}
+/* 001763e8 000000b0 */ setFlatRect() {}
+/* 00176498 00000054 */ setDMAscTag() {}
+/* 001764f0 00000054 */ setGIFtag() {}
+/* 00176548 00000030 */ setGIFad() {}
+/* 00176578 00000020 */ setTEXFLUSH() {}
+/* 00176598 00000068 */ setTEX1_1() {}
+/* 00176600 000000a0 */ setTEX0_1() {}
+/* 001766a0 00000084 */ setPRIM() {}
+/* 00176728 00000030 */ setUV() {}
+/* 00176758 00000050 */ setRGBAQ() {}
+/* 001767a8 00000038 */ setXYZ2() {}
+/* 001767e0 00000044 */ setFRAME_1() {}
+/* 00176828 00000078 */ setTEST_1() {}
+/* 001768a0 00000040 */ setSCISSOR_1() {}
+/* 001768e0 0000002c */ setXYOFFSET_1() {}
+/* 00176910 00000024 */ setPRMODECONT() {}
+/* 00176938 00000078 */ setPRMODE() {}
+/* 001769b0 0000005c */ setCLAMP_1() {}
+/* 00176a10 00000030 */ setBITBLTBUF() {}
+/* 00176a40 00000030 */ setTRXPOS() {}
+/* 00176a70 0000002c */ setTRXREG() {}
+/* 00176aa0 00000024 */ setTRXDIR() {}
+/* 00176ac8 00000038 */ loadImage() {}
+/* 00176b00 0000012c */ MovieVblankHandler() {}
+/* 00176c30 00000034 */ MovieHandlerEndImage() {}
+/* 00176c68 00000038 */ MovieStartDisplay() {}
+/* 00176ca0 0000000c */ MovieEndDisplay() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_game_tex.c
+// *****************************************************************************
+
+/* 00176cb0 00000038 */ suGameTexureStart() {}
+/* 00176ce8 00000008 */ suGameTexureEnd() {}
+/* 00176cf0 000000e8 */ suGameTextureControl() {}
+/* 00176dd8 0000014c */ suDispTutoMessage() {}
+/* 00176f28 00000074 */ suInitLeagueChart() {}
+/* 00176fa0 00000374 */ suDispLeagueChart() {}
+/* 00177318 000013ac */ static _DispLeagueChartLine() {}
+/* 001786c8 000003c4 */ suDispLifeBar() {}
+/* 00178a90 000002cc */ suDispMentalBar() {}
+/* 00178d60 00000210 */ suDispWinCount() {}
+/* 00178f70 000001b0 */ suDispContinuWinCounter() {}
+/* 00179120 00000010 */ suDispGameTime() {}
+/* 00179130 000005ec */ suDispRecord() {}
+/* 00179720 00000604 */ suDispPauseWindow() {}
+/* 00179d28 0000001c */ suDispReplayRogo() {}
+/* 00179d48 0000001c */ suInitGameStartLogo() {}
+/* 00179d68 000003b0 */ static _DispNumPerson() {}
+/* 0017a118 000003a4 */ suDispGameStartLogo() {}
+/* 0017a4c0 00000014 */ suInitKillNumLogo() {}
+/* 0017a4d8 00000400 */ suDispKillNumLogo() {}
+/* 0017a8d8 00000014 */ suInitWinLogo() {}
+/* 0017a8f0 00000158 */ suDispWinLogo() {}
+/* 0017aa48 0000000c */ suInitLoseLogo() {}
+/* 0017aa58 000000d0 */ suDispLoseLogo() {}
+/* 0017ab28 0000000c */ suInitLastBattleLogo() {}
+/* 0017ab38 0000018c */ suDispLastBattleLogo() {}
+/* 0017acc8 0000000c */ suInitDrawLogo() {}
+/* 0017acd8 000000d0 */ suDispDrawLogo() {}
+/* 0017ada8 0000000c */ suInitVictoryLogo() {}
+/* 0017adb8 000000d0 */ suDispVictoryLogo() {}
+/* 0017ae88 0000000c */ suInitSuccessLogo() {}
+/* 0017ae98 000000d0 */ suDispSuccessLogo() {}
+/* 0017af68 0000000c */ suInitFailedLogo() {}
+/* 0017af78 000000d0 */ suDispFailedLogo() {}
+/* 0017b048 00000108 */ static _DispTimeNumber() {}
+/* 0017b150 000000c8 */ static _DispRankNumber() {}
+/* 0017b218 0000008c */ static _DispCharName() {}
+/* 0017b2a8 0000015c */ static _DispTime() {}
+/* 0017b408 0000025c */ static _DispWinRecord() {}
+/* 0017b668 00000270 */ suDispGauge() {}
+/* 0017b8d8 0000012c */ suDispGaugeRGB() {}
+/* 0017ba08 00000864 */ suDispMessageFrame() {}
+/* 0017c270 000000f4 */ suDispButton() {}
+/* 0017c368 000003f8 */ suDispCursor() {}
+/* 0017c760 00000250 */ suDispTitleLine() {}
+/* 0017c9b0 00000554 */ suDispEnglishStrings_MC() {}
+/* 0017cf08 000001cc */ suDispEnglishStrings_GM() {}
+/* 0017d0d8 0000009c */ suDispSetOptionClip2D() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_game_leauge.c
+// *****************************************************************************
+
+/* 0017d178 00000118 */ suLeagueSystemInit() {}
+/* 0017d290 00000080 */ suLeagueGotoNextRound() {}
+/* 0017d310 0000001c */ suLeagueGetEnemyID() {}
+/* 0017d330 00000214 */ static _GetEnemyID() {}
+/* 0017d548 0000023c */ static _CheckWinLose() {}
+/* 0017d788 00000084 */ static _SetWinLoseFlag() {}
+/* 0017d810 0000082c */ static _SetCharID() {}
+/* 0017e040 000001d0 */ static _SwapCharID() {}
+
+// *****************************************************************************
+// FILE -- src/suzuki/su_card.c
+// *****************************************************************************
+
+/* 0017e210 000000e0 */ LWCard_SystemInit() {}
+/* 0017e2f0 0000000c */ LWCard_Init() {}
+/* 0017e300 00000018 */ LWCard_ResetAccess() {}
+/* 0017e318 0000004c */ static _CardInitProcess() {}
+/* 0017e368 00000128 */ LWCard_Check() {}
+/* 0017e490 00000320 */ LWCard_LoadSave() {}
+/* 0017e7b0 00000094 */ static _CardStart() {}
+/* 0017e848 00000064 */ static _CardError() {}
+/* 0017e8b0 0000012c */ static _CardChecking() {}
+/* 0017e9e0 000001c8 */ static _CardSearchGameFile() {}
+/* 0017eba8 00000190 */ static _CardDataFileOpen() {}
+/* 0017ed38 00000124 */ static _CardFileCloseForComplete() {}
+/* 0017ee60 00000074 */ static _CardFileCloseForFaild() {}
+/* 0017eed8 00000124 */ static _CardGetCheckSumData() {}
+/* 0017f000 00000168 */ static _CardSetCheckSumData() {}
+/* 0017f168 000000ec */ static _CreateNewDirectory() {}
+/* 0017f258 00000150 */ static _CreateNewFile() {}
+/* 0017f3a8 00000030 */ static _CardAccessing() {}
+/* 0017f3d8 00000178 */ static _CardAccessSave() {}
+/* 0017f550 0000015c */ static _CardAccessLoad() {}
+/* 0017f6b0 00000138 */ static _CardAccessDelete() {}
+/* 0017f7e8 00000038 */ static _CardAlertUnformat() {}
+/* 0017f820 000000a0 */ static _CardAskMakeNewFile() {}
+/* 0017f8c0 0000004c */ static _CardAskAccessing() {}
+/* 0017f910 00000060 */ static _CardAskOverwite() {}
+/* 0017f970 00000068 */ static _CardAskFormat() {}
+/* 0017f9d8 00000090 */ static _CardFormatting() {}
+/* 0017fa68 0000002c */ static _CardFormatComplete() {}
+/* 0017fa98 0000002c */ static _CardWaitPushButton() {}
+/* 0017fac8 0000009c */ static _CardDataFileOpen_Sub() {}
+/* 0017fb68 000000a8 */ static _CardCheckSumData_Sub() {}
+/* 0017fc10 000000a8 */ static _CardAccessLoad_Sub() {}
+/* 0017fcb8 00000080 */ static _CardFileCloseForComplete_Sub() {}
+/* 0017fd38 000000ec */ static _CardSearchIconFile() {}
+/* 0017fe28 00000148 */ static _CardIconFileOpen() {}
+/* 0017ff70 00000150 */ static _CreateNewIcon() {}
+/* 001800c0 000000fc */ static _CardIconFileClose() {}
+/* 001801c0 0000014c */ static _CardWriteIconFile() {}
+/* 00180310 00000368 */ static _CardSetIconData() {}
+/* 00180678 00000074 */ static _CardSetIconImage() {}
+/* 001806f0 00000084 */ static _CardCheckPulled() {}
+/* 00180778 000000d0 */ static _PS2Card_FileOpen() {}
+/* 00180848 000000c8 */ static _PS2Card_FileClose() {}
+/* 00180910 000000ec */ static _PS2Card_SearchFile() {}
+/* 00180a00 000000d0 */ static _PS2Card_CreateFile() {}
+/* 00180ad0 000000d4 */ static _PS2Card_CreateDirectory() {}
+/* 00180ba8 000000cc */ static _PS2Card_FileDelete() {}
+/* 00180c78 000000b8 */ static _PS2Card_Format() {}
+/* 00180d30 0000019c */ static _PS2Card_GetInfo() {}
+/* 00180ed0 000000cc */ static _PS2Card_Write() {}
+/* 00180fa0 000000d8 */ static _PS2Card_Read() {}
+/* 00181078 00000048 */ static _PS2Card_Retry() {}
+/* 001810c0 0000000c */ static _PS2Card_RetryClear() {}
+/* 001810d0 0000004c */ static _PS2Card_CalcCRC() {}
+/* 00181120 00000018 */ LWCard_SetAccessData() {}
+/* 00181138 0000000c */ LWCard_GetMessage() {}
+/* 00181148 0000000c */ LWCard_GetAccessMode() {}
+/* 00181158 0000000c */ LWCard_GetResultCode() {}
+/* 00181168 0000000c */ LWCard_GetKeyWait() {}
+/* 00181178 0000000c */ LWCard_PushAnyKey() {}
+/* 00181188 00000010 */ LWCard_PushYesKey() {}
+/* 00181198 00000010 */ LWCard_PushNoKey() {}
+/* 001811a8 0000000c */ LWCard_CheckBootMode() {}
+/* 001811b8 0000000c */ LWCard_CheckSubLoadFlag() {}
+/* 001811c8 0000000c */ LWCard_DebugSetMessage() {}
+
+// *****************************************************************************
+// FILE -- ../eecdvd.c
+// *****************************************************************************
+
+/* 001811d8 0000003c */ sceCdCallback() {}
+/* 00181218 000000b4 */ static cd_callback() {}
+/* 001812d0 000000d4 */ _Cdvd_cbLoop() {}
+/* 001813a8 000000d4 */ sceCdInitEeCB() {}
+/* 00181480 00000098 */ static cd_read_intr() {}
+/* 00181518 00000088 */ static cmd_sem_init() {}
+/* 001815a0 0000005c */ static cdvd_exit() {}
+/* 00181600 000000c8 */ sceCdIntToPos() {}
+/* 001816c8 00000060 */ sceCdPosToInt() {}
+/* 00181728 00000160 */ static PowerOffCB() {}
+/* 00181888 000002ec */ sceCdSearchFile() {}
+/* 00181b78 0000017c */ static ncmd_prechk() {}
+/* 00181cf8 00000098 */ sceCdNcmdDiskReady() {}
+/* 00181d90 00000030 */ sceCdGetReadPos() {}
+/* 00181dc0 000002d8 */ sceCdReadChain() {}
+/* 00182098 000001d0 */ sceCdRead() {}
+/* 00182268 00000148 */ sceCdReadIOPm() {}
+/* 001823b0 00000270 */ sceCdGetToc() {}
+/* 00182620 000000e4 */ sceCdSeek() {}
+/* 00182708 000000c0 */ sceCdStandby() {}
+/* 001827c8 000000c4 */ sceCdStop() {}
+/* 00182890 000000c0 */ sceCdPause() {}
+/* 00182950 000000a8 */ sceCdSync() {}
+/* 001829f8 00000064 */ sceCdSyncS() {}
+/* 00182a60 0000017c */ static scmd_prechk() {}
+/* 00182be0 000002a0 */ sceCdInit() {}
+/* 00182e80 000001f4 */ sceCdDiskReady() {}
+/* 00183078 000000b4 */ sceCdBreak() {}
+/* 00183130 00000098 */ sceCdGetDiskType() {}
+/* 001831c8 000000b8 */ sceCdStatus() {}
+/* 00183280 00000098 */ sceCdGetError() {}
+/* 00183318 000000d8 */ _sceCdRI() {}
+/* 001833f0 000000e8 */ _sceCdRM() {}
+/* 001834d8 000000bc */ sceCdMmode() {}
+/* 00183598 000000f8 */ sceCdReadClock() {}
+/* 00183690 000000e4 */ sceCdTrayReq() {}
+/* 00183778 0000002c */ sceCdStInit() {}
+/* 001837a8 00000034 */ sceCdStStart() {}
+/* 001837e0 0000002c */ sceCdStSeek() {}
+/* 00183810 00000038 */ sceCdStStop() {}
+/* 00183848 00000178 */ sceCdStRead() {}
+/* 001839c0 00000050 */ sceCdStPause() {}
+/* 00183a10 00000054 */ sceCdStResume() {}
+/* 00183a68 00000048 */ sceCdStStat() {}
+/* 00183ab0 00000160 */ sceCdStream() {}
+
+// *****************************************************************************
+// FILE -- libdma.c
+// *****************************************************************************
+
+/* 00183c10 00000034 */ static memclr() {}
+/* 00183c48 00000028 */ sceDmaGetChan() {}
+/* 00183c70 000000e0 */ sceDmaReset() {}
+/* 00183d50 00000010 */ sceDmaDebug() {}
+/* 00183d60 000001d8 */ sceDmaPutEnv() {}
+/* 00183f38 00000038 */ sceDmaGetEnv() {}
+/* 00183f70 0000002c */ sceDmaPutStallAddr() {}
+/* 00183fa0 000000d8 */ sceDmaSend() {}
+/* 00184078 000000e4 */ sceDmaSendN() {}
+/* 00184160 000000e4 */ sceDmaSendI() {}
+/* 00184248 000000c4 */ sceDmaRecv() {}
+/* 00184310 000000ec */ sceDmaRecvN() {}
+/* 00184400 000000f0 */ sceDmaRecvI() {}
+/* 001844f0 0000000c */ sceDmaSendM() {}
+/* 00184500 000000c4 */ sceDmaSync() {}
+/* 001845c8 000000d0 */ sceDmaWatch() {}
+/* 00184698 00000024 */ sceDmaSyncN() {}
+/* 001846c0 0000000c */ sceDmaLastSyncTime() {}
+/* 001846d0 0000001c */ sceDmaPause() {}
+/* 001846f0 0000001c */ sceDmaRestart() {}
+/* 00184710 00000024 */ sceDmaCallback() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00184738 00000110 */ sceGsResetGraph() {}
+/* 00184848 0000000c */ sceGsGetGParam() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00184858 0000006c */ sceGsResetPath() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 001848c8 00000270 */ sceGsSetDefDispEnv() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00184b38 000000bc */ sceGsPutDispEnv() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00184bf8 000000e8 */ sceGsPutDrawEnv() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00184ce0 00000094 */ sceGsSyncV() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00184d78 0000033c */ sceGsSyncPath() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 001850b8 0000010c */ sceGsSetDefTexEnv() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 001851c8 0000005c */ sceGsSetDefAlphaEnv() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00185228 000001e4 */ sceGsSetDefLoadImage() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00185410 00000140 */ sceGsSetDefStoreImage() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00185550 0000017c */ sceGsExecLoadImage() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 001856d0 00000690 */ sceGsExecStoreImage() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00185d60 00000088 */ sceGsSetHalfOffset() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00185de8 00000088 */ sceGsSetHalfOffset2() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00185e70 000002d4 */ sceGsSetDefDBuffDc() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00186148 0000005c */ sceGsSwapDBuffDc() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 001861a8 000000c4 */ sceGszbufaddr() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00186270 000001e4 */ sceGsSetDefDrawEnv() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00186458 00000104 */ sceGsSetDefClear() {}
+
+// *****************************************************************************
+// FILE -- graphdev.c
+// *****************************************************************************
+
+/* 00186560 000001e0 */ sceGsSetDefDrawEnv2() {}
+
+// *****************************************************************************
+// FILE -- klib.s
+// *****************************************************************************
+
+/* 00186740 00000010 */ RFU000_FullReset() {}
+/* 00186750 00000010 */ ResetEE() {}
+/* 00186760 00000010 */ SetGsCrt() {}
+/* 00186770 00000010 */ RFU003() {}
+/* 00186780 00000010 */ Exit() {}
+/* 00186790 00000010 */ RFU005() {}
+/* 001867a0 00000010 */ LoadExecPS2() {}
+/* 001867b0 00000010 */ ExecPS2() {}
+/* 001867c0 00000010 */ RFU008() {}
+/* 001867d0 00000010 */ RFU009() {}
+/* 001867e0 00000010 */ AddSbusIntcHandler() {}
+/* 001867f0 00000010 */ RemoveSbusIntcHandler() {}
+/* 00186800 00000010 */ Interrupt2Iop() {}
+/* 00186810 00000010 */ SetVTLBRefillHandler() {}
+/* 00186820 00000010 */ SetVCommonHandler() {}
+/* 00186830 00000010 */ SetVInterruptHandler() {}
+/* 00186840 00000010 */ AddIntcHandler() {}
+/* 00186850 00000010 */ AddIntcHandler2() {}
+/* 00186860 00000010 */ RemoveIntcHandler() {}
+/* 00186870 00000010 */ AddDmacHandler() {}
+/* 00186880 00000010 */ AddDmacHandler2() {}
+/* 00186890 00000010 */ RemoveDmacHandler() {}
+/* 001868a0 00000010 */ _EnableIntc() {}
+/* 001868b0 00000010 */ _DisableIntc() {}
+/* 001868c0 00000010 */ _EnableDmac() {}
+/* 001868d0 00000010 */ _DisableDmac() {}
+/* 001868e0 00000010 */ _SetAlarm() {}
+/* 001868f0 00000010 */ _ReleaseAlarm() {}
+/* 00186900 00000010 */ _iEnableIntc() {}
+/* 00186910 00000010 */ _iDisableIntc() {}
+/* 00186920 00000010 */ _iEnableDmac() {}
+/* 00186930 00000010 */ _iDisableDmac() {}
+/* 00186940 00000010 */ _iSetAlarm() {}
+/* 00186950 00000010 */ _iReleaseAlarm() {}
+/* 00186960 00000010 */ CreateThread() {}
+/* 00186970 00000010 */ DeleteThread() {}
+/* 00186980 00000010 */ StartThread() {}
+/* 00186990 00000010 */ ExitThread() {}
+/* 001869a0 00000010 */ ExitDeleteThread() {}
+/* 001869b0 00000010 */ TerminateThread() {}
+/* 001869c0 00000010 */ iTerminateThread() {}
+/* 001869d0 00000010 */ DisableDispatchThread() {}
+/* 001869e0 00000010 */ EnableDispatchThread() {}
+/* 001869f0 00000010 */ ChangeThreadPriority() {}
+/* 00186a00 00000010 */ iChangeThreadPriority() {}
+/* 00186a10 00000010 */ RotateThreadReadyQueue() {}
+/* 00186a20 00000010 */ iRotateThreadReadyQueue() {}
+/* 00186a30 00000010 */ ReleaseWaitThread() {}
+/* 00186a40 00000010 */ iReleaseWaitThread() {}
+/* 00186a50 00000010 */ GetThreadId() {}
+/* 00186a60 00000010 */ ReferThreadStatus() {}
+/* 00186a70 00000010 */ iReferThreadStatus() {}
+/* 00186a80 00000010 */ SleepThread() {}
+/* 00186a90 00000010 */ WakeupThread() {}
+/* 00186aa0 00000010 */ _iWakeupThread() {}
+/* 00186ab0 00000010 */ CancelWakeupThread() {}
+/* 00186ac0 00000010 */ iCancelWakeupThread() {}
+/* 00186ad0 00000010 */ SuspendThread() {}
+/* 00186ae0 00000010 */ iSuspendThread() {}
+/* 00186af0 00000010 */ ResumeThread() {}
+/* 00186b00 00000010 */ iResumeThread() {}
+/* 00186b10 00000010 */ JoinThread() {}
+/* 00186b20 00000010 */ RFU060() {}
+/* 00186b30 00000010 */ RFU061() {}
+/* 00186b40 00000010 */ EndOfHeap() {}
+/* 00186b50 00000010 */ RFU063() {}
+/* 00186b60 00000010 */ CreateSema() {}
+/* 00186b70 00000010 */ DeleteSema() {}
+/* 00186b80 00000010 */ SignalSema() {}
+/* 00186b90 00000010 */ iSignalSema() {}
+/* 00186ba0 00000010 */ WaitSema() {}
+/* 00186bb0 00000010 */ PollSema() {}
+/* 00186bc0 00000010 */ iPollSema() {}
+/* 00186bd0 00000010 */ ReferSemaStatus() {}
+/* 00186be0 00000010 */ iReferSemaStatus() {}
+/* 00186bf0 00000010 */ RFU073() {}
+/* 00186c00 00000010 */ SetOsdConfigParam() {}
+/* 00186c10 00000010 */ GetOsdConfigParam() {}
+/* 00186c20 00000010 */ GetGsHParam() {}
+/* 00186c30 00000010 */ GetGsVParam() {}
+/* 00186c40 00000010 */ SetGsHParam() {}
+/* 00186c50 00000010 */ SetGsVParam() {}
+/* 00186c60 00000010 */ RFU080_CreateEventFlag() {}
+/* 00186c70 00000010 */ RFU081_DeleteEventFlag() {}
+/* 00186c80 00000010 */ RFU082_SetEventFlag() {}
+/* 00186c90 00000010 */ RFU083_iSetEventFlag() {}
+/* 00186ca0 00000010 */ RFU084_ClearEventFlag() {}
+/* 00186cb0 00000010 */ RFU085_iClearEventFlag() {}
+/* 00186cc0 00000010 */ RFU086_WaitEvnetFlag() {}
+/* 00186cd0 00000010 */ RFU087_PollEvnetFlag() {}
+/* 00186ce0 00000010 */ RFU088_iPollEvnetFlag() {}
+/* 00186cf0 00000010 */ RFU089_ReferEventFlagStatus() {}
+/* 00186d00 00000010 */ RFU090_iReferEventFlagStatus() {}
+/* 00186d10 00000010 */ RFU091() {}
+/* 00186d20 00000010 */ EnableIntcHandler() {}
+/* 00186d30 00000010 */ iEnableIntcHandler() {}
+/* 00186d40 00000010 */ DisableIntcHandler() {}
+/* 00186d50 00000010 */ iDisableIntcHandler() {}
+/* 00186d60 00000010 */ EnableDmacHandler() {}
+/* 00186d70 00000010 */ iEnableDmacHandler() {}
+/* 00186d80 00000010 */ DisableDmacHandler() {}
+/* 00186d90 00000010 */ iDisableDmacHandler() {}
+/* 00186da0 00000010 */ KSeg0() {}
+/* 00186db0 00000010 */ EnableCache() {}
+/* 00186dc0 00000010 */ DisableCache() {}
+/* 00186dd0 00000010 */ GetCop0() {}
+/* 00186de0 00000010 */ FlushCache() {}
+/* 00186df0 00000010 */ CpuConfig() {}
+/* 00186e00 00000010 */ iGetCop0() {}
+/* 00186e10 00000010 */ iFlushCache() {}
+/* 00186e20 00000010 */ iCpuConfig() {}
+/* 00186e30 00000010 */ sceSifStopDma() {}
+/* 00186e40 00000010 */ SetCPUTimerHandler() {}
+/* 00186e50 00000010 */ SetCPUTimer() {}
+/* 00186e60 00000010 */ ForceRead() {}
+/* 00186e70 00000010 */ ForceWrite() {}
+/* 00186e80 00000010 */ GsGetIMR() {}
+/* 00186e90 00000010 */ iGsGetIMR() {}
+/* 00186ea0 00000010 */ GsPutIMR() {}
+/* 00186eb0 00000010 */ iGsPutIMR() {}
+/* 00186ec0 00000010 */ SetPgifHandler() {}
+/* 00186ed0 00000010 */ SetVSyncFlag() {}
+/* 00186ee0 00000010 */ RFU116() {}
+/* 00186ef0 00000010 */ print() {}
+/* 00186f00 00000010 */ sceSifDmaStat() {}
+/* 00186f10 00000010 */ isceSifDmaStat() {}
+/* 00186f20 00000010 */ sceSifSetDma() {}
+/* 00186f30 00000010 */ isceSifSetDma() {}
+/* 00186f40 00000010 */ sceSifSetDChain() {}
+/* 00186f50 00000010 */ isceSifSetDChain() {}
+/* 00186f60 00000010 */ sceSifSetReg() {}
+/* 00186f70 00000010 */ sceSifGetReg() {}
+/* 00186f80 00000010 */ ExecOSD() {}
+/* 00186f90 00000010 */ Deci2Call() {}
+/* 00186fa0 00000010 */ PSMode() {}
+/* 00186fb0 00000010 */ MachineType() {}
+/* 00186fc0 00000010 */ GetMemorySize() {}
+
+// *****************************************************************************
+// FILE -- glue.c
+// *****************************************************************************
+
+/* 00186fd0 00000044 */ VSync() {}
+/* 00187018 00000060 */ VSync2() {}
+/* 00187078 0000007c */ write() {}
+/* 001870f8 00000074 */ read() {}
+/* 00187170 00000028 */ open() {}
+/* 00187198 00000008 */ close() {}
+/* 001871a0 00000008 */ ioctl() {}
+/* 001871a8 00000008 */ lseek() {}
+/* 001871b0 000000a8 */ sbrk() {}
+/* 00187258 00000008 */ isatty() {}
+/* 00187260 00000014 */ fstat() {}
+/* 00187278 00000008 */ getpid() {}
+/* 00187280 00000028 */ kill() {}
+/* 001872a8 00000028 */ stat() {}
+/* 001872d0 00000028 */ unlink() {}
+/* 001872f8 00000054 */ putnum() {}
+/* 00187350 00000014 */ get_mem_info() {}
+
+// *****************************************************************************
+// FILE -- intr.c
+// *****************************************************************************
+
+/* 00187368 00000064 */ DisableIntc() {}
+/* 001873d0 00000064 */ EnableIntc() {}
+/* 00187438 00000064 */ DisableDmac() {}
+/* 001874a0 00000064 */ EnableDmac() {}
+/* 00187508 0000006c */ SetAlarm() {}
+/* 00187578 00000064 */ ReleaseAlarm() {}
+/* 001875e0 00000020 */ iEnableIntc() {}
+/* 00187600 00000020 */ iDisableIntc() {}
+/* 00187620 00000020 */ iEnableDmac() {}
+/* 00187640 00000020 */ iDisableDmac() {}
+/* 00187660 00000020 */ iSetAlarm() {}
+/* 00187680 00000020 */ iReleaseAlarm() {}
+
+// *****************************************************************************
+// FILE -- tty.c
+// *****************************************************************************
+
+/* 001876a0 00000024 */ static QueueInit() {}
+/* 001876c8 0000003c */ static QueuePeekWriteDone() {}
+/* 00187708 0000003c */ static QueuePeekReadDone() {}
+/* 00187748 00000194 */ static sceTtyHandler() {}
+/* 001878e0 00000150 */ sceTtyWrite() {}
+/* 00187a30 000000d0 */ sceTtyRead() {}
+/* 00187b00 000000bc */ sceTtyInit() {}
+
+// *****************************************************************************
+// FILE -- kprintf.c
+// *****************************************************************************
+
+/* 00187bc0 0000003c */ static kputchar() {}
+/* 00187c00 000000b0 */ static deci2Putchar() {}
+/* 00187cb0 00000034 */ static serialPutchar() {}
+/* 00187ce8 00000094 */ ftoi() {}
+/* 00187d80 000000c8 */ itof() {}
+/* 00187e48 00000168 */ printfloat() {}
+/* 00187fb0 000005c8 */ _printf() {}
+/* 00188578 00000038 */ kprintf() {}
+/* 001885b0 00000060 */ scePrintf() {}
+
+// *****************************************************************************
+// FILE -- sifcmd.c
+// *****************************************************************************
+
+/* 00188610 0000001c */ static _set_sreg() {}
+/* 00188630 0000000c */ static _change_addr() {}
+/* 00188640 00000018 */ sceSifGetSreg() {}
+/* 00188658 0000001c */ sceSifSetSreg() {}
+/* 00188678 0000000c */ sceSifGetDataTable() {}
+/* 00188688 00000280 */ sceSifInitCmd() {}
+/* 00188908 00000028 */ sceSifExitCmd() {}
+/* 00188930 00000018 */ sceSifSetCmdBuffer() {}
+/* 00188948 00000018 */ sceSifSetSysCmdBuffer() {}
+/* 00188960 0000002c */ sceSifAddCmdHandler() {}
+/* 00188990 00000028 */ sceSifRemoveCmdHandler() {}
+/* 001889b8 00000134 */ static _sceSifSendCmd() {}
+/* 00188af0 0000003c */ sceSifSendCmd() {}
+/* 00188b30 0000003c */ isceSifSendCmd() {}
+/* 00188b70 00000120 */ static _sceSifCmdIntrHdlr() {}
+/* 00188c90 000000b0 */ sceSifWriteBackDCache() {}
+
+// *****************************************************************************
+// FILE -- sifrpc.c
+// *****************************************************************************
+
+/* 00188d40 00000198 */ sceSifInitRpc() {}
+/* 00188ed8 00000024 */ sceSifExitRpc() {}
+/* 00188f00 000000a4 */ static _sceRpcGetPacket() {}
+/* 00188fa8 0000001c */ static _sceRpcFreePacket() {}
+/* 00188fc8 00000030 */ static _sceRpcGetFPacket() {}
+/* 00188ff8 00000040 */ static _sceRpcGetFPacket2() {}
+/* 00189038 000000b4 */ static _request_end() {}
+/* 001890f0 00000060 */ static _request_rdata() {}
+/* 00189150 00000134 */ sceSifGetOtherData() {}
+/* 00189288 0000004c */ static _search_svdata() {}
+/* 001892d8 000000b0 */ static _request_bind() {}
+/* 00189388 0000011c */ sceSifBindRpc() {}
+/* 001894a8 0000008c */ static _request_call() {}
+/* 00189538 000001b4 */ sceSifCallRpc() {}
+/* 001896f0 0000003c */ sceSifCheckStatRpc() {}
+/* 00189730 00000094 */ sceSifSetRpcQueue() {}
+/* 001897c8 00000094 */ sceSifRegisterRpc() {}
+/* 00189860 0000007c */ sceSifRemoveRpc() {}
+/* 001898e0 00000084 */ sceSifRemoveRpcQueue() {}
+/* 00189968 0000004c */ sceSifGetNextRequest() {}
+/* 001899b8 000001dc */ sceSifExecRequest() {}
+/* 00189b98 00000040 */ sceSifRpcLoop() {}
+
+// *****************************************************************************
+// FILE -- filestub.c
+// *****************************************************************************
+
+/* 00189bd8 00000070 */ static new_iob() {}
+/* 00189c48 00000024 */ static get_iob() {}
+/* 00189c70 000000e8 */ sceFsInit() {}
+/* 00189d58 00000010 */ sceFsReset() {}
+/* 00189d68 00000160 */ sceOpen() {}
+/* 00189ec8 000000b8 */ sceClose() {}
+/* 00189f80 000000e0 */ sceLseek() {}
+/* 0018a060 00000090 */ static fs_read_intr() {}
+/* 0018a0f0 00000130 */ sceRead() {}
+/* 0018a220 00000184 */ sceWrite() {}
+/* 0018a3a8 00000098 */ sceIoctl() {}
+
+// *****************************************************************************
+// FILE -- iopheap.c
+// *****************************************************************************
+
+/* 0018a440 00000088 */ sceSifInitIopHeap() {}
+/* 0018a4c8 00000070 */ sceSifAllocIopHeap() {}
+/* 0018a538 00000078 */ sceSifFreeIopHeap() {}
+/* 0018a5b0 000000f0 */ sceSifLoadIopHeap() {}
+
+// *****************************************************************************
+// FILE -- eeloadfile.c
+// *****************************************************************************
+
+/* 0018a6a0 000000a0 */ static _lf_bind() {}
+/* 0018a740 00000014 */ sceSifLoadFileReset() {}
+/* 0018a758 000001ec */ static _sceSifLoadModule() {}
+/* 0018a948 0000001c */ sceSifLoadModule() {}
+/* 0018a968 000000f0 */ static _sceSifLoadElfPart() {}
+/* 0018aa58 0000001c */ sceSifLoadElfPart() {}
+/* 0018aa78 00000028 */ sceSifLoadElf() {}
+/* 0018aaa0 000000ec */ sceSifGetIopAddr() {}
+/* 0018ab90 000000dc */ sceSifSetIopAddr() {}
+
+// *****************************************************************************
+// FILE -- iopreset.c
+// *****************************************************************************
+
+/* 0018ac70 00000130 */ sceSifResetIop() {}
+/* 0018ada0 00000028 */ sceSifIsAliveIop() {}
+/* 0018adc8 00000048 */ sceSifSyncIop() {}
+/* 0018ae10 00000100 */ sceSifRebootIop() {}
+
+// *****************************************************************************
+// FILE -- thread.c
+// *****************************************************************************
+
+/* 0018af10 000000a0 */ iWakeupThread() {}
+
+// *****************************************************************************
+// FILE -- deci2.c
+// *****************************************************************************
+
+/* 0018afb0 00000044 */ sceDeci2Open() {}
+/* 0018aff8 00000024 */ sceDeci2Close() {}
+/* 0018b020 00000030 */ sceDeci2ReqSend() {}
+/* 0018b050 00000024 */ sceDeci2Poll() {}
+/* 0018b078 00000034 */ sceDeci2ExRecv() {}
+/* 0018b0b0 00000034 */ sceDeci2ExSend() {}
+/* 0018b0e8 00000030 */ sceDeci2ExReqSend() {}
+/* 0018b118 00000024 */ sceDeci2ExLock() {}
+/* 0018b140 00000024 */ sceDeci2ExUnLock() {}
+/* 0018b168 00000024 */ kputs() {}
+
+// *****************************************************************************
+// FILE -- ../libmc.c
+// *****************************************************************************
+
+/* 0018b190 00000158 */ sceMcInit() {}
+/* 0018b2e8 00000024 */ _lmcGetClientPtr() {}
+/* 0018b310 000000e4 */ sceMcOpen() {}
+/* 0018b3f8 00000034 */ sceMcMkdir() {}
+/* 0018b430 0000008c */ sceMcClose() {}
+/* 0018b4c0 00000090 */ sceMcSeek() {}
+/* 0018b550 00000090 */ static mceIntrReadFixAlign() {}
+/* 0018b5e0 000000d8 */ sceMcRead() {}
+/* 0018b6b8 00000134 */ sceMcWrite() {}
+/* 0018b7f0 000000f0 */ sceMcSync() {}
+/* 0018b8e0 00000054 */ static mceGetInfoApdx() {}
+/* 0018b938 00000144 */ sceMcGetInfo() {}
+/* 0018ba80 000000e8 */ sceMcGetDir() {}
+/* 0018bb68 00000088 */ static mceStorePwd() {}
+/* 0018bbf0 000000e8 */ sceMcChdir() {}
+/* 0018bcd8 00000090 */ sceMcFormat() {}
+/* 0018bd68 000000d8 */ sceMcDelete() {}
+/* 0018be40 0000008c */ sceMcFlush() {}
+/* 0018bed0 00000154 */ sceMcSetFileInfo() {}
+/* 0018c028 000000fc */ sceMcRename() {}
+/* 0018c128 00000090 */ sceMcUnformat() {}
+/* 0018c1b8 000000b8 */ sceMcGetEntSpace() {}
+
+// *****************************************************************************
+// FILE -- pack.c
+// *****************************************************************************
+
+/* 0018c270 00000088 */ _type2id() {}
+/* 0018c2f8 000001fc */ _id2type() {}
+/* 0018c4f8 000002f0 */ sceMpegDemuxPssRing() {}
+/* 0018c7e8 00000020 */ sceMpegDemuxPss() {}
+/* 0018c808 000000f4 */ sceMpegAddStrCallback() {}
+/* 0018c900 00000150 */ _pack_header() {}
+/* 0018ca50 0000006c */ _system_header() {}
+/* 0018cac0 00000588 */ _PES_packet() {}
+
+// *****************************************************************************
+// FILE -- mpeg.c
+// *****************************************************************************
+
+/* 0018d048 00000050 */ sceMpegInit() {}
+/* 0018d098 0000023c */ sceMpegCreate() {}
+/* 0018d2d8 00000008 */ sceMpegDelete() {}
+/* 0018d2e0 00000038 */ sceMpegAddBs() {}
+/* 0018d318 00000048 */ sceMpegGetPicture() {}
+/* 0018d360 00000044 */ sceMpegGetPictureRAW8() {}
+/* 0018d3a8 00000050 */ sceMpegGetPictureRAW8xy() {}
+/* 0018d3f8 00000014 */ sceMpegSetDecodeMode() {}
+/* 0018d410 00000020 */ sceMpegGetDecodeMode() {}
+/* 0018d430 0000000c */ sceMpegIsEnd() {}
+/* 0018d440 00000010 */ sceMpegIsRefBuffEmpty() {}
+/* 0018d450 00000040 */ sceMpegReset() {}
+/* 0018d490 00000068 */ sceMpegClearRefBuff() {}
+/* 0018d4f8 00000024 */ sceMpegAddCallback() {}
+/* 0018d520 00000050 */ _dispatchMpegCallback() {}
+/* 0018d570 00000024 */ _dispatchMpegCbNodata() {}
+/* 0018d598 00000014 */ sceMpegSetDefaultPtsGap() {}
+/* 0018d5b0 00000010 */ sceMpegResetDefaultPtsGap() {}
+/* 0018d5c0 00000014 */ sceMpegSetImageBuff() {}
+/* 0018d5d8 0000000c */ sceMpegDispWidth() {}
+/* 0018d5e8 0000000c */ sceMpegDispHeight() {}
+/* 0018d5f8 0000000c */ sceMpegDispCenterOffX() {}
+/* 0018d608 0000000c */ sceMpegDispCenterOffY() {}
+/* 0018d618 00000010 */ sceSetBrokenLink() {}
+/* 0018d628 00000014 */ sceSetPtm() {}
+/* 0018d640 00000014 */ _alalcInit() {}
+/* 0018d658 0000000c */ _alalcSetDynamic() {}
+/* 0018d668 0000000c */ _alalcFree() {}
+/* 0018d678 00000068 */ _alalcAlloc() {}
+/* 0018d6e0 00000018 */ _alalcRest() {}
+/* 0018d6f8 00000170 */ static _getpic() {}
+/* 0018d868 00000124 */ static _decodeOrSkipFrame() {}
+/* 0018d990 0000003c */ static _decodeOrSkip() {}
+/* 0018d9d0 00000170 */ static _decodeOrSkipField() {}
+/* 0018db40 00000070 */ _sceMpegFlush() {}
+
+// *****************************************************************************
+// FILE -- init.c
+// *****************************************************************************
+
+/* 0018dbb0 00000010 */ _initSeqAgain() {}
+/* 0018dbc0 00000084 */ _lastFrame() {}
+/* 0018dc48 0000004c */ _clearOnce() {}
+/* 0018dc98 00000078 */ _clearEach() {}
+/* 0018dd10 00000010 */ _ErrMessage() {}
+/* 0018dd20 0000002c */ _Error1() {}
+/* 0018dd50 00000058 */ _Error() {}
+/* 0018dda8 000000d8 */ _sendDataToIPU() {}
+/* 0018de80 00000020 */ static _RefImageInit() {}
+/* 0018dea0 00000154 */ _sequenceHeader() {}
+/* 0018dff8 00000344 */ _initSeq() {}
+/* 0018e340 000000e8 */ static _initRefImages() {}
+/* 0018e428 000000c8 */ static _setDefaultQM() {}
+/* 0018e4f0 00000164 */ _sequenceExtension() {}
+/* 0018e658 000000a0 */ _sequenceDisplayExtension() {}
+/* 0018e6f8 0000000c */ _sequenceScalableExtension() {}
+/* 0018e708 0000000c */ _unknown_extension() {}
+/* 0018e718 0000000c */ _pictureSpatialScalableExtension() {}
+/* 0018e728 0000000c */ _pictureTemporalScalableExtension() {}
+
+// *****************************************************************************
+// FILE -- defhandler.c
+// *****************************************************************************
+
+/* 0018e738 0000000c */ _defStopDMA() {}
+/* 0018e748 0000000c */ _defRestartDMA() {}
+
+// *****************************************************************************
+// FILE -- mpc.c
+// *****************************************************************************
+
+/* 0018e760 00000334 */ static _motionComp0() {}
+/* 0018ea98 000006b0 */ _getAllRefs() {}
+/* 0018f148 00000420 */ _getRef0() {}
+/* 0018f568 0000018c */ static _doMC() {}
+/* 0018f6f8 00000074 */ _rix_000() {}
+/* 0018f770 00000094 */ _ri0_000() {}
+/* 0018f808 000000b4 */ _rix_001() {}
+/* 0018f8c0 000000cc */ _ri0_001() {}
+/* 0018f990 000000ac */ _rix_010() {}
+/* 0018fa40 000000b8 */ _ri0_010() {}
+/* 0018faf8 000000f8 */ _rix_011() {}
+/* 0018fbf0 000000fc */ _ri0_011() {}
+/* 0018fcf0 000000a4 */ _rix_100() {}
+/* 0018fd98 000000ac */ _ri0_100() {}
+/* 0018fe48 000000e4 */ _rix_101() {}
+/* 0018ff30 000000e4 */ _ri0_101() {}
+/* 00190018 000000dc */ _rix_110() {}
+/* 001900f8 000000d0 */ _ri0_110() {}
+/* 001901c8 00000128 */ _rix_111() {}
+/* 001902f0 00000114 */ _ri0_111() {}
+/* 00190408 0000005c */ _copyAddRefImage() {}
+/* 00190468 00000060 */ _copyRefImage() {}
+/* 001904c8 0000002c */ _ipuSetMPEG1() {}
+/* 001904f8 000001a4 */ _waitBdecOut() {}
+/* 001906a0 0000001c */ _dmVector() {}
+/* 001906c0 00000188 */ _dualPrimeVector() {}
+/* 00190848 00000110 */ _mbAddressIncrement() {}
+/* 00190958 00000124 */ _pictureData0() {}
+/* 00190a80 00000124 */ static _sliceA0() {}
+/* 00190ba8 00000200 */ static _slice0() {}
+/* 00190da8 000000cc */ static _skipMB0() {}
+/* 00190e78 00000528 */ static _decMB0() {}
+/* 001913a0 00000088 */ decode_motion_vector() {}
+/* 00191428 0000017c */ _motionVectors() {}
+/* 001915a8 0000013c */ _motionVector() {}
+/* 001916e8 00000030 */ _sendIpuCommand() {}
+/* 00191718 000000a4 */ _waitIpuIdle() {}
+/* 001917c0 000000b0 */ _waitIpuIdle64() {}
+/* 00191870 000001b4 */ _ipuVdec() {}
+/* 00191a28 00000134 */ _peepBit() {}
+/* 00191b60 00000114 */ _flushBuf() {}
+/* 00191c78 00000168 */ _nextBit() {}
+/* 00191de0 00000068 */ _nextStartCode() {}
+/* 00191e48 0000006c */ _sliceB() {}
+/* 00191eb8 00000124 */ _nextHeader() {}
+/* 00191fe0 000000cc */ _pictureHeader() {}
+/* 001920b0 000000b0 */ _extensionAndUserData() {}
+/* 00192160 00000230 */ _pictureCodingExtension() {}
+/* 00192390 00000034 */ _extrainfo() {}
+/* 001923c8 000000e0 */ static _updateTempTackData() {}
+/* 001924a8 000000e4 */ _groupOfPicturesHeader() {}
+/* 00192590 000000ac */ _quantMatrixExtension() {}
+/* 00192640 000000f0 */ _pictureDisplayExtension() {}
+/* 00192730 000000ac */ _copyrightExtension() {}
+/* 001927e0 000000e0 */ _decPicture() {}
+/* 001928c0 000000b8 */ _outputFrame() {}
+/* 00192978 000003dc */ _updateRefImage() {}
+/* 00192d58 0000009c */ static _isOutSizeOK() {}
+/* 00192df8 000001ec */ _cpr8() {}
+/* 00192fe8 00000038 */ static _markOutput() {}
+/* 00193020 00000194 */ static _getPtsDtsFlags() {}
+/* 001931b8 00000118 */ _dispRefImage() {}
+/* 001932d0 000001c0 */ _dispRefImageField() {}
+
+// *****************************************************************************
+// FILE -- csc.c
+// *****************************************************************************
+
+/* 00193490 000000e8 */ static _doCSC() {}
+/* 00193578 000000b8 */ static _ch3dmaCSC() {}
+/* 00193630 000001b8 */ static _doCSC2() {}
+/* 001937e8 00000154 */ _csc_storeRefImage() {}
+
+// *****************************************************************************
+// FILE -- bit.c
+// *****************************************************************************
+
+/* 00193940 00000034 */ _sysbitInit() {}
+/* 00193978 00000020 */ _sysbitNext() {}
+/* 00193998 00000098 */ static _sysbitFlush() {}
+/* 00193a30 0000004c */ _sysbitGet() {}
+/* 00193a80 00000044 */ _sysbitMarker() {}
+/* 00193ac8 00000054 */ _sysbitJump() {}
+/* 00193b20 0000002c */ _sysbitPtr() {}
+
+// *****************************************************************************
+// FILE -- libpad.c
+// *****************************************************************************
+
+/* 00193b50 00000084 */ static _send_to_iop() {}
+/* 00193bd8 00000110 */ scePadInit() {}
+/* 00193ce8 00000098 */ static scePadInit2() {}
+/* 00193d80 00000080 */ scePadEnd() {}
+/* 00193e00 00000154 */ scePadPortOpen() {}
+/* 00193f58 00000074 */ scePadPortClose() {}
+/* 00193fd0 00000060 */ static scePadGetDmaStr() {}
+/* 00194030 00000020 */ scePadGetFrameCount() {}
+/* 00194050 0000008c */ scePadRead() {}
+/* 001940e0 000000b8 */ scePadGetState() {}
+/* 00194198 00000034 */ scePadStateIntToStr() {}
+/* 001941d0 00000074 */ static scePadSetReqState() {}
+/* 00194248 00000064 */ scePadGetReqState() {}
+/* 001942b0 00000034 */ scePadReqIntToStr() {}
+/* 001942e8 000000f0 */ scePadInfoAct() {}
+/* 001943d8 000000e4 */ scePadInfoComb() {}
+/* 001944c0 00000108 */ scePadInfoMode() {}
+/* 001945c8 000000b0 */ scePadSetMainMode() {}
+/* 00194678 00000094 */ scePadSetActDirect() {}
+/* 00194710 000000d0 */ scePadSetActAlign() {}
+/* 001947e0 0000006c */ static scePadGetButtonMask() {}
+/* 00194850 000000ac */ static scePadSetButtonInfo() {}
+/* 00194900 0000002c */ scePadInfoPressMode() {}
+/* 00194930 0000001c */ scePadEnterPressMode() {}
+/* 00194950 0000001c */ scePadExitPressMode() {}
+/* 00194970 000000c8 */ static scePadSetVrefParam() {}
+/* 00194a38 00000064 */ static scePadGetPortMax() {}
+/* 00194aa0 00000068 */ scePadGetSlotMax() {}
+/* 00194b08 0000006c */ scePadGetConnection() {}
+/* 00194b78 00000064 */ static scePadGetModVersion() {}
+
+// *****************************************************************************
+// FILE -- libvu0.c
+// *****************************************************************************
+
+/* 00194be0 0000002c */ sceVu0ApplyMatrix() {}
+/* 00194c10 00000048 */ sceVu0MulMatrix() {}
+/* 00194c58 0000001c */ sceVu0OuterProduct() {}
+/* 00194c78 00000024 */ sceVu0InnerProduct() {}
+/* 00194ca0 00000034 */ sceVu0Normalize() {}
+/* 00194cd8 00000048 */ sceVu0TransposeMatrix() {}
+/* 00194d20 0000006c */ sceVu0InversMatrix() {}
+/* 00194d90 00000020 */ sceVu0DivVector() {}
+/* 00194db0 00000020 */ sceVu0DivVectorXYZ() {}
+/* 00194dd0 00000028 */ sceVu0InterVector() {}
+/* 00194df8 00000014 */ sceVu0AddVector() {}
+/* 00194e10 00000014 */ sceVu0SubVector() {}
+/* 00194e28 00000014 */ sceVu0MulVector() {}
+/* 00194e40 00000018 */ sceVu0ScaleVector() {}
+/* 00194e58 0000002c */ sceVu0TransMatrix() {}
+/* 00194e88 00000010 */ sceVu0CopyVector() {}
+/* 00194e98 00000028 */ sceVu0CopyMatrix() {}
+/* 00194ec0 00000010 */ sceVu0FTOI4Vector() {}
+/* 00194ed0 00000010 */ sceVu0FTOI0Vector() {}
+/* 00194ee0 00000010 */ sceVu0ITOF4Vector() {}
+/* 00194ef0 00000010 */ sceVu0ITOF0Vector() {}
+/* 00194f00 00000028 */ sceVu0UnitMatrix() {}
+/* 00194f28 00000074 */ static _sceVu0ecossin() {}
+/* 00194fa0 000000ac */ sceVu0RotMatrixZ() {}
+/* 00195050 000000b0 */ sceVu0RotMatrixX() {}
+/* 00195100 000000b0 */ sceVu0RotMatrixY() {}
+/* 001951b0 00000050 */ sceVu0RotMatrix() {}
+/* 00195200 00000024 */ sceVu0ClampVector() {}
+/* 00195228 000000b0 */ sceVu0CameraMatrix() {}
+/* 001952d8 000000c0 */ sceVu0NormalLightMatrix() {}
+/* 00195398 00000068 */ sceVu0LightColorMatrix() {}
+/* 00195400 00000104 */ sceVu0ViewScreenMatrix() {}
+/* 00195508 00000190 */ sceVu0DropShadowMatrix() {}
+/* 00195698 0000005c */ sceVu0RotTransPersN() {}
+/* 001956f8 00000044 */ sceVu0RotTransPers() {}
+/* 00195740 0000001c */ sceVu0CopyVectorXYZ() {}
+/* 00195760 0000002c */ sceVu0InterVectorXYZ() {}
+/* 00195790 00000018 */ sceVu0ScaleVectorXYZ() {}
+/* 001957a8 0000004c */ sceVu0ClipScreen() {}
+/* 001957f8 00000064 */ sceVu0ClipScreen3() {}
+/* 00195860 0000008c */ sceVu0ClipAll() {}
+/* 001958f0 00000060 */ sceVpu0Reset() {}
+
+// *****************************************************************************
+// FILE -- libipu.c
+// *****************************************************************************
+
+/* 00195950 000000cc */ sceIpuStopDMA() {}
+/* 00195a20 0000011c */ sceIpuRestartDMA() {}
+/* 00195b40 00000068 */ sceIpuSync() {}
+
+// *****************************************************************************
+// FILE -- ipuinit.c
+// *****************************************************************************
+
+/* 00195ba8 00000234 */ sceIpuInit() {}
+
+// *****************************************************************************
+// FILE -- rs_main.c
+// *****************************************************************************
+
+/* 00195de0 000000c8 */ sceSpu2RemoteInit() {}
+/* 00195ea8 0000000c */ sceSpu2RemoteCallBack() {}
+/* 00195eb8 0000027c */ sceSpu2Remote() {}
+
+// *****************************************************************************
+// FILE -- rs_cb.c
+// *****************************************************************************
+
+/* 00196138 00000080 */ sceSpu2CallbackInit() {}
+/* 001961b8 00000064 */ static _spuCBThread() {}
+/* 00196220 000000cc */ static _spuCB() {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/s_cos.c
+// *****************************************************************************
+
+/* 001962f0 00000108 */ double cos(/* a0 4 */ double x) {
+	/* 0x0(sp) */ double y[2];
+	/* a1 5 */ __int32_t ix;
+	/* v0 2 */ ieee_double_shape_type gh_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/s_sin.c
+// *****************************************************************************
+
+/* 001963f8 000000f4 */ double sin(/* a0 4 */ double x) {
+	/* 0x0(sp) */ double y[2];
+	/* a1 5 */ __int32_t ix;
+	/* v0 2 */ ieee_double_shape_type gh_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/sf_cos.c
+// *****************************************************************************
+
+/* 001964f0 000000e8 */ float cosf(/* f12 50 */ float x) {
+	/* 0x0(sp) */ float y[2];
+	/* a0 4 */ __int32_t ix;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/sf_sin.c
+// *****************************************************************************
+
+/* 001965d8 000000f0 */ float sinf(/* f12 50 */ float x) {
+	/* 0x0(sp) */ float y[2];
+	/* a0 4 */ __int32_t ix;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/w_atan2.c
+// *****************************************************************************
+
+/* 001966c8 00000118 */ double atan2(/* s0 16 */ double y, /* s1 17 */ double x) {
+	/* s3 19 */ double z;
+	/* 0x0(sp) */ exception exc;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/w_sqrt.c
+// *****************************************************************************
+
+/* 001967e0 0000010c */ double sqrt(/* s0 16 */ double x) {
+	/* 0x0(sp) */ exception exc;
+	/* s1 17 */ double z;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/e_atan2.c
+// *****************************************************************************
+
+/* 001968f0 00000334 */ double __ieee754_atan2(/* t3 11 */ double y, /* a1 5 */ double x) {
+	/* v1 3 */ double z;
+	/* v0 2 */ __int32_t k;
+	/* s0 16 */ __int32_t m;
+	/* t4 12 */ __int32_t hx;
+	/* t1 9 */ __int32_t hy;
+	/* t2 10 */ __int32_t ix;
+	/* t0 8 */ __int32_t iy;
+	/* v0 2 */ ieee_double_shape_type ew_u;
+	/* v0 2 */ ieee_double_shape_type ew_u;
+	/* v0 2 */ __uint32_t zh;
+	/* v0 2 */ ieee_double_shape_type gh_u;
+	/* v1 3 */ ieee_double_shape_type sh_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/e_rem_pio2.c
+// *****************************************************************************
+
+/* 00196c28 0000051c */ __int32_t __ieee754_rem_pio2(/* a0 4 */ double x, /* s4 20 */ double *y) {
+	/* s1 17 */ double z;
+	/* s2 18 */ double w;
+	/* s1 17 */ double t;
+	/* s3 19 */ double r;
+	/* s5 21 */ double fn;
+	/* 0x0(sp) */ double tx[3];
+	/* s0 16 */ __int32_t i;
+	/* s7 23 */ __int32_t j;
+	/* s6 22 */ __int32_t n;
+	/* s0 16 */ __int32_t ix;
+	/* fp 30 */ __int32_t hx;
+	/* s3 19 */ int e0;
+	/* s1 17 */ int nx;
+	/* v0 2 */ ieee_double_shape_type gh_u;
+	/* v1 3 */ ieee_double_shape_type gh_u;
+	/* v1 3 */ ieee_double_shape_type gh_u;
+	/* v0 2 */ ieee_double_shape_type gl_u;
+	/* 0x20(sp) */ ieee_double_shape_type sl_u;
+	/* v0 2 */ ieee_double_shape_type sh_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/e_sqrt.c
+// *****************************************************************************
+
+/* 00197148 00000304 */ double __ieee754_sqrt(/* s0 16 */ double x) {
+	/* s0 16 */ double z;
+	/* s3 19 */ __int32_t sign;
+	/* t1 9 */ __uint32_t r;
+	/* a1 5 */ __uint32_t t1;
+	/* t3 11 */ __uint32_t s1;
+	/* a3 7 */ __uint32_t ix1;
+	/* s1 17 */ __uint32_t q1;
+	/* a2 6 */ __int32_t ix0;
+	/* t2 10 */ __int32_t s0;
+	/* s2 18 */ __int32_t q;
+	/* a1 5 */ __int32_t m;
+	/* a0 4 */ __int32_t t;
+	/* a0 4 */ __int32_t i;
+	/* v0 2 */ ieee_double_shape_type ew_u;
+	/* s4 20 */ ieee_double_shape_type iw_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/ef_rem_pio2.c
+// *****************************************************************************
+
+/* 00197450 000003e0 */ __int32_t __ieee754_rem_pio2f(/* f12 50 */ float x, /* s1 17 */ float *y) {
+	/* f12 50 */ float z;
+	/* f3 41 */ float w;
+	/* f5 43 */ float t;
+	/* f4 42 */ float r;
+	/* f6 44 */ float fn;
+	/* 0x0(sp) */ float tx[3];
+	/* v1 3 */ __int32_t i;
+	/* a0 4 */ __int32_t j;
+	/* a1 5 */ __int32_t n;
+	/* s0 16 */ __int32_t ix;
+	/* s2 18 */ __int32_t hx;
+	/* a2 6 */ int e0;
+	/* a3 7 */ int nx;
+	/* v0 2 */ __uint32_t high;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/k_cos.c
+// *****************************************************************************
+
+/* 00197830 0000024c */ double __kernel_cos(/* s4 20 */ double x, /* s6 22 */ double y) {
+	/* s3 19 */ double z;
+	/* s5 21 */ double r;
+	/* s1 17 */ double qx;
+	/* s0 16 */ __int32_t ix;
+	/* v0 2 */ ieee_double_shape_type gh_u;
+	/* 0x0(sp) */ ieee_double_shape_type iw_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/k_rem_pio2.c
+// *****************************************************************************
+
+/* 00197a80 00000b68 */ int __kernel_rem_pio2(/* 0x230(sp) */ double *x, /* 0x234(sp) */ double *y, /* a2 6 */ int e0, /* a3 7 */ int nx, /* 0x238(sp) */ int prec, /* 0x23c(sp) */ __int32_t *ipio2) {
+	/* s7 23 */ __int32_t jz;
+	/* fp 30 */ __int32_t jx;
+	/* 0x240(sp) */ __int32_t jv;
+	/* 0x244(sp) */ __int32_t jp;
+	/* s5 21 */ __int32_t carry;
+	/* s3 19 */ __int32_t n;
+	/* 0x0(sp) */ __int32_t iq[20];
+	/* s4 20 */ __int32_t i;
+	/* s1 17 */ __int32_t j;
+	/* s0 16 */ __int32_t k;
+	/* s2 18 */ __int32_t m;
+	/* 0x248(sp) */ __int32_t q0;
+	/* 0x24c(sp) */ __int32_t ih;
+	/* s2 18 */ double z;
+	/* s6 22 */ double fw;
+	/* 0x50(sp) */ double f[20];
+	/* 0xf0(sp) */ double fq[20];
+	/* 0x190(sp) */ double q[20];
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/k_sin.c
+// *****************************************************************************
+
+/* 001985e8 000001d4 */ double __kernel_sin(/* s2 18 */ double x, /* s5 21 */ double y, /* s0 16 */ int iy) {
+	/* s1 17 */ double z;
+	/* s3 19 */ double r;
+	/* s4 20 */ double v;
+	/* v0 2 */ __int32_t ix;
+	/* v0 2 */ ieee_double_shape_type gh_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/kf_cos.c
+// *****************************************************************************
+
+/* 001987c0 00000158 */ float __kernel_cosf(/* f12 50 */ float x, /* f13 51 */ float y) {
+	/* f1 39 */ float a;
+	/* f0 38 */ float hz;
+	/* f6 44 */ float z;
+	/* f1 39 */ float r;
+	/* v0 2 */ float qx;
+	/* a0 4 */ __int32_t ix;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/kf_rem_pio2.c
+// *****************************************************************************
+
+/* 00198918 0000094c */ int __kernel_rem_pio2f(/* 0x140(sp) */ float *x, /* s7 23 */ float *y, /* a2 6 */ int e0, /* a3 7 */ int nx, /* 0x144(sp) */ int prec, /* 0x148(sp) */ __int32_t *ipio2) {
+	/* s0 16 */ __int32_t jz;
+	/* s1 17 */ __int32_t jx;
+	/* s6 22 */ __int32_t jv;
+	/* s4 20 */ __int32_t jp;
+	/* a3 7 */ __int32_t carry;
+	/* s3 19 */ __int32_t n;
+	/* 0x0(sp) */ __int32_t iq[20];
+	/* a2 6 */ __int32_t i;
+	/* a1 5 */ __int32_t j;
+	/* t0 8 */ __int32_t k;
+	/* a3 7 */ __int32_t m;
+	/* s2 18 */ __int32_t q0;
+	/* 0x14c(sp) */ __int32_t ih;
+	/* f20 58 */ float z;
+	/* f2 40 */ float fw;
+	/* 0x50(sp) */ float f[20];
+	/* 0xa0(sp) */ float fq[20];
+	/* 0xf0(sp) */ float q[20];
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/kf_sin.c
+// *****************************************************************************
+
+/* 00199268 00000104 */ float __kernel_sinf(/* f12 50 */ float x, /* f13 51 */ float y, /* a1 5 */ int iy) {
+	/* f5 43 */ float z;
+	/* f1 39 */ float r;
+	/* f6 44 */ float v;
+	/* a0 4 */ __int32_t ix;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/s_atan.c
+// *****************************************************************************
+
+/* 00199370 0000040c */ double atan(/* s4 20 */ double x) {
+	/* s2 18 */ double s1;
+	/* v0 2 */ double s2;
+	/* s2 18 */ double z;
+	/* s0 16 */ __int32_t ix;
+	/* s6 22 */ __int32_t hx;
+	/* s5 21 */ __int32_t id;
+	/* v0 2 */ ieee_double_shape_type gh_u;
+	/* v0 2 */ ieee_double_shape_type gl_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/s_fabs.c
+// *****************************************************************************
+
+/* 00199780 00000034 */ double fabs(/* a0 4 */ double x) {
+	/* v0 2 */ __uint32_t high;
+	/* v0 2 */ ieee_double_shape_type gh_u;
+	/* a1 5 */ ieee_double_shape_type sh_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/s_floor.c
+// *****************************************************************************
+
+/* 001997b8 000001d8 */ double floor(/* a1 5 */ double x) {
+	/* s0 16 */ __int32_t i0;
+	/* s2 18 */ __int32_t i1;
+	/* s1 17 */ __int32_t j0;
+	/* s3 19 */ __uint32_t i;
+	/* v1 3 */ __uint32_t j;
+	/* v0 2 */ ieee_double_shape_type ew_u;
+	/* s4 20 */ ieee_double_shape_type iw_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/s_isnan.c
+// *****************************************************************************
+
+/* 00199990 00000038 */ int isnan(/* a0 4 */ double x) {
+	/* a0 4 */ __int32_t hx;
+	/* a0 4 */ ieee_double_shape_type ew_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/common/s_matherr.c
+// *****************************************************************************
+
+/* 001999c8 00000024 */ int matherr(/* a0 4 */ exception *x) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/common/s_scalbn.c
+// *****************************************************************************
+
+/* 001999f0 000001b4 */ double scalbn(/* a0 4 */ double x, /* s0 16 */ int n) {
+	/* v1 3 */ __int32_t k;
+	/* a2 6 */ __int32_t hx;
+	/* v0 2 */ ieee_double_shape_type ew_u;
+	/* v0 2 */ ieee_double_shape_type gh_u;
+	/* v1 3 */ ieee_double_shape_type sh_u;
+	/* a0 4 */ ieee_double_shape_type sh_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/sf_fabs.c
+// *****************************************************************************
+
+/* 00199ba8 0000001c */ float fabsf(/* v1 3 */ float x) {
+	/* v1 3 */ __uint32_t ix;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/sf_floor.c
+// *****************************************************************************
+
+/* 00199bc8 000000e4 */ float floorf(/* f12 50 */ float x) {
+	/* a0 4 */ __int32_t i0;
+	/* a1 5 */ __int32_t j0;
+	/* a2 6 */ __uint32_t i;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/common/sf_scalbn.c
+// *****************************************************************************
+
+/* 00199cb0 00000160 */ float scalbnf(/* a1 5 */ float x, /* a0 4 */ int n) {
+	/* v1 3 */ __int32_t k;
+	/* a2 6 */ __int32_t ix;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/common/s_copysign.c
+// *****************************************************************************
+
+/* 00199e10 00000044 */ double copysign(/* a0 4 */ double x, /* a1 5 */ double y) {
+	/* v0 2 */ __uint32_t hx;
+	/* a1 5 */ __uint32_t hy;
+	/* v0 2 */ ieee_double_shape_type gh_u;
+	/* a2 6 */ ieee_double_shape_type sh_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/common/sf_copysign.c
+// *****************************************************************************
+
+/* 00199e58 00000030 */ float copysignf(/* a1 5 */ float x, /* a0 4 */ float y) {
+	/* a1 5 */ __uint32_t ix;
+	/* v1 3 */ __uint32_t iy;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* 00199e88 00000054 */ void __do_global_dtors() {}
+/* 00199ee0 000000b0 */ void __do_global_ctors() {}
+/* 00199f90 00000020 */ void __main() {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* 00199fb0 000006ec */ DItype __divdi3(/* a0 4 */ DItype u, /* a1 5 */ DItype v) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* 0019a6a0 000000ec */ DItype __fixunsdfdi(/* s1 17 */ DFtype a) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* 0019a790 00000098 */ DFtype __floatdidf(/* s0 16 */ DItype u) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* 0019a828 000000e0 */ SFtype __floatdisf(/* s1 17 */ DItype u) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* 0019a908 00000668 */ DItype __moddi3(/* a0 4 */ DItype u, /* a1 5 */ DItype v) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* 0019af70 00000060 */ DItype __muldi3(/* a0 4 */ DItype u, /* a1 5 */ DItype v) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* 0019afd0 000005d0 */ UDItype __udivdi3(/* a0 4 */ UDItype n, /* a1 5 */ UDItype d) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* 0019b5a0 00000540 */ UDItype __umoddi3(/* a0 4 */ UDItype u, /* a1 5 */ UDItype v) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/build/gcc/dp-bit.c
+// *****************************************************************************
+
+/* 0019bae0 0000012c */ FLO_type __pack_d(/* a0 4 */ fp_number_type *src) {}
+/* 0019bc10 0000009c */ void __unpack_d(/* a0 4 */ FLO_union_type *src, /* a1 5 */ fp_number_type *dst) {}
+/* 0019bcb0 00000240 */ static fp_number_type* _fpadd_parts(/* t0 8 */ fp_number_type *a, /* a1 5 */ fp_number_type *b, /* a2 6 */ fp_number_type *tmp) {}
+/* 0019bef0 00000058 */ FLO_type dpadd(/* 0x60(sp) */ FLO_type arg_a, /* 0x68(sp) */ FLO_type arg_b) {}
+/* 0019bf48 00000064 */ FLO_type dpsub(/* 0x60(sp) */ FLO_type arg_a, /* 0x68(sp) */ FLO_type arg_b) {}
+/* 0019bfb0 000002a8 */ FLO_type dpmul(/* 0x60(sp) */ FLO_type arg_a, /* 0x68(sp) */ FLO_type arg_b) {}
+/* 0019c258 00000168 */ FLO_type dpdiv(/* 0x40(sp) */ FLO_type arg_a, /* 0x48(sp) */ FLO_type arg_b) {}
+/* 0019c3c0 00000114 */ int __fpcmp_parts_d(/* a0 4 */ fp_number_type *a, /* a1 5 */ fp_number_type *b) {}
+/* 0019c4d8 0000004c */ SItype dpcmp(/* 0x40(sp) */ FLO_type arg_a, /* 0x48(sp) */ FLO_type arg_b) {}
+/* 0019c528 000000b8 */ FLO_type litodp(/* a0 4 */ SItype arg_a) {}
+/* 0019c5e0 00000094 */ SItype dptoli(/* 0x20(sp) */ FLO_type arg_a) {}
+/* 0019c678 000000a0 */ USItype dptoul(/* 0x20(sp) */ FLO_type arg_a) {}
+/* 0019c718 00000038 */ FLO_type __negdf2(/* 0x20(sp) */ FLO_type arg_a) {}
+/* 0019c750 0000002c */ DFtype __make_dp(/* a0 4 */ fp_class_type class, /* a1 5 */ unsigned int sign, /* a2 6 */ int exp, /* a3 7 */ UDItype frac) {}
+/* 0019c780 00000054 */ SFtype dptofp(/* 0x20(sp) */ DFtype arg_a) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/build/gcc/fp-bit.c
+// *****************************************************************************
+
+/* 0019c7d8 0000010c */ FLO_type __pack_f(/* a0 4 */ fp_number_type *src) {}
+/* 0019c8e8 00000090 */ void __unpack_f(/* a0 4 */ FLO_union_type *src, /* a1 5 */ fp_number_type *dst) {}
+/* 0019c978 00000234 */ static fp_number_type* _fpadd_parts(/* t1 9 */ fp_number_type *a, /* a1 5 */ fp_number_type *b, /* a2 6 */ fp_number_type *tmp) {}
+/* 0019cbb0 00000058 */ FLO_type fpadd(/* 0x30(sp) */ FLO_type arg_a, /* 0x34(sp) */ FLO_type arg_b) {}
+/* 0019cc08 00000064 */ FLO_type fpsub(/* 0x30(sp) */ FLO_type arg_a, /* 0x34(sp) */ FLO_type arg_b) {}
+/* 0019cc70 000001f4 */ FLO_type fpmul(/* 0x30(sp) */ FLO_type arg_a, /* 0x34(sp) */ FLO_type arg_b) {}
+/* 0019ce68 00000160 */ FLO_type fpdiv(/* 0x20(sp) */ FLO_type arg_a, /* 0x24(sp) */ FLO_type arg_b) {}
+/* 0019cfc8 00000114 */ int __fpcmp_parts_f(/* a0 4 */ fp_number_type *a, /* a1 5 */ fp_number_type *b) {}
+/* 0019d0e0 0000004c */ SItype fpcmp(/* 0x20(sp) */ FLO_type arg_a, /* 0x24(sp) */ FLO_type arg_b) {}
+/* 0019d130 000000b8 */ FLO_type sitofp(/* a0 4 */ SItype arg_a) {}
+/* 0019d1e8 0000008c */ SItype fptosi(/* 0x10(sp) */ FLO_type arg_a) {}
+/* 0019d278 00000098 */ USItype fptoui(/* 0x10(sp) */ FLO_type arg_a) {}
+/* 0019d310 00000038 */ FLO_type __negsf2(/* 0x10(sp) */ FLO_type arg_a) {}
+/* 0019d348 0000002c */ SFtype __make_fp(/* a0 4 */ fp_class_type class, /* a1 5 */ unsigned int sign, /* a2 6 */ int exp, /* a3 7 */ USItype frac) {}
+/* 0019d378 00000040 */ DFtype fptodp(/* 0x10(sp) */ SFtype arg_a) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/errno/errno.c
+// *****************************************************************************
+
+/* 0019d3b8 0000000c */ int* __errno() {}
+
+// *****************************************************************************
+// FILE -- ../../../../../../src/newlib/libc/machine/r5900/memcpy.S
+// *****************************************************************************
+
+/* 0019d3c4 000000b0 */ memcpy() {}
+
+// *****************************************************************************
+// FILE -- ../../../../../../src/newlib/libc/machine/r5900/memset.S
+// *****************************************************************************
+
+/* 0019d474 000000c0 */ memset() {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdio/printf.c
+// *****************************************************************************
+
+/* 0019d538 0000003c */ int _printf_r(/* a0 4 */ _reent *ptr, /* a1 5 */ char *fmt) {}
+/* 0019d578 00000050 */ int printf(/* a0 4 */ char *fmt) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdlib/rand.c
+// *****************************************************************************
+
+/* 0019d5c8 00000010 */ void srand(/* a0 4 */ unsigned int seed) {}
+/* 0019d5d8 00000030 */ int rand() {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdio/sprintf.c
+// *****************************************************************************
+
+/* 0019d608 00000068 */ int _sprintf_r(/* a0 4 */ _reent *ptr, /* t4 12 */ char *str, /* a2 6 */ char *fmt) {
+	/* 0x0(sp) */ FILE f;
+}
+
+/* 0019d670 00000070 */ int sprintf(/* t4 12 */ char *str, /* a1 5 */ char *fmt) {
+	/* 0x0(sp) */ FILE f;
+}
+
+// *****************************************************************************
+// FILE -- ../../../../../../src/newlib/libc/machine/r5900/strcpy.S
+// *****************************************************************************
+
+/* 0019d6e0 00000114 */ strcpy() {}
+
+// *****************************************************************************
+// FILE -- ../../../../../../src/newlib/libc/machine/r5900/strlen.S
+// *****************************************************************************
+
+/* 0019d7f4 00000138 */ strlen() {}
+
+// *****************************************************************************
+// FILE -- ../../../../../../src/newlib/libc/machine/r5900/strncpy.S
+// *****************************************************************************
+
+/* 0019d930 000001bc */ strncpy() {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/string/strupr.c
+// *****************************************************************************
+
+/* 0019daf0 00000054 */ char* strupr(/* a2 6 */ char *a) {
+	/* a0 4 */ char *ret;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdio/vfprintf.c
+// *****************************************************************************
+
+/* 0019db48 00000044 */ static int __sprint(/* a0 4 */ FILE *fp, /* s0 16 */ __suio *uio) {}
+
+/* 0019db90 000000b4 */ static int __sbprintf(/* s1 17 */ FILE *fp, /* a1 5 */ char *fmt, /* a2 6 */ va_list ap) {
+	/* s0 16 */ int ret;
+	/* 0x0(sp) */ FILE fake;
+	/* 0x60(sp) */ unsigned char buf[1024];
+}
+
+/* 0019dc48 00000078 */ int vfprintf(/* s0 16 */ FILE *fp, /* s1 17 */ char *fmt0, /* s2 18 */ va_list ap) {}
+
+/* 0019dcc0 00001518 */ int _vfprintf_r(/* 0x1e4(sp) */ _reent *data, /* 0x1e8(sp) */ FILE *fp, /* s0 16 */ char *fmt0, /* s4 20 */ va_list ap) {
+	/* 0x1ec(sp) */ char *fmt;
+	/* s7 23 */ int ch;
+	/* s0 16 */ int n;
+	/* s2 18 */ int m;
+	/* s3 19 */ char *cp;
+	/* s1 17 */ __siov *iovp;
+	/* fp 30 */ int flags;
+	/* 0x1f0(sp) */ int ret;
+	/* 0x1f4(sp) */ int width;
+	/* s2 18 */ int prec;
+	/* 0x1d1(sp) */ char sign;
+	/* 0x1d4(sp) */ wchar_t wc;
+	/* 0x1f8(sp) */ char *decimal_point;
+	/* 0x1d0(sp) */ char softsign;
+	/* 0x200(sp) */ double _double;
+	/* 0x1dc(sp) */ int expt;
+	/* 0x208(sp) */ int expsize;
+	/* 0x1e0(sp) */ int ndig;
+	/* 0x0(sp) */ char expstr[7];
+	/* s0 16 */ u_long _uquad;
+	/* a0 4 */ enum {
+		OCT = 0,
+		DEC = 1,
+		HEX = 2
+	} base;
+	/* 0x20c(sp) */ int dprec;
+	/* 0x210(sp) */ int realsz;
+	/* s5 21 */ int size;
+	/* 0x214(sp) */ char *xdigs;
+	/* 0x10(sp) */ __suio uio;
+	/* 0x20(sp) */ __siov iov[8];
+	/* 0x60(sp) */ char buf[348];
+	/* 0x1c0(sp) */ char ox[2];
+	/* 0x1d8(sp) */ int state;
+	/* rdata 358970 */ static char blanks[16];
+	/* rdata 358980 */ static char zeroes[16];
+	/* v0 2 */ char *p;
+}
+
+/* 0019f1d8 000001b0 */ static char* cvt(/* s6 22 */ _reent *data, /* s2 18 */ double value, /* s4 20 */ int ndigits, /* s7 23 */ int flags, /* s0 16 */ char *sign, /* s5 21 */ int *decpt, /* s1 17 */ int ch, /* fp 30 */ int *length) {
+	/* s3 19 */ int mode;
+	/* 0x0(sp) */ int dsgn;
+	/* s3 19 */ char *digits;
+	/* s0 16 */ char *bp;
+	/* 0x4(sp) */ char *rve;
+	/* v0 2 */ double_union tmp;
+}
+
+/* 0019f388 000000e0 */ static int exponent(/* a0 4 */ char *p0, /* a1 5 */ int exp, /* a2 6 */ int fmtch) {
+	/* t0 8 */ char *p;
+	/* a2 6 */ char *t;
+	/* 0x0(sp) */ char expbuf[308];
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdio/wsetup.c
+// *****************************************************************************
+
+/* 0019f468 0000010c */ int __swsetup(/* s0 16 */ FILE *fp) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdlib/dtoa.c
+// *****************************************************************************
+
+/* 0019f578 00000214 */ static int quorem(/* s4 20 */ _Bigint *b, /* t6 14 */ _Bigint *S) {
+	/* s0 16 */ int n;
+	/* t4 12 */ __int32_t borrow;
+	/* v1 3 */ __int32_t y;
+	/* v1 3 */ ULong carry;
+	/* s2 18 */ ULong q;
+	/* v0 2 */ ULong ys;
+	/* t2 10 */ ULong *bx;
+	/* t0 8 */ ULong *bxe;
+	/* t3 11 */ ULong *sx;
+	/* s3 19 */ ULong *sxe;
+	/* a1 5 */ __int32_t z;
+	/* a0 4 */ ULong si;
+	/* t1 9 */ ULong zs;
+}
+
+/* 0019f790 000011cc */ char* _dtoa_r(/* fp 30 */ _reent *ptr, /* a1 5 */ double _d, /* 0x8(sp) */ int mode, /* 0xc(sp) */ int ndigits, /* 0x10(sp) */ int *decpt, /* s0 16 */ int *sign, /* 0x14(sp) */ char **rve) {
+	/* 0x4(sp) */ int bbits;
+	/* 0x18(sp) */ int b2;
+	/* 0x1c(sp) */ int b5;
+	/* 0x0(sp) */ int be;
+	/* s3 19 */ int dig;
+	/* s4 20 */ int i;
+	/* s4 20 */ int ieps;
+	/* 0x20(sp) */ int ilim;
+	/* 0x24(sp) */ int ilim0;
+	/* 0x28(sp) */ int ilim1;
+	/* s0 16 */ int j;
+	/* s1 17 */ int j1;
+	/* s3 19 */ int k;
+	/* 0x2c(sp) */ int k0;
+	/* 0x30(sp) */ int k_check;
+	/* 0x34(sp) */ int leftright;
+	/* s1 17 */ int m2;
+	/* s2 18 */ int m5;
+	/* 0x38(sp) */ int s2;
+	/* 0x3c(sp) */ int s5;
+	/* 0x40(sp) */ int spec_case;
+	/* s2 18 */ int try_quick;
+	/* s6 22 */ double_union d;
+	/* s7 23 */ double_union d2;
+	/* s2 18 */ double_union eps;
+	/* s1 17 */ __int32_t L;
+	/* 0x44(sp) */ int denorm;
+	/* s0 16 */ ULong x;
+	/* 0x48(sp) */ _Bigint *b;
+	/* v0 2 */ _Bigint *b1;
+	/* s2 18 */ _Bigint *delta;
+	/* 0x4c(sp) */ _Bigint *mlo;
+	/* 0x50(sp) */ _Bigint *mhi;
+	/* 0x54(sp) */ _Bigint *S;
+	/* s2 18 */ double ds;
+	/* s5 21 */ char *s;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdio/fflush.c
+// *****************************************************************************
+
+/* 001a0960 00000104 */ int fflush(/* s1 17 */ FILE *fp) {
+	/* s2 18 */ unsigned char *p;
+	/* s0 16 */ int n;
+	/* v1 3 */ int t;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdio/findfp.c
+// *****************************************************************************
+
+/* 001a0a68 00000058 */ static void std(/* a0 4 */ FILE *ptr, /* a1 5 */ int flags, /* a2 6 */ int file, /* a3 7 */ _reent *data) {}
+
+/* 001a0ac0 00000070 */ _glue* __sfmoreglue(/* a0 4 */ _reent *d, /* s1 17 */ int n) {
+	/* s0 16 */ _glue *g;
+	/* v0 2 */ FILE *p;
+}
+
+/* 001a0b30 000000e0 */ FILE* __sfp(/* s1 17 */ _reent *d) {
+	/* a0 4 */ FILE *fp;
+	/* v1 3 */ int n;
+	/* s0 16 */ _glue *g;
+}
+
+/* 001a0c10 0000000c */ void _cleanup_r(/* a0 4 */ _reent *ptr) {}
+/* 001a0c20 0000000c */ void _cleanup() {}
+/* 001a0c30 0000008c */ void __sinit(/* s0 16 */ _reent *s) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdlib/mallocr.c
+// *****************************************************************************
+
+/* 001a0cc0 0000031c */ void _free_r(/* s1 17 */ _reent *reent_ptr, /* s0 16 */ void *mem) {
+	/* t2 10 */ mchunkptr p;
+	/* a3 7 */ size_t hd;
+	/* t1 9 */ size_t sz;
+	/* a2 6 */ int idx;
+	/* a2 6 */ mchunkptr next;
+	/* t3 11 */ size_t nextsz;
+	/* a1 5 */ size_t prevsz;
+	/* t0 8 */ mchunkptr bck;
+	/* a3 7 */ mchunkptr fwd;
+	/* a0 4 */ int islr;
+}
+
+/* 001a0fe0 0000016c */ int _malloc_trim_r(/* s2 18 */ _reent *reent_ptr, /* s0 16 */ size_t pad) {
+	/* s1 17 */ long int top_size;
+	/* s0 16 */ long int extra;
+	/* a1 5 */ char *current_brk;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdio/fvwrite.c
+// *****************************************************************************
+
+/* 001a1150 000003d8 */ int __sfvwrite(/* s1 17 */ FILE *fp, /* s6 22 */ __suio *uio) {
+	/* s2 18 */ size_t len;
+	/* s3 19 */ char *p;
+	/* s4 20 */ __siov *iov;
+	/* s0 16 */ int w;
+	/* a1 5 */ int s;
+	/* v1 3 */ char *nl;
+	/* s7 23 */ int nlknown;
+	/* s5 21 */ int nldist;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdio/fwalk.c
+// *****************************************************************************
+
+/* 001a1528 00000094 */ int _fwalk(/* a0 4 */ _reent *ptr, /* s4 20 */ int (*function)(/* parameters unknown */)) {
+	/* s1 17 */ FILE *fp;
+	/* s0 16 */ int n;
+	/* s3 19 */ int ret;
+	/* s2 18 */ _glue *g;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/locale/locale.c
+// *****************************************************************************
+
+/* 001a15c0 00000084 */ char* _setlocale_r(/* s1 17 */ _reent *p, /* s2 18 */ int category, /* s0 16 */ char *locale) {
+	/* data 34f9e8 */ static char lc_ctype[8];
+	/* data 34f9f0 */ static char last_lc_ctype[8];
+}
+
+/* 001a1648 0000000c */ lconv* _localeconv_r(/* a0 4 */ _reent *data) {}
+/* 001a1658 0000002c */ char* setlocale(/* v0 2 */ int category, /* a2 6 */ char *locale) {}
+/* 001a1688 00000024 */ lconv* localeconv() {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdio/makebuf.c
+// *****************************************************************************
+
+/* 001a16b0 00000150 */ void __smakebuf(/* s0 16 */ FILE *fp) {
+	/* s2 18 */ size_t size;
+	/* s1 17 */ size_t couldbetty;
+	/* a1 5 */ void *p;
+	/* 0x0(sp) */ stat st;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdlib/mallocr.c
+// *****************************************************************************
+
+/* 001a1800 00000254 */ static void malloc_extend_top(/* s7 23 */ _reent *reent_ptr, /* a1 5 */ size_t nb) {
+	/* s1 17 */ char *brk;
+	/* a1 5 */ size_t front_misalign;
+	/* s0 16 */ size_t correction;
+	/* a0 4 */ char *new_brk;
+	/* v0 2 */ size_t top_size;
+	/* s4 20 */ mchunkptr old_top;
+	/* s3 19 */ size_t old_top_size;
+	/* s5 21 */ char *old_end;
+	/* s2 18 */ size_t sbrk_size;
+	/* v1 3 */ long unsigned int pagesz;
+}
+
+/* 001a1a58 00000778 */ void* _malloc_r(/* s3 19 */ _reent *reent_ptr, /* a1 5 */ size_t bytes) {
+	/* s0 16 */ mchunkptr victim;
+	/* t0 8 */ size_t victim_size;
+	/* t3 11 */ int idx;
+	/* a1 5 */ mbinptr bin;
+	/* a3 7 */ mchunkptr remainder;
+	/* a3 7 */ long int remainder_size;
+	/* a2 6 */ int remainder_index;
+	/* a0 4 */ long unsigned int block;
+	/* t2 10 */ int startidx;
+	/* t1 9 */ mchunkptr fwd;
+	/* t2 10 */ mchunkptr bck;
+	/* t1 9 */ mbinptr q;
+	/* s1 17 */ size_t nb;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdlib/mbtowc_r.c
+// *****************************************************************************
+
+/* 001a21d0 0000003c */ int _mbtowc_r(/* a0 4 */ _reent *r, /* v1 3 */ wchar_t *pwc, /* a2 6 */ char *s, /* a3 7 */ size_t n, /* t0 8 */ int *state) {
+	/* 0x0(sp) */ wchar_t dummy;
+}
+
+// *****************************************************************************
+// FILE -- ../../../../../../src/newlib/libc/machine/r5900/memchr.S
+// *****************************************************************************
+
+/* 001a220c 000000e0 */ memchr() {}
+
+// *****************************************************************************
+// FILE -- ../../../../../../src/newlib/libc/machine/r5900/memmove.S
+// *****************************************************************************
+
+/* 001a22ec 00000104 */ memmove() {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdlib/mlock.c
+// *****************************************************************************
+
+/* 001a23f0 00000008 */ void __malloc_lock(/* a0 4 */ _reent *ptr) {}
+/* 001a23f8 00000008 */ void __malloc_unlock(/* a0 4 */ _reent *ptr) {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdlib/mprec.c
+// *****************************************************************************
+
+/* 001a2400 000000a8 */ _Bigint* _Balloc(/* s0 16 */ _reent *ptr, /* s1 17 */ int k) {
+	/* s0 16 */ int x;
+	/* v1 3 */ _Bigint *rv;
+}
+
+/* 001a24a8 0000002c */ void _Bfree(/* a0 4 */ _reent *ptr, /* a1 5 */ _Bigint *v) {}
+
+/* 001a24d8 00000114 */ _Bigint* _multadd(/* s4 20 */ _reent *ptr, /* s1 17 */ _Bigint *b, /* t0 8 */ int m, /* s3 19 */ int a) {
+	/* t1 9 */ int i;
+	/* s2 18 */ int wds;
+	/* a3 7 */ ULong *x;
+	/* a0 4 */ ULong y;
+	/* v1 3 */ ULong xi;
+	/* v1 3 */ ULong z;
+	/* s0 16 */ _Bigint *b1;
+}
+
+/* 001a25f0 00000148 */ _Bigint* _s2b(/* s4 20 */ _reent *ptr, /* s0 16 */ char *s, /* s3 19 */ int nd0, /* s5 21 */ int nd, /* s6 22 */ ULong y9) {
+	/* a1 5 */ _Bigint *b;
+	/* s1 17 */ int i;
+	/* a1 5 */ int k;
+	/* a3 7 */ __int32_t y;
+}
+
+/* 001a2738 00000084 */ int _hi0bits(/* a0 4 */ ULong x) {
+	/* a1 5 */ int k;
+}
+
+/* 001a27c0 000000c0 */ int _lo0bits(/* a0 4 */ ULong *y) {
+	/* a1 5 */ int k;
+	/* v1 3 */ ULong x;
+}
+
+/* 001a2880 00000038 */ _Bigint* _i2b(/* a0 4 */ _reent *ptr, /* s0 16 */ int i) {
+	/* v1 3 */ _Bigint *b;
+}
+
+/* 001a28b8 0000022c */ _Bigint* _multiply(/* a0 4 */ _reent *ptr, /* s0 16 */ _Bigint *a, /* s1 17 */ _Bigint *b) {
+	/* t9 25 */ _Bigint *c;
+	/* v0 2 */ int k;
+	/* s4 20 */ int wc;
+	/* t3 11 */ ULong carry;
+	/* t2 10 */ ULong y;
+	/* v0 2 */ ULong z;
+	/* t1 9 */ ULong *x;
+	/* a0 4 */ ULong *xa;
+	/* s1 17 */ ULong *xae;
+	/* t4 12 */ ULong *xb;
+	/* s2 18 */ ULong *xbe;
+	/* t0 8 */ ULong *xc;
+	/* t5 13 */ ULong *xc0;
+	/* a3 7 */ ULong z2;
+}
+
+/* 001a2ae8 00000100 */ _Bigint* _pow5mult(/* s3 19 */ _reent *ptr, /* s2 18 */ _Bigint *b, /* s1 17 */ int k) {
+	/* v0 2 */ _Bigint *b1;
+	/* s0 16 */ _Bigint *p5;
+	/* v0 2 */ _Bigint *p51;
+	/* v1 3 */ int i;
+	/* rdata 358d20 */ static int p05[3];
+}
+
+/* 001a2be8 00000178 */ _Bigint* _lshift(/* s6 22 */ _reent *ptr, /* s1 17 */ _Bigint *b, /* a2 6 */ int k) {
+	/* a3 7 */ int i;
+	/* a1 5 */ int k1;
+	/* s4 20 */ int n;
+	/* s0 16 */ int n1;
+	/* s5 21 */ _Bigint *b1;
+	/* a0 4 */ ULong *x;
+	/* a2 6 */ ULong *x1;
+	/* a3 7 */ ULong *xe;
+	/* v1 3 */ ULong z;
+}
+
+/* 001a2d60 00000068 */ int __mcmp(/* a0 4 */ _Bigint *a, /* a1 5 */ _Bigint *b) {
+	/* a2 6 */ ULong *xa;
+	/* a3 7 */ ULong *xa0;
+	/* v1 3 */ ULong *xb;
+	/* v0 2 */ ULong *xb0;
+	/* v0 2 */ int i;
+	/* v1 3 */ int j;
+}
+
+/* 001a2dc8 00000190 */ _Bigint* __mdiff(/* s3 19 */ _reent *ptr, /* s1 17 */ _Bigint *a, /* s2 18 */ _Bigint *b) {
+	/* t3 11 */ _Bigint *c;
+	/* s0 16 */ int i;
+	/* t4 12 */ int wa;
+	/* v0 2 */ int wb;
+	/* t2 10 */ __int32_t borrow;
+	/* v1 3 */ __int32_t y;
+	/* t0 8 */ ULong *xa;
+	/* t5 13 */ ULong *xae;
+	/* t1 9 */ ULong *xb;
+	/* a2 6 */ ULong *xbe;
+	/* a3 7 */ ULong *xc;
+	/* a1 5 */ __int32_t z;
+}
+
+/* 001a2f58 00000098 */ double _ulp(/* a0 4 */ double _x) {
+	/* a1 5 */ double_union a;
+	/* a0 4 */ __int32_t L;
+}
+
+/* 001a2ff0 0000017c */ double _b2d(/* a0 4 */ _Bigint *a, /* s0 16 */ int *e) {
+	/* s2 18 */ ULong *xa;
+	/* s4 20 */ ULong *xa0;
+	/* a0 4 */ ULong w;
+	/* s3 19 */ ULong y;
+	/* a3 7 */ ULong z;
+	/* a2 6 */ int k;
+	/* s1 17 */ double_union d;
+}
+
+/* 001a3170 0000017c */ _Bigint* _d2b(/* a0 4 */ _reent *ptr, /* a1 5 */ double _d, /* s4 20 */ int *e, /* s5 21 */ int *bits) {
+	/* s0 16 */ double_union d;
+	/* s1 17 */ _Bigint *b;
+	/* s2 18 */ int de;
+	/* s0 16 */ int i;
+	/* a1 5 */ int k;
+	/* s3 19 */ ULong *x;
+	/* 0x0(sp) */ ULong y;
+	/* 0x4(sp) */ ULong z;
+}
+
+/* 001a32f0 000000c0 */ double _ratio(/* s0 16 */ _Bigint *a, /* s1 17 */ _Bigint *b) {
+	/* s2 18 */ double_union da;
+	/* a2 6 */ double_union db;
+	/* v0 2 */ int k;
+	/* 0x0(sp) */ int ka;
+	/* 0x4(sp) */ int kb;
+}
+
+/* 001a33b0 0000006c */ double _mprec_log10(/* s0 16 */ int dig) {
+	/* a0 4 */ double v;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/s_isinf.c
+// *****************************************************************************
+
+/* 001a3420 00000048 */ int isinf(/* a0 4 */ double x) {
+	/* a0 4 */ __int32_t hx;
+	/* a0 4 */ ieee_double_shape_type ew_u;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/reent/sbrkr.c
+// *****************************************************************************
+
+/* 001a3468 0000005c */ void* _sbrk_r(/* s0 16 */ _reent *ptr, /* a1 5 */ size_t incr) {
+	/* v1 3 */ char *ret;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdio/stdio.c
+// *****************************************************************************
+
+/* 001a34c8 00000064 */ int __sread(/* s0 16 */ void *cookie, /* v0 2 */ char *buf, /* a3 7 */ int n) {
+	/* v1 3 */ int ret;
+}
+
+/* 001a3530 00000080 */ int __swrite(/* s0 16 */ void *cookie, /* s1 17 */ char *buf, /* s2 18 */ int n) {}
+
+/* 001a35b0 00000068 */ fpos_t __sseek(/* s0 16 */ void *cookie, /* v0 2 */ fpos_t offset, /* a3 7 */ int whence) {
+	/* a0 4 */ off_t ret;
+}
+
+/* 001a3618 00000020 */ int __sclose(/* a0 4 */ void *cookie) {}
+
+// *****************************************************************************
+// FILE -- ../../../../../../src/newlib/libc/machine/r5900/strcmp.S
+// *****************************************************************************
+
+/* 001a3638 00000144 */ strcmp() {}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/reent/writer.c
+// *****************************************************************************
+
+/* 001a3780 00000060 */ _ssize_t _write_r(/* s0 16 */ _reent *ptr, /* a1 5 */ int fd, /* a2 6 */ void *buf, /* a3 7 */ size_t cnt) {
+	/* v1 3 */ long int ret;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdlib/mallocr.c
+// *****************************************************************************
+
+/* 001a37e0 000000bc */ void* _calloc_r(/* a0 4 */ _reent *reent_ptr, /* a1 5 */ size_t n, /* a2 6 */ size_t elem_size) {
+	/* v1 3 */ size_t csz;
+	/* s0 16 */ void *mem;
+	/* a2 6 */ size_t mzsz;
+	/* a0 4 */ size_t *mz;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/reent/closer.c
+// *****************************************************************************
+
+/* 001a38a0 00000058 */ int _close_r(/* s1 17 */ _reent *ptr, /* a1 5 */ int fd) {
+	/* v1 3 */ int ret;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/reent/fstatr.c
+// *****************************************************************************
+
+/* 001a38f8 0000005c */ int _fstat_r(/* s0 16 */ _reent *ptr, /* a1 5 */ int fd, /* a2 6 */ stat *pstat) {
+	/* v1 3 */ int ret;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/reent/lseekr.c
+// *****************************************************************************
+
+/* 001a3958 00000060 */ _off_t _lseek_r(/* s0 16 */ _reent *ptr, /* a1 5 */ int fd, /* a2 6 */ off_t pos, /* a3 7 */ int whence) {
+	/* v1 3 */ off_t ret;
+}
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/reent/readr.c
+// *****************************************************************************
+
+/* 001a39b8 00000060 */ _ssize_t _read_r(/* s0 16 */ _reent *ptr, /* a1 5 */ int fd, /* a2 6 */ void *buf, /* a3 7 */ size_t cnt) {
+	/* v1 3 */ long int ret;
+}
+
+// *****************************************************************************
+// FILE -- cache.c
+// *****************************************************************************
+
+/* 001a3a18 000000a4 */ _sceSDC() {}
+/* 001a3ac0 00000074 */ SyncDCache() {}
+/* 001a3b38 00000014 */ iSyncDCache() {}
+/* 001a3b50 000000a4 */ _sceIDC() {}
+/* 001a3bf8 00000074 */ InvalidDCache() {}
+/* 001a3c70 00000014 */ iInvalidDCache() {}
