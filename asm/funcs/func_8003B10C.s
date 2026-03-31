@@ -5,7 +5,7 @@ glabel func_8003B10C
     /* 2B918 8003B118 1800B2AF */  sw         $s2, 0x18($sp)
     /* 2B91C 8003B11C 1980123C */  lui        $s2, (0x80190800 >> 16)
     /* 2B920 8003B120 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* 2B924 8003B124 1A5A000C */  jal        func_80016868
+    /* 2B924 8003B124 1A5A000C */  jal        gpu_EnableDisplay
     /* 2B928 8003B128 1000B0AF */   sw        $s0, 0x10($sp)
     /* 2B92C 8003B12C 4E83000C */  jal        func_80020D38
     /* 2B930 8003B130 00085236 */   ori       $s2, $s2, (0x80190800 & 0xFFFF)

@@ -33,7 +33,7 @@ glabel func_8007B178
     /* 6B9F0 8007B1F0 01000424 */   addiu     $a0, $zero, 0x1
     /* 6B9F4 8007B1F4 02000424 */  addiu      $a0, $zero, 0x2
     /* 6B9F8 8007B1F8 21280000 */  addu       $a1, $zero, $zero
-    /* 6B9FC 8007B1FC C80A020C */  jal        func_80082B20
+    /* 6B9FC 8007B1FC C80A020C */  jal        irq_AcknowledgeVblank
     /* 6BA00 8007B200 000030A2 */   sb        $s0, 0x0($s1)
     /* 6BA04 8007B204 21104002 */  addu       $v0, $s2, $zero
   .L8007B208:

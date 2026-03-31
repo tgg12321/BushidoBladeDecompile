@@ -1,7 +1,7 @@
 glabel func_80033898
     /* 24098 80033898 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2409C 8003389C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 240A0 800338A0 1A5A000C */  jal        func_80016868
+    /* 240A0 800338A0 1A5A000C */  jal        gpu_EnableDisplay
     /* 240A4 800338A4 00000000 */   nop
     /* 240A8 800338A8 03000224 */  addiu      $v0, $zero, 0x3
     /* 240AC 800338AC 0A80013C */  lui        $at, %hi(D_800A37B8)

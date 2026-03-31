@@ -82,7 +82,7 @@ glabel func_8007BC08
     /* 6C53C 8007BD3C 73004310 */  beq        $v0, $v1, .L8007BF0C
     /* 6C540 8007BD40 00000000 */   nop
   .L8007BD44:
-    /* 6C544 8007BD44 A20D020C */  jal        func_80083688
+    /* 6C544 8007BD44 A20D020C */  jal        sys_GetVideoMode
     /* 6C548 8007BD48 00000000 */   nop
     /* 6C54C 8007BD4C 08000486 */  lh         $a0, 0x8($s0)
     /* 6C550 8007BD50 120002A2 */  sb         $v0, 0x12($s0)
@@ -250,7 +250,7 @@ glabel func_8007BC08
     /* 6C78C 8007BF8C 3A004310 */  beq        $v0, $v1, .L8007C078
     /* 6C790 8007BF90 00000000 */   nop
   .L8007BF94:
-    /* 6C794 8007BF94 A20D020C */  jal        func_80083688
+    /* 6C794 8007BF94 A20D020C */  jal        sys_GetVideoMode
     /* 6C798 8007BF98 00000000 */   nop
     /* 6C79C 8007BF9C 120002A2 */  sb         $v0, 0x12($s0)
     /* 6C7A0 8007BFA0 FF004230 */  andi       $v0, $v0, 0xFF

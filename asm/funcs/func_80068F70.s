@@ -8,7 +8,7 @@ glabel func_80068F70
     /* 59788 80068F88 58001026 */  addiu      $s0, $s0, 0x58
     /* 5978C 80068F8C 2000BFAF */  sw         $ra, 0x20($sp)
     /* 59790 80068F90 340490AF */  sw         $s0, %gp_rel(D_800A3500)($gp)
-    /* 59794 80068F94 A81A010C */  jal        func_80046AA0
+    /* 59794 80068F94 A81A010C */  jal        snd_StopAll
     /* 59798 80068F98 2188A000 */   addu      $s1, $a1, $zero
     /* 5979C 80068F9C 3404858F */  lw         $a1, %gp_rel(D_800A3500)($gp)
     /* 597A0 80068FA0 54BA010C */  jal        func_8006E950

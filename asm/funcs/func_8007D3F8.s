@@ -88,7 +88,7 @@ glabel func_8007D3F8
   .L8007D540:
     /* 6DD40 8007D540 0880053C */  lui        $a1, %hi(func_8007D6D8)
     /* 6DD44 8007D544 D8D6A524 */  addiu      $a1, $a1, %lo(func_8007D6D8)
-    /* 6DD48 8007D548 C80A020C */  jal        func_80082B20
+    /* 6DD48 8007D548 C80A020C */  jal        irq_AcknowledgeVblank
     /* 6DD4C 8007D54C 02000424 */   addiu     $a0, $zero, 0x2
     /* 6DD50 8007D550 2B002012 */  beqz       $s1, .L8007D600
     /* 6DD54 8007D554 21300000 */   addu      $a2, $zero, $zero

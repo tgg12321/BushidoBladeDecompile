@@ -14,7 +14,7 @@ glabel func_800203B4
     /* 10BE4 800203E4 21082200 */  addu       $at, $at, $v0
     /* 10BE8 800203E8 9ED52294 */  lhu        $v0, %lo(D_8008D59E)($at)
     /* 10BEC 800203EC 2188C000 */  addu       $s1, $a2, $zero
-    /* 10BF0 800203F0 7B1B010C */  jal        func_80046DEC
+    /* 10BF0 800203F0 7B1B010C */  jal        game_GetPlayerData
     /* 10BF4 800203F4 520302A6 */   sh        $v0, 0x352($s0)
     /* 10BF8 800203F8 52030386 */  lh         $v1, 0x352($s0)
     /* 10BFC 800203FC 00000000 */  nop

@@ -6,7 +6,7 @@ glabel func_8001EFA0
     /* F7B0 8001EFB0 01004224 */  addiu      $v0, $v0, 0x1
     /* F7B4 8001EFB4 0A80013C */  lui        $at, %hi(D_800A37B8)
     /* F7B8 8001EFB8 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
-    /* F7BC 8001EFBC AC1C010C */  jal        func_800472B0
+    /* F7BC 8001EFBC AC1C010C */  jal        camera_GetBoneData
     /* F7C0 8001EFC0 00000000 */   nop
     /* F7C4 8001EFC4 099C033C */  lui        $v1, (0x9C09C09D >> 16)
     /* F7C8 8001EFC8 0A80063C */  lui        $a2, %hi(D_800A37B8)
@@ -56,7 +56,7 @@ glabel func_8001EFA0
     /* F878 8001F078 00000000 */   nop
     /* F87C 8001F07C E8E5000C */  jal        func_800397A0
     /* F880 8001F080 00000000 */   nop
-    /* F884 8001F084 6A1B010C */  jal        func_80046DA8
+    /* F884 8001F084 6A1B010C */  jal        game_StageInit
     /* F888 8001F088 01000424 */   addiu     $a0, $zero, 0x1
     /* F88C 8001F08C 76CD000C */  jal        func_800335D8
     /* F890 8001F090 00000000 */   nop

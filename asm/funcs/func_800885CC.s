@@ -2,7 +2,7 @@ glabel func_800885CC
     /* 78DCC 800885CC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 78DD0 800885D0 1000B0AF */  sw         $s0, 0x10($sp)
     /* 78DD4 800885D4 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 78DD8 800885D8 B00A020C */  jal        func_80082AC0
+    /* 78DD8 800885D8 B00A020C */  jal        irq_DisableInterrupts
     /* 78DDC 800885DC 21808000 */   addu      $s0, $a0, $zero
     /* 78DE0 800885E0 D021020C */  jal        func_80088740
     /* 78DE4 800885E4 21200002 */   addu      $a0, $s0, $zero

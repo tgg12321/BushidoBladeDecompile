@@ -19,9 +19,9 @@ glabel func_8007FF7C
     /* 707BC 8007FFBC 00000000 */   nop
     /* 707C0 8007FFC0 0880043C */  lui        $a0, %hi(D_80080064)
     /* 707C4 8007FFC4 64008424 */  addiu      $a0, $a0, %lo(D_80080064)
-    /* 707C8 8007FFC8 270A020C */  jal        func_8008289C
+    /* 707C8 8007FFC8 270A020C */  jal        sys_SetVsyncMode
     /* 707CC 8007FFCC 00000000 */   nop
-    /* 707D0 8007FFD0 2D0A020C */  jal        func_800828B4
+    /* 707D0 8007FFD0 2D0A020C */  jal        sys_SetTimer
     /* 707D4 8007FFD4 21200000 */   addu      $a0, $zero, $zero
     /* 707D8 8007FFD8 00000208 */  j          .L80080000
     /* 707DC 8007FFDC 01000224 */   addiu     $v0, $zero, 0x1

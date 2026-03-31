@@ -22,7 +22,7 @@ glabel func_8003E6D8
     /* 2EF28 8003E728 C3170200 */  sra        $v0, $v0, 31
     /* 2EF2C 8003E72C 10200000 */  mfhi       $a0
     /* 2EF30 8003E730 C3810400 */  sra        $s0, $a0, 7
-    /* 2EF34 8003E734 E11C010C */  jal        func_80047384
+    /* 2EF34 8003E734 E11C010C */  jal        camera_CalcAngles
     /* 2EF38 8003E738 23800202 */   subu      $s0, $s0, $v0
     /* 2EF3C 8003E73C 0A80043C */  lui        $a0, %hi(D_800A3708)
     /* 2EF40 8003E740 0837848C */  lw         $a0, %lo(D_800A3708)($a0)
@@ -277,7 +277,7 @@ glabel func_8003E6D8
     /* 2F2D8 8003EAD8 EEFFC414 */  bne        $a2, $a0, .L8003EA94
     /* 2F2DC 8003EADC FCFFC624 */   addiu     $a2, $a2, -0x4
   .L8003EAE0:
-    /* 2F2E0 8003EAE0 E619010C */  jal        func_80046798
+    /* 2F2E0 8003EAE0 E619010C */  jal        stage_GetId
     /* 2F2E4 8003EAE4 00000000 */   nop
     /* 2F2E8 8003EAE8 C0100200 */  sll        $v0, $v0, 3
     /* 2F2EC 8003EAEC 0980013C */  lui        $at, %hi(D_800948C0)
@@ -286,7 +286,7 @@ glabel func_8003E6D8
     /* 2F2F8 8003EAF8 00000000 */  nop
     /* 2F2FC 8003EAFC 0B004010 */  beqz       $v0, .L8003EB2C
     /* 2F300 8003EB00 4800A427 */   addiu     $a0, $sp, 0x48
-    /* 2F304 8003EB04 E619010C */  jal        func_80046798
+    /* 2F304 8003EB04 E619010C */  jal        stage_GetId
     /* 2F308 8003EB08 00000000 */   nop
     /* 2F30C 8003EB0C C0100200 */  sll        $v0, $v0, 3
     /* 2F310 8003EB10 0980013C */  lui        $at, %hi(D_800948C0)

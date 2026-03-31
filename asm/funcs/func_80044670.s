@@ -13,7 +13,7 @@ glabel func_80044670
     /* 34E9C 8004469C 049D30AC */  sw         $s0, %lo(D_800A9D04)($at)
     /* 34EA0 800446A0 0B80013C */  lui        $at, %hi(D_800A9CFA)
     /* 34EA4 800446A4 FA9C22A4 */  sh         $v0, %lo(D_800A9CFA)($at)
-    /* 34EA8 800446A8 E619010C */  jal        func_80046798
+    /* 34EA8 800446A8 E619010C */  jal        stage_GetId
     /* 34EAC 800446AC 00000000 */   nop
     /* 34EB0 800446B0 0B80013C */  lui        $at, %hi(D_800A9CFC)
     /* 34EB4 800446B4 FC9C22A4 */  sh         $v0, %lo(D_800A9CFC)($at)

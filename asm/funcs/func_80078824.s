@@ -25,7 +25,7 @@ glabel func_80078824
     /* 69080 80078880 380280AF */  sw         $zero, %gp_rel(D_800A3304)($gp)
     /* 69084 80078884 3C0580AF */  sw         $zero, %gp_rel(D_800A3608)($gp)
     /* 69088 80078888 480580AF */  sw         $zero, %gp_rel(D_800A3614)($gp)
-    /* 6908C 8007888C DA59000C */  jal        func_80016768
+    /* 6908C 8007888C DA59000C */  jal        disp_SetFramebufferMode
     /* 69090 80078890 21380000 */   addu      $a3, $zero, $zero
     /* 69094 80078894 01000224 */  addiu      $v0, $zero, 0x1
     /* 69098 80078898 1800BF8F */  lw         $ra, 0x18($sp)

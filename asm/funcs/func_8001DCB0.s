@@ -10,14 +10,14 @@ glabel func_8001DCB0
     /* E4D0 8001DCD0 14000224 */  addiu      $v0, $zero, 0x14
     /* E4D4 8001DCD4 05006210 */  beq        $v1, $v0, .L8001DCEC
     /* E4D8 8001DCD8 00000000 */   nop
-    /* E4DC 8001DCDC 225A000C */  jal        func_80016888
+    /* E4DC 8001DCDC 225A000C */  jal        gpu_InitDisplay
     /* E4E0 8001DCE0 00000000 */   nop
-    /* E4E4 8001DCE4 345A000C */  jal        func_800168D0
+    /* E4E4 8001DCE4 345A000C */  jal        gpu_DisableDisplay
     /* E4E8 8001DCE8 00000000 */   nop
   .L8001DCEC:
     /* E4EC 8001DCEC 3D5D000C */  jal        func_800174F4
     /* E4F0 8001DCF0 00000000 */   nop
-    /* E4F4 8001DCF4 1A5A000C */  jal        func_80016868
+    /* E4F4 8001DCF4 1A5A000C */  jal        gpu_EnableDisplay
     /* E4F8 8001DCF8 00000000 */   nop
     /* E4FC 8001DCFC 8BF8000C */  jal        func_8003E22C
     /* E500 8001DD00 00000000 */   nop
@@ -36,7 +36,7 @@ glabel func_8001DCB0
     /* E534 8001DD34 2D000424 */   addiu     $a0, $zero, 0x2D
     /* E538 8001DD38 50000424 */  addiu      $a0, $zero, 0x50
   .L8001DD3C:
-    /* E53C 8001DD3C B159000C */  jal        func_800166C4
+    /* E53C 8001DD3C B159000C */  jal        disp_CalcFov
     /* E540 8001DD40 21800000 */   addu      $s0, $zero, $zero
     /* E544 8001DD44 FFFB010C */  jal        func_8007EFFC
     /* E548 8001DD48 21204000 */   addu      $a0, $v0, $zero
@@ -466,7 +466,7 @@ glabel func_8001DCB0
     /* EB74 8001E374 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
     /* EB78 8001E378 0A80013C */  lui        $at, %hi(D_800A36A8)
     /* EB7C 8001E37C A83620A0 */  sb         $zero, %lo(D_800A36A8)($at)
-    /* EB80 8001E380 205B000C */  jal        func_80016C80
+    /* EB80 8001E380 205B000C */  jal        file_LoadOverlay
     /* EB84 8001E384 00000000 */   nop
     /* EB88 8001E388 01000224 */  addiu      $v0, $zero, 0x1
     /* EB8C 8001E38C 0A80013C */  lui        $at, %hi(D_800A3670)
@@ -490,7 +490,7 @@ glabel func_8001DCB0
     /* EBD4 8001E3D4 00000000 */   nop
     /* EBD8 8001E3D8 0A80043C */  lui        $a0, %hi(D_800A3904)
     /* EBDC 8001E3DC 04398494 */  lhu        $a0, %lo(D_800A3904)($a0)
-    /* EBE0 8001E3E0 6B5C000C */  jal        func_800171AC
+    /* EBE0 8001E3E0 6B5C000C */  jal        rng_SetSeed
     /* EBE4 8001E3E4 00000000 */   nop
   .L8001E3E8:
     /* EBE8 8001E3E8 2400BF8F */  lw         $ra, 0x24($sp)

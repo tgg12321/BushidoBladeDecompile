@@ -3,7 +3,7 @@ glabel func_8001DA8C
     /* E290 8001DA90 1000BFAF */  sw         $ra, 0x10($sp)
     /* E294 8001DA94 EAD7000C */  jal        func_80035FA8
     /* E298 8001DA98 00000000 */   nop
-    /* E29C 8001DA9C F559000C */  jal        func_800167D4
+    /* E29C 8001DA9C F559000C */  jal        file_GetFlag2
     /* E2A0 8001DAA0 00000000 */   nop
     /* E2A4 8001DAA4 28004014 */  bnez       $v0, .L8001DB48
     /* E2A8 8001DAA8 00000000 */   nop

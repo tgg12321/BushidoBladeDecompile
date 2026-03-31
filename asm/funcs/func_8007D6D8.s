@@ -43,7 +43,7 @@ glabel func_8007D6D8
     /* 6DF78 8007D778 00000000 */  nop
     /* 6DF7C 8007D77C 03004014 */  bnez       $v0, .L8007D78C
     /* 6DF80 8007D780 02000424 */   addiu     $a0, $zero, 0x2
-    /* 6DF84 8007D784 C80A020C */  jal        func_80082B20
+    /* 6DF84 8007D784 C80A020C */  jal        irq_AcknowledgeVblank
     /* 6DF88 8007D788 21280000 */   addu      $a1, $zero, $zero
   .L8007D78C:
     /* 6DF8C 8007D78C 0A80043C */  lui        $a0, %hi(D_8009BF48)

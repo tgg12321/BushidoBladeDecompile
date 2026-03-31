@@ -3,7 +3,7 @@ glabel func_800833C8
     /* 73BCC 800833CC 0A80043C */  lui        $a0, %hi(D_800A2640)
     /* 73BD0 800833D0 40268424 */  addiu      $a0, $a0, %lo(D_800A2640)
     /* 73BD4 800833D4 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 73BD8 800833D8 910D020C */  jal        func_80083644
+    /* 73BD8 800833D8 910D020C */  jal        sys_MemClear2
     /* 73BDC 800833DC 08000524 */   addiu     $a1, $zero, 0x8
     /* 73BE0 800833E0 03000424 */  addiu      $a0, $zero, 0x3
     /* 73BE4 800833E4 0A80023C */  lui        $v0, %hi(D_800A263C)
@@ -11,7 +11,7 @@ glabel func_800833C8
     /* 73BEC 800833EC 0880053C */  lui        $a1, %hi(D_80083418)
     /* 73BF0 800833F0 1834A524 */  addiu      $a1, $a1, %lo(D_80083418)
     /* 73BF4 800833F4 000040AC */  sw         $zero, 0x0($v0)
-    /* 73BF8 800833F8 BC0A020C */  jal        func_80082AF0
+    /* 73BF8 800833F8 BC0A020C */  jal        irq_EnableInterrupts
     /* 73BFC 800833FC 00000000 */   nop
     /* 73C00 80083400 0880023C */  lui        $v0, %hi(D_8008359C)
     /* 73C04 80083404 9C354224 */  addiu      $v0, $v0, %lo(D_8008359C)

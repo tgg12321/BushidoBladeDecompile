@@ -42,7 +42,7 @@ glabel func_80016514
   .L800165A8:
     /* 6DA8 800165A8 21204002 */  addu       $a0, $s2, $zero
     /* 6DAC 800165AC 21286002 */  addu       $a1, $s3, $zero
-    /* 6DB0 800165B0 1F0E020C */  jal        func_8008387C
+    /* 6DB0 800165B0 1F0E020C */  jal        bios_FileRead
     /* 6DB4 800165B4 21300002 */   addu      $a2, $s0, $zero
     /* 6DB8 800165B8 E8FF5014 */  bne        $v0, $s0, .L8001655C
     /* 6DBC 800165BC 23883002 */   subu      $s1, $s1, $s0

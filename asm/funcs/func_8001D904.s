@@ -5,7 +5,7 @@ glabel func_8001D904
     /* E110 8001D910 00085236 */  ori        $s2, $s2, (0x80190800 & 0xFFFF)
     /* E114 8001D914 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* E118 8001D918 1400B1AF */  sw         $s1, 0x14($sp)
-    /* E11C 8001D91C 1A5A000C */  jal        func_80016868
+    /* E11C 8001D91C 1A5A000C */  jal        gpu_EnableDisplay
     /* E120 8001D920 1000B0AF */   sw        $s0, 0x10($sp)
     /* E124 8001D924 4E83000C */  jal        func_80020D38
     /* E128 8001D928 00000000 */   nop
@@ -18,7 +18,7 @@ glabel func_8001D904
     /* E144 8001D944 810E222A */  slti       $v0, $s1, 0xE81
     /* E148 8001D948 03004014 */  bnez       $v0, .L8001D958
     /* E14C 8001D94C 00000000 */   nop
-    /* E150 8001D950 0F5B000C */  jal        func_80016C3C
+    /* E150 8001D950 0F5B000C */  jal        sys_Panic
     /* E154 8001D954 00000000 */   nop
   .L8001D958:
     /* E158 8001D958 1080103C */  lui        $s0, %hi(D_80104F38)

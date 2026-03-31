@@ -9,7 +9,7 @@ glabel func_80077A80
     /* 6829C 80077A9C 01000424 */  addiu      $a0, $zero, 0x1
     /* 682A0 80077AA0 21280000 */  addu       $a1, $zero, $zero
     /* 682A4 80077AA4 21300000 */  addu       $a2, $zero, $zero
-    /* 682A8 80077AA8 DA59000C */  jal        func_80016768
+    /* 682A8 80077AA8 DA59000C */  jal        disp_SetFramebufferMode
     /* 682AC 80077AAC 21380000 */   addu      $a3, $zero, $zero
     /* 682B0 80077AB0 1000BF8F */  lw         $ra, 0x10($sp)
     /* 682B4 80077AB4 01000224 */  addiu      $v0, $zero, 0x1

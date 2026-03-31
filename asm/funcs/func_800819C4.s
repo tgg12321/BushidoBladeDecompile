@@ -23,11 +23,11 @@ glabel func_800819C4
     /* 72218 80081A18 C81120AC */  sw         $zero, %lo(D_800A11C8)($at)
     /* 7221C 80081A1C 0A80013C */  lui        $at, %hi(D_800A11C4)
     /* 72220 80081A20 C41120AC */  sw         $zero, %lo(D_800A11C4)($at)
-    /* 72224 80081A24 B00A020C */  jal        func_80082AC0
+    /* 72224 80081A24 B00A020C */  jal        irq_DisableInterrupts
     /* 72228 80081A28 00000000 */   nop
     /* 7222C 80081A2C 0880053C */  lui        $a1, %hi(D_80081F1C)
     /* 72230 80081A30 1C1FA524 */  addiu      $a1, $a1, %lo(D_80081F1C)
-    /* 72234 80081A34 BC0A020C */  jal        func_80082AF0
+    /* 72234 80081A34 BC0A020C */  jal        irq_EnableInterrupts
     /* 72238 80081A38 02000424 */   addiu     $a0, $zero, 0x2
     /* 7223C 80081A3C 0A80033C */  lui        $v1, %hi(D_800A147C)
     /* 72240 80081A40 7C14638C */  lw         $v1, %lo(D_800A147C)($v1)

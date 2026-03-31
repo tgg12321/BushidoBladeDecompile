@@ -11,13 +11,13 @@ glabel func_80037468
     /* 27C8C 8003748C 21200000 */   addu      $a0, $zero, $zero
     /* 27C90 80037490 A8EC010C */  jal        func_8007B2A0
     /* 27C94 80037494 21200000 */   addu      $a0, $zero, $zero
-    /* 27C98 80037498 1A5A000C */  jal        func_80016868
+    /* 27C98 80037498 1A5A000C */  jal        gpu_EnableDisplay
     /* 27C9C 8003749C 00000000 */   nop
     /* 27CA0 800374A0 436D010C */  jal        func_8005B50C
     /* 27CA4 800374A4 00000000 */   nop
     /* 27CA8 800374A8 DDDD000C */  jal        func_80037774
     /* 27CAC 800374AC 00000000 */   nop
-    /* 27CB0 800374B0 B00A020C */  jal        func_80082AC0
+    /* 27CB0 800374B0 B00A020C */  jal        irq_DisableInterrupts
     /* 27CB4 800374B4 00000000 */   nop
     /* 27CB8 800374B8 DFFF010C */  jal        func_8007FF7C
     /* 27CBC 800374BC 00000000 */   nop
@@ -29,7 +29,7 @@ glabel func_80037468
     /* 27CD4 800374D4 21200000 */   addu      $a0, $zero, $zero
     /* 27CD8 800374D8 5AE3010C */  jal        func_80078D68
     /* 27CDC 800374DC 00000000 */   nop
-    /* 27CE0 800374E0 ED0A020C */  jal        func_80082BB4
+    /* 27CE0 800374E0 ED0A020C */  jal        irq_Reset
     /* 27CE4 800374E4 00000000 */   nop
     /* 27CE8 800374E8 3000B1AF */  sw         $s1, 0x30($sp)
     /* 27CEC 800374EC 6EE2010C */  jal        func_800789B8
@@ -38,9 +38,9 @@ glabel func_80037468
     /* 27CF8 800374F8 21280002 */  addu       $a1, $s0, $zero
     /* 27CFC 800374FC 52E2010C */  jal        func_80078948
     /* 27D00 80037500 21304002 */   addu      $a2, $s2, $zero
-    /* 27D04 80037504 865A000C */  jal        func_80016A18
+    /* 27D04 80037504 865A000C */  jal        sys_Init
     /* 27D08 80037508 00000000 */   nop
-    /* 27D0C 8003750C 3E5B000C */  jal        func_80016CF8
+    /* 27D0C 8003750C 3E5B000C */  jal        file_LoadSoundData
     /* 27D10 80037510 00000000 */   nop
     /* 27D14 80037514 330A020C */  jal        func_800828CC
     /* 27D18 80037518 21200000 */   addu      $a0, $zero, $zero

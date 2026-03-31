@@ -20,7 +20,7 @@ glabel func_80016C80
     /* 74C8 80016CC8 2A105000 */  slt        $v0, $v0, $s0
     /* 74CC 80016CCC 04004010 */  beqz       $v0, .L80016CE0
     /* 74D0 80016CD0 01000224 */   addiu     $v0, $zero, 0x1
-    /* 74D4 80016CD4 0F5B000C */  jal        func_80016C3C
+    /* 74D4 80016CD4 0F5B000C */  jal        sys_Panic
     /* 74D8 80016CD8 00000000 */   nop
     /* 74DC 80016CDC 01000224 */  addiu      $v0, $zero, 0x1
   .L80016CE0:

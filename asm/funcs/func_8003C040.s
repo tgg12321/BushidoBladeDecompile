@@ -1,9 +1,9 @@
 glabel func_8003C040
     /* 2C840 8003C040 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 2C844 8003C044 2400BFAF */  sw         $ra, 0x24($sp)
-    /* 2C848 8003C048 225A000C */  jal        func_80016888
+    /* 2C848 8003C048 225A000C */  jal        gpu_InitDisplay
     /* 2C84C 8003C04C 2000B0AF */   sw        $s0, 0x20($sp)
-    /* 2C850 8003C050 1A5A000C */  jal        func_80016868
+    /* 2C850 8003C050 1A5A000C */  jal        gpu_EnableDisplay
     /* 2C854 8003C054 00000000 */   nop
     /* 2C858 8003C058 3783000C */  jal        func_80020CDC
     /* 2C85C 8003C05C 00000000 */   nop
@@ -14,7 +14,7 @@ glabel func_8003C040
     /* 2C870 8003C070 0200422C */  sltiu      $v0, $v0, 0x2
     /* 2C874 8003C074 03004010 */  beqz       $v0, .L8003C084
     /* 2C878 8003C078 00000000 */   nop
-    /* 2C87C 8003C07C 1D5B000C */  jal        func_80016C74
+    /* 2C87C 8003C07C 1D5B000C */  jal        file_ResetDmaFlag
     /* 2C880 8003C080 00000000 */   nop
   .L8003C084:
     /* 2C884 8003C084 0A80033C */  lui        $v1, %hi(D_800A38A4)
@@ -166,7 +166,7 @@ glabel func_8003C040
     /* 2CA98 8003C298 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
     /* 2CA9C 8003C29C 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 2CAA0 8003C2A0 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
-    /* 2CAA4 8003C2A4 345A000C */  jal        func_800168D0
+    /* 2CAA4 8003C2A4 345A000C */  jal        gpu_DisableDisplay
     /* 2CAA8 8003C2A8 00000000 */   nop
     /* 2CAAC 8003C2AC 2400BF8F */  lw         $ra, 0x24($sp)
     /* 2CAB0 8003C2B0 2000B08F */  lw         $s0, 0x20($sp)

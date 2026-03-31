@@ -22,7 +22,7 @@ glabel func_80016D78
     /* 75C8 80016DC8 CC0682AF */  sw         $v0, %gp_rel(D_800A3798)($gp)
     /* 75CC 80016DCC 4A0680A3 */  sb         $zero, %gp_rel(D_800A3716)($gp)
     /* 75D0 80016DD0 3A0880A3 */  sb         $zero, %gp_rel(D_800A3906)($gp)
-    /* 75D4 80016DD4 3E5B000C */  jal        func_80016CF8
+    /* 75D4 80016DD4 3E5B000C */  jal        file_LoadSoundData
     /* 75D8 80016DD8 00000000 */   nop
     /* 75DC 80016DDC 4D65000C */  jal        func_80019534
     /* 75E0 80016DE0 00000000 */   nop
@@ -37,7 +37,7 @@ glabel func_80016D78
     /* 7604 80016E04 453720A0 */  sb         $zero, %lo(D_800A3745)($at)
     /* 7608 80016E08 0A80013C */  lui        $at, %hi(D_800A3746)
     /* 760C 80016E0C 463720A0 */  sb         $zero, %lo(D_800A3746)($at)
-    /* 7610 80016E10 D11A010C */  jal        func_80046B44
+    /* 7610 80016E10 D11A010C */  jal        game_Init
     /* 7614 80016E14 00000000 */   nop
     /* 7618 80016E18 02000224 */  addiu      $v0, $zero, 0x2
     /* 761C 80016E1C 250682A3 */  sb         $v0, %gp_rel(D_800A36F1)($gp)

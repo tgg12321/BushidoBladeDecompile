@@ -1,9 +1,9 @@
 glabel func_80035480
     /* 25C80 80035480 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 25C84 80035484 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 25C88 80035488 1A5A000C */  jal        func_80016868
+    /* 25C88 80035488 1A5A000C */  jal        gpu_EnableDisplay
     /* 25C8C 8003548C 00000000 */   nop
-    /* 25C90 80035490 225A000C */  jal        func_80016888
+    /* 25C90 80035490 225A000C */  jal        gpu_InitDisplay
     /* 25C94 80035494 00000000 */   nop
     /* 25C98 80035498 0E018293 */  lbu        $v0, %gp_rel(D_800A31DA)($gp)
     /* 25C9C 8003549C 00000000 */  nop
@@ -18,7 +18,7 @@ glabel func_80035480
     /* 25CBC 800354BC 21200000 */   addu      $a0, $zero, $zero
     /* 25CC0 800354C0 7105010C */  jal        func_800415C4
     /* 25CC4 800354C4 01000424 */   addiu     $a0, $zero, 0x1
-    /* 25CC8 800354C8 1D5B000C */  jal        func_80016C74
+    /* 25CC8 800354C8 1D5B000C */  jal        file_ResetDmaFlag
     /* 25CCC 800354CC 00000000 */   nop
     /* 25CD0 800354D0 0C018293 */  lbu        $v0, %gp_rel(D_800A31D8)($gp)
     /* 25CD4 800354D4 00000000 */  nop
@@ -42,7 +42,7 @@ glabel func_80035480
     /* 25D18 80035518 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
     /* 25D1C 8003551C 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 25D20 80035520 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
-    /* 25D24 80035524 345A000C */  jal        func_800168D0
+    /* 25D24 80035524 345A000C */  jal        gpu_DisableDisplay
     /* 25D28 80035528 00000000 */   nop
     /* 25D2C 8003552C 1000BF8F */  lw         $ra, 0x10($sp)
     /* 25D30 80035530 1800BD27 */  addiu      $sp, $sp, 0x18

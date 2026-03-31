@@ -4,7 +4,7 @@ glabel func_800475A4
     /* 37DAC 800475AC 7C00B3AF */  sw         $s3, 0x7C($sp)
     /* 37DB0 800475B0 7800B2AF */  sw         $s2, 0x78($sp)
     /* 37DB4 800475B4 7400B1AF */  sw         $s1, 0x74($sp)
-    /* 37DB8 800475B8 EA19010C */  jal        func_800467A8
+    /* 37DB8 800475B8 EA19010C */  jal        stage_GetVariant
     /* 37DBC 800475BC 7000B0AF */   sw        $s0, 0x70($sp)
     /* 37DC0 800475C0 55004014 */  bnez       $v0, .L80047718
     /* 37DC4 800475C4 1000A527 */   addiu     $a1, $sp, 0x10

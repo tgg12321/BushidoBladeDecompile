@@ -4,7 +4,7 @@ glabel func_8001D790
     /* DF98 8001D798 1980123C */  lui        $s2, (0x80190800 >> 16)
     /* DF9C 8001D79C 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* DFA0 8001D7A0 1400B1AF */  sw         $s1, 0x14($sp)
-    /* DFA4 8001D7A4 1A5A000C */  jal        func_80016868
+    /* DFA4 8001D7A4 1A5A000C */  jal        gpu_EnableDisplay
     /* DFA8 8001D7A8 1000B0AF */   sw        $s0, 0x10($sp)
     /* DFAC 8001D7AC 0A80033C */  lui        $v1, %hi(D_800A36A4)
     /* DFB0 8001D7B0 A4366384 */  lh         $v1, %lo(D_800A36A4)($v1)
@@ -36,7 +36,7 @@ glabel func_8001D790
     /* E014 8001D814 00000000 */   nop
     /* E018 8001D818 0A80043C */  lui        $a0, %hi(D_800A36A4)
     /* E01C 8001D81C A4368484 */  lh         $a0, %lo(D_800A36A4)($a0)
-    /* E020 8001D820 B71B010C */  jal        func_80046EDC
+    /* E020 8001D820 B71B010C */  jal        game_StageCleanup
     /* E024 8001D824 21284002 */   addu      $a1, $s2, $zero
     /* E028 8001D828 1BA4000C */  jal        func_8002906C
     /* E02C 8001D82C 00000000 */   nop
@@ -76,7 +76,7 @@ glabel func_8001D790
     /* E0B4 8001D8B4 310083A3 */  sb         $v1, %gp_rel(D_800A30FD)($gp)
     /* E0B8 8001D8B8 03004014 */  bnez       $v0, .L8001D8C8
     /* E0BC 8001D8BC 00000000 */   nop
-    /* E0C0 8001D8C0 0F5B000C */  jal        func_80016C3C
+    /* E0C0 8001D8C0 0F5B000C */  jal        sys_Panic
     /* E0C4 8001D8C4 00000000 */   nop
   .L8001D8C8:
     /* E0C8 8001D8C8 1080103C */  lui        $s0, %hi(D_800FF6A8)

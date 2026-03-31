@@ -16,7 +16,7 @@ extern s16 D_800FF578;
 extern s32 D_800A2D10;
 extern s32 D_800A2CDC;
 
-extern void func_80082B20(s32, s32);
+extern void irq_AcknowledgeVblank(s32, s32);
 extern s32 spu_TransferDirect(s32, s32);
 extern volatile s32 D_800A2D14;
 extern s32 D_800A2874;
@@ -30,7 +30,7 @@ extern void func_8008D050(s32 *);
 extern s32 D_800A307C;
 extern s32 D_80106F28;
 extern s32 func_80078998(s32);
-extern void func_80082AC0(void);
+extern void irq_DisableInterrupts(void);
 extern void func_80088740(s32);
 extern void spu_WriteReg(s32, u32, s32);
 extern s32 D_800A287C;
@@ -371,7 +371,7 @@ void spu_InitEx(s32 arg0) {
     s32 var_v1;
     s32 val;
 
-    func_80082AC0();
+    irq_DisableInterrupts();
     func_80088740(arg0);
     val = 0xC000;
     if (arg0 == 0) {
@@ -471,7 +471,7 @@ void spu_WriteReg16(void) {
     }
 }
 void spu_SetCallback(s32 a0) {
-    func_80082B20(4, a0);
+    irq_AcknowledgeVblank(4, a0);
 }
 extern s32 D_800A2D18;
 

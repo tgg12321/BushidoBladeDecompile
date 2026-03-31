@@ -264,7 +264,7 @@ u16 func_8007A62C(s32 a0, s32 a1, s32 a2) {
 }
 s16 *func_8007A694(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
     s32 ret;
-    ret = func_80083688();
+    ret = sys_GetVideoMode();
     a0[0] = a1;
     a0[1] = a2;
     a0[2] = a3;
@@ -560,7 +560,7 @@ u32 func_8007AE7C(s32 a0) {
     case 5:
         s0 = (GpuConfig *)&D_8009BE74;
         func_8007DEE4(s0, 0, 0x80);
-        func_80082AC0();
+        irq_DisableInterrupts();
         func_8007DF10((u32)D_8009BE6C & 0xFFFFFF);
         s0->mode = (idx = func_8007D9C4(a0));
         idx = (u8)idx;
@@ -624,7 +624,7 @@ u32 func_8007B178(s32 a0) {
     if (a0 != *p) {
         ((void (*)(s32))D_8009BE6C[0x34 / 4])(1);
         *p = a0;
-        func_80082B20(2, 0);
+        irq_AcknowledgeVblank(2, 0);
     }
     return old;
 }

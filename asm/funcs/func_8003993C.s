@@ -54,7 +54,7 @@ glabel func_8003993C
   .L80039A04:
     /* 2A204 80039A04 12800000 */  mflo       $s0
   .L80039A08:
-    /* 2A208 80039A08 AC1C010C */  jal        func_800472B0
+    /* 2A208 80039A08 AC1C010C */  jal        camera_GetBoneData
     /* 2A20C 80039A0C 00000000 */   nop
     /* 2A210 80039A10 0A80013C */  lui        $at, %hi(D_800A3778)
     /* 2A214 80039A14 783722AC */  sw         $v0, %lo(D_800A3778)($at)
@@ -392,7 +392,7 @@ glabel func_8003993C
     /* 2A700 80039F00 B400622A */  slti       $v0, $s3, 0xB4
     /* 2A704 80039F04 DCFF4014 */  bnez       $v0, .L80039E78
     /* 2A708 80039F08 10003126 */   addiu     $s1, $s1, 0x10
-    /* 2A70C 80039F0C 6A1B010C */  jal        func_80046DA8
+    /* 2A70C 80039F0C 6A1B010C */  jal        game_StageInit
     /* 2A710 80039F10 01000424 */   addiu     $a0, $zero, 0x1
     /* 2A714 80039F14 76CD000C */  jal        func_800335D8
     /* 2A718 80039F18 00000000 */   nop

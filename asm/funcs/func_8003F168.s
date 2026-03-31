@@ -1,7 +1,7 @@
 glabel func_8003F168
     /* 2F968 8003F168 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2F96C 8003F16C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2F970 8003F170 E619010C */  jal        func_80046798
+    /* 2F970 8003F170 E619010C */  jal        stage_GetId
     /* 2F974 8003F174 00000000 */   nop
     /* 2F978 8003F178 C0100200 */  sll        $v0, $v0, 3
     /* 2F97C 8003F17C 0980013C */  lui        $at, %hi(D_800948BC)
@@ -10,7 +10,7 @@ glabel func_8003F168
     /* 2F988 8003F188 00000000 */  nop
     /* 2F98C 8003F18C 0A004010 */  beqz       $v0, .L8003F1B8
     /* 2F990 8003F190 00000000 */   nop
-    /* 2F994 8003F194 E619010C */  jal        func_80046798
+    /* 2F994 8003F194 E619010C */  jal        stage_GetId
     /* 2F998 8003F198 00000000 */   nop
     /* 2F99C 8003F19C C0100200 */  sll        $v0, $v0, 3
     /* 2F9A0 8003F1A0 0980013C */  lui        $at, %hi(D_800948BC)

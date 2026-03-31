@@ -80,7 +80,7 @@ glabel func_80080DB0
   .L80080EDC:
     /* 716DC 80080EDC 49004014 */  bnez       $v0, .L80081004
     /* 716E0 80080EE0 FFFF0224 */   addiu     $v0, $zero, -0x1
-    /* 716E4 80080EE4 050B020C */  jal        func_80082C14
+    /* 716E4 80080EE4 050B020C */  jal        sys_GetVblankCount
     /* 716E8 80080EE8 00000000 */   nop
     /* 716EC 80080EEC 2B004010 */  beqz       $v0, .L80080F9C
     /* 716F0 80080EF0 00000000 */   nop

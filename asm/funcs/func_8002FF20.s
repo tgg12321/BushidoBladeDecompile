@@ -9,7 +9,7 @@ glabel func_8002FF20
     /* 2073C 8002FF3C 01000224 */  addiu      $v0, $zero, 0x1
     /* 20740 8002FF40 080002A2 */  sb         $v0, 0x8($s0)
     /* 20744 8002FF44 090005A2 */  sb         $a1, 0x9($s0)
-    /* 20748 8002FF48 7B1B010C */  jal        func_80046DEC
+    /* 20748 8002FF48 7B1B010C */  jal        game_GetPlayerData
     /* 2074C 8002FF4C 0100842C */   sltiu     $a0, $a0, 0x1
     /* 20750 8002FF50 0C001126 */  addiu      $s1, $s0, 0xC
     /* 20754 8002FF54 21282002 */  addu       $a1, $s1, $zero

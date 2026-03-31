@@ -9,7 +9,7 @@ extern void func_80081030(void);
 extern s32 func_80081718();
 extern s32 func_80081D1C();
 extern s32 func_80081E1C(void);
-extern void func_80082B20(s32, s32);
+extern void irq_AcknowledgeVblank(s32, s32);
 extern s32 func_80081BB0(s32);
 
 /* Externs for globals */
@@ -149,7 +149,7 @@ s32 func_80080640(void) {
 }
 
 void func_80080660(s32 a0) {
-    func_80082B20(3, a0);
+    irq_AcknowledgeVblank(3, a0);
 }
 
 void func_80080684(s32 a0) {
@@ -253,16 +253,16 @@ s32 func_80081880(void) {
     return 0;
 }
 extern s32 D_800A11C8;
-extern void func_80082AC0(void);
-extern void func_80082AF0(s32, void *);
+extern void irq_DisableInterrupts(void);
+extern void irq_EnableInterrupts(s32, void *);
 extern u8 D_80081F1C;
 void func_80081974(void) {
     D_800A11B8 = 0;
     D_800A11B4 = 0;
     D_800A11C8 = 0;
     *(s32 *)&D_800A11C4 = 0;
-    func_80082AC0();
-    func_80082AF0(2, &D_80081F1C);
+    irq_DisableInterrupts();
+    irq_EnableInterrupts(2, &D_80081F1C);
 }
 extern void D_800162A8;
 extern void D_800162B4;
@@ -282,8 +282,8 @@ s32 func_800819C4(void) {
     D_800A11C8 = 0;
     *(s32 *)&D_800A11C4 = 0;
 
-    func_80082AC0();
-    func_80082AF0(2, &D_80081F1C);
+    irq_DisableInterrupts();
+    irq_EnableInterrupts(2, &D_80081F1C);
 
     *D_800A147C = 1;
     v0 = *D_800A1488 & 7;

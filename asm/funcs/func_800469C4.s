@@ -25,8 +25,8 @@ glabel func_800469C4
     /* 37220 80046A20 0A000424 */  addiu      $a0, $zero, 0xA
     /* 37224 80046A24 8015010C */  jal        func_80045600
     /* 37228 80046A28 21280002 */   addu      $a1, $s0, $zero
-    /* 3722C 80046A2C 0480053C */  lui        $a1, %hi(func_80046A80)
-    /* 37230 80046A30 806AA524 */  addiu      $a1, $a1, %lo(func_80046A80)
+    /* 3722C 80046A2C 0480053C */  lui        $a1, %hi(snd_SelectionCallback)
+    /* 37230 80046A30 806AA524 */  addiu      $a1, $a1, %lo(snd_SelectionCallback)
     /* 37234 80046A34 7E0192A7 */  sh         $s2, %gp_rel(D_800A324A)($gp)
     /* 37238 80046A38 A515010C */  jal        func_80045694
     /* 3723C 80046A3C 0A000424 */   addiu     $a0, $zero, 0xA

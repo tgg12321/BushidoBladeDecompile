@@ -2,7 +2,7 @@
 #include "include_asm.h"
 
 /* Forward declarations */
-extern void func_80082AC0(void);
+extern void irq_DisableInterrupts(void);
 extern void func_800885AC(void);
 extern void func_80083A48(void);
 extern void func_800892F8(void);
@@ -18,14 +18,14 @@ extern void func_8008AF9C(s32 *);
 
 /* --- Functions 0x8008289C - 0x80083BE4 --- */
 
-s32 func_8008289C(s32 a0) {
+s32 sys_SetVsyncMode(s32 a0) {
     s32 old = D_800A14CC;
     D_800A14CC = a0;
     return old;
 }
 
 extern s32 D_800A1500;
-s32 func_800828B4(s32 a0) {
+s32 sys_SetTimer(s32 a0) {
     s32 *p = &D_800A1500;
     s32 old = p[0];
     *(volatile s32 *)p = a0;
@@ -47,35 +47,35 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-void func_80082AC0(void) {
+void irq_DisableInterrupts(void) {
     ((void (*)(void))D_800A2600[3])();
 }
-void func_80082AF0(void) {
+void irq_EnableInterrupts(void) {
     ((void (*)(void))D_800A2600[2])();
 }
 
-void func_80082B20(void) {
+void irq_AcknowledgeVblank(void) {
     ((void (*)(void))D_800A2600[1])();
 }
-void func_80082B50(s32 a0) {
+void irq_SetAlarm(s32 a0) {
     ((void (*)(s32, s32))D_800A2600[5])(4, a0);
 }
 
-void func_80082B84(void) {
+void irq_ClearAlarm(void) {
     ((void (*)(void))D_800A2600[5])();
 }
-void func_80082BB4(void) {
+void irq_Reset(void) {
     ((void (*)(void))D_800A2600[4])();
 }
 
-void func_80082BE4(void) {
+void irq_Dispatch(void) {
     ((void (*)(void))D_800A2600[6])();
 }
-u32 func_80082C14(void) {
+u32 sys_GetVblankCount(void) {
     return D_800A157A;
 }
 
-u32 func_80082C24(void) {
+u32 sys_GetIrqCounter(void) {
     return *D_800A2608;
 }
 INCLUDE_ASM("asm/funcs", func_80082C3C);
@@ -176,27 +176,27 @@ __asm__(
     "    .set at\n"
 );
 INCLUDE_ASM("asm/funcs", func_800832A0);
-void func_8008339C(s32 *a0, s32 a1) {
+void sys_MemClear(s32 *a0, s32 a1) {
     s32 i;
     for (i = a1 - 1; i != -1; i--) {
         *a0++ = 0;
     }
 }
 INCLUDE_ASM("asm/funcs", func_800833C8);
-void func_80083644(s32 *a0, s32 a1) {
+void sys_MemClear2(s32 *a0, s32 a1) {
     s32 i;
     for (i = a1 - 1; i != -1; i--) {
         *a0++ = 0;
     }
 }
 
-s32 func_80083670(s32 a0) {
+s32 sys_SetVideoMode(s32 a0) {
     s32 old = D_800A2664;
     D_800A2664 = a0;
     return old;
 }
 
-s32 func_80083688(void) {
+s32 sys_GetVideoMode(void) {
     return D_800A2664;
 }
 
@@ -246,9 +246,9 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-extern s32 func_8008393C(s32, s32, s32, s32);
+extern s32 bios_FileReadRaw(s32, s32, s32, s32);
 
-s32 func_8008387C(s32 addr, s32 dest, s32 len) {
+s32 bios_FileRead(s32 addr, s32 dest, s32 len) {
     register s32 total asm("s2");
     s32 chunk;
     s32 result;
@@ -260,7 +260,7 @@ s32 func_8008387C(s32 addr, s32 dest, s32 len) {
             if ((u32)0x8000 < (u32)len) {
                 chunk = 0x8000;
             }
-            result = func_8008393C(0, addr, chunk, dest);
+            result = bios_FileReadRaw(0, addr, chunk, dest);
             total += result;
             if (result == -1) {
                 return -1;
@@ -278,7 +278,7 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_8008393C\n"
+    "glabel bios_FileReadRaw\n"
     "    .word 0x0000414D\n"
     "    beqz $v0, .L8008394C\n"
     "    addu $v0, $v1, $zero\n"
@@ -286,7 +286,7 @@ __asm__(
     ".L8008394C:\n"
     "    jr $ra\n"
     "    nop\n"
-    "endlabel func_8008393C\n"
+    "endlabel bios_FileReadRaw\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -298,7 +298,7 @@ extern s32 D_800A26D8;
 extern void func_800789B8(void);
 extern void func_800789C8(void);
 
-void func_80083954(void) {
+void irq_ProcessPending(void) {
     if (D_800A26D0 != 0) {
         return;
     }
@@ -308,31 +308,31 @@ void func_80083954(void) {
     }
     func_800789B8();
     if (D_800A26DC != 0) {
-        func_80082B50(0);
+        irq_SetAlarm(0);
         D_800A26DC = 0;
     } else if (D_800A26DE == 0) {
-        ((void (*)(s32, s32))func_80082AF0)(0, D_800A26D8);
+        ((void (*)(s32, s32))irq_EnableInterrupts)(0, D_800A26D8);
         D_800A26D8 = 0;
     } else {
-        ((void (*)(s32, s32))func_80082AF0)(6, 0);
+        ((void (*)(s32, s32))irq_EnableInterrupts)(6, 0);
     }
     func_800789C8();
     D_800A26DE = 0x7F;
 }
 
-void func_80083A18(void) {
-    func_80082AC0();
+void sys_Shutdown(void) {
+    irq_DisableInterrupts();
     func_800885AC();
     func_80083A48();
 }
 
 INCLUDE_ASM("asm/funcs", func_80083A48);
 
-void func_80083B30(void) {
+void spu_Reset(void) {
     func_800892F8();
 }
 
-void func_80083B50(s32 a0, s32 a1, s32 a2) {
+void spu_SetVolume(s32 a0, s32 a1, s32 a2) {
     s32 buf[10];
 
     if ((a0 & 0xFF) == 0) {

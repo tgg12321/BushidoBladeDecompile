@@ -1,7 +1,7 @@
 glabel func_800486FC
     /* 38EFC 800486FC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 38F00 80048700 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 38F04 80048704 EB59000C */  jal        func_800167AC
+    /* 38F04 80048704 EB59000C */  jal        file_GetFlag0
     /* 38F08 80048708 00000000 */   nop
     /* 38F0C 8004870C 05004010 */  beqz       $v0, .L80048724
     /* 38F10 80048710 01000224 */   addiu     $v0, $zero, 0x1

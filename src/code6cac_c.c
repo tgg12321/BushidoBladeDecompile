@@ -39,14 +39,14 @@ extern void func_80023CB4(s32, s32);
 extern s32 func_80037110(s32);
 extern void func_80036EC0(void);
 extern void func_80036F40(void);
-extern void func_80016868(void);
+extern void gpu_EnableDisplay(void);
 extern void func_800194F4(void);
 extern void func_80045188(void);
 extern s32 func_8008C464(s32, s32, s32);
 extern void func_80080148(void);
 extern void func_8007FF7C(void);
 extern void func_800828CC(s32);
-extern void func_80083B50(s32, s32, s32);
+extern void spu_SetVolume(s32, s32, s32);
 extern void func_80085448(s32, s32, s32);
 extern void func_8003E2D8(s32, s32, s32, s32);
 extern void func_8007B600(s32, s32);
@@ -56,9 +56,9 @@ extern void func_80079A30(s32 *, s32, s32, s32);
 extern s32 D_800109BC;
 extern void func_80078A28(s32 *);
 extern void func_8003DE14(s32 *, s32);
-extern void func_80016888(void);
+extern void gpu_InitDisplay(void);
 extern void func_80061178(void);
-extern void func_800168D0(void);
+extern void gpu_DisableDisplay(void);
 extern s32 func_800371E8(s16);
 extern void func_800450BC(s32, s32);
 extern u16 D_800F6656;
@@ -121,7 +121,7 @@ extern void func_80036940(void);
 extern void func_8003D52C(s32, s32, s32, s32);
 extern s32 D_800100A4;
 extern void func_800415C4(s32);
-extern void func_80016C74(void);
+extern void file_ResetDmaFlag(void);
 extern void func_8005B72C(void);
 extern void func_80077820(s32);
 extern void func_80080168(s32);
@@ -174,10 +174,10 @@ extern s32 D_800A3860;
 extern s32 D_80102760;
 extern u8 D_800A36F1;
 extern s16 D_800A391D;
-extern s32 func_800167D4(void);
+extern s32 file_GetFlag2(void);
 extern void func_80041688(s32, s32);
 extern void func_8003F1E4(s32);
-extern s16 *func_8004678C(void);
+extern s16 *snd_GetSeId(void);
 extern void func_8003553C(void);
 extern s32 D_800109C8;
 
@@ -191,7 +191,7 @@ extern s16 D_800F6618;
 extern s16 D_800F661A;
 extern s16 D_800F661C;
 extern s32 D_800F6620;
-extern void func_80016C3C(void);
+extern void sys_Panic(void);
 extern s32 func_80020D38(void);
 extern s32 func_8005B9FC(s32);
 extern s32 D_800A37C0;
@@ -233,26 +233,26 @@ extern s32 D_800A37A4;
 extern s32 D_800A3844;
 extern u8 D_800A376C;
 extern u8 D_8008D578;
-extern void func_80016C80(void);
+extern void file_LoadOverlay(void);
 extern void func_80022580(s32, s32, s32, s32, s32);
 extern void func_80040510(s32, s32, s32);
-extern void func_80046F14(void);
+extern void stage_GetDataPtr(void);
 extern s16 D_800A36A4;
 
 extern u8 D_800A3768;
 extern u8 D_800A38F8;
 extern void func_8005B50C(void);
-extern void func_80082AC0(void);
+extern void irq_DisableInterrupts(void);
 extern void func_80037348(s32 *);
 extern void func_8007AE7C(s32);
 extern void func_80078D68(void);
-extern void func_80082BB4(void);
+extern void irq_Reset(void);
 extern s32 D_800A3210;
 extern void func_8008BE04(void);
 extern s32 func_800789B8(void);
 extern void func_80078948(s32 *, s32, s32 *);
-extern void func_80016A18(void);
-extern void func_80016CF8(void);
+extern void sys_Init(void);
+extern void file_LoadSoundData(void);
 extern void func_8007B2A0(s32);
 extern void func_8007B33C(s32);
 extern void func_800493E4(s32);
@@ -622,7 +622,7 @@ extern void func_8008BE4C(void);
 extern s32 func_8006BEC4(s32, s32);
 extern void func_8003E22C(void);
 extern void func_8003F218(s32);
-extern s32 func_800166C4(s32);
+extern s32 disp_CalcFov(s32);
 extern void func_8007EFFC(s32);
 extern void func_8001B6F4(void);
 extern void func_80022568(u8 *);
@@ -1146,10 +1146,10 @@ void func_800397A0(void) {
     }
 }
 void func_800397D4(void) {
-    func_80016868();
+    gpu_EnableDisplay();
     func_8003E22C();
     func_8003F218(0);
-    func_8007EFFC(func_800166C4(0x2D));
+    func_8007EFFC(disp_CalcFov(0x2D));
     func_80041688(0, 0);
     func_80041688(1, 0);
     func_8001B6F4();
@@ -1379,8 +1379,8 @@ s32 func_8003ACB8(void) {
         }
         D_800A3904 = var_v0;
     }
-    func_80016888();
-    func_800168D0();
+    gpu_InitDisplay();
+    gpu_DisableDisplay();
     func_80078BA8(0xF2000001);
     return temp_s0;
 }
@@ -1390,7 +1390,7 @@ void func_8003AF40(s32 arg0) {
         (&D_8010277E)[arg0] = (&D_8010277E)[(u32)arg0 < 1u];
     }
     func_80022580(arg0, ((s8 *)&D_80102780)[arg0], ((s8 *)&D_8010277C)[arg0], ((s8 *)&D_8010277E)[arg0], 0);
-    func_80016868();
+    gpu_EnableDisplay();
     func_80020D38();
     func_80040510(arg0, (&D_8008D578)[(s8)(&D_8010277C)[arg0]], (s32)0x80190800);
 }
@@ -1410,7 +1410,7 @@ void func_8003B20C(s32 arg0) {
     D_800A37A0 = 0;
     D_800A37A4 = 0;
     D_800A3844 = arg0;
-    func_80016C80();
+    file_LoadOverlay();
     func_8003AE5C(D_800A3844);
     func_8003AF40(0);
     D_800A376C = (&D_8008D538)[(s8)D_8010277C];
@@ -1512,11 +1512,11 @@ void func_8003B870(void) {
     func_80041604(0, D_800A376A);
     func_80041604(1, 0);
     func_8005B5AC();
-    func_80016888();
-    func_80016768(1, 0, 0, 0);
+    gpu_InitDisplay();
+    disp_SetFramebufferMode(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x17;
-    func_800168D0();
+    gpu_DisableDisplay();
 }
 void func_8003B8E4(void) {
     s32 tmp;
@@ -1536,7 +1536,7 @@ void func_8003B8E4(void) {
         D_800A3768 = 0x14;
         func_8001D790();
         func_8003B5A4();
-        func_80016768(1, 0, 0, 0);
+        disp_SetFramebufferMode(1, 0, 0, 0);
         D_800A390D = 1;
     }
 }

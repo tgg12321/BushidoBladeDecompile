@@ -7,7 +7,7 @@ glabel func_800300B4
     /* 208C8 800300C8 4C00B1AF */  sw         $s1, 0x4C($sp)
     /* 208CC 800300CC 4800B0AF */  sw         $s0, 0x48($sp)
     /* 208D0 800300D0 06006492 */  lbu        $a0, 0x6($s3)
-    /* 208D4 800300D4 7B1B010C */  jal        func_80046DEC
+    /* 208D4 800300D4 7B1B010C */  jal        game_GetPlayerData
     /* 208D8 800300D8 0100842C */   sltiu     $a0, $a0, 0x1
     /* 208DC 800300DC 09006392 */  lbu        $v1, 0x9($s3)
     /* 208E0 800300E0 00000000 */  nop

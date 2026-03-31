@@ -28,7 +28,7 @@ glabel func_8003AF40
     /* 2B7A4 8003AFA4 21200002 */  addu       $a0, $s0, $zero
     /* 2B7A8 8003AFA8 6089000C */  jal        func_80022580
     /* 2B7AC 8003AFAC 1000A0AF */   sw        $zero, 0x10($sp)
-    /* 2B7B0 8003AFB0 1A5A000C */  jal        func_80016868
+    /* 2B7B0 8003AFB0 1A5A000C */  jal        gpu_EnableDisplay
     /* 2B7B4 8003AFB4 00000000 */   nop
     /* 2B7B8 8003AFB8 4E83000C */  jal        func_80020D38
     /* 2B7BC 8003AFBC 00000000 */   nop

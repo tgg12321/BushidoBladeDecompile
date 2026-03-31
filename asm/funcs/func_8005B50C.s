@@ -10,9 +10,9 @@ glabel func_8005B50C
     /* 4BD2C 8005B52C 21200000 */  addu       $a0, $zero, $zero
     /* 4BD30 8005B530 9317020C */  jal        func_80085E4C
     /* 4BD34 8005B534 21280000 */   addu      $a1, $zero, $zero
-    /* 4BD38 8005B538 550E020C */  jal        func_80083954
+    /* 4BD38 8005B538 550E020C */  jal        irq_ProcessPending
     /* 4BD3C 8005B53C 00000000 */   nop
-    /* 4BD40 8005B540 CC0E020C */  jal        func_80083B30
+    /* 4BD40 8005B540 CC0E020C */  jal        spu_Reset
     /* 4BD44 8005B544 00000000 */   nop
     /* 4BD48 8005B548 21280000 */  addu       $a1, $zero, $zero
     /* 4BD4C 8005B54C 0F80043C */  lui        $a0, %hi(D_800EFB38)

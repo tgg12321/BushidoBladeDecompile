@@ -16,7 +16,7 @@ glabel func_800770B8
     /* 678F0 800770F0 11EE010C */  jal        func_8007B844
     /* 678F4 800770F4 1200A0A7 */   sh        $zero, 0x12($sp)
     /* 678F8 800770F8 0C0590AF */  sw         $s0, %gp_rel(D_800A35D8)($gp)
-    /* 678FC 800770FC A81A010C */  jal        func_80046AA0
+    /* 678FC 800770FC A81A010C */  jal        snd_StopAll
     /* 67900 80077100 00000000 */   nop
     /* 67904 80077104 06000424 */  addiu      $a0, $zero, 0x6
     /* 67908 80077108 54BA010C */  jal        func_8006E950

@@ -2,12 +2,12 @@
 #include "include_asm.h"
 
 /* Forward declarations */
-extern s32 func_80046798(void);
-extern void func_80017F98(s32, s32, s32);
+extern s32 stage_GetId(void);
+extern void sys_StubEmpty3(s32, s32, s32);
 extern void *func_8004153C(void);
-extern void func_80017714(void);
-extern void func_80017F90(void);
-extern void func_80017E8C(s32);
+extern void obj_ClearAll(void);
+extern void sys_StubEmpty2(void);
+extern void obj_Clear(s32);
 
 /* Externs for globals */
 extern s32 D_800A336C;
@@ -35,9 +35,9 @@ extern s32 D_800A93C4;
 
 /* --- Functions 0x8003F168 - 0x8004019C --- */
 void func_8003F168(void) {
-    s32 v0 = *(s32 *)((u32)&D_800948BC + (func_80046798() << 3));
+    s32 v0 = *(s32 *)((u32)&D_800948BC + (stage_GetId() << 3));
     if (v0) {
-        (*(void (**)(void))((u32)&D_800948BC + (func_80046798() << 3)))();
+        (*(void (**)(void))((u32)&D_800948BC + (stage_GetId() << 3)))();
     }
 }
 s32 func_8003F1C8(void) {
@@ -141,9 +141,9 @@ void func_8003F5A8(s32 a0, s32 a1, s32 a2) {
 }
 
 void func_8003F5CC(void) {
-    func_80017F98(D_800A93B0, D_800A93BC, 0);
-    func_80017F98(D_800A93B4, D_800A93C0, 1);
-    func_80017F98(D_800A93B8, D_800A93C4, 2);
+    sys_StubEmpty3(D_800A93B0, D_800A93BC, 0);
+    sys_StubEmpty3(D_800A93B4, D_800A93C0, 1);
+    sys_StubEmpty3(D_800A93B8, D_800A93C4, 2);
 }
 
 void func_8003F62C(s32 *a0) {
@@ -167,8 +167,8 @@ void func_8003F62C(s32 *a0) {
 }
 INCLUDE_ASM("asm/funcs", func_8003F6D8);
 void func_8003F7F4(void) {
-    func_80017714();
-    func_80017F90();
+    obj_ClearAll();
+    sys_StubEmpty2();
     D_800A3370 = 0;
     D_800A3374 = 0;
 }
@@ -339,7 +339,7 @@ void func_800400F8(s32 *a0) {
             s1 = s2;
             s0 = 0;
             do {
-                func_80017E8C(s1[4]);
+                obj_Clear(s1[4]);
                 s1 = (s16 *)((s32)s1 + 0xD0);
                 s0++;
             } while (s0 < s2[0]);

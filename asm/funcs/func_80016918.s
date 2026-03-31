@@ -14,7 +14,7 @@ glabel func_80016918
     /* 7148 80016948 40010424 */  addiu      $a0, $zero, 0x140
     /* 714C 8001694C F7FB010C */  jal        func_8007EFDC
     /* 7150 80016950 78000524 */   addiu     $a1, $zero, 0x78
-    /* 7154 80016954 B159000C */  jal        func_800166C4
+    /* 7154 80016954 B159000C */  jal        disp_CalcFov
     /* 7158 80016958 2D000424 */   addiu     $a0, $zero, 0x2D
     /* 715C 8001695C FFFB010C */  jal        func_8007EFFC
     /* 7160 80016960 21204000 */   addu      $a0, $v0, $zero
@@ -47,7 +47,7 @@ glabel func_80016918
     /* 71CC 800169CC 01000424 */  addiu      $a0, $zero, 0x1
     /* 71D0 800169D0 21280000 */  addu       $a1, $zero, $zero
     /* 71D4 800169D4 21300000 */  addu       $a2, $zero, $zero
-    /* 71D8 800169D8 DA59000C */  jal        func_80016768
+    /* 71D8 800169D8 DA59000C */  jal        disp_SetFramebufferMode
     /* 71DC 800169DC 21380000 */   addu      $a3, $zero, $zero
     /* 71E0 800169E0 0A80043C */  lui        $a0, %hi(D_800A30CC)
     /* 71E4 800169E4 CC308424 */  addiu      $a0, $a0, %lo(D_800A30CC)

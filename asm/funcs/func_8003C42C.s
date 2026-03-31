@@ -71,7 +71,7 @@ glabel func_8003C42C
     /* 2CD28 8003C528 01000424 */  addiu      $a0, $zero, 0x1
     /* 2CD2C 8003C52C 21280000 */  addu       $a1, $zero, $zero
     /* 2CD30 8003C530 21300000 */  addu       $a2, $zero, $zero
-    /* 2CD34 8003C534 DA59000C */  jal        func_80016768
+    /* 2CD34 8003C534 DA59000C */  jal        disp_SetFramebufferMode
     /* 2CD38 8003C538 21380000 */   addu      $a3, $zero, $zero
     /* 2CD3C 8003C53C 15000224 */  addiu      $v0, $zero, 0x15
     /* 2CD40 8003C540 0A80013C */  lui        $at, %hi(D_800A37B8)

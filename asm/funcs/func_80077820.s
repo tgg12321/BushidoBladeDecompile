@@ -8,7 +8,7 @@ glabel func_80077820
     /* 68038 80077838 01000424 */  addiu      $a0, $zero, 0x1
     /* 6803C 8007783C 21280000 */  addu       $a1, $zero, $zero
     /* 68040 80077840 21300000 */  addu       $a2, $zero, $zero
-    /* 68044 80077844 DA59000C */  jal        func_80016768
+    /* 68044 80077844 DA59000C */  jal        disp_SetFramebufferMode
     /* 68048 80077848 21380000 */   addu      $a3, $zero, $zero
     /* 6804C 8007784C 180580AF */  sw         $zero, %gp_rel(D_800A35E4)($gp)
     /* 68050 80077850 1000BF8F */  lw         $ra, 0x10($sp)
