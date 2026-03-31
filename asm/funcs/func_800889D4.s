@@ -1,4 +1,4 @@
-glabel DispUpdateStatusMessage
+glabel func_800889D4
     /* 791D4 800889D4 0A80023C */  lui        $v0, %hi(D_800A2CDC)
     /* 791D8 800889D8 DC2C428C */  lw         $v0, %lo(D_800A2CDC)($v0)
     /* 791DC 800889DC 0A80033C */  lui        $v1, %hi(D_800A2CF4)
@@ -222,4 +222,4 @@ glabel DispUpdateStatusMessage
     /* 79500 80088D00 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 79504 80088D04 0800E003 */  jr         $ra
     /* 79508 80088D08 00000000 */   nop
-endlabel DispUpdateStatusMessage
+endlabel func_800889D4

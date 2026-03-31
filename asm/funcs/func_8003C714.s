@@ -1,4 +1,4 @@
-glabel SetCurrentCursor
+glabel func_8003C714
     /* 2CF14 8003C714 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2CF18 8003C718 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 2CF1C 8003C71C 40DF010C */  jal        func_80077D00
@@ -104,4 +104,4 @@ glabel SetCurrentCursor
     /* 2D0A8 8003C8A8 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 2D0AC 8003C8AC 0800E003 */  jr         $ra
     /* 2D0B0 8003C8B0 00000000 */   nop
-endlabel SetCurrentCursor
+endlabel func_8003C714

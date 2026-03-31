@@ -1,4 +1,4 @@
-glabel DispSleepMenuTex
+glabel func_8003D52C
     /* 2DD2C 8003D52C 0400A5AF */  sw         $a1, 0x4($sp)
     /* 2DD30 8003D530 0800A6AF */  sw         $a2, 0x8($sp)
     /* 2DD34 8003D534 0C00A7AF */  sw         $a3, 0xC($sp)
@@ -157,4 +157,4 @@ glabel DispSleepMenuTex
     /* 2DF68 8003D768 3805BD27 */  addiu      $sp, $sp, 0x538
     /* 2DF6C 8003D76C 0800E003 */  jr         $ra
     /* 2DF70 8003D770 00000000 */   nop
-endlabel DispSleepMenuTex
+endlabel func_8003D52C

@@ -106,7 +106,7 @@ glabel func_80088740
     /* 790CC 800888CC B20140A4 */  sh         $zero, 0x1B2($v0)
     /* 790D0 800888D0 B40140A4 */  sh         $zero, 0x1B4($v0)
     /* 790D4 800888D4 B60140A4 */  sh         $zero, 0x1B6($v0)
-    /* 790D8 800888D8 7522020C */  jal        DispUpdateStatusMessage
+    /* 790D8 800888D8 7522020C */  jal        func_800889D4
     /* 790DC 800888DC 10000524 */   addiu     $a1, $zero, 0x10
     /* 790E0 800888E0 21200000 */  addu       $a0, $zero, $zero
     /* 790E4 800888E4 FF3F0624 */  addiu      $a2, $zero, 0x3FFF

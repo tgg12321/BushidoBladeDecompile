@@ -1,4 +1,4 @@
-glabel DispPracticeMenuTex_B
+glabel func_80020E74
     /* 11674 80020E74 0A80023C */  lui        $v0, %hi(D_800A3880)
     /* 11678 80020E78 80384290 */  lbu        $v0, %lo(D_800A3880)($v0)
     /* 1167C 80020E7C C0FEBD27 */  addiu      $sp, $sp, -0x140
@@ -248,4 +248,4 @@ glabel DispPracticeMenuTex_B
     /* 11A04 80021204 4001BD27 */  addiu      $sp, $sp, 0x140
     /* 11A08 80021208 0800E003 */  jr         $ra
     /* 11A0C 8002120C 00000000 */   nop
-endlabel DispPracticeMenuTex_B
+endlabel func_80020E74

@@ -1,4 +1,4 @@
-glabel DispSamnailWindow
+glabel func_800344B4
     /* 24CB4 800344B4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 24CB8 800344B8 1400BFAF */  sw         $ra, 0x14($sp)
     /* 24CBC 800344BC FCD0000C */  jal        func_800343F0
@@ -161,4 +161,4 @@ glabel DispSamnailWindow
     /* 24EFC 800346FC 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 24F00 80034700 0800E003 */  jr         $ra
     /* 24F04 80034704 00000000 */   nop
-endlabel DispSamnailWindow
+endlabel func_800344B4

@@ -1,4 +1,4 @@
-glabel DispSchoolBG
+glabel func_8002EBDC
     /* 1F3DC 8002EBDC C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 1F3E0 8002EBE0 2400B3AF */  sw         $s3, 0x24($sp)
     /* 1F3E4 8002EBE4 21988000 */  addu       $s3, $a0, $zero
@@ -193,4 +193,4 @@ glabel DispSchoolBG
     /* 1F6C0 8002EEC0 3800BD27 */  addiu      $sp, $sp, 0x38
     /* 1F6C4 8002EEC4 0800E003 */  jr         $ra
     /* 1F6C8 8002EEC8 00000000 */   nop
-endlabel DispSchoolBG
+endlabel func_8002EBDC

@@ -1,4 +1,4 @@
-glabel DispStuff
+glabel func_80083E9C
     /* 7469C 80083E9C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 746A0 80083EA0 1000BFAF */  sw         $ra, 0x10($sp)
     /* 746A4 80083EA4 0D0F020C */  jal        func_80083C34
@@ -225,4 +225,4 @@ glabel DispStuff
     /* 749D4 800841D4 4800BD27 */  addiu      $sp, $sp, 0x48
     /* 749D8 800841D8 0800E003 */  jr         $ra
     /* 749DC 800841DC 00000000 */   nop
-endlabel DispStuff
+endlabel func_80083E9C

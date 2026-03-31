@@ -180,6 +180,7 @@ s32 func_800807A8(u8 *a0) {
 }
 INCLUDE_ASM("asm/funcs", func_80080828);
 INCLUDE_ASM("asm/funcs", cpu_side_move_dir_4);
+/* kengo:HIGH  |  nm_cpu/cpu_side_move_dir_4  |  160i  |  x4 size collision */
 INCLUDE_ASM("asm/funcs", func_80081030);
 INCLUDE_ASM("asm/funcs", func_800812FC);
 extern volatile u8 *D_800A147C;

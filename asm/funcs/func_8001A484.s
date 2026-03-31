@@ -15,7 +15,7 @@ glabel func_8001A484
     /* ACB4 8001A4B4 00002596 */  lhu        $a1, 0x0($s1)
     /* ACB8 8001A4B8 0180043C */  lui        $a0, %hi(D_800100A4)
     /* ACBC 8001A4BC A4008424 */  addiu      $a0, $a0, %lo(D_800100A4)
-    /* ACC0 8001A4C0 4BF5000C */  jal        DispSleepMenuTex
+    /* ACC0 8001A4C0 4BF5000C */  jal        func_8003D52C
     /* ACC4 8001A4C4 06003126 */   addiu     $s1, $s1, 0x6
     /* ACC8 8001A4C8 1600422A */  slti       $v0, $s2, 0x16
     /* ACCC 8001A4CC F6FF4014 */  bnez       $v0, .L8001A4A8

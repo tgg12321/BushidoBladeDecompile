@@ -715,6 +715,7 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
 }
 INCLUDE_ASM("asm/funcs", func_8004473C);
 INCLUDE_ASM("asm/funcs", efc_rob_set_type_flash);
+/* kengo:HIGH  |  is_efc_rob/efc_rob_set_type_flash  |  204i */
 INCLUDE_ASM("asm/funcs", func_80044B30);
 extern s16 D_800A9CF8;
 extern s32 D_800A9D04;
