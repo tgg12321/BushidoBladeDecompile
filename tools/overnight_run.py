@@ -678,6 +678,8 @@ def babysit_compiled(func_name, code, max_rounds, perm_timeout, perm_jobs):
                 if actual_score < best_score:
                     best_score = actual_score
                     best_code  = perm_code
+                    # Update base.c so next permuter round starts from this better version
+                    write_base_c(func_name, perm_code)
                     # Save improvement to drafts dir
                     with open(os.path.join(DRAFTS_DIR, f"{func_name}.c"), "w", newline="\n") as f:
                         f.write(perm_code + "\n")
