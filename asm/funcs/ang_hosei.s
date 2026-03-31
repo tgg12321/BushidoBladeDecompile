@@ -1,4 +1,4 @@
-glabel func_800836C8
+glabel ang_hosei
     /* 73EC8 800836C8 2138C000 */  addu       $a3, $a2, $zero
     /* 73ECC 800836CC 2130A000 */  addu       $a2, $a1, $zero
     /* 73ED0 800836D0 21288000 */  addu       $a1, $a0, $zero
@@ -52,4 +52,4 @@ glabel func_800836C8
     /* 73F88 80083788 805C000C */  jal        cpu_set_move_command_and_dir_for_no_action_2
     /* 73F8C 8008378C 00000000 */   nop
     /* 73F90 80083790 4D000000 */  break      0, 1
-endlabel func_800836C8
+endlabel ang_hosei

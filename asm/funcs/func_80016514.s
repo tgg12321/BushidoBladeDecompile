@@ -24,13 +24,13 @@ glabel func_80016514
     /* 6D68 80016568 FFFF0224 */   addiu     $v0, $zero, -0x1
   .L8001656C:
     /* 6D6C 8001656C 21280000 */  addu       $a1, $zero, $zero
-    /* 6D70 80016570 B20D020C */  jal        func_800836C8
+    /* 6D70 80016570 B20D020C */  jal        ang_hosei
     /* 6D74 80016574 02000624 */   addiu     $a2, $zero, 0x2
     /* 6D78 80016578 21A04000 */  addu       $s4, $v0, $zero
     /* 6D7C 8001657C 21888002 */  addu       $s1, $s4, $zero
     /* 6D80 80016580 21204002 */  addu       $a0, $s2, $zero
     /* 6D84 80016584 21280000 */  addu       $a1, $zero, $zero
-    /* 6D88 80016588 B20D020C */  jal        func_800836C8
+    /* 6D88 80016588 B20D020C */  jal        ang_hosei
     /* 6D8C 8001658C 21300000 */   addu      $a2, $zero, $zero
     /* 6D90 80016590 0D00801A */  blez       $s4, .L800165C8
     /* 6D94 80016594 00000000 */   nop

@@ -1,4 +1,4 @@
-glabel func_800833C8
+glabel conv_matrix_rotation
     /* 73BC8 800833C8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 73BCC 800833CC 0A80043C */  lui        $a0, %hi(D_800A2640)
     /* 73BD0 800833D0 40268424 */  addiu      $a0, $a0, %lo(D_800A2640)
@@ -170,4 +170,4 @@ glabel func_800833C8
   .L8008363C:
     /* 73E3C 8008363C 0800E003 */  jr         $ra
     /* 73E40 80083640 2110E000 */   addu      $v0, $a3, $zero
-endlabel func_800833C8
+endlabel conv_matrix_rotation

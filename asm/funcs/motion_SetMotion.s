@@ -1,4 +1,4 @@
-glabel func_80038C70
+glabel motion_SetMotion
     /* 29470 80038C70 3B018293 */  lbu        $v0, %gp_rel(D_800A3204 + 0x3)($gp)
     /* 29474 80038C74 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 29478 80038C78 1C00B3AF */  sw         $s3, 0x1C($sp)
@@ -455,4 +455,4 @@ glabel func_80038C70
     /* 29AAC 800392AC 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 29AB0 800392B0 0800E003 */  jr         $ra
     /* 29AB4 800392B4 00000000 */   nop
-endlabel func_80038C70
+endlabel motion_SetMotion

@@ -257,7 +257,7 @@ glabel func_80035828
     /* 263D0 80035BD0 21200000 */  addu       $a0, $zero, $zero
     /* 263D4 80035BD4 7FB0010C */  jal        func_8006C1FC
     /* 263D8 80035BD8 21280000 */   addu      $a1, $zero, $zero
-    /* 263DC 80035BDC 1CE3000C */  jal        func_80038C70
+    /* 263DC 80035BDC 1CE3000C */  jal        motion_SetMotion
     /* 263E0 80035BE0 00000000 */   nop
     /* 263E4 80035BE4 6D004010 */  beqz       $v0, .L80035D9C
     /* 263E8 80035BE8 00000000 */   nop

@@ -78,7 +78,8 @@ u32 sys_GetVblankCount(void) {
 u32 sys_GetIrqCounter(void) {
     return *D_800A2608;
 }
-INCLUDE_ASM("asm/funcs", func_80082C3C);
+INCLUDE_ASM("asm/funcs", motion_make_table);
+/* kengo:HIGH  |  is_motion/motion_make_table  |  62i */
 INCLUDE_ASM("asm/funcs", func_80082D34);
 __asm__(
     ".section .text\n"
@@ -182,7 +183,8 @@ void sys_MemClear(s32 *a0, s32 a1) {
         *a0++ = 0;
     }
 }
-INCLUDE_ASM("asm/funcs", func_800833C8);
+INCLUDE_ASM("asm/funcs", conv_matrix_rotation);
+/* kengo:MED  |  common/conv_matrix_rotation  |  145i  |  -14 9.7% */
 void sys_MemClear2(s32 *a0, s32 a1) {
     s32 i;
     for (i = a1 - 1; i != -1; i--) {
@@ -231,8 +233,10 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-INCLUDE_ASM("asm/funcs", func_800836C8);
-INCLUDE_ASM("asm/funcs", func_80083794);
+INCLUDE_ASM("asm/funcs", ang_hosei);
+/* kengo:MED  |  common/ang_hosei  |  47i  |  +4 8.5% */
+INCLUDE_ASM("asm/funcs", motion_Open);
+/* kengo:HIGH  |  is_motion/motion_Open  |  54i */
 __asm__(
     ".section .text\n"
     "    .set noat\n"

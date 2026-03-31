@@ -26,7 +26,7 @@ glabel func_800165F8
     /* 6E54 80016654 FFFF0224 */   addiu     $v0, $zero, -0x1
   .L80016658:
     /* 6E58 80016658 C02A1000 */  sll        $a1, $s0, 11
-    /* 6E5C 8001665C B20D020C */  jal        func_800836C8
+    /* 6E5C 8001665C B20D020C */  jal        ang_hosei
     /* 6E60 80016660 21300000 */   addu      $a2, $zero, $zero
     /* 6E64 80016664 0B00601A */  blez       $s3, .L80016694
     /* 6E68 80016668 21800000 */   addu      $s0, $zero, $zero

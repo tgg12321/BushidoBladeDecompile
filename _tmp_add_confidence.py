@@ -99,6 +99,14 @@ ANNOTATIONS = [
     ("tslTm2LoadImage",                      "tsl_tm2",        253, "MED", "-10 x2 size collision"),
     ("tslTm2LoadImage_2",                    "tsl_tm2",        253, "MED", "-10 x2 size collision"),
     ("mario_test_Exec",                      "nm_mario_test",  450, "MED", "-19"),
+    # Kengo near-miss batch LOW (±10%, 2026-03-30)
+    ("motion_SetMotion",           "is_motion",     425, "MED", "-23 5.4%"),
+    ("special_camera_get_rot_dir", "nm_special_cam", 66, "MED", "+6 9.1%"),
+    ("ang_hosei",                  "common",          47, "MED", "+4 8.5%"),
+    ("conv_matrix_rotation",       "common",         145, "MED", "-14 9.7%"),
+    # Expanded affinity exact matches (2026-03-30)
+    ("motion_make_table", "is_motion", 62, "HIGH", ""),
+    ("motion_Open",       "is_motion", 54, "HIGH", ""),
 ]
 
 # Build lookup: func_name -> comment line
