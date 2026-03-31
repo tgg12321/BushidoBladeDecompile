@@ -793,6 +793,21 @@ def main():
     log = ProgressLog()
     total = len(stubs)
 
+    # --- Preflight: verify Ollama is reachable ---
+    print(f"  Ollama URL: {OLLAMA_URL}")
+    try:
+        urllib.request.urlopen(OLLAMA_URL.replace("/api/generate", "/api/tags"), timeout=5).read()
+        print(f"  Ollama: OK")
+    except Exception as e:
+        print(f"\n  ERROR: Ollama not reachable at {OLLAMA_URL}")
+        print(f"  {e}")
+        print(f"  Make sure Ollama is running and accessible. Aborting.")
+        sys.exit(1)
+
+    MAX_CONSECUTIVE_FAILS = 10  # stop if this many functions fail in a row
+    consecutive_gen_fails = 0
+    consecutive_compile_fails = 0
+
     for i, (src_file, func_name, asm_lines) in enumerate(stubs):
         print(f"[{i+1}/{total}] {func_name} ({asm_lines} lines, {src_file})")
 
@@ -807,7 +822,13 @@ def main():
         if not raw or raw.startswith("/* ERROR"):
             print(f"FAILED ({elapsed:.1f}s)")
             log.record(func_name, src_file, asm_lines, False, None, False, "generation failed")
+            consecutive_gen_fails += 1
+            if consecutive_gen_fails >= MAX_CONSECUTIVE_FAILS:
+                print(f"\n  ABORTING: {MAX_CONSECUTIVE_FAILS} consecutive draft generation failures.")
+                print(f"  Ollama may be down or unreachable.")
+                break
             continue
+        consecutive_gen_fails = 0
         code = clean_draft(raw)
         with open(draft_path, "w", newline="\n") as f:
             f.write(code + "\n")
@@ -853,7 +874,13 @@ def main():
         if not compiled:
             log.record(func_name, src_file, asm_lines, False, None, False,
                        f"compile failed after {MAX_RETRIES} attempts")
+            consecutive_compile_fails += 1
+            if consecutive_compile_fails >= MAX_CONSECUTIVE_FAILS:
+                print(f"\n  ABORTING: {MAX_CONSECUTIVE_FAILS} consecutive compile failures.")
+                print(f"  DeepSeek may be generating unusable code. Check prompts/model.")
+                break
             continue
+        consecutive_compile_fails = 0
 
         # --- Babysit loop (permuter + DeepSeek feedback) or fallback score ---
         score   = None
