@@ -13,19 +13,19 @@ glabel func_80088F9C
     /* 797C8 80088FC8 0A80053C */  lui        $a1, %hi(D_800A2D04)
     /* 797CC 80088FCC 042DA58C */  lw         $a1, %lo(D_800A2D04)($a1)
     /* 797D0 80088FD0 02000424 */  addiu      $a0, $zero, 0x2
-    /* 797D4 80088FD4 4323020C */  jal        func_80088D0C
+    /* 797D4 80088FD4 4323020C */  jal        saTan0GaugeDraw
     /* 797D8 80088FD8 0428A200 */   sllv      $a1, $v0, $a1
-    /* 797DC 80088FDC 4323020C */  jal        func_80088D0C
+    /* 797DC 80088FDC 4323020C */  jal        saTan0GaugeDraw
     /* 797E0 80088FE0 01000424 */   addiu     $a0, $zero, 0x1
     /* 797E4 80088FE4 03000424 */  addiu      $a0, $zero, 0x3
     /* 797E8 80088FE8 21282002 */  addu       $a1, $s1, $zero
-    /* 797EC 80088FEC 4323020C */  jal        func_80088D0C
+    /* 797EC 80088FEC 4323020C */  jal        saTan0GaugeDraw
     /* 797F0 80088FF0 21300002 */   addu      $a2, $s0, $zero
     /* 797F4 80088FF4 03240208 */  j          .L8008900C
     /* 797F8 80088FF8 21100002 */   addu      $v0, $s0, $zero
   .L80088FFC:
     /* 797FC 80088FFC 21202002 */  addu       $a0, $s1, $zero
-    /* 79800 80089000 7522020C */  jal        func_800889D4
+    /* 79800 80089000 7522020C */  jal        DispUpdateStatusMessage
     /* 79804 80089004 21280002 */   addu      $a1, $s0, $zero
     /* 79808 80089008 21100002 */  addu       $v0, $s0, $zero
   .L8008900C:

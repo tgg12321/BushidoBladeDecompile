@@ -45,7 +45,7 @@ glabel func_800464C4
     /* 36D5C 8004655C 0410010C */  jal        func_80044010
     /* 36D60 80046560 07000524 */   addiu     $a1, $zero, 0x7
     /* 36D64 80046564 21202002 */  addu       $a0, $s1, $zero
-    /* 36D68 80046568 70FB000C */  jal        func_8003EDC0
+    /* 36D68 80046568 70FB000C */  jal        md_game_check_mode
     /* 36D6C 8004656C 07000524 */   addiu     $a1, $zero, 0x7
     /* 36D70 80046570 07000424 */  addiu      $a0, $zero, 0x7
     /* 36D74 80046574 4415010C */  jal        func_80045510

@@ -27,7 +27,7 @@ glabel func_8001E878
     /* F0DC 8001E8DC 80200400 */  sll        $a0, $a0, 2
     /* F0E0 8001E8E0 23208200 */  subu       $a0, $a0, $v0
     /* F0E4 8001E8E4 80200400 */  sll        $a0, $a0, 2
-    /* F0E8 8001E8E8 1E6D000C */  jal        func_8001B478
+    /* F0E8 8001E8E8 1E6D000C */  jal        myRobGeneiMove
     /* F0EC 8001E8EC 21209000 */   addu      $a0, $a0, $s0
   .L8001E8F0:
     /* F0F0 8001E8F0 0179000C */  jal        func_8001E404

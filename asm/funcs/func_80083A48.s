@@ -34,7 +34,7 @@ glabel func_80083A48
     /* 742BC 80083ABC 10008228 */  slti       $v0, $a0, 0x10
     /* 742C0 80083AC0 FAFF4014 */  bnez       $v0, .L80083AAC
     /* 742C4 80083AC4 0200C624 */   addiu     $a2, $a2, 0x2
-    /* 742C8 80083AC8 061A020C */  jal        func_80086818
+    /* 742C8 80083AC8 061A020C */  jal        md_game_end
     /* 742CC 80083ACC 18000424 */   addiu     $a0, $zero, 0x18
     /* 742D0 80083AD0 21280000 */  addu       $a1, $zero, $zero
     /* 742D4 80083AD4 1080033C */  lui        $v1, %hi(D_80106FA8)

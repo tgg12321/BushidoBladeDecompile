@@ -757,7 +757,7 @@ glabel func_8008C464
   .L8008CFAC:
     /* 7D7AC 8008CFAC 0800048E */  lw         $a0, 0x8($s0)
     /* 7D7B0 8008CFB0 0C00058E */  lw         $a1, 0xC($s0)
-    /* 7D7B4 8008CFB4 C12F020C */  jal        func_8008BF04
+    /* 7D7B4 8008CFB4 C12F020C */  jal        cpu_side_move_dir_3
     /* 7D7B8 8008CFB8 00000000 */   nop
     /* 7D7BC 8008CFBC 06340208 */  j          .L8008D018
     /* 7D7C0 8008CFC0 21184000 */   addu      $v1, $v0, $zero

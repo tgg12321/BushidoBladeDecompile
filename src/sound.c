@@ -11,7 +11,7 @@ extern void func_80078A68(u32, s32, s32);
 extern void func_80078B04(u32);
 extern void func_80078B3C(u32);
 extern void func_8004473C(void);
-extern void func_80044800(void);
+extern void efc_rob_set_type_flash(void);
 extern void func_80048F58(s32, s32);
 extern void func_80048FFC(s32);
 extern void *func_8004153C(void);
@@ -24,7 +24,7 @@ extern void func_80045694(s32, void (*)(void));
 extern void func_800460E4(s32);
 extern void func_800421C8(s32);
 extern void func_8003E0E0(void);
-extern void func_8003E6D8(s32);
+extern void DispHira(s32);
 extern void func_8003DA8C(s32, s32);
 extern void func_800415C4(s32);
 extern void func_8004668C(void);
@@ -303,7 +303,7 @@ void game_ResetTimer(void) {
 }
 
 void game_InitStageSound(s32 a0) {
-    func_8003E6D8(a0);
+    DispHira(a0);
     {
         s32 v0 = stage_GetId();
         func_8003DA8C(v0, a0);
@@ -451,7 +451,7 @@ void game_EffInit(void) {
 }
 
 void game_EffCleanup(void) {
-    func_80044800();
+    efc_rob_set_type_flash();
 }
 
 void game_AnimInit(void) {
@@ -467,7 +467,7 @@ void game_EffInit2(void) {
 }
 
 void game_EffCleanup2(void) {
-    func_80044800();
+    efc_rob_set_type_flash();
 }
 
 void game_SndInit(void) {
@@ -497,7 +497,7 @@ void game_EffStart(void) {
 }
 
 void game_EffStop(void) {
-    func_80044800();
+    efc_rob_set_type_flash();
 }
 
 void game_Stub1(void) {

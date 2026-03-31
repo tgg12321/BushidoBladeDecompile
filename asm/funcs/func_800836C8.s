@@ -49,7 +49,7 @@ glabel func_800836C8
     /* 73F7C 8008377C 0A801F3C */  lui        $ra, %hi(D_800A3668)
     /* 73F80 80083780 6836FF8F */  lw         $ra, %lo(D_800A3668)($ra)
     /* 73F84 80083784 00000000 */  nop
-    /* 73F88 80083788 805C000C */  jal        func_80017200
+    /* 73F88 80083788 805C000C */  jal        cpu_set_move_command_and_dir_for_no_action_2
     /* 73F8C 8008378C 00000000 */   nop
     /* 73F90 80083790 4D000000 */  break      0, 1
 endlabel func_800836C8

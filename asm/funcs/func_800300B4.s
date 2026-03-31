@@ -74,7 +74,7 @@ glabel func_800300B4
     /* 209D4 800301D4 21280002 */  addu       $a1, $s0, $zero
     /* 209D8 800301D8 21304002 */  addu       $a2, $s2, $zero
     /* 209DC 800301DC 0A006492 */  lbu        $a0, 0xA($s3)
-    /* 209E0 800301E0 F2E4000C */  jal        func_800393C8
+    /* 209E0 800301E0 F2E4000C */  jal        saSeInit_2
     /* 209E4 800301E4 21382002 */   addu      $a3, $s1, $zero
     /* 209E8 800301E8 5800BF8F */  lw         $ra, 0x58($sp)
     /* 209EC 800301EC 5400B38F */  lw         $s3, 0x54($sp)

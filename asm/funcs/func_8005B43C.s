@@ -45,7 +45,7 @@ glabel func_8005B43C
     /* 4BCE0 8005B4E0 C0006228 */  slti       $v0, $v1, 0xC0
     /* 4BCE4 8005B4E4 F6FF4014 */  bnez       $v0, .L8005B4C0
     /* 4BCE8 8005B4E8 08008424 */   addiu     $a0, $a0, 0x8
-    /* 4BCEC 8005B4EC A70F020C */  jal        func_80083E9C
+    /* 4BCEC 8005B4EC A70F020C */  jal        DispStuff
     /* 4BCF0 8005B4F0 00000000 */   nop
     /* 4BCF4 8005B4F4 3C0380AF */  sw         $zero, %gp_rel(D_800A3408)($gp)
     /* 4BCF8 8005B4F8 340380A7 */  sh         $zero, %gp_rel(D_800A3400)($gp)

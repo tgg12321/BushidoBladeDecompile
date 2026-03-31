@@ -4,7 +4,7 @@
 
 /* Forward declarations */
 extern void func_800817A0(void);
-extern void func_80080DB0(void);
+extern void cpu_side_move_dir_4(void);
 extern void func_80081030(void);
 extern s32 func_80081718();
 extern s32 func_80081D1C();
@@ -109,7 +109,7 @@ done:
 }
 
 void func_800801E8(void) {
-    func_80080DB0();
+    cpu_side_move_dir_4();
 }
 
 void func_80080208(void) {
@@ -179,7 +179,7 @@ s32 func_800807A8(u8 *a0) {
     }
 }
 INCLUDE_ASM("asm/funcs", func_80080828);
-INCLUDE_ASM("asm/funcs", func_80080DB0);
+INCLUDE_ASM("asm/funcs", cpu_side_move_dir_4);
 INCLUDE_ASM("asm/funcs", func_80081030);
 INCLUDE_ASM("asm/funcs", func_800812FC);
 extern volatile u8 *D_800A147C;
@@ -319,7 +319,7 @@ s32 func_800819C4(void) {
     }
     {
         s32 r;
-        r = ((s32 (*)(s32, s32))func_80080DB0)(0, 0);
+        r = ((s32 (*)(s32, s32))cpu_side_move_dir_4)(0, 0);
         r ^= 2;
         return -((u32)(0 < (u32)r));
     }

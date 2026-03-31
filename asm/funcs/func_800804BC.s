@@ -68,7 +68,7 @@ glabel func_800804BC
   .L800805B4:
     /* 70DB4 800805B4 06004014 */  bnez       $v0, .L800805D0
     /* 70DB8 800805B8 21200000 */   addu      $a0, $zero, $zero
-    /* 70DBC 800805BC 6C03020C */  jal        func_80080DB0
+    /* 70DBC 800805BC 6C03020C */  jal        cpu_side_move_dir_4
     /* 70DC0 800805C0 21284002 */   addu      $a1, $s2, $zero
     /* 70DC4 800805C4 02004238 */  xori       $v0, $v0, 0x2
     /* 70DC8 800805C8 75010208 */  j          .L800805D4

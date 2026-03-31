@@ -73,14 +73,14 @@ glabel func_8008A928
     /* 7B224 8008AA24 21980000 */  addu       $s3, $zero, $zero
   .L8008AA28:
     /* 7B228 8008AA28 02000424 */  addiu      $a0, $zero, 0x2
-    /* 7B22C 8008AA2C 4323020C */  jal        func_80088D0C
+    /* 7B22C 8008AA2C 4323020C */  jal        saTan0GaugeDraw
     /* 7B230 8008AA30 21284002 */   addu      $a1, $s2, $zero
-    /* 7B234 8008AA34 4323020C */  jal        func_80088D0C
+    /* 7B234 8008AA34 4323020C */  jal        saTan0GaugeDraw
     /* 7B238 8008AA38 01000424 */   addiu     $a0, $zero, 0x1
     /* 7B23C 8008AA3C 03000424 */  addiu      $a0, $zero, 0x3
     /* 7B240 8008AA40 0A80053C */  lui        $a1, %hi(D_800A28D4)
     /* 7B244 8008AA44 D428A524 */  addiu      $a1, $a1, %lo(D_800A28D4)
-    /* 7B248 8008AA48 4323020C */  jal        func_80088D0C
+    /* 7B248 8008AA48 4323020C */  jal        saTan0GaugeDraw
     /* 7B24C 8008AA4C 21300002 */   addu      $a2, $s0, $zero
     /* 7B250 8008AA50 0A80043C */  lui        $a0, %hi(D_800A2870)
     /* 7B254 8008AA54 7028848C */  lw         $a0, %lo(D_800A2870)($a0)
