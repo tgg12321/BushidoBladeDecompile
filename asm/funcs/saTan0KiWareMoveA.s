@@ -182,7 +182,7 @@ glabel saTan0KiWareMoveA
     /* 1E23C 8002DA3C 23104800 */  subu       $v0, $v0, $t0
     /* 1E240 8002DA40 23186900 */  subu       $v1, $v1, $t1
     /* 1E244 8002DA44 240102AE */  sw         $v0, 0x124($s0)
-    /* 1E248 8002DA48 46B5000C */  jal        func_8002D518
+    /* 1E248 8002DA48 46B5000C */  jal        saTan5TakeAnim2
     /* 1E24C 8002DA4C 280103AE */   sw        $v1, 0x128($s0)
     /* 1E250 8002DA50 15004014 */  bnez       $v0, .L8002DAA8
     /* 1E254 8002DA54 01000224 */   addiu     $v0, $zero, 0x1
@@ -196,14 +196,14 @@ glabel saTan0KiWareMoveA
     /* 1E274 8002DA74 23100200 */  negu       $v0, $v0
     /* 1E278 8002DA78 23180300 */  negu       $v1, $v1
     /* 1E27C 8002DA7C 0C0102AE */  sw         $v0, 0x10C($s0)
-    /* 1E280 8002DA80 46B5000C */  jal        func_8002D518
+    /* 1E280 8002DA80 46B5000C */  jal        saTan5TakeAnim2
     /* 1E284 8002DA84 100103AE */   sw        $v1, 0x110($s0)
     /* 1E288 8002DA88 07004014 */  bnez       $v0, .L8002DAA8
     /* 1E28C 8002DA8C 01000224 */   addiu     $v0, $zero, 0x1
     /* 1E290 8002DA90 21204002 */  addu       $a0, $s2, $zero
     /* 1E294 8002DA94 21282002 */  addu       $a1, $s1, $zero
     /* 1E298 8002DA98 21306002 */  addu       $a2, $s3, $zero
-    /* 1E29C 8002DA9C 46B5000C */  jal        func_8002D518
+    /* 1E29C 8002DA9C 46B5000C */  jal        saTan5TakeAnim2
     /* 1E2A0 8002DAA0 2138A002 */   addu      $a3, $s5, $zero
     /* 1E2A4 8002DAA4 2B100200 */  sltu       $v0, $zero, $v0
   .L8002DAA8:

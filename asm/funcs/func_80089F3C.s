@@ -313,7 +313,7 @@ glabel func_80089F3C
     /* 7ABAC 8008A3AC 00000000 */   nop
     /* 7ABB0 8008A3B0 0A80043C */  lui        $a0, %hi(D_800A288C)
     /* 7ABB4 8008A3B4 8C28848C */  lw         $a0, %lo(D_800A288C)($a0)
-    /* 7ABB8 8008A3B8 4A2A020C */  jal        func_8008A928
+    /* 7ABB8 8008A3B8 4A2A020C */  jal        md_game_check_change_main_mode_katinuki
     /* 7ABBC 8008A3BC 00000000 */   nop
   .L8008A3C0:
     /* 7ABC0 8008A3C0 0E008012 */  beqz       $s4, .L8008A3FC

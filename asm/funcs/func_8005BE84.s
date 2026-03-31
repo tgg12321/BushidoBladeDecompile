@@ -25,7 +25,7 @@ glabel func_8005BE84
     /* 4C6E0 8005BEE0 B917020C */  jal        func_80085EE4
     /* 4C6E4 8005BEE4 00000000 */   nop
     /* 4C6E8 8005BEE8 00002486 */  lh         $a0, 0x0($s1)
-    /* 4C6EC 8005BEEC 4A2A020C */  jal        func_8008A928
+    /* 4C6EC 8005BEEC 4A2A020C */  jal        md_game_check_change_main_mode_katinuki
     /* 4C6F0 8005BEF0 21884000 */   addu      $s1, $v0, $zero
     /* 4C6F4 8005BEF4 01000426 */  addiu      $a0, $s0, 0x1
     /* 4C6F8 8005BEF8 00240400 */  sll        $a0, $a0, 16

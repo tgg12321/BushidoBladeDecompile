@@ -115,7 +115,7 @@ extern void func_800826CC(s32);
 extern s32 func_800827D0(s32, s32);
 extern void func_80041604(s32, s32);
 extern void special_camera_Exec(void);
-extern void func_8003D52C(s32, s32, s32, s32);
+extern void DispSleepMenuTex(s32, s32, s32, s32);
 extern s32 D_800100A4;
 extern void func_800415C4(s32);
 extern void file_ResetDmaFlag(void);
@@ -570,7 +570,7 @@ extern u8 D_801077AF;
 extern u8 D_801077B0;
 extern u8 D_801077BA;
 extern s32 func_80036EA8(s32, s32);
-extern s32 func_80036D98(s32, s32);
+extern s32 replay_camera_Init(s32, s32);
 extern s32 func_80079154(s32);
 extern void func_800325E0(s32, s32);
 extern void func_80046BF4(s32 *, s32 *, s32);
@@ -674,7 +674,7 @@ void func_8001A484(u16 *arg0) {
     p = arg0 + 2;
     do {
         i++;
-        func_8003D52C((s32)&D_800100A4, arg0[0], p[-1], p[0]);
+        DispSleepMenuTex((s32)&D_800100A4, arg0[0], p[-1], p[0]);
         p += 3;
         arg0 += 3;
     } while (i < 0x16);
@@ -777,13 +777,13 @@ void func_8001B6F4(void) {
     D_800F5347 = 0;
     func_8003F1E4(0);
 }
-INCLUDE_ASM("asm/funcs", func_8001B748);
+INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_A);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 INCLUDE_ASM("asm/funcs", func_8001BAE4);
 void func_8001BBD8(s32 *arg0, s32 *arg1, s32 *arg2) {
     s32 temp_s0;
     temp_s0 = (D_800A387C < 0x2711) << 0xB;
-    func_8001B748((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
+    DispPracticeMenuTex_A((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
 }
 void func_8001BC70(u8 *arg0, s32 arg1) {
     typedef struct { s32 x, y, z; } Vec3;
@@ -898,7 +898,8 @@ void func_8001CD68(s16 *arg0) {
     }
 }
 INCLUDE_ASM("asm/funcs", func_8001CE60);
-INCLUDE_ASM("asm/funcs", func_8001D790);
+INCLUDE_ASM("asm/funcs", se_data_set);
+/* kengo:HIGH  |  md_game/se_data_set  |  93i */
 void func_8001D904(void) {
     s32 s2 = (s32)0x80190800;
     s32 s1;
@@ -1150,7 +1151,8 @@ check3:
     }
     return v0;
 }
-INCLUDE_ASM("asm/funcs", func_8001FBE8);
+INCLUDE_ASM("asm/funcs", single_game_CheckStatusUpDataTotalOver);
+/* kengo:HIGH  |  nm_single_game/single_game_CheckStatusUpDataTotalOver  |  289i */
 s32 func_8002006C(void) {
     s32 s0 = D_800A387C;
     s32 v0 = func_8001F888();
@@ -1158,13 +1160,14 @@ s32 func_8002006C(void) {
     D_800A387C = v0;
     D_800A38F0 = v0 - s0;
     if (v != 5 && v != 2) {
-        func_8001FBE8();
+        single_game_CheckStatusUpDataTotalOver();
     }
     D_800A38A8 = 0;
 }
 INCLUDE_ASM("asm/funcs", func_800200DC);
 INCLUDE_ASM("asm/funcs", func_800203B4);
-INCLUDE_ASM("asm/funcs", func_800204C0);
+INCLUDE_ASM("asm/funcs", single_game_SetAbilityData);
+/* kengo:HIGH  |  nm_single_game/single_game_SetAbilityData  |  124i */
 void func_800206B0(s32 arg0, s32 arg1) {
     u8 *a3 = (u8 *)&D_8008D59C;
     u8 *a2 = (u8 *)&D_800F5F68 + arg0 * 0x1B8;
@@ -1223,8 +1226,8 @@ void func_80020D70(void) {
     D_800A3864 = (s32)0x80190800;
     func_80020CDC();
 }
-void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    func_80036D98(v0, D_800A3830);    func_80036F40();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
-INCLUDE_ASM("asm/funcs", func_80020E74);
+void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    replay_camera_Init(v0, D_800A3830);    func_80036F40();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
+INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_B);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 extern s32 D_80102770;
 extern u16 D_800A38C4;
@@ -1393,7 +1396,8 @@ INCLUDE_ASM("asm/funcs", func_80022F34);
 INCLUDE_ASM("asm/funcs", func_8002304C);
 INCLUDE_ASM("asm/funcs", func_800233AC);
 INCLUDE_ASM("asm/funcs", func_80023648);
-INCLUDE_ASM("asm/funcs", func_800238C4);
+INCLUDE_ASM("asm/funcs", camera_set_zoom);
+/* kengo:HIGH  |  nm_camera/camera_set_zoom  |  219i */
 void func_80023C30(s32 arg0, s32 arg1, s32 arg2, s16 *arg3) {
     arg3[0] = 0x1000;
     arg3[1] = 0;

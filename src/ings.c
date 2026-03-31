@@ -58,7 +58,7 @@ extern u8 D_800A38F8;
 extern s32 D_800A37C0;
 extern u8 D_800A37A8[];
 extern s32 func_80036EA8(s32, s32);
-extern void func_80036D98(s32, s32);
+extern void replay_camera_Init(s32, s32);
 extern void func_80036F40(void);
 extern void func_8007BC08(u8 *);
 extern void func_8007B600(u8 *, u8 *);

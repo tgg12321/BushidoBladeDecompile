@@ -289,7 +289,7 @@ glabel func_8002C61C
     /* 1D260 8002CA60 00000000 */  nop
     /* 1D264 8002CA64 03005014 */  bne        $v0, $s0, .L8002CA74
     /* 1D268 8002CA68 00000000 */   nop
-    /* 1D26C 8002CA6C C5C8000C */  jal        func_80032314
+    /* 1D26C 8002CA6C C5C8000C */  jal        Pad_Prs
     /* 1D270 8002CA70 00000000 */   nop
   .L8002CA74:
     /* 1D274 8002CA74 1800BF8F */  lw         $ra, 0x18($sp)

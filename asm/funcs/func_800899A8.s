@@ -27,7 +27,7 @@ glabel func_800899A8
     /* 7A204 80089A04 F4FF4014 */  bnez       $v0, .L800899D8
     /* 7A208 80089A08 0800A524 */   addiu     $a1, $a1, 0x8
   .L80089A0C:
-    /* 7A20C 80089A0C A825020C */  jal        func_800896A0
+    /* 7A20C 80089A0C A825020C */  jal        exec_game
     /* 7A210 80089A10 00000000 */   nop
     /* 7A214 80089A14 1800BF8F */  lw         $ra, 0x18($sp)
     /* 7A218 80089A18 2000BD27 */  addiu      $sp, $sp, 0x20

@@ -18,7 +18,7 @@ glabel func_8002006C
     /* 108AC 800200AC 02000224 */   addiu     $v0, $zero, 0x2
     /* 108B0 800200B0 03006210 */  beq        $v1, $v0, .L800200C0
     /* 108B4 800200B4 00000000 */   nop
-    /* 108B8 800200B8 FA7E000C */  jal        func_8001FBE8
+    /* 108B8 800200B8 FA7E000C */  jal        single_game_CheckStatusUpDataTotalOver
     /* 108BC 800200BC 00000000 */   nop
   .L800200C0:
     /* 108C0 800200C0 0A80013C */  lui        $at, %hi(D_800A38A8)

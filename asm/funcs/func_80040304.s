@@ -39,10 +39,10 @@ glabel func_80040304
     /* 30B80 80040380 12001124 */   addiu     $s1, $zero, 0x12
   jlabel .L80040384
     /* 30B84 80040384 21204002 */  addu       $a0, $s2, $zero
-    /* 30B88 80040388 7300010C */  jal        func_800401CC
+    /* 30B88 80040388 7300010C */  jal        PutShadowRmd
     /* 30B8C 8004038C 05000524 */   addiu     $a1, $zero, 0x5
     /* 30B90 80040390 21204002 */  addu       $a0, $s2, $zero
-    /* 30B94 80040394 7300010C */  jal        func_800401CC
+    /* 30B94 80040394 7300010C */  jal        PutShadowRmd
     /* 30B98 80040398 06000524 */   addiu     $a1, $zero, 0x6
     /* 30B9C 8004039C 21880000 */  addu       $s1, $zero, $zero
   .L800403A0:
@@ -57,7 +57,7 @@ glabel func_80040304
     /* 30BBC 800403BC 01002232 */  andi       $v0, $s1, 0x1
     /* 30BC0 800403C0 03004010 */  beqz       $v0, .L800403D0
     /* 30BC4 800403C4 21204002 */   addu      $a0, $s2, $zero
-    /* 30BC8 800403C8 7300010C */  jal        func_800401CC
+    /* 30BC8 800403C8 7300010C */  jal        PutShadowRmd
     /* 30BCC 800403CC 23287002 */   subu      $a1, $s3, $s0
   .L800403D0:
     /* 30BD0 800403D0 01001026 */  addiu      $s0, $s0, 0x1

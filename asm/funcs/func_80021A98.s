@@ -95,7 +95,7 @@ glabel func_80021A98
     /* 123F8 80021BF8 01000424 */  addiu      $a0, $zero, 0x1
   .L80021BFC:
     /* 123FC 80021BFC AD0004A2 */  sb         $a0, 0xAD($s0)
-    /* 12400 80021C00 34C9000C */  jal        func_800324D0
+    /* 12400 80021C00 34C9000C */  jal        cpu_get_dist_2
     /* 12404 80021C04 21200002 */   addu      $a0, $s0, $zero
     /* 12408 80021C08 6A000496 */  lhu        $a0, 0x6A($s0)
     /* 1240C 80021C0C 09000224 */  addiu      $v0, $zero, 0x9

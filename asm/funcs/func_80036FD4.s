@@ -59,7 +59,7 @@ glabel func_80036FD4
     /* 278B0 800370B0 F6FF02A2 */  sb         $v0, -0xA($s0)
     /* 278B4 800370B4 1080013C */  lui        $at, %hi(D_80101E59)
     /* 278B8 800370B8 591E31A0 */  sb         $s1, %lo(D_80101E59)($at)
-    /* 278BC 800370BC 2F01020C */  jal        func_800804BC
+    /* 278BC 800370BC 2F01020C */  jal        tslPolyF4Init
     /* 278C0 800370C0 21300000 */   addu      $a2, $zero, $zero
     /* 278C4 800370C4 C8000224 */  addiu      $v0, $zero, 0xC8
   .L800370C8:

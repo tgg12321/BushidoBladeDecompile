@@ -25,7 +25,7 @@ glabel func_80088F9C
     /* 797F8 80088FF8 21100002 */   addu      $v0, $s0, $zero
   .L80088FFC:
     /* 797FC 80088FFC 21202002 */  addu       $a0, $s1, $zero
-    /* 79800 80089000 7522020C */  jal        func_800889D4
+    /* 79800 80089000 7522020C */  jal        DispUpdateStatusMessage
     /* 79804 80089004 21280002 */   addu      $a1, $s0, $zero
     /* 79808 80089008 21100002 */  addu       $v0, $s0, $zero
   .L8008900C:

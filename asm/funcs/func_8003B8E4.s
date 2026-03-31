@@ -44,7 +44,7 @@ glabel func_8003B8E4
     /* 2C184 8003B984 F83820A0 */  sb         $zero, %lo(D_800A38F8)($at)
     /* 2C188 8003B988 0A80013C */  lui        $at, %hi(D_800A3768)
     /* 2C18C 8003B98C 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
-    /* 2C190 8003B990 E475000C */  jal        func_8001D790
+    /* 2C190 8003B990 E475000C */  jal        se_data_set
     /* 2C194 8003B994 00000000 */   nop
     /* 2C198 8003B998 69ED000C */  jal        func_8003B5A4
     /* 2C19C 8003B99C 00000000 */   nop
