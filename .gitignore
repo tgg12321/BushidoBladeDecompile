@@ -44,4 +44,23 @@ m2c_triage/
 
 # Triage/analysis outputs
 *_results.csv
+*_with_context.csv
+*_old.csv
 *.log
+
+# Temporary/experimental scripts (not source)
+tmp/
+
+# Claude Code session files
+.claude/
+.crush/
+
+# Local model config
+deepseek-tools.Modelfile
+
+# Stale worktree directories (from failed isolation attempts)
+49c14ff/
+
+# Agent output logs
+local_agent_output/
+
