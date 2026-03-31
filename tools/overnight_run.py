@@ -297,13 +297,8 @@ def clean_draft(text):
     # Rename MIPS register names used as C variables (DeepSeek habit)
     for reg in _MIPS_REGS:
         text = re.sub(r'\b' + reg + r'\b', '_' + reg, text)
-    # Declare any renamed register vars that appear in the function body
-    used = [r for r in _MIPS_REGS if re.search(r'\b_' + r + r'\b', text)]
-    if used:
-        decl = '    int ' + ', '.join('_' + r for r in used) + ';\n'
-        m = re.search(r'\{', text)
-        if m:
-            text = text[:m.end()] + '\n' + decl + text[m.end():]
+    # Fix invalid goto labels: .L80019408 -> L80019408
+    text = re.sub(r'\.(L[0-9A-Fa-f]+)', r'\1', text)
     return text
 
 # ---------------------------------------------------------------------------
