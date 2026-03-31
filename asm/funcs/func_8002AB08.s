@@ -591,7 +591,7 @@ glabel func_8002AB08
     /* 1BB8C 8002B38C 2A10E800 */  slt        $v0, $a3, $t0
     /* 1BB90 8002B390 CDFF4014 */  bnez       $v0, .L8002B2C8
     /* 1BB94 8002B394 21204002 */   addu      $a0, $s2, $zero
-    /* 1BB98 8002B398 56B3000C */  jal        func_8002CD58
+    /* 1BB98 8002B398 56B3000C */  jal        special_camera_Init
     /* 1BB9C 8002B39C 9000A9AF */   sw        $t1, 0x90($sp)
     /* 1BBA0 8002B3A0 3000A48F */  lw         $a0, 0x30($sp)
     /* 1BBA4 8002B3A4 6000A68F */  lw         $a2, 0x60($sp)

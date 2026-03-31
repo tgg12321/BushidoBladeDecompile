@@ -7,7 +7,7 @@ glabel func_8003E6A0
     /* 2EEB4 8003E6B4 441EA58C */  lw         $a1, %lo(D_80101E44)($a1)
     /* 2EEB8 8003E6B8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2EEBC 8003E6BC 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2EEC0 8003E6C0 B6F8000C */  jal        func_8003E2D8
+    /* 2EEC0 8003E6C0 B6F8000C */  jal        replay_camera_get_attack_number
     /* 2EEC4 8003E6C4 00000000 */   nop
     /* 2EEC8 8003E6C8 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2EECC 8003E6CC 1800BD27 */  addiu      $sp, $sp, 0x18

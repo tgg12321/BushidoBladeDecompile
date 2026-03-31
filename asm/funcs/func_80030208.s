@@ -60,7 +60,7 @@ glabel func_80030208
     /* 20ADC 800302DC 00006492 */  lbu        $a0, 0x0($s3)
     /* 20AE0 800302E0 21284002 */  addu       $a1, $s2, $zero
     /* 20AE4 800302E4 21302002 */  addu       $a2, $s1, $zero
-    /* 20AE8 800302E8 F2E4000C */  jal        func_800393C8
+    /* 20AE8 800302E8 F2E4000C */  jal        saSeInit_2
     /* 20AEC 800302EC 21380002 */   addu      $a3, $s0, $zero
   .L800302F0:
     /* 20AF0 800302F0 0100B526 */  addiu      $s5, $s5, 0x1

@@ -48,7 +48,7 @@ extern void func_8007FF7C(void);
 extern void func_800828CC(s32);
 extern void spu_SetVolume(s32, s32, s32);
 extern void func_80085448(s32, s32, s32);
-extern void func_8003E2D8(s32, s32, s32, s32);
+extern void replay_camera_get_attack_number(s32, s32, s32, s32);
 extern void func_8007B600(s32, s32);
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
@@ -117,8 +117,8 @@ extern s32 func_800827D0(s32, s32);
 extern void func_80041604(s32, s32);
 extern void func_80021974(s32);
 extern void func_80021A98(s32, s32, s32);
-extern void func_80036940(void);
-extern void func_8003D52C(s32, s32, s32, s32);
+extern void special_camera_Exec(void);
+extern void DispSleepMenuTex(s32, s32, s32, s32);
 extern s32 D_800100A4;
 extern void func_800415C4(s32);
 extern void file_ResetDmaFlag(void);
@@ -223,7 +223,7 @@ extern u8 D_8008EB1C;
 extern u8 D_8008DB1C;
 extern s32 D_800F5328;
 extern s32 func_8007FD5C(s32, s32);
-extern void func_8001B748(s32 *, s32 *, s32 *, s32 *, s32, s32);
+extern void DispPracticeMenuTex_A(s32 *, s32 *, s32 *, s32 *, s32, s32);
 extern u8 D_8008F13C;
 extern s16 D_80101E74;
 
@@ -1058,7 +1058,7 @@ void func_80039320(void) {
     D_800A379C = 0;
     D_800A3714 = 0;
 }
-INCLUDE_ASM("asm/funcs", func_800393C8);
+INCLUDE_ASM("asm/funcs", saSeInit_2);
 void func_800395B4(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
     extern u8 D_800A3208;
     extern u8 D_800A379C;

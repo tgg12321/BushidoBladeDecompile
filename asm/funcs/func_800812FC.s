@@ -50,7 +50,7 @@ glabel func_800812FC
     /* 71BB8 800813B8 BC050208 */  j          .L800816F0
     /* 71BBC 800813BC FEFF0224 */   addiu     $v0, $zero, -0x2
   .L800813C0:
-    /* 71BC0 800813C0 6C03020C */  jal        func_80080DB0
+    /* 71BC0 800813C0 6C03020C */  jal        cpu_side_move_dir_4
     /* 71BC4 800813C4 21280000 */   addu      $a1, $zero, $zero
     /* 71BC8 800813C8 FF000332 */  andi       $v1, $s0, 0xFF
     /* 71BCC 800813CC 02000224 */  addiu      $v0, $zero, 0x2

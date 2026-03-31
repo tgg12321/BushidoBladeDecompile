@@ -117,7 +117,7 @@ extern s32 func_800827D0(s32, s32);
 extern void func_80041604(s32, s32);
 extern void func_80021974(s32);
 extern void func_80021A98(s32, s32, s32);
-extern void func_80036940(void);
+extern void special_camera_Exec(void);
 extern s32 D_800100A4;
 extern void func_800415C4(s32);
 extern void file_ResetDmaFlag(void);
@@ -228,7 +228,7 @@ extern u8 D_8008EB1C;
 extern u8 D_8008DB1C;
 extern s32 D_800F5328;
 extern s32 func_8007FD5C(s32, s32);
-extern void func_8001B748(s32 *, s32 *, s32 *, s32 *, s32, s32);
+extern void DispPracticeMenuTex_A(s32 *, s32 *, s32 *, s32 *, s32, s32);
 extern u8 D_8008F13C;
 extern s16 D_80101E74;
 
@@ -720,7 +720,7 @@ void func_8003BFC4(void) {
     game_Init();
     D_800A3834 = 8;
 }
-INCLUDE_ASM("asm/funcs", func_8003C040);
+INCLUDE_ASM("asm/funcs", cpu_side_move_dir_2);
 void func_8003C2C0(void) {
     s32 ret;
 
@@ -823,7 +823,7 @@ void func_8003C42C(void) {
     D_800A3834 = 0x15;
 }
 INCLUDE_ASM("asm/funcs", func_8003C560);
-INCLUDE_ASM("asm/funcs", func_8003C714);
+INCLUDE_ASM("asm/funcs", SetCurrentCursor);
 void func_8003C8B4(void) {
     s32 ret;
 
@@ -983,7 +983,7 @@ void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
         ch = *str++;
     } while (ch != 0);
 }
-INCLUDE_ASM("asm/funcs", func_8003D52C);
+INCLUDE_ASM("asm/funcs", DispSleepMenuTex);
 void func_8003D774(s32 arg0, s32 arg1) {
     s32 *ptr = (s32 *)((u8 *)&D_800A3D40 + arg1 * 24);
     ptr[0] = arg0;
@@ -1133,10 +1133,10 @@ void func_8003E2AC(void) {
 u32 func_8003E2C8(void) {
     return D_800905F8;
 }
-INCLUDE_ASM("asm/funcs", func_8003E2D8);
+INCLUDE_ASM("asm/funcs", replay_camera_get_attack_number);
 void func_8003E6A0(s32 arg0, s32 arg1) {
-    func_8003E2D8(D_80101E3C, D_80101E44, arg0, arg1);
+    replay_camera_get_attack_number(D_80101E3C, D_80101E44, arg0, arg1);
 }
-INCLUDE_ASM("asm/funcs", func_8003E6D8);
+INCLUDE_ASM("asm/funcs", DispHira);
 INCLUDE_ASM("asm/funcs", func_8003EB84);
-INCLUDE_ASM("asm/funcs", func_8003EDC0);
+INCLUDE_ASM("asm/funcs", md_game_check_mode);

@@ -123,6 +123,45 @@ RENAMES = {
     "func_80083A18": "sys_Shutdown",
     "func_80083B30": "spu_Reset",
     "func_80083B50": "spu_SetVolume",
+    # Kengo size-match batch (38 renames, 2026-03-30)
+    "func_8002CD58": "special_camera_Init",
+    "func_8001F2E4": "md_game_rob_data_init",
+    "func_8003E6D8": "DispHira",
+    "func_80036940": "special_camera_Exec",
+    "func_800863DC": "action_CheckHitZangeki",
+    "func_80085A40": "AllocBukiRmd",
+    "func_8002C22C": "PutRobShadow",
+    "func_80086818": "md_game_end",
+    "func_800880E8": "saTan2Main",
+    "func_8003E2D8": "replay_camera_get_attack_number",
+    "func_8003EDC0": "md_game_check_mode",
+    "func_8001B748": "DispPracticeMenuTex_A",
+    "func_80020E74": "DispPracticeMenuTex_B",
+    "func_800290B8": "DispPracticeMenuTex_C",
+    "func_800283D0": "saTan2KabutoWareMove",
+    "func_8002D780": "saTan0KiWareMoveA",
+    "func_8002DAD0": "saTan0KiWareMoveB",
+    "func_80083E9C": "DispStuff",
+    "func_800889D4": "DispUpdateStatusMessage",
+    "func_80044800": "efc_rob_set_type_flash",
+    "func_800338CC": "cpu_set_move_command_and_dir_for_no_action",
+    "func_80017200": "cpu_set_move_command_and_dir_for_no_action_2",
+    "func_8002EBDC": "DispSchoolBG",
+    "func_800893D8": "coli_HitPauseKatana",
+    "func_80089A48": "coli_HitPauseKatana_2",
+    "func_80088D0C": "saTan0GaugeDraw",
+    "func_80027640": "cpu_side_move_dir",
+    "func_8003C040": "cpu_side_move_dir_2",
+    "func_8008BF04": "cpu_side_move_dir_3",
+    "func_80080DB0": "cpu_side_move_dir_4",
+    "func_80018094": "marionation_camera_Exec",
+    "func_800344B4": "DispSamnailWindow",
+    "func_8003D52C": "DispSleepMenuTex",
+    "func_8001B478": "myRobGeneiMove",
+    "func_8002E838": "saSeInit",
+    "func_800393C8": "saSeInit_2",
+    "func_8003C714": "SetCurrentCursor",
+    "func_8002E6B0": "pad_main_control",
 }
 
 dry_run = "--apply" not in sys.argv
@@ -159,10 +198,15 @@ asm_files = (
 )
 # Data section .s files use .word symbol references — treat like C (replace all)
 data_files = list((root / "asm" / "data").glob("*.s"))
+# sdata files list functions by name — must be updated or GP-relative breaks
+sdata_files = [
+    p for p in [root / "sdata_funcs.txt", root / "sdata_exclude.txt"]
+    if p.exists()
+]
 
-for path in sorted(c_files + asm_files + data_files):
+for path in sorted(c_files + asm_files + data_files + sdata_files):
     text = path.read_text(encoding="utf-8", errors="replace")
-    if path.suffix == ".c" or path.parent.name == "data":
+    if path.suffix == ".c" or path.parent.name == "data" or path.suffix == ".txt":
         new_text = process_c_file(path, text)
     else:
         new_text = process_asm_file(path, text)
@@ -175,6 +219,44 @@ for path in sorted(c_files + asm_files + data_files):
         total_replacements += count
         if not dry_run:
             path.write_text(new_text, encoding="utf-8")
+
+# Rename stub .s files for functions that are still INCLUDE_ASM stubs.
+# When a stub is renamed, the INCLUDE_ASM argument (and thus the expected
+# filename) changes, so the .s file must be renamed to match.  The glabel
+# inside the file must also be updated — it is the symbol name the linker uses.
+#
+# Only process functions that are currently stubs — i.e. their NEW name appears
+# in an INCLUDE_ASM call in a C file (the text replacements above already
+# updated those calls).  Decompiled functions have no INCLUDE_ASM and their old
+# .s files are kept as reference only; we leave those alone.
+funcs_dir = root / "asm" / "funcs"
+glabel_pattern = re.compile(r"^(glabel|endlabel) (func_[0-9A-Fa-f]{8})\b", re.MULTILINE)
+
+# Build set of new names that appear in INCLUDE_ASM calls
+include_asm_re = re.compile(r'INCLUDE_ASM\s*\(\s*"[^"]+"\s*,\s*(\w+)\s*\)')
+active_stubs = set()
+for c_path in (root / "src").glob("*.c"):
+    c_text = c_path.read_text(encoding="utf-8", errors="replace")
+    for m in include_asm_re.finditer(c_text):
+        active_stubs.add(m.group(1))
+
+for old_name, new_name in RENAMES.items():
+    if new_name not in active_stubs:
+        continue  # already decompiled — leave the reference .s file alone
+    old_path = funcs_dir / f"{old_name}.s"
+    new_path = funcs_dir / f"{new_name}.s"
+    if not old_path.exists():
+        continue  # file was already renamed in a previous run
+    text = old_path.read_text(encoding="utf-8", errors="replace")
+    # Replace glabel/endlabel lines (intentionally skipped in process_asm_file)
+    new_text = glabel_pattern.sub(lambda m: f"{m.group(1)} {RENAMES.get(m.group(2), m.group(2))}", text)
+    rel_old = old_path.relative_to(root)
+    rel_new = new_path.relative_to(root)
+    print(f"  [stub rename] {rel_old} → {rel_new}")
+    total_files += 1
+    if not dry_run:
+        old_path.write_text(new_text, encoding="utf-8")
+        old_path.rename(new_path)
 
 mode = "DRY RUN" if dry_run else "APPLIED"
 print(f"\n{mode}: {total_replacements} replacements across {total_files} files")

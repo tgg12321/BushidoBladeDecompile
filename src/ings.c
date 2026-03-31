@@ -64,7 +64,7 @@ extern void func_8007BC08(u8 *);
 extern void func_8007B600(u8 *, u8 *);
 extern void func_800828CC(s32);
 extern void func_8007B844(u8 *, s32);
-extern void func_80036940(void);
+extern void special_camera_Exec(void);
 extern void func_8005C6D0(void);
 extern void func_80019568(s32);
 extern void func_8005C8A8(s32, s32, u32, s32);
@@ -395,7 +395,7 @@ s32 rng_Next(void) {
     D_800A38BC = seed;
     return seed & 0x7FFF;
 }
-INCLUDE_ASM("asm/funcs", func_80017200);
+INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action_2);
 INCLUDE_ASM("asm/funcs", func_800174F4);
 void obj_ClearAll(void) {
     s32 i;

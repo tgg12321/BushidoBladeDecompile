@@ -2,7 +2,7 @@ glabel func_80046EA0
     /* 376A0 80046EA0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 376A4 80046EA4 1000B0AF */  sw         $s0, 0x10($sp)
     /* 376A8 80046EA8 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 376AC 80046EAC B6F9000C */  jal        func_8003E6D8
+    /* 376AC 80046EAC B6F9000C */  jal        DispHira
     /* 376B0 80046EB0 21808000 */   addu      $s0, $a0, $zero
     /* 376B4 80046EB4 E619010C */  jal        stage_GetId
     /* 376B8 80046EB8 00000000 */   nop

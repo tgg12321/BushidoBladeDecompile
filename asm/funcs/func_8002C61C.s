@@ -45,7 +45,7 @@ glabel func_8002C61C
     /* 1CEBC 8002C6BC 00140200 */  sll        $v0, $v0, 16
     /* 1CEC0 8002C6C0 1F004004 */  bltz       $v0, .L8002C740
     /* 1CEC4 8002C6C4 00000000 */   nop
-    /* 1CEC8 8002C6C8 8BB0000C */  jal        func_8002C22C
+    /* 1CEC8 8002C6C8 8BB0000C */  jal        PutRobShadow
     /* 1CECC 8002C6CC 00000000 */   nop
     /* 1CED0 8002C6D0 0A80023C */  lui        $v0, %hi(D_800A3824)
     /* 1CED4 8002C6D4 24384284 */  lh         $v0, %lo(D_800A3824)($v0)
@@ -64,11 +64,11 @@ glabel func_8002C61C
     /* 1CF08 8002C708 00000000 */   nop
   .L8002C70C:
     /* 1CF0C 8002C70C 801F053C */  lui        $a1, (0x1F8003F4 >> 16)
-    /* 1CF10 8002C710 F4A0000C */  jal        func_800283D0
+    /* 1CF10 8002C710 F4A0000C */  jal        saTan2KabutoWareMove
     /* 1CF14 8002C714 F403A534 */   ori       $a1, $a1, (0x1F8003F4 & 0xFFFF)
     /* 1CF18 8002C718 21200002 */  addu       $a0, $s0, $zero
     /* 1CF1C 8002C71C 801F053C */  lui        $a1, (0x1F8003F4 >> 16)
-    /* 1CF20 8002C720 F4A0000C */  jal        func_800283D0
+    /* 1CF20 8002C720 F4A0000C */  jal        saTan2KabutoWareMove
     /* 1CF24 8002C724 F403A534 */   ori       $a1, $a1, (0x1F8003F4 & 0xFFFF)
     /* 1CF28 8002C728 1080013C */  lui        $at, %hi(D_801023C1)
     /* 1CF2C 8002C72C C12320A0 */  sb         $zero, %lo(D_801023C1)($at)

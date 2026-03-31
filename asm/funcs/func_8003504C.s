@@ -142,7 +142,7 @@ glabel func_8003504C
     /* 25A60 80035260 EAFF4014 */  bnez       $v0, .L8003520C
     /* 25A64 80035264 02002925 */   addiu     $t1, $t1, 0x2
   .L80035268:
-    /* 25A68 80035268 2DD1000C */  jal        func_800344B4
+    /* 25A68 80035268 2DD1000C */  jal        DispSamnailWindow
     /* 25A6C 8003526C 00000000 */   nop
     /* 25A70 80035270 1000BF8F */  lw         $ra, 0x10($sp)
     /* 25A74 80035274 1800BD27 */  addiu      $sp, $sp, 0x18

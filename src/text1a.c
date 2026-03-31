@@ -22,7 +22,7 @@ extern s32 D_800A3240;
 extern s32 D_800A3398;
 extern s32 D_800A3244;
 extern s16 D_800963EE;
-extern void func_8003EDC0(s32 *, s32);
+extern void md_game_check_mode(s32 *, s32);
 extern void func_80054410(s32 *);
 extern s32 func_800457A0(s32);
 extern void func_80041430(s32, s32);
@@ -714,7 +714,7 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     }
 }
 INCLUDE_ASM("asm/funcs", func_8004473C);
-INCLUDE_ASM("asm/funcs", func_80044800);
+INCLUDE_ASM("asm/funcs", efc_rob_set_type_flash);
 INCLUDE_ASM("asm/funcs", func_80044B30);
 extern s16 D_800A9CF8;
 extern s32 D_800A9D04;
@@ -1137,7 +1137,7 @@ void func_800464C4(void) {
         break;
     }
     func_80044010(a0, 7);
-    func_8003EDC0(s1, 7);
+    md_game_check_mode(s1, 7);
     func_80045510(7, (s32)((u8 *)s1 - (u8 *)s0));
     D_8009947A = 0;
 }
@@ -1173,7 +1173,7 @@ void func_8004659C(s32 a0) {
     func_80054410(s3);
     D_800A33B0 = (s32)s4p;
     D_800A33B4 = (s32)s1p;
-    func_8003EDC0(s0p, 7);
+    md_game_check_mode(s0p, 7);
 }
 extern s16 D_80099478;
 extern s16 D_8009947A;

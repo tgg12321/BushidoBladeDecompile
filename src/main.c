@@ -7,8 +7,8 @@ extern void func_80089D60(s32);
 extern void spu_InitEx(s32);
 extern s32 func_8008AEB0(s32);
 extern void func_80084974(s16, s16);
-extern s16 func_800880E8(s32, s16, s32, s32);
-extern void func_80089A48(s32, s32, s32, s32);
+extern s16 saTan2Main(s32, s16, s32, s32);
+extern void coli_HitPauseKatana_2(s32, s32, s32, s32);
 
 /* Externs for globals */
 extern s16 D_800F66F8;
@@ -63,7 +63,7 @@ void func_80083BE4(s16 a0, s16 a1) {
     func_8008AF9C(buf);
 }
 INCLUDE_ASM("asm/funcs", func_80083C34);
-INCLUDE_ASM("asm/funcs", func_80083E9C);
+INCLUDE_ASM("asm/funcs", DispStuff);
 INCLUDE_ASM("asm/funcs", func_800841E0);
 INCLUDE_ASM("asm/funcs", func_80084500);
 void spu_SetMotionState(s16 a0, s16 a1) {
@@ -179,7 +179,7 @@ s32 func_800859F0(s16 a0) {
     }
     return D_80107810[a0];
 }
-INCLUDE_ASM("asm/funcs", func_80085A40);
+INCLUDE_ASM("asm/funcs", AllocBukiRmd);
 extern s32 D_800F5750;
 extern s16 D_800F5758;
 extern s16 D_800F575A;
@@ -245,8 +245,8 @@ void spu_ResetCounter(void) {
     D_800F66F8 = 0;
 }
 
-INCLUDE_ASM("asm/funcs", func_800863DC);
-INCLUDE_ASM("asm/funcs", func_80086818);
+INCLUDE_ASM("asm/funcs", action_CheckHitZangeki);
+INCLUDE_ASM("asm/funcs", md_game_end);
 INCLUDE_ASM("asm/funcs", func_80086BFC);
 INCLUDE_ASM("asm/funcs", func_80086CF8);
 INCLUDE_ASM("asm/funcs", func_800871D4);
@@ -323,17 +323,17 @@ s16 func_80087FE8(s16 a0) {
 }
 
 s16 func_80088058(s32 a0, s16 a1) {
-    return func_800880E8(a0, a1, 0, 0);
+    return saTan2Main(a0, a1, 0, 0);
 }
 
 s16 func_80088088(s32 a0, s16 a1, s32 a2) {
-    return func_800880E8(a0, a1, 1, a2);
+    return saTan2Main(a0, a1, 1, a2);
 }
 
 s16 func_800880B8(s32 a0, s16 a1, s32 a2) {
-    return func_800880E8(a0, a1, 1, a2);
+    return saTan2Main(a0, a1, 1, a2);
 }
-INCLUDE_ASM("asm/funcs", func_800880E8);
+INCLUDE_ASM("asm/funcs", saTan2Main);
 extern u8 D_80102A68[];
 extern s32 D_80107810[];
 extern s32 D_801077C8[];
@@ -420,24 +420,24 @@ void spu_InitIrq(void) {
     }
 }
 INCLUDE_ASM("asm/funcs", func_80088740);
-INCLUDE_ASM("asm/funcs", func_800889D4);
-INCLUDE_ASM("asm/funcs", func_80088D0C);
-extern void func_80088D0C(s32, ...);
-extern void func_800889D4(s32, s32);
+INCLUDE_ASM("asm/funcs", DispUpdateStatusMessage);
+INCLUDE_ASM("asm/funcs", saTan0GaugeDraw);
+extern void saTan0GaugeDraw(s32, ...);
+extern void DispUpdateStatusMessage(s32, s32);
 s32 spu_TransferData(s32 a0, s32 a1) {
     if (D_800A2CF8 == 0) {
-        func_80088D0C(2, D_800A2CF4 << D_800A2D04);
-        func_80088D0C(1);
-        func_80088D0C(3, a0, a1);
+        saTan0GaugeDraw(2, D_800A2CF4 << D_800A2D04);
+        saTan0GaugeDraw(1);
+        saTan0GaugeDraw(3, a0, a1);
     } else {
-        func_800889D4(a0, a1);
+        DispUpdateStatusMessage(a0, a1);
     }
     return a1;
 }
 s32 spu_TransferDirect(s32 a0, s32 a1) {
-    func_80088D0C(2, D_800A2CF4 << D_800A2D04);
-    func_80088D0C(0);
-    func_80088D0C(3, a0, a1);
+    saTan0GaugeDraw(2, D_800A2CF4 << D_800A2D04);
+    saTan0GaugeDraw(0);
+    saTan0GaugeDraw(3, a0, a1);
     return a1;
 }
 void spu_WriteReg(s32 arg0, u32 arg1, s32 arg2) {
@@ -529,7 +529,7 @@ s32 spu_IrqHandler(s32 a0, s32 *a1) {
     a1[1] = new_var - 0x1010;
     return v0;
 }
-INCLUDE_ASM("asm/funcs", func_800893D8);
+INCLUDE_ASM("asm/funcs", coli_HitPauseKatana);
 INCLUDE_ASM("asm/funcs", func_800896A0);
 extern s32 D_800A2D38;
 extern void func_800896A0(void);
@@ -564,10 +564,10 @@ void spu_DmaTransfer(s32 a0) {
 }
 
 void spu_WaitReady(s32 a0, s32 a1) {
-    func_80089A48(a0, a1, 0xCA, 0xCB);
+    coli_HitPauseKatana_2(a0, a1, 0xCA, 0xCB);
 }
 
-INCLUDE_ASM("asm/funcs", func_80089A48);
+INCLUDE_ASM("asm/funcs", coli_HitPauseKatana_2);
 s32 func_80089D10(s32 a0) {
     s32 val;
     if (a0 < 0) {
@@ -626,7 +626,7 @@ void func_8008A434(s32 *arg0) {
 }
 
 void func_8008A904(s32 a0, s32 a1) {
-    func_80089A48(a0, a1, 0xCC, 0xCD);
+    coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD);
 }
 
 INCLUDE_ASM("asm/funcs", func_8008A928);
@@ -833,7 +833,7 @@ s32 func_8008BEA4(int a0, int a1) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/funcs", func_8008BF04);
+INCLUDE_ASM("asm/funcs", cpu_side_move_dir_3);
 extern s32 D_800F1AEC;
 extern s32 D_800F1AF0;
 extern s32 D_800F1AF4;

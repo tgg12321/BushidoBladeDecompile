@@ -246,7 +246,7 @@ glabel func_8002A458
     /* 1AFF4 8002A7F4 0004022A */  slti       $v0, $s0, 0x400
     /* 1AFF8 8002A7F8 41004010 */  beqz       $v0, .L8002A900
     /* 1AFFC 8002A7FC 00000000 */   nop
-    /* 1B000 8002A800 0EBA000C */  jal        func_8002E838
+    /* 1B000 8002A800 0EBA000C */  jal        saSeInit
     /* 1B004 8002A804 2120A002 */   addu      $a0, $s5, $zero
     /* 1B008 8002A808 C0101700 */  sll        $v0, $s7, 3
     /* 1B00C 8002A80C 23105700 */  subu       $v0, $v0, $s7

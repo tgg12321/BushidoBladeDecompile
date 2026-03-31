@@ -116,7 +116,7 @@ glabel func_800819C4
     /* 72380 80081B80 07004014 */  bnez       $v0, .L80081BA0
     /* 72384 80081B84 FFFF0224 */   addiu     $v0, $zero, -0x1
     /* 72388 80081B88 21200000 */  addu       $a0, $zero, $zero
-    /* 7238C 80081B8C 6C03020C */  jal        func_80080DB0
+    /* 7238C 80081B8C 6C03020C */  jal        cpu_side_move_dir_4
     /* 72390 80081B90 21280000 */   addu      $a1, $zero, $zero
     /* 72394 80081B94 02004238 */  xori       $v0, $v0, 0x2
     /* 72398 80081B98 2B100200 */  sltu       $v0, $zero, $v0

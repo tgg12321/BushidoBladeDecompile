@@ -74,7 +74,7 @@ glabel func_8002304C
     /* 13960 80023160 2130C003 */  addu       $a2, $fp, $zero
     /* 13964 80023164 C0FF0724 */  addiu      $a3, $zero, -0x40
     /* 13968 80023168 E6000224 */  addiu      $v0, $zero, 0xE6
-    /* 1396C 8002316C F7BA000C */  jal        func_8002EBDC
+    /* 1396C 8002316C F7BA000C */  jal        DispSchoolBG
     /* 13970 80023170 1000A2AF */   sw        $v0, 0x10($sp)
     /* 13974 80023174 10000386 */  lh         $v1, 0x10($s0)
     /* 13978 80023178 00000000 */  nop
@@ -170,7 +170,7 @@ glabel func_8002304C
     /* 13AC4 800232C4 2120C002 */  addu       $a0, $s6, $zero
     /* 13AC8 800232C8 21288002 */  addu       $a1, $s4, $zero
     /* 13ACC 800232CC 2130C002 */  addu       $a2, $s6, $zero
-    /* 13AD0 800232D0 F7BA000C */  jal        func_8002EBDC
+    /* 13AD0 800232D0 F7BA000C */  jal        DispSchoolBG
     /* 13AD4 800232D4 21380000 */   addu      $a3, $zero, $zero
     /* 13AD8 800232D8 12000286 */  lh         $v0, 0x12($s0)
     /* 13ADC 800232DC 00000000 */  nop
