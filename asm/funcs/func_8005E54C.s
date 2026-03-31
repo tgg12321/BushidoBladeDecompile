@@ -554,8 +554,8 @@ glabel func_8005E54C
     /* 4F540 8005ED40 40100400 */  sll        $v0, $a0, 1
     /* 4F544 8005ED44 21104400 */  addu       $v0, $v0, $a0
     /* 4F548 8005ED48 C0100200 */  sll        $v0, $v0, 3
-    /* 4F54C 8005ED4C 0A80033C */  lui        $v1, %hi(D_8009ADD8)
-    /* 4F550 8005ED50 D8AD6324 */  addiu      $v1, $v1, %lo(D_8009ADD8)
+    /* 4F54C 8005ED4C 0A80033C */  lui        $v1, %hi(UesrWorkDef)
+    /* 4F550 8005ED50 D8AD6324 */  addiu      $v1, $v1, %lo(UesrWorkDef)
     /* 4F554 8005ED54 21104300 */  addu       $v0, $v0, $v1
     /* 4F558 8005ED58 2C00A2AF */  sw         $v0, 0x2C($sp)
     /* 4F55C 8005ED5C 80110500 */  sll        $v0, $a1, 6

@@ -46,9 +46,9 @@ glabel func_80060B70
     /* 51420 80060C20 00000000 */  nop
     /* 51424 80060C24 21104300 */  addu       $v0, $v0, $v1
     /* 51428 80060C28 80100200 */  sll        $v0, $v0, 2
-    /* 5142C 80060C2C 0A80013C */  lui        $at, %hi(D_8009BA7C)
+    /* 5142C 80060C2C 0A80013C */  lui        $at, %hi(chractar_use_pset_combo_id_table)
     /* 51430 80060C30 21082200 */  addu       $at, $at, $v0
-    /* 51434 80060C34 7CBA228C */  lw         $v0, %lo(D_8009BA7C)($at)
+    /* 51434 80060C34 7CBA228C */  lw         $v0, %lo(chractar_use_pset_combo_id_table)($at)
     /* 51438 80060C38 00000000 */  nop
     /* 5143C 80060C3C 09F84000 */  jalr       $v0
     /* 51440 80060C40 00000000 */   nop

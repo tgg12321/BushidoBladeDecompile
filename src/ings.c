@@ -27,7 +27,7 @@ extern u8 D_8001000C;
 
 extern void func_80079208();
 extern void func_800164F8(void);
-extern s16 D_800973FC[];
+extern s16 Judge[];
 extern s32 func_80083698(s32, s32, s32);
 extern s32 ang_hosei(s32, s32, s32);
 extern s32 bios_FileRead(s32, u8 *, s32);
@@ -187,8 +187,8 @@ s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
 s32 disp_CalcFov(s32 a0) {
     s32 tmp = (a0 << 12) / 360;
     s32 v1 = tmp / 2;
-    s16 cos_val = D_800973FC[(v1 + 0x400) & 0xFFF];
-    s16 sin_val = D_800973FC[v1 & 0xFFF];
+    s16 cos_val = Judge[(v1 + 0x400) & 0xFFF];
+    s16 sin_val = Judge[v1 & 0xFFF];
     return (cos_val * 320) / sin_val;
 }
 void disp_SetFramebufferMode(s32 a0, s32 a1, s32 a2, s32 a3) {

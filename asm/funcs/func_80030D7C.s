@@ -9,8 +9,8 @@ glabel func_80030D7C
     /* 21598 80030D98 4800BEAF */  sw         $fp, 0x48($sp)
     /* 2159C 80030D9C 21F00000 */  addu       $fp, $zero, $zero
     /* 215A0 80030DA0 4400B7AF */  sw         $s7, 0x44($sp)
-    /* 215A4 80030DA4 0980173C */  lui        $s7, %hi(D_800973FC)
-    /* 215A8 80030DA8 FC73F726 */  addiu      $s7, $s7, %lo(D_800973FC)
+    /* 215A4 80030DA4 0980173C */  lui        $s7, %hi(Judge)
+    /* 215A8 80030DA8 FC73F726 */  addiu      $s7, $s7, %lo(Judge)
     /* 215AC 80030DAC 801F093C */  lui        $t1, (0x1F8002C8 >> 16)
     /* 215B0 80030DB0 C8022935 */  ori        $t1, $t1, (0x1F8002C8 & 0xFFFF)
     /* 215B4 80030DB4 2800B0AF */  sw         $s0, 0x28($sp)

@@ -376,9 +376,9 @@ extern s16 D_800F62E2;
 extern s16 D_800F6460;
 extern s16 D_800F6340;
 extern s16 D_800F62E0;
-extern s32 D_80094E48[];
+extern s32 StageLight[];
 void func_800421C8(s32 a0) {
-    s32 *p = (s32 *)((u8 *)D_80094E48 + a0 * 24);
+    s32 *p = (s32 *)((u8 *)StageLight + a0 * 24);
     s32 val;
     func_800422BC(a0, *p++, 0, 0);
     func_800422BC(a0, *p++, 0, 1);
@@ -459,14 +459,14 @@ void func_80042ED8(u16 *a0) {
     a0[7] = t3;
     a0[5] = t0;
 }
-extern s16 D_800973FC[];
+extern s16 Judge[];
 void func_80042F10(s32 *a0, s32 *a1, s32 a2) {
     s16 sin_val, cos_val;
     s32 x, y;
     s32 sin_x, cos_x, sin_y, cos_y;
-    sin_val = D_800973FC[(a2 + 0x400) & 0xFFF];
+    sin_val = Judge[(a2 + 0x400) & 0xFFF];
     x = *a0;
-    cos_val = D_800973FC[a2 & 0xFFF];
+    cos_val = Judge[a2 & 0xFFF];
     y = *a1;
     sin_x = sin_val * x;
     cos_x = cos_val * x;

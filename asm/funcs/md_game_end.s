@@ -6,8 +6,8 @@ glabel md_game_end
     /* 77028 80086828 5800BFAF */  sw         $ra, 0x58($sp)
     /* 7702C 8008682C D62B020C */  jal        func_8008AF58
     /* 77030 80086830 5000B0AF */   sw        $s0, 0x50($sp)
-    /* 77034 80086834 0F80053C */  lui        $a1, %hi(D_800F19D0)
-    /* 77038 80086838 D019A524 */  addiu      $a1, $a1, %lo(D_800F19D0)
+    /* 77034 80086834 0F80053C */  lui        $a1, %hi(MarioCam_str)
+    /* 77038 80086838 D019A524 */  addiu      $a1, $a1, %lo(MarioCam_str)
     /* 7703C 8008683C 0F80013C */  lui        $at, %hi(D_800F66F8)
     /* 77040 80086840 F86620A4 */  sh         $zero, %lo(D_800F66F8)($at)
     /* 77044 80086844 E124020C */  jal        spu_IrqHandler

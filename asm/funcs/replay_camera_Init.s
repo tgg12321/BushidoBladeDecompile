@@ -9,9 +9,9 @@ glabel replay_camera_Init
     /* 275B4 80036DB4 43130200 */  sra        $v0, $v0, 13
     /* 275B8 80036DB8 1080013C */  lui        $at, %hi(D_80101E60)
     /* 275BC 80036DBC 601E24A4 */  sh         $a0, %lo(D_80101E60)($at)
-    /* 275C0 80036DC0 0980013C */  lui        $at, %hi(D_8008EC34)
+    /* 275C0 80036DC0 0980013C */  lui        $at, %hi(SpecialCam)
     /* 275C4 80036DC4 21082200 */  addu       $at, $at, $v0
-    /* 275C8 80036DC8 34EC238C */  lw         $v1, %lo(D_8008EC34)($at)
+    /* 275C8 80036DC8 34EC238C */  lw         $v1, %lo(SpecialCam)($at)
     /* 275CC 80036DCC 0980013C */  lui        $at, %hi(D_8008EC38)
     /* 275D0 80036DD0 21082200 */  addu       $at, $at, $v0
     /* 275D4 80036DD4 38EC248C */  lw         $a0, %lo(D_8008EC38)($at)

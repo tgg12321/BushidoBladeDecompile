@@ -34,9 +34,9 @@ glabel func_8001BAE4
   .L8001BB5C:
     /* C35C 8001BB5C 43100300 */  sra        $v0, $v1, 1
     /* C360 8001BB60 FE1F4230 */  andi       $v0, $v0, 0x1FFE
-    /* C364 8001BB64 0980013C */  lui        $at, %hi(D_800973FC)
+    /* C364 8001BB64 0980013C */  lui        $at, %hi(Judge)
     /* C368 8001BB68 21082200 */  addu       $at, $at, $v0
-    /* C36C 8001BB6C FC732384 */  lh         $v1, %lo(D_800973FC)($at)
+    /* C36C 8001BB6C FC732384 */  lh         $v1, %lo(Judge)($at)
     /* C370 8001BB70 00000000 */  nop
     /* C374 8001BB74 40100300 */  sll        $v0, $v1, 1
     /* C378 8001BB78 21104300 */  addu       $v0, $v0, $v1
