@@ -108,6 +108,9 @@ ANNOTATIONS = [
     ("motion_make_table", "is_motion", 62, "HIGH", ""),
     ("motion_Open",       "is_motion", 54, "HIGH", ""),
     ("calc_loc_mat_fw",   "se_fc",    1074, "MED", "-38 3.5% no-affinity fallback"),
+    # Final ±5% batch (2026-03-30)
+    ("marionation_Exec",              "nm_mario",      180, "HIGH", "+1 near-exact"),
+    ("replay_camera_rob_back_loose2", "nm_replay_cam", 126, "MED",  "-6 4.8%"),
 ]
 
 # Build lookup: func_name -> comment line

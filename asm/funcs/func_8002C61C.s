@@ -77,7 +77,7 @@ glabel func_8002C61C
     /* 1CF38 8002C738 D2B10008 */  j          .L8002C748
     /* 1CF3C 8002C73C 00000000 */   nop
   .L8002C740:
-    /* 1CF40 8002C740 C2AA000C */  jal        func_8002AB08
+    /* 1CF40 8002C740 C2AA000C */  jal        calc_loc_mat_fw
     /* 1CF44 8002C744 21200000 */   addu      $a0, $zero, $zero
   .L8002C748:
     /* 1CF48 8002C748 3C00228E */  lw         $v0, 0x3C($s1)

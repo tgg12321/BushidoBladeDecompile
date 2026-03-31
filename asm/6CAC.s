@@ -33264,7 +33264,7 @@ glabel func_800355E8
     /* 25E14 80035614 00000000 */   nop
 endlabel func_800355E8
 
-nonmatching func_80035618, 0x210
+nonmatching replay_camera_rob_back_loose2, 0x210
 
 glabel func_80035618
     /* 25E18 80035618 E8FFBD27 */  addiu      $sp, $sp, -0x18
@@ -33443,7 +33443,7 @@ glabel func_80035828
     /* 26078 80035878 00000000 */   nop
     /* 2607C 8003587C 0A80043C */  lui        $a0, %hi(D_800A38DC)
     /* 26080 80035880 DC388484 */  lh         $a0, %lo(D_800A38DC)($a0)
-    /* 26084 80035884 86D5000C */  jal        func_80035618
+    /* 26084 80035884 86D5000C */  jal        replay_camera_rob_back_loose2
     /* 26088 80035888 00000000 */   nop
     /* 2608C 8003588C 0E0180A3 */  sb         $zero, %gp_rel(D_800A31DA)($gp)
   .L80035890:
@@ -33585,7 +33585,7 @@ glabel func_80035828
     /* 26280 80035A80 1080013C */  lui        $at, %hi(D_80102785)
     /* 26284 80035A84 852722A0 */  sb         $v0, %lo(D_80102785)($at)
     /* 26288 80035A88 00160200 */  sll        $v0, $v0, 24
-    /* 2628C 80035A8C 86D5000C */  jal        func_80035618
+    /* 2628C 80035A8C 86D5000C */  jal        replay_camera_rob_back_loose2
     /* 26290 80035A90 03260200 */   sra       $a0, $v0, 24
     /* 26294 80035A94 67D70008 */  j          .L80035D9C
     /* 26298 80035A98 00000000 */   nop

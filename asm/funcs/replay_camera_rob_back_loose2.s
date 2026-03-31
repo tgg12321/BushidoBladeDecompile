@@ -1,4 +1,4 @@
-glabel func_80035618
+glabel replay_camera_rob_back_loose2
     /* 25E18 80035618 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 25E1C 8003561C 0800822C */  sltiu      $v0, $a0, 0x8
     /* 25E20 80035620 7D004010 */  beqz       $v0, .L80035818
@@ -146,4 +146,4 @@ glabel func_80035618
     /* 2601C 8003581C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 26020 80035820 0800E003 */  jr         $ra
     /* 26024 80035824 00000000 */   nop
-endlabel func_80035618
+endlabel replay_camera_rob_back_loose2

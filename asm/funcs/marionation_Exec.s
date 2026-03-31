@@ -1,4 +1,4 @@
-glabel func_80081030
+glabel marionation_Exec
     /* 71830 80081030 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 71834 80081034 3400B7AF */  sw         $s7, 0x34($sp)
     /* 71838 80081038 21B88000 */  addu       $s7, $a0, $zero
@@ -193,4 +193,4 @@ glabel func_80081030
     /* 71AF0 800812F0 4000BD27 */  addiu      $sp, $sp, 0x40
     /* 71AF4 800812F4 0800E003 */  jr         $ra
     /* 71AF8 800812F8 00000000 */   nop
-endlabel func_80081030
+endlabel marionation_Exec

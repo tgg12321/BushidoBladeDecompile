@@ -228,6 +228,8 @@ RENAMES = {
     "func_80082C3C": "motion_make_table",
     "func_80083794": "motion_Open",
     "func_8002AB08": "calc_loc_mat_fw",
+    "func_80081030": "marionation_Exec",
+    "func_80035618": "replay_camera_rob_back_loose2",
 }
 
 dry_run = "--apply" not in sys.argv
