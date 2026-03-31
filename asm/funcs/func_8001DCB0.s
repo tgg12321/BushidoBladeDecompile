@@ -318,7 +318,7 @@ glabel func_8001DCB0
     /* E944 8001E144 0980013C */  lui        $at, %hi(D_8008D538)
     /* E948 8001E148 21082300 */  addu       $at, $at, $v1
     /* E94C 8001E14C 38D52690 */  lbu        $a2, %lo(D_8008D538)($at)
-    /* E950 8001E150 9D83000C */  jal        DispPracticeMenuTex_B
+    /* E950 8001E150 9D83000C */  jal        func_80020E74
     /* E954 8001E154 00000000 */   nop
     /* E958 8001E158 5F780008 */  j          .L8001E17C
     /* E95C 8001E15C 00000000 */   nop

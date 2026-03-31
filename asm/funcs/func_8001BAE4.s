@@ -54,7 +54,7 @@ glabel func_8001BAE4
     /* C3A4 8001BBA4 21304002 */  addu       $a2, $s2, $zero
     /* C3A8 8001BBA8 21380002 */  addu       $a3, $s0, $zero
     /* C3AC 8001BBAC 1000B3AF */  sw         $s3, 0x10($sp)
-    /* C3B0 8001BBB0 D26D000C */  jal        DispPracticeMenuTex_A
+    /* C3B0 8001BBB0 D26D000C */  jal        func_8001B748
     /* C3B4 8001BBB4 1400A2AF */   sw        $v0, 0x14($sp)
     /* C3B8 8001BBB8 2800BF8F */  lw         $ra, 0x28($sp)
     /* C3BC 8001BBBC 2400B38F */  lw         $s3, 0x24($sp)

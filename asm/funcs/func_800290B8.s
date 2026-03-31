@@ -1,4 +1,4 @@
-glabel DispPracticeMenuTex_C
+glabel func_800290B8
     /* 198B8 800290B8 B8FFBD27 */  addiu      $sp, $sp, -0x48
     /* 198BC 800290BC 3C00B7AF */  sw         $s7, 0x3C($sp)
     /* 198C0 800290C0 21B88000 */  addu       $s7, $a0, $zero
@@ -250,4 +250,4 @@ glabel DispPracticeMenuTex_C
     /* 19C48 80029448 4800BD27 */  addiu      $sp, $sp, 0x48
     /* 19C4C 8002944C 0800E003 */  jr         $ra
     /* 19C50 80029450 00000000 */   nop
-endlabel DispPracticeMenuTex_C
+endlabel func_800290B8

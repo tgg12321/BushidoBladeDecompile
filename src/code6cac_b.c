@@ -119,7 +119,7 @@ extern void func_80041604(s32, s32);
 extern void func_80021974(s32);
 extern void func_80021A98(s32, s32, s32);
 extern void special_camera_Exec(void);
-extern void DispSleepMenuTex(s32, s32, s32, s32);
+extern void func_8003D52C(s32, s32, s32, s32);
 extern s32 D_800100A4;
 extern void func_800415C4(s32);
 extern void file_ResetDmaFlag(void);
@@ -230,7 +230,7 @@ extern u8 D_8008EB1C;
 extern u8 D_8008DB1C;
 extern s32 D_800F5328;
 extern s32 func_8007FD5C(s32, s32);
-extern void DispPracticeMenuTex_A(s32 *, s32 *, s32 *, s32 *, s32, s32);
+extern void func_8001B748(s32 *, s32 *, s32 *, s32 *, s32, s32);
 extern u8 D_8008F13C;
 extern s16 D_80101E74;
 
@@ -613,6 +613,7 @@ INCLUDE_ASM("asm/funcs", func_8002738C);
 INCLUDE_ASM("asm/funcs", func_80027438);
 INCLUDE_ASM("asm/funcs", func_800274BC);
 INCLUDE_ASM("asm/funcs", cpu_side_move_dir);
+/* kengo:HIGH  |  nm_cpu/cpu_side_move_dir  |  160i  |  x4 size collision */
 INCLUDE_ASM("asm/funcs", func_800278C0);
 s32 func_8002798C(u8 *a0) {
     s32 ret = 0;
@@ -683,6 +684,7 @@ void func_80027A58(s32 *a0) {
 }
 INCLUDE_ASM("asm/funcs", func_80027AD8);
 INCLUDE_ASM("asm/funcs", saTan2KabutoWareMove);
+/* kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i */
 INCLUDE_ASM("asm/funcs", func_8002872C);
 INCLUDE_ASM("asm/funcs", func_800288C8);
 void func_8002906C(void) {
@@ -692,7 +694,8 @@ void func_8002906C(void) {
         ptr = (s16 *)((u8 *)ptr + 0x10);
     }
 }
-INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_C);
+INCLUDE_ASM("asm/funcs", func_800290B8);
+/* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 INCLUDE_ASM("asm/funcs", func_80029454);
 INCLUDE_ASM("asm/funcs", func_8002A458);
 INCLUDE_ASM("asm/funcs", func_8002AB08);
@@ -700,18 +703,25 @@ INCLUDE_ASM("asm/funcs", func_8002BC68);
 INCLUDE_ASM("asm/funcs", func_8002BEA0);
 INCLUDE_ASM("asm/funcs", func_8002C0DC);
 INCLUDE_ASM("asm/funcs", PutRobShadow);
+/* kengo:MED  |  am_rmd/PutRobShadow  |  252i */
 INCLUDE_ASM("asm/funcs", func_8002C61C);
 INCLUDE_ASM("asm/funcs", func_8002CA8C);
 INCLUDE_ASM("asm/funcs", special_camera_Init);
+/* kengo:HIGH  |  nm_special_cam/special_camera_Init  |  370i */
 INCLUDE_ASM("asm/funcs", func_8002D320);
 INCLUDE_ASM("asm/funcs", func_8002D518);
 INCLUDE_ASM("asm/funcs", saTan0KiWareMoveA);
+/* kengo:MED  |  sa_tan0/saTan0KiWareMoveA  |  212i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", saTan0KiWareMoveB);
+/* kengo:MED  |  sa_tan0/saTan0KiWareMoveB  |  212i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", func_8002DE20);
 INCLUDE_ASM("asm/funcs", pad_main_control);
+/* kengo:HIGH  |  is_pad/pad_main_control  |  98i */
 INCLUDE_ASM("asm/funcs", saSeInit);
+/* kengo:MED  |  sa_se/saSeInit  |  123i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", func_8002EA24);
-INCLUDE_ASM("asm/funcs", DispSchoolBG);
+INCLUDE_ASM("asm/funcs", func_8002EBDC);
+/* kengo:LOW  |  su_menu_single/_DispSchoolBG  |  188i  |  PS2 UI — reverted */
 void func_8002EECC(void *arg0, void *arg1) {
     s16 temp_a3;
     s16 temp_t0;
@@ -934,6 +944,7 @@ void func_80033898(void) {
     D_800A3834 = 3;
 }
 INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action);
+/* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action  |  189i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", func_80033BC0);
 INCLUDE_ASM("asm/funcs", func_80033D38);
 INCLUDE_ASM("asm/funcs", func_80033DF4);
@@ -1051,7 +1062,8 @@ void func_800343F0(void) {
 
 
 
-INCLUDE_ASM("asm/funcs", DispSamnailWindow);
+INCLUDE_ASM("asm/funcs", func_800344B4);
+/* kengo:LOW  |  su_menu_vs/_DispSamnailWindow  |  149i  |  PS2 UI — reverted */
 INCLUDE_ASM("asm/funcs", func_80034708);
 INCLUDE_ASM("asm/funcs", func_80034F88);
 INCLUDE_ASM("asm/funcs", func_8003504C);

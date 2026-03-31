@@ -115,7 +115,7 @@ extern void func_800826CC(s32);
 extern s32 func_800827D0(s32, s32);
 extern void func_80041604(s32, s32);
 extern void special_camera_Exec(void);
-extern void DispSleepMenuTex(s32, s32, s32, s32);
+extern void func_8003D52C(s32, s32, s32, s32);
 extern s32 D_800100A4;
 extern void func_800415C4(s32);
 extern void file_ResetDmaFlag(void);
@@ -610,6 +610,7 @@ extern s32 D_80102030;
 
 INCLUDE_ASM("asm/funcs", func_80017FA0);
 INCLUDE_ASM("asm/funcs", marionation_camera_Exec);
+/* kengo:MED  |  nm_mario_cam/marionation_camera_Exec  |  155i */
 INCLUDE_ASM("asm/funcs", func_80018300);
 INCLUDE_ASM("asm/funcs", func_800187F4);
 extern s32 D_800F6740;
@@ -673,7 +674,7 @@ void func_8001A484(u16 *arg0) {
     p = arg0 + 2;
     do {
         i++;
-        DispSleepMenuTex((s32)&D_800100A4, arg0[0], p[-1], p[0]);
+        func_8003D52C((s32)&D_800100A4, arg0[0], p[-1], p[0]);
         p += 3;
         arg0 += 3;
     } while (i < 0x16);
@@ -751,6 +752,7 @@ void func_8001B138(s32 *arg0) {
 void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6638 = 0x64;    D_800F663A = 0;    D_800F663C = 0x64;    D_800F6640 = 0x64;    D_800F6642 = 0;    D_800F6644 = 0x64;    func_8003F1E4(0);    D_800F6608 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F660C = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6618 = 0;        D_800F6610 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = func_8007FD5C(dx, dy);    }    D_800F661A = 0x400 - v0;    D_800F661C = 0;    D_800F6620 = 0x1388;    D_800F6626 = 0;}
 void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5358 = 0x64;    D_800F535A = 0;    D_800F535C = 0x64;    D_800F5360 = 0x64;    D_800F5362 = 0;    D_800F5364 = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5330 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5368 = 0;        D_800F532C = v;    }}
 INCLUDE_ASM("asm/funcs", myRobGeneiMove);
+/* kengo:MED  |  my_eff/myRobGeneiMove  |  134i */
 void func_8001B690(s32 arg0, s32 arg1) {
     if (D_800A38BA == 0) {
         return;
@@ -775,12 +777,13 @@ void func_8001B6F4(void) {
     D_800F5347 = 0;
     func_8003F1E4(0);
 }
-INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_A);
+INCLUDE_ASM("asm/funcs", func_8001B748);
+/* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 INCLUDE_ASM("asm/funcs", func_8001BAE4);
 void func_8001BBD8(s32 *arg0, s32 *arg1, s32 *arg2) {
     s32 temp_s0;
     temp_s0 = (D_800A387C < 0x2711) << 0xB;
-    DispPracticeMenuTex_A((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
+    func_8001B748((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
 }
 void func_8001BC70(u8 *arg0, s32 arg1) {
     typedef struct { s32 x, y, z; } Vec3;
@@ -1062,6 +1065,7 @@ void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
     }
 }
 INCLUDE_ASM("asm/funcs", md_game_rob_data_init);
+/* kengo:HIGH  |  md_game/md_game_rob_data_init  |  351i */
 void func_8001F860(s16 *arg0, s32 arg1) {
     arg1 = (arg1 - *(s16 *)((u8 *)arg0 + 0x1CA)) & 0xFFF;
     if (arg1 >= 0x800) {
@@ -1220,7 +1224,8 @@ void func_80020D70(void) {
     func_80020CDC();
 }
 void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    func_80036D98(v0, D_800A3830);    func_80036F40();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
-INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_B);
+INCLUDE_ASM("asm/funcs", func_80020E74);
+/* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 extern s32 D_80102770;
 extern u16 D_800A38C4;
 extern s32 D_801027C0;

@@ -1,4 +1,4 @@
-glabel DispPracticeMenuTex_A
+glabel func_8001B748
     /* BF48 8001B748 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* BF4C 8001B74C 1000B0AF */  sw         $s0, 0x10($sp)
     /* BF50 8001B750 21808000 */  addu       $s0, $a0, $zero
@@ -241,4 +241,4 @@ glabel DispPracticeMenuTex_A
     /* C2D8 8001BAD8 2800BD27 */  addiu      $sp, $sp, 0x28
     /* C2DC 8001BADC 0800E003 */  jr         $ra
     /* C2E0 8001BAE0 00000000 */   nop
-endlabel DispPracticeMenuTex_A
+endlabel func_8001B748
