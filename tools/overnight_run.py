@@ -36,7 +36,6 @@ from datetime import datetime
 # Config
 # ---------------------------------------------------------------------------
 
-OLLAMA_URL    = "http://localhost:11434/api/generate"
 MODEL         = "bb2-deepseek"
 SRC_DIR       = "src"
 ASM_DIR       = os.path.join("asm", "funcs")
@@ -46,8 +45,42 @@ SYMBOL_ADDRS  = "symbol_addrs.txt"
 PROGRESS_FILE = "overnight_progress.md"
 BATCH_SIZE    = 10   # commit progress log every N functions
 
-WSL_ROOT = '/mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile"'
-WSL_VENV = "source .venv/bin/activate"
+VENV_ACTIVATE = "source .venv/bin/activate"
+
+
+def _get_ollama_url():
+    """Detect the correct Ollama URL, trying gateway IP first (works through Windows Firewall)."""
+    import urllib.request as _ur
+    candidates = ["http://localhost:11434"]
+    # WSL2: try default gateway (most reliable when firewall allows it)
+    try:
+        result = subprocess.run(["ip", "route", "show", "default"],
+                                capture_output=True, text=True, timeout=3)
+        for token in result.stdout.split():
+            if token.count(".") == 3 and not token.startswith("0."):
+                candidates.insert(0, f"http://{token}:11434")
+                break
+    except Exception:
+        pass
+    # Also try nameserver IP (classic WSL2 NAT)
+    try:
+        with open("/etc/resolv.conf") as f:
+            for line in f:
+                if line.startswith("nameserver"):
+                    ip = line.split()[1].strip()
+                    if ip not in ("127.0.0.1", "::1", "10.255.255.254"):
+                        candidates.append(f"http://{ip}:11434")
+    except Exception:
+        pass
+    for base in candidates:
+        try:
+            _ur.urlopen(f"{base}/api/tags", timeout=2).read()
+            return f"{base}/api/generate"
+        except Exception:
+            continue
+    return "http://localhost:11434/api/generate"
+
+OLLAMA_URL = _get_ollama_url()
 
 # ---------------------------------------------------------------------------
 # Import babysit utilities (scoring + permuter+DeepSeek loop)
@@ -153,7 +186,73 @@ def get_context(func_name, asm, globals_by_addr, funcs_by_addr):
 # Model query
 # ---------------------------------------------------------------------------
 
-def generate_draft(func_name, globals_by_addr, funcs_by_addr):
+_PREVIEW_LINES = 7   # number of code lines shown in the live preview box
+_PREVIEW_WIDTH = 100  # max chars per line before truncation
+
+def _draw_preview(buf, height_ref):
+    """Redraw the in-place preview box. height_ref is a 1-element list used as mutable int."""
+    lines = buf.split("\n")
+    visible = lines[-_PREVIEW_LINES:]
+    visible = [l[:_PREVIEW_WIDTH] for l in visible]
+    # Move cursor up to overwrite previous preview
+    if height_ref[0]:
+        sys.stdout.write(f"\033[{height_ref[0]}A")
+    for l in visible:
+        sys.stdout.write(f"\033[2K{l}\n")
+    height_ref[0] = len(visible)
+    sys.stdout.flush()
+
+def _clear_preview(height_ref):
+    if height_ref[0]:
+        sys.stdout.write(f"\033[{height_ref[0]}A")
+        for _ in range(height_ref[0]):
+            sys.stdout.write("\033[2K\n")
+        sys.stdout.write(f"\033[{height_ref[0]}A")
+        height_ref[0] = 0
+        sys.stdout.flush()
+
+
+def ollama_call(prompt, verbose=False):
+    """Call Ollama. If verbose=True, show a live scrolling preview window."""
+    if verbose:
+        payload = json.dumps({"model": MODEL, "stream": True, "prompt": prompt}).encode()
+        req = urllib.request.Request(OLLAMA_URL, data=payload,
+                                     headers={"Content-Type": "application/json"})
+        buf = ""
+        height = [0]
+        try:
+            with urllib.request.urlopen(req, timeout=600) as resp:
+                for line in resp:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    data = json.loads(line.decode())
+                    token = data.get("response", "")
+                    if token:
+                        buf += token
+                        # Only redraw on newline tokens to avoid flickering
+                        if "\n" in token:
+                            _draw_preview(buf, height)
+                    if data.get("done"):
+                        break
+            _clear_preview(height)
+            return buf
+        except Exception as e:
+            _clear_preview(height)
+            return f"/* ERROR: {e} */"
+    else:
+        payload = json.dumps({"model": MODEL, "stream": False, "prompt": prompt}).encode()
+        req = urllib.request.Request(OLLAMA_URL, data=payload,
+                                     headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=600) as resp:
+                data = json.loads(resp.read().decode())
+                return data.get("response", "")
+        except Exception as e:
+            return f"/* ERROR: {e} */"
+
+
+def generate_draft(func_name, globals_by_addr, funcs_by_addr, verbose=False):
     asm_path = os.path.join(ASM_DIR, f"{func_name}.s")
     if not os.path.exists(asm_path):
         return None
@@ -175,15 +274,7 @@ def generate_draft(func_name, globals_by_addr, funcs_by_addr):
             "Output ONLY the C function, no explanation, no markdown.\n\n" + asm
         )
 
-    payload = json.dumps({"model": MODEL, "stream": False, "prompt": prompt}).encode()
-    req = urllib.request.Request(OLLAMA_URL, data=payload,
-                                 headers={"Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=600) as resp:
-            data = json.loads(resp.read().decode())
-            return data.get("response", "")
-    except Exception as e:
-        return f"/* ERROR: {e} */"
+    return ollama_call(prompt, verbose=verbose)
 
 
 def clean_draft(text):
@@ -205,19 +296,39 @@ COMPILE_WRAPPER = """\
 {code}
 """
 
+def _wsl_path(p):
+    """Convert an absolute Windows path to a WSL /mnt/... path."""
+    p = os.path.abspath(p).replace("\\", "/")
+    if len(p) >= 2 and p[1] == ":":
+        return f"/mnt/{p[0].lower()}{p[2:]}"
+    return p  # already a Unix path
+
+
 def try_compile(func_name, code):
     """Try to compile the draft standalone. Returns (success, error_text)."""
     wrapped = COMPILE_WRAPPER.format(code=code)
-    wsl_cmd = (
-        f'cd {WSL_ROOT} && '
-        f'{WSL_VENV} && '
-        f'printf \'%s\' {json.dumps(wrapped)} > /tmp/bb2_overnight.c && '
-        f'bash tools/permuter_compile.sh /tmp/bb2_overnight.c -o /tmp/bb2_overnight.o 2>&1 && '
+    if sys.platform == "win32":
+        # Running as Windows Python: write to project root so WSL bash can see it
+        write_c = os.path.abspath("bb2_overnight_tmp.c")
+        write_o = os.path.abspath("bb2_overnight_tmp.o")
+        tmp_c = _wsl_path(write_c)
+        tmp_o = _wsl_path(write_o)
+    else:
+        write_c = tmp_c = "/tmp/bb2_overnight.c"
+        write_o = tmp_o = "/tmp/bb2_overnight.o"
+    try:
+        with open(write_c, "w", newline="\n") as f:
+            f.write(wrapped)
+    except Exception as e:
+        return False, str(e)
+    cmd = (
+        f'{VENV_ACTIVATE} && '
+        f'bash tools/permuter_compile.sh {tmp_c} -o {tmp_o} 2>&1 && '
         f'echo __OK__'
     )
     try:
         result = subprocess.run(
-            ["wsl", "bash", "-lc", wsl_cmd],
+            ["bash", "-c", cmd],
             capture_output=True, text=True, timeout=30
         )
         output = result.stdout + result.stderr
@@ -231,7 +342,7 @@ def try_compile(func_name, code):
         return False, str(e)
 
 
-def fix_draft(func_name, asm, failed_code, error_text, attempt, globals_by_addr, funcs_by_addr):
+def fix_draft(func_name, asm, failed_code, error_text, attempt, globals_by_addr, funcs_by_addr, verbose=False):
     """Ask DeepSeek to fix a compile error. Returns cleaned code or None."""
     context = get_context(func_name, asm, globals_by_addr, funcs_by_addr)
 
@@ -247,16 +358,8 @@ def fix_draft(func_name, asm, failed_code, error_text, attempt, globals_by_addr,
         prompt += f"## Reference context:\n{context}\n\n"
     prompt += "## Target assembly:\n" + asm
 
-    payload = json.dumps({"model": MODEL, "stream": False, "prompt": prompt}).encode()
-    req = urllib.request.Request(OLLAMA_URL, data=payload,
-                                 headers={"Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=600) as resp:
-            data = json.loads(resp.read().decode())
-            raw = data.get("response", "")
-            return clean_draft(raw) if raw else None
-    except Exception:
-        return None
+    raw = ollama_call(prompt, verbose=verbose)
+    return clean_draft(raw) if raw and not raw.startswith("/* ERROR") else None
 
 # ---------------------------------------------------------------------------
 # Permuter scoring
@@ -275,16 +378,19 @@ def get_permuter_score(func_name, code):
     # Wrap with headers (same as try_compile) so the permuter can compile it
     wrapped = COMPILE_WRAPPER.format(code=code)
 
-    # Write new base via WSL
-    wsl_cmd = (
-        f'cd {WSL_ROOT} && '
-        f'printf \'%s\' {json.dumps(wrapped)} > {json.dumps("permuter/" + func_name + "/base.c")} && '
-        f'{WSL_VENV} && '
+    # Write new base.c directly, then run permuter --debug to get score
+    try:
+        with open(base_c, "w", newline="\n") as f:
+            f.write(wrapped)
+    except Exception:
+        pass
+    cmd = (
+        f'{VENV_ACTIVATE} && '
         f'python3 tools/decomp-permuter/permuter.py permuter/{func_name}/ --debug 2>&1 | head -20'
     )
     try:
         result = subprocess.run(
-            ["wsl", "bash", "-lc", wsl_cmd],
+            ["bash", "-c", cmd],
             capture_output=True, text=True, timeout=60
         )
         output = result.stdout
@@ -307,11 +413,8 @@ def get_permuter_score(func_name, code):
     # Restore original on failure
     if orig:
         try:
-            wsl_cmd2 = (
-                f'cd {WSL_ROOT} && '
-                f'printf \'%s\' {json.dumps(orig)} > {json.dumps("permuter/" + func_name + "/base.c")}'
-            )
-            subprocess.run(["wsl", "bash", "-lc", wsl_cmd2], timeout=10)
+            with open(base_c, "w", newline="\n") as f:
+                f.write(orig)
         except Exception:
             pass
     return None
@@ -349,27 +452,19 @@ def apply_to_src(func_name, code):
 
     new_content = content.replace(stub_pattern, code)
 
-    # Write via WSL to preserve LF line endings
-    wsl_path = src_path.replace("C:/", "/mnt/c/").replace("\\", "/")
-    wsl_cmd = (
-        f'printf \'%s\' {json.dumps(new_content)} > {json.dumps(wsl_path)}'
-    )
     try:
-        result = subprocess.run(
-            ["wsl", "bash", "-lc", wsl_cmd],
-            capture_output=True, text=True, timeout=30
-        )
-        return result.returncode == 0, src_path
+        with open(src_path, "w", newline="\n") as f:
+            f.write(new_content)
+        return True, src_path
     except Exception:
         return False, src_path
 
 
 def revert_src(func_name, src_path, original_content):
     """Restore src file to original content if build fails."""
-    wsl_path = src_path.replace("C:/", "/mnt/c/").replace("\\", "/")
-    wsl_cmd = f'printf \'%s\' {json.dumps(original_content)} > {json.dumps(wsl_path)}'
     try:
-        subprocess.run(["wsl", "bash", "-lc", wsl_cmd], timeout=30)
+        with open(src_path, "w", newline="\n") as f:
+            f.write(original_content)
     except Exception:
         pass
 
@@ -379,14 +474,10 @@ def revert_src(func_name, src_path, original_content):
 
 def verify_build():
     """Run make and check for SHA1 match. Returns True on success."""
-    wsl_cmd = (
-        f'cd {WSL_ROOT} && '
-        f'{WSL_VENV} && '
-        f'make 2>&1 | tail -3'
-    )
+    cmd = f'{VENV_ACTIVATE} && make 2>&1 | tail -3'
     try:
         result = subprocess.run(
-            ["wsl", "bash", "-lc", wsl_cmd],
+            ["bash", "-c", cmd],
             capture_output=True, text=True, timeout=120
         )
         return "OK: bb2 matches" in result.stdout
@@ -398,9 +489,8 @@ def verify_build():
 # ---------------------------------------------------------------------------
 
 def git_commit(message):
-    """Commit all staged changes via WSL."""
-    wsl_cmd = (
-        f'cd {WSL_ROOT} && '
+    """Commit all staged changes."""
+    cmd = (
         f'git add -u && '
         f'git add {PROGRESS_FILE} 2>/dev/null ; '
         f'git diff --cached --quiet || '
@@ -408,7 +498,7 @@ def git_commit(message):
     )
     try:
         result = subprocess.run(
-            ["wsl", "bash", "-lc", wsl_cmd],
+            ["bash", "-c", cmd],
             capture_output=True, text=True, timeout=60
         )
         return result.returncode == 0
@@ -638,6 +728,8 @@ def main():
                         help="Permuter seconds per babysit round (default 60)")
     parser.add_argument("--babysit-jobs", type=int, default=4,
                         help="Permuter parallel jobs per round (default 4)")
+    parser.add_argument("--verbose", "-v", action="store_true",
+                        help="Stream DeepSeek output token-by-token and show compile errors")
     args = parser.parse_args()
 
     os.makedirs(DRAFTS_DIR, exist_ok=True)
@@ -692,7 +784,7 @@ def main():
         draft_path = os.path.join(DRAFTS_DIR, f"{func_name}.c")
         print(f"  draft: generating...", end=" ", flush=True)
         t0 = time.time()
-        raw = generate_draft(func_name, globals_by_addr, funcs_by_addr)
+        raw = generate_draft(func_name, globals_by_addr, funcs_by_addr, verbose=args.verbose)
         elapsed = time.time() - t0
         if not raw or raw.startswith("/* ERROR"):
             print(f"FAILED ({elapsed:.1f}s)")
@@ -720,12 +812,15 @@ def main():
                 compiled = True
                 break
             print(f"FAIL")
+            if args.verbose and error_text:
+                for eline in error_text.splitlines()[:10]:
+                    print(f"    {eline}")
             if attempt < MAX_RETRIES:
                 # Feed error back to DeepSeek for a fix
                 print(f"  fixing...", end=" ", flush=True)
                 t0 = time.time()
                 fixed = fix_draft(func_name, asm_text, code, error_text, attempt,
-                                  globals_by_addr, funcs_by_addr)
+                                  globals_by_addr, funcs_by_addr, verbose=args.verbose)
                 elapsed = time.time() - t0
                 if fixed:
                     code = fixed

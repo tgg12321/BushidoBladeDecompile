@@ -37,15 +37,13 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='repla
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-OLLAMA_URL   = "http://localhost:11434/api/generate"
 MODEL        = "bb2-deepseek"
 ASM_DIR      = os.path.join("asm", "funcs")
 DRAFTS_DIR   = os.path.join("local_drafts", "bb2-deepseek")
 PERMUTER_DIR = "permuter"
 SRC_DIR      = "src"
 
-WSL_ROOT = '/mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile"'
-WSL_VENV = "source .venv/bin/activate"
+VENV_ACTIVATE = "source .venv/bin/activate"
 
 PERM_TIMEOUT = 90     # seconds per permuter run
 PERM_JOBS    = 4      # permuter threads
@@ -54,20 +52,57 @@ SCORE_FLOOR  = 0      # only stop on exact match (score=0)
 
 COMPILE_WRAPPER = '#include "common.h"\n#include "include_asm.h"\n\n{code}\n'
 
-def win_to_wsl(path):
-    """Convert a Windows absolute path (C:\\...) to WSL /mnt/c/... path."""
-    path = path.replace("\\", "/")
-    if len(path) >= 2 and path[1] == ":":
-        return f"/mnt/{path[0].lower()}/{path[3:]}"
-    return path
+
+def _get_ollama_url():
+    """Detect the correct Ollama URL, trying gateway IP first (works through Windows Firewall)."""
+    import urllib.request as _ur
+    candidates = ["http://localhost:11434"]
+    try:
+        result = subprocess.run(["ip", "route", "show", "default"],
+                                capture_output=True, text=True, timeout=3)
+        for token in result.stdout.split():
+            if token.count(".") == 3 and not token.startswith("0."):
+                candidates.insert(0, f"http://{token}:11434")
+                break
+    except Exception:
+        pass
+    try:
+        with open("/etc/resolv.conf") as f:
+            for line in f:
+                if line.startswith("nameserver"):
+                    ip = line.split()[1].strip()
+                    if ip not in ("127.0.0.1", "::1", "10.255.255.254"):
+                        candidates.append(f"http://{ip}:11434")
+    except Exception:
+        pass
+    for base in candidates:
+        try:
+            _ur.urlopen(f"{base}/api/tags", timeout=2).read()
+            return f"{base}/api/generate"
+        except Exception:
+            continue
+    return "http://localhost:11434/api/generate"
+
+OLLAMA_URL = _get_ollama_url()
+
+
+def _wsl_path(p):
+    """Convert an absolute Windows path to a WSL /mnt/... path."""
+    p = os.path.abspath(p).replace("\\", "/")
+    if len(p) >= 2 and p[1] == ":":
+        return f"/mnt/{p[0].lower()}{p[2:]}"
+    return p  # already a Unix path
 
 
 def write_temp_c(code, suffix=".c"):
-    """Write code to a Windows temp file. Returns (win_path, wsl_path)."""
+    """Write code to a temp file. Returns (local_path, bash_path).
+    On Windows, bash_path is the WSL /mnt/... equivalent so WSL bash can find it."""
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix, mode="w", newline="\n")
     tmp.write(code)
     tmp.close()
-    return tmp.name, win_to_wsl(tmp.name)
+    if sys.platform == "win32":
+        return tmp.name, _wsl_path(tmp.name)
+    return tmp.name, tmp.name
 
 
 # Typedef prefix lines the permuter adds to its output — strip these before wrapping
@@ -99,12 +134,12 @@ def compile_code(func_name, code):
     _, wsl_src = write_temp_c(wrapped)
     wsl_out = f"/tmp/bb2_babysit_{func_name}.o"
 
-    wsl_cmd = (
-        f'cd {WSL_ROOT} && {WSL_VENV} && '
+    cmd = (
+        f'{VENV_ACTIVATE} && '
         f'bash tools/permuter_compile.sh "{wsl_src}" -o {wsl_out} 2>&1 && '
         f'test -f {wsl_out} && echo __OK__'
     )
-    result = subprocess.run(["wsl", "bash", "-lc", wsl_cmd],
+    result = subprocess.run(["bash", "-c", cmd],
                             capture_output=True, text=True, timeout=90)
     if "__OK__" in result.stdout:
         return wsl_out
@@ -114,7 +149,7 @@ def compile_code(func_name, code):
 def get_insn_hex(wsl_obj_path):
     """Return list of raw instruction hex words via objdump."""
     cmd = f'mipsel-linux-gnu-objdump -d "{wsl_obj_path}" 2>/dev/null'
-    result = subprocess.run(["wsl", "bash", "-lc", cmd],
+    result = subprocess.run(["bash", "-c", cmd],
                             capture_output=True, text=True, timeout=15)
     words = []
     for line in result.stdout.splitlines():
@@ -125,14 +160,11 @@ def get_insn_hex(wsl_obj_path):
 
 
 def get_target_o(func_name):
-    """Return WSL path to target.o (pre-assembled from permuter setup)."""
+    """Return bash-usable path to target.o (WSL /mnt/... on Windows, abspath otherwise)."""
     perm_target = os.path.join(PERMUTER_DIR, func_name, "target.o")
     if os.path.exists(perm_target):
-        # Convert Windows path to WSL path
-        abs_path = os.path.abspath(perm_target).replace("\\", "/")
-        if abs_path[1] == ":":
-            abs_path = f"/mnt/{abs_path[0].lower()}/{abs_path[3:]}"
-        return abs_path
+        p = os.path.abspath(perm_target)
+        return _wsl_path(p) if sys.platform == "win32" else p
     return None
 
 
@@ -167,14 +199,14 @@ def get_insn_diff(func_name, our_code, max_lines=40):
     _, wsl_src = write_temp_c(wrapped)
     wsl_out = f"/tmp/bb2_diff_{func_name}.o"
 
-    wsl_cmd = (
-        f'cd {WSL_ROOT} && {WSL_VENV} && '
+    cmd = (
+        f'{VENV_ACTIVATE} && '
         f'bash tools/permuter_compile.sh "{wsl_src}" -o {wsl_out} 2>/dev/null && '
         f'diff <(mipsel-linux-gnu-objdump -d --no-show-raw-insn "{wsl_out}" 2>/dev/null | grep -E "^\\s") '
         f'     <(mipsel-linux-gnu-objdump -d --no-show-raw-insn "{target_o}" 2>/dev/null | grep -E "^\\s") '
         f'| head -{max_lines}'
     )
-    result = subprocess.run(["wsl", "bash", "-lc", wsl_cmd],
+    result = subprocess.run(["bash", "-c", cmd],
                             capture_output=True, text=True, timeout=60)
     return result.stdout.strip()
 
@@ -187,14 +219,14 @@ def run_permuter(func_name, timeout=None, jobs=None):
     jobs    = jobs    or PERM_JOBS
     """Run permuter for `timeout` seconds in background. Returns when done or killed."""
     perm_path = f"permuter/{func_name}"
-    wsl_cmd = (
-        f'cd {WSL_ROOT} && {WSL_VENV} && '
+    cmd = (
+        f'{VENV_ACTIVATE} && '
         f'timeout {timeout} python3 tools/decomp-permuter/permuter.py {perm_path}/ '
         f'-j{jobs} --stop-on-zero 2>&1 | grep -v "^$" | tail -3'
     )
     print(f"  [permuter] running {timeout}s with -j{jobs}...", flush=True)
     t0 = time.time()
-    result = subprocess.run(["wsl", "bash", "-lc", wsl_cmd],
+    result = subprocess.run(["bash", "-c", cmd],
                             capture_output=True, text=True,
                             timeout=timeout + 30)
     elapsed = time.time() - t0
@@ -240,11 +272,11 @@ def ensure_permuter_dir(func_name):
     # Run permuter_setup.sh if no dir yet
     if not os.path.isdir(perm_dir):
         print(f"  [setup] running permuter_setup.sh...", flush=True)
-        wsl_cmd = (
-            f'cd {WSL_ROOT} && {WSL_VENV} && '
+        cmd = (
+            f'{VENV_ACTIVATE} && '
             f'bash tools/permuter_setup.sh {func_name} 2>&1 | tail -5'
         )
-        result = subprocess.run(["wsl", "bash", "-lc", wsl_cmd],
+        result = subprocess.run(["bash", "-c", cmd],
                                 capture_output=True, text=True, timeout=60)
         if not os.path.isdir(perm_dir):
             print(f"  ERROR: permuter_setup.sh failed: {result.stdout[:200]}")
@@ -378,26 +410,26 @@ def apply_and_verify(func_name, code):
         return False
 
     new_content = orig.replace(stub, code)
-    wsl_path = os.path.abspath(src_path).replace("\\", "/")
-    if wsl_path[1] == ":":
-        wsl_path = f"/mnt/{wsl_path[0].lower()}/{wsl_path[3:]}"
-
-    wsl_cmd = f'printf \'%s\' {json.dumps(new_content)} > "{wsl_path}"'
-    subprocess.run(["wsl", "bash", "-lc", wsl_cmd], capture_output=True, timeout=30)
+    try:
+        with open(src_path, "w", newline="\n") as f:
+            f.write(new_content)
+    except Exception as e:
+        print(f"  ERROR: failed to write {src_path}: {e}")
+        return False
 
     # Verify build
-    build_cmd = (
-        f'cd {WSL_ROOT} && {WSL_VENV} && '
-        f'make 2>&1 | tail -3'
-    )
-    result = subprocess.run(["wsl", "bash", "-lc", build_cmd],
+    build_cmd = f'{VENV_ACTIVATE} && make 2>&1 | tail -3'
+    result = subprocess.run(["bash", "-c", build_cmd],
                             capture_output=True, text=True, timeout=120)
     if "OK: bb2 matches" in result.stdout:
         return True
 
     # Revert on failure
-    revert_cmd = f'printf \'%s\' {json.dumps(orig)} > "{wsl_path}"'
-    subprocess.run(["wsl", "bash", "-lc", revert_cmd], capture_output=True, timeout=30)
+    try:
+        with open(src_path, "w", newline="\n") as f:
+            f.write(orig)
+    except Exception:
+        pass
     print(f"  build FAILED — reverted")
     return False
 
@@ -407,11 +439,8 @@ def git_commit_match(func_name):
         f"match {func_name} via permuter+deepseek babysitter\n\n"
         f"Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
     )
-    wsl_cmd = (
-        f'cd {WSL_ROOT} && git add -u && '
-        f'git diff --cached --quiet || git commit -m {json.dumps(msg)}'
-    )
-    subprocess.run(["wsl", "bash", "-lc", wsl_cmd], capture_output=True, timeout=60)
+    cmd = f'git add -u && git diff --cached --quiet || git commit -m {json.dumps(msg)}'
+    subprocess.run(["bash", "-c", cmd], capture_output=True, timeout=60)
 
 # ---------------------------------------------------------------------------
 # Per-function babysit loop
