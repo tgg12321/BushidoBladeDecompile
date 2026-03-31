@@ -769,7 +769,8 @@ void func_8008B400(u8 *a0) {
         buf++;
     } while (i < limit);
 }
-INCLUDE_ASM("asm/funcs", func_8008B488);
+INCLUDE_ASM("asm/funcs", saTan1MainJump);
+/* kengo:MED  |  sa_tan1/saTan1MainJump  |  413i  |  -10 */
 INCLUDE_ASM("asm/funcs", func_8008BB24);
 void func_8008BD88(s32 arg0, u16 *arg1, u16 *arg2) {
     u16 temp_v1;

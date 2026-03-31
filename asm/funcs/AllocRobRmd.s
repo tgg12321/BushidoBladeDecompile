@@ -1,4 +1,4 @@
-glabel func_80040594
+glabel AllocRobRmd
     /* 30D94 80040594 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 30D98 80040598 3000B2AF */  sw         $s2, 0x30($sp)
     /* 30D9C 8004059C 21908000 */  addu       $s2, $a0, $zero
@@ -229,4 +229,4 @@ glabel func_80040594
     /* 310EC 800408EC 4000BD27 */  addiu      $sp, $sp, 0x40
     /* 310F0 800408F0 0800E003 */  jr         $ra
     /* 310F4 800408F4 00000000 */   nop
-endlabel func_80040594
+endlabel AllocRobRmd

@@ -90,7 +90,7 @@ glabel func_8001E878
     /* F1CC 8001E9CC 01008438 */  xori       $a0, $a0, 0x1
     /* F1D0 8001E9D0 6A1B010C */  jal        game_StageInit
     /* F1D4 8001E9D4 2B200400 */   sltu      $a0, $zero, $a0
-    /* F1D8 8001E9D8 9873000C */  jal        func_8001CE60
+    /* F1D8 8001E9D8 9873000C */  jal        camera_set_target_zoom
     /* F1DC 8001E9DC 00000000 */   nop
     /* F1E0 8001E9E0 76CD000C */  jal        func_800335D8
     /* F1E4 8001E9E4 00000000 */   nop

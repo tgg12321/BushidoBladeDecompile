@@ -36,7 +36,7 @@ glabel func_8001924C
     /* 9ACC 800192CC 80280500 */  sll        $a1, $a1, 2
     /* 9AD0 800192D0 2128A200 */  addu       $a1, $a1, $v0
     /* 9AD4 800192D4 80280500 */  sll        $a1, $a1, 2
-    /* 9AD8 800192D8 FD61000C */  jal        func_800187F4
+    /* 9AD8 800192D8 FD61000C */  jal        single_game_setModeRequest
     /* 9ADC 800192DC 2128B300 */   addu      $a1, $a1, $s3
     /* 9AE0 800192E0 01003126 */  addiu      $s1, $s1, 0x1
   .L800192E4:

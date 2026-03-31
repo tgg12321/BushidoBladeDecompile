@@ -232,7 +232,7 @@ glabel action_CheckHitZangeki
     /* 76F30 80086730 00000000 */  nop
     /* 76F34 80086734 03004010 */  beqz       $v0, .L80086744
     /* 76F38 80086738 00000000 */   nop
-    /* 76F3C 8008673C 222D020C */  jal        func_8008B488
+    /* 76F3C 8008673C 222D020C */  jal        saTan1MainJump
     /* 76F40 80086740 1000A427 */   addiu     $a0, $sp, 0x10
   .L80086744:
     /* 76F44 80086744 000000A2 */  sb         $zero, 0x0($s0)

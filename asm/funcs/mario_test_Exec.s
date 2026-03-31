@@ -1,4 +1,4 @@
-glabel func_8001DCB0
+glabel mario_test_Exec
     /* E4B0 8001DCB0 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* E4B4 8001DCB4 2400BFAF */  sw         $ra, 0x24($sp)
     /* E4B8 8001DCB8 2000B2AF */  sw         $s2, 0x20($sp)
@@ -15,7 +15,7 @@ glabel func_8001DCB0
     /* E4E4 8001DCE4 345A000C */  jal        gpu_DisableDisplay
     /* E4E8 8001DCE8 00000000 */   nop
   .L8001DCEC:
-    /* E4EC 8001DCEC 3D5D000C */  jal        func_800174F4
+    /* E4EC 8001DCEC 3D5D000C */  jal        gnd_disp_loop_ctrl
     /* E4F0 8001DCF0 00000000 */   nop
     /* E4F4 8001DCF4 1A5A000C */  jal        gpu_EnableDisplay
     /* E4F8 8001DCF8 00000000 */   nop
@@ -500,4 +500,4 @@ glabel func_8001DCB0
     /* EBF8 8001E3F8 2800BD27 */  addiu      $sp, $sp, 0x28
     /* EBFC 8001E3FC 0800E003 */  jr         $ra
     /* EC00 8001E400 00000000 */   nop
-endlabel func_8001DCB0
+endlabel mario_test_Exec

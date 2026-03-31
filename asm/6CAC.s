@@ -231,7 +231,7 @@ glabel func_80018094
     /* 8AD4 800182D4 280085AC */  sw         $a1, 0x28($a0)
     /* 8AD8 800182D8 2C0086AC */  sw         $a2, 0x2C($a0)
     /* 8ADC 800182DC 300087AC */  sw         $a3, 0x30($a0)
-    /* 8AE0 800182E0 C060000C */  jal        func_80018300
+    /* 8AE0 800182E0 C060000C */  jal        cpu_check_run_attack
     /* 8AE4 800182E4 00000000 */   nop
     /* 8AE8 800182E8 2800BF8F */  lw         $ra, 0x28($sp)
     /* 8AEC 800182EC 2400B18F */  lw         $s1, 0x24($sp)
@@ -242,7 +242,7 @@ glabel func_80018094
 endlabel func_80018094
 
 /* Handwritten function */
-nonmatching func_80018300, 0x4F4
+nonmatching cpu_check_run_attack, 0x4F4
 
 glabel func_80018300
     /* 8B00 80018300 D8FFBD27 */  addiu      $sp, $sp, -0x28
@@ -585,7 +585,7 @@ glabel func_80018300
 endlabel func_80018300
 
 /* Handwritten function */
-nonmatching func_800187F4, 0xA58
+nonmatching single_game_setModeRequest, 0xA58
 
 glabel func_800187F4
     /* 8FF4 800187F4 88FFBD27 */  addiu      $sp, $sp, -0x78
@@ -1324,7 +1324,7 @@ glabel func_8001924C
     /* 9ACC 800192CC 80280500 */  sll        $a1, $a1, 2
     /* 9AD0 800192D0 2128A200 */  addu       $a1, $a1, $v0
     /* 9AD4 800192D4 80280500 */  sll        $a1, $a1, 2
-    /* 9AD8 800192D8 FD61000C */  jal        func_800187F4
+    /* 9AD8 800192D8 FD61000C */  jal        single_game_setModeRequest
     /* 9ADC 800192DC 2128B300 */   addu      $a1, $a1, $s3
     /* 9AE0 800192E0 01003126 */  addiu      $s1, $s1, 0x1
   .L800192E4:
@@ -5593,7 +5593,7 @@ glabel func_8001CD68
     /* D65C 8001CE5C 00000000 */   nop
 endlabel func_8001CD68
 
-nonmatching func_8001CE60, 0x930
+nonmatching camera_set_target_zoom, 0x930
 
 glabel func_8001CE60
     /* D660 8001CE60 E0FFBD27 */  addiu      $sp, $sp, -0x20
@@ -6582,7 +6582,7 @@ glabel func_8001DBE4
   .L8001DC28:
     /* E428 8001DC28 92EA000C */  jal        func_8003AA48
     /* E42C 8001DC2C 00000000 */   nop
-    /* E430 8001DC30 3D5D000C */  jal        func_800174F4
+    /* E430 8001DC30 3D5D000C */  jal        gnd_disp_loop_ctrl
     /* E434 8001DC34 00000000 */   nop
     /* E438 8001DC38 330A020C */  jal        func_800828CC
     /* E43C 8001DC3C 02000424 */   addiu     $a0, $zero, 0x2
@@ -6597,7 +6597,7 @@ glabel func_8001DBE4
   .L8001DC60:
     /* E460 8001DC60 92EA000C */  jal        func_8003AA48
     /* E464 8001DC64 01001026 */   addiu     $s0, $s0, 0x1
-    /* E468 8001DC68 3D5D000C */  jal        func_800174F4
+    /* E468 8001DC68 3D5D000C */  jal        gnd_disp_loop_ctrl
     /* E46C 8001DC6C 00000000 */   nop
     /* E470 8001DC70 330A020C */  jal        func_800828CC
     /* E474 8001DC74 02000424 */   addiu     $a0, $zero, 0x2
@@ -6619,7 +6619,7 @@ glabel func_8001DBE4
     /* E4AC 8001DCAC 00000000 */   nop
 endlabel func_8001DBE4
 
-nonmatching func_8001DCB0, 0x754
+nonmatching mario_test_Exec, 0x754
 
 glabel func_8001DCB0
     /* E4B0 8001DCB0 D8FFBD27 */  addiu      $sp, $sp, -0x28
@@ -6638,7 +6638,7 @@ glabel func_8001DCB0
     /* E4E4 8001DCE4 345A000C */  jal        gpu_DisableDisplay
     /* E4E8 8001DCE8 00000000 */   nop
   .L8001DCEC:
-    /* E4EC 8001DCEC 3D5D000C */  jal        func_800174F4
+    /* E4EC 8001DCEC 3D5D000C */  jal        gnd_disp_loop_ctrl
     /* E4F0 8001DCF0 00000000 */   nop
     /* E4F4 8001DCF4 1A5A000C */  jal        gpu_EnableDisplay
     /* E4F8 8001DCF8 00000000 */   nop
@@ -7535,7 +7535,7 @@ glabel func_8001E878
     /* F1CC 8001E9CC 01008438 */  xori       $a0, $a0, 0x1
     /* F1D0 8001E9D0 6A1B010C */  jal        game_StageInit
     /* F1D4 8001E9D4 2B200400 */   sltu      $a0, $zero, $a0
-    /* F1D8 8001E9D8 9873000C */  jal        func_8001CE60
+    /* F1D8 8001E9D8 9873000C */  jal        camera_set_target_zoom
     /* F1DC 8001E9DC 00000000 */   nop
     /* F1E0 8001E9E0 76CD000C */  jal        func_800335D8
     /* F1E4 8001E9E4 00000000 */   nop
@@ -7585,7 +7585,7 @@ glabel func_8001EA04
     /* F280 8001EA80 00000000 */   nop
 endlabel func_8001EA04
 
-nonmatching func_8001EA84, 0x430
+nonmatching cpu_get_move_pattern_table_number, 0x430
 
 glabel func_8001EA84
     /* F284 8001EA84 0A80023C */  lui        $v0, %hi(D_800A37B8)
@@ -18777,7 +18777,7 @@ glabel func_8002872C
 endlabel func_8002872C
 
 /* Handwritten function */
-nonmatching func_800288C8, 0x7A4
+nonmatching saTan3MainJump, 0x7A4
 
 glabel func_800288C8
     /* 190C8 800288C8 B0FFBD27 */  addiu      $sp, $sp, -0x50
@@ -23084,7 +23084,7 @@ glabel func_8002C61C
   .L8002C69C:
     /* 1CE9C 8002C69C CBA1000C */  jal        func_8002872C
     /* 1CEA0 8002C6A0 00000000 */   nop
-    /* 1CEA4 8002C6A4 32A2000C */  jal        func_800288C8
+    /* 1CEA4 8002C6A4 32A2000C */  jal        saTan3MainJump
     /* 1CEA8 8002C6A8 00000000 */   nop
     /* 1CEAC 8002C6AC 15A5000C */  jal        func_80029454
     /* 1CEB0 8002C6B0 00000000 */   nop
@@ -34098,7 +34098,7 @@ glabel func_80036064
     /* 2693C 8003613C 00000000 */   nop
 endlabel func_80036064
 
-nonmatching func_80036140, 0x800
+nonmatching special_camera_set_win_cam, 0x800
 
 glabel func_80036140
     /* 26940 80036140 88078887 */  lh         $t0, %gp_rel(D_800A3854)($gp)
@@ -34666,7 +34666,7 @@ glabel func_80036940
     /* 27150 80036950 10006228 */  slti       $v0, $v1, 0x10
     /* 27154 80036954 05004014 */  bnez       $v0, .L8003696C
     /* 27158 80036958 1800B0AF */   sw        $s0, 0x18($sp)
-    /* 2715C 8003695C 50D8000C */  jal        func_80036140
+    /* 2715C 8003695C 50D8000C */  jal        special_camera_set_win_cam
     /* 27160 80036960 00000000 */   nop
     /* 27164 80036964 5DDB0008 */  j          .L80036D74
     /* 27168 80036968 00000000 */   nop
@@ -35130,7 +35130,7 @@ glabel func_80036F40
     /* 2778C 80036F8C B471010C */  jal        func_8005C6D0
     /* 27790 80036F90 00000000 */   nop
   .L80036F94:
-    /* 27794 80036F94 3D5D000C */  jal        func_800174F4
+    /* 27794 80036F94 3D5D000C */  jal        gnd_disp_loop_ctrl
     /* 27798 80036F98 00000000 */   nop
     /* 2779C 80036F9C 00000296 */  lhu        $v0, 0x0($s0)
     /* 277A0 80036FA0 02000424 */  addiu      $a0, $zero, 0x2
@@ -40695,7 +40695,7 @@ glabel func_8003B9D0
     /* 2C22C 8003BA2C 345A000C */  jal        gpu_DisableDisplay
     /* 2C230 8003BA30 00000000 */   nop
   .L8003BA34:
-    /* 2C234 8003BA34 3D5D000C */  jal        func_800174F4
+    /* 2C234 8003BA34 3D5D000C */  jal        gnd_disp_loop_ctrl
     /* 2C238 8003BA38 00000000 */   nop
     /* 2C23C 8003BA3C 1A5A000C */  jal        gpu_EnableDisplay
     /* 2C240 8003BA40 00000000 */   nop

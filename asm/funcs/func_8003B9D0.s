@@ -26,7 +26,7 @@ glabel func_8003B9D0
     /* 2C22C 8003BA2C 345A000C */  jal        gpu_DisableDisplay
     /* 2C230 8003BA30 00000000 */   nop
   .L8003BA34:
-    /* 2C234 8003BA34 3D5D000C */  jal        func_800174F4
+    /* 2C234 8003BA34 3D5D000C */  jal        gnd_disp_loop_ctrl
     /* 2C238 8003BA38 00000000 */   nop
     /* 2C23C 8003BA3C 1A5A000C */  jal        gpu_EnableDisplay
     /* 2C240 8003BA40 00000000 */   nop

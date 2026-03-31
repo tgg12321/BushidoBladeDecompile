@@ -158,7 +158,7 @@ glabel md_game_end
     /* 77270 80086A70 3E4E20A4 */  sh         $zero, %lo(D_800F4E3E)($at)
     /* 77274 80086A74 01000224 */  addiu      $v0, $zero, 0x1
     /* 77278 80086A78 0410A200 */  sllv       $v0, $v0, $a1
-    /* 7727C 80086A7C 222D020C */  jal        func_8008B488
+    /* 7727C 80086A7C 222D020C */  jal        saTan1MainJump
     /* 77280 80086A80 1000A2AF */   sw        $v0, 0x10($sp)
     /* 77284 80086A84 1080013C */  lui        $at, %hi(D_8010280A)
     /* 77288 80086A88 0A2830A4 */  sh         $s0, %lo(D_8010280A)($at)

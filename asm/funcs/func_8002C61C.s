@@ -36,7 +36,7 @@ glabel func_8002C61C
   .L8002C69C:
     /* 1CE9C 8002C69C CBA1000C */  jal        func_8002872C
     /* 1CEA0 8002C6A0 00000000 */   nop
-    /* 1CEA4 8002C6A4 32A2000C */  jal        func_800288C8
+    /* 1CEA4 8002C6A4 32A2000C */  jal        saTan3MainJump
     /* 1CEA8 8002C6A8 00000000 */   nop
     /* 1CEAC 8002C6AC 15A5000C */  jal        func_80029454
     /* 1CEB0 8002C6B0 00000000 */   nop

@@ -1,4 +1,4 @@
-glabel func_800812FC
+glabel tslTm2LoadImage
     /* 71AFC 800812FC 0A80023C */  lui        $v0, %hi(D_800A11C0)
     /* 71B00 80081300 C011428C */  lw         $v0, %lo(D_800A11C0)($v0)
     /* 71B04 80081304 B8FFBD27 */  addiu      $sp, $sp, -0x48
@@ -163,7 +163,7 @@ glabel func_800812FC
   .L8008155C:
     /* 71D5C 8008155C 0180043C */  lui        $a0, %hi(D_800161B8)
     /* 71D60 80081560 B8618424 */  addiu      $a0, $a0, %lo(D_800161B8)
-    /* 71D64 80081564 0008020C */  jal        func_80082000
+    /* 71D64 80081564 0008020C */  jal        tslTm2LoadImage_2
     /* 71D68 80081568 00000000 */   nop
     /* 71D6C 8008156C 00004492 */  lbu        $a0, 0x0($s2)
     /* 71D70 80081570 01004292 */  lbu        $v0, 0x1($s2)
@@ -283,4 +283,4 @@ glabel func_800812FC
     /* 71F0C 8008170C 4800BD27 */  addiu      $sp, $sp, 0x48
     /* 71F10 80081710 0800E003 */  jr         $ra
     /* 71F14 80081714 00000000 */   nop
-endlabel func_800812FC
+endlabel tslTm2LoadImage

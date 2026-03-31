@@ -84,6 +84,21 @@ ANNOTATIONS = [
     ("saTan4GaugeInit",  "sa_tan4",     66, "MED", ""),
     ("hirahira_w_frie",  "my_hirahira", 59, "MED", ""),
     ("AddTbpOfst",       "am_rmd",      49, "MED", ""),
+    # Kengo near-miss batch HIGH (±5%, 2026-03-30)
+    ("single_game_setModeRequest",          "nm_single_game", 663, "HIGH", "+1 near-exact"),
+    ("saTan3MainJump",                       "sa_tan3",        492, "HIGH", "+3 near-exact"),
+    ("cpu_get_move_pattern_table_number",    "nm_cpu",         265, "HIGH", "-3 near-exact"),
+    ("AllocRobRmd",                          "am_rmd",         220, "HIGH", "+3 near-exact"),
+    ("saEft00Add",                           "sa_eft",         169, "HIGH", "-3 near-exact"),
+    ("cpu_check_run_attack",                 "nm_cpu",         322, "HIGH", "+5 near-exact"),
+    # Kengo near-miss batch MED (±5%, 2026-03-30)
+    ("camera_set_target_zoom",               "nm_camera",      593, "MED", "+5"),
+    ("gnd_disp_loop_ctrl",                   "hi_gnd",         140, "MED", "+4"),
+    ("special_camera_set_win_cam",           "nm_special_cam", 502, "MED", "-10"),
+    ("saTan1MainJump",                       "sa_tan1",        413, "MED", "-10"),
+    ("tslTm2LoadImage",                      "tsl_tm2",        253, "MED", "-10 x2 size collision"),
+    ("tslTm2LoadImage_2",                    "tsl_tm2",        253, "MED", "-10 x2 size collision"),
+    ("mario_test_Exec",                      "nm_mario_test",  450, "MED", "-19"),
 ]
 
 # Build lookup: func_name -> comment line

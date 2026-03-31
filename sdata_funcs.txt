@@ -8,7 +8,7 @@ func_80016E60
 rng_SetSeed
 rng_Next
 cpu_set_move_command_and_dir_for_no_action_2
-func_800174F4
+gnd_disp_loop_ctrl
 func_80017D84
 func_800198D0
 DispPracticeMenuTex_A
@@ -27,7 +27,7 @@ func_80035828
 func_80035F30
 func_80035F78
 func_80035FE0
-func_80036140
+special_camera_set_win_cam
 special_camera_Exec
 func_800375EC
 func_80037774

@@ -1,4 +1,4 @@
-glabel func_80036140
+glabel special_camera_set_win_cam
     /* 26940 80036140 88078887 */  lh         $t0, %gp_rel(D_800A3854)($gp)
     /* 26944 80036144 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 26948 80036148 1C00BFAF */  sw         $ra, 0x1C($sp)
@@ -552,4 +552,4 @@ glabel func_80036140
     /* 27134 80036934 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 27138 80036938 0800E003 */  jr         $ra
     /* 2713C 8003693C 00000000 */   nop
-endlabel func_80036140
+endlabel special_camera_set_win_cam

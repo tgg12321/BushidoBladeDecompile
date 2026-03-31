@@ -22068,7 +22068,7 @@ __asm__(
     "    addu  $a1,$zero,$zero\n"
     "    jal  func_80087F34\n"
     "    addu  $a0,$zero,$zero\n"
-    "    jal  func_80085544\n"
+    "    jal  SetBloodSpot\n"
     "    addiu  $a0,$zero,1\n"
     "    addiu  $a1,$zero,127\n"
     "    lui  $a0,%hi(D_800EFB78)\n"
@@ -22086,7 +22086,7 @@ __asm__(
     "    slti  $v0,$v1,192\n"
     "    bnez  $v0,.L8005B4C0\n"
     "    addiu  $a0,$a0,8\n"
-    "    jal  func_80083E9C\n"
+    "    jal  DispStuff\n"
     "    nop\n"
     "    .word 0xAF80033C\n"
     "    .word 0xA7800334\n"
@@ -22521,7 +22521,7 @@ __asm__(
     "    addiu  $a1,$zero,1\n"
     "    addu  $s0,$v0,$zero\n"
     "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80036D98\n"
+    "    jal  replay_camera_Init\n"
     "    addu  $a1,$s1,$zero\n"
     "    jal  func_80036F28\n"
     "    addu  $a0,$s0,$zero\n"
@@ -22586,7 +22586,7 @@ __asm__(
     "    jal  func_80036F40\n"
     "    addu  $s0,$v0,$zero\n"
     "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80036D98\n"
+    "    jal  replay_camera_Init\n"
     "    addu  $a1,$s3,$zero\n"
     "    jal  func_80036F28\n"
     "    addu  $a0,$s0,$zero\n"
@@ -22604,7 +22604,7 @@ __asm__(
     "    addu  $s1,$v0,$zero\n"
     "    addu  $a0,$s1,$zero\n"
     "    addu  $s2,$s3,$s0\n"
-    "    jal  func_80036D98\n"
+    "    jal  replay_camera_Init\n"
     "    addu  $a1,$s2,$zero\n"
     "    jal  func_80036F28\n"
     "    addu  $a0,$s1,$zero\n"
@@ -22646,7 +22646,7 @@ void func_8005B9C4(void) {
 void func_8005B9C4(void);
 s32 func_80036EA8(s32, s32);
 s32 func_80036F40(void);
-void func_80036D98(s32, s32);
+void replay_camera_Init(s32, s32);
 s32 func_80036F28(s32);
 void func_8005C2A8(s32, s32, s32);
 void func_8005B9FC(s32 a0) {
@@ -22654,7 +22654,7 @@ void func_8005B9FC(s32 a0) {
     func_8005B9C4();
     s1 = func_80036EA8(2, 8);
     func_80036F40();
-    func_80036D98(s1, a0);
+    replay_camera_Init(s1, a0);
     s1 = func_80036F28(s1);
     func_80036F40();
     func_8005C2A8(a0, 9, a0 + s1);
@@ -22716,7 +22716,7 @@ __asm__(
     "    jal  func_80036F40\n"
     "    addu  $s0,$v0,$zero\n"
     "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80036D98\n"
+    "    jal  replay_camera_Init\n"
     "    addu  $a1,$s3,$zero\n"
     "    jal  func_80036F28\n"
     "    addu  $a0,$s0,$zero\n"
@@ -22965,7 +22965,7 @@ __asm__(
     "    jal  func_80085EE4\n"
     "    nop\n"
     "    lh  $a0,0($s1)\n"
-    "    jal  func_8008A928\n"
+    "    jal  md_game_check_change_main_mode_katinuki\n"
     "    addu  $s1,$v0,$zero\n"
     "    addiu  $a0,$s0,1\n"
     "    sll  $a0,$a0,16\n"
@@ -27192,7 +27192,7 @@ __asm__(
     "    sw  $s0,32($sp)\n"
     "    addu  $s0,$v0,$zero\n"
     "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80036D98\n"
+    "    jal  replay_camera_Init\n"
     "    addu  $a1,$s1,$zero\n"
     "    jal  func_80036F40\n"
     "    nop\n"
@@ -27678,7 +27678,7 @@ __asm__(
     "    sw  $s1,52($sp)\n"
     "    addu  $s1,$v0,$zero\n"
     "    addu  $a0,$s1,$zero\n"
-    "    jal  func_80036D98\n"
+    "    jal  replay_camera_Init\n"
     "    addu  $a1,$s0,$zero\n"
     "    jal  func_80036F40\n"
     "    nop\n"
@@ -28445,7 +28445,7 @@ __asm__(
     "    jal  func_80036EA8\n"
     "    addiu  $s0,$zero,476\n"
     "    addu  $a0,$v0,$zero\n"
-    "    jal  func_80036D98\n"
+    "    jal  replay_camera_Init\n"
     "    addu  $a1,$s1,$zero\n"
     "    jal  func_80036F40\n"
     "    nop\n"
@@ -43038,7 +43038,7 @@ __asm__(
     "    addiu  $s1,$zero,240\n"
     "    addu  $s0,$v0,$zero\n"
     "    .word 0x8F850434\n"
-    "    jal  func_80036D98\n"
+    "    jal  replay_camera_Init\n"
     "    addu  $a0,$s0,$zero\n"
     "    jal  func_80036F40\n"
     "    nop\n"
@@ -43547,7 +43547,7 @@ void func_8006E950(s32 *a0, s32 *a1) {
     s0_addr = (s32)a0;
     func_80036F40();
     v0 = func_80036EA8(2, s0_addr);
-    func_80036D98(v0, (s32)s1);
+    replay_camera_Init(v0, (s32)s1);
     func_80036F40();
     s2 = 0x280;
     func_8006E440(s1);
@@ -48879,7 +48879,7 @@ __asm__(
     "    addiu  $v0,$zero,1\n"
     "    lui  $a0,%hi(D_800159A0)\n"
     "    addiu  $a0,$a0,%lo(D_800159A0)\n"
-    "    jal  func_8003D52C\n"
+    "    jal  DispSleepMenuTex\n"
     "    sw  $v0,20($s4)\n"
     "    addu  $a1,$s5,$zero\n"
     ".L800736BC:\n"

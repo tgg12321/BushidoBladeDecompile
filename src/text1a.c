@@ -82,7 +82,7 @@ void func_800404D8(void) {
         D_80094B88[i] = 0;
     }
 }
-extern void func_80040594(s32 *);
+extern void AllocRobRmd(s32 *);
 extern void rob_life_ctrl(s32 *);
 extern void rob_calc_2d_position(s32 *);
 extern s32 *func_80045878(s32);
@@ -94,14 +94,15 @@ s32 *func_80040510(s32 a0) {
     s32 idx = a0;
     ptr = func_80045878(a0);
     D_800A9A10[idx] = (s32)ptr;
-    func_80040594(ptr);
+    AllocRobRmd(ptr);
     do { rob_life_ctrl(ptr); rob_calc_2d_position(ptr); func_8003F824(ptr, 1); } while (0);
     func_8003FFC4(ptr);
     func_80040CB8(ptr);
     func_8003E120();
     return ptr;
 }
-INCLUDE_ASM("asm/funcs", func_80040594);
+INCLUDE_ASM("asm/funcs", AllocRobRmd);
+/* kengo:HIGH  |  am_rmd/AllocRobRmd  |  220i  |  +3 near-exact */
 INCLUDE_ASM("asm/funcs", rob_life_ctrl);
 /* kengo:MED  |  my_rob/rob_life_ctrl  |  96i  |  x2 size collision */
 void func_80040A78(s32 arg0) {

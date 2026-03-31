@@ -209,7 +209,7 @@ extern void func_8005B98C(s32);
 extern void func_8005C6D0(void);
 extern s32 func_80036D88(void);
 extern u8 D_800A3906;
-extern void func_800174F4(void);
+extern void gnd_disp_loop_ctrl(void);
 extern u16 D_80101E9E;
 extern u8 D_8008D538;
 extern u8 D_800A37A0;

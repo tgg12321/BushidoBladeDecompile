@@ -1,4 +1,4 @@
-glabel func_80018300
+glabel cpu_check_run_attack
     /* 8B00 80018300 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 8B04 80018304 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 8B08 80018308 801F113C */  lui        $s1, (0x1F8000BC >> 16)
@@ -336,4 +336,4 @@ glabel func_80018300
     /* 8FE8 800187E8 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 8FEC 800187EC 0800E003 */  jr         $ra
     /* 8FF0 800187F0 00000000 */   nop
-endlabel func_80018300
+endlabel cpu_check_run_attack
