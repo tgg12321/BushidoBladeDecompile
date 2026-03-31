@@ -1,0 +1,642 @@
+// File written by stdump v2.1 on 2026-03-29
+// 
+// Input file:
+//   SLUS_200.21
+// Toolchain version(s):
+//   unknown
+// Built-in types:
+//   char                     8-bit integer
+//   complex double           64-bit floating point
+//   complex float            32-bit floating point
+//   complex long double      64-bit floating point
+//   double                   64-bit floating point
+//   float                    32-bit floating point
+//   int                      32-bit signed integer
+//   long double              64-bit floating point
+//   long int                 64-bit signed integer
+//   long long int            64-bit signed integer
+//   long long unsigned int   64-bit unsigned integer
+//   long unsigned int        64-bit unsigned integer
+//   short int                16-bit signed integer
+//   short unsigned int       16-bit unsigned integer
+//   signed char              8-bit signed integer
+//   unsigned char            8-bit unsigned integer
+//   unsigned int             32-bit unsigned integer
+//   void                     void
+
+typedef struct { // 0x8
+	/* 0x0 */ int real;
+	/* 0x4 */ int imag;
+} complex int;
+
+typedef int __int32_t;
+typedef unsigned int __uint32_t;
+typedef unsigned int size_t;
+typedef long unsigned int clock_t;
+typedef long int time_t;
+
+struct tm { // 0x24
+	/* 0x00 */ int tm_sec;
+	/* 0x04 */ int tm_min;
+	/* 0x08 */ int tm_hour;
+	/* 0x0c */ int tm_mday;
+	/* 0x10 */ int tm_mon;
+	/* 0x14 */ int tm_year;
+	/* 0x18 */ int tm_wday;
+	/* 0x1c */ int tm_yday;
+	/* 0x20 */ int tm_isdst;
+};
+
+typedef __uint32_t ULong;
+
+struct _glue { // 0xc
+	/* 0x0 */ _glue *_next;
+	/* 0x4 */ int _niobs;
+	/* 0x8 */ __sFILE *_iobs;
+};
+
+typedef struct { // 0x18
+	/* 0x00 */ _Bigint *_next;
+	/* 0x04 */ int _k;
+	/* 0x08 */ int _maxwds;
+	/* 0x0c */ int _sign;
+	/* 0x10 */ int _wds;
+	/* 0x14 */ ULong _x[1];
+} _Bigint;
+
+struct _atexit { // 0x88
+	/* 0x00 */ _atexit *_next;
+	/* 0x04 */ int _ind;
+	/* 0x08 */ void (*_fns[32])(/* parameters unknown */);
+};
+
+struct __sbuf { // 0x8
+	/* 0x0 */ unsigned char *_base;
+	/* 0x4 */ int _size;
+};
+
+typedef long int _fpos_t;
+
+struct __sFILE { // 0x58
+	/* 0x00 */ unsigned char *_p;
+	/* 0x04 */ int _r;
+	/* 0x08 */ int _w;
+	/* 0x0c */ short int _flags;
+	/* 0x0e */ short int _file;
+	/* 0x10 */ __sbuf _bf;
+	/* 0x18 */ int _lbfsize;
+	/* 0x1c */ void *_cookie;
+	/* 0x20 */ int (*_read)(/* parameters unknown */);
+	/* 0x24 */ int (*_write)(/* parameters unknown */);
+	/* 0x28 */ _fpos_t (*_seek)(/* parameters unknown */);
+	/* 0x2c */ int (*_close)(/* parameters unknown */);
+	/* 0x30 */ __sbuf _ub;
+	/* 0x38 */ unsigned char *_up;
+	/* 0x3c */ int _ur;
+	/* 0x40 */ unsigned char _ubuf[3];
+	/* 0x43 */ unsigned char _nbuf[1];
+	/* 0x44 */ __sbuf _lb;
+	/* 0x4c */ int _blksize;
+	/* 0x50 */ int _offset;
+	/* 0x54 */ _reent *_data;
+};
+
+struct _reent { // 0x2ec
+	/* 0x000 */ int _errno;
+	/* 0x004 */ __sFILE *_stdin;
+	/* 0x008 */ __sFILE *_stdout;
+	/* 0x00c */ __sFILE *_stderr;
+	/* 0x010 */ int _inc;
+	/* 0x014 */ char _emergency[25];
+	/* 0x030 */ int _current_category;
+	/* 0x034 */ char *_current_locale;
+	/* 0x038 */ int __sdidinit;
+	/* 0x03c */ void (*__cleanup)(/* parameters unknown */);
+	/* 0x040 */ _Bigint *_result;
+	/* 0x044 */ int _result_k;
+	/* 0x048 */ _Bigint *_p5s;
+	/* 0x04c */ _Bigint **_freelist;
+	/* 0x050 */ int _cvtlen;
+	/* 0x054 */ char *_cvtbuf;
+	/* 0x058 */ union { // 0xf0
+		/* 0x058 */ struct { // 0x4c
+			/* 0x058 */ unsigned int _rand_next;
+			/* 0x05c */ char *_strtok_last;
+			/* 0x060 */ char _asctime_buf[26];
+			/* 0x07c */ tm _localtime_buf;
+			/* 0x0a0 */ int _gamma_signgam;
+		} _reent;
+		/* 0x058 */ struct { // 0xf0
+			/* 0x058 */ unsigned char *_nextf[30];
+			/* 0x0d0 */ unsigned int _nmalloc[30];
+		} _unused;
+	} _new;
+	/* 0x148 */ _atexit *_atexit;
+	/* 0x14c */ _atexit _atexit0;
+	/* 0x1d4 */ void (**_sig_func)(/* parameters unknown */);
+	/* 0x1d8 */ _glue __sglue;
+	/* 0x1e4 */ __sFILE __sf[3];
+};
+
+union __dmath { // 0x8
+	/* 0x0 */ __uint32_t i[2];
+	/* 0x0 */ double d;
+};
+
+struct exception { // 0x28
+	/* 0x00 */ int type;
+	/* 0x04 */ char *name;
+	/* 0x08 */ double arg1;
+	/* 0x10 */ double arg2;
+	/* 0x18 */ double retval;
+	/* 0x20 */ int err;
+};
+
+enum __fdlibm_version {
+	__fdlibm_ieee = -1,
+	__fdlibm_svid = 0,
+	__fdlibm_xopen = 1,
+	__fdlibm_posix = 2
+};
+
+typedef union { // 0x8
+	/* 0x0 */ double value;
+	/* 0x0 */ struct { // 0x8
+		/* 0x0 */ __uint32_t lsw;
+		/* 0x4 */ __uint32_t msw;
+	} parts;
+} ieee_double_shape_type;
+
+typedef union { // 0x4
+	/* 0x0 */ float value;
+	/* 0x0 */ __uint32_t word;
+} ieee_float_shape_type;
+
+enum cmp_type {
+	CMP_SI = 0,
+	CMP_DI = 1,
+	CMP_SF = 2,
+	CMP_DF = 3,
+	CMP_MAX = 4
+};
+
+enum delay_type {
+	DELAY_NONE = 0,
+	DELAY_LOAD = 1,
+	DELAY_HILO = 2,
+	DELAY_HILO1 = 3,
+	DELAY_FCMP = 4
+};
+
+enum processor_type {
+	PROCESSOR_DEFAULT = 0,
+	PROCESSOR_R3000 = 1,
+	PROCESSOR_R3900 = 2,
+	PROCESSOR_R6000 = 3,
+	PROCESSOR_R4000 = 4,
+	PROCESSOR_R4100 = 5,
+	PROCESSOR_R4300 = 6,
+	PROCESSOR_R4600 = 7,
+	PROCESSOR_R4650 = 8,
+	PROCESSOR_R5000 = 9,
+	PROCESSOR_R5400 = 10,
+	PROCESSOR_R5900 = 11,
+	PROCESSOR_R8000 = 12
+};
+
+enum mips_abicalls_type {
+	MIPS_ABICALLS_NO = 0,
+	MIPS_ABICALLS_YES = 1
+};
+
+enum block_move_type {
+	BLOCK_MOVE_NORMAL = 0,
+	BLOCK_MOVE_NOT_LAST = 1,
+	BLOCK_MOVE_LAST = 2
+};
+
+enum reg_class {
+	NO_REGS = 0,
+	M16_NA_REGS = 1,
+	M16_REGS = 2,
+	T_REG = 3,
+	M16_T_REGS = 4,
+	GR_REGS = 5,
+	FP_REGS = 6,
+	HI_REG = 7,
+	LO_REG = 8,
+	HILO_REG = 9,
+	MD_REGS = 10,
+	HI_AND_GR_REGS = 11,
+	LO_AND_GR_REGS = 12,
+	HILO_AND_GR_REGS = 13,
+	HI1_REG = 14,
+	LO1_REG = 15,
+	HILO1_REG = 16,
+	MD1_REGS = 17,
+	HI1_AND_GR_REGS = 18,
+	LO1_AND_GR_REGS = 19,
+	HILO1_AND_GR_REGS = 20,
+	HI01_REG = 21,
+	LO01_REG = 22,
+	HILO01_REG = 23,
+	MD01_REGS = 24,
+	HI01_AND_GR_REGS = 25,
+	LO01_AND_GR_REGS = 26,
+	HILO01_AND_GR_REGS = 27,
+	ST_REGS = 28,
+	ALL_REGS = 29,
+	LIM_REG_CLASSES = 30
+};
+
+struct mips_frame_info { // 0x70
+	/* 0x00 */ long int total_size;
+	/* 0x08 */ long int var_size;
+	/* 0x10 */ long int args_size;
+	/* 0x18 */ long int extra_size;
+	/* 0x20 */ int gp_reg_size;
+	/* 0x24 */ int fp_reg_size;
+	/* 0x28 */ long int mask;
+	/* 0x30 */ long int fmask;
+	/* 0x38 */ long int gp_save_offset;
+	/* 0x40 */ long int fp_save_offset;
+	/* 0x48 */ long int gp_sp_offset;
+	/* 0x50 */ long int fp_sp_offset;
+	/* 0x58 */ int initialized;
+	/* 0x5c */ int num_gp;
+	/* 0x60 */ int num_fp;
+	/* 0x68 */ long int insns_len;
+};
+
+struct mips_args { // 0x3c
+	/* 0x00 */ int gp_reg_found;
+	/* 0x04 */ int arg_number;
+	/* 0x08 */ int arg_words;
+	/* 0x0c */ int fp_arg_words;
+	/* 0x10 */ int last_arg_fp;
+	/* 0x14 */ int fp_code;
+	/* 0x18 */ int num_adjusts;
+	/* 0x1c */ rtx_def *adjust[8];
+};
+
+typedef mips_args CUMULATIVE_ARGS;
+
+enum machine_mode {
+	VOIDmode = 0,
+	PQImode = 1,
+	QImode = 2,
+	PHImode = 3,
+	HImode = 4,
+	PSImode = 5,
+	SImode = 6,
+	PDImode = 7,
+	DImode = 8,
+	TImode = 9,
+	OImode = 10,
+	QFmode = 11,
+	HFmode = 12,
+	TQFmode = 13,
+	SFmode = 14,
+	DFmode = 15,
+	XFmode = 16,
+	TFmode = 17,
+	QCmode = 18,
+	HCmode = 19,
+	SCmode = 20,
+	DCmode = 21,
+	XCmode = 22,
+	TCmode = 23,
+	CQImode = 24,
+	CHImode = 25,
+	CSImode = 26,
+	CDImode = 27,
+	CTImode = 28,
+	COImode = 29,
+	BLKmode = 30,
+	CCmode = 31,
+	MAX_MACHINE_MODE = 32
+};
+
+enum mode_class {
+	MODE_RANDOM = 0,
+	MODE_INT = 1,
+	MODE_FLOAT = 2,
+	MODE_PARTIAL_INT = 3,
+	MODE_CC = 4,
+	MODE_COMPLEX_INT = 5,
+	MODE_COMPLEX_FLOAT = 6,
+	MAX_MODE_CLASS = 7
+};
+
+typedef int ptrdiff_t;
+typedef int wchar_t;
+typedef unsigned int wint_t;
+typedef unsigned char UQItype;
+typedef int SItype;
+typedef unsigned int USItype;
+typedef long int DItype;
+typedef long unsigned int UDItype;
+typedef float SFtype;
+typedef double DFtype;
+typedef long int word_type;
+
+struct DIstruct { // 0x8
+	/* 0x0 */ SItype low;
+	/* 0x4 */ SItype high;
+};
+
+typedef union { // 0x8
+	/* 0x0 */ DIstruct s;
+	/* 0x0 */ DItype ll;
+} DIunion;
+
+typedef void (*func_ptr)(/* parameters unknown */);
+typedef short int HItype;
+typedef short unsigned int UHItype;
+// warning: multiple differing types with the same name (type name not equal)
+typedef UDItype fractype;
+// warning: multiple differing types with the same name (type name not equal)
+typedef USItype halffractype;
+// warning: multiple differing types with the same name (type name not equal)
+typedef DFtype FLO_type;
+// warning: multiple differing types with the same name (type name not equal)
+typedef DItype intfrac;
+
+typedef enum {
+	CLASS_SNAN = 0,
+	CLASS_QNAN = 1,
+	CLASS_ZERO = 2,
+	CLASS_NUMBER = 3,
+	CLASS_INFINITY = 4
+} fp_class_type;
+
+// warning: multiple differing types with the same name (size not equal)
+typedef struct { // 0x18
+	/* 0x00 */ fp_class_type class;
+	/* 0x04 */ unsigned int sign;
+	/* 0x08 */ int normal_exp;
+	/* 0x10 */ union { // 0x8
+		/* 0x10 */ fractype ll;
+		/* 0x10 */ halffractype l[2];
+	} fraction;
+} fp_number_type;
+
+// warning: multiple differing types with the same name (size not equal)
+typedef union { // 0x8
+	/* 0x0 */ FLO_type value;
+	/* 0x0 */ fractype value_raw;
+	/* 0x0 */ halffractype words[2];
+	/* 0x0 */ struct { // 0x8
+		/* 0x0:0 */ fractype fraction : 52;
+		/* 0x6:4 */ unsigned int exp : 11;
+		/* 0x7:7 */ unsigned int sign : 1;
+	} bits;
+} FLO_union_type;
+
+// warning: multiple differing types with the same name (type name not equal)
+typedef USItype fractype;
+// warning: multiple differing types with the same name (type name not equal)
+typedef UHItype halffractype;
+// warning: multiple differing types with the same name (type name not equal)
+typedef SFtype FLO_type;
+// warning: multiple differing types with the same name (type name not equal)
+typedef SItype intfrac;
+
+// warning: multiple differing types with the same name (size not equal)
+typedef struct { // 0x10
+	/* 0x0 */ fp_class_type class;
+	/* 0x4 */ unsigned int sign;
+	/* 0x8 */ int normal_exp;
+	/* 0xc */ union { // 0x4
+		/* 0xc */ fractype ll;
+		/* 0xc */ halffractype l[2];
+	} fraction;
+} fp_number_type;
+
+// warning: multiple differing types with the same name (size not equal)
+typedef union { // 0x4
+	/* 0x0 */ FLO_type value;
+	/* 0x0 */ fractype value_raw;
+	/* 0x0 */ struct { // 0x4
+		/* 0x0:0 */ fractype fraction : 23;
+		/* 0x2:7 */ unsigned int exp : 8;
+		/* 0x3:7 */ unsigned int sign : 1;
+	} bits;
+} FLO_union_type;
+
+typedef long int _off_t;
+typedef long int _ssize_t;
+typedef char *__gnuc_va_list;
+typedef _fpos_t fpos_t;
+typedef __sFILE FILE;
+
+enum {
+	__no_type_class = -1,
+	__void_type_class = 0,
+	__integer_type_class = 1,
+	__char_type_class = 2,
+	__enumeral_type_class = 3,
+	__boolean_type_class = 4,
+	__pointer_type_class = 5,
+	__reference_type_class = 6,
+	__offset_type_class = 7,
+	__real_type_class = 8,
+	__complex_type_class = 9,
+	__function_type_class = 10,
+	__method_type_class = 11,
+	__record_type_class = 12,
+	__union_type_class = 13,
+	__array_type_class = 14,
+	__string_type_class = 15,
+	__set_type_class = 16,
+	__file_type_class = 17,
+	__lang_type_class = 18
+};
+
+typedef __gnuc_va_list va_list;
+
+typedef struct { // 0x8
+	/* 0x0 */ int quot;
+	/* 0x4 */ int rem;
+} div_t;
+
+typedef struct { // 0x10
+	/* 0x0 */ long int quot;
+	/* 0x8 */ long int rem;
+} ldiv_t;
+
+typedef unsigned char u_char;
+typedef short unsigned int u_short;
+typedef unsigned int u_int;
+typedef long unsigned int u_long;
+typedef short unsigned int ushort;
+typedef unsigned int uint;
+typedef long int daddr_t;
+typedef char *caddr_t;
+typedef short unsigned int ino_t;
+typedef short int dev_t;
+typedef long int off_t;
+typedef short unsigned int uid_t;
+typedef short unsigned int gid_t;
+typedef int pid_t;
+typedef long int key_t;
+typedef long int ssize_t;
+typedef unsigned int mode_t;
+typedef short unsigned int nlink_t;
+typedef long int fd_mask;
+
+typedef struct { // 0x8
+	/* 0x0 */ fd_mask fds_bits[1];
+} _types_fd_set;
+
+struct __siov { // 0x8
+	/* 0x0 */ void *iov_base;
+	/* 0x4 */ size_t iov_len;
+};
+
+struct __suio { // 0xc
+	/* 0x0 */ __siov *uio_iov;
+	/* 0x4 */ int uio_iovcnt;
+	/* 0x8 */ int uio_resid;
+};
+
+typedef union { // 0x10
+	/* 0x0 */ double value;
+	/* 0x0 */ struct { // 0x8
+		/* 0x0 */ unsigned int fraction1;
+		/* 0x4:0 */ unsigned int fraction0 : 20;
+		/* 0x6:4 */ unsigned int exponent : 11;
+		/* 0x7:7 */ unsigned int sign : 1;
+	} number;
+	/* 0x0 */ struct { // 0x8
+		/* 0x0 */ unsigned int function1;
+		/* 0x4:0 */ unsigned int function0 : 19;
+		/* 0x6:3 */ unsigned int quiet : 1;
+		/* 0x6:4 */ unsigned int exponent : 11;
+		/* 0x7:7 */ unsigned int sign : 1;
+	} nan;
+	/* 0x0 */ struct { // 0x10
+		/* 0x0 */ long unsigned int lsw;
+		/* 0x8 */ long unsigned int msw;
+	} parts;
+	/* 0x0 */ long int aslong[2];
+} __ieee_double_shape_type;
+
+typedef union { // 0x8
+	/* 0x0 */ float value;
+	/* 0x0 */ struct { // 0x4
+		/* 0x0:0 */ unsigned int fraction0 : 7;
+		/* 0x0:7 */ unsigned int fraction1 : 16;
+		/* 0x2:7 */ unsigned int exponent : 8;
+		/* 0x3:7 */ unsigned int sign : 1;
+	} number;
+	/* 0x0 */ struct { // 0x4
+		/* 0x0:0 */ unsigned int function1 : 16;
+		/* 0x2:0 */ unsigned int function0 : 6;
+		/* 0x2:6 */ unsigned int quiet : 1;
+		/* 0x2:7 */ unsigned int exponent : 8;
+		/* 0x3:7 */ unsigned int sign : 1;
+	} nan;
+	/* 0x0 */ long int p1;
+} __ieee_float_shape_type;
+
+typedef int fp_rnd;
+typedef int fp_except;
+typedef int fp_rdi;
+
+union double_union { // 0x8
+	/* 0x0 */ double d;
+	/* 0x0 */ __uint32_t i[2];
+};
+
+struct lconv { // 0x30
+	/* 0x00 */ char *decimal_point;
+	/* 0x04 */ char *thousands_sep;
+	/* 0x08 */ char *grouping;
+	/* 0x0c */ char *int_curr_symbol;
+	/* 0x10 */ char *currency_symbol;
+	/* 0x14 */ char *mon_decimal_point;
+	/* 0x18 */ char *mon_thousands_sep;
+	/* 0x1c */ char *mon_grouping;
+	/* 0x20 */ char *positive_sign;
+	/* 0x24 */ char *negative_sign;
+	/* 0x28 */ char int_frac_digits;
+	/* 0x29 */ char frac_digits;
+	/* 0x2a */ char p_cs_precedes;
+	/* 0x2b */ char p_sep_by_space;
+	/* 0x2c */ char n_cs_precedes;
+	/* 0x2d */ char n_sep_by_space;
+	/* 0x2e */ char p_sign_posn;
+	/* 0x2f */ char n_sign_posn;
+};
+
+enum {
+	OCT = 0,
+	DEC = 1,
+	HEX = 2
+};
+
+struct mallinfo { // 0x28
+	/* 0x00 */ int arena;
+	/* 0x04 */ int ordblks;
+	/* 0x08 */ int smblks;
+	/* 0x0c */ int hblks;
+	/* 0x10 */ int hblkhd;
+	/* 0x14 */ int usmblks;
+	/* 0x18 */ int fsmblks;
+	/* 0x1c */ int uordblks;
+	/* 0x20 */ int fordblks;
+	/* 0x24 */ int keepcost;
+};
+
+struct malloc_chunk { // 0x10
+	/* 0x0 */ size_t prev_size;
+	/* 0x4 */ size_t size;
+	/* 0x8 */ malloc_chunk *fd;
+	/* 0xc */ malloc_chunk *bk;
+};
+
+typedef malloc_chunk *mchunkptr;
+typedef malloc_chunk *mbinptr;
+
+struct stat { // 0x68
+	/* 0x00 */ dev_t st_dev;
+	/* 0x02 */ ino_t st_ino;
+	/* 0x04 */ mode_t st_mode;
+	/* 0x08 */ nlink_t st_nlink;
+	/* 0x0a */ uid_t st_uid;
+	/* 0x0c */ gid_t st_gid;
+	/* 0x0e */ dev_t st_rdev;
+	/* 0x10 */ off_t st_size;
+	/* 0x18 */ time_t st_atime;
+	/* 0x20 */ long int st_spare1;
+	/* 0x28 */ time_t st_mtime;
+	/* 0x30 */ long int st_spare2;
+	/* 0x38 */ time_t st_ctime;
+	/* 0x40 */ long int st_spare3;
+	/* 0x48 */ long int st_blksize;
+	/* 0x50 */ long int st_blocks;
+	/* 0x58 */ long int st_spare4[2];
+};
+
+struct flock { // 0x20
+	/* 0x00 */ short int l_type;
+	/* 0x02 */ short int l_whence;
+	/* 0x08 */ long int l_start;
+	/* 0x10 */ long int l_len;
+	/* 0x18 */ short int l_pid;
+	/* 0x1a */ short int l_xxx;
+};
+
+struct eflock { // 0x30
+	/* 0x00 */ short int l_type;
+	/* 0x02 */ short int l_whence;
+	/* 0x08 */ long int l_start;
+	/* 0x10 */ long int l_len;
+	/* 0x18 */ short int l_pid;
+	/* 0x1a */ short int l_xxx;
+	/* 0x20 */ long int l_rpid;
+	/* 0x28 */ long int l_rsys;
+};
+
+struct rtx_def;

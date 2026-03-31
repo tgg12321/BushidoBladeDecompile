@@ -1,0 +1,1128 @@
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/sf_cos.c
+// *****************************************************************************
+
+/* rdata 357b98 */ static float one;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/e_atan2.c
+// *****************************************************************************
+
+/* rdata 357bb8 */ static double tiny;
+/* rdata 357bc0 */ static double zero;
+/* rdata 357bc8 */ static double pi_o_4;
+/* rdata 357bd0 */ static double pi_o_2;
+/* rdata 357bd8 */ static double pi;
+/* rdata 357be0 */ static double pi_lo;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/e_rem_pio2.c
+// *****************************************************************************
+
+/* rdata 357c68 */ static __int32_t two_over_pi[0];
+/* rdata 357d70 */ static __int32_t npio2_hw[0];
+/* rdata 357df0 */ static double zero;
+/* rdata 357df8 */ static double half;
+/* rdata 357e00 */ static double two24;
+/* rdata 357e08 */ static double invpio2;
+/* rdata 357e10 */ static double pio2_1;
+/* rdata 357e18 */ static double pio2_1t;
+/* rdata 357e20 */ static double pio2_2;
+/* rdata 357e28 */ static double pio2_2t;
+/* rdata 357e30 */ static double pio2_3;
+/* rdata 357e38 */ static double pio2_3t;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/e_sqrt.c
+// *****************************************************************************
+
+/* rdata 357eb8 */ static double one;
+/* rdata 357ec0 */ static double tiny;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/ef_rem_pio2.c
+// *****************************************************************************
+
+/* rdata 357ec8 */ static __int32_t two_over_pi[0];
+/* rdata 3581e0 */ static __int32_t npio2_hw[0];
+/* rdata 358260 */ static float zero;
+/* rdata 358264 */ static float half;
+/* rdata 358268 */ static float two8;
+/* rdata 35826c */ static float invpio2;
+/* rdata 358270 */ static float pio2_1;
+/* rdata 358274 */ static float pio2_1t;
+/* rdata 358278 */ static float pio2_2;
+/* rdata 35827c */ static float pio2_2t;
+/* rdata 358280 */ static float pio2_3;
+/* rdata 358284 */ static float pio2_3t;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/k_cos.c
+// *****************************************************************************
+
+/* rdata 358288 */ static double one;
+/* rdata 358290 */ static double C1;
+/* rdata 358298 */ static double C2;
+/* rdata 3582a0 */ static double C3;
+/* rdata 3582a8 */ static double C4;
+/* rdata 3582b0 */ static double C5;
+/* rdata 3582b8 */ static double C6;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/k_rem_pio2.c
+// *****************************************************************************
+
+/* rdata 3582f0 */ static int init_jk[0];
+/* rdata 358300 */ static double PIo2[0];
+/* rdata 358340 */ static double zero;
+/* rdata 358348 */ static double one;
+/* rdata 358350 */ static double two24;
+/* rdata 358358 */ static double twon24;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/k_sin.c
+// *****************************************************************************
+
+/* rdata 358360 */ static double half;
+/* rdata 358368 */ static double S1;
+/* rdata 358370 */ static double S2;
+/* rdata 358378 */ static double S3;
+/* rdata 358380 */ static double S4;
+/* rdata 358388 */ static double S5;
+/* rdata 358390 */ static double S6;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/kf_cos.c
+// *****************************************************************************
+
+/* rdata 3583d0 */ static float one;
+/* rdata 3583d4 */ static float C1;
+/* rdata 3583d8 */ static float C2;
+/* rdata 3583dc */ static float C3;
+/* rdata 3583e0 */ static float C4;
+/* rdata 3583e4 */ static float C5;
+/* rdata 3583e8 */ static float C6;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/kf_rem_pio2.c
+// *****************************************************************************
+
+/* rdata 3583f0 */ static int init_jk[0];
+/* rdata 358400 */ static float PIo2[0];
+/* rdata 35842c */ static float zero;
+/* rdata 358430 */ static float one;
+/* rdata 358434 */ static float two8;
+/* rdata 358438 */ static float twon8;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/kf_sin.c
+// *****************************************************************************
+
+/* rdata 35843c */ static float half;
+/* rdata 358440 */ static float S1;
+/* rdata 358444 */ static float S2;
+/* rdata 358448 */ static float S3;
+/* rdata 35844c */ static float S4;
+/* rdata 358450 */ static float S5;
+/* rdata 358454 */ static float S6;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/s_atan.c
+// *****************************************************************************
+
+/* rdata 358458 */ static double atanhi[0];
+/* rdata 358478 */ static double atanlo[0];
+/* rdata 358498 */ static double aT[0];
+/* rdata 3584f0 */ static double one;
+/* rdata 3584f8 */ static double huge;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/s_floor.c
+// *****************************************************************************
+
+/* rdata 358508 */ static double huge;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/common/s_lib_ver.c
+// *****************************************************************************
+
+/* rdata 358518 */ __fdlibm_version __fdlib_version;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/common/s_scalbn.c
+// *****************************************************************************
+
+/* rdata 358520 */ static double two54;
+/* rdata 358528 */ static double twom54;
+/* rdata 358530 */ static double huge;
+/* rdata 358538 */ static double tiny;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/math/sf_floor.c
+// *****************************************************************************
+
+/* rdata 358550 */ static float huge;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libm/common/sf_scalbn.c
+// *****************************************************************************
+
+/* rdata 358554 */ static float two25;
+/* rdata 358558 */ static float twom25;
+/* rdata 35855c */ static float huge;
+/* rdata 358560 */ static float tiny;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* bss 35a578 */ func_ptr __CTOR_LIST__[2];
+/* bss 35a580 */ func_ptr __DTOR_LIST__[2];
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* rdata 358568 */ static UQItype __clz_tab[0];
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* rdata 358668 */ static UQItype __clz_tab[0];
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* rdata 358768 */ static UQItype __clz_tab[0];
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/gcc/libgcc2.c
+// *****************************************************************************
+
+/* rdata 358868 */ static UQItype __clz_tab[0];
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/reent/impure.c
+// *****************************************************************************
+
+/* data 34f6f0 */ static _reent impure_data;
+/* data 34f9dc */ _reent *_impure_ptr;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/ctype/ctype_.c
+// *****************************************************************************
+
+/* rdata 358b78 */ char _ctype_[257];
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/locale/locale.c
+// *****************************************************************************
+
+/* data 34f9e0 */ int __mb_cur_max;
+/* rdata 358cd8 */ static lconv lconv;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdlib/mallocr.c
+// *****************************************************************************
+
+/* data 34f9f8 */ mbinptr __malloc_av_[258];
+/* data 34fe00 */ long unsigned int __malloc_trim_threshold;
+/* data 34fe08 */ long unsigned int __malloc_top_pad;
+/* data 34fe10 */ char *__malloc_sbrk_base;
+/* data 34fe18 */ long unsigned int __malloc_max_sbrked_mem;
+/* data 34fe20 */ long unsigned int __malloc_max_total_mem;
+/* data 34fe28 */ mallinfo __malloc_current_mallinfo;
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/stdlib/mprec.c
+// *****************************************************************************
+
+/* rdata 358d30 */ double __mprec_tens[0];
+/* rdata 358df8 */ double __mprec_bigtens[0];
+/* rdata 358e20 */ double __mprec_tinytens[0];
+
+// *****************************************************************************
+// FILE -- /usr/local/sce/ee/gcc/src/newlib/libc/reent/sbrkr.c
+// *****************************************************************************
+
+/* bss 35a588 */ int errno;
+
+// *****************************************************************************
+// FILE -- (unknown)
+// *****************************************************************************
+
+/* nil 1a6890 */ puse_menue_cpos_max_tbl;
+/* nil 1a68a8 */ fire_alph_tbl;
+/* nil 1e0440 */ buki_load_info;
+/* nil 1e0a18 */ tex_bp_tbl;
+/* nil 1e0a30 */ disp_hakimono_tbl;
+/* nil 1e0a80 */ rob_load_info;
+/* nil 359d04 */ disp_parts_mode.273;
+/* nil 1e1f50 */ light_effect_col;
+/* nil 1e2520 */ intro_str;
+/* nil 1e3020 */ intro_jimaku_tbl;
+/* nil 1e3100 */ mario_yaburi_s_str;
+/* nil 1e3380 */ mario_yaburi_s_jimaku_tbl;
+/* nil 1e33f8 */ mario_yaburi_e_str;
+/* nil 1e3578 */ mario_yaburi_e_jimaku_tbl;
+/* nil 1e35e0 */ mario_adauchi_s_str;
+/* nil 1e37e0 */ mario_adauchi_s_jimaku_tbl;
+/* nil 1e3858 */ mario_adauchi_e_str;
+/* nil 1e3958 */ mario_adauchi_e_jimaku_tbl;
+/* nil 1e39a8 */ mario_shihan_s_str;
+/* nil 1e3b28 */ mario_shihan_s_jimaku_tbl;
+/* nil 1e3b78 */ mario_shihan_e_str;
+/* nil 1e3d78 */ mario_shihan_e_jimaku_tbl;
+/* nil 1e3db8 */ mario_yaburare_s_str;
+/* nil 1e40b8 */ mario_yaburare_s_jimaku_tbl;
+/* nil 1e4148 */ mario_jimaku_tbl;
+/* nil 1e4180 */ gnd_hit_proc.72;
+/* nil 1e4fd0 */ gnd_stage_data_tbl;
+/* nil 1e5000 */ kgm_map_ctg;
+/* nil 1e5020 */ kgm_init_ctg;
+/* nil 1e5038 */ kgm_exec_ctg;
+/* nil 1e5050 */ kgm_disp_ctg;
+/* nil 1e5068 */ kgm_map_gnd_plane.93;
+/* nil 1e5078 */ kgm_interp.130;
+/* nil 1e6c30 */ motion_data_load_tbl;
+/* nil 359de0 */ lmp.76;
+/* nil 351ad0 */ motion_move_attack_type;
+/* nil 351b50 */ motion_kawashi_type;
+/* nil 351f08 */ damage_body_place_rate_attack_move;
+/* nil 351f70 */ damage_attack_norm_level_rate;
+/* nil 351f88 */ damage_attack_ougi_level_rate;
+/* nil 359f38 */ ReplayEncodeFrame;
+/* nil 3520e0 */ status_up_char_rate;
+/* nil 3521b8 */ mn_group_00;
+/* nil 3521c8 */ mn_group_01;
+/* nil 3521d8 */ mn_group_02;
+/* nil 3521e0 */ mn_group_03;
+/* nil 3521e8 */ mn_group_04;
+/* nil 3521f0 */ mn_group_05;
+/* nil 352200 */ mn_group_06;
+/* nil 352208 */ mn_group_07;
+/* nil 352210 */ mn_group_08;
+/* nil 352218 */ mn_group_09;
+/* nil 352220 */ mn_group_10;
+/* nil 352228 */ mi_group_00;
+/* nil 352238 */ mi_group_01;
+/* nil 352248 */ mi_group_02;
+/* nil 352258 */ mi_group_03;
+/* nil 352260 */ mi_group_04;
+/* nil 352268 */ mi_group_05;
+/* nil 352270 */ mi_group_06;
+/* nil 352280 */ mi_group_07;
+/* nil 352288 */ mi_group_08;
+/* nil 352290 */ mj_group_00;
+/* nil 352298 */ mj_group_01;
+/* nil 3522a8 */ mj_group_02;
+/* nil 3522b0 */ mj_group_03;
+/* nil 3522b8 */ mj_group_04;
+/* nil 3522c8 */ mj_group_05;
+/* nil 3522d0 */ mj_group_06;
+/* nil 3522d8 */ mj_group_07;
+/* nil 3522e0 */ mj_group_08;
+/* nil 3522e8 */ mj_group_09;
+/* nil 3522f0 */ mj_group_10;
+/* nil 3522f8 */ fd_group_00;
+/* nil 352300 */ fd_group_01;
+/* nil 352308 */ fd_group_02;
+/* nil 352310 */ fd_group_03;
+/* nil 352320 */ fd_group_04;
+/* nil 352328 */ fd_group_05;
+/* nil 352330 */ fd_group_06;
+/* nil 352338 */ un_group_00;
+/* nil 352340 */ un_group_01;
+/* nil 352348 */ un_group_02;
+/* nil 352350 */ un_group_03;
+/* nil 352358 */ un_group_04;
+/* nil 352360 */ un_group_05;
+/* nil 352368 */ un_group_06;
+/* nil 352378 */ un_group_07;
+/* nil 352380 */ un_group_08;
+/* nil 352390 */ un_group_09;
+/* nil 352398 */ un_group_10;
+/* nil 3523a0 */ si_group_00;
+/* nil 3523a8 */ si_group_01;
+/* nil 3523b8 */ si_group_02;
+/* nil 3523c8 */ si_group_03;
+/* nil 3523d0 */ si_group_04;
+/* nil 3523d8 */ si_group_05;
+/* nil 3523e0 */ si_group_06;
+/* nil 3523f0 */ si_group_07;
+/* nil 3523f8 */ si_group_08;
+/* nil 352400 */ ko_group_00;
+/* nil 352418 */ ko_group_01;
+/* nil 352428 */ ko_group_02;
+/* nil 352430 */ ko_group_03;
+/* nil 352438 */ ko_group_04;
+/* nil 352440 */ ko_group_05;
+/* nil 352450 */ ko_group_06;
+/* nil 352458 */ ko_group_07;
+/* nil 352468 */ is_group_00;
+/* nil 352470 */ is_group_01;
+/* nil 352478 */ is_group_02;
+/* nil 352480 */ is_group_03;
+/* nil 352490 */ is_group_04;
+/* nil 3524a0 */ is_group_05;
+/* nil 3524a8 */ is_group_06;
+/* nil 3524b0 */ is_group_07;
+/* nil 1e8208 */ mn_search_tbl;
+/* nil 1e8238 */ mi_search_tbl;
+/* nil 1e8260 */ mj_search_tbl;
+/* nil 1e8290 */ fd_search_tbl;
+/* nil 1e82b0 */ un_search_tbl;
+/* nil 1e82e0 */ si_search_tbl;
+/* nil 1e8308 */ ko_search_tbl;
+/* nil 1e8330 */ is_search_tbl;
+/* nil 3524b8 */ tanren_tan5_start_camera_pos_tbl;
+/* nil 352518 */ tanren_tan5_start_camera_tag_tbl;
+/* nil 352578 */ tanren_tan5_start_camera_pos_tbl2;
+/* nil 352598 */ tanren_tan5_start_camera_tag_tbl2;
+/* nil 3525b8 */ BukiZanzouInfoTable;
+/* nil 3526f0 */ BukiZanzouDefaultTopColVec;
+/* nil 352700 */ BukiZanzouDefaultEndColVec;
+/* nil 352710 */ efc_rob_buki_hit_color;
+/* nil 352750 */ efc_rob_stage_sand_info;
+/* nil 352ab8 */ rob_scale_tbl;
+/* nil 296dd0 */ amb.84;
+/* nil 353050 */ sg_montei_mj_offset_tbl;
+/* nil 3530b8 */ sg_montei_si_offset_tbl;
+/* nil 353120 */ sg_montei_ko_offset_tbl;
+/* nil 353188 */ sg_montei_mn_offset_tbl;
+/* nil 3531f0 */ sg_montei_mi_offset_tbl;
+/* nil 353258 */ sg_montei_is_offset_tbl;
+/* nil 3532c0 */ sg_montei_un_offset_tbl;
+/* nil 353328 */ sg_montei_fd_offset_tbl;
+/* nil 299690 */ get_attack_kind_tbl;
+/* nil 299cc0 */ mario_first_motion_tbl;
+/* nil 299cd0 */ gozen_final_taiko_time_tbl;
+/* nil 299cf8 */ gozen_taiko_time_tbl;
+/* nil 299d20 */ tslDn_QWC;
+/* nil 299d30 */ tslDn_TADR;
+/* nil 299d40 */ tslDn_CHCR;
+/* nil 35a0d4 */ tslPktOffsetX;
+/* nil 35a0d8 */ tslPktOffsetY;
+/* nil 35a0dc */ OffsetX;
+/* nil 35a0e0 */ OffsetY;
+/* nil 35a0e4 */ tslHSyncMode;
+/* nil 35a0e8 */ tslHSyncCnt;
+/* nil 299d50 */ LightN;
+/* nil 299d80 */ LightColor;
+/* nil 299dc0 */ saSeTbl;
+/* nil 29a0d8 */ GndFileNo;
+/* nil 29a0f0 */ saTan2DTmlFile;
+/* nil 29a108 */ MotionLoadTbl;
+/* nil 29a120 */ LightStageNo;
+/* nil 29a138 */ InfoPosYTbl0;
+/* nil 29a158 */ InfoPosYTbl1;
+/* nil 29a190 */ InfoPosYTbl2;
+/* nil 29a1d8 */ InfoPosYTbl3;
+/* nil 29a200 */ InfoPosYTbl4;
+/* nil 29a230 */ InfoPosYTbl5;
+/* nil 29a250 */ InfoPageTbl0;
+/* nil 29a260 */ InfoPageTbl1;
+/* nil 29a270 */ InfoPageTbl2;
+/* nil 29a280 */ InfoPageTbl3;
+/* nil 29a290 */ InfoPageTbl4;
+/* nil 29a2a0 */ InfoPageTbl5;
+/* nil 29a2b0 */ InfoPosYTbl;
+/* nil 29a2c8 */ InfoPageTbl;
+/* nil 29a2e0 */ saTan0Tati;
+/* nil 29a2e8 */ saTan0Walk;
+/* nil 29a300 */ saTan0Kamae;
+/* nil 29a308 */ saTan0KiruL;
+/* nil 29a310 */ saTan0KiruR;
+/* nil 29a318 */ saTan0Noutou;
+/* nil 29a320 */ LightN;
+/* nil 29a350 */ LightC;
+/* nil 29a390 */ ObjSmdFile;
+/* nil 29a3a8 */ saTan0KiAnimTbl;
+/* nil 29a3f8 */ GameModeTbl;
+/* nil 29a578 */ saTan0CPAnimTbl0;
+/* nil 29a598 */ saTan0CTAnimTbl0;
+/* nil 29a5c8 */ saTan0CPAnimTbl2;
+/* nil 29a5f8 */ saTan0CTAnimTbl2;
+/* nil 29a618 */ saTan0KeyTbl;
+/* nil 29a648 */ saTan0KeyRegs;
+/* nil 29a658 */ saTan0KeyTypeTbl;
+/* nil 29a840 */ saTan1Tati;
+/* nil 29a848 */ saTan1Suwari;
+/* nil 29a858 */ saTan1Zazen;
+/* nil 29a860 */ saTan1TatiOsyo;
+/* nil 29a868 */ saTan1Nemuke0;
+/* nil 29a870 */ saTan1Nemuke1;
+/* nil 29a878 */ saTan1Tataku;
+/* nil 29a880 */ saTan1Tatakare;
+/* nil 29a888 */ saTan1TatiEnd;
+/* nil 29a8a0 */ LightN;
+/* nil 29a8d0 */ LightC;
+/* nil 29a910 */ saTan1CPAnimTbl0;
+/* nil 29a940 */ saTan1CTAnimTbl0;
+/* nil 29a960 */ saTan1CPAnimTbl1;
+/* nil 29a990 */ saTan1CTAnimTbl1;
+/* nil 29a9c0 */ saTan2Tati;
+/* nil 29a9c8 */ saTan2Tati2;
+/* nil 29a9d0 */ saTan2Nuku;
+/* nil 29a9e0 */ saTan2Kamae;
+/* nil 29a9e8 */ saTan2Kiru;
+/* nil 29a9f0 */ saTan2Fail;
+/* nil 29a9f8 */ saTan2FailLoop;
+/* nil 29aa00 */ saTan2Hajikare;
+/* nil 29aa08 */ saTan2Noutou;
+/* nil 29aa10 */ LightN;
+/* nil 29aa40 */ LightC;
+/* nil 29aa80 */ SmdFile;
+/* nil 29aa90 */ saTan2CPAnimTbl0;
+/* nil 29aab0 */ saTan2CTAnimTbl0;
+/* nil 29aad0 */ saTan2CPAnimTbl1;
+/* nil 29aaf0 */ saTan2CTAnimTbl1;
+/* nil 29ab10 */ KabutoYureTbl;
+/* nil 29abd0 */ saTan3Tati;
+/* nil 29abd8 */ saTan3Aruki;
+/* nil 29abf0 */ saTan3ArukiEnd;
+/* nil 29ac00 */ saTan3Utare1;
+/* nil 29ac08 */ saTan3Utare2;
+/* nil 29ac10 */ saTan3Utare3;
+/* nil 29ac18 */ saTan3Fail;
+/* nil 29ac20 */ LightN;
+/* nil 29ac50 */ LightC;
+/* nil 29ac90 */ saTan3CPAnimTbl0;
+/* nil 29acb0 */ saTan3CTAnimTbl0;
+/* nil 29acd0 */ saTan3CPAnimTbl1;
+/* nil 29acf0 */ saTan3CTAnimTbl1;
+/* nil 29ad10 */ saTan3CPAnimTbl2;
+/* nil 29ad30 */ saTan3CTAnimTbl2;
+/* nil 29ad50 */ saTan4Tati;
+/* nil 29ad58 */ saTan4Kiri;
+/* nil 29ad60 */ LightN;
+/* nil 29ad90 */ LightC;
+/* nil 35a0f0 */ ObjSmdFile;
+/* nil 29add0 */ saTan4CPAnimTbl0;
+/* nil 29ae00 */ saTan4CTAnimTbl0;
+/* nil 29ae20 */ saTan4CPAnimTbl1;
+/* nil 29ae50 */ saTan4CTAnimTbl1;
+/* nil 29ae70 */ FireTexAnimTblA;
+/* nil 29ae90 */ FireTexAnimTblB;
+/* nil 29aed0 */ saTan5TakePos;
+/* nil 29b510 */ saTan5Tati;
+/* nil 29b520 */ LightN;
+/* nil 29b550 */ LightC;
+/* nil 29b590 */ LightCAnim;
+/* nil 29b5d0 */ ObjSmdFile;
+/* nil 29b5f0 */ saKeyIndexTbl;
+/* nil 29ba50 */ saSeFile;
+/* nil 35a0f8 */ saFileReadFlag;
+/* nil 35a108 */ saEft00LinePtr;
+/* nil 29bd10 */ Eft01TexAnimTbl;
+/* nil 35a11c */ menuCounter;
+/* nil 2d5b00 */ md_2d_tbl;
+/* nil 3541e0 */ contentsTable;
+/* nil 354220 */ indexTable;
+/* nil 354310 */ dataBG;
+/* nil 354948 */ numberUV;
+/* nil 354998 */ change_win_to_sw;
+/* nil 35a158 */ change_sw_to_win;
+/* nil 3549c0 */ charTexID;
+/* nil 354ad8 */ samnailTexTbl;
+/* nil 354c90 */ charNamePictTbl;
+/* nil 354cf8 */ nameTbl;
+/* nil 354d78 */ selCharaID;
+/* nil 354da8 */ selMonteiCharaID;
+/* nil 354df8 */ selStageID;
+/* nil 354e08 */ stageTexTbl;
+/* nil 354e70 */ charIDTbl;
+/* nil 35a170 */ motionTbl;
+/* nil 34e110 */ robST;
+/* nil 34e158 */ bgTexTbl;
+/* nil 354ea0 */ numberTex;
+/* nil 34e220 */ motionTbl;
+/* nil 34e228 */ robST;
+/* nil 34e270 */ cameraDat;
+/* nil 354f40 */ schoolBGTbl;
+/* nil 34e2a0 */ homeLight;
+/* nil 354f80 */ bgmID;
+/* nil 355110 */ bgTexTbl;
+/* nil 3551d0 */ practiceBitTbl;
+/* nil 3551e0 */ testBitTbl;
+/* nil 355568 */ enableMoves;
+/* nil 34e2f0 */ motionTbl;
+/* nil 34e620 */ robST;
+/* nil 35a1ac */ counter.87;
+/* nil 41b680 */ localTags;
+/* nil 41b7c0 */ clearTags;
+/* nil 3560c0 */ cvtTbl;
+/* nil 356140 */ frameTexTbl;
+/* nil 356210 */ masterTbl;
+/* nil 356230 */ subMasterTbl;
+/* nil 356250 */ studentTbl;
+/* nil 356270 */ vipTbl;
+/* nil 3562e0 */ crc_table;
+/* nil 3564e0 */ unformat_err_mess;
+/* nil 34e8b0 */ iconName;
+/* nil 41ba80 */ dirTable;
+/* nil 34e930 */ __ps2_libinfo__;
+/* nil 34e944 */ scmd_sema_keep_cmd;
+/* nil 34e948 */ ncmd_sema_keep_cmd;
+/* nil 34e94c */ cb_thid;
+/* nil 34e964 */ _icmd_bind;
+/* nil 34e968 */ _sf_bind;
+/* nil 34e96c */ _rd_bind;
+/* nil 34e970 */ _ncmd_bind;
+/* nil 34e974 */ _scmd_bind;
+/* nil 34e978 */ _scmd_dr_bind;
+/* nil 34e97c */ _scmd_bk_bind;
+/* nil 34e980 */ _it_bind;
+/* nil 34e984 */ c_cnt.78;
+/* nil 34e988 */ stm_status;
+/* nil 34e9d0 */ __ps2_libinfo__;
+/* nil 34e9e0 */ isclr;
+/* nil 34ea08 */ ststbl;
+/* nil 34ea18 */ stdtbl;
+/* nil 34ea28 */ mfdtbl;
+/* nil 34ea50 */ __ps2_libinfo__;
+/* nil 34ea60 */ gp.6;
+/* nil 34ea70 */ init_vif_regs.3;
+/* nil 34ea90 */ init_mp3.3;
+/* nil 34eab0 */ ttyinit;
+/* nil 34eab4 */ heap_ptr.27;
+/* nil 34eab8 */ count;
+/* nil 34eabc */ _putchar;
+/* nil 34eac0 */ _sceSifInitCheck;
+/* nil 34eac4 */ _fs_init;
+/* nil 34eac8 */ _bind;
+/* nil 34eacc */ _bind_check;
+/* nil 34ead0 */ __ps2_libinfo__;
+/* nil 34eae0 */ mcRunCmdNo;
+/* nil 34eae8 */ _strmap;
+/* nil 34eb98 */ __ps2_libinfo__;
+/* nil 34eba8 */ _buffbase;
+/* nil 421140 */ _sprtagdata;
+/* nil 421340 */ _bstag;
+/* nil 34f488 */ _rix;
+/* nil 34f4a8 */ _ri0;
+/* nil 34f4c8 */ _isDirty;
+/* nil 34f500 */ ext_func.183;
+/* nil 34f52c */ tempRefWrap.193;
+/* nil 34f530 */ tempRefOld.194;
+/* nil 34f590 */ __ps2_libinfo__;
+/* nil 34f5a0 */ isInit;
+/* nil 34f5a8 */ PadStateStr;
+/* nil 34f5c8 */ ReqStateStr;
+/* nil 34f5f0 */ init_vif_regs.126;
+/* nil 34f610 */ __ps2_libinfo__;
+/* nil 34f620 */ iqval;
+/* nil 34f670 */ vqval;
+/* nil 34f690 */ __ps2_libinfo__;
+/* nil 34f6e8 */ p.3;
+/* nil 34edcc */ _original_or_copy;
+/* nil 296e00 */ Camera_Rot_def;
+/* nil 359f60 */ Tan5PadDisableFlag;
+/* nil 298288 */ cpu_move_dir_pattern_tbl;
+/* nil 359b40 */ demo_game_stage_id;
+/* nil 1a6460 */ structBlur;
+/* nil 299928 */ single_get_muishinjin_basic_waza_id_tbl;
+/* nil 296890 */ UserWork;
+/* nil 34ec80 */ defNIQM;
+/* nil 1e8be0 */ rob_colli_radius_genpou;
+/* nil 34ebf4 */ _ipubp;
+/* nil 2998d8 */ single_get_muni_basic_waza_id_tbl;
+/* nil 359d58 */ tim;
+/* nil 1e5280 */ Act_tbl;
+/* nil 359b38 */ GameSe;
+/* nil 34ecdc */ _isSecondField;
+/* nil 359b10 */ TimerMain;
+/* nil 34ed48 */ _forward_f_code;
+/* nil 34e958 */ cb_semid;
+/* nil 299d08 */ Marionation_str;
+/* nil 34f6a0 */ gEnd_func;
+/* nil 1e6b08 */ MOT_OUGI_5_TBL;
+/* nil 34ebcc */ _forwTop;
+/* nil 34ebc8 */ _zFrame;
+/* nil 34edd8 */ _copyright_number_3;
+/* nil 2999c8 */ single_get_kumomusin_basic_waza_id_tbl;
+/* nil 299638 */ ryuha_waza_adress_tbl;
+/* nil 34f458 */ _top32;
+/* nil 34ee10 */ _refFrame0;
+/* nil 1e5688 */ act_str;
+/* nil 34f4f4 */ _trFrameNumberA;
+/* nil 34ed6c */ _picture_structure;
+/* nil 359fc4 */ MarioCam;
+/* nil 359dec */ SetMotionSwMask;
+/* nil 298878 */ miss_attack_enable_number_table;
+/* nil 34f478 */ _alternate_scan;
+/* nil 359f90 */ DebugModelDBSW;
+/* nil 34edc8 */ _copyright_identifier;
+/* nil 359b30 */ Judge;
+/* nil 299b30 */ single_game_keiko_serif_num;
+/* nil 34ee00 */ _qscqsc;
+/* nil 1e8ff0 */ rob_colli_radius_jirouemon;
+/* nil 1e6a80 */ MOT_OUGI_1_TBL;
+/* nil 34ea38 */ sceDmaCurrentEnv;
+/* nil 34ed70 */ _top_field_first;
+/* nil 34ebf8 */ _iputop;
+/* nil 29bdd0 */ BaseMatrix;
+/* nil 35a0a8 */ single_dojo_stage_number_tbl;
+/* nil 34efb0 */ _refTop1;
+/* nil 34eccc */ _picWidth;
+/* nil 2989d8 */ ukenagasi_enable_number_table;
+/* nil 359df0 */ mt_gnd;
+/* nil 296df0 */ Camera_Tpos_def;
+/* nil 35a120 */ menuFlash;
+/* nil 35a0cc */ Mario;
+/* nil 359f94 */ CpuPP;
+/* nil 1a64e0 */ texenv;
+/* nil 1a65f0 */ stage_se_number_tbl;
+/* nil 34e960 */ Init_seq;
+/* nil 299838 */ single_get_suigetu_basic_waza_id_tbl;
+/* nil 34ed94 */ _field_sequence;
+/* nil 1e6aa0 */ MOT_OUGI_2_TBL;
+/* nil 34ed2c */ _matrix_coefficients;
+/* nil 299ac8 */ mar05_serif_data_tbl;
+/* nil 299778 */ single_taryu_match_char_id_tbl;
+/* nil 1e69d0 */ MOT_EX_GO_KAW_B_TBL;
+/* nil 298518 */ mao_dist_attack_enable_number_table;
+/* nil 34f6e4 */ gIRQCB;
+/* nil 34ed38 */ _temporal_reference;
+/* nil 359b4c */ CallGameMode;
+/* nil 360e70 */ _gp;
+/* nil 34edf0 */ _closed_gop;
+/* nil 34ebb8 */ _bsDatap;
+/* nil 1e8aa8 */ rob_colli_radius_yasutomo;
+/* nil 299c80 */ KatinukiGame_str;
+/* nil 34e98c */ sceCdCbfunc;
+/* nil 34ed08 */ _progressive_sequence;
+/* nil 1e5150 */ act_sinpaku_o0;
+/* nil 1e7e48 */ BukiSeStr;
+/* nil 34ed1c */ _video_format;
+/* nil 359da8 */ MOT_EX_GO_SIK01_TBL;
+/* nil 29bed0 */ waki_l_mat;
+/* nil 2983f8 */ atk_dist_attack_enable_number_table;
+/* nil 299600 */ kunomusin_pset_attack_tbl;
+/* nil 34e994 */ sceCdCbfunc_number;
+/* nil 298998 */ attack_enemy_dir_adjust_table;
+/* nil 359f48 */ Stats;
+/* nil 1e6930 */ MOT_EX_GO_PRE_TBL;
+/* nil 297400 */ StageLight;
+/* nil 359b08 */ ModeSub;
+/* nil 1a6370 */ mode_str;
+/* nil 1e8b78 */ rob_colli_radius_kangorou;
+/* nil 2e7810 */ u_menuTexTbl;
+/* nil 35a0c4 */ KatinukiGame;
+/* nil 29be90 */ kao_mat;
+/* nil 1e7ea0 */ colli_parts_str;
+/* nil 1e5198 */ act_sinpaku_o3;
+/* nil 359b03 */ ComaFlag;
+/* nil 1e8d80 */ rob_colli_radius_gettan;
+/* nil 34ebac */ _sprtag;
+/* nil 299af8 */ mar06_serif_data_tbl;
+/* nil 34f6d8 */ gStFinishCB;
+/* nil 359b20 */ TimerSub;
+/* nil 1a6630 */ md_game_exec_func_tbl;
+/* nil 1e6970 */ MOT_EX_DAMAGE_TBL;
+/* nil 34ecf8 */ _bit_rate_value;
+/* nil 34e860 */ voBuf;
+/* nil 34ece8 */ _widthMB;
+/* nil 359f98 */ DispCpuPower;
+/* nil 359b06 */ ModeMainOld;
+/* nil 34ee78 */ _refFrame1;
+/* nil 359de4 */ MotHeadStartAddress;
+/* nil 2993e8 */ chractar_use_pset_combo_id_table;
+/* nil 35a1cc */ handler_error;
+/* nil 359f78 */ rt_gnd;
+/* nil 359b50 */ ModeSubTimer;
+/* nil 34ebdc */ _backBot;
+/* nil 34ed9c */ _burst_amplitude;
+/* nil 34edf4 */ _broken_link;
+/* nil 34ece0 */ _horizontal_size;
+/* nil 1e6900 */ MOT_EX_BAT_KAM_TBL;
+/* nil 298ad8 */ avoid_enable_number_table;
+/* nil 1e6bb0 */ MOT_EX_GO_OUGI_TBL;
+/* nil 1e5220 */ act_attack_00;
+/* nil 2980f8 */ cpu_move_dir_out_side_move_tbl;
+/* nil 298148 */ cpu_move_dir_out_near_move_tbl;
+/* nil 297c90 */ DefaultLightMat;
+/* nil 34ed74 */ _frame_pred_frame_dct;
+/* nil 1a67c0 */ dopt_chr_kind_str;
+/* nil 1e9128 */ rob_colli_radius_kanenobu;
+/* nil 1e8840 */ rob_default_position;
+/* nil 34ecc4 */ _totalFrames;
+/* nil 359d28 */ PadDebugSw;
+/* nil 34f474 */ _q_scale_type;
+/* nil 35a0c8 */ VsGame;
+/* nil 1e9190 */ rob_colli_radius_naotsuna;
+/* nil 34e9a0 */ dch;
+/* nil 359fb0 */ PlayRobPointerOld;
+/* nil 359f54 */ Tan5BambooNum;
+/* nil 359fc0 */ SpecialCam;
+/* nil 34ede0 */ _time_code_hours;
+/* nil 1e90c0 */ rob_colli_radius_shigetoshi;
+/* nil 34f480 */ _intra_slice;
+/* nil 297e90 */ Light_str;
+/* nil 1a6618 */ mode_sub_game_str;
+/* nil 34ede4 */ _time_code_minutes;
+/* nil 299708 */ single_practice_shihan_char_id_tbl;
+/* nil 34ed28 */ _transfer_characteristics;
+/* nil 299070 */ sg_montei_offset_tbl;
+/* nil 359f88 */ DebugModelMax;
+/* nil 34ed90 */ _v_axis;
+/* nil 297328 */ mtst_chr_id_str;
+/* nil 34ef48 */ _refTop0;
+/* nil 1e6950 */ MOT_EX_GO_DEAD_TBL;
+/* nil 298008 */ cpu_move_dir_maai_side_move_tbl;
+/* nil 299978 */ single_get_issin_basic_waza_id_tbl;
+/* nil 1e58c0 */ Pad;
+/* nil 34e878 */ display;
+/* nil 359db0 */ MOT_EX_GO_DEF_TBL;
+/* nil 34f6a8 */ gCd;
+/* nil 34e950 */ ncmd_semid;
+/* nil 34ed58 */ _f_code;
+/* nil 359b55 */ StageNum;
+/* nil 298b58 */ offense_status_adjust_table;
+/* nil 2980a8 */ cpu_move_dir_maai_far_move_tbl;
+/* nil 35a0a0 */ gozen_pset_attack_tbl;
+/* nil 34f150 */ _refBot2;
+/* nil 34ed68 */ _intra_dc_precision;
+/* nil 34edd4 */ _copyright_number_2;
+/* nil 299c70 */ katinuki_montei_tbl;
+/* nil 2989b8 */ run_attack_enemy_dir_adjust_table;
+/* nil 1a65b0 */ demo_game_chr_id;
+/* nil 34f448 */ _headerPts;
+/* nil 298058 */ cpu_move_dir_maai_near_move_tbl;
+/* nil 1e8c48 */ rob_colli_radius_toranosuke;
+/* nil 34ec00 */ _d4madr;
+/* nil 34ed7c */ _intra_vlc_format;
+/* nil 2982d8 */ move_atk_dist_attack_enable_number_table;
+/* nil 34ebe8 */ _tmp_flag;
+/* nil 34ed4c */ _full_pel_backward_vector;
+/* nil 1e6e40 */ MotDataBaseAddress;
+/* nil 2981e8 */ cpu_move_dir_no_attack_tbl;
+/* nil 1e5cc0 */ BukiMatrix;
+/* nil 359dc8 */ MOT_EX_TAM_AT_TBL;
+/* nil 1e6ba0 */ MOT_OUGI_8_TBL;
+/* nil 34ecfc */ _vbv_buffer_size_value;
+/* nil 34e95c */ c_cb_sem;
+/* nil 359b05 */ ModeMainLast;
+/* nil 34ed18 */ _frame_rate_extension_d;
+/* nil 34ebfc */ _d4tadr;
+/* nil 34ecc8 */ _isError;
+/* nil 34ece4 */ _vertical_size;
+/* nil 359d18 */ ActDefaultAlign;
+/* nil 34f580 */ _cscDma;
+/* nil 34ecf4 */ _frame_rate_code;
+/* nil 34ecd4 */ _cWidth;
+/* nil 35a248 */ MakeDate;
+/* nil 35a0ec */ TanGnd;
+/* nil 296e40 */ Camera_Pos_def3;
+/* nil 1e6a58 */ MOT_EX_GO_TAM_TBL;
+/* nil 359b28 */ TimerSubR;
+/* nil 35a1c0 */ vblankCount;
+/* nil 1a6800 */ dopt_wep_kind_str;
+/* nil 359de8 */ ShiftMotionSwMask;
+/* nil 296de0 */ Camera_Pos_def;
+/* nil 1a6818 */ dopt_stage_str;
+/* nil 34ebc4 */ _backFrame;
+/* nil 34ed50 */ _backward_f_code;
+/* nil 1e5140 */ act_dummy;
+/* nil 1e8f88 */ rob_colli_radius_koutarou;
+/* nil 35a09c */ Light;
+/* nil 359dd0 */ MOT_EX_GO_WALK_TBL;
+/* nil 1e8870 */ rob_default_angle;
+/* nil 1e9058 */ rob_colli_radius_seiichirou;
+/* nil 298b70 */ defense_status_adjust_table;
+/* nil 2e7368 */ menuDat;
+/* nil 1e7e08 */ CharSeStr;
+/* nil 1e89d8 */ rob_colli_radius_taketsune;
+/* nil 296e10 */ Camera_Spd_def;
+/* nil 34ed78 */ _concealment_motion_vectors;
+/* nil 1e9480 */ Rob;
+/* nil 298170 */ cpu_move_dir_out_near_no_move_tbl;
+/* nil 299670 */ cahractar_use_weapon_id_tbl;
+/* nil 1e6ae0 */ MOT_OUGI_4_TBL;
+/* nil 34e808 */ audioDec;
+/* nil 1e50e0 */ FontPalBuf;
+/* nil 34ecd8 */ _cHeight;
+/* nil 1e8eb8 */ rob_colli_radius_hideyasu;
+/* nil 296e50 */ Camera_Tpos_def3;
+/* nil 34f018 */ _refTop2;
+/* nil 1e5250 */ act_buki_hit_00;
+/* nil 1e7f10 */ ColiWork;
+/* nil 359b0b */ ModeSubReq;
+/* nil 359b48 */ gnd;
+/* nil 2997e8 */ single_get_mujya_basic_waza_id_tbl;
+/* nil 297fe0 */ cpu_move_dir_attack_far_move_tbl;
+/* nil 296e30 */ Camera_Zom_def2;
+/* nil 34ec04 */ _d4chcr;
+/* nil 298b88 */ waza_check_pset_attack_table;
+/* nil 34ebb0 */ _refBlockp;
+/* nil 297cd0 */ DefaultColorMat;
+/* nil 298638 */ out_dist_attack_enable_number_table;
+/* nil 34f578 */ isCSCerror;
+/* nil 299750 */ single_revenge_match_char_id_tbl;
+/* nil 1e5260 */ act_damage_00;
+/* nil 1e8f20 */ rob_colli_radius_kakuma;
+/* nil 34ed10 */ _low_delay;
+/* nil 359b0a */ ModeSubOld;
+/* nil 359b58 */ GameSe_Str;
+/* nil 1a6480 */ gs_limage;
+/* nil 34f440 */ _isOutputPicture;
+/* nil 2995c8 */ muishinjin_pset_attack_tbl;
+/* nil 34edc4 */ _copyright_flag;
+/* nil 298238 */ cpu_move_dir_near_tbl;
+/* nil 1e8d18 */ rob_colli_radius_enshirou;
+/* nil 359f80 */ DebugModelCnt;
+/* nil 299258 */ cpu_practice_honmokuroku_data_tbl;
+/* nil 34f6dc */ gDMA0CB;
+/* nil 34f6d4 */ gStTransCB;
+/* nil 1e88a0 */ rob_colli_status;
+/* nil 359b09 */ ModeSubLast;
+/* nil 34f4f0 */ _tmpRefBase;
+/* nil 1e51b0 */ act_sinpaku_i0;
+/* nil 35a1c8 */ isUp;
+/* nil 1e6990 */ MOT_EX_DAMAGE_DEAD_TBL;
+/* nil 359b56 */ MarioModeFlag;
+/* nil 2973a8 */ mtst_stage_str;
+/* nil 34ed14 */ _frame_rate_extension_n;
+/* nil 2966c0 */ UesrWorkOptionDef;
+/* nil 34ed00 */ _constrained_parameters_flag;
+/* nil 359f5c */ Tan5TagBambooID;
+/* nil 29bf10 */ jnt_dat;
+/* nil 298210 */ cpu_move_dir_stop_tbl;
+/* nil 29be50 */ kosi_mat;
+/* nil 2d5b68 */ memCardBuffer;
+/* nil 1e51e0 */ act_sinpaku_i2;
+/* nil 1e4190 */ gnd_scene_tbl;
+/* nil 1e8720 */ structEfcOugi;
+/* nil 34edd0 */ _copyright_number_1;
+/* nil 34ebd0 */ _backTop;
+/* nil 2994e0 */ cpu_kamaekae_id_tbl;
+/* nil 299a98 */ mar02_serif_data_tbl;
+/* nil 1e6940 */ MOT_EX_SIK_KAM_TBL;
+/* nil 359f70 */ RobEffect;
+/* nil 359f58 */ Tan5HitBambooID;
+/* nil 1e6be0 */ DebugMot;
+/* nil 1e6a00 */ MOT_EX_GO_UKE_TBL;
+/* nil 1e69b0 */ MOT_EX_TAM_KAM_TBL;
+/* nil 34ed84 */ _chroma_420_type;
+/* nil 299618 */ fudo_pset_attack_tbl;
+/* nil 1e69a0 */ MOT_EX_GO_TAME_DEAD_TBL;
+/* nil 1e91f8 */ rob_colli_radius_nobutsuna;
+/* nil 34f4f8 */ _tmpRefGOPreset;
+/* nil 2981c0 */ cpu_move_dir_out_far_no_move_tbl;
+/* nil 1e8378 */ Learn;
+/* nil 1a6740 */ dopt_chr_id_str;
+/* nil 1e7998 */ MotPreCalc;
+/* nil 359b61 */ sel_menu_pg;
+/* nil 1e68a8 */ MOT_EX_GO_TURN_TBL;
+/* nil 34ec0c */ _d3madr;
+/* nil 297220 */ MarioCam_str;
+/* nil 35a0b0 */ single_outside_stage_number_tbl;
+/* nil 1e5890 */ pad_function_tbl;
+/* nil 35a1c4 */ isFrameEnd;
+/* nil 1e8168 */ StatusUpBuf;
+/* nil 1e7760 */ MotDataBankID;
+/* nil 34ecd0 */ _picHeight;
+/* nil 1a65c8 */ stage_bgm_number_tbl;
+/* nil 2980d0 */ cpu_move_dir_maai_far_no_move_tbl;
+/* nil 34ed0c */ _chroma_format;
+/* nil 34f538 */ _showCount;
+/* nil 298b98 */ cpu_personal_data_tbl;
+/* nil 34f470 */ _isMpeg2;
+/* nil 2996f8 */ single_practice_shihandai_char_id_tbl;
+/* nil 34ed98 */ _sub_carrier;
+/* nil 299c50 */ katinuki_chra_kind_tbl;
+/* nil 1e6a30 */ MOT_EX_RUN_AT_TBL;
+/* nil 359d50 */ sel;
+/* nil 1e5240 */ act_o_hit_00;
+/* nil 1e6b80 */ MOT_OUGI_7_TBL;
+/* nil 34e954 */ scmd_semid;
+/* nil 1e86a0 */ structBukiZanzou;
+/* nil 299a18 */ single_get_fudo_basic_waza_id_tbl;
+/* nil 1e5270 */ act_dead_00;
+/* nil 1e68c8 */ MOT_EX_KAM_KAM_TBL;
+/* nil 29bd80 */ lf_or_ch_flag;
+/* nil 359f50 */ StatusBufCnt;
+/* nil 359d60 */ kan;
+/* nil 34e640 */ menuRob;
+/* nil 359db8 */ MOT_EX_GO_TUBAZERI_TBL;
+/* nil 34ee04 */ _curFrame;
+/* nil 34ee08 */ _curTop;
+/* nil 2997d0 */ single_dojo_yaburi_char_id_tbl;
+/* nil 1a68c0 */ PauseMenue;
+/* nil 359fa8 */ PlayRobPointer;
+/* nil 34f450 */ _headerDts;
+/* nil 34f6e0 */ gDMA1CB;
+/* nil 34f080 */ _refBot0;
+/* nil 359d14 */ Console;
+/* nil 359d24 */ Pad2;
+/* nil 359d20 */ Pad1;
+/* nil 29bfc0 */ rob;
+/* nil 1e8730 */ CpuPower;
+/* nil 359b02 */ PauseKey;
+/* nil 34ebe4 */ _isTop32dirty;
+/* nil 359d98 */ MOT_EX_GO_RUN_DEAD_TBL;
+/* nil 1e9418 */ rob_se_buki_hit_tbl;
+/* nil 1e92c8 */ rob_colli_radius_ikousai;
+/* nil 34e750 */ videoDec;
+/* nil 1e80c8 */ structReplay;
+/* nil 35a0c0 */ SingleGame;
+/* nil 34f464 */ _load_non_intra_quantizer_matrix;
+/* nil 359d68 */ vol;
+/* nil 1e6ac0 */ MOT_OUGI_3_TBL;
+/* nil 1e9260 */ rob_colli_radius_zion;
+/* nil 296e70 */ Camera_str;
+/* nil 34ebd8 */ _forwBot;
+/* nil 359f32 */ coliEditStatus;
+/* nil 298260 */ cpu_move_dir_side_tbl;
+/* nil 34ed40 */ _vbv_delay;
+/* nil 296640 */ ChrId2Mdl;
+/* nil 35a0b8 */ single_change_stage_number_tbl;
+/* nil 299718 */ single_dojo_break_char_id_tbl;
+/* nil 299560 */ mujya_pset_attack_tbl;
+/* nil 299aa8 */ mar03_serif_data_tbl;
+/* nil 2970f0 */ SpecialCam_str;
+/* nil 2e73f8 */ menuBackup;
+/* nil 359bb2 */ sel_menu_pgm;
+/* nil 34ecf0 */ _aspect_ratio_information;
+/* nil 34ed88 */ _progressive_frame;
+/* nil 2996b8 */ single_game_time_limit_table;
+/* nil 35a1bc */ isCountVblank;
+/* nil 1e8de8 */ rob_colli_radius_tatsunao;
+/* nil 1e69f0 */ MOT_EX_GO_KAW_L_TBL;
+/* nil 298758 */ ougi_attack_enable_number_table;
+/* nil 1e5210 */ act_pre_00;
+/* nil 359f68 */ BukiZanzou;
+/* nil 34f460 */ _load_intra_quantizer_matrix;
+/* nil 1a6720 */ DebugOptionDefault;
+/* nil 359f40 */ Replay;
+/* nil 299cb0 */ VsGame_str;
+/* nil 34ed20 */ _color_description;
+/* nil 34ecc0 */ _bsDataSize;
+/* nil 298080 */ cpu_move_dir_maai_near_no_move_tbl;
+/* nil 2966a0 */ ChrId2Category;
+/* nil 1e8b10 */ rob_colli_radius_jyurouzaemon;
+/* nil 35a0d0 */ taiko_counter;
+/* nil 1e69c0 */ MOT_EX_GO_KAW_F_TBL;
+/* nil 1e6d08 */ shift_prog_tbl;
+/* nil 1e5080 */ kgm_clamp;
+/* nil 34edfc */ _sp_dcr;
+/* nil 299888 */ single_get_kyoshin_basic_waza_id_tbl;
+/* nil 34ec14 */ _d3qwc;
+/* nil 34ebb4 */ _theSceMpeg;
+/* nil 34ecec */ _heightMB;
+/* nil 2997b0 */ single_char_ryuha_id_tbl;
+/* nil 34ed80 */ _repeat_first_field;
+/* nil 34edf8 */ _trFrameNumber;
+/* nil 1e69e0 */ MOT_EX_GO_KAW_R_TBL;
+/* nil 298120 */ cpu_move_dir_out_side_no_move_tbl;
+/* nil 296e60 */ Camera_Zom_def3;
+/* nil 1e6a10 */ MOT_EX_TAM_RUN_TBL;
+/* nil 1a6280 */ md_prog_tbl;
+/* nil 1a6870 */ DebugOption_str;
+/* nil 359b18 */ TimerMainR;
+/* nil 34ed30 */ _display_horizontal_size;
+/* nil 34ebd4 */ _zTop;
+/* nil 1e5230 */ act_e_hit_00;
+/* nil 298a58 */ guard_enable_number_table;
+/* nil 1a6580 */ Judge_str;
+/* nil 29be10 */ PsMatrix;
+/* nil 1e6e88 */ MotDataOffset;
+/* nil 296e20 */ Camera_Zom_def;
+/* nil 1e6a48 */ MOT_EX_TM_KE_TBL;
+/* nil 1e8a40 */ rob_colli_radius_shouzaemon;
+/* nil 359b57 */ ModeEndWait;
+/* nil 34ed24 */ _color_primaries;
+/* nil 2995e8 */ issin_pset_attack_tbl;
+/* nil 1e5180 */ act_sinpaku_o2;
+/* nil 1e5168 */ act_sinpaku_o1;
+/* nil 359dc0 */ MOT_EX_GO_HAJI_TBL;
+/* nil 297f90 */ cpu_move_dir_attack_side_move_tbl;
+/* nil 299090 */ player_default_data_tbl;
+/* nil 1e8108 */ structSTATS;
+/* nil 359f7c */ MoveSpd;
+/* nil 1e6b50 */ MOT_OUGI_6_TBL;
+/* nil 1e6910 */ MOT_EX_BAT_KAM_BOKUTOU_TBL;
+/* nil 359b04 */ ModeMain;
+/* nil 2990f0 */ cpu_practice_data_tbl;
+/* nil 34ec08 */ _d4qwc;
+/* nil 34e990 */ sceCdCbfunc_num;
+/* nil 2966d0 */ UesrWorkDef;
+/* nil 1a6900 */ test_rob;
+/* nil 359fc8 */ mr_gnd;
+/* nil 34eda8 */ _frame_center_horizontal_offset;
+/* nil 34f1b8 */ _mbcont;
+/* nil 34ed3c */ _picture_coding_type;
+/* nil 34eee0 */ _refFrame2;
+/* nil 299b08 */ mar07_serif_data_tbl;
+/* nil 359f30 */ coliCurParts;
+/* nil 299580 */ suigetsu_pset_attack_tbl;
+/* nil 297790 */ StageLightColor;
+/* nil 1e8cb0 */ rob_colli_radius_ichiun;
+/* nil 351ea0 */ damage_body_place;
+/* nil 34e940 */ CD_debug;
+/* nil 299b10 */ marionation_serif_data_tbl;
+/* nil 34edb8 */ _frame_center_vertical_offset;
+/* nil 34ec10 */ _d3chcr;
+/* nil 359d00 */ DebugOption;
+/* nil 359fbc */ Camera;
+/* nil 299660 */ ryuha_default_combo_num_tbl;
+/* nil 1e6920 */ MOT_EX_GO_WIN_TBL;
+/* nil 1a67d0 */ dopt_wep_id_str;
+/* nil 359fb8 */ BukiHitCnt;
+/* nil 2977d0 */ RobLightColor;
+/* nil 359b00 */ PauseFlag;
+/* nil 299ab8 */ mar04_serif_data_tbl;
+/* nil 34f46c */ _load_chroma_non_intra_quantizer_matrix;
+/* nil 1e51c8 */ act_sinpaku_i1;
+/* nil 34ede8 */ _time_code_seconds;
+/* nil 34f47c */ _priority_breakpoint;
+/* nil 298198 */ cpu_move_dir_out_far_move_tbl;
+/* nil 34eddc */ _drop_frame_flag;
+/* nil 1e6960 */ MOT_EX_GO_TAME_TBL;
+/* nil 34ec40 */ defIQM;
+/* nil 299598 */ kyoshin_pset_attack_tbl;
+/* nil 1e8358 */ ryuha_waza_group_search_tbl;
+/* nil 34ee0c */ _curBot;
+/* nil 34f6d0 */ gStPrepareCB;
+/* nil 299a68 */ single_get_ryuha_basic_waza_id_tbl;
+/* nil 1e51f8 */ act_sinpaku_i3;
+/* nil 299c08 */ SingleGame_str;
+/* nil 34eda0 */ _sub_carrier_phase;
+/* nil 355240 */ editMoveTbl;
+/* nil 2996e8 */ single_practice_montei_char_id_tbl;
+/* nil 297fb8 */ cpu_move_dir_attack_near_move_tbl;
+/* nil 34ebc0 */ _forwFrame;
+/* nil 2e8810 */ paket2D;
+/* nil 359d70 */ len;
+/* nil 359b01 */ PauseReq;
+/* nil 34f45c */ _top32len;
+/* nil 359b54 */ ModeEndMode;
+/* nil 359b60 */ sel_menu_csr;
+/* nil 34ed44 */ _full_pel_forward_vector;
+/* nil 359da0 */ MOT_EX_GO_SIK00_TBL;
+/* nil 34edec */ _time_code_pictures;
+/* nil 34f0e8 */ _refBot1;
+/* nil 34e9c8 */ sceDmaDebugMode;
+/* nil 34ebe0 */ _zBot;
+/* nil 359bb3 */ sel_menu_mod;
+/* nil 299a88 */ mar01_serif_data_tbl;
+/* nil 34ed8c */ _composite_display_flag;
+/* nil 1e8e50 */ rob_colli_radius_zesuiken;
+/* nil 1e60c0 */ MOT_EX_ZAN_TBL;
+/* nil 2995b0 */ muni_pset_attack_tbl;
+/* nil 1e7f90 */ coliStatusBuf;
+/* nil 34ebec */ _ipucmd;
+/* nil 34ed34 */ _display_vertical_size;
+/* nil 1e9398 */ rob_colli_radius_char;
+/* nil 34e998 */ dum_mode;
+/* nil 34ed04 */ _profile_and_level_indication;
+/* nil 34ebf0 */ _ipuctrl;
+/* nil 359b07 */ ModeMainReq;
+/* nil 297d10 */ chara_ambient_rate_tbl;
+/* nil 2e7410 */ c_menuTexTbl;
+/* nil 1a6648 */ sel_menu;
+/* nil 34f468 */ _load_chroma_intra_quantizer_matrix;
+/* nil 298030 */ cpu_move_dir_maai_side_no_move_tbl;
+/* nil 1e9330 */ rob_colli_radius_montei;
