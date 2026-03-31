@@ -259,20 +259,22 @@ def generate_draft(func_name, globals_by_addr, funcs_by_addr, verbose=False):
     asm = open(asm_path).read()
     context = get_context(func_name, asm, globals_by_addr, funcs_by_addr)
 
+    rules = (
+        "Decompile this MIPS assembly to matching C for GCC 2.7.2 -O2. "
+        "Output ONLY the C function, no explanation, no markdown.\n"
+        "RULES: Never use MIPS register names (v0, v1, a0-a3, t0-t9, s0-s8, "
+        "at, gp, sp, fp, ra) as C variable names — use descriptive names instead.\n\n"
+    )
     if context:
         prompt = (
-            "Decompile this MIPS assembly to matching C for GCC 2.7.2 -O2. "
-            "Output ONLY the C function, no explanation, no markdown.\n\n"
+            rules +
             "I have prior work. Use it to produce a better result — fix issues, "
             "apply named symbols, resolve remaining differences.\n\n"
             f"{context}\n\n"
             "## Target assembly:\n" + asm
         )
     else:
-        prompt = (
-            "Decompile this MIPS assembly to matching C for GCC 2.7.2 -O2. "
-            "Output ONLY the C function, no explanation, no markdown.\n\n" + asm
-        )
+        prompt = rules + asm
 
     return ollama_call(prompt, verbose=verbose)
 
@@ -348,10 +350,12 @@ def fix_draft(func_name, asm, failed_code, error_text, attempt, globals_by_addr,
 
     prompt = (
         "This C decompilation for GCC 2.7.2 -O2 failed to compile. "
-        "Fix ALL compile errors and output ONLY the corrected C function — no explanation, no markdown.\n\n"
+        "Fix ALL compile errors and output ONLY the corrected C function — no explanation, no markdown.\n"
+        "IMPORTANT: Never use MIPS register names (v0, v1, a0-a3, t0-t9, s0-s8, at, gp, sp, fp, ra) "
+        "as C variable names.\n\n"
         "## Compile errors:\n"
         f"```\n{error_text}\n```\n\n"
-        "## Failed code (attempt {attempt}):\n"
+        f"## Failed code (attempt {attempt}):\n"
         f"```c\n{failed_code}\n```\n\n"
     )
     if context:
