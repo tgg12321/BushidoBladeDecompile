@@ -13,7 +13,7 @@ func_80017D84
 func_800198D0
 DispPracticeMenuTex_A
 se_data_set
-func_8002AB08
+calc_loc_mat_fw
 func_8002DE20
 cpu_check_tubazeri_2
 func_80030BA8

@@ -699,7 +699,8 @@ INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_C);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 INCLUDE_ASM("asm/funcs", func_80029454);
 INCLUDE_ASM("asm/funcs", func_8002A458);
-INCLUDE_ASM("asm/funcs", func_8002AB08);
+INCLUDE_ASM("asm/funcs", calc_loc_mat_fw);
+/* kengo:MED  |  se_fc/calc_loc_mat_fw  |  1074i  |  -38 3.5% no-affinity fallback */
 INCLUDE_ASM("asm/funcs", func_8002BC68);
 INCLUDE_ASM("asm/funcs", func_8002BEA0);
 INCLUDE_ASM("asm/funcs", func_8002C0DC);

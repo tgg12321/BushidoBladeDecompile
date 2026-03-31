@@ -227,6 +227,7 @@ RENAMES = {
     # Expanded affinity batch (exact matches unlocked by new module entries)
     "func_80082C3C": "motion_make_table",
     "func_80083794": "motion_Open",
+    "func_8002AB08": "calc_loc_mat_fw",
 }
 
 dry_run = "--apply" not in sys.argv

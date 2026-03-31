@@ -107,6 +107,7 @@ ANNOTATIONS = [
     # Expanded affinity exact matches (2026-03-30)
     ("motion_make_table", "is_motion", 62, "HIGH", ""),
     ("motion_Open",       "is_motion", 54, "HIGH", ""),
+    ("calc_loc_mat_fw",   "se_fc",    1074, "MED", "-38 3.5% no-affinity fallback"),
 ]
 
 # Build lookup: func_name -> comment line
