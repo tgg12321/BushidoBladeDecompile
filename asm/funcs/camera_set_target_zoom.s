@@ -1,4 +1,4 @@
-glabel func_8001CE60
+glabel camera_set_target_zoom
     /* D660 8001CE60 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* D664 8001CE64 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* D668 8001CE68 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
@@ -632,4 +632,4 @@ glabel func_8001CE60
     /* DF84 8001D784 2000BD27 */  addiu      $sp, $sp, 0x20
     /* DF88 8001D788 0800E003 */  jr         $ra
     /* DF8C 8001D78C 00000000 */   nop
-endlabel func_8001CE60
+endlabel camera_set_target_zoom

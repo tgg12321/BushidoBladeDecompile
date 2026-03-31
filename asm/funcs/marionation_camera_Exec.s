@@ -150,7 +150,7 @@ glabel marionation_camera_Exec
     /* 8AD4 800182D4 280085AC */  sw         $a1, 0x28($a0)
     /* 8AD8 800182D8 2C0086AC */  sw         $a2, 0x2C($a0)
     /* 8ADC 800182DC 300087AC */  sw         $a3, 0x30($a0)
-    /* 8AE0 800182E0 C060000C */  jal        func_80018300
+    /* 8AE0 800182E0 C060000C */  jal        cpu_check_run_attack
     /* 8AE4 800182E4 00000000 */   nop
     /* 8AE8 800182E8 2800BF8F */  lw         $ra, 0x28($sp)
     /* 8AEC 800182EC 2400B18F */  lw         $s1, 0x24($sp)

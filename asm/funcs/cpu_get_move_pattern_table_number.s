@@ -1,4 +1,4 @@
-glabel func_8001EA84
+glabel cpu_get_move_pattern_table_number
     /* F284 8001EA84 0A80023C */  lui        $v0, %hi(D_800A37B8)
     /* F288 8001EA88 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
     /* F28C 8001EA8C C8FFBD27 */  addiu      $sp, $sp, -0x38
@@ -283,4 +283,4 @@ glabel func_8001EA84
     /* F6A8 8001EEA8 3800BD27 */  addiu      $sp, $sp, 0x38
     /* F6AC 8001EEAC 0800E003 */  jr         $ra
     /* F6B0 8001EEB0 00000000 */   nop
-endlabel func_8001EA84
+endlabel cpu_get_move_pattern_table_number

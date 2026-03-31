@@ -205,7 +205,7 @@ extern void func_8005C6D0(void);
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
 extern u8 D_800A3906;
-extern void func_800174F4(void);
+extern void gnd_disp_loop_ctrl(void);
 extern void func_8003AAB0(void);
 extern u16 D_80101E9E;
 extern u8 D_8008D538;
@@ -749,7 +749,8 @@ do_stop:
     func_80080240(0);
     func_80080390(9, 0);
 }
-INCLUDE_ASM("asm/funcs", func_80036140);
+INCLUDE_ASM("asm/funcs", special_camera_set_win_cam);
+/* kengo:MED  |  nm_special_cam/special_camera_set_win_cam  |  502i  |  -10 */
 INCLUDE_ASM("asm/funcs", special_camera_Exec);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
 s32 func_80036D88(void) {
@@ -793,7 +794,7 @@ void func_80036F40(void) {
         if (D_800A3906 != 0) {
             func_8005C6D0();
         }
-        func_800174F4();
+        gnd_disp_loop_ctrl();
         *s0 = *s0 + 2;
         func_800828CC(2);
     }

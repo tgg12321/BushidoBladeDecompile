@@ -62,7 +62,7 @@ glabel func_800826CC
     /* 72FB0 800827B0 2F01020C */  jal        tslPolyF4Init
     /* 72FB4 800827B4 21300000 */   addu      $a2, $zero, $zero
   .L800827B8:
-    /* 72FB8 800827B8 0709020C */  jal        func_8008241C
+    /* 72FB8 800827B8 0709020C */  jal        saEft00Add
     /* 72FBC 800827BC 21200000 */   addu      $a0, $zero, $zero
     /* 72FC0 800827C0 1000BF8F */  lw         $ra, 0x10($sp)
     /* 72FC4 800827C4 2A100200 */  slt        $v0, $zero, $v0

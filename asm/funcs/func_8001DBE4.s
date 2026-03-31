@@ -19,7 +19,7 @@ glabel func_8001DBE4
   .L8001DC28:
     /* E428 8001DC28 92EA000C */  jal        func_8003AA48
     /* E42C 8001DC2C 00000000 */   nop
-    /* E430 8001DC30 3D5D000C */  jal        func_800174F4
+    /* E430 8001DC30 3D5D000C */  jal        gnd_disp_loop_ctrl
     /* E434 8001DC34 00000000 */   nop
     /* E438 8001DC38 330A020C */  jal        func_800828CC
     /* E43C 8001DC3C 02000424 */   addiu     $a0, $zero, 0x2
@@ -34,7 +34,7 @@ glabel func_8001DBE4
   .L8001DC60:
     /* E460 8001DC60 92EA000C */  jal        func_8003AA48
     /* E464 8001DC64 01001026 */   addiu     $s0, $s0, 0x1
-    /* E468 8001DC68 3D5D000C */  jal        func_800174F4
+    /* E468 8001DC68 3D5D000C */  jal        gnd_disp_loop_ctrl
     /* E46C 8001DC6C 00000000 */   nop
     /* E470 8001DC70 330A020C */  jal        func_800828CC
     /* E474 8001DC74 02000424 */   addiu     $a0, $zero, 0x2

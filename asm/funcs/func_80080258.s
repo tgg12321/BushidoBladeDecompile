@@ -35,7 +35,7 @@ glabel func_80080258
     /* 70AD8 800802D8 01000424 */   addiu     $a0, $zero, 0x1
     /* 70ADC 800802DC 21280000 */  addu       $a1, $zero, $zero
     /* 70AE0 800802E0 21300000 */  addu       $a2, $zero, $zero
-    /* 70AE4 800802E4 BF04020C */  jal        func_800812FC
+    /* 70AE4 800802E4 BF04020C */  jal        tslTm2LoadImage
     /* 70AE8 800802E8 21380000 */   addu      $a3, $zero, $zero
   .L800802EC:
     /* 70AEC 800802EC 0B002012 */  beqz       $s1, .L8008031C
@@ -46,7 +46,7 @@ glabel func_80080258
     /* 70B00 80080300 02000424 */   addiu     $a0, $zero, 0x2
     /* 70B04 80080304 21282002 */  addu       $a1, $s1, $zero
     /* 70B08 80080308 21304002 */  addu       $a2, $s2, $zero
-    /* 70B0C 8008030C BF04020C */  jal        func_800812FC
+    /* 70B0C 8008030C BF04020C */  jal        tslTm2LoadImage
     /* 70B10 80080310 21380000 */   addu      $a3, $zero, $zero
     /* 70B14 80080314 0A004014 */  bnez       $v0, .L80080340
     /* 70B18 80080318 00000000 */   nop
@@ -56,7 +56,7 @@ glabel func_80080258
     /* 70B24 80080324 FF008432 */  andi       $a0, $s4, 0xFF
     /* 70B28 80080328 21282002 */  addu       $a1, $s1, $zero
     /* 70B2C 8008032C 21304002 */  addu       $a2, $s2, $zero
-    /* 70B30 80080330 BF04020C */  jal        func_800812FC
+    /* 70B30 80080330 BF04020C */  jal        tslTm2LoadImage
     /* 70B34 80080334 21380000 */   addu      $a3, $zero, $zero
     /* 70B38 80080338 09004010 */  beqz       $v0, .L80080360
     /* 70B3C 8008033C 0100E226 */   addiu     $v0, $s7, 0x1

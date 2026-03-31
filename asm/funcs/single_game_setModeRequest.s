@@ -1,4 +1,4 @@
-glabel func_800187F4
+glabel single_game_setModeRequest
     /* 8FF4 800187F4 88FFBD27 */  addiu      $sp, $sp, -0x78
     /* 8FF8 800187F8 6400B5AF */  sw         $s5, 0x64($sp)
     /* 8FFC 800187FC 21A88000 */  addu       $s5, $a0, $zero
@@ -693,4 +693,4 @@ glabel func_800187F4
     /* 9A40 80019240 7800BD27 */  addiu      $sp, $sp, 0x78
     /* 9A44 80019244 0800E003 */  jr         $ra
     /* 9A48 80019248 00000000 */   nop
-endlabel func_800187F4
+endlabel single_game_setModeRequest

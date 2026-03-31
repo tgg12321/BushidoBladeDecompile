@@ -129,7 +129,7 @@ s32 func_80080240(s32 a0) {
 }
 
 extern s32 D_800A112C[];
-extern s32 func_800812FC(s32, void *, void *, s32);
+extern s32 tslTm2LoadImage(s32, void *, void *, s32);
 
 INCLUDE_ASM("asm/funcs", func_80080258);
 INCLUDE_ASM("asm/funcs", func_80080390);
@@ -160,7 +160,7 @@ void func_80080684(s32 a0) {
 INCLUDE_ASM("asm/funcs", func_800806A4);
 
 extern s32 D_800A112C[];
-extern s32 func_800812FC(s32, void *, void *, s32);
+extern s32 tslTm2LoadImage(s32, void *, void *, s32);
 extern s32 func_80080DB0_ret(s32, void *);
 /* --- text3 segment functions (0x800807A8-0x800827D0, 17 funcs) --- */
 
@@ -183,7 +183,8 @@ INCLUDE_ASM("asm/funcs", func_80080828);
 INCLUDE_ASM("asm/funcs", cpu_side_move_dir_4);
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir_4  |  160i  |  x4 size collision */
 INCLUDE_ASM("asm/funcs", func_80081030);
-INCLUDE_ASM("asm/funcs", func_800812FC);
+INCLUDE_ASM("asm/funcs", tslTm2LoadImage);
+/* kengo:MED  |  tsl_tm2/tslTm2LoadImage  |  253i  |  -10 x2 size collision */
 extern volatile u8 *D_800A147C;
 extern volatile u8 *D_800A1484;
 extern volatile u8 *D_800A1488;
@@ -274,7 +275,7 @@ s32 func_800819C4(void) {
     u8 v0;
     volatile u8 *p94;
 
-    func_80082000(&D_800162A8);
+    tslTm2LoadImage_2(&D_800162A8);
     func_80079208(&D_800162B4, &D_800A1498);
 
     D_800A11D5 = 0;
@@ -307,16 +308,16 @@ s32 func_800819C4(void) {
     *D_800A1488 = 0;
     *D_800A148C = 0x1325;
 
-    func_800812FC(1, 0, 0, 0);
+    tslTm2LoadImage(1, 0, 0, 0);
 
     if (*(s32 *)&D_800A11C4 & 0x10) {
-        func_800812FC(1, 0, 0, 0);
+        tslTm2LoadImage(1, 0, 0, 0);
     }
 
-    if (func_800812FC(0xA, 0, 0, 0) != 0) {
+    if (tslTm2LoadImage(0xA, 0, 0, 0) != 0) {
         return -1;
     }
-    if (func_800812FC(0xC, 0, 0, 0) != 0) {
+    if (tslTm2LoadImage(0xC, 0, 0, 0) != 0) {
         return -1;
     }
     {
@@ -327,7 +328,7 @@ s32 func_800819C4(void) {
     }
 }
 extern s32 func_800828CC(s32);
-extern void func_80082000(void *);
+extern void tslTm2LoadImage_2(void *);
 extern void func_80079208(void *, void *, s32, s32, s32);
 extern s32 D_800F19B8;
 extern s32 D_800F19BC;
@@ -439,8 +440,10 @@ void func_80081F1C(void) {
     } while (1);
     *D_800A147C = s2;
 }
-INCLUDE_ASM("asm/funcs", func_80082000);
-INCLUDE_ASM("asm/funcs", func_8008241C);
+INCLUDE_ASM("asm/funcs", tslTm2LoadImage_2);
+/* kengo:MED  |  tsl_tm2/tslTm2LoadImage_2  |  253i  |  -10 x2 size collision */
+INCLUDE_ASM("asm/funcs", saEft00Add);
+/* kengo:HIGH  |  sa_eft/saEft00Add  |  169i  |  -3 near-exact */
 INCLUDE_ASM("asm/funcs", func_800826CC);
 extern s32 D_800A14EC;
 extern s32 D_800A14E8;
@@ -462,7 +465,7 @@ s32 func_800827D0(s32 a0, s32 a1) {
             tick = func_800828CC(-1);
             if (p[-1] + 0x3C < tick) {
 do_seek:
-                func_8008241C(1);
+                saEft00Add(1);
                 result = p[-7];
             } else {
                 result = p[-2];

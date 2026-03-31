@@ -10,7 +10,7 @@ glabel func_80040510
     /* 30D30 80040530 0B80013C */  lui        $at, %hi(D_800A9A10)
     /* 30D34 80040534 21083100 */  addu       $at, $at, $s1
     /* 30D38 80040538 109A30AC */  sw         $s0, %lo(D_800A9A10)($at)
-    /* 30D3C 8004053C 6501010C */  jal        func_80040594
+    /* 30D3C 8004053C 6501010C */  jal        AllocRobRmd
     /* 30D40 80040540 21200002 */   addu      $a0, $s0, $zero
     /* 30D44 80040544 3E02010C */  jal        rob_life_ctrl
     /* 30D48 80040548 21200002 */   addu      $a0, $s0, $zero

@@ -213,7 +213,7 @@ extern void func_8003AA78(void);
 extern s32 func_80036D88(void);
 extern void func_8003AA48(void);
 extern u8 D_800A3906;
-extern void func_800174F4(void);
+extern void gnd_disp_loop_ctrl(void);
 extern void func_8003AAB0(void);
 extern u16 D_80101E9E;
 extern u8 D_8008D538;

@@ -33,7 +33,7 @@ glabel tslPolyF4Init
     /* 70D34 80080534 01000424 */   addiu     $a0, $zero, 0x1
     /* 70D38 80080538 21280000 */  addu       $a1, $zero, $zero
     /* 70D3C 8008053C 21300000 */  addu       $a2, $zero, $zero
-    /* 70D40 80080540 BF04020C */  jal        func_800812FC
+    /* 70D40 80080540 BF04020C */  jal        tslTm2LoadImage
     /* 70D44 80080544 21380000 */   addu      $a3, $zero, $zero
   .L80080548:
     /* 70D48 80080548 0B002012 */  beqz       $s1, .L80080578
@@ -44,7 +44,7 @@ glabel tslPolyF4Init
     /* 70D5C 8008055C 02000424 */   addiu     $a0, $zero, 0x2
     /* 70D60 80080560 21282002 */  addu       $a1, $s1, $zero
     /* 70D64 80080564 21304002 */  addu       $a2, $s2, $zero
-    /* 70D68 80080568 BF04020C */  jal        func_800812FC
+    /* 70D68 80080568 BF04020C */  jal        tslTm2LoadImage
     /* 70D6C 8008056C 21380000 */   addu      $a3, $zero, $zero
     /* 70D70 80080570 0A004014 */  bnez       $v0, .L8008059C
     /* 70D74 80080574 00000000 */   nop
@@ -54,7 +54,7 @@ glabel tslPolyF4Init
     /* 70D80 80080580 FF008432 */  andi       $a0, $s4, 0xFF
     /* 70D84 80080584 21282002 */  addu       $a1, $s1, $zero
     /* 70D88 80080588 21304002 */  addu       $a2, $s2, $zero
-    /* 70D8C 8008058C BF04020C */  jal        func_800812FC
+    /* 70D8C 8008058C BF04020C */  jal        tslTm2LoadImage
     /* 70D90 80080590 21380000 */   addu      $a3, $zero, $zero
     /* 70D94 80080594 07004010 */  beqz       $v0, .L800805B4
     /* 70D98 80080598 21100000 */   addu      $v0, $zero, $zero

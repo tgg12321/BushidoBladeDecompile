@@ -1,4 +1,4 @@
-glabel func_800174F4
+glabel gnd_disp_loop_ctrl
     /* 7CF4 800174F4 68FFBD27 */  addiu      $sp, $sp, -0x98
     /* 7CF8 800174F8 9000B2AF */  sw         $s2, 0x90($sp)
     /* 7CFC 800174FC 0F80123C */  lui        $s2, %hi(D_800F33D8)
@@ -146,4 +146,4 @@ glabel func_800174F4
     /* 7F08 80017708 9800BD27 */  addiu      $sp, $sp, 0x98
     /* 7F0C 8001770C 0800E003 */  jr         $ra
     /* 7F10 80017710 00000000 */   nop
-endlabel func_800174F4
+endlabel gnd_disp_loop_ctrl

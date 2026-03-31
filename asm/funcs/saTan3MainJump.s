@@ -1,4 +1,4 @@
-glabel func_800288C8
+glabel saTan3MainJump
     /* 190C8 800288C8 B0FFBD27 */  addiu      $sp, $sp, -0x50
     /* 190CC 800288CC 1080023C */  lui        $v0, %hi(D_80101F32)
     /* 190D0 800288D0 321F4294 */  lhu        $v0, %lo(D_80101F32)($v0)
@@ -522,4 +522,4 @@ glabel func_800288C8
     /* 19860 80029060 5000BD27 */  addiu      $sp, $sp, 0x50
     /* 19864 80029064 0800E003 */  jr         $ra
     /* 19868 80029068 00000000 */   nop
-endlabel func_800288C8
+endlabel saTan3MainJump

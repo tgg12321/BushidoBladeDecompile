@@ -210,7 +210,7 @@ extern void func_8003AA78(void);
 extern s32 func_80036D88(void);
 extern void func_8003AA48(void);
 extern u8 D_800A3906;
-extern void func_800174F4(void);
+extern void gnd_disp_loop_ctrl(void);
 extern void func_8003AAB0(void);
 extern u16 D_80101E9E;
 extern u8 D_8008D538;
@@ -611,8 +611,10 @@ extern s32 D_80102030;
 INCLUDE_ASM("asm/funcs", func_80017FA0);
 INCLUDE_ASM("asm/funcs", marionation_camera_Exec);
 /* kengo:MED  |  nm_mario_cam/marionation_camera_Exec  |  155i */
-INCLUDE_ASM("asm/funcs", func_80018300);
-INCLUDE_ASM("asm/funcs", func_800187F4);
+INCLUDE_ASM("asm/funcs", cpu_check_run_attack);
+/* kengo:HIGH  |  nm_cpu/cpu_check_run_attack  |  322i  |  +5 near-exact */
+INCLUDE_ASM("asm/funcs", single_game_setModeRequest);
+/* kengo:HIGH  |  nm_single_game/single_game_setModeRequest  |  663i  |  +1 near-exact */
 extern s32 D_800F6740;
 void func_8001924C(s16 *arg0, s32 arg1) {
     s32 i;
@@ -631,7 +633,7 @@ void func_8001924C(s16 *arg0, s32 arg1) {
             func_80019310(s0, (s32 *)(val * 52 + new_var));
         } else {
             s16 val = s0[0];
-            func_800187F4(s0, (s32 *)(val * 52 + new_var));
+            single_game_setModeRequest(s0, (s32 *)(val * 52 + new_var));
         }
         i++;
         s0 = (s16 *)((u8 *)s0 + 16);
@@ -897,7 +899,8 @@ void func_8001CD68(s16 *arg0) {
         }
     }
 }
-INCLUDE_ASM("asm/funcs", func_8001CE60);
+INCLUDE_ASM("asm/funcs", camera_set_target_zoom);
+/* kengo:MED  |  nm_camera/camera_set_target_zoom  |  593i  |  +5 */
 INCLUDE_ASM("asm/funcs", se_data_set);
 /* kengo:HIGH  |  md_game/se_data_set  |  93i */
 void func_8001D904(void) {
@@ -966,14 +969,14 @@ void func_8001DBE4(void) {
     } else {
         do {
             func_8003AA48();
-            func_800174F4();
+            gnd_disp_loop_ctrl();
             func_800828CC(2);
         } while (!(D_800A38F8 > D_800A37A0));
         i = 0;
         do {
             func_8003AA48();
             i += 1;
-            func_800174F4();
+            gnd_disp_loop_ctrl();
             func_800828CC(2);
         } while (i < 15);
     }
@@ -981,7 +984,8 @@ void func_8001DBE4(void) {
     gpu_InitDisplay();
     gpu_DisableDisplay();
 }
-INCLUDE_ASM("asm/funcs", func_8001DCB0);
+INCLUDE_ASM("asm/funcs", mario_test_Exec);
+/* kengo:MED  |  nm_mario_test/mario_test_Exec  |  450i  |  -19 */
 INCLUDE_ASM("asm/funcs", func_8001E404);
 INCLUDE_ASM("asm/funcs", func_8001E6E4);
 void func_8001E800(void) {
@@ -1026,7 +1030,7 @@ void func_8001E878(void) {
         func_8003E6A0(D_80102408, D_80102410);
     }
     game_StageInit((D_800A3690 ^ 1) != 0);
-    func_8001CE60();
+    camera_set_target_zoom();
     func_800335D8();
     func_8001C8DC();
 }
@@ -1044,7 +1048,8 @@ void func_8001EA04(void) {
     D_800A3804 = v < 1;
     D_800A3817 = v < 1;
 }
-INCLUDE_ASM("asm/funcs", func_8001EA84);
+INCLUDE_ASM("asm/funcs", cpu_get_move_pattern_table_number);
+/* kengo:HIGH  |  nm_cpu/cpu_get_move_pattern_table_number  |  265i  |  -3 near-exact */
 INCLUDE_ASM("asm/funcs", func_8001EEB4);
 INCLUDE_ASM("asm/funcs", func_8001EFA0);
 void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {

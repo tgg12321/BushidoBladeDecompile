@@ -1,4 +1,4 @@
-glabel func_8008B488
+glabel saTan1MainJump
     /* 7BC88 8008B488 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 7BC8C 8008B48C 1800B0AF */  sw         $s0, 0x18($sp)
     /* 7BC90 8008B490 21808000 */  addu       $s0, $a0, $zero
@@ -492,4 +492,4 @@ glabel func_8008B488
     /* 7C318 8008BB18 1000BD27 */  addiu      $sp, $sp, 0x10
     /* 7C31C 8008BB1C 0800E003 */  jr         $ra
     /* 7C320 8008BB20 00000000 */   nop
-endlabel func_8008B488
+endlabel saTan1MainJump

@@ -397,7 +397,8 @@ s32 rng_Next(void) {
 }
 INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action_2);
 /* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action_2  |  189i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", func_800174F4);
+INCLUDE_ASM("asm/funcs", gnd_disp_loop_ctrl);
+/* kengo:MED  |  hi_gnd/gnd_disp_loop_ctrl  |  140i  |  +4 */
 void obj_ClearAll(void) {
     s32 i;
     for (i = 0x16C; i >= 0; i -= 0x34) {

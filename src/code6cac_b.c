@@ -215,7 +215,7 @@ extern void func_8003AA78(void);
 extern s32 func_80036D88(void);
 extern void func_8003AA48(void);
 extern u8 D_800A3906;
-extern void func_800174F4(void);
+extern void gnd_disp_loop_ctrl(void);
 extern void func_8003AAB0(void);
 extern u16 D_80101E9E;
 extern u8 D_8008D538;
@@ -686,7 +686,8 @@ INCLUDE_ASM("asm/funcs", func_80027AD8);
 INCLUDE_ASM("asm/funcs", saTan2KabutoWareMove);
 /* kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i */
 INCLUDE_ASM("asm/funcs", func_8002872C);
-INCLUDE_ASM("asm/funcs", func_800288C8);
+INCLUDE_ASM("asm/funcs", saTan3MainJump);
+/* kengo:HIGH  |  sa_tan3/saTan3MainJump  |  492i  |  +3 near-exact */
 void func_8002906C(void) {
     s16 *ptr = snd_GetSeId();
     while (*(s16 *)ptr != 0) {

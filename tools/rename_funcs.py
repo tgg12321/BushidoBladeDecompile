@@ -203,6 +203,22 @@ RENAMES = {
     "func_80087E3C": "AddTbpOfst",
     "func_8008C1E8": "SetPacketData",
     "func_8002D518": "saTan5TakeAnim2",
+    # Kengo near-miss batch (13 renames, ±5%, 2026-03-30)
+    # HIGH — ≤5 insn diff, unique affinity match
+    "func_800187F4": "single_game_setModeRequest",
+    "func_800288C8": "saTan3MainJump",
+    "func_8001EA84": "cpu_get_move_pattern_table_number",
+    "func_80040594": "AllocRobRmd",
+    "func_8008241C": "saEft00Add",
+    "func_80018300": "cpu_check_run_attack",
+    # MED — 5-19 insn diff, unique affinity match
+    "func_8001CE60": "camera_set_target_zoom",
+    "func_800174F4": "gnd_disp_loop_ctrl",
+    "func_80036140": "special_camera_set_win_cam",
+    "func_8008B488": "saTan1MainJump",
+    "func_800812FC": "tslTm2LoadImage",
+    "func_80082000": "tslTm2LoadImage_2",
+    "func_8001DCB0": "mario_test_Exec",
 }
 
 dry_run = "--apply" not in sys.argv

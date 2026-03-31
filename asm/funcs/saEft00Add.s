@@ -1,4 +1,4 @@
-glabel func_8008241C
+glabel saEft00Add
     /* 72C1C 8008241C D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 72C20 80082420 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 72C24 80082424 21888000 */  addu       $s1, $a0, $zero
@@ -30,7 +30,7 @@ glabel func_8008241C
     /* 72C88 80082488 01000424 */   addiu     $a0, $zero, 0x1
     /* 72C8C 8008248C 0180043C */  lui        $a0, %hi(D_800162EC)
     /* 72C90 80082490 EC628424 */  addiu      $a0, $a0, %lo(D_800162EC)
-    /* 72C94 80082494 0008020C */  jal        func_80082000
+    /* 72C94 80082494 0008020C */  jal        tslTm2LoadImage_2
     /* 72C98 80082498 00000000 */   nop
     /* 72C9C 8008249C 01000424 */  addiu      $a0, $zero, 0x1
   .L800824A0:
@@ -50,7 +50,7 @@ glabel func_8008241C
     /* 72CD0 800824D0 00000000 */   nop
     /* 72CD4 800824D4 0180043C */  lui        $a0, %hi(D_80016304)
     /* 72CD8 800824D8 04638424 */  addiu      $a0, $a0, %lo(D_80016304)
-    /* 72CDC 800824DC 0008020C */  jal        func_80082000
+    /* 72CDC 800824DC 0008020C */  jal        tslTm2LoadImage_2
     /* 72CE0 800824E0 00000000 */   nop
     /* 72CE4 800824E4 09000424 */  addiu      $a0, $zero, 0x9
     /* 72CE8 800824E8 21280000 */  addu       $a1, $zero, $zero
@@ -181,4 +181,4 @@ glabel func_8008241C
     /* 72EC0 800826C0 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 72EC4 800826C4 0800E003 */  jr         $ra
     /* 72EC8 800826C8 00000000 */   nop
-endlabel func_8008241C
+endlabel saEft00Add
