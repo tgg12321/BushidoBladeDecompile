@@ -135,7 +135,7 @@ glabel func_80017A44
     /* 8434 80017C34 4000B08F */  lw         $s0, 0x40($sp)
   .L80017C38:
     /* 8438 80017C38 2000A427 */  addiu      $a0, $sp, 0x20
-    /* 843C 80017C3C F25D000C */  jal        func_800177C8
+    /* 843C 80017C3C F25D000C */  jal        math_Distance3D_16
     /* 8440 80017C40 21280002 */   addu      $a1, $s0, $zero
     /* 8444 80017C44 031A0200 */  sra        $v1, $v0, 8
     /* 8448 80017C48 01016228 */  slti       $v0, $v1, 0x101
@@ -166,7 +166,7 @@ glabel func_80017A44
     /* 849C 80017C9C 0000C586 */  lh         $a1, 0x0($s6)
     /* 84A0 80017CA0 4000A88F */  lw         $t0, 0x40($sp)
     /* 84A4 80017CA4 80290500 */  sll        $a1, $a1, 6
-    /* 84A8 80017CA8 F25D000C */  jal        func_800177C8
+    /* 84A8 80017CA8 F25D000C */  jal        math_Distance3D_16
     /* 84AC 80017CAC 21280501 */   addu      $a1, $t0, $a1
     /* 84B0 80017CB0 21F04000 */  addu       $fp, $v0, $zero
     /* 84B4 80017CB4 2A103402 */  slt        $v0, $s1, $s4
@@ -179,7 +179,7 @@ glabel func_80017A44
     /* 84CC 80017CCC 00000586 */  lh         $a1, 0x0($s0)
     /* 84D0 80017CD0 4000A88F */  lw         $t0, 0x40($sp)
     /* 84D4 80017CD4 80290500 */  sll        $a1, $a1, 6
-    /* 84D8 80017CD8 F25D000C */  jal        func_800177C8
+    /* 84D8 80017CD8 F25D000C */  jal        math_Distance3D_16
     /* 84DC 80017CDC 21280501 */   addu      $a1, $t0, $a1
     /* 84E0 80017CE0 2A10C203 */  slt        $v0, $fp, $v0
     /* 84E4 80017CE4 06004010 */  beqz       $v0, .L80017D00

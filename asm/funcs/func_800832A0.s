@@ -9,11 +9,11 @@ glabel func_800832A0
     /* 73ABC 800832BC 000062AC */  sw         $v0, 0x0($v1)
     /* 73AC0 800832C0 0A80013C */  lui        $at, %hi(D_800A2634)
     /* 73AC4 800832C4 342620AC */  sw         $zero, %lo(D_800A2634)($at)
-    /* 73AC8 800832C8 E70C020C */  jal        func_8008339C
+    /* 73AC8 800832C8 E70C020C */  jal        sys_MemClear
     /* 73ACC 800832CC 08000524 */   addiu     $a1, $zero, 0x8
     /* 73AD0 800832D0 0880053C */  lui        $a1, %hi(D_800832F8)
     /* 73AD4 800832D4 F832A524 */  addiu      $a1, $a1, %lo(D_800832F8)
-    /* 73AD8 800832D8 BC0A020C */  jal        func_80082AF0
+    /* 73AD8 800832D8 BC0A020C */  jal        irq_EnableInterrupts
     /* 73ADC 800832DC 21200000 */   addu      $a0, $zero, $zero
     /* 73AE0 800832E0 0880023C */  lui        $v0, %hi(D_80083370)
     /* 73AE4 800832E4 70334224 */  addiu      $v0, $v0, %lo(D_80083370)

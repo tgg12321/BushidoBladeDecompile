@@ -5,7 +5,7 @@ glabel func_8003C714
     /* 2CF20 8003C720 1800B0AF */   sw        $s0, 0x18($sp)
     /* 2CF24 8003C724 B0DC000C */  jal        func_800372C0
     /* 2CF28 8003C728 21804000 */   addu      $s0, $v0, $zero
-    /* 2CF2C 8003C72C 225A000C */  jal        func_80016888
+    /* 2CF2C 8003C72C 225A000C */  jal        gpu_InitDisplay
     /* 2CF30 8003C730 00000000 */   nop
     /* 2CF34 8003C734 D681010C */  jal        func_80060758
     /* 2CF38 8003C738 00000000 */   nop
@@ -90,14 +90,14 @@ glabel func_8003C714
     /* 2D070 8003C870 1080023C */  lui        $v0, %hi(D_80101ED2)
     /* 2D074 8003C874 D21E4294 */  lhu        $v0, %lo(D_80101ED2)($v0)
     /* 2D078 8003C878 21380000 */  addu       $a3, $zero, $zero
-    /* 2D07C 8003C87C DA59000C */  jal        func_80016768
+    /* 2D07C 8003C87C DA59000C */  jal        disp_SetFramebufferMode
     /* 2D080 8003C880 300002A2 */   sb        $v0, 0x30($s0)
     /* 2D084 8003C884 1F000224 */  addiu      $v0, $zero, 0x1F
     /* 2D088 8003C888 0A80013C */  lui        $at, %hi(D_800A37B8)
     /* 2D08C 8003C88C B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
     /* 2D090 8003C890 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 2D094 8003C894 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
-    /* 2D098 8003C898 345A000C */  jal        func_800168D0
+    /* 2D098 8003C898 345A000C */  jal        gpu_DisableDisplay
     /* 2D09C 8003C89C 00000000 */   nop
     /* 2D0A0 8003C8A0 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* 2D0A4 8003C8A4 1800B08F */  lw         $s0, 0x18($sp)

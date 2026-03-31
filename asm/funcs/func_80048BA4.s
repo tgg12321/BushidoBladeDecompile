@@ -11,7 +11,7 @@ glabel func_80048BA4
     /* 393C8 80048BC8 4C00B3AF */  sw         $s3, 0x4C($sp)
     /* 393CC 80048BCC 4800B2AF */  sw         $s2, 0x48($sp)
     /* 393D0 80048BD0 4400B1AF */  sw         $s1, 0x44($sp)
-    /* 393D4 80048BD4 7B1B010C */  jal        func_80046DEC
+    /* 393D4 80048BD4 7B1B010C */  jal        game_GetPlayerData
     /* 393D8 80048BD8 4000B0AF */   sw        $s0, 0x40($sp)
     /* 393DC 80048BDC 21984000 */  addu       $s3, $v0, $zero
     /* 393E0 80048BE0 D2006012 */  beqz       $s3, .L80048F2C

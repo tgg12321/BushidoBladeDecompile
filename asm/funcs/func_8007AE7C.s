@@ -36,7 +36,7 @@ glabel func_8007AE7C
     /* 6B6F8 8007AEF8 21280000 */  addu       $a1, $zero, $zero
     /* 6B6FC 8007AEFC B9F7010C */  jal        func_8007DEE4
     /* 6B700 8007AF00 80000624 */   addiu     $a2, $zero, 0x80
-    /* 6B704 8007AF04 B00A020C */  jal        func_80082AC0
+    /* 6B704 8007AF04 B00A020C */  jal        irq_DisableInterrupts
     /* 6B708 8007AF08 00000000 */   nop
     /* 6B70C 8007AF0C FF00023C */  lui        $v0, (0xFFFFFF >> 16)
     /* 6B710 8007AF10 0A80043C */  lui        $a0, %hi(D_8009BE6C)

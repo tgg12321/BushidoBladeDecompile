@@ -22,7 +22,7 @@ glabel func_80042478
     /* 32CC4 800424C4 01000424 */  addiu      $a0, $zero, 0x1
     /* 32CC8 800424C8 21282002 */  addu       $a1, $s1, $zero
     /* 32CCC 800424CC 21304002 */  addu       $a2, $s2, $zero
-    /* 32CD0 800424D0 DA59000C */  jal        func_80016768
+    /* 32CD0 800424D0 DA59000C */  jal        disp_SetFramebufferMode
     /* 32CD4 800424D4 21380002 */   addu      $a3, $s0, $zero
     /* 32CD8 800424D8 21202002 */  addu       $a0, $s1, $zero
     /* 32CDC 800424DC 21284002 */  addu       $a1, $s2, $zero

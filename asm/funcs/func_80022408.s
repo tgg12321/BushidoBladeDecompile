@@ -3,7 +3,7 @@ glabel func_80022408
     /* 12C0C 8002240C 1000B0AF */  sw         $s0, 0x10($sp)
     /* 12C10 80022410 21808000 */  addu       $s0, $a0, $zero
     /* 12C14 80022414 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 12C18 80022418 C51B010C */  jal        func_80046F14
+    /* 12C18 80022418 C51B010C */  jal        stage_GetDataPtr
     /* 12C1C 8002241C 1400B1AF */   sw        $s1, 0x14($sp)
     /* 12C20 80022420 FF7F073C */  lui        $a3, (0x7FFFFFFF >> 16)
     /* 12C24 80022424 FFFFE734 */  ori        $a3, $a3, (0x7FFFFFFF & 0xFFFF)

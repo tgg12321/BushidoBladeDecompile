@@ -11,7 +11,7 @@ glabel func_80046AA0
     /* 372C4 80046AC4 00000000 */   nop
     /* 372C8 80046AC8 8727010C */  jal        func_80049E1C
     /* 372CC 80046ACC 00000000 */   nop
-    /* 372D0 80046AD0 451A010C */  jal        func_80046914
+    /* 372D0 80046AD0 451A010C */  jal        snd_StopBgm
     /* 372D4 80046AD4 00000000 */   nop
     /* 372D8 80046AD8 1000BF8F */  lw         $ra, 0x10($sp)
     /* 372DC 80046ADC 1800BD27 */  addiu      $sp, $sp, 0x18

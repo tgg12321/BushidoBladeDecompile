@@ -392,7 +392,7 @@ void func_800421C8(s32 a0) {
 INCLUDE_ASM("asm/funcs", func_800422BC);
 extern s32 func_800486FC(s32);
 extern s32 func_8004881C(s32, s32, s32);
-extern void func_80016768(s32, s32, s32, s32);
+extern void disp_SetFramebufferMode(s32, s32, s32, s32);
 extern void func_8007EFBC(s32, s32, s32);
 void func_80042478(s32 a0) {
     s32 r = (a0 >> 16) & 0xFF;
@@ -403,7 +403,7 @@ void func_80042478(s32 a0) {
         g = b;
         r = b;
     }
-    func_80016768(1, r, g, b);
+    disp_SetFramebufferMode(1, r, g, b);
     func_8007EFBC(r, g, b);
 }
 INCLUDE_ASM("asm/funcs", func_80042504);
@@ -628,12 +628,12 @@ extern void func_80042874(s32 *, s32 *);
 extern void func_8007EB4C(s32 *, s32 *);
 extern void func_8007EC5C(s32 *, s32 *);
 extern void func_8007E4DC(s32 *, s32 *, s32 *);
-extern void func_80046F24(void);
+extern void camera_InitMatrix(void);
 extern s32 func_8003E2C8(void);
 extern s32 func_8003F268(void);
-extern s32 func_80046E7C(void);
+extern s32 game_GetPause(void);
 extern void func_8004A4E0(void);
-extern void func_80046E54(s32);
+extern void game_SetPause(s32);
 void func_80044504(s32 a0) {
     s32 *s0 = &D_80101BD0;
     func_80042874(&D_800A3678, s0);
@@ -645,7 +645,7 @@ void func_80044504(s32 a0) {
     } else {
         *(s32 *)0x1F800014 = 0;
     }
-    func_80046F24();
+    camera_InitMatrix();
     *(s32 *)0x1F80001C = (s32)&D_80095328;
     *(s32 *)0x1F80000C = a0;
     {
@@ -662,7 +662,7 @@ void func_80044504(s32 a0) {
         if (v0 != 0) {
             v0 = 0xBE;
         } else {
-            v0 = func_80046E7C();
+            v0 = game_GetPause();
             if (v0 != 0) {
                 v0 = 0x182;
             } else {
@@ -672,7 +672,7 @@ void func_80044504(s32 a0) {
         *(s32 *)0x1F800018 = v0;
     }
     func_8004A4E0();
-    func_80046E54(1);
+    game_SetPause(1);
     D_800A3820 = (s32)&D_80102C00;
 }
 extern void func_80052C10(void);
@@ -685,7 +685,7 @@ extern s32 D_800A9D04;
 extern s16 D_800A9CFA;
 extern s16 D_800A9CFC;
 extern s16 D_800A9CFE;
-extern s32 func_80046798(void);
+extern s32 stage_GetId(void);
 s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     s32 v0;
     do { } while (0);
@@ -695,7 +695,7 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     D_800A9D00 = (s32)a0;
     D_800A9D04 = a2;
     D_800A9CFA = v0;
-    v0 = func_80046798();
+    v0 = stage_GetId();
     D_800A9CFC = v0;
     switch ((s16)v0) {
     case 7:

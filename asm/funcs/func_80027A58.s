@@ -17,7 +17,7 @@ glabel func_80027A58
     /* 18294 80027A94 0B004010 */  beqz       $v0, .L80027AC4
     /* 18298 80027A98 00000000 */   nop
     /* 1829C 80027A9C 04000486 */  lh         $a0, 0x4($s0)
-    /* 182A0 80027AA0 7B1B010C */  jal        func_80046DEC
+    /* 182A0 80027AA0 7B1B010C */  jal        game_GetPlayerData
     /* 182A4 80027AA4 00000000 */   nop
     /* 182A8 80027AA8 4C00458C */  lw         $a1, 0x4C($v0)
     /* 182AC 80027AAC 21200002 */  addu       $a0, $s0, $zero

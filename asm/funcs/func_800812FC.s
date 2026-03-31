@@ -195,7 +195,7 @@ glabel func_800812FC
   .L800815D4:
     /* 71DD4 800815D4 46004014 */  bnez       $v0, .L800816F0
     /* 71DD8 800815D8 FFFF0224 */   addiu     $v0, $zero, -0x1
-    /* 71DDC 800815DC 050B020C */  jal        func_80082C14
+    /* 71DDC 800815DC 050B020C */  jal        sys_GetVblankCount
     /* 71DE0 800815E0 00000000 */   nop
     /* 71DE4 800815E4 2B004010 */  beqz       $v0, .L80081694
     /* 71DE8 800815E8 00000000 */   nop

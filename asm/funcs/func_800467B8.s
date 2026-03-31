@@ -50,8 +50,8 @@ glabel func_800467B8
     /* 37070 80046870 21282002 */   addu      $a1, $s1, $zero
     /* 37074 80046874 7C0193A7 */  sh         $s3, %gp_rel(D_800A3248)($gp)
   .L80046878:
-    /* 37078 80046878 0480053C */  lui        $a1, %hi(func_800468DC)
-    /* 3707C 8004687C DC68A524 */  addiu      $a1, $a1, %lo(func_800468DC)
+    /* 37078 80046878 0480053C */  lui        $a1, %hi(snd_BgmCallback)
+    /* 3707C 8004687C DC68A524 */  addiu      $a1, $a1, %lo(snd_BgmCallback)
     /* 37080 80046880 A515010C */  jal        func_80045694
     /* 37084 80046884 21208002 */   addu      $a0, $s4, $zero
     /* 37088 80046888 21104002 */  addu       $v0, $s2, $zero

@@ -12,7 +12,7 @@ glabel func_8001DB58
     /* E37C 8001DB7C E3760008 */  j          .L8001DB8C
     /* E380 8001DB80 01000224 */   addiu     $v0, $zero, 0x1
   .L8001DB84:
-    /* E384 8001DB84 F559000C */  jal        func_800167D4
+    /* E384 8001DB84 F559000C */  jal        file_GetFlag2
     /* E388 8001DB88 00000000 */   nop
   .L8001DB8C:
     /* E38C 8001DB8C 1000BF8F */  lw         $ra, 0x10($sp)

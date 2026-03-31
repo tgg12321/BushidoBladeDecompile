@@ -6,7 +6,7 @@ glabel func_80021D10
     /* 12520 80021D20 2188A000 */  addu       $s1, $a1, $zero
     /* 12524 80021D24 1000B0AF */  sw         $s0, 0x10($sp)
     /* 12528 80021D28 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* 1252C 80021D2C C51B010C */  jal        func_80046F14
+    /* 1252C 80021D2C C51B010C */  jal        stage_GetDataPtr
     /* 12530 80021D30 2180C000 */   addu      $s0, $a2, $zero
     /* 12534 80021D34 0A80033C */  lui        $v1, %hi(D_800A36A4)
     /* 12538 80021D38 A4366384 */  lh         $v1, %lo(D_800A36A4)($v1)

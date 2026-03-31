@@ -314,7 +314,7 @@ glabel func_8004A940
     /* 3B60C 8004AE0C 0C00448E */  lw         $a0, 0xC($s2)
     /* 3B610 8004AE10 28002526 */  addiu      $a1, $s1, 0x28
     /* 3B614 8004AE14 5800468E */  lw         $a2, 0x58($s2)
-    /* 3B618 8004AE18 031C010C */  jal        func_8004700C
+    /* 3B618 8004AE18 031C010C */  jal        camera_Transform
     /* 3B61C 8004AE1C 18008424 */   addiu     $a0, $a0, 0x18
     /* 3B620 8004AE20 0A80023C */  lui        $v0, %hi(D_800A3708)
     /* 3B624 8004AE24 0837428C */  lw         $v0, %lo(D_800A3708)($v0)

@@ -12,9 +12,9 @@ glabel func_80017200
     /* 7A28 80017228 00FF8434 */   ori       $a0, $a0, (0x801FFF00 & 0xFFFF)
     /* 7A2C 8001722C 5AE2010C */  jal        func_80078968
     /* 7A30 80017230 02000424 */   addiu     $a0, $zero, 0x2
-    /* 7A34 80017234 865A000C */  jal        func_80016A18
+    /* 7A34 80017234 865A000C */  jal        sys_Init
     /* 7A38 80017238 00000000 */   nop
-    /* 7A3C 8001723C 5E5B000C */  jal        func_80016D78
+    /* 7A3C 8001723C 5E5B000C */  jal        sys_GameInit
     /* 7A40 80017240 00000000 */   nop
     /* 7A44 80017244 A8EC010C */  jal        func_8007B2A0
     /* 7A48 80017248 01000424 */   addiu     $a0, $zero, 0x1

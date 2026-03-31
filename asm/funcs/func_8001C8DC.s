@@ -140,7 +140,7 @@ glabel func_8001C8DC
     /* D2DC 8001CADC 01001024 */   addiu     $s0, $zero, 0x1
     /* D2E0 8001CAE0 0A80013C */  lui        $at, %hi(D_800A390D)
     /* D2E4 8001CAE4 0D3930A0 */  sb         $s0, %lo(D_800A390D)($at)
-    /* D2E8 8001CAE8 1A5A000C */  jal        func_80016868
+    /* D2E8 8001CAE8 1A5A000C */  jal        gpu_EnableDisplay
     /* D2EC 8001CAEC 00000000 */   nop
     /* D2F0 8001CAF0 01000424 */  addiu      $a0, $zero, 0x1
     /* D2F4 8001CAF4 0A80053C */  lui        $a1, %hi(D_800A38DE)

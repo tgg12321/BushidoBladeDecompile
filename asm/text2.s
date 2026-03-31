@@ -817,7 +817,7 @@ glabel func_8007BC08
     /* 6C53C 8007BD3C 73004310 */  beq        $v0, $v1, .L8007BF0C
     /* 6C540 8007BD40 00000000 */   nop
   .L8007BD44:
-    /* 6C544 8007BD44 A20D020C */  jal        func_80083688
+    /* 6C544 8007BD44 A20D020C */  jal        sys_GetVideoMode
     /* 6C548 8007BD48 00000000 */   nop
     /* 6C54C 8007BD4C 08000486 */  lh         $a0, 0x8($s0)
     /* 6C550 8007BD50 120002A2 */  sb         $v0, 0x12($s0)
@@ -985,7 +985,7 @@ glabel func_8007BC08
     /* 6C78C 8007BF8C 3A004310 */  beq        $v0, $v1, .L8007C078
     /* 6C790 8007BF90 00000000 */   nop
   .L8007BF94:
-    /* 6C794 8007BF94 A20D020C */  jal        func_80083688
+    /* 6C794 8007BF94 A20D020C */  jal        sys_GetVideoMode
     /* 6C798 8007BF98 00000000 */   nop
     /* 6C79C 8007BF9C 120002A2 */  sb         $v0, 0x12($s0)
     /* 6C7A0 8007BFA0 FF004230 */  andi       $v0, $v0, 0xFF
@@ -2601,7 +2601,7 @@ glabel func_8007D3F8
   .L8007D540:
     /* 6DD40 8007D540 0880053C */  lui        $a1, %hi(func_8007D6D8)
     /* 6DD44 8007D544 D8D6A524 */  addiu      $a1, $a1, %lo(func_8007D6D8)
-    /* 6DD48 8007D548 C80A020C */  jal        func_80082B20
+    /* 6DD48 8007D548 C80A020C */  jal        irq_AcknowledgeVblank
     /* 6DD4C 8007D54C 02000424 */   addiu     $a0, $zero, 0x2
     /* 6DD50 8007D550 2B002012 */  beqz       $s1, .L8007D600
     /* 6DD54 8007D554 21300000 */   addu      $a2, $zero, $zero
@@ -2756,7 +2756,7 @@ glabel func_8007D6D8
     /* 6DF78 8007D778 00000000 */  nop
     /* 6DF7C 8007D77C 03004014 */  bnez       $v0, .L8007D78C
     /* 6DF80 8007D780 02000424 */   addiu     $a0, $zero, 0x2
-    /* 6DF84 8007D784 C80A020C */  jal        func_80082B20
+    /* 6DF84 8007D784 C80A020C */  jal        irq_AcknowledgeVblank
     /* 6DF88 8007D788 21280000 */   addu      $a1, $zero, $zero
   .L8007D78C:
     /* 6DF8C 8007D78C 0A80043C */  lui        $a0, %hi(D_8009BF48)
@@ -5715,9 +5715,9 @@ glabel func_8007FF7C
     /* 707BC 8007FFBC 00000000 */   nop
     /* 707C0 8007FFC0 0880043C */  lui        $a0, %hi(D_80080064)
     /* 707C4 8007FFC4 64008424 */  addiu      $a0, $a0, %lo(D_80080064)
-    /* 707C8 8007FFC8 270A020C */  jal        func_8008289C
+    /* 707C8 8007FFC8 270A020C */  jal        sys_SetVsyncMode
     /* 707CC 8007FFCC 00000000 */   nop
-    /* 707D0 8007FFD0 2D0A020C */  jal        func_800828B4
+    /* 707D0 8007FFD0 2D0A020C */  jal        sys_SetTimer
     /* 707D4 8007FFD4 21200000 */   addu      $a0, $zero, $zero
     /* 707D8 8007FFD8 00000208 */  j          .L80080000
     /* 707DC 8007FFDC 01000224 */   addiu     $v0, $zero, 0x1

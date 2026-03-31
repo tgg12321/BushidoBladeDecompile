@@ -3,7 +3,7 @@ glabel func_80035FA8
     /* 267AC 80035FAC 1000BFAF */  sw         $ra, 0x10($sp)
     /* 267B0 80035FB0 21200000 */  addu       $a0, $zero, $zero
     /* 267B4 80035FB4 21280000 */  addu       $a1, $zero, $zero
-    /* 267B8 80035FB8 D40E020C */  jal        func_80083B50
+    /* 267B8 80035FB8 D40E020C */  jal        spu_SetVolume
     /* 267BC 80035FBC 01000624 */   addiu     $a2, $zero, 0x1
     /* 267C0 80035FC0 21200000 */  addu       $a0, $zero, $zero
     /* 267C4 80035FC4 7F000524 */  addiu      $a1, $zero, 0x7F

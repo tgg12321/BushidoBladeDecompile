@@ -26,7 +26,7 @@ glabel func_8003C9A4
     /* 2D204 8003CA04 1A6622A4 */  sh         $v0, %lo(D_800F661A)($at)
     /* 2D208 8003CA08 FD1A010C */  jal        func_80046BF4
     /* 2D20C 8003CA0C 10270624 */   addiu     $a2, $zero, 0x2710
-    /* 2D210 8003CA10 6A1B010C */  jal        func_80046DA8
+    /* 2D210 8003CA10 6A1B010C */  jal        game_StageInit
     /* 2D214 8003CA14 01000424 */   addiu     $a0, $zero, 0x1
     /* 2D218 8003CA18 0A80023C */  lui        $v0, %hi(D_800A3929)
     /* 2D21C 8003CA1C 29394290 */  lbu        $v0, %lo(D_800A3929)($v0)
@@ -154,7 +154,7 @@ glabel func_8003C9A4
     /* 2D3E0 8003CBE0 05000224 */  addiu      $v0, $zero, 0x5
     /* 2D3E4 8003CBE4 0B006214 */  bne        $v1, $v0, .L8003CC14
     /* 2D3E8 8003CBE8 01000224 */   addiu     $v0, $zero, 0x1
-    /* 2D3EC 8003CBEC 1A5A000C */  jal        func_80016868
+    /* 2D3EC 8003CBEC 1A5A000C */  jal        gpu_EnableDisplay
     /* 2D3F0 8003CBF0 00000000 */   nop
     /* 2D3F4 8003CBF4 3783000C */  jal        func_80020CDC
     /* 2D3F8 8003CBF8 00000000 */   nop

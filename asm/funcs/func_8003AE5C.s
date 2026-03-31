@@ -52,7 +52,7 @@ glabel func_8003AE5C
     /* 2B700 8003AF00 0A80013C */  lui        $at, %hi(D_800A37A8)
     /* 2B704 8003AF04 21082300 */  addu       $at, $at, $v1
     /* 2B708 8003AF08 A83722A0 */  sb         $v0, %lo(D_800A37A8)($at)
-    /* 2B70C 8003AF0C 1A5A000C */  jal        func_80016868
+    /* 2B70C 8003AF0C 1A5A000C */  jal        gpu_EnableDisplay
     /* 2B710 8003AF10 00000000 */   nop
     /* 2B714 8003AF14 4E83000C */  jal        func_80020D38
     /* 2B718 8003AF18 00000000 */   nop

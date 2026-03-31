@@ -2037,7 +2037,7 @@ glabel func_80023F08
     /* 164AC 80025CAC 9C00A627 */  addiu      $a2, $sp, 0x9C
     /* 164B0 80025CB0 6204010C */  jal        func_80041188
     /* 164B4 80025CB4 1000A2AF */   sw        $v0, 0x10($sp)
-    /* 164B8 80025CB8 CA5F000C */  jal        func_80017F28
+    /* 164B8 80025CB8 CA5F000C */  jal        scratchpad_Save
     /* 164BC 80025CBC 00000000 */   nop
     /* 164C0 80025CC0 21206002 */  addu       $a0, $s3, $zero
     /* 164C4 80025CC4 01000524 */  addiu      $a1, $zero, 0x1
@@ -2047,7 +2047,7 @@ glabel func_80023F08
     /* 164D4 80025CD4 C8012726 */  addiu      $a3, $s1, 0x1C8
     /* 164D8 80025CD8 5203010C */  jal        func_80040D48
     /* 164DC 80025CDC 1400A2AF */   sw        $v0, 0x14($sp)
-    /* 164E0 80025CE0 D75F000C */  jal        func_80017F5C
+    /* 164E0 80025CE0 D75F000C */  jal        scratchpad_Restore
     /* 164E4 80025CE4 00000000 */   nop
     /* 164E8 80025CE8 86002386 */  lh         $v1, 0x86($s1)
     /* 164EC 80025CEC 8E002286 */  lh         $v0, 0x8E($s1)
@@ -2915,7 +2915,7 @@ glabel func_80023F08
     /* 17164 80026964 37006214 */  bne        $v1, $v0, .L80026A44
     /* 17168 80026968 00000000 */   nop
   .L8002696C:
-    /* 1716C 8002696C 7B1B010C */  jal        func_80046DEC
+    /* 1716C 8002696C 7B1B010C */  jal        game_GetPlayerData
     /* 17170 80026970 21206002 */   addu      $a0, $s3, $zero
     /* 17174 80026974 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* 17178 80026978 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)

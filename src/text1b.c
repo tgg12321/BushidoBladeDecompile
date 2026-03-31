@@ -651,9 +651,9 @@ __asm__(
     ".set at\n"
 );
 extern s16 D_800F6652;
-s32 func_800167AC(void);
+s32 file_GetFlag0(void);
 s16 func_800486FC(void) {
-    if (func_800167AC()) {
+    if (file_GetFlag0()) {
         D_800F6652 = 1;
     } else {
         D_800F6652 = 0;
@@ -964,7 +964,7 @@ __asm__(
     "    j  .L80048B78\n"
     "    addu  $v0,$zero,$zero\n"
     ".L80048B14:\n"
-    "    jal  func_800467B8\n"
+    "    jal  snd_LoadBgm\n"
     "    nop\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $t0,$zero,9\n"
@@ -987,7 +987,7 @@ __asm__(
     "    slti  $v0,$a0,17\n"
     "    bnez  $v0,.L80048B44\n"
     "    addiu  $v1,$v1,104\n"
-    "    jal  func_800468B0\n"
+    "    jal  snd_PlayBgm\n"
     "    addiu  $a0,$a2,1768\n"
     "    addiu  $v0,$zero,1\n"
     ".L80048B78:\n"
@@ -1023,7 +1023,7 @@ __asm__(
     "    sw  $s3,76($sp)\n"
     "    sw  $s2,72($sp)\n"
     "    sw  $s1,68($sp)\n"
-    "    jal  func_80046DEC\n"
+    "    jal  game_GetPlayerData\n"
     "    sw  $s0,64($sp)\n"
     "    addu  $s3,$v0,$zero\n"
     "    beqz  $s3,.L80048F2C\n"
@@ -3485,7 +3485,7 @@ __asm__(
     "    lw  $a0,12($s2)\n"
     "    addiu  $a1,$s1,40\n"
     "    lw  $a2,88($s2)\n"
-    "    jal  func_8004700C\n"
+    "    jal  camera_Transform\n"
     "    addiu  $a0,$a0,24\n"
     "    lui  $v0,%hi(D_800A3708)\n"
     "    lw  $v0,%lo(D_800A3708)($v0)\n"
@@ -14340,14 +14340,14 @@ __asm__(
     "    addu  $a0,$s0,$zero\n"
     "    bgez  $v0,.L8005469C\n"
     "    nop\n"
-    "    jal  func_80046914\n"
+    "    jal  snd_StopBgm\n"
     "    nop\n"
     "    lui  $a0,%hi(D_80015840)\n"
     "    addiu  $a0,$a0,%lo(D_80015840)\n"
     "    jal  func_80079208\n"
     "    nop\n"
     ".L8005469C:\n"
-    "    jal  func_800469C4\n"
+    "    jal  snd_LoadSelection\n"
     "    addu  $a0,$s0,$zero\n"
     "    lui  $at,%hi(D_800EFB14)\n"
     "    sw  $v0,%lo(D_800EFB14)($at)\n"
@@ -14366,9 +14366,9 @@ __asm__(
     "    addu  $v0,$v0,$v1\n"
     "    lhu  $v0,0($v0)\n"
     "    sh  $zero,0($s1)\n"
-    "    jal  func_80046F14\n"
+    "    jal  stage_GetDataPtr\n"
     "    sh  $v0,2($s1)\n"
-    "    jal  func_80046798\n"
+    "    jal  stage_GetId\n"
     "    addu  $s0,$v0,$zero\n"
     "    sll  $v1,$v0,1\n"
     "    addu  $v1,$v1,$v0\n"
@@ -14432,7 +14432,7 @@ __asm__(
     "    addu  $a0,$zero,$zero\n"
     "    jal  func_8003F218\n"
     "    sh  $s3,8($s1)\n"
-    "    jal  func_800166C4\n"
+    "    jal  disp_CalcFov\n"
     "    addiu  $a0,$zero,45\n"
     "    jal  func_8007EFFC\n"
     "    addu  $a0,$v0,$zero\n"
@@ -14447,13 +14447,13 @@ __asm__(
     "    j  .L80054828\n"
     "    addu  $a1,$s2,$s4\n"
     ".L80054814:\n"
-    "    jal  func_80016868\n"
+    "    jal  gpu_EnableDisplay\n"
     "    nop\n"
     "    addu  $a0,$s0,$zero\n"
     "    lui  $a1,%hi(D_800A3770)\n"
     "    addiu  $a1,$a1,%lo(D_800A3770)\n"
     ".L80054828:\n"
-    "    jal  func_80046EDC\n"
+    "    jal  game_StageCleanup\n"
     "    nop\n"
     ".L80054830:\n"
     "    lw  $v0,4($s1)\n"
@@ -14490,11 +14490,11 @@ void func_80054884(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a
 }
 void func_8007B33C(s32);
 void func_8004659C(s32);
-void func_80046A60(void);
+void snd_StopSelection(void);
 void func_800548DC(void) {
     func_8007B33C(0);
     func_8004659C(-1);
-    func_80046A60();
+    snd_StopSelection();
 }
 __asm__(
     ".set\tnoat\n"
@@ -14745,7 +14745,7 @@ __asm__(
     "    sh  $v1,40($s3)\n"
     "    jal  func_8004211C\n"
     "    nop\n"
-    "    jal  func_80047210\n"
+    "    jal  camera_InitBoneData\n"
     "    nop\n"
     "    jal  func_8003F274\n"
     "    nop\n"
@@ -14899,7 +14899,7 @@ __asm__(
     "    slti  $v0,$s1,2\n"
     "    bnez  $v0,.L80054CE0\n"
     "    addiu  $s4,$s4,4\n"
-    "    jal  func_80046EA0\n"
+    "    jal  game_InitStageSound\n"
     "    addiu  $a0,$zero,10000\n"
     "    lhu  $v0,0($s3)\n"
     "    lh  $v1,2($s3)\n"
@@ -15320,7 +15320,7 @@ __asm__(
     "    nop\n"
     "    sb  $v0,1014($s0)\n"
     ".L80055530:\n"
-    "    jal  func_800167BC\n"
+    "    jal  file_GetFlag1\n"
     "    nop\n"
     "    beqz  $v0,.L80055574\n"
     "    addiu  $v0,$zero,3\n"
@@ -16336,7 +16336,7 @@ __asm__(
     "    nop\n"
     "    beqz  $v0,.L80056454\n"
     "    addiu  $v0,$zero,-1\n"
-    "    jal  func_800167BC\n"
+    "    jal  file_GetFlag1\n"
     "    nop\n"
     "    beqz  $v0,.L80056388\n"
     "    addiu  $v0,$zero,3\n"
@@ -18910,7 +18910,7 @@ __asm__(
     "    beqz  $v0,.L80058760\n"
     "    nop\n"
     ".L8005873C:\n"
-    "    jal  func_800167BC\n"
+    "    jal  file_GetFlag1\n"
     "    nop\n"
     "    beqz  $v0,.L80058764\n"
     "    addiu  $v0,$zero,3\n"
@@ -19401,7 +19401,7 @@ __asm__(
     "    andi  $v0,$v0,35840\n"
     "    bnez  $v0,.L800590D0\n"
     "    nop\n"
-    "    jal  func_800167BC\n"
+    "    jal  file_GetFlag1\n"
     "    nop\n"
     "    bnez  $v0,.L80058E64\n"
     "    addiu  $v0,$zero,3\n"
@@ -22055,7 +22055,7 @@ __asm__(
     "    slti  $v0,$a1,16\n"
     "    bnez  $v0,.L8005B458\n"
     "    addiu  $v1,$v1,4\n"
-    "    jal  func_80083A18\n"
+    "    jal  sys_Shutdown\n"
     "    nop\n"
     "    jal  func_800858D0\n"
     "    addu  $a0,$zero,$zero\n"
@@ -22103,8 +22103,8 @@ void func_800858D0(s32);
 void func_80085F98(void);
 void func_80085EE4(s32);
 void func_80085E4C(s32, s32);
-void func_80083954(void);
-void func_80083B30(void);
+void irq_ProcessPending(void);
+void spu_Reset(void);
 extern s32 D_800EFB38[];
 extern s32 D_800EFC38[];
 extern s32 D_800A3408;
@@ -22116,8 +22116,8 @@ void func_8005B50C(void) {
     func_80085F98();
     func_80085EE4(0);
     func_80085E4C(0, 0);
-    func_80083954();
-    func_80083B30();
+    irq_ProcessPending();
+    spu_Reset();
     i = 0;
     a0 = D_800EFB38;
     v1 = D_800EFC38;
@@ -37249,7 +37249,7 @@ __asm__(
     "    addiu  $s0,$s0,88\n"
     "    sw  $ra,32($sp)\n"
     "    .word 0xAF900434\n"
-    "    jal  func_80046AA0\n"
+    "    jal  snd_StopAll\n"
     "    addu  $s1,$a1,$zero\n"
     "    .word 0x8F850434\n"
     "    jal  func_8006E950\n"
@@ -43169,7 +43169,7 @@ __asm__(
     "    addiu  $a0,$zero,1\n"
     "    addu  $a1,$zero,$zero\n"
     "    addu  $a2,$zero,$zero\n"
-    "    jal  func_80016768\n"
+    "    jal  disp_SetFramebufferMode\n"
     "    addu  $a3,$zero,$zero\n"
     "    jal  func_8007B2A0\n"
     "    addiu  $a0,$zero,1\n"
@@ -43300,7 +43300,7 @@ __asm__(
     "    .word 0xAF9004DC\n"
     "    andi  $v0,$v0,15\n"
     "    .word 0xAF8204F0\n"
-    "    jal  func_80046AA0\n"
+    "    jal  snd_StopAll\n"
     "    nop\n"
     "    .word 0x8F8304F0\n"
     "    nop\n"
@@ -52978,7 +52978,7 @@ __asm__(
     "    jal  func_8007B844\n"
     "    sh  $zero,18($sp)\n"
     "    .word 0xAF90050C\n"
-    "    jal  func_80046AA0\n"
+    "    jal  snd_StopAll\n"
     "    nop\n"
     "    addiu  $a0,$zero,6\n"
     "    jal  func_8006E950\n"
@@ -53484,10 +53484,10 @@ __asm__(
 extern s32 D_800A35E4;
 void func_80068F70(s32, s32 *);
 extern s32 D_8009BD24;
-s32 func_80016768(s32, s32, s32, s32);
+s32 disp_SetFramebufferMode(s32, s32, s32, s32);
 s32 func_80077820(s32 a0) {
     func_80068F70(a0, (s32 *)&D_8009BD24);
-    func_80016768(1, 0, 0, 0);
+    disp_SetFramebufferMode(1, 0, 0, 0);
     D_800A35E4 = 0;
     return 1;
 }
@@ -53603,7 +53603,7 @@ extern u8 D_8009BD24[];
 void func_8006E534(s32, s32, u8*, s32);
 s32 func_80077984(s32 a0) {
     func_8006E534(a0, D_800A35E0, D_8009BD24, D_800A35E8);
-    func_80016768(1, 0, 0, 0);
+    disp_SetFramebufferMode(1, 0, 0, 0);
     return 1;
 }
 s32 func_8006EACC(void);
@@ -53622,11 +53622,11 @@ void func_80077A04(s32 a0, s32 a1) {
     func_8006D74C(a0, a1);
 }
 extern s32 D_800A35E4;
-void func_80016768(s32, s32, s32, s32);
+void disp_SetFramebufferMode(s32, s32, s32, s32);
 s32 func_8006D7FC(void);
 void func_80077A28(void) {
     D_800A35E4 = 0;
-    func_80016768(1, 0, 0, 0);
+    disp_SetFramebufferMode(1, 0, 0, 0);
     func_8006D7FC();
 }
 void func_8006E068(void);
@@ -53636,10 +53636,10 @@ void func_80077A60(void) {
 extern s32 D_800A35E8;
 extern s32 D_8009BD24;
 void func_800770B8(s32, s32 *, s32);
-s32 func_80016768(s32, s32, s32, s32);
+s32 disp_SetFramebufferMode(s32, s32, s32, s32);
 s32 func_80077A80(s32 a0) {
     func_800770B8(a0, (s32 *)&D_8009BD24, D_800A35E8);
-    func_80016768(1, 0, 0, 0);
+    disp_SetFramebufferMode(1, 0, 0, 0);
     return 1;
 }
 
@@ -54600,7 +54600,7 @@ __asm__(
     "    .word 0xAF800238\n"
     "    .word 0xAF80053C\n"
     "    .word 0xAF800548\n"
-    "    jal  func_80016768\n"
+    "    jal  disp_SetFramebufferMode\n"
     "    addu  $a3,$zero,$zero\n"
     "    addiu  $v0,$zero,1\n"
     "    lw  $ra,24($sp)\n"

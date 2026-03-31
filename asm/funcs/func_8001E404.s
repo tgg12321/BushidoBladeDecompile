@@ -72,7 +72,7 @@ glabel func_8001E404
     /* ED00 8001E500 2D000424 */   addiu     $a0, $zero, 0x2D
     /* ED04 8001E504 50000424 */  addiu      $a0, $zero, 0x50
   .L8001E508:
-    /* ED08 8001E508 B159000C */  jal        func_800166C4
+    /* ED08 8001E508 B159000C */  jal        disp_CalcFov
     /* ED0C 8001E50C 00000000 */   nop
     /* ED10 8001E510 FFFB010C */  jal        func_8007EFFC
     /* ED14 8001E514 21204000 */   addu      $a0, $v0, $zero

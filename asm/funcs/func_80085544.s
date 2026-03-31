@@ -2,7 +2,7 @@ glabel func_80085544
     /* 75D44 80085544 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 75D48 80085548 1000B0AF */  sw         $s0, 0x10($sp)
     /* 75D4C 8008554C 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 75D50 80085550 A20D020C */  jal        func_80083688
+    /* 75D50 80085550 A20D020C */  jal        sys_GetVideoMode
     /* 75D54 80085554 21808000 */   addu      $s0, $a0, $zero
     /* 75D58 80085558 21204000 */  addu       $a0, $v0, $zero
     /* 75D5C 8008555C 00100232 */  andi       $v0, $s0, 0x1000

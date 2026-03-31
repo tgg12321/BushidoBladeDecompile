@@ -27,7 +27,7 @@ glabel func_8006E534
     /* 5ED98 8006E598 DC0490AF */  sw         $s0, %gp_rel(D_800A35A8)($gp)
     /* 5ED9C 8006E59C 0F004230 */  andi       $v0, $v0, 0xF
     /* 5EDA0 8006E5A0 F00482AF */  sw         $v0, %gp_rel(D_800A35BC)($gp)
-    /* 5EDA4 8006E5A4 A81A010C */  jal        func_80046AA0
+    /* 5EDA4 8006E5A4 A81A010C */  jal        snd_StopAll
     /* 5EDA8 8006E5A8 00000000 */   nop
     /* 5EDAC 8006E5AC F004838F */  lw         $v1, %gp_rel(D_800A35BC)($gp)
     /* 5EDB0 8006E5B0 00000000 */  nop

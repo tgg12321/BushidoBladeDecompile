@@ -75,7 +75,7 @@ glabel func_800342A0
     /* 24BBC 800343BC 02006228 */  slti       $v0, $v1, 0x2
     /* 24BC0 800343C0 E9FF4014 */  bnez       $v0, .L80034368
     /* 24BC4 800343C4 00000000 */   nop
-    /* 24BC8 800343C8 225A000C */  jal        func_80016888
+    /* 24BC8 800343C8 225A000C */  jal        gpu_InitDisplay
     /* 24BCC 800343CC 00000000 */   nop
     /* 24BD0 800343D0 B0DC000C */  jal        func_800372C0
     /* 24BD4 800343D4 00000000 */   nop

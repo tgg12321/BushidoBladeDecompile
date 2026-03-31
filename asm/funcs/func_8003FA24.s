@@ -99,7 +99,7 @@ glabel func_8003FA24
     /* 30390 8003FB90 02001026 */   addiu     $s0, $s0, 0x2
   .L8003FB94:
     /* 30394 8003FB94 1000A487 */  lh         $a0, 0x10($sp)
-    /* 30398 8003FB98 CE5D000C */  jal        func_80017738
+    /* 30398 8003FB98 CE5D000C */  jal        obj_CalcOffset
     /* 3039C 8003FB9C 2000B1AF */   sw        $s1, 0x20($sp)
     /* 303A0 8003FBA0 21882202 */  addu       $s1, $s1, $v0
     /* 303A4 8003FBA4 03002232 */  andi       $v0, $s1, 0x3

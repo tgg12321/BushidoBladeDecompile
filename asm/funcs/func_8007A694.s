@@ -10,7 +10,7 @@ glabel func_8007A694
     /* 6AEB4 8007A6B4 21A0C000 */  addu       $s4, $a2, $zero
     /* 6AEB8 8007A6B8 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6AEBC 8007A6BC 2400BFAF */  sw         $ra, 0x24($sp)
-    /* 6AEC0 8007A6C0 A20D020C */  jal        func_80083688
+    /* 6AEC0 8007A6C0 A20D020C */  jal        sys_GetVideoMode
     /* 6AEC4 8007A6C4 2180E000 */   addu      $s0, $a3, $zero
     /* 6AEC8 8007A6C8 01000324 */  addiu      $v1, $zero, 0x1
     /* 6AECC 8007A6CC 000033A6 */  sh         $s3, 0x0($s1)

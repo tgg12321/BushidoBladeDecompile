@@ -242,7 +242,7 @@ glabel func_8005490C
     /* 454A4 80054CA4 280063A6 */   sh        $v1, 0x28($s3)
     /* 454A8 80054CA8 4708010C */  jal        func_8004211C
     /* 454AC 80054CAC 00000000 */   nop
-    /* 454B0 80054CB0 841C010C */  jal        func_80047210
+    /* 454B0 80054CB0 841C010C */  jal        camera_InitBoneData
     /* 454B4 80054CB4 00000000 */   nop
     /* 454B8 80054CB8 9DFC000C */  jal        func_8003F274
     /* 454BC 80054CBC 00000000 */   nop
@@ -396,7 +396,7 @@ glabel func_8005490C
     /* 456F8 80054EF8 0200222A */  slti       $v0, $s1, 0x2
     /* 456FC 80054EFC 78FF4014 */  bnez       $v0, .L80054CE0
     /* 45700 80054F00 04009426 */   addiu     $s4, $s4, 0x4
-    /* 45704 80054F04 A81B010C */  jal        func_80046EA0
+    /* 45704 80054F04 A81B010C */  jal        game_InitStageSound
     /* 45708 80054F08 10270424 */   addiu     $a0, $zero, 0x2710
     /* 4570C 80054F0C 00006296 */  lhu        $v0, 0x0($s3)
     /* 45710 80054F10 02006386 */  lh         $v1, 0x2($s3)

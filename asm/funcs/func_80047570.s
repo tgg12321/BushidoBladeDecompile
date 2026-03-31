@@ -3,7 +3,7 @@ glabel func_80047570
     /* 37D74 80047574 0F80043C */  lui        $a0, %hi(D_800EEDF0)
     /* 37D78 80047578 F0ED8424 */  addiu      $a0, $a0, %lo(D_800EEDF0)
     /* 37D7C 8004757C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 37D80 80047580 B01C010C */  jal        func_800472C0
+    /* 37D80 80047580 B01C010C */  jal        camera_InitRotation
     /* 37D84 80047584 00000000 */   nop
     /* 37D88 80047588 04000224 */  addiu      $v0, $zero, 0x4
     /* 37D8C 8004758C 0F80013C */  lui        $at, %hi(D_800EEDF8)

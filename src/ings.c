@@ -7,7 +7,7 @@ extern void func_8007AE7C(s32);
 extern void func_8007B2A0(s32);
 extern void func_8007B4D0(void *, s32, s32, s32);
 extern void func_8007B33C(s32);
-extern void func_80046AE8(void);
+extern void snd_PlaySystemSe(void);
 
 /* Externs for globals */
 extern u8 D_80106A73;
@@ -30,7 +30,7 @@ extern void func_800164F8(void);
 extern s16 D_800973FC[];
 extern s32 func_80083698(s32, s32, s32);
 extern s32 func_800836C8(s32, s32, s32);
-extern s32 func_8008387C(s32, u8 *, s32);
+extern s32 bios_FileRead(s32, u8 *, s32);
 extern void func_80078A18(s32);
 extern void func_800836B8(s32);
 
@@ -130,7 +130,7 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-s32 func_80016514(s32 a0, u8 *dest) {
+s32 file_LoadAll(s32 a0, u8 *dest) {
     s32 fd;
     s32 total;
     s32 remaining;
@@ -149,7 +149,7 @@ s32 func_80016514(s32 a0, u8 *dest) {
             if (remaining < 0x4001) {
                 chunk = remaining;
             }
-            if (func_8008387C(fd, dest, chunk) != chunk) {
+            if (bios_FileRead(fd, dest, chunk) != chunk) {
                 func_80078A18(fd);
                 return -1;
             }
@@ -160,7 +160,7 @@ s32 func_80016514(s32 a0, u8 *dest) {
     func_800836B8(fd);
     return total;
 }
-s32 func_800165F8(s32 a0, u8 *dest, s32 sector, s32 count) {
+s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
     s32 fd;
     s32 _pad[2];
     s32 i;
@@ -173,7 +173,7 @@ s32 func_800165F8(s32 a0, u8 *dest, s32 sector, s32 count) {
     i = 0;
     if (count > 0) {
         do {
-            if (func_8008387C(fd, dest, 0x800) != 0x800) {
+            if (bios_FileRead(fd, dest, 0x800) != 0x800) {
                 func_80078A18(fd);
                 return -1;
             }
@@ -184,14 +184,14 @@ s32 func_800165F8(s32 a0, u8 *dest, s32 sector, s32 count) {
     func_800836B8(fd);
     return count << 11;
 }
-s32 func_800166C4(s32 a0) {
+s32 disp_CalcFov(s32 a0) {
     s32 tmp = (a0 << 12) / 360;
     s32 v1 = tmp / 2;
     s16 cos_val = D_800973FC[(v1 + 0x400) & 0xFFF];
     s16 sin_val = D_800973FC[v1 & 0xFFF];
     return (cos_val * 320) / sin_val;
 }
-void func_80016768(s32 a0, s32 a1, s32 a2, s32 a3) {
+void disp_SetFramebufferMode(s32 a0, s32 a1, s32 a2, s32 a3) {
     s32 i;
     u8 *ptr;
     s32 offset;
@@ -212,40 +212,40 @@ void func_80016768(s32 a0, s32 a1, s32 a2, s32 a3) {
 
 /* --- Decompiled functions --- */
 
-u32 func_800167AC(void) {
+u32 file_GetFlag0(void) {
     return D_80106A73 & 1;
 }
 
-u32 func_800167BC(void) {
+u32 file_GetFlag1(void) {
     return (D_80106A73 >> 1) & 1;
 }
 
-u32 func_800167D4(void) {
+u32 file_GetFlag2(void) {
     return (D_80106A73 >> 2) & 1;
 }
 
 INCLUDE_ASM("asm/funcs", func_800167EC);
 
-void func_80016868(void) {
+void gpu_EnableDisplay(void) {
     func_8007AE7C(1);
 }
 
-void func_80016888(void) {
+void gpu_InitDisplay(void) {
     func_8007B2A0(0);
     func_8007AE7C(1);
     func_8007B4D0(&D_800A30CC, 0, 0, 0);
     func_8007B33C(0);
 }
 
-void func_800168D0(void) {
+void gpu_DisableDisplay(void) {
     func_8007B2A0(1);
 }
 
-void func_800168F0(void) {
+void sys_StubEmpty(void) {
 }
 
-void func_800168F8(void) {
-    func_80046AE8();
+void sys_InitSound(void) {
+    snd_PlaySystemSe();
 }
 
 extern void func_8007B114(s32);
@@ -254,7 +254,7 @@ extern void func_8007EFDC(s32, s32);
 extern void func_8007EFFC(s32);
 extern void func_8007A694(u8 *, s32, s32, s32, s32);
 extern void func_8007A74C(u8 *, s32, s32, s32, s32);
-void func_80016918(void) {
+void disp_Init(void) {
     u8 *base;
 
     func_8007AE7C(0);
@@ -262,17 +262,17 @@ void func_80016918(void) {
     func_8007B2A0(0);
     func_8007E094();
     func_8007EFDC(0x140, 0x78);
-    func_8007EFFC(func_800166C4(0x2D));
+    func_8007EFFC(disp_CalcFov(0x2D));
     base = &D_800F7438;
     func_8007A694(base, 0, 0, 0x280, 0xF0);
     func_8007A694(base + 0x4090, 0, 0xF0, 0x280, 0xF0);
     func_8007A74C(base + 0x5C, 0, 0xF0, 0x280, 0xF0);
     func_8007A74C(base + 0x40EC, 0, 0, 0x280, 0xF0);
-    func_80016768(1, 0, 0, 0);
+    disp_SetFramebufferMode(1, 0, 0, 0);
     func_8007B4D0(&D_800A30CC, 0, 0, 0);
     func_8007B33C(0);
 }
-extern void func_80082AC0(void);
+extern void irq_DisableInterrupts(void);
 extern void func_80078C9C(u8 *, s32, u8 *, s32);
 extern void func_80078D38(void);
 extern void func_80078A58(s32);
@@ -281,31 +281,31 @@ extern void func_800375EC(void);
 extern u8 D_800FF580;
 extern u8 D_800A3768;
 extern u8 D_800A36A8;
-void func_80016A18(void) {
+void sys_Init(void) {
     u8 *base = &D_800FF580;
-    func_80082AC0();
+    irq_DisableInterrupts();
     func_80078C9C(base, 8, base + 0x24, 8);
     func_80078D38();
     func_80078A58(0);
-    func_80016918();
+    disp_Init();
     D_800A3768 = 0xFF;
     D_800A36A8 = 0;
     func_80035FE0();
     func_800375EC();
-    func_800168F8();
+    sys_InitSound();
 }
 INCLUDE_ASM("asm/funcs", func_80016A8C);
-void func_80016C3C(void) {
+void sys_Panic(void) {
     func_80079208((s32)&D_80010000);
     while (1) {
         func_800164F8();
     }
 }
-void func_80016C74(void) {
+void file_ResetDmaFlag(void) {
     D_800A3716 = 0;
 }
 extern s32 func_80060CB8(u32, u32);
-void func_80016C80(void) {
+void file_LoadOverlay(void) {
     s32 size;
 
     if (D_800A3716 != 0) {
@@ -314,7 +314,7 @@ void func_80016C80(void) {
     size = func_80060CB8(0x801D8800, 0x8010E800);
     func_80079208((s32)&D_8001000C, 0x8010E800, size);
     if (0xA000 < size) {
-        func_80016C3C();
+        sys_Panic();
     }
     D_800A3716 = 1;
 }
@@ -324,13 +324,13 @@ extern void func_80079120(u32, u32, s32);
 extern void func_8005C4C0(u32, s32);
 extern void func_8005C614(void);
 extern u8 D_800A3906;
-void func_80016CF8(void) {
+void file_LoadSoundData(void) {
     s32 size;
 
     func_8005B43C();
     size = func_8005B7C4(0x801D8800);
     if (size >= 0xD01) {
-        func_80016C3C();
+        sys_Panic();
     }
     func_80079120(0x8010DB00, 0x801D8800, size);
     func_8005C4C0(0xFFF35300, 0);
@@ -347,7 +347,7 @@ extern u8 D_800A3744;
 extern u8 D_800A3745;
 extern u8 D_800A3746;
 extern void func_80020D70(void);
-extern void func_80046B44(void);
+extern void game_Init(void);
 extern u8 D_800A36F1;
 extern u16 D_800A38C6;
 extern u8 D_800A36B0;
@@ -355,7 +355,7 @@ extern u8 D_800A3928;
 extern void func_80019534(void);
 extern void func_8003D2C4(void);
 extern void func_8001C444(void);
-void func_80016D78(void) {
+void sys_GameInit(void) {
     func_80079208((s32)&D_80010028, 0x8010DB00);
     func_800167EC();
     func_80020D70();
@@ -364,7 +364,7 @@ void func_80016D78(void) {
     D_800A3798 = 0x13400;
     D_800A3716 = 0;
     D_800A3906 = 0;
-    func_80016CF8();
+    file_LoadSoundData();
     func_80019534();
     func_8003D2C4();
     func_8001C444();
@@ -373,22 +373,22 @@ void func_80016D78(void) {
     D_800A3744 = 0;
     D_800A3745 = 0;
     D_800A3746 = 0;
-    func_80046B44();
+    game_Init();
     D_800A36F1 = 2;
     D_800A38C6 = 0;
     D_800A36B0 = 0;
     D_800A3928 = 0;
 }
 
-void func_80016E40(void) {
+void gpu_SetDrawMode(void) {
     func_8007B33C(0);
 }
 
 INCLUDE_ASM("asm/funcs", func_80016E60);
-void func_800171AC(s32 a0) {
+void rng_SetSeed(s32 a0) {
     D_800A38BC = a0;
 }
-s32 func_800171B8(void) {
+s32 rng_Next(void) {
     s32 seed = D_800A38BC;
     s32 result = seed * 5497 + 0x7FA9;
     seed = (seed >> 16) ^ result;
@@ -397,20 +397,20 @@ s32 func_800171B8(void) {
 }
 INCLUDE_ASM("asm/funcs", func_80017200);
 INCLUDE_ASM("asm/funcs", func_800174F4);
-void func_80017714(void) {
+void obj_ClearAll(void) {
     s32 i;
     for (i = 0x16C; i >= 0; i -= 0x34) {
         *(s32 *)(D_800F6740 + i) = 0;
     }
 }
 
-s32 func_80017738(s32 a0, s32 a1) {
+s32 obj_CalcOffset(s32 a0, s32 a1) {
     return (a0 << 6) + (a1 << 4);
 }
 
 extern s32 func_8007F0BC(s32 *, s32 *);
 extern s32 func_8007E43C(s32);
-s32 func_80017748(s32 *a0, s32 *a1) {
+s32 math_Distance3D(s32 *a0, s32 *a1) {
     s32 in[3];
     s32 out[4];
 
@@ -420,7 +420,7 @@ s32 func_80017748(s32 *a0, s32 *a1) {
     func_8007F0BC(in, out);
     return func_8007E43C(out[0] + out[1] + out[2]) << 2;
 }
-s32 func_800177C8(s32 *a0, s32 *a1) {
+s32 math_Distance3D_16(s32 *a0, s32 *a1) {
     s32 in[3];
     s32 out[4];
 
@@ -433,20 +433,20 @@ s32 func_800177C8(s32 *a0, s32 *a1) {
 INCLUDE_ASM("asm/funcs", func_80017848);
 INCLUDE_ASM("asm/funcs", func_80017A44);
 INCLUDE_ASM("asm/funcs", func_80017D84);
-void func_80017E8C(s32 a0) {
+void obj_Clear(s32 a0) {
     *(s32 *)(D_800F6740 + a0 * 52) = 0;
 }
-void func_80017EB4(s32 a0, s32 a1) {
+void obj_UpdatePosition(s32 a0, s32 a1) {
     u8 *ptr = D_800F6740 + a0 * 52;
     s32 c = *(s32 *)(ptr + 0xC) + a1;
     *(s32 *)(ptr + 0xC) = c;
     *(s32 *)(ptr + 0x10) = c + (*(s16 *)(ptr + 4) << 6);
 }
-void func_80017EF4(s32 a0, s32 a1) {
+void obj_AddValue(s32 a0, s32 a1) {
     s32 *ptr = (s32 *)(D_800F6740 + a0 * 52);
     *ptr = *ptr + a1;
 }
-void func_80017F28(void) {
+void scratchpad_Save(void) {
     vu32 *src = (vu32 *)0x1F800000;
     u32 *dst = (u32 *)&D_800F5370;
     u32 i;
@@ -454,7 +454,7 @@ void func_80017F28(void) {
         *dst++ = *src++;
     }
 }
-void func_80017F5C(void) {
+void scratchpad_Restore(void) {
     u32 *src = (u32 *)&D_800F5370;
     vu32 *dst = (vu32 *)0x1F800000;
     u32 i;
@@ -463,8 +463,8 @@ void func_80017F5C(void) {
     }
 }
 
-void func_80017F90(void) {
+void sys_StubEmpty2(void) {
 }
 
-void func_80017F98(void) {
+void sys_StubEmpty3(void) {
 }

@@ -27,7 +27,7 @@ glabel func_8003B20C
     /* 2BA70 8003B270 A43720AC */  sw         $zero, %lo(D_800A37A4)($at)
     /* 2BA74 8003B274 0A80013C */  lui        $at, %hi(D_800A3844)
     /* 2BA78 8003B278 443824AC */  sw         $a0, %lo(D_800A3844)($at)
-    /* 2BA7C 8003B27C 205B000C */  jal        func_80016C80
+    /* 2BA7C 8003B27C 205B000C */  jal        file_LoadOverlay
     /* 2BA80 8003B280 00000000 */   nop
     /* 2BA84 8003B284 0A80043C */  lui        $a0, %hi(D_800A3844)
     /* 2BA88 8003B288 4438848C */  lw         $a0, %lo(D_800A3844)($a0)

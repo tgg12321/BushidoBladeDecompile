@@ -7,7 +7,7 @@ glabel func_8003AFFC
     /* 2B810 8003B010 2000B4AF */  sw         $s4, 0x20($sp)
     /* 2B814 8003B014 1800B2AF */  sw         $s2, 0x18($sp)
     /* 2B818 8003B018 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 2B81C 8003B01C 1A5A000C */  jal        func_80016868
+    /* 2B81C 8003B01C 1A5A000C */  jal        gpu_EnableDisplay
     /* 2B820 8003B020 1000B0AF */   sw        $s0, 0x10($sp)
     /* 2B824 8003B024 4E83000C */  jal        func_80020D38
     /* 2B828 8003B028 21900000 */   addu      $s2, $zero, $zero

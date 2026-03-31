@@ -1,7 +1,7 @@
 glabel func_80016A18
     /* 7218 80016A18 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 721C 80016A1C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 7220 80016A20 B00A020C */  jal        func_80082AC0
+    /* 7220 80016A20 B00A020C */  jal        irq_DisableInterrupts
     /* 7224 80016A24 00000000 */   nop
     /* 7228 80016A28 1080043C */  lui        $a0, %hi(D_800FF580)
     /* 722C 80016A2C 80F58424 */  addiu      $a0, $a0, %lo(D_800FF580)
@@ -13,7 +13,7 @@ glabel func_80016A18
     /* 7244 80016A44 00000000 */   nop
     /* 7248 80016A48 96E2010C */  jal        func_80078A58
     /* 724C 80016A4C 21200000 */   addu      $a0, $zero, $zero
-    /* 7250 80016A50 465A000C */  jal        func_80016918
+    /* 7250 80016A50 465A000C */  jal        disp_Init
     /* 7254 80016A54 00000000 */   nop
     /* 7258 80016A58 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 725C 80016A5C 9C0682A3 */  sb         $v0, %gp_rel(D_800A3768)($gp)
@@ -22,7 +22,7 @@ glabel func_80016A18
     /* 7268 80016A68 00000000 */   nop
     /* 726C 80016A6C 7BDD000C */  jal        func_800375EC
     /* 7270 80016A70 00000000 */   nop
-    /* 7274 80016A74 3E5A000C */  jal        func_800168F8
+    /* 7274 80016A74 3E5A000C */  jal        sys_InitSound
     /* 7278 80016A78 00000000 */   nop
     /* 727C 80016A7C 1000BF8F */  lw         $ra, 0x10($sp)
     /* 7280 80016A80 1800BD27 */  addiu      $sp, $sp, 0x18

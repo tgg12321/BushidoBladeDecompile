@@ -5,7 +5,7 @@ glabel func_80022224
     /* 12A30 80022230 2800B0AF */  sw         $s0, 0x28($sp)
     /* 12A34 80022234 2180C000 */  addu       $s0, $a2, $zero
     /* 12A38 80022238 3400BFAF */  sw         $ra, 0x34($sp)
-    /* 12A3C 8002223C C51B010C */  jal        func_80046F14
+    /* 12A3C 8002223C C51B010C */  jal        stage_GetDataPtr
     /* 12A40 80022240 2C00B1AF */   sw        $s1, 0x2C($sp)
     /* 12A44 80022244 21280000 */  addu       $a1, $zero, $zero
     /* 12A48 80022248 0A80043C */  lui        $a0, %hi(D_800A36A4)

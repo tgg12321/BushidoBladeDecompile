@@ -18,7 +18,7 @@ glabel func_80083954
     /* 74194 80083994 00000000 */  nop
     /* 74198 80083998 07004010 */  beqz       $v0, .L800839B8
     /* 7419C 8008399C 00000000 */   nop
-    /* 741A0 800839A0 D40A020C */  jal        func_80082B50
+    /* 741A0 800839A0 D40A020C */  jal        irq_SetAlarm
     /* 741A4 800839A4 21200000 */   addu      $a0, $zero, $zero
     /* 741A8 800839A8 0A80013C */  lui        $at, %hi(D_800A26DC)
     /* 741AC 800839AC DC2620A0 */  sb         $zero, %lo(D_800A26DC)($at)
@@ -32,14 +32,14 @@ glabel func_80083954
     /* 741C8 800839C8 06000424 */   addiu     $a0, $zero, 0x6
     /* 741CC 800839CC 0A80053C */  lui        $a1, %hi(D_800A26D8)
     /* 741D0 800839D0 D826A58C */  lw         $a1, %lo(D_800A26D8)($a1)
-    /* 741D4 800839D4 BC0A020C */  jal        func_80082AF0
+    /* 741D4 800839D4 BC0A020C */  jal        irq_EnableInterrupts
     /* 741D8 800839D8 21200000 */   addu      $a0, $zero, $zero
     /* 741DC 800839DC 0A80013C */  lui        $at, %hi(D_800A26D8)
     /* 741E0 800839E0 D82620AC */  sw         $zero, %lo(D_800A26D8)($at)
     /* 741E4 800839E4 7D0E0208 */  j          .L800839F4
     /* 741E8 800839E8 00000000 */   nop
   .L800839EC:
-    /* 741EC 800839EC BC0A020C */  jal        func_80082AF0
+    /* 741EC 800839EC BC0A020C */  jal        irq_EnableInterrupts
     /* 741F0 800839F0 21280000 */   addu      $a1, $zero, $zero
   .L800839F4:
     /* 741F4 800839F4 72E2010C */  jal        func_800789C8
