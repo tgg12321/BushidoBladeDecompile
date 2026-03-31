@@ -222,7 +222,7 @@ def run_permuter(func_name, timeout=None, jobs=None):
     cmd = (
         f'{VENV_ACTIVATE} && '
         f'timeout {timeout} python3 tools/decomp-permuter/permuter.py {perm_path}/ '
-        f'-j{jobs} --stop-on-zero 2>&1 | grep -v "^$" | tail -3'
+        f'-j{jobs} --stop-on-zero 2>&1 | tail -5'
     )
     print(f"  [permuter] running {timeout}s with -j{jobs}...", flush=True)
     t0 = time.time()
@@ -230,9 +230,19 @@ def run_permuter(func_name, timeout=None, jobs=None):
                             capture_output=True, text=True,
                             timeout=timeout + 30)
     elapsed = time.time() - t0
-    stopped_on_zero = "score 0" in result.stdout or "Stopped" in result.stdout
-    print(f"  [permuter] done in {elapsed:.0f}s"
-          + (" — MATCH FOUND!" if stopped_on_zero else ""), flush=True)
+    output = result.stdout + result.stderr
+    stopped_on_zero = "score 0" in output or "Stopped" in output
+    # Detect permuter parser failures (exits in <5s when it should run for timeout)
+    if elapsed < 5 and not stopped_on_zero:
+        if "Syntax error" in output or "error" in output.lower():
+            print(f"  [permuter] ERROR: permuter crashed in {elapsed:.0f}s — base.c likely has parse errors", flush=True)
+            for line in output.strip().splitlines()[-3:]:
+                print(f"    {line}", flush=True)
+            return False
+        print(f"  [permuter] WARNING: exited in {elapsed:.0f}s (expected ~{timeout}s)", flush=True)
+    else:
+        print(f"  [permuter] done in {elapsed:.0f}s"
+              + (" — MATCH FOUND!" if stopped_on_zero else ""), flush=True)
     return stopped_on_zero
 
 
@@ -301,7 +311,13 @@ PERM_TYPEDEFS = (
     "typedef unsigned short u16;\n"
     "typedef signed short s16;\n"
     "typedef unsigned int u32;\n"
-    "typedef signed int s32;\n\n"
+    "typedef signed int s32;\n"
+    "typedef volatile unsigned char vu8;\n"
+    "typedef volatile signed char vs8;\n"
+    "typedef volatile unsigned short vu16;\n"
+    "typedef volatile signed short vs16;\n"
+    "typedef volatile unsigned int vu32;\n"
+    "typedef volatile signed int vs32;\n\n"
 )
 
 
