@@ -244,7 +244,33 @@ extern s16 D_80102A78[];
 extern s16 D_80102A7A[];
 extern u8 D_800F65E0[];
 
-INCLUDE_ASM("asm/funcs", func_80086130);
+s32 func_80086130(s32 a0, s32 a1, s32 a2)
+{
+  register s32 v0 asm("$2");
+  register s32 v1 asm("$3");
+  register volatile int ra2 asm("$6");
+  register s32 ra1 asm("$5");
+  register s32 ra0 asm("$4");
+
+  if (((u32)(a0 & 0xFFFF)) < 0x18) {
+    v1 = a2;
+    v0 = (a1 << 16) >> 16;
+    ra2 = v0 << 7;
+    ra2 += v0;
+    v0 = (v1 << 16) >> 16;
+    v1 = (v0 << 7) + v0;
+    ra0 = (a0 << 16) >> 16;
+    ra1 = ra0 << 4;
+    *((s16 *)((u8 *)&D_80102A7A + ra1)) = v1;
+    v1 = *((u8 *)&D_800F65E0 + ra0);
+    v0 = 0;
+    *((s16 *)((u8 *)&D_80102A78 + ra1)) = ra2;
+    v1 |= 3;
+    *((u8 *)&D_800F65E0 + ra0) = v1;
+    return 0;
+  }
+  return -1;
+}
 INCLUDE_ASM("asm/funcs", func_800861BC);
 
 void spu_ResetCounter(void) {
