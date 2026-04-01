@@ -985,7 +985,56 @@ void func_8003D330(void) {
     *(u32 *)p = tag;
     *ot = (*ot & mask_hi) | ((u32)p & mask_lo);
 }
-INCLUDE_ASM("asm/funcs", func_8003D39C);
+extern u32 D_800A3930;
+void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
+    register s32 sx asm("t0") = x;
+    register s32 sy asm("t1") = y;
+    s32 count;
+    u8 *p;
+    register u32 tag asm("a1");
+    register s32 scolor asm("t2") = color;
+
+    count = D_800A3358;
+    if (count == 0x20) return;
+
+    {
+        register u32 mask_lo asm("a3") = 0x00FFFFFF;
+        u32 *ot;
+        u32 mask_hi;
+        u32 cmd_tag;
+        u32 base;
+
+        D_800A3358 = count + 1;
+        __asm__ volatile("" ::: "memory");
+        cmd_tag = 0x74000000;
+        base = (count << 4) + (u32)&D_800A3930;
+        {
+            register u8 *pp asm("a0") = (u8 *)((D_800A3218 << 9) + base);
+
+            pp[3] = 3;
+            pp[7] = 0x74;
+            pp[0xC] = ((ch & 7) * 8) - 64;
+            pp[0xD] = ((ch >> 5) * 8) - 32;
+            *((u16 *)(pp + 0xE)) = ((ch << 3) & 0xC0) | 0x773F;
+
+            {
+                u32 hc;
+                __asm__ volatile("sra %0, %1, 1" : "=r"(hc) : "r"(scolor));
+                tag = *((u32 *)pp);
+                *((u32 *)(pp + 4)) = hc | cmd_tag;
+            }
+
+            ot = (u32 *)D_800A374C;
+            mask_hi = 0xFF000000;
+            *((s16 *)(pp + 8)) = sx;
+            *((s16 *)(pp + 0xA)) = sy;
+
+            tag = (tag & mask_hi) | ((*ot) & mask_lo);
+            *((u32 *)pp) = tag;
+            *ot = ((*ot) & mask_hi) | (((u32)pp) & mask_lo);
+        }
+    }
+}
 void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
     s32 ch;
     s32 start_x = x;
