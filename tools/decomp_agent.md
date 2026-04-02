@@ -92,6 +92,11 @@ The penalty breakdown at the bottom tells you exactly what's wrong:
 - Types: `u8/s8/u16/s16/u32/s32` (typedefs for unsigned/signed char/short/int)
 - Struct access via cast: `*((u16 *)(ptr + 0xE))` not `ptr->field_0E`
 
+## Switch Statements / Jump Tables
+If the target asm contains a `lw + jr` pattern with a jump table in `.rodata`, the function uses a `switch` statement. When you match it, note in your report: **"NEEDS RODATA SPLIT"**. The orchestrator must handle rodata integration — you cannot do this from the permuter alone. Just get score 0 in permuter/base.c and flag it.
+
+If the matched function reads a global with `lhu` but the project declares it `extern s16`, use a pointer cast: `*(u16 *)&global` instead of changing the extern type.
+
 ## Rules
 1. ONLY modify `permuter/{{FUNC_NAME}}/base.c`
 2. Use `wsl bash -c` for ALL build commands
