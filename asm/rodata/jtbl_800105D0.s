@@ -1,0 +1,55 @@
+.align 2
+nonmatching jtbl_800105D0
+
+dlabel jtbl_800105D0
+    .word .L80032A0C
+    .word .L800329E4
+    .word .L800329D4
+    .word .L80032984
+    .word .L80032A1C
+    .word .L80032A4C
+    .word .L80032A7C
+    .word .L80032AAC
+    .word .L80032ADC
+    .word .L80032AEC
+    .word .L80032AFC
+    .word .L80032B1C
+    .word .L80032B3C
+    .word .L80032B5C
+    .word .L800329F8
+    .word .L80032C28
+    .word .L80032B7C
+    .word .L80032B84
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032C28
+    .word .L80032B94
+    .word .L80032B9C
+    .word .L80032BA4
+    .word .L80032BAC
+    .word .L80032BB4
+    .word .L80032BBC
+    .word .L80032BC4
+    .word .L80032BCC
+    .word .L80032BD4
+    .word .L80032BDC
+    .word .L80032BE4
+    .word .L80032BEC
+    .word .L80032BF4
+    .word .L80032BFC
+    .word .L80032C04
+    .word .L80032C0C
+    .word .L80032C14
+    .word .L80032C1C
+enddlabel jtbl_800105D0

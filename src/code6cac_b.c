@@ -578,6 +578,7 @@ extern u8 D_801077B0;
 extern u8 D_801077BA;
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
+INCLUDE_RODATA("asm/rodata", jtbl_8001042C);
 INCLUDE_ASM("asm/funcs", func_80026DA4);
 s32 func_800272FC(s32 a0) {
     s32 v1;
@@ -609,8 +610,52 @@ void func_80027334(s16 *arg0) {
     arg0[0x26] = 0;
     arg0[0x29] = 0xBCD;
 }
+INCLUDE_RODATA("asm/rodata", jtbl_80010498);
 INCLUDE_ASM("asm/funcs", func_8002738C);
-INCLUDE_ASM("asm/funcs", func_80027438);
+void func_80027438(u8 *a0, s32 a1, s16 a2) {
+    s16 v1;
+    v1 = D_800A38DC;
+    if (v1 == 5) {
+        return;
+    }
+    if ((u32)a1 >= 0x16) {
+        return;
+    }
+    switch (a1) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            *(u16 *)(a0 + 0x272) += a2;
+            break;
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+            *(u16 *)(a0 + 0x26C) = 0;
+            *(u16 *)(a0 + 0x90) = 0;
+            *(u16 *)(a0 + 0x8A) = 0;
+            break;
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+            *(u16 *)(a0 + 0x270) += a2;
+            break;
+        case 14:
+        case 15:
+        case 16:
+        case 17:
+        case 18:
+        case 19:
+        case 20:
+        case 21:
+            *(u16 *)(a0 + 0x26E) += a2;
+            break;
+    }
+}
 INCLUDE_ASM("asm/funcs", func_800274BC);
 INCLUDE_ASM("asm/funcs", cpu_side_move_dir);
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir  |  160i  |  x4 size collision */
@@ -682,6 +727,7 @@ void func_80027A58(s32 *a0) {
         }
     }
 }
+INCLUDE_RODATA("asm/rodata", jtbl_80010548);
 INCLUDE_ASM("asm/funcs", func_80027AD8);
 INCLUDE_ASM("asm/funcs", saTan2KabutoWareMove);
 /* kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i */
@@ -895,14 +941,34 @@ INCLUDE_ASM("asm/funcs", func_80032064);
 INCLUDE_ASM("asm/funcs", func_800321E8);
 INCLUDE_ASM("asm/funcs", Pad_Prs);
 /* kengo:HIGH  |  is_pad/Pad_Prs  |  111i */
+INCLUDE_RODATA("asm/rodata", jtbl_800105A0);
 INCLUDE_ASM("asm/funcs", cpu_get_dist_2);
 /* kengo:HIGH  |  nm_cpu/cpu_get_dist_2  |  68i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", func_800325E0);
+INCLUDE_RODATA("asm/rodata", jtbl_800105D0);
 INCLUDE_ASM("asm/funcs", func_80032854);
+INCLUDE_RODATA("asm/rodata", jtbl_80010698);
 INCLUDE_ASM("asm/funcs", func_80032C50);
 INCLUDE_ASM("asm/funcs", cpu_check_same_dir_timer);
 /* kengo:HIGH  |  nm_cpu/cpu_check_same_dir_timer  |  63i */
-INCLUDE_ASM("asm/funcs", func_80033498);
+s32 func_80033498(void) {
+    switch ((s16)(*(u16 *)&D_800A36A4 - 2)) {
+    case 0:
+        return 0;
+    case 2:
+        return 1;
+    case 5:
+        return 2;
+    case 6:
+        return 3;
+    case 16:
+        return 4;
+    case 22:
+        return 5;
+    default:
+        return 0xFF;
+    }
+}
 extern s16 D_800A3756;
 extern u8 D_800A391D;
 void func_80033510(void) {
