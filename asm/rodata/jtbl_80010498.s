@@ -1,0 +1,27 @@
+.align 2
+nonmatching jtbl_80010498
+
+dlabel jtbl_80010498
+    .word .L800273C0
+    .word .L800273C0
+    .word .L800273C0
+    .word .L800273C0
+    .word .L800273C0
+    .word .L800273C0
+    .word .L800273D4
+    .word .L800273D4
+    .word .L800273D4
+    .word .L800273D4
+    .word .L800273E8
+    .word .L800273E8
+    .word .L800273E8
+    .word .L800273E8
+    .word .L800273FC
+    .word .L800273FC
+    .word .L800273FC
+    .word .L800273FC
+    .word .L80027410
+    .word .L80027410
+    .word .L80027410
+    .word .L80027410
+enddlabel jtbl_80010498

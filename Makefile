@@ -100,15 +100,22 @@ GP_FILES :=
 EXPAND_LB_FILES := code6cac_b
 EXPAND_LH_FILES :=
 
+# -- Per-file rodata alignment fix --
+# GCC 2.7.2 emits .align 3 (8-byte) for switch tables in .rodata.
+# When rodata is split across objects, this creates unwanted padding.
+# Downgrade to .align 2 (4-byte) for files whose rodata is sandwiched.
+RODATA_ALIGN2_FILES := code6cac_b
+
 # Helper: resolve CC/MASPSX flags based on whether file needs GP-relative
 cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))
 maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(EXPAND_LB_FILES)), --expand-lb)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)
+rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.align\t2/" |,)
 
 # -- Compile C source (decompiled functions) --
-# Pipeline: cpp | cc1 | maspsx | as -> .o
+# Pipeline: cpp | cc1 | maspsx | [sed align fix] | as -> .o
 $(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(MASPSX) $(call maspsx_flags_for,$*) | $(AS) $(AS_FLAGS) -o $@
+	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call rodata_align_fix,$*) $(AS) $(AS_FLAGS) -o $@
 
 # -- Assemble .s files (non-decompiled asm) --
 $(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s
