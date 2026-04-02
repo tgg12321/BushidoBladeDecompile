@@ -626,7 +626,49 @@ s32 func_80089D10(s32 a0) {
     return val;
 }
 INCLUDE_ASM("asm/funcs", func_80089D60);
-INCLUDE_ASM("asm/funcs", func_80089EB0);
+s32 func_80089EB0(u32 a0) {
+    register s32 shift asm("v0");
+    register s32 entry asm("v1");
+    register u32 *p asm("a1");
+    register u32 t0 asm("t0");
+    register u32 a3reg asm("a3");
+    register u32 a2 asm("a2");
+
+    shift = D_800A2D04;
+    entry = D_800A2D40;
+    a0 <<= shift;
+    if (entry != 0) goto body;
+    __asm__ volatile("" ::: "v1");
+    shift = 0;
+    goto end;
+body:
+    t0 = 0x80000000U;
+    a3reg = 0x40000000U;
+    a2 = 0x0FFFFFFFU;
+    p = (u32 *)entry;
+loop:
+    entry = p[0];
+    if (entry & t0) goto iter;
+    if (entry & a3reg) goto ret0;
+    entry &= a2;
+    if ((u32)entry >= a0) {
+        shift = 1;
+        goto end;
+    }
+    shift = p[1];
+    shift = (s32)((u32)entry + (u32)shift);
+    if (a0 < (u32)shift) {
+        shift = 1;
+        goto end;
+    }
+iter:
+    p += 2;
+    goto loop;
+ret0:
+    __asm__ volatile("move $2,$0" : "=r"(shift));
+end:
+    return shift;
+}
 INCLUDE_ASM("asm/funcs", func_80089F3C);
 void func_8008A434(s32 *arg0) {
     s32 flags = arg0[0];
@@ -685,7 +727,56 @@ __asm__(
     ".set at\n"
 );
 INCLUDE_ASM("asm/funcs", func_8008AAD4);
-INCLUDE_ASM("asm/funcs", func_8008ACD0);
+s32 func_8008ACD0(s32 arg0) {
+    register s32 bit_found asm("a1");
+    register s32 i asm("v1");
+    register s32 one asm("a2");
+    register s32 mask asm("v0");
+    register s32 base asm("a0");
+    s32 flags;
+
+    bit_found = -1;
+    i = 0;
+    one = 1;
+    __asm__ volatile("sllv %0, %1, %2" : "=r"(mask) : "r"(one), "r"(i));
+
+loop:
+    if (arg0 & mask) {
+        goto found;
+    }
+    i++;
+    if (i < 0x18) {
+        mask = one << i;
+        goto loop;
+    }
+
+check:
+    mask = -1;
+    if (bit_found != mask) goto work;
+    return mask;
+
+found:
+    bit_found = i;
+    goto check;
+
+work:
+    base = bit_found << 4;
+    mask = D_800A2CDC;
+    flags = D_800A2874;
+    base = base + mask;
+    mask = 1 << bit_found;
+    flags = flags & mask;
+    base = *(u16 *)(base + 0xC);
+    if (!flags) goto no_flags;
+    if (!base) goto ret3;
+    goto ret1;
+no_flags:
+    return (s32)(base != 0) << 1;
+ret3:
+    return 3;
+ret1:
+    return 1;
+}
 s32 func_8008AD64(s32 a0, s32 a1) {
     if ((u32)a1 > 0x7EFF0u) {
         a1 = 0x7EFF0;

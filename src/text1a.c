@@ -141,7 +141,52 @@ void func_80040A78(s32 arg0) {
 INCLUDE_ASM("asm/funcs", rob_calc_2d_position);
 /* kengo:MED  |  my_rob/rob_calc_2d_position  |  93i */
 extern s16 D_80094B9E[];
-INCLUDE_ASM("asm/funcs", func_80040CB8);
+void func_80040CB8(void *arg0) {
+    register s8 *a2 asm("a2");
+    register s32 t1 asm("t1");
+    register s16 t4 asm("t4");
+    register s16 t3 asm("t3");
+    register s16 t2 asm("t2");
+    register s32 t0 asm("t0");
+    register s16 *a3 asm("a3");
+    register s32 a1 asm("a1");
+
+    a2 = (s8 *)arg0 + 0x8B4;
+    t1 = 0;
+    t4 = -1;
+    t3 = 3;
+    t2 = 1;
+    t0 = (s32)arg0 + 0x94;
+    a3 = D_80094B9E;
+    a1 = (s32)arg0 + 0x90C;
+
+loop:
+    {
+        s16 v0 = *a3;
+        if (v0 != t4) {
+            s16 v1 = v0;
+            *(s16 *)(a1 - 0x56) = v1;
+            *a2 = t3;
+            *(s8 *)(a1 - 0x57) = 0;
+            *(s16 *)(a1 - 0x50) = 0;
+            *(s32 *)(a1 - 0x4C) = t0;
+            *(s16 *)(a1 - 0x52) = t2;
+            *(s16 *)(a1 - 0x4E) = 0;
+            {
+                u16 lhu_result = *(u16 *)((s32)arg0 + 0x16);
+                a2 += 0x68;
+                *(s32 *)a1 = 0;
+                *(s16 *)(a1 - 0x54) = lhu_result;
+                a1 += 0x68;
+            }
+        }
+        t0 += 0x68;
+        t1++;
+        a3 = (s16 *)((s32)a3 + 0xA);
+        if (t1 < 0x12) goto loop;
+    }
+    *(s16 *)((s32)a2 + 2) = -1;
+}
 INCLUDE_ASM("asm/funcs", func_80040D48);
 INCLUDE_ASM("asm/funcs", hirahira_w_ctrl);
 /* kengo:MED  |  my_hirahira/hirahira_w_ctrl  |  132i  |  x2 size collision */
