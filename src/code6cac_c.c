@@ -726,7 +726,29 @@ void func_800379D8(void) {
     func_80078998(D_800A3848);
     func_80078998(D_800A3850);
 }
-INCLUDE_ASM("asm/funcs", func_80037A20);
+s32 func_80037A20(s32 arg0, s32 arg1)
+{
+  register s32 *var_s0 asm("s0");
+  register s32 var_s1 asm("s1");
+  s32 sp10[8];
+  s32 v0_val;
+  var_s0 = (s32 *)&D_80102810;
+  func_80079A30(sp10, (s32) (&D_800109B0), arg0, arg1);
+  var_s1 = 0;
+  if (func_80078A38(sp10, var_s0) != 0)
+  {
+    __asm__("" : "=r"(var_s1) : "0"(var_s1));
+    var_s1++;
+    loop:
+    var_s0 = (s32 *) (((u8 *) var_s0) + 0x28);
+    v0_val = func_80078A48(var_s0);
+    var_s1 += 1;
+    if (v0_val) goto loop;
+    var_s1 -= 1;
+  }
+  D_800A38C8 = var_s1;
+  return var_s1;
+}
 s32 func_80037AA4(void) {
     s32 var_a1;
     register s32 var_a2 asm("a2");
