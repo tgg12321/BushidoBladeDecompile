@@ -46,6 +46,7 @@ echo ""
 # Items to symlink (gitignored, needed for builds)
 ITEMS=(
     "tools/gcc-2.7.2"
+    "tools/maspsx"
     "tools/decomp-permuter"
     "tools/m2c"
     ".venv"
@@ -55,7 +56,15 @@ ITEMS=(
 for item in "${ITEMS[@]}"; do
     src="$MAIN_REPO/$item"
     dst="$CURRENT/$item"
-    if [ -e "$dst" ] || [ -L "$dst" ]; then
+    # If dst is a symlink already, skip
+    if [ -L "$dst" ]; then
+        echo "  skip (linked):  $item"
+    # If dst is an empty directory (git placeholder for nested repo), replace it
+    elif [ -d "$dst" ] && [ -z "$(ls -A "$dst" 2>/dev/null)" ]; then
+        rmdir "$dst"
+        ln -sf "$src" "$dst"
+        echo "  linked (replaced empty dir): $item -> $src"
+    elif [ -e "$dst" ]; then
         echo "  skip (exists):  $item"
     elif [ -e "$src" ]; then
         ln -sf "$src" "$dst"
