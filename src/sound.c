@@ -541,7 +541,77 @@ void snd_SetVolume(s32 a0) {
     D_800A33D0 = a0;
 }
 INCLUDE_ASM("asm/funcs", func_800477E8);
-INCLUDE_ASM("asm/funcs", func_80047A90);
+extern s32 D_800EF558[];
+extern s32 D_800EF59C[];
+extern s32 D_800A3820;
+extern s32 D_800EF070;
+void func_80047A90(void) {
+    register s32 i asm("$8");
+    register s32 *p558 asm("$4");
+    register s32 *p59C asm("$5");
+    register s16 *pJudge asm("$6");
+    register s32 *pt2 asm("$10");
+    register s32 *pt1 asm("$9");
+    register s32 *pa1 asm("$5");
+    register s32 a3 asm("$7");
+    register s32 *pa2 asm("$6");
+    register s32 *pt3 asm("$11");
+    s32 v1;
+    s32 a0;
+    s32 *temp;
+
+    i = 0;
+    pJudge = Judge;
+    p558 = D_800EF558;
+    p59C = D_800EF59C;
+    do {
+        i++;
+        *p59C = ((s32)pJudge[*p558 & 0xFFF] * 0x271) >> 10;
+        p59C++;
+        *p558 += 0x12;
+        p558++;
+    } while (i < 0x11);
+
+    i = 1;
+    pt2 = D_800EF59C;
+    pt1 = D_800EF59C + 0x11;
+  outer_loop:
+    pa1 = pt1;
+    a3 = 0;
+    pa2 = pt2;
+    pt3 = pt1 + 0x11;
+  inner_loop:
+    {
+        s32 v0 = *pa1;
+        v1 = *pa2;
+        v0 -= v1;
+        a0 = 0x7D0 - v0;
+        if (a0 < 0) {
+            v1 = (a0 + 0xF) >> 4;
+        } else {
+            v1 = a0 / 10;
+        }
+    }
+    *pa1 += v1;
+    if (i == 8) {
+        *(s32 *)((s8 *)D_800EF800 + a3) = v1;
+    }
+    pa1++;
+    a3 += 4;
+    pa2++;
+    if ((s32)pa1 < (s32)pt3)
+        goto inner_loop;
+    pt2 += 0x11;
+    i++;
+    pt1 += 0x11;
+    if (i < 9)
+        goto outer_loop;
+
+    temp = (s32 *)D_800A3820;
+    D_800A3820 = (s32)(temp + 1);
+    *temp = (s32)&D_800EF070;
+}
+
 
 INCLUDE_ASM("asm/funcs", func_80047BE0);
 extern s32 D_800EF7BC[];
