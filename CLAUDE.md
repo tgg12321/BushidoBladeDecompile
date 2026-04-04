@@ -183,10 +183,24 @@ When spawning multiple agents to work on this project simultaneously, follow the
 
 ### Architecture: Worktree Isolation
 
+**ALL agents MUST use `isolation: "worktree"` — no exceptions.** Agents that write directly to main are forbidden. The worktree gives the agent its own branch so results can be reviewed and merged by the orchestrator before touching main.
+
 Each agent runs in its own git worktree (`isolation: "worktree"`), giving it an independent copy of the repo on its own branch. This means:
-- Agents cannot corrupt each other's files
+- Agents cannot corrupt each other's files or the main branch
 - Each agent can build and verify independently
 - Results are merged one branch at a time by the orchestrator
+
+### Worktree First Step (MANDATORY)
+
+Worktrees do not contain gitignored tools (`tools/gcc-2.7.2/`, `.venv/`, `disc/`, etc.) which are required to build. **Every agent's first action must be to run the setup script:**
+
+```bash
+wsl bash -c 'cd /path/to/worktree && bash tools/worktree_setup.sh && source .venv/bin/activate'
+```
+
+`tools/worktree_setup.sh` symlinks the heavy tools from the main repo into the worktree. Without this, `make` will silently produce a broken binary and SHA1 checks will give false results.
+
+To find the worktree path: the agent should use `git rev-parse --show-toplevel` inside WSL.
 
 ### Two-Phase Workflow
 
@@ -203,11 +217,12 @@ Each agent owns exactly ONE C source file. It decompiles INCLUDE_ASM stubs into 
 3. **No destructive git commands.** Agents must NEVER run `git checkout`, `git restore`, `git stash`, `git clean`, or `git reset`. To undo a change, rewrite the specific file content.
 4. **No `make clean`.** Agents use incremental builds only (`make`). Only the orchestrator runs `make clean` for final verification.
 5. **Add missing symbols to `undefined_syms_auto.txt` if needed.** If a decompiled function references a global not yet in the symbol files, the agent should note it in its report. The orchestrator adds it on main before merging.
+6. **Do not push or merge to main.** Agents commit to their own worktree branch only. The orchestrator is responsible for all merges into main.
 
 ### Merge Workflow
 
 After agents complete:
-1. Orchestrator verifies each branch builds independently
+1. Orchestrator verifies each branch builds independently (in the worktree)
 2. Merge branches into main one at a time with `git merge --no-ff`
 3. After each merge, run `make clean && make` to verify combined build
 4. If a merge causes a mismatch, investigate that branch's changes before proceeding
@@ -216,7 +231,12 @@ After agents complete:
 
 Agents should use incremental builds for speed:
 ```bash
-wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && source .venv/bin/activate && make 2>&1 | tail -5'
+wsl bash -c 'cd $(git -C /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" worktree list | grep $(git rev-parse --show-toplevel) | awk "{print \$1}") && source .venv/bin/activate && make 2>&1 | tail -5'
+```
+
+Simpler form (if the agent knows its worktree path):
+```bash
+wsl bash -c 'cd /path/to/worktree && source .venv/bin/activate && make 2>&1 | tail -5'
 ```
 Expected success output: `OK: bb2 matches!`
 
