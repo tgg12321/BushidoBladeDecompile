@@ -352,7 +352,32 @@ void camera_Transform(s32 *a0, s32 *a1, s32 a2) {
     prod = diff * D_800EEDBE;
     a1[7] = a0[7] + (prod >> 12);
 }
-INCLUDE_ASM("asm/funcs", func_800470B0);
+void func_800470B0(s32 arg0, void *arg1, void *arg2, s32 arg3) {
+    s16 sp10[9];
+    s32 temp_v1;
+    void *var_s0;
+    register void *var_s1 asm("s1");
+    register s32 var_s2 asm("s2");
+    volatile s32 _sp_pad[2];
+
+    var_s0 = arg1;
+    temp_v1 = arg0 * 0x60;
+    sp10[0] = 0x1000;
+    sp10[1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62F8 + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
+    sp10[2] = 0;
+    sp10[3] = 0;
+    sp10[4] = 0;
+    sp10[5] = 0;
+    sp10[6] = 0;
+    sp10[7] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62FC + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
+    sp10[8] = 0x1000;
+    var_s1 = arg2;
+    var_s2 = arg3;
+    func_80052930(sp10, var_s0);
+    *(s32 *)((s8 *)var_s1 + 0x14) = *(s32 *)((s8 *)var_s0 + 0x14) + (((*(s32 *)((s8 *)var_s0 + 0x18) - var_s2) * sp10[1]) >> 12);
+    *(s32 *)((s8 *)var_s1 + 0x18) = var_s2;
+    *(s32 *)((s8 *)var_s1 + 0x1C) = *(s32 *)((s8 *)var_s0 + 0x1C) + (((*(s32 *)((s8 *)var_s0 + 0x18) - var_s2) * sp10[7]) >> 12);
+}
 typedef struct {
     s32 w[8];
 } Block32;
