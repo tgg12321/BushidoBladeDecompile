@@ -283,13 +283,60 @@ INCLUDE_ASM("asm/funcs", md_game_end);
 /* kengo:HIGH  |  md_game/md_game_end  |  249i */
 INCLUDE_ASM("asm/funcs", func_80086BFC);
 INCLUDE_ASM("asm/funcs", func_80086CF8);
-INCLUDE_ASM("asm/funcs", func_800871D4);
+extern u16 D_800F1B10;
+extern u16 D_800F1B12;
+extern s16 D_800F4E18;
+extern s16 D_800F4E1C;
+extern s8 D_800F4E35;
+extern u16 D_8010280A;
+extern u16 D_801078D8;
+extern u16 D_801078DA;
+void func_800871D4(s32 a0_arg)
+{
+  u32 temp_a0;
+  u32 var_v1;
+  s32 var_a2;
+  s32 var_a1;
+  s32 temp_v0;
+  u16 temp_v1_d8;
+  u16 temp_a0_da;
+  u16 temp_v0_1b10;
+  u16 temp_v0_1b12;
+
+  temp_a0 = D_8010280A;
+  __asm__("andi %0, %1, 0xffff" : "=r"(var_v1) : "r"(temp_a0));
+  if (var_v1 < 0x10U)
+  {
+    var_a2 = 1 << var_v1;
+    var_a1 = 0;
+  }
+  else
+  {
+    var_a2 = 0;
+    var_a1 = 1 << (var_v1 - 0x10);
+    __asm__("andi %0, %1, 0xffff" : "=r"(var_v1) : "r"(temp_a0));
+  }
+  temp_v0 = ((((var_v1 * 8) - var_v1) * 4) - var_v1) * 2;
+  *((s8 *)((u8 *)&D_800F4E35 + temp_v0)) = 0;
+  temp_v1_d8 = D_801078D8;
+  temp_a0_da = D_801078DA;
+  *((s16 *)((u8 *)&D_800F4E1C + temp_v0)) = 0;
+  *((s16 *)((u8 *)&D_800F4E18 + temp_v0)) = 0;
+  temp_v0_1b10 = D_800F1B10;
+  __asm__("" : : "r"(var_a1));
+  temp_v1_d8 = temp_v1_d8 | var_a2;
+  D_801078D8 = temp_v1_d8;
+  D_800F1B10 = temp_v0_1b10 & ~temp_v1_d8;
+  temp_v0_1b12 = D_800F1B12;
+  temp_a0_da = temp_a0_da | var_a1;
+  D_801078DA = temp_a0_da;
+  D_800F1B12 = temp_v0_1b12 & ~temp_a0_da;
+}
 INCLUDE_ASM("asm/funcs", func_800872A4);
 INCLUDE_ASM("asm/funcs", func_80087770);
 INCLUDE_ASM("asm/funcs", func_80087CAC);
 extern u8 D_80101BCC;
 extern s16 D_800F4E28[];
-extern s16 D_8010280A;
 void spu_NotifyChannel(s16 a0) {
     s32 s0 = 0;
     s16 s1;
