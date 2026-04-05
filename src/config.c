@@ -165,7 +165,77 @@ void func_8003F62C(s32 *a0) {
         s0[1] = 0;
     }
 }
-INCLUDE_ASM("asm/funcs", func_8003F6D8);
+void func_8003F6D8(s16 *arg0) {
+    volatile s32 _arg0_spill;
+    volatile s32 _p0, _p1, _p2, _p3, _p4;
+    volatile s32 sp28;
+    s32 count;
+    register void *temp_v0 asm("v0");
+    register s32 var_s7 asm("s7");
+    register s32 var_s6 asm("s6");
+    register s32 var_s5 asm("s5");
+    register void *temp_s4 asm("s4");
+    register void *var_s3 asm("s3");
+    register void *var_s2 asm("s2");
+    register void *temp_s1 asm("s1");
+    register s32 temp_s0 asm("s0");
+    s32 var_fp;
+    _arg0_spill = (s32)arg0;
+    var_fp = 0;
+    if (*arg0 > 0) {
+        {
+            register s32 init_a3 asm("a3");
+            init_a3 = 8;
+            sp28 = init_a3;
+        }
+        do {
+            {
+                register s32 reg_t0 asm("t0");
+                register s32 reg_a3 asm("a3");
+                asm("lw %0,%2; lw %1,%3" : "=r"(reg_t0), "=r"(reg_a3) : "m"(_arg0_spill), "m"(sp28));
+                var_s7 = 0;
+                asm("addu %0,%1,%2" : "=r"(temp_v0) : "r"(reg_t0), "r"(reg_a3));
+            }
+            count = *(s32 *)((u8 *)temp_v0 + 0x1C);
+            temp_s4 = (void *)((u8 *)temp_v0 + 0x1C);
+            if (count > 0) {
+                var_s6 = 0x18;
+                var_s5 = 0x84;
+                var_s3 = temp_s4;
+                asm("addu %0,%1,%2" : "=r"(var_s2) : "r"(temp_s4), "r"(var_s5));
+L8003F750:
+                {
+                    register s32 *call_a1 asm("a1");
+                    register s16 *call_a2 asm("a2");
+                    call_a1 = (s32 *)var_s2;
+                    temp_s1 = (void *)((u8 *)temp_s4 + var_s6);
+                    call_a2 = (s16 *)temp_s1;
+                    var_s6 += 0x20;
+                    var_s5 += 0x10;
+                    temp_s0 = *(s32 *)((u8 *)var_s3 + 4);
+                    var_s3 = (void *)((u8 *)var_s3 + 4);
+                    temp_s0 += 0x18;
+                    func_80052A20((s32 *)temp_s0, call_a1, call_a2);
+                    func_80052A20((s32 *)temp_s0, (s32 *)((u8 *)var_s2 + 8), (s16 *)((u8 *)temp_s1 + 0x10));
+                }
+                var_s2 = (void *)((u8 *)temp_s4 + var_s5);
+                var_s7 += 1;
+                if (var_s7 < *(s32 *)temp_s4) goto L8003F750;
+            }
+            {
+                register s32 incr_t0 asm("t0");
+                register s16 *end_a3 asm("a3");
+                incr_t0 = sp28;
+                end_a3 = (s16 *)_arg0_spill;
+                incr_t0 += 0xD0;
+                sp28 = incr_t0;
+                var_fp += 1;
+                if (var_fp >= *end_a3) break;
+            }
+        } while (1);
+    }
+}
+
 void func_8003F7F4(void) {
     obj_ClearAll();
     sys_StubEmpty2();
