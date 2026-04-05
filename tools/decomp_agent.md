@@ -24,16 +24,35 @@ This shows a side-by-side diff (target left, yours right) with penalty breakdown
 
 ## How to Edit base.c
 Use the Edit tool to modify `permuter/{{FUNC_NAME}}/base.c` directly.
-After editing, run `wsl bash -c '... && sed -i "s/\r$//" permuter/{{FUNC_NAME}}/base.c'` to fix line endings, THEN compile+score.
+CRLF is fixed automatically by `try_match.sh` — no separate step needed.
 
 ## Workflow
-1. **Read** the target asm (`asm/funcs/{{FUNC_NAME}}.s`) to understand what the function does
-2. **Read** current `permuter/{{FUNC_NAME}}/base.c` to see the starting point
+0. **Log session start** (first action after setup):
+   ```bash
+   wsl bash -c 'cd <ROOT> && bash tools/agent_log.sh {{FUNC_NAME}} SESSION_START "tier=sonnet"'
+   ```
+1. **Read** the target asm (`asm/funcs/{{FUNC_NAME}}.s`) — log it:
+   ```bash
+   wsl bash -c 'cd <ROOT> && bash tools/agent_log.sh {{FUNC_NAME}} READ "asm/funcs/{{FUNC_NAME}}.s"'
+   ```
+2. **Read** current `permuter/{{FUNC_NAME}}/base.c` — log it:
+   ```bash
+   wsl bash -c 'cd <ROOT> && bash tools/agent_log.sh {{FUNC_NAME}} READ "permuter/{{FUNC_NAME}}/base.c"'
+   ```
 3. **Score** current base.c to see the diff
 4. **Analyze** the diff: which instructions differ? Register names? Ordering? Extra/missing?
-5. **Edit** base.c with a targeted fix
-6. **Score** again — did it improve?
-7. **Repeat** until score = 0 or you've exhausted your attempts
+5. **Edit** base.c with a targeted fix — log a one-line description of what you changed:
+   ```bash
+   wsl bash -c 'cd <ROOT> && bash tools/agent_log.sh {{FUNC_NAME}} EDIT "description of change"'
+   ```
+6. **Score** again (CRLF is fixed automatically) — did it improve?
+7. **Repeat** until score = 0 or attempts exhausted
+8. **Log session end** (last action before reporting):
+   ```bash
+   wsl bash -c 'cd <ROOT> && bash tools/agent_log.sh {{FUNC_NAME}} SESSION_END "score=<N> attempts=<N> status=MATCHED"'
+   ```
+
+**Only read the asm file once.** If you need to check a specific instruction, re-read only a small range rather than the whole file.
 
 ## Reading the Diff
 The scorer output shows two columns: YOUR output (left) vs TARGET (right).
@@ -100,11 +119,10 @@ If the matched function reads a global with `lhu` but the project declares it `e
 ## Rules
 1. ONLY modify `permuter/{{FUNC_NAME}}/base.c`
 2. Use `wsl bash -c` for ALL build commands
-3. After EVERY edit, fix line endings: `sed -i "s/\r$//" permuter/{{FUNC_NAME}}/base.c`
-4. If score = 0: report **MATCHED** immediately
-5. **Max attempts: {{MAX_ATTEMPTS}}** compile/score cycles
-6. If stuck (no improvement for 3 consecutive attempts): **STOP and report**
-7. Track your scores: note each attempt's score to detect progress/regression
+3. If score = 0: report **MATCHED** immediately
+5. **HARD LIMIT: {{MAX_ATTEMPTS}} attempts.** At attempt {{MAX_ATTEMPTS}}, STOP AND REPORT regardless of progress or how close you feel you are. Do not exceed this.
+6. **Early stop:** If your score has not improved in 3 consecutive attempts, STOP immediately — do not wait for the hard limit. Spinning on the same diff wastes tokens and a stronger model will take over.
+7. Track your scores explicitly: write down each attempt number and score before proceeding to the next attempt. Example: `[1] 3900 → [2] 2400 → [3] 2400 → [4] 2400 → STOP (no progress 3x)`
 
 ## Reporting
 When done, output a summary:
@@ -113,6 +131,9 @@ RESULT: {{FUNC_NAME}}
   Final score: <N>
   Attempts: <N>
   Best score: <N>
-  Status: MATCHED | STUCK_AT_<score> | COMPILE_FAIL
+  Status: MATCHED | STUCK_AT_<score> | TABLED | COMPILE_FAIL
   Notes: <what you tried, what the remaining diff looks like>
+  Blocker: <specific instruction(s) or pattern that won't match, if known>
 ```
+
+**TABLED** means: hard limit reached or no clear hypothesis remains. Your best `base.c` is already saved in `permuter/{{FUNC_NAME}}/base.c`. The orchestrator will pick this up in a future session. A precise blocker description is the most valuable thing you can leave behind.

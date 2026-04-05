@@ -25,7 +25,7 @@ PERMUTER_DIR = ROOT / "permuter"
 TIER_CONFIG = {
     "haiku": {"max_attempts": 5, "techniques": "Tier 1 only"},
     "sonnet": {"max_attempts": 15, "techniques": "Tiers 1-2"},
-    "opus": {"max_attempts": 30, "techniques": "Tiers 1-3"},
+    "opus": {"max_attempts": 20, "techniques": "Tiers 1-3"},
 }
 
 
@@ -41,14 +41,9 @@ def count_insns(func_name):
     asm_file = ASM_DIR / f"{func_name}.s"
     if not asm_file.exists():
         return 0
-    count = 0
     with open(asm_file) as f:
-        for line in f:
-            s = line.strip()
-            if s and not s.startswith(".") and not s.startswith("#") \
-               and "glabel" not in s and "endlabel" not in s:
-                count += 1
-    return count
+        # Each instruction line has a /* offset addr opcode */ prefix
+        return sum(1 for line in f if "/*" in line)
 
 
 def is_leaf(func_name):
@@ -107,13 +102,15 @@ def main():
     tier_header += f"Focus on: {cfg['techniques']}\n"
     if tier == "haiku":
         tier_header += "Do NOT attempt register asm or inline asm — stick to basic C transformations.\n"
-        tier_header += "If score > 100 after your attempts, report STUCK — a stronger model will take over.\n"
+        tier_header += "Hard stop at attempt 5. If score > 100, report STUCK — a stronger model will take over.\n"
     elif tier == "sonnet":
         tier_header += "You may use register asm and scheduling barriers.\n"
-        tier_header += "If score > 30 after your attempts, report STUCK — Opus will handle it.\n"
+        tier_header += f"At attempt 8 of {cfg['max_attempts']}: pause and reassess. If score > 200, report STUCK now — don't use remaining attempts chasing diminishing returns.\n"
+        tier_header += f"Hard stop at attempt {cfg['max_attempts']}. If score > 30, report STUCK — Opus will handle it.\n"
     elif tier == "opus":
         tier_header += "Full toolkit available including inline asm and advanced scheduling tricks.\n"
-        tier_header += "This is the final tier — exhaust all options before reporting stuck.\n"
+        tier_header += f"At attempt 10 of {cfg['max_attempts']}: pause and reassess. If score > 50 and you have no clear next move, report TABLED — don't burn remaining attempts without a hypothesis.\n"
+        tier_header += f"Hard stop at attempt {cfg['max_attempts']}. Save your best base.c (it's already there), report your best score and the exact remaining diff. This function will be revisited — a clean handoff is more valuable than a desperate last attempt.\n"
 
     prompt = prompt + tier_header
 
