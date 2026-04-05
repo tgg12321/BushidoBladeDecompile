@@ -47,6 +47,15 @@ if [ ! -f "$SOURCE_C" ]; then
     exit 2
 fi
 
+# Auto-fix CRLF in source before compiling (no separate step needed)
+sed -i "s/\r$//" "$SOURCE_C"
+
+# Session log setup
+LOG="$PERMUTER_DIR/session_log.txt"
+TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+ATTEMPT=$(grep -c "^[0-9].*|SCORE|" "$LOG" 2>/dev/null) || ATTEMPT=0
+ATTEMPT=$((ATTEMPT + 1))
+
 # Compile
 CAND_O=$(mktemp /tmp/bb2_trymatch_XXXXXX.o)
 trap "rm -f $CAND_O" EXIT
@@ -55,19 +64,29 @@ echo "Compiling $SOURCE_C..."
 if ! bash "$PERMUTER_DIR/compile.sh" "$SOURCE_C" -o "$CAND_O" 2>/tmp/bb2_trymatch_err.txt; then
     echo "Compilation FAILED:" >&2
     cat /tmp/bb2_trymatch_err.txt >&2
+    echo "${TS}|COMPILE_FAIL|attempt=${ATTEMPT}" >> "$LOG"
     rm -f /tmp/bb2_trymatch_err.txt
     exit 2
 fi
 rm -f /tmp/bb2_trymatch_err.txt
 
-# Score using Python helper
+# Score using Python helper (disable set -e here — non-zero means non-match, not error)
 echo ""
-python3 "$ROOT/tools/score_match.py" "$PERMUTER_DIR/target.o" "$CAND_O" --debug
+set +e
+python3 "$ROOT/tools/score_match.py" "$PERMUTER_DIR/target.o" "$CAND_O" --debug > /tmp/bb2_score_out.txt 2>&1
 EXIT_CODE=$?
+set -e
+cat /tmp/bb2_score_out.txt
+
+# Extract numeric score and log
+SCORE_VAL=$(grep -oP 'Score:\s*\K[0-9]+' /tmp/bb2_score_out.txt | tail -1) || true
+echo "${TS}|SCORE|attempt=${ATTEMPT} score=${SCORE_VAL:-unknown}" >> "$LOG"
+rm -f /tmp/bb2_score_out.txt
 
 if [ $EXIT_CODE -eq 0 ]; then
     echo ""
     echo "*** PERFECT MATCH! ***"
+    echo "${TS}|MATCHED|attempt=${ATTEMPT}" >> "$LOG"
 fi
 
 exit $EXIT_CODE
