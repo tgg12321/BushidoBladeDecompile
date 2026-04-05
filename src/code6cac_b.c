@@ -905,7 +905,56 @@ INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir);
 
 
 
-INCLUDE_ASM("asm/funcs", func_80030B10);
+s32 func_80030B10(u8 *arg0, s32 arg1) {
+    register u8 *ptr asm("a0") = arg0;
+    register s32 a1val asm("a1") = arg1;
+    register s32 count asm("a2") = *(s16 *)(ptr + 0x330);
+    if (count == 0xC) {
+        return 0;
+    }
+    {
+        register s32 v1 asm("v1") = *(s16 *)(ptr + 0x88);
+        if (v1 == -1) {
+            goto L80030B7C;
+        }
+        __asm__ volatile("" :: "r"(v1));
+    }
+    if (a1val != *(s16 *)(ptr + 0x14)) {
+        goto L80030B7C;
+    }
+    if (count <= 0) {
+        goto L80030B68;
+    }
+    {
+        register s32 v0 asm("v0") = count << 1;
+        register u8 *v1 asm("v1");
+        __asm__ volatile("addu %0,%1,$4" : "=r"(v1) : "r"(v0));
+        do {
+            v0 = *(u16 *)(v1 + 0x330);
+            count--;
+            *(u16 *)(v1 + 0x332) = (u16)v0;
+            v1 -= 2;
+        } while (count > 0);
+    }
+L80030B68:
+    {
+        register u16 v0 asm("v0") = *(u16 *)(ptr + 0x330);
+        *(u16 *)(ptr + 0x332) = (u16)a1val;
+        v0++;
+        *(u16 *)(ptr + 0x330) = v0;
+        goto L80030B9C;
+    }
+L80030B7C:
+    {
+        register u16 v0 asm("v0") = *(u16 *)(ptr + 0x330);
+        register s32 v1 asm("v1") = (s32)v0 + 1;
+        __asm__ volatile("" :: "r"(v0), "r"(v1));
+        *(u16 *)(ptr + 0x330) = (u16)v1;
+        *(u16 *)(ptr + (s16)v0 * 2 + 0x332) = (u16)a1val;
+    }
+L80030B9C:
+    return 1;
+}
 
 INCLUDE_ASM("asm/funcs", func_80030BA8);
 void func_80030D04(void) {
