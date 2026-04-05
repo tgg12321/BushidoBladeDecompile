@@ -731,7 +731,77 @@ INCLUDE_RODATA("asm/rodata", jtbl_80010548);
 INCLUDE_ASM("asm/funcs", func_80027AD8);
 INCLUDE_ASM("asm/funcs", saTan2KabutoWareMove);
 /* kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i */
-INCLUDE_ASM("asm/funcs", func_8002872C);
+void func_8002872C(void) {
+    s32 i;
+    s32 offset;
+    u8 *base;
+    register s32 cmp_a1 asm("a1");
+    register s32 cmp_a2 asm("a2");
+
+    i = 0;
+    offset = 0;
+
+    do {
+        base = &D_80101EC8 + offset;
+
+        cmp_a1 = *(s16 *)(base + 0xC);
+        if (cmp_a1 != 0x1B) goto next;
+
+        if (*(s16 *)(base + 0x46) != 0) goto next;
+
+        cmp_a2 = *(u16 *)(base + 0x6A);
+        asm("" : "+r"(cmp_a2));
+        if (cmp_a2 != 0xB) goto next;
+
+        if (*(s16 *)(base + 0x40) != *(u8 *)(base + 0xA7)) goto next;
+
+        {
+            s32 *ptr = *(s32 **)base;
+            register s32 a0_raw asm("a0");
+            s32 v1;
+
+            a0_raw = *(u16 *)((u8 *)ptr + 0x6A);
+            asm("" : "+r"(a0_raw));
+            v1 = a0_raw & 0xFFFF;
+
+            if (v1 == 0x26) goto match;
+            if (v1 == cmp_a1) goto match;
+            if (v1 == 2) goto match;
+            if (v1 == 0x15) goto match;
+            if ((u32)(a0_raw - 0x24) < 2) goto match;
+            if (v1 == 8) goto match;
+            if ((u32)(a0_raw - 0x22) < 2) goto match;
+            if (v1 == 0) goto match;
+            if (v1 == 0x10) goto match;
+            if (v1 == 0x13) goto match;
+            if ((u32)(a0_raw - 0x30) < 2) goto match;
+            if (v1 == 0x1A) goto match;
+            if (v1 == cmp_a2) goto match;
+            if (v1 == 0x12) goto match;
+            if (v1 == 0x2A) goto match;
+            if (v1 == 0xC) goto match;
+            if (v1 != 0x19) goto next;
+            asm("" : : "r"(a0_raw));
+
+        match:
+            if (!(D_800A387C < D_800A3134)) goto next;
+
+            *(s16 *)((u8 *)*(s32 **)base + 0x286) = 0x1C;
+            func_80027A58(*(s32 **)base);
+
+            {
+                s32 *p2 = *(s32 **)base;
+                if (*(u16 *)((u8 *)p2 + 0x6A) == 0x25) {
+                    *(u16 *)((u8 *)p2 + 0x86) = *(u16 *)((u8 *)p2 + 0x84);
+                }
+            }
+        }
+
+    next:
+        i++;
+        offset += 0x44C;
+    } while (i < 2);
+}
 INCLUDE_ASM("asm/funcs", saTan3MainJump);
 /* kengo:HIGH  |  sa_tan3/saTan3MainJump  |  492i  |  +3 near-exact */
 void func_8002906C(void) {
