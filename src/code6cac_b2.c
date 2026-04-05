@@ -190,7 +190,7 @@ extern void sys_Panic(void);
 extern s32 func_80020D38(void);
 extern s32 func_8005B9FC(s32);
 extern s32 D_800A37C0;
-extern s32 D_800A38B4;
+extern void *D_800A38B4;
 extern u8 D_800A390D;
 extern s32 func_80079120(s32 *, s32, s32);
 extern void func_8005BA6C(s32);
@@ -356,6 +356,8 @@ extern s32 D_800A371C;
 extern u8 D_800A3728;
 extern s8 D_800A3748;
 extern s32 D_800A374C;
+extern void func_8007AA30(u8 *p);
+extern void func_8007A8B4(u32 *a0, u32 *a1);
 extern u8 D_800A3758;
 extern u8 D_800A3764;
 extern u8 D_800A3769;
@@ -609,7 +611,43 @@ void func_80035480(void) {
     D_800A3834 = 9;
     gpu_DisableDisplay();
 }
-INCLUDE_ASM("asm/funcs", func_8003553C);
+void func_8003553C(void) {
+    u8 *temp_s0;
+    register s32 v280 asm("v1");
+    register s32 vtmp asm("v0");
+
+    temp_s0 = (u8 *)D_800A38B4;
+    func_8007AA30(temp_s0);
+    __asm__ ("addiu $3,$zero,640\naddiu $2,$zero,240" : "=r"(v280), "=r"(vtmp));
+    *(s16 *)(temp_s0 + 0x1A) = vtmp;
+    *(s16 *)(temp_s0 + 0x22) = vtmp;
+    vtmp = 0x80;
+    *(u8 *)(temp_s0 + 4) = 0;
+    *(u8 *)(temp_s0 + 5) = 0;
+    *(u8 *)(temp_s0 + 6) = vtmp;
+    *(u8 *)(temp_s0 + 0xC) = 0;
+    *(u8 *)(temp_s0 + 0xD) = 0;
+    *(u8 *)(temp_s0 + 0xE) = vtmp;
+    *(u8 *)(temp_s0 + 0x14) = 0;
+    *(u8 *)(temp_s0 + 0x15) = 0;
+    *(u8 *)(temp_s0 + 0x16) = 0;
+    *(u8 *)(temp_s0 + 0x1C) = 0;
+    *(u8 *)(temp_s0 + 0x1D) = 0;
+    *(u8 *)(temp_s0 + 0x1E) = 0;
+    {
+        register u32 *a0_arg asm("a0") = (u32 *)(D_800A374C + 0x401C);
+        register u32 *a1_arg asm("a1") = (u32 *)temp_s0;
+        *(s16 *)(temp_s0 + 8) = 0;
+        *(s16 *)(temp_s0 + 0xA) = 0;
+        *(s16 *)(temp_s0 + 0x10) = v280;
+        *(s16 *)(temp_s0 + 0x12) = 0;
+        *(s16 *)(temp_s0 + 0x18) = 0;
+        *(s16 *)(temp_s0 + 0x20) = v280;
+        temp_s0 += 0x24;
+        func_8007A8B4(a0_arg, a1_arg);
+    }
+    D_800A38B4 = temp_s0;
+}
 void func_800355E8(void) {
     func_80035FA8();
     func_80037110(1);
