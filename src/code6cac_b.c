@@ -1068,7 +1068,68 @@ INCLUDE_RODATA("asm/rodata", jtbl_800105D0);
 INCLUDE_ASM("asm/funcs", func_80032854);
 INCLUDE_RODATA("asm/rodata", jtbl_80010698);
 INCLUDE_ASM("asm/funcs", func_80032C50);
-INCLUDE_ASM("asm/funcs", cpu_check_same_dir_timer);
+void cpu_check_same_dir_timer(s32 *a0) {
+    u8 *s0;
+    register s32 a1val asm("a1");
+    s32 *base = a0;
+    s32 *p;
+
+    p = *(s32 **)((u8 *)base + 0x58);
+    a1val = *(u8 *)((u8 *)p + 4);
+    if (a1val == 0) goto done;
+    s0 = (u8 *)p + 5;
+
+loop:
+    a1val = a1val & 0xFF;
+    if (a1val == 0xFF) {
+        u8 b0 = s0[0];
+        u8 b1 = s0[1];
+        u8 b2 = s0[2];
+        u8 b3 = s0[3];
+        s32 packed;
+        s16 shift;
+        s32 mask;
+
+        packed = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+        shift = *(s16 *)((u8 *)base + 0xA);
+        mask = 1 << shift;
+        if ((packed & mask) != 0) {
+            s0 += 4;
+        } else {
+            s0 += 6;
+        }
+        goto next;
+    }
+
+    if ((u32)a1val < 0x80) {
+        u8 val = s0[0];
+        s16 dir = *(s16 *)((u8 *)base + 0x40);
+        s0 += 1;
+        if ((val & 0xFF) == dir) {
+            {
+                register s32 *arg0 asm("a0") = base;
+                asm("" : "=r"(arg0) : "0"(arg0));
+                func_80032C50(arg0, a1val - 1);
+            }
+            goto next;
+        }
+        if (dir < val) {
+            goto done;
+        }
+        asm volatile("");
+        goto next;
+    }
+
+    s0 += 1;
+
+next:
+    a1val = *s0;
+    s0 += 1;
+    if (a1val != 0) goto loop;
+
+done:
+    return;
+}
 /* kengo:HIGH  |  nm_cpu/cpu_check_same_dir_timer  |  63i */
 s32 func_80033498(void) {
     switch ((s16)(*(u16 *)&D_800A36A4 - 2)) {
