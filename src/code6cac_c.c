@@ -984,7 +984,70 @@ void func_800387E8(void) {
     D_800A3814 = 0;
     D_800A31F4 = 1;
 }
-INCLUDE_ASM("asm/funcs", func_8003880C);
+extern u8 D_800A3203;
+extern u8 D_800A31FC;
+extern void func_8003877C(void);
+extern s32 func_80038734(void);
+extern s32 func_8006BEC4(s32, s32);
+
+s32 func_8003880C(void) {
+    s32 s0;
+    s32 v0;
+
+    s0 = 0;
+    if (D_800A3203) {
+        D_800A3203 = 0;
+        D_800A31FC = 1;
+        func_8003877C();
+    }
+    v0 = func_80038734();
+    switch (v0 - 4) {
+    case 0:
+        break;
+    case 1:
+        s0 = 1;
+        break;
+    case 2:
+        s0 = -1;
+        break;
+    case 3:
+        s0 = -1;
+        break;
+    case 4:
+        s0 = -1;
+        break;
+    case 5:
+        s0 = -1;
+        break;
+    case 6:
+        s0 = -1;
+        break;
+    case 7:
+        s0 = -1;
+        break;
+    case 8:
+        s0 = -1;
+        break;
+    case 9:
+        s0 = -1;
+        break;
+    case 10:
+        s0 = -1;
+        break;
+    case 11:
+        s0 = -1;
+        break;
+    default:
+        s0 = -1;
+        break;
+    }
+    func_8006BEC4(0, -1);
+    if (s0) {
+        D_800A3203 = 1;
+        D_800A31FC = 0;
+    }
+    return s0;
+}
 s32 func_800388A8(void) {
     extern u8 D_800A3204;
     extern u8 D_800A3318;
