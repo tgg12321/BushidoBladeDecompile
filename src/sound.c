@@ -507,7 +507,59 @@ void camera_InitBone2(void) {
     camera_InitRotation(&D_800EEDF0);
     D_800EEDF8 = 4;
 }
-INCLUDE_ASM("asm/funcs", func_800475A4);
+extern s32 D_800A3820;
+extern s16 D_800EEE00;
+extern s16 D_800EEE02;
+extern s32 D_800EEE1C;
+extern s32 D_800EEE20;
+extern s32 D_800EEE24;
+extern s32 D_80101E1C;
+extern s32 D_80101E20;
+extern s32 D_80101E24;
+extern s32 D_800F66B0;
+extern void func_8007E4DC(s32 *, s32 *, s32 *);
+void func_800475A4(void) {
+    s16 rot[3];
+    s32 result[4];
+    s32 buf1[8];
+    s32 buf2[8];
+    s16 angle;
+    s32 computed;
+    u8 *base;
+
+    if (stage_GetVariant() != 0) {
+        return;
+    }
+
+    rot[0] = 0;
+    rot[1] = 0;
+    rot[2] = 0x6590;
+    func_8007ED6C((s32 *)&D_80101E08, rot, result);
+
+    angle = func_8007FD5C(result[0], result[2]);
+
+    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
+    result[2] = computed;
+
+    {
+        s16 neg = -func_8007FD5C(result[1], computed);
+        base = &D_800EEDF0;
+        D_800EEE00 = neg;
+    }
+    D_800EEE02 = angle;
+    D_800EEE1C = D_80101E1C;
+    D_800EEE20 = D_80101E20;
+    D_800EEE24 = D_80101E24 + 0x6590;
+    ((void (*)(u8 *, s32 *))D_800F66B0)(base + 0x10, buf1);
+    ((void (*)(u8 *, s32 *))D_800F66A0[0])((u8 *)&D_80101E08 - 8, buf2);
+    func_8007E4DC(buf2, buf1, (s32 *)(base + 0x18));
+
+    {
+        s32 *temp = (s32 *)D_800A3820;
+        D_800A3820 = (s32)(temp + 1);
+        *temp = (s32)base;
+    }
+}
 
 void game_AnimStart(void) {
     func_80048F58(1, 0);
