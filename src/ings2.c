@@ -330,7 +330,70 @@ void sys_Shutdown(void) {
     func_80083A48();
 }
 
-INCLUDE_ASM("asm/funcs", func_80083A48);
+extern u16 D_800A269C;
+extern u16 D_800A26AC;
+extern s32 D_80106FA8;
+extern s32 D_80104E80;
+extern s32 D_801027E4;
+extern s32 D_800FF630;
+extern void md_game_end(s32);
+
+void func_80083A48(void) {
+    /* Loop 1: Copy 8 default regs to each of 24 SPU voices */
+    {
+        register volatile u16 *spu asm("a2") = (volatile u16 *)0x1F801C00;
+        register s32 i asm("a0") = 0;
+        register u16 *base asm("a3") = &D_800A269C;
+    loop1_outer:
+        {
+            register s32 j asm("a1") = 0;
+            register u16 *src asm("v1") = base;
+        loop1_inner:
+            *spu++ = *src++;
+            j++;
+            if (j < 8) goto loop1_inner;
+        }
+        i++;
+        if (i < 0x18) goto loop1_outer;
+    }
+
+    /* Loop 2: Copy 16 control regs */
+    {
+        register volatile u16 *spu2 asm("a2") = (volatile u16 *)0x1F801D80;
+        register s32 k asm("a0") = 0;
+        register u16 *src2 asm("v1") = &D_800A26AC;
+    loop2:
+        *spu2++ = *src2++;
+        k++;
+        if (k < 0x10) goto loop2;
+    }
+
+    md_game_end(0x18);
+
+    /* Loop 3: Clear 32 blocks of 16 words each */
+    {
+        register s32 m asm("a1") = 0;
+        register s32 *tbl asm("v1") = &D_80106FA8;
+    loop3_outer:
+        {
+            register s32 n asm("a0") = 15;
+            s32 *p = tbl + 15;
+        loop3_inner:
+            *p-- = 0;
+            n--;
+            if (n >= 0) goto loop3_inner;
+        }
+        m++;
+        if (m < 0x20) {
+            tbl += 16;
+            goto loop3_outer;
+        }
+    }
+
+    D_80104E80 = 0x3C;
+    D_801027E4 = 0;
+    D_800FF630 = 0;
+}
 
 void spu_Reset(void) {
     func_800892F8();
