@@ -11,6 +11,7 @@ SPLAT_YAML   := splat.yaml
 # PsyQ GCC 2.7.2 compiler (built from decompals/mips-gcc-2.7.2)
 CC1          := tools/gcc-2.7.2/build/cc1
 # maspsx ASPSX compatibility layer
+PROLOGUE_FIX := python3 tools/prologue_fix.py
 MASPSX       := python3 tools/maspsx/maspsx.py
 MASPSX_FLAGS := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt
 MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --dont-force-G0 --sdata-syms=sdata_syms.txt -G8
@@ -112,10 +113,10 @@ maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLA
 rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.align\t2/" |,)
 
 # -- Compile C source (decompiled functions) --
-# Pipeline: cpp | cc1 | maspsx | [sed align fix] | as -> .o
+# Pipeline: cpp | cc1 | prologue_fix | maspsx | [sed align fix] | as -> .o
 $(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call rodata_align_fix,$*) $(AS) $(AS_FLAGS) -o $@
+	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call rodata_align_fix,$*) $(AS) $(AS_FLAGS) -o $@
 
 # -- Assemble .s files (non-decompiled asm) --
 $(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s
