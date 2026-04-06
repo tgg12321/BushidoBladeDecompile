@@ -38,6 +38,15 @@ if [ ! -f "$PERMUTER_DIR/target.o" ]; then
     echo "Run: bash tools/permuter_setup.sh $FUNC_NAME <src_file.c>" >&2
     exit 2
 fi
+
+# Validate target.o has non-empty .text section (catches silently dropped GTE instructions)
+TEXT_SIZE=$(mipsel-linux-gnu-objdump -h "$PERMUTER_DIR/target.o" 2>/dev/null | grep '\.text' | awk '{print $3}')
+if [ "$TEXT_SIZE" = "00000000" ] || [ -z "$TEXT_SIZE" ]; then
+    echo "ERROR: $PERMUTER_DIR/target.o has empty .text section!" >&2
+    echo "  The target was assembled incorrectly (GTE/COP2 instructions likely dropped)." >&2
+    echo "  Fix: python3 tools/fix_gte_asm.py --fix-targets --reassemble" >&2
+    exit 2
+fi
 if [ ! -f "$PERMUTER_DIR/compile.sh" ]; then
     echo "ERROR: $PERMUTER_DIR/compile.sh not found" >&2
     exit 2
@@ -49,6 +58,13 @@ fi
 
 # Auto-fix CRLF in source before compiling (no separate step needed)
 sed -i "s/\r$//" "$SOURCE_C"
+
+# Warn if source uses M2C_ERROR (drops GTE/cop instructions, score is unreliable)
+if grep -q 'M2C_ERROR' "$SOURCE_C"; then
+    echo "WARNING: $SOURCE_C contains M2C_ERROR() — GTE instructions are dropped."
+    echo "         Score will be UNRELIABLE (false positive likely)."
+    echo ""
+fi
 
 # Session log setup
 LOG="$PERMUTER_DIR/session_log.txt"

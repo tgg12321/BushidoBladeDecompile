@@ -146,6 +146,13 @@ def ensure_m2c_context():
         cmd = ["mipsel-linux-gnu-cpp", "-Iinclude", "-P",
                str(INCLUDE_DIR / "common.h")]
         result = subprocess.run(cmd, capture_output=True, cwd=str(PROJECT_ROOT))
+        if result.returncode != 0:
+            log("WARNING: cpp failed generating m2c context: %s" %
+                result.stderr.decode("utf-8", errors="replace")[:200])
+            return
+        if not result.stdout:
+            log("WARNING: cpp produced empty m2c context")
+            return
         with open(M2C_CONTEXT, "wb") as f:
             f.write(result.stdout)
 
@@ -332,13 +339,32 @@ def setup_permuter_dir(func_name, src_file, m2c_code):
             line = re.sub(r'/\*.*?\*/\s*', '', line)
             f.write(line)
 
+    # Fix GTE/COP2 instructions before assembly
+    fix_gte = PROJECT_ROOT / "tools" / "fix_gte_asm.py"
+    if fix_gte.exists():
+        try:
+            subprocess.run([sys.executable, str(fix_gte), str(target_s)],
+                          capture_output=True, timeout=10, cwd=str(PROJECT_ROOT))
+        except Exception:
+            pass  # Best-effort
+
     # Assemble target.o
     target_o = work_dir / "target.o"
-    subprocess.run(
+    asm_result = subprocess.run(
         ["mipsel-linux-gnu-as", "-march=r3000", "-mtune=r3000",
          "-no-pad-sections", "-O1", "-G0",
          str(target_s), "-o", str(target_o)],
-        capture_output=True, cwd=str(PROJECT_ROOT))
+        capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    if asm_result.returncode != 0:
+        log("  WARNING: assembly failed for %s: %s" % (func_name, asm_result.stderr[:100]))
+    elif target_o.exists():
+        # Validate .text section is non-empty
+        r2 = subprocess.run(
+            ["mipsel-linux-gnu-objdump", "-h", str(target_o)],
+            capture_output=True, text=True, timeout=5, cwd=str(PROJECT_ROOT))
+        m = re.search(r'\.text\s+(\w+)', r2.stdout)
+        if not m or m.group(1) == "00000000":
+            log("  WARNING: %s target.o has empty .text (GTE/COP2 instructions dropped?)" % func_name)
 
     # Write base.c
     base_c = work_dir / "base.c"

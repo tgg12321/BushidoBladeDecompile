@@ -9,6 +9,8 @@ With --quiet, prints only the numeric score.
 """
 import sys
 import os
+import re
+import subprocess
 
 def main():
     args = sys.argv[1:]
@@ -29,6 +31,20 @@ def main():
     if not os.path.exists(cand_o):
         print(f"ERROR: {cand_o} not found", file=sys.stderr)
         sys.exit(2)
+
+    # Validate .text sections are non-empty (catches silently dropped GTE instructions)
+    for label, path in [("target", target_o), ("candidate", cand_o)]:
+        try:
+            r = subprocess.run(
+                ["mipsel-linux-gnu-objdump", "-h", path],
+                capture_output=True, text=True, timeout=5)
+            m = re.search(r'\.text\s+(\w+)', r.stdout)
+            if not m or m.group(1) == "00000000":
+                print(f"ERROR: {label} {path} has empty .text section!", file=sys.stderr)
+                print(f"  Score would be meaningless (comparing empty objects).", file=sys.stderr)
+                sys.exit(2)
+        except Exception as e:
+            print(f"WARNING: Could not validate {label} .text section: {e}", file=sys.stderr)
 
     # Add decomp-permuter to path
     script_dir = os.path.dirname(os.path.abspath(__file__))

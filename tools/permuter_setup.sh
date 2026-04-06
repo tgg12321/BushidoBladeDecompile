@@ -54,13 +54,29 @@ echo "  Creating target.s..."
         "$FUNC_ASM"
 } > "$WORK_DIR/target.s"
 
+# Fix GTE/COP2 instructions and splat directives (jlabel, alabel) before assembling
+echo "  Fixing GTE/splat instructions in target.s..."
+python3 "$ROOT/tools/fix_gte_asm.py" "$WORK_DIR/target.s" 2>&1 | grep -v "^$" || true
+
 # Assemble target.s to target.o
 echo "  Assembling target.o..."
-mipsel-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0 \
-    "$WORK_DIR/target.s" -o "$WORK_DIR/target.o" 2>/dev/null || {
-    echo "WARNING: Could not assemble target.s directly."
-    echo "You may need to fix target.s manually."
+ASM_ERR=$(mipsel-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0 \
+    "$WORK_DIR/target.s" -o "$WORK_DIR/target.o" 2>&1) || {
+    echo "WARNING: Could not assemble target.s:" >&2
+    echo "$ASM_ERR" >&2
+    echo "  You may need to fix target.s manually."
 }
+
+# Validate target.o has non-empty .text section
+if [ -f "$WORK_DIR/target.o" ]; then
+    TEXT_SIZE=$(mipsel-linux-gnu-objdump -h "$WORK_DIR/target.o" 2>/dev/null \
+        | grep '\.text' | awk '{print $3}')
+    if [ "$TEXT_SIZE" = "00000000" ] || [ -z "$TEXT_SIZE" ]; then
+        echo "ERROR: target.o has empty .text section!" >&2
+        echo "  Assembly silently dropped instructions. Check target.s for" >&2
+        echo "  unrecognized opcodes (GTE, jlabel, alabel)." >&2
+    fi
+fi
 
 # --- Create base.c ---
 echo "  Creating base.c..."
