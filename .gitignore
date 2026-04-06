@@ -22,6 +22,14 @@ Thumbs.db
 *.swp
 *~
 
+# Python bytecode
+__pycache__/
+*.pyc
+
+# GCC debug dumps
+gccdump.*
+-.s
+
 # Permuter working directories
 permuter/
 debug_source.c
@@ -63,4 +71,7 @@ deepseek-tools.Modelfile
 
 # Agent output logs
 local_agent_output/
+
+# Miscellaneous
+save/
 
