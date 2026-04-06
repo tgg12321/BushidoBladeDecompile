@@ -77,6 +77,27 @@ extern s16 D_800EEDC0;
 
 extern void func_800451A0(void);
 extern void func_800451D0(void);
+extern void func_8007E74C(void *, void *, void *);
+extern void func_800418D0(s32 *);
+extern void func_8004A1FC(void *);
+extern void func_800420D0(void);
+extern void func_8003F568(void);
+extern void func_8003F5CC(void);
+extern void func_8003F274(void);
+extern s16 D_80101E00;
+extern s16 D_80101E02;
+extern s16 D_80101E04;
+extern s32 D_80101E3C;
+extern s32 D_80101E40;
+extern s32 D_80101E44;
+extern s32 D_80102C00;
+extern u16 D_800A38D6;
+extern s32 D_800A374C;
+extern s32 D_800A3808;
+extern s32 D_800A378C;
+extern s32 D_800A3820;
+extern s32 D_800F62E0;
+extern s32 D_800F66A0[];
 extern void func_80042E90(void);
 extern void func_80044498(void);
 extern void func_80049E4C(void);
@@ -253,7 +274,66 @@ void game_Init(void) {
     D_800A3790 = 0x23;
     D_800A33BC = 0;
 }
-INCLUDE_ASM("asm/funcs", func_80046BF4);
+void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
+    s32 result[3];
+    u16 *new_var;
+    u16 new_var2;
+    s32 trans[3];
+    s16 rot[3];
+    s32 matrix_buf[8];
+    s16 *rot_base;
+    u8 *base;
+
+    D_800A3820 = (s32)&D_80102C00;
+    {
+        u16 cnt = D_800A38D6;
+        s32 old_ptr = D_800A374C;
+        new_var2 = cnt - -1;
+        D_800A3808 = old_ptr;
+        D_800A38D6 = new_var2;
+        D_800A378C = old_ptr + 0x10;
+    }
+
+    new_var = &a1[2];
+    if (a0 != 0) {
+        rot_base = &D_80101E00;
+
+        *rot_base = -(s16)a1[0];
+        D_80101E02 = -(s16)a1[1];
+        D_80101E04 = -(s16)(*new_var);
+
+        trans[1] = (trans[0] = 0);
+        trans[2] = -a2;
+
+        rot[0] = -(s16)a1[0];
+        rot[1] = -(s16)a1[1];
+        rot[2] = -(s16)(*new_var);
+
+        ((void (*)(s16 *, s32 *))D_800F66A0[0])(rot, matrix_buf);
+
+        func_8007E74C(matrix_buf, trans, result);
+
+        D_80101E3C = result[0] + a0[0];
+        asm volatile("" ::: "memory");
+        D_80101E40 = result[1] + a0[1];
+        asm volatile("" ::: "memory");
+        D_80101E44 = result[2] + a0[2];
+
+        func_800418D0((s32 *)((char *)rot_base - 0x10));
+        camera_InitBoneData();
+        func_8003F274();
+
+        D_800A33C0 = a2;
+    }
+
+    base = (u8 *)&D_800F62E0;
+    func_8004A1FC(base);
+    func_8004A1FC(base + 0x60);
+    func_8004A1FC(base + 0x180);
+    func_800420D0();
+    func_8003F568();
+    func_8003F5CC();
+}
 void game_StageInit(s32 a0) {
     if (a0 & 1) {
         game_InitStageSound(D_800A33C0);
