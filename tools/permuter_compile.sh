@@ -1,7 +1,7 @@
 #!/bin/bash
 # Compile script for decomp-permuter (BB2)
 # Usage: ./compile.sh input.c -o output.o
-set -e
+set -eo pipefail
 
 INPUT="$1"
 shift; shift
@@ -19,6 +19,7 @@ if [ ! -f "$ROOT/Makefile" ]; then
 fi
 
 CC1="$ROOT/tools/gcc-2.7.2/build/cc1"
+PROLOGUE_FIX="$ROOT/tools/prologue_fix.py"
 MASPSX="$ROOT/tools/maspsx/maspsx.py"
 
 CC_FLAGS="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w"
@@ -36,8 +37,15 @@ mipsel-linux-gnu-cpp \
   -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C -DPERMUTER \
   "$TMP_INPUT" \
   | "$CC1" $CC_FLAGS \
+  | python3 "$PROLOGUE_FIX" \
   | python3 "$MASPSX" --expand-div --aspsx-version=2.34 \
       "--sdata-syms=$ROOT/sdata_syms.txt" \
       "--sdata-funcs=$ROOT/sdata_funcs.txt" \
       "--sdata-exclude=$ROOT/sdata_exclude.txt" \
   | mipsel-linux-gnu-as "-I$ROOT/include" -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0 -o "$OUTPUT"
+
+# Validate output was produced
+if [ ! -s "$OUTPUT" ]; then
+    echo "ERROR: Compilation produced empty output file: $OUTPUT" >&2
+    exit 1
+fi

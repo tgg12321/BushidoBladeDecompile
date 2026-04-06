@@ -77,11 +77,18 @@ def compile_to_obj(c_code, output_path):
             "-"
         ]
         p_cpp = subprocess.Popen(cpp_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                 stderr=subprocess.DEVNULL, cwd=str(ROOT))
+                                 stderr=subprocess.PIPE, cwd=str(ROOT))
         cc1_cmd = [str(CC1)] + CC_FLAGS.split()
         p_cc1 = subprocess.Popen(cc1_cmd, stdin=p_cpp.stdout, stdout=subprocess.PIPE,
-                                 stderr=subprocess.DEVNULL, cwd=str(ROOT))
+                                 stderr=subprocess.PIPE, cwd=str(ROOT))
         p_cpp.stdout.close()
+
+        prologue_fix = ROOT / "tools" / "prologue_fix.py"
+        prologue_cmd = [sys.executable, str(prologue_fix)]
+        p_prologue = subprocess.Popen(prologue_cmd, stdin=p_cc1.stdout, stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE, cwd=str(ROOT))
+        p_cc1.stdout.close()
+
         maspsx_cmd = [
             sys.executable, str(MASPSX),
             "--expand-div", "--aspsx-version=2.34",
@@ -89,21 +96,34 @@ def compile_to_obj(c_code, output_path):
             f"--sdata-funcs={ROOT}/sdata_funcs.txt",
             f"--sdata-exclude={ROOT}/sdata_exclude.txt",
         ]
-        p_maspsx = subprocess.Popen(maspsx_cmd, stdin=p_cc1.stdout, stdout=subprocess.PIPE,
-                                    stderr=subprocess.DEVNULL, cwd=str(ROOT))
-        p_cc1.stdout.close()
+        p_maspsx = subprocess.Popen(maspsx_cmd, stdin=p_prologue.stdout, stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, cwd=str(ROOT))
+        p_prologue.stdout.close()
         as_cmd = [
             "mipsel-linux-gnu-as",
             f"-I{ROOT}/include", "-march=r3000", "-mtune=r3000",
             "-no-pad-sections", "-O1", "-G0", "-o", str(output_path)
         ]
-        p_as = subprocess.Popen(as_cmd, stdin=p_maspsx.stdout, stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL, cwd=str(ROOT))
+        p_as = subprocess.Popen(as_cmd, stdin=p_maspsx.stdout, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, cwd=str(ROOT))
         p_maspsx.stdout.close()
         p_cpp.stdin.write(c_code.encode())
         p_cpp.stdin.close()
+
+        # Wait for all stages and check return codes
         p_as.wait(timeout=30)
-        return p_as.returncode == 0 and output_path.exists()
+        p_maspsx.wait(timeout=5)
+        p_prologue.wait(timeout=5)
+        p_cc1.wait(timeout=5)
+        p_cpp.wait(timeout=5)
+
+        if p_cpp.returncode != 0 or p_cc1.returncode != 0 or p_prologue.returncode != 0:
+            return False
+        if p_maspsx.returncode != 0 or p_as.returncode != 0:
+            return False
+        if not output_path.exists() or output_path.stat().st_size == 0:
+            return False
+        return True
     except Exception:
         return False
 
@@ -132,13 +152,31 @@ def build_target_obj(func, output_path):
     with open(target_s, 'w') as f:
         f.writelines(lines)
 
+    # Fix GTE/COP2 instructions before assembly
+    fix_gte = ROOT / "tools" / "fix_gte_asm.py"
+    if fix_gte.exists():
+        try:
+            subprocess.run([sys.executable, str(fix_gte), str(target_s)],
+                          capture_output=True, timeout=10, cwd=str(ROOT))
+        except Exception:
+            pass  # Best-effort; assembly may still work without it
+
     try:
         result = subprocess.run(
             ["mipsel-linux-gnu-as", "-march=r3000", "-mtune=r3000",
              "-no-pad-sections", "-O1", "-G0", "-o", str(output_path), str(target_s)],
             capture_output=True, timeout=10, cwd=str(ROOT)
         )
-        return result.returncode == 0
+        if result.returncode != 0:
+            return False
+        # Validate .text section is non-empty
+        r2 = subprocess.run(
+            ["mipsel-linux-gnu-objdump", "-h", str(output_path)],
+            capture_output=True, text=True, timeout=5)
+        m = re.search(r'\.text\s+(\w+)', r2.stdout)
+        if not m or m.group(1) == "00000000":
+            return False
+        return True
     except Exception:
         return False
 
