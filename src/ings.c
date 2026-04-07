@@ -418,8 +418,97 @@ s32 rng_Next(void) {
 }
 INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action_2);
 /* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action_2  |  189i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", gnd_disp_loop_ctrl);
-/* kengo:MED  |  hi_gnd/gnd_disp_loop_ctrl  |  140i  |  +4 */
+extern s32 D_800A3784;
+void gnd_disp_loop_ctrl(void) {
+    u32 new_var;
+    u8 sp18[8];
+    u8 sp20[0x68];
+    register s32 s0_var asm("s0");
+    int new_var2;
+    unsigned short s1_var;
+    register s32 s2_var asm("s2");
+    s32 mask;
+    s2_var = (s32)(&D_800F33D8);
+    if (D_800A3768 == 0xFF) {
+        return;
+    }
+    s0_var = (s32)sp20;
+    s1_var = 0xF0;
+    mask = D_800A36AC & 1;
+    mask = -mask;
+    func_8007A694((u8 *)s0_var, 0, mask & 0xF0, 0x280, s1_var);
+    new_var2 = 0;
+    sp20[0x18] = new_var2;
+    func_8007B9B0((u8 *)s0_var);
+    D_800A374C = sp18;
+    func_8007B844(sp18, 2);
+    switch (D_800A3768) {
+    case 1:
+    case 2:
+        s2_var = (s32)func_8005D46C((u8 *)s2_var);
+        if (D_800A36A8 != new_var2) {
+            s32 v0;
+            s32 a0_temp;
+            s0_var = new_var2;
+            v0 = func_80079154();
+            v0 &= 3;
+            s1_var = v0 + 4;
+            if (s1_var != new_var2) {
+                a0_temp = s2_var;
+                inner_loop:
+                s0_var++;
+                s2_var = (s32)func_8005D554((u8 *)a0_temp, D_800A3768);
+                if (s0_var >= s1_var) {
+                    break;
+                }
+                a0_temp = s2_var;
+                goto inner_loop;
+            }
+        } else if ((func_80079154() & 7) == new_var2) {
+            func_8005D554((u8 *)s2_var, D_800A3768);
+        }
+        break;
+    case 10:
+        func_8005E54C(D_800A3784, (u8 *)s2_var, new_var2);
+        break;
+    case 20:
+    {
+        u8 a2_val = D_800A38F8;
+        register s32 a1_val asm("a1") = D_800A37A0;
+        s32 a0_val = a2_val & 0xFF;
+        s32 div_result;
+        s32 counter;
+        new_var = (u32)a0_val;
+        if (((u32)a1_val) < new_var) {
+            break;
+        }
+        div_result = s1_var / (a1_val + 1);
+        counter = D_800A37C0 + 1;
+        D_800A37C0 = counter;
+        if (div_result >= counter) {
+            break;
+        }
+        if (a0_val == a1_val) {
+            D_800A38F8 = a2_val + 1;
+        } else {
+            u8 new_val = a2_val + 1;
+            D_800A38F8 = new_val;
+            D_800A37C0 = new_var2;
+            s1_var = D_800A37A8[a0_val];
+            if ((new_val & 0xFF) == a1_val) {
+                s1_var |= 0x8000;
+                if ((a1_val && a1_val) && a1_val) {
+                }
+            }
+            func_80060414(s1_var, (u8 *)s2_var, new_var2);
+        }
+        break;
+    }
+    }
+    func_8007B93C((u8 *)(D_800A374C + 4));
+    new_var = new_var2;
+    func_8007B33C(new_var);
+}
 void obj_ClearAll(void) {
     s32 i;
     for (i = 0x16C; i >= 0; i -= 0x34) {

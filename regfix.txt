@@ -13,6 +13,9 @@ PutShadowRmd: $2 <-> $3 @ 1-5
 PutShadowRmd: $2 <-> $3 @ 14-21
 PutShadowRmd: $6 <-> $7 @ 51-68
 
+# gnd_disp_loop_ctrl: switch variable in v1 ($3) instead of a1 ($5)
+gnd_disp_loop_ctrl: $3 <-> $5 @ 27-41
+
 # cpu_get_dist: cos_idx in a0 ($4) instead of v1 ($3), plus scheduling reorder
 # Swap a0<->v1 only on cos_idx computation (not vx load or mult which also use $3)
 cpu_get_dist: $4 <-> $3 @ 8-9
