@@ -203,7 +203,40 @@ void func_80080684(s32 a0) {
     saEft01Init(a0);
 }
 
-INCLUDE_ASM("asm/funcs", func_800806A4);
+void func_800806A4(s32 frames, u8 *out) {
+    register u8 *v0 asm("v0") = out;
+    s32 total;
+    register s32 secs asm("a3");
+    s32 mins;
+    s32 rem75;
+    s32 d1;
+    s32 m1;
+    s32 new_var2;
+    s32 d2;
+    s32 m2;
+    s32 new_var;
+    s32 d3;
+    s32 m3;
+    frames++;
+    frames--;
+    total = frames + 150;
+    secs = total / 75;
+    rem75 = total % 75;
+    mins = secs / 60;
+    secs = secs % 60;
+    d1 = rem75 / 10;
+    ;
+    v0[2] = (u8)((d1 << 4) + (rem75 % 10));
+    d2 = secs / 10;
+    new_var2 = d2 << 4;
+    new_var = new_var2;
+    m2 = secs % 10;
+    v0[1] = (u8)(new_var + m2);
+    d3 = mins / 10;
+    new_var = d3 << 4;
+    m3 = mins % 10;
+    v0[0] = (u8)(new_var + m3);
+}
 
 extern s32 D_800A112C[];
 extern s32 tslTm2LoadImage(s32, void *, void *, s32);
