@@ -1,0 +1,15 @@
+# Per-function register fixups for GCC 2.7.2 register allocator mismatches
+# Format: func_name: $regA <-> $regB [@ start-end]
+# Swaps are bidirectional. Range is instruction index (0-based, inclusive).
+# Without @range, swap applies to ALL instructions in the function.
+
+# func_800806A4: GCC picks t2 ($10) for mfhi temp, target uses t3 ($11)
+func_800806A4: $10 <-> $11
+
+# PutShadowRmd: v0/v1 swapped in two regions, a2/a3 swapped in OT linking block
+# Region 1: initial global loads and comparison (insns 1-5)
+PutShadowRmd: $2 <-> $3 @ 1-5
+# Region 2: second comparison block (insns 14-21)
+PutShadowRmd: $2 <-> $3 @ 14-21
+# Region 3: mask constant loading and OT link operations (insns 51-68)
+PutShadowRmd: $6 <-> $7 @ 51-68

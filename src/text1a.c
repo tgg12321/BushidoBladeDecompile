@@ -29,8 +29,50 @@ extern void func_80041430(s32, s32);
 extern s32 func_8004019C(s32 *, s32);
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
-INCLUDE_ASM("asm/funcs", PutShadowRmd);
-/* kengo:MED  |  am_rmd/PutShadowRmd  |  78i */
+extern s32 D_800A36AC;
+extern s32 D_800A378C;
+extern s32 D_800A3234;
+extern s32 D_800A3378;
+extern u8 D_800A9830;
+extern u8 D_800A9920;
+extern u16 D_80094AF4;
+extern void func_8007ABB8(s32, s16 *, s32, s32);
+
+void PutShadowRmd(s32 a0, s32 a1, s32 a2) {
+    s16 buf[4];
+    s32 v0;
+    u16 *tbl;
+    s16 u, v;
+    s32 *pkt;
+    s32 *ot;
+
+    v0 = D_800A36AC;
+    a2 = v0 & 1;
+    if (a2 != D_800A3234) {
+        D_800A3378 = (s32)(&D_800A9830 + a2 * 240);
+        D_800A3234 = a2;
+    }
+    v0 = D_800A3234;
+    if ((s32 *)D_800A3378 != (s32 *)(&D_800A9920 + v0 * 240)) {
+        tbl = &D_80094AF4 + a1 * 6;
+        buf[0] = *tbl++;
+        buf[1] = *tbl++;
+        buf[2] = *tbl++;
+        buf[3] = *tbl++;
+        u = *tbl++;
+        v = *tbl;
+        if (a0 != 0) {
+            buf[0] = buf[0] + 0x80;
+            u = u + 0x80;
+        }
+        func_8007ABB8((s32)(s32 *)D_800A3378, buf, (s16)u, (s16)v);
+        pkt = (s32 *)D_800A3378;
+        ot = (s32 *)D_800A378C;
+        *pkt = (*pkt & 0xFF000000) | (ot[0x3FFC / 4] & 0xFFFFFF);
+        D_800A3378 = (s32)(pkt + 6);
+        ot[0x3FFC / 4] = (ot[0x3FFC / 4] & 0xFF000000) | ((s32)pkt & 0xFFFFFF);
+    }
+}
 INCLUDE_ASM("asm/funcs", func_80040304);
 void func_80040400(s32 *a0, s16 *a1, s16 a2) {
     s32 v0;
