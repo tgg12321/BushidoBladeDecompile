@@ -33,7 +33,25 @@ s32 sys_SetTimer(s32 a0) {
 }
 
 INCLUDE_ASM("asm/funcs", func_800828CC);
-INCLUDE_ASM("asm/funcs", func_80082A14);
+
+extern s32 D_80016318;
+extern void tslTm2LoadImage_2(void *);
+extern void func_80078A58(s32);
+extern void func_80082AB0(s32, s32);
+void func_80082A14(s32 a0, s32 a1) {
+    volatile s32 counter = a1 << 15;
+    asm volatile("" ::: "memory");
+    if (D_800A2634 < a0) {
+        do {
+            if (--counter == -1) {
+                tslTm2LoadImage_2(&D_80016318);
+                func_80078A58(0);
+                func_80082AB0(3, 0);
+                return;
+            }
+        } while (D_800A2634 < a0);
+    }
+}
 __asm__(
     ".section .text\n"
     "    .set noat\n"
