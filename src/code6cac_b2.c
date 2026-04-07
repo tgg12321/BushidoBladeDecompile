@@ -938,7 +938,49 @@ void func_800372F4(s32 arg0) {
         }
     } while (v > 0);
 }
-INCLUDE_ASM("asm/funcs", special_camera_get_rot_dir);
+typedef struct { s32 w_q[4]; } Quad;
+typedef struct { s32 w_t[3]; } Triple;
+extern void func_80080258(s32, s32, s32);
+extern void func_800806A4(s32, s32);
+void special_camera_get_rot_dir(s32 *dest) {
+    extern s32 func_800372F4(s32, s32, s32);
+    u8 sp_buf[0x800];
+    u8 sp_buf2[8];
+    register s32 index asm("s2");
+    register s32 cam_base asm("s3");
+    s32 v0;
+    register s32 constant_80 asm("s4");
+    register Quad *copy_end asm("s5");
+    s32 *buf2_ptr;
+
+    constant_80 = 0x80;
+    index = func_80036EA8(6, 0) << 3;
+    cam_base = (s32)&SpecialCam;
+    copy_end = (Quad *)&sp_buf[0x40];
+    buf2_ptr = (s32 *)sp_buf2;
+
+retry:
+    func_80080258(2, index + cam_base, 0);
+    v0 = func_800372F4(0x800, (s32)sp_buf, constant_80);
+    if (v0 != 0) goto retry;
+
+    {
+        Quad *dst_q = (Quad *)dest;
+        Quad *src = (Quad *)&sp_buf[0x10];
+        do {
+            *dst_q = *src;
+            src++;
+            dst_q++;
+        } while (src != copy_end);
+        *(Triple *)dst_q = *(Triple *)src;
+    }
+
+    v0 = func_800807A8(index + cam_base);
+    func_800806A4(v0 + 1, (s32)buf2_ptr);
+    func_80080258(2, (s32)buf2_ptr, 0);
+    v0 = func_800372F4(dest[3], dest[2], constant_80);
+    if (v0 != 0) goto retry;
+}
 /* kengo:MED  |  nm_special_cam/special_camera_get_rot_dir  |  66i  |  +6 9.1% */
 void func_80037468(s32 a0, s32 *a1, s32 a2) {
     s32 sp[16];
