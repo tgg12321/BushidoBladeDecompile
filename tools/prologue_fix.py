@@ -495,21 +495,150 @@ def reorder_prologue(lines, func_name, target_insns):
     return True
 
 
+def apply_delay_slot_ra(lines, func_name):
+    """Replace the delay slot of the first conditional branch with 'sw $31'
+    (moved from the prologue).
+
+    GCC 2.7.2 always saves ra in the prologue. Some original functions have
+    sw ra in a branch delay slot instead. This pass swaps the GCC-chosen
+    delay slot instruction with sw ra, placing the original delay instruction
+    after the branch block.
+
+    Transforms:
+        sw $31,24($sp)            [removed from prologue]
+        ...
+        .set noreorder
+        .set nomacro
+        beq $2,$0,.L1
+        li  $3,-1                 [original delay slot]
+        .set macro
+        .set reorder
+
+    Into:
+        ...
+        .set noreorder
+        .set nomacro
+        beq $2,$0,.L1
+        sw  $31,24($sp)           [new delay slot]
+        .set macro
+        .set reorder
+        li  $3,-1                 [moved after block]
+    """
+    # Find function label
+    label_idx = None
+    for i, line in enumerate(lines):
+        if line.strip() == f'{func_name}:':
+            label_idx = i
+            break
+    if label_idx is None:
+        return False
+
+    # Find the sw $31 (sw $ra) line in the prologue region
+    sw_ra_idx = None
+    sw_ra_line = None
+    for i in range(label_idx + 1, min(label_idx + 30, len(lines))):
+        stripped = lines[i].strip()
+        if re.match(r'sw\s+\$31\s*,\s*\d+\(\$sp\)', stripped) or \
+           re.match(r'sw\s+\$ra\s*,\s*\d+\(\$sp\)', stripped):
+            sw_ra_idx = i
+            sw_ra_line = lines[i]
+            break
+        # Stop at branches/jumps
+        parts = stripped.split(None, 1)
+        mnemonic = parts[0] if parts else ''
+        if mnemonic in BRANCH_MNEMONICS or mnemonic in JUMP_MNEMONICS:
+            break
+        if '.set' in stripped and 'noreorder' in stripped:
+            break
+
+    if sw_ra_idx is None:
+        return False
+
+    # Find the first .set noreorder block containing a conditional branch
+    branch_idx = None
+    delay_idx = None
+    reorder_idx = None  # the .set reorder that closes the block
+
+    i = sw_ra_idx + 1
+    while i < min(label_idx + 60, len(lines)):
+        stripped = lines[i].strip()
+        if '.set' in stripped and 'noreorder' in stripped:
+            # Scan for branch + delay slot within this block
+            j = i + 1
+            found_branch = None
+            found_delay = None
+            found_reorder = None
+            while j < min(i + 8, len(lines)):
+                s = lines[j].strip()
+                if '.set' in s and 'reorder' in s and 'noreorder' not in s:
+                    found_reorder = j
+                    break
+                parts = s.split(None, 1)
+                mn = parts[0] if parts else ''
+                if mn in BRANCH_MNEMONICS and found_branch is None:
+                    found_branch = j
+                elif found_branch is not None and found_delay is None:
+                    # Skip .set directives between branch and delay slot
+                    if not s.startswith('.set'):
+                        found_delay = j
+                j += 1
+            if found_branch is not None and found_delay is not None:
+                branch_idx = found_branch
+                delay_idx = found_delay
+                reorder_idx = found_reorder
+                break
+        i += 1
+
+    if branch_idx is None or delay_idx is None:
+        return False
+
+    # Apply the transformation:
+    # 1. Remove sw $31 from prologue
+    lines[sw_ra_idx] = ''
+
+    # 2. Save the original delay slot instruction
+    orig_delay = lines[delay_idx]
+
+    # 3. Replace delay slot with sw $31
+    lines[delay_idx] = sw_ra_line
+
+    # 4. Insert original delay instruction after the .set reorder line
+    if reorder_idx is not None:
+        lines[reorder_idx] = lines[reorder_idx] + orig_delay
+    else:
+        # No .set reorder found; insert after delay slot
+        lines[delay_idx] = lines[delay_idx] + orig_delay
+
+    return True
+
+
 def main():
     script_dir = Path(__file__).parent
     config_path = script_dir / "prologue_config.json"
+    delay_slot_ra_path = script_dir / "delay_slot_ra_funcs.txt"
 
-    if not config_path.exists():
+    if not config_path.exists() and not delay_slot_ra_path.exists():
         sys.stdout.write(sys.stdin.read())
         return
 
-    with open(config_path) as f:
-        config = json.load(f)
+    config = {}
+    if config_path.exists():
+        with open(config_path) as f:
+            config = json.load(f)
+
+    delay_slot_ra_funcs = set()
+    if delay_slot_ra_path.exists():
+        with open(delay_slot_ra_path) as f:
+            for line in f:
+                name = line.strip()
+                if name and not name.startswith('#'):
+                    delay_slot_ra_funcs.add(name)
 
     lines = sys.stdin.readlines()
 
     applied = 0
     skipped = 0
+    ds_applied = 0
 
     for i, line in enumerate(lines):
         m = re.match(r'\s*\.ent\s+(\S+)', line)
@@ -520,10 +649,17 @@ def main():
                     applied += 1
                 else:
                     skipped += 1
+            if func_name in delay_slot_ra_funcs:
+                if apply_delay_slot_ra(lines, func_name):
+                    ds_applied += 1
 
     if applied > 0 or skipped > 0:
         sys.stderr.write(
             f"PROLOGUE_FIX: {applied} reordered, {skipped} unchanged\n"
+        )
+    if ds_applied > 0:
+        sys.stderr.write(
+            f"DELAY_SLOT_RA: {ds_applied} transformed\n"
         )
 
     sys.stdout.write(''.join(lines))
