@@ -878,8 +878,33 @@ INCLUDE_ASM("asm/funcs", coli_check_circle_hit_line);
 INCLUDE_ASM("asm/funcs", func_8002FF20);
 INCLUDE_ASM("asm/funcs", func_800300B4);
 INCLUDE_ASM("asm/funcs", func_80030208);
-INCLUDE_ASM("asm/funcs", cpu_get_dist);
-/* kengo:HIGH  |  nm_cpu/cpu_get_dist  |  68i  |  x2 size collision */
+void cpu_get_dist(s32 *a0, s16 *a1) {
+    s32 angle;
+    s16 cos_val;
+    s16 sin_val;
+    s32 vx;
+    s32 vz;
+    s32 rx;
+    s32 rz;
+    s32 v48;
+    angle = func_8007FD5C(a1[0], a1[2]);
+    cos_val = *((&Judge) + ((angle + 0x400) & 0xFFF));
+    vx = *((s32 *)(((u8 *)a0) + 0x44));
+    do {
+        sin_val = *((&Judge) + (angle & 0xFFF));
+        rx = ((vx * cos_val) + (vz * sin_val)) >> 12;
+        vz = *((s32 *)(((u8 *)a0) + 0x4C));
+        rx = ((vx * cos_val) + (vz * sin_val)) >> 12;
+        rz = -((((-vx) * sin_val) + (vz * cos_val)) >> 12);
+        v48 = *((s32 *)(((u8 *)a0) + 0x48));
+        *((s32 *)(((u8 *)a0) + 0x44)) = ((rx * cos_val) - (rz * sin_val)) >> 15;
+        *((s32 *)(((u8 *)a0) + 0x4C)) = ((rx * sin_val) + (rz * cos_val)) >> 15;
+        if (v48 < 0) {
+            v48 += 3;
+        }
+    } while (0);
+    *((s32 *)(((u8 *)a0) + 0x48)) = v48 >> 2;
+}
 void func_8003043C(void) {
     s32 i = 0;
     s16 neg = -1;
