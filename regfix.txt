@@ -2,14 +2,21 @@
 # Format: func_name: $regA <-> $regB [@ start-end]
 # Swaps are bidirectional. Range is instruction index (0-based, inclusive).
 # Without @range, swap applies to ALL instructions in the function.
+# Reorder: func_name: reorder i,j,k,... @ start-end
+#   Rearranges instructions in range to new order (i,j,k are original indices).
 
 # func_800806A4: GCC picks t2 ($10) for mfhi temp, target uses t3 ($11)
 func_800806A4: $10 <-> $11
 
 # PutShadowRmd: v0/v1 swapped in two regions, a2/a3 swapped in OT linking block
-# Region 1: initial global loads and comparison (insns 1-5)
 PutShadowRmd: $2 <-> $3 @ 1-5
-# Region 2: second comparison block (insns 14-21)
 PutShadowRmd: $2 <-> $3 @ 14-21
-# Region 3: mask constant loading and OT link operations (insns 51-68)
 PutShadowRmd: $6 <-> $7 @ 51-68
+
+# cpu_get_dist: cos_idx in a0 ($4) instead of v1 ($3), plus scheduling reorder
+# Swap a0<->v1 only on cos_idx computation (not vx load or mult which also use $3)
+cpu_get_dist: $4 <-> $3 @ 8-9
+cpu_get_dist: $4 <-> $3 @ 11-11
+cpu_get_dist: $4 <-> $3 @ 14-14
+# Reorder: move cos_idx sll/lui/addu/lh before vx load, push sin mask after mult
+cpu_get_dist: reorder 11,13,14,15,10,16,17,12 @ 10-17

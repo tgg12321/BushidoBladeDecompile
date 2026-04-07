@@ -1,25 +1,30 @@
 #!/usr/bin/env python3
 """
-Per-function register fixup pass for the BB2 decompilation build pipeline.
+Per-function register fixup and instruction reorder pass for the BB2
+decompilation build pipeline.
 
 Sits between maspsx and as in the build pipeline:
   cpp | cc1 | prologue_fix | maspsx | regfix | as
 
-Reads assembly from stdin, and for functions listed in a config file,
-replaces specific register names. This handles cases where GCC 2.7.2's
-register allocator picks a different temp register than the original
-compiler, but the code is otherwise identical.
+Handles cases where GCC 2.7.2's register allocator or instruction
+scheduler differs from the original compiler, but code is otherwise
+structurally identical.
 
 Config file format (regfix.txt):
-  # Comments and blank lines are ignored
-
-  # Function-wide swap:
+  # Function-wide register swap:
   func_800806A4: $10 <-> $11
 
-  # Range-based swap (instruction indices, 0-based, inclusive):
+  # Range-based register swap (instruction indices, 0-based, inclusive):
   PutShadowRmd: $2 <-> $3 @ 1-7
-  PutShadowRmd: $2 <-> $3 @ 18-27
 
+  # Instruction reorder (move instruction at index A to index B):
+  cpu_get_dist: reorder 8,10,6,7,9,11,12 @ 8-14
+
+  The reorder directive specifies the new order of instruction indices
+  within the given range. The list must contain exactly the indices
+  in the range, rearranged.
+
+Register swaps are applied first, then reorders.
 Instruction indices count actual instructions (not directives, labels,
 or comments) from the function entry point, 0-based.
 """
@@ -29,19 +34,27 @@ from pathlib import Path
 
 
 def load_config(config_path):
-    """Load register swap config.
-
-    Returns {func_name: [(reg_a, reg_b, start, end), ...]}
-    where start/end are instruction indices (None = whole function).
-    """
-    swaps = {}
+    """Load config. Returns {func_name: {'swaps': [...], 'reorders': [...]}}"""
+    config = {}
     if not config_path.exists():
-        return swaps
+        return config
     for line in config_path.read_text().splitlines():
         line = line.strip()
         if not line or line.startswith('#'):
             continue
-        # Parse: func_name: $X <-> $Y [@ start-end]
+
+        # Parse reorder: func_name: reorder i,j,k,... @ start-end
+        m = re.match(r'(\w+)\s*:\s*reorder\s+([\d,]+)\s*@\s*(\d+)\s*-\s*(\d+)', line)
+        if m:
+            func = m.group(1)
+            order = [int(x) for x in m.group(2).split(',')]
+            start = int(m.group(3))
+            end = int(m.group(4))
+            config.setdefault(func, {'swaps': [], 'reorders': []})
+            config[func]['reorders'].append((start, end, order))
+            continue
+
+        # Parse register swap: func_name: $X <-> $Y [@ start-end]
         m = re.match(r'(\w+)\s*:\s*(\$\w+)\s*<->\s*(\$\w+)(?:\s*@\s*(\d+)\s*-\s*(\d+))?', line)
         if m:
             func = m.group(1)
@@ -49,10 +62,12 @@ def load_config(config_path):
             reg_b = m.group(3)
             start = int(m.group(4)) if m.group(4) is not None else None
             end = int(m.group(5)) if m.group(5) is not None else None
-            swaps.setdefault(func, []).append((reg_a, reg_b, start, end))
-        else:
-            print(f"regfix: WARNING: ignoring malformed line: {line}", file=sys.stderr)
-    return swaps
+            config.setdefault(func, {'swaps': [], 'reorders': []})
+            config[func]['swaps'].append((reg_a, reg_b, start, end))
+            continue
+
+        print(f"regfix: WARNING: ignoring malformed line: {line}", file=sys.stderr)
+    return config
 
 
 def is_instruction(line):
@@ -62,26 +77,17 @@ def is_instruction(line):
         return False
     if s.startswith('.') or s.startswith('#') or s.endswith(':'):
         return False
-    # Assembler directives we should skip
-    if any(s.startswith(d) for d in ('gcc2_compiled', '.set', '.frame', '.mask', '.fmask',
-                                      '.file', '.version', '.ident', '.size', '.type',
-                                      '.globl', '.ent', '.end', '.align', '.text',
-                                      '.data', '.rdata', '.section')):
+    if any(s.startswith(d) for d in ('gcc2_compiled',)):
         return False
     return True
 
 
-def swap_registers(line, swap_pairs, insn_idx):
-    """Apply register swaps to an assembly line.
-
-    Only applies swaps whose range includes the current instruction index.
-    Uses a placeholder to avoid A->B then B->A double-swap.
-    """
-    for reg_a, reg_b, start, end in swap_pairs:
-        # Check range
+def swap_registers_in_line(line, swap_list, insn_idx):
+    """Apply register swaps to a single assembly line."""
+    for reg_a, reg_b, start, end in swap_list:
         if start is not None and (insn_idx < start or insn_idx > end):
             continue
-        placeholder = f"__REGFIX_{id(swap_pairs)}_{reg_a}__"
+        placeholder = f"__REGFIX_{id(swap_list)}_{reg_a}__"
         ra = re.escape(reg_a)
         rb = re.escape(reg_b)
         line = re.sub(r'(?<!\w)' + ra + r'(?!\d)', placeholder, line)
@@ -90,54 +96,117 @@ def swap_registers(line, swap_pairs, insn_idx):
     return line
 
 
+def process_function(lines, func_config):
+    """Process a collected function's lines: apply swaps then reorders.
+
+    lines is a list of (original_line_text, insn_idx_or_None) tuples.
+    """
+    swap_list = func_config.get('swaps', [])
+    reorder_list = func_config.get('reorders', [])
+
+    # Phase 1: Apply register swaps
+    if swap_list:
+        new_lines = []
+        for text, idx in lines:
+            if idx is not None:
+                text = swap_registers_in_line(text, swap_list, idx)
+            new_lines.append((text, idx))
+        lines = new_lines
+
+    # Phase 2: Apply instruction reorders
+    for reorder_start, reorder_end, new_order in reorder_list:
+        # Build map of insn_idx -> line index in our list
+        idx_to_pos = {}
+        for pos, (text, idx) in enumerate(lines):
+            if idx is not None and reorder_start <= idx <= reorder_end:
+                idx_to_pos[idx] = pos
+
+        # Validate
+        expected = set(range(reorder_start, reorder_end + 1))
+        if set(new_order) != expected:
+            print(f"regfix: WARNING: reorder indices {new_order} don't match range {reorder_start}-{reorder_end}", file=sys.stderr)
+            continue
+
+        # Collect the instruction lines in their current order
+        positions = sorted(idx_to_pos.values())
+        insn_lines = [lines[p] for p in positions]
+
+        # Map new_order indices to the instruction lines
+        idx_to_line = {idx: line_tuple for idx, line_tuple in zip(range(reorder_start, reorder_end + 1), insn_lines)}
+        reordered = [idx_to_line[i] for i in new_order]
+
+        # Put them back into the positions
+        for pos, new_line in zip(positions, reordered):
+            lines[pos] = new_line
+
+    return lines
+
+
 def main():
     script_dir = Path(__file__).resolve().parent
     project_root = script_dir.parent
     config_path = project_root / 'regfix.txt'
 
-    swaps = load_config(config_path)
-    if not swaps:
+    config = load_config(config_path)
+    if not config:
         for line in sys.stdin:
             sys.stdout.write(line)
         return
 
     current_func = None
-    current_swaps = None
+    current_config = None
+    func_lines = []  # collected lines for current function
     insn_idx = 0
+    buffering = False
 
-    for line in sys.stdin:
+    all_input = sys.stdin.readlines()
+
+    i = 0
+    while i < len(all_input):
+        line = all_input[i]
         stripped = line.strip()
 
         # Match function entry label
         label_match = re.match(r'^(\w+):$', stripped)
-        if label_match:
+        if label_match and not buffering:
             func_name = label_match.group(1)
-            if func_name in swaps:
+            if func_name in config:
                 current_func = func_name
-                current_swaps = swaps[func_name]
+                current_config = config[func_name]
+                func_lines = [(line, None)]
                 insn_idx = 0
-            elif current_func and func_name.startswith('$'):
-                pass  # local label — still in function
-            # Don't clear on other labels (could be branch targets like .L2)
+                buffering = True
+                i += 1
+                continue
 
-        # Detect end of function
-        end_match = re.match(r'^\s*\.end\s+(\w+)', stripped)
-        if end_match:
-            if current_func and current_swaps and is_instruction(stripped):
-                line = swap_registers(line, current_swaps, insn_idx)
-            sys.stdout.write(line)
-            if end_match.group(1) == current_func:
-                current_func = None
-                current_swaps = None
-            continue
+        if buffering:
+            # Detect end of function
+            end_match = re.match(r'^\s*\.end\s+(\w+)', stripped)
 
-        # Apply swaps if inside a target function
-        if current_func and current_swaps:
             if is_instruction(stripped):
-                line = swap_registers(line, current_swaps, insn_idx)
+                func_lines.append((line, insn_idx))
                 insn_idx += 1
+            else:
+                func_lines.append((line, None))
 
-        sys.stdout.write(line)
+            if end_match and end_match.group(1) == current_func:
+                # Process and emit the collected function
+                processed = process_function(func_lines, current_config)
+                for text, _ in processed:
+                    sys.stdout.write(text)
+                buffering = False
+                current_func = None
+                current_config = None
+                func_lines = []
+        else:
+            sys.stdout.write(line)
+
+        i += 1
+
+    # Flush any remaining buffered lines (shouldn't happen in well-formed input)
+    if buffering:
+        for text, _ in func_lines:
+            sys.stdout.write(text)
 
 
 if __name__ == '__main__':
