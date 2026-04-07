@@ -983,18 +983,30 @@ INCLUDE_ASM("asm/funcs", coli_hit_body_weapon);
 INCLUDE_ASM("asm/funcs", cpu_check_tubazeri_2);
 /* kengo:HIGH  |  nm_cpu/cpu_check_tubazeri_2  |  76i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", func_80030900);
+typedef struct { s32 x, y, z; } Vec3_copy;
 extern s32 rng_Next(void);
-extern s32 *coli_hit_body_weapon(s32 *a0, s16 a1);
-extern s32 rng_Next(void);
-extern s32 *coli_hit_body_weapon(s32 *a0, s32 a1);
-extern s32 rng_Next(void);
-extern s32 *coli_hit_body_weapon(s32 *a0, s32 a1);
-extern s32 rng_Next(void);
-extern s32 *coli_hit_body_weapon(s32 *a0, s32 a1);
-extern s32 rng_Next(void);
-extern s32 *coli_hit_body_weapon(s32 *a0, s32 a1);
-INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir);
-/* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir  |  57i */
+extern s32 *coli_hit_body_weapon(s32 *, s32);
+void cpu_set_move_command_and_dir(s32 *a0, s32 a1, s32 *a2) {
+    s32 *p;
+    s32 rnd;
+
+    p = coli_hit_body_weapon(a0, a1);
+    *((u8 *)p + 4) = 0;
+    *(Vec3_copy *)((u8 *)p + 0x2C) = *(Vec3_copy *)a2;
+    *(s32 *)((u8 *)p + 0x44) = (rng_Next() & 0xFF) - 0x80;
+    *(s32 *)((u8 *)p + 0x48) = -(rng_Next() & 0x3F) - 0x80;
+    *(s32 *)((u8 *)p + 0x4C) = (rng_Next() & 0xFF) - 0x80;
+    rnd = rng_Next();
+    if (rnd & 0x1000) {
+        *(s16 *)((u8 *)p + 0x5C) = (rnd & 0x3FF) + 0x200;
+    } else {
+        *(s16 *)((u8 *)p + 0x5C) = -(rnd & 0x3FF) - 0x200;
+    }
+    *(s16 *)((u8 *)p + 0x5E) = (rng_Next() & 0x7FF) - 0x400;
+    *(s16 *)((u8 *)p + 0x60) = 0;
+    *((u8 *)p + 7) = 1;
+    *((u8 *)p + 0xB) = *(u16 *)((u8 *)a0 + 0x12);
+}
 
 
 
@@ -1447,6 +1459,7 @@ INCLUDE_ASM("asm/funcs", DispSamnailWindow);
 /* kengo:LOW  |  su_menu_vs/_DispSamnailWindow  |  149i  |  PS2 UI — reverted */
 INCLUDE_ASM("asm/funcs", func_80034708);
 INCLUDE_ASM("asm/funcs", func_80034F88);
+/* TABLED: score 2145, branch polarity (beqz vs bnez) + address folding + v1/a0 reg alloc mismatch */
 INCLUDE_ASM("asm/funcs", func_8003504C);
 INCLUDE_ASM("asm/funcs", func_80035280);
 void func_80035430(void) {
