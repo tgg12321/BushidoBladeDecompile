@@ -240,6 +240,57 @@ wsl bash -c 'cd /path/to/worktree && source .venv/bin/activate && make 2>&1 | ta
 ```
 Expected success output: `OK: bb2 matches!`
 
+## WSL Execution Rules (MANDATORY)
+
+All decomp operations go through `tools/dc.sh` — never construct raw WSL pipelines for compile/score/build.
+
+```bash
+wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash tools/dc.sh <command> [args]'
+```
+
+| Command | Purpose |
+|---------|---------|
+| `dc.sh compile <func_dir>` | Compile base.c + objdump disassembly |
+| `dc.sh score <func_dir>` | Permuter score only (one line) |
+| `dc.sh debug <func_dir>` | Full permuter --debug diff + score |
+| `dc.sh build` | Incremental make, tail output |
+| `dc.sh replace <src> <func> <c_file>` | Replace INCLUDE_ASM with C code (LF-safe) |
+| `dc.sh setup <func> <src>` | Set up permuter directory |
+| `dc.sh analysis <func>` | Run asm_analysis.py |
+
+### File Editing
+
+- **Build files** (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, `*.txt`): **ALWAYS write through WSL** (python3 -c, dc.sh replace, or heredoc). Never use Windows Edit/Write — CRLF silently breaks the GNU toolchain.
+- **Non-build files** (memory, CLAUDE.md, tools/*.py, tools/*.sh): Native Edit/Write is fine.
+
+### Execution Discipline
+
+1. **Never use `run_in_background`** for compile/score/build commands — they take <15 seconds.
+2. **Always use `2>&1`** on WSL commands to capture stderr.
+3. **Ignore systemd warnings** — `"Failed to start systemd user session"` is cosmetic, the command still runs. Do not retry.
+4. **For multi-function loops**, use python3 instead of bash for-loops (variable expansion through `wsl bash -c` is unreliable).
+
+## Function Matching Process (MANDATORY)
+
+### Starting a Function
+
+1. **Try without register asm hints first.** GCC 2.7.2's natural allocation usually matches for ≤4 callee-saved regs. Hints often cause extra copies and inflate the frame.
+2. **Full diff analysis after first structurally-correct attempt.** Once frame size and save count match, do a complete side-by-side (`dc.sh debug`). List EVERY difference. Categorize as: register, scheduling, structural, or missing/extra. Plan fixes for all before next attempt.
+3. **One variable per attempt.** Change exactly one thing, verify no regression.
+
+### Key GCC 2.7.2 Techniques
+
+- **`>> N` vs `/ 2^N`**: Check target for bgez/addiu rounding pattern. Absent → shift. Present → division.
+- **Split expressions for load scheduling**: `s32 sum = expr; load = ...; result = sum >> N;` positions a load in the pipeline stall.
+- **Intermediate variables control subtraction order**: `s32 val = A - B; result = val - C;` prevents GCC from commuting to `A - C - B`.
+- **Variable declaration position = load timing**: Declare early → loads early. Declare after heavy computation → loads late.
+
+### Anti-patterns
+
+- Don't use register asm as a first resort — it's a last resort
+- Don't change two things between attempts
+- Don't spiral on scheduling without checking structural correctness first
+
 ## Key Conventions for PS1 Decomp
 
 - All addresses are MIPS virtual addresses in KSEG0 (`0x80000000`+)
