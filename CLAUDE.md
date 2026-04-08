@@ -291,6 +291,17 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 - Don't change two things between attempts
 - Don't spiral on scheduling without checking structural correctness first
 
+## Error Response Protocol (MANDATORY)
+
+When a tool call, command, or process fails, **do not just retry with a fix and move on.** Instead:
+
+1. **Diagnose the root cause.** Why did it fail? Was it a one-off environment issue or a systemic problem?
+2. **Fix it permanently.** If the fix is a script change, make the change. If it's a workflow pattern, update CLAUDE.md or the relevant tool.
+3. **Commit the fix.** If you changed a script or tool, commit it so future sessions benefit.
+4. **Update rules if needed.** If the error reveals a bad pattern (e.g., using Edit on build files, using run_in_background for compiles), add a rule to CLAUDE.md preventing it from happening again.
+
+The goal: **every error should only happen once.** If you find yourself working around the same issue twice, that's a failure to enforce. The second occurrence means you should have fixed it the first time.
+
 ## Key Conventions for PS1 Decomp
 
 - All addresses are MIPS virtual addresses in KSEG0 (`0x80000000`+)
