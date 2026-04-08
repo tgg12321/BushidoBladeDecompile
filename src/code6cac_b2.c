@@ -870,6 +870,8 @@ void func_80036F40(void) {
     }
     func_8003AAB0();
 }
+extern void tslPolyF4Init(s32, u8 *, s32);
+/* TABLED: same size, score 185 — register allocation: SpecialCam in a1 vs v1, entry loads v1/v0 vs a0/a1, sb/sh addressing modes swapped */
 INCLUDE_ASM("asm/funcs", func_80036FD4);
 s32 func_80037110(s32 arg0) {
     u8 *s0 = (u8 *)&D_8008F13C + (arg0 << 3);
