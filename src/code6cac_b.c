@@ -610,8 +610,45 @@ void func_80027334(s16 *arg0) {
     arg0[0x26] = 0;
     arg0[0x29] = 0xBCD;
 }
-INCLUDE_RODATA("asm/rodata", jtbl_80010498);
-INCLUDE_ASM("asm/funcs", func_8002738C);
+void func_8002738C(s32 a0, s32 a1) {
+    if (D_800A38DC != 0) {
+        return;
+    }
+    switch (a1) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            *(&D_800A376A + a0) |= 0x10;
+            break;
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+            *(&D_800A376A + a0) |= 0x01;
+            break;
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+            *(&D_800A376A + a0) |= 0x02;
+            break;
+        case 14:
+        case 15:
+        case 16:
+        case 17:
+            *(&D_800A376A + a0) |= 0x04;
+            break;
+        case 18:
+        case 19:
+        case 20:
+        case 21:
+            *(&D_800A376A + a0) |= 0x08;
+            break;
+    }
+}
 void func_80027438(u8 *a0, s32 a1, s16 a2) {
     s16 v1;
     v1 = D_800A38DC;
@@ -1569,7 +1606,7 @@ INCLUDE_ASM("asm/funcs", DispSamnailWindow);
 /* kengo:LOW  |  su_menu_vs/_DispSamnailWindow  |  149i  |  PS2 UI — reverted */
 INCLUDE_ASM("asm/funcs", func_80034708);
 INCLUDE_ASM("asm/funcs", func_80034F88);
-/* TABLED: score 2145, branch polarity (beqz vs bnez) + address folding + v1/a0 reg alloc mismatch */
+/* TABLED: -4 bytes. Branch inversion (beqz→bnez+ori delay slot), load order (lbu before lw vs lw,lbu fill), byte caching. Best: volatile ptr + inverted cond gives bnez+ori but lbu before lw. */
 INCLUDE_ASM("asm/funcs", func_8003504C);
 INCLUDE_ASM("asm/funcs", func_80035280);
 void func_80035430(void) {
