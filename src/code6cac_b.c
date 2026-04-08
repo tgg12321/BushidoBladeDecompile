@@ -1660,6 +1660,7 @@ void func_800343F0(void) {
 INCLUDE_ASM("asm/funcs", DispSamnailWindow);
 /* kengo:LOW  |  su_menu_vs/_DispSamnailWindow  |  149i  |  PS2 UI — reverted */
 INCLUDE_ASM("asm/funcs", func_80034708);
+/* TABLED: -4 bytes, score 1980. Target alternates v1/a0 for D_80106A73 address — unreproducible register allocation pattern */
 INCLUDE_ASM("asm/funcs", func_80034F88);
 /* TABLED: -4 bytes. Branch inversion (beqz→bnez+ori delay slot), load order (lbu before lw vs lw,lbu fill), byte caching. Best: volatile ptr + inverted cond gives bnez+ori but lbu before lw. */
 INCLUDE_ASM("asm/funcs", func_8003504C);
