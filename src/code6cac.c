@@ -800,7 +800,29 @@ void func_8001BC70(u8 *arg0, s32 arg1) {
     D_800F661C = 0;
     D_800F6620 = 0x1162;
 }
-INCLUDE_ASM("asm/funcs", func_8001BCF0);
+void func_8001BCF0(u8 *arg0, s32 arg1) {
+    typedef struct { s32 x, y, z; } Vec3;
+    s32 diff = 0x1000 - arg1;
+
+    func_8003F1E4(0);
+
+    *(Vec3 *)&D_800F6608 = *(Vec3 *)(arg0 + 0xB8);
+
+    D_800F660C -= 0x44C;
+
+    D_800F6618 = 0x100 - (arg1 * 288) / 4096;
+
+    {
+        s32 div4 = arg1 / 4;
+        s32 sum = arg1 * 3000 + diff * 8000;
+        u16 lhu_val = *(u16 *)(arg0 + 0x1CA);
+        s32 val;
+        D_800F6620 = sum >> 12;
+        val = 0xB00 - div4;
+        D_800F661C = 0;
+        D_800F661A = val - lhu_val;
+    }
+}
 void func_8001BE08(s32 *arg0) {
     arg0[2] = 0;
     arg0[3] = 0;
