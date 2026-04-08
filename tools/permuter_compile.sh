@@ -27,7 +27,9 @@ CC_FLAGS="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-bu
 cd "$ROOT"
 
 # Copy input to /tmp to avoid spaces in path (maspsx .file directive bug)
-TMP_INPUT="/tmp/bb2_permuter_input.c"
+# Use PID-based name to avoid collisions with parallel runs
+TMP_INPUT="/tmp/bb2_permuter_input_$$.c"
+trap 'rm -f "$TMP_INPUT"' EXIT
 cp "$INPUT" "$TMP_INPUT"
 
 mipsel-linux-gnu-cpp \
