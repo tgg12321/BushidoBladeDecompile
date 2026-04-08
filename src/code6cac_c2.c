@@ -248,7 +248,7 @@ extern s16 D_800A36A4;
 extern u8 D_800A3768;
 extern u8 D_800A38F8;
 extern void func_8005B50C(void);
-extern void func_8007ABB8(s32 *, s32 *, s32, s32);
+extern void func_8007ABB8(u32 *, s16 *, s32, s32);
 extern s32 func_8003F268(void);
 extern s32 func_80052C28(s32, s32);
 extern s32 func_800788B0(void);
@@ -1162,7 +1162,33 @@ void func_8003D91C(void) {
     buf[3] = 8;
     func_8003D9A0(buf, 0x13, &D_800A4340);
 }
-INCLUDE_ASM("asm/funcs", func_8003D9A0);
+typedef struct { s32 w[6]; } Copy24;
+void func_8003D9A0(s16 *a0, s32 a1, u32 *a2) {
+    register s16 *s0 asm("s0") = a0;
+    register u32 *s1 asm("s1") = a2;
+    s32 s4, s3;
+    s32 s2;
+
+    asm("" : : "r"(s1));
+    s4 = s0[0];
+    s3 = s0[1];
+
+    if (a1 != 0) {
+        s2 = a1 - 1;
+        do {
+            s16 v0;
+            v0 = (u16)s0[1] + (u16)s0[3];
+            s0[1] = v0;
+            if (v0 >= 0x200) {
+                s0[1] = s3;
+                s0[0] = (u16)s0[0] + (u16)s0[2];
+            }
+            func_8007ABB8(s1, s0, s4, s3);
+            *(Copy24 *)((u8 *)s1 + 0x18) = *(Copy24 *)s1;
+            s1 = (u32 *)((u8 *)s1 + 0x30);
+        } while (--s2 != -1);
+    }
+}
 INCLUDE_ASM("asm/funcs", func_8003DA8C);
 INCLUDE_ASM("asm/funcs", func_8003DBE4);
 void func_8003DDF8(u32 arg0) {
