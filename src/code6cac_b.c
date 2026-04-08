@@ -982,10 +982,34 @@ INCLUDE_ASM("asm/funcs", coli_hit_body_weapon);
 /* kengo:HIGH  |  is_coli/coli_hit_body_weapon  |  148i */
 INCLUDE_ASM("asm/funcs", cpu_check_tubazeri_2);
 /* kengo:HIGH  |  nm_cpu/cpu_check_tubazeri_2  |  76i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", func_80030900);
 typedef struct { s32 x, y, z; } Vec3_copy;
 extern s32 rng_Next(void);
 extern s32 *coli_hit_body_weapon(s32 *, s32);
+void func_80030900(u8 *a0, s32 *a1) {
+    s32 *p;
+    s32 rnd;
+    s32 i;
+
+    p = coli_hit_body_weapon((s32 *)a0, *(s16 *)(a0 + 0x332));
+    *((u8 *)p + 4) = 0;
+    *(Vec3_copy *)((u8 *)p + 0x2C) = *(Vec3_copy *)a1;
+    *(s32 *)((u8 *)p + 0x44) = (rng_Next() & 0xFF) - 0x80;
+    *(s32 *)((u8 *)p + 0x48) = -(rng_Next() & 0x3F) - 0x80;
+    *(s32 *)((u8 *)p + 0x4C) = (rng_Next() & 0xFF) - 0x80;
+    rnd = rng_Next();
+    if (rnd & 0x1000) {
+        *(s16 *)((u8 *)p + 0x5C) = (rnd & 0x3FF) + 0x200;
+    } else {
+        *(s16 *)((u8 *)p + 0x5C) = -(rnd & 0x3FF) - 0x200;
+    }
+    *(s16 *)((u8 *)p + 0x5E) = (rng_Next() & 0x7FF) - 0x400;
+    *(s16 *)((u8 *)p + 0x60) = 0;
+    *((u8 *)p + 7) = 1;
+    for (i = 0; i < *(s16 *)(a0 + 0x330) - 1; i++) {
+        *(u16 *)(a0 + 0x332 + i * 2) = *(u16 *)(a0 + 0x334 + i * 2);
+    }
+    *(s16 *)(a0 + 0x330) = (s16)(*(u16 *)(a0 + 0x330) - 1);
+}
 void cpu_set_move_command_and_dir(s32 *a0, s32 a1, s32 *a2) {
     s32 *p;
     s32 rnd;
