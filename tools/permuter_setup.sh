@@ -96,10 +96,48 @@ if [ -n "$SOURCE_FILE" ] && [ -f "$ROOT/$SOURCE_FILE" ]; then
     # Check if we got a valid base.c
     if [ ! -s "$WORK_DIR/base.c" ] || ! grep -q "$FUNC_NAME" "$WORK_DIR/base.c" 2>/dev/null; then
         echo "  WARNING: Could not extract $FUNC_NAME from $SOURCE_FILE."
-        echo "  Creating stub base.c instead."
+        # Try m2c as fallback
+        _try_m2c=1
+    fi
+else
+    # No source file specified — try m2c directly
+    _try_m2c=1
+fi
+
+# --- m2c fallback: generate base.c from assembly ---
+if [ "${_try_m2c:-0}" = "1" ]; then
+    M2C="$ROOT/tools/m2c/m2c.py"
+    STRUCT_FIX="$ROOT/tools/struct_copy_fix.py"
+    if [ -f "$M2C" ]; then
+        echo "  Running m2c on $FUNC_NAME..."
+        M2C_OUT=$(python3 "$M2C" --valid-syntax -t mipsel-gcc-c "$FUNC_ASM" 2>/dev/null) || true
+        if [ -n "$M2C_OUT" ] && echo "$M2C_OUT" | grep -q "$FUNC_NAME"; then
+            # Apply struct copy fix if the tool exists
+            if [ -f "$STRUCT_FIX" ]; then
+                FIXED=$(echo "$M2C_OUT" | python3 "$STRUCT_FIX" /dev/stdin --asm "$FUNC_ASM" 2>/dev/null) || true
+                if [ -n "$FIXED" ]; then
+                    # Report what was fixed
+                    FIXES=$(echo "$M2C_OUT" | python3 "$STRUCT_FIX" /dev/stdin --asm "$FUNC_ASM" --dry-run 2>/dev/null) || true
+                    if [ -n "$FIXES" ] && ! echo "$FIXES" | grep -q "No struct copy"; then
+                        echo "  struct_copy_fix: $FIXES"
+                    fi
+                    M2C_OUT="$FIXED"
+                fi
+            fi
+            echo "$M2C_OUT" > "$WORK_DIR/base.c"
+            echo "  Created base.c from m2c output."
+        else
+            echo "  m2c failed; creating stub base.c instead."
+            _create_stub=1
+        fi
+    else
+        echo "  m2c not found; creating stub base.c instead."
+        _create_stub=1
+    fi
+
+    if [ "${_create_stub:-0}" = "1" ]; then
         cat > "$WORK_DIR/base.c" << BASEC
 // TODO: Add proper types, externs, and function body
-// Source file: $SOURCE_FILE
 // Function: $FUNC_NAME
 
 typedef unsigned char u8;
@@ -114,23 +152,6 @@ void $FUNC_NAME(void) {
 }
 BASEC
     fi
-else
-    echo "  No source file specified; creating minimal stub."
-    cat > "$WORK_DIR/base.c" << BASEC
-// TODO: Add proper types, externs, and function body
-// Function: $FUNC_NAME
-
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-
-void $FUNC_NAME(void) {
-    // TODO: decompile this function
-}
-BASEC
 fi
 
 # --- Copy compile.sh ---
