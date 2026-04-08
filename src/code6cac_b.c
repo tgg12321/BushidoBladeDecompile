@@ -1405,6 +1405,7 @@ void func_80033898(void) {
 INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action);
 /* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action  |  189i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", func_80033BC0);
+/* TABLED: score 235, 94/94 insns. GCC eliminates andi v1,a0,0xFF after lbu (knows 0-255), inline asm prevents load interleaving. */
 void func_80033D38(void) {
     register u8 *t1 asm("t1") = (u8 *)&D_80106A50;
     register s32 a3 asm("a3");
