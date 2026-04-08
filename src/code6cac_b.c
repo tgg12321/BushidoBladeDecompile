@@ -1117,7 +1117,57 @@ void func_80032040(void) {
         (&D_80104E88)[i] = 0;
     }
 }
-INCLUDE_ASM("asm/funcs", func_80032064);
+extern s32 func_80032854(s32, s32, u8 *, s16 *);
+u8 *func_80032064(u8 *a0, s32 a1) {
+    register u8 *src asm("a2");
+    register s32 type asm("a3");
+    s32 mul;
+    s32 sw_val;
+    s32 i;
+    u8 *ptr;
+    u8 *s0;
+    s16 sp_area[2];
+
+    src = a0;
+    type = a1;
+    mul = 0x50;
+    sw_val = -0xC8;
+    i = 0;
+    ptr = &D_80104E88;
+
+    for (i = 0; i < 4; i++) {
+        s0 = ptr;
+        if (*s0 == 0) break;
+        ptr = s0 + 0x2C;
+    }
+    if (i == 4) return 0;
+
+    *s0 = type;
+    *(s0 + 1) = 1;
+    *(s0 + 2) = 0;
+    *(s0 + 3) = *(u16 *)(src + 4);
+    *(s32 *)(s0 + 4) = *(s32 *)(src + 0xF4);
+    {
+        s32 v1 = *(s16 *)(src + 0x1A);
+        if (v1 < 0) v1 += 0x1F;
+        *(s32 *)(s0 + 8) = *(s32 *)(src + 0xBC) - (v1 >> 5);
+    }
+    *(s32 *)(s0 + 0xC) = *(s32 *)(src + 0xFC);
+    *(s32 *)(s0 + 0x1C) = ((s32)*(&Judge + (*(u16 *)(src + 0x1CA) & 0xFFF)) * mul) >> 12;
+    *(s32 *)(s0 + 0x20) = sw_val;
+    *(s32 *)(s0 + 0x24) = ((s32)*(&Judge + ((*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF)) * mul) >> 12;
+    *(Vec3_copy *)(s0 + 0x10) = *(Vec3_copy *)(s0 + 4);
+    *(s32 *)(s0 + 0x28) = *(s32 *)(src + 0xBC);
+    sp_area[1] = *(u16 *)(src + 0x1CA);
+    {
+        s32 a0_arg = *(u8 *)(src + 0xB2);
+        s32 cmd = 0xD;
+        u8 *v1 = s0 + 4;
+        if (type == 1) cmd = 0xC;
+        func_80032854(a0_arg, cmd, v1, sp_area);
+    }
+    return s0;
+}
 INCLUDE_ASM("asm/funcs", func_800321E8);
 INCLUDE_ASM("asm/funcs", Pad_Prs);
 /* kengo:HIGH  |  is_pad/Pad_Prs  |  111i */
