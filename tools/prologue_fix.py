@@ -612,12 +612,95 @@ def apply_delay_slot_ra(lines, func_name):
     return True
 
 
+def apply_frame_fix(lines, func_name, target_frame):
+    """Adjust function frame size and register save/restore offsets.
+
+    When GCC allocates a smaller frame than the target binary, this adjusts
+    the addiu $sp instructions and all callee-save sw/lw offsets by the delta.
+    """
+    CALLEE_SAVE = {'$s0','$s1','$s2','$s3','$s4','$s5','$s6','$s7','$fp','$ra',
+                   '$16','$17','$18','$19','$20','$21','$22','$23','$30','$31'}
+
+    # Find .ent and .end boundaries
+    ent_idx = end_idx = None
+    for i, line in enumerate(lines):
+        if re.match(rf'\s*\.ent\s+{re.escape(func_name)}\b', line):
+            ent_idx = i
+        elif ent_idx is not None and re.match(rf'\s*\.end\s+{re.escape(func_name)}\b', line):
+            end_idx = i
+            break
+    if ent_idx is None:
+        return False
+
+    if end_idx is None:
+        end_idx = len(lines)
+
+    # Find GCC frame size from addiu $sp,$sp,-N or subu $sp,$sp,N
+    gcc_frame = None
+    for i in range(ent_idx, min(ent_idx + 40, end_idx)):
+        m = re.match(r'(\s*)addiu\s+\$sp\s*,\s*\$sp\s*,\s*-(\d+)', lines[i])
+        if m:
+            gcc_frame = int(m.group(2))
+            break
+        m = re.match(r'(\s*)subu\s+\$sp\s*,\s*\$sp\s*,\s*(\d+)', lines[i])
+        if m:
+            gcc_frame = int(m.group(2))
+            break
+    if gcc_frame is None or gcc_frame == target_frame:
+        return False
+
+    delta = target_frame - gcc_frame
+
+    # Adjust .frame directive
+    for i in range(ent_idx, min(ent_idx + 5, end_idx)):
+        m = re.match(r'(\s*\.frame\s+\$sp\s*,\s*)(\d+)(.*)', lines[i])
+        if m:
+            lines[i] = f"{m.group(1)}{target_frame}{m.group(3)}\n"
+            break
+
+    # Adjust .mask offset (negative offset from frame top)
+    for i in range(ent_idx, min(ent_idx + 5, end_idx)):
+        m = re.match(r'(\s*\.mask\s+0x[0-9a-fA-F]+\s*,\s*)-(\d+)', lines[i])
+        if m:
+            old_off = int(m.group(2))
+            lines[i] = f"{m.group(1)}-{old_off}\n"
+            break
+
+    # Adjust all sp-relative instructions in the function
+    for i in range(ent_idx, end_idx):
+        line = lines[i]
+
+        # subu/addu $sp,$sp,N (prologue alloc or epilogue dealloc)
+        m = re.match(r'(\s*(?:subu|addu|addiu)\s+\$sp\s*,\s*\$sp\s*,\s*)(-?\d+)(.*)', line)
+        if m:
+            val = int(m.group(2))
+            if val == -gcc_frame:
+                lines[i] = f"{m.group(1)}{-target_frame}{m.group(3)}\n"
+            elif val == gcc_frame:
+                lines[i] = f"{m.group(1)}{target_frame}{m.group(3)}\n"
+            continue
+
+        # sw/lw $callee_save, offset($sp)
+        m = re.match(r'(\s*)(sw|lw)(\s+)(\$\w+)(\s*,\s*)(\d+)(\(\$sp\).*)', line)
+        if m:
+            reg = m.group(4)
+            offset = int(m.group(6))
+            # Only adjust callee-save register saves (offset >= 16, i.e. above arg area)
+            if reg in CALLEE_SAVE and offset >= 16:
+                new_offset = offset + delta
+                lines[i] = f"{m.group(1)}{m.group(2)}{m.group(3)}{reg}{m.group(5)}{new_offset}{m.group(7)}\n"
+            continue
+
+    return True
+
+
 def main():
     script_dir = Path(__file__).parent
     config_path = script_dir / "prologue_config.json"
     delay_slot_ra_path = script_dir / "delay_slot_ra_funcs.txt"
+    frame_fix_path = script_dir / "frame_fix_funcs.txt"
 
-    if not config_path.exists() and not delay_slot_ra_path.exists():
+    if not config_path.exists() and not delay_slot_ra_path.exists() and not frame_fix_path.exists():
         sys.stdout.write(sys.stdin.read())
         return
 
@@ -634,11 +717,22 @@ def main():
                 if name and not name.startswith('#'):
                     delay_slot_ra_funcs.add(name)
 
+    frame_fix_funcs = {}
+    if frame_fix_path.exists():
+        with open(frame_fix_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        frame_fix_funcs[parts[0]] = int(parts[1])
+
     lines = sys.stdin.readlines()
 
     applied = 0
     skipped = 0
     ds_applied = 0
+    ff_applied = 0
 
     for i, line in enumerate(lines):
         m = re.match(r'\s*\.ent\s+(\S+)', line)
@@ -652,6 +746,9 @@ def main():
             if func_name in delay_slot_ra_funcs:
                 if apply_delay_slot_ra(lines, func_name):
                     ds_applied += 1
+            if func_name in frame_fix_funcs:
+                if apply_frame_fix(lines, func_name, frame_fix_funcs[func_name]):
+                    ff_applied += 1
 
     if applied > 0 or skipped > 0:
         sys.stderr.write(
@@ -660,6 +757,10 @@ def main():
     if ds_applied > 0:
         sys.stderr.write(
             f"DELAY_SLOT_RA: {ds_applied} transformed\n"
+        )
+    if ff_applied > 0:
+        sys.stderr.write(
+            f"FRAME_FIX: {ff_applied} adjusted\n"
         )
 
     sys.stdout.write(''.join(lines))

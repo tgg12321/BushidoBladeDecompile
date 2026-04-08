@@ -1,0 +1,3 @@
+# Functions that need frame size adjustment
+# Format: func_name target_frame_size
+func_8003D9A0 56
