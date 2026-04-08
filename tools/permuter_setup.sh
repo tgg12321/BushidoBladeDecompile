@@ -162,6 +162,18 @@ cat > "$WORK_DIR/settings.toml" << TOML
 compiler = "gcc"
 TOML
 
+# --- Run asm_analysis.py for decompilation hints ---
+ASM_ANALYSIS="$ROOT/tools/asm_analysis.py"
+if [ -f "$ASM_ANALYSIS" ]; then
+    echo "  Running assembly analysis..."
+    ANALYSIS=$(python3 "$ASM_ANALYSIS" "$FUNC_ASM" 2>/dev/null) || true
+    if [ -n "$ANALYSIS" ]; then
+        echo "$ANALYSIS" > "$WORK_DIR/hints.txt"
+        echo ""
+        echo "$ANALYSIS"
+    fi
+fi
+
 echo ""
 echo "=== Permuter setup complete ==="
 echo "Directory: $WORK_DIR"
