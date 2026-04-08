@@ -204,7 +204,7 @@ extern u8 D_800A390D;
 extern s32 func_80079120(s32 *, s32, s32);
 extern void func_8005BA6C(s32);
 extern s32 D_80104F38;
-extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
+extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern void func_80048BA4(s32, s32, s32);
 extern u8 D_80101EC8;
 
@@ -1206,6 +1206,7 @@ u8 *func_80032064(u8 *a0, s32 a1) {
     }
     return s0;
 }
+/* TABLED: same size, score 1450 — GCC body scheduling entirely different from target (delay slot fill choices, register allocation for intermediates) */
 INCLUDE_ASM("asm/funcs", func_800321E8);
 INCLUDE_ASM("asm/funcs", Pad_Prs);
 /* kengo:HIGH  |  is_pad/Pad_Prs  |  111i */
