@@ -1018,8 +1018,8 @@ void func_80030524(void) {
 }
 INCLUDE_ASM("asm/funcs", coli_hit_body_weapon);
 /* kengo:HIGH  |  is_coli/coli_hit_body_weapon  |  148i */
+/* TABLED: -4 bytes, beqz delay slot scheduling (GCC fills with move v1,s2 instead of move a2,v0) */
 INCLUDE_ASM("asm/funcs", cpu_check_tubazeri_2);
-/* kengo:HIGH  |  nm_cpu/cpu_check_tubazeri_2  |  76i  |  x2 size collision */
 typedef struct { s32 x, y, z; } Vec3_copy;
 extern s32 rng_Next(void);
 extern s32 *coli_hit_body_weapon(s32 *, s32);
