@@ -26,6 +26,8 @@ extern u8 D_800A6690;
 extern s16 D_800F6656;
 extern s16 D_800F6658;
 extern u8 D_800A8FB0[];
+extern s32 D_80094A6C[];
+extern u8 *D_800A3708;
 extern s32 D_800A93B0;
 extern s32 D_800A93B4;
 extern s32 D_800A93B8;
@@ -74,7 +76,46 @@ void func_8003F218(s32 a0) {
 s32 func_8003F268(void) {
     return D_800A322C;
 }
-INCLUDE_ASM("asm/funcs", func_8003F274);
+void func_8003F274(void) {
+    s32 i, j;
+    s32 col_center, row_center;
+    s32 data;
+    s32 adj_i;
+    s32 adj_j;
+    s32 *ptr = (s32 *)D_800A8FB0;
+    s32 count = 0xFF;
+
+    do {
+        *ptr = 0;
+        count--;
+        ptr++;
+    } while (count >= 0);
+
+    func_8003F268();
+
+    col_center = (*(s32 *)(D_800A3708 + 0x4C) + 0x7D00) / 2000;
+    row_center = (*(s32 *)(D_800A3708 + 0x54) + 0x7D00) / 2000;
+
+    for (i = 0; i < 16; i++) {
+        adj_i = i - 8;
+        {
+            u32 y = (u32)(row_center + adj_i);
+            if (y < 0x20) {
+                data = D_80094A6C[i];
+                for (j = 0; j < 16; j++) {
+                    adj_j = j - 8;
+                    {
+                        u32 x = (u32)(col_center + adj_j);
+                        if (x < 0x20) {
+                            s32 bits = (data >> ((15 - j) * 2)) & 3;
+                            D_800A8FB0[(y << 5) + x] |= bits;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 void func_8003F388(s16 *a0) {
     s32 x = a0[0] + 0x10;
     s32 y = a0[2] + 0x10;
