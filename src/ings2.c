@@ -32,7 +32,59 @@ s32 sys_SetTimer(s32 a0) {
     return old;
 }
 
-INCLUDE_ASM("asm/funcs", func_800828CC);
+extern volatile s32 *D_800A1510;
+extern volatile s32 *D_800A1514;
+extern s32 D_800A1518;
+extern s32 D_800A151C;
+void func_80082A14(s32 a0, s32 a1);
+
+s32 func_800828CC(s32 a0) {
+    s32 s0_val;
+    s32 s1_val;
+
+    s0_val = *D_800A1510;
+    s1_val = (*D_800A1514 - D_800A1518) & 0xFFFF;
+
+    if (a0 < 0) {
+        return D_800A2634;
+    }
+    if (a0 == 1) {
+        return s1_val;
+    }
+
+    {
+        s32 frame;
+        s32 count;
+
+        if (a0 > 0) {
+            frame = (D_800A151C + a0) - 1;
+        } else {
+            frame = D_800A151C;
+        }
+        count = 0;
+        if (a0 > 0) {
+            count = a0 - 1;
+        }
+        func_80082A14(frame, count);
+        do { } while (0);
+    }
+
+    s0_val = *D_800A1510;
+    func_80082A14(D_800A2634 + 1, 1);
+
+    if (s0_val & 0x400000) {
+        volatile s32 *ptr = D_800A1510;
+        if ((s32)(s0_val ^ *ptr) >= 0) {
+            do {
+            } while (!((s0_val ^ *ptr) & 0x80000000));
+        }
+    }
+
+    D_800A151C = D_800A2634;
+    D_800A1518 = *D_800A1514;
+
+    return s1_val;
+}
 
 extern s32 D_80016318;
 extern void tslTm2LoadImage_2(void *);

@@ -38,3 +38,8 @@ func_8001EEB4: reorder 36,38,40,39,37,41 @ 36-41
 # 3-way rotation via two sequential range-based swaps on the zeroing loop (TEXT 2-7)
 func_8003F274: $2 <-> $3 @ 2-7
 func_8003F274: $3 <-> $6 @ 2-7
+
+# func_800828CC: frame computation — swap addu/addiu around j (TEXT indices)
+func_800828CC: reorder 25,24,23 @ 23-25
+# func_800828CC: second call — move nop+lw s0 before D_800A2634 load (TEXT indices)
+func_800828CC: reorder 32,38,36,33,34,37,35 @ 32-38

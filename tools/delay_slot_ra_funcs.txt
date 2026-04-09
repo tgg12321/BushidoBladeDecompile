@@ -4,3 +4,4 @@
 # prologue_fix.py moves sw ra and unwraps the noreorder block so maspsx
 # can fill the delay slot naturally.
 func_80082A14
+func_800826CC
