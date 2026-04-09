@@ -281,7 +281,58 @@ INCLUDE_ASM("asm/funcs", action_CheckHitZangeki);
 /* kengo:HIGH  |  is_action/action_CheckHitZangeki  |  271i */
 INCLUDE_ASM("asm/funcs", md_game_end);
 /* kengo:HIGH  |  md_game/md_game_end  |  249i */
-INCLUDE_ASM("asm/funcs", func_80086BFC);
+extern u8 D_801027F7;
+extern u8 D_801027FC;
+extern s32 D_80101BC8;
+extern u16 D_800A26E4[];
+
+u16 func_80086BFC(s32 a0, s16 a1) {
+    u8 *entry;
+    s32 val, div8, col, overflow, total, row, rem, shift;
+    u16 result;
+
+    {
+        u8 idx1 = D_801027F7;
+        u8 idx2 = D_801027FC;
+        s32 combined = idx2 + (idx1 << 4);
+        entry = (u8 *)((combined << 5) + D_80101BC8);
+    }
+
+    val = (u16)a1 + entry[5];
+    if (val < 0) {
+        val += 7;
+    }
+
+    div8 = val >> 3;
+    col = div8;
+    overflow = 0;
+    if (div8 >= 0x10) {
+        overflow = 1;
+        col = div8 - 0x10;
+    }
+
+    {
+        s32 e4 = entry[4];
+        s32 base_val = a0 + 0x3C;
+        s32 diff = base_val - e4;
+        total = (s16)(overflow + diff);
+    }
+    row = total / 12;
+    rem = total - row * 12;
+
+    {
+        s32 index = ((s16)rem << 4) + (s16)col;
+        shift = (s16)(row - 5);
+        result = D_800A26E4[index];
+    }
+
+    if (shift > 0) {
+        result <<= shift;
+    } else if (shift < 0) {
+        result = (u16)result >> (-shift);
+    }
+    return result;
+}
 INCLUDE_ASM("asm/funcs", func_80086CF8);
 extern u16 D_800F1B10;
 extern u16 D_800F1B12;

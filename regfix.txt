@@ -50,3 +50,15 @@ func_80037F40: $9 <-> $10 @ 14-14
 # func_80037F40: post-memcpy scheduling - insert nop for load delay, then reorder
 func_80037F40: insert "nop" @ 30
 func_80037F40: reorder 29,30,32,33,27,28,31 @ 27-33
+
+# func_80086BFC: saved a0 in t0 ($8) instead of a3 ($7)
+func_80086BFC: $7 <-> $8 @ 11-11
+func_80086BFC: $7 <-> $8 @ 22-22
+# func_80086BFC: mfhi dest in t1 ($9) instead of t0 ($8)
+func_80086BFC: $8 <-> $9 @ 29-30
+# func_80086BFC: col sign-extension uses a3 ($7) instead of a1 ($5)
+func_80086BFC: $5 <-> $7 @ 38-38
+# func_80086BFC: col destination in overflow addiu (rd only, $5->$7)
+func_80086BFC: subst "\$5" "$7" @ 18
+# func_80086BFC: insert col=div8 copy (move a3,a1) before slti
+func_80086BFC: insert "addu $7,$5,$zero" @ 14
