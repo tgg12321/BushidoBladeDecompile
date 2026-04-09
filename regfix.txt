@@ -43,3 +43,10 @@ func_8003F274: $3 <-> $6 @ 2-7
 func_800828CC: reorder 25,24,23 @ 23-25
 # func_800828CC: second call — move nop+lw s0 before D_800A2634 load (TEXT indices)
 func_800828CC: reorder 32,38,36,33,34,37,35 @ 32-38
+
+# s0(6)=a0 → s2(8)=a0, s1(7)=D_800A125C → s0(6), s2(8)=D_800A1494 → s1(7)
+# func_80037F40: addu operand order - GCC puts base(t1) first, target has offset(t2) first
+func_80037F40: $9 <-> $10 @ 14-14
+# func_80037F40: post-memcpy scheduling - insert nop for load delay, then reorder
+func_80037F40: insert "nop" @ 30
+func_80037F40: reorder 29,30,32,33,27,28,31 @ 27-33

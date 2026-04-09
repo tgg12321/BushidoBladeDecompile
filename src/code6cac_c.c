@@ -880,7 +880,55 @@ void func_80037F08(s32 a0, s32 a1) {
     func_80079A30(buf, &D_800109C8, a0, a1);
     func_80078A28(buf);
 }
-INCLUDE_ASM("asm/funcs", func_80037F40);
+typedef struct { s32 w[4]; } Quad;
+void func_80037F40(u8 *a0) {
+    s32 checksum;
+    u8 *p;
+    s32 i;
+
+    checksum = 0;
+    p = (u8 *)&D_80106A50;
+    i = 0;
+    do {
+        checksum += *p++;
+        i++;
+    } while ((u32)i < 0x24);
+
+    i = 0;
+    {
+        Quad *end = (Quad *)&D_80106A70;
+        u8 *base = a0;
+        u8 *base2 = base;
+        s32 offset = 0;
+        do {
+            Quad *dst = (Quad *)(offset + base);
+            Quad *src = (Quad *)&D_80106A50;
+            do {
+                *dst = *src;
+                src++;
+                dst++;
+            } while (src != end);
+            *(s32 *)dst = *(s32 *)src;
+            *(s32 *)(base2 + 0x6C) = checksum;
+            {
+                s32 j = 0;
+                s16 *hp = (s16 *)base;
+                u8 *bp = base;
+                do {
+                    *(s32 *)(bp + 0x78) = 0;
+                    *(s16 *)((u8 *)hp + 0xD0) = 0;
+                    hp++;
+                    j++;
+                    bp += 4;
+                } while (j < 0x16);
+            }
+            base2 += 4;
+            i++;
+            offset += 0x24;
+        } while (i < 3);
+        *(s32 *)(base + 0xFC) = 0;
+    }
+}
 INCLUDE_ASM("asm/funcs", damage_DebugDisp);
 /* kengo:HIGH  |  is_damage_calc/damage_DebugDisp  |  79i */
 
