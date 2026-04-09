@@ -262,6 +262,7 @@ extern u8 D_8008EB80;
 extern u8 D_8008EB8E;
 extern s16 D_80101EDC;
 extern u8 D_8008E5CC;
+extern u8 D_8008E6A4;
 extern void func_80049584(s32);
 extern u8 SpecialCam;
 extern u8 D_8008D118;
@@ -1533,7 +1534,29 @@ void func_8003AF40(s32 arg0) {
     func_80040510(arg0, (&D_8008D578)[(s8)(&D_8010277C)[arg0]], (s32)0x80190800);
 }
 INCLUDE_ASM("asm/funcs", func_8003AFFC);
-INCLUDE_ASM("asm/funcs", func_8003B10C);
+void func_8003B10C(s32 arg0) {
+    s32 addr = (s32)0x80190800;
+    s32 s0;
+    u8 *tbl;
+    s32 v0;
+
+    gpu_EnableDisplay();
+    func_80020D38();
+    func_8004939C();
+
+    s0 = arg0 * 1100;
+    func_800493E4(*(s16 *)((u8 *)&D_80101EDA + s0));
+
+    if (D_800A38DC == 5) {
+        tbl = &D_8008E6A4;
+        v0 = *(s16 *)((u8 *)&D_80101ED2 + s0) * 6;
+    } else {
+        tbl = &D_8008E5CC;
+        v0 = *(s16 *)((u8 *)&D_80101ED2 + s0) * 8;
+    }
+    func_800494D4(arg0, *(tbl + v0 + *(s16 *)((u8 *)&D_80101ED6 + s0)));
+    func_80049584(addr);
+}
 void func_8003B20C(s32 arg0) {
     u8 *new_var;
     register s32 one asm("v1") = 1;
