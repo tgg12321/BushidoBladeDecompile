@@ -72,3 +72,6 @@ func_80017FA0: delete @ 9
 func_80017FA0: subst "lui.*" "nop" @ 55
 func_80017FA0: subst "ori.*" "lui $1,0x1f80" @ 57
 func_80017FA0: subst "0\(\$3\)" "0x60($1)" @ 58
+
+# func_80021280: counter in a1($5) instead of a2($6), pointer swapped
+func_80021280: $5 <-> $6
