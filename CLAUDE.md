@@ -275,8 +275,12 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 ### Starting a Function
 
 1. **Try without register asm hints first.** GCC 2.7.2's natural allocation usually matches for ≤4 callee-saved regs. Hints often cause extra copies and inflate the frame.
-2. **Full diff analysis after first structurally-correct attempt.** Once frame size and save count match, do a complete side-by-side (`dc.sh debug`). List EVERY difference. Categorize as: register, scheduling, structural, or missing/extra. Plan fixes for all before next attempt.
-3. **One variable per attempt.** Change exactly one thing, verify no regression.
+2. **Check function definitions/prototypes in the source file BEFORE writing permuter base.c.** The permuter must see the same declarations the build sees. Wrong prototypes cause different register allocation and codegen. Check: is the function defined later in the same file? What argument types does it use? Are there forward declarations?
+3. **Full diff analysis after first structurally-correct attempt.** Once frame size and save count match, do a complete side-by-side (`dc.sh debug`). List EVERY difference. Categorize as: register, scheduling, structural, or missing/extra. Plan fixes for all before next attempt.
+4. **One variable per attempt.** Change exactly one thing, verify no regression.
+5. **When permuter score ≠ 0 but structure is correct, check `make` output immediately.** The permuter compiles standalone base.c; the build compiles the full source with real prototypes. If they differ, fix the permuter to match, or skip straight to build + regfix.
+6. **If 2 C-level attempts at a codegen quirk fail, escalate to pipeline fix.** Don't keep trying source-level tricks for assembler-level problems. Use regfix (swap, reorder, insert) instead.
+7. **For regfix indices, always dump maspsx intermediate output first.** Count TEXT instructions (pseudo-insns like `la`/`lb sym` = 1 each), NOT binary instructions (where they expand to 2). Wrong indices silently corrupt the output.
 
 ### Key GCC 2.7.2 Techniques
 
@@ -285,11 +289,26 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 - **Intermediate variables control subtraction order**: `s32 val = A - B; result = val - C;` prevents GCC from commuting to `A - C - B`.
 - **Variable declaration position = load timing**: Declare early → loads early. Declare after heavy computation → loads late.
 
+### Permuter vs Regfix Decision
+
+- **Permuter is for structural alternatives** — different loop styles, expression forms, variable orderings. It explores C-level variations.
+- **Regfix is for register assignment** — when the C structure is correct but GCC assigns wrong registers.
+- **Trivial loops with no structural alternatives → regfix immediately.** A simple `do { *p=0; n--; p++; } while(n>=0)` has only one C representation. If declaration reordering doesn't fix registers in 2 attempts, the permuter won't either.
+- **When pipeline config changes (regfix.txt, sdata_funcs.txt) aren't reflected in build output**, the issue is stale object files: `rm -f build/src/<file>.o && make`. Don't debug the config file.
+
+### Source Integration (after match)
+
+- **Never use `dc.sh replace` for final integration.** It copies the standalone permuter base.c (with duplicate typedefs, externs, forward declarations) into the source file. This requires a cleanup cycle.
+- **Write the function body directly** via WSL python3, reusing existing `#include "common.h"` and the file's extern block. Add any missing externs to the file's extern section first.
+- **One check for permuter results.** `grep "score = 0"` or read the final line. Don't issue 3 separate calls.
+
 ### Anti-patterns
 
 - Don't use register asm as a first resort — it's a last resort
 - Don't change two things between attempts
 - Don't spiral on scheduling without checking structural correctness first
+- Don't run the permuter on trivial loops where there's only one possible C structure
+- Don't use `dc.sh replace` for final integration — write the function body directly
 
 ## Error Response Protocol (MANDATORY)
 
