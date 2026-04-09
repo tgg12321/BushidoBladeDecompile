@@ -33,3 +33,8 @@ func_8001EEB4: $3 <-> $5 @ 21-21
 func_8001EEB4: insert "andi $3,$5,0xFFFF" @ 16
 # Reorder: sh to delay slot, li a2 before jal (post-insert TEXT indices)
 func_8001EEB4: reorder 36,38,40,39,37,41 @ 36-41
+
+# func_8003F274: first loop ptr in v1($3) needs v0($2), count in v0($2) needs a2($6)
+# 3-way rotation via two sequential range-based swaps on the zeroing loop (TEXT 2-7)
+func_8003F274: $2 <-> $3 @ 2-7
+func_8003F274: $3 <-> $6 @ 2-7
