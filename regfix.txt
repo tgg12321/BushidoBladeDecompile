@@ -62,3 +62,13 @@ func_80086BFC: $5 <-> $7 @ 38-38
 func_80086BFC: subst "\$5" "$7" @ 18
 # func_80086BFC: insert col=div8 copy (move a3,a1) before slti
 func_80086BFC: insert "addu $7,$5,$zero" @ 14
+
+# func_80017FA0: lui+ori+sw(0) → lui+sw(offset) for scratchpad writes
+# Prologue 0xB8 write: change $3→$1, delete ori, fix sw offset
+func_80017FA0: subst "\$3" "$1" @ 8
+func_80017FA0: subst "0\(\$3\)" "0xb8($1)" @ 10
+func_80017FA0: delete @ 9
+# Epilogue 0x60 write: lui→nop, ori→lui $at, fix sw offset
+func_80017FA0: subst "lui.*" "nop" @ 55
+func_80017FA0: subst "ori.*" "lui $1,0x1f80" @ 57
+func_80017FA0: subst "0\(\$3\)" "0x60($1)" @ 58
