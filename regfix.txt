@@ -23,3 +23,13 @@ cpu_get_dist: $4 <-> $3 @ 11-11
 cpu_get_dist: $4 <-> $3 @ 14-14
 # Reorder: move cos_idx sll/lui/addu/lh before vx load, push sin mask after mult
 cpu_get_dist: reorder 11,13,14,15,10,16,17,12 @ 10-17
+
+# func_8001EEB4: GCC optimizes away andi for lhu zero-extension, original has it
+# TEXT indices (pseudo-insns like la/lb count as 1)
+# Swap v1<->a1 at lhu (TEXT 14) and range-check addiu (TEXT 21)
+func_8001EEB4: $3 <-> $5 @ 14-14
+func_8001EEB4: $3 <-> $5 @ 21-21
+# Insert the andi before the beq (TEXT 16)
+func_8001EEB4: insert "andi $3,$5,0xFFFF" @ 16
+# Reorder: sh to delay slot, li a2 before jal (post-insert TEXT indices)
+func_8001EEB4: reorder 36,38,40,39,37,41 @ 36-41

@@ -1072,7 +1072,26 @@ void func_8001EA04(void) {
 }
 INCLUDE_ASM("asm/funcs", cpu_get_move_pattern_table_number);
 /* kengo:HIGH  |  nm_cpu/cpu_get_move_pattern_table_number  |  265i  |  -3 near-exact */
-INCLUDE_ASM("asm/funcs", func_8001EEB4);
+void func_8001EEB4(void) {
+    s8 idx = D_800A3748;
+    u8 *entry = (u8 *)&D_80101EC8 + idx * 0x44C;
+    u16 a1 = *(u16 *)(entry + 0x6A);
+
+    if (a1 != 0xA && *(s16 *)(entry + 0x72) == 0 &&
+        (u32)((s32)a1 - 0x17) >= 2 && *(s16 *)(entry + 0x96) == 0) {
+        func_800218C8(D_800A3748);
+        {
+            s32 ret = func_80021A3C(D_800A3748, *(s16 *)(entry + 0xA));
+            *(s16 *)(entry + 0x5E) = 1;
+            func_80021A98(D_800A3748, ret, 1);
+        }
+        *(s16 *)(entry + 0x26C) = 1;
+    }
+
+    func_80061178();
+    D_800A37B8 = 0;
+    D_800A3834 = 0x11;
+}
 INCLUDE_ASM("asm/funcs", func_8001EFA0);
 void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
     s16 temp_v1;
