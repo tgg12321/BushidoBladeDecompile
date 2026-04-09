@@ -30,8 +30,17 @@ Config file format (regfix.txt):
   Inserts the given assembly text as a new instruction before the
   instruction at the specified index. All subsequent indices shift +1.
 
+  # Text substitution at a specific instruction index:
+  func_80086BFC: subst "addiu \\$5," "addiu \\$7," @ 21
+
+  Applies a regex substitution on the instruction at the specified index.
+  Only the first match is replaced. Useful for field-specific register
+  changes that bidirectional swaps cannot handle (e.g., changing only
+  the destination register when source uses the same register number).
+
 Order of operations: register swaps first (on original indices),
-then inserts (shifts indices), then reorders (on post-insert indices).
+then substitutions (on original indices), then inserts (shifts indices),
+then reorders (on post-insert indices).
 Instruction indices count actual instructions (not directives, labels,
 or comments) from the function entry point, 0-based.
 """
@@ -41,7 +50,7 @@ from pathlib import Path
 
 
 def load_config(config_path):
-    """Load config. Returns {func_name: {'swaps': [...], 'reorders': [], 'inserts': []}}"""
+    """Load config. Returns {func_name: {'swaps': [...], 'reorders': [], 'inserts': [], 'substs': []}}"""
     config = {}
     if not config_path.exists():
         return config
@@ -57,7 +66,7 @@ def load_config(config_path):
             order = [int(x) for x in m.group(2).split(',')]
             start = int(m.group(3))
             end = int(m.group(4))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': []})
             config[func]['reorders'].append((start, end, order))
             continue
 
@@ -67,8 +76,19 @@ def load_config(config_path):
             func = m.group(1)
             asm_text = m.group(2)
             idx = int(m.group(3))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': []})
             config[func]['inserts'].append((idx, asm_text))
+            continue
+
+        # Parse subst: func_name: subst "pattern" "replacement" @ index
+        m = re.match(r'(\w+)\s*:\s*subst\s+"([^"]+)"\s+"([^"]*)"\s*@\s*(\d+)', line)
+        if m:
+            func = m.group(1)
+            pattern = m.group(2)
+            replacement = m.group(3)
+            idx = int(m.group(4))
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': []})
+            config[func]['substs'].append((idx, pattern, replacement))
             continue
 
         # Parse register swap: func_name: $X <-> $Y [@ start-end]
@@ -79,7 +99,7 @@ def load_config(config_path):
             reg_b = m.group(3)
             start = int(m.group(4)) if m.group(4) is not None else None
             end = int(m.group(5)) if m.group(5) is not None else None
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': []})
             config[func]['swaps'].append((reg_a, reg_b, start, end))
             continue
 
@@ -119,6 +139,7 @@ def process_function(lines, func_config):
     lines is a list of (original_line_text, insn_idx_or_None) tuples.
     """
     swap_list = func_config.get('swaps', [])
+    subst_list = func_config.get('substs', [])
     insert_list = func_config.get('inserts', [])
     reorder_list = func_config.get('reorders', [])
 
@@ -128,6 +149,17 @@ def process_function(lines, func_config):
         for text, idx in lines:
             if idx is not None:
                 text = swap_registers_in_line(text, swap_list, idx)
+            new_lines.append((text, idx))
+        lines = new_lines
+
+    # Phase 1.5: Apply text substitutions (on original indices, after swaps)
+    if subst_list:
+        new_lines = []
+        for text, idx in lines:
+            if idx is not None:
+                for subst_idx, pattern, replacement in subst_list:
+                    if idx == subst_idx:
+                        text = re.sub(pattern, replacement, text, count=1)
             new_lines.append((text, idx))
         lines = new_lines
 
