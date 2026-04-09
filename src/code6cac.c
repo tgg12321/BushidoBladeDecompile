@@ -608,7 +608,61 @@ extern s32 D_80102030;
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-INCLUDE_ASM("asm/funcs", func_80017FA0);
+void func_80017FA0(s32 *a0) {
+    s32 _frame;
+    s32 temp;
+    s32 *ptr;
+
+    temp = a0[3];
+    if (temp == 0) {
+        goto end;
+    }
+    ptr = (s32 *)temp;
+
+    {
+        s32 val = ptr[0] << 7;
+        asm volatile("" : "=r"(val) : "0"(val));
+        *(volatile s32 *)0x1F8000B8 = val;
+    }
+
+    {
+        s32 i = 0;
+        if (ptr[1] > 0) {
+            s32 *p68 = ptr;
+            volatile s32 *ac_base = (volatile s32 *)0x1F800000;
+            s32 sp_off = 0;
+            do {
+                s32 j;
+                s32 data_off;
+                s32 sp_inner;
+
+                j = 0;
+                data_off = i << 5;
+                sp_inner = sp_off;
+                do {
+                    s32 *dp = (s32 *)((u8 *)ptr + data_off);
+                    *(volatile s32 *)(0x1F800064 + sp_inner) = dp[2] << 2;
+                    data_off += 0x10;
+                    *(volatile s32 *)(0x1F800068 + sp_inner) = dp[3] << 2;
+                    j++;
+                    *(volatile s32 *)(0x1F80006C + sp_inner) = dp[4] << 2;
+                    sp_inner += 0xC;
+                } while (j < 2);
+
+                ac_base[0x2B] = *(s32 *)((u8 *)p68 + 0x68) << 2;
+                p68 = (s32 *)((u8 *)p68 + 4);
+                sp_off += 0x18;
+                i++;
+                ac_base++;
+            } while (i < ptr[1]);
+        }
+    }
+
+    *(volatile s32 *)0x1F800060 = ((s32 *)a0[3])[1];
+
+end:
+    asm volatile("" : : "m"(_frame));
+}
 INCLUDE_ASM("asm/funcs", marionation_camera_Exec);
 /* kengo:MED  |  nm_mario_cam/marionation_camera_Exec  |  155i */
 INCLUDE_ASM("asm/funcs", cpu_check_run_attack);
@@ -1009,7 +1063,43 @@ void func_8001DBE4(void) {
 INCLUDE_ASM("asm/funcs", mario_test_Exec);
 /* kengo:MED  |  nm_mario_test/mario_test_Exec  |  450i  |  -19 */
 INCLUDE_ASM("asm/funcs", func_8001E404);
-INCLUDE_ASM("asm/funcs", func_8001E6E4);
+typedef struct {
+    s32 vx, vy, vz;
+    s32 pad0;
+    s16 rx, ry, rz;
+    s16 pad1;
+    s32 dist;
+    s32 pad2[11];
+} CamWork;
+
+void func_8001E6E4(s32 arg0) {
+    s32 pre_pad[2];
+    CamWork local;
+    s32 *s2;
+
+    s2 = (s32 *)&D_800F5328;
+    if ((u32)(arg0 - 0x555) >= 0x556U) {
+        s2 = (s32 *)&D_800F6608;
+    }
+
+    local.vx = s2[0] + D_800FF5C8;
+    local.vy = s2[1] + D_800FF5CC;
+    local.vz = s2[2] + D_800FF5D0;
+    local.rx = *(u16 *)((u8 *)s2 + 0x10) + (u16)D_800FF5D8;
+    local.ry = *(u16 *)((u8 *)s2 + 0x12) + (u16)D_800FF5DA;
+    local.rz = *(u16 *)((u8 *)s2 + 0x14) + (u16)D_800FF5DC;
+
+    local.dist = *(s32 *)((u8 *)s2 + 0x18) + D_800FF5E0;
+    func_80046BF4((s32 *)&local, &local.rx, local.dist);
+
+    {
+        s32 *p20 = (s32 *)((u8 *)s2 + 0x20);
+        func_8001A538((s32 *)&local, p20);
+        func_80061064((s32 *)&local.rx, p20);
+    }
+
+    D_800A36B4 = (s32)s2;
+}
 void func_8001E800(void) {
     s32 v = D_800A36F6;
     volatile u8 *ptr = (volatile u8 *)(&D_80101EC8 + v * 1100);

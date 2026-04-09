@@ -38,9 +38,18 @@ Config file format (regfix.txt):
   changes that bidirectional swaps cannot handle (e.g., changing only
   the destination register when source uses the same register number).
 
+  # Instruction delete (remove the instruction at index N):
+  func_80017FA0: delete @ 8
+
+  Removes the instruction at the specified index. All subsequent
+  instruction indices shift -1. Use for extra instructions GCC generates
+  that are not in the target (e.g., ori in a lui+ori+sw(0) pattern
+  when target uses lui+sw(offset)).
+
 Order of operations: register swaps first (on original indices),
-then substitutions (on original indices), then inserts (shifts indices),
-then reorders (on post-insert indices).
+then substitutions (on original indices), then deletes (on original
+indices), then inserts (shifts indices), then reorders (on post-insert
+indices).
 Instruction indices count actual instructions (not directives, labels,
 or comments) from the function entry point, 0-based.
 """
@@ -59,6 +68,15 @@ def load_config(config_path):
         if not line or line.startswith('#'):
             continue
 
+        # Parse delete: func_name: delete @ index
+        m = re.match(r'(\w+)\s*:\s*delete\s*@\s*(\d+)', line)
+        if m:
+            func = m.group(1)
+            idx = int(m.group(2))
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
+            config[func]['deletes'].append(idx)
+            continue
+
         # Parse reorder: func_name: reorder i,j,k,... @ start-end
         m = re.match(r'(\w+)\s*:\s*reorder\s+([\d,]+)\s*@\s*(\d+)\s*-\s*(\d+)', line)
         if m:
@@ -66,7 +84,7 @@ def load_config(config_path):
             order = [int(x) for x in m.group(2).split(',')]
             start = int(m.group(3))
             end = int(m.group(4))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
             config[func]['reorders'].append((start, end, order))
             continue
 
@@ -76,7 +94,7 @@ def load_config(config_path):
             func = m.group(1)
             asm_text = m.group(2)
             idx = int(m.group(3))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
             config[func]['inserts'].append((idx, asm_text))
             continue
 
@@ -87,7 +105,7 @@ def load_config(config_path):
             pattern = m.group(2)
             replacement = m.group(3)
             idx = int(m.group(4))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
             config[func]['substs'].append((idx, pattern, replacement))
             continue
 
@@ -99,7 +117,7 @@ def load_config(config_path):
             reg_b = m.group(3)
             start = int(m.group(4)) if m.group(4) is not None else None
             end = int(m.group(5)) if m.group(5) is not None else None
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
             config[func]['swaps'].append((reg_a, reg_b, start, end))
             continue
 
@@ -159,11 +177,35 @@ def process_function(lines, func_config):
             if idx is not None:
                 for subst_idx, pattern, replacement in subst_list:
                     if idx == subst_idx:
-                        text = re.sub(pattern, replacement, text, count=1)
+                        # Use lambda to avoid backreference interpretation of $N in replacement
+                        text = re.sub(pattern, lambda m: replacement, text, count=1)
             new_lines.append((text, idx))
         lines = new_lines
 
-    # Phase 2: Apply instruction inserts (sorted by index descending to preserve positions)
+    # Phase 2: Apply instruction deletes (on original indices, sorted descending)
+    delete_list = func_config.get('deletes', [])
+    if delete_list:
+        for del_idx in sorted(delete_list, reverse=True):
+            # Find and remove the line with this instruction index
+            del_pos = None
+            for pos, (text, idx) in enumerate(lines):
+                if idx == del_idx:
+                    del_pos = pos
+                    break
+            if del_pos is None:
+                print(f"regfix: WARNING: delete index {del_idx} not found", file=sys.stderr)
+                continue
+            lines.pop(del_pos)
+            # Renumber: shift all instruction indices > del_idx by -1
+            renumbered = []
+            for text, idx in lines:
+                if idx is not None and idx > del_idx:
+                    renumbered.append((text, idx - 1))
+                else:
+                    renumbered.append((text, idx))
+            lines = renumbered
+
+    # Phase 3: Apply instruction inserts (sorted by index descending to preserve positions)
     if insert_list:
         for insert_idx, asm_text in sorted(insert_list, key=lambda x: x[0], reverse=True):
             # Find the position in lines where insn_idx == insert_idx
