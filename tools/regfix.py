@@ -218,7 +218,11 @@ def process_function(lines, func_config):
                 print(f"regfix: WARNING: insert index {insert_idx} not found", file=sys.stderr)
                 continue
             # Insert the new instruction line before this position
-            new_line = f"\t{asm_text}\n"
+            # Wrap in .set noat/.set at if the instruction uses $at ($1)
+            if '$1' in asm_text or '$at' in asm_text:
+                new_line = f".set\tnoat\n\t{asm_text}\n.set\tat\n"
+            else:
+                new_line = f"\t{asm_text}\n"
             lines.insert(insert_pos, (new_line, insert_idx))
             # Renumber: shift all instruction indices >= insert_idx by +1
             renumbered = []
@@ -230,8 +234,9 @@ def process_function(lines, func_config):
             lines = renumbered
 
     # Phase 3: Apply instruction reorders (on post-insert indices)
+    # Each instruction carries any preceding non-instruction lines (labels, .set, comments)
     for reorder_start, reorder_end, new_order in reorder_list:
-        # Build map of insn_idx -> line index in our list
+        # Build map of insn_idx -> line position
         idx_to_pos = {}
         for pos, (text, idx) in enumerate(lines):
             if idx is not None and reorder_start <= idx <= reorder_end:
@@ -243,17 +248,54 @@ def process_function(lines, func_config):
             print(f"regfix: WARNING: reorder indices {new_order} don't match range {reorder_start}-{reorder_end}", file=sys.stderr)
             continue
 
-        # Collect the instruction lines in their current order
         positions = sorted(idx_to_pos.values())
-        insn_lines = [lines[p] for p in positions]
+        if not positions:
+            continue
 
-        # Map new_order indices to the instruction lines
-        idx_to_line = {idx: line_tuple for idx, line_tuple in zip(range(reorder_start, reorder_end + 1), insn_lines)}
-        reordered = [idx_to_line[i] for i in new_order]
+        # Build groups: each instruction + preceding non-insn lines
+        # Group boundaries: from (prev_insn_pos + 1) to (this_insn_pos), inclusive
+        groups = {}
+        for i, insn_pos in enumerate(positions):
+            if i == 0:
+                group_start = insn_pos
+                # Also grab preceding non-insn lines up to previous instruction
+                while group_start > 0 and lines[group_start - 1][1] is None:
+                    group_start -= 1
+                    # Don't go past the position before the first instruction in range
+                    if group_start < positions[0]:
+                        # Only include non-insn lines that are "close" (within the conceptual range)
+                        # Check if this non-insn line is after the previous instruction outside the range
+                        found_prev_insn = False
+                        for check in range(group_start - 1, -1, -1):
+                            if lines[check][1] is not None:
+                                found_prev_insn = True
+                                break
+                        if found_prev_insn:
+                            break
+            else:
+                group_start = positions[i - 1] + 1
 
-        # Put them back into the positions
-        for pos, new_line in zip(positions, reordered):
-            lines[pos] = new_line
+            insn_idx_val = lines[insn_pos][1]
+            groups[insn_idx_val] = [lines[p] for p in range(group_start, insn_pos + 1)]
+
+        # Determine the full span of lines being replaced
+        first_group = groups[lines[positions[0]][1]]
+        span_start = None
+        for pos in range(len(lines)):
+            if lines[pos] is first_group[0]:
+                span_start = pos
+                break
+        if span_start is None:
+            span_start = positions[0]
+        span_end = positions[-1] + 1  # exclusive
+
+        # Build reordered section
+        reordered_section = []
+        for new_idx in new_order:
+            reordered_section.extend(groups[new_idx])
+
+        # Replace the span
+        lines = lines[:span_start] + reordered_section + lines[span_end:]
 
     return lines
 
