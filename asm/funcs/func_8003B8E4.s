@@ -30,7 +30,7 @@ glabel func_8003B8E4
     /* 2C14C 8003B94C 03000224 */  addiu      $v0, $zero, 0x3
     /* 2C150 8003B950 1B006214 */  bne        $v1, $v0, .L8003B9C0
     /* 2C154 8003B954 00000000 */   nop
-    /* 2C158 8003B958 CFEC010C */  jal        func_8007B33C
+    /* 2C158 8003B958 CFEC010C */  jal        gpu_DrawSync
     /* 2C15C 8003B95C 21200000 */   addu      $a0, $zero, $zero
     /* 2C160 8003B960 0A80043C */  lui        $a0, %hi(D_800A3844)
     /* 2C164 8003B964 4438848C */  lw         $a0, %lo(D_800A3844)($a0)

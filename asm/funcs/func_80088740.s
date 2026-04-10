@@ -42,7 +42,7 @@ glabel func_80088740
     /* 78FDC 800887DC D8638424 */  addiu      $a0, $a0, %lo(D_800163D8)
     /* 78FE0 800887E0 0180053C */  lui        $a1, %hi(D_800163E8)
     /* 78FE4 800887E4 E863A524 */  addiu      $a1, $a1, %lo(D_800163E8)
-    /* 78FE8 800887E8 82E4010C */  jal        func_80079208
+    /* 78FE8 800887E8 82E4010C */  jal        debug_printf
     /* 78FEC 800887EC 00000000 */   nop
     /* 78FF0 800887F0 07220208 */  j          .L8008881C
     /* 78FF4 800887F4 21200000 */   addu      $a0, $zero, $zero

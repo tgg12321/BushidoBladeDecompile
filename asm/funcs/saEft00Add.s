@@ -23,7 +23,7 @@ glabel saEft00Add
     /* 72C6C 8008246C 10004230 */  andi       $v0, $v0, 0x10
     /* 72C70 80082470 16004010 */  beqz       $v0, .L800824CC
     /* 72C74 80082474 00000000 */   nop
-    /* 72C78 80082478 330A020C */  jal        func_800828CC
+    /* 72C78 80082478 330A020C */  jal        sys_VSync
     /* 72C7C 8008247C FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 72C80 80082480 3F004230 */  andi       $v0, $v0, 0x3F
     /* 72C84 80082484 06004014 */  bnez       $v0, .L800824A0
@@ -36,7 +36,7 @@ glabel saEft00Add
   .L800824A0:
     /* 72CA0 800824A0 E400020C */  jal        func_80080390
     /* 72CA4 800824A4 21280000 */   addu      $a1, $zero, $zero
-    /* 72CA8 800824A8 330A020C */  jal        func_800828CC
+    /* 72CA8 800824A8 330A020C */  jal        sys_VSync
     /* 72CAC 800824AC FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 72CB0 800824B0 0A80013C */  lui        $at, %hi(D_800A14EC)
     /* 72CB4 800824B4 EC1422AC */  sw         $v0, %lo(D_800A14EC)($at)
@@ -127,7 +127,7 @@ glabel saEft00Add
     /* 72DF4 800825F4 FFFF0424 */  addiu      $a0, $zero, -0x1
     /* 72DF8 800825F8 0A80013C */  lui        $at, %hi(D_800A14E4)
     /* 72DFC 800825FC E41422AC */  sw         $v0, %lo(D_800A14E4)($at)
-    /* 72E00 80082600 330A020C */  jal        func_800828CC
+    /* 72E00 80082600 330A020C */  jal        sys_VSync
     /* 72E04 80082604 00000000 */   nop
     /* 72E08 80082608 0A80013C */  lui        $at, %hi(D_800A14E8)
     /* 72E0C 8008260C E81422AC */  sw         $v0, %lo(D_800A14E8)($at)

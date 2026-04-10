@@ -12,13 +12,13 @@ glabel func_8003DE14
     /* 2E63C 8003DE3C 4408B5AF */  sw         $s5, 0x844($sp)
     /* 2E640 8003DE40 4008B4AF */  sw         $s4, 0x840($sp)
     /* 2E644 8003DE44 3C08B3AF */  sw         $s3, 0x83C($sp)
-    /* 2E648 8003DE48 CFEC010C */  jal        func_8007B33C
+    /* 2E648 8003DE48 CFEC010C */  jal        gpu_DrawSync
     /* 2E64C 8003DE4C 3408B1AF */   sw        $s1, 0x834($sp)
     /* 2E650 8003DE50 FFFF5226 */  addiu      $s2, $s2, -0x1
     /* 2E654 8003DE54 21200002 */  addu       $a0, $s0, $zero
-    /* 2E658 8003DE58 99ED010C */  jal        func_8007B664
+    /* 2E658 8003DE58 99ED010C */  jal        gpu_StoreImage
     /* 2E65C 8003DE5C 1000A527 */   addiu     $a1, $sp, 0x10
-    /* 2E660 8003DE60 CFEC010C */  jal        func_8007B33C
+    /* 2E660 8003DE60 CFEC010C */  jal        gpu_DrawSync
     /* 2E664 8003DE64 21200000 */   addu      $a0, $zero, $zero
     /* 2E668 8003DE68 21200002 */  addu       $a0, $s0, $zero
     /* 2E66C 8003DE6C 1000A527 */  addiu      $a1, $sp, 0x10
@@ -26,7 +26,7 @@ glabel func_8003DE14
     /* 2E674 8003DE74 06000396 */  lhu        $v1, 0x6($s0)
     /* 2E678 8003DE78 21880000 */  addu       $s1, $zero, $zero
     /* 2E67C 8003DE7C 23104300 */  subu       $v0, $v0, $v1
-    /* 2E680 8003DE80 80ED010C */  jal        func_8007B600
+    /* 2E680 8003DE80 80ED010C */  jal        gpu_LoadImage
     /* 2E684 8003DE84 020002A6 */   sh        $v0, 0x2($s0)
     /* 2E688 8003DE88 02001786 */  lh         $s7, 0x2($s0)
     /* 2E68C 8003DE8C 06000296 */  lhu        $v0, 0x6($s0)
@@ -168,9 +168,9 @@ glabel func_8003DE14
     /* 2E884 8003E084 000002A6 */  sh         $v0, 0x0($s0)
   .L8003E088:
     /* 2E888 8003E088 21200002 */  addu       $a0, $s0, $zero
-    /* 2E88C 8003E08C 80ED010C */  jal        func_8007B600
+    /* 2E88C 8003E08C 80ED010C */  jal        gpu_LoadImage
     /* 2E890 8003E090 1004A527 */   addiu     $a1, $sp, 0x410
-    /* 2E894 8003E094 CFEC010C */  jal        func_8007B33C
+    /* 2E894 8003E094 CFEC010C */  jal        gpu_DrawSync
     /* 2E898 8003E098 21200000 */   addu      $a0, $zero, $zero
     /* 2E89C 8003E09C 01003126 */  addiu      $s1, $s1, 0x1
     /* 2E8A0 8003E0A0 2A103202 */  slt        $v0, $s1, $s2

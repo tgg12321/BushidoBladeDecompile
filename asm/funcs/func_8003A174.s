@@ -1,7 +1,7 @@
 glabel func_8003A174
     /* 2A974 8003A174 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2A978 8003A178 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 2A97C 8003A17C 6EE2010C */  jal        func_800789B8
+    /* 2A97C 8003A17C 6EE2010C */  jal        EnterCriticalSection
     /* 2A980 8003A180 1000B0AF */   sw        $s0, 0x10($sp)
     /* 2A984 8003A184 FFFF1024 */  addiu      $s0, $zero, -0x1
     /* 2A988 8003A188 00F0043C */  lui        $a0, (0xF000000B >> 16)
@@ -24,9 +24,9 @@ glabel func_8003A174
     /* 2A9C4 8003A1C4 440782AF */  sw         $v0, %gp_rel(D_800A3810)($gp)
     /* 2A9C8 8003A1C8 F9FF5010 */  beq        $v0, $s0, .L8003A1B0
     /* 2A9CC 8003A1CC 00F0043C */   lui       $a0, (0xF000000B >> 16)
-    /* 2A9D0 8003A1D0 72E2010C */  jal        func_800789C8
+    /* 2A9D0 8003A1D0 72E2010C */  jal        ExitCriticalSection
     /* 2A9D4 8003A1D4 FFFF1024 */   addiu     $s0, $zero, -0x1
-    /* 2A9D8 8003A1D8 330A020C */  jal        func_800828CC
+    /* 2A9D8 8003A1D8 330A020C */  jal        sys_VSync
     /* 2A9DC 8003A1DC 02000424 */   addiu     $a0, $zero, 0x2
     /* 2A9E0 8003A1E0 812F020C */  jal        func_8008BE04
     /* 2A9E4 8003A1E4 00000000 */   nop

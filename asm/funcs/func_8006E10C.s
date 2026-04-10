@@ -34,11 +34,11 @@ glabel func_8006E10C
     /* 5E984 8006E184 3404858F */  lw         $a1, %gp_rel(D_800A3500)($gp)
     /* 5E988 8006E188 66DB000C */  jal        replay_camera_Init
     /* 5E98C 8006E18C 21200002 */   addu      $a0, $s0, $zero
-    /* 5E990 8006E190 D0DB000C */  jal        func_80036F40
+    /* 5E990 8006E190 D0DB000C */  jal        game_FrameLoop
     /* 5E994 8006E194 00000000 */   nop
     /* 5E998 8006E198 CADB000C */  jal        func_80036F28
     /* 5E99C 8006E19C 21200002 */   addu      $a0, $s0, $zero
-    /* 5E9A0 8006E1A0 A8EC010C */  jal        func_8007B2A0
+    /* 5E9A0 8006E1A0 A8EC010C */  jal        gpu_SetDispMask
     /* 5E9A4 8006E1A4 21200000 */   addu      $a0, $zero, $zero
     /* 5E9A8 8006E1A8 0F80103C */  lui        $s0, %hi(D_800F7438)
     /* 5E9AC 8006E1AC 38741026 */  addiu      $s0, $s0, %lo(D_800F7438)
@@ -75,25 +75,25 @@ glabel func_8006E10C
     /* 5EA28 8006E228 A57420A0 */  sb         $zero, %lo(D_800F74A5)($at)
     /* 5EA2C 8006E22C 1080013C */  lui        $at, %hi(D_800FB535)
     /* 5EA30 8006E230 35B520A0 */  sb         $zero, %lo(D_800FB535)($at)
-    /* 5EA34 8006E234 CFEC010C */  jal        func_8007B33C
+    /* 5EA34 8006E234 CFEC010C */  jal        gpu_DrawSync
     /* 5EA38 8006E238 21200000 */   addu      $a0, $zero, $zero
     /* 5EA3C 8006E23C 1800A427 */  addiu      $a0, $sp, 0x18
     /* 5EA40 8006E240 21280000 */  addu       $a1, $zero, $zero
     /* 5EA44 8006E244 21300000 */  addu       $a2, $zero, $zero
     /* 5EA48 8006E248 34ED010C */  jal        func_8007B4D0
     /* 5EA4C 8006E24C 21380000 */   addu      $a3, $zero, $zero
-    /* 5EA50 8006E250 CFEC010C */  jal        func_8007B33C
+    /* 5EA50 8006E250 CFEC010C */  jal        gpu_DrawSync
     /* 5EA54 8006E254 21200000 */   addu      $a0, $zero, $zero
     /* 5EA58 8006E258 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 5EA5C 8006E25C 80ED010C */  jal        func_8007B600
+    /* 5EA5C 8006E25C 80ED010C */  jal        gpu_LoadImage
     /* 5EA60 8006E260 14006526 */   addiu     $a1, $s3, 0x14
-    /* 5EA64 8006E264 CFEC010C */  jal        func_8007B33C
+    /* 5EA64 8006E264 CFEC010C */  jal        gpu_DrawSync
     /* 5EA68 8006E268 21200000 */   addu      $a0, $zero, $zero
     /* 5EA6C 8006E26C 6CEE010C */  jal        func_8007B9B0
     /* 5EA70 8006E270 21200002 */   addu      $a0, $s0, $zero
     /* 5EA74 8006E274 02EF010C */  jal        func_8007BC08
     /* 5EA78 8006E278 21204002 */   addu      $a0, $s2, $zero
-    /* 5EA7C 8006E27C A8EC010C */  jal        func_8007B2A0
+    /* 5EA7C 8006E27C A8EC010C */  jal        gpu_SetDispMask
     /* 5EA80 8006E280 01000424 */   addiu     $a0, $zero, 0x1
     /* 5EA84 8006E284 01000224 */  addiu      $v0, $zero, 0x1
     /* 5EA88 8006E288 3000BF8F */  lw         $ra, 0x30($sp)

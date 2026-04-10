@@ -1,4 +1,4 @@
-glabel func_80041604
+glabel player_SetCharId
     /* 31E04 80041604 80100400 */  sll        $v0, $a0, 2
     /* 31E08 80041608 0B80013C */  lui        $at, %hi(D_800A9A10)
     /* 31E0C 8004160C 21082200 */  addu       $at, $at, $v0
@@ -20,4 +20,4 @@ glabel func_80041604
     /* 31E44 80041644 884B25AC */  sw         $a1, %lo(D_80094B88)($at)
     /* 31E48 80041648 0800E003 */  jr         $ra
     /* 31E4C 8004164C 00000000 */   nop
-endlabel func_80041604
+endlabel player_SetCharId

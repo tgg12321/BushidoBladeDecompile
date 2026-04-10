@@ -19,7 +19,7 @@ glabel func_80048864
     /* 390A8 800488A8 4004BEAF */  sw         $fp, 0x440($sp)
     /* 390AC 800488AC 6804BE8F */  lw         $fp, 0x468($sp)
     /* 390B0 800488B0 4404BFAF */  sw         $ra, 0x444($sp)
-    /* 390B4 800488B4 CFEC010C */  jal        func_8007B33C
+    /* 390B4 800488B4 CFEC010C */  jal        gpu_DrawSync
     /* 390B8 800488B8 21200000 */   addu      $a0, $zero, $zero
     /* 390BC 800488BC 1004A427 */  addiu      $a0, $sp, 0x410
     /* 390C0 800488C0 1000A527 */  addiu      $a1, $sp, 0x10
@@ -27,9 +27,9 @@ glabel func_80048864
     /* 390C8 800488C8 1004B0A7 */  sh         $s0, 0x410($sp)
     /* 390CC 800488CC 1204B1A7 */  sh         $s1, 0x412($sp)
     /* 390D0 800488D0 1404B3A7 */  sh         $s3, 0x414($sp)
-    /* 390D4 800488D4 99ED010C */  jal        func_8007B664
+    /* 390D4 800488D4 99ED010C */  jal        gpu_StoreImage
     /* 390D8 800488D8 1604A2A7 */   sh        $v0, 0x416($sp)
-    /* 390DC 800488DC CFEC010C */  jal        func_8007B33C
+    /* 390DC 800488DC CFEC010C */  jal        gpu_DrawSync
     /* 390E0 800488E0 21200000 */   addu      $a0, $zero, $zero
     /* 390E4 800488E4 1000AC27 */  addiu      $t4, $sp, 0x10
     /* 390E8 800488E8 1002AB27 */  addiu      $t3, $sp, 0x210
@@ -124,9 +124,9 @@ glabel func_80048864
     /* 3922C 80048A2C 1004A427 */  addiu      $a0, $sp, 0x410
     /* 39230 80048A30 1002A527 */  addiu      $a1, $sp, 0x210
     /* 39234 80048A34 1004B7A7 */  sh         $s7, 0x410($sp)
-    /* 39238 80048A38 80ED010C */  jal        func_8007B600
+    /* 39238 80048A38 80ED010C */  jal        gpu_LoadImage
     /* 3923C 80048A3C 1204BEA7 */   sh        $fp, 0x412($sp)
-    /* 39240 80048A40 CFEC010C */  jal        func_8007B33C
+    /* 39240 80048A40 CFEC010C */  jal        gpu_DrawSync
     /* 39244 80048A44 21200000 */   addu      $a0, $zero, $zero
     /* 39248 80048A48 4404BF8F */  lw         $ra, 0x444($sp)
     /* 3924C 80048A4C 4004BE8F */  lw         $fp, 0x440($sp)

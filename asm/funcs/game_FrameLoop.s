@@ -1,4 +1,4 @@
-glabel func_80036F40
+glabel game_FrameLoop
     /* 27740 80036F40 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 27744 80036F44 1400BFAF */  sw         $ra, 0x14($sp)
     /* 27748 80036F48 9EEA000C */  jal        func_8003AA78
@@ -27,7 +27,7 @@ glabel func_80036F40
     /* 2779C 80036F9C 00000296 */  lhu        $v0, 0x0($s0)
     /* 277A0 80036FA0 02000424 */  addiu      $a0, $zero, 0x2
     /* 277A4 80036FA4 02004224 */  addiu      $v0, $v0, 0x2
-    /* 277A8 80036FA8 330A020C */  jal        func_800828CC
+    /* 277A8 80036FA8 330A020C */  jal        sys_VSync
     /* 277AC 80036FAC 000002A6 */   sh        $v0, 0x0($s0)
     /* 277B0 80036FB0 D6DB0008 */  j          .L80036F58
     /* 277B4 80036FB4 00000000 */   nop
@@ -39,4 +39,4 @@ glabel func_80036F40
     /* 277C8 80036FC8 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 277CC 80036FCC 0800E003 */  jr         $ra
     /* 277D0 80036FD0 00000000 */   nop
-endlabel func_80036F40
+endlabel game_FrameLoop

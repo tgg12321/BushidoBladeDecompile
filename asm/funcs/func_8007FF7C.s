@@ -31,7 +31,7 @@ glabel func_8007FF7C
     /* 707E8 8007FFE8 00000000 */   nop
     /* 707EC 8007FFEC 0180043C */  lui        $a0, %hi(D_8001605C)
     /* 707F0 8007FFF0 5C608424 */  addiu      $a0, $a0, %lo(D_8001605C)
-    /* 707F4 8007FFF4 82E4010C */  jal        func_80079208
+    /* 707F4 8007FFF4 82E4010C */  jal        debug_printf
     /* 707F8 8007FFF8 00000000 */   nop
     /* 707FC 8007FFFC 21100000 */  addu       $v0, $zero, $zero
   .L80080000:

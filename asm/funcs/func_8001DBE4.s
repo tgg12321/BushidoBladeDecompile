@@ -21,7 +21,7 @@ glabel func_8001DBE4
     /* E42C 8001DC2C 00000000 */   nop
     /* E430 8001DC30 3D5D000C */  jal        gnd_disp_loop_ctrl
     /* E434 8001DC34 00000000 */   nop
-    /* E438 8001DC38 330A020C */  jal        func_800828CC
+    /* E438 8001DC38 330A020C */  jal        sys_VSync
     /* E43C 8001DC3C 02000424 */   addiu     $a0, $zero, 0x2
     /* E440 8001DC40 0A80033C */  lui        $v1, %hi(D_800A38F8)
     /* E444 8001DC44 F8386390 */  lbu        $v1, %lo(D_800A38F8)($v1)
@@ -36,7 +36,7 @@ glabel func_8001DBE4
     /* E464 8001DC64 01001026 */   addiu     $s0, $s0, 0x1
     /* E468 8001DC68 3D5D000C */  jal        gnd_disp_loop_ctrl
     /* E46C 8001DC6C 00000000 */   nop
-    /* E470 8001DC70 330A020C */  jal        func_800828CC
+    /* E470 8001DC70 330A020C */  jal        sys_VSync
     /* E474 8001DC74 02000424 */   addiu     $a0, $zero, 0x2
     /* E478 8001DC78 0F00022A */  slti       $v0, $s0, 0xF
     /* E47C 8001DC7C F8FF4014 */  bnez       $v0, .L8001DC60

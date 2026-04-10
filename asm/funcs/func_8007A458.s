@@ -1,7 +1,7 @@
 glabel func_8007A458
     /* 6AC58 8007A458 0A80013C */  lui        $at, %hi(D_800A3648)
     /* 6AC5C 8007A45C 48363FAC */  sw         $ra, %lo(D_800A3648)($at)
-    /* 6AC60 8007A460 6EE2010C */  jal        func_800789B8
+    /* 6AC60 8007A460 6EE2010C */  jal        EnterCriticalSection
     /* 6AC64 8007A464 00000000 */   nop
     /* 6AC68 8007A468 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 6AC6C 8007A46C 09F84001 */  jalr       $t2
@@ -19,7 +19,7 @@ glabel func_8007A458
     /* 6AC98 8007A498 6C0043AC */   sw        $v1, 0x6C($v0)
     /* 6AC9C 8007A49C FCE3010C */  jal        func_80078FF0
     /* 6ACA0 8007A4A0 00000000 */   nop
-    /* 6ACA4 8007A4A4 72E2010C */  jal        func_800789C8
+    /* 6ACA4 8007A4A4 72E2010C */  jal        ExitCriticalSection
     /* 6ACA8 8007A4A8 00000000 */   nop
     /* 6ACAC 8007A4AC 0A801F3C */  lui        $ra, %hi(D_800A3648)
     /* 6ACB0 8007A4B0 4836FF8F */  lw         $ra, %lo(D_800A3648)($ra)

@@ -1,7 +1,7 @@
 glabel func_8007DC9C
     /* 6E49C 8007DC9C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6E4A0 8007DCA0 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 6E4A4 8007DCA4 330A020C */  jal        func_800828CC
+    /* 6E4A4 8007DCA4 330A020C */  jal        sys_VSync
     /* 6E4A8 8007DCA8 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 6E4AC 8007DCAC 0A80033C */  lui        $v1, %hi(D_8009BF8C)
     /* 6E4B0 8007DCB0 8CBF638C */  lw         $v1, %lo(D_8009BF8C)($v1)
@@ -38,7 +38,7 @@ glabel func_8007DC9C
     /* 6E528 8007DD28 54BF428C */  lw         $v0, %lo(D_8009BF54)($v0)
     /* 6E52C 8007DD2C 0000668C */  lw         $a2, 0x0($v1)
     /* 6E530 8007DD30 0000478C */  lw         $a3, 0x0($v0)
-    /* 6E534 8007DD34 82E4010C */  jal        func_80079208
+    /* 6E534 8007DD34 82E4010C */  jal        debug_printf
     /* 6E538 8007DD38 3F00A530 */   andi      $a1, $a1, 0x3F
     /* 6E53C 8007DD3C 0A80023C */  lui        $v0, %hi(D_8009BF68)
     /* 6E540 8007DD40 68BF4224 */  addiu      $v0, $v0, %lo(D_8009BF68)
@@ -49,7 +49,7 @@ glabel func_8007DC9C
     /* 6E554 8007DD54 70BFE78C */  lw         $a3, %lo(D_8009BF70)($a3)
     /* 6E558 8007DD58 0180043C */  lui        $a0, %hi(D_80016044)
     /* 6E55C 8007DD5C 44608424 */  addiu      $a0, $a0, %lo(D_80016044)
-    /* 6E560 8007DD60 82E4010C */  jal        func_80079208
+    /* 6E560 8007DD60 82E4010C */  jal        debug_printf
     /* 6E564 8007DD64 00000000 */   nop
     /* 6E568 8007DD68 0F0B020C */  jal        motion_make_table
     /* 6E56C 8007DD6C 21200000 */   addu      $a0, $zero, $zero

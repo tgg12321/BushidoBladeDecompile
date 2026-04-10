@@ -340,13 +340,13 @@ s32 func_80041584(void) {
 }
 extern void func_8004016C(s32);
 extern void func_80045A50(s32);
-void func_800415C4(s32 a0) {
+void player_Destroy(s32 a0) {
     func_8004016C(a0);
     func_80045A50(a0);
     g_player_ptrs[a0] = 0;
 }
 extern s32 g_player_char_ids[];
-void func_80041604(s32 a0, s32 a1) {
+void player_SetCharId(s32 a0, s32 a1) {
     s16 *ptr = (s16 *)g_player_ptrs[a0];
     if (ptr) {
         s32 val = ptr[1];
@@ -1109,16 +1109,16 @@ s32 func_80044E64(void) {
 s32 func_80044E6C(void) {
     return 0x26;
 }
-extern void func_80036F40(void);
+extern void game_FrameLoop(void);
 extern void func_80036E34(s32, s32, s32, s32);
 
 typedef struct { s16 x; s16 y; } Coord;
 extern Coord D_800963EC[];
 
 void func_80044E74(s32 a0, s32 a1) {
-    func_80036F40();
+    game_FrameLoop();
     func_80036E34(0, a1, D_800963EC[a0].x, D_800963EC[a0].y);
-    func_80036F40();
+    game_FrameLoop();
 }
 void func_80044ED8(s32 a0, s32 a1) {
     if (a0 >= 0x1F) {
@@ -1165,7 +1165,7 @@ s32 func_80044FA0(s32 a0, s32 a1) {
     }
     v0 = func_800457DC();
     if (v0 < s0) {
-        func_80079208(D_8001528C, a0, s0 - v0);
+        debug_printf(D_8001528C, a0, s0 - v0);
         while (1) {
             func_800164F8();
         }
@@ -1183,7 +1183,7 @@ s32 func_80045080(s32 a0) {
     s32 val = (s32)*(s16 *)((u8 *)&D_800963EE + a0 * 4) << 11;
     return func_800457DC() - val;
 }
-void func_800450BC(s32 a0, s32 a1) {
+void seq_Start(s32 a0, s32 a1) {
     func_80044E74(a0 + 0x25, a1);
     D_800A3398 = a1;
     D_800A3244 = 1;
@@ -1219,10 +1219,10 @@ s32 func_800450F4(s32 a0, s32 a1) {
     return 1;
 }
 extern s32 D_800A3244;
-void func_80045188(void) {
+void seq_Reset(void) {
     D_800A3244 = 0;
 }
-s32 func_80045194(void) {
+s32 seq_GetState(void) {
     return D_800A3244;
 }
 void func_800451A0(void) {

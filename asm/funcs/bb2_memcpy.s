@@ -1,4 +1,4 @@
-glabel func_80079120
+glabel bb2_memcpy
     /* 69920 80079120 0A008010 */  beqz       $a0, .L8007914C
     /* 69924 80079124 21100000 */   addu      $v0, $zero, $zero
     /* 69928 80079128 0700C018 */  blez       $a2, .L80079148
@@ -15,4 +15,4 @@ glabel func_80079120
   .L8007914C:
     /* 6994C 8007914C 0800E003 */  jr         $ra
     /* 69950 80079150 00000000 */   nop
-endlabel func_80079120
+endlabel bb2_memcpy

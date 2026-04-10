@@ -90,13 +90,13 @@ glabel func_80068F70
     /* 598C4 800690C4 1000A2BB */  swr        $v0, 0x10($sp)
     /* 598C8 800690C8 1700A3AB */  swl        $v1, 0x17($sp)
     /* 598CC 800690CC 1400A3BB */  swr        $v1, 0x14($sp)
-    /* 598D0 800690D0 CFEC010C */  jal        func_8007B33C
+    /* 598D0 800690D0 CFEC010C */  jal        gpu_DrawSync
     /* 598D4 800690D4 21200000 */   addu      $a0, $zero, $zero
     /* 598D8 800690D8 1000A427 */  addiu      $a0, $sp, 0x10
     /* 598DC 800690DC C0030524 */  addiu      $a1, $zero, 0x3C0
     /* 598E0 800690E0 B2ED010C */  jal        func_8007B6C8
     /* 598E4 800690E4 FE010624 */   addiu     $a2, $zero, 0x1FE
-    /* 598E8 800690E8 CFEC010C */  jal        func_8007B33C
+    /* 598E8 800690E8 CFEC010C */  jal        gpu_DrawSync
     /* 598EC 800690EC 21200000 */   addu      $a0, $zero, $zero
     /* 598F0 800690F0 5804838F */  lw         $v1, %gp_rel(D_800A3524)($gp)
     /* 598F4 800690F4 01000224 */  addiu      $v0, $zero, 0x1

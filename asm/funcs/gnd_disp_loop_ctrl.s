@@ -134,9 +134,9 @@ glabel gnd_disp_loop_ctrl
     /* 7EE0 800176E0 21300000 */   addu      $a2, $zero, $zero
   .L800176E4:
     /* 7EE4 800176E4 8006848F */  lw         $a0, %gp_rel(D_800A374C)($gp)
-    /* 7EE8 800176E8 4FEE010C */  jal        func_8007B93C
+    /* 7EE8 800176E8 4FEE010C */  jal        gpu_DrawOTag
     /* 7EEC 800176EC 04008424 */   addiu     $a0, $a0, 0x4
-    /* 7EF0 800176F0 CFEC010C */  jal        func_8007B33C
+    /* 7EF0 800176F0 CFEC010C */  jal        gpu_DrawSync
     /* 7EF4 800176F4 21200000 */   addu      $a0, $zero, $zero
   .L800176F8:
     /* 7EF8 800176F8 9400BF8F */  lw         $ra, 0x94($sp)

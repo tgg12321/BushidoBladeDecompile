@@ -11,7 +11,7 @@ glabel func_8005FBC8
     /* 503EC 8005FBEC 21200002 */  addu       $a0, $s0, $zero
     /* 503F0 8005FBF0 66DB000C */  jal        replay_camera_Init
     /* 503F4 8005FBF4 21282002 */   addu      $a1, $s1, $zero
-    /* 503F8 8005FBF8 D0DB000C */  jal        func_80036F40
+    /* 503F8 8005FBF8 D0DB000C */  jal        game_FrameLoop
     /* 503FC 8005FBFC 00000000 */   nop
     /* 50400 8005FC00 CADB000C */  jal        func_80036F28
     /* 50404 8005FC04 21200002 */   addu      $a0, $s0, $zero
@@ -36,14 +36,14 @@ glabel func_8005FBC8
     /* 50450 8005FC50 1F00A3AB */  swl        $v1, 0x1F($sp)
     /* 50454 8005FC54 1C00A3BB */  swr        $v1, 0x1C($sp)
     /* 50458 8005FC58 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 5045C 8005FC5C 80ED010C */  jal        func_8007B600
+    /* 5045C 8005FC5C 80ED010C */  jal        gpu_LoadImage
     /* 50460 8005FC60 40002526 */   addiu     $a1, $s1, 0x40
-    /* 50464 8005FC64 CFEC010C */  jal        func_8007B33C
+    /* 50464 8005FC64 CFEC010C */  jal        gpu_DrawSync
     /* 50468 8005FC68 21200000 */   addu      $a0, $zero, $zero
     /* 5046C 8005FC6C 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 50470 8005FC70 80ED010C */  jal        func_8007B600
+    /* 50470 8005FC70 80ED010C */  jal        gpu_LoadImage
     /* 50474 8005FC74 14002526 */   addiu     $a1, $s1, 0x14
-    /* 50478 8005FC78 CFEC010C */  jal        func_8007B33C
+    /* 50478 8005FC78 CFEC010C */  jal        gpu_DrawSync
     /* 5047C 8005FC7C 21200000 */   addu      $a0, $zero, $zero
     /* 50480 8005FC80 AC0180AF */  sw         $zero, %gp_rel(D_800A3278)($gp)
     /* 50484 8005FC84 2800BF8F */  lw         $ra, 0x28($sp)

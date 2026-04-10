@@ -8,7 +8,7 @@ glabel func_8003B9D0
     /* 2C1E8 8003B9E8 2400B1AF */  sw         $s1, 0x24($sp)
     /* 2C1EC 8003B9EC 8B76000C */  jal        func_8001DA2C
     /* 2C1F0 8003B9F0 2000B0AF */   sw        $s0, 0x20($sp)
-    /* 2C1F4 8003B9F4 5E84010C */  jal        func_80061178
+    /* 2C1F4 8003B9F4 5E84010C */  jal        game_Cleanup
     /* 2C1F8 8003B9F8 00000000 */   nop
     /* 2C1FC 8003B9FC 0A80033C */  lui        $v1, %hi(D_800A3768)
     /* 2C200 8003BA00 68376390 */  lbu        $v1, %lo(D_800A3768)($v1)

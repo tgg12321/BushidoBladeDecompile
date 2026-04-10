@@ -1,4 +1,4 @@
-glabel func_8005B5AC
+glabel obj_InitChars
     /* 4BDAC 8005B5AC D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 4BDB0 8005B5B0 21200000 */  addu       $a0, $zero, $zero
     /* 4BDB4 8005B5B4 2000BFAF */  sw         $ra, 0x20($sp)
@@ -38,4 +38,4 @@ glabel func_8005B5AC
     /* 4BE38 8005B638 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 4BE3C 8005B63C 0800E003 */  jr         $ra
     /* 4BE40 8005B640 00000000 */   nop
-endlabel func_8005B5AC
+endlabel obj_InitChars

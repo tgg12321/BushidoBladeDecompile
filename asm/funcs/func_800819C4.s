@@ -9,7 +9,7 @@ glabel func_800819C4
     /* 721E0 800819E0 B4628424 */  addiu      $a0, $a0, %lo(D_800162B4)
     /* 721E4 800819E4 0A80053C */  lui        $a1, %hi(D_800A1498)
     /* 721E8 800819E8 9814A524 */  addiu      $a1, $a1, %lo(D_800A1498)
-    /* 721EC 800819EC 82E4010C */  jal        func_80079208
+    /* 721EC 800819EC 82E4010C */  jal        debug_printf
     /* 721F0 800819F0 00000000 */   nop
     /* 721F4 800819F4 0A80013C */  lui        $at, %hi(D_800A11D5)
     /* 721F8 800819F8 D51120A0 */  sb         $zero, %lo(D_800A11D5)($at)

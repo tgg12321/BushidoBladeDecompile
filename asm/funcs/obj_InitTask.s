@@ -1,4 +1,4 @@
-glabel func_8005B9C4
+glabel obj_InitTask
     /* 4C1C4 8005B9C4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 4C1C8 8005B9C8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 4C1CC 8005B9CC 3416020C */  jal        func_800858D0
@@ -13,4 +13,4 @@ glabel func_8005B9C4
     /* 4C1F0 8005B9F0 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 4C1F4 8005B9F4 0800E003 */  jr         $ra
     /* 4C1F8 8005B9F8 00000000 */   nop
-endlabel func_8005B9C4
+endlabel obj_InitTask

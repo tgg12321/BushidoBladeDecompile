@@ -452,7 +452,7 @@ s32 func_800819C4(void) {
     volatile u8 *p94;
 
     tslTm2LoadImage_2(&D_800162A8);
-    func_80079208(&D_800162B4, &D_800A1498);
+    debug_printf(&D_800162B4, &D_800A1498);
 
     g_cd_ready_flag2 = 0;
     g_cd_ready_flag = 0;
@@ -503,9 +503,9 @@ s32 func_800819C4(void) {
         return -((u32)(0 < (u32)r));
     }
 }
-extern s32 func_800828CC(s32);
+extern s32 sys_VSync(s32);
 extern void tslTm2LoadImage_2(void *);
-extern void func_80079208(void *, void *, s32, s32, s32);
+extern void debug_printf(void *, void *, s32, s32, s32);
 extern s32 D_800F19B8;
 extern s32 D_800F19BC;
 extern void *D_800F19C0;
@@ -526,7 +526,7 @@ s32 saEft01Init(s32 a0) {
     u8 *idx_1494;
     s32 *tbl_125c;
 
-    D_800F19B8 = func_800828CC(-1) + 0x3C0;
+    D_800F19B8 = sys_VSync(-1) + 0x3C0;
     tbl_11dc = D_800A11DC;
     idx_1494 = &D_800A1494;
     tbl_125c = D_800A125C;
@@ -534,7 +534,7 @@ s32 saEft01Init(s32 a0) {
     D_800F19C0 = &D_800162C0;
 
 loop:
-    v0 = func_800828CC(-1);
+    v0 = sys_VSync(-1);
     if (D_800F19B8 < v0) {
         goto do_timeout;
     }
@@ -550,7 +550,7 @@ do_timeout:
         s32 arg5, arg4;
         arg5 = tbl_125c[idx_1494[1]];
         arg4 = tbl_125c[idx_1494[0]];
-        func_80079208(&D_800161C8, D_800F19C0, tbl_11dc[D_800A11D5], arg4, arg5);
+        debug_printf(&D_800161C8, D_800F19C0, tbl_11dc[D_800A11D5], arg4, arg5);
     }
     func_800817A0();
     v0 = -1;
@@ -689,14 +689,14 @@ s32 func_800827D0(s32 a0, s32 a1) {
     s32 result;
 
     do {
-        s32 tick = func_800828CC(-1);
+        s32 tick = sys_VSync(-1);
         if (*p + 0x4B0 < tick) {
             result = -1;
         } else {
             if (p[-2] < 0) {
                 goto do_seek;
             }
-            tick = func_800828CC(-1);
+            tick = sys_VSync(-1);
             if (p[-1] + 0x3C < tick) {
 do_seek:
                 saEft00Add(1);

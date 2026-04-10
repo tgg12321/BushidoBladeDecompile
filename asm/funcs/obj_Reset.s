@@ -1,4 +1,4 @@
-glabel func_8005BF3C
+glabel obj_Reset
     /* 4C73C 8005BF3C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 4C740 8005BF40 1000BFAF */  sw         $ra, 0x10($sp)
     /* 4C744 8005BF44 3416020C */  jal        func_800858D0
@@ -14,4 +14,4 @@ glabel func_8005BF3C
     /* 4C76C 8005BF6C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 4C770 8005BF70 0800E003 */  jr         $ra
     /* 4C774 8005BF74 00000000 */   nop
-endlabel func_8005BF3C
+endlabel obj_Reset

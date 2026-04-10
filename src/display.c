@@ -9,8 +9,8 @@
 
 
 /* Forward declarations */
-extern s32 func_800828CC(s32);
-extern s32 func_80079120(s32, void *, s32);
+extern s32 sys_VSync(s32);
+extern s32 bb2_memcpy(s32, void *, s32);
 
 /* Externs for globals */
 extern u32 *g_gpu_stat_reg;
@@ -42,7 +42,7 @@ u32 func_8007B244(s32 a0) {
     g_gpu_draw_mode = a0;
     return old;
 }
-void func_8007B2A0(s32 a0) {
+void gpu_SetDispMask(s32 a0) {
     u8 *p = &g_gpu_debug_level;
     if (*p >= 2) {
         g_gpu_debug_func(&g_str_setdispmask, a0);
@@ -59,7 +59,7 @@ void func_8007B2A0(s32 a0) {
         ((void (*)(u32))v0[4])(cmd);
     }
 }
-void func_8007B33C(s32 a0) {
+void gpu_DrawSync(s32 a0) {
     if (g_gpu_debug_level >= 2) {
         g_gpu_debug_func(&g_str_drawsync, a0);
     }
@@ -258,7 +258,7 @@ __asm__(
 );
 extern u32 g_str_loadimage;
 
-void func_8007B600(s32 a0, s32 a1) {
+void gpu_LoadImage(s32 a0, s32 a1) {
     u32 *v0;
     func_8007B3A8(&g_str_loadimage, a0);
     v0 = g_gpu_dev_table;
@@ -266,7 +266,7 @@ void func_8007B600(s32 a0, s32 a1) {
 }
 extern u32 g_str_storeimage;
 
-void func_8007B664(s32 a0, s32 a1) {
+void gpu_StoreImage(s32 a0, s32 a1) {
     u32 *v0;
     func_8007B3A8(&g_str_storeimage, a0);
     v0 = g_gpu_dev_table;
@@ -337,7 +337,7 @@ __asm__(
 extern u32 g_str_clearotag;
 extern u32 g_gpu_ot_end;
 
-u32 *func_8007B78C(u32 *a0, s32 a1) {
+u32 *gpu_ClearOTag(u32 *a0, s32 a1) {
     if (g_gpu_debug_level >= 2) {
         g_gpu_debug_func(&g_str_clearotag, a0, a1);
     }
@@ -407,14 +407,14 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-void func_8007B8DC(u8 *a0) {
+void gpu_SendPacket(u8 *a0) {
     u32 *dev = g_gpu_dev_table;
     u32 size = a0[3];
     ((void (*)(s32))dev[15])(0);
     dev = g_gpu_dev_table;
     ((void (*)(u32 *, u32))dev[5])(a0 + 4, size);
 }
-void func_8007B93C(s32 a0) {
+void gpu_DrawOTag(s32 a0) {
     if (g_gpu_debug_level >= 2) {
         g_gpu_debug_func(&g_str_drawotag, a0);
     }
@@ -585,8 +585,8 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-s32 func_8007BBD0(s32 a0) {
-    func_80079120(a0, &g_gpu_draw_env, 0x5C);
+s32 gpu_GetDrawEnv(s32 a0) {
+    bb2_memcpy(a0, &g_gpu_draw_env, 0x5C);
     return a0;
 }
 __asm__(
@@ -917,7 +917,7 @@ __asm__(
     "    lui        $a0, %hi(g_gpu_disp_env)\n"
     "    addiu      $a0, $a0, %lo(g_gpu_disp_env)\n"
     "    addu       $a1, $s0, $zero\n"
-    "    jal        func_80079120\n"
+    "    jal        bb2_memcpy\n"
     "    addiu     $a2, $zero, 0x14\n"
     "    addu       $v0, $s0, $zero\n"
     "    lw         $ra, 32($sp)\n"
@@ -934,7 +934,7 @@ __asm__(
     "    .set at\n"
 );
 s32 func_8007C0B0(s32 a0) {
-    func_80079120(a0, &g_gpu_disp_env, 0x14);
+    bb2_memcpy(a0, &g_gpu_disp_env, 0x14);
     return a0;
 }
 u32 func_8007C0E8(void) {
@@ -2855,7 +2855,7 @@ __asm__(
     "    .set at\n"
 );
 void func_8007DC68(void) {
-    g_gpu_vcount = func_800828CC(-1) + 0xF0;
+    g_gpu_vcount = sys_VSync(-1) + 0xF0;
     g_gpu_draw_count = 0;
 }
 __asm__(
@@ -2866,7 +2866,7 @@ __asm__(
     "glabel func_8007DC9C\n"
     "    addiu      $sp, $sp, -0x20\n"
     "    sw         $ra, 24($sp)\n"
-    "    jal        func_800828CC\n"
+    "    jal        sys_VSync\n"
     "    addiu     $a0, $zero, -0x1\n"
     "    lui        $v1, %hi(g_gpu_vcount)\n"
     "    lw         $v1, %lo(g_gpu_vcount)($v1)\n"
@@ -2903,7 +2903,7 @@ __asm__(
     "    lw         $v0, %lo(g_gpu_dma_chcr)($v0)\n"
     "    lw         $a2, 0($v1)\n"
     "    lw         $a3, 0($v0)\n"
-    "    jal        func_80079208\n"
+    "    jal        debug_printf\n"
     "    andi      $a1, $a1, 0x3F\n"
     "    lui        $v0, %hi(D_8009BF68)\n"
     "    addiu      $v0, $v0, %lo(D_8009BF68)\n"
@@ -2914,7 +2914,7 @@ __asm__(
     "    lw         $a3, %lo(D_8009BF70)($a3)\n"
     "    lui        $a0, %hi(D_80016044)\n"
     "    addiu      $a0, $a0, %lo(D_80016044)\n"
-    "    jal        func_80079208\n"
+    "    jal        debug_printf\n"
     "    nop\n"
     "    jal        motion_make_table\n"
     "    addu      $a0, $zero, $zero\n"
@@ -5379,7 +5379,7 @@ __asm__(
     "glabel func_8007FEDC\n"
     "    lui $at, %hi(D_800A3658)\n"
     "    sw $ra, %lo(D_800A3658)($at)\n"
-    "    jal func_800789B8\n"
+    "    jal EnterCriticalSection\n"
     "    nop\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jalr $t2\n"
@@ -5397,7 +5397,7 @@ __asm__(
     "    sw $v1, -4($v0)\n"
     "    jal func_80078FF0\n"
     "    nop\n"
-    "    jal func_800789C8\n"
+    "    jal ExitCriticalSection\n"
     "    nop\n"
     "    lui $ra, %hi(D_800A3658)\n"
     "    lw $ra, %lo(D_800A3658)($ra)\n"
@@ -5464,7 +5464,7 @@ __asm__(
     "    nop\n"
     "    lui $a0, %hi(g_str_cdinit_fail)\n"
     "    addiu $a0, $a0, %lo(g_str_cdinit_fail)\n"
-    "    jal func_80079208\n"
+    "    jal debug_printf\n"
     "    nop\n"
     "    addu $v0, $zero, $zero\n"
     ".L80080000:\n"

@@ -1,4 +1,4 @@
-glabel func_8007B33C
+glabel gpu_DrawSync
     /* 6BB3C 8007B33C 0A80023C */  lui        $v0, %hi(D_8009BE76)
     /* 6BB40 8007B340 76BE4290 */  lbu        $v0, %lo(D_8009BE76)($v0)
     /* 6BB44 8007B344 E8FFBD27 */  addiu      $sp, $sp, -0x18
@@ -27,4 +27,4 @@ glabel func_8007B33C
     /* 6BB9C 8007B39C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 6BBA0 8007B3A0 0800E003 */  jr         $ra
     /* 6BBA4 8007B3A4 00000000 */   nop
-endlabel func_8007B33C
+endlabel gpu_DrawSync

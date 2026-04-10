@@ -1,4 +1,4 @@
-glabel func_80079208
+glabel debug_printf
     /* 69A08 80079208 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 69A0C 8007920C 21108000 */  addu       $v0, $a0, $zero
     /* 69A10 80079210 01000424 */  addiu      $a0, $zero, 0x1
@@ -14,4 +14,4 @@ glabel func_80079208
     /* 69A38 80079238 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 69A3C 8007923C 0800E003 */  jr         $ra
     /* 69A40 80079240 00000000 */   nop
-endlabel func_80079208
+endlabel debug_printf

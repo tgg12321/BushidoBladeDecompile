@@ -41,7 +41,7 @@ glabel func_8003E164
     /* 2E9F4 8003E1F4 E8000224 */  addiu      $v0, $zero, 0xE8
     /* 2E9F8 8003E1F8 A80C010C */  jal        func_800432A0
     /* 2E9FC 8003E1FC 1000A2AF */   sw        $v0, 0x10($sp)
-    /* 2EA00 8003E200 CFEC010C */  jal        func_8007B33C
+    /* 2EA00 8003E200 CFEC010C */  jal        gpu_DrawSync
     /* 2EA04 8003E204 21200000 */   addu      $a0, $zero, $zero
     /* 2EA08 8003E208 48F8000C */  jal        func_8003E120
     /* 2EA0C 8003E20C 00000000 */   nop

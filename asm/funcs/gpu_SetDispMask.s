@@ -1,4 +1,4 @@
-glabel func_8007B2A0
+glabel gpu_SetDispMask
     /* 6BAA0 8007B2A0 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6BAA4 8007B2A4 1400B1AF */  sw         $s1, 0x14($sp)
     /* 6BAA8 8007B2A8 0A80113C */  lui        $s1, %hi(D_8009BE76)
@@ -41,4 +41,4 @@ glabel func_8007B2A0
     /* 6BB30 8007B330 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6BB34 8007B334 0800E003 */  jr         $ra
     /* 6BB38 8007B338 00000000 */   nop
-endlabel func_8007B2A0
+endlabel gpu_SetDispMask

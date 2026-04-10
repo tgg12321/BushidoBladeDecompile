@@ -32,7 +32,7 @@ glabel func_80045294
   .L80045308:
     /* 35B08 80045308 25002012 */  beqz       $s1, .L800453A0
     /* 35B0C 8004530C 00000000 */   nop
-    /* 35B10 80045310 CFEC010C */  jal        func_8007B33C
+    /* 35B10 80045310 CFEC010C */  jal        gpu_DrawSync
     /* 35B14 80045314 21200000 */   addu      $a0, $zero, $zero
     /* 35B18 80045318 21208002 */  addu       $a0, $s4, $zero
     /* 35B1C 8004531C 2128A002 */  addu       $a1, $s5, $zero

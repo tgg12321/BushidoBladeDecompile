@@ -1,7 +1,7 @@
 glabel func_80078F88
     /* 69788 80078F88 0A80013C */  lui        $at, %hi(D_800A3618)
     /* 6978C 80078F8C 18363FAC */  sw         $ra, %lo(D_800A3618)($at)
-    /* 69790 80078F90 6EE2010C */  jal        func_800789B8
+    /* 69790 80078F90 6EE2010C */  jal        EnterCriticalSection
     /* 69794 80078F94 00000000 */   nop
     /* 69798 80078F98 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 6979C 80078F9C 09F84001 */  jalr       $t2

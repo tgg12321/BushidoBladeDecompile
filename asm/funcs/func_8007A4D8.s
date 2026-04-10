@@ -49,7 +49,7 @@ glabel func_8007A4D8
   .L8007A580:
     /* 6AD80 8007A580 1000A427 */  addiu      $a0, $sp, 0x10
   .L8007A584:
-    /* 6AD84 8007A584 80ED010C */  jal        func_8007B600
+    /* 6AD84 8007A584 80ED010C */  jal        gpu_LoadImage
     /* 6AD88 8007A588 21280001 */   addu      $a1, $t0, $zero
     /* 6AD8C 8007A58C 21200002 */  addu       $a0, $s0, $zero
     /* 6AD90 8007A590 21284002 */  addu       $a1, $s2, $zero

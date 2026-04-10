@@ -3,7 +3,7 @@ glabel func_8001DCB0
     /* E4B4 8001DCB4 2400BFAF */  sw         $ra, 0x24($sp)
     /* E4B8 8001DCB8 2000B2AF */  sw         $s2, 0x20($sp)
     /* E4BC 8001DCBC 1C00B1AF */  sw         $s1, 0x1C($sp)
-    /* E4C0 8001DCC0 6B6D010C */  jal        func_8005B5AC
+    /* E4C0 8001DCC0 6B6D010C */  jal        obj_InitChars
     /* E4C4 8001DCC4 1800B0AF */   sw        $s0, 0x18($sp)
     /* E4C8 8001DCC8 0A80033C */  lui        $v1, %hi(D_800A3768)
     /* E4CC 8001DCCC 68376390 */  lbu        $v1, %lo(D_800A3768)($v1)
@@ -46,7 +46,7 @@ glabel func_8001DCB0
     /* E554 8001DD54 00000000 */  nop
     /* E558 8001DD58 03004010 */  beqz       $v0, .L8001DD68
     /* E55C 8001DD5C 21200000 */   addu      $a0, $zero, $zero
-    /* E560 8001DD60 8105010C */  jal        func_80041604
+    /* E560 8001DD60 8105010C */  jal        player_SetCharId
     /* E564 8001DD64 21280000 */   addu      $a1, $zero, $zero
   .L8001DD68:
     /* E568 8001DD68 1080013C */  lui        $at, %hi(D_80102780)
@@ -457,7 +457,7 @@ glabel func_8001DCB0
   .L8001E354:
     /* EB54 8001E354 B2E4000C */  jal        func_800392C8
     /* EB58 8001E358 00000000 */   nop
-    /* EB5C 8001E35C 5E84010C */  jal        func_80061178
+    /* EB5C 8001E35C 5E84010C */  jal        game_Cleanup
     /* EB60 8001E360 00000000 */   nop
     /* EB64 8001E364 F976000C */  jal        func_8001DBE4
     /* EB68 8001E368 00000000 */   nop
