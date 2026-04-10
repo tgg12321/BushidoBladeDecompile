@@ -4,7 +4,7 @@ glabel func_8003553C
     /* 25D44 80035544 0A80103C */  lui        $s0, %hi(D_800A38B4)
     /* 25D48 80035548 B438108E */  lw         $s0, %lo(D_800A38B4)($s0)
     /* 25D4C 8003554C 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 25D50 80035550 8CEA010C */  jal        func_8007AA30
+    /* 25D50 80035550 8CEA010C */  jal        initPolyG4
     /* 25D54 80035554 21200002 */   addu      $a0, $s0, $zero
     /* 25D58 80035558 80020324 */  addiu      $v1, $zero, 0x280
     /* 25D5C 8003555C F0000224 */  addiu      $v0, $zero, 0xF0
@@ -33,7 +33,7 @@ glabel func_8003553C
     /* 25DB8 800355B8 180000A6 */  sh         $zero, 0x18($s0)
     /* 25DBC 800355BC 200003A6 */  sh         $v1, 0x20($s0)
     /* 25DC0 800355C0 24001026 */  addiu      $s0, $s0, 0x24
-    /* 25DC4 800355C4 2DEA010C */  jal        func_8007A8B4
+    /* 25DC4 800355C4 2DEA010C */  jal        ot_Link
     /* 25DC8 800355C8 1C408424 */   addiu     $a0, $a0, 0x401C
     /* 25DCC 800355CC 0A80013C */  lui        $at, %hi(D_800A38B4)
     /* 25DD0 800355D0 B43830AC */  sw         $s0, %lo(D_800A38B4)($at)

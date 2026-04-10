@@ -16,10 +16,10 @@ glabel func_80017A44
     /* 827C 80017A7C 2400A0AF */  sw         $zero, 0x24($sp)
     /* 8280 80017A80 2800A0AF */  sw         $zero, 0x28($sp)
     /* 8284 80017A84 0C00448E */  lw         $a0, 0xC($s2)
-    /* 8288 80017A88 BBFB010C */  jal        func_8007EEEC
+    /* 8288 80017A88 BBFB010C */  jal        gte_SetRotMatrix
     /* 828C 80017A8C 21880000 */   addu      $s1, $zero, $zero
     /* 8290 80017A90 0C00448E */  lw         $a0, 0xC($s2)
-    /* 8294 80017A94 D3FB010C */  jal        func_8007EF4C
+    /* 8294 80017A94 D3FB010C */  jal        gte_SetTransVector
     /* 8298 80017A98 21980000 */   addu      $s3, $zero, $zero
     /* 829C 80017A9C 3800A88F */  lw         $t0, 0x38($sp)
     /* 82A0 80017AA0 00004286 */  lh         $v0, 0x0($s2)

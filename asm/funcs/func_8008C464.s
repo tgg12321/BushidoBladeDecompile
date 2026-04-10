@@ -332,7 +332,7 @@ glabel func_8008C464
     /* 7D148 8008C948 000046AC */   sw        $a2, 0x0($v0)
     /* 7D14C 8008C94C 0400A014 */  bnez       $a1, .L8008C960
     /* 7D150 8008C950 21100002 */   addu      $v0, $s0, $zero
-    /* 7D154 8008C954 9FEB010C */  jal        func_8007AE7C
+    /* 7D154 8008C954 9FEB010C */  jal        gpu_SetMode
     /* 7D158 8008C958 05000424 */   addiu     $a0, $zero, 0x5
   .L8008C95C:
     /* 7D15C 8008C95C 21100002 */  addu       $v0, $s0, $zero

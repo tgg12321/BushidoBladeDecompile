@@ -89,8 +89,8 @@ extern s16 Judge;
 extern s16 D_800A3678;
 extern s32 D_800A3708;
 extern s32 D_800A374C;
-extern void func_8007AA30(u8 *p);
-extern void func_8007A8B4(u32 *a0, u32 *a1);
+extern void initPolyG4(u8 *p);
+extern void ot_Link(u32 *a0, u32 *a1);
 extern u8 D_800A377C;
 extern u8 D_800A37A8;
 extern u16 D_800A3904;
@@ -151,7 +151,7 @@ void func_8003553C(void) {
     register s32 vtmp asm("v0");
 
     temp_s0 = (u8 *)D_800A38B4;
-    func_8007AA30(temp_s0);
+    initPolyG4(temp_s0);
     __asm__ ("addiu $3,$zero,640\naddiu $2,$zero,240" : "=r"(v280), "=r"(vtmp));
     *(s16 *)(temp_s0 + 0x1A) = vtmp;
     *(s16 *)(temp_s0 + 0x22) = vtmp;
@@ -178,7 +178,7 @@ void func_8003553C(void) {
         *(s16 *)(temp_s0 + 0x18) = 0;
         *(s16 *)(temp_s0 + 0x20) = v280;
         temp_s0 += 0x24;
-        func_8007A8B4(a0_arg, a1_arg);
+        ot_Link(a0_arg, a1_arg);
     }
     D_800A38B4 = temp_s0;
 }
@@ -562,7 +562,7 @@ void func_80037468(s32 a0, s32 *a1, s32 a2) {
     func_8007FF7C();
     special_camera_get_rot_dir(sp);
     gpu_DrawSync(0);
-    func_8007AE7C(0);
+    gpu_SetMode(0);
     pad_Init();
     irq_Reset();
     sp[8] = a2;

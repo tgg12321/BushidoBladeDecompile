@@ -33,7 +33,7 @@ glabel func_8003D9A0
   .L8003DA18:
     /* 2E218 8003DA18 21280002 */  addu       $a1, $s0, $zero
     /* 2E21C 8003DA1C 21308002 */  addu       $a2, $s4, $zero
-    /* 2E220 8003DA20 EEEA010C */  jal        func_8007ABB8
+    /* 2E220 8003DA20 EEEA010C */  jal        initLoadImage
     /* 2E224 8003DA24 21386002 */   addu      $a3, $s3, $zero
     /* 2E228 8003DA28 0000228E */  lw         $v0, 0x0($s1)
     /* 2E22C 8003DA2C 0400238E */  lw         $v1, 0x4($s1)

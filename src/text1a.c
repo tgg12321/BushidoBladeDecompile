@@ -36,7 +36,7 @@ extern s32 D_800A3378;
 extern u8 D_800A9830;
 extern u8 D_800A9920;
 extern u16 D_80094AF4;
-extern void func_8007ABB8(s32, s16 *, s32, s32);
+extern void initLoadImage(s32, s16 *, s32, s32);
 
 void PutShadowRmd(s32 a0, s32 a1, s32 a2) {
     s16 buf[4];
@@ -65,7 +65,7 @@ void PutShadowRmd(s32 a0, s32 a1, s32 a2) {
             buf[0] = buf[0] + 0x80;
             u = u + 0x80;
         }
-        func_8007ABB8((s32)(s32 *)D_800A3378, buf, (s16)u, (s16)v);
+        initLoadImage((s32)(s32 *)D_800A3378, buf, (s16)u, (s16)v);
         pkt = (s32 *)D_800A3378;
         ot = (s32 *)D_800A378C;
         *pkt = (*pkt & 0xFF000000) | (ot[0x3FFC / 4] & 0xFFFFFF);
@@ -485,7 +485,7 @@ INCLUDE_ASM("asm/funcs", func_800422BC);
 extern s32 func_800486FC(s32);
 extern s32 func_8004881C(s32, s32, s32);
 extern void disp_SetFramebufferMode(s32, s32, s32, s32);
-extern void func_8007EFBC(s32, s32, s32);
+extern void gte_SetFarColor(s32, s32, s32);
 void func_80042478(s32 a0) {
     s32 r = (a0 >> 16) & 0xFF;
     s32 g = (a0 >> 8) & 0xFF;
@@ -496,7 +496,7 @@ void func_80042478(s32 a0) {
         r = b;
     }
     disp_SetFramebufferMode(1, r, g, b);
-    func_8007EFBC(r, g, b);
+    gte_SetFarColor(r, g, b);
 }
 INCLUDE_ASM("asm/funcs", rob_life_ctrl_2);
 /* kengo:MED  |  my_rob/rob_life_ctrl_2  |  96i  |  x2 size collision */
@@ -1060,8 +1060,8 @@ void func_80044C70(s32 a0) {
     D_800A9D04 += a0;
     D_800A9D00 += a0;
 }
-extern s32 func_8007DF20(s32);
-extern s32 func_8007DFEC(s32);
+extern s32 math_Sin(s32);
+extern s32 math_Cos(s32);
 void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[3];
     s32 sp28[3];
@@ -1072,8 +1072,8 @@ void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     sp18[1] = a0[0];
     angle = a0[1];
     radius = a0[2];
-    sp18[0] = (func_8007DF20(angle) * radius) >> 12;
-    v0 = func_8007DFEC(angle);
+    sp18[0] = (math_Sin(angle) * radius) >> 12;
+    v0 = math_Cos(angle);
     sp18[1] = -sp18[1];
     sp18[2] = (v0 * radius) >> 12;
     sp18[2] = -sp18[2];
@@ -1081,8 +1081,8 @@ void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     sp28[1] = a1[0];
     angle = a1[1];
     radius = a1[2];
-    sp28[0] = (func_8007DF20(angle) * radius) >> 12;
-    v0 = func_8007DFEC(angle);
+    sp28[0] = (math_Sin(angle) * radius) >> 12;
+    v0 = math_Cos(angle);
     sp28[1] = -sp28[1];
     sp28[2] = (v0 * radius) >> 12;
     sp28[2] = -sp28[2];

@@ -25,7 +25,7 @@ glabel func_8005B43C
     /* 4BC94 8005B494 21200000 */  addu       $a0, $zero, $zero
     /* 4BC98 8005B498 9317020C */  jal        func_80085E4C
     /* 4BC9C 8005B49C 21280000 */   addu      $a1, $zero, $zero
-    /* 4BCA0 8005B4A0 CD1F020C */  jal        func_80087F34
+    /* 4BCA0 8005B4A0 CD1F020C */  jal        memcard_SetSlot
     /* 4BCA4 8005B4A4 21200000 */   addu      $a0, $zero, $zero
     /* 4BCA8 8005B4A8 5115020C */  jal        SetBloodSpot
     /* 4BCAC 8005B4AC 01000424 */   addiu     $a0, $zero, 0x1

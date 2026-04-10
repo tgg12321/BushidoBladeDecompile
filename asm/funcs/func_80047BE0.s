@@ -67,7 +67,7 @@ glabel func_80047BE0
     /* 384D0 80047CD0 18003126 */  addiu      $s1, $s1, 0x18
     /* 384D4 80047CD4 3400A427 */  addiu      $a0, $sp, 0x34
     /* 384D8 80047CD8 3800A527 */  addiu      $a1, $sp, 0x38
-    /* 384DC 80047CDC DBFB010C */  jal        func_8007EF6C
+    /* 384DC 80047CDC DBFB010C */  jal        gte_GetScreenXY
     /* 384E0 80047CE0 3C00A627 */   addiu     $a2, $sp, 0x3C
     /* 384E4 80047CE4 2000A28F */  lw         $v0, 0x20($sp)
     /* 384E8 80047CE8 01007326 */  addiu      $s3, $s3, 0x1

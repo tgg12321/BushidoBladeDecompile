@@ -54,13 +54,13 @@ glabel func_8006D808
     /* 5E0D4 8006D8D4 21300000 */  addu       $a2, $zero, $zero
     /* 5E0D8 8006D8D8 1000A0AF */  sw         $zero, 0x10($sp)
     /* 5E0DC 8006D8DC 0000C48E */  lw         $a0, 0x0($s6)
-    /* 5E0E0 8006D8E0 92F0010C */  jal        func_8007C248
+    /* 5E0E0 8006D8E0 92F0010C */  jal        initTexPage
     /* 5E0E4 8006D8E4 21384000 */   addu      $a3, $v0, $zero
     /* 5E0E8 8006D8E8 80201E00 */  sll        $a0, $fp, 2
     /* 5E0EC 8006D8EC 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 5E0F0 8006D8F0 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 5E0F4 8006D8F4 0000C58E */  lw         $a1, 0x0($s6)
-    /* 5E0F8 8006D8F8 2DEA010C */  jal        func_8007A8B4
+    /* 5E0F8 8006D8F8 2DEA010C */  jal        ot_Link
     /* 5E0FC 8006D8FC 21204400 */   addu      $a0, $v0, $a0
     /* 5E100 8006D900 0000C28E */  lw         $v0, 0x0($s6)
     /* 5E104 8006D904 00000000 */  nop
@@ -158,13 +158,13 @@ glabel func_8006D808
     /* 5E25C 8006DA5C 21300000 */  addu       $a2, $zero, $zero
     /* 5E260 8006DA60 1000A0AF */  sw         $zero, 0x10($sp)
     /* 5E264 8006DA64 0000C48E */  lw         $a0, 0x0($s6)
-    /* 5E268 8006DA68 92F0010C */  jal        func_8007C248
+    /* 5E268 8006DA68 92F0010C */  jal        initTexPage
     /* 5E26C 8006DA6C 21384000 */   addu      $a3, $v0, $zero
     /* 5E270 8006DA70 80201E00 */  sll        $a0, $fp, 2
     /* 5E274 8006DA74 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 5E278 8006DA78 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 5E27C 8006DA7C 0000C58E */  lw         $a1, 0x0($s6)
-    /* 5E280 8006DA80 2DEA010C */  jal        func_8007A8B4
+    /* 5E280 8006DA80 2DEA010C */  jal        ot_Link
     /* 5E284 8006DA84 21204400 */   addu      $a0, $v0, $a0
     /* 5E288 8006DA88 0000C28E */  lw         $v0, 0x0($s6)
     /* 5E28C 8006DA8C 6766B536 */  ori        $s5, $s5, (0x66666667 & 0xFFFF)
@@ -350,13 +350,13 @@ glabel func_8006D808
     /* 5E524 8006DD24 21300000 */  addu       $a2, $zero, $zero
     /* 5E528 8006DD28 1000A0AF */  sw         $zero, 0x10($sp)
     /* 5E52C 8006DD2C 0000C48E */  lw         $a0, 0x0($s6)
-    /* 5E530 8006DD30 92F0010C */  jal        func_8007C248
+    /* 5E530 8006DD30 92F0010C */  jal        initTexPage
     /* 5E534 8006DD34 21384000 */   addu      $a3, $v0, $zero
     /* 5E538 8006DD38 80201E00 */  sll        $a0, $fp, 2
     /* 5E53C 8006DD3C 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 5E540 8006DD40 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 5E544 8006DD44 0000C58E */  lw         $a1, 0x0($s6)
-    /* 5E548 8006DD48 2DEA010C */  jal        func_8007A8B4
+    /* 5E548 8006DD48 2DEA010C */  jal        ot_Link
     /* 5E54C 8006DD4C 21204400 */   addu      $a0, $v0, $a0
     /* 5E550 8006DD50 0000C28E */  lw         $v0, 0x0($s6)
     /* 5E554 8006DD54 00000000 */  nop

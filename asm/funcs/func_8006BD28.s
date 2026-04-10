@@ -82,12 +82,12 @@ glabel func_8006BD28
     /* 5C64C 8006BE4C 21300000 */  addu       $a2, $zero, $zero
     /* 5C650 8006BE50 1406848F */  lw         $a0, %gp_rel(D_800A36E0)($gp)
     /* 5C654 8006BE54 21384000 */  addu       $a3, $v0, $zero
-    /* 5C658 8006BE58 92F0010C */  jal        func_8007C248
+    /* 5C658 8006BE58 92F0010C */  jal        initTexPage
     /* 5C65C 8006BE5C 1000A0AF */   sw        $zero, 0x10($sp)
     /* 5C660 8006BE60 0A80043C */  lui        $a0, %hi(D_800A374C)
     /* 5C664 8006BE64 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 5C668 8006BE68 1406858F */  lw         $a1, %gp_rel(D_800A36E0)($gp)
-    /* 5C66C 8006BE6C 2DEA010C */  jal        func_8007A8B4
+    /* 5C66C 8006BE6C 2DEA010C */  jal        ot_Link
     /* 5C670 8006BE70 20008424 */   addiu     $a0, $a0, 0x20
     /* 5C674 8006BE74 1406828F */  lw         $v0, %gp_rel(D_800A36E0)($gp)
     /* 5C678 8006BE78 01007326 */  addiu      $s3, $s3, 0x1

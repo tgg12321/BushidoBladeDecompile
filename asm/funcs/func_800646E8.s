@@ -39,7 +39,7 @@ glabel func_800646E8
     /* 54F7C 8006477C 0020CE48 */  ctc2       $t6, $4 /* handwritten instruction */
     /* 54F80 80064780 3C0040A4 */  sh         $zero, 0x3C($v0)
     /* 54F84 80064784 3A0040A4 */  sh         $zero, 0x3A($v0)
-    /* 54F88 80064788 E3FB010C */  jal        func_8007EF8C
+    /* 54F88 80064788 E3FB010C */  jal        gte_GetH
     /* 54F8C 8006478C 380040A4 */   sh        $zero, 0x38($v0)
     /* 54F90 80064790 21A00000 */  addu       $s4, $zero, $zero
     /* 54F94 80064794 21B8C002 */  addu       $s7, $s6, $zero
@@ -113,7 +113,7 @@ glabel func_800646E8
     /* 5509C 8006489C 83FA010C */  jal        func_8007EA0C
     /* 550A0 800648A0 0800A2AE */   sw        $v0, 0x8($s5)
     /* 550A4 800648A4 1800A88F */  lw         $t0, 0x18($sp)
-    /* 550A8 800648A8 D3FB010C */  jal        func_8007EF4C
+    /* 550A8 800648A8 D3FB010C */  jal        gte_SetTransVector
     /* 550AC 800648AC ECFF0425 */   addiu     $a0, $t0, -0x14
     /* 550B0 800648B0 2000A48F */  lw         $a0, 0x20($sp)
     /* 550B4 800648B4 EC03858F */  lw         $a1, %gp_rel(D_800A34B8)($gp)
@@ -252,7 +252,7 @@ glabel func_800646E8
     /* 552B8 80064AB8 12400000 */  mflo       $t0
     /* 552BC 80064ABC 03120800 */  sra        $v0, $t0, 8
     /* 552C0 80064AC0 21186200 */  addu       $v1, $v1, $v0
-    /* 552C4 80064AC4 87EA010C */  jal        func_8007AA1C
+    /* 552C4 80064AC4 87EA010C */  jal        initPolyFT4
     /* 552C8 80064AC8 000043A6 */   sh        $v1, 0x0($s2)
     /* 552CC 80064ACC C403828F */  lw         $v0, %gp_rel(D_800A3490)($gp)
     /* 552D0 80064AD0 C803838F */  lw         $v1, %gp_rel(D_800A3494)($gp)
@@ -401,10 +401,10 @@ glabel func_800646E8
     /* 554F4 80064CF4 21202002 */  addu       $a0, $s1, $zero
     /* 554F8 80064CF8 00004294 */  lhu        $v0, 0x0($v0)
     /* 554FC 80064CFC 21280000 */  addu       $a1, $zero, $zero
-    /* 55500 80064D00 64EA010C */  jal        func_8007A990
+    /* 55500 80064D00 64EA010C */  jal        gpu_SetRawTexture
     /* 55504 80064D04 000002A2 */   sb        $v0, 0x0($s0)
     /* 55508 80064D08 21202002 */  addu       $a0, $s1, $zero
-    /* 5550C 80064D0C 5AEA010C */  jal        func_8007A968
+    /* 5550C 80064D0C 5AEA010C */  jal        gpu_SetSemiTransp
     /* 55510 80064D10 01000524 */   addiu     $a1, $zero, 0x1
     /* 55514 80064D14 5406838F */  lw         $v1, %gp_rel(D_800A3720)($gp)
     /* 55518 80064D18 00000000 */  nop

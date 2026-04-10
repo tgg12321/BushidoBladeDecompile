@@ -23,7 +23,7 @@ glabel func_80016A8C
     /* 72E0 80016AE0 21280000 */  addu       $a1, $zero, $zero
     /* 72E4 80016AE4 21300000 */  addu       $a2, $zero, $zero
     /* 72E8 80016AE8 40010724 */  addiu      $a3, $zero, 0x140
-    /* 72EC 80016AEC D3E9010C */  jal        func_8007A74C
+    /* 72EC 80016AEC D3E9010C */  jal        gpu_InitDispEnv
     /* 72F0 80016AF0 1000A2AF */   sw        $v0, 0x10($sp)
     /* 72F4 80016AF4 D0DB000C */  jal        game_FrameLoop
     /* 72F8 80016AF8 00000000 */   nop
@@ -101,7 +101,7 @@ glabel func_80016A8C
     /* 7408 80016C08 24B58424 */  addiu      $a0, $a0, %lo(D_800FB524)
     /* 740C 80016C0C 21280000 */  addu       $a1, $zero, $zero
     /* 7410 80016C10 21300000 */  addu       $a2, $zero, $zero
-    /* 7414 80016C14 D3E9010C */  jal        func_8007A74C
+    /* 7414 80016C14 D3E9010C */  jal        gpu_InitDispEnv
     /* 7418 80016C18 80020724 */   addiu     $a3, $zero, 0x280
     /* 741C 80016C1C A8EC010C */  jal        gpu_SetDispMask
     /* 7420 80016C20 01000424 */   addiu     $a0, $zero, 0x1

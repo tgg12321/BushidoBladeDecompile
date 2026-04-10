@@ -54,7 +54,7 @@ glabel func_8007A4D8
     /* 6AD8C 8007A58C 21200002 */  addu       $a0, $s0, $zero
     /* 6AD90 8007A590 21284002 */  addu       $a1, $s2, $zero
     /* 6AD94 8007A594 21302002 */  addu       $a2, $s1, $zero
-    /* 6AD98 8007A598 E2E9010C */  jal        func_8007A788
+    /* 6AD98 8007A598 E2E9010C */  jal        gpu_CalcTPage
     /* 6AD9C 8007A59C 21386002 */   addu      $a3, $s3, $zero
     /* 6ADA0 8007A5A0 FFFF4230 */  andi       $v0, $v0, 0xFFFF
     /* 6ADA4 8007A5A4 2800BF8F */  lw         $ra, 0x28($sp)

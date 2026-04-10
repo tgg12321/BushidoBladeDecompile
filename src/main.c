@@ -409,19 +409,19 @@ void spu_NotifyChannel(s16 a0) {
 INCLUDE_ASM("asm/funcs", AddTbpOfst);
 /* kengo:MED  |  am_rmd/AddTbpOfst  |  49i */
 extern u8 g_memcard_data;
-void func_80087F00(u8 a0) {
+void memcard_SetData(u8 a0) {
     g_memcard_data = a0;
 }
 void memcard_SetBusy(void) {
     g_memcard_busy = 1;
 }
 
-void func_80087F24(void) {
+void memcard_ClearBusy(void) {
     g_memcard_busy = 0;
 }
 
 extern u8 g_memcard_slot;
-s32 func_80087F34(s32 a0) {
+s32 memcard_SetSlot(s32 a0) {
     u8 v = (u8)a0;
     if (v >= 0x19 || v == 0) {
         return 0xFF;
@@ -497,7 +497,7 @@ s16 func_80088584(s16 a0) {
     return func_8008AEB0(a0);
 }
 
-void func_800885AC(void) {
+void spu_Init(void) {
     spu_InitEx(0);
 }
 

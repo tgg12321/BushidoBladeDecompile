@@ -21,7 +21,7 @@ glabel func_80061FAC
     /* 527F8 80061FF8 180000AE */  sw         $zero, 0x18($s0)
     /* 527FC 80061FFC 37FA010C */  jal        func_8007E8DC
     /* 52800 80062000 140000AE */   sw        $zero, 0x14($s0)
-    /* 52804 80062004 BBFB010C */  jal        func_8007EEEC
+    /* 52804 80062004 BBFB010C */  jal        gte_SetRotMatrix
     /* 52808 80062008 21200002 */   addu      $a0, $s0, $zero
     /* 5280C 8006200C 1400BF8F */  lw         $ra, 0x14($sp)
     /* 52810 80062010 1000B08F */  lw         $s0, 0x10($sp)

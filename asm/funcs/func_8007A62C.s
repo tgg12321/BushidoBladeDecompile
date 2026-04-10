@@ -16,7 +16,7 @@ glabel func_8007A62C
     /* 6AE64 8007A664 80ED010C */  jal        gpu_LoadImage
     /* 6AE68 8007A668 1600A2A7 */   sh        $v0, 0x16($sp)
     /* 6AE6C 8007A66C 21200002 */  addu       $a0, $s0, $zero
-    /* 6AE70 8007A670 F1E9010C */  jal        func_8007A7C4
+    /* 6AE70 8007A670 F1E9010C */  jal        gpu_CalcClut
     /* 6AE74 8007A674 21282002 */   addu      $a1, $s1, $zero
     /* 6AE78 8007A678 FFFF4230 */  andi       $v0, $v0, 0xFFFF
     /* 6AE7C 8007A67C 2000BF8F */  lw         $ra, 0x20($sp)

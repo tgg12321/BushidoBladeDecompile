@@ -118,13 +118,13 @@ glabel func_80060544
     /* 50EF4 800606F4 01000524 */  addiu      $a1, $zero, 0x1
     /* 50EF8 800606F8 21300000 */  addu       $a2, $zero, $zero
     /* 50EFC 800606FC 21384000 */  addu       $a3, $v0, $zero
-    /* 50F00 80060700 92F0010C */  jal        func_8007C248
+    /* 50F00 80060700 92F0010C */  jal        initTexPage
     /* 50F04 80060704 1000A0AF */   sw        $zero, 0x10($sp)
     /* 50F08 80060708 2128C002 */  addu       $a1, $s6, $zero
     /* 50F0C 8006070C 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 50F10 80060710 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 50F14 80060714 80201700 */  sll        $a0, $s7, 2
-    /* 50F18 80060718 2DEA010C */  jal        func_8007A8B4
+    /* 50F18 80060718 2DEA010C */  jal        ot_Link
     /* 50F1C 8006071C 21204400 */   addu      $a0, $v0, $a0
     /* 50F20 80060720 2310D403 */  subu       $v0, $fp, $s4
     /* 50F24 80060724 6C00BF8F */  lw         $ra, 0x6C($sp)

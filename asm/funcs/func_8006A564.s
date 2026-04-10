@@ -10,7 +10,7 @@ glabel func_8006A564
     /* 5AD84 8006A584 1800B0AF */  sw         $s0, 0x18($sp)
     /* 5AD88 8006A588 1800508E */  lw         $s0, 0x18($s2)
     /* 5AD8C 8006A58C 2198C000 */  addu       $s3, $a2, $zero
-    /* 5AD90 8006A590 B4EA010C */  jal        func_8007AAD0
+    /* 5AD90 8006A590 B4EA010C */  jal        initTile
     /* 5AD94 8006A594 21200002 */   addu      $a0, $s0, $zero
     /* 5AD98 8006A598 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
     /* 5AD9C 8006A59C 00000000 */  nop
@@ -41,7 +41,7 @@ glabel func_8006A564
     /* 5ADF8 8006A5F8 19004224 */  addiu      $v0, $v0, 0x19
     /* 5ADFC 8006A5FC 0C0002A6 */  sh         $v0, 0xC($s0)
     /* 5AE00 8006A600 1000258E */  lw         $a1, 0x10($s1)
-    /* 5AE04 8006A604 5AEA010C */  jal        func_8007A968
+    /* 5AE04 8006A604 5AEA010C */  jal        gpu_SetSemiTransp
     /* 5AE08 8006A608 21200002 */   addu      $a0, $s0, $zero
     /* 5AE0C 8006A60C 21280002 */  addu       $a1, $s0, $zero
     /* 5AE10 8006A610 10001026 */  addiu      $s0, $s0, 0x10
@@ -49,9 +49,9 @@ glabel func_8006A564
     /* 5AE18 8006A618 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 5AE1C 8006A61C 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 5AE20 8006A620 80200400 */  sll        $a0, $a0, 2
-    /* 5AE24 8006A624 2DEA010C */  jal        func_8007A8B4
+    /* 5AE24 8006A624 2DEA010C */  jal        ot_Link
     /* 5AE28 8006A628 21204400 */   addu      $a0, $v0, $a0
-    /* 5AE2C 8006A62C B4EA010C */  jal        func_8007AAD0
+    /* 5AE2C 8006A62C B4EA010C */  jal        initTile
     /* 5AE30 8006A630 21200002 */   addu      $a0, $s0, $zero
     /* 5AE34 8006A634 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
     /* 5AE38 8006A638 00000000 */  nop
@@ -79,7 +79,7 @@ glabel func_8006A564
     /* 5AE88 8006A688 01000224 */  addiu      $v0, $zero, 0x1
     /* 5AE8C 8006A68C 0E0002A6 */  sh         $v0, 0xE($s0)
     /* 5AE90 8006A690 0E006324 */  addiu      $v1, $v1, 0xE
-    /* 5AE94 8006A694 5AEA010C */  jal        func_8007A968
+    /* 5AE94 8006A694 5AEA010C */  jal        gpu_SetSemiTransp
     /* 5AE98 8006A698 0A0003A6 */   sh        $v1, 0xA($s0)
     /* 5AE9C 8006A69C 21280002 */  addu       $a1, $s0, $zero
     /* 5AEA0 8006A6A0 10001026 */  addiu      $s0, $s0, 0x10
@@ -87,9 +87,9 @@ glabel func_8006A564
     /* 5AEA8 8006A6A8 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 5AEAC 8006A6AC 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 5AEB0 8006A6B0 80200400 */  sll        $a0, $a0, 2
-    /* 5AEB4 8006A6B4 2DEA010C */  jal        func_8007A8B4
+    /* 5AEB4 8006A6B4 2DEA010C */  jal        ot_Link
     /* 5AEB8 8006A6B8 21204400 */   addu      $a0, $v0, $a0
-    /* 5AEBC 8006A6BC B4EA010C */  jal        func_8007AAD0
+    /* 5AEBC 8006A6BC B4EA010C */  jal        initTile
     /* 5AEC0 8006A6C0 21200002 */   addu      $a0, $s0, $zero
     /* 5AEC4 8006A6C4 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
     /* 5AEC8 8006A6C8 00000000 */  nop
@@ -120,14 +120,14 @@ glabel func_8006A564
     /* 5AF24 8006A724 01000224 */  addiu      $v0, $zero, 0x1
     /* 5AF28 8006A728 0E0002A6 */  sh         $v0, 0xE($s0)
     /* 5AF2C 8006A72C 0D006324 */  addiu      $v1, $v1, 0xD
-    /* 5AF30 8006A730 5AEA010C */  jal        func_8007A968
+    /* 5AF30 8006A730 5AEA010C */  jal        gpu_SetSemiTransp
     /* 5AF34 8006A734 0A0003A6 */   sh        $v1, 0xA($s0)
     /* 5AF38 8006A738 21280002 */  addu       $a1, $s0, $zero
     /* 5AF3C 8006A73C 1400248E */  lw         $a0, 0x14($s1)
     /* 5AF40 8006A740 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 5AF44 8006A744 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 5AF48 8006A748 80200400 */  sll        $a0, $a0, 2
-    /* 5AF4C 8006A74C 2DEA010C */  jal        func_8007A8B4
+    /* 5AF4C 8006A74C 2DEA010C */  jal        ot_Link
     /* 5AF50 8006A750 21204400 */   addu      $a0, $v0, $a0
     /* 5AF54 8006A754 0400428E */  lw         $v0, 0x4($s2)
     /* 5AF58 8006A758 10001026 */  addiu      $s0, $s0, 0x10
@@ -184,14 +184,14 @@ glabel func_8006A564
     /* 5B01C 8006A81C 21300000 */  addu       $a2, $zero, $zero
     /* 5B020 8006A820 1000A0AF */  sw         $zero, 0x10($sp)
     /* 5B024 8006A824 1C00448E */  lw         $a0, 0x1C($s2)
-    /* 5B028 8006A828 92F0010C */  jal        func_8007C248
+    /* 5B028 8006A828 92F0010C */  jal        initTexPage
     /* 5B02C 8006A82C 21384000 */   addu      $a3, $v0, $zero
     /* 5B030 8006A830 1C00458E */  lw         $a1, 0x1C($s2)
     /* 5B034 8006A834 1400248E */  lw         $a0, 0x14($s1)
     /* 5B038 8006A838 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 5B03C 8006A83C 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 5B040 8006A840 80200400 */  sll        $a0, $a0, 2
-    /* 5B044 8006A844 2DEA010C */  jal        func_8007A8B4
+    /* 5B044 8006A844 2DEA010C */  jal        ot_Link
     /* 5B048 8006A848 21204400 */   addu      $a0, $v0, $a0
     /* 5B04C 8006A84C 1C00428E */  lw         $v0, 0x1C($s2)
     /* 5B050 8006A850 00000000 */  nop

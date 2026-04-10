@@ -43,14 +43,14 @@ glabel func_8005FC9C
     /* 50540 8005FD40 4C00A3A7 */  sh         $v1, 0x4C($sp)
     /* 50544 8005FD44 06004394 */  lhu        $v1, 0x6($v0)
     /* 50548 8005FD48 21904000 */  addu       $s2, $v0, $zero
-    /* 5054C 8005FD4C 55F0010C */  jal        func_8007C154
+    /* 5054C 8005FD4C 55F0010C */  jal        initDrawArea
     /* 50550 8005FD50 4E00A3A7 */   sh        $v1, 0x4E($sp)
     /* 50554 8005FD54 21288002 */  addu       $a1, $s4, $zero
     /* 50558 8005FD58 E002D426 */  addiu      $s4, $s6, 0x2E0
     /* 5055C 8005FD5C 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 50560 8005FD60 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 50564 8005FD64 80201700 */  sll        $a0, $s7, 2
-    /* 50568 8005FD68 2DEA010C */  jal        func_8007A8B4
+    /* 50568 8005FD68 2DEA010C */  jal        ot_Link
     /* 5056C 8005FD6C 21204400 */   addu      $a0, $v0, $a0
     /* 50570 8005FD70 AC01838F */  lw         $v1, %gp_rel(D_800A3278)($gp)
     /* 50574 8005FD74 0A80023C */  lui        $v0, %hi(D_8009B6B0)
@@ -77,10 +77,10 @@ glabel func_8005FC9C
     /* 505C4 8005FDC4 B5004228 */  slti       $v0, $v0, 0xB5
     /* 505C8 8005FDC8 67004014 */  bnez       $v0, .L8005FF68
     /* 505CC 8005FDCC 21880000 */   addu      $s1, $zero, $zero
-    /* 505D0 8005FDD0 8CEA010C */  jal        func_8007AA30
+    /* 505D0 8005FDD0 8CEA010C */  jal        initPolyG4
     /* 505D4 8005FDD4 2120A002 */   addu      $a0, $s5, $zero
     /* 505D8 8005FDD8 2120A002 */  addu       $a0, $s5, $zero
-    /* 505DC 8005FDDC 5AEA010C */  jal        func_8007A968
+    /* 505DC 8005FDDC 5AEA010C */  jal        gpu_SetSemiTransp
     /* 505E0 8005FDE0 01000524 */   addiu     $a1, $zero, 0x1
     /* 505E4 8005FDE4 6800A897 */  lhu        $t0, 0x68($sp)
     /* 505E8 8005FDE8 00000000 */  nop
@@ -178,7 +178,7 @@ glabel func_8005FC9C
     /* 50750 8005FF50 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 50754 8005FF54 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 50758 8005FF58 24001026 */  addiu      $s0, $s0, 0x24
-    /* 5075C 8005FF5C 2DEA010C */  jal        func_8007A8B4
+    /* 5075C 8005FF5C 2DEA010C */  jal        ot_Link
     /* 50760 8005FF60 21204400 */   addu      $a0, $v0, $a0
     /* 50764 8005FF64 21880000 */  addu       $s1, $zero, $zero
   .L8005FF68:
@@ -212,14 +212,14 @@ glabel func_8005FC9C
     /* 507D0 8005FFD0 0B004014 */  bnez       $v0, .L80060000
     /* 507D4 8005FFD4 00000000 */   nop
     /* 507D8 8005FFD8 21208002 */  addu       $a0, $s4, $zero
-    /* 507DC 8005FFDC 55F0010C */  jal        func_8007C154
+    /* 507DC 8005FFDC 55F0010C */  jal        initDrawArea
     /* 507E0 8005FFE0 4800A527 */   addiu     $a1, $sp, 0x48
     /* 507E4 8005FFE4 21288002 */  addu       $a1, $s4, $zero
     /* 507E8 8005FFE8 0C009426 */  addiu      $s4, $s4, 0xC
     /* 507EC 8005FFEC 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 507F0 8005FFF0 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 507F4 8005FFF4 80201700 */  sll        $a0, $s7, 2
-    /* 507F8 8005FFF8 2DEA010C */  jal        func_8007A8B4
+    /* 507F8 8005FFF8 2DEA010C */  jal        ot_Link
     /* 507FC 8005FFFC 21204400 */   addu      $a0, $v0, $a0
   .L80060000:
     /* 50800 80060000 6800A897 */  lhu        $t0, 0x68($sp)
@@ -239,13 +239,13 @@ glabel func_8005FC9C
     /* 50838 80060038 21300000 */  addu       $a2, $zero, $zero
     /* 5083C 8006003C 5800A48F */  lw         $a0, 0x58($sp)
     /* 50840 80060040 21384000 */  addu       $a3, $v0, $zero
-    /* 50844 80060044 92F0010C */  jal        func_8007C248
+    /* 50844 80060044 92F0010C */  jal        initTexPage
     /* 50848 80060048 1000A0AF */   sw        $zero, 0x10($sp)
     /* 5084C 8006004C 80201700 */  sll        $a0, $s7, 2
     /* 50850 80060050 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 50854 80060054 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 50858 80060058 5800A58F */  lw         $a1, 0x58($sp)
-    /* 5085C 8006005C 2DEA010C */  jal        func_8007A8B4
+    /* 5085C 8006005C 2DEA010C */  jal        ot_Link
     /* 50860 80060060 21204400 */   addu      $a0, $v0, $a0
     /* 50864 80060064 00141300 */  sll        $v0, $s3, 16
     /* 50868 80060068 03140200 */  sra        $v0, $v0, 16

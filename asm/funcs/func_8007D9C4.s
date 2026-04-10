@@ -46,12 +46,12 @@ glabel func_8007D9C4
     /* 6E26C 8007DA6C 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
     /* 6E270 8007DA70 00010624 */  addiu      $a2, $zero, 0x100
     /* 6E274 8007DA74 000040AC */  sw         $zero, 0x0($v0)
-    /* 6E278 8007DA78 B9F7010C */  jal        func_8007DEE4
+    /* 6E278 8007DA78 B9F7010C */  jal        bb2_memset
     /* 6E27C 8007DA7C 00000000 */   nop
     /* 6E280 8007DA80 1080043C */  lui        $a0, %hi(D_80103680)
     /* 6E284 8007DA84 80368424 */  addiu      $a0, $a0, %lo(D_80103680)
     /* 6E288 8007DA88 21280000 */  addu       $a1, $zero, $zero
-    /* 6E28C 8007DA8C B9F7010C */  jal        func_8007DEE4
+    /* 6E28C 8007DA8C B9F7010C */  jal        bb2_memset
     /* 6E290 8007DA90 00180624 */   addiu     $a2, $zero, 0x1800
     /* 6E294 8007DA94 BAF60108 */  j          .L8007DAE8
     /* 6E298 8007DA98 00000000 */   nop
