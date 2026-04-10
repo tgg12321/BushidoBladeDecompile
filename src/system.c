@@ -704,11 +704,11 @@ s32 saEft00Add(s32 arg0) {
         func_80080660(0);
     }
     if (func_8008009C() & 0x10) {
-        if (!(func_800828CC(-1) & 0x3F)) {
+        if (!(sys_VSync(-1) & 0x3F)) {
             tslTm2LoadImage_2(&D_800162EC);
         }
         func_80080390(1, 0);
-        D_800A14EC = func_800828CC(-1);
+        D_800A14EC = sys_VSync(-1);
         *(volatile s32 *)&D_800A14E4 = -1;
         goto end;
     }
@@ -742,7 +742,7 @@ common_path:
     D_800A14D8 = D_800A14D4;
     func_80080390(6, 0);
     D_800A14E4 = D_800A14D0;
-    D_800A14E8 = func_800828CC(-1);
+    D_800A14E8 = sys_VSync(-1);
 end:
     return D_800A14E4;
 }
