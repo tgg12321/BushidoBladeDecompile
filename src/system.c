@@ -512,7 +512,65 @@ extern void *D_800F19C0;
 extern s32 g_str_cd_timeout;
 extern s32 D_800161C8;
 extern void D_800162C0;
-INCLUDE_ASM("asm/funcs", saEft01Init);
+extern u8 D_800A11D5;
+extern s32 D_800A11DC[];
+extern s32 D_800A125C[];
+extern u8 D_800A1494;
+extern u8 D_800A1495;
+extern volatile u32 *D_800A14C0;
+extern s32 D_800161B8;
+s32 saEft01Init(s32 a0) {
+    s32 v0;
+    s32 cnt;
+    s32 *tbl_11dc;
+    u8 *idx_1494;
+    s32 *tbl_125c;
+
+    D_800F19B8 = func_800828CC(-1) + 0x3C0;
+    tbl_11dc = D_800A11DC;
+    idx_1494 = &D_800A1494;
+    tbl_125c = D_800A125C;
+    D_800F19BC = 0;
+    D_800F19C0 = &D_800162C0;
+
+loop:
+    v0 = func_800828CC(-1);
+    if (D_800F19B8 < v0) {
+        goto do_timeout;
+    }
+    cnt = D_800F19BC;
+    D_800F19BC = cnt + 1;
+    if (!(0x3C0000 < cnt)) {
+        goto success;
+    }
+
+do_timeout:
+    tslTm2LoadImage_2(&D_800161B8);
+    {
+        s32 arg5, arg4;
+        arg5 = tbl_125c[idx_1494[1]];
+        arg4 = tbl_125c[idx_1494[0]];
+        func_80079208(&D_800161C8, D_800F19C0, tbl_11dc[D_800A11D5], arg4, arg5);
+    }
+    func_800817A0();
+    v0 = -1;
+    goto check;
+
+success:
+    v0 = 0;
+
+check:
+    if (v0 != 0) {
+        return -1;
+    }
+    if (*D_800A14C0 & 0x1000000) {
+        if (a0 == 0) {
+            goto loop;
+        }
+        return 1;
+    }
+    return 0;
+}
 /* kengo:MED  |  sa_eft/saEft01Init  |  91i */
 extern volatile u32 *g_cd_dma_madr;
 extern volatile u32 *g_cd_dma_bcr;
