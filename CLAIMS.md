@@ -19,9 +19,9 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/system.c:saEft00Add | Agent 7: matched | 2026-04-10 | done — merged to main |
 | src/ings2.c:conv_matrix_rotation | Agent 8: never spawned (power flicker) | 2026-04-10 | cancelled |
 | src/sound.c:func_800477E8 | Agent 9: matched | 2026-04-10 | done — merged to main |
-| src/code6cac.c:se_data_set | Agent 10: Wave 5 | 2026-04-10 | active |
-| src/ings2.c:motion_Open | Agent 11: Wave 5 | 2026-04-10 | active |
-| src/code6cac_c.c:damage_DebugDisp | Agent 12: Wave 5 | 2026-04-10 | active |
+| src/code6cac.c:se_data_set | Agent 10: matched | 2026-04-10 | done — merged to main |
+| src/ings2.c:motion_Open | Agent 11: matched (+ motion_Close) | 2026-04-10 | done — merged to main |
+| src/code6cac_c.c:damage_DebugDisp | Agent 12: matched | 2026-04-10 | done — merged to main |
 | src/*.c, include/*.h, asm/ | Item 4: 29 function renames | 2026-04-10 | done — merged to main |
 | include/*.h, src/*.c | Item 5: magic number constants | 2026-04-10 | done — merged to main |
 | src/*.c, asm/ | Item 6: 76 function renames (gpu/display/main) | 2026-04-10 | done — merged to main |
