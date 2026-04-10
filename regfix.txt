@@ -182,3 +182,26 @@ saEft00Add_sub: subst "sw	\$0,D_800A14E4" "lw	$4,D_800A14F4" @ 12
 # func_800477E8: swap t1/t2 and v1/a1 registers
 func_800477E8: $9 <-> $10 @ 26-57
 func_800477E8: $3 <-> $5 @ 32-135
+
+
+# motion_Open: prologue register v0->t0, save offsets 0/4/8->4/8/C, ori for delay
+motion_Open: $2 <-> $8 @ 0-7
+motion_Open: reorder 2,3,5,4 @ 2-5
+motion_Open: subst "\$31,8" "$16,4" @ 2
+motion_Open: subst ",4\(" ",8(" @ 3
+motion_Open: subst "\$16,0\(" "$31,0xc(" @ 5
+motion_Open: subst "addiu" "ori" @ 6
+motion_Open: subst ",8\(" ",0xc(" @ 18
+motion_Open: subst ",4\(" ",8(" @ 19
+motion_Open: subst ",0\(" ",4(" @ 20
+
+# motion_Close: prologue register v0->t0, save offsets, insert nop for delay slot
+motion_Close: $2 <-> $8 @ 0-4
+motion_Close: insert "nop" @ 6
+motion_Close: reorder 2,3,5,4 @ 2-5
+motion_Close: subst "\$31,8" "$16,4" @ 2
+motion_Close: subst ",4\(" ",8(" @ 3
+motion_Close: subst "\$16,0\(" "$31,0xc(" @ 5
+motion_Close: subst ",8\(" ",0xc(" @ 16
+motion_Close: subst ",4\(" ",8(" @ 17
+motion_Close: subst ",0\(" ",4(" @ 18
