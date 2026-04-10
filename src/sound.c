@@ -29,7 +29,7 @@ extern void func_800421C8(s32);
 extern void func_8003E0E0(void);
 extern void DispHira(s32);
 extern void func_8003DA8C(s32, s32);
-extern void func_800415C4(s32);
+extern void player_Destroy(s32);
 extern void func_8004668C(void);
 extern void func_80046020(void);
 extern void func_80049E1C(void);
@@ -222,8 +222,8 @@ void snd_SelectionCallback(s32 a0, s32 a1) {
 }
 
 void snd_StopAll(void) {
-    func_800415C4(0);
-    func_800415C4(1);
+    player_Destroy(0);
+    player_Destroy(1);
     func_8004668C();
     func_80046020();
     func_80049E1C();

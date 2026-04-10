@@ -105,7 +105,7 @@ glabel func_8005C2A8
     /* 4CC2C 8005C42C 80101000 */   sll       $v0, $s0, 2
     /* 4CC30 8005C430 0180043C */  lui        $a0, %hi(D_800158CC)
     /* 4CC34 8005C434 CC588424 */  addiu      $a0, $a0, %lo(D_800158CC)
-    /* 4CC38 8005C438 82E4010C */  jal        func_80079208
+    /* 4CC38 8005C438 82E4010C */  jal        debug_printf
     /* 4CC3C 8005C43C 21284002 */   addu      $a1, $s2, $zero
     /* 4CC40 8005C440 25710108 */  j          .L8005C494
     /* 4CC44 8005C444 21100000 */   addu      $v0, $zero, $zero

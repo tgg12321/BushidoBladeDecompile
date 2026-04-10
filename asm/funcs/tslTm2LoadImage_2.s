@@ -133,7 +133,7 @@ glabel tslTm2LoadImage_2
     /* 729EC 800821EC 0A80013C */  lui        $at, %hi(D_800A14E4)
     /* 729F0 800821F0 E41422AC */  sw         $v0, %lo(D_800A14E4)($at)
   .L800821F4:
-    /* 729F4 800821F4 330A020C */  jal        func_800828CC
+    /* 729F4 800821F4 330A020C */  jal        sys_VSync
     /* 729F8 800821F8 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 729FC 800821FC 0A80013C */  lui        $at, %hi(D_800A14E8)
     /* 72A00 80082200 E81422AC */  sw         $v0, %lo(D_800A14E8)($at)
@@ -145,7 +145,7 @@ glabel tslTm2LoadImage_2
     /* 72A18 80082218 0709020C */  jal        saEft00Add
     /* 72A1C 8008221C 01000424 */   addiu     $a0, $zero, 0x1
   .L80082220:
-    /* 72A20 80082220 330A020C */  jal        func_800828CC
+    /* 72A20 80082220 330A020C */  jal        sys_VSync
     /* 72A24 80082224 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 72A28 80082228 0A80033C */  lui        $v1, %hi(D_800A14EC)
     /* 72A2C 8008222C EC14638C */  lw         $v1, %lo(D_800A14EC)($v1)
@@ -162,7 +162,7 @@ glabel tslTm2LoadImage_2
     /* 72A54 80082254 00000000 */  nop
     /* 72A58 80082258 0A004010 */  beqz       $v0, .L80082284
     /* 72A5C 8008225C 00000000 */   nop
-    /* 72A60 80082260 330A020C */  jal        func_800828CC
+    /* 72A60 80082260 330A020C */  jal        sys_VSync
     /* 72A64 80082264 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 72A68 80082268 0A80033C */  lui        $v1, %hi(D_800A14EC)
     /* 72A6C 8008226C EC14638C */  lw         $v1, %lo(D_800A14EC)($v1)

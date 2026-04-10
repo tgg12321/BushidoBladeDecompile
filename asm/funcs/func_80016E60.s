@@ -80,18 +80,18 @@ glabel func_80016E60
     /* 7784 80016F84 00000000 */   nop
     /* 7788 80016F88 B471010C */  jal        func_8005C6D0
     /* 778C 80016F8C 00000000 */   nop
-    /* 7790 80016F90 CFEC010C */  jal        func_8007B33C
+    /* 7790 80016F90 CFEC010C */  jal        gpu_DrawSync
     /* 7794 80016F94 21200000 */   addu      $a0, $zero, $zero
-    /* 7798 80016F98 330A020C */  jal        func_800828CC
+    /* 7798 80016F98 330A020C */  jal        sys_VSync
     /* 779C 80016F9C 02000424 */   addiu     $a0, $zero, 0x2
     /* 77A0 80016FA0 02EF010C */  jal        func_8007BC08
     /* 77A4 80016FA4 5C000426 */   addiu     $a0, $s0, 0x5C
     /* 77A8 80016FA8 6CEE010C */  jal        func_8007B9B0
     /* 77AC 80016FAC 21200002 */   addu      $a0, $s0, $zero
-    /* 77B0 80016FB0 4FEE010C */  jal        func_8007B93C
+    /* 77B0 80016FB0 4FEE010C */  jal        gpu_DrawOTag
     /* 77B4 80016FB4 8C40A426 */   addiu     $a0, $s5, 0x408C
     /* 77B8 80016FB8 8006848F */  lw         $a0, %gp_rel(D_800A374C)($gp)
-    /* 77BC 80016FBC 4FEE010C */  jal        func_8007B93C
+    /* 77BC 80016FBC 4FEE010C */  jal        gpu_DrawOTag
     /* 77C0 80016FC0 00000000 */   nop
     /* 77C4 80016FC4 1000033C */  lui        $v1, (0x100010 >> 16)
     /* 77C8 80016FC8 10006334 */  ori        $v1, $v1, (0x100010 & 0xFFFF)
@@ -209,7 +209,7 @@ glabel func_80016E60
     /* 7960 80017160 B0DC000C */  jal        func_800372C0
     /* 7964 80017164 00000000 */   nop
   .L80017168:
-    /* 7968 80017168 CFEC010C */  jal        func_8007B33C
+    /* 7968 80017168 CFEC010C */  jal        gpu_DrawSync
     /* 796C 8001716C 21200000 */   addu      $a0, $zero, $zero
     /* 7970 80017170 00F2043C */  lui        $a0, (0xF2000001 >> 16)
     /* 7974 80017174 EAE2010C */  jal        func_80078BA8

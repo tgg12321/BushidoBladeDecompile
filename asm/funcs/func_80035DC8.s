@@ -7,13 +7,13 @@ glabel func_80035DC8
     /* 265DC 80035DDC 00000000 */   nop
     /* 265E0 80035DE0 3783000C */  jal        func_80020CDC
     /* 265E4 80035DE4 00000000 */   nop
-    /* 265E8 80035DE8 7105010C */  jal        func_800415C4
+    /* 265E8 80035DE8 7105010C */  jal        player_Destroy
     /* 265EC 80035DEC 21200000 */   addu      $a0, $zero, $zero
-    /* 265F0 80035DF0 7105010C */  jal        func_800415C4
+    /* 265F0 80035DF0 7105010C */  jal        player_Destroy
     /* 265F4 80035DF4 01000424 */   addiu     $a0, $zero, 0x1
     /* 265F8 80035DF8 1D5B000C */  jal        file_ResetDmaFlag
     /* 265FC 80035DFC 00000000 */   nop
-    /* 26600 80035E00 CB6D010C */  jal        func_8005B72C
+    /* 26600 80035E00 CB6D010C */  jal        obj_InitAll
     /* 26604 80035E04 00000000 */   nop
     /* 26608 80035E08 1180043C */  lui        $a0, (0x80118800 >> 16)
     /* 2660C 80035E0C 08DE010C */  jal        func_80077820

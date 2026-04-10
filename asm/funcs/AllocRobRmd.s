@@ -29,7 +29,7 @@ glabel AllocRobRmd
     /* 30DF8 800405F8 00000000 */  nop
     /* 30DFC 800405FC 82100200 */  srl        $v0, $v0, 2
     /* 30E00 80040600 80100200 */  sll        $v0, $v0, 2
-    /* 30E04 80040604 6514010C */  jal        func_80045194
+    /* 30E04 80040604 6514010C */  jal        seq_GetState
     /* 30E08 80040608 21982202 */   addu      $s3, $s1, $v0
     /* 30E0C 8004060C 05004010 */  beqz       $v0, .L80040624
     /* 30E10 80040610 01000224 */   addiu     $v0, $zero, 0x1
@@ -183,7 +183,7 @@ glabel AllocRobRmd
     /* 3103C 8004083C B206010C */  jal        func_80041AC8
     /* 31040 80040840 21204002 */   addu      $a0, $s2, $zero
   .L80040844:
-    /* 31044 80040844 CFEC010C */  jal        func_8007B33C
+    /* 31044 80040844 CFEC010C */  jal        gpu_DrawSync
     /* 31048 80040848 21200000 */   addu      $a0, $zero, $zero
     /* 3104C 8004084C 04004486 */  lh         $a0, 0x4($s2)
     /* 31050 80040850 08004586 */  lh         $a1, 0x8($s2)
@@ -211,7 +211,7 @@ glabel AllocRobRmd
     /* 310A8 800408A8 0980013C */  lui        $at, %hi(D_80094B88)
     /* 310AC 800408AC 21082300 */  addu       $at, $at, $v1
     /* 310B0 800408B0 884B20AC */  sw         $zero, %lo(D_80094B88)($at)
-    /* 310B4 800408B4 CFEC010C */  jal        func_8007B33C
+    /* 310B4 800408B4 CFEC010C */  jal        gpu_DrawSync
     /* 310B8 800408B8 21200000 */   addu      $a0, $zero, $zero
     /* 310BC 800408BC 21288002 */  addu       $a1, $s4, $zero
     /* 310C0 800408C0 1C00428E */  lw         $v0, 0x1C($s2)

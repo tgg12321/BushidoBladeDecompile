@@ -79,7 +79,7 @@ glabel func_8003CE18
     /* 2D740 8003CF40 01000424 */  addiu      $a0, $zero, 0x1
     /* 2D744 8003CF44 A205010C */  jal        func_80041688
     /* 2D748 8003CF48 21280000 */   addu      $a1, $zero, $zero
-    /* 2D74C 8003CF4C 5E84010C */  jal        func_80061178
+    /* 2D74C 8003CF4C 5E84010C */  jal        game_Cleanup
     /* 2D750 8003CF50 00000000 */   nop
     /* 2D754 8003CF54 1D000224 */  addiu      $v0, $zero, 0x1D
     /* 2D758 8003CF58 0A80013C */  lui        $at, %hi(D_800A37B8)

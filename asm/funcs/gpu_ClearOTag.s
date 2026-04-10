@@ -1,4 +1,4 @@
-glabel func_8007B78C
+glabel gpu_ClearOTag
     /* 6BF8C 8007B78C 0A80023C */  lui        $v0, %hi(D_8009BE76)
     /* 6BF90 8007B790 76BE4290 */  lbu        $v0, %lo(D_8009BE76)($v0)
     /* 6BF94 8007B794 E0FFBD27 */  addiu      $sp, $sp, -0x20
@@ -48,4 +48,4 @@ glabel func_8007B78C
     /* 6C038 8007B838 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6C03C 8007B83C 0800E003 */  jr         $ra
     /* 6C040 8007B840 00000000 */   nop
-endlabel func_8007B78C
+endlabel gpu_ClearOTag

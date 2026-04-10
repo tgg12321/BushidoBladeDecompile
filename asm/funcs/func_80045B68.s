@@ -156,7 +156,7 @@ glabel func_80045B68
     /* 3658C 80045D8C 2000222A */  slti       $v0, $s1, 0x20
     /* 36590 80045D90 CEFF4014 */  bnez       $v0, .L80045CCC
     /* 36594 80045D94 02005226 */   addiu     $s2, $s2, 0x2
-    /* 36598 80045D98 CFEC010C */  jal        func_8007B33C
+    /* 36598 80045D98 CFEC010C */  jal        gpu_DrawSync
     /* 3659C 80045D9C 21200000 */   addu      $a0, $zero, $zero
     /* 365A0 80045DA0 4801A88F */  lw         $t0, 0x148($sp)
     /* 365A4 80045DA4 00000000 */  nop

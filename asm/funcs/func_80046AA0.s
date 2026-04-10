@@ -1,9 +1,9 @@
 glabel func_80046AA0
     /* 372A0 80046AA0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 372A4 80046AA4 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 372A8 80046AA8 7105010C */  jal        func_800415C4
+    /* 372A8 80046AA8 7105010C */  jal        player_Destroy
     /* 372AC 80046AAC 21200000 */   addu      $a0, $zero, $zero
-    /* 372B0 80046AB0 7105010C */  jal        func_800415C4
+    /* 372B0 80046AB0 7105010C */  jal        player_Destroy
     /* 372B4 80046AB4 01000424 */   addiu     $a0, $zero, 0x1
     /* 372B8 80046AB8 A319010C */  jal        func_8004668C
     /* 372BC 80046ABC 00000000 */   nop

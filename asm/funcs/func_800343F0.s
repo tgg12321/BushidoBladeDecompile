@@ -26,10 +26,10 @@ glabel func_800343F0
     /* 24C50 80034450 403127AC */  sw         $a3, %lo(D_800A3140)($at)
     /* 24C54 80034454 0A80013C */  lui        $at, %hi(D_800A36A4)
     /* 24C58 80034458 A43622A4 */  sh         $v0, %lo(D_800A36A4)($at)
-    /* 24C5C 8003445C 8105010C */  jal        func_80041604
+    /* 24C5C 8003445C 8105010C */  jal        player_SetCharId
     /* 24C60 80034460 21280000 */   addu      $a1, $zero, $zero
     /* 24C64 80034464 01000424 */  addiu      $a0, $zero, 0x1
-    /* 24C68 80034468 8105010C */  jal        func_80041604
+    /* 24C68 80034468 8105010C */  jal        player_SetCharId
     /* 24C6C 8003446C 21280000 */   addu      $a1, $zero, $zero
     /* 24C70 80034470 02000224 */  addiu      $v0, $zero, 0x2
     /* 24C74 80034474 0A80013C */  lui        $at, %hi(D_800A376A)

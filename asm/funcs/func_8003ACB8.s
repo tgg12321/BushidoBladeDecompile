@@ -3,7 +3,7 @@ glabel func_8003ACB8
     /* 2B4BC 8003ACBC 1400BFAF */  sw         $ra, 0x14($sp)
     /* 2B4C0 8003ACC0 B8DE010C */  jal        func_80077AE0
     /* 2B4C4 8003ACC4 1000B0AF */   sw        $s0, 0x10($sp)
-    /* 2B4C8 8003ACC8 A8EC010C */  jal        func_8007B2A0
+    /* 2B4C8 8003ACC8 A8EC010C */  jal        gpu_SetDispMask
     /* 2B4CC 8003ACCC 21200000 */   addu      $a0, $zero, $zero
     /* 2B4D0 8003ACD0 0A80013C */  lui        $at, %hi(D_800A37B8)
     /* 2B4D4 8003ACD4 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
@@ -21,7 +21,7 @@ glabel func_8003ACB8
     /* 2B500 8003AD00 D1EA000C */  jal        func_8003AB44
     /* 2B504 8003AD04 00000000 */   nop
     /* 2B508 8003AD08 02000424 */  addiu      $a0, $zero, 0x2
-    /* 2B50C 8003AD0C 330A020C */  jal        func_800828CC
+    /* 2B50C 8003AD0C 330A020C */  jal        sys_VSync
     /* 2B510 8003AD10 21804000 */   addu      $s0, $v0, $zero
     /* 2B514 8003AD14 F6FF0012 */  beqz       $s0, .L8003ACF0
     /* 2B518 8003AD18 00000000 */   nop
@@ -36,7 +36,7 @@ glabel func_8003ACB8
     /* 2B53C 8003AD3C F80682A7 */  sh         $v0, %gp_rel(D_800A37C4)($gp)
     /* 2B540 8003AD40 92EA000C */  jal        func_8003AA48
     /* 2B544 8003AD44 00000000 */   nop
-    /* 2B548 8003AD48 330A020C */  jal        func_800828CC
+    /* 2B548 8003AD48 330A020C */  jal        sys_VSync
     /* 2B54C 8003AD4C 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B550 8003AD50 92EA000C */  jal        func_8003AA48
     /* 2B554 8003AD54 00000000 */   nop
@@ -49,15 +49,15 @@ glabel func_8003ACB8
     /* 2B570 8003AD70 2265000C */  jal        func_80019488
     /* 2B574 8003AD74 00000000 */   nop
     /* 2B578 8003AD78 F80682A7 */  sh         $v0, %gp_rel(D_800A37C4)($gp)
-    /* 2B57C 8003AD7C 330A020C */  jal        func_800828CC
+    /* 2B57C 8003AD7C 330A020C */  jal        sys_VSync
     /* 2B580 8003AD80 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B584 8003AD84 92EA000C */  jal        func_8003AA48
     /* 2B588 8003AD88 00000000 */   nop
-    /* 2B58C 8003AD8C 330A020C */  jal        func_800828CC
+    /* 2B58C 8003AD8C 330A020C */  jal        sys_VSync
     /* 2B590 8003AD90 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B594 8003AD94 92EA000C */  jal        func_8003AA48
     /* 2B598 8003AD98 00000000 */   nop
-    /* 2B59C 8003AD9C 330A020C */  jal        func_800828CC
+    /* 2B59C 8003AD9C 330A020C */  jal        sys_VSync
     /* 2B5A0 8003ADA0 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B5A4 8003ADA4 92EA000C */  jal        func_8003AA48
     /* 2B5A8 8003ADA8 00000000 */   nop
@@ -68,15 +68,15 @@ glabel func_8003ACB8
     /* 2B5BC 8003ADBC 55E4010C */  jal        func_80079154
     /* 2B5C0 8003ADC0 00000000 */   nop
     /* 2B5C4 8003ADC4 F80682A7 */  sh         $v0, %gp_rel(D_800A37C4)($gp)
-    /* 2B5C8 8003ADC8 330A020C */  jal        func_800828CC
+    /* 2B5C8 8003ADC8 330A020C */  jal        sys_VSync
     /* 2B5CC 8003ADCC 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B5D0 8003ADD0 92EA000C */  jal        func_8003AA48
     /* 2B5D4 8003ADD4 00000000 */   nop
-    /* 2B5D8 8003ADD8 330A020C */  jal        func_800828CC
+    /* 2B5D8 8003ADD8 330A020C */  jal        sys_VSync
     /* 2B5DC 8003ADDC 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B5E0 8003ADE0 92EA000C */  jal        func_8003AA48
     /* 2B5E4 8003ADE4 00000000 */   nop
-    /* 2B5E8 8003ADE8 330A020C */  jal        func_800828CC
+    /* 2B5E8 8003ADE8 330A020C */  jal        sys_VSync
     /* 2B5EC 8003ADEC 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B5F0 8003ADF0 92EA000C */  jal        func_8003AA48
     /* 2B5F4 8003ADF4 00000000 */   nop

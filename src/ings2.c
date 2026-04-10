@@ -38,7 +38,7 @@ extern s32 D_800A1518;
 extern s32 D_800A151C;
 void func_80082A14(s32 a0, s32 a1);
 
-s32 func_800828CC(s32 a0) {
+s32 sys_VSync(s32 a0) {
     s32 s0_val;
     s32 s1_val;
 
@@ -216,7 +216,7 @@ u16 *func_80082C58(void) {
         }
         asm volatile("" : "=r"(s0b) : "0"(s0b));
         s0b = (s32 *)((char *)s0b - 0x3C);
-        func_800789C8();
+        ExitCriticalSection();
         return (u16 *)s0b;
     }
 }
@@ -476,8 +476,8 @@ extern u8 D_800A26DD;
 extern u8 D_800A26DE;
 extern u8 D_800A26DC;
 extern s32 D_800A26D8;
-extern void func_800789B8(void);
-extern void func_800789C8(void);
+extern void EnterCriticalSection(void);
+extern void ExitCriticalSection(void);
 
 void irq_ProcessPending(void) {
     if (D_800A26D0 != 0) {
@@ -487,7 +487,7 @@ void irq_ProcessPending(void) {
     if (D_800A26DE == 0x7F) {
         return;
     }
-    func_800789B8();
+    EnterCriticalSection();
     if (D_800A26DC != 0) {
         irq_SetAlarm(0);
         D_800A26DC = 0;
@@ -497,7 +497,7 @@ void irq_ProcessPending(void) {
     } else {
         ((void (*)(s32, s32))irq_EnableInterrupts)(6, 0);
     }
-    func_800789C8();
+    ExitCriticalSection();
     D_800A26DE = 0x7F;
 }
 

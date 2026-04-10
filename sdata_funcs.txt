@@ -104,10 +104,10 @@ func_800444BC
 func_800444E0
 func_80044504
 func_80044FA0
-func_800450BC
+seq_Start
 func_800450F4
-func_80045188
-func_80045194
+seq_Reset
+seq_GetState
 func_800451D0
 func_80045230
 func_80045294
@@ -161,7 +161,7 @@ func_80054434
 func_8005490C
 func_8005B43C
 func_8005B50C
-func_8005B72C
+obj_InitAll
 func_8005B7C4
 func_8005C2A8
 func_8005C5A8
@@ -177,7 +177,7 @@ func_80060CB8
 func_80060E04
 func_80060E38
 func_80061064
-func_80061178
+game_Cleanup
 func_800611A4
 func_80061250
 func_8006133C

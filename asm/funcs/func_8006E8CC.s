@@ -22,12 +22,12 @@ glabel func_8006E8CC
     /* 5F114 8006E914 1400A2A7 */  sh         $v0, 0x14($sp)
     /* 5F118 8006E918 20000224 */  addiu      $v0, $zero, 0x20
     /* 5F11C 8006E91C 1000A0A7 */  sh         $zero, 0x10($sp)
-    /* 5F120 8006E920 CFEC010C */  jal        func_8007B33C
+    /* 5F120 8006E920 CFEC010C */  jal        gpu_DrawSync
     /* 5F124 8006E924 1600A2A7 */   sh        $v0, 0x16($sp)
     /* 5F128 8006E928 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 5F12C 8006E92C 80ED010C */  jal        func_8007B600
+    /* 5F12C 8006E92C 80ED010C */  jal        gpu_LoadImage
     /* 5F130 8006E930 21280002 */   addu      $a1, $s0, $zero
-    /* 5F134 8006E934 CFEC010C */  jal        func_8007B33C
+    /* 5F134 8006E934 CFEC010C */  jal        gpu_DrawSync
     /* 5F138 8006E938 21200000 */   addu      $a0, $zero, $zero
     /* 5F13C 8006E93C 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* 5F140 8006E940 1800B08F */  lw         $s0, 0x18($sp)

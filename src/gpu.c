@@ -122,18 +122,18 @@ __asm__(
 );
 void func_8007A370(s32 a0) {
     func_80078A58(0);
-    func_800789B8();
+    EnterCriticalSection();
     if (func_80078BF0() == 0) {
         a0 = 0;
     }
     func_8007A428(a0);
-    func_800789C8();
+    ExitCriticalSection();
 }
 void func_8007A3C8(void) {
-    func_800789B8();
+    EnterCriticalSection();
     func_8007A438();
     func_80078A58(0);
-    func_800789C8();
+    ExitCriticalSection();
 }
 
 void func_8007A400(void) {
@@ -182,7 +182,7 @@ __asm__(
     "glabel func_8007A458\n"
     "\tlui\t$at,%hi(D_800A3648)\n"
     "\tsw\t$ra,%lo(D_800A3648)($at)\n"
-    "\tjal\tfunc_800789B8\n"
+    "\tjal\tEnterCriticalSection\n"
     "\tnop\n"
     "\taddiu\t$t2,$zero,176\n"
     "\tjalr\t$t2\n"
@@ -200,7 +200,7 @@ __asm__(
     "\tsw\t$v1,108($v0)\n"
     "\tjal\tfunc_80078FF0\n"
     "\tnop\n"
-    "\tjal\tfunc_800789C8\n"
+    "\tjal\tExitCriticalSection\n"
     "\tnop\n"
     "\tlui\t$ra,%hi(D_800A3648)\n"
     "\tlw\t$ra,%lo(D_800A3648)($ra)\n"
@@ -234,7 +234,7 @@ u16 func_8007A4D8(s32 a0, s32 mode, s32 a2, s32 a3, s32 texpage, s32 width, s32 
         buf[2] = width;
         break;
     }
-    func_8007B600((s32)buf, a0);
+    gpu_LoadImage((s32)buf, a0);
     return func_8007A788(mode, a2, a3, texpage) & 0xFFFF;
 }
 
@@ -244,7 +244,7 @@ u16 func_8007A5C4(s32 a0, s32 a1, s32 a2) {
     buf[1] = a2;
     buf[2] = 0x100;
     buf[3] = 1;
-    func_8007B600((s32)buf, a0);
+    gpu_LoadImage((s32)buf, a0);
     return func_8007A7C4(a1, a2);
 }
 u16 func_8007A62C(s32 a0, s32 a1, s32 a2) {
@@ -253,7 +253,7 @@ u16 func_8007A62C(s32 a0, s32 a1, s32 a2) {
     buf[1] = a2;
     buf[2] = 0x10;
     buf[3] = 1;
-    func_8007B600((s32)buf, a0);
+    gpu_LoadImage((s32)buf, a0);
     return func_8007A7C4(a1, a2);
 }
 s16 *func_8007A694(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
@@ -549,7 +549,7 @@ u32 func_8007AE7C(s32 a0) {
     switch (a0 & 7) {
     case 0:
     case 3:
-        func_80079208(&D_80015E5C, &D_8009BE2C, &g_gpu_type);
+        debug_printf(&D_80015E5C, &D_8009BE2C, &g_gpu_type);
         /* fallthrough */
     case 5:
         s0 = (GpuConfig *)&g_gpu_type;

@@ -7,7 +7,7 @@ glabel func_800892F8
     /* 79B0C 8008930C 1000BFAF */   sw        $ra, 0x10($sp)
     /* 79B10 80089310 0A80013C */  lui        $at, %hi(D_800A2CD8)
     /* 79B14 80089314 D82C20AC */  sw         $zero, %lo(D_800A2CD8)($at)
-    /* 79B18 80089318 6EE2010C */  jal        func_800789B8
+    /* 79B18 80089318 6EE2010C */  jal        EnterCriticalSection
     /* 79B1C 8008931C 00000000 */   nop
     /* 79B20 80089320 21200000 */  addu       $a0, $zero, $zero
     /* 79B24 80089324 0A80013C */  lui        $at, %hi(D_800A2D14)
@@ -24,7 +24,7 @@ glabel func_800892F8
     /* 79B50 80089350 7028848C */  lw         $a0, %lo(D_800A2870)($a0)
     /* 79B54 80089354 DD24020C */  jal        func_80089374
     /* 79B58 80089358 00000000 */   nop
-    /* 79B5C 8008935C 72E2010C */  jal        func_800789C8
+    /* 79B5C 8008935C 72E2010C */  jal        ExitCriticalSection
     /* 79B60 80089360 00000000 */   nop
   .L80089364:
     /* 79B64 80089364 1000BF8F */  lw         $ra, 0x10($sp)

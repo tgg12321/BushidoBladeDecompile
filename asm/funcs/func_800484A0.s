@@ -29,7 +29,7 @@ glabel func_800484A0
     /* 38D0C 8004850C 21300002 */   addu      $a2, $s0, $zero
   .L80048510:
     /* 38D10 80048510 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 38D14 80048514 80ED010C */  jal        func_8007B600
+    /* 38D14 80048514 80ED010C */  jal        gpu_LoadImage
     /* 38D18 80048518 21280002 */   addu      $a1, $s0, $zero
   .L8004851C:
     /* 38D1C 8004851C 1C04BF8F */  lw         $ra, 0x41C($sp)

@@ -59,14 +59,14 @@ glabel func_80041AC8
     /* 323A0 80041BA0 1400B5A7 */  sh         $s5, 0x14($sp)
     /* 323A4 80041BA4 1600B4A7 */  sh         $s4, 0x16($sp)
     /* 323A8 80041BA8 21105200 */  addu       $v0, $v0, $s2
-    /* 323AC 80041BAC 99ED010C */  jal        func_8007B664
+    /* 323AC 80041BAC 99ED010C */  jal        gpu_StoreImage
     /* 323B0 80041BB0 1200A2A7 */   sh        $v0, 0x12($sp)
     /* 323B4 80041BB4 00000286 */  lh         $v0, 0x0($s0)
     /* 323B8 80041BB8 00000396 */  lhu        $v1, 0x0($s0)
     /* 323BC 80041BBC F2FF4104 */  bgez       $v0, .L80041B88
     /* 323C0 80041BC0 1000A427 */   addiu     $a0, $sp, 0x10
   .L80041BC4:
-    /* 323C4 80041BC4 CFEC010C */  jal        func_8007B33C
+    /* 323C4 80041BC4 CFEC010C */  jal        gpu_DrawSync
     /* 323C8 80041BC8 21200000 */   addu      $a0, $zero, $zero
   .L80041BCC:
     /* 323CC 80041BCC 4800BF8F */  lw         $ra, 0x48($sp)

@@ -46,7 +46,7 @@ glabel func_8001EEB4
     /* F764 8001EF64 5E0030A6 */   sh        $s0, 0x5E($s1)
     /* F768 8001EF68 6C0230A6 */  sh         $s0, 0x26C($s1)
   .L8001EF6C:
-    /* F76C 8001EF6C 5E84010C */  jal        func_80061178
+    /* F76C 8001EF6C 5E84010C */  jal        game_Cleanup
     /* F770 8001EF70 00000000 */   nop
     /* F774 8001EF74 11000224 */  addiu      $v0, $zero, 0x11
     /* F778 8001EF78 0A80013C */  lui        $at, %hi(D_800A37B8)

@@ -13,7 +13,7 @@ glabel func_8007A5C4
     /* 6ADF0 8007A5F0 2000BFAF */  sw         $ra, 0x20($sp)
     /* 6ADF4 8007A5F4 1000B0A7 */  sh         $s0, 0x10($sp)
     /* 6ADF8 8007A5F8 1200B1A7 */  sh         $s1, 0x12($sp)
-    /* 6ADFC 8007A5FC 80ED010C */  jal        func_8007B600
+    /* 6ADFC 8007A5FC 80ED010C */  jal        gpu_LoadImage
     /* 6AE00 8007A600 1600A2A7 */   sh        $v0, 0x16($sp)
     /* 6AE04 8007A604 21200002 */  addu       $a0, $s0, $zero
     /* 6AE08 8007A608 F1E9010C */  jal        func_8007A7C4

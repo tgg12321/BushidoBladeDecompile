@@ -10,7 +10,7 @@ glabel cpu_side_move_dir_4
     /* 715D0 80080DD0 2400B3AF */  sw         $s3, 0x24($sp)
     /* 715D4 80080DD4 2000B2AF */  sw         $s2, 0x20($sp)
     /* 715D8 80080DD8 1C00B1AF */  sw         $s1, 0x1C($sp)
-    /* 715DC 80080DDC 330A020C */  jal        func_800828CC
+    /* 715DC 80080DDC 330A020C */  jal        sys_VSync
     /* 715E0 80080DE0 1800B0AF */   sw        $s0, 0x18($sp)
     /* 715E4 80080DE4 0A80133C */  lui        $s3, %hi(D_800A125C)
     /* 715E8 80080DE8 5C127326 */  addiu      $s3, $s3, %lo(D_800A125C)
@@ -27,7 +27,7 @@ glabel cpu_side_move_dir_4
     /* 71614 80080E14 0F80013C */  lui        $at, %hi(D_800F19C0)
     /* 71618 80080E18 C01922AC */  sw         $v0, %lo(D_800F19C0)($at)
   .L80080E1C:
-    /* 7161C 80080E1C 330A020C */  jal        func_800828CC
+    /* 7161C 80080E1C 330A020C */  jal        sys_VSync
     /* 71620 80080E20 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 71624 80080E24 0F80033C */  lui        $v1, %hi(D_800F19B8)
     /* 71628 80080E28 B819638C */  lw         $v1, %lo(D_800F19B8)($v1)
@@ -69,7 +69,7 @@ glabel cpu_side_move_dir_4
     /* 716B4 80080EB4 0000878C */  lw         $a3, 0x0($a0)
     /* 716B8 80080EB8 0180043C */  lui        $a0, %hi(D_800161C8)
     /* 716BC 80080EBC C8618424 */  addiu      $a0, $a0, %lo(D_800161C8)
-    /* 716C0 80080EC0 82E4010C */  jal        func_80079208
+    /* 716C0 80080EC0 82E4010C */  jal        debug_printf
     /* 716C4 80080EC4 00000000 */   nop
     /* 716C8 80080EC8 E805020C */  jal        func_800817A0
     /* 716CC 80080ECC 00000000 */   nop

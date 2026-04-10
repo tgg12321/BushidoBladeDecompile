@@ -230,7 +230,7 @@ glabel func_800460E4
     /* 36C34 80046434 2000A78F */  lw         $a3, 0x20($sp)
     /* 36C38 80046438 00000000 */  nop
     /* 36C3C 8004643C E80287AF */  sw         $a3, %gp_rel(D_800A33B4)($gp)
-    /* 36C40 80046440 CFEC010C */  jal        func_8007B33C
+    /* 36C40 80046440 CFEC010C */  jal        gpu_DrawSync
     /* 36C44 80046444 21200000 */   addu      $a0, $zero, $zero
     /* 36C48 80046448 2120E002 */  addu       $a0, $s7, $zero
     /* 36C4C 8004644C 8015010C */  jal        func_80045600

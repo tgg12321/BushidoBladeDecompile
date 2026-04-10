@@ -52,7 +52,7 @@ glabel DispPracticeMenuTex_B
     /* 1172C 80020F2C 0000658E */  lw         $a1, 0x0($s3)
     /* 11730 80020F30 8DDB000C */  jal        func_80036E34
     /* 11734 80020F34 07000724 */   addiu     $a3, $zero, 0x7
-    /* 11738 80020F38 D0DB000C */  jal        func_80036F40
+    /* 11738 80020F38 D0DB000C */  jal        game_FrameLoop
     /* 1173C 80020F3C 00000000 */   nop
   .L80020F40:
     /* 11740 80020F40 04007326 */  addiu      $s3, $s3, 0x4
@@ -177,7 +177,7 @@ glabel DispPracticeMenuTex_B
     /* 118F0 800210F0 0000058E */  lw         $a1, 0x0($s0)
     /* 118F4 800210F4 66DB000C */  jal        replay_camera_Init
     /* 118F8 800210F8 21204000 */   addu      $a0, $v0, $zero
-    /* 118FC 800210FC D0DB000C */  jal        func_80036F40
+    /* 118FC 800210FC D0DB000C */  jal        game_FrameLoop
     /* 11900 80021100 00000000 */   nop
     /* 11904 80021104 0000048E */  lw         $a0, 0x0($s0)
     /* 11908 80021108 00000000 */  nop

@@ -321,7 +321,7 @@ glabel func_8007BC08
     /* 6C878 8007C078 0A80043C */  lui        $a0, %hi(D_8009BEE0)
     /* 6C87C 8007C07C E0BE8424 */  addiu      $a0, $a0, %lo(D_8009BEE0)
     /* 6C880 8007C080 21280002 */  addu       $a1, $s0, $zero
-    /* 6C884 8007C084 48E4010C */  jal        func_80079120
+    /* 6C884 8007C084 48E4010C */  jal        bb2_memcpy
     /* 6C888 8007C088 14000624 */   addiu     $a2, $zero, 0x14
     /* 6C88C 8007C08C 21100002 */  addu       $v0, $s0, $zero
     /* 6C890 8007C090 2000BF8F */  lw         $ra, 0x20($sp)

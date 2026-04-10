@@ -1,7 +1,7 @@
 glabel func_8007DC68
     /* 6E468 8007DC68 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6E46C 8007DC6C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 6E470 8007DC70 330A020C */  jal        func_800828CC
+    /* 6E470 8007DC70 330A020C */  jal        sys_VSync
     /* 6E474 8007DC74 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 6E478 8007DC78 F0004224 */  addiu      $v0, $v0, 0xF0
     /* 6E47C 8007DC7C 0A80013C */  lui        $at, %hi(D_8009BF8C)

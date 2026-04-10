@@ -1,4 +1,4 @@
-glabel func_8007B8DC
+glabel gpu_SendPacket
     /* 6C0DC 8007B8DC E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6C0E0 8007B8E0 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6C0E4 8007B8E4 21808000 */  addu       $s0, $a0, $zero
@@ -23,4 +23,4 @@ glabel func_8007B8DC
     /* 6C130 8007B930 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6C134 8007B934 0800E003 */  jr         $ra
     /* 6C138 8007B938 00000000 */   nop
-endlabel func_8007B8DC
+endlabel gpu_SendPacket

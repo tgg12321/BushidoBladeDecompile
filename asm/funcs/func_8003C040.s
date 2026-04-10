@@ -138,7 +138,7 @@ glabel func_8003C040
     /* 2CA2C 8003C22C 01000424 */  addiu      $a0, $zero, 0x1
     /* 2CA30 8003C230 A205010C */  jal        func_80041688
     /* 2CA34 8003C234 21280000 */   addu      $a1, $zero, $zero
-    /* 2CA38 8003C238 5E84010C */  jal        func_80061178
+    /* 2CA38 8003C238 5E84010C */  jal        game_Cleanup
     /* 2CA3C 8003C23C 00000000 */   nop
     /* 2CA40 8003C240 0A80023C */  lui        $v0, %hi(D_800A38A4)
     /* 2CA44 8003C244 A4384290 */  lbu        $v0, %lo(D_800A38A4)($v0)
