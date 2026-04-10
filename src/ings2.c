@@ -412,7 +412,45 @@ __asm__(
 );
 INCLUDE_ASM("asm/funcs", ang_hosei);
 /* kengo:MED  |  common/ang_hosei  |  47i  |  +4 8.5% */
-INCLUDE_ASM("asm/funcs", motion_Open);
+/* motion_Open + motion_Close (paired open/close functions) */
+extern s32 D_800A2668;
+extern void (*D_8008D070)(void);
+extern s32 D_00000000;
+
+void motion_Open(void) {
+    register void (**p)(void) asm("s0");
+    register s32 count asm("s1");
+
+    if (D_800A2668 == 0) {
+        D_800A2668 = 1;
+        p = &D_8008D070;
+        count = (s32)&D_00000000;
+        if (count != 0) {
+            do {
+                register void (*f)(void) asm("t0") = *p;
+                p++;
+                __asm__ volatile("jalr %1\n addiu $17, $17, -1" : "=r"(count) : "r"(f), "0"(count) : "ra", "memory");
+            } while (count != 0);
+        }
+    }
+}
+
+void motion_Close(void) {
+    register void (**p)(void) asm("s0");
+    register s32 count asm("s1");
+
+    if (D_800A2668 != 0) {
+        p = &D_8008D070;
+        count = (s32)&D_00000000;
+        if (count != 0) {
+            do {
+                register void (*f)(void) asm("t0") = *p;
+                p++;
+                __asm__ volatile("jalr %1\n addiu $17, $17, -1" : "=r"(count) : "r"(f), "0"(count) : "ra", "memory");
+            } while (count != 0);
+        }
+    }
+}
 /* kengo:HIGH  |  is_motion/motion_Open  |  54i */
 __asm__(
     ".section .text\n"
