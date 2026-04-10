@@ -1,6 +1,7 @@
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
+#include "system.h"
 
 /* Forward declarations */
 extern void func_800817A0(void);
@@ -432,7 +433,6 @@ s32 func_80081880(void) {
     return 0;
 }
 extern s32 g_cd_init_flag;
-extern void irq_DisableInterrupts(void);
 extern void irq_EnableInterrupts(s32, void *);
 extern u8 D_80081F1C;
 void func_80081974(void) {

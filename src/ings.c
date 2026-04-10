@@ -1,18 +1,16 @@
 #include "common.h"
 #include "include_asm.h"
+#include "game.h"
+#include "system.h"
+#include "code6cac.h"
 
 /* Forward declarations for called functions */
 extern void func_8001945C(void);
-extern void func_8007AE7C(s32);
-extern void func_8007B2A0(s32);
 extern void func_8007B4D0(void *, s32, s32, s32);
-extern void func_8007B33C(s32);
 extern void snd_PlaySystemSe(void);
 
 /* Externs for globals */
 extern u8 g_file_flags;
-extern u8 g_file_disc_type;
-extern u16 g_file_vram_timer;
 extern u32 g_file_disc_size;
 extern u32 D_80106A5C;
 extern u8 g_file_dma_flag;
@@ -38,34 +36,20 @@ extern void func_800836B8(s32);
 extern u8 D_800A30E8;
 extern u8 D_800A30D4;
 extern u8 D_800FB524;
-extern s16 D_800A38DC;
-extern u8 D_800A389A;
-extern s32 D_800A36AC;
-extern u8 D_800A3788;
 extern u8 *D_800A374C;
 extern u32 D_800A38B4;
 extern u32 D_80102794;
-extern u8 D_800A31DA;
-extern s16 D_800A3834;
 extern s32 D_800A30DC;
 extern u8 g_str_prim_overflow;
-extern u8 D_800A390D;
-extern u8 D_800A3713;
 extern u32 g_module_func_tbl[];
 extern u8 D_800F33D8;
-extern u8 D_800A37A0;
-extern u8 D_800A38F8;
-extern s32 D_800A37C0;
 extern u8 D_800A37A8[];
-extern s32 func_80036EA8(s32, s32);
 extern void replay_camera_Init(s32, s32);
 extern void func_80036F40(void);
 extern void func_8007BC08(u8 *);
 extern void func_8007B600(u8 *, u8 *);
 extern void func_800828CC(s32);
 extern void func_8007B844(u8 *, s32);
-extern void special_camera_Exec(void);
-extern void func_8005C6D0(void);
 extern void func_80019568(s32);
 extern void func_8005C8A8(s32, s32, u32, s32);
 extern void func_8005C650(s32, s32, s32);
@@ -293,15 +277,12 @@ void disp_Init(void) {
     func_8007B4D0(&g_disp_gp_base, 0, 0, 0);
     func_8007B33C(0);
 }
-extern void irq_DisableInterrupts(void);
 extern void func_80078C9C(u8 *, s32, u8 *, s32);
 extern void func_80078D38(void);
 extern void func_80078A58(s32);
 extern void func_80035FE0(void);
 extern void func_800375EC(void);
 extern u8 g_pad_data;
-extern u8 g_disp_enable;
-extern u8 g_disp_fade;
 void sys_Init(void) {
     u8 *base = &g_pad_data;
     irq_DisableInterrupts();
@@ -344,7 +325,6 @@ extern s32 func_8005B7C4(u32);
 extern void func_80079120(u32, u32, s32);
 extern void func_8005C4C0(u32, s32);
 extern void func_8005C614(void);
-extern u8 D_800A3906;
 void file_LoadSoundData(void) {
     s32 size;
 
@@ -362,17 +342,12 @@ extern u8 g_str_limit;
 extern u32 D_800A3770;
 extern u32 D_800A3774;
 extern u32 D_800A3798;
-extern u8 D_800A36F9;
-extern u8 D_800A3690;
 extern u8 D_800A3744;
 extern u8 D_800A3745;
 extern u8 D_800A3746;
 extern void func_80020D70(void);
 extern void game_Init(void);
-extern u8 D_800A36F1;
-extern u16 D_800A38C6;
 extern u8 D_800A36B0;
-extern u8 D_800A3928;
 extern void func_80019534(void);
 extern void func_8003D2C4(void);
 extern void func_8001C444(void);
@@ -418,7 +393,6 @@ s32 rng_Next(void) {
 }
 INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action_2);
 /* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action_2  |  189i  |  x2 size collision */
-extern s32 D_800A3784;
 void gnd_disp_loop_ctrl(void) {
     u32 new_var;
     u8 sp18[8];
