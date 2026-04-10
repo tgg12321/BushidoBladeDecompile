@@ -5,7 +5,7 @@
 func_80016E60: D_800A31DA, D_800A3770
 cpu_set_move_command_and_dir_for_no_action_2: D_800A31DA, D_800A3770
 func_80030D7C: D_800A38DC
-func_80031B24: D_800A36A8
+func_80031B24: g_disp_fade
 func_80034708: D_800A3690, D_800A36F9
 func_80035480: D_800A3834
 replay_camera_rob_back_loose2: D_800A3834
@@ -26,7 +26,7 @@ func_8003EB84: D_800A3820
 PutShadowRmd: D_800A36AC, D_800A378C
 func_80044504: D_800A36AC
 func_800460E4: D_800A38DC
-game_Init: D_800A3790
+game_Init: g_game_timer
 func_80046BF4: D_800A374C, D_800A378C, D_800A3820
 camera_CalcAngles: D_800A3708
 func_80048BA4: D_800A36AC, D_800A378C, D_800A3820

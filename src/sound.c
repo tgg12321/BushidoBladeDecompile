@@ -42,32 +42,32 @@ extern void func_8004211C(void);
 extern void func_800444BC(void);
 extern void func_80052930(void *, void *, void *);
 extern void func_80044FA0(s32, s32 *);
-extern s16 D_800A324A;
+extern s16 g_pad_selection;
 
 /* Externs for globals */
-extern s32 D_800A33B0;
-extern s16 D_800EEDB0;
+extern s32 g_snd_bgm_id;
+extern s16 g_cam_matrix;
 extern s16 D_800EEDB2;
 extern s16 D_800EEDBE;
-extern s32 D_800A33B4;
-extern s32 D_800A33D0;
-extern s32 D_800A33C0;
-extern s32 D_800A33D4;
-extern s32 D_800A33D8;
-extern s32 D_800EF7BC[];
-extern s32 D_800EF800[];
-extern s16 D_80099478;
-extern s16 D_8009947A;
-extern u8 D_8009947C;
-extern s16 D_800F6654;
-extern s32 D_800A3790;
-extern u8 D_800EEDD0;
-extern u8 D_800EEDF0;
+extern s32 g_snd_se_id;
+extern s32 g_snd_volume;
+extern s32 g_snd_stage_bgm;
+extern s32 g_snd_fade_pos;
+extern s32 g_snd_fade_amt;
+extern s32 g_snd_config_tbl[];
+extern s32 g_snd_fade_curve[];
+extern s16 g_stage_id;
+extern s16 g_stage_variant;
+extern u8 g_stage_data;
+extern s16 g_game_pause;
+extern s32 g_game_timer;
+extern u8 g_cam_bone_data;
+extern u8 g_cam_bone_data2;
 
-extern s16 D_800EEDF8;
-extern s16 D_800F62F8;
-extern s16 D_800F62FA;
-extern s16 D_800F62FC;
+extern s16 g_cam_interp;
+extern s16 g_cam_fov_x;
+extern s16 g_cam_fov_div;
+extern s16 g_cam_fov_z;
 extern s16 D_800EEDB4;
 extern s16 D_800EEDB6;
 extern s16 D_800EEDB8;
@@ -97,7 +97,7 @@ extern s32 D_800A3808;
 extern s32 D_800A378C;
 extern s32 D_800A3820;
 extern s32 D_800F62E0;
-extern s32 D_800F66A0[];
+extern s32 g_anim_func_table[];
 extern void func_80042E90(void);
 extern void func_80044498(void);
 extern void func_80049E4C(void);
@@ -106,11 +106,11 @@ extern void func_8003D91C(void);
 extern void func_800404D8(void);
 extern void func_8003F7F4(void);
 extern s16 D_800F6650;
-extern s16 D_800F6652;
-extern s16 D_800F6656;
-extern s16 D_800F6658;
+extern s16 g_color_mode;
+extern s16 g_game_p1_ctrl;
+extern s16 g_game_p2_ctrl;
 extern s16 D_800F665A;
-extern s16 D_800F665C;
+extern s16 g_game_mirror_mode;
 extern s32 D_800A33BC;
 extern s32 func_800486FC(void);
 extern s32 *func_8004574C(s32);
@@ -123,18 +123,18 @@ void snd_BgmCallback(s32 a0, s32 a1);
 /* --- Functions 0x80046780 - 0x80047EC8 --- */
 
 s32 snd_GetBgmId(void) {
-    return D_800A33B0;
+    return g_snd_bgm_id;
 }
 s32 snd_GetSeId(void) {
-    return D_800A33B4;
+    return g_snd_se_id;
 }
 
 s32 stage_GetId(void) {
-    return D_80099478;
+    return g_stage_id;
 }
 
 s32 stage_GetVariant(void) {
-    return D_8009947A;
+    return g_stage_variant;
 }
 
 s32 *snd_LoadBgm(s32 a0) {
@@ -215,7 +215,7 @@ s32 *snd_LoadSelection(s32 a0) {
         func_80045230((s32)s0);
         func_80045600(0xA, (s32)s0);
     }
-    D_800A324A = (s16)a0;
+    g_pad_selection = (s16)a0;
     func_80045694(0xA, snd_SelectionCallback);
     return v0;
 }
@@ -264,14 +264,14 @@ void game_Init(void) {
     one = 1;
     two = 2;
     do { } while (0);
-    D_800F6654 = one;
+    g_game_pause = one;
     D_800F665A = one;
-    D_800F6652 = 0;
+    g_color_mode = 0;
     D_800F6650 = new_var;
-    D_800F6656 = 0;
-    D_800F6658 = two;
-    D_800F665C = 0;
-    D_800A3790 = 0x23;
+    g_game_p1_ctrl = 0;
+    g_game_p2_ctrl = two;
+    g_game_mirror_mode = 0;
+    g_game_timer = 0x23;
     D_800A33BC = 0;
 }
 void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
@@ -309,7 +309,7 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
         rot[1] = -(s16)a1[1];
         rot[2] = -(s16)(*new_var);
 
-        ((void (*)(s16 *, s32 *))D_800F66A0[0])(rot, matrix_buf);
+        ((void (*)(s16 *, s32 *))g_anim_func_table[0])(rot, matrix_buf);
 
         func_8007E74C(matrix_buf, trans, result);
 
@@ -323,7 +323,7 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
         camera_InitBoneData();
         func_8003F274();
 
-        D_800A33C0 = a2;
+        g_snd_stage_bgm = a2;
     }
 
     base = (u8 *)&D_800F62E0;
@@ -336,7 +336,7 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
 }
 void game_StageInit(s32 a0) {
     if (a0 & 1) {
-        game_InitStageSound(D_800A33C0);
+        game_InitStageSound(g_snd_stage_bgm);
     }
     func_8004211C();
     func_800444BC();
@@ -363,23 +363,23 @@ void *game_GetPlayerBase(void) {
 }
 
 void game_DisablePause(void) {
-    D_800F6654 = 0;
+    g_game_pause = 0;
 }
 
 void game_SetPause(s32 a0) {
     if (a0) {
-        D_800F6654 = 1;
+        g_game_pause = 1;
     } else {
-        D_800F6654 = 0;
+        g_game_pause = 0;
     }
 }
 
 s32 game_GetPause(void) {
-    return D_800F6654;
+    return g_game_pause;
 }
 
 void game_ResetTimer(void) {
-    D_800A3790 = 0x23;
+    g_game_timer = 0x23;
 }
 
 void game_InitStageSound(s32 a0) {
@@ -397,14 +397,14 @@ void game_StageCleanup(s32 a0) {
 }
 
 void *stage_GetDataPtr(void) {
-    return &D_8009947C;
+    return &g_stage_data;
 }
 
 void camera_InitMatrix(void) {
-    s32 num = (s32)D_800F62F8 << 12;
-    s32 div = D_800F62FA;
+    s32 num = (s32)g_cam_fov_x << 12;
+    s32 div = g_cam_fov_div;
     s32 v0 = num / div;
-    s32 v1 = ((s32)D_800F62FC << 12) / div;
+    s32 v1 = ((s32)g_cam_fov_z << 12) / div;
     D_800EEDB4 = 0;
     div = 0;
     num = v0;
@@ -413,7 +413,7 @@ void camera_InitMatrix(void) {
     D_800EEDB8 = 0;
     D_800EEDBA = 0;
     D_800EEDBC = div;
-    D_800EEDB0 = 0x1000;
+    g_cam_matrix = 0x1000;
     D_800EEDC0 = 0x1000;
     v0 = -(s16)num;
     D_800EEDB2 = v0;
@@ -422,7 +422,7 @@ void camera_InitMatrix(void) {
 void camera_Transform(s32 *a0, s32 *a1, s32 a2) {
     s32 new_var;
     s32 diff, prod;
-    func_80052930(&D_800EEDB0, a0, a1);
+    func_80052930(&g_cam_matrix, a0, a1);
     new_var = a0[5];
     diff = a0[6] - a2;
     prod = diff * D_800EEDB2;
@@ -443,13 +443,13 @@ void func_800470B0(s32 arg0, void *arg1, void *arg2, s32 arg3) {
     var_s0 = arg1;
     temp_v1 = arg0 * 0x60;
     sp10[0] = 0x1000;
-    sp10[1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62F8 + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
+    sp10[1] = (s16) -((s32)(*(s16 *)((s8 *)&g_cam_fov_x + temp_v1) << 12) / *(s16 *)((s8 *)&g_cam_fov_div + temp_v1));
     sp10[2] = 0;
     sp10[3] = 0;
     sp10[4] = 0;
     sp10[5] = 0;
     sp10[6] = 0;
-    sp10[7] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62FC + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
+    sp10[7] = (s16) -((s32)(*(s16 *)((s8 *)&g_cam_fov_z + temp_v1) << 12) / *(s16 *)((s8 *)&g_cam_fov_div + temp_v1));
     sp10[8] = 0x1000;
     var_s1 = arg2;
     var_s2 = arg3;
@@ -466,7 +466,7 @@ extern s16 D_800EEDD6;
 extern s16 D_800EEDD8;
 void camera_InitBoneData(void) {
     s16 *new_var;
-    do { *(Block32 *)&D_800EEDD0 = D_80101E08; } while (0);
+    do { *(Block32 *)&g_cam_bone_data = D_80101E08; } while (0);
     new_var = &D_800EEDD8;
     {
         s16 h0 = D_800EEDD6;
@@ -481,10 +481,10 @@ void camera_InitBoneData(void) {
 }
 
 void *camera_GetBoneData(void) {
-    return &D_800EEDD0;
+    return &g_cam_bone_data;
 }
 
-extern s32 D_800F66A0[];
+extern s32 g_anim_func_table[];
 void camera_InitRotation(u8 *a0) {
     u8 *s0 = a0;
     *(s16 *)(s0 + 4) = 8;
@@ -502,7 +502,7 @@ void camera_InitRotation(u8 *a0) {
             *(s16 *)(s0 + 0x10) = 0;
             *(s16 *)(s0 + 0x12) = 0;
             *(s16 *)(s0 + 0x14) = 0;
-            ((void (*)(u8 *, u8 *))D_800F66A0[idx])(a0_arg, s0 + 0x38);
+            ((void (*)(u8 *, u8 *))g_anim_func_table[idx])(a0_arg, s0 + 0x38);
         }
     }
     *(volatile s32 *)(s0 + 0x54) = 0;
@@ -584,8 +584,8 @@ void game_SndCleanup(void) {
 }
 
 void camera_InitBone2(void) {
-    camera_InitRotation(&D_800EEDF0);
-    D_800EEDF8 = 4;
+    camera_InitRotation(&g_cam_bone_data2);
+    g_cam_interp = 4;
 }
 extern s32 D_800A3820;
 extern s16 D_800EEE00;
@@ -623,7 +623,7 @@ void func_800475A4(void) {
 
     {
         s16 neg = -func_8007FD5C(result[1], computed);
-        base = &D_800EEDF0;
+        base = &g_cam_bone_data2;
         D_800EEE00 = neg;
     }
     D_800EEE02 = angle;
@@ -631,7 +631,7 @@ void func_800475A4(void) {
     D_800EEE20 = D_80101E20;
     D_800EEE24 = D_80101E24 + 0x6590;
     ((void (*)(u8 *, s32 *))D_800F66B0)(base + 0x10, buf1);
-    ((void (*)(u8 *, s32 *))D_800F66A0[0])((u8 *)&D_80101E08 - 8, buf2);
+    ((void (*)(u8 *, s32 *))g_anim_func_table[0])((u8 *)&D_80101E08 - 8, buf2);
     func_8007E4DC(buf2, buf1, (s32 *)(base + 0x18));
 
     {
@@ -670,7 +670,7 @@ void game_Stub4(void) {
 }
 
 void snd_SetVolume(s32 a0) {
-    D_800A33D0 = a0;
+    g_snd_volume = a0;
 }
 INCLUDE_ASM("asm/funcs", func_800477E8);
 extern s32 D_800EF558[];
@@ -726,7 +726,7 @@ void func_80047A90(void) {
     }
     *pa1 += v1;
     if (i == 8) {
-        *(s32 *)((s8 *)D_800EF800 + a3) = v1;
+        *(s32 *)((s8 *)g_snd_fade_curve + a3) = v1;
     }
     pa1++;
     a3 += 4;
@@ -746,34 +746,34 @@ void func_80047A90(void) {
 
 
 INCLUDE_ASM("asm/funcs", func_80047BE0);
-extern s32 D_800EF7BC[];
+extern s32 g_snd_config_tbl[];
 
 s32 snd_CalcFade(s32 a0) {
     s32 a1 = (a0 + 0x7D00) / 3200;
     s32 a0_div = a0 / 3200;
     s32 remainder = a0 - a0_div * 3200;
     s32 odd = remainder & 1;
-    D_800A33D4 = a1;
-    D_800A33D8 = odd;
+    g_snd_fade_pos = a1;
+    g_snd_fade_amt = odd;
     if ((u32)a1 >= 18) {
         return (s32)0xFFFE7960;
     }
     {
-        s32 val1 = D_800EF7BC[a1] * odd;
-        s32 val2 = D_800EF7BC[a1 + 1] * (0x1000 - odd);
+        s32 val1 = g_snd_config_tbl[a1] * odd;
+        s32 val2 = g_snd_config_tbl[a1 + 1] * (0x1000 - odd);
         return ((val1 + val2) >> 12) - 0x3F48;
     }
 }
 s32 snd_GetFadeCurve(void) {
-    s32 v1 = D_800A33D4;
+    s32 v1 = g_snd_fade_pos;
     if ((u32)v1 >= 18) {
         return 0;
     }
     {
-        s32 v0 = D_800EF800[v1];
-        s32 a0 = D_800A33D8;
+        s32 v0 = g_snd_fade_curve[v1];
+        s32 a0 = g_snd_fade_amt;
         s32 val1 = v0 * a0;
-        s32 v3 = D_800EF800[v1 + 1];
+        s32 v3 = g_snd_fade_curve[v1 + 1];
         s32 val2 = v3 * (0x1000 - a0);
         return (val1 + val2) >> 12;
     }
