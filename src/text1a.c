@@ -1050,7 +1050,55 @@ void func_8004473C(void)
 }
 INCLUDE_ASM("asm/funcs", efc_rob_set_type_flash);
 /* kengo:HIGH  |  is_efc_rob/efc_rob_set_type_flash  |  204i */
-INCLUDE_ASM("asm/funcs", func_80044B30);
+extern s32 D_800F66A0[];
+typedef void (*FuncPtr44B30)(s16 *, s16 *);
+typedef struct { s32 f0, f1, f2; } Vec3_44B30;
+
+void func_80044B30(s32 a0, s32 a1) {
+    s8 *p;
+    s16 stage;
+
+    if (a0 >= D_800A9CFE) return;
+
+    p = (s8 *)(D_800A9D04 + a0 * 0x68);
+    if (*(s32 *)(p + 0x58) != -1) return;
+
+    stage = D_800A9CFC;
+    if (stage == 4) goto case4;
+    if (stage == 0x12) goto set_zero;
+    goto do_store;
+
+case4:
+    if (a0 == 0) {
+        a1 = 0x800;
+    }
+    if (a0 != 1) {
+        goto do_store;
+    }
+set_zero:
+    a1 = 0;
+
+do_store:
+    *(s32 *)(p + 0x5C) = a1;
+    *(s32 *)(p + 0x58) = 0;
+    p = (s8 *)(D_800A9D08 + a0 * 0x68);
+    *(s16 *)(p + 0x2) = 1;
+    {
+        u16 cf8 = *(u16 *)&D_800A9CF8;
+        s32 idx = *(s16 *)(p + 0x8);
+        *(s16 *)(p + 0x12) = (s16)a1;
+        *(s8 *)(p + 0x0) = 0;
+        *(s32 *)(p + 0xC) = 0;
+        *(s16 *)(p + 0x10) = 0;
+        *(s16 *)(p + 0x14) = 0;
+        *(s16 *)(p + 0x6) = 1;
+        *(u16 *)(p + 0x4) = cf8;
+        ((FuncPtr44B30)D_800F66A0[idx])((s16 *)(p + 0x10), (s16 *)(p + 0x18));
+    }
+    if (D_800A9CFC == 0x12) {
+        *(Vec3_44B30 *)(p + 0x4C) = *(Vec3_44B30 *)(p + 0x2C);
+    }
+}
 extern s16 D_800A9CF8;
 extern s32 D_800A9D04;
 extern s32 D_800A9D00;
