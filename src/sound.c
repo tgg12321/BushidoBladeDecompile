@@ -18,7 +18,7 @@ extern void efc_rob_set_type_flash(void);
 extern void func_80048F58(s32, s32);
 extern void func_80048FFC(s32);
 extern void *func_8004153C(void);
-extern void func_800477E8(void);
+extern s32 func_800477E8(void);
 extern void func_80047A90(void);
 extern void func_80048B8C(s32);
 extern void func_80044100(s32, s32);
@@ -664,10 +664,168 @@ void game_Stub4(void) {
 void snd_SetVolume(s32 a0) {
     g_snd_volume = a0;
 }
-INCLUDE_ASM("asm/funcs", func_800477E8);
+extern u32 func_8007A788(s32, s32, s32, s32);
+extern u32 func_8007A7C4(s32, s32);
+extern void func_800417D0(s32 *);
+extern s16 *D_800A33D0;
+extern s8 D_800EF070;
+extern s8 D_800EF071;
+extern s16 D_800EF076;
+extern s16 D_800EF078;
+extern s16 D_800EF07A;
+extern s32 D_800EF07C;
+extern s16 D_800EF080;
+extern s16 D_800EF082;
+extern s16 D_800EF084;
+extern s32 D_800EF0BC;
+extern s32 D_800EF0C0;
+extern s32 D_800EF0C4;
 extern s32 D_800EF558[];
 extern s32 D_800EF59C[];
-extern s32 D_800EF070;
+s32 func_800477E8(void) {
+    s16 *s0;
+    s32 s3val;
+    s32 s2val;
+    s32 s1val;
+    s32 t1val;
+    s32 a3;
+    s32 a0;
+    s32 a2;
+    s32 a1;
+    s32 t0;
+    s32 v1;
+    s32 t2;
+    s32 v0;
+    s32 *ptr;
+    s32 *p;
+
+    s0 = D_800A33D0;
+    s3val = func_8007A788(0, 0, 0x2C0, 0x1C0);
+    s2val = func_8007A788(0, 0, 0x2C0, 0x180);
+    s1val = func_8007A7C4(0x10, 0x1E0);
+    t1val = func_8007A7C4(0x10, 0x1E0);
+    a3 = 0;
+    t2 = 0x2C00;
+    a0 = 0;
+    do {
+        t0 = 0x1200;
+        a2 = 0x13;
+        a1 = 0;
+        v1 = 1;
+inner:
+        if (a3 >= 5) {
+            *s0 = s3val;
+            s0 += 1;
+            *s0 = t2;
+            s0 += 1;
+            *s0 = s1val;
+            s0 += 1;
+            v0 = -0xC1;
+            *s0 = v0;
+            s0 += 1;
+            v0 = -0x100;
+            *s0 = v0;
+            s0 += 1;
+            v0 = -0x3FC1;
+            *s0 = v0;
+            s0 += 1;
+            v0 = -0x4000;
+        } else {
+            *s0 = s2val;
+            s0 += 1;
+            *s0 = t2;
+            s0 += 1;
+            *s0 = t1val;
+            s0 += 1;
+            v0 = -0x40C1;
+            *s0 = v0;
+            s0 += 1;
+            v0 = -0x4100;
+            *s0 = v0;
+            s0 += 1;
+            v0 = -0x7FC1;
+            *s0 = v0;
+            s0 += 1;
+            v0 = -0x8000;
+        }
+        *s0 = v0;
+        s0 += 1;
+        if (a3 & 1) {
+            v0 = a2 | t0;
+            *s0 = v0;
+            s0 += 1;
+            do { v0 = v1 | a1; } while (0);
+        } else {
+            v0 = v1 | a1;
+            *s0 = v0;
+            s0 += 1;
+            v0 = a2 | t0;
+        }
+        *s0 = v0;
+        s0 += 1;
+        *s0 = 0;
+        s0 += 1;
+        *s0 = 0;
+        s0 += 1;
+        v0 = -0x1000;
+        *s0 = v0;
+        s0 += 1;
+        t0 += 0x100;
+        a2 += 1;
+        a1 += 0x100;
+        a0 += 1;
+        v1 += 1;
+        if (a0 < 0x10) goto inner;
+        a3 += 1;
+        a0 = 0;
+    } while (a3 < 8);
+
+    {
+        s32 *a0p;
+        a0p = (s32 *)&D_800EF070;
+        *(s8 *)a0p = 0xE;
+        D_800EF07A = 4;
+        D_800EF0BC = -0x2EE0;
+        D_800EF071 = 0;
+        D_800EF0C0 = 0;
+        D_800EF0C4 = -0xFA0;
+        D_800EF080 = 0;
+        D_800EF082 = 0;
+        D_800EF084 = 0;
+        D_800EF078 = 0;
+        D_800EF07C = 0;
+        D_800EF076 = 0;
+        func_800417D0(a0p);
+    }
+
+    a3 = 0;
+    a2 = 0;
+    ptr = &D_800EF59C[0];
+outer2:
+    v1 = a2;
+    a0 = 0x10;
+    p = ptr + 0x10;
+inner2:
+    *p = v1;
+    a0--;
+    p--;
+    if (a0 >= 0) goto inner2;
+    a2 += 0x7D0;
+    a3 += 1;
+    ptr += 0x11;
+    if (a3 < 9) goto outer2;
+
+    a0 = 0;
+    ptr = &D_800EF558[0];
+loop3:
+    *ptr = (a0 << 7) & 0xFFF;
+    a0++;
+    ptr++;
+    if (0x11 > a0) goto loop3;
+
+    return (s32)s0 - (s32)D_800A33D0;
+}
+
 void func_80047A90(void) {
     register s32 i asm("$8");
     register s32 *p558 asm("$4");

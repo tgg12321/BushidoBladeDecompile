@@ -168,43 +168,21 @@ saEft01Init: subst ",24\(" ",32(" @ 72
 # Reorder epilogue restores to match target order (s2, s1, s0)
 saEft01Init: reorder 72,70,71 @ 70-72
 
-# Subst: fill bnez delay slot with li a0,1 (ASPSX branch delay slot optimization)
-# Subst: change volatile indirect store to symbol store (removes extra addiu)
-# Subst: fill beq delay slot with li a0,6 (ASPSX branch delay slot optimization)
-# Delete: remove volatile address load (la ,D_800A14E4)
-# Insert: nops for jal delay slots (arguments moved to load delay fills)
-# Reorder: move jal arguments into load delay slots (ASPSX scheduling)
-
-# Subst: fill bnez delay slot with li a0,1 (ASPSX branch delay slot optimization)
-# Subst: change volatile indirect store to symbol store (removes extra addiu)
-# Subst: fill beq delay slot with li a0,6 (ASPSX branch delay slot optimization)
-# Delete: remove volatile address load (la $3,D_800A14E4)
-# Insert: nops for jal delay slots (arguments moved to load delay fills)
-# Reorder: move jal arguments into load delay slots (ASPSX scheduling)
-
-# Use subst instead of reorder to avoid moving .L147 label
-
 # saEft00Add: fix volatile D_800A14E4 addressing and ASPSX delay slot fills
-# Subst: fill bnez delay slot with li a0,1 (ASPSX branch delay slot optimization)
 saEft00Add: subst "nop" "addiu	$4,$zero,1" @ 26
-# Subst: adjust bnez branch offset for delay slot fill (+1 instruction)
 saEft00Add: subst "\.L136" ".L136+4" @ 25
-# Subst: change volatile indirect store to symbol store (removes extra addiu)
 saEft00Add: subst "sw	\$2,0\(\$3\)" "sw	$2,D_800A14E4" @ 38
-# Subst: fill beq delay slot with li a0,6 (ASPSX branch delay slot optimization)
 saEft00Add: subst "nop" "addiu	$4,$zero,6" @ 93
-# Subst: adjust beq branch offset for delay slot fill (+1 instruction)
 saEft00Add: subst "\.L144" ".L144+4" @ 92
-# Delete: remove volatile address load (la $3,D_800A14E4)
 saEft00Add: delete @ 35
-# Insert: nops for jal delay slots (arguments moved to load delay fills)
 saEft00Add: insert "nop" @ 101
 saEft00Add: insert "nop" @ 105
-# Reorder: move jal arguments into load delay slots (ASPSX scheduling)
 saEft00Add: reorder 97,100,98,99,101,102,105,103,104,106 @ 97-106
 
 # saEft00Add_sub: swap D_800A14E4 store and D_800A14F4 load order
-# Use subst instead of reorder to avoid moving .L147 label
 saEft00Add_sub: subst "lw	\$4,D_800A14F4" "sw	$0,D_800A14E4" @ 11
 saEft00Add_sub: subst "sw	\$0,D_800A14E4" "lw	$4,D_800A14F4" @ 12
 
+# func_800477E8: swap t1/t2 and v1/a1 registers
+func_800477E8: $9 <-> $10 @ 26-57
+func_800477E8: $3 <-> $5 @ 32-135
