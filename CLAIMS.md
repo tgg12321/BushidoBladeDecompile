@@ -20,3 +20,4 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/ings2.c:conv_matrix_rotation | Agent 8: Wave 4 | 2026-04-10 | stale — previous session |
 | src/sound.c:func_800477E8 | Agent 9: Wave 4 | 2026-04-10 | stale — previous session |
 | src/*.c, include/*.h, asm/ | Item 4: 29 function renames | 2026-04-10 | done — merged to main |
+| include/*.h, src/*.c | Item 5: magic number constants | 2026-04-10 | done — merged to main |
