@@ -313,13 +313,43 @@ RENAMES = {
     "func_8007C1D8": "initDrawOffset",
     "func_8007C21C": "initMaskBit",
     "func_8007C248": "initTexPage",
-    # system.c — SKIPPED (GCC 2.7.2 register allocation sensitivity)
+    # system.c — applied with regfix (GCC 2.7.2 register allocation sensitivity)
+    "func_8008009C": "cdrom_GetMode",
+    "func_800800AC": "cdrom_GetReadyFlag",
+    "func_800800BC": "cdrom_GetReadyFlag2",
+    "func_800800DC": "cdrom_CheckReady",
+    "func_80080168": "cdrom_SetDebugLevel",
+    "func_80080228": "cdrom_SetCallbackA",
+    "func_80080240": "cdrom_SetCallbackB",
+    "func_800806A4": "cdrom_FramesToBcd",
+    "func_800807A8": "cdrom_BcdToFrames",
+    "func_80081718": "cdrom_SendCmd",
+    "func_800817A0": "cdrom_ClearIrq",
+    "func_80081880": "cdrom_ConfigSPU",
+    "func_80081974": "cdrom_Shutdown",
+    "func_800819C4": "cdrom_Initialize",
+    "func_80081D1C": "cdrom_DmaToRam",
+    "func_80081E1C": "cdrom_DmaChain",
+    "func_80081F0C": "cdrom_SetErrorCallback",
+    "func_80081F1C": "cdrom_IrqHandler",
     # main.c — memcard / SPU
     "func_80087F00": "memcard_SetData",
     "func_80087F24": "memcard_ClearBusy",
     "func_80087F34": "memcard_SetSlot",
     "func_800885AC": "spu_Init",
-    # config.c — SKIPPED (GCC 2.7.2 register allocation sensitivity)
+    # config.c — applied with regfix (GCC 2.7.2 register allocation sensitivity)
+    "func_8003F168": "stage_ExecInitFunc",
+    "func_8003F1C8": "game_GetMode",
+    "func_8003F1D4": "game_GetCharData",
+    "func_8003F1E4": "game_SetControllerPorts",
+    "func_8003F218": "game_SetPlayerCount",
+    "func_8003F268": "game_GetPlayerCount",
+    "func_8003F274": "stage_InitCollision",
+    "func_8003F52C": "stage_SetCollision",
+    "func_8003F54C": "stage_GetCollision",
+    "func_8003F568": "stage_ClearLighting",
+    "func_8003F5A8": "stage_SetLightPosDir",
+    "func_8003F5CC": "stage_ApplyLighting",
 }
 
 dry_run = "--apply" not in sys.argv

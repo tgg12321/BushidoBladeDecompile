@@ -309,7 +309,7 @@ glabel func_8001A820
     /* B498 8001AC98 01004238 */  xori       $v0, $v0, 0x1
     /* B49C 8001AC9C 1E00C2A2 */  sb         $v0, 0x1E($s6)
     /* B4A0 8001ACA0 1E00C492 */  lbu        $a0, 0x1E($s6)
-    /* B4A4 8001ACA4 79FC000C */  jal        func_8003F1E4
+    /* B4A4 8001ACA4 79FC000C */  jal        game_SetControllerPorts
     /* B4A8 8001ACA8 00000000 */   nop
     /* B4AC 8001ACAC 2000AA8F */  lw         $t2, 0x20($sp)
     /* B4B0 8001ACB0 00000000 */  nop

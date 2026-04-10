@@ -5,8 +5,8 @@
 # Reorder: func_name: reorder i,j,k,... @ start-end
 #   Rearranges instructions in range to new order (i,j,k are original indices).
 
-# func_800806A4: GCC picks t2 ($10) for mfhi temp, target uses t3 ($11)
-func_800806A4: $10 <-> $11
+# cdrom_FramesToBcd: GCC picks t2 ($10) for mfhi temp, target uses t3 ($11)
+cdrom_FramesToBcd: $10 <-> $11
 
 # PutShadowRmd: v0/v1 swapped in two regions, a2/a3 swapped in OT linking block
 PutShadowRmd: $2 <-> $3 @ 1-5
@@ -34,10 +34,10 @@ func_8001EEB4: insert "andi $3,$5,0xFFFF" @ 16
 # Reorder: sh to delay slot, li a2 before jal (post-insert TEXT indices)
 func_8001EEB4: reorder 36,38,40,39,37,41 @ 36-41
 
-# func_8003F274: first loop ptr in v1($3) needs v0($2), count in v0($2) needs a2($6)
+# stage_InitCollision: first loop ptr in v1($3) needs v0($2), count in v0($2) needs a2($6)
 # 3-way rotation via two sequential range-based swaps on the zeroing loop (TEXT 2-7)
-func_8003F274: $2 <-> $3 @ 2-7
-func_8003F274: $3 <-> $6 @ 2-7
+stage_InitCollision: $2 <-> $3 @ 2-7
+stage_InitCollision: $3 <-> $6 @ 2-7
 
 # sys_VSync: frame computation — swap addu/addiu around j (TEXT indices)
 sys_VSync: reorder 25,24,23 @ 23-25

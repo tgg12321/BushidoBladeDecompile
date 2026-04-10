@@ -272,7 +272,7 @@ void func_80035FA8(void) {
 extern u8 D_800A31E4;
 void func_80035FE0(void) {
     func_8007FF7C();
-    func_80080168(0);
+    cdrom_SetDebugLevel(0);
     func_80035F30(0, 0, 0, 0);
     D_80101E62 = 0;
     if (D_800A31E4 == 0) {
@@ -285,7 +285,7 @@ void func_80036034(void) {
     sys_VSync(4);
 }
 extern void func_80080620(s32, s32);
-extern s32 func_800807A8(s32);
+extern s32 cdrom_BcdToFrames(s32);
 void func_80036064(u8 arg0) {
     s32 sp[4];
     if (arg0 == 1) {
@@ -295,7 +295,7 @@ void func_80036064(u8 arg0) {
         }
         func_80080620((s32)sp, 3);
         {
-            s32 v0 = func_800807A8((s32)sp);
+            s32 v0 = cdrom_BcdToFrames((s32)sp);
             if (v0 != D_80101EA0) {
                 D_80101E80 = -2;
                 goto do_stop;
@@ -313,7 +313,7 @@ void func_80036064(u8 arg0) {
         D_80101E80 = -1;
     }
 do_stop:
-    func_80080240(0);
+    cdrom_SetCallbackB(0);
     func_80080390(9, 0);
 }
 INCLUDE_ASM("asm/funcs", special_camera_set_win_cam);
@@ -360,7 +360,7 @@ s32 func_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (replay_camera_Init(arg0, arg1) == 0) {
         return 0;
     }
-    func_800806A4(func_800807A8((s32)&D_80101E6C) + arg2, (s32)&D_80101E6C);
+    cdrom_FramesToBcd(cdrom_BcdToFrames((s32)&D_80101E6C) + arg2, (s32)&D_80101E6C);
     D_80101E78 = arg3;
     return 1;
 }
@@ -368,7 +368,7 @@ s32 func_80036EA8(s32 arg0, s32 arg1) {
     return (&D_8008F12C)[arg0] + arg1;
 }
 void game_FrameInit(void) {
-    func_80080240(0);
+    cdrom_SetCallbackB(0);
     func_80035F30(0, 0, 0, 0);
     func_80080148();
     func_80080390(9, 0);
@@ -419,7 +419,7 @@ s32 func_80036FD4(s32 arg0, s32 arg1) {
 
     {
         extern u8 SpecialCam;
-        D_80101E74 = func_800807A8((s32)(&SpecialCam + D_80101E60 * 8)) + (*(u32 *)((u8 *)&D_8008EC38 + (D_80101E60 << 3)) >> 11) - 0x96;
+        D_80101E74 = cdrom_BcdToFrames((s32)(&SpecialCam + D_80101E60 * 8)) + (*(u32 *)((u8 *)&D_8008EC38 + (D_80101E60 << 3)) >> 11) - 0x96;
     }
 
     if (arg1 < 0) {
@@ -448,7 +448,7 @@ s32 func_80037110(s32 arg0) {
     v0 = func_80036FD4(v0, s0[1]);
     if (v0 != 0) {
         if (*(s32 *)(s0 + 4) != -1) {
-            v0 = func_800807A8((s32)&SpecialCam + (s32)D_80101E60 * 8);
+            v0 = cdrom_BcdToFrames((s32)&SpecialCam + (s32)D_80101E60 * 8);
             D_80101E74 = v0 + *(s32 *)(s0 + 4);
         }
         return 1;
@@ -510,7 +510,7 @@ void func_800372F4(s32 arg0) {
 typedef struct { s32 w_q[4]; } Quad;
 typedef struct { s32 w_t[3]; } Triple;
 extern void func_80080258(s32, s32, s32);
-extern void func_800806A4(s32, s32);
+extern void cdrom_FramesToBcd(s32, s32);
 void special_camera_get_rot_dir(s32 *dest) {
     extern s32 func_800372F4(s32, s32, s32);
     u8 sp_buf[0x800];
@@ -544,8 +544,8 @@ retry:
         *(Triple *)dst_q = *(Triple *)src;
     }
 
-    v0 = func_800807A8(index + cam_base);
-    func_800806A4(v0 + 1, (s32)buf2_ptr);
+    v0 = cdrom_BcdToFrames(index + cam_base);
+    cdrom_FramesToBcd(v0 + 1, (s32)buf2_ptr);
     func_80080258(2, (s32)buf2_ptr, 0);
     v0 = func_800372F4(dest[3], dest[2], constant_80);
     if (v0 != 0) goto retry;

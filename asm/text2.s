@@ -5700,18 +5700,18 @@ glabel func_8007FF7C
     /* 70784 8007FF84 04001024 */  addiu      $s0, $zero, 0x4
     /* 70788 8007FF88 1400BFAF */  sw         $ra, 0x14($sp)
   .L8007FF8C:
-    /* 7078C 8007FF8C 3700020C */  jal        func_800800DC
+    /* 7078C 8007FF8C 3700020C */  jal        cdrom_CheckReady
     /* 70790 8007FF90 01000424 */   addiu     $a0, $zero, 0x1
     /* 70794 8007FF94 01000324 */  addiu      $v1, $zero, 0x1
     /* 70798 8007FF98 11004314 */  bne        $v0, $v1, .L8007FFE0
     /* 7079C 8007FF9C FFFF1026 */   addiu     $s0, $s0, -0x1
     /* 707A0 8007FFA0 0880043C */  lui        $a0, %hi(D_80080014)
     /* 707A4 8007FFA4 14008424 */  addiu      $a0, $a0, %lo(D_80080014)
-    /* 707A8 8007FFA8 8A00020C */  jal        func_80080228
+    /* 707A8 8007FFA8 8A00020C */  jal        cdrom_SetCallbackA
     /* 707AC 8007FFAC 00000000 */   nop
     /* 707B0 8007FFB0 0880043C */  lui        $a0, %hi(D_8008003C)
     /* 707B4 8007FFB4 3C008424 */  addiu      $a0, $a0, %lo(D_8008003C)
-    /* 707B8 8007FFB8 9000020C */  jal        func_80080240
+    /* 707B8 8007FFB8 9000020C */  jal        cdrom_SetCallbackB
     /* 707BC 8007FFBC 00000000 */   nop
     /* 707C0 8007FFC0 0880043C */  lui        $a0, %hi(D_80080064)
     /* 707C4 8007FFC4 64008424 */  addiu      $a0, $a0, %lo(D_80080064)

@@ -67,7 +67,7 @@ glabel saEft01Init
     /* 724AC 80081CAC C8618424 */  addiu      $a0, $a0, %lo(D_800161C8)
     /* 724B0 80081CB0 82E4010C */  jal        debug_printf
     /* 724B4 80081CB4 00000000 */   nop
-    /* 724B8 80081CB8 E805020C */  jal        func_800817A0
+    /* 724B8 80081CB8 E805020C */  jal        cdrom_ClearIrq
     /* 724BC 80081CBC 00000000 */   nop
     /* 724C0 80081CC0 33070208 */  j          .L80081CCC
     /* 724C4 80081CC4 FFFF0224 */   addiu     $v0, $zero, -0x1

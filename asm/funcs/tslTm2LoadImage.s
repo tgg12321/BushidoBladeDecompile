@@ -186,7 +186,7 @@ glabel tslTm2LoadImage
     /* 71DB4 800815B4 C8618424 */  addiu      $a0, $a0, %lo(D_800161C8)
     /* 71DB8 800815B8 82E4010C */  jal        debug_printf
     /* 71DBC 800815BC 00000000 */   nop
-    /* 71DC0 800815C0 E805020C */  jal        func_800817A0
+    /* 71DC0 800815C0 E805020C */  jal        cdrom_ClearIrq
     /* 71DC4 800815C4 00000000 */   nop
     /* 71DC8 800815C8 75050208 */  j          .L800815D4
     /* 71DCC 800815CC FFFF0224 */   addiu     $v0, $zero, -0x1

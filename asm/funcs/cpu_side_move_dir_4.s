@@ -71,7 +71,7 @@ glabel cpu_side_move_dir_4
     /* 716BC 80080EBC C8618424 */  addiu      $a0, $a0, %lo(D_800161C8)
     /* 716C0 80080EC0 82E4010C */  jal        debug_printf
     /* 716C4 80080EC4 00000000 */   nop
-    /* 716C8 80080EC8 E805020C */  jal        func_800817A0
+    /* 716C8 80080EC8 E805020C */  jal        cdrom_ClearIrq
     /* 716CC 80080ECC 00000000 */   nop
     /* 716D0 80080ED0 B7030208 */  j          .L80080EDC
     /* 716D4 80080ED4 FFFF0224 */   addiu     $v0, $zero, -0x1

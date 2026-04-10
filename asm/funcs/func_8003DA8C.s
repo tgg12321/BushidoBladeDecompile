@@ -15,7 +15,7 @@ glabel func_8003DA8C
     /* 2E2C0 8003DAC0 00000000 */  nop
     /* 2E2C4 8003DAC4 40004010 */  beqz       $v0, .L8003DBC8
     /* 2E2C8 8003DAC8 2190A000 */   addu      $s2, $a1, $zero
-    /* 2E2CC 8003DACC 9AFC000C */  jal        func_8003F268
+    /* 2E2CC 8003DACC 9AFC000C */  jal        game_GetPlayerCount
     /* 2E2D0 8003DAD0 00000000 */   nop
     /* 2E2D4 8003DAD4 02004014 */  bnez       $v0, .L8003DAE0
     /* 2E2D8 8003DAD8 F0550224 */   addiu     $v0, $zero, 0x55F0

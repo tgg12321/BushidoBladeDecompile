@@ -48,7 +48,7 @@ glabel func_800460E4
   jlabel .L80046198
     /* 36998 80046198 21B80000 */  addu       $s7, $zero, $zero
   jlabel .L8004619C
-    /* 3699C 8004619C 5AFC000C */  jal        func_8003F168
+    /* 3699C 8004619C 5AFC000C */  jal        stage_ExecInitFunc
     /* 369A0 800461A0 00000000 */   nop
     /* 369A4 800461A4 BA00E016 */  bnez       $s7, .L80046490
     /* 369A8 800461A8 00000000 */   nop
@@ -239,7 +239,7 @@ glabel func_800460E4
     /* 36C58 80046458 C066A524 */  addiu      $a1, $a1, %lo(func_800466C0)
     /* 36C5C 8004645C A515010C */  jal        func_80045694
     /* 36C60 80046460 2120E002 */   addu      $a0, $s7, $zero
-    /* 36C64 80046464 5AFC000C */  jal        func_8003F168
+    /* 36C64 80046464 5AFC000C */  jal        stage_ExecInitFunc
     /* 36C68 80046468 00000000 */   nop
     /* 36C6C 8004646C 0A80023C */  lui        $v0, %hi(D_800A38DC)
     /* 36C70 80046470 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)

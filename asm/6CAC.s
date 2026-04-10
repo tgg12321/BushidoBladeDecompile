@@ -3190,7 +3190,7 @@ glabel func_8001A820
     /* B498 8001AC98 01004238 */  xori       $v0, $v0, 0x1
     /* B49C 8001AC9C 1E00C2A2 */  sb         $v0, 0x1E($s6)
     /* B4A0 8001ACA0 1E00C492 */  lbu        $a0, 0x1E($s6)
-    /* B4A4 8001ACA4 79FC000C */  jal        func_8003F1E4
+    /* B4A4 8001ACA4 79FC000C */  jal        game_SetControllerPorts
     /* B4A8 8001ACA8 00000000 */   nop
     /* B4AC 8001ACAC 2000AA8F */  lw         $t2, 0x20($sp)
     /* B4B0 8001ACB0 00000000 */  nop
@@ -3638,7 +3638,7 @@ glabel func_8001B294
     /* BADC 8001B2DC 426620A4 */  sh         $zero, %lo(D_800F6642)($at)
     /* BAE0 8001B2E0 0F80013C */  lui        $at, %hi(D_800F6644)
     /* BAE4 8001B2E4 446622A4 */  sh         $v0, %lo(D_800F6644)($at)
-    /* BAE8 8001B2E8 79FC000C */  jal        func_8003F1E4
+    /* BAE8 8001B2E8 79FC000C */  jal        game_SetControllerPorts
     /* BAEC 8001B2EC 21200000 */   addu      $a0, $zero, $zero
     /* BAF0 8001B2F0 F400228E */  lw         $v0, 0xF4($s1)
     /* BAF4 8001B2F4 F400038E */  lw         $v1, 0xF4($s0)
@@ -3718,7 +3718,7 @@ glabel func_8001B3C0
     /* BC08 8001B408 625320A4 */  sh         $zero, %lo(D_800F5362)($at)
     /* BC0C 8001B40C 0F80013C */  lui        $at, %hi(D_800F5364)
     /* BC10 8001B410 645322A4 */  sh         $v0, %lo(D_800F5364)($at)
-    /* BC14 8001B414 79FC000C */  jal        func_8003F1E4
+    /* BC14 8001B414 79FC000C */  jal        game_SetControllerPorts
     /* BC18 8001B418 21200000 */   addu      $a0, $zero, $zero
     /* BC1C 8001B41C 0A80023C */  lui        $v0, %hi(D_800A36F6)
     /* BC20 8001B420 F6364284 */  lh         $v0, %lo(D_800A36F6)($v0)
@@ -3755,7 +3755,7 @@ glabel func_8001B478
     /* BC84 8001B484 21200000 */  addu       $a0, $zero, $zero
     /* BC88 8001B488 3400BFAF */  sw         $ra, 0x34($sp)
     /* BC8C 8001B48C 3000B2AF */  sw         $s2, 0x30($sp)
-    /* BC90 8001B490 79FC000C */  jal        func_8003F1E4
+    /* BC90 8001B490 79FC000C */  jal        game_SetControllerPorts
     /* BC94 8001B494 2800B0AF */   sw        $s0, 0x28($sp)
     /* BC98 8001B498 9C01228E */  lw         $v0, 0x19C($s1)
     /* BC9C 8001B49C A801238E */  lw         $v1, 0x1A8($s1)
@@ -3946,7 +3946,7 @@ glabel func_8001B6F4
     /* BF24 8001B724 276620A0 */  sb         $zero, %lo(D_800F6627)($at)
     /* BF28 8001B728 0F80013C */  lui        $at, %hi(D_800F5347)
     /* BF2C 8001B72C 475320A0 */  sb         $zero, %lo(D_800F5347)($at)
-    /* BF30 8001B730 79FC000C */  jal        func_8003F1E4
+    /* BF30 8001B730 79FC000C */  jal        game_SetControllerPorts
     /* BF34 8001B734 21200000 */   addu      $a0, $zero, $zero
     /* BF38 8001B738 1000BF8F */  lw         $ra, 0x10($sp)
     /* BF3C 8001B73C 1800BD27 */  addiu      $sp, $sp, 0x18
@@ -4323,7 +4323,7 @@ glabel func_8001BC70
     /* C47C 8001BC7C 1400B1AF */  sw         $s1, 0x14($sp)
     /* C480 8001BC80 2188A000 */  addu       $s1, $a1, $zero
     /* C484 8001BC84 1800BFAF */  sw         $ra, 0x18($sp)
-    /* C488 8001BC88 79FC000C */  jal        func_8003F1E4
+    /* C488 8001BC88 79FC000C */  jal        game_SetControllerPorts
     /* C48C 8001BC8C 21200000 */   addu      $a0, $zero, $zero
     /* C490 8001BC90 0F80053C */  lui        $a1, %hi(D_800F6608)
     /* C494 8001BC94 0866A524 */  addiu      $a1, $a1, %lo(D_800F6608)
@@ -4363,7 +4363,7 @@ glabel func_8001BCF0
     /* C508 8001BD08 1400B1AF */  sw         $s1, 0x14($sp)
     /* C50C 8001BD0C 23885000 */  subu       $s1, $v0, $s0
     /* C510 8001BD10 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* C514 8001BD14 79FC000C */  jal        func_8003F1E4
+    /* C514 8001BD14 79FC000C */  jal        game_SetControllerPorts
     /* C518 8001BD18 21200000 */   addu      $a0, $zero, $zero
     /* C51C 8001BD1C 0F80053C */  lui        $a1, %hi(D_800F6608)
     /* C520 8001BD20 0866A524 */  addiu      $a1, $a1, %lo(D_800F6608)
@@ -6650,7 +6650,7 @@ glabel func_8001DCB0
     /* E510 8001DD10 00000000 */   nop
     /* E514 8001DD14 0A80043C */  lui        $a0, %hi(D_800A38BA)
     /* E518 8001DD18 BA388484 */  lh         $a0, %lo(D_800A38BA)($a0)
-    /* E51C 8001DD1C 86FC000C */  jal        func_8003F218
+    /* E51C 8001DD1C 86FC000C */  jal        game_SetPlayerCount
     /* E520 8001DD20 00000000 */   nop
     /* E524 8001DD24 0A80023C */  lui        $v0, %hi(D_800A38BA)
     /* E528 8001DD28 BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
@@ -7192,7 +7192,7 @@ glabel func_8001E404
   .L8001E4E0:
     /* ECE0 8001E4E0 0A80043C */  lui        $a0, %hi(D_800A36FA)
     /* ECE4 8001E4E4 FA368490 */  lbu        $a0, %lo(D_800A36FA)($a0)
-    /* ECE8 8001E4E8 86FC000C */  jal        func_8003F218
+    /* ECE8 8001E4E8 86FC000C */  jal        game_SetPlayerCount
     /* ECEC 8001E4EC 0100842C */   sltiu     $a0, $a0, 0x1
     /* ECF0 8001E4F0 0A80023C */  lui        $v0, %hi(D_800A36FA)
     /* ECF4 8001E4F4 FA364290 */  lbu        $v0, %lo(D_800A36FA)($v0)
@@ -33997,7 +33997,7 @@ glabel func_80035FE0
     /* 267E4 80035FE4 1000BFAF */  sw         $ra, 0x10($sp)
     /* 267E8 80035FE8 DFFF010C */  jal        func_8007FF7C
     /* 267EC 80035FEC 00000000 */   nop
-    /* 267F0 80035FF0 5A00020C */  jal        func_80080168
+    /* 267F0 80035FF0 5A00020C */  jal        cdrom_SetDebugLevel
     /* 267F4 80035FF4 21200000 */   addu      $a0, $zero, $zero
     /* 267F8 80035FF8 21200000 */  addu       $a0, $zero, $zero
     /* 267FC 80035FFC 21280000 */  addu       $a1, $zero, $zero
@@ -34050,7 +34050,7 @@ glabel func_80036064
     /* 2688C 8003608C 1000A427 */   addiu     $a0, $sp, 0x10
     /* 26890 80036090 8801020C */  jal        func_80080620
     /* 26894 80036094 03000524 */   addiu     $a1, $zero, 0x3
-    /* 26898 80036098 EA01020C */  jal        func_800807A8
+    /* 26898 80036098 EA01020C */  jal        cdrom_BcdToFrames
     /* 2689C 8003609C 1000A427 */   addiu     $a0, $sp, 0x10
     /* 268A0 800360A0 1080033C */  lui        $v1, %hi(D_80101EA0)
     /* 268A4 800360A4 A01E638C */  lw         $v1, %lo(D_80101EA0)($v1)
@@ -34086,7 +34086,7 @@ glabel func_80036064
     /* 26914 80036114 1080013C */  lui        $at, %hi(D_80101E80)
     /* 26918 80036118 801E22AC */  sw         $v0, %lo(D_80101E80)($at)
   .L8003611C:
-    /* 2691C 8003611C 9000020C */  jal        func_80080240
+    /* 2691C 8003611C 9000020C */  jal        cdrom_SetCallbackB
     /* 26920 80036120 21200000 */   addu      $a0, $zero, $zero
     /* 26924 80036124 09000424 */  addiu      $a0, $zero, 0x9
     /* 26928 80036128 E400020C */  jal        func_80080390
@@ -34402,7 +34402,7 @@ glabel func_80036140
     /* 26D9C 8003659C 63378424 */  addiu      $a0, $a0, %lo(D_800A3763)
     /* 26DA0 800365A0 1080013C */  lui        $at, %hi(D_80101E9C)
     /* 26DA4 800365A4 9C1E20A4 */  sh         $zero, %lo(D_80101E9C)($at)
-    /* 26DA8 800365A8 EA01020C */  jal        func_800807A8
+    /* 26DA8 800365A8 EA01020C */  jal        cdrom_BcdToFrames
     /* 26DAC 800365AC 00000000 */   nop
     /* 26DB0 800365B0 1080033C */  lui        $v1, %hi(D_80101E74)
     /* 26DB4 800365B4 741E638C */  lw         $v1, %lo(D_80101E74)($v1)
@@ -34483,7 +34483,7 @@ glabel func_80036140
     /* 26EC8 800366C8 000002A6 */   sh        $v0, 0x0($s0)
     /* 26ECC 800366CC 0A80043C */  lui        $a0, %hi(D_800A3765)
     /* 26ED0 800366D0 65378424 */  addiu      $a0, $a0, %lo(D_800A3765)
-    /* 26ED4 800366D4 EA01020C */  jal        func_800807A8
+    /* 26ED4 800366D4 EA01020C */  jal        cdrom_BcdToFrames
     /* 26ED8 800366D8 00000000 */   nop
     /* 26EDC 800366DC 1080043C */  lui        $a0, %hi(D_80101E74)
     /* 26EE0 800366E0 741E848C */  lw         $a0, %lo(D_80101E74)($a0)
@@ -34752,7 +34752,7 @@ glabel func_80036940
     /* 2728C 80036A8C 841E22AC */  sw         $v0, %lo(D_80101E84)($at)
     /* 27290 80036A90 1080013C */  lui        $at, %hi(D_80101E80)
     /* 27294 80036A94 801E23AC */  sw         $v1, %lo(D_80101E80)($at)
-    /* 27298 80036A98 EA01020C */  jal        func_800807A8
+    /* 27298 80036A98 EA01020C */  jal        cdrom_BcdToFrames
     /* 2729C 80036A9C 21200002 */   addu      $a0, $s0, $zero
     /* 272A0 80036AA0 02000424 */  addiu      $a0, $zero, 0x2
     /* 272A4 80036AA4 21280002 */  addu       $a1, $s0, $zero
@@ -34777,7 +34777,7 @@ glabel func_80036940
     /* 272EC 80036AEC 64608424 */  addiu      $a0, $a0, %lo(func_80036064)
     /* 272F0 80036AF0 1080103C */  lui        $s0, %hi(D_80101E98)
     /* 272F4 80036AF4 981E1026 */  addiu      $s0, $s0, %lo(D_80101E98)
-    /* 272F8 80036AF8 9000020C */  jal        func_80080240
+    /* 272F8 80036AF8 9000020C */  jal        cdrom_SetCallbackB
     /* 272FC 80036AFC 000000A6 */   sh        $zero, 0x0($s0)
     /* 27300 80036B00 06000424 */  addiu      $a0, $zero, 0x6
     /* 27304 80036B04 E400020C */  jal        func_80080390
@@ -34830,14 +34830,14 @@ glabel func_80036940
     /* 273B4 80036BB4 3D004228 */  slti       $v0, $v0, 0x3D
     /* 273B8 80036BB8 6E004014 */  bnez       $v0, .L80036D74
     /* 273BC 80036BBC 00000000 */   nop
-    /* 273C0 80036BC0 9000020C */  jal        func_80080240
+    /* 273C0 80036BC0 9000020C */  jal        cdrom_SetCallbackB
     /* 273C4 80036BC4 21200000 */   addu      $a0, $zero, $zero
     /* 273C8 80036BC8 5BDB0008 */  j          .L80036D6C
     /* 273CC 80036BCC 0A000224 */   addiu     $v0, $zero, 0xA
   .L80036BD0:
     /* 273D0 80036BD0 05006214 */  bne        $v1, $v0, .L80036BE8
     /* 273D4 80036BD4 00000000 */   nop
-    /* 273D8 80036BD8 9000020C */  jal        func_80080240
+    /* 273D8 80036BD8 9000020C */  jal        cdrom_SetCallbackB
     /* 273DC 80036BDC 21200000 */   addu      $a0, $zero, $zero
     /* 273E0 80036BE0 5BDB0008 */  j          .L80036D6C
     /* 273E4 80036BE4 09000224 */   addiu     $v0, $zero, 0x9
@@ -34853,7 +34853,7 @@ glabel func_80036940
     /* 27408 80036C08 3D004228 */  slti       $v0, $v0, 0x3D
     /* 2740C 80036C0C 59004014 */  bnez       $v0, .L80036D74
     /* 27410 80036C10 00000000 */   nop
-    /* 27414 80036C14 9000020C */  jal        func_80080240
+    /* 27414 80036C14 9000020C */  jal        cdrom_SetCallbackB
     /* 27418 80036C18 21200000 */   addu      $a0, $zero, $zero
     /* 2741C 80036C1C 5BDB0008 */  j          .L80036D6C
     /* 27420 80036C20 0A000224 */   addiu     $v0, $zero, 0xA
@@ -35030,10 +35030,10 @@ glabel func_80036E34
     /* 27658 80036E58 00000000 */   nop
     /* 2765C 80036E5C 1080103C */  lui        $s0, %hi(D_80101E6C)
     /* 27660 80036E60 6C1E1026 */  addiu      $s0, $s0, %lo(D_80101E6C)
-    /* 27664 80036E64 EA01020C */  jal        func_800807A8
+    /* 27664 80036E64 EA01020C */  jal        cdrom_BcdToFrames
     /* 27668 80036E68 21200002 */   addu      $a0, $s0, $zero
     /* 2766C 80036E6C 21205100 */  addu       $a0, $v0, $s1
-    /* 27670 80036E70 A901020C */  jal        func_800806A4
+    /* 27670 80036E70 A901020C */  jal        cdrom_FramesToBcd
     /* 27674 80036E74 21280002 */   addu      $a1, $s0, $zero
     /* 27678 80036E78 1080013C */  lui        $at, %hi(D_80101E78)
     /* 2767C 80036E7C 781E32AC */  sw         $s2, %lo(D_80101E78)($at)
@@ -35067,7 +35067,7 @@ nonmatching game_FrameInit, 0x68
 glabel game_FrameInit
     /* 276C0 80036EC0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 276C4 80036EC4 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 276C8 80036EC8 9000020C */  jal        func_80080240
+    /* 276C8 80036EC8 9000020C */  jal        cdrom_SetCallbackB
     /* 276CC 80036ECC 21200000 */   addu      $a0, $zero, $zero
     /* 276D0 80036ED0 21200000 */  addu       $a0, $zero, $zero
     /* 276D4 80036ED4 21280000 */  addu       $a1, $zero, $zero
@@ -35182,7 +35182,7 @@ glabel func_80036FD4
     /* 2783C 8003703C 601E8484 */  lh         $a0, %lo(D_80101E60)($a0)
     /* 27840 80037040 00000000 */  nop
     /* 27844 80037044 C0200400 */  sll        $a0, $a0, 3
-    /* 27848 80037048 EA01020C */  jal        func_800807A8
+    /* 27848 80037048 EA01020C */  jal        cdrom_BcdToFrames
     /* 2784C 8003704C 21208300 */   addu      $a0, $a0, $v1
     /* 27850 80037050 1080033C */  lui        $v1, %hi(D_80101E60)
     /* 27854 80037054 601E6384 */  lh         $v1, %lo(D_80101E60)($v1)
@@ -35264,7 +35264,7 @@ glabel func_80037110
     /* 27964 80037164 0980023C */  lui        $v0, %hi(SpecialCam)
     /* 27968 80037168 34EC4224 */  addiu      $v0, $v0, %lo(SpecialCam)
     /* 2796C 8003716C C0200400 */  sll        $a0, $a0, 3
-    /* 27970 80037170 EA01020C */  jal        func_800807A8
+    /* 27970 80037170 EA01020C */  jal        cdrom_BcdToFrames
     /* 27974 80037174 21208200 */   addu      $a0, $a0, $v0
     /* 27978 80037178 0400038E */  lw         $v1, 0x4($s0)
     /* 2797C 8003717C 00000000 */  nop
@@ -35489,10 +35489,10 @@ glabel func_80037348
     /* 27BF8 800373F8 0000E2AC */  sw         $v0, 0x0($a3)
     /* 27BFC 800373FC 0400E3AC */  sw         $v1, 0x4($a3)
     /* 27C00 80037400 0800E4AC */  sw         $a0, 0x8($a3)
-    /* 27C04 80037404 EA01020C */  jal        func_800807A8
+    /* 27C04 80037404 EA01020C */  jal        cdrom_BcdToFrames
     /* 27C08 80037408 21205302 */   addu      $a0, $s2, $s3
     /* 27C0C 8003740C 01004424 */  addiu      $a0, $v0, 0x1
-    /* 27C10 80037410 A901020C */  jal        func_800806A4
+    /* 27C10 80037410 A901020C */  jal        cdrom_FramesToBcd
     /* 27C14 80037414 21282002 */   addu      $a1, $s1, $zero
     /* 27C18 80037418 02000424 */  addiu      $a0, $zero, 0x2
     /* 27C1C 8003741C 21282002 */  addu       $a1, $s1, $zero
@@ -38185,7 +38185,7 @@ glabel func_800397D4
     /* 29FE0 800397E0 00000000 */   nop
     /* 29FE4 800397E4 8BF8000C */  jal        func_8003E22C
     /* 29FE8 800397E8 00000000 */   nop
-    /* 29FEC 800397EC 86FC000C */  jal        func_8003F218
+    /* 29FEC 800397EC 86FC000C */  jal        game_SetPlayerCount
     /* 29FF0 800397F0 21200000 */   addu      $a0, $zero, $zero
     /* 29FF4 800397F4 B159000C */  jal        disp_CalcFov
     /* 29FF8 800397F8 2D000424 */   addiu     $a0, $zero, 0x2D
@@ -41811,7 +41811,7 @@ nonmatching func_8003C9A4, 0x328
 glabel func_8003C9A4
     /* 2D1A4 8003C9A4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2D1A8 8003C9A8 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2D1AC 8003C9AC 79FC000C */  jal        func_8003F1E4
+    /* 2D1AC 8003C9AC 79FC000C */  jal        game_SetControllerPorts
     /* 2D1B0 8003C9B0 21200000 */   addu      $a0, $zero, $zero
     /* 2D1B4 8003C9B4 0F80043C */  lui        $a0, %hi(D_800F6608)
     /* 2D1B8 8003C9B8 08668424 */  addiu      $a0, $a0, %lo(D_800F6608)
@@ -42054,7 +42054,7 @@ nonmatching func_8003CD10, 0x108
 glabel func_8003CD10
     /* 2D510 8003CD10 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2D514 8003CD14 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2D518 8003CD18 79FC000C */  jal        func_8003F1E4
+    /* 2D518 8003CD18 79FC000C */  jal        game_SetControllerPorts
     /* 2D51C 8003CD1C 21200000 */   addu      $a0, $zero, $zero
     /* 2D520 8003CD20 0F80043C */  lui        $a0, %hi(D_800F6608)
     /* 2D524 8003CD24 08668424 */  addiu      $a0, $a0, %lo(D_800F6608)
@@ -42142,7 +42142,7 @@ glabel func_8003CE18
     /* 2D650 8003CE50 21380000 */   addu      $a3, $zero, $zero
     /* 2D654 8003CE54 8BF8000C */  jal        func_8003E22C
     /* 2D658 8003CE58 00000000 */   nop
-    /* 2D65C 8003CE5C 86FC000C */  jal        func_8003F218
+    /* 2D65C 8003CE5C 86FC000C */  jal        game_SetPlayerCount
     /* 2D660 8003CE60 21200000 */   addu      $a0, $zero, $zero
     /* 2D664 8003CE64 B159000C */  jal        disp_CalcFov
     /* 2D668 8003CE68 2D000424 */   addiu     $a0, $zero, 0x2D
@@ -43046,7 +43046,7 @@ glabel func_8003DA8C
     /* 2E2C0 8003DAC0 00000000 */  nop
     /* 2E2C4 8003DAC4 40004010 */  beqz       $v0, .L8003DBC8
     /* 2E2C8 8003DAC8 2190A000 */   addu      $s2, $a1, $zero
-    /* 2E2CC 8003DACC 9AFC000C */  jal        func_8003F268
+    /* 2E2CC 8003DACC 9AFC000C */  jal        game_GetPlayerCount
     /* 2E2D0 8003DAD0 00000000 */   nop
     /* 2E2D4 8003DAD4 02004014 */  bnez       $v0, .L8003DAE0
     /* 2E2D8 8003DAD8 F0550224 */   addiu     $v0, $zero, 0x55F0
@@ -43160,7 +43160,7 @@ glabel func_8003DBE4
     /* 2E450 8003DC50 1CF70008 */  j          .L8003DC70
     /* 2E454 8003DC54 00000000 */   nop
   .L8003DC58:
-    /* 2E458 8003DC58 9AFC000C */  jal        func_8003F268
+    /* 2E458 8003DC58 9AFC000C */  jal        game_GetPlayerCount
     /* 2E45C 8003DC5C 00000000 */   nop
     /* 2E460 8003DC60 02004014 */  bnez       $v0, .L8003DC6C
     /* 2E464 8003DC64 F0550224 */   addiu     $v0, $zero, 0x55F0

@@ -1,4 +1,4 @@
-glabel func_80080168
+glabel cdrom_SetDebugLevel
     /* 70968 80080168 0A80023C */  lui        $v0, %hi(D_800A11C0)
     /* 7096C 8008016C C011428C */  lw         $v0, %lo(D_800A11C0)($v0)
     /* 70970 80080170 0A80013C */  lui        $at, %hi(D_800A11C0)
@@ -35,4 +35,4 @@ glabel func_80080168
   .L800801E0:
     /* 709E0 800801E0 0800E003 */  jr         $ra
     /* 709E4 800801E4 00000000 */   nop
-endlabel func_80080168
+endlabel cdrom_SetDebugLevel

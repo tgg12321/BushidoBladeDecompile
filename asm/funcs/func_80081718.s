@@ -1,4 +1,4 @@
-glabel func_80081718
+glabel cdrom_SendCmd
     /* 71F18 80081718 0A80033C */  lui        $v1, %hi(D_800A147C)
     /* 71F1C 8008171C 7C14638C */  lw         $v1, %lo(D_800A147C)($v1)
     /* 71F20 80081720 02000224 */  addiu      $v0, $zero, 0x2
@@ -33,4 +33,4 @@ glabel func_80081718
     /* 71F94 80081794 000062A0 */  sb         $v0, 0x0($v1)
     /* 71F98 80081798 0800E003 */  jr         $ra
     /* 71F9C 8008179C 21100000 */   addu      $v0, $zero, $zero
-endlabel func_80081718
+endlabel cdrom_SendCmd

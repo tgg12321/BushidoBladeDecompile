@@ -1,4 +1,4 @@
-glabel func_8003F5CC
+glabel stage_ApplyLighting
     /* 2FDCC 8003F5CC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2FDD0 8003F5D0 0B80043C */  lui        $a0, %hi(D_800A93B0)
     /* 2FDD4 8003F5D4 B093848C */  lw         $a0, %lo(D_800A93B0)($a0)
@@ -23,4 +23,4 @@ glabel func_8003F5CC
     /* 2FE20 8003F620 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2FE24 8003F624 0800E003 */  jr         $ra
     /* 2FE28 8003F628 00000000 */   nop
-endlabel func_8003F5CC
+endlabel stage_ApplyLighting

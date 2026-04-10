@@ -83,7 +83,7 @@ glabel func_80046BF4
     /* 37538 80046D38 F0FF2426 */   addiu     $a0, $s1, -0x10
     /* 3753C 80046D3C 841C010C */  jal        camera_InitBoneData
     /* 37540 80046D40 00000000 */   nop
-    /* 37544 80046D44 9DFC000C */  jal        func_8003F274
+    /* 37544 80046D44 9DFC000C */  jal        stage_InitCollision
     /* 37548 80046D48 00000000 */   nop
     /* 3754C 80046D4C F40293AF */  sw         $s3, %gp_rel(D_800A33C0)($gp)
   .L80046D50:
@@ -97,9 +97,9 @@ glabel func_80046BF4
     /* 3756C 80046D6C 80010426 */   addiu     $a0, $s0, 0x180
     /* 37570 80046D70 3408010C */  jal        func_800420D0
     /* 37574 80046D74 00000000 */   nop
-    /* 37578 80046D78 5AFD000C */  jal        func_8003F568
+    /* 37578 80046D78 5AFD000C */  jal        stage_ClearLighting
     /* 3757C 80046D7C 00000000 */   nop
-    /* 37580 80046D80 73FD000C */  jal        func_8003F5CC
+    /* 37580 80046D80 73FD000C */  jal        stage_ApplyLighting
     /* 37584 80046D84 00000000 */   nop
     /* 37588 80046D88 6800BF8F */  lw         $ra, 0x68($sp)
     /* 3758C 80046D8C 6400B38F */  lw         $s3, 0x64($sp)

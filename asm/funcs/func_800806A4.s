@@ -1,4 +1,4 @@
-glabel func_800806A4
+glabel cdrom_FramesToBcd
     /* 70EA4 800806A4 4E1B033C */  lui        $v1, (0x1B4E81B5 >> 16)
     /* 70EA8 800806A8 B5816334 */  ori        $v1, $v1, (0x1B4E81B5 & 0xFFFF)
     /* 70EAC 800806AC 96008424 */  addiu      $a0, $a0, 0x96
@@ -64,4 +64,4 @@ glabel func_800806A4
     /* 70F9C 8008079C 2128A800 */  addu       $a1, $a1, $t0
     /* 70FA0 800807A0 0800E003 */  jr         $ra
     /* 70FA4 800807A4 000045A0 */   sb        $a1, 0x0($v0)
-endlabel func_800806A4
+endlabel cdrom_FramesToBcd

@@ -218,6 +218,7 @@ Each agent tackles exactly ONE function stub. Up to 3 agents run in parallel, ea
 4. **No `make clean`.** Agents use incremental builds only (`make`). Only the orchestrator runs `make clean` for final verification.
 5. **Add missing symbols to `undefined_syms_auto.txt` if needed.** If a decompiled function references a global not yet in the symbol files, the agent should note it in its report. The orchestrator adds it on main before merging.
 6. **Do not push or merge to main.** Agents commit to their own worktree branch only. The orchestrator is responsible for all merges into main.
+7. **MINIMIZE TEXT OUTPUT.** Nobody reads agent prose. Do not narrate plans, explain reasoning, or summarize tool results between tool calls. Just act. The only text that matters is the audit log (terse: issue/fix/score) and the final report (bullet points: function, result, technique, commit hash). Target: <50K tokens per function.
 
 ### Agent Pre-Screening (MANDATORY — before any decompilation attempt)
 

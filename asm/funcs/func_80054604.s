@@ -122,7 +122,7 @@ glabel func_80054604
     /* 44FCC 800547CC 21204000 */   addu      $a0, $v0, $zero
   .L800547D0:
     /* 44FD0 800547D0 21200000 */  addu       $a0, $zero, $zero
-    /* 44FD4 800547D4 86FC000C */  jal        func_8003F218
+    /* 44FD4 800547D4 86FC000C */  jal        game_SetPlayerCount
     /* 44FD8 800547D8 080033A6 */   sh        $s3, 0x8($s1)
     /* 44FDC 800547DC B159000C */  jal        disp_CalcFov
     /* 44FE0 800547E0 2D000424 */   addiu     $a0, $zero, 0x2D

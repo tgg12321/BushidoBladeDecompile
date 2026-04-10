@@ -1,4 +1,4 @@
-glabel func_800817A0
+glabel cdrom_ClearIrq
     /* 71FA0 800817A0 0A80033C */  lui        $v1, %hi(D_800A147C)
     /* 71FA4 800817A4 7C14638C */  lw         $v1, %lo(D_800A147C)($v1)
     /* 71FA8 800817A8 01000224 */  addiu      $v0, $zero, 0x1
@@ -57,4 +57,4 @@ glabel func_800817A0
     /* 72074 80081874 000062AC */  sw         $v0, 0x0($v1)
     /* 72078 80081878 0800E003 */  jr         $ra
     /* 7207C 8008187C 00000000 */   nop
-endlabel func_800817A0
+endlabel cdrom_ClearIrq

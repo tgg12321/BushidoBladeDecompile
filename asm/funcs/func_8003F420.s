@@ -44,21 +44,21 @@ glabel func_8003F420
   .L8003F4C4:
     /* 2FCC4 8003F4C4 21206002 */  addu       $a0, $s3, $zero
     /* 2FCC8 8003F4C8 21284002 */  addu       $a1, $s2, $zero
-    /* 2FCCC 8003F4CC 4BFD000C */  jal        func_8003F52C
+    /* 2FCCC 8003F4CC 4BFD000C */  jal        stage_SetCollision
     /* 2FCD0 8003F4D0 02000624 */   addiu     $a2, $zero, 0x2
     /* 2FCD4 8003F4D4 21887102 */  addu       $s1, $s3, $s1
     /* 2FCD8 8003F4D8 21202002 */  addu       $a0, $s1, $zero
     /* 2FCDC 8003F4DC 21284002 */  addu       $a1, $s2, $zero
-    /* 2FCE0 8003F4E0 4BFD000C */  jal        func_8003F52C
+    /* 2FCE0 8003F4E0 4BFD000C */  jal        stage_SetCollision
     /* 2FCE4 8003F4E4 02000624 */   addiu     $a2, $zero, 0x2
     /* 2FCE8 8003F4E8 21206002 */  addu       $a0, $s3, $zero
     /* 2FCEC 8003F4EC 21805002 */  addu       $s0, $s2, $s0
     /* 2FCF0 8003F4F0 21280002 */  addu       $a1, $s0, $zero
-    /* 2FCF4 8003F4F4 4BFD000C */  jal        func_8003F52C
+    /* 2FCF4 8003F4F4 4BFD000C */  jal        stage_SetCollision
     /* 2FCF8 8003F4F8 02000624 */   addiu     $a2, $zero, 0x2
     /* 2FCFC 8003F4FC 21202002 */  addu       $a0, $s1, $zero
     /* 2FD00 8003F500 21280002 */  addu       $a1, $s0, $zero
-    /* 2FD04 8003F504 4BFD000C */  jal        func_8003F52C
+    /* 2FD04 8003F504 4BFD000C */  jal        stage_SetCollision
     /* 2FD08 8003F508 02000624 */   addiu     $a2, $zero, 0x2
     /* 2FD0C 8003F50C 2000BF8F */  lw         $ra, 0x20($sp)
     /* 2FD10 8003F510 1C00B38F */  lw         $s3, 0x1C($sp)

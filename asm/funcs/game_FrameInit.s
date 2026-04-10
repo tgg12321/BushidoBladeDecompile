@@ -1,7 +1,7 @@
 glabel game_FrameInit
     /* 276C0 80036EC0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 276C4 80036EC4 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 276C8 80036EC8 9000020C */  jal        func_80080240
+    /* 276C8 80036EC8 9000020C */  jal        cdrom_SetCallbackB
     /* 276CC 80036ECC 21200000 */   addu      $a0, $zero, $zero
     /* 276D0 80036ED0 21200000 */  addu       $a0, $zero, $zero
     /* 276D4 80036ED4 21280000 */  addu       $a1, $zero, $zero

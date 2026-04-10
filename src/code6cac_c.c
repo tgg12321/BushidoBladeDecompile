@@ -159,7 +159,7 @@ extern void func_8007A400(void);
 extern void func_8008BE4C(void);
 extern s32 func_8006BEC4(s32, s32);
 extern void func_8003E22C(void);
-extern void func_8003F218(s32);
+extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
 extern void func_8007EFFC(s32);
 extern void func_8001B6F4(void);
@@ -820,7 +820,7 @@ void func_800397A0(void) {
 void func_800397D4(void) {
     gpu_EnableDisplay();
     func_8003E22C();
-    func_8003F218(0);
+    game_SetPlayerCount(0);
     func_8007EFFC(disp_CalcFov(0x2D));
     func_80041688(0, 0);
     func_80041688(1, 0);

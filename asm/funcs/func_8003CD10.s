@@ -1,7 +1,7 @@
 glabel func_8003CD10
     /* 2D510 8003CD10 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2D514 8003CD14 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2D518 8003CD18 79FC000C */  jal        func_8003F1E4
+    /* 2D518 8003CD18 79FC000C */  jal        game_SetControllerPorts
     /* 2D51C 8003CD1C 21200000 */   addu      $a0, $zero, $zero
     /* 2D520 8003CD20 0F80043C */  lui        $a0, %hi(D_800F6608)
     /* 2D524 8003CD24 08668424 */  addiu      $a0, $a0, %lo(D_800F6608)

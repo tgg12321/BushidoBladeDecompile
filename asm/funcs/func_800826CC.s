@@ -29,12 +29,12 @@ glabel func_800826CC
     /* 72F30 80082730 0A80013C */  lui        $at, %hi(D_800A14D4)
     /* 72F34 80082734 D41425AC */  sw         $a1, %lo(D_800A14D4)($at)
     /* 72F38 80082738 000047AC */  sw         $a3, 0x0($v0)
-    /* 72F3C 8008273C 8A00020C */  jal        func_80080228
+    /* 72F3C 8008273C 8A00020C */  jal        cdrom_SetCallbackA
     /* 72F40 80082740 00000000 */   nop
     /* 72F44 80082744 21200000 */  addu       $a0, $zero, $zero
     /* 72F48 80082748 0A80013C */  lui        $at, %hi(D_800A14F4)
     /* 72F4C 8008274C F41422AC */  sw         $v0, %lo(D_800A14F4)($at)
-    /* 72F50 80082750 9000020C */  jal        func_80080240
+    /* 72F50 80082750 9000020C */  jal        cdrom_SetCallbackB
     /* 72F54 80082754 00000000 */   nop
     /* 72F58 80082758 0A80013C */  lui        $at, %hi(D_800A14F8)
     /* 72F5C 8008275C F81422AC */  sw         $v0, %lo(D_800A14F8)($at)
@@ -53,7 +53,7 @@ glabel func_800826CC
     /* 72F8C 8008278C FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 72F90 80082790 0A80013C */  lui        $at, %hi(D_800A14EC)
     /* 72F94 80082794 EC1422AC */  sw         $v0, %lo(D_800A14EC)($at)
-    /* 72F98 80082798 2700020C */  jal        func_8008009C
+    /* 72F98 80082798 2700020C */  jal        cdrom_GetMode
     /* 72F9C 8008279C 00000000 */   nop
     /* 72FA0 800827A0 E0004230 */  andi       $v0, $v0, 0xE0
     /* 72FA4 800827A4 04004010 */  beqz       $v0, .L800827B8

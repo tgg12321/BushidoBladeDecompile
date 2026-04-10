@@ -1,4 +1,4 @@
-glabel func_800800AC
+glabel cdrom_GetReadyFlag
     /* 708AC 800800AC 0A80023C */  lui        $v0, %hi(D_800A11D4)
     /* 708B0 800800B0 D4114290 */  lbu        $v0, %lo(D_800A11D4)($v0)
     /* 708B4 800800B4 0800E003 */  jr         $ra
@@ -7,4 +7,4 @@ glabel func_800800AC
     /* 708C0 800800C0 D5114290 */  lbu        $v0, %lo(D_800A11D5)($v0)
     /* 708C4 800800C4 0800E003 */  jr         $ra
     /* 708C8 800800C8 00000000 */   nop
-endlabel func_800800AC
+endlabel cdrom_GetReadyFlag
