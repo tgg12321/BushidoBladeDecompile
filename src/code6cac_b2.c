@@ -399,8 +399,48 @@ void func_80036F40(void) {
     func_8003AAB0();
 }
 extern void tslPolyF4Init(s32, u8 *, s32);
-/* TABLED: same size, score 185 — register allocation: SpecialCam in a1 vs v1, entry loads v1/v0 vs a0/a1, sb/sh addressing modes swapped */
-INCLUDE_ASM("asm/funcs", func_80036FD4);
+s32 func_80036FD4(s32 arg0, s32 arg1) {
+    s16 *s0 = &D_80101E62;
+
+    if (*s0 != 0) {
+        return 0;
+    }
+
+    {
+        extern u8 SpecialCam;
+        s32 *entry = (s32 *)(&SpecialCam + ((arg0 << 16) >> 13));
+
+        D_80101E60 = arg0;
+        D_80101E6C = entry[0];
+        D_80101E70 = entry[1];
+    }
+
+    asm volatile("" ::: "memory");
+
+    {
+        extern u8 SpecialCam;
+        D_80101E74 = func_800807A8((s32)(&SpecialCam + D_80101E60 * 8)) + (*(u32 *)((u8 *)&D_8008EC38 + (D_80101E60 << 3)) >> 11) - 0x96;
+    }
+
+    if (arg1 < 0) {
+        D_80101E94 = 0;
+        D_80101E90 = 5;
+    } else {
+        u8 *base = (u8 *)s0 - 0xA;
+        D_80101E94 = 1;
+        *base = 1;
+        D_80101E59 = arg1;
+        tslPolyF4Init(0xD, base, 0);
+        D_80101E90 = 0xC8;
+    }
+
+    D_80101E64 = 0;
+    D_80101E68 = 0;
+    D_80101E6A = 0;
+    D_80101E62 = 0x10;
+
+    return 1;
+}
 s32 func_80037110(s32 arg0) {
     u8 *s0 = (u8 *)&D_8008F13C + (arg0 << 3);
     s32 v0;
