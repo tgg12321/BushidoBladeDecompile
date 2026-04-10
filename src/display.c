@@ -1,5 +1,6 @@
 #include "common.h"
 #include "include_asm.h"
+#include "gpu.h"
 
 /* Padding NOP macro - emits NOP instructions between functions to match original layout */
 #define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
@@ -18,22 +19,15 @@ extern u32 *g_gpu_dma_madr;
 extern u32 *g_gpu_dma_bcr;
 extern u32 *g_gpu_dma_chcr;
 extern u8 g_gpu_color_table[];
-extern u32 *g_gpu_dev_table;
 extern u8 g_gpu_draw_env;
 extern u8 g_gpu_disp_env;
 extern s32 g_gpu_vcount;
 extern s32 g_gpu_draw_count;
-extern u8 g_gpu_debug_level;
-extern void (*g_gpu_debug_func)();
 extern u32 g_str_drawotag;
 extern u32 g_str_drawsync;
 extern u32 D_80015EE8;
 extern u32 g_gpu_draw_mode;
 
-extern u8 g_gpu_type;
-extern s16 g_gpu_disp_x;
-extern s16 g_gpu_disp_y;
-extern u8 g_gpu_dither;
 extern u32 g_str_setdispmask;
 extern u32 g_str_clearimage;
 

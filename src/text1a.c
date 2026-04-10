@@ -1,6 +1,9 @@
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
+#include "sound.h"
+#include "game.h"
+#include "code6cac.h"
 
 
 extern s16 D_800EED10[];
@@ -16,8 +19,6 @@ extern void func_80045294(s32, s32);
 extern void func_80052C10(void);
 extern void func_80044098(s16);
 extern void func_80044010(s32 *, s16);
-extern s32 g_snd_bgm_id;
-extern s32 g_snd_se_id;
 extern s32 D_800A3240;
 extern s32 D_800A3398;
 extern s32 D_800A3244;
@@ -29,7 +30,6 @@ extern void func_80041430(s32, s32);
 extern s32 func_8004019C(s32 *, s32);
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
-extern s32 D_800A36AC;
 extern s32 D_800A378C;
 extern s32 D_800A3234;
 extern s32 D_800A3378;
@@ -904,11 +904,8 @@ extern s32 D_80101BD0;
 extern s32 D_800A3708;
 extern s32 D_800A370C;
 extern s32 D_800FF610;
-extern s32 D_800A36AC;
-extern s32 g_game_timer;
 extern s16 D_80095328;
 extern s32 D_80102C00;
-extern s32 D_800A3820;
 extern void func_80042874(s32 *, s32 *);
 extern void func_8007EB4C(s32 *, s32 *);
 extern void func_8007EC5C(s32 *, s32 *);
@@ -1477,8 +1474,6 @@ void func_80046048(s32 a0, s32 a1) {
     } while (count != -1);
 }
 INCLUDE_ASM("asm/funcs", func_800460E4);
-extern s16 g_stage_id;
-extern s16 g_stage_variant;
 void func_800464C4(void) {
     s32 *s0;
     s32 *s1;
@@ -1541,8 +1536,6 @@ void func_8004659C(s32 a0) {
     g_snd_se_id = (s32)s1p;
     md_game_check_mode(s0p, 7);
 }
-extern s16 g_stage_id;
-extern s16 g_stage_variant;
 extern void func_800453E0(s32);
 void func_8004668C(void) {
     func_800453E0(7);

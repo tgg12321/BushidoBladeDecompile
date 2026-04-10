@@ -1,6 +1,7 @@
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
+#include "system.h"
 
 /* Forward declarations */
 extern void func_80089D60(s32);
@@ -30,7 +31,6 @@ extern void func_8008D050(s32 *);
 extern s32 g_snd_callback;
 extern s32 D_80106F28;
 extern s32 func_80078998(s32);
-extern void irq_DisableInterrupts(void);
 extern void func_80088740(s32);
 extern void spu_WriteReg(s32, u32, s32);
 extern s32 D_800A287C;

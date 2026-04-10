@@ -1,6 +1,9 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
+#include "sound.h"
+#include "game.h"
+#include "code6cac.h"
 
 /* Padding NOP macro */
 #define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
@@ -9,7 +12,6 @@
 
 /* --- Functions from text1b segment (0x80047ED0 - 0x80079A30) --- */
 
-extern s32 g_snd_volume;
 void func_80047ED0(s32 a0) {
     g_snd_volume += a0;
 }
@@ -14931,7 +14933,6 @@ __asm__(
     ".set at\n"
 );
 extern u32 D_80102C00;
-extern u32 *D_800A3820;
 extern u16 D_800A38D6;
 extern s32 D_800A374C;
 extern s32 D_800A3808;
@@ -22163,7 +22164,6 @@ void func_800858D0(s32);
 void func_80087F64(s32);
 extern s32 D_800EFC38;
 extern s32 D_80015470;
-extern u8 cpu_practice_honmokuroku_data_tbl;
 extern s16 Judge;
 extern u8 D_80099BCC;
 extern u8 D_80099CC8;
@@ -22259,27 +22259,11 @@ extern s32 D_800A3618;
 extern s32 D_800A3628;
 extern s32 D_800A362C;
 extern s32 D_800A3638;
-extern u8 D_800A3671;
-extern u8 D_800A3680;
-extern s16 D_800A36A4;
-extern s32 D_800A36AC;
 extern s32 D_800A3708;
 extern s32 D_800A370C;
-extern u8 D_800A3783;
-extern u8 D_800A3788;
-extern s32 g_game_timer;
-extern u8 D_800A37A0;
-extern u8 D_800A37D2;
-extern s32 D_800A3820;
 extern s32 D_800A3828;
-extern s16 D_800A3834;
-extern s32 D_800A387C;
-extern u8 D_800A389A;
-extern s16 D_800A38AE;
 extern s32 D_800A38B4;
 extern s32 D_800A38D8;
-extern s16 D_800A38DC;
-extern u8 D_800A38E2;
 extern s16 D_800EF980;
 extern s16 D_800EF9F4;
 extern s32 D_800EFC44;
@@ -22394,9 +22378,6 @@ extern s32 D_800F1850;
 extern u8 D_800F6338;
 extern u8 D_800F6339;
 extern u8 D_800F633A;
-extern s32 D_800F6608;
-extern s32 D_800F6610;
-extern s16 g_game_p2_ctrl;
 extern s32 g_anim_func_table;
 extern u8 D_800F74A4;
 extern u8 D_800F74A5;
@@ -22425,15 +22406,11 @@ extern s32 D_800FF68C;
 extern u8 D_80101DF1;
 extern s16 D_80101DF8;
 extern s32 D_80101DFC;
-extern s16 D_80101E00;
 extern u16 D_80101E02;
 extern u16 D_80101E04;
 extern s32 D_80101E3C;
 extern s32 D_80101E40;
 extern s32 D_80101E44;
-extern s16 D_8010278C;
-extern s16 D_8010278E;
-extern s32 D_80102790;
 extern s32 D_80103624;
 extern s32 D_800EFB38;
 void func_8005B644(s32 a0) {

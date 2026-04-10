@@ -1,5 +1,8 @@
 #include "common.h"
 #include "include_asm.h"
+#include "sound.h"
+#include "game.h"
+#include "code6cac.h"
 
 /* Forward declarations for called functions */
 extern void func_800453E0(s32);
@@ -45,22 +48,16 @@ extern void func_80044FA0(s32, s32 *);
 extern s16 g_pad_selection;
 
 /* Externs for globals */
-extern s32 g_snd_bgm_id;
 extern s16 g_cam_matrix;
 extern s16 D_800EEDB2;
 extern s16 D_800EEDBE;
-extern s32 g_snd_se_id;
-extern s32 g_snd_volume;
 extern s32 g_snd_stage_bgm;
 extern s32 g_snd_fade_pos;
 extern s32 g_snd_fade_amt;
 extern s32 g_snd_config_tbl[];
 extern s32 g_snd_fade_curve[];
-extern s16 g_stage_id;
-extern s16 g_stage_variant;
 extern u8 g_stage_data;
 extern s16 g_game_pause;
-extern s32 g_game_timer;
 extern u8 g_cam_bone_data;
 extern u8 g_cam_bone_data2;
 
@@ -84,7 +81,6 @@ extern void func_800420D0(void);
 extern void func_8003F568(void);
 extern void func_8003F5CC(void);
 extern void func_8003F274(void);
-extern s16 D_80101E00;
 extern s16 D_80101E02;
 extern s16 D_80101E04;
 extern s32 D_80101E3C;
@@ -95,7 +91,6 @@ extern u16 D_800A38D6;
 extern s32 D_800A374C;
 extern s32 D_800A3808;
 extern s32 D_800A378C;
-extern s32 D_800A3820;
 extern s32 D_800F62E0;
 extern s32 g_anim_func_table[];
 extern void func_80042E90(void);
@@ -108,9 +103,7 @@ extern void func_8003F7F4(void);
 extern s16 D_800F6650;
 extern s16 g_color_mode;
 extern s16 g_game_p1_ctrl;
-extern s16 g_game_p2_ctrl;
 extern s16 D_800F665A;
-extern s16 g_game_mirror_mode;
 extern s32 D_800A33BC;
 extern s32 func_800486FC(void);
 extern s32 *func_8004574C(s32);
@@ -587,7 +580,6 @@ void camera_InitBone2(void) {
     camera_InitRotation(&g_cam_bone_data2);
     g_cam_interp = 4;
 }
-extern s32 D_800A3820;
 extern s16 D_800EEE00;
 extern s16 D_800EEE02;
 extern s32 D_800EEE1C;
@@ -675,7 +667,6 @@ void snd_SetVolume(s32 a0) {
 INCLUDE_ASM("asm/funcs", func_800477E8);
 extern s32 D_800EF558[];
 extern s32 D_800EF59C[];
-extern s32 D_800A3820;
 extern s32 D_800EF070;
 void func_80047A90(void) {
     register s32 i asm("$8");
