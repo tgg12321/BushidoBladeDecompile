@@ -270,6 +270,11 @@ def action_matches(gcc_action, target_action):
     if g_type == 'li' and t_type == 'li':
         return gcc_action[1] == target_action[1]  # same dest register
 
+    # GCC 'li' with large constant becomes 'lui' in assembler output.
+    # Match GCC 'li' against target 'lui' for the same register.
+    if g_type == 'li' and t_type == 'lui':
+        return gcc_action[1] == target_action[1]  # same dest register
+
     # ALU/shift operations
     if g_type == 'alu' and t_type == 'alu':
         return (gcc_action[1] == target_action[1] and   # same mnemonic
