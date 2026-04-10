@@ -58,14 +58,14 @@ glabel func_800759D0
     /* 662A4 80075AA4 21300000 */  addu       $a2, $zero, $zero
     /* 662A8 80075AA8 1000A0AF */  sw         $zero, 0x10($sp)
     /* 662AC 80075AAC 1800048E */  lw         $a0, 0x18($s0)
-    /* 662B0 80075AB0 92F0010C */  jal        func_8007C248
+    /* 662B0 80075AB0 92F0010C */  jal        initTexPage
     /* 662B4 80075AB4 21384000 */   addu      $a3, $v0, $zero
     /* 662B8 80075AB8 1800058E */  lw         $a1, 0x18($s0)
     /* 662BC 80075ABC 2C00A48F */  lw         $a0, 0x2C($sp)
     /* 662C0 80075AC0 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 662C4 80075AC4 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 662C8 80075AC8 80200400 */  sll        $a0, $a0, 2
-    /* 662CC 80075ACC 2DEA010C */  jal        func_8007A8B4
+    /* 662CC 80075ACC 2DEA010C */  jal        ot_Link
     /* 662D0 80075AD0 21204400 */   addu      $a0, $v0, $a0
     /* 662D4 80075AD4 1800028E */  lw         $v0, 0x18($s0)
     /* 662D8 80075AD8 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
@@ -75,7 +75,7 @@ glabel func_800759D0
     /* 662E8 80075AE8 00000000 */  nop
     /* 662EC 80075AEC 1F008430 */  andi       $a0, $a0, 0x1F
     /* 662F0 80075AF0 C0210400 */  sll        $a0, $a0, 7
-    /* 662F4 80075AF4 C8F7010C */  jal        func_8007DF20
+    /* 662F4 80075AF4 C8F7010C */  jal        math_Sin
     /* 662F8 80075AF8 FF018424 */   addiu     $a0, $a0, 0x1FF
     /* 662FC 80075AFC 40110200 */  sll        $v0, $v0, 5
     /* 66300 80075B00 03130200 */  sra        $v0, $v0, 12
@@ -338,14 +338,14 @@ glabel func_800759D0
     /* 666B8 80075EB8 21300000 */  addu       $a2, $zero, $zero
     /* 666BC 80075EBC 1000A0AF */  sw         $zero, 0x10($sp)
     /* 666C0 80075EC0 1800048E */  lw         $a0, 0x18($s0)
-    /* 666C4 80075EC4 92F0010C */  jal        func_8007C248
+    /* 666C4 80075EC4 92F0010C */  jal        initTexPage
     /* 666C8 80075EC8 21384000 */   addu      $a3, $v0, $zero
     /* 666CC 80075ECC 1800058E */  lw         $a1, 0x18($s0)
     /* 666D0 80075ED0 2C00A48F */  lw         $a0, 0x2C($sp)
     /* 666D4 80075ED4 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 666D8 80075ED8 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 666DC 80075EDC 80200400 */  sll        $a0, $a0, 2
-    /* 666E0 80075EE0 2DEA010C */  jal        func_8007A8B4
+    /* 666E0 80075EE0 2DEA010C */  jal        ot_Link
     /* 666E4 80075EE4 21204400 */   addu      $a0, $v0, $a0
     /* 666E8 80075EE8 1800028E */  lw         $v0, 0x18($s0)
     /* 666EC 80075EEC 00000000 */  nop
@@ -358,7 +358,7 @@ glabel func_800759D0
     /* 66708 80075F08 21300000 */  addu       $a2, $zero, $zero
     /* 6670C 80075F0C 1000A0AF */  sw         $zero, 0x10($sp)
     /* 66710 80075F10 1800048E */  lw         $a0, 0x18($s0)
-    /* 66714 80075F14 92F0010C */  jal        func_8007C248
+    /* 66714 80075F14 92F0010C */  jal        initTexPage
     /* 66718 80075F18 21384000 */   addu      $a3, $v0, $zero
     /* 6671C 80075F1C 1800058E */  lw         $a1, 0x18($s0)
     /* 66720 80075F20 2C00A28F */  lw         $v0, 0x2C($sp)
@@ -366,7 +366,7 @@ glabel func_800759D0
     /* 66728 80075F28 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 6672C 80075F2C 80100200 */  sll        $v0, $v0, 2
     /* 66730 80075F30 21208200 */  addu       $a0, $a0, $v0
-    /* 66734 80075F34 2DEA010C */  jal        func_8007A8B4
+    /* 66734 80075F34 2DEA010C */  jal        ot_Link
     /* 66738 80075F38 FCFF8424 */   addiu     $a0, $a0, -0x4
     /* 6673C 80075F3C 1800028E */  lw         $v0, 0x18($s0)
     /* 66740 80075F40 00000000 */  nop

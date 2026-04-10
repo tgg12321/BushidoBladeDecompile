@@ -664,8 +664,8 @@ void game_Stub4(void) {
 void snd_SetVolume(s32 a0) {
     g_snd_volume = a0;
 }
-extern u32 func_8007A788(s32, s32, s32, s32);
-extern u32 func_8007A7C4(s32, s32);
+extern u32 gpu_CalcTPage(s32, s32, s32, s32);
+extern u32 gpu_CalcClut(s32, s32);
 extern void func_800417D0(s32 *);
 extern s16 *D_800A33D0;
 extern s8 D_800EF070;
@@ -700,10 +700,10 @@ s32 func_800477E8(void) {
     s32 *p;
 
     s0 = D_800A33D0;
-    s3val = func_8007A788(0, 0, 0x2C0, 0x1C0);
-    s2val = func_8007A788(0, 0, 0x2C0, 0x180);
-    s1val = func_8007A7C4(0x10, 0x1E0);
-    t1val = func_8007A7C4(0x10, 0x1E0);
+    s3val = gpu_CalcTPage(0, 0, 0x2C0, 0x1C0);
+    s2val = gpu_CalcTPage(0, 0, 0x2C0, 0x180);
+    s1val = gpu_CalcClut(0x10, 0x1E0);
+    t1val = gpu_CalcClut(0x10, 0x1E0);
     a3 = 0;
     t2 = 0x2C00;
     a0 = 0;

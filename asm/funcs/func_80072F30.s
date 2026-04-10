@@ -5,7 +5,7 @@ glabel func_80072F30
     /* 6373C 80072F3C 1400B1AF */  sw         $s1, 0x14($sp)
     /* 63740 80072F40 2188A000 */  addu       $s1, $a1, $zero
     /* 63744 80072F44 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 63748 80072F48 B4EA010C */  jal        func_8007AAD0
+    /* 63748 80072F48 B4EA010C */  jal        initTile
     /* 6374C 80072F4C 21202002 */   addu      $a0, $s1, $zero
     /* 63750 80072F50 0400102A */  slti       $s0, $s0, 0x4
     /* 63754 80072F54 08000012 */  beqz       $s0, .L80072F78
@@ -26,12 +26,12 @@ glabel func_80072F30
     /* 6378C 80072F8C 18000224 */  addiu      $v0, $zero, 0x18
     /* 63790 80072F90 060022A2 */  sb         $v0, 0x6($s1)
   .L80072F94:
-    /* 63794 80072F94 5AEA010C */  jal        func_8007A968
+    /* 63794 80072F94 5AEA010C */  jal        gpu_SetSemiTransp
     /* 63798 80072F98 00000000 */   nop
     /* 6379C 80072F9C 0A80043C */  lui        $a0, %hi(D_800A374C)
     /* 637A0 80072FA0 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 637A4 80072FA4 21282002 */  addu       $a1, $s1, $zero
-    /* 637A8 80072FA8 2DEA010C */  jal        func_8007A8B4
+    /* 637A8 80072FA8 2DEA010C */  jal        ot_Link
     /* 637AC 80072FAC 5C008424 */   addiu     $a0, $a0, 0x5C
     /* 637B0 80072FB0 10002226 */  addiu      $v0, $s1, 0x10
     /* 637B4 80072FB4 1800BF8F */  lw         $ra, 0x18($sp)

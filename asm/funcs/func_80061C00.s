@@ -32,9 +32,9 @@ glabel func_80061C00
     /* 52474 80061C74 21200002 */  addu       $a0, $s0, $zero
     /* 52478 80061C78 4C00A0AF */  sw         $zero, 0x4C($sp)
     /* 5247C 80061C7C 4800A0AF */  sw         $zero, 0x48($sp)
-    /* 52480 80061C80 BBFB010C */  jal        func_8007EEEC
+    /* 52480 80061C80 BBFB010C */  jal        gte_SetRotMatrix
     /* 52484 80061C84 4400A0AF */   sw        $zero, 0x44($sp)
-    /* 52488 80061C88 D3FB010C */  jal        func_8007EF4C
+    /* 52488 80061C88 D3FB010C */  jal        gte_SetTransVector
     /* 5248C 80061C8C 21200002 */   addu      $a0, $s0, $zero
     /* 52490 80061C90 1000A427 */  addiu      $a0, $sp, 0x10
     /* 52494 80061C94 2000A527 */  addiu      $a1, $sp, 0x20

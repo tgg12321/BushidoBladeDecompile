@@ -480,7 +480,7 @@ glabel func_8005D814
     /* 4E718 8005DF18 2800A0AF */  sw         $zero, 0x28($sp)
     /* 4E71C 8005DF1C 2C00ACAF */  sw         $t4, 0x2C($sp)
   .L8005DF20:
-    /* 4E720 8005DF20 B4EA010C */  jal        func_8007AAD0
+    /* 4E720 8005DF20 B4EA010C */  jal        initTile
     /* 4E724 8005DF24 2120C003 */   addu      $a0, $fp, $zero
     /* 4E728 8005DF28 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 4E72C 8005DF2C 00841400 */  sll        $s0, $s4, 16
@@ -505,7 +505,7 @@ glabel func_8005D814
     /* 4E778 8005DF78 000022A6 */  sh         $v0, 0x0($s1)
     /* 4E77C 8005DF7C 38020224 */  addiu      $v0, $zero, 0x238
     /* 4E780 8005DF80 23104300 */  subu       $v0, $v0, $v1
-    /* 4E784 8005DF84 5AEA010C */  jal        func_8007A968
+    /* 4E784 8005DF84 5AEA010C */  jal        gpu_SetSemiTransp
     /* 4E788 8005DF88 FEFF22A6 */   sh        $v0, -0x2($s1)
     /* 4E78C 8005DF8C 2128C003 */  addu       $a1, $fp, $zero
     /* 4E790 8005DF90 10003126 */  addiu      $s1, $s1, 0x10
@@ -514,7 +514,7 @@ glabel func_8005D814
     /* 4E79C 8005DF9C 0A80043C */  lui        $a0, %hi(D_800A374C)
     /* 4E7A0 8005DFA0 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 4E7A4 8005DFA4 80900D00 */  sll        $s2, $t5, 2
-    /* 4E7A8 8005DFA8 2DEA010C */  jal        func_8007A8B4
+    /* 4E7A8 8005DFA8 2DEA010C */  jal        ot_Link
     /* 4E7AC 8005DFAC 21209200 */   addu      $a0, $a0, $s2
     /* 4E7B0 8005DFB0 0A80013C */  lui        $at, %hi(D_8009B452)
     /* 4E7B4 8005DFB4 21083000 */  addu       $at, $at, $s0
@@ -550,12 +550,12 @@ glabel func_8005D814
     /* 4E82C 8005E02C 21300000 */  addu       $a2, $zero, $zero
     /* 4E830 8005E030 6800A48F */  lw         $a0, 0x68($sp)
     /* 4E834 8005E034 21384000 */  addu       $a3, $v0, $zero
-    /* 4E838 8005E038 92F0010C */  jal        func_8007C248
+    /* 4E838 8005E038 92F0010C */  jal        initTexPage
     /* 4E83C 8005E03C 1000A0AF */   sw        $zero, 0x10($sp)
     /* 4E840 8005E040 0A80043C */  lui        $a0, %hi(D_800A374C)
     /* 4E844 8005E044 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 4E848 8005E048 6800A58F */  lw         $a1, 0x68($sp)
-    /* 4E84C 8005E04C 2DEA010C */  jal        func_8007A8B4
+    /* 4E84C 8005E04C 2DEA010C */  jal        ot_Link
     /* 4E850 8005E050 21209200 */   addu      $a0, $a0, $s2
     /* 4E854 8005E054 7000AC8F */  lw         $t4, 0x70($sp)
     /* 4E858 8005E058 5800AD8F */  lw         $t5, 0x58($sp)

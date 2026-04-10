@@ -3,7 +3,7 @@ glabel func_80016888
     /* 708C 8001688C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 7090 80016890 A8EC010C */  jal        gpu_SetDispMask
     /* 7094 80016894 21200000 */   addu      $a0, $zero, $zero
-    /* 7098 80016898 9FEB010C */  jal        func_8007AE7C
+    /* 7098 80016898 9FEB010C */  jal        gpu_SetMode
     /* 709C 8001689C 01000424 */   addiu     $a0, $zero, 0x1
     /* 70A0 800168A0 0A80043C */  lui        $a0, %hi(D_800A30CC)
     /* 70A4 800168A4 CC308424 */  addiu      $a0, $a0, %lo(D_800A30CC)

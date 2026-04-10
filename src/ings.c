@@ -70,8 +70,8 @@ extern u8 *func_8005D46C(u8 *);
 extern u8 *func_8005D554(u8 *, u8);
 extern void func_8005E54C(s32, u8 *, s32);
 extern void func_80060414(s32, u8 *, s32);
-extern void func_8007EEEC(u8 *);
-extern void func_8007EF4C(u8 *);
+extern void gte_SetRotMatrix(u8 *);
+extern void gte_SetTransVector(u8 *);
 extern void func_8007F2AC(u8 *, s32 *, s32 *);
 
 /* --- Non-decompiled functions (INCLUDE_ASM) --- */
@@ -233,12 +233,12 @@ void func_800167EC(void) {
 }
 
 void gpu_EnableDisplay(void) {
-    func_8007AE7C(1);
+    gpu_SetMode(1);
 }
 
 void gpu_InitDisplay(void) {
     gpu_SetDispMask(0);
-    func_8007AE7C(1);
+    gpu_SetMode(1);
     func_8007B4D0(&g_disp_gp_base, 0, 0, 0);
     gpu_DrawSync(0);
 }
@@ -254,26 +254,26 @@ void sys_InitSound(void) {
     snd_PlaySystemSe();
 }
 
-extern void func_8007B114(s32);
+extern void gpu_SetDebugLevel(s32);
 extern void func_8007E094(void);
-extern void func_8007EFDC(s32, s32);
+extern void gte_SetScreenOffset(s32, s32);
 extern void func_8007EFFC(s32);
-extern void func_8007A694(u8 *, s32, s32, s32, s32);
-extern void func_8007A74C(u8 *, s32, s32, s32, s32);
+extern void gpu_InitDrawEnv(u8 *, s32, s32, s32, s32);
+extern void gpu_InitDispEnv(u8 *, s32, s32, s32, s32);
 void disp_Init(void) {
     u8 *base;
 
-    func_8007AE7C(0);
-    func_8007B114(0);
+    gpu_SetMode(0);
+    gpu_SetDebugLevel(0);
     gpu_SetDispMask(0);
     func_8007E094();
-    func_8007EFDC(0x140, 0x78);
+    gte_SetScreenOffset(0x140, 0x78);
     func_8007EFFC(disp_CalcFov(0x2D));
     base = &g_disp_fb_base;
-    func_8007A694(base, 0, 0, 0x280, 0xF0);
-    func_8007A694(base + 0x4090, 0, 0xF0, 0x280, 0xF0);
-    func_8007A74C(base + 0x5C, 0, 0xF0, 0x280, 0xF0);
-    func_8007A74C(base + 0x40EC, 0, 0, 0x280, 0xF0);
+    gpu_InitDrawEnv(base, 0, 0, 0x280, 0xF0);
+    gpu_InitDrawEnv(base + 0x4090, 0, 0xF0, 0x280, 0xF0);
+    gpu_InitDispEnv(base + 0x5C, 0, 0xF0, 0x280, 0xF0);
+    gpu_InitDispEnv(base + 0x40EC, 0, 0, 0x280, 0xF0);
     disp_SetFramebufferMode(1, 0, 0, 0);
     func_8007B4D0(&g_disp_gp_base, 0, 0, 0);
     gpu_DrawSync(0);
@@ -411,7 +411,7 @@ void gnd_disp_loop_ctrl(void) {
     s1_var = 0xF0;
     mask = D_800A36AC & 1;
     mask = -mask;
-    func_8007A694((u8 *)s0_var, 0, mask & 0xF0, 0x280, s1_var);
+    gpu_InitDrawEnv((u8 *)s0_var, 0, mask & 0xF0, 0x280, s1_var);
     new_var2 = 0;
     sp20[0x18] = new_var2;
     func_8007B9B0((u8 *)s0_var);

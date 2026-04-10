@@ -54,7 +54,7 @@ glabel PutShadowRmd
     /* 30A94 80040294 003C0700 */  sll        $a3, $a3, 16
     /* 30A98 80040298 1000A527 */  addiu      $a1, $sp, 0x10
     /* 30A9C 8004029C 03340600 */  sra        $a2, $a2, 16
-    /* 30AA0 800402A0 EEEA010C */  jal        func_8007ABB8
+    /* 30AA0 800402A0 EEEA010C */  jal        initLoadImage
     /* 30AA4 800402A4 033C0700 */   sra       $a3, $a3, 16
     /* 30AA8 800402A8 FF00063C */  lui        $a2, (0xFFFFFF >> 16)
     /* 30AAC 800402AC FFFFC634 */  ori        $a2, $a2, (0xFFFFFF & 0xFFFF)

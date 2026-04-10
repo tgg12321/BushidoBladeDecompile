@@ -49,7 +49,7 @@ void gpu_SetDispMask(s32 a0) {
         g_gpu_debug_func(&g_str_setdispmask, a0);
     }
     if (!a0) {
-        func_8007DEE4(p + 0x6A, -1, 0x14);
+        bb2_memset(p + 0x6A, -1, 0x14);
     }
     {
         u32 cmd = GP1_DISP_ENABLE;
@@ -934,30 +934,30 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-s32 func_8007C0B0(s32 a0) {
+s32 gpu_GetDispEnv(s32 a0) {
     bb2_memcpy(a0, &g_gpu_disp_env, 0x14);
     return a0;
 }
-u32 func_8007C0E8(void) {
+u32 gpu_IsDrawing(void) {
     s32 (*func)(void) = ((s32 (**)(void))g_gpu_dev_table)[0xE];
     return (u32)func() >> 31;
 }
-void func_8007C118(u8 *a0, s32 a1) {
+void initClearImage(u8 *a0, s32 a1) {
     a0[3] = 2;
     *(u32 *)(a0 + 4) = func_8007C97C(a1);
     *(u32 *)(a0 + 8) = 0;
 }
-void func_8007C154(u8 *a0, s16 *a1) {
+void initDrawArea(u8 *a0, s16 *a1) {
     a0[3] = 2;
     *(u32 *)(a0 + 4) = func_8007C7A0(a1[0], a1[1]);
     *(u32 *)(a0 + 8) = func_8007C86C((s32)(s16)((u16)a1[0] + (u16)a1[2] - 1), (s32)(s16)((u16)a1[1] + (u16)a1[3] - 1));
 }
-void func_8007C1D8(u8 *a0, s16 *a1) {
+void initDrawOffset(u8 *a0, s16 *a1) {
     a0[3] = 2;
     *(u32 *)(a0 + 4) = func_8007C938(a1[0], a1[1]);
     *(u32 *)(a0 + 8) = 0;
 }
-void func_8007C21C(u8 *a0, s32 a1, s32 a2) {
+void initMaskBit(u8 *a0, s32 a1, s32 a2) {
     u32 v0;
     a0[3] = 2;
     v0 = 0xE6000000;
@@ -970,7 +970,7 @@ void func_8007C21C(u8 *a0, s32 a1, s32 a2) {
     *(u32 *)(a0 + 4) = v0;
     *(u32 *)(a0 + 8) = 0;
 }
-void func_8007C248(u8 *a0, s32 a1, s32 a2, u16 a3, s32 a4) {
+void initTexPage(u8 *a0, s32 a1, s32 a2, u16 a3, s32 a4) {
     a0[3] = 2;
     *(u32 *)(a0 + 4) = func_8007C748(a1, a2, a3);
     *(u32 *)(a0 + 8) = func_8007C97C(a4);
@@ -1792,18 +1792,18 @@ __asm__(
     "    sw         $a3, 0($a2)\n"
     "    lui        $at, %hi(D_800F1878)\n"
     "    sw         $v0, %lo(D_800F1878)($at)\n"
-    "    jal        func_8007D3A4\n"
+    "    jal        gpu_GetInfo\n"
     "    addiu     $a0, $zero, 0x3\n"
     "    or         $v0, $v0, $s0\n"
     "    lui        $at, %hi(D_800F1880)\n"
     "    sw         $v0, %lo(D_800F1880)($at)\n"
-    "    jal        func_8007D3A4\n"
+    "    jal        gpu_GetInfo\n"
     "    addiu     $a0, $zero, 0x4\n"
     "    lui        $v1, (0xE4000000 >> 16)\n"
     "    or         $v0, $v0, $v1\n"
     "    lui        $at, %hi(D_800F1884)\n"
     "    sw         $v0, %lo(D_800F1884)($at)\n"
-    "    jal        func_8007D3A4\n"
+    "    jal        gpu_GetInfo\n"
     "    addiu     $a0, $zero, 0x5\n"
     "    or         $v0, $v0, $s1\n"
     "    lui        $at, %hi(D_800F1888)\n"
@@ -1844,7 +1844,7 @@ __asm__(
     ".Lfunc_8007CBB0_8007CDE0:\n"
     "    lui        $a0, %hi(D_800F1858)\n"
     "    addiu      $a0, $a0, %lo(D_800F1858)\n"
-    "    jal        func_8007D358\n"
+    "    jal        gpu_StartDmaList\n"
     "    nop\n"
     "    addu       $v0, $zero, $zero\n"
     "    lw         $ra, 56($sp)\n"
@@ -2218,7 +2218,7 @@ void func_8007D2CC(u32 a0) {
 u32 func_8007D2F4(s32 a0) {
     return g_gpu_color_table[a0];
 }
-s32 func_8007D308(u32 *a0, s32 a1) {
+s32 gpu_SendData(u32 *a0, s32 a1) {
     s32 i;
     *(volatile u32 *)g_gpu_stat_reg = GP1_DMA_DIR;
     for (i = a1 - 1; i != -1; i--) {
@@ -2226,13 +2226,13 @@ s32 func_8007D308(u32 *a0, s32 a1) {
     }
     return 0;
 }
-void func_8007D358(u32 a0) {
+void gpu_StartDmaList(u32 a0) {
     *(volatile u32 *)g_gpu_stat_reg = GP1_DMA_DIR_FIFO;
     *(volatile u32 *)g_gpu_dma_madr = a0;
     *(volatile u32 *)g_gpu_dma_bcr = 0;
     *(volatile u32 *)g_gpu_dma_chcr = DMA_GPU_LINKED_LIST;
 }
-u32 func_8007D3A4(u32 a0) {
+u32 gpu_GetInfo(u32 a0) {
     *g_gpu_stat_reg = a0 | GP1_GPU_INFO;
     return *g_gpu_data_reg & OT_ADDR_MASK;
 }
@@ -2703,12 +2703,12 @@ __asm__(
     "    lw         $v0, %lo(g_gpu_stat_reg)($v0)\n"
     "    addiu      $a2, $zero, 0x100\n"
     "    sw         $zero, 0($v0)\n"
-    "    jal        func_8007DEE4\n"
+    "    jal        bb2_memset\n"
     "    nop\n"
     "    lui        $a0, %hi(D_80103680)\n"
     "    addiu      $a0, $a0, %lo(D_80103680)\n"
     "    addu       $a1, $zero, $zero\n"
-    "    jal        func_8007DEE4\n"
+    "    jal        bb2_memset\n"
     "    addiu     $a2, $zero, 0x1800\n"
     "    j          .Lfunc_8007D9C4_8007DAE8\n"
     "    nop\n"
@@ -3035,7 +3035,7 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-void func_8007DEE4(u8 *a0, u8 a1, s32 a2) {
+void bb2_memset(u8 *a0, u8 a1, s32 a2) {
     s32 i;
     for (i = a2 - 1; i != -1; i--) {
         *a0++ = a1;
@@ -3052,21 +3052,21 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_1; /* 1 NOP after func_8007DF10 */
-extern s32 func_8007DF5C(s32);
-s32 func_8007DF20(s32 a0) {
+extern s32 math_SinLookup(s32);
+s32 math_Sin(s32 a0) {
     s32 v;
     if (a0 < 0) {
-        v = func_8007DF5C((-a0) & 0xFFF);
+        v = math_SinLookup((-a0) & 0xFFF);
         return -v;
     }
-    return func_8007DF5C(a0 & 0xFFF);
+    return math_SinLookup(a0 & 0xFFF);
 }
 extern s16 g_sin_lut_q1[];
 extern s16 g_sin_lut_q3[];
 extern s16 g_cos_lut_q2[];
 extern s16 g_cos_lut_q4[];
 
-s32 func_8007DF5C(s32 a0) {
+s32 math_SinLookup(s32 a0) {
     if (a0 < 0x801) {
         if (a0 < 0x401) {
             return g_sin_lut_q1[a0];
@@ -3078,7 +3078,7 @@ s32 func_8007DF5C(s32 a0) {
     }
     return -g_sin_lut_q1[0x1000 - a0];
 }
-s32 func_8007DFEC(s32 a0) {
+s32 math_Cos(s32 a0) {
     if (a0 < 0) {
         a0 = -a0;
     }
@@ -3095,7 +3095,7 @@ s32 func_8007DFEC(s32 a0) {
     return g_cos_lut_q4[a0];
 }
 
-/* Data blob D_8007E08C between func_8007DFEC and func_8007E094 */
+/* Data blob D_8007E08C between math_Cos and func_8007E094 */
 __asm__(
     ".section .text\n"
     "    .set noat\n"
@@ -4192,7 +4192,7 @@ __asm__(
     "    .set at\n"
 );
 PAD_NOPS_3; /* 3 NOPs after func_8007EDBC */
-void func_8007EEEC(s32 *a0) {
+void gte_SetRotMatrix(s32 *a0) {
     register s32 t0 asm("t0") = a0[0];
     register s32 t1 asm("t1") = a0[1];
     register s32 t2 asm("t2") = a0[2];
@@ -4204,7 +4204,7 @@ void func_8007EEEC(s32 *a0) {
     __asm__ volatile (".word 0x48CB1800" :: "r"(t3));  /* ctc2 $t3, $3 */
     __asm__ volatile (".word 0x48CC2000" :: "r"(t4));  /* ctc2 $t4, $4 */
 }
-void func_8007EF1C(s32 *a0) {
+void gte_SetColorMatrix(s32 *a0) {
     register s32 t0 asm("t0") = a0[0];
     register s32 t1 asm("t1") = a0[1];
     register s32 t2 asm("t2") = a0[2];
@@ -4216,7 +4216,7 @@ void func_8007EF1C(s32 *a0) {
     __asm__ volatile (".word 0x48CB9800" :: "r"(t3));  /* ctc2 $t3, $19 */
     __asm__ volatile (".word 0x48CCA000" :: "r"(t4));  /* ctc2 $t4, $20 */
 }
-void func_8007EF4C(s32 *a0) {
+void gte_SetTransVector(s32 *a0) {
     register s32 t0 asm("t0") = a0[5];
     register s32 t1 asm("t1") = a0[6];
     register s32 t2 asm("t2") = a0[7];
@@ -4224,15 +4224,15 @@ void func_8007EF4C(s32 *a0) {
     __asm__ volatile (".word 0x48C93000" :: "r"(t1));  /* ctc2 $t1, $6 */
     __asm__ volatile (".word 0x48CA3800" :: "r"(t2));  /* ctc2 $t2, $7 */
 }
-void func_8007EF6C(s32 *a0, s32 *a1, s32 *a2) {
+void gte_GetScreenXY(s32 *a0, s32 *a1, s32 *a2) {
     __asm__ volatile (".word 0xE8910000" :: "r"(a0));  /* swc2 $17, 0($a0) */
     __asm__ volatile (".word 0xE8B20000" :: "r"(a1));  /* swc2 $18, 0($a1) */
     __asm__ volatile (".word 0xE8D30000" :: "r"(a2));  /* swc2 $19, 0($a2) */
 }
-PAD_NOPS_3; /* 3 NOPs after func_8007EF6C */
-s32 func_8007EF8C(void) { s32 ret; __asm__ volatile (".word 0x4842D000" : "=r" (ret)); return ret; }
-PAD_NOPS_1; /* 1 NOP after func_8007EF8C */
-void func_8007EF9C(s32 a0, s32 a1, s32 a2) {
+PAD_NOPS_3; /* 3 NOPs after gte_GetScreenXY */
+s32 gte_GetH(void) { s32 ret; __asm__ volatile (".word 0x4842D000" : "=r" (ret)); return ret; }
+PAD_NOPS_1; /* 1 NOP after gte_GetH */
+void gte_SetBackColor(s32 a0, s32 a1, s32 a2) {
     a0 <<= 4;
     a1 <<= 4;
     a2 <<= 4;
@@ -4240,7 +4240,7 @@ void func_8007EF9C(s32 a0, s32 a1, s32 a2) {
     __asm__ volatile (".word 0x48C57000" :: "r"(a1));  /* ctc2 $a1, $14 */
     __asm__ volatile (".word 0x48C67800" :: "r"(a2));  /* ctc2 $a2, $15 */
 }
-void func_8007EFBC(s32 a0, s32 a1, s32 a2) {
+void gte_SetFarColor(s32 a0, s32 a1, s32 a2) {
     a0 <<= 4;
     a1 <<= 4;
     a2 <<= 4;
@@ -4248,13 +4248,13 @@ void func_8007EFBC(s32 a0, s32 a1, s32 a2) {
     __asm__ volatile (".word 0x48C5B000" :: "r"(a1));  /* ctc2 $a1, $22 */
     __asm__ volatile (".word 0x48C6B800" :: "r"(a2));  /* ctc2 $a2, $23 */
 }
-void func_8007EFDC(s32 a0, s32 a1) {
+void gte_SetScreenOffset(s32 a0, s32 a1) {
     a0 <<= 16;
     a1 <<= 16;
     __asm__ volatile (".word 0x48C4C000" :: "r"(a0));  /* ctc2 $a0, $24 */
     __asm__ volatile (".word 0x48C5C800" :: "r"(a1));  /* ctc2 $a1, $25 */
 }
-PAD_NOPS_2; /* 2 NOPs after func_8007EFDC */
+PAD_NOPS_2; /* 2 NOPs after gte_SetScreenOffset */
 __asm__(
     ".section .text\n"
     "    .set\tnoat\n"

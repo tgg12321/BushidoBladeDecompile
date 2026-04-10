@@ -25,7 +25,7 @@ glabel func_80037468
     /* 27CC4 800374C4 1000A427 */   addiu     $a0, $sp, 0x10
     /* 27CC8 800374C8 CFEC010C */  jal        gpu_DrawSync
     /* 27CCC 800374CC 21200000 */   addu      $a0, $zero, $zero
-    /* 27CD0 800374D0 9FEB010C */  jal        func_8007AE7C
+    /* 27CD0 800374D0 9FEB010C */  jal        gpu_SetMode
     /* 27CD4 800374D4 21200000 */   addu      $a0, $zero, $zero
     /* 27CD8 800374D8 5AE3010C */  jal        pad_Init
     /* 27CDC 800374DC 00000000 */   nop

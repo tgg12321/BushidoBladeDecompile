@@ -134,7 +134,7 @@ glabel func_80048FFC
     /* 399F8 800491F8 1200B2A7 */  sh         $s2, 0x12($sp)
     /* 399FC 800491FC 23985701 */  subu       $s3, $t2, $s7
     /* 39A00 80049200 1400ABA7 */  sh         $t3, 0x14($sp)
-    /* 39A04 80049204 EEEA010C */  jal        func_8007ABB8
+    /* 39A04 80049204 EEEA010C */  jal        initLoadImage
     /* 39A08 80049208 1600B3A7 */   sh        $s3, 0x16($sp)
     /* 39A0C 8004920C 1000A527 */  addiu      $a1, $sp, 0x10
     /* 39A10 80049210 21302002 */  addu       $a2, $s1, $zero
@@ -179,7 +179,7 @@ glabel func_80048FFC
     /* 39AAC 800492AC 25104300 */  or         $v0, $v0, $v1
     /* 39AB0 800492B0 FC3F02AD */  sw         $v0, 0x3FFC($t0)
     /* 39AB4 800492B4 1200B2A7 */  sh         $s2, 0x12($sp)
-    /* 39AB8 800492B8 EEEA010C */  jal        func_8007ABB8
+    /* 39AB8 800492B8 EEEA010C */  jal        initLoadImage
     /* 39ABC 800492BC 1600A9A7 */   sh        $t1, 0x16($sp)
     /* 39AC0 800492C0 0A80043C */  lui        $a0, %hi(D_800A378C)
     /* 39AC4 800492C4 8C37848C */  lw         $a0, %lo(D_800A378C)($a0)

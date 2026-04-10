@@ -26,7 +26,7 @@ glabel func_80042478
     /* 32CD4 800424D4 21380002 */   addu      $a3, $s0, $zero
     /* 32CD8 800424D8 21202002 */  addu       $a0, $s1, $zero
     /* 32CDC 800424DC 21284002 */  addu       $a1, $s2, $zero
-    /* 32CE0 800424E0 EFFB010C */  jal        func_8007EFBC
+    /* 32CE0 800424E0 EFFB010C */  jal        gte_SetFarColor
     /* 32CE4 800424E4 21300002 */   addu      $a2, $s0, $zero
     /* 32CE8 800424E8 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* 32CEC 800424EC 1800B28F */  lw         $s2, 0x18($sp)

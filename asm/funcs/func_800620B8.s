@@ -46,11 +46,11 @@ glabel func_800620B8
     /* 52968 80062168 EB87010C */  jal        func_80061FAC
     /* 5296C 8006216C 0800A3AC */   sw        $v1, 0x8($a1)
     /* 52970 80062170 A803848F */  lw         $a0, %gp_rel(D_800A3474)($gp)
-    /* 52974 80062174 BBFB010C */  jal        func_8007EEEC
+    /* 52974 80062174 BBFB010C */  jal        gte_SetRotMatrix
     /* 52978 80062178 21A80000 */   addu      $s5, $zero, $zero
     /* 5297C 8006217C 380000A6 */  sh         $zero, 0x38($s0)
     /* 52980 80062180 360000A6 */  sh         $zero, 0x36($s0)
-    /* 52984 80062184 E3FB010C */  jal        func_8007EF8C
+    /* 52984 80062184 E3FB010C */  jal        gte_GetH
     /* 52988 80062188 340000A6 */   sh        $zero, 0x34($s0)
     /* 5298C 8006218C 00120200 */  sll        $v0, $v0, 8
     /* 52990 80062190 10001326 */  addiu      $s3, $s0, 0x10
@@ -228,7 +228,7 @@ glabel func_800620B8
     /* 52C10 80062410 23104300 */  subu       $v0, $v0, $v1
     /* 52C14 80062414 83FA010C */  jal        func_8007EA0C
     /* 52C18 80062418 080082AE */   sw        $v0, 0x8($s4)
-    /* 52C1C 8006241C D3FB010C */  jal        func_8007EF4C
+    /* 52C1C 8006241C D3FB010C */  jal        gte_SetTransVector
     /* 52C20 80062420 ECFFE426 */   addiu     $a0, $s7, -0x14
     /* 52C24 80062424 1000A48F */  lw         $a0, 0x10($sp)
     /* 52C28 80062428 EC03858F */  lw         $a1, %gp_rel(D_800A34B8)($gp)
@@ -357,7 +357,7 @@ glabel func_800620B8
     /* 52DFC 800625FC 23186200 */  subu       $v1, $v1, $v0
     /* 52E00 80062600 831B0300 */  sra        $v1, $v1, 14
     /* 52E04 80062604 2128A300 */  addu       $a1, $a1, $v1
-    /* 52E08 80062608 87EA010C */  jal        func_8007AA1C
+    /* 52E08 80062608 87EA010C */  jal        initPolyFT4
     /* 52E0C 8006260C 000045A6 */   sh        $a1, 0x0($s2)
     /* 52E10 80062610 C403828F */  lw         $v0, %gp_rel(D_800A3490)($gp)
     /* 52E14 80062614 C803838F */  lw         $v1, %gp_rel(D_800A3494)($gp)
@@ -445,10 +445,10 @@ glabel func_800620B8
     /* 52F5C 8006275C 01000524 */  addiu      $a1, $zero, 0x1
     /* 52F60 80062760 00004294 */  lhu        $v0, 0x0($v0)
     /* 52F64 80062764 21202002 */  addu       $a0, $s1, $zero
-    /* 52F68 80062768 64EA010C */  jal        func_8007A990
+    /* 52F68 80062768 64EA010C */  jal        gpu_SetRawTexture
     /* 52F6C 8006276C 000002A2 */   sb        $v0, 0x0($s0)
     /* 52F70 80062770 21202002 */  addu       $a0, $s1, $zero
-    /* 52F74 80062774 5AEA010C */  jal        func_8007A968
+    /* 52F74 80062774 5AEA010C */  jal        gpu_SetSemiTransp
     /* 52F78 80062778 01000524 */   addiu     $a1, $zero, 0x1
     /* 52F7C 8006277C 5406838F */  lw         $v1, %gp_rel(D_800A3720)($gp)
     /* 52F80 80062780 00000000 */  nop

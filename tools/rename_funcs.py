@@ -230,6 +230,96 @@ RENAMES = {
     "func_8002AB08": "calc_loc_mat_fw",
     "func_80081030": "marionation_Exec",
     "func_80035618": "replay_camera_rob_back_loose2",
+
+    # === Item 6: readability renames (2026-04-10) ===
+    # gpu.c — primitive inits (verified via GPU command codes)
+    "func_8007A9B8": "initPolyF3",
+    "func_8007A9CC": "initPolyFT3",
+    "func_8007A9E0": "initPolyG3",
+    "func_8007A9F4": "initPolyGT3",
+    "func_8007AA08": "initPolyF4",
+    "func_8007AA1C": "initPolyFT4",
+    "func_8007AA30": "initPolyG4",
+    "func_8007AA44": "initPolyGT4",
+    "func_8007AA58": "initSprt8",
+    "func_8007AA6C": "initSprt16",
+    "func_8007AA80": "initSprt",
+    "func_8007AA94": "initTile1",
+    "func_8007AAA8": "initTile8",
+    "func_8007AABC": "initTile16",
+    "func_8007AAD0": "initTile",
+    "func_8007AAE4": "initLineF2",
+    "func_8007AAF8": "initLineG2",
+    "func_8007AB0C": "initPolyF3_dither",
+    "func_8007AB2C": "initPolyG3_dither",
+    "func_8007AB4C": "initPolyF4_dither",
+    "func_8007AB6C": "initPolyG4_dither",
+    # gpu.c — GPU packet/OT functions
+    "func_8007AB8C": "initDrawMode",
+    "func_8007ABB8": "initLoadImage",
+    "func_8007AC18": "initStoreImage",
+    "func_8007AC84": "gpu_CatPacket",
+    "func_8007A87C": "ot_GetTag",
+    "func_8007A898": "ot_IsEnd",
+    "func_8007A8B4": "ot_Link",
+    "func_8007A8F0": "ot_Insert",
+    "func_8007A92C": "ot_SetAddr",
+    "func_8007A950": "ot_SetEnd",
+    # gpu.c — TPage/Clut/debug/flags
+    "func_8007A788": "gpu_CalcTPage",
+    "func_8007A7C4": "gpu_CalcClut",
+    "func_8007A7DC": "gpu_DebugTPage",
+    "func_8007A83C": "gpu_DebugClut",
+    "func_8007ACBC": "gpu_DebugDispEnv",
+    "func_8007ADD0": "gpu_DebugDrawEnv",
+    "func_8007A968": "gpu_SetSemiTransp",
+    "func_8007A990": "gpu_SetRawTexture",
+    # gpu.c — env init, mode/config
+    "func_8007A694": "gpu_InitDrawEnv",
+    "func_8007A74C": "gpu_InitDispEnv",
+    "func_8007AE7C": "gpu_SetMode",
+    "func_8007B000": "gpu_SetDither",
+    "func_8007B114": "gpu_SetDebugLevel",
+    "func_8007B178": "gpu_SetInterlace",
+    "func_8007B224": "gpu_GetType",
+    "func_8007B234": "gpu_GetDebugLevel",
+    # gpu.c — texture loaders
+    "func_8007A4D8": "gpu_LoadTexture",
+    "func_8007A5C4": "gpu_LoadClut256",
+    "func_8007A62C": "gpu_LoadClut16",
+    # display.c — GTE functions (verified via COP2 control register assignments)
+    "func_8007EEEC": "gte_SetRotMatrix",
+    "func_8007EF1C": "gte_SetColorMatrix",
+    "func_8007EF4C": "gte_SetTransVector",
+    "func_8007EF6C": "gte_GetScreenXY",
+    "func_8007EF8C": "gte_GetH",
+    "func_8007EF9C": "gte_SetBackColor",
+    "func_8007EFBC": "gte_SetFarColor",
+    "func_8007EFDC": "gte_SetScreenOffset",
+    # display.c — math (sin/cos lookup tables)
+    "func_8007DF20": "math_Sin",
+    "func_8007DF5C": "math_SinLookup",
+    "func_8007DFEC": "math_Cos",
+    # display.c — GPU state
+    "func_8007DEE4": "bb2_memset",
+    "func_8007C0B0": "gpu_GetDispEnv",
+    "func_8007C0E8": "gpu_IsDrawing",
+    "func_8007D308": "gpu_SendData",
+    "func_8007D358": "gpu_StartDmaList",
+    "func_8007D3A4": "gpu_GetInfo",
+    # display.c — GPU packet inits
+    "func_8007C118": "initClearImage",
+    "func_8007C154": "initDrawArea",
+    "func_8007C1D8": "initDrawOffset",
+    "func_8007C21C": "initMaskBit",
+    "func_8007C248": "initTexPage",
+    # system.c — SKIPPED (GCC 2.7.2 register allocation sensitivity)
+    # main.c — memcard / SPU
+    "func_80087F00": "memcard_SetData",
+    "func_80087F24": "memcard_ClearBusy",
+    "func_80087F34": "memcard_SetSlot",
+    "func_800885AC": "spu_Init",
+    # config.c — SKIPPED (GCC 2.7.2 register allocation sensitivity)
 }
 
 dry_run = "--apply" not in sys.argv
@@ -259,7 +349,7 @@ def process_asm_file(path, text):
 total_files = 0
 total_replacements = 0
 
-c_files = list((root / "src").glob("*.c"))
+c_files = list((root / "src").glob("*.c")) + list((root / "include").glob("*.h"))
 asm_files = (
     list((root / "asm" / "funcs").glob("*.s")) +
     list((root / "asm").glob("*.s"))

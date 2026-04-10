@@ -87,7 +87,7 @@ extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
 extern void func_8005B50C(void);
-extern void func_8007ABB8(u32 *, s16 *, s32, s32);
+extern void initLoadImage(u32 *, s16 *, s32, s32);
 extern s32 func_8003F268(void);
 extern s32 func_80052C28(s32, s32);
 extern s32 func_800788B0(void);
@@ -708,7 +708,7 @@ void func_8003D9A0(s16 *a0, s32 a1, u32 *a2) {
                 s0[1] = s3;
                 s0[0] = (u16)s0[0] + (u16)s0[2];
             }
-            func_8007ABB8(s1, s0, s4, s3);
+            initLoadImage(s1, s0, s4, s3);
             *(Copy24 *)((u8 *)s1 + 0x18) = *(Copy24 *)s1;
             s1 = (u32 *)((u8 *)s1 + 0x30);
         } while (--s2 != -1);

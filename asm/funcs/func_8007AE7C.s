@@ -34,7 +34,7 @@ glabel func_8007AE7C
     /* 6B6F0 8007AEF0 74BE1026 */  addiu      $s0, $s0, %lo(D_8009BE74)
     /* 6B6F4 8007AEF4 21200002 */  addu       $a0, $s0, $zero
     /* 6B6F8 8007AEF8 21280000 */  addu       $a1, $zero, $zero
-    /* 6B6FC 8007AEFC B9F7010C */  jal        func_8007DEE4
+    /* 6B6FC 8007AEFC B9F7010C */  jal        bb2_memset
     /* 6B700 8007AF00 80000624 */   addiu     $a2, $zero, 0x80
     /* 6B704 8007AF04 B00A020C */  jal        irq_DisableInterrupts
     /* 6B708 8007AF08 00000000 */   nop
@@ -64,11 +64,11 @@ glabel func_8007AE7C
     /* 6B768 8007AF68 08BF228C */  lw         $v0, %lo(D_8009BF08)($at)
     /* 6B76C 8007AF6C 0A80013C */  lui        $at, %hi(D_8009BE7A)
     /* 6B770 8007AF70 7ABE22A4 */  sh         $v0, %lo(D_8009BE7A)($at)
-    /* 6B774 8007AF74 B9F7010C */  jal        func_8007DEE4
+    /* 6B774 8007AF74 B9F7010C */  jal        bb2_memset
     /* 6B778 8007AF78 5C000624 */   addiu     $a2, $zero, 0x5C
     /* 6B77C 8007AF7C 6C000426 */  addiu      $a0, $s0, 0x6C
     /* 6B780 8007AF80 FFFF0524 */  addiu      $a1, $zero, -0x1
-    /* 6B784 8007AF84 B9F7010C */  jal        func_8007DEE4
+    /* 6B784 8007AF84 B9F7010C */  jal        bb2_memset
     /* 6B788 8007AF88 14000624 */   addiu     $a2, $zero, 0x14
     /* 6B78C 8007AF8C 00000292 */  lbu        $v0, 0x0($s0)
     /* 6B790 8007AF90 FAEB0108 */  j          .L8007AFE8

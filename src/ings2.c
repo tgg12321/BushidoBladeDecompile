@@ -3,7 +3,7 @@
 #include "system.h"
 
 /* Forward declarations */
-extern void func_800885AC(void);
+extern void spu_Init(void);
 extern void func_80083A48(void);
 extern void func_800892F8(void);
 
@@ -503,7 +503,7 @@ void irq_ProcessPending(void) {
 
 void sys_Shutdown(void) {
     irq_DisableInterrupts();
-    func_800885AC();
+    spu_Init();
     func_80083A48();
 }
 

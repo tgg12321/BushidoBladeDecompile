@@ -93,10 +93,10 @@ glabel func_80041EB0
     /* 327F0 80041FF0 57FF010C */  jal        func_8007FD5C
     /* 327F4 80041FF4 21284002 */   addu      $a1, $s2, $zero
     /* 327F8 80041FF8 21884000 */  addu       $s1, $v0, $zero
-    /* 327FC 80041FFC FBF7010C */  jal        func_8007DFEC
+    /* 327FC 80041FFC FBF7010C */  jal        math_Cos
     /* 32800 80042000 21202002 */   addu      $a0, $s1, $zero
     /* 32804 80042004 21202002 */  addu       $a0, $s1, $zero
-    /* 32808 80042008 C8F7010C */  jal        func_8007DF20
+    /* 32808 80042008 C8F7010C */  jal        math_Sin
     /* 3280C 8004200C 21804000 */   addu      $s0, $v0, $zero
     /* 32810 80042010 18001202 */  mult       $s0, $s2
     /* 32814 80042014 12180000 */  mflo       $v1

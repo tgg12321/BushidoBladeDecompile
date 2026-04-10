@@ -18,7 +18,7 @@ glabel gnd_disp_loop_ctrl
     /* 7D34 80017534 1000B1AF */  sw         $s1, 0x10($sp)
     /* 7D38 80017538 0100C630 */  andi       $a2, $a2, 0x1
     /* 7D3C 8001753C 23300600 */  negu       $a2, $a2
-    /* 7D40 80017540 A5E9010C */  jal        func_8007A694
+    /* 7D40 80017540 A5E9010C */  jal        gpu_InitDrawEnv
     /* 7D44 80017544 F000C630 */   andi      $a2, $a2, 0xF0
     /* 7D48 80017548 21200002 */  addu       $a0, $s0, $zero
     /* 7D4C 8001754C 6CEE010C */  jal        func_8007B9B0

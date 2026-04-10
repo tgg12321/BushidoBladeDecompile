@@ -37,13 +37,13 @@ glabel func_80074D2C
     /* 655B4 80074DB4 21300000 */  addu       $a2, $zero, $zero
     /* 655B8 80074DB8 1000A0AF */  sw         $zero, 0x10($sp)
     /* 655BC 80074DBC 1800048E */  lw         $a0, 0x18($s0)
-    /* 655C0 80074DC0 92F0010C */  jal        func_8007C248
+    /* 655C0 80074DC0 92F0010C */  jal        initTexPage
     /* 655C4 80074DC4 21384000 */   addu      $a3, $v0, $zero
     /* 655C8 80074DC8 80201100 */  sll        $a0, $s1, 2
     /* 655CC 80074DCC 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 655D0 80074DD0 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 655D4 80074DD4 1800058E */  lw         $a1, 0x18($s0)
-    /* 655D8 80074DD8 2DEA010C */  jal        func_8007A8B4
+    /* 655D8 80074DD8 2DEA010C */  jal        ot_Link
     /* 655DC 80074DDC 21204400 */   addu      $a0, $v0, $a0
     /* 655E0 80074DE0 1800028E */  lw         $v0, 0x18($s0)
     /* 655E4 80074DE4 00000000 */  nop

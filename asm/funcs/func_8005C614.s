@@ -6,9 +6,9 @@ glabel func_8005C614
     /* 4CE24 8005C624 7F000524 */   addiu     $a1, $zero, 0x7F
     /* 4CE28 8005C628 3416020C */  jal        func_800858D0
     /* 4CE2C 8005C62C 21200000 */   addu      $a0, $zero, $zero
-    /* 4CE30 8005C630 C91F020C */  jal        func_80087F24
+    /* 4CE30 8005C630 C91F020C */  jal        memcard_ClearBusy
     /* 4CE34 8005C634 00000000 */   nop
-    /* 4CE38 8005C638 C01F020C */  jal        func_80087F00
+    /* 4CE38 8005C638 C01F020C */  jal        memcard_SetData
     /* 4CE3C 8005C63C 21200000 */   addu      $a0, $zero, $zero
     /* 4CE40 8005C640 1000BF8F */  lw         $ra, 0x10($sp)
     /* 4CE44 8005C644 1800BD27 */  addiu      $sp, $sp, 0x18

@@ -59,7 +59,7 @@ glabel gpu_SetDispMask
     /* 6BAE8 8007B2E8 04000016 */  bnez       $s0, .L8007B2FC
     /* 6BAEC 8007B2EC 6A002426 */   addiu     $a0, $s1, 0x6A
     /* 6BAF0 8007B2F0 FFFF0524 */  addiu      $a1, $zero, -0x1
-    /* 6BAF4 8007B2F4 B9F7010C */  jal        func_8007DEE4
+    /* 6BAF4 8007B2F4 B9F7010C */  jal        bb2_memset
     /* 6BAF8 8007B2F8 14000624 */   addiu     $a2, $zero, 0x14
   .L8007B2FC:
     /* 6BAFC 8007B2FC 0003043C */  lui        $a0, (0x3000001 >> 16)
@@ -1069,7 +1069,7 @@ glabel func_8007BC08
     /* 6C8AC 8007C0AC 00000000 */   nop
 endlabel func_8007BC08
 
-nonmatching func_8007C0B0, 0x38
+nonmatching gpu_GetDispEnv, 0x38
 
 glabel func_8007C0B0
     /* 6C8B0 8007C0B0 E8FFBD27 */  addiu      $sp, $sp, -0x18
@@ -1088,7 +1088,7 @@ glabel func_8007C0B0
     /* 6C8E4 8007C0E4 00000000 */   nop
 endlabel func_8007C0B0
 
-nonmatching func_8007C0E8, 0x30
+nonmatching gpu_IsDrawing, 0x30
 
 glabel func_8007C0E8
     /* 6C8E8 8007C0E8 0A80023C */  lui        $v0, %hi(D_8009BE6C)
@@ -1105,7 +1105,7 @@ glabel func_8007C0E8
     /* 6C914 8007C114 1800BD27 */   addiu     $sp, $sp, 0x18
 endlabel func_8007C0E8
 
-nonmatching func_8007C118, 0x3C
+nonmatching initClearImage, 0x3C
 
 glabel func_8007C118
     /* 6C918 8007C118 E8FFBD27 */  addiu      $sp, $sp, -0x18
@@ -1125,7 +1125,7 @@ glabel func_8007C118
     /* 6C950 8007C150 00000000 */   nop
 endlabel func_8007C118
 
-nonmatching func_8007C154, 0x84
+nonmatching initDrawArea, 0x84
 
 glabel func_8007C154
     /* 6C954 8007C154 E0FFBD27 */  addiu      $sp, $sp, -0x20
@@ -1163,7 +1163,7 @@ glabel func_8007C154
     /* 6C9D4 8007C1D4 00000000 */   nop
 endlabel func_8007C154
 
-nonmatching func_8007C1D8, 0x44
+nonmatching initDrawOffset, 0x44
 
 glabel func_8007C1D8
     /* 6C9D8 8007C1D8 E8FFBD27 */  addiu      $sp, $sp, -0x18
@@ -1185,7 +1185,7 @@ glabel func_8007C1D8
     /* 6CA18 8007C218 00000000 */   nop
 endlabel func_8007C1D8
 
-nonmatching func_8007C21C, 0x2C
+nonmatching initMaskBit, 0x2C
 
 glabel func_8007C21C
     /* 6CA1C 8007C21C 02000224 */  addiu      $v0, $zero, 0x2
@@ -1203,7 +1203,7 @@ glabel func_8007C21C
     /* 6CA44 8007C244 080080AC */   sw        $zero, 0x8($a0)
 endlabel func_8007C21C
 
-nonmatching func_8007C248, 0x58
+nonmatching initTexPage, 0x58
 
 glabel func_8007C248
     /* 6CA48 8007C248 E0FFBD27 */  addiu      $sp, $sp, -0x20
@@ -1998,18 +1998,18 @@ glabel func_8007CBB0
     /* 6D514 8007CD14 0000C7AC */  sw         $a3, 0x0($a2)
     /* 6D518 8007CD18 0F80013C */  lui        $at, %hi(D_800F1878)
     /* 6D51C 8007CD1C 781822AC */  sw         $v0, %lo(D_800F1878)($at)
-    /* 6D520 8007CD20 E9F4010C */  jal        func_8007D3A4
+    /* 6D520 8007CD20 E9F4010C */  jal        gpu_GetInfo
     /* 6D524 8007CD24 03000424 */   addiu     $a0, $zero, 0x3
     /* 6D528 8007CD28 25105000 */  or         $v0, $v0, $s0
     /* 6D52C 8007CD2C 0F80013C */  lui        $at, %hi(D_800F1880)
     /* 6D530 8007CD30 801822AC */  sw         $v0, %lo(D_800F1880)($at)
-    /* 6D534 8007CD34 E9F4010C */  jal        func_8007D3A4
+    /* 6D534 8007CD34 E9F4010C */  jal        gpu_GetInfo
     /* 6D538 8007CD38 04000424 */   addiu     $a0, $zero, 0x4
     /* 6D53C 8007CD3C 00E4033C */  lui        $v1, (0xE4000000 >> 16)
     /* 6D540 8007CD40 25104300 */  or         $v0, $v0, $v1
     /* 6D544 8007CD44 0F80013C */  lui        $at, %hi(D_800F1884)
     /* 6D548 8007CD48 841822AC */  sw         $v0, %lo(D_800F1884)($at)
-    /* 6D54C 8007CD4C E9F4010C */  jal        func_8007D3A4
+    /* 6D54C 8007CD4C E9F4010C */  jal        gpu_GetInfo
     /* 6D550 8007CD50 05000424 */   addiu     $a0, $zero, 0x5
     /* 6D554 8007CD54 25105100 */  or         $v0, $v0, $s1
     /* 6D558 8007CD58 0F80013C */  lui        $at, %hi(D_800F1888)
@@ -2050,7 +2050,7 @@ glabel func_8007CBB0
   .L8007CDE0:
     /* 6D5E0 8007CDE0 0F80043C */  lui        $a0, %hi(D_800F1858)
     /* 6D5E4 8007CDE4 58188424 */  addiu      $a0, $a0, %lo(D_800F1858)
-    /* 6D5E8 8007CDE8 D6F4010C */  jal        func_8007D358
+    /* 6D5E8 8007CDE8 D6F4010C */  jal        gpu_StartDmaList
     /* 6D5EC 8007CDEC 00000000 */   nop
     /* 6D5F0 8007CDF0 21100000 */  addu       $v0, $zero, $zero
     /* 6D5F4 8007CDF4 3800BF8F */  lw         $ra, 0x38($sp)
@@ -2427,7 +2427,7 @@ glabel func_8007D2F4
     /* 6DB04 8007D304 00000000 */   nop
 endlabel func_8007D2F4
 
-nonmatching func_8007D308, 0x50
+nonmatching gpu_SendData, 0x50
 
 glabel func_8007D308
     /* 6DB08 8007D308 F8FFBD27 */  addiu      $sp, $sp, -0x8
@@ -2454,7 +2454,7 @@ glabel func_8007D308
     /* 6DB54 8007D354 00000000 */   nop
 endlabel func_8007D308
 
-nonmatching func_8007D358, 0x4C
+nonmatching gpu_StartDmaList, 0x4C
 
 glabel func_8007D358
     /* 6DB58 8007D358 0004033C */  lui        $v1, (0x4000002 >> 16)
@@ -2478,7 +2478,7 @@ glabel func_8007D358
     /* 6DBA0 8007D3A0 00000000 */   nop
 endlabel func_8007D358
 
-nonmatching func_8007D3A4, 0x30
+nonmatching gpu_GetInfo, 0x30
 
 glabel func_8007D3A4
     /* 6DBA4 8007D3A4 0010023C */  lui        $v0, (0x10000000 >> 16)
@@ -2958,12 +2958,12 @@ glabel func_8007D9C4
     /* 6E26C 8007DA6C 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
     /* 6E270 8007DA70 00010624 */  addiu      $a2, $zero, 0x100
     /* 6E274 8007DA74 000040AC */  sw         $zero, 0x0($v0)
-    /* 6E278 8007DA78 B9F7010C */  jal        func_8007DEE4
+    /* 6E278 8007DA78 B9F7010C */  jal        bb2_memset
     /* 6E27C 8007DA7C 00000000 */   nop
     /* 6E280 8007DA80 1080043C */  lui        $a0, %hi(D_80103680)
     /* 6E284 8007DA84 80368424 */  addiu      $a0, $a0, %lo(D_80103680)
     /* 6E288 8007DA88 21280000 */  addu       $a1, $zero, $zero
-    /* 6E28C 8007DA8C B9F7010C */  jal        func_8007DEE4
+    /* 6E28C 8007DA8C B9F7010C */  jal        bb2_memset
     /* 6E290 8007DA90 00180624 */   addiu     $a2, $zero, 0x1800
     /* 6E294 8007DA94 BAF60108 */  j          .L8007DAE8
     /* 6E298 8007DA98 00000000 */   nop
@@ -3283,7 +3283,7 @@ glabel func_8007DE08
     /* 6E6E0 8007DEE0 00000000 */   nop
 endlabel func_8007DE08
 
-nonmatching func_8007DEE4, 0x2C
+nonmatching bb2_memset, 0x2C
 
 glabel func_8007DEE4
     /* 6E6E4 8007DEE4 F8FFBD27 */  addiu      $sp, $sp, -0x8
@@ -3310,19 +3310,19 @@ glabel func_8007DF10
 endlabel func_8007DF10
     /* 6E71C 8007DF1C 00000000 */  nop
 
-nonmatching func_8007DF20, 0x3C
+nonmatching math_Sin, 0x3C
 
 glabel func_8007DF20
     /* 6E720 8007DF20 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6E724 8007DF24 05008004 */  bltz       $a0, .L8007DF3C
     /* 6E728 8007DF28 1000BFAF */   sw        $ra, 0x10($sp)
-    /* 6E72C 8007DF2C D7F7010C */  jal        func_8007DF5C
+    /* 6E72C 8007DF2C D7F7010C */  jal        math_SinLookup
     /* 6E730 8007DF30 FF0F8430 */   andi      $a0, $a0, 0xFFF
     /* 6E734 8007DF34 D3F70108 */  j          .L8007DF4C
     /* 6E738 8007DF38 00000000 */   nop
   .L8007DF3C:
     /* 6E73C 8007DF3C 23200400 */  negu       $a0, $a0
-    /* 6E740 8007DF40 D7F7010C */  jal        func_8007DF5C
+    /* 6E740 8007DF40 D7F7010C */  jal        math_SinLookup
     /* 6E744 8007DF44 FF0F8430 */   andi      $a0, $a0, 0xFFF
     /* 6E748 8007DF48 23100200 */  negu       $v0, $v0
   .L8007DF4C:
@@ -3332,7 +3332,7 @@ glabel func_8007DF20
     /* 6E758 8007DF58 00000000 */   nop
 endlabel func_8007DF20
 
-nonmatching func_8007DF5C, 0x90
+nonmatching math_SinLookup, 0x90
 
 glabel func_8007DF5C
     /* 6E75C 8007DF5C 01088228 */  slti       $v0, $a0, 0x801
@@ -3377,7 +3377,7 @@ glabel func_8007DF5C
     /* 6E7E8 8007DFE8 00000000 */   nop
 endlabel func_8007DF5C
 
-nonmatching func_8007DFEC, 0xA0
+nonmatching math_Cos, 0xA0
 
 glabel func_8007DFEC
     /* 6E7EC 8007DFEC 02008104 */  bgez       $a0, .L8007DFF8
@@ -4466,7 +4466,7 @@ endlabel func_8007EDBC
     /* 6F6E8 8007EEE8 00000000 */  nop
 
 /* Handwritten function */
-nonmatching func_8007EEEC, 0x30
+nonmatching gte_SetRotMatrix, 0x30
 
 glabel func_8007EEEC
     /* 6F6EC 8007EEEC 0000888C */  lw         $t0, 0x0($a0)
@@ -4484,7 +4484,7 @@ glabel func_8007EEEC
 endlabel func_8007EEEC
 
 /* Handwritten function */
-nonmatching func_8007EF1C, 0x30
+nonmatching gte_SetColorMatrix, 0x30
 
 glabel func_8007EF1C
     /* 6F71C 8007EF1C 0000888C */  lw         $t0, 0x0($a0)
@@ -4502,7 +4502,7 @@ glabel func_8007EF1C
 endlabel func_8007EF1C
 
 /* Handwritten function */
-nonmatching func_8007EF4C, 0x20
+nonmatching gte_SetTransVector, 0x20
 
 glabel func_8007EF4C
     /* 6F74C 8007EF4C 1400888C */  lw         $t0, 0x14($a0)
@@ -4515,7 +4515,7 @@ glabel func_8007EF4C
     /* 6F768 8007EF68 00000000 */   nop
 endlabel func_8007EF4C
 
-nonmatching func_8007EF6C, 0x14
+nonmatching gte_GetScreenXY, 0x14
 
 glabel func_8007EF6C
     /* 6F76C 8007EF6C 000091E8 */  swc2       $17, 0x0($a0)
@@ -4529,7 +4529,7 @@ endlabel func_8007EF6C
     /* 6F788 8007EF88 00000000 */  nop
 
 /* Handwritten function */
-nonmatching func_8007EF8C, 0xC
+nonmatching gte_GetH, 0xC
 
 glabel func_8007EF8C
     /* 6F78C 8007EF8C 00D04248 */  cfc2       $v0, $26 /* handwritten instruction */
@@ -4539,7 +4539,7 @@ endlabel func_8007EF8C
     /* 6F798 8007EF98 00000000 */  nop
 
 /* Handwritten function */
-nonmatching func_8007EF9C, 0x20
+nonmatching gte_SetBackColor, 0x20
 
 glabel func_8007EF9C
     /* 6F79C 8007EF9C 00210400 */  sll        $a0, $a0, 4
@@ -4553,7 +4553,7 @@ glabel func_8007EF9C
 endlabel func_8007EF9C
 
 /* Handwritten function */
-nonmatching func_8007EFBC, 0x20
+nonmatching gte_SetFarColor, 0x20
 
 glabel func_8007EFBC
     /* 6F7BC 8007EFBC 00210400 */  sll        $a0, $a0, 4
@@ -4567,7 +4567,7 @@ glabel func_8007EFBC
 endlabel func_8007EFBC
 
 /* Handwritten function */
-nonmatching func_8007EFDC, 0x18
+nonmatching gte_SetScreenOffset, 0x18
 
 glabel func_8007EFDC
     /* 6F7DC 8007EFDC 00240400 */  sll        $a0, $a0, 16

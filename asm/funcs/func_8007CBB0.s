@@ -96,18 +96,18 @@ glabel func_8007CBB0
     /* 6D514 8007CD14 0000C7AC */  sw         $a3, 0x0($a2)
     /* 6D518 8007CD18 0F80013C */  lui        $at, %hi(D_800F1878)
     /* 6D51C 8007CD1C 781822AC */  sw         $v0, %lo(D_800F1878)($at)
-    /* 6D520 8007CD20 E9F4010C */  jal        func_8007D3A4
+    /* 6D520 8007CD20 E9F4010C */  jal        gpu_GetInfo
     /* 6D524 8007CD24 03000424 */   addiu     $a0, $zero, 0x3
     /* 6D528 8007CD28 25105000 */  or         $v0, $v0, $s0
     /* 6D52C 8007CD2C 0F80013C */  lui        $at, %hi(D_800F1880)
     /* 6D530 8007CD30 801822AC */  sw         $v0, %lo(D_800F1880)($at)
-    /* 6D534 8007CD34 E9F4010C */  jal        func_8007D3A4
+    /* 6D534 8007CD34 E9F4010C */  jal        gpu_GetInfo
     /* 6D538 8007CD38 04000424 */   addiu     $a0, $zero, 0x4
     /* 6D53C 8007CD3C 00E4033C */  lui        $v1, (0xE4000000 >> 16)
     /* 6D540 8007CD40 25104300 */  or         $v0, $v0, $v1
     /* 6D544 8007CD44 0F80013C */  lui        $at, %hi(D_800F1884)
     /* 6D548 8007CD48 841822AC */  sw         $v0, %lo(D_800F1884)($at)
-    /* 6D54C 8007CD4C E9F4010C */  jal        func_8007D3A4
+    /* 6D54C 8007CD4C E9F4010C */  jal        gpu_GetInfo
     /* 6D550 8007CD50 05000424 */   addiu     $a0, $zero, 0x5
     /* 6D554 8007CD54 25105100 */  or         $v0, $v0, $s1
     /* 6D558 8007CD58 0F80013C */  lui        $at, %hi(D_800F1888)
@@ -148,7 +148,7 @@ glabel func_8007CBB0
   .L8007CDE0:
     /* 6D5E0 8007CDE0 0F80043C */  lui        $a0, %hi(D_800F1858)
     /* 6D5E4 8007CDE4 58188424 */  addiu      $a0, $a0, %lo(D_800F1858)
-    /* 6D5E8 8007CDE8 D6F4010C */  jal        func_8007D358
+    /* 6D5E8 8007CDE8 D6F4010C */  jal        gpu_StartDmaList
     /* 6D5EC 8007CDEC 00000000 */   nop
     /* 6D5F0 8007CDF0 21100000 */  addu       $v0, $zero, $zero
     /* 6D5F4 8007CDF4 3800BF8F */  lw         $ra, 0x38($sp)

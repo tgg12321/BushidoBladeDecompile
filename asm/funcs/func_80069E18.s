@@ -5,7 +5,7 @@ glabel func_80069E18
     /* 5A624 80069E24 5000BFAF */  sw         $ra, 0x50($sp)
     /* 5A628 80069E28 4800B0AF */  sw         $s0, 0x48($sp)
     /* 5A62C 80069E2C 1800308E */  lw         $s0, 0x18($s1)
-    /* 5A630 80069E30 B4EA010C */  jal        func_8007AAD0
+    /* 5A630 80069E30 B4EA010C */  jal        initTile
     /* 5A634 80069E34 21200002 */   addu      $a0, $s0, $zero
     /* 5A638 80069E38 21200002 */  addu       $a0, $s0, $zero
     /* 5A63C 80069E3C 21280000 */  addu       $a1, $zero, $zero
@@ -18,12 +18,12 @@ glabel func_80069E18
     /* 5A658 80069E58 F0000224 */  addiu      $v0, $zero, 0xF0
     /* 5A65C 80069E5C 080000A6 */  sh         $zero, 0x8($s0)
     /* 5A660 80069E60 0A0000A6 */  sh         $zero, 0xA($s0)
-    /* 5A664 80069E64 5AEA010C */  jal        func_8007A968
+    /* 5A664 80069E64 5AEA010C */  jal        gpu_SetSemiTransp
     /* 5A668 80069E68 0E0002A6 */   sh        $v0, 0xE($s0)
     /* 5A66C 80069E6C 0A80043C */  lui        $a0, %hi(D_800A374C)
     /* 5A670 80069E70 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 5A674 80069E74 21280002 */  addu       $a1, $s0, $zero
-    /* 5A678 80069E78 2DEA010C */  jal        func_8007A8B4
+    /* 5A678 80069E78 2DEA010C */  jal        ot_Link
     /* 5A67C 80069E7C 50008424 */   addiu     $a0, $a0, 0x50
     /* 5A680 80069E80 0400228E */  lw         $v0, 0x4($s1)
     /* 5A684 80069E84 10001026 */  addiu      $s0, $s0, 0x10
@@ -43,12 +43,12 @@ glabel func_80069E18
     /* 5A6BC 80069EBC 21300000 */  addu       $a2, $zero, $zero
     /* 5A6C0 80069EC0 1000A0AF */  sw         $zero, 0x10($sp)
     /* 5A6C4 80069EC4 1C00248E */  lw         $a0, 0x1C($s1)
-    /* 5A6C8 80069EC8 92F0010C */  jal        func_8007C248
+    /* 5A6C8 80069EC8 92F0010C */  jal        initTexPage
     /* 5A6CC 80069ECC 21384000 */   addu      $a3, $v0, $zero
     /* 5A6D0 80069ED0 0A80043C */  lui        $a0, %hi(D_800A374C)
     /* 5A6D4 80069ED4 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 5A6D8 80069ED8 1C00258E */  lw         $a1, 0x1C($s1)
-    /* 5A6DC 80069EDC 2DEA010C */  jal        func_8007A8B4
+    /* 5A6DC 80069EDC 2DEA010C */  jal        ot_Link
     /* 5A6E0 80069EE0 44008424 */   addiu     $a0, $a0, 0x44
     /* 5A6E4 80069EE4 1C00228E */  lw         $v0, 0x1C($s1)
     /* 5A6E8 80069EE8 00000000 */  nop

@@ -21,7 +21,7 @@ glabel gpu_SetDispMask
     /* 6BAE8 8007B2E8 04000016 */  bnez       $s0, .L8007B2FC
     /* 6BAEC 8007B2EC 6A002426 */   addiu     $a0, $s1, 0x6A
     /* 6BAF0 8007B2F0 FFFF0524 */  addiu      $a1, $zero, -0x1
-    /* 6BAF4 8007B2F4 B9F7010C */  jal        func_8007DEE4
+    /* 6BAF4 8007B2F4 B9F7010C */  jal        bb2_memset
     /* 6BAF8 8007B2F8 14000624 */   addiu     $a2, $zero, 0x14
   .L8007B2FC:
     /* 6BAFC 8007B2FC 0003043C */  lui        $a0, (0x3000001 >> 16)

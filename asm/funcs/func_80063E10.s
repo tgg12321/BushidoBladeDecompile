@@ -121,7 +121,7 @@ glabel func_80063E10
     /* 547E4 80063FE4 001A0300 */  sll        $v1, $v1, 8
     /* 547E8 80063FE8 21104300 */  addu       $v0, $v0, $v1
     /* 547EC 80063FEC 000082A4 */  sh         $v0, 0x0($a0)
-    /* 547F0 80063FF0 E3FB010C */  jal        func_8007EF8C
+    /* 547F0 80063FF0 E3FB010C */  jal        gte_GetH
     /* 547F4 80063FF4 0000C0A7 */   sh        $zero, 0x0($fp)
     /* 547F8 80063FF8 E403838F */  lw         $v1, %gp_rel(D_800A34B0)($gp)
     /* 547FC 80063FFC 00000000 */  nop

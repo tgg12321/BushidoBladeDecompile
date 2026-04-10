@@ -119,7 +119,7 @@ glabel func_80076D74
     /* 67734 80076F34 00000000 */   nop
   .L80076F38:
     /* 67738 80076F38 1400308E */  lw         $s0, 0x14($s1)
-    /* 6773C 80076F3C B4EA010C */  jal        func_8007AAD0
+    /* 6773C 80076F3C B4EA010C */  jal        initTile
     /* 67740 80076F40 21200002 */   addu      $a0, $s0, $zero
     /* 67744 80076F44 00004296 */  lhu        $v0, 0x0($s2)
     /* 67748 80076F48 21200002 */  addu       $a0, $s0, $zero
@@ -134,24 +134,24 @@ glabel func_80076D74
     /* 6776C 80076F6C 080000A6 */  sh         $zero, 0x8($s0)
     /* 67770 80076F70 0A0000A6 */  sh         $zero, 0xA($s0)
     /* 67774 80076F74 0E0002A6 */  sh         $v0, 0xE($s0)
-    /* 67778 80076F78 5AEA010C */  jal        func_8007A968
+    /* 67778 80076F78 5AEA010C */  jal        gpu_SetSemiTransp
     /* 6777C 80076F7C 060003A2 */   sb        $v1, 0x6($s0)
     /* 67780 80076F80 21280002 */  addu       $a1, $s0, $zero
     /* 67784 80076F84 0A80043C */  lui        $a0, %hi(D_800A374C)
     /* 67788 80076F88 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
-    /* 6778C 80076F8C 2DEA010C */  jal        func_8007A8B4
+    /* 6778C 80076F8C 2DEA010C */  jal        ot_Link
     /* 67790 80076F90 10001026 */   addiu     $s0, $s0, 0x10
     /* 67794 80076F94 01000524 */  addiu      $a1, $zero, 0x1
     /* 67798 80076F98 21300000 */  addu       $a2, $zero, $zero
     /* 6779C 80076F9C 140030AE */  sw         $s0, 0x14($s1)
     /* 677A0 80076FA0 1000A0AF */  sw         $zero, 0x10($sp)
     /* 677A4 80076FA4 1800248E */  lw         $a0, 0x18($s1)
-    /* 677A8 80076FA8 92F0010C */  jal        func_8007C248
+    /* 677A8 80076FA8 92F0010C */  jal        initTexPage
     /* 677AC 80076FAC 40000724 */   addiu     $a3, $zero, 0x40
     /* 677B0 80076FB0 0A80043C */  lui        $a0, %hi(D_800A374C)
     /* 677B4 80076FB4 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 677B8 80076FB8 1800258E */  lw         $a1, 0x18($s1)
-    /* 677BC 80076FBC 2DEA010C */  jal        func_8007A8B4
+    /* 677BC 80076FBC 2DEA010C */  jal        ot_Link
     /* 677C0 80076FC0 00000000 */   nop
     /* 677C4 80076FC4 1800228E */  lw         $v0, 0x18($s1)
     /* 677C8 80076FC8 00000000 */  nop

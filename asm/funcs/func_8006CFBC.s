@@ -190,12 +190,12 @@ glabel func_8006CFBC
     /* 5DA84 8006D284 21300000 */  addu       $a2, $zero, $zero
     /* 5DA88 8006D288 1000A0AF */  sw         $zero, 0x10($sp)
     /* 5DA8C 8006D28C 1C00448E */  lw         $a0, 0x1C($s2)
-    /* 5DA90 8006D290 92F0010C */  jal        func_8007C248
+    /* 5DA90 8006D290 92F0010C */  jal        initTexPage
     /* 5DA94 8006D294 21384000 */   addu      $a3, $v0, $zero
     /* 5DA98 8006D298 0A80043C */  lui        $a0, %hi(D_800A374C)
     /* 5DA9C 8006D29C 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 5DAA0 8006D2A0 1C00458E */  lw         $a1, 0x1C($s2)
-    /* 5DAA4 8006D2A4 2DEA010C */  jal        func_8007A8B4
+    /* 5DAA4 8006D2A4 2DEA010C */  jal        ot_Link
     /* 5DAA8 8006D2A8 20008424 */   addiu     $a0, $a0, 0x20
     /* 5DAAC 8006D2AC 21204002 */  addu       $a0, $s2, $zero
     /* 5DAB0 8006D2B0 5000A527 */  addiu      $a1, $sp, 0x50
