@@ -7,8 +7,8 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 
 | Scope | Session | Claimed | Status |
 |-------|---------|---------|--------|
-| src/ings2.c | Agent 1: ang_hosei, motion_Open, motion_make_table | 2026-04-09 | active |
-| src/system.c | Agent 2: func_800826CC, func_80080258, tslPolyF4Init | 2026-04-09 | active |
-| src/ings.c | Agent 3: func_80016A8C, func_80017848, func_80016E60 | 2026-04-09 | active |
+| src/ings2.c | Agent 1: motion_make_table matched | 2026-04-09 | done — merged to main |
+| src/system.c | Agent 2: tslPolyF4Init + func_80080258 matched | 2026-04-09 | done — merged to main |
+| src/ings.c | Agent 3: all 3 tabled (blockers) | 2026-04-09 | done — no changes |
 | include/m2c_context.h | GameObj field naming (~40 fields named) | 2026-04-09 | done — merged to main |
-| src/*.c (not ings/ings2/system) | Propagate named symbols from symbol_addrs.txt | 2026-04-10 | active |
+| src/*.c (not ings/ings2/system) | 188 symbols renamed, 825 replacements | 2026-04-10 | done — merged to main |
