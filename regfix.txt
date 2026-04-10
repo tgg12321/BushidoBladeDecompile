@@ -111,3 +111,10 @@ func_80044CCC: reorder 1,7,2,8,3,4,5,6,9,10 @ 1-10
 func_80044CCC: insert "sw $2,0x20($29)" @ 29
 # func_80044CCC: dead store - write positive sp28[2] before negate (original index)
 func_80044CCC: insert "sw $2,0x30($29)" @ 55
+
+# tslPolyF4Init: delay slot after beqz (TEXT 50): li v0,-1 -> move v0,zero
+tslPolyF4Init: subst "addiu" "addu" @ 50
+tslPolyF4Init: subst "\$zero,-1" "$0,$zero" @ 50
+# tslPolyF4Init: merged exit dispatch (TEXT 56): beq s0,v0 -> bne v0,zero (bnez v0)
+tslPolyF4Init: subst "beq" "bne" @ 56
+tslPolyF4Init: subst "\$16,\$2" "$2,$0" @ 56
