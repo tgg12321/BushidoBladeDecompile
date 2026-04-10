@@ -1063,7 +1063,35 @@ void func_80044C70(s32 a0) {
     D_800A9D04 += a0;
     D_800A9D00 += a0;
 }
-INCLUDE_ASM("asm/funcs", func_80044CCC);
+extern s32 func_8007DF20(s32);
+extern s32 func_8007DFEC(s32);
+void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
+    s32 sp18[3];
+    s32 sp28[3];
+    s16 angle;
+    s32 radius;
+    s32 v0;
+
+    sp18[1] = a0[0];
+    angle = a0[1];
+    radius = a0[2];
+    sp18[0] = (func_8007DF20(angle) * radius) >> 12;
+    v0 = func_8007DFEC(angle);
+    sp18[1] = -sp18[1];
+    sp18[2] = (v0 * radius) >> 12;
+    sp18[2] = -sp18[2];
+
+    sp28[1] = a1[0];
+    angle = a1[1];
+    radius = a1[2];
+    sp28[0] = (func_8007DF20(angle) * radius) >> 12;
+    v0 = func_8007DFEC(angle);
+    sp28[1] = -sp28[1];
+    sp28[2] = (v0 * radius) >> 12;
+    sp28[2] = -sp28[2];
+
+    func_8007E1AC(sp18, sp28, 0x1000 - a2, a2, a3);
+}
 extern void func_8007E1AC(s32 *, s32 *, s32, s32, s32);
 void func_80044DE4(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[4];
