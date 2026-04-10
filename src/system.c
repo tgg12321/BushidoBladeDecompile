@@ -2,6 +2,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 #include "system.h"
+#include "psx.h"
 
 /* Forward declarations */
 extern void func_800817A0(void);
@@ -583,21 +584,21 @@ s32 func_80081D1C(s32 a0, s32 a1) {
     volatile u8 *v1;
     u32 v0;
     *g_cd_index_reg = 0;
-    *g_cd_irq_reg = 0x80;
+    *g_cd_irq_reg = CD_IRQ_DATA_READY;
     *g_cd_dma_bcr = 0x20943;
     *g_cd_dma_madr = 0x1323;
-    *g_cd_dma_ctrl_b4 = *g_cd_dma_ctrl_b4 | 0x8000;
+    *g_cd_dma_ctrl_b4 = *g_cd_dma_ctrl_b4 | DMA_CD_ENABLE;
     *g_cd_dma_dest = a0;
     *g_cd_dma_size = a1 | 0x10000;
     v1 = g_cd_index_reg;
     do {
         __asm__ volatile("nop");
-        v0 = *v1 & 0x40;
+        v0 = *v1 & CD_STAT_DATA_REQ;
     } while (v0 == 0);
-    *g_cd_dma_ctrl = 0x11000000;
-    if ((*g_cd_dma_ctrl & 0x1000000) != 0) {
+    *g_cd_dma_ctrl = DMA_CD_TO_RAM;
+    if ((*g_cd_dma_ctrl & DMA_BUSY) != 0) {
         do {
-            v0 = *g_cd_dma_ctrl & 0x1000000;
+            v0 = *g_cd_dma_ctrl & DMA_BUSY;
         } while (v0 != 0);
     }
     *g_cd_dma_madr = 0x1325;
@@ -607,20 +608,20 @@ s32 func_80081E1C(s32 a0, s32 a1) {
     volatile u8 *v1;
     u32 v0;
     *g_cd_index_reg = 0;
-    *g_cd_irq_reg = 0x80;
+    *g_cd_irq_reg = CD_IRQ_DATA_READY;
     *g_cd_dma_bcr = 0x21020843;
     *g_cd_dma_madr = 0x1325;
-    *g_cd_dma_ctrl_b4 = *g_cd_dma_ctrl_b4 | 0x8000;
+    *g_cd_dma_ctrl_b4 = *g_cd_dma_ctrl_b4 | DMA_CD_ENABLE;
     *g_cd_dma_dest = a0;
     *g_cd_dma_size = a1 | 0x10000;
     v1 = g_cd_index_reg;
-    v0 = *v1 & 0x40;
+    v0 = *v1 & CD_STAT_DATA_REQ;
     if (v0 == 0) {
         do {
-            v0 = *v1 & 0x40;
+            v0 = *v1 & CD_STAT_DATA_REQ;
         } while (v0 == 0);
     }
-    *g_cd_dma_ctrl = 0x11400100;
+    *g_cd_dma_ctrl = DMA_CD_TO_RAM_CHAIN;
     {
         volatile s32 tmp;
         tmp = *g_cd_dma_ctrl;

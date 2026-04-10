@@ -3,6 +3,7 @@
 #include "game.h"
 #include "system.h"
 #include "code6cac.h"
+#include "bb2_const.h"
 
 /* Forward declarations for called functions */
 extern void func_8001945C(void);
@@ -290,7 +291,7 @@ void sys_Init(void) {
     func_80078D38();
     func_80078A58(0);
     disp_Init();
-    g_disp_enable = 0xFF;
+    g_disp_enable = DISP_DISABLED;
     g_disp_fade = 0;
     func_80035FE0();
     func_800375EC();
@@ -403,7 +404,7 @@ void gnd_disp_loop_ctrl(void) {
     register s32 s2_var asm("s2");
     s32 mask;
     s2_var = (s32)(&D_800F33D8);
-    if (g_disp_enable == 0xFF) {
+    if (g_disp_enable == DISP_DISABLED) {
         return;
     }
     s0_var = (s32)sp20;

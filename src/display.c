@@ -1,6 +1,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "gpu.h"
+#include "psx.h"
 
 /* Padding NOP macro - emits NOP instructions between functions to match original layout */
 #define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
@@ -51,7 +52,7 @@ void gpu_SetDispMask(s32 a0) {
         func_8007DEE4(p + 0x6A, -1, 0x14);
     }
     {
-        u32 cmd = 0x03000001;
+        u32 cmd = GP1_DISP_ENABLE;
         u32 *v0 = g_gpu_dev_table;
         if (a0) {
             cmd = 0x03000000;
@@ -2219,21 +2220,21 @@ u32 func_8007D2F4(s32 a0) {
 }
 s32 func_8007D308(u32 *a0, s32 a1) {
     s32 i;
-    *(volatile u32 *)g_gpu_stat_reg = 0x04000000;
+    *(volatile u32 *)g_gpu_stat_reg = GP1_DMA_DIR;
     for (i = a1 - 1; i != -1; i--) {
         *(volatile u32 *)g_gpu_data_reg = *a0++;
     }
     return 0;
 }
 void func_8007D358(u32 a0) {
-    *(volatile u32 *)g_gpu_stat_reg = 0x04000002;
+    *(volatile u32 *)g_gpu_stat_reg = GP1_DMA_DIR_FIFO;
     *(volatile u32 *)g_gpu_dma_madr = a0;
     *(volatile u32 *)g_gpu_dma_bcr = 0;
-    *(volatile u32 *)g_gpu_dma_chcr = 0x01000401;
+    *(volatile u32 *)g_gpu_dma_chcr = DMA_GPU_LINKED_LIST;
 }
 u32 func_8007D3A4(u32 a0) {
-    *g_gpu_stat_reg = a0 | 0x10000000;
-    return *g_gpu_data_reg & 0xFFFFFF;
+    *g_gpu_stat_reg = a0 | GP1_GPU_INFO;
+    return *g_gpu_data_reg & OT_ADDR_MASK;
 }
 void func_8007D3D4(s32 a0, s32 a1, s32 a2) {
     func_8007D3F8(a0, a1, 0, a2);
