@@ -27,7 +27,7 @@ glabel func_8007AE7C
     /* 6B6D8 8007AED8 2CBEA524 */  addiu      $a1, $a1, %lo(D_8009BE2C)
     /* 6B6DC 8007AEDC 0A80063C */  lui        $a2, %hi(D_8009BE74)
     /* 6B6E0 8007AEE0 74BEC624 */  addiu      $a2, $a2, %lo(D_8009BE74)
-    /* 6B6E4 8007AEE4 82E4010C */  jal        func_80079208
+    /* 6B6E4 8007AEE4 82E4010C */  jal        debug_printf
     /* 6B6E8 8007AEE8 00000000 */   nop
   .L8007AEEC:
     /* 6B6EC 8007AEEC 0A80103C */  lui        $s0, %hi(D_8009BE74)

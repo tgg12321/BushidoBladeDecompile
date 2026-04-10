@@ -3,7 +3,7 @@ glabel func_8003CCCC
     /* 2D4D0 8003CCD0 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2D4D4 8003CCD4 225A000C */  jal        gpu_InitDisplay
     /* 2D4D8 8003CCD8 00000000 */   nop
-    /* 2D4DC 8003CCDC 5E84010C */  jal        func_80061178
+    /* 2D4DC 8003CCDC 5E84010C */  jal        game_Cleanup
     /* 2D4E0 8003CCE0 00000000 */   nop
     /* 2D4E4 8003CCE4 21000224 */  addiu      $v0, $zero, 0x21
     /* 2D4E8 8003CCE8 0A80013C */  lui        $at, %hi(D_800A37B8)

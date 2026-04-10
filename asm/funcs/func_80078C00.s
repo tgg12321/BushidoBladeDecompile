@@ -10,11 +10,11 @@ glabel func_80078C00
     /* 69420 80078C20 2000BFAF */  sw         $ra, 0x20($sp)
     /* 69424 80078C24 30E4010C */  jal        func_800790C0
     /* 69428 80078C28 2198E000 */   addu      $s3, $a3, $zero
-    /* 6942C 80078C2C 6EE2010C */  jal        func_800789B8
+    /* 6942C 80078C2C 6EE2010C */  jal        EnterCriticalSection
     /* 69430 80078C30 00000000 */   nop
     /* 69434 80078C34 E2E3010C */  jal        func_80078F88
     /* 69438 80078C38 00000000 */   nop
-    /* 6943C 80078C3C 72E2010C */  jal        func_800789C8
+    /* 6943C 80078C3C 72E2010C */  jal        ExitCriticalSection
     /* 69440 80078C40 00000000 */   nop
     /* 69444 80078C44 96E2010C */  jal        func_80078A58
     /* 69448 80078C48 21200000 */   addu      $a0, $zero, $zero

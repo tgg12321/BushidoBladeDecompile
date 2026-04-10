@@ -5,7 +5,7 @@ glabel func_80020CDC
     /* 114E8 80020CE8 FFFF0234 */  ori        $v0, $zero, 0xFFFF
     /* 114EC 80020CEC 03006214 */  bne        $v1, $v0, .L80020CFC
     /* 114F0 80020CF0 1000BFAF */   sw        $ra, 0x10($sp)
-    /* 114F4 80020CF4 6214010C */  jal        func_80045188
+    /* 114F4 80020CF4 6214010C */  jal        seq_Reset
     /* 114F8 80020CF8 00000000 */   nop
   .L80020CFC:
     /* 114FC 80020CFC FF000224 */  addiu      $v0, $zero, 0xFF

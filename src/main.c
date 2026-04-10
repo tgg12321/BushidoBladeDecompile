@@ -25,8 +25,8 @@ extern s32 g_snd_reverb_flag;
 extern s32 g_spu_reverb_mode;
 extern u16 g_spu_xfer_addr;
 extern s32 g_spu_addr_shift;
-extern s32 func_800789B8(void);
-extern void func_800789C8(void);
+extern s32 EnterCriticalSection(void);
+extern void ExitCriticalSection(void);
 extern void func_8008D050(s32 *);
 extern s32 g_snd_callback;
 extern s32 D_80106F28;
@@ -545,12 +545,12 @@ void spu_InitIrq(void) {
     s32 v0;
     if (g_snd_init_flag == 0) {
         g_snd_init_flag = 1;
-        func_800789B8();
+        EnterCriticalSection();
         spu_SetCallback((s32)&g_snd_irq_data);
         v0 = func_80078978((s32)0xF0000009, 0x20, 0x2000, 0);
         g_snd_irq_handle = v0;
         func_800789A8(v0);
-        func_800789C8();
+        ExitCriticalSection();
     }
 }
 INCLUDE_ASM("asm/funcs", func_80088740);
@@ -618,13 +618,13 @@ extern s32 g_spu_timer;
 void func_800892F8(void) {
     if (g_snd_init_flag == 1) {
         g_snd_init_flag = 0;
-        func_800789B8();
+        EnterCriticalSection();
         g_spu_init_flag = 0;
         g_spu_timer = 0;
         spu_SetCallback(0);
         func_80078988(g_snd_irq_handle);
         func_80089374(g_snd_irq_handle);
-        func_800789C8();
+        ExitCriticalSection();
     }
 }
 __asm__(
@@ -1020,21 +1020,21 @@ void func_8008BDE8(s32 a0, u16 *a1) {
 
 void func_8008BE04(void) {
     s32 v0;
-    v0 = func_800789B8();
+    v0 = EnterCriticalSection();
     func_8008D050(&g_snd_callback);
     if (v0 == 1) {
-        func_800789C8();
+        ExitCriticalSection();
     }
 }
 extern s32 g_str_sio;
 
 void func_8008BE4C(void) {
     s32 v0;
-    v0 = func_800789B8();
+    v0 = EnterCriticalSection();
     func_8008D060(&g_str_sio);
     func_80078FF0();
     if (v0 == 1) {
-        func_800789C8();
+        ExitCriticalSection();
     }
 }
 

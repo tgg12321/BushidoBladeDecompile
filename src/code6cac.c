@@ -20,31 +20,31 @@ extern u32 D_80101E44;
 
 /* Extern function declarations */
 extern s32 func_80037110(s32);
-extern void func_80036EC0(void);
-extern void func_80036F40(void);
-extern void func_80045188(void);
+extern void game_FrameInit(void);
+extern void game_FrameLoop(void);
+extern void seq_Reset(void);
 extern void func_8003A39C(void);
-extern void func_800828CC(s32);
-extern void func_8007B600(s32, s32);
+extern void sys_VSync(s32);
+extern void gpu_LoadImage(s32, s32);
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
-extern void func_80061178(void);
+extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
-extern void func_800450BC(s32, s32);
+extern void seq_Start(s32, s32);
 extern u16 g_game_p1_ctrl;
 extern s32 D_80102794;
 extern s32 D_800A3894;
 extern s16 D_800A38C4;
 extern s16 D_80101F32;
 extern void func_80035F30(s32, s32, s32, s32);
-extern void func_8005B5AC(void);
-extern void func_8005BF3C(void);
-extern void func_8005B9C4(void);
-extern void func_8005B868(void);
-extern void func_80041604(s32, s32);
-extern void func_800415C4(s32);
+extern void obj_InitChars(void);
+extern void obj_Reset(void);
+extern void obj_InitTask(void);
+extern void obj_InitPair(void);
+extern void player_SetCharId(s32, s32);
+extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
-extern void func_8005B72C(void);
+extern void obj_InitAll(void);
 extern void func_80077820(s32);
 extern s32 D_80101E70;
 extern s32 D_800A3894;
@@ -61,10 +61,10 @@ extern void func_8003AF40(s32);
 extern void func_8003AFFC(void);
 
 extern void sys_Panic(void);
-extern s32 func_8005B9FC(s32);
+extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
-extern s32 func_80079120(s32 *, s32, s32);
-extern void func_8005BA6C(s32);
+extern s32 bb2_memcpy(s32 *, s32, s32);
+extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 
 extern void func_8005B98C(s32);
@@ -84,9 +84,9 @@ extern s32 stage_GetDataPtr(void);
 extern void func_8005B50C(void);
 extern void func_80037774(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void func_80078D68(void);
+extern void pad_Init(void);
 extern void irq_Reset(void);
-extern s32 func_800789B8(void);
+extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
 extern s32 func_8004939C(void);
@@ -516,14 +516,14 @@ void func_8001D904(void) {
     s32 *s0;
     gpu_EnableDisplay();
     func_80020D38();
-    func_8005B9C4();
-    s1 = func_8005B9FC((s32)0x80190800);
+    obj_InitTask();
+    s1 = obj_InitTaskCamera((s32)0x80190800);
     if (s1 >= 0xE81) {
         sys_Panic();
     }
     s0 = &D_80104F38;
-    func_80079120(s0, (s32)0x80190800, s1);
-    func_8005BA6C((s32)s0 - s2);
+    bb2_memcpy(s0, (s32)0x80190800, s1);
+    obj_ExecTask((s32)s0 - s2);
 }
 void func_8001D998(void) {
     s32 s2 = (s32)0x80190800;
@@ -531,23 +531,23 @@ void func_8001D998(void) {
     s32 *s0;
     gpu_EnableDisplay();
     func_80020D38();
-    func_8005B868();
+    obj_InitPair();
     s1 = func_8005B8B8((s32)0x80190800);
     if (s1 >= 0x1B19) {
         sys_Panic();
     }
     s0 = &D_80104F38;
-    func_80079120(s0, (s32)0x80190800, s1);
+    bb2_memcpy(s0, (s32)0x80190800, s1);
     func_8005B98C((s32)s0 - s2);
 }
 void func_8001DA2C(void) {
-    func_8005B5AC();
-    func_8005BF3C();
+    obj_InitChars();
+    obj_Reset();
     if (D_800A38DC == 5) {
-        func_8005B9C4();
+        obj_InitTask();
     }
     if (D_800A38DC == 3) {
-        func_8005B868();
+        obj_InitPair();
     }
 }
 INCLUDE_ASM("asm/funcs", func_8001DA8C);
@@ -562,7 +562,7 @@ s32 func_8001DB58(void) {
     return 1;
 }
 void func_8001DB9C(void) {
-    func_800450BC((&D_8008D9EC)[D_80101ED2] < 1, (s32)0x80190800);
+    seq_Start((&D_8008D9EC)[D_80101ED2] < 1, (s32)0x80190800);
     D_800A38C6 = (u16)0xFFFF;
 }
 void func_8001DBE4(void) {
@@ -577,14 +577,14 @@ void func_8001DBE4(void) {
         do {
             func_8003AA48();
             gnd_disp_loop_ctrl();
-            func_800828CC(2);
+            sys_VSync(2);
         } while (!(D_800A38F8 > D_800A37A0));
         i = 0;
         do {
             func_8003AA48();
             i += 1;
             gnd_disp_loop_ctrl();
-            func_800828CC(2);
+            sys_VSync(2);
         } while (i < 15);
     }
     func_8003AAB0();
@@ -681,7 +681,7 @@ void func_8001EA04(void) {
     u8 v;
     func_80041688(0, 0);
     func_80041688(1, 0);
-    func_80061178();
+    game_Cleanup();
     v = D_800A38D4;
     D_8010262E = 0;
     D_801021E2 = 0;
@@ -709,7 +709,7 @@ void func_8001EEB4(void) {
         *(s16 *)(entry + 0x26C) = 1;
     }
 
-    func_80061178();
+    game_Cleanup();
     D_800A37B8 = 0;
     D_800A3834 = 0x11;
 }
@@ -865,7 +865,7 @@ loop:
 INCLUDE_ASM("asm/funcs", func_800207C8);
 void func_80020CDC(void) {
     if (D_800A38C6 == 0xFFFF) {
-        func_80045188();
+        seq_Reset();
     }
     D_800A3880 = 0;
     D_800A38C6 = 0;
@@ -875,7 +875,7 @@ void func_80020CDC(void) {
 }
 void func_80020D38(void) {
     if (D_800A38C6 == 0xFFFF) {
-        func_80045188();
+        seq_Reset();
     }
     D_800A38C6 = 0;
 }
@@ -888,7 +888,7 @@ void func_80020D70(void) {
     D_800A3864 = (s32)0x80190800;
     func_80020CDC();
 }
-void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    replay_camera_Init(v0, D_800A3830);    func_80036F40();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
+void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    replay_camera_Init(v0, D_800A3830);    game_FrameLoop();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
 INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_B);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 extern u16 D_800A38C4;

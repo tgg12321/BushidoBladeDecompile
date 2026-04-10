@@ -62,7 +62,7 @@ glabel DispUpdateStatusMessage
     /* 792B0 80088AB0 D8638424 */  addiu      $a0, $a0, %lo(D_800163D8)
     /* 792B4 80088AB4 0180053C */  lui        $a1, %hi(D_800163F8)
     /* 792B8 80088AB8 F863A524 */  addiu      $a1, $a1, %lo(D_800163F8)
-    /* 792BC 80088ABC 82E4010C */  jal        func_80079208
+    /* 792BC 80088ABC 82E4010C */  jal        debug_printf
     /* 792C0 80088AC0 00000000 */   nop
     /* 792C4 80088AC4 BB220208 */  j          .L80088AEC
     /* 792C8 80088AC8 00000000 */   nop
@@ -103,7 +103,7 @@ glabel DispUpdateStatusMessage
     /* 79344 80088B44 D8638424 */  addiu      $a0, $a0, %lo(D_800163D8)
     /* 79348 80088B48 0180053C */  lui        $a1, %hi(D_8001640C)
     /* 7934C 80088B4C 0C64A524 */  addiu      $a1, $a1, %lo(D_8001640C)
-    /* 79350 80088B50 82E4010C */  jal        func_80079208
+    /* 79350 80088B50 82E4010C */  jal        debug_printf
     /* 79354 80088B54 00000000 */   nop
     /* 79358 80088B58 E0220208 */  j          .L80088B80
     /* 7935C 80088B5C 00000000 */   nop

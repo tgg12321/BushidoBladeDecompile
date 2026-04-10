@@ -7,7 +7,7 @@ glabel func_8001EA04
     /* F218 8001EA18 01000424 */  addiu      $a0, $zero, 0x1
     /* F21C 8001EA1C A205010C */  jal        func_80041688
     /* F220 8001EA20 21280000 */   addu      $a1, $zero, $zero
-    /* F224 8001EA24 5E84010C */  jal        func_80061178
+    /* F224 8001EA24 5E84010C */  jal        game_Cleanup
     /* F228 8001EA28 00000000 */   nop
     /* F22C 8001EA2C 0A80023C */  lui        $v0, %hi(D_800A38D4)
     /* F230 8001EA30 D4384290 */  lbu        $v0, %lo(D_800A38D4)($v0)

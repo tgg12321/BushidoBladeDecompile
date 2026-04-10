@@ -23,7 +23,7 @@ extern u32 D_800F5370;
 extern u8 g_str_overflow;
 extern u8 g_str_eff_init;
 
-extern void func_80079208();
+extern void debug_printf();
 extern void func_800164F8(void);
 extern s16 Judge[];
 extern s32 func_80083698(s32, s32, s32);
@@ -45,16 +45,16 @@ extern u32 g_module_func_tbl[];
 extern u8 D_800F33D8;
 extern u8 D_800A37A8[];
 extern void replay_camera_Init(s32, s32);
-extern void func_80036F40(void);
+extern void game_FrameLoop(void);
 extern void func_8007BC08(u8 *);
-extern void func_8007B600(u8 *, u8 *);
-extern void func_800828CC(s32);
+extern void gpu_LoadImage(u8 *, u8 *);
+extern void sys_VSync(s32);
 extern void func_8007B844(u8 *, s32);
 extern void func_80019568(s32);
 extern void func_8005C8A8(s32, s32, u32, s32);
 extern void func_8005C650(s32, s32, s32);
 extern void func_8007B9B0(u8 *);
-extern void func_8007B93C(u8 *);
+extern void gpu_DrawOTag(u8 *);
 extern void func_80078BA8(u32);
 extern s32 func_80078B04(u32);
 extern s32 func_80079154(void);
@@ -236,14 +236,14 @@ void gpu_EnableDisplay(void) {
 }
 
 void gpu_InitDisplay(void) {
-    func_8007B2A0(0);
+    gpu_SetDispMask(0);
     func_8007AE7C(1);
     func_8007B4D0(&g_disp_gp_base, 0, 0, 0);
-    func_8007B33C(0);
+    gpu_DrawSync(0);
 }
 
 void gpu_DisableDisplay(void) {
-    func_8007B2A0(1);
+    gpu_SetDispMask(1);
 }
 
 void sys_StubEmpty(void) {
@@ -264,7 +264,7 @@ void disp_Init(void) {
 
     func_8007AE7C(0);
     func_8007B114(0);
-    func_8007B2A0(0);
+    gpu_SetDispMask(0);
     func_8007E094();
     func_8007EFDC(0x140, 0x78);
     func_8007EFFC(disp_CalcFov(0x2D));
@@ -275,7 +275,7 @@ void disp_Init(void) {
     func_8007A74C(base + 0x40EC, 0, 0, 0x280, 0xF0);
     disp_SetFramebufferMode(1, 0, 0, 0);
     func_8007B4D0(&g_disp_gp_base, 0, 0, 0);
-    func_8007B33C(0);
+    gpu_DrawSync(0);
 }
 extern void func_80078C9C(u8 *, s32, u8 *, s32);
 extern void func_80078D38(void);
@@ -298,7 +298,7 @@ void sys_Init(void) {
 }
 INCLUDE_ASM("asm/funcs", func_80016A8C);
 void sys_Panic(void) {
-    func_80079208((s32)&g_str_overflow);
+    debug_printf((s32)&g_str_overflow);
     while (1) {
         func_800164F8();
     }
@@ -314,7 +314,7 @@ void file_LoadOverlay(void) {
         return;
     }
     size = func_80060CB8(0x801D8800, 0x8010E800);
-    func_80079208((s32)&g_str_eff_init, 0x8010E800, size);
+    debug_printf((s32)&g_str_eff_init, 0x8010E800, size);
     if (0xA000 < size) {
         sys_Panic();
     }
@@ -322,7 +322,7 @@ void file_LoadOverlay(void) {
 }
 extern void func_8005B43C(void);
 extern s32 func_8005B7C4(u32);
-extern void func_80079120(u32, u32, s32);
+extern void bb2_memcpy(u32, u32, s32);
 extern void func_8005C4C0(u32, s32);
 extern void func_8005C614(void);
 void file_LoadSoundData(void) {
@@ -333,7 +333,7 @@ void file_LoadSoundData(void) {
     if (size >= 0xD01) {
         sys_Panic();
     }
-    func_80079120(0x8010DB00, 0x801D8800, size);
+    bb2_memcpy(0x8010DB00, 0x801D8800, size);
     func_8005C4C0(0xFFF35300, 0);
     func_8005C614();
     D_800A3906 = 1;
@@ -352,7 +352,7 @@ extern void func_80019534(void);
 extern void func_8003D2C4(void);
 extern void func_8001C444(void);
 void sys_GameInit(void) {
-    func_80079208((s32)&g_str_limit, 0x8010DB00);
+    debug_printf((s32)&g_str_limit, 0x8010DB00);
     func_800167EC();
     func_80020D70();
     D_800A3770 = 0x801D8800;
@@ -377,7 +377,7 @@ void sys_GameInit(void) {
 }
 
 void gpu_SetDrawMode(void) {
-    func_8007B33C(0);
+    gpu_DrawSync(0);
 }
 
 INCLUDE_ASM("asm/funcs", func_80016E60);
@@ -479,9 +479,9 @@ void gnd_disp_loop_ctrl(void) {
         break;
     }
     }
-    func_8007B93C((u8 *)(D_800A374C + 4));
+    gpu_DrawOTag((u8 *)(D_800A374C + 4));
     new_var = new_var2;
-    func_8007B33C(new_var);
+    gpu_DrawSync(new_var);
 }
 void obj_ClearAll(void) {
     s32 i;

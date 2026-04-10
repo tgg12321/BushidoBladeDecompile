@@ -2,7 +2,7 @@ glabel func_8003B5A4
     /* 2BDA4 8003B5A4 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2BDA8 8003B5A8 1800BFAF */  sw         $ra, 0x18($sp)
     /* 2BDAC 8003B5AC 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 2BDB0 8003B5B0 6B6D010C */  jal        func_8005B5AC
+    /* 2BDB0 8003B5B0 6B6D010C */  jal        obj_InitChars
     /* 2BDB4 8003B5B4 1000B0AF */   sw        $s0, 0x10($sp)
     /* 2BDB8 8003B5B8 21800000 */  addu       $s0, $zero, $zero
     /* 2BDBC 8003B5BC 1080113C */  lui        $s1, %hi(D_8010277D)
@@ -68,7 +68,7 @@ glabel func_8003B5A4
     /* 2BE98 8003B698 00000000 */   nop
     /* 2BE9C 8003B69C 0A80053C */  lui        $a1, %hi(D_800A36F4)
     /* 2BEA0 8003B6A0 F436A590 */  lbu        $a1, %lo(D_800A36F4)($a1)
-    /* 2BEA4 8003B6A4 8105010C */  jal        func_80041604
+    /* 2BEA4 8003B6A4 8105010C */  jal        player_SetCharId
     /* 2BEA8 8003B6A8 01000424 */   addiu     $a0, $zero, 0x1
   .L8003B6AC:
     /* 2BEAC 8003B6AC D0EB000C */  jal        func_8003AF40

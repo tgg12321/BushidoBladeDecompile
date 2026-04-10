@@ -5,7 +5,7 @@ glabel func_80060CB8
     /* 514C4 80060CC4 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 514C8 80060CC8 21888000 */  addu       $s1, $a0, $zero
     /* 514CC 80060CCC 2400BFAF */  sw         $ra, 0x24($sp)
-    /* 514D0 80060CD0 D0DB000C */  jal        func_80036F40
+    /* 514D0 80060CD0 D0DB000C */  jal        game_FrameLoop
     /* 514D4 80060CD4 1800B0AF */   sw        $s0, 0x18($sp)
     /* 514D8 80060CD8 0A80023C */  lui        $v0, %hi(D_8009BD38)
     /* 514DC 80060CDC 38BD428C */  lw         $v0, %lo(D_8009BD38)($v0)
@@ -43,7 +43,7 @@ glabel func_80060CB8
     /* 51548 80060D48 21204000 */  addu       $a0, $v0, $zero
     /* 5154C 80060D4C 66DB000C */  jal        replay_camera_Init
     /* 51550 80060D50 21282002 */   addu      $a1, $s1, $zero
-    /* 51554 80060D54 D0DB000C */  jal        func_80036F40
+    /* 51554 80060D54 D0DB000C */  jal        game_FrameLoop
     /* 51558 80060D58 00000000 */   nop
     /* 5155C 80060D5C 21200000 */  addu       $a0, $zero, $zero
     /* 51560 80060D60 80030224 */  addiu      $v0, $zero, 0x380
@@ -51,12 +51,12 @@ glabel func_80060CB8
     /* 51568 80060D68 80000224 */  addiu      $v0, $zero, 0x80
     /* 5156C 80060D6C 1200A0A7 */  sh         $zero, 0x12($sp)
     /* 51570 80060D70 1400A2A7 */  sh         $v0, 0x14($sp)
-    /* 51574 80060D74 CFEC010C */  jal        func_8007B33C
+    /* 51574 80060D74 CFEC010C */  jal        gpu_DrawSync
     /* 51578 80060D78 1600B0A7 */   sh        $s0, 0x16($sp)
     /* 5157C 80060D7C 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 51580 80060D80 80ED010C */  jal        func_8007B600
+    /* 51580 80060D80 80ED010C */  jal        gpu_LoadImage
     /* 51584 80060D84 21282002 */   addu      $a1, $s1, $zero
-    /* 51588 80060D88 CFEC010C */  jal        func_8007B33C
+    /* 51588 80060D88 CFEC010C */  jal        gpu_DrawSync
     /* 5158C 80060D8C 21200000 */   addu      $a0, $zero, $zero
     /* 51590 80060D90 0100053C */  lui        $a1, (0x1DC00 >> 16)
     /* 51594 80060D94 00DCA534 */  ori        $a1, $a1, (0x1DC00 & 0xFFFF)
@@ -66,9 +66,9 @@ glabel func_80060CB8
     /* 515A4 80060DA4 1400A2A7 */  sh         $v0, 0x14($sp)
     /* 515A8 80060DA8 24000224 */  addiu      $v0, $zero, 0x24
     /* 515AC 80060DAC 1200B0A7 */  sh         $s0, 0x12($sp)
-    /* 515B0 80060DB0 80ED010C */  jal        func_8007B600
+    /* 515B0 80060DB0 80ED010C */  jal        gpu_LoadImage
     /* 515B4 80060DB4 1600A2A7 */   sh        $v0, 0x16($sp)
-    /* 515B8 80060DB8 CFEC010C */  jal        func_8007B33C
+    /* 515B8 80060DB8 CFEC010C */  jal        gpu_DrawSync
     /* 515BC 80060DBC 21200000 */   addu      $a0, $zero, $zero
     /* 515C0 80060DC0 1883010C */  jal        func_80060C60
     /* 515C4 80060DC4 00000000 */   nop

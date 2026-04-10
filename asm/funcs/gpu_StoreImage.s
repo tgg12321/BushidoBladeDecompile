@@ -1,4 +1,4 @@
-glabel func_8007B664
+glabel gpu_StoreImage
     /* 6BE64 8007B664 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6BE68 8007B668 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6BE6C 8007B66C 21808000 */  addu       $s0, $a0, $zero
@@ -24,4 +24,4 @@ glabel func_8007B664
     /* 6BEBC 8007B6BC 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6BEC0 8007B6C0 0800E003 */  jr         $ra
     /* 6BEC4 8007B6C4 00000000 */   nop
-endlabel func_8007B664
+endlabel gpu_StoreImage

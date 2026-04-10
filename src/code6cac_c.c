@@ -21,33 +21,33 @@ extern u32 D_80101E44;
 /* Extern function declarations */
 extern void func_80023CB4(s32, s32);
 extern s32 func_80037110(s32);
-extern void func_80036EC0(void);
-extern void func_80036F40(void);
+extern void game_FrameInit(void);
+extern void game_FrameLoop(void);
 extern void func_800194F4(void);
-extern void func_80045188(void);
-extern void func_800828CC(s32);
-extern void func_8007B600(s32, s32);
+extern void seq_Reset(void);
+extern void sys_VSync(s32);
+extern void gpu_LoadImage(s32, s32);
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
 extern s32 D_800109BC;
-extern void func_80061178(void);
+extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
-extern void func_800450BC(s32, s32);
+extern void seq_Start(s32, s32);
 extern u16 g_game_p1_ctrl;
 extern s32 D_80102794;
 extern u8 *D_800A3894;
 extern s16 D_800A38C4;
 extern s16 D_80101F32;
 extern void func_80035F30(s32, s32, s32, s32);
-extern void func_8005B5AC(void);
-extern void func_8005BF3C(void);
-extern void func_8005B9C4(void);
-extern void func_8005B868(void);
-extern void func_80041604(s32, s32);
+extern void obj_InitChars(void);
+extern void obj_Reset(void);
+extern void obj_InitTask(void);
+extern void obj_InitPair(void);
+extern void player_SetCharId(s32, s32);
 extern void func_80021974(s32);
-extern void func_800415C4(s32);
+extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
-extern void func_8005B72C(void);
+extern void obj_InitAll(void);
 extern void func_80077820(s32);
 extern s32 D_80101E70;
 
@@ -63,10 +63,10 @@ extern void func_8003553C(void);
 
 extern void sys_Panic(void);
 extern s32 func_80020D38(void);
-extern s32 func_8005B9FC(s32);
+extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
-extern s32 func_80079120(s32 *, s32, s32);
-extern void func_8005BA6C(s32);
+extern s32 bb2_memcpy(s32 *, s32, s32);
+extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
 extern void func_8005B98C(s32);
@@ -82,11 +82,11 @@ extern void stage_GetDataPtr(void);
 
 extern void func_8005B50C(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void func_80078D68(void);
+extern void pad_Init(void);
 extern void irq_Reset(void);
 extern s32 D_800A3210;
 extern void func_8008BE04(void);
-extern s32 func_800789B8(void);
+extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
 extern s32 func_8004939C(void);
@@ -146,8 +146,8 @@ extern s32 D_800A36F4_ext;
 extern s32 func_80078998(s32);
 extern void func_80078988(s32);
 extern void func_800789A8(s32);
-extern void func_800789B8(void);
-extern void func_800789C8(void);
+extern void EnterCriticalSection(void);
+extern void ExitCriticalSection(void);
 extern void func_800789F8(s32, s32 *, s32);
 extern void func_80078A18(s32);
 extern s32 func_80078A38(s32 *, s32 *);
@@ -174,7 +174,7 @@ void func_800375EC(void) {
     func_8007A3C8();
     func_80078958();
     func_80078A58(0);
-    func_800789B8();
+    EnterCriticalSection();
     D_800A37DC = func_80078978(0xF4000001, 4, 0x2000, 0);
     D_800A37F0 = func_80078978(0xF4000001, 0x8000, 0x2000, 0);
     D_800A37FC = func_80078978(0xF4000001, 0x100, 0x2000, 0);
@@ -183,7 +183,7 @@ void func_800375EC(void) {
     D_800A383C = func_80078978(0xF0000011, 0x8000, 0x2000, 0);
     D_800A3848 = func_80078978(0xF0000011, 0x100, 0x2000, 0);
     D_800A3850 = func_80078978(0xF0000011, 0x2000, 0x2000, 0);
-    func_800789C8();
+    ExitCriticalSection();
     func_800789A8(D_800A37DC);
     func_800789A8(D_800A37F0);
     func_800789A8(D_800A37FC);
@@ -194,7 +194,7 @@ void func_800375EC(void) {
     func_800789A8(D_800A3850);
 }
 void func_80037774(void) {
-    func_800789B8();
+    EnterCriticalSection();
     func_80078988(D_800A37DC);
     func_80078988(D_800A37F0);
     func_80078988(D_800A37FC);
@@ -203,7 +203,7 @@ void func_80037774(void) {
     func_80078988(D_800A383C);
     func_80078988(D_800A3848);
     func_80078988(D_800A3850);
-    func_800789C8();
+    ExitCriticalSection();
     func_8007A400();
 }
 s32 func_80037804(void) {
@@ -824,7 +824,7 @@ void func_800397D4(void) {
     func_80041688(0, 0);
     func_80041688(1, 0);
     func_8001B6F4();
-    func_80061178();
+    game_Cleanup();
     D_800A37D0 = 0;
     D_800A3834 = 5;
 }
@@ -866,7 +866,7 @@ neg:
 INCLUDE_ASM("asm/funcs", func_8003993C);
 void func_8003A174(void) {
     s32 neg1;
-    func_800789B8();
+    EnterCriticalSection();
     neg1 = -1;
     do {
         D_800A3738 = func_80078978(0xF000000B, 0x400, 0x2000, 0);
@@ -875,9 +875,9 @@ void func_8003A174(void) {
     do {
         D_800A3810 = func_80078978(0xF000000B, 0x8000, 0x2000, 0);
     } while (D_800A3810 == neg1);
-    func_800789C8();
+    ExitCriticalSection();
     neg1 = -1;
-    func_800828CC(2);
+    sys_VSync(2);
     func_8008BE04();
     do {
         D_800A373C = func_800789E8(&D_800A3210, 2);
@@ -893,11 +893,11 @@ void func_8003A174(void) {
 void func_8003A264(void) {
     func_80078A18(D_800A3734);
     func_80078A18(D_800A373C);
-    func_800789B8();
+    EnterCriticalSection();
     func_80078988(D_800A3738);
     func_80078988(D_800A3810);
-    func_800789C8();
-    func_800828CC(2);
+    ExitCriticalSection();
+    sys_VSync(2);
     func_8008BE4C();
     func_8008C464(1, 1, 0);
 }
@@ -965,14 +965,14 @@ void func_8003AA48(void) {
 }
 void func_8003AA78(void) {
     D_800A3870 = 1;
-    func_800828CC(2);
+    sys_VSync(2);
     func_8003AA48();
-    func_800828CC(2);
+    sys_VSync(2);
 }
 void func_8003AAB0(void) {
     s32 val;
     D_800A3870 = 2;
-    func_800828CC(2);
+    sys_VSync(2);
     val = 2;
     do {
         func_8003AA48();
@@ -984,9 +984,9 @@ void func_8003AAB0(void) {
         } while (func_80078B04(0xF2000001) < 0x100);
     } while (D_800A3870 == val);
 end:
-    func_800828CC(2);
+    sys_VSync(2);
     func_8003AA48();
-    func_800828CC(2);
+    sys_VSync(2);
 }
 extern void func_80077AE0(void);
 extern void func_80077B00(void);
@@ -1007,7 +1007,7 @@ s32 func_8003ACB8(void) {
     s32 temp_s0;
 
     func_80077AE0();
-    func_8007B2A0(0);
+    gpu_SetDispMask(0);
     D_800A37B8 = 0;
     D_800A38AC = 0;
     D_800A38D0 = 0;
@@ -1018,29 +1018,29 @@ s32 func_8003ACB8(void) {
         func_80019568(1);
         func_8005C6D0();
         temp_s0 = func_8003AB44();
-        func_800828CC(2);
+        sys_VSync(2);
     } while (temp_s0 == 0);
     func_80077B00();
     func_800194F4();
     D_800A37C4 = func_80035E88(g_file_disc_size);
     func_8003AA48();
-    func_800828CC(1);
+    sys_VSync(1);
     func_8003AA48();
     D_800A38E4 = func_80035EDC(D_800A36C6);
     D_800A37C4 = func_80019488();
-    func_800828CC(1);
+    sys_VSync(1);
     func_8003AA48();
-    func_800828CC(1);
+    sys_VSync(1);
     func_8003AA48();
-    func_800828CC(1);
+    sys_VSync(1);
     func_8003AA48();
     func_800194C0(D_800A36C6);
     D_800A37C4 = func_80079154();
-    func_800828CC(1);
+    sys_VSync(1);
     func_8003AA48();
-    func_800828CC(1);
+    sys_VSync(1);
     func_8003AA48();
-    func_800828CC(1);
+    sys_VSync(1);
     func_8003AA48();
     {
         s32 var_v0;
@@ -1144,7 +1144,7 @@ void func_8003B20C(s32 arg0) {
     D_800A376C = (&D_8008D538)[(s8)D_8010277C];
 }
 extern u8 *D_800A3894;
-extern void func_80041604(s32, s32);
+extern void player_SetCharId(s32, s32);
 void func_8003B2C8(void) {
     u8 *p = &D_8010277C;
     D_800A3836 = *p;
@@ -1156,7 +1156,7 @@ void func_8003B2C8(void) {
         D_800A376A = 0;
         *p = v0;
     }
-    func_80041604(0, 0);
+    player_SetCharId(0, 0);
 }
 void func_8003B328(void) {
     u8 *p = &D_8010277C;
@@ -1169,7 +1169,7 @@ void func_8003B328(void) {
     D_800A36F4 = v_376A;
     *p = v_3836;
     D_800A376A = v_36C8;
-    func_80041604(0, v_36C8);
+    player_SetCharId(0, v_36C8);
     func_80022568(&D_80101EC8);
 }
 s32 func_8003B3A4(u8 *arg0) {
@@ -1233,9 +1233,9 @@ void func_8003B56C(s32 arg0) {
 }
 INCLUDE_ASM("asm/funcs", func_8003B5A4);
 void func_8003B870(void) {
-    func_80041604(0, D_800A376A);
-    func_80041604(1, 0);
-    func_8005B5AC();
+    player_SetCharId(0, D_800A376A);
+    player_SetCharId(1, 0);
+    obj_InitChars();
     gpu_InitDisplay();
     disp_SetFramebufferMode(1, 0, 0, 0);
     D_800A37B8 = 0;
@@ -1253,7 +1253,7 @@ void func_8003B8E4(void) {
         D_800A38B4 = D_800A38B4 + (ret / 4) * 4;
     }
     if (D_800A37B8 == 3) {
-        func_8007B33C(0);
+        gpu_DrawSync(0);
         func_8003AE5C(D_800A3844);
         D_800A37C0 = 500;
         D_800A38F8 = 0;

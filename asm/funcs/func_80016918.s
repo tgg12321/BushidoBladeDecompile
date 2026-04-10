@@ -7,7 +7,7 @@ glabel func_80016918
     /* 712C 8001692C 1800B0AF */   sw        $s0, 0x18($sp)
     /* 7130 80016930 45EC010C */  jal        func_8007B114
     /* 7134 80016934 21200000 */   addu      $a0, $zero, $zero
-    /* 7138 80016938 A8EC010C */  jal        func_8007B2A0
+    /* 7138 80016938 A8EC010C */  jal        gpu_SetDispMask
     /* 713C 8001693C 21200000 */   addu      $a0, $zero, $zero
     /* 7140 80016940 25F8010C */  jal        func_8007E094
     /* 7144 80016944 F0001024 */   addiu     $s0, $zero, 0xF0
@@ -55,7 +55,7 @@ glabel func_80016918
     /* 71EC 800169EC 21300000 */  addu       $a2, $zero, $zero
     /* 71F0 800169F0 34ED010C */  jal        func_8007B4D0
     /* 71F4 800169F4 21380000 */   addu      $a3, $zero, $zero
-    /* 71F8 800169F8 CFEC010C */  jal        func_8007B33C
+    /* 71F8 800169F8 CFEC010C */  jal        gpu_DrawSync
     /* 71FC 800169FC 21200000 */   addu      $a0, $zero, $zero
     /* 7200 80016A00 2000BF8F */  lw         $ra, 0x20($sp)
     /* 7204 80016A04 1C00B18F */  lw         $s1, 0x1C($sp)

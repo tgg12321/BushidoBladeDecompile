@@ -21,18 +21,18 @@ extern u32 D_80101E44;
 /* Extern function declarations */
 extern void func_80023CB4(s32, s32);
 extern s32 func_80037110(s32);
-extern void func_80036EC0(void);
-extern void func_80036F40(void);
+extern void game_FrameInit(void);
+extern void game_FrameLoop(void);
 extern void func_800194F4(void);
-extern void func_80045188(void);
+extern void seq_Reset(void);
 extern void func_8003A39C(void);
-extern void func_800828CC(s32);
-extern void func_8007B600(s32, s32);
+extern void sys_VSync(s32);
+extern void gpu_LoadImage(s32, s32);
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
-extern void func_80061178(void);
+extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
-extern void func_800450BC(s32, s32);
+extern void seq_Start(s32, s32);
 extern u16 g_game_p1_ctrl;
 extern s32 D_80102794;
 extern s32 D_800A3894;
@@ -40,15 +40,15 @@ extern u32 D_800A3D30;
 extern s16 D_800A38C4;
 extern s16 D_80101F32;
 extern void func_80035F30(s32, s32, s32, s32);
-extern void func_8005B5AC(void);
-extern void func_8005BF3C(void);
-extern void func_8005B9C4(void);
-extern void func_8005B868(void);
-extern void func_80041604(s32, s32);
+extern void obj_InitChars(void);
+extern void obj_Reset(void);
+extern void obj_InitTask(void);
+extern void obj_InitPair(void);
+extern void player_SetCharId(s32, s32);
 extern void func_80021974(s32);
-extern void func_800415C4(s32);
+extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
-extern void func_8005B72C(void);
+extern void obj_InitAll(void);
 extern void func_80077820(s32);
 extern s32 D_80101E70;
 extern s32 D_800A3894;
@@ -66,10 +66,10 @@ extern void func_8003AFFC(void);
 
 extern void sys_Panic(void);
 extern s32 func_80020D38(void);
-extern s32 func_8005B9FC(s32);
+extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
-extern s32 func_80079120(s32 *, s32, s32);
-extern void func_8005BA6C(s32);
+extern s32 bb2_memcpy(s32 *, s32, s32);
+extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
 extern void func_8005B98C(s32);
@@ -116,14 +116,14 @@ extern s32 func_8005C8A8(s32, s32, s32, s32);
 extern s32 func_8005FA98(s32, s32, s32);
 extern void func_800342A0(void);
 extern s32 func_80022408(s32 *);
-extern void func_8007B664(s32 *, u16 *);
+extern void gpu_StoreImage(s32 *, u16 *);
 extern void func_80052BE4(u8 *);
 extern void func_8003F388(s16 *);
 extern void func_80037774(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void func_80078D68(void);
+extern void pad_Init(void);
 extern void irq_Reset(void);
-extern s32 func_800789B8(void);
+extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
 extern s32 func_8004939C(void);
@@ -151,9 +151,9 @@ INCLUDE_ASM("asm/funcs", func_8003B9D0);
 INCLUDE_ASM("asm/funcs", md_game_check_change_sub_mode);
 /* kengo:HIGH  |  md_game/md_game_check_change_sub_mode  |  87i */
 
-extern void func_800415C4(s32);
+extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
-extern void func_8005B72C(void);
+extern void obj_InitAll(void);
 extern void func_80078824(s32);
 extern void func_80035FA8(void);
 extern void func_80036FD4(s32, s32);
@@ -162,10 +162,10 @@ void func_8003BE10(void) {
     gpu_EnableDisplay();
     gpu_InitDisplay();
     func_80020CDC();
-    func_800415C4(0);
-    func_800415C4(1);
+    player_Destroy(0);
+    player_Destroy(1);
     file_ResetDmaFlag();
-    func_8005B72C();
+    obj_InitAll();
     func_80078824((s32)0x80118800);
     func_80035FA8();
     {
@@ -244,8 +244,8 @@ void func_8003BFC4(void) {
     s32 v;
     gpu_EnableDisplay();
     func_80020CDC();
-    func_800415C4(0);
-    func_800415C4(1);
+    player_Destroy(0);
+    player_Destroy(1);
     file_ResetDmaFlag();
     v = func_80045814();
     func_80037540(v, (s32)0x80118000, 1, 0xCF8, 0xB01);
@@ -378,7 +378,7 @@ void func_8003C958(void) {
 INCLUDE_ASM("asm/funcs", func_8003C9A4);
 void func_8003CCCC(void) {
     gpu_InitDisplay();
-    func_80061178();
+    game_Cleanup();
     D_800A37B8 = 0;
     D_800A3834 = 0x21;
     gpu_DisableDisplay();
@@ -458,14 +458,14 @@ void func_8003CE18(void) {
     }
     func_80041688(0, 0);
     func_80041688(1, 0);
-    func_80061178();
+    game_Cleanup();
     D_800A37B8 = 0;
     D_800A3834 = 0x1D;
     gpu_DisableDisplay();
 }
 INCLUDE_ASM("asm/funcs", func_8003CF84);
 void func_8003D2C4(void) {
-    func_8007B600((s32)&D_800A3220, (s32)&D_80090178);
+    gpu_LoadImage((s32)&D_800A3220, (s32)&D_80090178);
 }
 extern s32 D_800A3364;
 extern s32 D_800A3218;
@@ -766,7 +766,7 @@ void func_8003E164(s32 arg0) {
     } else {
         func_800432A0(*(s16 *)((u8 *)s0 + 0x14), 0, 0, -0x1C0, 0xE8);
     }
-    func_8007B33C(0);
+    gpu_DrawSync(0);
     func_8003E120();
 end:
     D_800A3228 = arg0;

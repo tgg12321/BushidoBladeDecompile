@@ -29,7 +29,7 @@ glabel func_8003AB44
     /* 2B3A8 8003ABA8 0C0780AF */  sw         $zero, %gp_rel(D_800A37D8)($gp)
     /* 2B3AC 8003ABAC 07004014 */  bnez       $v0, .L8003ABCC
     /* 2B3B0 8003ABB0 03000224 */   addiu     $v0, $zero, 0x3
-    /* 2B3B4 8003ABB4 A8EC010C */  jal        func_8007B2A0
+    /* 2B3B4 8003ABB4 A8EC010C */  jal        gpu_SetDispMask
     /* 2B3B8 8003ABB8 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B3BC 8003ABBC 02000224 */  addiu      $v0, $zero, 0x2
     /* 2B3C0 8003ABC0 E00782A3 */  sb         $v0, %gp_rel(D_800A38AC)($gp)
@@ -82,7 +82,7 @@ glabel func_8003AB44
     /* 2B464 8003AC64 2AEB0008 */  j          .L8003ACA8
     /* 2B468 8003AC68 FFFF0224 */   addiu     $v0, $zero, -0x1
   jlabel .L8003AC6C
-    /* 2B46C 8003AC6C A8EC010C */  jal        func_8007B2A0
+    /* 2B46C 8003AC6C A8EC010C */  jal        gpu_SetDispMask
     /* 2B470 8003AC70 21200000 */   addu      $a0, $zero, $zero
   jlabel .L8003AC74
     /* 2B474 8003AC74 E0078293 */  lbu        $v0, %gp_rel(D_800A38AC)($gp)

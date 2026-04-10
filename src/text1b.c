@@ -356,7 +356,7 @@ __asm__(
     "    addiu  $a1,$t0,4\n"
     "    srl  $v0,$v1,16\n"
     "    sh  $v0,22($sp)\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    sh  $v1,20($sp)\n"
     "    beqz  $s1,.L800483BC\n"
     "    addiu  $s0,$s0,4\n"
@@ -375,15 +375,15 @@ __asm__(
     "    jal  func_8004876C\n"
     "    addu  $a2,$s0,$zero\n"
     "    addiu  $a0,$sp,16\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addu  $a1,$s0,$zero\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    j  .L800483BC\n"
     "    nop\n"
     ".L800483B0:\n"
     "    addiu  $a0,$sp,16\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addu  $a1,$s0,$zero\n"
     ".L800483BC:\n"
     "    lw  $ra,1064($sp)\n"
@@ -497,7 +497,7 @@ __asm__(
     "    addu  $a2,$s0,$zero\n"
     ".L80048510:\n"
     "    addiu  $a0,$sp,16\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addu  $a1,$s0,$zero\n"
     ".L8004851C:\n"
     "    lw  $ra,1052($sp)\n"
@@ -782,7 +782,7 @@ __asm__(
     "    sw  $fp,1088($sp)\n"
     "    lw  $fp,1128($sp)\n"
     "    sw  $ra,1092($sp)\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $a0,$sp,1040\n"
     "    addiu  $a1,$sp,16\n"
@@ -790,9 +790,9 @@ __asm__(
     "    sh  $s0,1040($sp)\n"
     "    sh  $s1,1042($sp)\n"
     "    sh  $s3,1044($sp)\n"
-    "    jal  func_8007B664\n"
+    "    jal  gpu_StoreImage\n"
     "    sh  $v0,1046($sp)\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $t4,$sp,16\n"
     "    addiu  $t3,$sp,528\n"
@@ -887,9 +887,9 @@ __asm__(
     "    addiu  $a0,$sp,1040\n"
     "    addiu  $a1,$sp,528\n"
     "    sh  $s7,1040($sp)\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    sh  $fp,1042($sp)\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    lw  $ra,1092($sp)\n"
     "    lw  $fp,1088($sp)\n"
@@ -14346,7 +14346,7 @@ __asm__(
     "    nop\n"
     "    lui  $a0,%hi(D_80015840)\n"
     "    addiu  $a0,$a0,%lo(D_80015840)\n"
-    "    jal  func_80079208\n"
+    "    jal  debug_printf\n"
     "    nop\n"
     ".L8005469C:\n"
     "    jal  snd_LoadSelection\n"
@@ -14490,11 +14490,11 @@ extern void func_80054604(s32, s32, s32, s32, s32, s32, s32);
 void func_80054884(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
     func_80054604(InfoPosYTbl1[a0] + a1 - 0x131, a2, a3, a4, a5, a6, a7);
 }
-void func_8007B33C(s32);
+void gpu_DrawSync(s32);
 void func_8004659C(s32);
 void snd_StopSelection(void);
 void func_800548DC(void) {
-    func_8007B33C(0);
+    gpu_DrawSync(0);
     func_8004659C(-1);
     snd_StopSelection();
 }
@@ -22140,7 +22140,7 @@ extern void func_800858D0(s32);
 extern void func_80086130(s32, s32, s32);
 extern u32 D_800EFB78[];
 extern u8 D_800EFB7C[];
-void func_8005B5AC(void) {
+void obj_InitChars(void) {
     s32 s1;
     s32 s3;
     u8 *s2;
@@ -22449,11 +22449,11 @@ void func_80085F98(void);
 void func_80085EE4(s32);
 void func_80085E4C(s32, s32);
 void func_80087F64(s16);
-void func_8005B5AC(void);
+void obj_InitChars(void);
 extern s32 D_800EFB3C[];
 extern s32 D_800EFC3C[];
 extern s32 D_800A3408;
-void func_8005B72C(void) {
+void obj_InitAll(void) {
     s32 s0;
     s32 *s2;
     s32 *s1;
@@ -22471,7 +22471,7 @@ void func_8005B72C(void) {
         s1++;
     }
     D_800A3408 = 0;
-    func_8005B5AC();
+    obj_InitChars();
 }
 
 __asm__(
@@ -22489,9 +22489,9 @@ __asm__(
     "    sw  $s0,16($sp)\n"
     "    lui  $a0,%hi(D_800158B4)\n"
     "    addiu  $a0,$a0,%lo(D_800158B4)\n"
-    "    jal  func_80079208\n"
+    "    jal  debug_printf\n"
     "    addu  $a1,$s1,$zero\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    nop\n"
     "    addiu  $a0,$zero,2\n"
     "    jal  func_80036EA8\n"
@@ -22502,7 +22502,7 @@ __asm__(
     "    addu  $a1,$s1,$zero\n"
     "    jal  func_80036F28\n"
     "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    addu  $s0,$v0,$zero\n"
     "    addu  $a0,$s1,$zero\n"
     "    addu  $a1,$zero,$zero\n"
@@ -22532,7 +22532,7 @@ extern s32 D_800EFC48;
 extern s32 D_800EFB48;
 void func_800858D0(s32);
 void func_80087F64(s32);
-void func_8005B868(void) {
+void obj_InitPair(void) {
     func_800858D0(0);
     func_80087F64(8);
     D_800EFC58 = 0;
@@ -22553,21 +22553,21 @@ __asm__(
     "    sw  $ra,32($sp)\n"
     "    sw  $s2,24($sp)\n"
     "    sw  $s1,20($sp)\n"
-    "    jal  func_8005B868\n"
+    "    jal  obj_InitPair\n"
     "    sw  $s0,16($sp)\n"
     "    jal  func_800858D0\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $a0,$zero,2\n"
     "    jal  func_80036EA8\n"
     "    addiu  $a1,$zero,93\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    addu  $s0,$v0,$zero\n"
     "    addu  $a0,$s0,$zero\n"
     "    jal  replay_camera_Init\n"
     "    addu  $a1,$s3,$zero\n"
     "    jal  func_80036F28\n"
     "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    addu  $s1,$v0,$zero\n"
     "    addu  $a0,$s3,$zero\n"
     "    addiu  $a1,$zero,8\n"
@@ -22577,7 +22577,7 @@ __asm__(
     "    addiu  $a1,$zero,94\n"
     "    jal  func_80036EA8\n"
     "    addu  $s0,$v0,$zero\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    addu  $s1,$v0,$zero\n"
     "    addu  $a0,$s1,$zero\n"
     "    addu  $s2,$s3,$s0\n"
@@ -22585,7 +22585,7 @@ __asm__(
     "    addu  $a1,$s2,$zero\n"
     "    jal  func_80036F28\n"
     "    addu  $a0,$s1,$zero\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    addu  $s1,$v0,$s0\n"
     "    addu  $a0,$s2,$zero\n"
     "    addiu  $a1,$zero,4\n"
@@ -22614,30 +22614,30 @@ extern s32 D_800EFC5C;
 extern s32 D_800EFB5C;
 void func_800858D0(s32);
 void func_80087F64(s32);
-void func_8005B9C4(void) {
+void obj_InitTask(void) {
     func_800858D0(0);
     func_80087F64(9);
     D_800EFC5C = 0;
     D_800EFB5C = 0;
 }
-void func_8005B9C4(void);
+void obj_InitTask(void);
 s32 func_80036EA8(s32, s32);
-s32 func_80036F40(void);
+s32 game_FrameLoop(void);
 void replay_camera_Init(s32, s32);
 s32 func_80036F28(s32);
 void func_8005C2A8(s32, s32, s32);
-void func_8005B9FC(s32 a0) {
+void obj_InitTaskCamera(s32 a0) {
     s32 s1;
-    func_8005B9C4();
+    obj_InitTask();
     s1 = func_80036EA8(2, 8);
-    func_80036F40();
+    game_FrameLoop();
     replay_camera_Init(s1, a0);
     s1 = func_80036F28(s1);
-    func_80036F40();
+    game_FrameLoop();
     func_8005C2A8(a0, 9, a0 + s1);
 }
 void func_8005C4C0(s32, s32);
-void func_8005BA6C(s32 a0) {
+void obj_ExecTask(s32 a0) {
     func_8005C4C0(a0, 9);
 }
 __asm__(
@@ -22690,14 +22690,14 @@ __asm__(
     "    addiu  $s2,$zero,3\n"
     "    jal  func_80036EA8\n"
     "    addiu  $a1,$s5,9\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    addu  $s0,$v0,$zero\n"
     "    addu  $a0,$s0,$zero\n"
     "    jal  replay_camera_Init\n"
     "    addu  $a1,$s3,$zero\n"
     "    jal  func_80036F28\n"
     "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    addu  $s5,$v0,$zero\n"
     "    lw  $a0,48($s3)\n"
     "    addiu  $s6,$zero,3\n"
@@ -22973,7 +22973,7 @@ void func_800858D0(s32);
 void func_80085F98(void);
 void func_80085EE4(s32);
 void func_80085E4C(s32, s32);
-void func_8005BF3C(void) {
+void obj_Reset(void) {
     func_800858D0(0);
     func_80085F98();
     func_80085EE4(0);
@@ -23329,7 +23329,7 @@ __asm__(
     "    sll  $v0,$s0,2\n"
     "    lui  $a0,%hi(D_800158CC)\n"
     "    addiu  $a0,$a0,%lo(D_800158CC)\n"
-    "    jal  func_80079208\n"
+    "    jal  debug_printf\n"
     "    addu  $a1,$s2,$zero\n"
     "    j  .L8005C494\n"
     "    addu  $v0,$zero,$zero\n"
@@ -27171,7 +27171,7 @@ __asm__(
     "    addu  $a0,$s0,$zero\n"
     "    jal  replay_camera_Init\n"
     "    addu  $a1,$s1,$zero\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    nop\n"
     "    jal  func_80036F28\n"
     "    addu  $a0,$s0,$zero\n"
@@ -27196,14 +27196,14 @@ __asm__(
     "    swl  $v1,31($sp)\n"
     "    swr  $v1,28($sp)\n"
     "    addiu  $a0,$sp,16\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addiu  $a1,$s1,64\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $a0,$sp,24\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addiu  $a1,$s1,20\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    .word 0xAF8001AC\n"
     "    lw  $ra,40($sp)\n"
@@ -27657,7 +27657,7 @@ __asm__(
     "    addu  $a0,$s1,$zero\n"
     "    jal  replay_camera_Init\n"
     "    addu  $a1,$s0,$zero\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    nop\n"
     "    jal  func_80036F28\n"
     "    addu  $a0,$s1,$zero\n"
@@ -27689,14 +27689,14 @@ __asm__(
     "    swr  $v1,28($sp)\n"
     "    lw  $s1,0($s0)\n"
     "    addiu  $a0,$sp,16\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addiu  $a1,$s1,64\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $a0,$sp,24\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addiu  $a1,$s1,20\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    lui  $a1,%hi(D_800A32A4)\n"
     "    addiu  $a1,$a1,%lo(D_800A32A4)\n"
@@ -27720,14 +27720,14 @@ __asm__(
     "    swr  $v1,44($sp)\n"
     "    lw  $s0,4($s0)\n"
     "    addiu  $a0,$sp,32\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addiu  $a1,$s0,96\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $a0,$sp,40\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addiu  $a1,$s0,20\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    lw  $ra,56($sp)\n"
     "    lw  $s1,52($sp)\n"
@@ -28386,7 +28386,7 @@ __asm__(
     "    sw  $s1,28($sp)\n"
     "    addu  $s1,$a0,$zero\n"
     "    sw  $ra,36($sp)\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    sw  $s0,24($sp)\n"
     "    lui  $v0,%hi(D_8009BD38)\n"
     "    lw  $v0,%lo(D_8009BD38)($v0)\n"
@@ -28424,7 +28424,7 @@ __asm__(
     "    addu  $a0,$v0,$zero\n"
     "    jal  replay_camera_Init\n"
     "    addu  $a1,$s1,$zero\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    nop\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $v0,$zero,896\n"
@@ -28432,12 +28432,12 @@ __asm__(
     "    addiu  $v0,$zero,128\n"
     "    sh  $zero,18($sp)\n"
     "    sh  $v0,20($sp)\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    sh  $s0,22($sp)\n"
     "    addiu  $a0,$sp,16\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addu  $a1,$s1,$zero\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    lui  $a1,1\n"
     "    ori  $a1,$a1,56320\n"
@@ -28447,9 +28447,9 @@ __asm__(
     "    sh  $v0,20($sp)\n"
     "    addiu  $v0,$zero,36\n"
     "    sh  $s0,18($sp)\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    sh  $v0,22($sp)\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    jal  func_80060C60\n"
     "    nop\n"
@@ -28720,7 +28720,7 @@ __asm__(
     "    nop\n"
     "    lui  $a0,%hi(D_800158E0)\n"
     "    addiu  $a0,$a0,%lo(D_800158E0)\n"
-    "    jal  func_80079208\n"
+    "    jal  debug_printf\n"
     "    addiu  $a1,$a1,-450\n"
     ".L80061160:\n"
     "    lw  $ra,24($sp)\n"
@@ -28737,7 +28737,7 @@ __asm__(
 extern s32 D_800A32BC;
 void func_80060C60(void);
 void func_800421A4(void);
-void func_80061178(void) {
+void game_Cleanup(void) {
     func_80060C60();
     func_800421A4();
     D_800A32BC = 0;
@@ -37308,13 +37308,13 @@ __asm__(
     "    swr  $v0,16($sp)\n"
     "    swl  $v1,23($sp)\n"
     "    swr  $v1,20($sp)\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $a0,$sp,16\n"
     "    addiu  $a1,$zero,960\n"
     "    jal  func_8007B6C8\n"
     "    addiu  $a2,$zero,510\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    .word 0x8F830458\n"
     "    addiu  $v0,$zero,1\n"
@@ -43017,11 +43017,11 @@ __asm__(
     "    .word 0x8F850434\n"
     "    jal  replay_camera_Init\n"
     "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80036F40\n"
+    "    jal  game_FrameLoop\n"
     "    nop\n"
     "    jal  func_80036F28\n"
     "    addu  $a0,$s0,$zero\n"
-    "    jal  func_8007B2A0\n"
+    "    jal  gpu_SetDispMask\n"
     "    addu  $a0,$zero,$zero\n"
     "    lui  $s0,%hi(g_disp_fb_base)\n"
     "    addiu  $s0,$s0,%lo(g_disp_fb_base)\n"
@@ -43058,25 +43058,25 @@ __asm__(
     "    sb  $zero,%lo(D_800F74A5)($at)\n"
     "    lui  $at,%hi(D_800FB535)\n"
     "    sb  $zero,%lo(D_800FB535)($at)\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $a0,$sp,24\n"
     "    addu  $a1,$zero,$zero\n"
     "    addu  $a2,$zero,$zero\n"
     "    jal  func_8007B4D0\n"
     "    addu  $a3,$zero,$zero\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $a0,$sp,24\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addiu  $a1,$s3,20\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    jal  func_8007B9B0\n"
     "    addu  $a0,$s0,$zero\n"
     "    jal  func_8007BC08\n"
     "    addu  $a0,$s2,$zero\n"
-    "    jal  func_8007B2A0\n"
+    "    jal  gpu_SetDispMask\n"
     "    addiu  $a0,$zero,1\n"
     "    addiu  $v0,$zero,1\n"
     "    lw  $ra,48($sp)\n"
@@ -43101,7 +43101,7 @@ __asm__(
     "    addiu  $sp,$sp,-32\n"
     "    addu  $a0,$zero,$zero\n"
     "    sw  $ra,28($sp)\n"
-    "    jal  func_8007B2A0\n"
+    "    jal  gpu_SetDispMask\n"
     "    sw  $s0,24($sp)\n"
     "    .word 0x8F82044C\n"
     "    lui  $s0,%hi(g_disp_fb_base)\n"
@@ -43124,7 +43124,7 @@ __asm__(
     "    sll  $a0,$a0,4\n"
     "    jal  func_8007BC08\n"
     "    addu  $a0,$a0,$s0\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    lui  $a1,%hi(D_800A32E0)\n"
     "    addiu  $a1,$a1,%lo(D_800A32E0)\n"
@@ -43141,14 +43141,14 @@ __asm__(
     "    addu  $a2,$zero,$zero\n"
     "    jal  func_8007B4D0\n"
     "    addu  $a3,$zero,$zero\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $a0,$zero,1\n"
     "    addu  $a1,$zero,$zero\n"
     "    addu  $a2,$zero,$zero\n"
     "    jal  disp_SetFramebufferMode\n"
     "    addu  $a3,$zero,$zero\n"
-    "    jal  func_8007B2A0\n"
+    "    jal  gpu_SetDispMask\n"
     "    addiu  $a0,$zero,1\n"
     "    addiu  $v0,$zero,1\n"
     "    lw  $ra,28($sp)\n"
@@ -43459,13 +43459,13 @@ __asm__(
     "    swr  $v1,20($sp)\n"
     "    .word 0xA78004D0\n"
     "    .word 0xA78004CC\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    addiu  $a0,$sp,16\n"
     "    addiu  $a1,$zero,960\n"
     "    jal  func_8007B6C8\n"
     "    addiu  $a2,$zero,510\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    .word 0x8F8404A0\n"
     "    addiu  $v0,$zero,1\n"
@@ -43492,8 +43492,8 @@ s32 func_8006E8AC(s32 a0) {
     return D_800A35AC + a0 * 44;
 }
 s32* func_80077D00(void);
-void func_8007B33C(s32);
-void func_8007B600(s16*, s32);
+void gpu_DrawSync(s32);
+void gpu_LoadImage(s16*, s32);
 void func_8006E8CC(s32 *a0) {
     s32 *p;
     s32 data;
@@ -43508,9 +43508,9 @@ void func_8006E8CC(s32 *a0) {
     rect[1] = 0x1E0;
     rect[2] = 0x280;
     rect[3] = 0x20;
-    func_8007B33C(0);
-    func_8007B600(rect, data);
-    func_8007B33C(0);
+    gpu_DrawSync(0);
+    gpu_LoadImage(rect, data);
+    gpu_DrawSync(0);
 }
 void func_8006E950(s32 *a0, s32 *a1) {
     s32 *s1 = a1;
@@ -43522,10 +43522,10 @@ void func_8006E950(s32 *a0, s32 *a1) {
     s16 rect[4];
 
     s0_addr = (s32)a0;
-    func_80036F40();
+    game_FrameLoop();
     v0 = func_80036EA8(2, s0_addr);
     replay_camera_Init(v0, (s32)s1);
-    func_80036F40();
+    game_FrameLoop();
     s2 = 0x280;
     func_8006E440(s1);
 
@@ -43536,15 +43536,15 @@ void func_8006E950(s32 *a0, s32 *a1) {
     rect[1] = 0;
     rect[2] = 0x180;
     rect[3] = (s16)s0;
-    func_8007B33C(0);
-    func_8007B600(rect, s3);
+    gpu_DrawSync(0);
+    gpu_LoadImage(rect, s3);
 
     rect[2] = 0x170;
     rect[0] = (s16)s2;
     rect[1] = (s16)s0;
     rect[3] = 0x24;
-    func_8007B33C(0);
-    func_8007B600(rect, s3 + 0x59400);
+    gpu_DrawSync(0);
+    gpu_LoadImage(rect, s3 + 0x59400);
 
     func_8006E8CC(s1);
 }
@@ -43877,9 +43877,9 @@ __asm__(
     "    swl  $v1,71($sp)\n"
     "    swr  $v1,68($sp)\n"
     "    addiu  $a0,$sp,64\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addu  $a1,$a2,$zero\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    j  .L8006EF24\n"
     "    nop\n"
@@ -46496,9 +46496,9 @@ __asm__(
     "    addu  $v1,$v1,$v0\n"
     ".L80071494:\n"
     "    lw  $a1,0($v1)\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addu  $a0,$s4,$a0\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    j  .L80071698\n"
     "    nop\n"
@@ -46772,9 +46772,9 @@ __asm__(
     "    addu  $a1,$a1,$v0\n"
     "    addu  $a1,$a1,$v1\n"
     "    lw  $a1,0($a1)\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addu  $a0,$s4,$a0\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    sll  $v0,$s3,16\n"
     ".L800718C0:\n"
@@ -54105,9 +54105,9 @@ __asm__(
     "    addu  $v0,$v0,$s1\n"
     "    lw  $a1,0($v0)\n"
     "    addiu  $s0,$s0,1\n"
-    "    jal  func_8007B600\n"
+    "    jal  gpu_LoadImage\n"
     "    addiu  $a1,$a1,544\n"
-    "    jal  func_8007B33C\n"
+    "    jal  gpu_DrawSync\n"
     "    addu  $a0,$zero,$zero\n"
     "    lhu  $v0,72($sp)\n"
     "    nop\n"
@@ -54722,7 +54722,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_800789B8\n"
+    "glabel EnterCriticalSection\n"
     "    addiu  $a0,$zero,1\n"
     "    .word 0x0000000C\n"
     "    jr  $ra\n"
@@ -54737,7 +54737,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_800789C8\n"
+    "glabel ExitCriticalSection\n"
     "    addiu  $a0,$zero,2\n"
     "    .word 0x0000000C\n"
     "    jr  $ra\n"
@@ -55050,9 +55050,9 @@ s32 func_80078BF0(void) {
     return D_8009BD80;
 }
 void func_800790C0(void);
-void func_800789B8(void);
+void EnterCriticalSection(void);
 void func_80078F88(void);
-void func_800789C8(void);
+void ExitCriticalSection(void);
 void func_80078A58(s32);
 s32 func_80078DA0(void);
 void func_80078F30(s32, s32, s32, s32);
@@ -55060,9 +55060,9 @@ void func_80079028(void);
 extern s32 D_8009BD80;
 void func_80078C00(s32 a0, s32 a1, s32 a2, s32 a3) {
     func_800790C0();
-    func_800789B8();
+    EnterCriticalSection();
     func_80078F88();
-    func_800789C8();
+    ExitCriticalSection();
     func_80078A58(0);
     func_80078DA0();
     func_80078F30(a0, a1, a2, a3);
@@ -55070,9 +55070,9 @@ void func_80078C00(s32 a0, s32 a1, s32 a2, s32 a3) {
     D_8009BD80 = 1;
 }
 void func_800790C0(void);
-void func_800789B8(void);
+void EnterCriticalSection(void);
 void func_80078F88(void);
-void func_800789C8(void);
+void ExitCriticalSection(void);
 void func_80078A58(s32);
 s32 func_80078DA0(void);
 void func_80078F00(s32, s32, s32, s32);
@@ -55080,9 +55080,9 @@ void func_80079028(void);
 extern s32 D_8009BD80;
 void func_80078C9C(s32 a0, s32 a1, s32 a2, s32 a3) {
     func_800790C0();
-    func_800789B8();
+    EnterCriticalSection();
     func_80078F88();
-    func_800789C8();
+    ExitCriticalSection();
     func_80078A58(0);
     func_80078DA0();
     func_80078F00(a0, a1, a2, a3);
@@ -55101,14 +55101,14 @@ extern s32 D_8009BD80;
 void func_80078F74(void);
 void func_80078F20(void);
 s32 func_80078E20(void);
-void func_80078D68(void) {
+void pad_Init(void) {
     func_80078F74();
     func_80078F20();
     func_80078E20();
     D_8009BD80 = 0;
 }
-extern void func_800789B8(void);
-extern void func_800789C8(void);
+extern void EnterCriticalSection(void);
+extern void ExitCriticalSection(void);
 extern void func_80078F50(s32, u32 *);
 extern void func_80078F40(s32, u32 *);
 extern void func_80078E58(void);
@@ -55120,24 +55120,24 @@ extern u32 D_800F1844;
 s32 func_80078DA0(void) {
     u32 *v1 = &D_800F183C;
     u32 *s0 = v1 - 1;
-    func_800789B8();
+    EnterCriticalSection();
     *v1 = (u32)func_80078E58;
     D_800F1840 = (u32)func_80078EC0;
     D_800F1838 = 0;
     D_800F1844 = 0;
     func_80078F50(1, s0);
     func_80078F40(1, s0);
-    func_800789C8();
+    ExitCriticalSection();
     return 1;
 }
-void func_800789B8(void);
+void EnterCriticalSection(void);
 void func_80078F50(s32, s16*);
-void func_800789C8(void);
+void ExitCriticalSection(void);
 extern s16 D_800F1838;
 s32 func_80078E20(void) {
-    func_800789B8();
+    EnterCriticalSection();
     func_80078F50(1, &D_800F1838);
-    func_800789C8();
+    ExitCriticalSection();
     return 1;
 }
 __asm__(
@@ -55337,7 +55337,7 @@ __asm__(
     "glabel func_80078F88\n"
     "    lui  $at,%hi(D_800A3618)\n"
     "    sw  $ra,%lo(D_800A3618)($at)\n"
-    "    jal  func_800789B8\n"
+    "    jal  EnterCriticalSection\n"
     "    nop\n"
     "    addiu  $t2,$zero,176\n"
     "    jalr  $t2\n"
@@ -55401,7 +55401,7 @@ __asm__(
     "glabel func_80079028\n"
     "    lui  $at,%hi(D_800A3628)\n"
     "    sw  $ra,%lo(D_800A3628)($at)\n"
-    "    jal  func_800789B8\n"
+    "    jal  EnterCriticalSection\n"
     "    nop\n"
     "    addiu  $t2,$zero,176\n"
     "    jalr  $t2\n"
@@ -55423,7 +55423,7 @@ __asm__(
     "    sw  $v1,1244($v0)\n"
     "    jal  func_80078FF0\n"
     "    nop\n"
-    "    jal  func_800789C8\n"
+    "    jal  ExitCriticalSection\n"
     "    nop\n"
     "    lui  $ra,%hi(D_800A3628)\n"
     "    lw  $ra,%lo(D_800A3628)($ra)\n"
@@ -55458,7 +55458,7 @@ __asm__(
     "glabel func_800790C0\n"
     "    lui  $at,%hi(D_800A3638)\n"
     "    sw  $ra,%lo(D_800A3638)($at)\n"
-    "    jal  func_800789B8\n"
+    "    jal  EnterCriticalSection\n"
     "    nop\n"
     "    addiu  $t2,$zero,176\n"
     "    jalr  $t2\n"
@@ -55473,7 +55473,7 @@ __asm__(
     "    addiu  $v1,$v1,4\n"
     "    jal  func_80078FF0\n"
     "    nop\n"
-    "    jal  func_800789C8\n"
+    "    jal  ExitCriticalSection\n"
     "    nop\n"
     "    lui  $ra,%hi(D_800A3638)\n"
     "    lw  $ra,%lo(D_800A3638)($ra)\n"
@@ -55486,7 +55486,7 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_1; /* padding after func_800790C0 */
-u8* func_80079120(u8 *dst, u8 *src, s32 len) {
+u8* bb2_memcpy(u8 *dst, u8 *src, s32 len) {
     u8 *ret;
     if (!dst) {
         return 0;
@@ -55537,7 +55537,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80079208\n"
+    "glabel debug_printf\n"
     "    addiu  $sp,$sp,-24\n"
     "    addu  $v0,$a0,$zero\n"
     "    addiu  $a0,$zero,1\n"

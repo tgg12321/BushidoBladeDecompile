@@ -20,7 +20,7 @@ glabel func_8003B328
     /* 2BB70 8003B370 000068A0 */  sb         $t0, 0x0($v1)
     /* 2BB74 8003B374 0A80013C */  lui        $at, %hi(D_800A376A)
     /* 2BB78 8003B378 6A3725A0 */  sb         $a1, %lo(D_800A376A)($at)
-    /* 2BB7C 8003B37C 8105010C */  jal        func_80041604
+    /* 2BB7C 8003B37C 8105010C */  jal        player_SetCharId
     /* 2BB80 8003B380 21200000 */   addu      $a0, $zero, $zero
     /* 2BB84 8003B384 1080043C */  lui        $a0, %hi(D_80101EC8)
     /* 2BB88 8003B388 C81E8424 */  addiu      $a0, $a0, %lo(D_80101EC8)

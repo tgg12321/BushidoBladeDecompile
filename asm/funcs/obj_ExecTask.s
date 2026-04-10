@@ -1,4 +1,4 @@
-glabel func_8005BA6C
+glabel obj_ExecTask
     /* 4C26C 8005BA6C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 4C270 8005BA70 1000BFAF */  sw         $ra, 0x10($sp)
     /* 4C274 8005BA74 3071010C */  jal        func_8005C4C0
@@ -7,4 +7,4 @@ glabel func_8005BA6C
     /* 4C280 8005BA80 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 4C284 8005BA84 0800E003 */  jr         $ra
     /* 4C288 8005BA88 00000000 */   nop
-endlabel func_8005BA6C
+endlabel obj_ExecTask

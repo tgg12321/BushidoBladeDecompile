@@ -21,26 +21,26 @@ extern u32 D_80101E44;
 /* Extern function declarations */
 extern void func_80023CB4(s32, s32);
 extern void func_800194F4(void);
-extern void func_80045188(void);
+extern void seq_Reset(void);
 extern void func_8003A39C(void);
-extern void func_800828CC(s32);
-extern void func_8007B600(s32, s32);
-extern void func_80061178(void);
-extern void func_800450BC(s32, s32);
+extern void sys_VSync(s32);
+extern void gpu_LoadImage(s32, s32);
+extern void game_Cleanup(void);
+extern void seq_Start(s32, s32);
 extern u16 g_game_p1_ctrl;
 extern s32 D_80102794;
 extern s32 D_800A3894;
 extern s16 D_800A38C4;
 extern s16 D_80101F32;
-extern void func_8005B5AC(void);
-extern void func_8005BF3C(void);
-extern void func_8005B9C4(void);
-extern void func_8005B868(void);
-extern void func_80041604(s32, s32);
+extern void obj_InitChars(void);
+extern void obj_Reset(void);
+extern void obj_InitTask(void);
+extern void obj_InitPair(void);
+extern void player_SetCharId(s32, s32);
 extern void func_80021974(s32);
-extern void func_800415C4(s32);
+extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
-extern void func_8005B72C(void);
+extern void obj_InitAll(void);
 extern void func_80077820(s32);
 extern volatile s32 D_80101E70;
 extern s32 D_800A3894;
@@ -57,10 +57,10 @@ extern void func_8003AFFC(void);
 
 extern void sys_Panic(void);
 extern s32 func_80020D38(void);
-extern s32 func_8005B9FC(s32);
+extern s32 obj_InitTaskCamera(s32);
 extern void *D_800A38B4;
-extern s32 func_80079120(s32 *, s32, s32);
-extern void func_8005BA6C(s32);
+extern s32 bb2_memcpy(s32 *, s32, s32);
+extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
 extern void func_8005B98C(s32);
@@ -78,9 +78,9 @@ extern void stage_GetDataPtr(void);
 
 extern void func_8005B50C(void);
 extern void func_80037774(void);
-extern void func_80078D68(void);
+extern void pad_Init(void);
 extern void irq_Reset(void);
-extern s32 func_800789B8(void);
+extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
 extern s32 func_8004939C(void);
@@ -128,11 +128,11 @@ void func_80035480(void) {
         func_8003A41C();
     }
     func_80020CDC();
-    func_800415C4(0);
-    func_800415C4(1);
+    player_Destroy(0);
+    player_Destroy(1);
     file_ResetDmaFlag();
     if (D_800A31D8 != 0) {
-        func_8005B72C();
+        obj_InitAll();
         D_800A390E = -1;
         v0 = 1;
     } else {
@@ -194,10 +194,10 @@ void func_80035DC8(void) {
     gpu_EnableDisplay();
     gpu_InitDisplay();
     func_80020CDC();
-    func_800415C4(0);
-    func_800415C4(1);
+    player_Destroy(0);
+    player_Destroy(1);
     file_ResetDmaFlag();
-    func_8005B72C();
+    obj_InitAll();
     func_80077820((s32)0x80118800);
     D_800A3834 = 0x1B;
     gpu_DisableDisplay();
@@ -282,7 +282,7 @@ void func_80035FE0(void) {
 void func_80036034(void) {
     func_80080148();
     func_8007FF7C();
-    func_800828CC(4);
+    sys_VSync(4);
 }
 extern void func_80080620(s32, s32);
 extern s32 func_800807A8(s32);
@@ -367,7 +367,7 @@ s32 func_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 s32 func_80036EA8(s32 arg0, s32 arg1) {
     return (&D_8008F12C)[arg0] + arg1;
 }
-void func_80036EC0(void) {
+void game_FrameInit(void) {
     func_80080240(0);
     func_80035F30(0, 0, 0, 0);
     func_80080148();
@@ -379,7 +379,7 @@ void func_80036EC0(void) {
 u32 func_80036F28(s32 arg0) {
     return (&D_8008EC38)[arg0 * 2];
 }
-void func_80036F40(void) {
+void game_FrameLoop(void) {
     u16 *s0;
     func_8003AA78();
     s0 = (u16 *)&D_80101E9E;
@@ -394,7 +394,7 @@ void func_80036F40(void) {
         }
         gnd_disp_loop_ctrl();
         *s0 = *s0 + 2;
-        func_800828CC(2);
+        sys_VSync(2);
     }
     func_8003AAB0();
 }
@@ -485,14 +485,14 @@ void func_80037260(void) {
     while (D_80101E62 != 0x16) {
         func_8003AA48();
         special_camera_Exec();
-        func_800828CC(2);
+        sys_VSync(2);
     }
 }
 void func_800372C0(void) {
     if (D_80101E62 != 0) {
-        func_80036EC0();
+        game_FrameInit();
     }
-    func_80036F40();
+    game_FrameLoop();
 }
 void func_800372F4(s32 arg0) {
     s32 v = arg0 + 0x7FF;
@@ -503,7 +503,7 @@ void func_800372F4(s32 arg0) {
     do {
         v = func_800827D0(1, 0);
         if (v > 0) {
-            func_800828CC(0);
+            sys_VSync(0);
         }
     } while (v > 0);
 }
@@ -553,26 +553,26 @@ retry:
 /* kengo:MED  |  nm_special_cam/special_camera_get_rot_dir  |  66i  |  +6 9.1% */
 void func_80037468(s32 a0, s32 *a1, s32 a2) {
     s32 sp[16];
-    func_800828CC(0);
-    func_8007B2A0(0);
+    sys_VSync(0);
+    gpu_SetDispMask(0);
     gpu_EnableDisplay();
     func_8005B50C();
     func_80037774();
     irq_DisableInterrupts();
     func_8007FF7C();
     special_camera_get_rot_dir(sp);
-    func_8007B33C(0);
+    gpu_DrawSync(0);
     func_8007AE7C(0);
-    func_80078D68();
+    pad_Init();
     irq_Reset();
     sp[8] = a2;
     sp[9] = 0;
-    func_800789B8();
+    EnterCriticalSection();
     func_80078948(sp, a0, a1);
     sys_Init();
     file_LoadSoundData();
-    func_800828CC(0);
-    func_8007B2A0(1);
+    sys_VSync(0);
+    gpu_SetDispMask(1);
 }
 extern s32 func_800392B8(void);
 extern void func_80037468(s32, s32 *, s32);

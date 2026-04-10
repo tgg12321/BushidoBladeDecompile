@@ -5,9 +5,9 @@ glabel func_8003BFC4
     /* 2C7D0 8003BFD0 00000000 */   nop
     /* 2C7D4 8003BFD4 3783000C */  jal        func_80020CDC
     /* 2C7D8 8003BFD8 00000000 */   nop
-    /* 2C7DC 8003BFDC 7105010C */  jal        func_800415C4
+    /* 2C7DC 8003BFDC 7105010C */  jal        player_Destroy
     /* 2C7E0 8003BFE0 21200000 */   addu      $a0, $zero, $zero
-    /* 2C7E4 8003BFE4 7105010C */  jal        func_800415C4
+    /* 2C7E4 8003BFE4 7105010C */  jal        player_Destroy
     /* 2C7E8 8003BFE8 01000424 */   addiu     $a0, $zero, 0x1
     /* 2C7EC 8003BFEC 1D5B000C */  jal        file_ResetDmaFlag
     /* 2C7F0 8003BFF0 00000000 */   nop
