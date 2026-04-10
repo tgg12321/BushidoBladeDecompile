@@ -1,6 +1,5 @@
 # Per-function register fixups for GCC 2.7.2 register allocator mismatches
 # Format: func_name: $regA <-> $regB [@ start-end]
-# Swaps are bidirectional. Range is instruction index (0-based, inclusive).
 # Without @range, swap applies to ALL instructions in the function.
 # Reorder: func_name: reorder i,j,k,... @ start-end
 #   Rearranges instructions in range to new order (i,j,k are original indices).
@@ -17,7 +16,6 @@ PutShadowRmd: $6 <-> $7 @ 51-68
 gnd_disp_loop_ctrl: $3 <-> $5 @ 27-41
 
 # cpu_get_dist: cos_idx in a0 ($4) instead of v1 ($3), plus scheduling reorder
-# Swap a0<->v1 only on cos_idx computation (not vx load or mult which also use $3)
 cpu_get_dist: $4 <-> $3 @ 8-9
 cpu_get_dist: $4 <-> $3 @ 11-11
 cpu_get_dist: $4 <-> $3 @ 14-14
@@ -26,7 +24,6 @@ cpu_get_dist: reorder 11,13,14,15,10,16,17,12 @ 10-17
 
 # func_8001EEB4: GCC optimizes away andi for lhu zero-extension, original has it
 # TEXT indices (pseudo-insns like la/lb count as 1)
-# Swap v1<->a1 at lhu (TEXT 14) and range-check addiu (TEXT 21)
 func_8001EEB4: $3 <-> $5 @ 14-14
 func_8001EEB4: $3 <-> $5 @ 21-21
 # Insert the andi before the beq (TEXT 16)
@@ -167,3 +164,17 @@ saEft01Init: subst ",28\(" ",24(" @ 71
 saEft01Init: subst ",24\(" ",32(" @ 72
 # Reorder epilogue restores to match target order (s2, s1, s0)
 saEft01Init: reorder 72,70,71 @ 70-72
+
+# damage_DebugDisp: swap j<->sum registers in inner loop body (TEXT 7-15)
+damage_DebugDisp: $4 <-> $5 @ 7-15
+# damage_DebugDisp: transform constants-before-moves at TEXT 55-59
+# Original: move,move,lui,lui,ori -> Target: lui,lui,ori,move,move
+damage_DebugDisp: subst "addu	\$4,\$9,\$zero" "lui $8,0x8000" @ 55
+damage_DebugDisp: subst "addu	\$6,\$4,\$zero" "lui $7,0x001f" @ 56
+damage_DebugDisp: subst "lui	\$8,.*" "ori $7,$7,0xffff" @ 57
+damage_DebugDisp: subst "lui	\$7,.*" "addu $4,$9,$zero" @ 58
+damage_DebugDisp: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
+# damage_DebugDisp: insert nop for load delay at trailing word copy (TEXT 53)
+damage_DebugDisp: insert "nop" @ 53
+# damage_DebugDisp: reorder sw before k=0 (post-insert TEXT 54-55)
+damage_DebugDisp: reorder 55,54 @ 54-55
