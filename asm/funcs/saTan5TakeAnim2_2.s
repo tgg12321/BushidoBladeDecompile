@@ -116,7 +116,7 @@ glabel saTan5TakeAnim2_2
     /* 745C8 80083DC8 00000000 */  nop
     /* 745CC 80083DCC 09004010 */  beqz       $v0, .L80083DF4
     /* 745D0 80083DD0 00000000 */   nop
-    /* 745D4 80083DD4 6EE2010C */  jal        func_800789B8
+    /* 745D4 80083DD4 6EE2010C */  jal        EnterCriticalSection
     /* 745D8 80083DD8 00000000 */   nop
     /* 745DC 80083DDC 0A80043C */  lui        $a0, %hi(D_800A26D4)
     /* 745E0 80083DE0 D426848C */  lw         $a0, %lo(D_800A26D4)($a0)
@@ -125,7 +125,7 @@ glabel saTan5TakeAnim2_2
     /* 745EC 80083DEC 9F0F0208 */  j          .L80083E7C
     /* 745F0 80083DF0 00000000 */   nop
   .L80083DF4:
-    /* 745F4 80083DF4 6EE2010C */  jal        func_800789B8
+    /* 745F4 80083DF4 6EE2010C */  jal        EnterCriticalSection
     /* 745F8 80083DF8 00000000 */   nop
     /* 745FC 80083DFC EAE2010C */  jal        func_80078BA8
     /* 74600 80083E00 21202002 */   addu      $a0, $s1, $zero
@@ -162,7 +162,7 @@ glabel saTan5TakeAnim2_2
     /* 74674 80083E74 BC0A020C */  jal        irq_EnableInterrupts
     /* 74678 80083E78 00000000 */   nop
   .L80083E7C:
-    /* 7467C 80083E7C 72E2010C */  jal        func_800789C8
+    /* 7467C 80083E7C 72E2010C */  jal        ExitCriticalSection
     /* 74680 80083E80 00000000 */   nop
   .L80083E84:
     /* 74684 80083E84 1800BF8F */  lw         $ra, 0x18($sp)

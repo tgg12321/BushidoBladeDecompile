@@ -49,7 +49,7 @@ glabel func_800826CC
     /* 72F80 80082780 0A80013C */  lui        $at, %hi(D_800A14FC)
     /* 72F84 80082784 FC1422AC */  sw         $v0, %lo(D_800A14FC)($at)
   .L80082788:
-    /* 72F88 80082788 330A020C */  jal        func_800828CC
+    /* 72F88 80082788 330A020C */  jal        sys_VSync
     /* 72F8C 8008278C FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 72F90 80082790 0A80013C */  lui        $at, %hi(D_800A14EC)
     /* 72F94 80082794 EC1422AC */  sw         $v0, %lo(D_800A14EC)($at)

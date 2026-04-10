@@ -262,13 +262,13 @@ glabel special_camera_Exec
     /* 27500 80036D00 02000224 */  addiu      $v0, $zero, 0x2
     /* 27504 80036D04 1080013C */  lui        $at, %hi(D_80101E62)
     /* 27508 80036D08 621E22A4 */  sh         $v0, %lo(D_80101E62)($at)
-    /* 2750C 80036D0C 330A020C */  jal        func_800828CC
+    /* 2750C 80036D0C 330A020C */  jal        sys_VSync
     /* 27510 80036D10 04000424 */   addiu     $a0, $zero, 0x4
-    /* 27514 80036D14 330A020C */  jal        func_800828CC
+    /* 27514 80036D14 330A020C */  jal        sys_VSync
     /* 27518 80036D18 04000424 */   addiu     $a0, $zero, 0x4
-    /* 2751C 80036D1C 330A020C */  jal        func_800828CC
+    /* 2751C 80036D1C 330A020C */  jal        sys_VSync
     /* 27520 80036D20 04000424 */   addiu     $a0, $zero, 0x4
-    /* 27524 80036D24 330A020C */  jal        func_800828CC
+    /* 27524 80036D24 330A020C */  jal        sys_VSync
     /* 27528 80036D28 04000424 */   addiu     $a0, $zero, 0x4
     /* 2752C 80036D2C 5DDB0008 */  j          .L80036D74
     /* 27530 80036D30 00000000 */   nop

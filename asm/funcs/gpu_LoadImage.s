@@ -1,4 +1,4 @@
-glabel func_8007B600
+glabel gpu_LoadImage
     /* 6BE00 8007B600 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6BE04 8007B604 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6BE08 8007B608 21808000 */  addu       $s0, $a0, $zero
@@ -24,4 +24,4 @@ glabel func_8007B600
     /* 6BE58 8007B658 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6BE5C 8007B65C 0800E003 */  jr         $ra
     /* 6BE60 8007B660 00000000 */   nop
-endlabel func_8007B600
+endlabel gpu_LoadImage

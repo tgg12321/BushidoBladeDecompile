@@ -11,7 +11,7 @@ glabel func_80083954
     /* 74178 80083978 DD2620A0 */  sb         $zero, %lo(D_800A26DD)($at)
     /* 7417C 8008397C 22006210 */  beq        $v1, $v0, .L80083A08
     /* 74180 80083980 00000000 */   nop
-    /* 74184 80083984 6EE2010C */  jal        func_800789B8
+    /* 74184 80083984 6EE2010C */  jal        EnterCriticalSection
     /* 74188 80083988 00000000 */   nop
     /* 7418C 8008398C 0A80023C */  lui        $v0, %hi(D_800A26DC)
     /* 74190 80083990 DC264290 */  lbu        $v0, %lo(D_800A26DC)($v0)
@@ -42,7 +42,7 @@ glabel func_80083954
     /* 741EC 800839EC BC0A020C */  jal        irq_EnableInterrupts
     /* 741F0 800839F0 21280000 */   addu      $a1, $zero, $zero
   .L800839F4:
-    /* 741F4 800839F4 72E2010C */  jal        func_800789C8
+    /* 741F4 800839F4 72E2010C */  jal        ExitCriticalSection
     /* 741F8 800839F8 00000000 */   nop
     /* 741FC 800839FC 7F000224 */  addiu      $v0, $zero, 0x7F
     /* 74200 80083A00 0A80013C */  lui        $at, %hi(D_800A26DE)

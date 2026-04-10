@@ -100,9 +100,9 @@ glabel func_80041BF4
     /* 32568 80041D68 01000224 */  addiu      $v0, $zero, 0x1
     /* 3256C 80041D6C 1E00A2A7 */  sh         $v0, 0x1E($sp)
     /* 32570 80041D70 21187400 */  addu       $v1, $v1, $s4
-    /* 32574 80041D74 80ED010C */  jal        func_8007B600
+    /* 32574 80041D74 80ED010C */  jal        gpu_LoadImage
     /* 32578 80041D78 1A00A3A7 */   sh        $v1, 0x1A($sp)
-    /* 3257C 80041D7C CFEC010C */  jal        func_8007B33C
+    /* 3257C 80041D7C CFEC010C */  jal        gpu_DrawSync
     /* 32580 80041D80 21200000 */   addu      $a0, $zero, $zero
     /* 32584 80041D84 10000624 */  addiu      $a2, $zero, 0x10
     /* 32588 80041D88 1800A487 */  lh         $a0, 0x18($sp)

@@ -1,7 +1,7 @@
 glabel func_80078DA0
     /* 695A0 80078DA0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 695A4 80078DA4 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 695A8 80078DA8 6EE2010C */  jal        func_800789B8
+    /* 695A8 80078DA8 6EE2010C */  jal        EnterCriticalSection
     /* 695AC 80078DAC 1000B0AF */   sw        $s0, 0x10($sp)
     /* 695B0 80078DB0 01000424 */  addiu      $a0, $zero, 0x1
     /* 695B4 80078DB4 0F80033C */  lui        $v1, %hi(D_800F183C)
@@ -23,7 +23,7 @@ glabel func_80078DA0
     /* 695F4 80078DF4 01000424 */  addiu      $a0, $zero, 0x1
     /* 695F8 80078DF8 D0E3010C */  jal        func_80078F40
     /* 695FC 80078DFC 21280002 */   addu      $a1, $s0, $zero
-    /* 69600 80078E00 72E2010C */  jal        func_800789C8
+    /* 69600 80078E00 72E2010C */  jal        ExitCriticalSection
     /* 69604 80078E04 00000000 */   nop
     /* 69608 80078E08 01000224 */  addiu      $v0, $zero, 0x1
     /* 6960C 80078E0C 1400BF8F */  lw         $ra, 0x14($sp)

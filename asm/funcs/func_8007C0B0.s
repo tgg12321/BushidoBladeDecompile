@@ -5,7 +5,7 @@ glabel func_8007C0B0
     /* 6C8BC 8007C0BC 0A80053C */  lui        $a1, %hi(D_8009BEE0)
     /* 6C8C0 8007C0C0 E0BEA524 */  addiu      $a1, $a1, %lo(D_8009BEE0)
     /* 6C8C4 8007C0C4 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 6C8C8 8007C0C8 48E4010C */  jal        func_80079120
+    /* 6C8C8 8007C0C8 48E4010C */  jal        bb2_memcpy
     /* 6C8CC 8007C0CC 14000624 */   addiu     $a2, $zero, 0x14
     /* 6C8D0 8007C0D0 21100002 */  addu       $v0, $s0, $zero
     /* 6C8D4 8007C0D4 1400BF8F */  lw         $ra, 0x14($sp)

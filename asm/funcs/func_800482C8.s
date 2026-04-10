@@ -33,7 +33,7 @@ glabel func_800482C8
     /* 38B40 80048340 04000525 */  addiu      $a1, $t0, 0x4
     /* 38B44 80048344 02140300 */  srl        $v0, $v1, 16
     /* 38B48 80048348 1600A2A7 */  sh         $v0, 0x16($sp)
-    /* 38B4C 8004834C 80ED010C */  jal        func_8007B600
+    /* 38B4C 8004834C 80ED010C */  jal        gpu_LoadImage
     /* 38B50 80048350 1400A3A7 */   sh        $v1, 0x14($sp)
     /* 38B54 80048354 19002012 */  beqz       $s1, .L800483BC
     /* 38B58 80048358 04001026 */   addiu     $s0, $s0, 0x4
@@ -52,15 +52,15 @@ glabel func_800482C8
     /* 38B8C 8004838C DB21010C */  jal        func_8004876C
     /* 38B90 80048390 21300002 */   addu      $a2, $s0, $zero
     /* 38B94 80048394 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 38B98 80048398 80ED010C */  jal        func_8007B600
+    /* 38B98 80048398 80ED010C */  jal        gpu_LoadImage
     /* 38B9C 8004839C 21280002 */   addu      $a1, $s0, $zero
-    /* 38BA0 800483A0 CFEC010C */  jal        func_8007B33C
+    /* 38BA0 800483A0 CFEC010C */  jal        gpu_DrawSync
     /* 38BA4 800483A4 21200000 */   addu      $a0, $zero, $zero
     /* 38BA8 800483A8 EF200108 */  j          .L800483BC
     /* 38BAC 800483AC 00000000 */   nop
   .L800483B0:
     /* 38BB0 800483B0 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 38BB4 800483B4 80ED010C */  jal        func_8007B600
+    /* 38BB4 800483B4 80ED010C */  jal        gpu_LoadImage
     /* 38BB8 800483B8 21280002 */   addu      $a1, $s0, $zero
   .L800483BC:
     /* 38BBC 800483BC 2804BF8F */  lw         $ra, 0x428($sp)

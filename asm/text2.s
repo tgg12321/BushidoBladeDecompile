@@ -34,9 +34,9 @@ glabel func_8007B244
     /* 6BA9C 8007B29C 00000000 */   nop
 endlabel func_8007B244
 
-nonmatching func_8007B2A0, 0x9C
+nonmatching gpu_SetDispMask, 0x9C
 
-glabel func_8007B2A0
+glabel gpu_SetDispMask
     /* 6BAA0 8007B2A0 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6BAA4 8007B2A4 1400B1AF */  sw         $s1, 0x14($sp)
     /* 6BAA8 8007B2A8 0A80113C */  lui        $s1, %hi(D_8009BE76)
@@ -79,11 +79,11 @@ glabel func_8007B2A0
     /* 6BB30 8007B330 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6BB34 8007B334 0800E003 */  jr         $ra
     /* 6BB38 8007B338 00000000 */   nop
-endlabel func_8007B2A0
+endlabel gpu_SetDispMask
 
-nonmatching func_8007B33C, 0x6C
+nonmatching gpu_DrawSync, 0x6C
 
-glabel func_8007B33C
+glabel gpu_DrawSync
     /* 6BB3C 8007B33C 0A80023C */  lui        $v0, %hi(D_8009BE76)
     /* 6BB40 8007B340 76BE4290 */  lbu        $v0, %lo(D_8009BE76)($v0)
     /* 6BB44 8007B344 E8FFBD27 */  addiu      $sp, $sp, -0x18
@@ -112,7 +112,7 @@ glabel func_8007B33C
     /* 6BB9C 8007B39C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 6BBA0 8007B3A0 0800E003 */  jr         $ra
     /* 6BBA4 8007B3A4 00000000 */   nop
-endlabel func_8007B33C
+endlabel gpu_DrawSync
 
 nonmatching func_8007B3A8, 0x128
 
@@ -284,9 +284,9 @@ glabel func_8007B564
     /* 6BDFC 8007B5FC 00000000 */   nop
 endlabel func_8007B564
 
-nonmatching func_8007B600, 0x64
+nonmatching gpu_LoadImage, 0x64
 
-glabel func_8007B600
+glabel gpu_LoadImage
     /* 6BE00 8007B600 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6BE04 8007B604 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6BE08 8007B608 21808000 */  addu       $s0, $a0, $zero
@@ -312,11 +312,11 @@ glabel func_8007B600
     /* 6BE58 8007B658 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6BE5C 8007B65C 0800E003 */  jr         $ra
     /* 6BE60 8007B660 00000000 */   nop
-endlabel func_8007B600
+endlabel gpu_LoadImage
 
-nonmatching func_8007B664, 0x64
+nonmatching gpu_StoreImage, 0x64
 
-glabel func_8007B664
+glabel gpu_StoreImage
     /* 6BE64 8007B664 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6BE68 8007B668 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6BE6C 8007B66C 21808000 */  addu       $s0, $a0, $zero
@@ -342,7 +342,7 @@ glabel func_8007B664
     /* 6BEBC 8007B6BC 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6BEC0 8007B6C0 0800E003 */  jr         $ra
     /* 6BEC4 8007B6C4 00000000 */   nop
-endlabel func_8007B664
+endlabel gpu_StoreImage
 
 nonmatching func_8007B6C8, 0xC4
 
@@ -400,9 +400,9 @@ glabel func_8007B6C8
     /* 6BF88 8007B788 00000000 */   nop
 endlabel func_8007B6C8
 
-nonmatching func_8007B78C, 0xB8
+nonmatching gpu_ClearOTag, 0xB8
 
-glabel func_8007B78C
+glabel gpu_ClearOTag
     /* 6BF8C 8007B78C 0A80023C */  lui        $v0, %hi(D_8009BE76)
     /* 6BF90 8007B790 76BE4290 */  lbu        $v0, %lo(D_8009BE76)($v0)
     /* 6BF94 8007B794 E0FFBD27 */  addiu      $sp, $sp, -0x20
@@ -452,7 +452,7 @@ glabel func_8007B78C
     /* 6C038 8007B838 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6C03C 8007B83C 0800E003 */  jr         $ra
     /* 6C040 8007B840 00000000 */   nop
-endlabel func_8007B78C
+endlabel gpu_ClearOTag
 
 nonmatching func_8007B844, 0x98
 
@@ -498,9 +498,9 @@ glabel func_8007B844
     /* 6C0D8 8007B8D8 00000000 */   nop
 endlabel func_8007B844
 
-nonmatching func_8007B8DC, 0x60
+nonmatching gpu_SendPacket, 0x60
 
-glabel func_8007B8DC
+glabel gpu_SendPacket
     /* 6C0DC 8007B8DC E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6C0E0 8007B8E0 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6C0E4 8007B8E4 21808000 */  addu       $s0, $a0, $zero
@@ -525,11 +525,11 @@ glabel func_8007B8DC
     /* 6C130 8007B930 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6C134 8007B934 0800E003 */  jr         $ra
     /* 6C138 8007B938 00000000 */   nop
-endlabel func_8007B8DC
+endlabel gpu_SendPacket
 
-nonmatching func_8007B93C, 0x74
+nonmatching gpu_DrawOTag, 0x74
 
-glabel func_8007B93C
+glabel gpu_DrawOTag
     /* 6C13C 8007B93C 0A80023C */  lui        $v0, %hi(D_8009BE76)
     /* 6C140 8007B940 76BE4290 */  lbu        $v0, %lo(D_8009BE76)($v0)
     /* 6C144 8007B944 E8FFBD27 */  addiu      $sp, $sp, -0x18
@@ -560,7 +560,7 @@ glabel func_8007B93C
     /* 6C1A4 8007B9A4 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 6C1A8 8007B9A8 0800E003 */  jr         $ra
     /* 6C1AC 8007B9AC 00000000 */   nop
-endlabel func_8007B93C
+endlabel gpu_DrawOTag
 
 nonmatching func_8007B9B0, 0x104
 
@@ -712,16 +712,16 @@ glabel func_8007BAB4
     /* 6C3CC 8007BBCC 00000000 */   nop
 endlabel func_8007BAB4
 
-nonmatching func_8007BBD0, 0x38
+nonmatching gpu_GetDrawEnv, 0x38
 
-glabel func_8007BBD0
+glabel gpu_GetDrawEnv
     /* 6C3D0 8007BBD0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6C3D4 8007BBD4 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6C3D8 8007BBD8 21808000 */  addu       $s0, $a0, $zero
     /* 6C3DC 8007BBDC 0A80053C */  lui        $a1, %hi(D_8009BE84)
     /* 6C3E0 8007BBE0 84BEA524 */  addiu      $a1, $a1, %lo(D_8009BE84)
     /* 6C3E4 8007BBE4 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 6C3E8 8007BBE8 48E4010C */  jal        func_80079120
+    /* 6C3E8 8007BBE8 48E4010C */  jal        bb2_memcpy
     /* 6C3EC 8007BBEC 5C000624 */   addiu     $a2, $zero, 0x5C
     /* 6C3F0 8007BBF0 21100002 */  addu       $v0, $s0, $zero
     /* 6C3F4 8007BBF4 1400BF8F */  lw         $ra, 0x14($sp)
@@ -729,7 +729,7 @@ glabel func_8007BBD0
     /* 6C3FC 8007BBFC 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 6C400 8007BC00 0800E003 */  jr         $ra
     /* 6C404 8007BC04 00000000 */   nop
-endlabel func_8007BBD0
+endlabel gpu_GetDrawEnv
 
 nonmatching func_8007BC08, 0x4A8
 
@@ -1056,7 +1056,7 @@ glabel func_8007BC08
     /* 6C878 8007C078 0A80043C */  lui        $a0, %hi(D_8009BEE0)
     /* 6C87C 8007C07C E0BE8424 */  addiu      $a0, $a0, %lo(D_8009BEE0)
     /* 6C880 8007C080 21280002 */  addu       $a1, $s0, $zero
-    /* 6C884 8007C084 48E4010C */  jal        func_80079120
+    /* 6C884 8007C084 48E4010C */  jal        bb2_memcpy
     /* 6C888 8007C088 14000624 */   addiu     $a2, $zero, 0x14
     /* 6C88C 8007C08C 21100002 */  addu       $v0, $s0, $zero
     /* 6C890 8007C090 2000BF8F */  lw         $ra, 0x20($sp)
@@ -1078,7 +1078,7 @@ glabel func_8007C0B0
     /* 6C8BC 8007C0BC 0A80053C */  lui        $a1, %hi(D_8009BEE0)
     /* 6C8C0 8007C0C0 E0BEA524 */  addiu      $a1, $a1, %lo(D_8009BEE0)
     /* 6C8C4 8007C0C4 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 6C8C8 8007C0C8 48E4010C */  jal        func_80079120
+    /* 6C8C8 8007C0C8 48E4010C */  jal        bb2_memcpy
     /* 6C8CC 8007C0CC 14000624 */   addiu     $a2, $zero, 0x14
     /* 6C8D0 8007C0D0 21100002 */  addu       $v0, $s0, $zero
     /* 6C8D4 8007C0D4 1400BF8F */  lw         $ra, 0x14($sp)
@@ -3106,7 +3106,7 @@ nonmatching func_8007DC68, 0x34
 glabel func_8007DC68
     /* 6E468 8007DC68 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6E46C 8007DC6C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 6E470 8007DC70 330A020C */  jal        func_800828CC
+    /* 6E470 8007DC70 330A020C */  jal        sys_VSync
     /* 6E474 8007DC74 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 6E478 8007DC78 F0004224 */  addiu      $v0, $v0, 0xF0
     /* 6E47C 8007DC7C 0A80013C */  lui        $at, %hi(D_8009BF8C)
@@ -3124,7 +3124,7 @@ nonmatching func_8007DC9C, 0x16C
 glabel func_8007DC9C
     /* 6E49C 8007DC9C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6E4A0 8007DCA0 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 6E4A4 8007DCA4 330A020C */  jal        func_800828CC
+    /* 6E4A4 8007DCA4 330A020C */  jal        sys_VSync
     /* 6E4A8 8007DCA8 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 6E4AC 8007DCAC 0A80033C */  lui        $v1, %hi(D_8009BF8C)
     /* 6E4B0 8007DCB0 8CBF638C */  lw         $v1, %lo(D_8009BF8C)($v1)
@@ -3161,7 +3161,7 @@ glabel func_8007DC9C
     /* 6E528 8007DD28 54BF428C */  lw         $v0, %lo(D_8009BF54)($v0)
     /* 6E52C 8007DD2C 0000668C */  lw         $a2, 0x0($v1)
     /* 6E530 8007DD30 0000478C */  lw         $a3, 0x0($v0)
-    /* 6E534 8007DD34 82E4010C */  jal        func_80079208
+    /* 6E534 8007DD34 82E4010C */  jal        debug_printf
     /* 6E538 8007DD38 3F00A530 */   andi      $a1, $a1, 0x3F
     /* 6E53C 8007DD3C 0A80023C */  lui        $v0, %hi(D_8009BF68)
     /* 6E540 8007DD40 68BF4224 */  addiu      $v0, $v0, %lo(D_8009BF68)
@@ -3172,7 +3172,7 @@ glabel func_8007DC9C
     /* 6E554 8007DD54 70BFE78C */  lw         $a3, %lo(D_8009BF70)($a3)
     /* 6E558 8007DD58 0180043C */  lui        $a0, %hi(D_80016044)
     /* 6E55C 8007DD5C 44608424 */  addiu      $a0, $a0, %lo(D_80016044)
-    /* 6E560 8007DD60 82E4010C */  jal        func_80079208
+    /* 6E560 8007DD60 82E4010C */  jal        debug_printf
     /* 6E564 8007DD64 00000000 */   nop
     /* 6E568 8007DD68 0F0B020C */  jal        motion_make_table
     /* 6E56C 8007DD6C 21200000 */   addu      $a0, $zero, $zero
@@ -5650,7 +5650,7 @@ nonmatching func_8007FEDC, 0x9C
 glabel func_8007FEDC
     /* 706DC 8007FEDC 0A80013C */  lui        $at, %hi(D_800A3658)
     /* 706E0 8007FEE0 58363FAC */  sw         $ra, %lo(D_800A3658)($at)
-    /* 706E4 8007FEE4 6EE2010C */  jal        func_800789B8
+    /* 706E4 8007FEE4 6EE2010C */  jal        EnterCriticalSection
     /* 706E8 8007FEE8 00000000 */   nop
     /* 706EC 8007FEEC B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 706F0 8007FEF0 09F84001 */  jalr       $t2
@@ -5668,7 +5668,7 @@ glabel func_8007FEDC
     /* 7071C 8007FF1C FCFF43AC */   sw        $v1, -0x4($v0)
     /* 70720 8007FF20 FCE3010C */  jal        func_80078FF0
     /* 70724 8007FF24 00000000 */   nop
-    /* 70728 8007FF28 72E2010C */  jal        func_800789C8
+    /* 70728 8007FF28 72E2010C */  jal        ExitCriticalSection
     /* 7072C 8007FF2C 00000000 */   nop
     /* 70730 8007FF30 0A801F3C */  lui        $ra, %hi(D_800A3658)
     /* 70734 8007FF34 5836FF8F */  lw         $ra, %lo(D_800A3658)($ra)
@@ -5727,7 +5727,7 @@ glabel func_8007FF7C
     /* 707E8 8007FFE8 00000000 */   nop
     /* 707EC 8007FFEC 0180043C */  lui        $a0, %hi(D_8001605C)
     /* 707F0 8007FFF0 5C608424 */  addiu      $a0, $a0, %lo(D_8001605C)
-    /* 707F4 8007FFF4 82E4010C */  jal        func_80079208
+    /* 707F4 8007FFF4 82E4010C */  jal        debug_printf
     /* 707F8 8007FFF8 00000000 */   nop
     /* 707FC 8007FFFC 21100000 */  addu       $v0, $zero, $zero
   .L80080000:

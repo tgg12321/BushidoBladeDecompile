@@ -1,7 +1,7 @@
 glabel func_800548DC
     /* 450DC 800548DC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 450E0 800548E0 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 450E4 800548E4 CFEC010C */  jal        func_8007B33C
+    /* 450E4 800548E4 CFEC010C */  jal        gpu_DrawSync
     /* 450E8 800548E8 21200000 */   addu      $a0, $zero, $zero
     /* 450EC 800548EC 6719010C */  jal        func_8004659C
     /* 450F0 800548F0 FFFF0424 */   addiu     $a0, $zero, -0x1

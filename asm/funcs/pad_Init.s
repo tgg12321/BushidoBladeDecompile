@@ -1,4 +1,4 @@
-glabel func_80078D68
+glabel pad_Init
     /* 69568 80078D68 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6956C 80078D6C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 69570 80078D70 DDE3010C */  jal        func_80078F74
@@ -13,4 +13,4 @@ glabel func_80078D68
     /* 69594 80078D94 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 69598 80078D98 0800E003 */  jr         $ra
     /* 6959C 80078D9C 00000000 */   nop
-endlabel func_80078D68
+endlabel pad_Init

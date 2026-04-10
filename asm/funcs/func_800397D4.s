@@ -19,7 +19,7 @@ glabel func_800397D4
     /* 2A018 80039818 21280000 */   addu      $a1, $zero, $zero
     /* 2A01C 8003981C BD6D000C */  jal        func_8001B6F4
     /* 2A020 80039820 00000000 */   nop
-    /* 2A024 80039824 5E84010C */  jal        func_80061178
+    /* 2A024 80039824 5E84010C */  jal        game_Cleanup
     /* 2A028 80039828 00000000 */   nop
     /* 2A02C 8003982C 05000224 */  addiu      $v0, $zero, 0x5
     /* 2A030 80039830 040780A3 */  sb         $zero, %gp_rel(D_800A37D0)($gp)

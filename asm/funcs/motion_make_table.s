@@ -54,7 +54,7 @@ glabel motion_make_table
     /* 73508 80082D08 0026848C */  lw         $a0, %lo(D_800A2600)($a0)
     /* 7350C 80082D0C 760C020C */  jal        func_800831D8
     /* 73510 80082D10 040082AC */   sw        $v0, 0x4($a0)
-    /* 73514 80082D14 72E2010C */  jal        func_800789C8
+    /* 73514 80082D14 72E2010C */  jal        ExitCriticalSection
     /* 73518 80082D18 C4FF1026 */   addiu     $s0, $s0, -0x3C
     /* 7351C 80082D1C 21100002 */  addu       $v0, $s0, $zero
   .L80082D20:

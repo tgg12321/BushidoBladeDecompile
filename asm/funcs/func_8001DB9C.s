@@ -8,7 +8,7 @@ glabel func_8001DB9C
     /* E3B4 8001DBB4 21082200 */  addu       $at, $at, $v0
     /* E3B8 8001DBB8 ECD92490 */  lbu        $a0, %lo(D_8008D9EC)($at)
     /* E3BC 8001DBBC 0008A534 */  ori        $a1, $a1, (0x80190800 & 0xFFFF)
-    /* E3C0 8001DBC0 2F14010C */  jal        func_800450BC
+    /* E3C0 8001DBC0 2F14010C */  jal        seq_Start
     /* E3C4 8001DBC4 0100842C */   sltiu     $a0, $a0, 0x1
     /* E3C8 8001DBC8 FFFF0234 */  ori        $v0, $zero, 0xFFFF
     /* E3CC 8001DBCC 0A80013C */  lui        $at, %hi(D_800A38C6)

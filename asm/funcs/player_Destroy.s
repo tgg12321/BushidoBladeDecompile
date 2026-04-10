@@ -1,4 +1,4 @@
-glabel func_800415C4
+glabel player_Destroy
     /* 31DC4 800415C4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 31DC8 800415C8 1000B0AF */  sw         $s0, 0x10($sp)
     /* 31DCC 800415CC 1400BFAF */  sw         $ra, 0x14($sp)
@@ -15,4 +15,4 @@ glabel func_800415C4
     /* 31DF8 800415F8 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 31DFC 800415FC 0800E003 */  jr         $ra
     /* 31E00 80041600 00000000 */   nop
-endlabel func_800415C4
+endlabel player_Destroy

@@ -14,9 +14,9 @@ glabel func_80035480
   .L800354B0:
     /* 25CB0 800354B0 3783000C */  jal        func_80020CDC
     /* 25CB4 800354B4 00000000 */   nop
-    /* 25CB8 800354B8 7105010C */  jal        func_800415C4
+    /* 25CB8 800354B8 7105010C */  jal        player_Destroy
     /* 25CBC 800354BC 21200000 */   addu      $a0, $zero, $zero
-    /* 25CC0 800354C0 7105010C */  jal        func_800415C4
+    /* 25CC0 800354C0 7105010C */  jal        player_Destroy
     /* 25CC4 800354C4 01000424 */   addiu     $a0, $zero, 0x1
     /* 25CC8 800354C8 1D5B000C */  jal        file_ResetDmaFlag
     /* 25CCC 800354CC 00000000 */   nop
@@ -24,7 +24,7 @@ glabel func_80035480
     /* 25CD4 800354D4 00000000 */  nop
     /* 25CD8 800354D8 07004010 */  beqz       $v0, .L800354F8
     /* 25CDC 800354DC 01000224 */   addiu     $v0, $zero, 0x1
-    /* 25CE0 800354E0 CB6D010C */  jal        func_8005B72C
+    /* 25CE0 800354E0 CB6D010C */  jal        obj_InitAll
     /* 25CE4 800354E4 00000000 */   nop
     /* 25CE8 800354E8 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 25CEC 800354EC 0A80013C */  lui        $at, %hi(D_800A390E)

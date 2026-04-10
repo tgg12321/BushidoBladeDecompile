@@ -8,7 +8,7 @@ glabel func_80020DDC
     /* 115F4 80020DF4 3038A58C */  lw         $a1, %lo(D_800A3830)($a1)
     /* 115F8 80020DF8 66DB000C */  jal        replay_camera_Init
     /* 115FC 80020DFC 21204000 */   addu      $a0, $v0, $zero
-    /* 11600 80020E00 D0DB000C */  jal        func_80036F40
+    /* 11600 80020E00 D0DB000C */  jal        game_FrameLoop
     /* 11604 80020E04 00000000 */   nop
     /* 11608 80020E08 0A80033C */  lui        $v1, %hi(D_800A3830)
     /* 1160C 80020E0C 3038638C */  lw         $v1, %lo(D_800A3830)($v1)

@@ -11,7 +11,7 @@ glabel marionation_Exec
     /* 71854 80081054 2400B3AF */  sw         $s3, 0x24($sp)
     /* 71858 80081058 2000B2AF */  sw         $s2, 0x20($sp)
     /* 7185C 8008105C 1C00B1AF */  sw         $s1, 0x1C($sp)
-    /* 71860 80081060 330A020C */  jal        func_800828CC
+    /* 71860 80081060 330A020C */  jal        sys_VSync
     /* 71864 80081064 1800B0AF */   sw        $s0, 0x18($sp)
     /* 71868 80081068 0A80153C */  lui        $s5, %hi(D_800A125C)
     /* 7186C 8008106C 5C12B526 */  addiu      $s5, $s5, %lo(D_800A125C)
@@ -29,7 +29,7 @@ glabel marionation_Exec
     /* 7189C 8008109C 0F80013C */  lui        $at, %hi(D_800F19C0)
     /* 718A0 800810A0 C01922AC */  sw         $v0, %lo(D_800F19C0)($at)
   .L800810A4:
-    /* 718A4 800810A4 330A020C */  jal        func_800828CC
+    /* 718A4 800810A4 330A020C */  jal        sys_VSync
     /* 718A8 800810A8 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 718AC 800810AC 0F80033C */  lui        $v1, %hi(D_800F19B8)
     /* 718B0 800810B0 B819638C */  lw         $v1, %lo(D_800F19B8)($v1)
@@ -71,7 +71,7 @@ glabel marionation_Exec
     /* 7193C 8008113C 0000878C */  lw         $a3, 0x0($a0)
     /* 71940 80081140 0180043C */  lui        $a0, %hi(D_800161C8)
     /* 71944 80081144 C8618424 */  addiu      $a0, $a0, %lo(D_800161C8)
-    /* 71948 80081148 82E4010C */  jal        func_80079208
+    /* 71948 80081148 82E4010C */  jal        debug_printf
     /* 7194C 8008114C 00000000 */   nop
     /* 71950 80081150 E805020C */  jal        func_800817A0
     /* 71954 80081154 00000000 */   nop

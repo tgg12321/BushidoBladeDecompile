@@ -14,7 +14,7 @@ glabel func_80016C80
     /* 74B0 80016CB0 1080053C */  lui        $a1, (0x8010E800 >> 16)
     /* 74B4 80016CB4 00E8A534 */  ori        $a1, $a1, (0x8010E800 & 0xFFFF)
     /* 74B8 80016CB8 21804000 */  addu       $s0, $v0, $zero
-    /* 74BC 80016CBC 82E4010C */  jal        func_80079208
+    /* 74BC 80016CBC 82E4010C */  jal        debug_printf
     /* 74C0 80016CC0 21300002 */   addu      $a2, $s0, $zero
     /* 74C4 80016CC4 00A00234 */  ori        $v0, $zero, 0xA000
     /* 74C8 80016CC8 2A105000 */  slt        $v0, $v0, $s0

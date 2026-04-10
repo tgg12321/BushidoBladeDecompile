@@ -43,14 +43,14 @@ glabel func_8005BA8C
     /* 4C32C 8005BB2C 03001224 */  addiu      $s2, $zero, 0x3
     /* 4C330 8005BB30 AADB000C */  jal        func_80036EA8
     /* 4C334 8005BB34 0900A526 */   addiu     $a1, $s5, 0x9
-    /* 4C338 8005BB38 D0DB000C */  jal        func_80036F40
+    /* 4C338 8005BB38 D0DB000C */  jal        game_FrameLoop
     /* 4C33C 8005BB3C 21804000 */   addu      $s0, $v0, $zero
     /* 4C340 8005BB40 21200002 */  addu       $a0, $s0, $zero
     /* 4C344 8005BB44 66DB000C */  jal        replay_camera_Init
     /* 4C348 8005BB48 21286002 */   addu      $a1, $s3, $zero
     /* 4C34C 8005BB4C CADB000C */  jal        func_80036F28
     /* 4C350 8005BB50 21200002 */   addu      $a0, $s0, $zero
-    /* 4C354 8005BB54 D0DB000C */  jal        func_80036F40
+    /* 4C354 8005BB54 D0DB000C */  jal        game_FrameLoop
     /* 4C358 8005BB58 21A84000 */   addu      $s5, $v0, $zero
     /* 4C35C 8005BB5C 3000648E */  lw         $a0, 0x30($s3)
     /* 4C360 8005BB60 03001624 */  addiu      $s6, $zero, 0x3

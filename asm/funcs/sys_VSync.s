@@ -1,4 +1,4 @@
-glabel func_800828CC
+glabel sys_VSync
     /* 730CC 800828CC 0A80023C */  lui        $v0, %hi(D_800A1510)
     /* 730D0 800828D0 1015428C */  lw         $v0, %lo(D_800A1510)($v0)
     /* 730D4 800828D4 0A80033C */  lui        $v1, %hi(D_800A1514)
@@ -88,4 +88,4 @@ glabel func_800828CC
     /* 73208 80082A08 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 7320C 80082A0C 0800E003 */  jr         $ra
     /* 73210 80082A10 00000000 */   nop
-endlabel func_800828CC
+endlabel sys_VSync

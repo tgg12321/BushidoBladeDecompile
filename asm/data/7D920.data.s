@@ -24028,7 +24028,7 @@ enddlabel D_8009BE6C
 nonmatching D_8009BE70
 
 dlabel D_8009BE70
-    /* 8C670 8009BE70 08920780 */ .word func_80079208
+    /* 8C670 8009BE70 08920780 */ .word debug_printf
 enddlabel D_8009BE70
 
 nonmatching D_8009BE74
