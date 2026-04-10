@@ -148,7 +148,78 @@ u32 sys_GetVblankCount(void) {
 u32 sys_GetIrqCounter(void) {
     return *D_800A2608;
 }
-INCLUDE_ASM("asm/funcs", motion_make_table);
+extern u16 *D_800A2604;
+extern s32 *D_800A260C;
+extern u16 D_800A1578;
+extern s32 D_800A15B4;
+extern s32 func_800831A4(u16 *, s32);
+extern s32 func_80083220(u16 *);
+extern void func_80082D34(void);
+extern void func_80083210(s32 *);
+extern s32 func_800832A0(void);
+extern s32 conv_matrix_rotation(void);
+extern s32 func_800831D8(s32 *);
+u16 motion_make_table(u16 arg0) {
+    u16 *ptr = D_800A2608;
+    u16 old = *ptr;
+    *(volatile u16 *)ptr = arg0;
+    return old;
+}
+
+u16 *func_80082C58(void) {
+    u16 *s0 = &D_800A1578;
+    s32 result;
+
+    if (*s0 != 0) {
+        return 0;
+    }
+
+    {
+        u16 *v1 = D_800A2604;
+        u16 *v0_ptr = D_800A2608;
+        s32 a1_val = 0x33333333;
+
+        *(volatile u16 *)v0_ptr = 0;
+        {
+            u16 val = *(volatile u16 *)v0_ptr;
+            *v1 = val;
+        }
+
+        *D_800A260C = a1_val;
+
+        func_800831A4(s0, 0x41A);
+
+        if (func_80083220(s0 + 0x1C) != 0) {
+            func_80082D34();
+        }
+    }
+
+    {
+        s32 *s0b = &D_800A15B4;
+
+        *s0b = (s32)s0b + 0xFDC;
+        func_80083210(s0b - 1);
+
+        asm volatile("" : "=r"(s0b) : "0"(s0b));
+        ((s16 *)s0b)[-0x1E] = 1;
+        result = func_800832A0();
+
+        {
+            s32 *v1 = D_800A2600;
+            v1[5] = result;
+        }
+        result = conv_matrix_rotation();
+        {
+            s32 *a0 = D_800A2600;
+            a0[1] = result;
+            func_800831D8(a0);
+        }
+        asm volatile("" : "=r"(s0b) : "0"(s0b));
+        s0b = (s32 *)((char *)s0b - 0x3C);
+        func_800789C8();
+        return (u16 *)s0b;
+    }
+}
 /* kengo:HIGH  |  is_motion/motion_make_table  |  62i */
 INCLUDE_ASM("asm/funcs", func_80082D34);
 __asm__(
