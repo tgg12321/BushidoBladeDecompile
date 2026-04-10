@@ -6,15 +6,15 @@ extern void func_8007A448(void);
 extern void func_8007A458(void);
 
 /* Externs for globals */
-extern u8 D_8009BE74;
-extern u8 D_8009BE76;
-extern void (*D_8009BE70)();
+extern u8 g_gpu_type;
+extern u8 g_gpu_debug_level;
+extern void (*g_gpu_debug_func)();
 extern s32 D_80015D58;
 extern s32 D_80015D70;
 extern s32 D_80015EA8;
-extern u8 D_8009BE77;
-extern u8 D_8009BE75;
-extern u32 *D_8009BE6C;
+extern u8 g_gpu_dither;
+extern u8 g_gpu_interlace;
+extern u32 *g_gpu_dev_table;
 extern s32 D_80015ED4;
 extern s32 D_80015E90;
 extern s32 D_80015DD8;
@@ -29,8 +29,8 @@ extern s32 D_80015DCC;
 extern s32 D_80015E5C;
 extern s32 D_80015E7C;
 extern s32 D_8009BE2C;
-extern s16 D_8009BE78;
-extern s16 D_8009BE7A;
+extern s16 g_gpu_disp_x;
+extern s16 g_gpu_disp_y;
 extern s32 D_8009BEF4[];
 extern s32 D_8009BF08[];
 
@@ -312,11 +312,11 @@ u32 func_8007A7C4(s32 a0, s32 a1) {
 }
 void func_8007A7DC(s32 a0) {
     u32 val = a0 & 0xFFFF;
-    D_8009BE70(&D_80015D58, (val >> 7) & 3, (val >> 5) & 3, (val << 6) & 0x7C0,
+    g_gpu_debug_func(&D_80015D58, (val >> 7) & 3, (val >> 5) & 3, (val << 6) & 0x7C0,
                ((val << 4) & 0x100) + ((val >> 2) & 0x200));
 }
 void func_8007A83C(s32 a0) {
-    D_8009BE70(&D_80015D70, (a0 & 0x3F) << 4, (a0 & 0xFFFF) >> 6);
+    g_gpu_debug_func(&D_80015D70, (a0 & 0x3F) << 4, (a0 & 0xFFFF) >> 6);
 }
 u32 func_8007A87C(u32 *a0) {
     return (*a0 & 0xFFFFFF) | 0x80000000;
@@ -525,20 +525,20 @@ s32 func_8007AC84(u8 *a0, u32 *a1) {
 }
 void func_8007ACBC(s16 *a0) {
     u32 val;
-    D_8009BE70(&D_80015D80, a0[0], a0[1], a0[2], a0[3]);
-    D_8009BE70(&D_80015D98, a0[4], a0[5]);
-    D_8009BE70(&D_80015DA8, a0[6], a0[7], a0[8], a0[9]);
-    D_8009BE70(&D_80015DC0, ((u8 *)a0)[0x16]);
-    D_8009BE70(&D_80015DCC, ((u8 *)a0)[0x17]);
+    g_gpu_debug_func(&D_80015D80, a0[0], a0[1], a0[2], a0[3]);
+    g_gpu_debug_func(&D_80015D98, a0[4], a0[5]);
+    g_gpu_debug_func(&D_80015DA8, a0[6], a0[7], a0[8], a0[9]);
+    g_gpu_debug_func(&D_80015DC0, ((u8 *)a0)[0x16]);
+    g_gpu_debug_func(&D_80015DCC, ((u8 *)a0)[0x17]);
     val = ((u16 *)a0)[0xA];
-    D_8009BE70(&D_80015D58, (val >> 7) & 3, (val >> 5) & 3, (val << 6) & 0x7C0,
+    g_gpu_debug_func(&D_80015D58, (val >> 7) & 3, (val >> 5) & 3, (val << 6) & 0x7C0,
                ((val << 4) & 0x100) + ((val >> 2) & 0x200));
 }
 void func_8007ADD0(s16 *a0) {
-    D_8009BE70(&D_80015DD8, a0[0], a0[1], a0[2], a0[3]);
-    D_8009BE70(&D_80015DF4, a0[4], a0[5], a0[6], a0[7]);
-    D_8009BE70(&D_80015E10, ((u8 *)a0)[0x10]);
-    D_8009BE70(&D_80015E1C, ((u8 *)a0)[0x11]);
+    g_gpu_debug_func(&D_80015DD8, a0[0], a0[1], a0[2], a0[3]);
+    g_gpu_debug_func(&D_80015DF4, a0[4], a0[5], a0[6], a0[7]);
+    g_gpu_debug_func(&D_80015E10, ((u8 *)a0)[0x10]);
+    g_gpu_debug_func(&D_80015E1C, ((u8 *)a0)[0x11]);
 }
 typedef struct {
     u8 mode;
@@ -555,13 +555,13 @@ u32 func_8007AE7C(s32 a0) {
     switch (a0 & 7) {
     case 0:
     case 3:
-        func_80079208(&D_80015E5C, &D_8009BE2C, &D_8009BE74);
+        func_80079208(&D_80015E5C, &D_8009BE2C, &g_gpu_type);
         /* fallthrough */
     case 5:
-        s0 = (GpuConfig *)&D_8009BE74;
+        s0 = (GpuConfig *)&g_gpu_type;
         func_8007DEE4(s0, 0, 0x80);
         irq_DisableInterrupts();
-        func_8007DF10((u32)D_8009BE6C & 0xFFFFFF);
+        func_8007DF10((u32)g_gpu_dev_table & 0xFFFFFF);
         s0->mode = (idx = func_8007D9C4(a0));
         idx = (u8)idx;
         s0->active = 1;
@@ -572,32 +572,32 @@ u32 func_8007AE7C(s32 a0) {
         func_8007DEE4((u8 *)s0 + 0x6C, -1, 0x14);
         return s0->mode;
     default:
-        if (D_8009BE76 >= 2) {
-            D_8009BE70(&D_80015E7C, a0);
+        if (g_gpu_debug_level >= 2) {
+            g_gpu_debug_func(&D_80015E7C, a0);
         }
-        ((void (*)(s32))D_8009BE6C[0x34 / 4])(1);
+        ((void (*)(s32))g_gpu_dev_table[0x34 / 4])(1);
         break;
     }
 }
 u32 func_8007B000(s32 a0) {
-    u8 *p = &D_8009BE77;
+    u8 *p = &g_gpu_dither;
     u32 old = *p;
     u32 val;
-    if (D_8009BE76 >= 2) {
-        D_8009BE70(&D_80015E90, a0);
+    if (g_gpu_debug_level >= 2) {
+        g_gpu_debug_func(&D_80015E90, a0);
     }
     *p = a0;
-    val = ((u32 (*)(s32))D_8009BE6C[0x28 / 4])(8);
+    val = ((u32 (*)(s32))g_gpu_dev_table[0x28 / 4])(8);
     if (*p) {
         val |= 0x8000080;
     } else {
         val |= 0x8000000;
     }
-    ((void (*)(u32))D_8009BE6C[0x10 / 4])(val);
-    if (D_8009BE74 == 2) {
-        u32 *tbl = D_8009BE6C;
+    ((void (*)(u32))g_gpu_dev_table[0x10 / 4])(val);
+    if (g_gpu_type == 2) {
+        u32 *tbl = g_gpu_dev_table;
         val = 0x20000504;
-        if (D_8009BE77) {
+        if (g_gpu_dither) {
             val = 0x20000501;
         }
         ((void (*)(u32))tbl[0x10 / 4])(val);
@@ -606,23 +606,23 @@ u32 func_8007B000(s32 a0) {
 }
 
 u32 func_8007B114(s32 a0) {
-    u8 *p = &D_8009BE76;
+    u8 *p = &g_gpu_debug_level;
     u32 old = *p;
     u32 val = a0 & 0xFF;
     *p = a0;
     if (val) {
-        D_8009BE70(&D_80015EA8, val, D_8009BE74, D_8009BE77);
+        g_gpu_debug_func(&D_80015EA8, val, g_gpu_type, g_gpu_dither);
     }
     return old;
 }
 u32 func_8007B178(s32 a0) {
-    u8 *p = &D_8009BE75;
+    u8 *p = &g_gpu_interlace;
     u32 old = *p;
-    if (D_8009BE76 >= 2) {
-        D_8009BE70(&D_80015ED4, a0);
+    if (g_gpu_debug_level >= 2) {
+        g_gpu_debug_func(&D_80015ED4, a0);
     }
     if (a0 != *p) {
-        ((void (*)(s32))D_8009BE6C[0x34 / 4])(1);
+        ((void (*)(s32))g_gpu_dev_table[0x34 / 4])(1);
         *p = a0;
         irq_AcknowledgeVblank(2, 0);
     }
@@ -630,9 +630,9 @@ u32 func_8007B178(s32 a0) {
 }
 
 u32 func_8007B224(void) {
-    return D_8009BE74;
+    return g_gpu_type;
 }
 
 u32 func_8007B234(void) {
-    return D_8009BE76;
+    return g_gpu_debug_level;
 }

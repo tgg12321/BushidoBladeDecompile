@@ -60,7 +60,7 @@ extern void func_80061178(void);
 extern void gpu_DisableDisplay(void);
 extern s32 func_800371E8(s16);
 extern void func_800450BC(s32, s32);
-extern u16 D_800F6656;
+extern u16 g_game_p1_ctrl;
 extern u8 D_80104E88;
 extern s16 D_80101F4C;
 extern s16 D_80101F4E;
@@ -240,7 +240,7 @@ extern void func_8003AE5C(s32);
 extern s32 stage_GetDataPtr(void);
 extern s16 D_800A36A4;
 
-extern u8 D_800A3768;
+extern u8 g_disp_enable;
 extern u8 D_800A38F8;
 extern void func_8005B50C(void);
 extern void func_80037774(void);
@@ -265,7 +265,7 @@ extern u8 D_8008E5CC;
 extern void func_80049584(s32);
 extern s32 func_800392B8(void);
 extern u8 SpecialCam;
-extern u8 D_8008D118;
+extern u8 g_module_type_tbl;
 extern u8 D_8008D518;
 extern u8 D_8008D55C;
 extern u16 D_8008D59E;
@@ -332,7 +332,7 @@ extern s16 D_800A367C;
 extern s32 D_800A368C;
 extern u8 D_800A3690;
 extern s32 D_800A369C;
-extern u8 D_800A36A8;
+extern u8 g_disp_fade;
 extern s32 D_800A36AC;
 extern s32 D_800A36B4;
 extern u8 D_800A36B9;
@@ -351,7 +351,7 @@ extern u8 D_800A36F0;
 extern u8 D_800A36F2;
 extern u8 D_800A36F9;
 extern s32 D_800A3708;
-extern u16 D_800A3710;
+extern u16 g_file_vram_timer;
 extern u8 D_800A3713;
 extern u8 D_800A3719;
 extern u8 D_800A371A;
@@ -443,9 +443,9 @@ extern s16 D_800F663C;
 extern s16 D_800F6640;
 extern s16 D_800F6642;
 extern s16 D_800F6644;
-extern s32 D_800F66A0;
+extern s32 g_anim_func_table;
 extern s16 D_800F68E0;
-extern s32 D_800FF580;
+extern s32 g_pad_data;
 extern s32 D_800FF584;
 extern s32 D_800FF5A4;
 extern s32 D_800FF5A8;
@@ -564,8 +564,8 @@ extern u8 D_80102795;
 extern s32 D_801027B4;
 extern s32 D_801027B8;
 extern s32 D_801027BC;
-extern s32 D_80106A50;
-extern u8 D_80106A54;
+extern s32 g_file_disc_size;
+extern u8 g_file_disc_type;
 extern u8 D_801077AF;
 extern u8 D_801077B0;
 extern u8 D_801077BA;
@@ -669,7 +669,7 @@ INCLUDE_ASM("asm/funcs", cpu_check_run_attack);
 /* kengo:HIGH  |  nm_cpu/cpu_check_run_attack  |  322i  |  +5 near-exact */
 INCLUDE_ASM("asm/funcs", single_game_setModeRequest);
 /* kengo:HIGH  |  nm_single_game/single_game_setModeRequest  |  663i  |  +1 near-exact */
-extern s32 D_800F6740;
+extern s32 g_file_data_buf;
 void func_8001924C(s16 *arg0, s32 arg1) {
     s32 i;
     s16 *s0;
@@ -679,7 +679,7 @@ void func_8001924C(s16 *arg0, s32 arg1) {
     i = 0;
     if (arg1 <= 0) return;
 
-    new_var = (s32)&D_800F6740;
+    new_var = (s32)&g_file_data_buf;
     s0 = arg0;
     do {
         if (*(u8 *)((u8 *)s0 + 2) & 1) {
@@ -781,22 +781,22 @@ void func_8001B138(s32 *arg0) {
         if (*arg0 & 1) {
             D_800A37E0 = 1;
             if (*arg0 & 8) {
-                D_800A3710 = (u16)(D_800A3710 + 0x4CC);
+                g_file_vram_timer = (u16)(g_file_vram_timer + 0x4CC);
             }
             if (*arg0 & 2) {
-                D_800A3710 = (u16)(D_800A3710 - 0x4CC);
+                g_file_vram_timer = (u16)(g_file_vram_timer - 0x4CC);
             }
-            if ((s16)D_800A3710 < -0x1C00) {
-                { s16 tmp = -0x1C00; D_800A3710 = tmp; }
+            if ((s16)g_file_vram_timer < -0x1C00) {
+                { s16 tmp = -0x1C00; g_file_vram_timer = tmp; }
             }
-            if ((s16)D_800A3710 >= 0x7401) {
-                D_800A3710 = 0x7400;
+            if ((s16)g_file_vram_timer >= 0x7401) {
+                g_file_vram_timer = 0x7400;
             }
             *arg0 = *arg0 & ~0xB;
         }
         {
             s32 v;
-            v = (s16)D_800A3710;
+            v = (s16)g_file_vram_timer;
             if (v < 0) {
                 v = v + 0xF;
             }
@@ -1037,7 +1037,7 @@ void func_8001DB9C(void) {
 void func_8001DBE4(void) {
     s32 i;
 
-    if (D_800A3768 != 0x14) {
+    if (g_disp_enable != 0x14) {
         return;
     }
     func_8003AA78();

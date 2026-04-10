@@ -12,22 +12,22 @@ extern void coli_HitPauseKatana_2(s32, s32, s32, s32);
 
 /* Externs for globals */
 extern s16 D_800F66F8;
-extern s16 D_800FF578;
-extern s32 D_800A2D10;
-extern s32 D_800A2CDC;
+extern s16 g_memcard_busy;
+extern s32 g_spu_busy;
+extern s32 g_spu_base_addr;
 
 extern void irq_AcknowledgeVblank(s32, s32);
 extern s32 spu_TransferDirect(s32, s32);
-extern volatile s32 D_800A2D14;
+extern volatile s32 g_spu_init_flag;
 extern s32 D_800A2874;
-extern s32 D_800A2878;
-extern s32 D_800A2CF8;
-extern u16 D_800A2CF4;
-extern s32 D_800A2D04;
+extern s32 g_snd_reverb_flag;
+extern s32 g_spu_reverb_mode;
+extern u16 g_spu_xfer_addr;
+extern s32 g_spu_addr_shift;
 extern s32 func_800789B8(void);
 extern void func_800789C8(void);
 extern void func_8008D050(s32 *);
-extern s32 D_800A307C;
+extern s32 g_snd_callback;
 extern s32 D_80106F28;
 extern s32 func_80078998(s32);
 extern void irq_DisableInterrupts(void);
@@ -45,10 +45,10 @@ extern s32 D_800A289C;
 extern s32 D_800A28A0;
 extern s16 D_800A28D2;
 extern s32 D_800A2CD4;
-extern s32 D_800A2CF8;
-extern s32 D_800A2D38;
-extern s32 D_800A2D3C;
-extern s32 D_800A2D40;
+extern s32 g_spu_reverb_mode;
+extern s32 g_spu_voice_key_a;
+extern s32 g_spu_voice_key_b;
+extern s32 g_spu_voice_key_c;
 extern s32 D_800A2D44;
 extern s32 spu_TransferData(s32, s32);
 
@@ -173,16 +173,16 @@ INCLUDE_ASM("asm/funcs", SetBloodSpot);
 /* kengo:MED  |  am_rmd/SetBloodSpot  |  91i */
 INCLUDE_ASM("asm/funcs", func_800856B0);
 INCLUDE_ASM("asm/funcs", func_800858D0);
-extern u8 D_80102A68[];
-extern s32 D_80107810[];
+extern u8 g_snd_ch_status[];
+extern s32 g_snd_ch_addr[];
 s32 func_800859F0(s16 a0) {
     if ((u16)a0 >= 0x11) {
         return -1;
     }
-    if (D_80102A68[a0] != 1) {
+    if (g_snd_ch_status[a0] != 1) {
         return -1;
     }
-    return D_80107810[a0];
+    return g_snd_ch_addr[a0];
 }
 INCLUDE_ASM("asm/funcs", AllocBukiRmd);
 /* kengo:MED  |  am_rmd/AllocBukiRmd  |  259i */
@@ -386,12 +386,12 @@ void func_800871D4(s32 a0_arg)
 INCLUDE_ASM("asm/funcs", func_800872A4);
 INCLUDE_ASM("asm/funcs", func_80087770);
 INCLUDE_ASM("asm/funcs", func_80087CAC);
-extern u8 D_80101BCC;
+extern u8 g_memcard_slot;
 extern s16 D_800F4E28[];
 void spu_NotifyChannel(s16 a0) {
     s32 s0 = 0;
     s16 s1;
-    if (D_80101BCC == 0) {
+    if (g_memcard_slot == 0) {
         return;
     }
     s1 = (s16)a0;
@@ -403,52 +403,52 @@ void spu_NotifyChannel(s16 a0) {
             func_800871D4(0);
         }
         s0++;
-    } while ((u8)s0 < D_80101BCC);
+    } while ((u8)s0 < g_memcard_slot);
 }
 INCLUDE_ASM("asm/funcs", AddTbpOfst);
 /* kengo:MED  |  am_rmd/AddTbpOfst  |  49i */
-extern u8 D_80103600;
+extern u8 g_memcard_data;
 void func_80087F00(u8 a0) {
-    D_80103600 = a0;
+    g_memcard_data = a0;
 }
 void memcard_SetBusy(void) {
-    D_800FF578 = 1;
+    g_memcard_busy = 1;
 }
 
 void func_80087F24(void) {
-    D_800FF578 = 0;
+    g_memcard_busy = 0;
 }
 
-extern u8 D_80101BCC;
+extern u8 g_memcard_slot;
 s32 func_80087F34(s32 a0) {
     u8 v = (u8)a0;
     if (v >= 0x19 || v == 0) {
         return 0xFF;
     }
-    D_80101BCC = a0;
+    g_memcard_slot = a0;
     return v;
 }
-extern u8 D_80102A68[];
-extern s32 D_80107810[];
-extern u16 D_80107808;
+extern u8 g_snd_ch_status[];
+extern s32 g_snd_ch_addr[];
+extern u16 g_snd_ch_count;
 extern void spu_DmaTransfer(s32);
 void func_80087F64(s16 a0) {
     if ((u16)a0 < 0x10) {
         s16 idx = a0;
-        if (D_80102A68[idx] == 1) {
-            spu_DmaTransfer(D_80107810[idx]);
-            D_80102A68[idx] = 0;
-            D_80107808--;
+        if (g_snd_ch_status[idx] == 1) {
+            spu_DmaTransfer(g_snd_ch_addr[idx]);
+            g_snd_ch_status[idx] = 0;
+            g_snd_ch_count--;
         }
     }
 }
-extern u8 D_80102A68[];
+extern u8 g_snd_ch_status[];
 
 s16 func_80087FE8(s16 a0) {
     if ((u16)a0 < 0x11) {
-        if (D_80102A68[a0] == 2) {
+        if (g_snd_ch_status[a0] == 2) {
             func_8008AF58(0);
-            D_80102A68[a0] = 1;
+            g_snd_ch_status[a0] = 1;
             return a0;
         }
     }
@@ -468,8 +468,8 @@ s16 func_800880B8(s32 a0, s16 a1, s32 a2) {
 }
 INCLUDE_ASM("asm/funcs", saTan2Main);
 /* kengo:MED  |  sa_tan2/saTan2Main  |  247i */
-extern u8 D_80102A68[];
-extern s32 D_80107810[];
+extern u8 g_snd_ch_status[];
+extern s32 g_snd_ch_addr[];
 extern s32 D_801077C8[];
 extern s32 func_8008AE24(s32);
 extern s32 func_8008ADC4(s32, s32);
@@ -478,16 +478,16 @@ s16 func_800884C4(s32 a0, s16 a1) {
         func_8008AF58(0);
         return -1;
     }
-    if (D_80102A68[a1] != 2) {
+    if (g_snd_ch_status[a1] != 2) {
         func_8008AF58(0);
         return -1;
     }
     {
-        s32 s0 = D_80107810[a1];
+        s32 s0 = g_snd_ch_addr[a1];
         func_8008AE7C(0);
         func_8008AE24(s0);
         func_8008ADC4(a0, D_801077C8[a1]);
-        D_80102A68[a1] = 1;
+        g_snd_ch_status[a1] = 1;
     }
     return a1;
 }
@@ -527,28 +527,28 @@ void spu_InitEx(s32 arg0) {
     D_800A2898 = 0;
     D_800A2884 = D_800A2D44;
     spu_WriteReg(0xD1, D_800A2D44, 0);
-    D_800A2D38 = 0;
-    D_800A2D3C = 0;
-    D_800A2D40 = 0;
-    D_800A2878 = 0;
-    D_800A2CF8 = 0;
+    g_spu_voice_key_a = 0;
+    g_spu_voice_key_b = 0;
+    g_spu_voice_key_c = 0;
+    g_snd_reverb_flag = 0;
+    g_spu_reverb_mode = 0;
     D_800A2874 = 0;
     D_800A28A0 = 0;
     D_800A289C = 0;
     D_800A2CD4 = 0;
 }
-extern s32 D_800A2CD8;
-extern s32 D_800A2870;
-extern s32 D_80088BA0;
+extern s32 g_snd_init_flag;
+extern s32 g_snd_irq_handle;
+extern s32 g_snd_irq_data;
 
 void spu_InitIrq(void) {
     s32 v0;
-    if (D_800A2CD8 == 0) {
-        D_800A2CD8 = 1;
+    if (g_snd_init_flag == 0) {
+        g_snd_init_flag = 1;
         func_800789B8();
-        spu_SetCallback((s32)&D_80088BA0);
+        spu_SetCallback((s32)&g_snd_irq_data);
         v0 = func_80078978((s32)0xF0000009, 0x20, 0x2000, 0);
-        D_800A2870 = v0;
+        g_snd_irq_handle = v0;
         func_800789A8(v0);
         func_800789C8();
     }
@@ -561,8 +561,8 @@ INCLUDE_ASM("asm/funcs", saTan0GaugeDraw);
 extern void saTan0GaugeDraw(s32, ...);
 extern void DispUpdateStatusMessage(s32, s32);
 s32 spu_TransferData(s32 a0, s32 a1) {
-    if (D_800A2CF8 == 0) {
-        saTan0GaugeDraw(2, D_800A2CF4 << D_800A2D04);
+    if (g_spu_reverb_mode == 0) {
+        saTan0GaugeDraw(2, g_spu_xfer_addr << g_spu_addr_shift);
         saTan0GaugeDraw(1);
         saTan0GaugeDraw(3, a0, a1);
     } else {
@@ -571,7 +571,7 @@ s32 spu_TransferData(s32 a0, s32 a1) {
     return a1;
 }
 s32 spu_TransferDirect(s32 a0, s32 a1) {
-    saTan0GaugeDraw(2, D_800A2CF4 << D_800A2D04);
+    saTan0GaugeDraw(2, g_spu_xfer_addr << g_spu_addr_shift);
     saTan0GaugeDraw(0);
     saTan0GaugeDraw(3, a0, a1);
     return a1;
@@ -583,21 +583,21 @@ void spu_WriteReg(s32 arg0, u32 arg1, s32 arg2) {
 
     temp_v0 = arg0 * 2;
     if (arg2 == 0) {
-        *(u16 *)(temp_v0 + D_800A2CDC) = arg1;
+        *(u16 *)(temp_v0 + g_spu_base_addr) = arg1;
         __asm__("" ::: "memory");
         return;
     }
-    temp_a0 = D_800A2CDC;
-    temp_v1 = D_800A2D04;
+    temp_a0 = g_spu_base_addr;
+    temp_v1 = g_spu_addr_shift;
     *(u16 *)(temp_v0 + temp_a0) = arg1 >> temp_v1;
 }
 INCLUDE_ASM("asm/funcs", func_800890D4);
-extern volatile u32 *D_800A2CF0;
+extern volatile u32 *g_spu_dma_ctrl;
 void spu_ReadStatus(void) {
-    *D_800A2CF0 = (*D_800A2CF0 & 0xF0FFFFFF) | 0x20000000;
+    *g_spu_dma_ctrl = (*g_spu_dma_ctrl & 0xF0FFFFFF) | 0x20000000;
 }
 void spu_ReadReg(void) {
-    *D_800A2CF0 = (*D_800A2CF0 & 0xF0FFFFFF) | 0x22000000;
+    *g_spu_dma_ctrl = (*g_spu_dma_ctrl & 0xF0FFFFFF) | 0x22000000;
 }
 void spu_WriteReg16(void) {
     volatile s32 i;
@@ -609,21 +609,21 @@ void spu_WriteReg16(void) {
 void spu_SetCallback(s32 a0) {
     irq_AcknowledgeVblank(4, a0);
 }
-extern s32 D_800A2D18;
+extern s32 g_spu_timer;
 
-extern s32 D_800A2D18;
+extern s32 g_spu_timer;
 
-extern s32 D_800A2D18;
+extern s32 g_spu_timer;
 
 void func_800892F8(void) {
-    if (D_800A2CD8 == 1) {
-        D_800A2CD8 = 0;
+    if (g_snd_init_flag == 1) {
+        g_snd_init_flag = 0;
         func_800789B8();
-        D_800A2D14 = 0;
-        D_800A2D18 = 0;
+        g_spu_init_flag = 0;
+        g_spu_timer = 0;
         spu_SetCallback(0);
-        func_80078988(D_800A2870);
-        func_80089374(D_800A2870);
+        func_80078988(g_snd_irq_handle);
+        func_80089374(g_snd_irq_handle);
         func_800789C8();
     }
 }
@@ -639,13 +639,13 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-extern s32 D_800A2D38;
-extern s32 D_800A2D3C;
-extern s32 D_800A2D40;
+extern s32 g_spu_voice_key_a;
+extern s32 g_spu_voice_key_b;
+extern s32 g_spu_voice_key_c;
 
-extern s32 D_800A2D38;
-extern s32 D_800A2D3C;
-extern s32 D_800A2D40;
+extern s32 g_spu_voice_key_a;
+extern s32 g_spu_voice_key_b;
+extern s32 g_spu_voice_key_c;
 
 s32 spu_IrqHandler(s32 a0, s32 *a1) {
     int new_var2;
@@ -657,11 +657,11 @@ s32 spu_IrqHandler(s32 a0, s32 *a1) {
             return 0;
         }
     }
-    new_var = 0x10000 << D_800A2D04;
+    new_var = 0x10000 << g_spu_addr_shift;
     *a1 = 0x40001010;
-    D_800A2D40 = (s32)a1;
-    D_800A2D3C = 0;
-    D_800A2D38 = v0;
+    g_spu_voice_key_c = (s32)a1;
+    g_spu_voice_key_b = 0;
+    g_spu_voice_key_a = v0;
     a1[1] = new_var - 0x1010;
     return v0;
 }
@@ -669,20 +669,20 @@ INCLUDE_ASM("asm/funcs", coli_HitPauseKatana);
 /* kengo:HIGH  |  is_coli/coli_HitPauseKatana  |  178i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", exec_game);
 /* kengo:HIGH  |  md_game/exec_game  |  194i */
-extern s32 D_800A2D38;
+extern s32 g_spu_voice_key_a;
 extern void exec_game(void);
 void spu_DmaTransfer(s32 a0) {
     s32 count;
     s32 i;
     volatile s32 pad;
-    count = D_800A2D38;
+    count = g_spu_voice_key_a;
     i = 0;
     if (count > 0) {
         u32 stopbit = 0x40000000;
         u32 highbit = 0x80000000;
         s32 marked = a0 | highbit;
         s32 n = count;
-        s32 *ptr = D_800A2D40;
+        s32 *ptr = g_spu_voice_key_c;
         do {
             s32 val;
             __asm__("nop");
@@ -717,7 +717,7 @@ s32 func_80089D10(s32 a0) {
         val = a0;
     }
     {
-        volatile u16 *ptr = (volatile u16 *)(D_800A2CDC + 0x1AA);
+        volatile u16 *ptr = (volatile u16 *)(g_spu_base_addr + 0x1AA);
         u16 tmp = *ptr;
         *ptr = (tmp & 0xC0FF) | ((val & 0x3F) << 8);
     }
@@ -732,8 +732,8 @@ s32 func_80089EB0(u32 a0) {
     register u32 a3reg asm("a3");
     register u32 a2 asm("a2");
 
-    shift = D_800A2D04;
-    entry = D_800A2D40;
+    shift = g_spu_addr_shift;
+    entry = g_spu_voice_key_c;
     a0 <<= shift;
     if (entry != 0) goto body;
     __asm__ volatile("" ::: "v1");
@@ -772,38 +772,38 @@ void func_8008A434(s32 *arg0) {
     s32 flags = arg0[0];
     s32 zero = flags == 0;
 
-    if (zero || (flags & 0x1)) { *(u16 *)(D_800A2CDC + 0x1C0) = *(u16 *)((s32)arg0 + 0x4); }
-    if (zero || (flags & 0x2)) { *(u16 *)(D_800A2CDC + 0x1C2) = *(u16 *)((s32)arg0 + 0x6); }
-    if (zero || (flags & 0x4)) { *(u16 *)(D_800A2CDC + 0x1C4) = *(u16 *)((s32)arg0 + 0x8); }
-    if (zero || (flags & 0x8)) { *(u16 *)(D_800A2CDC + 0x1C6) = *(u16 *)((s32)arg0 + 0xA); }
-    if (zero || (flags & 0x10)) { *(u16 *)(D_800A2CDC + 0x1C8) = *(u16 *)((s32)arg0 + 0xC); }
-    if (zero || (flags & 0x20)) { *(u16 *)(D_800A2CDC + 0x1CA) = *(u16 *)((s32)arg0 + 0xE); }
-    if (zero || (flags & 0x40)) { *(u16 *)(D_800A2CDC + 0x1CC) = *(u16 *)((s32)arg0 + 0x10); }
-    if (zero || (flags & 0x80)) { *(u16 *)(D_800A2CDC + 0x1CE) = *(u16 *)((s32)arg0 + 0x12); }
-    if (zero || (flags & 0x100)) { *(u16 *)(D_800A2CDC + 0x1D0) = *(u16 *)((s32)arg0 + 0x14); }
-    if (zero || (flags & 0x200)) { *(u16 *)(D_800A2CDC + 0x1D2) = *(u16 *)((s32)arg0 + 0x16); }
-    if (zero || (flags & 0x400)) { *(u16 *)(D_800A2CDC + 0x1D4) = *(u16 *)((s32)arg0 + 0x18); }
-    if (zero || (flags & 0x800)) { *(u16 *)(D_800A2CDC + 0x1D6) = *(u16 *)((s32)arg0 + 0x1A); }
-    if (zero || (flags & 0x1000)) { *(u16 *)(D_800A2CDC + 0x1D8) = *(u16 *)((s32)arg0 + 0x1C); }
-    if (zero || (flags & 0x2000)) { *(u16 *)(D_800A2CDC + 0x1DA) = *(u16 *)((s32)arg0 + 0x1E); }
-    if (zero || (flags & 0x4000)) { *(u16 *)(D_800A2CDC + 0x1DC) = *(u16 *)((s32)arg0 + 0x20); }
-    if (zero || (flags & 0x8000)) { *(u16 *)(D_800A2CDC + 0x1DE) = *(u16 *)((s32)arg0 + 0x22); }
-    if (zero || (flags & 0x10000)) { *(u16 *)(D_800A2CDC + 0x1E0) = *(u16 *)((s32)arg0 + 0x24); }
-    if (zero || (flags & 0x20000)) { *(u16 *)(D_800A2CDC + 0x1E2) = *(u16 *)((s32)arg0 + 0x26); }
-    if (zero || (flags & 0x40000)) { *(u16 *)(D_800A2CDC + 0x1E4) = *(u16 *)((s32)arg0 + 0x28); }
-    if (zero || (flags & 0x80000)) { *(u16 *)(D_800A2CDC + 0x1E6) = *(u16 *)((s32)arg0 + 0x2A); }
-    if (zero || (flags & 0x100000)) { *(u16 *)(D_800A2CDC + 0x1E8) = *(u16 *)((s32)arg0 + 0x2C); }
-    if (zero || (flags & 0x200000)) { *(u16 *)(D_800A2CDC + 0x1EA) = *(u16 *)((s32)arg0 + 0x2E); }
-    if (zero || (flags & 0x400000)) { *(u16 *)(D_800A2CDC + 0x1EC) = *(u16 *)((s32)arg0 + 0x30); }
-    if (zero || (flags & 0x800000)) { *(u16 *)(D_800A2CDC + 0x1EE) = *(u16 *)((s32)arg0 + 0x32); }
-    if (zero || (flags & 0x1000000)) { *(u16 *)(D_800A2CDC + 0x1F0) = *(u16 *)((s32)arg0 + 0x34); }
-    if (zero || (flags & 0x2000000)) { *(u16 *)(D_800A2CDC + 0x1F2) = *(u16 *)((s32)arg0 + 0x36); }
-    if (zero || (flags & 0x4000000)) { *(u16 *)(D_800A2CDC + 0x1F4) = *(u16 *)((s32)arg0 + 0x38); }
-    if (zero || (flags & 0x8000000)) { *(u16 *)(D_800A2CDC + 0x1F6) = *(u16 *)((s32)arg0 + 0x3A); }
-    if (zero || (flags & 0x10000000)) { *(u16 *)(D_800A2CDC + 0x1F8) = *(u16 *)((s32)arg0 + 0x3C); }
-    if (zero || (flags & 0x20000000)) { *(u16 *)(D_800A2CDC + 0x1FA) = *(u16 *)((s32)arg0 + 0x3E); }
-    if (zero || (flags & 0x40000000)) { *(u16 *)(D_800A2CDC + 0x1FC) = *(u16 *)((s32)arg0 + 0x40); }
-    if (zero || (flags < 0)) { *(u16 *)(D_800A2CDC + 0x1FE) = *(u16 *)((s32)arg0 + 0x42); }
+    if (zero || (flags & 0x1)) { *(u16 *)(g_spu_base_addr + 0x1C0) = *(u16 *)((s32)arg0 + 0x4); }
+    if (zero || (flags & 0x2)) { *(u16 *)(g_spu_base_addr + 0x1C2) = *(u16 *)((s32)arg0 + 0x6); }
+    if (zero || (flags & 0x4)) { *(u16 *)(g_spu_base_addr + 0x1C4) = *(u16 *)((s32)arg0 + 0x8); }
+    if (zero || (flags & 0x8)) { *(u16 *)(g_spu_base_addr + 0x1C6) = *(u16 *)((s32)arg0 + 0xA); }
+    if (zero || (flags & 0x10)) { *(u16 *)(g_spu_base_addr + 0x1C8) = *(u16 *)((s32)arg0 + 0xC); }
+    if (zero || (flags & 0x20)) { *(u16 *)(g_spu_base_addr + 0x1CA) = *(u16 *)((s32)arg0 + 0xE); }
+    if (zero || (flags & 0x40)) { *(u16 *)(g_spu_base_addr + 0x1CC) = *(u16 *)((s32)arg0 + 0x10); }
+    if (zero || (flags & 0x80)) { *(u16 *)(g_spu_base_addr + 0x1CE) = *(u16 *)((s32)arg0 + 0x12); }
+    if (zero || (flags & 0x100)) { *(u16 *)(g_spu_base_addr + 0x1D0) = *(u16 *)((s32)arg0 + 0x14); }
+    if (zero || (flags & 0x200)) { *(u16 *)(g_spu_base_addr + 0x1D2) = *(u16 *)((s32)arg0 + 0x16); }
+    if (zero || (flags & 0x400)) { *(u16 *)(g_spu_base_addr + 0x1D4) = *(u16 *)((s32)arg0 + 0x18); }
+    if (zero || (flags & 0x800)) { *(u16 *)(g_spu_base_addr + 0x1D6) = *(u16 *)((s32)arg0 + 0x1A); }
+    if (zero || (flags & 0x1000)) { *(u16 *)(g_spu_base_addr + 0x1D8) = *(u16 *)((s32)arg0 + 0x1C); }
+    if (zero || (flags & 0x2000)) { *(u16 *)(g_spu_base_addr + 0x1DA) = *(u16 *)((s32)arg0 + 0x1E); }
+    if (zero || (flags & 0x4000)) { *(u16 *)(g_spu_base_addr + 0x1DC) = *(u16 *)((s32)arg0 + 0x20); }
+    if (zero || (flags & 0x8000)) { *(u16 *)(g_spu_base_addr + 0x1DE) = *(u16 *)((s32)arg0 + 0x22); }
+    if (zero || (flags & 0x10000)) { *(u16 *)(g_spu_base_addr + 0x1E0) = *(u16 *)((s32)arg0 + 0x24); }
+    if (zero || (flags & 0x20000)) { *(u16 *)(g_spu_base_addr + 0x1E2) = *(u16 *)((s32)arg0 + 0x26); }
+    if (zero || (flags & 0x40000)) { *(u16 *)(g_spu_base_addr + 0x1E4) = *(u16 *)((s32)arg0 + 0x28); }
+    if (zero || (flags & 0x80000)) { *(u16 *)(g_spu_base_addr + 0x1E6) = *(u16 *)((s32)arg0 + 0x2A); }
+    if (zero || (flags & 0x100000)) { *(u16 *)(g_spu_base_addr + 0x1E8) = *(u16 *)((s32)arg0 + 0x2C); }
+    if (zero || (flags & 0x200000)) { *(u16 *)(g_spu_base_addr + 0x1EA) = *(u16 *)((s32)arg0 + 0x2E); }
+    if (zero || (flags & 0x400000)) { *(u16 *)(g_spu_base_addr + 0x1EC) = *(u16 *)((s32)arg0 + 0x30); }
+    if (zero || (flags & 0x800000)) { *(u16 *)(g_spu_base_addr + 0x1EE) = *(u16 *)((s32)arg0 + 0x32); }
+    if (zero || (flags & 0x1000000)) { *(u16 *)(g_spu_base_addr + 0x1F0) = *(u16 *)((s32)arg0 + 0x34); }
+    if (zero || (flags & 0x2000000)) { *(u16 *)(g_spu_base_addr + 0x1F2) = *(u16 *)((s32)arg0 + 0x36); }
+    if (zero || (flags & 0x4000000)) { *(u16 *)(g_spu_base_addr + 0x1F4) = *(u16 *)((s32)arg0 + 0x38); }
+    if (zero || (flags & 0x8000000)) { *(u16 *)(g_spu_base_addr + 0x1F6) = *(u16 *)((s32)arg0 + 0x3A); }
+    if (zero || (flags & 0x10000000)) { *(u16 *)(g_spu_base_addr + 0x1F8) = *(u16 *)((s32)arg0 + 0x3C); }
+    if (zero || (flags & 0x20000000)) { *(u16 *)(g_spu_base_addr + 0x1FA) = *(u16 *)((s32)arg0 + 0x3E); }
+    if (zero || (flags & 0x40000000)) { *(u16 *)(g_spu_base_addr + 0x1FC) = *(u16 *)((s32)arg0 + 0x40); }
+    if (zero || (flags < 0)) { *(u16 *)(g_spu_base_addr + 0x1FE) = *(u16 *)((s32)arg0 + 0x42); }
 }
 
 void func_8008A904(s32 a0, s32 a1) {
@@ -859,7 +859,7 @@ found:
 
 work:
     base = bit_found << 4;
-    mask = D_800A2CDC;
+    mask = g_spu_base_addr;
     flags = D_800A2874;
     base = base + mask;
     mask = 1 << bit_found;
@@ -880,8 +880,8 @@ s32 func_8008AD64(s32 a0, s32 a1) {
         a1 = 0x7EFF0;
     }
     spu_TransferDirect(a0, a1);
-    if (D_800A2D14 == 0) {
-        D_800A2D10 = 0;
+    if (g_spu_init_flag == 0) {
+        g_spu_busy = 0;
     }
     return a1;
 }
@@ -890,8 +890,8 @@ s32 func_8008ADC4(s32 a0, s32 a1) {
         a1 = 0x7EFF0;
     }
     spu_TransferData(a0, a1);
-    if (D_800A2D14 == 0) {
-        D_800A2D10 = 0;
+    if (g_spu_init_flag == 0) {
+        g_spu_busy = 0;
     }
     return a1;
 }
@@ -902,8 +902,8 @@ s32 func_8008AE24(s32 a0) {
         return 0;
     }
     v0 = func_800890D4(-1, a0);
-    D_800A2CF4 = (u16)v0;
-    return (u32)(u16)v0 << D_800A2D04;
+    g_spu_xfer_addr = (u16)v0;
+    return (u32)(u16)v0 << g_spu_addr_shift;
 }
 void func_8008AE7C(s32 a0) {
     int new_var;
@@ -918,20 +918,20 @@ void func_8008AE7C(s32 a0) {
         v0++;
         v0--;
     }
-    D_800A2878 = a0;
-    D_800A2CF8 = v0;
+    g_snd_reverb_flag = a0;
+    g_spu_reverb_mode = v0;
 }
 s32 func_8008AEB0(s32 arg0) {
     s32 var_v0;
 
-    if ((D_800A2878 == 1) || (D_800A2D10 == 1)) {
+    if ((g_snd_reverb_flag == 1) || (g_spu_busy == 1)) {
         return 1;
     }
-    var_v0 = func_80078998(D_800A2870);
+    var_v0 = func_80078998(g_snd_irq_handle);
     if (arg0 == 1) {
         if (var_v0 == 0) {
             do {
-                var_v0 = func_80078998(D_800A2870);
+                var_v0 = func_80078998(g_snd_irq_handle);
             } while (var_v0 == 0);
         }
         var_v0 = 1;
@@ -939,20 +939,20 @@ s32 func_8008AEB0(s32 arg0) {
     }
     if (var_v0 == 1) {
 block_8:
-        D_800A2D10 = var_v0;
+        g_spu_busy = var_v0;
     }
     return var_v0;
 }
 void func_8008AF58(s32 a0) {
     if (a0 == 1) {
-        D_800A2D10 = 0;
+        g_spu_busy = 0;
     } else {
-        D_800A2D10 = 1;
+        g_spu_busy = 1;
     }
 }
 
 s32 func_8008AF84(void) {
-    return D_800A2D10 != 1;
+    return g_spu_busy != 1;
 }
 
 INCLUDE_ASM("asm/funcs", func_8008AF9C);
@@ -967,7 +967,7 @@ void func_8008B400(u8 *a0) {
         s32 off = i << 4;
         u16 data;
         s32 bit;
-        data = *((u16 *)((off + D_800A2CDC) + 0xC));
+        data = *((u16 *)((off + g_spu_base_addr) + 0xC));
         bit = D_800A2874 & (one << i);
         if (bit) {
             if (data != 0) {
@@ -994,7 +994,7 @@ void func_8008BD88(s32 arg0, u16 *arg1, u16 *arg2) {
     u32 temp_v1_2;
     s32 temp;
 
-    temp = (arg0 << 4) + D_800A2CDC;
+    temp = (arg0 << 4) + g_spu_base_addr;
     temp_v1 = *(u16 *)(temp);
     temp_a0_2 = *(u16 *)(temp + 2);
     temp_a3 = temp_v1 & 0xFFFF;
@@ -1014,24 +1014,24 @@ void func_8008BD88(s32 arg0, u16 *arg1, u16 *arg2) {
 }
 
 void func_8008BDE8(s32 a0, u16 *a1) {
-    a0 = (a0 << 4) + D_800A2CDC;
+    a0 = (a0 << 4) + g_spu_base_addr;
     *a1 = *(u16 *)(a0 + 0xC);
 }
 
 void func_8008BE04(void) {
     s32 v0;
     v0 = func_800789B8();
-    func_8008D050(&D_800A307C);
+    func_8008D050(&g_snd_callback);
     if (v0 == 1) {
         func_800789C8();
     }
 }
-extern s32 D_800164A8;
+extern s32 g_str_sio;
 
 void func_8008BE4C(void) {
     s32 v0;
     v0 = func_800789B8();
-    func_8008D060(&D_800164A8);
+    func_8008D060(&g_str_sio);
     func_80078FF0();
     if (v0 == 1) {
         func_800789C8();
@@ -1114,10 +1114,10 @@ __asm__(
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x48\n"
     "    nop\n"
-    ".global D_8008D070\n"
-    ".type D_8008D070, @function\n"
-    "D_8008D070:\n"
-    "    .aent D_8008D070\n"
+    ".global g_data_start\n"
+    ".type g_data_start, @function\n"
+    "g_data_start:\n"
+    "    .aent g_data_start\n"
     "    nop\n"
     "    nop\n"
     "    nop\n"
@@ -1126,10 +1126,10 @@ __asm__(
     "    nop\n"
     "    nop\n"
     "    nop\n"
-    ".global D_8008D090\n"
-    ".type D_8008D090, @function\n"
-    "D_8008D090:\n"
-    "    .aent D_8008D090\n"
+    ".global g_module_func_tbl\n"
+    ".type g_module_func_tbl, @function\n"
+    "g_module_func_tbl:\n"
+    "    .aent g_module_func_tbl\n"
     "    .word 0x8001DCB0\n"
     "    .word 0x8001E878\n"
     "    .word 0x80033898\n"
@@ -1164,10 +1164,10 @@ __asm__(
     "    .word 0x8003C8B4\n"
     "    .word 0x8003CCCC\n"
     "    .word 0x8003CD10\n"
-    ".global D_8008D118\n"
-    ".type D_8008D118, @function\n"
-    "D_8008D118:\n"
-    "    .aent D_8008D118\n"
+    ".global g_module_type_tbl\n"
+    ".type g_module_type_tbl, @function\n"
+    "g_module_type_tbl:\n"
+    "    .aent g_module_type_tbl\n"
     "    .word 0x0D0B0800\n"
     "    .word 0x15131110\n"
     "endlabel func_8008D060\n"
