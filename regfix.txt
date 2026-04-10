@@ -100,3 +100,14 @@ func_8003B10C: insert "lui $1,%hi(D_80101ED6)" @ 34
 func_8003AFFC: $17 <-> $18 @ 10-58
 # func_8003AFFC: prologue - move lui s3 before ori (TEXT indices)
 func_8003AFFC: reorder 7,2,3,4,5,6 @ 2-7
+
+# func_80044CCC: 4-way s0-s3 rotation - angle from s0->s3, args shift down
+func_80044CCC: $16 <-> $17 @ 7-58
+func_80044CCC: $17 <-> $18 @ 7-58
+func_80044CCC: $18 <-> $19 @ 7-58
+# func_80044CCC: interleave prologue saves with moves
+func_80044CCC: reorder 1,7,2,8,3,4,5,6,9,10 @ 1-10
+# func_80044CCC: dead store - write positive sp18[2] before negate
+func_80044CCC: insert "sw $2,0x20($29)" @ 29
+# func_80044CCC: dead store - write positive sp28[2] before negate (original index)
+func_80044CCC: insert "sw $2,0x30($29)" @ 55
