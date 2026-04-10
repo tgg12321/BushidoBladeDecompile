@@ -27,102 +27,240 @@ KNOWN_TYPES = {
 # Struct definition — hardcoded to avoid circular read/overwrite issues
 STRUCT_DEFS = r"""
 /* -----------------------------------------------------------------------
- * Main game object struct (accessed via a0/s0 in ~340 functions)
+ * GameObj: Polymorphic game object struct (0x100 bytes)
  *
- * Offsets determined from load/store instruction patterns across all asm
- * stubs. Fields with mixed lw/lh access at word-aligned offsets indicate
- * the field is a pair of s16s that is sometimes loaded as a full word.
+ * Accessed via a0/s0 in ~340+ functions across the codebase.
+ * Used for multiple object types (characters, cameras, effects, particles)
+ * with field semantics varying by object type.
  *
- * Range 0x00-0x03: status/flag bytes
- * Range 0x04-0x1F: position, rotation, velocity (s16 pairs -> s32 words)
- * Range 0x20-0x3F: additional transform data
- * Range 0x40-0x5F: animation/physics vectors (s16 pairs)
- * Range 0x60-0x6F: extended state
- * Range 0x70-0xBF: matrices, pointers, extra data
- * Range 0xC0-0xFF: more data fields
+ * NAMING EVIDENCE SOURCES:
+ *   - Kengo (PS2 sequel) debug symbols: rob_*, motion_*, camera_*, coli_*
+ *   - Named BB2 functions: cpu_get_dist, rob_life_ctrl, efc_rob_set_type_flash
+ *   - Decompiled C code: func_8001A538 (rotation), func_8002EECC (matrix inverse)
+ *   - Assembly instruction patterns across 1,466 functions
+ *
+ * POLYMORPHIC FIELD OVERLAY:
+ *   Field 0x00 is accessed as lw (323 funcs), lh (180), lb (74):
+ *     - As lw: pointer to linked object (opponent in rob, parent in effect)
+ *     - As lbu: object type/status flag
+ *     - As lhu: packed type+subtype
+ *
+ * OBJECT TYPE USAGE:
+ *   Rob (character):  0x00=opponent_ptr, 0x0C=mode, 0x0E=sub_mode, 0x6A=action_id
+ *   Camera:           0x60=target0_ptr, 0x64=target1_ptr, 0x68=target2_ptr
+ *   Effect/particle:  0x04=active_flag, 0x2C=pos, 0x44=vel, 0x5C=ang_vel
+ *   3x3 matrix:       0x00-0x10 as 9 s16 entries (3x3 rotation)
+ *
  * ----------------------------------------------------------------------- */
 typedef struct GameObj {
-    /* 0x00 */ u8 field_00;
-    /* 0x01 */ u8 field_01;
-    /* 0x02 */ s16 field_02;
-    /* 0x04 */ s16 field_04;
-    /* 0x06 */ s16 field_06;
-    /* 0x08 */ s16 field_08;
-    /* 0x0A */ s16 field_0A;
-    /* 0x0C */ s16 field_0C;
-    /* 0x0E */ s16 field_0E;
-    /* 0x10 */ s16 field_10;
-    /* 0x12 */ s16 field_12;
-    /* 0x14 */ s16 field_14;
-    /* 0x16 */ s16 field_16;
-    /* 0x18 */ s32 field_18;
-    /* 0x1C */ s32 field_1C;
-    /* 0x20 */ s32 field_20;
-    /* 0x24 */ s32 field_24;
-    /* 0x28 */ s32 field_28;
-    /* 0x2C */ s32 field_2C;
-    /* 0x30 */ s16 field_30;
-    /* 0x32 */ s16 field_32;
-    /* 0x34 */ s16 field_34;
-    /* 0x36 */ s16 field_36;
-    /* 0x38 */ s16 field_38;
-    /* 0x3A */ s16 field_3A;
-    /* 0x3C */ s16 field_3C;
-    /* 0x3E */ s16 field_3E;
-    /* 0x40 */ s16 field_40;
-    /* 0x42 */ s16 field_42;
-    /* 0x44 */ s32 field_44;
-    /* 0x48 */ s32 field_48;
-    /* 0x4C */ s32 field_4C;
-    /* 0x50 */ s32 field_50;
-    /* 0x54 */ s16 field_54;
-    /* 0x56 */ s16 field_56;
-    /* 0x58 */ s32 field_58;
-    /* 0x5C */ s16 field_5C;
-    /* 0x5E */ s16 field_5E;
-    /* 0x60 */ s32 field_60;
-    /* 0x64 */ s32 field_64;
-    /* 0x68 */ s32 field_68;
-    /* 0x6C */ s32 field_6C;
-    /* 0x70 */ s32 field_70;
-    /* 0x74 */ s32 field_74;
-    /* 0x78 */ s32 field_78;
-    /* 0x7C */ s32 field_7C;
-    /* 0x80 */ s32 field_80;
-    /* 0x84 */ s16 field_84;
-    /* 0x86 */ s16 field_86;
-    /* 0x88 */ s16 field_88;
-    /* 0x8A */ s16 field_8A;
-    /* 0x8C */ s32 field_8C;
-    /* 0x90 */ s32 field_90;
-    /* 0x94 */ s32 field_94;
-    /* 0x98 */ s32 field_98;
-    /* 0x9C */ s32 field_9C;
-    /* 0xA0 */ s32 field_A0;
-    /* 0xA4 */ s32 field_A4;
-    /* 0xA8 */ s32 field_A8;
-    /* 0xAC */ s32 field_AC;
-    /* 0xB0 */ s32 field_B0;
-    /* 0xB4 */ s32 field_B4;
-    /* 0xB8 */ s32 field_B8;
-    /* 0xBC */ s32 field_BC;
-    /* 0xC0 */ s32 field_C0;
-    /* 0xC4 */ s32 field_C4;
-    /* 0xC8 */ s32 field_C8;
-    /* 0xCC */ s32 field_CC;
-    /* 0xD0 */ s32 field_D0;
-    /* 0xD4 */ s32 field_D4;
-    /* 0xD8 */ s32 field_D8;
-    /* 0xDC */ s32 field_DC;
-    /* 0xE0 */ s32 field_E0;
-    /* 0xE4 */ s32 field_E4;
-    /* 0xE8 */ s32 field_E8;
-    /* 0xEC */ s32 field_EC;
-    /* 0xF0 */ s32 field_F0;
-    /* 0xF4 */ s32 field_F4;
-    /* 0xF8 */ s16 field_F8;
-    /* 0xFA */ s16 field_FA;
-    /* 0xFC */ s32 field_FC;
+    /* ===== 0x00-0x03: Object identity / status flags (542 funcs total) ===== */
+
+    /* 0x00 */ u8 type;             /* object type flag; lbu in 74 funcs (action_CheckHitZangeki,
+                                       cpu_check_same_dir_timer, marionation_Exec)
+                                       NOTE: also accessed as lw (323 funcs) for linked pointer
+                                       and lhu (180 funcs) for packed type+sub_type */
+    /* 0x01 */ u8 sub_type;         /* sub-type/variant; 37 funcs; cpu_check_same_dir_timer checks,
+                                       marionation_Exec reads; md_game_check_mode clears */
+    /* 0x02 */ s16 state;           /* object state; 120 funcs; sh in md_game_check_mode,
+                                       efc_rob_set_type_flash reads as lhu; rob_life_ctrl reads;
+                                       also used as matrix entry m00 in func_8002EECC */
+    /* ===== 0x04-0x16: Core transform / matrix data (316+ funcs) ===== */
+    /*
+     * When used as a 3x3 rotation matrix (func_8002EECC matrix inverse):
+     *   [m00 m01 m02]   [0x00 0x02 0x04]   (but 0x00 overlaps type field)
+     *   [m10 m11 m12] = [0x06 0x08 0x0A]
+     *   [m20 m21 m22]   [0x0C 0x0E 0x10]
+     *
+     * When used as rob/game object (most common usage):
+     *   0x04-0x0A: secondary transform or collision data
+     *   0x0C-0x0E: mode/sub_mode IDs
+     *   0x10-0x14: rotation angles
+     */
+
+    /* 0x04 */ s16 field_04;        /* 316 funcs; heavily used in collision (coli_check_circle_hit_line),
+                                       camera (camera_set_zoom), transform (calc_loc_mat_fw);
+                                       also matrix entry m01; lh dominant */
+    /* 0x06 */ s16 field_06;        /* 126 funcs; rob_life_ctrl, cpu_check_run_attack;
+                                       efc: cleared to 0; also matrix entry m02 */
+    /* 0x08 */ s16 field_08;        /* 238 funcs; rob_life_ctrl uses in limb index lookup;
+                                       mot_data_set loads; pad_main_control accesses;
+                                       also matrix entry m10 */
+    /* 0x0A */ s16 field_0A;        /* 100 funcs; cpu_check_same_dir_timer, hirahira_w_ctrl_2;
+                                       also matrix entry m11 */
+    /* 0x0C */ s16 mode;            /* 181 funcs; md_game_rob_data_init compares against 0x1D, 0x1F, 0x0E
+                                       (mode IDs); md_game_check_mode sets; saTan2KabutoWareMove reads;
+                                       for matrix context = m20 */
+    /* 0x0E */ s16 sub_mode;        /* 81 funcs; md_game_rob_data_init checks (lhu, subtract 6, range test);
+                                       hirahira_w_ctrl_2, rob_life_ctrl;
+                                       for matrix context = m21 */
+
+    /* 0x10 */ s16 rot_x;           /* 149 funcs; CONFIRMED rotation X: func_8001A538 passes -field_10
+                                       to func_8007F87C (RotateX); efc_rob_set_type_flash stores from
+                                       data table; rob_life_ctrl reads via lhu;
+                                       for matrix context = m22 */
+    /* 0x12 */ s16 rot_y;           /* 55 funcs; CONFIRMED rotation Y: func_8001A538 passes -field_12
+                                       to func_8007FA1C (RotateY); efc uses; rob_life_ctrl_2 uses
+                                       as multiplier for limb scaling */
+    /* 0x14 */ s16 rot_z;           /* 129 funcs; CONFIRMED rotation Z: func_8001A538 passes -field_14
+                                       to func_8007FBBC (RotateZ); AllocRobRmd reads; DispPracticeMenuTex_A;
+                                       rob_life_ctrl reads via lhu */
+    /* 0x16 */ s16 field_16;        /* 25 funcs; AllocRobRmd reads; saTan1MainJump, saTan2Main reads lbu;
+                                       low traffic, possibly padding or scale factor */
+
+    /* ===== 0x18-0x2C: Position / distance (98 funcs at 0x18) ===== */
+
+    /* 0x18 */ s32 dist;            /* 98 funcs; func_8001E6E4 camera code: local.dist = *(s32*)(s2+0x18);
+                                       efc_rob_set_type_flash: dest for func_8007EC5C (transform);
+                                       marionation_camera_Exec stores */
+    /* 0x1C */ s32 field_1C;        /* 92 funcs; AllocRobRmd stores pointer; calc_loc_mat_fw;
+                                       marionation_camera_Exec stores; myRobGeneiMove clears */
+    /* 0x20 */ s32 field_20;        /* 54 funcs; calc_loc_mat_fw; marionation_camera_Exec;
+                                       AllocRobRmd loads */
+    /* 0x24 */ s32 field_24;        /* 50 funcs; calc_loc_mat_fw; marionation_camera_Exec;
+                                       SetCurrentCursor stores */
+    /* 0x28 */ s32 field_28;        /* 35 funcs; calc_loc_mat_fw; marionation_camera_Exec */
+    /* 0x2C */ s32 pos_x;           /* 37 funcs; CONFIRMED position X: cpu_set_move_command_and_dir
+                                       copies Vec3_copy here from a1; SetBloodSpot source position;
+                                       efc_rob_set_type_flash copies; calc_loc_mat_fw reads */
+
+    /* ===== 0x30-0x42: Extended transform / sub-object data ===== */
+
+    /* 0x30 */ s16 pos_y;           /* 39 funcs; part of position vector with pos_x; md_game_check_mode
+                                       stores; DispPracticeMenuTex_A; saTan1MainJump reads as lhu */
+    /* 0x32 */ s16 pos_z;           /* 7 funcs; continues position triple; DispPracticeMenuTex_A;
+                                       saTan1MainJump reads */
+    /* 0x34 */ s16 field_34;        /* 37 funcs; calc_loc_mat_fw; md_game_check_mode stores;
+                                       saTan1MainJump reads */
+    /* 0x36 */ s16 field_36;        /* 7 funcs; saTan1MainJump reads */
+    /* 0x38 */ s16 field_38;        /* 22 funcs; DispPracticeMenuTex_A; calc_loc_mat_fw;
+                                       saTan1MainJump reads */
+    /* 0x3A */ s16 field_3A;        /* 6 funcs; DispPracticeMenuTex_A; saTan1MainJump */
+    /* 0x3C */ s16 field_3C;        /* 24 funcs; DispPracticeMenuTex_A; calc_loc_mat_fw;
+                                       saTan1MainJump reads */
+    /* 0x3E */ s16 field_3E;        /* 4 funcs; low traffic */
+    /* 0x40 */ s16 field_40;        /* 25 funcs; calc_loc_mat_fw; cpu_check_same_dir_timer reads */
+    /* 0x42 */ s16 field_42;        /* 8 funcs */
+
+    /* ===== 0x44-0x50: Velocity / movement vector (21 funcs at 0x44) ===== */
+
+    /* 0x44 */ s32 vel_x;           /* 21 funcs; CONFIRMED velocity X: cpu_get_dist rotates (vel_x,vel_z)
+                                       by angle using sin/cos LUT; cpu_set_move_command_and_dir assigns
+                                       randomized values; calc_loc_mat_fw stores */
+    /* 0x48 */ s32 vel_y;           /* 20 funcs; CONFIRMED velocity Y: cpu_get_dist damps (>>2);
+                                       cpu_set_move_command_and_dir assigns -(rng & 0x3F) - 0x80;
+                                       rob_life_ctrl stores scaled value */
+    /* 0x4C */ s32 vel_z;           /* 24 funcs; CONFIRMED velocity Z: cpu_get_dist rotates with vel_x;
+                                       cpu_set_move_command_and_dir assigns; rob_life_ctrl stores */
+    /* 0x50 */ s32 field_50;        /* 21 funcs; cpu_side_move_dir loads; rob_life_ctrl stores scaled value;
+                                       single_game_CheckStatusUpDataTotalOver loads */
+
+    /* ===== 0x54-0x60: Angular velocity / counters ===== */
+
+    /* 0x54 */ s16 field_54;        /* 20 funcs; saTan4GaugeInit reads */
+    /* 0x56 */ s16 field_56;        /* 6 funcs */
+    /* 0x58 */ s32 timer;           /* 26 funcs; efc_rob_set_type_flash loads as frame index/timer;
+                                       cpu_check_same_dir_timer loads; cpu_get_dist_2 loads;
+                                       md_game_check_mode clears (sb zero) */
+    /* 0x5C */ s16 ang_vel_x;      /* 17 funcs; CONFIRMED angular velocity: cpu_set_move_command_and_dir
+                                       assigns random rotation speed (0x200..0x5FF or negative);
+                                       efc_rob_set_type_flash reads */
+    /* 0x5E */ s16 ang_vel_y;      /* 12 funcs; CONFIRMED: cpu_set_move_command_and_dir assigns
+                                       (rng & 0x7FF) - 0x400; cpu_side_move_dir reads;
+                                       single_game_CheckStatusUpDataTotalOver reads */
+    /* 0x60 */ s32 target0_ptr;     /* 25 funcs; DUAL USE:
+                                       - For effects: s16 ang_vel_z (cleared to 0 by cpu_set_move_command_and_dir)
+                                       - For cameras: pointer to target0 position (special_camera_Init,
+                                         saTan0KiWareMoveA/B load and dereference as Vec3) */
+    /* 0x64 */ s32 target1_ptr;     /* 14 funcs; camera context: pointer to target1 position
+                                       (special_camera_Init dereferences); calc_loc_mat_fw stores */
+    /* 0x68 */ s32 target2_ptr;     /* 13 funcs; camera context: pointer to target2 position
+                                       (special_camera_Init dereferences) */
+
+    /* ===== 0x6C-0x80: Extended data / checksum ===== */
+
+    /* 0x6C */ s32 field_6C;        /* 9 funcs */
+    /* 0x70 */ s32 field_70;        /* 6 funcs */
+    /* 0x74 */ s32 field_74;        /* 9 funcs; camera_set_zoom stores; single_game stores */
+    /* 0x78 */ s32 field_78;        /* 10 funcs; damage_DebugDisp loads; calc_loc_mat_fw reads/writes */
+    /* 0x7C */ s32 field_7C;        /* 11 funcs; calc_loc_mat_fw reads/writes */
+    /* 0x80 */ s32 field_80;        /* 9 funcs; calc_loc_mat_fw reads/writes */
+
+    /* ===== 0x84-0x96: Motion / animation frame data ===== */
+
+    /* 0x84 */ s16 mot_frame_start; /* 11 funcs; func_80027A58: field_86 is reset to field_84 value;
+                                       func_8002872C copies to field_86; animation frame start */
+    /* 0x86 */ s16 mot_frame;       /* 8 funcs; func_80027A58: compared against field_88;
+                                       loaded, checked, reset to field_84; current motion frame */
+    /* 0x88 */ s16 mot_frame_end;   /* 18 funcs; func_80027A58: compared against field_86;
+                                       cpu_check_tubazeri_2 reads; end frame of animation */
+    /* 0x8A */ s16 mot_frame_delta; /* 8 funcs; func_80027A58: checked for non-zero, then cleared;
+                                       frame increment/delta */
+    /* 0x8C */ s32 field_8C;        /* 10 funcs; md_game_rob_data_init checks non-zero;
+                                       saTan2KabutoWareMove reads; calc_loc_mat_fw writes */
+    /* 0x90 */ s32 field_90;        /* 9 funcs; saTan4GaugeInit accesses */
+    /* 0x94 */ s32 field_94;        /* 7 funcs; camera_set_zoom writes; single_game writes */
+    /* 0x98 */ s32 field_98;        /* 5 funcs */
+    /* 0x9C */ s32 field_9C;        /* 4 funcs */
+
+    /* ===== 0xA0-0xAC: CPU AI / distance data ===== */
+
+    /* 0xA0 */ s32 field_A0;        /* 5 funcs */
+    /* 0xA4 */ s32 field_A4;        /* 6 funcs */
+    /* 0xA8 */ s32 delta0_x;        /* 16 funcs; special_camera_Init: target1.x - target0.x;
+                                       saTan0KiWareMoveA loads pair; DispSchoolBG stores;
+                                       saSeInit computes; delta vector component X */
+    /* 0xAC */ s32 delta0_y;        /* 16 funcs; special_camera_Init: target1.y - target0.y;
+                                       delta vector component Y */
+    /* 0xB0 */ s32 delta0_z;        /* 14 funcs; special_camera_Init: target1.z - target0.z;
+                                       delta vector component Z */
+
+    /* ===== 0xB4-0xC0: Secondary delta / transform vectors ===== */
+
+    /* 0xB4 */ s32 field_B4;        /* 6 funcs; calc_loc_mat_fw loads */
+    /* 0xB8 */ s32 delta1_x;        /* 20 funcs; special_camera_Init: target2.x - target0.x;
+                                       camera_set_zoom loads; cpu_side_move_dir reads/writes;
+                                       saTan0KiWareMoveA loads */
+    /* 0xBC */ s32 delta1_y;        /* 23 funcs; special_camera_Init: target2.y - target0.y;
+                                       camera_set_zoom loads; single_game loads */
+    /* 0xC0 */ s32 delta1_z;        /* 18 funcs; special_camera_Init: target2.z - target0.z;
+                                       camera_set_zoom loads; cpu_side_move_dir reads/writes */
+
+    /* ===== 0xC4-0xD4: Interpolation / spline data ===== */
+
+    /* 0xC4 */ s32 field_C4;        /* 5 funcs; calc_loc_mat_fw loads */
+    /* 0xC8 */ s32 interp_x;        /* 10 funcs; camera_set_zoom loads; saTan0KiWareMoveB does
+                                       interpolation: interp_x += (delta0_x - interp_x) >> shift */
+    /* 0xCC */ s32 interp_y;        /* 8 funcs; same interpolation pattern as interp_x */
+    /* 0xD0 */ s32 interp_z;        /* 13 funcs; same interpolation pattern; camera_set_zoom loads;
+                                       calc_loc_mat_fw stores */
+    /* 0xD4 */ s32 field_D4;        /* 4 funcs */
+
+    /* ===== 0xD8-0xE8: Rotation matrix (3x3 s16 with padding) ===== */
+    /* Pattern from DispSchoolBG/saSeInit/special_camera_Init:
+     *   D8=val, DA=0, DC=0, DE=0, E0=val, E2=0, E4=0, E6=0, E8=val
+     * This is a diagonal rotation matrix stored as 3 rows of {s16,s16,s16,pad} */
+
+    /* 0xD8 */ s32 rot_m00_m01;     /* 19 funcs; packed s16 pair: rotation matrix [0][0] and [0][1];
+                                       DispSchoolBG sets diag; saSeInit sets; special_camera_Init */
+    /* 0xDC */ s32 rot_m02_m10;     /* 15 funcs; packed s16 pair: rotation matrix [0][2] and [1][0] */
+    /* 0xE0 */ s32 rot_m11_m12;     /* 16 funcs; packed s16 pair: rotation matrix [1][1] and [1][2] */
+    /* 0xE4 */ s32 rot_m20_m21;     /* 12 funcs; packed s16 pair: rotation matrix [2][0] and [2][1] */
+    /* 0xE8 */ s32 rot_m22_pad;     /* 14 funcs; packed s16 pair: rotation matrix [2][2] and pad */
+
+    /* ===== 0xEC-0xFC: World position / final state ===== */
+
+    /* 0xEC */ s32 field_EC;        /* 2 funcs; low traffic */
+    /* 0xF0 */ s32 field_F0;        /* 3 funcs */
+    /* 0xF4 */ s32 world_pos_x;     /* 18 funcs; md_game_rob_data_init: loaded from self and opponent (via
+                                       field_00 ptr) at 0xF4; distance squared computed;
+                                       cpu_side_move_dir reads/writes; used in position calculations */
+    /* 0xF8 */ s16 screen_x;        /* 20 funcs; saTan0KiWareMoveA/B: delta projected to screen coords;
+                                       DispSchoolBG reads; saSeInit sets; special_camera_Init sets;
+                                       GTE mvmva output stored here */
+    /* 0xFA */ s16 screen_y;        /* 11 funcs; same pattern as screen_x; DispSchoolBG reads */
+    /* 0xFC */ s32 world_pos_z;     /* 21 funcs; md_game_rob_data_init: same usage as world_pos_x;
+                                       cpu_side_move_dir reads/writes;
+                                       single_game_CheckStatusUpDataTotalOver loads */
 } GameObj;
 
 /* Short vector types used for angles, positions, etc. */
