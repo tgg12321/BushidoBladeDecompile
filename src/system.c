@@ -13,12 +13,12 @@ extern void irq_AcknowledgeVblank(s32, s32);
 extern s32 saEft01Init(s32);
 
 /* Externs for globals */
-extern u8 D_800A11C4;
-extern u8 D_800A11D0;
-extern u8 D_800A11D4;
-extern u8 D_800A11D5;
-extern s32 D_800A11B4;
-extern s32 D_800A11B8;
+extern u8 g_cd_mode;
+extern u8 g_cd_param;
+extern u8 g_cd_ready_flag;
+extern u8 g_cd_ready_flag2;
+extern s32 g_cd_callback_a;
+extern s32 g_cd_callback_b;
 
 /* --- Functions 0x8008008C - 0x800807A8 --- */
 
@@ -35,19 +35,19 @@ __asm__(
 );
 
 u32 func_8008009C(void) {
-    return D_800A11C4;
+    return g_cd_mode;
 }
 
 u32 func_800800AC(void) {
-    return D_800A11D4;
+    return g_cd_ready_flag;
 }
 
 u32 func_800800BC(void) {
-    return D_800A11D5;
+    return g_cd_ready_flag2;
 }
 
 void *func_800800CC(void) {
-    return &D_800A11D0;
+    return &g_cd_param;
 }
 
 extern void func_80081974(void);
@@ -73,14 +73,14 @@ void func_80080148(void) {
     func_800817A0();
 }
 
-extern s32 D_800A11C0;
-extern s32 D_800A11DC[];
-extern s32 D_800A125C[];
-extern char D_80016074;
+extern s32 g_cd_debug_level;
+extern s32 g_cd_cmd_table[];
+extern s32 g_cd_result_table[];
+extern char g_str_none;
 
 s32 func_80080168(s32 a0) {
-    s32 old = D_800A11C0;
-    D_800A11C0 = a0;
+    s32 old = g_cd_debug_level;
+    g_cd_debug_level = a0;
     return old;
 }
 
@@ -88,10 +88,10 @@ void *func_80080180(u32 a0) {
     u32 idx = a0 & 0xFF;
     void *ret;
     if (idx < 0x1C) {
-        ret = (void *)D_800A11DC[idx];
+        ret = (void *)g_cd_cmd_table[idx];
         goto done;
     }
-    ret = &D_80016074;
+    ret = &g_str_none;
 done:
     return ret;
 }
@@ -100,10 +100,10 @@ void *func_800801B4(u32 a0) {
     u32 idx = a0 & 0xFF;
     void *ret;
     if (idx < 0x7) {
-        ret = (void *)D_800A125C[idx];
+        ret = (void *)g_cd_result_table[idx];
         goto done;
     }
-    ret = &D_80016074;
+    ret = &g_str_none;
 done:
     return ret;
 }
@@ -117,18 +117,18 @@ void func_80080208(void) {
 }
 
 s32 func_80080228(s32 a0) {
-    s32 old = D_800A11B4;
-    D_800A11B4 = a0;
+    s32 old = g_cd_callback_a;
+    g_cd_callback_a = a0;
     return old;
 }
 
 s32 func_80080240(s32 a0) {
-    s32 old = D_800A11B8;
-    D_800A11B8 = a0;
+    s32 old = g_cd_callback_b;
+    g_cd_callback_b = a0;
     return old;
 }
 
-extern s32 D_800A112C[];
+extern s32 g_cd_sector_buf[];
 extern s32 tslTm2LoadImage(s32, void *, void *, s32);
 
 s32 func_80080258(s32 a0, s32 a1, s32 a2) {
@@ -141,18 +141,18 @@ s32 func_80080258(s32 a0, s32 a1, s32 a2) {
     s32 *elem;
 
     idx = a0 & 0xFF;
-    saved = D_800A11B4;
-    elem = &D_800A112C[idx];
+    saved = g_cd_callback_a;
+    elem = &g_cd_sector_buf[idx];
     new_var = 3;
     result = 0;
     new_var2 = new_var;
     count = new_var2;
 
 loop:
-    D_800A11B4 = 0;
+    g_cd_callback_a = 0;
 
     if (idx != 1) {
-        if (D_800A11C4 & 0x10) {
+        if (g_cd_mode & 0x10) {
             tslTm2LoadImage(1, 0, 0, 0);
         }
     }
@@ -163,7 +163,7 @@ loop:
             }
         }
     }
-    D_800A11B4 = saved;
+    g_cd_callback_a = saved;
     if (tslTm2LoadImage(a0 & 0xFF, a1, a2, 0) == 0) {
         goto done;
     }
@@ -173,7 +173,7 @@ next:
     if (count != (-1)) {
         goto loop;
     }
-    D_800A11B4 = saved;
+    g_cd_callback_a = saved;
     result = -1;
 done:
     return result + 1;
@@ -188,18 +188,18 @@ s32 func_80080390(s32 a0, s32 a1) {
     s32 *elem;
 
     idx = a0 & 0xFF;
-    saved = D_800A11B4;
-    elem = &D_800A112C[idx];
+    saved = g_cd_callback_a;
+    elem = &g_cd_sector_buf[idx];
     new_var = 3;
     result = 0;
     new_var2 = new_var;
     count = new_var2;
 
 loop:
-    D_800A11B4 = 0;
+    g_cd_callback_a = 0;
 
     if (idx != 1) {
-        if (D_800A11C4 & 0x10) {
+        if (g_cd_mode & 0x10) {
             tslTm2LoadImage(1, 0, 0, 0);
         }
     }
@@ -210,7 +210,7 @@ loop:
             }
         }
     }
-    D_800A11B4 = saved;
+    g_cd_callback_a = saved;
     if (tslTm2LoadImage(a0 & 0xFF, a1, 0, 1) == 0) {
         goto done;
     }
@@ -220,7 +220,7 @@ next:
     if (count != (-1)) {
         goto loop;
     }
-    D_800A11B4 = saved;
+    g_cd_callback_a = saved;
     result = -1;
 done:
     return result + 1;
@@ -234,17 +234,17 @@ s32 tslPolyF4Init(s32 a0, s32 a1, s32 a2) {
     s32 *elem;
 
     idx = a0 & 0xFF;
-    saved = D_800A11B4;
-    elem = &D_800A112C[idx];
+    saved = g_cd_callback_a;
+    elem = &g_cd_sector_buf[idx];
     new_var = 3;
     new_var2 = new_var;
     count = new_var2;
 
 loop:
-    D_800A11B4 = 0;
+    g_cd_callback_a = 0;
 
     if (idx != 1) {
-        if (D_800A11C4 & 0x10) {
+        if (g_cd_mode & 0x10) {
             tslTm2LoadImage(1, 0, 0, 0);
         }
     }
@@ -255,7 +255,7 @@ loop:
             }
         }
     }
-    D_800A11B4 = saved;
+    g_cd_callback_a = saved;
     if (tslTm2LoadImage(a0 & 0xFF, a1, a2, 0) == 0) {
         goto done;
     }
@@ -264,7 +264,7 @@ next:
     if (count != (-1)) {
         goto loop;
     }
-    D_800A11B4 = saved;
+    g_cd_callback_a = saved;
 done:
     if (count == (-1)) {
         return 0;
@@ -334,7 +334,7 @@ void func_800806A4(s32 frames, u8 *out) {
     v0[0] = (u8)(new_var + m3);
 }
 
-extern s32 D_800A112C[];
+extern s32 g_cd_sector_buf[];
 extern s32 tslTm2LoadImage(s32, void *, void *, s32);
 extern s32 func_80080DB0_ret(s32, void *);
 /* --- text3 segment functions (0x800807A8-0x800827D0, 17 funcs) --- */
@@ -361,58 +361,58 @@ INCLUDE_ASM("asm/funcs", marionation_Exec);
 /* kengo:HIGH  |  nm_mario/marionation_Exec  |  180i  |  +1 near-exact */
 INCLUDE_ASM("asm/funcs", tslTm2LoadImage);
 /* kengo:MED  |  tsl_tm2/tslTm2LoadImage  |  253i  |  -10 x2 size collision */
-extern volatile u8 *D_800A147C;
-extern volatile u8 *D_800A1484;
-extern volatile u8 *D_800A1488;
-extern volatile u8 *D_800A1480;
+extern volatile u8 *g_cd_index_reg;
+extern volatile u8 *g_cd_req_reg;
+extern volatile u8 *g_cd_irq_reg;
+extern volatile u8 *g_cd_param_fifo;
 
 s32 func_80081718(u8 *a0) {
-    *D_800A147C = 2;
-    *D_800A1484 = a0[0];
-    *D_800A1488 = a0[1];
-    *D_800A147C = 3;
-    *D_800A1480 = a0[2];
-    *D_800A1484 = a0[3];
-    *D_800A1488 = 0x20;
+    *g_cd_index_reg = 2;
+    *g_cd_req_reg = a0[0];
+    *g_cd_irq_reg = a0[1];
+    *g_cd_index_reg = 3;
+    *g_cd_param_fifo = a0[2];
+    *g_cd_req_reg = a0[3];
+    *g_cd_irq_reg = 0x20;
     return 0;
 }
-extern volatile u32 *D_800A148C;
-extern volatile u32 *D_800A14C0;
-extern volatile u8 D_800A1494;
-extern volatile u8 D_800A1495;
-extern volatile u8 D_800A1496;
+extern volatile u32 *g_cd_dma_madr;
+extern volatile u32 *g_cd_dma_ctrl;
+extern volatile u8 g_cd_status_a;
+extern volatile u8 g_cd_status_b;
+extern volatile u8 g_cd_status_c;
 void func_800817A0(void) {
     u8 v0;
     volatile u8 *p94;
-    *D_800A147C = 1;
-    v0 = *D_800A1488 & 7;
+    *g_cd_index_reg = 1;
+    v0 = *g_cd_irq_reg & 7;
     if (v0 != 0) {
         do {
-            *D_800A147C = 1;
-            *D_800A1488 = 7;
-            *D_800A1484 = 7;
-            v0 = *D_800A1488 & 7;
+            *g_cd_index_reg = 1;
+            *g_cd_irq_reg = 7;
+            *g_cd_req_reg = 7;
+            v0 = *g_cd_irq_reg & 7;
         } while (v0 != 0);
     }
-    D_800A1496 = 0;
-    v0 = D_800A1496;
-    p94 = &D_800A1494;
-    D_800A1495 = v0;
+    g_cd_status_c = 0;
+    v0 = g_cd_status_c;
+    p94 = &g_cd_status_a;
+    g_cd_status_b = v0;
     *p94 = 2;
-    *D_800A147C = 0;
-    *D_800A1488 = 0;
-    *D_800A148C = 0x1325;
+    *g_cd_index_reg = 0;
+    *g_cd_irq_reg = 0;
+    *g_cd_dma_madr = 0x1325;
 }
-extern volatile u16 * volatile D_800A1490;
+extern volatile u16 * volatile g_cd_spu_voice;
 s32 func_80081880(void) {
     u8 buf[4];
     volatile u16 *v1;
-    v1 = D_800A1490;
+    v1 = g_cd_spu_voice;
     if (v1[0xDC] == 0) {
         if (v1[0xDD] == 0) {
             v1[0xC0] = 0x3FFF;
             v1[0xC1] = 0x3FFF;
-            v1 = D_800A1490;
+            v1 = g_cd_spu_voice;
         }
     }
     v1[0xD8] = 0x3FFF;
@@ -422,24 +422,24 @@ s32 func_80081880(void) {
     buf[0] = 0x80;
     buf[3] = 0;
     buf[1] = 0;
-    *D_800A147C = 2;
-    *D_800A1484 = buf[0];
-    *D_800A1488 = buf[1];
-    *D_800A147C = 3;
-    *D_800A1480 = buf[2];
-    *D_800A1484 = buf[3];
-    *D_800A1488 = 0x20;
+    *g_cd_index_reg = 2;
+    *g_cd_req_reg = buf[0];
+    *g_cd_irq_reg = buf[1];
+    *g_cd_index_reg = 3;
+    *g_cd_param_fifo = buf[2];
+    *g_cd_req_reg = buf[3];
+    *g_cd_irq_reg = 0x20;
     return 0;
 }
-extern s32 D_800A11C8;
+extern s32 g_cd_init_flag;
 extern void irq_DisableInterrupts(void);
 extern void irq_EnableInterrupts(s32, void *);
 extern u8 D_80081F1C;
 void func_80081974(void) {
-    D_800A11B8 = 0;
-    D_800A11B4 = 0;
-    D_800A11C8 = 0;
-    *(s32 *)&D_800A11C4 = 0;
+    g_cd_callback_b = 0;
+    g_cd_callback_a = 0;
+    g_cd_init_flag = 0;
+    *(s32 *)&g_cd_mode = 0;
     irq_DisableInterrupts();
     irq_EnableInterrupts(2, &D_80081F1C);
 }
@@ -454,39 +454,39 @@ s32 func_800819C4(void) {
     tslTm2LoadImage_2(&D_800162A8);
     func_80079208(&D_800162B4, &D_800A1498);
 
-    D_800A11D5 = 0;
-    D_800A11D4 = 0;
-    D_800A11B8 = 0;
-    D_800A11B4 = 0;
-    D_800A11C8 = 0;
-    *(s32 *)&D_800A11C4 = 0;
+    g_cd_ready_flag2 = 0;
+    g_cd_ready_flag = 0;
+    g_cd_callback_b = 0;
+    g_cd_callback_a = 0;
+    g_cd_init_flag = 0;
+    *(s32 *)&g_cd_mode = 0;
 
     irq_DisableInterrupts();
     irq_EnableInterrupts(2, &D_80081F1C);
 
-    *D_800A147C = 1;
-    v0 = *D_800A1488 & 7;
+    *g_cd_index_reg = 1;
+    v0 = *g_cd_irq_reg & 7;
     if (v0 != 0) {
         do {
-            *D_800A147C = 1;
-            *D_800A1488 = 7;
-            *D_800A1484 = 7;
-            v0 = *D_800A1488 & 7;
+            *g_cd_index_reg = 1;
+            *g_cd_irq_reg = 7;
+            *g_cd_req_reg = 7;
+            v0 = *g_cd_irq_reg & 7;
         } while (v0 != 0);
     }
 
-    D_800A1496 = 0;
-    v0 = D_800A1496;
-    p94 = &D_800A1494;
-    D_800A1495 = v0;
+    g_cd_status_c = 0;
+    v0 = g_cd_status_c;
+    p94 = &g_cd_status_a;
+    g_cd_status_b = v0;
     *p94 = 2;
-    *D_800A147C = 0;
-    *D_800A1488 = 0;
-    *D_800A148C = 0x1325;
+    *g_cd_index_reg = 0;
+    *g_cd_irq_reg = 0;
+    *g_cd_dma_madr = 0x1325;
 
     tslTm2LoadImage(1, 0, 0, 0);
 
-    if (*(s32 *)&D_800A11C4 & 0x10) {
+    if (*(s32 *)&g_cd_mode & 0x10) {
         tslTm2LoadImage(1, 0, 0, 0);
     }
 
@@ -509,63 +509,63 @@ extern void func_80079208(void *, void *, s32, s32, s32);
 extern s32 D_800F19B8;
 extern s32 D_800F19BC;
 extern void *D_800F19C0;
-extern s32 D_800161B8;
+extern s32 g_str_cd_timeout;
 extern s32 D_800161C8;
 extern void D_800162C0;
 INCLUDE_ASM("asm/funcs", saEft01Init);
 /* kengo:MED  |  sa_eft/saEft01Init  |  91i */
-extern volatile u32 *D_800A148C;
-extern volatile u32 *D_800A14B0;
-extern volatile u32 *D_800A14B4;
-extern volatile u32 *D_800A14B8;
-extern volatile u32 *D_800A14BC;
-extern volatile u32 *D_800A14C0;
+extern volatile u32 *g_cd_dma_madr;
+extern volatile u32 *g_cd_dma_bcr;
+extern volatile u32 *g_cd_dma_ctrl_b4;
+extern volatile u32 *g_cd_dma_dest;
+extern volatile u32 *g_cd_dma_size;
+extern volatile u32 *g_cd_dma_ctrl;
 
 s32 func_80081D1C(s32 a0, s32 a1) {
     volatile u8 *v1;
     u32 v0;
-    *D_800A147C = 0;
-    *D_800A1488 = 0x80;
-    *D_800A14B0 = 0x20943;
-    *D_800A148C = 0x1323;
-    *D_800A14B4 = *D_800A14B4 | 0x8000;
-    *D_800A14B8 = a0;
-    *D_800A14BC = a1 | 0x10000;
-    v1 = D_800A147C;
+    *g_cd_index_reg = 0;
+    *g_cd_irq_reg = 0x80;
+    *g_cd_dma_bcr = 0x20943;
+    *g_cd_dma_madr = 0x1323;
+    *g_cd_dma_ctrl_b4 = *g_cd_dma_ctrl_b4 | 0x8000;
+    *g_cd_dma_dest = a0;
+    *g_cd_dma_size = a1 | 0x10000;
+    v1 = g_cd_index_reg;
     do {
         __asm__ volatile("nop");
         v0 = *v1 & 0x40;
     } while (v0 == 0);
-    *D_800A14C0 = 0x11000000;
-    if ((*D_800A14C0 & 0x1000000) != 0) {
+    *g_cd_dma_ctrl = 0x11000000;
+    if ((*g_cd_dma_ctrl & 0x1000000) != 0) {
         do {
-            v0 = *D_800A14C0 & 0x1000000;
+            v0 = *g_cd_dma_ctrl & 0x1000000;
         } while (v0 != 0);
     }
-    *D_800A148C = 0x1325;
+    *g_cd_dma_madr = 0x1325;
     return 0;
 }
 s32 func_80081E1C(s32 a0, s32 a1) {
     volatile u8 *v1;
     u32 v0;
-    *D_800A147C = 0;
-    *D_800A1488 = 0x80;
-    *D_800A14B0 = 0x21020843;
-    *D_800A148C = 0x1325;
-    *D_800A14B4 = *D_800A14B4 | 0x8000;
-    *D_800A14B8 = a0;
-    *D_800A14BC = a1 | 0x10000;
-    v1 = D_800A147C;
+    *g_cd_index_reg = 0;
+    *g_cd_irq_reg = 0x80;
+    *g_cd_dma_bcr = 0x21020843;
+    *g_cd_dma_madr = 0x1325;
+    *g_cd_dma_ctrl_b4 = *g_cd_dma_ctrl_b4 | 0x8000;
+    *g_cd_dma_dest = a0;
+    *g_cd_dma_size = a1 | 0x10000;
+    v1 = g_cd_index_reg;
     v0 = *v1 & 0x40;
     if (v0 == 0) {
         do {
             v0 = *v1 & 0x40;
         } while (v0 == 0);
     }
-    *D_800A14C0 = 0x11400100;
+    *g_cd_dma_ctrl = 0x11400100;
     {
         volatile s32 tmp;
-        tmp = *D_800A14C0;
+        tmp = *g_cd_dma_ctrl;
     }
     return 0;
 }
@@ -575,10 +575,10 @@ void func_80081F0C(s32 a0) {
     D_800A1460 = a0;
 }
 
-extern volatile u8 D_800A1494;
-extern volatile u8 D_800A1495;
-extern s32 D_800A11B4;
-extern s32 D_800A11B8;
+extern volatile u8 g_cd_status_a;
+extern volatile u8 g_cd_status_b;
+extern s32 g_cd_callback_a;
+extern s32 g_cd_callback_b;
 extern void D_800F19A8;
 extern void D_800F19A0;
 extern s32 func_80080828(void);
@@ -597,24 +597,24 @@ __asm__(
 );
 
 void func_80081F1C(void) {
-    volatile u8 *s1 = &D_800A1495;
+    volatile u8 *s1 = &g_cd_status_b;
     volatile u8 *s3 = s1 - 1;
     u8 s2;
     s32 s0;
-    s2 = *D_800A147C & 3;
+    s2 = *g_cd_index_reg & 3;
     do {
         s0 = func_80080828();
         if (s0 == 0) break;
         if (s0 & 4) {
-            if (D_800A11B8 != 0) {
-                ((void (*)(u8, void *))D_800A11B8)(*s1, &D_800F19A8);
+            if (g_cd_callback_b != 0) {
+                ((void (*)(u8, void *))g_cd_callback_b)(*s1, &D_800F19A8);
             }
         }
         if (!(s0 & 2)) continue;
-        if (D_800A11B4 == 0) continue;
-        ((void (*)(u8, void *))D_800A11B4)(*s3, &D_800F19A0);
+        if (g_cd_callback_a == 0) continue;
+        ((void (*)(u8, void *))g_cd_callback_a)(*s3, &D_800F19A0);
     } while (1);
-    *D_800A147C = s2;
+    *g_cd_index_reg = s2;
 }
 INCLUDE_ASM("asm/funcs", tslTm2LoadImage_2);
 /* kengo:MED  |  tsl_tm2/tslTm2LoadImage_2  |  253i  |  -10 x2 size collision */
