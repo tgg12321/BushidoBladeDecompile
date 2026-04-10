@@ -143,3 +143,27 @@ func_80036FD4: subst "\$3" "$4" @ 18
 func_80036FD4: subst "\$2" "$5" @ 19
 # jal delay: $5 -> $3 (SpecialCam base)
 func_80036FD4: subst "\$5" "$3" @ 24
+
+# saEft01Init: 3-way s-reg rotation (s0->s2, s2->s1, s1->s0)
+saEft01Init: $16 <-> $18
+saEft01Init: $16 <-> $17
+# Fix prologue save offsets after s-reg swap
+saEft01Init: subst ",24\(" ",32(" @ 1
+saEft01Init: subst ",32\(" ",28(" @ 6
+saEft01Init: subst ",28\(" ",24(" @ 8
+# Arg block register fixes: idx[1] path v1->v0 ($3->$2)
+saEft01Init: $2 <-> $3 @ 35-35
+saEft01Init: $2 <-> $3 @ 38-39
+# Arg block register fixes: idx[0] path v0->a0 ($2->$4)
+saEft01Init: $2 <-> $4 @ 36-36
+saEft01Init: $2 <-> $4 @ 40-42
+# Arg block: fix lw source register at insn 44
+saEft01Init: subst "0\(\$3\)" "0($2)" @ 44
+# Arg block reorder to match target evaluation order
+saEft01Init: reorder 36,35,37,38,39,40,44,43,41,45,46,47,48,42 @ 35-48
+# Fix epilogue restore offsets after s-reg swap
+saEft01Init: subst ",32\(" ",28(" @ 70
+saEft01Init: subst ",28\(" ",24(" @ 71
+saEft01Init: subst ",24\(" ",32(" @ 72
+# Reorder epilogue restores to match target order (s2, s1, s0)
+saEft01Init: reorder 72,70,71 @ 70-72
