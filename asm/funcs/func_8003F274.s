@@ -1,4 +1,4 @@
-glabel func_8003F274
+glabel stage_InitCollision
     /* 2FA74 8003F274 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2FA78 8003F278 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2FA7C 8003F27C 0B80023C */  lui        $v0, %hi(D_800A8FB0)
@@ -9,7 +9,7 @@ glabel func_8003F274
     /* 2FA8C 8003F28C FFFFC624 */  addiu      $a2, $a2, -0x1
     /* 2FA90 8003F290 FDFFC104 */  bgez       $a2, .L8003F288
     /* 2FA94 8003F294 04004224 */   addiu     $v0, $v0, 0x4
-    /* 2FA98 8003F298 9AFC000C */  jal        func_8003F268
+    /* 2FA98 8003F298 9AFC000C */  jal        game_GetPlayerCount
     /* 2FA9C 8003F29C 00000000 */   nop
     /* 2FAA0 8003F2A0 0A80023C */  lui        $v0, %hi(D_800A3708)
     /* 2FAA4 8003F2A4 0837428C */  lw         $v0, %lo(D_800A3708)($v0)
@@ -73,4 +73,4 @@ glabel func_8003F274
     /* 2FB7C 8003F37C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2FB80 8003F380 0800E003 */  jr         $ra
     /* 2FB84 8003F384 00000000 */   nop
-endlabel func_8003F274
+endlabel stage_InitCollision

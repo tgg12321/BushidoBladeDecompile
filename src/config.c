@@ -35,21 +35,21 @@ extern s32 D_800A93C0;
 extern s32 D_800A93C4;
 
 /* --- Functions 0x8003F168 - 0x8004019C --- */
-void func_8003F168(void) {
+void stage_ExecInitFunc(void) {
     s32 v0 = *(s32 *)((u32)&g_stage_init_tbl + (stage_GetId() << 3));
     if (v0) {
         (*(void (**)(void))((u32)&g_stage_init_tbl + (stage_GetId() << 3)))();
     }
 }
-s32 func_8003F1C8(void) {
+s32 game_GetMode(void) {
     return g_game_mode;
 }
 
-void *func_8003F1D4(void) {
+void *game_GetCharData(void) {
     return &g_char_data;
 }
 
-void func_8003F1E4(s32 a0) {
+void game_SetControllerPorts(s32 a0) {
     if (a0) {
         g_game_p1_ctrl = 3;
         g_game_p2_ctrl = 2;
@@ -59,7 +59,7 @@ void func_8003F1E4(s32 a0) {
     }
 }
 
-void func_8003F218(s32 a0) {
+void game_SetPlayerCount(s32 a0) {
     if ((u32)a0 >= 2) {
         return;
     }
@@ -68,14 +68,14 @@ void func_8003F218(s32 a0) {
     }
     g_game_player_count = a0;
     if (!a0) {
-        func_8003F1E4(0);
+        game_SetControllerPorts(0);
     }
     g_game_mirror_mode = (s16)g_game_player_count;
 }
-s32 func_8003F268(void) {
+s32 game_GetPlayerCount(void) {
     return g_game_player_count;
 }
-void func_8003F274(void) {
+void stage_InitCollision(void) {
     s32 i, j;
     s32 col_center, row_center;
     s32 data;
@@ -90,7 +90,7 @@ void func_8003F274(void) {
         ptr++;
     } while (count >= 0);
 
-    func_8003F268();
+    game_GetPlayerCount();
 
     col_center = (*(s32 *)(D_800A3708 + 0x4C) + 0x7D00) / 2000;
     row_center = (*(s32 *)(D_800A3708 + 0x54) + 0x7D00) / 2000;
@@ -150,21 +150,21 @@ void func_8003F420(s32 a0, s32 a1) {
     } else {
         s0 = 1;
     }
-    func_8003F52C(s3, s2, 2);
-    func_8003F52C(s3 + s1, s2, 2);
-    func_8003F52C(s3, s2 + s0, 2);
-    func_8003F52C(s3 + s1, s2 + s0, 2);
+    stage_SetCollision(s3, s2, 2);
+    stage_SetCollision(s3 + s1, s2, 2);
+    stage_SetCollision(s3, s2 + s0, 2);
+    stage_SetCollision(s3 + s1, s2 + s0, 2);
 }
 
-void func_8003F52C(s32 a0, s32 a1, s32 a2) {
+void stage_SetCollision(s32 a0, s32 a1, s32 a2) {
     g_stage_collision[a1 * 32 + a0] = a2 & 3;
 }
 
-u32 func_8003F54C(s32 a0, s32 a1) {
+u32 stage_GetCollision(s32 a0, s32 a1) {
     return g_stage_collision[a1 * 32 + a0];
 }
 
-void func_8003F568(void) {
+void stage_ClearLighting(void) {
     g_game_flag_b = 0;
     g_game_flag_a = 0;
     D_800A93B8 = 0;
@@ -175,12 +175,12 @@ void func_8003F568(void) {
     g_stage_light_dir = 0;
 }
 
-void func_8003F5A8(s32 a0, s32 a1, s32 a2) {
+void stage_SetLightPosDir(s32 a0, s32 a1, s32 a2) {
     (&g_stage_light_pos)[a2] = a0;
     (&g_stage_light_dir)[a2] = a1;
 }
 
-void func_8003F5CC(void) {
+void stage_ApplyLighting(void) {
     sys_StubEmpty3(g_stage_light_pos, g_stage_light_dir, 0);
     sys_StubEmpty3(D_800A93B4, D_800A93C0, 1);
     sys_StubEmpty3(D_800A93B8, D_800A93C4, 2);

@@ -244,7 +244,7 @@ glabel func_8005490C
     /* 454AC 80054CAC 00000000 */   nop
     /* 454B0 80054CB0 841C010C */  jal        camera_InitBoneData
     /* 454B4 80054CB4 00000000 */   nop
-    /* 454B8 80054CB8 9DFC000C */  jal        func_8003F274
+    /* 454B8 80054CB8 9DFC000C */  jal        stage_InitCollision
     /* 454BC 80054CBC 00000000 */   nop
     /* 454C0 80054CC0 0F80103C */  lui        $s0, %hi(D_800F62E0)
     /* 454C4 80054CC4 E0621026 */  addiu      $s0, $s0, %lo(D_800F62E0)

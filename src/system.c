@@ -5,12 +5,12 @@
 #include "psx.h"
 
 /* Forward declarations */
-extern void func_800817A0(void);
+extern void cdrom_ClearIrq(void);
 extern void cpu_side_move_dir_4(void);
 extern void marionation_Exec(void);
-extern s32 func_80081718();
-extern s32 func_80081D1C();
-extern s32 func_80081E1C(void);
+extern s32 cdrom_SendCmd();
+extern s32 cdrom_DmaToRam();
+extern s32 cdrom_DmaChain(void);
 extern void irq_AcknowledgeVblank(s32, s32);
 extern s32 saEft01Init(s32);
 
@@ -36,15 +36,15 @@ __asm__(
     ".set at\n"
 );
 
-u32 func_8008009C(void) {
+u32 cdrom_GetMode(void) {
     return g_cd_mode;
 }
 
-u32 func_800800AC(void) {
+u32 cdrom_GetReadyFlag(void) {
     return g_cd_ready_flag;
 }
 
-u32 func_800800BC(void) {
+u32 cdrom_GetReadyFlag2(void) {
     return g_cd_ready_flag2;
 }
 
@@ -52,19 +52,19 @@ void *func_800800CC(void) {
     return &g_cd_param;
 }
 
-extern void func_80081974(void);
-extern s32 func_800819C4(void);
-extern s32 func_80081880(void);
-s32 func_800800DC(s32 a0) {
+extern void cdrom_Shutdown(void);
+extern s32 cdrom_Initialize(void);
+extern s32 cdrom_ConfigSPU(void);
+s32 cdrom_CheckReady(s32 a0) {
     if (a0 == 2) {
-        func_80081974();
+        cdrom_Shutdown();
         return 1;
     }
-    if (func_800819C4() != 0) {
+    if (cdrom_Initialize() != 0) {
         return 0;
     }
     if (a0 == 1) {
-        if (func_80081880() != 0) {
+        if (cdrom_ConfigSPU() != 0) {
             return 0;
         }
     }
@@ -72,7 +72,7 @@ s32 func_800800DC(s32 a0) {
 }
 
 void func_80080148(void) {
-    func_800817A0();
+    cdrom_ClearIrq();
 }
 
 extern s32 g_cd_debug_level;
@@ -80,13 +80,13 @@ extern s32 g_cd_cmd_table[];
 extern s32 g_cd_result_table[];
 extern char g_str_none;
 
-s32 func_80080168(s32 a0) {
+s32 cdrom_SetDebugLevel(s32 a0) {
     s32 old = g_cd_debug_level;
     g_cd_debug_level = a0;
     return old;
 }
 
-void *func_80080180(u32 a0) {
+void *cdrom_GetCmdName(u32 a0) {
     u32 idx = a0 & 0xFF;
     void *ret;
     if (idx < 0x1C) {
@@ -98,7 +98,7 @@ done:
     return ret;
 }
 
-void *func_800801B4(u32 a0) {
+void *cdrom_GetResultName(u32 a0) {
     u32 idx = a0 & 0xFF;
     void *ret;
     if (idx < 0x7) {
@@ -118,13 +118,13 @@ void func_80080208(void) {
     marionation_Exec();
 }
 
-s32 func_80080228(s32 a0) {
+s32 cdrom_SetCallbackA(s32 a0) {
     s32 old = g_cd_callback_a;
     g_cd_callback_a = a0;
     return old;
 }
 
-s32 func_80080240(s32 a0) {
+s32 cdrom_SetCallbackB(s32 a0) {
     s32 old = g_cd_callback_b;
     g_cd_callback_b = a0;
     return old;
@@ -281,16 +281,16 @@ done:
 /* kengo:MED  |  tsl_pkt/tslPolyF4Init  |  81i */
 
 s32 func_80080600(void) {
-    func_80081718();
+    cdrom_SendCmd();
     return 1;
 }
 
 s32 func_80080620(void) {
-    return func_80081D1C() == 0;
+    return cdrom_DmaToRam() == 0;
 }
 
 s32 func_80080640(void) {
-    return func_80081E1C() == 0;
+    return cdrom_DmaChain() == 0;
 }
 
 void func_80080660(s32 a0) {
@@ -301,7 +301,7 @@ void func_80080684(s32 a0) {
     saEft01Init(a0);
 }
 
-void func_800806A4(s32 frames, u8 *out) {
+void cdrom_FramesToBcd(s32 frames, u8 *out) {
     register u8 *v0 asm("v0") = out;
     s32 total;
     register s32 secs asm("a3");
@@ -341,7 +341,7 @@ extern s32 tslTm2LoadImage(s32, void *, void *, s32);
 extern s32 func_80080DB0_ret(s32, void *);
 /* --- text3 segment functions (0x800807A8-0x800827D0, 17 funcs) --- */
 
-s32 func_800807A8(u8 *a0) {
+s32 cdrom_BcdToFrames(u8 *a0) {
     u8 b0 = a0[0];
     u8 b1 = a0[1];
     s32 min, sec, frm;
@@ -368,7 +368,7 @@ extern volatile u8 *g_cd_req_reg;
 extern volatile u8 *g_cd_irq_reg;
 extern volatile u8 *g_cd_param_fifo;
 
-s32 func_80081718(u8 *a0) {
+s32 cdrom_SendCmd(u8 *a0) {
     *g_cd_index_reg = 2;
     *g_cd_req_reg = a0[0];
     *g_cd_irq_reg = a0[1];
@@ -383,7 +383,7 @@ extern volatile u32 *g_cd_dma_ctrl;
 extern volatile u8 g_cd_status_a;
 extern volatile u8 g_cd_status_b;
 extern volatile u8 g_cd_status_c;
-void func_800817A0(void) {
+void cdrom_ClearIrq(void) {
     u8 v0;
     volatile u8 *p94;
     *g_cd_index_reg = 1;
@@ -406,7 +406,7 @@ void func_800817A0(void) {
     *g_cd_dma_madr = 0x1325;
 }
 extern volatile u16 * volatile g_cd_spu_voice;
-s32 func_80081880(void) {
+s32 cdrom_ConfigSPU(void) {
     u8 buf[4];
     volatile u16 *v1;
     v1 = g_cd_spu_voice;
@@ -436,7 +436,7 @@ s32 func_80081880(void) {
 extern s32 g_cd_init_flag;
 extern void irq_EnableInterrupts(s32, void *);
 extern u8 D_80081F1C;
-void func_80081974(void) {
+void cdrom_Shutdown(void) {
     g_cd_callback_b = 0;
     g_cd_callback_a = 0;
     g_cd_init_flag = 0;
@@ -448,7 +448,7 @@ extern void D_800162A8;
 extern void D_800162B4;
 extern void D_800A1498;
 
-s32 func_800819C4(void) {
+s32 cdrom_Initialize(void) {
     u8 v0;
     volatile u8 *p94;
 
@@ -553,7 +553,7 @@ do_timeout:
         arg4 = tbl_125c[idx_1494[0]];
         debug_printf(&D_800161C8, D_800F19C0, tbl_11dc[D_800A11D5], arg4, arg5);
     }
-    func_800817A0();
+    cdrom_ClearIrq();
     v0 = -1;
     goto check;
 
@@ -580,7 +580,7 @@ extern volatile u32 *g_cd_dma_dest;
 extern volatile u32 *g_cd_dma_size;
 extern volatile u32 *g_cd_dma_ctrl;
 
-s32 func_80081D1C(s32 a0, s32 a1) {
+s32 cdrom_DmaToRam(s32 a0, s32 a1) {
     volatile u8 *v1;
     u32 v0;
     *g_cd_index_reg = 0;
@@ -604,7 +604,7 @@ s32 func_80081D1C(s32 a0, s32 a1) {
     *g_cd_dma_madr = 0x1325;
     return 0;
 }
-s32 func_80081E1C(s32 a0, s32 a1) {
+s32 cdrom_DmaChain(s32 a0, s32 a1) {
     volatile u8 *v1;
     u32 v0;
     *g_cd_index_reg = 0;
@@ -630,7 +630,7 @@ s32 func_80081E1C(s32 a0, s32 a1) {
 }
 
 extern s32 D_800A1460;
-void func_80081F0C(s32 a0) {
+void cdrom_SetErrorCallback(s32 a0) {
     D_800A1460 = a0;
 }
 
@@ -655,7 +655,7 @@ __asm__(
 "
 );
 
-void func_80081F1C(void) {
+void cdrom_IrqHandler(void) {
     volatile u8 *s1 = &g_cd_status_b;
     volatile u8 *s3 = s1 - 1;
     u8 s2;
@@ -698,12 +698,12 @@ s32 saEft00Add(s32 arg0) {
     u8 sp10;
     s32 temp_s0;
 
-    func_80080228(0);
-    func_80080240(0);
+    cdrom_SetCallbackA(0);
+    cdrom_SetCallbackB(0);
     if (*(volatile s32 *)&D_800A1500 & 1) {
         func_80080660(0);
     }
-    if (func_8008009C() & 0x10) {
+    if (cdrom_GetMode() & 0x10) {
         if (!(sys_VSync(-1) & 0x3F)) {
             tslTm2LoadImage_2(&D_800162EC);
         }
@@ -728,14 +728,14 @@ common_path:
     temp_s0 = *(volatile s32 *)&D_800A14DC;
     sp10 = temp_s0;
     temp_s0 = temp_s0 & 0xFF;
-    if (temp_s0 != func_800800AC() || arg0 != 0) {
+    if (temp_s0 != cdrom_GetReadyFlag() || arg0 != 0) {
         if (func_80080258(0xE, (s32)&sp10, 0) == 0) {
             D_800A14E4 = -1;
             goto end;
         }
     }
-    D_800A14F0 = func_800807A8(func_800800CC());
-    func_80080240((s32)&D_80082050);
+    D_800A14F0 = cdrom_BcdToFrames(func_800800CC());
+    cdrom_SetCallbackB((s32)&D_80082050);
     if (D_800A1500 & 1) {
         func_80080660((s32)&D_80082320);
     }
@@ -754,8 +754,8 @@ void saEft00Add_sub(void) {
         func_80080684(0);
     }
     D_800A14E4 = 0;
-    func_80080228(D_800A14F4);
-    func_80080240(D_800A14F8);
+    cdrom_SetCallbackA(D_800A14F4);
+    cdrom_SetCallbackB(D_800A14F8);
     if (*p & 1) {
         func_80080660(D_800A14FC);
     }

@@ -1,4 +1,4 @@
-glabel func_8003F568
+glabel stage_ClearLighting
     /* 2FD68 8003F568 A80280AF */  sw         $zero, %gp_rel(D_800A3374)($gp)
     /* 2FD6C 8003F56C A40280AF */  sw         $zero, %gp_rel(D_800A3370)($gp)
     /* 2FD70 8003F570 0B80013C */  lui        $at, %hi(D_800A93B8)
@@ -15,4 +15,4 @@ glabel func_8003F568
     /* 2FD9C 8003F59C BC9320AC */  sw         $zero, %lo(D_800A93BC)($at)
     /* 2FDA0 8003F5A0 0800E003 */  jr         $ra
     /* 2FDA4 8003F5A4 00000000 */   nop
-endlabel func_8003F568
+endlabel stage_ClearLighting

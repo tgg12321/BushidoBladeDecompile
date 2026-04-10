@@ -31,7 +31,7 @@ glabel func_8003DBE4
     /* 2E450 8003DC50 1CF70008 */  j          .L8003DC70
     /* 2E454 8003DC54 00000000 */   nop
   .L8003DC58:
-    /* 2E458 8003DC58 9AFC000C */  jal        func_8003F268
+    /* 2E458 8003DC58 9AFC000C */  jal        game_GetPlayerCount
     /* 2E45C 8003DC5C 00000000 */   nop
     /* 2E460 8003DC60 02004014 */  bnez       $v0, .L8003DC6C
     /* 2E464 8003DC64 F0550224 */   addiu     $v0, $zero, 0x55F0

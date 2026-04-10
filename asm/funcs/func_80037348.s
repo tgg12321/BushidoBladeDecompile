@@ -48,10 +48,10 @@ glabel func_80037348
     /* 27BF8 800373F8 0000E2AC */  sw         $v0, 0x0($a3)
     /* 27BFC 800373FC 0400E3AC */  sw         $v1, 0x4($a3)
     /* 27C00 80037400 0800E4AC */  sw         $a0, 0x8($a3)
-    /* 27C04 80037404 EA01020C */  jal        func_800807A8
+    /* 27C04 80037404 EA01020C */  jal        cdrom_BcdToFrames
     /* 27C08 80037408 21205302 */   addu      $a0, $s2, $s3
     /* 27C0C 8003740C 01004424 */  addiu      $a0, $v0, 0x1
-    /* 27C10 80037410 A901020C */  jal        func_800806A4
+    /* 27C10 80037410 A901020C */  jal        cdrom_FramesToBcd
     /* 27C14 80037414 21282002 */   addu      $a1, $s1, $zero
     /* 27C18 80037418 02000424 */  addiu      $a0, $zero, 0x2
     /* 27C1C 8003741C 21282002 */  addu       $a1, $s1, $zero

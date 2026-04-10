@@ -62,7 +62,7 @@ glabel func_80044504
   .L800445E8:
     /* 34DE8 800445E8 801F013C */  lui        $at, (0x1F800010 >> 16)
     /* 34DEC 800445EC 100022AC */  sw         $v0, (0x1F800010 & 0xFFFF)($at)
-    /* 34DF0 800445F0 9AFC000C */  jal        func_8003F268
+    /* 34DF0 800445F0 9AFC000C */  jal        game_GetPlayerCount
     /* 34DF4 800445F4 00000000 */   nop
     /* 34DF8 800445F8 06004014 */  bnez       $v0, .L80044614
     /* 34DFC 800445FC BE000224 */   addiu     $v0, $zero, 0xBE

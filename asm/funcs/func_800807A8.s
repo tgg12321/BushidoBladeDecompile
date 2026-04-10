@@ -1,4 +1,4 @@
-glabel func_800807A8
+glabel cdrom_BcdToFrames
     /* 70FA8 800807A8 00008390 */  lbu        $v1, 0x0($a0)
     /* 70FAC 800807AC 01008690 */  lbu        $a2, 0x1($a0)
     /* 70FB0 800807B0 02290300 */  srl        $a1, $v1, 4
@@ -31,4 +31,4 @@ glabel func_800807A8
     /* 7101C 8008081C 21104300 */  addu       $v0, $v0, $v1
     /* 71020 80080820 0800E003 */  jr         $ra
     /* 71024 80080824 6AFF4224 */   addiu     $v0, $v0, -0x96
-endlabel func_800807A8
+endlabel cdrom_BcdToFrames

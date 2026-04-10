@@ -11,10 +11,10 @@ glabel func_80036E34
     /* 27658 80036E58 00000000 */   nop
     /* 2765C 80036E5C 1080103C */  lui        $s0, %hi(D_80101E6C)
     /* 27660 80036E60 6C1E1026 */  addiu      $s0, $s0, %lo(D_80101E6C)
-    /* 27664 80036E64 EA01020C */  jal        func_800807A8
+    /* 27664 80036E64 EA01020C */  jal        cdrom_BcdToFrames
     /* 27668 80036E68 21200002 */   addu      $a0, $s0, $zero
     /* 2766C 80036E6C 21205100 */  addu       $a0, $v0, $s1
-    /* 27670 80036E70 A901020C */  jal        func_800806A4
+    /* 27670 80036E70 A901020C */  jal        cdrom_FramesToBcd
     /* 27674 80036E74 21280002 */   addu      $a1, $s0, $zero
     /* 27678 80036E78 1080013C */  lui        $at, %hi(D_80101E78)
     /* 2767C 80036E7C 781E32AC */  sw         $s2, %lo(D_80101E78)($at)

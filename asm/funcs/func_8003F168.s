@@ -1,4 +1,4 @@
-glabel func_8003F168
+glabel stage_ExecInitFunc
     /* 2F968 8003F168 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2F96C 8003F16C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2F970 8003F170 E619010C */  jal        stage_GetId
@@ -24,4 +24,4 @@ glabel func_8003F168
     /* 2F9BC 8003F1BC 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2F9C0 8003F1C0 0800E003 */  jr         $ra
     /* 2F9C4 8003F1C4 00000000 */   nop
-endlabel func_8003F168
+endlabel stage_ExecInitFunc

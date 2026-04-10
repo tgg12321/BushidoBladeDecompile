@@ -5,7 +5,7 @@ glabel myRobGeneiMove
     /* BC84 8001B484 21200000 */  addu       $a0, $zero, $zero
     /* BC88 8001B488 3400BFAF */  sw         $ra, 0x34($sp)
     /* BC8C 8001B48C 3000B2AF */  sw         $s2, 0x30($sp)
-    /* BC90 8001B490 79FC000C */  jal        func_8003F1E4
+    /* BC90 8001B490 79FC000C */  jal        game_SetControllerPorts
     /* BC94 8001B494 2800B0AF */   sw        $s0, 0x28($sp)
     /* BC98 8001B498 9C01228E */  lw         $v0, 0x19C($s1)
     /* BC9C 8001B49C A801238E */  lw         $v1, 0x1A8($s1)

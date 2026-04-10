@@ -78,9 +78,9 @@ extern void func_8007E74C(void *, void *, void *);
 extern void func_800418D0(s32 *);
 extern void func_8004A1FC(void *);
 extern void func_800420D0(void);
-extern void func_8003F568(void);
-extern void func_8003F5CC(void);
-extern void func_8003F274(void);
+extern void stage_ClearLighting(void);
+extern void stage_ApplyLighting(void);
+extern void stage_InitCollision(void);
 extern s16 D_80101E02;
 extern s16 D_80101E04;
 extern s32 D_80101E3C;
@@ -314,7 +314,7 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
 
         func_800418D0((s32 *)((char *)rot_base - 0x10));
         camera_InitBoneData();
-        func_8003F274();
+        stage_InitCollision();
 
         g_snd_stage_bgm = a2;
     }
@@ -324,8 +324,8 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
     func_8004A1FC(base + 0x60);
     func_8004A1FC(base + 0x180);
     func_800420D0();
-    func_8003F568();
-    func_8003F5CC();
+    stage_ClearLighting();
+    stage_ApplyLighting();
 }
 void game_StageInit(s32 a0) {
     if (a0 & 1) {

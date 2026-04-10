@@ -1,4 +1,4 @@
-glabel func_80081974
+glabel cdrom_Shutdown
     /* 72174 80081974 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 72178 80081978 1000BFAF */  sw         $ra, 0x10($sp)
     /* 7217C 8008197C 0A80013C */  lui        $at, %hi(D_800A11B8)
@@ -19,4 +19,4 @@ glabel func_80081974
     /* 721B8 800819B8 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 721BC 800819BC 0800E003 */  jr         $ra
     /* 721C0 800819C0 00000000 */   nop
-endlabel func_80081974
+endlabel cdrom_Shutdown

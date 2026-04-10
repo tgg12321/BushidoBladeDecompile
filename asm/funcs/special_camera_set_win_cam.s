@@ -300,7 +300,7 @@ glabel special_camera_set_win_cam
     /* 26D9C 8003659C 63378424 */  addiu      $a0, $a0, %lo(D_800A3763)
     /* 26DA0 800365A0 1080013C */  lui        $at, %hi(D_80101E9C)
     /* 26DA4 800365A4 9C1E20A4 */  sh         $zero, %lo(D_80101E9C)($at)
-    /* 26DA8 800365A8 EA01020C */  jal        func_800807A8
+    /* 26DA8 800365A8 EA01020C */  jal        cdrom_BcdToFrames
     /* 26DAC 800365AC 00000000 */   nop
     /* 26DB0 800365B0 1080033C */  lui        $v1, %hi(D_80101E74)
     /* 26DB4 800365B4 741E638C */  lw         $v1, %lo(D_80101E74)($v1)
@@ -381,7 +381,7 @@ glabel special_camera_set_win_cam
     /* 26EC8 800366C8 000002A6 */   sh        $v0, 0x0($s0)
     /* 26ECC 800366CC 0A80043C */  lui        $a0, %hi(D_800A3765)
     /* 26ED0 800366D0 65378424 */  addiu      $a0, $a0, %lo(D_800A3765)
-    /* 26ED4 800366D4 EA01020C */  jal        func_800807A8
+    /* 26ED4 800366D4 EA01020C */  jal        cdrom_BcdToFrames
     /* 26ED8 800366D8 00000000 */   nop
     /* 26EDC 800366DC 1080043C */  lui        $a0, %hi(D_80101E74)
     /* 26EE0 800366E0 741E848C */  lw         $a0, %lo(D_80101E74)($a0)

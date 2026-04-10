@@ -27,7 +27,7 @@ glabel mario_test_Exec
     /* E510 8001DD10 00000000 */   nop
     /* E514 8001DD14 0A80043C */  lui        $a0, %hi(D_800A38BA)
     /* E518 8001DD18 BA388484 */  lh         $a0, %lo(D_800A38BA)($a0)
-    /* E51C 8001DD1C 86FC000C */  jal        func_8003F218
+    /* E51C 8001DD1C 86FC000C */  jal        game_SetPlayerCount
     /* E520 8001DD20 00000000 */   nop
     /* E524 8001DD24 0A80023C */  lui        $v0, %hi(D_800A38BA)
     /* E528 8001DD28 BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)

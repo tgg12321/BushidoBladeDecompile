@@ -912,7 +912,7 @@ extern void func_8007EC5C(s32 *, s32 *);
 extern void func_8007E4DC(s32 *, s32 *, s32 *);
 extern void camera_InitMatrix(void);
 extern s32 func_8003E2C8(void);
-extern s32 func_8003F268(void);
+extern s32 game_GetPlayerCount(void);
 extern s32 game_GetPause(void);
 extern void func_8004A4E0(void);
 extern void game_SetPause(s32);
@@ -940,7 +940,7 @@ void func_80044504(s32 a0) {
         *(s32 *)0x1F800010 = v1;
     }
     {
-        s32 v0 = func_8003F268();
+        s32 v0 = game_GetPlayerCount();
         if (v0 != 0) {
             v0 = 0xBE;
         } else {
@@ -995,7 +995,7 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
         return a2 + val * 104;
     }
 }
-extern s32 func_8003F1D4(void);
+extern s32 game_GetCharData(void);
 extern s32 D_800A9D08;
 void func_8004473C(void)
 {
@@ -1011,7 +1011,7 @@ void func_8004473C(void)
   register s32 constneg1 asm("t0");
   s32 _sp_pad[2];
   __asm__ volatile("" : "=m"(_sp_pad[0]));
-  temp_v0 = func_8003F1D4();
+  temp_v0 = game_GetCharData();
   var_a2 = 0;
   var_a1 = D_800A9D04;
   *((s32 *) (((s8 *) &D_800A9D08) + 0)) = temp_v0;

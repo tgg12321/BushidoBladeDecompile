@@ -1,4 +1,4 @@
-glabel func_80081880
+glabel cdrom_ConfigSPU
     /* 72080 80081880 0A80033C */  lui        $v1, %hi(D_800A1490)
     /* 72084 80081884 9014638C */  lw         $v1, %lo(D_800A1490)($v1)
     /* 72088 80081888 00000000 */  nop
@@ -62,4 +62,4 @@ glabel func_80081880
     /* 72168 80081968 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 7216C 8008196C 0800E003 */  jr         $ra
     /* 72170 80081970 00000000 */   nop
-endlabel func_80081880
+endlabel cdrom_ConfigSPU

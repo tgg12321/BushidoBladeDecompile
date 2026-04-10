@@ -1,4 +1,4 @@
-glabel func_8003F1E4
+glabel game_SetControllerPorts
     /* 2F9E4 8003F1E4 05008010 */  beqz       $a0, .L8003F1FC
     /* 2F9E8 8003F1E8 03000224 */   addiu     $v0, $zero, 0x3
     /* 2F9EC 8003F1EC 0F80013C */  lui        $at, %hi(D_800F6656)
@@ -14,4 +14,4 @@ glabel func_8003F1E4
     /* 2FA0C 8003F20C 586622A4 */  sh         $v0, %lo(D_800F6658)($at)
     /* 2FA10 8003F210 0800E003 */  jr         $ra
     /* 2FA14 8003F214 00000000 */   nop
-endlabel func_8003F1E4
+endlabel game_SetControllerPorts

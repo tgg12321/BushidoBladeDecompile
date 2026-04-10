@@ -24,4 +24,5 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac_c.c:damage_DebugDisp | Agent 12: Wave 5 | 2026-04-10 | active |
 | src/*.c, include/*.h, asm/ | Item 4: 29 function renames | 2026-04-10 | done — merged to main |
 | include/*.h, src/*.c | Item 5: magic number constants | 2026-04-10 | done — merged to main |
-| src/*.c, asm/ | Item 6: 76 function renames (gpu/display/main) | 2026-04-10 | done |
+| src/*.c, asm/ | Item 6: 76 function renames (gpu/display/main) | 2026-04-10 | done — merged to main |
+| src/*.c, asm/, regfix.txt | Item 6b: 30 config.c/system.c renames + regfix | 2026-04-10 | done |

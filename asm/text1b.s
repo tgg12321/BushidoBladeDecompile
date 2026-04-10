@@ -13960,7 +13960,7 @@ glabel func_80054604
     /* 44FCC 800547CC 21204000 */   addu      $a0, $v0, $zero
   .L800547D0:
     /* 44FD0 800547D0 21200000 */  addu       $a0, $zero, $zero
-    /* 44FD4 800547D4 86FC000C */  jal        func_8003F218
+    /* 44FD4 800547D4 86FC000C */  jal        game_SetPlayerCount
     /* 44FD8 800547D8 080033A6 */   sh        $s3, 0x8($s1)
     /* 44FDC 800547DC B159000C */  jal        disp_CalcFov
     /* 44FE0 800547E0 2D000424 */   addiu     $a0, $zero, 0x2D
@@ -14302,7 +14302,7 @@ glabel func_8005490C
     /* 454AC 80054CAC 00000000 */   nop
     /* 454B0 80054CB0 841C010C */  jal        camera_InitBoneData
     /* 454B4 80054CB4 00000000 */   nop
-    /* 454B8 80054CB8 9DFC000C */  jal        func_8003F274
+    /* 454B8 80054CB8 9DFC000C */  jal        stage_InitCollision
     /* 454BC 80054CBC 00000000 */   nop
     /* 454C0 80054CC0 0F80103C */  lui        $s0, %hi(D_800F62E0)
     /* 454C4 80054CC4 E0621026 */  addiu      $s0, $s0, %lo(D_800F62E0)

@@ -1,7 +1,7 @@
 glabel func_8004473C
     /* 34F3C 8004473C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 34F40 80044740 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 34F44 80044744 75FC000C */  jal        func_8003F1D4
+    /* 34F44 80044744 75FC000C */  jal        game_GetCharData
     /* 34F48 80044748 00000000 */   nop
     /* 34F4C 8004474C 21300000 */  addu       $a2, $zero, $zero
     /* 34F50 80044750 0B80053C */  lui        $a1, %hi(D_800A9D04)

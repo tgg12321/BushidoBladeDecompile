@@ -92,7 +92,7 @@ glabel special_camera_Exec
     /* 2728C 80036A8C 841E22AC */  sw         $v0, %lo(D_80101E84)($at)
     /* 27290 80036A90 1080013C */  lui        $at, %hi(D_80101E80)
     /* 27294 80036A94 801E23AC */  sw         $v1, %lo(D_80101E80)($at)
-    /* 27298 80036A98 EA01020C */  jal        func_800807A8
+    /* 27298 80036A98 EA01020C */  jal        cdrom_BcdToFrames
     /* 2729C 80036A9C 21200002 */   addu      $a0, $s0, $zero
     /* 272A0 80036AA0 02000424 */  addiu      $a0, $zero, 0x2
     /* 272A4 80036AA4 21280002 */  addu       $a1, $s0, $zero
@@ -117,7 +117,7 @@ glabel special_camera_Exec
     /* 272EC 80036AEC 64608424 */  addiu      $a0, $a0, %lo(func_80036064)
     /* 272F0 80036AF0 1080103C */  lui        $s0, %hi(D_80101E98)
     /* 272F4 80036AF4 981E1026 */  addiu      $s0, $s0, %lo(D_80101E98)
-    /* 272F8 80036AF8 9000020C */  jal        func_80080240
+    /* 272F8 80036AF8 9000020C */  jal        cdrom_SetCallbackB
     /* 272FC 80036AFC 000000A6 */   sh        $zero, 0x0($s0)
     /* 27300 80036B00 06000424 */  addiu      $a0, $zero, 0x6
     /* 27304 80036B04 E400020C */  jal        func_80080390
@@ -170,14 +170,14 @@ glabel special_camera_Exec
     /* 273B4 80036BB4 3D004228 */  slti       $v0, $v0, 0x3D
     /* 273B8 80036BB8 6E004014 */  bnez       $v0, .L80036D74
     /* 273BC 80036BBC 00000000 */   nop
-    /* 273C0 80036BC0 9000020C */  jal        func_80080240
+    /* 273C0 80036BC0 9000020C */  jal        cdrom_SetCallbackB
     /* 273C4 80036BC4 21200000 */   addu      $a0, $zero, $zero
     /* 273C8 80036BC8 5BDB0008 */  j          .L80036D6C
     /* 273CC 80036BCC 0A000224 */   addiu     $v0, $zero, 0xA
   .L80036BD0:
     /* 273D0 80036BD0 05006214 */  bne        $v1, $v0, .L80036BE8
     /* 273D4 80036BD4 00000000 */   nop
-    /* 273D8 80036BD8 9000020C */  jal        func_80080240
+    /* 273D8 80036BD8 9000020C */  jal        cdrom_SetCallbackB
     /* 273DC 80036BDC 21200000 */   addu      $a0, $zero, $zero
     /* 273E0 80036BE0 5BDB0008 */  j          .L80036D6C
     /* 273E4 80036BE4 09000224 */   addiu     $v0, $zero, 0x9
@@ -193,7 +193,7 @@ glabel special_camera_Exec
     /* 27408 80036C08 3D004228 */  slti       $v0, $v0, 0x3D
     /* 2740C 80036C0C 59004014 */  bnez       $v0, .L80036D74
     /* 27410 80036C10 00000000 */   nop
-    /* 27414 80036C14 9000020C */  jal        func_80080240
+    /* 27414 80036C14 9000020C */  jal        cdrom_SetCallbackB
     /* 27418 80036C18 21200000 */   addu      $a0, $zero, $zero
     /* 2741C 80036C1C 5BDB0008 */  j          .L80036D6C
     /* 27420 80036C20 0A000224 */   addiu     $v0, $zero, 0xA

@@ -88,7 +88,7 @@ extern void stage_GetDataPtr(void);
 
 extern void func_8005B50C(void);
 extern void initLoadImage(u32 *, s16 *, s32, s32);
-extern s32 func_8003F268(void);
+extern s32 game_GetPlayerCount(void);
 extern s32 func_80052C28(s32, s32);
 extern s32 func_800788B0(void);
 extern void func_800372C0(void);
@@ -388,7 +388,7 @@ void func_8003CD10(void) {
     s16 *a1 = (s16 *)((u8 *)a0 + 0x10);
     s32 ret;
 
-    func_8003F1E4(0);
+    game_SetControllerPorts(0);
     a0[0] = 0;
     D_800F660C = -0xBB8;
     D_800F6610 = 0;
@@ -414,7 +414,7 @@ extern void func_8001DA2C(void);
 extern s32 disp_CalcFov(s32);
 extern void func_8007EFFC(s32);
 extern void func_8003E22C(void);
-extern void func_8003F218(s32);
+extern void game_SetPlayerCount(s32);
 extern s32 func_80022408(s32 *);
 extern void func_80054884(s32, s32, s32, s32, s32, s32, s32, s32);
 void func_8003CE18(void) {
@@ -428,7 +428,7 @@ void func_8003CE18(void) {
     gpu_EnableDisplay();
     disp_SetFramebufferMode(1, 0, 0, 0);
     func_8003E22C();
-    func_8003F218(0);
+    game_SetPlayerCount(0);
     v0 = disp_CalcFov(0x2D);
     func_8007EFFC(v0);
     player = D_800A3748;

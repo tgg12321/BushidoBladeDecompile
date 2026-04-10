@@ -65,7 +65,7 @@ glabel tslTm2LoadImage_2
     /* 728EC 800820EC 8801020C */  jal        func_80080620
     /* 728F0 800820F0 03000524 */   addiu     $a1, $zero, 0x3
   .L800820F4:
-    /* 728F4 800820F4 EA01020C */  jal        func_800807A8
+    /* 728F4 800820F4 EA01020C */  jal        cdrom_BcdToFrames
     /* 728F8 800820F8 1000A427 */   addiu     $a0, $sp, 0x10
     /* 728FC 800820FC 0A80033C */  lui        $v1, %hi(D_800A14F0)
     /* 72900 80082100 F0146324 */  addiu      $v1, $v1, %lo(D_800A14F0)
@@ -174,11 +174,11 @@ glabel tslTm2LoadImage_2
   .L80082284:
     /* 72A84 80082284 0A80043C */  lui        $a0, %hi(D_800A14F4)
     /* 72A88 80082288 F414848C */  lw         $a0, %lo(D_800A14F4)($a0)
-    /* 72A8C 8008228C 8A00020C */  jal        func_80080228
+    /* 72A8C 8008228C 8A00020C */  jal        cdrom_SetCallbackA
     /* 72A90 80082290 00000000 */   nop
     /* 72A94 80082294 0A80043C */  lui        $a0, %hi(D_800A14F8)
     /* 72A98 80082298 F814848C */  lw         $a0, %lo(D_800A14F8)($a0)
-    /* 72A9C 8008229C 9000020C */  jal        func_80080240
+    /* 72A9C 8008229C 9000020C */  jal        cdrom_SetCallbackB
     /* 72AA0 800822A0 00000000 */   nop
     /* 72AA4 800822A4 0A80023C */  lui        $v0, %hi(D_800A1500)
     /* 72AA8 800822A8 0015428C */  lw         $v0, %lo(D_800A1500)($v0)
@@ -246,11 +246,11 @@ glabel tslTm2LoadImage_2
     /* 72B90 80082390 1000BFAF */   sw        $ra, 0x10($sp)
     /* 72B94 80082394 0A80043C */  lui        $a0, %hi(D_800A14F4)
     /* 72B98 80082398 F414848C */  lw         $a0, %lo(D_800A14F4)($a0)
-    /* 72B9C 8008239C 8A00020C */  jal        func_80080228
+    /* 72B9C 8008239C 8A00020C */  jal        cdrom_SetCallbackA
     /* 72BA0 800823A0 00000000 */   nop
     /* 72BA4 800823A4 0A80043C */  lui        $a0, %hi(D_800A14F8)
     /* 72BA8 800823A8 F814848C */  lw         $a0, %lo(D_800A14F8)($a0)
-    /* 72BAC 800823AC 9000020C */  jal        func_80080240
+    /* 72BAC 800823AC 9000020C */  jal        cdrom_SetCallbackB
     /* 72BB0 800823B0 00000000 */   nop
     /* 72BB4 800823B4 0A80023C */  lui        $v0, %hi(D_800A1500)
     /* 72BB8 800823B8 0015428C */  lw         $v0, %lo(D_800A1500)($v0)

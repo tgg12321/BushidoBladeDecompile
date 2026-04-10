@@ -63,7 +63,7 @@ glabel func_8001E404
   .L8001E4E0:
     /* ECE0 8001E4E0 0A80043C */  lui        $a0, %hi(D_800A36FA)
     /* ECE4 8001E4E4 FA368490 */  lbu        $a0, %lo(D_800A36FA)($a0)
-    /* ECE8 8001E4E8 86FC000C */  jal        func_8003F218
+    /* ECE8 8001E4E8 86FC000C */  jal        game_SetPlayerCount
     /* ECEC 8001E4EC 0100842C */   sltiu     $a0, $a0, 0x1
     /* ECF0 8001E4F0 0A80023C */  lui        $v0, %hi(D_800A36FA)
     /* ECF4 8001E4F4 FA364290 */  lbu        $v0, %lo(D_800A36FA)($v0)

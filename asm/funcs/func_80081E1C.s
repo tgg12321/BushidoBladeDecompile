@@ -1,4 +1,4 @@
-glabel func_80081E1C
+glabel cdrom_DmaChain
     /* 7261C 80081E1C 0A80023C */  lui        $v0, %hi(D_800A147C)
     /* 72620 80081E20 7C14428C */  lw         $v0, %lo(D_800A147C)($v0)
     /* 72624 80081E24 0221063C */  lui        $a2, (0x21020843 >> 16)
@@ -127,4 +127,4 @@ glabel func_80081E1C
     /* 727F4 80081FF4 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 727F8 80081FF8 0800E003 */  jr         $ra
     /* 727FC 80081FFC 00000000 */   nop
-endlabel func_80081E1C
+endlabel cdrom_DmaChain

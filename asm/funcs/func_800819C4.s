@@ -1,4 +1,4 @@
-glabel func_800819C4
+glabel cdrom_Initialize
     /* 721C4 800819C4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 721C8 800819C8 0180043C */  lui        $a0, %hi(D_800162A8)
     /* 721CC 800819CC A8628424 */  addiu      $a0, $a0, %lo(D_800162A8)
@@ -126,4 +126,4 @@ glabel func_800819C4
     /* 723A4 80081BA4 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 723A8 80081BA8 0800E003 */  jr         $ra
     /* 723AC 80081BAC 00000000 */   nop
-endlabel func_800819C4
+endlabel cdrom_Initialize

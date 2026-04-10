@@ -20,7 +20,7 @@ glabel func_8001B3C0
     /* BC08 8001B408 625320A4 */  sh         $zero, %lo(D_800F5362)($at)
     /* BC0C 8001B40C 0F80013C */  lui        $at, %hi(D_800F5364)
     /* BC10 8001B410 645322A4 */  sh         $v0, %lo(D_800F5364)($at)
-    /* BC14 8001B414 79FC000C */  jal        func_8003F1E4
+    /* BC14 8001B414 79FC000C */  jal        game_SetControllerPorts
     /* BC18 8001B418 21200000 */   addu      $a0, $zero, $zero
     /* BC1C 8001B41C 0A80023C */  lui        $v0, %hi(D_800A36F6)
     /* BC20 8001B420 F6364284 */  lh         $v0, %lo(D_800A36F6)($v0)
