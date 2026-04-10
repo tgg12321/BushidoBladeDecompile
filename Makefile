@@ -80,7 +80,7 @@ $(TARGET).sha1:
 # -- Link --
 $(ELF): $(ALL_O_FILES) $(TARGET).ld
 	$(LD) $(LD_FLAGS) -Map $(BUILD_DIR)/$(TARGET).map -T $(TARGET).ld \
-		-T undefined_funcs_auto.txt -T undefined_syms_auto.txt \
+		-T undefined_funcs_auto.txt -T undefined_syms_auto.txt -T named_syms.txt \
 		-o $@
 
 # Extract raw binary from ELF
