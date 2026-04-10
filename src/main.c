@@ -2,6 +2,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 #include "system.h"
+#include "psx.h"
 
 /* Forward declarations */
 extern void func_80089D60(s32);
@@ -594,10 +595,10 @@ void spu_WriteReg(s32 arg0, u32 arg1, s32 arg2) {
 INCLUDE_ASM("asm/funcs", func_800890D4);
 extern volatile u32 *g_spu_dma_ctrl;
 void spu_ReadStatus(void) {
-    *g_spu_dma_ctrl = (*g_spu_dma_ctrl & 0xF0FFFFFF) | 0x20000000;
+    *g_spu_dma_ctrl = (*g_spu_dma_ctrl & DMA_CHAN_MASK) | DMA_SPU_FROM_RAM;
 }
 void spu_ReadReg(void) {
-    *g_spu_dma_ctrl = (*g_spu_dma_ctrl & 0xF0FFFFFF) | 0x22000000;
+    *g_spu_dma_ctrl = (*g_spu_dma_ctrl & DMA_CHAN_MASK) | DMA_SPU_TO_RAM;
 }
 void spu_WriteReg16(void) {
     volatile s32 i;

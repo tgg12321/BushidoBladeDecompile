@@ -1,6 +1,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "gpu.h"
+#include "psx.h"
 
 /* Forward declarations */
 extern void func_8007A448(void);
@@ -313,29 +314,29 @@ void func_8007A83C(s32 a0) {
     g_gpu_debug_func(&D_80015D70, (a0 & 0x3F) << 4, (a0 & 0xFFFF) >> 6);
 }
 u32 func_8007A87C(u32 *a0) {
-    return (*a0 & 0xFFFFFF) | 0x80000000;
+    return (*a0 & OT_ADDR_MASK) | OT_TAG_BASE;
 }
 
 u32 func_8007A898(u32 *a0) {
-    return (*a0 & 0xFFFFFF) == 0xFFFFFF;
+    return (*a0 & OT_ADDR_MASK) == OT_ADDR_MASK;
 }
 void func_8007A8B4(u32 *a0, u32 *a1) {
-    register u32 mask asm("a2") = 0xFFFFFF;
-    register u32 tag_mask asm("a3") = 0xFF000000;
+    register u32 mask asm("a2") = OT_ADDR_MASK;
+    register u32 tag_mask asm("a3") = OT_TAG_MASK;
     *a1 = (*a1 & tag_mask) | (*a0 & mask);
     *a0 = (*a0 & tag_mask) | ((u32)a1 & mask);
 }
 void func_8007A8F0(u32 *a0, u32 a1, u32 *a2) {
-    register u32 mask asm("a3") = 0xFFFFFF;
-    register u32 tag_mask asm("t0") = 0xFF000000;
+    register u32 mask asm("a3") = OT_ADDR_MASK;
+    register u32 tag_mask asm("t0") = OT_TAG_MASK;
     *a2 = (*a2 & tag_mask) | (*a0 & mask);
     *a0 = (*a0 & tag_mask) | (a1 & mask);
 }
 void func_8007A92C(u32 *a0, u32 a1) {
-    *a0 = (*a0 & 0xFF000000) | (a1 & 0xFFFFFF);
+    *a0 = (*a0 & OT_TAG_MASK) | (a1 & OT_ADDR_MASK);
 }
 void func_8007A950(u32 *a0) {
-    *a0 |= 0xFFFFFF;
+    *a0 |= OT_ADDR_MASK;
 }
 void func_8007A968(u8 *a0, s32 a1) {
     if (a1) {
@@ -441,38 +442,38 @@ void func_8007AAF8(u8 *p) {
 void func_8007AB0C(u8 *p) {
     p[3] = 0x5;
     p[7] = 0x48;
-    *(u32 *)(p + 0x14) = 0x55555555;
+    *(u32 *)(p + 0x14) = GPU_DITHER_PATTERN;
 }
 
 void func_8007AB2C(u8 *p) {
     p[3] = 0x7;
     p[7] = 0x58;
-    *(u32 *)(p + 0x1C) = 0x55555555;
+    *(u32 *)(p + 0x1C) = GPU_DITHER_PATTERN;
 }
 
 void func_8007AB4C(u8 *p) {
     p[3] = 0x6;
     p[7] = 0x4C;
-    *(u32 *)(p + 0x18) = 0x55555555;
+    *(u32 *)(p + 0x18) = GPU_DITHER_PATTERN;
 }
 
 void func_8007AB6C(u8 *p) {
     p[3] = 0x9;
     p[7] = 0x5C;
-    *(u32 *)(p + 0x24) = 0x55555555;
+    *(u32 *)(p + 0x24) = GPU_DITHER_PATTERN;
 }
 
 void func_8007AB8C(u8 *a0, s32 a1, s32 a2, u32 a3) {
     register u32 cmd asm("v1");
     register u32 val asm("v0");
     a0[3] = 1;
-    cmd = 0xE1000000;
+    cmd = GP0_DRAW_MODE;
     if (a2) {
-        cmd = 0xE1000200;
+        cmd = (GP0_DRAW_MODE | GPU_DRAW_MODE_DITHER);
     }
-    val = a3 & 0x9FF;
+    val = a3 & GPU_DRAW_MODE_MASK;
     if (a1) {
-        val |= 0x400;
+        val |= GPU_DRAW_MODE_TEXOFF;
     }
     *(u32 *)(a0 + 4) = cmd | val;
 }
@@ -484,8 +485,8 @@ void func_8007ABB8(u32 *a0, s16 *a1, u32 a2, u32 a3) {
     } else if (a1[3] == 0) {
         size = 0;
     }
-    t0[1] = 0x01000000;
-    t0[2] = 0x80000000;
+    t0[1] = OT_TERMINATOR;
+    t0[2] = OT_TAG_BASE;
     ((u8 *)t0)[3] = size;
     t0[3] = *(u32 *)a1;
     t0[4] = (a3 << 16) | (a2 & 0xFFFF);
@@ -501,11 +502,11 @@ void func_8007AC18(u32 *a0, s16 *a1) {
         size = 0;
     }
     ((u8 *)a0)[3] = size;
-    a0[1] = 0xA0000000;
+    a0[1] = GP0_COPY_RECT_C2V;
     a0[2] = *(u32 *)&a1[0];
     a0[3] = *(u32 *)&a1[2];
     end = a0 + size;
-    *end = 0x01000000;
+    *end = OT_TERMINATOR;
 }
 s32 func_8007AC84(u8 *a0, u32 *a1) {
     s32 size;
