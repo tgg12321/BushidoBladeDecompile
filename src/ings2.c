@@ -317,7 +317,43 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-INCLUDE_ASM("asm/funcs", func_800832A0);
+extern s32 D_800A2614[8];
+extern volatile s32 D_800A2634;
+extern s32 *D_800A2638;
+
+void D_800832F8(void);
+void D_80083370(s32, s32);
+
+s32 func_800832A0(void) {
+    *D_800A2638 = 0x107;
+    D_800A2634 = 0;
+    sys_MemClear(&D_800A2614[0], 8);
+    ((void (*)(s32, void *))irq_EnableInterrupts)(0, (void *)D_800832F8);
+    return (s32)D_80083370;
+}
+
+void D_800832F8(void) {
+    s32 i;
+    s32 *p;
+
+    ++D_800A2634;
+
+    i = 0;
+    p = &D_800A2614[0];
+    for (; i < 8; i++) {
+        s32 fp = *p;
+        if (fp != 0) {
+            ((void (*)(void))fp)();
+        }
+        p++;
+    }
+}
+
+void D_80083370(s32 a0, s32 a1) {
+    if (a1 != D_800A2614[a0]) {
+        D_800A2614[a0] = a1;
+    }
+}
 void sys_MemClear(s32 *a0, s32 a1) {
     s32 i;
     for (i = a1 - 1; i != -1; i--) {
