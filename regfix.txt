@@ -167,3 +167,6 @@ saEft01Init: subst ",28\(" ",24(" @ 71
 saEft01Init: subst ",24\(" ",32(" @ 72
 # Reorder epilogue restores to match target order (s2, s1, s0)
 saEft01Init: reorder 72,70,71 @ 70-72
+# func_800477E8: swap t1/t2 and v1/a1 registers
+func_800477E8: $9 <-> $10 @ 26-57
+func_800477E8: $3 <-> $5 @ 32-135
