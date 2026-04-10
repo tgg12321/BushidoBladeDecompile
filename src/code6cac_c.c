@@ -1533,7 +1533,41 @@ void func_8003AF40(s32 arg0) {
     func_80020D38();
     func_80040510(arg0, (&D_8008D578)[(s8)(&D_8010277C)[arg0]], (s32)0x80190800);
 }
-INCLUDE_ASM("asm/funcs", func_8003AFFC);
+void func_8003AFFC(void) {
+    s32 addr = (s32)0x80190800;
+    s32 s0;
+    s16 *edcp;
+    s32 s2;
+    u8 *tbl;
+    s32 v1;
+
+    gpu_EnableDisplay();
+    func_80020D38();
+    func_8004939C();
+
+    tbl = &D_8008E5CC;
+    edcp = &D_80101EDC;
+    s2 = 0;
+    s0 = 0;
+loop:
+    func_800493E4(*(s16 *)((u8 *)&D_80101EDA + s0));
+    func_800494D4(s2, *(tbl + *(s16 *)((u8 *)&D_80101ED2 + s0) * 8 + *(s16 *)((u8 *)&D_80101ED6 + s0)));
+
+    v1 = *edcp;
+    if (v1 != -1) {
+        func_800493E4((&D_8008EB80)[v1]);
+        v1 = *edcp;
+        if (v1 == 14) {
+            func_800493E4(D_8008EB8E + 3);
+        }
+    }
+    edcp = (s16 *)((u8 *)edcp + 0x44C);
+    s0 += 0x44C;
+    s2++;
+    if (s2 < 2) goto loop;
+
+    func_80049584(addr);
+}
 void func_8003B10C(s32 arg0) {
     s32 addr = (s32)0x80190800;
     s32 s0;
