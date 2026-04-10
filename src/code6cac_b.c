@@ -62,7 +62,7 @@ extern void func_80061178(void);
 extern void gpu_DisableDisplay(void);
 extern s32 func_800371E8(s16);
 extern void func_800450BC(s32, s32);
-extern u16 D_800F6656;
+extern u16 g_game_p1_ctrl;
 extern u8 D_80104E88;
 extern s16 D_80101F4C;
 extern s16 D_80101F4E;
@@ -247,7 +247,7 @@ extern void func_8003AE5C(s32);
 extern void stage_GetDataPtr(void);
 extern s16 D_800A36A4;
 
-extern u8 D_800A3768;
+extern u8 g_disp_enable;
 extern u8 D_800A38F8;
 extern void func_8005B50C(void);
 extern void func_80037774(void);
@@ -272,7 +272,7 @@ extern u8 D_8008E5CC;
 extern void func_80049584(s32);
 extern s32 func_800392B8(void);
 extern u8 SpecialCam;
-extern u8 D_8008D118;
+extern u8 g_module_type_tbl;
 extern u8 D_8008D518;
 extern u8 D_8008D55C;
 extern u16 D_8008D59E;
@@ -339,7 +339,7 @@ extern s16 D_800A367C;
 extern s32 D_800A368C;
 extern u8 D_800A3690;
 extern s32 D_800A369C;
-extern u8 D_800A36A8;
+extern u8 g_disp_fade;
 extern s32 D_800A36AC;
 extern s32 D_800A36B4;
 extern u8 D_800A36B9;
@@ -358,7 +358,7 @@ extern u8 D_800A36F0;
 extern u8 D_800A36F2;
 extern u8 D_800A36F9;
 extern s32 D_800A3708;
-extern u16 D_800A3710;
+extern u16 g_file_vram_timer;
 extern u8 D_800A3713;
 extern u8 D_800A3719;
 extern u8 D_800A371A;
@@ -450,9 +450,9 @@ extern s16 D_800F663C;
 extern s16 D_800F6640;
 extern s16 D_800F6642;
 extern s16 D_800F6644;
-extern s32 D_800F66A0;
+extern s32 g_anim_func_table;
 extern s16 D_800F68E0;
-extern s32 D_800FF580;
+extern s32 g_pad_data;
 extern s32 D_800FF584;
 extern s32 D_800FF5A4;
 extern s32 D_800FF5A8;
@@ -571,8 +571,8 @@ extern u8 D_80102795;
 extern s32 D_801027B4;
 extern s32 D_801027B8;
 extern s32 D_801027BC;
-extern s32 D_80106A50;
-extern u8 D_80106A54;
+extern s32 g_file_disc_size;
+extern u8 g_file_disc_type;
 extern u8 D_801077AF;
 extern u8 D_801077B0;
 extern u8 D_801077BA;
@@ -1408,7 +1408,7 @@ INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action);
 INCLUDE_ASM("asm/funcs", func_80033BC0);
 /* TABLED: score 235, 94/94 insns. GCC eliminates andi v1,a0,0xFF after lbu (knows 0-255), inline asm prevents load interleaving. */
 void func_80033D38(void) {
-    register u8 *t1 asm("t1") = (u8 *)&D_80106A50;
+    register u8 *t1 asm("t1") = (u8 *)&g_file_disc_size;
     register s32 a3 asm("a3");
     register s32 a0 asm("a0");
     register s32 v1 asm("v1");
@@ -1537,7 +1537,7 @@ void func_80034200(void) {
     a2 = 0;
     a3 = 0;
     count = D_800A389B;
-    D_800A3768 = 10;
+    g_disp_enable = 10;
     a0 = (count & 0) + 0;
     if (count <= 0) {
         goto end;
@@ -1590,8 +1590,8 @@ extern u8 D_8010277E;
 void func_800342A0(void) {
     func_80034200();
     if (D_800A3874 == D_800A389B) {
-        D_800A3768 = 0xFF;
-        D_800A36A8 = 0;
+        g_disp_enable = 0xFF;
+        g_disp_fade = 0;
         D_800A3834 = 0x14;
     } else {
         s32 v1;
@@ -1660,7 +1660,7 @@ void func_800343F0(void) {
 INCLUDE_ASM("asm/funcs", DispSamnailWindow);
 /* kengo:LOW  |  su_menu_vs/_DispSamnailWindow  |  149i  |  PS2 UI — reverted */
 INCLUDE_ASM("asm/funcs", func_80034708);
-/* TABLED: -4 bytes, score 1980. Target alternates v1/a0 for D_80106A73 address — unreproducible register allocation pattern */
+/* TABLED: -4 bytes, score 1980. Target alternates v1/a0 for g_file_flags address — unreproducible register allocation pattern */
 INCLUDE_ASM("asm/funcs", func_80034F88);
 /* TABLED: -4 bytes. Branch inversion (beqz→bnez+ori delay slot), load order (lbu before lw vs lw,lbu fill), byte caching. Best: volatile ptr + inverted cond gives bnez+ori but lbu before lw. */
 INCLUDE_ASM("asm/funcs", func_8003504C);

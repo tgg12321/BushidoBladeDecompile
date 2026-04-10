@@ -61,7 +61,7 @@ extern void func_80061178(void);
 extern void gpu_DisableDisplay(void);
 extern s32 func_800371E8(s16);
 extern void func_800450BC(s32, s32);
-extern u16 D_800F6656;
+extern u16 g_game_p1_ctrl;
 extern u8 D_80104E88;
 extern s16 D_80101F4C;
 extern s16 D_80101F4E;
@@ -239,7 +239,7 @@ extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 extern s16 D_800A36A4;
 
-extern u8 D_800A3768;
+extern u8 g_disp_enable;
 extern u8 D_800A38F8;
 extern void func_8005B50C(void);
 extern void irq_DisableInterrupts(void);
@@ -265,7 +265,7 @@ extern u8 D_8008E5CC;
 extern u8 D_8008E6A4;
 extern void func_80049584(s32);
 extern u8 SpecialCam;
-extern u8 D_8008D118;
+extern u8 g_module_type_tbl;
 extern u8 D_8008D518;
 extern u8 D_8008D55C;
 extern u16 D_8008D59E;
@@ -332,7 +332,7 @@ extern s16 D_800A367C;
 extern s32 D_800A368C;
 extern u8 D_800A3690;
 extern s32 D_800A369C;
-extern u8 D_800A36A8;
+extern u8 g_disp_fade;
 extern s32 D_800A36AC;
 extern s32 D_800A36B4;
 extern u8 D_800A36B9;
@@ -352,7 +352,7 @@ extern u8 D_800A36F0;
 extern u8 D_800A36F2;
 extern u8 D_800A36F9;
 extern s32 D_800A3708;
-extern u16 D_800A3710;
+extern u16 g_file_vram_timer;
 extern u8 D_800A3713;
 extern u8 D_800A3719;
 extern u8 D_800A371A;
@@ -444,9 +444,9 @@ extern s16 D_800F663C;
 extern s16 D_800F6640;
 extern s16 D_800F6642;
 extern s16 D_800F6644;
-extern s32 D_800F66A0;
+extern s32 g_anim_func_table;
 extern s16 D_800F68E0;
-extern s32 D_800FF580;
+extern s32 g_pad_data;
 extern s32 D_800FF584;
 extern s32 D_800FF5A4;
 extern s32 D_800FF5A8;
@@ -565,8 +565,8 @@ extern u8 D_80102795;
 extern s32 D_801027B4;
 extern s32 D_801027B8;
 extern s32 D_801027BC;
-extern s32 D_80106A50;
-extern u8 D_80106A54;
+extern s32 g_file_disc_size;
+extern u8 g_file_disc_type;
 extern u8 D_801077AF;
 extern u8 D_801077B0;
 extern u8 D_801077BA;
@@ -627,7 +627,7 @@ extern s32 disp_CalcFov(s32);
 extern void func_8007EFFC(s32);
 extern void func_8001B6F4(void);
 extern void func_80022568(u8 *);
-extern s32 D_800109B0;
+extern s32 g_str_memcard_fmt;
 extern s32 D_80102810;
 extern s32 D_800F34D8;
 extern u8 D_80101EC8;
@@ -734,7 +734,7 @@ s32 func_80037A20(s32 arg0, s32 arg1)
   s32 sp10[8];
   s32 v0_val;
   var_s0 = (s32 *)&D_80102810;
-  func_80079A30(sp10, (s32) (&D_800109B0), arg0, arg1);
+  func_80079A30(sp10, (s32) (&g_str_memcard_fmt), arg0, arg1);
   var_s1 = 0;
   if (func_80078A38(sp10, var_s0) != 0)
   {
@@ -888,7 +888,7 @@ void func_80037F40(u8 *a0) {
     s32 i;
 
     checksum = 0;
-    p = (u8 *)&D_80106A50;
+    p = (u8 *)&g_file_disc_size;
     i = 0;
     do {
         checksum += *p++;
@@ -903,7 +903,7 @@ void func_80037F40(u8 *a0) {
         s32 offset = 0;
         do {
             Quad *dst = (Quad *)(offset + base);
-            Quad *src = (Quad *)&D_80106A50;
+            Quad *src = (Quad *)&g_file_disc_size;
             do {
                 *dst = *src;
                 src++;
@@ -1489,7 +1489,7 @@ s32 func_8003ACB8(void) {
     } while (temp_s0 == 0);
     func_80077B00();
     func_800194F4();
-    D_800A37C4 = func_80035E88(D_80106A50);
+    D_800A37C4 = func_80035E88(g_file_disc_size);
     func_8003AA48();
     func_800828CC(1);
     func_8003AA48();
@@ -1728,7 +1728,7 @@ void func_8003B8E4(void) {
         func_8003AE5C(D_800A3844);
         D_800A37C0 = 500;
         D_800A38F8 = 0;
-        D_800A3768 = 0x14;
+        g_disp_enable = 0x14;
         se_data_set();
         func_8003B5A4();
         disp_SetFramebufferMode(1, 0, 0, 0);

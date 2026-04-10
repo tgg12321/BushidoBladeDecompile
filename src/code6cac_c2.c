@@ -60,7 +60,7 @@ extern void func_80061178(void);
 extern void gpu_DisableDisplay(void);
 extern s32 func_800371E8(s16);
 extern void func_800450BC(s32, s32);
-extern u16 D_800F6656;
+extern u16 g_game_p1_ctrl;
 extern u8 D_80104E88;
 extern s16 D_80101F4C;
 extern s16 D_80101F4E;
@@ -245,7 +245,7 @@ extern void func_8003AE5C(s32);
 extern void stage_GetDataPtr(void);
 extern s16 D_800A36A4;
 
-extern u8 D_800A3768;
+extern u8 g_disp_enable;
 extern u8 D_800A38F8;
 extern void func_8005B50C(void);
 extern void func_8007ABB8(u32 *, s16 *, s32, s32);
@@ -302,7 +302,7 @@ extern u8 D_8008E5CC;
 extern void func_80049584(s32);
 extern s32 func_800392B8(void);
 extern u8 SpecialCam;
-extern u8 D_8008D118;
+extern u8 g_module_type_tbl;
 extern u8 D_8008D518;
 extern u8 D_8008D55C;
 extern u16 D_8008D59E;
@@ -371,7 +371,7 @@ extern s16 D_800A367C;
 extern s32 D_800A368C;
 extern u8 D_800A3690;
 extern s32 D_800A369C;
-extern u8 D_800A36A8;
+extern u8 g_disp_fade;
 extern s32 D_800A36AC;
 extern s32 D_800A36B4;
 extern u8 D_800A36B9;
@@ -390,7 +390,7 @@ extern u8 D_800A36F0;
 extern u8 D_800A36F2;
 extern u8 D_800A36F9;
 extern s32 D_800A3708;
-extern u16 D_800A3710;
+extern u16 g_file_vram_timer;
 extern u8 D_800A3713;
 extern u8 D_800A3719;
 extern u8 D_800A371A;
@@ -482,9 +482,9 @@ extern s16 D_800F663C;
 extern s16 D_800F6640;
 extern s16 D_800F6642;
 extern s16 D_800F6644;
-extern s32 D_800F66A0;
+extern s32 g_anim_func_table;
 extern s16 D_800F68E0;
-extern s32 D_800FF580;
+extern s32 g_pad_data;
 extern s32 D_800FF584;
 extern s32 D_800FF5A4;
 extern s32 D_800FF5A8;
@@ -603,9 +603,9 @@ extern u8 D_80102795;
 extern s32 D_801027B4;
 extern s32 D_801027B8;
 extern s32 D_801027BC;
-extern s32 D_80106A50;
+extern s32 g_file_disc_size;
 extern s32 D_80106A58;
-extern u8 D_80106A54;
+extern u8 g_file_disc_type;
 extern u8 D_801077AF;
 extern u8 D_801077B0;
 extern u8 D_801077BA;
@@ -659,7 +659,7 @@ void func_8003BEA8(void) {
     if (v0 != 0) {
         func_800372C0();
         {
-            s32 *ptr = &D_80106A50;
+            s32 *ptr = &g_file_disc_size;
             s32 old_val = *ptr;
             s32 new_val = old_val | D_800A37A4;
             if (new_val != old_val) {
@@ -693,7 +693,7 @@ void func_8003BEA8(void) {
                 bit = bit - 9;
             }
             {
-                u8 *vptr = &D_80106A54;
+                u8 *vptr = &g_file_disc_type;
                 val = *vptr;
                 if (!((val >> bit) & 1)) {
                     *vptr = val | (1 << bit);
@@ -1266,9 +1266,9 @@ extern s32 D_800A3228;
 s32 func_8003E2A0(void) {
     return D_800A3228;
 }
-extern u16 D_800F6656;
+extern u16 g_game_p1_ctrl;
 void func_8003E2AC(void) {
-    u16 *p = &D_800F6656;
+    u16 *p = &g_game_p1_ctrl;
     *p = *p & 0xFFFD;
 }
 u32 func_8003E2C8(void) {

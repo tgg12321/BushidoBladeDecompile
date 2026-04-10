@@ -10,53 +10,53 @@ extern void sys_StubEmpty2(void);
 extern void obj_Clear(s32);
 
 /* Externs for globals */
-extern s32 D_800A336C;
-extern s32 D_800A322C;
-extern s32 D_800A3374;
-extern s32 D_800A3370;
-extern s32 D_800948BC;
-extern s16 D_800F665C;
+extern s32 g_game_mode;
+extern s32 g_game_player_count;
+extern s32 g_game_flag_b;
+extern s32 g_game_flag_a;
+extern s32 g_stage_init_tbl;
+extern s16 g_game_mirror_mode;
 extern void func_8001924C(s32 *, s32);
 extern void func_80045A28(s32, s32);
 extern void func_80052A20(s32 *, s32 *, s16 *);
 extern void func_80052C10(void *);
 
 /* Externs for globals */
-extern u8 D_800A6690;
-extern s16 D_800F6656;
-extern s16 D_800F6658;
-extern u8 D_800A8FB0[];
+extern u8 g_char_data;
+extern s16 g_game_p1_ctrl;
+extern s16 g_game_p2_ctrl;
+extern u8 g_stage_collision[];
 extern s32 D_80094A6C[];
 extern u8 *D_800A3708;
-extern s32 D_800A93B0;
+extern s32 g_stage_light_pos;
 extern s32 D_800A93B4;
 extern s32 D_800A93B8;
-extern s32 D_800A93BC;
+extern s32 g_stage_light_dir;
 extern s32 D_800A93C0;
 extern s32 D_800A93C4;
 
 /* --- Functions 0x8003F168 - 0x8004019C --- */
 void func_8003F168(void) {
-    s32 v0 = *(s32 *)((u32)&D_800948BC + (stage_GetId() << 3));
+    s32 v0 = *(s32 *)((u32)&g_stage_init_tbl + (stage_GetId() << 3));
     if (v0) {
-        (*(void (**)(void))((u32)&D_800948BC + (stage_GetId() << 3)))();
+        (*(void (**)(void))((u32)&g_stage_init_tbl + (stage_GetId() << 3)))();
     }
 }
 s32 func_8003F1C8(void) {
-    return D_800A336C;
+    return g_game_mode;
 }
 
 void *func_8003F1D4(void) {
-    return &D_800A6690;
+    return &g_char_data;
 }
 
 void func_8003F1E4(s32 a0) {
     if (a0) {
-        D_800F6656 = 3;
-        D_800F6658 = 2;
+        g_game_p1_ctrl = 3;
+        g_game_p2_ctrl = 2;
     } else {
-        D_800F6656 = 0;
-        D_800F6658 = 1;
+        g_game_p1_ctrl = 0;
+        g_game_p2_ctrl = 1;
     }
 }
 
@@ -64,17 +64,17 @@ void func_8003F218(s32 a0) {
     if ((u32)a0 >= 2) {
         return;
     }
-    if (a0 == D_800A322C) {
+    if (a0 == g_game_player_count) {
         return;
     }
-    D_800A322C = a0;
+    g_game_player_count = a0;
     if (!a0) {
         func_8003F1E4(0);
     }
-    D_800F665C = (s16)D_800A322C;
+    g_game_mirror_mode = (s16)g_game_player_count;
 }
 s32 func_8003F268(void) {
-    return D_800A322C;
+    return g_game_player_count;
 }
 void func_8003F274(void) {
     s32 i, j;
@@ -82,7 +82,7 @@ void func_8003F274(void) {
     s32 data;
     s32 adj_i;
     s32 adj_j;
-    s32 *ptr = (s32 *)D_800A8FB0;
+    s32 *ptr = (s32 *)g_stage_collision;
     s32 count = 0xFF;
 
     do {
@@ -108,7 +108,7 @@ void func_8003F274(void) {
                         u32 x = (u32)(col_center + adj_j);
                         if (x < 0x20) {
                             s32 bits = (data >> ((15 - j) * 2)) & 3;
-                            D_800A8FB0[(y << 5) + x] |= bits;
+                            g_stage_collision[(y << 5) + x] |= bits;
                         }
                     }
                 }
@@ -120,14 +120,14 @@ void func_8003F388(s16 *a0) {
     s32 x = a0[0] + 0x10;
     s32 y = a0[2] + 0x10;
     if ((u32)x < 0x20 && (u32)y < 0x20) {
-        D_800A8FB0[y * 32 + x] |= 0x4;
+        g_stage_collision[y * 32 + x] |= 0x4;
     }
 }
 void func_8003F3D4(s16 *a0) {
     s32 x = a0[0] + 0x10;
     s32 y = a0[2] + 0x10;
     if ((u32)x < 0x20 && (u32)y < 0x20) {
-        D_800A8FB0[y * 32 + x] |= 0x8;
+        g_stage_collision[y * 32 + x] |= 0x8;
     }
 }
 void func_8003F420(s32 a0, s32 a1) {
@@ -158,31 +158,31 @@ void func_8003F420(s32 a0, s32 a1) {
 }
 
 void func_8003F52C(s32 a0, s32 a1, s32 a2) {
-    D_800A8FB0[a1 * 32 + a0] = a2 & 3;
+    g_stage_collision[a1 * 32 + a0] = a2 & 3;
 }
 
 u32 func_8003F54C(s32 a0, s32 a1) {
-    return D_800A8FB0[a1 * 32 + a0];
+    return g_stage_collision[a1 * 32 + a0];
 }
 
 void func_8003F568(void) {
-    D_800A3374 = 0;
-    D_800A3370 = 0;
+    g_game_flag_b = 0;
+    g_game_flag_a = 0;
     D_800A93B8 = 0;
     D_800A93B4 = 0;
-    D_800A93B0 = 0;
+    g_stage_light_pos = 0;
     D_800A93C4 = 0;
     D_800A93C0 = 0;
-    D_800A93BC = 0;
+    g_stage_light_dir = 0;
 }
 
 void func_8003F5A8(s32 a0, s32 a1, s32 a2) {
-    (&D_800A93B0)[a2] = a0;
-    (&D_800A93BC)[a2] = a1;
+    (&g_stage_light_pos)[a2] = a0;
+    (&g_stage_light_dir)[a2] = a1;
 }
 
 void func_8003F5CC(void) {
-    sys_StubEmpty3(D_800A93B0, D_800A93BC, 0);
+    sys_StubEmpty3(g_stage_light_pos, g_stage_light_dir, 0);
     sys_StubEmpty3(D_800A93B4, D_800A93C0, 1);
     sys_StubEmpty3(D_800A93B8, D_800A93C4, 2);
 }
@@ -280,8 +280,8 @@ L8003F750:
 void func_8003F7F4(void) {
     obj_ClearAll();
     sys_StubEmpty2();
-    D_800A3370 = 0;
-    D_800A3374 = 0;
+    g_game_flag_a = 0;
+    g_game_flag_b = 0;
 }
 INCLUDE_ASM("asm/funcs", func_8003F824);
 INCLUDE_ASM("asm/funcs", func_8003FA24);

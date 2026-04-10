@@ -9,9 +9,9 @@
 
 /* --- Functions from text1b segment (0x80047ED0 - 0x80079A30) --- */
 
-extern s32 D_800A33D0;
+extern s32 g_snd_volume;
 void func_80047ED0(s32 a0) {
-    D_800A33D0 += a0;
+    g_snd_volume += a0;
 }
 __asm__(
     ".set\tnoat\n"
@@ -650,22 +650,22 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-extern s16 D_800F6652;
+extern s16 g_color_mode;
 s32 file_GetFlag0(void);
 s16 func_800486FC(void) {
     if (file_GetFlag0()) {
-        D_800F6652 = 1;
+        g_color_mode = 1;
     } else {
-        D_800F6652 = 0;
+        g_color_mode = 0;
     }
-    return D_800F6652;
+    return g_color_mode;
 }
-extern s16 D_800F6652;
+extern s16 g_color_mode;
 void func_80048744(s32 a0) {
     if (a0) {
-        D_800F6652 = 1;
+        g_color_mode = 1;
     } else {
-        D_800F6652 = 0;
+        g_color_mode = 0;
     }
 }
 __asm__(
@@ -1001,9 +1001,9 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-extern s32 D_800A33E4;
+extern s32 g_snd_play_count;
 void func_80048B8C(s32 a0) {
-    D_800A33E4 += a0;
+    g_snd_play_count += a0;
 }
 __asm__(
     ".set\tnoat\n"
@@ -1259,8 +1259,8 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-extern u8 D_800EF848[];
-extern u16 D_80099C34[];
+extern u8 g_snd_ch_data[];
+extern u16 g_snd_se_bank[];
 extern void func_80052C10(void);
 void func_80048F58(s32 a0, s32 a1) {
     s32 s1 = a0;
@@ -1272,9 +1272,9 @@ void func_80048F58(s32 a0, s32 a1) {
     if (s0 > 0) {
         func_80052C10();
     }
-    base = D_800EF848 + s0 * 308;
+    base = g_snd_ch_data + s0 * 308;
     *(u32 *)base = 0;
-    src = (u16 *)(D_80099C34 + s1 * 7);
+    src = (u16 *)(g_snd_se_bank + s1 * 7);
     dst = (u16 *)(base + 0x124);
     i = 0;
     do {
@@ -1298,8 +1298,8 @@ __asm__(
     "    sll  $v0,$v0,2\n"
     "    addu  $v0,$v0,$a0\n"
     "    sll  $v0,$v0,2\n"
-    "    lui  $v1,%hi(D_800EF848)\n"
-    "    addiu  $v1,$v1,%lo(D_800EF848)\n"
+    "    lui  $v1,%hi(g_snd_ch_data)\n"
+    "    addiu  $v1,$v1,%lo(g_snd_ch_data)\n"
     "    sw  $s6,144($sp)\n"
     "    addu  $s6,$v0,$v1\n"
     "    addiu  $t2,$s6,292\n"
@@ -1882,8 +1882,8 @@ __asm__(
     "    lhu  $v0,4($s1)\n"
     "    addiu  $a0,$s2,16\n"
     "    sh  $v0,20($s2)\n"
-    "    lui  $v0,%hi(D_800F66A0)\n"
-    "    lw  $v0,%lo(D_800F66A0)($v0)\n"
+    "    lui  $v0,%hi(g_anim_func_table)\n"
+    "    lw  $v0,%lo(g_anim_func_table)($v0)\n"
     "    nop\n"
     "    jalr  $v0\n"
     "    addiu  $a1,$s2,24\n"
@@ -3933,8 +3933,8 @@ __asm__(
     "    subu  $t0,$t0,$t3\n"
     "    subu  $t1,$t1,$t4\n"
     "    subu  $t2,$t2,$t5\n"
-    "    lui  $s5,%hi(D_800F6658)\n"
-    "    lh  $s5,%lo(D_800F6658)($s5)\n"
+    "    lui  $s5,%hi(g_game_p2_ctrl)\n"
+    "    lh  $s5,%lo(g_game_p2_ctrl)($s5)\n"
     "    nop\n"
     "    srav  $t0,$t0,$s5\n"
     "    sh  $t0,32($s1)\n"
@@ -4043,8 +4043,8 @@ __asm__(
     "    ctc2  $t2,$2\n"
     "    ctc2  $t3,$3\n"
     "    ctc2  $t4,$4\n"
-    "    lui  $a1,%hi(D_800A3790)\n"
-    "    lw  $a1,%lo(D_800A3790)($a1)\n"
+    "    lui  $a1,%hi(g_game_timer)\n"
+    "    lw  $a1,%lo(g_game_timer)($a1)\n"
     "    nop\n"
     "    sw  $a1,448($s1)\n"
     "    jal  func_80047BE0\n"
@@ -4989,8 +4989,8 @@ __asm__(
     "    addu   $s2,$a0,$zero\n"
     "    addu   $s1,$a1,$zero\n"
     "    lui   $s3,0x1F80\n"
-    "    lui   $s4,%hi(D_800F6658)\n"
-    "    lh   $s4,%lo(D_800F6658)($s4)\n"
+    "    lui   $s4,%hi(g_game_p2_ctrl)\n"
+    "    lh   $s4,%lo(g_game_p2_ctrl)($s4)\n"
     "    addiu   $t0,$zero,0x3\n"
     "    sub   $t0,$t0,$s4\n"
     "    sh   $t0,454($s3)\n"
@@ -4998,8 +4998,8 @@ __asm__(
     "    lw   $t1,%lo(D_80103624)($t1)\n"
     "    nop\n"
     "    sw   $t1,456($s3)\n"
-    "    lui   $a0,%hi(D_800A3790)\n"
-    "    lw   $a0,%lo(D_800A3790)($a0)\n"
+    "    lui   $a0,%hi(g_game_timer)\n"
+    "    lw   $a0,%lo(g_game_timer)($a0)\n"
     "    nop\n"
     "    sw   $a0,448($s3)\n"
     "    lw   $t0,0($a2)\n"
@@ -14676,8 +14676,8 @@ __asm__(
     "    beqz  $v0,.L80054C54\n"
     "    addiu  $s5,$s4,-60\n"
     "    addiu  $a0,$sp,208\n"
-    "    lui  $s1,%hi(D_800F66A0)\n"
-    "    addiu  $s1,$s1,%lo(D_800F66A0)\n"
+    "    lui  $s1,%hi(g_anim_func_table)\n"
+    "    addiu  $s1,$s1,%lo(g_anim_func_table)\n"
     "    addiu  $s2,$sp,176\n"
     "    lhu  $v0,30($s3)\n"
     "    lw  $v1,0($s1)\n"
@@ -22267,7 +22267,7 @@ extern s32 D_800A3708;
 extern s32 D_800A370C;
 extern u8 D_800A3783;
 extern u8 D_800A3788;
-extern s32 D_800A3790;
+extern s32 g_game_timer;
 extern u8 D_800A37A0;
 extern u8 D_800A37D2;
 extern s32 D_800A3820;
@@ -22396,8 +22396,8 @@ extern u8 D_800F6339;
 extern u8 D_800F633A;
 extern s32 D_800F6608;
 extern s32 D_800F6610;
-extern s16 D_800F6658;
-extern s32 D_800F66A0;
+extern s16 g_game_p2_ctrl;
+extern s32 g_anim_func_table;
 extern u8 D_800F74A4;
 extern u8 D_800F74A5;
 extern u8 D_800FB534;
@@ -27276,8 +27276,8 @@ __asm__(
     "    sll  $v0,$v0,3\n"
     "    addu  $v0,$v0,$v1\n"
     "    sll  $v0,$v0,4\n"
-    "    lui  $v1,%hi(D_800F7438)\n"
-    "    addiu  $v1,$v1,%lo(D_800F7438)\n"
+    "    lui  $v1,%hi(g_disp_fb_base)\n"
+    "    addiu  $v1,$v1,%lo(g_disp_fb_base)\n"
     "    addu  $v0,$v0,$v1\n"
     "    lhu  $v1,0($v0)\n"
     "    addiu  $a1,$sp,72\n"
@@ -37545,8 +37545,8 @@ __asm__(
     "    sll  $v0,$v0,3\n"
     "    addu  $v0,$v0,$v1\n"
     "    sll  $v0,$v0,4\n"
-    "    lui  $v1,%hi(D_800F7438)\n"
-    "    addiu  $v1,$v1,%lo(D_800F7438)\n"
+    "    lui  $v1,%hi(g_disp_fb_base)\n"
+    "    addiu  $v1,$v1,%lo(g_disp_fb_base)\n"
     "    jal  func_8006E390\n"
     "    addu  $s1,$v0,$v1\n"
     "    addiu  $a0,$sp,64\n"
@@ -40114,8 +40114,8 @@ __asm__(
     "    addu  $s0,$s0,$v1\n"
     "    sll  $s0,$s0,4\n"
     "    .word 0xAF820448\n"
-    "    lui  $v0,%hi(D_800F7438)\n"
-    "    addiu  $v0,$v0,%lo(D_800F7438)\n"
+    "    lui  $v0,%hi(g_disp_fb_base)\n"
+    "    addiu  $v0,$v0,%lo(g_disp_fb_base)\n"
     "    jal  func_8006E390\n"
     "    addu  $s0,$s0,$v0\n"
     "    addiu  $a0,$sp,16\n"
@@ -40763,8 +40763,8 @@ __asm__(
     "    addu  $s0,$s0,$v1\n"
     "    sll  $s0,$s0,4\n"
     "    .word 0xAF820448\n"
-    "    lui  $v0,%hi(D_800F7438)\n"
-    "    addiu  $v0,$v0,%lo(D_800F7438)\n"
+    "    lui  $v0,%hi(g_disp_fb_base)\n"
+    "    addiu  $v0,$v0,%lo(g_disp_fb_base)\n"
     "    jal  func_8006E390\n"
     "    addu  $s0,$s0,$v0\n"
     "    addiu  $a0,$sp,16\n"
@@ -42007,8 +42007,8 @@ __asm__(
     "    addu  $s0,$s0,$v1\n"
     "    sll  $s0,$s0,4\n"
     "    .word 0xAF820448\n"
-    "    lui  $v0,%hi(D_800F7438)\n"
-    "    addiu  $v0,$v0,%lo(D_800F7438)\n"
+    "    lui  $v0,%hi(g_disp_fb_base)\n"
+    "    addiu  $v0,$v0,%lo(g_disp_fb_base)\n"
     "    jal  func_8006E390\n"
     "    addu  $s0,$s0,$v0\n"
     "    addiu  $a0,$sp,16\n"
@@ -42316,8 +42316,8 @@ __asm__(
     "    addu  $s0,$s0,$v1\n"
     "    sll  $s0,$s0,4\n"
     "    .word 0xAF820448\n"
-    "    lui  $v0,%hi(D_800F7438)\n"
-    "    addiu  $v0,$v0,%lo(D_800F7438)\n"
+    "    lui  $v0,%hi(g_disp_fb_base)\n"
+    "    addiu  $v0,$v0,%lo(g_disp_fb_base)\n"
     "    jal  func_8006E390\n"
     "    addu  $s0,$s0,$v0\n"
     "    addiu  $a0,$sp,16\n"
@@ -42974,8 +42974,8 @@ __asm__(
     "    addu  $s0,$s0,$v1\n"
     "    sll  $s0,$s0,4\n"
     "    .word 0xAF820448\n"
-    "    lui  $v0,%hi(D_800F7438)\n"
-    "    addiu  $v0,$v0,%lo(D_800F7438)\n"
+    "    lui  $v0,%hi(g_disp_fb_base)\n"
+    "    addiu  $v0,$v0,%lo(g_disp_fb_base)\n"
     "    jal  func_8006E390\n"
     "    addu  $s0,$s0,$v0\n"
     "    addiu  $a0,$sp,16\n"
@@ -43046,8 +43046,8 @@ __asm__(
     "    addu  $a0,$s0,$zero\n"
     "    jal  func_8007B2A0\n"
     "    addu  $a0,$zero,$zero\n"
-    "    lui  $s0,%hi(D_800F7438)\n"
-    "    addiu  $s0,$s0,%lo(D_800F7438)\n"
+    "    lui  $s0,%hi(g_disp_fb_base)\n"
+    "    addiu  $s0,$s0,%lo(g_disp_fb_base)\n"
     "    addu  $a0,$s0,$zero\n"
     "    addu  $a1,$zero,$zero\n"
     "    addu  $a2,$zero,$zero\n"
@@ -43127,8 +43127,8 @@ __asm__(
     "    jal  func_8007B2A0\n"
     "    sw  $s0,24($sp)\n"
     "    .word 0x8F82044C\n"
-    "    lui  $s0,%hi(D_800F7438)\n"
-    "    addiu  $s0,$s0,%lo(D_800F7438)\n"
+    "    lui  $s0,%hi(g_disp_fb_base)\n"
+    "    addiu  $s0,$s0,%lo(g_disp_fb_base)\n"
     "    andi  $v0,$v0,1\n"
     "    sll  $a0,$v0,7\n"
     "    addu  $a0,$a0,$v0\n"
@@ -43601,8 +43601,8 @@ __asm__(
     "    sll  $v0,$v0,3\n"
     "    addu  $v0,$v0,$v1\n"
     "    sll  $v0,$v0,4\n"
-    "    lui  $v1,%hi(D_800F7438)\n"
-    "    addiu  $v1,$v1,%lo(D_800F7438)\n"
+    "    lui  $v1,%hi(g_disp_fb_base)\n"
+    "    addiu  $v1,$v1,%lo(g_disp_fb_base)\n"
     "    addu  $v0,$v0,$v1\n"
     "    .word 0x8F8304F0\n"
     "    addiu  $sp,$sp,-64\n"
@@ -53419,8 +53419,8 @@ __asm__(
     "    lui  $v1,%hi(D_800A36AC)\n"
     "    lw  $v1,%lo(D_800A36AC)($v1)\n"
     "    .word 0x8F8505D4\n"
-    "    lui  $a0,%hi(D_800F7438)\n"
-    "    addiu  $a0,$a0,%lo(D_800F7438)\n"
+    "    lui  $a0,%hi(g_disp_fb_base)\n"
+    "    addiu  $a0,$a0,%lo(g_disp_fb_base)\n"
     "    sw  $ra,60($sp)\n"
     "    andi  $v1,$v1,1\n"
     "    sll  $v0,$v1,7\n"
