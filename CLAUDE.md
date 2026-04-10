@@ -208,16 +208,74 @@ To find the worktree path: the agent should use `git rev-parse --show-toplevel` 
 Changes to shared infrastructure — `bb2.ld`, `Makefile`, `undefined_syms_auto.txt`, `undefined_funcs_auto.txt`, `splat.yaml`, or creating new C files — must be done by the orchestrator on main BEFORE spawning parallel agents. Never let multiple agents modify these files.
 
 **Phase B — Decompilation (parallel, isolated agents):**
-Each agent owns exactly ONE C source file. It decompiles INCLUDE_ASM stubs into C, builds, and verifies. Multiple agents can run in parallel because they're in separate worktrees.
+Each agent tackles exactly ONE function stub. Up to 3 agents run in parallel, each in its own worktree. When an agent finishes (match or table), the orchestrator merges the result (if matched) and spawns a new agent for the next stub.
 
 ### Agent Rules
 
 1. **WSL-only file writes.** All file modifications must go through WSL (e.g., `python3 -c` or `sed -i` via `wsl bash -c`). The Windows-side Edit/Write tools introduce CRLF line endings that break the build.
-2. **One C file per agent.** Each agent declares which `.c` file it owns. It may only modify that file.
+2. **One function per agent.** Each agent is assigned exactly ONE INCLUDE_ASM stub to match. It may only modify the source file containing that stub. When done (matched or tabled), the agent reports back and terminates — it does NOT pick another function.
 3. **No destructive git commands.** Agents must NEVER run `git checkout`, `git restore`, `git stash`, `git clean`, or `git reset`. To undo a change, rewrite the specific file content.
 4. **No `make clean`.** Agents use incremental builds only (`make`). Only the orchestrator runs `make clean` for final verification.
 5. **Add missing symbols to `undefined_syms_auto.txt` if needed.** If a decompiled function references a global not yet in the symbol files, the agent should note it in its report. The orchestrator adds it on main before merging.
 6. **Do not push or merge to main.** Agents commit to their own worktree branch only. The orchestrator is responsible for all merges into main.
+
+### Agent Pre-Screening (MANDATORY — before any decompilation attempt)
+
+Before writing ANY C or running the permuter, agents MUST grep each target's asm for known blockers. This takes <30 seconds and prevents wasting entire runs.
+
+1. `grep -E 'lwl|lwr|swl|swr' asm/funcs/<func>.s` → needs fix_lwl.py in pipeline. TABLE immediately.
+2. `grep -E '\badd\b|\baddi\b|\bsub\b|syscall|break |jalr.*\$t2' asm/funcs/<func>.s` → likely handwritten asm. Verify with prologue check. If confirmed, TABLE immediately.
+3. Check prologue: does load happen BEFORE `addiu sp,sp,-N`? Non-standard frame layout (e.g., saves at 4,8,12 instead of 16,20,24 for -0x20 frame)? → handwritten asm, TABLE.
+4. `grep -E 'switch|\.word 0x800' asm/funcs/<func>.s` → may need rodata split. Flag for orchestrator.
+
+**Why this exists:** Wave 2 Agent 3 spent 130K tokens (its entire budget) on 3 functions that all had fundamental blockers. 30 seconds of grepping would have caught all 3.
+
+### Agent Spiral Prevention (MANDATORY)
+
+1. **Score regression = immediate revert.** If attempt N scores WORSE than attempt N-1, revert to the better version before trying anything else. Never build on a regression.
+2. **3 stagnant attempts = escalate.** If 3 consecutive attempts produce the same or worse score:
+   - Haven't run permuter yet → run permuter (120s max)
+   - Permuter already tried → try regfix if structural match is close
+   - Both tried → TABLE immediately
+3. **Permuter by attempt 5.** If manual attempts haven't matched by attempt 4, run the permuter. Don't wait until attempt 10.
+4. **Hard cap: 7 attempts without permuter, 10 total.** After 10 total attempts, TABLE unconditionally.
+
+**Why this exists:** Wave 2 Agent 2 burned 6 consecutive attempts at identical score 1165. Agent 3 burned 5 attempts oscillating around score 650. Combined waste: ~80K tokens.
+
+### Agent Audit Logging (MANDATORY)
+
+Agents MUST write a structured log to `tmp/agent_audit/agent<N>_<file>.log` in the MAIN repo (not the worktree). Log via WSL to the main repo path.
+
+**Requirements:**
+- Write log entry BEFORE starting each function (START timestamp + PRE-SCREEN results)
+- Append each attempt immediately after scoring (not batched at end)
+- Close entry with RESULT/END/TOTAL_ATTEMPTS when moving to next function
+- **Successful matches are MORE important to log than failures**
+
+```
+=== [FUNC_NAME] ===
+START: $(date)
+ASM_SIZE: <lines>
+PRE-SCREEN: <blocker check results>
+APPROACH: <initial strategy>
+ATTEMPT 1: score=<N>, change=<one-line description>
+ATTEMPT 2: score=<N>, change=<description>
+BEST_SCORE: <N> (attempt <M>)
+RESULT: MATCHED | TABLED (reason)
+END: $(date)
+TOTAL_ATTEMPTS: <N>
+```
+
+**Why this exists:** Wave 2 had major audit gaps — Agent 2's 2 successful matches had ZERO log entries. Agent 3's largest function (9 attempts) had no log entry. Without logs, we can't learn from success or diagnose waste.
+
+### Orchestrator Target Selection
+
+The orchestrator MUST pre-screen all candidates before assigning to agents. Don't rely on line count as a difficulty proxy.
+
+1. Grep each candidate for blockers (Rule above)
+2. Verify required pipeline tools are integrated for the target file
+3. Sort by matchability signals: Kengo "near-exact" > few s-regs > linear control flow > simple globals
+4. Assign only pre-vetted, blocker-free targets
 
 ### Merge Workflow
 
