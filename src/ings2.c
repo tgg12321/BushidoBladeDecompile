@@ -8,25 +8,25 @@ extern void func_80083A48(void);
 extern void func_800892F8(void);
 
 /* Externs for globals */
-extern s32 D_800A14CC;
-extern s32 D_800A2664;
-extern u16 D_800A157A;
-extern u16 *D_800A2608;
-extern s32 *D_800A2600;
-extern s32 D_800A2634;
+extern s32 g_sys_vsync_mode;
+extern s32 g_sys_video_mode;
+extern u16 g_sys_vblank_count;
+extern u16 *g_sys_irq_counter;
+extern s32 *g_sys_irq_vtable;
+extern s32 g_sys_dma_region;
 extern void func_8008AF9C(s32 *);
 
 /* --- Functions 0x8008289C - 0x80083BE4 --- */
 
 s32 sys_SetVsyncMode(s32 a0) {
-    s32 old = D_800A14CC;
-    D_800A14CC = a0;
+    s32 old = g_sys_vsync_mode;
+    g_sys_vsync_mode = a0;
     return old;
 }
 
-extern s32 D_800A1500;
+extern s32 g_sys_timer;
 s32 sys_SetTimer(s32 a0) {
-    s32 *p = &D_800A1500;
+    s32 *p = &g_sys_timer;
     s32 old = p[0];
     *(volatile s32 *)p = a0;
     return old;
@@ -46,7 +46,7 @@ s32 func_800828CC(s32 a0) {
     s1_val = (*D_800A1514 - D_800A1518) & 0xFFFF;
 
     if (a0 < 0) {
-        return D_800A2634;
+        return g_sys_dma_region;
     }
     if (a0 == 1) {
         return s1_val;
@@ -70,7 +70,7 @@ s32 func_800828CC(s32 a0) {
     }
 
     s0_val = *D_800A1510;
-    func_80082A14(D_800A2634 + 1, 1);
+    func_80082A14(g_sys_dma_region + 1, 1);
 
     if (s0_val & 0x400000) {
         volatile s32 *ptr = D_800A1510;
@@ -80,7 +80,7 @@ s32 func_800828CC(s32 a0) {
         }
     }
 
-    D_800A151C = D_800A2634;
+    D_800A151C = g_sys_dma_region;
     D_800A1518 = *D_800A1514;
 
     return s1_val;
@@ -93,7 +93,7 @@ extern void func_80082AB0(s32, s32);
 void func_80082A14(s32 a0, s32 a1) {
     volatile s32 counter = a1 << 15;
     asm volatile("" ::: "memory");
-    if (D_800A2634 < a0) {
+    if (g_sys_dma_region < a0) {
         do {
             if (--counter == -1) {
                 tslTm2LoadImage_2(&D_80016318);
@@ -101,7 +101,7 @@ void func_80082A14(s32 a0, s32 a1) {
                 func_80082AB0(3, 0);
                 return;
             }
-        } while (D_800A2634 < a0);
+        } while (g_sys_dma_region < a0);
     }
 }
 __asm__(
@@ -118,35 +118,35 @@ __asm__(
     "    .set at\n"
 );
 void irq_DisableInterrupts(void) {
-    ((void (*)(void))D_800A2600[3])();
+    ((void (*)(void))g_sys_irq_vtable[3])();
 }
 void irq_EnableInterrupts(void) {
-    ((void (*)(void))D_800A2600[2])();
+    ((void (*)(void))g_sys_irq_vtable[2])();
 }
 
 void irq_AcknowledgeVblank(void) {
-    ((void (*)(void))D_800A2600[1])();
+    ((void (*)(void))g_sys_irq_vtable[1])();
 }
 void irq_SetAlarm(s32 a0) {
-    ((void (*)(s32, s32))D_800A2600[5])(4, a0);
+    ((void (*)(s32, s32))g_sys_irq_vtable[5])(4, a0);
 }
 
 void irq_ClearAlarm(void) {
-    ((void (*)(void))D_800A2600[5])();
+    ((void (*)(void))g_sys_irq_vtable[5])();
 }
 void irq_Reset(void) {
-    ((void (*)(void))D_800A2600[4])();
+    ((void (*)(void))g_sys_irq_vtable[4])();
 }
 
 void irq_Dispatch(void) {
-    ((void (*)(void))D_800A2600[6])();
+    ((void (*)(void))g_sys_irq_vtable[6])();
 }
 u32 sys_GetVblankCount(void) {
-    return D_800A157A;
+    return g_sys_vblank_count;
 }
 
 u32 sys_GetIrqCounter(void) {
-    return *D_800A2608;
+    return *g_sys_irq_counter;
 }
 extern u16 *D_800A2604;
 extern s32 *D_800A260C;
@@ -160,7 +160,7 @@ extern s32 func_800832A0(void);
 extern s32 conv_matrix_rotation(void);
 extern s32 func_800831D8(s32 *);
 u16 motion_make_table(u16 arg0) {
-    u16 *ptr = D_800A2608;
+    u16 *ptr = g_sys_irq_counter;
     u16 old = *ptr;
     *(volatile u16 *)ptr = arg0;
     return old;
@@ -176,7 +176,7 @@ u16 *func_80082C58(void) {
 
     {
         u16 *v1 = D_800A2604;
-        u16 *v0_ptr = D_800A2608;
+        u16 *v0_ptr = g_sys_irq_counter;
         s32 a1_val = 0x33333333;
 
         *(volatile u16 *)v0_ptr = 0;
@@ -205,12 +205,12 @@ u16 *func_80082C58(void) {
         result = func_800832A0();
 
         {
-            s32 *v1 = D_800A2600;
+            s32 *v1 = g_sys_irq_vtable;
             v1[5] = result;
         }
         result = conv_matrix_rotation();
         {
-            s32 *a0 = D_800A2600;
+            s32 *a0 = g_sys_irq_vtable;
             a0[1] = result;
             func_800831D8(a0);
         }
@@ -334,13 +334,13 @@ void sys_MemClear2(s32 *a0, s32 a1) {
 }
 
 s32 sys_SetVideoMode(s32 a0) {
-    s32 old = D_800A2664;
-    D_800A2664 = a0;
+    s32 old = g_sys_video_mode;
+    g_sys_video_mode = a0;
     return old;
 }
 
 s32 sys_GetVideoMode(void) {
-    return D_800A2664;
+    return g_sys_video_mode;
 }
 
 __asm__(

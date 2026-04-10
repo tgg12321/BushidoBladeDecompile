@@ -10,20 +10,20 @@ extern void func_8007B33C(s32);
 extern void snd_PlaySystemSe(void);
 
 /* Externs for globals */
-extern u8 D_80106A73;
-extern u8 D_80106A54;
-extern u16 D_800A3710;
-extern u32 D_80106A50;
+extern u8 g_file_flags;
+extern u8 g_file_disc_type;
+extern u16 g_file_vram_timer;
+extern u32 g_file_disc_size;
 extern u32 D_80106A5C;
-extern u8 D_800A3716;
-extern s32 D_800A38BC;
-extern u32 D_800A30CC;
-extern u8 D_800F6740[];
-extern u8 D_800F7438;
-extern u8 D_800F7450;
+extern u8 g_file_dma_flag;
+extern s32 g_file_heap_base;
+extern u32 g_disp_gp_base;
+extern u8 g_file_data_buf[];
+extern u8 g_disp_fb_base;
+extern u8 g_disp_fb_flag;
 extern u32 D_800F5370;
-extern u8 D_80010000;
-extern u8 D_8001000C;
+extern u8 g_str_overflow;
+extern u8 g_str_eff_init;
 
 extern void func_80079208();
 extern void func_800164F8(void);
@@ -48,10 +48,10 @@ extern u32 D_80102794;
 extern u8 D_800A31DA;
 extern s16 D_800A3834;
 extern s32 D_800A30DC;
-extern u8 D_80010034;
+extern u8 g_str_prim_overflow;
 extern u8 D_800A390D;
 extern u8 D_800A3713;
-extern u32 D_8008D090[];
+extern u32 g_module_func_tbl[];
 extern u8 D_800F33D8;
 extern u8 D_800A37A0;
 extern u8 D_800A38F8;
@@ -197,11 +197,11 @@ void disp_SetFramebufferMode(s32 a0, s32 a1, s32 a2, s32 a3) {
     s32 offset;
 
     i = 0;
-    ptr = (u8 *)&D_800F7438;
+    ptr = (u8 *)&g_disp_fb_base;
     offset = 0;
 
     for (; i < 2; i++) {
-        *(vu8 *)((u8 *)&D_800F7450 + offset) = a0;
+        *(vu8 *)((u8 *)&g_disp_fb_flag + offset) = a0;
         *(vu8 *)(ptr + 0x19) = a1;
         *(vu8 *)(ptr + 0x1A) = a2;
         *(vu8 *)(ptr + 0x1B) = a3;
@@ -213,15 +213,15 @@ void disp_SetFramebufferMode(s32 a0, s32 a1, s32 a2, s32 a3) {
 /* --- Decompiled functions --- */
 
 u32 file_GetFlag0(void) {
-    return D_80106A73 & 1;
+    return g_file_flags & 1;
 }
 
 u32 file_GetFlag1(void) {
-    return (D_80106A73 >> 1) & 1;
+    return (g_file_flags >> 1) & 1;
 }
 
 u32 file_GetFlag2(void) {
-    return (D_80106A73 >> 2) & 1;
+    return (g_file_flags >> 2) & 1;
 }
 
 void func_800167EC(void) {
@@ -230,12 +230,12 @@ void func_800167EC(void) {
     register u8 *tmp asm("v0");
     register u8 *p asm("v1");
 
-    D_800A3710 = 0;
-    D_80106A73 = 0;
-    tmp = (u8 *)&D_80106A50;
+    g_file_vram_timer = 0;
+    g_file_flags = 0;
+    tmp = (u8 *)&g_file_disc_size;
     asm("addu %0,%1,$zero" : "=r"(p) : "r"(tmp));
     *(s32 *)p = 0x7007;
-    D_80106A54 = 0;
+    g_file_disc_type = 0;
     do {
         ((volatile u8 *)p)[8] = 0;
         ((volatile u8 *)p)[9] = 0;
@@ -254,7 +254,7 @@ void gpu_EnableDisplay(void) {
 void gpu_InitDisplay(void) {
     func_8007B2A0(0);
     func_8007AE7C(1);
-    func_8007B4D0(&D_800A30CC, 0, 0, 0);
+    func_8007B4D0(&g_disp_gp_base, 0, 0, 0);
     func_8007B33C(0);
 }
 
@@ -284,13 +284,13 @@ void disp_Init(void) {
     func_8007E094();
     func_8007EFDC(0x140, 0x78);
     func_8007EFFC(disp_CalcFov(0x2D));
-    base = &D_800F7438;
+    base = &g_disp_fb_base;
     func_8007A694(base, 0, 0, 0x280, 0xF0);
     func_8007A694(base + 0x4090, 0, 0xF0, 0x280, 0xF0);
     func_8007A74C(base + 0x5C, 0, 0xF0, 0x280, 0xF0);
     func_8007A74C(base + 0x40EC, 0, 0, 0x280, 0xF0);
     disp_SetFramebufferMode(1, 0, 0, 0);
-    func_8007B4D0(&D_800A30CC, 0, 0, 0);
+    func_8007B4D0(&g_disp_gp_base, 0, 0, 0);
     func_8007B33C(0);
 }
 extern void irq_DisableInterrupts(void);
@@ -299,45 +299,45 @@ extern void func_80078D38(void);
 extern void func_80078A58(s32);
 extern void func_80035FE0(void);
 extern void func_800375EC(void);
-extern u8 D_800FF580;
-extern u8 D_800A3768;
-extern u8 D_800A36A8;
+extern u8 g_pad_data;
+extern u8 g_disp_enable;
+extern u8 g_disp_fade;
 void sys_Init(void) {
-    u8 *base = &D_800FF580;
+    u8 *base = &g_pad_data;
     irq_DisableInterrupts();
     func_80078C9C(base, 8, base + 0x24, 8);
     func_80078D38();
     func_80078A58(0);
     disp_Init();
-    D_800A3768 = 0xFF;
-    D_800A36A8 = 0;
+    g_disp_enable = 0xFF;
+    g_disp_fade = 0;
     func_80035FE0();
     func_800375EC();
     sys_InitSound();
 }
 INCLUDE_ASM("asm/funcs", func_80016A8C);
 void sys_Panic(void) {
-    func_80079208((s32)&D_80010000);
+    func_80079208((s32)&g_str_overflow);
     while (1) {
         func_800164F8();
     }
 }
 void file_ResetDmaFlag(void) {
-    D_800A3716 = 0;
+    g_file_dma_flag = 0;
 }
 extern s32 func_80060CB8(u32, u32);
 void file_LoadOverlay(void) {
     s32 size;
 
-    if (D_800A3716 != 0) {
+    if (g_file_dma_flag != 0) {
         return;
     }
     size = func_80060CB8(0x801D8800, 0x8010E800);
-    func_80079208((s32)&D_8001000C, 0x8010E800, size);
+    func_80079208((s32)&g_str_eff_init, 0x8010E800, size);
     if (0xA000 < size) {
         sys_Panic();
     }
-    D_800A3716 = 1;
+    g_file_dma_flag = 1;
 }
 extern void func_8005B43C(void);
 extern s32 func_8005B7C4(u32);
@@ -358,7 +358,7 @@ void file_LoadSoundData(void) {
     func_8005C614();
     D_800A3906 = 1;
 }
-extern u8 D_80010028;
+extern u8 g_str_limit;
 extern u32 D_800A3770;
 extern u32 D_800A3774;
 extern u32 D_800A3798;
@@ -377,13 +377,13 @@ extern void func_80019534(void);
 extern void func_8003D2C4(void);
 extern void func_8001C444(void);
 void sys_GameInit(void) {
-    func_80079208((s32)&D_80010028, 0x8010DB00);
+    func_80079208((s32)&g_str_limit, 0x8010DB00);
     func_800167EC();
     func_80020D70();
     D_800A3770 = 0x801D8800;
     D_800A3774 = 0x801EBC00;
     D_800A3798 = 0x13400;
-    D_800A3716 = 0;
+    g_file_dma_flag = 0;
     D_800A3906 = 0;
     file_LoadSoundData();
     func_80019534();
@@ -407,13 +407,13 @@ void gpu_SetDrawMode(void) {
 
 INCLUDE_ASM("asm/funcs", func_80016E60);
 void rng_SetSeed(s32 a0) {
-    D_800A38BC = a0;
+    g_file_heap_base = a0;
 }
 s32 rng_Next(void) {
-    s32 seed = D_800A38BC;
+    s32 seed = g_file_heap_base;
     s32 result = seed * 5497 + 0x7FA9;
     seed = (seed >> 16) ^ result;
-    D_800A38BC = seed;
+    g_file_heap_base = seed;
     return seed & 0x7FFF;
 }
 INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action_2);
@@ -429,7 +429,7 @@ void gnd_disp_loop_ctrl(void) {
     register s32 s2_var asm("s2");
     s32 mask;
     s2_var = (s32)(&D_800F33D8);
-    if (D_800A3768 == 0xFF) {
+    if (g_disp_enable == 0xFF) {
         return;
     }
     s0_var = (s32)sp20;
@@ -442,11 +442,11 @@ void gnd_disp_loop_ctrl(void) {
     func_8007B9B0((u8 *)s0_var);
     D_800A374C = sp18;
     func_8007B844(sp18, 2);
-    switch (D_800A3768) {
+    switch (g_disp_enable) {
     case 1:
     case 2:
         s2_var = (s32)func_8005D46C((u8 *)s2_var);
-        if (D_800A36A8 != new_var2) {
+        if (g_disp_fade != new_var2) {
             s32 v0;
             s32 a0_temp;
             s0_var = new_var2;
@@ -457,7 +457,7 @@ void gnd_disp_loop_ctrl(void) {
                 a0_temp = s2_var;
                 inner_loop:
                 s0_var++;
-                s2_var = (s32)func_8005D554((u8 *)a0_temp, D_800A3768);
+                s2_var = (s32)func_8005D554((u8 *)a0_temp, g_disp_enable);
                 if (s0_var >= s1_var) {
                     break;
                 }
@@ -465,7 +465,7 @@ void gnd_disp_loop_ctrl(void) {
                 goto inner_loop;
             }
         } else if ((func_80079154() & 7) == new_var2) {
-            func_8005D554((u8 *)s2_var, D_800A3768);
+            func_8005D554((u8 *)s2_var, g_disp_enable);
         }
         break;
     case 10:
@@ -512,7 +512,7 @@ void gnd_disp_loop_ctrl(void) {
 void obj_ClearAll(void) {
     s32 i;
     for (i = 0x16C; i >= 0; i -= 0x34) {
-        *(s32 *)(D_800F6740 + i) = 0;
+        *(s32 *)(g_file_data_buf + i) = 0;
     }
 }
 
@@ -551,7 +551,7 @@ s32 func_80017D84(void *a0) {
     s32 i;
 
     saved_a0 = a0;
-    obj_base = &D_800F6740[0];
+    obj_base = &g_file_data_buf[0];
     for (i = 0; i < 8; i++) {
         if (*(s32 *)obj_base == 0) break;
         obj_base += 0x34;
@@ -601,16 +601,16 @@ s32 func_80017D84(void *a0) {
     }
 }
 void obj_Clear(s32 a0) {
-    *(s32 *)(D_800F6740 + a0 * 52) = 0;
+    *(s32 *)(g_file_data_buf + a0 * 52) = 0;
 }
 void obj_UpdatePosition(s32 a0, s32 a1) {
-    u8 *ptr = D_800F6740 + a0 * 52;
+    u8 *ptr = g_file_data_buf + a0 * 52;
     s32 c = *(s32 *)(ptr + 0xC) + a1;
     *(s32 *)(ptr + 0xC) = c;
     *(s32 *)(ptr + 0x10) = c + (*(s16 *)(ptr + 4) << 6);
 }
 void obj_AddValue(s32 a0, s32 a1) {
-    s32 *ptr = (s32 *)(D_800F6740 + a0 * 52);
+    s32 *ptr = (s32 *)(g_file_data_buf + a0 * 52);
     *ptr = *ptr + a1;
 }
 void scratchpad_Save(void) {
