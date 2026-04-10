@@ -125,3 +125,21 @@ tslPolyF4Init: subst "\$zero,-1" "$0,$zero" @ 50
 # tslPolyF4Init: merged exit dispatch (TEXT 56): beq s0,v0 -> bne v0,zero (bnez v0)
 tslPolyF4Init: subst "beq" "bne" @ 56
 tslPolyF4Init: subst "\$16,\$2" "$2,$0" @ 56
+
+
+# func_80036FD4: SpecialCam in $5(a1) -> $3(v1), entry loads $3/$2 -> $4/$5
+# Reorder: put sra after SpecialCam load
+func_80036FD4: reorder 11,13,12,14 @ 11-14
+# SpecialCam address: $5 -> $3
+func_80036FD4: subst "\$5" "$3" @ 13
+func_80036FD4: subst "\$5" "$3" @ 14
+# Entry load[0]: $3 -> $4
+func_80036FD4: subst "\$3" "$4" @ 16
+# Entry load[1]: dest $2 -> $5 (match "$2," to avoid base reg)
+func_80036FD4: subst "\$2," "$5," @ 17
+# Entry store[0]: $3 -> $4
+func_80036FD4: subst "\$3" "$4" @ 18
+# Entry store[1]: $2 -> $5
+func_80036FD4: subst "\$2" "$5" @ 19
+# jal delay: $5 -> $3 (SpecialCam base)
+func_80036FD4: subst "\$5" "$3" @ 24
