@@ -76,8 +76,6 @@ func_80017FA0: subst "0\(\$3\)" "0x60($1)" @ 58
 # func_80021280: counter in a1($5) instead of a2($6), pointer swapped
 func_80021280: $5 <-> $6
 
-# func_8003B10C: prologue - swap sw ra and lui s2
-func_8003B10C: reorder 5,4 @ 4-5
 # func_8003B10C: merge addu operand order (v0,a0,v0 -> v0,v0,a0)
 func_8003B10C: subst "\$4,\$2" "$2,$4" @ 44
 # func_8003B10C: delete merge ED6 and else-branch la E5CC
@@ -98,8 +96,6 @@ func_8003B10C: insert "lui $1,%hi(D_80101ED6)" @ 34
 
 # func_8003AFFC: swap s1/s2 in body only (prologue/epilogue already match)
 func_8003AFFC: $17 <-> $18 @ 10-58
-# func_8003AFFC: prologue - move lui s3 before ori (TEXT indices)
-func_8003AFFC: reorder 7,2,3,4,5,6 @ 2-7
 
 # func_80044CCC: 4-way s0-s3 rotation - angle from s0->s3, args shift down
 func_80044CCC: $16 <-> $17 @ 7-58
