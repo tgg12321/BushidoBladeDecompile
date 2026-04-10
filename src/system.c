@@ -179,7 +179,57 @@ next:
 done:
     return result + 1;
 }
-INCLUDE_ASM("asm/funcs", tslPolyF4Init);
+s32 tslPolyF4Init(s32 a0, s32 a1, s32 a2) {
+    s32 count;
+    unsigned long long new_var2;
+    s32 idx;
+    s32 saved;
+    int new_var;
+    s32 *elem;
+
+    idx = a0 & 0xFF;
+    saved = D_800A11B4;
+    elem = &D_800A112C[idx];
+    new_var = 3;
+    new_var2 = new_var;
+    count = new_var2;
+
+loop:
+    D_800A11B4 = 0;
+
+    if (idx != 1) {
+        if (D_800A11C4 & 0x10) {
+            tslTm2LoadImage(1, 0, 0, 0);
+        }
+    }
+    if (a1 != 0) {
+        if ((*elem) != 0) {
+            if (tslTm2LoadImage(2, a1, a2, 0) != 0) {
+                goto next;
+            }
+        }
+    }
+    D_800A11B4 = saved;
+    if (tslTm2LoadImage(a0 & 0xFF, a1, a2, 0) == 0) {
+        goto done;
+    }
+next:
+    count--;
+    if (count != (-1)) {
+        goto loop;
+    }
+    D_800A11B4 = saved;
+done:
+    if (count == (-1)) {
+        return 0;
+    }
+    {
+        s32 r;
+        r = ((s32 (*)(s32, s32))cpu_side_move_dir_4)(0, a2);
+        r ^= 2;
+        return (u32)r < 1;
+    }
+}
 /* kengo:MED  |  tsl_pkt/tslPolyF4Init  |  81i */
 
 s32 func_80080600(void) {
