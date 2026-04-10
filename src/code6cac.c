@@ -6,6 +6,7 @@
 #include "game.h"
 #include "system.h"
 #include "code6cac.h"
+#include "bb2_const.h"
 
 /* Padding NOP macro */
 #define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
@@ -568,7 +569,7 @@ void func_8001DB9C(void) {
 void func_8001DBE4(void) {
     s32 i;
 
-    if (g_disp_enable != 0x14) {
+    if (g_disp_enable != DISP_ACTIVE) {
         return;
     }
     func_8003AA78();
