@@ -1,5 +1,6 @@
 #include "common.h"
 #include "include_asm.h"
+#include "game.h"
 
 /* Forward declarations */
 extern s32 stage_GetId(void);
@@ -15,7 +16,6 @@ extern s32 g_game_player_count;
 extern s32 g_game_flag_b;
 extern s32 g_game_flag_a;
 extern s32 g_stage_init_tbl;
-extern s16 g_game_mirror_mode;
 extern void func_8001924C(s32 *, s32);
 extern void func_80045A28(s32, s32);
 extern void func_80052A20(s32 *, s32 *, s16 *);
@@ -24,7 +24,6 @@ extern void func_80052C10(void *);
 /* Externs for globals */
 extern u8 g_char_data;
 extern s16 g_game_p1_ctrl;
-extern s16 g_game_p2_ctrl;
 extern u8 g_stage_collision[];
 extern s32 D_80094A6C[];
 extern u8 *D_800A3708;

@@ -1,8 +1,8 @@
 #include "common.h"
 #include "include_asm.h"
+#include "system.h"
 
 /* Forward declarations */
-extern void irq_DisableInterrupts(void);
 extern void func_800885AC(void);
 extern void func_80083A48(void);
 extern void func_800892F8(void);

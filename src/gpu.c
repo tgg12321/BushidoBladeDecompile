@@ -1,20 +1,16 @@
 #include "common.h"
 #include "include_asm.h"
+#include "gpu.h"
 
 /* Forward declarations */
 extern void func_8007A448(void);
 extern void func_8007A458(void);
 
 /* Externs for globals */
-extern u8 g_gpu_type;
-extern u8 g_gpu_debug_level;
-extern void (*g_gpu_debug_func)();
 extern s32 D_80015D58;
 extern s32 D_80015D70;
 extern s32 D_80015EA8;
-extern u8 g_gpu_dither;
 extern u8 g_gpu_interlace;
-extern u32 *g_gpu_dev_table;
 extern s32 D_80015ED4;
 extern s32 D_80015E90;
 extern s32 D_80015DD8;
@@ -29,8 +25,6 @@ extern s32 D_80015DCC;
 extern s32 D_80015E5C;
 extern s32 D_80015E7C;
 extern s32 D_8009BE2C;
-extern s16 g_gpu_disp_x;
-extern s16 g_gpu_disp_y;
 extern s32 D_8009BEF4[];
 extern s32 D_8009BF08[];
 
