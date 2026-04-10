@@ -676,13 +676,92 @@ void func_80081F1C(void) {
 }
 INCLUDE_ASM("asm/funcs", tslTm2LoadImage_2);
 /* kengo:MED  |  tsl_tm2/tslTm2LoadImage_2  |  253i  |  -10 x2 size collision */
-INCLUDE_ASM("asm/funcs", saEft00Add);
-/* kengo:HIGH  |  sa_eft/saEft00Add  |  169i  |  -3 near-exact */
-INCLUDE_ASM("asm/funcs", func_800826CC);
+extern s32 D_800A1500;
 extern s32 D_800A14EC;
 extern s32 D_800A14E8;
 extern s32 D_800A14E4;
 extern s32 D_800A14D0;
+extern s32 D_800A14DC;
+extern s32 D_800A14D4;
+extern s32 D_800A14D8;
+extern s32 D_800A14F0;
+extern s32 D_800A14F4;
+extern s32 D_800A14F8;
+extern s32 D_800A14FC;
+extern s32 D_800162EC;
+extern s32 D_80016304;
+extern s32 D_80082050;
+extern s32 D_80082320;
+
+s32 saEft00Add(s32 arg0) {
+    u8 sp10;
+    s32 temp_s0;
+
+    func_80080228(0);
+    func_80080240(0);
+    if (*(volatile s32 *)&D_800A1500 & 1) {
+        func_80080660(0);
+    }
+    if (func_8008009C() & 0x10) {
+        if (!(func_800828CC(-1) & 0x3F)) {
+            tslTm2LoadImage_2(&D_800162EC);
+        }
+        func_80080390(1, 0);
+        D_800A14EC = func_800828CC(-1);
+        *(volatile s32 *)&D_800A14E4 = -1;
+        goto end;
+    }
+    if (arg0 != 0) {
+        tslTm2LoadImage_2(&D_80016304);
+        func_80080258(9, 0, 0);
+        temp_s0 = (s32)func_800800CC();
+        if (func_80080258(2, temp_s0, 0) != 0) {
+            goto common_path;
+        }
+        D_800A14E4 = -1;
+        __asm__("");
+        goto end;
+    }
+common_path:
+    func_80080148();
+    temp_s0 = *(volatile s32 *)&D_800A14DC;
+    sp10 = temp_s0;
+    temp_s0 = temp_s0 & 0xFF;
+    if (temp_s0 != func_800800AC() || arg0 != 0) {
+        if (func_80080258(0xE, (s32)&sp10, 0) == 0) {
+            D_800A14E4 = -1;
+            goto end;
+        }
+    }
+    D_800A14F0 = func_800807A8(func_800800CC());
+    func_80080240((s32)&D_80082050);
+    if (D_800A1500 & 1) {
+        func_80080660((s32)&D_80082320);
+    }
+    D_800A14D8 = D_800A14D4;
+    func_80080390(6, 0);
+    D_800A14E4 = D_800A14D0;
+    D_800A14E8 = func_800828CC(-1);
+end:
+    return D_800A14E4;
+}
+
+void saEft00Add_sub(void) {
+    s32 *p = &D_800A1500;
+
+    if (*p & 1) {
+        func_80080684(0);
+    }
+    D_800A14E4 = 0;
+    func_80080228(D_800A14F4);
+    func_80080240(D_800A14F8);
+    if (*p & 1) {
+        func_80080660(D_800A14FC);
+    }
+    func_80080390(9, 0);
+}
+/* kengo:HIGH  |  sa_eft/saEft00Add  |  169i  |  -3 near-exact */
+INCLUDE_ASM("asm/funcs", func_800826CC);
 
 s32 func_800827D0(s32 a0, s32 a1) {
     s32 *p = &D_800A14EC;
