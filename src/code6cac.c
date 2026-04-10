@@ -509,7 +509,41 @@ void func_8001CD68(s16 *arg0) {
 }
 INCLUDE_ASM("asm/funcs", camera_set_target_zoom);
 /* kengo:MED  |  nm_camera/camera_set_target_zoom  |  593i  |  +5 */
-INCLUDE_ASM("asm/funcs", se_data_set);
+extern s8 D_800A30FC;
+extern s8 D_800A30FD;
+extern s32 D_800FF6A8;
+void se_data_set(void) {
+    s32 s2 = (s32)0x80190800;
+    s32 s1;
+    s32 *s0;
+
+    gpu_EnableDisplay();
+
+    if (D_800A36A4 != D_800A390E
+        || *(&D_8008E5A8 + (s8)D_8010277C) != D_800A30FC
+        || *(&D_8008E5A8 + D_8010277D) != D_800A30FD) {
+        s8 *p = (s8 *)&D_8010277C;
+
+        func_80020D38();
+        game_StageCleanup(D_800A36A4, s2);
+        func_8002906C();
+        func_8005BDF0();
+
+        s1 = func_8005BA8C(s2, D_800A36A4, *(&D_8008E5A8 + *p), *(&D_8008E5A8 + D_8010277D));
+
+        D_800A390E = (s8)(u16)D_800A36A4;
+        D_800A30FC = *(&D_8008E5A8 + *p);
+        D_800A30FD = *(&D_8008E5A8 + D_8010277D);
+
+        if (s1 >= 0x2519) {
+            sys_Panic();
+        }
+
+        s0 = &D_800FF6A8;
+        bb2_memcpy(s0, s2, s1);
+        func_8005BD30((s32)s0 - s2);
+    }
+}
 /* kengo:HIGH  |  md_game/se_data_set  |  93i */
 void func_8001D904(void) {
     s32 s2 = (s32)0x80190800;
