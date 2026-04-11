@@ -880,7 +880,50 @@ void func_80044100(s32 a0, s32 a1) {
     }
 }
 INCLUDE_ASM("asm/funcs", func_80044170);
-INCLUDE_ASM("asm/funcs", hirahira_w_frie);
+extern void func_800520B8(s32, s32, s32);
+s32 hirahira_w_frie(s32 *base, s16 *offsets) {
+    s16 *s3 = offsets;
+    s32 *s4 = base;
+    s32 *s5 = s4 + 1;
+    s32 s6 = 0;
+    s32 *s2 = (s32 *)((s32)s4 + s4[1]);
+    s32 v1;
+    s32 *s1;
+    s32 s0;
+    s32 a0_val;
+    s32 ret;
+
+    v1 = *s3;
+    s3++;
+    if (v1 == -2) goto done;
+
+    ret++;
+    ret--;
+    s1 = s5;
+    do {
+        if (v1 >= 0) {
+            s0 = s1[1];
+            a0_val = s1[0];
+            *s5 = (s32)s2 - (s32)s4;
+            s5++;
+            s6++;
+            s0 = s0 - a0_val;
+            func_800520B8((s32)s4 + a0_val, (s32)s2, s0);
+            s0 = ((u32)s0 >> 2) << 2;
+            s2 = (s32 *)((s32)s2 + s0);
+        }
+        s1++;
+        v1 = *s3;
+        s3++;
+    } while (v1 != -2);
+
+done:
+    ret = (s32)s2;
+    v1 = ret - (s32)s4;
+    *s4 = s6;
+    *s5 = v1;
+    return ret;
+}
 /* kengo:MED  |  my_hirahira/hirahira_w_frie  |  59i */
 INCLUDE_ASM("asm/funcs", calc_fc_frame);
 /* kengo:MED  |  se_fc/calc_fc_frame  |  72i */

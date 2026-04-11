@@ -215,3 +215,10 @@ damage_DebugDisp: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
 damage_DebugDisp: insert "nop" @ 53
 # damage_DebugDisp: reorder sw before k=0 (post-insert TEXT 54-55)
 damage_DebugDisp: reorder 55,54 @ 54-55
+# hirahira_w_frie: move addiu s5,s4,4 from after saves to between sw s5 and sw s6
+hirahira_w_frie: reorder 5,13,6,7,8,9,10,11,12 @ 5-13
+# hirahira_w_frie: swap li s7,-2 and move s1,s5
+hirahira_w_frie: reorder 22,21 @ 21-22
+# hirahira_w_frie: fix srl/sll register (v0 -> s0)
+hirahira_w_frie: subst "\$2,\$16" "$16,$16" @ 35
+hirahira_w_frie: subst "\$16,\$2" "$16,$16" @ 36
