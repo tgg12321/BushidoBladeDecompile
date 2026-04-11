@@ -28,10 +28,11 @@ SECTIONS
         build/asm/data/101C.rodata_pre.o(.rodata);
         build/src/code6cac_c.o(.rodata);
         build/asm/data/101C.rodata_post.o(.rodata);
+        build/src/text1a.o(.rodata);
+        build/asm/data/101C.rodata_text1a.o(.rodata);
         build/src/code6cac_b2.o(.rodata);
         build/src/code6cac_c2.o(.rodata);
         build/src/config.o(.rodata);
-        build/src/text1a.o(.rodata);
         build/src/sound.o(.rodata);
         build/src/text1b.o(.rodata);
         build/src/gpu.o(.rodata);
