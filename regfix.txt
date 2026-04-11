@@ -363,3 +363,6 @@ title_mv_exec2: insert "sllv $2,$2,$5\n.set	noreorder" @ 36
 title_mv_exec2: insert "addiu $2,$zero,1" @ 36
 title_mv_exec2: reorder 3,4,5,1,2 @ 1-5
 title_mv_exec2: reorder 17,19,18,16 @ 16-19
+# func_80030208: GCC drops la for D_80106A78 in full compilation unit
+func_80030208: insert "la $20,D_80106A78" @ 2
+func_80030208: reorder 5,10,6,7,8,9 @ 5-10
