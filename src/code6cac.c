@@ -965,7 +965,63 @@ s32 func_8002006C(void) {
     D_800A38A8 = 0;
 }
 INCLUDE_ASM("asm/funcs", func_800200DC);
-INCLUDE_ASM("asm/funcs", func_800203B4);
+void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
+    s32 sp_matrix[8];
+    s32 vec[3];
+
+    *(s16 *)(arg0 + 0x350) = 1;
+    *(u16 *)(arg0 + 0x352) = *(u16 *)((u8 *)&D_8008D59E + arg1 * 20);
+    {
+        s32 ret = game_GetPlayerData(*(s16 *)(arg0 + 0x4));
+        s16 idx = *(s16 *)(arg0 + 0x352);
+        func_8002EECC(*(s32 *)(ret + idx * 4), sp_matrix);
+    }
+    /* Set GTE rotation matrix from sp_matrix */
+    {
+        register s32 *v0 asm("v0") = sp_matrix;
+        __asm__ volatile (
+            ".word 0x00406021\n"   /* addu $t4, $v0, $zero */
+            "\t.word 0x8D8D0000\n" /* lw   $t5, 0($t4) */
+            "\t.word 0x8D8E0004\n" /* lw   $t6, 4($t4) */
+            "\t.word 0x48CD0000\n" /* ctc2 $t5, $0 */
+            "\t.word 0x48CE0800\n" /* ctc2 $t6, $1 */
+            "\t.word 0x8D8D0008\n" /* lw   $t5, 8($t4) */
+            "\t.word 0x8D8E000C\n" /* lw   $t6, 0xC($t4) */
+            "\t.word 0x8D8F0010\n" /* lw   $t7, 0x10($t4) */
+            "\t.word 0x48CD1000\n" /* ctc2 $t5, $2 */
+            "\t.word 0x48CE1800\n" /* ctc2 $t6, $3 */
+            "\t.word 0x48CF2000\n" /* ctc2 $t7, $4 */
+            :: "r"(v0)
+        );
+    }
+    /* Load translation vector from arg2 */
+    vec[0] = (s32)arg2[0];
+    vec[1] = (s32)arg2[1];
+    vec[2] = (s32)arg2[2];
+    /* Load GTE vector (VXY0, VZ0), run MVMVA */
+    __asm__ volatile (
+        ".word 0x00406021\n"   /* addu $t4, $v0, $zero */
+        "\t.word 0x958E0004\n" /* lhu  $t6, 4($t4) */
+        "\t.word 0x958D0000\n" /* lhu  $t5, 0($t4) */
+        "\t.word 0x000E7400\n" /* sll  $t6, $t6, 16 */
+        "\t.word 0x01AE6825\n" /* or   $t5, $t5, $t6 */
+        "\t.word 0x488D0000\n" /* mtc2 $t5, $0 (VXY0) */
+        "\t.word 0xC9810008\n" /* lwc2 $1, 8($t4) (VZ0) */
+        "\tnop\n"
+        "\tnop\n"
+        "\t.word 0x4A486012\n" /* mvmva 1,0,0,3,0 (rtv0) */
+        :: "r"(vec)
+    );
+    /* Store GTE MAC1/MAC2/MAC3 results to arg0+0x354 */
+    arg0 += 0x354;
+    __asm__ volatile (
+        ".word 0x02006021\n"   /* addu $t4, $s0, $zero */
+        "\t.word 0xE9990000\n" /* swc2 $25, 0($t4) (MAC1) */
+        "\t.word 0xE99A0004\n" /* swc2 $26, 4($t4) (MAC2) */
+        "\t.word 0xE99B0008\n" /* swc2 $27, 8($t4) (MAC3) */
+        :: "r"(arg0)
+    );
+}
 INCLUDE_ASM("asm/funcs", single_game_SetAbilityData);
 /* kengo:HIGH  |  nm_single_game/single_game_SetAbilityData  |  124i */
 void func_800206B0(s32 arg0, s32 arg1) {
