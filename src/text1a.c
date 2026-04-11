@@ -565,7 +565,7 @@ INCLUDE_ASM("asm/funcs", hirahira_w_ctrl_2);
 extern void func_8004A348(void);
 extern void func_80042874(void);
 extern void func_80042A88(void);
-extern void hirahira_w_ctrl_2(void);
+extern void hirahira_w_ctrl_2();
 extern s32 D_800F66A8;
 extern s32 D_800F66B0;
 extern s32 D_800F66B4;
@@ -606,7 +606,53 @@ void func_80042F10(s32 *a0, s32 *a1, s32 a2) {
     *a1 = (cos_x + sin_y) >> 12;
     *a0 = (sin_x - cos_y) >> 12;
 }
-INCLUDE_ASM("asm/funcs", func_80042FA0);
+extern s32 *func_8007ED6C(s32 *, s16 *, s32 *);
+extern s16 func_8007FD5C(s32, s32);
+extern s32 math_Cos(s32);
+extern s32 math_Sin(s32);
+extern void func_8007EB4C(s32 *, s32 *);
+void func_80042FA0(s32 *a0, s16 *a1) {
+    s16 rot[3];
+    s32 result[4];
+    s32 sp28[8];
+    s16 angle1;
+    s32 cos_val, sin_val;
+    s16 neg_angle2;
+    s32 combined;
+
+    rot[0] = 0;
+    rot[1] = 0;
+    rot[2] = 0x1000;
+    func_8007ED6C(a0, rot, result);
+
+    angle1 = func_8007FD5C(result[0], result[2]);
+
+    cos_val = math_Cos((s16)angle1);
+    sin_val = math_Sin((s16)angle1);
+
+    combined = (cos_val * result[2] + sin_val * result[0]) >> 12;
+    neg_angle2 = -func_8007FD5C(result[1], combined);
+
+    rot[0] = -neg_angle2;
+    rot[1] = -angle1;
+    rot[2] = 0;
+    hirahira_w_ctrl_2(rot, sp28);
+
+    func_8007EB4C(sp28, a0);
+
+    rot[0] = 0;
+    rot[1] = 0x1000;
+    rot[2] = 0;
+    func_8007ED6C(sp28, rot, result);
+
+    {
+        s16 angle3;
+        angle3 = func_8007FD5C(result[0], result[1]);
+        a1[0] = neg_angle2;
+        a1[1] = angle1;
+        a1[2] = -angle3;
+    }
+}
 INCLUDE_ASM("asm/funcs", func_800430E4);
 s32 func_80043244(s32 a0) {
     s32 ret;
