@@ -468,3 +468,29 @@ rob_life_ctrl: subst "addu\t\$5,\$7,4" "addiu	$5,$5,104" @ 88
 
 # func_80047BE0: swap s1 (dst32) and s2 (p) in function body only
 func_80047BE0: $17 <-> $18 @ 13-93
+
+# func_80019310: 3-way register rotation in loop (CORRECT TEXT indices)
+# .word directives NOT counted by regfix!
+# Compiled: $7=output, $6=i, $5=dst; after swap of $6<->$7, $5<->$6, $3<->$5
+# Target: $7=output, $6=i, $5=dst
+func_80019310: $6 <-> $7 @ 16-45
+func_80019310: $5 <-> $6 @ 16-45
+func_80019310: $3 <-> $5 @ 16-45
+# Loop offset calc: GCC puts sll result in $12(t4) directly, target uses $3(v1)
+# After swap, TEXT 21 is "sll $12,$6,3" -> change dest $12 to $3
+func_80019310: subst "\$12,\$6" "$3,$6" @ 21
+# After swap, TEXT 22 is "addu $12,$2,$12" -> change to "addu $2,$2,$3"
+func_80019310: subst "\$12,\$2,\$12" "$2,$2,$3" @ 22
+# Insert "move t4,v0" (addu $12,$2,$0) right after TEXT 23 (post-insert idx) before .word lwc2
+func_80019310: insert_after "addu $12,$2,$zero" @ 23
+# Prologue: insert nop at TEXT 3 for load-use hazard after reorder
+func_80019310: insert "nop" @ 3
+# Prologue: reorder TEXT 1-2 (post-insert indices) to swap lw and move
+func_80019310: reorder 2,1 @ 1-2
+
+# func_80045294: move i++ to fill load delay slot in first loop
+# Delete i++ at 21 and nop at 25 (original maspsx indices)
+func_80045294: delete @ 21
+func_80045294: delete @ 25
+# Insert i++ at post-delete index 24 (between lw and addu sum)
+func_80045294: insert "addu $16,$16,1" @ 24

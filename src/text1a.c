@@ -9,6 +9,7 @@
 extern s16 D_800EED10[];
 extern s32 D_800EED1C[];
 extern s32 D_800EED18;
+extern s32 D_800EED14;
 extern s32 D_800EED00[];
 extern s32 D_800A33AC;
 extern s32 D_800A33A0;
@@ -16,7 +17,6 @@ extern s32 D_800A33A4;
 extern s32 D_800A33A8;
 extern u8 D_800A9D10;
 extern void func_80049E1C(void);
-extern void func_80045294(s32, s32);
 extern void func_80052C10(void);
 extern void func_80044098(s16);
 extern void func_80044010(s32 *, s16);
@@ -1620,7 +1620,52 @@ void func_80045230(s32 a0) {
         func_80052C10();
     }
 }
-INCLUDE_ASM("asm/funcs", saTan0Init);
+void func_80045294(s32 a0, s32 a1) {
+    s32 sum = 0;
+    s32 v1 = a0 << 4;
+    s32 s4 = *(s32 *)((u8 *)&D_800EED14 + v1);
+    s32 i = a0;
+    s32 count = D_800A33AC;
+    s32 s5 = s4 + a1;
+
+    if (i < count) {
+        do {
+            sum += *(s32 *)((u8 *)&D_800EED18 + v1);
+            i += 1;
+            v1 += 0x10;
+        } while (i < count);
+    }
+
+    if (sum != 0) {
+        s32 *ptr;
+        s32 idx;
+
+        gpu_DrawSync(0);
+        func_800520B8(s4, s5, sum);
+
+        i = a0;
+        if (i < D_800A33AC) {
+            v1 = i << 4;
+            ptr = (s32 *)((u8 *)&D_800EED14 + v1);
+            idx = v1;
+            do {
+                *ptr += a1;
+                {
+                    void (*fn)(s16, s32) = (void (*)(s16, s32)) *(s32 *)((u8 *)&D_800EED1C + idx);
+                    if (fn != 0) {
+                        fn(*(s16 *)((u8 *)&D_800EED10 + idx), a1);
+                    }
+                }
+                ptr = (s32 *)((u8 *)ptr + 0x10);
+                idx += 0x10;
+                i += 1;
+            } while (i < D_800A33AC);
+        }
+    }
+
+    D_800A33A0 += a1;
+    D_800A33A4 -= a1;
+}
 void func_800453E0(s32 a0) {
     s32 s0 = 0;
     s32 s1;

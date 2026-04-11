@@ -46,10 +46,19 @@ Config file format (regfix.txt):
   that are not in the target (e.g., ori in a lui+ori+sw(0) pattern
   when target uses lui+sw(offset)).
 
+  # Insert AFTER a specific instruction index:
+  func_80019310: insert_after "addu $12,$2,$0" @ 22
+
+  Like insert, but places the new instruction immediately AFTER the
+  instruction at the specified index (before any subsequent .word
+  directives or non-instruction lines). Useful when .word directives
+  follow the target instruction and a regular insert at the next
+  index would land after those .word lines.
+
 Order of operations: register swaps first (on original indices),
 then substitutions (on original indices), then deletes (on original
-indices), then inserts (shifts indices), then reorders (on post-insert
-indices).
+indices), then inserts (shifts indices), then insert_afters (shifts
+indices), then reorders (on post-insert indices).
 Instruction indices count actual instructions (not directives, labels,
 or comments) from the function entry point, 0-based.
 """
@@ -73,7 +82,7 @@ def load_config(config_path):
         if m:
             func = m.group(1)
             idx = int(m.group(2))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
             config[func]['deletes'].append(idx)
             continue
 
@@ -84,7 +93,7 @@ def load_config(config_path):
             order = [int(x) for x in m.group(2).split(',')]
             start = int(m.group(3))
             end = int(m.group(4))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
             config[func]['reorders'].append((start, end, order))
             continue
 
@@ -94,8 +103,18 @@ def load_config(config_path):
             func = m.group(1)
             asm_text = m.group(2).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(3))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
             config[func]['inserts'].append((idx, asm_text))
+            continue
+
+        # Parse insert_after: func_name: insert_after "asm_text" @ index
+        m = re.match(r'(\w+)\s*:\s*insert_after\s+"([^"]+)"\s*@\s*(\d+)', line)
+        if m:
+            func = m.group(1)
+            asm_text = m.group(2)
+            idx = int(m.group(3))
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
+            config[func]['insert_afters'].append((idx, asm_text))
             continue
 
         # Parse subst: func_name: subst "pattern" "replacement" @ index
@@ -105,7 +124,7 @@ def load_config(config_path):
             pattern = m.group(2)
             replacement = m.group(3).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(4))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
             config[func]['substs'].append((idx, pattern, replacement))
             continue
 
@@ -117,7 +136,7 @@ def load_config(config_path):
             reg_b = m.group(3)
             start = int(m.group(4)) if m.group(4) is not None else None
             end = int(m.group(5)) if m.group(5) is not None else None
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
             config[func]['swaps'].append((reg_a, reg_b, start, end))
             continue
 
@@ -219,7 +238,7 @@ def process_function(lines, func_config):
                 continue
             # Insert the new instruction line before this position
             # Wrap in .set noat/.set at if the instruction uses $at ($1)
-            if '$1' in asm_text or '$at' in asm_text:
+            if re.search(r'\$1(?!\d)', asm_text) or '$at' in asm_text:
                 new_line = f".set\tnoat\n\t{asm_text}\n.set\tat\n"
             else:
                 new_line = f"\t{asm_text}\n"
@@ -233,7 +252,37 @@ def process_function(lines, func_config):
                     renumbered.append((text, idx))
             lines = renumbered
 
-    # Phase 3: Apply instruction reorders (on post-insert indices)
+    # Phase 3.5: Apply insert_after (sorted by index descending to preserve positions)
+    insert_after_list = func_config.get('insert_afters', [])
+    if insert_after_list:
+        for insert_idx, asm_text in sorted(insert_after_list, key=lambda x: x[0], reverse=True):
+            # Find the position in lines where insn_idx == insert_idx
+            target_pos = None
+            for pos, (text, idx) in enumerate(lines):
+                if idx == insert_idx:
+                    target_pos = pos
+                    break
+            if target_pos is None:
+                print(f"regfix: WARNING: insert_after index {insert_idx} not found", file=sys.stderr)
+                continue
+            # Insert right after the target instruction (pos + 1)
+            insert_pos = target_pos + 1
+            if re.search(r'\$1(?!\d)', asm_text) or '$at' in asm_text:
+                new_line = f".set\tnoat\n\t{asm_text}\n.set\tat\n"
+            else:
+                new_line = f"\t{asm_text}\n"
+            new_idx = insert_idx + 1
+            lines.insert(insert_pos, (new_line, new_idx))
+            # Renumber: shift all instruction indices > insert_idx by +1
+            renumbered = []
+            for text, idx in lines:
+                if idx is not None and idx > insert_idx and (text, idx) != lines[insert_pos]:
+                    renumbered.append((text, idx + 1))
+                else:
+                    renumbered.append((text, idx))
+            lines = renumbered
+
+    # Phase 4: Apply instruction reorders (on post-insert indices)
     # Each instruction carries any preceding non-instruction lines (labels, .set, comments)
     for reorder_start, reorder_end, new_order in reorder_list:
         # Build map of insn_idx -> line position
