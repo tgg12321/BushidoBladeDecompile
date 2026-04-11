@@ -108,6 +108,8 @@ extern s32 g_anim_func_table;
 extern s32 g_pad_data;
 extern u16 D_80101E02;
 extern u16 D_80101E04;
+extern u8 D_80106A73;
+extern s32 *func_80077D00(void);
 extern s16 D_80101ED6;
 extern s32 g_file_disc_size;
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
@@ -1171,7 +1173,45 @@ INCLUDE_ASM("asm/funcs", DispSamnailWindow);
 /* kengo:LOW  |  su_menu_vs/_DispSamnailWindow  |  149i  |  PS2 UI — reverted */
 INCLUDE_ASM("asm/funcs", func_80034708);
 /* TABLED: -4 bytes, score 1980. Target alternates v1/a0 for g_file_flags address — unreproducible register allocation pattern */
-INCLUDE_ASM("asm/funcs", func_80034F88);
+void func_80034F88(void) {
+    s32 *p;
+    u8 *ptr;
+    u8 val;
+    u8 val2;
+    s32 i;
+
+    p = func_80077D00();
+    ptr = &D_80106A73;
+    *ptr &= 0xF8;
+    asm volatile("" ::: "memory");
+
+    val = *ptr;
+    val2 = val | 1;
+    if (!(p[8] & 1)) {
+        val2 = val;
+    }
+    *ptr = val2;
+    asm volatile("" ::: "memory");
+
+    val = *ptr;
+    val2 = val | 2;
+    if (!(p[8] & 2)) {
+        val2 = val;
+    }
+    *ptr = val2;
+    asm volatile("" ::: "memory");
+
+    val = *ptr;
+    val2 = val | 4;
+    if (!(p[8] & 4)) {
+        val2 = val;
+    }
+    *ptr = val2;
+
+    for (i = 0; i < 3; i++) {
+        *(&D_80106A70 + i) = *((u8 *)p + 0x17 + i);
+    }
+}
 /* TABLED: -4 bytes. Branch inversion (beqz→bnez+ori delay slot), load order (lbu before lw vs lw,lbu fill), byte caching. Best: volatile ptr + inverted cond gives bnez+ori but lbu before lw. */
 INCLUDE_ASM("asm/funcs", func_8003504C);
 INCLUDE_ASM("asm/funcs", single_game_SetWazaData);
