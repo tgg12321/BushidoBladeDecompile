@@ -714,7 +714,53 @@ void func_8003D9A0(s16 *a0, s32 a1, u32 *a2) {
         } while (--s2 != -1);
     }
 }
-INCLUDE_ASM("asm/funcs", tslLineG5Init);
+extern s16 D_800F6656;
+extern void func_8003DBE4(s32, s32, s32 *, s32, s32);
+void tslLineG5Init(s32 arg0, s32 arg1) {
+    s32 dist;
+    s16 *new_var2;
+    s32 offset;
+    int new_var;
+    s32 *ptr;
+
+    D_800905F8 = 0xFFFF;
+    new_var2 = &D_800906A4 + arg0 * 2;
+    if (*new_var2 != 0) {
+        if (game_GetPlayerCount() != 0) {
+            dist = 0x55F0;
+        } else {
+            dist = 0x6590;
+        }
+        dist = dist - arg1;
+        new_var = dist < 0x1770;
+        if (new_var) {
+            offset = 0x1770 - dist;
+            dist = 0x1770;
+        } else {
+            offset = 0;
+        }
+        {
+            s16 v1 = D_800F6656;
+            s16 mask = D_80090608;
+            if ((v1 & ~mask) & 1) {
+                D_80090600 = dist;
+                D_80090604 = offset;
+            }
+            if (v1 & 1) {
+                arg1 -= D_80090604;
+            } else {
+                arg1 -= offset;
+            }
+        }
+        {
+            s32 idx = arg0 * 4;
+            D_80090608 = (u16)D_800F6656;
+            ptr = (s32 *)((u8 *)&D_8009060C + idx);
+            func_8003DBE4(arg1, 0x1F, &light_effect_col, *ptr, *(s16 *)((u8 *)&StatusUpBuf + idx));
+            func_8003DBE4(arg1, 0x13, &D_800A4340, *ptr, *(s16 *)((u8 *)&StatusUpBuf + idx));
+        }
+    }
+}
 INCLUDE_ASM("asm/funcs", func_8003DBE4);
 void func_8003DDF8(u32 arg0) {
     u32 *ptr = (u32 *)D_800A378C;
