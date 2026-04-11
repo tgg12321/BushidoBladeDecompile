@@ -426,3 +426,33 @@ videoDecCreate: $2 <-> $3 @ 21-23
 func_80089E30: $2 <-> $3 @ 0-2
 func_80089E30: subst "\$2,\$3,\$zero" "$2,$0,$zero" @ 5
 func_80089E30: subst "\$5,\$3" "$5,$2" @ 9
+
+# Substs on ORIGINAL 0-based indices, inserts on original, reorders on post-insert
+# Loop 1: v0->v1 for hi computation
+
+
+# func_8001979C: bitfield extraction - v0/v1 swap, pointer offset, constant reorder
+# Substs on ORIGINAL 0-based indices, inserts on original, reorders on post-insert
+# Loop 1: v0->v1 for hi computation
+func_8001979C: subst "\$9,\$11,10" "$9,$11,$0" @ 16
+func_8001979C: subst "subu	\$2,\$10,\$7" "subu	$3,$10,$7" @ 19
+func_8001979C: subst "srl	\$2,\$6,\$2" "srlv	$3,$6,$3" @ 20
+func_8001979C: subst "subu	\$7,\$10,\$4" "subu	$2,$10,$4" @ 24
+func_8001979C: subst "sll	\$2,\$2,\$4" "sllv	$3,$3,$4" @ 25
+func_8001979C: subst "srl	\$3,\$6,\$7" "srlv	$2,$6,$7" @ 26
+func_8001979C: subst "or	\$2,\$2,\$3" "or	$3,$3,$2" @ 28
+func_8001979C: subst "sh	\$2,0\(\$9\)" "sh	$3,0xa($9)" @ 30
+func_8001979C: subst "sh	\$2,0\(\$9\)" "sh	$2,0xa($9)" @ 32
+func_8001979C: subst "\$9,\$11,142" "$9,$11,$0" @ 42
+func_8001979C: subst "subu	\$2,\$10,\$7" "subu	$3,$10,$7" @ 45
+func_8001979C: subst "srl	\$2,\$6,\$2" "srlv	$3,$6,$3" @ 46
+func_8001979C: subst "subu	\$7,\$10,\$4" "subu	$2,$10,$4" @ 50
+func_8001979C: subst "sll	\$2,\$2,\$4" "sllv	$3,$3,$4" @ 51
+func_8001979C: subst "srl	\$3,\$6,\$7" "srlv	$2,$6,$7" @ 52
+func_8001979C: subst "or	\$2,\$2,\$3" "or	$3,$3,$2" @ 54
+func_8001979C: subst "sh	\$2,0\(\$9\)" "sh	$3,0x8e($9)" @ 56
+func_8001979C: subst "sh	\$2,0\(\$9\)" "sh	$2,0x8e($9)" @ 58
+func_8001979C: insert "addu	$7,$2,$0" @ 25
+func_8001979C: insert "addu	$7,$2,$0" @ 51
+func_8001979C: reorder 15,14 @ 14-15
+func_8001979C: reorder 42,41 @ 41-42
