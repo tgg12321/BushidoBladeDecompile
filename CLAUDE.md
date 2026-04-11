@@ -218,7 +218,7 @@ Each agent tackles exactly ONE function stub. Up to 3 agents run in parallel, ea
 4. **No `make clean`.** Agents use incremental builds only (`make`). Only the orchestrator runs `make clean` for final verification.
 5. **Add missing symbols to `undefined_syms_auto.txt` if needed.** If a decompiled function references a global not yet in the symbol files, the agent should note it in its report. The orchestrator adds it on main before merging.
 6. **Do not push or merge to main.** Agents commit to their own worktree branch only. The orchestrator is responsible for all merges into main.
-7. **MINIMIZE TEXT OUTPUT.** Nobody reads agent prose. Do not narrate plans, explain reasoning, or summarize tool results between tool calls. Just act. The only text that matters is the audit log (terse: issue/fix/score) and the final report (bullet points: function, result, technique, commit hash). Target: <50K tokens per function.
+7. **MINIMIZE TEXT OUTPUT.** Nobody reads agent prose. Do not narrate plans, explain reasoning, or summarize tool results between tool calls. Just act. The only text that matters is the audit log (terse: issue/fix/score) and the final report (bullet points: function, result, technique, commit hash). Target: <100K tokens per function.
 
 ### Agent Pre-Screening (MANDATORY — before any decompilation attempt)
 
@@ -233,15 +233,18 @@ Before writing ANY C or running the permuter, agents MUST grep each target's asm
 
 ### Agent Spiral Prevention (MANDATORY)
 
-1. **Score regression = immediate revert.** If attempt N scores WORSE than attempt N-1, revert to the better version before trying anything else. Never build on a regression.
-2. **3 stagnant attempts = escalate.** If 3 consecutive attempts produce the same or worse score:
-   - Haven't run permuter yet → run permuter (120s max)
-   - Permuter already tried → try regfix if structural match is close
-   - Both tried → TABLE immediately
-3. **Permuter by attempt 5.** If manual attempts haven't matched by attempt 4, run the permuter. Don't wait until attempt 10.
-4. **Hard cap: 7 attempts without permuter, 10 total.** After 10 total attempts, TABLE unconditionally.
+**Token target: <100K tokens per function.** Waves 8-12 averaged ~120K — too high. Every rule below exists to cut waste.
 
-**Why this exists:** Wave 2 Agent 2 burned 6 consecutive attempts at identical score 1165. Agent 3 burned 5 attempts oscillating around score 650. Combined waste: ~80K tokens.
+1. **Score regression = immediate revert.** If attempt N scores WORSE than attempt N-1, revert to the better version before trying anything else. Never build on a regression.
+2. **Same score = stop trying C variants.** If 2 consecutive attempts produce the SAME score, the issue is register allocation, not C structure. GCC flattens different C structures (goto vs if/else vs switch) to identical code. Do NOT try a third C variant. Escalate immediately:
+   - Score > 200 → run permuter
+   - Score ≤ 200 → go straight to regfix
+3. **Permuter by attempt 3.** Run the permuter after attempt 2 if score > 200. Run the permuter after attempt 3 regardless. Manual attempts 4+ are ONLY allowed if the permuter already ran and you are applying or refining its output.
+4. **Hard cap: 5 attempts without permuter, 8 total.** After 8 total attempts, TABLE unconditionally.
+5. **Batch regfix — no iteration.** Before applying ANY regfix rules: dump maspsx intermediate output, count TEXT indices (pseudo-insns like `la`/`lb sym` = 1 each), and write ALL regfix rules in one batch. Apply once, test with `make` once. Do NOT iterate on regfix rules one at a time — each failed iteration wastes a full build cycle. If regfix doesn't match in 2 applications, TABLE.
+6. **Hypothesis before every attempt.** Before each attempt, write ONE LINE in the audit log: "HYPOTHESIS: [specific thing being tested]". If you cannot articulate a specific hypothesis, STOP and escalate.
+
+**Why this exists:** Wave 2 burned ~80K tokens on stagnant scores. Wave 12 averaged 136K tokens/func — agents tried 4+ C variants that all produced identical GCC output. Late permuter escalation and regfix iteration are the other major sinks.
 
 ### Agent Audit Logging (MANDATORY)
 
