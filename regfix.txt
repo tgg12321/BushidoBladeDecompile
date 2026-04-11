@@ -341,3 +341,25 @@ hirahira_w_frie: reorder 22,21 @ 21-22
 # hirahira_w_frie: fix srl/sll register (v0 -> s0)
 hirahira_w_frie: subst "\$2,\$16" "$16,$16" @ 35
 hirahira_w_frie: subst "\$16,\$2" "$16,$16" @ 36
+
+
+# title_mv_exec2: GCC hoists 0x18 and 1 into s2/s3, target only hoists 0xFF into s1
+# Remove s2/s3 saves, change sign-ext reg $3->$5 in loop, fresh load 0x18 and 1<<a1
+title_mv_exec2: $3 <-> $5 @ 26-32
+title_mv_exec2: subst "104" "96" @ 0
+title_mv_exec2: subst ",96\(" ",88(" @ 14
+title_mv_exec2: subst "sll\t\$3,\$18,\$3" "addiu	$3,$zero,24" @ 33
+title_mv_exec2: subst "\$19," "$3," @ 34
+title_mv_exec2: subst "sw\t\$3,16" "sw	$2,16" @ 41
+title_mv_exec2: subst ",96\(" ",88(" @ 53
+title_mv_exec2: subst "104" "96" @ 58
+title_mv_exec2: delete @ 15
+title_mv_exec2: delete @ 16
+title_mv_exec2: delete @ 23
+title_mv_exec2: delete @ 24
+title_mv_exec2: delete @ 54
+title_mv_exec2: delete @ 55
+title_mv_exec2: insert "sllv $2,$2,$5\n.set	noreorder" @ 36
+title_mv_exec2: insert "addiu $2,$zero,1" @ 36
+title_mv_exec2: reorder 3,4,5,1,2 @ 1-5
+title_mv_exec2: reorder 17,19,18,16 @ 16-19
