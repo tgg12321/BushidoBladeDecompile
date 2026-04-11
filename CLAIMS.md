@@ -59,3 +59,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac.c:func_800203B4 | Agent 43: Wave 16 — matched (GTE .word directives, 7 attempts) | 2026-04-11 | done — merged to main |
 | src/text1a.c:rob_life_ctrl | Agent 44: Wave 16 — matched (table lookups + regfix, 7 attempts) | 2026-04-11 | done — merged to main |
 | src/sound.c:func_80047BE0 | Agent 45: Wave 16 — matched (goto loops + regfix s1/s2 swap) | 2026-04-11 | done — merged to main |
+| src/code6cac_c.c:func_8003AE5C | Agent 46: Wave 17 — tabled (needs rodata split scaffolding) | 2026-04-11 | done — tabled |
+| src/code6cac.c:func_80019310 | Agent 47: Wave 17 — matched (GTE + regfix + insert_after, 6 attempts) | 2026-04-11 | done — merged to main |
+| src/text1a.c:saTan0Init | Agent 48: Wave 17 — matched (permuter + regfix delete/insert, 6 attempts) | 2026-04-11 | done — merged to main |
