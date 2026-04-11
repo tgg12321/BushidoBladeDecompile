@@ -215,3 +215,15 @@ damage_DebugDisp: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
 damage_DebugDisp: insert "nop" @ 53
 # damage_DebugDisp: reorder sw before k=0 (post-insert TEXT 54-55)
 damage_DebugDisp: reorder 55,54 @ 54-55
+
+# func_800453E0: addu operand order - GCC puts base(s2/s3) first, target has offset(v0) first
+func_800453E0: subst "\$7,\$18,\$2" "$7,$2,$18" @ 33
+func_800453E0: subst "\$6,\$19,\$2" "$6,$2,$19" @ 34
+# func_800453E0: copy loop body scheduling - reorder to match original compiler
+# Target order: all stores, dst advance, reload count, counter++, slt, bnez, src advance(delay)
+func_800453E0: reorder 40,43,44,45,48,41,39,46,47,42 @ 39-48
+# func_800453E0: clear section - neg1 in v1($3) not a0($4), shift in a0($4) not v1($3)
+func_800453E0: subst "\$4,\$zero,-1" "$3,$zero,-1" @ 50
+func_800453E0: subst "sll	\$3,\$2,4" "sll	$4,$2,4" @ 52
+func_800453E0: subst "sh	\$4,D_800EED10\(\$3\)" "sh	$3,D_800EED10($4)" @ 53
+func_800453E0: subst "D_800EED1C\(\$3\)" "D_800EED1C($4)" @ 54
