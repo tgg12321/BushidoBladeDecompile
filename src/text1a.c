@@ -882,8 +882,67 @@ void func_80044100(s32 a0, s32 a1) {
 INCLUDE_ASM("asm/funcs", func_80044170);
 INCLUDE_ASM("asm/funcs", hirahira_w_frie);
 /* kengo:MED  |  my_hirahira/hirahira_w_frie  |  59i */
-INCLUDE_ASM("asm/funcs", calc_fc_frame);
-/* kengo:MED  |  se_fc/calc_fc_frame  |  72i */
+extern void func_800520B8(s32, s32, s32);
+s32 calc_fc_frame(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
+    s16 *fp;
+    s16 *scan;
+    s32 *orig_dest;
+    s32 *dest;
+    s32 val;
+    s32 data_ptr;
+    s32 sentinel;
+    s32 count;
+    s32 *src_ptr;
+    s32 start;
+    s32 size;
+
+    fp = frame_offsets;
+    orig_dest = dest_arr;
+    count = 0;
+    scan = fp + 1;
+    dest = dest_arr;
+
+    val = *fp;
+    if (val != -2) {
+        do {
+            if (val >= 0) {
+                count++;
+            }
+            val = *scan;
+            scan++;
+        } while (val != -2);
+    }
+
+    *dest = count;
+    dest++;
+    src_base += 4;
+    data_ptr = (s32)orig_dest + (count + 2) * 4;
+
+    val = *fp;
+    if (val != -2) {
+        fp++;
+        sentinel = -2;
+        src_ptr = (s32 *)src_base;
+        do {
+            if (val >= 0) {
+                size = src_ptr[1];
+                start = *src_ptr;
+                *dest = data_ptr - (s32)orig_dest;
+                dest++;
+                size = size - start;
+                func_800520B8(src_base + start, data_ptr, size);
+                size = ((u32)size >> 2) << 2;
+                data_ptr += size;
+            }
+            src_ptr++;
+            val = *fp;
+            fp++;
+        } while (val != sentinel);
+    }
+
+    *dest = data_ptr - (s32)orig_dest;
+    return data_ptr;
+}
 extern s16 D_8010367E;
 void func_80044498(void) {
     s32 i = 0x13;
