@@ -9,6 +9,7 @@
 extern s16 D_800EED10[];
 extern s32 D_800EED1C[];
 extern s32 D_800EED18;
+extern s32 D_800EED00[];
 extern s32 D_800A33AC;
 extern s32 D_800A33A0;
 extern s32 D_800A33A4;
@@ -1494,7 +1495,83 @@ void func_80045230(s32 a0) {
     }
 }
 INCLUDE_ASM("asm/funcs", saTan0Init);
-INCLUDE_ASM("asm/funcs", func_800453E0);
+void func_800453E0(s32 a0) {
+    s32 s0 = 0;
+    s32 s1;
+    s32 *s2;
+    s32 *s3;
+    s32 v1;
+    s32 t0;
+    volatile s32 sp_pad;
+    s32 v0;
+
+    v0 = D_800A33AC;
+    if (v0 <= 0) goto L_exit;
+
+    s2 = D_800EED00;
+    s3 = s2 + 4;
+    v1 = 0;
+
+L_search:
+    v0 = *(s16 *)((u8 *)D_800EED10 + v1);
+    if (v0 != a0) goto L_not_found;
+
+    s1 = s0 + 1;
+    saTan0Init(s1, -(*(s32 *)((u8 *)&D_800EED18 + v1)));
+
+    {
+        s32 v1b = D_800A33AC;
+        s32 v0b = v1b - 1;
+        if (s0 >= v0b) goto L_clear;
+        t0 = s1;
+        if (t0 >= v1b) goto L_clear;
+
+        {
+            s32 *a3p = t0 * 4 + s2;
+            s32 *a2p = t0 * 4 + s3;
+L_copy:
+            {
+                s32 w0 = a2p[0];
+                s32 w1 = a2p[1];
+                s32 w2 = a2p[2];
+                s32 w3 = a2p[3];
+                a3p[0] = w0;
+                a3p[1] = w1;
+                a3p[2] = w2;
+                a3p[3] = w3;
+                a3p += 4;
+                v0 = D_800A33AC;
+                t0++;
+                a2p += 4;
+                if (t0 < v0) goto L_copy;
+            }
+        }
+    }
+
+L_clear:
+    {
+        s32 cnt;
+        s32 neg1;
+        s32 shift;
+        cnt = D_800A33AC;
+        neg1 = -1;
+        cnt--;
+        shift = cnt << 4;
+        *(s16 *)((u8 *)D_800EED10 + shift) = neg1;
+        *(s32 *)((u8 *)D_800EED1C + shift) = 0;
+        D_800A33AC = cnt;
+    }
+    goto L_exit;
+
+L_not_found:
+    v0 = D_800A33AC;
+    s0++;
+    v1 += 0x10;
+    if (s0 < v0) goto L_search;
+
+L_exit:
+    return;
+}
 void func_80045510(s32 a0, s32 a1) {
     volatile s32 sp_pad;
     s32 i = 0;
