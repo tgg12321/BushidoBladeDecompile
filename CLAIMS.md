@@ -47,3 +47,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/main.c:saEft03Start2 | Agent 31: Wave 12 — matched (goto + regfix, split func_80089E30) | 2026-04-11 | done — merged to main |
 | src/code6cac_b.c:cpu_check_tubazeri_2 | Agent 32: Wave 12 — matched (goto + 9 regfix subst) | 2026-04-11 | done — merged to main |
 | src/text1a.c:videoDecCreate | Agent 33: Wave 12 — matched (goto + regfix) | 2026-04-11 | done — merged to main |
+| src/main.c:func_80089E30 | Agent 34: Wave 13 | 2026-04-11 | active |
+| src/text1a.c:func_800466C0 | Agent 35: Wave 13 | 2026-04-11 | active |
+| src/code6cac_b.c:cpu_check_tubazeri | Agent 36: Wave 13 | 2026-04-11 | active |
