@@ -36,6 +36,7 @@ extern s32 D_800A3378;
 extern u8 D_800A9830;
 extern u8 D_800A9920;
 extern u16 D_80094AF4;
+extern u8 D_80094B48[];
 extern void initLoadImage(s32, s16 *, s32, s32);
 
 void PutShadowRmd(s32 a0, s32 a1, s32 a2) {
@@ -73,7 +74,49 @@ void PutShadowRmd(s32 a0, s32 a1, s32 a2) {
         ot[0x3FFC / 4] = (ot[0x3FFC / 4] & 0xFF000000) | ((s32)pkt & 0xFFFFFF);
     }
 }
-INCLUDE_ASM("asm/funcs", func_80040304);
+void func_80040304(s32 a0, s32 a1) {
+    s32 ptr;
+    s32 mask;
+    s32 i;
+
+    ptr = func_8004153C(a0);
+    if (ptr != 0) {
+        switch (a1) {
+        case 0:
+            mask = 0x05;
+            break;
+        case 1:
+            mask = 0x09;
+            break;
+        case 2:
+            mask = 0x11;
+            break;
+        case 3:
+            mask = 0x06;
+            break;
+        case 4:
+            mask = 0x0A;
+            break;
+        case 5:
+            mask = 0x12;
+            break;
+        case 6:
+            PutShadowRmd(a0, 5);
+            PutShadowRmd(a0, 6);
+            mask = 0;
+            break;
+        }
+        mask = mask & D_80094B48[*(s16 *)(ptr + 8)];
+        i = 0;
+        do {
+            if (mask & 1) {
+                PutShadowRmd(a0, 4 - i);
+            }
+            i++;
+            mask >>= 1;
+        } while (i < 5);
+    }
+}
 void func_80040400(s32 *a0, s16 *a1, s16 a2) {
     s32 v0;
     if (a1[1] == -1) {
