@@ -411,3 +411,11 @@ cpu_check_tubazeri_2: subst "\$18,\$16,\$4" "$18,$2,$16" @ 25
 cpu_check_tubazeri_2: subst "addu	\$3,\$18,818" "addu	$3,$18,$zero" @ 37
 cpu_check_tubazeri_2: subst "lhu	\$2,2\(\$3\)" "lhu	$2,820($3)" @ 38
 cpu_check_tubazeri_2: subst "sh	\$2,0\(\$3\)" "sh	$2,818($3)" @ 40
+
+# func_800432A0 (videoDecCreate): v0/v1 swap and reorder in la addr computations,
+# stack offset fix for 5th arg (lhu 66 -> 64)
+videoDecCreate: subst "66" "64" @ 18
+videoDecCreate: reorder 11,10,12 @ 10-12
+videoDecCreate: reorder 22,21,23 @ 21-23
+videoDecCreate: $2 <-> $3 @ 10-12
+videoDecCreate: $2 <-> $3 @ 21-23

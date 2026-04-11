@@ -628,14 +628,31 @@ s32 func_80043278(s32 a0) {
     v0 = v0 >> a0_new;
     return v0 & 0xFFF;
 }
-INCLUDE_ASM("asm/funcs", videoDecCreate);
-extern void func_800432A0(s16, s16, s16, s16, s16);
-void func_80043398(s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
-    func_800432A0(a0, (s16)(a1 << 6), (s16)(a2 << 8), (s16)(a3 << 6), (s16)(a4 << 8));
-}
 extern s32 *D_80103608[];
 extern u16 D_80103658[];
 extern void func_80043454(s32, s16, s16, s16);
+void videoDecCreate(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4) {
+    u16 *countPtr;
+    s16 i;
+
+    countPtr = &D_80103658[arg0];
+    i = 0;
+    if (*countPtr == 0) goto done;
+    {
+        s32 **basePtr = &D_80103608[arg0];
+        u16 *cntPtr = countPtr;
+    loop:
+        *(s32 *)0x1F800000 = (*basePtr)[(s16)i];
+        func_80043454((s16)arg1, (s16)arg2, (s16)arg3, (s16)arg4);
+        i++;
+        if ((s16)i < *cntPtr) goto loop;
+    }
+    done:
+    ;
+}
+void func_80043398(s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
+    videoDecCreate(a0, (s16)(a1 << 6), (s16)(a2 << 8), (s16)(a3 << 6), (s16)(a4 << 8));
+}
 void func_800433E4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
     *(s32 *)0x1F800000 = D_80103608[arg0][arg1];
     func_80043454(arg2, arg3, arg4, arg5);
