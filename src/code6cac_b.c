@@ -112,6 +112,9 @@ extern u8 D_80106A73;
 extern s32 *func_80077D00(void);
 extern s16 D_80101ED6;
 extern s32 g_file_disc_size;
+extern s32 func_8002BC68(s32 a0);
+extern void func_8001F860(s16 *arg0, s32 arg1);
+extern void calc_loc_mat_fw(s32 a0);
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 INCLUDE_RODATA("asm/rodata", jtbl_8001042C);
@@ -447,7 +450,64 @@ INCLUDE_ASM("asm/funcs", calc_loc_mat_fw);
 /* kengo:MED  |  se_fc/calc_loc_mat_fw  |  1074i  |  -38 3.5% no-affinity fallback */
 INCLUDE_ASM("asm/funcs", func_8002BC68);
 INCLUDE_ASM("asm/funcs", func_8002BEA0);
-INCLUDE_ASM("asm/funcs", func_8002C0DC);
+void func_8002C0DC(void) {
+    register s32 var_s1 asm("s1");
+    register u8 *var_s0 asm("s0");
+    register s32 temp_s2 asm("s2");
+
+    var_s1 = 0;
+    var_s0 = &D_80101EC8;
+    temp_s2 = func_8002BC68(D_800A371C);
+
+    do {
+        u8 *ptr;
+        s32 arg1, arg2;
+        var_s1++;
+        ptr = *(u8 **)var_s0;
+        arg1 = *(s32 *)(var_s0 + 0xD8);
+        arg2 = *(s32 *)(var_s0 + 0xE0);
+        arg1 = *(s32 *)(ptr + 0xD8) - arg1;
+        arg2 = *(s32 *)(ptr + 0xE0) - arg2;
+        func_8001F860((s16 *)var_s0, func_8007FD5C(arg1, arg2));
+        var_s0 += 0x44C;
+    } while (var_s1 < 2);
+
+    {
+        s32 idx;
+        s32 chk;
+        idx = D_800A38AE;
+        chk = D_800A376E;
+        var_s0 = &D_80101EC8 + idx * 0x44C;
+
+        if (chk == 0) {
+            if (D_800A3758 == 0xFF) {
+                if (*(u8 *)(var_s0 + 0xAA) == *(s16 *)(var_s0 + 0x40)) {
+                    calc_loc_mat_fw(1);
+                }
+            }
+        }
+
+        {
+            s32 v1;
+            v1 = *(s16 *)(var_s0 + 0x40);
+            if (v1 < (s32)D_800A38E8) {
+                return;
+            }
+            if (v1 >= *(u8 *)(var_s0 + 0xAA)) {
+                return;
+            }
+            if (D_800A371C + 0xC8 >= temp_s2) {
+                return;
+            }
+            {
+                u8 *v1ptr;
+                v1ptr = *(u8 **)var_s0;
+                *(s16 *)(var_s0 + 0x286) = 4;
+                *(s16 *)(v1ptr + 0x286) = 5;
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/funcs", PutRobShadow);
 /* kengo:MED  |  am_rmd/PutRobShadow  |  252i */
 INCLUDE_ASM("asm/funcs", func_8002C61C);
