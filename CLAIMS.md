@@ -26,3 +26,24 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | include/*.h, src/*.c | Item 5: magic number constants | 2026-04-10 | done — merged to main |
 | src/*.c, asm/ | Item 6: 76 function renames (gpu/display/main) | 2026-04-10 | done — merged to main |
 | src/*.c, asm/, regfix.txt | Item 6b: 30 config.c/system.c renames + regfix | 2026-04-10 | done |
+| src/text1a.c:func_80044B30 | Agent 13: matched | 2026-04-10 | done — merged to main |
+| src/code6cac_c.c:pad_ClearAppliBuffer | Agent 14: matched (regfix 23 ops) | 2026-04-10 | done — merged to main |
+| src/main.c:md_game_check_change_main_mode_katinuki | Agent 15: matched | 2026-04-10 | done — merged to main |
+| src/text1a.c:func_80040304 | Agent 16: matched (1 attempt, rodata split) | 2026-04-10 | done — merged to main |
+| src/main.c:saTan4GaugeInit | Agent 17: matched (4 attempts, regfix 15 ops) | 2026-04-10 | done — merged to main |
+| src/code6cac_c2.c:tslLineG5Init | Agent 18: matched (4 attempts, regfix) | 2026-04-10 | done — merged to main |
+| src/code6cac_b.c:func_80034F88 | Agent 19: matched (30 regfix rules) | 2026-04-10 | done — merged to main |
+| src/main.c:func_80087CAC | Agent 20: matched (+ func_80087E30, func_80087F30) | 2026-04-10 | done — merged to main |
+| src/text1a.c:func_80044170 | Agent 21: matched | 2026-04-10 | done — merged to main |
+| src/code6cac_b.c:func_800278C0 | Agent 22: matched (7 attempts, regfix) | 2026-04-10 | done — merged to main |
+| src/text1a.c:calc_fc_frame | Agent 23: matched (permuter + regfix 10 rules) | 2026-04-10 | done — merged to main |
+| src/code6cac_c.c:func_8003A450 | Agent 24: matched (7 attempts, goto + regfix) | 2026-04-10 | done — merged to main |
+| src/text1a.c:hirahira_w_frie | Agent 25: matched (6 attempts, permuter + regfix) | 2026-04-11 | done — merged to main |
+| src/main.c:title_mv_exec2 | Agent 26: matched (5 attempts, regfix 18 rules + regfix.py fix) | 2026-04-11 | done — merged to main |
+| src/code6cac_b.c:func_80030208 | Agent 27: matched (4 attempts, goto + regfix) | 2026-04-11 | done — merged to main |
+| src/text1a.c:func_800453E0 | Agent 28 (Sonnet): matched (regfix) | 2026-04-11 | done — merged to main |
+| src/main.c:saEft03Start2 | Agent 29 (Sonnet): inline asm (not real decomp) | 2026-04-11 | rejected — needs C decomp |
+| src/code6cac_b.c:func_8002C0DC | Agent 30 (Sonnet): matched (register asm + regfix) | 2026-04-11 | done — merged to main |
+| src/main.c:saEft03Start2 | Agent 31: Wave 12 — matched (goto + regfix, split func_80089E30) | 2026-04-11 | done — merged to main |
+| src/code6cac_b.c:cpu_check_tubazeri_2 | Agent 32: Wave 12 — matched (goto + 9 regfix subst) | 2026-04-11 | done — merged to main |
+| src/text1a.c:videoDecCreate | Agent 33: Wave 12 — matched (goto + regfix) | 2026-04-11 | done — merged to main |
