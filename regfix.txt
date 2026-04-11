@@ -215,3 +215,18 @@ damage_DebugDisp: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
 damage_DebugDisp: insert "nop" @ 53
 # damage_DebugDisp: reorder sw before k=0 (post-insert TEXT 54-55)
 damage_DebugDisp: reorder 55,54 @ 54-55
+
+
+# calc_fc_frame: register + prologue + scheduling fixes
+# Indices are CORRECT — nop debug lines at [20] and [23] are counted as instructions
+calc_fc_frame: $20 <-> $21 @ 8-8
+calc_fc_frame: $20 <-> $21 @ 18-18
+calc_fc_frame: $4 <-> $5 @ 6-6
+calc_fc_frame: $4 <-> $5 @ 22-22
+calc_fc_frame: $4 <-> $5 @ 25-25
+calc_fc_frame: subst "\$22" "$4" @ 37
+calc_fc_frame: subst "\$2,\$16" "$16,$16" @ 49
+calc_fc_frame: subst "\$16,\$2" "$16,$16" @ 50
+calc_fc_frame: delete @ 34
+calc_fc_frame: insert "addiu $4,$4,4" @ 28
+calc_fc_frame: reorder 9,8,1,2,5,6,3,4,7 @ 1-9
