@@ -105,6 +105,7 @@ extern s32 g_pad_data;
 extern u16 D_80101E02;
 extern u16 D_80101E04;
 extern s16 D_80101ED6;
+extern u8 D_800F1B18[];
 extern s32 g_file_disc_size;
 extern s32 replay_camera_Init(s32, s32);
 extern s32 func_80079154(s32);
@@ -254,7 +255,73 @@ void func_80019534(void) {
     D_8010278E = 1;
 }
 INCLUDE_ASM("asm/funcs", single_game_VoiceContorol);
-INCLUDE_ASM("asm/funcs", func_8001979C);
+void func_8001979C(s32 arg0, u32 *arg1) {
+    s32 bits_left;
+    u32 base;
+    s32 i;
+    u32 cur;
+    u32 hi;
+    s32 needed;
+    u32 dst;
+    s32 val;
+
+    bits_left = 0x20;
+    base = (u32)&D_800F1B18[arg0 * 0x570];
+
+    *(u32 **)base = arg1;
+    cur = *arg1;
+    arg1++;
+
+    i = 0;
+    dst = base;
+    do {
+        if (bits_left < 0xC) {
+            hi = cur >> (0x20 - bits_left);
+            cur = *arg1;
+            arg1++;
+            needed = 0xC - bits_left;
+            bits_left = 0x20 - needed;
+            *(s16 *)(dst + 0xA) = (s16)((hi << needed) | (cur >> bits_left));
+            cur <<= needed;
+        } else {
+            *(s16 *)(dst + 0xA) = (s16)(cur >> 20);
+            cur <<= 0xC;
+            bits_left -= 0xC;
+        }
+        i++;
+        dst += 2;
+    } while (i < 0x3F);
+
+    i = 0;
+    dst = base;
+    do {
+        if (bits_left < 2) {
+            hi = cur >> (0x20 - bits_left);
+            cur = *arg1;
+            arg1++;
+            needed = 2 - bits_left;
+            bits_left = 0x20 - needed;
+            *(s16 *)(dst + 0x8E) = (s16)((hi << needed) | (cur >> bits_left));
+            cur <<= needed;
+        } else {
+            *(s16 *)(dst + 0x8E) = (s16)(cur >> 30);
+            cur <<= 2;
+            bits_left -= 2;
+        }
+        i++;
+        dst += 2;
+    } while (i < 0x3F);
+
+    val = -2;
+    i = 3;
+    dst = base + 0x348;
+    do {
+        *(s32 *)(dst + 0x110) = val;
+        i--;
+        dst -= 0x118;
+    } while (i >= 0);
+    *(s32 *)(base + 0x10C) = 0;
+}
 INCLUDE_ASM("asm/funcs", func_800198D0);
 void func_8001A484(u16 *arg0) {
     s32 i;
