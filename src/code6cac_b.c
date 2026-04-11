@@ -446,7 +446,56 @@ INCLUDE_ASM("asm/funcs", coli_check_circle_hit_line);
 /* kengo:HIGH  |  is_coli/coli_check_circle_hit_line  |  92i */
 INCLUDE_ASM("asm/funcs", func_8002FF20);
 INCLUDE_ASM("asm/funcs", func_800300B4);
-INCLUDE_ASM("asm/funcs", func_80030208);
+void func_80030208(void) {
+    u8 *base;
+    s32 i;
+    u8 *p;
+    s16 v1;
+    s32 lookup;
+    u8 *ptr1;
+    u8 *ptr0;
+
+    base = (u8 *)&D_80106A78;
+    i = 0;
+    p = base + 0xA;
+loop:
+    v1 = *(s16 *)(p - 8);
+    if (v1 == -1) goto increment;
+    if (*(u8 *)(p - 2) != 0) {
+        func_800300B4(base);
+        i++;
+        goto next;
+    }
+    if (*(s16 *)base < 2) goto increment;
+
+    lookup = (&D_8008EB80)[v1];
+    if ((u16)(v1 - 0x12) < 0xC) {
+        lookup = *(u8 *)(p + 1);
+        goto call_funcs;
+    }
+    if (v1 != 0xE) {
+        goto call_funcs;
+    }
+    if (*(u8 *)(p - 5) != 2) {
+        goto call_with_a1;
+    }
+    lookup += 3;
+
+call_funcs:
+    ;
+call_with_a1:
+    ptr1 = base + 0x2C;
+    ptr0 = base + 0x54;
+    func_80049718(lookup, 1, ptr1, ptr0);
+    saSeInit_2(*(u8 *)p, lookup, ptr1, ptr0);
+
+increment:
+    i++;
+next:
+    p += 0x64;
+    base += 0x64;
+    if (i < 12) goto loop;
+}
 void cpu_get_dist(s32 *a0, s16 *a1) {
     s32 angle;
     s16 cos_val;

@@ -215,3 +215,6 @@ damage_DebugDisp: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
 damage_DebugDisp: insert "nop" @ 53
 # damage_DebugDisp: reorder sw before k=0 (post-insert TEXT 54-55)
 damage_DebugDisp: reorder 55,54 @ 54-55
+# func_80030208: GCC drops la for D_80106A78 in full compilation unit
+func_80030208: insert "la $20,D_80106A78" @ 2
+func_80030208: reorder 5,10,6,7,8,9 @ 5-10
