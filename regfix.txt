@@ -215,3 +215,19 @@ damage_DebugDisp: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
 damage_DebugDisp: insert "nop" @ 53
 # damage_DebugDisp: reorder sw before k=0 (post-insert TEXT 54-55)
 damage_DebugDisp: reorder 55,54 @ 54-55
+# func_8002C0DC: reorder ptr load before field_D8 load in loop body (TEXT 11-12)
+func_8002C0DC: reorder 12,11 @ 11-12
+# func_8002C0DC: fix post-loop multiply register allocation (TEXT 25-36)
+# GCC allocated $2/$3/$16, target uses $3/$4/$2
+func_8002C0DC: subst "\$2,D_800A38AE" "$3,D_800A38AE" @ 25
+func_8002C0DC: subst "\$3,D_800A376E" "$4,D_800A376E" @ 26
+func_8002C0DC: subst "sll\t\$16,\$2," "sll $2,$3," @ 27
+func_8002C0DC: subst "addu\t\$16,\$16,\$2" "addu $2,$2,$3" @ 28
+func_8002C0DC: subst "\$16,\$16,2" "$2,$2,2" @ 29
+func_8002C0DC: subst "addu\t\$16,\$16,\$2" "addu $2,$2,$3" @ 30
+func_8002C0DC: subst "\$16,\$16,2" "$2,$2,2" @ 31
+func_8002C0DC: subst "subu\t\$16,\$16,\$2" "subu $2,$2,$3" @ 32
+func_8002C0DC: subst "\$16,\$16,2" "$2,$2,2" @ 33
+func_8002C0DC: subst "\$2,D_80101EC8" "$3,D_80101EC8" @ 34
+func_8002C0DC: subst "bne\t\$3,\$0," "bne $4,$0," @ 35
+func_8002C0DC: subst "addu\t\$16,\$16,\$2" "addu $16,$2,$3" @ 36
