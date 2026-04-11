@@ -92,7 +92,7 @@ def load_config(config_path):
         m = re.match(r'(\w+)\s*:\s*insert\s+"([^"]+)"\s*@\s*(\d+)', line)
         if m:
             func = m.group(1)
-            asm_text = m.group(2)
+            asm_text = m.group(2).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(3))
             config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
             config[func]['inserts'].append((idx, asm_text))
@@ -103,7 +103,7 @@ def load_config(config_path):
         if m:
             func = m.group(1)
             pattern = m.group(2)
-            replacement = m.group(3)
+            replacement = m.group(3).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(4))
             config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'substs': [], 'deletes': []})
             config[func]['substs'].append((idx, pattern, replacement))
