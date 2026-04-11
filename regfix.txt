@@ -299,3 +299,9 @@ pad_ClearAppliBuffer: subst "\.L244" ".L249" @ 74
 pad_ClearAppliBuffer: subst "\$3,\$0" "$2,$0" @ 75
 pad_ClearAppliBuffer: subst "\$3,\$zero" "$2,$zero" @ 76
 pad_ClearAppliBuffer: delete @ 79
+
+# tslLineG5Init: fix playerCount branch direction and register
+tslLineG5Init: subst "beq" "bne" @ 17
+tslLineG5Init: subst "\$4,\$zero,26000" "$2,$zero,22000" @ 18
+tslLineG5Init: subst "\$4,\$zero,22000" "$2,$zero,26000" @ 19
+tslLineG5Init: subst "\$4,\$4,\$18" "$4,$2,$18" @ 20
