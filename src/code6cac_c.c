@@ -1019,7 +1019,76 @@ INCLUDE_ASM("asm/funcs", func_8003A450);
 void func_8003A574(void) {
     func_800789F8(D_800A3734, &D_800A3688, 8);
 }
-INCLUDE_ASM("asm/funcs", pad_ClearAppliBuffer);
+extern s32 D_800A38D0;
+s32 pad_ClearAppliBuffer(void) {
+    s32 s0;
+    s32 s1;
+    s32 a1;
+    s32 a0;
+    s32 v0;
+
+    s1 = 0;
+    s0 = func_80078B04(0xF2000001);
+    if (s0 >= 0x401) {
+        goto overflow;
+    }
+    goto loop_check;
+overflow:
+    func_80078BA8(0xF2000001);
+    s0 = 0;
+loop_check:
+    if (func_80078998(D_800A3738) != 0) {
+        goto success;
+    }
+    if (func_80078998(D_800A3810) == 0) {
+        goto poll;
+    }
+    s1 += 1;
+    if (s1 >= 5) {
+        goto ret0_tramp;
+    }
+    func_8008C464(2, 0, 0);
+    s0 = 0;
+    func_8003A574();
+    func_80078BA8(0xF2000001);
+poll:
+    v0 = (func_8008C464(0, 0, 0) >> 7) & 3;
+    if (v0 == 1) {
+        goto loop_check;
+    }
+    v0 = func_80078B04(0xF2000001) - s0;
+    if (v0 < 0x3C01) {
+        goto loop_check;
+    }
+    s1 += 1;
+    v0 = 0;
+    if (s1 >= 5) {
+        goto epilogue;
+    }
+    goto overflow;
+success:
+    a1 = D_800A3688;
+    a0 = D_800A368C;
+    v0 = a1 >> 16;
+    v0 = v0 ^ a1;
+    v0 = v0 ^ (a0 >> 16);
+    v0 = v0 & 0xFFFF;
+    if ((a0 & 0xFFFF) == v0) {
+        goto match;
+    }
+    v0 = 0;
+    D_800A38D0 += 1;
+    goto epilogue;
+ret0_tramp:
+    v0 = 0;
+    goto epilogue;
+match:
+    v0 = 1;
+    D_800A36C0 = a1;
+    D_800A36C4 = a0;
+epilogue:
+    return v0;
+}
 /* kengo:HIGH  |  is_pad/pad_ClearAppliBuffer  |  87i */
 s32 func_8003A6FC(u32 arg0) {
     s32 count = 0;
