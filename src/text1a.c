@@ -922,7 +922,51 @@ void func_80044100(s32 a0, s32 a1) {
         } while (count != -1);
     }
 }
-INCLUDE_ASM("asm/funcs", func_80044170);
+extern void func_800520B8(s32, s32, s32);
+s32 func_80044170(s32 *a0, ...) {
+    s32 *base;
+    s32 old_first;
+    s32 count;
+    s32 *slots;
+    s32 *varptr;
+    s32 dest;
+    s32 entry;
+    s32 size;
+
+    base = a0;
+    old_first = *base;
+    count = *(s32 *)((s32)&a0 + 4);
+    a0 = base + 1;
+    *base = count;
+    slots = a0;
+    dest = (s32)base + *slots;
+    count--;
+    varptr = (s32 *)((s32)&a0 + 8);
+    if (count != -1) {
+        do {
+            s32 *tbl;
+            s32 cur_off;
+
+            varptr++;
+            entry = *(varptr - 1);
+            if (entry >= old_first) {
+                func_80052C10();
+            }
+            count--;
+            tbl = (s32 *)((entry * 4) + (s32)(*(volatile s32 **)&a0));
+            cur_off = *tbl;
+            size = *(tbl + 1);
+            *slots = dest - (s32)base;
+            slots++;
+            size = size - cur_off;
+            func_800520B8((s32)base + cur_off, dest, size);
+            size = (s32)(((u32)size >> 2) * 4);
+            dest += size;
+        } while (count != -1);
+    }
+    *slots = dest - (s32)base;
+    return dest;
+}
 INCLUDE_ASM("asm/funcs", hirahira_w_frie);
 /* kengo:MED  |  my_hirahira/hirahira_w_frie  |  59i */
 INCLUDE_ASM("asm/funcs", calc_fc_frame);
