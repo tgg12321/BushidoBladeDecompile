@@ -230,7 +230,64 @@ void func_80027438(u8 *a0, s32 a1, s16 a2) {
 INCLUDE_ASM("asm/funcs", func_800274BC);
 INCLUDE_ASM("asm/funcs", cpu_side_move_dir);
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir  |  160i  |  x4 size collision */
-INCLUDE_ASM("asm/funcs", func_800278C0);
+extern s32 func_80032854(s32, s32, u8 *, s16 *);
+void func_800278C0(s32 a0, s32 *ptr, s32 cmd, s32 a3, u8 *stack_a2, s32 stack_v1) {
+    s32 v1_obj;
+    u8 *arg_a2 = stack_a2;
+    s32 arg_v1 = stack_v1;
+
+    if (a0 == 1) {
+        return;
+    }
+
+    if (arg_v1 != 0) {
+        v1_obj = *ptr;
+        cmd = 0x2B;
+        goto call_with_field4;
+    }
+
+    v1_obj = *ptr;
+    {
+        s16 f86 = *(s16 *)(v1_obj + 0x86);
+        s16 f8E = *(s16 *)(v1_obj + 0x8E);
+
+        if (f86 == f8E) {
+            a0 = *(s16 *)(v1_obj + 0x4);
+            cmd = 0x28;
+            goto do_call;
+        }
+
+        {
+            s16 f88 = *(s16 *)(v1_obj + 0x88);
+            if (f86 == f88 && a3 != 0) {
+                a0 = *(s16 *)(v1_obj + 0x4);
+                cmd = 0x27;
+                goto do_call;
+            }
+        }
+    }
+
+    if (cmd == 0) {
+        v1_obj = *ptr;
+        cmd = 0x22;
+        goto call_with_field4;
+    }
+
+    if (cmd < 6) {
+        cmd = 0x23;
+        v1_obj = *ptr;
+        goto call_with_field4;
+    }
+
+    v1_obj = *ptr;
+    cmd = 0x24;
+
+call_with_field4:
+    a0 = *(s16 *)(v1_obj + 0x4);
+
+do_call:
+    func_80032854(a0, cmd, arg_a2, (s16 *)0);
+}
 /* TABLED: -16 bytes. 6 params, prologue register shuffling (t0/a1/a2/v1 reorder), lhu+sll+sra vs lh. */
 s32 func_8002798C(u8 *a0) {
     s32 ret = 0;

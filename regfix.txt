@@ -215,3 +215,20 @@ damage_DebugDisp: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
 damage_DebugDisp: insert "nop" @ 53
 # damage_DebugDisp: reorder sw before k=0 (post-insert TEXT 54-55)
 damage_DebugDisp: reorder 55,54 @ 54-55
+
+# func_800278C0 (camera_SetMatrix): ptr v1->t0, 6th param t0->v1
+func_800278C0: $3 <-> $8
+# obj/f86 register rotation in field-check section
+func_800278C0: $3 <-> $4 @ 13-29
+# fix overswapped lh dest at indices 20 and 29
+func_800278C0: subst "\$3," "$4," @ 20
+func_800278C0: subst "\$3," "$4," @ 29
+# *ptr load dest a0->v0 at branch-entry loads
+func_800278C0: subst "\$4," "$2," @ 10
+func_800278C0: subst "\$4," "$2," @ 34
+func_800278C0: subst "\$4," "$2," @ 39
+func_800278C0: subst "\$4," "$2," @ 42
+# call_with_field4 base reg a0->v0
+func_800278C0: subst "4\(\$4\)" "4($2)" @ 44
+# reorder stack param loads (5th before 6th)
+func_800278C0: reorder 4,3 @ 3-4
