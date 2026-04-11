@@ -889,7 +889,46 @@ store_v1:
 exit_load:
     return D_800A287C;
 }
-INCLUDE_ASM("asm/funcs", func_80089E30);
+s32 func_80089E30(u32 a0) {
+    register s32 shift asm("v0");
+    register s32 entry asm("v1");
+    register u32 *p asm("a1");
+    register u32 t0 asm("t0");
+    register u32 a3reg asm("a3");
+    register u32 a2 asm("a2");
+
+    entry = g_spu_voice_key_c;
+    if (entry != 0) goto body;
+    shift = 0;
+    goto end;
+body:
+    t0 = 0x80000000U;
+    a3reg = 0x40000000U;
+    a2 = 0x0FFFFFFFU;
+    p = (u32 *)entry;
+loop:
+    entry = p[0];
+    if (entry & t0) goto iter;
+    if (entry & a3reg) goto ret0;
+    entry &= a2;
+    if ((u32)entry >= a0) {
+        shift = 1;
+        goto end;
+    }
+    shift = p[1];
+    shift = (s32)((u32)entry + (u32)shift);
+    if (a0 < (u32)shift) {
+        shift = 1;
+        goto end;
+    }
+iter:
+    p += 2;
+    goto loop;
+ret0:
+    __asm__ volatile("move $2,$0" : "=r"(shift));
+end:
+    return shift;
+}
 s32 func_80089EB0(u32 a0) {
     register s32 shift asm("v0");
     register s32 entry asm("v1");
