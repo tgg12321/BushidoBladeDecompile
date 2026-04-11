@@ -401,3 +401,13 @@ saEft03Start2: $2 <-> $3 @ 24-35
 saEft03Start2: insert "nop" @ 11
 # saEft03Start2: reorder case_0: swap sw/lhu after nop insert (post-insert indices 12-13)
 saEft03Start2: reorder 13,12 @ 12-13
+# cpu_check_tubazeri_2: fix a0->v0 register allocation in xor check section
+cpu_check_tubazeri_2: subst "addu	\$4,\$0,\$zero" "sll	$2,$17,1" @ 18
+cpu_check_tubazeri_2: subst "lh	\$4," "lh	$2," @ 19
+cpu_check_tubazeri_2: subst "xor	\$17,\$4,\$3" "xor	$2,$2,$3" @ 22
+cpu_check_tubazeri_2: subst "sltu	\$17,\$17," "sltu	$17,$2," @ 23
+cpu_check_tubazeri_2: subst "sll	\$4," "sll	$2," @ 24
+cpu_check_tubazeri_2: subst "\$18,\$16,\$4" "$18,$2,$16" @ 25
+cpu_check_tubazeri_2: subst "addu	\$3,\$18,818" "addu	$3,$18,$zero" @ 37
+cpu_check_tubazeri_2: subst "lhu	\$2,2\(\$3\)" "lhu	$2,820($3)" @ 38
+cpu_check_tubazeri_2: subst "sh	\$2,0\(\$3\)" "sh	$2,818($3)" @ 40
