@@ -218,23 +218,3 @@ dlabel jtbl_80010D1C
     /* 1570 80010D70 00000000 */ .word 0x00000000
 enddlabel jtbl_80010D1C
 
-nonmatching jtbl_80010D74
-
-dlabel jtbl_80010D74
-    /* 1574 80010D74 68BD0380 */ .word .L8003BD68
-    /* 1578 80010D78 68BD0380 */ .word .L8003BD68
-    /* 157C 80010D7C 88BD0380 */ .word .L8003BD88
-    /* 1580 80010D80 68BD0380 */ .word .L8003BD68
-    /* 1584 80010D84 68BD0380 */ .word .L8003BD68
-    /* 1588 80010D88 98BD0380 */ .word .L8003BD98
-enddlabel jtbl_80010D74
-
-.align 2
-nonmatching D_80010D8C
-
-dlabel D_80010D8C
-    /* 158C 80010D8C */ .asciz "Multipul Model"
-    /* 4D756C746970756C204D6F64656C0000 */
-.align 2
-enddlabel D_80010D8C
-
