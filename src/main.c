@@ -436,7 +436,45 @@ void func_800871D4(s32 a0_arg)
 }
 INCLUDE_ASM("asm/funcs", func_800872A4);
 INCLUDE_ASM("asm/funcs", func_80087770);
-INCLUDE_ASM("asm/funcs", func_80087CAC);
+extern s16 D_80102806;
+s16 func_80087CAC(s32 a0, s16 *a1, s16 *a2) {
+    u8 *base;
+    s16 *ptr;
+    s32 slot;
+    u8 *p;
+    base = (u8 *)((s32 *)&D_80106F28)[(u8)a0];
+    ptr = &D_80102806;
+    *ptr = a0;
+    slot = (a0 & 0xFF00) >> 8;
+    p = base + slot * 176;
+    *a1 = *(u16 *)(p + 0x58);
+    *a2 = *(u16 *)(p + 0x5A);
+    return *ptr;
+}
+
+s16 func_80087D10(s32 a0) {
+    u8 *base;
+    s32 slot;
+    u8 *p;
+    base = (u8 *)((s32 *)&D_80106F28)[(u8)a0];
+    __asm__ volatile("" ::: "memory");
+    D_80102806 = a0;
+    slot = (a0 & 0xFF00) >> 8;
+    p = base + slot * 176;
+    return *(s16 *)(p + 0x58);
+}
+
+s16 func_80087D58(s32 a0) {
+    u8 *base;
+    s32 slot;
+    u8 *p;
+    base = (u8 *)((s32 *)&D_80106F28)[(u8)a0];
+    __asm__ volatile("" ::: "memory");
+    D_80102806 = a0;
+    slot = (a0 & 0xFF00) >> 8;
+    p = base + slot * 176;
+    return *(s16 *)(p + 0x5A);
+}
 extern u8 g_memcard_slot;
 extern s16 D_800F4E28[];
 void spu_NotifyChannel(s16 a0) {
