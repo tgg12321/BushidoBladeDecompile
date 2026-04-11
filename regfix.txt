@@ -215,3 +215,29 @@ damage_DebugDisp: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
 damage_DebugDisp: insert "nop" @ 53
 # damage_DebugDisp: reorder sw before k=0 (post-insert TEXT 54-55)
 damage_DebugDisp: reorder 55,54 @ 54-55
+
+# Reorder save instructions (after $16<->$17 swap, s0/s1 saves need swapping)
+# Reorder restore instructions
+
+# saTan4GaugeInit regfix
+# Swap s0/s1 in body (base pointer register)
+saTan4GaugeInit: $16 <-> $17 @ 18-58
+# Fix arg register renames in prologue
+saTan4GaugeInit: subst "sll\s+\$4," "sll	$7," @ 1
+saTan4GaugeInit: subst "sra\s+\$3,\$4" "sra	$4,$7" @ 2
+saTan4GaugeInit: subst "sra\s+\$5,\$5" "sra	$3,$5" @ 4
+saTan4GaugeInit: $3 <-> $5 @ 5-8
+saTan4GaugeInit: subst ",\$3$" ",$4" @ 15
+# Fix diff/gauge region registers
+saTan4GaugeInit: $4 <-> $6 @ 22-23
+saTan4GaugeInit: $6 <-> $7 @ 24-24
+saTan4GaugeInit: $6 <-> $7 @ 35-35
+saTan4GaugeInit: $4 <-> $6 @ 39-39
+# Fix sa0/sa1 save region: a0->a3 and sll->addu
+saTan4GaugeInit: subst "\$4," "$7," @ 43
+saTan4GaugeInit: subst "sll\s+(\$18,\$5),16" "addu	$18,$5,$zero" @ 44
+# Fix loop body register allocation: v0/v1 and v1/a0
+saTan4GaugeInit: $2 <-> $3 @ 48-53
+saTan4GaugeInit: $3 <-> $4 @ 52-56
+# Fix outer loop branch target (.L10 -> .L13)
+saTan4GaugeInit: subst "\.L10" ".L13" @ 55

@@ -86,7 +86,52 @@ void spu_SetMotionCallback(s16 a0, s16 a1) {
     saTan4GaugeInit(a0, a1);
 }
 
-INCLUDE_ASM("asm/funcs", saTan4GaugeInit);
+void saTan4GaugeInit(s16 a0, s16 a1) {
+    u8 *base;
+    s32 gauge;
+    s32 diff;
+    s32 accum;
+    s32 result;
+
+    base = (u8 *)(*(s32 *)((u8 *)&D_80106F28 + ((s32)(a0 << 16) >> 14)) + (s16)a1 * 0xB0);
+    gauge = *(s32 *)(base + 0x90);
+    diff = gauge - *(s16 *)(base + 0x54);
+    if (diff > 0) {
+        s16 timer = *(s16 *)(base + 0x52);
+        if (timer > 0) {
+            *(s16 *)(base + 0x52) = timer - 1;
+            return;
+        }
+        if (timer == 0) {
+            *(s16 *)(base + 0x52) = *(s16 *)(base + 0x54);
+            result = *(s32 *)(base + 0x90) - 1;
+            goto store_result;
+        }
+        *(s32 *)(base + 0x90) = diff;
+        return;
+    }
+    if (*(s16 *)(base + 0x54) < gauge) {
+        return;
+    }
+    accum = gauge;
+    {
+        s32 sa0 = a0 << 16;
+        s32 sa1 = a1 << 16;
+    loop:
+        saTan0Main(sa0 >> 16, sa1 >> 16);
+        gauge = *(s32 *)(base + 0x90);
+        if (gauge == 0) {
+            goto loop;
+        }
+        accum += gauge;
+        if (accum < *(s16 *)(base + 0x54)) {
+            goto loop;
+        }
+        result = accum - *(s16 *)(base + 0x54);
+    }
+store_result:
+    *(s32 *)(base + 0x90) = result;
+}
 /* kengo:MED  |  sa_tan4/saTan4GaugeInit  |  66i */
 INCLUDE_ASM("asm/funcs", func_80084A7C);
 INCLUDE_ASM("asm/funcs", saTan0Main);
