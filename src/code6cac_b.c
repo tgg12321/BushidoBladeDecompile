@@ -559,7 +559,79 @@ void func_8002EECC(void *arg0, void *arg1) {
 }
 INCLUDE_ASM("asm/funcs", func_8002F2D0);
 INCLUDE_ASM("asm/funcs", func_8002F770);
-INCLUDE_ASM("asm/funcs", cpu_check_tubazeri);
+s32 cpu_check_tubazeri(s32 *a0, s32 *a1, s32 *a2) {
+    s32 *sp380;
+    s32 result;
+
+    __asm__ volatile (
+        "lw     $2, 0($5)\n"
+        "lw     $3, 0($4)\n"
+        "nop\n"
+        "subu   $2, $2, $3\n"
+        "lui    $1, 0x1F80\n"
+        "sw     $2, 864($1)\n"
+        "lw     $2, 4($5)\n"
+        "lw     $3, 4($4)\n"
+        "nop\n"
+        "subu   $2, $2, $3\n"
+        "lui    $1, 0x1F80\n"
+        "sw     $2, 868($1)\n"
+        "lw     $2, 8($5)\n"
+        "lw     $3, 8($4)\n"
+        "nop\n"
+        "subu   $2, $2, $3\n"
+        "lui    $1, 0x1F80\n"
+        "sw     $2, 872($1)\n"
+        "lw     $2, 0($6)\n"
+        "lw     $3, 0($4)\n"
+        "nop\n"
+        "subu   $2, $2, $3\n"
+        "lui    $1, 0x1F80\n"
+        "sw     $2, 880($1)\n"
+        "lw     $2, 4($6)\n"
+        "lw     $3, 4($4)\n"
+        "nop\n"
+        "subu   $2, $2, $3\n"
+        "lui    $1, 0x1F80\n"
+        "sw     $2, 884($1)\n"
+        "lw     $2, 8($6)\n"
+        "lw     $3, 8($4)\n"
+        "lui    $7, 0x1F80\n"
+        "ori    $7, $7, 0x0360\n"
+        "subu   $2, $2, $3\n"
+        "lui    $1, 0x1F80\n"
+        "sw     $2, 888($1)\n"
+        "addu   $12, $7, $0\n"
+        "lw     $13, 0($12)\n"
+        "lw     $14, 4($12)\n"
+        "ctc2   $13, $0\n"
+        "lw     $15, 8($12)\n"
+        "ctc2   $14, $2\n"
+        "ctc2   $15, $4\n"
+        "lui    $7, 0x1F80\n"
+        "ori    $7, $7, 0x0370\n"
+        "addu   $12, $7, $0\n"
+        "lwc2   $11, 8($12)\n"
+        "lwc2   $9, 0($12)\n"
+        "lwc2   $10, 4($12)\n"
+        "nop\n"
+        "nop\n"
+        ".word 0x4B70000C\n"
+        "lui    $2, 0x1F80\n"
+        "ori    $2, $2, 0x0380\n"
+        "addu   $12, $2, $0\n"
+        "swc2   $25, 0($12)\n"
+        "swc2   $26, 4($12)\n"
+        "swc2   $27, 8($12)\n"
+        : "=r"(sp380)
+    );
+
+    result = func_8007FD5C(sp380[0], *(s32 *)0x1F800388);
+    if (*(s32 *)0x1F800384 > 0) {
+        result += 0x800;
+    }
+    return result;
+}
 /* kengo:HIGH  |  nm_cpu/cpu_check_tubazeri  |  76i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", coli_check_circle_hit_line);
 /* kengo:HIGH  |  is_coli/coli_check_circle_hit_line  |  92i */
