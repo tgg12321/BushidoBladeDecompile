@@ -1873,5 +1873,3 @@ void func_8004668C(void) {
     g_stage_id = -1;
     g_stage_variant = 0;
 }
-INCLUDE_ASM("asm/funcs", func_800466C0);
-}
