@@ -189,7 +189,70 @@ s32 *func_80040510(s32 a0) {
 }
 INCLUDE_ASM("asm/funcs", AllocRobRmd);
 /* kengo:HIGH  |  am_rmd/AllocRobRmd  |  220i  |  +3 near-exact */
-INCLUDE_ASM("asm/funcs", rob_life_ctrl);
+extern s16 D_80094B96[];
+extern s16 D_80094B98[];
+extern s16 D_80094B9A[];
+extern s16 D_80094B9C[];
+extern s16 D_80094C68[];
+void rob_life_ctrl(s32 *a0) {
+    s16 *tbl;
+    s32 count;
+    s16 idx;
+
+    tbl = D_80094C68;
+    count = 0;
+    if (*tbl != -1) {
+        tbl++;
+        do {
+            count++;
+        } while (*tbl++ != -1);
+    }
+
+    idx = *(s16 *)((u8 *)a0 + 8);
+    if (idx < count) {
+        *(u16 *)((u8 *)a0 + 0x12) = (u16)D_80094C68[idx];
+    } else {
+        *(u16 *)((u8 *)a0 + 0x12) = 0x1000;
+    }
+
+    {
+        u8 *a3 = (u8 *)a0 + 0x2C;
+        u8 *base = a3;
+        s32 neg1 = -1;
+        s32 off = 0;
+        u8 *a1 = (u8 *)a0 + 0x30;
+
+        do {
+            s16 v1;
+            s32 prod;
+            *a3 = 0;
+            *(a1 - 3) = 0;
+            *(s16 *)(a1 + 4) = 0;
+            *(s16 *)(a1 - 2) = neg1;
+            v1 = *(s16 *)((u8 *)D_80094B96 + off);
+            if (v1 != neg1) {
+                *(s32 *)(a1 + 8) = (s32)(base + v1 * 104);
+            } else {
+                *(s32 *)(a1 + 8) = 0;
+            }
+            *(s32 *)(a1 + 0x48) = ((s32)*(s16 *)((u8 *)D_80094B98 + off) * (s16)*(u16 *)((u8 *)a0 + 0x12)) >> 12;
+            *(s32 *)(a1 + 0x4C) = ((s32)*(s16 *)((u8 *)D_80094B9A + off) * (s16)*(u16 *)((u8 *)a0 + 0x12)) >> 12;
+            prod = (s32)*(s16 *)((u8 *)D_80094B9C + off) * (s16)*(u16 *)((u8 *)a0 + 0x12);
+            *(s16 *)(a1 + 0xC) = 0;
+            *(s16 *)(a1 + 0xE) = 0;
+            *(s16 *)(a1 + 0x10) = 0;
+            *(s16 *)(a1 + 0x2) = 0;
+            *(s32 *)(a1 + 0x50) = prod >> 12;
+            *(u16 *)(a1 + 6) = *(u16 *)((u8 *)a0 + 0x10);
+            *(u16 *)a1 = *(u16 *)((u8 *)a0 + 0x14);
+            off += 0xA;
+            a3 += 0x68;
+            a1 = a3 + 4;
+        } while (off < 0xD2);
+    }
+
+    func_80040A78((s32)a0);
+}
 /* kengo:MED  |  my_rob/rob_life_ctrl  |  96i  |  x2 size collision */
 void func_80040A78(s32 arg0) {
     register s32 var_a1 asm("a1");

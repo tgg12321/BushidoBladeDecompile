@@ -56,3 +56,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac.c:func_8001DA8C | Agent 40: Wave 15 — matched (switch + 800.rodata split, 3 attempts) | 2026-04-11 | done — merged to main |
 | src/code6cac_b.c:myRobGeneiDraw2 | Agent 41: Wave 15 — matched (permuter + regfix, 6 attempts) | 2026-04-11 | done — merged to main |
 | src/code6cac_c2.c:md_game_check_change_sub_mode | Agent 42: Wave 15 — matched (switch + rodata split, 2 attempts) | 2026-04-11 | done — merged to main |
+| src/code6cac.c:func_800203B4 | Agent 43: Wave 16 — matched (GTE .word directives, 7 attempts) | 2026-04-11 | done — merged to main |
+| src/text1a.c:rob_life_ctrl | Agent 44: Wave 16 — matched (table lookups + regfix, 7 attempts) | 2026-04-11 | done — merged to main |
+| src/sound.c:func_80047BE0 | Agent 45: Wave 16 — matched (goto loops + regfix s1/s2 swap) | 2026-04-11 | done — merged to main |

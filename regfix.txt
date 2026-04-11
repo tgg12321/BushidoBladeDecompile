@@ -460,3 +460,11 @@ func_8001979C: reorder 42,41 @ 41-42
 # myRobGeneiDraw2 (func_800321E8): fix a0 arg and comparison load order
 myRobGeneiDraw2: subst "addu\t\$4,\$18,4" "addu	$4,$16,$0" @ 42
 myRobGeneiDraw2: reorder 48,47 @ 47-48
+
+# rob_life_ctrl: move a2=0 before sw ra (prologue scheduling)
+rob_life_ctrl: reorder 6,2,3,4,5,7 @ 2-7
+# rob_life_ctrl: GCC strength-reduces a1+=0x68 to a1=a3+4
+rob_life_ctrl: subst "addu\t\$5,\$7,4" "addiu	$5,$5,104" @ 88
+
+# func_80047BE0: swap s1 (dst32) and s2 (p) in function body only
+func_80047BE0: $17 <-> $18 @ 13-93
