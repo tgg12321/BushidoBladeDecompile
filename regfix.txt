@@ -419,3 +419,10 @@ videoDecCreate: reorder 11,10,12 @ 10-12
 videoDecCreate: reorder 22,21,23 @ 21-23
 videoDecCreate: $2 <-> $3 @ 10-12
 videoDecCreate: $2 <-> $3 @ 21-23
+
+
+
+# func_80089E30: GCC loads g_spu_voice_key_c into v1, target uses v0
+func_80089E30: $2 <-> $3 @ 0-2
+func_80089E30: subst "\$2,\$3,\$zero" "$2,$0,$zero" @ 5
+func_80089E30: subst "\$5,\$3" "$5,$2" @ 9
