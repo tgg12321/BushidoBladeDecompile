@@ -216,65 +216,6 @@ damage_DebugDisp: insert "nop" @ 53
 # damage_DebugDisp: reorder sw before k=0 (post-insert TEXT 54-55)
 damage_DebugDisp: reorder 55,54 @ 54-55
 
-# Poll section: andi/li/beq comparison (TEXT 42-44)
-# Poll section: subu/slt after func_80078B04 (TEXT 48-49)
-# Second s1 check: delay slot v1=0 -> v0=0 (TEXT 55)
-# Second s1 check: branch target .L244 -> .L249 (TEXT 54)
-# Success hash block: full v0/v1 swap (TEXT 60-67)
-# Success mismatch: D_800A38D0 load/store in v1($3) instead of v0($2) (TEXT 68-71)
-# Success mismatch: j delay slot move -> nop (TEXT 73)
-# ret0_tramp: jump target .L244 -> .L249 (TEXT 74)
-# ret0_tramp: delay slot v1=0 -> v0=0 (TEXT 75)
-# Match block: li v1,1 -> li v0,1 (TEXT 76)
-# Delete extra move v0,v1 at .L244 (TEXT 79)
-
-# TEXT 42: andi $3,$2,0x0003 -> andi $2,$2,0x0003 (change dest $3->$2)
-# TEXT 43: addiu $2,$zero,1 -> addiu $3,$zero,1 (change dest $2->$3)
-# TEXT 44: beq $3,$2,.L234 -> beq $2,$3,.L234 (swap operands)
-# TEXT 48: subu $3,$2,$16 -> subu $2,$2,$16 (change dest $3->$2)
-# TEXT 49: slt $2,$3,15361 -> slt $2,$2,15361 (change src $3->$2)
-# TEXT 54: beq $2,$0,.L244 -> beq $2,$0,.L249 (change branch target)
-# TEXT 55: addu $3,$0,$zero -> addu $2,$0,$zero (change dest $3->$2)
-# TEXT 60: sra $3,$5,16 -> sra $2,$5,16 (change dest $3->$2)
-# TEXT 61: xor $3,$3,$5 -> xor $2,$2,$5 (change both $3->$2)
-# TEXT 62: sra $2,$4,16 -> sra $3,$4,16 (change dest $2->$3)
-# TEXT 63: xor $3,$3,$2 -> xor $2,$2,$3 (swap all)
-# TEXT 64: andi $3,$3,0xffff -> andi $2,$2,0xffff (all $3->$2)
-# TEXT 65: andi $2,$4,0xffff -> andi $3,$4,0xffff (change dest $2->$3)
-# TEXT 66: beq $2,$3,.L246 -> beq $3,$2,.L246 (swap operands)
-# TEXT 67: addu $3,$0,$zero -> addu $2,$0,$zero (change dest $3->$2)
-# TEXT 68: lw $2,D_800A38D0 -> lw $3,D_800A38D0
-# TEXT 70: addu $2,$2,1 -> addu $3,$3,1
-# TEXT 71: sw $2,D_800A38D0 -> sw $3,D_800A38D0
-# TEXT 73: addu $2,$3,$zero -> nop (remove move v0,v1 delay slot)
-# TEXT 74: j .L244 -> j .L249 (change jump target)
-# TEXT 75: addu $3,$0,$zero -> addu $2,$0,$zero (change dest $3->$2)
-# TEXT 76: addiu $3,$zero,1 -> addiu $2,$zero,1 (change dest $3->$2)
-# TEXT 79: addu $2,$3,$zero -> DELETE (remove .L244 move v0,v1)
-# Strategy: targeted subst per instruction, no range swaps
-# TEXT 42: andi dest $3->$2
-# TEXT 43: addiu dest $2->$3
-# TEXT 44: beq swap operands
-# TEXT 48: subu dest $3->$2
-# TEXT 49: slt src $3->$2
-# TEXT 54: branch target .L244->.L249
-# TEXT 55: addu dest $3->$2
-# TEXT 60: sra dest $3->$2
-# TEXT 61: xor both $3->$2
-# TEXT 62: sra dest $2->$3
-# TEXT 63: xor full swap
-# TEXT 64: andi both $3->$2
-# TEXT 65: andi dest $2->$3
-# TEXT 66: beq swap operands
-# TEXT 67: addu dest $3->$2
-# TEXT 68: lw $2->$3
-# TEXT 70: addu all $2->$3
-# TEXT 71: sw $2->$3
-# TEXT 73: move v0,v1 -> nop (success-mismatch path)
-# TEXT 74: ret0_tramp jump target .L244->.L249
-# TEXT 75: ret0_tramp dest $3->$2
-# TEXT 76: match block dest $3->$2
-# TEXT 79: delete .L244 move v0,v1
 # pad_ClearAppliBuffer: GCC uses $3(v1) for result, target uses $2(v0)
 pad_ClearAppliBuffer: subst "\$3," "$2," @ 42
 pad_ClearAppliBuffer: subst "\$2," "$3," @ 43
@@ -305,3 +246,26 @@ tslLineG5Init: subst "beq" "bne" @ 17
 tslLineG5Init: subst "\$4,\$zero,26000" "$2,$zero,22000" @ 18
 tslLineG5Init: subst "\$4,\$zero,22000" "$2,$zero,26000" @ 19
 tslLineG5Init: subst "\$4,\$4,\$18" "$4,$2,$18" @ 20
+
+# saTan4GaugeInit regfix
+# Swap s0/s1 in body (base pointer register)
+saTan4GaugeInit: $16 <-> $17 @ 18-58
+# Fix arg register renames in prologue
+saTan4GaugeInit: subst "sll\s+\$4," "sll	$7," @ 1
+saTan4GaugeInit: subst "sra\s+\$3,\$4" "sra	$4,$7" @ 2
+saTan4GaugeInit: subst "sra\s+\$5,\$5" "sra	$3,$5" @ 4
+saTan4GaugeInit: $3 <-> $5 @ 5-8
+saTan4GaugeInit: subst ",\$3$" ",$4" @ 15
+# Fix diff/gauge region registers
+saTan4GaugeInit: $4 <-> $6 @ 22-23
+saTan4GaugeInit: $6 <-> $7 @ 24-24
+saTan4GaugeInit: $6 <-> $7 @ 35-35
+saTan4GaugeInit: $4 <-> $6 @ 39-39
+# Fix sa0/sa1 save region: a0->a3 and sll->addu
+saTan4GaugeInit: subst "\$4," "$7," @ 43
+saTan4GaugeInit: subst "sll\s+(\$18,\$5),16" "addu	$18,$5,$zero" @ 44
+# Fix loop body register allocation: v0/v1 and v1/a0
+saTan4GaugeInit: $2 <-> $3 @ 48-53
+saTan4GaugeInit: $3 <-> $4 @ 52-56
+# Fix outer loop branch target (.L10 -> .L13)
+saTan4GaugeInit: subst "\.L10" ".L13" @ 55
