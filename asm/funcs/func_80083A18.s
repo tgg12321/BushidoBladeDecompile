@@ -5,7 +5,7 @@ glabel func_80083A18
     /* 74224 80083A24 00000000 */   nop
     /* 74228 80083A28 6B21020C */  jal        spu_Init
     /* 7422C 80083A2C 00000000 */   nop
-    /* 74230 80083A30 920E020C */  jal        func_80083A48
+    /* 74230 80083A30 920E020C */  jal        md_game_check_change_main_mode_default
     /* 74234 80083A34 00000000 */   nop
     /* 74238 80083A38 1000BF8F */  lw         $ra, 0x10($sp)
     /* 7423C 80083A3C 1800BD27 */  addiu      $sp, $sp, 0x18

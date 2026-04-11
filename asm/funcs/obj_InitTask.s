@@ -1,7 +1,7 @@
 glabel obj_InitTask
     /* 4C1C4 8005B9C4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 4C1C8 8005B9C8 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 4C1CC 8005B9CC 3416020C */  jal        func_800858D0
+    /* 4C1CC 8005B9CC 3416020C */  jal        title_mv_exec2
     /* 4C1D0 8005B9D0 21200000 */   addu      $a0, $zero, $zero
     /* 4C1D4 8005B9D4 D91F020C */  jal        func_80087F64
     /* 4C1D8 8005B9D8 09000424 */   addiu     $a0, $zero, 0x9

@@ -1,4 +1,4 @@
-glabel func_80035280
+glabel single_game_SetWazaData
     /* 25A80 80035280 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 25A84 80035284 1000BFAF */  sw         $ra, 0x10($sp)
     /* 25A88 80035288 40DF010C */  jal        func_80077D00
@@ -109,4 +109,4 @@ glabel func_80035280
     /* 25C24 80035424 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 25C28 80035428 0800E003 */  jr         $ra
     /* 25C2C 8003542C 00000000 */   nop
-endlabel func_80035280
+endlabel single_game_SetWazaData

@@ -59,7 +59,7 @@ glabel cpu_side_move_dir_2
   .L8003C110:
     /* 2C910 8003C110 D0EB000C */  jal        func_8003AF40
     /* 2C914 8003C114 00000000 */   nop
-    /* 2C918 8003C118 43EC000C */  jal        func_8003B10C
+    /* 2C918 8003C118 43EC000C */  jal        kgm_init_hitrect
     /* 2C91C 8003C11C 21200000 */   addu      $a0, $zero, $zero
     /* 2C920 8003C120 0A80033C */  lui        $v1, %hi(D_800A38A4)
     /* 2C924 8003C124 A4386390 */  lbu        $v1, %lo(D_800A38A4)($v1)
@@ -111,7 +111,7 @@ glabel cpu_side_move_dir_2
     /* 2C9C8 8003C1C8 7E2723A0 */  sb         $v1, %lo(D_8010277E)($at)
     /* 2C9CC 8003C1CC D0EB000C */  jal        func_8003AF40
     /* 2C9D0 8003C1D0 21200000 */   addu      $a0, $zero, $zero
-    /* 2C9D4 8003C1D4 43EC000C */  jal        func_8003B10C
+    /* 2C9D4 8003C1D4 43EC000C */  jal        kgm_init_hitrect
     /* 2C9D8 8003C1D8 21200000 */   addu      $a0, $zero, $zero
   .L8003C1DC:
     /* 2C9DC 8003C1DC 1180033C */  lui        $v1, (0x80118800 >> 16)
@@ -156,7 +156,7 @@ glabel cpu_side_move_dir_2
     /* 2CA74 8003C274 AADB000C */  jal        func_80036EA8
     /* 2CA78 8003C278 05000424 */   addiu     $a0, $zero, 0x5
     /* 2CA7C 8003C27C 01000592 */  lbu        $a1, 0x1($s0)
-    /* 2CA80 8003C280 F5DB000C */  jal        func_80036FD4
+    /* 2CA80 8003C280 F5DB000C */  jal        mottest_rob_init
     /* 2CA84 8003C284 21204000 */   addu      $a0, $v0, $zero
     /* 2CA88 8003C288 98DC000C */  jal        func_80037260
     /* 2CA8C 8003C28C 00000000 */   nop

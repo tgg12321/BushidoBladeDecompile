@@ -132,7 +132,7 @@ glabel AllocRobRmd
     /* 30F7C 8004077C C0FE0724 */  addiu      $a3, $zero, -0x140
     /* 30F80 80040780 14004486 */  lh         $a0, 0x14($s2)
     /* 30F84 80040784 E8000224 */  addiu      $v0, $zero, 0xE8
-    /* 30F88 80040788 A80C010C */  jal        func_800432A0
+    /* 30F88 80040788 A80C010C */  jal        videoDecCreate
     /* 30F8C 8004078C 1000A2AF */   sw        $v0, 0x10($sp)
     /* 30F90 80040790 21206002 */  addu       $a0, $s3, $zero
     /* 30F94 80040794 21280000 */  addu       $a1, $zero, $zero
@@ -160,7 +160,7 @@ glabel AllocRobRmd
     /* 30FE8 800407E8 C0FE0724 */  addiu      $a3, $zero, -0x140
     /* 30FEC 800407EC 14004486 */  lh         $a0, 0x14($s2)
     /* 30FF0 800407F0 E8000224 */  addiu      $v0, $zero, 0xE8
-    /* 30FF4 800407F4 A80C010C */  jal        func_800432A0
+    /* 30FF4 800407F4 A80C010C */  jal        videoDecCreate
     /* 30FF8 800407F8 1000A2AF */   sw        $v0, 0x10($sp)
     /* 30FFC 800407FC 21206002 */  addu       $a0, $s3, $zero
     /* 31000 80040800 21280000 */  addu       $a1, $zero, $zero

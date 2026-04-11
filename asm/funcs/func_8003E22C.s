@@ -22,7 +22,7 @@ glabel func_8003E22C
   .L8003E278:
     /* 2EA78 8003E278 14006484 */  lh         $a0, 0x14($v1)
     /* 2EA7C 8003E27C 18FF0224 */  addiu      $v0, $zero, -0xE8
-    /* 2EA80 8003E280 A80C010C */  jal        func_800432A0
+    /* 2EA80 8003E280 A80C010C */  jal        videoDecCreate
     /* 2EA84 8003E284 1000A2AF */   sw        $v0, 0x10($sp)
     /* 2EA88 8003E288 FFFF0224 */  addiu      $v0, $zero, -0x1
   .L8003E28C:

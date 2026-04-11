@@ -34,7 +34,7 @@ glabel special_camera_Exec
   .L800369B4:
     /* 271B4 800369B4 1000A527 */  addiu      $a1, $sp, 0x10
     /* 271B8 800369B8 A0000224 */  addiu      $v0, $zero, 0xA0
-    /* 271BC 800369BC E400020C */  jal        func_80080390
+    /* 271BC 800369BC E400020C */  jal        myRobGeneiDraw3
     /* 271C0 800369C0 1000A2A3 */   sb        $v0, 0x10($sp)
     /* 271C4 800369C4 1080013C */  lui        $at, %hi(D_80101E66)
     /* 271C8 800369C8 661E20A4 */  sh         $zero, %lo(D_80101E66)($at)
@@ -98,7 +98,7 @@ glabel special_camera_Exec
     /* 272A4 80036AA4 21280002 */  addu       $a1, $s0, $zero
     /* 272A8 80036AA8 1080013C */  lui        $at, %hi(D_80101EA0)
     /* 272AC 80036AAC A01E22AC */  sw         $v0, %lo(D_80101EA0)($at)
-    /* 272B0 80036AB0 9600020C */  jal        func_80080258
+    /* 272B0 80036AB0 9600020C */  jal        _DispCharacterName
     /* 272B4 80036AB4 21300000 */   addu      $a2, $zero, $zero
     /* 272B8 80036AB8 1080013C */  lui        $at, %hi(D_80101E98)
     /* 272BC 80036ABC 981E20A4 */  sh         $zero, %lo(D_80101E98)($at)
@@ -120,7 +120,7 @@ glabel special_camera_Exec
     /* 272F8 80036AF8 9000020C */  jal        cdrom_SetCallbackB
     /* 272FC 80036AFC 000000A6 */   sh        $zero, 0x0($s0)
     /* 27300 80036B00 06000424 */  addiu      $a0, $zero, 0x6
-    /* 27304 80036B04 E400020C */  jal        func_80080390
+    /* 27304 80036B04 E400020C */  jal        myRobGeneiDraw3
     /* 27308 80036B08 D4FF0526 */   addiu     $a1, $s0, -0x2C
     /* 2730C 80036B0C 5BDB0008 */  j          .L80036D6C
     /* 27310 80036B10 06000224 */   addiu     $v0, $zero, 0x6
@@ -207,7 +207,7 @@ glabel special_camera_Exec
     /* 2743C 80036C3C 0C000224 */   addiu     $v0, $zero, 0xC
   jlabel .L80036C40
     /* 27440 80036C40 01000424 */  addiu      $a0, $zero, 0x1
-    /* 27444 80036C44 E400020C */  jal        func_80080390
+    /* 27444 80036C44 E400020C */  jal        myRobGeneiDraw3
     /* 27448 80036C48 21280000 */   addu      $a1, $zero, $zero
     /* 2744C 80036C4C 32DB0008 */  j          .L80036CC8
     /* 27450 80036C50 0B000224 */   addiu     $v0, $zero, 0xB
@@ -240,7 +240,7 @@ glabel special_camera_Exec
     /* 274B4 80036CB4 0B004228 */   slti      $v0, $v0, 0xB
   jlabel .L80036CB8
     /* 274B8 80036CB8 13000424 */  addiu      $a0, $zero, 0x13
-    /* 274BC 80036CBC E400020C */  jal        func_80080390
+    /* 274BC 80036CBC E400020C */  jal        myRobGeneiDraw3
     /* 274C0 80036CC0 21280000 */   addu      $a1, $zero, $zero
     /* 274C4 80036CC4 0D000224 */  addiu      $v0, $zero, 0xD
   .L80036CC8:

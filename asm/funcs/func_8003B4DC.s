@@ -15,7 +15,7 @@ glabel func_8003B4DC
     /* 2BD10 8003B510 21200000 */   addu      $a0, $zero, $zero
     /* 2BD14 8003B514 D0EB000C */  jal        func_8003AF40
     /* 2BD18 8003B518 01000424 */   addiu     $a0, $zero, 0x1
-    /* 2BD1C 8003B51C FFEB000C */  jal        func_8003AFFC
+    /* 2BD1C 8003B51C FFEB000C */  jal        md_menu_logo_exec
     /* 2BD20 8003B520 00000000 */   nop
     /* 2BD24 8003B524 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2BD28 8003B528 1800BD27 */  addiu      $sp, $sp, 0x18

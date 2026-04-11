@@ -1,4 +1,4 @@
-glabel func_800432A0
+glabel videoDecCreate
     /* 33AA0 800432A0 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 33AA4 800432A4 2000B4AF */  sw         $s4, 0x20($sp)
     /* 33AA8 800432A8 21A0A000 */  addu       $s4, $a1, $zero
@@ -63,4 +63,4 @@ glabel func_800432A0
     /* 33B8C 8004338C 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 33B90 80043390 0800E003 */  jr         $ra
     /* 33B94 80043394 00000000 */   nop
-endlabel func_800432A0
+endlabel videoDecCreate

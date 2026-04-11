@@ -1,7 +1,7 @@
 glabel obj_InitPair
     /* 4C068 8005B868 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 4C06C 8005B86C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 4C070 8005B870 3416020C */  jal        func_800858D0
+    /* 4C070 8005B870 3416020C */  jal        title_mv_exec2
     /* 4C074 8005B874 21200000 */   addu      $a0, $zero, $zero
     /* 4C078 8005B878 D91F020C */  jal        func_80087F64
     /* 4C07C 8005B87C 08000424 */   addiu     $a0, $zero, 0x8

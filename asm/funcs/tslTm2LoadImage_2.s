@@ -192,7 +192,7 @@ glabel tslTm2LoadImage_2
     /* 72AC8 800822C8 00000000 */   nop
     /* 72ACC 800822CC 09000424 */  addiu      $a0, $zero, 0x9
   .L800822D0:
-    /* 72AD0 800822D0 E400020C */  jal        func_80080390
+    /* 72AD0 800822D0 E400020C */  jal        myRobGeneiDraw3
     /* 72AD4 800822D4 21280000 */   addu      $a1, $zero, $zero
     /* 72AD8 800822D8 0A80033C */  lui        $v1, %hi(D_800A14CC)
     /* 72ADC 800822DC CC14638C */  lw         $v1, %lo(D_800A14CC)($v1)
@@ -264,7 +264,7 @@ glabel tslTm2LoadImage_2
     /* 72BD8 800823D8 00000000 */   nop
     /* 72BDC 800823DC 09000424 */  addiu      $a0, $zero, 0x9
   .L800823E0:
-    /* 72BE0 800823E0 E400020C */  jal        func_80080390
+    /* 72BE0 800823E0 E400020C */  jal        myRobGeneiDraw3
     /* 72BE4 800823E4 21280000 */   addu      $a1, $zero, $zero
     /* 72BE8 800823E8 0A80023C */  lui        $v0, %hi(D_800A14CC)
     /* 72BEC 800823EC CC14428C */  lw         $v0, %lo(D_800A14CC)($v0)

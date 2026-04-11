@@ -1,4 +1,4 @@
-glabel func_800858D0
+glabel title_mv_exec2
     /* 760D0 800858D0 A0FFBD27 */  addiu      $sp, $sp, -0x60
     /* 760D4 800858D4 0600023C */  lui        $v0, (0x60093 >> 16)
     /* 760D8 800858D8 1080033C */  lui        $v1, %hi(D_80101BCC)
@@ -55,7 +55,7 @@ glabel func_800858D0
     /* 761A0 800859A0 1000A2AF */   sw        $v0, 0x10($sp)
     /* 761A4 800859A4 1080013C */  lui        $at, %hi(D_8010280A)
     /* 761A8 800859A8 0A2830A4 */  sh         $s0, %lo(D_8010280A)($at)
-    /* 761AC 800859AC 751C020C */  jal        func_800871D4
+    /* 761AC 800859AC 751C020C */  jal        motutil_GetAngTableNum
     /* 761B0 800859B0 01000424 */   addiu     $a0, $zero, 0x1
     /* 761B4 800859B4 01000226 */  addiu      $v0, $s0, 0x1
     /* 761B8 800859B8 21804000 */  addu       $s0, $v0, $zero
@@ -73,4 +73,4 @@ glabel func_800858D0
     /* 761E4 800859E4 6000BD27 */  addiu      $sp, $sp, 0x60
     /* 761E8 800859E8 0800E003 */  jr         $ra
     /* 761EC 800859EC 00000000 */   nop
-endlabel func_800858D0
+endlabel title_mv_exec2

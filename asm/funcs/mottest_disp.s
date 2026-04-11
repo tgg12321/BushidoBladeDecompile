@@ -1,4 +1,4 @@
-glabel func_80033BC0
+glabel mottest_disp
     /* 243C0 80033BC0 0A80043C */  lui        $a0, %hi(D_800A3783)
     /* 243C4 80033BC4 83378490 */  lbu        $a0, %lo(D_800A3783)($a0)
     /* 243C8 80033BC8 0A80023C */  lui        $v0, %hi(D_800A391F)
@@ -101,4 +101,4 @@ glabel func_80033BC0
   .L80033D30:
     /* 24530 80033D30 0800E003 */  jr         $ra
     /* 24534 80033D34 00000000 */   nop
-endlabel func_80033BC0
+endlabel mottest_disp

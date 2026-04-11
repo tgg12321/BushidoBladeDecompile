@@ -4,7 +4,7 @@ glabel func_80035E38
     /* 26640 80035E40 1000BFAF */  sw         $ra, 0x10($sp)
     /* 26644 80035E44 0A80013C */  lui        $at, %hi(D_800A36F1)
     /* 26648 80035E48 F13622A0 */  sb         $v0, %lo(D_800A36F1)($at)
-    /* 2664C 80035E4C 4FD5000C */  jal        func_8003553C
+    /* 2664C 80035E4C 4FD5000C */  jal        tslDrTex1Init2
     /* 26650 80035E50 00000000 */   nop
     /* 26654 80035E54 1CE3000C */  jal        motion_SetMotion
     /* 26658 80035E58 00000000 */   nop

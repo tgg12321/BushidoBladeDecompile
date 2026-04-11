@@ -14,7 +14,7 @@ glabel func_8003ACB8
     /* 2B4E8 8003ACE8 5DE8000C */  jal        func_8003A174
     /* 2B4EC 8003ACEC 00000000 */   nop
   .L8003ACF0:
-    /* 2B4F0 8003ACF0 5A65000C */  jal        func_80019568
+    /* 2B4F0 8003ACF0 5A65000C */  jal        single_game_VoiceContorol
     /* 2B4F4 8003ACF4 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B4F8 8003ACF8 B471010C */  jal        func_8005C6D0
     /* 2B4FC 8003ACFC 00000000 */   nop

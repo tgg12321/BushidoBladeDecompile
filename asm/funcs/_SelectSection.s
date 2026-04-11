@@ -1,4 +1,4 @@
-glabel func_80042874
+glabel _SelectSection
     /* 33074 80042874 C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 33078 80042878 3400B1AF */  sw         $s1, 0x34($sp)
     /* 3307C 8004287C 3000B0AF */  sw         $s0, 0x30($sp)
@@ -132,4 +132,4 @@ glabel func_80042874
     /* 3327C 80042A7C 3800BD27 */  addiu      $sp, $sp, 0x38
     /* 33280 80042A80 0800E003 */  jr         $ra
     /* 33284 80042A84 00000000 */   nop
-endlabel func_80042874
+endlabel _SelectSection

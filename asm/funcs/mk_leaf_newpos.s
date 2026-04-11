@@ -1,4 +1,4 @@
-glabel func_800335D8
+glabel mk_leaf_newpos
     /* 23DD8 800335D8 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 23DDC 800335DC 1000B0AF */  sw         $s0, 0x10($sp)
     /* 23DE0 800335E0 0A80103C */  lui        $s0, %hi(D_800A3918)
@@ -22,7 +22,7 @@ glabel func_800335D8
     /* 23E24 80033624 00000000 */  nop
     /* 23E28 80033628 31004010 */  beqz       $v0, .L800336F0
     /* 23E2C 8003362C 00000000 */   nop
-    /* 23E30 80033630 26CD000C */  jal        func_80033498
+    /* 23E30 80033630 26CD000C */  jal        ki_attack_ougi
     /* 23E34 80033634 00000000 */   nop
     /* 23E38 80033638 21884000 */  addu       $s1, $v0, $zero
     /* 23E3C 8003363C 00000392 */  lbu        $v1, 0x0($s0)
@@ -190,4 +190,4 @@ glabel func_800335D8
     /* 2408C 8003388C 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 24090 80033890 0800E003 */  jr         $ra
     /* 24094 80033894 00000000 */   nop
-endlabel func_800335D8
+endlabel mk_leaf_newpos

@@ -41,7 +41,7 @@ glabel func_80089F3C
     /* 7A7D0 80089FD0 442D248C */  lw         $a0, %lo(D_800A2D44)($at)
     /* 7A7D4 80089FD4 0A80113C */  lui        $s1, %hi(D_800A2D44)
     /* 7A7D8 80089FD8 442D3126 */  addiu      $s1, $s1, %lo(D_800A2D44)
-    /* 7A7DC 80089FDC AC27020C */  jal        func_80089EB0
+    /* 7A7DC 80089FDC AC27020C */  jal        action_check_defense2
     /* 7A7E0 80089FE0 00000000 */   nop
     /* 7A7E4 80089FE4 03004010 */  beqz       $v0, .L80089FF4
     /* 7A7E8 80089FE8 01001424 */   addiu     $s4, $zero, 0x1

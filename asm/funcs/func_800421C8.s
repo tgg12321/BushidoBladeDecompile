@@ -13,25 +13,25 @@ glabel func_800421C8
     /* 329F4 800421F4 0000058E */  lw         $a1, 0x0($s0)
     /* 329F8 800421F8 04001026 */  addiu      $s0, $s0, 0x4
     /* 329FC 800421FC 21300000 */  addu       $a2, $zero, $zero
-    /* 32A00 80042200 AF08010C */  jal        func_800422BC
+    /* 32A00 80042200 AF08010C */  jal        gnd_land_hit_char_die_main
     /* 32A04 80042204 21380000 */   addu      $a3, $zero, $zero
     /* 32A08 80042208 0000058E */  lw         $a1, 0x0($s0)
     /* 32A0C 8004220C 04001026 */  addiu      $s0, $s0, 0x4
     /* 32A10 80042210 21202002 */  addu       $a0, $s1, $zero
     /* 32A14 80042214 21300000 */  addu       $a2, $zero, $zero
-    /* 32A18 80042218 AF08010C */  jal        func_800422BC
+    /* 32A18 80042218 AF08010C */  jal        gnd_land_hit_char_die_main
     /* 32A1C 8004221C 01000724 */   addiu     $a3, $zero, 0x1
     /* 32A20 80042220 0000058E */  lw         $a1, 0x0($s0)
     /* 32A24 80042224 04001026 */  addiu      $s0, $s0, 0x4
     /* 32A28 80042228 21202002 */  addu       $a0, $s1, $zero
     /* 32A2C 8004222C 01000624 */  addiu      $a2, $zero, 0x1
-    /* 32A30 80042230 AF08010C */  jal        func_800422BC
+    /* 32A30 80042230 AF08010C */  jal        gnd_land_hit_char_die_main
     /* 32A34 80042234 21380000 */   addu      $a3, $zero, $zero
     /* 32A38 80042238 0000058E */  lw         $a1, 0x0($s0)
     /* 32A3C 8004223C 04001026 */  addiu      $s0, $s0, 0x4
     /* 32A40 80042240 21202002 */  addu       $a0, $s1, $zero
     /* 32A44 80042244 01000624 */  addiu      $a2, $zero, 0x1
-    /* 32A48 80042248 AF08010C */  jal        func_800422BC
+    /* 32A48 80042248 AF08010C */  jal        gnd_land_hit_char_die_main
     /* 32A4C 8004224C 01000724 */   addiu     $a3, $zero, 0x1
     /* 32A50 80042250 0000028E */  lw         $v0, 0x0($s0)
     /* 32A54 80042254 00000000 */  nop

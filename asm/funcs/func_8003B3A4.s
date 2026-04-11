@@ -52,7 +52,7 @@ glabel func_8003B3A4
     /* 2BC60 8003B460 B63722A0 */  sb         $v0, %lo(D_800A37B6)($at)
     /* 2BC64 8003B464 D0EB000C */  jal        func_8003AF40
     /* 2BC68 8003B468 01000424 */   addiu     $a0, $zero, 0x1
-    /* 2BC6C 8003B46C FFEB000C */  jal        func_8003AFFC
+    /* 2BC6C 8003B46C FFEB000C */  jal        md_menu_logo_exec
     /* 2BC70 8003B470 00000000 */   nop
     /* 2BC74 8003B474 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2BC78 8003B478 05000224 */  addiu      $v0, $zero, 0x5

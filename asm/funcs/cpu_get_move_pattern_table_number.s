@@ -41,13 +41,13 @@ glabel cpu_get_move_pattern_table_number
     /* F31C 8001EB1C 00000000 */   nop
     /* F320 8001EB20 5FC3000C */  jal        func_80030D7C
     /* F324 8001EB24 00000000 */   nop
-    /* F328 8001EB28 7AC8000C */  jal        func_800321E8
+    /* F328 8001EB28 7AC8000C */  jal        myRobGeneiDraw2
     /* F32C 8001EB2C 00000000 */   nop
     /* F330 8001EB30 E8E5000C */  jal        func_800397A0
     /* F334 8001EB34 00000000 */   nop
     /* F338 8001EB38 6A1B010C */  jal        game_StageInit
     /* F33C 8001EB3C 01000424 */   addiu     $a0, $zero, 0x1
-    /* F340 8001EB40 76CD000C */  jal        func_800335D8
+    /* F340 8001EB40 76CD000C */  jal        mk_leaf_newpos
     /* F344 8001EB44 00000000 */   nop
     /* F348 8001EB48 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* F34C 8001EB4C DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)

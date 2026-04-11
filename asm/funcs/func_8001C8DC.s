@@ -107,7 +107,7 @@ glabel func_8001C8DC
     /* D268 8001CA68 44730008 */  j          .L8001CD10
     /* D26C 8001CA6C 00000000 */   nop
   .L8001CA70:
-    /* D270 8001CA70 69ED000C */  jal        func_8003B5A4
+    /* D270 8001CA70 69ED000C */  jal        suDispMentalBar
     /* D274 8001CA74 00000000 */   nop
     /* D278 8001CA78 44730008 */  j          .L8001CD10
     /* D27C 8001CA7C 00000000 */   nop
@@ -220,7 +220,7 @@ glabel func_8001C8DC
     /* D400 8001CC00 ED38A590 */  lbu        $a1, %lo(D_800A38ED)($a1)
     /* D404 8001CC04 0A80063C */  lui        $a2, %hi(D_800A38EE)
     /* D408 8001CC08 EE38C690 */  lbu        $a2, %lo(D_800A38EE)($a2)
-    /* D40C 8001CC0C FD06010C */  jal        func_80041BF4
+    /* D40C 8001CC0C FD06010C */  jal        saTan4FireDisp
     /* D410 8001CC10 00000000 */   nop
     /* D414 8001CC14 44730008 */  j          .L8001CD10
     /* D418 8001CC18 00000000 */   nop

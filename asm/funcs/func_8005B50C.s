@@ -1,7 +1,7 @@
 glabel func_8005B50C
     /* 4BD0C 8005B50C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 4BD10 8005B510 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 4BD14 8005B514 3416020C */  jal        func_800858D0
+    /* 4BD14 8005B514 3416020C */  jal        title_mv_exec2
     /* 4BD18 8005B518 21200000 */   addu      $a0, $zero, $zero
     /* 4BD1C 8005B51C E617020C */  jal        func_80085F98
     /* 4BD20 8005B520 00000000 */   nop

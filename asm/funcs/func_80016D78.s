@@ -6,7 +6,7 @@ glabel func_80016D78
     /* 7588 80016D88 1000BFAF */  sw         $ra, 0x10($sp)
     /* 758C 80016D8C 82E4010C */  jal        debug_printf
     /* 7590 80016D90 00DBA534 */   ori       $a1, $a1, (0x8010DB00 & 0xFFFF)
-    /* 7594 80016D94 FB59000C */  jal        func_800167EC
+    /* 7594 80016D94 FB59000C */  jal        coli_CheckRobEnemy
     /* 7598 80016D98 00000000 */   nop
     /* 759C 80016D9C 5C83000C */  jal        func_80020D70
     /* 75A0 80016DA0 00000000 */   nop

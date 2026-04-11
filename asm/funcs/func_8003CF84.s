@@ -2,7 +2,7 @@ glabel func_8003CF84
     /* 2D784 8003CF84 B8FFBD27 */  addiu      $sp, $sp, -0x48
     /* 2D788 8003CF88 4000BFAF */  sw         $ra, 0x40($sp)
     /* 2D78C 8003CF8C 3C00B1AF */  sw         $s1, 0x3C($sp)
-    /* 2D790 8003CF90 76CD000C */  jal        func_800335D8
+    /* 2D790 8003CF90 76CD000C */  jal        mk_leaf_newpos
     /* 2D794 8003CF94 3800B0AF */   sw        $s0, 0x38($sp)
     /* 2D798 8003CF98 0A80053C */  lui        $a1, %hi(D_800A3748)
     /* 2D79C 8003CF9C 4837A580 */  lb         $a1, %lo(D_800A3748)($a1)
@@ -198,7 +198,7 @@ glabel func_8003CF84
     /* 2DA68 8003D268 00000000 */   nop
     /* 2DA6C 8003D26C D0EB000C */  jal        func_8003AF40
     /* 2DA70 8003D270 21200000 */   addu      $a0, $zero, $zero
-    /* 2DA74 8003D274 FFEB000C */  jal        func_8003AFFC
+    /* 2DA74 8003D274 FFEB000C */  jal        md_menu_logo_exec
     /* 2DA78 8003D278 00000000 */   nop
     /* 2DA7C 8003D27C 4DED000C */  jal        func_8003B534
     /* 2DA80 8003D280 04000424 */   addiu     $a0, $zero, 0x4

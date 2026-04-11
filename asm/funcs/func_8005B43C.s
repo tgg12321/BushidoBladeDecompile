@@ -16,7 +16,7 @@ glabel func_8005B43C
     /* 4BC70 8005B470 04006324 */   addiu     $v1, $v1, 0x4
     /* 4BC74 8005B474 860E020C */  jal        sys_Shutdown
     /* 4BC78 8005B478 00000000 */   nop
-    /* 4BC7C 8005B47C 3416020C */  jal        func_800858D0
+    /* 4BC7C 8005B47C 3416020C */  jal        title_mv_exec2
     /* 4BC80 8005B480 21200000 */   addu      $a0, $zero, $zero
     /* 4BC84 8005B484 E617020C */  jal        func_80085F98
     /* 4BC88 8005B488 00000000 */   nop

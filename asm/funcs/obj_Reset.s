@@ -1,7 +1,7 @@
 glabel obj_Reset
     /* 4C73C 8005BF3C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 4C740 8005BF40 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 4C744 8005BF44 3416020C */  jal        func_800858D0
+    /* 4C744 8005BF44 3416020C */  jal        title_mv_exec2
     /* 4C748 8005BF48 21200000 */   addu      $a0, $zero, $zero
     /* 4C74C 8005BF4C E617020C */  jal        func_80085F98
     /* 4C750 8005BF50 00000000 */   nop

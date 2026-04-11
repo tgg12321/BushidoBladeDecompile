@@ -155,14 +155,14 @@ glabel func_80043454
     /* 33E78 80043678 21304002 */  addu       $a2, $s2, $zero
     /* 33E7C 8004367C 0000848E */  lw         $a0, (0x1F800000 & 0xFFFF)($s4)
     /* 33E80 80043680 21382002 */  addu       $a3, $s1, $zero
-    /* 33E84 80043684 F40E010C */  jal        func_80043BD0
+    /* 33E84 80043684 F40E010C */  jal        tslDrTex1Init3
     /* 33E88 80043688 1000B0AF */   sw        $s0, 0x10($sp)
     /* 33E8C 8004368C 2128E002 */  addu       $a1, $s7, $zero
     /* 33E90 80043690 21304002 */  addu       $a2, $s2, $zero
     /* 33E94 80043694 0000848E */  lw         $a0, (0x1F800000 & 0xFFFF)($s4)
     /* 33E98 80043698 21382002 */  addu       $a3, $s1, $zero
     /* 33E9C 8004369C 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 33EA0 800436A0 F40E010C */  jal        func_80043BD0
+    /* 33EA0 800436A0 F40E010C */  jal        tslDrTex1Init3
     /* 33EA4 800436A4 20008424 */   addiu     $a0, $a0, 0x20
     /* 33EA8 800436A8 D70D0108 */  j          .L8004375C
     /* 33EAC 800436AC FFFF7326 */   addiu     $s3, $s3, -0x1
@@ -171,14 +171,14 @@ glabel func_80043454
     /* 33EB4 800436B4 21304002 */  addu       $a2, $s2, $zero
     /* 33EB8 800436B8 0000848E */  lw         $a0, (0x1F800000 & 0xFFFF)($s4)
     /* 33EBC 800436BC 21382002 */  addu       $a3, $s1, $zero
-    /* 33EC0 800436C0 1F0F010C */  jal        func_80043C7C
+    /* 33EC0 800436C0 1F0F010C */  jal        gnd_set_fog
     /* 33EC4 800436C4 1000B0AF */   sw        $s0, 0x10($sp)
     /* 33EC8 800436C8 2128E002 */  addu       $a1, $s7, $zero
     /* 33ECC 800436CC 21304002 */  addu       $a2, $s2, $zero
     /* 33ED0 800436D0 0000848E */  lw         $a0, (0x1F800000 & 0xFFFF)($s4)
     /* 33ED4 800436D4 21382002 */  addu       $a3, $s1, $zero
     /* 33ED8 800436D8 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 33EDC 800436DC 1F0F010C */  jal        func_80043C7C
+    /* 33EDC 800436DC 1F0F010C */  jal        gnd_set_fog
     /* 33EE0 800436E0 28008424 */   addiu     $a0, $a0, 0x28
     /* 33EE4 800436E4 D70D0108 */  j          .L8004375C
     /* 33EE8 800436E8 FFFF7326 */   addiu     $s3, $s3, -0x1
@@ -187,14 +187,14 @@ glabel func_80043454
     /* 33EF0 800436F0 21304002 */  addu       $a2, $s2, $zero
     /* 33EF4 800436F4 0000848E */  lw         $a0, (0x1F800000 & 0xFFFF)($s4)
     /* 33EF8 800436F8 21382002 */  addu       $a3, $s1, $zero
-    /* 33EFC 800436FC 4D0F010C */  jal        func_80043D34
+    /* 33EFC 800436FC 4D0F010C */  jal        tslDrTex1Init4
     /* 33F00 80043700 1000B0AF */   sw        $s0, 0x10($sp)
     /* 33F04 80043704 2128E002 */  addu       $a1, $s7, $zero
     /* 33F08 80043708 21304002 */  addu       $a2, $s2, $zero
     /* 33F0C 8004370C 0000848E */  lw         $a0, (0x1F800000 & 0xFFFF)($s4)
     /* 33F10 80043710 21382002 */  addu       $a3, $s1, $zero
     /* 33F14 80043714 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 33F18 80043718 4D0F010C */  jal        func_80043D34
+    /* 33F18 80043718 4D0F010C */  jal        tslDrTex1Init4
     /* 33F1C 8004371C 28008424 */   addiu     $a0, $a0, 0x28
     /* 33F20 80043720 D70D0108 */  j          .L8004375C
     /* 33F24 80043724 FFFF7326 */   addiu     $s3, $s3, -0x1
@@ -202,14 +202,14 @@ glabel func_80043454
     /* 33F28 80043728 21304002 */  addu       $a2, $s2, $zero
     /* 33F2C 8004372C 0000848E */  lw         $a0, (0x1F800000 & 0xFFFF)($s4)
     /* 33F30 80043730 21382002 */  addu       $a3, $s1, $zero
-    /* 33F34 80043734 780F010C */  jal        func_80043DE0
+    /* 33F34 80043734 780F010C */  jal        gnd_set_fog2
     /* 33F38 80043738 1000B0AF */   sw        $s0, 0x10($sp)
     /* 33F3C 8004373C 2128E002 */  addu       $a1, $s7, $zero
     /* 33F40 80043740 21304002 */  addu       $a2, $s2, $zero
     /* 33F44 80043744 0000848E */  lw         $a0, (0x1F800000 & 0xFFFF)($s4)
     /* 33F48 80043748 21382002 */  addu       $a3, $s1, $zero
     /* 33F4C 8004374C 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 33F50 80043750 780F010C */  jal        func_80043DE0
+    /* 33F50 80043750 780F010C */  jal        gnd_set_fog2
     /* 33F54 80043754 34008424 */   addiu     $a0, $a0, 0x34
     /* 33F58 80043758 FFFF7326 */  addiu      $s3, $s3, -0x1
   .L8004375C:

@@ -60,7 +60,7 @@ glabel func_8001C51C
     /* CDFC 8001C5FC A2FF0526 */   addiu     $a1, $s0, -0x5E
     /* CE00 8001C600 B2E4000C */  jal        func_800392C8
     /* CE04 8001C604 00000000 */   nop
-    /* CE08 8001C608 A084000C */  jal        func_80021280
+    /* CE08 8001C608 A084000C */  jal        title_mv_exec
     /* CE0C 8001C60C 01000424 */   addiu     $a0, $zero, 0x1
     /* CE10 8001C610 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* CE14 8001C614 1800B08F */  lw         $s0, 0x18($sp)

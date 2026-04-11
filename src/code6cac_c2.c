@@ -714,7 +714,7 @@ void func_8003D9A0(s16 *a0, s32 a1, u32 *a2) {
         } while (--s2 != -1);
     }
 }
-INCLUDE_ASM("asm/funcs", func_8003DA8C);
+INCLUDE_ASM("asm/funcs", tslLineG5Init);
 INCLUDE_ASM("asm/funcs", func_8003DBE4);
 void func_8003DDF8(u32 arg0) {
     u32 *ptr = (u32 *)D_800A378C;

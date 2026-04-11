@@ -1,4 +1,4 @@
-glabel func_80045294
+glabel saTan0Init
     /* 35A94 80045294 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 35A98 80045298 1800B2AF */  sw         $s2, 0x18($sp)
     /* 35A9C 8004529C 21908000 */  addu       $s2, $a0, $zero
@@ -87,4 +87,4 @@ glabel func_80045294
     /* 35BD4 800453D4 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 35BD8 800453D8 0800E003 */  jr         $ra
     /* 35BDC 800453DC 00000000 */   nop
-endlabel func_80045294
+endlabel saTan0Init

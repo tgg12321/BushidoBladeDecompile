@@ -27,7 +27,7 @@ glabel marionation_camera_Exec
     /* 88F8 800180F8 1C008F8D */  lw         $t7, 0x1C($t4)
     /* 88FC 800180FC 0030CE48 */  ctc2       $t6, $6 /* handwritten instruction */
     /* 8900 80018100 0038CF48 */  ctc2       $t7, $7 /* handwritten instruction */
-    /* 8904 80018104 E85F000C */  jal        func_80017FA0
+    /* 8904 80018104 E85F000C */  jal        getScreenPosition
     /* 8908 80018108 00000000 */   nop
     /* 890C 8001810C 0400028E */  lw         $v0, 0x4($s0)
     /* 8910 80018110 2800238E */  lw         $v1, 0x28($s1)

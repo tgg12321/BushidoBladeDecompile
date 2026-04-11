@@ -68,7 +68,7 @@ glabel func_80033DF4
     /* 246F0 80033EF0 813722A0 */  sb         $v0, %lo(D_800A3781)($at)
     /* 246F4 80033EF4 000083AC */  sw         $v1, 0x0($a0)
   .L80033EF8:
-    /* 246F8 80033EF8 4ECF000C */  jal        func_80033D38
+    /* 246F8 80033EF8 4ECF000C */  jal        motutil_CheckKamaeReq
     /* 246FC 80033EFC 00000000 */   nop
     /* 24700 80033F00 04000224 */  addiu      $v0, $zero, 0x4
     /* 24704 80033F04 0A80013C */  lui        $at, %hi(D_800A3834)

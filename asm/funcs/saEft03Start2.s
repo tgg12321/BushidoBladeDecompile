@@ -1,4 +1,4 @@
-glabel func_80089D60
+glabel saEft03Start2
     /* 7A560 80089D60 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 7A564 80089D64 1000B0AF */  sw         $s0, 0x10($sp)
     /* 7A568 80089D68 21808000 */  addu       $s0, $a0, $zero
@@ -26,7 +26,7 @@ glabel func_80089D60
     /* 7A5B8 80089DB8 00000000 */   nop
     /* 7A5BC 80089DBC 0A80043C */  lui        $a0, %hi(D_800A2884)
     /* 7A5C0 80089DC0 8428848C */  lw         $a0, %lo(D_800A2884)($a0)
-    /* 7A5C4 80089DC4 AC27020C */  jal        func_80089EB0
+    /* 7A5C4 80089DC4 AC27020C */  jal        action_check_defense2
     /* 7A5C8 80089DC8 00000000 */   nop
     /* 7A5CC 80089DCC 09004010 */  beqz       $v0, .L80089DF4
     /* 7A5D0 80089DD0 00000000 */   nop
@@ -93,4 +93,4 @@ glabel func_80089D60
   .L80089EA8:
     /* 7A6A8 80089EA8 0800E003 */  jr         $ra
     /* 7A6AC 80089EAC 00000000 */   nop
-endlabel func_80089D60
+endlabel saEft03Start2

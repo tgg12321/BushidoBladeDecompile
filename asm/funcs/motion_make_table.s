@@ -44,7 +44,7 @@ glabel motion_make_table
     /* 734E0 80082CE0 840C020C */  jal        func_80083210
     /* 734E4 80082CE4 000002AE */   sw        $v0, 0x0($s0)
     /* 734E8 80082CE8 01000224 */  addiu      $v0, $zero, 0x1
-    /* 734EC 80082CEC A80C020C */  jal        func_800832A0
+    /* 734EC 80082CEC A80C020C */  jal        disp_mario_jimaku
     /* 734F0 80082CF0 C4FF02A6 */   sh        $v0, -0x3C($s0)
     /* 734F4 80082CF4 0A80033C */  lui        $v1, %hi(D_800A2600)
     /* 734F8 80082CF8 0026638C */  lw         $v1, %lo(D_800A2600)($v1)

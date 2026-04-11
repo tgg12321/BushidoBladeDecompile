@@ -7,7 +7,7 @@ glabel func_80046EA0
     /* 376B4 80046EB4 E619010C */  jal        stage_GetId
     /* 376B8 80046EB8 00000000 */   nop
     /* 376BC 80046EBC 21204000 */  addu       $a0, $v0, $zero
-    /* 376C0 80046EC0 A3F6000C */  jal        func_8003DA8C
+    /* 376C0 80046EC0 A3F6000C */  jal        tslLineG5Init
     /* 376C4 80046EC4 21280002 */   addu      $a1, $s0, $zero
     /* 376C8 80046EC8 1400BF8F */  lw         $ra, 0x14($sp)
     /* 376CC 80046ECC 1000B08F */  lw         $s0, 0x10($sp)

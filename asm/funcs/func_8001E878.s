@@ -52,7 +52,7 @@ glabel func_8001E878
     /* F13C 8001E93C 00000000 */   nop
     /* F140 8001E940 5FC3000C */  jal        func_80030D7C
     /* F144 8001E944 00000000 */   nop
-    /* F148 8001E948 7AC8000C */  jal        func_800321E8
+    /* F148 8001E948 7AC8000C */  jal        myRobGeneiDraw2
     /* F14C 8001E94C 00000000 */   nop
     /* F150 8001E950 E8E5000C */  jal        func_800397A0
     /* F154 8001E954 00000000 */   nop
@@ -92,7 +92,7 @@ glabel func_8001E878
     /* F1D4 8001E9D4 2B200400 */   sltu      $a0, $zero, $a0
     /* F1D8 8001E9D8 9873000C */  jal        camera_set_target_zoom
     /* F1DC 8001E9DC 00000000 */   nop
-    /* F1E0 8001E9E0 76CD000C */  jal        func_800335D8
+    /* F1E0 8001E9E0 76CD000C */  jal        mk_leaf_newpos
     /* F1E4 8001E9E4 00000000 */   nop
     /* F1E8 8001E9E8 3772000C */  jal        func_8001C8DC
     /* F1EC 8001E9EC 00000000 */   nop

@@ -4,7 +4,7 @@ glabel obj_InitAll
     /* 4BF34 8005B734 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 4BF38 8005B738 1800B2AF */  sw         $s2, 0x18($sp)
     /* 4BF3C 8005B73C 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 4BF40 8005B740 3416020C */  jal        func_800858D0
+    /* 4BF40 8005B740 3416020C */  jal        title_mv_exec2
     /* 4BF44 8005B744 1000B0AF */   sw        $s0, 0x10($sp)
     /* 4BF48 8005B748 E617020C */  jal        func_80085F98
     /* 4BF4C 8005B74C 01001024 */   addiu     $s0, $zero, 0x1

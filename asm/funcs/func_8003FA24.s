@@ -250,7 +250,7 @@ glabel func_8003FA24
     /* 305B8 8003FDB8 18007026 */  addiu      $s0, $s3, 0x18
     /* 305BC 8003FDBC 000E0224 */  addiu      $v0, $zero, 0xE00
     /* 305C0 8003FDC0 1C00B0AF */  sw         $s0, 0x1C($sp)
-    /* 305C4 8003FDC4 615F000C */  jal        func_80017D84
+    /* 305C4 8003FDC4 615F000C */  jal        efc_rob_ougi_control
     /* 305C8 8003FDC8 1200A2A7 */   sh        $v0, 0x12($sp)
     /* 305CC 8003FDCC 000042A6 */  sh         $v0, 0x0($s2)
     /* 305D0 8003FDD0 2000A28F */  lw         $v0, 0x20($sp)

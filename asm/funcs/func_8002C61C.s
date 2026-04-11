@@ -34,7 +34,7 @@ glabel func_8002C61C
     /* 1CE94 8002C694 03B20008 */  j          .L8002C80C
     /* 1CE98 8002C698 00000000 */   nop
   .L8002C69C:
-    /* 1CE9C 8002C69C CBA1000C */  jal        func_8002872C
+    /* 1CE9C 8002C69C CBA1000C */  jal        motion_GameCalcMotion
     /* 1CEA0 8002C6A0 00000000 */   nop
     /* 1CEA4 8002C6A4 32A2000C */  jal        saTan3MainJump
     /* 1CEA8 8002C6A8 00000000 */   nop

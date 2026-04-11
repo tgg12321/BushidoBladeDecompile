@@ -1,4 +1,4 @@
-glabel func_800422BC
+glabel gnd_land_hit_char_die_main
     /* 32ABC 800422BC D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 32AC0 800422C0 2000B4AF */  sw         $s4, 0x20($sp)
     /* 32AC4 800422C4 21A0C000 */  addu       $s4, $a2, $zero
@@ -115,4 +115,4 @@ glabel func_800422BC
     /* 32C6C 8004246C 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 32C70 80042470 0800E003 */  jr         $ra
     /* 32C74 80042474 00000000 */   nop
-endlabel func_800422BC
+endlabel gnd_land_hit_char_die_main

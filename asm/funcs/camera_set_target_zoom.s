@@ -288,7 +288,7 @@ glabel camera_set_target_zoom
     /* DA90 8001D290 09006214 */  bne        $v1, $v0, .L8001D2B8
     /* DA94 8001D294 01000224 */   addiu     $v0, $zero, 0x1
   .L8001D298:
-    /* DA98 8001D298 28D0000C */  jal        func_800340A0
+    /* DA98 8001D298 28D0000C */  jal        robtest_disp
     /* DA9C 8001D29C 00000000 */   nop
     /* DAA0 8001D2A0 01000224 */  addiu      $v0, $zero, 0x1
     /* DAA4 8001D2A4 0A80013C */  lui        $at, %hi(D_800A36E8)

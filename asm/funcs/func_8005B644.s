@@ -4,7 +4,7 @@ glabel func_8005B644
     /* 4BE4C 8005B64C 21808000 */  addu       $s0, $a0, $zero
     /* 4BE50 8005B650 21200000 */  addu       $a0, $zero, $zero
     /* 4BE54 8005B654 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 4BE58 8005B658 3416020C */  jal        func_800858D0
+    /* 4BE58 8005B658 3416020C */  jal        title_mv_exec2
     /* 4BE5C 8005B65C 1400B1AF */   sw        $s1, 0x14($sp)
     /* 4BE60 8005B660 40881000 */  sll        $s1, $s0, 1
     /* 4BE64 8005B664 21883002 */  addu       $s1, $s1, $s0

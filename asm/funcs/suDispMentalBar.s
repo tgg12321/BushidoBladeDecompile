@@ -1,4 +1,4 @@
-glabel func_8003B5A4
+glabel suDispMentalBar
     /* 2BDA4 8003B5A4 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2BDA8 8003B5A8 1800BFAF */  sw         $ra, 0x18($sp)
     /* 2BDAC 8003B5AC 1400B1AF */  sw         $s1, 0x14($sp)
@@ -73,7 +73,7 @@ glabel func_8003B5A4
   .L8003B6AC:
     /* 2BEAC 8003B6AC D0EB000C */  jal        func_8003AF40
     /* 2BEB0 8003B6B0 01000424 */   addiu     $a0, $zero, 0x1
-    /* 2BEB4 8003B6B4 FFEB000C */  jal        func_8003AFFC
+    /* 2BEB4 8003B6B4 FFEB000C */  jal        md_menu_logo_exec
     /* 2BEB8 8003B6B8 00000000 */   nop
     /* 2BEBC 8003B6BC 14EE0008 */  j          .L8003B850
     /* 2BEC0 8003B6C0 00000000 */   nop
@@ -192,4 +192,4 @@ glabel func_8003B5A4
     /* 2C064 8003B864 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 2C068 8003B868 0800E003 */  jr         $ra
     /* 2C06C 8003B86C 00000000 */   nop
-endlabel func_8003B5A4
+endlabel suDispMentalBar
