@@ -56,6 +56,7 @@ extern s32 D_800A28D4;
 extern s32 D_800A2CF8;
 extern s32 D_800A2D04;
 extern volatile s32 D_800A2D14;
+extern s32 D_800A2CDC;
 extern s32 spu_TransferData(s32, s32);
 
 /* --- Functions 0x80083BE4 - 0x8008D060 (text4 segment) --- */
@@ -852,7 +853,43 @@ s32 func_80089D10(s32 a0) {
     }
     return val;
 }
-INCLUDE_ASM("asm/funcs", saEft03Start2);
+s32 saEft03Start2(s32 a0) {
+    u8 *p;
+    u16 v1;
+
+    if (a0 == 0) goto case_0;
+    if (a0 == 1) goto case_1;
+    goto exit_load;
+
+case_0:
+    D_800A287C = 0;
+    p = (u8 *)D_800A2CDC;
+    v1 = *(u16 *)(p + 0x1AA);
+    v1 &= 0xFF7F;
+    goto store_v1;
+
+case_1:
+    if (D_800A2880 == a0) goto set_flag;
+    if (func_80089EB0(D_800A2884) == 0) goto set_flag;
+    p = (u8 *)D_800A2CDC;
+    v1 = *(u16 *)(p + 0x1AA);
+    D_800A287C = 0;
+    v1 &= 0xFF7F;
+    goto store_v1;
+
+set_flag:
+    p = (u8 *)D_800A2CDC;
+    v1 = *(u16 *)(p + 0x1AA);
+    D_800A287C = a0;
+    v1 |= 0x80;
+
+store_v1:
+    *(u16 *)(p + 0x1AA) = v1;
+
+exit_load:
+    return D_800A287C;
+}
+INCLUDE_ASM("asm/funcs", func_80089E30);
 s32 func_80089EB0(u32 a0) {
     register s32 shift asm("v0");
     register s32 entry asm("v1");

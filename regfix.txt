@@ -393,3 +393,11 @@ func_8002C0DC: subst "\$16,\$16,2" "$2,$2,2" @ 33
 func_8002C0DC: subst "\$2,D_80101EC8" "$3,D_80101EC8" @ 34
 func_8002C0DC: subst "bne\t\$3,\$0," "bne $4,$0," @ 35
 func_8002C0DC: subst "addu\t\$16,\$16,\$2" "addu $16,$2,$3" @ 36
+
+# saEft03Start2: register swap v0/v1 in data access blocks
+saEft03Start2: $2 <-> $3 @ 10-14
+saEft03Start2: $2 <-> $3 @ 24-35
+# saEft03Start2: insert nop for load-use delay in case_0 block
+saEft03Start2: insert "nop" @ 11
+# saEft03Start2: reorder case_0: swap sw/lhu after nop insert (post-insert indices 12-13)
+saEft03Start2: reorder 13,12 @ 12-13
