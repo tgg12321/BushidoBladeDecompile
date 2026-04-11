@@ -652,7 +652,38 @@ void func_8001DA2C(void) {
         obj_InitPair();
     }
 }
-INCLUDE_ASM("asm/funcs", func_8001DA8C);
+void func_8001DA8C(void) {
+    func_80035FA8();
+    if (file_GetFlag2()) {
+        return;
+    }
+    switch (D_800A38DC) {
+        case 0:
+        case 1:
+        default:
+            break;
+        case 4:
+            func_80037110((&D_8008D518)[D_800A36A4]);
+            break;
+        case 3:
+            if ((&D_8008D9EC)[D_80101ED2] != 0) {
+                func_80037110(9);
+            } else {
+                func_80037110(8);
+            }
+            break;
+        case 2:
+            if (D_800A389A != 0) {
+                func_80037110(0xA);
+            } else {
+                func_80037110(0xB);
+            }
+            break;
+        case 5:
+            break;
+    }
+    func_800371E8(1);
+}
 s32 func_8001DB58(void) {
     s32 v = D_800A38DC;
     if (v >= 5) {

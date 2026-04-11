@@ -1384,24 +1384,6 @@
     "beqz\t$v0, .L800320B4",
     "addiu\t$v0, $zero, 0x4"
   ],
-  "func_800321E8": [
-    "addiu\t$sp, $sp, -0x30",
-    "sw\t$s1, 0x1C($sp)",
-    "lui\t$s1, (0x1F8002B8 >> 16)",
-    "ori\t$s1, $s1, (0x1F8002B8 & 0xFFFF)",
-    "sw\t$s2, 0x20($sp)",
-    "lui\t$s2, %hi(D_80104E88)",
-    "addiu\t$s2, $s2, %lo(D_80104E88)",
-    "sw\t$s3, 0x24($sp)",
-    "addu\t$s3, $zero, $zero",
-    "sw\t$s0, 0x18($sp)",
-    "addiu\t$s0, $s2, 0x4",
-    "sw\t$ra, 0x28($sp)",
-    "lbu\t$v0, 0x0($s2)",
-    "nop",
-    "beqz\t$v0, .L800322E0",
-    "addiu\t$a2, $s1, 0x10"
-  ],
   "func_80032854": [
     "addiu\t$sp, $sp, -0x30",
     "sw\t$s3, 0x1C($sp)",

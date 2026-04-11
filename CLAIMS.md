@@ -53,3 +53,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac.c:func_8001979C | Agent 37: Wave 14 — matched (killed mid-commit, salvaged by orchestrator) | 2026-04-11 | done — merged to main |
 | src/code6cac_b.c:func_80030BA8 | Agent 38: Wave 14 — matched (goto + permuter, 7 attempts) | 2026-04-11 | done — merged to main |
 | src/text1a.c:func_80042FA0 | Agent 39: Wave 14 — matched (GTE + permuter, 2 attempts) | 2026-04-11 | done — merged to main |
+| src/code6cac.c:func_8001DA8C | Agent 40: Wave 15 — matched (switch + 800.rodata split, 3 attempts) | 2026-04-11 | done — merged to main |
+| src/code6cac_b.c:myRobGeneiDraw2 | Agent 41: Wave 15 — matched (permuter + regfix, 6 attempts) | 2026-04-11 | done — merged to main |
+| src/code6cac_c2.c:md_game_check_change_sub_mode | Agent 42: Wave 15 — matched (switch + rodata split, 2 attempts) | 2026-04-11 | done — merged to main |

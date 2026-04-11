@@ -456,3 +456,7 @@ func_8001979C: insert "addu	$7,$2,$0" @ 25
 func_8001979C: insert "addu	$7,$2,$0" @ 51
 func_8001979C: reorder 15,14 @ 14-15
 func_8001979C: reorder 42,41 @ 41-42
+
+# myRobGeneiDraw2 (func_800321E8): fix a0 arg and comparison load order
+myRobGeneiDraw2: subst "addu\t\$4,\$18,4" "addu	$4,$16,$0" @ 42
+myRobGeneiDraw2: reorder 48,47 @ 47-48
