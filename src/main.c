@@ -51,6 +51,11 @@ extern s32 g_spu_voice_key_a;
 extern s32 g_spu_voice_key_b;
 extern s32 g_spu_voice_key_c;
 extern s32 D_800A2D44;
+extern s32 D_800A2870;
+extern s32 D_800A28D4;
+extern s32 D_800A2CF8;
+extern s32 D_800A2D04;
+extern volatile s32 D_800A2D14;
 extern s32 spu_TransferData(s32, s32);
 
 /* --- Functions 0x80083BE4 - 0x8008D060 (text4 segment) --- */
@@ -811,8 +816,72 @@ void func_8008A904(s32 a0, s32 a1) {
     coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD);
 }
 
-INCLUDE_ASM("asm/funcs", md_game_check_change_main_mode_katinuki);
-/* kengo:HIGH  |  md_game/md_game_check_change_main_mode_katinuki  |  103i */
+s32 md_game_check_change_main_mode_katinuki(s32 arg0) {
+    volatile s32 sp10;
+    s32 s1_val;
+    s32 s2_val;
+    s32 s3_flag;
+    s32 s4_saved;
+    s32 s5_flag;
+    s32 chunk;
+    s32 v0_cmp;
+    s32 *table_ptr;
+    s32 *base;
+
+    sp10 = 0;
+    s5_flag = 0;
+    if ((u32)arg0 >= 10u) {
+        return -1;
+    }
+    base = &D_800A2D44;
+    table_ptr = (s32 *)((arg0 << 2) + (s32)base);
+    if (func_80089EB0(*table_ptr) != 0) {
+        return -1;
+    }
+    if (arg0 == 0) {
+        s1_val = 0x10 << D_800A2D04;
+        s2_val = (s32)0xFFF0 << D_800A2D04;
+    } else {
+        s32 entry_val = *table_ptr;
+        s1_val = (0x10000 - entry_val) << D_800A2D04;
+        s2_val = entry_val << D_800A2D04;
+    }
+    s4_saved = D_800A2CF8;
+    if (s4_saved == 1) {
+        D_800A2CF8 = 0;
+        s5_flag = 1;
+    }
+    s3_flag = 1;
+    if (D_800A2D14 != 0) {
+        sp10 = D_800A2D14;
+        D_800A2D14 = 0;
+    }
+    ;
+loop:
+    if (!((u32)s1_val < 0x401u)) {
+        chunk = 0x400;
+    } else {
+        do { chunk = s1_val; } while (0);
+        s3_flag = 0;
+    }
+    saTan0GaugeDraw(2, s2_val);
+    saTan0GaugeDraw(1);
+    saTan0GaugeDraw(3, &D_800A28D4, chunk);
+    func_8008AAC4(D_800A2870);
+    s1_val -= 0x400;
+    s2_val += 0x400;
+    if (s3_flag != 0) {
+        v0_cmp = (u32)s1_val < 0x401u;
+        goto loop;
+    }
+    if (s5_flag != 0) {
+        D_800A2CF8 = s4_saved;
+    }
+    if (sp10 != 0) {
+        D_800A2D14 = sp10;
+    }
+    return 0;
+}
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
