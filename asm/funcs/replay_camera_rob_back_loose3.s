@@ -1,4 +1,4 @@
-glabel func_80042A88
+glabel replay_camera_rob_back_loose3
     /* 33288 80042A88 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 3328C 80042A8C 3800B2AF */  sw         $s2, 0x38($sp)
     /* 33290 80042A90 3400B1AF */  sw         $s1, 0x34($sp)
@@ -125,4 +125,4 @@ glabel func_80042A88
     /* 33474 80042C74 4000BD27 */  addiu      $sp, $sp, 0x40
     /* 33478 80042C78 0800E003 */  jr         $ra
     /* 3347C 80042C7C 00000000 */   nop
-endlabel func_80042A88
+endlabel replay_camera_rob_back_loose3

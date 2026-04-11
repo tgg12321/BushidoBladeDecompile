@@ -7,7 +7,7 @@ glabel func_8008AE24
     /* 7B638 8008AE38 2B104300 */  sltu       $v0, $v0, $v1
     /* 7B63C 8008AE3C 0A004014 */  bnez       $v0, .L8008AE68
     /* 7B640 8008AE40 1000BFAF */   sw        $ra, 0x10($sp)
-    /* 7B644 8008AE44 3524020C */  jal        func_800890D4
+    /* 7B644 8008AE44 3524020C */  jal        saTan1SyuryoDraw
     /* 7B648 8008AE48 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 7B64C 8008AE4C 0A80033C */  lui        $v1, %hi(D_800A2D04)
     /* 7B650 8008AE50 042D638C */  lw         $v1, %lo(D_800A2D04)($v1)

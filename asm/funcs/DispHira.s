@@ -27,7 +27,7 @@ glabel DispHira
     /* 2EF3C 8003E73C 0A80043C */  lui        $a0, %hi(D_800A3708)
     /* 2EF40 8003E740 0837848C */  lw         $a0, %lo(D_800A3708)($a0)
     /* 2EF44 8003E744 1000A527 */  addiu      $a1, $sp, 0x10
-    /* 2EF48 8003E748 A20A010C */  jal        func_80042A88
+    /* 2EF48 8003E748 A20A010C */  jal        replay_camera_rob_back_loose3
     /* 2EF4C 8003E74C 10008424 */   addiu     $a0, $a0, 0x10
     /* 2EF50 8003E750 00100224 */  addiu      $v0, $zero, 0x1000
     /* 2EF54 8003E754 3400A2A7 */  sh         $v0, 0x34($sp)

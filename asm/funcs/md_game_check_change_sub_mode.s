@@ -57,7 +57,7 @@ glabel md_game_check_change_sub_mode
   jlabel .L8003BD88
     /* 2C588 8003BD88 D0EB000C */  jal        func_8003AF40
     /* 2C58C 8003BD8C 21200000 */   addu      $a0, $zero, $zero
-    /* 2C590 8003BD90 FFEB000C */  jal        func_8003AFFC
+    /* 2C590 8003BD90 FFEB000C */  jal        md_menu_logo_exec
     /* 2C594 8003BD94 00000000 */   nop
   jlabel .L8003BD98
     /* 2C598 8003BD98 0A80013C */  lui        $at, %hi(D_800A3894)
@@ -87,7 +87,7 @@ glabel md_game_check_change_sub_mode
     /* 2C5F0 8003BDF0 0A80013C */  lui        $at, %hi(D_800A385C)
     /* 2C5F4 8003BDF4 5C3820AC */  sw         $zero, %lo(D_800A385C)($at)
   .L8003BDF8:
-    /* 2C5F8 8003BDF8 69ED000C */  jal        func_8003B5A4
+    /* 2C5F8 8003BDF8 69ED000C */  jal        suDispMentalBar
     /* 2C5FC 8003BDFC 00000000 */   nop
   .L8003BE00:
     /* 2C600 8003BE00 1000BF8F */  lw         $ra, 0x10($sp)

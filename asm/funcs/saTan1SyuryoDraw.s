@@ -1,4 +1,4 @@
-glabel func_800890D4
+glabel saTan1SyuryoDraw
     /* 798D4 800890D4 0A80023C */  lui        $v0, %hi(D_800A2D00)
     /* 798D8 800890D8 002D428C */  lw         $v0, %lo(D_800A2D00)($v0)
     /* 798DC 800890DC 00000000 */  nop
@@ -88,4 +88,4 @@ glabel func_800890D4
     /* 79A08 80089208 000043AC */  sw         $v1, 0x0($v0)
     /* 79A0C 8008920C 0800E003 */  jr         $ra
     /* 79A10 80089210 00000000 */   nop
-endlabel func_800890D4
+endlabel saTan1SyuryoDraw

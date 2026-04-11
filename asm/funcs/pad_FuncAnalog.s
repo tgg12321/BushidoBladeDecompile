@@ -83,7 +83,7 @@ glabel pad_FuncAnalog
   .L800384C8:
     /* 28CC8 800384C8 01000224 */  addiu      $v0, $zero, 0x1
     /* 28CCC 800384CC D20682A7 */  sh         $v0, %gp_rel(D_800A379E)($gp)
-    /* 28CD0 800384D0 88DE000C */  jal        func_80037A20
+    /* 28CD0 800384D0 88DE000C */  jal        _CardCheckPulled2
     /* 28CD4 800384D4 21280000 */   addu      $a1, $zero, $zero
     /* 28CD8 800384D8 A9DE000C */  jal        func_80037AA4
     /* 28CDC 800384DC 00000000 */   nop
@@ -112,7 +112,7 @@ glabel pad_FuncAnalog
     /* 28D30 80038530 D8331026 */  addiu      $s0, $s0, %lo(D_800F33D8)
     /* 28D34 80038534 5CE0000C */  jal        func_80038170
     /* 28D38 80038538 21200002 */   addu      $a0, $s0, $zero
-    /* 28D3C 8003853C D0DF000C */  jal        func_80037F40
+    /* 28D3C 8003853C D0DF000C */  jal        camera_SetMatrix
     /* 28D40 80038540 00010426 */   addiu     $a0, $s0, 0x100
     /* 28D44 80038544 21200000 */  addu       $a0, $zero, $zero
     /* 28D48 80038548 21280000 */  addu       $a1, $zero, $zero
@@ -138,7 +138,7 @@ glabel pad_FuncAnalog
     /* 28D94 80038594 00000000 */   nop
   .L80038598:
     /* 28D98 80038598 21200000 */  addu       $a0, $zero, $zero
-    /* 28D9C 8003859C 88DE000C */  jal        func_80037A20
+    /* 28D9C 8003859C 88DE000C */  jal        _CardCheckPulled2
     /* 28DA0 800385A0 21280000 */   addu      $a1, $zero, $zero
     /* 28DA4 800385A4 A9DE000C */  jal        func_80037AA4
     /* 28DA8 800385A8 00000000 */   nop

@@ -14,7 +14,7 @@ glabel func_8005BA8C
     /* 4C2BC 8005BABC 6800B4AF */  sw         $s4, 0x68($sp)
     /* 4C2C0 8005BAC0 6000B2AF */  sw         $s2, 0x60($sp)
     /* 4C2C4 8005BAC4 5C00B1AF */  sw         $s1, 0x5C($sp)
-    /* 4C2C8 8005BAC8 3416020C */  jal        func_800858D0
+    /* 4C2C8 8005BAC8 3416020C */  jal        title_mv_exec2
     /* 4C2CC 8005BACC 5800B0AF */   sw        $s0, 0x58($sp)
     /* 4C2D0 8005BAD0 0F80143C */  lui        $s4, %hi(D_800EFC38)
     /* 4C2D4 8005BAD4 38FC9426 */  addiu      $s4, $s4, %lo(D_800EFC38)

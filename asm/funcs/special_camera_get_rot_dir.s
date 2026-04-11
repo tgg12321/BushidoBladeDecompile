@@ -20,7 +20,7 @@ glabel special_camera_get_rot_dir
     /* 27B90 80037390 02000424 */  addiu      $a0, $zero, 0x2
   .L80037394:
     /* 27B94 80037394 21285302 */  addu       $a1, $s2, $s3
-    /* 27B98 80037398 9600020C */  jal        func_80080258
+    /* 27B98 80037398 9600020C */  jal        _DispCharacterName
     /* 27B9C 8003739C 21300000 */   addu      $a2, $zero, $zero
     /* 27BA0 800373A0 00080424 */  addiu      $a0, $zero, 0x800
     /* 27BA4 800373A4 1000A527 */  addiu      $a1, $sp, 0x10
@@ -55,7 +55,7 @@ glabel special_camera_get_rot_dir
     /* 27C14 80037414 21282002 */   addu      $a1, $s1, $zero
     /* 27C18 80037418 02000424 */  addiu      $a0, $zero, 0x2
     /* 27C1C 8003741C 21282002 */  addu       $a1, $s1, $zero
-    /* 27C20 80037420 9600020C */  jal        func_80080258
+    /* 27C20 80037420 9600020C */  jal        _DispCharacterName
     /* 27C24 80037424 21300000 */   addu      $a2, $zero, $zero
     /* 27C28 80037428 0C00048E */  lw         $a0, 0xC($s0)
     /* 27C2C 8003742C 0800058E */  lw         $a1, 0x8($s0)

@@ -4,7 +4,7 @@ glabel func_8005C614
     /* 4CE1C 8005C61C 7F000424 */  addiu      $a0, $zero, 0x7F
     /* 4CE20 8005C620 F90E020C */  jal        func_80083BE4
     /* 4CE24 8005C624 7F000524 */   addiu     $a1, $zero, 0x7F
-    /* 4CE28 8005C628 3416020C */  jal        func_800858D0
+    /* 4CE28 8005C628 3416020C */  jal        title_mv_exec2
     /* 4CE2C 8005C62C 21200000 */   addu      $a0, $zero, $zero
     /* 4CE30 8005C630 C91F020C */  jal        memcard_ClearBusy
     /* 4CE34 8005C634 00000000 */   nop

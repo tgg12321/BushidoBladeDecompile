@@ -725,7 +725,7 @@ u8 *func_80032064(u8 *a0, s32 a1) {
     return s0;
 }
 /* TABLED: same size, score 1450 — GCC body scheduling entirely different from target (delay slot fill choices, register allocation for intermediates) */
-INCLUDE_ASM("asm/funcs", func_800321E8);
+INCLUDE_ASM("asm/funcs", myRobGeneiDraw2);
 INCLUDE_ASM("asm/funcs", Pad_Prs);
 /* kengo:HIGH  |  is_pad/Pad_Prs  |  111i */
 void cpu_get_dist_2(u8 *a0) {
@@ -914,7 +914,7 @@ void func_80033550(s32 *arg0)
   *((s32 *) (((u8 *) (&D_80107858)) + idx)) = w2;
 }
 
-INCLUDE_ASM("asm/funcs", func_800335D8);
+INCLUDE_ASM("asm/funcs", mk_leaf_newpos);
 void func_80033898(void) {
     gpu_EnableDisplay();
     D_800A37B8 = 0;
@@ -922,7 +922,7 @@ void func_80033898(void) {
 }
 INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action);
 /* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action  |  189i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", func_80033BC0);
+INCLUDE_ASM("asm/funcs", mottest_disp);
 /* TABLED: score 235, 94/94 insns. GCC eliminates andi v1,a0,0xFF after lbu (knows 0-255), inline asm prevents load interleaving. */
 void func_80033D38(void) {
     register u8 *t1 asm("t1") = (u8 *)&g_file_disc_size;
@@ -1174,6 +1174,6 @@ INCLUDE_ASM("asm/funcs", func_80034708);
 INCLUDE_ASM("asm/funcs", func_80034F88);
 /* TABLED: -4 bytes. Branch inversion (beqz→bnez+ori delay slot), load order (lbu before lw vs lw,lbu fill), byte caching. Best: volatile ptr + inverted cond gives bnez+ori but lbu before lw. */
 INCLUDE_ASM("asm/funcs", func_8003504C);
-INCLUDE_ASM("asm/funcs", func_80035280);
+INCLUDE_ASM("asm/funcs", single_game_SetWazaData);
 void func_80035430(void) {
 }

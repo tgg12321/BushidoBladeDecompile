@@ -6,7 +6,7 @@ glabel func_8005BD30
     /* 4C540 8005BD40 2000BFAF */  sw         $ra, 0x20($sp)
     /* 4C544 8005BD44 1800B2AF */  sw         $s2, 0x18($sp)
     /* 4C548 8005BD48 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 4C54C 8005BD4C 3416020C */  jal        func_800858D0
+    /* 4C54C 8005BD4C 3416020C */  jal        title_mv_exec2
     /* 4C550 8005BD50 1000B0AF */   sw        $s0, 0x10($sp)
     /* 4C554 8005BD54 0F80033C */  lui        $v1, %hi(D_800EFC50)
     /* 4C558 8005BD58 50FC638C */  lw         $v1, %lo(D_800EFC50)($v1)

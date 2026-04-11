@@ -1,4 +1,4 @@
-glabel func_80041EB0
+glabel decBs0
     /* 326B0 80041EB0 B8FFBD27 */  addiu      $sp, $sp, -0x48
     /* 326B4 80041EB4 4000BEAF */  sw         $fp, 0x40($sp)
     /* 326B8 80041EB8 0F801E3C */  lui        $fp, %hi(D_800F62E0)
@@ -148,4 +148,4 @@ glabel func_80041EB0
     /* 328C4 800420C4 4800BD27 */  addiu      $sp, $sp, 0x48
     /* 328C8 800420C8 0800E003 */  jr         $ra
     /* 328CC 800420CC 00000000 */   nop
-endlabel func_80041EB0
+endlabel decBs0

@@ -17,7 +17,7 @@ glabel func_8003D7B4
     /* 2DFF0 8003D7F0 1000B0AF */  sw         $s0, 0x10($sp)
   .L8003D7F4:
     /* 2DFF4 8003D7F4 21204002 */  addu       $a0, $s2, $zero
-    /* 2DFF8 8003D7F8 22F6000C */  jal        func_8003D888
+    /* 2DFF8 8003D7F8 22F6000C */  jal        coli_calc_motion
     /* 2DFFC 8003D7FC 04000524 */   addiu     $a1, $zero, 0x4
     /* 2E000 8003D800 21804000 */  addu       $s0, $v0, $zero
     /* 2E004 8003D804 02000016 */  bnez       $s0, .L8003D810
@@ -25,7 +25,7 @@ glabel func_8003D7B4
     /* 2E00C 8003D80C 10001024 */  addiu      $s0, $zero, 0x10
   .L8003D810:
     /* 2E010 8003D810 21204002 */  addu       $a0, $s2, $zero
-    /* 2E014 8003D814 22F6000C */  jal        func_8003D888
+    /* 2E014 8003D814 22F6000C */  jal        coli_calc_motion
     /* 2E018 8003D818 21280002 */   addu      $a1, $s0, $zero
     /* 2E01C 8003D81C 21184000 */  addu       $v1, $v0, $zero
     /* 2E020 8003D820 00140300 */  sll        $v0, $v1, 16

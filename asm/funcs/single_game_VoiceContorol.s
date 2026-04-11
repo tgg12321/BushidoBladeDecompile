@@ -1,4 +1,4 @@
-glabel func_80019568
+glabel single_game_VoiceContorol
     /* 9D68 80019568 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 9D6C 8001956C 3800B0AF */  sw         $s0, 0x38($sp)
     /* 9D70 80019570 21808000 */  addu       $s0, $a0, $zero
@@ -150,4 +150,4 @@ glabel func_80019568
     /* 9F90 80019790 4000BD27 */  addiu      $sp, $sp, 0x40
     /* 9F94 80019794 0800E003 */  jr         $ra
     /* 9F98 80019798 00000000 */   nop
-endlabel func_80019568
+endlabel single_game_VoiceContorol

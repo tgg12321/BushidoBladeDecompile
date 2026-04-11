@@ -24,7 +24,7 @@ glabel func_80087DA0
     /* 785F4 80087DF4 FF000232 */   andi      $v0, $s0, 0xFF
     /* 785F8 80087DF8 1080013C */  lui        $at, %hi(D_8010280A)
     /* 785FC 80087DFC 0A2822A4 */  sh         $v0, %lo(D_8010280A)($at)
-    /* 78600 80087E00 751C020C */  jal        func_800871D4
+    /* 78600 80087E00 751C020C */  jal        motutil_GetAngTableNum
     /* 78604 80087E04 21200000 */   addu      $a0, $zero, $zero
   .L80087E08:
     /* 78608 80087E08 01001026 */  addiu      $s0, $s0, 0x1

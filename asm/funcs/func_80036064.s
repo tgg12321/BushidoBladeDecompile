@@ -51,7 +51,7 @@ glabel func_80036064
     /* 2691C 8003611C 9000020C */  jal        cdrom_SetCallbackB
     /* 26920 80036120 21200000 */   addu      $a0, $zero, $zero
     /* 26924 80036124 09000424 */  addiu      $a0, $zero, 0x9
-    /* 26928 80036128 E400020C */  jal        func_80080390
+    /* 26928 80036128 E400020C */  jal        myRobGeneiDraw3
     /* 2692C 8003612C 21280000 */   addu      $a1, $zero, $zero
   .L80036130:
     /* 26930 80036130 2000BF8F */  lw         $ra, 0x20($sp)

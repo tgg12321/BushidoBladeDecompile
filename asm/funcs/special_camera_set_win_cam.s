@@ -152,7 +152,7 @@ glabel special_camera_set_win_cam
     /* 26B70 80036370 21380000 */   addu      $a3, $zero, $zero
     /* 26B74 80036374 1080053C */  lui        $a1, %hi(D_80101E90)
     /* 26B78 80036378 901EA524 */  addiu      $a1, $a1, %lo(D_80101E90)
-    /* 26B7C 8003637C E400020C */  jal        func_80080390
+    /* 26B7C 8003637C E400020C */  jal        myRobGeneiDraw3
     /* 26B80 80036380 0E000424 */   addiu     $a0, $zero, 0xE
     /* 26B84 80036384 1080013C */  lui        $at, %hi(D_80101E88)
     /* 26B88 80036388 881E20AC */  sw         $zero, %lo(D_80101E88)($at)
@@ -173,7 +173,7 @@ glabel special_camera_set_win_cam
     /* 26BC0 800363C0 05000224 */   addiu     $v0, $zero, 0x5
     /* 26BC4 800363C4 1080053C */  lui        $a1, %hi(D_80101E6C)
     /* 26BC8 800363C8 6C1EA524 */  addiu      $a1, $a1, %lo(D_80101E6C)
-    /* 26BCC 800363CC E400020C */  jal        func_80080390
+    /* 26BCC 800363CC E400020C */  jal        myRobGeneiDraw3
     /* 26BD0 800363D0 02000424 */   addiu     $a0, $zero, 0x2
     /* 26BD4 800363D4 49DA0008 */  j          .L80036924
     /* 26BD8 800363D8 12000224 */   addiu     $v0, $zero, 0x12
@@ -196,7 +196,7 @@ glabel special_camera_set_win_cam
     /* 26C18 80036418 40016214 */  bne        $v1, $v0, .L8003691C
     /* 26C1C 8003641C 05000224 */   addiu     $v0, $zero, 0x5
     /* 26C20 80036420 16000424 */  addiu      $a0, $zero, 0x16
-    /* 26C24 80036424 E400020C */  jal        func_80080390
+    /* 26C24 80036424 E400020C */  jal        myRobGeneiDraw3
     /* 26C28 80036428 21280000 */   addu      $a1, $zero, $zero
     /* 26C2C 8003642C 49DA0008 */  j          .L80036924
     /* 26C30 80036430 13000224 */   addiu     $v0, $zero, 0x13
@@ -221,7 +221,7 @@ glabel special_camera_set_win_cam
     /* 26C78 80036478 03000424 */   addiu     $a0, $zero, 0x3
     /* 26C7C 8003647C 1B000424 */  addiu      $a0, $zero, 0x1B
   .L80036480:
-    /* 26C80 80036480 E400020C */  jal        func_80080390
+    /* 26C80 80036480 E400020C */  jal        myRobGeneiDraw3
     /* 26C84 80036484 21280000 */   addu      $a1, $zero, $zero
     /* 26C88 80036488 49DA0008 */  j          .L80036924
     /* 26C8C 8003648C 14000224 */   addiu     $v0, $zero, 0x14
@@ -272,7 +272,7 @@ glabel special_camera_set_win_cam
     /* 26D30 80036530 000002A6 */   sh        $v0, 0x0($s0)
     /* 26D34 80036534 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 26D38 80036538 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
-    /* 26D3C 8003653C E400020C */  jal        func_80080390
+    /* 26D3C 8003653C E400020C */  jal        myRobGeneiDraw3
     /* 26D40 80036540 11000424 */   addiu     $a0, $zero, 0x11
     /* 26D44 80036544 1080013C */  lui        $at, %hi(D_80101E9A)
     /* 26D48 80036548 9A1E20A4 */  sh         $zero, %lo(D_80101E9A)($at)
@@ -280,7 +280,7 @@ glabel special_camera_set_win_cam
     /* 26D50 80036550 00000000 */   nop
   .L80036554:
     /* 26D54 80036554 01000424 */  addiu      $a0, $zero, 0x1
-    /* 26D58 80036558 E400020C */  jal        func_80080390
+    /* 26D58 80036558 E400020C */  jal        myRobGeneiDraw3
     /* 26D5C 8003655C 21280000 */   addu      $a1, $zero, $zero
     /* 26D60 80036560 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 26D64 80036564 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
@@ -446,7 +446,7 @@ glabel special_camera_set_win_cam
     /* 26FBC 800367BC CCD7000C */  jal        func_80035F30
     /* 26FC0 800367C0 21380000 */   addu      $a3, $zero, $zero
     /* 26FC4 800367C4 09000424 */  addiu      $a0, $zero, 0x9
-    /* 26FC8 800367C8 E400020C */  jal        func_80080390
+    /* 26FC8 800367C8 E400020C */  jal        myRobGeneiDraw3
     /* 26FCC 800367CC 21280000 */   addu      $a1, $zero, $zero
     /* 26FD0 800367D0 49DA0008 */  j          .L80036924
     /* 26FD4 800367D4 1D000224 */   addiu     $v0, $zero, 0x1D
@@ -492,7 +492,7 @@ glabel special_camera_set_win_cam
     /* 27068 80036868 1A000224 */   addiu     $v0, $zero, 0x1A
   jlabel .L8003686C
     /* 2706C 8003686C 01000424 */  addiu      $a0, $zero, 0x1
-    /* 27070 80036870 E400020C */  jal        func_80080390
+    /* 27070 80036870 E400020C */  jal        myRobGeneiDraw3
     /* 27074 80036874 21280000 */   addu      $a1, $zero, $zero
     /* 27078 80036878 49DA0008 */  j          .L80036924
     /* 2707C 8003687C 19000224 */   addiu     $v0, $zero, 0x19
@@ -519,7 +519,7 @@ glabel special_camera_set_win_cam
     /* 270C8 800368C8 00000000 */   nop
   jlabel .L800368CC
     /* 270CC 800368CC 13000424 */  addiu      $a0, $zero, 0x13
-    /* 270D0 800368D0 E400020C */  jal        func_80080390
+    /* 270D0 800368D0 E400020C */  jal        myRobGeneiDraw3
     /* 270D4 800368D4 21280000 */   addu      $a1, $zero, $zero
     /* 270D8 800368D8 49DA0008 */  j          .L80036924
     /* 270DC 800368DC 1B000224 */   addiu     $v0, $zero, 0x1B

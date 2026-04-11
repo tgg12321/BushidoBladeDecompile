@@ -10,7 +10,7 @@ glabel func_8005BF78
     /* 4C798 8005BF98 2180E000 */  addu       $s0, $a3, $zero
     /* 4C79C 8005BF9C 21200000 */  addu       $a0, $zero, $zero
     /* 4C7A0 8005BFA0 2400BFAF */  sw         $ra, 0x24($sp)
-    /* 4C7A4 8005BFA4 3416020C */  jal        func_800858D0
+    /* 4C7A4 8005BFA4 3416020C */  jal        title_mv_exec2
     /* 4C7A8 8005BFA8 1400B1AF */   sw        $s1, 0x14($sp)
     /* 4C7AC 8005BFAC 008C1200 */  sll        $s1, $s2, 16
     /* 4C7B0 8005BFB0 038C1100 */  sra        $s1, $s1, 16

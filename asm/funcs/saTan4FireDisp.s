@@ -1,4 +1,4 @@
-glabel func_80041BF4
+glabel saTan4FireDisp
     /* 323F4 80041BF4 A8FFBD27 */  addiu      $sp, $sp, -0x58
     /* 323F8 80041BF8 3000B0AF */  sw         $s0, 0x30($sp)
     /* 323FC 80041BFC 21808000 */  addu       $s0, $a0, $zero
@@ -141,4 +141,4 @@ glabel func_80041BF4
     /* 32604 80041E04 5800BD27 */  addiu      $sp, $sp, 0x58
     /* 32608 80041E08 0800E003 */  jr         $ra
     /* 3260C 80041E0C 00000000 */   nop
-endlabel func_80041BF4
+endlabel saTan4FireDisp

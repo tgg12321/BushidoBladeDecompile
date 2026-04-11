@@ -1,4 +1,4 @@
-glabel func_8003F824
+glabel tslPrintScreen
     /* 30024 8003F824 B8FFBD27 */  addiu      $sp, $sp, -0x48
     /* 30028 8003F828 3000B4AF */  sw         $s4, 0x30($sp)
     /* 3002C 8003F82C 21A08000 */  addu       $s4, $a0, $zero
@@ -137,4 +137,4 @@ glabel func_8003F824
     /* 30218 8003FA18 4800BD27 */  addiu      $sp, $sp, 0x48
     /* 3021C 8003FA1C 0800E003 */  jr         $ra
     /* 30220 8003FA20 00000000 */   nop
-endlabel func_8003F824
+endlabel tslPrintScreen

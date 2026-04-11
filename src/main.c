@@ -178,7 +178,7 @@ void func_80085448(s16 a0, s16 a1, s16 a2) {
 INCLUDE_ASM("asm/funcs", SetBloodSpot);
 /* kengo:MED  |  am_rmd/SetBloodSpot  |  91i */
 INCLUDE_ASM("asm/funcs", func_800856B0);
-INCLUDE_ASM("asm/funcs", func_800858D0);
+INCLUDE_ASM("asm/funcs", title_mv_exec2);
 extern u8 g_snd_ch_status[];
 extern s32 g_snd_ch_addr[];
 s32 func_800859F0(s16 a0) {
@@ -597,7 +597,7 @@ void spu_WriteReg(s32 arg0, u32 arg1, s32 arg2) {
     temp_v1 = g_spu_addr_shift;
     *(u16 *)(temp_v0 + temp_a0) = arg1 >> temp_v1;
 }
-INCLUDE_ASM("asm/funcs", func_800890D4);
+INCLUDE_ASM("asm/funcs", saTan1SyuryoDraw);
 extern volatile u32 *g_spu_dma_ctrl;
 void spu_ReadStatus(void) {
     *g_spu_dma_ctrl = (*g_spu_dma_ctrl & DMA_CHAN_MASK) | DMA_SPU_FROM_RAM;
@@ -729,7 +729,7 @@ s32 func_80089D10(s32 a0) {
     }
     return val;
 }
-INCLUDE_ASM("asm/funcs", func_80089D60);
+INCLUDE_ASM("asm/funcs", saEft03Start2);
 s32 func_80089EB0(u32 a0) {
     register s32 shift asm("v0");
     register s32 entry asm("v1");

@@ -6,7 +6,7 @@ glabel func_80047384
     /* 37B94 80047394 0837848C */  lw         $a0, %lo(D_800A3708)($a0)
     /* 37B98 80047398 21280002 */  addu       $a1, $s0, $zero
     /* 37B9C 8004739C 5400BFAF */  sw         $ra, 0x54($sp)
-    /* 37BA0 800473A0 A20A010C */  jal        func_80042A88
+    /* 37BA0 800473A0 A20A010C */  jal        replay_camera_rob_back_loose3
     /* 37BA4 800473A4 10008424 */   addiu     $a0, $a0, 0x10
     /* 37BA8 800473A8 21200002 */  addu       $a0, $s0, $zero
     /* 37BAC 800473AC 1000A527 */  addiu      $a1, $sp, 0x10

@@ -54,7 +54,7 @@ glabel cpu_set_move_command_and_dir_for_no_action_2
     /* 7AC8 800172C8 21202002 */   addu      $a0, $s1, $zero
     /* 7ACC 800172CC BDF4000C */  jal        func_8003D2F4
     /* 7AD0 800172D0 00000000 */   nop
-    /* 7AD4 800172D4 5A65000C */  jal        func_80019568
+    /* 7AD4 800172D4 5A65000C */  jal        single_game_VoiceContorol
     /* 7AD8 800172D8 21206002 */   addu      $a0, $s3, $zero
     /* 7ADC 800172DC 50DA000C */  jal        special_camera_Exec
     /* 7AE0 800172E0 00000000 */   nop
@@ -83,7 +83,7 @@ glabel cpu_set_move_command_and_dir_for_no_action_2
     /* 7B38 80017338 00000000 */  nop
     /* 7B3C 8001733C 09F84000 */  jalr       $v0
     /* 7B40 80017340 00000000 */   nop
-    /* 7B44 80017344 CCF4000C */  jal        func_8003D330
+    /* 7B44 80017344 CCF4000C */  jal        ReturnVTMenu
     /* 7B48 80017348 00000000 */   nop
     /* 7B4C 8001734C 00F2043C */  lui        $a0, (0xF2000001 >> 16)
   .L80017350:

@@ -121,7 +121,7 @@ glabel DispSleepMenuTex
     /* 2DEE8 8003D6E8 9002848F */  lw         $a0, %gp_rel(D_800A335C)($gp)
     /* 2DEEC 8003D6EC 9802878F */  lw         $a3, %gp_rel(D_800A3364)($gp)
     /* 2DEF0 8003D6F0 C0200400 */  sll        $a0, $a0, 3
-    /* 2DEF4 8003D6F4 E7F4000C */  jal        func_8003D39C
+    /* 2DEF4 8003D6F4 E7F4000C */  jal        _McAccessSection
     /* 2DEF8 8003D6F8 10008424 */   addiu     $a0, $a0, 0x10
   .L8003D6FC:
     /* 2DEFC 8003D6FC 9002828F */  lw         $v0, %gp_rel(D_800A335C)($gp)

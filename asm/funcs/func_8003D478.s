@@ -28,7 +28,7 @@ glabel func_8003D478
     /* 2DCDC 8003D4DC 08005226 */   addiu     $s2, $s2, 0x8
   .L8003D4E0:
     /* 2DCE0 8003D4E0 21284002 */  addu       $a1, $s2, $zero
-    /* 2DCE4 8003D4E4 E7F4000C */  jal        func_8003D39C
+    /* 2DCE4 8003D4E4 E7F4000C */  jal        _McAccessSection
     /* 2DCE8 8003D4E8 21388002 */   addu      $a3, $s4, $zero
   .L8003D4EC:
     /* 2DCEC 8003D4EC 08001026 */  addiu      $s0, $s0, 0x8

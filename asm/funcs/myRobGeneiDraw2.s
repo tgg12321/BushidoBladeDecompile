@@ -1,4 +1,4 @@
-glabel func_800321E8
+glabel myRobGeneiDraw2
     /* 229E8 800321E8 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 229EC 800321EC 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 229F0 800321F0 801F113C */  lui        $s1, (0x1F8002B8 >> 16)
@@ -78,4 +78,4 @@ glabel func_800321E8
     /* 22B08 80032308 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 22B0C 8003230C 0800E003 */  jr         $ra
     /* 22B10 80032310 00000000 */   nop
-endlabel func_800321E8
+endlabel myRobGeneiDraw2

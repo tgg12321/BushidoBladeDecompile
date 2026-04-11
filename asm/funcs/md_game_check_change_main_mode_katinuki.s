@@ -17,7 +17,7 @@ glabel md_game_check_change_main_mode_katinuki
     /* 7B164 8008A964 80101000 */  sll        $v0, $s0, 2
     /* 7B168 8008A968 21884300 */  addu       $s1, $v0, $v1
     /* 7B16C 8008A96C 0000248E */  lw         $a0, 0x0($s1)
-    /* 7B170 8008A970 AC27020C */  jal        func_80089EB0
+    /* 7B170 8008A970 AC27020C */  jal        action_check_defense2
     /* 7B174 8008A974 00000000 */   nop
     /* 7B178 8008A978 03004010 */  beqz       $v0, .L8008A988
     /* 7B17C 8008A97C 00000000 */   nop

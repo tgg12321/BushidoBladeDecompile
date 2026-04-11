@@ -16,7 +16,7 @@ glabel func_8003F62C
     /* 2FE64 8003F664 5B00010C */  jal        func_8004016C
     /* 2FE68 8003F668 00000000 */   nop
     /* 2FE6C 8003F66C 21202002 */  addu       $a0, $s1, $zero
-    /* 2FE70 8003F670 09FE000C */  jal        func_8003F824
+    /* 2FE70 8003F670 09FE000C */  jal        tslPrintScreen
     /* 2FE74 8003F674 21280000 */   addu      $a1, $zero, $zero
   .L8003F678:
     /* 2FE78 8003F678 02000286 */  lh         $v0, 0x2($s0)
@@ -26,7 +26,7 @@ glabel func_8003F62C
     /* 2FE88 8003F688 0700010C */  jal        func_8004001C
     /* 2FE8C 8003F68C 21200002 */   addu      $a0, $s0, $zero
   .L8003F690:
-    /* 2FE90 8003F690 B6FD000C */  jal        func_8003F6D8
+    /* 2FE90 8003F690 B6FD000C */  jal        md_game_restart_init2
     /* 2FE94 8003F694 21200002 */   addu      $a0, $s0, $zero
     /* 2FE98 8003F698 00000586 */  lh         $a1, 0x0($s0)
     /* 2FE9C 8003F69C 9364000C */  jal        func_8001924C

@@ -51,7 +51,7 @@ glabel func_80030BA8
     /* 21468 80030C68 2A186200 */  slt        $v1, $v1, $v0
     /* 2146C 80030C6C 19006014 */  bnez       $v1, .L80030CD4
     /* 21470 80030C70 0100C624 */   addiu     $a2, $a2, 0x1
-    /* 21474 80030C74 C4C2000C */  jal        func_80030B10
+    /* 21474 80030C74 C4C2000C */  jal        motion_shift_check_e_kawashi
     /* 21478 80030C78 21202002 */   addu      $a0, $s1, $zero
     /* 2147C 80030C7C 18004010 */  beqz       $v0, .L80030CE0
     /* 21480 80030C80 0E000224 */   addiu     $v0, $zero, 0xE

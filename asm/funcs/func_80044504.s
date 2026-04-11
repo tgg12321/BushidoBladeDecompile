@@ -8,7 +8,7 @@ glabel func_80044504
     /* 34D1C 8004451C 1080103C */  lui        $s0, %hi(D_80101BD0)
     /* 34D20 80044520 D01B1026 */  addiu      $s0, $s0, %lo(D_80101BD0)
     /* 34D24 80044524 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 34D28 80044528 1D0A010C */  jal        func_80042874
+    /* 34D28 80044528 1D0A010C */  jal        _SelectSection
     /* 34D2C 8004452C 21280002 */   addu      $a1, $s0, $zero
     /* 34D30 80044530 3C06858F */  lw         $a1, %gp_rel(D_800A3708)($gp)
     /* 34D34 80044534 21200002 */  addu       $a0, $s0, $zero

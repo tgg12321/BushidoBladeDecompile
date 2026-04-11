@@ -1,7 +1,7 @@
 glabel func_80085FB8
     /* 767B8 80085FB8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 767BC 80085FBC 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 767C0 80085FC0 5827020C */  jal        func_80089D60
+    /* 767C0 80085FC0 5827020C */  jal        saEft03Start2
     /* 767C4 80085FC4 01000424 */   addiu     $a0, $zero, 0x1
     /* 767C8 80085FC8 1000BF8F */  lw         $ra, 0x10($sp)
     /* 767CC 80085FCC 1800BD27 */  addiu      $sp, $sp, 0x18

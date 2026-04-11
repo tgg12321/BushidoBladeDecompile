@@ -218,7 +218,7 @@ glabel AllocBukiRmd
     /* 76574 80085D74 64170208 */  j          .L80085D90
     /* 76578 80085D78 00000000 */   nop
   .L80085D7C:
-    /* 7657C 80085D7C FF1A020C */  jal        func_80086BFC
+    /* 7657C 80085D7C FF1A020C */  jal        disp_mario_jimaku2
     /* 76580 80085D80 2128C003 */   addu      $a1, $fp, $zero
     /* 76584 80085D84 01000424 */  addiu      $a0, $zero, 0x1
     /* 76588 80085D88 A91C020C */  jal        func_800872A4
@@ -265,7 +265,7 @@ glabel AllocBukiRmd
   .L80085E20:
     /* 76620 80085E20 1080013C */  lui        $at, %hi(D_8010280A)
     /* 76624 80085E24 0A2825A4 */  sh         $a1, %lo(D_8010280A)($at)
-    /* 76628 80085E28 751C020C */  jal        func_800871D4
+    /* 76628 80085E28 751C020C */  jal        motutil_GetAngTableNum
     /* 7662C 80085E2C 21200000 */   addu      $a0, $zero, $zero
     /* 76630 80085E30 21100000 */  addu       $v0, $zero, $zero
     /* 76634 80085E34 1080013C */  lui        $at, %hi(D_800FF630)

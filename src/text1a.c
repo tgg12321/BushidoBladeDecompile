@@ -408,7 +408,7 @@ void func_800418D0(s32 *a0) {
 }
 INCLUDE_ASM("asm/funcs", func_80041988);
 INCLUDE_ASM("asm/funcs", func_80041AC8);
-INCLUDE_ASM("asm/funcs", func_80041BF4);
+INCLUDE_ASM("asm/funcs", saTan4FireDisp);
 extern s16 g_anim_select;
 extern s16 D_800A323A;
 extern s16 D_800A323C;
@@ -419,7 +419,7 @@ void func_80041E10(Block16 *a0, s32 a1) {
     D_800A323C = (s16)(((a1 & 0xFF) << 12) / 255);
     D_800A9B28 = *a0;
 }
-INCLUDE_ASM("asm/funcs", func_80041EB0);
+INCLUDE_ASM("asm/funcs", decBs0);
 extern s16 g_anim_counter;
 extern s16 g_anim_select;
 void func_800420D0(void) {
@@ -481,7 +481,7 @@ void func_800421C8(s32 a0) {
     D_800F62E0 = val & 0xFFF;
     func_80042478(*(s32 *)((u8 *)p + 4));
 }
-INCLUDE_ASM("asm/funcs", func_800422BC);
+INCLUDE_ASM("asm/funcs", gnd_land_hit_char_die_main);
 extern s32 func_800486FC(s32);
 extern s32 func_8004881C(s32, s32, s32);
 extern void disp_SetFramebufferMode(s32, s32, s32, s32);
@@ -514,8 +514,8 @@ extern s16 D_800F6650;
 s32 func_80042864(void) {
     return D_800F6650;
 }
-INCLUDE_ASM("asm/funcs", func_80042874);
-INCLUDE_ASM("asm/funcs", func_80042A88);
+INCLUDE_ASM("asm/funcs", _SelectSection);
+INCLUDE_ASM("asm/funcs", replay_camera_rob_back_loose3);
 INCLUDE_ASM("asm/funcs", hirahira_w_ctrl_2);
 /* kengo:MED  |  my_hirahira/hirahira_w_ctrl_2  |  132i  |  x2 size collision */
 extern void func_8004A348(void);
@@ -584,7 +584,7 @@ s32 func_80043278(s32 a0) {
     v0 = v0 >> a0_new;
     return v0 & 0xFFF;
 }
-INCLUDE_ASM("asm/funcs", func_800432A0);
+INCLUDE_ASM("asm/funcs", videoDecCreate);
 extern void func_800432A0(s16, s16, s16, s16, s16);
 void func_80043398(s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
     func_800432A0(a0, (s16)(a1 << 6), (s16)(a2 << 8), (s16)(a3 << 6), (s16)(a4 << 8));
@@ -1304,7 +1304,7 @@ void func_80045230(s32 a0) {
         func_80052C10();
     }
 }
-INCLUDE_ASM("asm/funcs", func_80045294);
+INCLUDE_ASM("asm/funcs", saTan0Init);
 INCLUDE_ASM("asm/funcs", func_800453E0);
 void func_80045510(s32 a0, s32 a1) {
     volatile s32 sp_pad;

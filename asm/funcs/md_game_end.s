@@ -162,7 +162,7 @@ glabel md_game_end
     /* 77280 80086A80 1000A2AF */   sw        $v0, 0x10($sp)
     /* 77284 80086A84 1080013C */  lui        $at, %hi(D_8010280A)
     /* 77288 80086A88 0A2830A4 */  sh         $s0, %lo(D_8010280A)($at)
-    /* 7728C 80086A8C 751C020C */  jal        func_800871D4
+    /* 7728C 80086A8C 751C020C */  jal        motutil_GetAngTableNum
     /* 77290 80086A90 01000424 */   addiu     $a0, $zero, 0x1
     /* 77294 80086A94 01001026 */  addiu      $s0, $s0, 0x1
     /* 77298 80086A98 1080033C */  lui        $v1, %hi(D_80101BCC)

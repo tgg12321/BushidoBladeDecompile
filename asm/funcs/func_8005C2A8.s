@@ -23,7 +23,7 @@ glabel func_8005C2A8
     /* 4CAFC 8005C2FC 65004310 */  beq        $v0, $v1, .L8005C494
     /* 4CB00 8005C300 21100000 */   addu      $v0, $zero, $zero
   .L8005C304:
-    /* 4CB04 8005C304 3416020C */  jal        func_800858D0
+    /* 4CB04 8005C304 3416020C */  jal        title_mv_exec2
     /* 4CB08 8005C308 21200000 */   addu      $a0, $zero, $zero
     /* 4CB0C 8005C30C 00141500 */  sll        $v0, $s5, 16
     /* 4CB10 8005C310 03840200 */  sra        $s0, $v0, 16

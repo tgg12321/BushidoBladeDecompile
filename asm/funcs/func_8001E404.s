@@ -175,7 +175,7 @@ glabel func_8001E404
     /* EE80 8001E680 21200002 */  addu       $a0, $s0, $zero
     /* EE84 8001E684 2800B127 */  addiu      $s1, $sp, 0x28
     /* EE88 8001E688 3000A68F */  lw         $a2, 0x30($sp)
-    /* EE8C 8001E68C FD1A010C */  jal        func_80046BF4
+    /* EE8C 8001E68C FD1A010C */  jal        replay_camera_rob_back_win_near
     /* EE90 8001E690 21282002 */   addu      $a1, $s1, $zero
     /* EE94 8001E694 21200002 */  addu       $a0, $s0, $zero
     /* EE98 8001E698 20005026 */  addiu      $s0, $s2, 0x20

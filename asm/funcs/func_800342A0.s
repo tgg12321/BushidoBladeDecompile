@@ -1,7 +1,7 @@
 glabel func_800342A0
     /* 24AA0 800342A0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 24AA4 800342A4 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 24AA8 800342A8 80D0000C */  jal        func_80034200
+    /* 24AA8 800342A8 80D0000C */  jal        _GetBattleSwichData
     /* 24AAC 800342AC 00000000 */   nop
     /* 24AB0 800342B0 0A80033C */  lui        $v1, %hi(D_800A3874)
     /* 24AB4 800342B4 74386390 */  lbu        $v1, %lo(D_800A3874)($v1)

@@ -46,7 +46,7 @@ glabel func_8003B8E4
     /* 2C18C 8003B98C 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
     /* 2C190 8003B990 E475000C */  jal        se_data_set
     /* 2C194 8003B994 00000000 */   nop
-    /* 2C198 8003B998 69ED000C */  jal        func_8003B5A4
+    /* 2C198 8003B998 69ED000C */  jal        suDispMentalBar
     /* 2C19C 8003B99C 00000000 */   nop
     /* 2C1A0 8003B9A0 01000424 */  addiu      $a0, $zero, 0x1
     /* 2C1A4 8003B9A4 21280000 */  addu       $a1, $zero, $zero

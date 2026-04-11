@@ -32,7 +32,7 @@ glabel func_8001EFA0
     /* F818 8001F018 2128E600 */  addu       $a1, $a3, $a2
     /* F81C 8001F01C 83290500 */  sra        $a1, $a1, 6
     /* F820 8001F020 C3370600 */  sra        $a2, $a2, 31
-    /* F824 8001F024 3C6F000C */  jal        func_8001BCF0
+    /* F824 8001F024 3C6F000C */  jal        suLeagueSystemInit
     /* F828 8001F028 2328A600 */   subu      $a1, $a1, $a2
     /* F82C 8001F02C 0179000C */  jal        func_8001E404
     /* F830 8001F030 00000000 */   nop
@@ -52,13 +52,13 @@ glabel func_8001EFA0
     /* F868 8001F068 00000000 */   nop
     /* F86C 8001F06C 5FC3000C */  jal        func_80030D7C
     /* F870 8001F070 00000000 */   nop
-    /* F874 8001F074 7AC8000C */  jal        func_800321E8
+    /* F874 8001F074 7AC8000C */  jal        myRobGeneiDraw2
     /* F878 8001F078 00000000 */   nop
     /* F87C 8001F07C E8E5000C */  jal        func_800397A0
     /* F880 8001F080 00000000 */   nop
     /* F884 8001F084 6A1B010C */  jal        game_StageInit
     /* F888 8001F088 01000424 */   addiu     $a0, $zero, 0x1
-    /* F88C 8001F08C 76CD000C */  jal        func_800335D8
+    /* F88C 8001F08C 76CD000C */  jal        mk_leaf_newpos
     /* F890 8001F090 00000000 */   nop
     /* F894 8001F094 0A80033C */  lui        $v1, %hi(D_800A3748)
     /* F898 8001F098 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
@@ -125,7 +125,7 @@ glabel func_8001EFA0
     /* F97C 8001F17C 02000224 */  addiu      $v0, $zero, 0x2
     /* F980 8001F180 0A80013C */  lui        $at, %hi(D_800A3768)
     /* F984 8001F184 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
-    /* F988 8001F188 F0CE000C */  jal        func_80033BC0
+    /* F988 8001F188 F0CE000C */  jal        mottest_disp
     /* F98C 8001F18C 00000000 */   nop
     /* F990 8001F190 6D7C0008 */  j          .L8001F1B4
     /* F994 8001F194 00000000 */   nop

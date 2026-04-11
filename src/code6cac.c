@@ -253,7 +253,7 @@ void func_80019534(void) {
     D_8010278C = 1;
     D_8010278E = 1;
 }
-INCLUDE_ASM("asm/funcs", func_80019568);
+INCLUDE_ASM("asm/funcs", single_game_VoiceContorol);
 INCLUDE_ASM("asm/funcs", func_8001979C);
 INCLUDE_ASM("asm/funcs", func_800198D0);
 void func_8001A484(u16 *arg0) {

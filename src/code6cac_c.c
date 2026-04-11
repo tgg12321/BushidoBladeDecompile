@@ -1375,7 +1375,7 @@ void func_8003B56C(s32 arg0) {
     D_800A3834 = 6;
     D_800A3878 = D_800A385C + (arg0 * 4 - 4);
 }
-INCLUDE_ASM("asm/funcs", func_8003B5A4);
+INCLUDE_ASM("asm/funcs", suDispMentalBar);
 void func_8003B870(void) {
     player_SetCharId(0, D_800A376A);
     player_SetCharId(1, 0);

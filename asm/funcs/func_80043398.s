@@ -12,7 +12,7 @@ glabel func_80043398
     /* 33BC0 800433C0 1800BFAF */  sw         $ra, 0x18($sp)
     /* 33BC4 800433C4 00160200 */  sll        $v0, $v0, 24
     /* 33BC8 800433C8 03140200 */  sra        $v0, $v0, 16
-    /* 33BCC 800433CC A80C010C */  jal        func_800432A0
+    /* 33BCC 800433CC A80C010C */  jal        videoDecCreate
     /* 33BD0 800433D0 1000A2AF */   sw        $v0, 0x10($sp)
     /* 33BD4 800433D4 1800BF8F */  lw         $ra, 0x18($sp)
     /* 33BD8 800433D8 2000BD27 */  addiu      $sp, $sp, 0x20

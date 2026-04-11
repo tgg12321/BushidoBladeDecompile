@@ -21,7 +21,7 @@ glabel func_80027A58
     /* 182A4 80027AA4 00000000 */   nop
     /* 182A8 80027AA8 4C00458C */  lw         $a1, 0x4C($v0)
     /* 182AC 80027AAC 21200002 */  addu       $a0, $s0, $zero
-    /* 182B0 80027AB0 40C2000C */  jal        func_80030900
+    /* 182B0 80027AB0 40C2000C */  jal        myRobGeneiDraw
     /* 182B4 80027AB4 1400A524 */   addiu     $a1, $a1, 0x14
     /* 182B8 80027AB8 84000296 */  lhu        $v0, 0x84($s0)
     /* 182BC 80027ABC 8A0000A6 */  sh         $zero, 0x8A($s0)

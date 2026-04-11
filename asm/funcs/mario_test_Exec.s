@@ -281,7 +281,7 @@ glabel mario_test_Exec
     /* E8C0 8001E0C0 01004590 */  lbu        $a1, 0x1($v0)
     /* E8C4 8001E0C4 02004690 */  lbu        $a2, 0x2($v0)
   .L8001E0C8:
-    /* E8C8 8001E0C8 FD06010C */  jal        func_80041BF4
+    /* E8C8 8001E0C8 FD06010C */  jal        saTan4FireDisp
     /* E8CC 8001E0CC 00000000 */   nop
   .L8001E0D0:
     /* E8D0 8001E0D0 E475000C */  jal        se_data_set
@@ -333,9 +333,9 @@ glabel mario_test_Exec
   .L8001E17C:
     /* E97C 8001E17C 8484000C */  jal        func_80021210
     /* E980 8001E180 02001024 */   addiu     $s0, $zero, 0x2
-    /* E984 8001E184 A084000C */  jal        func_80021280
+    /* E984 8001E184 A084000C */  jal        title_mv_exec
     /* E988 8001E188 21200000 */   addu      $a0, $zero, $zero
-    /* E98C 8001E18C A084000C */  jal        func_80021280
+    /* E98C 8001E18C A084000C */  jal        title_mv_exec
     /* E990 8001E190 01000424 */   addiu     $a0, $zero, 0x1
     /* E994 8001E194 CD8B000C */  jal        func_80022F34
     /* E998 8001E198 00000000 */   nop

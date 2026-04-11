@@ -1,4 +1,4 @@
-glabel func_8003DA8C
+glabel tslLineG5Init
     /* 2E28C 8003DA8C D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 2E290 8003DA90 2400B1AF */  sw         $s1, 0x24($sp)
     /* 2E294 8003DA94 21888000 */  addu       $s1, $a0, $zero
@@ -92,4 +92,4 @@ glabel func_8003DA8C
     /* 2E3D8 8003DBD8 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 2E3DC 8003DBDC 0800E003 */  jr         $ra
     /* 2E3E0 8003DBE0 00000000 */   nop
-endlabel func_8003DA8C
+endlabel tslLineG5Init

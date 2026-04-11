@@ -40,7 +40,7 @@ glabel DispSamnailWindow
     /* 24D44 80034544 00000000 */   nop
     /* 24D48 80034548 1080013C */  lui        $at, %hi(D_8010277D)
     /* 24D4C 8003454C 7D2720A0 */  sb         $zero, %lo(D_8010277D)($at)
-    /* 24D50 80034550 69ED000C */  jal        func_8003B5A4
+    /* 24D50 80034550 69ED000C */  jal        suDispMentalBar
     /* 24D54 80034554 00000000 */   nop
     /* 24D58 80034558 2754010C */  jal        func_8005509C
     /* 24D5C 8003455C 01000424 */   addiu     $a0, $zero, 0x1
@@ -54,7 +54,7 @@ glabel DispSamnailWindow
     /* 24D78 80034578 00000000 */   nop
     /* 24D7C 8003457C 0A80013C */  lui        $at, %hi(D_800A3768)
     /* 24D80 80034580 683730A0 */  sb         $s0, %lo(D_800A3768)($at)
-    /* 24D84 80034584 F0CE000C */  jal        func_80033BC0
+    /* 24D84 80034584 F0CE000C */  jal        mottest_disp
     /* 24D88 80034588 00000000 */   nop
     /* 24D8C 8003458C B6D10008 */  j          .L800346D8
     /* 24D90 80034590 00000000 */   nop

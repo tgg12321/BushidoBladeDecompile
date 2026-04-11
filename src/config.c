@@ -282,7 +282,7 @@ void func_8003F7F4(void) {
     g_game_flag_a = 0;
     g_game_flag_b = 0;
 }
-INCLUDE_ASM("asm/funcs", func_8003F824);
+INCLUDE_ASM("asm/funcs", tslPrintScreen);
 INCLUDE_ASM("asm/funcs", func_8003FA24);
 s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2) {
     register s32 i asm("a3");

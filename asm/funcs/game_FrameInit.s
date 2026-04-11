@@ -11,7 +11,7 @@ glabel game_FrameInit
     /* 276E4 80036EE4 5200020C */  jal        func_80080148
     /* 276E8 80036EE8 00000000 */   nop
     /* 276EC 80036EEC 09000424 */  addiu      $a0, $zero, 0x9
-    /* 276F0 80036EF0 E400020C */  jal        func_80080390
+    /* 276F0 80036EF0 E400020C */  jal        myRobGeneiDraw3
     /* 276F4 80036EF4 21280000 */   addu      $a1, $zero, $zero
     /* 276F8 80036EF8 01000224 */  addiu      $v0, $zero, 0x1
     /* 276FC 80036EFC 1080013C */  lui        $at, %hi(D_80101E68)

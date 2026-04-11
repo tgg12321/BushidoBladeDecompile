@@ -1,7 +1,7 @@
 glabel func_800371F8
     /* 279F8 800371F8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 279FC 800371FC 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 27A00 80037200 F5DB000C */  jal        func_80036FD4
+    /* 27A00 80037200 F5DB000C */  jal        mottest_rob_init
     /* 27A04 80037204 00000000 */   nop
     /* 27A08 80037208 03004014 */  bnez       $v0, .L80037218
     /* 27A0C 8003720C 01000224 */   addiu     $v0, $zero, 0x1

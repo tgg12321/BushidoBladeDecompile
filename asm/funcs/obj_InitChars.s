@@ -5,7 +5,7 @@ glabel obj_InitChars
     /* 4BDB8 8005B5B8 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 4BDBC 8005B5BC 1800B2AF */  sw         $s2, 0x18($sp)
     /* 4BDC0 8005B5C0 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 4BDC4 8005B5C4 3416020C */  jal        func_800858D0
+    /* 4BDC4 8005B5C4 3416020C */  jal        title_mv_exec2
     /* 4BDC8 8005B5C8 1000B0AF */   sw        $s0, 0x10($sp)
     /* 4BDCC 8005B5CC 21880000 */  addu       $s1, $zero, $zero
     /* 4BDD0 8005B5D0 7F001324 */  addiu      $s3, $zero, 0x7F
@@ -23,7 +23,7 @@ glabel obj_InitChars
     /* 4BDFC 8005B5FC 0F80013C */  lui        $at, %hi(D_800EFB7C)
     /* 4BE00 8005B600 21083000 */  addu       $at, $at, $s0
     /* 4BE04 8005B604 7CFB33A0 */  sb         $s3, %lo(D_800EFB7C)($at)
-    /* 4BE08 8005B608 4C18020C */  jal        func_80086130
+    /* 4BE08 8005B608 4C18020C */  jal        action_check_defense
     /* 4BE0C 8005B60C 21300000 */   addu      $a2, $zero, $zero
     /* 4BE10 8005B610 08005226 */  addiu      $s2, $s2, 0x8
     /* 4BE14 8005B614 01003126 */  addiu      $s1, $s1, 0x1
