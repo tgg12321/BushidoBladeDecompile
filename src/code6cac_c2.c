@@ -63,6 +63,7 @@ extern s16 *snd_GetSeId(void);
 extern void func_8003553C(void);
 extern void func_8003AF40(s32);
 extern void func_8003AFFC(void);
+extern void md_menu_logo_exec(void);
 
 extern void sys_Panic(void);
 extern s32 func_80020D38(void);
@@ -148,8 +149,63 @@ extern s32 D_80106A58;
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 INCLUDE_ASM("asm/funcs", func_8003B9D0);
-INCLUDE_ASM("asm/funcs", md_game_check_change_sub_mode);
 /* kengo:HIGH  |  md_game/md_game_check_change_sub_mode  |  87i */
+
+void md_game_check_change_sub_mode(void) {
+    D_800A37B8++;
+
+    if (func_80054F68() != 0) {
+        if ((D_80102794 & 0x400040) == 0) {
+            return;
+        }
+    }
+
+    func_800372C0();
+    func_800548DC();
+
+    if (D_800A38DC != 0) {
+        return;
+    }
+
+    if (D_800A3894 != 0) {
+        D_800A3834 = 0;
+        switch (D_800A37B0) {
+        case 1:
+        case 2:
+        case 4:
+        case 5:
+            D_800A3907++;
+            return;
+        case 3:
+            func_8003AF40(0);
+            md_menu_logo_exec();
+            /* fall through */
+        case 6:
+            D_800A3894 = 0;
+            goto call_bar;
+        default:
+            return;
+        }
+    }
+
+    if (D_800A385C != 0) {
+        s32 val = D_800A390C;
+        if (val == 1) {
+            D_800A3834 = 0;
+            return;
+        }
+        if (val == 0) {
+            return;
+        }
+        if (val >= 4) {
+            return;
+        }
+        D_800A385C = 0;
+    }
+
+call_bar:
+    func_8003B5A4();
+}
 
 extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
