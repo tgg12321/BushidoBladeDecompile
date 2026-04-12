@@ -215,3 +215,38 @@ damage_DebugDisp: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
 damage_DebugDisp: insert "nop" @ 53
 # damage_DebugDisp: reorder sw before k=0 (post-insert TEXT 54-55)
 damage_DebugDisp: reorder 55,54 @ 54-55
+
+# func_800430E4: GCC hoists scratchpad addresses into regs, target uses inline lui/lo
+# Register renames: arg saves t6->t2, t7->t3; dst t5->t1; loaded val t4->t0; FF610 ptr t3->a1
+func_800430E4: $14 <-> $10
+func_800430E4: $12 <-> $8 @ 18-20
+func_800430E4: $12 <-> $8 @ 74-74
+func_800430E4: $15 <-> $11 @ 2-2
+func_800430E4: $15 <-> $11 @ 71-71
+func_800430E4: $11 <-> $5 @ 22-38
+func_800430E4: $13 <-> $9 @ 3-4
+func_800430E4: $13 <-> $9 @ 26-38
+func_800430E4: $13 <-> $9 @ 72-72
+# Scratchpad accesses: replace register-relative with pseudo instructions
+# Subst patterns must match POST-SWAP text (swaps run before substs)
+# $5 at TEXT 43/50: no swap affects $5 there (swap $11<->$5 is @ 22-38 only)
+# $8 at TEXT 46/53: no swap affects $8 there (swap $12<->$8 is @ 18-20 only)
+# $9 at TEXT 51/58: no swap affects $9 there (swap $13<->$9 is @ 26-38 only)
+# $10 at TEXT 54/59: swap $14<->$10 (full) changes $10->$14, so match $14
+func_800430E4: subst "lhu\t\$3,0\(\$5\)" "lhu $3,0x1F8003A6" @ 43
+func_800430E4: subst "lhu\t\$2,0\(\$8\)" "lhu $2,0x1F8003A8" @ 46
+func_800430E4: subst "sh\t\$3,0\(\$5\)" "sh $3,0x1F8003A6" @ 50
+func_800430E4: subst "lhu\t\$3,0\(\$9\)" "lhu $3,0x1F8003AA" @ 51
+func_800430E4: subst "sh\t\$2,0\(\$8\)" "sh $2,0x1F8003A8" @ 53
+func_800430E4: subst "lw\t\$2,0\(\$14\)" "lw $2,0x1F8003B8" @ 54
+func_800430E4: subst "sh\t\$3,0\(\$9\)" "sh $3,0x1F8003AA" @ 58
+func_800430E4: subst "sw\t\$2,0\(\$14\)" "sw $2,0x1F8003B8" @ 59
+# Delete hoisted scratchpad address loads (0x3A6, 0x3A8, 0x3AA, 0x3B8)
+func_800430E4: delete @ 7
+func_800430E4: delete @ 8
+func_800430E4: delete @ 9
+func_800430E4: delete @ 10
+func_800430E4: delete @ 11
+func_800430E4: delete @ 12
+func_800430E4: delete @ 13
+func_800430E4: delete @ 14
