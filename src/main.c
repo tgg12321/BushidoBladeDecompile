@@ -327,7 +327,35 @@ void func_80085F98(void) {
     func_80089D60(0);
 }
 
-INCLUDE_ASM("asm/funcs", func_80085FB8);
+extern s16 D_80102A78[];
+extern s16 D_80102A7A[];
+extern u8 D_800F65E0[];
+
+void func_80085FB8(void) {
+    func_80089D60(1);
+}
+
+s32 func_80085FD8(s16 a0) {
+    if ((u16)a0 < 0x18) {
+        func_8008BD88((s16)(a0 << 16 >> 16));
+        return 0;
+    }
+    return -1;
+}
+
+INCLUDE_ASM("asm/funcs", func_80086014);
+
+s32 func_80086080(s16 a0, s16 *a1, s16 *a2) {
+    u16 raw1, raw2;
+
+    if ((u16)a0 < 0x18) {
+        func_8008BD88((s16)(a0 << 16 >> 16), &raw1, &raw2);
+        *a1 = (s16)raw1 / 129;
+        *a2 = (s16)raw2 / 129;
+        return 0;
+    }
+    return -1;
+}
 extern s16 D_80102A78[];
 extern s16 D_80102A7A[];
 extern u8 D_800F65E0[];
