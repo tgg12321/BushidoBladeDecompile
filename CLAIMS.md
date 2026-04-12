@@ -68,6 +68,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/text1a.c:rob_calc_2d_position | Agent 52: Wave 19 — matched (regfix global swap + insert_after + 8 substs) | 2026-04-11 | done — merged to main |
 | src/code6cac_b.c:pad_main_control | Agent 53: Wave 19 — tabled at score 405 (v0 reg-asm trick caused -2 insn mismatch, 15 attempts) | 2026-04-11 | done — tabled |
 | src/text1a.c:func_800430E4 | Agent 54: Wave 19 — matched (scratchpad + struct copy + regfix, stale Wave 5 base resolved by orchestrator) | 2026-04-11 | done — merged to main |
-| src/main.c:saTan1SyuryoDraw | Agent 55: Wave 20 | 2026-04-11 | active |
-| src/text1a.c:func_80041688 | Agent 56: Wave 20 | 2026-04-11 | active |
-| src/code6cac_b.c:coli_check_circle_hit_line | Agent 57: Wave 20 | 2026-04-11 | active |
+| src/main.c:saTan1SyuryoDraw | Agent 55: Wave 20 — tabled (3 leaf funcs glued; near-miss -4 bytes, reg alloc on funcs A/B) | 2026-04-11 | done — tabled |
+| src/text1a.c:func_80041688 | Agent 56: Wave 20 — matched (goto loops + volatile frame pad + regfix substs, 8 attempts at cap) | 2026-04-11 | done — merged to main |
+| src/code6cac_b.c:coli_check_circle_hit_line | Agent 57: Wave 20 — matched (leaf + inline asm GTE + scratchpad, 1 attempt) | 2026-04-11 | done — merged to main |
