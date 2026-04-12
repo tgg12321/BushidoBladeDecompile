@@ -53,6 +53,8 @@ extern void func_80077820(s32);
 extern s32 D_80101E70;
 extern s32 D_800A3894;
 extern u8 D_80102781;
+extern u8 D_800A3768;
+extern u8 D_800A36A8;
 
 
 extern u8 D_8010277D;
@@ -1468,8 +1470,55 @@ void func_80033898(void) {
 }
 INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action);
 /* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action  |  189i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", mottest_disp);
-/* TABLED: score 235, 94/94 insns. GCC eliminates andi v1,a0,0xFF after lbu (knows 0-255), inline asm prevents load interleaving. */
+void mottest_disp(void) {
+    u8 a0 = D_800A3783;
+    u8 b = D_800A391F;
+
+    if ((a0 & 0xFF) == b) {
+        D_800A3768 = 0xFF;
+        D_800A36A8 = 0;
+        if ((a0 & 0xFF) == 0x14) {
+            u8 z = (&D_8008D9EC)[D_80101ED2];
+            s32 val = 2;
+            if (z != 0) val = 3;
+            D_800A38A4 = val;
+            D_800A3834 = 0x12;
+        } else {
+            D_800A3834 = 0x20;
+        }
+    } else {
+        u8 a1;
+        u8 idx;
+        D_800A376B = 0;
+        D_800A3783 = a0 + 1;
+        a1 = (&D_801077B0)[a0 & 0xFF];
+        idx = a1 & 0xFF;
+        D_8010277D = (&D_8008D55C)[idx];
+        if (idx == 5) {
+            D_8010277F = 6;
+        } else if (idx == 0x10) {
+            D_8010277F = 7;
+        } else {
+            u8 x = D_800A37BC;
+            s8 y;
+            D_800A37BC = x + 1;
+            y = (s8)(&D_8008E748)[x & 0xFF];
+            D_8010277F = y;
+            if (y == 4) {
+                u8 v = (&D_8008D9EC)[idx];
+                if (v != 0) {
+                    D_8010277F = 5;
+                }
+            }
+        }
+        D_8010277A = 0x800;
+        {
+            s16 v = (&D_8008E75C)[(u8)a1];
+            D_800A3834 = 0;
+            D_800A36A4 = v;
+        }
+    }
+}
 void func_80033D38(void) {
     register u8 *t1 asm("t1") = (u8 *)&g_file_disc_size;
     register s32 a3 asm("a3");
