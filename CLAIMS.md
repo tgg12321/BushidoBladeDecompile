@@ -85,3 +85,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac.c:func_80022F34 | Agent 65: Wave 23 — TABLED score=740 (10 attempts); GCC LICM hoists &D_80101EC8 + const 3 to s-regs, target re-materializes inline (same pattern as feedback_licm_hoist_intractability.md) | 2026-04-12 | done — tabled |
 | src/system.c:func_800826CC | Agent 66: Wave 23 — TABLED at -16 bytes (9 attempts); 5 compounding blockers: la pattern unreproducible (lui+sw vs lui+addiu+sw 0(reg)), jal delay slot scheduling, volatile vs non-volatile reordering, maspsx mangles inline asm | 2026-04-12 | done — tabled |
 | src/code6cac_c2.c:SetCurrentCursor | Orchestrator: LICM unhoist breakthrough — regfix 7-rule recipe (delete preheader lui+ori, insert inline lui+ori with insert_after for delay-slot fill, $t2→$t1 cascade rename, prologue arg reorder); matched first try, recipe documented in feedback_licm_unhoist_recipe.md | 2026-04-12 | done — merged to main (22c1cc0) |
+| src/code6cac_c.c:func_8003AB44 | Agent 67: Wave 24 — assigned (93 insns, 0 s-regs, 8 jals) | 2026-04-12 | active |
+| src/code6cac_b.c:single_game_SetWazaData | Agent 68: Wave 24 — assigned (108 insns, 0 s-regs, 1 jal) | 2026-04-12 | active |
+| src/main.c:func_8008AAD4 | Agent 69: Wave 24 — assigned (127 insns, 0 s-regs, 0 jals leaf) | 2026-04-12 | active |
