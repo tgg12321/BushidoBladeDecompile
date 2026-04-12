@@ -558,3 +558,10 @@ func_800430E4: delete @ 11
 func_800430E4: delete @ 12
 func_800430E4: delete @ 13
 func_800430E4: delete @ 14
+
+# func_80041688: FALSE color branch in text1a.c
+# Target loads in order (b=$3, r=$4, g=$2); mine loads (r=$4, g=$2, b=$3).
+# Swap register+offset in-place at each load index to match target order.
+func_80041688: subst "\$4,24\(\$16\)" "$3,26($16)" @ 68
+func_80041688: subst "\$2,25\(\$16\)" "$4,24($16)" @ 69
+func_80041688: subst "\$3,26\(\$16\)" "$2,25($16)" @ 70
