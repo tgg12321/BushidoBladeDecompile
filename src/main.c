@@ -55,6 +55,10 @@ extern s32 D_800A2870;
 extern s32 D_800A28D4;
 extern s32 D_800A2CF8;
 extern s32 D_800A2D04;
+extern s32 D_800A2D00;
+extern s32 D_800A2D08;
+extern s32 D_800A2D0C;
+extern volatile u32 *D_800A2CEC;
 extern volatile s32 D_800A2D14;
 extern s32 D_800A2CDC;
 extern s32 spu_TransferData(s32, s32);
@@ -749,7 +753,39 @@ void spu_WriteReg(s32 arg0, u32 arg1, s32 arg2) {
     temp_v1 = g_spu_addr_shift;
     *(u16 *)(temp_v0 + temp_a0) = arg1 >> temp_v1;
 }
-INCLUDE_ASM("asm/funcs", saTan1SyuryoDraw);
+s32 saTan1SyuryoDraw(s32 mode, s32 val) {
+    s32 aligned;
+    if (D_800A2D00 != 0) {
+        u32 step = D_800A2D08;
+        if ((u32)val % step != 0) {
+            val = (val + step) & ~D_800A2D0C;
+        }
+    }
+    aligned = (s32)((u32)val >> D_800A2D04);
+    if (mode == -2) goto ret_val_m2;
+    if (mode != -1) goto store;
+    return aligned & 0xFFFF;
+ret_val_m2:
+    return val;
+store:
+    ((s16 *)D_800A2CDC)[mode] = (s16)aligned;
+    return val;
+}
+s32 func_80089178(s32 index, s32 mode) {
+    u16 val = ((u16 *)D_800A2CDC)[index];
+    if (mode == -1) {
+        return val;
+    }
+    return val << D_800A2D04;
+}
+void func_800891B4(s32 arg0) {
+    *D_800A2CEC &= 0xFFF8FFFF;
+    if (arg0 != 0) {
+        *D_800A2CEC |= 0x30000;
+    } else {
+        *D_800A2CEC |= 0x50000;
+    }
+}
 extern volatile u32 *g_spu_dma_ctrl;
 void spu_ReadStatus(void) {
     *g_spu_dma_ctrl = (*g_spu_dma_ctrl & DMA_CHAN_MASK) | DMA_SPU_FROM_RAM;

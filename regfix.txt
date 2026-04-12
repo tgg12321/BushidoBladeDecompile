@@ -565,3 +565,9 @@ func_800430E4: delete @ 14
 func_80041688: subst "\$4,24\(\$16\)" "$3,26($16)" @ 68
 func_80041688: subst "\$2,25\(\$16\)" "$4,24($16)" @ 69
 func_80041688: subst "\$3,26\(\$16\)" "$2,25($16)" @ 70
+
+# saTan1SyuryoDraw: val+step delay slot fill uses $v1 intermediate,
+# target has nop in beqz delay and addu $a1,$a1,$a0 after D_800A2D0C load.
+saTan1SyuryoDraw: subst "addu\t\$3,\$5,\$4" "nop" @ 13
+saTan1SyuryoDraw: subst "nop" "addu\t$5,$5,$4" @ 15
+saTan1SyuryoDraw: subst "\$3" "$5" @ 17
