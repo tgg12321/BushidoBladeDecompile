@@ -577,3 +577,11 @@ saTan1SyuryoDraw: subst "\$3" "$5" @ 17
 # the subsequent sra source to match. TEXT idx 49 (mflo) / 51 (sra).
 rob_life_ctrl_2: subst "mflo\t\$8" "mflo\t$5" @ 49
 rob_life_ctrl_2: subst "sra\t\$5,\$8,12" "sra\t$5,$5,12" @ 51
+
+
+
+# AddTbpOfst: sa1<<4 lives in v1 ($3), target uses v0 ($2).
+# Fix sll dest and addu source at indices 30 and 33.
+AddTbpOfst: subst "andi	\$2,\$7,0xffff" "andi	$2,$4,0xffff" @ 1
+AddTbpOfst: subst "sll	\$3,\$3,4" "sll	$2,$3,4" @ 30
+AddTbpOfst: subst "addu	\$2,\$3,\$4" "addu	$2,$2,$4" @ 33
