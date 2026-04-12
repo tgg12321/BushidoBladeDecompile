@@ -74,5 +74,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac_b.c:coli_check_circle_hit_line | Agent 57: Wave 20 — matched (leaf + inline asm GTE + scratchpad, 1 attempt) | 2026-04-11 | done — merged to main |
 | src/main.c:SetBloodSpot | Agent 58: Wave 21 — C-level match (score=0, 4 attempts) | 2026-04-12 | done — merged to main |
 | main.c rodata split | Orchestrator: split 101C.rodata_text1a_b.s around jtbl_800163C0 → new 101C.rodata_main_post.s; main.o(.rodata) now sandwiched; unblocked SetBloodSpot | 2026-04-12 | done — merged to main |
-| src/text1a.c:rob_life_ctrl_2 | Agent 59: Wave 21 — near-match score=10 (1-reg diff), blocked on jtbl_80010DD4 rodata split (text1a_a section); staged C body saved as comment | 2026-04-12 | blocked — needs text1a.c rodata split |
+| src/text1a.c:rob_life_ctrl_2 | Agent 59: Wave 21 — near-match score=10 (1-reg diff), blocked on jtbl_80010DD4 rodata split (text1a_a section); staged C body saved as comment | 2026-04-12 | superseded by orchestrator finish |
+| src/text1a_c.c:rob_life_ctrl_2 | Orchestrator: three-way split text1a.c/text1a_c.c + 101C.rodata_text1a_DB8.s; Agent 59 C body + 2-subst regfix for mflo/sra $t0→$a1 | 2026-04-12 | done — merged to main |
 | src/code6cac_b.c:func_800274BC | Agent 60: Wave 21 — rejected (full __asm__ block, not real decomp; same pattern as rejected Agent 29). Function is GCC-emitted signed divs + GTE inline; needs C body with u32 div cast + __asm__ GTE block only | 2026-04-12 | rejected |
