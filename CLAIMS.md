@@ -65,3 +65,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac_b.c:func_800300B4 | Agent 49: Wave 18 — matched (GTE inline asm, 6 attempts) | 2026-04-11 | done — merged to main |
 | src/text1a.c:func_80041988 | Agent 50: Wave 18 — reworked on main (regfix reindex + D_80094D40 extern) | 2026-04-11 | done — merged to main |
 | src/main.c:func_80085FB8 | Agent 51: Wave 18 — reworked: 3/4 sub-funcs decompiled, func_80086014 kept as asm (leaf frame intractable) | 2026-04-11 | done — merged to main |
+| src/text1a.c:rob_calc_2d_position | Agent 52: Wave 19 | 2026-04-11 | active |
+| src/code6cac_b.c:pad_main_control | Agent 53: Wave 19 | 2026-04-11 | active |
+| src/text1a.c:func_800430E4 | Agent 54: Wave 19 | 2026-04-11 | active |
