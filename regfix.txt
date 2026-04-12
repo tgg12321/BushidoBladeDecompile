@@ -571,3 +571,9 @@ func_80041688: subst "\$3,26\(\$16\)" "$2,25($16)" @ 70
 saTan1SyuryoDraw: subst "addu\t\$3,\$5,\$4" "nop" @ 13
 saTan1SyuryoDraw: subst "nop" "addu\t$5,$5,$4" @ 15
 saTan1SyuryoDraw: subst "\$3" "$5" @ 17
+
+# rob_life_ctrl_2: 1-reg diff in mflo dest - GCC picks $t0 for extra mflo,
+# target uses $a1 directly (saves a reg-to-reg copy). Rewrite mflo dest and
+# the subsequent sra source to match. TEXT idx 49 (mflo) / 51 (sra).
+rob_life_ctrl_2: subst "mflo\t\$8" "mflo\t$5" @ 49
+rob_life_ctrl_2: subst "sra\t\$5,\$8,12" "sra\t$5,$5,12" @ 51
