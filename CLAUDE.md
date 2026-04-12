@@ -202,24 +202,20 @@ wsl bash -c 'cd /path/to/worktree && bash tools/worktree_setup.sh && source .ven
 
 To find the worktree path: the agent should use `git rev-parse --show-toplevel` inside WSL.
 
-### Worktree Freshness (MANDATORY)
+### Worktree Freshness (MANDATORY — automated)
 
 **Agents MUST branch from the latest main commit.** Context drift — where an agent matches a function against an old codebase that no longer compiles identically on current main — has caused multiple failed merges.
+
+**Automated enforcement:** `tools/worktree_setup.sh` now hard-fails (`exit 2`) if the worktree's base is not exactly equal to main's HEAD. If you see `ERROR: WORKTREE IS STALE`, **stop immediately** and report to the orchestrator. Do NOT `git pull`, `git fetch`, or `git rebase` — the orchestrator must spawn a fresh worktree.
 
 **Orchestrator rules (before spawning agents):**
 1. Commit ALL pending changes to main before spawning any agents
 2. Verify `git status` is clean (no uncommitted changes to source files)
 3. Run `make` to confirm main builds and matches BEFORE spawning
+4. **Spawn all agents in a single batch.** Do not merge a completed agent and then spawn a new agent in the same wave — the new agent's base would be ahead of the still-running agents.
+5. After every merge, the orchestrator must `git status` clean before any new spawn.
 
-**Agent first-step verification:**
-After running `worktree_setup.sh`, agents MUST verify their base is current:
-```bash
-# In the worktree, check that the base commit matches main
-git log --oneline -1  # Should be the latest main commit
-```
-If the worktree's base commit is more than 1 commit behind the orchestrator's latest, something is wrong — the agent should report this and stop.
-
-**Why this exists:** Waves 17-18 lost 4 function matches because agents branched from commits 40+ behind main. GCC 2.7.2's codegen is sensitive to surrounding declarations — a function that scores 0 on an old base can score 40+ on current main due to different extern blocks and decompiled neighbors.
+**Why this exists:** Waves 17-18 lost 4 function matches because agents branched from commits 40+ behind main. GCC 2.7.2's codegen is sensitive to surrounding declarations — a function that scores 0 on an old base can score 40+ on current main due to different extern blocks and decompiled neighbors. The freshness check is automated in `worktree_setup.sh` because the soft "agent self-checks via git log" rule was insufficient — agents skipped it.
 
 ### Two-Phase Workflow
 
@@ -300,6 +296,24 @@ The orchestrator MUST pre-screen all candidates before assigning to agents. Don'
 2. Verify required pipeline tools are integrated for the target file
 3. Sort by matchability signals: Kengo "near-exact" > few s-regs > linear control flow > simple globals
 4. Assign only pre-vetted, blocker-free targets
+
+### Agent Matching Toolbox (proven techniques — try in this order)
+
+When an attempt scores > 0, classify the diff before flailing. The following techniques have all been proven on real BB2 functions:
+
+1. **Structural alternatives (C-level)** — goto vs if/else vs switch, intermediate variables for subtraction order, declaration position for load timing. Use the permuter to explore.
+2. **Register asm hints** — `register T x asm("regname")` constrains GCC's allocator. Useful for forcing specific s-reg/v-reg placements. WARNING: leaf temp regs cause scheduling side effects (see `feedback_regasm_leaf_danger.md`).
+3. **Inline `__asm__`** — for GTE ops, BIOS calls, scratchpad access, and forcing specific instruction sequences. See `feedback_gcc272_asm_constraints.md` for pitfalls (no `+r`, `=r`/`0` pseudo-split).
+4. **regfix.py (assembly stream rewrite)** — `subst`, `swap`, `delete`, `insert`, `insert_after`, `reorder`. Operates between maspsx and `as`. Use for register-allocation diffs and small structural fixes that survive after C-level options are exhausted.
+5. **LICM unhoist recipe** — when target keeps a magic-constant `lui+ori` inline (with the ori filling a `lw` delay slot) and your variant hoists it to a t-reg in the preheader, apply the regfix recipe documented in `memory/feedback_licm_unhoist_recipe.md`. Proven on SetCurrentCursor (commit 22c1cc0). ~7 rules: delete preheader, insert inline (with `insert_after` for the ori delay-slot fill), cascade-rename freed reg.
+6. **TABLE** — when 2 consecutive attempts score the same OR the diff is dominated by frame-size mismatch + multiple compounding blockers (regalloc spill differences, GCC strength reduction, delay-slot scheduling across many branches).
+
+**Memory entries to consult before each function:**
+- `feedback_gcc272_matching.md` — full matching guide
+- `feedback_licm_unhoist_recipe.md` — when LICM signature appears
+- `feedback_regasm_scheduling.md` — register asm for scheduling control
+- `feedback_aspsx_scheduling.md` — when lui/ori split matters
+- `feedback_gcc272_div_and_layout.md` — signed div, block layout, delay-slot patterns
 
 ### Merge Workflow
 
