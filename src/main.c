@@ -225,7 +225,64 @@ void func_80085448(s16 a0, s16 a1, s16 a2) {
     }
     func_8008AF9C(buf);
 }
-INCLUDE_ASM("asm/funcs", SetBloodSpot);
+extern s32 D_800A26CC;
+extern s32 D_800A26D0;
+extern s32 D_80104E80;
+void SetBloodSpot(s32 arg) {
+    s32 mode;
+    s32 v;
+
+    mode = sys_GetVideoMode();
+
+    if (arg & 0x1000) {
+        D_800A26D0 = 1;
+        D_800A26CC = arg & 0xFFF;
+    } else {
+        D_800A26D0 = 0;
+        D_800A26CC = arg;
+    }
+
+    v = D_800A26CC;
+    if (v >= 6) goto big_v;
+    switch (v) {
+    case 4: {
+        s32 t = 50;
+        D_80104E80 = t;
+        if (mode == 1) D_800A26CC = 5;
+        else D_800A26CC = t;
+        break;
+    }
+    case 1: {
+        s32 t = 60;
+        D_80104E80 = t;
+        if (mode == 0) D_800A26CC = 5;
+        else D_800A26CC = t;
+        break;
+    }
+    case 3:
+        D_80104E80 = 120;
+        break;
+    case 2:
+        D_80104E80 = 240;
+        break;
+    case 5:
+        if (mode == 0) D_80104E80 = 60;
+        else if (mode == 1) D_80104E80 = 50;
+        else D_80104E80 = 60;
+        break;
+    case 0:
+        if (mode == 0) D_80104E80 = 60;
+        else if (mode == 1) D_80104E80 = 50;
+        else D_80104E80 = 60;
+        break;
+    default:
+        D_80104E80 = 60;
+        break;
+    }
+    return;
+big_v:
+    D_80104E80 = v;
+}
 /* kengo:MED  |  am_rmd/SetBloodSpot  |  91i */
 INCLUDE_ASM("asm/funcs", func_800856B0);
 extern u8 D_80101BCC;
