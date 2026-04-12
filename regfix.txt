@@ -494,3 +494,8 @@ func_80045294: delete @ 21
 func_80045294: delete @ 25
 # Insert i++ at post-delete index 24 (between lw and addu sum)
 func_80045294: insert "addu $16,$16,1" @ 24
+
+# func_80041988: reorder constant inits (s0 after s6,s5 instead of before)
+func_80041988: reorder 19,20,22,23,21 @ 19-23
+# func_80041988: swap v0<->v1 in dispatch (li and beq)
+func_80041988: $2 <-> $3 @ 30-31
