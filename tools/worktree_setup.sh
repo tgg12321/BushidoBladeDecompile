@@ -43,6 +43,47 @@ echo "Main repo:     $MAIN_REPO"
 echo "This worktree: $CURRENT"
 echo ""
 
+# === FRESHNESS CHECK (MANDATORY) ===
+# A worktree's base must be reachable from main's current HEAD. If main has
+# moved on since this worktree was created, the agent will produce work
+# against an outdated base — GCC 2.7.2's codegen is sensitive to surrounding
+# declarations, so context drift causes silent merge failures.
+MAIN_HEAD=$(git -C "$MAIN_REPO" rev-parse main 2>/dev/null)
+WORKTREE_BASE=$(git rev-parse HEAD 2>/dev/null)
+
+if [ -z "$MAIN_HEAD" ] || [ -z "$WORKTREE_BASE" ]; then
+    echo "ERROR: could not determine HEAD commits" >&2
+    exit 1
+fi
+
+if [ "$MAIN_HEAD" != "$WORKTREE_BASE" ]; then
+    # Worktree is not exactly at main HEAD — check whether it is an ancestor
+    if git -C "$MAIN_REPO" merge-base --is-ancestor "$WORKTREE_BASE" "$MAIN_HEAD" 2>/dev/null; then
+        # WORKTREE_BASE is reachable from MAIN_HEAD — count how far behind
+        BEHIND=$(git -C "$MAIN_REPO" rev-list --count "${WORKTREE_BASE}..${MAIN_HEAD}" 2>/dev/null)
+        echo "ERROR: WORKTREE IS STALE — $BEHIND commits behind main HEAD" >&2
+        echo "  worktree base:  $WORKTREE_BASE" >&2
+        echo "  main HEAD:      $MAIN_HEAD" >&2
+        echo "" >&2
+        echo "GCC 2.7.2 codegen is sensitive to surrounding declarations." >&2
+        echo "Working from a stale base risks silent merge failure." >&2
+        echo "" >&2
+        echo "STOP and report this error to the orchestrator." >&2
+        echo "DO NOT try to git pull, fetch, or rebase — the orchestrator" >&2
+        echo "must spawn a fresh worktree." >&2
+        exit 2
+    else
+        # Disjoint history — completely wrong branch
+        echo "ERROR: worktree base is not reachable from main HEAD" >&2
+        echo "  worktree base:  $WORKTREE_BASE" >&2
+        echo "  main HEAD:      $MAIN_HEAD" >&2
+        echo "STOP and report to the orchestrator." >&2
+        exit 2
+    fi
+fi
+echo "Freshness OK: worktree at main HEAD ($MAIN_HEAD)"
+echo ""
+
 # Items to symlink (gitignored, needed for builds)
 ITEMS=(
     "tools/gcc-2.7.2"
