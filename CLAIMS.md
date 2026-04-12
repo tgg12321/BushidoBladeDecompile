@@ -63,5 +63,5 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac.c:func_80019310 | Agent 47: Wave 17 — matched (GTE + regfix + insert_after, 6 attempts) | 2026-04-11 | done — merged to main |
 | src/text1a.c:saTan0Init | Agent 48: Wave 17 — matched (permuter + regfix delete/insert, 6 attempts) | 2026-04-11 | done — merged to main |
 | src/code6cac_b.c:func_800300B4 | Agent 49: Wave 18 — matched (GTE inline asm, 6 attempts) | 2026-04-11 | done — merged to main |
-| src/text1a.c:func_80041988 | Agent 50: Wave 18 — matched in worktree, context drift on main (score 40) | 2026-04-11 | done — needs rework |
-| src/main.c:func_80085FB8 | Agent 51: Wave 18 — matched in worktree, context drift on main (-8 bytes) | 2026-04-11 | done — needs rework |
+| src/text1a.c:func_80041988 | Agent 50: Wave 18 — reworked on main (regfix reindex + D_80094D40 extern) | 2026-04-11 | done — merged to main |
+| src/main.c:func_80085FB8 | Agent 51: Wave 18 — reworked: 3/4 sub-funcs decompiled, func_80086014 kept as asm (leaf frame intractable) | 2026-04-11 | done — merged to main |
