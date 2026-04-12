@@ -202,6 +202,25 @@ wsl bash -c 'cd /path/to/worktree && bash tools/worktree_setup.sh && source .ven
 
 To find the worktree path: the agent should use `git rev-parse --show-toplevel` inside WSL.
 
+### Worktree Freshness (MANDATORY)
+
+**Agents MUST branch from the latest main commit.** Context drift — where an agent matches a function against an old codebase that no longer compiles identically on current main — has caused multiple failed merges.
+
+**Orchestrator rules (before spawning agents):**
+1. Commit ALL pending changes to main before spawning any agents
+2. Verify `git status` is clean (no uncommitted changes to source files)
+3. Run `make` to confirm main builds and matches BEFORE spawning
+
+**Agent first-step verification:**
+After running `worktree_setup.sh`, agents MUST verify their base is current:
+```bash
+# In the worktree, check that the base commit matches main
+git log --oneline -1  # Should be the latest main commit
+```
+If the worktree's base commit is more than 1 commit behind the orchestrator's latest, something is wrong — the agent should report this and stop.
+
+**Why this exists:** Waves 17-18 lost 4 function matches because agents branched from commits 40+ behind main. GCC 2.7.2's codegen is sensitive to surrounding declarations — a function that scores 0 on an old base can score 40+ on current main due to different extern blocks and decompiled neighbors.
+
 ### Two-Phase Workflow
 
 **Phase A — Scaffolding (sequential, orchestrator only):**
@@ -216,9 +235,10 @@ Each agent tackles exactly ONE function stub. Up to 3 agents run in parallel, ea
 2. **One function per agent.** Each agent is assigned exactly ONE INCLUDE_ASM stub to match. It may only modify the source file containing that stub. When done (matched or tabled), the agent reports back and terminates — it does NOT pick another function.
 3. **No destructive git commands.** Agents must NEVER run `git checkout`, `git restore`, `git stash`, `git clean`, or `git reset`. To undo a change, rewrite the specific file content.
 4. **No `make clean`.** Agents use incremental builds only (`make`). Only the orchestrator runs `make clean` for final verification.
-5. **Add missing symbols to `undefined_syms_auto.txt` if needed.** If a decompiled function references a global not yet in the symbol files, the agent should note it in its report. The orchestrator adds it on main before merging.
-6. **Do not push or merge to main.** Agents commit to their own worktree branch only. The orchestrator is responsible for all merges into main.
-7. **MINIMIZE TEXT OUTPUT.** Nobody reads agent prose. Do not narrate plans, explain reasoning, or summarize tool results between tool calls. Just act. The only text that matters is the audit log (terse: issue/fix/score) and the final report (bullet points: function, result, technique, commit hash). Target: <100K tokens per function.
+5. **No `make setup` or `splat`.** Agents must NEVER run `make setup`, `python -m splat split`, or any command that regenerates asm files, linker scripts, or symbol files. These commands overwrite 150+ files with regenerated content, polluting the branch and making it unmergeable. Only the orchestrator runs splat on main.
+6. **Add missing symbols to `undefined_syms_auto.txt` if needed.** If a decompiled function references a global not yet in the symbol files, the agent should note it in its report. The orchestrator adds it on main before merging.
+7. **Do not push or merge to main.** Agents commit to their own worktree branch only. The orchestrator is responsible for all merges into main.
+8. **MINIMIZE TEXT OUTPUT.** Nobody reads agent prose. Do not narrate plans, explain reasoning, or summarize tool results between tool calls. Just act. The only text that matters is the audit log (terse: issue/fix/score) and the final report (bullet points: function, result, technique, commit hash). Target: <100K tokens per function.
 
 ### Agent Pre-Screening (MANDATORY — before any decompilation attempt)
 
