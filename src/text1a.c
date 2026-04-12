@@ -843,7 +843,41 @@ void func_80042FA0(s32 *a0, s16 *a1) {
         a1[2] = -angle3;
     }
 }
-INCLUDE_ASM("asm/funcs", func_800430E4);
+
+typedef struct { s32 f0, f1, f2, f3, f4, f5, f6, f7; } StructCopy32_800430E4;
+extern void func_8004DDB4(s32, s32, s32, s32);
+extern s32 D_800FF610;
+extern s32 D_800951D8;
+extern s32 D_80095280;
+extern s32 D_80095328;
+extern s32 D_800A3828;
+void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
+    s32 *dst = (s32 *)0x1F8003A0;
+    s32 t0;
+
+    t0 = *(s32 *)0x1F800008;
+    *(s32 *)0x1F800008 = 3 - t0;
+
+    *(StructCopy32_800430E4 *)dst = *(StructCopy32_800430E4 *)&D_800FF610;
+
+    D_800A3828 = (s32)(&D_800F62E0 + arg2 * 48);
+
+    *(s16 *)0x1F8003A6 = *(s16 *)0x1F8003A6 >> 1;
+    *(s16 *)0x1F8003A8 = *(s16 *)0x1F8003A8 >> 1;
+    *(s16 *)0x1F8003AA = *(s16 *)0x1F8003AA >> 1;
+    *(s32 *)0x1F8003B8 = *(s32 *)0x1F8003B8 >> 1;
+
+    if (arg3[1] & 1) {
+        *(s32 *)0x1F80001C = (s32)&D_80095280;
+    } else {
+        *(s32 *)0x1F80001C = (s32)&D_800951D8;
+    }
+
+    func_8004DDB4(arg0, arg1, (s32)dst, t0);
+
+    *(s32 *)0x1F80001C = (s32)&D_80095328;
+}
+
 s32 func_80043244(s32 a0) {
     s32 ret;
     if (a0 > 0x16A09) {
