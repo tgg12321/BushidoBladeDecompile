@@ -78,5 +78,5 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/text1a_c.c:rob_life_ctrl_2 | Orchestrator: three-way split text1a.c/text1a_c.c + 101C.rodata_text1a_DB8.s; Agent 59 C body + 2-subst regfix for mflo/sra $t0→$a1 | 2026-04-12 | done — merged to main |
 | src/code6cac_b.c:func_800274BC | Agent 60: Wave 21 — rejected (full __asm__ block, not real decomp; same pattern as rejected Agent 29). Function is GCC-emitted signed divs + GTE inline; needs C body with u32 div cast + __asm__ GTE block only | 2026-04-12 | rejected |
 | src/code6cac_b.c:mottest_disp | Agent 61: Wave 22 — matched (4 attempts, inline load between store pair) | 2026-04-12 | done — merged to main |
-| src/code6cac_c2.c:SetCurrentCursor | Agent 62: Wave 22 | 2026-04-12 | active |
+| src/code6cac_c2.c:SetCurrentCursor | Agent 62: Wave 22 — TABLED (10 attempts + 2 permuter runs, best score 430-500); /1800 signed-div magic constant (0x91A2B3C5) hoisted loop-invariant by GCC CSE, target recomputes in $v0 each iter; cannot force via volatile/asm/structural variants | 2026-04-12 | done — tabled |
 | src/code6cac.c:func_8001F938 | Agent 63: Wave 22 | 2026-04-12 | active |
