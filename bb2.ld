@@ -35,6 +35,8 @@ SECTIONS
         build/asm/data/101C.rodata_text1a_a.o(.rodata);
         build/src/text1a_b.o(.rodata);
         build/asm/data/101C.rodata_text1a_b.o(.rodata);
+        build/src/main.o(.rodata);
+        build/asm/data/101C.rodata_main_post.o(.rodata);
         build/src/code6cac_b2.o(.rodata);
         build/src/config.o(.rodata);
         build/src/sound.o(.rodata);
@@ -43,7 +45,6 @@ SECTIONS
         build/src/display.o(.rodata);
         build/src/system.o(.rodata);
         build/src/ings2.o(.rodata);
-        build/src/main.o(.rodata);
         main_RODATA_END = .;
         main_RODATA_SIZE = ABSOLUTE(main_RODATA_END - main_RODATA_START);
         main_TEXT_START = .;
