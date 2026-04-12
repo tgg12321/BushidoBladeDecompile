@@ -38,6 +38,7 @@ extern u8 D_800A9830;
 extern u8 D_800A9920;
 extern u16 D_80094AF4;
 extern u8 D_80094B48[];
+extern u8 D_80094D40[];
 extern void initLoadImage(s32, s16 *, s32, s32);
 
 void PutShadowRmd(s32 a0, s32 a1, s32 a2) {
@@ -513,7 +514,50 @@ void func_800418D0(s32 *a0) {
     ((Block16 *)(a0 + 6))[0] = ((Block16 *)(a0 + 14))[0];
     ((Block16 *)(a0 + 6))[1] = ((Block16 *)(a0 + 14))[1];
 }
-INCLUDE_ASM("asm/funcs", func_80041988);
+void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
+    u8 mask_table;
+    s32 bit;
+    s32 i;
+    s32 id;
+
+    if ((u32)a0 >= 2) {
+        return;
+    }
+    mask_table = D_80094D40[a1];
+    bit = 0x10;
+    i = 0;
+    id = 1;
+    do {
+        if (!(mask_table & bit) || !(a2 & bit)) {
+            goto next;
+        }
+        if (a0 == 0) {
+            goto case0;
+        }
+        if (a0 == 1) {
+            goto case1;
+        }
+        goto shift;
+    case0:
+        if (func_8003E2A0() == 0) {
+            func_800480C0(a3, id, 0, 0, -0x140, 0xE8);
+        } else {
+            func_80047EE8(a3, id);
+        }
+        goto shift;
+    case1:
+        if (func_8003E2A0() == a0) {
+            func_800480C0(a3, id, 0x80, 0, -0x140, 0xE8);
+        } else {
+            func_80047FBC(a3, id, 0x80, 0);
+        }
+    next:
+    shift:
+        bit >>= 1;
+        i++;
+        id++;
+    } while (i < 5);
+}
 INCLUDE_ASM("asm/funcs", func_80041AC8);
 INCLUDE_ASM("asm/funcs", saTan4FireDisp);
 extern s16 g_anim_select;
