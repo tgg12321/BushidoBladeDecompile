@@ -1807,6 +1807,7 @@ void func_80034F88(void) {
 }
 /* TABLED: -4 bytes. Branch inversion (beqz→bnez+ori delay slot), load order (lbu before lw vs lw,lbu fill), byte caching. Best: volatile ptr + inverted cond gives bnez+ori but lbu before lw. */
 INCLUDE_ASM("asm/funcs", func_8003504C);
+/* TABLED: best score 1705 via permuter (12k+ iters). Math/loop layout correct but loop2 register allocation and stack-spill pattern of X across 3 div-by-constant computations not reachable from C. */
 INCLUDE_ASM("asm/funcs", single_game_SetWazaData);
 void func_80035430(void) {
 }
