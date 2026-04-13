@@ -737,7 +737,82 @@ s32 coli_check_circle_hit_line(s32 *arg0) {
 
 
 /* kengo:HIGH  |  is_coli/coli_check_circle_hit_line  |  92i */
-INCLUDE_ASM("asm/funcs", func_8002FF20);
+void func_8002FF20(u8 *arg0, u8 arg1) {
+    s32 sp10[8];
+    s32 *temp_s1;
+    s32 *temp_s2;
+    s32 v0;
+
+    *(u8 *)(arg0 + 8) = 1;
+    *(u8 *)(arg0 + 9) = arg1;
+    v0 = game_GetPlayerData(*(u8 *)(arg0 + 6) < 1);
+    temp_s1 = (s32 *)(arg0 + 0xC);
+    temp_s2 = *(s32 **)((*(u8 *)(arg0 + 9) * 4) + v0);
+    *(s16 *)(arg0 + 0xC) = 0x1000;
+    *(s16 *)(arg0 + 0xE) = 0;
+    *(s16 *)(arg0 + 0x10) = 0;
+    *(s16 *)(arg0 + 0x12) = 0;
+    *(s16 *)(arg0 + 0x14) = 0x1000;
+    *(s16 *)(arg0 + 0x16) = 0;
+    *(s16 *)(arg0 + 0x18) = 0;
+    *(s16 *)(arg0 + 0x1A) = 0;
+    *(s16 *)(arg0 + 0x1C) = 0x1000;
+    func_8007F87C(*(s16 *)(arg0 + 0x54), (s32)temp_s1);
+    func_8007FA1C(*(s16 *)(arg0 + 0x56), (s32)temp_s1);
+    func_8007FBBC(*(s16 *)(arg0 + 0x58), (s32)temp_s1);
+    func_8002EECC(temp_s2, sp10);
+    func_8007E4DC(sp10, temp_s1, temp_s1);
+
+    *(s32 *)(arg0 + 0x2C) = *(s32 *)(arg0 + 0x2C) - *(s32 *)((u8 *)temp_s2 + 0x14);
+    *(s32 *)(arg0 + 0x30) = *(s32 *)(arg0 + 0x30) - *(s32 *)((u8 *)temp_s2 + 0x18);
+    *(s32 *)(arg0 + 0x34) = *(s32 *)(arg0 + 0x34) - *(s32 *)((u8 *)temp_s2 + 0x1C);
+
+    {
+        s32 *mat_ptr = sp10;
+        register s32 t4 asm("t4");
+        register s32 t5 asm("t5");
+        register s32 t6 asm("t6");
+        __asm__ volatile ("addu %0, %1, $0" : "=r"(t4) : "r"(mat_ptr));
+        t5 = *(s32 *)(t4);
+        t6 = *(s32 *)(t4 + 4);
+        __asm__ volatile (".word 0x48CD0000" :: "r"(t5));
+        __asm__ volatile (".word 0x48CE0800" :: "r"(t6));
+        t5 = *(s32 *)(t4 + 8);
+        t6 = *(s32 *)(t4 + 0xC);
+        {
+            register s32 t7 asm("t7") = *(s32 *)(t4 + 0x10);
+            __asm__ volatile (".word 0x48CD1000" :: "r"(t5));
+            __asm__ volatile (".word 0x48CE1800" :: "r"(t6));
+            __asm__ volatile (".word 0x48CF2000" :: "r"(t7));
+        }
+    }
+
+    {
+        s32 vtx_addr = (s32)(arg0 + 0x2C);
+        register s32 t4 asm("t4");
+        register s32 t6 asm("t6");
+        register s32 t5 asm("t5");
+        __asm__ volatile ("addu %0, %1, $0" : "=r"(t4) : "r"(vtx_addr));
+        t6 = *(u16 *)(t4 + 4);
+        t5 = *(u16 *)(t4);
+        t6 = t6 << 16;
+        t5 = t5 | t6;
+        __asm__ volatile (".word 0x488D0000" :: "r"(t5));
+        __asm__ volatile (".word 0xC9810008" :: "r"(t4));
+        __asm__ volatile ("nop");
+        __asm__ volatile ("nop");
+        __asm__ volatile (".word 0x4A486012");
+        __asm__ volatile ("addu %0, %1, $0" : "=r"(t4) : "r"(vtx_addr));
+        __asm__ volatile (".word 0xE9990000" :: "r"(t4));
+        __asm__ volatile (".word 0xE99A0004" :: "r"(t4));
+        __asm__ volatile (".word 0xE99B0008" :: "r"(t4));
+    }
+
+    *(s32 *)(arg0 + 0x2C) = *(s32 *)(arg0 + 0x2C) >> 1;
+    *(s32 *)(arg0 + 0x30) = *(s32 *)(arg0 + 0x30) >> 1;
+    *(s32 *)(arg0 + 0x34) = *(s32 *)(arg0 + 0x34) >> 1;
+}
+
 void func_800300B4(u8 *arg0) {
     s32 result[3];
     s16 out[4];
