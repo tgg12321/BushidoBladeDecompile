@@ -721,3 +721,12 @@ single_game_SetWazaData: subst "addu\s+\$3,\$7,\$8" "addu	$3,$8,$7" @ 27
 # Post-insert indices: 37=la $6, 38=a3=0, 39=lui $9, 40=ori $9, 41=a1=t0.
 # Target order: a3=0, lui $9, ori $9, la $6, a1=t0.
 single_game_SetWazaData: reorder 38,39,40,37,41 @ 37-41
+
+# func_80085270: scheduling diffs.
+# Diff A: sra t0, 14 should come after la D_80106F28 (index 2 -> index 3).
+func_80085270: reorder 1,3,2,4 @ 1-4
+# Diff B: post-jal section — move hp init (index 52) to after last lw (58),
+# and move t1 init (index 59) to before first lw (54).
+# Pre-reorder: 51=adduzero, 52=addu,6, 53=addiu0,64, 54-58=lw chain, 59=addiu,127.
+# Post-reorder: 51=adduzero, 53=addiu0,64, 59=addiu,127, 54,55,56,57,58=lw chain, 52=addu,6.
+func_80085270: reorder 51,53,59,54,55,56,57,58,52 @ 51-59
