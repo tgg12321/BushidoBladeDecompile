@@ -753,3 +753,7 @@ Pad_Prs: subst "srl\s+\$2,\$2,1" "srl $3,$3,1" @ 83
 Pad_Prs: subst "addiu\s+\$3,\$zero,19" "addiu $2,$zero,19" @ 84
 Pad_Prs: subst "subu\s+\$3,\$3,\$2" "subu $2,$2,$3" @ 85
 Pad_Prs: subst "srl\s+\$4,\$4,\$3" "srl $4,$4,$2" @ 87
+
+# func_8001BAE4: GCC optimizes signed shift to srl due to & 0x1FFE mask, target has sra
+# TEXT index 29 = srl ,,1 -> sra ,,1
+func_8001BAE4: subst "srl" "sra" @ 29
