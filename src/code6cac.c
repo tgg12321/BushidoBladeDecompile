@@ -112,6 +112,7 @@ extern s32 func_80079154(s32);
 extern void func_800325E0(s32, s32);
 extern void func_80046BF4(s32 *, s32 *, s32);
 extern s32 game_GetPlayerData(s32);
+extern s32 func_80032854(s32, s32, u8 *, s16 *);
 extern void func_8002EECC(s32, s32 *);
 extern void func_80061064(s32 *, s32 *);
 extern s32 func_8007E11C(s32);
@@ -1090,7 +1091,86 @@ void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
         :: "r"(arg0)
     );
 }
-INCLUDE_ASM("asm/funcs", single_game_SetAbilityData);
+void single_game_SetAbilityData(u8 *arg0) {
+    long temp_s1;
+    s32 sp10[3];
+    s16 sp20[3];
+    s32 tx, ty, tz;
+    s32 mul;
+    s16 idx;
+    s32 pd;
+
+    temp_s1 = *(s16 *)(arg0 + 0x4);
+    if (*(s16 *)(arg0 + 0x350) != 0) {
+        *(u16 *)(arg0 + 0x350) += 1;
+        if ((*(u16 *)(arg0 + 0x350) & 7) == 2) {
+            pd = game_GetPlayerData(temp_s1);
+            idx = *(s16 *)(arg0 + 0x352);
+            {
+                register s32 *v1 asm("v1") = (s32 *)*(s32 *)(pd + idx * 4);
+                __asm__ volatile (
+                    "nop\n"
+                    "\t.word 0x00606021\n"
+                    "\t.word 0x8D8D0000\n"
+                    "\t.word 0x8D8E0004\n"
+                    "\t.word 0x48CD0000\n"
+                    "\t.word 0x48CE0800\n"
+                    "\t.word 0x8D8D0008\n"
+                    "\t.word 0x8D8E000C\n"
+                    "\t.word 0x8D8F0010\n"
+                    "\t.word 0x48CD1000\n"
+                    "\t.word 0x48CE1800\n"
+                    "\t.word 0x48CF2000\n"
+                    :: "r"(v1)
+                );
+            }
+            {
+                register s32 *v0 asm("v0") = (s32 *)(arg0 + 0x354);
+                __asm__ volatile (
+                    ".word 0x00406021\n"
+                    "\t.word 0x958E0004\n"
+                    "\t.word 0x958D0000\n"
+                    "\t.word 0x000E7400\n"
+                    "\t.word 0x01AE6825\n"
+                    "\t.word 0x488D0000\n"
+                    "\t.word 0xC9810008\n"
+                    "\tnop\n"
+                    "\tnop\n"
+                    "\t.word 0x4A486012\n"
+                    :: "r"(v0)
+                );
+            }
+            { s32 cc = *(s16 *)(arg0 + 0x350); mul = ((0x96 - cc) << 12) / 150; do {} while(0); }
+            {
+                register s32 *v0 asm("v0") = sp10;
+                __asm__ volatile (
+                    ".word 0x00406021\n"
+                    "\t.word 0xE9990000\n"
+                    "\t.word 0xE99A0004\n"
+                    "\t.word 0xE99B0008\n"
+                    :: "r"(v0)
+                );
+            }
+            tx = (sp10[0] * mul) / 0x1000;
+            sp20[0] = tx;
+            ty = (sp10[1] * mul) / 0x1000;
+            sp20[1] = ty;
+            tz = (sp10[2] * mul) / 0x1000;
+            sp20[2] = tz;
+            if ((s16)ty >= 0x801) {
+                sp20[0] = -tx;
+                sp20[1] = -ty;
+                sp20[2] = -tz;
+            }
+            func_80032854(temp_s1, 4, (u8 *)0x1F8000A8 + temp_s1 * 0x108 + *(s16 *)(arg0 + 0x352) * 0xC, sp20);
+        }
+        if (*(s16 *)(arg0 + 0x350) >= 0x96) {
+            *(s16 *)(arg0 + 0x350) = 0;
+        }
+        *(s16 *)(arg0 + 0x350) = 0;
+    }
+}
+
 /* kengo:HIGH  |  nm_single_game/single_game_SetAbilityData  |  124i */
 void func_800206B0(s32 arg0, s32 arg1) {
     u8 *a3 = (u8 *)&D_8008D59C;
