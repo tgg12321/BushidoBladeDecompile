@@ -504,7 +504,29 @@ void func_8001B6F4(void) {
 }
 INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_A);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
-INCLUDE_ASM("asm/funcs", func_8001BAE4);
+void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
+    s32 temp_a2;
+    s32 var_s3;
+    s32 var_v1;
+    s32 var_v0;
+
+    if (D_800A387C < 0x2711) {
+        var_s3 = (arg2 / 2) + 0x800;
+    } else {
+        var_s3 = 0x1000;
+    }
+    temp_a2 = func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4),
+                             *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8));
+    var_v1 = arg2;
+    if (arg2 < 0) {
+        var_v1 = arg2 + 3;
+    }
+    var_v0 = ((s16*)&Judge)[((var_v1 >> 1) & 0x1FFE) >> 1] * 3;
+    if (var_v0 < 0) {
+        var_v0 += 3;
+    }
+    DispPracticeMenuTex_A(&D_800F6608, arg0, arg1, (s32 *)arg2, var_s3, (0x500 - temp_a2) - (var_v0 >> 2));
+}
 void func_8001BBD8(s32 *arg0, s32 *arg1, s32 *arg2) {
     s32 temp_s0;
     temp_s0 = (D_800A387C < 0x2711) << 0xB;
