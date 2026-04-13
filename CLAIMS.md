@@ -96,3 +96,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac_b.c:func_8002FF20 | Agent 73: Wave 26 — matched (4 attempts, natural regalloc + inline GTE asm, sp10[8] frame padding) | 2026-04-13 | done — merged to main |
 | src/text1a.c:gnd_land_hit_char_die_main | Agent 74: Wave 26 — matched (10 attempts, goto layout + base-ptr deref technique for first color stores) | 2026-04-13 | done — merged to main |
 | src/code6cac.c:single_game_SetAbilityData | Agent 75: Wave 26 — matched (11 attempts, inline asm GTE .word + v1 regasm + nop delay slot + long temp_s1) | 2026-04-13 | done — merged to main |
+| src/code6cac_c2.c:func_8003C560 | Agent 78: Wave 27 — matched (state dispatcher) | 2026-04-13 | done — merged to main |
+| src/code6cac_b.c:func_8002EA24 | Agent 77: Wave 27 — matched (inline asm GTE rotation + distance check) | 2026-04-13 | done — merged to main |
+| src/code6cac_b.c:Pad_Prs | Agent 76 → Orchestrator: Wave 27 — agent crashed (API 500) after scoring 95 with 13 regfix rules; orchestrator salvaged by fixing regfix replacement escaping bug ($ -> $ in replacement side) — matched first rebuild | 2026-04-13 | done — merged to main |
