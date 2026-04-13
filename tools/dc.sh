@@ -64,6 +64,16 @@ case "$CMD" in
         [ -z "$C_FILE" ] && { echo "Usage: dc.sh replace <src_file> <func_name> <c_file>"; exit 1; }
         [ ! -f "$SRC_FILE" ] && { echo "ERROR: $SRC_FILE not found"; exit 1; }
         [ ! -f "$C_FILE" ] && { echo "ERROR: $C_FILE not found"; exit 1; }
+        # Loudly identify which repo we are operating on. Past agents have hit
+        # the main repo instead of their worktree because dc.sh cd's to its own
+        # SCRIPT_DIR/.. — print the absolute resolved path so the caller can
+        # spot the wrong target before damage is done.
+        ABS_SRC="$(cd "$(dirname "$SRC_FILE")" && pwd)/$(basename "$SRC_FILE")"
+        BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || echo '<detached>')"
+        echo "REPLACE: $ABS_SRC (branch: $BRANCH)"
+        if [ "$BRANCH" = "main" ]; then
+            echo "WARNING: operating on main branch — if you intended a worktree, abort now."
+        fi
         # Read replacement C code (strip any CR)
         REPLACEMENT="$(tr -d '\r' < "$C_FILE")"
         # Do the replacement using python (safe with any content)
