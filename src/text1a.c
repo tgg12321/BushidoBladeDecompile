@@ -770,7 +770,85 @@ void func_800421C8(s32 a0) {
     D_800F62E0 = val & 0xFFF;
     func_80042478(*(s32 *)((u8 *)p + 4));
 }
-INCLUDE_ASM("asm/funcs", gnd_land_hit_char_die_main);
+extern s16 D_800F6318;
+extern s16 D_800F631E;
+extern s16 D_800F6324;
+extern u8 D_800F6338;
+extern u8 D_800F6339;
+extern u8 D_800F633A;
+extern s16 D_800F6378;
+extern s16 D_800F637E;
+extern s16 D_800F6384;
+extern u8 D_800F6398;
+extern u8 D_800F6399;
+extern u8 D_800F639A;
+extern s16 D_800F6498;
+extern s16 D_800F649E;
+extern s16 D_800F64A4;
+extern u8 D_800F64B8;
+extern u8 D_800F64B9;
+extern u8 D_800F64BA;
+extern s32 func_800486FC(s32);
+extern s32 func_8004881C(s32, s32, s32);
+extern void func_8004A1FC(s16 *);
+void gnd_land_hit_char_die_main(s32 a0, s32 packed, s32 a2, s32 a3) {
+    s32 r = (packed >> 16) & 0xFF;
+    s32 g = (packed >> 8) & 0xFF;
+    s32 b = packed & 0xFF;
+    s16 r2;
+    s16 g2;
+    s16 *new_var;
+    s16 b2;
+    if (func_800486FC(a0)) {
+        b = func_8004881C(r, g, b);
+        g = b;
+        r = b;
+    }
+    if (a3 != 0) {
+        goto raw;
+    }
+    r2 = (r << 12) / 255;
+    g2 = (g << 12) / 255;
+    b2 = (b << 12) / 255;
+    if (a2 != 0) {
+        goto alt_scale;
+    }
+    new_var = &D_800F6318;
+    *new_var = r2;
+    D_800F631E = g2;
+    D_800F6324 = b2;
+    func_8004A1FC((s16 *)(((u8 *)new_var) - 0x38));
+    D_800F6378 = r2;
+    D_800F637E = g2;
+    D_800F6384 = b2;
+    func_8004A1FC((s16 *)(((u8 *)new_var) + 0x28));
+    goto out;
+alt_scale:
+    {
+        s16 *p2 = &D_800F6498;
+        *p2 = r2;
+        D_800F649E = g2;
+        D_800F64A4 = b2;
+        func_8004A1FC((s16 *)(((u8 *)p2) - 0x38));
+    }
+    goto out;
+raw:
+    if (a2 != 0) {
+        goto alt_raw;
+    }
+    D_800F6338 = r;
+    D_800F6339 = g;
+    D_800F633A = b;
+    D_800F6398 = r;
+    D_800F6399 = g;
+    D_800F639A = b;
+    goto out;
+alt_raw:
+    D_800F64B8 = r;
+    D_800F64B9 = g;
+    D_800F64BA = b;
+out:;
+}
 extern s32 func_800486FC(s32);
 extern s32 func_8004881C(s32, s32, s32);
 extern void disp_SetFramebufferMode(s32, s32, s32, s32);
