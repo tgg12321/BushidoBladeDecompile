@@ -99,6 +99,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac_c2.c:func_8003C560 | Agent 78: Wave 27 — matched (state dispatcher) | 2026-04-13 | done — merged to main |
 | src/code6cac_b.c:func_8002EA24 | Agent 77: Wave 27 — matched (inline asm GTE rotation + distance check) | 2026-04-13 | done — merged to main |
 | src/code6cac_b.c:Pad_Prs | Agent 76 → Orchestrator: Wave 27 — agent crashed (API 500) after scoring 95 with 13 regfix rules; orchestrator salvaged by fixing regfix replacement escaping bug ($ -> $ in replacement side) — matched first rebuild | 2026-04-13 | done — merged to main |
-| src/code6cac.c:func_8001BAE4 | Agent 79: Wave 28 — claimed | 2026-04-13 | active |
-| src/code6cac_b.c:func_80033DF4 | Agent 80: Wave 28 — claimed | 2026-04-13 | active |
-| src/text1a_c.c:replay_camera_rob_back_loose3 | Agent 81: Wave 28 — claimed | 2026-04-13 | active |
+| src/code6cac.c:func_8001BAE4 | Agent 79: Wave 28 — matched (Judge cast + regfix srl→sra @ 29, 5 attempts) | 2026-04-13 | done — merged to main |
+| src/code6cac_b.c:func_80033DF4 | Agent 80: Wave 28 — TABLED @ score 1330 (8 attempts); regfix candidate — 3 unhoisted base pointers, ~12 rules | 2026-04-13 | tabled |
+| src/text1a_c.c:replay_camera_rob_back_loose3 | Agent 81: Wave 28 — TABLED @ score 140 floor (8 attempts); 64-bit codegen introduces `move v0,zero` that can't be eliminated at C level | 2026-04-13 | tabled |
