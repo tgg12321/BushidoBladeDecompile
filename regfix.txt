@@ -660,3 +660,15 @@ func_8008AAD4: subst "and	\$2,\$2,\$8" "and	$2,$2,$3" @ 87
 # C-cont. case0 inactive nor (idx 96-97).
 func_8008AAD4: subst "nor	\$5,\$0,\$5" "nor	$3,$0,$5" @ 96
 func_8008AAD4: subst "and	\$2,\$2,\$5" "and	$2,$2,$3" @ 97
+
+# func_8003AB44: case 2 branch polarity.
+# Target: beqz v0,ep ; move v0,zero ; j done ; li a0,3
+# Mine:   bnez v0,done ; li a0,3 ; j ep ; move v0,zero
+# These are 4 instructions with flipped branch polarity.
+# After splitting code6cac_c.c, labels changed from .L304/.L305 to .L21/.L22.
+func_8003AB44: subst "bne\s+\$2,\$0,\.L22" "beq $2,$0,.L21" @ 42
+func_8003AB44: subst "addiu\s+\$4,\$zero,3" "addu $2,$0,$zero" @ 43
+func_8003AB44: subst "j\s+\.L21" "j .L22" @ 44
+func_8003AB44: subst "addu\s+\$2,\$0,\$zero" "addiu $4,$zero,3" @ 45
+# func_8003AB44: case 5/6 increment block uses $v1 instead of $v0.
+func_8003AB44: $2 <-> $3 @ 72-75
