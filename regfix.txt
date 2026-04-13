@@ -739,3 +739,17 @@ func_80022224: subst "0\(\$4\)" "10($4)" @ 21
 func_80022224: reorder 63,62 @ 62-63
 # loop 4 init: reorder 3-way ($v1=$a0 / $a1=0 / $a2=-1) -> ($a1=0 / $a2=-1 / $v1=$a0)
 func_80022224: reorder 79,80,78 @ 78-80
+
+# Pad_Prs: regalloc fixup for multiply chain and log2 shift chain
+Pad_Prs: subst "addu\s+\$4,\$5,\$4" "addu $2,$5,$4" @ 57
+Pad_Prs: subst "mflo\s+\$2" "mflo $3" @ 58
+Pad_Prs: subst "addu\s+\$4,\$4,\$2" "addu $4,$2,$3" @ 59
+Pad_Prs: subst "and\s+\$3,\$3,\$2" "and $2,$3,$2" @ 76
+Pad_Prs: subst "addiu\s+\$2,\$zero,22" "addiu $3,$zero,22" @ 77
+Pad_Prs: subst "subu\s+\$2,\$2,\$3" "subu $3,$3,$2" @ 78
+Pad_Prs: subst "srl\s+\$4,\$4,\$2" "srl $2,$4,$3" @ 79
+Pad_Prs: subst "addu\s+\$at,\$at,\$4" "addu $at,$at,$2" @ 81
+Pad_Prs: subst "srl\s+\$2,\$2,1" "srl $3,$3,1" @ 83
+Pad_Prs: subst "addiu\s+\$3,\$zero,19" "addiu $2,$zero,19" @ 84
+Pad_Prs: subst "subu\s+\$3,\$3,\$2" "subu $2,$2,$3" @ 85
+Pad_Prs: subst "srl\s+\$4,\$4,\$3" "srl $4,$4,$2" @ 87
