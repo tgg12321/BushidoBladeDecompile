@@ -11,6 +11,52 @@
 
 set -e
 
+# === PATH NORMALIZATION (MUST RUN BEFORE ANY GIT CALL) ===
+# Claude Code's isolation="worktree" spawns worktrees via Git-for-Windows,
+# which writes Windows-format paths ("C:/...") into the worktree's .git file
+# and the main repo's .git/worktrees/<name>/gitdir pointer. WSL's native git
+# cannot parse those paths and will fail with "not a .git file".
+#
+# Agents run all their work (dc.sh, make, permuter, commits) via WSL, so we
+# rewrite both pointer files to the /mnt/c/... form here, using only plain
+# bash — no git calls, because git itself is what's broken until this runs.
+#
+# The orchestrator must use tools/worktree_cleanup.sh (via WSL) to remove
+# worktrees so the format stays consistent. Git-for-Windows can still run
+# read-only ops (log, branch, diff, merge by ref) on WSL-format worktrees.
+normalize_worktree_paths() {
+    local git_file=".git"
+    [ -f "$git_file" ] || return 0
+
+    local line drive rest wsl_path
+    line=$(head -n1 "$git_file")
+    case "$line" in
+        "gitdir: "[A-Za-z]:/*)
+            drive=$(printf '%s' "${line:8:1}" | tr '[:upper:]' '[:lower:]')
+            rest="${line:10}"  # everything after "gitdir: X:"
+            wsl_path="/mnt/${drive}${rest}"
+            printf 'gitdir: %s\n' "$wsl_path" > "$git_file"
+            echo "normalize: rewrote $git_file → $wsl_path"
+
+            # Also rewrite the main-side gitdir pointer, which holds the
+            # reverse path ("back to the worktree's .git file").
+            if [ -f "$wsl_path/gitdir" ]; then
+                local back_line bdrive brest
+                back_line=$(head -n1 "$wsl_path/gitdir")
+                case "$back_line" in
+                    [A-Za-z]:/*)
+                        bdrive=$(printf '%s' "${back_line:0:1}" | tr '[:upper:]' '[:lower:]')
+                        brest="${back_line:2}"
+                        printf '/mnt/%s%s\n' "$bdrive" "$brest" > "$wsl_path/gitdir"
+                        echo "normalize: rewrote $wsl_path/gitdir"
+                        ;;
+                esac
+            fi
+            ;;
+    esac
+}
+normalize_worktree_paths
+
 # Get the current worktree's WSL path
 CURRENT=$(git rev-parse --show-toplevel)
 
