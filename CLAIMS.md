@@ -93,3 +93,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/main.c:func_80085270 | Agent 70: Wave 25 — matched + 2 sibling wrappers (func_800853F4, func_8008541C), multifunction stub, m2c + 2 regfix reorders, 4 attempts | 2026-04-13 | done — merged to main |
 | src/text1a_c.c:mot_data_set | Agent 71: Wave 25 — TABLED at 150 (10 attempts, 5 permuter rounds); RGB→HSV, 4 signed divisions, pure regalloc plateau with 30 cascading reg diffs | 2026-04-13 | done — tabled |
 | src/code6cac.c:func_80022224 | Agent 72: Wave 25 — matched as tanren_calc_rob_pos (4-point distance + random middle-picker), C + 5 regfix rules (LICM un-hoist + 2 reorders), 8 attempts | 2026-04-13 | done — merged to main |
+| src/code6cac_b.c:func_8002FF20 | Agent 73: Wave 26 — matched (4 attempts, natural regalloc + inline GTE asm, sp10[8] frame padding) | 2026-04-13 | done — merged to main |
+| src/text1a.c:gnd_land_hit_char_die_main | Agent 74: Wave 26 — matched (10 attempts, goto layout + base-ptr deref technique for first color stores) | 2026-04-13 | done — merged to main |
+| src/code6cac.c:single_game_SetAbilityData | Agent 75: Wave 26 — matched (11 attempts, inline asm GTE .word + v1 regasm + nop delay slot + long temp_s1) | 2026-04-13 | done — merged to main |
