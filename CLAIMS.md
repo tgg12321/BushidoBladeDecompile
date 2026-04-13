@@ -87,4 +87,4 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac_c2.c:SetCurrentCursor | Orchestrator: LICM unhoist breakthrough — regfix 7-rule recipe (delete preheader lui+ori, insert inline lui+ori with insert_after for delay-slot fill, $t2→$t1 cascade rename, prologue arg reorder); matched first try, recipe documented in feedback_licm_unhoist_recipe.md | 2026-04-12 | done — merged to main (22c1cc0) |
 | src/code6cac_c.c:func_8003AB44 | Agent 67: Wave 24 — assigned (93 insns, 0 s-regs, 8 jals) | 2026-04-12 | active |
 | src/code6cac_b.c:single_game_SetWazaData | Agent 68: Wave 24 — assigned (108 insns, 0 s-regs, 1 jal) | 2026-04-12 | active |
-| src/main.c:func_8008AAD4 | Agent 69: Wave 24 — assigned (127 insns, 0 s-regs, 0 jals leaf) | 2026-04-12 | active |
+| src/main.c:func_8008AAD4 | Agent 69 TABLED → Orchestrator MATCHED via 26 substs + 15 deletes + 1 multi-line insert. Demonstrated post-delete index gotcha — earlier deletes (16, 23, 28) shift later indices, so insert needed @ 58 not @ 61 | 2026-04-12 | done — to merge |

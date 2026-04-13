@@ -61,6 +61,8 @@ extern s32 D_800A2D0C;
 extern volatile u32 *D_800A2CEC;
 extern volatile s32 D_800A2D14;
 extern s32 D_800A2CDC;
+extern volatile u16 D_800F7420[2];
+extern volatile u16 D_800F7424[2];
 extern s32 spu_TransferData(s32, s32);
 
 /* --- Functions 0x80083BE4 - 0x8008D060 (text4 segment) --- */
@@ -1252,7 +1254,57 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-INCLUDE_ASM("asm/funcs", func_8008AAD4);
+void func_8008AAD4(s32 arg0, u32 arg1) {
+    register u32 mask asm("a1");
+    register u32 lo asm("a2");
+    register u32 hi asm("a3");
+    register u32 hi32 asm("t0");
+
+    mask = arg1 & 0xFFFFFF;
+    lo = mask;
+    hi32 = mask >> 16;
+    hi = hi32;
+
+    if (arg0 == 0) goto case0;
+    if (arg0 != 1) return;
+
+    if (D_800A2CD4 & 1) {
+        D_800F7420[0] = (u16)lo;
+        D_800F7420[1] = (u16)hi;
+        *(volatile s32 *)&D_800A28A0 = *(volatile s32 *)&D_800A28A0 | 1;
+        *(volatile s32 *)&D_800A289C = *(volatile s32 *)&D_800A289C | mask;
+        if (D_800F7424[0] & mask) {
+            D_800F7424[0] = (u16)(D_800F7424[0] & ~mask);
+        }
+        if (D_800F7424[1] & hi32) {
+            D_800F7424[1] = (u16)(D_800F7424[1] & ~hi32);
+        }
+        return;
+    }
+    *(s16 *)(D_800A2CDC + 0x188) = (s16)lo;
+    *(s16 *)(D_800A2CDC + 0x18A) = (s16)hi;
+    D_800A2874 = D_800A2874 | mask;
+    return;
+
+case0:
+    if (D_800A2CD4 & 1) {
+        u32 notmask = ~mask;
+        D_800F7424[0] = (u16)lo;
+        D_800F7424[1] = (u16)hi;
+        D_800A28A0 |= 1;
+        D_800A289C &= notmask;
+        if (D_800F7420[0] & mask) {
+            D_800F7420[0] = (u16)(D_800F7420[0] & notmask);
+        }
+        if (D_800F7420[1] & hi32) {
+            D_800F7420[1] = (u16)(D_800F7420[1] & ~hi32);
+        }
+        return;
+    }
+    *(s16 *)(D_800A2CDC + 0x18C) = (s16)lo;
+    *(s16 *)(D_800A2CDC + 0x18E) = (s16)hi;
+    D_800A2874 = D_800A2874 & ~mask;
+}
 s32 func_8008ACD0(s32 arg0) {
     register s32 bit_found asm("a1");
     register s32 i asm("v1");
