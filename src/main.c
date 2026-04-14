@@ -464,7 +464,29 @@ s32 func_80085FD8(s16 a0) {
     return -1;
 }
 
-INCLUDE_ASM("asm/funcs", func_80086014);
+s32 func_80086014(s32 a0, s32 a1, s32 a2)
+{
+  register s32 v0 asm("$2");
+  register s32 v1 asm("$3");
+  register s32 ra0 asm("$4");
+  register s32 ra1 asm("$5");
+  register s32 ra3 asm("$7");
+
+  if (((u32)(a0 & 0xFFFF)) < 0x18) {
+    ra3 = a1;
+    v1 = (a0 << 16) >> 16;
+    ra1 = v1 << 4;
+    *((s16 *)((u8 *)&D_80102A7A + ra1)) = (s16)a2;
+    asm volatile("" ::: "memory");
+    ra0 = *((u8 *)&D_800F65E0 + v1);
+    v0 = 0;
+    *((s16 *)((u8 *)&D_80102A78 + ra1)) = ra3;
+    ra0 |= 3;
+    *((u8 *)&D_800F65E0 + v1) = ra0;
+    return 0;
+  }
+  return -1;
+}
 
 s32 func_80086080(s16 a0, s16 *a1, s16 *a2) {
     u16 raw1, raw2;
