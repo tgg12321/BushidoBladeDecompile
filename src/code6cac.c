@@ -14,6 +14,7 @@
 #define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
 
 /* Extern data declarations */
+extern u8 D_8008D118;
 extern s32 D_800F33D8;
 extern u32 D_800A378C;
 extern u32 D_80101E3C;
@@ -436,7 +437,49 @@ s32 func_8001A62C(s32 arg0) {
     }
     return arg0 / 2000;
 }
-INCLUDE_ASM("asm/funcs", func_8001A67C);
+void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
+    s32 *new_var;
+    s32 dx;
+    s32 dz;
+    u32 dist_sq;
+    u32 log2_val;
+    s32 sp_tmp;
+    dx = arg1[0] - arg2[0];
+    dz = arg1[2] - arg2[2];
+    while ((((u32)(dx + 0x4000)) > 0x8000U) || (((u32)(dz + 0x4000)) > 0x8000U)) {
+        dx = dx / 2;
+        dz = dz / 2;
+    }
+    dist_sq = (dx * dx) + (dz * dz);
+    if (dist_sq < 0x400U) {
+        log2_val = ((u32)((u8)(*((&D_8008D118) + dist_sq)))) >> 3;
+    } else {
+        u32 shift_a;
+        u32 shift_b;
+        register s32 t4_v asm("t4");
+        asm volatile("" : "=r"(t4_v));
+        t4_v = (s32)dist_sq;
+        new_var = &sp_tmp;
+        asm volatile(".word 0x488CF000" : : "r"(t4_v));
+        asm volatile("nop");
+        asm volatile("nop");
+        {
+            s32 addr_v0 = (s32)new_var;
+            t4_v = addr_v0;
+            asm volatile(".word 0xE99F0000" : : "r"(t4_v));
+        }
+        {
+            s32 lw_v1 = sp_tmp;
+            s32 li_v0 = -2;
+            li_v0 = lw_v1 & li_v0;
+            shift_a = 0x16 - li_v0;
+        }
+        shift_b = shift_a >> 1;
+        log2_val = (((u32)((u8)(*((&D_8008D118) + (dist_sq >> shift_a))))) << 16) >> (0x13 - shift_b);
+    }
+    arg0[0] = (s16)func_8001A62C(arg2[0] + ((dx << 10) / ((s32)log2_val)));
+    arg0[2] = (s16)func_8001A62C(arg2[2] + ((dz << 10) / ((s32)log2_val)));
+}
 INCLUDE_ASM("asm/funcs", func_8001A820);
 void func_8001B138(s32 *arg0) {
     D_800FF5C8 = 0;
