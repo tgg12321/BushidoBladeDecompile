@@ -762,3 +762,5 @@ func_8001BAE4: subst "srl" "sra" @ 29
 # expansion, to fill the srlv delay slot and match target schedule
 func_800274BC: insert "srl $3,$3,1" @ 33
 func_800274BC: delete @ 36
+# func_8001A67C: GCC places addiu v0,sp,16 before mtc2/nops; target places after
+func_8001A67C: reorder 44,46,47,45,48,49 @ 44-49
