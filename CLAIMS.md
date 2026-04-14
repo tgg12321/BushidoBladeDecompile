@@ -108,3 +108,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/main.c:func_80086014 | Agent 85: Wave 30 — matched (register asm + memory barrier + regfix insert for -0x8 frame, 12 attempts — overshot 8-cap) | 2026-04-13 | done — merged to main |
 | src/code6cac_b.c:func_8002D320 | Agent 86: Wave 30 — matched on attempt 1 (inline asm port of func_8002EA24 GTE template + 3 adaptations) | 2026-04-13 | done — merged to main |
 | src/text1a_c.c:func_80045878 | Agent 87: Wave 30 — matched (tail block regfix: 1 insert_after + 9 substs for v0=s1 base + v1 scratch pattern) | 2026-04-13 | done — merged to main |
+| src/main.c:func_800861BC | Agent 88: Wave 31 — claimed (132 insns, leaf, -0x8 frame, indexed global writes) | 2026-04-13 | active |
+| src/code6cac_c.c:func_80037D14 | Agent 89: Wave 31 — claimed (125 insns, -0x20 frame, 8 jal) | 2026-04-13 | active |
+| src/config.c:tslPrintScreen | Agent 90: Wave 31 — claimed (128 insns, -0x48 frame, 4 jal) | 2026-04-13 | active |
