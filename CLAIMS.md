@@ -118,3 +118,7 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/ings.c:func_80017848 | Agent 94: Wave 33 — TABLED @ 2380 (10 attempts + 2900 permuter). Pointer reload across jal math_Distance3D — GCC 2.7.2 won't hold s0/s1 across the call regardless of C structure. | 2026-04-14 | tabled |
 | src/text1a.c:func_80041AC8 | Agent 95: Wave 33 — TABLED @ 865 near-miss. ~3-insn delay-slot diff in inner loop; target fills bgez delay slot with `addiu a0,sp,16` (invariant) while GCC picks `addu v0,v1,s3`. Orchestrator regfix candidate — 1-2 swap rules. | 2026-04-14 | tabled — regfix candidate |
 | src/code6cac_c_mid.c:func_80038170 | Agent 96: Wave 33 — TABLED @ 1730 (9000 permuter iters). Compound blockers: bit-count loop layout + jal scheduling + trailing clear-loop counter reuse. ~15 regfix rules needed — over 2-application limit. | 2026-04-14 | tabled |
+| src/text1a.c:func_80041AC8 | Wave 33 post-orchestrator MATCHED. Progression 3855→325→180→0: ret var to prevent s3 hoist + func_8003E2A0(void) proto fix + 2 regfix reorder rules. Commit 2c7a7ed. | 2026-04-14 | done — matched |
+| src/code6cac_b.c:coli_hit_body_weapon | Wave 34 Agent 97 | 2026-04-14 | active |
+| src/code6cac_c2.c:func_8003EB84 | Wave 34 Agent 98 | 2026-04-14 | active |
+| src/text1a_c.c:hirahira_w_ctrl_2 | Wave 34 Agent 99 | 2026-04-14 | active |
