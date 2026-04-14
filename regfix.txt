@@ -764,3 +764,19 @@ func_800274BC: insert "srl $3,$3,1" @ 33
 func_800274BC: delete @ 36
 # func_8001A67C: GCC places addiu v0,sp,16 before mtc2/nops; target places after
 func_8001A67C: reorder 44,46,47,45,48,49 @ 44-49
+
+# Tail uses s1+v0; target uses fresh v0(=s1) base + v1 scratch
+
+
+# func_80045878: re-emit s3 = a0+3 at end of else block (target has duplicate)
+func_80045878: insert_after "addiu $19,$18,3" @ 30
+# func_80045878: rewrite tail block (9 substs) for v0=s1 base + v1 scratch (0-based idx)
+func_80045878: subst "addu\s+\$2,\$18,3" "addu $2,$17,$zero" @ 86
+func_80045878: subst "sh\s+\$2,22\(\$17\)" "addiu $3,$18,3" @ 87
+func_80045878: subst "addu\s+\$2,\$18,\$zero" "sh $3,22($2)" @ 88
+func_80045878: subst "sh\s+\$2,4\(\$17\)" "ori $3,$zero,32768" @ 89
+func_80045878: subst "sh\s+\$2,20\(\$17\)" "sh $18,4($2)" @ 90
+func_80045878: subst "sh\s+\$2,16\(\$17\)" "sh $21,8($2)" @ 91
+func_80045878: subst "ori\s+\$2,\$zero,32768" "sh $18,20($2)" @ 92
+func_80045878: subst "sh\s+\$21,8\(\$17\)" "sh $18,16($2)" @ 93
+func_80045878: subst "sw\s+\$2,24\(\$17\)" "sw $3,24($2)" @ 94
