@@ -112,6 +112,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac_c.c:func_80037D14 | Agent 89: Wave 31 — TABLED (no attempts); jtbl_800109D8 lives inside 101C.rodata_pre.s — requires rodata split scaffolding (Phase A orchestrator work) | 2026-04-13 | tabled |
 | src/config.c:tslPrintScreen | Agent 90: Wave 31 — TABLED @ score 1170 (11 attempts + 5 permuter runs); persistent ptr in s6 vs target s0 + 4 jal scheduling diffs — too many compound reassignments | 2026-04-13 | tabled |
 | src/code6cac_c.c:func_80037D14 | Orchestrator: UNSTUCK — 3-way CU split (code6cac_c.c/c0.c/c_mid.c) + rodata split (pre.s/pre_post.s), explicit goto labels mirroring original asm layout, permuter score=0; key gotcha: code6cac_c_mid.o rodata must slot BEFORE 101C.rodata_c_pre.o for jtbl_80010AC4 (commit a5a887a) | 2026-04-14 | done — merged to main |
-| src/code6cac_b.c:saSeInit | Agent 91: Wave 32 — 128 insn, 4 jal, sound effect init | 2026-04-14 | active |
-| src/code6cac.c:func_8001C624 | Agent 92: Wave 32 — 129 insn, 3 jal | 2026-04-14 | active |
-| src/text1a_c.c:_SelectSection | Agent 93: Wave 32 — 135 insn, leaf Judge lookup | 2026-04-14 | active |
+| src/code6cac_b.c:saSeInit | Agent 91: Wave 32 — TABLED @ 430 (5 attempts); regalloc plateau + 2 hard deletions (GCC DCE of redundant move t4,v0) + inverse arg-load order; regfix candidate not attempted | 2026-04-14 | tabled |
+| src/code6cac.c:func_8001C624 | Agent 92: Wave 32 — matched (permuter: nested do-while(0) block scoping + triple load/store pattern + 0x36 indirection, 5 manual + 4 permuter runs 7550→0, commit 152f99c) | 2026-04-14 | done — merged to main |
+| src/text1a_c.c:_SelectSection | Agent 93: Wave 32 — TABLED @ 2395 (7 attempts + permuter); unused-s1 prologue save (GCC 2.7.2 allocator reserved callee-saved reg then DCE elided use but not save) + HI/LO hazard nops; regfix candidate | 2026-04-14 | tabled |
