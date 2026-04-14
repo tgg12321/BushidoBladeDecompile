@@ -198,9 +198,15 @@ Worktrees do not contain gitignored tools (`tools/gcc-2.7.2/`, `.venv/`, `disc/`
 wsl bash -c 'cd /path/to/worktree && bash tools/worktree_setup.sh && source .venv/bin/activate'
 ```
 
-`tools/worktree_setup.sh` symlinks the heavy tools from the main repo into the worktree. Without this, `make` will silently produce a broken binary and SHA1 checks will give false results.
+`tools/worktree_setup.sh` symlinks the heavy tools from the main repo into the worktree, and also normalizes the worktree's `.git` pointer files from Windows format (`C:/...`) to WSL format (`/mnt/c/...`). Without the symlinks, `make` will silently produce a broken binary and SHA1 checks will give false results. Without the path normalization, every WSL git call inside the worktree fails with `fatal: not a git repository` because Git-for-Windows wrote the paths and WSL git can't parse them.
 
-To find the worktree path: the agent should use `git rev-parse --show-toplevel` inside WSL.
+To find the worktree path: the agent should use `git rev-parse --show-toplevel` inside WSL **after** `worktree_setup.sh` has run.
+
+**Orchestrator worktree cleanup:** use `tools/worktree_cleanup.sh <worktree-name>` via WSL — **not** `git worktree remove` from Git Bash. Once `worktree_setup.sh` has normalized the `.git` file to WSL format, Git-for-Windows refuses to validate it as a worktree and `git worktree remove` fails with `'...\\.git' is not a .git file, error code 7`. The cleanup helper runs via WSL to match the normalized format and falls back to manual rm + metadata cleanup if git still refuses.
+
+```bash
+wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash tools/worktree_cleanup.sh agent-XXXX'
+```
 
 ### Worktree Freshness (MANDATORY — automated)
 
