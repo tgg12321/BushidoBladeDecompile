@@ -108,6 +108,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/main.c:func_80086014 | Agent 85: Wave 30 — matched (register asm + memory barrier + regfix insert for -0x8 frame, 12 attempts — overshot 8-cap) | 2026-04-13 | done — merged to main |
 | src/code6cac_b.c:func_8002D320 | Agent 86: Wave 30 — matched on attempt 1 (inline asm port of func_8002EA24 GTE template + 3 adaptations) | 2026-04-13 | done — merged to main |
 | src/text1a_c.c:func_80045878 | Agent 87: Wave 30 — matched (tail block regfix: 1 insert_after + 9 substs for v0=s1 base + v1 scratch pattern) | 2026-04-13 | done — merged to main |
-| src/main.c:func_800861BC | Agent 88: Wave 31 — claimed (132 insns, leaf, -0x8 frame, indexed global writes) | 2026-04-13 | active |
-| src/code6cac_c.c:func_80037D14 | Agent 89: Wave 31 — claimed (125 insns, -0x20 frame, 8 jal) | 2026-04-13 | active |
-| src/config.c:tslPrintScreen | Agent 90: Wave 31 — claimed (128 insns, -0x48 frame, 4 jal) | 2026-04-13 | active |
+| src/main.c:func_800861BC | Agent 88: Wave 31 — TABLED @ score 2825 after 2300 permuter iters; compounding diffs (missing frame + 4 hoists + reorder + second-pointer alias) not regfix-bridgeable | 2026-04-13 | tabled |
+| src/code6cac_c.c:func_80037D14 | Agent 89: Wave 31 — TABLED (no attempts); jtbl_800109D8 lives inside 101C.rodata_pre.s — requires rodata split scaffolding (Phase A orchestrator work) | 2026-04-13 | tabled |
+| src/config.c:tslPrintScreen | Agent 90: Wave 31 — TABLED @ score 1170 (11 attempts + 5 permuter runs); persistent ptr in s6 vs target s0 + 4 jal scheduling diffs — too many compound reassignments | 2026-04-13 | tabled |
