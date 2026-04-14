@@ -177,7 +177,52 @@ If a claim has no matching active session (e.g., the terminal was closed), it is
 2. If there are uncommitted changes or unmerged branches, ask the user before overwriting
 3. Remove the stale claim row
 
-## Parallel Agent Protocol
+## Solo Focused Workflow (CURRENT — 2026-04-14 onward)
+
+**Parallel agent waves are DEPRECATED for decomp matching.** Wave 34 was the inflection point: remaining stubs all need compound regfix recipes, multi-round permuter runs, or multi-session work that parallel agents deliberately cap. The main Claude session now works ONE function end-to-end with no token/attempt/round caps. Do NOT spawn `isolation: worktree` agents for matching unless the user explicitly requests it.
+
+See `memory/feedback_solo_focused_paradigm.md` for the full rule set. Key points:
+
+### Workflow per function
+
+1. **Pre-screen** (unchanged from agent rules): grep for lwl/swl, handwritten asm markers, prologue layout, jtbl. Skip known-intractable blockers.
+2. **Pre-dive analysis** (MANDATORY): read the asm top to bottom, read the surrounding source file, consult Kengo via `tools/kengo_ref.py <func> --bb2`, consult matching-toolbox feedback memories. Form an explicit hypothesis BEFORE writing C.
+3. **Check in with user BEFORE writing C.** One short paragraph: target, pre-screen, hypothesis, expected difficulty.
+4. **Iterate:**
+   - Every attempt needs a one-line `HYPOTHESIS: ...` written down
+   - Check in after: initial score, each permuter round, each regfix layer, any plateau ≥2 attempts
+   - Between check-ins, act silently — no prose narration between tool calls
+
+### Anti-spiral rules (PRESERVED from agent protocol)
+
+- **Score regression → immediate revert.** Never build on a worse score.
+- **Same score twice on C variants → stop C, escalate to permuter/regfix.** GCC flattens different C structures; repeating won't help.
+- **3 attempts at the same plateau → STOP and check in with user before trying a 4th.** User may redirect or approve deeper work.
+- **Hypothesis before every attempt.** If you cannot articulate one, STOP and escalate.
+
+### Unlocked from agent protocol
+
+- No 100K token cap — sessions can run as long as the hypothesis pipeline is productive
+- No 8-attempt cap — limited by quality, not count
+- Permuter can run multiple rounds / long durations (overnight OK with check-in)
+- Regfix can layer compound recipes (25+ rules across multiple applications)
+- Multi-session work on one function is allowed — commit best partial state with notes so future sessions can resume
+
+### Tabling criteria (solo mode)
+
+Only table when you have documented attempts at ALL of:
+- Alternative C structures via permuter
+- Regfix at the assembly stream level
+- Consulted the full matching toolbox feedback memories
+- Explained why the remaining diff is architecturally intractable (not merely "hard")
+
+Table with full notes in CLAIMS.md so a future session can resume.
+
+---
+
+## Parallel Agent Protocol (DEPRECATED for matching — kept for reference and bulk non-matching work)
+
+**This section no longer applies to decomp matching as of 2026-04-14.** Keep it for reference in case agent waves become appropriate again for bulk renames, readability passes, or other non-matching bulk work where throughput > depth.
 
 When spawning multiple agents to work on this project simultaneously, follow these rules to prevent conflicts.
 
