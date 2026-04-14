@@ -667,7 +667,65 @@ void func_8001C51C(void) {
     func_800392C8();
     func_80021280(1);
 }
-INCLUDE_ASM("asm/funcs", func_8001C624);
+void func_8001C624(void) {
+    typedef struct { s32 a, b, c, d; } Blk16;
+    typedef struct { s32 a, b, c; } Blk12;
+    s32 local[3];
+    s32 a1;
+    s32 v1;
+    s32 a0_val;
+
+    v1 = 0x36;
+    func_80021D10(0, &((s32 *)&D_80101EC8)[v1], (s32)D_800A38E0);
+    func_80021D10(1, local, (s32)D_800A38E0);
+    D_80101FB0 = 0;
+    do {
+        a1 = ((s32 *)&D_80101EC8)[0x36];
+        v1 = D_80101FA4;
+        a0_val = D_80101FA8;
+        D_80101FB4 = -0x384;
+        D_80101FB8 = 0;
+        D_80101FBC = a1;
+        D_80101FC0 = v1 - 0x384;
+        D_80101FC4 = a0_val;
+        D_80101F80 = a1;
+        {
+            D_80101F84 = v1;
+            D_80101F88 = a0_val;
+            do {
+                *((Blk16 *)&D_80101F90) = *((Blk16 *)&D_80101F80);
+                *((Blk12 *)&D_801020C0) = *((Blk12 *)&D_80101FB0);
+                D_80101FCC = 0;
+                D_80101FD0 = 0;
+            } while (0);
+            D_80101FD4 = 0;
+            *((Blk16 *)&D_80102114) = *((Blk16 *)&D_80101FCC);
+            {
+                s32 t = local[0];
+                s32 u = local[2];
+                local[0] = t;
+                local[1] -= 0x384;
+                local[2] = u;
+            }
+            D_80101FDC = 0;
+            D_80101FE0 = 0;
+        }
+        D_80101FE4 = 0;
+        D_80101FEC = 0;
+        D_80101FF0 = 0;
+        D_80101FF4 = 0;
+    } while (0 != 0);
+    D_80101FFC = 0;
+    D_80102000 = 0;
+    D_80102004 = 0;
+    D_8010200C = 0;
+    D_80102014 = 0;
+    D_80102018 = 0;
+    D_8010201A = 0;
+    D_80102016 = 0;
+    D_80102010 = D_80101F84;
+    func_8003FFE0(0);
+}
 void func_8001C820(void) {
     s16 *s0 = &D_80101ED2;
     s32 a0;
