@@ -757,3 +757,8 @@ Pad_Prs: subst "srl\s+\$4,\$4,\$3" "srl $4,$4,$2" @ 87
 # func_8001BAE4: GCC optimizes signed shift to srl due to & 0x1FFE mask, target has sra
 # TEXT index 29 = srl ,,1 -> sra ,,1
 func_8001BAE4: subst "srl" "sra" @ 29
+
+# func_800274BC: move srl $3,$3,1 (half = v1_m>>1) before the lui/lbu
+# expansion, to fill the srlv delay slot and match target schedule
+func_800274BC: insert "srl $3,$3,1" @ 33
+func_800274BC: delete @ 36

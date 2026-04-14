@@ -235,7 +235,36 @@ void func_80027438(u8 *a0, s32 a1, s16 a2) {
             break;
     }
 }
-INCLUDE_ASM("asm/funcs", func_800274BC);
+extern u8 D_8008D118;
+void func_800274BC(s32 *arg0, s16 *arg1) {
+    u32 dist_sq = (u32)((arg0[0] * arg0[0]) + (arg0[1] * arg0[1]) + (arg0[2] * arg0[2]));
+    u32 log2_val;
+    u8 *new_var;
+    if (dist_sq < 0x400) {
+        log2_val = ((u32)(*((&D_8008D118) + dist_sq))) >> 3;
+    } else {
+        s32 sp_tmp;
+        register s32 t4_v asm("t4");
+        t4_v = (s32)dist_sq;
+        __asm__ volatile(".word 0x488CF000" : : "r"(t4_v));
+        __asm__ volatile("nop");
+        __asm__ volatile("nop");
+        t4_v = (s32)(&sp_tmp);
+        __asm__ volatile(".word 0xE99F0000" : : "r"(t4_v));
+        {
+            u32 clz = sp_tmp;
+            u32 v0_m = clz & (-2);
+            u32 v1_m = 0x16 - v0_m;
+            u32 idx = dist_sq >> v1_m;
+            u32 hi = (u32)((u8)(*((new_var = &D_8008D118) + idx)));
+            do { v0_m = 0x13 - (v1_m >> 1); } while (0);
+            log2_val = (hi << 16) >> v0_m;
+        }
+    }
+    arg1[0] = (s16)(((-arg0[0]) << 12) / ((s32)log2_val));
+    arg1[1] = (s16)(((-arg0[1]) << 12) / ((s32)log2_val));
+    arg1[2] = (s16)(((-arg0[2]) << 12) / ((s32)log2_val));
+}
 INCLUDE_ASM("asm/funcs", cpu_side_move_dir);
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir  |  160i  |  x4 size collision */
 extern s32 func_80032854(s32, s32, u8 *, s16 *);
