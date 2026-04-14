@@ -696,7 +696,63 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
         id++;
     } while (i < 5);
 }
-INCLUDE_ASM("asm/funcs", func_80041AC8);
+
+extern s32 D_80094DF0[];
+extern u8 D_80094E08[];
+extern s16 D_800A9A20;
+extern u16 D_800A9A24;
+void func_80041AC8(s16 *arg0)
+{
+  s16 rect[4];
+  s16 *var_s0;
+  u16 *var_s1;
+  s32 var_s2;
+  s32 var_s3;
+  u16 v1_val;
+  if (arg0[2] != 1)
+  {
+    return;
+  }
+  if (D_80094E08[arg0[4]] == 0xFF)
+  {
+    return;
+  }
+  D_800A9A20 = arg0[4];
+  var_s0 = (s16 *) D_80094DF0[D_80094E08[arg0[4]]];
+  if (func_8003E2A0() != 1)
+  {
+    goto else_lbl;
+  }
+  var_s3 = -0x140;
+  var_s2 = 0xF0;
+  goto after_if;
+  else_lbl:
+  var_s3 = 0x80;
+
+  var_s2 = 0;
+  after_if:
+  v1_val = (u16) (*var_s0);
+
+  if ((*var_s0) >= 0)
+  {
+    var_s1 = &D_800A9A24;
+    do
+    {
+      u16 v0_val;
+      rect[0] = v1_val + var_s3;
+      v0_val = (u16) var_s0[1];
+      rect[2] = 0x10;
+      rect[3] = 1;
+      rect[1] = v0_val + var_s2;
+      gpu_StoreImage(rect, var_s1);
+      var_s0 += 2;
+      var_s1 += 0x10;
+      v1_val = (u16) (*var_s0);
+    }
+    while ((*var_s0) >= 0);
+  }
+  gpu_DrawSync(0);
+}
 INCLUDE_ASM("asm/funcs", saTan4FireDisp);
 extern s16 g_anim_select;
 extern s16 D_800A323A;
