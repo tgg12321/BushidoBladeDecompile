@@ -105,3 +105,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac_b.c:func_800274BC | Agent 82: Wave 29 — matched (m2c + register asm t4 + inline GTE LZCS + 2 regfix rules, 8 attempts) | 2026-04-13 | done — merged to main |
 | src/code6cac.c:func_8001A67C | Agent 83: Wave 29 — matched (register asm t4 + inline GTE CLZ + 1 regfix reorder, 12 attempts — overshot 8-cap) | 2026-04-13 | done — merged to main |
 | src/code6cac_c.c:saSeInit_2 | Agent 84: Wave 29 — TABLED @ score 600 (8 attempts); final report hallucinated, audit log shows no commit | 2026-04-13 | tabled |
+| src/main.c:func_80086014 | Agent 85: Wave 30 — claimed (27 insns, leaf, 3 global array writes indexed by u16) | 2026-04-13 | active |
+| src/code6cac_b.c:func_8002D320 | Agent 86: Wave 30 — claimed (126 insns, leaf, GTE mvmva ops on struct fields) | 2026-04-13 | active |
+| src/text1a_c.c:func_80045878 | Agent 87: Wave 30 — claimed (108 insns, 14 jal, setup/init flow) | 2026-04-13 | active |
