@@ -757,3 +757,6 @@ Pad_Prs: subst "srl\s+\$4,\$4,\$3" "srl $4,$4,$2" @ 87
 # func_8001BAE4: GCC optimizes signed shift to srl due to & 0x1FFE mask, target has sra
 # TEXT index 29 = srl ,,1 -> sra ,,1
 func_8001BAE4: subst "srl" "sra" @ 29
+
+# func_8001A67C: GCC places addiu v0,sp,16 before mtc2/nops; target places after
+func_8001A67C: reorder 44,46,47,45,48,49 @ 44-49
