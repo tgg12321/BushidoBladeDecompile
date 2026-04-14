@@ -115,3 +115,6 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac_b.c:saSeInit | Agent 91: Wave 32 — TABLED @ 430 (5 attempts); regalloc plateau + 2 hard deletions (GCC DCE of redundant move t4,v0) + inverse arg-load order; regfix candidate not attempted | 2026-04-14 | tabled |
 | src/code6cac.c:func_8001C624 | Agent 92: Wave 32 — matched (permuter: nested do-while(0) block scoping + triple load/store pattern + 0x36 indirection, 5 manual + 4 permuter runs 7550→0, commit 152f99c) | 2026-04-14 | done — merged to main |
 | src/text1a_c.c:_SelectSection | Agent 93 + orchestrator regfix verification: TABLED. Permuter 3000 iters best=1915; diff is structural (77 reg + 14 del + 8 ins) not frame-only — regfix cannot bridge. DCE-allocator artifact is not the only blocker; GCC's HI/LO scheduling diverges across entire function. | 2026-04-14 | tabled |
+| src/ings.c:func_80017848 | Agent 94: Wave 33 — 136 lines, 6 s-regs, 1 jal | 2026-04-14 | active |
+| src/text1a.c:func_80041AC8 | Agent 95: Wave 33 — 82 lines, 6 s-regs, 3 jal | 2026-04-14 | active |
+| src/code6cac_c_mid.c:func_80038170 | Agent 96: Wave 33 — 156 lines, 4 s-regs, 1 jal | 2026-04-14 | active |
