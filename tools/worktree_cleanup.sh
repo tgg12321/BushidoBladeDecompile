@@ -18,6 +18,20 @@
 
 set -e
 
+# Guard: this script MUST run from WSL, never from Git Bash.
+# Git-for-Windows cannot parse WSL-format gitdir pointers (`/mnt/c/...`) and
+# its `git worktree prune` — which this script calls on the happy path AND
+# the manual-fallback path — treats every WSL-format worktree as "non-existent
+# location" and silently deletes the reverse-pointer metadata for ALL
+# currently-active agent worktrees. This has wiped concurrent agents mid-run.
+# See memory/feedback_worktree_path_format.md.
+if [ ! -d /mnt/c ]; then
+    echo "ERROR: worktree_cleanup.sh must run from WSL, not Git Bash." >&2
+    echo "  Git-for-Windows prune will destroy all WSL-format worktrees." >&2
+    echo "  Use: wsl bash -c 'cd /mnt/c/.../main-repo && bash tools/worktree_cleanup.sh <name>'" >&2
+    exit 3
+fi
+
 if [ $# -lt 1 ]; then
     echo "usage: $0 <worktree-name-or-path>" >&2
     exit 1
