@@ -788,3 +788,23 @@ func_80045878: subst "sw\s+\$2,24\(\$17\)" "sw $3,24($2)" @ 94
 func_80041AC8: reorder 22,21 @ 21-22
 # func_80041AC8: reorder loop preheader (move la after li s5/s4)
 func_80041AC8: reorder 44,45,43 @ 43-45
+
+# func_8001F938: same pattern as func_8001EEB4 - GCC split lhu+andi
+# Pre-fix: swap v1/a1 at lhu (1) and at the 3 addiu sub instructions
+func_8001F938: $3 <-> $5 @ 1-1
+func_8001F938: $3 <-> $5 @ 7-7
+func_8001F938: $3 <-> $5 @ 11-11
+func_8001F938: $3 <-> $5 @ 15-15
+# Insert the redundant andi between lh a2 and beq v1 v0
+func_8001F938: insert "andi $3,$5,0xFFFF" @ 3
+
+# func_8001F938: 0x270 block patch
+# Transform 9-insn block (lh/nop/move/slt/beq/addiu-delay/andi/sll/sra)
+# into target 8-insn block (lh/lhu/slt/bne/sll-delay/addiu/sll/sra).
+func_8001F938: subst "nop" "lhu\t$3,624($4)" @ 74
+func_8001F938: subst "addu\s+\$3,\$2,\$zero" "slt\t$2,$2,4" @ 75
+func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L219" @ 76
+func_8001F938: subst "beq\s+\$2,\$0,\.L219" "sll\t$2,$3,16" @ 77
+func_8001F938: subst "addiu\s+\$5,\$zero,3" "addiu\t$3,$zero,3" @ 78
+func_8001F938: subst "andi\s+\$5,\$3,0xffff" "sll\t$2,$3,16" @ 79
+func_8001F938: delete @ 80
