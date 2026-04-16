@@ -1,0 +1,41 @@
+# Lab-only regfix spike for tslPrintScreen.
+# This file is intentionally separate from the main regfix.txt so Codex
+# experiments do not interfere with the live workflow.
+
+# Early sentinel/token register cleanup.
+tslPrintScreen: $3 <-> $4 @ 18-19
+tslPrintScreen: $3 <-> $4 @ 28-32
+tslPrintScreen: subst "\.L9" ".L27-8" @ 34
+
+# func_80052C10 neighborhood:
+# target keeps a1=s1 live in both the branch-delay slot and the post-call block,
+# then reloads from s3 and materializes a2 from the old s0 value.
+tslPrintScreen: subst "\.L10" ".L10+4" @ 39
+tslPrintScreen: subst "addu.*" "addu\t$5,$17,$zero" @ 40
+tslPrintScreen: subst "lh.*" "lh\t$3,0($19)" @ 43
+tslPrintScreen: subst "nop.*" "addu\t$6,$16,$zero" @ 44
+tslPrintScreen: insert "addu\t$5,$17,$zero" @ 43
+
+# s0 carry through the setup/copy block:
+# target loads the next pointer into s0, keeps old s0 in a2, and writes via s0.
+tslPrintScreen: subst "lw.*" "lw\t$16,6708($2)" @ 54
+tslPrintScreen: subst "sw.*" "sw\t$6,24($18)" @ 56
+tslPrintScreen: subst "sw.*" "sw\t$16,20($18)" @ 58
+tslPrintScreen: subst "addu.*" "addu\t$3,$3,$19" @ 62
+tslPrintScreen: subst "sb.*" "sb\t$3,0($16)" @ 72
+
+# Marker entry should branch to the load before .L27, not the label itself.
+tslPrintScreen: subst "\.L27" ".L27-8" @ 89
+
+# Tail block reshaping:
+# load -> nop -> beq, then materialize -2 before the scan loop body, then swap
+# the bne/nop pair and finish with v1/a0 instead of s5/v1 for the final token.
+tslPrintScreen: subst "lh.*" "lh\t$2,0($17)" @ 95
+tslPrintScreen: reorder 97,98,96 @ 96-98
+tslPrintScreen: subst "lh.*" "addiu\t$3,$zero,-2" @ 99
+tslPrintScreen: subst "nop.*" "lh\t$2,0($17)" @ 100
+tslPrintScreen: subst "bne.*" "bne\t$2,$3,.L26" @ 101
+tslPrintScreen: reorder 102,103,101 @ 101-103
+tslPrintScreen: subst "lh.*" "lh\t$3,0($17)" @ 105
+tslPrintScreen: subst "lhu.*" "lhu\t$4,0($17)" @ 106
+tslPrintScreen: subst "bne.*" "bne\t$3,$2,.L7" @ 107

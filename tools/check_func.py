@@ -23,6 +23,8 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ORIGINAL_EXE = os.path.join(PROJECT_ROOT, "disc", "SLUS_006.63")
 CC1 = os.path.join(PROJECT_ROOT, "tools", "gcc-2.7.2", "build", "cc1")
 MASPSX = os.path.join(PROJECT_ROOT, "tools", "maspsx", "maspsx.py")
+REGFIX = os.path.join(PROJECT_ROOT, "tools", "regfix.py")
+REGFIX_STAGE2 = os.path.join(PROJECT_ROOT, "regfix_stage2.txt")
 ASM_FILE = os.path.join(PROJECT_ROOT, "asm", "6CAC.s")
 UNDEF_FUNCS = os.path.join(PROJECT_ROOT, "undefined_funcs_auto.txt")
 UNDEF_SYMS = os.path.join(PROJECT_ROOT, "undefined_syms_auto.txt")
@@ -119,9 +121,27 @@ def compile_c_file(c_file, output_obj):
         print(f"  MASPSX failed:\n{maspsx_result.stderr.decode()}")
         return False
 
-    # Step 4: Assemble
+    # Step 4: Regfix stage 1
+    regfix_cmd = ["python3", REGFIX]
+    regfix_result = subprocess.run(regfix_cmd, input=maspsx_result.stdout,
+                                    capture_output=True, cwd=PROJECT_ROOT)
+    if regfix_result.returncode != 0:
+        print(f"  REGFIX failed:\n{regfix_result.stderr.decode()}")
+        return False
+
+    # Step 5: Regfix stage 2
+    env = os.environ.copy()
+    env["REGFIX_CONFIG"] = REGFIX_STAGE2
+    regfix2_cmd = ["python3", REGFIX]
+    regfix2_result = subprocess.run(regfix2_cmd, input=regfix_result.stdout,
+                                     capture_output=True, cwd=PROJECT_ROOT, env=env)
+    if regfix2_result.returncode != 0:
+        print(f"  REGFIX stage 2 failed:\n{regfix2_result.stderr.decode()}")
+        return False
+
+    # Step 6: Assemble
     as_cmd = [AS] + AS_FLAGS + ["-o", output_obj]
-    as_result = subprocess.run(as_cmd, input=maspsx_result.stdout,
+    as_result = subprocess.run(as_cmd, input=regfix2_result.stdout,
                                 capture_output=True, cwd=PROJECT_ROOT)
     if as_result.returncode != 0:
         print(f"  AS failed:\n{as_result.stderr.decode()}")
