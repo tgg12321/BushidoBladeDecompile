@@ -360,28 +360,7 @@ void sys_MemClear(s32 *a0, s32 a1) {
         *a0++ = 0;
     }
 }
-extern s32 *D_800A263C;
-extern s32 D_800A2640[];
-extern void D_80083418(void);
-extern s32 D_8008359C(s32, s32);
-
-s32 conv_matrix_rotation(void) {
-    register s32 mode asm("a0");
-    s32 *ptr;
-    void *handler;
-
-    sys_MemClear2(D_800A2640, 8);
-    mode = 3;
-    ptr = D_800A263C;
-    handler = D_80083418;
-    *ptr = 0;
-    asm volatile("" : "=r"(mode) : "0"(mode));
-    asm volatile("" ::: "memory");
-    ((void (*)(s32, void *))irq_EnableInterrupts)(mode, handler);
-    return (s32)D_8008359C;
-}
-INCLUDE_ASM("asm/funcs", D_80083418);
-INCLUDE_ASM("asm/funcs", D_8008359C);
+INCLUDE_ASM("asm/funcs", conv_matrix_rotation);
 /* kengo:MED  |  common/conv_matrix_rotation  |  145i  |  -14 9.7% */
 void sys_MemClear2(s32 *a0, s32 a1) {
     s32 i;
