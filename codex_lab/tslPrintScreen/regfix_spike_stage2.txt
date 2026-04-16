@@ -1,0 +1,16 @@
+# Second-stage label-aware cleanup applied on top of regfix_spike.txt output.
+# This stage intentionally works on the first-stage output indices.
+
+# Now that .L27 stays on the first tail instruction group, branches can target it
+# directly instead of using byte offsets.
+tslPrintScreen: subst "\.L27-8" ".L27" @ 34
+tslPrintScreen: subst "\.L27-8" ".L27" @ 90
+
+# Tail block:
+#   .L27: lh / nop / beq .L9+4 / addiu
+#   .L26: ... li -2 / lh / nop / bne .L26+8 / addiu
+#   .L9:  addiu -3 / lh / lhu / bne
+tslPrintScreen: subst "beq.*" "lh\t$2,0($17)" @ 96
+tslPrintScreen: subst "lh.*" "beq\t$2,$22,.L9+4" @ 98
+tslPrintScreen: subst "bne.*" "lh\t$2,0($17)" @ 101
+tslPrintScreen: subst "lh.*" "bne\t$2,$3,.L26+8" @ 103

@@ -62,6 +62,7 @@ indices), then reorders (on post-insert indices).
 Instruction indices count actual instructions (not directives, labels,
 or comments) from the function entry point, 0-based.
 """
+import os
 import re
 import sys
 from pathlib import Path
@@ -352,7 +353,7 @@ def process_function(lines, func_config):
 def main():
     script_dir = Path(__file__).resolve().parent
     project_root = script_dir.parent
-    config_path = project_root / 'regfix.txt'
+    config_path = Path(os.environ.get('REGFIX_CONFIG', project_root / 'regfix.txt'))
 
     config = load_config(config_path)
     if not config:

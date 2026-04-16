@@ -1,0 +1,12 @@
+# Second-stage regfix pass.
+# This file is intentionally small and only contains fixes that are easiest to
+# express after the first regfix pass has already rewritten the surrounding
+# instructions.
+
+# tslPrintScreen: label-aware marker-scan tail cleanup after stage 1.
+tslPrintScreen: subst "\.L27-8" ".L27" @ 34
+tslPrintScreen: subst "\.L27-8" ".L27" @ 90
+tslPrintScreen: subst "beq.*" "lh\t$2,0($17)" @ 96
+tslPrintScreen: subst "lh.*" "beq\t$2,$22,.L70+4" @ 98
+tslPrintScreen: subst "bne.*" "lh\t$2,0($17)" @ 101
+tslPrintScreen: subst "lh.*" "bne\t$2,$3,.L87+8" @ 103
