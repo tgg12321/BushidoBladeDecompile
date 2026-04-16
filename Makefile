@@ -14,6 +14,7 @@ CC1          := tools/gcc-2.7.2/build/cc1
 PROLOGUE_FIX := python3 tools/prologue_fix.py
 REGFIX       := python3 tools/regfix.py
 REGFIX_STAGE2:= REGFIX_CONFIG=regfix_stage2.txt python3 tools/regfix.py
+ASMFIX       := python3 tools/asmfix.py
 MASPSX       := python3 tools/maspsx/maspsx.py
 MASPSX_FLAGS := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt
 MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --dont-force-G0 --sdata-syms=sdata_syms.txt -G8
@@ -115,10 +116,10 @@ maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLA
 rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.align\t2/" |,)
 
 # -- Compile C source (decompiled functions) --
-# Pipeline: cpp | cc1 | prologue_fix | maspsx | [sed align fix] | regfix | regfix_stage2 | as -> .o
+# Pipeline: cpp | cc1 | prologue_fix | maspsx | [sed align fix] | regfix | regfix_stage2 | asmfix | as -> .o
 $(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call rodata_align_fix,$*) $(REGFIX) | $(REGFIX_STAGE2) | $(AS) $(AS_FLAGS) -o $@
+	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call rodata_align_fix,$*) $(REGFIX) | $(REGFIX_STAGE2) | $(ASMFIX) | $(AS) $(AS_FLAGS) -o $@
 
 # -- Assemble .s files (non-decompiled asm) --
 $(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s

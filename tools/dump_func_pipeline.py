@@ -58,6 +58,7 @@ def main() -> int:
         "pre": extract_function_asm(stages["maspsx"].decode("utf-8"), func_name),
         "regfix1": extract_function_asm(stages["regfix1"].decode("utf-8"), func_name),
         "regfix2": extract_function_asm(stages["regfix2"].decode("utf-8"), func_name),
+        "asmfix": extract_function_asm(stages["asmfix"].decode("utf-8"), func_name),
     }
 
     target_text = None
