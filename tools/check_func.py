@@ -26,6 +26,7 @@ STAGE_CHOICES = {
     "pre": "maspsx",
     "regfix1": "regfix1",
     "regfix2": "regfix2",
+    "asmfix": "asmfix",
 }
 
 

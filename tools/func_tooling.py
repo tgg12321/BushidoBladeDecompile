@@ -13,19 +13,25 @@ import struct
 import subprocess
 import tempfile
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ORIGINAL_EXE = PROJECT_ROOT / "disc" / "SLUS_006.63"
+ASM_DIR = PROJECT_ROOT / "asm"
 CC1 = PROJECT_ROOT / "tools" / "gcc-2.7.2" / "build" / "cc1"
 MASPSX = PROJECT_ROOT / "tools" / "maspsx" / "maspsx.py"
 REGFIX = PROJECT_ROOT / "tools" / "regfix.py"
 REGFIX_STAGE2 = PROJECT_ROOT / "regfix_stage2.txt"
+ASMFIX = PROJECT_ROOT / "tools" / "asmfix.py"
 ASM_FILE = PROJECT_ROOT / "asm" / "6CAC.s"
+ASM_DATA_DIR = PROJECT_ROOT / "asm" / "data"
 UNDEF_FUNCS = PROJECT_ROOT / "undefined_funcs_auto.txt"
 UNDEF_SYMS = PROJECT_ROOT / "undefined_syms_auto.txt"
 NAMED_SYMS = PROJECT_ROOT / "named_syms.txt"
+LINKER_SCRIPT = PROJECT_ROOT / "bb2.ld"
+BUILD_MAP = PROJECT_ROOT / "build" / "bb2.map"
 SRC_DIR = PROJECT_ROOT / "src"
 ASM_FUNCS_DIR = PROJECT_ROOT / "asm" / "funcs"
 CODEX_LAB_DIR = PROJECT_ROOT / "codex_lab"
@@ -112,6 +118,12 @@ class FuncInfo:
     source_kind: str = "unknown"
 
 
+ADDR_COMMENT_RE = re.compile(r"/\*\s+[0-9A-Fa-f]+\s+([0-9A-Fa-f]+)\b")
+SYMBOL_DECL_RE = re.compile(r"^(glabel|dlabel)\s+([A-Za-z0-9_.$]+)\s*$")
+GLABEL_RE = re.compile(r"^glabel\s+([A-Za-z0-9_.$]+)\s*$")
+NONMATCHING_RE = re.compile(r"^nonmatching\s+([A-Za-z0-9_.$]+)\s*,\s*(0x[0-9A-Fa-f]+|\d+)\s*$")
+
+
 def stem_for_path(path: str | Path) -> str:
     return Path(path).stem
 
@@ -158,18 +170,128 @@ def parse_func_info_from_asm(path: str | Path) -> FuncInfo | None:
     return FuncInfo(name=name, addr=start, size=size, asm_path=asm_path, source_kind="split_asm")
 
 
+def extract_addr_from_line(line: str) -> int | None:
+    match = ADDR_COMMENT_RE.search(line)
+    if match:
+        return int(match.group(1), 16)
+    return None
+
+
+@lru_cache(maxsize=None)
+def parse_original_symbols_from_asm(path: str | Path) -> dict[str, int]:
+    asm_path = Path(path)
+    symbols: dict[str, int] = {}
+    pending: list[str] = []
+    for raw_line in asm_path.read_text(encoding="utf-8", errors="replace").splitlines():
+        stripped = raw_line.strip()
+        match = SYMBOL_DECL_RE.match(stripped)
+        if match:
+            pending.append(match.group(2))
+            addr = extract_addr_from_line(raw_line)
+            if addr is not None:
+                for name in pending:
+                    symbols.setdefault(name, addr)
+                pending.clear()
+            continue
+
+        addr = extract_addr_from_line(raw_line)
+        if addr is not None and pending:
+            for name in pending:
+                symbols.setdefault(name, addr)
+            pending.clear()
+            continue
+
+        if stripped.startswith(("nonmatching ", "endlabel ", "enddlabel ")):
+            pending.clear()
+
+    return symbols
+
+
+@lru_cache(maxsize=None)
+def get_top_level_asm_glabels(path: str | Path) -> list[tuple[str, int]]:
+    asm_path = Path(path)
+    glabels: list[tuple[str, int]] = []
+    pending_name: str | None = None
+
+    for raw_line in asm_path.read_text(encoding="utf-8", errors="replace").splitlines():
+        stripped = raw_line.strip()
+        match = GLABEL_RE.match(stripped)
+        if match:
+            pending_name = match.group(1)
+            addr = extract_addr_from_line(raw_line)
+            if addr is not None:
+                glabels.append((pending_name, addr))
+                pending_name = None
+            continue
+
+        addr = extract_addr_from_line(raw_line)
+        if addr is not None and pending_name is not None:
+            glabels.append((pending_name, addr))
+            pending_name = None
+            continue
+
+        if stripped.startswith(("nonmatching ", "endlabel ")):
+            pending_name = None
+
+    return glabels
+
+
+@lru_cache(maxsize=None)
+def parse_top_level_asm_funcs(path: str | Path) -> dict[str, FuncInfo]:
+    asm_path = Path(path)
+    funcs: dict[str, FuncInfo] = {}
+    lines = asm_path.read_text(encoding="utf-8", errors="replace").splitlines()
+
+    for idx, raw_line in enumerate(lines):
+        stripped = raw_line.strip()
+        match = NONMATCHING_RE.match(stripped)
+        if not match:
+            continue
+        name = match.group(1)
+        size = int(match.group(2), 0)
+        addr = None
+        for probe in range(idx + 1, len(lines)):
+            if probe > idx + 1 and NONMATCHING_RE.match(lines[probe].strip()):
+                break
+            addr = extract_addr_from_line(lines[probe])
+            if addr is not None:
+                break
+        if addr is not None:
+            funcs[name] = FuncInfo(name=name, addr=addr, size=size, asm_path=asm_path, source_kind="main_asm")
+
+    glabels = get_top_level_asm_glabels(asm_path)
+    for idx, (name, addr) in enumerate(glabels):
+        next_addr = glabels[idx + 1][1] if idx + 1 < len(glabels) else addr
+        size = max(0, next_addr - addr)
+        funcs.setdefault(name, FuncInfo(name=name, addr=addr, size=size, asm_path=asm_path, source_kind="asm_glabel"))
+
+    return funcs
+
+
+@lru_cache(maxsize=None)
+def get_all_original_symbol_addrs() -> dict[str, int]:
+    symbols: dict[str, int] = {}
+
+    for path in sorted(ASM_DIR.glob("*.s")):
+        for name, addr in parse_original_symbols_from_asm(path).items():
+            symbols.setdefault(name, addr)
+
+    for path in sorted(ASM_FUNCS_DIR.glob("*.s")):
+        for name, addr in parse_original_symbols_from_asm(path).items():
+            symbols.setdefault(name, addr)
+
+    for path in sorted(ASM_DATA_DIR.glob("*.s")):
+        for name, addr in parse_original_symbols_from_asm(path).items():
+            symbols.setdefault(name, addr)
+
+    return symbols
+
+
 def get_all_func_info() -> dict[str, FuncInfo]:
     funcs: dict[str, FuncInfo] = {}
 
-    content = ASM_FILE.read_text()
-    for match in re.finditer(r"nonmatching\s+(\w+)\s*,\s*(0x[0-9A-Fa-f]+|\d+)", content):
-        name = match.group(1)
-        size = int(match.group(2), 0)
-        addr_match = re.match(r"func_([0-9A-Fa-f]+)", name)
-        if not addr_match:
-            continue
-        addr = int(addr_match.group(1), 16)
-        funcs[name] = FuncInfo(name=name, addr=addr, size=size, asm_path=ASM_FILE, source_kind="main_asm")
+    for path in sorted(ASM_DIR.glob("*.s")):
+        funcs.update(parse_top_level_asm_funcs(path))
 
     for path in sorted(glob.glob(str(ASM_FUNCS_DIR / "*.s"))):
         info = parse_func_info_from_asm(path)
@@ -178,6 +300,10 @@ def get_all_func_info() -> dict[str, FuncInfo]:
         funcs[info.name] = info
 
     return funcs
+
+
+def get_all_split_symbol_addrs() -> dict[str, int]:
+    return get_all_original_symbol_addrs()
 
 
 def infer_source_file(func_name: str) -> Path | None:
@@ -256,6 +382,16 @@ def run_command(cmd: list[str], *, input_bytes: bytes | None = None, env: dict[s
     return result.stdout
 
 
+def parse_gp_value() -> int | None:
+    if not LINKER_SCRIPT.exists():
+        return None
+    text = LINKER_SCRIPT.read_text(encoding="utf-8")
+    match = re.search(r"^\s*_gp\s*=\s*0x([0-9A-Fa-f]+)\s*;", text, flags=re.MULTILINE)
+    if match:
+        return int(match.group(1), 16)
+    return None
+
+
 def apply_rodata_align_fix(text: str, c_file: str | Path) -> str:
     if stem_for_path(c_file) not in RODATA_ALIGN2_FILES:
         return text
@@ -288,6 +424,10 @@ def compile_stage_outputs(c_file: str | Path) -> dict[str, bytes]:
         input_bytes=stages["regfix1"],
         env=env,
     )
+    stages["asmfix"] = run_command(
+        ["python3", str(ASMFIX)],
+        input_bytes=stages["regfix2"],
+    )
     return stages
 
 
@@ -297,7 +437,7 @@ def assemble_asm_text(asm_text: bytes, output_obj: str | Path) -> None:
 
 def compile_c_file_to_object(c_file: str | Path, output_obj: str | Path) -> dict[str, bytes]:
     stages = compile_stage_outputs(c_file)
-    assemble_asm_text(stages["regfix2"], output_obj)
+    assemble_asm_text(stages["asmfix"], output_obj)
     return stages
 
 
@@ -334,8 +474,31 @@ def get_obj_functions(obj_file: str | Path) -> list[tuple[int, int, str]]:
     return funcs
 
 
+def load_map_symbols() -> dict[str, int]:
+    symbols: dict[str, int] = {}
+    if not BUILD_MAP.exists():
+        return symbols
+    for line in BUILD_MAP.read_text(encoding="utf-8", errors="replace").splitlines():
+        match = re.match(r"^\s*0x([0-9A-Fa-f]+)\s+([^\s]+)$", line)
+        if not match:
+            continue
+        name = match.group(2)
+        if name.endswith(".NON_MATCHING"):
+            continue
+        symbols.setdefault(name, int(match.group(1), 16))
+    return symbols
+
+
 def generate_func_symbols(all_funcs: dict[str, FuncInfo], obj_func_names: set[str], sym_file: str | Path) -> None:
+    split_symbols = get_all_split_symbol_addrs()
+    map_symbols = load_map_symbols()
     with open(sym_file, "w", encoding="utf-8") as handle:
+        for name, addr in sorted(split_symbols.items(), key=lambda item: item[1]):
+            if name not in obj_func_names and name not in all_funcs:
+                handle.write(f"{name} = 0x{addr:08X};\n")
+        for name, addr in sorted(map_symbols.items(), key=lambda item: item[1]):
+            if name not in obj_func_names and name not in all_funcs and name not in split_symbols:
+                handle.write(f"{name} = 0x{addr:08X};\n")
         for name, info in sorted(all_funcs.items(), key=lambda item: item[1].addr):
             if name not in obj_func_names:
                 handle.write(f"{name} = 0x{info.addr:08X};\n")
@@ -355,8 +518,11 @@ def link_object_at_vram_base(
         func_syms = tmpdir / "func_syms.ld"
         elf_out = tmpdir / "check.elf"
 
+        gp_value = parse_gp_value()
+        gp_line = f"    _gp = 0x{gp_value:08X};\n" if gp_value is not None else ""
         ld_script.write_text(
             "SECTIONS {\n"
+            f"{gp_line}"
             f"    .text 0x{base_addr:08X} : SUBALIGN(4) {{ *(.text) }}\n"
             "    /DISCARD/ : { *(*) }\n"
             "}\n",
