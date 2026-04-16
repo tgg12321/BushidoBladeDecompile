@@ -350,31 +350,21 @@ def process_function(lines, func_config):
     return lines
 
 
-def main():
-    script_dir = Path(__file__).resolve().parent
-    project_root = script_dir.parent
-    config_path = Path(os.environ.get('REGFIX_CONFIG', project_root / 'regfix.txt'))
-
-    config = load_config(config_path)
-    if not config:
-        for line in sys.stdin:
-            sys.stdout.write(line)
-        return
-
+def process_asm_text(asm_text, config):
+    """Apply regfix config to a full asm text blob and return the rewritten text."""
     current_func = None
     current_config = None
-    func_lines = []  # collected lines for current function
+    func_lines = []
     insn_idx = 0
     buffering = False
+    output = []
 
-    all_input = sys.stdin.readlines()
-
+    all_input = asm_text.splitlines(keepends=True)
     i = 0
     while i < len(all_input):
         line = all_input[i]
         stripped = line.strip()
 
-        # Match function entry label
         label_match = re.match(r'^(\w+):$', stripped)
         if label_match and not buffering:
             func_name = label_match.group(1)
@@ -388,7 +378,6 @@ def main():
                 continue
 
         if buffering:
-            # Detect end of function
             end_match = re.match(r'^\s*\.end\s+(\w+)', stripped)
 
             if is_instruction(stripped):
@@ -398,23 +387,35 @@ def main():
                 func_lines.append((line, None))
 
             if end_match and end_match.group(1) == current_func:
-                # Process and emit the collected function
                 processed = process_function(func_lines, current_config)
-                for text, _ in processed:
-                    sys.stdout.write(text)
+                output.extend(text for text, _ in processed)
                 buffering = False
                 current_func = None
                 current_config = None
                 func_lines = []
         else:
-            sys.stdout.write(line)
+            output.append(line)
 
         i += 1
 
-    # Flush any remaining buffered lines (shouldn't happen in well-formed input)
     if buffering:
-        for text, _ in func_lines:
-            sys.stdout.write(text)
+        output.extend(text for text, _ in func_lines)
+
+    return ''.join(output)
+
+
+def main():
+    script_dir = Path(__file__).resolve().parent
+    project_root = script_dir.parent
+    config_path = Path(os.environ.get('REGFIX_CONFIG', project_root / 'regfix.txt'))
+
+    config = load_config(config_path)
+    if not config:
+        for line in sys.stdin:
+            sys.stdout.write(line)
+        return
+
+    sys.stdout.write(process_asm_text(''.join(sys.stdin.readlines()), config))
 
 
 if __name__ == '__main__':
