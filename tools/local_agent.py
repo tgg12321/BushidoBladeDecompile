@@ -28,7 +28,7 @@ from datetime import datetime
 # Config
 # ---------------------------------------------------------------------------
 
-MODEL = "bb2-deepseek"
+MODEL = "bb2-deepseek"  # overridable via --model
 OLLAMA_URL = "http://localhost:11434/api/generate"
 ASM_DIR = os.path.join("asm", "funcs")
 PERMUTER_DIR = "permuter"
@@ -433,7 +433,7 @@ def run_agent(func_name, src_file, dry_run=False, permuter_timeout=120, agent_id
     pdir = setup_permuter(func_name, src_file)
 
     # 4. Generate initial C
-    log("Generating initial C with DeepSeek...")
+    log(f"Generating initial C with {MODEL}...")
     code = strip_markdown(generate_initial(func_name, asm))
     if "ERROR" in code:
         audit.result(f"TABLED (generation error)", 0)
@@ -532,7 +532,7 @@ def run_agent(func_name, src_file, dry_run=False, permuter_timeout=120, agent_id
 
         # Ask DeepSeek to improve
         diff = get_debug_diff(pdir)
-        hyp = f"reduce from {best_score} via diff analysis"
+        hyp = f"reduce from {best_score} via diff analysis ({MODEL})"
         new_code = strip_markdown(ask_improve(best_code, diff, best_score, asm))
 
         if "ERROR" in new_code or not new_code.strip():
@@ -619,16 +619,24 @@ def integrate_permuter(func_name, src_file, pdir):
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Local DeepSeek decomp agent")
+    parser = argparse.ArgumentParser(description="Local decomp agent (Ollama)")
     parser.add_argument("func", help="Function name")
     parser.add_argument("src", help="Source file (e.g. src/main.c)")
+    parser.add_argument("--model", default=None,
+                        help="Ollama model name (default: bb2-deepseek)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Score only, don't integrate into source")
     parser.add_argument("--permuter-timeout", type=int, default=PERMUTER_TIMEOUT,
                         help=f"Permuter timeout seconds (default: {PERMUTER_TIMEOUT})")
-    parser.add_argument("--agent-id", default="deepseek",
-                        help="Agent ID for audit log")
+    parser.add_argument("--agent-id", default=None,
+                        help="Agent ID for audit log (default: model name)")
     args = parser.parse_args()
+
+    if args.model:
+        global MODEL
+        MODEL = args.model
+    if args.agent_id is None:
+        args.agent_id = MODEL.replace("bb2-", "")
 
     success = run_agent(
         args.func, args.src,
