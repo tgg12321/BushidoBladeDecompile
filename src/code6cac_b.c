@@ -81,10 +81,14 @@ extern void func_8003AA48(void);
 extern void gnd_disp_loop_ctrl(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
+extern u8 D_8008E908;
+extern u8 D_8008EC24;
+extern s32 D_80106A50;
 extern s32 func_8007FD5C(s32, s32);
 extern void func_8007F87C(s32, s32 *);
 extern void func_8007FA1C(s32, s32 *);
 extern s16 D_80101E74;
+extern void motutil_CheckKamaeReq(void);
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
@@ -2110,7 +2114,84 @@ loop_1:
         }
     }
 }
-INCLUDE_ASM("asm/funcs", func_80033DF4);
+s32 func_80033DF4(void) {
+    register u8 state asm("v1");
+    register s32 tableIndex asm("a1");
+
+    state = D_800A38E2;
+    tableIndex = state & 0xFF;
+    if (tableIndex == 0x64) {
+        D_800A36F0 = 0;
+        D_800A3781 = 0;
+
+        if (D_800A3858 < 0x6979) {
+            register s32 v0 asm("v0");
+            register s32 v1 asm("v1");
+            register s32 *a0 asm("a0");
+
+            v0 = (s8)D_8010277C;
+            v0 = *(&D_8008D538 + v0);
+            v0 = *(&D_8008D9EC + v0);
+            tableIndex = 0x20;
+            if (v0 != 0) {
+                tableIndex = 0x10000;
+            }
+            a0 = &D_80106A50;
+            v1 = *a0;
+            D_800A36F0 = (u32)(v1 & tableIndex) < 1;
+            *a0 = v1 | tableIndex;
+        }
+
+        if (D_800A380C == 0) {
+            register s32 v0 asm("v0");
+            register s32 v1 asm("v1");
+            register s32 *a0 asm("a0");
+
+            v0 = (s8)D_8010277C;
+            v0 = *(&D_8008D538 + v0);
+            v0 = *(&D_8008D9EC + v0);
+            tableIndex = 0x1000000;
+            if (v0 != 0) {
+                tableIndex = 0x4000000;
+            }
+            a0 = &D_80106A50;
+            v1 = *a0;
+            D_800A3781 = (u32)(v1 & tableIndex) < 1;
+            *a0 = v1 | tableIndex;
+        }
+
+        motutil_CheckKamaeReq();
+        D_800A3834 = 4;
+        return 0;
+    } else {
+        register s32 v0 asm("v0");
+        register u8 *v1 asm("v1");
+        register s32 a0 asm("a0");
+        register s32 a2 asm("a2");
+        register u8 *table asm("a1");
+
+        D_800A38E2 = state + 1;
+        table = &cpu_practice_honmokuroku_data_tbl + (tableIndex * 4);
+        D_800A376B = 0;
+        a2 = table[0];
+        v0 = (s8)D_8010277C;
+        *((u8 *)&D_800A384C) = a2;
+        v0 = *(&D_8008D538 + v0);
+        v1 = &D_8008EC24;
+        v0 = *(&D_8008D9EC + v0);
+        a2 &= 0xFF;
+        v0 = (u32)v0 < 1;
+        a0 = v0 << 2;
+        a0 += v0;
+        D_800A38DE = *(v1 + a0 + a2);
+        D_800A38EC = table[1];
+        D_800A38ED = table[2];
+        D_800A38EE = table[3];
+        a0 = a0 + (s32)&D_8008E908;
+        D_8010277D = *(u8 *)(a0 + a2);
+        return 1;
+    }
+}
 void func_80033FE4(void) {
     s32 v1;
     if (D_800A36F0 != 0) {
