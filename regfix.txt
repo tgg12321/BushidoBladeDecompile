@@ -829,8 +829,8 @@ func_8001F938: insert "andi $3,$5,0xFFFF" @ 3
 # into target 8-insn block (lh/lhu/slt/bne/sll-delay/addiu/sll/sra).
 func_8001F938: subst "nop" "lhu\t$3,624($4)" @ 74
 func_8001F938: subst "addu\s+\$3,\$2,\$zero" "slt\t$2,$2,4" @ 75
-func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L219" @ 76
-func_8001F938: subst "beq\s+\$2,\$0,\.L219" "sll\t$2,$3,16" @ 77
+func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L236" @ 76
+func_8001F938: subst "beq\s+\$2,\$0,\.L236" "sll\t$2,$3,16" @ 77
 func_8001F938: subst "addiu\s+\$5,\$zero,3" "addiu\t$3,$zero,3" @ 78
 func_8001F938: subst "andi\s+\$5,\$3,0xffff" "sll\t$2,$3,16" @ 79
 func_8001F938: delete @ 80
@@ -862,3 +862,20 @@ tslPrintScreen: reorder 102,103,101 @ 101-103
 tslPrintScreen: subst "lh.*" "lh\t$3,0($17)" @ 105
 tslPrintScreen: subst "lhu.*" "lhu\t$4,0($17)" @ 106
 tslPrintScreen: subst "bne.*" "bne\t$3,$2,.L68" @ 107
+
+# myRobGeneiMove: val $4->$16, far $5->$4, neg_angle $5->$16
+myRobGeneiMove: subst "\$4" "$16" @ 16
+myRobGeneiMove: subst "\$4" "$16" @ 17
+myRobGeneiMove: subst "\$5" "$4" @ 18
+myRobGeneiMove: subst "\$4" "$16" @ 22
+myRobGeneiMove: subst "\$4" "$16" @ 28
+myRobGeneiMove: subst "\$5" "$4" @ 29
+myRobGeneiMove: subst "\$4" "$16" @ 45
+myRobGeneiMove: subst "\$4" "$16" @ 45
+myRobGeneiMove: subst "\$4" "$16" @ 48
+myRobGeneiMove: subst "\$4" "$16" @ 58
+myRobGeneiMove: subst "\$4" "$16" @ 83
+myRobGeneiMove: subst "\$4" "$16" @ 86
+myRobGeneiMove: subst "\$5" "$16" @ 96
+myRobGeneiMove: subst "\$5" "$16" @ 101
+myRobGeneiMove: subst "\$5" "$16" @ 119

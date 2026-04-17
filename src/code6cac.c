@@ -519,7 +519,103 @@ void func_8001B138(s32 *arg0) {
 }
 void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6638 = 0x64;    D_800F663A = 0;    D_800F663C = 0x64;    D_800F6640 = 0x64;    D_800F6642 = 0;    D_800F6644 = 0x64;    game_SetControllerPorts(0);    D_800F6608 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F660C = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6618 = 0;        D_800F6610 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = func_8007FD5C(dx, dy);    }    D_800F661A = 0x400 - v0;    D_800F661C = 0;    D_800F6620 = 0x1388;    D_800F6626 = 0;}
 void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5358 = 0x64;    D_800F535A = 0;    D_800F535C = 0x64;    D_800F5360 = 0x64;    D_800F5362 = 0;    D_800F5364 = 0x64;    game_SetControllerPorts(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5330 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5368 = 0;        D_800F532C = v;    }}
-INCLUDE_ASM("asm/funcs", myRobGeneiMove);
+void myRobGeneiMove(s32 arg0) {
+    u8 *obj = (u8 *)arg0;
+    u8 *s2 = (u8 *)&D_800F5328;
+    s32 a2;
+    s32 val;
+    s32 far;
+
+    game_SetControllerPorts(0);
+
+    val = (*(s32 *)(obj + 0x19C) + *(s32 *)(obj + 0x1A8)) / 2 - *(s32 *)(obj + 0x184);
+    far = val >= 0x391;
+
+    if (*(u16 *)(obj + 0x6A) == 0x2A) {
+        val = 0x200;
+    } else {
+        *(s32 *)s2 = *(s32 *)(obj + 0x180);
+        D_800F5330 = *(s32 *)(obj + 0x188);
+        val = *(s32 *)(obj + 0x184);
+
+        if (!far) {
+            s32 v = -(*(s16 *)(obj + 0x1A) * 950);
+            if (v < 0) {
+                v += 0xFFF;
+            }
+            val += v >> 12;
+        }
+
+        {
+            s32 diff = val - *(s32 *)(s2 + 4);
+            if (diff < 0) {
+                diff += 3;
+            }
+            a2 = *(s32 *)(s2 + 4) + (diff >> 2);
+            *(s32 *)(s2 + 4) = a2;
+        }
+
+        if (*(u16 *)(obj + 0x6A) == 0x2A) {
+            val = 0x200;
+        } else {
+            s32 angle = (-(*(s16 *)(obj + 0x1D8)) - *(s16 *)(s2 + 0x12)) & 0xFFF;
+
+            if (angle >= 0x800) {
+                angle = 0x1000 - angle;
+            }
+            if (angle >= 0x400) {
+                angle = 0x400;
+            }
+
+            {
+                s32 base_val = *(s32 *)(*(s32 *)obj + 0xF8);
+                s32 result = func_8007FD5C(base_val - a2, D_800A387C);
+                val = (result * (0x400 - angle)) >> 10;
+            }
+        }
+    }
+
+    {
+        s16 old = *(s16 *)(s2 + 0x10);
+        s32 diff = val - old;
+        if (diff < 0) {
+            diff += 7;
+        }
+        *(s16 *)(s2 + 0x10) = old + (diff >> 3);
+    }
+    *(s16 *)(s2 + 0x14) = 0;
+
+    {
+        s32 neg_angle = -(*(s16 *)(obj + 0x1CA));
+        s16 counter = D_800A36FC;
+
+        if (counter != 0) {
+            s16 old12 = *(s16 *)(s2 + 0x12);
+            s32 diff = neg_angle - old12;
+            if (diff < 0) {
+                diff += 3;
+            }
+            {
+                s16 cnt = counter - 1;
+                *(s16 *)(s2 + 0x12) = old12 + (diff >> 2);
+                D_800A36FC = cnt;
+            }
+
+            {
+                s32 decay = *(s16 *)(s2 + 0x1C) * 3;
+                if (decay < 0) {
+                    decay += 3;
+                }
+                *(s16 *)(s2 + 0x1C) = decay >> 2;
+            }
+        } else {
+            *(s16 *)(s2 + 0x12) = neg_angle;
+            *(s16 *)(s2 + 0x1C) = 0;
+        }
+    }
+    *(s32 *)(s2 + 0x18) = 0;
+}
+
 /* kengo:MED  |  my_eff/myRobGeneiMove  |  134i */
 void func_8001B690(s32 arg0, s32 arg1) {
     if (D_800A38BA == 0) {
