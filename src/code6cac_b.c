@@ -703,7 +703,40 @@ INCLUDE_ASM("asm/funcs", saTan0KiWareMoveA);
 INCLUDE_ASM("asm/funcs", saTan0KiWareMoveB);
 /* kengo:MED  |  sa_tan0/saTan0KiWareMoveB  |  212i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", func_8002DE20);
-INCLUDE_ASM("asm/funcs", pad_main_control);
+s32 pad_main_control(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
+    s32 x0 = arg0[0];
+    s32 z0 = arg0[2];
+    s32 x1 = arg1[0];
+    s32 z1 = arg1[2];
+    s32 x2 = arg2[0];
+    s32 z2 = arg2[2];
+    s32 px = arg3[0];
+    s32 pz = arg3[2];
+    s32 center_x = (x0 + x1 + x2) / 3;
+    s32 center_z = (z0 + z1 + z2) / 3;
+    s32 dz = z1 - z0;
+    s32 dx = x1 - x0;
+    s32 cross_center = (dz * (center_x - x0)) - (dx * (center_z - z0));
+    s32 cross_point = (dz * (px - x0)) - (dx * (pz - z0));
+
+    if ((cross_center ^ cross_point) < 0) {
+        return 0;
+    }
+
+    dz = z2 - z0;
+    dx = x2 - x0;
+    cross_center = (dz * (center_x - x0)) - (dx * (center_z - z0));
+    cross_point = (dz * (px - x0)) - (dx * (pz - z0));
+    if ((cross_center ^ cross_point) < 0) {
+        return 0;
+    }
+
+    dz = z2 - z1;
+    dx = x2 - x1;
+    cross_center = (dz * (center_x - x1)) - (dx * (center_z - z1));
+    cross_point = (dz * (px - x1)) - (dx * (pz - z1));
+    return (cross_center ^ cross_point) >= 0;
+}
 /* kengo:HIGH  |  is_pad/pad_main_control  |  98i */
 void saSeInit(u8 *arg0) {
     s32 *mat;
