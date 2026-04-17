@@ -435,17 +435,28 @@ def get_all_split_symbol_addrs() -> dict[str, int]:
 
 
 def infer_source_file(func_name: str) -> Path | None:
-    body_needle = re.compile(rf"\b{re.escape(func_name)}\s*\(")
+    body_needle = re.compile(
+        rf"^[^\n;]*\b{re.escape(func_name)}\s*\([^;{{}}]*\)\s*\{{",
+        flags=re.MULTILINE,
+    )
     include_asm_needle = re.compile(
         rf'INCLUDE_ASM\("asm/funcs",\s*{re.escape(func_name)}\s*\);'
     )
-    matches = []
+    include_matches = []
+    body_matches = []
     for path in sorted(SRC_DIR.glob("*.c")):
-        text = path.read_text()
-        if body_needle.search(text) or include_asm_needle.search(text):
-            matches.append(path)
-    if len(matches) == 1:
-        return matches[0]
+        text = path.read_text(encoding="utf-8", errors="replace")
+        if include_asm_needle.search(text):
+            include_matches.append(path)
+        if body_needle.search(text):
+            body_matches.append(path)
+
+    if len(include_matches) == 1:
+        return include_matches[0]
+    if len(body_matches) == 1:
+        return body_matches[0]
+    if len(include_matches) == 1 and not body_matches:
+        return include_matches[0]
     return None
 
 
