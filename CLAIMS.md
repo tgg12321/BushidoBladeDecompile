@@ -104,7 +104,7 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/text1a_c.c:replay_camera_rob_back_loose3 | Agent 81: Wave 28 — TABLED @ score 140 floor (8 attempts); 64-bit codegen introduces `move v0,zero` that can't be eliminated at C level | 2026-04-13 | tabled |
 | src/code6cac_b.c:func_800274BC | Agent 82: Wave 29 — matched (m2c + register asm t4 + inline GTE LZCS + 2 regfix rules, 8 attempts) | 2026-04-13 | done — merged to main |
 | src/code6cac.c:func_8001A67C | Agent 83: Wave 29 — matched (register asm t4 + inline GTE CLZ + 1 regfix reorder, 12 attempts — overshot 8-cap) | 2026-04-13 | done — merged to main |
-| src/code6cac_c.c:saSeInit_2 | Agent 84: Wave 29 — TABLED @ score 600 (8 attempts); final report hallucinated, audit log shows no commit | 2026-04-13 | tabled |
+| src/code6cac_c_mid.c:saSeInit_2 | Codex retry in isolated worktree — matched via real C body plus instruction-anchored localized asmfix; key finding was that lab-only label anchors do not promote, so the live rule must anchor on stable instructions instead | 2026-04-17 | done — matched in worktree |
 | src/main.c:func_80086014 | Agent 85: Wave 30 — matched (register asm + memory barrier + regfix insert for -0x8 frame, 12 attempts — overshot 8-cap) | 2026-04-13 | done — merged to main |
 | src/code6cac_b.c:func_8002D320 | Agent 86: Wave 30 — matched on attempt 1 (inline asm port of func_8002EA24 GTE template + 3 adaptations) | 2026-04-13 | done — merged to main |
 | src/text1a_c.c:func_80045878 | Agent 87: Wave 30 — matched (tail block regfix: 1 insert_after + 9 substs for v0=s1 base + v1 scratch pattern) | 2026-04-13 | done — merged to main |
