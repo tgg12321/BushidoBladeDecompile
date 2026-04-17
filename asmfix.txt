@@ -24,3 +24,14 @@ replay_camera_rob_back_loose2: replace_first "^\\.L800357B0:$" "jlabel .L800357B
 replay_camera_rob_back_loose2: replace_first "^\\.L800356D4:$" "jlabel .L800356D4"
 replay_camera_rob_back_loose2: replace_first "^\\.L80035808:$" "jlabel .L80035808"
 replay_camera_rob_back_loose2: delete_between "^\\.section\\s+\\.rodata" "^\\.text$"
+
+# func_80016A8C: compiler emits the same unaligned Rect copy with the opposite
+# operand offsets/spill offsets; normalize it in the asm text.
+func_80016A8C: replace_first "^lwl\\s+\\$2,0\\(\\$5\\)$" "lwl\t$2,3($5)"
+func_80016A8C: replace_first "^lwr\\s+\\$2,3\\(\\$5\\)$" "lwr\t$2,0($5)"
+func_80016A8C: replace_first "^lwl\\s+\\$3,4\\(\\$5\\)$" "lwl\t$3,7($5)"
+func_80016A8C: replace_first "^lwr\\s+\\$3,7\\(\\$5\\)$" "lwr\t$3,4($5)"
+func_80016A8C: replace_first "^swl\\s+\\$2,24\\(\\$sp\\)$" "swl\t$2,27($sp)"
+func_80016A8C: replace_first "^swr\\s+\\$2,27\\(\\$sp\\)$" "swr\t$2,24($sp)"
+func_80016A8C: replace_first "^swl\\s+\\$3,28\\(\\$sp\\)$" "swl\t$3,31($sp)"
+func_80016A8C: replace_first "^swr\\s+\\$3,31\\(\\$sp\\)$" "swr\t$3,28($sp)"

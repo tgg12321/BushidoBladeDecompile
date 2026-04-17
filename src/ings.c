@@ -74,6 +74,13 @@ extern void gte_SetRotMatrix(u8 *);
 extern void gte_SetTransVector(u8 *);
 extern void func_8007F2AC(u8 *, s32 *, s32 *);
 
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 w;
+    s16 h;
+} Rect;
+
 /* --- Non-decompiled functions (INCLUDE_ASM) --- */
 __asm__(
     ".set noreorder\n"
@@ -297,7 +304,53 @@ void sys_Init(void) {
     func_800375EC();
     sys_InitSound();
 }
-INCLUDE_ASM("asm/funcs", func_80016A8C);
+void func_80016A8C(u8 *arg0) {
+    Rect rect;
+    s32 i;
+
+    rect = *(Rect *)&D_800A30D4;
+
+    gpu_SetDispMask(0);
+    gpu_InitDispEnv(&D_800FB524, 0, 0, 0x140, 0xF0);
+    game_FrameLoop();
+    replay_camera_Init(func_80036EA8(2, 0x61), (s32)arg0);
+    game_FrameLoop();
+    func_8007BC08(&D_800FB524);
+    gpu_DrawSync(0);
+    gpu_LoadImage((u8 *)&rect, arg0 + 0x14);
+    gpu_DrawSync(0);
+    gpu_SetDispMask(1);
+
+    for (i = 0; i < 0x96; i++) {
+        if (i >= 0x79) {
+            u16 *pixels = (u16 *)(arg0 + 0x28);
+            s32 j;
+
+            for (j = 0; j < rect.w * rect.h; j++, pixels++) {
+                u32 pixel = *pixels;
+                s32 value = (s32)(pixel & 0x1F) >> 1;
+                u32 temp;
+
+                pixel &= 0xFFFF;
+                temp = pixel >> 1;
+                temp &= 0x1E0;
+                value += temp;
+                pixel >>= 1;
+                pixel &= 0x3C00;
+                value += pixel;
+                *pixels = value;
+            }
+            gpu_LoadImage((u8 *)&rect, arg0 + 0x14);
+        }
+
+        gpu_DrawSync(0);
+        sys_VSync(0);
+    }
+
+    gpu_SetDispMask(0);
+    gpu_InitDispEnv(&D_800FB524, 0, 0, 0x280, 0xF0);
+    gpu_SetDispMask(1);
+}
 void sys_Panic(void) {
     debug_printf((s32)&g_str_overflow);
     while (1) {
