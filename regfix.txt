@@ -886,3 +886,26 @@ myRobGeneiMove: subst "\$5" "$16" @ 119
 
 # func_8001E404: GCC forward-props D_800A36FA=2 store to li, target reloads from memory
 func_8001E404: subst "addiu\s+\$3,\$zero,2" "lbu\t$3,D_800A36FA" @ 20
+
+# func_80021A98: v0/v1 swap in lhu result + D_80102764 load (TEXT 24-29)
+func_80021A98: subst "\$2,4" "$3,4" @ 24
+func_80021A98: subst "\$2,92" "$3,92" @ 26
+func_80021A98: subst "\$3,D_80102764" "$2,D_80102764" @ 27
+func_80021A98: subst "\$2,\$2,2" "$3,$3,2" @ 28
+func_80021A98: subst "\$2,\$3,\$2" "$2,$2,$3" @ 29
+# func_80021A98: idx a3*5 in $3(v1)->$4(a0), D_801027B4 load $4->$2, v1*4 $2->$3 (TEXT 35-49)
+func_80021A98: subst "\$3,\$7" "$4,$7" @ 35
+func_80021A98: subst "\$3,\$3,\$7" "$4,$4,$7" @ 36
+func_80021A98: subst "\$3,\$3,2" "$4,$4,2" @ 37
+func_80021A98: subst "\$at,\$3" "$at,$4" @ 39
+func_80021A98: subst "\$4,%lo" "$2,%lo" @ 40
+func_80021A98: subst "\$2,\$2,2" "$3,$3,2" @ 41
+func_80021A98: subst "\$2,\$4,\$2" "$2,$2,$3" @ 42
+func_80021A98: subst "\$4,2" "$3,2" @ 44
+func_80021A98: subst "\$at,\$3" "$at,$4" @ 46
+func_80021A98: subst "\$2,\$2,\$4" "$2,$2,$3" @ 49
+# func_80021A98: a0/a1 swap for 0x58(s0) load and lbu 6(v0) (TEXT 53-65)
+func_80021A98: subst "\$5,88" "$4,88" @ 53
+func_80021A98: subst "\$4,6" "$5,6" @ 56
+func_80021A98: subst "\$4,64" "$5,64" @ 64
+func_80021A98: subst "0\(\$5\)" "0($4)" @ 65
