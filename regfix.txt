@@ -960,3 +960,21 @@ func_80023648: subst "\$6," "$7," @ 139
 func_80023648: subst "\$5,\$6," "$6,$7," @ 121
 func_80023648: subst ",\$5" ",$6" @ 122
 func_80023648: subst ",\$5" ",$6" @ 136
+
+
+# func_80022F34: frame size fix (40->32) + load-delay nop
+# GCC allocates 8 bytes of vars for val1 spill that target doesnt have
+# Prologue: change frame alloc and save offsets
+func_80022F34: subst ",40" ",32" @ 0
+func_80022F34: subst ",24\(" ",16(" @ 1
+func_80022F34: subst ",32\(" ",24(" @ 3
+func_80022F34: subst ",28\(" ",20(" @ 5
+func_80022F34: subst ",36\(" ",28(" @ 7
+# Epilogue: change restore offsets and frame dealloc
+func_80022F34: subst ",36\(" ",28(" @ 59
+func_80022F34: subst ",32\(" ",24(" @ 60
+func_80022F34: subst ",28\(" ",20(" @ 61
+func_80022F34: subst ",24\(" ",16(" @ 62
+func_80022F34: subst ",40" ",32" @ 63
+# Load-delay nop after lhu (maspsx removes it across label .L439)
+func_80022F34: insert "nop" @ 36
