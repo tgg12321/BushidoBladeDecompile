@@ -909,3 +909,54 @@ func_80021A98: subst "\$5,88" "$4,88" @ 53
 func_80021A98: subst "\$4,6" "$5,6" @ 56
 func_80021A98: subst "\$4,64" "$5,64" @ 64
 func_80021A98: subst "0\(\$5\)" "0($4)" @ 65
+
+# Region 1: table value v1->a2 ($3->$6)
+# Region 2: abs_val v1->a2 ($3->$6)
+# Region 3: sub_result+abs in subu: a1,v0,v1 -> a0,v0,a2
+# Region 4: div16 a0->v1 ($4->$3)
+# Region 5: addu operand swap: v1,a1,a0 -> v1,a0,v1
+# Region 6: 0x1A reload a1->a0 ($5->$4)
+# Region 7: mflo a2->a3 ($6->$7) and sll/sra sources
+# Region 8: speed+mflo: sra a1,a2,12 -> sra a2,a3,12
+# mult v0,a1 -> mult v0,a2
+# mflo a2->a3
+# mult v0,a1 -> mult v0,a2
+# mflo a2->a3
+
+# func_80023648: register allocation fixes (36 diffs, score 180->0)
+# Group 1: v1->a2 ($3->$6) - table value + abs_val
+func_80023648: subst "\$3,0\(\$3\)" "$6,0($3)" @ 35
+func_80023648: subst "\$3," "$6," @ 43
+func_80023648: subst ",\$3,\$zero" ",$6,$zero" @ 44
+func_80023648: subst ",\$3,3" ",$6,3" @ 45
+func_80023648: subst ",\$3" ",$6" @ 55
+func_80023648: subst "\$3,336" "$6,336" @ 67
+func_80023648: subst "\$3," "$6," @ 69
+func_80023648: subst ",\$3," ",$6," @ 70
+func_80023648: subst "\$3,\$0,\$3" "$6,$0,$6" @ 71
+func_80023648: subst ",\$3," ",$6," @ 72
+func_80023648: subst "\$3,\$zero" "$6,$zero" @ 75
+# Group 2: a0->v1 ($4->$3) - div16
+func_80023648: subst "\$4,26" "$3,26" @ 77
+func_80023648: subst "\$4," "$3," @ 79
+func_80023648: subst "\$4,\$4,15" "$3,$3,15" @ 81
+func_80023648: subst "\$4,\$4,4" "$3,$3,4" @ 82
+# Group 3: combined a1->a0 + v1->a2 ($5,$2,$3 -> $4,$2,$6)
+func_80023648: subst "\$5,\$2,\$3" "$4,$2,$6" @ 78
+# Group 3b: a1->a0 ($5->$4) - sub_result, reload
+func_80023648: subst "\$5,334" "$4,334" @ 80
+func_80023648: subst ",\$5,\$4" ",$4,$3" @ 84
+func_80023648: subst "\$5,26" "$4,26" @ 89
+func_80023648: subst "\$5,\$2" "$4,$2" @ 95
+# Group 4: a2->a3 ($6->$7) - mflo results
+func_80023648: subst "\$6" "$7" @ 98
+func_80023648: subst "\$6," "$7," @ 99
+func_80023648: subst "\$6" "$7" @ 117
+func_80023648: subst "\$6" "$7" @ 128
+func_80023648: subst "\$6," "$7," @ 129
+func_80023648: subst "\$6" "$7" @ 138
+func_80023648: subst "\$6," "$7," @ 139
+# Group 5: a1->a2 + a2->a3 ($5,$6 -> $6,$7) - speed
+func_80023648: subst "\$5,\$6," "$6,$7," @ 121
+func_80023648: subst ",\$5" ",$6" @ 122
+func_80023648: subst ",\$5" ",$6" @ 136
