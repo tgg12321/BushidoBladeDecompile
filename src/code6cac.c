@@ -2005,7 +2005,59 @@ void func_80022568(s16 *arg0) {
     arg0[0x139] = 0;
 }
 INCLUDE_ASM("asm/funcs", func_80022580);
-INCLUDE_ASM("asm/funcs", func_80022F34);
+void func_80022F34(void) {
+    s32 i;
+    s32 offset;
+    s16 *vals;
+
+    i = 0;
+    vals = &D_80102778;
+    offset = 0;
+loop:
+    {
+        u8 *entry = (u8 *)&D_80101EC8 + offset;
+        s16 mode;
+
+        if (*(s16 *)(entry + 6) == 0) {
+            goto next;
+        }
+
+        mode = D_800A38DC;
+        if (mode >= 3) {
+            if (mode == 3) {
+                goto do_call;
+            }
+            goto use_vals;
+        }
+
+        if (mode > 0) {
+            goto use_vals;
+        }
+
+        if (mode == 0) {
+            *(s16 *)(entry + 8) = (s16)(*(&D_80102782 + i) << 4);
+            goto do_call;
+        }
+
+use_vals:
+        *(s16 *)(entry + 8) = *vals;
+
+do_call:
+        func_80055138(
+            i,
+            *(&D_801027BC + (*(s16 *)(entry + 0x4A) * 5)),
+            *(&D_801027BC + (*(s16 *)(*(s32 *)entry + 0x4A) * 5))
+        );
+    }
+
+next:
+    vals++;
+    i++;
+    offset += 0x44C;
+    if (i < 2) {
+        goto loop;
+    }
+}
 INCLUDE_ASM("asm/funcs", func_8002304C);
 INCLUDE_ASM("asm/funcs", func_800233AC);
 void func_80023648(u8 *arg0) {
