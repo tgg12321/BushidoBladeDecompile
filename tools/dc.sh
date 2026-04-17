@@ -10,6 +10,10 @@
 #   bash tools/dc.sh replace <src_file> <func_name> <c_file>  — replace INCLUDE_ASM with C code (LF-safe)
 #   bash tools/dc.sh setup <func_name> <src_file> — permuter setup
 #   bash tools/dc.sh analysis <func_name>         — run asm_analysis.py
+#   bash tools/dc.sh dump-text <func_name> [src]  — dump numbered TEXT indices from pipeline
+#   bash tools/dc.sh validate-regfix [--func F]   — validate regfix.txt rules (static)
+#   bash tools/dc.sh validate-regfix --live [--func F] — validate rules against pipeline
+#   bash tools/dc.sh gen-regfix <func_name> [src] — auto-generate regfix rules from diff
 #
 set -eo pipefail
 
@@ -111,9 +115,38 @@ print(f'Replaced {func} in {src}')
         python3 tools/asm_analysis.py "asm/funcs/${FUNC_NAME}.s" 2>&1
         ;;
 
+    dump-text)
+        # Dump numbered TEXT indices from build pipeline
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh dump-text <func_name> [src_file]"; exit 1; }
+        SRC_FILE="${2:-}"
+        if [ -n "$SRC_FILE" ]; then
+            python3 tools/dump_text_indices.py "$FUNC_NAME" "$SRC_FILE"
+        else
+            python3 tools/dump_text_indices.py "$FUNC_NAME"
+        fi
+        ;;
+
+    validate-regfix)
+        # Validate regfix.txt rules
+        python3 tools/validate_regfix.py "$@" 2>&1
+        ;;
+
+    gen-regfix)
+        # Auto-generate regfix rules from pipeline vs target diff
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh gen-regfix <func_name> [src_file]"; exit 1; }
+        SRC_FILE="${2:-}"
+        if [ -n "$SRC_FILE" ]; then
+            python3 tools/gen_regfix.py "$FUNC_NAME" "$SRC_FILE"
+        else
+            python3 tools/gen_regfix.py "$FUNC_NAME"
+        fi
+        ;;
+
     *)
         echo "Unknown command: $CMD"
-        echo "Commands: compile, score, debug, build, replace, setup, analysis"
+        echo "Commands: compile, score, debug, build, replace, setup, analysis, dump-text, validate-regfix, gen-regfix"
         exit 1
         ;;
 esac
