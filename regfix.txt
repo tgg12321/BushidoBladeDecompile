@@ -978,3 +978,25 @@ func_80022F34: subst ",24\(" ",16(" @ 62
 func_80022F34: subst ",40" ",32" @ 63
 # Load-delay nop after lhu (maspsx removes it across label .L439)
 func_80022F34: insert "nop" @ 36
+
+# func_800200DC: register allocation fixes (14 rules, 16 reg diffs)
+# Group 1: dy result in $2 instead of $3
+func_800200DC: subst "subu\t\$3,\$3,\$2" "subu\t$2,$3,$2" @ 38
+func_800200DC: subst "bne\t\$3," "bne\t$2," @ 39
+# Group 2: mflo $2->$3 and sll $3->$2 swap
+func_800200DC: subst "mflo\t\$2" "mflo\t$3" @ 76
+func_800200DC: subst "\$16,\$3,1" "$16,$2,1" @ 77
+# Group 3: mult result in $9(t1) instead of $3(v1)
+func_800200DC: subst "mflo\t\$3" "mflo\t$9" @ 80
+func_800200DC: subst "addu\t\$3,\$2,\$3" "addu\t$3,$3,$9" @ 81
+# Group 4: sqrt result saved in $3(v1) instead of $5(a1)
+func_800200DC: subst "addu\t\$5,\$2,\$zero" "addu\t$3,$2,$zero" @ 86
+func_800200DC: subst "\$6,\$5" "$6,$3" @ 88
+# Group 5: first div /32 result in $5(a1) instead of $3(v1)
+func_800200DC: subst "mflo\t\$3" "mflo\t$5" @ 103
+func_800200DC: subst "bgez\t\$3," "bgez\t$5," @ 105
+func_800200DC: subst "\$4,\$3,5" "$4,$5,5" @ 106
+func_800200DC: subst "\$3,\$3,31" "$5,$5,31" @ 107
+func_800200DC: subst "\$4,\$3,5" "$4,$5,5" @ 108
+# Group 6: second root subtraction uses $3(v1) instead of $5(a1)
+func_800200DC: subst "\$6,\$5" "$6,$3" @ 111
