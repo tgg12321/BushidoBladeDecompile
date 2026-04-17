@@ -122,3 +122,5 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac_b.c:coli_hit_body_weapon | Wave 34 Agent 97: TABLED (permuter plateau 585; needs frame_fix_funcs.txt + regfix for LICM of `addiu v1,a3,0xa`) — best base saved at tmp/coli_hit_body_weapon_best_585.c | 2026-04-14 | done — no changes |
 | src/code6cac_c2.c:func_8003EB84 | Wave 34 Agent 98: TABLED (permuter plateau 4985; 5 LICM globals hoisted to s-regs, target uses inline t-regs — 25+ regfix rules exceed batch budget) | 2026-04-14 | done — no changes |
 | src/text1a_c.c:hirahira_w_ctrl_2 | Wave 34 Agent 99: TABLED (permuter plateau 2895; 132-insn rotation transform, GCC schedules rot[0] load ahead of target, lh vs lhu+sll/sra divergence — 20+ regfix rules intractable) | 2026-04-14 | done — no changes |
+| src/code6cac.c:myRobGeneiMove | Solo session: matched (permuter score 75→0 via 15 regfix substs + func_8001F938 label fix) | 2026-04-17 | done — commit 8968f0c |
+| src/code6cac.c:func_8001EFA0 | Solo session: matched (divisor 105 + goto block layout + 2 regfix substs for beq/bne swap) | 2026-04-17 | done |

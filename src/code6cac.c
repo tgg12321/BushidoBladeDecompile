@@ -141,6 +141,10 @@ extern void func_8003E6A0(s32, s32);
 extern void game_StageInit(s32);
 extern void func_800335D8(void);
 extern s32 D_80102030;
+extern s8 D_800A3768;
+extern void myRobGeneiDraw2(void);
+extern void mk_leaf_newpos(void);
+extern void mottest_disp(void);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
@@ -1134,7 +1138,63 @@ void func_8001EEB4(void) {
     D_800A37B8 = 0;
     D_800A3834 = 0x11;
 }
-INCLUDE_ASM("asm/funcs", func_8001EFA0);
+void func_8001EFA0(void) {
+    s32 sp10[6];
+    s16 var_v0;
+
+    D_800A37B8 += 1;
+    D_800A3778 = camera_GetBoneData();
+    func_8001BCF0((u8 *)&D_80101EC8 + D_800A3748 * 1100, (D_800A37B8 << 12) / 105);
+    func_8001E404();
+    func_80039320();
+    func_8002006C();
+    func_8001BE08(sp10);
+    func_80023F08(0, (s32)sp10);
+    func_80023F08(1, (s32)sp10);
+    func_8002C61C();
+    func_80030D7C();
+    myRobGeneiDraw2();
+    func_800397A0();
+    game_StageInit(1);
+    mk_leaf_newpos();
+
+    if (*(&D_80101F5E + D_800A3748 * 550) != 0 && D_800A38DC == 1) {
+        D_800A37B8 = 0x69;
+    }
+
+    if (D_800A37B8 >= 0x69 || (D_80102794 & 0x400040)) {
+        if (D_800A38DC == 4) {
+            var_v0 = 0xC;
+            goto set_val;
+        }
+        if (D_800A38DC < 5) {
+            if (D_800A38DC == 1) goto handle_1;
+            goto default_case;
+        }
+        if (D_800A38DC == 6) {
+            var_v0 = 0xC;
+            goto set_val;
+        }
+        goto default_case;
+
+    handle_1:
+        if (D_800A3748 == 0) {
+            func_8001DA2C();
+            D_800A3768 = 2;
+            mottest_disp();
+            return;
+        }
+        var_v0 = 0xC;
+        goto set_val;
+
+    default_case:
+        func_8001DA2C();
+        var_v0 = 2;
+
+    set_val:
+        D_800A3834 = var_v0;
+    }
+}
 void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
     s16 temp_v1;
     if (!(*(u8 *)(arg1 + 0x18) & 0x80)) {
