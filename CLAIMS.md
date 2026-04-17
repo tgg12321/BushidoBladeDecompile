@@ -125,3 +125,4 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac.c:myRobGeneiMove | Solo session: matched (permuter score 75→0 via 15 regfix substs + func_8001F938 label fix) | 2026-04-17 | done — commit 8968f0c |
 | src/code6cac.c:func_8001EFA0 | Solo session: matched (divisor 105 + goto block layout + 2 regfix substs for beq/bne swap) | 2026-04-17 | done |
 | src/code6cac_b.c:saSeInit | Codex retry in isolated worktree — matched via C body + localized asmfix chunk; key promotion gotchas were scalar-vs-array symbol form for `D_8008D118` and unique asmfix label naming | 2026-04-17 | done — matched in worktree |
+| src/code6cac.c:func_8001E404 | Solo session: matched (saTan3GaugeMain camera setup — CamBuf 68-byte struct, goto labels, regfix subst for GCC forward-prop, label shift +20 for func_8001F938/func_8001EFA0) | 2026-04-17 | done |
