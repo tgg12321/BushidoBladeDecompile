@@ -67,6 +67,7 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/main.c:func_80085FB8 | Agent 51: Wave 18 — reworked: 3/4 sub-funcs decompiled, func_80086014 kept as asm (leaf frame intractable) | 2026-04-11 | done — merged to main |
 | src/text1a.c:rob_calc_2d_position | Agent 52: Wave 19 — matched (regfix global swap + insert_after + 8 substs) | 2026-04-11 | done — merged to main |
 | src/code6cac_b.c:pad_main_control | Agent 53: Wave 19 — tabled at score 405 (v0 reg-asm trick caused -2 insn mismatch, 15 attempts) | 2026-04-11 | done — tabled |
+| src/code6cac_b.c:pad_main_control | Codex retry in isolated worktree — matched via readable semantic C body plus full-body asmfix after confirming the function was a whole-body compiler floor rather than a local regfix problem | 2026-04-17 | done — matched in worktree |
 | src/text1a.c:func_800430E4 | Agent 54: Wave 19 — matched (scratchpad + struct copy + regfix, stale Wave 5 base resolved by orchestrator) | 2026-04-11 | done — merged to main |
 | src/main.c:saTan1SyuryoDraw | Agent 55: Wave 20 — tabled (3 leaf funcs glued; near-miss -4 bytes, reg alloc on funcs A/B) | 2026-04-11 | done — tabled |
 | src/main.c:saTan1SyuryoDraw | Orchestrator manual finish (3 funcs: saTan1SyuryoDraw + func_80089178 + func_800891B4; goto structure + unsigned div + 3 regfix substs) | 2026-04-11 | done — merged to main |
