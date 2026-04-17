@@ -10,8 +10,10 @@ extern void cpu_side_move_dir_4(void);
 extern void marionation_Exec(void);
 extern s32 cdrom_SendCmd();
 extern s32 cdrom_DmaToRam();
-extern s32 cdrom_DmaChain(void);
+extern s32 cdrom_DmaChain();
+extern s32 func_80080660_ret(s32) asm("func_80080660");
 extern void irq_AcknowledgeVblank(s32, s32);
+extern s32 saEft00Add_ret(s32) asm("saEft00Add");
 extern s32 saEft01Init(s32);
 
 /* Externs for globals */
@@ -681,6 +683,7 @@ extern s32 D_800A1500;
 extern s32 D_800A14EC;
 extern s32 D_800A14E8;
 extern s32 D_800A14E4;
+extern s32 D_800A14E0;
 extern s32 D_800A14D0;
 extern s32 D_800A14DC;
 extern s32 D_800A14D4;
@@ -762,7 +765,54 @@ void saEft00Add_sub(void) {
     func_80080390(9, 0);
 }
 /* kengo:HIGH  |  sa_eft/saEft00Add  |  169i  |  -3 near-exact */
-INCLUDE_ASM("asm/funcs", func_800826CC);
+s32 func_800826CC(s32 arg0, s32 arg1, s32 arg2) {
+    extern volatile s32 D_800A14DC_v asm("D_800A14DC");
+    extern volatile s32 D_800A1500_v asm("D_800A1500");
+    register s32 temp_v0 asm("v0");
+    register s32 temp_v1 asm("v1");
+    register s32 saved_a0 asm("a3");
+    s32 *saved_arg0;
+    s32 enabled;
+
+    D_800A14DC_v = arg2;
+    temp_v0 = D_800A14DC_v;
+    saved_a0 = arg0;
+    temp_v1 = temp_v0 & 0x30;
+    if (temp_v1) {
+        temp_v0 = 0x20;
+        if (temp_v1 != temp_v0) {
+            temp_v0 = 0x246;
+        } else {
+            temp_v0 = 0x249;
+        }
+    } else {
+        temp_v0 = 0x200;
+    }
+    D_800A14E0 = temp_v0;
+    temp_v0 = D_800A14DC_v;
+    arg0 = 0;
+    D_800A14DC_v = temp_v0 | 0x20;
+    saved_arg0 = &D_800A14D0;
+    D_800A14D4 = arg1;
+    *saved_arg0 = saved_a0;
+    temp_v0 = cdrom_SetCallbackA(arg0);
+    D_800A14F4 = temp_v0;
+    temp_v0 = cdrom_SetCallbackB(arg0);
+    D_800A14F8 = temp_v0;
+    enabled = D_800A1500_v & 1;
+    if (enabled) {
+        temp_v0 = func_80080660_ret(arg0);
+        D_800A14FC = temp_v0;
+    }
+    temp_v0 = sys_VSync(-1);
+    D_800A14EC = temp_v0;
+    temp_v0 = cdrom_GetMode();
+    if (temp_v0 & 0xE0) {
+        tslPolyF4Init(9, 0, 0);
+    }
+    temp_v0 = saEft00Add_ret(arg0);
+    return temp_v0 > 0;
+}
 
 s32 func_800827D0(s32 a0, s32 a1) {
     s32 *p = &D_800A14EC;
