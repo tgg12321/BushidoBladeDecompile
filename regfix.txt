@@ -41,6 +41,13 @@ sys_VSync: reorder 25,24,23 @ 23-25
 # sys_VSync: second call — move nop+lw s0 before D_800A2634 load (TEXT indices)
 sys_VSync: reorder 32,38,36,33,34,37,35 @ 32-38
 
+# func_800372F4: preserve early v0 copy but restore target loop/epilogue shape.
+func_800372F4: delete @ 19
+func_800372F4: delete @ 11
+func_800372F4: subst "\$4" "$2" @ 12
+func_800372F4: insert "nop" @ 19
+func_800372F4: reorder 17,20,18,19 @ 17-20
+
 # s0(6)=a0 → s2(8)=a0, s1(7)=D_800A125C → s0(6), s2(8)=D_800A1494 → s1(7)
 # func_80037F40: addu operand order - GCC puts base(t1) first, target has offset(t2) first
 func_80037F40: $9 <-> $10 @ 14-14
