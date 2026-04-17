@@ -12,6 +12,7 @@ import shutil
 import struct
 import subprocess
 import tempfile
+from bisect import bisect_right
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -116,6 +117,28 @@ class FuncInfo:
     size: int
     asm_path: Path | None = None
     source_kind: str = "unknown"
+
+
+@dataclass(frozen=True)
+class BuildMapSection:
+    section: str
+    addr: int
+    size: int
+    obj_path: str
+
+    @property
+    def end(self) -> int:
+        return self.addr + self.size
+
+
+@dataclass(frozen=True)
+class FunctionCompareResult:
+    name: str
+    matched: bool
+    diff_words: int
+    lines: tuple[str, ...]
+    addr: int | None = None
+    size: int | None = None
 
 
 ADDR_COMMENT_RE = re.compile(r"/\*\s+[0-9A-Fa-f]+\s+([0-9A-Fa-f]+)\b")
@@ -300,6 +323,111 @@ def get_all_func_info() -> dict[str, FuncInfo]:
         funcs[info.name] = info
 
     return funcs
+
+
+@lru_cache(maxsize=None)
+def parse_build_map_sections() -> tuple[BuildMapSection, ...]:
+    sections: list[BuildMapSection] = []
+    if not BUILD_MAP.exists():
+        return tuple()
+
+    pattern = re.compile(
+        r"^\s*(\.[A-Za-z0-9_.$]+)\s+0x([0-9A-Fa-f]+)\s+0x([0-9A-Fa-f]+)\s+(\S+)$"
+    )
+    for line in BUILD_MAP.read_text(encoding="utf-8", errors="replace").splitlines():
+        match = pattern.match(line)
+        if not match:
+            continue
+        section = match.group(1)
+        addr = int(match.group(2), 16)
+        size = int(match.group(3), 16)
+        obj_path = match.group(4)
+        if "/" not in obj_path or not obj_path.endswith(".o"):
+            continue
+        sections.append(BuildMapSection(section=section, addr=addr, size=size, obj_path=obj_path))
+    return tuple(sections)
+
+
+@lru_cache(maxsize=None)
+def load_map_symbols_sorted() -> tuple[tuple[int, str], ...]:
+    return tuple(sorted((addr, name) for name, addr in load_map_symbols().items()))
+
+
+def find_sections_containing_addr(addr: int) -> list[BuildMapSection]:
+    return [section for section in parse_build_map_sections() if section.addr <= addr < section.end]
+
+
+def find_nearest_map_symbols(addr: int, *, before: int = 2, after: int = 1) -> list[tuple[int, str]]:
+    symbols = load_map_symbols_sorted()
+    addrs = [symbol_addr for symbol_addr, _ in symbols]
+    pos = bisect_right(addrs, addr)
+    start = max(0, pos - before)
+    end = min(len(symbols), pos + after)
+    return list(symbols[start:end])
+
+
+def find_symbol_span(addr: int) -> tuple[tuple[int, str], tuple[int, str] | None] | None:
+    symbols = load_map_symbols_sorted()
+    if not symbols:
+        return None
+    addrs = [symbol_addr for symbol_addr, _ in symbols]
+    pos = bisect_right(addrs, addr) - 1
+    if pos < 0:
+        return None
+    current = symbols[pos]
+    next_symbol = symbols[pos + 1] if pos + 1 < len(symbols) else None
+    return current, next_symbol
+
+
+@lru_cache(maxsize=None)
+def get_original_callgraph() -> dict[str, set[str]]:
+    known_funcs = set(get_all_func_info())
+    known_symbols = known_funcs | set(get_all_original_symbol_addrs()) | set(load_map_symbols())
+    graph: dict[str, set[str]] = {name: set() for name in known_symbols}
+    start_re = re.compile(r"^(?:glabel\s+([A-Za-z0-9_.$]+)|([A-Za-z0-9_.$]+):)\s*$")
+    call_re = re.compile(r"^(?:jal|j)\s+([A-Za-z0-9_.$]+)\s*$")
+
+    for path in [*sorted(ASM_DIR.glob("*.s")), *sorted(ASM_FUNCS_DIR.glob("*.s"))]:
+        current_func: str | None = None
+        for raw_line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+            stripped = strip_comments(raw_line).strip()
+            if not stripped:
+                continue
+
+            start_match = start_re.match(stripped)
+            if start_match:
+                candidate = start_match.group(1) or start_match.group(2)
+                if candidate in known_symbols:
+                    current_func = candidate
+                    graph.setdefault(candidate, set())
+                    continue
+
+            end_match = re.match(r"^\s*\.end\s+([A-Za-z0-9_.$]+)\s*$", stripped)
+            if end_match and current_func == end_match.group(1):
+                current_func = None
+                continue
+
+            if current_func is None:
+                continue
+
+            call_match = call_re.match(stripped)
+            if not call_match:
+                continue
+            target = call_match.group(1)
+            if target.startswith(".L") or target.startswith("$") or target not in known_symbols:
+                continue
+            graph[current_func].add(target)
+
+    return graph
+
+
+def invert_callgraph(graph: dict[str, set[str]]) -> dict[str, set[str]]:
+    inverted: dict[str, set[str]] = {name: set() for name in graph}
+    for caller, callees in graph.items():
+        inverted.setdefault(caller, set())
+        for callee in callees:
+            inverted.setdefault(callee, set()).add(caller)
+    return inverted
 
 
 def get_all_split_symbol_addrs() -> dict[str, int]:
@@ -603,6 +731,88 @@ def compare_word_sequences(expected: bytes, actual: bytes, addr: int) -> tuple[b
             lines.append(f"0x{addr + offset:08X}: expected 0x{exp_word:08X}, got 0x{act_word:08X}")
             shown += 1
     return diff_words == 0 and len(expected) == len(actual), lines, diff_words
+
+
+def compare_functions_in_object(
+    obj_path: str | Path,
+    *,
+    requested_funcs: list[str] | None = None,
+    linked: bool = True,
+    all_funcs: dict[str, FuncInfo] | None = None,
+) -> list[FunctionCompareResult]:
+    all_funcs = all_funcs or get_all_func_info()
+    obj_funcs = get_obj_functions(obj_path)
+    if requested_funcs:
+        requested = set(requested_funcs)
+        obj_funcs = [entry for entry in obj_funcs if entry[2] in requested]
+
+    if not obj_funcs:
+        return []
+
+    if linked:
+        with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as tmp:
+            linked_bin = tmp.name
+
+        base_func_off, _, base_func_name = obj_funcs[0]
+        if base_func_name not in all_funcs:
+            return [
+                FunctionCompareResult(
+                    name=base_func_name,
+                    matched=False,
+                    diff_words=0,
+                    lines=("not found in asm metadata",),
+                )
+            ]
+        base_addr = all_funcs[base_func_name].addr - base_func_off
+        try:
+            link_object_at_vram_base(obj_path, base_addr, linked_bin, all_funcs=all_funcs)
+            with open(linked_bin, "rb") as handle:
+                linked_bytes = handle.read()
+        finally:
+            if os.path.exists(linked_bin):
+                os.unlink(linked_bin)
+    else:
+        with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as tmp:
+            obj_bin = tmp.name
+        try:
+            run_command([OBJCOPY, "-O", "binary", "-j", ".text", obj_path, obj_bin])
+            with open(obj_bin, "rb") as handle:
+                linked_bytes = handle.read()
+        finally:
+            if os.path.exists(obj_bin):
+                os.unlink(obj_bin)
+        base_addr = 0
+
+    results: list[FunctionCompareResult] = []
+    for func_off, _, func_name in obj_funcs:
+        info = all_funcs.get(func_name)
+        if info is None:
+            results.append(
+                FunctionCompareResult(
+                    name=func_name,
+                    matched=False,
+                    diff_words=0,
+                    lines=("not found in asm metadata",),
+                )
+            )
+            continue
+
+        expected = get_original_bytes(info.addr, info.size)
+        start = info.addr - base_addr if linked else func_off
+        actual = linked_bytes[start:start + info.size]
+        matched, lines, diff_words = compare_word_sequences(expected, actual, info.addr)
+        results.append(
+            FunctionCompareResult(
+                name=func_name,
+                matched=matched,
+                diff_words=diff_words,
+                lines=tuple(lines),
+                addr=info.addr,
+                size=info.size,
+            )
+        )
+
+    return results
 
 
 def extract_function_asm(asm_text: str, func_name: str) -> str:
