@@ -124,3 +124,4 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/text1a_c.c:hirahira_w_ctrl_2 | Wave 34 Agent 99: TABLED (permuter plateau 2895; 132-insn rotation transform, GCC schedules rot[0] load ahead of target, lh vs lhu+sll/sra divergence — 20+ regfix rules intractable) | 2026-04-14 | done — no changes |
 | src/code6cac.c:myRobGeneiMove | Solo session: matched (permuter score 75→0 via 15 regfix substs + func_8001F938 label fix) | 2026-04-17 | done — commit 8968f0c |
 | src/code6cac.c:func_8001EFA0 | Solo session: matched (divisor 105 + goto block layout + 2 regfix substs for beq/bne swap) | 2026-04-17 | done |
+| src/code6cac_b.c:saSeInit | Codex retry in isolated worktree — matched via C body + localized asmfix chunk; key promotion gotchas were scalar-vs-array symbol form for `D_8008D118` and unique asmfix label naming | 2026-04-17 | done — matched in worktree |
