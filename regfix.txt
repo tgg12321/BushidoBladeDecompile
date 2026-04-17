@@ -829,15 +829,15 @@ func_8001F938: insert "andi $3,$5,0xFFFF" @ 3
 # into target 8-insn block (lh/lhu/slt/bne/sll-delay/addiu/sll/sra).
 func_8001F938: subst "nop" "lhu\t$3,624($4)" @ 74
 func_8001F938: subst "addu\s+\$3,\$2,\$zero" "slt\t$2,$2,4" @ 75
-func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L249" @ 76
-func_8001F938: subst "beq\s+\$2,\$0,\.L249" "sll\t$2,$3,16" @ 77
+func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L269" @ 76
+func_8001F938: subst "beq\s+\$2,\$0,\.L269" "sll\t$2,$3,16" @ 77
 func_8001F938: subst "addiu\s+\$5,\$zero,3" "addiu\t$3,$zero,3" @ 78
 func_8001F938: subst "andi\s+\$5,\$3,0xffff" "sll\t$2,$3,16" @ 79
 func_8001F938: delete @ 80
 
 # func_8001EFA0: ==6 branch sense swap (bne→beq, swap j targets)
-func_8001EFA0: subst "bne\s+\$3,\$2,\.L214" "beq\t$3,$2,.L210" @ 96
-func_8001EFA0: subst "j\s+\.L210" "j\t.L214" @ 98
+func_8001EFA0: subst "bne\s+\$3,\$2,\.L234" "beq\t$3,$2,.L230" @ 96
+func_8001EFA0: subst "j\s+\.L230" "j\t.L234" @ 98
 
 # tslPrintScreen: first-stage cleanup
 # Early sentinel/token register cleanup.
@@ -883,3 +883,6 @@ myRobGeneiMove: subst "\$4" "$16" @ 86
 myRobGeneiMove: subst "\$5" "$16" @ 96
 myRobGeneiMove: subst "\$5" "$16" @ 101
 myRobGeneiMove: subst "\$5" "$16" @ 119
+
+# func_8001E404: GCC forward-props D_800A36FA=2 store to li, target reloads from memory
+func_8001E404: subst "addiu\s+\$3,\$zero,2" "lbu\t$3,D_800A36FA" @ 20

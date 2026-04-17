@@ -126,6 +126,10 @@ extern u8 D_800F5F68;
 extern s16 Judge;
 extern void func_80033BC0(void);
 extern void func_8001DA2C(void);
+extern void game_SetPlayerCount(s32);
+extern s32 disp_CalcFov(s32);
+extern void func_8007EFFC(s32);
+extern void func_8003F3D4(s16 *);
 extern void func_80055138(s32, s32, s32);
 extern void func_8003FFE0(s32);
 extern s32 D_80101F90;
@@ -1018,7 +1022,85 @@ void func_8001DBE4(void) {
 }
 INCLUDE_ASM("asm/funcs", mario_test_Exec);
 /* kengo:MED  |  nm_mario_test/mario_test_Exec  |  450i  |  -19 */
-INCLUDE_ASM("asm/funcs", func_8001E404);
+typedef struct {
+    s32 vx, vy, vz;
+    s32 pad0;
+    u16 rx, ry, rz;
+    u16 pad1;
+    s32 dist;
+    s32 tail[10];
+} CamBuf;
+
+void func_8001E404(void) {
+    s32 pre_pad[2];
+    CamBuf local;
+    s32 *s2;
+
+    if (D_800A38BA != 0) {
+        s32 v3 = D_800A36FA;
+        if (v3 == 1) {
+            if (D_80101F5E != 0 || D_801023AA != 0) {
+                D_800A36FA = 2;
+                v3 = D_800A36FA;
+            }
+        }
+        if (v3 == 2) goto s2_default;
+        if ((u16)D_80101F32 == 0x11 || (u16)D_8010237E == 0x11) {
+            s2 = (s32 *)&D_800F6608;
+            D_800A36FA = 1;
+        } else {
+            s2 = (s32 *)&D_800F5328;
+            D_800A36FA = 0;
+        }
+        goto done_s2;
+    s2_default:
+        s2 = (s32 *)&D_800F6608;
+    done_s2:
+
+        game_SetPlayerCount(D_800A36FA < 1);
+
+        {
+            s32 fov = 0x2D;
+            if (D_800A36FA == 0) {
+                fov = 0x50;
+            }
+            func_8007EFFC(disp_CalcFov(fov));
+        }
+
+        if (D_800A36FA == 0) {
+            func_80041688(D_800A36F6, 1);
+            func_80041688(D_800A36F6 == 0, 0);
+        } else {
+            func_80041688(0, 0);
+            func_80041688(1, 0);
+        }
+        goto common_tail;
+    }
+    s2 = (s32 *)&D_800F6608;
+common_tail:
+
+    if (D_800A3834 == 1) {
+        local.vx = s2[0] + D_800FF5C8;
+        local.vy = s2[1] + D_800FF5CC;
+        local.vz = s2[2] + D_800FF5D0;
+        local.rx = *(u16 *)((u8 *)s2 + 0x10) + (u16)D_800FF5D8;
+        local.ry = *(u16 *)((u8 *)s2 + 0x12) + (u16)D_800FF5DA;
+        local.rz = *(u16 *)((u8 *)s2 + 0x14) + (u16)D_800FF5DC;
+        local.dist = *(s32 *)((u8 *)s2 + 0x18) + D_800FF5E0;
+    } else {
+        local = *(CamBuf *)s2;
+    }
+
+    func_80046BF4((s32 *)&local, (s32 *)&local.rx, local.dist);
+    {
+        s32 *p20 = (s32 *)((u8 *)s2 + 0x20);
+        func_8001A538((s32 *)&local, p20);
+        func_80061064((s32 *)&local.rx, p20);
+    }
+    func_8003F3D4((s16 *)((u8 *)s2 + 0x30));
+    func_8003F3D4((s16 *)((u8 *)s2 + 0x38));
+    D_800A36B4 = (s32)s2;
+}
 typedef struct {
     s32 vx, vy, vz;
     s32 pad0;
