@@ -10,14 +10,12 @@ import tempfile
 from pathlib import Path
 
 from func_tooling import (
-    compare_word_sequences,
+    compare_functions_in_object,
     compile_c_file_to_object,
     extract_function_asm,
     get_all_func_info,
     get_obj_functions,
-    get_original_bytes,
     infer_source_file,
-    link_object_at_vram_base,
     write_stage_outputs,
 )
 
@@ -84,77 +82,6 @@ def resolve_target(target: str, func_names: list[str]) -> tuple[Path, list[str]]
 
     requested = [target, *func_names]
     return source_path, requested
-
-
-def compare_object_slices(obj_path: str, obj_funcs, all_funcs) -> bool:
-    with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as tmp:
-        obj_bin = tmp.name
-
-    try:
-        from func_tooling import run_command  # local import to keep top-level tidy
-
-        run_command(["mipsel-linux-gnu-objcopy", "-O", "binary", "-j", ".text", obj_path, obj_bin])
-        with open(obj_bin, "rb") as handle:
-            obj_bytes = handle.read()
-    finally:
-        if os.path.exists(obj_bin):
-            os.unlink(obj_bin)
-
-    ok = True
-    for func_off, _, func_name in obj_funcs:
-        info = all_funcs.get(func_name)
-        if info is None:
-            print(f"  {func_name}: SKIP (not in asm metadata)")
-            continue
-        expected = get_original_bytes(info.addr, info.size)
-        actual = obj_bytes[func_off:func_off + info.size]
-        matched, lines, diff_words = compare_word_sequences(expected, actual, info.addr)
-        if matched:
-            print(f"  {func_name}: OK")
-        else:
-            print(f"  {func_name}: MISMATCH ({diff_words} differing words)")
-            for line in lines:
-                print(f"    {line}")
-            ok = False
-    return ok
-
-
-def compare_linked_slices(obj_path: str, obj_funcs, all_funcs) -> bool:
-    with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as tmp:
-        linked_bin = tmp.name
-
-    base_func_off, _, base_func_name = obj_funcs[0]
-    if base_func_name not in all_funcs:
-        raise KeyError(f"{base_func_name} not found in asm metadata")
-    base_addr = all_funcs[base_func_name].addr - base_func_off
-
-    try:
-        link_object_at_vram_base(obj_path, base_addr, linked_bin, all_funcs=all_funcs)
-        with open(linked_bin, "rb") as handle:
-            linked_bytes = handle.read()
-    finally:
-        if os.path.exists(linked_bin):
-            os.unlink(linked_bin)
-    ok = True
-    for _, _, func_name in obj_funcs:
-        info = all_funcs.get(func_name)
-        if info is None:
-            print(f"  {func_name}: SKIP (not in asm metadata)")
-            continue
-        expected = get_original_bytes(info.addr, info.size)
-        start = info.addr - base_addr
-        actual = linked_bytes[start:start + info.size]
-        matched, lines, diff_words = compare_word_sequences(expected, actual, info.addr)
-        if matched:
-            print(f"  {func_name}: OK")
-        else:
-            print(f"  {func_name}: MISMATCH ({diff_words} differing words)")
-            for line in lines:
-                print(f"    {line}")
-            ok = False
-    return ok
-
-
 def main() -> int:
     args = parse_args()
     c_file, requested_funcs = resolve_target(args.target, args.func_names)
@@ -206,7 +133,24 @@ def main() -> int:
             print(f"  {obj_funcs[0][2]}: not found in asm metadata")
             return 1
 
-        ok = compare_linked_slices(obj_path, obj_funcs, all_funcs) if compare_linked else compare_object_slices(obj_path, obj_funcs, all_funcs)
+        results = compare_functions_in_object(
+            obj_path,
+            requested_funcs=[func_name for _, _, func_name in obj_funcs],
+            linked=compare_linked,
+            all_funcs=all_funcs,
+        )
+        ok = True
+        for result in results:
+            if result.matched:
+                print(f"  {result.name}: OK")
+            else:
+                label = "not found in asm metadata" if result.lines == ("not found in asm metadata",) else f"MISMATCH ({result.diff_words} differing words)"
+                print(f"  {result.name}: {label}")
+                for line in result.lines:
+                    if line == "not found in asm metadata":
+                        continue
+                    print(f"    {line}")
+                ok = False
         return 0 if ok else 1
     finally:
         if os.path.exists(obj_path):
