@@ -138,6 +138,25 @@ func_80036FD4: subst "\$3" "$4" @ 16
 func_80036FD4: subst "\$2," "$5," @ 17
 # Entry store[0]: $3 -> $4
 func_80036FD4: subst "\$3" "$4" @ 18
+
+# func_800826CC: restore callback/save ordering and load-delay shape from the
+# original cdrom effect startup helper.
+func_800826CC: subst "bne" "beq" @ 8
+func_800826CC: subst "582" "585" @ 9
+func_800826CC: subst "585" "582" @ 11
+func_800826CC: subst "sw.*" "sw\t$7,0($2)" @ 16
+func_800826CC: subst "addu.*" "nop" @ 20
+func_800826CC: subst "addu.*" "nop" @ 23
+func_800826CC: subst "lw.*" "lw\t$2,D_800A1500" @ 24
+func_800826CC: subst "andi.*" "andi\t$2,$2,0x0001" @ 26
+func_800826CC: subst "beq.*" "beq\t$2,$0,.L155" @ 27
+func_800826CC: insert "addu $4,$0,$zero" @ 15
+func_800826CC: insert "lui $2,%hi(D_800A14D0)" @ 18
+func_800826CC: insert "addiu $2,$2,%lo(D_800A14D0)" @ 19
+func_800826CC: insert "addu $4,$0,$zero" @ 24
+func_800826CC: insert "nop" @ 31
+func_800826CC: reorder 15,18,20,19,21,16,17,22,23,27,24,25,26,29,28 @ 15-29
+func_800826CC: reorder 35,30,31,32,33,34,36 @ 30-36
 # Entry store[1]: $2 -> $5
 func_80036FD4: subst "\$2" "$5" @ 19
 # jal delay: $5 -> $3 (SpecialCam base)
