@@ -82,6 +82,8 @@ extern void gnd_disp_loop_ctrl(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
 extern s32 func_8007FD5C(s32, s32);
+extern void func_8007F87C(s32, s32 *);
+extern void func_8007FA1C(s32, s32 *);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
@@ -699,7 +701,104 @@ INCLUDE_ASM("asm/funcs", saTan0KiWareMoveB);
 INCLUDE_ASM("asm/funcs", func_8002DE20);
 INCLUDE_ASM("asm/funcs", pad_main_control);
 /* kengo:HIGH  |  is_pad/pad_main_control  |  98i */
-INCLUDE_ASM("asm/funcs", saSeInit);
+void saSeInit(u8 *arg0) {
+    s32 *mat;
+    s32 sp10;
+    s32 dist_sq;
+    s32 log2_val;
+    s32 shift;
+    s32 idx;
+    s32 z_diff;
+
+    *(s32 *)(arg0 + 0xA8) = *(s32 *)(*(s32 *)(arg0 + 0x64) + 0) - *(s32 *)(*(s32 *)(arg0 + 0x60) + 0);
+    *(s32 *)(arg0 + 0xAC) = *(s32 *)(*(s32 *)(arg0 + 0x64) + 4) - *(s32 *)(*(s32 *)(arg0 + 0x60) + 4);
+    z_diff = *(s32 *)(*(s32 *)(arg0 + 0x64) + 8) - *(s32 *)(*(s32 *)(arg0 + 0x60) + 8);
+    *(s32 *)(arg0 + 0xB0) = z_diff;
+    *(s16 *)(arg0 + 0xFA) = 0x800 - func_8007FD5C(*(s32 *)(arg0 + 0xA8), z_diff);
+
+    dist_sq = (*(s32 *)(arg0 + 0xA8) * *(s32 *)(arg0 + 0xA8))
+            + (z_diff * z_diff);
+
+    if ((u32)dist_sq < 0x400) {
+        log2_val = ((u32)*(&D_8008D118 + dist_sq)) >> 3;
+    } else {
+        idx = 0;
+        if (dist_sq >= 0) {
+            register s32 t4 asm("t4") = dist_sq;
+
+            __asm__ volatile(".word 0x488CF000" : : "r"(t4));
+            __asm__ volatile("nop");
+            __asm__ volatile("nop");
+            t4 = (s32)&sp10;
+            __asm__ volatile(".word 0xE99F0000" : : "r"(t4));
+            idx = sp10;
+        }
+
+        idx &= -2;
+        shift = 0x16 - idx;
+        idx = (u32)dist_sq >> shift;
+        log2_val = ((u32)*(&D_8008D118 + idx) << 16) >> (0x13 - (shift >> 1));
+    }
+
+    mat = (s32 *)(arg0 + 0xD8);
+    *(s16 *)(arg0 + 0xF8) = 0x800 - func_8007FD5C(*(s32 *)(arg0 + 0xAC), log2_val);
+
+    *(s16 *)(arg0 + 0xD8) = 0x1000;
+    *(s16 *)(arg0 + 0xDA) = 0;
+    *(s16 *)(arg0 + 0xDC) = 0;
+    *(s16 *)(arg0 + 0xDE) = 0;
+    *(s16 *)(arg0 + 0xE0) = 0x1000;
+    *(s16 *)(arg0 + 0xE2) = 0;
+    *(s16 *)(arg0 + 0xE4) = 0;
+    *(s16 *)(arg0 + 0xE6) = 0;
+    *(s16 *)(arg0 + 0xE8) = 0x1000;
+
+    func_8007FA1C(*(s16 *)(arg0 + 0xFA), mat);
+    func_8007F87C(*(s16 *)(arg0 + 0xF8), mat);
+
+    {
+        register s32 t4 asm("t4");
+        register s32 t5 asm("t5");
+        register s32 t6 asm("t6");
+
+        __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(mat));
+        t5 = *(s32 *)(t4);
+        t6 = *(s32 *)(t4 + 4);
+        __asm__ volatile(".word 0x48CD0000" : : "r"(t5));
+        __asm__ volatile(".word 0x48CE0800" : : "r"(t6));
+        t5 = *(s32 *)(t4 + 8);
+        t6 = *(s32 *)(t4 + 0xC);
+        {
+            register s32 t7 asm("t7") = *(s32 *)(t4 + 0x10);
+
+            __asm__ volatile(".word 0x48CD1000" : : "r"(t5));
+            __asm__ volatile(".word 0x48CE1800" : : "r"(t6));
+            __asm__ volatile(".word 0x48CF2000" : : "r"(t7));
+        }
+    }
+
+    {
+        s32 vtx_addr = (s32)(arg0 + 0xA8);
+        register s32 t4 asm("t4");
+        register s32 t5 asm("t5");
+        register s32 t6 asm("t6");
+
+        __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(vtx_addr));
+        t6 = *(u16 *)(t4 + 4);
+        t5 = *(u16 *)(t4);
+        t6 <<= 16;
+        t5 |= t6;
+        __asm__ volatile(".word 0x488D0000" : : "r"(t5));
+        __asm__ volatile(".word 0xC9810008" : : "r"(t4));
+        __asm__ volatile("nop");
+        __asm__ volatile("nop");
+        __asm__ volatile(".word 0x4A486012");
+        __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(vtx_addr));
+        __asm__ volatile(".word 0xE9990000" : : "r"(t4));
+        __asm__ volatile(".word 0xE99A0004" : : "r"(t4));
+        __asm__ volatile(".word 0xE99B0008" : : "r"(t4));
+    }
+}
 /* kengo:MED  |  sa_se/saSeInit  |  123i  |  x2 size collision */
 s32 func_8002EA24(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     register s32 result asm("v0");

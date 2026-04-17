@@ -24,3 +24,17 @@ replay_camera_rob_back_loose2: replace_first "^\\.L800357B0:$" "jlabel .L800357B
 replay_camera_rob_back_loose2: replace_first "^\\.L800356D4:$" "jlabel .L800356D4"
 replay_camera_rob_back_loose2: replace_first "^\\.L80035808:$" "jlabel .L80035808"
 replay_camera_rob_back_loose2: delete_between "^\\.section\\s+\\.rodata" "^\\.text$"
+
+saSeInit: delete_between "^lw\\s+\\$16,8\\(\\$2\\)$" "^lw\\s+\\$4,172\\(\\$17\\)$"
+saSeInit: insert_before "^lw\\s+\\$4,172\\(\\$17\\)$" "lw $5,8($2)\nlw $2,8($3)\nlw $4,168($17)\nsubu $5,$5,$2\njal func_8007FD5C\nsw $5,176($17)\nlw $3,168($17)\nnop\nmult $3,$3\nmflo $4\nlw $3,176($17)\nnop\nmult $3,$3\naddiu $3,$zero,2048\nsubu $3,$3,$2\nmflo $7\naddu $4,$4,$7\nsltiu $2,$4,1024\nbeq $2,$0,.LsaSeInit_2\nsh $3,250($17)\nlui $1,%hi(D_8008D118)\naddu $1,$1,$4\nlbu $2,%lo(D_8008D118)($1)\nj .LsaSeInit_3\nsrl $5,$2,3\n.LsaSeInit_2:\nbltz $4,.LsaSeInit_4\naddu $3,$0,$zero\naddu $12,$4,$zero\n.word 0x488CF000\nnop\nnop\naddiu $2,$sp,16\naddu $12,$2,$zero\n.word 0xE99F0000\nlw $3,16($sp)\n.LsaSeInit_4:\naddiu $2,$zero,-2\nand $2,$3,$2\naddiu $3,$zero,22\nsubu $3,$3,$2\nsrlv $2,$4,$3\nlui $1,%hi(D_8008D118)\naddu $1,$1,$2\nlbu $4,%lo(D_8008D118)($1)\nsrl $3,$3,1\naddiu $2,$zero,19\nsubu $2,$2,$3\nsll $4,$4,16\nsrlv $5,$4,$2\n.LsaSeInit_3:"
+
+# func_80016A8C: compiler emits the same unaligned Rect copy with the opposite
+# operand offsets/spill offsets; normalize it in the asm text.
+func_80016A8C: replace_first "^lwl\\s+\\$2,0\\(\\$5\\)$" "lwl\t$2,3($5)"
+func_80016A8C: replace_first "^lwr\\s+\\$2,3\\(\\$5\\)$" "lwr\t$2,0($5)"
+func_80016A8C: replace_first "^lwl\\s+\\$3,4\\(\\$5\\)$" "lwl\t$3,7($5)"
+func_80016A8C: replace_first "^lwr\\s+\\$3,7\\(\\$5\\)$" "lwr\t$3,4($5)"
+func_80016A8C: replace_first "^swl\\s+\\$2,24\\(\\$sp\\)$" "swl\t$2,27($sp)"
+func_80016A8C: replace_first "^swr\\s+\\$2,27\\(\\$sp\\)$" "swr\t$2,24($sp)"
+func_80016A8C: replace_first "^swl\\s+\\$3,28\\(\\$sp\\)$" "swl\t$3,31($sp)"
+func_80016A8C: replace_first "^swr\\s+\\$3,31\\(\\$sp\\)$" "swr\t$3,28($sp)"
