@@ -188,7 +188,121 @@ s32 *func_80040510(s32 a0) {
     func_8003E120();
     return ptr;
 }
-INCLUDE_ASM("asm/funcs", AllocRobRmd);
+extern s32 D_80094B88[];
+void AllocRobRmd(s32 *a0)
+{
+    s32 *rmd;
+    s32 *sec;
+    s32 count;
+    s32 *ptr;
+    s32 off;
+
+    if (((s16 *)a0)[3] == 0) {
+        return;
+    }
+
+    ((s16 *)a0)[3] = 0;
+
+    if (a0[8] != 0) {
+        rmd = (s32 *)a0[8];
+    } else {
+        rmd = (s32 *)a0[7];
+    }
+
+    count = rmd[0];
+    sec = (s32 *)((s32)rmd + (((u32)rmd[count] >> 2) << 2));
+
+    if (seq_GetState() == 0) goto call_b644;
+    if (((s16 *)a0)[2] == 1) goto after_b644;
+
+call_b644:
+    func_8005B644(((s16 *)a0)[2]);
+
+after_b644:
+    if (count < 6) goto simple;
+
+    {
+        s32 prev_off = ((u32)rmd[count - 1] >> 2) << 2;
+        s32 next_off = ((u32)rmd[count + 1] >> 2) << 2;
+        s32 idx;
+        ptr = (s32 *)((s32)rmd + prev_off);
+        idx = ((s16 *)a0)[2] * 3 + 1;
+        ptr = (s32 *)((s32)ptr + func_8005C2A8(ptr, idx, (s32 *)((s32)rmd + next_off)));
+
+        if (ptr == 0) {
+            func_80052C10();
+        }
+
+        a0[0] |= 2;
+        goto after_select;
+    }
+
+simple:
+    ptr = sec;
+
+after_select:
+    off = (s32)ptr - (s32)rmd;
+
+    if (a0[8] != 0) {
+        func_800520B8(a0[8], a0[7], off);
+        rmd = (s32 *)a0[7];
+        if ((a0[0] >> 1) & 1) {
+            func_8005C4C0((s32)rmd - a0[8], ((s16 *)a0)[2] * 3 + 1);
+        }
+    }
+
+    {
+        s32 *texA = (s32 *)((s32)rmd + (((u32)rmd[1] >> 2) << 2));
+        s32 *texB;
+        a0[10] = (s32)rmd + (((u32)rmd[3] >> 2) << 2);
+        texB = (s32 *)((s32)rmd + (((u32)rmd[4] >> 2) << 2));
+        func_80044010(texA, ((s16 *)a0)[10]);
+        func_80044010(texB, ((s16 *)a0)[11]);
+    }
+
+    {
+        s32 player = ((s16 *)a0)[2];
+        if (player == 1) goto case_1;
+        if (player >= 2) goto done_cases;
+        if (player != 0) goto done_cases;
+
+        func_80047EE8(sec, 0);
+        if (func_8003E2A0() != 0) goto done_cases;
+        videoDecCreate(((s16 *)a0)[10], 0, 0, -0x140, 0xE8);
+        func_800480C0(sec, 0, 0, 0, -0x140, 0xF0);
+        goto done_cases;
+
+    case_1:
+        func_80047FBC(sec, 0, 0x80, 0);
+        if (func_8003E2A0() != player) goto case_1_else;
+        videoDecCreate(((s16 *)a0)[10], 0x80, 0, -0x140, 0xE8);
+        func_800480C0(sec, 0, 0x80, 0, -0x140, 0xF0);
+        goto case_1_done;
+
+    case_1_else:
+        func_80043398(((s16 *)a0)[10], 2, 0, 2, 0);
+
+    case_1_done:
+        func_80041AC8((s16 *)a0);
+    }
+
+done_cases:
+    gpu_DrawSync(0);
+    func_80041988(((s16 *)a0)[2], ((s16 *)a0)[4], D_80094B88[((s16 *)a0)[2]], (s32)sec);
+
+    {
+        s32 flags = a0[0] & (s32)0xFFE0FFFF;
+        s32 bits = (D_80094B88[((s16 *)a0)[2]] & 0x1F) << 16;
+        a0[0] = flags | bits;
+        D_80094B88[((s16 *)a0)[2]] = 0;
+    }
+
+    gpu_DrawSync(0);
+    a0[9] = a0[7] + off;
+    func_80045A28(((s16 *)a0)[2], off);
+}
+
+
 /* kengo:HIGH  |  am_rmd/AllocRobRmd  |  220i  |  +3 near-exact */
 extern s16 D_80094B96[];
 extern s16 D_80094B98[];
@@ -824,7 +938,68 @@ void func_80041AC8(s16 *arg0)
   }
   gpu_DrawSync(0);
 }
-INCLUDE_ASM("asm/funcs", saTan4FireDisp);
+extern void gpu_LoadImage(s32, s32);
+extern void func_80048A7C(s16, s16, s32, s32, s32, s32);
+extern s32 func_8003E2A0(void);
+void saTan4FireDisp(s32 a0, s32 a1, s32 a2)
+{
+  s32 *fp_ptr;
+  s32 r;
+  s32 g;
+  s32 b;
+  s32 outer;
+  int new_var;
+  s32 xoff;
+  s32 yoff;
+  s16 *tbl;
+  s32 idx;
+  s16 rect[4];
+  extern s32 func_800486FC(void);
+  fp_ptr = (s32 *)func_8004153C(1);
+  if (fp_ptr == 0) { return; }
+  if ((*(((s16 *) fp_ptr) + 4)) != D_800A9A20) { return; }
+  if (D_80094E08[*(((s16 *) fp_ptr) + 4)] == 0xFF) { return; }
+  new_var = 5;
+  r = (a0 << 12) / 255;
+  g = (a1 << 12) / 255;
+  b = (a2 << 12) / 255;
+  if (func_800486FC()) {
+    b = func_8004881C(r, g, b);
+    g = b;
+    r = b;
+  }
+  outer = 0;
+  loop_outer:
+  if (outer == 0) {
+    xoff = -0x140;
+    yoff = 0xF0;
+  } else {
+    xoff = 0x80;
+    do { yoff = 0; } while (0);
+  }
+  tbl = (s16 *) D_80094DF0[D_80094E08[*(((s16 *) fp_ptr) + 4)]];
+  idx = 0;
+  goto inner_check;
+  inner_body:
+  {
+    s32 off = idx << new_var;
+    idx++;
+    rect[0] = (*((u16 *) tbl)) + xoff;
+    rect[1] = (*(((u16 *) tbl) + 1)) + yoff;
+    tbl += 2;
+    rect[2] = 0x10;
+    rect[3] = 1;
+    gpu_LoadImage((s32)rect, (s32)((u8 *)&D_800A9A24 + off));
+    gpu_DrawSync(0);
+    func_80048A7C(rect[0], rect[1], 0x10, r, g, b);
+  }
+  r = tbl[0];
+  inner_check:
+  if (r >= 0) { goto inner_body; }
+  outer++;
+  if (outer < 2) { goto loop_outer; }
+  if (func_8003E2A0() == 1) { func_8003E120(); }
+}
 extern s16 g_anim_select;
 extern s16 D_800A323A;
 extern s16 D_800A323C;
@@ -835,7 +1010,92 @@ void func_80041E10(Block16 *a0, s32 a1) {
     D_800A323C = (s16)(((a1 & 0xFF) << 12) / 255);
     D_800A9B28 = *a0;
 }
-INCLUDE_ASM("asm/funcs", decBs0);
+extern s32 func_80052754(s32, s32, s32);
+extern s32 func_8007FD5C(s32, s32);
+extern s32 math_Cos(s32);
+extern s32 math_Sin(s32);
+extern s32 func_8004A1FC(s32);
+extern s16 D_800F62E0[];
+extern s16 D_800F6340[];
+void decBs0(s32 a0, s32 a1)
+{
+    register s16 *fp_ptr asm("fp");
+    s32 outer;
+    s32 *cam;
+    s16 *tbl;
+    s32 dx;
+    s32 dy;
+    s32 dz;
+    s32 angle;
+    s32 cos_val;
+    s32 *ptr;
+
+    fp_ptr = D_800F62E0;
+    outer = 0;
+    cam = (s32 *)&D_800A9B28;
+
+loop_outer:
+    tbl = fp_ptr;
+    if (outer == 0) {
+        ptr = (s32 *)a0;
+    } else {
+        ptr = (s32 *)a1;
+        tbl = D_800F6340;
+    }
+
+    if (ptr == 0) { goto skip; }
+    if (g_anim_select < 0) { goto skip; }
+
+    dx = ptr[0] - cam[0];
+    dy = ptr[1] - cam[1];
+    dz = ptr[2] - cam[2];
+
+    if (dx < 0) goto neg_dx;
+    if (dx < 0x7000) goto check_dy;
+    goto calc;
+neg_dx:
+    if (-dx >= 0x7000) goto calc;
+check_dy:
+    if (dy < 0) goto neg_dy;
+    if (dy < 0x7000) goto check_dz;
+    goto calc;
+neg_dy:
+    if (-dy >= 0x7000) goto calc;
+check_dz:
+    if (dz < 0) goto neg_dz;
+    if (dz < 0x7000) goto dist_check;
+    goto calc;
+neg_dz:
+    if (-dz >= 0x7000) goto calc;
+
+dist_check:
+    if (func_80052754(dx, dy, dz) > 0x17D7840) { goto skip; }
+
+calc:
+    angle = func_8007FD5C(dx, dz);
+    cos_val = math_Cos(angle);
+    {
+        s32 sin_val = math_Sin(angle);
+        s32 cross = (cos_val * dz + sin_val * dx) >> 12;
+        tbl[4] = (s16)-func_8007FD5C(dy, cross);
+    }
+    tbl[5] = (s16)angle;
+    tbl[6] = 1;
+    *(u16 *)&tbl[29] = *(u16 *)&g_anim_select;
+    *(u16 *)&tbl[32] = *(u16 *)&D_800A323A;
+    *(u16 *)&tbl[35] = *(u16 *)&D_800A323C;
+    goto end_loop;
+
+skip:
+    tbl[6] = 0;
+
+end_loop:
+    outer++;
+    if (outer < 2) { goto loop_outer; }
+
+    func_8004A1FC((s32)fp_ptr);
+    func_8004A1FC((s32)D_800F6340);
+}
 extern s16 g_anim_counter;
 extern s16 g_anim_select;
 void func_800420D0(void) {
