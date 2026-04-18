@@ -1408,3 +1408,107 @@ hirahira_w_ctrl_2: insert_after "mflo $16" @ 33
 hirahira_w_ctrl_2: insert_after "sll $4,$4,16" @ 39
 hirahira_w_ctrl_2: insert_after "nop" @ 39
 hirahira_w_ctrl_2: insert_after "sra $4,$4,16" @ 40
+
+# func_800856B0 — 64-rule compound regfix (leaf function, 133 TEXT insns)
+# All indices are 0-based from function entry point
+# Prologue: sra reorder past la (same pattern as tail)
+# Setup: a3↔a2 byte_offset/struct_ptr swap
+# Duration: a1→a0
+# Negative path: v0→v1, a2→v1, v1→a0 for struct access
+# Negative convergence: a0→t0 for target value + extra lw reload
+# Delay slot fill: sll a2,t1,16 into beqz delay slot
+# Tail: a1→a2 table ptr, t2→a1 direct arg, v0↔v1 byte computation
+
+# --- Setup section: byte_offset/struct_ptr register swap ---
+func_800856B0: subst "sll\t\$7,\$2,4" "sll\t$6,$2,4" @ 10
+func_800856B0: subst "addu\t\$6,\$3,\$7" "addu\t$7,$3,$6" @ 13
+func_800856B0: subst "lw\t\$2,168\(\$6\)" "lw\t$2,168($7)" @ 14
+func_800856B0: subst "addu\t\$10,\$5,\$zero" "nop" @ 15
+func_800856B0: subst "sw\t\$2,168\(\$6\)" "sw\t$2,168($7)" @ 18
+
+# --- Negative early-exit (countdown < 0): struct via v1, mask in a0 ---
+func_800856B0: subst "lw\t\$2,0\(\$8\)" "lw\t$3,0($8)" @ 19
+func_800856B0: subst "addu\t\$6,\$2,\$7" "addu\t$3,$6,$3" @ 21
+func_800856B0: subst "lw\t\$2,152\(\$6\)" "lw\t$2,152($3)" @ 22
+func_800856B0: subst "addiu\t\$3,\$zero,-65" "addiu\t$4,$zero,-65" @ 23
+func_800856B0: subst "and\t\$2,\$2,\$3" "and\t$2,$2,$4" @ 24
+func_800856B0: subst "sw\t\$2,152\(\$6\)" "sw\t$2,152($3)" @ 25
+func_800856B0: subst "lw\t\$2,0\(\$8\)" "lw\t$3,0($8)" @ 26
+func_800856B0: subst "addu\t\$6,\$2,\$7" "addu\t$3,$6,$3" @ 28
+
+# --- Duration register a1→a0, struct base a2→a3 ---
+func_800856B0: subst "lh\t\$5,78\(\$6\)" "lh\t$4,78($7)" @ 29
+func_800856B0: subst "blez\t\$5," "blez\t$4," @ 31
+func_800856B0: subst "div\t\$zero,\$2,\$5" "div\t$zero,$2,$4" @ 33
+func_800856B0: subst "bnez\t\$5," "bnez\t$4," @ 34
+func_800856B0: subst "bne\t\$5,\$at," "bne\t$4,$at," @ 38
+
+# --- Positive convergence: struct base a2→a3 ---
+func_800856B0: subst "lw\t\$3,148\(\$6\)" "lw\t$3,148($7)" @ 47
+func_800856B0: subst "lw\t\$4,172\(\$6\)" "lw\t$4,172($7)" @ 48
+func_800856B0: subst "sw\t\$2,148\(\$6\)" "sw\t$2,148($7)" @ 57
+
+# --- Negative convergence: target value a0→t0, duration a1→a0, base a2→a3 ---
+func_800856B0: subst "lw\t\$3,148\(\$6\)" "lw\t$3,148($7)" @ 58
+func_800856B0: subst "lw\t\$4,172\(\$6\)" "lw\t$8,172($7)" @ 59
+func_800856B0: subst "sltu\t\$2,\$4,\$3" "sltu\t$2,$8,$3" @ 61
+func_800856B0: subst "addu\t\$2,\$3,\$5" "addu\t$2,$3,$4" @ 63
+func_800856B0: subst "sw\t\$2,148\(\$6\)" "sw\t$2,148($7)" @ 64
+func_800856B0: subst "sltu\t\$2,\$2,\$4" "sltu\t$2,$2,$8" @ 66
+func_800856B0: subst "sltu\t\$2,\$3,\$4" "sltu\t$2,$3,$8" @ 67
+func_800856B0: subst "subu\t\$2,\$3,\$5" "subu\t$2,$3,$4" @ 69
+
+# --- Shifted section (after insert): struct base fixes ---
+func_800856B0: subst "sw\t\$2,148\(\$6\)" "sw\t$2,148($7)" @ 70
+func_800856B0: subst "sltu\t\$2,\$4,\$2" "sltu\t$2,$8,$2" @ 71
+func_800856B0: subst "sw\t\$4,148\(\$6\)" "sw\t$8,148($7)" @ 74
+
+# --- .L97 section: struct base a2→a3 ---
+func_800856B0: subst "lh\t\$2,80\(\$6\)" "lh\t$2,80($7)" @ 75
+func_800856B0: subst "lw\t\$3,148\(\$6\)" "lw\t$3,148($7)" @ 76
+func_800856B0: subst "sh\t\$3,84\(\$6\)" "sh\t$3,84($7)" @ 93
+func_800856B0: subst "sh\t\$2,84\(\$6\)" "sh\t$2,84($7)" @ 97
+func_800856B0: subst "lw\t\$2,168\(\$6\)" "lw\t$2,168($7)" @ 98
+
+# --- Delay slot fill + comparison section ---
+func_800856B0: subst "nop.*" "sll\t$6,$9,16" @ 101
+func_800856B0: subst "lw\t\$3,148\(\$6\)" "lw\t$3,148($7)" @ 102
+func_800856B0: subst "lw\t\$2,172\(\$6\)" "lw\t$2,172($7)" @ 103
+
+# --- Tail recompute: a1→a2 table ptr, substs before delete/reorder ---
+func_800856B0: subst "sra\t\$5,\$5,14" "sra\t$6,$6,14" @ 108
+func_800856B0: subst "addu\t\$5,\$5,\$2" "addu\t$6,$6,$2" @ 110
+func_800856B0: subst "sll\t\$3,\$10,16" "sll\t$2,$5,16" @ 111
+func_800856B0: subst "sra\t\$3,\$3,16" "sra\t$2,$2,16" @ 112
+func_800856B0: subst "sll\t\$2,\$3,1" "sll\t$3,$2,1" @ 113
+func_800856B0: subst "addu\t\$2,\$2,\$3" "addu\t$3,$3,$2" @ 114
+func_800856B0: subst "sll\t\$2,\$2,2" "sll\t$3,$3,2" @ 115
+func_800856B0: subst "subu\t\$2,\$2,\$3" "subu\t$3,$3,$2" @ 116
+func_800856B0: subst "lw\t\$3,0\(\$5\)" "lw\t$5,0($6)" @ 117
+func_800856B0: subst "sll\t\$2,\$2,4" "sll\t$3,$3,4" @ 118
+func_800856B0: subst "addu\t\$6,\$3,\$2" "addu\t$5,$3,$5" @ 119
+func_800856B0: subst "lw\t\$3,152\(\$6\)" "lw\t$2,152($5)" @ 120
+func_800856B0: subst "and\t\$3,\$3,\$4" "and\t$2,$2,$4" @ 122
+func_800856B0: subst "sw\t\$3,152\(\$6\)" "sw\t$2,152($5)" @ 123
+func_800856B0: subst "lw\t\$3,0\(\$5\)" "lw\t$2,0($6)" @ 124
+func_800856B0: subst "addu\t\$6,\$3,\$2" "addu\t$3,$3,$2" @ 126
+
+# --- clear_80 shared section: struct via v1, mask in a0 ---
+func_800856B0: subst "lw\t\$2,152\(\$6\)" "lw\t$2,152($3)" @ 127
+func_800856B0: subst "addiu\t\$3,\$zero,-129" "addiu\t$4,$zero,-129" @ 128
+func_800856B0: subst "and\t\$2,\$2,\$3" "and\t$2,$2,$4" @ 129
+func_800856B0: subst "sw\t\$2,152\(\$6\)" "sw\t$2,152($3)" @ 130
+
+# --- Structural: extra lw reload in negative convergence ---
+func_800856B0: insert "lw\t$8,172($7)" @ 70
+
+# --- Structural: delete sll from .L105 (moved to delay slot) ---
+func_800856B0: delete @ 107
+# --- Structural: delete la from original position, re-insert before sra ---
+# This ensures .L105 label stays before la (reorder would leave label on sra)
+func_800856B0: delete @ 109
+func_800856B0: insert "la\t$2,D_80106F28" @ 107
+
+# --- Reorders (post-insert/delete indices) ---
+# Prologue: la before sra
+func_800856B0: reorder 2,1 @ 1-2

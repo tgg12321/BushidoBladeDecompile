@@ -402,7 +402,94 @@ big_v:
     D_80104E80 = v;
 }
 /* kengo:MED  |  am_rmd/SetBloodSpot  |  91i */
-INCLUDE_ASM("asm/funcs", func_800856B0);
+void func_800856B0(s16 a0, s16 a1) {
+    s32 *tbl_ptr;
+    u8 *p;
+    s32 countdown;
+    s16 duration;
+    u32 current;
+    u32 target;
+    u32 new_val;
+    s32 product;
+    s32 numer;
+    s32 denom;
+    s16 display;
+    s32 *tbl2;
+    u8 *q;
+
+    tbl_ptr = (s32 *)((u8 *)&D_80106F28 + ((s32)(a0 << 16) >> 14));
+    p = (u8 *)(*tbl_ptr + (s16)a1 * 0xB0);
+
+    countdown = *(s32 *)(p + 0xA8) - 1;
+    *(s32 *)(p + 0xA8) = countdown;
+
+    if (countdown < 0) {
+        q = (u8 *)(*tbl_ptr + (s16)a1 * 0xB0);
+        *(s32 *)(q + 0x98) &= ~0x40;
+        q = (u8 *)(*tbl_ptr + (s16)a1 * 0xB0);
+        goto clear_80;
+    }
+
+    duration = *(s16 *)(p + 0x4E);
+    if (duration > 0) {
+        if (countdown % duration != 0) {
+            return;
+        }
+        current = *(u32 *)(p + 0x94);
+        target = *(u32 *)(p + 0xAC);
+        if (target < current) {
+            new_val = current - 1;
+            goto pos_store;
+        }
+        if (current < target) {
+            new_val = current + 1;
+        pos_store:
+            *(u32 *)(p + 0x94) = new_val;
+        }
+    } else {
+        current = *(u32 *)(p + 0x94);
+        target = *(u32 *)(p + 0xAC);
+        if (target < current) {
+            new_val = current + duration;
+            *(u32 *)(p + 0x94) = new_val;
+            if (new_val < target) {
+                *(u32 *)(p + 0x94) = target;
+            }
+        } else if (current < target) {
+            new_val = current - duration;
+            target = *(u32 *)(p + 0xAC);
+            *(u32 *)(p + 0x94) = new_val;
+            if (target < new_val) {
+                *(u32 *)(p + 0x94) = target;
+            }
+        }
+    }
+
+    product = *(s16 *)(p + 0x50) * *(s32 *)(p + 0x94);
+    numer = product * 10;
+    denom = D_80104E80 * 60;
+    display = (u32)numer / (u32)denom;
+    *(s16 *)(p + 0x54) = display;
+    if ((s16)display <= 0) {
+        *(s16 *)(p + 0x54) = 1;
+    }
+
+    if (*(s32 *)(p + 0xA8) == 0) {
+        goto recompute;
+    }
+    if (*(s32 *)(p + 0x94) == *(s32 *)(p + 0xAC)) {
+        goto recompute;
+    }
+    return;
+
+recompute:
+    tbl2 = (s32 *)((u8 *)&D_80106F28 + ((s32)(a0 << 16) >> 14));
+    q = (u8 *)(*tbl2 + (s16)a1 * 0xB0);
+    *(s32 *)(q + 0x98) &= ~0x40;
+    q = (u8 *)(*tbl2 + (s16)a1 * 0xB0);
+clear_80:
+    *(s32 *)(q + 0x98) &= ~0x80;
+}
 extern u8 D_80101BCC;
 extern s16 D_800F4E1A;
 extern s16 D_800F4E1E;
