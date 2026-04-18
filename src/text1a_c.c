@@ -332,7 +332,80 @@ void replay_camera_rob_back_loose3(u16 *a0, s16 *a1) {
     sinB_sinC = sinB * sinC;
     a1[7] = (scb_cosC + sinB_sinC) >> 12;
 }
-INCLUDE_ASM("asm/funcs", hirahira_w_ctrl_2);
+extern s16 Judge[];
+void hirahira_w_ctrl_2(u16 *a0, s16 *a1) {
+    s32 angB, angC;
+    s16 cosB, cosC;
+    s32 cosB_cosC, cosB_negsinC;
+    s32 angA;
+    s16 sinB;
+    s16 sinA;
+    s16 sinC;
+    s32 sab;
+    s32 sab12;
+    s32 sab12_cosC, sab12_negsinC;
+    s32 cosA;
+    s32 cosA_sinC, cosA_cosC;
+    s32 cosA_negsinB;
+    s32 negsinA_cosB;
+    s32 cab12, cab12_cosC;
+    s32 cosA_sinB;
+    s32 sinA_sinC;
+    s32 csb12_sinC;
+    s32 cosA_cosB;
+    s32 sinA_cosC;
+
+    angB = a0[1];
+    angC = a0[2];
+
+    sinB = Judge[angB & 0xFFF];
+    sinC = Judge[angC & 0xFFF];
+    angA = a0[0];
+    sinA = Judge[angA & 0xFFF];
+
+    cosB = Judge[((s16)angB + 0x400) & 0xFFF];
+    cosC = Judge[((s16)angC + 0x400) & 0xFFF];
+
+    cosB_cosC = cosB * cosC;
+
+    sab = sinA * sinB;
+
+    cosB_negsinC = cosB * -sinC;
+    sab12 = sab >> 12;
+
+    sab12_cosC = sab12 * cosC;
+
+    cosA = (s16)*(volatile u16 *)(&Judge[((s16)angA + 0x400) & 0xFFF]);
+
+    cosA_sinC = cosA * sinC;
+    sab12_negsinC = sab12 * -sinC;
+    cosA_cosC = cosA * cosC;
+    cosA_negsinB = cosA * -sinB;
+    negsinA_cosB = -sinA * cosB;
+
+    cab12 = cosA_negsinB >> 12;
+    cab12_cosC = cab12 * cosC;
+
+    cosA_sinB = cosA * sinB;
+    sinA_sinC = sinA * sinC;
+
+    csb12_sinC = (cosA_sinB >> 12) * sinC;
+
+    cosA_cosB = cosA * cosB;
+
+    a1[2] = sinB;
+    a1[0] = cosB_cosC >> 12;
+    a1[1] = cosB_negsinC >> 12;
+    a1[5] = negsinA_cosB >> 12;
+
+    sinA_cosC = sinA * cosC;
+
+    a1[8] = cosA_cosB >> 12;
+    a1[3] = (sab12_cosC + cosA_sinC) >> 12;
+    a1[4] = (sab12_negsinC + cosA_cosC) >> 12;
+    a1[6] = (cab12_cosC + sinA_sinC) >> 12;
+    a1[7] = (csb12_sinC + sinA_cosC) >> 12;
+}
 /* kengo:MED  |  my_hirahira/hirahira_w_ctrl_2  |  132i  |  x2 size collision */
 extern void func_8004A348(void);
 extern void func_80042874(void);
