@@ -131,3 +131,4 @@ See CLAUDE.md "Cross-Session Coordination" for the full protocol.
 | src/code6cac.c:func_8001E404 | Solo session: matched (saTan3GaugeMain camera setup — CamBuf 68-byte struct, goto labels, regfix subst for GCC forward-prop, label shift +20 for func_8001F938/func_8001EFA0) | 2026-04-17 | done |
 | src/code6cac.c:func_80021A98 | Solo session: matched (permuter score 430→135 via do{}while(0) barrier + 19 regfix substs for 3-region register swap) | 2026-04-17 | done |
 | src/code6cac_c2.c:func_8003DBE4 | Solo session: matched (color/palette swap — 36-rule compound regfix: frame 56→64, step restructure with branch target arithmetic, reg swap, load-delay nop insert, comparison compression) | 2026-04-17 | done |
+| src/code6cac_b.c:func_8003504C | Solo session: matched (141 insns — goto inner loop prevents strength reduction, s8 pointer for D_80102785, 11-rule regfix: a2/a3 swap, 2 reorders, 6 substs, delete+insert for label-safe init move) | 2026-04-17 | done |
