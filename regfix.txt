@@ -1342,3 +1342,69 @@ mot_data_set: subst "sw\s+\$11,4\(\$5\)" "sw\t$12,4($5)" @ 106
 mot_data_set: subst "sw\s+\$4,8\(\$5\)" "sw\t$11,8($5)" @ 108
 # Insert copy instruction at post-delete idx 25 (before beq)
 mot_data_set: insert "addu\t$11,$4,$zero" @ 25
+
+# hirahira_w_ctrl_2: 3x3 rotation matrix, compound regfix
+# lh->lhu + sign-ext for sinB/sinA/sinC, volatile cosA fix, register cycle
+hirahira_w_ctrl_2: subst "56" "48" @ 0
+hirahira_w_ctrl_2: subst "52" "44" @ 1
+hirahira_w_ctrl_2: subst "48" "40" @ 2
+hirahira_w_ctrl_2: subst "\$7" "$6" @ 3
+hirahira_w_ctrl_2: subst "\$6" "$8" @ 4
+hirahira_w_ctrl_2: subst "\$7" "$6" @ 5
+hirahira_w_ctrl_2: subst "\$6" "$8" @ 10
+hirahira_w_ctrl_2: subst "\$9" "$10" @ 17
+hirahira_w_ctrl_2: subst "\$8" "$9" @ 20
+hirahira_w_ctrl_2: subst "\$9,\$8" "$10,$9" @ 22
+hirahira_w_ctrl_2: subst "\$7,\$7" "$6,$6" @ 23
+hirahira_w_ctrl_2: subst "\$7,\$7" "$6,$6" @ 24
+hirahira_w_ctrl_2: subst "\$7" "$6" @ 27
+hirahira_w_ctrl_2: subst "lh\t\$7" "lhu\t$11" @ 28
+hirahira_w_ctrl_2: subst "lh\t\$10" "lhu\t$7" @ 34
+hirahira_w_ctrl_2: subst "\$10,\$7" "$7,$6" @ 36
+hirahira_w_ctrl_2: subst "\$6,\$6" "$8,$8" @ 37
+hirahira_w_ctrl_2: subst "\$6,\$6" "$8,$8" @ 38
+hirahira_w_ctrl_2: subst "\$6" "$8" @ 40
+hirahira_w_ctrl_2: subst "lh\t" "lhu\t" @ 41
+hirahira_w_ctrl_2: subst "\$11" "$8" @ 43
+hirahira_w_ctrl_2: subst "\$9,\$11" "$10,$8" @ 45
+hirahira_w_ctrl_2: subst "\$6,\$2" "$2,$2" @ 47
+hirahira_w_ctrl_2: subst "\$6,\$8" "$2,$9" @ 49
+hirahira_w_ctrl_2: subst "\$6,\$11" "$2,$8" @ 65
+hirahira_w_ctrl_2: subst ",\$8" ",$9" @ 69
+hirahira_w_ctrl_2: subst "\$7" "$6" @ 71
+hirahira_w_ctrl_2: subst "\$11" "$12" @ 74
+hirahira_w_ctrl_2: subst "\$10" "$7" @ 75
+hirahira_w_ctrl_2: subst "\$9" "$10" @ 77
+hirahira_w_ctrl_2: subst "\$6" "$8" @ 78
+hirahira_w_ctrl_2: subst "\$11" "$12" @ 79
+hirahira_w_ctrl_2: subst ",\$8" ",$9" @ 81
+hirahira_w_ctrl_2: subst ",\$7" ",$6" @ 85
+hirahira_w_ctrl_2: subst "\$10" "$7" @ 89
+hirahira_w_ctrl_2: subst "\$11" "$6" @ 90
+hirahira_w_ctrl_2: subst ",\$9" ",$10" @ 97
+hirahira_w_ctrl_2: subst "\$7," "$11," @ 98
+hirahira_w_ctrl_2: subst "\$9" "$10" @ 103
+hirahira_w_ctrl_2: subst ",\$6," ",$8," @ 104
+hirahira_w_ctrl_2: subst "\$10,\$8" "$7,$9" @ 106
+hirahira_w_ctrl_2: subst ",\$9," ",$10," @ 107
+hirahira_w_ctrl_2: subst "\$11" "$6" @ 115
+hirahira_w_ctrl_2: subst "52" "44" @ 122
+hirahira_w_ctrl_2: subst "48" "40" @ 123
+hirahira_w_ctrl_2: subst "56" "48" @ 124
+hirahira_w_ctrl_2: delete @ 31
+hirahira_w_ctrl_2: delete @ 35
+hirahira_w_ctrl_2: delete @ 44
+hirahira_w_ctrl_2: delete @ 55
+hirahira_w_ctrl_2: delete @ 56
+hirahira_w_ctrl_2: delete @ 57
+hirahira_w_ctrl_2: insert "lhu $3,%lo(Judge)($at)" @ 52
+hirahira_w_ctrl_2: insert "addu $at,$at,$3" @ 52
+hirahira_w_ctrl_2: insert "lui $at,%hi(Judge)" @ 52
+hirahira_w_ctrl_2: insert_after "sra $6,$6,16" @ 30
+hirahira_w_ctrl_2: insert_after "sll $6,$11,16" @ 30
+hirahira_w_ctrl_2: insert_after "sra $7,$7,16" @ 33
+hirahira_w_ctrl_2: insert_after "sll $7,$7,16" @ 33
+hirahira_w_ctrl_2: insert_after "mflo $16" @ 33
+hirahira_w_ctrl_2: insert_after "sll $4,$4,16" @ 39
+hirahira_w_ctrl_2: insert_after "nop" @ 39
+hirahira_w_ctrl_2: insert_after "sra $4,$4,16" @ 40
