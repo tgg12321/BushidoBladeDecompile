@@ -96,7 +96,7 @@ stage_ClearLighting
 func_8003F7F4
 PutShadowRmd
 func_80041E10
-func_80041EB0
+decBs0
 func_800420D0
 func_8004211C
 func_800430E4
