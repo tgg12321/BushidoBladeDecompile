@@ -145,7 +145,65 @@ store_result:
     *(s32 *)(base + 0x90) = result;
 }
 /* kengo:MED  |  sa_tan4/saTan4GaugeInit  |  66i */
-INCLUDE_ASM("asm/funcs", func_80084A7C);
+void func_80084A7C(s16 a0, s16 a1) {
+    s32 shifted = a0 << 16;
+    s32 *base_ptr = (s32 *)((u8 *)&D_80106F28 + (shifted >> 14));
+    s32 offset = (s16)a1 * 0xB0;
+    u8 *base = (u8 *)(*base_ptr + offset);
+    s32 val;
+    u32 threshold;
+
+    val = base[0x21] + 1;
+    threshold = base[0x20];
+    base[0x21] = val;
+
+    if (threshold == 0) {
+        *(s32 *)(base + 0x88) = 0;
+        base[0x1C] = 0;
+        *(s32 *)(base + 0x90) = 0;
+        if (*(s32 *)(*base_ptr + offset + 0x98) & 0x400) {
+            *(s32 *)base = *(s32 *)(base + 0xC);
+        } else {
+            *(s32 *)base = *(s32 *)(base + 4);
+        }
+        return;
+    }
+
+    if ((u8)val < threshold) {
+        *(s32 *)(base + 0x88) = 0;
+        base[0x1C] = 0;
+        *(s32 *)(base + 0x90) = 0;
+        if (*(s32 *)(*base_ptr + offset + 0x98) & 0x400) {
+            *(s32 *)base = *(s32 *)(base + 0xC);
+            *(s32 *)(base + 8) = *(s32 *)(base + 0xC);
+        } else {
+            *(s32 *)base = *(s32 *)(base + 4);
+            *(s32 *)(base + 8) = *(s32 *)(base + 4);
+        }
+        return;
+    }
+
+    *(s32 *)(*base_ptr + offset + 0x98) &= ~1;
+    *(s32 *)(*base_ptr + offset + 0x98) &= ~8;
+    *(s32 *)(*base_ptr + offset + 0x98) &= ~2;
+    *(s32 *)(*base_ptr + offset + 0x98) |= 0x200;
+    *(s32 *)(*base_ptr + offset + 0x98) |= 4;
+    base[0x14] = 0;
+
+    if (*(s32 *)(*base_ptr + offset + 0x98) & 0x400) {
+        *(s32 *)(base + 8) = *(s32 *)(base + 0xC);
+    } else {
+        *(s32 *)(base + 8) = *(s32 *)(base + 4);
+    }
+
+    if (base[0x22] != 0xFF) {
+        base[0x14] = 0;
+        spu_ResetMotionEntry(base[0x22], base[0x23]);
+        spu_NotifyChannel((s16)(a0 | (a1 << 8)));
+    }
+    spu_NotifyChannel((s16)(a0 | (a1 << 8)));
+    *(s32 *)(base + 0x90) = *(s16 *)(base + 0x54);
+}
 INCLUDE_ASM("asm/funcs", saTan0Main);
 /* kengo:MED  |  sa_tan0/saTan0Main  |  233i */
 s32 spu_ReadMotionFrame(s32 arg0, s16 arg1) {
