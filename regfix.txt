@@ -1322,3 +1322,23 @@ _SelectSection: subst "lhu\s+\$3,0\(\$7\)" "lhu\t$3,%lo(Judge)($at)\n.set\tat" @
 _SelectSection: insert_after "nop" @ 58
 # Reorder post-insert 55-63: move subu down, swap sll/mflo order
 _SelectSection: reorder 55,56,58,59,61,60,62,57,63 @ 55-63
+# ---- mot_data_set: RGB-to-HSV, insert max_val copy + register cascade ----
+# GCC keeps max_val in $4(a0) but target copies to $11(t3), shifting sat/dR/mfhi up by 1
+# TEXT indices from --expand-div maspsx output
+# Substs on original TEXT indices:
+mot_data_set: subst "beq\s+\$4,\$0" "beq\t$11,$0" @ 25
+mot_data_set: subst "div\s+\$zero,\$2,\$4" "div\t$zero,$2,$11" @ 28
+mot_data_set: subst "bnez\s+\$4," "bnez\t$11," @ 29
+mot_data_set: subst "bne\s+\$4,\$at," "bne\t$11,$at," @ 33
+mot_data_set: subst "mflo\s+\$11" "mflo\t$12" @ 38
+mot_data_set: subst "addu\s+\$11,\$0,\$zero" "addu\t$12,$0,$zero" @ 41
+mot_data_set: subst "beq\s+\$11,\$0" "beq\t$12,$0" @ 42
+mot_data_set: subst "mflo\s+\$12" "mflo\t$13" @ 55
+mot_data_set: subst "subu\s+\$9,\$12,\$2" "subu\t$9,$13,$2" @ 89
+mot_data_set: subst "addu\s+\$2,\$12,-16384" "addu\t$2,$13,-16384" @ 92
+mot_data_set: subst "mfhi\s+\$13" "mfhi\t$14" @ 98
+mot_data_set: subst "subu\s+\$9,\$13,\$2" "subu\t$9,$14,$2" @ 99
+mot_data_set: subst "sw\s+\$11,4\(\$5\)" "sw\t$12,4($5)" @ 106
+mot_data_set: subst "sw\s+\$4,8\(\$5\)" "sw\t$11,8($5)" @ 108
+# Insert copy instruction at post-delete idx 25 (before beq)
+mot_data_set: insert "addu\t$11,$4,$zero" @ 25

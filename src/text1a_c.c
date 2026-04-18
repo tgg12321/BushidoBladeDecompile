@@ -89,7 +89,86 @@ out:
     rgb[2] = b;
 }
 /* kengo:MED  |  my_rob/rob_life_ctrl_2  |  96i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", mot_data_set);
+void mot_data_set(s32 *a0, s32 *a1) {
+    s32 r, g;
+    register s32 b asm("$6");
+    s32 max_val, min_val;
+    s32 chroma;
+    s32 sat;
+    s32 hue;
+    s32 dR, dG, dB;
+
+    r = a0[0];
+    g = a0[1];
+    b = a0[2];
+
+    /* find max */
+    if (r >= g) {
+        if (r >= b) {
+            max_val = r;
+        } else {
+            max_val = b;
+        }
+    } else {
+        if (g >= b) {
+            max_val = g;
+        } else {
+            max_val = b;
+        }
+    }
+
+    /* find min */
+    if (g >= r) {
+        if (b >= r) {
+            min_val = r;
+        } else {
+            min_val = b;
+        }
+    } else {
+        if (b >= g) {
+            min_val = g;
+        } else {
+            min_val = b;
+        }
+    }
+
+    chroma = max_val - min_val;
+
+    if (max_val != 0) {
+        sat = (chroma << 12) / max_val;
+    } else {
+        sat = 0;
+    }
+
+    if (sat != 0) {
+        dR = ((max_val - r) << 12) / chroma;
+        dG = ((max_val - g) << 12) / chroma;
+        dB = ((max_val - b) << 12) / chroma;
+
+        if (r == max_val) {
+            hue = dB - dG;
+        } else if (g == max_val) {
+            s32 tmp = dB - 0x2000;
+            hue = dR - tmp;
+        } else if (b == max_val) {
+            s32 tmp = dR - 0x4000;
+            hue = dG - tmp;
+        }
+
+        hue /= 6;
+
+        if (hue < 0) {
+            hue += 0x1000;
+        }
+    } else {
+        hue = 0;
+    }
+
+    a1[0] = hue;
+    a1[1] = sat;
+    a1[2] = max_val;
+}
+
 /* kengo:MED  |  se_fc/mot_data_set  |  110i */
 extern s16 D_800F6650;
 void func_8004283C(s32 a0) {
