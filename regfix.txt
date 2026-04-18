@@ -1046,3 +1046,22 @@ func_8003DBE4: delete @ 87
 func_8003DBE4: subst "bne\s+\$2,\$0" "bne\t$17,$2" @ 88
 func_8003DBE4: subst "nop" "addiu\t$16,$16,48" @ 89
 func_8003DBE4: delete @ 91
+
+# func_8003504C: first loop a2/a3 swap (i in $7, src in $6 like target)
+func_8003504C: $6 <-> $7 @ 4-44
+# Reorder first-loop setup: constants before p assignment
+func_8003504C: reorder 4,9,10,5,6,7,8 @ 4-10
+# Reorder post-loop: p[5]->val->D_80102784 first, then p[8]->D_800A36F6->D_80102786
+func_8003504C: reorder 45,52,48,53,54,46,47,49,50,51 @ 45-54
+# After reorder: rename $3->$2 on p[8] path (positions 50,52,53,54)
+func_8003504C: subst "\$3" "$2" @ 46
+func_8003504C: subst "\$3" "$2" @ 49
+func_8003504C: subst "\$3" "$2" @ 49
+func_8003504C: subst "\$3" "$2" @ 50
+func_8003504C: subst "\$3" "$2" @ 50
+func_8003504C: subst "\$3" "$2" @ 51
+# Nested-loop init: delete j=0 from pos 90, insert before la (under .L468 label)
+func_8003504C: delete @ 90
+func_8003504C: insert "addu $8,$0,$zero" @ 87
+# Post-insert: swap la $9 and lw to get: j=0, la $10, lw, la $9
+func_8003504C: reorder 90,89 @ 89-90
