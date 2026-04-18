@@ -12,6 +12,7 @@ SPLAT_YAML   := splat.yaml
 CC1          := tools/gcc-2.7.2/build/cc1
 # maspsx ASPSX compatibility layer
 PROLOGUE_FIX := python3 tools/prologue_fix.py
+FIX_LWL      := python3 tools/fix_lwl.py
 REGFIX       := python3 tools/regfix.py
 REGFIX_STAGE2:= REGFIX_CONFIG=regfix_stage2.txt python3 tools/regfix.py
 ASMFIX       := python3 tools/asmfix.py
@@ -104,6 +105,11 @@ GP_FILES :=
 EXPAND_LB_FILES := code6cac_b
 EXPAND_LH_FILES :=
 
+# -- Per-file fix_lwl opt-in --
+# GCC 2.7.2 emits lwl/lwr/swl/swr with big-endian offsets; XOR with 3 for little-endian.
+# Only enable for files containing lwl/lwr in maspsx output (without compensating inline asm).
+FIX_LWL_FILES :=
+
 # -- Per-file rodata alignment fix --
 # GCC 2.7.2 emits .align 3 (8-byte) for switch tables in .rodata.
 # When rodata is split across objects, this creates unwanted padding.
@@ -113,13 +119,14 @@ RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_c code6cac_c0 code6cac_c_ab 
 # Helper: resolve CC/MASPSX flags based on whether file needs GP-relative
 cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))
 maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(EXPAND_LB_FILES)), --expand-lb)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)
+fix_lwl_for = $(if $(filter $1,$(FIX_LWL_FILES)),$(FIX_LWL) |,)
 rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.align\t2/" |,)
 
 # -- Compile C source (decompiled functions) --
-# Pipeline: cpp | cc1 | prologue_fix | maspsx | [sed align fix] | regfix | regfix_stage2 | asmfix | as -> .o
+# Pipeline: cpp | cc1 | prologue_fix | maspsx | [fix_lwl] | [sed align fix] | regfix | regfix_stage2 | asmfix | as -> .o
 $(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call rodata_align_fix,$*) $(REGFIX) | $(REGFIX_STAGE2) | $(ASMFIX) | $(AS) $(AS_FLAGS) -o $@
+	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call fix_lwl_for,$*) $(call rodata_align_fix,$*) $(REGFIX) | $(REGFIX_STAGE2) | $(ASMFIX) | $(AS) $(AS_FLAGS) -o $@
 
 # -- Assemble .s files (non-decompiled asm) --
 $(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s
