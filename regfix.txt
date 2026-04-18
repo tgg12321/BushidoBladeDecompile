@@ -1111,3 +1111,28 @@ func_800861BC: insert_after "addiu $9,$3,-2" @ 5
 func_800861BC: insert_after "la $5,D_8010280C" @ 64
 # Reorder prologue (post-all-inserts: indices 1-6)
 func_800861BC: reorder 2,5,6,3,4,1 @ 1-6
+
+# func_80084A7C: 156-insn motion state handler (main.c)
+# Phase 1: swap a2/a3 for base_ptr/offset register assignment
+func_80084A7C: $6 <-> $7
+
+# Phase 1.5: fix operand order in addu after swap (offset,v0 not v0,offset)
+# Early paths: offset(a2) before v0 in addu
+func_80084A7C: subst "\$2,\$2,\$6" "$2,$6,$2" @ 31
+func_80084A7C: subst "\$2,\$2,\$6" "$2,$6,$2" @ 52
+# Flag ops: change a1($5) to a2($6) and swap operands
+func_80084A7C: subst "\$3,\$3,\$5" "$3,$6,$3" @ 69
+func_80084A7C: subst "\$3,\$3,\$5" "$3,$6,$3" @ 76
+func_80084A7C: subst "\$3,\$3,\$5" "$3,$6,$3" @ 83
+func_80084A7C: subst "\$3,\$3,\$5" "$3,$6,$3" @ 90
+func_80084A7C: subst "\$3,\$3,\$5" "$3,$6,$3" @ 97
+# Last flag check: a1($5) to a2($6) and swap operands
+func_80084A7C: subst "\$2,\$2,\$5" "$2,$6,$2" @ 105
+
+# Phase 2: delete extra move a1,a2 (was a1,a3 before swap)
+func_80084A7C: delete @ 19
+
+# Phase 4: reorder prologue (post-delete indices)
+# Compiled: sw s1(14), move s1,a1(15), sw ra(16), sw s0(17), lw(18)
+# Target:   sw ra(14), sw s1(15), sw s0(16), lw(17), move s1,a1(18)
+func_80084A7C: reorder 16,14,17,18,15 @ 14-18
