@@ -112,7 +112,7 @@ def load_config(config_path):
         m = re.match(r'(\w+)\s*:\s*insert_after\s+"([^"]+)"\s*@\s*(\d+)', line)
         if m:
             func = m.group(1)
-            asm_text = m.group(2)
+            asm_text = m.group(2).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(3))
             config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
             config[func]['insert_afters'].append((idx, asm_text))

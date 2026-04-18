@@ -308,7 +308,90 @@ void func_8003BFC4(void) {
     game_Init();
     D_800A3834 = 8;
 }
-INCLUDE_ASM("asm/funcs", cpu_side_move_dir_2);
+
+extern void kgm_init_hitrect(s32);
+extern void mottest_rob_init(s32, s32);
+
+void cpu_side_move_dir_2(void) {
+    s32 a0;
+    s8 *p;
+    gpu_InitDisplay();
+    gpu_EnableDisplay();
+    func_80020CDC();
+    if (((u32)(D_800A38A4 - 4)) < 2u) {
+        file_ResetDmaFlag();
+    }
+    {
+        u8 v = D_800A38A4;
+        if (D_800A38A4 == 6) {
+            D_8010277C = 8;
+            D_8010277E = 6;
+            a0 = 0;
+            goto after_dispatch;
+        }
+        if (D_800A38A4 == 7) {
+            D_8010277C = 0x16;
+            D_8010277E = 7;
+            a0 = 0;
+            goto after_dispatch;
+        }
+        if (v == 8) {
+            a0 = 0;
+            D_8010277C = 0x1E;
+            goto write_e_zero;
+        }
+        if (D_800A38A4 == 9) {
+            a0 = 0;
+            D_8010277C = 0x20;
+        write_e_zero:
+            D_8010277E = 0;
+
+        after_dispatch:
+            func_8003AF40(a0);
+
+            kgm_init_hitrect(0);
+        }
+    }
+    if (D_800A38A4 == 9) {
+        a0 = 8;
+    } else {
+        a0 = D_800A38A4;
+    }
+    func_8005FBC8(a0, (s32)0x80118800);
+    {
+        u8 val = D_800A38A4;
+        if (val == 4) {
+            if ((&D_8008D9EC)[D_80101ED2] != 0) {
+                goto do_copy;
+            }
+        }
+        if (val == 5) {
+            if ((&D_8008D9EC)[D_80101ED2] != 0) {
+                goto skip_copy;
+            }
+        do_copy:
+            D_8010277C = D_8010277D;
+
+            D_8010277E = D_8010277F;
+            func_8003AF40(0);
+            kgm_init_hitrect(0);
+        }
+    skip_copy:;
+    }
+    func_80054884(0x16, (&D_8009016C)[D_800A38A4], 0, D_80101EDA, -1, -1, -1, (s32)0x80118800);
+    func_80041688(0, 0);
+    func_80041688(1, 0);
+    game_Cleanup();
+    p = (s8 *)(((s8 *)(&D_8008EA70)) + (D_800A38A4 << 1));
+    if (p[0] >= 0) {
+        func_80035FA8();
+        mottest_rob_init(func_80036EA8(5, p[0]), (u8)p[1]);
+        func_80037260();
+    }
+    D_800A37B8 = 0;
+    D_800A3834 = 0x13;
+    gpu_DisableDisplay();
+}
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir_2  |  160i  |  x4 size collision */
 void func_8003C2C0(void) {
     s32 ret;

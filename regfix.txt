@@ -1029,7 +1029,7 @@ func_8003DBE4: subst ",56" ",64" @ 125
 # Step computation: direct s2 → shared v0 intermediate + single subu at merge
 # Branch target: .L172 is past subu, but bnez should go TO the shared subu (.L172-4)
 func_8003DBE4: subst "addiu.*" "nop" @ 28
-func_8003DBE4: subst "\.L172" ".L172-4" @ 29
+func_8003DBE4: subst "\.L193" ".L193-4" @ 29
 func_8003DBE4: subst "subu.*" "addiu\t$2,$zero,22000" @ 30
 func_8003DBE4: subst "\$18,\$zero" "$2,$zero" @ 31
 func_8003DBE4: subst "\$18,\$18" "$18,$2" @ 32
@@ -1512,3 +1512,10 @@ func_800856B0: insert "la\t$2,D_80106F28" @ 107
 # --- Reorders (post-insert/delete indices) ---
 # Prologue: la before sra
 func_800856B0: reorder 2,1 @ 1-2
+
+# --- cpu_side_move_dir_2: insert j+lui in else branch + label before jal ---
+# Target wants j .L_b with lui $5,0x8011 in its delay slot in the else branch,
+# then duplicate lui $5,0x8011 at .L46 (BEQ target), then jal at .L_b.
+# Process insert_afters sorted desc; @ 53 first, then @ 52.
+cpu_side_move_dir_2: insert_after ".L_csmd2_b:" @ 53
+cpu_side_move_dir_2: insert_after "j\t.L_csmd2_b\n\tlui\t$5,0x8011" @ 52
