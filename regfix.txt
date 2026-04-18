@@ -1136,3 +1136,40 @@ func_80084A7C: delete @ 19
 # Compiled: sw s1(14), move s1,a1(15), sw ra(16), sw s0(17), lw(18)
 # Target:   sw ra(14), sw s1(15), sw s0(16), lw(17), move s1,a1(18)
 func_80084A7C: reorder 16,14,17,18,15 @ 14-18
+
+# hirahira_w_ctrl: 136-insn petal/wind controller (text1a.c)
+# Score 360 -> 0 via 18 subst rules (0-based indices)
+
+# Loop1 first half: operand order in addu v1 (s1,s0 -> s0,s1)
+hirahira_w_ctrl: subst "\$3,\$17,\$16" "$3,$16,$17" @ 30
+
+# Loop1 first half: scheduling rotation (s5->a0, a0->a1, a1->s5)
+hirahira_w_ctrl: subst "addu\t\$21,\$21,4" "addu\t$4,$sp,16" @ 32
+hirahira_w_ctrl: subst "addu\t\$4,\$sp,16" "addu\t$5,$23,$zero" @ 35
+hirahira_w_ctrl: subst "addu\t\$5,\$23,\$zero" "addu\t$21,$21,4" @ 39
+
+# Loop1 second half: v1($3) -> s0($16) for a2+offset base
+hirahira_w_ctrl: subst "\$3,\$18,\$16" "$16,$16,$18" @ 43
+hirahira_w_ctrl: subst "\$2,0\(\$3\)" "$2,0($16)" @ 44
+hirahira_w_ctrl: subst "\$2,2\(\$3\)" "$2,2($16)" @ 47
+hirahira_w_ctrl: subst "\$2,4\(\$3\)" "$2,4($16)" @ 51
+
+# Inter-loop: register reassignment for loop2
+# out2: s6($22) -> s3($19)
+hirahira_w_ctrl: subst "\$22,\$23,32" "$19,$23,32" @ 70
+# stptr: s3($19) -> s0($16)
+hirahira_w_ctrl: subst "\$19,\$8,1872" "$16,$8,1872" @ 71
+
+# Loop2: stptr s3($19) -> s0($16)
+hirahira_w_ctrl: subst "\$7,\$19,76" "$7,$16,76" @ 76
+hirahira_w_ctrl: subst "\$7,\$19,56" "$7,$16,56" @ 112
+hirahira_w_ctrl: subst "\$2,6\(\$19\)" "$2,6($16)" @ 114
+hirahira_w_ctrl: subst "\$19,\$19,104" "$16,$16,104" @ 117
+
+# Stack offset: saved var at sp+28 -> sp+24
+hirahira_w_ctrl: subst "\$8,28\(\$sp\)" "$8,24($sp)" @ 24
+hirahira_w_ctrl: subst "\$8,28\(\$sp\)" "$8,24($sp)" @ 69
+
+# Loop2: out2 s6($22) -> s3($19)
+hirahira_w_ctrl: subst "\$5,\$22,\$zero" "$5,$19,$zero" @ 97
+hirahira_w_ctrl: subst "\$5,\$22,\$zero" "$5,$19,$zero" @ 109
