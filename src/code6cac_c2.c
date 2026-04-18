@@ -888,7 +888,71 @@ void tslLineG5Init(s32 arg0, s32 arg1) {
         }
     }
 }
-INCLUDE_ASM("asm/funcs", func_8003DBE4);
+void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
+    s32 limit;
+    s32 step;
+    s32 *colors;
+    s32 i;
+
+    colors = arg2;
+
+    if (arg4 != 0) {
+        limit = arg1;
+    } else {
+        limit = arg1 - 1;
+    }
+
+    if (D_800F6656 & 1) {
+        step = D_80090600;
+    } else {
+        s32 v0 = 0x55F0;
+        if (game_GetPlayerCount() == 0) {
+            v0 = 0x6590;
+        }
+        step = v0 - arg0;
+    }
+
+    if (step < 0) {
+        return;
+    }
+
+    if ((u32)arg3 < (u32)step) {
+        step = (s32)((u32)arg3 / (u32)arg1);
+    } else {
+        step = step / arg1;
+    }
+
+    i = 0;
+    colors = (s32 *)((u8 *)colors + (D_800A36AC & 1) * 24);
+
+    if (limit > 0) {
+        u32 rgb_mask = 0xFFFFFF;
+        u32 alpha_mask = 0xFF000000;
+
+        do {
+            s32 idx = func_80052C28((u32)arg0 >> 2, 2);
+            if (idx < 0x1000) {
+                s32 *pal = (s32 *)(D_800A378C + (u32)idx * 4);
+                *colors = (*colors & alpha_mask) | (*pal & rgb_mask);
+                *pal = (*pal & alpha_mask) | ((u32)colors & rgb_mask);
+                if (i + 1 >= limit) {
+                    D_800905F8 = idx;
+                }
+                colors = (s32 *)((u8 *)colors + 0x30);
+            }
+            arg0 += step;
+            i++;
+        } while (i < limit);
+    }
+
+    if (arg4 != 0) {
+        func_8003DDF8((u32)colors);
+    } else {
+        s32 *pal = (s32 *)D_800A378C;
+        *colors = (*colors & (s32)0xFF000000) | (*(s32 *)((u8 *)pal + 0x3FEC) & 0xFFFFFF);
+        *(s32 *)((u8 *)pal + 0x3FEC) = (*(s32 *)((u8 *)pal + 0x3FEC) & (s32)0xFF000000) | ((u32)colors & 0xFFFFFF);
+    }
+}
 void func_8003DDF8(u32 arg0) {
     u32 *ptr = (u32 *)D_800A378C;
     arg0 &= 0xFFFFFF;
