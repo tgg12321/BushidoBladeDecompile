@@ -1519,3 +1519,31 @@ func_800856B0: reorder 2,1 @ 1-2
 # Process insert_afters sorted desc; @ 53 first, then @ 52.
 cpu_side_move_dir_2: insert_after ".L_csmd2_b:" @ 53
 cpu_side_move_dir_2: insert_after "j\t.L_csmd2_b\n\tlui\t$5,0x8011" @ 52
+# --- cpu_side_move_dir: 25 reg diffs across 3 groups + 1 reload insert + 1 lost-nop insert ---
+# Group A: if-branch division output cascade (target keeps sum in $v1, mfhi to $t1)
+cpu_side_move_dir: subst "addu\t\$2,\$6,\$3" "addu\t$3,$6,$3" @ 69
+cpu_side_move_dir: subst "mult\t\$2,\$5" "mult\t$3,$5" @ 71
+cpu_side_move_dir: subst "sra\t\$2,\$2,31" "sra\t$3,$3,31" @ 72
+cpu_side_move_dir: subst "mfhi\t\$3" "mfhi\t$9" @ 73
+cpu_side_move_dir: subst "sra\t\$3,\$3,5" "sra\t$2,$9,5" @ 74
+cpu_side_move_dir: subst "subu\t\$4,\$3,\$2" "subu\t$2,$2,$3" @ 76
+
+# Group B: else-branch p computation (target keeps p in $a0, lh dest in $v0)
+cpu_side_move_dir: subst "addu\t\$2,\$4,\$2" "addu\t$4,$4,$2" @ 83
+cpu_side_move_dir: subst "lh\t\$3,0\(\$2\)" "lh\t$2,0($4)" @ 84
+cpu_side_move_dir: subst "sw\t\$3,16\(\$sp\)" "sw\t$2,16($sp)" @ 86
+cpu_side_move_dir: subst "lh\t\$4,4\(\$2\)" "lh\t$2,4($4)" @ 87
+
+# Group C: post-.L7 sp18 store + .L7 join cascade (indices shifted -1 vs prior version)
+cpu_side_move_dir: subst "sw\t\$4,24\(\$sp\)" "sw\t$2,24($sp)" @ 88
+cpu_side_move_dir: subst "lw\t\$3,16\(\$sp\)" "lw\t$4,16($sp)" @ 89
+cpu_side_move_dir: subst "subu\t\$3,\$3,\$2" "subu\t$4,$4,$2" @ 92
+cpu_side_move_dir: subst "sw\t\$3,16\(\$sp\)" "sw\t$4,16($sp)" @ 93
+cpu_side_move_dir: subst "lw\t\$2,252\(\$17\)" "lw\t$3,252($17)" @ 94
+cpu_side_move_dir: subst "subu\t\$2,\$4,\$2" "subu\t$2,$2,$3" @ 96
+cpu_side_move_dir: subst "addu\t\$2,\$2,\$3" "addu\t$2,$2,$4" @ 100
+
+# Insert lw $v0, sp18 (reload) BEFORE idx 93 (sw sp10)
+cpu_side_move_dir: insert "lw\t$2,24($sp)" @ 93
+# Insert nop BEFORE idx 88 (load delay for lh $2,4($4) that maspsx wrongly stripped)
+cpu_side_move_dir: insert "nop" @ 88
