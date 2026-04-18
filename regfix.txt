@@ -1288,3 +1288,17 @@ AllocRobRmd: insert "nop" @ 19
 # target loads rmd[1],h[10],rmd[3],rmd[4] first, then processes each in order
 # build interleaves loads/computes; this reorder matches target scheduling
 AllocRobRmd: reorder 90,89,88,97,94,95,98,91,92,93,99,100,102,101,96 @ 88-102
+
+# replay_camera_rob_back_loose3: rotation matrix function regfix
+# Fix sinAxsinB_12 register: GCC puts in $4 (a0), target has $2 (v0)
+replay_camera_rob_back_loose3: subst "sra\s+\$4,\$8,12" "sra\t$2,$8,12" @ 26
+replay_camera_rob_back_loose3: subst "mult\s+\$4,\$9" "mult\t$2,$9" @ 27
+replay_camera_rob_back_loose3: subst "mult\s+\$4,\$6" "mult\t$2,$6" @ 50
+# Fix volatile addressing: la+addu+lhu(ptr) -> lui $at + addu $at + lhu %lo($at)
+# volatile generates la pseudo (2 binary insns) + ptr arith; target uses $at-based (3 insns)
+replay_camera_rob_back_loose3: subst "la\s+\$2,Judge" ".set\tnoat\nlui\t$at,%hi(Judge)" @ 60
+replay_camera_rob_back_loose3: subst "addu\s+\$7,\$7,\$2" "addu\t$at,$at,$7" @ 61
+replay_camera_rob_back_loose3: subst "lhu\s+\$2,0\(\$7\)" "lhu\t$2,%lo(Judge)($at)\n.set\tat" @ 62
+# Fix sinA*cosB mflo register: GCC puts in $14 (t6), target has $3 (v1)
+replay_camera_rob_back_loose3: subst "mflo\s+\$14" "mflo\t$3" @ 75
+replay_camera_rob_back_loose3: subst "sra\s+\$4,\$14,12" "sra\t$4,$3,12" @ 80
