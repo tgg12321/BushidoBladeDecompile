@@ -1302,3 +1302,23 @@ replay_camera_rob_back_loose3: subst "lhu\s+\$2,0\(\$7\)" "lhu\t$2,%lo(Judge)($a
 # Fix sinA*cosB mflo register: GCC puts in $14 (t6), target has $3 (v1)
 replay_camera_rob_back_loose3: subst "mflo\s+\$14" "mflo\t$3" @ 75
 replay_camera_rob_back_loose3: subst "sra\s+\$4,\$14,12" "sra\t$4,$3,12" @ 80
+
+# _SelectSection: rotation matrix function regfix
+# Block 1: Fix negSinAxsinB_12 register + scheduling (TEXT 21-27)
+# GCC puts mflo result in $8 (t0), target has $12 (t4); sra/mult use $4 (a0), target $2 (v0)
+_SelectSection: subst "mflo\s+\$8" "mflo\t$12" @ 21
+_SelectSection: subst "sra\s+\$4,\$8,12" "sra\t$2,$12,12" @ 22
+_SelectSection: subst "mult\s+\$4,\$8" "mult\t$2,$8" @ 27
+# Delete extra nop at TEXT 26 (target fills this delay slot with the sra instead)
+_SelectSection: delete @ 26
+# Reorder post-delete 22-25: move sra after lh to fill load delay slot
+_SelectSection: reorder 23,24,25,22 @ 22-25
+# Block 2: Fix volatile addressing (TEXT 56-59) + scheduling
+# la+addu+lhu(ptr) -> lui $at + addu $at + lhu %lo($at)
+_SelectSection: subst "la\s+\$2,Judge" ".set\tnoat\nlui\t$at,%hi(Judge)" @ 56
+_SelectSection: subst "addu\s+\$7,\$7,\$2" "addu\t$at,$at,$7" @ 57
+_SelectSection: subst "lhu\s+\$3,0\(\$7\)" "lhu\t$3,%lo(Judge)($at)\n.set\tat" @ 59
+# Insert nop after lhu (post-delete idx 58) for load delay slot
+_SelectSection: insert_after "nop" @ 58
+# Reorder post-insert 55-63: move subu down, swap sll/mflo order
+_SelectSection: reorder 55,56,58,59,61,60,62,57,63 @ 55-63
