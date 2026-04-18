@@ -1,0 +1,5 @@
+# Functions that have been attempted and abandoned for specific reasons.
+# Don't auto-suggest these as quick wins. To re-attempt, address the listed reason first.
+# Format: funcname  # reason (commit-ref if applicable)
+coli_hit_body_weapon     # C code crashes GCC 2.7.2 (rev b13dd90, reverted 44cbbed)
+conv_matrix_rotation     # split asm helpers broke full EXE layout (rev a19c524, reverted 44bdf14)
