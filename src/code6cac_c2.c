@@ -585,7 +585,82 @@ void func_8003C958(void) {
     D_800A3834 = 0x19;
     gpu_DisableDisplay();
 }
-INCLUDE_ASM("asm/funcs", func_8003C9A4);
+extern void replay_camera_rob_back_win_near(s16 *, s16 *, s32);
+void func_8003C9A4(void) {
+    s32 ret;
+    s32 *a0 = (s32 *)&D_800F6608;
+    s16 *a1 = (s16 *)((u8 *)a0 + 0x10);
+
+    game_SetControllerPorts(0);
+    a0[0] = 0;
+    D_800F660C = -0xBB8;
+    D_800F6610 = 0;
+    *a1 = 0x20;
+    D_800F661C = 0;
+    D_800F6620 = 0x2710;
+    D_800F661A = (s16)(D_800A36AC << 2);
+    replay_camera_rob_back_win_near((s16 *)a0, a1, 0x2710);
+    game_StageInit(1);
+
+    if (D_800A3929 == 0) {
+        D_800A38B4 = D_800A38B4 + (func_8005C8A8(1, D_800A3817, D_800A38B4, 0) / 4) * 4;
+
+        if ((D_80102794 & 0x10001000) != 0) {
+            func_8005C650(0, 0x7F, 0x7F);
+            if (D_800A3817 != 0) {
+                D_800A3817 = D_800A3817 - 1;
+            } else {
+                D_800A3817 = 2;
+            }
+        } else if ((D_80102794 & 0x40004000) != 0) {
+            func_8005C650(0, 0x7F, 0x7F);
+            if (D_800A3817 == 2) {
+                D_800A3817 = 0;
+            } else {
+                D_800A3817 = D_800A3817 + 1;
+            }
+        }
+
+        if ((D_80102794 & 0x400040) != 0) {
+            func_8005C650(1, 0x7F, 0x7F);
+            D_800A3929 = (D_800A3817 == 0) ? 1 : 0x3C;
+        }
+        return;
+    }
+
+    if (D_800A3817 == 0) {
+        ret = func_8005FA98(0, D_800A38B4, 1);
+        D_800A38B4 = D_800A38B4 + (ret / 4) * 4;
+    }
+    D_800A3929 = D_800A3929 + 1;
+    if ((u8)D_800A3929 < 0x3C) return;
+
+    func_800372C0();
+    if (D_800A3817 == 0) {
+        if (D_800A38DC == 5) {
+            gpu_EnableDisplay();
+            func_80020CDC();
+            D_800A3874 = 0;
+            func_800342A0();
+            return;
+        }
+        D_800A3670 = 1;
+        D_800A380C = D_800A380C + 1;
+        D_800A38DF = (u8)func_80022408((s32 *)((u8 *)&D_80101FBC + (s32)D_800A3748 * 1100));
+        D_800A3834 = 0;
+        return;
+    }
+    if (D_800A3817 == 1) {
+        func_8001DA2C();
+        D_800A31DA = 1;
+        D_800A3834 = 8;
+        return;
+    }
+    if (D_800A3817 == 2) {
+        func_8001DA2C();
+        D_800A3834 = 8;
+    }
+}
 void func_8003CCCC(void) {
     gpu_InitDisplay();
     game_Cleanup();
