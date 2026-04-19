@@ -442,7 +442,7 @@ extern void DispSleepMenuTex(s32, s32, s32, s32);
 extern void func_80021A98(s32, u8 *, s32);
 extern void func_80022580(s32, s32, s32, s32, s32);
 extern s32 func_80036EA8(s32, s32);
-extern void func_8003A728(s32 *);
+extern void func_8003A728(s32);
 extern void func_8003AE5C(s32);
 extern void func_8003DE14(s32 *, s32);
 extern void game_SetControllerPorts(s32);

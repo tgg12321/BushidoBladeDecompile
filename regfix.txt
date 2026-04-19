@@ -1621,3 +1621,24 @@ func_8003B9D0: fill_delay @ 49 <- 52
 # Mine: sw_ra(9), addu_a3(10), li_a0(11), li_a2(12), lw_a1(13/la), sllv(14)
 # Want: addu_a3, li_a0, lw_a1, li_a2, sw_ra, sllv
 func_80038170: reorder 10,11,13,12,9 @ 9-13
+
+# func_8003A728: 4 register-allocation/scheduling diff clusters after C-level matching reduced 65->22 bytes
+# (1) Cluster 1: lbu D_800A3916 hoisted before `or $4,$4,$2`; should be after, with $2 not $3
+func_8003A728: subst "\$3," "$2," @ 31
+func_8003A728: subst "\$3," "$2," @ 34
+func_8003A728: reorder 32,31 @ 31-32
+
+# (2) Cluster 2: continue_a450 jal delay slot uses cached $18 (lower); target recomputes from $16
+func_8003A728: subst "addu\s+\$4,\$18,\$zero" "andi $4,$16,0xffff" @ 85
+
+# (3) Cluster 3: post_8F4 c0lo path (D_800A38A0==0 fall-through)
+# Substitute nop->sll into bne delay slot (TEXT 123), then sll->nop at TEXT 125 to preserve count
+func_8003A728: subst "nop" "sll $2,$3,16" @ 123
+func_8003A728: subst "sll\s+\$3,\$3,16" "nop" @ 125
+func_8003A728: subst "lhu\s+\$2,%gp_rel\(D_800A3698\)" "lhu $16,%gp_rel(D_800A3698)" @ 124
+func_8003A728: subst "or\s+\$3,\$3,\$2" "or $2,$2,$16" @ 126
+func_8003A728: subst "\$3,8\(\$17\)" "$2,8($17)" @ 127
+
+# (4) Cluster 4: post_8F4 D_800A38A0!=0 path — lhu D_800A36D0 dest $16 not $2
+func_8003A728: subst "lhu\s+\$2,%gp_rel\(D_800A36D0\)" "lhu $16,%gp_rel(D_800A36D0)" @ 131
+func_8003A728: subst "sll\s+\$2,\$2,16" "sll $2,$16,16" @ 133
