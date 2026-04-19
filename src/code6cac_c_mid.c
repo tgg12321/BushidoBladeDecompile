@@ -169,6 +169,15 @@ extern void func_80022568(u8 *);
 extern s32 g_str_memcard_fmt;
 extern s32 D_80102810;
 extern s32 D_800F34D8;
+extern s32 D_800A31F0;
+extern s32 D_800A3794;
+extern s32 _CardCheckPulled2(s32, s32);
+extern void camera_SetMatrix(void *);
+extern s32 func_80037AA4(void);
+extern s32 func_80037B00(s32);
+extern s32 func_80037B90(s32, s32, s32, void *, s32);
+extern s32 func_80037C34(s32, s32, s32, void *, s32, s32, s32);
+extern s32 func_80037F08_ret(s32, s32);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
@@ -177,6 +186,13 @@ void func_80037F08(s32 a0, s32 a1) {
     func_80079A30(buf, &D_800109C8, a0, a1);
     func_80078A28(buf);
 }
+__asm__(
+    ".globl func_80037F08_ret
+"
+    "func_80037F08_ret = func_80037F08
+"
+);
+
 typedef struct { s32 w[4]; } Quad;
 void func_80037F40(u8 *a0) {
     s32 checksum;
@@ -312,7 +328,119 @@ void func_80038148(void) {
     } while ((u32)i < 0x200);
 }
 INCLUDE_ASM("asm/funcs", func_80038170);
-INCLUDE_ASM("asm/funcs", pad_FuncAnalog);
+void pad_FuncAnalog(void) {
+    register s32 var_v1 asm("v1");
+    register s32 var_v0 asm("v0");
+    s32 temp_s0;
+    s32 var_s1;
+    u16 temp_v0;
+
+    var_v1 = D_800A31F4;
+    if (var_v1 != 1) goto state_other;
+
+    var_v1 = D_800A31F8;
+    if (var_v1 == -1) goto sub_inc;
+
+    if (var_v1 >= 0) goto positive_path;
+    if (var_v1 == -2) goto neg2_handler;
+    return;
+
+positive_path:
+    if (var_v1 >= 3) return;
+    if (var_v1 <= 0) return;
+    if (D_800A37C8 == 0) { D_800A31F4 = 5; return; }
+    if (D_800A37C8 == 3) goto set_state_7;
+    D_800A31F4 = 3;
+    return;
+
+neg2_handler:
+    if (D_800A37C8 != 3) goto neg2_else;
+set_state_7:
+    D_800A31F4 = 7;
+    return;
+neg2_else:
+    D_800A31F4 = 0;
+    D_800A379E = 0xA;
+    return;
+
+sub_inc:
+    temp_v0 = (u16)D_800A3814 + 1;
+    D_800A3814 = temp_v0;
+    if ((s16)temp_v0 < 4) return;
+    var_v0 = 8;
+    goto finish;
+
+state_other:
+    var_v0 = 5;
+    if (var_v1 == var_v0) goto state_5;
+    if (var_v1 < 6) {
+        var_v0 = 3;
+        if (var_v1 == var_v0) goto state_3;
+        return;
+    }
+    var_v0 = 7;
+    if (var_v1 == var_v0) goto state_7;
+    return;
+
+state_3:
+    D_800A379E = 1;
+    _CardCheckPulled2(0, 0);
+    temp_s0 = func_80037AA4();
+    if (func_80037B00(D_800A31F0) != 0) {
+        var_s1 = 0;
+        if (D_800A37C8 == 1) {
+            var_v0 = 0xD;
+            goto finish;
+        }
+        goto setup_load;
+    }
+    var_s1 = 1;
+    if (temp_s0 == 0) {
+        var_v0 = 7;
+        goto finish;
+    }
+setup_load:
+    D_800A38CC = 1;
+    func_80038148();
+    func_80038170(&D_800F33D8);
+    camera_SetMatrix(&D_800F33D8 + 0x100);
+    if (func_80037C34(0, 0, D_800A31F0, &D_800F33D8, 1, 0x200, var_s1) != 0) {
+        func_80078A18(D_800A3794);
+        var_v0 = 3;
+        goto finish;
+    }
+    D_800A31F4 = 4;
+    return;
+
+state_5:
+    _CardCheckPulled2(0, 0);
+    func_80037AA4();
+    if (func_80037B00(D_800A31F0) == 0) {
+        var_v0 = 0xE;
+        goto finish;
+    }
+    D_800A379E = 4;
+    func_80038148();
+    if (func_80037B90(0, 0, D_800A31F0, &D_800F33D8, 0x200) != 0) {
+        func_80078A18(D_800A3794);
+        var_v0 = 6;
+        goto finish;
+    }
+    D_800A31F4 = 6;
+    return;
+
+state_7:
+    var_v0 = func_80037F08_ret(0, 0);
+    if (var_v0 != 0) {
+        var_v0 = 0xB;
+        goto finish;
+    }
+    var_v0 = 0xC;
+finish:
+    D_800A379E = var_v0;
+    D_800A31F4 = 0;
+}
+
 /* kengo:HIGH  |  is_pad/pad_FuncAnalog  |  173i */
 extern s32 damage_DebugDisp(s32 *);
 void func_80038658(void) {
