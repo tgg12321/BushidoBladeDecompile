@@ -18,12 +18,29 @@ from pathlib import Path
 
 
 def find_source_file(root, func_name):
-    """Find which src/*.c file contains a function (INCLUDE_ASM or definition)."""
+    """Find which src/*.c file contains a function. Prefers file with the
+    actual definition (or INCLUDE_ASM stub) over files that merely declare
+    the symbol via `extern`."""
     src_dir = root / "src"
+    extern_re = re.compile(rf'\bextern\b[^;{{}}]*\b{re.escape(func_name)}\b\s*\(')
+    decl_re = re.compile(rf'^[^/\n]*\b{re.escape(func_name)}\s*\([^;]*\)\s*\{{', re.MULTILINE)
+    asm_re = re.compile(rf'INCLUDE_ASM\s*\(\s*"[^"]+"\s*,\s*{re.escape(func_name)}\s*\)')
+
+    candidates = []
     for c_file in sorted(src_dir.glob("*.c")):
         text = c_file.read_text()
-        if func_name in text:
+        if func_name not in text:
+            continue
+        has_def = bool(decl_re.search(text))
+        has_asm = bool(asm_re.search(text))
+        only_extern = bool(extern_re.search(text)) and not has_def and not has_asm
+        # Priority: definition > INCLUDE_ASM stub > extern-only > other
+        if has_def:
             return c_file
+        candidates.append((1 if has_asm else (3 if only_extern else 2), c_file))
+    if candidates:
+        candidates.sort()
+        return candidates[0][1]
     return None
 
 

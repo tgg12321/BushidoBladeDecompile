@@ -141,6 +141,12 @@ $(BUILD_DIR)/$(ASM_DIR)/data/%.o: $(ASM_DIR)/data/%.s
 setup:
 	python3 -m splat split $(SPLAT_YAML)
 
+# -- Validate regfix.txt rules against current pipeline output --
+# Catches label-renumber drift, stale indices, post-swap pattern mismatches.
+# See feedback_label_renumber_breaks_regfix.md.
+validate:
+	python3 tools/validate_regfix.py --live
+
 # -- Clean --
 clean:
 	rm -rf $(BUILD_DIR)
