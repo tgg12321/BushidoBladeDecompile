@@ -1029,7 +1029,7 @@ func_8003DBE4: subst ",56" ",64" @ 125
 # Step computation: direct s2 → shared v0 intermediate + single subu at merge
 # Branch target: .L172 is past subu, but bnez should go TO the shared subu (.L172-4)
 func_8003DBE4: subst "addiu.*" "nop" @ 28
-func_8003DBE4: subst "\.L218" ".L218-4" @ 29
+func_8003DBE4: subst "\.L234" ".L234-4" @ 29
 func_8003DBE4: subst "subu.*" "addiu\t$2,$zero,22000" @ 30
 func_8003DBE4: subst "\$18,\$zero" "$2,$zero" @ 31
 func_8003DBE4: subst "\$18,\$18" "$18,$2" @ 32
@@ -1614,3 +1614,8 @@ cpu_side_move_dir_3: fill_delay @ 66 <- 68
 # cleanup_B uses $v1 for D_800A3044 pointer; GCC picks $a2 (carried over from main_work).
 # Range [39,44] covers cleanup_B's lw/lhu/sh uses; cleanup_A and loop_top still use $a2.
 cpu_side_move_dir_3: $3 <-> $6 @ 39-44
+
+# func_8003B9D0: target schedules andi ,,0x0010 into beqz delay slot of &0x30 check.
+# GCC put nop in delay because asm constraint (=r/0 on eda) blocks scheduling past la.
+# Move idx 52 andi into idx 50 nop; deletes source idx 52.
+func_8003B9D0: fill_delay @ 49 <- 52

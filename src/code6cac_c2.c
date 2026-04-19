@@ -53,7 +53,7 @@ extern void func_80077820(s32);
 extern s32 D_80101E70;
 extern s32 D_800A3894;
 extern u8 D_80102781;
-extern u8 D_8010277D;
+extern s8 D_8010277D;
 extern u8 D_8010277F;
 extern s16 D_800A391D;
 extern s32 *func_8004153C(s32);
@@ -146,9 +146,99 @@ extern u16 D_80101E04;
 extern s16 D_80101ED6;
 extern s32 g_file_disc_size;
 extern s32 D_80106A58;
+extern u8 D_800A3768;
+extern u8 D_800A36A8;
+extern u8 D_800A376C;
+extern u8 D_800A37B4;
+extern u8 D_800A37B5;
+extern u8 D_800A37B6;
+extern s32 D_800A37B8;
+extern u8 D_800A390F;
+extern s16 D_800A3834;
+extern s16 D_80101EDA;
+extern s16 D_80102326;
+extern void gpu_InitDisplay(void);
+extern void gpu_DisableDisplay(void);
+extern void gpu_EnableDisplay(void);
+extern void md_menu_logo_exec(void);
+extern void func_80020CDC(void);
+extern void func_80020D38(void);
+extern void func_80041688(s32, s32);
+extern void func_8004659C(s32);
+extern void func_80035FA8(void);
+extern s32 func_80036EA8(s32, s32);
+extern void mottest_rob_init(s32, s32);
+extern void func_80037260(void);
+extern void saTan4FireDisp(s32, s32, s32);
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-INCLUDE_ASM("asm/funcs", func_8003B9D0);
+void func_8003B9D0(void) {
+    s32 saved_first;
+    s32 saved_44c;
+    s32 a3_arg;
+    s32 a0_arg;
+    s32 magic;
+    s32 v0;
+    u8 *p;
+    u8 flags;
+
+    magic = 0x80190800;
+    func_8001DA2C();
+    game_Cleanup();
+    if (D_800A3768 != 0x14) gpu_InitDisplay();
+    if (D_800A3768 != 0xFF) gpu_DisableDisplay();
+    gnd_disp_loop_ctrl();
+    gpu_EnableDisplay();
+    func_80020D38();
+    disp_SetFramebufferMode(1, 0, 0, 0);
+    if (((u8 *)D_800A3878)[3] & 0x80) {
+        func_80020CDC();
+        magic = 0x80118800;
+    }
+    {
+        u8 *q = (u8 *)D_800A3878;
+        u8 qf = q[3];
+        if (qf & 0x30) {
+            s16 *eda = &D_80101EDA;
+            __asm__ __volatile__("" : "=r"(eda) : "0"(eda));
+            saved_first = eda[0];
+            saved_44c = eda[0x226];
+            if (qf & 0x10) eda[0] = 0x32;
+            if (q[3] & 0x20) eda[0x226] = 0x32;
+            md_menu_logo_exec();
+            eda[0] = saved_first;
+            eda[0x226] = saved_44c;
+        }
+    }
+    a3_arg = -1;
+    if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = D_80101EDA;
+    __asm__ __volatile__("" ::: "memory");
+    a0_arg = -1;
+    if (((u8 *)D_800A3878)[3] & 0x2) a0_arg = D_80102326;
+    __asm__ __volatile__("" ::: "memory");
+    p = (u8 *)D_800A3878;
+    flags = p[3];
+    if (flags & 0x10) a3_arg = 0x32;
+    if (flags & 0x20) a0_arg = 0x32;
+    D_800A390F = 0;
+    func_80054884(D_800A376C, p[0], 0, a3_arg, a0_arg, -1, -1, magic);
+    func_80041688(0, 0);
+    func_80041688(1, 0);
+    if (((u8 *)D_800A3878)[3] & 0x40) func_8004659C(-1);
+    if (D_8010277D == 0xE || D_8010277D == 0x1D) {
+        saTan4FireDisp(D_800A37B4, D_800A37B5, D_800A37B6);
+    }
+    func_8001DBE4();
+    D_800A3768 = 0xFF;
+    D_800A36A8 = 0;
+    func_80035FA8();
+    v0 = func_80036EA8(5, ((u8 *)D_800A3878)[1]);
+    mottest_rob_init(v0, ((u8 *)D_800A3878)[2]);
+    func_80037260();
+    D_800A37B8 = 0;
+    D_800A3834 = 7;
+    gpu_DisableDisplay();
+}
 /* kengo:HIGH  |  md_game/md_game_check_change_sub_mode  |  87i */
 
 void md_game_check_change_sub_mode(void) {
