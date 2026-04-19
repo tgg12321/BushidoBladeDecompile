@@ -61,6 +61,15 @@ extern s32 D_800A2D0C;
 extern volatile u32 *D_800A2CEC;
 extern volatile s32 D_800A2D14;
 extern s32 D_800A2CDC;
+extern s32 D_800A2CFC;
+extern s16 D_800A2CF4;
+extern s32 D_800A2D10;
+extern s32 D_800A2D18;
+extern s32 D_800A2D1C;
+extern s32 D_800163D8;
+extern s32 D_800163E8;
+extern void debug_printf(s32 *, s32 *);
+extern void spu_WriteReg16(void);
 extern volatile u16 D_800F7420[2];
 extern volatile u16 D_800F7424[2];
 extern s32 spu_TransferData(s32, s32);
@@ -1093,7 +1102,128 @@ void spu_InitIrq(void) {
         ExitCriticalSection();
     }
 }
-INCLUDE_ASM("asm/funcs", func_80088740);
+void func_80088740(s32 a0) {
+    s32 base;
+    s32 count;
+    s32 i;
+    s16 *a1_ptr;
+
+    *D_800A2CEC |= 0xB0000;
+
+    base = D_800A2CDC;
+    D_800A2CF8 = 0;
+    D_800A2CFC = 0;
+    D_800A2CF4 = 0;
+    *(s16 *)(base + 0x180) = 0;
+    *(s16 *)(base + 0x182) = 0;
+    *(s16 *)(base + 0x1AA) = 0;
+    spu_WriteReg16();
+
+    base = D_800A2CDC;
+    *(volatile s16 *)(base + 0x180) = 0;
+    *(volatile s16 *)(base + 0x182) = 0;
+
+    if (*(volatile u16 *)(base + 0x1AE) & 0x7FF) {
+        count = 0;
+        do {
+            count++;
+            if ((u32)count >= 0xF01) {
+                debug_printf(&D_800163D8, &D_800163E8);
+                goto common_init;
+            }
+        } while (*(volatile u16 *)(D_800A2CDC + 0x1AE) & 0x7FF);
+    }
+
+common_init:
+    i = 0;
+    a1_ptr = (s16 *)&D_800F7420;
+    D_800A2D00 = 2;
+    D_800A2D04 = 3;
+    D_800A2D08 = 8;
+    D_800A2D0C = 7;
+    __asm__ __volatile__("" : : : "memory");
+
+    base = D_800A2CDC;
+    *(s16 *)(base + 0x1AC) = 4;
+    *(s16 *)(base + 0x184) = 0;
+    *(s16 *)(base + 0x186) = 0;
+    *(s16 *)(base + 0x18C) = (s16)0xFFFF;
+    *(s16 *)(base + 0x18E) = (s16)0xFFFF;
+    *(s16 *)(base + 0x198) = 0;
+    *(s16 *)(base + 0x19A) = 0;
+
+loop_10:
+    *a1_ptr = 0;
+    a1_ptr++;
+    i++;
+    if (i < 10) goto loop_10;
+
+    if (a0 != 0) {
+        goto end_init;
+    }
+
+    {
+        s32 addr;
+        s32 s1_val;
+        s32 s0_val;
+        s16 *p;
+        s16 c_3fff;
+        s16 c_200;
+
+        addr = (s32)&D_800A2D1C;
+        base = D_800A2CDC;
+        D_800A2CF4 = 0x200;
+        *(s16 *)(base + 0x190) = 0;
+        *(s16 *)(base + 0x192) = 0;
+        *(s16 *)(base + 0x194) = 0;
+        *(s16 *)(base + 0x196) = 0;
+        *(s16 *)(base + 0x1B0) = 0;
+        *(s16 *)(base + 0x1B2) = 0;
+        *(s16 *)(base + 0x1B4) = 0;
+        *(s16 *)(base + 0x1B6) = 0;
+        DispUpdateStatusMessage(addr, 0x10);
+
+        i = 0;
+        c_3fff = (s16)0x3FFF;
+        c_200 = (s16)0x200;
+        p = (s16 *)D_800A2CDC;
+loop_18:
+        p[0] = 0;
+        p[1] = 0;
+        p[2] = c_3fff;
+        p[3] = c_200;
+        p[4] = 0;
+        p[5] = 0;
+        p += 8;
+        i++;
+        if (i < 0x18) goto loop_18;
+
+        s1_val = 0xFFFF;
+        s0_val = 0xFF;
+        base = D_800A2CDC;
+        *(s16 *)(base + 0x188) = s1_val;
+        *(s16 *)(base + 0x18A) = s0_val;
+        spu_WriteReg16();
+        spu_WriteReg16();
+        spu_WriteReg16();
+        spu_WriteReg16();
+
+        base = D_800A2CDC;
+        *(s16 *)(base + 0x18C) = s1_val;
+        *(s16 *)(base + 0x18E) = s0_val;
+        spu_WriteReg16();
+        spu_WriteReg16();
+        spu_WriteReg16();
+        spu_WriteReg16();
+    }
+
+end_init:
+    base = D_800A2CDC;
+    D_800A2D10 = 1;
+    *(s16 *)(base + 0x1AA) = (s16)0xC000;
+    D_800A2D14 = 0;
+    D_800A2D18 = 0;
+}
 INCLUDE_ASM("asm/funcs", DispUpdateStatusMessage);
 /* kengo:LOW  |  su_menu_home/_DispUpdateStatusMessage  |  206i  |  PS2 UI — reverted */
 INCLUDE_ASM("asm/funcs", saTan0GaugeDraw);
