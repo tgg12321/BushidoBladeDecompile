@@ -1956,7 +1956,103 @@ s32 func_8008BEA4(int a0, int a1) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/funcs", cpu_side_move_dir_3);
+extern u16 D_800F1AE0;
+extern volatile u16 D_800F1AE2;
+extern u16 D_800F1AE6;
+extern s32 (*D_800F1AE8)(s32, s32);
+extern s16 D_800A3074[4];
+extern void func_8008008C(s32, s32);
+
+s32 cpu_side_move_dir_3(u8 *arg0, s32 arg1) {
+    s32 r_arg1 = arg1;
+    volatile s32 *flag = &D_800F1AFC;
+    s32 s0;
+    s32 s4;
+    void *spu;
+    s32 (*fn)(s32, s32);
+    u16 saved_a;
+    volatile u16 *p_ae0;
+    s32 s2 = 0;
+
+    if (*flag != 0) return -1;
+    goto main_work;
+
+cleanup_A:
+    __asm__ ("la %0, D_800F1AE0" : "=r"(p_ae0));
+    saved_a = *((volatile u16 *)(((s32)spu) + 0xA));
+    *((volatile u16 *)(((s32)spu) + 0xA)) = 0x50;
+    *((volatile u16 *)(((s32)spu) + 8)) = *p_ae0;
+    *((volatile u16 *)(((s32)spu) + 0xE)) = D_800F1AE6;
+    *((volatile u16 *)(((s32)spu) + 0xA)) |= 0x10;
+    *((volatile u16 *)(((s32)spu) + 0xA)) = saved_a;
+    *((volatile u16 *)(((s32)spu) + 0xA)) &= 0xFFDF;
+    func_8008008C(0xF000000B, 0x8000);
+    __asm__ __volatile__("# A" ::: "memory");
+    goto return_val;
+
+cleanup_B:
+    spu = (void *)D_800A3044;
+    *((volatile u16 *)(((s32)spu) + 0xA)) &= 0xFFDF;
+    func_8008008C(0xF000000B, 0x100);
+    __asm__ __volatile__("# B" ::: "memory");
+    goto return_val;
+
+main_work:
+    {
+        volatile u16 *p_ae2;
+        u32 ae2_val;
+        __asm__ ("la %0, D_800F1AE2" : "=r"(p_ae2));
+        ae2_val = *p_ae2;
+        s4 = *(s16 *)((s32)D_800A3074 + ((ae2_val & 0x300) >> 7));
+    }
+    flag[2] = r_arg1;
+    flag[1] = (s32)arg0;
+    *flag = 0;
+    *((volatile u16 *)(((s32)D_800A3044) + 0xA)) |= 0x20;
+
+    if (flag[2] == 0) goto final_cleanup;
+    s0 = 0;
+    {
+        volatile s32 *loop_flag = flag;
+
+loop_top:
+    spu = (void *)D_800A3044;
+    if ((*((volatile u16 *)(((s32)spu) + 4))) & 0x38) goto cleanup_A;
+    if ((*((volatile u16 *)(((s32)spu) + 4))) & 2) goto copy_byte;
+
+inner:
+    fn = D_800F1AE8;
+    if (fn != 0) {
+        s32 prev = s2;
+        s2 += 1;
+        if (fn(1, prev) == 0) goto cleanup_B;
+    }
+    if (!((*((volatile u16 *)(((s32)D_800A3044) + 4))) & 2)) goto inner;
+
+copy_byte:
+    *((u8 *)D_800F1B00) = *((u8 *)D_800A3044);
+    loop_flag[1] += 1;
+    loop_flag[1];
+    loop_flag[2] -= 1;
+    loop_flag[2];
+    s0 += 1;
+    if (s0 == s4) {
+        s0 = 0;
+        *((volatile u16 *)(((s32)D_800A3044) + 0xA)) ^= 2;
+    }
+    if (loop_flag[2] != 0) goto loop_top;
+    }
+
+final_cleanup:
+    *((volatile u16 *)(((s32)D_800A3044) + 0xA)) &= 0xFFDF;
+
+return_val:
+    {
+        volatile s32 *p_b04 = &D_800F1B04;
+        return r_arg1 - *p_b04;
+    }
+}
+
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir_3  |  160i  |  x4 size collision */
 extern s32 D_800F1AEC;
 extern s32 D_800F1AF0;

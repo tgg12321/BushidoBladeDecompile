@@ -271,7 +271,9 @@ def process_function(lines, func_config):
         if nop_pos is None:
             print(f"regfix: WARNING: fill_delay delay-slot index {jal_idx + 1} not found", file=sys.stderr)
             continue
-        if nop_text.strip() != 'nop':
+        # Strip inline comments (maspsx emits "nop # DEBUG: branch/jump" for branch/jump delay slots)
+        nop_body = re.sub(r'\s*#.*$', '', nop_text).strip()
+        if nop_body != 'nop':
             print(f"regfix: WARNING: fill_delay expected nop at index {jal_idx + 1}, got: {nop_text.strip()!r}", file=sys.stderr)
             continue
 

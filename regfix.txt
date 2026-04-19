@@ -1598,3 +1598,19 @@ func_80088740: subst "addiu\s+\$3,\$zero,-16384" "ori	$3,$zero,0xC000" @ 124
 # Note: 5 inserts (3 drain_delays @ 16,102,113 + 2 explicit inserts @ 82,88) shift idx 120 to 125
 # (insert_afters run after inserts, so use post-shift idx)
 func_80088740: insert_after "addu	$2,$0,$zero" @ 125
+
+
+# cpu_side_move_dir_3: target swaps r_arg1 (s4<->s3) and loop counter/flag (s1<->s0)
+# r_arg1 in s3 instead of s4; chunk_size in s4 instead of s3
+# Range [0,134] = body+prologue saves; epilogue restores at [136-140] keep their slots
+cpu_side_move_dir_3: $19 <-> $20 @ 0-134
+# Loop counter in s0 instead of s1; loop_flag pointer in s1 instead of s0
+cpu_side_move_dir_3: $16 <-> $17 @ 68-121
+# After s3<->s4 swap, prologue saves have wrong offsets:
+cpu_side_move_dir_3: subst "32" "28" @ 1
+cpu_side_move_dir_3: subst "28" "32" @ 5
+# Fill beqz delay slot (idx 67 nop) with loop counter init (idx 68 = addu $16,$0,$zero after swap)
+cpu_side_move_dir_3: fill_delay @ 66 <- 68
+# cleanup_B uses $v1 for D_800A3044 pointer; GCC picks $a2 (carried over from main_work).
+# Range [39,44] covers cleanup_B's lw/lhu/sh uses; cleanup_A and loop_top still use $a2.
+cpu_side_move_dir_3: $3 <-> $6 @ 39-44
