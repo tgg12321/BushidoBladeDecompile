@@ -246,7 +246,6 @@ pad_ClearAppliBuffer: subst "\$2," "$3," @ 43
 pad_ClearAppliBuffer: subst "\$3,\$2" "$2,$3" @ 44
 pad_ClearAppliBuffer: subst "\$3,\$2" "$2,$2" @ 48
 pad_ClearAppliBuffer: subst ",\$3," ",$2," @ 49
-pad_ClearAppliBuffer: subst "\.L244" ".L249" @ 54
 pad_ClearAppliBuffer: subst "\$3,\$0" "$2,$0" @ 55
 pad_ClearAppliBuffer: subst "\$3,\$5" "$2,$5" @ 60
 pad_ClearAppliBuffer: subst "\$3,\$3,\$5" "$2,$5,$2" @ 61
@@ -260,7 +259,6 @@ pad_ClearAppliBuffer: subst "\$2," "$3," @ 68
 pad_ClearAppliBuffer: subst "\$2,\$2,1" "$3,$3,1" @ 70
 pad_ClearAppliBuffer: subst "\$2," "$3," @ 71
 pad_ClearAppliBuffer: subst "addu.*" "nop" @ 73
-pad_ClearAppliBuffer: subst "\.L244" ".L249" @ 74
 pad_ClearAppliBuffer: subst "\$3,\$0" "$2,$0" @ 75
 pad_ClearAppliBuffer: subst "\$3,\$zero" "$2,$zero" @ 76
 pad_ClearAppliBuffer: delete @ 79
@@ -856,7 +854,6 @@ tslPrintScreen: subst "sw.*" "sw\t$16,20($18)" @ 58
 tslPrintScreen: subst "addu.*" "addu\t$3,$3,$19" @ 62
 tslPrintScreen: subst "sb.*" "sb\t$3,0($16)" @ 72
 # Marker entry and tail reshaping.
-tslPrintScreen: subst "\.L27" ".L27-8" @ 89
 tslPrintScreen: subst "lh.*" "lh\t$2,0($17)" @ 95
 tslPrintScreen: reorder 97,98,96 @ 96-98
 tslPrintScreen: subst "lh.*" "addiu\t$3,$zero,-2" @ 99
