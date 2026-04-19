@@ -1547,3 +1547,54 @@ cpu_side_move_dir: subst "addu\t\$2,\$2,\$3" "addu\t$2,$2,$4" @ 100
 cpu_side_move_dir: insert "lw\t$2,24($sp)" @ 93
 # Insert nop BEFORE idx 88 (load delay for lh $2,4($4) that maspsx wrongly stripped)
 cpu_side_move_dir: insert "nop" @ 88
+
+# func_80088740 — match attempt (2026-04-18)
+# Region 1 (init): rename cached D_800A2CDC pointer $3->$2 (target uses $v0)
+# Narrow swap to 10-21: idx 22 lhu, 24 andi, 25 beq must stay $2 (target uses $v0 chain)
+func_80088740: $2 <-> $3 @ 10-21
+# Fix lhu base register at idx 22: was lhu $2,430($3), target wants lhu $2,430($2)
+func_80088740: subst "430\(\$3\)" "430($2)" @ 22
+# Drain init jal spu delay slot (target has nop)
+func_80088740: drain_delay @ 16
+
+# Region 2 (DispUpdateStatusMessage prep): swap pointer $3->$2, c_200 $2->$3 (72-83)
+func_80088740: $2 <-> $3 @ 72-83
+# bnez s0 DS at idx 70: target has addu $v0,$0,$0 instead of addiu $5,16
+func_80088740: subst "addiu\s+\$5,\$zero,16" "addu	$2,$0,$zero" @ 70
+# DispUpdateStatusMessage DS at idx 83: target has addiu $a1,16 instead of sh $0,438
+func_80088740: subst "sh\s+\$0,438\(\$2\)" "addiu	$5,$0,16" @ 83
+# Insert sh $0,438 before jal DispUpdateStatusMessage at idx 82 (target has it pre-jal)
+func_80088740: insert "sh	$0,438($2)" @ 82
+
+# Region 1.5 (.L231 common_init store cluster): swap cached pointer $3<->$2 (target uses $v0)
+# pre-regfix idx 54 lw $3,D_800A2CDC then 55-63 use $3 as base, $2 as scratch
+# target uses $v0 (=$2) for pointer, $v1 (=$3) for scratch
+func_80088740: $2 <-> $3 @ 54-63
+# Sentinel at idx 57: target uses ori $v1,0xFFFF instead of addiu $v0,-1 (post-swap: $3 instead of $2)
+func_80088740: subst "addiu\s+\$3,\$zero,-1" "ori	$3,$zero,0xFFFF" @ 57
+
+# Region 2.5 (loop_18 cluster): insert load-use delay nop missing after lw $3,D_800A2CDC
+# pre-regfix idx 87 lw $3,D_800A2CDC, idx 88 sh $0,0($3) — needs nop between
+func_80088740: insert "nop" @ 88
+
+# Region 3 (spu clusters post-DispUpdateStatusMessage): rename pointer $3->$2 (99-119)
+func_80088740: $2 <-> $3 @ 99-119
+# Drain spu jal DSs (target has nop)
+func_80088740: drain_delay @ 102
+func_80088740: drain_delay @ 113
+
+# Region 4 (cleanup at idx 121-127): target uses $a0 for cached pointer, $v1 for data
+# pre-regfix idx 121 lw $3,D_800A2CDC, 122 addiu $2,1, 123 sw $2,D_800A2D10,
+#   124 addiu $2,-16384, 125 sh $2,426($3), 126 sw $0,D_800A2D14, 127 sw $0,D_800A2D18
+# target: addu $v0,$0,$0 (88988); lw $a0,D_800A2CDC; addiu $v1,1; sw $v1,D_800A2D10;
+#   ori $v1,0xC000; sh $v1,0x1AA($a0)
+# Two-stage swap: rename $3->$4 then $2->$3 in overlapping ranges
+func_80088740: $3 <-> $4 @ 121-125
+func_80088740: $2 <-> $3 @ 122-125
+# Cleanup C000 const at idx 124: target uses ori $v1,0xC000 instead of addiu $v0,-16384
+# After swaps, idx 124 is addiu $3,-16384 — subst to ori $3,0xC000
+func_80088740: subst "addiu\s+\$3,\$zero,-16384" "ori	$3,$zero,0xC000" @ 124
+# Insert addu $2,$0,$zero AFTER nop @ 120, BEFORE label .L228
+# Note: 5 inserts (3 drain_delays @ 16,102,113 + 2 explicit inserts @ 82,88) shift idx 120 to 125
+# (insert_afters run after inserts, so use post-shift idx)
+func_80088740: insert_after "addu	$2,$0,$zero" @ 125

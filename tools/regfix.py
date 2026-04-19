@@ -55,10 +55,35 @@ Config file format (regfix.txt):
   follow the target instruction and a regular insert at the next
   index would land after those .word lines.
 
+  # Fill a jal/branch delay slot with an existing instruction:
+  func_80088740: fill_delay @ 22 <- 19
+
+  Reads the instruction text at <source_idx>, replaces the nop at
+  <jal_idx>+1 with that text, and removes the original instruction
+  at <source_idx>. The jal_idx must be a branch/jal whose immediate
+  next instruction is currently a nop. Source_idx must be a single
+  instruction. Runs after swaps/substs (so register renames flow
+  through), and feeds the source removal into the delete phase
+  (which handles renumbering). Used when GCC emits store-then-jal-
+  then-nop but target schedules store into the jal's delay slot.
+
+  # Drain a jal/branch delay slot, moving its instruction before the jal:
+  func_80088740: drain_delay @ 16
+
+  Inverse of fill_delay. Reads the instruction at <jal_idx>+1
+  (which must NOT be a nop), inserts a copy immediately before
+  the jal at <jal_idx>, and replaces the original delay slot with
+  a nop. Used when target keeps a nop in the delay slot but GCC
+  scheduled an unrelated instruction there. After draining, the
+  total instruction count grows by 1 (insert) and the delay slot
+  becomes a no-op.
+
 Order of operations: register swaps first (on original indices),
-then substitutions (on original indices), then deletes (on original
-indices), then inserts (shifts indices), then insert_afters (shifts
-indices), then reorders (on post-insert indices).
+then substitutions (on original indices), then fill_delay (reads
+post-subst source, replaces nop, queues source deletion), then
+deletes (on original indices), then inserts (shifts indices), then
+insert_afters (shifts indices), then reorders (on post-insert
+indices).
 Instruction indices count actual instructions (not directives, labels,
 or comments) from the function entry point, 0-based.
 """
@@ -83,8 +108,27 @@ def load_config(config_path):
         if m:
             func = m.group(1)
             idx = int(m.group(2))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['deletes'].append(idx)
+            continue
+
+        # Parse fill_delay: func_name: fill_delay @ jal_idx <- source_idx
+        m = re.match(r'(\w+)\s*:\s*fill_delay\s*@\s*(\d+)\s*<-\s*(\d+)', line)
+        if m:
+            func = m.group(1)
+            jal_idx = int(m.group(2))
+            source_idx = int(m.group(3))
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config[func]['fill_delays'].append((jal_idx, source_idx))
+            continue
+
+        # Parse drain_delay: func_name: drain_delay @ jal_idx
+        m = re.match(r'(\w+)\s*:\s*drain_delay\s*@\s*(\d+)', line)
+        if m:
+            func = m.group(1)
+            jal_idx = int(m.group(2))
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config[func]['drain_delays'].append(jal_idx)
             continue
 
         # Parse reorder: func_name: reorder i,j,k,... @ start-end
@@ -94,7 +138,7 @@ def load_config(config_path):
             order = [int(x) for x in m.group(2).split(',')]
             start = int(m.group(3))
             end = int(m.group(4))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['reorders'].append((start, end, order))
             continue
 
@@ -104,7 +148,7 @@ def load_config(config_path):
             func = m.group(1)
             asm_text = m.group(2).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(3))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['inserts'].append((idx, asm_text))
             continue
 
@@ -114,7 +158,7 @@ def load_config(config_path):
             func = m.group(1)
             asm_text = m.group(2).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(3))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['insert_afters'].append((idx, asm_text))
             continue
 
@@ -125,7 +169,7 @@ def load_config(config_path):
             pattern = m.group(2)
             replacement = m.group(3).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(4))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['substs'].append((idx, pattern, replacement))
             continue
 
@@ -137,7 +181,7 @@ def load_config(config_path):
             reg_b = m.group(3)
             start = int(m.group(4)) if m.group(4) is not None else None
             end = int(m.group(5)) if m.group(5) is not None else None
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['swaps'].append((reg_a, reg_b, start, end))
             continue
 
@@ -202,8 +246,82 @@ def process_function(lines, func_config):
             new_lines.append((text, idx))
         lines = new_lines
 
+    # Phase 1.7: Apply fill_delay (read source post-swap/subst, replace nop, queue source for deletion)
+    fill_delay_list = func_config.get('fill_delays', [])
+    extra_deletes = []
+    for jal_idx, source_idx in fill_delay_list:
+        # Find source instruction (post-swap/subst text)
+        source_text = None
+        for text, idx in lines:
+            if idx == source_idx:
+                source_text = text
+                break
+        if source_text is None:
+            print(f"regfix: WARNING: fill_delay source index {source_idx} not found", file=sys.stderr)
+            continue
+
+        # Find delay slot (the next instruction after jal_idx — should be jal_idx+1)
+        nop_pos = None
+        nop_text = None
+        for pos, (text, idx) in enumerate(lines):
+            if idx == jal_idx + 1:
+                nop_pos = pos
+                nop_text = text
+                break
+        if nop_pos is None:
+            print(f"regfix: WARNING: fill_delay delay-slot index {jal_idx + 1} not found", file=sys.stderr)
+            continue
+        if nop_text.strip() != 'nop':
+            print(f"regfix: WARNING: fill_delay expected nop at index {jal_idx + 1}, got: {nop_text.strip()!r}", file=sys.stderr)
+            continue
+
+        # Preserve indentation from the original nop line; copy body from source text
+        # Strip the source line down to just the instruction body (no surrounding whitespace/newline)
+        source_body = source_text.strip()
+        # Match indentation of the nop line (everything before 'nop')
+        m_indent = re.match(r'^(\s*)', nop_text)
+        indent = m_indent.group(1) if m_indent else '\t'
+        # Preserve trailing newline from nop_text
+        trailing = '\n' if nop_text.endswith('\n') else ''
+        new_text = f"{indent}{source_body}{trailing}"
+        lines[nop_pos] = (new_text, jal_idx + 1)
+
+        # Queue the source for deletion (handled in Phase 2)
+        extra_deletes.append(source_idx)
+
+    # Phase 1.8: Apply drain_delay (move delay-slot insn before jal, replace slot with nop)
+    # We do this by mutating the delay-slot line text in place AND queuing an insert.
+    drain_delay_list = func_config.get('drain_delays', [])
+    extra_inserts = []
+    for jal_idx in drain_delay_list:
+        # Find delay slot (jal_idx + 1)
+        ds_pos = None
+        ds_text = None
+        for pos, (text, idx) in enumerate(lines):
+            if idx == jal_idx + 1:
+                ds_pos = pos
+                ds_text = text
+                break
+        if ds_pos is None:
+            print(f"regfix: WARNING: drain_delay delay-slot index {jal_idx + 1} not found", file=sys.stderr)
+            continue
+        if ds_text.strip() == 'nop':
+            print(f"regfix: WARNING: drain_delay at jal {jal_idx}: delay slot is already nop", file=sys.stderr)
+            continue
+
+        # Capture body, build a copy to insert before the jal
+        ds_body = ds_text.strip()
+        # Replace the delay slot with nop, preserving indentation
+        m_indent = re.match(r'^(\s*)', ds_text)
+        indent = m_indent.group(1) if m_indent else '\t'
+        trailing = '\n' if ds_text.endswith('\n') else ''
+        lines[ds_pos] = (f"{indent}nop{trailing}", jal_idx + 1)
+
+        # Queue an insert of the original delay-slot body before jal_idx
+        extra_inserts.append((jal_idx, ds_body))
+
     # Phase 2: Apply instruction deletes (on original indices, sorted descending)
-    delete_list = func_config.get('deletes', [])
+    delete_list = func_config.get('deletes', []) + extra_deletes
     if delete_list:
         for del_idx in sorted(delete_list, reverse=True):
             # Find and remove the line with this instruction index
@@ -224,6 +342,9 @@ def process_function(lines, func_config):
                 else:
                     renumbered.append((text, idx))
             lines = renumbered
+
+    # Merge in any inserts queued by drain_delay (before jal_idx, with jal_idx as the insert point)
+    insert_list = insert_list + extra_inserts
 
     # Phase 3: Apply instruction inserts (sorted by index descending to preserve positions)
     if insert_list:
