@@ -23,6 +23,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Reuse regfix's own swap engine so live checks see the same text
+# the regfix subst rules will see at runtime.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from regfix import swap_registers_in_line as _swap_line
+
 
 def parse_regfix(regfix_path):
     """Parse regfix.txt into structured rules grouped by function."""
@@ -63,6 +68,27 @@ def parse_regfix(regfix_path):
             rules.setdefault(func, []).append({
                 'type': m.group(2), 'asm_text': m.group(3),
                 'index': int(m.group(4)),
+                'lineno': lineno, 'raw': stripped,
+            })
+            continue
+
+        # fill_delay
+        m = re.match(r'(\w+)\s*:\s*fill_delay\s*@\s*(\d+)\s*<-\s*(\d+)', stripped)
+        if m:
+            func = m.group(1)
+            rules.setdefault(func, []).append({
+                'type': 'fill_delay', 'jal_index': int(m.group(2)),
+                'source_index': int(m.group(3)),
+                'lineno': lineno, 'raw': stripped,
+            })
+            continue
+
+        # drain_delay
+        m = re.match(r'(\w+)\s*:\s*drain_delay\s*@\s*(\d+)', stripped)
+        if m:
+            func = m.group(1)
+            rules.setdefault(func, []).append({
+                'type': 'drain_delay', 'jal_index': int(m.group(2)),
                 'lineno': lineno, 'raw': stripped,
             })
             continue
@@ -114,16 +140,23 @@ def check_static(rules):
 
         subst_indices = []
         for rule in func_rules:
-            # Check 1: Unescaped $ in subst patterns
+            # Check 1: Unescaped $ in subst patterns. A trailing `$` is a
+            # legitimate regex end-of-string anchor, so only flag $ that is
+            # NOT at the end of the pattern AND NOT preceded by a backslash.
             if rule['type'] == 'subst':
                 pat = rule['pattern']
                 for i, ch in enumerate(pat):
-                    if ch == '$' and (i == 0 or pat[i - 1] != '\\'):
-                        errors.append(
-                            f"  Line {rule['lineno']}: UNESCAPED $ in pattern at pos {i}\n"
-                            f"    {rule['raw']}\n"
-                            f"    Fix: use \\$ for literal dollar sign in pattern side")
-                        break
+                    if ch != '$':
+                        continue
+                    if i > 0 and pat[i - 1] == '\\':
+                        continue
+                    if i == len(pat) - 1:
+                        continue  # end-of-string anchor — intentional
+                    errors.append(
+                        f"  Line {rule['lineno']}: UNESCAPED $ in pattern at pos {i}\n"
+                        f"    {rule['raw']}\n"
+                        f"    Fix: use \\$ for literal dollar sign in pattern side")
+                    break
 
                 subst_indices.append((rule['index'], rule['lineno']))
 
@@ -149,14 +182,8 @@ def check_static(rules):
                     msg += f"\n    {rule['raw']}"
                     errors.append(msg)
 
-        # Check 2: Duplicate subst indices (same index, different rules — may be intentional)
-        seen = {}
-        for idx, ln in subst_indices:
-            if idx in seen:
-                errors.append(
-                    f"  Line {ln}: DUPLICATE subst index {idx} (also at line {seen[idx]})\n"
-                    f"    Function: {func}")
-            seen[idx] = ln
+        # Note: multiple substs at the same index are normal (different
+        # fields of the same instruction) so we no longer flag them.
 
     return errors
 
@@ -201,6 +228,22 @@ def check_live(rules, root, func_filter=None):
             print(f"SKIP (pipeline error)", file=sys.stderr)
             errors.append(f"  {func}: pipeline failed — {err}")
             continue
+
+        if not instructions:
+            print(f"SKIP (empty pipeline output — wrong source file?)", file=sys.stderr)
+            errors.append(f"  {func}: pipeline produced no instructions for this function")
+            continue
+
+        # Replay swaps so subst patterns see the same text regfix.py will see.
+        # regfix order: swaps first, then substs against post-swap text.
+        swap_list = []
+        for r in func_rules:
+            if r['type'] == 'swap':
+                swap_list.append((r['reg_a'], r['reg_b'], r.get('start'), r.get('end')))
+
+        if swap_list:
+            instructions = [(idx, _swap_line(text, swap_list, idx))
+                            for idx, text in instructions]
 
         max_idx = max(idx for idx, _ in instructions) if instructions else -1
         insn_map = {idx: text for idx, text in instructions}

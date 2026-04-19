@@ -448,6 +448,8 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 - **Never use `dc.sh replace` for final integration.** It copies the standalone permuter base.c (with duplicate typedefs, externs, forward declarations) into the source file. This requires a cleanup cycle.
 - **Write the function body directly** via WSL python3, reusing existing `#include "common.h"` and the file's extern block. Add any missing externs to the file's extern section first.
 - **One check for permuter results.** `grep "score = 0"` or read the final line. Don't issue 3 separate calls.
+- **Run `make validate` after every match.** GCC numbers `.L<N>` labels file-wide, so adding labels in your function silently shifts label numbers in EVERY later function in the same .c file — breaking any regfix `\.L<N>` substs in those functions. The validator runs the full pipeline and flags PATTERN MISMATCH on every drifted label rule. Fix drifted rules before committing. (See `feedback_label_renumber_breaks_regfix.md`.)
+- **Sibling-file extern audit.** Before declaring `extern <type> <sym>` in your file, grep other .c files for the same symbol — a sibling file may already have a more accurate signed/unsigned declaration. Mismatched extern types flip lh/lhu and lb/lbu silently. (See `feedback_signed_load_widening.md`.)
 
 ### Anti-patterns
 
