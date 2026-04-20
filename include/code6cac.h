@@ -437,7 +437,7 @@ extern s32 D_80107854;
 extern s32 D_80107858;
 
 /* Functions */
-extern void DispPracticeMenuTex_A(s32 *, s32 *, s32 *, s32 *, s32, s32);
+extern void DispPracticeMenuTex_A(u8 *, u8 *, u8 *, s32, s32, s32);
 extern void DispSleepMenuTex(s32, s32, s32, s32);
 extern void func_80021A98(s32, u8 *, s32);
 extern void func_80022580(s32, s32, s32, s32, s32);
