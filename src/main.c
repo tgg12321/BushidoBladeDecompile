@@ -2077,7 +2077,98 @@ s32 func_8008C184(int a0, int a1) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/funcs", SetPacketData);
+s32 SetPacketData(u8 *arg0, s32 arg1) {
+    register s32 r_arg1 asm("s4") = arg1;
+    volatile s32 *flag = &D_800F1AEC;
+    s32 s0;
+    s32 s5;
+    s32 s1;
+    void *spu;
+    s32 (*fn)(s32, s32);
+    s32 wait_val;
+
+    if (*flag != 0) return -1;
+    s0 = 0;
+    goto main_work;
+
+cleanup_A:
+    func_8008008C(0xF000000B, 0x100);
+    goto return_val;
+
+cleanup_B:
+    func_8008008C(0xF000000B, 0x100);
+    {
+        volatile s32 *p_af4 = &D_800F1AF4;
+        return (r_arg1 - *p_af4) - 1;
+    }
+
+main_work:
+    {
+        volatile u16 *p_ae2;
+        u32 ae2_val;
+        __asm__ ("la %0, D_800F1AE2" : "=r"(p_ae2));
+        ae2_val = *p_ae2;
+        s5 = *(s16 *)((s32)D_800A3074 + ((ae2_val & 0x300) >> 7));
+    }
+    D_800F1AF4 = r_arg1;
+    D_800F1AF0 = (s32)arg0;
+    s1 = 0;
+    if (D_800F1AF4 == 0) goto return_val;
+
+    {
+        volatile s32 *loop_flag = flag;
+
+outer_top:
+        spu = (void *)D_800A3044;
+        if ((*((volatile u16 *)(((s32)spu) + 4)) & 5) == 5) goto check_first;
+        wait_val = 5;
+
+inner_wait:
+        fn = D_800F1AE8;
+        if (fn != 0) {
+            s32 prev = s0;
+            s0 += 1;
+            if (fn(2, prev) == 0) goto cleanup_A;
+        }
+        if ((*((volatile u16 *)(((s32)D_800A3044) + 4)) & 5) != wait_val) goto inner_wait;
+
+check_first:
+        if (s1 != 0) goto send_byte;
+        D_800F1AF8 = (*((volatile u16 *)(((s32)D_800A3044) + 4))) & 0x80;
+
+send_byte:
+        *((u8 *)D_800A3044) = *((u8 *)D_800F1AF0);
+        loop_flag[1] += 1;
+        loop_flag[1];
+        s1 += 1;
+        loop_flag[2] -= 1;
+        loop_flag[2];
+        if (s1 != s5) goto loop_continue;
+        if ((*((volatile u16 *)(((s32)D_800A3044) + 4)) & 0x80) != loop_flag[3]) goto loop_continue;
+        s1 = 0;
+        {
+            volatile s32 *p_af8 = &D_800F1AF8;
+inner_wait2:
+            fn = D_800F1AE8;
+            if (fn != 0) {
+                s32 prev = s0;
+                s0 += 1;
+                if (fn(2, prev) == 0) goto cleanup_B;
+            }
+            if ((*((volatile u16 *)(((s32)D_800A3044) + 4)) & 0x80) == *p_af8) goto inner_wait2;
+        }
+        s1 = 0;
+
+loop_continue:
+        if (loop_flag[2] != 0) goto outer_top;
+    }
+
+return_val:
+    {
+        volatile s32 *p_af4 = &D_800F1AF4;
+        return r_arg1 - *p_af4;
+    }
+}
 /* kengo:MED  |  am_rmd/SetPacketData  |  159i */
 INCLUDE_ASM("asm/funcs", func_8008C464);
 __asm__(
