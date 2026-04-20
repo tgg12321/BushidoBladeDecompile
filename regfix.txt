@@ -1026,7 +1026,7 @@ func_8003DBE4: subst ",56" ",64" @ 125
 # Step computation: direct s2 → shared v0 intermediate + single subu at merge
 # Branch target: .L172 is past subu, but bnez should go TO the shared subu (.L172-4)
 func_8003DBE4: subst "addiu.*" "nop" @ 28
-func_8003DBE4: subst "\.L234" ".L234-4" @ 29
+func_8003DBE4: subst "\.L252" ".L252-4" @ 29
 func_8003DBE4: subst "subu.*" "addiu\t$2,$zero,22000" @ 30
 func_8003DBE4: subst "\$18,\$zero" "$2,$zero" @ 31
 func_8003DBE4: subst "\$18,\$18" "$18,$2" @ 32
