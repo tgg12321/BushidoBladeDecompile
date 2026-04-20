@@ -1651,14 +1651,14 @@ SetPacketData: $16 <-> $18 @ 9-127
 
 # Eliminate orphan j+addu chain after the early-return: branch beq directly to .L525,
 # fill its delay slot with cb_idx=0 (was move s4,a1; now relocated to prologue insert)
-SetPacketData: subst "beq\s+\$2,\$0,\.L524" "beq $2,$0,.L525" @ 11
+SetPacketData: subst "beq\s+\$2,\$0,\.L565" "beq $2,$0,.L566" @ 11
 SetPacketData: subst "addu\s+\$20,\$5,\$zero" "addu $16,$0,$zero" @ 12
 SetPacketData: delete @ 15
 SetPacketData: delete @ 16
 
 # Pre-loop reload of D_800F1AF4 (target re-reads global instead of using cached r_arg1).
 # Subst beq to test the reloaded $2; insert lw+nop before it (post-delete idx 41).
-SetPacketData: subst "beq\s+\$20,\$0,\.L527" "beq $2,$0,.L527" @ 43
+SetPacketData: subst "beq\s+\$20,\$0,\.L568" "beq $2,$0,.L568" @ 43
 
 # Bne delay slot fill: target keeps a `s1=0;` dead-store that GCC eliminated in mine
 SetPacketData: subst "nop" "addu $17,$0,$zero" @ 101
@@ -1674,3 +1674,62 @@ SetPacketData: insert "addu $20,$5,$zero" @ 2
 SetPacketData: insert "nop" @ 41
 SetPacketData: insert "lw $2,D_800F1AF4" @ 41
 SetPacketData: insert "la $2,D_800F1AF4" @ 118
+
+# saTan0GaugeDraw: compound regfix (Cluster A const-1 + Cluster F home store)
+# Cluster A: const-1 register $3 (v1) -> $6 (a2)
+saTan0GaugeDraw: subst "addiu\s+\$3,\$zero,1" "addiu $6,$zero,1" @ 7
+saTan0GaugeDraw: subst "beq\s+\$4,\$3,\.L235" "beq $4,$6,.L235" @ 8
+saTan0GaugeDraw: subst "sw\s+\$3,D_800A2D2C" "sw $6,D_800A2D2C" @ 57
+saTan0GaugeDraw: subst "bne\s+\$2,\$3,\.L256" "bne $2,$6,.L256" @ 81
+# Cluster F: move sw ra before beq, insert sw a0 in beq delay slot
+saTan0GaugeDraw: delete @ 24
+saTan0GaugeDraw: delete @ 9
+saTan0GaugeDraw: insert "sw $4,24($sp)" @ 9
+saTan0GaugeDraw: insert "sw $31,20($sp)" @ 8
+# Cluster B: m1_done block (idx 47-55) — ptr $4->$3, val chain $3->$4/$2/$4
+saTan0GaugeDraw: subst "lw\s+\$4,D_800A2CDC" "lw $3,D_800A2CDC" @ 47
+saTan0GaugeDraw: subst "lhu\s+\$3,426\(\$4\)" "lhu $4,426($3)" @ 49
+saTan0GaugeDraw: subst "addu\s+\$2,\$0,\$zero" "nop" @ 50
+saTan0GaugeDraw: subst "andi\s+\$3,\$3,0xffcf" "andi $2,$4,0xffcf" @ 51
+saTan0GaugeDraw: subst "ori\s+\$3,\$3,0x0020" "ori $4,$2,0x0020" @ 52
+saTan0GaugeDraw: subst "sh\s+\$3,426\(\$4\)" "sh $4,426($3)" @ 53
+saTan0GaugeDraw: subst "nop" "addu $2,$0,$zero" @ 55
+# Cluster C: m0_done block (idx 71-78) — ptr $4->$2, val $3->$4
+saTan0GaugeDraw: subst "lw\s+\$4,D_800A2CDC" "lw $2,D_800A2CDC" @ 71
+saTan0GaugeDraw: subst "lhu\s+\$3,426\(\$4\)" "lhu $4,426($2)" @ 73
+saTan0GaugeDraw: subst "addu\s+\$2,\$0,\$zero" "nop" @ 74
+saTan0GaugeDraw: subst "ori\s+\$3,\$3,0x0030" "ori $4,$4,0x0030" @ 75
+saTan0GaugeDraw: subst "sh\s+\$3,426\(\$4\)" "sh $4,426($2)" @ 76
+saTan0GaugeDraw: subst "nop" "addu $2,$0,$zero" @ 78
+# Stage 4: m3 polling first iter — promote nops to productive insns, drop the now-redundant ones
+saTan0GaugeDraw: subst "nop" "addu $3,$0,$zero" @ 85
+saTan0GaugeDraw: subst "nop" "andi $4,$4,0xffff" @ 87
+saTan0GaugeDraw: subst "addu\s+\$3,\$0,\$zero" "addu $3,$3,1" @ 90
+saTan0GaugeDraw: delete @ 91
+saTan0GaugeDraw: delete @ 92
+# Stage 5: m3 final — reuse $a0 for both vals, use $a1 for ptr, srl, insert D_800A2D30 reload
+saTan0GaugeDraw: subst "lw\s+\$5,-4\(\$16\)" "lw $4,-4($16)" @ 112
+saTan0GaugeDraw: subst "sw\s+\$5,D_800A2D30" "sw $4,D_800A2D30" @ 113
+saTan0GaugeDraw: subst "lw\s+\$2,0\(\$16\)" "lw $4,0($16)" @ 114
+saTan0GaugeDraw: subst "lw\s+\$4,D_800A2CE0" "lw $5,D_800A2CE0" @ 115
+saTan0GaugeDraw: subst "sra\s+\$3,\$2,6" "srl $3,$4,6" @ 116
+saTan0GaugeDraw: subst "andi\s+\$2,\$2,0x003f" "andi $2,$4,0x003f" @ 117
+saTan0GaugeDraw: insert "lw $4,D_800A2D30" @ 115
+saTan0GaugeDraw: subst "sw\s+\$5,0\(\$4\)" "sw $4,0($5)" @ 121
+# Stage 6: m3 ctrl alt — move return-value addu_zero after sw $a2
+saTan0GaugeDraw: subst "lw\s+\$3,D_800A2CE8" "lw $2,D_800A2CE8" @ 133
+saTan0GaugeDraw: subst "sw\s+\$6,0\(\$3\)" "sw $6,0($2)" @ 135
+saTan0GaugeDraw: subst "addu\s+\$2,\$0,\$zero" "nop" @ 134
+saTan0GaugeDraw: insert_after "addu $2,$0,$zero" @ 134
+# Stage 7: m1/m0 entry reorder — lhu $4,D_800A2CF4 before sw $0/$6,D_800A2D2C
+saTan0GaugeDraw: reorder 33,36,35,34,37 @ 33-37
+saTan0GaugeDraw: reorder 56,57,60,59,58 @ 56-60
+# Stage 8: m2 reorder + reg substs — addu_zero to j-delay, $a0/$v0/$v1 chain
+saTan0GaugeDraw: subst "lw\s+\$3,28\(\$sp\)" "lw $4,28($sp)" @ 25
+saTan0GaugeDraw: subst "lw\s+\$4,D_800A2D04" "lw $2,D_800A2D04" @ 26
+saTan0GaugeDraw: subst "lw\s+\$5,D_800A2CDC" "lw $3,D_800A2CDC" @ 27
+saTan0GaugeDraw: subst "srl\s+\$3,\$3,\$4" "srl $2,$4,$2" @ 28
+saTan0GaugeDraw: subst "sh\s+\$3,D_800A2CF4" "sh $2,D_800A2CF4" @ 29
+saTan0GaugeDraw: subst "sh\s+\$3,422\(\$5\)" "sh $2,422($3)" @ 31
+saTan0GaugeDraw: insert_after "addu $2,$0,$zero" @ 30
+saTan0GaugeDraw: reorder 25,26,27,28,29,32,30,31 @ 25-32
