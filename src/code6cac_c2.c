@@ -838,7 +838,83 @@ void func_8003CE18(void) {
     D_800A3834 = 0x1D;
     gpu_DisableDisplay();
 }
-INCLUDE_ASM("asm/funcs", func_8003CF84);
+extern void mk_leaf_newpos(void);
+extern void func_80021D10(s32, s32 *, s32);
+extern void func_800618B4(s32 *, s32 *);
+extern s32 *func_8005507C(void);
+extern s32 *func_8005508C(void);
+extern void func_80061064(s32 *, s32 *);
+extern void func_8001979C(s32, u32 *);
+extern void func_8003B328(void);
+extern void func_8003B534(s32);
+extern s32 D_800A312C;
+void func_8003CF84(void) {
+    volatile s32 pad[4];
+    s32 vec[3];
+    volatile s32 pad2[2];
+    s32 *vp;
+    s32 *a;
+    s32 *b;
+    s32 s1 = 0;
+    s8 p;
+    s16 stage;
+
+    mk_leaf_newpos();
+    p = D_800A3748;
+    stage = *(s16 *)((u8 *)&D_80101ED2 + p * 0x44C);
+    if (D_800A37B8 == (&D_8008EAC0)[stage]) {
+        func_8005C650(40 * p + 0x2D, 0x7F, 0x7F);
+    }
+    if (D_800A37B8 == D_8008EB04) {
+        func_8005C650(40 * D_800A3748 + 0x31, 0x7F, 0x7F);
+    }
+    if (D_800A37B8 == D_8008EB06) {
+        func_8005C650(40 * D_800A3748 + 0x36, 0x7F, 0x7F);
+    }
+    if (D_800A37B8 == D_8008EB08) {
+        if (D_800A3748 == 0) {
+            func_8005C650(0x53, 0x7F, 0x7F);
+        } else {
+            func_8005C650(0x2B, 0x7F, 0x7F);
+        }
+    }
+    if (D_800A37B8 == D_8008EB0A) {
+        func_8005C650(0x71, 0x7F, 0x7F);
+    }
+    if (D_800A37B8 == D_8008EB0C) {
+        vp = vec;
+        func_80021D10(0, vp, D_800A3818);
+        vp[0] += D_8008EB10;
+        vp[1] += D_8008EB14;
+        vp[2] += D_8008EB18;
+        func_800618B4(vp, &D_800A312C);
+    }
+    a = func_8005507C();
+    b = func_8005508C();
+    func_80061064(a, b);
+    if (func_80054F68() == 0) {
+        s1 = 1;
+    }
+    if (s1 != 0 || (D_80102794 & 0x400040) != 0) {
+        func_800548DC();
+        if (D_800A38DC == 4 || D_800A38DC == 6) {
+            (&D_800A37D2)[D_800A3748] = (&D_800A37D2)[D_800A3748] + 1;
+        }
+        func_8001979C(0, (u32 *)D_80102770);
+        func_8001979C(1, (u32 *)D_801027C0);
+        func_8001979C(2, (u32 *)D_801027D4);
+        if (D_800A38DC == 0 && (u8)D_800A3836 != 0xFF) {
+            func_8001DA2C();
+            func_8003B328();
+            func_8003AF40(0);
+            md_menu_logo_exec();
+            func_8003B534(4);
+        } else {
+            D_800A3834 = 0x18;
+        }
+    }
+    D_800A37B8 = D_800A37B8 + 1;
+}
 void func_8003D2C4(void) {
     gpu_LoadImage((s32)&D_800A3220, (s32)&D_80090178);
 }
