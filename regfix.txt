@@ -786,6 +786,15 @@ func_8001BAE4: subst "srl" "sra" @ 29
 # expansion, to fill the srlv delay slot and match target schedule
 func_800274BC: insert "srl $3,$3,1" @ 33
 func_800274BC: delete @ 36
+
+# func_8002BC68: same srl move (after GTE leading-zero count); reorder magic-mult
+# constant load before its subu; mfhi target $24 (t8) not $13; .L148 path uses $3 (v1) not $2 (v0)
+func_8002BC68: insert "srl $3,$3,1" @ 34
+func_8002BC68: delete @ 37
+func_8002BC68: reorder 45,46,44 @ 44-46
+func_8002BC68: subst "mfhi\s+\$13" "mfhi	$24" @ 52
+func_8002BC68: subst "sra\s+\$3,\$13,5" "sra	$3,$24,5" @ 53
+func_8002BC68: $2 <-> $3 @ 56-60
 # func_8001A67C: GCC places addiu v0,sp,16 before mtc2/nops; target places after
 func_8001A67C: reorder 44,46,47,45,48,49 @ 44-49
 
