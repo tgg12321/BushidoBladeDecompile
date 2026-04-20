@@ -62,7 +62,7 @@ extern volatile u32 *D_800A2CEC;
 extern volatile s32 D_800A2D14;
 extern s32 D_800A2CDC;
 extern s32 D_800A2CFC;
-extern s16 D_800A2CF4;
+extern u16 D_800A2CF4;
 extern s32 D_800A2D10;
 extern s32 D_800A2D18;
 extern s32 D_800A2D1C;
@@ -73,6 +73,12 @@ extern void spu_WriteReg16(void);
 extern volatile u16 D_800F7420[2];
 extern volatile u16 D_800F7424[2];
 extern s32 spu_TransferData(s32, s32);
+extern s32 D_800A2D2C;
+extern s32 D_800A2D30;
+extern s32 D_800A2D34;
+extern s32 *D_800A2CE0;
+extern s32 *D_800A2CE4;
+extern s32 *D_800A2CE8;
 
 /* --- Functions 0x80083BE4 - 0x8008D060 (text4 segment) --- */
 
@@ -1226,9 +1232,83 @@ end_init:
 }
 INCLUDE_ASM("asm/funcs", DispUpdateStatusMessage);
 /* kengo:LOW  |  su_menu_home/_DispUpdateStatusMessage  |  206i  |  PS2 UI — reverted */
-INCLUDE_ASM("asm/funcs", saTan0GaugeDraw);
+s32 saTan0GaugeDraw(s32 mode, ...) {
+    u32 i;
+    s32 *args = (s32 *)__builtin_next_arg(mode);
+    s32 second;
+    s32 ctrl;
+    s32 mask;
+
+    if (mode == 1) goto m1;
+    if (mode >= 2) goto ge2;
+    if (mode == 0) goto m0;
+    return 0;
+
+ge2:
+    if (mode == 2) goto m2;
+    if (mode == 3) goto m3;
+    return 0;
+
+m2:
+    {
+        u32 shifted = (u32)args[0] >> D_800A2D04;
+        D_800A2CF4 = (u16)shifted;
+        *(u16 *)(D_800A2CDC + 0x1A6) = (u16)shifted;
+    }
+    return 0;
+
+m1:
+    D_800A2D2C = 0;
+    if ((*(volatile u16 *)(D_800A2CDC + 0x1A6) & 0xFFFFu) != D_800A2CF4) {
+        i = 0;
+        do {
+            i++;
+            if (i >= 0xF01) return -2;
+        } while (*(volatile u16 *)(D_800A2CDC + 0x1A6) != D_800A2CF4);
+    }
+    *(volatile u16 *)(D_800A2CDC + 0x1AA) = (u16)((*(volatile u16 *)(D_800A2CDC + 0x1AA) & 0xFFCFu) | 0x20u);
+    return 0;
+
+m0:
+    D_800A2D2C = 1;
+    if ((*(volatile u16 *)(D_800A2CDC + 0x1A6) & 0xFFFFu) != D_800A2CF4) {
+        i = 0;
+        do {
+            i++;
+            if (i >= 0xF01) return -2;
+        } while (*(volatile u16 *)(D_800A2CDC + 0x1A6) != D_800A2CF4);
+    }
+    *(volatile u16 *)(D_800A2CDC + 0x1AA) = (u16)(*(volatile u16 *)(D_800A2CDC + 0x1AA) | 0x30u);
+    return 0;
+
+m3:
+    mask = 0x20;
+    if (D_800A2D2C == 1) mask = 0x30;
+    if ((*(volatile u16 *)(D_800A2CDC + 0x1AA) & 0x30u) != (u32)mask) {
+        i = 0;
+        do {
+            i++;
+            if (i >= 0xF01) return -2;
+        } while ((*(volatile u16 *)(D_800A2CDC + 0x1AA) & 0x30u) != ((((u32)mask) & 0xFFFF) & 0xFFFF));
+    }
+    if (D_800A2D2C == 1) {
+        args++;
+        spu_ReadReg();
+    } else {
+        args++;
+        spu_ReadStatus();
+    }
+    D_800A2D30 = args[-1];
+    second = (u32)args[0];
+    D_800A2D34 = (second >> 6) + ((second & 0x3F) != 0);
+    *D_800A2CE0 = D_800A2D30;
+    *D_800A2CE4 = (D_800A2D34 << 16) | 0x10;
+    ctrl = 0x01000201;
+    if (D_800A2D2C == 1) ctrl = 0x01000200;
+    *D_800A2CE8 = ctrl;
+    return 0;
+}
 /* kengo:MED  |  sa_tan0/saTan0GaugeDraw  |  164i */
-extern void saTan0GaugeDraw(s32, ...);
 extern void DispUpdateStatusMessage(s32, s32);
 s32 spu_TransferData(s32 a0, s32 a1) {
     if (g_spu_reverb_mode == 0) {
