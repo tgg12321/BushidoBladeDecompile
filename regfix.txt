@@ -1642,3 +1642,35 @@ func_8003A728: subst "\$3,8\(\$17\)" "$2,8($17)" @ 127
 # (4) Cluster 4: post_8F4 D_800A38A0!=0 path — lhu D_800A36D0 dest $16 not $2
 func_8003A728: subst "lhu\s+\$2,%gp_rel\(D_800A36D0\)" "lhu $16,%gp_rel(D_800A36D0)" @ 131
 func_8003A728: subst "sll\s+\$2,\$2,16" "sll $2,$16,16" @ 133
+
+# === SetPacketData (compound regfix) ===
+# 3-way reg rotation in body: $16(loop_flag)->$19, $18(cb_idx)->$16, $19(wait_val)->$18
+# Range 9-127 skips prologue saves (1-8) and epilogue restores (128-135)
+SetPacketData: $16 <-> $19 @ 9-127
+SetPacketData: $16 <-> $18 @ 9-127
+
+# Eliminate orphan j+addu chain after the early-return: branch beq directly to .L525,
+# fill its delay slot with cb_idx=0 (was move s4,a1; now relocated to prologue insert)
+SetPacketData: subst "beq\s+\$2,\$0,\.L524" "beq $2,$0,.L525" @ 11
+SetPacketData: subst "addu\s+\$20,\$5,\$zero" "addu $16,$0,$zero" @ 12
+SetPacketData: delete @ 15
+SetPacketData: delete @ 16
+
+# Pre-loop reload of D_800F1AF4 (target re-reads global instead of using cached r_arg1).
+# Subst beq to test the reloaded $2; insert lw+nop before it (post-delete idx 41).
+SetPacketData: subst "beq\s+\$20,\$0,\.L527" "beq $2,$0,.L527" @ 43
+
+# Bne delay slot fill: target keeps a `s1=0;` dead-store that GCC eliminated in mine
+SetPacketData: subst "nop" "addu $17,$0,$zero" @ 101
+
+# Loop continuation: target re-reads D_800F1AF4 via la+lw form instead of cached lw $2,8($16)
+# (subst pattern uses POST-SWAP text — $16 was rotated to $19)
+SetPacketData: subst "lw\s+\$2,8\(\$19\)" "lw $2,0($2)" @ 120
+
+# Inserts. Indices >16 use POST-DELETE renumbering (orig 43 -> 41, orig 120 -> 118).
+# Insert order at same idx: file order is processing order (stable descending sort).
+# List nop FIRST so lw lands ABOVE nop in final output: nop@41 first, then lw@41.
+SetPacketData: insert "addu $20,$5,$zero" @ 2
+SetPacketData: insert "nop" @ 41
+SetPacketData: insert "lw $2,D_800F1AF4" @ 41
+SetPacketData: insert "la $2,D_800F1AF4" @ 118
