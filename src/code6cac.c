@@ -51,6 +51,7 @@ extern void func_80077820(s32);
 extern s32 D_80101E70;
 extern s32 D_800A3894;
 extern s8 D_80102781;
+extern u16 D_800A3310;
 
 
 extern s8 D_8010277D;
@@ -651,7 +652,87 @@ void func_8001B6F4(void) {
     D_800F5347 = 0;
     game_SetControllerPorts(0);
 }
-INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_A);
+void DispPracticeMenuTex_A(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
+    s32 inv_frac = 0x1000 - frac;
+    s32 inv_s1 = 0x1000 - frac_s1;
+    int new_var;
+    s32 dx;
+    s32 dy;
+    u8 *base = (u8 *)&D_80101EC8 + D_800A3748 * 0x44C;
+    s32 dz;
+    s32 cur;
+    s32 target;
+    s32 use_high;
+    s32 v;
+    if (dst[0x1F] == 0) {
+        dst[0x1F] = 1;
+        *((s32 *) (dst + 0)) = ((frac * (*((s16 *) (a + 4)))) + (inv_frac * (*((s16 *) (b + 4))))) >> 12;
+        *((s32 *) (dst + 4)) = (((frac * (*((s16 *) (a + 6)))) + (inv_frac * (*((s16 *) (b + 6))))) >> 12) - 0x12C;
+        new_var = (frac * (*((s16 *) (a + 8)))) + (inv_frac * (*((s16 *) (b + 8))));
+        D_800A3310 = 0;
+        *((s16 *) (dst + 0x12)) = val;
+        cur = new_var;
+        *((s16 *) (dst + 0x10)) = 0x80;
+        *((s16 *) (dst + 0x14)) = 0;
+        dy = cur;
+        *((s32 *) (dst + 0x18)) = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
+        *((s32 *) (dst + 8)) = dy >> 12;
+        return;
+    }
+    {
+        s32 sum = (*((s32 *) (base + 0x19C))) + (*((s32 *) (base + (0x1A8 & 0xFFFFFFFF))));
+        s32 avg = ((s32) (sum + (((u32) sum) >> 31))) >> 1;
+        if ((avg - (*((s32 *) (base + 0x184)))) < 0xC8) {
+            D_800A3310 += 1;
+        }
+    }
+    use_high = ((s16) D_800A3310) >= 0xB;
+    cur = *((s32 *) (dst + 0));
+    inv_s1 = inv_s1;
+    dx = (((frac * (*((s16 *) (a + 4)))) + (inv_frac * (*((s16 *) (b + 4))))) >> 12) - cur;
+    if (dx < 0) {
+        dx += 0xF;
+    }
+    *((s32 *) (dst + 0)) = cur + (dx >> 4);
+    cur = *((s32 *) (dst + 4));
+    dy = (((frac * (*((s16 *) (a + 6)))) + (inv_frac * (*((s16 *) (b + 6))))) >> 12) - (cur + 0x12C);
+    if (dy < 0) {
+        dy += 0xF;
+    }
+    *((s32 *) (dst + 4)) = cur + (dy >> 4);
+    cur = *((s32 *) (dst + 8));
+    dz = (((frac * (*((s16 *) (a + 8)))) + (inv_frac * (*((s16 *) (b + 8))))) >> 12) - cur;
+    if (dz < 0) {
+        dz += 0xF;
+    }
+    *((s32 *) (dst + 8)) = cur + (dz >> 4);
+    if (use_high) {
+        target = ((frac_s1 * 0x180) >> 12) + 0x80;
+    } else {
+        target = 0x80 - ((frac_s1 << 8) >> 12);
+    }
+    *((s16 *) (dst + 0x10)) = (*((u16 *) (dst + 0x10))) + func_8001A4F0(target - (*((s16 *) (dst + 0x10))), 0x10);
+    v = func_8001A4F0(val - (*((s16 *) (dst + 0x12))), 0x10);
+    *((s16 *) (dst + 0x14)) = 0;
+    *((s16 *) (dst + 0x12)) = (*((u16 *) (dst + 0x12))) + v;
+    if (use_high) {
+        target = frac_s1 * 0x7D0;
+    } else {
+        target = frac_s1 * 0x1F4;
+    }
+    cur = *((s32 *) (dst + 0x18));
+    dx = ((target + (inv_s1 * 0x2EE0)) >> 12) - cur;
+    if (dx < 0) {
+        dx += 0xF;
+    }
+    *((s32 *) (dst + 0x18)) = cur + (dx >> 4);
+    *((s16 *) (dst + 0x30)) = 0x64;
+    *((s16 *) (dst + 0x32)) = 0;
+    *((s16 *) (dst + 0x34)) = 0x64;
+    *((s16 *) (dst + 0x38)) = 0x64;
+    *((s16 *) (dst + 0x3A)) = 0;
+    *((s16 *) (dst + 0x3C)) = 0x64;
+}
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
     s32 temp_a2;

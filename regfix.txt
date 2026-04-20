@@ -827,15 +827,15 @@ func_8001F938: insert "andi $3,$5,0xFFFF" @ 3
 # into target 8-insn block (lh/lhu/slt/bne/sll-delay/addiu/sll/sra).
 func_8001F938: subst "nop" "lhu\t$3,624($4)" @ 74
 func_8001F938: subst "addu\s+\$3,\$2,\$zero" "slt\t$2,$2,4" @ 75
-func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L269" @ 76
-func_8001F938: subst "beq\s+\$2,\$0,\.L269" "sll\t$2,$3,16" @ 77
+func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L280" @ 76
+func_8001F938: subst "beq\s+\$2,\$0,\.L280" "sll\t$2,$3,16" @ 77
 func_8001F938: subst "addiu\s+\$5,\$zero,3" "addiu\t$3,$zero,3" @ 78
 func_8001F938: subst "andi\s+\$5,\$3,0xffff" "sll\t$2,$3,16" @ 79
 func_8001F938: delete @ 80
 
 # func_8001EFA0: ==6 branch sense swap (bne→beq, swap j targets)
-func_8001EFA0: subst "bne\s+\$3,\$2,\.L234" "beq\t$3,$2,.L230" @ 96
-func_8001EFA0: subst "j\s+\.L230" "j\t.L234" @ 98
+func_8001EFA0: subst "bne\s+\$3,\$2,\.L245" "beq\t$3,$2,.L241" @ 96
+func_8001EFA0: subst "j\s+\.L241" "j\t.L245" @ 98
 
 # tslPrintScreen: first-stage cleanup
 # Early sentinel/token register cleanup.
@@ -1733,3 +1733,46 @@ saTan0GaugeDraw: subst "sh\s+\$3,D_800A2CF4" "sh $2,D_800A2CF4" @ 29
 saTan0GaugeDraw: subst "sh\s+\$3,422\(\$5\)" "sh $2,422($3)" @ 31
 saTan0GaugeDraw: insert_after "addu $2,$0,$zero" @ 30
 saTan0GaugeDraw: reorder 25,26,27,28,29,32,30,31 @ 25-32
+
+# DispPracticeMenuTex_A: 405 baseline. Compound recipe:
+# - Init path: addu/sra dst $4->$2, $2->$2 (idx 80,81)
+# - Init reorder: move sh zero(D_800A3310) from idx 62 to right after mult @53
+# - DX block (110-117): v0/v1 swap pattern (target uses v1 for dx chain, v0 for use_high)
+# - DY block (131-132): addiu/subu dst+src v0->v1
+# - DZ block (149-150): sra dst v0->v1, subu src v0->v1
+# - LERP 0x18 (184-194): mult chain v0->v1 in target
+# - LERP 0x18: delete early lw $4,24($16) at 195, re-insert + nop after sra (post-delete 203)
+# - LERP 0x18 (203-205): final addu/sra/subu reg fixups
+DispPracticeMenuTex_A: subst "\$4,\$5,\$8" "$2,$5,$8" @ 80
+DispPracticeMenuTex_A: subst "\$2,\$4,12" "$2,$2,12" @ 81
+DispPracticeMenuTex_A: subst "\$2,\$2,12" "$3,$2,12" @ 110
+DispPracticeMenuTex_A: subst "\$3,%gp_rel" "$2,%gp_rel" @ 111
+DispPracticeMenuTex_A: subst "\$2,\$2,\$4" "$3,$3,$4" @ 112
+DispPracticeMenuTex_A: subst "\$3,\$3,11" "$2,$2,11" @ 113
+DispPracticeMenuTex_A: subst "\$2,\.L109" "$3,.L109" @ 114
+DispPracticeMenuTex_A: subst "\$3,0x0001" "$2,0x0001" @ 115
+DispPracticeMenuTex_A: subst "\$2,\$2,15" "$3,$3,15" @ 116
+DispPracticeMenuTex_A: subst "\$2,\$2,4" "$2,$3,4" @ 117
+DispPracticeMenuTex_A: subst "\$2,\$2,-300" "$3,$2,-300" @ 131
+DispPracticeMenuTex_A: subst "\$2,\$2,\$4" "$2,$3,$4" @ 132
+DispPracticeMenuTex_A: subst "\$2,\$2,12" "$3,$2,12" @ 149
+DispPracticeMenuTex_A: subst "\$2,\$2,\$4" "$2,$3,$4" @ 150
+DispPracticeMenuTex_A: subst "\$2,\$17,5" "$3,$17,5" @ 184
+DispPracticeMenuTex_A: subst "\$2,\$2,\$17" "$3,$3,$17" @ 185
+DispPracticeMenuTex_A: subst "\$2,\$2,2" "$3,$3,2" @ 186
+DispPracticeMenuTex_A: subst "\$2,\$2,\$17" "$3,$3,$17" @ 187
+DispPracticeMenuTex_A: subst "\$3,\$2,4" "$3,$3,4" @ 189
+DispPracticeMenuTex_A: subst "\$2,\$17,5" "$3,$17,5" @ 190
+DispPracticeMenuTex_A: subst "\$2,\$2,\$17" "$3,$3,$17" @ 191
+DispPracticeMenuTex_A: subst "\$2,\$2,2" "$3,$3,2" @ 192
+DispPracticeMenuTex_A: subst "\$2,\$2,\$17" "$3,$3,$17" @ 193
+DispPracticeMenuTex_A: subst "\$3,\$2,2" "$3,$3,2" @ 194
+DispPracticeMenuTex_A: delete @ 195
+DispPracticeMenuTex_A: subst "\$2,\$3,\$2" "$3,$3,$2" @ 203
+DispPracticeMenuTex_A: subst "\$2,\$2,12" "$3,$3,12" @ 204
+DispPracticeMenuTex_A: subst "\$2,\$2,\$4" "$2,$3,$4" @ 205
+# Re-insert lw $4,24($16) and nop after sra (post-delete idx 203)
+# File order=processing order; insert "nop" first, then "lw" -> final layout: sra, lw, nop, subu
+DispPracticeMenuTex_A: insert "nop" @ 204
+DispPracticeMenuTex_A: insert "lw $4,24($16)" @ 204
+DispPracticeMenuTex_A: reorder 53,62,54,55,56,57,58,59,60,61,63 @ 53-63
