@@ -117,7 +117,7 @@ def parse_tabled_funcs(claims_path='CLAIMS.md'):
     tabled = set()
     if not os.path.exists(claims_path):
         return tabled
-    with open(claims_path) as fh:
+    with open(claims_path, encoding='utf-8', errors='replace') as fh:
         for line in fh:
             if 'tabled' in line.lower() or 'TABLED' in line:
                 # Look for func names like func_XXXXXXXX or :NAME pattern
