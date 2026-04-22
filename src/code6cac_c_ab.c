@@ -64,6 +64,7 @@ extern void func_8003553C(void);
 
 extern void sys_Panic(void);
 extern s32 func_80020D38(void);
+extern void func_800602AC(s32, s32);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
 extern s32 bb2_memcpy(s32 *, s32, s32);
@@ -298,7 +299,45 @@ s32 func_8003ACB8(void) {
     func_80078BA8(0xF2000001);
     return temp_s0;
 }
-INCLUDE_ASM("asm/funcs", func_8003AE5C);
+void func_8003AE5C(u8 *arg0) {
+    s32 addr = (s32)0x80190800;
+    s32 result = -1;
+    s32 done = 0;
+
+    do {
+        s32 cmd = *arg0++;
+        switch (cmd) {
+            case 1:
+                result = *arg0;
+            case 0:
+            case 20:
+                done = 1;
+                break;
+            case 16:
+                arg0 += 5;
+                break;
+            case 17:
+                arg0 += 3;
+                break;
+            case 3:
+                arg0 += 2;
+                break;
+            case 19:
+                arg0 += 4;
+                break;
+            case 2:
+                arg0 += 0x1D;
+                break;
+        }
+    } while (!done);
+
+    if (result >= 0) {
+        (&D_800A37A8)[D_800A37A0] = *(u16 *)&D_800A36A4;
+        gpu_EnableDisplay();
+        func_80020D38();
+        func_800602AC(result, addr);
+    }
+}
 void func_8003AF40(s32 arg0) {
     if ((&D_8010277E)[arg0] == 0xFF) {
         (&D_8010277E)[arg0] = (&D_8010277E)[(u32)arg0 < 1u];
