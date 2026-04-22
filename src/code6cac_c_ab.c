@@ -65,6 +65,7 @@ extern void func_8003553C(void);
 extern void sys_Panic(void);
 extern s32 func_80020D38(void);
 extern void func_800602AC(s32, s32);
+extern void md_menu_logo_exec(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
 extern s32 bb2_memcpy(s32 *, s32, s32);
@@ -338,6 +339,9 @@ void func_8003AE5C(u8 *arg0) {
         func_800602AC(result, addr);
     }
 }
+__asm__(".section .rodata
+	.word 0
+	.text");
 void func_8003AF40(s32 arg0) {
     if ((&D_8010277E)[arg0] == 0xFF) {
         (&D_8010277E)[arg0] = (&D_8010277E)[(u32)arg0 < 1u];
@@ -512,7 +516,104 @@ void func_8003B56C(s32 arg0) {
     D_800A3834 = 6;
     D_800A3878 = D_800A385C + (arg0 * 4 - 4);
 }
-INCLUDE_ASM("asm/funcs", suDispMentalBar);
+void suDispMentalBar(void) {
+    s32 done;
+    u8 *chardata;
+
+    obj_InitChars();
+    done = 0;
+    chardata = &D_8010277D;
+
+    do {
+        s32 ptr = D_800A3844;
+        s32 cmd;
+        D_800A3844 = ptr + 1;
+        cmd = *(u8 *)ptr;
+
+        switch (cmd) {
+            case 16: {
+                s32 ret = func_8003B3A4((u8 *)D_800A3844);
+                D_800A3844 += ret;
+                break;
+            }
+
+            case 17: {
+                s32 ret = func_8003B484((u8 *)D_800A3844);
+                D_800A3844 += ret;
+                break;
+            }
+
+            case 3: {
+                s32 data = D_800A3844;
+                u8 byte0 = *(u8 *)data;
+                u8 byte1 = *(u8 *)(data + 1);
+                D_800A3844 = data + 1;
+                chardata[0] = byte0;
+                D_800A3844 = data + 2;
+                chardata[2] = byte1;
+                if ((s8)byte0 == D_800A3915) {
+                    player_SetCharId(1, D_800A36F4);
+                }
+                func_8003AF40(1);
+                md_menu_logo_exec();
+                break;
+            }
+
+            case 1: {
+                u8 byte;
+                u8 counter = D_800A37A0;
+                byte = *(u8 *)D_800A3844;
+                D_800A3844 += 1;
+                D_800A37A0 = counter + 1;
+                D_800A36A4 = byte;
+                (&D_800A37A8)[counter] = byte;
+                D_800A3834 = 22;
+                done = 1;
+                func_80022568(&D_80101EC8);
+                D_800A3907 = 0;
+                break;
+            }
+
+            case 0:
+                if (D_800A380C == 0) {
+                    D_800A38A4 = ((&D_8008D9EC)[(s16)D_80101ED2] != 0);
+                    D_800A3834 = 18;
+                } else {
+                    D_800A3834 = 10;
+                }
+                done = 1;
+                break;
+
+            case 19:
+                D_800A3834 = 6;
+                D_800A3878 = D_800A3844;
+                D_800A3844 += 4;
+                done = 1;
+                break;
+
+            case 2:
+                D_800A3894 = (u8 *)D_800A3844;
+                D_800A3844 += 0x1D;
+                func_8003B2C8();
+                func_8003AF40(0);
+                func_8003B3A4(D_800A3894 + 1);
+            case 18:
+                D_800A3834 = 0;
+                D_800A3907++;
+                done = 1;
+                break;
+
+            case 20:
+                D_800A385C = (u8 *)D_800A3844;
+                D_800A3844 += 12;
+                done = 1;
+                func_8003B4DC();
+                func_8003B56C(1);
+                D_800A38BA = 0;
+                break;
+        }
+    } while (!done);
+}
 void func_8003B870(void) {
     player_SetCharId(0, D_800A376A);
     player_SetCharId(1, 0);
