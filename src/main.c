@@ -1448,7 +1448,108 @@ s32 spu_IrqHandler(s32 a0, s32 *a1) {
     a1[1] = new_var - 0x1010;
     return v0;
 }
-INCLUDE_ASM("asm/funcs", coli_HitPauseKatana);
+extern void exec_game(void);
+s32 coli_HitPauseKatana(s32 arg0) {
+    s32 i = 0;
+    s32 found = -1;
+    s32 shift_val;
+    unsigned char new_var;
+
+    if (D_800A2880 == 0) {
+        shift_val = 0;
+    } else {
+        shift_val = (0x10000 - D_800A2884) << D_800A2D04;
+    }
+
+    {
+        s32 a0_val = arg0;
+        if (arg0 & ~D_800A2D0C) {
+            a0_val = arg0 + D_800A2D0C;
+        }
+        arg0 = (a0_val >> D_800A2D04) << D_800A2D04;
+    }
+
+    if (*(s32 *)g_spu_voice_key_c & 0x40000000) {
+        found = 0;
+    } else {
+        exec_game();
+        if (i < g_spu_voice_key_a) {
+            u32 stopbit = 0x40000000;
+            u32 highbit = 0x80000000;
+            s32 count = g_spu_voice_key_a;
+            s32 *ptr = (s32 *)g_spu_voice_key_c;
+            do {
+                s32 val = *ptr;
+                if (val & stopbit) goto found_match;
+                if (!(val & highbit)) goto next_iter;
+                if ((u32)ptr[1] < (u32)arg0) goto next_iter;
+            found_match:
+                found = i;
+                goto after_search;
+            next_iter:
+                i++;
+                ptr = (s32 *)((u8 *)ptr + 8);
+            } while (i < count);
+        }
+    }
+
+after_search:
+    if (found == -1) {
+        return -1;
+    }
+
+    {
+        s32 idx = found << 3;
+        s32 *tbl = (s32 *)g_spu_voice_key_c;
+        s32 *entry = (s32 *)((u8 *)tbl + idx);
+        s32 field0 = *entry;
+
+        if (field0 & 0x40000000) {
+            s32 f4;
+            if (found >= g_spu_voice_key_a) {
+                return -1;
+            }
+            f4 = entry[1];
+            if ((u32)(f4 - shift_val) < (u32)arg0) {
+                return -1;
+            }
+            {
+                s32 next_idx = found + 1;
+                s32 *next = (s32 *)((u8 *)tbl + (next_idx << 3));
+                *next = ((*entry & 0x0FFFFFFF) + arg0) | 0x40000000;
+                next[1] = f4 - arg0;
+                g_spu_voice_key_b = next_idx;
+                entry[1] = arg0;
+                *entry = *entry & 0x0FFFFFFF;
+                exec_game();
+                return *(s32 *)((u8 *)(s32 *)g_spu_voice_key_c + idx);
+            }
+        }
+
+        {
+            s32 f4 = entry[1];
+            if ((u32)arg0 < (u32)f4 && g_spu_voice_key_b < g_spu_voice_key_a) {
+                s32 *kb = (s32 *)((u8 *)tbl + (g_spu_voice_key_b << 3));
+                s32 old0 = kb[new_var = 0];
+                s32 old1 = kb[1];
+                kb[0] = (field0 + arg0) | 0x80000000;
+                kb[1] = f4 - arg0;
+                g_spu_voice_key_b++;
+                kb[2] = old0;
+                kb[3] = old1;
+            }
+
+            {
+                s32 idx2 = found << 3;
+                s32 *e2 = (s32 *)((u8 *)(s32 *)g_spu_voice_key_c + idx2);
+                e2[1] = arg0;
+                e2[0] = e2[new_var] & 0x0FFFFFFF;
+                exec_game();
+                return *(s32 *)((u8 *)(s32 *)g_spu_voice_key_c + idx2);
+            }
+        }
+    }
+}
 /* kengo:HIGH  |  is_coli/coli_HitPauseKatana  |  178i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", exec_game);
 /* kengo:HIGH  |  md_game/exec_game  |  194i */

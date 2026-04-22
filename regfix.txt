@@ -1660,14 +1660,14 @@ SetPacketData: $16 <-> $18 @ 9-127
 
 # Eliminate orphan j+addu chain after the early-return: branch beq directly to .L525,
 # fill its delay slot with cb_idx=0 (was move s4,a1; now relocated to prologue insert)
-SetPacketData: subst "beq\s+\$2,\$0,\.L591" "beq $2,$0,.L592" @ 11
+SetPacketData: subst "beq\s+\$2,\$0,\.L619" "beq $2,$0,.L620" @ 11
 SetPacketData: subst "addu\s+\$20,\$5,\$zero" "addu $16,$0,$zero" @ 12
 SetPacketData: delete @ 15
 SetPacketData: delete @ 16
 
 # Pre-loop reload of D_800F1AF4 (target re-reads global instead of using cached r_arg1).
 # Subst beq to test the reloaded $2; insert lw+nop before it (post-delete idx 41).
-SetPacketData: subst "beq\s+\$20,\$0,\.L594" "beq $2,$0,.L594" @ 43
+SetPacketData: subst "beq\s+\$20,\$0,\.L622" "beq $2,$0,.L622" @ 43
 
 # Bne delay slot fill: target keeps a `s1=0;` dead-store that GCC eliminated in mine
 SetPacketData: subst "nop" "addu $17,$0,$zero" @ 101
@@ -1824,7 +1824,7 @@ coli_HitPauseKatana_2: subst ",\$8$" ",$2" @ 75
 coli_HitPauseKatana_2: subst "\$8," "$2," @ 120
 coli_HitPauseKatana_2: subst "\$8," "$2," @ 122
 coli_HitPauseKatana_2: subst ",\$8" ",$2" @ 122
-coli_HitPauseKatana_2: subst "\.L341" ".L324" @ 121
+coli_HitPauseKatana_2: subst "\.L369" ".L352" @ 121
 # Case 8 tail: $10 -> $2 for mask materialization
 coli_HitPauseKatana_2: subst "\$10," "$2," @ 143
 coli_HitPauseKatana_2: subst "\$10," "$2," @ 153
@@ -1922,3 +1922,99 @@ suDispMentalBar: subst "\$2" "$5" @ 61
 suDispMentalBar: subst "\$2" "$5" @ 63
 suDispMentalBar: subst ",\$2," ",$5," @ 64
 suDispMentalBar: reorder 64,65,66,63 @ 63-66
+
+# === coli_HitPauseKatana regfix rules ===
+# 64 rules: register renames, re-reads, inline return, operand swaps
+#
+# --- SUBSTS (original TEXT indices) ---
+# Alignment block: D_800A2D04 in v1($3), g_spu_voice_key_c in v0($2)
+coli_HitPauseKatana: subst "\$2" "$3" @ 25
+coli_HitPauseKatana: subst "\$3" "$17" @ 27
+coli_HitPauseKatana: subst "\$2" "$3" @ 27
+coli_HitPauseKatana: subst "\$4" "$2" @ 28
+coli_HitPauseKatana: subst "\$3" "$17" @ 29
+coli_HitPauseKatana: subst "\$2" "$3" @ 29
+coli_HitPauseKatana: subst "0\(\$4\)" "0($2)" @ 30
+# Branch-to-label + delay slot change
+coli_HitPauseKatana: subst "\.L337" ".L327" @ 42
+coli_HitPauseKatana: subst "addiu\t\$2,\$zero,-1" "sll\t$2,$16,3" @ 43
+# Loop init: g_spu_voice_key_c into v1($3)
+coli_HitPauseKatana: subst "\$4" "$3" @ 47
+# Post-search block: tbl in a3($7), field0 in v1($3), 0x40000000 in t0($8)
+coli_HitPauseKatana: subst "\$8" "$7" @ 69
+coli_HitPauseKatana: subst "\$8,\$16" "$16,$7" @ 71
+coli_HitPauseKatana: subst "\$7" "$3" @ 72
+coli_HitPauseKatana: subst "\$10" "$8" @ 73
+coli_HitPauseKatana: subst "\$7" "$3" @ 74
+coli_HitPauseKatana: subst "\$10" "$8" @ 74
+# Stop-flag branch: f4 in v0($2)
+coli_HitPauseKatana: subst "\$9" "$2" @ 82
+coli_HitPauseKatana: subst "\$9" "$2" @ 84
+# Stop-flag alloc: re-read *entry into v0, operand swap, 0x40000000 in t0
+coli_HitPauseKatana: subst "\$8,\$3" "$3,$7" @ 92
+coli_HitPauseKatana: subst "\$7" "$2" @ 93
+coli_HitPauseKatana: subst "\$10" "$8" @ 95
+coli_HitPauseKatana: subst "\$9" "$2" @ 97
+# No-flag branch: f4 in t0($8), g_spu_voice_key_b in a2($6)
+coli_HitPauseKatana: subst "\$9" "$8" @ 108
+coli_HitPauseKatana: subst "\$9" "$8" @ 110
+coli_HitPauseKatana: subst "\$4" "$6" @ 113
+coli_HitPauseKatana: subst "\$4" "$6" @ 116
+# No-flag branch: redirect .L333 to .L339 (skip redundant lui when mask already loaded)
+coli_HitPauseKatana: subst "\.L333" ".L339" @ 117
+# No-flag kb: delay slot + instruction rewrite
+coli_HitPauseKatana: subst "sll\t\$4,\$4,3" "addu\t$3,$3,$17" @ 118
+coli_HitPauseKatana: subst "addu\t\$4,\$8,\$4" "sll\t$2,$6,3" @ 119
+coli_HitPauseKatana: subst "\$7,\$17" "$2,$7" @ 120
+coli_HitPauseKatana: subst "\$3" "$4" @ 121
+coli_HitPauseKatana: subst "\$6" "$5" @ 122
+coli_HitPauseKatana: subst "0\(\$4\)" "0($2)" @ 122
+coli_HitPauseKatana: subst "4\(\$4\)" "4($2)" @ 123
+coli_HitPauseKatana: subst "\$5" "$4" @ 123
+coli_HitPauseKatana: subst "\$2,\$2,\$3" "$3,$3,$4" @ 124
+coli_HitPauseKatana: subst "\$2,0\(\$4\)" "$3,0($2)" @ 125
+# No-flag kb stores: subu f4 in t0($8), kb_ptr in v0($2), g_spu_voice_key_b addiu
+coli_HitPauseKatana: subst "\$9" "$8" @ 127
+coli_HitPauseKatana: subst "\$4" "$2" @ 128
+coli_HitPauseKatana: subst "addu\t\$2,\$2,1" "addiu\t$3,$6,1" @ 129
+coli_HitPauseKatana: subst "\$2" "$3" @ 130
+coli_HitPauseKatana: subst "\$6" "$5" @ 131
+coli_HitPauseKatana: subst "8\(\$4\)" "8($2)" @ 131
+coli_HitPauseKatana: subst "12\(\$4\)" "12($2)" @ 132
+coli_HitPauseKatana: subst "\$5" "$4" @ 132
+# Tail: operand swap in addu, deref base change
+coli_HitPauseKatana: subst "\$3,\$16" "$16,$3" @ 136
+coli_HitPauseKatana: subst "\$2,\$2,\$16" "$16,$16,$2" @ 145
+coli_HitPauseKatana: subst "0\(\$2\)" "0($16)" @ 146
+#
+# --- DELETES (original TEXT indices) ---
+coli_HitPauseKatana: delete @ 26
+coli_HitPauseKatana: delete @ 106
+coli_HitPauseKatana: delete @ 107
+coli_HitPauseKatana: delete @ 126
+#
+# --- INSERTS (post-delete indices) ---
+# Re-read *entry before stop-flag and (PD 91)
+coli_HitPauseKatana: insert "lw\t$2,0($6)" @ 91
+# Re-read entry[1] + nop before stop-flag subu (PD 96; file order: nop first, lw second)
+coli_HitPauseKatana: insert "nop" @ 96
+coli_HitPauseKatana: insert "lw\t$2,4($6)" @ 96
+#
+# --- INSERT_AFTERS (post-Phase-3 indices) ---
+# Loop init: nop + addu after lw g_spu_voice_key_c (PP3 46; file order: addu first, nop second)
+coli_HitPauseKatana: insert_after "addu\t$4,$2,$3" @ 46
+coli_HitPauseKatana: insert_after "nop" @ 46
+# Stop-flag inline return after lw g_spu_voice_key_c (PP3 107; 5 insns, file order = furthest first)
+coli_HitPauseKatana: insert_after "nop" @ 107
+coli_HitPauseKatana: insert_after "j\t.L334" @ 107
+coli_HitPauseKatana: insert_after "lw\t$2,0($2)" @ 107
+coli_HitPauseKatana: insert_after "addu\t$2,$16,$2" @ 107
+coli_HitPauseKatana: insert_after "nop" @ 107
+#
+# --- REORDERS (post-all-insert indices) ---
+# Swap sra/lw g_spu_voice_key_c (alignment block)
+coli_HitPauseKatana: reorder 27,26 @ 26-27
+# Swap lw *entry / sw g_spu_voice_key_b (stop-flag cleanup)
+coli_HitPauseKatana: reorder 104,103 @ 103-104
+# Move or before lw/lw in no-flag kb block
+coli_HitPauseKatana: reorder 128,131,129,130 @ 128-131
