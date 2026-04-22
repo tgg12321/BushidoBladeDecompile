@@ -10,7 +10,7 @@ extern void spu_InitEx(s32);
 extern s32 func_8008AEB0(s32);
 extern void saTan4GaugeInit(s16, s16);
 extern s16 saTan2Main(s32, s16, s32, s32);
-extern void coli_HitPauseKatana_2(s32, s32, s32, s32);
+extern s32 coli_HitPauseKatana_2(s32, u32, s32, s32);
 
 /* Externs for globals */
 extern s16 D_800F66F8;
@@ -61,6 +61,7 @@ extern s32 D_800A2D0C;
 extern volatile u32 *D_800A2CEC;
 extern volatile s32 D_800A2D14;
 extern s32 D_800A2CDC;
+extern volatile u16 D_800F7298[];
 extern s32 D_800A2CFC;
 extern u16 D_800A2CF4;
 extern s32 D_800A2D10;
@@ -1487,7 +1488,82 @@ void spu_WaitReady(s32 a0, s32 a1) {
     coli_HitPauseKatana_2(a0, a1, 0xCA, 0xCB);
 }
 
-INCLUDE_ASM("asm/funcs", coli_HitPauseKatana_2);
+s32 coli_HitPauseKatana_2(s32 arg0, u32 arg1, s32 arg2, s32 arg3)
+{
+  register s32 mode asm("t1") = arg0;
+  volatile u16 *base;
+  register u32 t2 asm("t2");
+  s32 new_var;
+  s32 new_var3;
+  s32 new_var2 = arg3;
+  register u32 mask asm("t0") = arg1;
+  if (D_800A2CD4 & 1)
+  {
+    base = D_800F7298;
+  }
+  else
+  {
+    base = (volatile u16 *) D_800A2CDC;
+  }
+  new_var3 = new_var2;
+  t2 = (((u32) (base[new_var3] & 0xFF)) << 16) | base[arg2];
+  switch (mode)
+  {
+    new_var = arg2;
+    case 1:
+      if (D_800A2CD4 & 1)
+    {
+      D_800F7298[new_var] |= mask;
+      D_800F7298[arg3] |= (mask >> 16) & 0xFF;
+      __asm__ volatile("" ::: "memory");
+      D_800A28A0 |= 1 << ((new_var - 0xC6) >> 1);
+    }
+    else
+    {
+      ((volatile u16 *) D_800A2CDC)[new_var] |= mask;
+      ((volatile u16 *) D_800A2CDC)[arg3] |= (mask >> 16) & 0xFF;
+    }
+      t2 |= (mask & 0xFFFFFF);
+      break;
+
+    case 0:
+      if (D_800A2CD4 & 1)
+    {
+      D_800F7298[new_var] &= ~mask;
+      do
+      {
+        D_800F7298[arg3] &= ~((mask >> 16) & 0xFF);
+        D_800A28A0 |= 1 << ((new_var - 0xC6) >> 1);
+      }
+      while (0);
+    }
+    else
+    {
+      ((volatile u16 *) D_800A2CDC)[new_var] &= ~mask;
+      ((volatile u16 *) D_800A2CDC)[arg3] &= ~((mask >> 16) & 0xFF);
+    }
+      t2 &= ~(mask & 0xFFFFFF);
+      break;
+
+    case 8:
+      if (D_800A2CD4 & 1)
+    {
+      D_800F7298[new_var] = mask;
+      D_800F7298[arg3] = (mask >> 16) & 0xFF;
+      D_800A28A0 |= 1 << ((new_var - 0xC6) >> 1);
+    }
+    else
+    {
+      ((volatile u16 *) D_800A2CDC)[new_var] = mask;
+      ((volatile u16 *) D_800A2CDC)[arg3] = (mask >> 16) & 0xFF;
+    }
+      t2 = mask & 0xFFFFFF;
+      break;
+
+  }
+
+  return t2 & 0xFFFFFF;
+}
 /* kengo:HIGH  |  is_coli/coli_HitPauseKatana_2  |  178i  |  x2 size collision */
 s32 func_80089D10(s32 a0) {
     s32 val;

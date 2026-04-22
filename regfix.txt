@@ -149,7 +149,7 @@ func_800826CC: subst "addu.*" "nop" @ 20
 func_800826CC: subst "addu.*" "nop" @ 23
 func_800826CC: subst "lw.*" "lw\t$2,D_800A1500" @ 24
 func_800826CC: subst "andi.*" "andi\t$2,$2,0x0001" @ 26
-func_800826CC: subst "beq.*" "beq\t$2,$0,.L155" @ 27
+func_800826CC: subst "beq.*" "beq\t$2,$0,.L180" @ 27
 func_800826CC: insert "addu $4,$0,$zero" @ 15
 func_800826CC: insert "lui $2,%hi(D_800A14D0)" @ 18
 func_800826CC: insert "addiu $2,$2,%lo(D_800A14D0)" @ 19
@@ -188,10 +188,10 @@ saEft01Init: reorder 72,70,71 @ 70-72
 
 # saEft00Add: fix volatile D_800A14E4 addressing and ASPSX delay slot fills
 saEft00Add: subst "nop" "addiu	$4,$zero,1" @ 26
-saEft00Add: subst "\.L136" ".L136+4" @ 25
+saEft00Add: subst "\.L161" ".L161+4" @ 25
 saEft00Add: subst "sw	\$2,0\(\$3\)" "sw	$2,D_800A14E4" @ 38
 saEft00Add: subst "nop" "addiu	$4,$zero,6" @ 93
-saEft00Add: subst "\.L144" ".L144+4" @ 92
+saEft00Add: subst "\.L169" ".L169+4" @ 92
 saEft00Add: delete @ 35
 saEft00Add: insert "nop" @ 101
 saEft00Add: insert "nop" @ 105
@@ -1660,14 +1660,14 @@ SetPacketData: $16 <-> $18 @ 9-127
 
 # Eliminate orphan j+addu chain after the early-return: branch beq directly to .L525,
 # fill its delay slot with cb_idx=0 (was move s4,a1; now relocated to prologue insert)
-SetPacketData: subst "beq\s+\$2,\$0,\.L565" "beq $2,$0,.L566" @ 11
+SetPacketData: subst "beq\s+\$2,\$0,\.L591" "beq $2,$0,.L592" @ 11
 SetPacketData: subst "addu\s+\$20,\$5,\$zero" "addu $16,$0,$zero" @ 12
 SetPacketData: delete @ 15
 SetPacketData: delete @ 16
 
 # Pre-loop reload of D_800F1AF4 (target re-reads global instead of using cached r_arg1).
 # Subst beq to test the reloaded $2; insert lw+nop before it (post-delete idx 41).
-SetPacketData: subst "beq\s+\$20,\$0,\.L568" "beq $2,$0,.L568" @ 43
+SetPacketData: subst "beq\s+\$20,\$0,\.L594" "beq $2,$0,.L594" @ 43
 
 # Bne delay slot fill: target keeps a `s1=0;` dead-store that GCC eliminated in mine
 SetPacketData: subst "nop" "addu $17,$0,$zero" @ 101
@@ -1785,3 +1785,68 @@ DispPracticeMenuTex_A: subst "\$2,\$2,\$4" "$2,$3,$4" @ 205
 DispPracticeMenuTex_A: insert "nop" @ 204
 DispPracticeMenuTex_A: insert "lw $4,24($16)" @ 204
 DispPracticeMenuTex_A: reorder 53,62,54,55,56,57,58,59,60,61,63 @ 53-63
+
+# === coli_HitPauseKatana_2 regfix rules ===
+# Base pointer: $3 -> $4
+coli_HitPauseKatana_2: subst "\$3," "$4," @ 7
+coli_HitPauseKatana_2: subst "\$3," "$4," @ 10
+coli_HitPauseKatana_2: subst ",\$3$" ",$4" @ 12
+coli_HitPauseKatana_2: subst ",\$3$" ",$4" @ 15
+# Arg3: $4 -> $7 in preamble shifts
+coli_HitPauseKatana_2: subst ",\$4," ",$7," @ 9
+coli_HitPauseKatana_2: subst ",\$4," ",$7," @ 11
+# Intermediate: $10 -> $3 in preamble
+coli_HitPauseKatana_2: subst "\$10," "$3," @ 13
+coli_HitPauseKatana_2: subst "\$10" "$3" @ 18
+coli_HitPauseKatana_2: subst "\$10" "$3" @ 18
+coli_HitPauseKatana_2: subst "\$10" "$3" @ 19
+coli_HitPauseKatana_2: subst "\$10" "$3" @ 19
+coli_HitPauseKatana_2: subst ",\$10$" ",$3" @ 21
+# Constant 1: $6 -> $11
+coli_HitPauseKatana_2: subst "\$6," "$11," @ 16
+coli_HitPauseKatana_2: subst ",\$6," ",$11," @ 20
+# Arg2: $11 -> $6 (across all cases)
+coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 38
+coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 51
+coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 80
+coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 94
+coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 129
+coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 136
+coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 144
+# Constant 1 in sllv: $6 -> $11
+coli_HitPauseKatana_2: subst ",\$6," ",$11," @ 54
+coli_HitPauseKatana_2: subst ",\$6," ",$11," @ 98
+coli_HitPauseKatana_2: subst ",\$6," ",$11," @ 139
+# Case 1 tail: mask temp $8 -> $2
+coli_HitPauseKatana_2: subst "\$8," "$2," @ 73
+coli_HitPauseKatana_2: subst ",\$8$" ",$2" @ 75
+# Case 0 tail: $8 -> $2, jump target, nor $8 -> $2
+coli_HitPauseKatana_2: subst "\$8," "$2," @ 120
+coli_HitPauseKatana_2: subst "\$8," "$2," @ 122
+coli_HitPauseKatana_2: subst ",\$8" ",$2" @ 122
+coli_HitPauseKatana_2: subst "\.L341" ".L324" @ 121
+# Case 8 tail: $10 -> $2 for mask materialization
+coli_HitPauseKatana_2: subst "\$10," "$2," @ 143
+coli_HitPauseKatana_2: subst "\$10," "$2," @ 153
+coli_HitPauseKatana_2: subst "\$10" "$2" @ 154
+coli_HitPauseKatana_2: subst "\$10" "$2" @ 154
+coli_HitPauseKatana_2: subst ",\$10$" ",$2" @ 155
+# Delete arg3 copy
+coli_HitPauseKatana_2: delete @ 1
+# Insert case 0 combine into delay slot (post-delete idx)
+coli_HitPauseKatana_2: insert_after "and\t$10,$10,$2" @ 121
+# Reorder: preamble - move addiu after sll block (post-insert indices)
+coli_HitPauseKatana_2: reorder 16,17,18,15 @ 15-18
+# Reorder: case 1 - move sh after addu,sra
+coli_HitPauseKatana_2: reorder 50,51,49 @ 49-51
+# Reorder: case 0 - move sh after sll,addu
+coli_HitPauseKatana_2: reorder 86,87,85 @ 85-87
+# Reorder: case 0 tail - swap j and nor
+coli_HitPauseKatana_2: reorder 121,120,122 @ 120-122
+
+# cpu_side_move_dir_4: register + scheduling fix for debug_printf block
+cpu_side_move_dir_4: subst "lbu\t\$3,0\(\$18\)" "lbu\t$4,0($18)" @ 39
+cpu_side_move_dir_4: subst "sll\t\$3,\$3,2" "sll\t$4,$4,2" @ 41
+cpu_side_move_dir_4: subst "addu\t\$3,\$3,\$19" "addu\t$4,$4,$19" @ 42
+cpu_side_move_dir_4: subst "lw\t\$7,0\(\$3\)" "lw\t$7,0($4)" @ 45
+cpu_side_move_dir_4: reorder 39,40,48,43,44,41,46,47,42,49,50,51,52,53,45 @ 39-53
