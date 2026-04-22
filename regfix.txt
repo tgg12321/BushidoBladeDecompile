@@ -149,7 +149,7 @@ func_800826CC: subst "addu.*" "nop" @ 20
 func_800826CC: subst "addu.*" "nop" @ 23
 func_800826CC: subst "lw.*" "lw\t$2,D_800A1500" @ 24
 func_800826CC: subst "andi.*" "andi\t$2,$2,0x0001" @ 26
-func_800826CC: subst "beq.*" "beq\t$2,$0,.L180" @ 27
+func_800826CC: subst "beq.*" "beq\t$2,$0,.L215" @ 27
 func_800826CC: insert "addu $4,$0,$zero" @ 15
 func_800826CC: insert "lui $2,%hi(D_800A14D0)" @ 18
 func_800826CC: insert "addiu $2,$2,%lo(D_800A14D0)" @ 19
@@ -188,10 +188,10 @@ saEft01Init: reorder 72,70,71 @ 70-72
 
 # saEft00Add: fix volatile D_800A14E4 addressing and ASPSX delay slot fills
 saEft00Add: subst "nop" "addiu	$4,$zero,1" @ 26
-saEft00Add: subst "\.L161" ".L161+4" @ 25
+saEft00Add: subst "\.L196" ".L196+4" @ 25
 saEft00Add: subst "sw	\$2,0\(\$3\)" "sw	$2,D_800A14E4" @ 38
 saEft00Add: subst "nop" "addiu	$4,$zero,6" @ 93
-saEft00Add: subst "\.L169" ".L169+4" @ 92
+saEft00Add: subst "\.L204" ".L204+4" @ 92
 saEft00Add: delete @ 35
 saEft00Add: insert "nop" @ 101
 saEft00Add: insert "nop" @ 105
@@ -1850,3 +1850,58 @@ cpu_side_move_dir_4: subst "sll\t\$3,\$3,2" "sll\t$4,$4,2" @ 41
 cpu_side_move_dir_4: subst "addu\t\$3,\$3,\$19" "addu\t$4,$4,$19" @ 42
 cpu_side_move_dir_4: subst "lw\t\$7,0\(\$3\)" "lw\t$7,0($4)" @ 45
 cpu_side_move_dir_4: reorder 39,40,48,43,44,41,46,47,42,49,50,51,52,53,45 @ 39-53
+
+# marionation_Exec: s-reg rotation (two permutation cycles)
+# 3-cycle: s5($21)→s7($23)→s6($22)→s5
+marionation_Exec: $21 <-> $23
+marionation_Exec: $21 <-> $22
+# 4-cycle: s1($17)→s4($20)→s3($19)→s2($18)→s1
+marionation_Exec: $17 <-> $20
+marionation_Exec: $17 <-> $19
+marionation_Exec: $17 <-> $18
+
+# marionation_Exec: debug_printf block register + scheduling fix
+marionation_Exec: subst "lbu\t\$2,0\(\$18\)" "lbu\t$4,0($18)" @ 41
+marionation_Exec: subst "lbu\t\$3,1\(\$18\)" "lbu\t$2,1($18)" @ 42
+marionation_Exec: subst "sll\t\$2,\$2,2" "sll\t$4,$4,2" @ 44
+marionation_Exec: subst "addu\t\$2,\$2,\$21" "addu\t$4,$4,$21" @ 45
+marionation_Exec: subst "sll\t\$3,\$3,2" "sll\t$2,$2,2" @ 46
+marionation_Exec: subst "addu\t\$3,\$3,\$21" "addu\t$2,$2,$21" @ 47
+marionation_Exec: subst "lw\t\$7,0\(\$2\)" "lw\t$7,0($4)" @ 48
+marionation_Exec: subst "lw\t\$3,0\(\$3\)" "lw\t$3,0($2)" @ 50
+marionation_Exec: reorder 41,42,43,46,47,44,50,49,45,51,52,53,54,55,48 @ 41-55
+
+# marionation_Exec: prologue frame offset correction (swaps rename regs but not offsets)
+marionation_Exec: subst "sw\t\$23,44\(\$sp\)" "sw\t$23,52($sp)" @ 1
+marionation_Exec: subst "sw\t\$20,28\(\$sp\)" "sw\t$20,40($sp)" @ 2
+marionation_Exec: subst "sw\t\$22,52\(\$sp\)" "sw\t$22,48($sp)" @ 7
+marionation_Exec: subst "sw\t\$21,48\(\$sp\)" "sw\t$21,44($sp)" @ 8
+marionation_Exec: subst "sw\t\$19,40\(\$sp\)" "sw\t$19,36($sp)" @ 9
+marionation_Exec: subst "sw\t\$18,36\(\$sp\)" "sw\t$18,32($sp)" @ 10
+marionation_Exec: subst "sw\t\$17,32\(\$sp\)" "sw\t$17,28($sp)" @ 11
+
+# marionation_Exec: epilogue register correction (swaps permuted restore reg names)
+# indices shifted +1 after register asm added addu at .L124 (idx 143)
+marionation_Exec: subst "lw\t\$22,52\(\$sp\)" "lw\t$23,52($sp)" @ 145
+marionation_Exec: subst "lw\t\$21,48\(\$sp\)" "lw\t$22,48($sp)" @ 146
+marionation_Exec: subst "lw\t\$23,44\(\$sp\)" "lw\t$21,44($sp)" @ 147
+marionation_Exec: subst "lw\t\$19,40\(\$sp\)" "lw\t$20,40($sp)" @ 148
+marionation_Exec: subst "lw\t\$18,36\(\$sp\)" "lw\t$19,36($sp)" @ 149
+marionation_Exec: subst "lw\t\$17,32\(\$sp\)" "lw\t$18,32($sp)" @ 150
+marionation_Exec: subst "lw\t\$20,28\(\$sp\)" "lw\t$17,28($sp)" @ 151
+
+# marionation_Exec: block 1+2 lbu->v0+andi, delay slot, tail layout fix
+marionation_Exec: subst "lbu\t\$6" "lbu\t$2" @ 106
+marionation_Exec: subst "lbu\t\$6" "lbu\t$2" @ 124
+marionation_Exec: subst "addu.*" "nop" @ 127
+marionation_Exec: subst "\.L127" ".L999" @ 111
+marionation_Exec: subst "\.L127" ".L999" @ 129
+marionation_Exec: subst "j" ".L999:\n\tj" @ 139
+marionation_Exec: subst "nop" "addu\t$2,$0,$zero" @ 142
+marionation_Exec: delete @ 143
+marionation_Exec: insert "andi\t$6,$2,0x00FF" @ 108
+marionation_Exec: insert "andi\t$6,$2,0x00FF" @ 126
+marionation_Exec: insert "addu\t$5,$20,$zero" @ 130
+marionation_Exec: reorder 3,2 @ 2-3
+marionation_Exec: reorder 113,111,112,114,115,116 @ 111-116
+marionation_Exec: reorder 133,132,130,131,134,135 @ 130-135
