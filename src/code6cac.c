@@ -19,6 +19,7 @@ extern s32 D_800F33D8;
 extern u32 D_800A378C;
 extern u32 D_80101E3C;
 extern u32 D_80101E44;
+extern s32 D_800FF580;
 
 /* Extern function declarations */
 extern s32 func_80037110(s32);
@@ -111,7 +112,7 @@ extern s16 D_80101ED6;
 extern u8 D_800F1B18[];
 extern s32 g_file_disc_size;
 extern s32 replay_camera_Init(s32, s32);
-extern s32 func_80079154(s32);
+extern s32 func_80079154();
 extern void func_800325E0(s32, s32);
 extern void func_80046BF4(s32 *, s32 *, s32);
 extern s32 game_GetPlayerData(s32);
@@ -342,7 +343,120 @@ void func_80019534(void) {
     D_8010278C = 1;
     D_8010278E = 1;
 }
-INCLUDE_ASM("asm/funcs", single_game_VoiceContorol);
+void single_game_VoiceContorol(s32 arg0) {
+    typedef struct {
+        u8 b0;
+        u8 b1;
+        u8 b2;
+        u8 b3;
+    } VoicePacket;
+    struct {
+        s16 output[4];
+        s32 voice_mask;
+        s32 unk_1C;
+        s32 unk_20;
+        s32 unk_24;
+        s32 packets[4];
+    } sp;
+    register s32 arg0_reg asm("s0") = arg0;
+    s32 voice_mask;
+    s32 old_mask;
+    s32 i;
+    VoicePacket *packet;
+
+    voice_mask = 0;
+    sp.packets[0] = D_800FF580;
+    sp.packets[1] = D_800FF584;
+    sp.packets[2] = D_800FF5A4;
+    sp.packets[3] = D_800FF5A8;
+
+    packet = (VoicePacket *)&sp.packets[0];
+    for (i = 0; i < 2; i++) {
+        s32 bits = 0;
+
+        if (packet->b0 == 0) {
+            s32 voice = packet->b1 >> 4;
+
+            sp.output[i] = voice;
+            sp.output[i + 2] = 1;
+            voice = (s16)((u16)sp.output[i] - 1);
+
+            if ((u32)voice < 8) {
+                switch (voice) {
+                case 4:
+                case 6:
+                    sp.output[i] = 4;
+                    /* fallthrough */
+                case 1:
+                case 2:
+                case 3:
+                    bits = ~((packet->b2 << 8) | packet->b3);
+                    break;
+                case 0:
+                case 5:
+                case 7:
+                default:
+                    break;
+                }
+            }
+        } else {
+            sp.output[i] = 4;
+            sp.output[i + 2] = 0;
+        }
+
+        voice_mask = ((u32)voice_mask >> 16) | (bits << 16);
+        packet = (VoicePacket *)((u8 *)packet + 8);
+    }
+
+    sp.voice_mask = voice_mask;
+    func_8001B138(&sp.voice_mask);
+
+    if (D_800A3834 == 1 && arg0_reg == 0) {
+        u16 voice_state = D_800A38DC;
+
+        if (voice_state < 7) {
+            switch (voice_state) {
+            case 4:
+            case 5:
+                if (D_8010278E == 0) {
+                    sp.voice_mask |= 0x08000800;
+                }
+                /* fallthrough */
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 6:
+                if (D_8010278C == 0) {
+                    sp.voice_mask |= 0x08000800;
+                }
+                break;
+            }
+        }
+    }
+
+    func_8003A728((s32)&sp.output[0]);
+
+    {
+        s16 *src = &sp.output[0];
+        s16 *dst0 = &D_80102788;
+        s16 *dst1 = &D_8010278C;
+
+        for (i = 0; i < 2; i++) {
+            dst0[0] = src[0];
+            dst0++;
+            dst1[0] = src[2];
+            dst1++;
+            src++;
+        }
+    }
+
+    old_mask = D_80102790;
+    arg0_reg = (D_80102794 = sp.voice_mask & ~old_mask);
+    D_80102790 = sp.voice_mask;
+    D_8010279C = ~sp.voice_mask;
+    D_80102798 = ~sp.voice_mask & old_mask;
+}
 void func_8001979C(s32 arg0, u32 *arg1) {
     s32 bits_left;
     u32 base;
@@ -826,7 +940,6 @@ void func_8001C444(void) {
     D_80102786 = 0;
     D_80102787 = 0;
 }
-extern u16 D_80101F32;
 void func_8001C4C0(void) {
     u16 v = D_80101F32;
     if (v == 0x32 || v == 0x11) {
@@ -1869,7 +1982,6 @@ void func_80020D70(void) {
 void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    replay_camera_Init(v0, D_800A3830);    game_FrameLoop();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
 INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_B);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
-extern u16 D_800A38C4;
 void func_80021210(void) {
     func_8001979C(0, D_80102770);
     if (D_800A38C4) {

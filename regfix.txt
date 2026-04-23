@@ -2018,3 +2018,29 @@ coli_HitPauseKatana: reorder 27,26 @ 26-27
 coli_HitPauseKatana: reorder 104,103 @ 103-104
 # Move or before lw/lw in no-flag kb block
 coli_HitPauseKatana: reorder 128,131,129,130 @ 128-131
+
+# single_game_VoiceContorol: promote target copy-loop preamble for the post-a728
+# output stores. This is intentionally source-coupled to the current C shape
+# and is completed by the second-stage cleanup in regfix_stage2.txt.
+single_game_VoiceContorol: delete @ 96
+single_game_VoiceContorol: delete @ 97
+single_game_VoiceContorol: delete @ 98
+single_game_VoiceContorol: delete @ 99
+single_game_VoiceContorol: insert "addu $3,$29,16" @ 96
+single_game_VoiceContorol: insert "addu $4,$2,$0" @ 96
+single_game_VoiceContorol: insert "addiu $5,$2,4" @ 96
+single_game_VoiceContorol: insert "addiu $2,$2,%lo(D_80102788)" @ 96
+single_game_VoiceContorol: insert "lui $2,%hi(D_80102788)" @ 96
+single_game_VoiceContorol: insert "addu $8,$0,$zero" @ 96
+single_game_VoiceContorol: subst ".*" "addu\t$8,$8,1" @ 101
+single_game_VoiceContorol: subst ".*" "sh\t$2,0($4)" @ 102
+single_game_VoiceContorol: subst ".*" "addu\t$4,$4,2" @ 103
+single_game_VoiceContorol: subst ".*" "slt\t$2,$8,2" @ 107
+single_game_VoiceContorol: subst ".*" "addu\t$8,$0,$zero" @ 4
+single_game_VoiceContorol: subst ".*" "lbu\t$2,0($7)" @ 20
+single_game_VoiceContorol: subst ".*" "addu\t$6,$6,2" @ 53
+single_game_VoiceContorol: subst ".*" "addiu\t$8,$8,1" @ 54
+single_game_VoiceContorol: subst ".*" "slti\t$2,$8,2" @ 55
+single_game_VoiceContorol: subst ".*" "addiu\t$7,$7,8" @ 57
+single_game_VoiceContorol: subst ".*" "lh\t$3,D_800A38DC" @ 67
+single_game_VoiceContorol: reorder 8,5,7,6 @ 5-8
