@@ -10,3 +10,38 @@ tslPrintScreen: subst "beq.*" "lh\t$2,0($17)" @ 96
 tslPrintScreen: subst "lh.*" "beq\t$2,$22,.L70+4" @ 98
 tslPrintScreen: subst "bne.*" "lh\t$2,0($17)" @ 101
 tslPrintScreen: subst "lh.*" "bne\t$2,$3,.L87+8" @ 103
+
+# single_game_VoiceContorol: second-stage cleanup after the source-level
+# branch inversion and first-stage copy-loop fixes. These rules repair GCC's
+# alternate first-loop induction/register choices, bind jump tables to the
+# original rodata symbols, and restore the target D_80102790 update schedule.
+single_game_VoiceContorol: subst ".*" "la\t$11,jtbl_80010068" @ 5
+single_game_VoiceContorol: delete @ 6
+single_game_VoiceContorol: subst ".*" "addu\t$6,$29,16" @ 8
+single_game_VoiceContorol: delete @ 9
+single_game_VoiceContorol: subst ".*" "addu\t$7,$29,40" @ 14
+single_game_VoiceContorol: subst ".*" "lbu\t$2,1($7)" @ 24
+single_game_VoiceContorol: subst ".*" "srl\t$2,$2,4" @ 26
+single_game_VoiceContorol: subst ".*" "sh\t$2,0($6)" @ 27
+single_game_VoiceContorol: subst ".*" "lhu\t$3,0($6)" @ 28
+single_game_VoiceContorol: subst ".*" "addiu\t$2,$zero,1" @ 29
+single_game_VoiceContorol: subst ".*" "addiu\t$3,$3,-1" @ 30
+single_game_VoiceContorol: subst ".*" "sll\t$3,$3,16" @ 31
+single_game_VoiceContorol: subst ".*" "sra\t$3,$3,16" @ 32
+single_game_VoiceContorol: subst ".*" "sltiu\t$2,$3,8" @ 33
+single_game_VoiceContorol: subst ".*" "beq\t$2,$0,.L38-8" @ 34
+single_game_VoiceContorol: subst ".*" "sll\t$2,$3,2" @ 35
+single_game_VoiceContorol: delete @ 36
+single_game_VoiceContorol: subst ".*" "addu\t$2,$2,$11" @ 37
+single_game_VoiceContorol: subst ".*" "lbu\t$2,2($7)" @ 43
+single_game_VoiceContorol: subst ".*" "lbu\t$3,3($7)" @ 44
+single_game_VoiceContorol: insert "sh\t$2,4($6)" @ 28
+single_game_VoiceContorol: insert_after "addu\t$3,$0,$zero" @ 45
+single_game_VoiceContorol: insert_after "j\t.L51" @ 45
+single_game_VoiceContorol: subst ".*" "lui\t$at,%hi(jtbl_80010088)" @ 72
+single_game_VoiceContorol: subst ".*" "lw\t$2,%lo(jtbl_80010088)($at)" @ 74
+single_game_VoiceContorol: subst ".*" "bne\t$2,$0,.L70+24" @ 110
+single_game_VoiceContorol: subst ".*" "la\t$2,D_80102790" @ 112
+single_game_VoiceContorol: delete @ 116
+single_game_VoiceContorol: insert "sw\t$3,0($2)" @ 111
+single_game_VoiceContorol: insert "lw\t$4,0($2)" @ 111
