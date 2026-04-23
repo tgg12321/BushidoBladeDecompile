@@ -2044,3 +2044,7 @@ single_game_VoiceContorol: subst ".*" "slti\t$2,$8,2" @ 55
 single_game_VoiceContorol: subst ".*" "addiu\t$7,$7,8" @ 57
 single_game_VoiceContorol: subst ".*" "lh\t$3,D_800A38DC" @ 67
 single_game_VoiceContorol: reorder 8,5,7,6 @ 5-8
+
+# func_80016E60: GCC reuses s2 as a known-zero argument on the non-special
+# func_8005C8A8 path; target materializes zero in a0.
+func_80016E60: subst ".*" "addu\t$4,$0,$zero" @ 66
