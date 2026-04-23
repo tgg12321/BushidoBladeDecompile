@@ -290,7 +290,7 @@ saTan4GaugeInit: subst "sll\s+(\$18,\$5),16" "addu	$18,$5,$zero" @ 44
 saTan4GaugeInit: $2 <-> $3 @ 48-53
 saTan4GaugeInit: $3 <-> $4 @ 52-56
 # Fix outer loop branch target (.L10 -> .L13)
-saTan4GaugeInit: subst "\.L10" ".L13" @ 55
+saTan4GaugeInit: subst "\.L56" ".L59" @ 55
 # func_80034F88: register alloc + load reorder + address recompute
 func_80034F88: subst "la\t\$5," "la	$3," @ 4
 func_80034F88: subst "\$3,0\(\$5\)" "$4,0($3)" @ 5
@@ -836,15 +836,15 @@ func_8001F938: insert "andi $3,$5,0xFFFF" @ 3
 # into target 8-insn block (lh/lhu/slt/bne/sll-delay/addiu/sll/sra).
 func_8001F938: subst "nop" "lhu\t$3,624($4)" @ 74
 func_8001F938: subst "addu\s+\$3,\$2,\$zero" "slt\t$2,$2,4" @ 75
-func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L312" @ 76
-func_8001F938: subst "beq\s+\$2,\$0,\.L312" "sll\t$2,$3,16" @ 77
+func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L351" @ 76
+func_8001F938: subst "beq\s+\$2,\$0,\.L351" "sll\t$2,$3,16" @ 77
 func_8001F938: subst "addiu\s+\$5,\$zero,3" "addiu\t$3,$zero,3" @ 78
 func_8001F938: subst "andi\s+\$5,\$3,0xffff" "sll\t$2,$3,16" @ 79
 func_8001F938: delete @ 80
 
 # func_8001EFA0: ==6 branch sense swap (bne→beq, swap j targets)
-func_8001EFA0: subst "bne\s+\$3,\$2,\.L277" "beq\t$3,$2,.L273" @ 96
-func_8001EFA0: subst "j\s+\.L273" "j\t.L277" @ 98
+func_8001EFA0: subst "bne\s+\$3,\$2,\.L316" "beq\t$3,$2,.L312" @ 96
+func_8001EFA0: subst "j\s+\.L312" "j\t.L316" @ 98
 
 # tslPrintScreen: first-stage cleanup
 # Early sentinel/token register cleanup.
@@ -1660,14 +1660,14 @@ SetPacketData: $16 <-> $18 @ 9-127
 
 # Eliminate orphan j+addu chain after the early-return: branch beq directly to .L525,
 # fill its delay slot with cb_idx=0 (was move s4,a1; now relocated to prologue insert)
-SetPacketData: subst "beq\s+\$2,\$0,\.L619" "beq $2,$0,.L620" @ 11
+SetPacketData: subst "beq\s+\$2,\$0,\.L699" "beq $2,$0,.L700" @ 11
 SetPacketData: subst "addu\s+\$20,\$5,\$zero" "addu $16,$0,$zero" @ 12
 SetPacketData: delete @ 15
 SetPacketData: delete @ 16
 
 # Pre-loop reload of D_800F1AF4 (target re-reads global instead of using cached r_arg1).
 # Subst beq to test the reloaded $2; insert lw+nop before it (post-delete idx 41).
-SetPacketData: subst "beq\s+\$20,\$0,\.L622" "beq $2,$0,.L622" @ 43
+SetPacketData: subst "beq\s+\$20,\$0,\.L702" "beq $2,$0,.L702" @ 43
 
 # Bne delay slot fill: target keeps a `s1=0;` dead-store that GCC eliminated in mine
 SetPacketData: subst "nop" "addu $17,$0,$zero" @ 101
@@ -1687,9 +1687,9 @@ SetPacketData: insert "la $2,D_800F1AF4" @ 118
 # saTan0GaugeDraw: compound regfix (Cluster A const-1 + Cluster F home store)
 # Cluster A: const-1 register $3 (v1) -> $6 (a2)
 saTan0GaugeDraw: subst "addiu\s+\$3,\$zero,1" "addiu $6,$zero,1" @ 7
-saTan0GaugeDraw: subst "beq\s+\$4,\$3,\.L235" "beq $4,$6,.L235" @ 8
+saTan0GaugeDraw: subst "beq\s+\$4,\$3,\.L315" "beq $4,$6,.L315" @ 8
 saTan0GaugeDraw: subst "sw\s+\$3,D_800A2D2C" "sw $6,D_800A2D2C" @ 57
-saTan0GaugeDraw: subst "bne\s+\$2,\$3,\.L256" "bne $2,$6,.L256" @ 81
+saTan0GaugeDraw: subst "bne\s+\$2,\$3,\.L336" "bne $2,$6,.L336" @ 81
 # Cluster F: move sw ra before beq, insert sw a0 in beq delay slot
 saTan0GaugeDraw: delete @ 24
 saTan0GaugeDraw: delete @ 9
@@ -1758,7 +1758,7 @@ DispPracticeMenuTex_A: subst "\$2,\$2,12" "$3,$2,12" @ 110
 DispPracticeMenuTex_A: subst "\$3,%gp_rel" "$2,%gp_rel" @ 111
 DispPracticeMenuTex_A: subst "\$2,\$2,\$4" "$3,$3,$4" @ 112
 DispPracticeMenuTex_A: subst "\$3,\$3,11" "$2,$2,11" @ 113
-DispPracticeMenuTex_A: subst "\$2,\.L109" "$3,.L109" @ 114
+DispPracticeMenuTex_A: subst "\$2,\.L148" "$3,.L148" @ 114
 DispPracticeMenuTex_A: subst "\$3,0x0001" "$2,0x0001" @ 115
 DispPracticeMenuTex_A: subst "\$2,\$2,15" "$3,$3,15" @ 116
 DispPracticeMenuTex_A: subst "\$2,\$2,4" "$2,$3,4" @ 117
@@ -1824,7 +1824,7 @@ coli_HitPauseKatana_2: subst ",\$8$" ",$2" @ 75
 coli_HitPauseKatana_2: subst "\$8," "$2," @ 120
 coli_HitPauseKatana_2: subst "\$8," "$2," @ 122
 coli_HitPauseKatana_2: subst ",\$8" ",$2" @ 122
-coli_HitPauseKatana_2: subst "\.L369" ".L352" @ 121
+coli_HitPauseKatana_2: subst "\.L449" ".L432" @ 121
 # Case 8 tail: $10 -> $2 for mask materialization
 coli_HitPauseKatana_2: subst "\$10," "$2," @ 143
 coli_HitPauseKatana_2: subst "\$10," "$2," @ 153
@@ -1936,7 +1936,7 @@ coli_HitPauseKatana: subst "\$3" "$17" @ 29
 coli_HitPauseKatana: subst "\$2" "$3" @ 29
 coli_HitPauseKatana: subst "0\(\$4\)" "0($2)" @ 30
 # Branch-to-label + delay slot change
-coli_HitPauseKatana: subst "\.L337" ".L327" @ 42
+coli_HitPauseKatana: subst "\.L417" ".L407" @ 42
 coli_HitPauseKatana: subst "addiu\t\$2,\$zero,-1" "sll\t$2,$16,3" @ 43
 # Loop init: g_spu_voice_key_c into v1($3)
 coli_HitPauseKatana: subst "\$4" "$3" @ 47
@@ -1961,7 +1961,7 @@ coli_HitPauseKatana: subst "\$9" "$8" @ 110
 coli_HitPauseKatana: subst "\$4" "$6" @ 113
 coli_HitPauseKatana: subst "\$4" "$6" @ 116
 # No-flag branch: redirect .L333 to .L339 (skip redundant lui when mask already loaded)
-coli_HitPauseKatana: subst "\.L333" ".L339" @ 117
+coli_HitPauseKatana: subst "\.L413" ".L419" @ 117
 # No-flag kb: delay slot + instruction rewrite
 coli_HitPauseKatana: subst "sll\t\$4,\$4,3" "addu\t$3,$3,$17" @ 118
 coli_HitPauseKatana: subst "addu\t\$4,\$8,\$4" "sll\t$2,$6,3" @ 119
@@ -2006,7 +2006,7 @@ coli_HitPauseKatana: insert_after "addu\t$4,$2,$3" @ 46
 coli_HitPauseKatana: insert_after "nop" @ 46
 # Stop-flag inline return after lw g_spu_voice_key_c (PP3 107; 5 insns, file order = furthest first)
 coli_HitPauseKatana: insert_after "nop" @ 107
-coli_HitPauseKatana: insert_after "j\t.L334" @ 107
+coli_HitPauseKatana: insert_after "j\t.L414" @ 107
 coli_HitPauseKatana: insert_after "lw\t$2,0($2)" @ 107
 coli_HitPauseKatana: insert_after "addu\t$2,$16,$2" @ 107
 coli_HitPauseKatana: insert_after "nop" @ 107
@@ -2048,3 +2048,37 @@ single_game_VoiceContorol: reorder 8,5,7,6 @ 5-8
 # func_80016E60: GCC reuses s2 as a known-zero argument on the non-special
 # func_8005C8A8 path; target materializes zero in a0.
 func_80016E60: subst ".*" "addu\t$4,$0,$zero" @ 66
+
+# func_800841E0: interleave table setup, offset arithmetic, and callee-save
+# stores to match the original scheduling.
+func_800841E0: reorder 2,4,3,8,12,13,14,15,16,17,18,9,19,5,6,7,10,11 @ 2-19
+func_800841E0: subst "\$2,\$2,\$18" "$2,$18,$2" @ 30
+func_800841E0: subst "\$3" "$6" @ 34
+func_800841E0: fill_delay @ 34 <- 33
+func_800841E0: subst "nop.*" "sll\t$4,$20,8" @ 49
+func_800841E0: subst "\$20" "$5" @ 56
+func_800841E0: subst "\$17,\$21" "$2,$7" @ 57
+func_800841E0: subst "\$17,\$17" "$2,$2" @ 58
+func_800841E0: subst "\$17,\$17" "$17,$2" @ 59
+func_800841E0: subst "\$3,\$2,\$3" "$2,$2,$3" @ 66
+func_800841E0: subst "\$2,\$2,1" "$4,$2,1" @ 67
+func_800841E0: subst "\$3,\$3,\$2" "$2,$2,$4" @ 68
+func_800841E0: subst "bne\t\$3" "bne\t$2" @ 69
+func_800841E0: subst ".*" "addu\t$2,$2,$3" @ 66
+func_800841E0: subst ".*" "addu\t$4,$2,1" @ 67
+func_800841E0: subst ".*" "slt\t$2,$2,$4" @ 68
+func_800841E0: subst ".*" "bne\t$2,$0,.L11" @ 69
+func_800841E0: reorder 67,66,68,69,70 @ 66-70
+func_800841E0: subst "\$3" "$6" @ 80
+func_800841E0: subst "nop.*" "sll\t$4,$20,8" @ 81
+
+# func_80084500: same table/offset/prologue scheduling family as func_800841E0.
+func_80084500: reorder 2,4,3,8,12,13,14,15,16,17,18,9,19,5,6,7,10,11 @ 2-19
+func_80084500: subst "\$2,\$2,\$18" "$2,$18,$2" @ 30
+func_80084500: subst "\$3" "$6" @ 34
+func_80084500: fill_delay @ 34 <- 33
+func_80084500: subst "nop.*" "sll\t$4,$20,8" @ 49
+func_80084500: subst "\$20" "$5" @ 56
+func_80084500: subst "\$17,\$21" "$2,$7" @ 57
+func_80084500: subst "\$17,\$17" "$2,$2" @ 58
+func_80084500: subst "\$17,\$17" "$17,$2" @ 59

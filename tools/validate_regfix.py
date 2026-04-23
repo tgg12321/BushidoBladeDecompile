@@ -35,7 +35,7 @@ def parse_regfix(regfix_path):
     if not regfix_path.exists():
         return rules
 
-    for lineno, line in enumerate(regfix_path.read_text().splitlines(), 1):
+    for lineno, line in enumerate(regfix_path.read_text(encoding="utf-8").splitlines(), 1):
         stripped = line.strip()
         if not stripped or stripped.startswith('#'):
             continue

@@ -37,7 +37,7 @@ extern void seq_Start(s32, s32);
 extern u16 g_game_p1_ctrl;
 extern s32 D_80102794;
 extern s32 D_800A3894;
-extern s16 D_800A38C4;
+extern u16 D_800A38C4;
 extern s16 D_80101F32;
 extern void func_80035F30(s32, s32, s32, s32);
 extern void obj_InitChars(void);
@@ -457,6 +457,7 @@ void single_game_VoiceContorol(s32 arg0) {
     D_8010279C = ~sp.voice_mask;
     D_80102798 = ~sp.voice_mask & old_mask;
 }
+INCLUDE_RODATA("asm/rodata", D_800100A4);
 void func_8001979C(s32 arg0, u32 *arg1) {
     s32 bits_left;
     u32 base;
@@ -1051,6 +1052,7 @@ void func_8001C820(void) {
     }
     func_800325E0(a0, (s32)((u8 *)s0 + 0x536));
 }
+INCLUDE_RODATA("asm/rodata", jtbl_800100C4);
 INCLUDE_ASM("asm/funcs", func_8001C8DC);
 void func_8001CD68(s16 *arg0) {
     s32 val = D_800A3858;

@@ -98,7 +98,7 @@ def load_config(config_path):
     config = {}
     if not config_path.exists():
         return config
-    for line in config_path.read_text().splitlines():
+    for line in config_path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line or line.startswith('#'):
             continue

@@ -141,216 +141,34 @@ Add these to `base.c` to guide the search:
 - `permuter/` directories are gitignored
 - Override compiler flags: `CC_FLAGS="-O2 -G8 ..." permuter/func_XXX/compile.sh ...`
 
-## Cross-Session Coordination
+## Workflow
 
-Multiple Claude Code sessions may work on this project at the same time. To prevent conflicts, all sessions use `CLAIMS.md` as a shared coordination ledger.
+Single-session, one function at a time. Pick the next unmatched stub and work it end-to-end — no scanning for easy targets, no pre-screening multiple candidates. Every function must be worked eventually, so just take whatever is next.
 
-### Before Starting Work
+### Per function
 
-1. **Read `CLAIMS.md`** to see what files/scopes are already claimed by other sessions.
-2. **Do not work on claimed files.** If the file you need is claimed, either:
-   - Pick a different file to work on
-   - Ask the user if the other session is still active
-3. **Register your claim** by adding a row to the table in `CLAIMS.md`:
-   ```
-   | src/main.c | decompile Tier 1-2 stubs | 2026-03-24 18:30 | active |
-   ```
-4. **Shared files** (`bb2.ld`, `Makefile`, `undefined_syms_auto.txt`, `undefined_funcs_auto.txt`) should be claimed as `scaffolding:bb2.ld` etc. Only one session may hold a scaffolding claim at a time.
+1. **Pre-dive analysis** (MANDATORY): read the asm top to bottom, read the surrounding source file, consult Kengo via `tools/kengo_ref.py <func> --bb2`, consult matching-toolbox feedback memories. Form an explicit hypothesis BEFORE writing C. Quick blocker check: if the function has lwl/swl (needs fix_lwl.py), handwritten asm markers, or non-standard prologue, note it but still attempt — only table if confirmed intractable after trying.
+2. **Iterate silently** — work without check-ins until the function matches or you're ready to table. Only interrupt for genuine blockers requiring user decision.
+   - Every attempt needs a one-line `HYPOTHESIS: ...` written down (for your own tracking)
 
-### While Working
-
-- If you spawn sub-agents via worktrees, list each agent's file in your claim (e.g., `src/gpu.c, src/ings.c` under one session).
-- Update the status column if your scope changes.
-
-### When Done
-
-- Update your claim status to `done` or remove the row.
-- If you created branches that need merging, note them:
-  ```
-  | src/gpu.c | 5 funcs decompiled | 2026-03-24 19:00 | done — branch: decomp/gpu-c |
-  ```
-
-### Stale Claims
-
-If a claim has no matching active session (e.g., the terminal was closed), it is stale. Before claiming a file held by a stale entry:
-1. Check `git status` and `git branch` for in-progress work from that session
-2. If there are uncommitted changes or unmerged branches, ask the user before overwriting
-3. Remove the stale claim row
-
-## Solo Focused Workflow (CURRENT — 2026-04-14 onward)
-
-**Parallel agent waves are DEPRECATED for decomp matching.** Wave 34 was the inflection point: remaining stubs all need compound regfix recipes, multi-round permuter runs, or multi-session work that parallel agents deliberately cap. The main Claude session now works ONE function end-to-end with no token/attempt/round caps. Do NOT spawn `isolation: worktree` agents for matching unless the user explicitly requests it.
-
-See `memory/feedback_solo_focused_paradigm.md` for the full rule set. Key points:
-
-### Workflow per function
-
-1. **Pre-screen** (unchanged from agent rules): grep for lwl/swl, handwritten asm markers, prologue layout, jtbl. Skip known-intractable blockers.
-2. **Pre-dive analysis** (MANDATORY): read the asm top to bottom, read the surrounding source file, consult Kengo via `tools/kengo_ref.py <func> --bb2`, consult matching-toolbox feedback memories. Form an explicit hypothesis BEFORE writing C.
-3. **Check in with user BEFORE writing C.** One short paragraph: target, pre-screen, hypothesis, expected difficulty.
-4. **Iterate:**
-   - Every attempt needs a one-line `HYPOTHESIS: ...` written down
-   - Check in after: initial score, each permuter round, each regfix layer, any plateau ≥2 attempts
-   - Between check-ins, act silently — no prose narration between tool calls
-
-### Anti-spiral rules (PRESERVED from agent protocol)
+### Anti-spiral rules
 
 - **Score regression → immediate revert.** Never build on a worse score.
 - **Same score twice on C variants → stop C, escalate to permuter/regfix.** GCC flattens different C structures; repeating won't help.
 - **3 attempts at the same plateau → STOP and check in with user before trying a 4th.** User may redirect or approve deeper work.
 - **Hypothesis before every attempt.** If you cannot articulate one, STOP and escalate.
 
-### Unlocked from agent protocol
+### Session limits
 
-- No 100K token cap — sessions can run as long as the hypothesis pipeline is productive
-- No 8-attempt cap — limited by quality, not count
+- No hard token cap — sessions run as long as the hypothesis pipeline is productive
+- No hard attempt cap — limited by quality, not count
 - Permuter can run multiple rounds / long durations (overnight OK with check-in)
 - Regfix can layer compound recipes (25+ rules across multiple applications)
 - Multi-session work on one function is allowed — commit best partial state with notes so future sessions can resume
 
-### Tabling criteria (solo mode)
+### Matching Toolbox (proven techniques — try in this order)
 
-Only table when you have documented attempts at ALL of:
-- Alternative C structures via permuter
-- Regfix at the assembly stream level
-- Consulted the full matching toolbox feedback memories
-- Explained why the remaining diff is architecturally intractable (not merely "hard")
-
-Table with full notes in CLAIMS.md so a future session can resume.
-
----
-
-## Parallel Agent Protocol (DEPRECATED for matching — kept for reference and bulk non-matching work)
-
-**This section no longer applies to decomp matching as of 2026-04-14.** Keep it for reference in case agent waves become appropriate again for bulk renames, readability passes, or other non-matching bulk work where throughput > depth.
-
-When spawning multiple agents to work on this project simultaneously, follow these rules to prevent conflicts.
-
-### Architecture: Worktree Isolation
-
-**ALL agents MUST use `isolation: "worktree"` — no exceptions.** Agents that write directly to main are forbidden. The worktree gives the agent its own branch so results can be reviewed and merged by the orchestrator before touching main.
-
-Each agent runs in its own git worktree (`isolation: "worktree"`), giving it an independent copy of the repo on its own branch. This means:
-- Agents cannot corrupt each other's files or the main branch
-- Each agent can build and verify independently
-- Results are merged one branch at a time by the orchestrator
-
-### Worktree First Step (MANDATORY)
-
-Worktrees do not contain gitignored tools (`tools/gcc-2.7.2/`, `.venv/`, `disc/`, etc.) which are required to build. **Every agent's first action must be to run the setup script:**
-
-```bash
-wsl bash -c 'cd /path/to/worktree && bash tools/worktree_setup.sh && source .venv/bin/activate'
-```
-
-`tools/worktree_setup.sh` symlinks the heavy tools from the main repo into the worktree, and also normalizes the worktree's `.git` pointer files from Windows format (`C:/...`) to WSL format (`/mnt/c/...`). Without the symlinks, `make` will silently produce a broken binary and SHA1 checks will give false results. Without the path normalization, every WSL git call inside the worktree fails with `fatal: not a git repository` because Git-for-Windows wrote the paths and WSL git can't parse them.
-
-To find the worktree path: the agent should use `git rev-parse --show-toplevel` inside WSL **after** `worktree_setup.sh` has run.
-
-**Orchestrator worktree cleanup:** use `tools/worktree_cleanup.sh <worktree-name>` via WSL — **not** `git worktree remove` from Git Bash. Once `worktree_setup.sh` has normalized the `.git` file to WSL format, Git-for-Windows refuses to validate it as a worktree and `git worktree remove` fails with `'...\\.git' is not a .git file, error code 7`. The cleanup helper runs via WSL to match the normalized format and falls back to manual rm + metadata cleanup if git still refuses.
-
-```bash
-wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash tools/worktree_cleanup.sh agent-XXXX'
-```
-
-### Worktree Freshness (MANDATORY — automated)
-
-**Agents MUST branch from the latest main commit.** Context drift — where an agent matches a function against an old codebase that no longer compiles identically on current main — has caused multiple failed merges.
-
-**Automated enforcement:** `tools/worktree_setup.sh` now hard-fails (`exit 2`) if the worktree's base is not exactly equal to main's HEAD. If you see `ERROR: WORKTREE IS STALE`, **stop immediately** and report to the orchestrator. Do NOT `git pull`, `git fetch`, or `git rebase` — the orchestrator must spawn a fresh worktree.
-
-**Orchestrator rules (before spawning agents):**
-1. Commit ALL pending changes to main before spawning any agents
-2. Verify `git status` is clean (no uncommitted changes to source files)
-3. Run `make` to confirm main builds and matches BEFORE spawning
-4. **Spawn all agents in a single batch.** Do not merge a completed agent and then spawn a new agent in the same wave — the new agent's base would be ahead of the still-running agents.
-5. After every merge, the orchestrator must `git status` clean before any new spawn.
-
-**Why this exists:** Waves 17-18 lost 4 function matches because agents branched from commits 40+ behind main. GCC 2.7.2's codegen is sensitive to surrounding declarations — a function that scores 0 on an old base can score 40+ on current main due to different extern blocks and decompiled neighbors. The freshness check is automated in `worktree_setup.sh` because the soft "agent self-checks via git log" rule was insufficient — agents skipped it.
-
-### Two-Phase Workflow
-
-**Phase A — Scaffolding (sequential, orchestrator only):**
-Changes to shared infrastructure — `bb2.ld`, `Makefile`, `undefined_syms_auto.txt`, `undefined_funcs_auto.txt`, `splat.yaml`, or creating new C files — must be done by the orchestrator on main BEFORE spawning parallel agents. Never let multiple agents modify these files.
-
-**Phase B — Decompilation (parallel, isolated agents):**
-Each agent tackles exactly ONE function stub. Up to 3 agents run in parallel, each in its own worktree. When an agent finishes (match or table), the orchestrator merges the result (if matched) and spawns a new agent for the next stub.
-
-### Agent Rules
-
-1. **WSL-only file writes.** All file modifications must go through WSL (e.g., `python3 -c` or `sed -i` via `wsl bash -c`). The Windows-side Edit/Write tools introduce CRLF line endings that break the build.
-2. **One function per agent.** Each agent is assigned exactly ONE INCLUDE_ASM stub to match. It may only modify the source file containing that stub. When done (matched or tabled), the agent reports back and terminates — it does NOT pick another function.
-3. **No destructive git commands.** Agents must NEVER run `git checkout`, `git restore`, `git stash`, `git clean`, or `git reset`. To undo a change, rewrite the specific file content.
-4. **No `make clean`.** Agents use incremental builds only (`make`). Only the orchestrator runs `make clean` for final verification.
-5. **No `make setup` or `splat`.** Agents must NEVER run `make setup`, `python -m splat split`, or any command that regenerates asm files, linker scripts, or symbol files. These commands overwrite 150+ files with regenerated content, polluting the branch and making it unmergeable. Only the orchestrator runs splat on main.
-6. **Add missing symbols to `undefined_syms_auto.txt` if needed.** If a decompiled function references a global not yet in the symbol files, the agent should note it in its report. The orchestrator adds it on main before merging.
-7. **Do not push or merge to main.** Agents commit to their own worktree branch only. The orchestrator is responsible for all merges into main.
-8. **MINIMIZE TEXT OUTPUT.** Nobody reads agent prose. Do not narrate plans, explain reasoning, or summarize tool results between tool calls. Just act. The only text that matters is the audit log (terse: issue/fix/score) and the final report (bullet points: function, result, technique, commit hash). Target: <100K tokens per function.
-
-### Agent Pre-Screening (MANDATORY — before any decompilation attempt)
-
-Before writing ANY C or running the permuter, agents MUST grep each target's asm for known blockers. This takes <30 seconds and prevents wasting entire runs.
-
-1. `grep -E 'lwl|lwr|swl|swr' asm/funcs/<func>.s` → needs fix_lwl.py in pipeline. TABLE immediately.
-2. `grep -E '\badd\b|\baddi\b|\bsub\b|syscall|break |jalr.*\$t2' asm/funcs/<func>.s` → likely handwritten asm. Verify with prologue check. If confirmed, TABLE immediately.
-3. Check prologue: does load happen BEFORE `addiu sp,sp,-N`? Non-standard frame layout (e.g., saves at 4,8,12 instead of 16,20,24 for -0x20 frame)? → handwritten asm, TABLE.
-4. `grep -E 'switch|\.word 0x800' asm/funcs/<func>.s` → may need rodata split. Flag for orchestrator.
-
-**Why this exists:** Wave 2 Agent 3 spent 130K tokens (its entire budget) on 3 functions that all had fundamental blockers. 30 seconds of grepping would have caught all 3.
-
-### Agent Spiral Prevention (MANDATORY)
-
-**Token target: <100K tokens per function.** Waves 8-12 averaged ~120K — too high. Every rule below exists to cut waste.
-
-1. **Score regression = immediate revert.** If attempt N scores WORSE than attempt N-1, revert to the better version before trying anything else. Never build on a regression.
-2. **Same score = stop trying C variants.** If 2 consecutive attempts produce the SAME score, the issue is register allocation, not C structure. GCC flattens different C structures (goto vs if/else vs switch) to identical code. Do NOT try a third C variant. Escalate immediately:
-   - Score > 200 → run permuter
-   - Score ≤ 200 → go straight to regfix
-3. **Permuter by attempt 3.** Run the permuter after attempt 2 if score > 200. Run the permuter after attempt 3 regardless. Manual attempts 4+ are ONLY allowed if the permuter already ran and you are applying or refining its output.
-4. **Hard cap: 5 attempts without permuter, 8 total.** After 8 total attempts, TABLE unconditionally.
-5. **Batch regfix — no iteration.** Before applying ANY regfix rules: dump maspsx intermediate output, count TEXT indices (pseudo-insns like `la`/`lb sym` = 1 each), and write ALL regfix rules in one batch. Apply once, test with `make` once. Do NOT iterate on regfix rules one at a time — each failed iteration wastes a full build cycle. If regfix doesn't match in 2 applications, TABLE.
-6. **Hypothesis before every attempt.** Before each attempt, write ONE LINE in the audit log: "HYPOTHESIS: [specific thing being tested]". If you cannot articulate a specific hypothesis, STOP and escalate.
-
-**Why this exists:** Wave 2 burned ~80K tokens on stagnant scores. Wave 12 averaged 136K tokens/func — agents tried 4+ C variants that all produced identical GCC output. Late permuter escalation and regfix iteration are the other major sinks.
-
-### Agent Audit Logging (MANDATORY)
-
-Agents MUST write a structured log to `tmp/agent_audit/agent<N>_<file>.log` in the MAIN repo (not the worktree). Log via WSL to the main repo path.
-
-**Requirements:**
-- Write log entry BEFORE starting each function (START timestamp + PRE-SCREEN results)
-- Append each attempt immediately after scoring (not batched at end)
-- Close entry with RESULT/END/TOTAL_ATTEMPTS when moving to next function
-- **Successful matches are MORE important to log than failures**
-
-```
-=== [FUNC_NAME] ===
-START: $(date)
-ASM_SIZE: <lines>
-PRE-SCREEN: <blocker check results>
-APPROACH: <initial strategy>
-ATTEMPT 1: score=<N>, change=<one-line description>
-ATTEMPT 2: score=<N>, change=<description>
-BEST_SCORE: <N> (attempt <M>)
-RESULT: MATCHED | TABLED (reason)
-END: $(date)
-TOTAL_ATTEMPTS: <N>
-```
-
-**Why this exists:** Wave 2 had major audit gaps — Agent 2's 2 successful matches had ZERO log entries. Agent 3's largest function (9 attempts) had no log entry. Without logs, we can't learn from success or diagnose waste.
-
-### Orchestrator Target Selection
-
-The orchestrator MUST pre-screen all candidates before assigning to agents. Don't rely on line count as a difficulty proxy.
-
-1. Grep each candidate for blockers (Rule above)
-2. Verify required pipeline tools are integrated for the target file
-3. Sort by matchability signals: Kengo "near-exact" > few s-regs > linear control flow > simple globals
-4. Assign only pre-vetted, blocker-free targets
-
-### Agent Matching Toolbox (proven techniques — try in this order)
-
-When an attempt scores > 0, classify the diff before flailing. The following techniques have all been proven on real BB2 functions:
+When an attempt scores > 0, classify the diff before flailing:
 
 1. **Structural alternatives (C-level)** — goto vs if/else vs switch, intermediate variables for subtraction order, declaration position for load timing. Use the permuter to explore.
 2. **Register asm hints** — `register T x asm("regname")` constrains GCC's allocator. Useful for forcing specific s-reg/v-reg placements. WARNING: leaf temp regs cause scheduling side effects (see `feedback_regasm_leaf_danger.md`).
@@ -366,26 +184,15 @@ When an attempt scores > 0, classify the diff before flailing. The following tec
 - `feedback_aspsx_scheduling.md` — when lui/ori split matters
 - `feedback_gcc272_div_and_layout.md` — signed div, block layout, delay-slot patterns
 
-### Merge Workflow
+### Tabling criteria
 
-After agents complete:
-1. Orchestrator verifies each branch builds independently (in the worktree)
-2. Merge branches into main one at a time with `git merge --no-ff`
-3. After each merge, run `make clean && make` to verify combined build
-4. If a merge causes a mismatch, investigate that branch's changes before proceeding
+Only table when you have documented attempts at ALL of:
+- Alternative C structures via permuter
+- Regfix at the assembly stream level
+- Consulted the full matching toolbox feedback memories
+- Explained why the remaining diff is architecturally intractable (not merely "hard")
 
-### Build Verification Command
-
-Agents should use incremental builds for speed:
-```bash
-wsl bash -c 'cd $(git -C /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" worktree list | grep $(git rev-parse --show-toplevel) | awk "{print \$1}") && source .venv/bin/activate && make 2>&1 | tail -5'
-```
-
-Simpler form (if the agent knows its worktree path):
-```bash
-wsl bash -c 'cd /path/to/worktree && source .venv/bin/activate && make 2>&1 | tail -5'
-```
-Expected success output: `OK: bb2 matches!`
+Table with full notes so a future session can resume.
 
 ## WSL Execution Rules (MANDATORY)
 
