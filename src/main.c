@@ -33,6 +33,8 @@ extern s32 g_snd_callback;
 extern s32 D_80106F28;
 extern s32 func_80078998(s32);
 extern void func_80088740(s32);
+extern void func_80087770(s32, s32, s32, s32);
+extern s16 func_80087CAC(s32, s16 *, s16 *);
 extern void spu_WriteReg(s32, u32, s32);
 extern s32 D_800A287C;
 extern s32 D_800A2880;
@@ -95,8 +97,267 @@ INCLUDE_ASM("asm/funcs", saTan5TakeAnim2_2);
 /* kengo:MED  |  sa_tan5/saTan5TakeAnim2_2  |  154i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", DispStuff);
 /* kengo:LOW  |  su_menu_ending/_DispStuff  |  209i  |  PS2 UI — reverted */
-INCLUDE_ASM("asm/funcs", func_800841E0);
-INCLUDE_ASM("asm/funcs", func_80084500);
+void func_800841E0(s32 arg0, s32 arg1) {
+    struct {
+        s16 sp10;
+        s16 sp12;
+        s32 pad[5];
+    } stack;
+    register s32 *base_ptr asm("s3");
+    register s32 offset asm("s2");
+    register u8 *entry asm("s0");
+    register s32 packed asm("s1");
+    register s32 ch asm("s5");
+    register s32 slot asm("s4");
+    register s32 a3_arg asm("a3");
+    register u8 *clear_entry asm("v0");
+    register s32 slot_se asm("v1");
+    register s32 offcalc asm("v0");
+    s32 timer;
+    register s32 base asm("v1");
+
+    a3_arg = arg0;
+    {
+        register s32 shift asm("v0") = (s32)(a3_arg << 16) >> 14;
+        register s32 tbl asm("v1") = (s32)&D_80106F28;
+        __asm__ volatile("addu %0, %1, %2" : "=r"(base_ptr) : "r"(shift), "r"(tbl));
+    }
+    slot_se = (s16)arg1;
+    offcalc = (slot_se << 1) + slot_se;
+    offcalc = (offcalc << 2) - slot_se;
+    offset = offcalc << 4;
+    base = *base_ptr;
+    entry = (u8 *)(base + offset);
+
+    ch = a3_arg;
+    timer = *(s32 *)(entry + 0xA0);
+    slot = arg1;
+    timer = timer - 1;
+    *(s32 *)(entry + 0xA0) = timer;
+
+    if (timer < 0) {
+        clear_entry = (u8 *)(*base_ptr + offset);
+        goto clear_flag_10;
+    }
+
+    {
+    register s32 step asm("a2");
+    register s32 step_copy asm("v1");
+    step = *(s16 *)(entry + 0x4C);
+    step_copy = step;
+    if (step_copy > 0) {
+        if ((timer % step) != 0) {
+            goto update_position;
+        }
+        *(u16 *)(entry + 0x4A) = *(u16 *)(entry + 0x4A) - 1;
+        if (*(s16 *)(entry + 0x4A) < 0) {
+            goto send_center_and_clear;
+        }
+
+        packed = (s16)(ch | (slot << 8));
+        func_80087CAC(packed, &stack.sp10, &stack.sp12);
+        if (((u16)stack.sp10 + *(s16 *)(entry + 0x4A)) < ((u16)stack.sp10 + 1)) {
+            goto post_send_check;
+        }
+        func_80087770(packed, (u16)(stack.sp10 + 1), (u16)(stack.sp12 + 1), 1);
+        goto post_send_check;
+    }
+
+    if (step_copy < 0) {
+        *(u16 *)(entry + 0x4A) = *(u16 *)(entry + 0x4A) + step;
+        if (*(s16 *)(entry + 0x4A) < 0) {
+            goto send_center_and_clear;
+        }
+
+        packed = (s16)(ch | (slot << 8));
+        func_80087CAC(packed, &stack.sp10, &stack.sp12);
+
+        if ((((u16)stack.sp10 - step) >= 0x7F) && (((u16)stack.sp12 - step) >= 0x7F)) {
+            func_80087770(packed, 0x7F, 0x7F, 1);
+            clear_entry = (u8 *)(*base_ptr + offset);
+            *(s32 *)(clear_entry + 0x98) &= ~0x10;
+        }
+
+        step = *(s16 *)(entry + 0x4C);
+        if (((*(s32 *)(entry + 0x9C) - *(s32 *)(entry + 0xA0)) * -step) < *(s16 *)(entry + 0x48)) {
+            packed = (s16)(ch | (slot << 8));
+            func_80087770(packed, (u16)(stack.sp10 - step), (u16)(stack.sp12 - step), 1);
+        }
+        goto post_send_check;
+    }
+    }
+    goto update_position;
+
+send_center_and_clear:
+    func_80087770((s16)(ch | (slot << 8)), 0x7F, 0x7F, 1);
+    clear_entry = (u8 *)(*base_ptr + offset);
+    *(s32 *)(clear_entry + 0x98) &= ~0x10;
+
+post_send_check:
+    if (*(s32 *)(entry + 0xA0) == 0) {
+        goto recompute_clear_flag_10;
+    }
+    if (*(s16 *)(entry + 0x4A) > 0) {
+        goto update_position;
+    }
+
+recompute_clear_flag_10:
+    {
+        s32 clear_shift = (s32)(ch << 16) >> 14;
+        s32 clear_offset = (s16)slot * 0xB0;
+        clear_entry = (u8 *)(*(s32 *)((u8 *)&D_80106F28 + clear_shift) + clear_offset);
+
+    }
+clear_flag_10:
+    *(s32 *)(clear_entry + 0x98) &= ~0x10;
+
+update_position:
+    func_80087CAC((s16)(ch | (slot << 8)), (s16 *)(entry + 0x5C), (s16 *)(entry + 0x5E));
+    return;
+}
+void func_80084500(s32 arg0, s32 arg1) {
+    struct {
+        s16 sp10;
+        s16 sp12;
+        s32 pad[5];
+    } stack;
+    register s32 *base_ptr asm("s3");
+    register s32 offset asm("s2");
+    register u8 *entry asm("s0");
+    register s32 packed asm("s1");
+    register s32 ch asm("s5");
+    register s32 slot asm("s4");
+    register s32 a3_arg asm("a3");
+    register u8 *clear_entry asm("v0");
+    register s32 slot_se asm("v1");
+    register s32 offcalc asm("v0");
+    s32 timer;
+    register s32 base asm("v1");
+
+    a3_arg = arg0;
+    {
+        register s32 shift asm("v0") = (s32)(a3_arg << 16) >> 14;
+        register s32 tbl asm("v1") = (s32)&D_80106F28;
+        __asm__ volatile("addu %0, %1, %2" : "=r"(base_ptr) : "r"(shift), "r"(tbl));
+    }
+    slot_se = (s16)arg1;
+    offcalc = (slot_se << 1) + slot_se;
+    offcalc = (offcalc << 2) - slot_se;
+    offset = offcalc << 4;
+    base = *base_ptr;
+    entry = (u8 *)(base + offset);
+
+    ch = a3_arg;
+    timer = *(s32 *)(entry + 0xA0);
+    slot = arg1;
+    timer = timer - 1;
+    *(s32 *)(entry + 0xA0) = timer;
+
+    if (timer < 0) {
+        clear_entry = (u8 *)(*base_ptr + offset);
+        goto clear_flag_20;
+    }
+
+    {
+    register s32 step asm("a2");
+    register s32 step_copy asm("v1");
+    step = *(s16 *)(entry + 0x4C);
+    step_copy = step;
+    if (step_copy > 0) {
+        if ((timer % step) != 0) {
+            goto update_position;
+        }
+        *(u16 *)(entry + 0x4A) = *(u16 *)(entry + 0x4A) - 1;
+        if (*(s16 *)(entry + 0x4A) < 0) {
+            goto send_zero_and_clear;
+        }
+
+        packed = (s16)(ch | (slot << 8));
+        func_80087CAC(packed, &stack.sp10, &stack.sp12);
+        if ((((u16)stack.sp10 - 1) < ((u16)stack.sp10 - *(s16 *)(entry + 0x4A))) &&
+            (((u16)stack.sp12 - 1) < ((u16)stack.sp12 - *(s16 *)(entry + 0x4A)))) {
+            goto post_send_check;
+        }
+            if ((u16)stack.sp10 == 0) {
+                goto recompute_post_send_clear_flag_20;
+            }
+            if ((u16)stack.sp12 != 0) {
+                goto send_step_down;
+            }
+            goto recompute_post_send_clear_flag_20;
+        send_step_down:
+            func_80087770((s16)(ch | (slot << 8)), (u16)(stack.sp10 - 1), (u16)(stack.sp12 - 1), 1);
+            goto post_send_check;
+    }
+
+    if (step_copy < 0) {
+        *(u16 *)(entry + 0x4A) = *(u16 *)(entry + 0x4A) + step;
+        if (*(s16 *)(entry + 0x4A) < 0) {
+            goto send_zero_and_clear;
+        }
+
+        packed = (s16)(ch | (slot << 8));
+        func_80087CAC(packed, &stack.sp10, &stack.sp12);
+
+        if ((((u16)stack.sp10 + *(s16 *)(entry + 0x4C)) <= 0) &&
+            (((u16)stack.sp12 + *(s16 *)(entry + 0x4C)) <= 0)) {
+            func_80087770(packed, 0, 0, 1);
+            clear_entry = (u8 *)(*base_ptr + offset);
+            *(s32 *)(clear_entry + 0x98) &= ~0x20;
+        }
+
+        step = *(s16 *)(entry + 0x4C);
+            if (((*(s32 *)(entry + 0x9C) - *(s32 *)(entry + 0xA0)) * -step) < *(s16 *)(entry + 0x48)) {
+                if ((u16)stack.sp10 == 0) {
+                    goto recompute_post_send_clear_flag_20;
+                }
+                if ((u16)stack.sp12 != 0) {
+                    goto send_step_up;
+                }
+                goto recompute_post_send_clear_flag_20;
+            send_step_up:
+                func_80087770((s16)(ch | (slot << 8)), (u16)(stack.sp10 + step), (u16)(stack.sp12 + step), 1);
+            }
+            goto post_send_check;
+        }
+    }
+    goto update_position;
+
+recompute_post_send_clear_flag_20:
+    {
+        s32 clear_shift = (s32)(ch << 16) >> 14;
+        s32 clear_offset = (s16)slot * 0xB0;
+        clear_entry = (u8 *)(*(s32 *)((u8 *)&D_80106F28 + clear_shift) + clear_offset);
+    }
+    *(s32 *)(clear_entry + 0x98) &= ~0x20;
+    goto post_send_check;
+
+send_zero_and_clear:
+    func_80087770((s16)(ch | (slot << 8)), 0, 0, 1);
+    clear_entry = (u8 *)(*base_ptr + offset);
+    *(s32 *)(clear_entry + 0x98) &= ~0x20;
+
+post_send_check:
+    if (*(s32 *)(entry + 0xA0) == 0) {
+        goto recompute_clear_flag_20;
+    }
+    if (*(s16 *)(entry + 0x4A) > 0) {
+        goto update_position;
+    }
+
+  recompute_clear_flag_20:
+      {
+          s32 clear_shift = (s32)(ch << 16) >> 14;
+          s32 clear_offset = (s16)slot * 0xB0;
+          clear_entry = (u8 *)(*(s32 *)((u8 *)&D_80106F28 + clear_shift) + clear_offset);
+    }
+clear_flag_20:
+    *(s32 *)(clear_entry + 0x98) &= ~0x20;
+
+update_position:
+    func_80087CAC((s16)(ch | (slot << 8)), (s16 *)(entry + 0x5C), (s16 *)(entry + 0x5E));
+    return;
+}
 void spu_SetMotionState(s16 a0, s16 a1) {
     s32 shifted = a0 << 16;
     s32 *addr = (s32 *)&D_80106F28;
@@ -220,7 +481,135 @@ void func_80084A7C(s16 a0, s16 a1) {
     spu_NotifyChannel((s16)(a0 | (a1 << 8)));
     *(s32 *)(base + 0x90) = *(s16 *)(base + 0x54);
 }
-INCLUDE_ASM("asm/funcs", saTan0Main);
+extern void (*D_800F3340)(s16, s16, u8, u8);
+extern void (*D_800F3344)(s16, s16, u8, u8 *);
+extern void (*D_800F3348)(s16, s16, u8, u8 *);
+extern void (*D_800F334C)(s16, s16, u8, u8 *);
+extern void (*D_800F3350)(s16, s16, u8, u8 *);
+
+s32 saTan0Main(s16 a0, s16 a1) {
+    u8 *state;
+    unsigned char new_var2;
+    register s32 cmd asm("a2");
+    u8 *cmd_ptr;
+    u8 *ptr;
+    register u8 b asm("s2");
+    u8 prev;
+    u8 **new_var;
+    u8 *new_var3;
+    register u8 next asm("s4");
+    register s32 ret asm("s5");
+
+    state = (u8 *)(((s32)((void **)&D_80106F28)[a0]) + (a1 * 0xB0));
+    ptr = *(u8 **)state;
+    *(u8 **)((u8 *)(((s32)((void **)&D_80106F28)[a0]) + (a1 * 0xB0))) = ptr + 1;
+    b = ptr[0];
+    ret = 0;
+    if (((*(s32 *)((u8 *)(((s32)((void **)&D_80106F28)[a0]) + (a1 * 0xB0)) + 0x98)) & 0x401) == 0x401) {
+        if ((s32)(ptr + 1) == (*(s32 *)(state + 0x10) + 1)) {
+            ((void (*)(s16, s16, u8, u8 *))func_80084A7C)(a0, a1, ((u8 *)(*(s32 *)(state + 0x10)))[1], ptr);
+            ptr = *(u8 **)state;
+            return -1;
+        }
+    }
+    if (b & 0x80) {
+        state[0x17] = b & 0xF;
+        cmd = b & 0xF0;
+        switch (cmd) {
+        case 0x90:
+            state[0x16] = 0x90;
+            cmd_ptr = *(u8 **)state;
+            *(u8 **)state = cmd_ptr + 1;
+            prev = cmd_ptr[0];
+            *(u8 **)state = cmd_ptr + 2;
+            next = cmd_ptr[1];
+            new_var3 = state + 0x90;
+            *(s32 *)new_var3 = spu_ReadMotionFrame(a0, a1);
+            D_800F3340(a0, a1, prev, next);
+            return 0;
+
+        case 0xB0:
+            state[0x16] = 0xB0;
+            cmd_ptr = *(u8 **)state;
+            *(u8 **)state = cmd_ptr + 1;
+            next = cmd_ptr[0];
+            D_800F3350(a0, a1, next, cmd_ptr);
+            new_var2 = !a0;
+            if ((new_var2 && new_var2) && new_var2) {
+            }
+            return 0;
+
+        case 0xC0:
+            state[0x16] = 0xC0;
+            cmd_ptr = *(u8 **)state;
+            *(u8 **)state = cmd_ptr + 1;
+            next = cmd_ptr[0];
+            D_800F3344(a0, a1, next, cmd_ptr);
+            return 0;
+
+        case 0xE0:
+            state[0x16] = 0xE0;
+            *(u8 **)state = (*(u8 **)state) + 1;
+            D_800F3348(a0, a1, cmd, ptr);
+            return 0;
+
+        case 0xF0:
+            state[0x16] = 0xFF;
+            cmd_ptr = ptr;
+            *(u8 **)state = cmd_ptr + 1;
+            next = cmd_ptr[0];
+            if (next == 0x2F) {
+                ret = 1;
+                ((void (*)(s16, s16, u8, u8 *))func_80084A7C)(a0, a1, 0x2F, cmd_ptr);
+                return ret;
+            }
+            D_800F334C(a0, a1, next, cmd_ptr);
+            return 0;
+
+        default:
+            return 0;
+            if ((!a1) && (!a1)) {
+            }
+            return 0;
+        }
+    } else {
+        prev = state[0x16];
+        switch (prev) {
+        case 0x90:
+            cmd_ptr = *(u8 **)state;
+            *(u8 **)state = cmd_ptr + 1;
+            next = cmd_ptr[0];
+            *(s32 *)new_var3 = spu_ReadMotionFrame(a0, a1);
+            D_800F3340(a0, a1, b, next);
+            return 0;
+            if (!state) {
+            }
+
+        case 0xB0:
+            D_800F3350(a0, a1, b, ptr);
+            return 0;
+
+        case 0xC0:
+            D_800F3344(a0, a1, b, ptr);
+            return 0;
+
+        case 0xE0:
+            D_800F3348(a0, a1, b & 0xFF, ptr);
+            return 0;
+
+        case 0xFF:
+            if ((b & 0xFF) == 0x2F) {
+                ret = 1;
+                ((void (*)(s16, s16, u8, u8 *))func_80084A7C)(a0, a1, 0x2F, ptr);
+                return ret;
+            }
+            D_800F334C(a0, a1, b & 0xFF, ptr);
+
+        default:
+            return 0;
+        }
+    }
+}
 /* kengo:MED  |  sa_tan0/saTan0Main  |  233i */
 s32 spu_ReadMotionFrame(s32 arg0, s16 arg1) {
     s32 result;
