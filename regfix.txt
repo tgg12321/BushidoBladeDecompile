@@ -2082,3 +2082,74 @@ func_80084500: subst "\$20" "$5" @ 56
 func_80084500: subst "\$17,\$21" "$2,$7" @ 57
 func_80084500: subst "\$17,\$17" "$2,$2" @ 58
 func_80084500: subst "\$17,\$17" "$17,$2" @ 59
+
+# camera_set_zoom: delay slot fills (fix +8 bytes)
+camera_set_zoom: subst "nop" "addiu\t$2,$zero,1" @ 24
+camera_set_zoom: delete @ 25
+camera_set_zoom: subst "nop" "addiu\t$2,$zero,40" @ 27
+camera_set_zoom: delete @ 28
+
+# camera_set_zoom: s1<->s2 swap (out pointer <-> func result)
+camera_set_zoom: $17 <-> $18 @ 43-55
+camera_set_zoom: $17 <-> $18 @ 88-88
+camera_set_zoom: $17 <-> $18 @ 101-101
+camera_set_zoom: $17 <-> $18 @ 152-186
+
+# camera_set_zoom: first rounding $8->$3 + undo delay slot fill
+camera_set_zoom: subst "\$8" "$3" @ 74
+camera_set_zoom: subst "\$8" "$3" @ 76
+camera_set_zoom: subst "\.L596" ".Lcam_rnd1" @ 76
+camera_set_zoom: subst "sra\t\$3,\$8,3" "nop" @ 77
+camera_set_zoom: subst "\$8" "$3" @ 78
+camera_set_zoom: subst "\$8" "$3" @ 78
+camera_set_zoom: subst "\$8" "$3" @ 79
+camera_set_zoom: insert ".Lcam_rnd1:" @ 77
+
+# camera_set_zoom: s1==0 branch dx_delta ($3->$4, $17->$4)
+camera_set_zoom: subst "\$3" "$4" @ 103
+camera_set_zoom: subst "\$17" "$4" @ 106
+camera_set_zoom: subst "\$3" "$4" @ 106
+camera_set_zoom: subst "sll\t\$4,\$17,16" "sh\t$4,72($sp)" @ 107
+camera_set_zoom: subst "sh\t\$17,72\(\$sp\)" "sll\t$4,$4,16" @ 108
+camera_set_zoom: subst "\$17" "$4" @ 111
+camera_set_zoom: subst "\$17" "$4" @ 114
+camera_set_zoom: subst "\$17" "$4" @ 117
+
+# camera_set_zoom: s1==0 branch dz_delta ($19->$3)
+camera_set_zoom: subst "\$19" "$3" @ 121
+camera_set_zoom: subst "\$19" "$3" @ 123
+camera_set_zoom: subst "\$19" "$3" @ 126
+
+# camera_set_zoom: s1==0 final loads ($17->$19, $19->$18)
+camera_set_zoom: subst "\$17" "$19" @ 130
+camera_set_zoom: subst "\$19" "$18" @ 131
+
+# camera_set_zoom: else branch dx ($17->$2)
+camera_set_zoom: subst "\$17" "$2" @ 134
+camera_set_zoom: subst "\$17" "$2" @ 136
+camera_set_zoom: subst "\$17" "$2" @ 138
+camera_set_zoom: subst "\$17" "$2" @ 138
+
+# camera_set_zoom: else branch dz ($19->$3)
+camera_set_zoom: subst "\$19" "$3" @ 139
+camera_set_zoom: subst "\$19" "$3" @ 141
+camera_set_zoom: subst "\$19" "$3" @ 143
+camera_set_zoom: subst "\$19" "$3" @ 143
+
+# camera_set_zoom: else branch sra dest/src splits
+camera_set_zoom: subst "\$17" "$19" @ 142
+camera_set_zoom: subst "\$17" "$2" @ 142
+camera_set_zoom: subst "\$19" "$18" @ 144
+camera_set_zoom: subst "\$19" "$3" @ 144
+
+# camera_set_zoom: v0<->v1 swap for pointer deref block
+camera_set_zoom: $2 <-> $3 @ 181-184
+
+# camera_set_zoom: D_800A3758 section (reorder lhu/sb + register fix)
+camera_set_zoom: subst "sb\t\$2,D_800A3769" "lhu\t$3,4($16)" @ 187
+camera_set_zoom: subst "lhu\t\$2,4\(\$16\)" "sb\t$2,D_800A3769" @ 188
+camera_set_zoom: subst "\$2" "$3" @ 189
+
+# camera_set_zoom: final adds dx/dz register fix
+camera_set_zoom: subst "\$17" "$19" @ 206
+camera_set_zoom: subst "\$19" "$18" @ 207
