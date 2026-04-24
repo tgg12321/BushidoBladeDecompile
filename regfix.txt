@@ -1043,7 +1043,7 @@ func_8003DBE4: subst ",56" ",64" @ 125
 # Step computation: direct s2 → shared v0 intermediate + single subu at merge
 # Branch target: .L172 is past subu, but bnez should go TO the shared subu (.L172-4)
 func_8003DBE4: subst "addiu.*" "nop" @ 28
-func_8003DBE4: subst "\.L252" ".L252-4" @ 29
+func_8003DBE4: subst "\.L280" ".L280-4" @ 29
 func_8003DBE4: subst "subu.*" "addiu\t$2,$zero,22000" @ 30
 func_8003DBE4: subst "\$18,\$zero" "$2,$zero" @ 31
 func_8003DBE4: subst "\$18,\$18" "$18,$2" @ 32
@@ -2240,3 +2240,6 @@ func_8008BC60: delete @ 74
 func_8008BC60: reorder 4,5,3 @ 3-5
 # Reorder: inner loop setup swap
 func_8008BC60: reorder 33,32 @ 32-33
+
+# DispSleepMenuTex: insert va_start home store for first_arg
+DispSleepMenuTex: insert "sw	$21,1340($29)" @ 19
