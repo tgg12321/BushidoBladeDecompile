@@ -2243,3 +2243,120 @@ func_8008BC60: reorder 33,32 @ 32-33
 
 # DispSleepMenuTex: insert va_start home store for first_arg
 DispSleepMenuTex: insert "sw	$21,1340($29)" @ 19
+
+# Register swaps (Phase 1)
+# Substs (Phase 1.5, original indices)
+# target_color chain: reorder prep
+# px register: v1->a0
+# blend sll dest: v0->a1
+# g_src srl/andi: v1->a0 source, v0->v1 dest
+# g mflo: a0->v1
+# b_src srl/andi: v1->a0 source, v0->a0 dest
+# r_ch addu dest: a1->v0
+# r_ch sra source: a1->v0
+# g_ch addu: a0,t1,a0 -> v0,t1,v1
+# g_ch sra: a0,a0 -> v1,v0
+# g_ch andi: a0,a0 -> v1,v1
+# b_shift mflo: v1->t7
+# b_shift addu: v1,v0,v1 -> v0,a0,t7
+# b_shift sra: v1,v1 -> a0,v0
+# final or: a0->v1
+# final andi source: v1->a0
+# loop tail: lh register swap
+# loop tail: mult operand swap
+# backward branch delay slot fill
+# Delete (Phase 2): remove extra move s6,a0
+# Reorders (Phase 4, post-delete indices)
+# Setup block: maspsx scheduling fix
+# target_color chain: andi,sll before or
+
+# Register swaps (Phase 1)
+# Substs (Phase 1.5, original indices)
+# target_color chain: reorder prep
+# px register: v1->a0
+# blend sll dest: v0->a1
+# g_src srl/andi: v1->a0 source, v0->v1 dest
+# g mflo: a0->v1
+# b_src srl/andi: v1->a0 source, v0->a0 dest
+# r_ch addu dest: a1->v0
+# r_ch sra source: a1->v0
+# g_ch addu: a0,t1,a0 -> v0,t1,v1
+# g_ch sra: a0,a0 -> v1,v0
+# g_ch andi: a0,a0 -> v1,v1
+# b_shift mflo: v1->t7
+# b_shift addu: v1,v0,v1 -> v0,a0,t7
+# b_shift sra: v1,v1 -> a0,v0
+# final or: a0->v1
+# final andi source: v1->a0
+# loop tail: lh register swap
+# loop tail: mult operand swap
+# backward branch delay slot fill
+# Delete (Phase 2): remove extra move s6,a0
+# Reorders (Phase 4, post-delete indices)
+# Setup block: maspsx scheduling fix
+# target_color chain: andi,sll before or
+
+# func_8003DE14: VRAM pixel fade/blend (179 target insns, 180 ours -> delete 1)
+# Register swaps (Phase 1)
+func_8003DE14: $6 <-> $7 @ 54-133
+func_8003DE14: $12 <-> $13 @ 71-140
+# Substs (Phase 1.5, original indices)
+# target_color chain: reorder prep
+func_8003DE14: subst "or\t\$3,\$4,\$3" "or\t$2,$2,$3" @ 40
+func_8003DE14: subst "\$3" "$4" @ 43
+func_8003DE14: subst "\$4" "$22" @ 47
+# px register: v1->a0
+func_8003DE14: subst "\$3,\$8" "$4,$8" @ 89
+func_8003DE14: subst "\$3,\$0" "$4,$0" @ 90
+# blend sll dest: v0->a1
+func_8003DE14: subst "\$2" "$5" @ 95
+func_8003DE14: subst "\$2" "$5" @ 96
+# g_src srl/andi: v1->a0 source, v0->v1 dest
+func_8003DE14: subst "\$3" "$4" @ 102
+func_8003DE14: subst "\$2" "$3" @ 103
+func_8003DE14: subst "\$2" "$3" @ 104
+# g mflo: a0->v1
+func_8003DE14: subst "\$4" "$3" @ 109
+# b_src srl/andi: v1->a0 source, v0->a0 dest
+func_8003DE14: subst "\$3" "$4" @ 110
+func_8003DE14: subst "\$2" "$4" @ 111
+func_8003DE14: subst "\$2" "$4" @ 112
+func_8003DE14: subst "\$2" "$4" @ 113
+# r_ch addu dest: a1->v0
+func_8003DE14: subst "\$5" "$2" @ 118
+# r_ch sra source: a1->v0
+func_8003DE14: subst "\$5,\$5" "$5,$2" @ 119
+# g_ch addu: a0,t1,a0 -> v0,t1,v1
+func_8003DE14: subst "addu\t\$4,\$9,\$4" "addu\t$2,$9,$3" @ 121
+# g_ch sra: a0,a0 -> v1,v0
+func_8003DE14: subst "sra\t\$4,\$4" "sra\t$3,$2" @ 122
+# g_ch andi: a0,a0 -> v1,v1
+func_8003DE14: subst "\$4,\$4" "$3,$3" @ 123
+# b_shift mflo: v1->t7
+func_8003DE14: subst "\$3" "$15" @ 124
+# b_shift addu: v1,v0,v1 -> v0,a0,t7
+func_8003DE14: subst "addu\t\$3,\$2,\$3" "addu\t$2,$4,$15" @ 125
+# b_shift sra: v1,v1 -> a0,v0
+func_8003DE14: subst "sra\t\$3,\$3" "sra\t$4,$2" @ 126
+# final or: a0->v1
+func_8003DE14: subst "\$4" "$3" @ 129
+# final andi source: v1->a0
+func_8003DE14: subst "\$3,\$3" "$3,$4" @ 130
+# loop tail: lh register swap
+func_8003DE14: subst "\$3,4" "$2,4" @ 134
+func_8003DE14: subst "\$2,6" "$3,6" @ 135
+# loop tail: mult operand swap
+func_8003DE14: subst "\$3,\$2" "$2,$3" @ 137
+# backward branch: redirect to bne (skip addu count-1)
+func_8003DE14: subst "\.L301" ".L_DE14_LOOP" @ 141
+# backward branch delay slot fill
+func_8003DE14: subst "nop.*" "addu\t$2,$18,-1" @ 142
+# Delete (Phase 2): remove extra move s6,a0
+func_8003DE14: delete @ 49
+# Insert label before bne (post-delete idx 72 = addu, 73 = bne)
+func_8003DE14: insert_after ".L_DE14_LOOP:" @ 72
+# Reorders (Phase 4, post-delete indices)
+# Setup block: maspsx scheduling fix
+func_8003DE14: reorder 24,22,23,34,25,26,27,28,29,30,31,32,33 @ 22-34
+# target_color chain: andi,sll before or
+func_8003DE14: reorder 41,42,40,43 @ 40-43
