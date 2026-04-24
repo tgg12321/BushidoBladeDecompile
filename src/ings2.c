@@ -354,14 +354,114 @@ void D_80083370(s32 a0, s32 a1) {
         D_800A2614[a0] = a1;
     }
 }
+extern s32 D_800A2640[8];
+extern s32 *D_800A263C;
+extern s32 *D_800A2660;
+extern u8 D_80016394;
+extern u8 D_800163B0;
+
+void D_80083418(void);
+s32 D_8008359C(s32, s32);
+
 void sys_MemClear(s32 *a0, s32 a1) {
     s32 i;
     for (i = a1 - 1; i != -1; i--) {
         *a0++ = 0;
     }
 }
-INCLUDE_ASM("asm/funcs", conv_matrix_rotation);
-/* kengo:MED  |  common/conv_matrix_rotation  |  145i  |  -14 9.7% */
+s32 conv_matrix_rotation(void) {
+    sys_MemClear2((s32 *)&D_800A2640, 8);
+    *(volatile s32 *)D_800A263C = 0;
+    ((void (*)(s32, void *))irq_EnableInterrupts)(3, (void *)D_80083418);
+    return (s32)D_8008359C;
+}
+
+void D_80083418(void) {
+    s32 i;
+    u32 bits;
+    s32 *tbl;
+    s32 *base;
+    s32 one;
+    u32 mask_const;
+
+    bits = ((u32)*(volatile s32 *)D_800A263C >> 24) & 0x7F;
+    if (bits == 0) goto done;
+
+    one = 1;
+    mask_const = 0x00FFFFFF;
+    base = D_800A2640;
+
+outer:
+    if (bits == 0) goto reload;
+    i = 0;
+    tbl = base;
+inner:
+    if (i >= 7) goto reload;
+    if (bits & 1) {
+        s32 *ctrl = D_800A263C;
+        s32 val = *ctrl;
+        val &= (one << (i + 24)) | mask_const;
+        *ctrl = val;
+
+        if (*tbl != 0) {
+            ((void (*)(void))*tbl)();
+        }
+    }
+    tbl++;
+    bits >>= 1;
+    i++;
+    if (bits != 0) goto inner;
+reload:
+    bits = ((u32)*(volatile s32 *)D_800A263C >> 24) & 0x7F;
+    if (bits != 0) goto outer;
+
+done:
+    {
+        s32 *ctrl = D_800A263C;
+        s32 val = *ctrl;
+        if ((val & (s32)0xFF000000u) == (s32)0x80000000u) goto error;
+        val = *(volatile s32 *)ctrl;
+        if (!(val & 0x8000)) return;
+    error:
+        debug_printf(&D_80016394, *ctrl);
+        i = 0;
+        do {
+            s32 *p = D_800A2660;
+            debug_printf(&D_800163B0, i, *(s32 *)((u8 *)p + (i << 4)));
+            i++;
+        } while (i < 7);
+    }
+}
+
+s32 D_8008359C(s32 a0, s32 a1) {
+    s32 *tbl;
+    s32 old;
+
+    tbl = &D_800A2640[a0];
+    old = *tbl;
+    if (a1 == old) return old;
+
+    if (a1 != 0) {
+        s32 *ctrl = D_800A263C;
+        s32 val;
+        *tbl = a1;
+        val = *ctrl;
+        val &= 0x00FFFFFF;
+        val |= (1 << (a0 + 16)) | 0x00800000;
+        *ctrl = val;
+    } else {
+        s32 *ctrl = D_800A263C;
+        s32 val;
+        *tbl = 0;
+        val = *ctrl;
+        val &= 0x00FFFFFF;
+        val |= 0x00800000;
+        val &= ~(1 << (a0 + 16));
+        *ctrl = val;
+    }
+    return old;
+}
+
 void sys_MemClear2(s32 *a0, s32 a1) {
     s32 i;
     for (i = a1 - 1; i != -1; i--) {
