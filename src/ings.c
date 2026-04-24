@@ -66,6 +66,11 @@ extern void func_800789D8(u32);
 extern void func_80078968(s32);
 extern void func_80060E04(s32);
 extern void func_8003D2F4(void);
+extern void ReturnVTMenu(void);
+extern void single_game_VoiceContorol();
+extern u8 D_800A3768;
+extern u32 D_8008D090;
+extern u8 D_80010034;
 extern void func_8003D330(void);
 extern u8 *func_8005D46C(u8 *);
 extern u8 *func_8005D554(u8 *, u8);
@@ -576,7 +581,99 @@ s32 rng_Next(void) {
     g_file_heap_base = seed;
     return seed & 0x7FFF;
 }
-INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action_2);
+void cpu_set_move_command_and_dir_for_no_action_2(void) {
+    s32 idx;
+    u8 *env;
+    u8 *ot;
+    s32 voice;
+    u32 *tbl;
+
+    motion_Open();
+    func_800789D8(0x801FFF00);
+    func_80078968(2);
+    sys_Init();
+    sys_GameInit();
+    gpu_SetDispMask(1);
+    func_80016A8C((u8 *)0x80118800);
+
+    tbl = &D_800A3770;
+    D_800A3834 = 0xF;
+    D_800A390D = 0;
+    D_800A36AC = 0;
+
+loop:
+    idx = D_800A36AC & 1;
+    env = &D_800F7438 + idx * 0x4090;
+    ot = env + 0x70;
+    func_8007B844(ot, 0x1008);
+    D_800A374C = ot;
+    D_800A38B4 = tbl[idx];
+    func_80060E04(idx);
+    func_8003D2F4();
+    single_game_VoiceContorol(voice);
+    special_camera_Exec();
+    func_8005C6D0();
+
+    if (D_800A3928 != 0) {
+        func_800372C0();
+        D_800A3768 = 0xFF;
+        D_800A3928 = 0;
+        D_800A31DA = 0;
+        D_800A3834 = 8;
+    }
+
+    ((void (*)(void))(&D_8008D090)[D_800A3834])();
+    ReturnVTMenu();
+
+    do {
+        if (func_80078B04(0xF2000001u) >= ((D_800A36F1 - 1) << 8) + 0x80) break;
+        func_80079154();
+    } while (1);
+
+    sys_VSync(1);
+    gpu_DrawSync(0);
+    sys_VSync(0);
+    func_80078BA8(0xF2000001u);
+
+    voice = D_800A390D;
+    if (voice == 0) {
+        func_8007BC08(env + 0x5C);
+        func_8007B9B0(env);
+    }
+
+    {
+        s32 adj = D_800A38B4 + 0xFFFECC00u;
+        s32 remaining = (s32)tbl[idx] - adj;
+        if (remaining < D_800A30DC) {
+            D_800A30DC = remaining;
+        }
+        if (remaining < 0) {
+            debug_printf(&D_80010034);
+            while (1) {
+                func_800164F8();
+            }
+        }
+    }
+
+    if (D_800A390D != 0) {
+        D_800A390D--;
+    } else {
+        gpu_DrawOTag(env + 0x408C);
+        D_800A36AC++;
+    }
+
+    if (D_800A3834 != 1) goto loop;
+    if (voice != 0) goto loop;
+    if (D_80102794 & 0x08000800u) goto call_func;
+    if (D_800A38DC != 2) goto loop;
+    if (D_800A3713 == 0) goto loop;
+    D_800A3713--;
+    if (D_800A3713 != 0) goto loop;
+call_func:
+    func_80016E60(env);
+    goto loop;
+}
+
 /* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action_2  |  189i  |  x2 size collision */
 void gnd_disp_loop_ctrl(void) {
     u32 new_var;

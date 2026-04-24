@@ -2360,3 +2360,29 @@ func_8003DE14: insert_after ".L_DE14_LOOP:" @ 72
 func_8003DE14: reorder 24,22,23,34,25,26,27,28,29,30,31,32,33 @ 22-34
 # target_color chain: andi,sll before or
 func_8003DE14: reorder 41,42,40,43 @ 40-43
+
+cpu_set_move_command_and_dir_for_no_action_2: subst "jal\tfunc_80016A8C" "ori\t$4,$4,0x8800" @ 20
+cpu_set_move_command_and_dir_for_no_action_2: subst "ori\t\$4,\$4,0x8800" "addu\t$5,$18,$zero" @ 21
+cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$3,\$3,-128" "addu\t$3,$3,128" @ 84
+cpu_set_move_command_and_dir_for_no_action_2: subst "jal\tfunc_80016E60" "addu\t$4,$18,$zero" @ 167
+cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$4,\$18,\$zero" "jal\tfunc_80016E60" @ 168
+cpu_set_move_command_and_dir_for_no_action_2: subst "nop" "addiu\t$5,$zero,4104" @ 170
+cpu_set_move_command_and_dir_for_no_action_2: subst "nop" "addiu\t$5,$zero,4104" @ 147
+cpu_set_move_command_and_dir_for_no_action_2: insert "addiu\t$3,$3,-1" @ 83
+cpu_set_move_command_and_dir_for_no_action_2: insert "addu\t$6,$17,$zero" @ 22
+cpu_set_move_command_and_dir_for_no_action_2: insert "jal\tfunc_80016A8C" @ 22
+cpu_set_move_command_and_dir_for_no_action_2: insert_after "addu\t$5,$17,$zero" @ 171
+cpu_set_move_command_and_dir_for_no_action_2: subst "la\t\$3,D_800F7438" "addiu\t$5,$zero,4104\n.Linner:\n\tlw\t$2,%gp_rel(D_800A36AC)($gp)" @ 27
+cpu_set_move_command_and_dir_for_no_action_2: subst "lw\t\$2,%gp_rel\(D_800A36AC\)\(\$gp\)" "lui\t$3,%hi(D_800F7438)" @ 28
+cpu_set_move_command_and_dir_for_no_action_2: subst "addiu\t\$5,\$zero,4104" "addiu\t$3,$3,%lo(D_800F7438)" @ 29
+cpu_set_move_command_and_dir_for_no_action_2: subst "lui\t\$2" "lui\t$4" @ 104
+cpu_set_move_command_and_dir_for_no_action_2: subst "lui\t\$2" "lui\t$4" @ 109
+cpu_set_move_command_and_dir_for_no_action_2: subst "lw\t\$3,%gp_rel\(D_800A38B4\)\(\$gp\)" "ori\t$4,$4,0xcc00" @ 110
+cpu_set_move_command_and_dir_for_no_action_2: subst "ori\t\$2,\$2,0xcc00" "sll\t$2,$17,2" @ 111
+cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$3,\$3,\$2" "lw\t$3,%gp_rel(D_800A38B4)($gp)" @ 112
+cpu_set_move_command_and_dir_for_no_action_2: subst "sll\t\$2,\$17,2" "addu\t$2,$2,$20" @ 113
+cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$2,\$2,\$20" "addu\t$3,$3,$4" @ 114
+cpu_set_move_command_and_dir_for_no_action_2: subst "\.L105" ".Linner" @ 146
+cpu_set_move_command_and_dir_for_no_action_2: subst "\.L105" ".Linner" @ 148
+cpu_set_move_command_and_dir_for_no_action_2: subst "\.L105" ".Linner" @ 161
+cpu_set_move_command_and_dir_for_no_action_2: subst "\.L105" ".Linner" @ 169
