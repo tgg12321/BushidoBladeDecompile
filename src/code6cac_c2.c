@@ -1370,7 +1370,102 @@ void func_8003DDF8(u32 arg0) {
     arg0 &= 0xFFFFFF;
     ptr[0x3FFC / 4] = arg0;
 }
-INCLUDE_ASM("asm/funcs", func_8003DE14);
+void func_8003DE14(s16 *rect, s32 count) {
+    u16 src_buf[0x200];
+    u16 dst_buf[0x200];
+    u8 color_info[0x20];
+    register s32 i asm("s1");
+    register s32 saved_y asm("s7");
+    register s32 r asm("s5");
+    register s32 g asm("s4");
+    register s32 b asm("s3");
+    s32 target_color;
+
+    gpu_DrawSync(0);
+    count--;
+    gpu_StoreImage((s32 *)rect, src_buf);
+    gpu_DrawSync(0);
+    i = 0;
+    ((u16 *)rect)[1] -= ((u16 *)rect)[3];
+    gpu_LoadImage((s32)rect, (s32)src_buf);
+    saved_y = rect[1];
+    rect[1] = ((u16 *)rect)[3] + saved_y;
+    func_80052BE4(color_info);
+
+    r = color_info[0];
+    g = color_info[1];
+    b = color_info[2];
+    target_color = (u32)r >> 3;
+    target_color |= ((g & 0xF8) << 2) | (s32)-0x8000;
+    target_color |= (b & 0xF8) << 7;
+
+    if (count > 0) {
+        s32 blend_base = 0x1000;
+        do {
+            s32 total = rect[2] * rect[3];
+            u16 *src = src_buf;
+            u16 *dst = dst_buf;
+            s32 factor = ((i + 1) << 12) / count;
+            s32 j = 0;
+
+            if (total > 0) {
+                s32 complement = blend_base - factor;
+                do {
+                    __asm__ volatile("" : "=r"(count) : "0"(count));
+                    if (i == count - 1) {
+                        u16 pixel = *src;
+                        if (pixel == 0) {
+                            *dst = pixel;
+                            src++;
+                            goto advance_dst;
+                        }
+                        *dst++ = target_color;
+                        src++;
+                        goto loop_check;
+                    }
+                    {
+                        u16 pixel = *src;
+                        s32 px = pixel & 0xFFFF;
+                        if (px == 0) {
+                            *dst = pixel;
+                            src++;
+                            goto advance_dst;
+                        }
+                        {
+                            s32 r_src = (pixel & 0x1F) << 3;
+                            s32 g_src = ((u32)px >> 2) & 0xF8;
+                            s32 b_src = ((u32)px >> 7) & 0xF8;
+                            s32 r_ch;
+                            s32 g_ch;
+                            s32 b_shift;
+                            src++;
+                            r_ch = ((r_src * complement + r * factor) >> 15) & 0x1F;
+                            g_ch = ((g_src * complement + g * factor) >> 10) & 0x3E0;
+                            b_shift = (b_src * complement + b * factor) >> 5;
+                            *dst = (pixel & 0x8000) | r_ch | g_ch | (b_shift & 0x7C00);
+                        }
+                    }
+                advance_dst:
+                    dst++;
+                loop_check:
+                    j++;
+                } while (j < rect[2] * rect[3]);
+            }
+
+            {
+                s32 new_y = ((u16 *)rect)[1] + ((u16 *)rect)[3];
+                ((u16 *)rect)[1] = new_y;
+                if ((s16)new_y >= 0x200) {
+                    rect[1] = saved_y;
+                    ((u16 *)rect)[0] += ((u16 *)rect)[2];
+                }
+            }
+            gpu_LoadImage((s32)rect, (s32)dst_buf);
+            gpu_DrawSync(0);
+            i++;
+        } while (i < count);
+    }
+}
 void func_8003E0E0(void) {
     s16 buf[4];
     buf[1] = 0x1E1;
