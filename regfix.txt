@@ -1668,14 +1668,14 @@ SetPacketData: $16 <-> $18 @ 9-127
 
 # Eliminate orphan j+addu chain after the early-return: branch beq directly to .L525,
 # fill its delay slot with cb_idx=0 (was move s4,a1; now relocated to prologue insert)
-SetPacketData: subst "beq\s+\$2,\$0,\.L723" "beq $2,$0,.L724" @ 11
+SetPacketData: subst "beq\s+\$2,\$0,\.L744" "beq $2,$0,.L745" @ 11
 SetPacketData: subst "addu\s+\$20,\$5,\$zero" "addu $16,$0,$zero" @ 12
 SetPacketData: delete @ 15
 SetPacketData: delete @ 16
 
 # Pre-loop reload of D_800F1AF4 (target re-reads global instead of using cached r_arg1).
 # Subst beq to test the reloaded $2; insert lw+nop before it (post-delete idx 41).
-SetPacketData: subst "beq\s+\$20,\$0,\.L726" "beq $2,$0,.L726" @ 43
+SetPacketData: subst "beq\s+\$20,\$0,\.L747" "beq $2,$0,.L747" @ 43
 
 # Bne delay slot fill: target keeps a `s1=0;` dead-store that GCC eliminated in mine
 SetPacketData: subst "nop" "addu $17,$0,$zero" @ 101
@@ -2161,3 +2161,82 @@ camera_set_zoom: subst "\$2" "$3" @ 189
 # camera_set_zoom: final adds dx/dz register fix
 camera_set_zoom: subst "\$17" "$19" @ 206
 camera_set_zoom: subst "\$19" "$18" @ 207
+
+# func_8008BC60: phantom  spill + full register allocation cascade
+# prologue: replace sp/s0 save with move t8,a0; move a0,a2
+# func_8008BC60: phantom $s0 spill + full register cascade (75-insn leaf)
+# Prologue: replace sp/s0 save with target's arg register moves
+func_8008BC60: subst "subu\t\$sp,\$sp,8" "addu\t$24,$4,$0" @ 0
+func_8008BC60: subst "sw\t\$16,0\(\$sp\)" "addu\t$4,$6,$0" @ 1
+# Bit scan setup: register renames
+func_8008BC60: subst "\$2,\$0,\$6" "$6,$0,$6" @ 2
+func_8008BC60: subst "andi\t\$14,\$2,0xffff" "andi\t$6,$6,0xffff" @ 3
+func_8008BC60: subst "srl\t\$7,\$14,15" "srav\t$2,$6,$10" @ 6
+func_8008BC60: subst "\$7,0x0001" "$2,0x0001" @ 7
+# Bit scan loop body
+func_8008BC60: subst "addu\t\$10,\$10,-1" "addiu\t$10,$10,-1" @ 12
+func_8008BC60: subst "srl\t\$7,\$14,\$10" "srav\t$2,$6,$10" @ 14
+func_8008BC60: subst "addu\t\$25,\$3,-12" "addiu\t$15,$3,-12" @ 15
+# Post-bitscan: sll→sllv, register renames
+func_8008BC60: subst "sll\t\$24,\$2,\$3" "sllv\t$14,$2,$3" @ 17
+func_8008BC60: subst "\$12,\$zero,4096" "$8,$zero,4096" @ 18
+func_8008BC60: subst "\$14,\$6" "$6,$4" @ 20
+func_8008BC60: subst "\$24,\$12" "$14,$8" @ 21
+# Outer loop: strength-reduction chain register renames ($12→$8)
+func_8008BC60: subst "\$12" "$8" @ 22
+func_8008BC60: subst "\$12" "$8" @ 23
+func_8008BC60: subst "\$12" "$8" @ 25
+func_8008BC60: subst "\$13" "$12" @ 27
+func_8008BC60: subst "subu\t\$2,\$2,\$12" "subu\t$8,$2,$8" @ 28
+func_8008BC60: subst "srl\t\$12,\$2,12" "srl\t$8,$8,12" @ 29
+func_8008BC60: subst "\$24,\$12" "$14,$8" @ 30
+func_8008BC60: subst "\$8,\$0" "$4,$0" @ 31
+# Inner loop setup: swap idx 32,33 + rename $15→$13
+func_8008BC60: subst "\$15,\$10" "$13,$10" @ 33
+# Inner loop: register renames
+func_8008BC60: subst "\$13" "$12" @ 35
+func_8008BC60: subst "\$3,\$9" "$7,$9" @ 37
+func_8008BC60: subst "\$13" "$12" @ 38
+# Inner loop: restructure comparison sequence (idx 39-42)
+func_8008BC60: subst "srl\t\$7,\$2,12" "addu\t$3,$12,$7" @ 39
+func_8008BC60: subst "sltu\t\$2,\$14,\$7" "srl\t$2,$2,12" @ 40
+func_8008BC60: subst "bne\t\$2,\$0,\.L691" "sltu\t$2,$6,$2" @ 41
+func_8008BC60: subst "addu\t\$2,\$13,\$3" "bne\t$2,$0,.L691" @ 42
+# Second comparison in inner loop
+func_8008BC60: subst "srl\t\$6,\$2,12" "srl\t$3,$3,12" @ 43
+func_8008BC60: subst "sltu\t\$2,\$14,\$6" "sltu\t$2,$6,$3" @ 44
+func_8008BC60: subst "addu\t\$7,\$15,\$8" "addu\t$2,$13,$4" @ 46
+# Inner loop increment/test
+func_8008BC60: subst "\$3,\$3,\$9" "$7,$7,$9" @ 47
+func_8008BC60: subst "addu\t\$8,\$8,1" "addiu\t$4,$4,1" @ 48
+func_8008BC60: subst "\$8,32" "$4,32" @ 49
+func_8008BC60: subst "addu\t\$10,\$10,1" "addiu\t$10,$10,1" @ 52
+func_8008BC60: subst "\$24,\$12" "$14,$8" @ 55
+# Epilogue register renames
+func_8008BC60: subst "\$7,\$zero,1536" "$2,$zero,1536" @ 56
+func_8008BC60: subst "bgez\t\$7" "bgez\t$2" @ 57
+func_8008BC60: subst "\$6,\$7,\$zero" "$3,$2,$zero" @ 58
+func_8008BC60: subst "addu\t\$6,\$7,127" "addiu\t$3,$2,127" @ 59
+func_8008BC60: subst "\$6,\$6,7" "$3,$3,7" @ 60
+func_8008BC60: subst "\$3,\$6" "$4,$3" @ 61
+func_8008BC60: subst "subu\t\$3,\$7,\$3" "subu\t$4,$2,$4" @ 62
+func_8008BC60: subst "\$2,\$4" "$2,$24" @ 63
+func_8008BC60: subst "addu\t\$7,\$2,\$6" "addu\t$2,$2,$3" @ 64
+func_8008BC60: subst "\$2,\$25" "$3,$15" @ 65
+func_8008BC60: subst "addu\t\$6,\$2,\$25" "addu\t$3,$3,$15" @ 66
+func_8008BC60: subst "\$6,\$6,2" "$3,$3,2" @ 67
+func_8008BC60: subst "addu\t\$7,\$7,\$6" "addu\t$2,$2,$3" @ 68
+func_8008BC60: subst "\$2,\$5" "$3,$5" @ 69
+func_8008BC60: subst "addu\t\$6,\$2,\$3" "addu\t$3,$3,$4" @ 70
+func_8008BC60: subst "\$7,\$7,8" "$2,$2,8" @ 71
+# Epilogue: replace or/lw with jr/or, delete sp restore + jr + nop
+func_8008BC60: subst "or\t\$2,\$7,\$6" "j\t$31" @ 72
+func_8008BC60: subst "lw\t\$16,0\(\$sp\)" "or\t$2,$2,$3" @ 73
+# Delete extra epilogue instructions
+func_8008BC60: delete @ 76
+func_8008BC60: delete @ 75
+func_8008BC60: delete @ 74
+# Reorder: bit scan setup (move andi after li)
+func_8008BC60: reorder 4,5,3 @ 3-5
+# Reorder: inner loop setup swap
+func_8008BC60: reorder 33,32 @ 32-33

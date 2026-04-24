@@ -2616,7 +2616,88 @@ void func_8008B400(u8 *a0) {
 INCLUDE_ASM("asm/funcs", saTan1MainJump);
 /* kengo:MED  |  sa_tan1/saTan1MainJump  |  413i  |  -10 */
 INCLUDE_ASM("asm/funcs", func_8008BB24);
-INCLUDE_ASM("asm/funcs", func_8008BC60);
+s32 func_8008BC60(s32 arg0, s32 arg1, s32 arg2) {
+    s32 bit_pos;
+    s32 i;
+    s32 v0;
+    s32 v1;
+    u32 t0;
+    s32 old_prod;
+    s32 t6;
+    s32 t7;
+    u32 step;
+    u32 a3_acc;
+    s32 t3_acc;
+    s32 a0_inner;
+    u32 a2_search;
+
+    a2_search = ~arg2 & 0xFFFF;
+    bit_pos = 0;
+    i = 15;
+    v0 = a2_search >> i;
+
+    do {
+        if ((v0 & 1) == 0) {
+            bit_pos = i;
+            goto found_bit;
+        }
+        i--;
+        v0 = a2_search >> i;
+    } while (i >= 0);
+
+found_bit:
+    t7 = bit_pos - 12;
+    t6 = 1 << bit_pos;
+    t0 = 0x1000;
+    i = 0;
+    a2_search = arg2 & 0xFFFF;
+
+    do {
+        old_prod = t6 * t0;
+        t0 = (t0 * 4155) >> 12;
+        a0_inner = 0;
+        t3_acc = 0;
+        step = (u32)(t6 * t0 - old_prod) >> 5;
+        a3_acc = step;
+
+        do {
+            v0 = (u32)(old_prod + t3_acc) >> 12;
+            if (a2_search < (u32)v0) {
+                goto inner_inc;
+            }
+            v1 = (u32)(old_prod + a3_acc) >> 12;
+            if (a2_search < (u32)v1) {
+                v0 = (i << 5) + a0_inner;
+                goto found;
+            }
+        inner_inc:
+            a3_acc += step;
+            a0_inner++;
+            t3_acc += step;
+        } while (a0_inner < 0x20);
+
+        i++;
+    } while (i < 0x30);
+
+    v0 = 0x600;
+
+found:
+    v1 = v0;
+    if (v0 < 0) {
+        v1 = v0 + 0x7F;
+    }
+    v1 >>= 7;
+    {
+        s32 rem = v0 - (v1 << 7);
+        v0 = (arg0 & 0xFFFF) + v1;
+        v1 = t7 * 3;
+        v1 <<= 2;
+        v0 += v1;
+        v1 = (arg1 & 0xFFFF) + rem;
+        v0 <<= 8;
+        return v0 | v1;
+    }
+}
 void func_8008BD88(s32 arg0, u16 *arg1, u16 *arg2) {
     u16 temp_v1;
     u16 temp_a0_2;
