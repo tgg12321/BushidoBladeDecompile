@@ -14,6 +14,8 @@
 #   bash tools/dc.sh validate-regfix [--func F]   — validate regfix.txt rules (static)
 #   bash tools/dc.sh validate-regfix --live [--func F] — validate rules against pipeline
 #   bash tools/dc.sh gen-regfix <func_name> [src] — auto-generate regfix rules from diff
+#   bash tools/dc.sh verify <func_name>           — binary-level verify function against original
+#   bash tools/dc.sh verify --all                  — verify all C functions
 #
 set -eo pipefail
 
@@ -144,9 +146,20 @@ print(f'Replaced {func} in {src}')
         fi
         ;;
 
+    verify)
+        # Binary-level verification of function against original
+        ARG1="${1:---help}"
+        if [ "$ARG1" = "--help" ]; then
+            echo "Usage: dc.sh verify <func_name>   — verify one function"
+            echo "       dc.sh verify --all          — verify all C functions"
+            exit 1
+        fi
+        python3 tools/regfix_verify.py "$ARG1" 2>&1
+        ;;
+
     *)
         echo "Unknown command: $CMD"
-        echo "Commands: compile, score, debug, build, replace, setup, analysis, dump-text, validate-regfix, gen-regfix"
+        echo "Commands: compile, score, debug, build, replace, setup, analysis, dump-text, validate-regfix, gen-regfix, verify"
         exit 1
         ;;
 esac
