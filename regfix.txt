@@ -290,7 +290,7 @@ saTan4GaugeInit: subst "sll\s+(\$18,\$5),16" "addu	$18,$5,$zero" @ 44
 saTan4GaugeInit: $2 <-> $3 @ 48-53
 saTan4GaugeInit: $3 <-> $4 @ 52-56
 # Fix outer loop branch target (.L10 -> .L13)
-saTan4GaugeInit: subst "\.L56" ".L59" @ 55
+saTan4GaugeInit: subst "\.L80" ".L83" @ 55
 # func_80034F88: register alloc + load reorder + address recompute
 func_80034F88: subst "la\t\$5," "la	$3," @ 4
 func_80034F88: subst "\$3,0\(\$5\)" "$4,0($3)" @ 5
@@ -1660,14 +1660,14 @@ SetPacketData: $16 <-> $18 @ 9-127
 
 # Eliminate orphan j+addu chain after the early-return: branch beq directly to .L525,
 # fill its delay slot with cb_idx=0 (was move s4,a1; now relocated to prologue insert)
-SetPacketData: subst "beq\s+\$2,\$0,\.L699" "beq $2,$0,.L700" @ 11
+SetPacketData: subst "beq\s+\$2,\$0,\.L723" "beq $2,$0,.L724" @ 11
 SetPacketData: subst "addu\s+\$20,\$5,\$zero" "addu $16,$0,$zero" @ 12
 SetPacketData: delete @ 15
 SetPacketData: delete @ 16
 
 # Pre-loop reload of D_800F1AF4 (target re-reads global instead of using cached r_arg1).
 # Subst beq to test the reloaded $2; insert lw+nop before it (post-delete idx 41).
-SetPacketData: subst "beq\s+\$20,\$0,\.L702" "beq $2,$0,.L702" @ 43
+SetPacketData: subst "beq\s+\$20,\$0,\.L726" "beq $2,$0,.L726" @ 43
 
 # Bne delay slot fill: target keeps a `s1=0;` dead-store that GCC eliminated in mine
 SetPacketData: subst "nop" "addu $17,$0,$zero" @ 101
@@ -1687,9 +1687,9 @@ SetPacketData: insert "la $2,D_800F1AF4" @ 118
 # saTan0GaugeDraw: compound regfix (Cluster A const-1 + Cluster F home store)
 # Cluster A: const-1 register $3 (v1) -> $6 (a2)
 saTan0GaugeDraw: subst "addiu\s+\$3,\$zero,1" "addiu $6,$zero,1" @ 7
-saTan0GaugeDraw: subst "beq\s+\$4,\$3,\.L315" "beq $4,$6,.L315" @ 8
+saTan0GaugeDraw: subst "beq\s+\$4,\$3,\.L339" "beq $4,$6,.L339" @ 8
 saTan0GaugeDraw: subst "sw\s+\$3,D_800A2D2C" "sw $6,D_800A2D2C" @ 57
-saTan0GaugeDraw: subst "bne\s+\$2,\$3,\.L336" "bne $2,$6,.L336" @ 81
+saTan0GaugeDraw: subst "bne\s+\$2,\$3,\.L360" "bne $2,$6,.L360" @ 81
 # Cluster F: move sw ra before beq, insert sw a0 in beq delay slot
 saTan0GaugeDraw: delete @ 24
 saTan0GaugeDraw: delete @ 9
@@ -1824,7 +1824,7 @@ coli_HitPauseKatana_2: subst ",\$8$" ",$2" @ 75
 coli_HitPauseKatana_2: subst "\$8," "$2," @ 120
 coli_HitPauseKatana_2: subst "\$8," "$2," @ 122
 coli_HitPauseKatana_2: subst ",\$8" ",$2" @ 122
-coli_HitPauseKatana_2: subst "\.L449" ".L432" @ 121
+coli_HitPauseKatana_2: subst "\.L473" ".L456" @ 121
 # Case 8 tail: $10 -> $2 for mask materialization
 coli_HitPauseKatana_2: subst "\$10," "$2," @ 143
 coli_HitPauseKatana_2: subst "\$10," "$2," @ 153
@@ -1936,7 +1936,7 @@ coli_HitPauseKatana: subst "\$3" "$17" @ 29
 coli_HitPauseKatana: subst "\$2" "$3" @ 29
 coli_HitPauseKatana: subst "0\(\$4\)" "0($2)" @ 30
 # Branch-to-label + delay slot change
-coli_HitPauseKatana: subst "\.L417" ".L407" @ 42
+coli_HitPauseKatana: subst "\.L441" ".L431" @ 42
 coli_HitPauseKatana: subst "addiu\t\$2,\$zero,-1" "sll\t$2,$16,3" @ 43
 # Loop init: g_spu_voice_key_c into v1($3)
 coli_HitPauseKatana: subst "\$4" "$3" @ 47
@@ -1961,7 +1961,7 @@ coli_HitPauseKatana: subst "\$9" "$8" @ 110
 coli_HitPauseKatana: subst "\$4" "$6" @ 113
 coli_HitPauseKatana: subst "\$4" "$6" @ 116
 # No-flag branch: redirect .L333 to .L339 (skip redundant lui when mask already loaded)
-coli_HitPauseKatana: subst "\.L413" ".L419" @ 117
+coli_HitPauseKatana: subst "\.L437" ".L443" @ 117
 # No-flag kb: delay slot + instruction rewrite
 coli_HitPauseKatana: subst "sll\t\$4,\$4,3" "addu\t$3,$3,$17" @ 118
 coli_HitPauseKatana: subst "addu\t\$4,\$8,\$4" "sll\t$2,$6,3" @ 119
@@ -2006,7 +2006,7 @@ coli_HitPauseKatana: insert_after "addu\t$4,$2,$3" @ 46
 coli_HitPauseKatana: insert_after "nop" @ 46
 # Stop-flag inline return after lw g_spu_voice_key_c (PP3 107; 5 insns, file order = furthest first)
 coli_HitPauseKatana: insert_after "nop" @ 107
-coli_HitPauseKatana: insert_after "j\t.L414" @ 107
+coli_HitPauseKatana: insert_after "j\t.L438" @ 107
 coli_HitPauseKatana: insert_after "lw\t$2,0($2)" @ 107
 coli_HitPauseKatana: insert_after "addu\t$2,$16,$2" @ 107
 coli_HitPauseKatana: insert_after "nop" @ 107

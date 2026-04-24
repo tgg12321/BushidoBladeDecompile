@@ -93,7 +93,99 @@ void func_80083BE4(s16 a0, s16 a1) {
     *((s16 *)&buf[1] + 1) = (s16)(a1 * 129);
     func_8008AF9C(buf);
 }
-INCLUDE_ASM("asm/funcs", saTan5TakeAnim2_2);
+extern s32 D_800A26CC;
+extern s32 D_800A26D0;
+extern void irq_SetAlarm(s32);
+extern s32 irq_EnableInterrupts(s32, s32);
+extern void func_80078BA8(s32);
+extern void func_80078A68(s32, s32, s32);
+extern s32 D_800A26D4;
+extern s32 D_800A26D8;
+extern u8 D_800A26DC;
+extern u8 D_800A26DD;
+extern u8 D_800A26DE;
+extern s32 D_80083EDC;
+extern s32 D_80083F1C;
+void saTan5TakeAnim2_2(s32 arg0) {
+    s32 i = 0x3E8;
+    s32 s1;
+    s32 s0;
+    s32 cc;
+    u8 *dc_ptr;
+
+    while (--i >= 0) ;
+
+    s1 = 0xF2000002;
+    dc_ptr = &D_800A26DC;
+    *dc_ptr = 0;
+    cc = D_800A26CC;
+    D_800A26DE = 6;
+    D_800A26DD = 0;
+    D_800A26D8 = 0;
+    s0 = 0x44E8;
+
+    switch (cc) {
+    case 0:
+        D_800A26DE = 0x7F;
+        return;
+    case 5:
+        D_800A26DE = 0;
+        if (arg0 == 0) {
+            *dc_ptr = 1;
+        } else {
+            s1 = 0xF2000003;
+            s0 = 1;
+        }
+        break;
+    case 2:
+        break;
+    case 3:
+        s0 = 0x89D0;
+        break;
+    default: {
+        register s32 *ptr asm("a1") = &D_800A26D0;
+        s32 val;
+        __asm__("" : "=r"(ptr) : "0"(ptr));
+        if (*ptr != 0) return;
+        val = ptr[-1];
+        if (val < 0x46) {
+            s32 quotient = 0x204CC0 / val;
+            *(u8 *)((u8 *)ptr + 0xD) += 1;
+            s0 = quotient;
+        } else {
+            s32 quotient = 0x409980 / val;
+            __asm__("" : "=r"(quotient) : "0"(quotient));
+            s0 = quotient;
+        }
+        break;
+    }
+    }
+
+    if (D_800A26DC != 0) {
+        EnterCriticalSection();
+        irq_SetAlarm(D_800A26D4);
+    } else {
+        s32 de;
+        s32 a1_val;
+        EnterCriticalSection();
+        func_80078BA8(s1);
+        func_80078A68(s1, (u16)s0, 0x1000);
+        de = D_800A26DE;
+        if (de == 0) {
+            s32 ret = irq_EnableInterrupts(0, 0);
+            de = D_800A26DE;
+            a1_val = (s32)&D_80083EDC;
+            D_800A26D8 = ret;
+        } else {
+            a1_val = (s32)&D_80083F1C;
+            if (D_800A26DD == 0) {
+                a1_val = D_800A26D4;
+            }
+        }
+        irq_EnableInterrupts(de, a1_val);
+    }
+    ExitCriticalSection();
+}
 /* kengo:MED  |  sa_tan5/saTan5TakeAnim2_2  |  154i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", DispStuff);
 /* kengo:LOW  |  su_menu_ending/_DispStuff  |  209i  |  PS2 UI — reverted */
