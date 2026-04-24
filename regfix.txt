@@ -795,6 +795,14 @@ func_8002BC68: reorder 45,46,44 @ 44-46
 func_8002BC68: subst "mfhi\s+\$13" "mfhi	$24" @ 52
 func_8002BC68: subst "sra\s+\$3,\$13,5" "sra	$3,$24,5" @ 53
 func_8002BC68: $2 <-> $3 @ 56-60
+# func_8002BEA0: srl scheduling, delay-slot reorder, mfhi $24, li/nop scheduling for /1000 divisor
+func_8002BEA0: subst "mfhi\s+\$13" "mfhi	$24" @ 52
+func_8002BEA0: subst "sra\s+\$3,\$13,5" "sra	$3,$24,5" @ 53
+func_8002BEA0: delete @ 65
+func_8002BEA0: delete @ 62
+func_8002BEA0: insert_after "addiu\t$2,$zero,1000" @ 63
+func_8002BEA0: reorder 36,33,34,35 @ 33-36
+func_8002BEA0: reorder 44,45,43 @ 43-45
 # func_8001A67C: GCC places addiu v0,sp,16 before mtc2/nops; target places after
 func_8001A67C: reorder 44,46,47,45,48,49 @ 44-49
 
