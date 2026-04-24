@@ -249,3 +249,4 @@ light_effect_col = 0x800A3D70;
 videoDec = 0x800F0D80;
 MarioCam_str = 0x800F19D0;
 selCharaID = 0x80102092;
+func_8008BC60 = 0x8008BC60;
