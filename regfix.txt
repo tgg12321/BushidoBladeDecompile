@@ -2068,17 +2068,81 @@ func_800841E0: subst "\$20" "$5" @ 56
 func_800841E0: subst "\$17,\$21" "$2,$7" @ 57
 func_800841E0: subst "\$17,\$17" "$2,$2" @ 58
 func_800841E0: subst "\$17,\$17" "$17,$2" @ 59
-func_800841E0: subst "\$3,\$2,\$3" "$2,$2,$3" @ 66
-func_800841E0: subst "\$2,\$2,1" "$4,$2,1" @ 67
-func_800841E0: subst "\$3,\$3,\$2" "$2,$2,$4" @ 68
-func_800841E0: subst "bne\t\$3" "bne\t$2" @ 69
-func_800841E0: subst ".*" "addu\t$2,$2,$3" @ 66
-func_800841E0: subst ".*" "addu\t$4,$2,1" @ 67
-func_800841E0: subst ".*" "slt\t$2,$2,$4" @ 68
-func_800841E0: subst ".*" "bne\t$2,$0,.L11" @ 69
-func_800841E0: reorder 67,66,68,69,70 @ 66-70
-func_800841E0: subst "\$3" "$6" @ 80
-func_800841E0: subst "nop.*" "sll\t$4,$20,8" @ 81
+func_800841E0: subst "\$3,\$2,\$3" "$2,$2,$3" @ 67
+func_800841E0: subst "\$2,\$2,1" "$4,$2,1" @ 68
+func_800841E0: subst "\$3,\$3,\$2" "$2,$2,$4" @ 69
+func_800841E0: subst "bne\t\$3" "bne\t$2" @ 70
+func_800841E0: subst ".*" "addu\t$2,$2,$3" @ 67
+func_800841E0: subst ".*" "addu\t$4,$2,1" @ 68
+func_800841E0: subst ".*" "slt\t$2,$2,$4" @ 69
+func_800841E0: subst ".*" "bne\t$2,$0,.L35" @ 70
+func_800841E0: reorder 68,67,69,70,71 @ 67-71
+func_800841E0: subst "\$3" "$6" @ 81
+func_800841E0: subst "nop.*" "sll\t$4,$20,8" @ 82
+
+# saTan5TakeAnim2: 154-insn line-sphere intersection, compound regfix
+# 152 TEXT instructions (0-151) from dump_text_indices (--expand-div, .word not counted)
+# dist_sq ordering: rotate to after c_val computation
+saTan5TakeAnim2: reorder 76,77,78,75 @ 75-78
+# dist_sq register a2->a1 (original idx 75 = addu $6,$8,$6)
+saTan5TakeAnim2: subst "\$6,\$8,\$6" "$5,$8,$6" @ 75
+saTan5TakeAnim2: subst "\$6," "$5," @ 80
+# disc register a0->a2
+saTan5TakeAnim2: subst "subu\t\$4" "subu\t$6" @ 84
+saTan5TakeAnim2: subst "\$4" "$6" @ 85
+saTan5TakeAnim2: subst ",\$4," ",$6," @ 86
+# j target: skip result copy, go to stack cleanup
+saTan5TakeAnim2: subst "\.L189" ".L194" @ 87
+# result=0 in j delay slot: a2->v0
+saTan5TakeAnim2: subst "addu\t\$6" "addu\t$2" @ 88
+# beqz delay slot: nop -> move a0,disc(a2)
+saTan5TakeAnim2: subst "nop.*" "addu\t$4,$6,$zero" @ 90
+# disc in LUT path a0->a2
+saTan5TakeAnim2: subst ",\$4" ",$6" @ 92
+# sqrt_val v0->a2
+saTan5TakeAnim2: subst "srl\t\$2" "srl\t$6" @ 95
+# disc in big sqrt path a0->a2
+saTan5TakeAnim2: subst "bltz\t\$4" "bltz\t$6" @ 96
+# sqrt_val srlv output v0->a2
+saTan5TakeAnim2: subst "srl\t\$2" "srl\t$6" @ 115
+# sqrt_val << 9: sll a1,v0 -> sll a2,a2
+saTan5TakeAnim2: subst "\$5,\$2" "$6,$6" @ 116
+# denom: sll a0,a2,1 -> sll v1,a1,1
+saTan5TakeAnim2: subst "\$4,\$6" "$3,$5" @ 118
+# t1_num: addu v1,v0,a1 -> addu a0,v0,a2
+saTan5TakeAnim2: subst "\$3,\$2,\$5" "$4,$2,$6" @ 119
+# t1_num shift: sll v1,v1,8 -> sll a0,a0,8
+saTan5TakeAnim2: subst "\$3,\$3" "$4,$4" @ 120
+# reorder: denom after t1_num pair (target: addu,sll,sll vs our sll,addu,sll)
+saTan5TakeAnim2: reorder 119,120,118 @ 118-120
+# div1 operand swap: div $zero,v1,a0 -> div $zero,a0,v1
+saTan5TakeAnim2: subst ",\$3,\$4" ",$4,$3" @ 121
+# div1 expansion: bnez divisor a0->v1
+saTan5TakeAnim2: subst "\$4" "$3" @ 122
+# div1 expansion: bne divisor a0->v1
+saTan5TakeAnim2: subst "\$4," "$3," @ 126
+# div1 expansion: bne dividend v1->a0
+saTan5TakeAnim2: subst "\$3," "$4," @ 128
+# mflo t1_val: v1->a0
+saTan5TakeAnim2: subst "\$3" "$4" @ 131
+# subu neg_b - sq: a1->a2
+saTan5TakeAnim2: subst "\$5" "$6" @ 132
+# div2 divisor: a0->v1
+saTan5TakeAnim2: subst ",\$4" ",$3" @ 134
+# div2 expansion: bnez divisor a0->v1
+saTan5TakeAnim2: subst "\$4" "$3" @ 135
+# div2 expansion: bne divisor a0->v1
+saTan5TakeAnim2: subst "\$4," "$3," @ 139
+# mflo t2_val: a0->v1
+saTan5TakeAnim2: subst "\$4" "$3" @ 144
+# bltz t1_val: v1->a0
+saTan5TakeAnim2: subst "bltz\t\$3" "bltz\t$4" @ 145
+# result=0: a2->a1
+saTan5TakeAnim2: subst "addu\t\$6" "addu\t$5" @ 146
+# slt result,t2_val: a2,a0 -> a1,v1
+saTan5TakeAnim2: subst "\$6,\$4" "$5,$3" @ 147
+# return result: a2->a1
+saTan5TakeAnim2: subst "\$6" "$5" @ 148
 
 # func_80084500: same table/offset/prologue scheduling family as func_800841E0.
 func_80084500: reorder 2,4,3,8,12,13,14,15,16,17,18,9,19,5,6,7,10,11 @ 2-19
