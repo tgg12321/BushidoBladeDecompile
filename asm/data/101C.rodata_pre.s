@@ -2,49 +2,7 @@
 
 .section .rodata, "a"
 
-.align 2
-nonmatching D_8001081C
-
-dlabel D_8001081C
-    /* 101C 8001081C */ .asciz "CHANBARA"
-    /* 4348414E4241524100000000 */
-.align 2
-.align 2
-    /* 1028 80010828 */ .asciz "PRACTICE"
-    /* 505241435449434500000000 */
-.align 2
-enddlabel D_8001081C
-
-.align 2
-nonmatching D_80010834
-
-dlabel D_80010834
-    /* 1034 80010834 */ .asciz "%sCR%3d\n"
-    /* 257343522533640A00000000 */
-.align 2
-enddlabel D_80010834
-
-.align 2
-nonmatching D_80010840
-
-dlabel D_80010840
-    /* 1040 80010840 */ .asciz "%sCO%3d\n"
-    /* 2573434F2533640A00000000 */
-.align 2
-enddlabel D_80010840
-
-nonmatching jtbl_8001084C
-
-dlabel jtbl_8001084C
-    /* 104C 8001084C 2C450380 */ .word .L8003452C
-    /* 1050 80010850 68450380 */ .word .L80034568
-    /* 1054 80010854 40460380 */ .word .L80034640
-    /* 1058 80010858 94450380 */ .word .L80034594
-    /* 105C 8001085C C4460380 */ .word .L800346C4
-    /* 1060 80010860 F4450380 */ .word .L800345F4
-    /* 1064 80010864 F4440380 */ .word .L800344F4
-    /* 1068 80010868 00000000 */ .word 0x00000000
-enddlabel jtbl_8001084C
+.word 0x00000000
 
 nonmatching jtbl_8001086C
 

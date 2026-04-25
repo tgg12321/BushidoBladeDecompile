@@ -52,7 +52,7 @@ extern void obj_InitAll(void);
 extern void func_80077820(s32);
 extern s32 D_80101E70;
 extern s32 D_800A3894;
-extern u8 D_80102781;
+extern s8 D_80102781;
 extern u8 D_800A3768;
 extern u8 D_800A36A8;
 
@@ -2610,7 +2610,98 @@ void func_800343F0(void) {
 }
 
 
-INCLUDE_ASM("asm/funcs", DispSamnailWindow);
+extern void func_8003B20C(s32);
+extern void suDispMentalBar(void);
+extern s32 func_8005509C(s32);
+INCLUDE_RODATA("asm/rodata", jtbl_8001084C);
+
+void DispSamnailWindow(void) {
+    s32 s0;
+
+    func_800343F0();
+
+    switch (D_800A38DC) {
+    case 6:
+        D_80102786 = 1;
+        D_800A3768 = 1;
+        D_800A3834 = 0;
+        D_800A36F6 = (D_800A38A0 != 0);
+        goto skip_clear;
+
+    case 0:
+        func_8003B20C((&D_8008D538)[(s8)D_8010277C]);
+        D_8010277D = 0;
+        suDispMentalBar();
+        func_8005509C(1);
+        goto skip_clear;
+
+    case 1:
+        s0 = 1;
+        D_80102781 = (u8)s0;
+        cpu_set_move_command_and_dir_for_no_action();
+        D_800A3768 = (u8)s0;
+        mottest_disp();
+        goto skip_clear;
+
+    case 3:
+        s0 = 1;
+        D_80102781 = (u8)s0;
+        D_8010277F = 0;
+        D_8010277E = 0;
+        D_800A38E2 = 0;
+        D_800A38E0 = 0;
+        D_800A3858 = 0;
+        D_800A3728 = 0;
+        D_800A36A4 = 0x22;
+        func_80033DF4();
+        D_800A3768 = (u8)s0;
+        break;
+
+    case 5:
+        {
+            s32 v1 = (D_800A38E1 & 1) ? 0x21 : 0x20;
+            D_800A36A4 = (s16)v1;
+        }
+        D_800A3874 = 0;
+        gpu_EnableDisplay();
+        file_LoadOverlay();
+        func_800342A0();
+        goto skip_clear;
+
+    case 2:
+        {
+            s32 v1 = D_800A389A;
+            s32 cmp = (u32)v1 < 1u;
+            D_800A3713 = (u8)(cmp << 1);
+            {
+                s32 da = (v1 != 0) ? 0x24 : 0x23;
+                D_800A36A4 = da;
+            }
+            D_80102781 = 1;
+            if (v1 != 0) {
+                break;
+            }
+        }
+        {
+            u8 idx = (&D_8008D538)[(s8)D_8010277C];
+            u8 val = (&D_8008D9EC)[idx];
+            s32 tmp = (val != 0) ? 0x0E : 0x1D;
+            D_8010277D = tmp;
+        }
+        break;
+
+    case 4:
+        D_800A3768 = 1;
+        break;
+    }
+
+    D_800A3834 = 0;
+
+skip_clear:
+    if (D_80102781 != 0) {
+        func_8005509C(1);
+    }
+}
 /* kengo:LOW  |  su_menu_vs/_DispSamnailWindow  |  149i  |  PS2 UI — reverted */
 INCLUDE_ASM("asm/funcs", func_80034708);
 /* TABLED: -4 bytes, score 1980. Target alternates v1/a0 for g_file_flags address — unreproducible register allocation pattern */
