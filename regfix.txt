@@ -2556,3 +2556,38 @@ func_800460E4: subst "addu\t\$4,\$16,\$5" "addu\t$4,$5,$16" @ 76
 func_800460E4: subst "addu\t\$2,\$17,\$5" "addu\t$2,$5,$17" @ 102
 func_800460E4: subst "addu\t\$2,\$16,\$2" "addu\t$2,$2,$16" @ 129
 func_800460E4: subst "addu\t\$3,\$16,\$3" "addu\t$3,$3,$16" @ 165
+
+
+# func_800325E0: 23 register diffs (corrected TEXT indices, .word not counted)
+# arg0 save: $9(t1) -> $10(t2)
+func_800325E0: subst "\$9" "$10" @ 1
+func_800325E0: subst "\$9" "$10" @ 148
+# dx variable: $8(t0) -> $9(t1)
+func_800325E0: subst "\$8" "$9" @ 9
+func_800325E0: subst "\$8" "$9" @ 16
+func_800325E0: subst "\$8" "$9" @ 22
+func_800325E0: subst "\$8" "$9" @ 22
+func_800325E0: subst "\$8" "$9" @ 87
+# lzcr load: v0<->v1
+func_800325E0: subst "lw\t\$2" "lw\t$3" @ 49
+func_800325E0: subst "addiu\t\$3" "addiu\t$2" @ 50
+func_800325E0: subst "and\t\$2,\$2,\$3" "and\t$2,$3,$2" @ 51
+# mfhi brightness: $10(t2) -> $11(t3)
+func_800325E0: subst "\$10" "$11" @ 70
+func_800325E0: subst "\$10" "$11" @ 71
+# brightness result: $7(a3) -> $8(t0)
+func_800325E0: subst "\$7" "$8" @ 72
+func_800325E0: subst "\$7" "$8" @ 73
+func_800325E0: subst "\$7" "$8" @ 75
+func_800325E0: subst "\$7" "$8" @ 132
+func_800325E0: subst "\$7" "$8" @ 136
+# mflo dot: $2(v0) -> $3(v1)
+func_800325E0: subst "\$2" "$3" @ 96
+func_800325E0: subst "addu\t\$2,\$4,\$2" "addu\t$2,$4,$3" @ 97
+# sign: nor/srl/beqz
+func_800325E0: subst "nor\t\$2" "nor\t$7" @ 99
+func_800325E0: subst "srl\t\$8,\$2,31" "srl\t$7,$7,31" @ 101
+func_800325E0: subst "\$8" "$7" @ 128
+# mfhi div10k: $11(t3) -> $9(t1)
+func_800325E0: subst "\$11" "$9" @ 120
+func_800325E0: subst "\$11" "$9" @ 121

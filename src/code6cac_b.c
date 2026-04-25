@@ -2078,6 +2078,7 @@ void myRobGeneiDraw2(void) {
     } while (i < 4);
 }
 extern u8 D_8008D118;
+extern void func_8005C650(s32, s32, s32);
 void Pad_Prs(void) {
     register u8 *t0 asm("t0") = &D_80104E88;
     register s32 t1 asm("t1") = 0;
@@ -2207,7 +2208,98 @@ void cpu_get_dist_2(u8 *a0) {
         v1++;
     } while (v0 != 0);
 }
-INCLUDE_ASM("asm/funcs", func_800325E0);
+void func_800325E0(s32 arg0, s32 *arg1) {
+    s32 sp_tmp;
+    s32 *cam;
+    s32 dx, dy, dz;
+    s32 sqrt_val;
+    s32 brightness;
+    s32 dot;
+    s32 sign;
+    s32 a1_val, a2_val;
+    s32 tmp;
+
+    cam = (s32 *)D_800A36B4;
+    dx = cam[8] - arg1[0];
+    dy = cam[9] - arg1[1];
+    dz = cam[10] - arg1[2];
+
+    if ((u32)(dx + 0x9C40) > 0x13880u || (u32)(dz + 0x9C40) > 0x13880u) {
+        sqrt_val = 0x9C40;
+    } else {
+        s32 dist_sq = dx * dx + dy * dy + dz * dz;
+        if ((u32)dist_sq < 0x400u) {
+            sqrt_val = (&D_8008D118)[dist_sq] >> 3;
+        } else {
+            s32 lzcr;
+            s32 addr;
+            register s32 t4_v asm("t4");
+            __asm__ volatile(
+                "addu\t$12,%1,$0\n\t"
+                ".word 0x488CF000"
+                : "=r"(t4_v) : "r"(dist_sq)
+            );
+            __asm__ volatile("nop");
+            __asm__ volatile("nop");
+            addr = (s32)&sp_tmp;
+            __asm__ volatile(
+                "addu\t$12,%0,$0\n\t"
+                ".word 0xE99F0000"
+                : : "r"(addr) : "memory"
+            );
+            lzcr = sp_tmp;
+            {
+                s32 shift = 0x16 - (lzcr & ~1);
+                s32 tval = (&D_8008D118)[(u32)dist_sq >> shift];
+                s32 half = (u32)shift >> 1;
+                sqrt_val = (u32)(tval << 16) >> (0x13 - half);
+            }
+        }
+    }
+
+    brightness = ((0x9C40 - sqrt_val) << 11) / 32000;
+    if (brightness < 0) {
+        brightness = 0;
+    }
+
+    {
+        s16 angle = ((s16 *)(s32)D_800A36B4)[9];
+        dot = (dx * (&Judge)[((angle + 0x400) & 0xFFF)] + dz * (&Judge)[(angle & 0xFFF)]) >> 12;
+    }
+
+    sign = (u32)~dot >> 31;
+    if (dot < 0) {
+        dot = -dot;
+    }
+
+    a1_val = ((0x7530 - dot) << 12) / 30000;
+    a2_val = ((0x2710 - dot) << 12) / 10000;
+
+    if (a1_val < 0) {
+        a1_val = 0;
+    }
+    if (a2_val < 0) {
+        a2_val = 0;
+    }
+
+    tmp = a1_val;
+    if (sign != 0) {
+        a1_val = a2_val;
+        a2_val = tmp;
+    }
+
+    a1_val = (brightness * a1_val) >> 16;
+    a2_val = (brightness * a2_val) >> 16;
+
+    if (a1_val >= 0x80) {
+        a1_val = 0x7F;
+    }
+    if (a2_val >= 0x80) {
+        a2_val = 0x7F;
+    }
+
+    func_8005C650(arg0, a1_val, a2_val);
+}
 INCLUDE_RODATA("asm/rodata", jtbl_800105D0);
 INCLUDE_ASM("asm/funcs", func_80032854);
 INCLUDE_RODATA("asm/rodata", jtbl_80010698);
