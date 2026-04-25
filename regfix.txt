@@ -2458,3 +2458,37 @@ efc_rob_set_type_flash: insert "lw\t$18,0($3)" @ 13
 efc_rob_set_type_flash: reorder 9,1,3,4,5,6,7,8,10,2,11,14,13,12,18,15,19,16,17 @ 1-19
 # Loop tail reorder (post-delete+insert: obj=178, i++=179, lh=180 → obj,lh,i++)
 efc_rob_set_type_flash: reorder 178,180,179 @ 178-180
+
+cpu_set_move_command_and_dir_for_no_action_2: subst "jal\tfunc_80016A8C" "ori\t$4,$4,0x8800" @ 20
+cpu_set_move_command_and_dir_for_no_action_2: subst "ori\t\$4,\$4,0x8800" "addu\t$5,$18,$zero" @ 21
+cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$3,\$3,-128" "addu\t$3,$3,128" @ 84
+cpu_set_move_command_and_dir_for_no_action_2: subst "jal\tfunc_80016E60" "addu\t$4,$18,$zero" @ 167
+cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$4,\$18,\$zero" "jal\tfunc_80016E60" @ 168
+cpu_set_move_command_and_dir_for_no_action_2: subst "nop" "addiu\t$5,$zero,4104" @ 170
+cpu_set_move_command_and_dir_for_no_action_2: subst "nop" "addiu\t$5,$zero,4104" @ 147
+cpu_set_move_command_and_dir_for_no_action_2: insert "addiu\t$3,$3,-1" @ 83
+cpu_set_move_command_and_dir_for_no_action_2: insert "addu\t$6,$17,$zero" @ 22
+cpu_set_move_command_and_dir_for_no_action_2: insert "jal\tfunc_80016A8C" @ 22
+cpu_set_move_command_and_dir_for_no_action_2: insert_after "addu\t$5,$17,$zero" @ 168
+
+# func_800460E4: 3-way register rotation ($17->$18, $18->$19, $19->$17)
+# Two swaps on body only (exclude prologue 0-14 and epilogue 227+)
+func_800460E4: $17 <-> $19 @ 15-226
+func_800460E4: $18 <-> $19 @ 15-226
+# Prologue: register+offset corrections
+func_800460E4: subst "sw\t\$19,52\(\$sp\)" "sw\t$17,44($sp)" @ 3
+func_800460E4: subst "\$19" "$17" @ 4
+func_800460E4: subst "sw\t\$18,48\(\$sp\)" "sw\t$19,52($sp)" @ 11
+func_800460E4: subst "sw\t\$17,44\(\$sp\)" "sw\t$18,48($sp)" @ 12
+# Stack variable offsets: sp10/sp18/sp20 shifted -4
+func_800460E4: subst "20\(\$sp\)" "16($sp)" @ 87
+func_800460E4: subst "28\(\$sp\)" "24($sp)" @ 94
+func_800460E4: subst "36\(\$sp\)" "32($sp)" @ 97
+func_800460E4: subst "20\(\$sp\)" "16($sp)" @ 200
+func_800460E4: subst "28\(\$sp\)" "24($sp)" @ 203
+func_800460E4: subst "36\(\$sp\)" "32($sp)" @ 206
+# Operand order: addu commuted operands (post-swap patterns)
+func_800460E4: subst "addu\t\$4,\$16,\$5" "addu\t$4,$5,$16" @ 76
+func_800460E4: subst "addu\t\$2,\$17,\$5" "addu\t$2,$5,$17" @ 102
+func_800460E4: subst "addu\t\$2,\$16,\$2" "addu\t$2,$2,$16" @ 129
+func_800460E4: subst "addu\t\$3,\$16,\$3" "addu\t$3,$3,$16" @ 165

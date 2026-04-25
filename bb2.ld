@@ -40,6 +40,7 @@ SECTIONS
         build/asm/data/101C.rodata_text1a_DB8.o(.rodata);
         build/src/text1a_c.o(.rodata);
         build/asm/data/101C.rodata_text1a_a.o(.rodata);
+        build/src/text1a_c2.o(.rodata);
         build/src/text1a_b.o(.rodata);
         build/asm/data/101C.rodata_text1a_b.o(.rodata);
         build/src/main.o(.rodata);
@@ -67,6 +68,7 @@ SECTIONS
         build/src/config.o(.text);
         build/src/text1a.o(.text);
         build/src/text1a_c.o(.text);
+        build/src/text1a_c2.o(.text);
         build/src/text1a_b.o(.text);
         build/src/sound.o(.text);
         build/src/text1b.o(.text);
@@ -91,6 +93,7 @@ SECTIONS
         build/src/config.o(.data);
         build/src/text1a.o(.data);
         build/src/text1a_c.o(.data);
+        build/src/text1a_c2.o(.data);
         build/src/text1a_b.o(.data);
         build/src/sound.o(.data);
         build/src/text1b.o(.data);
@@ -116,6 +119,7 @@ SECTIONS
         build/src/config.o(.bss);
         build/src/text1a.o(.bss);
         build/src/text1a_c.o(.bss);
+        build/src/text1a_c2.o(.bss);
         build/src/text1a_b.o(.bss);
         build/src/sound.o(.bss);
         build/src/text1b.o(.bss);
