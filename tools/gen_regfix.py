@@ -61,7 +61,7 @@ def normalize_opcode_aliases(text):
     text = re.sub(r'^bnez\s+(\$\d+),', r'bne \1,$0,', text)
     text = re.sub(r'^beqz\s+(\$\d+),', r'beq \1,$0,', text)
     text = re.sub(r'^negu\s+(\$\d+),(\$\d+)', r'subu \1,$0,\2', text)
-    m = re.match(r'^addiu\s+(\$\d+),(\$\d+),(-\d+)$', text)
+    m = re.match(r'^addi?u\s+(\$\d+),(\$\d+),(-\d+)$', text)
     if m and int(m.group(3)) < 0:
         text = f"subu {m.group(1)},{m.group(2)},{-int(m.group(3))}"
     m = re.match(r'^addiu\s+(\$\d+),(\$\d+),(\d+)$', text)
@@ -72,7 +72,7 @@ def normalize_opcode_aliases(text):
     m = re.match(r'^addiu\s+(\$\d+),(\$\d+),(\d+)$', text)
     if m and m.group(1) != '$29':
         text = f"addu {m.group(1)},{m.group(2)},{m.group(3)}"
-    text = re.sub(r'^jr\s+(\$31)$', r'j \1', text)
+    text = re.sub(r'^jr\s+(\$\d+)$', r'j \1', text)
     return text
 
 
@@ -145,6 +145,8 @@ def parse_target_asm(asm_path):
         if not stripped or stripped.startswith('glabel') or stripped.endswith(':'):
             continue
         if stripped.startswith('.'):
+            continue
+        if stripped.startswith('jlabel') or stripped.startswith('endlabel'):
             continue
         m = re.match(r'/\*.*?\*/\s*(.*)', stripped)
         insn = m.group(1).strip() if m else stripped
@@ -225,10 +227,22 @@ def classify_diff(our_norm, tgt_norm):
     if reg_diffs:
         our_no_regs = re.sub(r'\$\d+', 'REG', our_cmp)
         tgt_no_regs = re.sub(r'\$\d+', 'REG', tgt_cmp)
-        if our_no_regs != tgt_no_regs:
-            return 'structural', 'non-register operand mismatch'
+        if our_no_regs == tgt_no_regs:
+            return 'register', reg_diffs
+        if sorted(our_regs) == sorted(tgt_regs):
+            return 'operand_order', (our_cmp, tgt_cmp)
         return 'register', reg_diffs
-    return 'structural', 'immediate or label mismatch'
+    # Same opcode, same registers, but different non-register operands
+    # Filter: jump table label diffs (.L<N> vs jtbl_XXX) are resolved by the
+    # assembler and match in binary — not real diffs
+    our_labels = re.findall(r'\.L\d+|jtbl_[0-9A-Fa-f]+', our_cmp)
+    tgt_labels = re.findall(r'\.L\d+|jtbl_[0-9A-Fa-f]+', tgt_cmp)
+    if our_labels or tgt_labels:
+        our_no_lbl = re.sub(r'%(?:hi|lo)\([^)]+\)', '%SYM', our_cmp)
+        tgt_no_lbl = re.sub(r'%(?:hi|lo)\([^)]+\)', '%SYM', tgt_cmp)
+        if our_no_lbl == tgt_no_lbl:
+            return 'match', None
+    return 'immediate', (our_cmp, tgt_cmp)
 
 
 # ---------------------------------------------------------------------------
@@ -388,6 +402,14 @@ def escape_pattern_dollar(s):
     return s.replace('$', '\\$')
 
 
+def norm_to_raw(norm):
+    """Convert normalized instruction back to tab-separated raw format for regfix."""
+    parts = norm.split(None, 1)
+    if len(parts) == 2:
+        return f'{parts[0]}\t{parts[1]}'
+    return norm
+
+
 def gen_subst_rules(func_name, idx, our_raw, diffs):
     rules = []
     for pos, our_reg, tgt_reg in diffs:
@@ -445,6 +467,8 @@ def main():
 
     reg_diffs = []
     structural_diffs = []
+    operand_order_diffs = []
+    immediate_diffs = []
     matches = 0
 
     for our_idx, our_raw, our_norm, tgt_norm in aligned:
@@ -459,11 +483,17 @@ def main():
             matches += 1
         elif kind == 'register':
             reg_diffs.append((our_idx, our_raw, our_norm, tgt_norm, info))
+        elif kind == 'operand_order':
+            operand_order_diffs.append((our_idx, our_raw, info[0], info[1]))
+        elif kind == 'immediate':
+            immediate_diffs.append((our_idx, our_raw, info[0], info[1]))
         elif kind == 'structural':
             structural_diffs.append((our_idx, info, our_norm, tgt_norm))
 
     print(f"\n  Matches: {matches}", file=sys.stderr)
     print(f"  Register diffs: {len(reg_diffs)}", file=sys.stderr)
+    print(f"  Operand order diffs: {len(operand_order_diffs)}", file=sys.stderr)
+    print(f"  Immediate diffs: {len(immediate_diffs)}", file=sys.stderr)
     print(f"  Structural diffs: {len(structural_diffs)}", file=sys.stderr)
 
     # Step 5: Detect patterns
@@ -481,6 +511,8 @@ def main():
     # Step 6: Generate rules
     print(f"\n# {func_name}: auto-generated regfix rules")
     print(f"# matches={matches}, reg_diffs={len(reg_diffs)}, "
+          f"operand_order={len(operand_order_diffs)}, "
+          f"immediate={len(immediate_diffs)}, "
           f"structural={len(structural_diffs)}")
 
     # 6a: Delay slot fills (subst nop -> insn, delete original)
@@ -523,7 +555,27 @@ def main():
             for rule in rules:
                 print(rule)
 
-    # 6d: Instruction swaps (full-instruction subst pairs)
+    # 6d: Operand order diffs (e.g. addu $4,$16,$5 -> addu $4,$5,$16)
+    if operand_order_diffs:
+        print(f"\n# {func_name}: operand order substs ({len(operand_order_diffs)} instructions)")
+        for idx, raw, our_cmp, tgt_cmp in operand_order_diffs:
+            our_raw_fmt = norm_to_raw(our_cmp)
+            tgt_raw_fmt = norm_to_raw(tgt_cmp)
+            print(f'# idx {idx}: {our_cmp} -> {tgt_cmp}')
+            pat = escape_pattern_dollar(our_raw_fmt)
+            print(f'{func_name}: subst "{pat}" "{tgt_raw_fmt}" @ {idx}')
+
+    # 6e: Immediate/offset diffs (e.g. 20($sp) -> 16($sp))
+    if immediate_diffs:
+        print(f"\n# {func_name}: immediate/offset substs ({len(immediate_diffs)} instructions)")
+        for idx, raw, our_cmp, tgt_cmp in immediate_diffs:
+            our_raw_fmt = norm_to_raw(our_cmp)
+            tgt_raw_fmt = norm_to_raw(tgt_cmp)
+            print(f'# idx {idx}: {our_cmp} -> {tgt_cmp}')
+            pat = escape_pattern_dollar(our_raw_fmt)
+            print(f'{func_name}: subst "{pat}" "{tgt_raw_fmt}" @ {idx}')
+
+    # 6f: Instruction swaps (full-instruction subst pairs)
     if insn_swaps:
         print(f"\n# {func_name}: instruction reorders ({len(insn_swaps)} swaps)")
         for idx1, idx2, raw1, raw2, tgt1, tgt2 in insn_swaps:
@@ -532,7 +584,7 @@ def main():
             print(f'#   idx {idx1}: ours="{raw1}" -> target wants "{tgt2}"')
             print(f'#   idx {idx2}: ours="{raw2}" -> target wants "{tgt1}"')
 
-    # 6e: Structural diffs (manual intervention needed)
+    # 6g: Structural diffs (manual intervention needed)
     if structural_diffs:
         print(f"\n# {func_name}: STRUCTURAL DIFFS ({len(structural_diffs)} — need manual fix)")
         for idx, desc, our, tgt in structural_diffs:
