@@ -2437,3 +2437,24 @@ D_8008359C: insert "nop" @ 21
 # Reorders (post-insert indices)
 D_8008359C: reorder 2,1 @ 1-2
 D_8008359C: reorder 12,14,15,16,18,19,13,17,20,23,21,22 @ 12-23
+
+# efc_rob_set_type_flash: type==0x12 branch — lw/addu use v0 not s2
+efc_rob_set_type_flash: subst "\$18" "$2" @ 111
+efc_rob_set_type_flash: subst "\$18,\$18" "$18,$2" @ 113
+# efc_rob_set_type_flash: prologue — content swap, pseudo conversions, insert, reorder
+efc_rob_set_type_flash: subst "lh" "subu" @ 0
+efc_rob_set_type_flash: subst "\$2,D_800A9CFE" "$sp,$sp,104" @ 0
+efc_rob_set_type_flash: subst "subu" "lh" @ 1
+efc_rob_set_type_flash: subst "\$sp,\$sp,104" "$2,D_800A9CFE" @ 1
+efc_rob_set_type_flash: subst "lw" "la" @ 3
+efc_rob_set_type_flash: subst "\$18" "$3" @ 3
+efc_rob_set_type_flash: subst "la" "addiu" @ 14
+efc_rob_set_type_flash: subst "D_800A9D04-10" "$3,-10" @ 14
+# Delete loop tail nop (original idx 180) — compiled has 205 binary, target 204
+efc_rob_set_type_flash: delete @ 180
+# Insert lw s2,0(v1) before sw s0 (original idx 13)
+efc_rob_set_type_flash: insert "lw\t$18,0($3)" @ 13
+# Prologue reorder (post-insert indices: insert at 13 shifts 13+ by +1)
+efc_rob_set_type_flash: reorder 9,1,3,4,5,6,7,8,10,2,11,14,13,12,18,15,19,16,17 @ 1-19
+# Loop tail reorder (post-delete+insert: obj=178, i++=179, lh=180 → obj,lh,i++)
+efc_rob_set_type_flash: reorder 178,180,179 @ 178-180
