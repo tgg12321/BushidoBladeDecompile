@@ -1985,7 +1985,106 @@ s32 func_80030D50(s32 arg0, s32 arg1, s32 arg2) {
     return arg1 + ((arg0 * arg2) >> 12);
 }
 INCLUDE_ASM("asm/funcs", func_80030D7C);
-INCLUDE_ASM("asm/funcs", func_80031890);
+void func_80031890(s32 arg0, s32 arg1, s32 arg2) {
+    s32 *mat;
+    s32 angle;
+    s32 rot;
+
+    if (*(s16 *)(arg1 + 2) != 14) {
+        s32 vx = *(s32 *)(arg1 + 0x44);
+        s32 vz = *(s32 *)(arg1 + 0x4C);
+        s32 cur = *(s16 *)(arg1 + 0x5E);
+        s32 mag = vx * vx + vz * vz;
+        s32 dv;
+        if (rng_Next() & 1) {
+            dv = mag / 64;
+        } else {
+            dv = (-mag) / 64;
+        }
+        *(s16 *)(arg1 + 0x5E) = cur + dv;
+    }
+
+    mat = (s32 *)(arg0 + 0xD8);
+    angle = (&D_8008EBA0)[arg2] & 0xFFF;
+
+    {
+        s32 pos0 = *(s32 *)(arg1 + 0x2C);
+        s32 pos1 = *(s32 *)(arg1 + 0x30);
+        s32 pos2 = *(s32 *)(arg1 + 0x34);
+
+        *(s16 *)(arg0 + 0xD8) = 0x1000;
+        *(s16 *)(arg0 + 0xDA) = 0;
+        *(s16 *)(arg0 + 0xDC) = 0;
+        *(s16 *)(arg0 + 0xDE) = 0;
+        *(s16 *)(arg0 + 0xE0) = 0x1000;
+        *(s16 *)(arg0 + 0xE2) = 0;
+        *(s16 *)(arg0 + 0xE4) = 0;
+        *(s16 *)(arg0 + 0xE6) = 0;
+        *(s16 *)(arg0 + 0xE8) = 0x1000;
+
+        rot = ((pos0 << 4) + pos1 + (pos2 << 3)) & 0x7FF;
+        rot -= 0x400;
+    }
+
+    func_8007FA1C(angle, mat);
+    func_8007F87C(rot, mat);
+
+    {
+        register s32 t4 asm("t4");
+        register s32 t5 asm("t5");
+        register s32 t6 asm("t6");
+
+        __asm__ volatile("addu\t%0,%1,$0" : "=r"(t4) : "r"(mat));
+        t5 = *(s32 *)(t4);
+        t6 = *(s32 *)(t4 + 4);
+        __asm__ volatile(".word 0x48CD0000" : : "r"(t5));
+        __asm__ volatile(".word 0x48CE0800" : : "r"(t6));
+        t5 = *(s32 *)(t4 + 8);
+        t6 = *(s32 *)(t4 + 0xC);
+        {
+            register s32 t7 asm("t7") = *(s32 *)(t4 + 0x10);
+            __asm__ volatile(".word 0x48CD1000" : : "r"(t5));
+            __asm__ volatile(".word 0x48CE1800" : : "r"(t6));
+            __asm__ volatile(".word 0x48CF2000" : : "r"(t7));
+        }
+    }
+
+    {
+        s32 vtx_addr = (s32)(arg1 + 0x44);
+        register s32 t4 asm("t4");
+        register s32 t5 asm("t5");
+        register s32 t6 asm("t6");
+
+        __asm__ volatile("addu\t%0,%1,$0" : "=r"(t4) : "r"(vtx_addr));
+        t6 = *(u16 *)(t4 + 4);
+        t5 = *(u16 *)(t4);
+        t6 <<= 16;
+        t5 |= t6;
+        __asm__ volatile(".word 0x488D0000" : : "r"(t5));
+        __asm__ volatile(".word 0xC9810008" : : "r"(t4));
+        __asm__ volatile("nop");
+        __asm__ volatile("nop");
+        __asm__ volatile(".word 0x4A486012");
+        __asm__ volatile("addu\t%0,%1,$0" : "=r"(t4) : "r"(vtx_addr));
+        __asm__ volatile(".word 0xE9990000" : : "r"(t4));
+        __asm__ volatile(".word 0xE99A0004" : : "r"(t4));
+        __asm__ volatile(".word 0xE99B0008" : : "r"(t4));
+    }
+
+    if ((u32)(angle - 0x401) < 0x7FFu) {
+        *(s32 *)(arg1 + 0x44) = *(s32 *)(arg1 + 0x44) / 8;
+        *(s32 *)(arg1 + 0x48) = *(s32 *)(arg1 + 0x48) / 8;
+        *(s32 *)(arg1 + 0x4C) = *(s32 *)(arg1 + 0x4C) / 8;
+    } else {
+        *(s32 *)(arg1 + 0x44) = *(s32 *)(arg1 + 0x44) / 4;
+        *(s32 *)(arg1 + 0x48) = *(s32 *)(arg1 + 0x48) / 4;
+        *(s32 *)(arg1 + 0x4C) = *(s32 *)(arg1 + 0x4C) / 4;
+    }
+
+    *(s32 *)(arg1 + 0x2C) += *(s32 *)(arg1 + 0x44) / 2;
+    *(s32 *)(arg1 + 0x30) += *(s32 *)(arg1 + 0x48) / 2;
+    *(s32 *)(arg1 + 0x34) += *(s32 *)(arg1 + 0x4C) / 2;
+}
 INCLUDE_ASM("asm/funcs", func_80031B24);
 void func_80032040(void) {
     s32 i;
