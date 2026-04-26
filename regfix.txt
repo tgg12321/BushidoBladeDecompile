@@ -2671,8 +2671,8 @@ mk_leaf_newpos: $5 <-> $3 @ 81-97
 mk_leaf_newpos: $5 <-> $3 @ 136-142
 # Phase 5: Dispatch restructure — beq uses s5, andi moves to delay slot
 mk_leaf_newpos: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
-mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L521" @ 83
-mk_leaf_newpos: subst "beq\t\$3,\$2,\.L521" "andi\t$6,$2,0x03ff" @ 84
+mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L574" @ 83
+mk_leaf_newpos: subst "beq\t\$3,\$2,\.L574" "andi\t$6,$2,0x03ff" @ 84
 # Phase 5: adj destination v0->v1
 mk_leaf_newpos: subst "addu\t\$2,\$3" "addu\t$3,$3" @ 89
 # Phase 5: count register v1->v0
@@ -2859,8 +2859,8 @@ func_800233AC: subst "\$2,\$2,\$3" "$3,$3,$2" @ 29
 func_800233AC: subst "\(\$2\)" "($3)" @ 31
 
 cpu_set_move_command_and_dir_for_no_action: reorder 8,9,1,2,3,4,5,10,11,6,7 @ 1-11
-cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L562" "beq\t$2,$0,.L563" @ 146
-cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L563" "j\t.L562" @ 148
+cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L615" "beq\t$2,$0,.L616" @ 146
+cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L616" "j\t.L615" @ 148
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 147
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 154
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 155

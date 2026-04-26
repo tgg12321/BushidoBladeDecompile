@@ -2727,8 +2727,155 @@ void func_800325E0(s32 arg0, s32 *arg1) {
 
     func_8005C650(arg0, a1_val, a2_val);
 }
-INCLUDE_RODATA("asm/rodata", jtbl_800105D0);
-INCLUDE_ASM("asm/funcs", func_80032854);
+void func_80032854(s32 arg0, s32 arg1, u8 *arg2, s16 *arg3) {
+    s32 s0;
+    s32 s4;
+
+    if (D_800A38DC == 3 && arg0 == 1 &&
+        ((u32)(arg1 - 0x22) < 2 || (u32)(arg1 - 0x24) < 2 ||
+         (u32)(arg1 - 0x26) < 2 || (u32)(arg1 - 0x28) < 2)) {
+        s4 = 0;
+        s0 = 0;
+    } else {
+        s0 = arg0 * 40;
+        s4 = 0x28;
+    }
+
+    if (D_800A38DC == 3 && arg0 == 1 && (u32)(arg1 - 0x2D) < 2) {
+        s0 += (&D_8008EBCC)[*(u8 *)&D_800A384C];
+    }
+
+    func_800395B4(arg0, arg1, arg2, arg3);
+
+    switch (arg1) {
+    case 4:
+        if (D_800A38DC == 2 && D_800A389A == 0) {
+            func_800617C8(arg2);
+            break;
+        }
+        if (D_800A38DC == 5) {
+            func_800617C8(arg2);
+            break;
+        }
+        func_800618B4(arg2, arg3);
+        break;
+    case 3:
+        func_80061250(arg2);
+        break;
+    case 2:
+        func_80061658(arg2, arg0);
+        break;
+    case 15:
+        func_80061710(arg2, arg0);
+        break;
+    case 1:
+        func_8006156C(arg2);
+        break;
+    case 5:
+        func_800325E0(0x3C, (s32 *)arg2);
+        func_800325E0(s4 + 0x3C, (s32 *)arg2);
+        D_800A3910 = func_8006133C(arg2);
+        break;
+    case 6:
+        func_800325E0(0x3C, (s32 *)arg2);
+        func_800325E0(s4 + 0x3C, (s32 *)arg2);
+        D_800A3910 = func_800613C8(arg2);
+        break;
+    case 7:
+        func_800325E0(0x3C, (s32 *)arg2);
+        func_800325E0(s4 + 0x3C, (s32 *)arg2);
+        D_800A3910 = func_80061454(arg2);
+        break;
+    case 8:
+        func_800325E0(0x3C, (s32 *)arg2);
+        func_800325E0(s4 + 0x3C, (s32 *)arg2);
+        D_800A3910 = func_800614E0(arg2);
+        break;
+    case 9:
+        func_800619A4(arg2);
+        break;
+    case 10:
+        func_800619F0(arg2);
+        break;
+    case 11:
+        func_800325E0(s0 + 0x31, (s32 *)arg2);
+        func_800611A4(arg2, arg3);
+        break;
+    case 12:
+        func_800325E0(0x78, (s32 *)arg2);
+        func_80061C00(arg2, arg3[1]);
+        break;
+    case 13:
+        func_800325E0(0x79, (s32 *)arg2);
+        func_80061D74(arg2, arg3[1]);
+        break;
+    case 14:
+        func_800325E0(s0 + 0x22, (s32 *)arg2);
+        func_80061ACC(arg2, arg3);
+        break;
+    case 17:
+        func_800325E0(s0 + 0x39, (s32 *)arg2);
+        break;
+    case 18:
+        func_80061EC0(arg2);
+        func_800325E0(s0 + 0x22, (s32 *)arg2);
+        break;
+    case 33:
+        func_800325E0(0x7A, (s32 *)arg2);
+        break;
+    case 34:
+        func_800325E0(s0 + 0x35, (s32 *)arg2);
+        break;
+    case 35:
+        func_800325E0(s0 + 0x35, (s32 *)arg2);
+        break;
+    case 36:
+        func_800325E0(s0 + 0x34, (s32 *)arg2);
+        break;
+    case 37:
+        func_800325E0(s0 + 0x3A, (s32 *)arg2);
+        break;
+    case 38:
+        func_800325E0(s0 + 0x3B, (s32 *)arg2);
+        break;
+    case 39:
+        func_800325E0(s0 + 0x22, (s32 *)arg2);
+        break;
+    case 40:
+        func_800325E0(s0 + 0x3E, (s32 *)arg2);
+        break;
+    case 41:
+        func_800325E0(s0 + 0x40, (s32 *)arg2);
+        break;
+    case 42:
+        func_800325E0(s0 + 0x21, (s32 *)arg2);
+        break;
+    case 43:
+        func_800325E0(s0 + 0x22, (s32 *)arg2);
+        break;
+    case 44:
+        func_800325E0(s0 + 0x23, (s32 *)arg2);
+        break;
+    case 45:
+        func_800325E0(s0 + 0x29, (s32 *)arg2);
+        break;
+    case 46:
+        func_800325E0(s0 + 0x2B, (s32 *)arg2);
+        break;
+    case 47:
+        func_800325E0(s0 + 0x22, (s32 *)arg2);
+        break;
+    case 48:
+        func_800325E0(s0 + 0x22, (s32 *)arg2);
+        break;
+    case 49:
+        func_800325E0(s0 + 0x32, (s32 *)arg2);
+        break;
+    case 50:
+        func_800325E0(s0 + 0x33, (s32 *)arg2);
+        break;
+    }
+}
 INCLUDE_RODATA("asm/rodata", jtbl_80010698);
 INCLUDE_ASM("asm/funcs", func_80032C50);
 void cpu_check_same_dir_timer(s32 *a0) {
