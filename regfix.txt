@@ -2092,7 +2092,7 @@ saTan5TakeAnim2: subst "subu\t\$4" "subu\t$6" @ 84
 saTan5TakeAnim2: subst "\$4" "$6" @ 85
 saTan5TakeAnim2: subst ",\$4," ",$6," @ 86
 # j target: skip result copy, go to stack cleanup
-saTan5TakeAnim2: subst "\.L189" ".L194" @ 87
+saTan5TakeAnim2: subst "\.L228" ".L233" @ 87
 # result=0 in j delay slot: a2->v0
 saTan5TakeAnim2: subst "addu\t\$6" "addu\t$2" @ 88
 # beqz delay slot: nop -> move a0,disc(a2)
@@ -2644,8 +2644,8 @@ mk_leaf_newpos: $5 <-> $3 @ 81-97
 mk_leaf_newpos: $5 <-> $3 @ 136-142
 # Phase 5: Dispatch restructure — beq uses s5, andi moves to delay slot
 mk_leaf_newpos: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
-mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L475" @ 83
-mk_leaf_newpos: subst "beq\t\$3,\$2,\.L475" "andi\t$6,$2,0x03ff" @ 84
+mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L514" @ 83
+mk_leaf_newpos: subst "beq\t\$3,\$2,\.L514" "andi\t$6,$2,0x03ff" @ 84
 # Phase 5: adj destination v0->v1
 mk_leaf_newpos: subst "addu\t\$2,\$3" "addu\t$3,$3" @ 89
 # Phase 5: count register v1->v0
@@ -2832,8 +2832,54 @@ func_800233AC: subst "\$2,\$2,\$3" "$3,$3,$2" @ 29
 func_800233AC: subst "\(\$2\)" "($3)" @ 31
 
 cpu_set_move_command_and_dir_for_no_action: reorder 8,9,1,2,3,4,5,10,11,6,7 @ 1-11
-cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L516" "beq\t$2,$0,.L517" @ 146
-cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L517" "j\t.L516" @ 148
+cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L555" "beq\t$2,$0,.L556" @ 146
+cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L556" "j\t.L555" @ 148
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 147
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 154
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 155
+
+saTan2KabutoWareMove: subst "\$19" "$18" @ 5
+saTan2KabutoWareMove: subst "\$5" "$6" @ 6
+saTan2KabutoWareMove: subst "\$3" "$5" @ 12
+saTan2KabutoWareMove: subst "\$5" "$6" @ 14
+saTan2KabutoWareMove: subst "\$5" "$6" @ 21
+saTan2KabutoWareMove: subst "\$3" "$5" @ 26
+saTan2KabutoWareMove: subst "\$19" "$18" @ 84
+saTan2KabutoWareMove: subst "\$19" "$18" @ 89
+saTan2KabutoWareMove: subst "\$19" "$18" @ 101
+saTan2KabutoWareMove: subst "\$19" "$18" @ 106
+saTan2KabutoWareMove: subst "\$19" "$18" @ 141
+saTan2KabutoWareMove: subst "\$19" "$18" @ 146
+saTan2KabutoWareMove: subst "\$18" "$19" @ 95
+saTan2KabutoWareMove: subst "\$18" "$19" @ 96
+saTan2KabutoWareMove: subst "\$18" "$19" @ 110
+saTan2KabutoWareMove: subst "\$2,648" "$3,648" @ 70
+saTan2KabutoWareMove: subst "bne\t\$2" "bne\t$3" @ 72
+saTan2KabutoWareMove: subst "addu\t\$3,\$4,\$zero" "sll\t$2,$5,1" @ 73
+saTan2KabutoWareMove: subst "\$16,\$4" "$2,$16" @ 74
+saTan2KabutoWareMove: subst "bne" "beq" @ 43
+saTan2KabutoWareMove: subst "\.L143" ".L113" @ 43
+saTan2KabutoWareMove: subst "addu.*" "nop" @ 44
+saTan2KabutoWareMove: subst "\.L113" ".L143" @ 45
+saTan2KabutoWareMove: subst "nop.*" "addiu\t$2,$zero,1" @ 46
+saTan2KabutoWareMove: subst "j\t" ".L902:\n\tj\t" @ 45
+saTan2KabutoWareMove: subst "\.L112" ".L902" @ 14
+saTan2KabutoWareMove: subst "\.L112" ".L902" @ 21
+saTan2KabutoWareMove: subst "\.L112" ".L902" @ 23
+saTan2KabutoWareMove: subst "\.L127" ".L900" @ 118
+saTan2KabutoWareMove: subst "bne" "beq" @ 124
+saTan2KabutoWareMove: subst "\.L127" ".L901" @ 124
+saTan2KabutoWareMove: subst "\$3" "$2" @ 125
+saTan2KabutoWareMove: subst "\$3" "$2" @ 126
+saTan2KabutoWareMove: subst "\$3" "$2" @ 127
+saTan2KabutoWareMove: subst "\$3" "$2" @ 128
+saTan2KabutoWareMove: subst "\$16,\$3" "$2,$16" @ 95
+saTan2KabutoWareMove: subst "\$3" "$2" @ 96
+saTan2KabutoWareMove: subst "bne\t\$3,\$2" "bne\t$2,$3" @ 98
+saTan2KabutoWareMove: subst "slt\t\$2,\$2,\$3" "slt\t$2,$3,$2" @ 99
+saTan2KabutoWareMove: $4 <-> $5 @ 152-173
+saTan2KabutoWareMove: subst "280\(\$5\)" "280($4)" @ 174
+saTan2KabutoWareMove: delete @ 67
+saTan2KabutoWareMove: insert_after "andi\t$3,$5,0xffff" @ 13
+saTan2KabutoWareMove: insert ".L900:\n\tbne\t$17,$0,.L131\n\taddiu\t$2,$zero,25\n\tj\t.L131\n\taddiu\t$2,$zero,11\n.L901:" @ 125
+saTan2KabutoWareMove: reorder 10,5,3,6,7,8,9,4 @ 3-10
