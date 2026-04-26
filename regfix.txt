@@ -844,15 +844,15 @@ func_8001F938: insert "andi $3,$5,0xFFFF" @ 3
 # into target 8-insn block (lh/lhu/slt/bne/sll-delay/addiu/sll/sra).
 func_8001F938: subst "nop" "lhu\t$3,624($4)" @ 74
 func_8001F938: subst "addu\s+\$3,\$2,\$zero" "slt\t$2,$2,4" @ 75
-func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L351" @ 76
-func_8001F938: subst "beq\s+\$2,\$0,\.L351" "sll\t$2,$3,16" @ 77
+func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L357" @ 76
+func_8001F938: subst "beq\s+\$2,\$0,\.L357" "sll\t$2,$3,16" @ 77
 func_8001F938: subst "addiu\s+\$5,\$zero,3" "addiu\t$3,$zero,3" @ 78
 func_8001F938: subst "andi\s+\$5,\$3,0xffff" "sll\t$2,$3,16" @ 79
 func_8001F938: delete @ 80
 
 # func_8001EFA0: ==6 branch sense swap (bne→beq, swap j targets)
-func_8001EFA0: subst "bne\s+\$3,\$2,\.L316" "beq\t$3,$2,.L312" @ 96
-func_8001EFA0: subst "j\s+\.L312" "j\t.L316" @ 98
+func_8001EFA0: subst "bne\s+\$3,\$2,\.L322" "beq\t$3,$2,.L318" @ 96
+func_8001EFA0: subst "j\s+\.L318" "j\t.L322" @ 98
 
 # tslPrintScreen: first-stage cleanup
 # Early sentinel/token register cleanup.
@@ -1766,7 +1766,7 @@ DispPracticeMenuTex_A: subst "\$2,\$2,12" "$3,$2,12" @ 110
 DispPracticeMenuTex_A: subst "\$3,%gp_rel" "$2,%gp_rel" @ 111
 DispPracticeMenuTex_A: subst "\$2,\$2,\$4" "$3,$3,$4" @ 112
 DispPracticeMenuTex_A: subst "\$3,\$3,11" "$2,$2,11" @ 113
-DispPracticeMenuTex_A: subst "\$2,\.L148" "$3,.L148" @ 114
+DispPracticeMenuTex_A: subst "\$2,\.L154" "$3,.L154" @ 114
 DispPracticeMenuTex_A: subst "\$3,0x0001" "$2,0x0001" @ 115
 DispPracticeMenuTex_A: subst "\$2,\$2,15" "$3,$3,15" @ 116
 DispPracticeMenuTex_A: subst "\$2,\$2,4" "$2,$3,4" @ 117
@@ -2170,7 +2170,7 @@ camera_set_zoom: $17 <-> $18 @ 152-186
 # camera_set_zoom: first rounding $8->$3 + undo delay slot fill
 camera_set_zoom: subst "\$8" "$3" @ 74
 camera_set_zoom: subst "\$8" "$3" @ 76
-camera_set_zoom: subst "\.L596" ".Lcam_rnd1" @ 76
+camera_set_zoom: subst "\.L602" ".Lcam_rnd1" @ 76
 camera_set_zoom: subst "sra\t\$3,\$8,3" "nop" @ 77
 camera_set_zoom: subst "\$8" "$3" @ 78
 camera_set_zoom: subst "\$8" "$3" @ 78
@@ -2667,3 +2667,118 @@ mk_leaf_newpos: subst "slt\t\$2,\$5,\$3" "slt\t$2,$3,$4" @ 110
 mk_leaf_newpos: subst "subu\t\$3,\$3,\$5" "subu\t$3,$4,$3" @ 112
 # Phase 5: rnd register a3->a2
 mk_leaf_newpos: subst "\$7,\$3" "$6,$3" @ 132
+
+# marionation_camera_Exec: 155-insn GTE camera — compound regfix
+# INDICES: .word lines are NOT counted by regfix.py (they start with '.')
+# First GTE block = 21 .word lines (not counted), GTE sqrt = 2 .word lines (not counted)
+# Effective TEXT idx: prologue 0-6, after GTE1 7+, after GTE_sqrt 61+
+
+# === Section A: First scratchpad stores (lui+ori+sw→lui+sw(offset)) ===
+# Store dx to 0x1F800024
+marionation_camera_Exec: subst "lui\t\$3" "lui\t$1" @ 15
+marionation_camera_Exec: delete @ 16
+marionation_camera_Exec: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x0024($1)" @ 17
+# Store dy to 0x1F800028
+marionation_camera_Exec: subst "lui\t\$3" "lui\t$1" @ 25
+marionation_camera_Exec: delete @ 26
+marionation_camera_Exec: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x0028($1)" @ 27
+# Store dz to 0x1F80002C
+marionation_camera_Exec: subst "lui\t\$2" "lui\t$1" @ 39
+marionation_camera_Exec: delete @ 40
+marionation_camera_Exec: subst "sw\t\$3,0\(\$2\)" "sw\t$2,0x002c($1)" @ 41
+
+# === Section B: Third iteration load reorder + register fix ===
+marionation_camera_Exec: subst "lw\t\$3,28" "lw\t$2,28" @ 30
+marionation_camera_Exec: subst "lw\t\$2,48" "lw\t$3,48" @ 31
+marionation_camera_Exec: delete @ 29
+marionation_camera_Exec: reorder 28,27 @ 27-28
+# Fix third iteration registers
+marionation_camera_Exec: subst "mflo\t\$5" "mflo\t$4" @ 32
+marionation_camera_Exec: subst "subu\t\$3,\$3,\$2" "subu\t$2,$2,$3" @ 33
+marionation_camera_Exec: subst "mult\t\$3,\$3" "mult\t$2,$2" @ 35
+
+# === Section C: 250000 constant register ($4→$3) ===
+marionation_camera_Exec: subst "lui\t\$4" "lui\t$3" @ 37
+marionation_camera_Exec: subst "ori\t\$4,\$4" "ori\t$3,$3" @ 38
+marionation_camera_Exec: subst "slt\t\$4,\$4" "slt\t$3,$3" @ 45
+marionation_camera_Exec: subst "bne\t\$4" "bne\t$3" @ 46
+
+# === Section D: dx²/dy²/dz² accumulator registers ===
+marionation_camera_Exec: subst "mflo\t\$7" "mflo\t$5" @ 21
+marionation_camera_Exec: subst "addu\t\$2,\$7,\$5" "addu\t$2,$5,$4" @ 42
+marionation_camera_Exec: subst "mflo\t\$8" "mflo\t$7" @ 43
+marionation_camera_Exec: subst "addu\t\$5,\$2,\$8" "addu\t$5,$2,$7" @ 44
+
+# === Section E: Delay slot fills ===
+# bnez delay slot: move addiu scale to delay slot
+marionation_camera_Exec: delete @ 36
+marionation_camera_Exec: subst "nop" "addiu\t$3,$zero,256" @ 47
+# beqz delay slot: fill with move a0,a1
+marionation_camera_Exec: subst "nop" "addu\t$4,$5,$zero" @ 53
+# scale=0 register ($6→$3)
+marionation_camera_Exec: subst "addu\t\$6,\$0,\$zero" "addu\t$3,$0,$zero" @ 51
+
+# === Section F: log2/scale register cascade ===
+marionation_camera_Exec: subst "srl\t\$3" "srl\t$5" @ 58
+marionation_camera_Exec: subst "addu\t\$12,\$5" "addu\t$12,$4" @ 59
+marionation_camera_Exec: subst "sra\t\$3,\$4" "sra\t$5,$4" @ 77
+marionation_camera_Exec: subst "sll\t\$3,\$3,6" "sll\t$3,$5,6" @ 80
+marionation_camera_Exec: subst "mfhi\t\$9" "mfhi\t$6" @ 83
+marionation_camera_Exec: subst "sra\t\$2,\$9" "sra\t$2,$6" @ 84
+marionation_camera_Exec: subst "addu\t\$6,\$2" "addu\t$3,$2" @ 86
+
+# === Section F2: GTE sqrt scheduling — move addiu $sp after mtc2+nops (post-delete) ===
+marionation_camera_Exec: reorder 56,57,55 @ 55-57
+
+# === Section G: Second scratchpad reads (lui+ori+lw(0)→lui+lw(offset)) ===
+# Read 1 (0x1F800024)
+marionation_camera_Exec: subst "lui\t\$5" "lui\t$2" @ 87
+marionation_camera_Exec: delete @ 88
+marionation_camera_Exec: subst "lw\t\$2,0\(\$5\)" "lw\t$2,0x0024($2)" @ 89
+marionation_camera_Exec: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 91
+# Read 2 (0x1F800028)
+marionation_camera_Exec: subst "lui\t\$4" "lui\t$2" @ 92
+marionation_camera_Exec: delete @ 93
+marionation_camera_Exec: subst "mflo\t\$8" "mflo\t$7" @ 94
+marionation_camera_Exec: subst "lw\t\$2,0\(\$4\)" "lw\t$2,0x0028($2)" @ 95
+marionation_camera_Exec: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 97
+# Read 3 (0x1F80002C)
+marionation_camera_Exec: subst "lui\t\$3" "lui\t$2" @ 98
+marionation_camera_Exec: delete @ 99
+marionation_camera_Exec: subst "mflo\t\$7" "mflo\t$4" @ 100
+marionation_camera_Exec: subst "lw\t\$2,0\(\$3\)" "lw\t$2,0x002c($2)" @ 101
+marionation_camera_Exec: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 103
+
+# === Section H: Reorder mflo/lui in second scratchpad reads (post-delete indices) ===
+marionation_camera_Exec: reorder 87,86 @ 86-87
+marionation_camera_Exec: reorder 92,91 @ 91-92
+
+# === Section I: Second scratchpad stores (insert lui $at + convert sw) ===
+marionation_camera_Exec: subst "sra\t\$2,\$8" "sra\t$2,$7" @ 104
+marionation_camera_Exec: insert "lui\t$1,0x1f80" @ 97
+marionation_camera_Exec: subst "sw\t\$2,0\(\$5\)" "sw\t$2,0x0024($1)" @ 105
+marionation_camera_Exec: subst "sra\t\$2,\$7" "sra\t$2,$4" @ 106
+marionation_camera_Exec: insert "lui\t$1,0x1f80" @ 99
+marionation_camera_Exec: subst "sw\t\$2,0\(\$4\)" "sw\t$2,0x0028($1)" @ 107
+marionation_camera_Exec: subst "mflo\t\$10" "mflo\t$3" @ 108
+marionation_camera_Exec: subst "sra\t\$2,\$10" "sra\t$2,$3" @ 109
+marionation_camera_Exec: insert "lui\t$1,0x1f80" @ 102
+marionation_camera_Exec: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x002c($1)" @ 110
+
+# === Section J: Struct copy (register rotation + base register + delay slot) ===
+# Rotate load/store data registers: $4→$5, $5→$6, $6→$7
+marionation_camera_Exec: $6 <-> $7 @ 114-128
+marionation_camera_Exec: $5 <-> $6 @ 114-128
+marionation_camera_Exec: $4 <-> $5 @ 114-128
+# Move "move a0,s1" from jal delay slot to before struct loads
+marionation_camera_Exec: subst "nop" "addu\t$4,$17,$zero" @ 112
+marionation_camera_Exec: subst "addu\t\$4,\$17,\$zero" "nop" @ 130
+# Change store base from s1($17) to a0($4)
+marionation_camera_Exec: subst "\$17\)" "$4)" @ 117
+marionation_camera_Exec: subst "\$17\)" "$4)" @ 118
+marionation_camera_Exec: subst "\$17\)" "$4)" @ 119
+marionation_camera_Exec: subst "\$17\)" "$4)" @ 120
+marionation_camera_Exec: subst "\$17\)" "$4)" @ 125
+marionation_camera_Exec: subst "\$17\)" "$4)" @ 126
+marionation_camera_Exec: subst "\$17\)" "$4)" @ 127
+marionation_camera_Exec: subst "\$17\)" "$4)" @ 128

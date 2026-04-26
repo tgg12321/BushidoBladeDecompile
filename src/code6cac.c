@@ -158,6 +158,9 @@ extern s32 func_8005C8A8(s32, s32, s32, s32);
 extern s32 func_8005FA98(s32, s32, s32);
 extern s32 func_8005D814(s16 *, s32, s32, s32);
 extern void func_800550E8(s32);
+typedef struct { s32 f0, f1, f2, f3; } Copy16;
+extern void getScreenPosition(void);
+extern void cpu_check_run_attack(s32 *);
 extern void func_800372C0(void);
 extern void func_80023F08(s32, s32);
 
@@ -218,7 +221,111 @@ void func_80017FA0(s32 *a0) {
 end:
     asm volatile("" : : "m"(_frame));
 }
-INCLUDE_ASM("asm/funcs", marionation_camera_Exec);
+void marionation_camera_Exec(s32 *arg0, s32 *arg1) {
+    register s32 *p0 asm("s0") = arg0;
+    register s32 *p1 asm("s1") = arg1;
+    s32 sp_area[4];
+
+    {
+        register s32 mat_ptr asm("a2") = p0[1];
+        __asm__ volatile(
+            ".word 0x00000000\n"
+            "\t.word 0x00C06021\n"
+            "\t.word 0x8D8D0000\n" "\t.word 0x8D8E0004\n"
+            "\t.word 0x48CD0000\n" "\t.word 0x48CE0800\n"
+            "\t.word 0x8D8D0008\n" "\t.word 0x8D8E000C\n" "\t.word 0x8D8F0010\n"
+            "\t.word 0x48CD1000\n" "\t.word 0x48CE1800\n" "\t.word 0x48CF2000\n"
+            :: "r"(mat_ptr)
+        );
+    }
+
+    __asm__ volatile(
+        ".word 0x8E060004\n"
+        "\t.word 0x00000000\n"
+        "\t.word 0x00C06021\n"
+        "\t.word 0x8D8D0014\n" "\t.word 0x8D8E0018\n"
+        "\t.word 0x48CD2800\n"
+        "\t.word 0x8D8F001C\n"
+        "\t.word 0x48CE3000\n" "\t.word 0x48CF3800\n"
+    );
+
+    getScreenPosition();
+
+    {
+        s32 *mat;
+        s32 dx, dy, dz;
+        s32 sum_sq;
+        s32 scale;
+
+        mat = (s32 *)p0[1];
+        dx = mat[5] - p1[10];
+        *(volatile s32 *)0x1F800024 = dx;
+
+        mat = (s32 *)p0[1];
+        dy = mat[6] - p1[11];
+        *(volatile s32 *)0x1F800028 = dy;
+
+        mat = (s32 *)p0[1];
+        dz = mat[7] - p1[12];
+        *(volatile s32 *)0x1F80002C = dz;
+
+        sum_sq = (dx * dx) + (dy * dy) + (dz * dz);
+
+        scale = 0x100;
+        if (sum_sq <= 250000) {
+            if (sum_sq < 0) {
+                scale = 0;
+            } else {
+                s32 log2_val;
+                if (sum_sq < 0x400) {
+                    log2_val = (u32)(*(&D_8008D118 + sum_sq)) >> 3;
+                } else {
+                    s32 shift_a, shift_b;
+                    register s32 t4_v asm("t4");
+                    asm volatile("" : "=r"(t4_v));
+                    t4_v = sum_sq;
+                    {
+                        s32 *new_var = &sp_area[0];
+                        asm volatile(".word 0x488CF000" : : "r"(t4_v));
+                        asm volatile("nop");
+                        asm volatile("nop");
+                        {
+                            s32 addr_v0 = (s32)new_var;
+                            t4_v = addr_v0;
+                            asm volatile(".word 0xE99F0000" : : "r"(t4_v));
+                        }
+                    }
+                    {
+                        s32 lw_v1 = sp_area[0];
+                        s32 li_v0 = -2;
+                        li_v0 = lw_v1 & li_v0;
+                        shift_a = 0x16 - li_v0;
+                    }
+                    shift_b = shift_a >> 1;
+                    log2_val = (((u8)(*(&D_8008D118 + (sum_sq >> shift_a)))) << 16) >> (0x13 - shift_b);
+                }
+                scale = ((log2_val << 6) / 500) + 0xC0;
+            }
+        }
+
+        {
+            s32 v24 = *(volatile s32 *)0x1F800024;
+            s32 v28 = *(volatile s32 *)0x1F800028;
+            s32 v2c = *(volatile s32 *)0x1F80002C;
+            *(volatile s32 *)0x1F800024 = (v24 * scale) >> 1;
+            *(volatile s32 *)0x1F800028 = (v28 * scale) >> 1;
+            *(volatile s32 *)0x1F80002C = (v2c * scale) >> 1;
+        }
+    }
+
+    {
+        s32 *src = (s32 *)p0[1];
+        *(Copy16 *)((u8 *)p1 + 0x14) = *(Copy16 *)src;
+        *(Copy16 *)((u8 *)p1 + 0x24) = *(Copy16 *)((u8 *)src + 0x10);
+    }
+
+    cpu_check_run_attack(p1);
+}
 /* kengo:MED  |  nm_mario_cam/marionation_camera_Exec  |  155i */
 INCLUDE_ASM("asm/funcs", cpu_check_run_attack);
 /* kengo:HIGH  |  nm_cpu/cpu_check_run_attack  |  322i  |  +5 near-exact */
