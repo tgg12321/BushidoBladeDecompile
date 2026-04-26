@@ -2591,3 +2591,9 @@ func_800325E0: subst "\$8" "$7" @ 128
 # mfhi div10k: $11(t3) -> $9(t1)
 func_800325E0: subst "\$11" "$9" @ 120
 func_800325E0: subst "\$11" "$9" @ 121
+
+# func_80031890: pos1 register a0($4)->a2($6)
+func_80031890: subst "\$4" "$6" @ 46
+func_80031890: subst "\$4" "$6" @ 59
+# func_80031890: reorder — move andi/move_a0 before sll chain, addiu to delay slot
+func_80031890: reorder 64,66,58,59,60,61,62,65,63 @ 58-66
