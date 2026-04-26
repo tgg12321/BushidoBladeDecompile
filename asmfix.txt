@@ -50,9 +50,9 @@ func_80033DF4: delete_between "^addu\\s+\\$3,\\$3,1$" "^sb\\s+\\$3,D_8010277D$"
 func_80033DF4: insert_before "^sb\\s+\\$3,D_8010277D$" "addiu $2,$3,1\nsll $5,$5,2\nlui $1,%hi(D_800A38E2)\nsb $2,%lo(D_800A38E2)($1)\nlui $2,%hi(cpu_practice_honmokuroku_data_tbl)\naddiu $2,$2,%lo(cpu_practice_honmokuroku_data_tbl)\naddu $5,$5,$2\nlui $1,%hi(D_800A376B)\nsb $0,%lo(D_800A376B)($1)\nlbu $6,0($5)\nlui $2,%hi(D_8010277C)\nlb $2,%lo(D_8010277C)($2)\nlui $1,%hi(D_800A384C)\nsb $6,%lo(D_800A384C)($1)\n.set noat\nlui $at,%hi(D_8008D538)\naddu $at,$at,$2\nlbu $2,%lo(D_8008D538)($at)\n.set at\nlui $3,%hi(D_8008EC24)\naddiu $3,$3,%lo(D_8008EC24)\n.set noat\nlui $at,%hi(D_8008D9EC)\naddu $at,$at,$2\nlbu $2,%lo(D_8008D9EC)($at)\n.set at\nandi $6,$6,0x00FF\nsltu $2,$2,1\nsll $4,$2,2\naddu $4,$4,$2\naddu $3,$4,$3\naddu $3,$3,$6\nlbu $2,0($3)\nlui $1,%hi(D_800A38DE)\nsb $2,%lo(D_800A38DE)($1)\nlbu $2,1($5)\nlui $1,%hi(D_800A38EC)\nsb $2,%lo(D_800A38EC)($1)\nlbu $2,2($5)\nlui $1,%hi(D_800A38ED)\nsb $2,%lo(D_800A38ED)($1)\nlbu $2,3($5)\nlui $1,%hi(D_800A38EE)\nsb $2,%lo(D_800A38EE)($1)\nlui $2,%hi(D_8008E908)\naddiu $2,$2,%lo(D_8008E908)\naddu $4,$4,$2\naddu $4,$4,$6\nlbu $3,0($4)\naddiu $2,$zero,1\nlui $1,%hi(D_8010277D)"
 func_80033DF4: replace_first "^sb\\s+\\$3,D_8010277D$" "sb $3,%lo(D_8010277D)($1)"
 
-# saTan4FireDisp: move .L241 label before lh/lhu (inner_check jump target fix)
-saTan4FireDisp: delete_between "#nop.*'\.L241:'" "^bgez"
-saTan4FireDisp: insert_before "^lh\t\$2,0\(\$16\)" ".L241:"
+# saTan4FireDisp: move .L279 label before lh/lhu (inner_check jump target fix)
+saTan4FireDisp: delete_between "#nop.*'\.L279:'" "^bgez"
+saTan4FireDisp: insert_before "^lh\t\$2,0\(\$16\)" ".L279:"
 
 # AllocRobRmd: fix .L61 label position (regfix reorder moved it with rmd[3] load)
 # 1. remove .L61: from its wrong position (after lh $5,20($18))
