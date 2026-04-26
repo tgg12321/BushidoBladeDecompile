@@ -2984,3 +2984,6 @@ func_8008BB24: reorder 41,40,39 @ 39-41
 func_8008BB24: reorder 47,46 @ 46-47
 # bne before sw for delay slot fill
 func_8008BB24: reorder 62,61 @ 61-62
+
+# motion_SetMotion: anti-cross-jump fix
+motion_SetMotion: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
