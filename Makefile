@@ -108,7 +108,7 @@ EXPAND_LH_FILES :=
 # -- Per-file fix_lwl opt-in --
 # GCC 2.7.2 emits lwl/lwr/swl/swr with big-endian offsets; XOR with 3 for little-endian.
 # Only enable for files containing lwl/lwr in maspsx output (without compensating inline asm).
-FIX_LWL_FILES :=
+FIX_LWL_FILES := code6cac
 
 # -- Per-file rodata alignment fix --
 # GCC 2.7.2 emits .align 3 (8-byte) for switch tables in .rodata.

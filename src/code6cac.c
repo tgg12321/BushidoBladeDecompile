@@ -2494,7 +2494,107 @@ loop_22F34:
 }
 
 INCLUDE_ASM("asm/funcs", func_8002304C);
-INCLUDE_ASM("asm/funcs", func_800233AC);
+typedef struct { s32 a; s32 b; } __attribute__((packed)) PackedPair_233AC;
+
+s32 func_800233AC(u8 *arg0, s32 *arg1) {
+    s32 pos[3];
+    s32 off[3];
+    s16 out1[4];
+    s32 out2[4];
+    u32 bits;
+    s32 a1_idx;
+    s32 a0_idx;
+    s16 *judge_ptr;
+
+    bits = *(u32 *)(arg0 + 0x2C);
+    a1_idx = (bits >> 14) & 1;
+    if (!(bits & 0x1000)) {
+        a1_idx++;
+    }
+    a0_idx = (bits >> 15) & 1;
+    if (!(bits & 0x2000)) {
+        a0_idx++;
+    }
+
+    {
+        s16 *tbl = &D_8008EB40;
+        s32 px;
+        s16 *row;
+        s32 a1_val;
+
+        __asm__ volatile("" : "=r"(tbl) : "0"(tbl));
+
+        px = *(s32 *)(arg0 + 0xB8);
+        row = tbl + a0_idx * 3;
+        a1_val = row[a1_idx];
+
+        pos[0] = px;
+        pos[1] = *(s32 *)(arg0 + 0xBC) - 0x64;
+        pos[2] = *(s32 *)(arg0 + 0xC0);
+
+        {
+            s32 angle = (*(s16 *)(arg0 + 0x1D8) + a1_val) & 0xFFF;
+            s16 jv = (&Judge)[angle];
+            judge_ptr = &Judge;
+
+            off[0] = px + jv / 4;
+            off[1] = pos[1];
+        }
+
+        {
+            s32 angle2 = (*(s16 *)(arg0 + 0x1D8) + a1_val + 0x400) & 0xFFF;
+            s16 jv2 = judge_ptr[angle2];
+
+            off[2] = pos[2] + jv2 / 4;
+        }
+    }
+
+    if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+        return 0;
+    }
+
+    *(PackedPair_233AC *)(arg0 + 0x98) = *(PackedPair_233AC *)out1;
+
+    {
+        s32 fwd_angle = func_8007FD5C(out1[0], out1[2]);
+        s32 fwd_800;
+
+        pos[0] = *(s32 *)(arg0 + 0xB8);
+        pos[1] = *(s32 *)(arg0 + 0xBC) - 0x898;
+        pos[2] = *(s32 *)(arg0 + 0xC0);
+
+        fwd_800 = fwd_angle + 0x800;
+
+        {
+            s32 angle3 = fwd_800 & 0xFFF;
+            s16 jv3 = judge_ptr[angle3];
+            off[0] = pos[0] + jv3 / 8;
+        }
+
+        off[1] = pos[1];
+
+        {
+            s32 angle4 = (fwd_angle + 0xC00) & 0xFFF;
+            s16 jv4 = judge_ptr[angle4];
+            off[2] = pos[2] + jv4 / 8;
+        }
+
+        if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) != 0) {
+            return 0;
+        }
+
+        pos[0] = off[0];
+        pos[1] = off[1] + 0x190;
+        pos[2] = off[2];
+
+        if (func_80053614(off, pos, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+            return 0;
+        }
+
+        *arg1 = fwd_800;
+        return 1;
+    }
+}
 void func_80023648(u8 *arg0) {
     u16 kind = *(u16 *)(arg0 + 0x6A);
     s16 *new_var;

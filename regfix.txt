@@ -2170,7 +2170,7 @@ camera_set_zoom: $17 <-> $18 @ 152-186
 # camera_set_zoom: first rounding $8->$3 + undo delay slot fill
 camera_set_zoom: subst "\$8" "$3" @ 74
 camera_set_zoom: subst "\$8" "$3" @ 76
-camera_set_zoom: subst "\.L602" ".Lcam_rnd1" @ 76
+camera_set_zoom: subst "\.L616" ".Lcam_rnd1" @ 76
 camera_set_zoom: subst "sra\t\$3,\$8,3" "nop" @ 77
 camera_set_zoom: subst "\$8" "$3" @ 78
 camera_set_zoom: subst "\$8" "$3" @ 78
@@ -2826,3 +2826,7 @@ func_80040D48: subst "\$4" "$6" @ 233
 func_80040D48: subst "\$4" "$6" @ 233
 func_80040D48: subst "\$4" "$6" @ 234
 func_80040D48: subst "\$5" "$4" @ 236
+func_800233AC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 27
+func_800233AC: subst "\$2," "$3," @ 28
+func_800233AC: subst "\$2,\$2,\$3" "$3,$3,$2" @ 29
+func_800233AC: subst "\(\$2\)" "($3)" @ 31
