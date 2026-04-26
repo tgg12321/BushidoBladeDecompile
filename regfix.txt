@@ -2597,3 +2597,73 @@ func_80031890: subst "\$4" "$6" @ 46
 func_80031890: subst "\$4" "$6" @ 59
 # func_80031890: reorder — move andi/move_a0 before sll chain, addiu to delay slot
 func_80031890: reorder 64,66,58,59,60,61,62,65,63 @ 58-66
+
+
+# mk_leaf_newpos: 176-insn leaf spawner — compound regfix (LICM unhoist + reg swap + delay slot fills)
+# Phase 1: s0<->s1 swap for loop 1 (slot/cat register assignment)
+mk_leaf_newpos: $16 <-> $17 @ 1-71
+# Phase 1: s0<->s4 swap for loop 2 setup (base load direction)
+mk_leaf_newpos: $16 <-> $20 @ 77-78
+# Phase 1.5: Fix save offsets after s0<->s1 swap (s0@0x10, s1@0x14)
+mk_leaf_newpos: subst "sw\t\$16,20" "sw\t$16,16" @ 1
+mk_leaf_newpos: subst "sw\t\$17,16" "sw\t$17,20" @ 13
+# Phase 1.5: Fill load delay with li v0,1 (replaces nop after lbu in loop 1)
+mk_leaf_newpos: subst "nop" "addiu\t$2,$zero,1" @ 24
+# Phase 1.5: bne uses v0(=1) not s5 for comparison
+mk_leaf_newpos: subst "\$21" "$2" @ 25
+# Phase 1.5: Fill j delay slot (cur==1 path) with move a1,s2
+mk_leaf_newpos: subst "nop" "addu\t$5,$18,$zero" @ 31
+# Phase 1.5: Fill bne delay slot (EBFC path) with move a1,s2
+mk_leaf_newpos: subst "nop" "addu\t$5,$18,$zero" @ 37
+# Phase 1.5: EBFC EBF4 lookup — lbu v0->a0
+mk_leaf_newpos: subst "\$2,%lo" "$4,%lo" @ 40
+# Phase 1.5: EBFC EBF4 lookup — addu source v0->a0
+mk_leaf_newpos: subst "\$2," "$4," @ 42
+# Phase 1.5: EBFD EBF4 lookup — lbu v0->a0
+mk_leaf_newpos: subst "\$2,%lo" "$4,%lo" @ 51
+# Phase 1.5: EBFD EBF4 lookup — addu source v0->a0
+mk_leaf_newpos: subst "\$2," "$4," @ 53
+# Phase 1.5: Clear jal delay slot (move a1,s2 distributed to j/bne delay slots)
+mk_leaf_newpos: subst "addu\t\$5,\$18,\$zero" "nop" @ 55
+# Phase 1.5: Loop 1 tail — slt uses v0 not s4 (LICM unhoist)
+mk_leaf_newpos: subst "\$20" "$2" @ 69
+# Phase 1.5: Between-loops beq delay slot — li s5,1 instead of data=tbl+1
+mk_leaf_newpos: subst "addu\t\$18,\$19,1" "addiu\t$21,$zero,1" @ 75
+# Phase 2: Delete LICM hoists from prologue
+mk_leaf_newpos: delete @ 6
+mk_leaf_newpos: delete @ 8
+# Phase 3: Insert inline D_800A391E materialization in loop 1 tail (post-delete idx 67)
+mk_leaf_newpos: insert "la $2,D_800A391E" @ 67
+# Phase 3.5: Insert data=tbl+1 after between-loops delay slot (post-insert idx 74)
+mk_leaf_newpos: insert_after "addu\t$18,$19,1" @ 74
+# Phase 4: Reorder prologue saves — move sw s5,s4 after sw ra (post-delete idx 5-9)
+mk_leaf_newpos: reorder 7,8,9,5,6 @ 5-9
+
+# mk_leaf_newpos Phase 5: Loop 2 type register swap (a1->v1)
+mk_leaf_newpos: $5 <-> $3 @ 81-97
+mk_leaf_newpos: $5 <-> $3 @ 136-142
+# Phase 5: Dispatch restructure — beq uses s5, andi moves to delay slot
+mk_leaf_newpos: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
+mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L475" @ 83
+mk_leaf_newpos: subst "beq\t\$3,\$2,\.L475" "andi\t$6,$2,0x03ff" @ 84
+# Phase 5: adj destination v0->v1
+mk_leaf_newpos: subst "addu\t\$2,\$3" "addu\t$3,$3" @ 89
+# Phase 5: count register v1->v0
+mk_leaf_newpos: subst "lhu\t\$3" "lhu\t$2" @ 98
+mk_leaf_newpos: subst "sll\t\$6,\$2" "sll\t$5,$3" @ 99
+mk_leaf_newpos: subst "addu\t\$3,\$3,1" "addu\t$2,$2,1" @ 100
+mk_leaf_newpos: subst "sh\t\$3" "sh\t$2" @ 101
+mk_leaf_newpos: subst "sll\t\$3,\$3,16" "sll\t$2,$2,16" @ 102
+# Phase 5: adj2 register a2->a1
+mk_leaf_newpos: subst ",\$6" ",$5" @ 104
+mk_leaf_newpos: subst ",\$6" ",$5" @ 114
+# Phase 5: thresh/scount/limit register rotation
+mk_leaf_newpos: subst "lbu\t\$4," "lbu\t$3," @ 105
+mk_leaf_newpos: subst "sra\t\$3,\$3,16" "sra\t$4,$2,16" @ 106
+mk_leaf_newpos: subst ",\$4," ",$3," @ 107
+mk_leaf_newpos: subst ",\$4" ",$3" @ 108
+mk_leaf_newpos: subst "sll\t\$5" "sll\t$3" @ 109
+mk_leaf_newpos: subst "slt\t\$2,\$5,\$3" "slt\t$2,$3,$4" @ 110
+mk_leaf_newpos: subst "subu\t\$3,\$3,\$5" "subu\t$3,$4,$3" @ 112
+# Phase 5: rnd register a3->a2
+mk_leaf_newpos: subst "\$7,\$3" "$6,$3" @ 132
