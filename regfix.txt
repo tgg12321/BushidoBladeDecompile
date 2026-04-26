@@ -1668,14 +1668,14 @@ SetPacketData: $16 <-> $18 @ 9-127
 
 # Eliminate orphan j+addu chain after the early-return: branch beq directly to .L525,
 # fill its delay slot with cb_idx=0 (was move s4,a1; now relocated to prologue insert)
-SetPacketData: subst "beq\s+\$2,\$0,\.L744" "beq $2,$0,.L745" @ 11
+SetPacketData: subst "beq\s+\$2,\$0,\.L758" "beq $2,$0,.L759" @ 11
 SetPacketData: subst "addu\s+\$20,\$5,\$zero" "addu $16,$0,$zero" @ 12
 SetPacketData: delete @ 15
 SetPacketData: delete @ 16
 
 # Pre-loop reload of D_800F1AF4 (target re-reads global instead of using cached r_arg1).
 # Subst beq to test the reloaded $2; insert lw+nop before it (post-delete idx 41).
-SetPacketData: subst "beq\s+\$20,\$0,\.L747" "beq $2,$0,.L747" @ 43
+SetPacketData: subst "beq\s+\$20,\$0,\.L761" "beq $2,$0,.L761" @ 43
 
 # Bne delay slot fill: target keeps a `s1=0;` dead-store that GCC eliminated in mine
 SetPacketData: subst "nop" "addu $17,$0,$zero" @ 101
@@ -2264,8 +2264,8 @@ func_8008BC60: subst "\$13" "$12" @ 38
 # Inner loop: restructure comparison sequence (idx 39-42)
 func_8008BC60: subst "srl\t\$7,\$2,12" "addu\t$3,$12,$7" @ 39
 func_8008BC60: subst "sltu\t\$2,\$14,\$7" "srl\t$2,$2,12" @ 40
-func_8008BC60: subst "bne\t\$2,\$0,\.L691" "sltu\t$2,$6,$2" @ 41
-func_8008BC60: subst "addu\t\$2,\$13,\$3" "bne\t$2,$0,.L691" @ 42
+func_8008BC60: subst "bne\t\$2,\$0,\.L705" "sltu\t$2,$6,$2" @ 41
+func_8008BC60: subst "addu\t\$2,\$13,\$3" "bne\t$2,$0,.L705" @ 42
 # Second comparison in inner loop
 func_8008BC60: subst "srl\t\$6,\$2,12" "srl\t$3,$3,12" @ 43
 func_8008BC60: subst "sltu\t\$2,\$14,\$6" "sltu\t$2,$6,$3" @ 44
@@ -2883,3 +2883,77 @@ saTan2KabutoWareMove: delete @ 67
 saTan2KabutoWareMove: insert_after "andi\t$3,$5,0xffff" @ 13
 saTan2KabutoWareMove: insert ".L900:\n\tbne\t$17,$0,.L131\n\taddiu\t$2,$zero,25\n\tj\t.L131\n\taddiu\t$2,$zero,11\n.L901:" @ 125
 saTan2KabutoWareMove: reorder 10,5,3,6,7,8,9,4 @ 3-10
+
+
+# ===== func_8008BB24: compound regfix (79-insn fixed-point attenuation) =====
+# C structure: v7 (2-multiply loop, 3 volatile for 16-byte frame)
+# Strategy: delete labeled insns to detach labels, re-insert at correct positions
+#
+# Swaps (Phase 1, original indices)
+func_8008BB24: $3 <-> $6 @ 35-62
+func_8008BB24: $7 <-> $8 @ 43-69
+#
+# Substs (Phase 2, original indices)
+# abs_diff: a0($4)->a1($5)
+func_8008BB24: subst "\$4" "$5" @ 11
+func_8008BB24: subst "\$4" "$5" @ 12
+func_8008BB24: subst "\$4" "$5" @ 15
+func_8008BB24: subst "\$4" "$5" @ 16
+func_8008BB24: subst "\$4" "$5" @ 24
+# Division magic constant format
+func_8008BB24: subst "lui\t\$2,\(715784192 >> 16\) & 0xFFFF" "lui\t$2,10922" @ 13
+func_8008BB24: subst "ori\t\$2,\$2,0xaaab" "ori\t$2,$2,(715827883 & 65535)" @ 14
+# quot: v1($3)->a0($4)
+func_8008BB24: subst "\$3" "$4" @ 20
+func_8008BB24: subst "\$3" "$4" @ 21
+func_8008BB24: subst "\$3" "$4" @ 27
+func_8008BB24: subst "\$3" "$4" @ 30
+func_8008BB24: subst "\$3" "$4" @ 30
+func_8008BB24: subst "\$3" "$4" @ 33
+# rem: a3($7)->v1($3)
+func_8008BB24: subst "\$7" "$3" @ 24
+func_8008BB24: subst "\$7" "$3" @ 28
+func_8008BB24: subst "\$7" "$3" @ 31
+func_8008BB24: subst "\$7" "$3" @ 31
+# a3_val: t0($8)->a3($7)
+func_8008BB24: subst "\$8" "$7" @ 36
+# abs_rem copy: $7->$3
+func_8008BB24: subst "\$7" "$3" @ 37
+# bgez: v0($2)->v1($3)
+func_8008BB24: subst "\$2" "$3" @ 38
+# loop subu/srl: v0($2)->a0($4)
+func_8008BB24: subst "\$2" "$4" @ 54
+func_8008BB24: subst "\$2" "$4" @ 55
+# loop mflo/sw: t2($10)->t1($9)
+func_8008BB24: subst "\$10" "$9" @ 59
+func_8008BB24: subst "\$10" "$9" @ 60
+# post-loop lw: v0($2)->t1($9)
+func_8008BB24: subst "lw\t\$2,8" "lw\t$9,8" @ 63
+# post-loop subu: after $7<->$8 swap $8->$7; need $2,$7 -> $9,$7
+func_8008BB24: subst "subu\t\$2,\$2,\$7" "subu\t$2,$9,$7" @ 65
+#
+# Deletes (Phase 4, original indices)
+# Delete li mult_const at orig 34 (.L680 label falls to andi at orig 35)
+func_8008BB24: delete @ 34
+# Delete mult at orig 41 (.L682 label falls to srl at orig 42)
+func_8008BB24: delete @ 41
+# Delete bnez delay-slot mult at orig 62
+func_8008BB24: delete @ 62
+#
+# Inserts (Phase 3, post-delete indices, sorted descending internally)
+# Re-insert mult before sll a3_val (post-delete 35=sll); use final regs ($6 from $3<->$6 swap)
+func_8008BB24: insert "mult\t$6,$4" @ 35
+# Insert quot copy (addu $4,$3,$0) at orig 20 position
+func_8008BB24: insert "addu\t$4,$3,$0" @ 20
+#
+# Insert_afters (Phase 3.5, post-Phase-3-insert indices)
+# Re-insert li mult_const after andi (post-Phase-3 idx 35 = andi)
+func_8008BB24: insert_after "addiu\t$4,$zero,4155" @ 35
+#
+# Reorders (Phase 7, post-all-insert indices)
+# Scheduling: counter(41),bgez(40),abs_rem(39) -> counter,bgez,abs_rem
+func_8008BB24: reorder 41,40,39 @ 39-41
+# beq before sw for delay slot fill
+func_8008BB24: reorder 47,46 @ 46-47
+# bne before sw for delay slot fill
+func_8008BB24: reorder 62,61 @ 61-62
