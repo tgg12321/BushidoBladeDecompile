@@ -2782,3 +2782,47 @@ marionation_camera_Exec: subst "\$17\)" "$4)" @ 125
 marionation_camera_Exec: subst "\$17\)" "$4)" @ 126
 marionation_camera_Exec: subst "\$17\)" "$4)" @ 127
 marionation_camera_Exec: subst "\$17\)" "$4)" @ 128
+
+# func_80040D48: register swaps s5/s6
+func_80040D48: $21 <-> $22 @ 15-15
+func_80040D48: $21 <-> $22 @ 163-163
+func_80040D48: $21 <-> $22 @ 240-244
+
+# func_80040D48: structural - move s4=a0 into beqz delay slot
+func_80040D48: subst "\$20" "$4" @ 14
+func_80040D48: subst "\$20" "$4" @ 16
+func_80040D48: subst "addu\t\$22,\$20,44" "addu\t$20,$4,$0" @ 17
+# idx 28: fill load delay with s5=s4+0x2C (target fills nop slot)
+func_80040D48: subst "nop" "addu\t$21,$20,44" @ 28
+
+
+# func_80040D48: immediate/offset substs (base pointer offset s3+0x7C -> s3+0x68)
+func_80040D48: subst "addu\t\$4,\$19,124" "addu\t$4,$19,104" @ 49
+func_80040D48: subst "sh\t\$2,-4\(\$4\)" "sh\t$2,16($4)" @ 64
+func_80040D48: subst "sh\t\$2,-2\(\$4\)" "sh\t$2,18($4)" @ 74
+func_80040D48: subst "sh\t\$2,0\(\$4\)" "sh\t$2,20($4)" @ 84
+
+# func_80040D48: register substs (remaining misallocs)
+func_80040D48: subst "\$9" "$8" @ 160
+func_80040D48: subst "\$9" "$8" @ 161
+func_80040D48: subst "\$8" "$6" @ 194
+func_80040D48: subst "\$6" "$21" @ 196
+func_80040D48: subst "\$6" "$21" @ 198
+func_80040D48: subst "\$6" "$21" @ 200
+func_80040D48: subst "\$6" "$21" @ 201
+func_80040D48: subst "\$6" "$21" @ 202
+func_80040D48: subst "\$6" "$21" @ 203
+func_80040D48: subst "\$6" "$21" @ 208
+func_80040D48: subst "\$6" "$21" @ 209
+func_80040D48: subst "\$6" "$21" @ 210
+func_80040D48: subst "\$6" "$21" @ 211
+func_80040D48: subst "\$8" "$6" @ 220
+func_80040D48: subst "\$8" "$6" @ 222
+func_80040D48: subst "\$8" "$6" @ 222
+func_80040D48: subst "\$4" "$6" @ 226
+func_80040D48: subst "\$5" "$4" @ 227
+func_80040D48: subst "\$4" "$6" @ 232
+func_80040D48: subst "\$4" "$6" @ 233
+func_80040D48: subst "\$4" "$6" @ 233
+func_80040D48: subst "\$4" "$6" @ 234
+func_80040D48: subst "\$5" "$4" @ 236
