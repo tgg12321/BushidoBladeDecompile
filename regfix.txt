@@ -2598,6 +2598,33 @@ func_80031890: subst "\$4" "$6" @ 59
 # func_80031890: reorder — move andi/move_a0 before sll chain, addiu to delay slot
 func_80031890: reorder 64,66,58,59,60,61,62,65,63 @ 58-66
 
+# DispSchoolBG: 189-insn GTE school bg renderer — isqrt register fixes
+# NOTE: regfix skips .word lines, so indices differ from raw TEXT count after .word at my-41 and my-45
+# dist_sq lives in $5(a1) but target uses $4(a0)
+DispSchoolBG: subst "\$5" "$4" @ 29
+DispSchoolBG: subst "\$5" "$4" @ 30
+DispSchoolBG: subst "\$5" "$4" @ 34
+DispSchoolBG: subst "\$5" "$4" @ 38
+DispSchoolBG: subst "\$5" "$4" @ 40
+# idx=0 init: $4(a0) → $3(v1)
+DispSchoolBG: subst "\$4" "$3" @ 39
+# sp10 addr: $12(t4) → $2(v0), target does addiu v0,sp,imm then move t4,v0
+DispSchoolBG: subst "\$12" "$2" @ 43
+DispSchoolBG: insert_after "addu\t$12,$2,$zero" @ 43
+# sp10 load: $4(a0) → $3(v1)
+DispSchoolBG: subst "\$4" "$3" @ 44
+# and mask: and $4,$4,$2 → and $2,$3,$2
+DispSchoolBG: subst "\$4" "$2" @ 46
+DispSchoolBG: subst "\$4" "$3" @ 46
+# idx cascade: subu last operand $4→$2
+DispSchoolBG: subst ",\$4" ",$2" @ 48
+# srlv: $4,$5 → $2,$4
+DispSchoolBG: subst "\$4" "$2" @ 49
+DispSchoolBG: subst "\$5" "$4" @ 49
+# lookup addr: $4→$2
+DispSchoolBG: subst "\$4" "$2" @ 51
+# shift>>1: sra → srl (target uses unsigned shift)
+DispSchoolBG: subst "sra" "srl" @ 53
 
 # mk_leaf_newpos: 176-insn leaf spawner — compound regfix (LICM unhoist + reg swap + delay slot fills)
 # Phase 1: s0<->s1 swap for loop 1 (slot/cat register assignment)
@@ -2644,8 +2671,8 @@ mk_leaf_newpos: $5 <-> $3 @ 81-97
 mk_leaf_newpos: $5 <-> $3 @ 136-142
 # Phase 5: Dispatch restructure — beq uses s5, andi moves to delay slot
 mk_leaf_newpos: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
-mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L514" @ 83
-mk_leaf_newpos: subst "beq\t\$3,\$2,\.L514" "andi\t$6,$2,0x03ff" @ 84
+mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L521" @ 83
+mk_leaf_newpos: subst "beq\t\$3,\$2,\.L521" "andi\t$6,$2,0x03ff" @ 84
 # Phase 5: adj destination v0->v1
 mk_leaf_newpos: subst "addu\t\$2,\$3" "addu\t$3,$3" @ 89
 # Phase 5: count register v1->v0
@@ -2832,8 +2859,8 @@ func_800233AC: subst "\$2,\$2,\$3" "$3,$3,$2" @ 29
 func_800233AC: subst "\(\$2\)" "($3)" @ 31
 
 cpu_set_move_command_and_dir_for_no_action: reorder 8,9,1,2,3,4,5,10,11,6,7 @ 1-11
-cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L555" "beq\t$2,$0,.L556" @ 146
-cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L556" "j\t.L555" @ 148
+cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L562" "beq\t$2,$0,.L563" @ 146
+cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L563" "j\t.L562" @ 148
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 147
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 154
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 155

@@ -28,6 +28,7 @@ extern void seq_Reset(void);
 extern void func_8003A39C(void);
 extern void sys_VSync(s32);
 extern void gpu_LoadImage(s32, s32);
+
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
 extern void game_Cleanup(void);
