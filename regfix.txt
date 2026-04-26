@@ -2830,3 +2830,10 @@ func_800233AC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 27
 func_800233AC: subst "\$2," "$3," @ 28
 func_800233AC: subst "\$2,\$2,\$3" "$3,$3,$2" @ 29
 func_800233AC: subst "\(\$2\)" "($3)" @ 31
+
+cpu_set_move_command_and_dir_for_no_action: reorder 8,9,1,2,3,4,5,10,11,6,7 @ 1-11
+cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L516" "beq\t$2,$0,.L517" @ 146
+cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L517" "j\t.L516" @ 148
+cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 147
+cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 154
+cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 155

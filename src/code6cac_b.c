@@ -89,6 +89,7 @@ extern u8 D_8008E908;
 extern u8 D_8008EC24;
 extern s32 D_80106A50;
 extern s32 func_8007FD5C(s32, s32);
+extern s32 func_80079154(void);
 extern void func_8007F87C(s32, s32 *);
 extern void func_8007FA1C(s32, s32 *);
 extern s16 D_80101E74;
@@ -2655,7 +2656,117 @@ void func_80033898(void) {
     D_800A37B8 = 0;
     D_800A3834 = 3;
 }
-INCLUDE_ASM("asm/funcs", cpu_set_move_command_and_dir_for_no_action);
+void cpu_set_move_command_and_dir_for_no_action(void) {
+    s32 sp[2];
+    s32 count;
+    s32 i;
+    s32 idx1;
+    u8 *ptr;
+    s32 one;
+
+    count = 0;
+    i = 0;
+    one = 1;
+    __asm__ volatile("" : "=r"(one) : "0"(one));
+    {
+        s32 mask = ~(1 << (&D_8008D538)[(s8)D_8010277C]) & 0x3EF3DF;
+        s32 bits = D_80106A50 & mask;
+        ptr = &D_801077B0;
+        do {
+            if (bits & (one << i)) {
+                *ptr = i;
+                ptr++;
+                count++;
+            }
+            i++;
+        } while (i < 0x1B);
+    }
+
+    i = 0;
+    do {
+        i++;
+        idx1 = func_80079154() % count;
+        {
+            s32 idx2 = func_80079154() % count;
+            s32 tmp = (u8)(&D_801077B0)[idx1];
+            (&D_801077B0)[idx1] = (u8)(&D_801077B0)[idx2];
+            (&D_801077B0)[idx2] = tmp;
+        }
+    } while (i < 0x6C);
+
+    if (D_80106A50 & 0x10020) {
+        s32 v1 = D_80106A50 & 0x20;
+        s32 v0 = D_80106A50 & 0x10000;
+        sp[0] = v1;
+        sp[1] = v0;
+        if (v1 == 0) {
+            sp[0] = v0;
+            sp[1] = 0;
+            goto block_12;
+        }
+        if (v0 != 0) {
+            if (func_80079154() & 1) {
+                s32 t1 = sp[1];
+                s32 t2 = sp[0];
+                sp[0] = t1;
+                sp[1] = t2;
+            }
+        }
+block_12:
+        if (count >= 0xB) {
+            i = count;
+            do {
+                (&D_801077B0)[i] = (&D_801077AF)[i];
+                i--;
+            } while (i >= 0xB);
+            {
+                s32 dir = 0x10;
+                if (sp[0] & 0x20) {
+                    dir = 5;
+                }
+                D_801077BA = dir;
+            }
+        } else {
+            s32 dir = 0x10;
+            if (sp[0] & 0x20) {
+                dir = 5;
+            }
+            (&D_801077B0)[count] = dir;
+        }
+        count++;
+        if (sp[1] != 0) {
+            u8 *a1 = &(&D_801077B0)[count];
+            count++;
+            {
+                s32 dir = 0x10;
+                if (sp[1] & 0x20) {
+                    dir = 5;
+                }
+                *a1 = dir;
+            }
+        }
+    }
+    {
+        u8 lookup = (&D_8008D9EC)[(&D_8008D538)[(s8)D_8010277C]];
+        s32 val;
+        if (lookup != 0) {
+            val = 0x1A;
+            if (D_80106A50 & 0x04000000) {
+                goto append_last;
+            }
+        } else {
+            val = 0x18;
+            if (D_80106A50 & 0x01000000) {
+append_last:
+                (&D_801077B0)[count] = val;
+                count++;
+            }
+        }
+    }
+    D_800A391F = count;
+    D_800A3783 = 0;
+    D_800A37BC = 0;
+}
 /* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action  |  189i  |  x2 size collision */
 void mottest_disp(void) {
     u8 a0 = D_800A3783;
