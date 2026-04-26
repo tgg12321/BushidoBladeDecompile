@@ -724,7 +724,158 @@ s32 func_800388A8(void) {
     }
     return result;
 }
-INCLUDE_ASM("asm/funcs", func_80038988);
+s32 func_80038988(void) {
+    extern u8 D_800A3205;
+    extern u8 D_800A331C;
+    extern u8 D_800A3320;
+    extern u8 D_800A3324;
+    extern u8 D_800A3328;
+    extern u8 D_800A332C;
+    extern u8 D_800A3330;
+    extern u8 D_800A3334;
+    extern u8 D_800A3338;
+    extern u8 D_800A333C;
+    s32 result = 0;
+    s32 v0;
+    s32 sel;
+
+    if (D_800A3205) {
+        D_800A331C = 0;
+        D_800A3320 = 0;
+        D_800A3324 = 0;
+        D_800A3328 = 0;
+        D_800A332C = 0;
+        D_800A31FC = 1;
+        func_8003877C();
+        D_800A3205 = 0;
+        D_800A3330 = 0x5A;
+        D_800A3334 = 0;
+        D_800A3338 = 0;
+        D_800A333C = 0;
+    }
+
+    v0 = func_80038734();
+
+    if (D_800A333C != 0) {
+        func_8006BEC4(0xA, -1);
+        goto timer;
+    }
+
+    sel = 0;
+    if (D_800A31FC == 0) {
+        if (D_800A3338 == 1) {
+            switch (v0 - 4) {
+            case 0: sel = 2; break;
+            case 1: sel = 3; break;
+            case 2:
+            case 6:
+            case 10:
+            case 11: sel = 4; break;
+            case 4: sel = -1; break;
+            default: sel = 0; break;
+            }
+        } else {
+            switch (v0 - 4) {
+            case 0: sel = 2; break;
+            case 1: sel = 3; break;
+            case 2: sel = 4; break;
+            case 10: sel = 1; break;
+            case 11: sel = 0xB; break;
+            case 4: sel = -1; break;
+            case 6: sel = 0x14; break;
+            default: sel = 0; break;
+            }
+        }
+    }
+
+    if (sel >= 0) {
+        func_8006BEC4(sel, -1);
+    }
+
+    if (D_800A31FC != 0) {
+        switch (v0 - 4) {
+        case 0:
+            break;
+        case 4:
+            D_800A331C++;
+            if ((u8)D_800A331C >= 5) {
+                D_800A333C = 1;
+                D_800A3330 = 0x5A;
+                break;
+            }
+            func_8003877C();
+            break;
+        case 11:
+            D_800A332C++;
+            if ((u8)D_800A332C >= 5) {
+                D_800A31FC = 0;
+                break;
+            }
+            func_8003877C();
+            break;
+        case 6:
+            D_800A3328++;
+            if ((u8)D_800A3328 >= 5) {
+                D_800A31FC = 0;
+                break;
+            }
+            func_8003877C();
+            break;
+        case 10:
+            D_800A3324++;
+            if ((u8)D_800A3324 >= 5) {
+                D_800A31FC = 0;
+                break;
+            }
+            func_8003877C();
+            break;
+        case 2:
+            D_800A31FC = 0;
+            break;
+        case 1:
+            D_800A3320++;
+            if ((u8)D_800A3320 >= 5) {
+                D_800A31FC = 0;
+                D_800A3338 = 1;
+            }
+            func_8003877C();
+            break;
+        default:
+            break;
+        }
+    } else {
+        switch (v0 - 5) {
+        case 0:
+        case 1:
+        case 5:
+        case 9:
+        case 10:
+            goto timer;
+        case 3:
+            D_800A333C = 1;
+            D_800A3330 = 0x5A;
+            break;
+        default:
+            break;
+        }
+    }
+
+    goto end;
+
+timer:
+    D_800A3330--;
+    if ((u8)D_800A3330 == 0 || (D_80102794 & 0x100010)) {
+        func_8005C650(2, 0x7F, 0x7F);
+        result = 1;
+    }
+
+end:
+    if (result != 0) {
+        D_800A3205 = 1;
+    }
+    return result;
+}
+
 INCLUDE_ASM("asm/funcs", motion_SetMotion);
 /* kengo:MED  |  is_motion/motion_SetMotion  |  425i  |  -23 5.4% */
 s32 *func_800392B8(void) {

@@ -333,3 +333,4 @@ g_file_dma_flag
 g_disp_enable
 g_game_timer
 g_file_heap_base
+D_800A3205

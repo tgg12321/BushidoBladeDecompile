@@ -114,7 +114,7 @@ FIX_LWL_FILES := code6cac
 # GCC 2.7.2 emits .align 3 (8-byte) for switch tables in .rodata.
 # When rodata is split across objects, this creates unwanted padding.
 # Downgrade to .align 2 (4-byte) for files whose rodata is sandwiched.
-RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_c code6cac_c0 code6cac_c_ab code6cac_c2 text1a text1a_b text1a_c text1a_c2 main
+RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_c code6cac_c0 code6cac_c_ab code6cac_c_mid code6cac_c2 text1a text1a_b text1a_c text1a_c2 main
 
 # Helper: resolve CC/MASPSX flags based on whether file needs GP-relative
 cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))
