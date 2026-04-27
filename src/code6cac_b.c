@@ -718,7 +718,9 @@ void func_8002906C(void) {
 }
 INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_C);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
-INCLUDE_ASM("asm/funcs", func_80029454);
+s32 func_80029454(void) {
+    return 0;
+}
 s32 func_8002A458() {
     return 0;
 }
