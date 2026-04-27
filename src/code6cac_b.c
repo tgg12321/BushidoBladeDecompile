@@ -42,7 +42,7 @@ extern u16 g_game_p1_ctrl;
 extern s32 D_80102794;
 extern s32 D_800A3894;
 extern s16 D_800A38C4;
-extern s16 D_80101F32;
+extern u16 D_80101F32;
 extern void func_80035F30(s32, s32, s32, s32);
 extern void obj_InitChars(void);
 extern void obj_Reset(void);
@@ -136,6 +136,10 @@ extern s16 D_800A3876;
 extern s16 D_800A38A8;
 extern void func_8001F860(s16 *arg0, s32 arg1);
 extern void calc_loc_mat_fw(s32 a0);
+extern void motion_GameCalcMotion(void);
+extern void saTan3MainJump(void);
+extern s32 func_80029454(void);
+extern void func_80031B24(void);
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 INCLUDE_RODATA("asm/rodata", jtbl_8001042C);
@@ -886,7 +890,121 @@ void func_8002C0DC(void) {
 }
 INCLUDE_ASM("asm/funcs", PutRobShadow);
 /* kengo:MED  |  am_rmd/PutRobShadow  |  252i */
-INCLUDE_ASM("asm/funcs", func_8002C61C);
+typedef struct { s32 x, y, z; } Vec3i;
+
+void func_8002C61C(void) {
+    u8 *s1 = (u8 *)&D_80101EC8;
+    u8 *s0 = s1 + 0x44C;
+    u16 mode;
+    s32 t1;
+
+    mode = D_80101F32;
+
+    if (mode == 0xF || (u32)(mode - 0x1C) < 2 ||
+        (u32)(mode - 0x1E) < 2 || (u32)(mode - 0x20) < 2) {
+        func_80026DA4();
+    } else if (mode == 0x11) {
+        func_8002C0DC();
+    } else {
+        motion_GameCalcMotion();
+        saTan3MainJump();
+        D_800A3824 = func_80029454();
+        if (D_800A3824 < 0) goto do_calc;
+        PutRobShadow();
+        if (D_800A3824 < 0) goto do_calc;
+        if (D_80101F75 != 0 || D_801023C1 != 0) {
+            saTan2KabutoWareMove(s1, (u8 *)0x1F8003F4);
+            saTan2KabutoWareMove(s0, (u8 *)0x1F8003F4);
+            D_801023C1 = 0;
+            D_80101F75 = 0;
+            goto after_calc;
+        }
+    do_calc:
+        calc_loc_mat_fw(0);
+    after_calc:
+
+        if (*(s32 *)(s1 + 0x3C) >= 3 && *(s32 *)(s0 + 0x3C) >= 3 &&
+            D_800A38A8 != 0 && *(s16 *)(s1 + 0x286) == -1 &&
+            *(s16 *)(s0 + 0x286) == -1 && *(s16 *)(s1 + 0xC) != 0x1F &&
+            *(s16 *)(s0 + 0xC) != 0x1F) {
+            s32 diff = *(s32 *)(s1 + 0xF8) - *(s32 *)(s0 + 0xF8);
+            if (diff < 0) diff = -diff;
+            if (diff < 0x3E8) {
+                *(s16 *)(s1 + 0x286) = 0xA;
+                *(s16 *)(s0 + 0x286) = 0xA;
+                *(s32 *)(s0 + 0x28C) = 0;
+                *(s32 *)(s1 + 0x28C) = 0;
+                D_800A3910 = 0;
+                D_800A389C = 0;
+            }
+        }
+    }
+
+    if (D_80101F32 == 5) {
+        D_800A3748 = 1;
+        D_800A3834 = 0x1C;
+    } else if (D_8010237E == 5) {
+        D_800A3748 = 0;
+        D_800A3834 = 0x1C;
+    }
+
+    {
+        Vec3i *dst_a = (Vec3i *)&D_801020D8;
+        Vec3i *dst_b = (Vec3i *)((u8 *)&D_801020D8 + 0x44C);
+        Vec3i *sp_src = (Vec3i *)0x1F800000;
+        t1 = 0;
+        do {
+            *dst_a = sp_src[0];
+            *dst_b = sp_src[3];
+            dst_b++;
+            dst_a++;
+            sp_src++;
+            t1++;
+        } while (t1 < 3);
+    }
+
+    {
+        Vec3i *dst_a = (Vec3i *)&D_801020FC;
+        Vec3i *dst_b = (Vec3i *)((u8 *)&D_801020FC + 0x44C);
+        Vec3i *sp_src = (Vec3i *)0x1F800000;
+        t1 = 0;
+        do {
+            *dst_a = sp_src[6];
+            *dst_b = sp_src[8];
+            dst_b++;
+            dst_a++;
+            sp_src++;
+            t1++;
+        } while (t1 < 2);
+    }
+
+    {
+        s32 *a1 = (s32 *)0x1F8000EC;
+        s32 a2_off = 0;
+        t1 = 0;
+        do {
+            *(s32 *)((u8 *)&D_80102054 + a2_off) = (a1[-14] + a1[-11] + a1[-8]) / 3;
+            *(s32 *)((u8 *)&D_80102058 + a2_off) = (a1[-13] + a1[-10] + a1[-7]) / 3;
+            *(s32 *)((u8 *)&D_8010205C + a2_off) = (a1[-12] + a1[-9] + a1[-6]) / 3;
+            *(s32 *)((u8 *)&D_8010203C + a2_off) = (a1[-5] + a1[-2]) / 2;
+            t1++;
+            *(s32 *)((u8 *)&D_80102040 + a2_off) = (a1[-4] + a1[-1]) / 2;
+            *(s32 *)((u8 *)&D_80102044 + a2_off) = (a1[-3] + a1[0]) / 2;
+            a1 += 66;
+            a2_off += 0x44C;
+        } while (t1 < 2);
+    }
+
+    {
+        s16 saved = *(s16 *)(s1 + 0x286);
+        if (saved == -1) {
+            func_80031B24();
+            if (*(s16 *)(s1 + 0x286) == saved) {
+                Pad_Prs();
+            }
+        }
+    }
+}
 INCLUDE_ASM("asm/funcs", func_8002CA8C);
 INCLUDE_ASM("asm/funcs", special_camera_Init);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Init  |  370i */

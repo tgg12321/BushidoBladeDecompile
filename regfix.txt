@@ -2092,7 +2092,7 @@ saTan5TakeAnim2: subst "subu\t\$4" "subu\t$6" @ 84
 saTan5TakeAnim2: subst "\$4" "$6" @ 85
 saTan5TakeAnim2: subst ",\$4," ",$6," @ 86
 # j target: skip result copy, go to stack cleanup
-saTan5TakeAnim2: subst "\.L228" ".L233" @ 87
+saTan5TakeAnim2: subst "\.L262" ".L267" @ 87
 # result=0 in j delay slot: a2->v0
 saTan5TakeAnim2: subst "addu\t\$6" "addu\t$2" @ 88
 # beqz delay slot: nop -> move a0,disc(a2)
@@ -2671,8 +2671,8 @@ mk_leaf_newpos: $5 <-> $3 @ 81-97
 mk_leaf_newpos: $5 <-> $3 @ 136-142
 # Phase 5: Dispatch restructure — beq uses s5, andi moves to delay slot
 mk_leaf_newpos: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
-mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L574" @ 83
-mk_leaf_newpos: subst "beq\t\$3,\$2,\.L574" "andi\t$6,$2,0x03ff" @ 84
+mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L608" @ 83
+mk_leaf_newpos: subst "beq\t\$3,\$2,\.L608" "andi\t$6,$2,0x03ff" @ 84
 # Phase 5: adj destination v0->v1
 mk_leaf_newpos: subst "addu\t\$2,\$3" "addu\t$3,$3" @ 89
 # Phase 5: count register v1->v0
@@ -2859,8 +2859,8 @@ func_800233AC: subst "\$2,\$2,\$3" "$3,$3,$2" @ 29
 func_800233AC: subst "\(\$2\)" "($3)" @ 31
 
 cpu_set_move_command_and_dir_for_no_action: reorder 8,9,1,2,3,4,5,10,11,6,7 @ 1-11
-cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L615" "beq\t$2,$0,.L616" @ 146
-cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L616" "j\t.L615" @ 148
+cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L649" "beq\t$2,$0,.L650" @ 146
+cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L650" "j\t.L649" @ 148
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 147
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 154
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 155
@@ -2987,3 +2987,223 @@ func_8008BB24: reorder 62,61 @ 61-62
 
 # motion_SetMotion: anti-cross-jump fix
 motion_SetMotion: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
+
+
+# === SUBSTS (ORIGINAL indices) ===
+
+# Phase 1: andi register fix
+
+# Phase 2: bne delay slot — change addiu to move t1,zero
+
+# Phase 3: Loop 1 header — la $7 -> la $2
+
+# Phase 4: Loop 2 header — la $7 -> la $2
+
+# Phase 5: Loop 2 load offsets — base 0x1F800060 -> 0x1F800000
+
+# Phase 6: Loop 3 pointer merge — $a1 base 0xE0 -> 0xEC, all offsets -12
+# merge $t0 read to $a1
+
+# === DELETES (ORIGINAL indices) ===
+
+
+# === INSERTS (post-delete indices) ===
+# After 5 deletes at 128,151,170,171,227:
+# post-delete 0-127 = orig 0-127; 128-149 = orig 129-150;
+# 150-167 = orig 152-169; 168-222 = orig 172-226; 223-248 = orig 228-253
+
+
+# === INSERT_AFTERS (post-insert indices) ===
+# After 2 inserts at post-del 7 and 123:
+# post-insert = post-delete + 2 (for items >= 123), +1 (for items >= 7)
+# orig 124 (sh) -> pd 124 -> pi 126
+# orig 126 (addu $8 loop1) -> pd 126 -> pi 128
+# orig 148 (addu $8 loop2) -> pd 147 -> pi 149
+
+# move t1 after sh (before .L227 label)
+# move a3,v0 after addu $8 in loop 1
+# move a3,v0 after addu $8 in loop 2
+
+# === REORDERS (post-all indices) ===
+# After insert_afters at 149(+1), 128(+1), 126(+1):
+
+# Loop 2 preheader: la,addu_t0,move_a3,move_t1,lui -> move_t1,la,addu_t0,move_a3,lui
+# orig 147(la)->pd146->pi148->ia(+3)=153, orig 148->pd147->pi149->ia(+3)=154,
+#   move_a3 inserted at 155, orig 149(move_t1)->pd148->pi150->ia(+3)=156, orig 150(lui)->pd149->pi151->ia(+3)=157
+#
+# Actually: insert_afters processed desc: @149 first (+1 to >149), @128 (+1 to >128), @126 (+1 to >126)
+# Starting from post-insert: la=148, addu=149, move_t1=150, lui=151
+# After ia@149: la=148, addu=149, move_a3=150, move_t1=151, lui=152
+# After ia@128: (>128 shift) la=149, addu=150, move_a3=151, move_t1=152, lui=153
+# After ia@126: (>126 shift) la=150, addu=151, move_a3=152, move_t1=153, lui=154
+
+# Loop 3 preheader: move_a2,move_t1,lui_mag,ori_mag,lui_a1,ori_a1 -> move_t1,lui_mag,ori_mag,lui_a1,ori_a1,move_a2
+# orig 172(move_a2)->pd168->pi170->ia(+3)=173, orig 173(move_t1)->pd169->pi171->ia(+3)=174
+# orig 174(lui_mag)->pd170->pi172->ia(+3)=175, orig 175(ori_mag)->pd171->pi173->ia(+3)=176
+# orig 176(lui_a1)->pd172->pi174->ia(+3)=177, orig 177(ori_a1)->pd173->pi175->ia(+3)=178
+
+# Loop 3 body: lw_a,addu_a1,lw_b -> lw_a,lw_b,addu_a1
+# orig 224(lw_a)->pd220->pi222->ia(+3)=225, orig 225(addu_a1)->pd221->pi223->ia(+3)=226
+# orig 226(lw_b,after subst)->pd222->pi224->ia(+3)=227
+# Note: orig 227 was deleted, so orig 226->pd222
+
+
+# === SUBSTS (ORIGINAL indices) ===
+
+# Phase 1: andi register fix
+
+# Phase 2: bne delay slot — change addiu to move t1,zero
+
+# Phase 3: Loop 1 header — la $7 -> la $2
+
+# Phase 4: Loop 2 header — la $7 -> la $2
+
+# Phase 5: Loop 2 load offsets — base 0x1F800060 -> 0x1F800000
+
+# Phase 6: Loop 3 pointer merge — $a1 base 0xE0 -> 0xEC, all offsets -12
+# merge $t0 read to $a1
+
+# === DELETES (ORIGINAL indices) ===
+
+
+# === INSERTS (post-delete indices) ===
+# After 5 deletes at 128,151,170,171,227:
+# post-delete 0-127 = orig 0-127; 128-149 = orig 129-150;
+# 150-167 = orig 152-169; 168-222 = orig 172-226; 223-248 = orig 228-253
+
+
+# === INSERT_AFTERS (post-insert indices) ===
+# After 2 inserts at post-del 7 and 123:
+# post-insert = post-delete + 2 (for items >= 123), +1 (for items >= 7)
+# orig 124 (sh) -> pd 124 -> pi 126
+# orig 126 (addu $8 loop1) -> pd 126 -> pi 128
+# orig 148 (addu $8 loop2) -> pd 147 -> pi 149
+
+# move t1 after sh (before .L227 label)
+# move a3,v0 after addu $8 in loop 1
+# move a3,v0 after addu $8 in loop 2
+
+# === REORDERS (post-all indices) ===
+# After insert_afters at 149(+1), 128(+1), 126(+1):
+
+# Loop 2 preheader: la,addu_t0,move_a3,move_t1,lui -> move_t1,la,addu_t0,move_a3,lui
+# orig 147(la)->pd146->pi148->ia(+3)=153, orig 148->pd147->pi149->ia(+3)=154,
+#   move_a3 inserted at 155, orig 149(move_t1)->pd148->pi150->ia(+3)=156, orig 150(lui)->pd149->pi151->ia(+3)=157
+#
+# Actually: insert_afters processed desc: @149 first (+1 to >149), @128 (+1 to >128), @126 (+1 to >126)
+# Starting from post-insert: la=148, addu=149, move_t1=150, lui=151
+# After ia@149: la=148, addu=149, move_a3=150, move_t1=151, lui=152
+# After ia@128: (>128 shift) la=149, addu=150, move_a3=151, move_t1=152, lui=153
+# After ia@126: (>126 shift) la=150, addu=151, move_a3=152, move_t1=153, lui=154
+
+# Loop 3 preheader: move_a2,move_t1,lui_mag,ori_mag,lui_a1,ori_a1 -> move_t1,lui_mag,ori_mag,lui_a1,ori_a1,move_a2
+# orig 172(move_a2)->pd168->pi170->ia(+3)=173, orig 173(move_t1)->pd169->pi171->ia(+3)=174
+# orig 174(lui_mag)->pd170->pi172->ia(+3)=175, orig 175(ori_mag)->pd171->pi173->ia(+3)=176
+# orig 176(lui_a1)->pd172->pi174->ia(+3)=177, orig 177(ori_a1)->pd173->pi175->ia(+3)=178
+
+# Loop 3 body: lw_a,addu_a1,lw_b -> lw_a,lw_b,addu_a1
+# orig 224(lw_a)->pd220->pi222->ia(+3)=225, orig 225(addu_a1)->pd221->pi223->ia(+3)=226
+# orig 226(lw_b,after subst)->pd222->pi224->ia(+3)=227
+# Note: orig 227 was deleted, so orig 226->pd222
+
+# func_8002C61C: compound regfix (74 rules)
+
+# === SUBSTS (ORIGINAL indices) ===
+
+# Phase 1: andi register fix
+func_8002C61C: subst "\$3,\$2" "$4,$2" @ 7
+func_8002C61C: subst "\$3,\$2" "$4,$2" @ 23
+
+# Phase 2: bne delay slot — change addiu to move t1,zero
+func_8002C61C: subst "addiu\t\$2,\$zero,28" "addu\t$9,$0,$zero" @ 122
+
+# Phase 3: Loop 1 header — la $7 -> la $2
+func_8002C61C: subst "\$7" "$2" @ 125
+func_8002C61C: subst "\$7" "$2" @ 126
+
+# Phase 4: Loop 2 header — la $7 -> la $2
+func_8002C61C: subst "\$7" "$2" @ 147
+func_8002C61C: subst "\$7" "$2" @ 148
+
+# Phase 5: Loop 2 load offsets — base 0x1F800060 -> 0x1F800000
+func_8002C61C: subst "-24\(\$6\)" "72($6)" @ 152
+func_8002C61C: subst "-20\(\$6\)" "76($6)" @ 153
+func_8002C61C: subst "-16\(\$6\)" "80($6)" @ 154
+func_8002C61C: subst "0\(\$6\)" "96($6)" @ 158
+func_8002C61C: subst "4\(\$6\)" "100($6)" @ 159
+func_8002C61C: subst "8\(\$6\)" "104($6)" @ 160
+
+# Phase 6: Loop 3 pointer merge — $a1 base 0xE0 -> 0xEC, all offsets -12
+func_8002C61C: subst "0x00e0" "0x00ec" @ 177
+func_8002C61C: subst "-44\(\$5\)" "-56($5)" @ 178
+func_8002C61C: subst "-32\(\$5\)" "-44($5)" @ 179
+func_8002C61C: subst "-20\(\$5\)" "-32($5)" @ 180
+func_8002C61C: subst "-40\(\$5\)" "-52($5)" @ 188
+func_8002C61C: subst "-28\(\$5\)" "-40($5)" @ 189
+func_8002C61C: subst "-16\(\$5\)" "-28($5)" @ 190
+func_8002C61C: subst "-36\(\$5\)" "-48($5)" @ 198
+func_8002C61C: subst "-24\(\$5\)" "-36($5)" @ 199
+func_8002C61C: subst "-12\(\$5\)" "-24($5)" @ 200
+func_8002C61C: subst "-8\(\$5\)" "-20($5)" @ 208
+func_8002C61C: subst "4\(\$5\)" "-8($5)" @ 209
+func_8002C61C: subst "-4\(\$5\)" "-16($5)" @ 216
+func_8002C61C: subst "8\(\$5\)" "-4($5)" @ 217
+func_8002C61C: subst "0\(\$5\)" "-12($5)" @ 224
+# merge $t0 read to $a1
+func_8002C61C: subst "0\(\$8\)" "0($5)" @ 226
+
+# === DELETES (ORIGINAL indices) ===
+
+func_8002C61C: delete @ 128
+func_8002C61C: delete @ 151
+func_8002C61C: delete @ 170
+func_8002C61C: delete @ 171
+func_8002C61C: delete @ 227
+
+# === INSERTS (post-delete indices) ===
+# After 5 deletes at 128,151,170,171,227:
+# post-delete 0-127 = orig 0-127; 128-149 = orig 129-150;
+# 150-167 = orig 152-169; 168-222 = orig 172-226; 223-248 = orig 228-253
+
+func_8002C61C: insert "andi\t$4,$3,0xffff" @ 7
+func_8002C61C: insert "addiu\t$2,$zero,28" @ 123
+
+# === INSERT_AFTERS (post-insert indices) ===
+# After 2 inserts at post-del 7 and 123:
+# post-insert = post-delete + 2 (for items >= 123), +1 (for items >= 7)
+# orig 124 (sh) -> pd 124 -> pi 126
+# orig 126 (addu $8 loop1) -> pd 126 -> pi 128
+# orig 148 (addu $8 loop2) -> pd 147 -> pi 149
+
+# move t1 after sh (before .L227 label)
+func_8002C61C: insert_after "addu\t$9,$0,$zero" @ 126
+# move a3,v0 after addu $8 in loop 1
+func_8002C61C: insert_after "addu\t$7,$2,$0" @ 128
+# move a3,v0 after addu $8 in loop 2
+func_8002C61C: insert_after "addu\t$7,$2,$0" @ 149
+
+# === REORDERS (post-all indices) ===
+# After insert_afters at 149(+1), 128(+1), 126(+1):
+
+# Loop 2 preheader: la,addu_t0,move_a3,move_t1,lui -> move_t1,la,addu_t0,move_a3,lui
+# orig 147(la)->pd146->pi148->ia(+3)=153, orig 148->pd147->pi149->ia(+3)=154,
+#   move_a3 inserted at 155, orig 149(move_t1)->pd148->pi150->ia(+3)=156, orig 150(lui)->pd149->pi151->ia(+3)=157
+#
+# Actually: insert_afters processed desc: @149 first (+1 to >149), @128 (+1 to >128), @126 (+1 to >126)
+# Starting from post-insert: la=148, addu=149, move_t1=150, lui=151
+# After ia@149: la=148, addu=149, move_a3=150, move_t1=151, lui=152
+# After ia@128: (>128 shift) la=149, addu=150, move_a3=151, move_t1=152, lui=153
+# After ia@126: (>126 shift) la=150, addu=151, move_a3=152, move_t1=153, lui=154
+func_8002C61C: reorder 153,150,151,152,154 @ 150-154
+
+# Loop 3 preheader: move_a2,move_t1,lui_mag,ori_mag,lui_a1,ori_a1 -> move_t1,lui_mag,ori_mag,lui_a1,ori_a1,move_a2
+# orig 172(move_a2)->pd168->pi170->ia(+3)=173, orig 173(move_t1)->pd169->pi171->ia(+3)=174
+# orig 174(lui_mag)->pd170->pi172->ia(+3)=175, orig 175(ori_mag)->pd171->pi173->ia(+3)=176
+# orig 176(lui_a1)->pd172->pi174->ia(+3)=177, orig 177(ori_a1)->pd173->pi175->ia(+3)=178
+func_8002C61C: reorder 174,175,176,177,178,173 @ 173-178
+
+# Loop 3 body: lw_a,addu_a1,lw_b -> lw_a,lw_b,addu_a1
+# orig 224(lw_a)->pd220->pi222->ia(+3)=225, orig 225(addu_a1)->pd221->pi223->ia(+3)=226
+# orig 226(lw_b,after subst)->pd222->pi224->ia(+3)=227
+# Note: orig 227 was deleted, so orig 226->pd222
+func_8002C61C: reorder 225,227,226 @ 225-227
