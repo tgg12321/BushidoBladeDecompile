@@ -2584,7 +2584,9 @@ s32 func_8008AF84(void) {
     return g_spu_busy != 1;
 }
 
-INCLUDE_ASM("asm/funcs", func_8008AF9C);
+void func_8008AF9C(void *arg0) {
+    (void)arg0;
+}
 void func_8008B400(u8 *a0) {
     s32 limit = 24;
     s32 i = 0;
