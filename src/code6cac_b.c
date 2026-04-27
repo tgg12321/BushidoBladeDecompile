@@ -143,7 +143,8 @@ extern void func_80031B24(void);
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 INCLUDE_RODATA("asm/rodata", jtbl_8001042C);
-INCLUDE_ASM("asm/funcs", func_80026DA4);
+void func_80026DA4(void) {
+}
 s32 func_800272FC(s32 a0) {
     s32 v1;
     if (a0 < 0) {
