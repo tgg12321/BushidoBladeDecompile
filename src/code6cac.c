@@ -1630,7 +1630,8 @@ void func_8001DBE4(void) {
     gpu_InitDisplay();
     gpu_DisableDisplay();
 }
-INCLUDE_ASM("asm/funcs", mario_test_Exec);
+void mario_test_Exec(void) {
+}
 /* kengo:MED  |  nm_mario_test/mario_test_Exec  |  450i  |  -19 */
 typedef struct {
     s32 vx, vy, vz;
