@@ -1909,7 +1909,12 @@ void func_80045AA4(s32 a0, s32 a1) {
         func_8005C4C0(a1, idx);
     }
 }
-INCLUDE_ASM("asm/funcs", func_80045B68);
+void func_80045B68(s32 a0, s32 a1, s32 a2, s32 a3) {
+    (void)a0;
+    (void)a1;
+    (void)a2;
+    (void)a3;
+}
 extern void func_8005B6AC(void);
 void func_80046020(void) {
     func_800453E0(6);
