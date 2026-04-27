@@ -2461,7 +2461,8 @@ void func_800213A0(s16 *arg0) {
         arg0[0x86 / 2] = (s16)((a1 + 1) % v[0x14 / 2]);
     }
 }
-INCLUDE_ASM("asm/funcs", func_80021424);
+void *func_80021424(s32 arg0, u16 arg1, s32 arg2) {
+}
 void func_800218C8(s32 a0) {
     s32 offset = a0 * 1100;
     *(u16 *)((u8 *)&D_80101F4E + offset) = *(u16 *)((u8 *)&D_80101F4C + offset);
