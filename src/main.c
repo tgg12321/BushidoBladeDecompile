@@ -3071,7 +3071,8 @@ return_val:
     }
 }
 /* kengo:MED  |  am_rmd/SetPacketData  |  159i */
-INCLUDE_ASM("asm/funcs", func_8008C464);
+s32 func_8008C464(s32 arg0, s32 arg1, s32 arg2) {
+}
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
