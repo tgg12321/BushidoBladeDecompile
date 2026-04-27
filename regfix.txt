@@ -2462,7 +2462,7 @@ D_80083418: subst "\$20" "$21" @ 20
 D_80083418: subst "\$21" "$20" @ 27
 
 # Insert outer loop guard beqz (GCC eliminated as dead code; target keeps it)
-D_80083418: insert "beq	$17,$0,.L63" @ 19
+D_80083418: insert "beq	$17,$0,.L64" @ 19
 
 # Done section: v0/v1 swap ($2/$3) in ctrl-read + mask-test
 D_80083418: subst "\$3" "$2" @ 52

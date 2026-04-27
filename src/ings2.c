@@ -221,7 +221,7 @@ u16 *func_80082C58(void) {
     }
 }
 /* kengo:HIGH  |  is_motion/motion_make_table  |  62i */
-INCLUDE_ASM("asm/funcs", func_80082D34);
+void func_80082D34(void) {}
 __asm__(
     ".section .text\n"
     "    .set noat\n"
