@@ -1554,7 +1554,9 @@ do_work:
 }
 
 /* kengo:MED  |  sa_tan0/saTan0KiWareMoveB  |  212i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", func_8002DE20);
+s32 func_8002DE20() {
+    return 0;
+}
 s32 pad_main_control(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
     s32 x0 = arg0[0];
     s32 z0 = arg0[2];
