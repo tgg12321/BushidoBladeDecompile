@@ -1329,7 +1329,8 @@ void func_8001BE08(s32 *arg0) {
     arg0[4] = 0;
     arg0[5] = -1;
 }
-INCLUDE_ASM("asm/funcs", func_8001BE20);
+void func_8001BE20(s32 arg0, GameObj *arg1) {
+}
 void func_8001C444(void) {
     D_8010277A = 0x800;
     D_80102778 = 0x800;
