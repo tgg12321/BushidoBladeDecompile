@@ -1689,5 +1689,8 @@ inner_chain:
     } while (row < 0x20);
     return out;
 }
-INCLUDE_ASM("asm/funcs", md_game_check_mode);
+void md_game_check_mode(s32 *a0, s32 a1) {
+    (void)a0;
+    (void)a1;
+}
 /* kengo:HIGH  |  md_game/md_game_check_mode  |  234i */
