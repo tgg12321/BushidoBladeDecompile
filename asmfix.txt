@@ -143,6 +143,7 @@ saTan3MainJump: replace_with_asmfile "asm/funcs/saTan3MainJump.s"
 func_80027AD8: replace_with_asmfile "asm/funcs/func_80027AD8.s"
 func_8003993C: replace_with_asmfile "asm/funcs/func_8003993C.s"
 func_80023F08: replace_with_asmfile "asm/funcs/func_80023F08.s"
+single_game_setModeRequest: replace_with_asmfile "asm/funcs/single_game_setModeRequest.s"
 DispPracticeMenuTex_A: replace_with_asmfile "asm/funcs/DispPracticeMenuTex_A.s"
 DispPracticeMenuTex_B: replace_with_asmfile "asm/funcs/DispPracticeMenuTex_B.s"
 func_80022580: replace_with_asmfile "asm/funcs/func_80022580.s"
@@ -187,12 +188,12 @@ func_80017848: insert_before "^\\.end\\s+func_80017848$" ".frame $sp,64,$31\n.ma
 cpu_check_run_attack: insert_after "\.L41:" "addu $12,$4,$zero"
 cpu_check_run_attack: replace_first "\.word 0x488C4000\nnop\naddu\t\$12,\$3,\$zero" "nop\naddu\t$12,$3,$zero\n.word 0x488C4000\nnop\nnop"
 
-# single_game_VoiceContorol: redirect break-cases (0,5,7) from .L83 to .Ldefault trampoline
-# GCC routes break-cases to after-switch (.L83), but target inserts a j+clear trampoline
-# Label shifted +26 after cpu_check_run_attack integration (was .L57)
-single_game_VoiceContorol: replace_first "^\.word\t\.L83$" ".word\t.Ldefault"
-single_game_VoiceContorol: replace_first "^\.word\t\.L83$" ".word\t.Ldefault"
-single_game_VoiceContorol: replace_first "^\.word\t\.L83$" ".word\t.Ldefault"
+# single_game_VoiceContorol: redirect break-cases (0,5,7) from the generated
+# after-switch label to the target's j+clear default trampoline.
+single_game_VoiceContorol: replace_first "^beq\t\\$2,\\$0,\\.L8[34]$" "beq\t$2,$0,.Ldefault"
+single_game_VoiceContorol: replace_first "^\.word\t\.L8[34]$" ".word\t.Ldefault"
+single_game_VoiceContorol: replace_first "^\.word\t\.L8[34]$" ".word\t.Ldefault"
+single_game_VoiceContorol: replace_first "^\.word\t\.L8[34]$" ".word\t.Ldefault"
 
 # func_8003EB84: semantic C is integrated, but GCC 2.7.2 keeps choosing the
 # wrong invariant hoists; replace the function-local body with the verified

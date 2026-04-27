@@ -625,7 +625,8 @@ post_loop:
     }
 }
 /* kengo:HIGH  |  nm_cpu/cpu_check_run_attack  |  322i  |  +5 near-exact */
-INCLUDE_ASM("asm/funcs", single_game_setModeRequest);
+void single_game_setModeRequest(s32 arg0, s32 *arg1) {
+}
 /* kengo:HIGH  |  nm_single_game/single_game_setModeRequest  |  663i  |  +1 near-exact */
 extern s32 g_file_data_buf;
 void func_8001924C(s16 *arg0, s32 arg1) {
