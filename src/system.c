@@ -358,7 +358,9 @@ s32 cdrom_BcdToFrames(u8 *a0) {
         return total - 150;
     }
 }
-INCLUDE_ASM("asm/funcs", func_80080828);
+s32 func_80080828(void) {
+    return 0;
+}
 extern s32 sys_VSync(s32);
 extern void tslTm2LoadImage_2(void *);
 extern void debug_printf(void *, void *, s32, s32, s32);
