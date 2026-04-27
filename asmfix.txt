@@ -90,6 +90,7 @@ func_80043454: replace_with_asmfile "asm/funcs/func_80043454.s"
 func_80045B68: replace_with_asmfile "asm/funcs/func_80045B68.s"
 special_camera_set_win_cam: replace_with_asmfile "asm/funcs/special_camera_set_win_cam.s"
 special_camera_Exec: replace_with_asmfile "asm/funcs/special_camera_Exec.s"
+saTan1MainJump: replace_with_asmfile "asm/funcs/saTan1MainJump.s"
 
 # func_80080828 replacement shifts a few hand-fixed join labels later in
 # system.c; retarget them to the intended post-block continuations.
@@ -104,13 +105,13 @@ func_800826CC: replace_first "^beq\t\\$2,\\$0,\\.L[0-9]+$" "beq\t$2,$0,.Lfunc_80
 
 # func_8008AF9C/func_80089F3C replacements shift one downstream
 # func_8008BC60 regfix pair; restore the original sltu + shared-loop label.
-func_8008BC60: replace_first "^bne\t\\$2,\\$0,\\.L707$" "sltu\t$2,$6,$2"
-func_8008BC60: insert_before "^\\.L707:$" ".L705:"
+func_8008BC60: replace_first "^bne\t\\$2,\\$0,\\.L708$" "sltu\t$2,$6,$2"
+func_8008BC60: insert_before "^\\.L708:$" ".L705:"
 
 # func_8008AF9C/func_80089F3C replacements also shift SetPacketData's early
 # exit/main-work labels; retarget the branch and restore the loaded-value test.
-SetPacketData: replace_first "^beq\t\\$2,\\$0,\\.L760$" "beq\t$2,$0,.L761"
-SetPacketData: replace_first "^beq\t\\$20,\\$0,\\.L763$" "beq\t$2,$0,.L763"
+SetPacketData: replace_first "^beq\t\\$2,\\$0,\\.L761$" "beq\t$2,$0,.L762"
+SetPacketData: replace_first "^beq\t\\$20,\\$0,\\.L764$" "beq\t$2,$0,.L764"
 
 func_80017848: delete_between "^\\.frame" "^\\.end\\s+func_80017848$"
 func_80017848: insert_before "^\\.end\\s+func_80017848$" ".frame $sp,64,$31\n.mask 0x803f0000,-8\n.fmask 0x00000000,0\naddiu      $sp, $sp, -0x40\nsw         $s2, 0x28($sp)\naddu       $s2, $a0, $zero\nsw         $s5, 0x34($sp)\naddu       $s5, $a1, $zero\nsw         $s4, 0x30($sp)\naddu       $s4, $a2, $zero\nsw         $s3, 0x2C($sp)\naddu       $s3, $a3, $zero\nsw         $ra, 0x38($sp)\nsw         $s1, 0x24($sp)\nbeq        $s4, $s3, .L800178AC\nsw         $s0, 0x20($sp)\nlw         $v1, 0xC($s2)\nsll        $v0, $s4, 6\naddu       $v0, $v0, $v1\nlw         $v0, 0x18($v0)\nnop\nbltz       $v0, .L800178B4\nsll        $v0, $s3, 6\naddu       $v0, $v0, $v1\nlw         $v0, 0x18($v0)\nnop\nbltz       $v0, .L800178B4\nnop\n.L800178AC:\nj          .L80017A1C\naddu       $v0, $zero, $zero\n.L800178B4:\nlw         $a0, 0xC($s2)\nsll        $a1, $s4, 6\naddu       $v0, $a1, $a0\nlw         $v0, 0x1C($v0)\nnop\nblez       $v0, .L8001791C\naddu       $v1, $zero, $zero\naddu       $a3, $a0, $zero\nlw         $a2, 0x10($s2)\naddu       $a0, $a1, $a3\naddu       $v0, $a0, $v1\n.L800178E0:\nlbu        $v0, 0x24($v0)\nnop\nsll        $v0, $v0, 4\naddu       $v0, $v0, $a2\nlhu        $v0, 0x4($v0)\nnop\nbeq        $v0, $s3, .L800178AC\naddiu      $v1, $v1, 0x1\nlw         $v0, 0x1C($a0)\nnop\nslt        $v0, $v1, $v0\nbnez       $v0, .L800178E0\naddu       $v0, $a0, $v1\nlw         $a0, 0xC($s2)\nsll        $a1, $s4, 6\n.L8001791C:\naddu       $v0, $a1, $a0\nlw         $v0, 0x20($v0)\nnop\nblez       $v0, .L80017974\naddu       $v1, $zero, $zero\naddu       $a3, $a0, $zero\nlw         $a2, 0x10($s2)\naddu       $a0, $a1, $a3\naddu       $v0, $a0, $v1\n.L80017940:\nlbu        $v0, 0x2C($v0)\nnop\nsll        $v0, $v0, 4\naddu       $v0, $v0, $a2\nlh         $v0, 0x6($v0)\nnop\nbeq        $v0, $s3, .L800178AC\naddiu      $v1, $v1, 0x1\nlw         $v0, 0x20($a0)\nnop\nslt        $v0, $v1, $v0\nbnez       $v0, .L80017940\naddu       $v0, $a0, $v1\n.L80017974:\nsll        $s0, $s4, 6\nlw         $a1, 0xC($s2)\nsll        $s1, $s3, 6\naddu       $a0, $a1, $s0\njal        math_Distance3D\naddu       $a1, $a1, $s1\nlh         $v1, 0x6($s2)\nlw         $a0, 0x10($s2)\nsll        $v1, $v1, 4\naddu       $a0, $a0, $v1\nsll        $v1, $v0, 1\naddu       $v1, $v1, $v0\nsw         $v0, 0x0($a0)\nsll        $v0, $s4, 16\nor         $v0, $v0, $s3\nsw         $v1, 0x8($a0)\nsw         $s5, 0xC($a0)\nsw         $v0, 0x4($a0)\nlw         $v0, 0xC($s2)\nnop\naddu       $s0, $s0, $v0\nlw         $v1, 0x1C($s0)\nnop\naddiu      $v0, $v1, 0x1\nsw         $v0, 0x1C($s0)\nlhu        $v0, 0x6($s2)\naddu       $s0, $s0, $v1\nsb         $v0, 0x24($s0)\nlw         $v0, 0xC($s2)\nnop\naddu       $s1, $s1, $v0\nlw         $v1, 0x20($s1)\nnop\naddiu      $v0, $v1, 0x1\nsw         $v0, 0x20($s1)\nlhu        $v0, 0x6($s2)\naddu       $s1, $s1, $v1\nsb         $v0, 0x2C($s1)\nlhu        $v1, 0x6($s2)\naddiu      $v0, $zero, 0x1\naddiu      $v1, $v1, 0x1\nsh         $v1, 0x6($s2)\n.L80017A1C:\nlw         $ra, 0x38($sp)\nlw         $s5, 0x34($sp)\nlw         $s4, 0x30($sp)\nlw         $s3, 0x2C($sp)\nlw         $s2, 0x28($sp)\nlw         $s1, 0x24($sp)\nlw         $s0, 0x20($sp)\naddiu      $sp, $sp, 0x40\njr         $ra\nnop"
