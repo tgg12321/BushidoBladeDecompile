@@ -1240,7 +1240,8 @@ void spu_ResetCounter(void) {
 
 INCLUDE_ASM("asm/funcs", action_CheckHitZangeki);
 /* kengo:HIGH  |  is_action/action_CheckHitZangeki  |  271i */
-INCLUDE_ASM("asm/funcs", md_game_end);
+void md_game_end(s32 arg0) {
+}
 /* kengo:HIGH  |  md_game/md_game_end  |  249i */
 extern u8 D_801027F7;
 extern u8 D_801027FC;
