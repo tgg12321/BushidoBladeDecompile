@@ -144,6 +144,8 @@ func_80023F08: replace_with_asmfile "asm/funcs/func_80023F08.s"
 func_80022580: replace_with_asmfile "asm/funcs/func_80022580.s"
 func_80021424: replace_with_asmfile "asm/funcs/func_80021424.s"
 camera_set_target_zoom: replace_with_asmfile "asm/funcs/camera_set_target_zoom.s"
+func_80026DA4: replace_with_asmfile "asm/funcs/func_80026DA4.s"
+saTan2KabutoWareMove: replace_with_asmfile "asm/funcs/saTan2KabutoWareMove.s"
 
 # func_80080828 replacement shifts a few hand-fixed join labels later in
 # system.c; retarget them to the intended post-block continuations.
