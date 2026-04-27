@@ -719,7 +719,9 @@ void func_8002906C(void) {
 INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_C);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 INCLUDE_ASM("asm/funcs", func_80029454);
-INCLUDE_ASM("asm/funcs", func_8002A458);
+s32 func_8002A458() {
+    return 0;
+}
 void calc_loc_mat_fw(s32 a0) {
     (void)a0;
 }
