@@ -2822,7 +2822,8 @@ void func_80031890(s32 arg0, s32 arg1, s32 arg2) {
     *(s32 *)(arg1 + 0x30) += *(s32 *)(arg1 + 0x48) / 2;
     *(s32 *)(arg1 + 0x34) += *(s32 *)(arg1 + 0x4C) / 2;
 }
-INCLUDE_ASM("asm/funcs", func_80031B24);
+void func_80031B24(void) {
+}
 void func_80032040(void) {
     s32 i;
     for (i = 0x84; i >= 0; i -= 0x2C) {
