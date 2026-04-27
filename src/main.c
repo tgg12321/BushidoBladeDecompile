@@ -1344,7 +1344,8 @@ void func_800871D4(s32 a0_arg)
   D_801078DA = temp_a0_da;
   D_800F1B12 = temp_v0_1b12 & ~temp_a0_da;
 }
-INCLUDE_ASM("asm/funcs", func_800872A4);
+void func_800872A4(void) {
+}
 INCLUDE_ASM("asm/funcs", func_80087770);
 extern s16 D_80102806;
 s16 func_80087CAC(s32 a0, s16 *a1, s16 *a2) {
