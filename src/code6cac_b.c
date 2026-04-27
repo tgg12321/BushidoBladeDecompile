@@ -888,7 +888,8 @@ void func_8002C0DC(void) {
         }
     }
 }
-INCLUDE_ASM("asm/funcs", PutRobShadow);
+void PutRobShadow(void) {
+}
 /* kengo:MED  |  am_rmd/PutRobShadow  |  252i */
 typedef struct { s32 x, y, z; } Vec3i;
 
