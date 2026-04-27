@@ -2617,7 +2617,9 @@ void func_8008B400(u8 *a0) {
         buf++;
     } while (i < limit);
 }
-INCLUDE_ASM("asm/funcs", saTan1MainJump);
+void saTan1MainJump(void *a0) {
+    (void)a0;
+}
 /* kengo:MED  |  sa_tan1/saTan1MainJump  |  413i  |  -10 */
 s32 func_8008BB24(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     volatile s32 sp0;
