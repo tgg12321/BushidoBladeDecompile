@@ -582,7 +582,12 @@ void func_800433E4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
     *(s32 *)0x1F800000 = D_80103608[arg0][arg1];
     func_80043454(arg2, arg3, arg4, arg5);
 }
-INCLUDE_ASM("asm/funcs", func_80043454);
+void func_80043454(s32 a0, s16 a1, s16 a2, s16 a3) {
+    (void)a0;
+    (void)a1;
+    (void)a2;
+    (void)a3;
+}
 s32 func_80043BD0(u8 *a0, s32 a1, s32 a2, s32 a3, s32 a4)
 {
   register unsigned int t1 asm("$9");
