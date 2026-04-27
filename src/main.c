@@ -1294,7 +1294,8 @@ u16 func_80086BFC(s32 a0, s16 a1) {
     }
     return result;
 }
-INCLUDE_ASM("asm/funcs", func_80086CF8);
+void func_80086CF8(s32 arg0) {
+}
 extern u16 D_800F1B10;
 extern u16 D_800F1B12;
 extern s16 D_800F4E18;
