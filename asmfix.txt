@@ -167,6 +167,7 @@ action_CheckHitZangeki: replace_with_asmfile "asm/funcs/action_CheckHitZangeki.s
 DispUpdateStatusMessage: replace_with_asmfile "asm/funcs/DispUpdateStatusMessage.s"
 DispStuff: replace_with_asmfile "asm/funcs/DispStuff.s"
 AllocBukiRmd: replace_with_asmfile "asm/funcs/AllocBukiRmd.s"
+saTan2Main: replace_with_asmfile "asm/funcs/saTan2Main.s"
 saTan4GaugeInit: replace_with_asmfile "asm/funcs/saTan4GaugeInit.s"
 saTan0GaugeDraw: replace_with_asmfile "asm/funcs/saTan0GaugeDraw.s"
 coli_HitPauseKatana: replace_with_asmfile "asm/funcs/coli_HitPauseKatana.s"

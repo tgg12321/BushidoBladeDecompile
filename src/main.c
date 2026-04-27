@@ -1510,7 +1510,8 @@ s16 func_80088088(s32 a0, s16 a1, s32 a2) {
 s16 func_800880B8(s32 a0, s16 a1, s32 a2) {
     return saTan2Main(a0, a1, 1, a2);
 }
-INCLUDE_ASM("asm/funcs", saTan2Main);
+s16 saTan2Main(s32 arg0, s16 arg1, s32 arg2, s32 arg3) {
+}
 /* kengo:MED  |  sa_tan2/saTan2Main  |  247i */
 extern u8 g_snd_ch_status[];
 extern s32 g_snd_ch_addr[];
