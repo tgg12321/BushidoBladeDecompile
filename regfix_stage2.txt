@@ -29,7 +29,7 @@ single_game_VoiceContorol: subst ".*" "addiu\t$3,$3,-1" @ 30
 single_game_VoiceContorol: subst ".*" "sll\t$3,$3,16" @ 31
 single_game_VoiceContorol: subst ".*" "sra\t$3,$3,16" @ 32
 single_game_VoiceContorol: subst ".*" "sltiu\t$2,$3,8" @ 33
-single_game_VoiceContorol: subst ".*" "beq\t$2,$0,.L44-8" @ 34
+single_game_VoiceContorol: subst ".*" "beq\t$2,$0,.L70-8" @ 34
 single_game_VoiceContorol: subst ".*" "sll\t$2,$3,2" @ 35
 single_game_VoiceContorol: delete @ 36
 single_game_VoiceContorol: subst ".*" "addu\t$2,$2,$11" @ 37
@@ -37,11 +37,11 @@ single_game_VoiceContorol: subst ".*" "lbu\t$2,2($7)" @ 43
 single_game_VoiceContorol: subst ".*" "lbu\t$3,3($7)" @ 44
 single_game_VoiceContorol: insert "sh\t$2,4($6)" @ 28
 single_game_VoiceContorol: insert_after "addu\t$3,$0,$zero" @ 45
-single_game_VoiceContorol: insert_after "j\t.L57" @ 45
+single_game_VoiceContorol: insert_after "j\t.L83" @ 45
 single_game_VoiceContorol: insert_after ".Ldefault:" @ 45
 single_game_VoiceContorol: subst ".*" "lui\t$at,%hi(jtbl_80010088)" @ 72
 single_game_VoiceContorol: subst ".*" "lw\t$2,%lo(jtbl_80010088)($at)" @ 74
-single_game_VoiceContorol: subst ".*" "bne\t$2,$0,.L76+24" @ 110
+single_game_VoiceContorol: subst ".*" "bne\t$2,$0,.L102+24" @ 110
 single_game_VoiceContorol: subst ".*" "la\t$2,D_80102790" @ 112
 single_game_VoiceContorol: delete @ 116
 single_game_VoiceContorol: insert "sw\t$3,0($2)" @ 111
