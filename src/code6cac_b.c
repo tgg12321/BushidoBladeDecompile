@@ -1368,7 +1368,187 @@ edge_check:
     }
 }
 /* kengo:MED  |  sa_tan0/saTan0KiWareMoveA  |  212i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", saTan0KiWareMoveB);
+s32 saTan0KiWareMoveB(u8 *obj) {
+    s32 *mat;
+    s32 sp10;
+
+    *(s32 *)(obj + 0xA8) = *(s32 *)(*(s32 *)(obj + 0x64) + 0) - *(s32 *)(*(s32 *)(obj + 0x60) + 0);
+    *(s32 *)(obj + 0xAC) = *(s32 *)(*(s32 *)(obj + 0x64) + 4) - *(s32 *)(*(s32 *)(obj + 0x60) + 4);
+    *(s32 *)(obj + 0xB0) = *(s32 *)(*(s32 *)(obj + 0x64) + 8) - *(s32 *)(*(s32 *)(obj + 0x60) + 8);
+    *(s32 *)(obj + 0xB8) = *(s32 *)(*(s32 *)(obj + 0x68) + 0) - *(s32 *)(*(s32 *)(obj + 0x60) + 0);
+    *(s32 *)(obj + 0xBC) = *(s32 *)(*(s32 *)(obj + 0x68) + 4) - *(s32 *)(*(s32 *)(obj + 0x60) + 4);
+    *(s32 *)(obj + 0xC0) = *(s32 *)(*(s32 *)(obj + 0x68) + 8) - *(s32 *)(*(s32 *)(obj + 0x60) + 8);
+
+    {
+        register s32 t4 asm("t4");
+        register s32 t5 asm("t5");
+        register s32 t6 asm("t6");
+        register s32 t7 asm("t7");
+
+        {
+            s32 addr = (s32)(obj + 0xA8);
+            __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(addr));
+        }
+        t5 = *(s32 *)(t4);
+        t6 = *(s32 *)(t4 + 4);
+        __asm__ volatile(".word 0x48CD0000" : : "r"(t5));
+        t7 = *(s32 *)(t4 + 8);
+        __asm__ volatile(".word 0x48CE1000" : : "r"(t6));
+        __asm__ volatile(".word 0x48CF2000" : : "r"(t7));
+
+        {
+            s32 addr = (s32)(obj + 0xB8);
+            __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(addr));
+        }
+        __asm__ volatile(".word 0xC98B0008" : : "r"(t4));
+        __asm__ volatile(".word 0xC9890000" : : "r"(t4));
+        __asm__ volatile(".word 0xC98A0004" : : "r"(t4));
+        __asm__ volatile("nop");
+        __asm__ volatile("nop");
+        __asm__ volatile(".word 0x4B70000C");
+
+        {
+            s32 addr = (s32)(obj + 0xC8);
+            __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(addr));
+        }
+        __asm__ volatile(".word 0xE9990000" : : "r"(t4));
+        __asm__ volatile(".word 0xE99A0004" : : "r"(t4));
+        __asm__ volatile(".word 0xE99B0008" : : "r"(t4));
+    }
+
+    if ((u32)(*(s32 *)(obj + 0xC8) + 0x3FFF) >= (u32)0x7FFF) goto do_work;
+    if ((u32)(*(s32 *)(obj + 0xCC) + 0x3FFF) >= (u32)0x7FFF) goto do_work;
+    if ((u32)(*(s32 *)(obj + 0xD0) + 0x3FFF) < (u32)0x7FFF) return 0;
+
+do_work:
+    {
+        s32 angle1 = func_8007FD5C(*(s32 *)(obj + 0xC8), *(s32 *)(obj + 0xD0));
+        s32 c8_sq, d0_scaled, dist;
+        s32 sqrt_val;
+
+        *(s32 *)(obj + 0xC8) = *(s32 *)(obj + 0xC8) >> 6;
+        __asm__ volatile("" : : : "memory");
+        c8_sq = *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8);
+
+        d0_scaled = *(s32 *)(obj + 0xD0) >> 6;
+
+        *(s32 *)(obj + 0xCC) = *(s32 *)(obj + 0xCC) >> 6;
+        *(s32 *)(obj + 0xD0) = d0_scaled;
+
+        *(s16 *)(obj + 0xFA) = 0x800 - angle1;
+
+        dist = c8_sq + d0_scaled * d0_scaled;
+
+        if ((u32)dist < 0x400) {
+            sqrt_val = ((u32)*(&D_8008D118 + dist)) >> 3;
+        } else {
+            s32 lzcr = 0;
+            if (dist >= 0) {
+                register s32 t4 asm("t4") = dist;
+                __asm__ volatile(".word 0x488CF000" : : "r"(t4));
+                __asm__ volatile("nop");
+                __asm__ volatile("nop");
+                {
+                    s32 sp_addr = (s32)&sp10;
+                    __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(sp_addr));
+                }
+                __asm__ volatile(".word 0xE99F0000" : : "r"(t4));
+                lzcr = sp10;
+            }
+            {
+                s32 shift = 0x16 - (lzcr & ~1);
+                s32 tbl = *(&D_8008D118 + ((u32)dist >> shift));
+                sqrt_val = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+            }
+        }
+
+        mat = (s32 *)(obj + 0xD8);
+        *(s16 *)(obj + 0xF8) = 0x800 - func_8007FD5C(*(s32 *)(obj + 0xCC), sqrt_val);
+
+        {
+            s32 val = 0x1000;
+            *(s16 *)(obj + 0xD8) = val;
+            *(s16 *)(obj + 0xDA) = 0;
+            *(s16 *)(obj + 0xDC) = 0;
+            *(s16 *)(obj + 0xDE) = 0;
+            *(s16 *)(obj + 0xE0) = val;
+            *(s16 *)(obj + 0xE2) = 0;
+            *(s16 *)(obj + 0xE4) = 0;
+            *(s16 *)(obj + 0xE6) = 0;
+            *(s16 *)(obj + 0xE8) = val;
+        }
+
+        func_8007FA1C(*(s16 *)(obj + 0xFA), mat);
+        func_8007F87C(*(s16 *)(obj + 0xF8), mat);
+
+        {
+            register s32 t4 asm("t4");
+            register s32 t5 asm("t5");
+            register s32 t6 asm("t6");
+
+            __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(mat));
+            t5 = *(s32 *)(t4);
+            t6 = *(s32 *)(t4 + 4);
+            __asm__ volatile(".word 0x48CD0000" : : "r"(t5));
+            __asm__ volatile(".word 0x48CE0800" : : "r"(t6));
+            t5 = *(s32 *)(t4 + 8);
+            t6 = *(s32 *)(t4 + 0xC);
+            {
+                register s32 t7 asm("t7") = *(s32 *)(t4 + 0x10);
+                __asm__ volatile(".word 0x48CD1000" : : "r"(t5));
+                __asm__ volatile(".word 0x48CE1800" : : "r"(t6));
+                __asm__ volatile(".word 0x48CF2000" : : "r"(t7));
+            }
+        }
+
+        {
+            s32 vtx_addr = (s32)(obj + 0xA8);
+            register s32 t4 asm("t4");
+            register s32 t5 asm("t5");
+            register s32 t6 asm("t6");
+
+            __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(vtx_addr));
+            t6 = *(u16 *)(t4 + 4);
+            t5 = *(u16 *)(t4);
+            t6 <<= 16;
+            t5 |= t6;
+            __asm__ volatile(".word 0x488D0000" : : "r"(t5));
+            __asm__ volatile(".word 0xC9810008" : : "r"(t4));
+            __asm__ volatile("nop");
+            __asm__ volatile("nop");
+            __asm__ volatile(".word 0x4A486012");
+            __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(vtx_addr));
+            __asm__ volatile(".word 0xE9990000" : : "r"(t4));
+            __asm__ volatile(".word 0xE99A0004" : : "r"(t4));
+            __asm__ volatile(".word 0xE99B0008" : : "r"(t4));
+        }
+
+        {
+            s32 vtx_addr = (s32)(obj + 0xB8);
+            register s32 t4 asm("t4");
+            register s32 t5 asm("t5");
+            register s32 t6 asm("t6");
+
+            __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(vtx_addr));
+            t6 = *(u16 *)(t4 + 4);
+            t5 = *(u16 *)(t4);
+            t6 <<= 16;
+            t5 |= t6;
+            __asm__ volatile(".word 0x488D0000" : : "r"(t5));
+            __asm__ volatile(".word 0xC9810008" : : "r"(t4));
+            __asm__ volatile("nop");
+            __asm__ volatile("nop");
+            __asm__ volatile(".word 0x4A486012");
+            __asm__ volatile("addu %0, %1, $0" : "=r"(t4) : "r"(vtx_addr));
+            __asm__ volatile(".word 0xE9990000" : : "r"(t4));
+            __asm__ volatile(".word 0xE99A0004" : : "r"(t4));
+            __asm__ volatile(".word 0xE99B0008" : : "r"(t4));
+        }
+
+        return 1;
+    }
+}
+
 /* kengo:MED  |  sa_tan0/saTan0KiWareMoveB  |  212i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", func_8002DE20);
 s32 pad_main_control(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
