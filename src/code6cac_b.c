@@ -1010,7 +1010,9 @@ void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
     (void)a1;
     (void)a2;
 }
-INCLUDE_ASM("asm/funcs", special_camera_Init);
+s32 special_camera_Init() {
+    return 0;
+}
 /* kengo:HIGH  |  nm_special_cam/special_camera_Init  |  370i */
 s32 func_8002D320(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     register s32 result asm("v0");
