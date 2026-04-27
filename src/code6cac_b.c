@@ -716,7 +716,9 @@ void func_8002906C(void) {
         ptr = (s16 *)((u8 *)ptr + 0x10);
     }
 }
-INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_C);
+s32 DispPracticeMenuTex_C() {
+    return 0;
+}
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 s32 func_80029454(void) {
     return 0;
