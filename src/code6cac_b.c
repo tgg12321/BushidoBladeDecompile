@@ -2481,7 +2481,11 @@ void func_80030524(void) {
         off += 0x64;
     } while (++i < 12);
 }
-INCLUDE_ASM("asm/funcs", coli_hit_body_weapon);
+s32 *coli_hit_body_weapon(s32 *a0, s32 a1) {
+    (void)a0;
+    (void)a1;
+    return 0;
+}
 /* kengo:HIGH  |  is_coli/coli_hit_body_weapon  |  148i */
 /* TABLED: -4 bytes, beqz delay slot scheduling (GCC fills with move v1,s2 instead of move a2,v0) */
 extern s32 *coli_hit_body_weapon(s32 *, s32);
