@@ -2360,7 +2360,8 @@ loop:
     }
     if (t0 < 0x16) goto loop;
 }
-INCLUDE_ASM("asm/funcs", func_800207C8);
+void func_800207C8(GameObj *arg0, s32 arg1, GameObj *arg2, s32 arg3) {
+}
 void func_80020CDC(void) {
     if (D_800A38C6 == 0xFFFF) {
         seq_Reset();
