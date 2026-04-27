@@ -493,7 +493,9 @@ void func_80027A58(s32 *a0) {
     }
 }
 INCLUDE_RODATA("asm/rodata", jtbl_80010548);
-INCLUDE_ASM("asm/funcs", func_80027AD8);
+s32 func_80027AD8() {
+    return 0;
+}
 s32 saTan2KabutoWareMove(u8 *arg0, u8 *arg1) {
     u16 temp_a1;
     u8 *temp_s4;
