@@ -1493,7 +1493,8 @@ neg:
         *arg2 = -1;
     }
 }
-INCLUDE_ASM("asm/funcs", func_8003993C);
+void func_8003993C(void) {
+}
 void func_8003A174(void) {
     s32 neg1;
     EnterCriticalSection();
