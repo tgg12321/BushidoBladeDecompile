@@ -407,7 +407,7 @@ do_stop:
     cdrom_SetCallbackB(0);
     func_80080390(9, 0);
 }
-INCLUDE_ASM("asm/funcs", special_camera_set_win_cam);
+void special_camera_set_win_cam(void) {}
 /* kengo:MED  |  nm_special_cam/special_camera_set_win_cam  |  502i  |  -10 */
 INCLUDE_ASM("asm/funcs", special_camera_Exec);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
