@@ -2741,7 +2741,8 @@ void func_80022568(s16 *arg0) {
     arg0[0x138] = 0;
     arg0[0x139] = 0;
 }
-INCLUDE_ASM("asm/funcs", func_80022580);
+void func_80022580(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+}
 void func_80022F34(void) {
     s32 i;
     u16 *tbl;
