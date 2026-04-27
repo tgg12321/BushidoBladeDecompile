@@ -68,13 +68,16 @@ C_O_FILES    := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/$(SRC_DIR)/%.o,$(C_FILES)
 ALL_O_FILES  := $(S_O_FILES) $(DATA_O_FILES) $(C_O_FILES)
 
 # -- Top-level targets --
-.PHONY: all clean setup check
+.PHONY: all clean setup check clean-check validate
 
 all: check
 
 # Build and verify match
 check: $(EXE) $(TARGET).sha1
 	@sha1sum -c $(TARGET).sha1 && echo "OK: $(TARGET) matches!" || echo "MISMATCH: $(TARGET) does not match"
+
+# Force a clean rebuild before checking the final hash.
+clean-check: clean check
 
 # -- SHA1 checksum file --
 $(TARGET).sha1:
@@ -122,9 +125,19 @@ maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLA
 fix_lwl_for = $(if $(filter $1,$(FIX_LWL_FILES)),$(FIX_LWL) |,)
 rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.align\t2/" |,)
 
+# Shared pipeline dependencies for every C object. Without these, changing
+# regfix/asmfix/toolchain config can leave stale objects in place because
+# make only notices src/*.c timestamps.
+PIPELINE_DEPS := Makefile \
+	tools/prologue_config.json \
+	regfix.txt regfix_stage2.txt asmfix.txt \
+	sdata_syms.txt sdata_funcs.txt sdata_exclude.txt expand_lb_funcs.txt \
+	tools/prologue_fix.py tools/fix_lwl.py tools/regfix.py tools/asmfix.py \
+	tools/maspsx/maspsx.py tools/maspsx/maspsx/__init__.py
+
 # -- Compile C source (decompiled functions) --
 # Pipeline: cpp | cc1 | prologue_fix | maspsx | [fix_lwl] | [sed align fix] | regfix | regfix_stage2 | asmfix | as -> .o
-$(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
+$(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c $(PIPELINE_DEPS)
 	@mkdir -p $(dir $@)
 	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call fix_lwl_for,$*) $(call rodata_align_fix,$*) $(REGFIX) | $(REGFIX_STAGE2) | $(ASMFIX) | $(AS) $(AS_FLAGS) -o $@
 

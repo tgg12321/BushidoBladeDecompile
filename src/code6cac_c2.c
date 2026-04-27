@@ -57,6 +57,12 @@ extern u8 D_80102781;
 extern s8 D_8010277D;
 extern u8 D_8010277F;
 extern s16 D_800A391D;
+extern s32 D_800A3368;
+extern u8 D_800A4750[];
+extern u8 D_800A6690[];
+extern s16 D_800A7FE0[];
+extern u16 D_800A87E0[];
+extern u8 D_800A8FB0[];
 extern s32 *func_8004153C(s32);
 extern void func_800432A0(s32, s32, s32, s32, s32);
 extern s32 file_GetFlag2(void);
@@ -1551,6 +1557,137 @@ void func_8003E6A0(s32 arg0, s32 arg1) {
 }
 INCLUDE_ASM("asm/funcs", DispHira);
 /* kengo:MED  |  am_rmd/DispHira  |  299i */
-INCLUDE_ASM("asm/funcs", func_8003EB84);
+s32 *func_8003EB84(s32 a0, s32 a1, s32 *out) {
+    s32 buf[32];
+    s32 mask;
+    s32 *p;
+    s32 *p_lo;
+    s32 *p_hi;
+    s32 *p_end;
+    s32 row;
+    s32 bit;
+    s32 word;
+    s32 base_index;
+    s16 *row_entries;
+    s16 *entry_ptr;
+    s32 *word_ptr;
+    s32 entry;
+    s32 chain_entry;
+    u8 flag_byte;
+    u16 lookup_val;
+    s32 index;
+    s32 flag_table_addr;
+    s32 lookup_table_addr;
+
+    if (a0 >= 0) {
+        if (a0 >= 0x20) {
+            mask = -1;
+            goto fill;
+        }
+    } else if ((-a0) >= 0x20) {
+        mask = -1;
+        goto fill;
+    }
+    if (a0 < 0) {
+        mask = (s32)(((u32)-1) >> (a0 + 0x1F));
+    } else if (a0 == 0) {
+        mask = 0;
+    } else {
+        mask = (-1) << (0x20 - a0);
+    }
+
+fill:
+    p = buf;
+    p_lo = &buf[a1];
+    entry = a1 + 0x1F;
+    p_hi = &buf[entry];
+    p_end = &buf[0x20];
+    do {
+        if (((s32)p >= (s32)p_lo) && ((s32)p < (s32)p_hi)) {
+            *p = mask;
+            goto next_word;
+        }
+        *p = -1;
+next_word:
+        p++;
+    } while ((s32)p < (s32)p_end);
+
+    row = 0;
+    flag_table_addr = (s32)D_800A8FB0;
+    lookup_table_addr = (s32)D_800A87E0;
+    row_entries = D_800A7FE0;
+    word_ptr = buf;
+    do {
+        word = *word_ptr;
+        if (word != 0) {
+            bit = 0;
+            entry_ptr = row_entries;
+            do {
+                if (word < 0) {
+                    entry = *entry_ptr;
+                    base_index = row << 5;
+                    if (entry >= 0) {
+                        chain_entry = entry;
+                        mask = base_index + bit;
+                        flag_byte = *(u8 *)(flag_table_addr + mask);
+inner_chain:
+                        lookup_val = *(u16 *)((((s32)((s16)chain_entry)) << 1) + lookup_table_addr);
+                        index = lookup_val & 0x7FFF;
+                        chain_entry++;
+                        if (index < D_800A3368) {
+                            u8 *char_ptr;
+                            s32 char_off;
+
+                            char_off = index << 4;
+                            __asm__ volatile(
+                                "la %0, D_800A4750\n\t"
+                                "addu %0, %0, %1"
+                                : "=&r"(char_ptr)
+                                : "r"(char_off)
+                            );
+                            char_ptr[6] = (s8)(flag_byte & 3);
+                            if ((flag_byte & 8) || ((flag_byte & 4) && (char_ptr[7] & 8))) {
+                                char_ptr[7] = char_ptr[7] | 1;
+                            } else {
+                                char_ptr[7] = char_ptr[7] & 0xFE;
+                            }
+                            {
+                                s32 old_3820 = D_800A3820;
+                                D_800A3820 = old_3820 + 4;
+                                *(s32 *)old_3820 = (s32)char_ptr;
+                            }
+                        } else {
+                            u8 *obj_ptr;
+                            s32 obj_off;
+
+                            obj_off = (index - D_800A3368) * 0x68;
+                            __asm__ volatile(
+                                "la %0, D_800A6690\n\t"
+                                "addu %0, %0, %1"
+                                : "=&r"(obj_ptr)
+                                : "r"(obj_off)
+                            );
+                            if (obj_ptr[0x58] == 0) {
+                                *out = (s32)obj_ptr;
+                                out++;
+                                obj_ptr[0x58] = 1;
+                            }
+                        }
+                        word <<= 1;
+                        if ((lookup_val & 0x8000) == 0) {
+                            goto inner_chain;
+                        }
+                    }
+                }
+                bit++;
+                entry_ptr++;
+            } while (bit < 0x20);
+        }
+        row_entries += 0x20;
+        row++;
+        word_ptr++;
+    } while (row < 0x20);
+    return out;
+}
 INCLUDE_ASM("asm/funcs", md_game_check_mode);
 /* kengo:HIGH  |  md_game/md_game_check_mode  |  234i */
