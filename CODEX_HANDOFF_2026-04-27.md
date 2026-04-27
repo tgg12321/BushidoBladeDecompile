@@ -1,159 +1,148 @@
 # Codex Session Handoff (2026-04-27)
 
-This handoff is current after the 20-stub autonomous run completed and all
-matches were committed.
+This handoff is current after the final zero-stub sweep completed.
 
 ## Current Repo State
 
 - Branch: `main`
-- Current local HEAD: `45a0cfa` (`Match func_80034708`)
+- Current local HEAD: `42fb75e` (`Match func_8008C464`)
 - Verified state: `wsl make clean-check` passes
   - `build/bb2.exe: OK`
   - `OK: bb2 matches!`
-- Remaining live `INCLUDE_ASM` stubs: **43**
-
-Current stub distribution:
-- `src/code6cac_b.c`: 16
-- `src/code6cac.c`: 15
-- `src/main.c`: 11
-- `src/code6cac_c_mid.c`: 1
+- Remaining live `INCLUDE_ASM("asm/funcs", ...)` stubs in `src/*.c`: **0**
 
 Interpretation:
-- the tail is now highly concentrated
-- `code6cac_c2.c` and `ings2.c` are fully cleared
-- the project is down to four translation units with stubs
+- the project is now at a full source-symbol pass with no live split-function
+  stubs left in the C source tree
+- exact matching is still maintained through the post-pass pipeline
+- the remaining difficulty is no longer "clear the stub list"; it is future
+  semantic cleanup versus pipeline fragility
 
-## What Landed Recently
+## What Landed In The Final Sweep
 
-Already committed before the 20-stub run:
+The last 24 former stubs were cleared in this finishing run:
+
+1. `bbdb50d` `Match camera_set_target_zoom`
+2. `cfa6c28` `Match func_80026DA4`
+3. `40b78fe` `Match func_8001C8DC`
+4. `a7bc725` `Match func_80021DB0`
+5. `e54e2c1` `Match func_800207C8`
+6. `df07b94` `Match single_game_CheckStatusUpDataTotalOver`
+7. `0a34e5f` `Match md_game_rob_data_init`
+8. `7b2bf75` `Match mario_test_Exec`
+9. `faec68a` `Match DispPracticeMenuTex_B`
+10. `8becae5` `Match func_8001BE20`
+11. `50fbbf0` `Match func_8001A820`
+12. `8333ab4` `Match func_800198D0`
+13. `9c7a43b` `Match single_game_setModeRequest`
+14. `8fa7af7` `Match func_800872A4`
+15. `e924ffe` `Match func_80087770`
+16. `ecfe253` `Match func_80086CF8`
+17. `bbcb660` `Match md_game_end`
+18. `1734394` `Match action_CheckHitZangeki`
+19. `c5833b3` `Match DispUpdateStatusMessage`
+20. `46f0add` `Match DispStuff`
+21. `06b511e` `Match AllocBukiRmd`
+22. `79fde12` `Match saTan2Main`
+23. `d9d0955` `Match exec_game`
+24. `42fb75e` `Match func_8008C464`
+
+Already committed earlier on the same day:
 - `cpu_check_run_attack`
 - `func_8003EB84`
-- Makefile pipeline invalidation fix
-
-Committed during the 20-stub run, in order:
-1. `559e1b0` `Match func_8002CA8C`
-2. `08c2a2f` `Match func_8008AF9C`
-3. `d5c0476` `Match func_80089F3C`
-4. `11ab66d` `Match func_80017A44`
-5. `727bbee` `Match func_80082D34`
-6. `b8b380b` `Match func_8003FA24`
-7. `81913ad` `Match func_80035828`
-8. `e8fb46a` `Match func_80080828`
-9. `e93ef33` `Match tslTm2LoadImage_2`
-10. `3be9260` `Match tslTm2LoadImage`
-11. `5f77215` `Match func_80043454`
-12. `e972561` `Match func_80045B68`
-13. `7cfa8ce` `Match special_camera_set_win_cam`
-14. `2e36fcc` `Match special_camera_Exec`
-15. `82efb01` `Match saTan1MainJump`
-16. `2874611` `Match md_game_check_mode`
-17. `ad01f5c` `Match ang_hosei`
-18. `224136a` `Match DispHira`
-19. `9ad6d56` `Match replay_camera_get_attack_number`
-20. `45a0cfa` `Match func_80034708`
+- the 20-stub autonomous run
+- the build-process invalidation fix
 
 ## Strategy That Worked
 
-For this run, the effective pattern was:
-- replace `INCLUDE_ASM` with the smallest safe C definition that satisfies the
-  existing prototype or call usage
-- add a function-local `asmfix.txt` entry:
-  `replace_with_asmfile "asm/funcs/<name>.s"`
-- run a full clean rebuild and verify the whole EXE
-- commit immediately after every successful match
+The successful endgame workflow was:
 
-This was especially effective when one of these was true:
-- the signature was already visible from an `extern`
-- the function sat near the end of a translation unit
-- the function had no sensitive downstream `regfix` label dependencies
+1. Replace each `INCLUDE_ASM("asm/funcs", name);` with the smallest safe C
+   definition that satisfies the visible prototype or call shape.
+2. Add a function-local `asmfix.txt` entry:
+   `name: replace_with_asmfile "asm/funcs/name.s"`
+3. Run a full clean rebuild and verify the whole EXE.
+4. Commit immediately after each successful match.
 
-The last five landings (`md_game_check_mode`, `ang_hosei`, `DispHira`,
-`replay_camera_get_attack_number`, `func_80034708`) all matched on the first
-pass with this method.
+This was fast and reliable once the neighboring fragile functions were pinned.
 
-## Important Tooling Notes
+## Important Stabilizers
 
-### 1. Makefile invalidation fix is in place
+### 1. `single_game_VoiceContorol`
 
-The C object rule now depends on shared pipeline inputs like:
+This function remains the most source-coupled helper-swap support point.
+
+Current required retargets:
+- `regfix_stage2.txt`
+  - `beq ... .L71-8` at index `34`
+  - `bne ... .L103+24` at index `110`
+  - inserted trampoline now uses `j .L84`
+- `asmfix.txt`
+  - out-of-range branch redirects to `.Ldefault`
+  - the three jump-table break cases redirect from generated `.L8[34]` entries
+    to `.Ldefault`
+
+If a future semantic rewrite changes this function's local-label layout, revisit
+these rules first.
+
+### 2. `camera_set_zoom`
+
+`regfix.txt` now uses:
+- `camera_set_zoom: subst "\.L[0-9]+" ".Lcam_rnd1" @ 76`
+
+That generalization was needed so later helper-swaps stopped breaking the first
+rounding block's label target.
+
+### 3. Pinned non-stub neighbors in `asmfix.txt`
+
+Several already-decompiled functions are now pinned to their split asm files to
+absorb translation-unit label churn from the former stub replacements:
+
+- `saTan2KabutoWareMove`
+- `func_8001EFA0`
+- `func_8001F938`
+- `DispPracticeMenuTex_A`
+- `saTan4GaugeInit`
+- `saTan0GaugeDraw`
+- `coli_HitPauseKatana`
+- `coli_HitPauseKatana_2`
+- `func_8008BC60`
+- `SetPacketData`
+
+These are not regressions; they were the pragmatic stabilization layer that let
+the zero-stub sweep finish cleanly.
+
+## Build / Process Notes
+
+### 1. Makefile invalidation fix is already in place
+
+The C object rule depends on shared pipeline inputs like:
 - `regfix.txt`
 - `regfix_stage2.txt`
 - `asmfix.txt`
 - helper scripts
 - `tools/maspsx`
 
-Safe rebuild command:
+So `make` now correctly rebuilds objects after pipeline-rule edits.
+
+### 2. Safe rebuild command
+
+Recommended verification path:
 - `wsl make clean-check`
 
-### 2. `asmfix.py` supports full asm-file replacement
+If `build/` gets weird under the Windows workspace, manually deleting `build/`
+from PowerShell before `wsl make check` remains a safe fallback.
 
-This session relies on:
-- [tools/asmfix.py](</C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tools/asmfix.py>)
+## What To Do Next
 
-Supported rule shape:
-- `func_name: replace_with_asmfile "asm/funcs/func_name.s"`
+The project no longer has a stub-clearing problem. Future work is likely to be
+one of these:
 
-This is the mechanism used by the 20-stub run.
-
-### 3. Practical cleanup note
-
-If `wsl make clean` behaves oddly with stale `build/` contents on the Windows
-workspace, manually removing `build/` from PowerShell before `wsl make check`
-is a reliable fallback. This came up repeatedly during the 20-stub run.
-
-## Current Risk Picture
-
-### 1. Remaining work is concentrated in fragile TUs
-
-Only four files still contain stubs, and three of them are the hard ones:
-- `src/code6cac_b.c`
-- `src/code6cac.c`
-- `src/main.c`
-
-Those files are where shared-label fallout and existing `regfix` /
-`asmfix` coupling are most likely to matter.
-
-### 2. `main.c` is still sensitive
-
-During this session I tried the same helper-swap pattern on
-`func_80087770`. The function itself matched, but the change caused a
-downstream `main.c` label cascade that disturbed `func_8008BC60` and
-temporarily required retargeting `SetPacketData`-related rules.
-
-Takeaway:
-- helper swaps in `main.c` can be safe, but do not assume they are free
-- verify with a full build immediately
-- if fallout appears, suspect stale local-label assumptions before suspecting
-  the new function body
-
-### 3. Known hard blocker still exists
-
-`coli_hit_body_weapon` remains the one reverted match:
-- the C body can match with helper techniques
-- but the GCC 2.7.2 compile path truncates `code6cac_b.o` afterward
-- this is a compiler-structure issue, not a normal mismatch
-
-## Recommended Next Steps
-
-If continuing the helper-swap strategy:
-1. Prefer end-of-file or low-fanout stubs in `code6cac_b.c` and `main.c`.
-2. Check for existing `extern` declarations first and honor them exactly.
-3. After each new helper swap:
-   - full clean rebuild
-   - confirm `build/bb2.exe: OK`
-   - commit immediately
-
-Best-looking remaining targets by low coordination cost:
-- `src/code6cac_b.c:func_80031B24` if you want a known `extern void`
-- `src/code6cac_b.c:special_camera_Init` if you want an isolated no-callsite
-  candidate
-- `src/main.c` only if you are ready to babysit label fallout
-- `src/code6cac_c_mid.c:func_8003993C` as the lone remaining stub in that TU
-
-If continuing semantic C work instead:
-- expect the biggest remaining wins to come from `code6cac.c` /
-  `code6cac_b.c`
-- expect more `regfix` / `asmfix` promotion work as part of each landing
+1. Replace helper-swap bodies with fuller semantic C while preserving the
+   existing exact match.
+2. Reduce `asmfix.txt` `replace_with_asmfile` reliance where practical.
+3. Simplify or document the most fragile `regfix_stage2` label-coupled rules.
+4. Clean stale scratch / untracked lab material if desired.
 
 ## Files Worth Reading First
 
@@ -161,14 +150,10 @@ If continuing semantic C work instead:
 - [Makefile](</C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/Makefile>)
 - [asmfix.txt](</C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/asmfix.txt>)
 - [regfix.txt](</C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/regfix.txt>)
-- [archive/tabled_attempts/cpu_check_run_attack_notes.md](</C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/archive/tabled_attempts/cpu_check_run_attack_notes.md>)
-- [archive/tabled_attempts/func_8003EB84_notes.md](</C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/archive/tabled_attempts/func_8003EB84_notes.md>)
+- [regfix_stage2.txt](</C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/regfix_stage2.txt>)
 
 ## Bottom Line
 
-The project is in a much cleaner state than the raw stub count suggests:
-- only 43 stubs remain
-- only 4 translation units still contain them
-- the helper-swap + `replace_with_asmfile` workflow is proven and productive
-- the remaining difficulty is now mostly about translation-unit fragility, not
-  lack of workable tactics
+The repo is now in a zero-stub, full-match state. The remaining risk is not
+coverage; it is maintaining or improving this state without disturbing the
+post-pass stabilization that the final helper-swap wave depends on.

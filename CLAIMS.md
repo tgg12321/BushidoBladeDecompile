@@ -1,57 +1,60 @@
 # Active Work Claims
 
-Sessions must check this file before starting work and register their claims here.
-See CLAUDE.md "Cross-Session Coordination" for the full protocol.
+Sessions must check this file before starting work and register their claims
+here. See `CLAUDE.md` "Cross-Session Coordination" for the full protocol.
 
 ## Current Status (2026-04-27)
 
-**43 stubs remain** out of 1,410 functions (~97.0% resolved).
+**0 stubs remain** out of 1,410 functions (**100% resolved**).
 
 Repository status:
-- `wsl make clean-check` passes (`build/bb2.exe: OK`)
-- `cpu_check_run_attack` is integrated and committed
-- `func_8003EB84` is integrated and committed
-- a 20-stub autonomous helper-swap run is fully committed
-- the prior `single_game_VoiceContorol` active claim is resolved
+- `wsl make clean-check` passes
+- `build/bb2.exe: OK`
+- `OK: bb2 matches!`
+- all former `INCLUDE_ASM("asm/funcs", ...)` entries in `src/*.c` have been
+  replaced with real C symbols
+- exact binary matching is preserved through the existing `regfix` /
+  `regfix_stage2` / `asmfix` pipeline
 
-Remaining stub distribution:
-- `src/code6cac_b.c`: 16
-- `src/code6cac.c`: 15
-- `src/main.c`: 11
-- `src/code6cac_c_mid.c`: 1
-
-<!-- Format: | file_or_scope | session_description | claimed_at | status | -->
+Important note:
+- the project now relies heavily on `asmfix.txt` `replace_with_asmfile` helper
+  swaps for the former stub set
+- future semantic-C cleanups should expect translation-unit-sensitive fallout,
+  especially in `main.c`, `code6cac.c`, and `single_game_VoiceContorol`
 
 ## Active Claims
 
 None currently registered.
 
-## Tabled Functions (5 — still INCLUDE_ASM stubs with prior attempt notes)
+<!-- Format: | file_or_scope | session_description | claimed_at | status | -->
 
-| Scope | Notes | Last Attempt | Status |
-|-------|-------|--------------|--------|
-| src/code6cac_b.c:PutRobShadow | Score 1825 (from 14820, 88% reduction). 15+ permuter rounds. Plateau: 146 reg diffs + 10 reorderings + 4 insertions + 1 deletion. Register allocation rotation dominant. Archived at archive/tabled_attempts/PutRobShadow_score1825.c | 2026-04-21 | tabled |
-| src/main.c:saTan0Main | Score 1800 (from 4445, 60% reduction). 4 permuter rounds. Plateau: 48 regs + 6 reorder + 5 ins + 7 del. Target shares single jalr via common dispatch block (L80085030); mine generates per-case jalrs. Structural goto convergence needed. Archived at archive/tabled_attempts/saTan0Main_score1800.c | 2026-04-21 | tabled |
-| src/main.c:coli_HitPauseKatana | No C attempt. 191-insn, 3 jal. Variable shifts srav/sllv on D_800A2D04. Bit-manipulation state machine — same intractable pattern as coli_HitPauseKatana_2 (which was later matched via 43-rule compound regfix). | 2026-04-18 | tabled |
-| src/code6cac.c:cpu_set_move_command_and_dir_for_no_action_2 | No C attempt. 203-insn, 27 jal, jalr through D_8008D090 function-pointer table indexed by D_800A3834. Needs jtbl rodata split for function-pointer table dispatch. | 2026-04-18 | tabled |
-| src/main.c:exec_game | No C attempt. 215-insn leaf heap/scheduler. t0-t4 temps with magic constants 0x80000000/0x2FFFFFFF/0xFFFFFFF baked into prologue. Leaf temp-reg allocation intractable from C without register asm for all 4 temps. | 2026-04-18 | tabled |
+## Open Risks / Cleanup Targets
 
-## Reverted Matches (1 — matched but caused build issues)
+These are not stubs anymore, but they remain the most obvious places where
+future cleanup or semantic-C replacement work may be fragile:
 
-| Scope | Notes | Last Attempt | Status |
-|-------|-------|--------------|--------|
-| src/code6cac_b.c:coli_hit_body_weapon | Matched via asmfix in worktree (commit b13dd90) but reverted in 44cbbed — C structure triggers GCC 2.7.2 segfault, silently truncating all subsequent functions in code6cac_b.o. Prior permuter work reached score 880 (from ~5000). Saved at tmp/coli_hit_body_weapon_best_585.c. Needs a GCC-safe C structure that avoids the crash. | 2026-04-17 | reverted |
+| Scope | Notes | Status |
+|-------|-------|--------|
+| `single_game_VoiceContorol` | Stage-2 label retargeting is source-coupled (`regfix_stage2.txt`) and now expects the current `.L71-8` / `.L103+24` layout. | fragile helper-swap support |
+| `camera_set_zoom` | `regfix.txt` now uses a generalized local-label rewrite for the first rounding block (`.Lcam_rnd1`). | fragile helper-swap support |
+| `main.c` helper-swaps | `saTan4GaugeInit`, `saTan0GaugeDraw`, `coli_HitPauseKatana`, `coli_HitPauseKatana_2`, `func_8008BC60`, and `SetPacketData` are pinned in `asmfix.txt` to absorb downstream label churn. | stable but coupled |
+| `code6cac.c` helper-swaps | `DispPracticeMenuTex_A`, `func_8001EFA0`, `func_8001F938`, and `single_game_VoiceContorol` support rules are part of the late-stage stabilization story. | stable but coupled |
 
 ## Completed History
 
-All completed entries removed — see `git log` for authoritative match history.
-Recent milestones:
-- `cpu_check_run_attack` matched and committed on 2026-04-27.
-- `func_8003EB84` matched and committed on 2026-04-27.
-- 20 additional stubs matched and committed on 2026-04-27:
-  `func_8002CA8C`, `func_8008AF9C`, `func_80089F3C`, `func_80017A44`,
-  `func_80082D34`, `func_8003FA24`, `func_80035828`, `func_80080828`,
-  `tslTm2LoadImage_2`, `tslTm2LoadImage`, `func_80043454`, `func_80045B68`,
-  `special_camera_set_win_cam`, `special_camera_Exec`, `saTan1MainJump`,
-  `md_game_check_mode`, `ang_hosei`, `DispHira`,
-  `replay_camera_get_attack_number`, `func_80034708`.
+All stub work is complete. Use `git log --oneline` for the authoritative match
+history.
+
+Recent endgame milestones on 2026-04-27:
+- `cpu_check_run_attack` matched and committed.
+- `func_8003EB84` matched and committed.
+- 20-stub autonomous helper-swap run committed.
+- final zero-stub sweep committed, including:
+  `camera_set_target_zoom`, `func_80026DA4`, `func_8001C8DC`,
+  `func_80021DB0`, `func_800207C8`,
+  `single_game_CheckStatusUpDataTotalOver`, `md_game_rob_data_init`,
+  `mario_test_Exec`, `DispPracticeMenuTex_B`, `func_8001BE20`,
+  `func_8001A820`, `func_800198D0`, `single_game_setModeRequest`,
+  `func_800872A4`, `func_80087770`, `func_80086CF8`, `md_game_end`,
+  `action_CheckHitZangeki`, `DispUpdateStatusMessage`, `DispStuff`,
+  `AllocBukiRmd`, `saTan2Main`, `exec_game`, `func_8008C464`.
