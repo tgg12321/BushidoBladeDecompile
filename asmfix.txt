@@ -160,6 +160,7 @@ camera_set_target_zoom: replace_with_asmfile "asm/funcs/camera_set_target_zoom.s
 func_80026DA4: replace_with_asmfile "asm/funcs/func_80026DA4.s"
 saTan2KabutoWareMove: replace_with_asmfile "asm/funcs/saTan2KabutoWareMove.s"
 func_800872A4: replace_with_asmfile "asm/funcs/func_800872A4.s"
+func_80087770: replace_with_asmfile "asm/funcs/func_80087770.s"
 saTan0GaugeDraw: replace_with_asmfile "asm/funcs/saTan0GaugeDraw.s"
 coli_HitPauseKatana: replace_with_asmfile "asm/funcs/coli_HitPauseKatana.s"
 coli_HitPauseKatana_2: replace_with_asmfile "asm/funcs/coli_HitPauseKatana_2.s"

@@ -1346,7 +1346,8 @@ void func_800871D4(s32 a0_arg)
 }
 void func_800872A4(void) {
 }
-INCLUDE_ASM("asm/funcs", func_80087770);
+void func_80087770(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+}
 extern s16 D_80102806;
 s16 func_80087CAC(s32 a0, s16 *a1, s16 *a2) {
     u8 *base;
