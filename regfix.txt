@@ -2671,8 +2671,8 @@ mk_leaf_newpos: $5 <-> $3 @ 81-97
 mk_leaf_newpos: $5 <-> $3 @ 136-142
 # Phase 5: Dispatch restructure — beq uses s5, andi moves to delay slot
 mk_leaf_newpos: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
-mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L608" @ 83
-mk_leaf_newpos: subst "beq\t\$3,\$2,\.L608" "andi\t$6,$2,0x03ff" @ 84
+mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L622" @ 83
+mk_leaf_newpos: subst "beq\t\$3,\$2,\.L622" "andi\t$6,$2,0x03ff" @ 84
 # Phase 5: adj destination v0->v1
 mk_leaf_newpos: subst "addu\t\$2,\$3" "addu\t$3,$3" @ 89
 # Phase 5: count register v1->v0
@@ -2859,8 +2859,8 @@ func_800233AC: subst "\$2,\$2,\$3" "$3,$3,$2" @ 29
 func_800233AC: subst "\(\$2\)" "($3)" @ 31
 
 cpu_set_move_command_and_dir_for_no_action: reorder 8,9,1,2,3,4,5,10,11,6,7 @ 1-11
-cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L649" "beq\t$2,$0,.L650" @ 146
-cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L650" "j\t.L649" @ 148
+cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L663" "beq\t$2,$0,.L664" @ 146
+cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L664" "j\t.L663" @ 148
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 147
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 154
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 155
@@ -3207,3 +3207,137 @@ func_8002C61C: reorder 174,175,176,177,178,173 @ 173-178
 # orig 226(lw_b,after subst)->pd222->pi224->ia(+3)=227
 # Note: orig 227 was deleted, so orig 226->pd222
 func_8002C61C: reorder 225,227,226 @ 225-227
+
+# saTan0KiWareMoveA: 212-insn collision/triangle test with GTE, div-by-3, sqrt, 3x saTan5TakeAnim2
+# 66-rule compound regfix: GTE 2-insn address patterns (+3), register cycle (5-way + swap),
+# deferred cz correction reorder, sqrt reg diffs (+1), end branch optimization (-1)
+
+# === GTE block: 1-insn addiu->2-insn addiu+addu pattern (+3 insns) ===
+# idx 26: change addu t4,s0,248 to nop (moved to after sh)
+saTan0KiWareMoveA: subst "addu\t\$12,\$16,248" "nop" @ 26
+# idx 33: change opcode/dest for 2-insn pattern
+saTan0KiWareMoveA: subst "addu\t\$12,\$16,256" "addiu\t$2,$16,256" @ 33
+# insert_after idx 28 (post-delete): addiu+addu for 0xF8 address (reversed file order)
+saTan0KiWareMoveA: insert_after "addu\t$12,$2,$zero" @ 28
+saTan0KiWareMoveA: insert_after "addiu\t$2,$16,248" @ 28
+# insert_after idx 33 (post-delete): addu for 0x100 address
+saTan0KiWareMoveA: insert_after "addu\t$12,$2,$zero" @ 33
+
+# === Triangle test 1st cross product: 5-way register cycle + deferred cz ===
+# Register mapping: x0($8->$9), z0($6->$7), z2($7->$8), cx($9->$10),
+#   cz_raw($4->$6), sum_x($3->$2), sum_z($2->$3),
+#   z0*px($3->$4), x0*pz($17->$2), x0*cz($2->$17)
+saTan0KiWareMoveA: subst "\$8" "$9" @ 44
+saTan0KiWareMoveA: subst "\$3" "$2" @ 47
+saTan0KiWareMoveA: subst "\$8" "$9" @ 47
+saTan0KiWareMoveA: subst "\$3" "$2" @ 48
+saTan0KiWareMoveA: subst "\$6" "$7" @ 49
+saTan0KiWareMoveA: subst "\$7" "$8" @ 50
+saTan0KiWareMoveA: subst "\$9" "$10" @ 51
+# idx 52: cycle $2->$3, $6->$7, $7->$8 - full-instruction subst
+saTan0KiWareMoveA: subst "addu\t\$2,\$6,\$7" "addu\t$3,$7,$8" @ 52
+saTan0KiWareMoveA: subst "\$2" "$3" @ 54
+saTan0KiWareMoveA: subst "\$4" "$6" @ 55
+# idx 56: sra $3,$3,31 -> sra $2,$2,31 (two $3 occurrences)
+saTan0KiWareMoveA: subst "\$3" "$2" @ 56
+saTan0KiWareMoveA: subst "\$3" "$2" @ 56
+# idx 57: subu $9,$9,$3 -> subu $10,$10,$2 (two $9 + one $3)
+saTan0KiWareMoveA: subst "\$9" "$10" @ 57
+saTan0KiWareMoveA: subst "\$9" "$10" @ 57
+saTan0KiWareMoveA: subst "\$3" "$2" @ 57
+saTan0KiWareMoveA: subst "\$6" "$7" @ 58
+saTan0KiWareMoveA: subst "\$9" "$10" @ 58
+# idx 60: sra $2,$2,31 -> sra $3,$3,31 (deferred to after loads, two $2 occurrences)
+saTan0KiWareMoveA: subst "\$2" "$3" @ 60
+saTan0KiWareMoveA: subst "\$2" "$3" @ 60
+# idx 61: subu $10,$4,$2 -> subu $6,$6,$3 (both $10,$4 map to $6)
+saTan0KiWareMoveA: subst "subu\t\$10,\$4,\$2" "subu\t$6,$6,$3" @ 61
+# idx 62: mult $8,$10 -> mult $9,$6 (x0*cz)
+saTan0KiWareMoveA: subst "\$8" "$9" @ 62
+saTan0KiWareMoveA: subst "\$10" "$6" @ 62
+# idx 63: mflo $2 -> mflo $17 (x0*cz result)
+saTan0KiWareMoveA: subst "\$2" "$17" @ 63
+# idx 66: mult $6,$11 -> mult $7,$11 (z0*px)
+saTan0KiWareMoveA: subst "\$6" "$7" @ 66
+# idx 67: mflo $3 -> mflo $4 (z0*px result)
+saTan0KiWareMoveA: subst "\$3" "$4" @ 67
+# idx 70: mult $8,$12 -> mult $9,$12 (x0*pz)
+saTan0KiWareMoveA: subst "\$8" "$9" @ 70
+# idx 71: subu $2,$14,$2 -> subu $2,$14,$17 (cross_c, second $2 only)
+saTan0KiWareMoveA: subst "subu\t\$2,\$14,\$2" "subu\t$2,$14,$17" @ 71
+# idx 72: mflo $17 -> mflo $2 (x0*pz result)
+saTan0KiWareMoveA: subst "\$17" "$2" @ 72
+# idx 73: subu $3,$3,$17 -> subu $3,$4,$2 (cross_p)
+saTan0KiWareMoveA: subst "subu\t\$3,\$3,\$17" "subu\t$3,$4,$2" @ 73
+# idx 76: mult $7,$9 -> mult $8,$10 (z2*cx delay slot)
+saTan0KiWareMoveA: subst "\$7" "$8" @ 76
+saTan0KiWareMoveA: subst "\$9" "$10" @ 76
+
+# === Triangle test 2nd cross product: register substs ===
+# idx 80: mult $13,$10 -> mult $13,$6 (x2*cz, cz=$10->$6)
+saTan0KiWareMoveA: subst "\$10" "$6" @ 80
+# idx 84: mult $7,$11 -> mult $8,$11 (z2*px, z2=$7->$8)
+saTan0KiWareMoveA: subst "\$7" "$8" @ 84
+# idx 90: mflo $14 -> mflo $17 (x2*pz result)
+saTan0KiWareMoveA: subst "\$14" "$17" @ 90
+# idx 91: subu $3,$3,$14 -> subu $3,$3,$17 (cross_p)
+saTan0KiWareMoveA: subst "\$14" "$17" @ 91
+
+# === Triangle test 3rd cross product: register substs ===
+# idx 94: subu $4,$7,$6 -> subu $4,$8,$7 (dz, cycle: $7->$8, $6->$7)
+saTan0KiWareMoveA: subst "\$7" "$8" @ 94
+saTan0KiWareMoveA: subst "\$6" "$7" @ 94
+# idx 95: subu $2,$9,$8 -> subu $2,$10,$9 (cx-x0)
+saTan0KiWareMoveA: subst "\$9" "$10" @ 95
+saTan0KiWareMoveA: subst "\$8" "$9" @ 95
+# idx 97: mflo $9 -> mflo $8
+saTan0KiWareMoveA: subst "\$9" "$8" @ 97
+# idx 98: subu $3,$13,$8 -> subu $3,$13,$9 (dx=x2-x0)
+saTan0KiWareMoveA: subst "\$8" "$9" @ 98
+# idx 99: subu $2,$10,$6 -> subu $2,$6,$7 (cz-z0, cycle)
+saTan0KiWareMoveA: subst "subu\t\$2,\$10,\$6" "subu\t$2,$6,$7" @ 99
+# idx 101: mflo $7 -> mflo $6
+saTan0KiWareMoveA: subst "\$7" "$6" @ 101
+# idx 102: subu $2,$11,$8 -> subu $2,$11,$9 (px-x0)
+saTan0KiWareMoveA: subst "\$8" "$9" @ 102
+# idx 106: subu $2,$12,$6 -> subu $2,$12,$7 (pz-z0)
+saTan0KiWareMoveA: subst "\$6" "$7" @ 106
+# idx 109: subu $2,$9,$7 -> subu $2,$8,$6 (cross_c sub)
+saTan0KiWareMoveA: subst "\$9" "$8" @ 109
+saTan0KiWareMoveA: subst "\$7" "$6" @ 109
+
+# === Sqrt block: mflo reg, delay slot fill, sp address pattern (+1 insn) ===
+# idx 118: mflo $15 -> mflo $24 ($t7->$t8)
+saTan0KiWareMoveA: subst "\$15" "$24" @ 118
+# idx 119: subu $17,$5,$15 -> subu $17,$5,$24
+saTan0KiWareMoveA: subst "\$15" "$24" @ 119
+# idx 122: fill beq delay slot: nop -> addu $4,$17,$zero
+saTan0KiWareMoveA: subst "nop" "addu\t$4,$17,$zero" @ 122
+# idx 130: addu $12,$17,$zero -> addu $12,$4,$zero (use a0 from delay slot)
+saTan0KiWareMoveA: subst "\$17" "$4" @ 130
+# idx 133: 1-insn -> 2-insn sp address pattern
+saTan0KiWareMoveA: subst "addu\t\$12,\$sp,16" "addiu\t$2,$sp,16" @ 133
+saTan0KiWareMoveA: insert_after "addu\t$12,$2,$zero" @ 133
+# idx 139: srl $2,$17,$3 -> srl $2,$4,$3 (use a0)
+saTan0KiWareMoveA: subst "\$17" "$4" @ 139
+
+# === End branch: integrate li/branch optimization (-1 insn) ===
+# idx 185: branch to epilogue instead of .L283
+saTan0KiWareMoveA: subst "\.L283" ".L284" @ 185
+# idx 186: delay slot: move -> li
+saTan0KiWareMoveA: subst "addu\t\$4,\$18,\$zero" "addiu\t$2,$zero,1" @ 186
+# delete j .L284 (idx 191) and .L283: li (idx 193)
+saTan0KiWareMoveA: delete @ 193
+saTan0KiWareMoveA: delete @ 191
+# insert the moved addu after the branch (post-delete idx 186)
+saTan0KiWareMoveA: insert_after "addu\t$4,$18,$zero" @ 186
+
+# === Reorders (post-everything indices) ===
+# Deferred cz correction: move sra/subu/mult(x0*cz) after px/pz loads
+# Original 60-73 -> post-everything 63-76 (+3 from GTE inserts)
+# Target order: lw_px,nop,mult_z0px,mflo_z0px,lw_pz,nop,mult_x0pz,mflo_x0pz,
+#               sra_cz,subu_cz,mult_x0cz,subu_crossp,mflo_x0cz,subu_crossc
+saTan0KiWareMoveA: reorder 67,68,69,70,71,72,73,75,63,64,65,76,66,74 @ 63-76
+# 3rd cross product: swap delay slot (cx-x0 before dz)
+# Original 94,95 -> post-everything 97,98 (+3 from GTE, no shift from sqrt/end)
+saTan0KiWareMoveA: reorder 98,97 @ 97-98
