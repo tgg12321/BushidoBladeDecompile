@@ -280,7 +280,7 @@ void replay_camera_rob_back_loose2(s32 arg0) {
         return;
     }
 }
-INCLUDE_ASM("asm/funcs", func_80035828);
+void func_80035828(void) {}
 void func_80035DC8(void) {
     gpu_EnableDisplay();
     gpu_InitDisplay();
