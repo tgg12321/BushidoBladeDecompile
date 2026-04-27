@@ -2898,7 +2898,7 @@ saTan2KabutoWareMove: $4 <-> $5 @ 152-173
 saTan2KabutoWareMove: subst "280\(\$5\)" "280($4)" @ 174
 saTan2KabutoWareMove: delete @ 67
 saTan2KabutoWareMove: insert_after "andi\t$3,$5,0xffff" @ 13
-saTan2KabutoWareMove: insert ".L900:\n\tbne\t$17,$0,.L131\n\taddiu\t$2,$zero,25\n\tj\t.L131\n\taddiu\t$2,$zero,11\n.L901:" @ 125
+saTan2KabutoWareMove: insert ".L900:\n\tbne\t$17,$0,.LsaTan2KabutoWareMove_store\n\taddiu\t$2,$zero,25\n\tj\t.LsaTan2KabutoWareMove_store\n\taddiu\t$2,$zero,11\n.L901:" @ 125
 saTan2KabutoWareMove: reorder 10,5,3,6,7,8,9,4 @ 3-10
 
 
