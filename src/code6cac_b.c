@@ -4109,7 +4109,8 @@ skip_clear:
     }
 }
 /* kengo:LOW  |  su_menu_vs/_DispSamnailWindow  |  149i  |  PS2 UI — reverted */
-INCLUDE_ASM("asm/funcs", func_80034708);
+void func_80034708(void) {
+}
 /* TABLED: -4 bytes, score 1980. Target alternates v1/a0 for g_file_flags address — unreproducible register allocation pattern */
 void func_80034F88(void) {
     s32 *p;
