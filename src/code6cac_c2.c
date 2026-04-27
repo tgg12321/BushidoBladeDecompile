@@ -1555,7 +1555,9 @@ INCLUDE_ASM("asm/funcs", replay_camera_get_attack_number);
 void func_8003E6A0(s32 arg0, s32 arg1) {
     replay_camera_get_attack_number(D_80101E3C, D_80101E44, arg0, arg1);
 }
-INCLUDE_ASM("asm/funcs", DispHira);
+void DispHira(s32 a0) {
+    (void)a0;
+}
 /* kengo:MED  |  am_rmd/DispHira  |  299i */
 s32 *func_8003EB84(s32 a0, s32 a1, s32 *out) {
     s32 buf[32];
