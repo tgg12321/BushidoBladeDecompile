@@ -720,7 +720,9 @@ INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_C);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 INCLUDE_ASM("asm/funcs", func_80029454);
 INCLUDE_ASM("asm/funcs", func_8002A458);
-INCLUDE_ASM("asm/funcs", calc_loc_mat_fw);
+void calc_loc_mat_fw(s32 a0) {
+    (void)a0;
+}
 /* kengo:MED  |  se_fc/calc_loc_mat_fw  |  1074i  |  -38 3.5% no-affinity fallback */
 s32 func_8002BC68(s32 arg0) {
     s32 temp_a3;
