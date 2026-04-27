@@ -2170,7 +2170,7 @@ camera_set_zoom: $17 <-> $18 @ 152-186
 # camera_set_zoom: first rounding $8->$3 + undo delay slot fill
 camera_set_zoom: subst "\$8" "$3" @ 74
 camera_set_zoom: subst "\$8" "$3" @ 76
-camera_set_zoom: subst "\.L616" ".Lcam_rnd1" @ 76
+camera_set_zoom: subst "\.L637" ".Lcam_rnd1" @ 76
 camera_set_zoom: subst "sra\t\$3,\$8,3" "nop" @ 77
 camera_set_zoom: subst "\$8" "$3" @ 78
 camera_set_zoom: subst "\$8" "$3" @ 78
@@ -2523,17 +2523,6 @@ efc_rob_set_type_flash: reorder 9,1,3,4,5,6,7,8,10,2,11,14,13,12,18,15,19,16,17 
 # Loop tail reorder (post-delete+insert: obj=178, i++=179, lh=180 → obj,lh,i++)
 efc_rob_set_type_flash: reorder 178,180,179 @ 178-180
 
-cpu_set_move_command_and_dir_for_no_action_2: subst "jal\tfunc_80016A8C" "ori\t$4,$4,0x8800" @ 20
-cpu_set_move_command_and_dir_for_no_action_2: subst "ori\t\$4,\$4,0x8800" "addu\t$5,$18,$zero" @ 21
-cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$3,\$3,-128" "addu\t$3,$3,128" @ 84
-cpu_set_move_command_and_dir_for_no_action_2: subst "jal\tfunc_80016E60" "addu\t$4,$18,$zero" @ 167
-cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$4,\$18,\$zero" "jal\tfunc_80016E60" @ 168
-cpu_set_move_command_and_dir_for_no_action_2: subst "nop" "addiu\t$5,$zero,4104" @ 170
-cpu_set_move_command_and_dir_for_no_action_2: subst "nop" "addiu\t$5,$zero,4104" @ 147
-cpu_set_move_command_and_dir_for_no_action_2: insert "addiu\t$3,$3,-1" @ 83
-cpu_set_move_command_and_dir_for_no_action_2: insert "addu\t$6,$17,$zero" @ 22
-cpu_set_move_command_and_dir_for_no_action_2: insert "jal\tfunc_80016A8C" @ 22
-cpu_set_move_command_and_dir_for_no_action_2: insert_after "addu\t$5,$17,$zero" @ 168
 
 # func_800460E4: 3-way register rotation ($17->$18, $18->$19, $19->$17)
 # Two swaps on body only (exclude prologue 0-14 and epilogue 227+)
@@ -3351,3 +3340,28 @@ saTan0KiWareMoveB: subst "\$5" "$4" @ 111
 saTan0KiWareMoveB: subst "\$5" "$4" @ 121
 # saTan0KiWareMoveB: scheduling reorder (li/subu delayed, sh moved to delay slot)
 saTan0KiWareMoveB: reorder 103,95,97,98,93,94,99,100,101,102,96 @ 93-103
+
+# func_8002304C (tanren_CameraControl) — 16-rule compound regfix
+# LICM unhoist: subst delay-slot fills to nop (s7 materialized in prologue instead)
+func_8002304C: subst "lui\t\$23.*" "nop" @ 26
+func_8002304C: subst "ori\t\$23.*" "nop" @ 31
+func_8002304C: subst "lui\t\$23.*" "nop" @ 36
+# Step register: t0 ($8) -> v0 ($2)
+func_8002304C: subst "\$8" "$2" @ 154
+func_8002304C: subst "\$8" "$2" @ 155
+# DispSchoolBG call: move sw to .L555, shift args, fill delay slot with a3=0
+func_8002304C: subst "addu\t\$4,\$22.*" "sw\t$2,16($29)" @ 156
+func_8002304C: subst "addu\t\$5,\$20" "addu\t$4,$22" @ 157
+func_8002304C: subst "addu\t\$6,\$22" "addu\t$5,$20" @ 158
+func_8002304C: subst "addu\t\$7,\$0" "addu\t$6,$22" @ 159
+func_8002304C: subst "sw\t\$8.*" "addu\t$7,$0,$0" @ 161
+# Mode check: lhu into $4, andi $3,$4,0xFFFF, subu uses $4
+func_8002304C: subst "lhu\t\$3" "lhu\t$4" @ 167
+func_8002304C: subst "\$3," "$4," @ 172
+# Delete .L560 ori s7 (merged with .L561 since s7 set in prologue)
+func_8002304C: delete @ 37
+# Insert andi for mode check (post-delete index: orig 169 - 1)
+func_8002304C: insert "andi $3,$4,0xFFFF" @ 168
+# LICM unhoist: insert lui+ori s7 after sw s7,52(sp) (reversed file order for correct layout)
+func_8002304C: insert_after "ori $23,$23,0x02B8" @ 17
+func_8002304C: insert_after "lui $23,0x1F80" @ 17
