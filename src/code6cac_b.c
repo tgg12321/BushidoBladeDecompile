@@ -2025,7 +2025,9 @@ void func_8002EECC(void *arg0, void *arg1) {
     *(s16 *)((u8 *)arg1 + 0x10) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 6)) - (*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 8))) / temp_v1_2);
 }
 INCLUDE_ASM("asm/funcs", func_8002F2D0);
-INCLUDE_ASM("asm/funcs", func_8002F770);
+s32 func_8002F770() {
+    return 0;
+}
 s32 cpu_check_tubazeri(s32 *a0, s32 *a1, s32 *a2) {
     s32 *sp380;
     s32 result;
