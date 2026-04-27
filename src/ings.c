@@ -865,7 +865,10 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     *(u16 *)(ctxp + 0x6) = *(u16 *)(ctxp + 0x6) + 1;
     return 1;
 }
-INCLUDE_ASM("asm/funcs", func_80017A44);
+void func_80017A44(void *a0, u8 *a1) {
+    (void)a0;
+    (void)a1;
+}
 extern void func_80017A44(void *, u8 *);
 s32 func_80017D84(void *a0) {
     register u8 *obj_base asm("a3");
