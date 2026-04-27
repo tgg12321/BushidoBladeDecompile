@@ -1040,7 +1040,8 @@ s32 func_800859F0(s16 a0) {
     }
     return g_snd_ch_addr[a0];
 }
-INCLUDE_ASM("asm/funcs", AllocBukiRmd);
+void AllocBukiRmd(void) {
+}
 /* kengo:MED  |  am_rmd/AllocBukiRmd  |  259i */
 extern s32 D_800F5750;
 extern s16 D_800F5758;
