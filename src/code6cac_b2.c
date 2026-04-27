@@ -409,7 +409,7 @@ do_stop:
 }
 void special_camera_set_win_cam(void) {}
 /* kengo:MED  |  nm_special_cam/special_camera_set_win_cam  |  502i  |  -10 */
-INCLUDE_ASM("asm/funcs", special_camera_Exec);
+void special_camera_Exec(void) {}
 /* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
 s32 func_80036D88(void) {
     return D_80101E62 == 0;
