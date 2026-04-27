@@ -1478,7 +1478,8 @@ void func_8001CD68(s16 *arg0) {
         }
     }
 }
-INCLUDE_ASM("asm/funcs", camera_set_target_zoom);
+void camera_set_target_zoom(void) {
+}
 /* kengo:MED  |  nm_camera/camera_set_target_zoom  |  593i  |  +5 */
 extern s8 D_800A30FC;
 extern s8 D_800A30FD;
