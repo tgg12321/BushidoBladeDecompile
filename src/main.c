@@ -1238,7 +1238,8 @@ void spu_ResetCounter(void) {
     D_800F66F8 = 0;
 }
 
-INCLUDE_ASM("asm/funcs", action_CheckHitZangeki);
+void action_CheckHitZangeki(void) {
+}
 /* kengo:HIGH  |  is_action/action_CheckHitZangeki  |  271i */
 void md_game_end(s32 arg0) {
 }
