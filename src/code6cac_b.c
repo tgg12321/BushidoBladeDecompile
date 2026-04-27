@@ -3286,7 +3286,10 @@ void func_80032854(s32 arg0, s32 arg1, u8 *arg2, s16 *arg3) {
     }
 }
 INCLUDE_RODATA("asm/rodata", jtbl_80010698);
-INCLUDE_ASM("asm/funcs", func_80032C50);
+void func_80032C50(s32 a0, s32 a1) {
+    (void)a0;
+    (void)a1;
+}
 void cpu_check_same_dir_timer(s32 *a0) {
     u8 *s0;
     register s32 a1val asm("a1");
