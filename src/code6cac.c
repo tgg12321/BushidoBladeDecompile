@@ -2137,7 +2137,8 @@ check3:
     }
     return v0;
 }
-INCLUDE_ASM("asm/funcs", single_game_CheckStatusUpDataTotalOver);
+void single_game_CheckStatusUpDataTotalOver(void) {
+}
 /* kengo:HIGH  |  nm_single_game/single_game_CheckStatusUpDataTotalOver  |  289i */
 s32 func_8002006C(void) {
     s32 s0 = D_800A387C;
