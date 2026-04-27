@@ -707,7 +707,8 @@ void func_8002872C(void) {
         offset += 0x44C;
     } while (i < 2);
 }
-INCLUDE_ASM("asm/funcs", saTan3MainJump);
+void saTan3MainJump(void) {
+}
 /* kengo:HIGH  |  sa_tan3/saTan3MainJump  |  492i  |  +3 near-exact */
 void func_8002906C(void) {
     s16 *ptr = snd_GetSeId();
