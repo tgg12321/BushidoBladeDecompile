@@ -1717,7 +1717,8 @@ end_init:
     D_800A2D14 = 0;
     D_800A2D18 = 0;
 }
-INCLUDE_ASM("asm/funcs", DispUpdateStatusMessage);
+void DispUpdateStatusMessage(s32 arg0, s32 arg1) {
+}
 /* kengo:LOW  |  su_menu_home/_DispUpdateStatusMessage  |  206i  |  PS2 UI — reverted */
 s32 saTan0GaugeDraw(s32 mode, ...) {
     u32 i;
