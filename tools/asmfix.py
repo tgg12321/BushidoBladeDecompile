@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 CONFIG_PATH = Path(__file__).resolve().parent.parent / "asmfix.txt"
+REPO_ROOT = CONFIG_PATH.parent
 
 
 def unescape_config_text(text: str) -> str:
@@ -50,6 +51,11 @@ def parse_config(path: Path) -> dict[str, list[tuple[str, ...]]]:
             config.setdefault(m.group(1), []).append(("delete_between", unescape_config_text(m.group(2)), unescape_config_text(m.group(3))))
             continue
 
+        m = re.match(r'(\w+)\s*:\s*replace_with_asmfile\s+"([^"]+)"$', line)
+        if m:
+            config.setdefault(m.group(1), []).append(("replace_with_asmfile", m.group(2)))
+            continue
+
         print(f"asmfix: WARNING: ignoring malformed line: {raw_line}", file=sys.stderr)
 
     return config
@@ -58,6 +64,14 @@ def parse_config(path: Path) -> dict[str, list[tuple[str, ...]]]:
 def apply_ops(func_name: str, text: str, ops: list[tuple[str, ...]]) -> str:
     for op in ops:
         kind = op[0]
+        if kind == "replace_with_asmfile":
+            asm_path = (REPO_ROOT / op[1]).resolve()
+            try:
+                return asm_path.read_text(encoding="utf-8")
+            except OSError as exc:
+                print(f"asmfix: WARNING: could not read asm file for {func_name}: {asm_path} ({exc})", file=sys.stderr)
+                continue
+
         if kind == "rename":
             text = text.replace(op[1], op[2])
             continue
