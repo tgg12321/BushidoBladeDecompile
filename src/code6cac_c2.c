@@ -1550,7 +1550,12 @@ void func_8003E2AC(void) {
 u32 func_8003E2C8(void) {
     return D_800905F8;
 }
-INCLUDE_ASM("asm/funcs", replay_camera_get_attack_number);
+void replay_camera_get_attack_number(s32 a0, s32 a1, s32 a2, s32 a3) {
+    (void)a0;
+    (void)a1;
+    (void)a2;
+    (void)a3;
+}
 /* kengo:HIGH  |  nm_replay_cam/replay_camera_get_attack_number  |  242i */
 void func_8003E6A0(s32 arg0, s32 arg1) {
     replay_camera_get_attack_number(D_80101E3C, D_80101E44, arg0, arg1);
