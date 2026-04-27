@@ -3296,4 +3296,5 @@ void func_80023E40(u8 *arg0) {
     *(s32 *)(arg0 + 0x148) = *(s32 *)(arg0 + 0xBC);
 done:;
 }
-INCLUDE_ASM("asm/funcs", func_80023F08);
+void func_80023F08(s32 arg0, s32 arg1) {
+}
