@@ -2721,7 +2721,8 @@ s32 func_80030D50(s32 arg0, s32 arg1, s32 arg2) {
     }
     return arg1 + ((arg0 * arg2) >> 12);
 }
-INCLUDE_ASM("asm/funcs", func_80030D7C);
+void func_80030D7C(void) {
+}
 void func_80031890(s32 arg0, s32 arg1, s32 arg2) {
     s32 *mat;
     s32 angle;
