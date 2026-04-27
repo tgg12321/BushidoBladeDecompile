@@ -187,7 +187,8 @@ void saTan5TakeAnim2_2(s32 arg0) {
     ExitCriticalSection();
 }
 /* kengo:MED  |  sa_tan5/saTan5TakeAnim2_2  |  154i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", DispStuff);
+void DispStuff(void) {
+}
 /* kengo:LOW  |  su_menu_ending/_DispStuff  |  209i  |  PS2 UI — reverted */
 void func_800841E0(s32 arg0, s32 arg1) {
     struct {
