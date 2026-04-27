@@ -928,7 +928,8 @@ void func_8001979C(s32 arg0, u32 *arg1) {
     } while (i >= 0);
     *(s32 *)(base + 0x10C) = 0;
 }
-INCLUDE_ASM("asm/funcs", func_800198D0);
+void func_800198D0(s32 arg0, s32 arg1, s32 arg2, GameObj *arg3) {
+}
 void func_8001A484(u16 *arg0) {
     s32 i;
     u16 *p;
