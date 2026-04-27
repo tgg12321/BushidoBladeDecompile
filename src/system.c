@@ -950,7 +950,9 @@ void cdrom_IrqHandler(void) {
     } while (1);
     *g_cd_index_reg = s2;
 }
-INCLUDE_ASM("asm/funcs", tslTm2LoadImage_2);
+void tslTm2LoadImage_2(void *a0) {
+    (void)a0;
+}
 /* kengo:MED  |  tsl_tm2/tslTm2LoadImage_2  |  253i  |  -10 x2 size collision */
 extern s32 D_800A1500;
 extern s32 D_800A14EC;
