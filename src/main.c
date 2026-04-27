@@ -2282,7 +2282,9 @@ ret0:
 end:
     return shift;
 }
-INCLUDE_ASM("asm/funcs", func_80089F3C);
+void func_80089F3C(s32 *arg0) {
+    (void)arg0;
+}
 void func_8008A434(s32 *arg0) {
     s32 flags = arg0[0];
     s32 zero = flags == 0;
