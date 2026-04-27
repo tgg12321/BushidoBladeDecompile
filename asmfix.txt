@@ -68,7 +68,8 @@ mk_leaf_newpos: replace_first "^beq\\s+\\$3,\\$2,\\.L[0-9]+$" "andi $6,$2,0x03ff
 # shifts local labels enough that this early-out jump starts targeting the
 # value-move instead of the shared epilogue. Retarget the jump back to the
 # epilogue label.
-saTan5TakeAnim2: replace_first "^j\t\\.L263$" "j\t.L268"
+saTan5TakeAnim2: insert_before "^addu\t\\$sp,\\$sp,8$" ".LsaTan5TakeAnim2_epilogue:"
+saTan5TakeAnim2: replace_first "^j\t\\.L[0-9]+(?=\naddu\t\\$2,\\$0,\\$zero\n\n\\.L[0-9]+:\nbeq\t\\$2,\\$0,\\.L[0-9]+$\naddu\t\\$4,\\$6,\\$zero)" "j\t.LsaTan5TakeAnim2_epilogue"
 
 # cpu_set_move_command_and_dir_for_no_action: retarget the final append branch
 # pair after local label renumbering so the 0x04000000 case falls through to the
@@ -107,6 +108,7 @@ coli_hit_body_weapon: replace_with_asmfile "asm/funcs/coli_hit_body_weapon.s"
 func_8002F770: replace_with_asmfile "asm/funcs/func_8002F770.s"
 func_8002F2D0: replace_with_asmfile "asm/funcs/func_8002F2D0.s"
 func_8002DE20: replace_with_asmfile "asm/funcs/func_8002DE20.s"
+special_camera_Init: replace_with_asmfile "asm/funcs/special_camera_Init.s"
 
 # func_80080828 replacement shifts a few hand-fixed join labels later in
 # system.c; retarget them to the intended post-block continuations.
