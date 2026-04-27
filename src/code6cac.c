@@ -1993,7 +1993,8 @@ void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
         *(u16 *)(arg3 + 0x72) = (u16)(*(u16 *)(arg3 + 0x72) + (*(s8 *)(arg1 + 0x16) * 4));
     }
 }
-INCLUDE_ASM("asm/funcs", md_game_rob_data_init);
+void md_game_rob_data_init(void) {
+}
 /* kengo:HIGH  |  md_game/md_game_rob_data_init  |  351i */
 void func_8001F860(s16 *arg0, s32 arg1) {
     arg1 = (arg1 - *(s16 *)((u8 *)arg0 + 0x1CA)) & 0xFFF;
