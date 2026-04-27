@@ -2041,7 +2041,8 @@ after_search:
     }
 }
 /* kengo:HIGH  |  is_coli/coli_HitPauseKatana  |  178i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", exec_game);
+void exec_game(void) {
+}
 /* kengo:HIGH  |  md_game/exec_game  |  194i */
 extern s32 g_spu_voice_key_a;
 extern void exec_game(void);
