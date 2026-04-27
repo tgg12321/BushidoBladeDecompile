@@ -2614,7 +2614,8 @@ void func_80021D10(s32 arg0, s32 *arg1, s32 arg2) {
     arg1[1] = (s32)temp_v0[1];
     arg1[2] = (s32)temp_v0[2];
 }
-INCLUDE_ASM("asm/funcs", func_80021DB0);
+void func_80021DB0(void) {
+}
 void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
     s32 dists[6];
     s16 *base;
