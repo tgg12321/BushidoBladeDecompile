@@ -1456,7 +1456,8 @@ void func_8001C820(void) {
     func_800325E0(a0, (s32)((u8 *)s0 + 0x536));
 }
 INCLUDE_RODATA("asm/rodata", jtbl_800100C4);
-INCLUDE_ASM("asm/funcs", func_8001C8DC);
+void func_8001C8DC(void) {
+}
 void func_8001CD68(s16 *arg0) {
     s32 val = D_800A3858;
 
