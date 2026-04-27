@@ -1016,7 +1016,8 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
     arg0[0] = (s16)func_8001A62C(arg2[0] + ((dx << 10) / ((s32)log2_val)));
     arg0[2] = (s16)func_8001A62C(arg2[2] + ((dz << 10) / ((s32)log2_val)));
 }
-INCLUDE_ASM("asm/funcs", func_8001A820);
+void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
+}
 void func_8001B138(s32 *arg0) {
     D_800FF5C8 = 0;
     D_800FF5CC = 0;
