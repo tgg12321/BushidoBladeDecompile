@@ -149,7 +149,7 @@ Single-session, one function at a time. Pick the next unmatched stub and work it
 
 The **attempt-first** flow runs all the cheap mechanical steps before the model intervenes. Token-cost-per-function is minimized when the deterministic pipeline gets to do its job and the model only handles NEAR_MISS work.
 
-1. **`dc.sh classify <func>`** — instant pre-dive. Read the recommendation. If it says `bios_or_syscall`, `psyq_stdlib_*`, `multi_function`, or `aspsx_delay_swra`, STOP — those are either allowed-as-asm exceptions or known-intractable.
+1. **`dc.sh classify <func>`** — instant pre-dive. Read the recommendation. If it says `permanently_blocked:*`, `bios_or_syscall`, `psyq_stdlib_*`, `multi_function`, or `aspsx_delay_swra`, **STOP** — these are either allowed-as-asm exceptions or genuinely un-decompilable. `permanently_blocked` covers `break` traps, handwritten overflow-trap ops (`add`/`sub`/`addi`), `$sp` swap primitives, and orphaned/no-return fragments — patterns GCC 2.7.2 cannot emit from C. Auto-detected by the classifier and overridable via `known_blocked.txt`. `attempt_func` reports SKIPPED for these and `build_queue` filters them out.
 2. **`dc.sh attempt <func>`** — runs setup → smart_match → permute_capped → gen_regfix automatically. Reports MATCHED / NEAR_MISS / HARD / SKIPPED.
    - **MATCHED** — `auto_matches/<func>.c` has the matched C. Use `dc.sh inline-replace <func> auto_matches/<func>.c` (or `dc.sh replace ... auto_matches/<func>.c`).
    - **NEAR_MISS** (score ≤ 200) — review `/tmp/<func>.regfix.suggestions`, run `dc.sh recipes <func>` for matching named recipes, apply rules with `dc.sh add-regfix`.
@@ -211,7 +211,7 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 
 | Command | Purpose |
 |---------|---------|
-| `dc.sh classify <func>` | Pre-dive report: size, blockers, BIOS/syscall/PsyQ tags, Kengo hint. Returns a `recommendation` (easy_attempt / standard / needs_rodata_split / multi_function / bios_or_syscall / psyq_stdlib_<n> / gte_function / aspsx_delay_swra / needs_lwl_fix). |
+| `dc.sh classify <func>` | Pre-dive report: size, blockers, BIOS/syscall/PsyQ tags, Kengo hint. Returns a `recommendation` (easy_attempt / standard / needs_rodata_split / multi_function / bios_or_syscall / psyq_stdlib_<n> / gte_function / aspsx_delay_swra / needs_lwl_fix / **permanently_blocked:&lt;reason&gt;**). The `permanently_blocked` tag is auto-detected from asm patterns (`break`, `add`/`sub`/`addi`, `$sp` swap, no `jr $ra`) plus the manual list in `known_blocked.txt`. |
 | `dc.sh attempt <func>` | Full mechanical pipeline: classify → setup → smart_match → permute_capped → gen_regfix. Reports MATCHED / NEAR_MISS / HARD / SKIPPED with elapsed time. **Run this first**; only intervene manually for NEAR_MISS. |
 | `dc.sh smart <func>` | smart_match.py: 16 automated transformation strategies (declaration reorder, cast variations, do-while barriers, register hints, etc). Pure-C exploration before permuter. |
 | `dc.sh permute <func> [--max-time N] [--max-flat-seconds K]` | permute_capped.py: bounded permuter run with flat-score early termination. |

@@ -141,7 +141,7 @@ def gen_regfix_step(func: str) -> tuple[str | None, str]:
 
 # ---- Recommendation buckets that should be SKIPPED at classify time ----
 
-SKIP_TAGS = {"bios_or_syscall", "psyq_stdlib"}
+SKIP_TAGS = {"bios_or_syscall", "psyq_stdlib", "permanently_blocked"}
 HARD_TAGS = {"multi_function", "needs_rodata_split", "aspsx_delay_swra"}
 
 

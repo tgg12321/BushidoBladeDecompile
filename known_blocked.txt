@@ -1,0 +1,46 @@
+# known_blocked.txt -- functions permanently blocked from C decompilation.
+#
+# Each line: <func>  <reason>  <evidence>
+#
+# These functions use instructions or patterns that GCC 2.7.2 + ASPSX cannot
+# emit from C source. They will remain inline asm forever. Auto-loaded by
+# tools/classify_func.py and filtered out by tools/build_queue.py.
+#
+# Reason codes (also auto-detected by classify_func.detect_permanent_blockers):
+#   break_instruction       break <code>; debug trap, GCC has no builtin
+#   handwritten_overflow_op add/sub/addi (overflow-trap variants); GCC emits
+#                           addu/subu/addiu by default. Requires inline asm.
+#   sp_manipulation         direct $sp swap (not prologue/epilogue). C has no
+#                           way to take/set the stack pointer.
+#   no_return_fragment      no `jr $ra` in body; orphaned code or fall-through
+#                           data-as-code that must remain in .text verbatim.
+#   data_as_code            instructions are actually a constant table accessed
+#                           via mid-function alabels; semantically data, not code.
+#   bios_jumptable_call     `addiu $tN, $zero, 0xA0/0xB0/0xC0; jalr $tN` BIOS
+#                           syscall pattern (already covered by bios_or_syscall
+#                           recommendation; listed here for explicitness).
+#
+# To remove an entry: only do so if you've actually decompiled the function
+# to pure C and it builds. Don't delete just because a future GCC has the
+# right builtin -- our toolchain is pinned to 2.7.2.
+
+# --- break instruction (trap with code) ---
+func_800164F8   break_instruction        break 1; 10000-iter countdown loop
+func_80083698   break_instruction        break 0,259; div-by-zero handler shape
+
+# --- handwritten overflow-trapping ops ---
+func_80052C28   handwritten_overflow_op  sub $a1,$t0,$a1; addi $a0,$a0,-0x1000
+func_8004C388   handwritten_overflow_op  6x add (not addu) for vector midpoint
+func_800790C0   handwritten_overflow_op  addi $v1,$v0,0x62C; also BIOS jumptable
+
+# --- $sp manipulation (stack swap primitive) ---
+func_800789D8   sp_manipulation          addu $v0,$sp,$zero; addu $sp,$a0,$zero (returns old sp, sets new)
+
+# --- no jr $ra in body / orphaned fragment ---
+func_800790A4   no_return_fragment       1-insn `and $v0,$v0,$s5` only; falls through to next func
+func_800545F4   data_as_code             4 magic-constant lui+ori embedded as code; alabels D_800545F8/FC/00 access them as data
+func_800164AC   data_as_code             19 consecutive `lb $t0,off($zero)` discarding; no jr $ra
+
+# --- BIOS jumptable / syscall pattern (also catches as bios_or_syscall) ---
+func_8007A458   bios_jumptable_call      `addiu $t2,$zero,0xB0; jalr $t2` + handwritten data after function
+func_8007A28C   bios_jumptable_call      same shape as func_8007A458
