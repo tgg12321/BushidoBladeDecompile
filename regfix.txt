@@ -3531,3 +3531,6 @@ func_80078BA8: subst "addu\s+\$2,\$5,\$zero" "nop" @ 12
 func_8004954C: drain_delay @ 9
 func_8004954C: insert "addiu $sp,$sp,-0x8" @ 0
 func_8004954C: insert_after "addiu $sp,$sp,0x8" @ 10
+func_8005509C: subst "la\s+\$3,D_80101EC8\+1044" "la	$3,D_80101EC8" @ 8
+func_8005509C: subst "sb\s+\$0,1\(\$3\)" "sb	$0,1045($3)" @ 10
+func_8005509C: subst "sb\s+\$0,0\(\$3\)" "sb	$0,1044($3)" @ 11
