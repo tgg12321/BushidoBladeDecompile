@@ -3534,3 +3534,8 @@ func_8004954C: insert_after "addiu $sp,$sp,0x8" @ 10
 func_8005509C: subst "la\s+\$3,D_80101EC8\+1044" "la	$3,D_80101EC8" @ 8
 func_8005509C: subst "sb\s+\$0,1\(\$3\)" "sb	$0,1045($3)" @ 10
 func_8005509C: subst "sb\s+\$0,0\(\$3\)" "sb	$0,1044($3)" @ 11
+func_8004881C: $2 <-> $3 @ 0-5
+func_8004881C: subst "subu\s+\$3" "subu\t$4" @ 5
+func_8004881C: subst "\$5" "$2" @ 6
+func_8004881C: subst "addu\s+\$2,\$2,\$5" "addu	$2,$4,$2" @ 7
+func_8004881C: reorder 8,9,10,11,12,13,14,7 @ 7-14
