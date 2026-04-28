@@ -53474,32 +53474,15 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80077904\n"
-    "    lui  $v0,%hi(D_8009BD38)\n"
-    "    lw  $v0,%lo(D_8009BD38)($v0)\n"
-    "    .word 0xAF800518\n"
-    "    andi  $v0,$v0,15\n"
-    "    sll  $v0,$v0,1\n"
-    "    lui  $at,%hi(D_8009BD59)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lbu  $v1,%lo(D_8009BD59)($at)\n"
-    "    nop\n"
-    "    .word 0xAF830514\n"
-    "    lui  $at,%hi(D_8009BD58)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lbu  $v0,%lo(D_8009BD58)($at)\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A35E0;
+s32 func_80077904(void) {
+    s32 i;
+
+    D_800A35E4 = 0;
+    i = (D_8009BD38 & 0xF) * 2;
+    D_800A35E0 = *((u8 *)&D_8009BD59 + i);
+    return *((u8 *)&D_8009BD58 + i);
+}
 extern s32 D_800A35E8;
 void func_80077940(s32 arg0) {
     D_800A35E8 = (arg0 & 0x3FF) + ((u32) (arg0 & 0x3FF000) >> 2) + ((u32) (arg0 & 0x01000000) >> 4) + ((u32) (arg0 & 0x04000000) >> 5);
