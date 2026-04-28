@@ -9,6 +9,10 @@ feedback_pre_dive_analysis.md.
 Output is structured key/value text by default. `--json` emits a machine-
 readable dict. The final field `recommendation` is one of:
 
+    permanently_blocked:<reason> — uses break / handwritten add/sub/addi /
+                                   $sp swap / no-jr-ra / data-as-code; cannot
+                                   be expressed in pure C with GCC 2.7.2.
+                                   STOP -- do not attempt. See known_blocked.txt.
     easy_attempt        — low risk, run `dc.sh attempt`
     syscall_trampoline  — BIOS jump pattern, allowed-as-asm exception
     psyq_stdlib_<name>  — memcpy/memset/etc match; replace with C idiom
@@ -40,6 +44,7 @@ ROOT = Path(__file__).resolve().parent.parent
 ASM_FUNCS = ROOT / "asm" / "funcs"
 SRC_DIR = ROOT / "src"
 KENGO_REF = ROOT / "tools" / "kengo_ref.py"
+KNOWN_BLOCKED = ROOT / "known_blocked.txt"
 
 GTE_OPS = {
     "cop2", "mtc2", "mfc2", "lwc2", "swc2", "ctc2", "cfc2",
@@ -183,6 +188,59 @@ def psyq_stdlib_fingerprint(insns) -> str | None:
     return None
 
 
+def load_known_blocked() -> dict[str, tuple[str, str]]:
+    """Read known_blocked.txt -> {func: (reason, evidence)}."""
+    out: dict[str, tuple[str, str]] = {}
+    if not KNOWN_BLOCKED.exists():
+        return out
+    for raw in KNOWN_BLOCKED.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = re.split(r"\s{2,}|\t", line, maxsplit=2)
+        if len(parts) < 2:
+            continue
+        func = parts[0].strip()
+        reason = parts[1].strip()
+        evidence = parts[2].strip() if len(parts) >= 3 else ""
+        out[func] = (reason, evidence)
+    return out
+
+
+def detect_permanent_blockers(insns) -> list[str]:
+    """Detect patterns that genuinely cannot be expressed in pure C with
+    GCC 2.7.2. Returns reason codes matching known_blocked.txt."""
+    tags: list[str] = []
+    mnems = [m for _, m, _ in insns]
+
+    # break <code> -- debug trap; GCC 2.7.2 has no __builtin_trap that emits this
+    if "break" in mnems:
+        tags.append("break_instruction")
+
+    # add / sub / addi (overflow-trap variants). GCC 2.7.2 emits addu / subu /
+    # addiu by default; these signed overflow-trapping ops are only produced
+    # via inline asm or hand-rolled assembly.
+    overflow_ops = {"add", "sub", "addi"}
+    if any(m in overflow_ops for m in mnems):
+        tags.append("handwritten_overflow_op")
+
+    # $sp written from a non-immediate source (i.e., not addiu $sp,$sp,N).
+    # Pattern like `addu $sp,$aN,$zero` is a stack-swap primitive impossible in C.
+    sp_write_re = re.compile(r"\$sp\s*,\s*\$(?:[atvs]\d|fp|gp|ra|k\d)")
+    for _, m, ops in insns:
+        if m in ("addu", "or", "move", "subu") and sp_write_re.match(ops):
+            tags.append("sp_manipulation")
+            break
+
+    # No `jr $ra` anywhere -> orphaned fragment / data-as-code.
+    # Function falls through to next or is accessed as data via mid-text alabels.
+    has_jr_ra = any(m == "jr" and "$ra" in ops for _, m, ops in insns)
+    if not has_jr_ra and len(insns) > 0:
+        tags.append("no_return_fragment")
+
+    return tags
+
+
 def detect_blockers(insns) -> list[str]:
     """Return a list of blocker tags."""
     tags = []
@@ -261,6 +319,8 @@ def classify(func: str) -> dict:
 
     src_info = find_in_src(func)
     blocker_tags = detect_blockers(insns)
+    permanent_tags = detect_permanent_blockers(insns)
+    manual_block = load_known_blocked().get(func)
     bios, bios_addr = is_bios_trampoline(insns)
     psyq = None if bios else psyq_stdlib_fingerprint(insns)
     kengo = kengo_lookup(func)
@@ -276,7 +336,14 @@ def classify(func: str) -> dict:
                    if m in {"sw", "sh", "sb", "swc2", "swl", "swr"})
 
     # Recommendation
-    if bios:
+    # Permanent blockers FIRST: explicit list overrides auto-detection;
+    # if neither matches, fall through to normal classification.
+    if manual_block:
+        reason, _ = manual_block
+        recommendation = f"permanently_blocked:{reason}"
+    elif permanent_tags:
+        recommendation = f"permanently_blocked:{permanent_tags[0]}"
+    elif bios:
         recommendation = f"bios_or_syscall:{bios_addr}"
     elif "multi_jr_ra" in blocker_tags:
         recommendation = "multi_function"
@@ -304,6 +371,11 @@ def classify(func: str) -> dict:
         "src": src_info,
         "neighbors": neighbors,
         "blocker_tags": blocker_tags,
+        "permanent_blocker_tags": permanent_tags,
+        "manual_block": (
+            {"reason": manual_block[0], "evidence": manual_block[1]}
+            if manual_block else None
+        ),
         "bios_trampoline": {"is": bios, "table": bios_addr},
         "psyq_stdlib": psyq,
         "kengo": kengo,
@@ -329,6 +401,14 @@ def print_report(d: dict):
           f"+ {d['neighbors']['inline_asm_count']} inline asm in same file")
     if d["blocker_tags"]:
         print(f"  blockers   : {', '.join(d['blocker_tags'])}")
+    if d.get("permanent_blocker_tags"):
+        print(f"  PERMANENT  : {', '.join(d['permanent_blocker_tags'])} "
+              "-- cannot be expressed in pure C with GCC 2.7.2")
+    if d.get("manual_block"):
+        mb = d["manual_block"]
+        print(f"  SEQUESTERED: {mb['reason']}")
+        if mb.get("evidence"):
+            print(f"               evidence: {mb['evidence']}")
     if d["bios_trampoline"]["is"]:
         print(f"  bios_call  : table={d['bios_trampoline']['table']} "
               "(allowed-as-asm exception)")

@@ -39,6 +39,24 @@ def has_permuter_dir(name: str) -> bool:
     return (PERMUTER / name / "base.c").exists()
 
 
+def load_known_blocked() -> set[str]:
+    """Read known_blocked.txt -> set of func names. Defensive against
+    missing/malformed rows. Used as a belt-and-suspenders filter even when
+    the CSV's recommendation field already says permanently_blocked."""
+    p = ROOT / "known_blocked.txt"
+    out: set[str] = set()
+    if not p.exists():
+        return out
+    for raw in p.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        first = line.split()[0] if line.split() else ""
+        if first:
+            out.add(first)
+    return out
+
+
 def main():
     csv_path = ROOT / "tmp" / "batch_attempt.csv"
     if not csv_path.exists():
@@ -47,10 +65,24 @@ def main():
         return 1
 
     rows = list(csv.DictReader(open(csv_path)))
+    blocked = load_known_blocked()
 
-    # Filter to tractable
+    def is_tractable(rec: str) -> bool:
+        if rec in ("easy_attempt", "standard"):
+            return True
+        # Defensive: anything starting with "permanently_blocked",
+        # "bios_or_syscall", "psyq_stdlib", or that names a func in
+        # known_blocked.txt is filtered out below.
+        return False
+
+    # Filter: tractable recommendation AND not in known_blocked.txt
     tract = [r for r in rows
-             if r.get("recommendation") in ("easy_attempt", "standard")]
+             if is_tractable(r.get("recommendation", ""))
+             and r.get("func") not in blocked]
+    skipped_blocked = sum(1 for r in rows if r.get("func") in blocked)
+    if skipped_blocked:
+        print(f"# Filtered {skipped_blocked} permanently-blocked functions "
+              f"(known_blocked.txt)", file=sys.stderr)
 
     # Annotate
     enriched = []
