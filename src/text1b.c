@@ -461,55 +461,26 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800484A0\n"
-    "    addiu  $sp,$sp,-1056\n"
-    "    sw  $s0,1048($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    sw  $ra,1052($sp)\n"
-    "    lbu  $v1,0($s0)\n"
-    "    addiu  $v0,$zero,16\n"
-    "    bne  $v1,$v0,.L8004851C\n"
-    "    addiu  $s0,$s0,4\n"
-    "    lw  $v0,0($s0)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,8\n"
-    "    beqz  $v0,.L8004851C\n"
-    "    addiu  $s0,$s0,4\n"
-    "    addiu  $s0,$s0,8\n"
-    "    sh  $a1,16($sp)\n"
-    "    sh  $a2,18($sp)\n"
-    "    lw  $v1,0($s0)\n"
-    "    addiu  $s0,$s0,4\n"
-    "    srl  $v0,$v1,16\n"
-    "    sh  $v0,22($sp)\n"
-    "    jal  func_800486FC\n"
-    "    sh  $v1,20($sp)\n"
-    "    beqz  $v0,.L80048510\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    lh  $a1,20($sp)\n"
-    "    addiu  $s0,$sp,24\n"
-    "    jal  func_8004876C\n"
-    "    addu  $a2,$s0,$zero\n"
-    ".L80048510:\n"
-    "    addiu  $a0,$sp,16\n"
-    "    jal  gpu_LoadImage\n"
-    "    addu  $a1,$s0,$zero\n"
-    ".L8004851C:\n"
-    "    lw  $ra,1052($sp)\n"
-    "    lw  $s0,1048($sp)\n"
-    "    addiu  $sp,$sp,1056\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
+    s16 rect[4];
+    s16 buf[512];
+    u32 dim;
+    if (arg0[0] != 0x10) return;
+    arg0 += 4;
+    if ((*(s32 *)arg0 & 8) == 0) return;
+    arg0 += 4;
+    arg0 += 8;
+    rect[0] = arg1;
+    rect[1] = arg2;
+    dim = *(u32 *)arg0;
+    arg0 += 4;
+    rect[3] = dim >> 16;
+    rect[2] = dim;
+    if (func_800486FC() != 0) {
+        func_8004876C((s32)arg0, rect[2], (s32)buf);
+    }
+    gpu_LoadImage(rect, (s32)buf);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
