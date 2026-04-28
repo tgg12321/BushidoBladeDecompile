@@ -3498,3 +3498,18 @@ func_8005B7C4: subst "\$2" "$3" @ 33
 func_80078B3C: drain_delay @ 9
 # func_80078B70: same as func_80078B3C clear-flag form
 func_80078B70: drain_delay @ 10
+# func_8007C748: 3-way reg cycle $v0/$v1/$a2 -- target uses $v1 for const, $a2 for mask
+func_8007C748: subst "\$2" "$3" @ 7
+func_8007C748: subst "\$2" "$3" @ 8
+func_8007C748: subst "\$2" "$3" @ 8
+func_8007C748: subst "\$6" "$2" @ 10
+func_8007C748: subst "\$6" "$2" @ 12
+func_8007C748: subst "\$6" "$2" @ 12
+func_8007C748: subst "\$2" "$3" @ 14
+func_8007C748: subst "\$2" "$3" @ 15
+func_8007C748: subst "\$2" "$3" @ 15
+func_8007C748: subst "\$6" "$2" @ 17
+func_8007C748: subst "\$6" "$2" @ 18
+func_8007C748: subst "\$6" "$2" @ 18
+# func_8007C748 idx 20: 3-cycle full-insn subst
+func_8007C748: subst "or\s+\$2,\$2,\$6" "or	$2,$3,$2" @ 20

@@ -22,6 +22,7 @@ extern u32 *g_gpu_dma_chcr;
 extern u8 g_gpu_color_table[];
 extern u8 g_gpu_draw_env;
 extern u8 g_gpu_disp_env;
+extern u8 D_8009BE74;
 extern s32 g_gpu_vcount;
 extern s32 g_gpu_draw_count;
 extern u32 g_str_drawotag;
@@ -1305,43 +1306,30 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007C748\n"
-    "    lui        $v0, %hi(g_gpu_type)\n"
-    "    lbu        $v0, %lo(g_gpu_type)($v0)\n"
-    "    nop\n"
-    "    addiu      $v0, $v0, -0x1\n"
-    "    sltiu      $v0, $v0, 0x2\n"
-    "    beqz       $v0, .Lfunc_8007C748_8007C780\n"
-    "    nop\n"
-    "    beqz       $a1, .Lfunc_8007C748_8007C770\n"
-    "    lui       $v1, (0xE1000800 >> 16)\n"
-    "    ori        $v1, $v1, (0xE1000800 & 0xFFFF)\n"
-    ".Lfunc_8007C748_8007C770:\n"
-    "    beqz       $a0, .Lfunc_8007C748_8007C798\n"
-    "    andi      $v0, $a2, 0x27FF\n"
-    "    j          .Lfunc_8007C748_8007C798\n"
-    "    ori       $v0, $v0, 0x1000\n"
-    ".Lfunc_8007C748_8007C780:\n"
-    "    beqz       $a1, .Lfunc_8007C748_8007C78C\n"
-    "    lui       $v1, (0xE1000200 >> 16)\n"
-    "    ori        $v1, $v1, (0xE1000200 & 0xFFFF)\n"
-    ".Lfunc_8007C748_8007C78C:\n"
-    "    beqz       $a0, .Lfunc_8007C748_8007C798\n"
-    "    andi      $v0, $a2, 0x9FF\n"
-    "    ori        $v0, $v0, 0x400\n"
-    ".Lfunc_8007C748_8007C798:\n"
-    "    jr         $ra\n"
-    "    or        $v0, $v1, $v0\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+s32 func_8007C748(s32 arg0, s32 arg1, s32 arg2) {
+    s32 var_v1;
+
+    if ((u32) (D_8009BE74 - 1) < 2U) {
+        var_v1 = 0xE1000000;
+        if (arg1 != 0) {
+            var_v1 = 0xE1000800;
+        }
+        arg2 = arg2 & 0x27FF;
+        if (arg0 != 0) {
+            arg2 |= 0x1000;
+        }
+    } else {
+        var_v1 = 0xE1000000;
+        if (arg1 != 0) {
+            var_v1 = 0xE1000200;
+        }
+        arg2 = arg2 & 0x9FF;
+        if (arg0 != 0) {
+            arg2 |= 0x400;
+        }
+    }
+    return var_v1 | arg2;
+}
 __asm__(
     "    .set\tnoat\n"
     "    .set\tnoreorder\n"
