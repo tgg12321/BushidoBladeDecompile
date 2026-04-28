@@ -3491,3 +3491,6 @@ func_80052C10: $2 <-> $25 @ 0-2
 func_800550E8: subst "la\s+\$3,D_80101EC8\+1045" "la	$3,D_80101EC8" @ 8
 func_800550E8: subst "lbu\s+\$2,0\(\$3\)" "lbu	$2,1045($3)" @ 10
 func_800550E8: subst "sb\s+\$2,0\(\$3\)" "sb	$2,1045($3)" @ 13
+# func_8005B7C4: GCC picked $v0 for the latest D_800A3404 read; target uses $v1
+func_8005B7C4: subst "\$2" "$3" @ 31
+func_8005B7C4: subst "\$2" "$3" @ 33

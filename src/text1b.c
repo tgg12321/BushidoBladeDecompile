@@ -22439,58 +22439,88 @@ void obj_InitAll(void) {
     obj_InitChars();
 }
 
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8005B7C4\n"
-    "    addiu  $sp,$sp,-32\n"
-    "    sw  $s1,20($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    sw  $ra,24($sp)\n"
-    "    jal  func_800858D0\n"
-    "    sw  $s0,16($sp)\n"
-    "    lui  $a0,%hi(D_800158B4)\n"
-    "    addiu  $a0,$a0,%lo(D_800158B4)\n"
-    "    jal  debug_printf\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    jal  game_FrameLoop\n"
-    "    nop\n"
-    "    addiu  $a0,$zero,2\n"
-    "    jal  func_80036EA8\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $s0,$v0,$zero\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    jal  replay_camera_Init\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    jal  func_80036F28\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    jal  game_FrameLoop\n"
-    "    addu  $s0,$v0,$zero\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    addiu  $v0,$zero,4112\n"
-    "    .word 0xAF80033C\n"
-    "    .word 0xAF820340\n"
-    "    .word 0xAF820338\n"
-    "    jal  func_8005C2A8\n"
-    "    addu  $a2,$a0,$s0\n"
-    "    .word 0x8F830338\n"
-    "    nop\n"
-    "    .word 0xAF830340\n"
-    "    lw  $ra,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,32\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+typedef unsigned char u8;
+typedef signed char s8;
+typedef unsigned short u16;
+typedef signed short s16;
+typedef unsigned int u32;
+typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
+typedef volatile u8 vu8;
+typedef volatile s8 vs8;
+typedef volatile u16 vu16;
+typedef volatile s16 vs16;
+typedef volatile u32 vu32;
+typedef volatile s32 vs32;
+#define NULL ((void *)0)
+
+typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
+typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
+typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
+typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
+typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
+typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
+typedef struct CVECTOR { u8 r, g, b, cd; } CVECTOR;
+typedef struct DVECTOR { s16 vx, vy; } DVECTOR;
+typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
+
+/* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
+ * field layout is the union of all observed accesses; m2c picks the type
+ * that best fits each access site. Mirroring smart_match.py's layout. */
+typedef struct GameObj {
+    u8 field_00; u8 field_01; s16 field_02;
+    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
+    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
+    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
+    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
+    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
+    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
+    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
+    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
+    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
+    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
+    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
+    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
+    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
+    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
+    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
+    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
+    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
+    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
+    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
+    s16 field_FA; s32 field_FC;
+} GameObj;
+extern s32 func_80036EA8();
+extern s32 func_80036F28();
+extern s32 func_8005C2A8();
+
+s32 debug_printf(s32 *, s32);               /* extern */
+s32 game_FrameLoop();                           /* extern */
+s32 replay_camera_Init(s32, s32);               /* extern */
+s32 title_mv_exec2(s32);                    /* extern */
+extern s32 D_800158B4;
+extern s32 D_800A3404;
+extern s32 D_800A3408;
+extern s32 D_800A340C;
+
+void func_8005B7C4(s32 arg0) {
+    s32 temp_v0;
+    u32 temp_s0;
+
+    title_mv_exec2(0);
+    debug_printf(&D_800158B4, arg0);
+    game_FrameLoop();
+    temp_v0 = func_80036EA8(2, 1);
+    replay_camera_Init(temp_v0, arg0);
+    temp_s0 = func_80036F28(temp_v0);
+    game_FrameLoop();
+    D_800A3408 = 0;
+    D_800A340C = 0x1010;
+    D_800A3404 = 0x1010;
+    func_8005C2A8((GameObj *) arg0, 0, arg0 + temp_s0);
+    D_800A340C = D_800A3404;
+}
 extern s32 D_800EFC58;
 extern s32 D_800EFB58;
 extern s32 D_800EFC48;
