@@ -207,15 +207,36 @@ def load_known_blocked() -> dict[str, tuple[str, str]]:
     return out
 
 
+COP0_OPS = {"mtc0", "mfc0", "ctc0", "cfc0", "rfe", "tlbwi", "tlbwr", "tlbp", "tlbr"}
+
+
 def detect_permanent_blockers(insns) -> list[str]:
     """Detect patterns that genuinely cannot be expressed in pure C with
     GCC 2.7.2. Returns reason codes matching known_blocked.txt."""
     tags: list[str] = []
     mnems = [m for _, m, _ in insns]
 
-    # break <code> -- debug trap; GCC 2.7.2 has no __builtin_trap that emits this
-    if "break" in mnems:
-        tags.append("break_instruction")
+    # break <code> -- debug trap; GCC 2.7.2 has no __builtin_trap that emits
+    # this. EXCEPT: GCC 2.7.2 emits `break 7` (divide-by-zero) and `break 6`
+    # (INT_MIN/-1 overflow) as guards around `div`/`divu` from normal C
+    # signed integer division. Those don't count -- only flag breaks with
+    # non-div-guard codes.
+    GCC_DIV_BREAK_CODES = {"6", "7"}
+    for _, m, ops in insns:
+        if m == "break":
+            code = ops.strip().split(",")[0].strip()
+            if code not in GCC_DIV_BREAK_CODES:
+                tags.append("break_instruction")
+                break
+
+    # syscall -- raw syscall (different from break-based traps)
+    if "syscall" in mnems:
+        tags.append("syscall_instruction")
+
+    # COP0 ops -- system control coprocessor (interrupt status, BPC, etc).
+    # No C primitive; requires inline asm.
+    if any(m in COP0_OPS for m in mnems):
+        tags.append("cop0_op")
 
     # add / sub / addi (overflow-trap variants). GCC 2.7.2 emits addu / subu /
     # addiu by default; these signed overflow-trapping ops are only produced
@@ -232,10 +253,12 @@ def detect_permanent_blockers(insns) -> list[str]:
             tags.append("sp_manipulation")
             break
 
-    # No `jr $ra` anywhere -> orphaned fragment / data-as-code.
-    # Function falls through to next or is accessed as data via mid-text alabels.
-    has_jr_ra = any(m == "jr" and "$ra" in ops for _, m, ops in insns)
-    if not has_jr_ra and len(insns) > 0:
+    # Truly orphaned fragment: no exit instruction at all (no jr, no j, no b*).
+    # BIOS trampolines have `j BIOS_target` so they don't trigger here -- they
+    # fall through to the bios_or_syscall path. We only want to flag functions
+    # that literally fall off the end into the next function.
+    has_exit = any(m in ("jr", "j") or m.startswith("b") for _, m, _ in insns)
+    if not has_exit and len(insns) > 0:
         tags.append("no_return_fragment")
 
     return tags
@@ -336,15 +359,16 @@ def classify(func: str) -> dict:
                    if m in {"sw", "sh", "sb", "swc2", "swl", "swr"})
 
     # Recommendation
-    # Permanent blockers FIRST: explicit list overrides auto-detection;
-    # if neither matches, fall through to normal classification.
+    # Manual list wins (explicit user intent). Then BIOS trampolines (more
+    # specific tag than permanent_blocked). Then auto-detected permanent
+    # blockers. Then everything else.
     if manual_block:
         reason, _ = manual_block
         recommendation = f"permanently_blocked:{reason}"
-    elif permanent_tags:
-        recommendation = f"permanently_blocked:{permanent_tags[0]}"
     elif bios:
         recommendation = f"bios_or_syscall:{bios_addr}"
+    elif permanent_tags:
+        recommendation = f"permanently_blocked:{permanent_tags[0]}"
     elif "multi_jr_ra" in blocker_tags:
         recommendation = "multi_function"
     elif "jlabel_switch" in blocker_tags:
