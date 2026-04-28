@@ -145,11 +145,16 @@ Add these to `base.c` to guide the search:
 
 Single-session, one function at a time. Pick the next unmatched stub and work it end-to-end — no scanning for easy targets, no pre-screening multiple candidates. Every function must be worked eventually, so just take whatever is next.
 
-### Per function
+### Per function (attempt-first)
 
-1. **Pre-dive analysis** (MANDATORY): read the asm top to bottom, read the surrounding source file, consult Kengo via `tools/kengo_ref.py <func> --bb2`, consult matching-toolbox feedback memories. Form an explicit hypothesis BEFORE writing C. Quick blocker check: if the function has lwl/swl (needs fix_lwl.py), handwritten asm markers, or non-standard prologue, note it but still attempt — only table if confirmed intractable after trying.
-2. **Iterate silently** — work without check-ins until the function matches or you're ready to table. Only interrupt for genuine blockers requiring user decision.
-   - Every attempt needs a one-line `HYPOTHESIS: ...` written down (for your own tracking)
+The **attempt-first** flow runs all the cheap mechanical steps before the model intervenes. Token-cost-per-function is minimized when the deterministic pipeline gets to do its job and the model only handles NEAR_MISS work.
+
+1. **`dc.sh classify <func>`** — instant pre-dive. Read the recommendation. If it says `bios_or_syscall`, `psyq_stdlib_*`, `multi_function`, or `aspsx_delay_swra`, STOP — those are either allowed-as-asm exceptions or known-intractable.
+2. **`dc.sh attempt <func>`** — runs setup → smart_match → permute_capped → gen_regfix automatically. Reports MATCHED / NEAR_MISS / HARD / SKIPPED.
+   - **MATCHED** — `auto_matches/<func>.c` has the matched C. Use `dc.sh inline-replace <func> auto_matches/<func>.c` (or `dc.sh replace ... auto_matches/<func>.c`).
+   - **NEAR_MISS** (score ≤ 200) — review `/tmp/<func>.regfix.suggestions`, run `dc.sh recipes <func>` for matching named recipes, apply rules with `dc.sh add-regfix`.
+   - **HARD** / **SKIPPED** — table or skip per classifier reason.
+3. **Manual deepening** — only when NEAR_MISS plus `dc.sh recipes <func>` doesn't surface a known pattern. Read `feedback_*` memories listed in the toolbox section.
 
 ### Anti-spiral rules
 
@@ -202,6 +207,35 @@ All decomp operations go through `tools/dc.sh` — never construct raw WSL pipel
 wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash tools/dc.sh <command> [args]'
 ```
 
+### Workflow-driver commands (try in this order)
+
+| Command | Purpose |
+|---------|---------|
+| `dc.sh classify <func>` | Pre-dive report: size, blockers, BIOS/syscall/PsyQ tags, Kengo hint. Returns a `recommendation` (easy_attempt / standard / needs_rodata_split / multi_function / bios_or_syscall / psyq_stdlib_<n> / gte_function / aspsx_delay_swra / needs_lwl_fix). |
+| `dc.sh attempt <func>` | Full mechanical pipeline: classify → setup → smart_match → permute_capped → gen_regfix. Reports MATCHED / NEAR_MISS / HARD / SKIPPED with elapsed time. **Run this first**; only intervene manually for NEAR_MISS. |
+| `dc.sh smart <func>` | smart_match.py: 16 automated transformation strategies (declaration reorder, cast variations, do-while barriers, register hints, etc). Pure-C exploration before permuter. |
+| `dc.sh permute <func> [--max-time N] [--max-flat-seconds K]` | permute_capped.py: bounded permuter run with flat-score early termination. |
+| `dc.sh recipes [<func>]` | List named regfix recipes / suggest recipes for `<func>`. `dc.sh apply-recipe <recipe> <func>` prints the concrete add-regfix commands. |
+| `dc.sh add-regfix <func> <op> ...` | Append a validated regfix rule (replaces ad-hoc tmp/add_regfix*.py). Auto-rolls back on validation failure. Ops: swap, subst, delete, insert, insert_after, reorder, fill_delay, drain_delay. |
+
+### Inline-asm-aware setup (399 functions still inline)
+
+| Command | Purpose |
+|---------|---------|
+| `dc.sh inline-locate <func>` | Find the inline `__asm__()` block for `<func>` in src/ |
+| `dc.sh inline-verify <func>` | Verify inline asm matches `asm/funcs/<func>.s` |
+| `dc.sh inline-setup <func>` | Stage `permuter/<func>/` for an inline-asm function (m2c base.c + target.s) |
+| `dc.sh inline-replace <func> <c>` | After matching, swap the inline block for matched C |
+
+### GTE helpers (Phase 4 -- 86 functions)
+
+| Command | Purpose |
+|---------|---------|
+| `dc.sh gte <func>` | gte_classifier.py: which `gte_*()` macros from `include/gte.h` would the function need? |
+| `dc.sh gte-migrate <func> [--stdout\|--setup]` | gte_migrate.py: convert inline-asm GTE function into a C scaffold using `gte_*()` macros + proper-constrained `__asm__` for the remaining mtc2/mfc2 ops. Writes `permuter/<func>/base.c`. |
+
+### Lower-level building blocks
+
 | Command | Purpose |
 |---------|---------|
 | `dc.sh compile <func_dir>` | Compile base.c + objdump disassembly |
@@ -209,7 +243,7 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 | `dc.sh debug <func_dir>` | Full permuter --debug diff + score |
 | `dc.sh build` | Incremental make, tail output |
 | `dc.sh replace <src> <func> <c_file>` | Replace INCLUDE_ASM with C code (LF-safe) |
-| `dc.sh setup <func> <src>` | Set up permuter directory |
+| `dc.sh setup <func> <src>` | Set up permuter directory (INCLUDE_ASM stub form) |
 | `dc.sh analysis <func>` | Run asm_analysis.py |
 
 ### File Editing

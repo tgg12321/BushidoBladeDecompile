@@ -1,0 +1,211 @@
+Loading...
+permuter/hirahira_w_ctrl_2/base.c
+Defaulting to function: hirahira_w_ctrl_2
+No perm macros found. Defaulting to randomization.
+Will try 1 different base sources.
+
+void hirahira_w_ctrl_2(u16 *rot, s16 *out)
+{
+  s32 sin_a;
+  s32 sin_b;
+  s32 sin_c;
+  s32 cos_a_u;
+  s32 cos_b_u;
+  s32 cos_c_u;
+  s32 cos_a_s;
+  s32 cos_b_s;
+  s32 cos_c_s;
+  s32 ab;
+  s32 ab_raw;
+  u16 rb;
+  u16 rc;
+  s32 m00;
+  rb = rot[1];
+  rc = rot[2];
+  sin_a = Judge[(((s16) rb) + 0x400) & 0xFFF];
+  sin_b = Judge[(((s16) rc) + 0x400) & 0xFFF];
+  m00 = sin_a * sin_b;
+  cos_a_u = ((u16 *) Judge)[rb & 0xFFF];
+  cos_b_u = ((u16 *) Judge)[rot[0] & 0xFFF];
+  cos_a_s = (s16) cos_a_u;
+  cos_c_u = ((u16 *) Judge)[rc & 0xFFF];
+  cos_b_s = (s16) cos_b_u;
+  ab_raw = cos_b_s * cos_a_s;
+  cos_c_s = (s16) cos_c_u;
+  ab = ab_raw >> 12;
+  sin_c = Judge[(((s16) rot[0]) + 0x400) & 0xFFF];
+  out[2] = cos_a_u;
+  out[0] = m00 >> 12;
+  out[1] = (sin_a * (-cos_c_s)) >> 12;
+  out[5] = ((-cos_b_s) * sin_a) >> 12;
+  out[8] = (sin_c * sin_a) >> 12;
+  out[3] = ((ab * sin_b) + (sin_c * cos_c_s)) >> 12;
+  out[4] = ((ab * (-cos_c_s)) + (sin_c * sin_b)) >> 12;
+  out[6] = ((((sin_c * (-cos_a_s)) >> 12) * sin_b) + (cos_b_s * cos_c_s)) >> 12;
+  out[7] = ((((sin_c * cos_a_s) >> 12) * cos_c_s) + (cos_b_s * sin_b)) >> 12;
+}
+
+DEBUG MODE: Saving a full copy of base candidate source to  ./debug_source.c
+DEBUG MODE: Saving the base candidate o file to  ./debug_compiled_object.o 
+
+[0maddiu  sp,sp,imm                        	addiu  sp,sp,imm
+[0msw     s1,addr(sp)                      	sw     s1,addr(sp)
+[0msw     s0,addr(sp)                      	sw     s0,addr(sp)
+[32;1m                                        	lh     t1,2(a0)
+[32;1m                                        	lh     a2,4(a0)
+[91;1mlhu    a2,2(a0)	
+[91;1mlhu    t0,4(a0)	
+[91;1msll    v1,a2,0x10	
+[91;1msra    v1,v1,0x10	
+[94maddiu  v1,v1,0x400                      	addiu  v1,t1,0x400
+[0mandi   v1,v1,0xfff                      	andi   v1,v1,0xfff
+[0msll    v1,v1,0x1                        	sll    v1,v1,0x1
+[91;1msll    v0,t0,0x10	
+[91;1msra    v0,v0,0x10	
+[94maddiu  v0,v0,0x400                      	addiu  v0,a2,0x400
+[0mandi   v0,v0,0xfff                      	andi   v0,v0,0xfff
+[0msll    v0,v0,0x1                        	sll    v0,v0,0x1
+[0mlui    at,%hi(Judge)                    	lui    at,%hi(Judge)
+[0maddu   at,at,v1                         	addu   at,at,v1
+[94mlh     t2,%lo(Judge)(at)                	lh     a3,%lo(Judge)(at)
+[0mlui    at,%hi(Judge)                    	lui    at,%hi(Judge)
+[0maddu   at,at,v0                         	addu   at,at,v0
+[94mlh     t1,%lo(Judge)(at)                	lh     t3,%lo(Judge)(at)
+[0mnop                                     	nop    
+[94mmult   t2,t1                            	mult   a3,t3
+[94mandi   a2,a2,0xfff                      	andi   t1,t1,0xfff
+[94msll    a2,a2,0x1                        	sll    t1,t1,0x1
+[0mlhu    v1,0(a0)                         	lhu    v1,0(a0)
+[0mlui    at,%hi(Judge)                    	lui    at,%hi(Judge)
+[94maddu   at,at,a2                         	addu   at,at,t1
+[32;1m                                        	lh     t0,%lo(Judge)(at)
+[91;1mlhu    t3,%lo(Judge)(at)	
+[0mandi   v0,v1,0xfff                      	andi   v0,v1,0xfff
+[0msll    v0,v0,0x1                        	sll    v0,v0,0x1
+[32;1m                                        	mflo   s0
+[91;1msll    a2,t3,0x10	
+[91;1msra    a2,a2,0x10	
+[0mlui    at,%hi(Judge)                    	lui    at,%hi(Judge)
+[0maddu   at,at,v0                         	addu   at,at,v0
+[32;1m                                        	lh     t2,%lo(Judge)(at)
+[32;1m                                        	nop    
+[91;1mlhu    a3,%lo(Judge)(at)	
+[91;1mmflo   s0	
+[91;1msll    a3,a3,0x10	
+[91;1msra    a3,a3,0x10	
+[94mmult   a3,a2                            	mult   t2,t0
+[94mandi   t0,t0,0xfff                      	andi   a2,a2,0xfff
+[94msll    t0,t0,0x1                        	sll    a2,a2,0x1
+[0mlui    at,%hi(Judge)                    	lui    at,%hi(Judge)
+[94maddu   at,at,t0                         	addu   at,at,a2
+[32;1m                                        	lh     a0,%lo(Judge)(at)
+[91;1mlhu    a0,%lo(Judge)(at)	
+[91;1mnop    	
+[91;1msll    a0,a0,0x10	
+[94mmflo   v0                               	mflo   t4
+[91;1msra    a0,a0,0x10	
+[94mnegu   t0,a0                            	negu   a2,a0
+[32;1m                                        	nop    
+[94mmult   t2,t0                            	mult   a3,a2
+[0mmflo   t8                               	mflo   t8
+[32;1m                                        	negu   v0,t2
+[91;1msra    v0,v0,0xc	
+[0mnop                                     	nop    
+[94mmult   v0,t1                            	mult   v0,a3
+[0msll    v1,v1,0x10                       	sll    v1,v1,0x10
+[0msra    v1,v1,0x10                       	sra    v1,v1,0x10
+[0maddiu  v1,v1,0x400                      	addiu  v1,v1,0x400
+[0mandi   v1,v1,0xfff                      	andi   v1,v1,0xfff
+[0msll    v1,v1,0x1                        	sll    v1,v1,0x1
+[32;1m                                        	mflo   t9
+[0mlui    at,%hi(Judge)                    	lui    at,%hi(Judge)
+[0maddu   at,at,v1                         	addu   at,at,v1
+[32;1m                                        	lh     v1,%lo(Judge)(at)
+[32;1m                                        	nop    
+[32;1m                                        	mult   v1,a3
+[91;1mlhu    v1,%lo(Judge)(at)	
+[94mmflo   t9                               	mflo   t5
+[91;1msll    v1,v1,0x10	
+[94msra    v1,v1,0x10                       	sra    v0,t4,0xc
+[32;1m                                        	nop    
+[94mmult   v1,a0                            	mult   v0,t3
+[94mmflo   t5                               	mflo   t6
+[0mnop                                     	nop    
+[0mnop                                     	nop    
+[94mmult   v0,t0                            	mult   v1,a0
+[94mmflo   t7                               	mflo   a3
+[0mnop                                     	nop    
+[0mnop                                     	nop    
+[94mmult   v1,t1                            	mult   v0,a2
+[94mmflo   t6                               	mflo   t7
+[94mnegu   v0,a2                            	negu   v0,t0
+[0mnop                                     	nop    
+[0mmult   v1,v0                            	mult   v1,v0
+[94mmflo   t4                               	mflo   v0
+[32;1m                                        	nop    
+[91;1mnegu   v0,a3	
+[0mnop                                     	nop    
+[94mmult   v0,t2                            	mult   v1,t3
+[94mmflo   t0                               	mflo   a2
+[94msra    v0,t4,0xc                        	sra    v0,v0,0xc
+[0mnop                                     	nop    
+[94mmult   v0,t1                            	mult   v0,t3
+[0mmflo   t4                               	mflo   t4
+[0mnop                                     	nop    
+[0mnop                                     	nop    
+[94mmult   v1,a2                            	mult   v1,t0
+[0mmflo   v0                               	mflo   v0
+[0mnop                                     	nop    
+[0mnop                                     	nop    
+[94mmult   a3,a0                            	mult   t2,a0
+[94mmflo   a2                               	mflo   v1
+[0msra    v0,v0,0xc                        	sra    v0,v0,0xc
+[0mnop                                     	nop    
+[0mmult   v0,a0                            	mult   v0,a0
+[32;1m                                        	lui    at,%hi(Judge)
+[32;1m                                        	addu   at,at,t1
+[32;1m                                        	lhu    v0,%lo(Judge)(at)
+[91;1mmflo   a0	
+[0mnop                                     	nop    
+[91;1mnop    	
+[91;1mmult   v1,t2	
+[94msh     t3,4(a1)                         	sh     v0,4(a1)
+[0msra    v0,s0,0xc                        	sra    v0,s0,0xc
+[0msh     v0,0(a1)                         	sh     v0,0(a1)
+[0msra    v0,t8,0xc                        	sra    v0,t8,0xc
+[0msh     v0,2(a1)                         	sh     v0,2(a1)
+[94mmflo   t2                               	mflo   a0
+[94msra    v0,t0,0xc                        	sra    v0,t9,0xc
+[0msh     v0,0xa(a1)                       	sh     v0,0xa(a1)
+[94mmult   a3,t1                            	mult   t2,t3
+[94msra    v0,t2,0xc                        	sra    v0,t5,0xc
+[0msh     v0,0x10(a1)                      	sh     v0,0x10(a1)
+[94maddu   v0,t9,t5                         	addu   v0,t6,a3
+[0msra    v0,v0,0xc                        	sra    v0,v0,0xc
+[0msh     v0,6(a1)                         	sh     v0,6(a1)
+[94maddu   v0,t7,t6                         	addu   v0,t7,a2
+[0msra    v0,v0,0xc                        	sra    v0,v0,0xc
+[0msh     v0,8(a1)                         	sh     v0,8(a1)
+[94maddu   v0,t4,a2                         	addu   v0,t4,v1
+[0msra    v0,v0,0xc                        	sra    v0,v0,0xc
+[0msh     v0,0xc(a1)                       	sh     v0,0xc(a1)
+[94mmflo   v1                               	mflo   t0
+[94maddu   v0,a0,v1                         	addu   v0,a0,t0
+[0msra    v0,v0,0xc                        	sra    v0,v0,0xc
+[0msh     v0,0xe(a1)                       	sh     v0,0xe(a1)
+[0mlw     s1,addr(sp)                      	lw     s1,addr(sp)
+[0mlw     s0,addr(sp)                      	lw     s0,addr(sp)
+[0maddiu  sp,sp,imm                        	addiu  sp,sp,imm
+[0mjr     ra                               	jr     ra
+[0m
+
+--------------- Penalty List ---------------
+Stack Differences:             0  (1)
+Branch Differences:            0  (1)
+Register Differences:          58  (5)
+Reorderings:                   3  (60)
+Insertions:                    15  (100)
+Deletions:                     21  (100)
+
+[hirahira_w_ctrl_2] base score = 4070
+End of Debug Mode... Exiting

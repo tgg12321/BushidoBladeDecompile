@@ -20,10 +20,19 @@ from pathlib import Path
 def find_source_file(root, func_name):
     """Find which src/*.c file contains a function. Prefers file with the
     actual definition (or INCLUDE_ASM stub) over files that merely declare
-    the symbol via `extern`."""
+    the symbol via `extern`. Definitions must look like `<type> <name>(args)
+    {` at the start of a line -- a call like `if (foo() != 0) {` would
+    otherwise false-positive on the old regex."""
     src_dir = root / "src"
     extern_re = re.compile(rf'\bextern\b[^;{{}}]*\b{re.escape(func_name)}\b\s*\(')
-    decl_re = re.compile(rf'^[^/\n]*\b{re.escape(func_name)}\s*\([^;]*\)\s*\{{', re.MULTILINE)
+    # Definition: at start of line (no leading paren / control-flow text),
+    # optionally `static`, then a return-type token, then the function name,
+    # an arg list with no semicolon, and an opening brace.
+    decl_re = re.compile(
+        rf'^\s*(?:static\s+)?(?:const\s+)?(?:[\w_]+\s*\*?\s+){{1,3}}'
+        rf'{re.escape(func_name)}\s*\([^;]*\)\s*\{{',
+        re.MULTILINE,
+    )
     asm_re = re.compile(rf'INCLUDE_ASM\s*\(\s*"[^"]+"\s*,\s*{re.escape(func_name)}\s*\)')
 
     candidates = []

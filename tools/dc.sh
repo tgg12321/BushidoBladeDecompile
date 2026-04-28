@@ -8,7 +8,19 @@
 #   bash tools/dc.sh debug <func_dir>             — permuter --debug (full diff)
 #   bash tools/dc.sh build                        — incremental make, tail output
 #   bash tools/dc.sh replace <src_file> <func_name> <c_file>  — replace INCLUDE_ASM with C code (LF-safe)
-#   bash tools/dc.sh setup <func_name> <src_file> — permuter setup
+#   bash tools/dc.sh setup <func_name> <src_file> — permuter setup (INCLUDE_ASM stub form)
+#   bash tools/dc.sh inline-locate <func>         — locate inline __asm__ block in src/
+#   bash tools/dc.sh inline-verify <func>         — verify inline asm matches asm/funcs/.s
+#   bash tools/dc.sh inline-setup <func>          — set up permuter/<func>/ for inline-asm function
+#   bash tools/dc.sh inline-replace <func> <c>    — replace inline __asm__ block with C from <c>
+#   bash tools/dc.sh smart <func>                  — run smart_match.py 16-strategy sweep
+#   bash tools/dc.sh permute <func> [opts]        — run permuter with early-termination cap
+#   bash tools/dc.sh add-regfix <func> <op> <args> @ <idx>  — append validated regfix rule
+#   bash tools/dc.sh classify <func>              — pre-dive classification report
+#   bash tools/dc.sh gte <func>                    — gte_*() macro suggestion report
+#   bash tools/dc.sh attempt <func>               — full mechanical attempt pipeline
+#   bash tools/dc.sh recipes [<func>]             — list recipes / suggest recipes for <func>
+#   bash tools/dc.sh apply-recipe <recipe> <func> — apply a named recipe to <func>
 #   bash tools/dc.sh analysis <func_name>         — run asm_analysis.py
 #   bash tools/dc.sh dump-text <func_name> [src]  — dump numbered TEXT indices from pipeline
 #   bash tools/dc.sh validate-regfix [--func F]   — validate regfix.txt rules (static)
@@ -157,9 +169,99 @@ print(f'Replaced {func} in {src}')
         python3 tools/regfix_verify.py "$ARG1" 2>&1
         ;;
 
+    inline-locate)
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh inline-locate <func>"; exit 1; }
+        python3 tools/extract_inline_asm.py locate "$FUNC_NAME" 2>&1
+        ;;
+
+    inline-verify)
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh inline-verify <func>"; exit 1; }
+        python3 tools/extract_inline_asm.py verify "$FUNC_NAME" 2>&1
+        ;;
+
+    inline-setup)
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh inline-setup <func>"; exit 1; }
+        python3 tools/extract_inline_asm.py setup "$FUNC_NAME" 2>&1
+        ;;
+
+    inline-replace)
+        FUNC_NAME="$1"
+        C_FILE="$2"
+        [ -z "$C_FILE" ] && { echo "Usage: dc.sh inline-replace <func> <c_file>"; exit 1; }
+        python3 tools/extract_inline_asm.py replace "$FUNC_NAME" "$C_FILE" 2>&1
+        ;;
+
+    smart)
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh smart <func> [smart_match flags]"; exit 1; }
+        python3 tools/smart_match.py --func "$FUNC_NAME" "$@" 2>&1
+        ;;
+
+    permute)
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh permute <func> [--max-flat N] [--max-time S]"; exit 1; }
+        python3 tools/permute_capped.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
+    add-regfix)
+        [ -z "$1" ] && { echo "Usage: dc.sh add-regfix <func> <op> <args...> @ <idx>"; exit 1; }
+        python3 tools/add_regfix.py "$@" 2>&1
+        ;;
+
+    classify)
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh classify <func>"; exit 1; }
+        python3 tools/classify_func.py "$FUNC_NAME" 2>&1
+        ;;
+
+    gte)
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh gte <func>"; exit 1; }
+        python3 tools/gte_classifier.py "$FUNC_NAME" 2>&1
+        ;;
+
+    gte-migrate)
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh gte-migrate <func> [--stdout|--setup]"; exit 1; }
+        python3 tools/gte_migrate.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
+    attempt)
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh attempt <func> [--time N] [--max-flat N]"; exit 1; }
+        python3 tools/attempt_func.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
+    recipes)
+        FUNC_NAME="${1:-}"
+        if [ -z "$FUNC_NAME" ]; then
+            python3 tools/recipes.py list 2>&1
+        else
+            python3 tools/recipes.py suggest "$FUNC_NAME" 2>&1
+        fi
+        ;;
+
+    apply-recipe)
+        RECIPE="$1"
+        FUNC_NAME="$2"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh apply-recipe <recipe> <func>"; exit 1; }
+        python3 tools/recipes.py apply "$RECIPE" "$FUNC_NAME" 2>&1
+        ;;
+
     *)
         echo "Unknown command: $CMD"
-        echo "Commands: compile, score, debug, build, replace, setup, analysis, dump-text, validate-regfix, gen-regfix, verify"
+        echo "Commands: compile, score, debug, build, replace, setup,"
+        echo "          inline-locate, inline-verify, inline-setup, inline-replace,"
+        echo "          smart, permute, add-regfix, classify, gte, attempt,"
+        echo "          recipes, apply-recipe,"
+        echo "          analysis, dump-text, validate-regfix, gen-regfix, verify"
         exit 1
         ;;
 esac

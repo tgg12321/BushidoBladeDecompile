@@ -1211,9 +1211,38 @@ def process_function_wrapper(args):
 
 
 def find_candidates(args):
+    # Single-function fast-path: bypass the (stale) triage CSV entirely.
+    # When --func is given, fabricate the candidate row from disk truth
+    # so smart_match works without a full triage run.
+    if args.func:
+        asm_path = ROOT / "asm" / "funcs" / f"{args.func}.s"
+        if not asm_path.exists():
+            print(f"ERROR: asm/funcs/{args.func}.s not found", file=sys.stderr)
+            sys.exit(1)
+        src_name = ""
+        for src in sorted((ROOT / "src").glob("*.c")):
+            txt = src.read_text(encoding="utf-8", errors="ignore")
+            if (f'INCLUDE_ASM("asm/funcs", {args.func})' in txt
+                    or f"glabel {args.func}" in txt):
+                src_name = src.name
+                break
+        with open(asm_path) as f:
+            asm_lines = sum(
+                1 for ln in f
+                if ln.strip() and not ln.lstrip().startswith(("/*", "glabel", "endlabel"))
+            )
+        return [{
+            "func": args.func,
+            "file": src_name,
+            "asm_lines": str(asm_lines),
+            "score": "0",
+            "compile_ok": "1",
+        }]
+
     csvpath = ROOT / "triage_results.csv"
     if not csvpath.exists():
-        print("ERROR: triage_results.csv not found. Run: python3 tools/triage_all.py")
+        print("ERROR: triage_results.csv not found. Run: python3 tools/triage_all.py",
+              file=sys.stderr)
         sys.exit(1)
 
     candidates = []

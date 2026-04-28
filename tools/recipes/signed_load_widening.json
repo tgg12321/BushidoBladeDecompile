@@ -1,0 +1,21 @@
+{
+  "name": "signed_load_widening",
+  "title": "Force lh/lb over lhu/lbu by widening extern type to s32",
+  "summary": "GCC 2.7.2 chooses signed (lh/lb) vs unsigned (lhu/lbu) load by the declared extern type. If our pipeline emits lhu but target has lh, the fix is at the C declaration site -- widen to s32 (or the matching signed shorter type) instead of u8/u16.",
+  "from_memory": "feedback_signed_load_widening.md",
+  "fingerprint": {
+    "structural": [
+      "Pipeline emits lhu/lbu where target has lh/lb (or vice versa) on the same offset+register",
+      "The diff is purely in the load opcode -- imm/registers match"
+    ],
+    "blocker_class": "signed_load_mismatch"
+  },
+  "rule_skeleton": [
+    {"op": "fix_at_source", "where": "extern decl in src/<file>.c",
+     "instruction": "Change `extern u8 g_x;` to `extern s32 g_x;` (or `extern s16` for 16-bit). Then audit sibling files for the same global -- mismatched extern types flip the load between files."}
+  ],
+  "notes": [
+    "regfix can also force this, but the C-side fix is preferred since it stays consistent across re-runs.",
+    "Always grep all .c files for the same symbol -- a sibling file may have the correct type already."
+  ]
+}
