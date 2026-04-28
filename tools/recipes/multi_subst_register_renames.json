@@ -1,0 +1,24 @@
+{
+  "name": "multi_subst_register_renames",
+  "title": "Plain register-renaming substs from gen_regfix",
+  "summary": "Most common NEAR_MISS shape: GCC picked different registers than the original at multiple sites, but the C structure is otherwise identical. `dc.sh gen-regfix <func>` enumerates the substs needed; we apply them all and the build matches.",
+  "from_memory": "feedback_gcc272_matching.md, feedback_regdiff_illusion.md",
+  "proof": "func_8005B7C4 (commit 7580e1d, 2 substs), func_8007C748 (commit 1c275b6, 13 substs across 9 indices).",
+  "fingerprint": {
+    "structural": [
+      "gen_regfix reports: matches > 0, reg_diffs > 0, structural == 0",
+      "the diff is dominated by 'register substs' rules with no instruction_swaps",
+      "no 3-cycle: no single index has multiple subst rules with both different patterns AND different replacements"
+    ],
+    "blocker_class": "multi_subst_register_renames"
+  },
+  "rule_skeleton": [
+    {"op": "subst", "comment": "apply all register substs from gen_regfix verbatim",
+     "idx": "<as emitted>", "pattern": "<as emitted>", "replacement": "<as emitted>"}
+  ],
+  "notes": [
+    "Run `dc.sh gen-regfix <func>` and pipe the output into regfix.txt verbatim, OR use `dc.sh near-miss <func> --apply` for the automated try-and-revert flow.",
+    "If gen_regfix reports a 3-cycle (multiple substs at the same index with different patterns AND replacements), use the `3cycle_full_insn_subst` recipe instead -- simple substs can't express the cycle.",
+    "Watch for `feedback_subst_count1_gotcha.md`: regfix subst replaces only the FIRST match per index. If a register appears twice on the same instruction, you may need two substs at that index."
+  ]
+}
