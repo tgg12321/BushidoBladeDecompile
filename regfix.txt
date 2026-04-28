@@ -3487,3 +3487,7 @@ cpu_check_run_attack: reorder 117,116 @ 116-117
 cpu_check_run_attack: reorder 206,205 @ 205-206
 # func_80052C10: scratchpad write -- target uses $t9 ($25), GCC picked $v0 ($2)
 func_80052C10: $2 <-> $25 @ 0-2
+# func_800550E8: byte-array indexing into D_80101EC8 -- target keeps 0x415 offset on lbu/sb; GCC pre-folds it. Reverse via 3 substs.
+func_800550E8: subst "la\s+\$3,D_80101EC8\+1045" "la	$3,D_80101EC8" @ 8
+func_800550E8: subst "lbu\s+\$2,0\(\$3\)" "lbu	$2,1045($3)" @ 10
+func_800550E8: subst "sb\s+\$2,0\(\$3\)" "sb	$2,1045($3)" @ 13

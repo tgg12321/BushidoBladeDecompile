@@ -15000,38 +15000,16 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800550E8\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    sll  $v0,$a0,4\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,2\n"
-    "    subu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,2\n"
-    "    lui  $v1,%hi(D_80101EC8)\n"
-    "    addiu  $v1,$v1,%lo(D_80101EC8)\n"
-    "    addu  $v1,$v0,$v1\n"
-    ".L80055114:\n"
-    "    lbu  $v0,1045($v1)\n"
-    "    addiu  $a1,$a1,1\n"
-    "    srl  $v0,$v0,1\n"
-    "    sb  $v0,1045($v1)\n"
-    "    slti  $v0,$a1,8\n"
-    "    bnez  $v0,.L80055114\n"
-    "    addiu  $v1,$v1,2\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_800550E8(s32 arg0) {
+    s32 i;
+    u8 *p = (u8 *)&D_80101EC8 + arg0 * 0x44C;
+    i = 0;
+    do {
+        i += 1;
+        *(p + 0x415) = *(p + 0x415) >> 1;
+        p += 2;
+    } while (i < 8);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
