@@ -54960,30 +54960,14 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80078B3C\n"
-    "    andi  $v0,$a0,65535\n"
-    "    sll  $a0,$v0,2\n"
-    "    lui  $a1,%hi(D_8009BD68)\n"
-    "    lw  $a1,%lo(D_8009BD68)($a1)\n"
-    "    lui  $at,%hi(D_8009BD70)\n"
-    "    addu  $at,$at,$a0\n"
-    "    lw  $a0,%lo(D_8009BD70)($at)\n"
-    "    lw  $v1,4($a1)\n"
-    "    slti  $v0,$v0,3\n"
-    "    or  $v1,$v1,$a0\n"
-    "    sw  $v1,4($a1)\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_80078B3C(s32 arg0) {
+    s32 v;
+    s32 *base;
+    v = arg0 & 0xFFFF;
+    base = D_8009BD68;
+    base[1] = base[1] | (&D_8009BD70)[v];
+    return v < 3;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"

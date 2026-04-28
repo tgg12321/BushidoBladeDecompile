@@ -3494,3 +3494,5 @@ func_800550E8: subst "sb\s+\$2,0\(\$3\)" "sb	$2,1045($3)" @ 13
 # func_8005B7C4: GCC picked $v0 for the latest D_800A3404 read; target uses $v1
 func_8005B7C4: subst "\$2" "$3" @ 31
 func_8005B7C4: subst "\$2" "$3" @ 33
+# func_80078B3C: GCC scheduled sw into jr delay slot; target keeps nop there. drain_delay reverses it.
+func_80078B3C: drain_delay @ 9
