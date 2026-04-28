@@ -12409,22 +12409,9 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80052C10\n"
-    "    lui  $t9,8064\n"
-    "    ori  $t9,$t9,1024\n"
-    "    sw  $zero,0($t9)\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80052C10(void) {
+    *(volatile s32 *)0x1F800400 = 0;
+}
 PAD_NOPS_1; /* padding after func_80052C10 */
 __asm__(
     ".set\tnoat\n"

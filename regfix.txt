@@ -188,10 +188,10 @@ saEft01Init: reorder 72,70,71 @ 70-72
 
 # saEft00Add: fix volatile D_800A14E4 addressing and ASPSX delay slot fills
 saEft00Add: subst "nop" "addiu	$4,$zero,1" @ 26
-saEft00Add: subst "\.L196" ".L196+4" @ 25
+saEft00Add: subst "\.L199" ".L199+4" @ 25
 saEft00Add: subst "sw	\$2,0\(\$3\)" "sw	$2,D_800A14E4" @ 38
 saEft00Add: subst "nop" "addiu	$4,$zero,6" @ 93
-saEft00Add: subst "\.L204" ".L204+4" @ 92
+saEft00Add: subst "\.L207" ".L207+4" @ 92
 saEft00Add: delete @ 35
 saEft00Add: insert "nop" @ 101
 saEft00Add: insert "nop" @ 105
@@ -290,7 +290,7 @@ saTan4GaugeInit: subst "sll\s+(\$18,\$5),16" "addu	$18,$5,$zero" @ 44
 saTan4GaugeInit: $2 <-> $3 @ 48-53
 saTan4GaugeInit: $3 <-> $4 @ 52-56
 # Fix outer loop branch target (.L10 -> .L13)
-saTan4GaugeInit: subst "\.L80" ".L83" @ 55
+saTan4GaugeInit: subst "\.L81" ".L84" @ 55
 # func_80034F88: register alloc + load reorder + address recompute
 func_80034F88: subst "la\t\$5," "la	$3," @ 4
 func_80034F88: subst "\$3,0\(\$5\)" "$4,0($3)" @ 5
@@ -845,14 +845,14 @@ func_8001F938: insert "andi $3,$5,0xFFFF" @ 3
 func_8001F938: subst "nop" "lhu\t$3,624($4)" @ 74
 func_8001F938: subst "addu\s+\$3,\$2,\$zero" "slt\t$2,$2,4" @ 75
 func_8001F938: subst "slt\s+\$2,\$2,4" "bne\t$2,$0,.L383" @ 76
-func_8001F938: subst "beq\s+\$2,\$0,\.L383" "sll\t$2,$3,16" @ 77
+func_8001F938: subst "beq\s+\$2,\$0,\.L391" "sll\t$2,$3,16" @ 77
 func_8001F938: subst "addiu\s+\$5,\$zero,3" "addiu\t$3,$zero,3" @ 78
 func_8001F938: subst "andi\s+\$5,\$3,0xffff" "sll\t$2,$3,16" @ 79
 func_8001F938: delete @ 80
 
 # func_8001EFA0: ==6 branch sense swap (bne->beq, swap j targets)
-func_8001EFA0: subst "bne\s+\$3,\$2,\.L348" "beq\t$3,$2,.L344" @ 96
-func_8001EFA0: subst "j\s+\.L344" "j\t.L348" @ 98
+func_8001EFA0: subst "bne\s+\$3,\$2,\.L355" "beq\t$3,$2,.L351" @ 96
+func_8001EFA0: subst "j\s+\.L351" "j\t.L355" @ 98
 
 # tslPrintScreen: first-stage cleanup
 # Early sentinel/token register cleanup.
@@ -1668,14 +1668,14 @@ SetPacketData: $16 <-> $18 @ 9-127
 
 # Eliminate orphan j+addu chain after the early-return: branch beq directly to .L525,
 # fill its delay slot with cb_idx=0 (was move s4,a1; now relocated to prologue insert)
-SetPacketData: subst "beq\s+\$2,\$0,\.L758" "beq $2,$0,.L759" @ 11
+SetPacketData: subst "beq\s+\$2,\$0,\.L771" "beq $2,$0,.L772" @ 11
 SetPacketData: subst "addu\s+\$20,\$5,\$zero" "addu $16,$0,$zero" @ 12
 SetPacketData: delete @ 15
 SetPacketData: delete @ 16
 
 # Pre-loop reload of D_800F1AF4 (target re-reads global instead of using cached r_arg1).
 # Subst beq to test the reloaded $2; insert lw+nop before it (post-delete idx 41).
-SetPacketData: subst "beq\s+\$20,\$0,\.L761" "beq $2,$0,.L761" @ 43
+SetPacketData: subst "beq\s+\$20,\$0,\.L774" "beq $2,$0,.L774" @ 43
 
 # Bne delay slot fill: target keeps a `s1=0;` dead-store that GCC eliminated in mine
 SetPacketData: subst "nop" "addu $17,$0,$zero" @ 101
@@ -1695,9 +1695,9 @@ SetPacketData: insert "la $2,D_800F1AF4" @ 118
 # saTan0GaugeDraw: compound regfix (Cluster A const-1 + Cluster F home store)
 # Cluster A: const-1 register $3 (v1) -> $6 (a2)
 saTan0GaugeDraw: subst "addiu\s+\$3,\$zero,1" "addiu $6,$zero,1" @ 7
-saTan0GaugeDraw: subst "beq\s+\$4,\$3,\.L339" "beq $4,$6,.L339" @ 8
+saTan0GaugeDraw: subst "beq\s+\$4,\$3,\.L348" "beq $4,$6,.L348" @ 8
 saTan0GaugeDraw: subst "sw\s+\$3,D_800A2D2C" "sw $6,D_800A2D2C" @ 57
-saTan0GaugeDraw: subst "bne\s+\$2,\$3,\.L360" "bne $2,$6,.L360" @ 81
+saTan0GaugeDraw: subst "bne\s+\$2,\$3,\.L369" "bne $2,$6,.L369" @ 81
 # Cluster F: move sw ra before beq, insert sw a0 in beq delay slot
 saTan0GaugeDraw: delete @ 24
 saTan0GaugeDraw: delete @ 9
@@ -1766,8 +1766,8 @@ DispPracticeMenuTex_A: subst "\$2,\$2,12" "$3,$2,12" @ 110
 DispPracticeMenuTex_A: subst "\$3,%gp_rel" "$2,%gp_rel" @ 111
 DispPracticeMenuTex_A: subst "\$2,\$2,\$4" "$3,$3,$4" @ 112
 DispPracticeMenuTex_A: subst "\$3,\$3,11" "$2,$2,11" @ 113
-DispPracticeMenuTex_A: subst "bgez\t\$2,\.L180" "bgez\t$3,.L180" @ 114
-DispPracticeMenuTex_A: subst "\$2,\.L154" "$3,.L154" @ 114
+DispPracticeMenuTex_A: subst "bgez\t\$2,\.L183" "bgez\t$3,.L183" @ 114
+DispPracticeMenuTex_A: subst "\$2,\.L183" "$3,.L183" @ 114
 DispPracticeMenuTex_A: subst "\$3,0x0001" "$2,0x0001" @ 115
 DispPracticeMenuTex_A: subst "\$2,\$2,15" "$3,$3,15" @ 116
 DispPracticeMenuTex_A: subst "\$2,\$2,4" "$2,$3,4" @ 117
@@ -1833,7 +1833,7 @@ coli_HitPauseKatana_2: subst ",\$8$" ",$2" @ 75
 coli_HitPauseKatana_2: subst "\$8," "$2," @ 120
 coli_HitPauseKatana_2: subst "\$8," "$2," @ 122
 coli_HitPauseKatana_2: subst ",\$8" ",$2" @ 122
-coli_HitPauseKatana_2: subst "\.L473" ".L456" @ 121
+coli_HitPauseKatana_2: subst "\.L483" ".L466" @ 121
 # Case 8 tail: $10 -> $2 for mask materialization
 coli_HitPauseKatana_2: subst "\$10," "$2," @ 143
 coli_HitPauseKatana_2: subst "\$10," "$2," @ 153
@@ -1903,8 +1903,8 @@ marionation_Exec: subst "lw\t\$20,28\(\$sp\)" "lw\t$17,28($sp)" @ 151
 marionation_Exec: subst "lbu\t\$6" "lbu\t$2" @ 106
 marionation_Exec: subst "lbu\t\$6" "lbu\t$2" @ 124
 marionation_Exec: subst "addu.*" "nop" @ 127
-marionation_Exec: subst "\.L127" ".L999" @ 111
-marionation_Exec: subst "\.L127" ".L999" @ 129
+marionation_Exec: subst "\.L128" ".L999" @ 111
+marionation_Exec: subst "\.L128" ".L999" @ 129
 marionation_Exec: subst "j" ".L999:\n\tj" @ 139
 marionation_Exec: subst "nop" "addu\t$2,$0,$zero" @ 142
 marionation_Exec: delete @ 143
@@ -1945,7 +1945,7 @@ coli_HitPauseKatana: subst "\$3" "$17" @ 29
 coli_HitPauseKatana: subst "\$2" "$3" @ 29
 coli_HitPauseKatana: subst "0\(\$4\)" "0($2)" @ 30
 # Branch-to-label + delay slot change
-coli_HitPauseKatana: subst "\.L441" ".L431" @ 42
+coli_HitPauseKatana: subst "\.L450" ".L440" @ 42
 coli_HitPauseKatana: subst "addiu\t\$2,\$zero,-1" "sll\t$2,$16,3" @ 43
 # Loop init: g_spu_voice_key_c into v1($3)
 coli_HitPauseKatana: subst "\$4" "$3" @ 47
@@ -1970,7 +1970,7 @@ coli_HitPauseKatana: subst "\$9" "$8" @ 110
 coli_HitPauseKatana: subst "\$4" "$6" @ 113
 coli_HitPauseKatana: subst "\$4" "$6" @ 116
 # No-flag branch: redirect .L333 to .L339 (skip redundant lui when mask already loaded)
-coli_HitPauseKatana: subst "\.L437" ".L443" @ 117
+coli_HitPauseKatana: subst "\.L446" ".L452" @ 117
 # No-flag kb: delay slot + instruction rewrite
 coli_HitPauseKatana: subst "sll\t\$4,\$4,3" "addu\t$3,$3,$17" @ 118
 coli_HitPauseKatana: subst "addu\t\$4,\$8,\$4" "sll\t$2,$6,3" @ 119
@@ -2093,7 +2093,7 @@ saTan5TakeAnim2: subst "subu\t\$4" "subu\t$6" @ 84
 saTan5TakeAnim2: subst "\$4" "$6" @ 85
 saTan5TakeAnim2: subst ",\$4," ",$6," @ 86
 # j target: skip result copy, go to stack cleanup
-saTan5TakeAnim2: subst "\.L262" ".L267" @ 87
+saTan5TakeAnim2: subst "\.L272" ".L277" @ 87
 # result=0 in j delay slot: a2->v0
 saTan5TakeAnim2: subst "addu\t\$6" "addu\t$2" @ 88
 # beqz delay slot: nop -> move a0,disc(a2)
@@ -2265,7 +2265,7 @@ func_8008BC60: subst "\$13" "$12" @ 38
 # Inner loop: restructure comparison sequence (idx 39-42)
 func_8008BC60: subst "srl\t\$7,\$2,12" "addu\t$3,$12,$7" @ 39
 func_8008BC60: subst "sltu\t\$2,\$14,\$7" "srl\t$2,$2,12" @ 40
-func_8008BC60: subst "bne\t\$2,\$0,\.L705" "sltu\t$2,$6,$2" @ 41
+func_8008BC60: subst "bne\t\$2,\$0,\.L718" "sltu\t$2,$6,$2" @ 41
 func_8008BC60: subst "addu\t\$2,\$13,\$3" "bne\t$2,$0,.L705" @ 42
 # Second comparison in inner loop
 func_8008BC60: subst "srl\t\$6,\$2,12" "srl\t$3,$3,12" @ 43
@@ -2662,7 +2662,7 @@ mk_leaf_newpos: $5 <-> $3 @ 136-142
 # Phase 5: Dispatch restructure — beq uses s5, andi moves to delay slot
 mk_leaf_newpos: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
 mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L631" @ 83
-mk_leaf_newpos: subst "beq\t\$3,\$2,\.L631" "andi\t$6,$2,0x03ff" @ 84
+mk_leaf_newpos: subst "beq\t\$3,\$2,\.L648" "andi\t$6,$2,0x03ff" @ 84
 # Phase 5: adj destination v0->v1
 mk_leaf_newpos: subst "addu\t\$2,\$3" "addu\t$3,$3" @ 89
 # Phase 5: count register v1->v0
@@ -2849,8 +2849,8 @@ func_800233AC: subst "\$2,\$2,\$3" "$3,$3,$2" @ 29
 func_800233AC: subst "\(\$2\)" "($3)" @ 31
 
 cpu_set_move_command_and_dir_for_no_action: reorder 8,9,1,2,3,4,5,10,11,6,7 @ 1-11
-cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L672" "beq\t$2,$0,.L673" @ 146
-cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L673" "j\t.L672" @ 148
+cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L689" "beq\t$2,$0,.L690" @ 146
+cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L690" "j\t.L689" @ 148
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 147
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 154
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 155
@@ -2875,17 +2875,17 @@ saTan2KabutoWareMove: subst "bne\t\$2" "bne\t$3" @ 72
 saTan2KabutoWareMove: subst "addu\t\$3,\$4,\$zero" "sll\t$2,$5,1" @ 73
 saTan2KabutoWareMove: subst "\$16,\$4" "$2,$16" @ 74
 saTan2KabutoWareMove: subst "bne" "beq" @ 43
-saTan2KabutoWareMove: subst "\.L143" ".L113" @ 43
+saTan2KabutoWareMove: subst "\.L145" ".L115" @ 43
 saTan2KabutoWareMove: subst "addu.*" "nop" @ 44
-saTan2KabutoWareMove: subst "\.L113" ".L143" @ 45
+saTan2KabutoWareMove: subst "\.L115" ".L145" @ 45
 saTan2KabutoWareMove: subst "nop.*" "addiu\t$2,$zero,1" @ 46
 saTan2KabutoWareMove: subst "j\t" ".L902:\n\tj\t" @ 45
-saTan2KabutoWareMove: subst "\.L112" ".L902" @ 14
-saTan2KabutoWareMove: subst "\.L112" ".L902" @ 21
-saTan2KabutoWareMove: subst "\.L112" ".L902" @ 23
-saTan2KabutoWareMove: subst "\.L127" ".L900" @ 118
+saTan2KabutoWareMove: subst "\.L114" ".L902" @ 14
+saTan2KabutoWareMove: subst "\.L114" ".L902" @ 21
+saTan2KabutoWareMove: subst "\.L114" ".L902" @ 23
+saTan2KabutoWareMove: subst "\.L129" ".L900" @ 118
 saTan2KabutoWareMove: subst "bne" "beq" @ 124
-saTan2KabutoWareMove: subst "\.L127" ".L901" @ 124
+saTan2KabutoWareMove: subst "\.L129" ".L901" @ 124
 saTan2KabutoWareMove: subst "\$3" "$2" @ 125
 saTan2KabutoWareMove: subst "\$3" "$2" @ 126
 saTan2KabutoWareMove: subst "\$3" "$2" @ 127
@@ -3313,7 +3313,7 @@ saTan0KiWareMoveA: subst "\$17" "$4" @ 139
 
 # === End branch: integrate li/branch optimization (-1 insn) ===
 # idx 185: branch to epilogue instead of .L283
-saTan0KiWareMoveA: subst "\.L283" ".L284" @ 185
+saTan0KiWareMoveA: subst "\.L293" ".L294" @ 185
 # idx 186: delay slot: move -> li
 saTan0KiWareMoveA: subst "addu\t\$4,\$18,\$zero" "addiu\t$2,$zero,1" @ 186
 # delete j .L284 (idx 191) and .L283: li (idx 193)
@@ -3485,3 +3485,5 @@ cpu_check_run_attack: reorder 77,76 @ 76-77
 cpu_check_run_attack: reorder 82,81 @ 81-82
 cpu_check_run_attack: reorder 117,116 @ 116-117
 cpu_check_run_attack: reorder 206,205 @ 205-206
+# func_80052C10: scratchpad write -- target uses $t9 ($25), GCC picked $v0 ($2)
+func_80052C10: $2 <-> $25 @ 0-2
