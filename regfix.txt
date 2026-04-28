@@ -3528,3 +3528,6 @@ func_80078BA8: subst "\$2" "$3" @ 6
 func_80078BA8: subst "\$2" "$3" @ 7
 func_80078BA8: subst "\$5" "$2" @ 10
 func_80078BA8: subst "addu\s+\$2,\$5,\$zero" "nop" @ 12
+func_8004954C: drain_delay @ 9
+func_8004954C: insert "addiu $sp,$sp,-0x8" @ 0
+func_8004954C: insert_after "addiu $sp,$sp,0x8" @ 10

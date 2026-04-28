@@ -1648,33 +1648,20 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8004954C\n"
-    "    addiu  $sp,$sp,-8\n"
-    "    addu  $a3,$zero,$zero\n"
-    "    blez  $a1,.L80049570\n"
-    "    addu  $v1,$zero,$zero\n"
-    ".L8004955C:\n"
-    "    addu  $v1,$v1,$a0\n"
-    "    addiu  $a3,$a3,1\n"
-    "    slt  $v0,$a3,$a1\n"
-    "    bnez  $v0,.L8004955C\n"
-    "    addiu  $a0,$a0,-1\n"
-    ".L80049570:\n"
-    "    subu  $v0,$a2,$a1\n"
-    "    addu  $v0,$v1,$v0\n"
-    "    addiu  $sp,$sp,8\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2) {
+    register s32 var_a3 asm("$7") = 0;
+    register s32 var_v1 asm("$3") = 0;
+    s32 var_a0 = arg0;
+    if (arg1 > 0) {
+        do {
+            var_v1 += var_a0;
+            var_a3 += 1;
+            var_a0 -= 1;
+        } while (var_a3 < arg1);
+    }
+    (void)var_a3;
+    return var_v1 + (arg2 - arg1);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
