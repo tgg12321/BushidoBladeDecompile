@@ -3539,3 +3539,8 @@ func_8004881C: subst "subu\s+\$3" "subu\t$4" @ 5
 func_8004881C: subst "\$5" "$2" @ 6
 func_8004881C: subst "addu\s+\$2,\$2,\$5" "addu	$2,$4,$2" @ 7
 func_8004881C: reorder 8,9,10,11,12,13,14,7 @ 7-14
+func_800484A0: subst "addu\s+\$16,\$16,12" "addu	$16,$16,4" @ 12
+func_800484A0: insert "addu $16,$16,8" @ 13
+func_800484A0: insert "addiu $16,$sp,24" @ 24
+func_800484A0: subst "addu\s+\$6,\$sp,24" "addu	$6,$16,$0" @ 25
+func_800484A0: subst "addu\s+\$5,\$sp,24" "addu	$5,$16,$0" @ 28
