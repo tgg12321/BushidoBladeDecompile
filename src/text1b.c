@@ -909,38 +909,9 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80048A7C\n"
-    "    addiu  $sp,$sp,-48\n"
-    "    addu  $t0,$a0,$zero\n"
-    "    addu  $t1,$a1,$zero\n"
-    "    addu  $t2,$a2,$zero\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    addu  $a1,$t0,$zero\n"
-    "    lw  $v0,64($sp)\n"
-    "    lw  $v1,68($sp)\n"
-    "    addu  $a2,$t1,$zero\n"
-    "    sw  $a3,16($sp)\n"
-    "    addu  $a3,$t2,$zero\n"
-    "    sw  $ra,40($sp)\n"
-    "    sw  $t0,28($sp)\n"
-    "    sw  $t1,32($sp)\n"
-    "    sw  $v0,20($sp)\n"
-    "    jal  func_80048864\n"
-    "    sw  $v1,24($sp)\n"
-    "    lw  $ra,40($sp)\n"
-    "    addiu  $sp,$sp,48\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
+    func_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
