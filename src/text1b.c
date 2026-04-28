@@ -33029,40 +33029,26 @@ s32 func_80064FB4(void) {
     D_800F0CD8 = last;
     return 1;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80065000\n"
-    "    .word 0x8F8303B0\n"
-    "    .word 0x8F84039C\n"
-    "    lw  $v0,0($v1)\n"
-    "    lui  $at,%hi(D_800F0CDC)\n"
-    "    sw  $v0,%lo(D_800F0CDC)($at)\n"
-    "    lw  $v0,4($v1)\n"
-    "    lui  $at,%hi(D_800F0CE0)\n"
-    "    sw  $v0,%lo(D_800F0CE0)($at)\n"
-    "    lw  $v1,8($v1)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    lui  $at,%hi(D_800F10FC)\n"
-    "    sw  $v0,%lo(D_800F10FC)($at)\n"
-    "    lui  $at,%hi(D_800F0BB2)\n"
-    "    sh  $zero,%lo(D_800F0BB2)($at)\n"
-    "    lui  $at,%hi(D_800F0CE4)\n"
-    "    sw  $v1,%lo(D_800F0CE4)($at)\n"
-    "    lw  $v0,0($a0)\n"
-    "    nop\n"
-    "    sra  $v0,$v0,19\n"
-    "    andi  $v0,$v0,3\n"
-    "    .word 0xA7820374\n"
-    "    jr  $ra\n"
-    "    addiu  $v0,$zero,1\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern volatile s32 D_800A347C;
+extern volatile s32 D_800A3468;
+extern volatile s32 D_800F0CDC;
+extern volatile s32 D_800F0CE0;
+extern volatile s32 D_800F0CE4;
+extern volatile s32 D_800F10FC;
+extern volatile s16 D_800F0BB2;
+extern volatile s16 D_800A3440;
+s32 func_80065000(void) {
+    volatile s32 *p = (volatile s32 *)D_800A347C;
+    volatile s32 *q = (volatile s32 *)D_800A3468;
+    D_800F0CDC = p[0];
+    D_800F0CE0 = p[1];
+    p = (volatile s32 *)p[2];
+    D_800F10FC = 1;
+    D_800F0BB2 = 0;
+    D_800F0CE4 = (s32)p;
+    D_800A3440 = (q[0] >> 19) & 3;
+    return 1;
+}
 extern volatile s32 D_800A347C;
 extern volatile s32 D_800F0CE8;
 extern volatile s32 D_800F0CEC;
