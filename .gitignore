@@ -75,3 +75,16 @@ local_agent_output/
 # Miscellaneous
 save/
 
+# Smart-match output directory (matches get integrated into src/)
+auto_matches/
+
+# Codex experimentation workspace (per-session scratch)
+codex_lab/
+
+# Path-mangled artifacts from prior sessions
+/2
+/Blade
+/case
+/Decompile*
+/Cïº*
+/CODEX_HANDOFF_*.md
