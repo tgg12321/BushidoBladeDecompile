@@ -1,0 +1,27 @@
+{
+  "name": "licm_unhoist",
+  "title": "LICM unhoist via regfix delete-preheader + insert-inline",
+  "summary": "When target keeps a magic-constant lui+ori inline (with the ori filling a `lw` delay slot) and our variant hoists it to a t-reg in the loop preheader, bridge with regfix delete + insert + register cascade.",
+  "from_memory": "feedback_licm_unhoist_recipe.md",
+  "proof": "SetCurrentCursor (commit 22c1cc0) -- 7-rule recipe brought it to byte match.",
+  "fingerprint": {
+    "structural": [
+      "Target has `lui $X, 0xNNNN` followed by `lw ...`, with `ori $X,$X,0xNNNN` filling the delay slot of the lw",
+      "Our pipeline output puts the lui+ori in a loop preheader, with the lw alone in the body",
+      "The const value 0xNNNN0000 + 0xNNNN appears inline at exactly one site in target"
+    ],
+    "blocker_class": "licm_hoist"
+  },
+  "rule_skeleton": [
+    {"op": "delete", "comment": "preheader lui at idx P_LUI", "idx": "P_LUI"},
+    {"op": "delete", "comment": "preheader ori at idx P_ORI", "idx": "P_ORI"},
+    {"op": "insert", "comment": "inline lui before lw", "idx": "B_LW", "asm_text": "lui $T,0xNNNN"},
+    {"op": "insert_after", "comment": "ori as lw delay-slot fill", "idx": "B_LW", "asm_text": "ori $T,$T,0xNNNN"},
+    {"op": "swap", "comment": "cascade-rename: free up the t-reg now unused", "reg_a": "$T_FROM", "reg_b": "$T_TO", "range": "BODY_START-BODY_END"}
+  ],
+  "notes": [
+    "Use insert_after with `idx=B_LW` to place the ori in the lw's delay slot (regfix interprets insert_after as 'right after this index').",
+    "After deletion, downstream indices shift -- always run `dump_text_indices.py` to reconfirm before adding the cascade swap.",
+    "The cascade swap renames the now-orphan preheader register to whatever target uses inline (often $t8/$t9 vs $a3)."
+  ]
+}

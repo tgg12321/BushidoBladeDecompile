@@ -1,0 +1,24 @@
+{
+  "name": "lui_ori_sw_offset_fold",
+  "title": "lui+ori+sw(0) -> lui+sw(%lo) via subst + delete",
+  "summary": "Target folds a (lui $R,%hi)(ori $R,$R,%lo)(sw $X,0($R)) trio into (lui $R,%hi)(sw $X,%lo($R)). Our pipeline emits the verbose form. Two regfix rules collapse it.",
+  "from_memory": "feedback_lui_ori_sw_pattern.md",
+  "fingerprint": {
+    "structural": [
+      "Three consecutive insns at indices N, N+1, N+2 of the form: lui $R,0xHI / ori $R,$R,0xLO / sw $X,0($R)",
+      "Target has only two: lui $R,0xHI / sw $X,0xLO($R)"
+    ],
+    "blocker_class": "ori_sw_offset_fold"
+  },
+  "rule_skeleton": [
+    {"op": "subst", "comment": "fold the ori's low-half into the sw offset", "idx": "N+2",
+     "pattern": "sw\\s+(\\$\\d+),0\\((\\$\\d+)\\)",
+     "replacement": "sw $1,LOW_VAL($2)"},
+    {"op": "delete", "comment": "remove the ori", "idx": "N+1"}
+  ],
+  "notes": [
+    "The same fold applies to lh / lhu / lw / lb / lbu / sb / sh on the load/store side.",
+    "Replacement text uses plain `$N`, not `\\$N` (see feedback_regfix_replacement_escape.md).",
+    "Validate with `dc.sh validate-regfix --live --func F` before commit."
+  ]
+}

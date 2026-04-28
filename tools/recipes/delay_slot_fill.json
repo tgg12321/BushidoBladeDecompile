@@ -1,0 +1,21 @@
+{
+  "name": "delay_slot_fill",
+  "title": "Move a store/load into a branch delay slot via fill_delay",
+  "summary": "Pipeline emits a `nop` in the delay slot of a `jal`/`branch`; target uses that slot to hold a real instruction (typically a store). regfix's `fill_delay` operation moves the source instruction into the slot and deletes the nop.",
+  "from_memory": "feedback_delay_slot_investigation.md",
+  "fingerprint": {
+    "structural": [
+      "At the slot index there is a `nop` in pipeline output but a real op in target",
+      "The real op already exists earlier or later in pipeline output -- it just needs to move"
+    ],
+    "blocker_class": "delay_slot_unfilled"
+  },
+  "rule_skeleton": [
+    {"op": "fill_delay", "comment": "move src instruction into the jal/branch delay slot",
+     "jal_idx": "JAL_IDX", "src_idx": "SRC_IDX"}
+  ],
+  "notes": [
+    "All delay slot fills in BB2 are GCC-scheduled, NOT ASPSX-scheduled (proven). regfix is the right layer.",
+    "If the source instruction has a side effect on a register read by the branch, do not move it -- the branch evaluates before the delay slot executes."
+  ]
+}
