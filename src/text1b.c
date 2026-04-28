@@ -14927,37 +14927,16 @@ extern s32 D_80101E1C;
 s32* func_8005508C(void) {
     return &D_80101E1C;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8005509C\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    sll  $v0,$a0,4\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,2\n"
-    "    subu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,2\n"
-    "    lui  $v1,%hi(D_80101EC8)\n"
-    "    addiu  $v1,$v1,%lo(D_80101EC8)\n"
-    "    addu  $v1,$v0,$v1\n"
-    ".L800550C8:\n"
-    "    sb  $zero,1045($v1)\n"
-    "    sb  $zero,1044($v1)\n"
-    "    addiu  $a1,$a1,1\n"
-    "    slti  $v0,$a1,8\n"
-    "    bnez  $v0,.L800550C8\n"
-    "    addiu  $v1,$v1,2\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_8005509C(s32 arg0) {
+    s32 i;
+    u8 *p = (u8 *)&D_80101EC8 + arg0 * 0x44C;
+    i = 0;
+    do {
+        *(p + 0x415) = 0;
+        *(p + 0x414) = 0;
+        p += 2;
+    } while (++i < 8);
+}
 void func_800550E8(s32 arg0) {
     s32 i;
     u8 *p = (u8 *)&D_80101EC8 + arg0 * 0x44C;
