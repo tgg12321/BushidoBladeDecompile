@@ -727,35 +727,12 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8004881C\n"
-    "    sll  $v0,$a0,1\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,6\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v1,$v0,3\n"
-    "    subu  $a0,$v1,$v0\n"
-    "    sll  $v0,$a1,11\n"
-    "    sll  $v1,$a2,1\n"
-    "    addu  $v1,$v1,$a2\n"
-    "    sll  $v1,$v1,2\n"
-    "    subu  $v1,$v1,$a2\n"
-    "    sll  $v1,$v1,3\n"
-    "    subu  $v1,$v1,$a2\n"
-    "    sll  $v1,$v1,3\n"
-    "    addu  $v0,$a0,$v0\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    jr  $ra\n"
-    "    sra  $v0,$v0,12\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_8004881C(s32 arg0, s32 arg1, s32 arg2) {
+    s32 a0_term = arg0 * 0x547;
+    s32 sum = a0_term + (arg1 << 11);
+    sum += arg2 * 0x2B8;
+    return sum >> 12;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
