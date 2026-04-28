@@ -29297,55 +29297,27 @@ void func_800619F0(s32 *a0) {
     func_80060A68();
 }
 
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80061A3C\n"
-    "    addiu  $sp,$sp,-32\n"
-    "    lui  $t0,%hi(D_800F116C)\n"
-    "    addiu  $t0,$t0,%lo(D_800F116C)\n"
-    "    addiu  $v0,$sp,16\n"
-    "    sw  $ra,24($sp)\n"
-    "    .word 0xAF88039C\n"
-    "    sh  $zero,20($sp)\n"
-    "    sh  $zero,16($sp)\n"
-    "    sh  $a1,18($sp)\n"
-    "    lui  $at,%hi(D_800F1178)\n"
-    "    sw  $a0,%lo(D_800F1178)($at)\n"
-    "    lui  $at,%hi(D_800F117C)\n"
-    "    sw  $v0,%lo(D_800F117C)($at)\n"
-    "    bnez  $a3,.L80061A98\n"
-    "    lui  $v1,1\n"
-    "    lui  $v0,%hi(D_800F1150)\n"
-    "    addiu  $v0,$v0,%lo(D_800F1150)\n"
-    "    lui  $at,%hi(D_800F1180)\n"
-    "    sw  $v0,%lo(D_800F1180)($at)\n"
-    "    lui  $v0,1\n"
-    "    addu  $v0,$a2,$v0\n"
-    "    j  .L80061AB4\n"
-    "    sw  $v0,0($t0)\n"
-    ".L80061A98:\n"
-    "    ori  $v1,$v1,1\n"
-    "    lui  $v0,%hi(D_800F1151)\n"
-    "    addiu  $v0,$v0,%lo(D_800F1151)\n"
-    "    addu  $v1,$a2,$v1\n"
-    "    lui  $at,%hi(D_800F1180)\n"
-    "    sw  $v0,%lo(D_800F1180)($at)\n"
-    "    sw  $v1,0($t0)\n"
-    ".L80061AB4:\n"
-    "    jal  func_80060A68\n"
-    "    nop\n"
-    "    lw  $ra,24($sp)\n"
-    "    addiu  $sp,$sp,32\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800F117C;
+extern u8 D_800F1151;
+void func_80061A3C(s32 *a0, s16 a1, s32 a2, s32 a3) {
+    s32 *v1 = (s32 *)&D_800F116C;
+    s16 sp[4];
+
+    D_800A3468 = (s32)v1;
+    sp[2] = 0;
+    sp[0] = 0;
+    sp[1] = a1;
+    D_800F1178 = (s32)a0;
+    D_800F117C = (s32)sp;
+    if (a3 == 0) {
+        D_800F1180 = (s32)&D_800F1150;
+        *v1 = a2 + 0x10000;
+    } else {
+        D_800F1180 = (s32)&D_800F1151;
+        *v1 = a2 + 0x10001;
+    }
+    func_80060A68();
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
