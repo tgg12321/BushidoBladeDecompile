@@ -48220,56 +48220,23 @@ s32 *func_80072F30(s32 a0, u8 *a1) {
     ot_Link(D_800A374C + 0x5C, (s32)a1);
     return (s32 *)(a1 + 0x10);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80072FCC\n"
-    "    addiu  $sp,$sp,-24\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a1,$zero\n"
-    "    sw  $ra,20($sp)\n"
-    "    jal  initTile\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    .word 0x878204B4\n"
-    "    nop\n"
-    "    slti  $v0,$v0,4\n"
-    "    beqz  $v0,.L80073018\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    addiu  $v0,$zero,70\n"
-    "    sb  $v0,4($s0)\n"
-    "    addiu  $v0,$zero,36\n"
-    "    sb  $v0,5($s0)\n"
-    "    addiu  $v0,$zero,10\n"
-    "    j  .L8007302C\n"
-    "    sb  $v0,6($s0)\n"
-    ".L80073018:\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    sb  $zero,4($s0)\n"
-    "    sb  $zero,5($s0)\n"
-    "    sb  $zero,6($s0)\n"
-    ".L8007302C:\n"
-    "    jal  gpu_SetSemiTransp\n"
-    "    nop\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    addu  $a1,$s0,$zero\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,92\n"
-    "    addiu  $v0,$s0,16\n"
-    "    lw  $ra,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,24\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s16 D_800A3580;
+s32 *func_80072FCC(s32 ignored, u8 *a1) {
+    initTile((s32)a1);
+    if (D_800A3580 < 4) {
+        a1[4] = 0x46;
+        a1[5] = 0x24;
+        a1[6] = 0x0A;
+        gpu_SetSemiTransp((s32)a1, 1);
+    } else {
+        a1[4] = 0;
+        a1[5] = 0;
+        a1[6] = 0;
+        gpu_SetSemiTransp((s32)a1, 0);
+    }
+    ot_Link(D_800A374C + 0x5C, (s32)a1);
+    return (s32 *)(a1 + 0x10);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
