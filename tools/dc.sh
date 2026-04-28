@@ -248,6 +248,13 @@ print(f'Replaced {func} in {src}')
         fi
         ;;
 
+    near-miss)
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh near-miss <func> [--apply] [--no-c-edit]"; exit 1; }
+        python3 tools/near_miss_attempt.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
     apply-recipe)
         RECIPE="$1"
         FUNC_NAME="$2"
