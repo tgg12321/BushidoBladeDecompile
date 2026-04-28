@@ -3496,3 +3496,5 @@ func_8005B7C4: subst "\$2" "$3" @ 31
 func_8005B7C4: subst "\$2" "$3" @ 33
 # func_80078B3C: GCC scheduled sw into jr delay slot; target keeps nop there. drain_delay reverses it.
 func_80078B3C: drain_delay @ 9
+# func_80078B70: same as func_80078B3C clear-flag form
+func_80078B70: drain_delay @ 10
