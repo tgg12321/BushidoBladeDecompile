@@ -1,0 +1,25 @@
+{
+  "name": "missing_extern_silent_elision",
+  "title": "Add missing extern decls so GCC stops eliding stores/loads",
+  "summary": "When the m2c-generated C body references a global like `D_<addr>` that has no `extern` declaration in the target .c file, GCC 2.7.2 with -w silently treats it as an undeclared identifier and may elide the corresponding store/load. The pipeline output is missing instructions that target has, and gen_regfix reports `Structural diffs: <N>` with `Our instructions: <fewer>`.",
+  "from_memory": "feedback_signed_load_widening.md (related)",
+  "proof": "func_800784E4 (commit cd46a30) -- 4 globals missing externs caused 4 stores to be elided, leaving the function 4 binary instructions short. After adding `extern s32 D_800A35F0; extern s32 D_800A35F8; extern s32 D_800A35FC; extern s32 D_800A3600;` near the existing `extern s32 D_800A35F4;` decl, all stores got emitted and the function matched.",
+  "fingerprint": {
+    "structural": [
+      "gen_regfix reports SIZE MISMATCH with `Our binary insns < Target binary insns`",
+      "the missing instructions are stores or loads to/from a `D_<addr>` symbol referenced in base.c",
+      "grep shows the symbol is NOT declared `extern <type> D_<addr>;` anywhere reachable from this .c file",
+      "function is otherwise structurally aligned (matches > 0, reg_diffs == 0)"
+    ],
+    "blocker_class": "missing_extern_silent_elision"
+  },
+  "rule_skeleton": [
+    {"op": "fix_at_source", "where": "src/<file>.c near the function or in the existing extern block",
+     "instruction": "Add `extern <type> <symbol>;` for every D_<addr> referenced in base.c that isn't already declared. Match the type used by sibling files if any (`grep -n 'extern.*<symbol>' src/`). Default to `s32` when in doubt -- mismatched types flip lh/lhu and lb/lbu silently (see feedback_signed_load_widening.md)."}
+  ],
+  "notes": [
+    "Detect cheaply: after integrating the C body, run `dc.sh gen-regfix <func>`. If `Our binary insns < Target binary insns` AND there are gp-relative stores/loads in target that aren't in our output, the symbols at those addresses are likely missing externs.",
+    "Always grep sibling .c files for the symbol BEFORE picking a type -- a mismatched type causes silent lhu/lh or lbu/lb flips that produce a different bug class.",
+    "The .ent / .end function output also won't include the elided ops, so matching is impossible until the externs are present."
+  ]
+}
