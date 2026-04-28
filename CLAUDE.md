@@ -216,6 +216,9 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 | `dc.sh smart <func>` | smart_match.py: 16 automated transformation strategies (declaration reorder, cast variations, do-while barriers, register hints, etc). Pure-C exploration before permuter. |
 | `dc.sh permute <func> [--max-time N] [--max-flat-seconds K]` | permute_capped.py: bounded permuter run with flat-score early termination. |
 | `dc.sh recipes [<func>]` | List named regfix recipes / suggest recipes for `<func>`. `dc.sh apply-recipe <recipe> <func>` prints the concrete add-regfix commands. |
+| `dc.sh agent-brief <func>` | All-in-one context dump for an agent session: classify + asm + base.c + gen_regfix + recipe suggestions + Kengo + tabled notes + neighbor functions. **First thing to run on a function.** |
+| `dc.sh near-miss <func> [--apply]` | near_miss_attempt: auto-detects byte_arith_fix / drain_delay / plain_reg_substs patterns and applies them with try-and-revert. Default is dry-run; pass `--apply` to actually edit. |
+| `dc.sh capture-recipe [<commit>]` | After committing a match, classifies the patterns used and reports if it matches an existing recipe or is novel. Use `--write` to save a draft JSON. |
 | `dc.sh add-regfix <func> <op> ...` | Append a validated regfix rule (replaces ad-hoc tmp/add_regfix*.py). Auto-rolls back on validation failure. Ops: swap, subst, delete, insert, insert_after, reorder, fill_delay, drain_delay. |
 
 ### Inline-asm-aware setup (399 functions still inline)

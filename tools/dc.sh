@@ -255,6 +255,19 @@ print(f'Replaced {func} in {src}')
         python3 tools/near_miss_attempt.py "$FUNC_NAME" "$@" 2>&1
         ;;
 
+    agent-brief)
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh agent-brief <func> [--no-asm] [--json]"; exit 1; }
+        python3 tools/agent_brief.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
+    capture-recipe)
+        COMMIT="${1:-HEAD}"
+        shift || true
+        python3 tools/capture_recipe.py "$COMMIT" "$@" 2>&1
+        ;;
+
     apply-recipe)
         RECIPE="$1"
         FUNC_NAME="$2"

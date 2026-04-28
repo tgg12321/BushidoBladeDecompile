@@ -1,0 +1,24 @@
+{
+  "name": "drain_delay_only",
+  "title": "Move sw out of jr ra delay slot (single rule)",
+  "summary": "GCC scheduled a store into the jr ra delay slot, but target keeps a `nop` there. One regfix rule reverses it.",
+  "from_memory": "feedback_delay_slot_investigation.md",
+  "proof": "func_80078B3C (commit 2353f22) and func_80078B70 (commit 1c5d90c) -- both used this rule (after byte-arith C fix). See byte_indexing_with_drain_delay for the compound recipe.",
+  "fingerprint": {
+    "structural": [
+      "gen_regfix reports `Instruction swaps detected: 1`",
+      "the swap signature is jr/j at index N followed by sw at index N+1",
+      "no other diffs (or only minor reg_diffs that resolve themselves once the swap is corrected)"
+    ],
+    "blocker_class": "drain_delay_only"
+  },
+  "rule_skeleton": [
+    {"op": "drain_delay", "comment": "move the sw at <JR>+1 out of the jr delay slot; target keeps a nop there",
+     "jal_idx": "JR_IDX"}
+  ],
+  "notes": [
+    "Run `dc.sh dump-text <func>` to find the jr index. The instruction at JR_IDX+1 will be the sw that GCC scheduled in.",
+    "near_miss_attempt.py auto-detects this signature and applies the rule.",
+    "If gen_regfix reports `Instruction swaps detected: > 1`, this is not the right recipe -- you have multiple scheduling differences, likely structural reorder needed."
+  ]
+}

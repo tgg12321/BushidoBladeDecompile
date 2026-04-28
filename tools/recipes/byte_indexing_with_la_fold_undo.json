@@ -1,0 +1,36 @@
+{
+  "name": "byte_indexing_with_la_fold_undo",
+  "title": "Byte-array indexing + reverse GCC's la-offset folding",
+  "summary": "Function loops over bytes inside a per-element struct, e.g. `BASE[i].field` where BASE is `extern s32`. m2c's pointer arithmetic doubles the multiplier (same as byte_indexing_with_drain_delay). Additionally, GCC pre-folds the constant byte offset into the address-load (`la $R, BASE+ofs`) where target keeps it on the lbu/sb. Three regfix rules undo the fold so the offsets re-appear on the load/store.",
+  "from_memory": "feedback_lui_ori_sw_pattern.md (related)",
+  "proof": "func_800550E8 (commit 4d9be09) -- 8-iter loop clearing a single byte at offset 0x415, with arg0 selecting the 1100-byte struct.",
+  "fingerprint": {
+    "structural": [
+      "after byte-arithmetic C fix, our pipeline emits `la $R, D_<sym>+<offset>` (with offset folded in) and `lbu/sb $X, 0($R)`",
+      "target has `la $R, D_<sym>` and `lbu/sb $X, <offset>($R)`",
+      "gen_regfix reports immediate_diffs >= 1"
+    ],
+    "blocker_class": "byte_indexing_with_la_fold"
+  },
+  "rule_skeleton": [
+    {"op": "fix_at_source", "where": "permuter/<func>/base.c",
+     "instruction": "Replace `(v * N) + &D_<sym>` with `(u8 *)&D_<sym> + v * N` to force byte arithmetic."},
+    {"op": "subst", "comment": "drop the +<offset> from the la pseudo-insn",
+     "idx": "LA_IDX",
+     "pattern": "la\\s+\\$R,D_<sym>\\+<offset>",
+     "replacement": "la\t$R,D_<sym>"},
+    {"op": "subst", "comment": "restore the offset on the load",
+     "idx": "L_IDX",
+     "pattern": "lbu\\s+\\$X,0\\(\\$R\\)",
+     "replacement": "lbu\t$X,<offset>($R)"},
+    {"op": "subst", "comment": "restore the offset on the store",
+     "idx": "S_IDX",
+     "pattern": "sb\\s+\\$X,0\\(\\$R\\)",
+     "replacement": "sb\t$X,<offset>($R)"}
+  ],
+  "notes": [
+    "Get LA_IDX, L_IDX, S_IDX from `dc.sh dump-text <func>` after the C edit + integration.",
+    "Same pattern applies to lh / lhu / lw / lb / sh / sw -- substitute the right load/store opcode.",
+    "Only LBU/SB cases handled in near_miss_attempt v1 detection; other widths require manual application via add-regfix."
+  ]
+}

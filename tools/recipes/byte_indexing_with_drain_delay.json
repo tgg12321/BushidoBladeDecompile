@@ -1,0 +1,26 @@
+{
+  "name": "byte_indexing_with_drain_delay",
+  "title": "Byte-array indexing on extern s32, with sw drained from jr-delay",
+  "summary": "Two issues compound when the function does `BASE[i] |= mask` (or `&= ~mask`) where BASE is `extern s32`:\n  1. m2c emits `*(&BASE + (i * 4))` which GCC scales by sizeof(s32)=4 again, producing a *16 multiplier; fix by rewriting as `(&BASE)[i]` (proper array indexing).\n  2. With the C now correct, GCC schedules the closing `sw <result>, ofs(<base>)` into the jr ra delay slot, but target keeps a `nop` there. Apply `drain_delay` to undo the schedule.",
+  "from_memory": "feedback_volatile_pointer_dedup.md (related), feedback_delay_slot_investigation.md",
+  "proof": "func_80078B3C (commit 2353f22) and func_80078B70 (commit 1c5d90c) -- bit-set and bit-clear siblings, identical recipe.",
+  "fingerprint": {
+    "structural": [
+      "m2c base.c contains `*(&D_<addr> + (<expr> * 4))` or `&D_<addr> + <expr> * <const>` with D_<addr> declared `extern s32`",
+      "after byte-arithmetic C fix, gen_regfix shows: matches~10, reg_diffs=0, structural=3, instruction_swaps=1",
+      "the swap signature is jr/j followed by sw at the next index"
+    ],
+    "blocker_class": "byte_indexing_with_drain_delay"
+  },
+  "rule_skeleton": [
+    {"op": "fix_at_source", "where": "permuter/<func>/base.c",
+     "instruction": "Replace `*(&D_<sym> + (v * 4))` (or `(v * N) + &D_<sym>`) with `(&D_<sym>)[v]` -- forces single byte-aware multiplication."},
+    {"op": "drain_delay", "comment": "move sw out of jr delay slot",
+     "jal_idx": "JR_IDX"}
+  ],
+  "notes": [
+    "Find JR_IDX from `dc.sh dump-text <func>` -- it's the index of `j $31`, with the `sw` at JR_IDX+1.",
+    "If gen_regfix reports `instruction_swaps: 1` after the C edit, this recipe almost certainly applies.",
+    "near_miss_attempt.py auto-detects this pattern (in the `drain_delay` recipe step)."
+  ]
+}
