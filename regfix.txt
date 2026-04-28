@@ -3513,3 +3513,18 @@ func_8007C748: subst "\$6" "$2" @ 18
 func_8007C748: subst "\$6" "$2" @ 18
 # func_8007C748 idx 20: 3-cycle full-insn subst
 func_8007C748: subst "or\s+\$2,\$2,\$6" "or	$2,$3,$2" @ 20
+func_80060E04: insert "nop" @ 6
+func_80078B04: $2 <-> $3 @ 3-6
+func_80078B04: subst "\$4" "$3" @ 0
+func_80078B04: subst "\$4" "$3" @ 1
+func_80078B04: subst "\$4" "$3" @ 3
+func_80078B04: subst "lhu\s+\$2,0\(\$2\)" "lhu\t$2,0($3)" @ 7
+func_80078BA8: $3 <-> $4 @ 1-6
+func_80078BA8: subst "\$4" "$3" @ 0
+func_80078BA8: subst "\$5" "$2" @ 3
+func_80078BA8: subst "\$2" "$3" @ 5
+func_80078BA8: subst "\$2" "$3" @ 6
+func_80078BA8: subst "\$2" "$3" @ 6
+func_80078BA8: subst "\$2" "$3" @ 7
+func_80078BA8: subst "\$5" "$2" @ 10
+func_80078BA8: subst "addu\s+\$2,\$5,\$zero" "nop" @ 12

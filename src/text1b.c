@@ -28439,32 +28439,20 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80060E04\n"
-    "    beqz  $a0,.L80060E18\n"
-    "    nop\n"
-    "    .word 0x8F820358\n"
-    "    j  .L80060E1C\n"
-    "    nop\n"
-    ".L80060E18:\n"
-    "    .word 0x8F820354\n"
-    ".L80060E1C:\n"
-    "    nop\n"
-    "    .word 0xAF820708\n"
-    "    .word 0x8F820708\n"
-    "    nop\n"
-    "    .word 0xAF820654\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A3420;
+extern s32 D_800A3424;
+extern volatile s32 D_800A37D4;
+extern s32 D_800A3720;
+void func_80060E04(s32 arg0) {
+    s32 v0;
+    if (arg0 != 0) {
+        v0 = D_800A3424;
+    } else {
+        v0 = D_800A3420;
+    }
+    D_800A37D4 = v0;
+    D_800A3720 = D_800A37D4;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
@@ -54817,33 +54805,16 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80078B04\n"
-    "    andi  $v1,$a0,65535\n"
-    "    slti  $v0,$v1,3\n"
-    "    beqz  $v0,.L80078B30\n"
-    "    sll  $v1,$v1,4\n"
-    "    lui  $v0,%hi(D_8009BD6C)\n"
-    "    lw  $v0,%lo(D_8009BD6C)($v0)\n"
-    "    nop\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    lhu  $v0,0($v1)\n"
-    "    j  .L80078B34\n"
-    "    nop\n"
-    ".L80078B30:\n"
-    "    addu  $v0,$zero,$zero\n"
-    ".L80078B34:\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_80078B04(s32 arg0) {
+    s32 v = arg0 & 0xFFFF;
+    s32 result;
+    if (v < 3) {
+        result = *(u16 *)(D_8009BD6C + v * 0x10);
+    } else {
+        result = 0;
+    }
+    return result;
+}
 s32 func_80078B3C(s32 arg0) {
     s32 v;
     s32 *base;
@@ -54860,33 +54831,16 @@ s32 func_80078B70(s32 arg0) {
     base[1] = base[1] & ~(&D_8009BD70)[v];
     return 1;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80078BA8\n"
-    "    andi  $v1,$a0,65535\n"
-    "    slti  $v0,$v1,3\n"
-    "    beqz  $v0,.L80078BD4\n"
-    "    addiu  $v0,$zero,1\n"
-    "    lui  $a0,%hi(D_8009BD6C)\n"
-    "    lw  $a0,%lo(D_8009BD6C)($a0)\n"
-    "    sll  $v1,$v1,4\n"
-    "    addu  $v1,$v1,$a0\n"
-    "    sh  $zero,0($v1)\n"
-    "    j  .L80078BD8\n"
-    "    nop\n"
-    ".L80078BD4:\n"
-    "    addu  $v0,$zero,$zero\n"
-    ".L80078BD8:\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_80078BA8(s32 arg0) {
+    s32 v = arg0 & 0xFFFF;
+    s32 result = 1;
+    if (v < 3) {
+        *(volatile u16 *)(D_8009BD6C + v * 0x10) = 0;
+    } else {
+        result = 0;
+    }
+    return result;
+}
 extern s32 D_8009BD80;
 void func_80078BE0(s32 a0) {
     D_8009BD80 = a0;
