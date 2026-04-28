@@ -33063,36 +33063,24 @@ void func_80064F20(void) {
     D_800F0BAC = 0;
     D_800F0CC0 = (s32)p;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80064F68\n"
-    "    .word 0x8F8303B0\n"
-    "    nop\n"
-    "    lw  $v0,0($v1)\n"
-    "    lui  $at,%hi(D_800F0CC4)\n"
-    "    sw  $v0,%lo(D_800F0CC4)($at)\n"
-    "    lw  $v0,4($v1)\n"
-    "    lui  $at,%hi(D_800F0CC8)\n"
-    "    sw  $v0,%lo(D_800F0CC8)($at)\n"
-    "    lw  $v1,8($v1)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    lui  $at,%hi(D_800F10F4)\n"
-    "    sw  $v0,%lo(D_800F10F4)($at)\n"
-    "    addiu  $v0,$zero,64\n"
-    "    lui  $at,%hi(D_800F0BAE)\n"
-    "    sh  $v0,%lo(D_800F0BAE)($at)\n"
-    "    lui  $at,%hi(D_800F0CCC)\n"
-    "    sw  $v1,%lo(D_800F0CCC)($at)\n"
-    "    jr  $ra\n"
-    "    addiu  $v0,$zero,1\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern void *D_800A347C;
+extern s32 D_800F0CC4;
+extern s32 D_800F0CC8;
+extern s32 D_800F0CCC;
+extern s32 D_800F10F4;
+extern s16 D_800F0BAE;
+
+s32 func_80064F68(void) {
+    void *p = D_800A347C;
+    s32 last;
+    D_800F0CC4 = *(s32 *)((s32)p + 0);
+    D_800F0CC8 = *(s32 *)((s32)p + 4);
+    last = *(s32 *)((s32)p + 8);
+    D_800F10F4 = 1;
+    D_800F0BAE = 0x40;
+    D_800F0CCC = last;
+    return 1;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
