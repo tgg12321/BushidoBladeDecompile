@@ -54279,52 +54279,28 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80078824\n"
-    "    addiu  $sp,$sp,-32\n"
-    "    sw  $s1,20($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    addiu  $a1,$zero,4104\n"
-    "    sw  $ra,24($sp)\n"
-    "    jal  func_8007B844\n"
-    "    sw  $s0,16($sp)\n"
-    "    addiu  $a0,$zero,95\n"
-    "    addiu  $s0,$s1,88\n"
-    "    .word 0xAF910540\n"
-    "    .word 0xAF900544\n"
-    "    jal  func_8006E950\n"
-    "    addu  $a1,$s0,$zero\n"
-    "    jal  func_80078628\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    .word 0x8F850540\n"
-    "    jal  func_8006E49C\n"
-    "    addu  $a0,$v0,$zero\n"
-    "    addiu  $a0,$zero,1\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    .word 0xAF800238\n"
-    "    .word 0xAF80053C\n"
-    "    .word 0xAF800548\n"
-    "    jal  disp_SetFramebufferMode\n"
-    "    addu  $a3,$zero,$zero\n"
-    "    addiu  $v0,$zero,1\n"
-    "    lw  $ra,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,32\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A3610;
+extern s32 D_800A3614;
+extern s32 D_800A3304;
+extern s32 D_800A3608;
+extern s32 func_80078628(s32);
+s32 func_80078824(s32 arg0) {
+    s32 s0;
+    s32 r;
+
+    func_8007B844(D_800A374C, 0x1008);
+    s0 = arg0 + 0x58;
+    D_800A360C = arg0;
+    D_800A3610 = s0;
+    func_8006E950(0x5F, s0);
+    r = func_80078628(s0);
+    func_8006E49C(r, D_800A360C);
+    D_800A3304 = 0;
+    D_800A3608 = 0;
+    D_800A3614 = 0;
+    disp_SetFramebufferMode(1, 0, 0, 0);
+    return 1;
+}
 extern s32 D_800A3304;
 extern s32 D_800A3608;
 s32 *func_80078634(s32);
