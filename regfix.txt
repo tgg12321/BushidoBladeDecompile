@@ -3556,3 +3556,10 @@ func_80078EC0: delete @ 13
 func_80078EC0: subst "\$4" "$2" @ 2
 func_80078EC0: subst "andi\s+\$4,\$4,0x0001" "andi	$2,$2,0x0001" @ 4
 func_80078EC0: subst "\$4" "$2" @ 5
+debug_printf: subst "addu\s+\$6,\$sp,28" "sw	$7,36($sp)" @ 10
+debug_printf: delete @ 0
+debug_printf: delete @ 1
+debug_printf: delete @ 2
+debug_printf: insert_after "addu	$6,$sp,28" @ 4
+debug_printf: insert_after "sw	$6,32($sp)" @ 4
+debug_printf: insert_after "sw	$2,24($sp)" @ 5

@@ -54970,32 +54970,9 @@ s32 func_800791D8(u8 *a0) {
     }
     return v1;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel debug_printf\n"
-    "    addiu  $sp,$sp,-24\n"
-    "    addu  $v0,$a0,$zero\n"
-    "    addiu  $a0,$zero,1\n"
-    "    sw  $a1,28($sp)\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    sw  $a2,32($sp)\n"
-    "    addiu  $a2,$sp,28\n"
-    "    sw  $ra,16($sp)\n"
-    "    sw  $v0,24($sp)\n"
-    "    jal  func_80079244\n"
-    "    sw  $a3,36($sp)\n"
-    "    lw  $ra,16($sp)\n"
-    "    addiu  $sp,$sp,24\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void debug_printf(s32 fmt, s32 a, ...) {
+    func_80079244(1, fmt, &a);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
