@@ -42549,55 +42549,37 @@ s32 func_8006E480(u8 *a0, s32 a1) {
     s32 v1 = a0[1] << 7;
     return v0 + v1 + a1;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8006E49C\n"
-    "    ori  $v1,$zero,40000\n"
-    "    sw  $a0,0($a1)\n"
-    "    addu  $a0,$a0,$v1\n"
-    "    addiu  $v0,$a0,24000\n"
-    "    sw  $v0,8($a1)\n"
-    "    addiu  $v0,$a0,25080\n"
-    "    sw  $a0,4($a1)\n"
-    "    addiu  $a0,$a0,26680\n"
-    "    sw  $v0,12($a1)\n"
-    "    addiu  $v0,$a0,7000\n"
-    "    sw  $v0,20($a1)\n"
-    "    addiu  $v0,$a0,7600\n"
-    "    sw  $v0,24($a1)\n"
-    "    addiu  $v0,$a0,7720\n"
-    "    sw  $v0,28($a1)\n"
-    "    addiu  $v0,$a0,7840\n"
-    "    sw  $a0,16($a1)\n"
-    "    addiu  $a0,$a0,8112\n"
-    "    sw  $a0,44($a1)\n"
-    "    addu  $a0,$a0,$v1\n"
-    "    sw  $v0,32($a1)\n"
-    "    addiu  $v0,$a0,24000\n"
-    "    sw  $v0,52($a1)\n"
-    "    addiu  $v0,$a0,25080\n"
-    "    sw  $a0,48($a1)\n"
-    "    addiu  $a0,$a0,26680\n"
-    "    sw  $v0,56($a1)\n"
-    "    addiu  $v0,$a0,7000\n"
-    "    sw  $v0,64($a1)\n"
-    "    addiu  $v0,$a0,7600\n"
-    "    sw  $v0,68($a1)\n"
-    "    addiu  $v0,$a0,7720\n"
-    "    sw  $v0,72($a1)\n"
-    "    addiu  $v0,$a0,7840\n"
-    "    sw  $v0,76($a1)\n"
-    "    addiu  $v0,$a0,8112\n"
-    "    jr  $ra\n"
-    "    sw  $a0,60($a1)\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_8006E49C(s32 arg0, s32 *arg1) {
+    s32 a;
+    s32 b;
+    int new_var2;
+    int new_var;
+    s32 c;
+    arg1[0] = arg0;
+    a = (new_var = arg0 + 0x9C40);
+    arg1[2] = a + 0x5DC0;
+    arg1[1] = a;
+    b = a + 0x6838;
+    arg1[3] = a + 0x61F8;
+    arg1[5] = b + 0x1B58;
+    arg1[6] = b + 0x1DB0;
+    arg1[7] = b + 0x1E28;
+    arg1[8] = b + 0x1EA0;
+    arg1[4] = b;
+    arg1[0xB] = b + 0x1FB0;
+    new_var2 = 0x1FB0;
+    a = (b + new_var2) + 0x9C40;
+    arg1[0xD] = a + 0x5DC0;
+    arg1[0xC] = a;
+    c = a + 0x6838;
+    arg1[0xE] = a + 0x61F8;
+    arg1[0x10] = c + 0x1B58;
+    arg1[0x11] = c + 0x1DB0;
+    arg1[0x12] = c + 0x1E28;
+    arg1[0x13] = c + 0x1EA0;
+    arg1[0xF] = c;
+    return c + new_var2;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
