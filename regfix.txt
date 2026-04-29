@@ -3605,3 +3605,5 @@ func_80053694: subst "lhu\s+\$2,4\(\$6\)" "lhu	$3,4($6)" @ 43
 func_80053694: subst "addiu\s+\$7,\$zero,1" "addiu	$2,$zero,1" @ 44
 func_80053694: subst "sh\s+\$2," "sh	$3," @ 45
 func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
+func_8005BD30: delete @ 17
+func_8005BD30: subst "\.L142" ".L142-4" @ 16
