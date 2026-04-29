@@ -1551,51 +1551,28 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800494D4\n"
-    "    .word 0x8F820320\n"
-    "    addiu  $sp,$sp,-32\n"
-    "    sw  $s1,20($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a1,$zero\n"
-    "    bnez  $v0,.L800494FC\n"
-    "    sw  $ra,24($sp)\n"
-    "    j  .L80049500\n"
-    "    slti  $v0,$s0,16\n"
-    ".L800494FC:\n"
-    "    slti  $v0,$s0,8\n"
-    ".L80049500:\n"
-    "    bnez  $v0,.L80049514\n"
-    "    sltiu  $v0,$s1,2\n"
-    "    jal  func_80052C10\n"
-    "    nop\n"
-    "    sltiu  $v0,$s1,2\n"
-    ".L80049514:\n"
-    "    bnez  $v0,.L80049528\n"
-    "    sll  $v0,$s1,1\n"
-    "    jal  func_80052C10\n"
-    "    nop\n"
-    "    sll  $v0,$s1,1\n"
-    ".L80049528:\n"
-    "    lui  $at,%hi(D_800A33E8)\n"
-    "    addu  $at,$at,$v0\n"
-    "    sh  $s0,%lo(D_800A33E8)($at)\n"
-    "    lw  $ra,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,32\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A33EC;
+extern s16 D_800A33E8;
+extern void func_80052C10(void);
+void func_800494D4(s32 arg0, s32 arg1) {
+    register s32 idx asm("$17") = arg0;
+    s32 new_var;
+    register s32 val asm("$16") = arg1;
+    s32 cond;
+    if (D_800A33EC == 0) {
+        cond = val < 16;
+    } else {
+        cond = val < 8;
+    }
+    if (!cond) {
+        func_80052C10();
+    }
+    new_var = idx;
+    if (((u32)new_var) >= 2U) {
+        func_80052C10();
+    }
+    (&D_800A33E8)[new_var] = (s16)val;
+}
 s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2) {
     register s32 var_a3 asm("$7") = 0;
     register s32 var_v1 asm("$3") = 0;
