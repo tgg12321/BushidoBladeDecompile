@@ -53210,48 +53210,29 @@ s32 func_80077860(void) {
     }
     return 0;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80077894\n"
-    "    addiu  $sp,$sp,-24\n"
-    "    sw  $s0,16($sp)\n"
-    "    sw  $ra,20($sp)\n"
-    "    jal  func_800693CC\n"
-    "    addu  $s0,$zero,$zero\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    bltz  $a1,.L800778DC\n"
-    "    addiu  $v0,$zero,-16\n"
-    "    lui  $a0,%hi(D_8009BD38)\n"
-    "    addiu  $a0,$a0,%lo(D_8009BD38)\n"
-    "    addiu  $s0,$zero,1\n"
-    "    lw  $v1,0($a0)\n"
-    "    .word 0xAF800518\n"
-    "    and  $v1,$v1,$v0\n"
-    "    andi  $v0,$a1,15\n"
-    "    or  $v1,$v1,$v0\n"
-    "    j  .L800778EC\n"
-    "    sw  $v1,0($a0)\n"
-    ".L800778DC:\n"
-    "    addiu  $v0,$zero,-2\n"
-    "    bne  $a1,$v0,.L800778F0\n"
-    "    addu  $v0,$s0,$zero\n"
-    "    addiu  $s0,$zero,-1\n"
-    ".L800778EC:\n"
-    "    addu  $v0,$s0,$zero\n"
-    ".L800778F0:\n"
-    "    lw  $ra,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,24\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_80077894(void) {
+    register s32 ret asm("$16") = 0;
+    register s32 result asm("$5") = func_800693CC();
+    register s32 mask asm("$2");
+    register s32 *p asm("$4");
+    register s32 cur asm("$3");
+    register s32 bits asm("$2");
+    if (result < 0) goto fail;
+    mask = -0x10;
+    p = (s32 *)&D_8009BD38;
+    ret = 1;
+    cur = *p;
+    D_800A35E4 = 0;
+    cur = cur & mask;
+    bits = result & 0xF;
+    cur = cur | bits;
+    *p = cur;
+    goto end;
+fail:
+    if (result == -2) ret = -1;
+end:
+    return ret;
+}
 extern s32 D_800A35E0;
 s32 func_80077904(void) {
     s32 i;
