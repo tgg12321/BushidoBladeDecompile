@@ -13011,53 +13011,19 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80053584\n"
-    "    lui  $v0,%hi(D_800EF9F8)\n"
-    "    addiu  $v0,$v0,%lo(D_800EF9F8)\n"
-    "    .word 0xAF820328\n"
-    "    .word 0x8F820328\n"
-    "    addiu  $sp,$sp,-24\n"
-    "    sw  $ra,16($sp)\n"
-    "    lui  $t2,%hi(D_800EFA00)\n"
-    "    addiu  $t2,$t2,%lo(D_800EFA00)\n"
-    "    lw  $v1,0($a0)\n"
-    "    lw  $t0,4($a0)\n"
-    "    lw  $t1,8($a0)\n"
-    "    sw  $v1,0($t2)\n"
-    "    sw  $t0,4($t2)\n"
-    "    sw  $t1,8($t2)\n"
-    "    lw  $v1,12($a0)\n"
-    "    nop\n"
-    "    sw  $v1,12($t2)\n"
-    "    lw  $v1,0($a1)\n"
-    "    lw  $a0,4($a1)\n"
-    "    lw  $t0,8($a1)\n"
-    "    lw  $t1,12($a1)\n"
-    "    sw  $v1,24($v0)\n"
-    "    sw  $a0,28($v0)\n"
-    "    sw  $t0,32($v0)\n"
-    "    sw  $t1,36($v0)\n"
-    "    lui  $v0,%hi(func_80053E9C)\n"
-    "    addiu  $v0,$v0,%lo(func_80053E9C)\n"
-    "    addu  $a0,$a2,$zero\n"
-    "    .word 0x8F830328\n"
-    "    addu  $a1,$a3,$zero\n"
-    "    jal  func_80052D00\n"
-    "    sw  $v0,92($v1)\n"
-    "    lw  $ra,16($sp)\n"
-    "    addiu  $sp,$sp,24\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_80052D00();
+extern void func_80053E9C();
+extern u8 D_800EFA00;
+extern u8 D_800EF9F8;
+extern s32 D_800A33F4;
+typedef struct { s32 a, b, c, d; } _S16_53584;
+void func_80053584(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
+    D_800A33F4 = (s32)&D_800EF9F8;
+    *(_S16_53584 *)&D_800EFA00 = *(_S16_53584 *)arg0;
+    *(_S16_53584 *)((u8 *)D_800A33F4 + 0x18) = *(_S16_53584 *)arg1;
+    *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053E9C;
+    func_80052D00(arg2, arg3);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
