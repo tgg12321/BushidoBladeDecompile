@@ -42881,67 +42881,36 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8006F038\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    sw  $s1,28($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    sw  $ra,32($sp)\n"
-    "    sw  $s0,24($sp)\n"
-    "    lw  $s0,20($s1)\n"
-    "    jal  initTile\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    .word 0x97820484\n"
-    "    addiu  $a1,$zero,1\n"
-    "    sh  $zero,8($s0)\n"
-    "    sh  $zero,10($s0)\n"
-    "    sb  $v0,4($s0)\n"
-    "    .word 0x97830484\n"
-    "    addiu  $v0,$zero,640\n"
-    "    sh  $v0,12($s0)\n"
-    "    sb  $v1,5($s0)\n"
-    "    .word 0x97830484\n"
-    "    addiu  $v0,$zero,240\n"
-    "    sh  $v0,14($s0)\n"
-    "    jal  gpu_SetSemiTransp\n"
-    "    sb  $v1,6($s0)\n"
-    "    addu  $a1,$s0,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    jal  ot_Link\n"
-    "    addiu  $s0,$s0,16\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    sw  $s0,20($s1)\n"
-    "    sw  $zero,16($sp)\n"
-    "    lw  $a0,24($s1)\n"
-    "    jal  initTexPage\n"
-    "    addiu  $a3,$zero,64\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    lw  $a1,24($s1)\n"
-    "    jal  ot_Link\n"
-    "    nop\n"
-    "    lw  $v0,24($s1)\n"
-    "    nop\n"
-    "    addiu  $v0,$v0,12\n"
-    "    sw  $v0,24($s1)\n"
-    "    lw  $ra,32($sp)\n"
-    "    lw  $s1,28($sp)\n"
-    "    lw  $s0,24($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern volatile u16 D_800A3550;
+extern s32 gpu_SetSemiTransp(s32, s32);
+extern s32 initTile(s32);
+void func_8006F038(s32 arg0) {
+    s32 temp_s0;
+    s32 v;
+
+    temp_s0 = *((s32 *)(((s32)arg0) + 0x14));
+    initTile(temp_s0);
+    v = (s8)D_800A3550;
+    *((s16 *)(((s32)temp_s0) + 8)) = 0;
+    *((s8 *)(((s32)temp_s0) + 4)) = v;
+    *((s16 *)(((s32)temp_s0) + 0xA)) = 0;
+    v = (s8)D_800A3550;
+    *((s8 *)(((s32)temp_s0) + 5)) = v;
+    *((s16 *)(((s32)temp_s0) + 0xC)) = 0x280;
+    v = (s8)D_800A3550;
+    *((s8 *)(((s32)temp_s0) + 6)) = v;
+    *((s16 *)(((s32)temp_s0) + 0xE)) = 0xF0;
+    gpu_SetSemiTransp(temp_s0, 1);
+    {
+        s32 saved = temp_s0;
+        ot_Link(D_800A374C, temp_s0);
+        temp_s0 = saved + 0x10;
+    }
+    *((s32 *)(((s32)arg0) + 0x14)) = temp_s0;
+    initTexPage(*((s32 *)(((s32)arg0) + 0x18)), 1, 0, 0x40, 0);
+    ot_Link(D_800A374C, *((s32 *)(((s32)arg0) + 0x18)));
+    *((s32 *)(((s32)arg0) + 0x18)) = (s32)(*((s32 *)(((s32)arg0) + 0x18)) + 0xC);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
