@@ -641,63 +641,36 @@ void func_80048744(s32 a0) {
         g_color_mode = 0;
     }
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8004876C\n"
-    "    addiu  $sp,$sp,-8\n"
-    "    addu  $t1,$a0,$zero\n"
-    "    beqz  $a1,.L80048810\n"
-    "    addiu  $t0,$a1,-1\n"
-    "    addiu  $t3,$zero,-32768\n"
-    "    addiu  $t2,$zero,-1\n"
-    ".L80048784:\n"
-    "    lhu  $a1,0($t1)\n"
-    "    addiu  $t1,$t1,2\n"
-    "    addiu  $t0,$t0,-1\n"
-    "    andi  $a3,$a1,31\n"
-    "    sll  $v0,$a3,1\n"
-    "    addu  $v0,$v0,$a3\n"
-    "    sll  $v0,$v0,6\n"
-    "    addu  $v0,$v0,$a3\n"
-    "    sll  $v1,$v0,3\n"
-    "    subu  $a3,$v1,$v0\n"
-    "    sll  $v1,$a1,16\n"
-    "    sra  $a0,$v1,26\n"
-    "    andi  $a0,$a0,31\n"
-    "    sra  $v1,$v1,10\n"
-    "    andi  $v1,$v1,63488\n"
-    "    sll  $v0,$a0,1\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,2\n"
-    "    subu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,3\n"
-    "    subu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,3\n"
-    "    addu  $v1,$a3,$v1\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    sra  $v1,$v1,12\n"
-    "    andi  $a3,$v1,31\n"
-    "    and  $a1,$a1,$t3\n"
-    "    sll  $v0,$a3,10\n"
-    "    addu  $a1,$a1,$v0\n"
-    "    sll  $v0,$a3,5\n"
-    "    addu  $a1,$a1,$v0\n"
-    "    addu  $a1,$a1,$a3\n"
-    "    sh  $a1,0($a2)\n"
-    "    bne  $t0,$t2,.L80048784\n"
-    "    addiu  $a2,$a2,2\n"
-    ".L80048810:\n"
-    "    addiu  $sp,$sp,8\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_8004876C(u16 *arg0, s32 arg1, u16 *arg2) {
+    s32 pad[2];
+    s32 temp_a3;
+    s32 temp_v1;
+    s32 var_t0;
+    u16 *var_t1;
+    s32 temp_a1;
+    var_t1 = arg0;
+    var_t0 = arg1 - 1;
+    if (arg1 != 0) {
+        do {
+            temp_a1 = *var_t1;
+            var_t1 += 1;
+            var_t0 -= 1;
+            temp_v1 = temp_a1 << 0x10;
+            {
+                s32 b;
+                s32 g;
+                temp_a3 = (temp_a1 & 0x1F) * 0x547;
+                b = (temp_v1 >> 0x1A) & 0x1F;
+                g = (temp_v1 >> 0xA) & 0xF800;
+                asm volatile("" : : "r"(b));
+                temp_a3 = ((temp_a3 + b * 0x2B8) + g) >> 0xC;
+                temp_a3 &= 0x1F;
+            }
+            *arg2 = (u16) ((((temp_a1 & (~0x7FFF)) + (temp_a3 << 0xA)) + (temp_a3 << 5)) + temp_a3);
+            arg2 += 1;
+        } while (var_t0 != (-1));
+    }
+}
 s32 func_8004881C(s32 arg0, s32 arg1, s32 arg2) {
     s32 a0_term = arg0 * 0x547;
     s32 sum = a0_term + (arg1 << 11);
