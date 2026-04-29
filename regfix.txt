@@ -3563,3 +3563,11 @@ debug_printf: delete @ 2
 debug_printf: insert_after "addu	$6,$sp,28" @ 4
 debug_printf: insert_after "sw	$6,32($sp)" @ 4
 debug_printf: insert_after "sw	$2,24($sp)" @ 5
+func_8007C97C: subst "subu\s+\$sp,\$sp,16" "bnez	$4,.LC97C" @ 0
+func_8007C97C: subst "beq\s+\$4,\$0,\.L\d+" "subu	$sp,$sp,16" @ 1
+func_8007C97C: subst "addu\s+\$2,\$4,\$zero" "addu	$2,$0,$0" @ 2
+func_8007C97C: subst "0\(\$2\)" "0($4)" @ 3
+func_8007C97C: subst "srl\s+\$6,\$6,3" "sra	$6,$6,3" @ 11
+func_8007C97C: subst "srl\s+\$3,\$3,3" "sra	$3,$3,3" @ 24
+func_8007C97C: insert "j	.L40" @ 2
+func_8007C97C: insert_after ".LC97C:" @ 3
