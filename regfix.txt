@@ -3578,3 +3578,4 @@ func_80062020: subst "addu\s+\$3,\$0,\$zero" "addu	$5,$0,$zero" @ 6
 func_80062020: delete @ 0
 func_80062020: delete @ 3
 func_80062020: insert_after "addu	$3,$0,$zero" @ 4
+func_8007992C: reorder 16,14,15,17 @ 14-17

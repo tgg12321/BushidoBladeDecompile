@@ -55442,41 +55442,23 @@ u8 func_800798FC(u8 a0) {
     }
     return c;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8007992C\n"
-    "    beqz  $a0,.L80079974\n"
-    "    addu  $v0,$zero,$zero\n"
-    "    blez  $a2,.L80079974\n"
-    "    nop\n"
-    "    j  .L8007994C\n"
-    "    addiu  $a2,$a2,-1\n"
-    ".L80079944:\n"
-    "    j  .L80079974\n"
-    "    addiu  $v0,$a0,-1\n"
-    ".L8007994C:\n"
-    "    bltz  $a2,.L80079974\n"
-    "    addu  $v0,$zero,$zero\n"
-    "    andi  $a1,$a1,255\n"
-    ".L80079958:\n"
-    "    lbu  $v0,0($a0)\n"
-    "    nop\n"
-    "    beq  $v0,$a1,.L80079944\n"
-    "    addiu  $a0,$a0,1\n"
-    "    addiu  $a2,$a2,-1\n"
-    "    bgez  $a2,.L80079958\n"
-    "    addu  $v0,$zero,$zero\n"
-    ".L80079974:\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+u8 *func_8007992C(u8 *buf, s32 ch, s32 len) {
+    if (buf == 0) return 0;
+    if (len <= 0) return 0;
+    len--;
+    goto check;
+found:
+    return buf - 1;
+check:
+    if (len < 0) return 0;
+    ch &= 0xFF;
+loop:
+    if (*buf == ch) goto found;
+    ++buf;
+    --len;
+    if (len >= 0) goto loop;
+    return 0;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
