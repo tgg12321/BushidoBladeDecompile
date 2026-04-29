@@ -140,6 +140,20 @@ print(f'Replaced {func} in {src}')
         python3 tools/dump_text_indices.py "$FUNC_NAME" "$@"
         ;;
 
+    siblings)
+        # Find structural siblings of a function. Use this when a sibling
+        # of a matched function is likely already on the work queue —
+        # porting the matched body usually takes 10-15 min vs 30-60 for
+        # novel structures.
+        if [ "$1" = "--all" ]; then
+            python3 tools/siblings.py --all
+        else
+            FUNC_NAME="$1"
+            [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh siblings <func_name> | --all"; exit 1; }
+            python3 tools/siblings.py "$FUNC_NAME"
+        fi
+        ;;
+
     validate-regfix)
         # Validate regfix.txt rules
         python3 tools/validate_regfix.py "$@" 2>&1
