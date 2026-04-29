@@ -154,6 +154,14 @@ print(f'Replaced {func} in {src}')
         fi
         ;;
 
+    check-gp-layout)
+        # Verify build's symbol layout matches canonical addresses.
+        # Catches silent gp-rel miscompiles (e.g. D_800A3514 ending up at
+        # gp+1092 instead of gp+1096 because sdata ordering differs).
+        # Run after layout-affecting changes; exit code 1 = mismatch.
+        python3 tools/check_gp_layout.py "$@"
+        ;;
+
     validate-regfix)
         # Validate regfix.txt rules
         python3 tools/validate_regfix.py "$@" 2>&1
