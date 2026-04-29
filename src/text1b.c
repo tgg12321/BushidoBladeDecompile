@@ -21672,71 +21672,60 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8005B43C\n"
-    "    addiu  $sp,$sp,-24\n"
-    "    sw  $ra,16($sp)\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    lui  $a0,%hi(D_800EFB38)\n"
-    "    addiu  $a0,$a0,%lo(D_800EFB38)\n"
-    "    lui  $v1,%hi(D_800EFC38)\n"
-    "    addiu  $v1,$v1,%lo(D_800EFC38)\n"
-    ".L8005B458:\n"
-    "    sw  $zero,0($v1)\n"
-    "    sw  $zero,0($a0)\n"
-    "    addiu  $a0,$a0,4\n"
-    "    addiu  $a1,$a1,1\n"
-    "    slti  $v0,$a1,16\n"
-    "    bnez  $v0,.L8005B458\n"
-    "    addiu  $v1,$v1,4\n"
-    "    jal  sys_Shutdown\n"
-    "    nop\n"
-    "    jal  func_800858D0\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    jal  func_80085F98\n"
-    "    nop\n"
-    "    jal  func_80085EE4\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    jal  func_80085E4C\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    jal  memcard_SetSlot\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    jal  SetBloodSpot\n"
-    "    addiu  $a0,$zero,1\n"
-    "    addiu  $a1,$zero,127\n"
-    "    lui  $a0,%hi(D_800EFB78)\n"
-    "    addiu  $a0,$a0,%lo(D_800EFB78)\n"
-    "    addu  $v1,$zero,$zero\n"
-    ".L8005B4C0:\n"
-    "    lui  $at,%hi(D_800EFB78)\n"
-    "    addu  $at,$at,$v1\n"
-    "    sw  $zero,%lo(D_800EFB78)($at)\n"
-    "    sb  $a1,5($a0)\n"
-    "    lui  $at,%hi(D_800EFB7C)\n"
-    "    addu  $at,$at,$v1\n"
-    "    sb  $a1,%lo(D_800EFB7C)($at)\n"
-    "    addiu  $v1,$v1,8\n"
-    "    slti  $v0,$v1,192\n"
-    "    bnez  $v0,.L8005B4C0\n"
-    "    addiu  $a0,$a0,8\n"
-    "    jal  DispStuff\n"
-    "    nop\n"
-    "    .word 0xAF80033C\n"
-    "    .word 0xA7800334\n"
-    "    lw  $ra,16($sp)\n"
-    "    addiu  $sp,$sp,24\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s16 D_800A3400;
+extern s32 D_800A3408;
+extern s32 D_800EFB38;
+extern s32 D_800EFB78;
+extern s32 D_800EFB7C;
+extern s32 D_800EFC38;
+extern s32 DispStuff(void);
+extern s32 SetBloodSpot(s32);
+extern s32 memcard_SetSlot(s32);
+extern s32 sys_Shutdown(void);
+extern s32 title_mv_exec2(s32);
+extern s32 func_80085E4C(s32, s32);
+extern s32 func_80085EE4(s32);
+extern s32 func_80085F98(void);
+void func_8005B43C(void) {
+    s32 *p1;
+    s32 *p2;
+    s32 i;
+    u8 *q;
+    s32 j;
+
+    i = 0;
+    p1 = &D_800EFB38;
+    p2 = &D_800EFC38;
+    do {
+        *p2 = 0;
+        *p1 = 0;
+        p1 += 1;
+        i += 1;
+        p2 += 1;
+    } while (i < 0x10);
+    sys_Shutdown();
+    title_mv_exec2(0);
+    func_80085F98();
+    func_80085EE4(0);
+    func_80085E4C(0, 0);
+    memcard_SetSlot(0);
+    SetBloodSpot(1);
+    {
+        register s32 v asm("$5") = 0x7F;
+        q = (u8 *)&D_800EFB78;
+        j = 0;
+        do {
+            *(s32 *)((u8 *)&D_800EFB78 + j) = 0;
+            *(s8 *)(q + 5) = v;
+            *(s8 *)((u8 *)&D_800EFB7C + j) = v;
+            j += 8;
+            q += 8;
+        } while (j < 0xC0);
+    }
+    DispStuff();
+    D_800A3408 = 0;
+    D_800A3400 = 0;
+}
 void func_800858D0(s32);
 void func_80085F98(void);
 void func_80085EE4(s32);
