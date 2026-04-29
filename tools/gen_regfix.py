@@ -637,6 +637,30 @@ def main():
         print(f"  SIZE MISMATCH: {'+' if delta > 0 else ''}{delta} binary instructions "
               f"({'+' if delta > 0 else ''}{delta * 4} bytes)", file=sys.stderr)
 
+    # Frame-size mismatch detector: if ours has a smaller frame than target,
+    # suggest padding the C source with `s32 pad[N];`. This is a very common
+    # need (4× this session) and is mechanical to compute. The target's
+    # frame is the immediate of the first `addiu $sp,$sp,-N` (or `subu`).
+    def first_sp_alloc(insns):
+        for s in insns[:8]:
+            m = re.match(r'^subu\s+\$29,\$29,(\d+)$', s) or \
+                re.match(r'^addu\s+\$29,\$29,-(\d+)$', s)
+            if m:
+                return int(m.group(1))
+        return None
+    our_frame = first_sp_alloc([n for _, _, n in ours])
+    tgt_frame = first_sp_alloc(target)
+    if our_frame is not None and tgt_frame is not None and our_frame != tgt_frame:
+        delta_bytes = tgt_frame - our_frame
+        print(f"  FRAME SIZE MISMATCH: ours={our_frame}, target={tgt_frame} "
+              f"({'+' if delta_bytes > 0 else ''}{delta_bytes} bytes)",
+              file=sys.stderr)
+        if delta_bytes > 0 and delta_bytes % 4 == 0:
+            n_words = delta_bytes // 4
+            print(f"  HINT: add `s32 pad[{n_words}];` to a C local in this "
+                  f"function to bump the frame by {delta_bytes} bytes.",
+                  file=sys.stderr)
+
     # Step 4: Align and classify
     aligned = align_instructions(ours, target)
 

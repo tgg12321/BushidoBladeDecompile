@@ -57,6 +57,30 @@ def load_known_blocked() -> set[str]:
     return out
 
 
+def load_already_matched() -> set[str]:
+    """Scan src/*.c for functions whose body is C (no `glabel <name>` in
+    an `__asm__()` block). Returns the set of function names that already
+    have a C body, so the work queue can exclude them.
+
+    Without this, batch_attempt.csv from earlier runs keeps proposing
+    functions that are already done — the agent has to re-classify each
+    one and waste time."""
+    src_dir = ROOT / "src"
+    if not src_dir.exists():
+        return set()
+    inline_funcs: set[str] = set()
+    for c_file in sorted(src_dir.glob("*.c")):
+        try:
+            text = c_file.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        for m in re.finditer(r'glabel\s+(\w+)', text):
+            inline_funcs.add(m.group(1))
+    # Funcs not in inline_funcs but present in asm/funcs/ are already C.
+    # We can compute this lazily; for now, callers want "is_inline_asm(name)".
+    return inline_funcs
+
+
 def main():
     csv_path = ROOT / "tmp" / "batch_attempt.csv"
     if not csv_path.exists():
@@ -66,6 +90,7 @@ def main():
 
     rows = list(csv.DictReader(open(csv_path)))
     blocked = load_known_blocked()
+    still_inline = load_already_matched()
 
     def is_tractable(rec: str) -> bool:
         if rec in ("easy_attempt", "standard"):
@@ -75,14 +100,26 @@ def main():
         # known_blocked.txt is filtered out below.
         return False
 
-    # Filter: tractable recommendation AND not in known_blocked.txt
+    # Filter: tractable recommendation, not in known_blocked.txt, AND still
+    # inline asm (otherwise we waste time re-considering already-matched funcs
+    # because the CSV is stale).
     tract = [r for r in rows
              if is_tractable(r.get("recommendation", ""))
-             and r.get("func") not in blocked]
+             and r.get("func") not in blocked
+             and r.get("func") in still_inline]
     skipped_blocked = sum(1 for r in rows if r.get("func") in blocked)
+    skipped_done = sum(
+        1 for r in rows
+        if is_tractable(r.get("recommendation", ""))
+        and r.get("func") not in blocked
+        and r.get("func") not in still_inline
+    )
     if skipped_blocked:
         print(f"# Filtered {skipped_blocked} permanently-blocked functions "
               f"(known_blocked.txt)", file=sys.stderr)
+    if skipped_done:
+        print(f"# Filtered {skipped_done} already-matched functions "
+              f"(no glabel in src/*.c)", file=sys.stderr)
 
     # Annotate
     enriched = []
