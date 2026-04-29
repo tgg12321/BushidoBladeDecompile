@@ -1496,52 +1496,51 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007C97C\n"
-    "    bnez       $a0, .Lfunc_8007C97C_8007C98C\n"
-    "    addiu     $sp, $sp, -0x10\n"
-    "    j          .Lfunc_8007C97C_8007C9F4\n"
-    "    addu      $v0, $zero, $zero\n"
-    ".Lfunc_8007C97C_8007C98C:\n"
-    "    lbu        $a1, 0($a0)\n"
-    "    nop\n"
-    "    srl        $a1, $a1, 3\n"
-    "    sw         $a1, 0($sp)\n"
-    "    lh         $a2, 4($a0)\n"
-    "    nop\n"
-    "    negu       $a2, $a2\n"
-    "    andi       $a2, $a2, 0xFF\n"
-    "    sra        $a2, $a2, 3\n"
-    "    sw         $a2, 8($sp)\n"
-    "    lbu        $v0, 2($a0)\n"
-    "    sll        $a1, $a1, 10\n"
-    "    srl        $v0, $v0, 3\n"
-    "    sw         $v0, 4($sp)\n"
-    "    sll        $v0, $v0, 15\n"
-    "    lh         $v1, 6($a0)\n"
-    "    lui        $a0, (0xE2000000 >> 16)\n"
-    "    or         $a1, $a1, $a0\n"
-    "    or         $v0, $v0, $a1\n"
-    "    negu       $v1, $v1\n"
-    "    andi       $v1, $v1, 0xFF\n"
-    "    sra        $v1, $v1, 3\n"
-    "    sll        $a0, $v1, 5\n"
-    "    or         $v0, $v0, $a0\n"
-    "    or         $v0, $v0, $a2\n"
-    "    sw         $v1, 12($sp)\n"
-    ".Lfunc_8007C97C_8007C9F4:\n"
-    "    addiu      $sp, $sp, 0x10\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+s32 func_8007C97C(u8 *arg0) {
+    s32 sp[4];
+    register u8 *p asm("$4") = arg0;
+    register s32 r asm("$5");
+    register s32 b1 asm("$6");
+    register s32 g asm("$2");
+    register s32 b2 asm("$3");
+    if (p == 0) {
+        g = 0;
+        return g;
+    }
+    r = p[0];
+    r >>= 3;
+    sp[0] = r;
+
+    b1 = *(s16 *)(p + 4);
+    b1 = -b1;
+    b1 &= 0xFF;
+    b1 >>= 3;
+    sp[2] = b1;
+
+    g = p[2];
+    r <<= 10;
+    g >>= 3;
+    sp[1] = g;
+    g <<= 15;
+
+    b2 = *(s16 *)(p + 6);
+    {
+        register s32 e2 asm("$4") = 0xE2000000;
+        r |= e2;
+    }
+    g |= r;
+
+    b2 = -b2;
+    b2 &= 0xFF;
+    b2 >>= 3;
+    {
+        register s32 b2sh asm("$4") = b2 << 5;
+        g |= b2sh;
+    }
+    g |= b1;
+    sp[3] = b2;
+    return g;
+}
 __asm__(
     "    .set\tnoat\n"
     "    .set\tnoreorder\n"
