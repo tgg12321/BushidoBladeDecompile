@@ -538,6 +538,115 @@ def detect_varargs_prologue_mismatch(ours, target):
 
 
 # ---------------------------------------------------------------------------
+# PACKED-ARG-IN-SAVED-REG DETECTOR — args preserved across a call, then packed
+# ---------------------------------------------------------------------------
+
+def detect_packed_args_in_saved_regs(ours, target):
+    """Detect the "save args to $sN, call, then pack into $a3" pattern.
+
+    Target shape (func_8007B4D0 / func_8007B564 family):
+      addiu $sp,$sp,-N
+      sw    $sX,off($sp)      # save callee-saved
+      addu  $sX,$aM,$zero     # preserve arg M into saved reg X
+      ... more saves ...
+      jal   <some_func>        # would clobber $aM
+      ... compose packed value using $sX with andi/sll/or ...
+      or    $a3,$sX,$sY        # final pack into call-arg reg
+
+    GCC, given a naive C body, won't realize the args need to survive the call
+    and will recompute the packed value using regs that get clobbered. The
+    fix is the `register sN asm("$N") = argM` hint pattern shown in
+    src/display.c. We detect the pattern in target, count how many ours
+    instructions reference $aM where target uses $sX (the diff signature),
+    and emit a hint with the specific arg-to-saved-reg mapping plus a
+    fallback regfix recipe sketch.
+
+    Returns dict {mappings: [(arg_reg, saved_reg)], ...} or None.
+    """
+    if not target:
+        return None
+
+    # Step 1: find the first jal in target.
+    first_jal_idx = None
+    for i, t in enumerate(target):
+        if t.startswith('jal ') or t.startswith('jal\t'):
+            first_jal_idx = i
+            break
+    if first_jal_idx is None or first_jal_idx < 2:
+        return None
+
+    # Step 2: in target[:first_jal_idx], find `addu $sX,$aM,$zero` saves.
+    # Args are $4..$7, callee-saved are $16..$23.
+    arg_to_saved: dict[int, int] = {}
+    for t in target[:first_jal_idx + 2]:  # +2 so we catch the delay slot
+        m = re.match(r'^addu\s+\$(\d+),\$(\d+),\$0$', t)
+        if not m:
+            continue
+        dst = int(m.group(1))
+        src = int(m.group(2))
+        if 16 <= dst <= 23 and 4 <= src <= 7:
+            # First save wins (don't overwrite if the target later moves things).
+            arg_to_saved.setdefault(src, dst)
+
+    if len(arg_to_saved) < 2:
+        return None  # Pattern needs at least 2 preserved args to be worth a hint.
+
+    # Step 3: confirm post-jal usage — at least one of the saved regs must
+    # appear in an `andi`/`sll`/`or` instruction after the jal. Otherwise
+    # the saves are for some other purpose and the hint isn't applicable.
+    post_jal = target[first_jal_idx + 1:]
+    saved_regs_used_in_pack = set()
+    for t in post_jal:
+        m = re.match(r'^(?:andi|sll|or)\s+\$(\d+),', t)
+        if m and int(m.group(1)) in arg_to_saved.values():
+            saved_regs_used_in_pack.add(int(m.group(1)))
+    if not saved_regs_used_in_pack:
+        return None
+
+    # Step 4: confirm ours DOESN'T have the same save pattern. If ours already
+    # preserves args correctly, no hint needed (the diff is something else).
+    our_norms = [n for _, _, n in ours]
+    our_first_jal = None
+    for i, n in enumerate(our_norms):
+        if n.startswith('jal ') or n.startswith('jal\t'):
+            our_first_jal = i
+            break
+    if our_first_jal is not None:
+        our_arg_to_saved: dict[int, int] = {}
+        for n in our_norms[:our_first_jal + 2]:
+            m = re.match(r'^addu\s+\$(\d+),\$(\d+),\$0$', n)
+            if not m:
+                continue
+            dst = int(m.group(1))
+            src = int(m.group(2))
+            if 16 <= dst <= 23 and 4 <= src <= 7:
+                our_arg_to_saved.setdefault(src, dst)
+        # If ours already saves the same args (regardless of WHICH saved reg
+        # gets each arg), the user already has the register-asm hint and
+        # gen_regfix doesn't need to suggest it again. Suppress the hint.
+        if set(our_arg_to_saved.keys()) >= set(arg_to_saved.keys()):
+            return None
+
+    # Step 5: estimate how many ours instructions use $aN where target uses
+    # the corresponding $sN. This is the count of regfix substs the user
+    # would need if they go the regfix route instead of register asm.
+    saved_to_arg = {s: a for a, s in arg_to_saved.items()}
+    subst_candidate_count = 0
+    for n in our_norms:
+        if any(re.search(rf'\${a}\b', n) for a in arg_to_saved.keys()):
+            # Check this instruction also uses pattern-related ops (andi/sll/or)
+            if re.match(r'^(?:andi|sll|or)\s', n):
+                subst_candidate_count += 1
+
+    return {
+        'arg_to_saved': arg_to_saved,
+        'saved_to_arg': saved_to_arg,
+        'first_jal_target': target[first_jal_idx].split(None, 1)[1].strip(),
+        'subst_candidate_count': subst_candidate_count,
+    }
+
+
+# ---------------------------------------------------------------------------
 # INSTRUCTION REORDER DETECTION — find swapped instruction pairs
 # ---------------------------------------------------------------------------
 
@@ -701,6 +810,7 @@ def main():
     swap_rules, remaining_reg_diffs = detect_swaps(reg_diffs)
     early_exit_match = detect_early_exit_alias(ours, target)
     varargs_match = detect_varargs_prologue_mismatch(ours, target)
+    packed_args_match = detect_packed_args_in_saved_regs(ours, target)
 
     if delay_fills:
         print(f"  Delay slot fills detected: {len(delay_fills)}", file=sys.stderr)
@@ -714,6 +824,10 @@ def main():
     if varargs_match:
         print(f"  Varargs prologue mismatch DETECTED (see memory/feedback_varargs_prologue_pattern.md)",
               file=sys.stderr)
+    if packed_args_match:
+        n = len(packed_args_match['arg_to_saved'])
+        print(f"  Packed-args-in-saved-regs pattern DETECTED ({n} args preserved across "
+              f"call to {packed_args_match['first_jal_target']})", file=sys.stderr)
 
     # Step 6: Generate rules
     print(f"\n# {func_name}: auto-generated regfix rules")
@@ -764,6 +878,34 @@ def main():
         print(f"#       check ours-vs-target diff for `srl X,Y,3` after `andi Y,Y,0xFF`")
         print(f"#       and add `subst \"srl\\\\s+...\" \"sra\\\\t...\" @ <idx>` rules.")
         print(f"# After applying, run `dc.sh dump-text {func_name} --post-regfix` to verify.")
+
+    # 6.packed: Packed-args-in-saved-regs hint
+    if packed_args_match:
+        p = packed_args_match
+        a2s = p['arg_to_saved']
+        # MIPS o32: $a0..$a3 = arg0..arg3; $sN saved reg encoding for the C
+        # `register asm("$N")` hint uses the numeric reg name.
+        n_args = len(a2s)
+        print(f"\n# {func_name}: packed-args-in-saved-regs pattern")
+        print(f"#   target preserves {n_args} arg(s) across call to "
+              f"{p['first_jal_target']}, then packs into $a3.")
+        print(f"#   Recommended fix: register-asm hint pattern (see "
+              f"src/display.c:func_8007B4D0). Add to base.c:")
+        print(f"#")
+        for arg_reg in sorted(a2s.keys()):
+            saved_reg = a2s[arg_reg]
+            arg_idx = arg_reg - 4  # $4 -> arg0, $5 -> arg1, ...
+            print(f"#     register s32 v{arg_idx} asm(\"${saved_reg}\") = arg{arg_idx};")
+        print(f"#")
+        print(f"#   Then use v0..v{n_args-1} (not arg0..) in the body.")
+        if p['subst_candidate_count'] > 0:
+            print(f"#   Fallback regfix recipe: {p['subst_candidate_count']} ours "
+                  f"insns reference $aN where target uses $sN.")
+            for arg_reg, saved_reg in sorted(a2s.items()):
+                # Emit the textual subst pattern. `\$N\b` to avoid matching $N0..$N9.
+                print(f'#   {func_name}: subst "\\${arg_reg}\\b" "${saved_reg}" '
+                      f'@ <idx of intermediate andi/sll>')
+            print(f"#   plus a final-or rewrite for the `or $a3,$sX,$sY` pack.")
 
     # 6.varargs: Varargs prologue ordering recipe
     if varargs_match:
