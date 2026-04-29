@@ -3551,3 +3551,8 @@ func_800651F0: reorder 16,12,13,14,15 @ 12-16
 func_800651F0: subst "\$4" "$2" @ 13
 func_800651F0: subst "\$4" "$2" @ 14
 func_80077894: reorder 10,9 @ 9-10
+func_80078EC0: subst "subu\s+\$sp,\$sp,8" "nop" @ 1
+func_80078EC0: delete @ 13
+func_80078EC0: subst "\$4" "$2" @ 2
+func_80078EC0: subst "andi\s+\$4,\$4,0x0001" "andi	$2,$2,0x0001" @ 4
+func_80078EC0: subst "\$4" "$2" @ 5

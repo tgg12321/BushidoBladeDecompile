@@ -54739,34 +54739,19 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80078EC0\n"
-    "    lui  $v1,%hi(D_8009BD88)\n"
-    "    lw  $v1,%lo(D_8009BD88)($v1)\n"
-    "    nop\n"
-    "    lw  $v0,4($v1)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,1\n"
-    "    beqz  $v0,.L80078EF8\n"
-    "    addu  $v0,$zero,$zero\n"
-    "    lw  $v0,0($v1)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,1\n"
-    "    bnez  $v0,.L80078EF8\n"
-    "    addiu  $v0,$zero,1\n"
-    "    addu  $v0,$zero,$zero\n"
-    ".L80078EF8:\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_80078EC0(void) {
+    register s32 *p asm("$3") = (s32 *)D_8009BD88;
+    register volatile s32 ret asm("$2") = 0;
+    if ((p[1] & 1) == 0) goto end;
+    if ((p[0] & 1) != 0) {
+        ret = 1;
+        goto end;
+    }
+    ret = 1;
+    ret = 0;
+end:
+    return ret;
+}
 __asm__(
     ".section .text\n"
     ".set noat\n"
