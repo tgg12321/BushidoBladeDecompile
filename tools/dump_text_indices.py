@@ -2,13 +2,20 @@
 """Dump numbered TEXT (instruction) indices for a function from the real build pipeline.
 
 Usage:
-    python3 tools/dump_text_indices.py <func_name> [<src_file>]
+    python3 tools/dump_text_indices.py <func_name> [<src_file>] [--post-regfix]
 
 Runs the exact Makefile pipeline (cpp | cc1 | prologue_fix | maspsx) for the
 source file containing the function, then extracts and numbers all instructions
 within that function's scope (label to .end).
 
 If <src_file> is omitted, greps src/*.c for the function to find it.
+
+Flags:
+    --post-regfix   Also pipe through regfix.py (and regfix_stage2.txt if it
+                    exists). Useful for verifying that regfix rules produce
+                    the expected output and for indexing instructions in the
+                    post-regfix asm (e.g., when writing follow-up rules that
+                    reference instructions inserted by earlier rules).
 """
 
 import re
@@ -86,11 +93,15 @@ def read_makefile_list(makefile_text, var_name):
     return read_makefile_var(makefile_text, var_name).split()
 
 
-def build_pipeline_cmd(root, src_file):
+def build_pipeline_cmd(root, src_file, post_regfix=False):
     """Build the exact Makefile pipeline command for a source file.
 
     Reads CC_FLAGS, MASPSX_FLAGS, etc. directly from the Makefile
     to ensure perfect flag matching.
+
+    If post_regfix=True, additionally pipes through regfix.py (and
+    regfix_stage2.txt if present) so the dumped indices reflect the
+    post-regfix instruction stream.
     """
     stem = get_file_stem(src_file)
     makefile = (root / "Makefile").read_text()
@@ -137,6 +148,13 @@ def build_pipeline_cmd(root, src_file):
         f" | python3 ./tools/prologue_fix.py {stem}"
         f" | python3 ./tools/maspsx/maspsx.py {maspsx_flags} -{rodata_sed}"
     )
+    if post_regfix:
+        # Mirror the Makefile's two regfix passes (regfix.txt then regfix_stage2.txt).
+        # asmfix.py runs after regfix2 in the build but is for handwritten-asm
+        # patterns, not relevant for typical regfix-rule debugging.
+        cmd += " | python3 ./tools/regfix.py"
+        if (root / "regfix_stage2.txt").exists():
+            cmd += " | REGFIX_CONFIG=regfix_stage2.txt python3 ./tools/regfix.py"
     return cmd
 
 
@@ -152,15 +170,21 @@ def is_instruction(line):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python3 tools/dump_text_indices.py <func_name> [<src_file>]", file=sys.stderr)
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    flags = [a for a in sys.argv[1:] if a.startswith('--')]
+
+    if not args:
+        print("Usage: python3 tools/dump_text_indices.py <func_name> [<src_file>] [--post-regfix]",
+              file=sys.stderr)
         sys.exit(1)
 
-    func_name = sys.argv[1]
+    post_regfix = '--post-regfix' in flags
+
+    func_name = args[0]
     root = Path(__file__).resolve().parent.parent
 
-    if len(sys.argv) >= 3:
-        src_file = sys.argv[2]
+    if len(args) >= 2:
+        src_file = args[1]
     else:
         found = find_source_file(root, func_name)
         if not found:
@@ -169,7 +193,10 @@ def main():
         src_file = str(found)
         print(f"# Found {func_name} in {found.name}", file=sys.stderr)
 
-    cmd = build_pipeline_cmd(root, src_file)
+    cmd = build_pipeline_cmd(root, src_file, post_regfix=post_regfix)
+    if post_regfix:
+        print(f"# Post-regfix output (regfix.txt{' + regfix_stage2.txt' if (root / 'regfix_stage2.txt').exists() else ''})",
+              file=sys.stderr)
     result = subprocess.run(
         ["bash", "-c", cmd],
         capture_output=True, text=True, cwd=str(root)

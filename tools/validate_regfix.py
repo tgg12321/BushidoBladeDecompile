@@ -61,8 +61,8 @@ def parse_regfix(regfix_path):
             })
             continue
 
-        # insert / insert_after
-        m = re.match(r'(\w+)\s*:\s*(insert(?:_after)?)\s+"([^"]+)"\s*@\s*(\d+)', stripped)
+        # insert / insert_after / insert_label
+        m = re.match(r'(\w+)\s*:\s*(insert(?:_after|_label)?)\s+"([^"]+)"\s*@\s*(\d+)', stripped)
         if m:
             func = m.group(1)
             rules.setdefault(func, []).append({
