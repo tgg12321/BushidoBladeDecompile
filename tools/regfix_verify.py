@@ -128,6 +128,29 @@ def decode_mips(word, addr=0):
     return f'op{op} {reg(rs)},{reg(rt)},0x{imm:x}'
 
 
+def get_expected_address(root, func_name):
+    """Get the expected function address from asm/funcs/<func>.s (splat-extracted).
+
+    Returns the original target address (e.g., 0x80062020) or None if not found.
+    The asm files have lines like:
+        glabel func_80062020
+        /* 52820 80062020 0000828C */  lw  $v0, 0x0($a0)
+    where the second hex value is the original instruction address.
+    """
+    asm_file = root / 'asm' / 'funcs' / f'{func_name}.s'
+    if not asm_file.exists():
+        return None
+    try:
+        text = asm_file.read_text()
+    except Exception:
+        return None
+    # Match the first instruction's comment: /* OFFSET ADDR HEX */
+    m = re.search(r'/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s+[0-9A-Fa-f]{8}\s*\*/', text)
+    if m:
+        return int(m.group(1), 16)
+    return None
+
+
 def get_func_address_range(root, func_name):
     """Get function start address and size from the linker map."""
     map_file = root / 'build' / 'bb2.map'
@@ -229,6 +252,26 @@ def verify_function(root, func_name, verbose=True):
 
     if func_size is None:
         func_size = 0x1000  # fallback: scan up to 4KB
+
+    # Sanity check: the function's symbol address should match the original address
+    # parsed from asm/funcs/<func>.s (splat-extracted). A mismatch here means a
+    # regfix moved the function label out of position (typically caused by
+    # `reorder` including idx 0; see feedback_regfix_label_attachment.md).
+    expected_addr = get_expected_address(root, func_name)
+    if expected_addr is not None and expected_addr != func_addr:
+        if verbose:
+            print(f"{func_name}: SYMBOL ADDRESS MISMATCH")
+            print(f"  ours:     0x{func_addr:08X}")
+            print(f"  expected: 0x{expected_addr:08X}")
+            delta = func_addr - expected_addr
+            print(f"  delta:    {delta:+d} bytes ({delta // 4:+d} instructions)")
+            print(f"  cause:    likely a regfix `reorder` of idx 0 moved the function")
+            print(f"            label group out of position. Switch to subst-swap to")
+            print(f"            keep the label glued to the first instruction.")
+            print(f"            (See memory/feedback_regfix_label_attachment.md)")
+        # Return a sentinel "address mismatch" diff so callers see a non-empty list
+        return [('ADDR_MISMATCH', expected_addr, 0, 0, None, f'addr=0x{func_addr:08X}',
+                 f'addr=0x{expected_addr:08X}')]
 
     with open(build_exe, 'rb') as f:
         build_data = f.read()
