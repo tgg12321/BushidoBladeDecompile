@@ -55,6 +55,16 @@ Config file format (regfix.txt):
   follow the target instruction and a regular insert at the next
   index would land after those .word lines.
 
+  # Insert a LABEL after an instruction (no instruction-index shift):
+  func_8007C97C: insert_label ".LC97C:" @ 3
+
+  Like insert_after, but for labels. The label is inserted right after
+  the instruction at the specified index, but does NOT take an
+  instruction index — subsequent rules using the same indices continue
+  to refer to the same instructions. Use this for synthesizing branch
+  targets (e.g., the `.LC97C` label in the early-exit alias-breaker
+  recipe). The label name should end with `:`.
+
   # Fill a jal/branch delay slot with an existing instruction:
   func_80088740: fill_delay @ 22 <- 19
 
@@ -82,8 +92,8 @@ Order of operations: register swaps first (on original indices),
 then substitutions (on original indices), then fill_delay (reads
 post-subst source, replaces nop, queues source deletion), then
 deletes (on original indices), then inserts (shifts indices), then
-insert_afters (shifts indices), then reorders (on post-insert
-indices).
+insert_afters (shifts indices), then insert_labels (no index shift),
+then reorders (on post-insert indices).
 Instruction indices count actual instructions (not directives, labels,
 or comments) from the function entry point, 0-based.
 """
@@ -108,7 +118,7 @@ def load_config(config_path):
         if m:
             func = m.group(1)
             idx = int(m.group(2))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['deletes'].append(idx)
             continue
 
@@ -118,7 +128,7 @@ def load_config(config_path):
             func = m.group(1)
             jal_idx = int(m.group(2))
             source_idx = int(m.group(3))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['fill_delays'].append((jal_idx, source_idx))
             continue
 
@@ -127,7 +137,7 @@ def load_config(config_path):
         if m:
             func = m.group(1)
             jal_idx = int(m.group(2))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['drain_delays'].append(jal_idx)
             continue
 
@@ -152,7 +162,7 @@ def load_config(config_path):
                     f"feedback_regfix_label_attachment.md.",
                     file=sys.stderr
                 )
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['reorders'].append((start, end, order))
             continue
 
@@ -162,7 +172,7 @@ def load_config(config_path):
             func = m.group(1)
             asm_text = m.group(2).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(3))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['inserts'].append((idx, asm_text))
             continue
 
@@ -172,8 +182,20 @@ def load_config(config_path):
             func = m.group(1)
             asm_text = m.group(2).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(3))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['insert_afters'].append((idx, asm_text))
+            continue
+
+        # Parse insert_label: func_name: insert_label "label_text" @ index
+        # Like insert_after but for labels — does NOT take an instruction
+        # index, so subsequent rules' indices remain unaffected.
+        m = re.match(r'(\w+)\s*:\s*insert_label\s+"([^"]+)"\s*@\s*(\d+)', line)
+        if m:
+            func = m.group(1)
+            label_text = m.group(2).replace('\\n', '\n').replace('\\t', '\t')
+            idx = int(m.group(3))
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config[func]['insert_labels'].append((idx, label_text))
             continue
 
         # Parse subst: func_name: subst "pattern" "replacement" @ index
@@ -183,7 +205,7 @@ def load_config(config_path):
             pattern = m.group(2)
             replacement = m.group(3).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(4))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['substs'].append((idx, pattern, replacement))
             continue
 
@@ -195,7 +217,7 @@ def load_config(config_path):
             reg_b = m.group(3)
             start = int(m.group(4)) if m.group(4) is not None else None
             end = int(m.group(5)) if m.group(5) is not None else None
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['swaps'].append((reg_a, reg_b, start, end))
             continue
 
@@ -248,17 +270,51 @@ def process_function(lines, func_config):
             new_lines.append((text, idx))
         lines = new_lines
 
-    # Phase 1.5: Apply text substitutions (on original indices, after swaps)
+    # Phase 1.5: Apply text substitutions (on original indices, after swaps).
+    # Track which subst rules fired so we can warn on silently-dropped patterns
+    # (e.g. literal `.L2` written when build has `.L40` — see
+    # memory/feedback_regfix_gcc_label_regex.md).
     if subst_list:
+        # Map (subst_idx, pattern, replacement) -> "did it fire?"
+        # We key on (idx, pattern) and track:
+        #   - "visited": True if some line at this idx existed
+        #   - "matched": True if re.sub actually changed the text
+        subst_status = {(s_idx, pat): {'visited': False, 'matched': False, 'replacement': repl}
+                        for s_idx, pat, repl in subst_list}
         new_lines = []
         for text, idx in lines:
             if idx is not None:
                 for subst_idx, pattern, replacement in subst_list:
                     if idx == subst_idx:
-                        # Use lambda to avoid backreference interpretation of $N in replacement
-                        text = re.sub(pattern, lambda m: replacement, text, count=1)
+                        subst_status[(subst_idx, pattern)]['visited'] = True
+                        new_text = re.sub(pattern, lambda m: replacement, text, count=1)
+                        if new_text != text:
+                            subst_status[(subst_idx, pattern)]['matched'] = True
+                            text = new_text
             new_lines.append((text, idx))
         lines = new_lines
+
+        # Warn on rules that visited their idx but didn't match. A rule that
+        # didn't visit (i.e., the idx doesn't exist in this function's pipeline
+        # output) is reported separately below.
+        func_name = func_config.get('__name__', '<unknown>')
+        for (s_idx, pat), status in subst_status.items():
+            if status['visited'] and not status['matched']:
+                print(
+                    f"regfix: WARNING: {func_name}: subst pattern did not match "
+                    f"at idx {s_idx}: pattern={pat!r}. Rule was silently ignored. "
+                    f"Common cause: hardcoded `.L<N>` label that differs between "
+                    f"isolated permuter and full-file build (use `\\.L\\d+` regex). "
+                    f"See memory/feedback_regfix_gcc_label_regex.md.",
+                    file=sys.stderr
+                )
+            elif not status['visited']:
+                print(
+                    f"regfix: WARNING: {func_name}: subst @ idx {s_idx} not "
+                    f"found in function (max valid idx may be lower). "
+                    f"pattern={pat!r}. Rule was silently ignored.",
+                    file=sys.stderr
+                )
 
     # Phase 1.7: Apply fill_delay (read source post-swap/subst, replace nop, queue source for deletion)
     fill_delay_list = func_config.get('fill_delays', [])
@@ -420,6 +476,25 @@ def process_function(lines, func_config):
                     renumbered.append((text, idx))
             lines = renumbered
 
+    # Phase 3.6: Apply insert_label (sorted by index descending; no index shift)
+    insert_label_list = func_config.get('insert_labels', [])
+    if insert_label_list:
+        for insert_idx, label_text in sorted(insert_label_list, key=lambda x: x[0], reverse=True):
+            # Find the position in lines where insn_idx == insert_idx
+            target_pos = None
+            for pos, (text, idx) in enumerate(lines):
+                if idx == insert_idx:
+                    target_pos = pos
+                    break
+            if target_pos is None:
+                print(f"regfix: WARNING: insert_label index {insert_idx} not found", file=sys.stderr)
+                continue
+            # Insert right after the target instruction. Label gets idx=None
+            # so it doesn't participate in instruction-index renumbering.
+            insert_pos = target_pos + 1
+            new_line = f"{label_text}\n"
+            lines.insert(insert_pos, (new_line, None))
+
     # Phase 4: Apply instruction reorders (on post-insert indices)
     # Each instruction carries any preceding non-instruction lines (labels, .set, comments)
     for reorder_start, reorder_end, new_order in reorder_list:
@@ -524,7 +599,10 @@ def process_asm_text(asm_text, config):
                 func_lines.append((line, None))
 
             if end_match and end_match.group(1) == current_func:
-                processed = process_function(func_lines, current_config)
+                # Pass function name into config so warnings can identify it
+                config_with_name = dict(current_config)
+                config_with_name['__name__'] = current_func
+                processed = process_function(func_lines, config_with_name)
                 output.extend(text for text, _ in processed)
                 buffering = False
                 current_func = None

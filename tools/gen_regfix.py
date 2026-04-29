@@ -363,6 +363,181 @@ def detect_delay_slot_fills(ours, aligned):
 
 
 # ---------------------------------------------------------------------------
+# EARLY-EXIT ALIAS BREAKER — detect GCC's `move v0,a0;beqz` optimization
+# ---------------------------------------------------------------------------
+
+def detect_early_exit_alias(ours, target):
+    """Detect GCC's "move v0,arg;beqz arg" early-exit aliasing optimization
+    that the target binary emits as the more verbose 4-insn prelude.
+
+    Compiled pattern (ours):
+        idx 0: subu $sp,$sp,N
+        idx 1: beq $X,$0,.LBL_end  (X = arg register, e.g. $4)
+        idx 2: addu $V,$X,$0       (V = $2 = $v0; alias arg as v0)
+        idx 3+: compute body using $X and $V
+
+    Target pattern:
+        idx 0: bne $X,$0,.LBL_compute  (skip early-exit if non-null)
+        idx 1: subu $sp,$sp,N           (delay slot — stack alloc)
+        idx 2: j .LBL_end                (jump to end)
+        idx 3: addu $V,$0,$0             (delay slot — explicit zero)
+        compute_lbl:
+        idx 4+: compute body using $X (no alias)
+
+    Returns dict with the recipe components, or None if pattern doesn't match.
+    See memory/feedback_early_exit_alias_breaker.md for the full recipe.
+    """
+    if len(ours) < 3 or len(target) < 4:
+        return None
+
+    # Inspect ours[0..2]
+    o0 = ours[0][2]  # normalized
+    o1 = ours[1][2]
+    o2 = ours[2][2]
+
+    m0 = re.match(r'^subu\s+\$29,\$29,(\d+)$', o0) or \
+         re.match(r'^addu\s+\$29,\$29,(-\d+)$', o0)
+    if not m0:
+        return None
+    sp_imm = m0.group(1).lstrip('-')
+
+    # ours[1] is `beq $X,$0,.<label>`
+    m1 = re.match(r'^beq\s+(\$\d+),\$0,(\S+)$', o1) or \
+         re.match(r'^bne\s+(\$\d+),\$0,(\S+)$', o1)
+    if not m1:
+        return None
+    arg_reg = m1.group(1)
+    end_label = m1.group(2)
+
+    # ours[2] is `addu $V,$X,$0` aliasing arg into v_reg (typically $2)
+    m2 = re.match(r'^addu\s+(\$\d+),(\$\d+),\$0$', o2)
+    if not m2:
+        return None
+    v_reg = m2.group(1)
+    if m2.group(2) != arg_reg:
+        return None
+
+    # Now check target's pattern
+    t0 = target[0]
+    t1 = target[1]
+    t2 = target[2]
+    t3 = target[3]
+
+    tm0 = re.match(r'^bne\s+(\$\d+),\$0,(\S+)$', t0) or \
+          re.match(r'^beq\s+(\$\d+),\$0,(\S+)$', t0)
+    if not tm0 or tm0.group(1) != arg_reg:
+        return None
+    compute_label = tm0.group(2)
+
+    # target[1] should be the same subu sp (now in delay slot)
+    tm1 = re.match(r'^subu\s+\$29,\$29,(\d+)$', t1) or \
+          re.match(r'^addu\s+\$29,\$29,(-\d+)$', t1)
+    if not tm1 or tm1.group(1).lstrip('-') != sp_imm:
+        return None
+
+    # target[2] should be `j .LBL_end`
+    tm2 = re.match(r'^j\s+(\S+)$', t2)
+    if not tm2:
+        return None
+    target_end_label = tm2.group(1)
+
+    # target[3] should be `addu $V,$0,$0` (or addu/move with both src zero)
+    tm3 = re.match(r'^addu\s+(\$\d+),\$0,\$0$', t3)
+    if not tm3 or tm3.group(1) != v_reg:
+        return None
+
+    # Detect the first arg-deref in compute body that uses $V instead of $X
+    # (Compiled body uses $V because GCC aliased arg into v_reg.)
+    first_v_deref_idx = None
+    for o_idx, o_raw, o_norm in ours[3:]:
+        # Look for memory ops dereferencing $V: e.g., `lbu $X,N($V)`
+        if re.search(rf'\(\{re.escape(v_reg)}\)', o_norm):
+            first_v_deref_idx = o_idx
+            break
+
+    return {
+        'sp_imm': int(sp_imm),
+        'arg_reg': arg_reg,
+        'v_reg': v_reg,
+        'end_label_in_ours': end_label,
+        'compute_label_in_target': compute_label,
+        'end_label_in_target': target_end_label,
+        'first_v_deref_idx': first_v_deref_idx,
+    }
+
+
+# ---------------------------------------------------------------------------
+# VARARGS PROLOGUE DETECTOR — pre-subu vs post-subu spill ordering
+# ---------------------------------------------------------------------------
+
+def detect_varargs_prologue_mismatch(ours, target):
+    """Detect the varargs-prologue ordering mismatch where GCC emits
+    `sw $aN-$a3` spills BEFORE subu sp at caller-arg offsets, but the target
+    spills AFTER subu sp at offsets shifted by the frame size.
+
+    The leading spills may be a prefix of $a0-$a3 (e.g. only $a1-$a3 if $a0
+    is a named arg whose address isn't explicitly taken — debug_printf-style).
+    Detected when we see at least 2 consecutive `sw $aR,offset($sp)` where
+    R ∈ {4,5,6,7} and offset matches caller-arg-slot conventions, followed by
+    a subu sp, AND the target starts directly with subu sp (no pre-subu
+    spills).
+
+    Returns dict with diagnostic info, or None if pattern doesn't match.
+    See memory/feedback_varargs_prologue_pattern.md.
+    """
+    if len(ours) < 3:
+        return None
+
+    # Scan leading consecutive sw $aR,offset($sp) instructions where R∈{4,5,6,7}
+    # and offset is the caller's a<R-4> slot (offset = (R-4)*4).
+    found_pre_subu_spills = []
+    for i, (o_idx, o_raw, o_norm) in enumerate(ours):
+        m = re.match(r'^sw\s+\$(\d+),(-?\d+)\(\$29\)$', o_norm)
+        if not m:
+            break
+        reg_num = int(m.group(1))
+        offset = int(m.group(2))
+        if reg_num not in (4, 5, 6, 7):
+            break
+        # Caller's argument-save area starts at offset 0 of the caller's sp.
+        # Each register slot is 4 bytes. Pre-subu addressing puts $aN at
+        # offset (N-4)*4 from the (yet-to-be-decremented) sp.
+        if offset != (reg_num - 4) * 4:
+            break
+        found_pre_subu_spills.append((o_idx, reg_num, offset))
+
+    if len(found_pre_subu_spills) < 2:
+        return None
+
+    # The next instruction should be subu sp,sp,N
+    next_idx = len(found_pre_subu_spills)
+    if next_idx >= len(ours):
+        return None
+    o_next = ours[next_idx][2]
+    m_subu = re.match(r'^subu\s+\$29,\$29,(\d+)$', o_next)
+    if not m_subu:
+        return None
+    frame_size = int(m_subu.group(1))
+
+    # Check that target does NOT have these pre-subu spills — instead it
+    # starts with subu sp (target[0] should be the subu).
+    if not target:
+        return None
+    tm = re.match(r'^subu\s+\$29,\$29,(\d+)$', target[0]) or \
+         re.match(r'^addu\s+\$29,\$29,(-\d+)$', target[0])
+    if not tm:
+        return None
+    if tm.group(1).lstrip('-') != str(frame_size):
+        return None
+
+    return {
+        'frame_size': frame_size,
+        'pre_subu_spills': found_pre_subu_spills,
+        'subu_idx_in_ours': next_idx,
+    }
+
+
+# ---------------------------------------------------------------------------
 # INSTRUCTION REORDER DETECTION — find swapped instruction pairs
 # ---------------------------------------------------------------------------
 
@@ -500,6 +675,8 @@ def main():
     delay_fills = detect_delay_slot_fills(ours, aligned)
     insn_swaps = detect_instruction_swaps(aligned)
     swap_rules, remaining_reg_diffs = detect_swaps(reg_diffs)
+    early_exit_match = detect_early_exit_alias(ours, target)
+    varargs_match = detect_varargs_prologue_mismatch(ours, target)
 
     if delay_fills:
         print(f"  Delay slot fills detected: {len(delay_fills)}", file=sys.stderr)
@@ -507,6 +684,12 @@ def main():
         print(f"  Instruction swaps detected: {len(insn_swaps)}", file=sys.stderr)
     if swap_rules:
         print(f"  Register swaps detected: {len(swap_rules)}", file=sys.stderr)
+    if early_exit_match:
+        print(f"  Early-exit alias pattern DETECTED (see memory/feedback_early_exit_alias_breaker.md)",
+              file=sys.stderr)
+    if varargs_match:
+        print(f"  Varargs prologue mismatch DETECTED (see memory/feedback_varargs_prologue_pattern.md)",
+              file=sys.stderr)
 
     # Step 6: Generate rules
     print(f"\n# {func_name}: auto-generated regfix rules")
@@ -514,6 +697,72 @@ def main():
           f"operand_order={len(operand_order_diffs)}, "
           f"immediate={len(immediate_diffs)}, "
           f"structural={len(structural_diffs)}")
+
+    # 6.early: Early-exit alias breaker (8-rule recipe with synthesized label)
+    if early_exit_match:
+        e = early_exit_match
+        addr_suffix = func_name.split('_')[-1] if '_' in func_name else 'XXX'
+        # Pick a label that won't collide with GCC's `.L<N>` namespace.
+        synth_label = f'.LC{addr_suffix[-3:]}' if len(addr_suffix) >= 3 else f'.LC{addr_suffix}'
+        sp = e['sp_imm']
+        v = e['v_reg']  # numeric form, e.g. $2
+        a = e['arg_reg']  # numeric form, e.g. $4
+        end = e['end_label_in_ours']
+        first_v = e['first_v_deref_idx']
+        # Map back to named forms (maspsx output uses named regs like $sp, $zero).
+        # NOTE: maspsx output uses $sp, $zero AND numeric forms inconsistently
+        # across functions; we use the numeric form which works for both since
+        # `\$29` and `\$sp` both appear in different positions. The patterns
+        # below use a flexible alternation to accommodate both.
+        sp_name = '\\$(?:sp|29)'  # $sp or $29
+        zero_name = '\\$(?:zero|0)'  # $zero or $0
+        print(f"\n# {func_name}: early-exit alias-breaker recipe")
+        print(f"# Pattern: GCC's `move {v},{a};beqz {a}` aliases — target uses explicit zero")
+        print(f"# Recipe (see memory/feedback_early_exit_alias_breaker.md):")
+        # Match a flexible label-end pattern (\.L\d+) since labels shift
+        # between isolated permuter and full-file builds.
+        print(f'{func_name}: subst "subu\\s+{sp_name},{sp_name},{sp}" '
+              f'"bnez\\t{a},{synth_label}" @ 0')
+        print(f'{func_name}: subst "beq\\s+{re.escape(a)},{zero_name},\\.L\\d+" '
+              f'"subu\\t$sp,$sp,{sp}" @ 1')
+        print(f'{func_name}: subst "addu\\s+{re.escape(v)},{re.escape(a)},{zero_name}" '
+              f'"addu\\t{v},$0,$0" @ 2')
+        if first_v is not None:
+            # Use re.escape on the v_reg numeric form for the pattern, but the
+            # replacement uses named/numeric matching the source's typical form.
+            print(f'# idx {first_v}: rewrite ({v}) -> ({a}) for arg deref')
+            print(f'{func_name}: subst "\\({re.escape(v)}\\)" '
+                  f'"({a})" @ {first_v}')
+        print(f'{func_name}: insert "j\\t{end}" @ 2')
+        print(f'{func_name}: insert_label "{synth_label}:" @ 3')
+        print(f"# NOTE: Verify {synth_label} is unique vs GCC's .L<N> labels in the file.")
+        print(f"# NOTE: srl→sra fixes for masked-shift idioms in body are NOT auto-emitted;")
+        print(f"#       check ours-vs-target diff for `srl X,Y,3` after `andi Y,Y,0xFF`")
+        print(f"#       and add `subst \"srl\\\\s+...\" \"sra\\\\t...\" @ <idx>` rules.")
+        print(f"# After applying, run `dc.sh dump-text {func_name} --post-regfix` to verify.")
+
+    # 6.varargs: Varargs prologue ordering recipe
+    if varargs_match:
+        v = varargs_match
+        frame = v['frame_size']
+        spills = v['pre_subu_spills']
+        print(f"\n# {func_name}: varargs prologue ordering recipe")
+        print(f"# Pattern: GCC emits {len(spills)} sw $a* spills BEFORE subu sp;")
+        print(f"# target spills AFTER subu sp at offsets {frame}+0, {frame}+4, ...")
+        print(f"# Recipe (see memory/feedback_varargs_prologue_pattern.md):")
+        # Delete the leading pre-subu spills.
+        for orig_idx, reg_num, _ in spills:
+            print(f'{func_name}: delete @ {orig_idx}  # remove pre-subu sw $a{reg_num - 4}')
+        print(f"# After deletes, the original idx N shifts to (N - {len(spills)}).")
+        print(f"# Re-insert post-subu spills using insert_after at positions that match")
+        print(f"# the target's interleaving with the call-arg setup (see target asm).")
+        print(f"# Typical scaffold (positions need adjustment per target):")
+        for _, reg_num, _ in spills:
+            offset = frame + (reg_num - 4) * 4
+            print(f'#   {func_name}: insert_after "sw\\t$a{reg_num - 4},{offset}($sp)" '
+                  f'@ <pos>')
+        print(f"# This recipe is a SCAFFOLD — finish manually after inspecting the")
+        print(f"# target asm to determine the exact insertion positions.")
 
     # 6a: Delay slot fills (subst nop -> insn, delete original)
     if delay_fills:

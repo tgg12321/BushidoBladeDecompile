@@ -130,15 +130,14 @@ print(f'Replaced {func} in {src}')
         ;;
 
     dump-text)
-        # Dump numbered TEXT indices from build pipeline
+        # Dump numbered TEXT indices from build pipeline.
+        # Use --post-regfix to dump indices AFTER regfix passes (useful for
+        # debugging multi-rule regfix sequences and verifying inserted
+        # instructions land where intended).
         FUNC_NAME="$1"
-        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh dump-text <func_name> [src_file]"; exit 1; }
-        SRC_FILE="${2:-}"
-        if [ -n "$SRC_FILE" ]; then
-            python3 tools/dump_text_indices.py "$FUNC_NAME" "$SRC_FILE"
-        else
-            python3 tools/dump_text_indices.py "$FUNC_NAME"
-        fi
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh dump-text <func_name> [src_file] [--post-regfix]"; exit 1; }
+        shift
+        python3 tools/dump_text_indices.py "$FUNC_NAME" "$@"
         ;;
 
     validate-regfix)

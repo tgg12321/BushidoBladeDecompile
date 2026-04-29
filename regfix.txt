@@ -3570,7 +3570,7 @@ func_8007C97C: subst "0\(\$2\)" "0($4)" @ 3
 func_8007C97C: subst "srl\s+\$6,\$6,3" "sra	$6,$6,3" @ 11
 func_8007C97C: subst "srl\s+\$3,\$3,3" "sra	$3,$3,3" @ 24
 func_8007C97C: insert "j	.L40" @ 2
-func_8007C97C: insert_after ".LC97C:" @ 3
+func_8007C97C: insert_label ".LC97C:" @ 3
 func_80062020: subst "sw\s+\$0,%gp_rel\(D_800A32B8\)\(\$gp\)" "lw	$2,0($4)" @ 1
 func_80062020: subst "lw\s+\$2,0\(\$4\)" "sw	$0,%gp_rel(D_800A32B8)($gp)" @ 2
 func_80062020: subst "addu\s+\$3,\$0,\$zero" "addu	$5,$0,$zero" @ 6
