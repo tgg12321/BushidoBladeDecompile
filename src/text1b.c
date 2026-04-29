@@ -833,68 +833,48 @@ __asm__(
 void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     func_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80048AD0\n"
-    "    addiu  $sp,$sp,-24\n"
-    "    sw  $s0,16($sp)\n"
-    "    sw  $ra,20($sp)\n"
-    "    jal  func_8004153C\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    beqz  $v0,.L80048B0C\n"
-    "    nop\n"
-    "    lh  $v0,8($v0)\n"
-    "    .word 0xAF900314\n"
-    "    lui  $at,%hi(D_80099BCC)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lbu  $a0,%lo(D_80099BCC)($at)\n"
-    "    addiu  $v0,$zero,255\n"
-    "    bne  $a0,$v0,.L80048B14\n"
-    "    nop\n"
-    ".L80048B0C:\n"
-    "    j  .L80048B78\n"
-    "    addu  $v0,$zero,$zero\n"
-    ".L80048B14:\n"
-    "    jal  snd_LoadBgm\n"
-    "    nop\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    addiu  $t0,$zero,9\n"
-    "    lw  $v1,8($v0)\n"
-    "    addiu  $a3,$zero,15\n"
-    "    srl  $v1,$v1,2\n"
-    "    sll  $v1,$v1,2\n"
-    "    addu  $v1,$v0,$v1\n"
-    "    subu  $a2,$v1,$v0\n"
-    "    addiu  $a1,$v1,10\n"
-    "    .word 0xAF830318\n"
-    ".L80048B44:\n"
-    "    sh  $a0,-8($a1)\n"
-    "    sh  $t0,-6($a1)\n"
-    "    sb  $a3,0($v1)\n"
-    "    sb  $zero,-9($a1)\n"
-    "    sh  $s0,0($a1)\n"
-    "    addiu  $a1,$a1,104\n"
-    "    addiu  $a0,$a0,1\n"
-    "    slti  $v0,$a0,17\n"
-    "    bnez  $v0,.L80048B44\n"
-    "    addiu  $v1,$v1,104\n"
-    "    jal  snd_PlayBgm\n"
-    "    addiu  $a0,$a2,1768\n"
-    "    addiu  $v0,$zero,1\n"
-    ".L80048B78:\n"
-    "    lw  $ra,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,24\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 snd_LoadBgm(u8);
+extern s32 snd_PlayBgm(s32);
+extern u8 D_80099BCC;
+extern s32 D_800A33E0;
+extern s32 D_800A33E4;
+extern s32 func_8004153C(s32);
+s32 func_80048AD0(s32 arg0) {
+    s32 temp_v0;
+    u8 sound;
+    u8 *base;
+    register s32 delta asm("$6");
+    register u8 *p asm("$3");
+    register u8 *q asm("$5");
+    register s32 i asm("$4");
+
+    temp_v0 = func_8004153C(arg0);
+    if (temp_v0 == 0) return 0;
+    {
+        s32 idx = *(s16 *)(temp_v0 + 8);
+        D_800A33E0 = arg0;
+        sound = (&D_80099BCC)[idx];
+    }
+    if (sound == 0xFF) return 0;
+    base = (u8 *)snd_LoadBgm(sound);
+    p = base + ((*(u32 *)(base + 8) >> 2) << 2);
+    delta = (s32)(p - base);
+    q = p + 0xA;
+    D_800A33E4 = (s32)p;
+    i = 0;
+    do {
+        *(s16 *)(q - 8) = i;
+        *(s16 *)(q - 6) = 9;
+        *p = 0xF;
+        *(s8 *)(q - 9) = 0;
+        *(s16 *)q = (s16)arg0;
+        q += 0x68;
+        i += 1;
+        p += 0x68;
+    } while (i < 0x11);
+    snd_PlayBgm(delta + 0x6E8);
+    return 1;
+}
 extern s32 g_snd_play_count;
 void func_80048B8C(s32 a0) {
     g_snd_play_count += a0;
