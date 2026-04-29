@@ -22959,78 +22959,33 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8005C4C0\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    sw  $s1,20($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a1,$zero\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    sw  $ra,32($sp)\n"
-    "    sw  $s3,28($sp)\n"
-    "    jal  func_800858D0\n"
-    "    sw  $s2,24($sp)\n"
-    "    sll  $s0,$s0,16\n"
-    "    sra  $s2,$s0,16\n"
-    "    lui  $v0,%hi(D_800EFC38)\n"
-    "    addiu  $v0,$v0,%lo(D_800EFC38)\n"
-    "    sll  $s3,$s2,2\n"
-    "    addu  $s0,$s3,$v0\n"
-    "    lw  $v1,0($s0)\n"
-    "    nop\n"
-    "    beqz  $v1,.L8005C57C\n"
-    "    addu  $v1,$v1,$s1\n"
-    "    sw  $v1,0($s0)\n"
-    "    lw  $v0,0($v1)\n"
-    "    nop\n"
-    "    addu  $v0,$v0,$s1\n"
-    "    sw  $v0,0($v1)\n"
-    "    lw  $v1,0($s0)\n"
-    "    nop\n"
-    "    lw  $v0,4($v1)\n"
-    "    addu  $a0,$s2,$zero\n"
-    "    addu  $v0,$v0,$s1\n"
-    "    jal  func_80087F64\n"
-    "    sw  $v0,4($v1)\n"
-    "    lw  $v0,0($s0)\n"
-    "    lui  $at,%hi(D_800EFB38)\n"
-    "    addu  $at,$at,$s3\n"
-    "    lw  $a2,%lo(D_800EFB38)($at)\n"
-    "    lw  $a0,4($v0)\n"
-    "    jal  func_800880B8\n"
-    "    addu  $a1,$s2,$zero\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    bne  $v0,$s2,.L8005C588\n"
-    "    nop\n"
-    "    jal  func_80087FE8\n"
-    "    addu  $a0,$v0,$zero\n"
-    "    j  .L8005C584\n"
-    "    sll  $v0,$v0,16\n"
-    ".L8005C57C:\n"
-    "    addiu  $v0,$zero,-1\n"
-    "    sll  $v0,$v0,16\n"
-    ".L8005C584:\n"
-    "    sra  $v0,$v0,16\n"
-    ".L8005C588:\n"
-    "    lw  $ra,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800EFC38;
+extern s32 func_80087F64(s32);
+extern s16 func_800880B8(s32, s32, s32);
+extern s16 func_80087FE8(s16);
+s32 func_8005C4C0(s32 arg0, s16 arg1) {
+    s32 **p;
+    s32 *v;
+    s32 *vv;
+    s16 ret;
+    title_mv_exec2(0);
+    p = (s32 **)((u8 *)&D_800EFC38 + arg1 * 4);
+    v = *p;
+    if (v != 0) {
+        v = (s32 *)((u8 *)v + arg0);
+        *p = v;
+        *v = *v + arg0;
+        vv = *(volatile s32 **)p;
+        *(s32 *)((u8 *)vv + 4) = *(s32 *)((u8 *)vv + 4) + arg0;
+        func_80087F64(arg1);
+        ret = func_800880B8(*(s32 *)((u8 *)*p + 4), arg1, *(s32 *)((u8 *)&D_800EFB38 + arg1 * 4));
+        if (ret == arg1) {
+            return (s16)func_80087FE8(ret);
+        }
+        return ret;
+    }
+    return (s16)-1;
+}
 extern s32 D_800A3404;
 void func_80087F64(s32);
 void func_80088088(s32, s16, s32);

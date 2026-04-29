@@ -3618,3 +3618,9 @@ func_8007CA00: $2 <-> $3 @ 30-36
 func_8007CA00: subst "sra\s+\$2,\$2,1" "sra	$2,$3,1" @ 38
 func_8007CA00: subst "lh\s+\$3,0\(\$4\)" "lh	$3,4($4)" @ 12
 func_8007CA00: subst "lh\s+\$4,4\(\$4\)" "lh	$4,0($4)" @ 13
+func_8005C4C0: reorder 45,44 @ 44-45
+func_8005C4C0: insert_after "sll	$2,$2,16" @ 46
+func_8005C4C0: reorder 13,12,14 @ 12-14
+func_8005C4C0: delete @ 46
+func_8005C4C0: insert "sra	$2,$2,16" @ 47
+func_8005C4C0: subst "\.L157" ".L157+4" @ 40
