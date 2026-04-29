@@ -33052,86 +33052,50 @@ void func_80065134(void) {
     D_800F0BBE = 0;
     D_800F0D2C = (s32)p;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8006517C\n"
-    "    .word 0x8F8303B0\n"
-    "    nop\n"
-    "    lw  $v0,0($v1)\n"
-    "    lui  $at,%hi(D_800F0D30)\n"
-    "    sw  $v0,%lo(D_800F0D30)($at)\n"
-    "    lw  $v0,4($v1)\n"
-    "    lui  $at,%hi(D_800F0D34)\n"
-    "    sw  $v0,%lo(D_800F0D34)($at)\n"
-    "    lw  $v0,8($v1)\n"
-    "    lui  $at,%hi(D_800F0BC0)\n"
-    "    sh  $zero,%lo(D_800F0BC0)($at)\n"
-    "    lui  $at,%hi(D_800F0D38)\n"
-    "    sw  $v0,%lo(D_800F0D38)($at)\n"
-    "    lw  $v0,0($v1)\n"
-    "    lui  $at,%hi(D_800F0D48)\n"
-    "    sw  $v0,%lo(D_800F0D48)($at)\n"
-    "    lw  $v0,4($v1)\n"
-    "    lui  $at,%hi(D_800F0D4C)\n"
-    "    sw  $v0,%lo(D_800F0D4C)($at)\n"
-    "    lw  $v1,8($v1)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    lui  $at,%hi(D_800F1110)\n"
-    "    sw  $v0,%lo(D_800F1110)($at)\n"
-    "    lui  $at,%hi(D_800F0BC4)\n"
-    "    sh  $zero,%lo(D_800F0BC4)($at)\n"
-    "    lui  $at,%hi(D_800F0D50)\n"
-    "    sw  $v1,%lo(D_800F0D50)($at)\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800651F0\n"
-    "    .word 0x8F8303B0\n"
-    "    nop\n"
-    "    lw  $v0,0($v1)\n"
-    "    lui  $at,%hi(D_800F0D3C)\n"
-    "    sw  $v0,%lo(D_800F0D3C)($at)\n"
-    "    lw  $v0,4($v1)\n"
-    "    lui  $at,%hi(D_800F0D40)\n"
-    "    sw  $v0,%lo(D_800F0D40)($at)\n"
-    "    lw  $v0,8($v1)\n"
-    "    lui  $at,%hi(D_800F0BC2)\n"
-    "    sh  $zero,%lo(D_800F0BC2)($at)\n"
-    "    lui  $at,%hi(D_800F0D44)\n"
-    "    sw  $v0,%lo(D_800F0D44)($at)\n"
-    "    lw  $v0,0($v1)\n"
-    "    lui  $at,%hi(D_800F0D54)\n"
-    "    sw  $v0,%lo(D_800F0D54)($at)\n"
-    "    lw  $v0,4($v1)\n"
-    "    lui  $at,%hi(D_800F0D58)\n"
-    "    sw  $v0,%lo(D_800F0D58)($at)\n"
-    "    lw  $v1,8($v1)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    lui  $at,%hi(D_800F1114)\n"
-    "    sw  $v0,%lo(D_800F1114)($at)\n"
-    "    lui  $at,%hi(D_800F0BC6)\n"
-    "    sh  $zero,%lo(D_800F0BC6)($at)\n"
-    "    lui  $at,%hi(D_800F0D5C)\n"
-    "    sw  $v1,%lo(D_800F0D5C)($at)\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern u16 D_800F0BC0;
+extern u16 D_800F0BC4;
+extern s32 D_800F0D38;
+extern s32 D_800F0D48;
+extern s32 D_800F0D4C;
+extern s32 D_800F0D50;
+extern s32 D_800F1110;
+void func_8006517C(void) {
+    register volatile s32 *p asm("$3") = (volatile s32 *)D_800A347C;
+    register s32 t asm("$2");
+    t = p[0]; D_800F0D30 = t;
+    t = p[1]; D_800F0D34 = t;
+    t = p[2];
+    D_800F0BC0 = 0;
+    D_800F0D38 = t;
+    t = p[0]; D_800F0D48 = t;
+    t = p[1]; D_800F0D4C = t;
+    p = (volatile s32 *)p[2];
+    D_800F1110 = 1;
+    D_800F0BC4 = 0;
+    D_800F0D50 = (s32)p;
+}
+extern u16 D_800F0BC2;
+extern u16 D_800F0BC6;
+extern s32 D_800F0D44;
+extern s32 D_800F0D54;
+extern s32 D_800F0D58;
+extern s32 D_800F0D5C;
+extern s32 D_800F1114;
+void func_800651F0(void) {
+    register volatile s32 *p asm("$3") = (volatile s32 *)D_800A347C;
+    register s32 t asm("$2");
+    t = p[0]; D_800F0D3C = t;
+    t = p[1]; D_800F0D40 = t;
+    t = p[2];
+    D_800F0BC2 = 0;
+    D_800F0D44 = t;
+    t = p[0]; D_800F0D54 = t;
+    t = p[1]; D_800F0D58 = t;
+    p = (volatile s32 *)p[2];
+    D_800F1114 = 1;
+    D_800F0BC6 = 0;
+    D_800F0D5C = (s32)p;
+}
 extern volatile s32 D_800A347C;
 extern volatile s32 D_800F0D60;
 extern volatile s32 D_800F0D64;

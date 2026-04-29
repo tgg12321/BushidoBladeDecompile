@@ -3544,3 +3544,9 @@ func_800484A0: insert "addu $16,$16,8" @ 13
 func_800484A0: insert "addiu $16,$sp,24" @ 24
 func_800484A0: subst "addu\s+\$6,\$sp,24" "addu	$6,$16,$0" @ 25
 func_800484A0: subst "addu\s+\$5,\$sp,24" "addu	$5,$16,$0" @ 28
+func_8006517C: reorder 16,12,13,14,15 @ 12-16
+func_8006517C: subst "\$4" "$2" @ 13
+func_8006517C: subst "\$4" "$2" @ 14
+func_800651F0: reorder 16,12,13,14,15 @ 12-16
+func_800651F0: subst "\$4" "$2" @ 13
+func_800651F0: subst "\$4" "$2" @ 14
