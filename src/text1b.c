@@ -39591,54 +39591,18 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8006B898\n"
-    "    addiu  $sp,$sp,-64\n"
-    "    sw  $a0,64($sp)\n"
-    "    addiu  $a0,$sp,16\n"
-    "    sw  $a1,68($sp)\n"
-    "    .word 0x8F820448\n"
-    "    lui  $v1,%hi(D_800A36AC)\n"
-    "    lw  $v1,%lo(D_800A36AC)($v1)\n"
-    "    lui  $a1,%hi(D_800A3518)\n"
-    "    addiu  $a1,$a1,%lo(D_800A3518)\n"
-    "    sw  $ra,60($sp)\n"
-    "    sw  $s0,56($sp)\n"
-    "    addiu  $v0,$v0,1\n"
-    "    andi  $v1,$v1,1\n"
-    "    sll  $s0,$v1,7\n"
-    "    addu  $s0,$s0,$v1\n"
-    "    sll  $s0,$s0,3\n"
-    "    addu  $s0,$s0,$v1\n"
-    "    sll  $s0,$s0,4\n"
-    "    .word 0xAF820448\n"
-    "    lui  $v0,%hi(g_disp_fb_base)\n"
-    "    addiu  $v0,$v0,%lo(g_disp_fb_base)\n"
-    "    jal  func_8006E390\n"
-    "    addu  $s0,$s0,$v0\n"
-    "    addiu  $a0,$sp,16\n"
-    "    addiu  $a1,$zero,1\n"
-    "    jal  func_80069AE4\n"
-    "    addu  $a2,$s0,$zero\n"
-    "    jal  func_8006B120\n"
-    "    addiu  $a0,$sp,16\n"
-    "    addiu  $a0,$sp,64\n"
-    "    jal  func_8006B578\n"
-    "    addiu  $a1,$sp,68\n"
-    "    lw  $ra,60($sp)\n"
-    "    lw  $s0,56($sp)\n"
-    "    addiu  $sp,$sp,64\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A36AC;
+extern u8 g_disp_fb_base;
+void func_8006B898(s32 arg0, s32 arg1) {
+    s32 sp10[10];
+    u8 *t;
+    D_800A3514 += 1;
+    t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
+    func_8006E390(sp10, &D_800A3518);
+    func_80069AE4(sp10, 1, t);
+    func_8006B120(sp10);
+    func_8006B578(&arg0, &arg1);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
