@@ -1461,67 +1461,28 @@ s32 func_8007C97C(u8 *arg0) {
     sp[3] = b2;
     return g;
 }
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007CA00\n"
-    "    lui        $v1, %hi(g_gpu_type)\n"
-    "    lbu        $v1, %lo(g_gpu_type)($v1)\n"
-    "    addiu      $v0, $zero, 0x1\n"
-    "    beq        $v1, $v0, .Lfunc_8007CA00_8007CA24\n"
-    "    addiu     $v0, $zero, 0x2\n"
-    "    beq        $v1, $v0, .Lfunc_8007CA00_8007CA4C\n"
-    "    nop\n"
-    "    j          .Lfunc_8007CA00_8007CAA4\n"
-    "    nop\n"
-    ".Lfunc_8007CA00_8007CA24:\n"
-    "    lui        $v0, %hi(g_gpu_dither)\n"
-    "    lbu        $v0, %lo(g_gpu_dither)($v0)\n"
-    "    nop\n"
-    "    beqz       $v0, .Lfunc_8007CA00_8007CAA4\n"
-    "    addiu     $v0, $zero, 0x400\n"
-    "    lh         $v1, 4($a0)\n"
-    "    lh         $a0, 0($a0)\n"
-    ".Lfunc_8007CA00_8007CA40:\n"
-    "    subu       $v0, $v0, $v1\n"
-    "    j          .Lfunc_8007CA00_8007CAA8\n"
-    "    subu      $v0, $v0, $a0\n"
-    ".Lfunc_8007CA00_8007CA4C:\n"
-    "    lui        $v0, %hi(g_gpu_dither)\n"
-    "    lbu        $v0, %lo(g_gpu_dither)($v0)\n"
-    "    nop\n"
-    "    beqz       $v0, .Lfunc_8007CA00_8007CA84\n"
-    "    nop\n"
-    "    lhu        $v0, 4($a0)\n"
-    "    lh         $a0, 0($a0)\n"
-    "    sll        $v0, $v0, 16\n"
-    "    sra        $v1, $v0, 16\n"
-    "    srl        $v0, $v0, 31\n"
-    "    addu       $v1, $v1, $v0\n"
-    "    sra        $v1, $v1, 1\n"
-    "    j          .Lfunc_8007CA00_8007CA40\n"
-    "    addiu     $v0, $zero, 0x400\n"
-    ".Lfunc_8007CA00_8007CA84:\n"
-    "    lhu        $v0, 0($a0)\n"
-    "    nop\n"
-    "    sll        $v0, $v0, 16\n"
-    "    sra        $v1, $v0, 16\n"
-    "    srl        $v0, $v0, 31\n"
-    "    addu       $v1, $v1, $v0\n"
-    "    j          .Lfunc_8007CA00_8007CAA8\n"
-    "    sra       $v0, $v1, 1\n"
-    ".Lfunc_8007CA00_8007CAA4:\n"
-    "    lh         $v0, 0($a0)\n"
-    ".Lfunc_8007CA00_8007CAA8:\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+extern u8 D_8009BE74;
+extern u8 D_8009BE77;
+s32 func_8007CA00(s16 *arg0) {
+    int new_var;
+    switch (D_8009BE74) {
+    case 1:
+        if (D_8009BE77 != 0) {
+            s32 v1 = arg0[2];
+            return (0x400 - v1) - arg0[0];
+        }
+        return arg0[0];
+    case 2:
+        if (0 != D_8009BE77) {
+            s32 v1 = ((s16)(*((u16 *)(arg0 + 2)))) / 2;
+            new_var = 0x400;
+            return (new_var - v1) - arg0[0];
+        }
+        return ((s32)((s16)(*((u16 *)arg0)))) / 2;
+    default:
+        return arg0[0];
+    }
+}
 u32 func_8007CAB0(void) {
     return *g_gpu_stat_reg;
 }
