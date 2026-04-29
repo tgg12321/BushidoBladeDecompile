@@ -178,56 +178,20 @@ void func_8007B4D0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     fn = (void (*)())p[2];
     fn(p[3], a, 8, packed | (b & 0xFF));
 }
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007B564\n"
-    "    addiu      $sp, $sp, -0x28\n"
-    "    sw         $s3, 28($sp)\n"
-    "    addu       $s3, $a0, $zero\n"
-    "    lui        $a0, %hi(g_str_clearimage)\n"
-    "    addiu      $a0, $a0, %lo(g_str_clearimage)\n"
-    "    sw         $s2, 24($sp)\n"
-    "    addu       $s2, $a1, $zero\n"
-    "    addu       $a1, $s3, $zero\n"
-    "    sw         $s0, 16($sp)\n"
-    "    addu       $s0, $a2, $zero\n"
-    "    sw         $s1, 20($sp)\n"
-    "    sw         $ra, 32($sp)\n"
-    "    jal        func_8007B3A8\n"
-    "    addu      $s1, $a3, $zero\n"
-    "    addu       $a1, $s3, $zero\n"
-    "    andi       $s1, $s1, 0xFF\n"
-    "    sll        $s1, $s1, 16\n"
-    "    andi       $s0, $s0, 0xFF\n"
-    "    sll        $s0, $s0, 8\n"
-    "    lui        $v0, (0x80000000 >> 16)\n"
-    "    or         $s0, $s0, $v0\n"
-    "    or         $s1, $s1, $s0\n"
-    "    andi       $s2, $s2, 0xFF\n"
-    "    lui        $v1, %hi(g_gpu_dev_table)\n"
-    "    lw         $v1, %lo(g_gpu_dev_table)($v1)\n"
-    "    addiu      $a2, $zero, 0x8\n"
-    "    lw         $a0, 12($v1)\n"
-    "    lw         $v0, 8($v1)\n"
-    "    nop\n"
-    "    jalr       $v0\n"
-    "    or        $a3, $s1, $s2\n"
-    "    lw         $ra, 32($sp)\n"
-    "    lw         $s3, 28($sp)\n"
-    "    lw         $s2, 24($sp)\n"
-    "    lw         $s1, 20($sp)\n"
-    "    lw         $s0, 16($sp)\n"
-    "    addiu      $sp, $sp, 0x28\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+void func_8007B564(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    register s32 a asm("$19") = arg0;
+    register s32 b asm("$18") = arg1;
+    register s32 c asm("$16") = arg2;
+    register s32 d asm("$17") = arg3;
+    s32 *p;
+    void (*fn)();
+    s32 packed;
+    func_8007B3A8(&g_str_clearimage, a);
+    packed = ((d & 0xFF) << 16) | ((c & 0xFF) << 8) | 0x80000000;
+    p = (s32 *)g_gpu_dev_table;
+    fn = (void (*)())p[2];
+    fn(p[3], a, 8, packed | (b & 0xFF));
+}
 extern u32 g_str_loadimage;
 
 void gpu_LoadImage(s32 a0, s32 a1) {
