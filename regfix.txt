@@ -3600,3 +3600,8 @@ func_8004876C: subst "\$7,\$7" "$7,$3" @ 31
 func_80065484: subst "andi\s+\$4,\$2,0x00ff" "addu	$4,$2,$0" @ 8
 func_80065484: subst "andi\s+\$4,\$2,0x00ff" "addu	$4,$2,$0" @ 8
 func_80065484: subst "addu\s+\$2,\$4,\$zero" "andi	$2,$4,0x00ff" @ 37
+func_80053694: subst "addu\s+\$7,\$0,\$zero" "addu	$2,$0,$zero" @ 5
+func_80053694: subst "lhu\s+\$2,4\(\$6\)" "lhu	$3,4($6)" @ 43
+func_80053694: subst "addiu\s+\$7,\$zero,1" "addiu	$2,$zero,1" @ 44
+func_80053694: subst "sh\s+\$2," "sh	$3," @ 45
+func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47

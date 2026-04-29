@@ -12962,66 +12962,26 @@ void func_80053614(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053E9C;
     func_80052D00(arg2, arg3);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80053694\n"
-    "    .word 0x8F860328\n"
-    "    lui  $v1,32767\n"
-    "    lw  $v0,0($a2)\n"
-    "    ori  $v1,$v1,65535\n"
-    "    beq  $v0,$v1,.L8005374C\n"
-    "    addu  $v0,$zero,$zero\n"
-    "    lh  $v1,72($a2)\n"
-    "    nop\n"
-    "    sll  $v0,$v1,5\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,4\n"
-    "    lw  $v1,56($a2)\n"
-    "    addiu  $v0,$v0,-32000\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    sw  $v1,0($a0)\n"
-    "    lw  $v0,60($a2)\n"
-    "    nop\n"
-    "    sw  $v0,4($a0)\n"
-    "    lh  $v1,74($a2)\n"
-    "    nop\n"
-    "    sll  $v0,$v1,5\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,4\n"
-    "    lw  $v1,64($a2)\n"
-    "    addiu  $v0,$v0,-32000\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    sw  $v1,8($a0)\n"
-    "    lw  $v0,40($a2)\n"
-    "    nop\n"
-    "    sra  $v0,$v0,2\n"
-    "    sh  $v0,0($a1)\n"
-    "    lw  $v0,44($a2)\n"
-    "    nop\n"
-    "    sra  $v0,$v0,2\n"
-    "    sh  $v0,2($a1)\n"
-    "    lw  $v0,48($a2)\n"
-    "    nop\n"
-    "    sra  $v0,$v0,2\n"
-    "    sh  $v0,4($a1)\n"
-    "    lhu  $v1,4($a2)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    .word 0xA783032C\n"
-    ".L8005374C:\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern u8 *D_800A33F4;
+extern u16 D_800A33F8;
+s32 func_80053694(s32 *arg0, s16 *arg1) {
+    u8 *p = D_800A33F4;
+    s32 t;
+    s32 result = 0;
+    if (*(s32 *)(p + 0) != 0x7FFFFFFF) {
+        t = (*(s16 *)(p + 0x48) * 0x7D0) - 0x7D00;
+        arg0[0] = *(s32 *)(p + 0x38) + t;
+        arg0[1] = *(s32 *)(p + 0x3C);
+        t = (*(s16 *)(p + 0x4A) * 0x7D0) - 0x7D00;
+        arg0[2] = *(s32 *)(p + 0x40) + t;
+        arg1[0] = *(s32 *)(p + 0x28) >> 2;
+        arg1[1] = *(s32 *)(p + 0x2C) >> 2;
+        arg1[2] = *(s32 *)(p + 0x30) >> 2;
+        result = 1;
+        D_800A33F8 = *(u16 *)(p + 4);
+    }
+    return result;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
