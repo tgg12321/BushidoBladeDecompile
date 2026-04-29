@@ -3579,3 +3579,7 @@ func_80062020: delete @ 0
 func_80062020: delete @ 3
 func_80062020: insert_after "addu	$3,$0,$zero" @ 4
 func_8007992C: reorder 16,14,15,17 @ 14-17
+func_8007B4D0: subst "andi\s+\$7,\$16,0x00ff" "andi	$16,$16,0x00ff" @ 14
+func_8007B4D0: subst "sll\s+\$7,\$7,16" "sll	$16,$16,16" @ 15
+func_8007B4D0: subst "or\s+\$7,\$7,\$17" "or	$16,$16,$17" @ 18
+func_8007B4D0: subst "or\s+\$7,\$7,\$18" "or	$7,$16,$18" @ 26
