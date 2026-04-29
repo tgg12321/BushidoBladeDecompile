@@ -37827,67 +37827,26 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8006A3CC\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    sw  $s1,28($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    sw  $ra,32($sp)\n"
-    "    sw  $s0,24($sp)\n"
-    "    lw  $v0,4($s1)\n"
-    "    nop\n"
-    "    lw  $v0,28($v0)\n"
-    "    nop\n"
-    "    lw  $v0,16($v0)\n"
-    "    addu  $s0,$a1,$zero\n"
-    "    sw  $v0,0($s0)\n"
-    "    lw  $v0,0($s0)\n"
-    "    addiu  $v1,$zero,1\n"
-    "    sw  $zero,24($s0)\n"
-    "    sw  $zero,28($s0)\n"
-    "    sb  $zero,40($s0)\n"
-    "    sw  $zero,16($s0)\n"
-    "    sw  $v1,20($s0)\n"
-    "    addiu  $v0,$v0,12\n"
-    "    sw  $v0,4($s0)\n"
-    "    lw  $v0,20($s1)\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    jal  func_8007352C\n"
-    "    sw  $v0,8($s0)\n"
-    "    sw  $v0,20($s1)\n"
-    "    lw  $a0,0($s0)\n"
-    "    jal  func_8006E480\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    sw  $zero,16($sp)\n"
-    "    lw  $a0,28($s1)\n"
-    "    jal  initTexPage\n"
-    "    addu  $a3,$v0,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    lw  $a1,28($s1)\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,4\n"
-    "    lw  $v0,28($s1)\n"
-    "    nop\n"
-    "    addiu  $v0,$v0,12\n"
-    "    sw  $v0,28($s1)\n"
-    "    lw  $ra,32($sp)\n"
-    "    lw  $s1,28($sp)\n"
-    "    lw  $s0,24($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_8006E480(s32, s32);
+extern s32 func_8007352C(s32);
+extern s32 initTexPage(s32, s32, s32, s32, s32);
+extern s32 ot_Link(s32, s32);
+void func_8006A3CC(s32 *arg0, u8 *arg1) {
+    s32 v;
+    *(s32 *)(arg1 + 0) = *(s32 *)(*(s32 *)(*(s32 *)((u8 *)arg0 + 4) + 0x1C) + 0x10);
+    v = *(volatile s32 *)(arg1 + 0);
+    *(s32 *)(arg1 + 0x18) = 0;
+    *(s32 *)(arg1 + 0x1C) = 0;
+    *(s8 *)(arg1 + 0x28) = 0;
+    *(s32 *)(arg1 + 0x10) = 0;
+    *(s32 *)(arg1 + 0x14) = 1;
+    *(s32 *)(arg1 + 4) = v + 0xC;
+    *(s32 *)(arg1 + 8) = arg0[5];
+    arg0[5] = func_8007352C((s32)arg1);
+    initTexPage(arg0[7], 1, 0, func_8006E480(*(s32 *)(arg1 + 0), 0), 0);
+    ot_Link(D_800A374C + 4, arg0[7]);
+    arg0[7] += 0xC;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
