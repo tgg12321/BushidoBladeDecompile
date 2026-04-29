@@ -172,6 +172,21 @@ def load_config(config_path):
             func = m.group(1)
             asm_text = m.group(2).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(3))
+            # Warn on hardcoded `.L<digits>` references — GCC's auto-labels
+            # are file-wide and shift when other functions are added or
+            # removed. Use insert_label to synthesize a stable label and
+            # reference it from the insert. See memory/
+            # feedback_label_renumber_breaks_regfix.md.
+            if re.search(r'\.L\d+\b', asm_text):
+                lbl = re.search(r'\.L\d+\b', asm_text).group(0)
+                print(
+                    f"regfix: WARNING: {func}: insert references GCC auto-label "
+                    f"{lbl!r}: {asm_text!r}. This label is file-wide and will "
+                    f"shift if other functions are added/removed. Synthesize a "
+                    f"stable label with insert_label and use that name "
+                    f"instead. See memory/feedback_label_renumber_breaks_regfix.md.",
+                    file=sys.stderr
+                )
             config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['inserts'].append((idx, asm_text))
             continue
