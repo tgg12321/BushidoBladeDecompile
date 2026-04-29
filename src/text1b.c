@@ -16984,63 +16984,29 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80056FE8\n"
-    "    lw  $a2,0($a0)\n"
-    "    nop\n"
-    "    lw  $v0,88($a2)\n"
-    "    nop\n"
-    "    lbu  $v1,3($v0)\n"
-    "    nop\n"
-    "    sll  $v0,$v1,2\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $a1,$v0,3\n"
-    "    lbu  $v1,163($a2)\n"
-    "    addiu  $v0,$zero,255\n"
-    "    beq  $v1,$v0,.L8005705C\n"
-    "    nop\n"
-    "    lh  $v0,94($a0)\n"
-    "    nop\n"
-    "    bnez  $v0,.L80057044\n"
-    "    nop\n"
-    "    lh  $v0,14($a2)\n"
-    "    lui  $at,%hi(D_8009A830)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lbu  $v0,%lo(D_8009A830)($at)\n"
-    "    j  .L80057074\n"
-    "    sll  $v0,$v0,1\n"
-    ".L80057044:\n"
-    "    lh  $v0,14($a2)\n"
-    "    lui  $at,%hi(D_8009A838)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lb  $v0,%lo(D_8009A838)($at)\n"
-    "    j  .L80057074\n"
-    "    sll  $v0,$v0,3\n"
-    ".L8005705C:\n"
-    "    lh  $v0,20($a2)\n"
-    "    lui  $at,%hi(D_8009A840)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lbu  $v0,%lo(D_8009A840)($at)\n"
-    "    nop\n"
-    "    sll  $v0,$v0,1\n"
-    ".L80057074:\n"
-    "    addu  $a1,$a1,$v0\n"
-    "    lw  $v0,0($a0)\n"
-    "    nop\n"
-    "    lh  $v0,1034($v0)\n"
-    "    nop\n"
-    "    addu  $v0,$a1,$v0\n"
-    "    jr  $ra\n"
-    "    addiu  $v0,$v0,300\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern u8 D_8009A830;
+extern s8 D_8009A838;
+extern u8 D_8009A840;
+s32 func_80056FE8(s32 arg0) {
+    s32 a2 = *((s32 *) arg0);
+    s32 a3 = *((u8 *) ((*((s32 *) (a2 + 0x58))) + 3));
+    s32 base = a3 * 40;
+    s32 var_v0;
+    if ((*((u8 *) (a2 + 0xA3))) != 0xFF) {
+        if ((var_v0 = *((s16 *) (arg0 + 0x5E))) == 0) {
+            var_v0 = (*((u8 *) (((s32) (&D_8009A830)) + (*((s16 *) (a2 + 0xE)))))) * 2;
+        } else {
+            var_v0 = (*((s8 *) (((s32) (&D_8009A838)) + (*((s16 *) (a2 + 0xE)))))) * 8;
+        }
+    } else {
+        var_v0 = (*((u8 *) (((s32) (&D_8009A840)) + (*((s16 *) (a2 + 0x14)))))) * 2;
+    }
+    {
+        register s32 partial asm("$5") = base + var_v0;
+        asm volatile("" : : "r"(partial));
+        return partial + (*((s16 *) ((*((s32 *) arg0)) + 0x40A))) + 0x12C;
+    }
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
