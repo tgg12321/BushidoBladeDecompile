@@ -22698,65 +22698,39 @@ void func_8005BDF0(void) {
         s0++;
     } while ((s32)s0 < (s32)s1);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8005BE84\n"
-    "    addiu  $sp,$sp,-32\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    sw  $ra,24($sp)\n"
-    "    jal  func_800858D0\n"
-    "    sw  $s1,20($sp)\n"
-    "    lui  $v1,%hi(D_8009AD1C)\n"
-    "    addiu  $v1,$v1,%lo(D_8009AD1C)\n"
-    "    sll  $v0,$s0,2\n"
-    "    addu  $s1,$v0,$v1\n"
-    "    lh  $v0,0($s1)\n"
-    "    nop\n"
-    "    bltz  $v0,.L8005BF18\n"
-    "    sll  $s0,$s0,1\n"
-    "    jal  func_80085F98\n"
-    "    nop\n"
-    "    jal  func_80085EE4\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    jal  func_80085E4C\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    lh  $a0,0($s1)\n"
-    "    jal  func_80085EE4\n"
-    "    nop\n"
-    "    lh  $a0,0($s1)\n"
-    "    jal  md_game_check_change_main_mode_katinuki\n"
-    "    addu  $s1,$v0,$zero\n"
-    "    addiu  $a0,$s0,1\n"
-    "    sll  $a0,$a0,16\n"
-    "    sra  $a0,$a0,16\n"
-    "    jal  func_80085E4C\n"
-    "    addu  $a1,$a0,$zero\n"
-    "    jal  func_80085FB8\n"
-    "    nop\n"
-    "    j  .L8005BF20\n"
-    "    sll  $v0,$s1,16\n"
-    ".L8005BF18:\n"
-    "    addiu  $s1,$zero,-1\n"
-    "    sll  $v0,$s1,16\n"
-    ".L8005BF20:\n"
-    "    sra  $v0,$v0,16\n"
-    "    lw  $ra,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,32\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_8009AD1C;
+extern s32 title_mv_exec2(s32);
+extern s32 func_80085F98();
+extern s32 func_80085EE4(s16);
+extern s32 func_80085E4C(s16, s16);
+extern s32 func_80085FB8();
+extern s32 md_game_check_change_main_mode_katinuki(s16);
+s32 func_8005BE84(s32 arg0) {
+    register s32 arg_save asm("$16") = arg0;
+    s32 result;
+    s16 *p;
+    title_mv_exec2(0);
+    {
+        register s32 base asm("$3");
+        base = (s32)&D_8009AD1C;
+        p = (s16 *)(base + (arg_save * 4));
+    }
+    if (*p >= 0) {
+        s16 temp_a0;
+        arg_save = arg_save << 1;
+        func_80085F98();
+        func_80085EE4(0);
+        func_80085E4C(0, 0);
+        result = func_80085EE4(*p);
+        md_game_check_change_main_mode_katinuki(*p);
+        temp_a0 = arg_save + 1;
+        func_80085E4C(temp_a0, temp_a0);
+        func_80085FB8();
+    } else {
+        result = -1;
+    }
+    return (s16)result;
+}
 void func_800858D0(s32);
 void func_80085F98(void);
 void func_80085EE4(s32);
