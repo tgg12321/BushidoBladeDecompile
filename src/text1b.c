@@ -29603,57 +29603,41 @@ void func_80061FAC(u16 *a0, s32 a1, u8 *a2) {
     func_8007E8DC(s0, D_8009BB74);
     gte_SetRotMatrix(s0);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80062020\n"
-    "    lw  $v0,0($a0)\n"
-    "    .word 0xAF8001EC\n"
-    "    andi  $v0,$v0,1\n"
-    "    beqz  $v0,.L80062084\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    addu  $v1,$zero,$zero\n"
-    ".L80062038:\n"
-    "    lw  $v0,0($a0)\n"
-    "    lui  $at,%hi(D_800F1198)\n"
-    "    addu  $at,$at,$v1\n"
-    "    sw  $v0,%lo(D_800F1198)($at)\n"
-    "    lw  $v0,4($a0)\n"
-    "    addiu  $a1,$a1,1\n"
-    "    lui  $at,%hi(D_800F119C)\n"
-    "    addu  $at,$at,$v1\n"
-    "    sw  $v0,%lo(D_800F119C)($at)\n"
-    "    lw  $v0,8($a0)\n"
-    "    addiu  $a0,$a0,12\n"
-    "    lui  $at,%hi(D_800F11A0)\n"
-    "    addu  $at,$at,$v1\n"
-    "    sw  $v0,%lo(D_800F11A0)($at)\n"
-    "    lw  $v0,0($a0)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,1\n"
-    "    bnez  $v0,.L80062038\n"
-    "    addiu  $v1,$v1,12\n"
-    ".L80062084:\n"
-    "    sll  $v1,$a1,1\n"
-    "    addu  $v1,$v1,$a1\n"
-    "    sll  $v1,$v1,2\n"
-    "    lui  $v0,%hi(D_800F1198)\n"
-    "    addiu  $v0,$v0,%lo(D_800F1198)\n"
-    "    addu  $v0,$v1,$v0\n"
-    "    sw  $zero,8($v0)\n"
-    "    sw  $zero,4($v0)\n"
-    "    lui  $at,%hi(D_800F1198)\n"
-    "    addu  $at,$at,$v1\n"
-    "    sw  $zero,%lo(D_800F1198)($at)\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A32B8;
+extern s32 D_800F1198;
+extern s32 D_800F119C;
+extern s32 D_800F11A0;
+void func_80062020(s32 *arg0) {
+    register s32 *a0 asm("$4") = arg0;
+    register s32 i asm("$5") = 0;
+    register s32 ofs asm("$3") = 0;
+    register s32 t asm("$2");
+    s32 *p;
+    s32 i12;
+    D_800A32B8 = 0;
+    t = a0[0];
+    if ((t & 1) == 0) goto end;
+    do {
+        t = a0[0];
+        *(s32 *)((u8 *)&D_800F1198 + ofs) = t;
+        t = a0[1];
+        i = i + 1;
+        *(s32 *)((u8 *)&D_800F119C + ofs) = t;
+        t = a0[2];
+        a0 = (s32 *)((u8 *)a0 + 12);
+        *(s32 *)((u8 *)&D_800F11A0 + ofs) = t;
+        t = a0[0];
+        ofs = ofs + 12;
+    } while ((t & 1) != 0);
+end:
+    i12 = i + i;
+    i12 = i12 + i;
+    i12 = i12 << 2;
+    p = (s32 *)((u8 *)&D_800F1198 + i12);
+    p[2] = 0;
+    p[1] = 0;
+    *(s32 *)((u8 *)&D_800F1198 + i12) = 0;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
