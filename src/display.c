@@ -1466,36 +1466,22 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007C938\n"
-    "    lui        $v0, %hi(g_gpu_type)\n"
-    "    lbu        $v0, %lo(g_gpu_type)($v0)\n"
-    "    nop\n"
-    "    addiu      $v0, $v0, -0x1\n"
-    "    sltiu      $v0, $v0, 0x2\n"
-    "    bnez       $v0, .Lfunc_8007C938_8007C964\n"
-    "    andi      $v1, $a1, 0xFFF\n"
-    "    andi       $v1, $a1, 0x7FF\n"
-    "    sll        $v1, $v1, 11\n"
-    "    j          .Lfunc_8007C938_8007C96C\n"
-    "    andi      $v0, $a0, 0x7FF\n"
-    ".Lfunc_8007C938_8007C964:\n"
-    "    sll        $v1, $v1, 12\n"
-    "    andi       $v0, $a0, 0xFFF\n"
-    ".Lfunc_8007C938_8007C96C:\n"
-    "    lui        $a0, (0xE5000000 >> 16)\n"
-    "    or         $v0, $v0, $a0\n"
-    "    jr         $ra\n"
-    "    or        $v0, $v1, $v0\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+extern u8 g_gpu_type;
+s32 func_8007C938(s32 arg0, s32 arg1) {
+    register s32 var_v0 asm("$2");
+    register s32 var_v1 asm("$3");
+    var_v1 = arg1 & 0xFFF;
+    if ((u32) (g_gpu_type - 1) >= 2U) {
+        var_v1 = arg1 & 0x7FF;
+        var_v1 = var_v1 << 0xB;
+        var_v0 = arg0 & 0x7FF;
+    } else {
+        var_v1 = var_v1 << 0xC;
+        var_v0 = arg0 & 0xFFF;
+    }
+    var_v0 = var_v0 | 0xE5000000;
+    return var_v1 | var_v0;
+}
 s32 func_8007C97C(u8 *arg0) {
     s32 sp[4];
     register u8 *p asm("$4") = arg0;

@@ -133,15 +133,20 @@ def is_bios_trampoline(insns) -> tuple[bool, str | None]:
             .word 0x0000000?...0D   # `break N` raw
 
     Returns (is_trampoline, kind_str)."""
-    if not 2 <= len(insns) <= 6:
+    # Pure trampolines are 2-6 insns (just the BIOS jump and prep).
+    # We also catch longer functions where the FIRST 4 insns are a BIOS
+    # trampoline followed by unreachable/dead code (splat sometimes lumps
+    # multiple symbols into one func when no separating jr $ra exists).
+    if len(insns) < 2:
         return False, None
-    ops_full = [i[2].replace(" ", "") for i in insns]
-    mnems = [i[1] for i in insns]
+    scan_window = insns if len(insns) <= 6 else insns[:6]
+    ops_full = [i[2].replace(" ", "") for i in scan_window]
+    mnems = [i[1] for i in scan_window]
 
     # Form (a)
     has_jr_t = any(m == "jr" and "$t" in o for m, o in zip(mnems, ops_full))
     addiu_table_match = None
-    for _, m, ops in insns:
+    for _, m, ops in scan_window:
         ops_n = ops.replace(" ", "")
         if m == "addiu":
             mm = re.search(r"\$t\d+,\$zero,(0x[ABC]0|160|176|192)", ops_n)
@@ -149,7 +154,8 @@ def is_bios_trampoline(insns) -> tuple[bool, str | None]:
                 addiu_table_match = mm.group(1)
                 break
     if has_jr_t and addiu_table_match:
-        return True, f"bios_table_{addiu_table_match}"
+        suffix = "" if len(insns) <= 6 else "_plus_dead_code"
+        return True, f"bios_table_{addiu_table_match}{suffix}"
 
     # Forms (b) and (c) -- raw `.word` encodings or splat-decoded mnemonics
     # for `syscall` (0x0C) or `break` (0x0D).
