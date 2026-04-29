@@ -54543,45 +54543,19 @@ s32 func_80078E20(void) {
     ExitCriticalSection();
     return 1;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80078E58\n"
-    "    lui  $v0,%hi(D_8009BD84)\n"
-    "    lw  $v0,%lo(D_8009BD84)($v0)\n"
-    "    addiu  $sp,$sp,-16\n"
-    "    sh  $zero,10($v0)\n"
-    "    addiu  $v0,$zero,10\n"
-    "    sw  $v0,0($sp)\n"
-    "    lw  $v0,0($sp)\n"
-    "    nop\n"
-    "    addiu  $v0,$v0,-1\n"
-    "    sw  $v0,0($sp)\n"
-    "    lw  $v1,0($sp)\n"
-    "    addiu  $v0,$zero,-1\n"
-    "    beq  $v1,$v0,.L80078EB4\n"
-    "    addu  $v0,$zero,$zero\n"
-    "    addiu  $v1,$zero,-1\n"
-    ".L80078E94:\n"
-    "    lw  $v0,0($sp)\n"
-    "    nop\n"
-    "    addiu  $v0,$v0,-1\n"
-    "    sw  $v0,0($sp)\n"
-    "    lw  $v0,0($sp)\n"
-    "    nop\n"
-    "    bne  $v0,$v1,.L80078E94\n"
-    "    addu  $v0,$zero,$zero\n"
-    ".L80078EB4:\n"
-    "    addiu  $sp,$sp,16\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_80078E58(void) {
+    volatile s32 i;
+    s32 pad[2];
+    *(s16 *)((u8 *)D_8009BD84 + 0xA) = 0;
+    i = 10;
+    i = i - 1;
+    if (i != -1) {
+        do {
+            i = i - 1;
+        } while (i != -1);
+    }
+    return 0;
+}
 s32 func_80078EC0(void) {
     register s32 *p asm("$3") = (s32 *)D_8009BD88;
     register volatile s32 ret asm("$2") = 0;
