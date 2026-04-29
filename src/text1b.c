@@ -28830,52 +28830,28 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80061454\n"
-    "    addiu  $sp,$sp,-24\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    lui  $a0,41\n"
-    "    ori  $a0,$a0,11\n"
-    "    lui  $v1,%hi(D_800F116C)\n"
-    "    addiu  $v1,$v1,%lo(D_800F116C)\n"
-    "    lui  $v0,%hi(D_800F115B)\n"
-    "    addiu  $v0,$v0,%lo(D_800F115B)\n"
-    "    sw  $ra,20($sp)\n"
-    "    .word 0xAF83039C\n"
-    "    lui  $at,%hi(D_800F1178)\n"
-    "    sw  $s0,%lo(D_800F1178)($at)\n"
-    "    lui  $at,%hi(D_800F1180)\n"
-    "    sw  $v0,%lo(D_800F1180)($at)\n"
-    "    jal  func_80060A68\n"
-    "    sw  $a0,0($v1)\n"
-    "    lw  $v0,0($s0)\n"
-    "    lui  $at,%hi(D_800F1140)\n"
-    "    sw  $v0,%lo(D_800F1140)($at)\n"
-    "    lw  $v0,4($s0)\n"
-    "    lui  $v1,128\n"
-    "    lui  $at,%hi(D_800F1144)\n"
-    "    sw  $v0,%lo(D_800F1144)($at)\n"
-    "    lw  $v0,8($s0)\n"
-    "    ori  $v1,$v1,33023\n"
-    "    .word 0xAF830398\n"
-    "    lui  $at,%hi(D_800F1148)\n"
-    "    sw  $v0,%lo(D_800F1148)($at)\n"
-    "    addiu  $v0,$zero,8\n"
-    "    lw  $ra,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,24\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern u8 D_800F115B;
+extern s32 D_800A3464;
+extern s32 D_800A3468;
+extern s32 D_800F116C;
+extern s32 D_800F1178;
+extern s32 D_800F1180;
+s32 func_80061454(s32 *a0) {
+    s32 *v1 = (s32 *)&D_800F116C;
+    register s32 t asm("$2");
+    register s32 mask asm("$3");
+    D_800A3468 = (s32)v1;
+    D_800F1178 = (s32)a0;
+    D_800F1180 = (s32)&D_800F115B;
+    *v1 = 0x29000B;
+    func_80060A68();
+    t = a0[0]; D_800F1140 = t;
+    t = a0[1]; D_800F1144 = t;
+    mask = 0x8080FF;
+    D_800A3464 = mask;
+    t = a0[2]; D_800F1148 = t;
+    return 8;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
