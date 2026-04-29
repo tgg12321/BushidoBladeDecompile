@@ -138,6 +138,20 @@ def load_config(config_path):
             order = [int(x) for x in m.group(2).split(',')]
             start = int(m.group(3))
             end = int(m.group(4))
+            # Warn when reorder spans idx 0: the function symbol label, .ent,
+            # .frame, .mask, .fmask are all attached as preceding non-instruction
+            # lines to the first instruction in the function. Reordering moves
+            # them with the group, which can place the function symbol mid-body.
+            # See memory/feedback_regfix_label_attachment.md.
+            if start == 0 and order and order[0] != 0:
+                print(
+                    f"regfix: WARNING: {func}: reorder spans idx 0 and idx 0 is "
+                    f"NOT first in the new order (new order: {order}). The function "
+                    f"symbol label will move with idx 0. Use subst-swap to swap "
+                    f"instruction CONTENT in place instead. See memory/"
+                    f"feedback_regfix_label_attachment.md.",
+                    file=sys.stderr
+                )
             config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['reorders'].append((start, end, order))
             continue
