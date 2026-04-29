@@ -28807,67 +28807,37 @@ void func_80061658(s32 *arg0, s32 arg1) {
     D_800A3464 = mask;
     t = arg0[2]; D_800F1148 = t;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80061710\n"
-    "    addiu  $sp,$sp,-24\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    lui  $a0,%hi(D_800F116C)\n"
-    "    addiu  $a0,$a0,%lo(D_800F116C)\n"
-    "    sw  $ra,20($sp)\n"
-    "    .word 0xAF84039C\n"
-    "    lui  $at,%hi(D_800F1178)\n"
-    "    sw  $s0,%lo(D_800F1178)($at)\n"
-    "    beqz  $a1,.L8006174C\n"
-    "    addiu  $v0,$zero,1\n"
-    "    beq  $a1,$v0,.L80061760\n"
-    "    lui  $v1,33\n"
-    "    j  .L8006177C\n"
-    "    nop\n"
-    ".L8006174C:\n"
-    "    lui  $v1,33\n"
-    "    lui  $v0,%hi(D_800F115C + 2)\n"
-    "    addiu  $v0,$v0,%lo(D_800F115C + 2)\n"
-    "    j  .L8006176C\n"
-    "    ori  $v1,$v1,14\n"
-    ".L80061760:\n"
-    "    ori  $v1,$v1,15\n"
-    "    lui  $v0,%hi(D_800F115C + 3)\n"
-    "    addiu  $v0,$v0,%lo(D_800F115C + 3)\n"
-    ".L8006176C:\n"
-    "    sb  $zero,0($v0)\n"
-    "    lui  $at,%hi(D_800F1180)\n"
-    "    sw  $v0,%lo(D_800F1180)($at)\n"
-    "    sw  $v1,0($a0)\n"
-    ".L8006177C:\n"
-    "    jal  func_80060A68\n"
-    "    nop\n"
-    "    lw  $v0,0($s0)\n"
-    "    lui  $at,%hi(D_800F1140)\n"
-    "    sw  $v0,%lo(D_800F1140)($at)\n"
-    "    lw  $v0,4($s0)\n"
-    "    lui  $v1,16\n"
-    "    lui  $at,%hi(D_800F1144)\n"
-    "    sw  $v0,%lo(D_800F1144)($at)\n"
-    "    lw  $v0,8($s0)\n"
-    "    ori  $v1,$v1,65296\n"
-    "    .word 0xAF830398\n"
-    "    lui  $at,%hi(D_800F1148)\n"
-    "    sw  $v0,%lo(D_800F1148)($at)\n"
-    "    lw  $ra,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,24\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80061710(s32 *arg0, s32 arg1) {
+    s32 *v1 = (s32 *)&D_800F116C;
+    register s32 t asm("$2");
+    register s32 mask asm("$3");
+    u8 *p;
+    s32 val;
+    D_800A3468 = (s32)v1;
+    D_800F1178 = (s32)arg0;
+    switch (arg1) {
+    case 0:
+        val = 0x21000E;
+        p = &D_800F115C + 2;
+        *p = 0;
+        D_800F1180 = (s32)p;
+        *v1 = val;
+        break;
+    case 1:
+        val = 0x21000F;
+        p = &D_800F115C + 3;
+        *p = 0;
+        D_800F1180 = (s32)p;
+        *v1 = val;
+        break;
+    }
+    func_80060A68();
+    t = arg0[0]; D_800F1140 = t;
+    t = arg0[1]; D_800F1144 = t;
+    mask = 0x10FF10;
+    D_800A3464 = mask;
+    t = arg0[2]; D_800F1148 = t;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
