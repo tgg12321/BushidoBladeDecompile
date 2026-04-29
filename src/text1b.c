@@ -22486,69 +22486,28 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8005BD30\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    sw  $s3,28($sp)\n"
-    "    addu  $s3,$a0,$zero\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    sw  $ra,32($sp)\n"
-    "    sw  $s2,24($sp)\n"
-    "    sw  $s1,20($sp)\n"
-    "    jal  func_800858D0\n"
-    "    sw  $s0,16($sp)\n"
-    "    lui  $v1,%hi(D_800EFC50)\n"
-    "    lw  $v1,%lo(D_800EFC50)($v1)\n"
-    "    lui  $v0,%hi(D_800EFC44)\n"
-    "    lw  $v0,%lo(D_800EFC44)($v0)\n"
-    "    nop\n"
-    "    bne  $v1,$v0,.L8005BD74\n"
-    "    addiu  $s1,$zero,3\n"
-    "    addiu  $s1,$zero,2\n"
-    ".L8005BD74:\n"
-    "    andi  $v0,$s1,255\n"
-    "    beqz  $v0,.L8005BDB0\n"
-    "    addu  $s0,$zero,$zero\n"
-    "    addu  $s2,$v0,$zero\n"
-    "    addu  $a0,$s3,$zero\n"
-    ".L8005BD88:\n"
-    "    andi  $v0,$s0,255\n"
-    "    lui  $at,%hi(D_8009AD18)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lbu  $a1,%lo(D_8009AD18)($at)\n"
-    "    jal  func_8005C4C0\n"
-    "    addiu  $s0,$s0,1\n"
-    "    andi  $v0,$s0,255\n"
-    "    sltu  $v0,$v0,$s2\n"
-    "    bnez  $v0,.L8005BD88\n"
-    "    addu  $a0,$s3,$zero\n"
-    ".L8005BDB0:\n"
-    "    andi  $v1,$s1,255\n"
-    "    addiu  $v0,$zero,2\n"
-    "    bne  $v1,$v0,.L8005BDD0\n"
-    "    nop\n"
-    "    lui  $v0,%hi(D_800EFC44)\n"
-    "    lw  $v0,%lo(D_800EFC44)($v0)\n"
-    "    lui  $at,%hi(D_800EFC50)\n"
-    "    sw  $v0,%lo(D_800EFC50)($at)\n"
-    ".L8005BDD0:\n"
-    "    lw  $ra,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern void title_mv_exec2(s32);
+extern void func_8005C4C0(s32, s32);
+extern s32 D_800EFC50;
+extern s32 D_800EFC44;
+extern u8 D_8009AD18;
+void func_8005BD30(s32 arg0) {
+    u8 count;
+    s32 i;
+    title_mv_exec2(0);
+    count = (D_800EFC50 == D_800EFC44) ? 2 : 3;
+    if (count != 0) {
+        i = 0;
+        do {
+            u8 byte = (&D_8009AD18)[i & 0xFF];
+            func_8005C4C0(arg0, byte);
+            i += 1;
+        } while ((u32)(i & 0xFF) < (u32)count);
+    }
+    if (count == 2) {
+        D_800EFC50 = D_800EFC44;
+    }
+}
 }
 extern u32 D_800EFC38[];
 extern u32 D_800EFB38[];
