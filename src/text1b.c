@@ -36485,58 +36485,23 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80068ECC\n"
-    "    lui  $a1,%hi(D_8009BC04)\n"
-    "    addiu  $a1,$a1,%lo(D_8009BC04)\n"
-    "    lw  $v0,0($a1)\n"
-    "    addiu  $v1,$zero,-2\n"
-    "    and  $v0,$v0,$v1\n"
-    "    andi  $v1,$a0,1\n"
-    "    or  $v0,$v0,$v1\n"
-    "    addiu  $v1,$zero,-3\n"
-    "    and  $v0,$v0,$v1\n"
-    "    andi  $v1,$a0,2\n"
-    "    or  $v0,$v0,$v1\n"
-    "    addiu  $v1,$zero,-5\n"
-    "    and  $v0,$v0,$v1\n"
-    "    andi  $v1,$a0,4\n"
-    "    or  $v0,$v0,$v1\n"
-    "    addiu  $v1,$zero,-9\n"
-    "    and  $v0,$v0,$v1\n"
-    "    srl  $v1,$a0,1\n"
-    "    andi  $v1,$v1,8\n"
-    "    or  $v0,$v0,$v1\n"
-    "    addiu  $v1,$zero,-17\n"
-    "    and  $v0,$v0,$v1\n"
-    "    srl  $v1,$a0,1\n"
-    "    andi  $v1,$v1,16\n"
-    "    or  $v0,$v0,$v1\n"
-    "    addiu  $v1,$zero,-33\n"
-    "    and  $v0,$v0,$v1\n"
-    "    srl  $v1,$a0,1\n"
-    "    andi  $v1,$v1,32\n"
-    "    or  $v0,$v0,$v1\n"
-    "    addiu  $v1,$zero,-65\n"
-    "    and  $v0,$v0,$v1\n"
-    "    sll  $v1,$a0,3\n"
-    "    andi  $v1,$v1,64\n"
-    "    or  $v0,$v0,$v1\n"
-    "    addiu  $v1,$zero,-129\n"
-    "    and  $v0,$v0,$v1\n"
-    "    andi  $a0,$a0,128\n"
-    "    or  $v0,$v0,$a0\n"
-    "    jr  $ra\n"
-    "    sw  $v0,0($a1)\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80068ECC(s32 arg0) {
+    s32 *p = &D_8009BC04;
+    register s32 v asm("$2");
+    v = *p;
+    v &= ~0x1; v |= arg0 & 0x1;
+    v &= ~0x2; v |= arg0 & 0x2;
+    v &= ~0x4; v |= arg0 & 0x4;
+    asm volatile("" : "=r"(arg0) : "0"(arg0));
+    v &= ~0x8; v |= ((u32)arg0 >> 1) & 0x8;
+    asm volatile("" : "=r"(arg0) : "0"(arg0));
+    v &= ~0x10; v |= ((u32)arg0 >> 1) & 0x10;
+    asm volatile("" : "=r"(arg0) : "0"(arg0));
+    v &= ~0x20; v |= ((u32)arg0 >> 1) & 0x20;
+    v &= ~0x40; v |= (arg0 << 3) & 0x40;
+    v &= ~0x80; v |= arg0 & 0x80;
+    *p = v;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
