@@ -54081,62 +54081,42 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_1; /* padding after func_80078A58 */
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80078A68\n"
-    "    andi  $t0,$a0,65535\n"
-    "    slti  $v0,$t0,3\n"
-    "    bnez  $v0,.L80078A80\n"
-    "    addiu  $a3,$zero,72\n"
-    "    j  .L80078AFC\n"
-    "    addu  $v0,$zero,$zero\n"
-    ".L80078A80:\n"
-    "    lui  $v0,%hi(D_8009BD6C)\n"
-    "    lw  $v0,%lo(D_8009BD6C)($v0)\n"
-    "    sll  $v1,$t0,4\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    sltiu  $v0,$t0,2\n"
-    "    sh  $zero,4($v1)\n"
-    "    sh  $a1,8($v1)\n"
-    "    beqz  $v0,.L80078AC0\n"
-    "    andi  $v0,$a2,16\n"
-    "    beqz  $v0,.L80078AB0\n"
-    "    andi  $v0,$a2,1\n"
-    "    addiu  $a3,$zero,73\n"
-    ".L80078AB0:\n"
-    "    bnez  $v0,.L80078ADC\n"
-    "    andi  $v0,$a2,4096\n"
-    "    j  .L80078ADC\n"
-    "    ori  $a3,$a3,256\n"
-    ".L80078AC0:\n"
-    "    addiu  $v0,$zero,2\n"
-    "    bne  $t0,$v0,.L80078ADC\n"
-    "    andi  $v0,$a2,4096\n"
-    "    andi  $v0,$a2,1\n"
-    "    bnez  $v0,.L80078ADC\n"
-    "    andi  $v0,$a2,4096\n"
-    "    addiu  $a3,$zero,584\n"
-    ".L80078ADC:\n"
-    "    beqz  $v0,.L80078AE8\n"
-    "    addiu  $v0,$zero,1\n"
-    "    ori  $a3,$a3,16\n"
-    ".L80078AE8:\n"
-    "    lui  $a0,%hi(D_8009BD6C)\n"
-    "    lw  $a0,%lo(D_8009BD6C)($a0)\n"
-    "    sll  $v1,$t0,4\n"
-    "    addu  $v1,$v1,$a0\n"
-    "    sh  $a3,4($v1)\n"
-    ".L80078AFC:\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_80078A68(s32 arg0, s32 arg1, s32 arg2) {
+    s32 a3;
+    s32 t0;
+    s32 v0;
+    s32 base;
+    t0 = arg0 & 0xFFFF;
+    a3 = 0x48;
+    if (t0 >= 3) {
+        return 0;
+    }
+    base = (t0 * 0x10) + D_8009BD6C;
+    *((s16 *) (base + 4)) = 0;
+    *((s16 *) (base + 8)) = (s16) arg1;
+    if (((u32) t0) < 2U) {
+        if (arg2 & 0x10) {
+            a3 = 0x49;
+        }
+        v0 = arg2 & 0x1000;
+        if (!(arg2 & 1)) {
+            a3 |= 0x100;
+        }
+    } else {
+        v0 = arg2 & 0x1000;
+        if (t0 == 2) {
+            ;
+            if (!(arg2 & 1)) {
+                a3 = 0x248;
+            }
+        }
+    }
+    if ((arg2 & 0x1000) != 0) {
+        a3 |= 0x10;
+    }
+    *((s16 *) (((t0 * 0x10) + D_8009BD6C) + 4)) = a3;
+    return 1;
+}
 s32 func_80078B04(s32 arg0) {
     s32 v = arg0 & 0xFFFF;
     s32 result;
