@@ -32783,70 +32783,35 @@ u8 func_80065434(void) {
     }
     return 0;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80065484\n"
-    "    addiu  $sp,$sp,-24\n"
-    "    .word 0x8F8303B8\n"
-    "    .word 0x87820374\n"
-    "    addiu  $a0,$zero,5\n"
-    "    sw  $ra,16($sp)\n"
-    "    jal  func_80065800\n"
-    "    sw  $v0,0($v1)\n"
-    "    .word 0x8F8303B8\n"
-    "    addu  $a0,$v0,$zero\n"
-    "    lw  $v1,0($v1)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    beq  $v1,$v0,.L800654E8\n"
-    "    nop\n"
-    "    beqz  $v1,.L800654D4\n"
-    "    nop\n"
-    "    addiu  $v0,$zero,2\n"
-    "    beq  $v1,$v0,.L800654FC\n"
-    "    nop\n"
-    "    j  .L80065514\n"
-    "    nop\n"
-    ".L800654D4:\n"
-    "    lui  $v1,%hi(D_800F0BB2)\n"
-    "    addiu  $v1,$v1,%lo(D_800F0BB2)\n"
-    "    lhu  $v0,0($v1)\n"
-    "    j  .L80065510\n"
-    "    addiu  $v0,$v0,511\n"
-    ".L800654E8:\n"
-    "    lui  $v1,%hi(D_800F0BB2)\n"
-    "    addiu  $v1,$v1,%lo(D_800F0BB2)\n"
-    "    lhu  $v0,0($v1)\n"
-    "    j  .L80065510\n"
-    "    addiu  $v0,$v0,1022\n"
-    ".L800654FC:\n"
-    "    lui  $v1,%hi(D_800F0BB2)\n"
-    "    addiu  $v1,$v1,%lo(D_800F0BB2)\n"
-    "    lhu  $v0,0($v1)\n"
-    "    nop\n"
-    "    addiu  $v0,$v0,1533\n"
-    ".L80065510:\n"
-    "    sh  $v0,0($v1)\n"
-    ".L80065514:\n"
-    "    lui  $v0,%hi(D_800F0BB2)\n"
-    "    lh  $v0,%lo(D_800F0BB2)($v0)\n"
-    "    nop\n"
-    "    slti  $v0,$v0,8193\n"
-    "    bnez  $v0,.L80065530\n"
-    "    andi  $v0,$a0,255\n"
-    "    addu  $v0,$zero,$zero\n"
-    ".L80065530:\n"
-    "    lw  $ra,16($sp)\n"
-    "    addiu  $sp,$sp,24\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 *D_800A3484;
+s32 func_80065484(void) {
+    unsigned int temp_v1;
+    s32 ret;
+    *D_800A3484 = (s32)*(s16 *)&D_800A3440;
+    ret = func_80065800(5);
+    temp_v1 = *D_800A3484;
+    switch (temp_v1) {
+    case 0: {
+        u16 *p = (u16 *)&D_800F0BB2;
+        *p = *p + 0x1FF;
+        break;
+    }
+    case 1: {
+        u16 *p = (u16 *)&D_800F0BB2;
+        *p = *p + 0x3FE;
+        break;
+    }
+    case 2: {
+        u16 *p = (u16 *)&D_800F0BB2;
+        *p = *p + 0x5FD;
+        break;
+    }
+    }
+    if (*(s16 *)&D_800F0BB2 < 0x2001) {
+        return ret & 0xFF;
+    }
+    return 0;
+}
 extern s16 D_800F0BB4;
 u8 func_80065540(void) {
     u8 v0 = func_80065800(6);
