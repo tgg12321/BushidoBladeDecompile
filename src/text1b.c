@@ -30593,58 +30593,37 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80062FEC\n"
-    "    addiu  $v0,$zero,1\n"
-    "    lui  $at,%hi(D_800F10F0)\n"
-    "    sw  $v0,%lo(D_800F10F0)($at)\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    ".L80063000:\n"
-    "    .word 0x8F84037C\n"
-    "    sllv  $v1,$a1,$a2\n"
-    "    and  $v0,$a0,$v1\n"
-    "    bnez  $v0,.L80063020\n"
-    "    or  $v0,$a0,$v1\n"
-    "    .word 0xAF82037C\n"
-    "    j  .L80063034\n"
-    "    sll  $a1,$a2,1\n"
-    ".L80063020:\n"
-    "    addiu  $a2,$a2,1\n"
-    "    slti  $v0,$a2,12\n"
-    "    bnez  $v0,.L80063000\n"
-    "    nop\n"
-    "    sll  $a1,$a2,1\n"
-    ".L80063034:\n"
-    "    .word 0x8F8403B0\n"
-    "    addu  $v1,$a1,$a2\n"
-    "    lw  $v0,0($a0)\n"
-    "    sll  $v1,$v1,2\n"
-    "    lui  $at,%hi(D_800F0E38)\n"
-    "    addu  $at,$at,$v1\n"
-    "    sw  $v0,%lo(D_800F0E38)($at)\n"
-    "    lw  $v0,4($a0)\n"
-    "    lui  $at,%hi(D_800F0E3C)\n"
-    "    addu  $at,$at,$v1\n"
-    "    sw  $v0,%lo(D_800F0E3C)($at)\n"
-    "    lw  $v0,8($a0)\n"
-    "    lui  $at,%hi(D_800F0E40)\n"
-    "    addu  $at,$at,$v1\n"
-    "    sw  $v0,%lo(D_800F0E40)($at)\n"
-    "    lui  $at,%hi(D_800F0BEC)\n"
-    "    addu  $at,$at,$a1\n"
-    "    sh  $zero,%lo(D_800F0BEC)($at)\n"
-    "    jr  $ra\n"
-    "    addiu  $v0,$zero,1\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern volatile s32 D_800A347C;
+
+s32 func_80062FEC(void) {
+    s32 i;
+    s32 bit;
+    s32 idx;
+    s32 word_off;
+    u8 *new_var;
+    s32 *src;
+    D_800F10F0 = 1;
+    i = 0;
+    bit = 1;
+    do {
+        if ((D_800A3448 & (bit << i)) == 0) {
+            D_800A3448 |= bit << i;
+            idx = i * 2;
+            goto found;
+        }
+        i++;
+    } while (i < 12);
+    idx = i * 2;
+found:
+    src = (s32 *) D_800A347C;
+    word_off = (idx + i) << 2;
+    *((s32 *) (((u8 *) (&D_800F0E38)) + word_off)) = src[0];
+    *((s32 *) (((u8 *) (&D_800F0E3C)) + word_off)) = src[1];
+    do { } while (0);
+    *((s32 *) (((u8 *) (&D_800F0E40)) + word_off)) = src[2];
+    *((s16 *) (((u8 *) (new_var = &D_800F0BEC)) + idx)) = 0;
+    return 1;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
