@@ -41636,61 +41636,28 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8006D74C\n"
-    "    addiu  $sp,$sp,-120\n"
-    "    sw  $s1,108($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    sw  $s2,112($sp)\n"
-    "    addu  $s2,$a1,$zero\n"
-    "    addiu  $a0,$sp,16\n"
-    "    .word 0x8F820448\n"
-    "    lui  $v1,%hi(D_800A36AC)\n"
-    "    lw  $v1,%lo(D_800A36AC)($v1)\n"
-    "    lui  $a1,%hi(D_800A3518)\n"
-    "    addiu  $a1,$a1,%lo(D_800A3518)\n"
-    "    sw  $ra,116($sp)\n"
-    "    sw  $s0,104($sp)\n"
-    "    addiu  $v0,$v0,1\n"
-    "    andi  $v1,$v1,1\n"
-    "    sll  $s0,$v1,7\n"
-    "    addu  $s0,$s0,$v1\n"
-    "    sll  $s0,$s0,3\n"
-    "    addu  $s0,$s0,$v1\n"
-    "    sll  $s0,$s0,4\n"
-    "    .word 0xAF820448\n"
-    "    lui  $v0,%hi(g_disp_fb_base)\n"
-    "    addiu  $v0,$v0,%lo(g_disp_fb_base)\n"
-    "    jal  func_8006E390\n"
-    "    addu  $s0,$s0,$v0\n"
-    "    addiu  $a0,$sp,16\n"
-    "    addiu  $a1,$zero,1\n"
-    "    jal  func_80069AE4\n"
-    "    addu  $a2,$s0,$zero\n"
-    "    jal  func_8006D3DC\n"
-    "    addiu  $a0,$sp,16\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    jal  func_8006D5D4\n"
-    "    addu  $a1,$s2,$zero\n"
-    "    jal  func_8005C6D0\n"
-    "    addu  $s0,$v0,$zero\n"
-    "    addu  $v0,$s0,$zero\n"
-    "    lw  $ra,116($sp)\n"
-    "    lw  $s2,112($sp)\n"
-    "    lw  $s1,108($sp)\n"
-    "    lw  $s0,104($sp)\n"
-    "    addiu  $sp,$sp,120\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A3514;
+extern s32 D_800A3518;
+extern s32 D_800A36AC;
+extern s32 D_800F7438;
+extern s32 func_8006E390(s32, s32);
+extern s32 func_80069AE4(s32, s32, s32);
+extern s32 func_8006D3DC(s32);
+extern s32 func_8006D5D4(s32, s32);
+extern s32 func_8005C6D0();
+s32 func_8006D74C(s32 arg0, s32 arg1) {
+    s32 sp_buf[22];
+    s32 result;
+    s32 ptr_offset;
+    D_800A3514 += 1;
+    ptr_offset = ((D_800A36AC & 1) * 0x4090) + (s32)&D_800F7438;
+    func_8006E390((s32)&sp_buf[0], (s32)&D_800A3518);
+    func_80069AE4((s32)&sp_buf[0], 1, ptr_offset);
+    func_8006D3DC((s32)&sp_buf[0]);
+    result = func_8006D5D4(arg0, arg1);
+    func_8005C6D0();
+    return result;
+}
 extern s32 D_800A352C;
 s32 func_8006D7FC(void) {
     D_800A352C = 0;
