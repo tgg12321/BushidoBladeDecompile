@@ -22166,70 +22166,31 @@ void obj_InitPair(void) {
     D_800EFC48 = 0;
     D_800EFB48 = 0;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8005B8B8\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    sw  $s3,28($sp)\n"
-    "    addu  $s3,$a0,$zero\n"
-    "    sw  $ra,32($sp)\n"
-    "    sw  $s2,24($sp)\n"
-    "    sw  $s1,20($sp)\n"
-    "    jal  obj_InitPair\n"
-    "    sw  $s0,16($sp)\n"
-    "    jal  func_800858D0\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    addiu  $a0,$zero,2\n"
-    "    jal  func_80036EA8\n"
-    "    addiu  $a1,$zero,93\n"
-    "    jal  game_FrameLoop\n"
-    "    addu  $s0,$v0,$zero\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    jal  replay_camera_Init\n"
-    "    addu  $a1,$s3,$zero\n"
-    "    jal  func_80036F28\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    jal  game_FrameLoop\n"
-    "    addu  $s1,$v0,$zero\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    addiu  $a1,$zero,8\n"
-    "    jal  func_8005C2A8\n"
-    "    addu  $a2,$s3,$s1\n"
-    "    addiu  $a0,$zero,2\n"
-    "    addiu  $a1,$zero,94\n"
-    "    jal  func_80036EA8\n"
-    "    addu  $s0,$v0,$zero\n"
-    "    jal  game_FrameLoop\n"
-    "    addu  $s1,$v0,$zero\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    addu  $s2,$s3,$s0\n"
-    "    jal  replay_camera_Init\n"
-    "    addu  $a1,$s2,$zero\n"
-    "    jal  func_80036F28\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    jal  game_FrameLoop\n"
-    "    addu  $s1,$v0,$s0\n"
-    "    addu  $a0,$s2,$zero\n"
-    "    addiu  $a1,$zero,4\n"
-    "    jal  func_8005C2A8\n"
-    "    addu  $a2,$s3,$s1\n"
-    "    addu  $v0,$v0,$s0\n"
-    "    lw  $ra,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_80036EA8(s32, s32);
+extern s32 func_80036F28(s32);
+extern s32 func_8005C2A8(s32, s32, s32);
+extern void obj_InitPair(void);
+extern void func_800858D0(s32);
+extern void replay_camera_Init(s32, s32);
+s32 func_8005B8B8(s32 arg0) {
+    s32 t0, t1, ret_a, t0_2, t1_2;
+
+    obj_InitPair();
+    func_800858D0(0);
+    t0 = func_80036EA8(2, 0x5D);
+    game_FrameLoop();
+    replay_camera_Init(t0, arg0);
+    t1 = func_80036F28(t0);
+    game_FrameLoop();
+    asm volatile("" : "=r"(t0) : "0"(t0));
+    ret_a = func_8005C2A8(arg0, 8, arg0 + t1);
+    t0_2 = func_80036EA8(2, 0x5E);
+    game_FrameLoop();
+    replay_camera_Init(t0_2, arg0 + ret_a);
+    t1_2 = func_80036F28(t0_2) + ret_a;
+    game_FrameLoop();
+    return func_8005C2A8(arg0 + ret_a, 4, arg0 + t1_2) + ret_a;
+}
 void func_8005C4C0(s32, s32);
 void func_8005B98C(s32 a0) {
     func_8005C4C0(a0, 8);
