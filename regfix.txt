@@ -3606,7 +3606,7 @@ func_80053694: subst "addiu\s+\$7,\$zero,1" "addiu	$2,$zero,1" @ 44
 func_80053694: subst "sh\s+\$2," "sh	$3," @ 45
 func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
 func_8005BD30: delete @ 17
-func_8005BD30: subst "\.L142" ".L142-4" @ 16
+func_8005BD30: subst "\.L145" ".L145-4" @ 16
 func_8007CA00: subst "j\s+\.L57" "subu	$2,$2,$3" @ 14
 func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.L55" @ 15
 func_8007CA00: insert_after "subu	$2,$2,$4" @ 15
@@ -3623,4 +3623,9 @@ func_8005C4C0: insert_after "sll	$2,$2,16" @ 46
 func_8005C4C0: reorder 13,12,14 @ 12-14
 func_8005C4C0: delete @ 46
 func_8005C4C0: insert "sra	$2,$2,16" @ 47
-func_8005C4C0: subst "\.L157" ".L157+4" @ 40
+func_8005C4C0: subst "\.L160" ".L160+4" @ 40
+func_80048530: subst "addu\s+\$8,\$4,\$zero" "addu $v1,$a0,$zero" @ 1
+func_80048530: subst "addu\s+\$5,\$5,\$8" "addu $a1,$a1,$v1" @ 3
+func_80048530: insert_after "addu $t0,$v1,$zero" @ 3
+func_80048530: subst "addu\s+\$3,\$8,\$2" "addu $v1,$v0,$v1" @ 8
+func_80048530: reorder 28,29,30,31,32,33,27 @ 27-33
