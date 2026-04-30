@@ -1397,82 +1397,38 @@ void func_8004939C(void) {
     D_800A33E8 = -1;
     D_800A33EC = -1;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800493E4\n"
-    "    addiu  $sp,$sp,-32\n"
-    "    sw  $s0,24($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    sll  $v0,$s0,1\n"
-    "    addiu  $v1,$zero,1\n"
-    "    sw  $ra,28($sp)\n"
-    "    lui  $at,%hi(D_800EF980)\n"
-    "    addu  $at,$at,$v0\n"
-    "    sh  $v1,%lo(D_800EF980)($at)\n"
-    "    .word 0x8F830320\n"
-    "    addiu  $v0,$zero,-1\n"
-    "    bne  $v1,$v0,.L80049438\n"
-    "    slti  $v0,$s0,51\n"
-    "    bnez  $v0,.L8004942C\n"
-    "    addiu  $v0,$zero,1\n"
-    "    .word 0xAF820320\n"
-    "    j  .L80049478\n"
-    "    sll  $a0,$s0,1\n"
-    ".L8004942C:\n"
-    "    .word 0xAF800320\n"
-    "    j  .L80049478\n"
-    "    sll  $a0,$s0,1\n"
-    ".L80049438:\n"
-    "    bnez  $v1,.L80049450\n"
-    "    nop\n"
-    "    bnez  $v0,.L80049450\n"
-    "    nop\n"
-    "    jal  func_80052C10\n"
-    "    nop\n"
-    ".L80049450:\n"
-    "    .word 0x8F830320\n"
-    "    addiu  $v0,$zero,1\n"
-    "    bne  $v1,$v0,.L80049478\n"
-    "    sll  $a0,$s0,1\n"
-    "    slti  $v0,$s0,51\n"
-    "    beqz  $v0,.L80049478\n"
-    "    nop\n"
-    "    jal  func_80052C10\n"
-    "    nop\n"
-    "    sll  $a0,$s0,1\n"
-    ".L80049478:\n"
-    "    lui  $at,%hi(D_80099CC8)\n"
-    "    addu  $at,$at,$a0\n"
-    "    lbu  $v1,%lo(D_80099CC8)($at)\n"
-    "    addiu  $v0,$zero,255\n"
-    "    beq  $v1,$v0,.L800494C0\n"
-    "    sll  $v0,$v1,1\n"
-    "    addiu  $v1,$zero,1\n"
-    "    lui  $at,%hi(D_800EF980)\n"
-    "    addu  $at,$at,$v0\n"
-    "    sh  $v1,%lo(D_800EF980)($at)\n"
-    "    lui  $at,%hi(D_80099CC9)\n"
-    "    addu  $at,$at,$a0\n"
-    "    lbu  $v0,%lo(D_80099CC9)($at)\n"
-    "    nop\n"
-    "    sll  $v0,$v0,1\n"
-    "    lui  $at,%hi(D_800EF980)\n"
-    "    addu  $at,$at,$v0\n"
-    "    sh  $v1,%lo(D_800EF980)($at)\n"
-    ".L800494C0:\n"
-    "    lw  $ra,28($sp)\n"
-    "    lw  $s0,24($sp)\n"
-    "    addiu  $sp,$sp,32\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_80052C10();
+extern u8 D_80099CC8[];
+extern u8 D_80099CC9[];
+extern s32 D_800A33EC;
+extern s16 D_800EF980[];
+void func_800493E4(s32 arg0) {
+    u8 temp_v1;
+    s32 idx;
+
+    D_800EF980[arg0] = 1;
+    if (D_800A33EC == -1) {
+        if (arg0 >= 0x33) {
+            D_800A33EC = 1;
+        } else {
+            D_800A33EC = 0;
+        }
+    } else {
+        if (D_800A33EC == 0 && !(arg0 < 0x33)) {
+            func_80052C10();
+        }
+        if (D_800A33EC == 1 && arg0 < 0x33) {
+            func_80052C10();
+        }
+    }
+    idx = arg0 * 2;
+    temp_v1 = D_80099CC8[idx];
+    if (temp_v1 != 0xFF) {
+        D_800EF980[temp_v1] = 1;
+        do { } while (0);
+        D_800EF980[D_80099CC9[idx]] = 1;
+    }
+}
 extern s32 D_800A33EC;
 extern s16 D_800A33E8;
 extern void func_80052C10(void);
