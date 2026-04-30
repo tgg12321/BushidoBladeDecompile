@@ -1486,77 +1486,29 @@ s32 func_8007CA00(s16 *arg0) {
 u32 func_8007CAB0(void) {
     return *g_gpu_stat_reg;
 }
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007CAC8\n"
-    "    addiu      $sp, $sp, -0x20\n"
-    "    sw         $s0, 16($sp)\n"
-    "    addu       $s0, $a1, $zero\n"
-    "    lui        $a1, %hi(D_8009BF64)\n"
-    "    lw         $a1, %lo(D_8009BF64)($a1)\n"
-    "    sw         $ra, 24($sp)\n"
-    "    sw         $s1, 20($sp)\n"
-    "    lw         $v0, 0($a1)\n"
-    "    lui        $v1, (0x8000000 >> 16)\n"
-    "    or         $v0, $v0, $v1\n"
-    "    sw         $v0, 0($a1)\n"
-    "    lui        $v0, %hi(D_8009BF60)\n"
-    "    lw         $v0, %lo(D_8009BF60)($v0)\n"
-    "    nop\n"
-    "    sw         $zero, 0($v0)\n"
-    "    sll        $v0, $s0, 2\n"
-    "    addiu      $v0, $v0, -0x4\n"
-    "    lui        $v1, %hi(D_8009BF58)\n"
-    "    lw         $v1, %lo(D_8009BF58)($v1)\n"
-    "    addu       $a0, $a0, $v0\n"
-    "    sw         $a0, 0($v1)\n"
-    "    lui        $v0, %hi(D_8009BF5C)\n"
-    "    lw         $v0, %lo(D_8009BF5C)($v0)\n"
-    "    lui        $v1, (0x11000002 >> 16)\n"
-    "    sw         $s0, 0($v0)\n"
-    "    lui        $v0, %hi(D_8009BF60)\n"
-    "    lw         $v0, %lo(D_8009BF60)($v0)\n"
-    "    ori        $v1, $v1, (0x11000002 & 0xFFFF)\n"
-    "    sw         $v1, 0($v0)\n"
-    "    jal        func_8007DC68\n"
-    "    nop\n"
-    "    lui        $v0, %hi(D_8009BF60)\n"
-    "    lw         $v0, %lo(D_8009BF60)($v0)\n"
-    "    nop\n"
-    "    lw         $v0, 0($v0)\n"
-    "    lui        $v1, (0x1000000 >> 16)\n"
-    "    and        $v0, $v0, $v1\n"
-    "    beqz       $v0, .Lfunc_8007CAC8_8007CB98\n"
-    "    addu      $v0, $s0, $zero\n"
-    "    lui        $s1, (0x1000000 >> 16)\n"
-    ".Lfunc_8007CAC8_8007CB68:\n"
-    "    jal        func_8007DC9C\n"
-    "    nop\n"
-    "    bnez       $v0, .Lfunc_8007CAC8_8007CB98\n"
-    "    addiu     $v0, $zero, -0x1\n"
-    "    lui        $v0, %hi(D_8009BF60)\n"
-    "    lw         $v0, %lo(D_8009BF60)($v0)\n"
-    "    nop\n"
-    "    lw         $v0, 0($v0)\n"
-    "    nop\n"
-    "    and        $v0, $v0, $s1\n"
-    "    bnez       $v0, .Lfunc_8007CAC8_8007CB68\n"
-    "    addu      $v0, $s0, $zero\n"
-    ".Lfunc_8007CAC8_8007CB98:\n"
-    "    lw         $ra, 24($sp)\n"
-    "    lw         $s1, 20($sp)\n"
-    "    lw         $s0, 16($sp)\n"
-    "    addiu      $sp, $sp, 0x20\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+extern s32 func_8007DC68();
+extern s32 func_8007DC9C();
+extern s32 *D_8009BF58;
+extern s32 *D_8009BF5C;
+extern s32 *D_8009BF60;
+extern s32 *D_8009BF64;
+s32 func_8007CAC8(s32 arg0, s32 arg1) {
+    *D_8009BF64 |= 0x08000000;
+    *D_8009BF60 = 0;
+    *D_8009BF58 = (arg0 - 4) + (arg1 * 4);
+    *D_8009BF5C = arg1;
+    *D_8009BF60 = 0x11000002;
+    asm volatile("");
+    func_8007DC68();
+    if (*D_8009BF60 & 0x01000000) {
+        do {
+            if (func_8007DC9C() != 0) {
+                return -1;
+            }
+        } while (*D_8009BF60 & 0x01000000);
+    }
+    return arg1;
+}
 __asm__(
     "    .set\tnoat\n"
     "    .set\tnoreorder\n"
