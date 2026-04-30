@@ -481,66 +481,35 @@ void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
     }
     gpu_LoadImage(rect, (s32)buf);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80048530\n"
-    "    addiu  $sp,$sp,-32\n"
-    "    addu  $v1,$a0,$zero\n"
-    "    sll  $a1,$a1,2\n"
-    "    addu  $a1,$a1,$v1\n"
-    "    addu  $t0,$v1,$zero\n"
-    "    sw  $ra,28($sp)\n"
-    "    sw  $s0,24($sp)\n"
-    "    lw  $v0,0($a1)\n"
-    "    addu  $a1,$a3,$zero\n"
-    "    addu  $v1,$v0,$v1\n"
-    "    lw  $s0,0($v1)\n"
-    "    nop\n"
-    "    sltu  $v0,$a2,$s0\n"
-    "    beqz  $v0,.L800485D4\n"
-    "    addiu  $v1,$v1,4\n"
-    "    sll  $v0,$a2,1\n"
-    "    addu  $v0,$v0,$a2\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    lw  $a0,0($v1)\n"
-    "    addiu  $v1,$v1,4\n"
-    "    lhu  $a2,0($v1)\n"
-    "    addiu  $v1,$v1,2\n"
-    "    lhu  $a3,0($v1)\n"
-    "    addiu  $v1,$v1,2\n"
-    "    lhu  $v0,0($v1)\n"
-    "    lhu  $v1,2($v1)\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    sll  $v1,$v1,16\n"
-    "    sra  $v1,$v1,16\n"
-    "    sll  $a2,$a2,16\n"
-    "    sll  $a3,$a3,16\n"
-    "    addu  $a0,$a0,$t0\n"
-    "    sra  $a2,$a2,16\n"
-    "    sra  $a3,$a3,16\n"
-    "    sw  $v0,16($sp)\n"
-    "    jal  func_800485EC\n"
-    "    sw  $v1,20($sp)\n"
-    "    j  .L800485D8\n"
-    "    addu  $v0,$s0,$zero\n"
-    ".L800485D4:\n"
-    "    addiu  $v0,$zero,-1\n"
-    ".L800485D8:\n"
-    "    lw  $ra,28($sp)\n"
-    "    lw  $s0,24($sp)\n"
-    "    addiu  $sp,$sp,32\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_800485EC(s32, s32, s16, s16, s16, s16);
+s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
+    u8 *p;
+    s32 count;
+    s32 entry_off;
+    s32 a, b, c, d;
+    u32 cv, dv;
+    p = (u8 *)arg0 + ((s32 *)arg0)[arg1];
+    asm volatile("" : "=r"(arg3) : "0"(arg3));
+    count = *(s32 *)p;
+    if (arg2 >= (u32)count) return -1;
+    p += 4;
+    p += arg2 * 0xC;
+    entry_off = *(s32 *)p;
+    p = p + 4;
+    a = (s32)*(u16 *)p;
+    p = p + 2;
+    entry_off = entry_off + arg0;
+    b = (s32)*(u16 *)p;
+    p = p + 2;
+    cv = *(u16 *)p;
+    dv = *(u16 *)(p + 2);
+    asm volatile("" : "=r"(cv) : "0"(cv));
+    asm volatile("" : "=r"(dv) : "0"(dv));
+    c = (s32)(s16)cv;
+    d = (s32)(s16)dv;
+    func_800485EC(entry_off, arg3, (s16)a, (s16)b, c, d);
+    return count;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
