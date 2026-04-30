@@ -51814,80 +51814,45 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80077724\n"
-    "    addiu  $sp,$sp,-64\n"
-    "    sw  $s0,56($sp)\n"
-    "    addu  $s0,$a1,$zero\n"
-    "    lui  $v1,%hi(D_800A36AC)\n"
-    "    lw  $v1,%lo(D_800A36AC)($v1)\n"
-    "    .word 0x8F8505D4\n"
-    "    lui  $a0,%hi(g_disp_fb_base)\n"
-    "    addiu  $a0,$a0,%lo(g_disp_fb_base)\n"
-    "    sw  $ra,60($sp)\n"
-    "    andi  $v1,$v1,1\n"
-    "    sll  $v0,$v1,7\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,3\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,4\n"
-    "    lw  $v1,48($a1)\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sw  $v0,36($a1)\n"
-    "    lhu  $v0,52($a1)\n"
-    "    addiu  $v1,$v1,1\n"
-    "    andi  $a0,$v1,1\n"
-    "    addiu  $v0,$v0,1\n"
-    "    sh  $v0,52($a1)\n"
-    "    jal  func_80077098\n"
-    "    sw  $v1,48($a1)\n"
-    "    .word 0x8F8305D4\n"
-    "    nop\n"
-    "    lw  $a0,4($v1)\n"
-    "    sw  $v0,44($v1)\n"
-    "    sw  $a0,16($sp)\n"
-    "    lw  $v1,0($v0)\n"
-    "    nop\n"
-    "    sw  $v1,20($sp)\n"
-    "    lw  $v1,4($v0)\n"
-    "    nop\n"
-    "    sw  $v1,24($sp)\n"
-    "    lw  $v1,8($v0)\n"
-    "    nop\n"
-    "    sw  $v1,28($sp)\n"
-    "    lw  $v1,16($v0)\n"
-    "    nop\n"
-    "    sw  $v1,32($sp)\n"
-    "    lw  $v1,12($v0)\n"
-    "    nop\n"
-    "    sw  $v1,36($sp)\n"
-    "    lw  $v1,20($v0)\n"
-    "    nop\n"
-    "    sw  $v1,40($sp)\n"
-    "    lw  $v1,24($v0)\n"
-    "    nop\n"
-    "    sw  $v1,44($sp)\n"
-    "    lw  $v1,28($v0)\n"
-    "    addiu  $a1,$sp,16\n"
-    "    sw  $v1,48($sp)\n"
-    "    lw  $v0,32($v0)\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80077374\n"
-    "    sw  $v0,52($sp)\n"
-    "    lw  $ra,60($sp)\n"
-    "    lw  $s0,56($sp)\n"
-    "    addiu  $sp,$sp,64\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A36AC;
+extern s32 *func_80077098(s32);
+extern s32 func_80077374(s32, s32 *);
+extern s32 *D_800A36A0;
+extern s32 D_800F7438;
+typedef struct {
+    s32 sp10;
+    s32 sp14;
+    s32 sp18;
+    s32 sp1C;
+    s32 sp20;
+    s32 sp24;
+    s32 sp28;
+    s32 sp2C;
+    s32 sp30;
+    s32 sp34;
+} S7724;
+void func_80077724(s32 arg0, s32 arg1) {
+    S7724 s;
+    s32 *p;
+    s32 temp_v1;
+    *(s32 **)((s32)D_800A36A0 + 0x24) = (s32 *)(((D_800A36AC & 1) * 0x4090) + (s32)&D_800F7438);
+    temp_v1 = *(s32 *)((s32)D_800A36A0 + 0x30) + 1;
+    *(u16 *)((s32)D_800A36A0 + 0x34) = (u16)(*(u16 *)((s32)D_800A36A0 + 0x34) + 1);
+    *(s32 *)((s32)D_800A36A0 + 0x30) = temp_v1;
+    p = func_80077098(temp_v1 & 1);
+    *(s32 **)((s32)D_800A36A0 + 0x2C) = p;
+    s.sp10 = *(s32 *)((s32)D_800A36A0 + 4);
+    s.sp14 = p[0];
+    s.sp18 = p[1];
+    s.sp1C = p[2];
+    s.sp20 = p[4];
+    s.sp24 = p[3];
+    s.sp28 = p[5];
+    s.sp2C = p[6];
+    s.sp30 = p[7];
+    s.sp34 = p[8];
+    func_80077374(arg1, &s.sp10);
+}
 extern s32 D_800A35E4;
 void func_80068F70(s32, s32 *);
 extern s32 D_8009BD24;
