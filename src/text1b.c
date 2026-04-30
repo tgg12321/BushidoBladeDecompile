@@ -52691,70 +52691,48 @@ s32 func_800784E4(s32 arg0) {
     D_800A3600 = 0;
     return 1;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8007855C\n"
-    "    .word 0x8F820530\n"
-    "    addiu  $sp,$sp,-64\n"
-    "    sw  $s0,56($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    sw  $ra,60($sp)\n"
-    "    addiu  $v0,$v0,1\n"
-    "    .word 0xAF820530\n"
-    "    jal  func_80077D74\n"
-    "    andi  $a0,$v0,1\n"
-    "    lw  $v1,0($v0)\n"
-    "    nop\n"
-    "    sw  $v1,20($sp)\n"
-    "    lw  $v1,8($v0)\n"
-    "    nop\n"
-    "    sw  $v1,28($sp)\n"
-    "    lw  $v1,16($v0)\n"
-    "    nop\n"
-    "    sw  $v1,32($sp)\n"
-    "    lw  $v1,12($v0)\n"
-    "    nop\n"
-    "    sw  $v1,36($sp)\n"
-    "    lw  $v1,20($v0)\n"
-    "    nop\n"
-    "    sw  $v1,40($sp)\n"
-    "    lw  $v1,24($v0)\n"
-    "    nop\n"
-    "    sw  $v1,44($sp)\n"
-    "    lw  $v0,28($v0)\n"
-    "    .word 0x8F830524\n"
-    "    nop\n"
-    "    blez  $v1,.L800785E8\n"
-    "    sw  $v0,48($sp)\n"
-    "    andi  $v0,$s0,64\n"
-    "    bnez  $v0,.L80078614\n"
-    "    addiu  $v0,$zero,1\n"
-    ".L800785E8:\n"
-    "    jal  func_80077D94\n"
-    "    addiu  $a0,$sp,16\n"
-    "    .word 0x8F82052C\n"
-    "    nop\n"
-    "    lw  $v1,52($v0)\n"
-    "    .word 0x8F820524\n"
-    "    lh  $v1,10($v1)\n"
-    "    addiu  $v0,$v0,1\n"
-    "    .word 0xAF820524\n"
-    "    slt  $v0,$v0,$v1\n"
-    "    xori  $v0,$v0,1\n"
-    ".L80078614:\n"
-    "    lw  $ra,60($sp)\n"
-    "    lw  $s0,56($sp)\n"
-    "    addiu  $sp,$sp,64\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 *func_80077D74(s32);
+extern s32 func_80077D94(s32 *);
+extern s32 D_800A35F0;
+extern s32 *D_800A35F8;
+extern s32 D_800A35FC;
+typedef struct {
+    s32 sp10;
+    s32 sp14;
+    s32 sp18;
+    s32 sp1C;
+    s32 sp20;
+    s32 sp24;
+    s32 sp28;
+    s32 sp2C;
+    s32 sp30;
+} S855C;
+s32 func_8007855C(s32 arg0) {
+    S855C s;
+    s32 *p;
+    s32 c;
+    c = D_800A35FC + 1;
+    D_800A35FC = c;
+    p = func_80077D74(c & 1);
+    s.sp14 = p[0];
+    s.sp1C = p[2];
+    s.sp20 = p[4];
+    s.sp24 = p[3];
+    s.sp28 = p[5];
+    s.sp2C = p[6];
+    s.sp30 = p[7];
+    if (D_800A35F0 > 0 && (arg0 & 0x40)) {
+        return 1;
+    }
+    func_80077D94(&s.sp10);
+    {
+        s32 *p_struct = *(s32 **)((s32)D_800A35F8 + 0x34);
+        s32 new_val = D_800A35F0 + 1;
+        int cond = new_val < *(s16 *)((s32)p_struct + 0xA);
+        D_800A35F0 = new_val;
+        return cond ? 0 : 1;
+    }
+}
 s32 func_80078628(s32 *a0) {
     return a0[1];
 }
