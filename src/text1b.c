@@ -22498,80 +22498,30 @@ void obj_Reset(void) {
     func_80085EE4(0);
     func_80085E4C(0, 0);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8005BF78\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    sw  $s4,32($sp)\n"
-    "    addu  $s4,$a0,$zero\n"
-    "    sw  $s2,24($sp)\n"
-    "    addu  $s2,$a1,$zero\n"
-    "    sw  $s3,28($sp)\n"
-    "    addu  $s3,$a2,$zero\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a3,$zero\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    sw  $ra,36($sp)\n"
-    "    jal  func_800858D0\n"
-    "    sw  $s1,20($sp)\n"
-    "    sll  $s1,$s2,16\n"
-    "    sra  $s1,$s1,16\n"
-    "    jal  func_80087F64\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    jal  func_8008AE24\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    lui  $s0,%hi(D_800EFC38)\n"
-    "    addiu  $s0,$s0,%lo(D_800EFC38)\n"
-    "    sll  $s2,$s2,2\n"
-    "    addu  $s0,$s2,$s0\n"
-    "    lw  $v0,0($s0)\n"
-    "    nop\n"
-    "    lw  $a1,12($v0)\n"
-    "    jal  func_8008AD64\n"
-    "    addu  $a0,$s4,$zero\n"
-    "    jal  func_8008AEB0\n"
-    "    addiu  $a0,$zero,1\n"
-    "    jal  func_8008AE24\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    lw  $v0,0($s0)\n"
-    "    nop\n"
-    "    lw  $a1,12($v0)\n"
-    "    jal  func_8008ADC4\n"
-    "    addu  $a0,$s4,$zero\n"
-    "    jal  func_8008AEB0\n"
-    "    addiu  $a0,$zero,1\n"
-    "    lw  $v0,0($s0)\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    lw  $a0,4($v0)\n"
-    "    jal  func_800880B8\n"
-    "    addu  $a2,$s3,$zero\n"
-    "    jal  func_80087FE8\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    lui  $at,%hi(D_800EFB38)\n"
-    "    addu  $at,$at,$s2\n"
-    "    sw  $s3,%lo(D_800EFB38)($at)\n"
-    "    lw  $v0,0($s0)\n"
-    "    nop\n"
-    "    lw  $v0,12($v0)\n"
-    "    nop\n"
-    "    addu  $v0,$s3,$v0\n"
-    "    lw  $ra,36($sp)\n"
-    "    lw  $s4,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_80087F64();
+extern s32 func_80087FE8();
+extern s32 func_800880B8();
+extern s32 func_8008AD64();
+extern s32 func_8008ADC4();
+extern s32 func_8008AE24();
+extern s32 func_8008AEB0();
+extern void func_800858D0(s32);
+extern s32 *D_800EFC38[];
+extern s32 D_800EFB38[];
+s32 func_8005BF78(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    func_800858D0(0);
+    func_80087F64((s16) arg1);
+    func_8008AE24(arg3);
+    func_8008AD64(arg0, D_800EFC38[arg1][3]);
+    func_8008AEB0(1);
+    func_8008AE24(arg2);
+    func_8008ADC4(arg0, D_800EFC38[arg1][3]);
+    func_8008AEB0(1);
+    func_800880B8(D_800EFC38[arg1][1], (s16) arg1, arg2);
+    func_80087FE8((s16) arg1);
+    D_800EFB38[arg1] = arg2;
+    return arg2 + D_800EFC38[arg1][3];
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
