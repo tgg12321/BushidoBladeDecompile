@@ -46731,89 +46731,54 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80072BC4\n"
-    "    addiu  $sp,$sp,-32\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    sw  $s1,20($sp)\n"
-    "    addu  $s1,$a1,$zero\n"
-    "    sw  $ra,24($sp)\n"
-    "    jal  initPolyG4\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    jal  gpu_SetSemiTransp\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    slti  $s0,$s0,4\n"
-    "    beqz  $s0,.L80072C60\n"
-    "    addiu  $v1,$zero,252\n"
-    "    addiu  $v0,$zero,130\n"
-    "    sb  $zero,4($s1)\n"
-    "    sb  $zero,5($s1)\n"
-    "    sb  $zero,6($s1)\n"
-    "    sb  $v1,12($s1)\n"
-    "    sb  $v0,13($s1)\n"
-    "    sb  $zero,14($s1)\n"
-    "    sb  $v1,20($s1)\n"
-    "    sb  $v0,21($s1)\n"
-    "    sb  $zero,22($s1)\n"
-    "    .word 0x8F8204F8\n"
-    "    nop\n"
-    "    lw  $v0,8($v0)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,4\n"
-    "    beqz  $v0,.L80072C4C\n"
-    "    addiu  $v0,$zero,195\n"
-    "    sb  $v0,29($s1)\n"
-    "    j  .L80072C54\n"
-    "    addiu  $v0,$zero,30\n"
-    ".L80072C4C:\n"
-    "    sb  $v0,29($s1)\n"
-    "    addiu  $v0,$zero,80\n"
-    ".L80072C54:\n"
-    "    sb  $v1,28($s1)\n"
-    "    j  .L80072CA4\n"
-    "    sb  $v0,30($s1)\n"
-    ".L80072C60:\n"
-    "    addiu  $v1,$zero,64\n"
-    "    addiu  $a0,$zero,128\n"
-    "    addiu  $v0,$zero,80\n"
-    "    sb  $v0,20($s1)\n"
-    "    addiu  $v0,$zero,160\n"
-    "    sb  $v0,21($s1)\n"
-    "    addiu  $v0,$zero,16\n"
-    "    sb  $zero,4($s1)\n"
-    "    sb  $zero,5($s1)\n"
-    "    sb  $zero,6($s1)\n"
-    "    sb  $v1,12($s1)\n"
-    "    sb  $zero,13($s1)\n"
-    "    sb  $a0,14($s1)\n"
-    "    sb  $v1,22($s1)\n"
-    "    sb  $v0,28($s1)\n"
-    "    sb  $v1,29($s1)\n"
-    "    sb  $a0,30($s1)\n"
-    ".L80072CA4:\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,96\n"
-    "    addiu  $v0,$s1,36\n"
-    "    lw  $ra,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,32\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A374C;
+extern s32 gpu_SetSemiTransp(GameObj *, s32);
+extern s32 initPolyG4(GameObj *);
+extern s32 ot_Link(s32, GameObj *);
+extern void *D_800A35C4;
+s32 func_80072BC4(s32 arg0, GameObj *arg1) {
+    register u8 var_v0 asm("$2");
+    int fc_const;
+
+    initPolyG4(arg1);
+    gpu_SetSemiTransp(arg1, 0);
+    fc_const = 0xFC;
+    if (arg0 < 4) {
+        *(u8 *)((s32)(arg1) + 4) = 0;
+        *(u8 *)((s32)(arg1) + 5) = 0;
+        *(u8 *)((s32)(arg1) + 6) = 0;
+        *(u8 *)((s32)(arg1) + 0xC) = fc_const;
+        *(u8 *)((s32)(arg1) + 0xD) = 0x82;
+        *(u8 *)((s32)(arg1) + 0xE) = 0;
+        *(u8 *)((s32)(arg1) + 0x14) = fc_const;
+        *(u8 *)((s32)(arg1) + 0x15) = 0x82;
+        *(u8 *)((s32)(arg1) + 0x16) = 0;
+        if (*(s32 *)((s32)(D_800A35C4) + 8) & 4) {
+            *(u8 *)((s32)(arg1) + 0x1D) = 0xC3;
+            var_v0 = 0x1E;
+        } else {
+            *(u8 *)((s32)(arg1) + 0x1D) = 0xC3;
+            var_v0 = 0x50;
+        }
+        *(u8 *)((s32)(arg1) + 0x1C) = fc_const;
+        *(u8 *)((s32)(arg1) + 0x1E) = var_v0;
+    } else {
+        *(u8 *)((s32)(arg1) + 4) = 0;
+        *(u8 *)((s32)(arg1) + 5) = 0;
+        *(u8 *)((s32)(arg1) + 6) = 0;
+        *(u8 *)((s32)(arg1) + 0xC) = 0x40;
+        *(u8 *)((s32)(arg1) + 0xD) = 0;
+        *(u8 *)((s32)(arg1) + 0xE) = 0x80;
+        *(u8 *)((s32)(arg1) + 0x14) = 0x50;
+        *(u8 *)((s32)(arg1) + 0x15) = 0xA0;
+        *(u8 *)((s32)(arg1) + 0x16) = 0x40;
+        *(u8 *)((s32)(arg1) + 0x1C) = 0x10;
+        *(u8 *)((s32)(arg1) + 0x1D) = 0x40;
+        *(u8 *)((s32)(arg1) + 0x1E) = 0x80;
+    }
+    ot_Link(D_800A374C + 0x60, arg1);
+    return (s32)((u8 *)arg1 + 0x24);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
