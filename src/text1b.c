@@ -27076,96 +27076,56 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80060414\n"
-    "    addiu  $sp,$sp,-96\n"
-    "    sw  $s0,72($sp)\n"
-    "    addu  $s0,$a1,$zero\n"
-    "    sw  $s2,80($sp)\n"
-    "    addu  $s2,$a2,$zero\n"
-    "    andi  $v1,$a0,32767\n"
-    "    lui  $v0,%hi(D_8009B850)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B850)\n"
-    "    sll  $v1,$v1,1\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    sw  $s1,76($sp)\n"
-    "    addiu  $s1,$s0,20\n"
-    "    sw  $s3,84($sp)\n"
-    "    addiu  $s3,$s0,44\n"
-    "    sw  $ra,88($sp)\n"
-    "    sb  $zero,64($sp)\n"
-    "    sw  $zero,40($sp)\n"
-    "    sw  $s2,44($sp)\n"
-    "    lhu  $v0,0($v1)\n"
-    "    andi  $a0,$a0,32768\n"
-    "    srl  $v0,$v0,7\n"
-    "    addiu  $v0,$v0,55\n"
-    "    sw  $v0,48($sp)\n"
-    "    lhu  $v0,0($v1)\n"
-    "    addu  $v1,$s0,$zero\n"
-    "    andi  $v0,$v0,127\n"
-    "    addiu  $v0,$v0,42\n"
-    "    beqz  $a0,.L80060498\n"
-    "    sw  $v0,52($sp)\n"
-    "    lui  $v0,%hi(D_8009B7AC)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B7AC)\n"
-    "    j  .L800604CC\n"
-    "    sw  $v0,24($sp)\n"
-    ".L80060498:\n"
-    "    lui  $v0,%hi(D_8009BD24)\n"
-    "    lbu  $v0,%lo(D_8009BD24)($v0)\n"
-    "    nop\n"
-    "    sltiu  $v0,$v0,12\n"
-    "    beqz  $v0,.L800604C0\n"
-    "    nop\n"
-    "    lui  $v0,%hi(D_8009B7B8)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B7B8)\n"
-    "    j  .L800604CC\n"
-    "    sw  $v0,24($sp)\n"
-    ".L800604C0:\n"
-    "    lui  $v0,%hi(D_8009B7C4)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B7C4)\n"
-    "    sw  $v0,24($sp)\n"
-    ".L800604CC:\n"
-    "    addiu  $a0,$sp,24\n"
-    "    lui  $v0,%hi(D_800A328C)\n"
-    "    addiu  $v0,$v0,%lo(D_800A328C)\n"
-    "    sw  $v0,28($sp)\n"
-    "    jal  func_8007352C\n"
-    "    sw  $v1,32($sp)\n"
-    "    lw  $a0,24($sp)\n"
-    "    jal  func_8006E480\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    addu  $a3,$v0,$zero\n"
-    "    jal  initTexPage\n"
-    "    sw  $zero,16($sp)\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    lui  $v0,%hi(D_800A374C)\n"
-    "    lw  $v0,%lo(D_800A374C)($v0)\n"
-    "    sll  $a0,$s2,2\n"
-    "    jal  ot_Link\n"
-    "    addu  $a0,$v0,$a0\n"
-    "    subu  $v0,$s3,$s0\n"
-    "    lw  $ra,88($sp)\n"
-    "    lw  $s3,84($sp)\n"
-    "    lw  $s2,80($sp)\n"
-    "    lw  $s1,76($sp)\n"
-    "    lw  $s0,72($sp)\n"
-    "    addiu  $sp,$sp,96\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_8006E480();
+extern s32 func_8007352C();
+extern s32 initTexPage(s32, s32, s32, s32, s32);
+extern s32 ot_Link(s32, s32);
+extern s32 D_8009B7AC;
+extern s32 D_8009B7B8;
+extern s32 D_8009B7C4;
+extern u16 D_8009B850;
+extern u8 D_8009BD24;
+extern s32 D_800A328C;
+typedef struct {
+    s32 *p_geom;
+    s32 *p_static;
+    s32 arg1_field;
+    s32 pad0C;
+    s32 zero10;
+    s32 arg2_field;
+    s32 width;
+    s32 height;
+    s32 pad20;
+    s32 pad24;
+    s8 byte28;
+} S414;
+s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
+    S414 s;
+    s32 dist_off;
+    s32 end_off;
+    s32 new_var;
+    new_var = arg1;
+    dist_off = new_var + 0x14;
+    end_off = new_var + 0x2C;
+    s.byte28 = 0;
+    s.zero10 = 0;
+    s.arg2_field = arg2;
+    s.width = (((u16)(*((&D_8009B850) + (arg0 & 0x7FFF)))) >> 7) + 0x37;
+    s.height = ((*((&D_8009B850) + (arg0 & 0x7FFF))) & 0x7F) + 0x2A;
+    if (arg0 & 0x8000) {
+        s.p_geom = &D_8009B7AC;
+    } else if (((u8)D_8009BD24) < 0xC) {
+        s.p_geom = &D_8009B7B8;
+    } else {
+        s.p_geom = &D_8009B7C4;
+    }
+    s.p_static = &D_800A328C;
+    s.arg1_field = new_var;
+    func_8007352C((s32)(&s));
+    initTexPage(dist_off, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
+    ot_Link(D_800A374C + (arg2 * 4), dist_off);
+    return end_off - arg1;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
