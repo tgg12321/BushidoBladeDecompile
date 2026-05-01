@@ -55,84 +55,49 @@ void func_80047EE8(s32 arg0, s32 arg1)
         while ((count--) != 0);
     }
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80047FBC\n"
-    "    addiu  $sp,$sp,-80\n"
-    "    sw  $s0,56($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    sw  $s4,72($sp)\n"
-    "    addu  $s4,$s0,$zero\n"
-    "    sll  $a1,$a1,16\n"
-    "    sra  $a1,$a1,14\n"
-    "    addu  $s0,$s0,$a1\n"
-    "    sw  $ra,76($sp)\n"
-    "    sw  $s3,68($sp)\n"
-    "    sw  $s2,64($sp)\n"
-    "    sw  $s1,60($sp)\n"
-    "    lw  $v0,0($s0)\n"
-    "    nop\n"
-    "    srl  $v0,$v0,2\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $s0,$s4,$v0\n"
-    "    lw  $s1,0($s0)\n"
-    "    nop\n"
-    "    beqz  $s1,.L8004809C\n"
-    "    addiu  $s0,$s0,4\n"
-    "    addiu  $s1,$s1,-1\n"
-    "    sll  $v0,$a2,16\n"
-    "    sra  $s3,$v0,16\n"
-    "    sll  $v0,$a3,16\n"
-    "    sra  $s2,$v0,16\n"
-    ".L80048024:\n"
-    "    lw  $a0,0($s0)\n"
-    "    addiu  $s0,$s0,4\n"
-    "    lhu  $a1,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    lhu  $a2,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    lhu  $a3,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    addu  $v0,$v0,$s2\n"
-    "    srl  $a0,$a0,2\n"
-    "    sll  $a0,$a0,2\n"
-    "    sll  $a1,$a1,16\n"
-    "    sra  $a1,$a1,16\n"
-    "    sll  $a2,$a2,16\n"
-    "    sra  $a2,$a2,16\n"
-    "    sll  $a3,$a3,16\n"
-    "    sra  $a3,$a3,16\n"
-    "    addu  $a0,$s4,$a0\n"
-    "    addu  $a1,$a1,$s3\n"
-    "    addu  $a2,$a2,$s2\n"
-    "    addu  $a3,$a3,$s3\n"
-    "    jal  func_800482C8\n"
-    "    sw  $v0,16($sp)\n"
-    "    addu  $v0,$s1,$zero\n"
-    "    bnez  $v0,.L80048024\n"
-    "    addiu  $s1,$s1,-1\n"
-    ".L8004809C:\n"
-    "    lw  $ra,76($sp)\n"
-    "    lw  $s4,72($sp)\n"
-    "    lw  $s3,68($sp)\n"
-    "    lw  $s2,64($sp)\n"
-    "    lw  $s1,60($sp)\n"
-    "    lw  $s0,56($sp)\n"
-    "    addiu  $sp,$sp,80\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
+{
+    u32 *p;
+    s32 count;
+    s32 new_var;
+    p = (u32 *)(arg0 + (((s32)(arg1 << 16)) >> 14));
+    p = (u32 *)(arg0 + (((*p) >> 2) << 2));
+    count = *(p++);
+    new_var = arg0;
+    if (count != 0) {
+        s32 sx_arg2;
+        s32 sx_arg3;
+        count--;
+        sx_arg2 = arg2;
+        sx_arg3 = arg3;
+        do {
+            u32 word;
+            s16 a1v;
+            s16 a2v;
+            s16 a3v;
+            s16 v0v;
+            s32 v_plus_arg3;
+            unsigned int new_var2;
+            word = *p;
+            p = (u32 *)(((s32)p) + 4);
+            a1v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            a2v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            a3v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            v0v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            v_plus_arg3 = (s32)v0v + sx_arg3;
+            new_var2 = word >> 2;
+            func_800482C8(new_var + (new_var2 << 2),
+                          (s32)a1v + sx_arg2,
+                          (s32)a2v + sx_arg3,
+                          (s32)a3v + sx_arg2,
+                          v_plus_arg3);
+        } while ((count--) != 0);
+    }
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"

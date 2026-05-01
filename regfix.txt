@@ -3606,7 +3606,7 @@ func_80053694: subst "addiu\s+\$7,\$zero,1" "addiu	$2,$zero,1" @ 44
 func_80053694: subst "sh\s+\$2," "sh	$3," @ 45
 func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
 func_8005BD30: delete @ 17
-func_8005BD30: subst "\.L173" ".L173-4" @ 16
+func_8005BD30: subst "\.L179" ".L179-4" @ 16
 func_8007CA00: subst "j\s+\.L79" "subu	$2,$2,$3" @ 14
 func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.L77" @ 15
 func_8007CA00: insert_after "subu	$2,$2,$4" @ 15
@@ -3691,6 +3691,32 @@ func_800483DC: subst "addu\s+\$20,\$4,\$zero" "addu	$20,$16,$zero" @ 11
 func_800483DC: subst "addu\s+\$16,\$4,\$2" "addu	$16,$16,$2" @ 12
 func_800483DC: insert_after "addu	$16,$4,$zero" @ 3
 func_800483DC: reorder 3,4,1,2,5 @ 1-5
+
+# func_80047FBC: extension of 800483DC recipe, frame -80 vs -48 + extra
+# "addu $20,$16,$zero" early prologue copy. Same call-loop family.
+func_80047FBC: subst "subu\s+\$sp,\$sp,48" "subu	$sp,$sp,80" @ 0
+func_80047FBC: subst "sw\s+\$16,24" "sw	$16,56" @ 3
+func_80047FBC: subst "addu\s+\$16,\$4,\$5" "addu	$16,$16,$5" @ 4
+func_80047FBC: subst "sw\s+\$31,44" "sw	$31,76" @ 5
+func_80047FBC: subst "sw\s+\$20,40" "sw	$20,72" @ 6
+func_80047FBC: subst "sw\s+\$19,36" "sw	$19,68" @ 7
+func_80047FBC: subst "sw\s+\$18,32" "sw	$18,64" @ 8
+func_80047FBC: subst "sw\s+\$17,28" "sw	$17,60" @ 9
+func_80047FBC: subst "addu\s+\$16,\$4,\$2" "addu	$16,$20,$2" @ 14
+func_80047FBC: delete @ 11
+func_80047FBC: insert_after "addu	$16,$4,$zero" @ 3
+func_80047FBC: insert_after "addu	$20,$16,$zero" @ 6
+func_80047FBC: insert_after "nop" @ 10
+func_80047FBC: reorder 3,4,7,8,1,2,5,6 @ 1-8
+# Epilogue (substs run on original indices, before delete shifts)
+func_80047FBC: subst "lw\s+\$31,44" "lw	$31,76" @ 54
+func_80047FBC: subst "lw\s+\$20,40" "lw	$20,72" @ 55
+func_80047FBC: subst "lw\s+\$19,36" "lw	$19,68" @ 56
+func_80047FBC: subst "lw\s+\$18,32" "lw	$18,64" @ 57
+func_80047FBC: subst "lw\s+\$17,28" "lw	$17,60" @ 58
+func_80047FBC: subst "lw\s+\$16,24" "lw	$16,56" @ 59
+func_80047FBC: subst "addu\s+\$sp,\$sp,48" "addu	$sp,$sp,80" @ 60
+
 func_8007CA00: $2 <-> $3 @ 30-36
 func_8007CA00: subst "sra\s+\$2,\$2,1" "sra	$2,$3,1" @ 38
 func_8007CA00: subst "lh\s+\$3,0\(\$4\)" "lh	$3,4($4)" @ 12
@@ -3700,7 +3726,7 @@ func_8005C4C0: insert_after "sll	$2,$2,16" @ 46
 func_8005C4C0: reorder 13,12,14 @ 12-14
 func_8005C4C0: delete @ 46
 func_8005C4C0: insert "sra	$2,$2,16" @ 47
-func_8005C4C0: subst "\.L189" ".L189+4" @ 40
+func_8005C4C0: subst "\.L195" ".L195+4" @ 40
 func_80048530: subst "addu\s+\$8,\$4,\$zero" "addu $v1,$a0,$zero" @ 1
 func_80048530: subst "addu\s+\$5,\$5,\$8" "addu $a1,$a1,$v1" @ 3
 func_80048530: insert_after "addu $t0,$v1,$zero" @ 3
