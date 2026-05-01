@@ -3607,13 +3607,13 @@ func_80053694: subst "sh\s+\$2," "sh	$3," @ 45
 func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
 func_8005BD30: delete @ 17
 func_8005BD30: subst "\.L161" ".L161-4" @ 16
-func_8007CA00: subst "j\s+\.L68" "subu	$2,$2,$3" @ 14
-func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.L66" @ 15
+func_8007CA00: subst "j\s+\.L79" "subu	$2,$2,$3" @ 14
+func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.L77" @ 15
 func_8007CA00: insert_after "subu	$2,$2,$4" @ 15
 func_8007CA00: delete @ 28
 func_8007CA00: delete @ 29
 func_8007CA00: delete @ 30
-func_8007CA00: insert "j	.L60+28" @ 27
+func_8007CA00: insert "j	.L71+28" @ 27
 
 # func_8007C7A0: regfix the 22 register/frame diffs from score-105 base in build context
 func_8007C7A0: subst "subu\s+\$sp,\$sp,24" "subu	$sp,$sp,16" @ 4
@@ -3637,6 +3637,29 @@ func_8007C7A0: subst "andi\s+\$2,\$8,0x0fff" "andi	$2,$7,0x0fff" @ 41
 func_8007C7A0: subst "lui\s+\$8,\(-486539264" "lui	$4,(-486539264" @ 42
 func_8007C7A0: subst "or\s+\$2,\$2,\$8" "or	$2,$2,$4" @ 43
 func_8007C7A0: subst "addu\s+\$sp,\$sp,24" "addu	$sp,$sp,16" @ 45
+
+# func_8007C86C: same recipe as 8007C7A0 (sibling — only 0xE3 vs 0xE4 differs)
+func_8007C86C: subst "subu\s+\$sp,\$sp,24" "subu	$sp,$sp,16" @ 4
+func_8007C86C: subst "addu\s+\$3,\$2,\$zero" "addu	$6,$2,$zero" @ 7
+func_8007C86C: subst "addu\s+\$4,\$3,-1" "addu	$2,$6,-1" @ 11
+func_8007C86C: subst "addu\s+\$4,\$7,\$zero" "addu	$2,$7,$zero" @ 13
+func_8007C86C: subst "addu\s+\$4,\$0,\$zero" "addu	$2,$0,$zero" @ 14
+func_8007C86C: delete @ 15
+func_8007C86C: insert "addu	$7,$2,$zero" @ 15
+func_8007C86C: subst "sll\s+\$2,\$6,16" "sll	$2,$5,16" @ 16
+func_8007C86C: subst "sra\s+\$5,\$2,16" "sra	$6,$2,16" @ 17
+func_8007C86C: subst "bltz\s+\$5," "bltz	$6," @ 18
+func_8007C86C: subst "addu\s+\$3,\$2,\$zero" "addu	$4,$2,$zero" @ 22
+func_8007C86C: subst "slt\s+\$2,\$2,\$5" "slt	$2,$2,$6" @ 24
+func_8007C86C: subst "addu\s+\$6,\$3,-1" "addu	$5,$4,-1" @ 28
+func_8007C86C: subst "addu\s+\$6,\$0,\$zero" "addu	$5,$0,$zero" @ 29
+func_8007C86C: subst "andi\s+\$3,\$6,0x0fff" "andi	$3,$5,0x0fff" @ 35
+func_8007C86C: subst "andi\s+\$3,\$3,0x03ff" "andi	$3,$5,0x03ff" @ 36
+func_8007C86C: subst "andi\s+\$2,\$4,0x03ff" "andi	$2,$7,0x03ff" @ 39
+func_8007C86C: subst "andi\s+\$2,\$8,0x0fff" "andi	$2,$7,0x0fff" @ 41
+func_8007C86C: subst "lui\s+\$8,\(-469762048" "lui	$4,(-469762048" @ 42
+func_8007C86C: subst "or\s+\$2,\$2,\$8" "or	$2,$2,$4" @ 43
+func_8007C86C: subst "addu\s+\$sp,\$sp,24" "addu	$sp,$sp,16" @ 45
 func_8007CA00: $2 <-> $3 @ 30-36
 func_8007CA00: subst "sra\s+\$2,\$2,1" "sra	$2,$3,1" @ 38
 func_8007CA00: subst "lh\s+\$3,0\(\$4\)" "lh	$3,4($4)" @ 12
