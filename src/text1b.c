@@ -15,72 +15,46 @@
 void func_80047ED0(s32 a0) {
     g_snd_volume += a0;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80047EE8\n"
-    "    addiu  $sp,$sp,-72\n"
-    "    sw  $s0,56($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    sw  $s2,64($sp)\n"
-    "    addu  $s2,$s0,$zero\n"
-    "    sll  $a1,$a1,16\n"
-    "    sra  $a1,$a1,14\n"
-    "    addu  $s0,$s0,$a1\n"
-    "    sw  $ra,68($sp)\n"
-    "    sw  $s1,60($sp)\n"
-    "    lw  $v0,0($s0)\n"
-    "    nop\n"
-    "    srl  $v0,$v0,2\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $s0,$s2,$v0\n"
-    "    lw  $s1,0($s0)\n"
-    "    nop\n"
-    "    beqz  $s1,.L80047FA0\n"
-    "    addiu  $s0,$s0,4\n"
-    "    addiu  $s1,$s1,-1\n"
-    ".L80047F38:\n"
-    "    lw  $a0,0($s0)\n"
-    "    addiu  $s0,$s0,4\n"
-    "    lhu  $a1,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    lhu  $a2,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    lhu  $a3,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    srl  $a0,$a0,2\n"
-    "    sll  $a0,$a0,2\n"
-    "    sll  $a1,$a1,16\n"
-    "    sll  $a2,$a2,16\n"
-    "    sll  $a3,$a3,16\n"
-    "    addu  $a0,$s2,$a0\n"
-    "    sra  $a1,$a1,16\n"
-    "    sra  $a2,$a2,16\n"
-    "    sra  $a3,$a3,16\n"
-    "    jal  func_800482C8\n"
-    "    sw  $v0,16($sp)\n"
-    "    addu  $v0,$s1,$zero\n"
-    "    bnez  $v0,.L80047F38\n"
-    "    addiu  $s1,$s1,-1\n"
-    ".L80047FA0:\n"
-    "    lw  $ra,68($sp)\n"
-    "    lw  $s2,64($sp)\n"
-    "    lw  $s1,60($sp)\n"
-    "    lw  $s0,56($sp)\n"
-    "    addiu  $sp,$sp,72\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_800482C8(s32, s32, s32, s32, s32);
+
+void func_80047EE8(s32 arg0, s32 arg1)
+{
+    u32 *p;
+    s16 new_var;
+    s32 count;
+    unsigned int new_var2;
+    count = (s32) (arg1 << 16);
+    count = arg0 + (count >> 14);
+    p = (u32 *) count;
+    p = (u32 *) (arg0 + (((*p) >> 2) << 2));
+    count = *(p++);
+    if (count != 0)
+    {
+        count--;
+        do
+        {
+            u32 word;
+            s16 a1v;
+            s16 a2v;
+            s16 a3v;
+            s16 v0v;
+            word = *p;
+            p = (u32 *) (((s32) p) + 4);
+            a1v = (s16) (*((u16 *) p));
+            p = (u32 *) (((s32) p) + 2);
+            a2v = (s16) (*((u16 *) p));
+            p = (u32 *) (((s32) p) + 2);
+            a3v = (s16) (*((u16 *) p));
+            p = (u32 *) (((s32) p) + 2);
+            new_var = a1v;
+            new_var2 = word >> 2;
+            v0v = (s16) (*((u16 *) p));
+            p = (u32 *) (((s32) p) + 2);
+            func_800482C8(arg0 + (new_var2 << 2), new_var, a2v, a3v, v0v);
+        }
+        while ((count--) != 0);
+    }
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"

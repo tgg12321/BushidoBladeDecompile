@@ -149,7 +149,7 @@ func_800826CC: subst "addu.*" "nop" @ 20
 func_800826CC: subst "addu.*" "nop" @ 23
 func_800826CC: subst "lw.*" "lw\t$2,D_800A1500" @ 24
 func_800826CC: subst "andi.*" "andi\t$2,$2,0x0001" @ 26
-func_800826CC: subst "beq.*" "beq\t$2,$0,.L215" @ 27
+func_800826CC: subst "beq.*" "beq\t$2,$0,.L218" @ 27
 func_800826CC: insert "addu $4,$0,$zero" @ 15
 func_800826CC: insert "lui $2,%hi(D_800A14D0)" @ 18
 func_800826CC: insert "addiu $2,$2,%lo(D_800A14D0)" @ 19
@@ -3606,7 +3606,7 @@ func_80053694: subst "addiu\s+\$7,\$zero,1" "addiu	$2,$zero,1" @ 44
 func_80053694: subst "sh\s+\$2," "sh	$3," @ 45
 func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
 func_8005BD30: delete @ 17
-func_8005BD30: subst "\.L161" ".L161-4" @ 16
+func_8005BD30: subst "\.L167" ".L167-4" @ 16
 func_8007CA00: subst "j\s+\.L79" "subu	$2,$2,$3" @ 14
 func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.L77" @ 15
 func_8007CA00: insert_after "subu	$2,$2,$4" @ 15
@@ -3660,6 +3660,27 @@ func_8007C86C: subst "andi\s+\$2,\$8,0x0fff" "andi	$2,$7,0x0fff" @ 41
 func_8007C86C: subst "lui\s+\$8,\(-469762048" "lui	$4,(-469762048" @ 42
 func_8007C86C: subst "or\s+\$2,\$2,\$8" "or	$2,$2,$4" @ 43
 func_8007C86C: subst "addu\s+\$sp,\$sp,24" "addu	$sp,$sp,16" @ 45
+
+# func_80047EE8: 1) frame -40 -> -72 + stack offsets +32; 2) register flips
+#    s2->s0 saved arg0 -> working ptr base; 3) insert missing addu $18,$16,$zero
+#    after sw $18.
+func_80047EE8: subst "subu\s+\$sp,\$sp,40" "subu	$sp,$sp,72" @ 0
+func_80047EE8: subst "sw\s+\$18,32" "sw	$16,56" @ 1
+func_80047EE8: subst "addu\s+\$18,\$4,\$zero" "addu	$16,$4,$zero" @ 2
+func_80047EE8: subst "sw\s+\$17,28" "sw	$18,64" @ 3
+func_80047EE8: subst "sll\s+\$17,\$5,16" "sll	$5,$5,16" @ 4
+func_80047EE8: subst "sra\s+\$2,\$17,14" "sra	$5,$5,14" @ 5
+func_80047EE8: subst "addu\s+\$17,\$18,\$2" "addu	$16,$16,$5" @ 6
+func_80047EE8: subst "sw\s+\$31,36" "sw	$31,68" @ 7
+func_80047EE8: subst "sw\s+\$16,24" "sw	$17,60" @ 8
+func_80047EE8: subst "lw\s+\$2,0\(\$17\)" "lw	$2,0($16)" @ 9
+func_80047EE8: insert "addu	$18,$16,$zero" @ 4
+# Epilogue stack offsets and frame restore
+func_80047EE8: subst "lw\s+\$31,36" "lw	$31,68" @ 45
+func_80047EE8: subst "lw\s+\$18,32" "lw	$18,64" @ 46
+func_80047EE8: subst "lw\s+\$17,28" "lw	$17,60" @ 47
+func_80047EE8: subst "lw\s+\$16,24" "lw	$16,56" @ 48
+func_80047EE8: subst "addu\s+\$sp,\$sp,40" "addu	$sp,$sp,72" @ 49
 func_8007CA00: $2 <-> $3 @ 30-36
 func_8007CA00: subst "sra\s+\$2,\$2,1" "sra	$2,$3,1" @ 38
 func_8007CA00: subst "lh\s+\$3,0\(\$4\)" "lh	$3,4($4)" @ 12
@@ -3669,7 +3690,7 @@ func_8005C4C0: insert_after "sll	$2,$2,16" @ 46
 func_8005C4C0: reorder 13,12,14 @ 12-14
 func_8005C4C0: delete @ 46
 func_8005C4C0: insert "sra	$2,$2,16" @ 47
-func_8005C4C0: subst "\.L177" ".L177+4" @ 40
+func_8005C4C0: subst "\.L183" ".L183+4" @ 40
 func_80048530: subst "addu\s+\$8,\$4,\$zero" "addu $v1,$a0,$zero" @ 1
 func_80048530: subst "addu\s+\$5,\$5,\$8" "addu $a1,$a1,$v1" @ 3
 func_80048530: insert_after "addu $t0,$v1,$zero" @ 3
