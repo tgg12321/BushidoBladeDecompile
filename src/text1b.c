@@ -46661,89 +46661,55 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80072E10\n"
-    "    addiu  $sp,$sp,-48\n"
-    "    sw  $s5,36($sp)\n"
-    "    addu  $s5,$a0,$zero\n"
-    "    sw  $ra,40($sp)\n"
-    "    sw  $s4,32($sp)\n"
-    "    sw  $s3,28($sp)\n"
-    "    sw  $s2,24($sp)\n"
-    "    sw  $s1,20($sp)\n"
-    "    jal  func_80073060\n"
-    "    sw  $s0,16($sp)\n"
-    "    addiu  $s4,$zero,80\n"
-    "    addiu  $s2,$zero,50\n"
-    "    addiu  $s1,$zero,82\n"
-    "    addiu  $s0,$zero,320\n"
-    "    lw  $v0,12($s5)\n"
-    "    .word 0x878404B4\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    sh  $s4,8($a1)\n"
-    "    sh  $s2,10($a1)\n"
-    "    sh  $s4,16($a1)\n"
-    "    sh  $s1,18($a1)\n"
-    "    sh  $s0,24($a1)\n"
-    "    sh  $s2,26($a1)\n"
-    "    sh  $s0,32($a1)\n"
-    "    jal  func_80072BC4\n"
-    "    sh  $s1,34($a1)\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    .word 0x878404B4\n"
-    "    addiu  $s3,$zero,561\n"
-    "    sh  $s3,8($a1)\n"
-    "    sh  $s2,10($a1)\n"
-    "    sh  $s3,16($a1)\n"
-    "    sh  $s1,18($a1)\n"
-    "    sh  $s0,24($a1)\n"
-    "    sh  $s2,26($a1)\n"
-    "    sh  $s0,32($a1)\n"
-    "    jal  func_80072BC4\n"
-    "    sh  $s1,34($a1)\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    .word 0x878404B4\n"
-    "    addiu  $s2,$zero,113\n"
-    "    sh  $s0,8($a1)\n"
-    "    sh  $s1,10($a1)\n"
-    "    sh  $s0,16($a1)\n"
-    "    sh  $s2,18($a1)\n"
-    "    sh  $s4,24($a1)\n"
-    "    sh  $s1,26($a1)\n"
-    "    sh  $s4,32($a1)\n"
-    "    jal  func_80072CD4\n"
-    "    sh  $s2,34($a1)\n"
-    "    .word 0x878404B4\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    sh  $s0,8($a1)\n"
-    "    sh  $s1,10($a1)\n"
-    "    sh  $s0,16($a1)\n"
-    "    sh  $s2,18($a1)\n"
-    "    sh  $s3,24($a1)\n"
-    "    sh  $s1,26($a1)\n"
-    "    sh  $s3,32($a1)\n"
-    "    jal  func_80072CD4\n"
-    "    sh  $s2,34($a1)\n"
-    "    sw  $v0,12($s5)\n"
-    "    lw  $ra,40($sp)\n"
-    "    lw  $s5,36($sp)\n"
-    "    lw  $s4,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,48\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_80073060(s32);
+extern s32 func_80072CD4(s32, GameObj *);
+extern s16 D_800A3580;
+void func_80072E10(s32 arg0) {
+    GameObj *p;
+    func_80073060(arg0);
+    p = *(GameObj **)((s32)arg0 + 0xC);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x08) = 0x50;
+    *(s16 *)((s32)p + 0x0A) = 0x32;
+    *(s16 *)((s32)p + 0x10) = 0x50;
+    *(s16 *)((s32)p + 0x12) = 0x52;
+    *(s16 *)((s32)p + 0x18) = 0x140;
+    *(s16 *)((s32)p + 0x1A) = 0x32;
+    *(s16 *)((s32)p + 0x20) = 0x140;
+    *(s16 *)((s32)p + 0x22) = 0x52;
+    p = (GameObj *)func_80072BC4((s32)D_800A3580, p);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x08) = 0x231;
+    *(s16 *)((s32)p + 0x0A) = 0x32;
+    *(s16 *)((s32)p + 0x10) = 0x231;
+    *(s16 *)((s32)p + 0x12) = 0x52;
+    *(s16 *)((s32)p + 0x18) = 0x140;
+    *(s16 *)((s32)p + 0x1A) = 0x32;
+    *(s16 *)((s32)p + 0x20) = 0x140;
+    *(s16 *)((s32)p + 0x22) = 0x52;
+    p = (GameObj *)func_80072BC4((s32)D_800A3580, p);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x08) = 0x140;
+    *(s16 *)((s32)p + 0x0A) = 0x52;
+    *(s16 *)((s32)p + 0x10) = 0x140;
+    *(s16 *)((s32)p + 0x12) = 0x71;
+    *(s16 *)((s32)p + 0x18) = 0x50;
+    *(s16 *)((s32)p + 0x1A) = 0x52;
+    *(s16 *)((s32)p + 0x20) = 0x50;
+    *(s16 *)((s32)p + 0x22) = 0x71;
+    p = (GameObj *)func_80072CD4((s32)D_800A3580, p);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x08) = 0x140;
+    *(s16 *)((s32)p + 0x0A) = 0x52;
+    *(s16 *)((s32)p + 0x10) = 0x140;
+    *(s16 *)((s32)p + 0x12) = 0x71;
+    *(s16 *)((s32)p + 0x18) = 0x231;
+    *(s16 *)((s32)p + 0x1A) = 0x52;
+    *(s16 *)((s32)p + 0x20) = 0x231;
+    *(s16 *)((s32)p + 0x22) = 0x71;
+    p = (GameObj *)func_80072CD4((s32)D_800A3580, p);
+    *(GameObj **)((s32)arg0 + 0xC) = p;
+}
 void initTile(s32);
 void gpu_SetSemiTransp(s32, s32);
 extern s32 D_800A374C;
