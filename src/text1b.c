@@ -2108,6 +2108,7 @@ void func_80049E1C(void) {
     D_800A324C = -1;
 }
 extern s32 func_800418D0();
+extern s32 func_8004A1FC();
 extern void *D_800A3708;
 extern void *D_800A370C;
 extern u8 D_800FF638;
@@ -2258,105 +2259,43 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8004A09C\n"
-    "    addiu  $sp,$sp,-32\n"
-    "    sw  $s1,20($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a1,$zero\n"
-    "    sw  $ra,24($sp)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,56($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,62($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,68($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,58($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,64($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,70($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,60($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,66($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $zero,24($s1)\n"
-    "    sh  $zero,26($s1)\n"
-    "    sh  $zero,28($s1)\n"
-    "    sh  $zero,30($s1)\n"
-    "    sh  $zero,32($s1)\n"
-    "    sh  $zero,34($s1)\n"
-    "    sh  $zero,36($s1)\n"
-    "    sh  $zero,38($s1)\n"
-    "    sh  $zero,40($s1)\n"
-    "    sh  $v0,72($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,0($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,2($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,4($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,8($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,10($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,12($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,16($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sh  $v0,18($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    jal  func_8004A1FC\n"
-    "    sh  $v0,20($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sb  $v0,88($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sb  $v0,89($s1)\n"
-    "    lhu  $v0,0($s0)\n"
-    "    nop\n"
-    "    sb  $v0,90($s1)\n"
-    "    lhu  $v0,2($s0)\n"
-    "    nop\n"
-    "    sh  $v0,92($s1)\n"
-    "    lw  $ra,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,32\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_8004A09C(s32 arg0, u16 *arg1) {
+    *(s16 *)(arg0 + 0x38) = *arg1++;
+    *(s16 *)(arg0 + 0x3E) = *arg1++;
+    *(s16 *)(arg0 + 0x44) = *arg1++;
+    *(s16 *)(arg0 + 0x3A) = *arg1++;
+    *(s16 *)(arg0 + 0x40) = *arg1++;
+    *(s16 *)(arg0 + 0x46) = *arg1++;
+    *(s16 *)(arg0 + 0x3C) = *arg1++;
+    *(s16 *)(arg0 + 0x42) = *arg1++;
+    {
+        s16 v48 = *arg1++;
+        *(s16 *)(arg0 + 0x18) = 0;
+        *(s16 *)(arg0 + 0x1A) = 0;
+        *(s16 *)(arg0 + 0x1C) = 0;
+        *(s16 *)(arg0 + 0x1E) = 0;
+        *(s16 *)(arg0 + 0x20) = 0;
+        *(s16 *)(arg0 + 0x22) = 0;
+        *(s16 *)(arg0 + 0x24) = 0;
+        *(s16 *)(arg0 + 0x26) = 0;
+        *(s16 *)(arg0 + 0x28) = 0;
+        *(s16 *)(arg0 + 0x48) = v48;
+    }
+    *(s16 *)(arg0 + 0x00) = *arg1++;
+    *(s16 *)(arg0 + 0x02) = *arg1++;
+    *(s16 *)(arg0 + 0x04) = *arg1++;
+    *(s16 *)(arg0 + 0x08) = *arg1++;
+    *(s16 *)(arg0 + 0x0A) = *arg1++;
+    *(s16 *)(arg0 + 0x0C) = *arg1++;
+    *(s16 *)(arg0 + 0x10) = *arg1++;
+    *(s16 *)(arg0 + 0x12) = *arg1++;
+    func_8004A1FC();
+    *(s16 *)(arg0 + 0x14) = *arg1++;
+    *(s8 *)(arg0 + 0x58) = *arg1++;
+    *(s8 *)(arg0 + 0x59) = *arg1++;
+    *(s8 *)(arg0 + 0x5A) = *arg1;
+    *(s16 *)(arg0 + 0x5C) = *(arg1 + 1);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
