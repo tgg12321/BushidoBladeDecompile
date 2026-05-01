@@ -3630,3 +3630,7 @@ func_80048530: insert_after "addu $t0,$v1,$zero" @ 3
 func_80048530: subst "addu\s+\$3,\$8,\$2" "addu $v1,$v0,$v1" @ 8
 func_80048530: reorder 28,29,30,31,32,33,27 @ 27-33
 func_8004A09C: reorder 66,67,68,65,69 @ 65-69
+
+
+# func_800618B4: swap v0/v1 in tail (arg0[2] in v1, FF0000 in v0)
+func_800618B4: $2 <-> $3 @ 42-46
