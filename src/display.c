@@ -23,6 +23,8 @@ extern u8 g_gpu_color_table[];
 extern u8 g_gpu_draw_env;
 extern u8 g_gpu_disp_env;
 extern u8 D_8009BE74;
+extern s16 D_8009BE78;
+extern s16 D_8009BE7A;
 extern s32 g_gpu_vcount;
 extern s32 g_gpu_draw_count;
 extern u32 g_str_drawotag;
@@ -1264,74 +1266,47 @@ s32 func_8007C748(s32 arg0, s32 arg1, s32 arg2) {
     }
     return var_v1 | arg2;
 }
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007C7A0\n"
-    "    addu       $a3, $a0, $zero\n"
-    "    sll        $a0, $a0, 16\n"
-    "    sra        $a0, $a0, 16\n"
-    "    bltz       $a0, .Lfunc_8007C7A0_8007C7DC\n"
-    "    addiu     $sp, $sp, -0x10\n"
-    "    lui        $v0, %hi(g_gpu_disp_x)\n"
-    "    lh         $v0, %lo(g_gpu_disp_x)($v0)\n"
-    "    nop\n"
-    "    addu       $a2, $v0, $zero\n"
-    "    addiu      $v0, $v0, -0x1\n"
-    "    slt        $v0, $v0, $a0\n"
-    "    bnez       $v0, .Lfunc_8007C7A0_8007C7E0\n"
-    "    addiu     $v0, $a2, -0x1\n"
-    "    j          .Lfunc_8007C7A0_8007C7E0\n"
-    "    addu      $v0, $a3, $zero\n"
-    ".Lfunc_8007C7A0_8007C7DC:\n"
-    "    addu       $v0, $zero, $zero\n"
-    ".Lfunc_8007C7A0_8007C7E0:\n"
-    "    addu       $a3, $v0, $zero\n"
-    "    sll        $v0, $a1, 16\n"
-    "    sra        $a2, $v0, 16\n"
-    "    bltz       $a2, .Lfunc_8007C7A0_8007C81C\n"
-    "    nop\n"
-    "    lui        $v0, %hi(g_gpu_disp_y)\n"
-    "    lh         $v0, %lo(g_gpu_disp_y)($v0)\n"
-    "    nop\n"
-    "    addu       $a0, $v0, $zero\n"
-    "    addiu      $v0, $v0, -0x1\n"
-    "    slt        $v0, $v0, $a2\n"
-    "    beqz       $v0, .Lfunc_8007C7A0_8007C820\n"
-    "    nop\n"
-    "    j          .Lfunc_8007C7A0_8007C820\n"
-    "    addiu     $a1, $a0, -0x1\n"
-    ".Lfunc_8007C7A0_8007C81C:\n"
-    "    addu       $a1, $zero, $zero\n"
-    ".Lfunc_8007C7A0_8007C820:\n"
-    "    lui        $v0, %hi(g_gpu_type)\n"
-    "    lbu        $v0, %lo(g_gpu_type)($v0)\n"
-    "    nop\n"
-    "    addiu      $v0, $v0, -0x1\n"
-    "    sltiu      $v0, $v0, 0x2\n"
-    "    bnez       $v0, .Lfunc_8007C7A0_8007C84C\n"
-    "    andi      $v1, $a1, 0xFFF\n"
-    "    andi       $v1, $a1, 0x3FF\n"
-    "    sll        $v1, $v1, 10\n"
-    "    j          .Lfunc_8007C7A0_8007C854\n"
-    "    andi      $v0, $a3, 0x3FF\n"
-    ".Lfunc_8007C7A0_8007C84C:\n"
-    "    sll        $v1, $v1, 12\n"
-    "    andi       $v0, $a3, 0xFFF\n"
-    ".Lfunc_8007C7A0_8007C854:\n"
-    "    lui        $a0, (0xE3000000 >> 16)\n"
-    "    or         $v0, $v0, $a0\n"
-    "    or         $v0, $v1, $v0\n"
-    "    addiu      $sp, $sp, 0x10\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+s32 func_8007C7A0(s16 arg0, s16 arg1)
+{
+    s16 var_a1;
+    s16 var_v0_2;
+    int new_var;
+    s32 var_v0;
+    int new_var2;
+    s32 var_v1;
+
+    new_var = arg0 >= 0;
+    if (new_var) {
+        if ((D_8009BE78 - 1) < arg0) {
+            var_v0_2 = D_8009BE78 - 1;
+        } else {
+            var_v0_2 = arg0;
+        }
+    } else {
+        var_v0_2 = 0;
+        var_a1 = arg1;
+    }
+    if (var_a1 >= 0) {
+        if ((D_8009BE7A - 1) < var_a1) {
+            var_a1 = D_8009BE7A - 1;
+        }
+    } else {
+        var_a1 = 0;
+    }
+    var_a1 = var_a1 & 0xFFF;
+    if (((u32)(D_8009BE74 - 1)) >= 2U) {
+        new_var2 = var_v0_2;
+        if (!D_8009BE7A) { }
+        var_v1 = var_a1 & 0x3FF;
+        var_v1 = var_v1 << 0xA;
+        var_v0 = new_var2 & 0x3FF;
+    } else {
+        var_v1 = (var_a1 << 1) << 11;
+        var_v0 = new_var2 & 0xFFF;
+    }
+    new_var2 = 0xE3000000;
+    return var_v1 | (var_v0 | new_var2);
+}
 __asm__(
     "    .set\tnoat\n"
     "    .set\tnoreorder\n"
