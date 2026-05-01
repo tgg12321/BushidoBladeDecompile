@@ -28150,80 +28150,36 @@ void func_80061710(s32 *arg0, s32 arg1) {
     D_800A3464 = mask;
     t = arg0[2]; D_800F1148 = t;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800617C8\n"
-    "    addiu  $sp,$sp,-24\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    lui  $v1,%hi(D_800F1160)\n"
-    "    addiu  $v1,$v1,%lo(D_800F1160)\n"
-    "    sw  $ra,20($sp)\n"
-    "    lbu  $v0,0($v1)\n"
-    "    lui  $a1,%hi(D_800F116C)\n"
-    "    addiu  $a1,$a1,%lo(D_800F116C)\n"
-    "    .word 0xAF85039C\n"
-    "    lui  $at,%hi(D_800F1178)\n"
-    "    sw  $s0,%lo(D_800F1178)($at)\n"
-    "    beqz  $v0,.L80061828\n"
-    "    nop\n"
-    "    lbu  $v0,1($v1)\n"
-    "    nop\n"
-    "    beqz  $v0,.L80061818\n"
-    "    addiu  $a0,$v1,1\n"
-    "    sb  $zero,1($v1)\n"
-    "    sb  $zero,0($v1)\n"
-    ".L80061818:\n"
-    "    lbu  $v0,0($v1)\n"
-    "    nop\n"
-    "    bnez  $v0,.L80061848\n"
-    "    nop\n"
-    ".L80061828:\n"
-    "    lui  $a0,33\n"
-    "    ori  $a0,$a0,16\n"
-    "    .word 0x8F83039C\n"
-    "    lui  $v0,%hi(D_800F1160)\n"
-    "    addiu  $v0,$v0,%lo(D_800F1160)\n"
-    "    sw  $v0,20($v1)\n"
-    "    j  .L80061868\n"
-    "    sw  $a0,0($v1)\n"
-    ".L80061848:\n"
-    "    lbu  $v0,1($v1)\n"
-    "    nop\n"
-    "    bnez  $v0,.L80061868\n"
-    "    lui  $v0,33\n"
-    "    ori  $v0,$v0,17\n"
-    "    lui  $at,%hi(D_800F1180)\n"
-    "    sw  $a0,%lo(D_800F1180)($at)\n"
-    "    sw  $v0,0($a1)\n"
-    ".L80061868:\n"
-    "    jal  func_80060A68\n"
-    "    nop\n"
-    "    lw  $v0,0($s0)\n"
-    "    lui  $at,%hi(D_800F1140)\n"
-    "    sw  $v0,%lo(D_800F1140)($at)\n"
-    "    lw  $v0,4($s0)\n"
-    "    lui  $v1,192\n"
-    "    lui  $at,%hi(D_800F1144)\n"
-    "    sw  $v0,%lo(D_800F1144)($at)\n"
-    "    lw  $v0,8($s0)\n"
-    "    ori  $v1,$v1,24595\n"
-    "    .word 0xAF830398\n"
-    "    lui  $at,%hi(D_800F1148)\n"
-    "    sw  $v0,%lo(D_800F1148)($at)\n"
-    "    lw  $ra,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,24\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern u8 D_800F1160[];
+void func_800617C8(s32 *arg0) {
+    s32 *v1 = (s32 *)&D_800F116C;
+    register s32 t asm("$2");
+    register s32 mask asm("$3");
+    D_800A3468 = (s32)v1;
+    D_800F1178 = (s32)arg0;
+    if (D_800F1160[0] != 0) {
+        if (D_800F1160[1] != 0) {
+            D_800F1160[1] = 0;
+            D_800F1160[0] = 0;
+        }
+        if (D_800F1160[0] != 0) goto check_one_zero;
+    }
+    *(s32 *)((s32)D_800A3468 + 0x14) = (s32)D_800F1160;
+    *(s32 *)D_800A3468 = 0x210010;
+    goto end;
+check_one_zero:
+    if (D_800F1160[1] == 0) {
+        D_800F1180 = (s32)(D_800F1160 + 1);
+        *v1 = 0x210011;
+    }
+end:
+    func_80060A68();
+    t = arg0[0]; D_800F1140 = t;
+    t = arg0[1]; D_800F1144 = t;
+    mask = 0xC06013;
+    D_800A3464 = mask;
+    t = arg0[2]; D_800F1148 = t;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
