@@ -27609,105 +27609,53 @@ void func_80060C60(void) {
     D_800A3448 = 0;
 }
 
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80060CB8\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    sw  $s2,32($sp)\n"
-    "    addu  $s2,$a1,$zero\n"
-    "    sw  $s1,28($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    sw  $ra,36($sp)\n"
-    "    jal  game_FrameLoop\n"
-    "    sw  $s0,24($sp)\n"
-    "    lui  $v0,%hi(D_8009BD38)\n"
-    "    lw  $v0,%lo(D_8009BD38)($v0)\n"
-    "    nop\n"
-    "    andi  $v1,$v0,15\n"
-    "    bnez  $v1,.L80060CFC\n"
-    "    addiu  $v0,$zero,3\n"
-    "    addiu  $a0,$zero,2\n"
-    "    j  .L80060D40\n"
-    "    addiu  $a1,$zero,60\n"
-    ".L80060CFC:\n"
-    "    bne  $v1,$v0,.L80060D10\n"
-    "    addiu  $v0,$zero,2\n"
-    "    addiu  $a0,$zero,2\n"
-    "    j  .L80060D40\n"
-    "    addiu  $a1,$zero,47\n"
-    ".L80060D10:\n"
-    "    bne  $v1,$v0,.L80060D24\n"
-    "    addiu  $v0,$zero,5\n"
-    "    addiu  $a0,$zero,2\n"
-    "    j  .L80060D40\n"
-    "    addiu  $a1,$zero,48\n"
-    ".L80060D24:\n"
-    "    bne  $v1,$v0,.L80060D38\n"
-    "    nop\n"
-    "    addiu  $a0,$zero,2\n"
-    "    j  .L80060D40\n"
-    "    addiu  $a1,$zero,49\n"
-    ".L80060D38:\n"
-    "    addiu  $a0,$zero,2\n"
-    "    addu  $a1,$zero,$zero\n"
-    ".L80060D40:\n"
-    "    jal  func_80036EA8\n"
-    "    addiu  $s0,$zero,476\n"
-    "    addu  $a0,$v0,$zero\n"
-    "    jal  replay_camera_Init\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    jal  game_FrameLoop\n"
-    "    nop\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    addiu  $v0,$zero,896\n"
-    "    sh  $v0,16($sp)\n"
-    "    addiu  $v0,$zero,128\n"
-    "    sh  $zero,18($sp)\n"
-    "    sh  $v0,20($sp)\n"
-    "    jal  gpu_DrawSync\n"
-    "    sh  $s0,22($sp)\n"
-    "    addiu  $a0,$sp,16\n"
-    "    jal  gpu_LoadImage\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    jal  gpu_DrawSync\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    lui  $a1,1\n"
-    "    ori  $a1,$a1,56320\n"
-    "    addiu  $a0,$sp,16\n"
-    "    addu  $a1,$s1,$a1\n"
-    "    addiu  $v0,$zero,112\n"
-    "    sh  $v0,20($sp)\n"
-    "    addiu  $v0,$zero,36\n"
-    "    sh  $s0,18($sp)\n"
-    "    jal  gpu_LoadImage\n"
-    "    sh  $v0,22($sp)\n"
-    "    jal  gpu_DrawSync\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    jal  func_80060C60\n"
-    "    nop\n"
-    "    jal  func_80079154\n"
-    "    nop\n"
-    "    jal  func_80079184\n"
-    "    addu  $a0,$v0,$zero\n"
-    "    addiu  $v1,$s2,18000\n"
-    "    addiu  $v0,$v1,18000\n"
-    "    .word 0xAF920354\n"
-    "    .word 0xAF830358\n"
-    "    lw  $ra,36($sp)\n"
-    "    lw  $s2,32($sp)\n"
-    "    lw  $s1,28($sp)\n"
-    "    lw  $s0,24($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A3420;
+extern s32 D_800A3424;
+
+s32 func_80060CB8(s32 arg0, s32 arg1) {
+    typedef struct {
+        s16 sp10;
+        s16 sp12;
+        s16 sp14;
+        s16 sp16;
+    } SLocal;
+    SLocal s;
+    s32 v;
+    s32 ret;
+
+    game_FrameLoop();
+    v = D_8009BD38 & 0xF;
+    if (v == 0) {
+        replay_camera_Init(func_80036EA8(2, 0x3C), arg0);
+    } else if (v == 3) {
+        replay_camera_Init(func_80036EA8(2, 0x2F), arg0);
+    } else if (v == 2) {
+        replay_camera_Init(func_80036EA8(2, 0x30), arg0);
+    } else if (v == 5) {
+        replay_camera_Init(func_80036EA8(2, 0x31), arg0);
+    } else {
+        replay_camera_Init(func_80036EA8(2, 0), arg0);
+    }
+    game_FrameLoop();
+    s.sp10 = 0x380;
+    s.sp12 = 0;
+    s.sp14 = 0x80;
+    s.sp16 = 0x1DC;
+    gpu_DrawSync(0);
+    gpu_LoadImage(&s.sp10, arg0);
+    gpu_DrawSync(0);
+    s.sp14 = 0x70;
+    s.sp12 = 0x1DC;
+    s.sp16 = 0x24;
+    gpu_LoadImage(&s.sp10, arg0 + 0x1DC00);
+    gpu_DrawSync(0);
+    func_80060C60();
+    func_80079184(func_80079154());
+    ret = arg1 + 0x4650;
+    D_800A3420 = arg1;
+    D_800A3424 = ret;
+    return ret + 0x4650;
+}
 extern s32 D_800A3420;
 extern s32 D_800A3424;
 extern volatile s32 D_800A37D4;
