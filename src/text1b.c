@@ -373,68 +373,41 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800483DC\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    sll  $a1,$a1,16\n"
-    "    sra  $a1,$a1,14\n"
-    "    addu  $a1,$a1,$s0\n"
-    "    sw  $ra,36($sp)\n"
-    "    sw  $s4,32($sp)\n"
-    "    sw  $s3,28($sp)\n"
-    "    sw  $s2,24($sp)\n"
-    "    sw  $s1,20($sp)\n"
-    "    lw  $v0,0($a1)\n"
-    "    addu  $s4,$s0,$zero\n"
-    "    addu  $s0,$s0,$v0\n"
-    "    lw  $s1,0($s0)\n"
-    "    nop\n"
-    "    beqz  $s1,.L8004847C\n"
-    "    addiu  $s0,$s0,4\n"
-    "    addiu  $s1,$s1,-1\n"
-    "    sll  $v0,$a2,16\n"
-    "    sra  $s3,$v0,16\n"
-    "    sll  $v0,$a3,16\n"
-    "    sra  $s2,$v0,16\n"
-    ".L80048438:\n"
-    "    lw  $a0,0($s0)\n"
-    "    addiu  $s0,$s0,8\n"
-    "    lhu  $a1,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    lhu  $a2,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sll  $a1,$a1,16\n"
-    "    sra  $a1,$a1,16\n"
-    "    sll  $a2,$a2,16\n"
-    "    sra  $a2,$a2,16\n"
-    "    addu  $a0,$s4,$a0\n"
-    "    addu  $a1,$a1,$s3\n"
-    "    jal  func_800484A0\n"
-    "    addu  $a2,$a2,$s2\n"
-    "    addu  $v0,$s1,$zero\n"
-    "    bnez  $v0,.L80048438\n"
-    "    addiu  $s1,$s1,-1\n"
-    ".L8004847C:\n"
-    "    lw  $ra,36($sp)\n"
-    "    lw  $s4,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_800484A0(s32, s32, s32);
+
+void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
+{
+    s32 *p;
+    s32 count;
+    s32 new_var;
+    p = (s32 *)(arg0 + (((s32)(arg1 << 16)) >> 14));
+    p = (s32 *)(arg0 + (*p));
+    count = *(p++);
+    new_var = arg0;
+    if (count != 0) {
+        s32 sx_arg2;
+        s32 sx_arg3;
+        count--;
+        sx_arg2 = arg2;
+        sx_arg3 = arg3;
+        do {
+            s32 entry_off;
+            u32 dx_u;
+            u32 dy_u;
+            s32 dx;
+            s32 dy;
+            entry_off = *p;
+            p = (s32 *)(((s32)p) + 8);
+            dx_u = *((u16 *)p);
+            p = (s32 *)(((s32)p) + 2);
+            dy_u = *((u16 *)p);
+            p = (s32 *)(((s32)p) + 2);
+            dx = ((s32)(dx_u << 16)) >> 16;
+            dy = ((s32)(dy_u << 16)) >> 16;
+            func_800484A0(new_var + entry_off, dx + sx_arg2, dy + sx_arg3);
+        } while ((count--) != 0);
+    }
+}
 void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
     s16 rect[4];
     s16 buf[512];
