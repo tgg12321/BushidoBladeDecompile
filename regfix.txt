@@ -3606,7 +3606,7 @@ func_80053694: subst "addiu\s+\$7,\$zero,1" "addiu	$2,$zero,1" @ 44
 func_80053694: subst "sh\s+\$2," "sh	$3," @ 45
 func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
 func_8005BD30: delete @ 17
-func_8005BD30: subst "\.L179" ".L179-4" @ 16
+func_8005BD30: subst "\.L186" ".L186-4" @ 16
 func_8007CA00: subst "j\s+\.L79" "subu	$2,$2,$3" @ 14
 func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.L77" @ 15
 func_8007CA00: insert_after "subu	$2,$2,$4" @ 15
@@ -3692,6 +3692,32 @@ func_800483DC: subst "addu\s+\$16,\$4,\$2" "addu	$16,$16,$2" @ 12
 func_800483DC: insert_after "addu	$16,$4,$zero" @ 3
 func_800483DC: reorder 3,4,1,2,5 @ 1-5
 
+# func_800481E8: same call-loop family with conditional v0v++.
+# Same prologue recipe as 80047EE8, plus $v0/$v1 swap in loop body to match
+# target's register allocation, plus a reorder to move the call-arg addu
+# out of the branch delay slot.
+func_800481E8: subst "subu\s+\$sp,\$sp,40" "subu	$sp,$sp,72" @ 0
+func_800481E8: subst "sw\s+\$16,24" "sw	$16,56" @ 3
+func_800481E8: subst "addu\s+\$16,\$4,\$5" "addu	$16,$16,$5" @ 4
+func_800481E8: subst "sw\s+\$31,36" "sw	$31,68" @ 5
+func_800481E8: subst "sw\s+\$18,32" "sw	$18,64" @ 6
+func_800481E8: subst "sw\s+\$17,28" "sw	$17,60" @ 7
+func_800481E8: subst "addu\s+\$16,\$4,\$2" "addu	$16,$18,$2" @ 12
+func_800481E8: $2 <-> $3 @ 18-30
+func_800481E8: subst "addu\s+\$4,\$18,\$3" "addu	$4,$18,$2" @ 33
+func_800481E8: delete @ 9
+func_800481E8: insert_after "addu	$16,$4,$zero" @ 3
+func_800481E8: insert_after "addu	$18,$16,$zero" @ 6
+func_800481E8: insert_after "nop" @ 8
+func_800481E8: reorder 3,4,7,8,1,2,5,6 @ 1-8
+func_800481E8: reorder 35,31,32,33,34 @ 31-35
+# Epilogue stack offsets
+func_800481E8: subst "lw\s+\$31,36" "lw	$31,68" @ 47
+func_800481E8: subst "lw\s+\$18,32" "lw	$18,64" @ 48
+func_800481E8: subst "lw\s+\$17,28" "lw	$17,60" @ 49
+func_800481E8: subst "lw\s+\$16,24" "lw	$16,56" @ 50
+func_800481E8: subst "addu\s+\$sp,\$sp,40" "addu	$sp,$sp,72" @ 51
+
 # func_80047FBC: extension of 800483DC recipe, frame -80 vs -48 + extra
 # "addu $20,$16,$zero" early prologue copy. Same call-loop family.
 func_80047FBC: subst "subu\s+\$sp,\$sp,48" "subu	$sp,$sp,80" @ 0
@@ -3726,7 +3752,7 @@ func_8005C4C0: insert_after "sll	$2,$2,16" @ 46
 func_8005C4C0: reorder 13,12,14 @ 12-14
 func_8005C4C0: delete @ 46
 func_8005C4C0: insert "sra	$2,$2,16" @ 47
-func_8005C4C0: subst "\.L195" ".L195+4" @ 40
+func_8005C4C0: subst "\.L202" ".L202+4" @ 40
 func_80048530: subst "addu\s+\$8,\$4,\$zero" "addu $v1,$a0,$zero" @ 1
 func_80048530: subst "addu\s+\$5,\$5,\$8" "addu $a1,$a1,$v1" @ 3
 func_80048530: insert_after "addu $t0,$v1,$zero" @ 3
