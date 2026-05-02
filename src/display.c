@@ -210,68 +210,33 @@ void gpu_StoreImage(s32 a0, s32 a1) {
     v0 = g_gpu_dev_table;
     ((void (*)(u32, s32, s32, s32))v0[2])(v0[7], a0, 8, a1);
 }
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007B6C8\n"
-    "    addiu      $sp, $sp, -0x20\n"
-    "    sw         $s0, 16($sp)\n"
-    "    addu       $s0, $a0, $zero\n"
-    "    sw         $s2, 24($sp)\n"
-    "    addu       $s2, $a1, $zero\n"
-    "    sw         $s1, 20($sp)\n"
-    "    addu       $s1, $a2, $zero\n"
-    "    lui        $a0, %hi(D_80015F74)\n"
-    "    addiu      $a0, $a0, %lo(D_80015F74)\n"
-    "    sw         $ra, 28($sp)\n"
-    "    jal        func_8007B3A8\n"
-    "    addu      $a1, $s0, $zero\n"
-    "    lh         $v0, 4($s0)\n"
-    "    nop\n"
-    "    beqz       $v0, .Lfunc_8007B6C8_8007B770\n"
-    "    addiu     $v0, $zero, -0x1\n"
-    "    lh         $v0, 6($s0)\n"
-    "    nop\n"
-    "    bnez       $v0, .Lfunc_8007B6C8_8007B720\n"
-    "    sll       $v0, $s1, 16\n"
-    "    j          .Lfunc_8007B6C8_8007B770\n"
-    "    addiu     $v0, $zero, -0x1\n"
-    ".Lfunc_8007B6C8_8007B720:\n"
-    "    andi       $v1, $s2, 0xFFFF\n"
-    "    or         $v0, $v0, $v1\n"
-    "    lui        $a1, %hi(D_8009BF24)\n"
-    "    addiu      $a1, $a1, %lo(D_8009BF24)\n"
-    "    lw         $a0, 0($s0)\n"
-    "    lui        $v1, %hi(g_gpu_dev_table)\n"
-    "    lw         $v1, %lo(g_gpu_dev_table)($v1)\n"
-    "    addiu      $a2, $zero, 0x14\n"
-    "    lui        $at, %hi(D_8009BF28)\n"
-    "    sw         $v0, %lo(D_8009BF28)($at)\n"
-    "    sw         $a0, 0($a1)\n"
-    "    lw         $v0, 4($s0)\n"
-    "    addu       $a3, $zero, $zero\n"
-    "    lui        $at, %hi(D_8009BF2C)\n"
-    "    sw         $v0, %lo(D_8009BF2C)($at)\n"
-    "    lw         $a0, 24($v1)\n"
-    "    lw         $v0, 8($v1)\n"
-    "    nop\n"
-    "    jalr       $v0\n"
-    "    addiu     $a1, $a1, -0x8\n"
-    ".Lfunc_8007B6C8_8007B770:\n"
-    "    lw         $ra, 28($sp)\n"
-    "    lw         $s2, 24($sp)\n"
-    "    lw         $s1, 20($sp)\n"
-    "    lw         $s0, 16($sp)\n"
-    "    addiu      $sp, $sp, 0x20\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+extern u8 D_80015F74;
+extern s32 D_8009BF24;
+extern s32 D_8009BF28;
+extern s32 D_8009BF2C;
+
+s32 func_8007B6C8(s32 *arg0, s16 arg1, s16 arg2) {
+    s32 *p;
+    s32 (*fn)();
+    s32 packed;
+    s32 *bf24;
+
+    func_8007B3A8(&D_80015F74, (s32)arg0);
+    if (((s16 *)arg0)[2] == 0) {
+        return -1;
+    }
+    if (((s16 *)arg0)[3] == 0) {
+        return -1;
+    }
+    packed = ((s32)arg2 << 16) | ((u32)arg1 & 0xFFFF);
+    bf24 = &D_8009BF24;
+    *bf24 = arg0[0];
+    D_8009BF28 = packed;
+    D_8009BF2C = arg0[1];
+    p = (s32 *)g_gpu_dev_table;
+    fn = (s32 (*)())p[2];
+    return fn(p[6], (s32)bf24 - 8, 0x14, 0);
+}
 extern u32 g_str_clearotag;
 extern u32 g_gpu_ot_end;
 

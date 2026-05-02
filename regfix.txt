@@ -3607,13 +3607,13 @@ func_80053694: subst "sh\s+\$2," "sh	$3," @ 45
 func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
 func_8005BD30: delete @ 17
 func_8005BD30: subst "\.L192" ".L192-4" @ 16
-func_8007CA00: subst "j\s+\.L79" "subu	$2,$2,$3" @ 14
-func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.L77" @ 15
+func_8007CA00: subst "j\s+\.L\d+" "subu	$2,$2,$3" @ 14
+func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.L81" @ 15
 func_8007CA00: insert_after "subu	$2,$2,$4" @ 15
 func_8007CA00: delete @ 28
 func_8007CA00: delete @ 29
 func_8007CA00: delete @ 30
-func_8007CA00: insert "j	.L71+28" @ 27
+func_8007CA00: insert "j	.L75+28" @ 27
 
 # func_8007C7A0: regfix the 22 register/frame diffs from score-105 base in build context
 func_8007C7A0: subst "subu\s+\$sp,\$sp,24" "subu	$sp,$sp,16" @ 4
@@ -3811,6 +3811,33 @@ func_800644FC: reorder 17,12,11,13,14,15,16 @ 11-17
 func_800644FC: reorder 25,23,24 @ 23-25
 func_800644FC: reorder 30,29 @ 29-30
 func_800644FC: subst "\.L347" ".L347-4" @ 22
+
+# func_8007B6C8: layout fix beq->bne
+func_8007B6C8: subst "beq\s+\$2,\$0,\.L15" "bne	$2,$0,.LbodyB6C8" @ 17
+func_8007B6C8: subst "addiu\s+\$2,\$zero,-1" "sll	$2,$17,16" @ 18
+func_8007B6C8: insert_after "addiu	$2,$zero,-1" @ 18
+func_8007B6C8: insert_after "j	.L16" @ 18
+func_8007B6C8: insert_label ".LbodyB6C8:" @ 20
+# Body register flip: $v0->$a1 (bf24), $v1->$a0 (arg0[0]), $a3->$v1 (g_gpu_dev_table), $a2->$v0 (arg0[1])
+func_8007B6C8: subst "la\s+\$2,D_8009BF24" "la	$5,D_8009BF24" @ 19
+func_8007B6C8: subst "lw\s+\$3,0\(\$16\)" "lw	$4,0($16)" @ 20
+func_8007B6C8: subst "lw\s+\$7,g_gpu_dev_table" "lw	$3,g_gpu_dev_table" @ 21
+func_8007B6C8: subst "sw\s+\$3,0\(\$2\)" "sw	$4,0($5)" @ 23
+func_8007B6C8: subst "lw\s+\$4,24\(\$7\)" "lw	$4,24($3)" @ 26
+func_8007B6C8: subst "lw\s+\$6,4\(\$16\)" "lw	$2,4($16)" @ 27
+func_8007B6C8: subst "lw\s+\$2,8\(\$7\)" "lw	$2,8($3)" @ 30
+func_8007B6C8: subst "sw\s+\$6,D_8009BF2C" "sw	$2,D_8009BF2C" @ 32
+# Delete redundant sll (already in bne delay slot via subst @ 18)
+func_8007B6C8: delete @ 24
+# Move bf24-=8 from early body to jalr delay slot
+func_8007B6C8: delete @ 22
+func_8007B6C8: subst "addiu\s+\$6,\$zero,20" "addiu	$5,$5,-8" @ 34
+# Insert addiu $a2,20 in body (target has it before D_8009BF28 store)
+func_8007B6C8: insert "addiu	$6,$zero,20" @ 22
+# Insert nop before jalr (target has load-delay nop)
+func_8007B6C8: insert "nop" @ 31
+# Reorder body to match target: andi/or first, la $a1, lw $a0, lw $v1, addiu $a2, sw D_8009BF28, sw 0($a1), lw $v0 4(s0), addu $a3, sw D_8009BF2C, lw $a0 vtable[6], lw $v0 vtable[2], nop, jalr, addiu $a1 -8
+func_8007B6C8: reorder 26,29,21,22,23,24,30,25,28,32,33,27,31,34,35,36 @ 21-36
 
 
 # func_800618B4: swap v0/v1 in tail (arg0[2] in v1, FF0000 in v0)
