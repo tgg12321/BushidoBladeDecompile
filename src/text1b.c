@@ -30877,65 +30877,34 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800644FC\n"
-    "    addiu  $sp,$sp,-48\n"
-    "    sw  $s2,32($sp)\n"
-    "    addu  $s2,$a0,$zero\n"
-    "    sw  $ra,44($sp)\n"
-    "    sw  $s4,40($sp)\n"
-    "    sw  $s3,36($sp)\n"
-    "    sw  $s1,28($sp)\n"
-    "    sw  $s0,24($sp)\n"
-    "    lw  $v0,0($s2)\n"
-    "    nop\n"
-    "    blez  $v0,.L8006458C\n"
-    "    addu  $s0,$zero,$zero\n"
-    "    lui  $v1,%hi(D_800A3454)\n"
-    "    addiu  $v1,$v1,%lo(D_800A3454)\n"
-    "    sll  $v0,$a2,2\n"
-    "    addu  $s4,$v0,$v1\n"
-    "    addu  $v0,$v0,$a2\n"
-    "    sll  $s3,$v0,4\n"
-    "    addu  $s1,$a1,$zero\n"
-    ".L80064548:\n"
-    "    addiu  $v0,$zero,1\n"
-    "    lw  $v1,0($s4)\n"
-    "    sllv  $v0,$v0,$s0\n"
-    "    and  $v1,$v1,$v0\n"
-    "    beqz  $v1,.L80064578\n"
-    "    sll  $a0,$s0,3\n"
-    "    lui  $v0,%hi(D_800F1000)\n"
-    "    addiu  $v0,$v0,%lo(D_800F1000)\n"
-    "    addu  $a0,$a0,$v0\n"
-    "    addu  $a0,$s3,$a0\n"
-    "    jal  func_8007F35C\n"
-    "    addu  $a1,$s1,$zero\n"
-    ".L80064578:\n"
-    "    lw  $v0,0($s2)\n"
-    "    addiu  $s0,$s0,1\n"
-    "    slt  $v0,$s0,$v0\n"
-    "    bnez  $v0,.L80064548\n"
-    "    addiu  $s1,$s1,32\n"
-    ".L8006458C:\n"
-    "    lw  $ra,44($sp)\n"
-    "    lw  $s4,40($sp)\n"
-    "    lw  $s3,36($sp)\n"
-    "    lw  $s2,32($sp)\n"
-    "    lw  $s1,28($sp)\n"
-    "    lw  $s0,24($sp)\n"
-    "    addiu  $sp,$sp,48\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_800644FC(s32 *arg0, s32 arg1, s32 arg2)
+{
+    s32 i;
+    s32 ptr;
+    s32 *bits_p;
+    s32 mul50;
+    s32 dummy_pad;
+    __asm__ volatile ("" : "=m"(dummy_pad));
+    __asm__ volatile ("" : "=m"(dummy_pad));
+    if ((*arg0) > 0) {
+        bits_p = (s32 *)((s32)&D_800A3454 + (arg2 << 2));
+        mul50 = (arg2 + (arg2 << 2)) << 4;
+        ptr = arg1;
+        i = 0;
+        do {
+            register s32 one asm("$2") = 1;
+            register s32 mask asm("$2");
+            mask = one << i;
+            if ((*bits_p) & mask) {
+                u8 *base;
+                __asm__ volatile ("" : "=r"(base) : "0"(&D_800F1000));
+                func_8007F35C((u16 *)(base + mul50 + (i << 3)), (u8 *)ptr);
+            }
+            i += 1;
+            ptr += 0x20;
+        } while (i < (*arg0));
+    }
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
