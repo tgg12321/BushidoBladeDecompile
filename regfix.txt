@@ -3606,7 +3606,7 @@ func_80053694: subst "addiu\s+\$7,\$zero,1" "addiu	$2,$zero,1" @ 44
 func_80053694: subst "sh\s+\$2," "sh	$3," @ 45
 func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
 func_8005BD30: delete @ 17
-func_8005BD30: subst "\.L186" ".L186-4" @ 16
+func_8005BD30: subst "\.L192" ".L192-4" @ 16
 func_8007CA00: subst "j\s+\.L79" "subu	$2,$2,$3" @ 14
 func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.L77" @ 15
 func_8007CA00: insert_after "subu	$2,$2,$4" @ 15
@@ -3692,6 +3692,44 @@ func_800483DC: subst "addu\s+\$16,\$4,\$2" "addu	$16,$16,$2" @ 12
 func_800483DC: insert_after "addu	$16,$4,$zero" @ 3
 func_800483DC: reorder 3,4,1,2,5 @ 1-5
 
+# func_800480C0: 6-arg call-loop with sx_arg2/3/4/5 + arg0_saved (7 callee-saves).
+# Same prologue restructure recipe as 800483DC/47FBC + frame +32 + stack offset
+# substs, with 2 stack-arg lws shifting position.
+func_800480C0: subst "subu\s+\$sp,\$sp,56" "subu	$sp,$sp,88" @ 0
+func_800480C0: subst "sw\s+\$16,24" "sw	$16,56" @ 3
+func_800480C0: subst "addu\s+\$16,\$4,\$5" "addu	$16,$16,$5" @ 4
+func_800480C0: subst "sw\s+\$18,32" "sw	$18,64" @ 5
+func_800480C0: subst "addu\s+\$18,\$4,\$zero" "addu	$18,$16,$zero" @ 6
+func_800480C0: subst "sw\s+\$31,52" "sw	$31,84" @ 7
+func_800480C0: subst "sw\s+\$22,48" "sw	$22,80" @ 8
+func_800480C0: subst "sw\s+\$21,44" "sw	$21,76" @ 9
+func_800480C0: subst "sw\s+\$20,40" "sw	$20,72" @ 10
+func_800480C0: subst "sw\s+\$19,36" "sw	$19,68" @ 11
+func_800480C0: subst "sw\s+\$17,28" "sw	$17,60" @ 12
+func_800480C0: subst "lw\s+\$20,72" "lw	$3,104" @ 14
+func_800480C0: subst "lw\s+\$19,76" "lw	$4,108" @ 15
+func_800480C0: subst "addu\s+\$16,\$4,\$2" "addu	$16,$18,$2" @ 18
+func_800480C0: subst "sll\s+\$22,\$6,16" "sll	$2,$6,16" @ 24
+func_800480C0: subst "sra\s+\$22,\$22,16" "sra	$22,$2,16" @ 25
+func_800480C0: subst "sll\s+\$21,\$7,16" "sll	$2,$7,16" @ 26
+func_800480C0: subst "sra\s+\$21,\$21,16" "sra	$21,$2,16" @ 27
+func_800480C0: subst "sll\s+\$20,\$20,16" "sll	$2,$3,16" @ 28
+func_800480C0: subst "sra\s+\$20,\$20,16" "sra	$20,$2,16" @ 29
+func_800480C0: subst "sll\s+\$19,\$19,16" "sll	$2,$4,16" @ 30
+func_800480C0: subst "sra\s+\$19,\$19,16" "sra	$19,$2,16" @ 31
+func_800480C0: insert_after "addu	$16,$4,$zero" @ 3
+func_800480C0: reorder 3,4,6,7,1,2,5 @ 1-7
+# Epilogue
+func_800480C0: subst "lw\s+\$31,52" "lw	$31,84" @ 62
+func_800480C0: subst "lw\s+\$22,48" "lw	$22,80" @ 63
+func_800480C0: subst "lw\s+\$21,44" "lw	$21,76" @ 64
+func_800480C0: subst "lw\s+\$20,40" "lw	$20,72" @ 65
+func_800480C0: subst "lw\s+\$19,36" "lw	$19,68" @ 66
+func_800480C0: subst "lw\s+\$18,32" "lw	$18,64" @ 67
+func_800480C0: subst "lw\s+\$17,28" "lw	$17,60" @ 68
+func_800480C0: subst "lw\s+\$16,24" "lw	$16,56" @ 69
+func_800480C0: subst "addu\s+\$sp,\$sp,56" "addu	$sp,$sp,88" @ 70
+
 # func_800481E8: same call-loop family with conditional v0v++.
 # Same prologue recipe as 80047EE8, plus $v0/$v1 swap in loop body to match
 # target's register allocation, plus a reorder to move the call-arg addu
@@ -3752,7 +3790,7 @@ func_8005C4C0: insert_after "sll	$2,$2,16" @ 46
 func_8005C4C0: reorder 13,12,14 @ 12-14
 func_8005C4C0: delete @ 46
 func_8005C4C0: insert "sra	$2,$2,16" @ 47
-func_8005C4C0: subst "\.L202" ".L202+4" @ 40
+func_8005C4C0: subst "\.L208" ".L208+4" @ 40
 func_80048530: subst "addu\s+\$8,\$4,\$zero" "addu $v1,$a0,$zero" @ 1
 func_80048530: subst "addu\s+\$5,\$5,\$8" "addu $a1,$a1,$v1" @ 3
 func_80048530: insert_after "addu $t0,$v1,$zero" @ 3
