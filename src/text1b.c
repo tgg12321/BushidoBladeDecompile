@@ -98,93 +98,53 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
         } while ((count--) != 0);
     }
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800480C0\n"
-    "    addiu  $sp,$sp,-88\n"
-    "    sw  $s0,56($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    sw  $s2,64($sp)\n"
-    "    addu  $s2,$s0,$zero\n"
-    "    sll  $a1,$a1,16\n"
-    "    sra  $a1,$a1,14\n"
-    "    addu  $s0,$s0,$a1\n"
-    "    sw  $ra,84($sp)\n"
-    "    sw  $s6,80($sp)\n"
-    "    sw  $s5,76($sp)\n"
-    "    sw  $s4,72($sp)\n"
-    "    sw  $s3,68($sp)\n"
-    "    sw  $s1,60($sp)\n"
-    "    lw  $v0,0($s0)\n"
-    "    lw  $v1,104($sp)\n"
-    "    lw  $a0,108($sp)\n"
-    "    srl  $v0,$v0,2\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $s0,$s2,$v0\n"
-    "    lw  $s1,0($s0)\n"
-    "    nop\n"
-    "    beqz  $s1,.L800481BC\n"
-    "    addiu  $s0,$s0,4\n"
-    "    addiu  $s1,$s1,-1\n"
-    "    sll  $v0,$a2,16\n"
-    "    sra  $s6,$v0,16\n"
-    "    sll  $v0,$a3,16\n"
-    "    sra  $s5,$v0,16\n"
-    "    sll  $v0,$v1,16\n"
-    "    sra  $s4,$v0,16\n"
-    "    sll  $v0,$a0,16\n"
-    "    sra  $s3,$v0,16\n"
-    ".L80048144:\n"
-    "    lw  $a0,0($s0)\n"
-    "    addiu  $s0,$s0,4\n"
-    "    lhu  $a1,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    lhu  $a2,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    lhu  $a3,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    lhu  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,2\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    addu  $v0,$v0,$s3\n"
-    "    srl  $a0,$a0,2\n"
-    "    sll  $a0,$a0,2\n"
-    "    sll  $a1,$a1,16\n"
-    "    sra  $a1,$a1,16\n"
-    "    sll  $a2,$a2,16\n"
-    "    sra  $a2,$a2,16\n"
-    "    sll  $a3,$a3,16\n"
-    "    sra  $a3,$a3,16\n"
-    "    addu  $a0,$s2,$a0\n"
-    "    addu  $a1,$a1,$s6\n"
-    "    addu  $a2,$a2,$s5\n"
-    "    addu  $a3,$a3,$s4\n"
-    "    jal  func_800482C8\n"
-    "    sw  $v0,16($sp)\n"
-    "    addu  $v0,$s1,$zero\n"
-    "    bnez  $v0,.L80048144\n"
-    "    addiu  $s1,$s1,-1\n"
-    ".L800481BC:\n"
-    "    lw  $ra,84($sp)\n"
-    "    lw  $s6,80($sp)\n"
-    "    lw  $s5,76($sp)\n"
-    "    lw  $s4,72($sp)\n"
-    "    lw  $s3,68($sp)\n"
-    "    lw  $s2,64($sp)\n"
-    "    lw  $s1,60($sp)\n"
-    "    lw  $s0,56($sp)\n"
-    "    addiu  $sp,$sp,88\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
+{
+    register s32 saved_arg0 asm("$18");
+    register s32 sx_arg2 asm("$22");
+    register s32 sx_arg3 asm("$21");
+    register s32 sx_arg4 asm("$20");
+    register s32 sx_arg5 asm("$19");
+    u32 *p;
+    s32 count;
+    p = (u32 *)(arg0 + (((s32)(arg1 << 16)) >> 14));
+    p = (u32 *)(arg0 + (((*p) >> 2) << 2));
+    count = *(p++);
+    saved_arg0 = arg0;
+    if (count != 0) {
+        count--;
+        sx_arg2 = arg2;
+        sx_arg3 = arg3;
+        sx_arg4 = arg4;
+        sx_arg5 = arg5;
+        do {
+            u32 word;
+            s16 a1v;
+            s16 a2v;
+            s16 a3v;
+            s16 v0v;
+            s32 v_plus;
+            unsigned int new_var2;
+            word = *p;
+            p = (u32 *)(((s32)p) + 4);
+            a1v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            a2v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            a3v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            v0v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            v_plus = (s32)v0v + sx_arg5;
+            new_var2 = word >> 2;
+            func_800482C8(saved_arg0 + (new_var2 << 2),
+                          (s32)a1v + sx_arg2,
+                          (s32)a2v + sx_arg3,
+                          (s32)a3v + sx_arg4,
+                          v_plus);
+        } while ((count--) != 0);
+    }
+}
 void func_800481E8(s32 arg0, s32 arg1)
 {
     u32 *p;
