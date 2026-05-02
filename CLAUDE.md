@@ -191,6 +191,27 @@ Stuck means switch *technique*, not target. The ladder (in order):
 - **Hypothesis before every attempt.** If you can't articulate one, escalate to the next ladder rung — don't flail.
 - **Multi-session OK.** If the session ends before match, commit best partial state with hand-off notes; the NEXT session resumes the SAME function. Don't start a new function.
 
+### DO NOT ASK FOR DIRECTION
+
+The user has explicitly directed: keep working until the function is matched. Asking for status updates, direction, or approval mid-work is forbidden. The user is not on standby to redirect when you're stuck — they expect "matched" when they next look.
+
+**FORBIDDEN mid-work prose:**
+- "Score is plateauing — should I keep going or move on?" — keep going. You don't move on.
+- "I've tried X, Y, Z. How would you like me to proceed?" — switch to the next escalation rung.
+- "Want me to build a new pipeline pass?" — yes, just build it. Commit it.
+- "Want me to run the permuter overnight?" — yes, just run it.
+- "I'm stuck. Should I switch to a different function?" — no, never. Switch *technique*, not target.
+- Status reports / progress dumps mid-work.
+
+**The only times you stop and wait for the user:**
+1. Function is matched + committed; either batch is done or it was a one-off ("do this function").
+2. Classifier returned an out-of-scope category — function is gated out by the rule.
+3. Genuinely catastrophic situation: WSL broken, build fundamentally corrupted, repo in an unexpected state requiring real decision. NOT "regfix is hard" or "I've made N attempts."
+
+If tempted to check in because you're stuck: switch technique, not direction. Build the tool. Run the long permuter. Write the 60 regfix rules. Asking permission for in-scope decomp work is itself a violation.
+
+See `feedback_workflow_rules.md` Communication section for the full rule.
+
 ### Matching Toolbox (proven techniques — try in this order)
 
 When an attempt scores > 0, classify the diff before flailing:
