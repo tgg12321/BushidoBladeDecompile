@@ -48311,73 +48311,36 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80074D2C\n"
-    "    addiu  $sp,$sp,-88\n"
-    "    sw  $s0,72($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    sw  $s1,76($sp)\n"
-    "    addiu  $s1,$zero,12\n"
-    "    sw  $ra,80($sp)\n"
-    "    sw  $zero,40($sp)\n"
-    "    sb  $zero,64($sp)\n"
-    "    lw  $v0,0($s0)\n"
-    "    sll  $a2,$a2,16\n"
-    "    lw  $v0,28($v0)\n"
-    "    sra  $a2,$a2,14\n"
-    "    addu  $a2,$a2,$v0\n"
-    "    sll  $v0,$a1,4\n"
-    "    subu  $v0,$v0,$a1\n"
-    "    lw  $v1,0($a2)\n"
-    "    sll  $v0,$v0,4\n"
-    "    sw  $v0,48($sp)\n"
-    "    sw  $zero,52($sp)\n"
-    "    sw  $v1,24($sp)\n"
-    "    addiu  $v1,$v1,12\n"
-    "    beqz  $a1,.L80074D8C\n"
-    "    sw  $v1,28($sp)\n"
-    "    addiu  $s1,$zero,22\n"
-    ".L80074D8C:\n"
-    "    sw  $s1,44($sp)\n"
-    "    lw  $v0,16($s0)\n"
-    "    addiu  $a0,$sp,24\n"
-    "    jal  func_8007352C\n"
-    "    sw  $v0,32($sp)\n"
-    "    sw  $v0,16($s0)\n"
-    "    lw  $a0,24($sp)\n"
-    "    jal  func_8006E480\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    sw  $zero,16($sp)\n"
-    "    lw  $a0,24($s0)\n"
-    "    jal  initTexPage\n"
-    "    addu  $a3,$v0,$zero\n"
-    "    sll  $a0,$s1,2\n"
-    "    lui  $v0,%hi(D_800A374C)\n"
-    "    lw  $v0,%lo(D_800A374C)($v0)\n"
-    "    lw  $a1,24($s0)\n"
-    "    jal  ot_Link\n"
-    "    addu  $a0,$v0,$a0\n"
-    "    lw  $v0,24($s0)\n"
-    "    nop\n"
-    "    addiu  $v0,$v0,12\n"
-    "    sw  $v0,24($s0)\n"
-    "    lw  $ra,80($sp)\n"
-    "    lw  $s1,76($sp)\n"
-    "    lw  $s0,72($sp)\n"
-    "    addiu  $sp,$sp,88\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+typedef struct {
+    s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
+    s8 sp40;
+} S_80074D2C;
+
+void func_80074D2C(s32 arg0, s32 arg1, s32 arg2) {
+    S_80074D2C s;
+    s32 var_s1;
+    s32 sp18_val;
+    s32 inner_ptr;
+
+    var_s1 = 0xC;
+    s.sp28 = 0;
+    s.sp40 = 0;
+    inner_ptr = *(s32 *)((s32)*(s32 *)arg0 + 0x1C);
+    sp18_val = *(s32 *)(((arg2 << 16) >> 14) + inner_ptr);
+    s.sp30 = arg1 * 0xF0;
+    s.sp34 = 0;
+    s.sp18 = sp18_val;
+    s.sp1C = sp18_val + 0xC;
+    if (arg1 != 0) {
+        var_s1 = 0x16;
+    }
+    s.sp2C = var_s1;
+    s.sp20 = *(s32 *)(arg0 + 0x10);
+    *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(s.sp18, 0), 0);
+    ot_Link(D_800A374C + var_s1 * 4, *(s32 *)(arg0 + 0x18));
+    *(s32 *)(arg0 + 0x18) += 0xC;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
