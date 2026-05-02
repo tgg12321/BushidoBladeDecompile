@@ -153,7 +153,8 @@ The **attempt-first** flow runs all the cheap mechanical steps before the model 
 2. **`dc.sh attempt <func>`** — runs setup → smart_match → permute_capped → gen_regfix automatically. Reports MATCHED / NEAR_MISS / HARD / SKIPPED.
    - **MATCHED** — `auto_matches/<func>.c` has the matched C. Use `dc.sh inline-replace <func> auto_matches/<func>.c` (or `dc.sh replace ... auto_matches/<func>.c`).
    - **NEAR_MISS** (score ≤ 200) — review `/tmp/<func>.regfix.suggestions`, run `dc.sh recipes <func>` for matching named recipes, apply rules with `dc.sh add-regfix`.
-   - **HARD** / **SKIPPED** — table or skip per classifier reason.
+   - **HARD** — pipeline didn't close it; manually deepen via toolbox (don't stop). Score plateau = switch technique, not table.
+   - **SKIPPED** — `permanently_blocked` / BIOS / PsyQ stdlib / multi-function / aspsx_delay_swra. These genuinely cannot reach pure C; treat as out-of-scope.
 3. **Manual deepening** — only when NEAR_MISS plus `dc.sh recipes <func>` doesn't surface a known pattern. Read `feedback_*` memories listed in the toolbox section.
 
 ### Anti-spiral rules
@@ -176,28 +177,17 @@ The **attempt-first** flow runs all the cheap mechanical steps before the model 
 When an attempt scores > 0, classify the diff before flailing:
 
 1. **Structural alternatives (C-level)** — goto vs if/else vs switch, intermediate variables for subtraction order, declaration position for load timing. Use the permuter to explore.
-2. **Register asm hints** — `register T x asm("regname")` constrains GCC's allocator. Useful for forcing specific s-reg/v-reg placements. WARNING: leaf temp regs cause scheduling side effects (see `feedback_regasm_leaf_danger.md`).
-3. **Inline `__asm__`** — for GTE ops, BIOS calls, scratchpad access, and forcing specific instruction sequences. See `feedback_gcc272_asm_constraints.md` for pitfalls (no `+r`, `=r`/`0` pseudo-split).
-4. **regfix.py (assembly stream rewrite)** — `subst`, `swap`, `delete`, `insert`, `insert_after`, `reorder`. Operates between maspsx and `as`. Use for register-allocation diffs and small structural fixes that survive after C-level options are exhausted.
-5. **LICM unhoist recipe** — when target keeps a magic-constant `lui+ori` inline (with the ori filling a `lw` delay slot) and your variant hoists it to a t-reg in the preheader, apply the regfix recipe documented in `memory/feedback_licm_unhoist_recipe.md`. Proven on SetCurrentCursor (commit 22c1cc0). ~7 rules: delete preheader, insert inline (with `insert_after` for the ori delay-slot fill), cascade-rename freed reg.
-6. **TABLE** — when 2 consecutive attempts score the same OR the diff is dominated by frame-size mismatch + multiple compounding blockers (regalloc spill differences, GCC strength reduction, delay-slot scheduling across many branches).
+2. **Register asm hints** — `register T x asm("regname")` constrains GCC's allocator. Useful for forcing specific s-reg/v-reg placements. WARNING: leaf temp regs cause scheduling side effects (see `feedback_matching_playbook.md`).
+3. **Inline `__asm__`** — for GTE ops, BIOS calls, scratchpad access, and forcing specific instruction sequences. See `feedback_matching_playbook.md` for GCC 2.7.2 constraint pitfalls (no `+r`, `=r`/`0` pseudo-split).
+4. **regfix.py (assembly stream rewrite)** — `subst`, `swap`, `delete`, `insert`, `insert_after`, `insert_label`, `reorder`, `fill_delay`, `drain_delay`. Operates between maspsx and `as`. Use for register-allocation diffs and small structural fixes that survive after C-level options are exhausted. Full reference in `feedback_regfix_reference.md`.
+5. **Named recipes** — LICM unhoist (`tools/recipes/licm_unhoist.json`, ~7 rules), call-loop family (text1b.c regfix recipe), early-exit alias breaker (8 rules, auto-detected by `gen-regfix`), varargs prologue, nested-bool memcard family, CU split for jtbl interposition. All documented in `feedback_matching_playbook.md` "Named recipes" section.
+
+**No tabling.** Iterate until score=0 + SHA1 OK in the same session — score plateau means switch *technique*, not stop. New tools/passes/recipes are acceptable. See `feedback_workflow_rules.md`.
 
 **Memory entries to consult before each function:**
-- `feedback_gcc272_matching.md` — full matching guide
-- `feedback_licm_unhoist_recipe.md` — when LICM signature appears
-- `feedback_regasm_scheduling.md` — register asm for scheduling control
-- `feedback_aspsx_scheduling.md` — when lui/ori split matters
-- `feedback_gcc272_div_and_layout.md` — signed div, block layout, delay-slot patterns
-
-### Tabling criteria
-
-Only table when you have documented attempts at ALL of:
-- Alternative C structures via permuter
-- Regfix at the assembly stream level
-- Consulted the full matching toolbox feedback memories
-- Explained why the remaining diff is architecturally intractable (not merely "hard")
-
-Table with full notes so a future session can resume.
+- `feedback_matching_playbook.md` — full matching guide (toolbox order, every C-side technique, named recipes, things that don't work)
+- `feedback_regfix_reference.md` — regfix.txt syntax + every gotcha + verification procedure
+- `feedback_workflow_rules.md` — workflow + WSL discipline + integration rules
 
 ## WSL Execution Rules (MANDATORY)
 
@@ -292,8 +282,8 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 - **Never use `dc.sh replace` for final integration.** It copies the standalone permuter base.c (with duplicate typedefs, externs, forward declarations) into the source file. This requires a cleanup cycle.
 - **Write the function body directly** via WSL python3, reusing existing `#include "common.h"` and the file's extern block. Add any missing externs to the file's extern section first.
 - **One check for permuter results.** `grep "score = 0"` or read the final line. Don't issue 3 separate calls.
-- **Run `make validate` after every match.** GCC numbers `.L<N>` labels file-wide, so adding labels in your function silently shifts label numbers in EVERY later function in the same .c file — breaking any regfix `\.L<N>` substs in those functions. The validator runs the full pipeline and flags PATTERN MISMATCH on every drifted label rule. Fix drifted rules before committing. (See `feedback_label_renumber_breaks_regfix.md`.)
-- **Sibling-file extern audit.** Before declaring `extern <type> <sym>` in your file, grep other .c files for the same symbol — a sibling file may already have a more accurate signed/unsigned declaration. Mismatched extern types flip lh/lhu and lb/lbu silently. (See `feedback_signed_load_widening.md`.)
+- **Run `make validate` after every match.** GCC numbers `.L<N>` labels file-wide, so adding labels in your function silently shifts label numbers in EVERY later function in the same .c file — breaking any regfix `\.L<N>` substs in those functions. The validator runs the full pipeline and flags PATTERN MISMATCH on every drifted label rule. Fix drifted rules before committing. (See `feedback_regfix_reference.md`.)
+- **Sibling-file extern audit.** Before declaring `extern <type> <sym>` in your file, grep other .c files for the same symbol — a sibling file may already have a more accurate signed/unsigned declaration. Mismatched extern types flip lh/lhu and lb/lbu silently. (See `feedback_matching_playbook.md` "type widening for signed loads".)
 
 ### Anti-patterns
 
