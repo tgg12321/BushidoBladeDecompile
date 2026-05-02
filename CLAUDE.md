@@ -143,34 +143,53 @@ Add these to `base.c` to guide the search:
 
 ## Workflow
 
-Single-session, one function at a time. Pick the next unmatched stub and work it end-to-end — no scanning for easy targets, no pre-screening multiple candidates. Every function must be worked eventually, so just take whatever is next.
+### THE HARD RULE — finish every function you start
+
+**Once a function is selected, you work it end-to-end until matching in 100% pure C (score=0, builds, SHA1 OK). No exceptions for difficulty.** This is the user's durable directive and overrides every other heuristic.
+
+**FORBIDDEN:** tabling, skipping, declaring "too hard", hunting for easier targets after starting, leaving inline `__asm__()` as the answer, leaving `replace_with_asmfile` as a final state, switching to a different function because you're stuck (stuck = switch *technique*, not target).
+
+**The only valid out-of-scope categories** (auto-detected by `dc.sh classify`):
+- `permanently_blocked:<reason>` — toolchain physically can't emit (`break`, `add`/`sub`/`addi` overflow ops, `$sp` swap, no `jr $ra`)
+- `bios_or_syscall`, `psyq_stdlib_*`, `multi_function`, `aspsx_delay_swra` — accepted-as-asm exceptions
+
+Anything else, you finish. "Hard" / "high score plateau" / "needs novel tooling" are NOT stopping points — they are signals to switch technique or build tooling. See `feedback_workflow_rules.md` THE HARD RULE for full text.
+
+### Selecting the next function
+
+Take the next unmatched function in the order presented (file order in attack phase, or whatever the user specifies). NO pre-screening multiple candidates to find the easiest. NO filtering by size / sreg-count / `easy_attempt` tag. Every function will be worked eventually — it doesn't matter which one you take next, just take one and finish it.
 
 ### Per function (attempt-first)
 
-The **attempt-first** flow runs all the cheap mechanical steps before the model intervenes. Token-cost-per-function is minimized when the deterministic pipeline gets to do its job and the model only handles NEAR_MISS work.
+The **attempt-first** flow runs all the cheap mechanical steps before the model intervenes. The deterministic pipeline does what it can; you handle the rest.
 
-1. **`dc.sh classify <func>`** — instant pre-dive. Read the recommendation. If it says `permanently_blocked:*`, `bios_or_syscall`, `psyq_stdlib_*`, `multi_function`, or `aspsx_delay_swra`, **STOP** — these are either allowed-as-asm exceptions or genuinely un-decompilable. `permanently_blocked` covers `break` traps, handwritten overflow-trap ops (`add`/`sub`/`addi`), `$sp` swap primitives, and orphaned/no-return fragments — patterns GCC 2.7.2 cannot emit from C. Auto-detected by the classifier and overridable via `known_blocked.txt`. `attempt_func` reports SKIPPED for these and `build_queue` filters them out.
+1. **`dc.sh classify <func>`** — instant pre-dive. Read the recommendation. If it returns one of the out-of-scope categories above, the function is gated out (not your concern this session). For everything else, you finish the function — no other recommendation justifies stopping.
 2. **`dc.sh attempt <func>`** — runs setup → smart_match → permute_capped → gen_regfix automatically. Reports MATCHED / NEAR_MISS / HARD / SKIPPED.
-   - **MATCHED** — `auto_matches/<func>.c` has the matched C. Use `dc.sh inline-replace <func> auto_matches/<func>.c` (or `dc.sh replace ... auto_matches/<func>.c`).
-   - **NEAR_MISS** (score ≤ 200) — review `/tmp/<func>.regfix.suggestions`, run `dc.sh recipes <func>` for matching named recipes, apply rules with `dc.sh add-regfix`.
-   - **HARD** — pipeline didn't close it; manually deepen via toolbox (don't stop). Score plateau = switch technique, not table.
-   - **SKIPPED** — `permanently_blocked` / BIOS / PsyQ stdlib / multi-function / aspsx_delay_swra. These genuinely cannot reach pure C; treat as out-of-scope.
-3. **Manual deepening** — only when NEAR_MISS plus `dc.sh recipes <func>` doesn't surface a known pattern. Read `feedback_*` memories listed in the toolbox section.
+   - **MATCHED** — `auto_matches/<func>.c` has the matched C. Use `dc.sh inline-replace <func> auto_matches/<func>.c`.
+   - **NEAR_MISS** (score ≤ 200) — review `/tmp/<func>.regfix.suggestions`, run `dc.sh recipes <func>`, apply rules with `dc.sh add-regfix`.
+   - **HARD** — pipeline didn't auto-close it. NOT a stopping point. Deepen manually via toolbox: alternative C structures → register asm → long permuter run → compound regfix → named recipes → new pipeline pass if needed.
+   - **SKIPPED** — only fires for the out-of-scope categories above.
+3. **Manual deepening** — when NEAR_MISS or HARD, work through the escalation ladder until matched. Build new tooling if the existing toolbox can't reach pure C — that's expected.
 
-### Anti-spiral rules
+### Escalation when stuck
+
+Stuck means switch *technique*, not target. The ladder (in order):
+
+1. C-level structural variants (the permuter explores these)
+2. Register asm pinning — callee-saves only (leaf temp regs are dangerous; see playbook)
+3. Long permuter runs (30 min, 1 hour, overnight)
+4. regfix at the assembly stream — 30-rule recipes happen
+5. Compound regfix layering across multiple blocker classes
+6. Named recipes (LICM unhoist, call-loop, early-exit alias, varargs, nested-bool, CU-split)
+7. New transformation pass — extend `prologue_fix.py`, add a pipeline stage, write a new regfix op
+8. Capture novel patterns as new named recipes via `dc.sh capture-recipe`
+
+### Per-attempt discipline
 
 - **Score regression → immediate revert.** Never build on a worse score.
-- **Same score twice on C variants → stop C, escalate to permuter/regfix.** GCC flattens different C structures; repeating won't help.
-- **3 attempts at the same plateau → STOP and check in with user before trying a 4th.** User may redirect or approve deeper work.
-- **Hypothesis before every attempt.** If you cannot articulate one, STOP and escalate.
-
-### Session limits
-
-- No hard token cap — sessions run as long as the hypothesis pipeline is productive
-- No hard attempt cap — limited by quality, not count
-- Permuter can run multiple rounds / long durations (overnight OK with check-in)
-- Regfix can layer compound recipes (25+ rules across multiple applications)
-- Multi-session work on one function is allowed — commit best partial state with notes so future sessions can resume
+- **Same score twice on C variants → switch from C to permuter/regfix.** GCC flattens different C structures; repeating doesn't help.
+- **Hypothesis before every attempt.** If you can't articulate one, escalate to the next ladder rung — don't flail.
+- **Multi-session OK.** If the session ends before match, commit best partial state with hand-off notes; the NEXT session resumes the SAME function. Don't start a new function.
 
 ### Matching Toolbox (proven techniques — try in this order)
 
@@ -206,7 +225,7 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 | `dc.sh smart <func>` | smart_match.py: 16 automated transformation strategies (declaration reorder, cast variations, do-while barriers, register hints, etc). Pure-C exploration before permuter. |
 | `dc.sh permute <func> [--max-time N] [--max-flat-seconds K]` | permute_capped.py: bounded permuter run with flat-score early termination. |
 | `dc.sh recipes [<func>]` | List named regfix recipes / suggest recipes for `<func>`. `dc.sh apply-recipe <recipe> <func>` prints the concrete add-regfix commands. |
-| `dc.sh agent-brief <func>` | All-in-one context dump for an agent session: classify + asm + base.c + gen_regfix + recipe suggestions + Kengo + tabled notes + neighbor functions. **First thing to run on a function.** |
+| `dc.sh agent-brief <func>` | All-in-one context dump for a session: classify + asm + base.c + gen_regfix + recipe suggestions + Kengo + neighbor functions. **First thing to run on a function.** |
 | `dc.sh near-miss <func> [--apply]` | near_miss_attempt: auto-detects byte_arith_fix / drain_delay / plain_reg_substs patterns and applies them with try-and-revert. Default is dry-run; pass `--apply` to actually edit. |
 | `dc.sh capture-recipe [<commit>]` | After committing a match, classifies the patterns used and reports if it matches an existing recipe or is novel. Use `--write` to save a draft JSON. |
 | `dc.sh add-regfix <func> <op> ...` | Append a validated regfix rule (replaces ad-hoc tmp/add_regfix*.py). Auto-rolls back on validation failure. Ops: swap, subst, delete, insert, insert_after, reorder, fill_delay, drain_delay. |
@@ -259,7 +278,7 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 2. **Check function definitions/prototypes in the source file BEFORE writing permuter base.c.** The permuter must see the same declarations the build sees. Wrong prototypes cause different register allocation and codegen. Check: is the function defined later in the same file? What argument types does it use? Are there forward declarations?
 3. **Full diff analysis after first structurally-correct attempt.** Once frame size and save count match, do a complete side-by-side (`dc.sh debug`). List EVERY difference. Categorize as: register, scheduling, structural, or missing/extra. Plan fixes for all before next attempt.
 4. **One variable per attempt.** Change exactly one thing, verify no regression.
-5. **When permuter score ≠ 0 but structure is correct, check `make` output immediately.** The permuter compiles standalone base.c; the build compiles the full source with real prototypes. If they differ, fix the permuter to match, or skip straight to build + regfix.
+5. **When permuter score ≠ 0 but structure is correct, check `make` output immediately.** The permuter compiles standalone base.c; the build compiles the full source with real prototypes. If they differ, fix the permuter to match, or go directly to build + regfix.
 6. **If 2 C-level attempts at a codegen quirk fail, escalate to pipeline fix.** Don't keep trying source-level tricks for assembler-level problems. Use regfix (swap, reorder, insert) instead.
 7. **For regfix indices, always dump maspsx intermediate output first.** Count TEXT instructions (pseudo-insns like `la`/`lb sym` = 1 each), NOT binary instructions (where they expand to 2). Wrong indices silently corrupt the output.
 
@@ -295,7 +314,7 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 
 ## Error Response Protocol (MANDATORY)
 
-When a tool call, command, or process fails, **do not just retry with a fix and move on.** Instead:
+When a tool call, command, or process fails, **do not just retry with a fix and continue.** Instead:
 
 1. **Diagnose the root cause.** Why did it fail? Was it a one-off environment issue or a systemic problem?
 2. **Fix it permanently.** If the fix is a script change, make the change. If it's a workflow pattern, update CLAUDE.md or the relevant tool.
