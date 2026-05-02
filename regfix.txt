@@ -3798,6 +3798,20 @@ func_80048530: subst "addu\s+\$3,\$8,\$2" "addu $v1,$v0,$v1" @ 8
 func_80048530: reorder 28,29,30,31,32,33,27 @ 27-33
 func_8004A09C: reorder 66,67,68,65,69 @ 65-69
 
+# func_800644FC: 6-callee-saved bits dispatcher; LICM unhoist + 2 nop fills
+# (sll $a0,$s0,3 in beq delay slot, addiu $s0,$s0,1 in lw load-delay)
+func_800644FC: subst "la\s+\$4,D_800F1000" "la	$2,D_800F1000" @ 24
+func_800644FC: subst "addu\s+\$4,\$4,\$19" "addu	$4,$4,$2" @ 25
+func_800644FC: subst "sll\s+\$2,\$16,3" "sll	$4,$16,3" @ 26
+func_800644FC: subst "addu\s+\$4,\$4,\$2" "addu	$4,$19,$4" @ 27
+func_800644FC: subst "addu\s+\$2,\$6,\$2" "addu	$2,$2,$6" @ 14
+func_800644FC: delete @ 23
+func_800644FC: delete @ 32
+func_800644FC: reorder 17,12,11,13,14,15,16 @ 11-17
+func_800644FC: reorder 25,23,24 @ 23-25
+func_800644FC: reorder 30,29 @ 29-30
+func_800644FC: subst "\.L347" ".L347-4" @ 22
+
 
 # func_800618B4: swap v0/v1 in tail (arg0[2] in v1, FF0000 in v0)
 func_800618B4: $2 <-> $3 @ 42-46
