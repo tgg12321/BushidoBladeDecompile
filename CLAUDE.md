@@ -155,9 +155,26 @@ Add these to `base.c` to guide the search:
 
 Anything else, you finish. "Hard" / "high score plateau" / "needs novel tooling" are NOT stopping points — they are signals to switch technique or build tooling. See `feedback_workflow_rules.md` THE HARD RULE for full text.
 
-### Selecting the next function
+### Selecting the next function — pull from `WORK_QUEUE.md`
 
-Take the next unmatched function in the order presented (file order in attack phase, or whatever the user specifies). NO pre-screening multiple candidates to find the easiest. NO filtering by size / sreg-count / `easy_attempt` tag. Every function will be worked eventually — it doesn't matter which one you take next, just take one and finish it.
+The canonical, ordered work queue lives at `WORK_QUEUE.md` (project root). Pull from the top:
+
+```
+bash tools/dc.sh next       # print top 1
+bash tools/dc.sh next 5     # print top 5 (preview, still work the top 1 first)
+```
+
+`WORK_QUEUE.md` already filters out the auto-gated out-of-scope categories (`permanently_blocked`, `bios_or_syscall`, `psyq_stdlib_*`, `multi_function`, `aspsx_delay_swra`, `not_found`) so anything in the queue is in-scope and gets finished.
+
+After matching: commit, then `bash tools/dc.sh refresh-queue` to regenerate (matched function falls off the queue).
+
+**FORBIDDEN:**
+- Searching `src/*.c` or `asm/funcs/*.s` for "easier" candidates
+- Reading multiple function asms before picking one
+- Re-classifying a function the queue already presents (the queue has already been classified)
+- Skipping queue entries because they look hard / large / unclear — the queue is in (loose) complexity order; what's at the top is what's next, and queue order is not your decision
+
+If the user says "do the next 5", "work through 10", or anything similar, pull from `dc.sh next` in order. If the user names a specific function, work that one. Either way, no hunting.
 
 ### Per function (attempt-first)
 
