@@ -115,6 +115,52 @@ The only valid stop conditions:
    git commit -m "Match {func} -- <one-line recipe summary>"
    ```
 
+10. **Post-match retrospective** (mandatory but brief):
+
+    Before returning, take 1-2 minutes to ask: was anything in this
+    match worth retaining for future agents? Document conservatively
+    — only if you can articulate ALL THREE of:
+      a) The specific technique, gotcha, or pattern.
+      b) ≥1 OTHER function where it applies (current sibling pattern,
+         or a hypothetical with the same shape).
+      c) What trips up the obvious approach (i.e., why a future agent
+         would otherwise re-derive this from scratch).
+
+    If you can articulate all three, update the appropriate file:
+
+    - **New C technique** → add a short subsection to
+      `~/.claude/projects/.../memory/feedback_matching_playbook.md`
+      (the "C-side techniques" section). One paragraph: name the
+      technique, give the C snippet, say when to apply, name the
+      function(s) it worked on.
+    - **New regfix gotcha** → `feedback_regfix_reference.md` (one-
+      line addition to the gotcha list).
+    - **New diagnostic signal** → `feedback_matching_playbook.md`
+      Diagnostics table or Penalty-list routing table.
+    - **A novel multi-step regfix recipe** that's likely to repeat →
+      `dc.sh capture-recipe HEAD --write` to draft a JSON in
+      `tools/recipes/`. Then human-edit the JSON to clean it up.
+    - **A toolchain quirk that fails the obvious approach** → add to
+      `feedback_matching_playbook.md` "Things that DON'T work" so
+      future agents skip the dead-end.
+
+    If a recurring pattern emerged that needs a NEW TOOL (e.g., a
+    third or fourth function with this exact shape), build it:
+    - New `dc.sh` subcommand backed by a `tools/X.py`.
+    - New regfix recipe JSON.
+    - New pipeline-pass extension.
+    - Wire it into the workflow doc so future agents find it.
+
+    Commit memory/tool updates as a SEPARATE commit (hook only
+    enforces the function-match commit; subsequent commits go
+    through). Commit message: `Post-match retro for {func} —
+    document <thing>`.
+
+    **Anti-noise:** if the match was a known recipe (call-loop,
+    LICM unhoist, early-exit alias, varargs, nested-bool, CU-split,
+    plain register cycle) with no twist, the audit produces NOTHING.
+    That's the right answer for routine matches.
+
 # Reading
 
 Mandatory:
@@ -130,16 +176,25 @@ DO NOT ask the user for direction. DO NOT report intermediate progress
 in prose. Work silently. Return when done (matched + committed) or
 genuinely stuck.
 
-Final return format:
+Final return format (one of):
 
   MATCHED — `{func}` at commit <sha>. Recipe: <one-line summary>.
+  Retro: NONE.
 
-  or
+  MATCHED — `{func}` at commit <sha>. Recipe: <one-line summary>.
+  Retro: <commit-sha-of-retro-commit>. Updated:
+    - <file>: <one-line description of addition>
+    - tools/<new>.py: <what it does> (wired as `dc.sh <cmd>`)
 
   STUCK — `{func}` exhausted toolbox. Tried: <list of techniques>.
   Best score: <score> with <ins/del/reord/reg breakdown>. Specific
   remaining diff: <description>. Suggested next move: <new tool /
   user release / etc>.
+
+The retrospective summary is what the parent (and the user) reads to
+know whether new institutional knowledge was captured. Be honest:
+"Retro: NONE" is the correct answer for routine matches. Future
+agents lose if you noise up memory with non-novel updates.
 """
 
 
