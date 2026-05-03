@@ -37,10 +37,16 @@ if [ -z "$COMMAND" ]; then
 fi
 
 # Helper: run dc.sh verify <ACTIVE> via WSL, return 0 if MATCH.
+# regfix_verify.py prints e.g. "func_X: MATCH (0 diffs in N bytes)" on
+# success, or "func_X: M instruction(s) differ" on diff. We grep for
+# "MATCH" — only the success case has that token in the first line.
 verify_active_matches() {
     local out
-    out=$(wsl bash -c "cd /mnt/c/Users/Trenton/Desktop/'Bushido Blade 2 Decompile' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null | head -3)
-    echo "$out" | grep -q "MATCH (0 diffs)"
+    out=$(wsl bash -c "cd /mnt/c/Users/Trenton/Desktop/'Bushido Blade 2 Decompile' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null | head -1)
+    case "$out" in
+        *": MATCH "*) return 0 ;;
+        *) return 1 ;;
+    esac
 }
 
 # === Rule 1: block `git commit` unless ACTIVE matches in the build ===
