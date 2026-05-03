@@ -297,18 +297,34 @@ print(f'Replaced {func} in {src}')
         ;;
 
     next)
-        # Print the next function from WORK_QUEUE.md. Pulls the top
-        # in-scope entry. Future agents pull from here -- no hunting.
-        # Pass an integer N to print the first N entries instead of just 1.
+        # Print the next function from WORK_QUEUE.md and SET it as the
+        # active function in .bb2_active_func. The PreToolUse hook will
+        # then block subsequent `git commit` (until verify passes) and
+        # `dc.sh next` calls until the active function is finished.
+        #
+        # Pass an integer N to preview the top N entries (without
+        # changing the active marker — only top-1 commits a selection).
         N="${1:-1}"
         [ -f "WORK_QUEUE.md" ] || {
             echo "ERROR: WORK_QUEUE.md missing -- run 'dc.sh refresh-queue'" >&2
             exit 1
         }
+
+        # Refuse if a function is already in progress. (The hook also
+        # enforces this, but exiting cleanly here gives a better error.)
+        if [ -s ".bb2_active_func" ]; then
+            ACTIVE=$(tr -d '[:space:]' < .bb2_active_func)
+            echo "ERROR: $ACTIVE is still in progress (set by an earlier 'dc.sh next')." >&2
+            echo "Finish it (build matches + commit) before pulling another function." >&2
+            echo "If the user has explicitly authorized abandoning this function:" >&2
+            echo "  bash tools/dc.sh release   # requires typing the function name to confirm" >&2
+            exit 1
+        fi
+
         # Extract the top N entries from the queue. awk handles the count
         # itself so we don't get SIGPIPE from `head` closing early under
         # `set -o pipefail`.
-        awk -v n="$N" '
+        TOP=$(awk -v n="$N" '
             /^## Queue/ { in_queue=1; next }
             in_queue && /^## / { in_queue=0 }
             in_queue && /^```$/ { in_block = !in_block; next }
@@ -317,12 +333,47 @@ print(f'Replaced {func} in {src}')
                 count++
                 if (count >= n) exit
             }
-        ' WORK_QUEUE.md
+        ' WORK_QUEUE.md)
+        echo "$TOP"
+
+        # Only set the active marker for the top-1 case. `dc.sh next 5`
+        # is preview-only and doesn't claim a function.
+        if [ "$N" = "1" ]; then
+            FUNC=$(echo "$TOP" | head -n 1 | awk '{print $2}')
+            if [ -n "$FUNC" ]; then
+                echo "$FUNC" > .bb2_active_func
+                echo "(active function set: $FUNC)" >&2
+            fi
+        fi
+        ;;
+
+    release)
+        # Explicit user-authorized abandonment of the current active
+        # function. Requires typing the function name to confirm — this
+        # is the ONLY escape hatch from the hard rule, and it's user-
+        # driven, never agent-driven.
+        if [ ! -s ".bb2_active_func" ]; then
+            echo "No active function to release."
+            exit 0
+        fi
+        ACTIVE=$(tr -d '[:space:]' < .bb2_active_func)
+        echo "About to release: $ACTIVE"
+        echo "This abandons WIP per explicit user authorization."
+        echo "Type the function name exactly to confirm:"
+        read -r CONFIRM
+        if [ "$CONFIRM" = "$ACTIVE" ]; then
+            : > .bb2_active_func
+            echo "Released $ACTIVE. The hook will no longer block on this function."
+        else
+            echo "Mismatch (expected '$ACTIVE', got '$CONFIRM'). Not releasing." >&2
+            exit 1
+        fi
         ;;
 
     refresh-queue)
         # Refresh classifier CSV + regenerate WORK_QUEUE.md. Run after a
         # batch of matches so the queue drops them. ~2 minutes.
+        # ALSO clears .bb2_active_func -- if you got here, you matched.
         echo "[1/3] Classifying inline_asm + INCLUDE_ASM (batch_attempt --classify-only)..."
         python3 tools/batch_attempt.py --classify-only 2>&1 | tail -3
         echo
@@ -331,6 +382,11 @@ print(f'Replaced {func} in {src}')
         echo
         echo "[3/3] Generating WORK_QUEUE.md..."
         python3 tools/gen_work_queue.py 2>&1
+        # Belt-and-suspenders: the commit-via-hook path already cleared
+        # the marker, but if for some reason a refresh runs while it's
+        # set, we know the queue is being regenerated and the active
+        # function is no longer relevant.
+        : > .bb2_active_func 2>/dev/null || true
         ;;
 
     *)
@@ -340,7 +396,7 @@ print(f'Replaced {func} in {src}')
         echo "          smart, permute, add-regfix, classify, gte, attempt,"
         echo "          recipes, apply-recipe,"
         echo "          analysis, dump-text, validate-regfix, gen-regfix, verify,"
-        echo "          next, refresh-queue"
+        echo "          next, refresh-queue, release"
         exit 1
         ;;
 esac

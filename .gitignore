@@ -81,6 +81,9 @@ auto_matches/
 # Codex experimentation workspace (per-session scratch)
 codex_lab/
 
+# Active function marker (used by .claude/hooks/active_func_guard.sh)
+.bb2_active_func
+
 # Path-mangled artifacts from prior sessions
 /2
 /Blade
