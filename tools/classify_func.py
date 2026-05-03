@@ -298,6 +298,35 @@ def detect_blockers(insns) -> list[str]:
     word_count = ops_text.count(".word ")
     if word_count > 0:
         tags.append(f"word_encoded_{word_count}")
+
+    # aliasing_heavy: register-relative loads through ptrs that aren't
+    # $sp/$gp, AND chained derefs (lw $a, X($Y); ...; lw $b, X($a)).
+    # These functions have hidden complexity — GCC's CSE/aliasing
+    # analysis often differs from the original compiler's choices, so
+    # they're harder than their instruction count suggests. Push them
+    # later in the queue; agents should expect more iterations.
+    LOAD_OPS = {"lw", "lh", "lhu", "lb", "lbu"}
+    register_loads = 0
+    chained_derefs = 0
+    last_load_dest: str | None = None
+    for _, m, ops in insns:
+        if m in LOAD_OPS:
+            # ops looks like "$2,0x4($v0)" — extract dest reg and base reg
+            mm = re.match(r"\$(\w+)\s*,\s*[^(]*\((\$[\w]+)\)", ops)
+            if mm:
+                dest = "$" + mm.group(1)
+                base = mm.group(2)
+                # Skip loads through gp/sp (those are normal global/stack accesses
+                # that don't indicate pointer-chasing complexity)
+                if base not in ("$gp", "$sp", "$28", "$29"):
+                    register_loads += 1
+                    if last_load_dest and base == last_load_dest:
+                        chained_derefs += 1
+                last_load_dest = dest
+    # Threshold: 6+ register-based loads with 2+ chained derefs suggests
+    # the function does serious ptr-chasing.
+    if register_loads >= 6 and chained_derefs >= 2:
+        tags.append("aliasing_heavy")
     return tags
 
 

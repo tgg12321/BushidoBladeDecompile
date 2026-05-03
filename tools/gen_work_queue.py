@@ -39,9 +39,26 @@ OUT = ROOT / "WORK_QUEUE.md"
 IN_SCOPE = {"standard", "gte_function", "needs_rodata_split", "needs_lwl_fix"}
 
 
-def tier_for(rec: str, size: int) -> tuple[int, str]:
-    """Return (tier_index, tier_label). Lower tier_index = higher priority."""
+def tier_for(rec: str, size: int, tags: str) -> tuple[int, str]:
+    """Return (tier_index, tier_label). Lower tier_index = higher priority.
+
+    `tags` is the comma-separated blocker_tags from the classifier.
+    Functions tagged `aliasing_heavy` are pushed to a later tier even
+    if their `recommendation` is `standard`, because their pointer-
+    chasing patterns hide complexity that instruction count doesn't
+    predict (see func_80060B70 post-mortem).
+    """
+    is_aliasing_heavy = "aliasing_heavy" in (tags or "")
+
     if rec == "standard":
+        if is_aliasing_heavy:
+            # Bump aliasing-heavy `standard` functions to a dedicated
+            # later tier — same kind of work but expect more iterations.
+            if size <= 100:
+                return (4, "standard, aliasing_heavy / small (<=100)")
+            if size <= 200:
+                return (5, "standard, aliasing_heavy / medium (101-200)")
+            return (5, "standard, aliasing_heavy / large (201+)")
         if size <= 40:
             return (1, "standard / small (<=40 insns)")
         if size <= 100:
@@ -50,11 +67,11 @@ def tier_for(rec: str, size: int) -> tuple[int, str]:
             return (3, "standard / large (101-200)")
         return (4, "standard / huge (201+)")
     if rec == "needs_lwl_fix":
-        return (5, "needs_lwl_fix")
+        return (6, "needs_lwl_fix")
     if rec == "needs_rodata_split":
-        return (6, "needs_rodata_split")
+        return (7, "needs_rodata_split")
     if rec == "gte_function":
-        return (7, "gte_function (cop2 inline asm allowed for ops)")
+        return (8, "gte_function (cop2 inline asm allowed for ops)")
     return (99, f"other ({rec})")
 
 
@@ -76,7 +93,7 @@ def main() -> int:
     tiers: dict[tuple[int, str], list[dict]] = defaultdict(list)
     for r in in_scope:
         size = int(r.get("size_insns", "0") or 0)
-        tier = tier_for(r["recommendation"], size)
+        tier = tier_for(r["recommendation"], size, r.get("blocker_tags", ""))
         tiers[tier].append(
             {
                 "func": r["func"],
