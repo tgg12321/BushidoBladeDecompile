@@ -97,6 +97,9 @@ case "$CMD" in
             echo "Queue:    WORK_QUEUE.md missing — run 'dc.sh refresh-queue' first"
         fi
 
+        # Unclosed-autonomous-run warning (silent if log is clean)
+        python3 tools/autonomous_run_summary.py --check-open 2>/dev/null
+
         echo
         echo "--- Top of queue ---"
         if [ -f "WORK_QUEUE.md" ] && [ ! -s ".bb2_active_func" ]; then

@@ -257,15 +257,32 @@ def main() -> int:
                     help="Show all runs in the log (default: just the last run)")
     ap.add_argument("--json", action="store_true",
                     help="Emit machine-readable JSON instead of human-readable text")
+    ap.add_argument("--check-open", action="store_true",
+                    help="Quiet exit 0 if no unclosed run; print one-line warning + exit 0 "
+                         "if the last run has no run_end event. Used by `dc.sh start`.")
     args = ap.parse_args()
 
     events = load_events()
     if not events:
+        if args.check_open:
+            return 0
         print("No autonomous run log found. Did you call `dc.sh run-log run-start ...`?")
         return 0
 
     runs = split_runs(events)
     summaries = [summarize_run(r) for r in runs]
+
+    if args.check_open:
+        if summaries and summaries[-1]["start_ts"] and not summaries[-1]["end_ts"]:
+            last = summaries[-1]
+            attempted = last["functions_attempted"]
+            matched = last["matched"]
+            print(f"  WARNING: autonomous run is unclosed "
+                  f"(started {last['start_ts']}, "
+                  f"{matched}/{attempted} matched, no run_end logged).")
+            print(f"           Inspect with `dc.sh run-summary` or close with "
+                  f"`dc.sh run-log run-end --note 'closed manually'`.")
+        return 0
 
     if not args.all:
         summaries = summaries[-1:]
