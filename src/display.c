@@ -326,84 +326,40 @@ void gpu_DrawOTag(s32 a0) {
         ((void (*)(u32, s32, s32, s32))v0[2])(v0[6], a0, 0, 0);
     }
 }
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007B9B0\n"
-    "    addiu      $sp, $sp, -0x20\n"
-    "    sw         $s2, 24($sp)\n"
-    "    lui        $s2, %hi(g_gpu_debug_level)\n"
-    "    addiu      $s2, $s2, %lo(g_gpu_debug_level)\n"
-    "    sw         $ra, 28($sp)\n"
-    "    sw         $s1, 20($sp)\n"
-    "    sw         $s0, 16($sp)\n"
-    "    lbu        $v0, 0($s2)\n"
-    "    nop\n"
-    "    sltiu      $v0, $v0, 0x2\n"
-    "    bnez       $v0, .Lfunc_8007B9B0_8007B9FC\n"
-    "    addu      $s1, $a0, $zero\n"
-    "    lui        $a0, %hi(g_str_putdrawenv)\n"
-    "    addiu      $a0, $a0, %lo(g_str_putdrawenv)\n"
-    "    lui        $v0, %hi(g_gpu_debug_func)\n"
-    "    lw         $v0, %lo(g_gpu_debug_func)($v0)\n"
-    "    nop\n"
-    "    jalr       $v0\n"
-    "    addu      $a1, $s1, $zero\n"
-    ".Lfunc_8007B9B0_8007B9FC:\n"
-    "    addiu      $s0, $s1, 0x1C\n"
-    "    addu       $a0, $s0, $zero\n"
-    "    jal        func_8007C4B8\n"
-    "    addu      $a1, $s1, $zero\n"
-    "    lui        $a0, (0xFFFFFF >> 16)\n"
-    "    ori        $a0, $a0, (0xFFFFFF & 0xFFFF)\n"
-    "    addu       $a1, $s0, $zero\n"
-    "    addiu      $a2, $zero, 0x40\n"
-    "    lw         $v0, 28($s1)\n"
-    "    lui        $v1, %hi(g_gpu_dev_table)\n"
-    "    lw         $v1, %lo(g_gpu_dev_table)($v1)\n"
-    "    or         $v0, $v0, $a0\n"
-    "    sw         $v0, 28($s1)\n"
-    "    lw         $a0, 24($v1)\n"
-    "    lw         $v0, 8($v1)\n"
-    "    nop\n"
-    "    jalr       $v0\n"
-    "    addu      $a3, $zero, $zero\n"
-    "    addiu      $a3, $s2, 0xE\n"
-    "    addu       $a2, $s1, $zero\n"
-    "    addiu      $t0, $s1, 0x50\n"
-    ".Lfunc_8007B9B0_8007BA50:\n"
-    "    lw         $v0, 0($a2)\n"
-    "    lw         $v1, 4($a2)\n"
-    "    lw         $a0, 8($a2)\n"
-    "    lw         $a1, 12($a2)\n"
-    "    sw         $v0, 0($a3)\n"
-    "    sw         $v1, 4($a3)\n"
-    "    sw         $a0, 8($a3)\n"
-    "    sw         $a1, 12($a3)\n"
-    "    addiu      $a2, $a2, 0x10\n"
-    "    bne        $a2, $t0, .Lfunc_8007B9B0_8007BA50\n"
-    "    addiu     $a3, $a3, 0x10\n"
-    "    lw         $v0, 0($a2)\n"
-    "    lw         $v1, 4($a2)\n"
-    "    lw         $a0, 8($a2)\n"
-    "    sw         $v0, 0($a3)\n"
-    "    sw         $v1, 4($a3)\n"
-    "    sw         $a0, 8($a3)\n"
-    "    addu       $v0, $s1, $zero\n"
-    "    lw         $ra, 28($sp)\n"
-    "    lw         $s2, 24($sp)\n"
-    "    lw         $s1, 20($sp)\n"
-    "    lw         $s0, 16($sp)\n"
-    "    addiu      $sp, $sp, 0x20\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+extern u32 g_str_putdrawenv;
+extern s32 func_8007C4B8(s32 *, s32 *);
+
+typedef struct { s32 a, b, c, d; } _drawenv_q;
+typedef struct { s32 a, b, c; } _drawenv_t;
+
+s32 *func_8007B9B0(s32 *arg0) {
+    s32 *p;
+    u32 *dev;
+    _drawenv_q *src;
+    _drawenv_q *dst;
+    _drawenv_q *end;
+    u8 *base = &g_gpu_debug_level;
+
+    if (*base >= 2) {
+        g_gpu_debug_func(&g_str_putdrawenv, arg0);
+    }
+    p = arg0 + 7;
+    func_8007C4B8(p, arg0);
+    arg0[7] |= 0xFFFFFF;
+    dev = g_gpu_dev_table;
+    ((s32 (*)(u32, s32 *, s32, s32))dev[2])(dev[6], p, 0x40, 0);
+
+    dst = (_drawenv_q *)(base + 0xE);
+    src = (_drawenv_q *)arg0;
+    end = (_drawenv_q *)(arg0 + 0x14);
+    do {
+        *dst = *src;
+        src++;
+        dst++;
+    } while (src != end);
+    *(_drawenv_t *)dst = *(_drawenv_t *)src;
+    return arg0;
+}
 __asm__(
     "    .set\tnoat\n"
     "    .set\tnoreorder\n"
