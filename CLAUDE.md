@@ -155,16 +155,29 @@ Add these to `base.c` to guide the search:
 
 Anything else, you finish. "Hard" / "high score plateau" / "needs novel tooling" are NOT stopping points — they are signals to switch technique or build tooling. See `feedback_workflow_rules.md` THE HARD RULE for full text.
 
-### Selecting the next function — pull from `WORK_QUEUE.md`
+### Selecting the next function — pull from `WORK_QUEUE.md` (HOOK-ENFORCED)
 
 The canonical, ordered work queue lives at `WORK_QUEUE.md` (project root). Pull from the top:
 
 ```
-bash tools/dc.sh next       # print top 1
-bash tools/dc.sh next 5     # print top 5 (preview, still work the top 1 first)
+bash tools/dc.sh next       # print top 1 AND set active function in .bb2_active_func
+bash tools/dc.sh next 5     # preview top 5 (does not set active marker)
 ```
 
 `WORK_QUEUE.md` already filters out the auto-gated out-of-scope categories (`permanently_blocked`, `bios_or_syscall`, `psyq_stdlib_*`, `multi_function`, `aspsx_delay_swra`, `not_found`) so anything in the queue is in-scope and gets finished.
+
+**THE HOOK** (`tools/hooks/active_func_guard.sh`, configured in `.claude/settings.local.json`) reads `.bb2_active_func` and BLOCKS the following while a function is active:
+- `git commit` — unless `dc.sh verify <active>` reports MATCH (then it auto-clears the marker and allows the commit)
+- `git checkout` / `git restore` / `git reset --` on `src/*.c`, `regfix.txt`, `asmfix.txt`, `undefined_syms_auto.txt`, `named_syms.txt`, `sdata*.txt`, `expand_lb_funcs.txt`
+- `dc.sh next` — refuses to hand out another function while one is active
+
+You literally cannot skip a started function or commit a partial state — the harness blocks the tool calls. This is the enforcement of THE HARD RULE.
+
+**Lifecycle:**
+- `dc.sh next` → writes function name to `.bb2_active_func`
+- Function matches → `git commit` succeeds → hook auto-clears `.bb2_active_func`
+- `dc.sh refresh-queue` → also clears (belt-and-suspenders)
+- `dc.sh release` → ONLY escape hatch; requires typing the function name to confirm. **User-driven, NEVER agent-driven.** If you think a function should be abandoned, ask the user; do not run `release` yourself.
 
 After matching: commit, then `bash tools/dc.sh refresh-queue` to regenerate (matched function falls off the queue).
 
@@ -173,6 +186,8 @@ After matching: commit, then `bash tools/dc.sh refresh-queue` to regenerate (mat
 - Reading multiple function asms before picking one
 - Re-classifying a function the queue already presents (the queue has already been classified)
 - Skipping queue entries because they look hard / large / unclear — the queue is in (loose) complexity order; what's at the top is what's next, and queue order is not your decision
+- **Manually deleting/editing `.bb2_active_func`** to bypass the hook — directly contradicts the rule the hook enforces. The only valid clear paths are: a successful `git commit` (auto-clear), `dc.sh refresh-queue` (post-match), or user-driven `dc.sh release`.
+- **Reverting WIP src/* files** to "start fresh" on the same function — the hook blocks this for a reason. If the function got into a confusing state, edit forward (write the corrected body via WSL python3) instead of `git checkout`.
 
 If the user says "do the next 5", "work through 10", or anything similar, pull from `dc.sh next` in order. If the user names a specific function, work that one. Either way, no hunting.
 
