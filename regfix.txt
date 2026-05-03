@@ -3855,3 +3855,5 @@ func_80060B70: fill_delay @ 34 <- 32
 func_80060B70: delete @ 29
 func_80060B70: delete @ 31
 func_80060B70: reorder 30,29 @ 29-30
+# Move li t6,1 to early position (target #3)
+func_800692C0: reorder 6,3,4,5 @ 3-6

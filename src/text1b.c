@@ -35656,92 +35656,72 @@ s32 func_80069250(s32 arg0, s32 arg1) {
     }
     return 0;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800692C0\n"
-    "    addu  $t2,$zero,$zero\n"
-    "    addu  $t3,$zero,$zero\n"
-    "    sll  $a1,$a1,4\n"
-    "    addiu  $t6,$zero,1\n"
-    "    addu  $t5,$zero,$zero\n"
-    "    addu  $t1,$zero,$zero\n"
-    "    lui  $t4,%hi(D_800A32D0)\n"
-    "    addiu  $t4,$t4,%lo(D_800A32D0)\n"
-    ".L800692E0:\n"
-    "    addu  $a3,$a3,$t5\n"
-    "    lw  $v0,0($t4)\n"
-    "    sll  $v1,$t3,2\n"
-    "    sllv  $t0,$v0,$a1\n"
-    "    lui  $at,%hi(D_800A32C8)\n"
-    "    addu  $at,$at,$v1\n"
-    "    lw  $v0,%lo(D_800A32C8)($at)\n"
-    "    lh  $v1,0($a2)\n"
-    "    nop\n"
-    "    bnez  $v1,.L80069338\n"
-    "    sllv  $v0,$v0,$a1\n"
-    "    lw  $v1,0($a0)\n"
-    "    nop\n"
-    "    and  $v0,$v1,$v0\n"
-    "    beqz  $v0,.L80069328\n"
-    "    and  $v0,$v1,$t0\n"
-    "    j  .L80069398\n"
-    "    sh  $t6,0($a3)\n"
-    ".L80069328:\n"
-    "    beqz  $v0,.L80069398\n"
-    "    addiu  $v0,$zero,-1\n"
-    "    j  .L80069398\n"
-    "    sh  $v0,0($a3)\n"
-    ".L80069338:\n"
-    "    lw  $v1,0($a0)\n"
-    "    nop\n"
-    "    and  $v0,$v1,$v0\n"
-    "    beqz  $v0,.L80069354\n"
-    "    addiu  $v0,$zero,6\n"
-    "    j  .L80069364\n"
-    "    sh  $v0,0($a2)\n"
-    ".L80069354:\n"
-    "    and  $v0,$v1,$t0\n"
-    "    beqz  $v0,.L80069364\n"
-    "    addiu  $v0,$zero,-6\n"
-    "    sh  $v0,0($a3)\n"
-    ".L80069364:\n"
-    "    lh  $v1,0($a2)\n"
-    "    nop\n"
-    "    slti  $v0,$v1,6\n"
-    "    bnez  $v0,.L80069380\n"
-    "    slti  $v0,$v1,-5\n"
-    "    j  .L8006938C\n"
-    "    sllv  $v0,$t6,$t1\n"
-    ".L80069380:\n"
-    "    beqz  $v0,.L80069398\n"
-    "    addiu  $v0,$zero,2\n"
-    "    sllv  $v0,$v0,$t1\n"
-    ".L8006938C:\n"
-    "    addu  $t2,$t2,$v0\n"
-    "    sh  $zero,0($a3)\n"
-    "    sh  $zero,0($a2)\n"
-    ".L80069398:\n"
-    "    addiu  $t5,$t5,2\n"
-    "    addiu  $t1,$t1,16\n"
-    "    addiu  $t4,$t4,4\n"
-    "    lhu  $v0,0($a2)\n"
-    "    lhu  $v1,0($a3)\n"
-    "    addiu  $t3,$t3,1\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sh  $v0,0($a2)\n"
-    "    slti  $v0,$t3,2\n"
-    "    bnez  $v0,.L800692E0\n"
-    "    addiu  $a2,$a2,2\n"
-    "    jr  $ra\n"
-    "    addu  $v0,$t2,$zero\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern u32 D_800A32D0;
+s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
+    register s32 sum asm("$10");
+    s32 i;
+    s32 a3_off;
+    register s32 bitpos asm("$9");
+    u32 *p;
+    u32 maskA;
+    u32 maskB;
+    u32 v;
+    s32 c;
+    s16 sval;
+
+    sum = 0;
+    i = 0;
+    arg1 <<= 4;
+    a3_off = 0;
+    bitpos = 0;
+    p = &D_800A32D0;
+
+    do {
+        s32 idx4;
+        arg3 = (s16 *)((s32)arg3 + a3_off);
+        v = i * 4;
+        maskB = *p << arg1;
+        idx4 = v;
+        maskA = *(u32 *)((s32)&D_800A32C8 + idx4) << arg1;
+        if (*arg2 == 0) {
+            v = *arg0;
+            if (v & maskA) {
+                *arg3 = 1;
+            } else if (v & maskB) {
+                c = -1;
+                *arg3 = c;
+            }
+        } else {
+            v = *arg0;
+            if (v & maskA) {
+                c = 6;
+                *arg2 = c;
+            } else if (v & maskB) {
+                c = -6;
+                *arg3 = c;
+            }
+            sval = *arg2;
+            if (sval >= 6) {
+                sum += 1 << bitpos;
+                *arg3 = 0;
+                *arg2 = 0;
+            } else if (sval < -5) {
+                c = 2;
+                sum += c << bitpos;
+                *arg3 = 0;
+                *arg2 = 0;
+            }
+        }
+        a3_off += 2;
+        bitpos += 0x10;
+        p++;
+        i++;
+        *arg2 = (u16)*arg2 + (u16)*arg3;
+        arg2++;
+    } while (i < 2);
+
+    return sum;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
