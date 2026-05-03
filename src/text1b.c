@@ -39501,86 +39501,34 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8006CBD4\n"
-    "    sll  $a2,$a0,4\n"
-    "    addiu  $v0,$zero,16\n"
-    "    sllv  $v0,$v0,$a2\n"
-    "    and  $v0,$a1,$v0\n"
-    "    beqz  $v0,.L8006CBF4\n"
-    "    addiu  $v0,$zero,64\n"
-    "    j  .L8006CC38\n"
-    "    addiu  $a3,$zero,1\n"
-    ".L8006CBF4:\n"
-    "    sllv  $v0,$v0,$a2\n"
-    "    and  $v0,$a1,$v0\n"
-    "    beqz  $v0,.L8006CC0C\n"
-    "    addiu  $v0,$zero,128\n"
-    "    j  .L8006CC38\n"
-    "    addiu  $a3,$zero,2\n"
-    ".L8006CC0C:\n"
-    "    sllv  $v0,$v0,$a2\n"
-    "    and  $v0,$a1,$v0\n"
-    "    beqz  $v0,.L8006CC24\n"
-    "    addiu  $v0,$zero,32\n"
-    "    j  .L8006CC38\n"
-    "    addiu  $a3,$zero,3\n"
-    ".L8006CC24:\n"
-    "    sllv  $v0,$v0,$a2\n"
-    "    and  $v0,$a1,$v0\n"
-    "    beqz  $v0,.L8006CC3C\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    addu  $a3,$zero,$zero\n"
-    ".L8006CC38:\n"
-    "    addu  $a1,$zero,$zero\n"
-    ".L8006CC3C:\n"
-    "    sll  $t0,$a0,1\n"
-    "    addiu  $v0,$zero,1\n"
-    "    sllv  $v0,$v0,$a3\n"
-    "    sll  $v1,$a0,2\n"
-    "    sllv  $a2,$v0,$v1\n"
-    "    nor  $a3,$zero,$a2\n"
-    ".L8006CC54:\n"
-    "    .word 0x8F820430\n"
-    "    sll  $v1,$a1,16\n"
-    "    addu  $v0,$t0,$v0\n"
-    "    lh  $v0,40($v0)\n"
-    "    sra  $a0,$v1,16\n"
-    "    bne  $a0,$v0,.L8006CC88\n"
-    "    nop\n"
-    "    .word 0x8F830458\n"
-    "    nop\n"
-    "    addu  $v1,$v1,$a0\n"
-    "    lbu  $v0,23($v1)\n"
-    "    j  .L8006CCA0\n"
-    "    or  $v0,$v0,$a2\n"
-    ".L8006CC88:\n"
-    "    .word 0x8F830458\n"
-    "    nop\n"
-    "    addu  $v1,$v1,$a0\n"
-    "    lbu  $v0,23($v1)\n"
-    "    nop\n"
-    "    and  $v0,$v0,$a3\n"
-    ".L8006CCA0:\n"
-    "    sb  $v0,23($v1)\n"
-    "    addiu  $v0,$a1,1\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    slti  $v0,$v0,3\n"
-    "    bnez  $v0,.L8006CC54\n"
-    "    nop\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A34FC;
+extern s32 D_800A3524;
+
+void func_8006CBD4(s32 arg0, s32 arg1) {
+    s32 code;
+    s16 i;
+    s32 mask;
+
+    if (arg1 & (0x10 << (arg0 * 16))) {
+        code = 1;
+    } else if (arg1 & (0x40 << (arg0 * 16))) {
+        code = 2;
+    } else if (arg1 & (0x80 << (arg0 * 16))) {
+        code = 3;
+    } else if (arg1 & (0x20 << (arg0 * 16))) {
+        code = 0;
+    }
+
+    mask = (1 << code) << (arg0 * 4);
+
+    for (i = 0; i < 3; i++) {
+        if (i == *(s16 *)((u8 *)D_800A34FC + (arg0 * 2) + 0x28)) {
+            *((u8 *)D_800A3524 + i + 0x17) |= mask;
+        } else {
+            *((u8 *)D_800A3524 + i + 0x17) &= ~mask;
+        }
+    }
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
