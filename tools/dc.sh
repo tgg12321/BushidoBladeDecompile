@@ -45,6 +45,110 @@ CMD="$1"
 shift || { echo "Usage: bash tools/dc.sh <command> [args...]"; exit 1; }
 
 case "$CMD" in
+    start)
+        # Session startup briefing. Surfaces current state (build, active
+        # marker, queue freshness, top-of-queue) and reminds the agent of
+        # the rule-of-engagement one-liner. Auto-run by the SessionStart
+        # hook so future agents get this without being told.
+        echo "=== BB2 Decomp Session Startup ==="
+        echo
+
+        # Build status (silent unless mismatch)
+        if [ -f "build/bb2.exe" ] && [ -f "bb2.sha1" ]; then
+            if sha1sum -c bb2.sha1 >/dev/null 2>&1; then
+                echo "Build:    OK (SHA1 matches)"
+            else
+                echo "Build:    MISMATCH — last build did not match. Investigate before any work."
+            fi
+        else
+            echo "Build:    not built yet — run 'bash tools/dc.sh build' to verify clean state"
+        fi
+
+        # Active marker state
+        if [ -s ".bb2_active_func" ]; then
+            ACTIVE=$(tr -d '[:space:]' < .bb2_active_func)
+            echo "Active:   $ACTIVE  (in progress — finish before pulling another)"
+            echo
+            echo "  Resume work on $ACTIVE. The hook is enforcing — you cannot:"
+            echo "  - 'dc.sh next' (refused while active)"
+            echo "  - 'git commit' (refused unless dc.sh verify $ACTIVE shows MATCH)"
+            echo "  - 'git checkout/restore' on src/ files"
+            echo
+            echo "  Diagnostic:"
+            echo "    bash tools/dc.sh verify $ACTIVE"
+            echo "    bash tools/dc.sh diff $ACTIVE"
+        else
+            echo "Active:   NONE (clear to pull from queue)"
+        fi
+
+        # Queue freshness
+        if [ -f "WORK_QUEUE.md" ]; then
+            QUEUE_AGE=$(( ( $(date +%s) - $(stat -c %Y WORK_QUEUE.md 2>/dev/null || stat -f %m WORK_QUEUE.md 2>/dev/null || echo 0) ) / 86400 ))
+            COUNT=$(grep -c "^[[:space:]]*[0-9]\+[[:space:]]\+func\|^[[:space:]]*[0-9]\+[[:space:]]\+sa\|^[[:space:]]*[0-9]\+[[:space:]]\+[A-Za-z]" WORK_QUEUE.md 2>/dev/null || echo "?")
+            if [ "$QUEUE_AGE" -gt 7 ] 2>/dev/null; then
+                echo "Queue:    WORK_QUEUE.md is $QUEUE_AGE days old — run 'dc.sh refresh-queue' before pulling"
+            else
+                echo "Queue:    WORK_QUEUE.md current (${QUEUE_AGE}d old)"
+            fi
+        else
+            echo "Queue:    WORK_QUEUE.md missing — run 'dc.sh refresh-queue' first"
+        fi
+
+        echo
+        echo "--- Top of queue ---"
+        if [ -f "WORK_QUEUE.md" ] && [ ! -s ".bb2_active_func" ]; then
+            awk -v n=3 '
+                /^## Queue/ { in_queue=1; next }
+                in_queue && /^## / { in_queue=0 }
+                in_queue && /^```$/ { in_block = !in_block; next }
+                in_queue && in_block && /^[[:space:]]*[0-9]+[[:space:]]/ {
+                    print "  " $0
+                    count++
+                    if (count >= n) exit
+                }
+            ' WORK_QUEUE.md
+        elif [ -s ".bb2_active_func" ]; then
+            echo "  (suppressed — finish active function first)"
+        fi
+
+        cat <<'EOF'
+
+--- THE HARD RULE (enforced by hook) ---
+
+1. Pull from WORK_QUEUE.md via `dc.sh next`. No hunting.
+2. Once selected, the function MUST be matched in 100% pure C before
+   you can commit or pull another. The hook blocks otherwise.
+3. Stuck = switch *technique*, not target. Escalate via the toolbox:
+   classify → attempt → recipes → near-miss → C-techniques → regfix
+   → compound regfix → new pipeline pass.
+4. Don't ask the user for direction. Don't run `dc.sh release`
+   yourself. Build new tools without asking.
+
+--- Quick command reference ---
+
+  dc.sh next [--with-context]    Pull next function (sets active marker)
+  dc.sh classify <func>           Pre-dive: blockers, aliasing_heavy tag
+  dc.sh agent-brief <func>        Full context dump
+  dc.sh attempt <func>            Auto pipeline (smart→permute→gen_regfix)
+  dc.sh diff <func>               Side-by-side: target vs build pipeline
+  dc.sh verify <func>             Binary diff one function
+  dc.sh fix-label-drift           Auto-fix .L<N> drift after match
+  dc.sh refresh-queue             Regen WORK_QUEUE.md (post-match)
+  dc.sh release                   ESCAPE HATCH (user-only, typed confirm)
+
+--- Where to read ---
+
+  CLAUDE.md                       project rules (already loaded)
+  WORK_QUEUE.md                   ordered work list
+  memory MEMORY.md links to:
+    feedback_workflow_rules.md      THE HARD RULE, escalation, integration
+    feedback_matching_playbook.md   techniques, recipes, penalty→technique
+                                    routing, things that don't work
+    feedback_regfix_reference.md    regfix.txt syntax + every gotcha
+
+EOF
+        ;;
+
     compile)
         # Compile a permuter base.c and dump disassembly
         FUNC_DIR="$1"
