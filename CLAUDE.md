@@ -195,13 +195,15 @@ If the user says "do the next 5", "work through 10", or anything similar, pull f
 
 The **attempt-first** flow runs all the cheap mechanical steps before the model intervenes. The deterministic pipeline does what it can; you handle the rest.
 
-1. **`dc.sh classify <func>`** — instant pre-dive. Read the recommendation. If it returns one of the out-of-scope categories above, the function is gated out (not your concern this session). For everything else, you finish the function — no other recommendation justifies stopping.
+1. **`dc.sh classify <func>`** — instant pre-dive. Read the recommendation. If it returns one of the out-of-scope categories above, the function is gated out (not your concern this session). For everything else, you finish the function. **Watch for `aliasing_heavy` in `blocker_tags`** — flagged for ptr-chasing patterns where instruction count under-predicts difficulty (queue already pushes them later); use `dc.sh diff` early on these to spot the asymmetric reload patterns.
 2. **`dc.sh attempt <func>`** — runs setup → smart_match → permute_capped → gen_regfix automatically. Reports MATCHED / NEAR_MISS / HARD / SKIPPED.
    - **MATCHED** — `auto_matches/<func>.c` has the matched C. Use `dc.sh inline-replace <func> auto_matches/<func>.c`.
    - **NEAR_MISS** (score ≤ 200) — review `/tmp/<func>.regfix.suggestions`, run `dc.sh recipes <func>`, apply rules with `dc.sh add-regfix`.
-   - **HARD** — pipeline didn't auto-close it. NOT a stopping point. Deepen manually via toolbox: alternative C structures → register asm → long permuter run → compound regfix → named recipes → new pipeline pass if needed.
+   - **HARD** — pipeline didn't auto-close it. NOT a stopping point. Deepen manually via toolbox: alternative C structures → register asm → long permuter run → compound regfix → named recipes → new pipeline pass if needed. Use `dc.sh diff <func>` for build-context diff (target.s vs build pipeline output).
    - **SKIPPED** — only fires for the out-of-scope categories above.
-3. **Manual deepening** — when NEAR_MISS or HARD, work through the escalation ladder until matched. Build new tooling if the existing toolbox can't reach pure C — that's expected.
+3. **Manual deepening** — when NEAR_MISS or HARD, work through the escalation ladder until matched. **Read the penalty-list → technique routing table** in `feedback_matching_playbook.md` to pick the right tool for the symptom. Build new tooling if the existing toolbox can't reach pure C — that's expected.
+
+**If a sibling function suddenly shows a 1-byte build error after your match:** that's `.L<N>` label drift. Run `bash tools/dc.sh fix-label-drift` (drives off the linker error, only fixes rules where the build genuinely failed).
 
 ### Escalation when stuck
 

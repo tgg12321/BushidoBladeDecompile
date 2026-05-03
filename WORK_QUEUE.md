@@ -19,12 +19,15 @@ After matching: commit the result, then `dc.sh refresh-queue` to regenerate this
 
 | Tier | Count | Description |
 |------|-------|-------------|
-| 2 |  31 | standard / medium (41-100) |
-| 3 |  60 | standard / large (101-200) |
-| 4 |  59 | standard / huge (201+) |
-| 5 |  10 | needs_lwl_fix |
-| 6 |  18 | needs_rodata_split |
-| 7 |  24 | gte_function (cop2 inline asm allowed for ops) |
+| 2 |  28 | standard / medium (41-100) |
+| 3 |  37 | standard / large (101-200) |
+| 4 |  23 | standard / huge (201+) |
+| 4 |   3 | standard, aliasing_heavy / small (<=100) |
+| 5 |  36 | standard, aliasing_heavy / large (201+) |
+| 5 |  23 | standard, aliasing_heavy / medium (101-200) |
+| 6 |  10 | needs_lwl_fix |
+| 7 |  18 | needs_rodata_split |
+| 8 |  24 | gte_function (cop2 inline asm allowed for ops) |
 
 ---
 
@@ -39,162 +42,177 @@ Format: `<#>  <func>  <size insns>  <rec>  <src>  [tags]`
    2  func_8006DF68                       64  standard              text1b.c                
    3  func_8007B9B0                       65  standard              display.c               
    4  saTan4GaugeInit                     66  standard              main.c                  
-   5  func_80060A68                       66  standard              text1b.c                
-   6  func_800692C0                       67  standard              text1b.c                
-   7  func_800485EC                       68  standard              text1b.c                
-   8  func_800482C8                       69  standard              text1b.c                
-   9  func_8007BAB4                       71  standard              display.c               
-  10  func_8007E8DC                       73  standard              display.c               
-  11  func_8007EDBC                       73  standard              display.c               
-  12  func_8008BC60                       74  standard              main.c                  
-  13  func_80057094                       75  standard              text1b.c                
-  14  func_8005FA98                       76  standard              text1b.c                
-  15  func_80061ACC                       77  standard              text1b.c                
-  16  func_8005344C                       78  standard              text1b.c                
-  17  func_800645B0                       78  standard              text1b.c                
-  18  func_80072CD4                       79  standard              text1b.c                
-  19  func_8006EACC                       80  standard              text1b.c                
-  20  func_80068D88                       81  standard              text1b.c                
-  21  func_8007DB20                       82  standard              display.c               
-  22  func_80053304                       82  standard              text1b.c                
-  23  func_8004A1FC                       83  standard              text1b.c                
-  24  func_80061D74                       83  standard              text1b.c                
-  25  func_8007D9C4                       87  standard              display.c               
-  26  func_80069E18                       90  standard              text1b.c                
-  27  func_8007DC9C                       91  standard              display.c               
-  28  func_8007526C                       91  standard              text1b.c                
-  29  func_80061C00                       93  standard              text1b.c                
-  30  func_8006D5D4                       94  standard              text1b.c                
-  31  func_80049584                       99  standard              text1b.c                
+   5  func_800692C0                       67  standard              text1b.c                
+   6  func_800485EC                       68  standard              text1b.c                
+   7  func_800482C8                       69  standard              text1b.c                
+   8  func_8007BAB4                       71  standard              display.c               
+   9  func_8007E8DC                       73  standard              display.c               
+  10  func_8007EDBC                       73  standard              display.c               
+  11  func_8008BC60                       74  standard              main.c                  
+  12  func_80057094                       75  standard              text1b.c                
+  13  func_8005FA98                       76  standard              text1b.c                
+  14  func_80061ACC                       77  standard              text1b.c                
+  15  func_8005344C                       78  standard              text1b.c                
+  16  func_800645B0                       78  standard              text1b.c                
+  17  func_80072CD4                       79  standard              text1b.c                
+  18  func_8006EACC                       80  standard              text1b.c                
+  19  func_8007DB20                       82  standard              display.c               
+  20  func_80053304                       82  standard              text1b.c                
+  21  func_8004A1FC                       83  standard              text1b.c                
+  22  func_80061D74                       83  standard              text1b.c                
+  23  func_8007D9C4                       87  standard              display.c               
+  24  func_8007DC9C                       91  standard              display.c               
+  25  func_8007526C                       91  standard              text1b.c                
+  26  func_80061C00                       93  standard              text1b.c                
+  27  func_8006D5D4                       94  standard              text1b.c                
+  28  func_80049584                       99  standard              text1b.c                
 ```
 
 ### standard / large (101-200)
 
 ```
-  32  func_8007F87C                      102  standard              display.c               
-  33  func_8007FA1C                      102  standard              display.c               
-  34  func_8007FBBC                      102  standard              display.c               
-  35  func_80069898                      102  standard              text1b.c                
-  36  func_8006BD28                      103  standard              text1b.c                
-  37  func_80073060                      104  standard              text1b.c                
-  38  func_80075830                      104  standard              text1b.c                
-  39  func_8001F938                      107  standard              code6cac.c              
-  40  func_80057CC8                      111  standard              text1b.c                
-  41  func_8006BB68                      112  standard              text1b.c                
-  42  func_80075670                      112  standard              text1b.c                
-  43  func_80078654                      116  standard              text1b.c                
-  44  func_8006DD94                      117  standard              text1b.c                
-  45  func_8005C6D0                      118  standard              text1b.c                
-  46  func_800600C8                      121  standard              text1b.c                
-  47  func_80049A2C                      126  standard              text1b.c                
-  48  func_80049C24                      126  standard              text1b.c                
-  49  func_8006D3DC                      126  standard              text1b.c                
-  50  func_80055948                      127  standard              text1b.c                
-  51  func_80057ACC                      127  standard              text1b.c                
-  52  func_8007352C                      127  standard              text1b.c                
-  53  func_80060544                      133  standard              text1b.c                
-  54  func_80074B18                      133  standard              text1b.c                
-  55  func_8007C2A0                      134  standard              display.c               
-  56  func_80048864                      134  standard              text1b.c                
-  57  func_8005C2A8                      134  standard              text1b.c                
-  58  func_80069F80                      136  standard              text1b.c                
-  59  func_8001EFA0                      137  standard              code6cac.c              
-  60  func_80060E38                      139  standard              text1b.c                
-  61  func_8006A1A0                      139  standard              text1b.c                
-  62  func_8005C074                      141  standard              text1b.c                
-  63  func_8007CE0C                      143  standard              display.c               
-  64  func_8006B92C                      143  standard              text1b.c                
-  65  func_80063BD0                      144  standard              text1b.c                
-  66  coli_hit_body_weapon               148  standard              code6cac_b.c            
-  67  func_8007CBB0                      151  standard              display.c               
-  68  func_80074220                      154  standard              text1b.c                
-  69  SetPacketData                      159  standard              main.c                  
-  70  func_80054604                      160  standard              text1b.c                
-  71  func_8007D048                      161  standard              display.c               
-  72  func_80076D74                      161  standard              text1b.c                
-  73  func_8007F35C                      163  standard              display.c               
-  74  func_8007F5EC                      163  standard              display.c               
-  75  func_8007C4B8                      164  standard              display.c               
-  76  saTan0GaugeDraw                    164  standard              main.c                  
-  77  func_800753D8                      166  standard              text1b.c                
-  78  func_8005BA8C                      169  standard              text1b.c                
-  79  func_8006BEC4                      169  standard              text1b.c                
-  80  func_800770B8                      175  standard              text1b.c                
-  81  func_8005D554                      176  standard              text1b.c                
-  82  coli_HitPauseKatana                178  standard              main.c                  
-  83  coli_HitPauseKatana_2              178  standard              main.c                  
-  84  func_8007D3F8                      184  standard              display.c               
-  85  func_8007D6D8                      187  standard              display.c               
-  86  func_8006CCC8                      189  standard              text1b.c                
-  87  func_80060768                      192  standard              text1b.c                
-  88  exec_game                          194  standard              main.c                  
-  89  func_80070C70                      194  standard              text1b.c                
-  90  func_80049718                      197  standard              text1b.c                
-  91  func_8006A564                      199  standard              text1b.c                
+  29  func_8007F87C                      102  standard              display.c               
+  30  func_8007FA1C                      102  standard              display.c               
+  31  func_8007FBBC                      102  standard              display.c               
+  32  func_80069898                      102  standard              text1b.c                
+  33  func_8006BD28                      103  standard              text1b.c                
+  34  func_80073060                      104  standard              text1b.c                
+  35  func_8001F938                      107  standard              code6cac.c              
+  36  func_80057CC8                      111  standard              text1b.c                
+  37  func_80075670                      112  standard              text1b.c                
+  38  func_80078654                      116  standard              text1b.c                
+  39  func_800600C8                      121  standard              text1b.c                
+  40  func_80049A2C                      126  standard              text1b.c                
+  41  func_80049C24                      126  standard              text1b.c                
+  42  func_80055948                      127  standard              text1b.c                
+  43  func_8007352C                      127  standard              text1b.c                
+  44  func_80060544                      133  standard              text1b.c                
+  45  func_80074B18                      133  standard              text1b.c                
+  46  func_8007C2A0                      134  standard              display.c               
+  47  func_80048864                      134  standard              text1b.c                
+  48  func_8001EFA0                      137  standard              code6cac.c              
+  49  func_80060E38                      139  standard              text1b.c                
+  50  func_8007CE0C                      143  standard              display.c               
+  51  func_8006B92C                      143  standard              text1b.c                
+  52  coli_hit_body_weapon               148  standard              code6cac_b.c            
+  53  func_80074220                      154  standard              text1b.c                
+  54  func_8007F35C                      163  standard              display.c               
+  55  func_8007F5EC                      163  standard              display.c               
+  56  func_8007C4B8                      164  standard              display.c               
+  57  saTan0GaugeDraw                    164  standard              main.c                  
+  58  func_800770B8                      175  standard              text1b.c                
+  59  func_8005D554                      176  standard              text1b.c                
+  60  coli_HitPauseKatana                178  standard              main.c                  
+  61  func_8007D3F8                      184  standard              display.c               
+  62  func_80060768                      192  standard              text1b.c                
+  63  exec_game                          194  standard              main.c                  
+  64  func_80070C70                      194  standard              text1b.c                
+  65  func_80049718                      197  standard              text1b.c                
 ```
 
 ### standard / huge (201+)
 
 ```
-  92  func_80073200                      203  standard              text1b.c                
-  93  func_80056CB8                      204  standard              text1b.c                
-  94  func_80069AE4                      205  standard              text1b.c                
-  95  func_80074488                      212  standard              text1b.c                
-  96  saTan2KabutoWareMove               215  standard              code6cac_b.c            
-  97  func_8006CFBC                      218  standard              text1b.c                
-  98  DispPracticeMenuTex_A              231  standard              code6cac.c              
-  99  DispPracticeMenuTex_B              231  standard              code6cac.c              
- 100  DispPracticeMenuTex_C              231  standard              code6cac_b.c            
- 101  md_game_check_mode                 234  standard              code6cac_c2.c           
- 102  func_80048BA4                      237  standard              text1b.c                
- 103  saTan2Main                         247  standard              main.c                  
- 104  func_80075F80                      251  standard              text1b.c                
- 105  PutRobShadow                       252  standard              code6cac_b.c            
- 106  func_8003FA24                      263  standard              config.c                
- 107  tslTm2LoadImage                    263  standard              system.c                
- 108  func_8006F100                      266  standard              text1b.c                
- 109  func_8005FC9C                      267  standard              text1b.c                
- 110  func_80071C4C                      270  standard              text1b.c                
- 111  action_CheckHitZangeki             271  standard              main.c                  
- 112  func_8006F528                      277  standard              text1b.c                
- 113  func_8006B120                      278  standard              text1b.c                
- 114  func_80074E08                      281  standard              text1b.c                
- 115  func_80021DB0                      285  standard              code6cac.c              
- 116  func_800571C0                      287  standard              text1b.c                
- 117  single_game_CheckStatusUpDataTotalOver   289  standard              code6cac.c              
- 118  func_8005E098                      289  standard              text1b.c                
- 119  func_800768DC                      294  standard              text1b.c                
- 120  func_8007BC08                      298  standard              display.c               
- 121  func_80045B68                      302  standard              text1a_c.c              
- 122  func_800872A4                      307  standard              main.c                  
- 123  func_800693CC                      307  standard              text1b.c                
- 124  func_80086CF8                      311  standard              main.c                  
- 125  func_80089F3C                      318  standard              main.c                  
- 126  func_80031B24                      327  standard              code6cac_b.c            
- 127  func_80087770                      335  standard              main.c                  
- 128  func_80073728                      340  standard              text1b.c                
- 129  func_8007636C                      348  standard              text1b.c                
- 130  func_8006D808                      355  standard              text1b.c                
- 131  func_80073C78                      362  standard              text1b.c                
- 132  func_800759D0                      364  standard              text1b.c                
- 133  func_8005490C                      407  standard              text1b.c                
- 134  mario_test_Exec                    469  standard              code6cac.c              
- 135  func_80043454                      479  standard              text1a_c.c              
- 136  func_8006F97C                      515  standard              text1b.c                
- 137  func_8005D814                      545  standard              text1b.c                
- 138  func_8006A880                      552  standard              text1b.c                
- 139  func_8005F1C8                      564  standard              text1b.c                
- 140  camera_set_target_zoom             588  standard              code6cac.c              
- 141  func_8006C21C                      622  standard              text1b.c                
- 142  func_800720FC                      690  standard              text1b.c                
- 143  func_80070188                      698  standard              text1b.c                
- 144  func_80030D7C                      709  standard              code6cac.c              
- 145  func_800198D0                      749  standard              code6cac.c              
- 146  func_8005C8A8                      753  standard              text1b.c                
- 147  func_8005E54C                      799  standard              text1b.c                
- 148  func_80070F78                      810  standard              text1b.c                
- 149  func_80029454                     1025  standard              code6cac_b.c            
- 150  calc_loc_mat_fw                   1112  standard              code6cac_b.c            
+  66  func_80056CB8                      204  standard              text1b.c                
+  67  func_80069AE4                      205  standard              text1b.c                
+  68  saTan2KabutoWareMove               215  standard              code6cac_b.c            
+  69  DispPracticeMenuTex_A              231  standard              code6cac.c              
+  70  md_game_check_mode                 234  standard              code6cac_c2.c           
+  71  saTan2Main                         247  standard              main.c                  
+  72  PutRobShadow                       252  standard              code6cac_b.c            
+  73  func_8005FC9C                      267  standard              text1b.c                
+  74  action_CheckHitZangeki             271  standard              main.c                  
+  75  func_8005E098                      289  standard              text1b.c                
+  76  func_8007BC08                      298  standard              display.c               
+  77  func_80045B68                      302  standard              text1a_c.c              
+  78  func_800872A4                      307  standard              main.c                  
+  79  func_80086CF8                      311  standard              main.c                  
+  80  func_80089F3C                      318  standard              main.c                  
+  81  func_80087770                      335  standard              main.c                  
+  82  func_80073728                      340  standard              text1b.c                
+  83  func_8006D808                      355  standard              text1b.c                
+  84  mario_test_Exec                    469  standard              code6cac.c              
+  85  func_80043454                      479  standard              text1a_c.c              
+  86  func_8005D814                      545  standard              text1b.c                
+  87  camera_set_target_zoom             588  standard              code6cac.c              
+  88  func_8005C8A8                      753  standard              text1b.c                
+```
+
+### standard, aliasing_heavy / small (<=100)
+
+```
+  89  func_80060A68                       66  standard              text1b.c                  [aliasing_heavy]
+  90  func_80068D88                       81  standard              text1b.c                  [aliasing_heavy]
+  91  func_80069E18                       90  standard              text1b.c                  [aliasing_heavy]
+```
+
+### standard, aliasing_heavy / large (201+)
+
+```
+  92  func_80073200                      203  standard              text1b.c                  [aliasing_heavy]
+  93  func_80074488                      212  standard              text1b.c                  [aliasing_heavy]
+  94  func_8006CFBC                      218  standard              text1b.c                  [aliasing_heavy]
+  95  DispPracticeMenuTex_B              231  standard              code6cac.c                [aliasing_heavy]
+  96  DispPracticeMenuTex_C              231  standard              code6cac_b.c              [aliasing_heavy]
+  97  func_80048BA4                      237  standard              text1b.c                  [aliasing_heavy]
+  98  func_80075F80                      251  standard              text1b.c                  [aliasing_heavy]
+  99  func_8003FA24                      263  standard              config.c                  [aliasing_heavy]
+ 100  tslTm2LoadImage                    263  standard              system.c                  [aliasing_heavy]
+ 101  func_8006F100                      266  standard              text1b.c                  [aliasing_heavy]
+ 102  func_80071C4C                      270  standard              text1b.c                  [aliasing_heavy]
+ 103  func_8006F528                      277  standard              text1b.c                  [aliasing_heavy]
+ 104  func_8006B120                      278  standard              text1b.c                  [aliasing_heavy]
+ 105  func_80074E08                      281  standard              text1b.c                  [aliasing_heavy]
+ 106  func_80021DB0                      285  standard              code6cac.c                [aliasing_heavy]
+ 107  func_800571C0                      287  standard              text1b.c                  [aliasing_heavy]
+ 108  single_game_CheckStatusUpDataTotalOver   289  standard              code6cac.c                [aliasing_heavy]
+ 109  func_800768DC                      294  standard              text1b.c                  [aliasing_heavy]
+ 110  func_800693CC                      307  standard              text1b.c                  [aliasing_heavy]
+ 111  func_80031B24                      327  standard              code6cac_b.c              [aliasing_heavy]
+ 112  func_8007636C                      348  standard              text1b.c                  [aliasing_heavy]
+ 113  func_80073C78                      362  standard              text1b.c                  [aliasing_heavy]
+ 114  func_800759D0                      364  standard              text1b.c                  [aliasing_heavy]
+ 115  func_8005490C                      407  standard              text1b.c                  [aliasing_heavy]
+ 116  func_8006F97C                      515  standard              text1b.c                  [aliasing_heavy]
+ 117  func_8006A880                      552  standard              text1b.c                  [aliasing_heavy]
+ 118  func_8005F1C8                      564  standard              text1b.c                  [aliasing_heavy]
+ 119  func_8006C21C                      622  standard              text1b.c                  [aliasing_heavy]
+ 120  func_800720FC                      690  standard              text1b.c                  [aliasing_heavy]
+ 121  func_80070188                      698  standard              text1b.c                  [aliasing_heavy]
+ 122  func_80030D7C                      709  standard              code6cac.c                [aliasing_heavy]
+ 123  func_800198D0                      749  standard              code6cac.c                [aliasing_heavy]
+ 124  func_8005E54C                      799  standard              text1b.c                  [aliasing_heavy]
+ 125  func_80070F78                      810  standard              text1b.c                  [aliasing_heavy]
+ 126  func_80029454                     1025  standard              code6cac_b.c              [aliasing_heavy]
+ 127  calc_loc_mat_fw                   1112  standard              code6cac_b.c              [aliasing_heavy]
+```
+
+### standard, aliasing_heavy / medium (101-200)
+
+```
+ 128  func_80075830                      104  standard              text1b.c                  [aliasing_heavy]
+ 129  func_8006BB68                      112  standard              text1b.c                  [aliasing_heavy]
+ 130  func_8006DD94                      117  standard              text1b.c                  [aliasing_heavy]
+ 131  func_8005C6D0                      118  standard              text1b.c                  [aliasing_heavy]
+ 132  func_8006D3DC                      126  standard              text1b.c                  [aliasing_heavy]
+ 133  func_80057ACC                      127  standard              text1b.c                  [aliasing_heavy]
+ 134  func_8005C2A8                      134  standard              text1b.c                  [aliasing_heavy]
+ 135  func_80069F80                      136  standard              text1b.c                  [aliasing_heavy]
+ 136  func_8006A1A0                      139  standard              text1b.c                  [aliasing_heavy]
+ 137  func_8005C074                      141  standard              text1b.c                  [aliasing_heavy]
+ 138  func_80063BD0                      144  standard              text1b.c                  [aliasing_heavy]
+ 139  func_8007CBB0                      151  standard              display.c                 [aliasing_heavy]
+ 140  SetPacketData                      159  standard              main.c                    [aliasing_heavy]
+ 141  func_80054604                      160  standard              text1b.c                  [aliasing_heavy]
+ 142  func_8007D048                      161  standard              display.c                 [aliasing_heavy]
+ 143  func_80076D74                      161  standard              text1b.c                  [aliasing_heavy]
+ 144  func_800753D8                      166  standard              text1b.c                  [aliasing_heavy]
+ 145  func_8005BA8C                      169  standard              text1b.c                  [aliasing_heavy]
+ 146  func_8006BEC4                      169  standard              text1b.c                  [aliasing_heavy]
+ 147  coli_HitPauseKatana_2              178  standard              main.c                    [aliasing_heavy]
+ 148  func_8007D6D8                      187  standard              display.c                 [aliasing_heavy]
+ 149  func_8006CCC8                      189  standard              text1b.c                  [aliasing_heavy]
+ 150  func_8006A564                      199  standard              text1b.c                  [aliasing_heavy]
 ```
 
 ### needs_lwl_fix
@@ -206,10 +224,10 @@ Format: `<#>  <func>  <size insns>  <rec>  <src>  [tags]`
  154  func_800602AC                       90  needs_lwl_fix         text1b.c                  [lwl_swl]
  155  func_8006E10C                      103  needs_lwl_fix         text1b.c                  [lwl_swl]
  156  func_80068F70                      108  needs_lwl_fix         text1b.c                  [lwl_swl]
- 157  func_80057E84                      447  needs_lwl_fix         text1b.c                  [lwl_swl]
- 158  func_80022580                      621  needs_lwl_fix         code6cac.c                [lwl_swl]
- 159  func_80055B60                     1110  needs_lwl_fix         text1b.c                  [lwl_swl]
- 160  func_80023F08                     2983  needs_lwl_fix         code6cac.c                [lwl_swl]
+ 157  func_80057E84                      447  needs_lwl_fix         text1b.c                  [lwl_swl,aliasing_heavy]
+ 158  func_80022580                      621  needs_lwl_fix         code6cac.c                [lwl_swl,aliasing_heavy]
+ 159  func_80055B60                     1110  needs_lwl_fix         text1b.c                  [lwl_swl,aliasing_heavy]
+ 160  func_80023F08                     2983  needs_lwl_fix         code6cac.c                [lwl_swl,aliasing_heavy]
 ```
 
 ### needs_rodata_split
@@ -219,18 +237,18 @@ Format: `<#>  <func>  <size insns>  <rec>  <src>  [tags]`
  162  func_80078F74                        5  needs_rodata_split    text1b.c                  [jlabel_switch]
  163  func_80077B30                      116  needs_rodata_split    text1b.c                  [jlabel_switch]
  164  func_8006B578                      200  needs_rodata_split    text1b.c                  [jlabel_switch]
- 165  func_800747D8                      208  needs_rodata_split    text1b.c                  [jlabel_switch]
- 166  func_8006ECF4                      209  needs_rodata_split    text1b.c                  [lwl_swl,jlabel_switch]
+ 165  func_800747D8                      208  needs_rodata_split    text1b.c                  [jlabel_switch,aliasing_heavy]
+ 166  func_8006ECF4                      209  needs_rodata_split    text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]
  167  func_8006E534                      222  needs_rodata_split    text1b.c                  [lwl_swl,jlabel_switch]
  168  func_80077374                      236  needs_rodata_split    text1b.c                  [jlabel_switch]
  169  special_camera_Exec                274  needs_rodata_split    code6cac_b2.c             [jlabel_switch]
  170  func_8001C8DC                      291  needs_rodata_split    code6cac.c                [jlabel_switch]
- 171  func_80026DA4                      342  needs_rodata_split    code6cac_b.c              [jlabel_switch]
+ 171  func_80026DA4                      342  needs_rodata_split    code6cac_b.c              [jlabel_switch,aliasing_heavy]
  172  func_80080828                      354  needs_rodata_split    system.c                  [jlabel_switch]
  173  func_80035828                      360  needs_rodata_split    code6cac_b2.c             [jlabel_switch]
- 174  func_80032C50                      467  needs_rodata_split    code6cac_b.c              [jlabel_switch,aspsx_swra_delay]
- 175  func_80077D94                      468  needs_rodata_split    text1b.c                  [lwl_swl,jlabel_switch]
- 176  func_80079A30                      535  needs_rodata_split    text1b.c                  [jlabel_switch]
+ 174  func_80032C50                      467  needs_rodata_split    code6cac_b.c              [jlabel_switch,aspsx_swra_delay,aliasing_heavy]
+ 175  func_80077D94                      468  needs_rodata_split    text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]
+ 176  func_80079A30                      535  needs_rodata_split    text1b.c                  [jlabel_switch,aliasing_heavy]
  177  func_80034708                      544  needs_rodata_split    code6cac_b.c              [jlabel_switch]
  178  func_80027AD8                      574  needs_rodata_split    code6cac_b.c              [jlabel_switch]
 ```
@@ -255,13 +273,13 @@ Format: `<#>  <func>  <size insns>  <rec>  <src>  [tags]`
  193  func_8007EC5C                       67  gte_function          display.c                 [gte_ops]
  194  func_8007EA0C                       78  gte_function          display.c                 [gte_ops]
  195  func_8007E74C                       88  gte_function          display.c                 [gte_ops]
- 196  func_800678A8                      283  gte_function          text1b.c                  [gte_ops]
- 197  DispHira                           299  gte_function          code6cac_c2.c             [gte_ops]
- 198  func_800207C8                      325  gte_function          code6cac.c                [gte_ops]
+ 196  func_800678A8                      283  gte_function          text1b.c                  [gte_ops,aliasing_heavy]
+ 197  DispHira                           299  gte_function          code6cac_c2.c             [gte_ops,aliasing_heavy]
+ 198  func_800207C8                      325  gte_function          code6cac.c                [gte_ops,aliasing_heavy]
  199  md_game_rob_data_init              351  gte_function          code6cac.c                [gte_ops]
  200  special_camera_Init                370  gte_function          code6cac_b.c              [gte_ops]
- 201  func_8006295C                      420  gte_function          text1b.c                  [gte_ops]
- 202  func_80063E10                      443  gte_function          text1b.c                  [gte_ops]
+ 201  func_8006295C                      420  gte_function          text1b.c                  [gte_ops,aliasing_heavy]
+ 202  func_80063E10                      443  gte_function          text1b.c                  [gte_ops,aliasing_heavy]
 ```
 
 ---

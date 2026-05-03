@@ -302,9 +302,20 @@ print(f'Replaced {func} in {src}')
         # then block subsequent `git commit` (until verify passes) and
         # `dc.sh next` calls until the active function is finished.
         #
-        # Pass an integer N to preview the top N entries (without
-        # changing the active marker — only top-1 commits a selection).
-        N="${1:-1}"
+        # Forms:
+        #   dc.sh next                # top 1, set active, no auto-brief
+        #   dc.sh next 5              # preview top 5 (no active change)
+        #   dc.sh next --with-context # top 1 + auto-run agent-brief
+        WITH_CONTEXT=0
+        N=1
+        for a in "$@"; do
+            case "$a" in
+                --with-context) WITH_CONTEXT=1 ;;
+                ''|*[!0-9]*) ;;
+                *) N="$a" ;;
+            esac
+        done
+
         [ -f "WORK_QUEUE.md" ] || {
             echo "ERROR: WORK_QUEUE.md missing -- run 'dc.sh refresh-queue'" >&2
             exit 1
@@ -321,9 +332,15 @@ print(f'Replaced {func} in {src}')
             exit 1
         fi
 
-        # Extract the top N entries from the queue. awk handles the count
-        # itself so we don't get SIGPIPE from `head` closing early under
-        # `set -o pipefail`.
+        # Stale-queue check: warn if WORK_QUEUE.md is older than 7 days.
+        if [ -f WORK_QUEUE.md ]; then
+            QUEUE_AGE_DAYS=$(( ( $(date +%s) - $(stat -c %Y WORK_QUEUE.md 2>/dev/null || stat -f %m WORK_QUEUE.md 2>/dev/null || echo 0) ) / 86400 ))
+            if [ "$QUEUE_AGE_DAYS" -gt 7 ] 2>/dev/null; then
+                echo "WARNING: WORK_QUEUE.md is $QUEUE_AGE_DAYS days old. Run 'dc.sh refresh-queue' to drop matched functions." >&2
+            fi
+        fi
+
+        # Extract the top N entries from the queue.
         TOP=$(awk -v n="$N" '
             /^## Queue/ { in_queue=1; next }
             in_queue && /^## / { in_queue=0 }
@@ -343,6 +360,11 @@ print(f'Replaced {func} in {src}')
             if [ -n "$FUNC" ]; then
                 echo "$FUNC" > .bb2_active_func
                 echo "(active function set: $FUNC)" >&2
+                if [ "$WITH_CONTEXT" = "1" ]; then
+                    echo
+                    echo "=== agent-brief ==="
+                    python3 tools/agent_brief.py "$FUNC" 2>&1
+                fi
             fi
         fi
         ;;
@@ -370,17 +392,37 @@ print(f'Replaced {func} in {src}')
         fi
         ;;
 
+    fix-label-drift)
+        # Auto-fix .L<N> drift in regfix.txt rules. Default is dry-run;
+        # pass --apply to actually edit regfix.txt. Drives off linker
+        # errors (only fixes rules where the build genuinely broke).
+        shift || true
+        python3 tools/fix_label_drift.py "$@" 2>&1
+        ;;
+
+    diff)
+        # Side-by-side diff: target asm vs build pipeline output for
+        # one function. Useful for spotting reorderings, register
+        # choices, and ins/del when iterating on a NEAR_MISS.
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh diff <func>"; exit 1; }
+        python3 tools/diff_build.py "$FUNC_NAME" 2>&1
+        ;;
+
     refresh-queue)
         # Refresh classifier CSV + regenerate WORK_QUEUE.md. Run after a
         # batch of matches so the queue drops them. ~2 minutes.
         # ALSO clears .bb2_active_func -- if you got here, you matched.
-        echo "[1/3] Classifying inline_asm + INCLUDE_ASM (batch_attempt --classify-only)..."
+        echo "[1/4] Capturing recipe from latest commit (if it's a match)..."
+        python3 tools/capture_recipe.py HEAD 2>&1 | tail -5 || true
+        echo
+        echo "[2/4] Classifying inline_asm + INCLUDE_ASM (batch_attempt --classify-only)..."
         python3 tools/batch_attempt.py --classify-only 2>&1 | tail -3
         echo
-        echo "[2/3] Classifying replace_with_asmfile entries..."
+        echo "[3/4] Classifying replace_with_asmfile entries..."
         python3 tools/classify_asmfix.py 2>&1 | tail -3
         echo
-        echo "[3/3] Generating WORK_QUEUE.md..."
+        echo "[4/4] Generating WORK_QUEUE.md..."
         python3 tools/gen_work_queue.py 2>&1
         # Belt-and-suspenders: the commit-via-hook path already cleared
         # the marker, but if for some reason a refresh runs while it's
