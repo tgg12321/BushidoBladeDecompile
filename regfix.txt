@@ -3606,7 +3606,7 @@ func_80053694: subst "addiu\s+\$7,\$zero,1" "addiu	$2,$zero,1" @ 44
 func_80053694: subst "sh\s+\$2," "sh	$3," @ 45
 func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
 func_8005BD30: delete @ 17
-func_8005BD30: subst "\.L196" ".L196-4" @ 16
+func_8005BD30: subst "\.L201" ".L201-4" @ 16
 func_8007CA00: subst "j\s+\.L\d+" "subu	$2,$2,$3" @ 14
 func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.L87" @ 15
 func_8007CA00: insert_after "subu	$2,$2,$4" @ 15
@@ -3790,7 +3790,7 @@ func_8005C4C0: insert_after "sll	$2,$2,16" @ 46
 func_8005C4C0: reorder 13,12,14 @ 12-14
 func_8005C4C0: delete @ 46
 func_8005C4C0: insert "sra	$2,$2,16" @ 47
-func_8005C4C0: subst "\.L212" ".L212+4" @ 40
+func_8005C4C0: subst "\.L217" ".L217+4" @ 40
 func_80048530: subst "addu\s+\$8,\$4,\$zero" "addu $v1,$a0,$zero" @ 1
 func_80048530: subst "addu\s+\$5,\$5,\$8" "addu $a1,$a1,$v1" @ 3
 func_80048530: insert_after "addu $t0,$v1,$zero" @ 3
@@ -3810,7 +3810,7 @@ func_800644FC: delete @ 32
 func_800644FC: reorder 17,12,11,13,14,15,16 @ 11-17
 func_800644FC: reorder 25,23,24 @ 23-25
 func_800644FC: reorder 30,29 @ 29-30
-func_800644FC: subst "\.L\d+" ".L357-4" @ 22
+func_800644FC: subst "\.L\d+" ".L362-4" @ 22
 
 # func_8007B6C8: layout fix beq->bne
 func_8007B6C8: subst "beq\s+\$2,\$0,\.L15" "bne	$2,$0,.LbodyB6C8" @ 17
@@ -3857,6 +3857,7 @@ func_80060B70: delete @ 31
 func_80060B70: reorder 30,29 @ 29-30
 # Move li t6,1 to early position (target #3)
 func_800692C0: reorder 6,3,4,5 @ 3-6
+func_800482C8: subst "lhu\t\$18,1090\(\$sp\)" "lhu\t$18,1088($sp)" @ 10
 func_800485EC: subst "\$8" "$3" @ 10
 func_800485EC: subst "lw\s+\$4," "lhu	$4," @ 11
 func_800485EC: subst "lw\s+\$6," "lhu	$5," @ 12

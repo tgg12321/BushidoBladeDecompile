@@ -15,7 +15,6 @@
 void func_80047ED0(s32 a0) {
     g_snd_volume += a0;
 }
-extern s32 func_800482C8(s32, s32, s32, s32, s32);
 
 void func_80047EE8(s32 arg0, s32 arg1)
 {
@@ -187,89 +186,46 @@ void func_800481E8(s32 arg0, s32 arg1)
         } while ((count--) != 0);
     }
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800482C8\n"
-    "    addiu  $sp,$sp,-1072\n"
-    "    addu  $t0,$a0,$zero\n"
-    "    sw  $ra,1064($sp)\n"
-    "    sw  $s3,1060($sp)\n"
-    "    sw  $s2,1056($sp)\n"
-    "    sw  $s1,1052($sp)\n"
-    "    sw  $s0,1048($sp)\n"
-    "    lbu  $v1,0($t0)\n"
-    "    addiu  $t0,$t0,4\n"
-    "    addiu  $v0,$zero,16\n"
-    "    lhu  $s2,1088($sp)\n"
-    "    bne  $v1,$v0,.L800483BC\n"
-    "    addu  $s3,$a3,$zero\n"
-    "    lw  $v0,0($t0)\n"
-    "    nop\n"
-    "    andi  $s1,$v0,8\n"
-    "    beqz  $s1,.L8004832C\n"
-    "    addiu  $t0,$t0,4\n"
-    "    addu  $s0,$t0,$zero\n"
-    "    lw  $v0,0($s0)\n"
-    "    nop\n"
-    "    srl  $v0,$v0,2\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $t0,$s0,$v0\n"
-    "    addiu  $s0,$s0,4\n"
-    ".L8004832C:\n"
-    "    addiu  $t0,$t0,8\n"
-    "    addiu  $a0,$sp,16\n"
-    "    sh  $a1,16($sp)\n"
-    "    sh  $a2,18($sp)\n"
-    "    lw  $v1,0($t0)\n"
-    "    addiu  $a1,$t0,4\n"
-    "    srl  $v0,$v1,16\n"
-    "    sh  $v0,22($sp)\n"
-    "    jal  gpu_LoadImage\n"
-    "    sh  $v1,20($sp)\n"
-    "    beqz  $s1,.L800483BC\n"
-    "    addiu  $s0,$s0,4\n"
-    "    sh  $s3,16($sp)\n"
-    "    sh  $s2,18($sp)\n"
-    "    lw  $v1,0($s0)\n"
-    "    addiu  $s0,$s0,4\n"
-    "    srl  $v0,$v1,16\n"
-    "    sh  $v0,22($sp)\n"
-    "    jal  func_800486FC\n"
-    "    sh  $v1,20($sp)\n"
-    "    beqz  $v0,.L800483B0\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    lh  $a1,20($sp)\n"
-    "    addiu  $s0,$sp,24\n"
-    "    jal  func_8004876C\n"
-    "    addu  $a2,$s0,$zero\n"
-    "    addiu  $a0,$sp,16\n"
-    "    jal  gpu_LoadImage\n"
-    "    addu  $a1,$s0,$zero\n"
-    "    jal  gpu_DrawSync\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    j  .L800483BC\n"
-    "    nop\n"
-    ".L800483B0:\n"
-    "    addiu  $a0,$sp,16\n"
-    "    jal  gpu_LoadImage\n"
-    "    addu  $a1,$s0,$zero\n"
-    ".L800483BC:\n"
-    "    lw  $ra,1064($sp)\n"
-    "    lw  $s3,1060($sp)\n"
-    "    lw  $s2,1056($sp)\n"
-    "    lw  $s1,1052($sp)\n"
-    "    lw  $s0,1048($sp)\n"
-    "    addiu  $sp,$sp,1072\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
+    s16 rect[4];
+    s16 buf[512];
+    u8 *p_alt;
+    s32 flags;
+    u32 dim;
+    u32 dim2;
+    s32 head = arg0[0];
+    arg0 += 4;
+    if (head != 0x10) return;
+    flags = *(s32 *)arg0 & 8;
+    arg0 += 4;
+    if (flags != 0) {
+        p_alt = arg0;
+        arg0 = p_alt + (((u32)*(u32 *)p_alt >> 2) << 2);
+        p_alt += 4;
+    }
+    arg0 += 8;
+    rect[0] = arg1;
+    rect[1] = arg2;
+    dim = *(u32 *)arg0;
+    rect[3] = dim >> 16;
+    rect[2] = dim;
+    gpu_LoadImage(rect, (s32 *)(arg0 + 4));
+    if (flags == 0) return;
+    p_alt += 4;
+    rect[0] = arg3;
+    rect[1] = arg4;
+    dim2 = *(u32 *)p_alt;
+    p_alt += 4;
+    rect[3] = dim2 >> 16;
+    rect[2] = dim2;
+    if (func_800486FC() != 0) {
+        func_8004876C((s32)p_alt, rect[2], (s32)buf);
+        gpu_LoadImage(rect, (s32 *)buf);
+        gpu_DrawSync(0);
+        return;
+    }
+    gpu_LoadImage(rect, (s32 *)p_alt);
+}
 extern s32 func_800484A0(s32, s32, s32);
 
 void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
