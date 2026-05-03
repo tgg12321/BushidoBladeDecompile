@@ -325,7 +325,7 @@ void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
     }
     gpu_LoadImage(rect, (s32)buf);
 }
-extern s32 func_800485EC(s32, s32, s16, s16, s16, s16);
+extern void func_800485EC(s32, s32, s32, s32, s32, s32);
 s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     u8 *p;
     s32 count;
@@ -354,88 +354,46 @@ s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     func_800485EC(entry_off, arg3, (s16)a, (s16)b, c, d);
     return count;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800485EC\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    sw  $s1,20($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a1,$zero\n"
-    "    sw  $ra,32($sp)\n"
-    "    sw  $s3,28($sp)\n"
-    "    sw  $s2,24($sp)\n"
-    "    lbu  $v1,0($s1)\n"
-    "    addiu  $s1,$s1,4\n"
-    "    addu  $s2,$a2,$zero\n"
-    "    addiu  $v0,$zero,16\n"
-    "    lhu  $a0,56($sp)\n"
-    "    lhu  $a1,60($sp)\n"
-    "    bne  $v1,$v0,.L800486DC\n"
-    "    addu  $s3,$a3,$zero\n"
-    "    lw  $v0,0($s1)\n"
-    "    addiu  $s1,$s1,4\n"
-    "    andi  $v1,$v0,7\n"
-    "    andi  $v0,$v0,8\n"
-    "    beqz  $v0,.L80048694\n"
-    "    sh  $v1,0($s0)\n"
-    "    addu  $v1,$s1,$zero\n"
-    "    lw  $v0,0($v1)\n"
-    "    sh  $a0,10($s0)\n"
-    "    lh  $a0,10($s0)\n"
-    "    sh  $a1,12($s0)\n"
-    "    lh  $a1,12($s0)\n"
-    "    srl  $v0,$v0,2\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $s1,$v1,$v0\n"
-    "    addiu  $v1,$v1,8\n"
-    "    lhu  $v0,2($v1)\n"
-    "    nop\n"
-    "    sh  $v0,16($s0)\n"
-    "    lw  $v0,0($v1)\n"
-    "    addiu  $v1,$v1,4\n"
-    "    sw  $v1,28($s0)\n"
-    "    jal  gpu_CalcClut\n"
-    "    sh  $v0,14($s0)\n"
-    "    j  .L80048698\n"
-    "    sh  $v0,20($s0)\n"
-    ".L80048694:\n"
-    "    sh  $zero,20($s0)\n"
-    ".L80048698:\n"
-    "    lh  $a0,0($s0)\n"
-    "    addiu  $v1,$s1,8\n"
-    "    sh  $s2,2($s0)\n"
-    "    sh  $s3,4($s0)\n"
-    "    lhu  $v0,2($v1)\n"
-    "    lh  $a2,2($s0)\n"
-    "    lh  $a3,4($s0)\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    sh  $v0,8($s0)\n"
-    "    lw  $v0,0($v1)\n"
-    "    addiu  $v1,$v1,4\n"
-    "    andi  $a2,$a2,65472\n"
-    "    andi  $a3,$a3,65280\n"
-    "    sw  $v1,24($s0)\n"
-    "    jal  gpu_CalcTPage\n"
-    "    sh  $v0,6($s0)\n"
-    "    sh  $v0,18($s0)\n"
-    ".L800486DC:\n"
-    "    lw  $ra,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_800485EC(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5)
+{
+    register s32 s1 asm("s1") = arg0;
+    register s32 s0 asm("s0") = arg1;
+    register s32 s2 asm("s2") = arg2;
+    register s32 s3 asm("s3") = arg3;
+    s32 v1;
+    s32 flags;
+    v1 = *((u8 *) s1);
+    if (v1 != 0x10) {
+        return;
+    }
+    s1 += 4;
+    flags = *((s32 *) s1);
+    s1 += 4;
+    *((s16 *) (s0 + 0)) = (s16)(flags & 7);
+    if (flags & 8) {
+        register u32 size asm("v0");
+        v1 = s1;
+        size = *((u32 *) v1);
+        *((u16 *) (s0 + 0xA)) = arg4;
+        *((u16 *) (s0 + 0xC)) = arg5;
+        s1 = v1 + ((size >> 2) << 2);
+        v1 += 8;
+        *((u16 *) (s0 + 0x10)) = *((u16 *) (v1 + 2));
+        *((s16 *) (s0 + 0xE)) = (s16)*((s32 *)v1);
+        *((s32 *) (s0 + 0x1C)) = v1 + 4;
+        *((s16 *) (s0 + 0x14)) = gpu_CalcClut(*((s16 *) (s0 + 0xA)), *((s16 *) (s0 + 0xC)));
+    } else {
+        *((s16 *) (s0 + 0x14)) = 0;
+    }
+    v1 = s1 + 8;
+    asm volatile("" : "=r"(v1) : "0"(v1));
+    *((s16 *) (s0 + 2)) = (s16)s2;
+    *((s16 *) (s0 + 4)) = (s16)s3;
+    *((u16 *) (s0 + 8)) = *((u16 *) (v1 + 2));
+    *((s16 *) (s0 + 6)) = (s16)*((s32 *)v1);
+    *((s32 *) (s0 + 0x18)) = v1 + 4;
+    *((s16 *) (s0 + 0x12)) = gpu_CalcTPage(*((s16 *) (s0 + 0)), 0, (*((s16 *) (s0 + 2))) & 0xFFC0, (*((s16 *) (s0 + 4))) & 0xFF00);
+}
 extern s16 g_color_mode;
 s32 file_GetFlag0(void);
 s16 func_800486FC(void) {
