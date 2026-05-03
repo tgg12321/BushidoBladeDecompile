@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+"""Generate the canonical subagent prompt for working ONE function to
+byte match. Used by autonomous-mode loops where the main agent spawns
+a fresh subagent per function (keeping its own context small).
+
+Usage:
+    python3 tools/gen_subagent_prompt.py <func>
+    bash tools/dc.sh subagent-prompt <func>
+
+Output goes to stdout. The main agent reads it and passes the text to
+the Agent() tool's `prompt` parameter.
+"""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+PROMPT_TEMPLATE = """You are working {func} to byte-match in 100% pure C.
+
+# Active function marker
+The harness has set `.bb2_active_func` to `{func}`. The PreToolUse hook
+will block (until you match):
+  - `git commit` (unless `dc.sh verify {func}` reports MATCH)
+  - `git checkout/restore/reset --` on src/*.c, regfix.txt, asmfix.txt,
+    undefined_syms_auto.txt, named_syms.txt, sdata*.txt, expand_lb_funcs.txt
+  - `dc.sh next` (you don't pull a new function — the parent does that)
+
+You CANNOT run `dc.sh release` — that's the user's escape hatch only.
+If you're genuinely stuck after exhausting the toolbox, RETURN with a
+detailed status; the parent will coordinate with the user.
+
+# THE HARD RULE
+Once you start, you finish. No tabling, no skipping, no inline-asm
+workarounds. Stuck = switch *technique*, not target.
+
+The only valid stop conditions:
+1. {func} matches — `dc.sh verify {func}` reports MATCH AND `make`
+   reports `OK: bb2 matches!` AND you've committed.
+2. Genuine intractable blocker — you've tried ≥5 distinct techniques
+   from the escalation ladder, including at least one assembly-stream
+   regfix attempt, and you can articulate what specifically prevents
+   matching with the current toolchain. Then RETURN with details so
+   the user can decide.
+
+# Workflow
+
+1. **Get context** (do this first, every time):
+   ```
+   bash tools/dc.sh agent-brief {func}
+   ```
+   This shows: classification (watch for `aliasing_heavy` blocker_tag —
+   means high deref-chain count, expect more iterations than insn count
+   suggests), source location, target asm, m2c output, gen_regfix
+   suggestions, sibling matches, Kengo reference.
+
+2. **Run the auto pipeline:**
+   ```
+   bash tools/dc.sh attempt {func}
+   ```
+   - MATCHED → integrate via `dc.sh inline-replace` (or write the body
+     directly via WSL python3), build, verify, commit. DONE.
+   - NEAR_MISS or HARD → continue below.
+
+3. **Check named recipes:**
+   ```
+   bash tools/dc.sh recipes {func}
+   bash tools/dc.sh near-miss {func}
+   ```
+
+4. **Read the penalty list and route to technique** (in
+   feedback_matching_playbook.md, section "Penalty-list → technique
+   routing"). Common patterns:
+   - 0 ins/del/reord, only Reg differences → swap rules in regfix.txt.
+     DO NOT run gen-regfix on this profile (produces noise). DO NOT
+     run permuter (nothing structural to find).
+   - Ins ≥ 1 (target has more) → don't cache the inner deref; let GCC
+     reload naturally. Cache outer pointers but read inner each access.
+   - Reord high → C-level scheduling techniques OR regfix
+     fill_delay/drain_delay/reorder.
+   - LICM hoist signature → regfix unhoist recipe.
+
+5. **For build-context iteration**, use `bash tools/dc.sh diff {func}`
+   (side-by-side target vs build pipeline output, normalized for
+   register aliases / hex / opcode aliases). Spot-check this BEFORE
+   reaching for permuter or gen-regfix.
+
+6. **Permuter cadence:**
+   - First manual run: 90-120s, NOT 600s.
+   - If first run plateaus AND diff still has ins/del: 5-10 min.
+   - Long overnight runs only for 3+ ins/del with no recipe match.
+   - DO NOT run permuter when penalty list shows only register
+     differences.
+
+7. **Integration discipline** (when you have matching C):
+   - Add missing externs to source file's extern block (sibling-file
+     audit first — sibling may already have correct signed/unsigned
+     declaration).
+   - Replace stub with just signature + body. Never use `dc.sh replace`
+     for final integration (copies scaffolding); use
+     `dc.sh inline-replace` or write directly via WSL python3.
+   - Build: `rm -f build/src/<file>.o && make 2>&1 | tail -5`.
+   - Verify: `bash tools/dc.sh verify {func}` — must say MATCH.
+
+8. **Validation IMMEDIATELY after match** (before considering done):
+   - `make validate` — catches regfix pattern drift in siblings.
+   - `bash tools/dc.sh verify --all` — catches label-renumber regressions.
+   - If a sibling broke (1-byte diff in beq/bne), run
+     `bash tools/dc.sh fix-label-drift` (drives off the linker error).
+
+9. **Commit** (the hook auto-clears the active marker on success):
+   ```
+   git commit -m "Match {func} -- <one-line recipe summary>"
+   ```
+
+# Reading
+
+Mandatory:
+- feedback_workflow_rules.md — escalation ladder, integration
+- feedback_matching_playbook.md — toolbox order, every C technique,
+  named recipes, penalty-list → technique routing, things that don't
+  work
+- feedback_regfix_reference.md — regfix.txt syntax + every gotcha
+
+# Communication
+
+DO NOT ask the user for direction. DO NOT report intermediate progress
+in prose. Work silently. Return when done (matched + committed) or
+genuinely stuck.
+
+Final return format:
+
+  MATCHED — `{func}` at commit <sha>. Recipe: <one-line summary>.
+
+  or
+
+  STUCK — `{func}` exhausted toolbox. Tried: <list of techniques>.
+  Best score: <score> with <ins/del/reord/reg breakdown>. Specific
+  remaining diff: <description>. Suggested next move: <new tool /
+  user release / etc>.
+"""
+
+
+def main() -> int:
+    if len(sys.argv) != 2:
+        print("Usage: gen_subagent_prompt.py <func>", file=sys.stderr)
+        return 1
+    func = sys.argv[1]
+    print(PROMPT_TEMPLATE.format(func=func))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

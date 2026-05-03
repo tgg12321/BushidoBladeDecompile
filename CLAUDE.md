@@ -10,13 +10,19 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 
 This prints current state (build status, active function marker, queue freshness, top of queue) and the rules summary. A SessionStart hook auto-runs it; if you don't see the briefing in your session context, run it manually as your first command.
 
-**The two things that determine what you do next:**
+**Decide what to do next based on the user's directive AND the briefing:**
 
-1. **`Active: <funcname>`** in the briefing → resume that function. The hook is enforcing — `dc.sh next` and `git commit` are blocked until you match. Don't try to revert src/ files (also blocked); edit forward instead. Read `dc.sh diff <funcname>` and `dc.sh verify <funcname>` to see where you are.
+**Solo mode** (default — user named one function, or said "do the next one"):
+1. **`Active: <funcname>`** → resume that function. Hook is enforcing — `dc.sh next` and `git commit` blocked until you match. Don't revert src/ files (also blocked); edit forward instead. Use `dc.sh diff <funcname>` and `dc.sh verify <funcname>` to see where you are.
+2. **`Active: NONE`** → `bash tools/dc.sh next --with-context` (pulls top, sets marker, runs agent-brief).
 
-2. **`Active: NONE`** → pull from queue: `bash tools/dc.sh next --with-context`. This sets the active marker, gives you the function, and runs `agent-brief` to dump full context.
+**Autonomous mode** (user said "run through the queue", "work for N hours", "do the next 10 without stopping"):
+- See `feedback_workflow_rules.md` § "Autonomous mode (subagent-per-function)".
+- Main agent becomes a thin coordinator: per function, run `dc.sh next`, run `dc.sh subagent-prompt <func>`, spawn `Agent(prompt=...)`, wait, check, refresh-queue, loop.
+- Subagents work in isolation (fresh context); only their one-line `MATCHED ...` / `STUCK ...` return lands in main's context. Keeps main lean over hours of work.
+- If a subagent returns `STUCK`, the loop pauses and reports to user (you cannot release on your own).
 
-If the build is `MISMATCH` at session start — STOP. Don't pull more work. Investigate (`dc.sh verify --all`, recent commits) and resolve before any function work. The hook can't help here because there's no active marker — it's a repo state problem.
+**Build: MISMATCH** at session start → STOP regardless of mode. Don't pull more work. Investigate (`dc.sh verify --all`, recent commits) before any function work. The hook can't help here because there's no active marker — it's a repo state problem.
 
 ## Project Overview
 

@@ -124,6 +124,16 @@ case "$CMD" in
 4. Don't ask the user for direction. Don't run `dc.sh release`
    yourself. Build new tools without asking.
 
+--- Modes ---
+
+  Solo (default):       work one function end-to-end yourself.
+  Autonomous (user opt-in: "run through queue", "work for N hours",
+              "do the next 10 without stopping"):
+                        spawn ONE fresh subagent per function via the
+                        Agent tool. Subagent context discards on
+                        return; main context stays lean over hours.
+                        See feedback_workflow_rules.md "Autonomous mode".
+
 --- Quick command reference ---
 
   dc.sh next [--with-context]    Pull next function (sets active marker)
@@ -134,6 +144,8 @@ case "$CMD" in
   dc.sh verify <func>             Binary diff one function
   dc.sh fix-label-drift           Auto-fix .L<N> drift after match
   dc.sh refresh-queue             Regen WORK_QUEUE.md (post-match)
+  dc.sh subagent-prompt <func>    Generate worker-subagent prompt
+                                  (autonomous mode only)
   dc.sh release                   ESCAPE HATCH (user-only, typed confirm)
 
 --- Where to read ---
@@ -398,6 +410,15 @@ print(f'Replaced {func} in {src}')
         FUNC_NAME="$2"
         [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh apply-recipe <recipe> <func>"; exit 1; }
         python3 tools/recipes.py apply "$RECIPE" "$FUNC_NAME" 2>&1
+        ;;
+
+    subagent-prompt)
+        # Generate the canonical worker-subagent prompt for a function.
+        # Used by autonomous-mode loops where the main agent spawns a
+        # fresh subagent per function (keeps main context lean).
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh subagent-prompt <func>"; exit 1; }
+        python3 tools/gen_subagent_prompt.py "$FUNC_NAME" 2>&1
         ;;
 
     next)
