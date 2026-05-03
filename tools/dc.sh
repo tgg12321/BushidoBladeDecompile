@@ -28,6 +28,9 @@
 #   bash tools/dc.sh gen-regfix <func_name> [src] — auto-generate regfix rules from diff
 #   bash tools/dc.sh verify <func_name>           — binary-level verify function against original
 #   bash tools/dc.sh verify --all                  — verify all C functions
+#   bash tools/dc.sh subagent-prompt <func>       — generate worker-subagent prompt (autonomous mode)
+#   bash tools/dc.sh run-log <event> [args...]    — log an autonomous-run event (run-start, func-*, run-end)
+#   bash tools/dc.sh run-summary [--all|--json]   — summarize autonomous run(s)
 #
 set -eo pipefail
 
@@ -146,6 +149,8 @@ case "$CMD" in
   dc.sh refresh-queue             Regen WORK_QUEUE.md (post-match)
   dc.sh subagent-prompt <func>    Generate worker-subagent prompt
                                   (autonomous mode only)
+  dc.sh run-log <event> ...       Log autonomous-run event (autonomous mode)
+  dc.sh run-summary [--all|--json] Stats from last autonomous run
   dc.sh release                   ESCAPE HATCH (user-only, typed confirm)
 
 --- Where to read ---
@@ -419,6 +424,23 @@ print(f'Replaced {func} in {src}')
         FUNC_NAME="$1"
         [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh subagent-prompt <func>"; exit 1; }
         python3 tools/gen_subagent_prompt.py "$FUNC_NAME" 2>&1
+        ;;
+
+    run-log)
+        # Append an event to the autonomous run log. Subcommands:
+        #   run-start --budget N [--note ...]
+        #   func-start <func>
+        #   func-end <func> MATCHED|STUCK [--duration N --commit SHA
+        #     --retro SHA --recipe "..." --retro-summary "..."
+        #     --stuck-reason "..." --note "..."]
+        #   run-end [--note ...]
+        python3 tools/autonomous_run_log.py "$@" 2>&1
+        ;;
+
+    run-summary)
+        # Print stats for the last autonomous run (or --all for the
+        # full log, or --json for machine-readable).
+        python3 tools/autonomous_run_summary.py "$@" 2>&1
         ;;
 
     next)
