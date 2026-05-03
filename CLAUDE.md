@@ -2,6 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## START HERE — first action of every session
+
+```
+wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash tools/dc.sh start'
+```
+
+This prints current state (build status, active function marker, queue freshness, top of queue) and the rules summary. A SessionStart hook auto-runs it; if you don't see the briefing in your session context, run it manually as your first command.
+
+**The two things that determine what you do next:**
+
+1. **`Active: <funcname>`** in the briefing → resume that function. The hook is enforcing — `dc.sh next` and `git commit` are blocked until you match. Don't try to revert src/ files (also blocked); edit forward instead. Read `dc.sh diff <funcname>` and `dc.sh verify <funcname>` to see where you are.
+
+2. **`Active: NONE`** → pull from queue: `bash tools/dc.sh next --with-context`. This sets the active marker, gives you the function, and runs `agent-brief` to dump full context.
+
+If the build is `MISMATCH` at session start — STOP. Don't pull more work. Investigate (`dc.sh verify --all`, recent commits) and resolve before any function work. The hook can't help here because there's no active marker — it's a repo state problem.
+
 ## Project Overview
 
 This is a matching decompilation project for **Bushido Blade 2** (SLUS-00663), a PlayStation 1 fighting game published by SquareSoft (1998, North America). The goal is to produce C source code that compiles to a byte-identical copy of the original executable.
