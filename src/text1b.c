@@ -27351,77 +27351,40 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80060B70\n"
-    "    .word 0x8F83039C\n"
-    "    addiu  $sp,$sp,-24\n"
-    "    sw  $ra,16($sp)\n"
-    "    lw  $v0,4($v1)\n"
-    "    .word 0x8F8403A0\n"
-    "    lhu  $v0,0($v0)\n"
-    "    nop\n"
-    "    sh  $v0,0($a0)\n"
-    "    lw  $v0,4($v1)\n"
-    "    nop\n"
-    "    lhu  $v0,2($v0)\n"
-    "    nop\n"
-    "    sh  $v0,2($a0)\n"
-    "    lw  $v0,4($v1)\n"
-    "    nop\n"
-    "    lhu  $v0,4($v0)\n"
-    "    nop\n"
-    "    sh  $v0,4($a0)\n"
-    "    lw  $v0,8($v1)\n"
-    "    .word 0x8F8503A4\n"
-    "    lw  $v0,0($v0)\n"
-    "    nop\n"
-    "    sw  $v0,0($a1)\n"
-    "    lw  $v0,8($v1)\n"
-    "    nop\n"
-    "    lw  $v0,4($v0)\n"
-    "    nop\n"
-    "    sw  $v0,4($a1)\n"
-    "    lw  $v0,8($v1)\n"
-    "    .word 0x8F8603A8\n"
-    "    lw  $v0,8($v0)\n"
-    "    jal  func_80061FAC\n"
-    "    sw  $v0,8($a1)\n"
-    "    .word 0x8F82039C\n"
-    "    nop\n"
-    "    lhu  $v0,0($v0)\n"
-    "    nop\n"
-    "    sll  $v1,$v0,2\n"
-    "    lui  $at,%hi(D_8009BA60)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lbu  $v0,%lo(D_8009BA60)($at)\n"
-    "    lui  $at,%hi(D_800F10D0)\n"
-    "    addu  $at,$at,$v1\n"
-    "    lw  $v1,%lo(D_800F10D0)($at)\n"
-    "    nop\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,2\n"
-    "    lui  $at,%hi(chractar_use_pset_combo_id_table)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lw  $v0,%lo(chractar_use_pset_combo_id_table)($at)\n"
-    "    nop\n"
-    "    jalr  $v0\n"
-    "    nop\n"
-    "    .word 0x8F83039C\n"
-    "    nop\n"
-    "    lw  $v1,20($v1)\n"
-    "    lw  $ra,16($sp)\n"
-    "    sb  $v0,0($v1)\n"
-    "    jr  $ra\n"
-    "    addiu  $sp,$sp,24\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80060B70(void) {
+    extern s32 D_800A3468;
+    extern s32 D_800A346C;
+    extern s32 D_800A3470;
+    extern s32 D_800A3474;
+    extern u8 D_8009BA60;
+    extern s32 D_800F10D0;
+    extern s32 chractar_use_pset_combo_id_table;
+    extern void func_80061FAC(s32, s32, s32);
+    s32 outer;
+    s32 dst_u16;
+    s32 dst_s32;
+    u16 idx;
+    s32 result;
+
+    outer = D_800A3468;
+    dst_u16 = (s32)D_800A346C;
+    *(u16 *)(dst_u16 + 0) = *(u16 *)(*(s32 *)(outer + 4) + 0);
+    *(u16 *)(dst_u16 + 2) = *(u16 *)(*(s32 *)(outer + 4) + 2);
+    *(u16 *)(dst_u16 + 4) = *(u16 *)(*(s32 *)(outer + 4) + 4);
+
+    dst_s32 = (s32)D_800A3470;
+    *(s32 *)(dst_s32 + 0) = *(s32 *)(*(s32 *)(outer + 8) + 0);
+    *(s32 *)(dst_s32 + 4) = *(s32 *)(*(s32 *)(outer + 8) + 4);
+    *(s32 *)(dst_s32 + 8) = *(s32 *)(*(s32 *)(outer + 8) + 8);
+
+    func_80061FAC(dst_u16, dst_s32, D_800A3474);
+
+    idx = *(u16 *)D_800A3468;
+    result = ((s32 (*)(void)) *(s32 *)((s32)&chractar_use_pset_combo_id_table
+              + (*(u8 *)((s32)&D_8009BA60 + idx) + *(s32 *)((s32)&D_800F10D0 + idx * 4)) * 4))();
+
+    *(s8 *)*(s32 *)((s32)D_800A3468 + 0x14) = result;
+}
 extern s32 D_800F10D0[];
 extern u8 D_800F1150[];
 extern s16 D_800A345E;

@@ -3810,7 +3810,7 @@ func_800644FC: delete @ 32
 func_800644FC: reorder 17,12,11,13,14,15,16 @ 11-17
 func_800644FC: reorder 25,23,24 @ 23-25
 func_800644FC: reorder 30,29 @ 29-30
-func_800644FC: subst "\.L\d+" ".L352-4" @ 22
+func_800644FC: subst "\.L\d+" ".L353-4" @ 22
 
 # func_8007B6C8: layout fix beq->bne
 func_8007B6C8: subst "beq\s+\$2,\$0,\.L15" "bne	$2,$0,.LbodyB6C8" @ 17
@@ -3849,3 +3849,9 @@ func_8006288C: $5 <-> $7
 func_8006288C: $5 <-> $9
 func_8006288C: $5 <-> $6
 func_8006288C: reorder 4,1,2,3 @ 1-4
+# func_80060B70: schedule 3rd s32 store into jal delay slot,
+# remove 2 redundant nops, reorder lw $6/lw $2 to match target.
+func_80060B70: fill_delay @ 34 <- 32
+func_80060B70: delete @ 29
+func_80060B70: delete @ 31
+func_80060B70: reorder 30,29 @ 29-30
