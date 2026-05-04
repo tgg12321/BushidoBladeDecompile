@@ -30714,99 +30714,51 @@ void func_800644FC(s32 *arg0, s32 arg1, s32 arg2)
         } while (i < (*arg0));
     }
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800645B0\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    addiu  $v0,$zero,1\n"
-    "    sw  $s3,28($sp)\n"
-    "    addu  $s3,$zero,$zero\n"
-    "    sw  $ra,32($sp)\n"
-    "    sw  $s2,24($sp)\n"
-    "    sw  $s1,20($sp)\n"
-    "    sw  $s0,16($sp)\n"
-    "    lui  $at,%hi(D_800F10EC)\n"
-    "    sw  $v0,%lo(D_800F10EC)($at)\n"
-    ".L800645D8:\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    addu  $s0,$s3,$a0\n"
-    ".L800645E0:\n"
-    "    addiu  $v1,$zero,1\n"
-    "    .word 0x8F820378\n"
-    "    sllv  $s2,$v1,$s0\n"
-    "    and  $v0,$v0,$s2\n"
-    "    bnez  $v0,.L800646AC\n"
-    "    addiu  $a0,$a0,1\n"
-    "    jal  func_80079154\n"
-    "    sll  $s1,$s0,1\n"
-    "    addu  $s0,$s1,$s0\n"
-    "    .word 0x8F8303B0\n"
-    "    sll  $s0,$s0,2\n"
-    "    lw  $v1,0($v1)\n"
-    "    andi  $v0,$v0,255\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    addiu  $v1,$v1,-127\n"
-    "    lui  $at,%hi(D_800F0D78)\n"
-    "    addu  $at,$at,$s0\n"
-    "    sw  $v1,%lo(D_800F0D78)($at)\n"
-    "    jal  func_80079154\n"
-    "    addiu  $s3,$s3,4\n"
-    "    .word 0x8F8303B0\n"
-    "    nop\n"
-    "    lw  $v1,4($v1)\n"
-    "    andi  $v0,$v0,255\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    addiu  $v1,$v1,-127\n"
-    "    lui  $at,%hi(D_800F0D7C)\n"
-    "    addu  $at,$at,$s0\n"
-    "    sw  $v1,%lo(D_800F0D7C)($at)\n"
-    "    jal  func_80079154\n"
-    "    nop\n"
-    "    .word 0x8F8303B0\n"
-    "    nop\n"
-    "    lw  $v1,8($v1)\n"
-    "    andi  $v0,$v0,255\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    addiu  $v1,$v1,-127\n"
-    "    lui  $at,%hi(videoDec)\n"
-    "    addu  $at,$at,$s0\n"
-    "    sw  $v1,%lo(videoDec)($at)\n"
-    "    jal  func_80079154\n"
-    "    nop\n"
-    "    .word 0x8F830378\n"
-    "    andi  $v0,$v0,7\n"
-    "    lui  $at,%hi(D_800F0BCC)\n"
-    "    addu  $at,$at,$s1\n"
-    "    sh  $v0,%lo(D_800F0BCC)($at)\n"
-    "    or  $v1,$v1,$s2\n"
-    "    .word 0xAF830378\n"
-    "    j  .L800646C0\n"
-    "    slti  $v0,$s3,15\n"
-    ".L800646AC:\n"
-    "    slti  $v0,$a0,4\n"
-    "    bnez  $v0,.L800645E0\n"
-    "    addu  $s0,$s3,$a0\n"
-    "    addiu  $s3,$s3,4\n"
-    "    slti  $v0,$s3,15\n"
-    ".L800646C0:\n"
-    "    bnez  $v0,.L800645D8\n"
-    "    addiu  $v0,$zero,1\n"
-    "    lw  $ra,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_80079154(void);
+extern void *D_800A347C;
+s32 func_800645B0(void) {
+    register s32 s3 asm("$19");
+    s32 mask;
+    s32 a0;
+    s32 s0;
+    s32 idx2;
+    s32 cont;
+    s3 = 0;
+    D_800F10EC = 1;
+    do {
+        a0 = 0;
+loop_inner:
+        s0 = s3 + a0;
+        {
+            register s32 one asm("$3") = 1;
+            mask = one << s0;
+        }
+        a0 += 1;
+        if (!(D_800A3444 & mask)) {
+            idx2 = s0 << 1;
+            *((s32 *)(((s32)(&D_800F0D78)) + ((idx2 + s0) << 2))) = (((s32 *)D_800A347C)[0] + (func_80079154() & 0xFF)) - 0x7F;
+            s3 += 4;
+            *((s32 *)(((s32)(&D_800F0D7C)) + ((idx2 + s0) << 2))) = (((s32 *)D_800A347C)[1] + (func_80079154() & 0xFF)) - 0x7F;
+            *((s32 *)(((s32)(&videoDec)) + ((idx2 + s0) << 2))) = (((s32 *)D_800A347C)[2] + (func_80079154() & 0xFF)) - 0x7F;
+            {
+                s32 last = func_80079154();
+                s32 bits = D_800A3444;
+                *((s16 *)(((s32)(&D_800F0BCC)) + idx2)) = last & 7;
+                D_800A3444 = bits | mask;
+            }
+            do { } while (0);
+            cont = s3 < 0xF;
+        } else {
+            if (a0 >= 4) {
+                s3 += 4;
+                cont = s3 < 0xF;
+            } else {
+                goto loop_inner;
+            }
+        }
+    } while (cont != 0);
+    return 1;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
