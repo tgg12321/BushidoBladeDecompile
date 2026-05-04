@@ -3991,3 +3991,24 @@ func_8007DC9C: insert_after "lw	$5, 0($2)" @ 31
 func_8007DC9C: subst "lw\s+\$4,0\(\$3\)" "lw	$2,0($3)" @ 20
 # Reorder idx 18-21 to match target: la,lw 0(v1),lw a1 BF78,lw v0 BF4C
 func_8007DC9C: reorder 21,20,19,18 @ 18-21
+# Pre-swap regs: $16=arg0, $17=var_s0, $18=zero
+# Target regs:   $16=var_s0, $17=arg0, $18=zero
+# Single swap: 16 <-> 17 (swaps arg0 and var_s0 positions)
+func_80078654: $16 <-> $17
+
+# Fix save offsets after register swap
+# Pre-swap saves at $16:72(arg0), $17:76(var_s0), $18:80(zero) - standard
+# Post-swap: $17(arg0)@72, $16(var_s0)@76, $18(zero)@80
+# Target: $16(var_s0)@72, $17(arg0)@76, $18(zero)@80
+# Need to swap offsets 72<->76 between $16 and $17
+func_80078654: subst "sw\s+\$17,72" "sw	$17,76" @ 1
+func_80078654: subst "sw\s+\$16,76" "sw	$16,72" @ 9
+# Fix epilog loads
+func_80078654: subst "lw\s+\$16,76" "lw	$16,72" @ 108
+func_80078654: subst "lw\s+\$17,72" "lw	$17,76" @ 109
+# Fix divide block: subu dest, insert addu, sll source
+func_80078654: subst "subu\s+\$3,\$2,\$3" "subu	$2,$2,$3" @ 37
+func_80078654: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 38
+func_80078654: insert_after "addu	$3,$2,$zero" @ 37
+# Reorder epilog loads: mine has s0,s1 but target has s1,s0 (post-insert indices)
+func_80078654: reorder 110,109 @ 109-110
