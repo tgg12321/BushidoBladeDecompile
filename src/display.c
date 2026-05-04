@@ -2283,111 +2283,43 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007D9C4\n"
-    "    addiu      $sp, $sp, -0x18\n"
-    "    sw         $s0, 16($sp)\n"
-    "    addu       $s0, $a0, $zero\n"
-    "    sw         $ra, 20($sp)\n"
-    "    jal        motion_make_table\n"
-    "    addu      $a0, $zero, $zero\n"
-    "    lui        $at, %hi(D_8009BF7C)\n"
-    "    sw         $zero, %lo(D_8009BF7C)($at)\n"
-    "    lui        $v1, %hi(D_8009BF7C)\n"
-    "    lw         $v1, %lo(D_8009BF7C)($v1)\n"
-    "    lui        $at, %hi(D_8009BF88)\n"
-    "    sw         $v0, %lo(D_8009BF88)($at)\n"
-    "    addiu      $v0, $zero, 0x1\n"
-    "    lui        $at, %hi(D_8009BF78)\n"
-    "    sw         $v1, %lo(D_8009BF78)($at)\n"
-    "    andi       $v1, $s0, 0x7\n"
-    "    beq        $v1, $v0, .Lfunc_8007D9C4_8007DA9C\n"
-    "    slti      $v0, $v1, 0x2\n"
-    "    beqz       $v0, .Lfunc_8007D9C4_8007DA24\n"
-    "    nop\n"
-    "    beqz       $v1, .Lfunc_8007D9C4_8007DA38\n"
-    "    nop\n"
-    "    j          .Lfunc_8007D9C4_8007DAE8\n"
-    "    nop\n"
-    ".Lfunc_8007D9C4_8007DA24:\n"
-    "    addiu      $v0, $zero, 0x3\n"
-    "    beq        $v1, $v0, .Lfunc_8007D9C4_8007DA9C\n"
-    "    addiu     $v0, $zero, 0x5\n"
-    "    bne        $v1, $v0, .Lfunc_8007D9C4_8007DAE8\n"
-    "    nop\n"
-    ".Lfunc_8007D9C4_8007DA38:\n"
-    "    lui        $v1, %hi(g_gpu_dma_chcr)\n"
-    "    lw         $v1, %lo(g_gpu_dma_chcr)($v1)\n"
-    "    addiu      $v0, $zero, 0x401\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v1, %hi(D_8009BF64)\n"
-    "    lw         $v1, %lo(D_8009BF64)($v1)\n"
-    "    lui        $a0, %hi(g_gpu_color_table)\n"
-    "    addiu      $a0, $a0, %lo(g_gpu_color_table)\n"
-    "    lw         $v0, 0($v1)\n"
-    "    addu       $a1, $zero, $zero\n"
-    "    ori        $v0, $v0, 0x800\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v0, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v0, %lo(g_gpu_stat_reg)($v0)\n"
-    "    addiu      $a2, $zero, 0x100\n"
-    "    sw         $zero, 0($v0)\n"
-    "    jal        bb2_memset\n"
-    "    nop\n"
-    "    lui        $a0, %hi(D_80103680)\n"
-    "    addiu      $a0, $a0, %lo(D_80103680)\n"
-    "    addu       $a1, $zero, $zero\n"
-    "    jal        bb2_memset\n"
-    "    addiu     $a2, $zero, 0x1800\n"
-    "    j          .Lfunc_8007D9C4_8007DAE8\n"
-    "    nop\n"
-    ".Lfunc_8007D9C4_8007DA9C:\n"
-    "    lui        $v1, %hi(g_gpu_dma_chcr)\n"
-    "    lw         $v1, %lo(g_gpu_dma_chcr)($v1)\n"
-    "    addiu      $v0, $zero, 0x401\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v1, %hi(D_8009BF64)\n"
-    "    lw         $v1, %lo(D_8009BF64)($v1)\n"
-    "    nop\n"
-    "    lw         $v0, 0($v1)\n"
-    "    nop\n"
-    "    ori        $v0, $v0, 0x800\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v1, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v1, %lo(g_gpu_stat_reg)($v1)\n"
-    "    lui        $v0, (0x2000000 >> 16)\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v1, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v1, %lo(g_gpu_stat_reg)($v1)\n"
-    "    lui        $v0, (0x1000000 >> 16)\n"
-    "    sw         $v0, 0($v1)\n"
-    ".Lfunc_8007D9C4_8007DAE8:\n"
-    "    lui        $a0, %hi(D_8009BF88)\n"
-    "    lw         $a0, %lo(D_8009BF88)($a0)\n"
-    "    jal        motion_make_table\n"
-    "    nop\n"
-    "    andi       $v0, $s0, 0x7\n"
-    "    bnez       $v0, .Lfunc_8007D9C4_8007DB0C\n"
-    "    addu      $v0, $zero, $zero\n"
-    "    jal        func_8007DE08\n"
-    "    addu      $a0, $s0, $zero\n"
-    ".Lfunc_8007D9C4_8007DB0C:\n"
-    "    lw         $ra, 20($sp)\n"
-    "    lw         $s0, 16($sp)\n"
-    "    addiu      $sp, $sp, 0x18\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+extern void bb2_memset(u8 *a0, u8 a1, s32 a2);
+extern s32 motion_make_table(s32);
+extern s32 func_8007DE08(s32);
+extern volatile s32 *D_8009BF48;
+extern s32 *D_8009BF54;
+extern volatile s32 D_8009BF7C;
 extern s32 D_8009BF78;
-extern s32 D_8009BF7C;
+extern s32 D_8009BF88;
+extern u8 D_800F189C[];
+extern u8 D_80103680[];
+s32 func_8007D9C4(s32 arg0) {
+    D_8009BF88 = motion_make_table(0);
+    D_8009BF7C = 0;
+    D_8009BF78 = D_8009BF7C;
+    switch (arg0 & 7) {
+    case 5:
+    case 0:
+        *D_8009BF54 = 0x401;
+        *D_8009BF64 |= 0x800;
+        *D_8009BF48 = 0;
+        bb2_memset(D_800F189C, 0, 0x100);
+        bb2_memset(D_80103680, 0, 0x1800);
+        break;
+    case 1:
+    case 3:
+        *D_8009BF54 = 0x401;
+        *D_8009BF64 |= 0x800;
+        *D_8009BF48 = 0x02000000;
+        *D_8009BF48 = 0x01000000;
+        break;
+    }
+    motion_make_table(D_8009BF88);
+    if (arg0 & 7) {
+        return 0;
+    }
+    return func_8007DE08(arg0);
+}
 extern s32 func_8007D6D8();
 s32 func_8007DB20(s32 arg0) {
     s32 temp_s0;
