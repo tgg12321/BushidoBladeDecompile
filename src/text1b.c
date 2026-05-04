@@ -12448,97 +12448,38 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8005344C\n"
-    "    addiu  $sp,$sp,-32\n"
-    "    lw  $v0,48($sp)\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a2,$zero\n"
-    "    sw  $s1,20($sp)\n"
-    "    addu  $s1,$a3,$zero\n"
-    "    sw  $ra,24($sp)\n"
-    "    .word 0xAF820328\n"
-    "    lw  $v1,0($a0)\n"
-    "    lw  $a2,4($a0)\n"
-    "    lw  $a3,8($a0)\n"
-    "    lw  $t0,12($a0)\n"
-    "    sw  $v1,8($v0)\n"
-    "    sw  $a2,12($v0)\n"
-    "    sw  $a3,16($v0)\n"
-    "    sw  $t0,20($v0)\n"
-    "    .word 0x8F820328\n"
-    "    lw  $v1,0($a1)\n"
-    "    lw  $a0,4($a1)\n"
-    "    lw  $a2,8($a1)\n"
-    "    lw  $a3,12($a1)\n"
-    "    sw  $v1,24($v0)\n"
-    "    sw  $a0,28($v0)\n"
-    "    sw  $a2,32($v0)\n"
-    "    sw  $a3,36($v0)\n"
-    "    .word 0x8F820328\n"
-    "    nop\n"
-    "    lw  $v1,24($v0)\n"
-    "    lw  $a0,8($v0)\n"
-    "    lw  $a3,28($v0)\n"
-    "    lw  $a1,12($v0)\n"
-    "    lw  $a2,16($v0)\n"
-    "    subu  $a0,$v1,$a0\n"
-    "    lw  $v1,32($v0)\n"
-    "    subu  $a1,$a3,$a1\n"
-    "    jal  func_80052754\n"
-    "    subu  $a2,$v1,$a2\n"
-    "    ori  $v1,$zero,39999\n"
-    "    slt  $v1,$v1,$v0\n"
-    "    bnez  $v1,.L80053550\n"
-    "    nop\n"
-    "    .word 0x8F840328\n"
-    "    nop\n"
-    "    lw  $v1,24($a0)\n"
-    "    lw  $a2,8($a0)\n"
-    "    lw  $a1,28($a0)\n"
-    "    lw  $a3,12($a0)\n"
-    "    lui  $v0,%hi(func_80053754)\n"
-    "    addiu  $v0,$v0,%lo(func_80053754)\n"
-    "    sw  $v0,92($a0)\n"
-    "    lw  $v0,32($a0)\n"
-    "    subu  $v1,$v1,$a2\n"
-    "    sll  $v1,$v1,1\n"
-    "    subu  $a2,$a2,$v1\n"
-    "    subu  $a1,$a1,$a3\n"
-    "    sll  $a1,$a1,1\n"
-    "    lw  $v1,16($a0)\n"
-    "    subu  $a3,$a3,$a1\n"
-    "    sw  $a2,8($a0)\n"
-    "    sw  $a3,12($a0)\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,1\n"
-    "    subu  $v1,$v1,$v0\n"
-    "    j  .L80053560\n"
-    "    sw  $v1,16($a0)\n"
-    ".L80053550:\n"
-    "    .word 0x8F830328\n"
-    "    lui  $v0,%hi(func_80053E9C)\n"
-    "    addiu  $v0,$v0,%lo(func_80053E9C)\n"
-    "    sw  $v0,92($v1)\n"
-    ".L80053560:\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80052D00\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    lw  $ra,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,32\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_80052754(s32, s32, s32, s32);
+extern s32 func_80052D00(s32, s32);
+extern void func_80053754();
+extern void func_80053E9C();
+extern u8 *D_800A33F4;
+typedef struct { s32 a, b, c, d; } _S16_5344C;
+void func_8005344C(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
+    s32 vx, vy, vz;
+    s32 bx, by, bz;
+    D_800A33F4 = (u8 *)arg4;
+    *(_S16_5344C *)((u8 *)D_800A33F4 + 8) = *(_S16_5344C *)arg0;
+    *(_S16_5344C *)((u8 *)D_800A33F4 + 0x18) = *(_S16_5344C *)arg1;
+    if (func_80052754(
+            *(s32 *)((u8 *)D_800A33F4 + 0x18) - *(s32 *)((u8 *)D_800A33F4 + 0x8),
+            *(s32 *)((u8 *)D_800A33F4 + 0x1C) - *(s32 *)((u8 *)D_800A33F4 + 0xC),
+            *(s32 *)((u8 *)D_800A33F4 + 0x20) - *(s32 *)((u8 *)D_800A33F4 + 0x10),
+            *(s32 *)((u8 *)D_800A33F4 + 0x1C)) <= 0x9C3F) {
+        bx = *(s32 *)((u8 *)D_800A33F4 + 0x18);
+        vx = *(s32 *)((u8 *)D_800A33F4 + 0x8);
+        by = *(s32 *)((u8 *)D_800A33F4 + 0x1C);
+        vy = *(s32 *)((u8 *)D_800A33F4 + 0xC);
+        vz = *(s32 *)((u8 *)D_800A33F4 + 0x10);
+        *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053754;
+        bz = *(s32 *)((u8 *)D_800A33F4 + 0x20);
+        *(s32 *)((u8 *)D_800A33F4 + 0x8) = vx - ((bx - vx) << 1);
+        *(s32 *)((u8 *)D_800A33F4 + 0xC) = vy - ((by - vy) << 1);
+        do { *(s32 *)((u8 *)D_800A33F4 + 0x10) = vz - ((bz - vz) << 1); } while (0);
+    } else {
+        *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053E9C;
+    }
+    func_80052D00(arg2, arg3);
+}
 extern s32 func_80052D00();
 extern void func_80053E9C();
 extern u8 D_800EFA00;
