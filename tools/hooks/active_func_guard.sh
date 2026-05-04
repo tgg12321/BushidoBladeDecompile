@@ -14,7 +14,35 @@
 
 set -e
 
-PROJECT_ROOT="/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile"
+# Resolve project root: prefer the cwd's git toplevel (correct for both
+# main-session and worktree subagent contexts since each session has its
+# own cwd). Fall back to $CLAUDE_PROJECT_DIR, then to the script's own
+# location's grandparent (script lives at <root>/tools/hooks/...).
+#
+# Why not hardcode: subagents spawned with isolation="worktree" run from
+# their own worktree path. A hardcoded main path makes the hook check the
+# main repo's .bb2_active_func and verify against main's build, while the
+# subagent is editing a different working tree entirely.
+PROJECT_ROOT=""
+if ROOT_FROM_CWD=$(git rev-parse --show-toplevel 2>/dev/null) && [ -d "$ROOT_FROM_CWD" ]; then
+    PROJECT_ROOT="$ROOT_FROM_CWD"
+elif [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -d "$CLAUDE_PROJECT_DIR" ]; then
+    PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
+else
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+    PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+fi
+
+# Normalize Windows-style paths (C:/foo or C:\foo) to bash form (/c/foo).
+case "$PROJECT_ROOT" in
+    [A-Za-z]:[/\\]*)
+        DRIVE=$(echo "$PROJECT_ROOT" | cut -c1 | tr '[:upper:]' '[:lower:]')
+        REST="${PROJECT_ROOT#?:}"
+        REST="${REST//\\//}"
+        PROJECT_ROOT="/$DRIVE$REST"
+        ;;
+esac
+
 ACTIVE_FILE="$PROJECT_ROOT/.bb2_active_func"
 
 # Fast path: no active function -> allow everything (the common case)
@@ -36,13 +64,20 @@ if [ -z "$COMMAND" ]; then
     exit 0
 fi
 
+# Convert PROJECT_ROOT to a WSL-mountable path: /c/foo -> /mnt/c/foo.
+# Already-WSL or non-Windows paths pass through unchanged.
+case "$PROJECT_ROOT" in
+    /[a-zA-Z]/*) WSL_ROOT="/mnt$PROJECT_ROOT" ;;
+    *)           WSL_ROOT="$PROJECT_ROOT" ;;
+esac
+
 # Helper: run dc.sh verify <ACTIVE> via WSL, return 0 if MATCH.
 # regfix_verify.py prints e.g. "func_X: MATCH (0 diffs in N bytes)" on
 # success, or "func_X: M instruction(s) differ" on diff. We grep for
 # "MATCH" — only the success case has that token in the first line.
 verify_active_matches() {
     local out
-    out=$(wsl bash -c "cd /mnt/c/Users/Trenton/Desktop/'Bushido Blade 2 Decompile' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null | head -1)
+    out=$(wsl bash -c "cd '$WSL_ROOT' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null | head -1)
     case "$out" in
         *": MATCH "*) return 0 ;;
         *) return 1 ;;
@@ -64,8 +99,10 @@ BLOCKED: $ACTIVE is the active function (set by 'dc.sh next') but it
 does not match in the current build. Per THE HARD RULE in
 feedback_workflow_rules.md, you finish the function before committing.
 
+Repo:  $PROJECT_ROOT
+
 To diagnose:
-  wsl bash -c "cd /mnt/c/Users/Trenton/Desktop/'Bushido Blade 2 Decompile' && bash tools/dc.sh verify $ACTIVE"
+  wsl bash -c "cd '$WSL_ROOT' && bash tools/dc.sh verify $ACTIVE"
 
 To proceed: get the function to match (work the toolbox until score=0
 and verify reports MATCH), then re-attempt the commit. The hook will
