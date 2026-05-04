@@ -3610,7 +3610,7 @@ func_80053694: subst "addiu\s+\$7,\$zero,1" "addiu	$2,$zero,1" @ 44
 func_80053694: subst "sh\s+\$2," "sh	$3," @ 45
 func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
 func_8005BD30: delete @ 17
-func_8005BD30: subst "\.L\d+" ".L279-4" @ 16
+func_8005BD30: subst "\.L\d+" ".L303-4" @ 16
 func_8007CA00: subst "j\s+\.L\d+" "subu	$2,$2,$3" @ 14
 func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.LCA00_RET" @ 15
 func_8007CA00: insert_after "subu	$2,$2,$4" @ 15
@@ -3796,7 +3796,7 @@ func_8005C4C0: insert_after "sll	$2,$2,16" @ 46
 func_8005C4C0: reorder 13,12,14 @ 12-14
 func_8005C4C0: delete @ 46
 func_8005C4C0: insert "sra	$2,$2,16" @ 47
-func_8005C4C0: subst "\.L\d+" ".L295+4" @ 40
+func_8005C4C0: subst "\.L\d+" ".L319+4" @ 40
 func_80048530: subst "addu\s+\$8,\$4,\$zero" "addu $v1,$a0,$zero" @ 1
 func_80048530: subst "addu\s+\$5,\$5,\$8" "addu $a1,$a1,$v1" @ 3
 func_80048530: insert_after "addu $t0,$v1,$zero" @ 3
@@ -4087,3 +4087,17 @@ func_80074220: insert_label ".Lloop4220:" @ 43
 func_80074220: subst "\.L\d+" ".Lloop4220" @ 54
 func_80074220: reorder 103,102 @ 102-103
 func_80074220: reorder 44,42,43,45,46,47,48,49 @ 42-49
+
+
+# func_80049C24 -- s7/$fp swap + nor reorder + slti + 4 use sites
+func_80049C24: subst "addu\s+\$fp,\$4,\$2" "addu	$23,$4,$2" @ 17
+func_80049C24: subst "slt\s+\$3,\$3,2" "slti	$3,$3,2" @ 19
+func_80049C24: subst "addu\s+\$23,\$4,\$2" "addu	$fp,$4,$2" @ 20
+func_80049C24: subst "addu\s+\$4,\$23,\$zero" "addu	$4,$fp,$zero" @ 72
+func_80049C24: subst "addu\s+\$6,\$fp,\$zero" "addu	$6,$23,$zero" @ 88
+func_80049C24: subst "addu\s+\$4,\$23,\$zero" "addu	$4,$fp,$zero" @ 94
+func_80049C24: subst "addu\s+\$6,\$fp,\$zero" "addu	$6,$23,$zero" @ 110
+# func_80049C24 -- 3-line swap to put nor at .L139 (label stays at idx 60)
+func_80049C24: subst "addu\s+\$3,\$19,\$zero" "nor	$2,$0,$16" @ 60
+func_80049C24: subst "addu\s+\$19,\$19,4" "addu	$3,$19,$zero" @ 61
+func_80049C24: subst "nor\s+\$2,\$0,\$16" "addu	$19,$19,4" @ 62
