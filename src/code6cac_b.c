@@ -122,6 +122,7 @@ extern s32 g_pad_data;
 extern u16 D_80101E02;
 extern u16 D_80101E04;
 extern u8 D_80106A73;
+extern u8 D_80106A78;
 extern s32 *func_80077D00(void);
 extern s32 D_80106A58;
 extern s16 D_80101ED6;
@@ -2503,10 +2504,85 @@ void func_80030524(void) {
         off += 0x64;
     } while (++i < 12);
 }
-s32 *coli_hit_body_weapon(s32 *a0, s32 a1) {
-    (void)a0;
-    (void)a1;
-    return 0;
+s32 *coli_hit_body_weapon(s32 *arg0, s32 arg1) {
+    volatile s32 _spill[3];
+    register u8 *t1 asm("t1") = (u8 *)arg0;
+    register u8 *a3 asm("a3") = (u8 *)&D_80106A78;
+    s32 i = 0;
+    s32 v;
+    u8 *p = a3 + 0xA;
+    u8 *t0;
+    s32 v1;
+    do {
+        if (((*((s16 *)(p - 8))) == (-1)) && ((*p) == 0xFF)) {
+            v = 1;
+            goto found;
+        }
+        i++;
+        p += 0x64;
+        a3 += 0x64;
+    } while (i < 12);
+    v = 1;
+found:
+    *((s8 *)(a3 + 0xA)) = i;
+    *((s16 *)(a3 + 2)) = arg1;
+    *((s8 *)(a3 + 7)) = 0;
+    *((s8 *)(a3 + 8)) = 0;
+    *((s8 *)(a3 + 4)) = v;
+    *((s8 *)(a3 + 6)) = (s8)(*((u16 *)(t1 + 4)));
+    *((s32 *)(a3 + 0x2C)) = *((s32 *)(t1 + 0xF4));
+    v1 = *((s16 *)(t1 + 0x1A));
+    *((s32 *)(a3 + 0x30)) = (*((s32 *)(t1 + 0xF8))) - (v1 / 32);
+    *((s32 *)(a3 + 0x34)) = *((s32 *)(t1 + 0xFC));
+    t0 = ((u8 *)(&D_8008E194)) + (2 * (arg1 * 7));
+    *((s32 *)(a3 + 0x44)) = ((s32)((*((&Judge) + ((*((u16 *)(t1 + 0x1CA))) & 0xFFF))) * (*((s16 *)(t0 + 4))))) >> 12;
+    *((s32 *)(a3 + 0x48)) = *((s16 *)(t0 + 6));
+    {
+        s32 tmp = (s32)((*((&Judge) + (((*((s16 *)(t1 + 0x1CA))) + 0x400) & 0xFFF))) * (*((s16 *)(t0 + 4))));
+        *((volatile s32 *)(a3 + 0x2C)) += *((s32 *)(a3 + 0x44));
+        *((volatile s32 *)(a3 + 0x30)) += *((s32 *)(a3 + 0x48));
+        *((volatile s32 *)(a3 + 0x2C)) += ((s32)(*((s32 *)(a3 + 0x44)))) / 2;
+        t1++;
+        t1--;
+        *((volatile s32 *)(a3 + 0x30)) += ((s32)(*((s32 *)(a3 + 0x48)))) / 2;
+        *((s32 *)(a3 + 0x4C)) = tmp >> 12;
+    }
+    __asm__ volatile("" ::: "memory");
+    *((volatile s32 *)(a3 + 0x34)) += *((s32 *)(a3 + 0x4C));
+    *((volatile s32 *)(a3 + 0x34)) += ((s32)(*((s32 *)(a3 + 0x4C)))) / 2;
+    __asm__ volatile("" ::: "memory");
+    *((s32 *)(a3 + 0x38)) = *((s32 *)(a3 + 0x2C));
+    *((s32 *)(a3 + 0x3C)) = *((s32 *)(a3 + 0x30));
+    *((s32 *)(a3 + 0x40)) = *((s32 *)(a3 + 0x34));
+    __asm__ volatile("" ::: "memory");
+    *((s16 *)(a3 + 0x54)) = 0;
+    *((u16 *)(a3 + 0x56)) = *((u16 *)(t1 + 0x1CA));
+    *((s16 *)(a3 + 0x58)) = 0;
+    {
+        s16 sw = *((s16 *)t0);
+        u16 t0_8;
+        if (sw == 1) {
+            goto label_1_or_3;
+        } else if (sw == 2) {
+            t0_8 = (*((u16 *)(a3 + 0x5C)) = *((u16 *)(t0 + 8)));
+            *((s16 *)(a3 + 0x5E)) = 0;
+            *((s16 *)(a3 + 0x60)) = 0;
+        } else if (sw == 3) {
+        label_1_or_3:
+            *((s16 *)(a3 + 0x5C)) = 0;
+            t0_8 = *((u16 *)(t0 + 8));
+            *((s16 *)(a3 + 0x60)) = 0;
+            *((u16 *)(a3 + 0x5E)) = t0_8;
+        } else {
+            *((s16 *)(a3 + 0x5C)) = 0;
+            *((s16 *)(a3 + 0x5E)) = 0;
+            *((s16 *)(a3 + 0x60)) = 0;
+        }
+    }
+    *((s32 *)(a3 + 0x50)) = 1;
+    *((s8 *)(a3 + 5)) = 0;
+    *((s16 *)a3) = 0;
+    return (s32 *)a3;
 }
 /* kengo:HIGH  |  is_coli/coli_hit_body_weapon  |  148i */
 /* TABLED: -4 bytes, beqz delay slot scheduling (GCC fills with move v1,s2 instead of move a2,v0) */
