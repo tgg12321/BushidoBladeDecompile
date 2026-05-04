@@ -3991,3 +3991,18 @@ func_8007DC9C: insert_after "lw	$5, 0($2)" @ 31
 func_8007DC9C: subst "lw\s+\$4,0\(\$3\)" "lw	$2,0($3)" @ 20
 # Reorder idx 18-21 to match target: la,lw 0(v1),lw a1 BF78,lw v0 BF4C
 func_8007DC9C: reorder 21,20,19,18 @ 18-21
+# func_80075670: register naming fixups
+# First reload (idx 0-12): a3<->v1
+func_80075670: $7 <-> $3 @ 0-12
+# Second reload (idx 27, 29): subst  ->  (target reuses  across these uses)
+func_80075670: subst "\$7" "$3" @ 27
+func_80075670: subst "\$7" "$3" @ 29
+# Third reload + 3-cycle in if-taken (idx 36-61)
+func_80075670: $7 <-> $5 @ 36-61
+func_80075670: $7 <-> $6 @ 36-61
+# Fourth-reload reuse of  (idx 70 dest swap, idx 74 src swap)
+func_80075670: subst "\$3,\$7,\$3" "$7,$7,$3" @ 70
+func_80075670: subst "104\(\$3\)" "104($7)" @ 74
+# Else branch + 3-cycle 2nd loop (idx 75-101): same swap pattern
+func_80075670: $7 <-> $5 @ 75-101
+func_80075670: $7 <-> $6 @ 75-101
