@@ -1223,128 +1223,92 @@ s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2) {
     (void)var_a3;
     return var_v1 + (arg2 - arg1);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80049584\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    sw  $s2,32($sp)\n"
-    "    addu  $s2,$a0,$zero\n"
-    "    sw  $s1,28($sp)\n"
-    "    addiu  $s1,$zero,1\n"
-    "    sw  $s0,24($sp)\n"
-    "    addu  $s0,$zero,$zero\n"
-    "    lui  $a1,%hi(D_80099C50)\n"
-    "    addiu  $a1,$a1,%lo(D_80099C50)\n"
-    "    lui  $a2,%hi(D_800EF980)\n"
-    "    addiu  $a2,$a2,%lo(D_800EF980)\n"
-    "    sw  $ra,36($sp)\n"
-    ".L800495B4:\n"
-    "    lh  $a0,0($a2)\n"
-    "    lh  $v0,0($a1)\n"
-    "    nor  $v1,$zero,$a0\n"
-    "    srl  $v1,$v1,31\n"
-    "    nor  $v0,$zero,$v0\n"
-    "    srl  $v0,$v0,31\n"
-    "    beq  $v1,$v0,.L800495D8\n"
-    "    nop\n"
-    "    addu  $s1,$zero,$zero\n"
-    ".L800495D8:\n"
-    "    sh  $a0,0($a1)\n"
-    "    addiu  $a1,$a1,2\n"
-    "    addiu  $s0,$s0,1\n"
-    "    slti  $v0,$s0,58\n"
-    "    bnez  $v0,.L800495B4\n"
-    "    addiu  $a2,$a2,2\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    addu  $s0,$zero,$zero\n"
-    "    lui  $v1,%hi(D_800EF980)\n"
-    "    addiu  $v1,$v1,%lo(D_800EF980)\n"
-    ".L80049600:\n"
-    "    lh  $v0,0($v1)\n"
-    "    nop\n"
-    "    bltz  $v0,.L80049618\n"
-    "    nop\n"
-    "    sh  $a0,0($v1)\n"
-    "    addiu  $a0,$a0,1\n"
-    ".L80049618:\n"
-    "    addiu  $s0,$s0,1\n"
-    "    slti  $v0,$s0,58\n"
-    "    bnez  $v0,.L80049600\n"
-    "    addiu  $v1,$v1,2\n"
-    "    .word 0x8F830320\n"
-    "    nop\n"
-    "    bnez  $v1,.L8004963C\n"
-    "    addiu  $a0,$zero,8\n"
-    "    addiu  $a0,$zero,16\n"
-    ".L8004963C:\n"
-    "    .word 0x8786031C\n"
-    "    addiu  $v0,$zero,-1\n"
-    "    bne  $a2,$v0,.L80049674\n"
-    "    nop\n"
-    "    .word 0x8785031E\n"
-    "    nop\n"
-    "    bne  $a1,$a2,.L8004966C\n"
-    "    nop\n"
-    "    bnez  $v1,.L800496AC\n"
-    "    addiu  $s0,$zero,36\n"
-    "    j  .L800496AC\n"
-    "    addiu  $s0,$zero,136\n"
-    ".L8004966C:\n"
-    "    j  .L800496A0\n"
-    "    addu  $a2,$a1,$zero\n"
-    ".L80049674:\n"
-    "    .word 0x8783031E\n"
-    "    nop\n"
-    "    beq  $v1,$v0,.L800496A0\n"
-    "    addu  $a1,$a2,$zero\n"
-    "    beq  $a2,$v1,.L800496A0\n"
-    "    slt  $v0,$a2,$v1\n"
-    "    beqz  $v0,.L8004969C\n"
-    "    nop\n"
-    "    j  .L800496A0\n"
-    "    addu  $a2,$v1,$zero\n"
-    ".L8004969C:\n"
-    "    addu  $a1,$v1,$zero\n"
-    ".L800496A0:\n"
-    "    jal  func_8004954C\n"
-    "    nop\n"
-    "    addu  $s0,$v0,$zero\n"
-    ".L800496AC:\n"
-    "    .word 0x8F820180\n"
-    "    nop\n"
-    "    beq  $v0,$s0,.L800496C4\n"
-    "    nop\n"
-    "    .word 0xAF900180\n"
-    "    addu  $s1,$zero,$zero\n"
-    ".L800496C4:\n"
-    "    bnez  $s1,.L800496F4\n"
-    "    nop\n"
-    "    jal  func_80046020\n"
-    "    nop\n"
-    "    .word 0x8F840320\n"
-    "    addu  $a1,$s0,$zero\n"
-    "    lui  $a2,%hi(D_800EF980)\n"
-    "    addiu  $a2,$a2,%lo(D_800EF980)\n"
-    "    jal  func_80045B68\n"
-    "    addu  $a3,$s2,$zero\n"
-    "    jal  func_8003E120\n"
-    "    nop\n"
-    ".L800496F4:\n"
-    "    lw  $ra,36($sp)\n"
-    "    lw  $s2,32($sp)\n"
-    "    lw  $s1,28($sp)\n"
-    "    lw  $s0,24($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s16 D_80099C50[];
+extern s16 D_800EF980[];
+extern s32 D_800A33EC;
+extern s16 D_800A33E8;
+extern s16 D_800A33EA;
+extern s32 D_800A324C;
+extern s32 func_8004954C(s32, s32, s32);
+extern s32 func_80046020();
+extern s32 func_80045B68(s32, s32, s16 *, s32);
+extern s32 func_8003E120();
+void func_80049584(s32 arg0) {
+    register s32 var_s2 asm("$18") = arg0;
+    register s32 var_s1 asm("$17") = 1;
+    register s32 var_s0 asm("$16") = 0;
+    register s16 *var_a1 asm("$5");
+    register s16 *var_a2 asm("$6");
+    s16 temp_a0;
+    s16 *var_v1;
+    s32 var_a0;
+    s32 var_a0_2;
+    s32 var_a2_2;
+    s32 var_a1_2;
+    register s32 var_s0_3 asm("$16");
+    s32 dummy[2];
+    var_a1 = D_80099C50;
+    var_a2 = D_800EF980;
+    do {
+        temp_a0 = *var_a2;
+        if ((((u32) (~temp_a0)) >> 31) != (((u32) (~(*var_a1))) >> 31)) {
+            var_s1 = 0;
+        }
+        var_a0_2 = temp_a0;
+        *var_a1 = var_a0_2;
+        var_a1++;
+        var_s0++;
+        var_a2++;
+    } while (var_s0 < 0x3A);
+    var_a0 = 0;
+    var_s0 = 0;
+    var_v1 = D_800EF980;
+    do {
+        if ((*var_v1) >= 0) {
+            *var_v1 = (s16) var_a0;
+            var_a0++;
+        }
+        var_s0++;
+        var_v1++;
+    } while (var_s0 < 0x3A);
+    var_a0_2 = 8;
+    if (D_800A33EC == 0) {
+        var_a0_2 = 0x10;
+    }
+    var_a2_2 = D_800A33E8;
+    if (var_a2_2 == (-1)) {
+        var_a1_2 = D_800A33EA;
+        if (var_a1_2 == var_a2_2) {
+            var_s0_3 = 0x24;
+            if (D_800A33EC == 0) {
+                var_s0_3 = 0x88;
+            }
+            goto end;
+        }
+        var_a2_2 = var_a1_2;
+    } else {
+        var_a1_2 = var_a2_2;
+        if ((D_800A33EA != (-1)) && (var_a2_2 != D_800A33EA)) {
+            if (var_a2_2 < D_800A33EA) {
+                var_a2_2 = D_800A33EA;
+            } else {
+                var_a1_2 = D_800A33EA;
+            }
+        }
+    }
+    var_s0_3 = func_8004954C(var_a0_2, var_a1_2, var_a2_2);
+end:
+    if (D_800A324C != var_s0_3) {
+        D_800A324C = var_s0_3;
+        var_s1 = 0;
+    }
+    if (var_s1 == 0) {
+        func_80046020();
+        func_80045B68(D_800A33EC, var_s0_3, D_800EF980, var_s2);
+        func_8003E120();
+    }
+    (void) var_s2;
+}
 void func_80049710(void) {
 }
 __asm__(
@@ -21378,7 +21342,7 @@ extern s32 D_800A370C;
 extern s32 D_800A3828;
 extern s32 D_800A38B4;
 extern s32 D_800A38D8;
-extern s16 D_800EF980;
+extern s16 D_800EF980[];
 extern s16 D_800EF9F4;
 extern s32 D_800EFC44;
 extern s32 D_800EFC50;
