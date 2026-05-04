@@ -3991,3 +3991,12 @@ func_8007DC9C: insert_after "lw	$5, 0($2)" @ 31
 func_8007DC9C: subst "lw\s+\$4,0\(\$3\)" "lw	$2,0($3)" @ 20
 # Reorder idx 18-21 to match target: la,lw 0(v1),lw a1 BF78,lw v0 BF4C
 func_8007DC9C: reorder 21,20,19,18 @ 18-21
+func_80073060: $19 <-> $20 @ 27-89
+func_80073060: $23 <-> $fp @ 27-71
+func_80073060: $17 <-> $18 @ 72-89
+func_80073060: $16 <-> $20 @ 72-89
+func_80073060: reorder 30,27,29,31,28 @ 27-31
+func_80073060: reorder 75,73,72,74 @ 72-75
+func_80073060: delete @ 76
+func_80073060: insert_after "addiu	$2,$0,63" @ 81
+func_80073060: subst "sh\s+\$20,14\(\$5\)" "sh	$2,14($5)" @ 85

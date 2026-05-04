@@ -45551,124 +45551,69 @@ s32 *func_80072FCC(s32 ignored, u8 *a1) {
     ot_Link(D_800A374C + 0x5C, (s32)a1);
     return (s32 *)(a1 + 0x10);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80073060\n"
-    "    addiu  $sp,$sp,-56\n"
-    "    sw  $s5,36($sp)\n"
-    "    addu  $s5,$a0,$zero\n"
-    "    sw  $s3,28($sp)\n"
-    "    addiu  $s3,$zero,111\n"
-    "    sw  $s2,24($sp)\n"
-    "    addiu  $s2,$zero,50\n"
-    "    sw  $s1,20($sp)\n"
-    "    addiu  $s1,$zero,2\n"
-    "    sw  $s0,16($sp)\n"
-    "    addiu  $s0,$zero,63\n"
-    "    sw  $ra,52($sp)\n"
-    "    sw  $fp,48($sp)\n"
-    "    sw  $s7,44($sp)\n"
-    "    sw  $s6,40($sp)\n"
-    "    sw  $s4,32($sp)\n"
-    "    lw  $a1,20($s5)\n"
-    ".L800730A4:\n"
-    "    .word 0x878404B4\n"
-    "    sh  $s3,8($a1)\n"
-    "    addiu  $s3,$s3,32\n"
-    "    sh  $s2,10($a1)\n"
-    "    sh  $s1,12($a1)\n"
-    "    jal  func_80072F30\n"
-    "    sh  $s0,14($a1)\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    slti  $v0,$s3,528\n"
-    "    bnez  $v0,.L800730A4\n"
-    "    addiu  $fp,$zero,50\n"
-    "    addu  $s3,$zero,$zero\n"
-    "    addiu  $s7,$zero,5\n"
-    "    addiu  $s6,$zero,63\n"
-    "    addiu  $s4,$zero,106\n"
-    "    addiu  $s1,$zero,81\n"
-    "    addiu  $v0,$zero,65\n"
-    "    addiu  $s0,$zero,480\n"
-    "    .word 0x878404B4\n"
-    "    addiu  $s2,$zero,1\n"
-    "    sh  $s1,8($a1)\n"
-    "    sh  $v0,10($a1)\n"
-    "    sh  $s0,12($a1)\n"
-    "    jal  func_80072F30\n"
-    "    sh  $s2,14($a1)\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    .word 0x878404B4\n"
-    "    addiu  $v0,$zero,97\n"
-    "    sh  $s1,8($a1)\n"
-    "    sh  $v0,10($a1)\n"
-    "    sh  $s0,12($a1)\n"
-    "    jal  func_80072F30\n"
-    "    sh  $s2,14($a1)\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    .word 0x878404B4\n"
-    "    addiu  $v0,$zero,80\n"
-    "    sh  $v0,10($a1)\n"
-    "    addiu  $v0,$zero,2\n"
-    "    sh  $s1,8($a1)\n"
-    "    sh  $s0,12($a1)\n"
-    "    jal  func_80072F30\n"
-    "    sh  $v0,14($a1)\n"
-    "    addu  $a1,$v0,$zero\n"
-    ".L80073150:\n"
-    "    sh  $s4,8($a1)\n"
-    "    addiu  $s4,$s4,33\n"
-    "    subu  $v0,$s7,$s3\n"
-    "    .word 0x878404B4\n"
-    "    addiu  $s3,$s3,1\n"
-    "    sh  $fp,10($a1)\n"
-    "    sh  $v0,12($a1)\n"
-    "    jal  func_80072FCC\n"
-    "    sh  $s6,14($a1)\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    slti  $v0,$s3,5\n"
-    "    bnez  $v0,.L80073150\n"
-    "    addiu  $s1,$zero,5\n"
-    "    addu  $s3,$zero,$zero\n"
-    "    addiu  $s2,$zero,50\n"
-    "    addiu  $s0,$zero,529\n"
-    ".L80073190:\n"
-    "    sh  $s0,8($a1)\n"
-    "    addiu  $s0,$s0,-32\n"
-    "    subu  $v0,$s1,$s3\n"
-    "    .word 0x878404B4\n"
-    "    addiu  $s3,$s3,1\n"
-    "    sh  $v0,12($a1)\n"
-    "    addiu  $v0,$zero,63\n"
-    "    sh  $s2,10($a1)\n"
-    "    jal  func_80072FCC\n"
-    "    sh  $v0,14($a1)\n"
-    "    addu  $a1,$v0,$zero\n"
-    "    slti  $v0,$s3,5\n"
-    "    bnez  $v0,.L80073190\n"
-    "    nop\n"
-    "    sw  $a1,20($s5)\n"
-    "    lw  $ra,52($sp)\n"
-    "    lw  $fp,48($sp)\n"
-    "    lw  $s7,44($sp)\n"
-    "    lw  $s6,40($sp)\n"
-    "    lw  $s5,36($sp)\n"
-    "    lw  $s4,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,56\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80073060(s32 arg0) {
+    GameObj *p;
+    s32 i;
+    s32 j;
+    p = *(GameObj **)((s32)arg0 + 0x14);
+    j = 0x6F;
+    do {
+        if (D_800A3580) {}
+        *(s16 *)((s32)p + 0x8) = j;
+        j += 0x20;
+        *(s16 *)((s32)p + 0xA) = 0x32;
+        *(s16 *)((s32)p + 0xC) = 2;
+        *(s16 *)((s32)p + 0xE) = 0x3F;
+        p = (GameObj *)func_80072F30((s32)D_800A3580, (u8 *)p);
+    } while (j < 0x210);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x8) = 0x51;
+    *(s16 *)((s32)p + 0xA) = 0x41;
+    *(s16 *)((s32)p + 0xC) = 0x1E0;
+    *(s16 *)((s32)p + 0xE) = 1;
+    p = (GameObj *)func_80072F30((s32)D_800A3580, (u8 *)p);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x8) = 0x51;
+    *(s16 *)((s32)p + 0xA) = 0x61;
+    *(s16 *)((s32)p + 0xC) = 0x1E0;
+    *(s16 *)((s32)p + 0xE) = 1;
+    p = (GameObj *)func_80072F30((s32)D_800A3580, (u8 *)p);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0xA) = 0x50;
+    *(s16 *)((s32)p + 0x8) = 0x51;
+    *(s16 *)((s32)p + 0xC) = 0x1E0;
+    *(s16 *)((s32)p + 0xE) = 2;
+    p = (GameObj *)func_80072F30((s32)D_800A3580, (u8 *)p);
+    i = 0;
+    j = 0x6A;
+    do {
+        s32 v;
+        *(s16 *)((s32)p + 0x8) = j;
+        j += 0x21;
+        if (D_800A3580) {}
+        v = 5 - i;
+        i += 1;
+        *(s16 *)((s32)p + 0xA) = 0x32;
+        *(s16 *)((s32)p + 0xC) = v;
+        *(s16 *)((s32)p + 0xE) = 0x3F;
+        p = (GameObj *)func_80072FCC((s32)D_800A3580, (u8 *)p);
+    } while (i < 5);
+    i = 0;
+    j = 0x211;
+    do {
+        s32 v;
+        *(s16 *)((s32)p + 0x8) = j;
+        j -= 0x20;
+        if (D_800A3580) {}
+        v = 5 - i;
+        i += 1;
+        *(s16 *)((s32)p + 0xC) = v;
+        *(s16 *)((s32)p + 0xA) = 0x32;
+        *(s16 *)((s32)p + 0xE) = 0x3F;
+        p = (GameObj *)func_80072FCC((s32)D_800A3580, (u8 *)p);
+    } while (i < 5);
+    *(GameObj **)((s32)arg0 + 0x14) = p;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
