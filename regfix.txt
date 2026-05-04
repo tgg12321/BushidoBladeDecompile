@@ -4057,3 +4057,9 @@ func_80060544: subst "la\s+\$3,D_8009B7D0" "la\t$2,D_8009B7D0" @ 52
 func_80060544: subst "sw\s+\$3,28\(\$sp\)" "sw\t$2,28($sp)" @ 53
 func_80060544: delete @ 77
 func_80060544: subst "sll\s+\$4,\$21,2" "sll\t$4,$23,2" @ 108
+func_80074220: reorder 26,25,29,27,28,30 @ 25-30
+# func_80074220: loop label needs to attach to reordered first instruction
+func_80074220: insert_label ".Lloop4220:" @ 43
+func_80074220: subst "\.L\d+" ".Lloop4220" @ 54
+func_80074220: reorder 103,102 @ 102-103
+func_80074220: reorder 44,42,43,45,46,47,48,49 @ 42-49
