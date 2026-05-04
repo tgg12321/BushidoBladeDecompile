@@ -41152,99 +41152,50 @@ s32 func_8006EA28(s32 *a0) {
     func_8005C2A8(a0[0], 1, a0[1]);
     return a0[1];
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8006EACC\n"
-    "    lui  $v1,%hi(D_800A36AC)\n"
-    "    lw  $v1,%lo(D_800A36AC)($v1)\n"
-    "    nop\n"
-    "    andi  $v1,$v1,1\n"
-    "    sll  $v0,$v1,7\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,3\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,4\n"
-    "    lui  $v1,%hi(g_disp_fb_base)\n"
-    "    addiu  $v1,$v1,%lo(g_disp_fb_base)\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    .word 0x8F8304F0\n"
-    "    addiu  $sp,$sp,-64\n"
-    "    sw  $ra,56($sp)\n"
-    "    .word 0xAF84047C\n"
-    "    .word 0xAF850480\n"
-    "    .word 0xAF8204F4\n"
-    "    addiu  $v0,$zero,2\n"
-    "    bne  $v1,$v0,.L8006EB24\n"
-    "    andi  $v0,$a1,65535\n"
-    "    .word 0xAF820480\n"
-    ".L8006EB24:\n"
-    "    jal  func_8006EC0C\n"
-    "    nop\n"
-    "    .word 0x8F8504F8\n"
-    "    nop\n"
-    "    lw  $v1,12($a1)\n"
-    "    lw  $v0,8($a1)\n"
-    "    addiu  $v1,$v1,1\n"
-    "    andi  $a0,$v1,1\n"
-    "    addiu  $v0,$v0,1\n"
-    "    sw  $v0,8($a1)\n"
-    "    jal  func_8006E8AC\n"
-    "    sw  $v1,12($a1)\n"
-    "    .word 0x8F8304DC\n"
-    "    nop\n"
-    "    sw  $v1,16($sp)\n"
-    "    lw  $v1,0($v0)\n"
-    "    nop\n"
-    "    sw  $v1,20($sp)\n"
-    "    lw  $v1,8($v0)\n"
-    "    nop\n"
-    "    sw  $v1,28($sp)\n"
-    "    lw  $v1,16($v0)\n"
-    "    nop\n"
-    "    sw  $v1,32($sp)\n"
-    "    lw  $v1,12($v0)\n"
-    "    nop\n"
-    "    sw  $v1,36($sp)\n"
-    "    lw  $v1,20($v0)\n"
-    "    nop\n"
-    "    sw  $v1,40($sp)\n"
-    "    lw  $v1,24($v0)\n"
-    "    nop\n"
-    "    sw  $v1,44($sp)\n"
-    "    lw  $v1,28($v0)\n"
-    "    .word 0xAF8204D8\n"
-    "    sw  $v1,48($sp)\n"
-    "    .word 0x978304B4\n"
-    "    lw  $a0,32($v0)\n"
-    "    addiu  $v1,$v1,-2\n"
-    "    sltiu  $v1,$v1,2\n"
-    "    bnez  $v1,.L8006EBD4\n"
-    "    sw  $a0,52($sp)\n"
-    "    jal  func_8006F528\n"
-    "    addiu  $a0,$sp,16\n"
-    ".L8006EBD4:\n"
-    "    .word 0x878204B4\n"
-    "    nop\n"
-    "    sll  $v0,$v0,2\n"
-    "    lui  $at,%hi(D_8009BC1C)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lw  $v0,%lo(D_8009BC1C)($at)\n"
-    "    nop\n"
-    "    jalr  $v0\n"
-    "    addiu  $a0,$sp,16\n"
-    "    .word 0x8F8204D4\n"
-    "    lw  $ra,56($sp)\n"
-    "    addiu  $sp,$sp,64\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_8009BC1C;
+extern s32 D_800A3548;
+extern s32 D_800A354C;
+extern s16 D_800A3580;
+extern s32 D_800A35A0;
+extern void *D_800A35A4;
+extern s32 D_800A35A8;
+extern s32 D_800A35BC;
+extern s32 D_800A35C0;
+extern void *D_800A35C4;
+s32 func_8006EC0C(void);
+s32 func_8006F528(s32 *);
+s32 func_8006EACC(s32 arg0, s32 arg1) {
+    s32 sp10[10];
+    s32 *temp_v0;
+    s32 temp_v1;
+
+    D_800A35C0 = ((D_800A36AC & 1) * 0x4090) + (s32)&D_800F7438;
+    D_800A3548 = arg0;
+    D_800A354C = arg1;
+    if (D_800A35BC == 2) {
+        D_800A354C = arg1 & 0xFFFF;
+    }
+    func_8006EC0C();
+    temp_v1 = ((s32 *)D_800A35C4)[3] + 1;
+    ((s32 *)D_800A35C4)[2] = ((s32 *)D_800A35C4)[2] + 1;
+    ((s32 *)D_800A35C4)[3] = temp_v1;
+    temp_v0 = (s32 *)func_8006E8AC(temp_v1 & 1);
+    sp10[0] = D_800A35A8;
+    sp10[1] = temp_v0[0];
+    sp10[3] = temp_v0[2];
+    sp10[4] = temp_v0[4];
+    sp10[5] = temp_v0[3];
+    sp10[6] = temp_v0[5];
+    sp10[7] = temp_v0[6];
+    D_800A35A4 = temp_v0;
+    sp10[8] = temp_v0[7];
+    sp10[9] = temp_v0[8];
+    if ((u16)(D_800A3580 - 2) >= 2U) {
+        func_8006F528(sp10);
+    }
+    ((void (*)(s32 *))(&D_8009BC1C)[D_800A3580])(sp10);
+    return D_800A35A0;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
