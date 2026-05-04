@@ -14,11 +14,11 @@ extern s32 sys_VSync(s32);
 extern s32 bb2_memcpy(s32, void *, s32);
 
 /* Externs for globals */
-extern u32 *g_gpu_stat_reg;
+extern volatile u32 *g_gpu_stat_reg;
 extern u32 *g_gpu_data_reg;
 extern u32 *g_gpu_dma_madr;
 extern u32 *g_gpu_dma_bcr;
-extern u32 *g_gpu_dma_chcr;
+extern volatile u32 *g_gpu_dma_chcr;
 extern u8 g_gpu_color_table[];
 extern u8 g_gpu_draw_env;
 extern u8 g_gpu_disp_env;
@@ -2386,108 +2386,39 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007DB20\n"
-    "    addiu      $sp, $sp, -0x18\n"
-    "    sw         $ra, 20($sp)\n"
-    "    bnez       $a0, .Lfunc_8007DB20_8007DBD4\n"
-    "    sw        $s0, 16($sp)\n"
-    "    jal        func_8007DC68\n"
-    "    nop\n"
-    "    j          .Lfunc_8007DB20_8007DB58\n"
-    "    nop\n"
-    ".Lfunc_8007DB20_8007DB40:\n"
-    "    jal        func_8007D6D8\n"
-    "    nop\n"
-    "    jal        func_8007DC9C\n"
-    "    nop\n"
-    "    bnez       $v0, .Lfunc_8007DB20_8007DC54\n"
-    "    addiu     $v0, $zero, -0x1\n"
-    ".Lfunc_8007DB20_8007DB58:\n"
-    "    lui        $v1, %hi(D_8009BF78)\n"
-    "    lw         $v1, %lo(D_8009BF78)($v1)\n"
-    "    lui        $v0, %hi(D_8009BF7C)\n"
-    "    lw         $v0, %lo(D_8009BF7C)($v0)\n"
-    "    nop\n"
-    "    beq        $v1, $v0, .Lfunc_8007DB20_8007DB8C\n"
-    "    nop\n"
-    "    j          .Lfunc_8007DB20_8007DB40\n"
-    "    nop\n"
-    ".Lfunc_8007DB20_8007DB7C:\n"
-    "    jal        func_8007DC9C\n"
-    "    nop\n"
-    "    bnez       $v0, .Lfunc_8007DB20_8007DC54\n"
-    "    addiu     $v0, $zero, -0x1\n"
-    ".Lfunc_8007DB20_8007DB8C:\n"
-    "    lui        $v0, %hi(g_gpu_dma_chcr)\n"
-    "    lw         $v0, %lo(g_gpu_dma_chcr)($v0)\n"
-    "    nop\n"
-    "    lw         $v0, 0($v0)\n"
-    "    lui        $v1, (0x1000000 >> 16)\n"
-    "    and        $v0, $v0, $v1\n"
-    "    bnez       $v0, .Lfunc_8007DB20_8007DB7C\n"
-    "    nop\n"
-    "    lui        $v0, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v0, %lo(g_gpu_stat_reg)($v0)\n"
-    "    nop\n"
-    "    lw         $v0, 0($v0)\n"
-    "    lui        $v1, (0x4000000 >> 16)\n"
-    "    and        $v0, $v0, $v1\n"
-    "    beqz       $v0, .Lfunc_8007DB20_8007DB7C\n"
-    "    addu      $v0, $zero, $zero\n"
-    "    j          .Lfunc_8007DB20_8007DC54\n"
-    "    nop\n"
-    ".Lfunc_8007DB20_8007DBD4:\n"
-    "    lui        $v0, %hi(D_8009BF78)\n"
-    "    lw         $v0, %lo(D_8009BF78)($v0)\n"
-    "    lui        $v1, %hi(D_8009BF7C)\n"
-    "    lw         $v1, %lo(D_8009BF7C)($v1)\n"
-    "    nop\n"
-    "    subu       $v0, $v0, $v1\n"
-    "    andi       $s0, $v0, 0x3F\n"
-    "    beqz       $s0, .Lfunc_8007DB20_8007DC00\n"
-    "    nop\n"
-    "    jal        func_8007D6D8\n"
-    "    nop\n"
-    ".Lfunc_8007DB20_8007DC00:\n"
-    "    lui        $v0, %hi(g_gpu_dma_chcr)\n"
-    "    lw         $v0, %lo(g_gpu_dma_chcr)($v0)\n"
-    "    nop\n"
-    "    lw         $v0, 0($v0)\n"
-    "    lui        $v1, (0x1000000 >> 16)\n"
-    "    and        $v0, $v0, $v1\n"
-    "    bnez       $v0, .Lfunc_8007DB20_8007DC40\n"
-    "    nop\n"
-    "    lui        $v0, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v0, %lo(g_gpu_stat_reg)($v0)\n"
-    "    nop\n"
-    "    lw         $v0, 0($v0)\n"
-    "    lui        $v1, (0x4000000 >> 16)\n"
-    "    and        $v0, $v0, $v1\n"
-    "    bnez       $v0, .Lfunc_8007DB20_8007DC50\n"
-    "    nop\n"
-    ".Lfunc_8007DB20_8007DC40:\n"
-    "    bnez       $s0, .Lfunc_8007DB20_8007DC54\n"
-    "    addu      $v0, $s0, $zero\n"
-    "    j          .Lfunc_8007DB20_8007DC54\n"
-    "    addiu     $v0, $zero, 0x1\n"
-    ".Lfunc_8007DB20_8007DC50:\n"
-    "    addu       $v0, $s0, $zero\n"
-    ".Lfunc_8007DB20_8007DC54:\n"
-    "    lw         $ra, 20($sp)\n"
-    "    lw         $s0, 16($sp)\n"
-    "    addiu      $sp, $sp, 0x18\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+extern s32 D_8009BF78;
+extern s32 D_8009BF7C;
+extern s32 func_8007D6D8();
+s32 func_8007DB20(s32 arg0) {
+    s32 temp_s0;
+    s32 ret;
+
+    if (arg0 == 0) {
+        func_8007DC68();
+        while (D_8009BF78 != D_8009BF7C) {
+            func_8007D6D8();
+            if (func_8007DC9C() != 0) return -1;
+        }
+        while ((*g_gpu_dma_chcr & 0x01000000) || !(*g_gpu_stat_reg & 0x04000000)) {
+            if (func_8007DC9C() != 0) return -1;
+        }
+        return 0;
+    }
+    temp_s0 = (D_8009BF78 - D_8009BF7C) & 0x3F;
+    if (temp_s0 != 0) {
+        func_8007D6D8();
+    }
+    if (!(*g_gpu_dma_chcr & 0x01000000) && (*g_gpu_stat_reg & 0x04000000)) {
+        ret = temp_s0;
+    } else {
+        if (temp_s0 != 0) {
+            ret = temp_s0;
+        } else {
+            return 1;
+        }
+    }
+    return ret;
+}
 void func_8007DC68(void) {
     g_gpu_vcount = sys_VSync(-1) + 0xF0;
     g_gpu_draw_count = 0;
