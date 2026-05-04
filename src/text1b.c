@@ -14781,157 +14781,88 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80055948\n"
-    "    lbu  $v1,952($a0)\n"
-    "    lw  $a2,948($a0)\n"
-    "    beqz  $v1,.L80055970\n"
-    "    nop\n"
-    "    lh  $v0,70($a0)\n"
-    "    nop\n"
-    "    bnez  $v0,.L80055B38\n"
-    "    addiu  $v0,$v1,-1\n"
-    "    j  .L80055B38\n"
-    "    sb  $v0,952($a0)\n"
-    ".L80055970:\n"
-    "    lbu  $v0,956($a0)\n"
-    "    nop\n"
-    "    bnez  $v0,.L80055A94\n"
-    "    addiu  $v0,$zero,22\n"
-    "    lbu  $v1,1091($a0)\n"
-    "    nop\n"
-    "    beq  $v1,$v0,.L80055A94\n"
-    "    sll  $v0,$v1,1\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,3\n"
-    "    lui  $at,%hi(D_80099D88)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lhu  $v0,%lo(D_80099D88)($at)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,48896\n"
-    "    bnez  $v0,.L80055A94\n"
-    "    nop\n"
-    "    lw  $v0,1072($a0)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,512\n"
-    "    beqz  $v0,.L800559D4\n"
-    "    nop\n"
-    "    lh  $v0,1084($a0)\n"
-    "    j  .L800559E0\n"
-    "    slti  $v0,$v0,2049\n"
-    ".L800559D4:\n"
-    "    lh  $v0,1084($a0)\n"
-    "    nop\n"
-    "    slti  $v0,$v0,1025\n"
-    ".L800559E0:\n"
-    "    beqz  $v0,.L80055AB8\n"
-    "    nop\n"
-    "    lw  $v0,1072($a0)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,2048\n"
-    "    bnez  $v0,.L80055AB8\n"
-    "    nop\n"
-    "    lbu  $v0,1061($a0)\n"
-    "    nop\n"
-    "    addiu  $v0,$v0,-1\n"
-    "    sltiu  $v0,$v0,2\n"
-    "    bnez  $v0,.L80055AB8\n"
-    "    nop\n"
-    "    lbu  $v0,1090($a0)\n"
-    "    nop\n"
-    "    bnez  $v0,.L80055AB8\n"
-    "    addiu  $v0,$zero,45\n"
-    "    lw  $a1,0($a0)\n"
-    "    nop\n"
-    "    lhu  $v1,106($a1)\n"
-    "    nop\n"
-    "    beq  $v1,$v0,.L80055AB8\n"
-    "    nop\n"
-    "    lh  $v1,1038($a0)\n"
-    "    lw  $v0,244($a1)\n"
-    "    nop\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    mult  $v0,$v0\n"
-    "    lh  $v1,1040($a0)\n"
-    "    lw  $v0,252($a1)\n"
-    "    mflo  $a3\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    nop\n"
-    "    mult  $v0,$v0\n"
-    "    mflo  $v1\n"
-    "    lh  $v0,1042($a0)\n"
-    "    nop\n"
-    "    mult  $v0,$v0\n"
-    "    addu  $v0,$a3,$v1\n"
-    "    mflo  $a1\n"
-    "    slt  $v0,$a1,$v0\n"
-    "    beqz  $v0,.L80055ACC\n"
-    "    addiu  $t0,$zero,128\n"
-    "    j  .L80055ABC\n"
-    "    sw  $zero,948($a0)\n"
-    ".L80055A94:\n"
-    "    lbu  $v1,956($a0)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    bne  $v1,$v0,.L80055ACC\n"
-    "    addiu  $t0,$zero,128\n"
-    "    lw  $v0,1072($a0)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,2048\n"
-    "    bnez  $v0,.L80055AD0\n"
-    "    addiu  $a3,$zero,1\n"
-    ".L80055AB8:\n"
-    "    sw  $zero,948($a0)\n"
-    ".L80055ABC:\n"
-    "    j  .L80055B3C\n"
-    "    addiu  $v0,$zero,-1\n"
-    ".L80055AC4:\n"
-    "    j  .L80055B38\n"
-    "    sw  $zero,948($a0)\n"
-    ".L80055ACC:\n"
-    "    addiu  $a3,$zero,1\n"
-    ".L80055AD0:\n"
-    "    lbu  $v1,0($a2)\n"
-    "    nop\n"
-    "    andi  $v0,$v1,128\n"
-    "    beqz  $v0,.L80055AFC\n"
-    "    addiu  $a2,$a2,1\n"
-    "    beq  $v1,$t0,.L80055AC4\n"
-    "    andi  $v0,$v1,127\n"
-    "    addiu  $v0,$v0,-1\n"
-    "    sw  $a2,948($a0)\n"
-    "    j  .L80055B38\n"
-    "    sb  $v0,952($a0)\n"
-    ".L80055AFC:\n"
-    "    andi  $v0,$v1,15\n"
-    "    sllv  $a1,$a3,$v0\n"
-    "    andi  $v0,$v1,16\n"
-    "    beqz  $v0,.L80055B24\n"
-    "    nor  $v1,$zero,$a1\n"
-    "    lw  $v0,968($a0)\n"
-    "    nop\n"
-    "    and  $v0,$v0,$v1\n"
-    "    j  .L80055AD0\n"
-    "    sw  $v0,968($a0)\n"
-    ".L80055B24:\n"
-    "    lw  $v0,968($a0)\n"
-    "    nop\n"
-    "    or  $v0,$v0,$a1\n"
-    "    j  .L80055AD0\n"
-    "    sw  $v0,968($a0)\n"
-    ".L80055B38:\n"
-    "    lw  $v0,968($a0)\n"
-    ".L80055B3C:\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern u16 D_80099D88;
+
+s32 func_80055948(u8 *arg0) {
+    register u8 *p asm("a2");
+    u8 ctr;
+    s32 t;
+    s32 mask;
+    s32 dx, dy, dz;
+    register s32 sentinel asm("t0");
+
+    ctr = arg0[0x3B8];
+    p = *(u8 **)(arg0 + 0x3B4);
+    if (ctr != 0) {
+        if (*(s16 *)(arg0 + 0x46) == 0) {
+            arg0[0x3B8] = ctr - 1;
+        }
+        goto ret_3c8;
+    }
+    if (arg0[0x3BC] != 0) {
+        goto check_loop;
+    }
+    {
+        u8 idx = arg0[0x443];
+        if (idx == 22) goto check_loop;
+        if ((*(&D_80099D88 + idx * 12) & 0xBF00) != 0) goto check_loop;
+        {
+            s32 limit;
+            if (*(s32 *)(arg0 + 0x430) & 0x200) {
+                limit = (*(s16 *)(arg0 + 0x43C) < 0x801);
+            } else {
+                limit = (*(s16 *)(arg0 + 0x43C) < 0x401);
+            }
+            if (limit == 0) goto reset_ret_neg1;
+        }
+        if (*(s32 *)(arg0 + 0x430) & 0x800) goto reset_ret_neg1;
+        if ((u32)(arg0[0x425] - 1) < 2U) goto reset_ret_neg1;
+        if (arg0[0x442] != 0) goto reset_ret_neg1;
+        {
+            u8 *other = *(u8 **)arg0;
+            if (*(u16 *)(other + 0x6A) == 0x2D) goto reset_ret_neg1;
+            dx = *(s32 *)(other + 0xF4) - *(s16 *)(arg0 + 0x40E);
+            dy = *(s32 *)(other + 0xFC) - *(s16 *)(arg0 + 0x410);
+            dz = *(s16 *)(arg0 + 0x412);
+            sentinel = 0x80;
+            if ((dz * dz) >= ((dx * dx) + (dy * dy))) goto loop_init;
+        }
+    }
+    goto reset_ret_neg1;
+check_loop:
+    if (arg0[0x3BC] != 1) goto loop_init;
+    if (*(s32 *)(arg0 + 0x430) & 0x800) {
+        sentinel = 0x80;
+        goto loop;
+    }
+reset_ret_neg1:
+    *(s32 *)(arg0 + 0x3B4) = 0;
+    return -1;
+sentinel_reset:
+    *(s32 *)(arg0 + 0x3B4) = 0;
+    goto ret_3c8;
+loop_init:
+    sentinel = 0x80;
+loop:
+    while (1) {
+        t = *p;
+        p += 1;
+        if (t & 0x80) {
+            if (t == sentinel) goto sentinel_reset;
+            *(s32 *)(arg0 + 0x3B4) = (s32)p;
+            arg0[0x3B8] = (t & 0x7F) - 1;
+            goto ret_3c8;
+        }
+        mask = 1 << (t & 0xF);
+        if (t & 0x10) {
+            *(s32 *)(arg0 + 0x3C8) &= ~mask;
+        } else {
+            *(s32 *)(arg0 + 0x3C8) |= mask;
+        }
+    }
+ret_3c8:
+    return *(s32 *)(arg0 + 0x3C8);
+}
 void func_80055B44(u8 *a0, s32 a1, s32 a2, s32 a3) {
     *(s32 *)(a0 + 0x3B4) = a1;
     a0[0x3BC] = (u8)a2;
