@@ -4,17 +4,17 @@ byte match. Used by autonomous-mode loops where the main agent spawns
 a fresh subagent per function (keeping its own context small).
 
 Two modes:
-  default        — sequential single-agent. Subagent works in the main
+  default        -- sequential single-agent. Subagent works in the main
                    repo, sets `.bb2_active_func` via `dc.sh next` (the
-                   coordinator already did that — this prompt assumes
+                   coordinator already did that -- this prompt assumes
                    the marker is set), commits to main on match.
 
-  --worktree     — parallel orchestration. Subagent runs in a worktree
+  --worktree     -- parallel orchestration. Subagent runs in a worktree
                    created by the Agent tool's isolation="worktree".
                    First action: bash tools/worktree_setup.sh (symlinks
                    gcc/.venv/disc/decomp-permuter/m2c into the worktree).
                    Then writes its own .bb2_active_func, matches, and
-                   commits to its branch — NEVER to main. The
+                   commits to its branch -- NEVER to main. The
                    coordinator integrates the branch via
                    `dc.sh integrate <branch>` after the worker returns.
 
@@ -43,9 +43,9 @@ will block (until you match):
   - `git commit` (unless `dc.sh verify {func}` reports MATCH)
   - `git checkout/restore/reset --` on src/*.c, regfix.txt, asmfix.txt,
     undefined_syms_auto.txt, named_syms.txt, sdata*.txt, expand_lb_funcs.txt
-  - `dc.sh next` (you don't pull a new function — the parent does that)
+  - `dc.sh next` (you don't pull a new function -- the parent does that)
 
-You CANNOT run `dc.sh release` — that's the user's escape hatch only.
+You CANNOT run `dc.sh release` -- that's the user's escape hatch only.
 If you're genuinely stuck after exhausting the toolbox, RETURN with a
 detailed status; the parent will coordinate with the user.
 
@@ -54,9 +54,9 @@ Once you start, you finish. No tabling, no skipping, no inline-asm
 workarounds. Stuck = switch *technique*, not target.
 
 The only valid stop conditions:
-1. {func} matches — `dc.sh verify {func}` reports MATCH AND `make`
+1. {func} matches -- `dc.sh verify {func}` reports MATCH AND `make`
    reports `OK: bb2 matches!` AND you've committed.
-2. Genuine intractable blocker — you've tried >=5 distinct techniques
+2. Genuine intractable blocker -- you've tried >=5 distinct techniques
    from the escalation ladder, including at least one assembly-stream
    regfix attempt, and you can articulate what specifically prevents
    matching with the current toolchain. Then RETURN with details so
@@ -68,7 +68,7 @@ The only valid stop conditions:
    ```
    bash tools/dc.sh agent-brief {func}
    ```
-   This shows: classification (watch for `aliasing_heavy` blocker_tag —
+   This shows: classification (watch for `aliasing_heavy` blocker_tag --
    means high deref-chain count, expect more iterations than insn count
    suggests), source location, target asm, m2c output, gen_regfix
    suggestions, sibling matches, Kengo reference.
@@ -113,17 +113,17 @@ The only valid stop conditions:
 
 7. **Integration discipline** (when you have matching C):
    - Add missing externs to source file's extern block (sibling-file
-     audit first — sibling may already have correct signed/unsigned
+     audit first -- sibling may already have correct signed/unsigned
      declaration).
    - Replace stub with just signature + body. Never use `dc.sh replace`
      for final integration (copies scaffolding); use
      `dc.sh inline-replace` or write directly via WSL python3.
    - Build: `rm -f build/src/<file>.o && make 2>&1 | tail -5`.
-   - Verify: `bash tools/dc.sh verify {func}` — must say MATCH.
+   - Verify: `bash tools/dc.sh verify {func}` -- must say MATCH.
 
 8. **Validation IMMEDIATELY after match** (before considering done):
-   - `make validate` — catches regfix pattern drift in siblings.
-   - `bash tools/dc.sh verify --all` — catches label-renumber regressions.
+   - `make validate` -- catches regfix pattern drift in siblings.
+   - `bash tools/dc.sh verify --all` -- catches label-renumber regressions.
    - If a sibling broke (1-byte diff in beq/bne), run
      `bash tools/dc.sh fix-label-drift` (drives off the linker error).
 
@@ -136,7 +136,7 @@ The only valid stop conditions:
 
     Before returning, take 1-2 minutes to ask: was anything in this
     match worth retaining for future agents? Document conservatively
-    — only if you can articulate ALL THREE of:
+    -- only if you can articulate ALL THREE of:
       a) The specific technique, gotcha, or pattern.
       b) >=1 OTHER function where it applies (current sibling pattern,
          or a hypothetical with the same shape).
@@ -170,7 +170,7 @@ The only valid stop conditions:
 
     Commit memory/tool updates as a SEPARATE commit (hook only
     enforces the function-match commit; subsequent commits go
-    through). Commit message: `Post-match retro for {func} —
+    through). Commit message: `Post-match retro for {func} --
     document <thing>`.
 
     **Anti-noise:** if the match was a known recipe (call-loop,
@@ -181,11 +181,11 @@ The only valid stop conditions:
 # Reading
 
 Mandatory:
-- feedback_workflow_rules.md — escalation ladder, integration
-- feedback_matching_playbook.md — toolbox order, every C technique,
+- feedback_workflow_rules.md -- escalation ladder, integration
+- feedback_matching_playbook.md -- toolbox order, every C technique,
   named recipes, penalty-list -> technique routing, things that don't
   work
-- feedback_regfix_reference.md — regfix.txt syntax + every gotcha
+- feedback_regfix_reference.md -- regfix.txt syntax + every gotcha
 
 # Communication
 
@@ -195,15 +195,15 @@ genuinely stuck.
 
 Final return format (one of):
 
-  MATCHED — `{func}` at commit <sha>. Recipe: <one-line summary>.
+  MATCHED -- `{func}` at commit <sha>. Recipe: <one-line summary>.
   Retro: NONE.
 
-  MATCHED — `{func}` at commit <sha>. Recipe: <one-line summary>.
+  MATCHED -- `{func}` at commit <sha>. Recipe: <one-line summary>.
   Retro: <commit-sha-of-retro-commit>. Updated:
     - <file>: <one-line description of addition>
     - tools/<new>.py: <what it does> (wired as `dc.sh <cmd>`)
 
-  STUCK — `{func}` exhausted toolbox. Tried: <list of techniques>.
+  STUCK -- `{func}` exhausted toolbox. Tried: <list of techniques>.
   Best score: <score> with <ins/del/reord/reg breakdown>. Specific
   remaining diff: <description>. Suggested next move: <new tool /
   user release / etc>.
@@ -219,7 +219,7 @@ WORKTREE_PROMPT_TEMPLATE = """You are working {func} to byte-match in 100% pure 
 
 You are running in a **git worktree** spawned by parallel orchestration.
 The coordinator (parent agent) has assigned you ONE function. You work
-it end-to-end, commit to YOUR branch, and return — the coordinator
+it end-to-end, commit to YOUR branch, and return -- the coordinator
 integrates your branch into main.
 
 # CRITICAL: First three actions, in order
@@ -230,7 +230,7 @@ integrates your branch into main.
    ```
    This symlinks gcc-2.7.2/, decomp-permuter/, m2c/, .venv/, disc/ from
    the main worktree. WITHOUT THIS the maspsx step fails silently and
-   every .o is a 788-byte empty stub — you'll get bizarre, unmatchable
+   every .o is a 788-byte empty stub -- you'll get bizarre, unmatchable
    diffs. Verify by checking `ls -la build/src/*.o` after first build:
    real objects are >>788 bytes.
 
@@ -239,7 +239,7 @@ integrates your branch into main.
    git symbolic-ref --short HEAD
    ```
    This MUST print something other than `main`. If it prints `main`,
-   STOP and report — the worktree wasn't set up correctly.
+   STOP and report -- the worktree wasn't set up correctly.
 
 3. **Claim the function** (sets the marker so the hook enforces you):
    ```
@@ -255,7 +255,7 @@ integrates your branch into main.
 You MAY:
 - Edit src/<your-function's-file>.c, permuter/, regfix.txt,
   regfix_stage2.txt, asmfix.txt, sdata_*.txt, expand_lb_funcs.txt,
-  named_syms.txt — all are per-worktree files
+  named_syms.txt -- all are per-worktree files
 - Build, verify, run smart_match / permuter / gen-regfix
 - Commit to your branch as many times as you want
 - Run `dc.sh capture-recipe HEAD --write` for novel patterns
@@ -267,16 +267,16 @@ You MUST NOT:
 - Run `git checkout main`, `git push`, or anything that touches the
   main branch
 - Modify scaffolding files (bb2.ld, Makefile, splat.yaml,
-  undefined_syms_auto.txt) — the coordinator owns these
+  undefined_syms_auto.txt) -- the coordinator owns these
 
 # THE HARD RULE
 Once you start, you finish. No tabling, no skipping, no inline-asm
 workarounds. Stuck = switch *technique*, not target.
 
 The only valid stop conditions:
-1. {func} matches — `dc.sh verify {func}` reports MATCH AND `make`
+1. {func} matches -- `dc.sh verify {func}` reports MATCH AND `make`
    reports `OK: bb2 matches!` AND you've committed.
-2. Genuine intractable blocker — you've tried >=5 distinct techniques
+2. Genuine intractable blocker -- you've tried >=5 distinct techniques
    from the escalation ladder, including at least one assembly-stream
    regfix attempt, and you can articulate what specifically prevents
    matching with the current toolchain.
@@ -292,7 +292,7 @@ The only valid stop conditions:
    `bash tools/dc.sh near-miss {func}`.
 4. **Penalty-list routing** (feedback_matching_playbook.md):
    - 0 ins/del/reord, only Reg diffs -> swap rules in regfix.txt
-     (skip gen-regfix and permuter — both produce noise here).
+     (skip gen-regfix and permuter -- both produce noise here).
    - Ins>=1 -> don't cache inner deref; let GCC reload naturally.
    - Reord high -> C scheduling OR regfix fill_delay/drain_delay/reorder.
    - LICM hoist signature -> regfix unhoist recipe.
@@ -319,16 +319,16 @@ recipe matches (call-loop, LICM unhoist, plain register cycle, etc.)
 return "Retro: NONE."
 
 If you DO add memory/tool updates, commit them on top of the match
-commit — they'll come along when the coordinator integrates your
+commit -- they'll come along when the coordinator integrates your
 branch.
 
 # Reading
 
 Mandatory:
-- feedback_workflow_rules.md — escalation ladder, integration
-- feedback_matching_playbook.md — toolbox order, techniques, recipes
-- feedback_regfix_reference.md — regfix.txt syntax + gotchas
-- feedback_parallel_orchestration.md — this orchestration model
+- feedback_workflow_rules.md -- escalation ladder, integration
+- feedback_matching_playbook.md -- toolbox order, techniques, recipes
+- feedback_regfix_reference.md -- regfix.txt syntax + gotchas
+- feedback_parallel_orchestration.md -- this orchestration model
 
 # Communication
 
