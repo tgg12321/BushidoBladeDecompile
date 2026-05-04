@@ -3812,7 +3812,7 @@ func_800644FC: delete @ 32
 func_800644FC: reorder 17,12,11,13,14,15,16 @ 11-17
 func_800644FC: reorder 25,23,24 @ 23-25
 func_800644FC: reorder 30,29 @ 29-30
-func_800644FC: subst "\.L\d+" ".L404-4" @ 22
+func_800644FC: subst "\.L\d+" ".L412-4" @ 22
 
 # func_8007B6C8: layout fix beq->bne
 func_8007B6C8: subst "beq\s+\$2,\$0,\.L15" "bne	$2,$0,.LbodyB6C8" @ 17
@@ -3984,3 +3984,4 @@ func_8007526C: subst "\$8(?!\d)" "$2" @ 19
 func_8007526C: insert "addiu $2,$0,3" @ 13
 func_8007526C: insert "nop" @ 3
 func_8007526C: reorder 0,2,1,3 @ 0-3
+func_80061C00: reorder 6,3,4,5 @ 3-6
