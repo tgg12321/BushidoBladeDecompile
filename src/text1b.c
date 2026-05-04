@@ -27010,156 +27010,74 @@ void func_80060E04(s32 arg0) {
     D_800A37D4 = v0;
     D_800A3720 = D_800A37D4;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80060E38\n"
-    "    addiu  $sp,$sp,-112\n"
-    "    lui  $v0,8064\n"
-    "    ori  $v0,$v0,24\n"
-    "    sw  $v0,0($sp)\n"
-    "    lui  $v0,8064\n"
-    "    ori  $v0,$v0,32\n"
-    "    sw  $v0,8($sp)\n"
-    "    lui  $v0,8064\n"
-    "    ori  $v0,$v0,48\n"
-    "    sw  $v0,16($sp)\n"
-    "    lui  $v0,8064\n"
-    "    ori  $v0,$v0,80\n"
-    "    sw  $v0,24($sp)\n"
-    "    lui  $v0,8064\n"
-    "    ori  $v0,$v0,88\n"
-    "    sw  $v0,32($sp)\n"
-    "    lui  $v0,8064\n"
-    "    ori  $v0,$v0,92\n"
-    "    sw  $v0,40($sp)\n"
-    "    lui  $v0,8064\n"
-    "    ori  $v0,$v0,96\n"
-    "    sw  $v0,48($sp)\n"
-    "    lui  $v0,8064\n"
-    "    ori  $v0,$v0,98\n"
-    "    sw  $v0,56($sp)\n"
-    "    lui  $v0,8064\n"
-    "    ori  $v0,$v0,100\n"
-    "    sw  $fp,104($sp)\n"
-    "    lui  $fp,8064\n"
-    "    ori  $fp,$fp,102\n"
-    "    lui  $t9,8064\n"
-    "    ori  $t9,$t9,104\n"
-    "    lui  $t8,8064\n"
-    "    ori  $t8,$t8,106\n"
-    "    sw  $s7,100($sp)\n"
-    "    lui  $s7,8064\n"
-    "    ori  $s7,$s7,108\n"
-    "    sw  $s6,96($sp)\n"
-    "    lui  $s6,8064\n"
-    "    ori  $s6,$s6,112\n"
-    "    sw  $s5,92($sp)\n"
-    "    lui  $s5,8064\n"
-    "    ori  $s5,$s5,116\n"
-    "    sw  $s4,88($sp)\n"
-    "    lui  $s4,8064\n"
-    "    ori  $s4,$s4,128\n"
-    "    sw  $s3,84($sp)\n"
-    "    lui  $s3,8064\n"
-    "    ori  $s3,$s3,130\n"
-    "    sw  $s2,80($sp)\n"
-    "    lui  $s2,8064\n"
-    "    ori  $s2,$s2,132\n"
-    "    sw  $s1,76($sp)\n"
-    "    lui  $s1,8064\n"
-    "    ori  $s1,$s1,136\n"
-    "    sw  $s0,72($sp)\n"
-    "    lui  $s0,8064\n"
-    "    ori  $s0,$s0,140\n"
-    "    lui  $t7,8064\n"
-    "    ori  $t7,$t7,144\n"
-    "    lui  $t6,8064\n"
-    "    ori  $t6,$t6,152\n"
-    "    lui  $t5,8064\n"
-    "    ori  $t5,$t5,154\n"
-    "    lui  $t4,8064\n"
-    "    ori  $t4,$t4,156\n"
-    "    lui  $t3,8064\n"
-    "    ori  $t3,$t3,158\n"
-    "    lui  $t2,8064\n"
-    "    ori  $t2,$t2,160\n"
-    "    lui  $t1,8064\n"
-    "    sw  $v0,64($sp)\n"
-    "    lui  $v0,8064\n"
-    "    .word 0xAF82039C\n"
-    "    lw  $v0,0($sp)\n"
-    "    ori  $t1,$t1,164\n"
-    "    .word 0xAF8203A0\n"
-    "    lw  $v0,8($sp)\n"
-    "    lui  $t0,8064\n"
-    "    .word 0xAF8203A4\n"
-    "    lw  $v0,16($sp)\n"
-    "    ori  $t0,$t0,168\n"
-    "    .word 0xAF8203A8\n"
-    "    lw  $v0,24($sp)\n"
-    "    lui  $a3,8064\n"
-    "    .word 0xAF8203BC\n"
-    "    lw  $v0,32($sp)\n"
-    "    ori  $a3,$a3,172\n"
-    "    .word 0xAF8203C4\n"
-    "    lw  $v0,40($sp)\n"
-    "    lui  $a2,8064\n"
-    "    .word 0xAF8203C8\n"
-    "    lw  $v0,48($sp)\n"
-    "    ori  $a2,$a2,176\n"
-    "    .word 0xAF8203CC\n"
-    "    lw  $v0,56($sp)\n"
-    "    lui  $v1,8064\n"
-    "    .word 0xAF8203D0\n"
-    "    lw  $v0,64($sp)\n"
-    "    ori  $v1,$v1,184\n"
-    "    .word 0xAF9E03D8\n"
-    "    .word 0xAF9903DC\n"
-    "    .word 0xAF9803E0\n"
-    "    .word 0xAF9703E4\n"
-    "    .word 0xAF9603E8\n"
-    "    .word 0xAF9503EC\n"
-    "    .word 0xAF9403F0\n"
-    "    .word 0xAF9303F4\n"
-    "    .word 0xAF9203F8\n"
-    "    .word 0xAF9103FC\n"
-    "    .word 0xAF900400\n"
-    "    .word 0xAF8F0404\n"
-    "    .word 0xAF8E0408\n"
-    "    .word 0xAF8D040C\n"
-    "    .word 0xAF8C0410\n"
-    "    .word 0xAF8B0414\n"
-    "    .word 0xAF8A0418\n"
-    "    .word 0xAF89041C\n"
-    "    .word 0xAF8803B4\n"
-    "    .word 0xAF8703B8\n"
-    "    .word 0xAF8603C0\n"
-    "    .word 0xAF830420\n"
-    "    lui  $at,8064\n"
-    "    sw  $a0,4($at)\n"
-    "    .word 0xAF8203D4\n"
-    "    lui  $at,8064\n"
-    "    sw  $a1,8($at)\n"
-    "    lw  $fp,104($sp)\n"
-    "    lw  $s7,100($sp)\n"
-    "    lw  $s6,96($sp)\n"
-    "    lw  $s5,92($sp)\n"
-    "    lw  $s4,88($sp)\n"
-    "    lw  $s3,84($sp)\n"
-    "    lw  $s2,80($sp)\n"
-    "    lw  $s1,76($sp)\n"
-    "    lw  $s0,72($sp)\n"
-    "    addiu  $sp,$sp,112\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A3468;
+extern s32 D_800A346C;
+extern s32 D_800A3470;
+extern s32 D_800A3474;
+extern s32 D_800A3480;
+extern s32 D_800A3484;
+extern s32 D_800A3488;
+extern s32 D_800A348C;
+extern s32 D_800A3490;
+extern s32 D_800A3494;
+extern s32 D_800A3498;
+extern s32 D_800A349C;
+extern s32 D_800A34A0;
+extern s32 D_800A34A4;
+extern s32 D_800A34A8;
+extern s32 D_800A34AC;
+extern s32 D_800A34B0;
+extern s32 D_800A34B4;
+extern s32 D_800A34B8;
+extern s32 D_800A34BC;
+extern s32 D_800A34C0;
+extern s32 D_800A34C4;
+extern s32 D_800A34C8;
+extern s32 D_800A34CC;
+extern s32 D_800A34D0;
+extern s32 D_800A34D4;
+extern s32 D_800A34D8;
+extern s32 D_800A34DC;
+extern s32 D_800A34E0;
+extern s32 D_800A34E4;
+extern s32 D_800A34E8;
+extern s32 D_800A34EC;
+void func_80060E38(s32 arg0, s32 arg1) {
+    D_800A3468 = 0x1F800000;
+    D_800A346C = 0x1F800018;
+    D_800A3470 = 0x1F800020;
+    D_800A3474 = 0x1F800030;
+    D_800A3488 = 0x1F800050;
+    D_800A3490 = 0x1F800058;
+    D_800A3494 = 0x1F80005C;
+    D_800A3498 = 0x1F800060;
+    D_800A349C = 0x1F800062;
+    D_800A34A0 = 0x1F800064;
+    D_800A34A4 = 0x1F800066;
+    D_800A34A8 = 0x1F800068;
+    D_800A34AC = 0x1F80006A;
+    D_800A34B0 = 0x1F80006C;
+    D_800A34B4 = 0x1F800070;
+    D_800A34B8 = 0x1F800074;
+    D_800A34BC = 0x1F800080;
+    D_800A34C0 = 0x1F800082;
+    D_800A34C4 = 0x1F800084;
+    D_800A34C8 = 0x1F800088;
+    D_800A34CC = 0x1F80008C;
+    D_800A34D0 = 0x1F800090;
+    D_800A34D4 = 0x1F800098;
+    D_800A34D8 = 0x1F80009A;
+    D_800A34DC = 0x1F80009C;
+    D_800A34E0 = 0x1F80009E;
+    D_800A34E4 = 0x1F8000A0;
+    D_800A34E8 = 0x1F8000A4;
+    D_800A3480 = 0x1F8000A8;
+    D_800A3484 = 0x1F8000AC;
+    D_800A348C = 0x1F8000B0;
+    D_800A34EC = 0x1F8000B8;
+    *(s32 *)0x1F800004 = arg0;
+    *(s32 *)0x1F800008 = arg1;
+}
 extern s32 func_80041E10();
 extern s32 func_800421A4();
 extern s32 func_80060B70();
