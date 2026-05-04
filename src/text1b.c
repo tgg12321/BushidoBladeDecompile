@@ -2018,103 +2018,36 @@ void func_8004A09C(s32 arg0, u16 *arg1) {
     *(s8 *)(arg0 + 0x5A) = *arg1;
     *(s16 *)(arg0 + 0x5C) = *(arg1 + 1);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8004A1FC\n"
-    "    addiu  $sp,$sp,-48\n"
-    "    sw  $s4,32($sp)\n"
-    "    addu  $s4,$a0,$zero\n"
-    "    sw  $s5,36($sp)\n"
-    "    addu  $s5,$zero,$zero\n"
-    "    sw  $ra,40($sp)\n"
-    "    sw  $s3,28($sp)\n"
-    "    sw  $s2,24($sp)\n"
-    "    sw  $s1,20($sp)\n"
-    "    sw  $s0,16($sp)\n"
-    "    sll  $v0,$s5,16\n"
-    ".L8004A228:\n"
-    "    sra  $s2,$v0,16\n"
-    "    sll  $v0,$s2,3\n"
-    "    addu  $s3,$s4,$v0\n"
-    "    lh  $v0,4($s3)\n"
-    "    nop\n"
-    "    beqz  $v0,.L8004A2EC\n"
-    "    sll  $v0,$s2,1\n"
-    "    lh  $a0,0($s3)\n"
-    "    jal  math_Cos\n"
-    "    sll  $s0,$s2,1\n"
-    "    lh  $a0,2($s3)\n"
-    "    jal  math_Sin\n"
-    "    addu  $s1,$v0,$zero\n"
-    "    sll  $s1,$s1,16\n"
-    "    sra  $s1,$s1,16\n"
-    "    mult  $v0,$s1\n"
-    "    mflo  $a1\n"
-    "    lh  $v1,92($s4)\n"
-    "    sra  $v0,$a1,12\n"
-    "    mult  $v0,$v1\n"
-    "    addu  $s0,$s0,$s2\n"
-    "    sll  $s0,$s0,1\n"
-    "    addu  $s0,$s4,$s0\n"
-    "    mflo  $a1\n"
-    "    negu  $v0,$a1\n"
-    "    sra  $v0,$v0,12\n"
-    "    sh  $v0,24($s0)\n"
-    "    lh  $a0,0($s3)\n"
-    "    jal  math_Sin\n"
-    "    nop\n"
-    "    lh  $v1,92($s4)\n"
-    "    nop\n"
-    "    mult  $v0,$v1\n"
-    "    mflo  $a1\n"
-    "    sra  $v0,$a1,12\n"
-    "    sh  $v0,26($s0)\n"
-    "    lh  $a0,2($s3)\n"
-    "    jal  math_Cos\n"
-    "    nop\n"
-    "    mult  $v0,$s1\n"
-    "    mflo  $a1\n"
-    "    lh  $v1,92($s4)\n"
-    "    sra  $v0,$a1,12\n"
-    "    mult  $v0,$v1\n"
-    "    mflo  $a1\n"
-    "    negu  $v0,$a1\n"
-    "    sra  $v0,$v0,12\n"
-    "    j  .L8004A304\n"
-    "    sh  $v0,28($s0)\n"
-    ".L8004A2EC:\n"
-    "    addu  $v0,$v0,$s2\n"
-    "    sll  $v0,$v0,1\n"
-    "    addu  $v0,$s4,$v0\n"
-    "    sh  $zero,24($v0)\n"
-    "    sh  $zero,26($v0)\n"
-    "    sh  $zero,28($v0)\n"
-    ".L8004A304:\n"
-    "    addiu  $v0,$s5,1\n"
-    "    addu  $s5,$v0,$zero\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    slti  $v0,$v0,3\n"
-    "    bnez  $v0,.L8004A228\n"
-    "    sll  $v0,$s5,16\n"
-    "    lw  $ra,40($sp)\n"
-    "    lw  $s5,36($sp)\n"
-    "    lw  $s4,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,48\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 math_Cos();
+extern s32 math_Sin();
+void func_8004A1FC(arg0) s16 *arg0; {
+    s16 i;
+    s16 *p;
+    s16 *out;
+    s16 c0;
+    s32 t;
+
+    i = 0;
+    do {
+        p = arg0 + (s32)i * 4;
+        if (p[2] != 0) {
+            c0 = math_Cos(p[0]);
+            t = ((math_Sin(p[1]) * c0) >> 12) * arg0[0x2E];
+            out = arg0 + (s32)i * 3 + 12;
+            out[0] = -t >> 12;
+            t = math_Sin(p[0]) * arg0[0x2E];
+            out[1] = t >> 12;
+            t = ((math_Cos(p[1]) * c0) >> 12) * arg0[0x2E];
+            out[2] = -t >> 12;
+        } else {
+            out = arg0 + (s32)i * 3 + 12;
+            out[0] = 0;
+            out[1] = 0;
+            out[2] = 0;
+        }
+        i++;
+    } while (i < 3);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
