@@ -16518,96 +16518,45 @@ s32 func_80056FE8(s32 arg0) {
         return partial + (*((s16 *) ((*((s32 *) arg0)) + 0x40A))) + 0x12C;
     }
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80057094\n"
-    "    lui  $v1,%hi(D_800F6608)\n"
-    "    lw  $v1,%lo(D_800F6608)($v1)\n"
-    "    addiu  $sp,$sp,-48\n"
-    "    sw  $s2,32($sp)\n"
-    "    addu  $s2,$a0,$zero\n"
-    "    sw  $s0,24($sp)\n"
-    "    addu  $s0,$a1,$zero\n"
-    "    sw  $s1,28($sp)\n"
-    "    addu  $s1,$a2,$zero\n"
-    "    sw  $s3,36($sp)\n"
-    "    addu  $s3,$a3,$zero\n"
-    "    sw  $ra,40($sp)\n"
-    "    lw  $a0,244($s2)\n"
-    "    lui  $v0,%hi(D_800F6610)\n"
-    "    lw  $v0,%lo(D_800F6610)($v0)\n"
-    "    lw  $a1,252($s2)\n"
-    "    subu  $a0,$v1,$a0\n"
-    "    jal  func_8007FD5C\n"
-    "    subu  $a1,$v0,$a1\n"
-    "    lw  $a0,244($s2)\n"
-    "    lw  $a1,252($s2)\n"
-    "    subu  $a0,$s0,$a0\n"
-    "    subu  $a1,$s1,$a1\n"
-    "    jal  func_8007FD5C\n"
-    "    addu  $s0,$v0,$zero\n"
-    "    subu  $s0,$s0,$v0\n"
-    "    addiu  $s0,$s0,-256\n"
-    "    sra  $v0,$s0,9\n"
-    "    andi  $v1,$v0,7\n"
-    "    bnez  $s3,.L8005715C\n"
-    "    sw  $v1,16($sp)\n"
-    "    andi  $v0,$v0,1\n"
-    "    bnez  $v0,.L8005715C\n"
-    "    nop\n"
-    "    lhu  $v0,1000($s2)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,16\n"
-    "    beqz  $v0,.L80057148\n"
-    "    addiu  $v0,$v1,1\n"
-    "    sw  $v0,16($sp)\n"
-    "    slti  $v0,$v0,8\n"
-    "    bnez  $v0,.L8005715C\n"
-    "    nop\n"
-    "    j  .L8005715C\n"
-    "    sw  $zero,16($sp)\n"
-    ".L80057148:\n"
-    "    addiu  $v0,$v1,-1\n"
-    "    bgez  $v0,.L8005715C\n"
-    "    sw  $v0,16($sp)\n"
-    "    addiu  $v0,$zero,7\n"
-    "    sw  $v0,16($sp)\n"
-    ".L8005715C:\n"
-    "    lw  $v0,16($sp)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,7\n"
-    "    sll  $v0,$v0,2\n"
-    "    lui  $at,%hi(D_8009AA50)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lw  $s0,%lo(D_8009AA50)($at)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    bne  $s3,$v0,.L80057188\n"
-    "    addu  $a0,$s2,$zero\n"
-    "    ori  $s0,$s0,4\n"
-    ".L80057188:\n"
-    "    jal  func_800233AC\n"
-    "    addiu  $a1,$sp,16\n"
-    "    beqz  $v0,.L800571A0\n"
-    "    addu  $v0,$s0,$zero\n"
-    "    ori  $s0,$s0,8\n"
-    "    addu  $v0,$s0,$zero\n"
-    ".L800571A0:\n"
-    "    lw  $ra,40($sp)\n"
-    "    lw  $s3,36($sp)\n"
-    "    lw  $s2,32($sp)\n"
-    "    lw  $s1,28($sp)\n"
-    "    lw  $s0,24($sp)\n"
-    "    addiu  $sp,$sp,48\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_8007FD5C(s32, s32);
+extern s32 func_800233AC(void *, s32 *);
+extern s32 D_8009AA50[];
+
+s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    s32 sp10;
+    s32 temp_s0;
+    s32 temp_v0;
+    s32 temp_v1;
+    s32 var_v0;
+
+    temp_s0 = func_8007FD5C(D_800F6608 - *(s32 *)((s32)arg0 + 0xF4), D_800F6610 - *(s32 *)((s32)arg0 + 0xFC));
+    var_v0 = temp_s0 - func_8007FD5C(arg1 - *(s32 *)((s32)arg0 + 0xF4), arg2 - *(s32 *)((s32)arg0 + 0xFC));
+    var_v0 -= 0x100;
+    temp_v0 = (s32)var_v0 >> 9;
+    temp_v1 = temp_v0 & 7;
+    sp10 = temp_v1;
+    if ((arg3 == 0) && !(temp_v0 & 1)) {
+        if (*(u16 *)((s32)arg0 + 0x3E8) & 0x10) {
+            sp10 = temp_v1 + 1;
+            if (sp10 >= 8) {
+                sp10 = 0;
+            }
+        } else {
+            sp10 = temp_v1 - 1;
+            if (sp10 < 0) {
+                sp10 = 7;
+            }
+        }
+    }
+    var_v0 = D_8009AA50[sp10 & 7];
+    if (arg3 == 1) {
+        var_v0 |= 4;
+    }
+    if (func_800233AC(arg0, &sp10) != 0) {
+        var_v0 |= 8;
+    }
+    return var_v0;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
@@ -21412,7 +21361,7 @@ extern u8 D_8009A851;
 extern u8 D_8009A852;
 extern u8 D_8009A853;
 extern u16 D_8009A8CA;
-extern s32 D_8009AA50;
+extern s32 D_8009AA50[];
 extern u8 D_8009AD18;
 extern u8 D_8009B14E;
 extern s16 D_8009B16C;
