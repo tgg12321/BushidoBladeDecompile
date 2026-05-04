@@ -129,7 +129,7 @@ func_80034708: replace_with_asmfile "asm/funcs/func_80034708.s"
 func_80032C50: replace_with_asmfile "asm/funcs/func_80032C50.s"
 func_80031B24: replace_with_asmfile "asm/funcs/func_80031B24.s"
 func_80030D7C: replace_with_asmfile "asm/funcs/func_80030D7C.s"
-coli_hit_body_weapon: replace_with_asmfile "asm/funcs/coli_hit_body_weapon.s"
+
 func_8002F770: replace_with_asmfile "asm/funcs/func_8002F770.s"
 func_8002F2D0: replace_with_asmfile "asm/funcs/func_8002F2D0.s"
 func_8002DE20: replace_with_asmfile "asm/funcs/func_8002DE20.s"
