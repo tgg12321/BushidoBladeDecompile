@@ -26480,158 +26480,120 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     ot_Link(D_800A374C + (arg2 * 4), dist_off);
     return end_off - arg1;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80060544\n"
-    "    addiu  $sp,$sp,-112\n"
-    "    sw  $s4,88($sp)\n"
-    "    addu  $s4,$a0,$zero\n"
-    "    sw  $s7,100($sp)\n"
-    "    addu  $s7,$a1,$zero\n"
-    "    sw  $s3,84($sp)\n"
-    "    addu  $s3,$s4,$zero\n"
-    "    sw  $s2,80($sp)\n"
-    "    addiu  $s2,$s4,1260\n"
-    "    sw  $s6,96($sp)\n"
-    "    addiu  $s6,$s4,1500\n"
-    "    sw  $fp,104($sp)\n"
-    "    addiu  $fp,$s4,1524\n"
-    "    sw  $s0,72($sp)\n"
-    "    addu  $s0,$zero,$zero\n"
-    "    sw  $s5,92($sp)\n"
-    "    addiu  $s5,$zero,3\n"
-    "    sw  $s1,76($sp)\n"
-    "    addu  $s1,$zero,$zero\n"
-    "    addiu  $v0,$zero,512\n"
-    "    sw  $v0,56($sp)\n"
-    "    addiu  $v0,$zero,256\n"
-    "    sw  $ra,108($sp)\n"
-    "    sb  $zero,64($sp)\n"
-    "    sw  $zero,40($sp)\n"
-    "    sw  $s7,44($sp)\n"
-    "    sw  $v0,60($sp)\n"
-    "    sw  $zero,52($sp)\n"
-    "    sw  $zero,48($sp)\n"
-    ".L800605B8:\n"
-    "    lui  $v0,%hi(D_8009B770)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B770)\n"
-    "    addu  $v0,$s1,$v0\n"
-    "    sw  $v0,24($sp)\n"
-    "    slti  $v0,$s0,3\n"
-    "    beqz  $v0,.L800605EC\n"
-    "    nop\n"
-    "    bgtz  $s0,.L8006060C\n"
-    "    nop\n"
-    "    beqz  $s0,.L800605FC\n"
-    "    nop\n"
-    "    j  .L80060638\n"
-    "    nop\n"
-    ".L800605EC:\n"
-    "    beq  $s0,$s5,.L8006061C\n"
-    "    addiu  $a0,$sp,24\n"
-    "    j  .L80060638\n"
-    "    nop\n"
-    ".L800605FC:\n"
-    "    lui  $v0,%hi(D_8009B7D8)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B7D8)\n"
-    "    j  .L80060638\n"
-    "    sw  $v0,28($sp)\n"
-    ".L8006060C:\n"
-    "    lui  $v0,%hi(D_8009B800)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B800)\n"
-    "    j  .L80060638\n"
-    "    sw  $v0,28($sp)\n"
-    ".L8006061C:\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    lui  $v0,%hi(D_8009B7D0)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B7D0)\n"
-    "    sw  $v0,28($sp)\n"
-    "    jal  func_80073728\n"
-    "    sw  $s2,36($sp)\n"
-    "    addu  $s2,$v0,$zero\n"
-    ".L80060638:\n"
-    "    beq  $s0,$s5,.L80060650\n"
-    "    nop\n"
-    "    sw  $s3,32($sp)\n"
-    "    jal  func_8007352C\n"
-    "    addiu  $a0,$sp,24\n"
-    "    addu  $s3,$v0,$zero\n"
-    ".L80060650:\n"
-    "    addiu  $s0,$s0,1\n"
-    "    slti  $v0,$s0,4\n"
-    "    bnez  $v0,.L800605B8\n"
-    "    addiu  $s1,$s1,12\n"
-    "    addiu  $a0,$sp,24\n"
-    "    lui  $v0,%hi(D_8009B7A0)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B7A0)\n"
-    "    sw  $v0,24($sp)\n"
-    "    lui  $v0,%hi(D_8009B820)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B820)\n"
-    "    sw  $v0,28($sp)\n"
-    "    jal  func_8007352C\n"
-    "    sw  $s3,32($sp)\n"
-    "    addu  $s3,$v0,$zero\n"
-    "    addu  $s2,$zero,$zero\n"
-    "    lui  $s1,%hi(D_8009B840)\n"
-    "    addiu  $s1,$s1,%lo(D_8009B840)\n"
-    "    lui  $s0,%hi(D_8009B3B0)\n"
-    "    addiu  $s0,$s0,%lo(D_8009B3B0)\n"
-    "    addiu  $v0,$zero,255\n"
-    "    sb  $v0,65($sp)\n"
-    "    addiu  $v0,$zero,16\n"
-    "    sb  $v0,67($sp)\n"
-    "    sb  $v0,66($sp)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    sb  $v0,64($sp)\n"
-    ".L800606B8:\n"
-    "    addiu  $a0,$sp,24\n"
-    "    sw  $s0,24($sp)\n"
-    "    sw  $s1,28($sp)\n"
-    "    jal  func_8007352C\n"
-    "    sw  $s3,32($sp)\n"
-    "    addu  $s3,$v0,$zero\n"
-    "    addiu  $s1,$s1,8\n"
-    "    addiu  $s2,$s2,1\n"
-    "    slti  $v0,$s2,2\n"
-    "    bnez  $v0,.L800606B8\n"
-    "    addiu  $s0,$s0,12\n"
-    "    lw  $a0,24($sp)\n"
-    "    jal  func_8006E480\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    addu  $a0,$s6,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    addu  $a3,$v0,$zero\n"
-    "    jal  initTexPage\n"
-    "    sw  $zero,16($sp)\n"
-    "    addu  $a1,$s6,$zero\n"
-    "    lui  $v0,%hi(D_800A374C)\n"
-    "    lw  $v0,%lo(D_800A374C)($v0)\n"
-    "    sll  $a0,$s7,2\n"
-    "    jal  ot_Link\n"
-    "    addu  $a0,$v0,$a0\n"
-    "    subu  $v0,$fp,$s4\n"
-    "    lw  $ra,108($sp)\n"
-    "    lw  $fp,104($sp)\n"
-    "    lw  $s7,100($sp)\n"
-    "    lw  $s6,96($sp)\n"
-    "    lw  $s5,92($sp)\n"
-    "    lw  $s4,88($sp)\n"
-    "    lw  $s3,84($sp)\n"
-    "    lw  $s2,80($sp)\n"
-    "    lw  $s1,76($sp)\n"
-    "    lw  $s0,72($sp)\n"
-    "    addiu  $sp,$sp,112\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_8009B3B0;
+extern s32 D_8009B770;
+extern s32 D_8009B7A0;
+extern s32 D_8009B7D0;
+extern s32 D_8009B7D8;
+extern s32 D_8009B800;
+extern s32 D_8009B820;
+extern s32 D_8009B840;
+typedef struct {
+    s32 *p_geom;
+    s32 *p_static;
+    s32 arg1_field;
+    s32 pad0C;
+    s32 zero10;
+    s32 arg2_field;
+    s32 width;
+    s32 height;
+    s32 pad20;
+    s32 pad24;
+    u8 byte28;
+    u8 byte29;
+    u8 byte2A;
+    u8 byte2B;
+} S544;
+s32 func_80060544(s32 arg0, s32 arg1) {
+    s32 new_var;
+    S544 s;
+    s32 end_off;
+    s32 mid_off;
+    s32 i;
+    s32 j;
+    s32 idx;
+    s32 new_var4;
+    s32 new_var6;
+    s32 prev;
+    s32 *p0;
+    S544 *new_var2;
+    s32 *p1;
+    int new_var3;
+    prev = arg0;
+    mid_off = arg0 + 0x4EC;
+    end_off = arg0 + 0x5F4;
+    s.byte28 = 0;
+    s.zero10 = 0;
+    s.arg2_field = arg1;
+    new_var3 = arg0 + 0x5DC;
+    new_var6 = end_off;
+    s.pad20 = 0x200;
+    s.pad24 = 0x100;
+    s.height = 0;
+    s.width = 0;
+    i = 0;
+    idx = 0;
+    do {
+        s.p_geom = (s32 *)(((s32)(&D_8009B770)) + idx);
+        if (i < 3) {
+            if (i > 0) {
+                goto S800;
+            }
+            if (i == 0) {
+                goto S7D8;
+            }
+            goto Skip;
+        }
+        if (i == 3) {
+            goto Case3;
+        }
+        goto Skip;
+    S7D8:
+        s.p_static = &D_8009B7D8;
+        goto Skip;
+    S800:
+        s.p_static = &D_8009B800;
+        goto Skip;
+    Case3:
+        s.p_static = &D_8009B7D0;
+        s.pad0C = mid_off;
+        mid_off = func_80073728(&s, 0);
+    Skip:
+        if (i != 3) {
+            s.arg1_field = prev;
+            prev = func_8007352C(&s);
+        }
+        i += 1;
+        idx += 0xC;
+    } while (i < 4);
+    s.p_geom = &D_8009B7A0;
+    s.p_static = &D_8009B820;
+    s.arg1_field = prev;
+    new_var4 = new_var6;
+    new_var2 = &s;
+    prev = func_8007352C(new_var2);
+    j = 0;
+    p1 = &D_8009B840;
+    new_var = arg1;
+    p0 = &D_8009B3B0;
+    s.byte29 = 0xFF;
+    s.byte2B = 0x10;
+    s.byte2A = 0x10;
+    s.byte28 = 1;
+    do {
+        s.p_geom = p0;
+        s.p_static = p1;
+        s.arg1_field = prev;
+        prev = func_8007352C(&s);
+        p1 = (s32 *)(((s32)p1) + 8);
+        j += 1;
+        p0 = (s32 *)(((s32)p0) + 0xC);
+    } while (j < 2);
+    initTexPage(new_var3, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
+    ot_Link(D_800A374C + (new_var * 4), new_var3);
+    new_var3 = new_var4;
+    return new_var3 - arg0;
+}
 extern s16 D_800A32B6;
 extern s16 D_800A32B4;
 void func_80060758(void) {
