@@ -1663,159 +1663,102 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80049C24\n"
-    "    addiu  $sp,$sp,-56\n"
-    "    sw  $ra,52($sp)\n"
-    "    sw  $fp,48($sp)\n"
-    "    sw  $s7,44($sp)\n"
-    "    sw  $s6,40($sp)\n"
-    "    sw  $s5,36($sp)\n"
-    "    sw  $s4,32($sp)\n"
-    "    sw  $s3,28($sp)\n"
-    "    sw  $s2,24($sp)\n"
-    "    sw  $s1,20($sp)\n"
-    "    sw  $s0,16($sp)\n"
-    "    lw  $v1,0($a0)\n"
-    "    addu  $s3,$a1,$zero\n"
-    "    sll  $v0,$v1,2\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    lw  $v0,4($v0)\n"
-    "    lw  $a2,8($a0)\n"
-    "    addu  $s7,$a0,$v0\n"
-    "    lw  $v0,4($a0)\n"
-    "    slti  $v1,$v1,2\n"
-    "    addu  $fp,$a0,$v0\n"
-    "    bnez  $v1,.L80049C90\n"
-    "    subu  $s5,$a2,$v0\n"
-    "    lw  $v0,12($a0)\n"
-    "    addu  $s6,$a0,$a2\n"
-    "    j  .L80049C98\n"
-    "    subu  $s4,$v0,$a2\n"
-    ".L80049C90:\n"
-    "    addu  $s6,$zero,$zero\n"
-    "    addu  $s4,$zero,$zero\n"
-    ".L80049C98:\n"
-    "    addiu  $v0,$zero,-1\n"
-    "    .word 0x8790031C\n"
-    "    .word 0x8792031E\n"
-    "    bne  $s0,$v0,.L80049CBC\n"
-    "    addiu  $s1,$s3,12\n"
-    "    bne  $s2,$s0,.L80049CD8\n"
-    "    nop\n"
-    "    j  .L80049D14\n"
-    "    addu  $s0,$s2,$zero\n"
-    ".L80049CBC:\n"
-    "    bne  $s2,$v0,.L80049CCC\n"
-    "    nop\n"
-    "    j  .L80049D14\n"
-    "    addu  $s0,$zero,$zero\n"
-    ".L80049CCC:\n"
-    "    bne  $s0,$s2,.L80049CE0\n"
-    "    nop\n"
-    "    addu  $s0,$zero,$zero\n"
-    ".L80049CD8:\n"
-    "    j  .L80049D14\n"
-    "    addu  $s2,$zero,$zero\n"
-    ".L80049CE0:\n"
-    "    slt  $v0,$s0,$s2\n"
-    "    beqz  $v0,.L80049CF8\n"
-    "    nop\n"
-    "    addu  $s0,$zero,$zero\n"
-    "    j  .L80049D14\n"
-    "    addiu  $s2,$zero,1\n"
-    ".L80049CF8:\n"
-    "    slt  $v0,$s2,$s0\n"
-    "    beqz  $v0,.L80049D0C\n"
-    "    nop\n"
-    "    j  .L80049CD8\n"
-    "    addiu  $s0,$zero,1\n"
-    ".L80049D0C:\n"
-    "    jal  func_80052C10\n"
-    "    nop\n"
-    ".L80049D14:\n"
-    "    nor  $v0,$zero,$s0\n"
-    "    addu  $v1,$s3,$zero\n"
-    "    addiu  $s3,$s3,4\n"
-    "    bltz  $s2,.L80049D2C\n"
-    "    srl  $v0,$v0,31\n"
-    "    addiu  $v0,$v0,1\n"
-    ".L80049D2C:\n"
-    "    bltz  $s0,.L80049D8C\n"
-    "    sw  $v0,0($v1)\n"
-    "    addiu  $v0,$zero,2\n"
-    "    sw  $v0,0($s3)\n"
-    "    bnez  $s0,.L80049D5C\n"
-    "    addiu  $s3,$s3,4\n"
-    "    addu  $a0,$fp,$zero\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    jal  func_800520B8\n"
-    "    addu  $a2,$s5,$zero\n"
-    "    j  .L80049D70\n"
-    "    addu  $a0,$s1,$s5\n"
-    ".L80049D5C:\n"
-    "    addu  $a0,$s6,$zero\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    jal  func_800520B8\n"
-    "    addu  $a2,$s4,$zero\n"
-    "    addu  $a0,$s1,$s4\n"
-    ".L80049D70:\n"
-    "    jal  func_80045230\n"
-    "    nop\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    addiu  $a1,$zero,2\n"
-    "    jal  func_8005C2A8\n"
-    "    addu  $a2,$s7,$zero\n"
-    "    addu  $s1,$s1,$v0\n"
-    ".L80049D8C:\n"
-    "    bltz  $s2,.L80049DE4\n"
-    "    addiu  $v0,$zero,5\n"
-    "    bnez  $s2,.L80049DB4\n"
-    "    sw  $v0,0($s3)\n"
-    "    addu  $a0,$fp,$zero\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    jal  func_800520B8\n"
-    "    addu  $a2,$s5,$zero\n"
-    "    j  .L80049DC8\n"
-    "    addu  $a0,$s1,$s5\n"
-    ".L80049DB4:\n"
-    "    addu  $a0,$s6,$zero\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    jal  func_800520B8\n"
-    "    addu  $a2,$s4,$zero\n"
-    "    addu  $a0,$s1,$s4\n"
-    ".L80049DC8:\n"
-    "    jal  func_80045230\n"
-    "    nop\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    addiu  $a1,$zero,5\n"
-    "    jal  func_8005C2A8\n"
-    "    addu  $a2,$s7,$zero\n"
-    "    addu  $s1,$s1,$v0\n"
-    ".L80049DE4:\n"
-    "    addu  $v0,$s1,$zero\n"
-    "    lw  $ra,52($sp)\n"
-    "    lw  $fp,48($sp)\n"
-    "    lw  $s7,44($sp)\n"
-    "    lw  $s6,40($sp)\n"
-    "    lw  $s5,36($sp)\n"
-    "    lw  $s4,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,56\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_80049C24(s32 arg0, s32 arg1) {
+    s32 count;
+    s32 temp_v0;
+    s32 temp_a2;
+    s32 var_s7;
+    s32 v0;
+    s32 var_fp;
+    s32 var_s5;
+    s32 var_s6;
+    s32 var_s4;
+    s32 var_s0;
+    s32 var_s2;
+    s32 var_s1;
+    s32 var_s3;
+    s32 v1;
+    s32 hdr;
+    s32 a0_arg;
+
+    count = *(s32 *)arg0;
+    var_s3 = arg1;
+    temp_v0 = *(s32 *)(arg0 + (count * 4) + 4);
+    temp_a2 = *(s32 *)(arg0 + 8);
+    var_s7 = arg0 + temp_v0;
+    v0 = *(s32 *)(arg0 + 4);
+    var_fp = arg0 + v0;
+    var_s5 = temp_a2 - v0;
+
+    if (count >= 2) {
+        var_s6 = arg0 + temp_a2;
+        var_s4 = *(s32 *)(arg0 + 0xC) - temp_a2;
+    } else {
+        var_s6 = 0;
+        var_s4 = 0;
+    }
+
+    var_s0 = D_800A33E8;
+    var_s2 = D_800A33EA;
+    var_s1 = var_s3 + 0xC;
+
+    if (var_s0 == -1) {
+        if (var_s2 == var_s0) {
+            var_s0 = var_s2;
+        } else {
+            var_s2 = 0;
+        }
+    } else if (var_s2 == -1) {
+        var_s0 = 0;
+    } else if (var_s0 == var_s2) {
+        var_s0 = 0;
+        var_s2 = 0;
+    } else if (var_s0 < var_s2) {
+        var_s0 = 0;
+        var_s2 = 1;
+    } else if (var_s2 < var_s0) {
+        var_s0 = 1;
+        var_s2 = 0;
+    } else {
+        func_80052C10();
+    }
+
+    v1 = var_s3;
+    var_s3 += 4;
+    hdr = ((u32)~var_s0) >> 31;
+    if (var_s2 >= 0) {
+        hdr += 1;
+    }
+    *(s32 *)v1 = hdr;
+
+    if (var_s0 >= 0) {
+        *(s32 *)var_s3 = 2;
+        var_s3 += 4;
+        if (var_s0 == 0) {
+            func_800520B8(var_fp, var_s1, var_s5);
+            a0_arg = var_s1 + var_s5;
+        } else {
+            func_800520B8(var_s6, var_s1, var_s4);
+            a0_arg = var_s1 + var_s4;
+        }
+        func_80045230(a0_arg);
+        var_s1 += func_8005C2A8(var_s1, 2, var_s7);
+    }
+
+    if (var_s2 >= 0) {
+        *(s32 *)var_s3 = 5;
+        if (var_s2 == 0) {
+            func_800520B8(var_fp, var_s1, var_s5);
+            a0_arg = var_s1 + var_s5;
+        } else {
+            func_800520B8(var_s6, var_s1, var_s4);
+            a0_arg = var_s1 + var_s4;
+        }
+        func_80045230(a0_arg);
+        var_s1 += func_8005C2A8(var_s1, 5, var_s7);
+    }
+    return var_s1;
+}
 extern s16 D_80099CC2;
 extern s32 D_800A324C;
 void func_80049E1C(void) {
