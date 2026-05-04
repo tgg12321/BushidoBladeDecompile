@@ -37,15 +37,47 @@ REGFIX = ROOT / "regfix.txt"
 
 
 def find_source_file(func_name: str) -> Path | None:
+    """Find the .c file that DEFINES func_name (not just calls it).
+
+    A definition is one of:
+    - inline asm `glabel func_NAME` (legacy form)
+    - C body matching `[type ...] func_NAME(` followed by `{` (with optional
+      arg list spanning lines)
+    - INCLUDE_ASM(...) line referencing the function
+
+    We must avoid plain call sites like `foo(func_NAME(...))` in other files.
+    """
     src_dir = ROOT / "src"
-    decl_re = re.compile(rf'\b{re.escape(func_name)}\s*\(', re.MULTILINE)
+    glabel_re = re.compile(rf'\bglabel\s+{re.escape(func_name)}\b')
+    include_asm_re = re.compile(
+        rf'INCLUDE_ASM\([^)]*"{re.escape(func_name)}"\s*\)'
+    )
+    # C definition: line starts (after optional spaces) with a type keyword
+    # or "static" then the function name + '('. We also accept just
+    # `func_NAME(` at column 0 as a definition (matches our project style).
+    cdef_re = re.compile(
+        rf'^(?:[A-Za-z_][\w *]*\s+)?{re.escape(func_name)}\s*\(',
+        re.MULTILINE,
+    )
     for c in sorted(src_dir.glob("*.c")):
         try:
             text = c.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             continue
-        if decl_re.search(text):
+        if glabel_re.search(text):
             return c
+        if include_asm_re.search(text):
+            return c
+        # Look for a C definition: cdef_re match followed by '{' within
+        # 200 chars (skip prototypes which end with ';').
+        for m in cdef_re.finditer(text):
+            tail = text[m.end():m.end() + 600]
+            # Find first '{' or ';' after the parens close.
+            # Simpler: check if the line/region contains '{' before ';'.
+            brace = tail.find("{")
+            semi = tail.find(";")
+            if brace >= 0 and (semi < 0 or brace < semi):
+                return c
     return None
 
 
