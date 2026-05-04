@@ -3985,3 +3985,9 @@ func_8007526C: insert "addiu $2,$0,3" @ 13
 func_8007526C: insert "nop" @ 3
 func_8007526C: reorder 0,2,1,3 @ 0-3
 func_80061C00: reorder 6,3,4,5 @ 3-6
+func_8007DC9C: subst "lw\s+\$5,D_8009BF68" "la	$2,D_8009BF68" @ 31
+func_8007DC9C: insert_after "lw	$5, 0($2)" @ 31
+# Fix dead load register: $4 -> $2 at idx 20
+func_8007DC9C: subst "lw\s+\$4,0\(\$3\)" "lw	$2,0($3)" @ 20
+# Reorder idx 18-21 to match target: la,lw 0(v1),lw a1 BF78,lw v0 BF4C
+func_8007DC9C: reorder 21,20,19,18 @ 18-21
