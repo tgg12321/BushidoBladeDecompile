@@ -4057,3 +4057,23 @@ func_80060544: subst "la\s+\$3,D_8009B7D0" "la\t$2,D_8009B7D0" @ 52
 func_80060544: subst "sw\s+\$3,28\(\$sp\)" "sw\t$2,28($sp)" @ 53
 func_80060544: delete @ 77
 func_80060544: subst "sll\s+\$4,\$21,2" "sll\t$4,$23,2" @ 108
+
+# func_80060E38: 18-rule stack-offset shift (sp[+4..+68] -> sp[+0..+64])
+func_80060E38: subst "4\(\$sp\)" "0($sp)" @ 3
+func_80060E38: subst "12\(\$sp\)" "8($sp)" @ 6
+func_80060E38: subst "20\(\$sp\)" "16($sp)" @ 9
+func_80060E38: subst "28\(\$sp\)" "24($sp)" @ 12
+func_80060E38: subst "36\(\$sp\)" "32($sp)" @ 15
+func_80060E38: subst "44\(\$sp\)" "40($sp)" @ 18
+func_80060E38: subst "52\(\$sp\)" "48($sp)" @ 21
+func_80060E38: subst "60\(\$sp\)" "56($sp)" @ 24
+func_80060E38: subst "68\(\$sp\)" "64($sp)" @ 71
+func_80060E38: subst "4\(\$sp\)" "0($sp)" @ 74
+func_80060E38: subst "12\(\$sp\)" "8($sp)" @ 77
+func_80060E38: subst "20\(\$sp\)" "16($sp)" @ 80
+func_80060E38: subst "28\(\$sp\)" "24($sp)" @ 83
+func_80060E38: subst "36\(\$sp\)" "32($sp)" @ 86
+func_80060E38: subst "44\(\$sp\)" "40($sp)" @ 89
+func_80060E38: subst "52\(\$sp\)" "48($sp)" @ 92
+func_80060E38: subst "60\(\$sp\)" "56($sp)" @ 95
+func_80060E38: subst "68\(\$sp\)" "64($sp)" @ 98
