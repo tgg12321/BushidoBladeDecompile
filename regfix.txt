@@ -3966,3 +3966,4 @@ func_8007EDBC: insert "mflo $9" @ 35
 func_8007EDBC: insert "lw $8,16($4)" @ 35
 # iter 4: j-delay-slot fill (sw into delay slot)
 func_8007EDBC: fill_delay @ 74 <- 73
+func_800645B0: reorder 3,1,2 @ 1-3
