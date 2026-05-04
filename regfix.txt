@@ -3608,12 +3608,14 @@ func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
 func_8005BD30: delete @ 17
 func_8005BD30: subst "\.L201" ".L201-4" @ 16
 func_8007CA00: subst "j\s+\.L\d+" "subu	$2,$2,$3" @ 14
-func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.L87" @ 15
+func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.LCA00_RET" @ 15
 func_8007CA00: insert_after "subu	$2,$2,$4" @ 15
 func_8007CA00: delete @ 28
 func_8007CA00: delete @ 29
 func_8007CA00: delete @ 30
-func_8007CA00: insert "j	.L81+28" @ 27
+func_8007CA00: insert "j	.LCA00_TAIL" @ 27
+func_8007CA00: insert_label ".LCA00_TAIL:" @ 13
+func_8007CA00: insert_label ".LCA00_RET:" @ 38
 
 # func_8007C7A0: regfix the 22 register/frame diffs from score-105 base in build context
 func_8007C7A0: subst "subu\s+\$sp,\$sp,24" "subu	$sp,$sp,16" @ 4

@@ -30,6 +30,7 @@ extern s32 g_gpu_draw_count;
 extern u32 g_str_drawotag;
 extern u32 g_str_drawsync;
 extern u32 D_80015EE8;
+extern u32 D_80015FDC;
 extern u32 g_gpu_draw_mode;
 
 extern u32 g_str_setdispmask;
@@ -360,90 +361,33 @@ s32 *func_8007B9B0(s32 *arg0) {
     *(_drawenv_t *)dst = *(_drawenv_t *)src;
     return arg0;
 }
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007BAB4\n"
-    "    addiu      $sp, $sp, -0x28\n"
-    "    sw         $s2, 24($sp)\n"
-    "    addu       $s2, $a0, $zero\n"
-    "    sw         $s3, 28($sp)\n"
-    "    lui        $s3, %hi(g_gpu_debug_level)\n"
-    "    addiu      $s3, $s3, %lo(g_gpu_debug_level)\n"
-    "    sw         $ra, 32($sp)\n"
-    "    sw         $s1, 20($sp)\n"
-    "    sw         $s0, 16($sp)\n"
-    "    lbu        $v0, 0($s3)\n"
-    "    nop\n"
-    "    sltiu      $v0, $v0, 0x2\n"
-    "    bnez       $v0, .Lfunc_8007BAB4_8007BB0C\n"
-    "    addu      $s1, $a1, $zero\n"
-    "    lui        $a0, %hi(D_80015FDC)\n"
-    "    addiu      $a0, $a0, %lo(D_80015FDC)\n"
-    "    addu       $a1, $s2, $zero\n"
-    "    lui        $v0, %hi(g_gpu_debug_func)\n"
-    "    lw         $v0, %lo(g_gpu_debug_func)($v0)\n"
-    "    nop\n"
-    "    jalr       $v0\n"
-    "    addu      $a2, $s1, $zero\n"
-    ".Lfunc_8007BAB4_8007BB0C:\n"
-    "    addiu      $s0, $s1, 0x1C\n"
-    "    addu       $a0, $s0, $zero\n"
-    "    jal        func_8007C4B8\n"
-    "    addu      $a1, $s1, $zero\n"
-    "    lui        $a0, (0xFFFFFF >> 16)\n"
-    "    ori        $a0, $a0, (0xFFFFFF & 0xFFFF)\n"
-    "    addu       $a1, $s0, $zero\n"
-    "    addiu      $a2, $zero, 0x40\n"
-    "    lui        $v1, (0xFF000000 >> 16)\n"
-    "    lw         $v0, 28($s1)\n"
-    "    and        $a0, $s2, $a0\n"
-    "    and        $v0, $v0, $v1\n"
-    "    lui        $v1, %hi(g_gpu_dev_table)\n"
-    "    lw         $v1, %lo(g_gpu_dev_table)($v1)\n"
-    "    or         $v0, $v0, $a0\n"
-    "    sw         $v0, 28($s1)\n"
-    "    lw         $a0, 24($v1)\n"
-    "    lw         $v0, 8($v1)\n"
-    "    nop\n"
-    "    jalr       $v0\n"
-    "    addu      $a3, $zero, $zero\n"
-    "    addiu      $a3, $s3, 0xE\n"
-    "    addu       $a2, $s1, $zero\n"
-    "    addiu      $t0, $a2, 0x50\n"
-    ".Lfunc_8007BAB4_8007BB6C:\n"
-    "    lw         $v0, 0($a2)\n"
-    "    lw         $v1, 4($a2)\n"
-    "    lw         $a0, 8($a2)\n"
-    "    lw         $a1, 12($a2)\n"
-    "    sw         $v0, 0($a3)\n"
-    "    sw         $v1, 4($a3)\n"
-    "    sw         $a0, 8($a3)\n"
-    "    sw         $a1, 12($a3)\n"
-    "    addiu      $a2, $a2, 0x10\n"
-    "    bne        $a2, $t0, .Lfunc_8007BAB4_8007BB6C\n"
-    "    addiu     $a3, $a3, 0x10\n"
-    "    lw         $v0, 0($a2)\n"
-    "    lw         $v1, 4($a2)\n"
-    "    lw         $a0, 8($a2)\n"
-    "    sw         $v0, 0($a3)\n"
-    "    sw         $v1, 4($a3)\n"
-    "    sw         $a0, 8($a3)\n"
-    "    lw         $ra, 32($sp)\n"
-    "    lw         $s3, 28($sp)\n"
-    "    lw         $s2, 24($sp)\n"
-    "    lw         $s1, 20($sp)\n"
-    "    lw         $s0, 16($sp)\n"
-    "    addiu      $sp, $sp, 0x28\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+void func_8007BAB4(s32 arg0, s32 *arg1) {
+    s32 *p;
+    u32 *dev;
+    _drawenv_q *src;
+    _drawenv_q *dst;
+    _drawenv_q *end;
+    u8 *base = &g_gpu_debug_level;
+
+    if (*base >= 2) {
+        g_gpu_debug_func(&D_80015FDC, arg0, arg1);
+    }
+    p = arg1 + 7;
+    func_8007C4B8(p, arg1);
+    arg1[7] = (arg1[7] & 0xFF000000) | (arg0 & 0xFFFFFF);
+    dev = g_gpu_dev_table;
+    ((s32 (*)(u32, s32 *, s32, s32))dev[2])(dev[6], p, 0x40, 0);
+
+    dst = (_drawenv_q *)(base + 0xE);
+    src = (_drawenv_q *)arg1;
+    end = (_drawenv_q *)(arg1 + 0x14);
+    do {
+        *dst = *src;
+        src++;
+        dst++;
+    } while (src != end);
+    *(_drawenv_t *)dst = *(_drawenv_t *)src;
+}
 s32 gpu_GetDrawEnv(s32 a0) {
     bb2_memcpy(a0, &g_gpu_draw_env, 0x5C);
     return a0;
