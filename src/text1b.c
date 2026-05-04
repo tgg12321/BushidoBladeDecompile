@@ -17261,132 +17261,58 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80057CC8\n"
-    "    addiu  $sp,$sp,-64\n"
-    "    sw  $s2,32($sp)\n"
-    "    addu  $s2,$a0,$zero\n"
-    "    sw  $s6,48($sp)\n"
-    "    addu  $s6,$a2,$zero\n"
-    "    sw  $s7,52($sp)\n"
-    "    addiu  $v1,$a1,-1\n"
-    "    addu  $a0,$v1,$zero\n"
-    "    sll  $v0,$a1,2\n"
-    "    sw  $ra,56($sp)\n"
-    "    sw  $s5,44($sp)\n"
-    "    sw  $s4,40($sp)\n"
-    "    sw  $s3,36($sp)\n"
-    "    sw  $s1,28($sp)\n"
-    "    sw  $s0,24($sp)\n"
-    "    lw  $a2,4($s2)\n"
-    "    sll  $v1,$v1,16\n"
-    "    addu  $v0,$v0,$a2\n"
-    "    lhu  $s4,0($v0)\n"
-    "    lhu  $s5,2($v0)\n"
-    "    bgez  $v1,.L80057D2C\n"
-    "    addu  $s7,$a3,$zero\n"
-    "    lbu  $v0,3($s2)\n"
-    "    nop\n"
-    "    addiu  $a0,$v0,-1\n"
-    ".L80057D2C:\n"
-    "    addiu  $v0,$a1,1\n"
-    "    addu  $s3,$v0,$zero\n"
-    "    sll  $v0,$v0,16\n"
-    "    lbu  $v1,3($s2)\n"
-    "    sra  $v0,$v0,16\n"
-    "    slt  $v0,$v0,$v1\n"
-    "    bnez  $v0,.L80057D50\n"
-    "    sll  $v0,$a0,16\n"
-    "    addu  $s3,$zero,$zero\n"
-    ".L80057D50:\n"
-    "    sra  $v0,$v0,14\n"
-    "    addu  $v0,$v0,$a2\n"
-    "    sll  $s1,$s4,16\n"
-    "    sra  $s1,$s1,16\n"
-    "    sll  $s0,$s5,16\n"
-    "    sra  $s0,$s0,16\n"
-    "    lh  $a0,0($v0)\n"
-    "    lh  $a1,2($v0)\n"
-    "    subu  $a0,$a0,$s1\n"
-    "    jal  func_8007FD5C\n"
-    "    subu  $a1,$a1,$s0\n"
-    "    sll  $v1,$s3,16\n"
-    "    lw  $a0,4($s2)\n"
-    "    sra  $v1,$v1,14\n"
-    "    addu  $v1,$v1,$a0\n"
-    "    lh  $a0,0($v1)\n"
-    "    lh  $a1,2($v1)\n"
-    "    subu  $a0,$a0,$s1\n"
-    "    subu  $a1,$a1,$s0\n"
-    "    jal  func_8007FD5C\n"
-    "    andi  $s0,$v0,4095\n"
-    "    andi  $v1,$v0,4095\n"
-    "    slt  $v0,$v1,$s0\n"
-    "    beqz  $v0,.L80057DCC\n"
-    "    addiu  $v0,$s0,2048\n"
-    "    subu  $v1,$s0,$v1\n"
-    "    srl  $a0,$v1,31\n"
-    "    addu  $v1,$v1,$a0\n"
-    "    sra  $v1,$v1,1\n"
-    "    j  .L80057DE0\n"
-    "    subu  $a0,$v0,$v1\n"
-    ".L80057DCC:\n"
-    "    subu  $v0,$v1,$s0\n"
-    "    srl  $v1,$v0,31\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sra  $v0,$v0,1\n"
-    "    addu  $a0,$v0,$s0\n"
-    ".L80057DE0:\n"
-    "    lbu  $v0,2($s2)\n"
-    "    nop\n"
-    "    sll  $v1,$v0,2\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    andi  $v0,$a0,4095\n"
-    "    sll  $v0,$v0,1\n"
-    "    lui  $at,%hi(Judge)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lh  $v0,%lo(Judge)($at)\n"
-    "    sll  $v1,$v1,3\n"
-    "    mult  $v1,$v0\n"
-    "    mflo  $t0\n"
-    "    sra  $v0,$t0,12\n"
-    "    addu  $v0,$s4,$v0\n"
-    "    sh  $v0,0($s6)\n"
-    "    sll  $v0,$a0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    addiu  $v0,$v0,1024\n"
-    "    andi  $v0,$v0,4095\n"
-    "    sll  $v0,$v0,1\n"
-    "    lui  $at,%hi(Judge)\n"
-    "    addu  $at,$at,$v0\n"
-    "    lh  $v0,%lo(Judge)($at)\n"
-    "    nop\n"
-    "    mult  $v1,$v0\n"
-    "    mflo  $t0\n"
-    "    sra  $v0,$t0,12\n"
-    "    addu  $v0,$s5,$v0\n"
-    "    sh  $v0,0($s7)\n"
-    "    lw  $ra,56($sp)\n"
-    "    lw  $s7,52($sp)\n"
-    "    lw  $s6,48($sp)\n"
-    "    lw  $s5,44($sp)\n"
-    "    lw  $s4,40($sp)\n"
-    "    lw  $s3,36($sp)\n"
-    "    lw  $s2,32($sp)\n"
-    "    lw  $s1,28($sp)\n"
-    "    lw  $s0,24($sp)\n"
-    "    addiu  $sp,$sp,64\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_8007FD5C(s32, s32);
+extern s16 Judge;
+void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
+    unsigned short prev_idx;
+    register unsigned short next_idx asm("s3");
+    s32 ang_prev;
+    s32 ang_next;
+    s32 ang_mid;
+    s32 scale;
+    s32 base;
+    s32 half;
+    u16 cx;
+    s16 new_var;
+    s16 *p;
+    u16 cy;
+    s16 *table;
+
+    prev_idx = arg1 - 1;
+    table = *(s16 **)(arg0 + 4);
+    cx = *(u16 *)((s32)table + arg1 * 4 + 0);
+    cy = *(u16 *)((s32)table + arg1 * 4 + 2);
+
+    if ((s16) prev_idx < 0) {
+        prev_idx = arg0[3] - 1;
+    }
+
+    {
+        s32 tmp = arg1 + 1;
+        next_idx = tmp;
+        if ((s16) tmp >= (s32)arg0[3]) {
+            next_idx = 0;
+        }
+    }
+
+    p = (s16 *)((s32)table + (((s32)(prev_idx << 16) >> 16) << 2));
+    ang_prev = func_8007FD5C(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
+    p = (s16 *)((s32)(*(s16 **)(arg0 + 4)) + (((s32)(next_idx << 16) >> 16) << 2));
+    ang_next = func_8007FD5C(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
+
+    if (ang_next < ang_prev) {
+        base = ang_prev + 0x800;
+        half = (s32)(ang_prev - ang_next) / 2;
+        ang_mid = base - half;
+    } else {
+        ang_mid = ((s32)(ang_next - ang_prev) / 2) + ang_prev;
+    }
+
+    scale = arg0[2] * 40;
+    *arg2 = cx + ((scale * (s32)(*(&Judge + (ang_mid & 0xFFF)))) >> 12);
+    *arg3 = cy + ((scale * (s32)(new_var = *(&Judge + (((s16)ang_mid + 0x400) & 0xFFF)))) >> 12);
+}
+
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
