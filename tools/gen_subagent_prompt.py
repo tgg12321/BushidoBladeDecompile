@@ -222,11 +222,12 @@ The coordinator (parent agent) has assigned you ONE function. You work
 it end-to-end, commit to YOUR branch, and return -- the coordinator
 integrates your branch into main.
 
-# CRITICAL: First three actions, in order
+# CRITICAL: First four actions, in order
 
 1. **Set up the worktree's toolchain** (gitignored dirs are missing):
    ```
    bash tools/worktree_setup.sh
+   bash tools/agent_log.sh setup-done
    ```
    This symlinks gcc-2.7.2/, decomp-permuter/, m2c/, .venv/, disc/ from
    the main worktree. WITHOUT THIS the maspsx step fails silently and
@@ -249,6 +250,42 @@ integrates your branch into main.
    the worktree's own marker (it auto-detects the project root from cwd).
    Once set, the hook will block `git commit` until `dc.sh verify {func}`
    reports MATCH, then auto-clear the marker on a successful commit.
+
+4. **Sanity-check: is the function already pure C?** (queue staleness guard)
+   ```
+   bash tools/dc.sh classify {func}
+   ```
+   If the classifier reports `src=...c_function` (already pure C in main),
+   STOP IMMEDIATELY:
+   - Run: `bash tools/agent_log.sh already-matched`
+   - Return: `MATCHED branch=<branch> sha=<HEAD-sha> recipe=already-pure-C-no-op`
+   - Do NOT make a no-op commit. Do not waste tokens.
+   - The queue can have stale entries; this catches them in seconds.
+
+   If the classifier reports inline_asm / INCLUDE_ASM / replace_with_asmfile,
+   continue with the workflow below.
+
+# Progress logging (mandatory)
+
+Log major transitions via `bash tools/agent_log.sh <event> [details]`.
+The coordinator monitors progress at any time via `dc.sh agent-status`.
+
+Required events (NOT every shell call -- just transitions):
+- After step 1: `bash tools/agent_log.sh setup-done`  (already in step 1)
+- After classify (step 4): `bash tools/agent_log.sh classified <category> size=<N>`
+- After `dc.sh attempt`: `bash tools/agent_log.sh attempt <RESULT> score=<N>`
+- After each `dc.sh diff`: `bash tools/agent_log.sh diff ins=<N> del=<N> reord=<N> reg=<N>`
+- Each regfix add: `bash tools/agent_log.sh regfix-add <op> @<idx>`
+- Long permuter run: `bash tools/agent_log.sh permuter-start budget=<N>s` /
+  `bash tools/agent_log.sh permuter-done best=<score> elapsed=<N>s`
+- Each `make`: `bash tools/agent_log.sh build OK` or `bash tools/agent_log.sh build MISMATCH`
+- Each `dc.sh verify`: `bash tools/agent_log.sh verify MATCH` or `bash tools/agent_log.sh verify diff=<N>`
+- On match: `bash tools/agent_log.sh matched recipe="<one-line>"`
+- On stuck: `bash tools/agent_log.sh stuck reason="<why>" best=<score>`
+
+If you go >5 min between events the coordinator's status view flags
+you as stalled. Log a heartbeat-ish event (e.g., `attempt`, `diff`,
+`permuter-start`) at least that often during long runs.
 
 # Boundaries (parallel-safe)
 
@@ -280,8 +317,10 @@ The only valid stop conditions:
    from the escalation ladder, including at least one assembly-stream
    regfix attempt, and you can articulate what specifically prevents
    matching with the current toolchain.
+3. Already-matched per the step-4 sanity check -- return immediately,
+   no commit, recipe=already-pure-C-no-op.
 
-# Workflow (after the three setup actions)
+# Workflow (after the four setup actions, only if step 4 said the function isn't already pure C)
 
 1. **Get context:** `bash tools/dc.sh agent-brief {func}`
 2. **Run the auto pipeline:** `bash tools/dc.sh attempt {func}`
@@ -337,6 +376,7 @@ Work silently. Return ONE line in one of these formats:
 
   MATCHED branch=<branch> sha=<commit-sha> recipe=<one-line summary>
   MATCHED branch=<branch> sha=<commit-sha> recipe=<summary> retro=<sha>
+  MATCHED branch=<branch> sha=<HEAD-sha> recipe=already-pure-C-no-op
   STUCK branch=<branch> tried=<technique-list> best_score=<n>
         diff=<ins/del/reord/reg breakdown> remaining=<description>
 

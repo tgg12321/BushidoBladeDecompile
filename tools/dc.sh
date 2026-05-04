@@ -30,6 +30,7 @@
 #   bash tools/dc.sh verify --all                  — verify all C functions
 #   bash tools/dc.sh subagent-prompt <func>       — generate worker-subagent prompt (autonomous mode)
 #   bash tools/dc.sh integrate <branch>           — merge worker branch into main with full verification
+#   bash tools/dc.sh agent-status                  — drop-in view of running parallel-worker progress
 #   bash tools/dc.sh run-log <event> [args...]    — log an autonomous-run event (run-start, func-*, run-end)
 #   bash tools/dc.sh run-summary [--all|--json]   — summarize autonomous run(s)
 #
@@ -582,6 +583,14 @@ print(f'Replaced {func} in {src}')
         # set, we know the queue is being regenerated and the active
         # function is no longer relevant.
         : > .bb2_active_func 2>/dev/null || true
+        ;;
+
+    agent-status)
+        # Snapshot of all running parallel-orchestration workers.
+        # Reads tmp/parallel_logs/<func>.log from each worker (written
+        # via tools/agent_log.sh) and prints a per-worker summary.
+        # Safe to run any time; doesn't touch worker state.
+        python3 tools/agent_status.py "$@" 2>&1
         ;;
 
     integrate)
