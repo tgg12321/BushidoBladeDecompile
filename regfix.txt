@@ -3812,7 +3812,8 @@ func_800644FC: delete @ 32
 func_800644FC: reorder 17,12,11,13,14,15,16 @ 11-17
 func_800644FC: reorder 25,23,24 @ 23-25
 func_800644FC: reorder 30,29 @ 29-30
-func_800644FC: subst "\.L\d+" ".L473-4" @ 22
+func_800644FC: insert_label ".Lfunc44FC_after_call:" @ 29
+func_800644FC: subst "\.L\d+" ".Lfunc44FC_after_call" @ 22
 
 # func_8007B6C8: layout fix beq->bne
 func_8007B6C8: subst "beq\s+\$2,\$0,\.L15" "bne	$2,$0,.LbodyB6C8" @ 17
@@ -4045,3 +4046,14 @@ func_80078654: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 38
 func_80078654: insert_after "addu	$3,$2,$zero" @ 37
 # Reorder epilog loads: mine has s0,s1 but target has s1,s0 (post-insert indices)
 func_80078654: reorder 110,109 @ 109-110
+func_80060544: reorder 17,18,15,16 @ 15-18
+func_80060544: subst "la\s+\$3,D_8009B770" "la\t$2,D_8009B770" @ 29
+func_80060544: subst "addu\s+\$2,\$17,\$3" "addu\t$2,$17,$2" @ 30
+func_80060544: subst "la\s+\$3,D_8009B7D8" "la\t$2,D_8009B7D8" @ 45
+func_80060544: subst "sw\s+\$3,28\(\$sp\)" "sw\t$2,28($sp)" @ 47
+func_80060544: subst "la\s+\$3,D_8009B800" "la\t$2,D_8009B800" @ 48
+func_80060544: subst "sw\s+\$3,28\(\$sp\)" "sw\t$2,28($sp)" @ 50
+func_80060544: subst "la\s+\$3,D_8009B7D0" "la\t$2,D_8009B7D0" @ 52
+func_80060544: subst "sw\s+\$3,28\(\$sp\)" "sw\t$2,28($sp)" @ 53
+func_80060544: delete @ 77
+func_80060544: subst "sll\s+\$4,\$21,2" "sll\t$4,$23,2" @ 108
