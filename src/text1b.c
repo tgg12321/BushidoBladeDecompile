@@ -37406,174 +37406,76 @@ void func_8006B898(s32 arg0, s32 arg1) {
     func_8006B120(sp10);
     func_8006B578(&arg0, &arg1);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8006B92C\n"
-    "    addiu  $sp,$sp,-40\n"
-    "    sw  $s1,28($sp)\n"
-    "    addu  $s1,$a1,$zero\n"
-    "    sw  $s0,24($sp)\n"
-    "    addu  $s0,$zero,$zero\n"
-    "    addiu  $a0,$sp,16\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    .word 0x8F860430\n"
-    "    lui  $a3,%hi(D_800A350C)\n"
-    "    addiu  $a3,$a3,%lo(D_800A350C)\n"
-    "    sw  $ra,32($sp)\n"
-    "    lw  $v1,0($s1)\n"
-    "    addiu  $a2,$a2,12\n"
-    "    andi  $v0,$v1,65535\n"
-    "    srl  $v1,$v1,16\n"
-    "    or  $v0,$v0,$v1\n"
-    "    jal  func_800692C0\n"
-    "    sw  $v0,16($sp)\n"
-    "    sra  $v1,$v0,16\n"
-    "    addiu  $v0,$zero,1\n"
-    "    beq  $v1,$v0,.L8006B994\n"
-    "    addiu  $v0,$zero,2\n"
-    "    beq  $v1,$v0,.L8006B9D8\n"
-    "    nop\n"
-    "    j  .L8006BA3C\n"
-    "    nop\n"
-    ".L8006B994:\n"
-    "    .word 0x8F84042C\n"
-    "    addiu  $v0,$zero,16384\n"
-    "    andi  $v1,$a0,57344\n"
-    "    bne  $v1,$v0,.L8006B9C0\n"
-    "    lui  $v1,65535\n"
-    "    lui  $v0,65535\n"
-    "    ori  $v0,$v0,8191\n"
-    "    and  $v0,$a0,$v0\n"
-    "    .word 0xAF82042C\n"
-    "    j  .L8006BA30\n"
-    "    addu  $a0,$zero,$zero\n"
-    ".L8006B9C0:\n"
-    "    ori  $v1,$v1,8191\n"
-    "    and  $v1,$a0,$v1\n"
-    "    srl  $v0,$a0,13\n"
-    "    andi  $v0,$v0,7\n"
-    "    j  .L8006BA1C\n"
-    "    addiu  $v0,$v0,1\n"
-    ".L8006B9D8:\n"
-    "    .word 0x8F84042C\n"
-    "    nop\n"
-    "    andi  $v0,$a0,57344\n"
-    "    bnez  $v0,.L8006BA08\n"
-    "    lui  $v1,65535\n"
-    "    lui  $v0,65535\n"
-    "    ori  $v0,$v0,8191\n"
-    "    and  $v0,$a0,$v0\n"
-    "    ori  $v0,$v0,16384\n"
-    "    .word 0xAF82042C\n"
-    "    j  .L8006BA30\n"
-    "    addu  $a0,$zero,$zero\n"
-    ".L8006BA08:\n"
-    "    ori  $v1,$v1,8191\n"
-    "    and  $v1,$a0,$v1\n"
-    "    srl  $v0,$a0,13\n"
-    "    andi  $v0,$v0,7\n"
-    "    addiu  $v0,$v0,-1\n"
-    ".L8006BA1C:\n"
-    "    andi  $v0,$v0,7\n"
-    "    sll  $v0,$v0,13\n"
-    "    or  $v1,$v1,$v0\n"
-    "    .word 0xAF83042C\n"
-    "    addu  $a0,$zero,$zero\n"
-    ".L8006BA30:\n"
-    "    addiu  $a1,$zero,127\n"
-    "    jal  func_8005C650\n"
-    "    addiu  $a2,$zero,127\n"
-    ".L8006BA3C:\n"
-    "    .word 0x8F82042C\n"
-    "    nop\n"
-    "    srl  $v0,$v0,13\n"
-    "    andi  $v1,$v0,7\n"
-    "    addiu  $v0,$zero,1\n"
-    "    beq  $v1,$v0,.L8006BAAC\n"
-    "    slti  $v0,$v1,2\n"
-    "    beqz  $v0,.L8006BA70\n"
-    "    nop\n"
-    "    beqz  $v1,.L8006BA84\n"
-    "    lui  $v1,64\n"
-    "    j  .L8006BB28\n"
-    "    lui  $v1,16\n"
-    ".L8006BA70:\n"
-    "    addiu  $v0,$zero,2\n"
-    "    beq  $v1,$v0,.L8006BAD8\n"
-    "    lui  $v1,64\n"
-    "    j  .L8006BB28\n"
-    "    lui  $v1,16\n"
-    ".L8006BA84:\n"
-    "    lw  $v0,0($s1)\n"
-    "    ori  $v1,$v1,64\n"
-    "    and  $v0,$v0,$v1\n"
-    "    beqz  $v0,.L8006BB24\n"
-    "    addiu  $a0,$zero,1\n"
-    "    addiu  $a1,$zero,127\n"
-    "    jal  func_8005C650\n"
-    "    addiu  $a2,$zero,127\n"
-    "    j  .L8006BB24\n"
-    "    addiu  $s0,$zero,2\n"
-    ".L8006BAAC:\n"
-    "    lui  $v1,64\n"
-    "    lw  $v0,0($s1)\n"
-    "    ori  $v1,$v1,64\n"
-    "    and  $v0,$v0,$v1\n"
-    "    beqz  $v0,.L8006BB24\n"
-    "    addiu  $a0,$zero,1\n"
-    "    addiu  $a1,$zero,127\n"
-    "    jal  func_8005C650\n"
-    "    addiu  $a2,$zero,127\n"
-    "    j  .L8006BB24\n"
-    "    addiu  $s0,$zero,3\n"
-    ".L8006BAD8:\n"
-    "    lw  $v0,0($s1)\n"
-    "    ori  $v1,$v1,64\n"
-    "    and  $v0,$v0,$v1\n"
-    "    beqz  $v0,.L8006BB24\n"
-    "    addiu  $a0,$zero,1\n"
-    "    addiu  $a1,$zero,127\n"
-    "    jal  func_8005C650\n"
-    "    addiu  $a2,$zero,127\n"
-    "    addiu  $s0,$zero,1\n"
-    "    .word 0x8F82042C\n"
-    "    addiu  $v1,$zero,-7169\n"
-    "    and  $v1,$v0,$v1\n"
-    "    srl  $v0,$v0,10\n"
-    "    andi  $v0,$v0,7\n"
-    "    addiu  $v0,$v0,1\n"
-    "    andi  $v0,$v0,7\n"
-    "    sll  $v0,$v0,10\n"
-    "    or  $v1,$v1,$v0\n"
-    "    .word 0xAF83042C\n"
-    ".L8006BB24:\n"
-    "    lui  $v1,16\n"
-    ".L8006BB28:\n"
-    "    lw  $v0,0($s1)\n"
-    "    ori  $v1,$v1,16\n"
-    "    and  $v0,$v0,$v1\n"
-    "    beqz  $v0,.L8006BB4C\n"
-    "    addiu  $a0,$zero,2\n"
-    "    addiu  $a1,$zero,127\n"
-    "    jal  func_8005C650\n"
-    "    addiu  $a2,$zero,127\n"
-    "    addiu  $s0,$zero,1\n"
-    ".L8006BB4C:\n"
-    "    addu  $v0,$s0,$zero\n"
-    "    lw  $ra,32($sp)\n"
-    "    lw  $s1,28($sp)\n"
-    "    lw  $s0,24($sp)\n"
-    "    addiu  $sp,$sp,40\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern u32 D_800A34F8;
+extern s32 D_800A350C;
+s32 func_8006B92C(s32 *unused, u32 *arg1) {
+    s32 sp10;
+    s32 ret;
+    s32 idx;
+    s32 var_v0;
+    register u32 var_v1 asm("v1");
+    s32 var_s0 = 0;
+    u32 v;
+    u32 a0;
+    v = *arg1;
+    sp10 = (v & 0xFFFF) | (v >> 16);
+    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, &D_800A350C);
+    ret >>= 16;
+    switch (ret) {
+    case 1:
+        a0 = D_800A34F8;
+        if ((a0 & 0xE000) == 0x4000) {
+            D_800A34F8 = a0 & 0xFFFF1FFF;
+        } else {
+            var_v1 = a0 & 0xFFFF1FFF;
+            var_v0 = ((a0 >> 13) & 7) + 1;
+            D_800A34F8 = var_v1 | ((var_v0 & 7) << 13);
+        }
+        func_8005C650(0, 0x7F, 0x7F);
+        break;
+    case 2:
+        a0 = D_800A34F8;
+        if ((a0 & 0xE000) == 0) {
+            D_800A34F8 = (a0 & 0xFFFF1FFF) | 0x4000;
+        } else {
+            var_v1 = a0 & 0xFFFF1FFF;
+            var_v0 = ((a0 >> 13) & 7) - 1;
+            D_800A34F8 = var_v1 | ((var_v0 & 7) << 13);
+        }
+        func_8005C650(0, 0x7F, 0x7F);
+        break;
+    }
+
+    idx = (D_800A34F8 >> 13) & 7;
+    switch (idx) {
+    case 0:
+        if (*arg1 & 0x400040) {
+            func_8005C650(1, 0x7F, 0x7F);
+            var_s0 = 2;
+        }
+        break;
+    case 1:
+        if (*arg1 & 0x400040) {
+            func_8005C650(1, 0x7F, 0x7F);
+            var_s0 = 3;
+        }
+        break;
+    case 2:
+        if (*arg1 & 0x400040) {
+            func_8005C650(1, 0x7F, 0x7F);
+            var_s0 = 1;
+            D_800A34F8 = (D_800A34F8 & ~0x1C00) | (((((D_800A34F8 >> 10) & 7) + 1) & 7) << 10);
+        }
+        break;
+    }
+
+    if (*arg1 & 0x100010) {
+        func_8005C650(2, 0x7F, 0x7F);
+        var_s0 = 1;
+    }
+    return var_s0;
+}
+
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
