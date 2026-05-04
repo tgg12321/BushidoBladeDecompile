@@ -2293,6 +2293,14 @@ extern s32 D_8009BF78;
 extern s32 D_8009BF88;
 extern u8 D_800F189C[];
 extern u8 D_80103680[];
+extern s32 g_str_gpu_timeout;
+extern s32 D_80016044;
+extern u32 *g_gpu_dma_madr;
+extern s32 *D_8009BF64;
+extern s32 D_8009BF68[];
+extern s32 D_8009BF6C;
+extern s32 D_8009BF70;
+extern s32 debug_printf();
 s32 func_8007D9C4(s32 arg0) {
     D_8009BF88 = motion_make_table(0);
     D_8009BF7C = 0;
@@ -2355,112 +2363,30 @@ void func_8007DC68(void) {
     g_gpu_vcount = sys_VSync(-1) + 0xF0;
     g_gpu_draw_count = 0;
 }
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007DC9C\n"
-    "    addiu      $sp, $sp, -0x20\n"
-    "    sw         $ra, 24($sp)\n"
-    "    jal        sys_VSync\n"
-    "    addiu     $a0, $zero, -0x1\n"
-    "    lui        $v1, %hi(g_gpu_vcount)\n"
-    "    lw         $v1, %lo(g_gpu_vcount)($v1)\n"
-    "    nop\n"
-    "    slt        $v1, $v1, $v0\n"
-    "    bnez       $v1, .Lfunc_8007DC9C_8007DCEC\n"
-    "    nop\n"
-    "    lui        $v1, %hi(g_gpu_draw_count)\n"
-    "    lw         $v1, %lo(g_gpu_draw_count)($v1)\n"
-    "    nop\n"
-    "    addiu      $v0, $v1, 0x1\n"
-    "    lui        $at, %hi(g_gpu_draw_count)\n"
-    "    sw         $v0, %lo(g_gpu_draw_count)($at)\n"
-    "    lui        $v0, (0xF0000 >> 16)\n"
-    "    slt        $v0, $v0, $v1\n"
-    "    beqz       $v0, .Lfunc_8007DC9C_8007DDF4\n"
-    "    nop\n"
-    ".Lfunc_8007DC9C_8007DCEC:\n"
-    "    lui        $v1, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v1, %lo(g_gpu_stat_reg)($v1)\n"
-    "    lui        $a0, %hi(g_str_gpu_timeout)\n"
-    "    addiu      $a0, $a0, %lo(g_str_gpu_timeout)\n"
-    "    lw         $v0, 0($v1)\n"
-    "    lui        $a1, %hi(D_8009BF78)\n"
-    "    lw         $a1, %lo(D_8009BF78)($a1)\n"
-    "    lui        $v0, %hi(g_gpu_dma_madr)\n"
-    "    lw         $v0, %lo(g_gpu_dma_madr)($v0)\n"
-    "    lui        $t0, %hi(D_8009BF7C)\n"
-    "    lw         $t0, %lo(D_8009BF7C)($t0)\n"
-    "    lw         $v0, 0($v0)\n"
-    "    subu       $a1, $a1, $t0\n"
-    "    sw         $v0, 16($sp)\n"
-    "    lui        $v0, %hi(g_gpu_dma_chcr)\n"
-    "    lw         $v0, %lo(g_gpu_dma_chcr)($v0)\n"
-    "    lw         $a2, 0($v1)\n"
-    "    lw         $a3, 0($v0)\n"
-    "    jal        debug_printf\n"
-    "    andi      $a1, $a1, 0x3F\n"
-    "    lui        $v0, %hi(D_8009BF68)\n"
-    "    addiu      $v0, $v0, %lo(D_8009BF68)\n"
-    "    lw         $a1, 0($v0)\n"
-    "    lui        $a2, %hi(D_8009BF6C)\n"
-    "    lw         $a2, %lo(D_8009BF6C)($a2)\n"
-    "    lui        $a3, %hi(D_8009BF70)\n"
-    "    lw         $a3, %lo(D_8009BF70)($a3)\n"
-    "    lui        $a0, %hi(D_80016044)\n"
-    "    addiu      $a0, $a0, %lo(D_80016044)\n"
-    "    jal        debug_printf\n"
-    "    nop\n"
-    "    jal        motion_make_table\n"
-    "    addu      $a0, $zero, $zero\n"
-    "    lui        $at, %hi(D_8009BF7C)\n"
-    "    sw         $zero, %lo(D_8009BF7C)($at)\n"
-    "    lui        $v1, %hi(D_8009BF7C)\n"
-    "    lw         $v1, %lo(D_8009BF7C)($v1)\n"
-    "    lui        $at, %hi(D_8009BF88)\n"
-    "    sw         $v0, %lo(D_8009BF88)($at)\n"
-    "    lui        $at, %hi(D_8009BF78)\n"
-    "    sw         $v1, %lo(D_8009BF78)($at)\n"
-    "    lui        $v1, %hi(g_gpu_dma_chcr)\n"
-    "    lw         $v1, %lo(g_gpu_dma_chcr)($v1)\n"
-    "    addiu      $v0, $zero, 0x401\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v1, %hi(D_8009BF64)\n"
-    "    lw         $v1, %lo(D_8009BF64)($v1)\n"
-    "    nop\n"
-    "    lw         $v0, 0($v1)\n"
-    "    nop\n"
-    "    ori        $v0, $v0, 0x800\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v1, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v1, %lo(g_gpu_stat_reg)($v1)\n"
-    "    lui        $v0, (0x2000000 >> 16)\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v1, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v1, %lo(g_gpu_stat_reg)($v1)\n"
-    "    lui        $v0, (0x1000000 >> 16)\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $a0, %hi(D_8009BF88)\n"
-    "    lw         $a0, %lo(D_8009BF88)($a0)\n"
-    "    jal        motion_make_table\n"
-    "    nop\n"
-    "    j          .Lfunc_8007DC9C_8007DDF8\n"
-    "    addiu     $v0, $zero, -0x1\n"
-    ".Lfunc_8007DC9C_8007DDF4:\n"
-    "    addu       $v0, $zero, $zero\n"
-    ".Lfunc_8007DC9C_8007DDF8:\n"
-    "    lw         $ra, 24($sp)\n"
-    "    addiu      $sp, $sp, 0x20\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
-s32 func_8007DE08(s32 arg0) {
+s32 func_8007DC9C(void) {
+    volatile s32 *new_var2;
+    s32 temp_v0;
+    s32 temp_v1;
+    s32 new_var;
+    new_var2 = &D_8009BF7C;
+    if ((g_gpu_vcount < sys_VSync(-1)) || ((temp_v1 = g_gpu_draw_count, g_gpu_draw_count = temp_v1 + 1, (temp_v1 > 0xF0000) != 0))) {
+        new_var = *g_gpu_stat_reg;
+        debug_printf(&g_str_gpu_timeout, (D_8009BF78 - D_8009BF7C) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
+        (void)new_var;
+        debug_printf(&D_80016044, D_8009BF68[0], D_8009BF6C, D_8009BF70);
+        temp_v0 = motion_make_table(0);
+        D_8009BF7C = 0;
+        D_8009BF88 = temp_v0;
+        D_8009BF78 = *new_var2;
+        *g_gpu_dma_chcr = 0x401;
+        *D_8009BF64 |= 0x800;
+        *g_gpu_stat_reg = 0x02000000;
+        *g_gpu_stat_reg = 0x01000000;
+        motion_make_table(D_8009BF88);
+        return -1;
+    }
+    return 0;
+}s32 func_8007DE08(s32 arg0) {
     *(volatile s32 *)g_gpu_stat_reg = 0x10000007;
     if ((*(volatile s32 *)g_gpu_data_reg & 0xFFFFFF) != 2) {
         *(volatile s32 *)g_gpu_data_reg = (*(volatile s32 *)g_gpu_stat_reg & 0x3FFF) | 0xE1001000;
