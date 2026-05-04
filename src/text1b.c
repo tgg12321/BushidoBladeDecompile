@@ -27915,104 +27915,69 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80061D74\n"
-    "    addiu  $sp,$sp,-104\n"
-    "    sw  $s1,92($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    addiu  $a0,$sp,24\n"
-    "    sw  $s0,88($sp)\n"
-    "    addiu  $s0,$sp,48\n"
-    "    sh  $a1,26($sp)\n"
-    "    addu  $a1,$s0,$zero\n"
-    "    lui  $v0,%hi(D_800F116C)\n"
-    "    addiu  $v0,$v0,%lo(D_800F116C)\n"
-    "    .word 0xAF82039C\n"
-    "    addiu  $v0,$zero,-2560\n"
-    "    sh  $v0,18($sp)\n"
-    "    addiu  $v0,$zero,2560\n"
-    "    sw  $ra,96($sp)\n"
-    "    sh  $zero,16($sp)\n"
-    "    sh  $v0,20($sp)\n"
-    "    sw  $zero,40($sp)\n"
-    "    sw  $zero,36($sp)\n"
-    "    sw  $zero,32($sp)\n"
-    "    sh  $zero,28($sp)\n"
-    "    jal  func_8007F35C\n"
-    "    sh  $zero,24($sp)\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    sw  $zero,76($sp)\n"
-    "    sw  $zero,72($sp)\n"
-    "    jal  gte_SetRotMatrix\n"
-    "    sw  $zero,68($sp)\n"
-    "    jal  gte_SetTransVector\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    addiu  $a0,$sp,16\n"
-    "    addiu  $a1,$sp,32\n"
-    "    jal  func_8007F2AC\n"
-    "    addiu  $a2,$sp,80\n"
-    "    lw  $v0,32($sp)\n"
-    "    lw  $v1,36($sp)\n"
-    "    lw  $a0,40($sp)\n"
-    "    .word 0x8F85039C\n"
-    "    sh  $v0,16($sp)\n"
-    "    addiu  $v0,$sp,16\n"
-    "    sh  $v1,18($sp)\n"
-    "    lui  $v1,%hi(D_800F1168)\n"
-    "    addiu  $v1,$v1,%lo(D_800F1168)\n"
-    "    sh  $a0,20($sp)\n"
-    "    sw  $s1,12($a1)\n"
-    "    sw  $v0,16($a1)\n"
-    "    lbu  $v0,0($v1)\n"
-    "    nop\n"
-    "    beqz  $v0,.L80061E64\n"
-    "    nop\n"
-    "    lbu  $v0,1($v1)\n"
-    "    nop\n"
-    "    beqz  $v0,.L80061E54\n"
-    "    addiu  $a0,$v1,1\n"
-    "    sb  $zero,1($v1)\n"
-    "    sb  $zero,0($v1)\n"
-    ".L80061E54:\n"
-    "    lbu  $v0,0($v1)\n"
-    "    nop\n"
-    "    bnez  $v0,.L80061E84\n"
-    "    nop\n"
-    ".L80061E64:\n"
-    "    lui  $a0,1\n"
-    "    ori  $a0,$a0,24\n"
-    "    .word 0x8F83039C\n"
-    "    lui  $v0,%hi(D_800F1168)\n"
-    "    addiu  $v0,$v0,%lo(D_800F1168)\n"
-    "    sw  $v0,20($v1)\n"
-    "    j  .L80061EA0\n"
-    "    sw  $a0,0($v1)\n"
-    ".L80061E84:\n"
-    "    lbu  $v0,1($v1)\n"
-    "    nop\n"
-    "    bnez  $v0,.L80061EA0\n"
-    "    lui  $v0,1\n"
-    "    ori  $v0,$v0,25\n"
-    "    sw  $a0,20($a1)\n"
-    "    sw  $v0,0($a1)\n"
-    ".L80061EA0:\n"
-    "    jal  func_80060A68\n"
-    "    nop\n"
-    "    lw  $ra,96($sp)\n"
-    "    lw  $s1,92($sp)\n"
-    "    lw  $s0,88($sp)\n"
-    "    addiu  $sp,$sp,104\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern u8 D_800F1168[];
+void func_8007F2AC(s16 *, s32 *, s32 *);
+void func_8007F35C(s16 *, u8 *);
+void gte_SetRotMatrix(u8 *);
+void gte_SetTransVector(u8 *);
+void func_80061D74(s32 arg0, s16 arg1) {
+    s16 sp10[4];
+    s16 sp18[4];
+    s32 sp20[3];
+    u8 sp30[32];
+    s32 sp50;
+
+    D_800A3468 = (s32)&D_800F116C;
+    sp10[1] = -0xA00;
+    sp10[0] = 0;
+    sp10[2] = 0xA00;
+    sp20[2] = 0;
+    sp20[1] = 0;
+    sp20[0] = 0;
+    sp18[2] = 0;
+    sp18[1] = arg1;
+    sp18[0] = 0;
+    func_8007F35C(sp18, sp30);
+    *(s32 *)(sp30 + 0x1C) = 0;
+    *(s32 *)(sp30 + 0x18) = 0;
+    *(s32 *)(sp30 + 0x14) = 0;
+    gte_SetRotMatrix(sp30);
+    gte_SetTransVector(sp30);
+    func_8007F2AC(sp10, sp20, &sp50);
+    sp10[0] = (s16)sp20[0];
+    sp10[1] = (s16)sp20[1];
+    sp10[2] = (s16)sp20[2];
+    *(s32 *)(D_800A3468 + 0xC) = arg0;
+    *(s32 *)(D_800A3468 + 0x10) = (s32)sp10;
+    if (D_800F1168[0] != 0) {
+        if (D_800F1168[1] != 0) {
+            D_800F1168[1] = 0;
+            D_800F1168[0] = 0;
+        }
+        if (D_800F1168[0] != 0) goto check_one_zero;
+    }
+    *(s32 *)(D_800A3468 + 0x14) = (s32)D_800F1168;
+    *(s32 *)D_800A3468 = 0x10018;
+    goto end;
+check_one_zero:
+    if (D_800F1168[1] == 0) {
+        *(s32 *)(D_800A3468 + 0x14) = (s32)(D_800F1168 + 1);
+        *(s32 *)D_800A3468 = 0x10019;
+    }
+end:
+    func_80060A68();
+}
+    *(s32 *)(D_800A3468 + 0x14) = (s32)D_800F1168;
+    *(s32 *)D_800A3468 = 0x10018;
+    goto end;
+check_one_zero:
+    if (D_800F1168[1] == 0) {
+        *(s32 *)(D_800A3468 + 0x14) = (s32)(D_800F1168 + 1);
+        *(s32 *)D_800A3468 = 0x10019;
+    }
+end:
+    func_80060A68();
+}
 void func_80061EC0(s32 *arg0) {
     s32 *v1 = (s32 *)&D_800F116C;
     register s32 t asm("$2");
