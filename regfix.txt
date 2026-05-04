@@ -4009,3 +4009,18 @@ func_80057CC8: subst "sll\s+\$19,\$19,16" "sll	$3,$19,16" @ 45
 func_80057CC8: subst "lw\s+\$3,4\(\$18\)" "lw	$4,4($18)" @ 46
 func_80057CC8: subst "sra\s+\$19,\$19,14" "sra	$3,$3,14" @ 47
 func_80057CC8: subst "addu\s+\$3,\$3,\$19" "addu	$3,$3,$4" @ 48
+# func_80075670: register naming fixups
+# First reload (idx 0-12): a3<->v1
+func_80075670: $7 <-> $3 @ 0-12
+# Second reload (idx 27, 29): subst  ->  (target reuses  across these uses)
+func_80075670: subst "\$7" "$3" @ 27
+func_80075670: subst "\$7" "$3" @ 29
+# Third reload + 3-cycle in if-taken (idx 36-61)
+func_80075670: $7 <-> $5 @ 36-61
+func_80075670: $7 <-> $6 @ 36-61
+# Fourth-reload reuse of  (idx 70 dest swap, idx 74 src swap)
+func_80075670: subst "\$3,\$7,\$3" "$7,$7,$3" @ 70
+func_80075670: subst "104\(\$3\)" "104($7)" @ 74
+# Else branch + 3-cycle 2nd loop (idx 75-101): same swap pattern
+func_80075670: $7 <-> $5 @ 75-101
+func_80075670: $7 <-> $6 @ 75-101
