@@ -51015,138 +51015,76 @@ extern s32 D_800A360C;
 s32 func_80078634(s32 a0) {
     return D_800A360C + a0 * 44;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80078654\n"
-    "    addiu  $sp,$sp,-88\n"
-    "    sw  $s1,76($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    .word 0x8F830544\n"
-    "    .word 0x8F84053C\n"
-    "    addiu  $v0,$zero,2\n"
-    "    sw  $s2,80($sp)\n"
-    "    addu  $s2,$zero,$zero\n"
-    "    sw  $ra,84($sp)\n"
-    "    sw  $s0,72($sp)\n"
-    "    sw  $v0,44($sp)\n"
-    "    sb  $zero,64($sp)\n"
-    "    sw  $zero,40($sp)\n"
-    "    sw  $zero,48($sp)\n"
-    "    lw  $v0,60($v1)\n"
-    "    sw  $zero,52($sp)\n"
-    "    sw  $v0,24($sp)\n"
-    "    addiu  $v0,$v0,12\n"
-    "    sw  $v0,28($sp)\n"
-    "    slti  $v0,$a0,2730\n"
-    "    bnez  $v0,.L80078774\n"
-    "    addiu  $s0,$v1,20\n"
-    "    slti  $v0,$a0,2820\n"
-    "    bnez  $v0,.L80078710\n"
-    "    lui  $v1,34952\n"
-    "    ori  $v1,$v1,34953\n"
-    "    addiu  $v0,$a0,-2820\n"
-    "    sll  $v0,$v0,7\n"
-    "    mult  $v0,$v1\n"
-    "    addiu  $v1,$zero,1\n"
-    "    sb  $v1,64($sp)\n"
-    "    mfhi  $t0\n"
-    "    addu  $v1,$t0,$v0\n"
-    "    sra  $v1,$v1,3\n"
-    "    sra  $v0,$v0,31\n"
-    "    subu  $v1,$v1,$v0\n"
-    "    addiu  $v0,$zero,128\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    addu  $v1,$v0,$zero\n"
-    "    sll  $v0,$v0,16\n"
-    "    bgez  $v0,.L80078704\n"
-    "    addu  $v0,$v1,$zero\n"
-    "    addu  $v1,$zero,$zero\n"
-    "    addu  $v0,$v1,$zero\n"
-    ".L80078704:\n"
-    "    sb  $v0,67($sp)\n"
-    "    sb  $v0,66($sp)\n"
-    "    sb  $v0,65($sp)\n"
-    ".L80078710:\n"
-    "    lw  $v0,12($s1)\n"
-    "    addiu  $a0,$sp,24\n"
-    "    jal  func_8007352C\n"
-    "    sw  $v0,32($sp)\n"
-    "    sw  $v0,12($s1)\n"
-    "    lw  $a0,24($sp)\n"
-    "    jal  func_8006E480\n"
-    "    addu  $a1,$s2,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    sw  $zero,16($sp)\n"
-    "    lw  $a0,20($s1)\n"
-    "    jal  initTexPage\n"
-    "    addu  $a3,$v0,$zero\n"
-    "    lw  $a1,20($s1)\n"
-    "    lw  $a0,44($sp)\n"
-    "    lui  $v0,%hi(D_800A374C)\n"
-    "    lw  $v0,%lo(D_800A374C)($v0)\n"
-    "    sll  $a0,$a0,2\n"
-    "    jal  ot_Link\n"
-    "    addu  $a0,$v0,$a0\n"
-    "    lw  $v0,20($s1)\n"
-    "    nop\n"
-    "    addiu  $v0,$v0,12\n"
-    "    sw  $v0,20($s1)\n"
-    ".L80078774:\n"
-    "    j  .L800787F8\n"
-    "    sb  $zero,64($sp)\n"
-    ".L8007877C:\n"
-    "    lw  $v0,0($s0)\n"
-    "    .word 0x8F83053C\n"
-    "    sw  $v0,24($sp)\n"
-    "    addiu  $v0,$v0,12\n"
-    "    negu  $v1,$v1\n"
-    "    sw  $v0,28($sp)\n"
-    "    sw  $v1,52($sp)\n"
-    "    lw  $v0,12($s1)\n"
-    "    jal  func_8007352C\n"
-    "    sw  $v0,32($sp)\n"
-    "    sw  $v0,12($s1)\n"
-    "    lw  $a0,24($sp)\n"
-    "    jal  func_8006E480\n"
-    "    addu  $a1,$s2,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    sw  $zero,16($sp)\n"
-    "    lw  $a0,20($s1)\n"
-    "    jal  initTexPage\n"
-    "    addu  $a3,$v0,$zero\n"
-    "    lw  $a1,20($s1)\n"
-    "    lw  $a0,44($sp)\n"
-    "    lui  $v0,%hi(D_800A374C)\n"
-    "    lw  $v0,%lo(D_800A374C)($v0)\n"
-    "    sll  $a0,$a0,2\n"
-    "    jal  ot_Link\n"
-    "    addu  $a0,$v0,$a0\n"
-    "    lw  $v0,20($s1)\n"
-    "    addiu  $s0,$s0,4\n"
-    "    addiu  $v0,$v0,12\n"
-    "    sw  $v0,20($s1)\n"
-    ".L800787F8:\n"
-    "    lw  $v1,4($s0)\n"
-    "    addiu  $v0,$zero,-1\n"
-    "    bne  $v1,$v0,.L8007877C\n"
-    "    addiu  $a0,$sp,24\n"
-    "    lw  $ra,84($sp)\n"
-    "    lw  $s2,80($sp)\n"
-    "    lw  $s1,76($sp)\n"
-    "    lw  $s0,72($sp)\n"
-    "    addiu  $sp,$sp,88\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 func_8006E480(s32, s32);
+extern s32 func_8007352C(s32 *);
+extern s32 initTexPage(s32, s32, s32, s32, s32);
+extern s32 ot_Link(s32, s32);
+extern s32 D_800A3608;
+extern s32 *D_800A3610;
+extern s32 D_800A374C;
+
+typedef struct {
+    s32 a;       /* sp18 - 0x00 */
+    s32 b;       /* sp1C - 0x04 */
+    s32 c;       /* sp20 - 0x08 */
+    s32 d;       /* sp24 - 0x0C - unused */
+    s32 e;       /* sp28 - 0x10 */
+    s32 f;       /* sp2C - 0x14 */
+    s32 g;       /* sp30 - 0x18 */
+    s32 h;       /* sp34 - 0x1C */
+    s32 i;       /* sp38 - 0x20 - unused */
+    s32 j;       /* sp3C - 0x24 - unused */
+    u8 cd_flag;  /* sp40 - 0x28 */
+    u8 r;        /* sp41 - 0x29 */
+    u8 g_;       /* sp42 - 0x2A */
+    u8 b_;       /* sp43 - 0x2B */
+} S78654;
+
+void func_80078654(s32 *arg0) {
+    S78654 s;
+    s32 v;
+    s32 *var_s0;
+    s32 zero;
+
+    zero = 0;
+    s.f = 2;
+    s.cd_flag = 0;
+    s.e = 0;
+    s.g = 0;
+    s.a = D_800A3610[0xF];
+    s.h = 0;
+    s.b = s.a + 0xC;
+    var_s0 = D_800A3610 + 5;
+    if (D_800A3608 >= 0xAAA) {
+        if (D_800A3608 >= 0xB04) {
+            s.cd_flag = 1;
+            v = 0x80 - (((D_800A3608 - 0xB04) << 7) / 15);
+            if ((s32)(v << 16) < 0) {
+                v = 0;
+            }
+            s.r = (s.g_ = (s.b_ = (u8) v));
+        }
+        s.c = arg0[3];
+        arg0[3] = func_8007352C(&s.a);
+        initTexPage(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
+        ot_Link(D_800A374C + (s.f * 4), arg0[5]);
+        arg0[5] = arg0[5] + 0xC;
+    }
+    s.cd_flag = 0;
+    goto check;
+loop:
+    s.a = var_s0[0];
+    s.b = s.a + 0xC;
+    s.h = -D_800A3608;
+    s.c = arg0[3];
+    arg0[3] = func_8007352C(&s.a);
+    initTexPage(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
+    ot_Link(D_800A374C + (s.f * 4), arg0[5]);
+    var_s0++;
+    arg0[5] = arg0[5] + 0xC;
+check:
+    if (var_s0[1] != -1) goto loop;
+}
 extern s32 D_800A3610;
 extern s32 D_800A3614;
 extern s32 D_800A3304;
