@@ -29,6 +29,7 @@
 #   bash tools/dc.sh verify <func_name>           — binary-level verify function against original
 #   bash tools/dc.sh verify --all                  — verify all C functions
 #   bash tools/dc.sh subagent-prompt <func>       — generate worker-subagent prompt (autonomous mode)
+#   bash tools/dc.sh integrate <branch>           — merge worker branch into main with full verification
 #   bash tools/dc.sh run-log <event> [args...]    — log an autonomous-run event (run-start, func-*, run-end)
 #   bash tools/dc.sh run-summary [--all|--json]   — summarize autonomous run(s)
 #
@@ -424,9 +425,11 @@ print(f'Replaced {func} in {src}')
         # Generate the canonical worker-subagent prompt for a function.
         # Used by autonomous-mode loops where the main agent spawns a
         # fresh subagent per function (keeps main context lean).
+        # Pass --worktree for the parallel-orchestration variant.
         FUNC_NAME="$1"
-        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh subagent-prompt <func>"; exit 1; }
-        python3 tools/gen_subagent_prompt.py "$FUNC_NAME" 2>&1
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh subagent-prompt <func> [--worktree]"; exit 1; }
+        python3 tools/gen_subagent_prompt.py "$FUNC_NAME" "$@" 2>&1
         ;;
 
     run-log)
@@ -579,6 +582,118 @@ print(f'Replaced {func} in {src}')
         # set, we know the queue is being regenerated and the active
         # function is no longer relevant.
         : > .bb2_active_func 2>/dev/null || true
+        ;;
+
+    integrate)
+        # Sequential integration of a worker subagent's branch into main.
+        # Used by parallel orchestration: workers match on their own
+        # branches, then the coordinator (parent agent) calls this once
+        # per successful worker to merge into main with full verification.
+        #
+        # On failure the merge is reverted and the branch is left intact
+        # for inspection. Exit codes:
+        #   0  integrated cleanly
+        #   1  preflight failure (wrong branch, dirty tree, branch missing)
+        #   2  merge/build/verify failure (auto-reverted)
+        BRANCH="$1"
+        [ -z "$BRANCH" ] && { echo "Usage: dc.sh integrate <branch>"; exit 1; }
+
+        # Preflight: must be on main, clean tree, no active marker
+        CUR_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+        if [ "$CUR_BRANCH" != "main" ]; then
+            echo "ERROR: must be on main (currently: '$CUR_BRANCH')" >&2
+            exit 1
+        fi
+        if [ -n "$(git status --porcelain)" ]; then
+            echo "ERROR: working tree not clean — commit or stash first" >&2
+            git status --short >&2
+            exit 1
+        fi
+        if [ -s ".bb2_active_func" ]; then
+            ACTIVE=$(tr -d '[:space:]' < .bb2_active_func)
+            echo "ERROR: main has an active function set ($ACTIVE); refusing to integrate" >&2
+            echo "  Coordinator should never have an active marker on main." >&2
+            exit 1
+        fi
+        if ! git rev-parse --verify "$BRANCH" >/dev/null 2>&1; then
+            echo "ERROR: branch '$BRANCH' not found" >&2
+            exit 1
+        fi
+
+        AHEAD=$(git rev-list --count "main..$BRANCH")
+        if [ "$AHEAD" = "0" ]; then
+            echo "[integrate] $BRANCH has no commits ahead of main — nothing to do"
+            exit 0
+        fi
+        echo "[integrate] $BRANCH has $AHEAD commit(s) ahead of main"
+
+        PRE_SHA=$(git rev-parse HEAD)
+        echo "[integrate] pre-state: $PRE_SHA"
+
+        # Merge with --no-ff so the integration is visible in history.
+        # --no-edit keeps the default merge message and avoids spawning
+        # an editor (which would block in non-interactive contexts).
+        if ! git merge --no-ff --no-edit "$BRANCH" 2>&1; then
+            echo "[integrate] FAIL: merge conflict — manual resolution required"
+            git merge --abort 2>/dev/null || true
+            git reset --hard "$PRE_SHA" 2>/dev/null || true
+            exit 2
+        fi
+        POST_MERGE_SHA=$(git rev-parse HEAD)
+        echo "[integrate] merged at $POST_MERGE_SHA"
+
+        # Build and check SHA1
+        echo "[integrate] building..."
+        BUILD_OUT=$(make 2>&1 | tail -10)
+        echo "$BUILD_OUT" | tail -3
+
+        BUILD_OK=0
+        if echo "$BUILD_OUT" | grep -q "OK: bb2 matches"; then
+            BUILD_OK=1
+            echo "[integrate] build OK on first try"
+        else
+            echo "[integrate] build mismatch — trying fix-label-drift"
+            DRIFT_OUT=$(python3 tools/fix_label_drift.py --apply 2>&1 | tail -5)
+            echo "$DRIFT_OUT"
+            BUILD_OUT=$(make 2>&1 | tail -10)
+            echo "$BUILD_OUT" | tail -3
+            if echo "$BUILD_OUT" | grep -q "OK: bb2 matches"; then
+                BUILD_OK=1
+                echo "[integrate] build OK after fix-label-drift"
+                if [ -n "$(git status --porcelain)" ]; then
+                    git add -A
+                    git commit -m "Auto: fix-label-drift after integrating $BRANCH" >/dev/null
+                fi
+            fi
+        fi
+
+        if [ "$BUILD_OK" != "1" ]; then
+            echo "[integrate] FAIL: build still broken — reverting to $PRE_SHA"
+            git reset --hard "$PRE_SHA"
+            exit 2
+        fi
+
+        # verify --all: any per-function regression triggers revert
+        echo "[integrate] verify --all..."
+        VERIFY_OUT=$(python3 tools/regfix_verify.py --all 2>&1)
+        echo "$VERIFY_OUT" | tail -3
+        if echo "$VERIFY_OUT" | grep -qiE "FAIL|MISMATCH|differ"; then
+            echo "[integrate] FAIL: verify --all reported regressions — reverting to $PRE_SHA"
+            echo "$VERIFY_OUT" | grep -iE "FAIL|MISMATCH|differ" | head -10 >&2
+            git reset --hard "$PRE_SHA"
+            exit 2
+        fi
+
+        # Refresh queue (drops the matched function) and commit any updates
+        echo "[integrate] refresh queue..."
+        bash tools/dc.sh refresh-queue 2>&1 | tail -3
+        if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "Auto: refresh queue after integrating $BRANCH" >/dev/null
+        fi
+
+        FINAL_SHA=$(git rev-parse HEAD)
+        echo "[integrate] OK: $BRANCH integrated as $FINAL_SHA"
         ;;
 
     *)
