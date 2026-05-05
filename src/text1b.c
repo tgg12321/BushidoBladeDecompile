@@ -46453,158 +46453,94 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80074B18\n"
-    "    addiu  $sp,$sp,-96\n"
-    "    addiu  $v1,$zero,5\n"
-    "    sw  $ra,92($sp)\n"
-    "    sw  $fp,88($sp)\n"
-    "    sw  $s7,84($sp)\n"
-    "    sw  $s6,80($sp)\n"
-    "    sw  $s5,76($sp)\n"
-    "    sw  $s4,72($sp)\n"
-    "    sw  $s3,68($sp)\n"
-    "    sw  $s2,64($sp)\n"
-    "    sw  $s1,60($sp)\n"
-    "    sw  $s0,56($sp)\n"
-    "    sw  $a0,16($sp)\n"
-    "    sw  $a1,24($sp)\n"
-    "    beqz  $a2,.L80074B5C\n"
-    "    sw  $a2,32($sp)\n"
-    "    addiu  $v1,$zero,8\n"
-    ".L80074B5C:\n"
-    "    .word 0x8F8405D4\n"
-    "    lw  $a3,16($sp)\n"
-    "    lbu  $v0,101($a0)\n"
-    "    lw  $s3,20($a3)\n"
-    "    addiu  $v0,$v0,3\n"
-    "    beqz  $v0,.L80074CF0\n"
-    "    addu  $fp,$zero,$zero\n"
-    "    sw  $v1,40($sp)\n"
-    "    slt  $a3,$zero,$v1\n"
-    "    sw  $a3,48($sp)\n"
-    "    lw  $a3,24($sp)\n"
-    "    nop\n"
-    "    sll  $v0,$a3,4\n"
-    "    subu  $v0,$v0,$a3\n"
-    "    sll  $s6,$v0,4\n"
-    ".L80074B98:\n"
-    "    lw  $v0,4($a0)\n"
-    "    lw  $a3,48($sp)\n"
-    "    lw  $s2,60($v0)\n"
-    "    beqz  $a3,.L80074CC4\n"
-    "    addu  $s4,$zero,$zero\n"
-    "    sll  $v0,$fp,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    sll  $v1,$v0,4\n"
-    "    addu  $s5,$v1,$v0\n"
-    "    sll  $s7,$s5,1\n"
-    "    addiu  $s1,$s2,2\n"
-    "    addiu  $s0,$s3,10\n"
-    ".L80074BC8:\n"
-    "    jal  initTile\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    lbu  $v0,6($s1)\n"
-    "    nop\n"
-    "    sb  $v0,-6($s0)\n"
-    "    lbu  $v0,7($s1)\n"
-    "    nop\n"
-    "    sb  $v0,-5($s0)\n"
-    "    lbu  $v0,8($s1)\n"
-    "    nop\n"
-    "    sb  $v0,-4($s0)\n"
-    "    lhu  $v0,2($s1)\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    sh  $v0,2($s0)\n"
-    "    lhu  $v0,4($s1)\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    jal  gpu_SetSemiTransp\n"
-    "    sh  $v0,4($s0)\n"
-    "    lw  $a3,32($sp)\n"
-    "    nop\n"
-    "    beqz  $a3,.L80074C44\n"
-    "    nop\n"
-    "    lhu  $v0,0($s2)\n"
-    "    nop\n"
-    "    addu  $v0,$v0,$s6\n"
-    "    sh  $v0,-2($s0)\n"
-    "    lhu  $v0,0($s1)\n"
-    "    nop\n"
-    "    addu  $v0,$v0,$s7\n"
-    "    j  .L80074C64\n"
-    "    addiu  $v0,$v0,43\n"
-    ".L80074C44:\n"
-    "    lhu  $v0,0($s2)\n"
-    "    nop\n"
-    "    addu  $v0,$v0,$s6\n"
-    "    sh  $v0,-2($s0)\n"
-    "    lhu  $v0,0($s1)\n"
-    "    nop\n"
-    "    addu  $v0,$v0,$s5\n"
-    "    addiu  $v0,$v0,124\n"
-    ".L80074C64:\n"
-    "    sh  $v0,0($s0)\n"
-    "    lw  $a3,24($sp)\n"
-    "    nop\n"
-    "    beqz  $a3,.L80074C7C\n"
-    "    addiu  $a0,$zero,11\n"
-    "    addiu  $a0,$zero,21\n"
-    ".L80074C7C:\n"
-    "    addu  $a1,$s3,$zero\n"
-    "    addiu  $s0,$s0,16\n"
-    "    addiu  $s3,$s3,16\n"
-    "    addiu  $s1,$s1,12\n"
-    "    addiu  $s2,$s2,12\n"
-    "    lui  $v0,%hi(D_800A374C)\n"
-    "    lw  $v0,%lo(D_800A374C)($v0)\n"
-    "    sll  $a0,$a0,2\n"
-    "    jal  ot_Link\n"
-    "    addu  $a0,$v0,$a0\n"
-    "    addiu  $v0,$s4,1\n"
-    "    addu  $s4,$v0,$zero\n"
-    "    sll  $v0,$v0,16\n"
-    "    lw  $a3,40($sp)\n"
-    "    sra  $v0,$v0,16\n"
-    "    slt  $v0,$v0,$a3\n"
-    "    bnez  $v0,.L80074BC8\n"
-    "    nop\n"
-    ".L80074CC4:\n"
-    "    addiu  $v0,$fp,1\n"
-    "    addu  $fp,$v0,$zero\n"
-    "    .word 0x8F8405D4\n"
-    "    sll  $v0,$v0,16\n"
-    "    lbu  $v1,101($a0)\n"
-    "    sra  $v0,$v0,16\n"
-    "    addiu  $v1,$v1,3\n"
-    "    slt  $v0,$v0,$v1\n"
-    "    bnez  $v0,.L80074B98\n"
-    "    nop\n"
-    "    lw  $a3,16($sp)\n"
-    ".L80074CF0:\n"
-    "    nop\n"
-    "    sw  $s3,20($a3)\n"
-    "    lw  $ra,92($sp)\n"
-    "    lw  $fp,88($sp)\n"
-    "    lw  $s7,84($sp)\n"
-    "    lw  $s6,80($sp)\n"
-    "    lw  $s5,76($sp)\n"
-    "    lw  $s4,72($sp)\n"
-    "    lw  $s3,68($sp)\n"
-    "    lw  $s2,64($sp)\n"
-    "    lw  $s1,60($sp)\n"
-    "    lw  $s0,56($sp)\n"
-    "    addiu  $sp,$sp,96\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+typedef unsigned char u8;
+typedef signed char s8;
+typedef unsigned short u16;
+typedef signed short s16;
+typedef unsigned int u32;
+typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
+
+/* opaque - to satisfy GameObj * pointer-arg signatures without struct */
+typedef struct GameObj { s32 dummy; } GameObj;
+extern s32 gpu_SetSemiTransp(GameObj *, s32);
+extern s32 initTile(GameObj *);
+extern s32 ot_Link(s32, GameObj *);
+extern u8 *D_800A36A0;
+extern s32 D_800A374C;
+
+void func_80074B18(s32 arg0, s32 arg1, s32 arg2) {
+    s32 var_v1;
+    s32 var_s3;
+    s32 var_fp;
+    s32 var_s4;
+    s32 var_s5;
+    s32 var_s7;
+    register s32 var_s6 asm("s6");
+    s32 var_s2;
+    register s32 var_s1 asm("s1");
+    register s32 var_s0 asm("s0");
+    s32 v0;
+    s32 a0_loc;
+
+    var_v1 = 5;
+    if (arg2 != 0) {
+        var_v1 = 8;
+    }
+    a0_loc = (s32)D_800A36A0;
+    var_s3 = *(s32 *)(arg0 + 0x14);
+    var_fp = 0;
+    if (((s32) *(u8 *)(a0_loc + 0x65)) + 3 != 0) {
+        s32 sp28 = var_v1;
+        s32 sp30 = (var_v1 > 0);
+        var_s6 = ((arg1 << 4) - arg1) << 4;
+        do {
+            var_s2 = *(s32 *)(*(s32 *)(a0_loc + 4) + 0x3C);
+            var_s4 = 0;
+            if (sp30 != 0) {
+                var_s5 = (((var_fp << 16) >> 16) << 4) + ((var_fp << 16) >> 16);
+                var_s7 = var_s5 << 1;
+                var_s1 = var_s2 + 2;
+                var_s0 = var_s3 + 0xA;
+                do {
+                    initTile((GameObj *)var_s3);
+                    *(u8 *)(var_s0 - 6) = *(u8 *)(var_s1 + 6);
+                    *(u8 *)(var_s0 - 5) = *(u8 *)(var_s1 + 7);
+                    *(u8 *)(var_s0 - 4) = *(u8 *)(var_s1 + 8);
+                    *(u16 *)(var_s0 + 2) = *(u16 *)(var_s1 + 2);
+                    *(u16 *)(var_s0 + 4) = *(u16 *)(var_s1 + 4);
+                    gpu_SetSemiTransp((GameObj *)var_s3, 0);
+                    if (arg2 != 0) {
+                        *(s16 *)(var_s0 - 2) = *(u16 *)var_s2 + var_s6;
+                        v0 = *(u16 *)var_s1 + var_s7 + 0x2B;
+                    } else {
+                        *(s16 *)(var_s0 - 2) = *(u16 *)var_s2 + var_s6;
+                        v0 = *(u16 *)var_s1 + var_s5 + 0x7C;
+                    }
+                    *(s16 *)var_s0 = v0;
+                    if (arg1 != 0) {
+                        a0_loc = 0x15;
+                    } else {
+                        a0_loc = 0xB;
+                    }
+                    {
+                        s32 a3_loc = var_s3;
+                        var_s0 += 0x10;
+                        var_s3 += 0x10;
+                        var_s1 += 0xC;
+                        var_s2 += 0xC;
+                        ot_Link(D_800A374C + (a0_loc << 2), (GameObj *)a3_loc);
+                    }
+                    var_s4 += 1;
+                } while ((s16)var_s4 < sp28);
+            }
+            var_fp += 1;
+            a0_loc = (s32)D_800A36A0;
+        } while ((s16)var_fp < (((s32) *(u8 *)(a0_loc + 0x65)) + 3));
+    }
+    *(s32 *)(arg0 + 0x14) = var_s3;
+}
 typedef struct {
     s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
     s8 sp40;
