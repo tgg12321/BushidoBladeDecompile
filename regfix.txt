@@ -4134,3 +4134,14 @@ func_80072CD4: insert_after "addiu\t$2,$zero,70" @ 34
 #   60 <- mine 55 (sb 14)
 #   61-63 <- mine 60-62
 func_80072CD4: reorder 56,63,54,57,58,59,55,60,61,62 @ 54-63
+
+# func_800600C8: target schedules sw $v0,48($sp) before addu $a0,$sp,24
+# at the two if-merge points and on the loop iteration. Mine emits the
+# opposite order. Use subst to swap operand text so labels stay attached
+# to original positions (avoids fragile label arithmetic).
+func_800600C8: subst "addu\s+\$4,\$sp,24" "sw	$2,48($sp)" @ 25
+func_800600C8: subst "sw\s+\$2,48\(\$sp\)" "addu	$4,$sp,24" @ 26
+func_800600C8: subst "sh\s+\$2,72\(\$sp\)" "sh	$2,74($sp)" @ 48
+func_800600C8: subst "sh\s+\$2,74\(\$sp\)" "sh	$2,72($sp)" @ 49
+func_800600C8: subst "addu\s+\$4,\$sp,24" "sw	$2,48($sp)" @ 78
+func_800600C8: subst "sw\s+\$2,48\(\$sp\)" "addu	$4,$sp,24" @ 79
