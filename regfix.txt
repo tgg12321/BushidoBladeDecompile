@@ -619,7 +619,6 @@ SetCurrentCursor: insert "lui	$2,(0x91a2b3c5 >> 16) & 0xFFFF" @ 15
 SetCurrentCursor: insert_after "ori	$2,$2,0xb3c5" @ 16
 SetCurrentCursor: reorder 13,14,11,12 @ 11-14
 
-
 # func_8008AAD4: GCC 2.7.2 caches D_800F7424 base in v1 ($3) for 3 accesses;
 # target emits 3 fresh lui/lhu/sh pseudos. Plus the conditional store nor uses
 # v1 ($3) in target but mine clobbers a1 ($5). Same nor issue in [1] section.
@@ -815,7 +814,6 @@ func_80086014: insert "addiu $29,$29,-8" @ 0
 func_80086014: insert "addiu $29,$29,8" @ 17
 # Tail uses s1+v0; target uses fresh v0(=s1) base + v1 scratch
 
-
 # func_80045878: re-emit s3 = a0+3 at end of else block (target has duplicate)
 func_80045878: insert_after "addiu $19,$18,3" @ 30
 # func_80045878: rewrite tail block (9 substs) for v0=s1 base + v1 scratch (0-based idx)
@@ -979,7 +977,6 @@ func_80023648: subst "\$5,\$6," "$6,$7," @ 121
 func_80023648: subst ",\$5" ",$6" @ 122
 func_80023648: subst ",\$5" ",$6" @ 136
 
-
 # func_80022F34: frame size fix (40->32) + load-delay nop
 # GCC allocates 8 bytes of vars for val1 spill that target doesnt have
 # Prologue: change frame alloc and save offsets
@@ -1083,7 +1080,6 @@ func_8003504C: delete @ 90
 func_8003504C: insert "addu $8,$0,$zero" @ 87
 # Post-insert: swap la $9 and lw to get: j=0, la $10, lw, la $9
 func_8003504C: reorder 90,89 @ 89-90
-
 
 # func_800861BC: compound regfix - 30 rules (0-based TEXT indices)
 # Prologue register renames
@@ -1616,7 +1612,6 @@ func_80088740: subst "addiu\s+\$3,\$zero,-16384" "ori	$3,$zero,0xC000" @ 124
 # Note: 5 inserts (3 drain_delays @ 16,102,113 + 2 explicit inserts @ 82,88) shift idx 120 to 125
 # (insert_afters run after inserts, so use post-shift idx)
 func_80088740: insert_after "addu	$2,$0,$zero" @ 125
-
 
 # cpu_side_move_dir_3: target swaps r_arg1 (s4<->s3) and loop counter/flag (s1<->s0)
 # r_arg1 in s3 instead of s4; chunk_size in s4 instead of s3
@@ -2528,7 +2523,6 @@ efc_rob_set_type_flash: reorder 9,1,3,4,5,6,7,8,10,2,11,14,13,12,18,15,19,16,17 
 # Loop tail reorder (post-delete+insert: obj=178, i++=179, lh=180 → obj,lh,i++)
 efc_rob_set_type_flash: reorder 178,180,179 @ 178-180
 
-
 # func_800460E4: 3-way register rotation ($17->$18, $18->$19, $19->$17)
 # Two swaps on body only (exclude prologue 0-14 and epilogue 227+)
 func_800460E4: $17 <-> $19 @ 15-226
@@ -2550,7 +2544,6 @@ func_800460E4: subst "addu\t\$4,\$16,\$5" "addu\t$4,$5,$16" @ 76
 func_800460E4: subst "addu\t\$2,\$17,\$5" "addu\t$2,$5,$17" @ 102
 func_800460E4: subst "addu\t\$2,\$16,\$2" "addu\t$2,$2,$16" @ 129
 func_800460E4: subst "addu\t\$3,\$16,\$3" "addu\t$3,$3,$16" @ 165
-
 
 # func_800325E0: 23 register diffs (corrected TEXT indices, .word not counted)
 # arg0 save: $9(t1) -> $10(t2)
@@ -2816,7 +2809,6 @@ func_80040D48: subst "addu\t\$22,\$20,44" "addu\t$20,$4,$0" @ 17
 # idx 28: fill load delay with s5=s4+0x2C (target fills nop slot)
 func_80040D48: subst "nop" "addu\t$21,$20,44" @ 28
 
-
 # func_80040D48: immediate/offset substs (base pointer offset s3+0x7C -> s3+0x68)
 func_80040D48: subst "addu\t\$4,\$19,124" "addu\t$4,$19,104" @ 49
 func_80040D48: subst "sh\t\$2,-4\(\$4\)" "sh\t$2,16($4)" @ 64
@@ -2905,7 +2897,6 @@ saTan2KabutoWareMove: insert_after "andi\t$3,$5,0xffff" @ 13
 saTan2KabutoWareMove: insert ".L900:\n\tbne\t$17,$0,.LsaTan2KabutoWareMove_store\n\taddiu\t$2,$zero,25\n\tj\t.LsaTan2KabutoWareMove_store\n\taddiu\t$2,$zero,11\n.L901:" @ 125
 saTan2KabutoWareMove: reorder 10,5,3,6,7,8,9,4 @ 3-10
 
-
 # ===== func_8008BB24: compound regfix (79-insn fixed-point attenuation) =====
 # C structure: v7 (2-multiply loop, 3 volatile for 16-byte frame)
 # Strategy: delete labeled insns to detach labels, re-insert at correct positions
@@ -2982,7 +2973,6 @@ func_8008BB24: reorder 62,61 @ 61-62
 # motion_SetMotion: anti-cross-jump fix
 motion_SetMotion: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
 
-
 # === SUBSTS (ORIGINAL indices) ===
 
 # Phase 1: andi register fix
@@ -3000,12 +2990,10 @@ motion_SetMotion: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
 
 # === DELETES (ORIGINAL indices) ===
 
-
 # === INSERTS (post-delete indices) ===
 # After 5 deletes at 128,151,170,171,227:
 # post-delete 0-127 = orig 0-127; 128-149 = orig 129-150;
 # 150-167 = orig 152-169; 168-222 = orig 172-226; 223-248 = orig 228-253
-
 
 # === INSERT_AFTERS (post-insert indices) ===
 # After 2 inserts at post-del 7 and 123:
@@ -3041,7 +3029,6 @@ motion_SetMotion: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
 # orig 226(lw_b,after subst)->pd222->pi224->ia(+3)=227
 # Note: orig 227 was deleted, so orig 226->pd222
 
-
 # === SUBSTS (ORIGINAL indices) ===
 
 # Phase 1: andi register fix
@@ -3059,12 +3046,10 @@ motion_SetMotion: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
 
 # === DELETES (ORIGINAL indices) ===
 
-
 # === INSERTS (post-delete indices) ===
 # After 5 deletes at 128,151,170,171,227:
 # post-delete 0-127 = orig 0-127; 128-149 = orig 129-150;
 # 150-167 = orig 152-169; 168-222 = orig 172-226; 223-248 = orig 228-253
-
 
 # === INSERT_AFTERS (post-insert indices) ===
 # After 2 inserts at post-del 7 and 123:
@@ -3848,7 +3833,6 @@ func_8007B6C8: insert "nop" @ 31
 # Reorder body to match target: andi/or first, la $a1, lw $a0, lw $v1, addiu $a2, sw D_8009BF28, sw 0($a1), lw $v0 4(s0), addu $a3, sw D_8009BF2C, lw $a0 vtable[6], lw $v0 vtable[2], nop, jalr, addiu $a1 -8
 func_8007B6C8: reorder 26,29,21,22,23,24,30,25,28,32,33,27,31,34,35,36 @ 21-36
 
-
 # func_800618B4: swap v0/v1 in tail (arg0[2] in v1, FF0000 in v0)
 func_800618B4: $2 <-> $3 @ 42-46
 func_80060CB8: reorder 3,4,1,2 @ 1-4
@@ -3892,7 +3876,6 @@ func_800485EC: subst "lw\s+\$3,0\(\$8\)" "lw	$2,0($3)" @ 54
 func_800485EC: reorder 54,52,53 @ 52-54
 func_800485EC: subst "sw\s+\$2,24" "sw	$3,24" @ 56
 func_800485EC: subst "sh\s+\$3,6" "sh	$2,6" @ 58
-
 
 # func_8007EDBC: structural reorder via subst+delete+insert+fill_delay
 # func_8007EDBC: 4x4 packed-pair fixed-point multiply
@@ -4090,7 +4073,6 @@ func_80074220: subst "\.L\d+" ".Lloop4220" @ 54
 func_80074220: reorder 103,102 @ 102-103
 func_80074220: reorder 44,42,43,45,46,47,48,49 @ 42-49
 
-
 # func_80049C24 -- s7/$fp swap + nor reorder + slti + 4 use sites
 func_80049C24: subst "addu\s+\$fp,\$4,\$2" "addu	$23,$4,$2" @ 17
 func_80049C24: subst "slt\s+\$3,\$3,2" "slti	$3,$3,2" @ 19
@@ -4145,3 +4127,228 @@ func_800600C8: subst "sh\s+\$2,72\(\$sp\)" "sh	$2,74($sp)" @ 48
 func_800600C8: subst "sh\s+\$2,74\(\$sp\)" "sh	$2,72($sp)" @ 49
 func_800600C8: subst "addu\s+\$4,\$sp,24" "sw	$2,48($sp)" @ 78
 func_800600C8: subst "sw\s+\$2,48\(\$sp\)" "addu	$4,$sp,24" @ 79
+
+# # Mine: var_fp=$21, var_s5=$23, var_s7=$fp -> Target: var_fp=$fp, var_s5=$21, var_s7=$23
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+
+# # Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Range 12-114 = post-save, pre-restore
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$30,16' into 'sll $2,$30,16; sra $2,$2,16' pair
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+# Reorder a1=s3 move BEFORE var_s0 increment (idx 89-90)
+# Move + split var_s4 += 1: delete idx 94 (addu s4,s4,1), insert pair after ot_Link delay slot
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+# Reorder a1=s3 move BEFORE var_s0 increment (idx 89-90)
+# Move + split var_s4 += 1: delete idx 94 (addu s4,s4,1), insert pair after ot_Link delay slot
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+# Reorder a1=s3 move BEFORE var_s0 increment (idx 89-90)
+# Move + split var_s4 += 1: delete idx 92 (addu s4,s4,1), insert pair after ot_Link delay slot
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+# Reorder a1=s3 move BEFORE var_s0 increment (idx 89-90)
+# Move + split var_s4 += 1: delete idx 92 (addu s4,s4,1), insert pair after ot_Link delay slot
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+# Reorder a1=s3 move BEFORE var_s0 increment (idx 89-90)
+# Move + split var_s4 += 1: delete idx 92 (addu s4,s4,1), insert pair after ot_Link delay slot
+# loop check sll: read from $v0 (post-split) not $s4
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+# Reorder a1=s3 move BEFORE var_s0 increment (idx 89-90)
+# Move + split var_s4 += 1: delete idx 92 (addu s4,s4,1), insert pair after ot_Link delay slot
+# loop check sll: read from $v0 (post-split) not $s4
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+# Reorder a1=s3 move BEFORE var_s0 increment (idx 89-90)
+# Move + split var_s4 += 1: delete idx 92 (addu s4,s4,1), insert pair after ot_Link delay slot
+# loop check sll: read from $v0 (post-split) not $s4
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra (target form)
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+# Reorder a1=s3 move BEFORE var_s0 increment (idx 89-90)
+# Move + split var_s4 += 1: delete idx 92 (addu s4,s4,1), insert pair after ot_Link delay slot
+# loop check sll: read from $v0 (post-split) not $s4
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra (target form)
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+# Swap mine idx 87/88 so addu a1,s3,0 comes first (preserve .L856 label position)
+# Move + split var_s4 += 1: delete idx 92 (addu s4,s4,1), insert pair after ot_Link delay slot
+# loop check sll: read from $v0 (post-split) not $s4
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra (target form)
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+# Swap mine idx 87/88 so addu a1,s3,0 comes first (preserve .L856 label position)
+# Move + split var_s4 += 1: delete idx 92 (addu s4,s4,1), insert pair after ot_Link delay slot
+# loop check sll: read from $v0 (post-split) not $s4
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra (target form)
+# Move convergence point: insert label after lw $7,16(sp)
+
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+# Stack offset shifts (-4 on spill area)
+# sltu -> slt for sp30 calc
+# var_s6 computation: route through $v0/$2 first
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+# Swap mine idx 87/88 so addu a1,s3,0 comes first (preserve .L856 label position)
+# Move + split var_s4 += 1: delete idx 92 (addu s4,s4,1), insert pair after ot_Link delay slot
+# loop check sll: read from $v0 (post-split) not $s4
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra (target form)
+# Move convergence point: insert label after lw $7,16(sp)
+
+# func_80074B18: 3-way reg cycle var_fp/var_s5/var_s7 + scheduling fixes
+# Cycle (21,30,23): mine 21->30, 30->23, 23->21
+func_80074B18: $23 <-> $fp @ 12-114
+func_80074B18: $21 <-> $fp @ 12-114
+# Stack offset shifts (-4 on spill area)
+func_80074B18: subst "sw\s+\$4,20\(\$sp\)" "sw	$4,16($sp)" @ 12
+func_80074B18: subst "sw\s+\$5,28\(\$sp\)" "sw	$5,24($sp)" @ 13
+func_80074B18: subst "sw\s+\$6,36\(\$sp\)" "sw	$6,32($sp)" @ 15
+func_80074B18: subst "lw\s+\$7,20\(\$sp\)" "lw	$7,16($sp)" @ 18
+func_80074B18: subst "sw\s+\$3,44\(\$sp\)" "sw	$3,40($sp)" @ 24
+func_80074B18: subst "sw\s+\$7,52\(\$sp\)" "sw	$7,48($sp)" @ 25
+func_80074B18: subst "lw\s+\$7,28\(\$sp\)" "lw	$7,24($sp)" @ 26
+func_80074B18: subst "lw\s+\$7,52\(\$sp\)" "lw	$7,48($sp)" @ 32
+func_80074B18: subst "lw\s+\$7,36\(\$sp\)" "lw	$7,32($sp)" @ 60
+func_80074B18: subst "lw\s+\$7,28\(\$sp\)" "lw	$7,24($sp)" @ 82
+func_80074B18: subst "lw\s+\$7,44\(\$sp\)" "lw	$7,40($sp)" @ 98
+func_80074B18: subst "lw\s+\$7,20\(\$sp\)" "lw	$7,16($sp)" @ 112
+# sltu -> slt for sp30 calc
+func_80074B18: subst "sltu\s+\$7,\$0,\$3" "slt	$7,$0,$3" @ 23
+# var_s6 computation: route through $v0/$2 first
+func_80074B18: subst "sll\s+\$22,\$7,4" "sll	$2,$7,4" @ 28
+func_80074B18: subst "subu\s+\$22,\$22,\$7" "subu	$2,$2,$7" @ 29
+func_80074B18: subst "sll\s+\$22,\$22,4" "sll	$22,$2,4" @ 30
+# Insert nop before var_s6 computation (matching target's pipeline pause)
+func_80074B18: insert "nop" @ 28
+# Reorder var_fp init / sp28 / slt / sp30 spill / arg1 reload
+func_80074B18: reorder 27,24,23,25,26 @ 23-27
+# var_s5 calc: convert merged 'sra $3,$fp,16' into 'sll $2,$fp,16; sra $2,$2,16' pair
+func_80074B18: insert "sll	$2,$fp,16" @ 36
+func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 36
+func_80074B18: subst "sll\s+\$2,\$3,4" "sll	$3,$2,4" @ 37
+func_80074B18: subst "addu\s+\$21,\$2,\$3" "addu	$21,$3,$2" @ 38
+# Swap mine idx 87/88 so addu a1,s3,0 comes first (preserve .L856 label position)
+func_80074B18: subst "addu\s+\$16,\$16,16" "addu	$5,$19,$zero" @ 87
+func_80074B18: subst "addu\s+\$5,\$19,\$zero" "addu	$16,$16,16" @ 88
+# Move + split var_s4 += 1: delete idx 92 (addu s4,s4,1), insert pair after ot_Link delay slot
+func_80074B18: delete @ 92
+func_80074B18: insert_after "addu	$20,$2,$0" @ 97
+func_80074B18: insert_after "addiu	$2,$20,1" @ 97
+# loop check sll: read from $v0 (post-split) not $s4
+func_80074B18: subst "sll\s+\$2,\$20,16" "sll	$2,$2,16" @ 97
+# var_fp += 1: replace lui+addu pattern with addiu+addu+sll+sra (target form)
+func_80074B18: subst "lui\s+\$2,\(65536\s*>>\s*16\)\s*&\s*0xFFFF" "addiu	$2,$fp,1" @ 103
+func_80074B18: insert_after "addu	$fp,$2,$0" @ 104
+func_80074B18: delete @ 105
+func_80074B18: insert_after "sll	$2,$2,16" @ 105
+func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
+func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
+func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
+func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L847" @ 110
+# Move convergence point: insert label after lw $7,16(sp)
+func_80074B18: insert_label ".LC846:" @ 116
+func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
