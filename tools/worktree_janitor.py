@@ -90,9 +90,30 @@ def main() -> int:
             break
 
     decisions = []
+    # Determine if a worktree's log shows recent activity (helps distinguish
+    # actively running vs. lock-orphaned but otherwise dead).
+    import time
+    now = time.time()
+
+    def recent_log_activity(branch_short: str) -> bool:
+        """Check if there's a tmp/parallel_logs/ entry mtime within last 5 min."""
+        wid = branch_short.replace("worktree-agent-", "")[:8]
+        log_dir = ROOT / "tmp" / "parallel_logs"
+        if not log_dir.is_dir():
+            return False
+        for log in log_dir.glob("*.log"):
+            try:
+                text = log.read_text(encoding="utf-8", errors="replace")
+            except Exception:
+                continue
+            if wid in text and (now - log.stat().st_mtime) < 300:
+                return True
+        return False
+
     for wt in worktrees:
         path = wt.get("path", "")
         branch = wt.get("branch", "")
+        locked = wt.get("locked", False)
 
         if path == main_path:
             decisions.append(("KEEP", path, "main worktree -- never delete"))
@@ -105,14 +126,23 @@ def main() -> int:
             decisions.append(("KEEP", path, f"non-agent branch ({branch})"))
             continue
 
+        # SAFETY: locked + recent log activity = ACTIVE worker, never delete.
+        if locked and recent_log_activity(branch):
+            decisions.append(("KEEP", path, "ACTIVE: locked + log activity within 5 min"))
+            continue
+
         ahead = commits_ahead(branch)
         if ahead == -1:
             decisions.append(("KEEP", path, "couldn't count commits -- conservative skip"))
             continue
         if ahead == 0:
             # Worker either did nothing or was already merged via cherry-pick.
-            # Either way, no unique work to lose.
-            decisions.append(("PRUNE", path, "0 commits ahead of main"))
+            # Either way, no unique work to lose. (Stale lock without recent
+            # activity = dead worker, safe to remove.)
+            reason = "0 commits ahead of main"
+            if locked:
+                reason += " (stale lock; no recent log activity)"
+            decisions.append(("PRUNE", path, reason))
             continue
 
         # ahead > 0: check if branch is fully merged
