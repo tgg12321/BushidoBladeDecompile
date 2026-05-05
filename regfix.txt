@@ -4348,7 +4348,13 @@ func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
 func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
 func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
 func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
-func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L847" @ 110
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L850" @ 110
 # Move convergence point: insert label after lw $7,16(sp)
 func_80074B18: insert_label ".LC846:" @ 116
 func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
+
+# func_80053304: pure-C body (D_800A33F4 cache + ptr cast) -- regfix recipe
+# from prior worker f561e61: new_var=field_1c sched + reorder@45-46 + a2/a3 swap@48-60
+func_80053304: subst "lw\s+\$7,8\(\$4\)" "lw	$3,24($4)" @ 45
+func_80053304: subst "lw\s+\$3,24\(\$4\)" "lw	$6,8($4)" @ 46
+func_80053304: $6 <-> $7 @ 48-60
