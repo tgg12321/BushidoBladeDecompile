@@ -1524,145 +1524,93 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80049A2C\n"
-    "    addiu  $sp,$sp,-48\n"
-    "    sw  $s1,28($sp)\n"
-    "    lui  $v0,%hi(D_80099CC8)\n"
-    "    addiu  $v0,$v0,%lo(D_80099CC8)\n"
-    "    sll  $a0,$a0,1\n"
-    "    addu  $a0,$a0,$v0\n"
-    "    addu  $a0,$a0,$a2\n"
-    "    sw  $ra,40($sp)\n"
-    "    sw  $s3,36($sp)\n"
-    "    sw  $s2,32($sp)\n"
-    "    sw  $s0,24($sp)\n"
-    "    lbu  $v1,0($a0)\n"
-    "    addiu  $v0,$zero,255\n"
-    "    beq  $v1,$v0,.L80049C04\n"
-    "    addu  $s1,$a1,$zero\n"
-    "    lui  $v0,%hi(D_800EF980)\n"
-    "    addiu  $v0,$v0,%lo(D_800EF980)\n"
-    "    sll  $v1,$v1,1\n"
-    "    addu  $s3,$v1,$v0\n"
-    "    lh  $v0,0($s3)\n"
-    "    nop\n"
-    "    bgez  $v0,.L80049A90\n"
-    "    nop\n"
-    "    jal  func_80052C10\n"
-    "    nop\n"
-    ".L80049A90:\n"
-    "    jal  func_8004153C\n"
-    "    sra  $a0,$s1,1\n"
-    "    andi  $a0,$s1,1\n"
-    "    sll  $v1,$a0,1\n"
-    "    addu  $v1,$v1,$a0\n"
-    "    sll  $v1,$v1,2\n"
-    "    lui  $a0,%hi(D_80099D3C)\n"
-    "    addiu  $a0,$a0,%lo(D_80099D3C)\n"
-    "    addu  $v1,$v1,$a0\n"
-    "    addiu  $s2,$zero,6\n"
-    "    lui  $s0,%hi(D_800A38B4)\n"
-    "    lw  $s0,%lo(D_800A38B4)($s0)\n"
-    "    addiu  $a0,$zero,4\n"
-    "    sb  $zero,0($s0)\n"
-    "    sb  $zero,1($s0)\n"
-    "    lh  $a1,0($s3)\n"
-    "    addu  $s1,$v0,$zero\n"
-    "    sh  $s2,4($s0)\n"
-    "    sh  $zero,8($s0)\n"
-    "    sh  $a0,10($s0)\n"
-    "    sll  $a1,$a1,1\n"
-    "    sh  $a1,2($s0)\n"
-    "    lh  $a0,0($v1)\n"
-    "    lh  $v0,18($s1)\n"
-    "    nop\n"
-    "    mult  $a0,$v0\n"
-    "    addiu  $v1,$v1,2\n"
-    "    mflo  $a3\n"
-    "    sra  $v0,$a3,12\n"
-    "    sw  $v0,76($s0)\n"
-    "    lh  $a0,0($v1)\n"
-    "    lh  $v0,18($s1)\n"
-    "    nop\n"
-    "    mult  $a0,$v0\n"
-    "    addiu  $v1,$v1,2\n"
-    "    mflo  $a3\n"
-    "    sra  $v0,$a3,12\n"
-    "    sw  $v0,80($s0)\n"
-    "    lh  $a0,0($v1)\n"
-    "    lh  $v0,18($s1)\n"
-    "    nop\n"
-    "    mult  $a0,$v0\n"
-    "    addiu  $v1,$v1,2\n"
-    "    mflo  $a3\n"
-    "    sra  $v0,$a3,12\n"
-    "    sw  $v0,84($s0)\n"
-    "    lhu  $v0,0($v1)\n"
-    "    addiu  $v1,$v1,2\n"
-    "    sh  $v0,16($s0)\n"
-    "    lhu  $v0,0($v1)\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    sh  $v0,18($s0)\n"
-    "    lhu  $v1,2($v1)\n"
-    "    addiu  $v0,$s1,1292\n"
-    "    sw  $v0,12($s0)\n"
-    "    sh  $zero,6($s0)\n"
-    "    jal  func_800417D0\n"
-    "    sh  $v1,20($s0)\n"
-    "    lui  $v1,%hi(D_800A3820)\n"
-    "    lw  $v1,%lo(D_800A3820)($v1)\n"
-    "    nop\n"
-    "    addiu  $v0,$v1,4\n"
-    "    lui  $at,%hi(D_800A3820)\n"
-    "    sw  $v0,%lo(D_800A3820)($at)\n"
-    "    sw  $s0,0($v1)\n"
-    "    addiu  $s0,$s0,104\n"
-    "    lh  $v1,0($s3)\n"
-    "    addiu  $v0,$zero,3\n"
-    "    sb  $v0,0($s0)\n"
-    "    addiu  $v0,$s0,-104\n"
-    "    sw  $v0,12($s0)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    sb  $zero,1($s0)\n"
-    "    sh  $zero,8($s0)\n"
-    "    sh  $v0,6($s0)\n"
-    "    sh  $zero,10($s0)\n"
-    "    sh  $s2,4($s0)\n"
-    "    sll  $v1,$v1,1\n"
-    "    addiu  $v1,$v1,1\n"
-    "    sh  $v1,2($s0)\n"
-    "    lh  $v0,6788($s1)\n"
-    "    nop\n"
-    "    sw  $v0,88($s0)\n"
-    "    lui  $v1,%hi(D_800A3820)\n"
-    "    lw  $v1,%lo(D_800A3820)($v1)\n"
-    "    nop\n"
-    "    addiu  $v0,$v1,4\n"
-    "    lui  $at,%hi(D_800A3820)\n"
-    "    sw  $v0,%lo(D_800A3820)($at)\n"
-    "    sw  $s0,0($v1)\n"
-    "    addiu  $s0,$s0,104\n"
-    "    lui  $at,%hi(D_800A38B4)\n"
-    "    sw  $s0,%lo(D_800A38B4)($at)\n"
-    ".L80049C04:\n"
-    "    lw  $ra,40($sp)\n"
-    "    lw  $s3,36($sp)\n"
-    "    lw  $s2,32($sp)\n"
-    "    lw  $s1,28($sp)\n"
-    "    lw  $s0,24($sp)\n"
-    "    addiu  $sp,$sp,48\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern u8 D_80099CC8[];
+extern s16 D_80099D3C[];
+extern u8 *D_800A3820;
+extern u8 *D_800A38B4;
+extern s16 D_800EF980[];
+extern void func_800417D0(s32 *);
+void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
+    u8 *new_var6;
+    u8 *new_var5;
+    s16 *new_var7;
+    char new_var4;
+    u8 temp_v1;
+    u8 *new_var8;
+    s16 *p_anim;
+    s16 new_var2;
+    s16 *src;
+    int new_var3;
+    u8 *obj;
+    int new_var;
+    u8 *vehicle;
+    s16 a1_val;
+    u8 *ot;
+    s32 dummy[2];
+
+    new_var6 = D_80099CC8;
+    {
+        u8 *p = new_var6 + (arg0 * 2);
+        temp_v1 = p[arg2];
+    }
+    if (temp_v1 == 0xFF) {
+        return;
+    }
+    new_var3 = 8;
+    new_var8 = (u8 *) D_800EF980;
+    p_anim = (s16 *) (new_var8 + (temp_v1 * 2));
+    if ((*p_anim) < 0) {
+        func_80052C10();
+    }
+    vehicle = (u8 *) func_8004153C(arg1 >> 1);
+    obj = D_800A38B4;
+    obj[0] = 0;
+    obj[1] = 0;
+    a1_val = (*p_anim) * 2;
+    *((s16 *) (obj + 4)) = 6;
+    *((s16 *) (obj + new_var3)) = 0;
+    *((s16 *) (obj + 0xA)) = 4;
+    *((s16 *) (obj + 2)) = a1_val;
+    src = &D_80099D3C[(arg1 & 1) * 6];
+    *((s32 *) (obj + 0x4C)) = ((s32) ((*src) * (*((s16 *) (vehicle + 0x12))))) >> 12;
+    if (a1_val) {
+    }
+    src++;
+    *((s32 *) (obj + 0x50)) = ((s32) ((*src) * (*((s16 *) (vehicle + 0x12))))) >> 12;
+    src++;
+    *((s32 *) (obj + 0x54)) = ((s32) ((*src) * (*((s16 *) (vehicle + 0x12))))) >> 12;
+    src++;
+    *((u16 *) (obj + 0x10)) = (u16) (*src);
+    src++;
+    *((u16 *) (obj + 0x12)) = (u16) (*src);
+    new_var2 = src[1];
+    *((s32 *) (obj + 0xC)) = (s32) (vehicle + 0x50C);
+    *((s16 *) (obj + 6)) = 0;
+    *((u16 *) (obj + 0x14)) = (u16) new_var2;
+    func_800417D0((s32 *) obj);
+    ot = D_800A3820;
+    D_800A3820 = ot + 4;
+    *((u8 **) ot) = obj;
+    obj += 0x68;
+    new_var5 = obj + 0xA;
+    a1_val = (*p_anim) * 2;
+    obj[0] = 3;
+    *((s32 *) (obj + 0xC)) = (s32) (obj - 0x68);
+    obj[1] = 0;
+    new_var7 = (s16 *) (obj + 6);
+    *((s16 *) (obj + (new_var = new_var3))) = 0;
+    *new_var7 = 1;
+    *((s16 *) new_var5) = 0;
+    *((s16 *) (obj + 4)) = 6;
+    *((s16 *) (obj + 2)) = (s16) (a1_val + 1);
+    *((s32 *) (obj + 0x58)) = (s32) (*((s16 *) (vehicle + 0x1A84)));
+    ot = D_800A3820;
+    D_800A3820 = ot + 4;
+    *((u8 **) ot) = obj;
+    D_800A38B4 = obj + 0x68;
+    (void) dummy;
+    (void) new_var4;
+}
 s32 func_80049C24(s32 arg0, s32 arg1) {
     s32 count;
     s32 temp_v0;
