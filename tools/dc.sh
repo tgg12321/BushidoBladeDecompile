@@ -34,6 +34,9 @@
 #   bash tools/dc.sh port-prior <func> <branch>   — quick-port src+regfix from prior worker (deep-retry)
 #   bash tools/dc.sh stuck-clusters                — scan logs for cluster-level toolchain gaps
 #   bash tools/dc.sh classify-batch <funcs...>     — pre-spawn validation; flags already-pure-C entries
+#   bash tools/dc.sh permute-adaptive <func>       — permuter with budget scaled to ins+del count
+#   bash tools/dc.sh clean-worktrees [--apply]     — safely prune fully-matched worktrees (preserves stuck)
+#   bash tools/dc.sh queue-easy [N]                — easiest N queue entries by quick-win score
 #   bash tools/dc.sh run-log <event> [args...]    — log an autonomous-run event (run-start, func-*, run-end)
 #   bash tools/dc.sh run-summary [--all|--json]   — summarize autonomous run(s)
 #
@@ -659,6 +662,33 @@ print(f'Replaced {func} in {src}')
         # worker build the shared fix before re-spawning cluster
         # members.
         python3 tools/agent_status.py 2>&1 | sed -n '/CLUSTER ALERT/,/Action:/p'
+        ;;
+
+    permute-adaptive)
+        # Run permuter with budget scaled to ins+del penalty count.
+        # 0 ins/del -> skip; 1-2 -> 90s; 3-5 -> 5min; 6-10 -> 15min; >10 -> 30min.
+        # Backed by tools/permute_adaptive.py.
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh permute-adaptive <func> [--dry-run]"; exit 1; }
+        python3 tools/permute_adaptive.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
+    clean-worktrees)
+        # Safely prune fully-matched worker worktrees. SAFETY:
+        # only worktrees with 0 commits ahead OR fully-merged branches
+        # are removed. Preserved-stuck branches (unique commits not
+        # in main) are NEVER deleted.
+        # Backed by tools/worktree_janitor.py.
+        # Default is dry-run; pass --apply to actually remove.
+        python3 tools/worktree_janitor.py "$@" 2>&1
+        ;;
+
+    queue-easy)
+        # Show easiest N queue entries by 'expected ease' score
+        # (lower = quicker win). Recommends quick-win prioritization.
+        # Backed by tools/queue_easy.py.
+        python3 tools/queue_easy.py "$@" 2>&1
         ;;
 
     classify-batch)

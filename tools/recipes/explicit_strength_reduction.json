@@ -1,0 +1,23 @@
+{
+  "name": "explicit_strength_reduction",
+  "title": "Spell out strength-reduction sequence in C to override GCC's default starting multiplier",
+  "summary": "GCC 2.7.2 reduces `r5 * 0x2A38` starting from `r5 * 2`, but target uses `r5 * 16` as the starting point. The two reductions produce different shift/add sequences. Writing the natural multiplication forces the wrong path.\n\nFix: spell the reduction out so GCC has nothing to optimize:\n```c\nint t = (r5 << 4) + r8;     /* r5*16 + r8 */\nt = (t << 6) + r8;          /* (r5*16 + r8)*64 + r8 */\nt = (t << 3) - t;           /* * 7 */\n```\nThis forces the reduction starting point to match target.",
+  "from_memory": "feedback_audit_techniques.md",
+  "proof": "func_80048864 (commit cda948e/ce5237d) was stuck for 164min on first attempt with default `r5 * 0x2A38`; matched in the deep retry by spelling out the reduction sequence explicitly.",
+  "fingerprint": {
+    "structural": [
+      "target asm contains a chain of `sll`/`addu`/`subu` that doesn't start from `addu $X, $r5, $r5` (which would be the GCC default *2 starting point)",
+      "C source uses `r5 * <large_constant>` where the constant has a specific factorization GCC won't find naturally"
+    ],
+    "blocker_class": "strength_reduction_starting_point"
+  },
+  "rule_skeleton": [
+    {"op": "fix_at_source", "where": "permuter/<func>/base.c",
+     "instruction": "Replace `r5 * <const>` with explicit shift/add chain. Decompose <const> manually starting from the target's first multiplier (e.g., 16 instead of GCC's default 2)."}
+  ],
+  "notes": [
+    "Find target's reduction starting point by reading the first `sll` after the constant load: `sll $X, $r5, N` means starting multiplier is 2^N.",
+    "Then factor your constant accordingly: 0x2A38 = 16 * 2 * 256 + 24, etc. Spell each step.",
+    "Workers tend to over-trust GCC; explicit reduction is one of the few reliable overrides."
+  ]
+}

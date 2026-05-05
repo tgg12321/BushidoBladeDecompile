@@ -1,0 +1,24 @@
+{
+  "name": "s8_vs_u8_cast_encoding",
+  "title": "(s8) sign-extends to negative addiu; (u8) zero-extends. The sb byte is the same but the addiu encoding differs.",
+  "summary": "When storing a constant byte via `sb`, the `addiu` that loads the constant has signedness baked into its encoding. `(s8)0xC3` becomes `addiu reg, $zero, -61` (encoded `0xFFC3`). `(u8)0xC3` becomes `addiu reg, $zero, 195` (encoded `0x00C3`). The `sb` produces the same byte but the addiu instruction itself does not match.\n\nFix: match the target's signedness when storing constants:\n  - Target's addiu immediate is negative (`0xFFxx`) -> use `(s8)`.\n  - Target's addiu immediate is positive (`0x00xx`) -> use `(u8)`.",
+  "from_memory": "feedback_audit_techniques.md",
+  "proof": "func_80072CD4 (commit 9abed76) had 1 byte diff for hours until the worker realized `arg2[0x4] = 0xC3` should be `arg2[0x4] = (u8)0xC3` to match target's positive addiu encoding.",
+  "fingerprint": {
+    "structural": [
+      "Function size matches and verify shows 1-2 byte diff",
+      "diff isolated to addiu instructions storing single-byte constants (anything 0x80-0xFF range)",
+      "C source uses raw hex constants without explicit (s8)/(u8) cast"
+    ],
+    "blocker_class": "byte_constant_signedness"
+  },
+  "rule_skeleton": [
+    {"op": "fix_at_source", "where": "permuter/<func>/base.c",
+     "instruction": "Add explicit (s8) or (u8) cast to byte constants. Match target by reading the addiu immediate sign in the asm."}
+  ],
+  "notes": [
+    "This is most common when the value is in the 0x80-0xFF range (high bit set).",
+    "Look at the target asm `addiu` for the constant: if you see e.g. `0xFFC3`, it's signed; `0x00C3` is unsigned.",
+    "Particularly important for character codes, status flags, masks."
+  ]
+}
