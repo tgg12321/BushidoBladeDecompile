@@ -4348,7 +4348,7 @@ func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
 func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
 func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
 func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
-func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L882" @ 110
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L893" @ 110
 # Move convergence point: insert label after lw $7,16(sp)
 func_80074B18: insert_label ".LC846:" @ 116
 func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
@@ -4383,7 +4383,7 @@ func_8007352C: subst "addu\s+\$3,\$23,-1" "addu	$2,$23,-1" @ 107
 func_8007352C: subst "addu\s+\$23,\$3,\$zero" "addu	$23,$2,$zero" @ 108
 func_8007352C: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 109
 # Idx 44 binary = idx 45 maspsx (1 nop earlier deleted): change y-check beq target to .L845 (next_compute_v_tail)
-func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L862" @ 45
+func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L873" @ 45
 # DispSleepMenuTex region scheduling - net 0 instructions
 func_8007352C: delete @ 95
 func_8007352C: delete @ 100
@@ -4435,3 +4435,7 @@ func_80048864: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.LBNE_TGT" @ 40
 # Insert label between two andi for j to skip first
 func_80048864: insert_label ".LJMP_TGT:" @ 101
 func_80048864: subst "j\s+\.L\d+" "j	.LJMP_TGT" @ 57
+# Reorder prologue saves
+func_80049718: reorder 13,18,3,4,8,7,9,10,11,12,14,5,15,16,17,6 @ 3-18
+# Mode==1 store order: sh v0,4 last in target
+func_80049718: reorder 168,169,167 @ 167-169
