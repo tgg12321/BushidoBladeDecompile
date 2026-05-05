@@ -26016,143 +26016,75 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800600C8\n"
-    "    addiu  $sp,$sp,-112\n"
-    "    sw  $s1,84($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    sw  $s2,88($sp)\n"
-    "    addu  $s2,$a1,$zero\n"
-    "    sw  $s4,96($sp)\n"
-    "    addu  $s4,$a2,$zero\n"
-    "    addu  $t1,$s2,$zero\n"
-    "    lui  $v0,%hi(D_8009B6F0)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B6F0)\n"
-    "    sw  $s3,92($sp)\n"
-    "    addiu  $s3,$s2,180\n"
-    "    sw  $s5,100($sp)\n"
-    "    addiu  $s5,$s2,192\n"
-    "    sw  $v0,24($sp)\n"
-    "    slti  $v0,$s1,10\n"
-    "    sw  $ra,104($sp)\n"
-    "    sw  $s0,80($sp)\n"
-    "    sb  $zero,64($sp)\n"
-    "    sw  $zero,40($sp)\n"
-    "    sw  $zero,52($sp)\n"
-    "    beqz  $v0,.L8006012C\n"
-    "    sw  $s4,44($sp)\n"
-    "    j  .L80060130\n"
-    "    addiu  $v0,$zero,147\n"
-    ".L8006012C:\n"
-    "    addiu  $v0,$zero,163\n"
-    ".L80060130:\n"
-    "    sw  $v0,48($sp)\n"
-    "    addiu  $a0,$sp,24\n"
-    "    lui  $v0,%hi(D_8009B758)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B758)\n"
-    "    sw  $v0,28($sp)\n"
-    "    jal  func_8007352C\n"
-    "    sw  $t1,32($sp)\n"
-    "    lui  $t0,26214\n"
-    "    ori  $t0,$t0,26215\n"
-    "    sll  $v1,$s1,16\n"
-    "    sra  $a2,$v1,16\n"
-    "    mult  $a2,$t0\n"
-    "    addu  $t1,$v0,$zero\n"
-    "    sra  $v1,$v1,31\n"
-    "    addu  $s0,$zero,$zero\n"
-    "    mfhi  $t2\n"
-    "    sra  $a0,$t2,2\n"
-    "    subu  $a0,$a0,$v1\n"
-    "    sll  $a1,$a0,16\n"
-    "    sra  $a3,$a1,16\n"
-    "    mult  $a3,$t0\n"
-    "    lui  $v0,%hi(D_8009B6FC)\n"
-    "    addiu  $v0,$v0,%lo(D_8009B6FC)\n"
-    "    sw  $v0,24($sp)\n"
-    "    addu  $v0,$s1,$zero\n"
-    "    sh  $v0,74($sp)\n"
-    "    sh  $v0,72($sp)\n"
-    "    sll  $v0,$a0,2\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,1\n"
-    "    subu  $a2,$a2,$v0\n"
-    "    sra  $a1,$a1,31\n"
-    "    sh  $a2,72($sp)\n"
-    "    mfhi  $t2\n"
-    "    sra  $v1,$t2,2\n"
-    "    subu  $v1,$v1,$a1\n"
-    "    sll  $v0,$v1,2\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,1\n"
-    "    subu  $a3,$a3,$v0\n"
-    "    sh  $a3,74($sp)\n"
-    "    sll  $v0,$s0,1\n"
-    ".L800601D8:\n"
-    "    addu  $v0,$sp,$v0\n"
-    "    lh  $v0,72($v0)\n"
-    "    lui  $v1,%hi(D_8009B708)\n"
-    "    addiu  $v1,$v1,%lo(D_8009B708)\n"
-    "    sll  $v0,$v0,3\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sw  $v0,28($sp)\n"
-    "    slti  $v0,$s1,10\n"
-    "    bnez  $v0,.L80060210\n"
-    "    addiu  $v0,$zero,100\n"
-    "    addiu  $v0,$zero,1\n"
-    "    subu  $v0,$v0,$s0\n"
-    "    sll  $v0,$v0,5\n"
-    "    addiu  $v0,$v0,84\n"
-    ".L80060210:\n"
-    "    sw  $v0,48($sp)\n"
-    "    addiu  $a0,$sp,24\n"
-    "    jal  func_8007352C\n"
-    "    sw  $t1,32($sp)\n"
-    "    lh  $v1,74($sp)\n"
-    "    nop\n"
-    "    beqz  $v1,.L80060240\n"
-    "    addu  $t1,$v0,$zero\n"
-    "    addiu  $s0,$s0,1\n"
-    "    slti  $v0,$s0,2\n"
-    "    bnez  $v0,.L800601D8\n"
-    "    sll  $v0,$s0,1\n"
-    ".L80060240:\n"
-    "    lui  $a0,%hi(D_8009B6F0)\n"
-    "    addiu  $a0,$a0,%lo(D_8009B6F0)\n"
-    "    jal  func_8006E480\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    addu  $a3,$v0,$zero\n"
-    "    jal  initTexPage\n"
-    "    sw  $zero,16($sp)\n"
-    "    addu  $a1,$s3,$zero\n"
-    "    lui  $v0,%hi(D_800A374C)\n"
-    "    lw  $v0,%lo(D_800A374C)($v0)\n"
-    "    sll  $a0,$s4,2\n"
-    "    jal  ot_Link\n"
-    "    addu  $a0,$v0,$a0\n"
-    "    subu  $v0,$s5,$s2\n"
-    "    lw  $ra,104($sp)\n"
-    "    lw  $s5,100($sp)\n"
-    "    lw  $s4,96($sp)\n"
-    "    lw  $s3,92($sp)\n"
-    "    lw  $s2,88($sp)\n"
-    "    lw  $s1,84($sp)\n"
-    "    lw  $s0,80($sp)\n"
-    "    addiu  $sp,$sp,112\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+typedef struct {
+    s32 *p0;
+    s32 *p1;
+    s32 in_tex;
+    s32 pad0C;
+    s32 zero10;
+    s32 arg2;
+    s32 width;
+    s32 zero1C;
+    s32 pad20;
+    s32 pad24;
+    s8 byte28;
+    s8 padpad[7];
+    s16 d0;
+    s16 d1;
+} S60C8;
+extern s32 D_8009B6F0;
+extern s32 D_8009B6FC;
+extern s32 D_8009B708;
+extern s32 D_8009B758;
+s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2)
+{
+    S60C8 s;
+    s32 dist_off = arg1 + 0xB4;
+    s32 end_off = arg1 + 0xC0;
+    s32 cur_tex = arg1;
+    s32 i;
+    s32 width;
+    s16 hi;
+
+    s.p0 = &D_8009B6F0;
+    s.byte28 = 0;
+    s.zero10 = 0;
+    s.zero1C = 0 & 0xFFFFu;
+    s.arg2 = arg2;
+    if (arg0 < 0xA) {
+        width = 0x93;
+        if ((!hi) && (!hi)) {}
+    } else {
+        width = 0xA3;
+    }
+    s.width = width;
+    s.p1 = &D_8009B758;
+    s.in_tex = cur_tex;
+    cur_tex = func_8007352C((s32)&s);
+    s.p0 = &D_8009B6FC;
+    s.d1 = (s.d0 = arg0);
+    s.d0 = ((s16)arg0) % 10;
+    hi = ((s16)arg0) / 10;
+    s.d1 = hi % 10;
+    i = 0;
+loop_60C8:
+    s.p1 = (s32 *)((s32)&D_8009B708 + ((&s.d0)[i] * 8));
+    if (arg0 < 0xA) {
+        width = 0x64;
+    } else {
+        width = (((1 - i) << 2) << 3) + 0x54;
+    }
+    s.width = width;
+    s.in_tex = cur_tex;
+    cur_tex = func_8007352C((s32)&s);
+    if (s.d1 != 0) {
+        i += 1;
+        if (i < 2) goto loop_60C8;
+    }
+    initTexPage(dist_off, 1, 0, func_8006E480((s32 *)&D_8009B6F0, 0), 0);
+    ot_Link(D_800A374C + (arg2 * 4), dist_off);
+    return end_off - arg1;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
