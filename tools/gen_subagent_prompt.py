@@ -265,27 +265,30 @@ integrates your branch into main.
    If the classifier reports inline_asm / INCLUDE_ASM / replace_with_asmfile,
    continue with the workflow below.
 
-# Progress logging (mandatory)
+# Progress logging (MANDATORY -- enforce heartbeat)
 
 Log major transitions via `bash tools/agent_log.sh <event> [details]`.
-The coordinator monitors progress at any time via `dc.sh agent-status`.
+The coordinator monitors via `dc.sh agent-status`. **Audit found
+average ~7 events per worker -- workers were under-logging.** Fix that.
 
-Required events (NOT every shell call -- just transitions):
-- After step 1: `bash tools/agent_log.sh setup-done`  (already in step 1)
+Required events (NOT every shell call -- but EVERY transition):
+- After step 1: `bash tools/agent_log.sh setup-done`
 - After classify (step 4): `bash tools/agent_log.sh classified <category> size=<N>`
 - After `dc.sh attempt`: `bash tools/agent_log.sh attempt <RESULT> score=<N>`
 - After each `dc.sh diff`: `bash tools/agent_log.sh diff ins=<N> del=<N> reord=<N> reg=<N>`
 - Each regfix add: `bash tools/agent_log.sh regfix-add <op> @<idx>`
 - Long permuter run: `bash tools/agent_log.sh permuter-start budget=<N>s` /
   `bash tools/agent_log.sh permuter-done best=<score> elapsed=<N>s`
-- Each `make`: `bash tools/agent_log.sh build OK` or `bash tools/agent_log.sh build MISMATCH`
-- Each `dc.sh verify`: `bash tools/agent_log.sh verify MATCH` or `bash tools/agent_log.sh verify diff=<N>`
+- Each `make`: `bash tools/agent_log.sh build OK|MISMATCH`
+- Each `dc.sh verify`: `bash tools/agent_log.sh verify MATCH|diff=<N>`
 - On match: `bash tools/agent_log.sh matched recipe="<one-line>"`
 - On stuck: `bash tools/agent_log.sh stuck reason="<why>" best=<score>`
 
-If you go >5 min between events the coordinator's status view flags
-you as stalled. Log a heartbeat-ish event (e.g., `attempt`, `diff`,
-`permuter-start`) at least that often during long runs.
+**HEARTBEAT RULE: log at least one event every 5 min.** Even
+mid-permuter, log a `progress` event with current best-score so the
+coordinator can see you're alive. If you've been working on something
+for 5+ min without logging, log a `progress` event NOW with what
+you're doing.
 
 # Boundaries (parallel-safe)
 
@@ -320,6 +323,21 @@ The only valid stop conditions:
 3. Already-matched per the step-4 sanity check -- return immediately,
    no commit, recipe=already-pure-C-no-op.
 
+# Cluster-pause check (audit-driven)
+
+If `dc.sh diff {func}` reveals a cluster pattern that other STUCK
+functions share (target uses `multu` where GCC emits `mult`; target
+has interleaved nops between mflo where GCC fills delay slots; target
+has hand-tuned register cycles GCC won't reproduce), STOP early and
+return STUCK with the cluster-tooling-needed flag:
+
+  STUCK branch=<b> tried=<list> cluster=<name> tooling=<specific>
+
+The coordinator will pause spawning to have ONE worker build the
+shared fix. Burning 60+ min independently re-discovering the same
+toolchain gap wastes tokens (audit found 4 workers did this for the
+multu/mult cluster, ~150 min total before the maspsx flag was built).
+
 # Workflow (after the four setup actions, only if step 4 said the function isn't already pure C)
 
 1. **Get context:** `bash tools/dc.sh agent-brief {func}`
@@ -336,9 +354,27 @@ The only valid stop conditions:
    - Reord high -> C scheduling OR regfix fill_delay/drain_delay/reorder.
    - LICM hoist signature -> regfix unhoist recipe.
 5. **Diff iteration:** `bash tools/dc.sh diff {func}` (side-by-side).
-6. **Permuter cadence:** first run 90-120s, escalate to 5-10 min only
-   if first run plateaus AND diff still has ins/del. Skip if only Reg
-   diffs.
+
+6. **Permuter discipline (HARD CAP -- audit-driven).**
+   First run: 90-120s. Log `permuter-start budget=120s`.
+   After first run completes, log `permuter-done best=<score>`.
+
+   **STOP RULE.** If best score did NOT drop by >=20% after first run
+   AND the diff has 0 ins/del/reord (only Reg diffs), do NOT run another
+   permuter. Switch to regfix swap rules instead. Permuter chasing is
+   the #1 token sink in audit data (one prior worker did 7 sequential
+   permuter starts in 30 min, no breakthrough).
+
+   You may run a SECOND permuter (5-10 min) ONLY if:
+   - First run dropped score by >=20%, AND
+   - diff still has ins>=1 or del>=1.
+
+   You may run a THIRD permuter (30 min) ONLY if both prior runs
+   showed monotonic progress AND diff still has ins>=2.
+
+   Beyond 3 permuter runs is forbidden unless a sibling-cluster fix
+   (new tool / pipeline pass) has just changed the search space.
+
 7. **Integration:** add missing externs (sibling-file audit first),
    replace stub with signature + body, `rm -f build/src/<file>.o &&
    make 2>&1 | tail -5`, then `bash tools/dc.sh verify {func}`.
@@ -387,16 +423,71 @@ stuck state to the user.
 """
 
 
+DEEP_RETRY_PREAMBLE = """# DEEP RETRY MODE -- port-first protocol (audit-driven)
+
+A prior worker on branch `{prior_branch}` matched {func} but
+integration to main hit a blocker (label drift, conflict, or off-by-N).
+**Do NOT redo their search.** Audit found that deep retries that
+re-ran permuter wasted 400-600K tokens; ones that ported prior work
+verbatim matched in 5-15 min.
+
+# Quick-port path (try this FIRST):
+
+1. Setup as usual (worktree_setup.sh, claim marker, etc.).
+2. **Port prior C body verbatim:**
+   ```
+   git show {prior_branch} -- src/<file>.c | grep -A 200 '{func}'
+   # Copy the function body directly into your worktree's src/<file>.c
+   ```
+3. **Port prior regfix rules verbatim:**
+   ```
+   git show {prior_branch} -- regfix.txt | grep -B1 -A 5 '{func}'
+   # Append to your worktree's regfix.txt (avoid arithmetic .L<N>+/-N
+   # rules; use insert_label anchors for siblings if drift is a risk)
+   ```
+4. **Build, verify, commit.** If it works: MATCHED.
+5. If it doesn't (off-by-N branch offset, etc.):
+   - Run `dc.sh fix-label-drift --apply` once.
+   - Run `dc.sh diff {func}` -- read the SPECIFIC remaining diff.
+   - Adjust ONE rule (label, idx, or rule type) to fix it.
+   - Build, verify, commit.
+6. **Only if quick-port doesn't get within 5 instructions** should you
+   redo your own permuter search. Most stuck integrations are
+   1-instruction off — fix that one rule, don't restart.
+
+If the prior branch was deleted (only memory of recipe remains), reuse
+the recipe pattern from the recipe summary in your prompt's worker
+report (typically embedded in the spawning prompt).
+
+"""
+
+
 def main() -> int:
     args = sys.argv[1:]
     worktree = "--worktree" in args
-    args = [a for a in args if a != "--worktree"]
+    deep_retry = "--deep-retry" in args
+    prior_branch = ""
+    # Parse --prior-branch=<name>
+    new_args = []
+    for a in args:
+        if a == "--worktree" or a == "--deep-retry":
+            continue
+        if a.startswith("--prior-branch="):
+            prior_branch = a[len("--prior-branch="):]
+            continue
+        new_args.append(a)
+    args = new_args
     if len(args) != 1:
-        print("Usage: gen_subagent_prompt.py <func> [--worktree]", file=sys.stderr)
+        print("Usage: gen_subagent_prompt.py <func> [--worktree] [--deep-retry --prior-branch=<branch>]", file=sys.stderr)
         return 1
     func = args[0]
-    template = WORKTREE_PROMPT_TEMPLATE if worktree else PROMPT_TEMPLATE
-    print(template.format(func=func))
+    body = (WORKTREE_PROMPT_TEMPLATE if worktree else PROMPT_TEMPLATE).format(func=func)
+    if deep_retry:
+        if not prior_branch:
+            prior_branch = f"worktree-agent-<id>"  # placeholder
+        preamble = DEEP_RETRY_PREAMBLE.format(func=func, prior_branch=prior_branch)
+        body = preamble + body
+    print(body)
     return 0
 
 
