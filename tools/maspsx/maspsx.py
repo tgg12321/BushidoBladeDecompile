@@ -22,6 +22,8 @@ def main() -> None:
                         help="Path to file listing functions that need lb expansion (when set, --expand-lb only applies to these)")
     parser.add_argument("--expand-lh-funcs", type=str, default=None,
                         help="Path to file listing functions that need lh expansion (when set, --expand-lh only applies to these)")
+    parser.add_argument("--multu-funcs", type=str, default=None,
+                        help="Path to file listing functions where 'mult $a,$b' should be rewritten to 'multu $a,$b'")
     parser.add_argument("--macro-inc", action="store_true")
     parser.add_argument("--dont-expand-li", action="store_true")
     parser.add_argument("--force-stdin", action="store_true")
@@ -168,6 +170,11 @@ def main() -> None:
         with open(args.expand_lh_funcs, "r", encoding="utf") as f:
             expand_lh_func_list = [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
+    multu_func_list = []
+    if args.multu_funcs:
+        with open(args.multu_funcs, "r", encoding="utf") as f:
+            multu_func_list = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
     maspsx_processor = MaspsxProcessor(
         in_lines,
         sdata_limit=sdata_limit,
@@ -186,6 +193,7 @@ def main() -> None:
         use_comm_for_lcomm=args.use_comm_for_lcomm,
         expand_lb_func_list=expand_lb_func_list,
         expand_lh_func_list=expand_lh_func_list,
+        multu_func_list=multu_func_list,
         sdata_sym_list=sdata_sym_list,
         sdata_func_list=sdata_func_list,
         sdata_exclude_map=sdata_exclude_map,

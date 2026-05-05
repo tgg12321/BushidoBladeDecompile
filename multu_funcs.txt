@@ -1,0 +1,11 @@
+# Functions where the original object uses multu instead of mult.
+#
+# GCC 2.7.2 emits mult for s32*s32 -> s32 (low half via mflo), but some
+# original objects in BB2 use multu for the same operation. The low 32
+# bits of mult and multu are identical for any inputs that fit in s32,
+# so converting mult -> multu in maspsx is a safe surgical rewrite.
+#
+# Wired in tools/maspsx/maspsx.py via --multu-funcs=multu_funcs.txt.
+# One function name per line; lines starting with # are ignored.
+
+func_8007FA1C
