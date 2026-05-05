@@ -4348,7 +4348,7 @@ func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
 func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
 func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
 func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
-func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L865" @ 110
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L882" @ 110
 # Move convergence point: insert label after lw $7,16(sp)
 func_80074B18: insert_label ".LC846:" @ 116
 func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
@@ -4383,10 +4383,55 @@ func_8007352C: subst "addu\s+\$3,\$23,-1" "addu	$2,$23,-1" @ 107
 func_8007352C: subst "addu\s+\$23,\$3,\$zero" "addu	$23,$2,$zero" @ 108
 func_8007352C: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 109
 # Idx 44 binary = idx 45 maspsx (1 nop earlier deleted): change y-check beq target to .L845 (next_compute_v_tail)
-func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L845" @ 45
+func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L862" @ 45
 # DispSleepMenuTex region scheduling - net 0 instructions
 func_8007352C: delete @ 95
 func_8007352C: delete @ 100
 func_8007352C: insert_after "sw	$2,20($20)" @ 96
 func_8007352C: insert "addu	$5,$21,$zero" @ 93
 func_8007E8DC: fill_delay @ 72 <- 71
+# func_80048864: regfix recipe (post strength-reduce inlining)
+func_80048864: delete @ 36
+func_80048864: delete @ 44
+func_80048864: insert "addiu	$2,$0,1" @ 53
+func_80048864: insert_after "addu	$12,$12,2" @ 50
+func_80048864: $11 <-> $12
+func_80048864: $10 <-> $13
+func_80048864: $9 <-> $10
+# Move sll $2,$10,14 (g_term) earlier in case 1 (post-regfix idx 85 -> 78)
+func_80048864: reorder 85,78,79,80,81,82,83,84 @ 78-85
+# func_80048864: subst register names for case 1 entry
+func_80048864: subst "andi\s+\$3,\$2,0x001f" "andi	$9,$2,0x001f" @ 51
+func_80048864: subst "sll\s+\$5,\$3,3" "sll	$5,$9,3" @ 52
+func_80048864: subst "beq\s+\$18,\$9,\.L\d+" "beq	$18,$2,.L75" @ 55
+# func_80048864: case 1 r-term register renames (correct)
+func_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 73
+func_80048864: subst "sll\s+\$2,\$6,6" "sll	$2,$2,6" @ 74
+func_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 75
+func_80048864: subst "sll\s+\$2,\$6,3" "sll	$3,$2,3" @ 76
+func_80048864: subst "subu\s+\$6,\$2,\$6" "subu	$4,$3,$2" @ 77
+func_80048864: subst "addu\s+\$6,\$6,\$2" "addu	$2,$4,$6" @ 86
+# func_80048864: g-term subst
+func_80048864: subst "sll\s+\$2,\$10,14" "sll	$6,$10,14" @ 85
+# func_80048864: b-term register/shift renames
+func_80048864: subst "sll\s+\$2,\$3,1" "sll	$2,$9,4" @ 78
+func_80048864: subst "addu\s+\$2,\$2,\$3" "addu	$2,$2,$5" @ 79
+func_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 81
+func_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 83
+func_80048864: subst "sll\s+\$13,\$2,6" "sll	$5,$2,3" @ 84
+# func_80048864: lum/packing register renames
+func_80048864: subst "addu\s+\$6,\$6,\$13" "addu	$2,$2,$5" @ 87
+func_80048864: subst "sra\s+\$13,\$6,15" "sra	$4,$2,15" @ 88
+func_80048864: subst "mult\s+\$13,\$22" "mult	$4,$22" @ 89
+func_80048864: subst "or\s+\$4,\$7,\$4" "or	$2,$7,$4" @ 104
+func_80048864: subst "sll\s+\$6,\$6,5" "sll	$3,$6,5" @ 105
+func_80048864: subst "or\s+\$4,\$4,\$6" "or	$2,$2,$3" @ 106
+func_80048864: subst "sll\s+\$5,\$5,10" "sll	$3,$5,10" @ 107
+func_80048864: subst "or\s+\$4,\$4,\$5" "or	$2,$2,$3" @ 108
+func_80048864: subst "sh\s+\$4,0\(\$11\)" "sh	$2,0($11)" @ 109
+# Insert new label after addu $12,$12,2 to fix bne target
+func_80048864: insert_label ".LBNE_TGT:" @ 43
+func_80048864: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.LBNE_TGT" @ 40
+# Insert label between two andi for j to skip first
+func_80048864: insert_label ".LJMP_TGT:" @ 101
+func_80048864: subst "j\s+\.L\d+" "j	.LJMP_TGT" @ 57
