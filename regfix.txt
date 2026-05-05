@@ -4348,7 +4348,7 @@ func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
 func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
 func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
 func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
-func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L850" @ 110
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L865" @ 110
 # Move convergence point: insert label after lw $7,16(sp)
 func_80074B18: insert_label ".LC846:" @ 116
 func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
@@ -4358,3 +4358,34 @@ func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
 func_80053304: subst "lw\s+\$7,8\(\$4\)" "lw	$3,24($4)" @ 45
 func_80053304: subst "lw\s+\$3,24\(\$4\)" "lw	$6,8($4)" @ 46
 func_80053304: $6 <-> $7 @ 48-60
+
+# (maspsx idx) v1 destination at idx 40 (mine has a0)
+# (maspsx idx) v0 destination at idx 43 (mine has v1)
+# (maspsx idx) blez source v1 at idx 47 (mine has a0)
+# (maspsx idx) fill nop @ 48 with addu ,,-1 (delay slot of blez @ 47)
+# Tail loop: target uses v0 instead of v1 for the loop counter chain
+# Idx 44 binary = idx 45 maspsx (1 nop earlier deleted): change y-check beq target from .L844 to .L842
+# DispSleepMenuTex region scheduling - net 0 instructions
+
+# func_8007352C: move andi from bltz delay slot into prior nop slot (drain)
+func_8007352C: subst "nop" "andi	$30,$2,0xffff" @ 20
+func_8007352C: delete @ 23
+# (maspsx idx) v1 destination at idx 40 (mine has a0)
+func_8007352C: subst "addu\s+\$4,\$18,\$3" "addu	$3,$18,$3" @ 40
+# (maspsx idx) v0 destination at idx 43 (mine has v1)
+func_8007352C: subst "addu\s+\$3,\$23,-1" "addu	$2,$23,-1" @ 43
+# (maspsx idx) blez source v1 at idx 47 (mine has a0)
+func_8007352C: subst "blez\s+\$4," "blez	$3," @ 47
+# (maspsx idx) fill nop @ 48 with addu $v0,$s7,-1 (delay slot of blez @ 47)
+func_8007352C: subst "nop" "addu	$2,$23,-1" @ 48
+# Tail loop: target uses v0 instead of v1 for the loop counter chain
+func_8007352C: subst "addu\s+\$3,\$23,-1" "addu	$2,$23,-1" @ 107
+func_8007352C: subst "addu\s+\$23,\$3,\$zero" "addu	$23,$2,$zero" @ 108
+func_8007352C: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 109
+# Idx 44 binary = idx 45 maspsx (1 nop earlier deleted): change y-check beq target to .L845 (next_compute_v_tail)
+func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L845" @ 45
+# DispSleepMenuTex region scheduling - net 0 instructions
+func_8007352C: delete @ 95
+func_8007352C: delete @ 100
+func_8007352C: insert_after "sw	$2,20($20)" @ 96
+func_8007352C: insert "addu	$5,$21,$zero" @ 93
