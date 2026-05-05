@@ -404,159 +404,113 @@ s32 func_8004881C(s32 arg0, s32 arg1, s32 arg2) {
     sum += arg2 * 0x2B8;
     return sum >> 12;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80048864\n"
-    "    addiu  $sp,$sp,-1096\n"
-    "    sw  $s6,1080($sp)\n"
-    "    lw  $s6,1112($sp)\n"
-    "    sw  $s5,1076($sp)\n"
-    "    lw  $s5,1116($sp)\n"
-    "    sw  $s4,1072($sp)\n"
-    "    lw  $s4,1120($sp)\n"
-    "    sw  $s7,1084($sp)\n"
-    "    lw  $s7,1124($sp)\n"
-    "    sw  $s2,1064($sp)\n"
-    "    addu  $s2,$a0,$zero\n"
-    "    sw  $s0,1056($sp)\n"
-    "    addu  $s0,$a1,$zero\n"
-    "    sw  $s1,1060($sp)\n"
-    "    addu  $s1,$a2,$zero\n"
-    "    sw  $s3,1068($sp)\n"
-    "    addu  $s3,$a3,$zero\n"
-    "    sw  $fp,1088($sp)\n"
-    "    lw  $fp,1128($sp)\n"
-    "    sw  $ra,1092($sp)\n"
-    "    jal  gpu_DrawSync\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    addiu  $a0,$sp,1040\n"
-    "    addiu  $a1,$sp,16\n"
-    "    addiu  $v0,$zero,1\n"
-    "    sh  $s0,1040($sp)\n"
-    "    sh  $s1,1042($sp)\n"
-    "    sh  $s3,1044($sp)\n"
-    "    jal  gpu_StoreImage\n"
-    "    sh  $v0,1046($sp)\n"
-    "    jal  gpu_DrawSync\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    addiu  $t4,$sp,16\n"
-    "    addiu  $t3,$sp,528\n"
-    "    blez  $s3,.L80048A2C\n"
-    "    addu  $t5,$zero,$zero\n"
-    ".L800488F4:\n"
-    "    lhu  $a3,0($t4)\n"
-    "    nop\n"
-    "    andi  $v1,$a3,65535\n"
-    "    bnez  $v1,.L80048914\n"
-    "    andi  $t0,$a3,31\n"
-    "    sh  $a3,0($t3)\n"
-    "    j  .L80048A1C\n"
-    "    addiu  $t4,$t4,2\n"
-    ".L80048914:\n"
-    "    sll  $a0,$t0,3\n"
-    "    srl  $v0,$v1,5\n"
-    "    andi  $t2,$v0,31\n"
-    "    sll  $a2,$t2,3\n"
-    "    srl  $v0,$v1,10\n"
-    "    andi  $t1,$v0,31\n"
-    "    sll  $a1,$t1,3\n"
-    "    addiu  $t4,$t4,2\n"
-    "    beqz  $s2,.L80048950\n"
-    "    andi  $a3,$a3,32768\n"
-    "    addiu  $v0,$zero,1\n"
-    "    beq  $s2,$v0,.L80048988\n"
-    "    sll  $v0,$t0,4\n"
-    "    j  .L800489FC\n"
-    "    andi  $a0,$a0,31\n"
-    ".L80048950:\n"
-    "    mult  $a0,$s6\n"
-    "    mflo  $t0\n"
-    "    nop\n"
-    "    nop\n"
-    "    mult  $a2,$s5\n"
-    "    mflo  $v0\n"
-    "    nop\n"
-    "    nop\n"
-    "    mult  $a1,$s4\n"
-    "    sra  $a0,$t0,15\n"
-    "    sra  $a2,$v0,15\n"
-    "    mflo  $v1\n"
-    "    j  .L800489F8\n"
-    "    sra  $a1,$v1,15\n"
-    ".L80048988:\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,6\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v1,$v0,3\n"
-    "    subu  $a0,$v1,$v0\n"
-    "    sll  $a2,$t2,14\n"
-    "    sll  $v0,$t1,4\n"
-    "    addu  $v0,$v0,$a1\n"
-    "    sll  $v0,$v0,2\n"
-    "    subu  $v0,$v0,$a1\n"
-    "    sll  $v0,$v0,3\n"
-    "    subu  $v0,$v0,$a1\n"
-    "    sll  $a1,$v0,3\n"
-    "    addu  $v0,$a0,$a2\n"
-    "    addu  $v0,$v0,$a1\n"
-    "    sra  $a0,$v0,15\n"
-    "    mult  $a0,$s6\n"
-    "    mflo  $v1\n"
-    "    sra  $a0,$v1,12\n"
-    "    nop\n"
-    "    mult  $a0,$s5\n"
-    "    mflo  $v1\n"
-    "    nop\n"
-    "    nop\n"
-    "    mult  $a0,$s4\n"
-    "    sra  $a2,$v1,12\n"
-    "    mflo  $v0\n"
-    "    sra  $a1,$v0,12\n"
-    ".L800489F8:\n"
-    "    andi  $a0,$a0,31\n"
-    ".L800489FC:\n"
-    "    andi  $a2,$a2,31\n"
-    "    andi  $a1,$a1,31\n"
-    "    or  $v0,$a3,$a0\n"
-    "    sll  $v1,$a2,5\n"
-    "    or  $v0,$v0,$v1\n"
-    "    sll  $v1,$a1,10\n"
-    "    or  $v0,$v0,$v1\n"
-    "    sh  $v0,0($t3)\n"
-    ".L80048A1C:\n"
-    "    addiu  $t5,$t5,1\n"
-    "    slt  $v0,$t5,$s3\n"
-    "    bnez  $v0,.L800488F4\n"
-    "    addiu  $t3,$t3,2\n"
-    ".L80048A2C:\n"
-    "    addiu  $a0,$sp,1040\n"
-    "    addiu  $a1,$sp,528\n"
-    "    sh  $s7,1040($sp)\n"
-    "    jal  gpu_LoadImage\n"
-    "    sh  $fp,1042($sp)\n"
-    "    jal  gpu_DrawSync\n"
-    "    addu  $a0,$zero,$zero\n"
-    "    lw  $ra,1092($sp)\n"
-    "    lw  $fp,1088($sp)\n"
-    "    lw  $s7,1084($sp)\n"
-    "    lw  $s6,1080($sp)\n"
-    "    lw  $s5,1076($sp)\n"
-    "    lw  $s4,1072($sp)\n"
-    "    lw  $s3,1068($sp)\n"
-    "    lw  $s2,1064($sp)\n"
-    "    lw  $s1,1060($sp)\n"
-    "    lw  $s0,1056($sp)\n"
-    "    addiu  $sp,$sp,1096\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+
+void func_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 dx, s32 dy)
+{
+  u16 src_buf[256];
+  u16 dst_buf[256];
+  s16 rect[4];
+  volatile s32 unused;
+  u16 *sp;
+  u16 *dp;
+  s32 i;
+  u32 a3_val;
+  u32 v1_val;
+  s32 r5;
+  s32 g5;
+  s32 b5;
+  s32 r8;
+  s32 g8;
+  s32 b8;
+  register s32 alpha asm("a3");
+  s32 lum;
+  register s32 nr asm("a0");
+  register s32 ng asm("a2");
+  register s32 nb asm("a1");
+  gpu_DrawSync(0);
+  rect[0] = (s16) sx;
+  rect[1] = (s16) sy;
+  rect[2] = (s16) w;
+  rect[3] = 1;
+  gpu_StoreImage(rect, src_buf);
+  gpu_DrawSync(0);
+  sp = src_buf;
+  dp = dst_buf;
+  i = 0;
+  if (w > 0)
+  {
+    do
+    {
+      a3_val = (u32) (*sp);
+      v1_val = a3_val & 0xFFFF;
+      r5 = v1_val == 0;
+      if (r5)
+      {
+        *dp = (u16) a3_val;
+        sp++;
+      }
+      else
+      {
+        r5 = a3_val & 0x1F;
+        do
+        {
+          sp++;
+          g5 = (v1_val >> 5) & 0x1F;
+          b5 = (v1_val >> 10) & 0x1F;
+          r8 = r5 << 3;
+          g8 = g5 << 3;
+          b8 = b5 << 3;
+          alpha = a3_val & 0x8000;
+        }
+        while (0);
+        switch (mode)
+        {
+          case 0:
+            nr = (r8 * mr) >> 15;
+            ng = (g8 * mg) >> 15;
+            nb = (b8 * mb) >> 15;
+            break;
+
+          case 1: {
+            int t = (r5 << 4) + r8;  /* t = r5*16 + r5*8 = r5*24 */
+            t = (t << 6) + r8;        /* t = r5*1536 + r5*8 = r5*0x608 */
+            t = (t << 3) - t;         /* t = r5*0x608 * 7 = r5*0x2A38 */
+            i = 1856 * (b5 * 3);
+            t = t + (g5 << 14);
+            g8 = t + i;
+            lum = g8 >> 15;
+            i = lum;
+            nr = (i * mr) >> 12;
+            ng = (nr * mg) >> 12;
+            nb = (nr * mb) >> 12;
+            break;
+          }
+
+          default:
+            r8 = r8 & 0x1F;
+            nr = r8;
+            ng = g8;
+            nb = b8;
+            break;
+
+        }
+
+        nr &= 0x1F;
+        ng &= 0x1F;
+        nb &= 0x1F;
+        r5 = 5;
+        *dp = (u16) (((alpha | nr) | (ng << r5)) | (nb << 10));
+      }
+      dp++;
+      i++;
+    }
+    while (i < w);
+  }
+  rect[0] = (s16) dx;
+  rect[1] = (s16) dy;
+  gpu_LoadImage(rect, dst_buf);
+  gpu_DrawSync(0);
+}
 void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     func_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
