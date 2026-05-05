@@ -44,12 +44,14 @@ def parse_event_line(line: str) -> tuple[str, str, str, str]:
 
 def classify_status(last_event: str, last_details: str, age_sec: float) -> str:
     if "matched" in last_event.lower() or "MATCHED" in last_details:
-        return "[DONE]"
+        return "[DONE] "
     if "stuck" in last_event.lower() or "STUCK" in last_details:
         return "[STUCK]"
     if "error" in last_event.lower():
-        return "[ERR] "
-    if age_sec > 300:  # 5 min
+        return "[ERR]  "
+    if age_sec > 600:  # 10 min — definitely stale
+        return "[DEAD?]"
+    if age_sec > 300:  # 5 min — heartbeat violation
         return "[STALL]"
     return "[work] "
 
@@ -67,6 +69,15 @@ def main() -> int:
     print("=== Parallel run status ===")
     print(f"  ({len(logs)} agent log{'s' if len(logs) != 1 else ''} in {LOG_DIR})")
     print()
+
+    # Per-cluster STUCK accumulator -- flag patterns the coordinator should pause on.
+    cluster_keywords = {
+        "multu": "multu/mult cluster (toolchain: maspsx --multu-funcs flag)",
+        "schedule-insns": "no-schedule-insns cluster (per-func GCC flag needed)",
+        "register-cycle": "register-cycle cluster (atomic regfix op needed)",
+        "register-cascade": "register-cascade cluster (cross-cutting reg substitution)",
+    }
+    stuck_clusters: dict[str, list[str]] = {k: [] for k in cluster_keywords}
 
     for log in logs:
         func = log.stem
@@ -97,6 +108,13 @@ def main() -> int:
         status = classify_status(last_event, last_details, age_sec)
         wid_str = f"({last_wid})" if last_wid and last_wid != "?" else ""
 
+        # Cluster detection: scan stuck/last-details for known keywords
+        if "stuck" in last_event.lower():
+            blob = (last_event + " " + last_details).lower()
+            for kw in stuck_clusters:
+                if kw in blob:
+                    stuck_clusters[kw].append(func)
+
         print(f"  {status} {func:24s} {fmt_age(age_sec):>5s} ago  {wid_str}")
         print(f"         chain: {chain}")
         if last_details:
@@ -104,6 +122,19 @@ def main() -> int:
             print(f"         last:  {last_event}  {details_short}")
         else:
             print(f"         last:  {last_event}")
+        print()
+
+    # Cluster detection report (audit-driven, prevents repeated rediscovery)
+    flagged = {k: v for k, v in stuck_clusters.items() if len(v) >= 2}
+    if flagged:
+        print("=== CLUSTER ALERT — pause spawning, build shared fix ===")
+        for kw, funcs in flagged.items():
+            print(f"  {cluster_keywords[kw]}")
+            print(f"    affected: {', '.join(funcs)}")
+        print()
+        print("  Action: spawn ONE worker tasked with building the shared")
+        print("  toolchain fix (e.g., new maspsx flag, regfix op, or")
+        print("  pipeline pass). Then re-spawn cluster members afterward.")
         print()
 
     return 0
