@@ -44913,151 +44913,102 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8007352C\n"
-    "    addiu  $sp,$sp,-56\n"
-    "    sw  $s4,32($sp)\n"
-    "    addu  $s4,$a0,$zero\n"
-    "    sw  $ra,52($sp)\n"
-    "    sw  $fp,48($sp)\n"
-    "    sw  $s7,44($sp)\n"
-    "    sw  $s6,40($sp)\n"
-    "    sw  $s5,36($sp)\n"
-    "    sw  $s3,28($sp)\n"
-    "    sw  $s2,24($sp)\n"
-    "    sw  $s1,20($sp)\n"
-    "    sw  $s0,16($sp)\n"
-    "    lw  $s6,0($s4)\n"
-    "    nop\n"
-    "    lhu  $a0,4($s6)\n"
-    "    lhu  $a1,6($s6)\n"
-    "    lw  $s5,8($s4)\n"
-    "    jal  gpu_CalcClut\n"
-    "    nop\n"
-    "    lbu  $v1,2($s6)\n"
-    "    andi  $fp,$v0,65535\n"
-    "    addiu  $v1,$v1,-1\n"
-    "    bltz  $v1,.L800736F0\n"
-    "    addu  $s7,$v1,$zero\n"
-    "    addiu  $s3,$s5,6\n"
-    "    sll  $v0,$s7,16\n"
-    ".L80073594:\n"
-    "    lw  $v1,4($s4)\n"
-    "    sra  $v0,$v0,13\n"
-    "    addu  $s0,$v1,$v0\n"
-    "    lh  $a1,0($s0)\n"
-    "    lw  $v1,24($s4)\n"
-    "    lh  $a0,2($s0)\n"
-    "    lw  $v0,28($s4)\n"
-    "    addu  $s1,$a1,$v1\n"
-    "    addu  $s2,$a0,$v0\n"
-    "    lbu  $v0,6($s0)\n"
-    "    lbu  $v1,7($s0)\n"
-    "    addu  $v0,$s1,$v0\n"
-    "    blez  $v0,.L800736DC\n"
-    "    addu  $v1,$s2,$v1\n"
-    "    slti  $v0,$s1,640\n"
-    "    beqz  $v0,.L800736E0\n"
-    "    addiu  $v0,$s7,-1\n"
-    "    slti  $v0,$s2,240\n"
-    "    beqz  $v0,.L800736DC\n"
-    "    nop\n"
-    "    blez  $v1,.L800736E0\n"
-    "    addiu  $v0,$s7,-1\n"
-    "    jal  initSprt\n"
-    "    addu  $a0,$s5,$zero\n"
-    "    sh  $fp,8($s3)\n"
-    "    sh  $s1,2($s3)\n"
-    "    sh  $s2,4($s3)\n"
-    "    lbu  $v0,4($s0)\n"
-    "    lbu  $v1,8($s6)\n"
-    "    nop\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sb  $v0,6($s3)\n"
-    "    lbu  $v0,5($s0)\n"
-    "    lbu  $v1,10($s6)\n"
-    "    nop\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sb  $v0,7($s3)\n"
-    "    lbu  $v0,6($s0)\n"
-    "    nop\n"
-    "    sh  $v0,10($s3)\n"
-    "    lbu  $v0,7($s0)\n"
-    "    nop\n"
-    "    sh  $v0,12($s3)\n"
-    "    lbu  $v0,40($s4)\n"
-    "    nop\n"
-    "    beqz  $v0,.L8007367C\n"
-    "    addu  $a0,$s5,$zero\n"
-    "    jal  gpu_SetRawTexture\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    lbu  $v0,41($s4)\n"
-    "    nop\n"
-    "    sb  $v0,-2($s3)\n"
-    "    lbu  $v0,42($s4)\n"
-    "    nop\n"
-    "    sb  $v0,-1($s3)\n"
-    "    lbu  $v0,43($s4)\n"
-    "    j  .L80073684\n"
-    "    sb  $v0,0($s3)\n"
-    ".L8007367C:\n"
-    "    jal  gpu_SetRawTexture\n"
-    "    addiu  $a1,$zero,1\n"
-    ".L80073684:\n"
-    "    lw  $a1,16($s4)\n"
-    "    jal  gpu_SetSemiTransp\n"
-    "    addu  $a0,$s5,$zero\n"
-    "    lw  $v0,20($s4)\n"
-    "    nop\n"
-    "    sltiu  $v0,$v0,4102\n"
-    "    bnez  $v0,.L800736BC\n"
-    "    addu  $a1,$s5,$zero\n"
-    "    addiu  $v0,$zero,1\n"
-    "    lui  $a0,%hi(D_800159A0)\n"
-    "    addiu  $a0,$a0,%lo(D_800159A0)\n"
-    "    jal  DispSleepMenuTex\n"
-    "    sw  $v0,20($s4)\n"
-    "    addu  $a1,$s5,$zero\n"
-    ".L800736BC:\n"
-    "    addiu  $s3,$s3,20\n"
-    "    addiu  $s5,$s5,20\n"
-    "    lw  $a0,20($s4)\n"
-    "    lui  $v0,%hi(D_800A374C)\n"
-    "    lw  $v0,%lo(D_800A374C)($v0)\n"
-    "    sll  $a0,$a0,2\n"
-    "    jal  ot_Link\n"
-    "    addu  $a0,$v0,$a0\n"
-    ".L800736DC:\n"
-    "    addiu  $v0,$s7,-1\n"
-    ".L800736E0:\n"
-    "    addu  $s7,$v0,$zero\n"
-    "    sll  $v0,$v0,16\n"
-    "    bgez  $v0,.L80073594\n"
-    "    sll  $v0,$s7,16\n"
-    ".L800736F0:\n"
-    "    addu  $v0,$s5,$zero\n"
-    "    lw  $ra,52($sp)\n"
-    "    lw  $fp,48($sp)\n"
-    "    lw  $s7,44($sp)\n"
-    "    lw  $s6,40($sp)\n"
-    "    lw  $s5,36($sp)\n"
-    "    lw  $s4,32($sp)\n"
-    "    lw  $s3,28($sp)\n"
-    "    lw  $s2,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,56\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 initSprt(s32, s16);
+extern s32 gpu_SetRawTexture(s32, s32);
+extern s32 gpu_SetSemiTransp(s32, s32);
+extern s32 ot_Link(s32, s32);
+extern s32 DispSleepMenuTex(s32 *, s32);
+extern s32 gpu_CalcClut(u16, u16);
+extern s32 D_800159A0;
+
+typedef struct EnvA {
+    s32 *header;
+    s8  *table;
+    s32  out;
+    s32  pad0C;
+    s32  semi;
+    u32  ot_idx;
+    s32  x;
+    s32  y;
+    s32  pad20, pad24;
+    u8   has_color;
+    u8   col_r;
+    u8   col_g;
+    u8   col_b;
+} EnvA;
+
+s32 func_8007352C(EnvA *_env) {
+    register EnvA *env asm("s4") = _env;
+    register s32 *hdr asm("s6") = env->header;
+    register s32 buf asm("s5") = env->out;
+    s32 fp;
+    register s32 i asm("s7");
+    register s32 dst asm("s3");
+    s32 v_tail;
+    s8 *e;
+    s32 a1, x, y, v1;
+    s32 raw;
+    s32 saved_buf;
+
+    {
+        register s32 j asm("v1");
+        raw = gpu_CalcClut(*((u16 *)hdr + 2), *((u16 *)hdr + 3));
+        j = (s32)*((u8 *)hdr + 2) - 1;
+        fp = raw & 0xFFFF;
+        if (j < 0) goto exit;
+        i = j;
+    }
+    dst = buf + 6;
+
+loop_top:
+    e = env->table + ((i << 16) >> 13);
+    a1 = *(s16 *)(e + 0);
+    x = a1 + env->x;
+    y = *(s16 *)(e + 2) + env->y;
+    {
+        s32 x_check = x + (s32)*((u8 *)e + 6);
+        v1 = y + (s32)*((u8 *)e + 7);
+        if (x_check <= 0) goto next_compute_v_tail;
+    }
+    v_tail = i - 1;
+    if (x >= 0x280) goto merge_v_tail;
+    if (y >= 0xF0) goto next_compute_v_tail;
+    v_tail = i - 1;
+    if (v1 <= 0) goto merge_v_tail;
+    initSprt(buf, (s16)a1);
+    *(s16 *)(dst + 8) = (s16)fp;
+    *(s16 *)(dst + 2) = (s16)x;
+    *(s16 *)(dst + 4) = (s16)y;
+    *(s8 *)(dst + 6) = (s8)((s32)*((u8 *)e + 4) + (s32)*((u8 *)hdr + 8));
+    *(s8 *)(dst + 7) = (s8)((s32)*((u8 *)e + 5) + (s32)*((u8 *)hdr + 0xA));
+    *(s16 *)(dst + 0xA) = (s16)*((u8 *)e + 6);
+    *(s16 *)(dst + 0xC) = (s16)*((u8 *)e + 7);
+    if (env->has_color != 0) {
+        gpu_SetRawTexture(buf, 0);
+        *((u8 *)dst - 2) = env->col_r;
+        *((u8 *)dst - 1) = env->col_g;
+        *((u8 *)dst + 0) = env->col_b;
+    } else {
+        gpu_SetRawTexture(buf, 1);
+    }
+    gpu_SetSemiTransp(buf, env->semi);
+    if (env->ot_idx >= 0x1006U) {
+        env->ot_idx = 1U;
+        DispSleepMenuTex(&D_800159A0, buf);
+    }
+    saved_buf = buf;
+    dst += 0x14;
+    buf += 0x14;
+    ot_Link(D_800A374C + env->ot_idx * 4, saved_buf);
+next_compute_v_tail:
+    v_tail = i - 1;
+merge_v_tail:
+    i = v_tail;
+    if ((v_tail << 16) >= 0) goto loop_top;
+exit:
+    return buf;
+}
+
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
