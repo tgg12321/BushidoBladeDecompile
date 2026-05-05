@@ -4389,3 +4389,4 @@ func_8007352C: delete @ 95
 func_8007352C: delete @ 100
 func_8007352C: insert_after "sw	$2,20($20)" @ 96
 func_8007352C: insert "addu	$5,$21,$zero" @ 93
+func_8007E8DC: fill_delay @ 72 <- 71
