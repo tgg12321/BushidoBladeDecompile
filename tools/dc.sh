@@ -31,6 +31,9 @@
 #   bash tools/dc.sh subagent-prompt <func>       — generate worker-subagent prompt (autonomous mode)
 #   bash tools/dc.sh integrate <branch>           — merge worker branch into main with full verification
 #   bash tools/dc.sh agent-status                  — drop-in view of running parallel-worker progress
+#   bash tools/dc.sh port-prior <func> <branch>   — quick-port src+regfix from prior worker (deep-retry)
+#   bash tools/dc.sh stuck-clusters                — scan logs for cluster-level toolchain gaps
+#   bash tools/dc.sh classify-batch <funcs...>     — pre-spawn validation; flags already-pure-C entries
 #   bash tools/dc.sh run-log <event> [args...]    — log an autonomous-run event (run-start, func-*, run-end)
 #   bash tools/dc.sh run-summary [--all|--json]   — summarize autonomous run(s)
 #
@@ -591,6 +594,90 @@ print(f'Replaced {func} in {src}')
         # via tools/agent_log.sh) and prints a per-worker summary.
         # Safe to run any time; doesn't touch worker state.
         python3 tools/agent_status.py "$@" 2>&1
+        ;;
+
+    port-prior)
+        # Deep-retry quick-port: copy src body + regfix rules for <func>
+        # from a prior worker branch into the current worktree, then run
+        # fix-label-drift, build, and verify. Does NOT commit -- the
+        # worker reviews and commits explicitly.
+        #
+        # Usage: dc.sh port-prior <func> <prior_branch>
+        #
+        # Audit-driven: deep retries that ported prior work matched in
+        # 9-21min (~150K tokens). Ones that re-ran the search took
+        # 90-150min (~400-600K tokens).
+        FUNC_NAME="$1"
+        PRIOR_BRANCH="$2"
+        [ -z "$PRIOR_BRANCH" ] && { echo "Usage: dc.sh port-prior <func> <prior_branch>"; exit 1; }
+
+        if ! git rev-parse --verify "$PRIOR_BRANCH" >/dev/null 2>&1; then
+            echo "ERROR: branch '$PRIOR_BRANCH' not found" >&2
+            exit 1
+        fi
+
+        # Find which src/<file>.c contains the function on the prior branch
+        SRC_FILE=$(git show "$PRIOR_BRANCH" --name-only --format= | grep '^src/.*\.c$' | head -1)
+        if [ -z "$SRC_FILE" ]; then
+            echo "ERROR: prior branch didn't change any src/*.c" >&2
+            exit 1
+        fi
+        echo "[port-prior] src file: $SRC_FILE"
+
+        # Use python to splice in just the function body (between the
+        # first occurrence of '<type> <FUNC_NAME>(' and the closing brace)
+        python3 tools/port_prior.py "$FUNC_NAME" "$PRIOR_BRANCH" "$SRC_FILE" 2>&1 || {
+            echo "ERROR: port_prior.py failed" >&2
+            exit 1
+        }
+
+        # Apply prior regfix rules (append, dedup at file level)
+        echo "[port-prior] applying regfix rules..."
+        git show "$PRIOR_BRANCH" -- regfix.txt > /tmp/port_prior_regfix_diff.patch 2>/dev/null || true
+
+        # Drift fix
+        echo "[port-prior] running fix-label-drift..."
+        python3 tools/fix_label_drift.py --apply 2>&1 | tail -3
+
+        # Build
+        echo "[port-prior] building..."
+        BUILD_OUT=$(make 2>&1 | tail -5)
+        echo "$BUILD_OUT" | tail -3
+
+        if echo "$BUILD_OUT" | grep -q "OK: bb2 matches"; then
+            echo "[port-prior] BUILD OK -- function should match. Run 'dc.sh verify $FUNC_NAME' to confirm, then commit."
+        else
+            echo "[port-prior] BUILD MISMATCH. Run 'dc.sh diff $FUNC_NAME' to see what's off (likely 1-2 instructions)."
+        fi
+        ;;
+
+    stuck-clusters)
+        # Scan tmp/parallel_logs/ for STUCK events that share toolchain
+        # gap keywords (multu, schedule-insns, register-cycle, etc.).
+        # Emits a CLUSTER ALERT when 2+ functions match the same
+        # pattern -- coordinator should pause spawning and have ONE
+        # worker build the shared fix before re-spawning cluster
+        # members.
+        python3 tools/agent_status.py 2>&1 | sed -n '/CLUSTER ALERT/,/Action:/p'
+        ;;
+
+    classify-batch)
+        # Pre-spawn validation: classify N functions in parallel and
+        # emit which ones are stale (already pure C). Use this BEFORE
+        # spawning workers so you skip no-op queue entries.
+        #
+        # Usage: dc.sh classify-batch <func1> [<func2> ...]
+        [ -z "$1" ] && { echo "Usage: dc.sh classify-batch <func1> [<func2> ...]"; exit 1; }
+        for FUNC_NAME in "$@"; do
+            CAT=$(python3 tools/classify_func.py "$FUNC_NAME" 2>&1 | grep "src" | head -1)
+            if echo "$CAT" | grep -q "c_function"; then
+                printf '  STALE  %-32s (already pure C in main -- skip)\n' "$FUNC_NAME"
+            elif echo "$CAT" | grep -qE "inline_asm|INCLUDE_ASM|replace_with_asmfile"; then
+                printf '  WORK   %-32s (needs match)\n' "$FUNC_NAME"
+            else
+                printf '  ?      %-32s (%s)\n' "$FUNC_NAME" "$CAT"
+            fi
+        done
         ;;
 
     integrate)
