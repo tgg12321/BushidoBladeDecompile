@@ -4087,3 +4087,35 @@ func_80074220: insert_label ".Lloop4220:" @ 43
 func_80074220: subst "\.L\d+" ".Lloop4220" @ 54
 func_80074220: reorder 103,102 @ 102-103
 func_80074220: reorder 44,42,43,45,46,47,48,49 @ 42-49
+
+# func_80072CD4: register-swap recipe to match target asm.
+# Base: 95-score with do-while barriers + new_var=FC + var_v0 pre-set in THEN.
+# Mine has var_v0 in $v1 and FC=0xFC in $v0; target has FC in $v1 and var_v0 in $v0.
+# Recipe: subst register/imm changes; delete redundant FC reload; insert var_v0=0x46
+#   set at end of ELSE; ELSE is unchanged.
+
+# Step 1: pre-set FC=0xFC (was var_v0=0x46) in inner-beqz delay slot.
+func_80072CD4: subst "addiu\s+\$3,\$zero,70" "addiu\t$3,$zero,252" @ 20
+# Step 2: THEN's j-delay: var_v0=0x32 in $v0 (was $v1).
+func_80072CD4: subst "addiu\s+\$3,\$zero,50" "addiu\t$2,$zero,50" @ 28
+# Step 3: subst @ 36 (orig): sb $2,12 -> sb $3,4 (target's first merge store).
+func_80072CD4: subst "sb\s+\$2,12\(" "sb\t$3,4(" @ 36
+# Step 4: subst @ 37 (orig): sb $3,14 -> sb $3,12.
+func_80072CD4: subst "sb\s+\$3,14\(" "sb\t$3,12(" @ 37
+# Step 5: subst @ 38 (orig): sb $2,20 -> sb $2,14.
+func_80072CD4: subst "sb\s+\$2,20\(" "sb\t$2,14(" @ 38
+# Step 6: subst @ 40 (orig): sb $2,4 -> sb $2,20.
+func_80072CD4: subst "sb\s+\$2,4\(" "sb\t$2,20(" @ 40
+# Step 7: delete redundant FC reload (orig idx 35 = first instr at .L749).
+# After this, .L749 attaches to the next instruction.
+func_80072CD4: delete @ 35
+# Step 8: insert var_v0=0x46 set at end of ELSE block (orig idx 34, before .L749).
+func_80072CD4: insert_after "addiu\t$2,$zero,70" @ 34
+# Step 9: reorder outer-else stores at orig idx 54-63. Target order maps to:
+#   54 <- mine 56 (li 24)
+#   55 <- mine 63 (sb 12)
+#   56 <- mine 54 (li 64)
+#   57-59 <- mine 57-59 (unchanged)
+#   60 <- mine 55 (sb 14)
+#   61-63 <- mine 60-62
+func_80072CD4: reorder 56,63,54,57,58,59,55,60,61,62 @ 54-63

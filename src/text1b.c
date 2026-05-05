@@ -44908,100 +44908,66 @@ s32 func_80072BC4(s32 arg0, GameObj *arg1) {
     ot_Link(D_800A374C + 0x60, arg1);
     return (s32)((u8 *)arg1 + 0x24);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80072CD4\n"
-    "    addiu  $sp,$sp,-32\n"
-    "    sw  $s0,16($sp)\n"
-    "    addu  $s0,$a0,$zero\n"
-    "    sw  $s1,20($sp)\n"
-    "    addu  $s1,$a1,$zero\n"
-    "    sw  $ra,24($sp)\n"
-    "    jal  initPolyG4\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    jal  gpu_SetSemiTransp\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    slti  $s0,$s0,4\n"
-    "    beqz  $s0,.L80072DA0\n"
-    "    addiu  $v0,$zero,16\n"
-    "    .word 0x8F8204F8\n"
-    "    nop\n"
-    "    lw  $v0,8($v0)\n"
-    "    nop\n"
-    "    andi  $v0,$v0,4\n"
-    "    beqz  $v0,.L80072D48\n"
-    "    addiu  $v1,$zero,252\n"
-    "    addiu  $v0,$zero,195\n"
-    "    sb  $v0,5($s1)\n"
-    "    addiu  $v0,$zero,30\n"
-    "    sb  $v0,6($s1)\n"
-    "    addiu  $v0,$zero,200\n"
-    "    sb  $v0,13($s1)\n"
-    "    j  .L80072D64\n"
-    "    addiu  $v0,$zero,50\n"
-    ".L80072D48:\n"
-    "    addiu  $v0,$zero,195\n"
-    "    sb  $v0,5($s1)\n"
-    "    addiu  $v0,$zero,80\n"
-    "    sb  $v0,6($s1)\n"
-    "    addiu  $v0,$zero,220\n"
-    "    sb  $v0,13($s1)\n"
-    "    addiu  $v0,$zero,70\n"
-    ".L80072D64:\n"
-    "    sb  $v1,4($s1)\n"
-    "    sb  $v1,12($s1)\n"
-    "    sb  $v0,14($s1)\n"
-    "    addiu  $v0,$zero,252\n"
-    "    sb  $v0,20($s1)\n"
-    "    addiu  $v0,$zero,130\n"
-    "    sb  $v0,21($s1)\n"
-    "    addiu  $v0,$zero,50\n"
-    "    sb  $v0,28($s1)\n"
-    "    addiu  $v0,$zero,40\n"
-    "    sb  $v0,29($s1)\n"
-    "    addiu  $v0,$zero,10\n"
-    "    sb  $zero,22($s1)\n"
-    "    j  .L80072DE0\n"
-    "    sb  $v0,30($s1)\n"
-    ".L80072DA0:\n"
-    "    addiu  $v1,$zero,48\n"
-    "    addiu  $a0,$zero,96\n"
-    "    sb  $v0,4($s1)\n"
-    "    addiu  $v0,$zero,24\n"
-    "    sb  $v0,12($s1)\n"
-    "    addiu  $v0,$zero,64\n"
-    "    sb  $v1,5($s1)\n"
-    "    sb  $a0,6($s1)\n"
-    "    sb  $zero,13($s1)\n"
-    "    sb  $v0,14($s1)\n"
-    "    sb  $v1,20($s1)\n"
-    "    sb  $zero,21($s1)\n"
-    "    sb  $a0,22($s1)\n"
-    "    sb  $zero,28($s1)\n"
-    "    sb  $zero,29($s1)\n"
-    "    sb  $zero,30($s1)\n"
-    ".L80072DE0:\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    addu  $a1,$s1,$zero\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,96\n"
-    "    addiu  $v0,$s1,36\n"
-    "    lw  $ra,24($sp)\n"
-    "    lw  $s1,20($sp)\n"
-    "    lw  $s0,16($sp)\n"
-    "    addiu  $sp,$sp,32\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_80072CD4(s32 arg0, GameObj *arg1)
+{
+  u8 var_v0;
+  s32 new_var;
+  initPolyG4(arg1);
+  gpu_SetSemiTransp(arg1, 0);
+  if (arg0 < 4)
+  {
+    var_v0 = 0x46;
+    if ((*((s32 *) (((s32) D_800A35C4) + 8))) & 4)
+    {
+      *((u8 *) (((s32) arg1) + 5)) = 0xC3;
+      *((u8 *) (((s32) arg1) + 6)) = 0x1E;
+      *((u8 *) (((s32) arg1) + 0xD)) = 0xC8;
+      do
+      {
+      }
+      while (0);
+      var_v0 = 0x32;
+    }
+    else
+    {
+      *((u8 *) (((s32) arg1) + 5)) = 0xC3;
+      *((u8 *) (((s32) arg1) + 6)) = 0x50;
+      *((u8 *) (((s32) arg1) + 0xD)) = 0xDC;
+    }
+    new_var = 0xFC;
+    *((u8 *) (((s32) arg1) + 0xC)) = new_var;
+    *((u8 *) (((s32) arg1) + 0xE)) = var_v0;
+    *((u8 *) (((s32) arg1) + 0x14)) = new_var;
+    do
+    {
+      *((u8 *) (((s32) arg1) + 4)) = 0xFC;
+    }
+    while (0);
+    *((u8 *) (((s32) arg1) + 0x15)) = 0x82;
+    *((u8 *) (((s32) arg1) + 0x1C)) = 0x32;
+    *((u8 *) (((s32) arg1) + 0x1D)) = 0x28;
+    *((u8 *) (((s32) arg1) + 0x16)) = 0;
+    *((u8 *) (((s32) arg1) + 0x1E)) = 0xA;
+  }
+  else
+  {
+    new_var = (s32) arg1;
+    *((u8 *) (new_var + 4)) = 0x10;
+    *((u8 *) (((s32) arg1) + 5)) = 0x30;
+    *((u8 *) (((s32) arg1) + 6)) = 0x60;
+    *((u8 *) (((s32) arg1) + 0xD)) = 0;
+    *((u8 *) (((s32) arg1) + 0xE)) = 0x40;
+    *((u8 *) (((s32) arg1) + 0x14)) = 0x30;
+    *((u8 *) (((s32) arg1) + 0x15)) = 0;
+    *((u8 *) (((s32) arg1) + 0x16)) = 0x60;
+    *((u8 *) (((s32) arg1) + 0xC)) = 0x18;
+    *((u8 *) (((s32) arg1) + 0x1C)) = 0;
+    *((u8 *) (((s32) arg1) + 0x1D)) = 0;
+    *((u8 *) (((s32) arg1) + 0x1E)) = 0;
+  }
+  ot_Link(D_800A374C + 0x60, arg1);
+  return (s32) (((u8 *) arg1) + 0x24);
+}
 extern s32 func_80073060(s32);
 extern s32 func_80072CD4(s32, GameObj *);
 extern s16 D_800A3580;
