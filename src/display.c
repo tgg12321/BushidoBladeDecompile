@@ -3106,91 +3106,94 @@ s32 *func_8007E8AC(s32 *a0, s32 *a1, s32 *a2) {
     __asm__ volatile ("addu %0,%1,$0" : "=r"(v0) : "r"(a2));
     return v0;
 }
-__asm__(
-    ".section .text\n"
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007E8DC\n"
-    "    lw $t0, 0($a0)\n"
-    "    lw $t3, 0($a1)\n"
-    "    andi $t1, $t0, 0xFFFF\n"
-    "    sll $t1, $t1, 16\n"
-    "    sra $t1, $t1, 16\n"
-    "    multu $t1, $t3\n"
-    "    sra $t2, $t0, 16\n"
-    "    lw $t4, 4($a1)\n"
-    "    lw $t5, 8($a1)\n"
-    "    lw $t0, 4($a0)\n"
-    "    addu $v0, $a0, $zero\n"
-    "    mflo $t1\n"
-    "    sra $t1, $t1, 12\n"
-    "    andi $t1, $t1, 0xFFFF\n"
-    "    multu $t2, $t3\n"
-    "    mflo $t2\n"
-    "    sra $t2, $t2, 12\n"
-    "    sll $t2, $t2, 16\n"
-    "    or $t1, $t1, $t2\n"
-    "    sw $t1, 0($a0)\n"
-    "    andi $t1, $t0, 0xFFFF\n"
-    "    sll $t1, $t1, 16\n"
-    "    sra $t1, $t1, 16\n"
-    "    multu $t1, $t3\n"
-    "    sra $t2, $t0, 16\n"
-    "    lw $t0, 8($a0)\n"
-    "    mflo $t1\n"
-    "    sra $t1, $t1, 12\n"
-    "    andi $t1, $t1, 0xFFFF\n"
-    "    multu $t2, $t4\n"
-    "    mflo $t2\n"
-    "    sra $t2, $t2, 12\n"
-    "    sll $t2, $t2, 16\n"
-    "    or $t1, $t1, $t2\n"
-    "    sw $t1, 4($a0)\n"
-    "    andi $t1, $t0, 0xFFFF\n"
-    "    sll $t1, $t1, 16\n"
-    "    sra $t1, $t1, 16\n"
-    "    multu $t1, $t4\n"
-    "    sra $t2, $t0, 16\n"
-    "    lw $t0, 12($a0)\n"
-    "    mflo $t1\n"
-    "    sra $t1, $t1, 12\n"
-    "    andi $t1, $t1, 0xFFFF\n"
-    "    multu $t2, $t4\n"
-    "    mflo $t2\n"
-    "    sra $t2, $t2, 12\n"
-    "    sll $t2, $t2, 16\n"
-    "    or $t1, $t1, $t2\n"
-    "    sw $t1, 8($a0)\n"
-    "    andi $t1, $t0, 0xFFFF\n"
-    "    sll $t1, $t1, 16\n"
-    "    sra $t1, $t1, 16\n"
-    "    multu $t1, $t5\n"
-    "    sra $t2, $t0, 16\n"
-    "    lw $t0, 16($a0)\n"
-    "    mflo $t1\n"
-    "    sra $t1, $t1, 12\n"
-    "    andi $t1, $t1, 0xFFFF\n"
-    "    multu $t2, $t5\n"
-    "    mflo $t2\n"
-    "    sra $t2, $t2, 12\n"
-    "    sll $t2, $t2, 16\n"
-    "    or $t1, $t1, $t2\n"
-    "    sw $t1, 12($a0)\n"
-    "    andi $t1, $t0, 0xFFFF\n"
-    "    sll $t1, $t1, 16\n"
-    "    sra $t1, $t1, 16\n"
-    "    multu $t1, $t5\n"
-    "    mflo $t1\n"
-    "    sra $t1, $t1, 12\n"
-    "    jr $ra\n"
-    "    sw $t1, 16($a0)\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+void *func_8007E8DC(s32 *arg0, s32 *arg1) {
+    register s32 t0 asm("t0");
+    register s32 t1 asm("t1");
+    register s32 t2 asm("t2");
+    register s32 t3 asm("t3");
+    register s32 t4 asm("t4");
+    register s32 t5 asm("t5");
+    s32 *v0;
+
+    asm volatile("lw %0, 0(%1)" : "=r"(t0) : "r"(arg0));
+    asm volatile("lw %0, 0(%1)" : "=r"(t3) : "r"(arg1));
+    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "r"(t0));
+    asm volatile("sll %0, %1, 16" : "=r"(t1) : "0"(t1));
+    asm volatile("sra %0, %1, 16" : "=r"(t1) : "0"(t1));
+    asm volatile("multu %0, %1" : : "r"(t1), "r"(t3));
+    asm volatile("sra %0, %1, 16" : "=r"(t2) : "r"(t0));
+    asm volatile("lw %0, 4(%1)" : "=r"(t4) : "r"(arg1));
+    asm volatile("lw %0, 8(%1)" : "=r"(t5) : "r"(arg1));
+    asm volatile("lw %0, 4(%1)" : "=r"(t0) : "r"(arg0));
+    asm volatile("addu %0, %1, $0" : "=r"(v0) : "r"(arg0));
+    asm volatile("mflo %0" : "=r"(t1));
+    asm volatile("sra %0, %1, 12" : "=r"(t1) : "0"(t1));
+    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "0"(t1));
+    asm volatile("multu %0, %1" : : "r"(t2), "r"(t3));
+    asm volatile("mflo %0" : "=r"(t2));
+    asm volatile("sra %0, %1, 12" : "=r"(t2) : "0"(t2));
+    asm volatile("sll %0, %1, 16" : "=r"(t2) : "0"(t2));
+    asm volatile("or %0, %1, %2" : "=r"(t1) : "0"(t1), "r"(t2));
+    asm volatile("sw %0, 0(%1)" : : "r"(t1), "r"(arg0));
+
+    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "r"(t0));
+    asm volatile("sll %0, %1, 16" : "=r"(t1) : "0"(t1));
+    asm volatile("sra %0, %1, 16" : "=r"(t1) : "0"(t1));
+    asm volatile("multu %0, %1" : : "r"(t1), "r"(t3));
+    asm volatile("sra %0, %1, 16" : "=r"(t2) : "r"(t0));
+    asm volatile("lw %0, 8(%1)" : "=r"(t0) : "r"(arg0));
+    asm volatile("mflo %0" : "=r"(t1));
+    asm volatile("sra %0, %1, 12" : "=r"(t1) : "0"(t1));
+    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "0"(t1));
+    asm volatile("multu %0, %1" : : "r"(t2), "r"(t4));
+    asm volatile("mflo %0" : "=r"(t2));
+    asm volatile("sra %0, %1, 12" : "=r"(t2) : "0"(t2));
+    asm volatile("sll %0, %1, 16" : "=r"(t2) : "0"(t2));
+    asm volatile("or %0, %1, %2" : "=r"(t1) : "0"(t1), "r"(t2));
+    asm volatile("sw %0, 4(%1)" : : "r"(t1), "r"(arg0));
+
+    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "r"(t0));
+    asm volatile("sll %0, %1, 16" : "=r"(t1) : "0"(t1));
+    asm volatile("sra %0, %1, 16" : "=r"(t1) : "0"(t1));
+    asm volatile("multu %0, %1" : : "r"(t1), "r"(t4));
+    asm volatile("sra %0, %1, 16" : "=r"(t2) : "r"(t0));
+    asm volatile("lw %0, 12(%1)" : "=r"(t0) : "r"(arg0));
+    asm volatile("mflo %0" : "=r"(t1));
+    asm volatile("sra %0, %1, 12" : "=r"(t1) : "0"(t1));
+    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "0"(t1));
+    asm volatile("multu %0, %1" : : "r"(t2), "r"(t4));
+    asm volatile("mflo %0" : "=r"(t2));
+    asm volatile("sra %0, %1, 12" : "=r"(t2) : "0"(t2));
+    asm volatile("sll %0, %1, 16" : "=r"(t2) : "0"(t2));
+    asm volatile("or %0, %1, %2" : "=r"(t1) : "0"(t1), "r"(t2));
+    asm volatile("sw %0, 8(%1)" : : "r"(t1), "r"(arg0));
+
+    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "r"(t0));
+    asm volatile("sll %0, %1, 16" : "=r"(t1) : "0"(t1));
+    asm volatile("sra %0, %1, 16" : "=r"(t1) : "0"(t1));
+    asm volatile("multu %0, %1" : : "r"(t1), "r"(t5));
+    asm volatile("sra %0, %1, 16" : "=r"(t2) : "r"(t0));
+    asm volatile("lw %0, 16(%1)" : "=r"(t0) : "r"(arg0));
+    asm volatile("mflo %0" : "=r"(t1));
+    asm volatile("sra %0, %1, 12" : "=r"(t1) : "0"(t1));
+    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "0"(t1));
+    asm volatile("multu %0, %1" : : "r"(t2), "r"(t5));
+    asm volatile("mflo %0" : "=r"(t2));
+    asm volatile("sra %0, %1, 12" : "=r"(t2) : "0"(t2));
+    asm volatile("sll %0, %1, 16" : "=r"(t2) : "0"(t2));
+    asm volatile("or %0, %1, %2" : "=r"(t1) : "0"(t1), "r"(t2));
+    asm volatile("sw %0, 12(%1)" : : "r"(t1), "r"(arg0));
+
+    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "r"(t0));
+    asm volatile("sll %0, %1, 16" : "=r"(t1) : "0"(t1));
+    asm volatile("sra %0, %1, 16" : "=r"(t1) : "0"(t1));
+    asm volatile("multu %0, %1" : : "r"(t1), "r"(t5));
+    asm volatile("mflo %0" : "=r"(t1));
+    asm volatile("sra %0, %1, 12" : "=r"(t1) : "0"(t1));
+    asm volatile("sw %0, 16(%1)" : : "r"(t1), "r"(arg0));
+
+    return v0;
+}
 PAD_NOPS_3; /* 3 NOPs after func_8007E8DC */
 __asm__(
     ".section .text\n"

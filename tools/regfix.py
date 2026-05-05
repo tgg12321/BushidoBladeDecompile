@@ -531,6 +531,18 @@ def process_function(lines, func_config):
 
         # Build groups: each instruction + preceding non-insn lines
         # Group boundaries: from (prev_insn_pos + 1) to (this_insn_pos), inclusive
+        #
+        # SPECIAL CASE: when reorder_start == 0, the preceding non-insn lines
+        # of idx 0 contain the function-label preamble (`func_NAME:`, `.ent`,
+        # `.frame`, `.mask`, `.fmask`, `.set noreorder`). If we attach these
+        # to idx 0's group, they move with idx 0 in the reorder, which places
+        # the function symbol mid-body and breaks link addresses.
+        # See memory/feedback_regfix_label_attachment.md.
+        #
+        # Fix: detect reorder_start == 0, extract the preamble separately,
+        # and emit it FIRST in the reordered section regardless of where
+        # idx 0 lands. Idx 0's group then contains only the instruction line.
+        preamble_lines = []
         groups = {}
         for i, insn_pos in enumerate(positions):
             if i == 0:
@@ -549,6 +561,13 @@ def process_function(lines, func_config):
                                 break
                         if found_prev_insn:
                             break
+
+                if reorder_start == 0:
+                    # Preamble = non-instruction lines preceding idx 0.
+                    # Idx 0's group should contain ONLY the instruction line
+                    # so the preamble doesn't follow idx 0 around the reorder.
+                    preamble_lines = [lines[p] for p in range(group_start, insn_pos)]
+                    group_start = insn_pos
             else:
                 group_start = positions[i - 1] + 1
 
@@ -556,18 +575,40 @@ def process_function(lines, func_config):
             groups[insn_idx_val] = [lines[p] for p in range(group_start, insn_pos + 1)]
 
         # Determine the full span of lines being replaced
-        first_group = groups[lines[positions[0]][1]]
-        span_start = None
-        for pos in range(len(lines)):
-            if lines[pos] is first_group[0]:
-                span_start = pos
-                break
-        if span_start is None:
+        # When reorder_start == 0, the preamble lives between the first
+        # in-range instruction's group_start (computed above) and the
+        # actual instruction position. We need span_start to cover those
+        # preamble lines too so the output replaces them once and the
+        # preamble emitted explicitly in `reordered_section` takes their place.
+        if reorder_start == 0 and preamble_lines:
+            # First preamble line position is the original group_start for idx 0.
+            # Walk back from positions[0] over None-idx lines to find it.
             span_start = positions[0]
+            while span_start > 0 and lines[span_start - 1][1] is None:
+                span_start -= 1
+                if span_start < positions[0]:
+                    found_prev_insn = False
+                    for check in range(span_start - 1, -1, -1):
+                        if lines[check][1] is not None:
+                            found_prev_insn = True
+                            break
+                    if found_prev_insn:
+                        break
+        else:
+            first_group = groups[lines[positions[0]][1]]
+            span_start = None
+            for pos in range(len(lines)):
+                if lines[pos] is first_group[0]:
+                    span_start = pos
+                    break
+            if span_start is None:
+                span_start = positions[0]
         span_end = positions[-1] + 1  # exclusive
 
-        # Build reordered section
-        reordered_section = []
+        # Build reordered section. Preamble (if any) comes first to keep
+        # the function label attached to whatever instruction now sits at
+        # the original idx 0 position.
+        reordered_section = list(preamble_lines)
         for new_idx in new_order:
             reordered_section.extend(groups[new_idx])
 
