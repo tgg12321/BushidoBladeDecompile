@@ -399,6 +399,7 @@ class MaspsxProcessor:
         use_comm_for_lcomm=False,
         expand_lb_func_list=None,
         expand_lh_func_list=None,
+        multu_func_list=None,
         sdata_sym_list=None,
         sdata_func_list=None,
         sdata_exclude_map=None,
@@ -414,6 +415,7 @@ class MaspsxProcessor:
 
         self.expand_lb_func_set = set(expand_lb_func_list) if expand_lb_func_list else set()
         self.expand_lh_func_set = set(expand_lh_func_list) if expand_lh_func_list else set()
+        self.multu_func_set = set(multu_func_list) if multu_func_list else set()
 
         self.nop_at_expansion = nop_at_expansion
         self.nop_mflo_mfhi = nop_mflo_mfhi
@@ -704,6 +706,22 @@ class MaspsxProcessor:
 
         return res
 
+    def _maybe_rewrite_mult(self, line: str) -> str:
+        """If current_func is in multu_func_set, rewrite `mult` to `multu`.
+
+        Operates on a single instruction line (post-strip). Safe to call on
+        any line — only `mult` followed by whitespace/tab is touched.
+        """
+        if self.current_func not in self.multu_func_set:
+            return line
+        # Match `mult` at the start, possibly followed by tab or space.
+        # Tolerate leading whitespace (we never see it after .strip(), but be safe).
+        stripped = line.lstrip()
+        if stripped.startswith("mult\t") or stripped.startswith("mult "):
+            indent = line[:len(line) - len(stripped)]
+            return indent + "multu" + stripped[len("mult"):]
+        return line
+
     def _handle_mflo_mfhi(self, r_source=None) -> List[str]:
         # we cannot use a div/mult within 2 instructions of mflo/mfhi
         res: List[str] = []
@@ -736,10 +754,10 @@ class MaspsxProcessor:
                         res.append("# DEBUG: div needs expanding")
                         skip -= 1
                     else:
-                        res.append(expand_move(inst))
+                        res.append(self._maybe_rewrite_mult(expand_move(inst)))
                     break
                 if not inst.startswith("#"):
-                    res.append(expand_move(inst))
+                    res.append(self._maybe_rewrite_mult(expand_move(inst)))
             self.skip_instructions = skip
 
         elif any(
@@ -798,14 +816,14 @@ class MaspsxProcessor:
                                 "nop  # DEBUG: mflo/mfhi with mult/div/rem and 1 instruction (noreorder)"
                             )
                             res.append(".set\tnoreorder")
-                            res.append(expand_move(inst))
+                            res.append(self._maybe_rewrite_mult(expand_move(inst)))
                         else:
                             if r_source and line_loads_from_reg(inst, r_source):
                                 # NOTE: only relevant when div has been expanded (i.e. -0 flag)
                                 res.extend(
                                     [
                                         f"nop  # DEBUG: mflo/mfhi with mult/div/rem and 1 instruction which loads from {r_source}",
-                                        expand_move(inst),
+                                        self._maybe_rewrite_mult(expand_move(inst)),
                                     ]
                                 )
                             else:
@@ -821,7 +839,7 @@ class MaspsxProcessor:
                                     if is_label(maybe_label):
                                         res.extend(
                                             [
-                                                expand_move(inst),
+                                                self._maybe_rewrite_mult(expand_move(inst)),
                                                 maybe_label,
                                                 "nop  # DEBUG: mflo/mfhi with mult/div/rem and 1 instruction (label)",
                                             ]
@@ -830,7 +848,7 @@ class MaspsxProcessor:
                                     else:
                                         res.extend(
                                             [
-                                                expand_move(inst),
+                                                self._maybe_rewrite_mult(expand_move(inst)),
                                                 "nop  # DEBUG: mflo/mfhi with mult/div/rem and 1 instruction",
                                             ]
                                         )
@@ -841,10 +859,10 @@ class MaspsxProcessor:
                         res.append("# DEBUG: div needs expanding")
                         skip -= 1
                     else:
-                        res.append(inst)
+                        res.append(self._maybe_rewrite_mult(inst))
                     break
                 elif not inst.startswith("#"):
-                    res.append(expand_move(inst))
+                    res.append(self._maybe_rewrite_mult(expand_move(inst)))
             self.skip_instructions = skip
 
         else:
@@ -920,6 +938,16 @@ class MaspsxProcessor:
                     )
 
         op, *rest = line.split()
+
+        # --multu-funcs: rewrite `mult $a,$b` to `multu $a,$b` for listed functions.
+        # GCC 2.7.2 emits `mult` for s32*s32 -> s32 (we discard the high half via mflo),
+        # but some original objects use `multu`; the low 32 bits are identical for
+        # any inputs that fit in s32, so this is a safe surgical rewrite.
+        # NOTE: also applied at _handle_mflo_mfhi() lookahead points where mult
+        # lines bypass per-line processing.
+        if op == "mult" and self.current_func in self.multu_func_set:
+            line = self._maybe_rewrite_mult(line)
+            op = "multu"
 
         # --expand-lb: transform lb into lbu + sign extension
         # --expand-lh: transform lh into lhu + sign extension
