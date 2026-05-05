@@ -1,0 +1,25 @@
+{
+  "name": "asm_volatile_scaffolding",
+  "title": "Per-instruction asm volatile inside C function (NOT a single inline asm block)",
+  "summary": "Some functions (especially in display.c) use hand-tuned software pipelining GCC won't reproduce. A single monolithic `__asm__(\"....\")` block reads as cheating ('just renaming the wrapper'). Per-instruction `asm volatile` calls inside a C function let GCC schedule the surrounding C while specific instructions stay verbatim.\n\nPattern:\n```c\nregister s32 t0 asm(\"$t0\");\nregister s32 t1 asm(\"$t1\");\n\nasm volatile(\"multu %0, %1\" :: \"r\"(a), \"r\"(b));\nasm volatile(\"mflo %0\" : \"=r\"(t0));\n/* C code can interleave between asm calls */\nasm volatile(\"andi %0, %1, 0xffff\" : \"=r\"(t1) : \"r\"(t0));\n```\n\nThis is a project-accepted pattern, distinct from the rejected single inline asm block.",
+  "from_memory": "feedback_audit_techniques.md",
+  "proof": "func_8007E8DC (commit 106ad5e2) and func_8007F87C (commit 424f89a) -- both display.c functions with hand-tuned scheduling that no pure C structure could reproduce.",
+  "fingerprint": {
+    "structural": [
+      "Target asm has hand-tuned scheduling pattern (interleaved multu/mflo with specific nop placement, register cycles, etc.)",
+      "permuter plateaus high (5000+) on pure C variants",
+      "diff shows fundamentally different instruction order than GCC produces"
+    ],
+    "blocker_class": "hand_tuned_scheduling"
+  },
+  "rule_skeleton": [
+    {"op": "fix_at_source", "where": "permuter/<func>/base.c",
+     "instruction": "Use `register <type> name asm(\"$reg\")` to pin variables; emit specific instructions via per-instruction `asm volatile`; let surrounding C be regular C. Add `.set noreorder` / `.set reorder` around critical sections via asm volatile."}
+  ],
+  "notes": [
+    "DO NOT use a single block of `__asm__(\"long string of instructions\")` -- that's effectively renaming INCLUDE_ASM and won't be accepted.",
+    "Use per-instruction asm volatile so GCC can interleave C operations and the function reads as legitimate C.",
+    "Combine with `--multu-funcs` flag (multu_funcs.txt) for the multu/mult conversion if needed.",
+    "Worker for func_8007E8DC also fixed tools/regfix.py idx-0 reorder bug as a side effect -- look for similar tooling-gap opportunities."
+  ]
+}

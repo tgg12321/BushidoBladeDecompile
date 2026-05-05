@@ -1,0 +1,25 @@
+{
+  "name": "drift_immune_label_anchor",
+  "title": "Anchor sibling-function branch targets via insert_label so they survive future label renumbering",
+  "summary": "When a regfix rule needs to redirect a branch target in a sibling function (e.g., `subst \"\\.L\\d+\" \".L412-4\" @ 22`), the hardcoded `.L<N>` number drifts every time another function in the same .c file changes. Each integration creates a new label-arithmetic conflict cycle.\n\nFix: anchor the target with a custom `.LfuncNAME_target:` label inside the sibling function. The custom label name is stable -- only its @-index drifts (and only if THAT sibling itself is modified, which is the much rarer case).",
+  "from_memory": "feedback_audit_techniques.md",
+  "proof": "func_80049C24 (commit 6bdc29d), func_8004A1FC (commit c4bba60), func_80072CD4 (commit 9abed76) -- all three were stuck on label-arithmetic cascades that the deep-retry workers fixed by switching to insert_label anchors.",
+  "fingerprint": {
+    "structural": [
+      "regfix.txt has rules of form `func_X: subst \"\\\\.L\\\\d+\" \".L<N>[+-]<offset>\" @ <idx>` where `func_X` is NOT the function being matched",
+      "fix-label-drift keeps updating the label number on each integration; after several integrations the rule no longer matches the right position"
+    ],
+    "blocker_class": "label_arithmetic_drift"
+  },
+  "rule_skeleton": [
+    {"op": "insert_label", "comment": "anchor target inside the sibling function",
+     "label": ".LfuncNAME_target:", "idx": "TARGET_IDX"},
+    {"op": "subst", "comment": "redirect branch in calling site to the anchored label",
+     "pattern": "\\.L\\d+", "replacement": ".LfuncNAME_target", "idx": "BRANCH_IDX"}
+  ],
+  "notes": [
+    "Pick a TARGET_IDX that is INSIDE the sibling's body and stable (e.g., right before a known instruction, not at idx 0).",
+    "Use a unique custom name (`.Lfunc_XX_target` or `.LfuncBD30_target`) so multiple sibling fixes don't collide.",
+    "Audit found this pattern saved 3+ matches that had been stuck for hours on label-arithmetic cycles."
+  ]
+}

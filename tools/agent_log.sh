@@ -65,4 +65,17 @@ LOG_FILE="$LOG_DIR/$FUNC.log"
 
 TS=$(date +%H:%M:%S)
 printf '%s\t%s\t%s\t%s\n' "$TS" "$WID" "$EVENT" "$DETAILS" >> "$LOG_FILE" 2>/dev/null || true
+
+# Token budget self-check (audit-driven). After the 50th event for a
+# function, emit a warning to stderr so the worker sees it on stdout
+# capture. ~50 events is a rough proxy for 200K+ tokens spent.
+EVENT_COUNT=$(wc -l < "$LOG_FILE" 2>/dev/null || echo 0)
+if [ "${EVENT_COUNT:-0}" -ge 50 ] && [ "${EVENT_COUNT:-0}" -lt 60 ]; then
+    if ! grep -q "TOKEN_BUDGET_WARNING" "$LOG_FILE" 2>/dev/null; then
+        printf '%s\t%s\tTOKEN_BUDGET_WARNING\tevent_count=%s -- consider returning STUCK if not close to match\n' \
+            "$TS" "$WID" "$EVENT_COUNT" >> "$LOG_FILE" 2>/dev/null
+        echo "[agent_log] TOKEN BUDGET WARNING: $EVENT_COUNT events logged for $FUNC. Consider STUCK if not close to match." >&2
+    fi
+fi
+
 exit 0

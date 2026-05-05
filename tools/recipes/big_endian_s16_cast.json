@@ -1,0 +1,24 @@
+{
+  "name": "big_endian_s16_cast",
+  "title": "(s16)v emits lh +2 on PSX (reads HIGH halfword), not the LOW one",
+  "summary": "GCC 2.7.2 treats `(s16)v` casts via memory-aligned big-endian semantics: when a 32-bit value is in memory and accessed as s16, GCC emits `lh ofs+2` (reads the BIG-endian high halfword). On PSX little-endian, `+2` is the HIGH 16 bits of the word, not the low ones. Workers expecting `(s16)v` to read the LOW 16 bits get bizarre regressions.\n\nFix: swap the C semantics. If you want the low 16 bits of v, write `v >> 16` (which emits `srl ofs`). If you want the high 16 bits, use `(s16)v` (which emits `lh ofs+2`).",
+  "from_memory": "feedback_audit_techniques.md",
+  "proof": "func_8007FBBC (worktree-agent-a37336621adaa378d) had wrong sin/cos halves until the worker swapped `cos = v >> 16; sin = (s16)v` to `cos = (s16)v; sin = v >> 16`.",
+  "fingerprint": {
+    "structural": [
+      "C source uses (s16) cast on a 32-bit value (or struct field)",
+      "diff shows lh with offset+2 in target where mine has lh with offset (or vice versa)",
+      "diff also shows wrong halfword extracted into the working register"
+    ],
+    "blocker_class": "psx_endian_s16_quirk"
+  },
+  "rule_skeleton": [
+    {"op": "fix_at_source", "where": "permuter/<func>/base.c",
+     "instruction": "Audit each (s16)/(u16) cast. If target's lh has +2 offset, the cast IS reading the high halfword -- match accordingly. If target's lh has +0 offset, swap your semantics: use `>> 16` instead of (s16)."}
+  ],
+  "notes": [
+    "Same quirk affects (u16) casts.",
+    "Quick test: read target asm for the lh instruction; the `+2` (or absence of) tells you which halfword is wanted.",
+    "Common in fixed-point math (sin/cos tables, matrix entries packed as s16:s16)."
+  ]
+}
