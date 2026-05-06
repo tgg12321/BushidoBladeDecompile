@@ -777,155 +777,86 @@ void initTexPage(u8 *a0, s32 a1, s32 a2, u16 a3, s32 a4) {
     *(u32 *)(a0 + 4) = func_8007C748(a1, a2, a3);
     *(u32 *)(a0 + 8) = func_8007C97C(a4);
 }
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007C2A0\n"
-    "    addiu      $sp, $sp, -0x40\n"
-    "    sw         $s0, 48($sp)\n"
-    "    addu       $s0, $a1, $zero\n"
-    "    sw         $s1, 52($sp)\n"
-    "    addu       $s1, $a0, $zero\n"
-    "    sw         $ra, 56($sp)\n"
-    "    lh         $a0, 0($s0)\n"
-    "    lh         $a1, 2($s0)\n"
-    "    jal        func_8007C7A0\n"
-    "    nop\n"
-    "    sw         $v0, 4($s1)\n"
-    "    lhu        $a0, 4($s0)\n"
-    "    lhu        $v0, 0($s0)\n"
-    "    lhu        $a1, 2($s0)\n"
-    "    addu       $a0, $a0, $v0\n"
-    "    addiu      $a0, $a0, -0x1\n"
-    "    sll        $a0, $a0, 16\n"
-    "    lhu        $v0, 6($s0)\n"
-    "    sra        $a0, $a0, 16\n"
-    "    addu       $a1, $a1, $v0\n"
-    "    addiu      $a1, $a1, -0x1\n"
-    "    sll        $a1, $a1, 16\n"
-    "    jal        func_8007C86C\n"
-    "    sra       $a1, $a1, 16\n"
-    "    sw         $v0, 8($s1)\n"
-    "    lh         $a0, 8($s0)\n"
-    "    lh         $a1, 10($s0)\n"
-    "    jal        func_8007C938\n"
-    "    nop\n"
-    "    sw         $v0, 12($s1)\n"
-    "    lbu        $a0, 23($s0)\n"
-    "    lbu        $a1, 22($s0)\n"
-    "    lhu        $a2, 20($s0)\n"
-    "    jal        func_8007C748\n"
-    "    nop\n"
-    "    addiu      $a0, $s0, 0xC\n"
-    "    jal        func_8007C97C\n"
-    "    sw        $v0, 16($s1)\n"
-    "    sw         $v0, 20($s1)\n"
-    "    lui        $v0, (0xE6000000 >> 16)\n"
-    "    sw         $v0, 24($s1)\n"
-    "    lbu        $v0, 24($s0)\n"
-    "    nop\n"
-    "    beqz       $v0, .Lfunc_8007C2A0_8007C498\n"
-    "    addiu     $a3, $zero, 0x7\n"
-    "    lhu        $v0, 0($s0)\n"
-    "    nop\n"
-    "    sh         $v0, 16($sp)\n"
-    "    lhu        $v0, 2($s0)\n"
-    "    nop\n"
-    "    sh         $v0, 18($sp)\n"
-    "    lhu        $a0, 4($s0)\n"
-    "    nop\n"
-    "    sh         $a0, 20($sp)\n"
-    "    lhu        $v0, 6($s0)\n"
-    "    nop\n"
-    "    sh         $v0, 22($sp)\n"
-    "    sll        $v0, $a0, 16\n"
-    "    sra        $a1, $v0, 16\n"
-    "    bltz       $a1, .Lfunc_8007C2A0_8007C3B8\n"
-    "    addu      $v0, $zero, $zero\n"
-    "    lui        $v0, %hi(g_gpu_disp_x)\n"
-    "    lh         $v0, %lo(g_gpu_disp_x)($v0)\n"
-    "    nop\n"
-    "    addu       $v1, $v0, $zero\n"
-    "    addiu      $v0, $v0, -0x1\n"
-    "    slt        $v0, $v0, $a1\n"
-    "    bnez       $v0, .Lfunc_8007C2A0_8007C3B8\n"
-    "    addiu     $v0, $v1, -0x1\n"
-    "    addu       $v0, $a0, $zero\n"
-    ".Lfunc_8007C2A0_8007C3B8:\n"
-    "    lh         $a1, 22($sp)\n"
-    "    sh         $v0, 20($sp)\n"
-    "    bltz       $a1, .Lfunc_8007C2A0_8007C3F0\n"
-    "    addu      $a0, $a1, $zero\n"
-    "    lui        $v0, %hi(g_gpu_disp_y)\n"
-    "    lh         $v0, %lo(g_gpu_disp_y)($v0)\n"
-    "    nop\n"
-    "    addu       $v1, $v0, $zero\n"
-    "    addiu      $v0, $v0, -0x1\n"
-    "    slt        $v0, $v0, $a1\n"
-    "    bnez       $v0, .Lfunc_8007C2A0_8007C3F4\n"
-    "    addiu     $v0, $v1, -0x1\n"
-    "    j          .Lfunc_8007C2A0_8007C3F4\n"
-    "    addu      $v0, $a0, $zero\n"
-    ".Lfunc_8007C2A0_8007C3F0:\n"
-    "    addu       $v0, $zero, $zero\n"
-    ".Lfunc_8007C2A0_8007C3F4:\n"
-    "    sll        $a2, $a3, 2\n"
-    "    addiu      $a3, $a3, 0x1\n"
-    "    sll        $a1, $a3, 2\n"
-    "    addiu      $a3, $a3, 0x1\n"
-    "    sh         $v0, 22($sp)\n"
-    "    lhu        $v0, 16($sp)\n"
-    "    lhu        $v1, 8($s0)\n"
-    "    addu       $a2, $a2, $s1\n"
-    "    subu       $v0, $v0, $v1\n"
-    "    sh         $v0, 16($sp)\n"
-    "    lhu        $v0, 18($sp)\n"
-    "    lhu        $v1, 10($s0)\n"
-    "    lui        $a0, (0x60000000 >> 16)\n"
-    "    subu       $v0, $v0, $v1\n"
-    "    sh         $v0, 18($sp)\n"
-    "    lbu        $v0, 27($s0)\n"
-    "    lbu        $v1, 26($s0)\n"
-    "    sll        $v0, $v0, 16\n"
-    "    sll        $v1, $v1, 8\n"
-    "    or         $v1, $v1, $a0\n"
-    "    lbu        $a0, 25($s0)\n"
-    "    or         $v0, $v0, $v1\n"
-    "    or         $v0, $v0, $a0\n"
-    "    sw         $v0, 0($a2)\n"
-    "    lw         $v0, 16($sp)\n"
-    "    addu       $a1, $a1, $s1\n"
-    "    sw         $v0, 0($a1)\n"
-    "    sll        $v0, $a3, 2\n"
-    "    lw         $v1, 20($sp)\n"
-    "    addu       $v0, $v0, $s1\n"
-    "    sw         $v1, 0($v0)\n"
-    "    lhu        $v0, 16($sp)\n"
-    "    lhu        $v1, 8($s0)\n"
-    "    nop\n"
-    "    addu       $v0, $v0, $v1\n"
-    "    sh         $v0, 16($sp)\n"
-    "    lhu        $v0, 18($sp)\n"
-    "    lhu        $v1, 10($s0)\n"
-    "    addiu      $a3, $a3, 0x1\n"
-    "    addu       $v0, $v0, $v1\n"
-    "    sh         $v0, 18($sp)\n"
-    ".Lfunc_8007C2A0_8007C498:\n"
-    "    addiu      $v0, $a3, -0x1\n"
-    "    sb         $v0, 3($s1)\n"
-    "    lw         $ra, 56($sp)\n"
-    "    lw         $s1, 52($sp)\n"
-    "    lw         $s0, 48($sp)\n"
-    "    addiu      $sp, $sp, 0x40\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 w;
+    s16 h;
+    s16 u;
+    s16 v;
+    u8 pad12[4];
+    s16 ax;
+    s16 ay;
+    u16 cx;
+    u16 cy;
+    u8 flag;
+    u8 r;
+    u8 g;
+    u8 b;
+} Rect;
+void func_8007C2A0(s32 *out, Rect *r)
+{
+  u16 buf[4];
+  s16 var_v0;
+  s16 var_v0_2;
+  s16 new_var;
+  s32 var_a3;
+  out[1] = func_8007C7A0(r->x, r->y);
+  out[2] = func_8007C86C((s16) ((((u16) r->w) + ((u16) r->x)) - 1), (s16) ((((u16) r->y) + ((u16) r->h)) - 1));
+  out[3] = func_8007C938(r->u, r->v);
+  out[4] = func_8007C748(*(((u8 *) r) + 23), *(((u8 *) r) + 22), *((u16 *) (((u8 *) r) + 20)));
+  out[5] = func_8007C97C(((u8 *) r) + 12);
+  out[6] = (s32) 0xE6000000;
+  var_a3 = 7;
+  if (r->flag != 0)
+  {
+    buf[0] = (u16) r->x;
+    buf[1] = (u16) r->y;
+    new_var = (s16) r->w;
+    buf[2] = (u16) r->w;
+    buf[3] = (u16) r->h;
+    if (new_var >= 0)
+    {
+      if ((D_8009BE78 - 1) < new_var)
+      {
+        var_v0 = D_8009BE78 - 1;
+      }
+      else
+      {
+        var_v0 = new_var;
+      }
+    }
+    else
+    {
+      var_v0 = 0;
+    }
+    buf[2] = (u16) var_v0;
+    if (((s16) buf[3]) >= 0)
+    {
+      if ((D_8009BE7A - 1) < ((s16) buf[3]))
+      {
+        var_v0_2 = D_8009BE7A - 1;
+      }
+      else
+      {
+        var_v0_2 = (s16) buf[3];
+      }
+    }
+    else
+    {
+      var_v0_2 = 0;
+    }
+    buf[3] = (u16) var_v0_2;
+    buf[0] -= (u16) r->u;
+    buf[1] -= (u16) r->v;
+    out[var_a3++] = ((((*(((u8 *) r) + 27)) << 16) | 0x60000000) | ((*(((u8 *) r) + 26)) << 8)) | (*(((u8 *) r) + 25));
+    out[var_a3++] = ((u32 *) buf)[0];
+    out[var_a3++] = ((u32 *) buf)[1];
+    buf[0] += (u16) r->u;
+    buf[1] += (u16) r->v;
+  }
+  *(((s8 *) out) + 3) = (s8) (var_a3 - 1);
+}
 __asm__(
     "    .set\tnoat\n"
     "    .set\tnoreorder\n"
