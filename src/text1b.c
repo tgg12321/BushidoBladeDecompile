@@ -34813,228 +34813,134 @@ void func_80069A8C(u8 *a0) {
     }
     a0[6] = (u8)v0;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80069AE4\n"
-    "    addiu  $sp,$sp,-96\n"
-    "    sw  $s4,88($sp)\n"
-    "    addu  $s4,$a0,$zero\n"
-    "    addiu  $v0,$zero,2\n"
-    "    sw  $ra,92($sp)\n"
-    "    sw  $s3,84($sp)\n"
-    "    sw  $s2,80($sp)\n"
-    "    sw  $s1,76($sp)\n"
-    "    sw  $s0,72($sp)\n"
-    "    lw  $s3,24($s4)\n"
-    "    bne  $a1,$v0,.L80069B98\n"
-    "    addiu  $v0,$zero,1\n"
-    "    jal  initTile\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    jal  func_80069A30\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addiu  $v0,$zero,78\n"
-    "    addiu  $s2,$zero,48\n"
-    "    addiu  $s1,$zero,204\n"
-    "    addiu  $s0,$zero,176\n"
-    "    sh  $v0,8($s3)\n"
-    "    sh  $s2,10($s3)\n"
-    "    sh  $s1,12($s3)\n"
-    "    jal  gpu_SetSemiTransp\n"
-    "    sh  $s0,14($s3)\n"
-    "    addu  $a1,$s3,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    addiu  $s3,$s3,16\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,68\n"
-    "    jal  initTile\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    jal  func_80069A30\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addiu  $v0,$zero,358\n"
-    "    sh  $v0,8($s3)\n"
-    "    sh  $s2,10($s3)\n"
-    "    sh  $s1,12($s3)\n"
-    "    j  .L80069C10\n"
-    "    sh  $s0,14($s3)\n"
-    ".L80069B98:\n"
-    "    bne  $a1,$v0,.L80069BD8\n"
-    "    nop\n"
-    "    jal  initTile\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    jal  func_80069A30\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addiu  $v0,$zero,63\n"
-    "    sh  $v0,8($s3)\n"
-    "    addiu  $v0,$zero,48\n"
-    "    sh  $v0,10($s3)\n"
-    "    addiu  $v0,$zero,514\n"
-    "    sh  $v0,12($s3)\n"
-    "    j  .L80069C0C\n"
-    "    addiu  $v0,$zero,176\n"
-    ".L80069BD8:\n"
-    "    jal  initTile\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    jal  func_80069A30\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    addu  $a0,$s3,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addiu  $v0,$zero,304\n"
-    "    sh  $v0,8($s3)\n"
-    "    addiu  $v0,$zero,58\n"
-    "    sh  $v0,10($s3)\n"
-    "    addiu  $v0,$zero,294\n"
-    "    sh  $v0,12($s3)\n"
-    "    addiu  $v0,$zero,171\n"
-    ".L80069C0C:\n"
-    "    sh  $v0,14($s3)\n"
-    ".L80069C10:\n"
-    "    jal  gpu_SetSemiTransp\n"
-    "    addu  $s1,$zero,$zero\n"
-    "    addu  $a1,$s3,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    addiu  $s3,$s3,16\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,68\n"
-    "    addiu  $v0,$zero,18\n"
-    "    sw  $s3,24($s4)\n"
-    "    sw  $v0,44($sp)\n"
-    "    sb  $zero,64($sp)\n"
-    "    sw  $zero,40($sp)\n"
-    "    lw  $v0,4($s4)\n"
-    "    nop\n"
-    "    lw  $s2,52($v0)\n"
-    "    sw  $zero,48($sp)\n"
-    "    sw  $zero,52($sp)\n"
-    "    addu  $s0,$s2,$zero\n"
-    ".L80069C5C:\n"
-    "    addiu  $a0,$sp,24\n"
-    "    lw  $v0,0($s0)\n"
-    "    addiu  $s0,$s0,4\n"
-    "    sw  $v0,24($sp)\n"
-    "    addiu  $v0,$v0,12\n"
-    "    sw  $v0,28($sp)\n"
-    "    lw  $v0,20($s4)\n"
-    "    addiu  $s1,$s1,1\n"
-    "    jal  func_8007352C\n"
-    "    sw  $v0,32($sp)\n"
-    "    sw  $v0,20($s4)\n"
-    "    slti  $v0,$s1,3\n"
-    "    bnez  $v0,.L80069C5C\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    lw  $a0,0($s2)\n"
-    "    jal  func_8006E480\n"
-    "    sw  $a0,24($sp)\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    sw  $zero,16($sp)\n"
-    "    lw  $a0,28($s4)\n"
-    "    jal  initTexPage\n"
-    "    addu  $a3,$v0,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    lw  $a1,28($s4)\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,72\n"
-    "    lw  $s0,12($s4)\n"
-    "    lw  $v0,28($s4)\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    addiu  $v0,$v0,12\n"
-    "    jal  initPolyF4\n"
-    "    sw  $v0,28($s4)\n"
-    "    jal  func_80069A8C\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    addiu  $v0,$zero,185\n"
-    "    addiu  $s3,$zero,290\n"
-    "    addiu  $s2,$zero,239\n"
-    "    sh  $zero,8($s0)\n"
-    "    sh  $v0,10($s0)\n"
-    "    sh  $s3,12($s0)\n"
-    "    sh  $zero,14($s0)\n"
-    "    sh  $zero,16($s0)\n"
-    "    sh  $s2,18($s0)\n"
-    "    sh  $s3,20($s0)\n"
-    "    jal  gpu_SetSemiTransp\n"
-    "    sh  $s2,22($s0)\n"
-    "    addu  $a1,$s0,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    addiu  $s0,$s0,24\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,76\n"
-    "    jal  initPolyF4\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80069A8C\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    addiu  $s1,$zero,350\n"
-    "    addiu  $v0,$zero,639\n"
-    "    sh  $v0,12($s0)\n"
-    "    sh  $v0,20($s0)\n"
-    "    addiu  $v0,$zero,54\n"
-    "    sh  $s1,8($s0)\n"
-    "    sh  $zero,10($s0)\n"
-    "    sh  $zero,14($s0)\n"
-    "    sh  $s1,16($s0)\n"
-    "    sh  $s2,18($s0)\n"
-    "    jal  gpu_SetSemiTransp\n"
-    "    sh  $v0,22($s0)\n"
-    "    addu  $a1,$s0,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    addiu  $s0,$s0,24\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,76\n"
-    "    jal  initPolyF4\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    jal  func_80069A8C\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    addu  $a0,$s0,$zero\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    sh  $s3,8($s0)\n"
-    "    sh  $zero,10($s0)\n"
-    "    sh  $s1,12($s0)\n"
-    "    sh  $zero,14($s0)\n"
-    "    sh  $s3,16($s0)\n"
-    "    sh  $s2,18($s0)\n"
-    "    sh  $s1,20($s0)\n"
-    "    jal  gpu_SetSemiTransp\n"
-    "    sh  $s2,22($s0)\n"
-    "    addu  $a1,$s0,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    addiu  $s0,$s0,24\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,76\n"
-    "    sw  $s0,12($s4)\n"
-    "    lw  $ra,92($sp)\n"
-    "    lw  $s4,88($sp)\n"
-    "    lw  $s3,84($sp)\n"
-    "    lw  $s2,80($sp)\n"
-    "    lw  $s1,76($sp)\n"
-    "    lw  $s0,72($sp)\n"
-    "    addiu  $sp,$sp,96\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
+typedef struct {
+    s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
+    s8 sp40;
+} S_69AE4;
+
+extern s32 func_8006E480(s32, s32);
+extern s32 func_8007352C(s32);
+extern s32 initTexPage(s32, s32, s32, s32, s32);
+extern void initPolyF4(u8 *p);
+extern void func_80069A8C(u8 *p);
+
+void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
+    u8 *p;
+    u8 *poly;
+    s32 *qbase;
+    s32 *q;
+    s32 i;
+    S_69AE4 s;
+
+    p = (u8 *)arg0[6];
+
+    if (mode == 2) {
+        initTile(p);
+        func_80069A30(p);
+        *(s16 *)(p + 8)  = 0x4E;
+        *(s16 *)(p + 10) = 0x30;
+        *(s16 *)(p + 12) = 0xCC;
+        *(s16 *)(p + 14) = 0xB0;
+        gpu_SetSemiTransp(p, 1);
+        ot_Link((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        p += 0x10;
+        initTile(p);
+        func_80069A30(p);
+        *(s16 *)(p + 8)  = 0x166;
+        *(s16 *)(p + 10) = 0x30;
+        *(s16 *)(p + 12) = 0xCC;
+        *(s16 *)(p + 14) = 0xB0;
+    } else if (mode == 1) {
+        initTile(p);
+        func_80069A30(p);
+        *(s16 *)(p + 8)  = 0x3F;
+        *(s16 *)(p + 10) = 0x30;
+        *(s16 *)(p + 12) = 0x202;
+        *(s16 *)(p + 14) = 0xB0;
+    } else {
+        initTile(p);
+        func_80069A30(p);
+        *(s16 *)(p + 8)  = 0x130;
+        *(s16 *)(p + 10) = 0x3A;
+        *(s16 *)(p + 12) = 0x126;
+        *(s16 *)(p + 14) = 0xAB;
+    }
+    gpu_SetSemiTransp(p, 1);
+    ot_Link((u32 *)(D_800A374C + 0x44), (u32 *)p);
+    p += 0x10;
+    arg0[6] = (s32)p;
+
+    s.sp2C = 0x12;
+    s.sp40 = 0;
+    s.sp28 = 0;
+    qbase = *(s32 **)(arg0[1] + 0x34);
+    s.sp30 = 0;
+    s.sp34 = 0;
+    q = qbase;
+    i = 0;
+    do {
+        s32 v = *q;
+        q++;
+        s.sp18 = v;
+        s.sp1C = v + 0xC;
+        s.sp20 = arg0[5];
+        arg0[5] = func_8007352C((s32)&s.sp18);
+        i++;
+    } while (i < 3);
+
+    {
+        s32 first = qbase[0];
+        s.sp18 = first;
+        initTexPage(arg0[7], 1, 0, func_8006E480(first, 0), 0);
+    }
+    ot_Link(D_800A374C + 0x48, arg0[7]);
+
+    poly = (u8 *)arg0[3];
+    arg0[7] += 0xC;
+    initPolyF4(poly);
+    func_80069A8C(poly);
+    *(s16 *)(poly + 8)  = 0;
+    *(s16 *)(poly + 10) = 0xB9;
+    *(s16 *)(poly + 12) = 0x122;
+    *(s16 *)(poly + 14) = 0;
+    *(s16 *)(poly + 16) = 0;
+    *(s16 *)(poly + 18) = 0xEF;
+    *(s16 *)(poly + 20) = 0x122;
+    *(s16 *)(poly + 22) = 0xEF;
+    gpu_SetSemiTransp(poly, 0);
+    ot_Link(D_800A374C + 0x4C, (s32)poly);
+    poly += 0x18;
+
+    initPolyF4(poly);
+    func_80069A8C(poly);
+    *(s16 *)(poly + 8)  = 0x15E;
+    *(s16 *)(poly + 12) = 0x27F;
+    *(s16 *)(poly + 10) = 0;
+    *(s16 *)(poly + 14) = 0;
+    *(s16 *)(poly + 16) = 0x15E;
+    *(s16 *)(poly + 18) = 0xEF;
+    *(s16 *)(poly + 20) = 0x27F;
+    *(s16 *)(poly + 22) = 0x36;
+    gpu_SetSemiTransp(poly, 0);
+    ot_Link(D_800A374C + 0x4C, (s32)poly);
+    poly += 0x18;
+
+    initPolyF4(poly);
+    func_80069A8C(poly);
+    *(s16 *)(poly + 8)  = 0x122;
+    *(s16 *)(poly + 10) = 0;
+    *(s16 *)(poly + 12) = 0x15E;
+    *(s16 *)(poly + 14) = 0;
+    *(s16 *)(poly + 16) = 0x122;
+    *(s16 *)(poly + 18) = 0xEF;
+    *(s16 *)(poly + 20) = 0x15E;
+    *(s16 *)(poly + 22) = 0xEF;
+    gpu_SetSemiTransp(poly, 0);
+    ot_Link(D_800A374C + 0x4C, (s32)poly);
+    poly += 0x18;
+
+    arg0[3] = (s32)poly;
+}__asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
     ".set noat\n"
