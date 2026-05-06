@@ -24,6 +24,12 @@ Out-of-scope categories (permanently_blocked, bios_or_syscall, multi_function,
 aspsx_delay_swra, not_found) are NOT in the queue. They are gated out by
 the classifier and listed separately at the bottom of the .md for
 auditability.
+
+Functions with `kind=asmfix` (already binary-matched via `replace_with_asmfile`
+in asmfix.txt) are also excluded from the in-scope queue and listed in their
+own section. Their bytes come from `asm/funcs/<func>.s` regardless of the C
+body, so they are not pure-C work-queue candidates — re-decompiling them in
+pure C is a separate "remove the asmfix entry" project.
 """
 from __future__ import annotations
 
@@ -86,8 +92,13 @@ def main() -> int:
         return 1
 
     rows = list(csv.DictReader(CSV_PATH.open()))
-    in_scope = [r for r in rows if r["recommendation"] in IN_SCOPE]
-    out_scope = [r for r in rows if r["recommendation"] not in IN_SCOPE]
+    # Functions with replace_with_asmfile in asmfix.txt are tagged kind=asmfix.
+    # Their bytes come from the .s file regardless of C — they are not in
+    # the pure-C work queue. Surface them in their own section instead.
+    asmfix_rows = [r for r in rows if r.get("kind") == "asmfix"]
+    pure_c_rows = [r for r in rows if r.get("kind") != "asmfix"]
+    in_scope = [r for r in pure_c_rows if r["recommendation"] in IN_SCOPE]
+    out_scope = [r for r in pure_c_rows if r["recommendation"] not in IN_SCOPE]
 
     # Group by tier, sort within tier
     tiers: dict[tuple[int, str], list[dict]] = defaultdict(list)
@@ -197,6 +208,36 @@ def main() -> int:
 
     lines.append("---")
     lines.append("")
+    lines.append("## Asmfix-replaced (binary matches via `replace_with_asmfile`)")
+    lines.append("")
+    lines.append(
+        "These functions have `replace_with_asmfile` entries in `asmfix.txt`. "
+        "The build replaces their bytes with `asm/funcs/<func>.s` regardless "
+        "of the C body, so they binary-match without being decompiled in pure C. "
+        "Listed here for visibility — they are NOT in the active work queue. "
+        "To re-decompile in pure C, remove the asmfix entry, write the C "
+        "implementation, and verify SHA1 still matches."
+    )
+    lines.append("")
+    lines.append(f"**Total asmfix-replaced: {len(asmfix_rows)} functions.**")
+    lines.append("")
+    asmfix_groups: dict[str, list[str]] = defaultdict(list)
+    for r in asmfix_rows:
+        asmfix_groups[r["recommendation"]].append(r["func"])
+    for rec in asmfix_groups:
+        asmfix_groups[rec].sort()
+    for rec in sorted(asmfix_groups.keys()):
+        funcs = asmfix_groups[rec]
+        lines.append(f"### {rec} ({len(funcs)})")
+        lines.append("")
+        lines.append("```")
+        for f in funcs:
+            lines.append(f"  {f}")
+        lines.append("```")
+        lines.append("")
+
+    lines.append("---")
+    lines.append("")
     lines.append("## Out of scope (auto-gated by `dc.sh classify`)")
     lines.append("")
     lines.append(
@@ -219,8 +260,10 @@ def main() -> int:
         lines.append("")
 
     OUT.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
-    print(f"Wrote {OUT.relative_to(ROOT)} ({len(ordered)} in-scope, "
-          f"{len(out_scope)} out-of-scope)")
+    print(
+        f"Wrote {OUT.relative_to(ROOT)} ({len(ordered)} in-scope, "
+        f"{len(asmfix_rows)} asmfix-replaced, {len(out_scope)} out-of-scope)"
+    )
 
     # Print top 10 for convenience
     print()
