@@ -13,6 +13,15 @@ disc/
 # Compiler toolchain (large binary, downloaded separately)
 tools/gcc-2.7.2/
 
+# Original PsyQ cc1 binary (used by tools/cc1psx_wrapper.sh as a sanity-check
+# oracle: same C source, byte-identical output to our rebuilt cc1, so we can
+# distinguish "C-source mismatch" from "compiler divergence" cheaply).
+# Extract from the publicly-archived PSYQ SDK on Internet Archive:
+#   curl -L https://archive.org/download/psyq-sdk/PSYQ_SDK.zip -o /tmp/sdk.zip
+#   python3 -c "import zipfile;zipfile.ZipFile('/tmp/sdk.zip').extract('psyq/psyq/CC1PSX.EXE','/tmp')"
+#   cp /tmp/psyq/psyq/CC1PSX.EXE tools/cc1psx.exe
+tools/cc1psx.exe
+
 # Cross-session coordination (ephemeral, not source)
 CLAIMS.md
 
