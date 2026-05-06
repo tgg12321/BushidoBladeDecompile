@@ -1,0 +1,24 @@
+# Functions where `lw $rdest, sym($rsrc)` should expand using $rdest as
+# the address scratch register (target's PsyQ-cc1 form):
+#
+#     lui   $rdest, %hi(sym)
+#     addu  $rdest, $rdest, $rsrc
+#     lw    $rdest, %lo(sym)($rdest)
+#
+# instead of the default decompals/mips-gcc-2.7.2 form which uses $at
+# inside a noat dance:
+#
+#     .set  noat
+#     lui   $at, %hi(sym)
+#     addu  $at, $at, $rsrc
+#     lw    $rdest, %lo(sym)($at)
+#     .set  at
+#
+# The two forms are functionally equivalent but emit different bytes.
+# Add a function here when its target asm uses the dest-reg-reused form
+# AND its non-asm body is otherwise correct in C.
+#
+# Wired in maspsx via --expand-dest-funcs=expand_dest_funcs.txt.
+# One function name per line; lines starting with # are ignored.
+func_8007FA1C
+func_8007FBBC

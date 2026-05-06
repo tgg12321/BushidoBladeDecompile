@@ -24,6 +24,10 @@ def main() -> None:
                         help="Path to file listing functions that need lh expansion (when set, --expand-lh only applies to these)")
     parser.add_argument("--multu-funcs", type=str, default=None,
                         help="Path to file listing functions where 'mult $a,$b' should be rewritten to 'multu $a,$b'")
+    parser.add_argument("--expand-dest-funcs", type=str, default=None,
+                        help="Path to file listing functions where `lw $rdest, sym($rsrc)` "
+                             "should expand using $rdest (target's PsyQ-cc1 form) instead of "
+                             "$at-via-noat (decompals/mips-gcc-2.7.2 default).")
     parser.add_argument("--macro-inc", action="store_true")
     parser.add_argument("--dont-expand-li", action="store_true")
     parser.add_argument("--force-stdin", action="store_true")
@@ -175,6 +179,11 @@ def main() -> None:
         with open(args.multu_funcs, "r", encoding="utf") as f:
             multu_func_list = [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
+    expand_dest_func_list = []
+    if args.expand_dest_funcs:
+        with open(args.expand_dest_funcs, "r", encoding="utf") as f:
+            expand_dest_func_list = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
     maspsx_processor = MaspsxProcessor(
         in_lines,
         sdata_limit=sdata_limit,
@@ -194,6 +203,7 @@ def main() -> None:
         expand_lb_func_list=expand_lb_func_list,
         expand_lh_func_list=expand_lh_func_list,
         multu_func_list=multu_func_list,
+        expand_dest_func_list=expand_dest_func_list,
         sdata_sym_list=sdata_sym_list,
         sdata_func_list=sdata_func_list,
         sdata_exclude_map=sdata_exclude_map,

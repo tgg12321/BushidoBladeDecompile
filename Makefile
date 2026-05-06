@@ -18,7 +18,7 @@ REGFIX       := python3 tools/regfix.py
 REGFIX_STAGE2:= REGFIX_CONFIG=regfix_stage2.txt python3 tools/regfix.py
 ASMFIX       := python3 tools/asmfix.py
 MASPSX       := python3 tools/maspsx/maspsx.py
-MASPSX_FLAGS := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt
+MASPSX_FLAGS := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt
 MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --dont-force-G0 --sdata-syms=sdata_syms.txt -G8
 
 # GNU MIPS cross-tools
@@ -132,7 +132,7 @@ rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.a
 PIPELINE_DEPS := Makefile \
 	tools/prologue_config.json \
 	regfix.txt regfix_stage2.txt asmfix.txt \
-	sdata_syms.txt sdata_funcs.txt sdata_exclude.txt expand_lb_funcs.txt multu_funcs.txt multu_pad_funcs.txt \
+	sdata_syms.txt sdata_funcs.txt sdata_exclude.txt expand_lb_funcs.txt multu_funcs.txt multu_pad_funcs.txt expand_dest_funcs.txt \
 	tools/prologue_fix.py tools/fix_lwl.py tools/regfix.py tools/asmfix.py tools/multu_pad.py \
 	tools/maspsx/maspsx.py tools/maspsx/maspsx/__init__.py
 
