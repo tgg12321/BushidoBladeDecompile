@@ -521,6 +521,24 @@ print(f'Replaced {func} in {src}')
             exit 1
         }
 
+        # Pull from origin first so we don't hand out a function that
+        # someone else (a parallel session, an agent worktree, or a
+        # remote teammate) already matched. Skipped on no-network or no-
+        # remote setups; failure is non-fatal (warn and continue).
+        # Pass --no-pull to skip explicitly.
+        if [ "${1:-}" != "--no-pull" ] && git rev-parse --git-dir >/dev/null 2>&1; then
+            if git remote get-url origin >/dev/null 2>&1; then
+                if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+                    echo "WARNING: working tree has uncommitted changes; skipping git pull." >&2
+                else
+                    if ! git pull --rebase --quiet origin main 2>/tmp/dc_next_pull_err; then
+                        echo "WARNING: 'git pull --rebase origin main' failed (continuing):" >&2
+                        head -3 /tmp/dc_next_pull_err >&2
+                    fi
+                fi
+            fi
+        fi
+
         # Refuse if a function is already in progress. (The hook also
         # enforces this, but exiting cleanly here gives a better error.)
         if [ -s ".bb2_active_func" ]; then
