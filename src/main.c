@@ -2698,85 +2698,124 @@ s32 func_8008BB24(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
 }
 s32 func_8008BC60(s32 arg0, s32 arg1, s32 arg2) {
-    s32 bit_pos;
-    s32 i;
-    s32 v0;
-    s32 v1;
-    u32 t0;
-    s32 old_prod;
-    s32 t6;
-    s32 t7;
-    u32 step;
-    u32 a3_acc;
-    s32 t3_acc;
-    s32 a0_inner;
-    u32 a2_search;
+    register s32 saved_arg0 asm("$24");
+    register s32 search asm("$6");
+    register s32 saved_arg2 asm("$4");
+    s32 scan_bit;
+    register s32 shift asm("$10");
+    s32 scan_result;
 
-    a2_search = ~arg2 & 0xFFFF;
-    bit_pos = 0;
-    i = 15;
-    v0 = a2_search >> i;
+    saved_arg0 = arg0;
+    search = arg2;
+    saved_arg2 = search;
+    search = ~search;
+    scan_bit = 0;
+    shift = 0xF;
+    search &= 0xFFFF;
+    scan_result = search >> shift;
 
-    do {
-        if ((v0 & 1) == 0) {
-            bit_pos = i;
-            goto found_bit;
-        }
-        i--;
-        v0 = a2_search >> i;
-    } while (i >= 0);
-
-found_bit:
-    t7 = bit_pos - 12;
-    t6 = 1 << bit_pos;
-    t0 = 0x1000;
-    i = 0;
-    a2_search = arg2 & 0xFFFF;
-
-    do {
-        old_prod = t6 * t0;
-        t0 = (t0 * 4155) >> 12;
-        a0_inner = 0;
-        t3_acc = 0;
-        step = (u32)(t6 * t0 - old_prod) >> 5;
-        a3_acc = step;
-
+scan_loop:
+    if ((scan_result & 1) == 0) {
         do {
-            v0 = (u32)(old_prod + t3_acc) >> 12;
-            if (a2_search < (u32)v0) {
-                goto inner_inc;
-            }
-            v1 = (u32)(old_prod + a3_acc) >> 12;
-            if (a2_search < (u32)v1) {
-                v0 = (i << 5) + a0_inner;
+            scan_bit = shift;
+            goto have_bit;
+        } while (0);
+    }
+
+    shift--;
+    scan_result = search >> shift;
+    if (shift >= 0) {
+        goto scan_loop;
+    }
+
+have_bit:
+    {
+        register s32 bit asm("$3") = scan_bit;
+        register s32 bit_offset asm("$15");
+        register s32 scale asm("$14");
+        register u32 curve asm("$8");
+        register s32 outer asm("$10");
+        register u32 target asm("$6");
+        register s32 result asm("$2");
+
+        bit_offset = bit - 12;
+        result = 1;
+        scale = result << bit;
+        curve = 0x1000;
+        outer = 0;
+        target = saved_arg2 & 0xFFFF;
+
+        for (;;) {
+            register s32 old_prod asm("$12");
+            register s32 next_prod asm("$3");
+            register u32 step asm("$9");
+            register u32 next asm("$7");
+            register u32 acc asm("$11");
+            register s32 inner asm("$4");
+            register s32 base asm("$13");
+
+            old_prod = scale * curve;
+            result = curve << 6;
+            result += curve;
+            result <<= 4;
+            result -= curve;
+            result <<= 2;
+            curve = result - curve;
+            curve >>= 12;
+            next_prod = scale * curve;
+            inner = 0;
+            base = outer << 5;
+            acc = 0;
+            result = next_prod - old_prod;
+            step = (u32)result >> 5;
+            next = step;
+
+            do {
+                result = old_prod + acc;
+                next_prod = old_prod + next;
+                next_prod = (u32)next_prod >> 12;
+                result = (u32)result >> 12;
+
+                if (target < (u32)result) {
+                    goto inner_next;
+                }
+                result = target < (u32)next_prod;
+                if (result != 0) {
+                    result = base + inner;
+                    goto found;
+                }
+
+            inner_next:
+                next += step;
+                inner++;
+                acc += step;
+            } while (inner < 0x20);
+
+            outer++;
+            if (outer >= 0x30) {
+                result = 0x600;
                 goto found;
             }
-        inner_inc:
-            a3_acc += step;
-            a0_inner++;
-            t3_acc += step;
-        } while (a0_inner < 0x20);
+        }
 
-        i++;
-    } while (i < 0x30);
+    found:
+        {
+            register s32 quot asm("$3") = result;
+            register s32 rem asm("$4");
 
-    v0 = 0x600;
-
-found:
-    v1 = v0;
-    if (v0 < 0) {
-        v1 = v0 + 0x7F;
-    }
-    v1 >>= 7;
-    {
-        s32 rem = v0 - (v1 << 7);
-        v0 = (arg0 & 0xFFFF) + v1;
-        v1 = t7 * 3;
-        v1 <<= 2;
-        v0 += v1;
-        v1 = (arg1 & 0xFFFF) + rem;
-        v0 <<= 8;
-        return v0 | v1;
+            if (result < 0) {
+                quot = result + 0x7F;
+            }
+            quot >>= 7;
+            rem = result - (quot << 7);
+            result = (saved_arg0 & 0xFFFF) + quot;
+            quot = bit_offset * 3;
+            quot <<= 2;
+            result += quot;
+            quot = (arg1 & 0xFFFF) + rem;
+            result <<= 8;
+            return result | quot;
+        }
     }
 }
 void func_8008BD88(s32 arg0, u16 *arg1, u16 *arg2) {
