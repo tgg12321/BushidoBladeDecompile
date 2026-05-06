@@ -20,5 +20,3 @@
 #
 # Wired in maspsx via --expand-dest-funcs=expand_dest_funcs.txt.
 # One function name per line; lines starting with # are ignored.
-func_8007FA1C
-func_8007FBBC
