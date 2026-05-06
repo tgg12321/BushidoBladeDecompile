@@ -225,6 +225,17 @@ The **attempt-first** flow runs all the cheap mechanical steps before the model 
    - **SKIPPED** — only fires for the out-of-scope categories above.
 3. **Manual deepening** — when NEAR_MISS or HARD, work through the escalation ladder until matched. **Read the penalty-list → technique routing table** in `feedback_matching_playbook.md` to pick the right tool for the symptom. Build new tooling if the existing toolbox can't reach pure C — that's expected.
 
+### Post-integration: regfix-suggest before manual rules (token-saving)
+
+After `dc.sh inline-replace <func> ...` and a first build that links but mismatches:
+
+1. **`dc.sh regfix-suggest <func>`** — auto-generates regfix rules from the build-vs-target diff. Emits `delete`/`insert_after`/`subst` rules with correct maspsx indices, plus hints for things it shouldn't auto-rewrite (gp-rel pseudos → `sdata_exclude.txt`, `.L<N>` label mismatches). Read the hints first; apply them; re-run regfix-suggest.
+2. **Apply hints first**, then `dc.sh regfix-suggest <func> --apply` for the auto rules, then build + verify.
+3. **Don't write regfix rules from scratch** — the indices are easy to get wrong. Maspsx `lw $X, sym` is one instruction, not two; `addiu $5,$zero,1` not `$0`; deletes/inserts shift indices in different phases. `regfix-suggest` knows the conventions.
+4. **`dc.sh add-regfix`** when you DO need to write a rule by hand. It pre-validates against `dump_text_indices` before any build round-trip. If it complains, fix the rule — don't `--no-prevalidate`.
+5. **`dc.sh caller-audit <func>`** is auto-run by `inline-replace`. If it blocks the integration, **add unused params to your decl** to match the max-observed arity. Skipping this causes cascade-regressions in unrelated sibling functions (GCC dead-codes extra-arg computations in callers, changing their bytes).
+6. **`dc.sh verify --all`** short-circuits on SHA1 match (~0.2s). If `bb2 matches!`, every function matches; don't second-guess it.
+
 **If a sibling function suddenly shows a 1-byte build error after your match:** that's `.L<N>` label drift. Run `bash tools/dc.sh fix-label-drift` (drives off the linker error, only fixes rules where the build genuinely failed).
 
 ### Escalation when stuck
@@ -305,7 +316,9 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 | `dc.sh agent-brief <func>` | All-in-one context dump for a session: classify + asm + base.c + gen_regfix + recipe suggestions + Kengo + neighbor functions. **First thing to run on a function.** |
 | `dc.sh near-miss <func> [--apply]` | near_miss_attempt: auto-detects byte_arith_fix / drain_delay / plain_reg_substs patterns and applies them with try-and-revert. Default is dry-run; pass `--apply` to actually edit. |
 | `dc.sh capture-recipe [<commit>]` | After committing a match, classifies the patterns used and reports if it matches an existing recipe or is novel. Use `--write` to save a draft JSON. |
-| `dc.sh add-regfix <func> <op> ...` | Append a validated regfix rule (replaces ad-hoc tmp/add_regfix*.py). Auto-rolls back on validation failure. Ops: swap, subst, delete, insert, insert_after, reorder, fill_delay, drain_delay. |
+| `dc.sh add-regfix <func> <op> ...` | Append a validated regfix rule (replaces ad-hoc tmp/add_regfix*.py). **Pre-validates** against live `dump_text_indices` before append (catches `$0`-vs-`$zero` patterns and out-of-bounds idx without a build round-trip). **Auto-rolls back** on live-build validation failure. `--no-prevalidate` to skip the cheap check, `--no-validate` to skip both. Ops: swap, subst, delete, insert, insert_after, reorder, fill_delay, drain_delay. |
+| `dc.sh regfix-suggest <func> [--apply]` | **Run this BEFORE writing any regfix rule by hand.** Diffs target.s vs the live post-regfix build pipeline and emits `delete`/`insert_after`/`subst` rules that close the gap. Catches gp-rel pseudo expansions (emits `sdata_exclude.txt` hints) and label drift (emits hints, not auto-rewrites). Conservative on reorders — emits insert+delete pairs to avoid the label-attachment trap. `--apply` appends the rules to regfix.txt. `--max-rules N` caps output (default 40 — anything more usually means structural mismatch, reach for permuter instead). |
+| `dc.sh caller-audit <func>` | Scan src/*.c for callers and report max args passed. Auto-runs as part of `dc.sh inline-replace` and BLOCKS the integration if the C signature is too narrow (catches the cascade-regression case where GCC dead-codes extra-arg computations in callers). |
 
 ### Inline-asm-aware setup (399 functions still inline)
 
@@ -329,7 +342,7 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 |---------|---------|
 | `dc.sh compile <func_dir>` | Compile base.c + objdump disassembly |
 | `dc.sh score <func_dir>` | Permuter score only (one line) |
-| `dc.sh debug <func_dir>` | Full permuter --debug diff + score |
+| `dc.sh debug <func_dir>` | Permuter penalty list + score (default; the routing decision is in the penalty profile alone). Pass `--full` for the ~200KB side-by-side asm dump. |
 | `dc.sh build` | Incremental make, tail output |
 | `dc.sh replace <src> <func> <c_file>` | Replace INCLUDE_ASM with C code (LF-safe) |
 | `dc.sh setup <func> <src>` | Set up permuter directory (INCLUDE_ASM stub form) |

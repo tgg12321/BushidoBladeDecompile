@@ -117,6 +117,114 @@ def validate_live(func: str) -> tuple[bool, str]:
     return result.returncode == 0, (result.stdout + result.stderr).strip()
 
 
+_INSN_CACHE: dict[str, dict[int, str] | None] = {}
+
+
+def _get_pipeline_instructions(func: str) -> dict[int, str] | None:
+    """Run dump_text_indices for func; return {idx: text}. Cached per process.
+
+    Returns None if the dump fails (silent — caller decides what to do)."""
+    if func in _INSN_CACHE:
+        return _INSN_CACHE[func]
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "tools" / "dump_text_indices.py"), func],
+        capture_output=True, text=True, cwd=str(ROOT),
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        _INSN_CACHE[func] = None
+        return None
+    insn_map: dict[int, str] = {}
+    for line in result.stdout.splitlines():
+        m = re.match(r"\s*(\d+):\s*(.*)", line)
+        if m:
+            insn_map[int(m.group(1))] = m.group(2).strip()
+    _INSN_CACHE[func] = insn_map if insn_map else None
+    return _INSN_CACHE[func]
+
+
+def _show_context(insn_map: dict[int, str], idx: int, radius: int = 2) -> str:
+    """Format insn_map[idx-r .. idx+r] as a multi-line string with arrow at idx."""
+    out_lines = []
+    for i in range(idx - radius, idx + radius + 1):
+        if i in insn_map:
+            arrow = " ->" if i == idx else "   "
+            out_lines.append(f"  {arrow} {i:>4}: {insn_map[i]}")
+    return "\n".join(out_lines)
+
+
+def pre_validate_rule(args) -> tuple[bool, str]:
+    """Cheap static check against the pre-regfix maspsx output for `args.func`.
+
+    Catches:
+      * Idx out of bounds (before a build round-trip).
+      * Subst pattern that doesn't match the line at the indexed position
+        (the silent-no-op trap — see memory/feedback_regfix_reference.md).
+
+    Returns (ok, message). On ok=True, message is informational ("OK: idx N
+    is `<text>`"); on ok=False, message explains what went wrong with
+    surrounding context.
+
+    Skipped (cannot be cheaply pre-validated without simulating the full
+    phase pipeline):
+      * `insert` / `insert_after` idx: indices shift after deletes in the
+        same rule-set; live validation will catch real breakages.
+      * `swap`, `reorder`, `fill_delay`, `drain_delay`: index semantics
+        are too phase-dependent for a static check.
+
+    Returns (ok=True, "skipped") for ops we don't know how to pre-validate.
+    Pre-validation is best-effort; the live build is still the source of truth."""
+    op = args.op
+    func = args.func
+    insn_map = _get_pipeline_instructions(func)
+    if insn_map is None:
+        return True, f"  pre-validate: skipped (no pipeline output for {func})"
+    max_idx = max(insn_map.keys())
+
+    if op == "subst":
+        idx = args.idx
+        if idx not in insn_map:
+            return False, (
+                f"  pre-validate FAILED: idx {idx} out of bounds (max={max_idx}).\n"
+                f"  Nearby:\n{_show_context(insn_map, idx)}"
+            )
+        line = insn_map[idx]
+        try:
+            if not re.search(args.pattern, line):
+                return False, (
+                    f"  pre-validate FAILED: subst pattern {args.pattern!r} does not\n"
+                    f"  match the line at idx {idx}:\n"
+                    f"      {line}\n"
+                    f"  Common gotcha: maspsx writes `$zero` not `$0`. See\n"
+                    f"  memory/feedback_regfix_reference.md."
+                )
+        except re.error as e:
+            return False, f"  pre-validate FAILED: invalid regex {args.pattern!r}: {e}"
+        return True, f"  pre-validate OK: idx {idx} = {line!r}"
+
+    if op == "delete":
+        idx = args.idx
+        if idx not in insn_map:
+            ctx = _show_context(insn_map, min(idx, max_idx))
+            return False, (
+                f"  pre-validate FAILED: delete @ {idx} out of bounds (max={max_idx}).\n"
+                f"  Last few instructions:\n{ctx}"
+            )
+        return True, f"  pre-validate OK: deleting idx {idx} = {insn_map[idx]!r}"
+
+    if op in ("insert", "insert_after"):
+        idx = args.idx
+        if idx > max_idx:
+            return False, (
+                f"  pre-validate FAILED: {op} @ {idx} out of bounds (max={max_idx}).\n"
+                f"  Nearby:\n{_show_context(insn_map, max(0, max_idx - 2))}"
+            )
+        if idx in insn_map:
+            return True, f"  pre-validate OK: {op} relative to idx {idx} = {insn_map[idx]!r}"
+        return True, f"  pre-validate: idx {idx} bounds OK (semantics vary by phase order; live check authoritative)"
+
+    return True, "  pre-validate: skipped (op not pre-validatable)"
+
+
 def append_with_rollback(target: Path, lines: list[str], func: str,
                          skip_validate: bool) -> int:
     """Append `lines` to target and run --live validation. Roll back on failure.
@@ -153,6 +261,8 @@ def main():
                     help="Print line(s) that would be appended; do not modify")
     ap.add_argument("--no-validate", action="store_true",
                     help="Skip live pipeline validation after append")
+    ap.add_argument("--no-prevalidate", action="store_true",
+                    help="Skip cheap static pre-check against dump_text_indices")
     ap.add_argument("--raw", default=None,
                     help="Append the literal line verbatim instead of parsing args")
 
@@ -225,6 +335,17 @@ def main():
     except ValueError as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return 1
+
+    # Pre-validate: cheap static check against the live maspsx output. Catches
+    # the most common errors (subst pattern doesn't match, idx out of bounds)
+    # in seconds instead of after a full build round-trip.
+    if not args.no_prevalidate:
+        ok, msg = pre_validate_rule(args)
+        print(msg, file=sys.stderr)
+        if not ok:
+            print("Use --no-prevalidate to bypass and rely on live validation.",
+                  file=sys.stderr)
+            return 1
 
     lines = []
     if args.comment:

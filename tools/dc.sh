@@ -195,10 +195,27 @@ EOF
         ;;
 
     debug)
-        # Full permuter debug output (diff + score)
+        # Permuter debug output. Default: penalty list + score only (the
+        # full --debug emits ~200KB of side-by-side asm). Pass --full for
+        # the entire dump. The penalty list alone tells you whether the
+        # remaining diff is structural (Insertions/Deletions/Reorders) or
+        # register-only — and that's the routing decision you want.
         FUNC_DIR="$1"
-        [ -z "$FUNC_DIR" ] && { echo "Usage: dc.sh debug <func_dir>"; exit 1; }
-        python3 tools/decomp-permuter/permuter.py "$FUNC_DIR" --debug 2>&1
+        shift || true
+        [ -z "$FUNC_DIR" ] && { echo "Usage: dc.sh debug <func_dir> [--full]"; exit 1; }
+        if [ "$1" = "--full" ]; then
+            python3 tools/decomp-permuter/permuter.py "$FUNC_DIR" --debug 2>&1
+        else
+            # Capture full output, emit only the penalty-list section + final score.
+            python3 tools/decomp-permuter/permuter.py "$FUNC_DIR" --debug 2>&1 \
+                | awk '
+                    /^--------------- Penalty/ { in_penalty=1 }
+                    /^\[.*\] base score/ { in_score=1 }
+                    in_penalty || in_score { print }
+                    /^End of Debug Mode/ { in_penalty=0; in_score=0 }
+                '
+            echo "  (default: penalty-only; pass --full to dc.sh debug for the side-by-side asm)"
+        fi
         ;;
 
     build)
@@ -345,6 +362,22 @@ print(f'Replaced {func} in {src}')
         C_FILE="$2"
         [ -z "$C_FILE" ] && { echo "Usage: dc.sh inline-replace <func> <c_file>"; exit 1; }
         python3 tools/extract_inline_asm.py replace "$FUNC_NAME" "$C_FILE" 2>&1
+        # Auto-audit callers — catches signature-arity bugs that cause
+        # cascade-regressions in sibling functions (see CLAUDE.md "caller-audit").
+        python3 tools/caller_audit.py "$FUNC_NAME" --quiet 2>&1 || {
+            echo
+            echo "STOP: caller-audit reported an arity mismatch above."
+            echo "  Fix the C signature before building, or callers will"
+            echo "  silently dead-code the extra args and break sibling functions."
+            exit 1
+        }
+        ;;
+
+    caller-audit)
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh caller-audit <func> [--json] [--quiet]"; exit 1; }
+        python3 tools/caller_audit.py "$FUNC_NAME" "$@" 2>&1
         ;;
 
     smart)
@@ -364,6 +397,13 @@ print(f'Replaced {func} in {src}')
     add-regfix)
         [ -z "$1" ] && { echo "Usage: dc.sh add-regfix <func> <op> <args...> @ <idx>"; exit 1; }
         python3 tools/add_regfix.py "$@" 2>&1
+        ;;
+
+    regfix-suggest)
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh regfix-suggest <func> [--apply] [--max-rules N]"; exit 1; }
+        python3 tools/regfix_suggest.py "$FUNC_NAME" "$@" 2>&1
         ;;
 
     classify)
