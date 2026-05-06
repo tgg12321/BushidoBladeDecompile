@@ -14,7 +14,5 @@
 # Wired in Makefile pipeline between maspsx and regfix.
 #
 # One function name per line; lines starting with # are ignored.
-func_8007FA1C
-func_8007FBBC
 # func_8007F87C — currently matches at HEAD without this pass; only add if
 # its match breaks during a code change that triggers the same gap problem.
