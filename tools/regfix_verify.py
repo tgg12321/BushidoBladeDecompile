@@ -363,6 +363,28 @@ def main():
         sys.exit(1)
 
     if sys.argv[1] == '--all':
+        # SHA1 short-circuit: if the build matches the original byte-for-byte,
+        # every function trivially matches. Skip the per-function loop (2+ min,
+        # ~1KB output) since it has nothing to find. Pass --force to bypass
+        # this check (e.g., to confirm tooling works after refactoring).
+        force = '--force' in sys.argv[2:]
+        if not force:
+            try:
+                import hashlib
+                build_exe = root / 'build' / 'bb2.exe'
+                orig_exe = root / 'disc' / 'SLUS_006.63'
+                if build_exe.exists() and orig_exe.exists():
+                    a = hashlib.sha1(build_exe.read_bytes()).hexdigest()
+                    b = hashlib.sha1(orig_exe.read_bytes()).hexdigest()
+                    if a == b:
+                        funcs = get_all_c_functions(root)
+                        print(f"SHA1 match: build/bb2.exe == disc/SLUS_006.63")
+                        print(f"All {len(funcs)} C functions match (skipping per-function check; pass --force to override)")
+                        sys.exit(0)
+            except Exception:
+                # Fall through to full verify on any unexpected error
+                pass
+
         funcs = get_all_c_functions(root)
         if not funcs:
             print("No C functions found", file=sys.stderr)

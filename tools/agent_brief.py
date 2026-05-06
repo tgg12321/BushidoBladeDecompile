@@ -256,12 +256,16 @@ def main():
     ap.add_argument("func")
     ap.add_argument("--no-asm", action="store_true",
                     help="Skip the raw target assembly section")
-    ap.add_argument("--asm-max-lines", type=int, default=200,
-                    help="Truncate asm if longer than N lines (default: 200)")
+    ap.add_argument("--asm-max-lines", type=int, default=60,
+                    help="Truncate asm if longer than N lines (default: 60; was 200)")
+    ap.add_argument("--full", action="store_true",
+                    help="Disable all truncation (asm + base.c + gen_regfix)")
     ap.add_argument("--json", action="store_true",
                     help="Emit a machine-readable JSON dict instead of text")
     args = ap.parse_args()
 
+    if args.full:
+        args.asm_max_lines = 10000
     b = build_brief(args.func, include_asm=not args.no_asm,
                     asm_max_lines=args.asm_max_lines)
     if args.json:

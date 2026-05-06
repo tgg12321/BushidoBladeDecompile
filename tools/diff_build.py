@@ -179,11 +179,14 @@ def normalize_insn(s: str) -> str:
     return s
 
 
-def color_diff(target: list[str], mine: list[str]) -> None:
-    """Print side-by-side aligned by index. Mark differences."""
-    # We don't try to do LCS alignment — just zip by position. The dump
-    # is already index-aligned so this works. If counts differ, the
-    # tail is clearly marked.
+def color_diff(target: list[str], mine: list[str], hunks_only: bool = False,
+               context: int = 2) -> None:
+    """Print side-by-side aligned by index. Mark differences.
+
+    With hunks_only=True, only emits diff hunks (lines that differ + `context`
+    lines on each side). Saves ~80% of bytes vs the full diff for nearly-
+    matching functions, which is the common case once you're iterating regfix
+    rules. Pass --full to dc.sh diff for the full version."""
     n = max(len(target), len(mine))
     target_w = 50
 
@@ -192,47 +195,63 @@ def color_diff(target: list[str], mine: list[str]) -> None:
     extra_target = 0
     extra_mine = 0
 
-    print(f"  {'#':>4}  {'target (asm/funcs/<func>.s)':<{target_w}} | mine (build pipeline)")
-    print(f"  {'-' * 4}  {'-' * target_w} | {'-' * target_w}")
-
+    rows = []
     for i in range(n):
         t = target[i] if i < len(target) else ""
         m = mine[i] if i < len(mine) else ""
-
         if t == m:
-            color = ""
-            mark = " "
-            same += 1
+            color = ""; mark = " "; same += 1
         elif t and not m:
-            color = RED
-            mark = "-"
-            extra_target += 1
+            color = RED; mark = "-"; extra_target += 1
         elif m and not t:
-            color = GREEN
-            mark = "+"
-            extra_mine += 1
+            color = GREEN; mark = "+"; extra_mine += 1
         else:
-            color = YELLOW
-            mark = "!"
-            diff += 1
+            color = YELLOW; mark = "!"; diff += 1
+        rows.append((i, t, m, color, mark))
 
+    # Decide which rows to print
+    if hunks_only and (diff + extra_target + extra_mine) > 0:
+        keep = [False] * n
+        for i, _, _, _, mark in rows:
+            if mark != " ":
+                for j in range(max(0, i - context), min(n, i + context + 1)):
+                    keep[j] = True
+    else:
+        keep = [True] * n
+
+    print(f"  {'#':>4}  {'target (asm/funcs/<func>.s)':<{target_w}} | mine (build pipeline)")
+    print(f"  {'-' * 4}  {'-' * target_w} | {'-' * target_w}")
+
+    last_printed = -2
+    for i, t, m, color, mark in rows:
+        if not keep[i]:
+            continue
+        if i > last_printed + 1:
+            print(f"  ...")
         t_disp = t if len(t) <= target_w else t[: target_w - 1] + "…"
         m_disp = m if len(m) <= target_w else m[: target_w - 1] + "…"
-
         print(f"  {color}{mark} {i:>3}  {t_disp:<{target_w}} | {m_disp}{RESET}")
+        last_printed = i
 
     print()
     print(f"  same: {same}    differ: {diff}    target-only: {extra_target}    "
           f"mine-only: {extra_mine}")
     print(f"  target insns: {len(target)}    mine insns: {len(mine)}    "
           f"delta: {len(mine) - len(target):+}")
+    if hunks_only and (diff + extra_target + extra_mine) > 0:
+        print(f"  (hunks-only mode; pass --full to dc.sh diff for the entire side-by-side)")
 
 
 def main() -> int:
-    if len(sys.argv) != 2:
-        print("Usage: diff_build.py <func>", file=sys.stderr)
-        return 1
-    func = sys.argv[1]
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("func")
+    ap.add_argument("--full", action="store_true",
+                    help="Print every instruction, not just diff hunks")
+    ap.add_argument("--context", type=int, default=2,
+                    help="Lines of context around each hunk (default: 2)")
+    args = ap.parse_args()
+    func = args.func
     target = parse_target_asm(func)
     if target is None:
         print(f"ERROR: asm/funcs/{func}.s not found", file=sys.stderr)
@@ -248,7 +267,7 @@ def main() -> int:
     print(f"  target: asm/funcs/{func}.s ({len(target)} insns)")
     print(f"  mine:   build pipeline post-regfix/asmfix ({len(mine)} insns)")
     print()
-    color_diff(target, mine)
+    color_diff(target, mine, hunks_only=not args.full, context=args.context)
     return 0
 
 
