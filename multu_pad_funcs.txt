@@ -1,0 +1,20 @@
+# Functions that need explicit nop padding between multu/mult and mflo/mfhi.
+#
+# The original game's assembly has exactly 2 instructions between every
+# `multu`/`mult` and its consuming `mflo`/`mfhi`. The R3000 has hardware
+# interlocks so a 0-cycle gap is functionally correct, but byte-matching
+# requires reproducing the original padding. tools/multu_pad.py inserts
+# nops just before any mflo/mfhi whose preceding multu/mult has too few
+# intervening instructions, but only inside functions listed here.
+#
+# Add a function here when its target asm shows the 2-cycle pattern AND
+# GCC's scheduler is producing a tighter gap. See feedback_regfix_reference
+# memory entry for diagnosis steps.
+#
+# Wired in Makefile pipeline between maspsx and regfix.
+#
+# One function name per line; lines starting with # are ignored.
+func_8007FA1C
+func_8007FBBC
+# func_8007F87C — currently matches at HEAD without this pass; only add if
+# its match breaks during a code change that triggers the same gap problem.

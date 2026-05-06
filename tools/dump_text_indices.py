@@ -148,6 +148,12 @@ def build_pipeline_cmd(root, src_file, post_regfix=False):
         f" | python3 ./tools/prologue_fix.py {stem}"
         f" | python3 ./tools/maspsx/maspsx.py {maspsx_flags} -{rodata_sed}"
     )
+    # multu_pad runs after maspsx (matches the Makefile pipeline). Without
+    # this, dump_text_indices and regfix-suggest see a different stream than
+    # the build, which silently breaks rule-suggestion for any function in
+    # multu_pad_funcs.txt.
+    if (root / "multu_pad_funcs.txt").exists():
+        cmd += " | python3 ./tools/multu_pad.py --funcs multu_pad_funcs.txt"
     if post_regfix:
         # Mirror the Makefile's two regfix passes (regfix.txt then regfix_stage2.txt).
         # asmfix.py runs after regfix2 in the build but is for handwritten-asm

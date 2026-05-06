@@ -13,6 +13,7 @@ CC1          := tools/gcc-2.7.2/build/cc1
 # maspsx ASPSX compatibility layer
 PROLOGUE_FIX := python3 tools/prologue_fix.py
 FIX_LWL      := python3 tools/fix_lwl.py
+MULTU_PAD    := python3 tools/multu_pad.py --funcs multu_pad_funcs.txt
 REGFIX       := python3 tools/regfix.py
 REGFIX_STAGE2:= REGFIX_CONFIG=regfix_stage2.txt python3 tools/regfix.py
 ASMFIX       := python3 tools/asmfix.py
@@ -131,15 +132,15 @@ rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.a
 PIPELINE_DEPS := Makefile \
 	tools/prologue_config.json \
 	regfix.txt regfix_stage2.txt asmfix.txt \
-	sdata_syms.txt sdata_funcs.txt sdata_exclude.txt expand_lb_funcs.txt multu_funcs.txt \
-	tools/prologue_fix.py tools/fix_lwl.py tools/regfix.py tools/asmfix.py \
+	sdata_syms.txt sdata_funcs.txt sdata_exclude.txt expand_lb_funcs.txt multu_funcs.txt multu_pad_funcs.txt \
+	tools/prologue_fix.py tools/fix_lwl.py tools/regfix.py tools/asmfix.py tools/multu_pad.py \
 	tools/maspsx/maspsx.py tools/maspsx/maspsx/__init__.py
 
 # -- Compile C source (decompiled functions) --
-# Pipeline: cpp | cc1 | prologue_fix | maspsx | [fix_lwl] | [sed align fix] | regfix | regfix_stage2 | asmfix | as -> .o
+# Pipeline: cpp | cc1 | prologue_fix | maspsx | [fix_lwl] | [sed align fix] | multu_pad | regfix | regfix_stage2 | asmfix | as -> .o
 $(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c $(PIPELINE_DEPS)
 	@mkdir -p $(dir $@)
-	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call fix_lwl_for,$*) $(call rodata_align_fix,$*) $(REGFIX) | $(REGFIX_STAGE2) | $(ASMFIX) | $(AS) $(AS_FLAGS) -o $@
+	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call fix_lwl_for,$*) $(call rodata_align_fix,$*) $(MULTU_PAD) | $(REGFIX) | $(REGFIX_STAGE2) | $(ASMFIX) | $(AS) $(AS_FLAGS) -o $@
 
 # -- Assemble .s files (non-decompiled asm) --
 $(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s
