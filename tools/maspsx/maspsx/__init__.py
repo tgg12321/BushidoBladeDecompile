@@ -400,6 +400,7 @@ class MaspsxProcessor:
         expand_lb_func_list=None,
         expand_lh_func_list=None,
         multu_func_list=None,
+        expand_dest_func_list=None,
         sdata_sym_list=None,
         sdata_func_list=None,
         sdata_exclude_map=None,
@@ -416,6 +417,7 @@ class MaspsxProcessor:
         self.expand_lb_func_set = set(expand_lb_func_list) if expand_lb_func_list else set()
         self.expand_lh_func_set = set(expand_lh_func_list) if expand_lh_func_list else set()
         self.multu_func_set = set(multu_func_list) if multu_func_list else set()
+        self.expand_dest_func_set = set(expand_dest_func_list) if expand_dest_func_list else set()
 
         self.nop_at_expansion = nop_at_expansion
         self.nop_mflo_mfhi = nop_mflo_mfhi
@@ -1010,7 +1012,24 @@ class MaspsxProcessor:
 
             elif is_addend and r_source:
                 # e.g. lw	$2,test_sym($4)
-                if self.addiu_at:
+                # Per-function override: when the current function is in
+                # `expand_dest_func_set`, emit the expansion using $rdest as
+                # the address scratch register (matching PsyQ's cc1 emission)
+                # instead of the default $at-based form. Required when the
+                # original game's asm uses the dest-reused form for this
+                # `lw $rdest, sym($rsrc)` pseudo. Only valid when
+                # rdest != rsrc (ensured by the cc1 pseudo semantics).
+                if (self.expand_dest_func_set and
+                        self.current_func in self.expand_dest_func_set and
+                        r_dest != r_source):
+                    res.extend(
+                        [
+                            f"lui\t{r_dest},%hi({operand})",
+                            f"addu\t{r_dest},{r_dest},{r_source}",
+                            f"{op}\t{r_dest},%lo({operand})({r_dest})",
+                        ]
+                    )
+                elif self.addiu_at:
                     res.extend(
                         [
                             "# EXPAND_AT START",
