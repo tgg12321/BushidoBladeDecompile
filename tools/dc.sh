@@ -665,6 +665,19 @@ print(f'Replaced {func} in {src}')
         python3 tools/diff_build.py "$FUNC_NAME" 2>&1
         ;;
 
+    diff-align)
+        # Sequence-aligned binary diff with relocation masking and recipe
+        # detection. Use FIRST when a build fails — this collapses the
+        # cascade caused by single-instruction length mismatches and shows
+        # only the real STRUCTURAL diffs, plus suggested fixes (delay-slot
+        # fill, label shift, hoist removal). Index-aligned `dc.sh diff` is
+        # noisy when mine and target differ in length; this is not.
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh diff-align <func>"; exit 1; }
+        python3 tools/diff_align.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
     refresh-queue)
         # Refresh classifier CSV + regenerate WORK_QUEUE.md. Run after a
         # batch of matches so the queue drops them. ~2 minutes.
