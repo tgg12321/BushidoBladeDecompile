@@ -120,8 +120,13 @@ FIX_LWL_FILES := code6cac
 # Downgrade to .align 2 (4-byte) for files whose rodata is sandwiched.
 RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_c code6cac_c0 code6cac_c_ab code6cac_c_mid code6cac_c2 text1a text1a_b text1a_c text1a_c2 main
 
+# -- Per-file -fno-strength-reduce opt-in --
+# Some functions were originally compiled without GCC's loop strength-reduction.
+# These files get the flag applied; other files in NO_SR_FILES below.
+NO_SR_FILES :=
+
 # Helper: resolve CC/MASPSX flags based on whether file needs GP-relative
-cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))
+cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)
 maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(EXPAND_LB_FILES)), --expand-lb)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)
 fix_lwl_for = $(if $(filter $1,$(FIX_LWL_FILES)),$(FIX_LWL) |,)
 rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.align\t2/" |,)
