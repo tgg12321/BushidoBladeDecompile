@@ -4425,3 +4425,9 @@ func_8006BD28: reorder 11,12,9,10 @ 9-12
 
 # func_8006BD28: addu operand order swap at idx 33 (mine: addu $2,$2,$8 -> target: addu $2,$8,$2)
 func_8006BD28: subst "addu\s+\$2,\$2,\$8" "addu	$2,$8,$2" @ 33
+
+
+# func_8007C4B8: prologue save order swap (s0/s1 setup pairs reordered)
+# Mine: sw s1,52; move s1,a0; sw s0,48; move s0,a1
+# Target: sw s0,48; move s0,a1; sw s1,52; move s1,a0
+func_8007C4B8: reorder 3,4,1,2 @ 1-4
