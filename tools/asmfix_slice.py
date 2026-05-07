@@ -42,7 +42,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 # splat line: "    /* X X X */  mnemonic     operands"
 SPLAT_INSN_RE = re.compile(
-    r'^\s*/\*[^*]*\*/\s*(?P<mn>\w+)\s+(?P<ops>.*?)\s*$'
+    r'^\s*/\*[^*]*\*/\s*(?P<mn>\w+)(?:\s+(?P<ops>.*?))?\s*$'
 )
 # Label line in splat: ".L8006BDD4:" or "glabel func_..."
 SPLAT_LABEL_RE = re.compile(r'^\s*(?P<label>\.L[0-9A-Fa-f]+):\s*$')
@@ -81,11 +81,12 @@ def parse_target_asm(func: str) -> tuple[list[tuple[str, str]], dict[str, int]]:
         m = SPLAT_INSN_RE.match(line)
         if m:
             mn = m.group('mn')
-            # operands: splat uses ", " and named regs ($sp, $zero, $s1)
-            # which the assembler accepts; collapse multiple spaces.
-            ops = re.sub(r'\s+', ' ', m.group('ops')).strip()
-            ops = ops.replace(', ', ',')  # match maspsx-canonical compact form
-            entries.append(('insn', f"{mn}\t{ops}"))
+            ops_raw = m.group('ops')
+            if ops_raw:
+                ops = re.sub(r'\s+', ' ', ops_raw).strip().replace(', ', ',')
+                entries.append(('insn', f"{mn}\t{ops}"))
+            else:
+                entries.append(('insn', mn))
             insn_count += 1
 
     return entries, label_idx
@@ -219,9 +220,22 @@ def main() -> int:
                     help="Label that begins the slice (exists in target's asm/funcs/<func>.s)")
     ap.add_argument("end_label",
                     help="Label that ends the slice (slice goes up to but not including end_label)")
+    ap.add_argument("--rename", action="append", default=[],
+                    metavar="OLD=NEW",
+                    help="Explicit rename hint (use when auto-detect fails). "
+                         "Can be repeated. Example: --rename .L766=.L8006BDD4")
     ap.add_argument("--apply", action="store_true",
                     help="Append rules to asmfix.txt; default is dry-run")
     args = ap.parse_args()
+
+    explicit_renames: list[tuple[str, str]] = []
+    for r in args.rename:
+        if "=" not in r:
+            print(f"asmfix-slice: ERROR: --rename {r!r} must be OLD=NEW",
+                  file=sys.stderr)
+            return 1
+        old, new = r.split("=", 1)
+        explicit_renames.append((old.strip(), new.strip()))
 
     try:
         entries, target_label_idx = parse_target_asm(args.func)
@@ -243,7 +257,13 @@ def main() -> int:
     needed_in_mine = (referenced - defined) | boundary_anchors
 
     live_label_idx = parse_live_labels(args.func)
-    renames = detect_renames(target_label_idx, live_label_idx, needed_in_mine)
+    auto_renames = detect_renames(target_label_idx, live_label_idx, needed_in_mine)
+    # Drop auto-renames that conflict with explicit hints
+    explicit_targets = {tgt for _, tgt in explicit_renames}
+    explicit_sources = {src for src, _ in explicit_renames}
+    auto_renames = [(s, t) for s, t in auto_renames
+                    if t not in explicit_targets and s not in explicit_sources]
+    renames = explicit_renames + auto_renames
 
     slice_body = build_slice_text(entries, start_pos, end_pos)
     rules: list[str] = []
@@ -267,10 +287,24 @@ def main() -> int:
             print(f"  rename {src!r} -> {dst!r}")
     unmatched = needed_in_mine - {tgt for _, tgt in renames} - set(live_label_idx)
     if unmatched:
+        # Build inverse: idx -> labels in mine, sorted, for nearby-label hints.
+        live_at: dict[int, set[str]] = {}
+        for lbl, idx in live_label_idx.items():
+            live_at.setdefault(idx, set()).add(lbl)
+        live_indices = sorted(live_at)
         print(f"# WARNING: {len(unmatched)} referenced label(s) have no obvious source in mine:")
         for lbl in sorted(unmatched):
             tgt_idx = target_label_idx.get(lbl)
-            print(f"  {lbl} (target idx {tgt_idx}) — add rename rule manually if branched into")
+            # Nearest mine labels
+            nearby = []
+            if tgt_idx is not None and live_indices:
+                # Take 3 mine labels closest to tgt_idx
+                ranked = sorted(live_indices, key=lambda i: abs(i - tgt_idx))[:3]
+                for mi in ranked:
+                    for ml in sorted(live_at[mi]):
+                        nearby.append(f"{ml}@{mi}")
+            print(f"  {lbl} (target idx {tgt_idx}) — nearest mine labels: {', '.join(nearby) if nearby else '(none)'}")
+            print(f"    Hint: --rename {nearby[0].split('@')[0] if nearby else '<your_label>'}={lbl}")
     print()
     print(f"# Proposed {len(rules)} asmfix rule(s):")
     for r in rules:
