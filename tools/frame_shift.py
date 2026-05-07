@@ -46,9 +46,85 @@ SP_MEM_RE = re.compile(
     r'\(\$(?P<base>sp|29)\)\s*$'
 )
 
+# splat target asm: "    /* X X X */  mnemonic     operands"
+TARGET_INSN_RE = re.compile(
+    r'^\s*/\*[^*]*\*/\s*(?P<mn>\w+)\s+(?P<ops>.*?)\s*$'
+)
+TARGET_SP_MEM_RE = re.compile(
+    r'^\$(?P<reg>\w+),\s*(?P<off>-?(?:0x[0-9a-fA-F]+|\d+))\(\$sp\)\s*$'
+)
+TARGET_SP_ADJ_RE = re.compile(
+    r'^\$sp,\s*\$sp,\s*(?P<imm>-?(?:0x[0-9a-fA-F]+|\d+))\s*$'
+)
+
+# MIPS register name <-> number conversion (so we can compare $8 vs $t0).
+_NUM_TO_NAME = {
+    0: 'zero', 1: 'at', 2: 'v0', 3: 'v1', 4: 'a0', 5: 'a1', 6: 'a2', 7: 'a3',
+    8: 't0', 9: 't1', 10: 't2', 11: 't3', 12: 't4', 13: 't5', 14: 't6', 15: 't7',
+    16: 's0', 17: 's1', 18: 's2', 19: 's3', 20: 's4', 21: 's5', 22: 's6', 23: 's7',
+    24: 't8', 25: 't9', 26: 'k0', 27: 'k1', 28: 'gp', 29: 'sp', 30: 'fp', 31: 'ra',
+}
+_NAME_TO_NUM = {v: k for k, v in _NUM_TO_NAME.items()}
+
+
+def reg_to_num(r: str) -> int:
+    """`$8` or `$t0` -> 8. Returns -1 if unrecognized."""
+    if r.startswith('$'):
+        r = r[1:]
+    if r.isdigit():
+        return int(r)
+    return _NAME_TO_NUM.get(r, -1)
+
 
 def parse_imm(s: str) -> int:
     return int(s, 0)
+
+
+def parse_target_ops(func: str) -> dict[int, tuple[str, int, int]]:
+    """Parse asm/funcs/<func>.s and return {target_idx: (mnemonic, reg_num, offset_or_imm)}.
+
+    Only entries that are stack ops (mem with $sp base) or stack adjustments.
+    target_idx is the linear instruction index within the function (matches
+    dump_text_indices' idx since we share the same instruction sequence in
+    the prologue/epilogue/save area).
+    """
+    path = ROOT / "asm" / "funcs" / f"{func}.s"
+    if not path.exists():
+        return {}
+    out: dict[int, tuple[str, int, int]] = {}
+    in_func = False
+    insn_idx = 0
+    glabel_re = re.compile(rf'^\s*glabel\s+{re.escape(func)}\b')
+
+    for line in path.read_text().splitlines():
+        if not in_func:
+            if glabel_re.match(line):
+                in_func = True
+            continue
+        # Stop at the next glabel (different function).
+        if re.match(r'^\s*glabel\s+', line) and not glabel_re.match(line):
+            break
+        m = TARGET_INSN_RE.match(line)
+        if not m:
+            continue
+        mn = m.group('mn')
+        ops = m.group('ops').strip()
+
+        # Stack memory op
+        m2 = TARGET_SP_MEM_RE.match(ops)
+        if m2 and mn in ('sw', 'lw', 'swc1', 'lwc1', 'swc2', 'lwc2'):
+            rn = reg_to_num('$' + m2.group('reg'))
+            off = parse_imm(m2.group('off'))
+            out[insn_idx] = (mn, rn, off)
+        # Stack adjustment
+        elif mn in ('addiu', 'addi', 'addu', 'subu', 'sub', 'add'):
+            m3 = TARGET_SP_ADJ_RE.match(ops)
+            if m3:
+                imm = parse_imm(m3.group('imm'))
+                out[insn_idx] = (mn, reg_to_num('$sp'), imm)
+        insn_idx += 1
+
+    return out
 
 
 def get_target_frame(func: str) -> int | None:
@@ -115,49 +191,96 @@ def existing_frame_rules(func: str) -> list[str]:
     return rules
 
 
-def build_rules(func: str, delta: int, insns: dict[int, str]) -> list[tuple[int, str, str, str]]:
-    """Return list of (idx, pattern, replacement, kind)."""
+def build_rules(func: str, delta: int, insns: dict[int, str],
+                target_ops: dict[int, tuple[str, int, int]]
+                ) -> list[tuple[int, str, str, str]]:
+    """Return list of (idx, pattern, replacement, kind).
+
+    For every $sp-relative instruction in mine's live build, look up the same
+    idx in target's asm. Use target's actual offset for the replacement.
+    Skip if target's idx has a different instruction type (mismatch =
+    likely scheduling divergence at this idx; rule would be wrong)."""
     out: list[tuple[int, str, str, str]] = []
+    callee_save_nums = set(range(16, 24)) | {30, 31}  # $s0-$s7, $fp, $ra
+
     for idx in sorted(insns):
         text = insns[idx]
         m = SP_ADJ_RE.match(text)
         if m:
             mn = m.group('mn')
             val = parse_imm(m.group('imm'))
-            if mn in ('subu', 'sub') and val > 0:
-                # Prologue: subu $sp,$sp,N -> addiu $29,$29,-(N+delta)
-                pat = rf'{mn}\s+\$sp,\$sp,{val}'
-                rep = f'addiu\t$29,$29,-{val + delta}'
-                out.append((idx, pat, rep, 'prologue'))
+            t_op = target_ops.get(idx)
+            # Determine prologue vs epilogue by sign convention.
+            # Prologue: subu/sub with positive val, OR addiu/addi with negative val
+            is_prologue = (mn in ('subu', 'sub') and val > 0) or \
+                          (mn in ('addiu', 'addi') and val < 0)
+            is_epilogue = (mn in ('addu', 'add') and val > 0) or \
+                          (mn in ('addiu', 'addi') and val > 0)
+            if not (is_prologue or is_epilogue):
                 continue
-            if mn in ('addiu', 'addi') and val < 0:
-                # Prologue: addiu $sp,$sp,-N -> addiu $29,$29,-(N+delta)
+
+            # Use target's exact stack adj imm if available
+            if t_op and t_op[1] == reg_to_num('$sp'):
+                t_imm = t_op[2]
                 pat = rf'{mn}\s+\$sp,\$sp,{val}'
-                rep = f'addiu\t$29,$29,{val - delta}'
-                out.append((idx, pat, rep, 'prologue'))
+                rep = f'addiu\t$29,$29,{t_imm}'
+                kind = 'prologue' if is_prologue else 'epilogue'
+                # Check if it's already correct (mine == target).
+                if mn == 'addiu' and val == t_imm:
+                    continue  # already matches
+                out.append((idx, pat, rep, kind))
                 continue
-            if mn in ('addu', 'add') and val > 0:
-                # Epilogue: addu $sp,$sp,N -> addiu $29,$29,(N+delta)
+            # No target lookup — fall back to delta math (less reliable).
+            if is_prologue:
+                if mn in ('subu', 'sub'):
+                    pat = rf'{mn}\s+\$sp,\$sp,{val}'
+                    rep = f'addiu\t$29,$29,-{val + delta}'
+                else:  # addiu negative
+                    pat = rf'{mn}\s+\$sp,\$sp,{val}'
+                    rep = f'addiu\t$29,$29,{val - delta}'
+                out.append((idx, pat, rep, 'prologue'))
+            else:
                 pat = rf'{mn}\s+\$sp,\$sp,{val}'
                 rep = f'addiu\t$29,$29,{val + delta}'
                 out.append((idx, pat, rep, 'epilogue'))
-                continue
-            if mn in ('addiu', 'addi') and val > 0:
-                # Epilogue: addiu $sp,$sp,N -> addiu $29,$29,(N+delta)
-                pat = rf'{mn}\s+\$sp,\$sp,{val}'
-                rep = f'addiu\t$29,$29,{val + delta}'
-                out.append((idx, pat, rep, 'epilogue'))
-                continue
+            continue
+
         m = SP_MEM_RE.match(text)
         if m:
             mn = m.group('mn')
             reg = m.group('reg')
             off = parse_imm(m.group('off'))
-            new_off = off + delta
+            mine_reg_num = reg_to_num(reg)
+
+            t_op = target_ops.get(idx)
+            target_off: int | None = None
+            if t_op and t_op[0] == mn and t_op[1] == mine_reg_num:
+                target_off = t_op[2]
+            elif mine_reg_num in callee_save_nums:
+                # Callee-save register: target's offset must follow the +delta
+                # shift (these positions are tied to frame size). Use that
+                # even if idx-aligned target lookup failed (e.g., scheduling
+                # divergence at this idx in target — but the save slot for
+                # this register is still at off+delta).
+                target_off = off + delta
+            else:
+                # Spill of a non-callee-save register. We don't know target's
+                # offset without the idx-aligned lookup. Skip — emitting a
+                # delta-shift rule would be wrong (target may use a different
+                # spill slot entirely).
+                continue
+
+            if target_off == off:
+                # Already correct, no rule needed.
+                continue
+
             esc_reg = reg.replace('$', r'\$')
             pat = rf'{mn}\s+{esc_reg},{off}\(\$sp\)'
-            rep = f'{mn}\t{reg},{new_off}($29)'
-            kind = 'save' if mn.startswith('s') else 'restore'
+            rep = f'{mn}\t{reg},{target_off}($29)'
+            if mine_reg_num in callee_save_nums:
+                kind = 'save' if mn.startswith('s') else 'restore'
+            else:
+                kind = 'spill-st' if mn.startswith('s') else 'spill-ld'
             out.append((idx, pat, rep, kind))
     return out
 
@@ -257,7 +380,8 @@ def main() -> int:
         print("frame-shift: delta is 0 — frame sizes already match. Nothing to do.")
         return 0
 
-    rules = build_rules(args.func, delta, insns)
+    target_ops = parse_target_ops(args.func)
+    rules = build_rules(args.func, delta, insns, target_ops)
     if not rules:
         print("frame-shift: no $sp instructions found. Nothing to do.")
         return 0
