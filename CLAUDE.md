@@ -229,6 +229,7 @@ The **attempt-first** flow runs all the cheap mechanical steps before the model 
 
 After `dc.sh inline-replace <func> ...` and a first build that links but mismatches:
 
+0. **`dc.sh diff-align <func>` FIRST.** Sequence-aligned (difflib) with relocation masking. Index-aligned `dc.sh diff` cascades when mine and target differ in length — every line after a 1-instruction shortfall is marked as different (140+ "diffs" that are really 1 structural change + 139 cascade). `diff-align` collapses cascade and surfaces real STRUCTURAL diffs only, plus suggested recipes (delay-slot fill, label-shift, hoist-removal). Compute `byte_diff/4` — if mine is 4 bytes short, you have ONE missing instruction, NOT 145. This single heuristic prevents the most common time-sink in regfix work. Reading `dc.sh diff` cascade output before this is wasteful — don't.
 1. **`dc.sh regfix-suggest <func>`** — auto-generates regfix rules from the build-vs-target diff. Emits `delete`/`insert_after`/`subst` rules with correct maspsx indices, plus hints for things it shouldn't auto-rewrite (gp-rel pseudos → `sdata_exclude.txt`, `.L<N>` label mismatches). Read the hints first; apply them; re-run regfix-suggest.
 2. **Apply hints first**, then `dc.sh regfix-suggest <func> --apply` for the auto rules, then build + verify.
 3. **Don't write regfix rules from scratch** — the indices are easy to get wrong. Maspsx `lw $X, sym` is one instruction, not two; `addiu $5,$zero,1` not `$0`; deletes/inserts shift indices in different phases. `regfix-suggest` knows the conventions.
