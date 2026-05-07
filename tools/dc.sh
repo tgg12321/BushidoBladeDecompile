@@ -16,6 +16,9 @@
 #   bash tools/dc.sh smart <func>                  — run smart_match.py 16-strategy sweep
 #   bash tools/dc.sh permute <func> [opts]        — run permuter with early-termination cap
 #   bash tools/dc.sh add-regfix <func> <op> <args> @ <idx>  — append validated regfix rule
+#   bash tools/dc.sh frame-shift <func> [--delta N] [--apply] — auto-cascade regfix when frame size differs
+#   bash tools/dc.sh asmfix-slice <func> <start> <end> [--apply] — lift target asm slice into asmfix.txt
+#   bash tools/dc.sh post-match-validate <func>  — sibling-regression check after a match
 #   bash tools/dc.sh classify <func>              — pre-dive classification report
 #   bash tools/dc.sh gte <func>                    — gte_*() macro suggestion report
 #   bash tools/dc.sh attempt <func>               — full mechanical attempt pipeline
@@ -404,6 +407,41 @@ print(f'Replaced {func} in {src}')
         shift || true
         [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh regfix-suggest <func> [--apply] [--max-rules N]"; exit 1; }
         python3 tools/regfix_suggest.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
+    frame-shift)
+        # Auto-generate the frame-cascade regfix rules when GCC's frame size
+        # differs from target by N bytes. Emits prologue/epilogue substs +
+        # all sw/lw stack-offset shifts as one batch.
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh frame-shift <func> [--delta N] [--apply]"; exit 1; }
+        python3 tools/frame_shift.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
+    asmfix-slice)
+        # Extract a target asm slice from asm/funcs/<func>.s and emit
+        # asmfix delete_between + insert_before rules to lift it into
+        # the build pipeline. Last-resort tool when C+permuter+regfix
+        # cannot reproduce target's scheduler/allocator decisions.
+        FUNC_NAME="$1"
+        START_LBL="$2"
+        END_LBL="$3"
+        shift 3 2>/dev/null || true
+        if [ -z "$FUNC_NAME" ] || [ -z "$START_LBL" ] || [ -z "$END_LBL" ]; then
+            echo "Usage: dc.sh asmfix-slice <func> <start_label> <end_label> [--apply]"
+            exit 1
+        fi
+        python3 tools/asmfix_slice.py "$FUNC_NAME" "$START_LBL" "$END_LBL" "$@" 2>&1
+        ;;
+
+    post-match-validate)
+        # After per-function MATCH, detect sibling regressions caused by
+        # `.L<N>` numbering shifts in the same .c file. Confirms
+        # whole-binary SHA1 + lists regressed siblings with hints.
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh post-match-validate <func>"; exit 1; }
+        python3 tools/post_match_validate.py "$FUNC_NAME" 2>&1
         ;;
 
     classify)
