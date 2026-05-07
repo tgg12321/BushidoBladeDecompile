@@ -1422,173 +1422,97 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007CE0C\n"
-    "    addiu      $sp, $sp, -0x50\n"
-    "    sw         $s1, 52($sp)\n"
-    "    addu       $s1, $a0, $zero\n"
-    "    sw         $s2, 56($sp)\n"
-    "    addu       $s2, $a1, $zero\n"
-    "    sw         $ra, 72($sp)\n"
-    "    sw         $s5, 68($sp)\n"
-    "    sw         $s4, 64($sp)\n"
-    "    sw         $s3, 60($sp)\n"
-    "    jal        func_8007DC68\n"
-    "    sw        $s0, 48($sp)\n"
-    "    lh         $a1, 4($s1)\n"
-    "    addu       $s5, $zero, $zero\n"
-    "    bltz       $a1, .Lfunc_8007CE0C_8007CE6C\n"
-    "    addu      $v1, $a1, $zero\n"
-    "    lui        $v0, %hi(g_gpu_disp_x)\n"
-    "    lh         $v0, %lo(g_gpu_disp_x)($v0)\n"
-    "    nop\n"
-    "    addu       $a0, $v0, $zero\n"
-    "    slt        $v0, $v0, $a1\n"
-    "    beqz       $v0, .Lfunc_8007CE0C_8007CE70\n"
-    "    nop\n"
-    "    j          .Lfunc_8007CE0C_8007CE70\n"
-    "    addu      $v1, $a0, $zero\n"
-    ".Lfunc_8007CE0C_8007CE6C:\n"
-    "    addu       $v1, $zero, $zero\n"
-    ".Lfunc_8007CE0C_8007CE70:\n"
-    "    lh         $a1, 6($s1)\n"
-    "    sh         $v1, 4($s1)\n"
-    "    bltz       $a1, .Lfunc_8007CE0C_8007CEA4\n"
-    "    addu      $v1, $a1, $zero\n"
-    "    lui        $v0, %hi(g_gpu_disp_y)\n"
-    "    lh         $v0, %lo(g_gpu_disp_y)($v0)\n"
-    "    addu       $a0, $v1, $zero\n"
-    "    addu       $v1, $v0, $zero\n"
-    "    slt        $v0, $v0, $a1\n"
-    "    beqz       $v0, .Lfunc_8007CE0C_8007CEAC\n"
-    "    sll       $v0, $a0, 16\n"
-    "    j          .Lfunc_8007CE0C_8007CEA8\n"
-    "    addu      $a0, $v1, $zero\n"
-    ".Lfunc_8007CE0C_8007CEA4:\n"
-    "    addu       $a0, $zero, $zero\n"
-    ".Lfunc_8007CE0C_8007CEA8:\n"
-    "    sll        $v0, $a0, 16\n"
-    ".Lfunc_8007CE0C_8007CEAC:\n"
-    "    lh         $v1, 4($s1)\n"
-    "    sra        $v0, $v0, 16\n"
-    "    mult       $v1, $v0\n"
-    "    sh         $a0, 6($s1)\n"
-    "    mflo       $a2\n"
-    "    addiu      $v1, $a2, 0x1\n"
-    "    srl        $v0, $v1, 31\n"
-    "    addu       $v1, $v1, $v0\n"
-    "    sra        $a0, $v1, 1\n"
-    "    bgtz       $a0, .Lfunc_8007CE0C_8007CEE0\n"
-    "    sra       $s0, $v1, 5\n"
-    "    j          .Lfunc_8007CE0C_8007D020\n"
-    "    addiu     $v0, $zero, -0x1\n"
-    ".Lfunc_8007CE0C_8007CEE0:\n"
-    "    addu       $v1, $s0, $zero\n"
-    "    sll        $v0, $v1, 4\n"
-    "    subu       $s0, $a0, $v0\n"
-    "    lui        $v0, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v0, %lo(g_gpu_stat_reg)($v0)\n"
-    "    addu       $s4, $v1, $zero\n"
-    "    lw         $v0, 0($v0)\n"
-    "    lui        $v1, (0x4000000 >> 16)\n"
-    "    and        $v0, $v0, $v1\n"
-    "    bnez       $v0, .Lfunc_8007CE0C_8007CF40\n"
-    "    lui       $a0, (0xA0000000 >> 16)\n"
-    "    lui        $s3, (0x4000000 >> 16)\n"
-    ".Lfunc_8007CE0C_8007CF10:\n"
-    "    jal        func_8007DC9C\n"
-    "    nop\n"
-    "    bnez       $v0, .Lfunc_8007CE0C_8007D020\n"
-    "    addiu     $v0, $zero, -0x1\n"
-    "    lui        $v0, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v0, %lo(g_gpu_stat_reg)($v0)\n"
-    "    nop\n"
-    "    lw         $v0, 0($v0)\n"
-    "    nop\n"
-    "    and        $v0, $v0, $s3\n"
-    "    beqz       $v0, .Lfunc_8007CE0C_8007CF10\n"
-    "    lui       $a0, (0xA0000000 >> 16)\n"
-    ".Lfunc_8007CE0C_8007CF40:\n"
-    "    lui        $v1, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v1, %lo(g_gpu_stat_reg)($v1)\n"
-    "    lui        $v0, (0x4000000 >> 16)\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v1, %hi(g_gpu_data_reg)\n"
-    "    lw         $v1, %lo(g_gpu_data_reg)($v1)\n"
-    "    lui        $v0, (0x1000000 >> 16)\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v0, %hi(g_gpu_data_reg)\n"
-    "    lw         $v0, %lo(g_gpu_data_reg)($v0)\n"
-    "    beqz       $s5, .Lfunc_8007CE0C_8007CF74\n"
-    "    nop\n"
-    "    lui        $a0, (0xB0000000 >> 16)\n"
-    ".Lfunc_8007CE0C_8007CF74:\n"
-    "    sw         $a0, 0($v0)\n"
-    "    lui        $v1, %hi(g_gpu_data_reg)\n"
-    "    lw         $v1, %lo(g_gpu_data_reg)($v1)\n"
-    "    lw         $v0, 0($s1)\n"
-    "    nop\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v1, %hi(g_gpu_data_reg)\n"
-    "    lw         $v1, %lo(g_gpu_data_reg)($v1)\n"
-    "    lw         $v0, 4($s1)\n"
-    "    addiu      $s0, $s0, -0x1\n"
-    "    sw         $v0, 0($v1)\n"
-    "    addiu      $v0, $zero, -0x1\n"
-    "    beq        $s0, $v0, .Lfunc_8007CE0C_8007CFD0\n"
-    "    nop\n"
-    "    addiu      $a0, $zero, -0x1\n"
-    ".Lfunc_8007CE0C_8007CFB0:\n"
-    "    lw         $v1, 0($s2)\n"
-    "    addiu      $s2, $s2, 0x4\n"
-    "    lui        $v0, %hi(g_gpu_data_reg)\n"
-    "    lw         $v0, %lo(g_gpu_data_reg)($v0)\n"
-    "    addiu      $s0, $s0, -0x1\n"
-    "    sw         $v1, 0($v0)\n"
-    "    bne        $s0, $a0, .Lfunc_8007CE0C_8007CFB0\n"
-    "    nop\n"
-    ".Lfunc_8007CE0C_8007CFD0:\n"
-    "    beqz       $s4, .Lfunc_8007CE0C_8007D01C\n"
-    "    lui       $v1, (0x4000002 >> 16)\n"
-    "    lui        $v0, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v0, %lo(g_gpu_stat_reg)($v0)\n"
-    "    ori        $v1, $v1, (0x4000002 & 0xFFFF)\n"
-    "    sw         $v1, 0($v0)\n"
-    "    lui        $v0, %hi(g_gpu_dma_madr)\n"
-    "    lw         $v0, %lo(g_gpu_dma_madr)($v0)\n"
-    "    lui        $a0, (0x1000201 >> 16)\n"
-    "    sw         $s2, 0($v0)\n"
-    "    sll        $v0, $s4, 16\n"
-    "    lui        $v1, %hi(g_gpu_dma_bcr)\n"
-    "    lw         $v1, %lo(g_gpu_dma_bcr)($v1)\n"
-    "    ori        $v0, $v0, 0x10\n"
-    "    sw         $v0, 0($v1)\n"
-    "    lui        $v0, %hi(g_gpu_dma_chcr)\n"
-    "    lw         $v0, %lo(g_gpu_dma_chcr)($v0)\n"
-    "    ori        $a0, $a0, (0x1000201 & 0xFFFF)\n"
-    "    sw         $a0, 0($v0)\n"
-    ".Lfunc_8007CE0C_8007D01C:\n"
-    "    addu       $v0, $zero, $zero\n"
-    ".Lfunc_8007CE0C_8007D020:\n"
-    "    lw         $ra, 72($sp)\n"
-    "    lw         $s5, 68($sp)\n"
-    "    lw         $s4, 64($sp)\n"
-    "    lw         $s3, 60($sp)\n"
-    "    lw         $s2, 56($sp)\n"
-    "    lw         $s1, 52($sp)\n"
-    "    lw         $s0, 48($sp)\n"
-    "    addiu      $sp, $sp, 0x50\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+typedef struct {
+    s32 unk0;
+    s16 x;
+    s16 y;
+} _GpuChunkHdr_CE0C;
+
+s32 func_8007CE0C(_GpuChunkHdr_CE0C *arg0, s32 *arg1) {
+    register s32 var_s5 asm("s5") = 0;
+    s32 half_size;
+    s32 big_size;
+    s32 remainder;
+    s16 x;
+    s16 y;
+    s32 v1_tmp;
+    s32 a0_tmp;
+    s32 v0_ext;
+
+    func_8007DC68();
+
+    x = arg0->x;
+    if (x < 0) goto x_neg;
+    v1_tmp = x;
+    if (D_8009BE78 < x) {
+        v1_tmp = D_8009BE78;
+    }
+    goto x_done;
+x_neg:
+    v1_tmp = 0;
+x_done:
+    arg0->x = (s16)v1_tmp;
+
+    y = arg0->y;
+    if (y < 0) goto y_neg;
+    a0_tmp = y;
+    v0_ext = a0_tmp << 16;
+    if (D_8009BE7A < y) {
+        a0_tmp = D_8009BE7A;
+        goto y_block_8;
+    }
+    goto y_done;
+y_neg:
+    a0_tmp = 0;
+y_block_8:
+    v0_ext = a0_tmp << 16;
+y_done:
+    arg0->y = (s16)a0_tmp;
+
+    {
+        s32 y_ext = v0_ext >> 16;
+        s32 prod = (s32)arg0->x * y_ext + 1;
+        half_size = prod / 2;
+        big_size = prod >> 5;
+    }
+
+    if (half_size <= 0) {
+        return -1;
+    }
+
+    remainder = (half_size - big_size * 16) - 1;
+
+    if (!((*g_gpu_stat_reg) & 0x04000000)) {
+        do {
+            if (func_8007DC9C((u32 *)0xA0000000) != 0) {
+                return -1;
+            }
+        } while (!((*g_gpu_stat_reg) & 0x04000000));
+    }
+
+    *g_gpu_stat_reg = 0x04000000;
+    *g_gpu_data_reg = 0x01000000;
+    *g_gpu_data_reg = (var_s5 != 0) ? 0xB0000000 : 0xA0000000;
+    *g_gpu_data_reg = arg0->unk0;
+    *g_gpu_data_reg = (s32)arg0->x;
+
+    if (remainder != -1) {
+        do {
+            *g_gpu_data_reg = *arg1++;
+            remainder--;
+        } while (remainder != -1);
+    }
+
+    if (big_size != 0) {
+        *g_gpu_stat_reg = 0x04000002;
+        *g_gpu_dma_madr = (u32)arg1;
+        *g_gpu_dma_bcr = (big_size << 16) | 0x10;
+        *g_gpu_dma_chcr = 0x01000201;
+    }
+
+    return 0;
+}
+
 __asm__(
     "    .set\tnoat\n"
     "    .set\tnoreorder\n"
