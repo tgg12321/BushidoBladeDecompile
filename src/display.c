@@ -3631,133 +3631,107 @@ void *func_8007FBBC(s32 angle, void *arg1) {
     return arg1;
 }
 PAD_NOPS_2; /* 2 NOPs after func_8007FBBC */
-__asm__(
-    ".section .text\n"
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007FD5C\n"
-    "    addu $a2, $zero, $zero\n"
-    "    bgez $a1, .L8007FD70\n"
-    "    addu $a3, $zero, $zero\n"
-    "    addiu $a2, $zero, 0x1\n"
-    "    negu $a1, $a1\n"
-    ".L8007FD70:\n"
-    "    bgez $a0, .L8007FD80\n"
-    "    nop\n"
-    "    addiu $a3, $zero, 0x1\n"
-    "    negu $a0, $a0\n"
-    ".L8007FD80:\n"
-    "    bnez $a1, .L8007FD98\n"
-    "    slt $v0, $a0, $a1\n"
-    "    bnez $a0, .L8007FD98\n"
-    "    nop\n"
-    "    j .L8007FED4\n"
-    "    addu $v0, $zero, $zero\n"
-    ".L8007FD98:\n"
-    "    beqz $v0, .L8007FE2C\n"
-    "    lui $v0, (0x7FE00000 >> 16)\n"
-    "    and $v0, $a0, $v0\n"
-    "    beqz $v0, .L8007FDE0\n"
-    "    sra $v0, $a1, 10\n"
-    "    .word 0x0082001A\n"
-    "    bnez $v0, .L8007FDBC\n"
-    "    nop\n"
-    "    .word 0x0007000D\n"
-    ".L8007FDBC:\n"
-    "    addiu $at, $zero, -0x1\n"
-    "    bne $v0, $at, .L8007FDD4\n"
-    "    lui $at, (0x80000000 >> 16)\n"
-    "    bne $a0, $at, .L8007FDD4\n"
-    "    nop\n"
-    "    .word 0x0006000D\n"
-    ".L8007FDD4:\n"
-    "    mflo $a0\n"
-    "    j .L8007FE18\n"
-    "    sll $v0, $a0, 1\n"
-    ".L8007FDE0:\n"
-    "    sll $v0, $a0, 10\n"
-    "    .word 0x0045001A\n"
-    "    bnez $a1, .L8007FDF4\n"
-    "    nop\n"
-    "    .word 0x0007000D\n"
-    ".L8007FDF4:\n"
-    "    addiu $at, $zero, -0x1\n"
-    "    bne $a1, $at, .L8007FE0C\n"
-    "    lui $at, (0x80000000 >> 16)\n"
-    "    bne $v0, $at, .L8007FE0C\n"
-    "    nop\n"
-    "    .word 0x0006000D\n"
-    ".L8007FE0C:\n"
-    "    mflo $a0\n"
-    "    nop\n"
-    "    sll $v0, $a0, 1\n"
-    ".L8007FE18:\n"
-    "    lui $at, %hi(D_800A0928)\n"
-    "    addu $at, $at, $v0\n"
-    "    lh $v1, %lo(D_800A0928)($at)\n"
-    "    j .L8007FEB8\n"
-    "    nop\n"
-    ".L8007FE2C:\n"
-    "    and $v0, $a1, $v0\n"
-    "    beqz $v0, .L8007FE6C\n"
-    "    sra $v0, $a0, 10\n"
-    "    .word 0x00A2001A\n"
-    "    bnez $v0, .L8007FE48\n"
-    "    nop\n"
-    "    .word 0x0007000D\n"
-    ".L8007FE48:\n"
-    "    addiu $at, $zero, -0x1\n"
-    "    bne $v0, $at, .L8007FE60\n"
-    "    lui $at, (0x80000000 >> 16)\n"
-    "    bne $a1, $at, .L8007FE60\n"
-    "    nop\n"
-    "    .word 0x0006000D\n"
-    ".L8007FE60:\n"
-    "    mflo $a0\n"
-    "    j .L8007FEA4\n"
-    "    sll $v0, $a0, 1\n"
-    ".L8007FE6C:\n"
-    "    sll $v0, $a1, 10\n"
-    "    .word 0x0044001A\n"
-    "    bnez $a0, .L8007FE80\n"
-    "    nop\n"
-    "    .word 0x0007000D\n"
-    ".L8007FE80:\n"
-    "    addiu $at, $zero, -0x1\n"
-    "    bne $a0, $at, .L8007FE98\n"
-    "    lui $at, (0x80000000 >> 16)\n"
-    "    bne $v0, $at, .L8007FE98\n"
-    "    nop\n"
-    "    .word 0x0006000D\n"
-    ".L8007FE98:\n"
-    "    mflo $a0\n"
-    "    nop\n"
-    "    sll $v0, $a0, 1\n"
-    ".L8007FEA4:\n"
-    "    lui $at, %hi(D_800A0928)\n"
-    "    addu $at, $at, $v0\n"
-    "    lh $v1, %lo(D_800A0928)($at)\n"
-    "    addiu $v0, $zero, 0x400\n"
-    "    subu $v1, $v0, $v1\n"
-    ".L8007FEB8:\n"
-    "    beqz $a2, .L8007FEC4\n"
-    "    addiu $v0, $zero, 0x800\n"
-    "    subu $v1, $v0, $v1\n"
-    ".L8007FEC4:\n"
-    "    beqz $a3, .L8007FED4\n"
-    "    addu $v0, $v1, $zero\n"
-    "    negu $v1, $v1\n"
-    "    addu $v0, $v1, $zero\n"
-    ".L8007FED4:\n"
-    "    jr $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+typedef unsigned char u8;
+typedef signed char s8;
+typedef unsigned short u16;
+typedef signed short s16;
+typedef unsigned int u32;
+typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
+typedef volatile u8 vu8;
+typedef volatile s8 vs8;
+typedef volatile u16 vu16;
+typedef volatile s16 vs16;
+typedef volatile u32 vu32;
+typedef volatile s32 vs32;
+#define NULL ((void *)0)
+
+typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
+typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
+typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
+typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
+typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
+typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
+typedef struct CVECTOR { u8 r, g, b, cd; } CVECTOR;
+typedef struct DVECTOR { s16 vx, vy; } DVECTOR;
+typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
+
+/* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
+ * field layout is the union of all observed accesses; m2c picks the type
+ * that best fits each access site. Mirroring smart_match.py's layout. */
+typedef struct GameObj {
+    u8 field_00; u8 field_01; s16 field_02;
+    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
+    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
+    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
+    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
+    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
+    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
+    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
+    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
+    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
+    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
+    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
+    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
+    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
+    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
+    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
+    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
+    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
+    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
+    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
+    s16 field_FA; s32 field_FC;
+} GameObj;
+extern s16 D_800A0928[];
+
+s32 func_8007FD5C(s32 arg0, s32 arg1) {
+    s32 var_v1;
+    s32 var_v0;
+    s32 var_a0;
+    s32 var_a1;
+    s32 var_a2;
+    s32 var_a3;
+    s32 idx;
+
+    var_a0 = arg0;
+    var_a1 = arg1;
+    var_a2 = 0;
+    var_a3 = 0;
+    if (var_a1 < 0) {
+        var_a2 = 1;
+        var_a1 = -var_a1;
+    }
+    if (var_a0 < 0) {
+        var_a3 = 1;
+        var_a0 = -var_a0;
+    }
+    if (var_a1 == 0 && var_a0 == 0) {
+        return 0;
+    }
+    if (var_a0 < var_a1) {
+        if (var_a0 & 0x7FE00000) {
+            idx = var_a0 / (var_a1 >> 0xA);
+        } else {
+            idx = (var_a0 << 0xA) / var_a1;
+        }
+        var_v1 = D_800A0928[idx];
+    } else {
+        if (var_a1 & 0x7FE00000) {
+            idx = var_a1 / (var_a0 >> 0xA);
+        } else {
+            idx = (var_a1 << 0xA) / var_a0;
+        }
+        var_v1 = 0x400 - D_800A0928[idx];
+    }
+    if (var_a2 != 0) {
+        var_v1 = 0x800 - var_v1;
+    }
+    if (var_a3 != 0) {
+        var_v1 = -var_v1;
+    }
+    return var_v1;
+}
 __asm__(
     ".section .text\n"
     "    .set\tnoat\n"
