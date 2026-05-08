@@ -4602,3 +4602,39 @@ func_8007A28C: subst "addu\s+\$2,\$6,\$zero" "addu	$3,$6,$0" @ 22
 func_8007A28C: subst "addu\s+\$6,\$2,-1" "addu	$6,$6,-1" @ 23
 func_8007A28C: subst "sb\s+\$3," "sb	$2," @ 24
 func_8007A28C: subst "bgtz\s+\$2," "bgtz	$3," @ 25
+func_8007D3F8: reorder 41,38,39,40,37 @ 37-41
+func_8007D3F8: $2 <-> $3 @ 49-54
+func_8007D3F8: subst "sw\s+\$19,D_8009BF68" "lui	$2,%hi(D_8009BF68)" @ 60
+func_8007D3F8: insert_after "sw	$19,0($2)" @ 60
+func_8007D3F8: insert_after "addiu	$2,$2,%lo(D_8009BF68)" @ 60
+func_8007D3F8: reorder 52,51,50,53 @ 50-53
+func_8007D3F8: subst "lui\s+\$3,\(67108864" "lui	$4,(67108864" @ 52
+func_8007D3F8: subst "and\s+\$2,\$2,\$3" "and	$2,$2,$4" @ 53
+func_8007D3F8: insert_label ".LD3F8_loop:" @ 50
+func_8007D3F8: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LD3F8_loop" @ 54
+func_8007D3F8: subst "addu\s+\$7,\$0,\$zero" "addu	$6,$0,$zero" @ 71
+func_8007D3F8: insert_after "addiu	$8,$8,%lo(D_8010368C)" @ 71
+func_8007D3F8: insert_after "lui	$8,%hi(D_8010368C)" @ 71
+func_8007D3F8: subst "addu\s+\$5,\$16,\$zero" "addu	$7,$16,$zero" @ 72
+func_8007D3F8: subst "addu\s+\$6,\$17,\$zero" "addu	$2,$17,$zero" @ 73
+func_8007D3F8: subst "bgez\s+\$6,\s*\.L\d+" "bgez	$2,.LD3F8_pos" @ 74
+func_8007D3F8: insert_label ".LD3F8_pos:" @ 80
+func_8007D3F8: subst "sra\s+\$2,\$6,2" "nop" @ 75
+func_8007D3F8: subst "addu\s+\$6,\$6,3" "addu	$2,$2,3" @ 76
+func_8007D3F8: subst "sra\s+\$2,\$6,2" "sra	$2,$2,2" @ 77
+func_8007D3F8: subst "slt\s+\$2,\$7,\$2" "slt	$2,$6,$2" @ 78
+func_8007D3F8: subst "sll\s+\$8,\$7,2" "sll	$4,$6,2" @ 80
+func_8007D3F8: subst "lw\s+\$4,0\(\$5\)" "lw	$5,0($7)" @ 81
+func_8007D3F8: subst "addu\s+\$5,\$5,4" "addu	$7,$7,4" @ 82
+func_8007D3F8: subst "addu\s+\$7,\$7,1" "addu	$6,$6,1" @ 83
+func_8007D3F8: delete @ 85
+func_8007D3F8: reorder 88,87 @ 87-88
+func_8007D3F8: insert_after "addu	$4,$4,$2" @ 88
+func_8007D3F8: subst "sw\s+\$4,D_8010368C\(\$2\)" "sw	$5,0($4)" @ 90
+func_8007D3F8: subst "addu\s+\$6,\$17,\$zero" "addu	$2,$17,$zero" @ 92
+func_8007D3F8: subst "la\s+\$3,D_8009BF78" "lui	$2,%hi(D_8009BF78)" @ 93
+func_8007D3F8: subst "lw\s+\$2,0\(\$3\)" "lw	$2,%lo(D_8009BF78)($2)" @ 94
+func_8007D3F8: subst "lw\s+\$3,0\(\$3\)" "lw	$3,D_8009BF78" @ 95
+func_8007D3F8: subst "la\s+\$4,D_8009BF78" "lui	$3,%hi(D_8009BF78)" @ 113
+func_8007D3F8: subst "lw\s+\$3,0\(\$4\)" "lw	$3,%lo(D_8009BF78)($3)" @ 114
+func_8007D3F8: subst "lw\s+\$3,0\(\$4\)" "lw	$3,D_8009BF78" @ 120

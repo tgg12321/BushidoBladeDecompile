@@ -1618,212 +1618,93 @@ u32 gpu_GetInfo(u32 a0) {
 void func_8007D3D4(s32 a0, s32 a1, s32 a2) {
     func_8007D3F8(a0, a1, 0, a2);
 }
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007D3F8\n"
-    "    addiu      $sp, $sp, -0x28\n"
-    "    sw         $s3, 28($sp)\n"
-    "    addu       $s3, $a0, $zero\n"
-    "    sw         $s0, 16($sp)\n"
-    "    addu       $s0, $a1, $zero\n"
-    "    sw         $s1, 20($sp)\n"
-    "    addu       $s1, $a2, $zero\n"
-    "    sw         $s2, 24($sp)\n"
-    "    sw         $ra, 32($sp)\n"
-    "    jal        func_8007DC68\n"
-    "    addu      $s2, $a3, $zero\n"
-    "    j          .Lfunc_8007D3F8_8007D444\n"
-    "    nop\n"
-    ".Lfunc_8007D3F8_8007D42C:\n"
-    "    jal        func_8007DC9C\n"
-    "    nop\n"
-    "    bnez       $v0, .Lfunc_8007D3F8_8007D6B8\n"
-    "    addiu     $v0, $zero, -0x1\n"
-    "    jal        func_8007D6D8\n"
-    "    nop\n"
-    ".Lfunc_8007D3F8_8007D444:\n"
-    "    lui        $v0, %hi(D_8009BF78)\n"
-    "    lw         $v0, %lo(D_8009BF78)($v0)\n"
-    "    lui        $v1, %hi(D_8009BF7C)\n"
-    "    lw         $v1, %lo(D_8009BF7C)($v1)\n"
-    "    addiu      $v0, $v0, 0x1\n"
-    "    andi       $v0, $v0, 0x3F\n"
-    "    beq        $v0, $v1, .Lfunc_8007D3F8_8007D42C\n"
-    "    nop\n"
-    "    jal        motion_make_table\n"
-    "    addu      $a0, $zero, $zero\n"
-    "    lui        $v1, %hi(g_gpu_interlace)\n"
-    "    lbu        $v1, %lo(g_gpu_interlace)($v1)\n"
-    "    lui        $at, %hi(D_8009BF80)\n"
-    "    sw         $v0, %lo(D_8009BF80)($at)\n"
-    "    addiu      $v0, $zero, 0x1\n"
-    "    lui        $at, %hi(D_8009BE7C)\n"
-    "    sw         $v0, %lo(D_8009BE7C)($at)\n"
-    "    beqz       $v1, .Lfunc_8007D3F8_8007D4E0\n"
-    "    nop\n"
-    "    lui        $v1, %hi(D_8009BF78)\n"
-    "    lw         $v1, %lo(D_8009BF78)($v1)\n"
-    "    lui        $v0, %hi(D_8009BF7C)\n"
-    "    lw         $v0, %lo(D_8009BF7C)($v0)\n"
-    "    nop\n"
-    "    bne        $v1, $v0, .Lfunc_8007D3F8_8007D540\n"
-    "    nop\n"
-    "    lui        $v0, %hi(g_gpu_dma_chcr)\n"
-    "    lw         $v0, %lo(g_gpu_dma_chcr)($v0)\n"
-    "    nop\n"
-    "    lw         $v0, 0($v0)\n"
-    "    lui        $v1, (0x1000000 >> 16)\n"
-    "    and        $v0, $v0, $v1\n"
-    "    bnez       $v0, .Lfunc_8007D3F8_8007D540\n"
-    "    nop\n"
-    "    lui        $v0, %hi(g_gpu_draw_mode)\n"
-    "    lw         $v0, %lo(g_gpu_draw_mode)($v0)\n"
-    "    nop\n"
-    "    bnez       $v0, .Lfunc_8007D3F8_8007D540\n"
-    "    nop\n"
-    ".Lfunc_8007D3F8_8007D4E0:\n"
-    "    lui        $v1, %hi(g_gpu_stat_reg)\n"
-    "    lw         $v1, %lo(g_gpu_stat_reg)($v1)\n"
-    "    lui        $a0, (0x4000000 >> 16)\n"
-    ".Lfunc_8007D3F8_8007D4EC:\n"
-    "    lw         $v0, 0($v1)\n"
-    "    nop\n"
-    "    and        $v0, $v0, $a0\n"
-    "    beqz       $v0, .Lfunc_8007D3F8_8007D4EC\n"
-    "    nop\n"
-    "    addu       $a0, $s0, $zero\n"
-    "    jalr       $s3\n"
-    "    addu      $a1, $s2, $zero\n"
-    "    lui        $a0, %hi(D_8009BF80)\n"
-    "    lw         $a0, %lo(D_8009BF80)($a0)\n"
-    "    lui        $v0, %hi(D_8009BF68)\n"
-    "    addiu      $v0, $v0, %lo(D_8009BF68)\n"
-    "    sw         $s3, 0($v0)\n"
-    "    lui        $at, %hi(D_8009BF6C)\n"
-    "    sw         $s0, %lo(D_8009BF6C)($at)\n"
-    "    lui        $at, %hi(D_8009BF70)\n"
-    "    sw         $s2, %lo(D_8009BF70)($at)\n"
-    "    jal        motion_make_table\n"
-    "    nop\n"
-    "    j          .Lfunc_8007D3F8_8007D6B8\n"
-    "    addu      $v0, $zero, $zero\n"
-    ".Lfunc_8007D3F8_8007D540:\n"
-    "    lui        $a1, %hi(func_8007D6D8)\n"
-    "    addiu      $a1, $a1, %lo(func_8007D6D8)\n"
-    "    jal        irq_AcknowledgeVblank\n"
-    "    addiu     $a0, $zero, 0x2\n"
-    "    beqz       $s1, .Lfunc_8007D3F8_8007D600\n"
-    "    addu      $a2, $zero, $zero\n"
-    "    lui        $t0, %hi(D_8010368C)\n"
-    "    addiu      $t0, $t0, %lo(D_8010368C)\n"
-    "    addu       $a3, $s0, $zero\n"
-    "    addu       $v0, $s1, $zero\n"
-    ".Lfunc_8007D3F8_8007D568:\n"
-    "    bgez       $v0, .Lfunc_8007D3F8_8007D574\n"
-    "    nop\n"
-    "    addiu      $v0, $v0, 0x3\n"
-    ".Lfunc_8007D3F8_8007D574:\n"
-    "    sra        $v0, $v0, 2\n"
-    "    slt        $v0, $a2, $v0\n"
-    "    beqz       $v0, .Lfunc_8007D3F8_8007D5B8\n"
-    "    sll       $a0, $a2, 2\n"
-    "    lw         $a1, 0($a3)\n"
-    "    addiu      $a3, $a3, 0x4\n"
-    "    lui        $v1, %hi(D_8009BF78)\n"
-    "    lw         $v1, %lo(D_8009BF78)($v1)\n"
-    "    addiu      $a2, $a2, 0x1\n"
-    "    sll        $v0, $v1, 1\n"
-    "    addu       $v0, $v0, $v1\n"
-    "    sll        $v0, $v0, 5\n"
-    "    addu       $v0, $v0, $t0\n"
-    "    addu       $a0, $a0, $v0\n"
-    "    sw         $a1, 0($a0)\n"
-    "    j          .Lfunc_8007D3F8_8007D568\n"
-    "    addu      $v0, $s1, $zero\n"
-    ".Lfunc_8007D3F8_8007D5B8:\n"
-    "    lui        $v0, %hi(D_8009BF78)\n"
-    "    lw         $v0, %lo(D_8009BF78)($v0)\n"
-    "    lui        $v1, %hi(D_8009BF78)\n"
-    "    lw         $v1, %lo(D_8009BF78)($v1)\n"
-    "    sll        $a0, $v0, 1\n"
-    "    addu       $a0, $a0, $v0\n"
-    "    sll        $a0, $a0, 5\n"
-    "    sll        $v0, $v1, 1\n"
-    "    addu       $v0, $v0, $v1\n"
-    "    sll        $v0, $v0, 5\n"
-    "    lui        $v1, %hi(D_8010368C)\n"
-    "    addiu      $v1, $v1, %lo(D_8010368C)\n"
-    "    addu       $v0, $v0, $v1\n"
-    "    lui        $at, %hi(D_80103684)\n"
-    "    addu       $at, $at, $a0\n"
-    "    sw         $v0, %lo(D_80103684)($at)\n"
-    "    j          .Lfunc_8007D3F8_8007D624\n"
-    "    nop\n"
-    ".Lfunc_8007D3F8_8007D600:\n"
-    "    lui        $v1, %hi(D_8009BF78)\n"
-    "    lw         $v1, %lo(D_8009BF78)($v1)\n"
-    "    nop\n"
-    "    sll        $v0, $v1, 1\n"
-    "    addu       $v0, $v0, $v1\n"
-    "    sll        $v0, $v0, 5\n"
-    "    lui        $at, %hi(D_80103684)\n"
-    "    addu       $at, $at, $v0\n"
-    "    sw         $s0, %lo(D_80103684)($at)\n"
-    ".Lfunc_8007D3F8_8007D624:\n"
-    "    lui        $v1, %hi(D_8009BF78)\n"
-    "    lw         $v1, %lo(D_8009BF78)($v1)\n"
-    "    nop\n"
-    "    sll        $v0, $v1, 1\n"
-    "    addu       $v0, $v0, $v1\n"
-    "    sll        $v0, $v0, 5\n"
-    "    lui        $at, %hi(D_80103688)\n"
-    "    addu       $at, $at, $v0\n"
-    "    sw         $s2, %lo(D_80103688)($at)\n"
-    "    lui        $v1, %hi(D_8009BF78)\n"
-    "    lw         $v1, %lo(D_8009BF78)($v1)\n"
-    "    nop\n"
-    "    sll        $v0, $v1, 1\n"
-    "    addu       $v0, $v0, $v1\n"
-    "    sll        $v0, $v0, 5\n"
-    "    lui        $at, %hi(D_80103680)\n"
-    "    addu       $at, $at, $v0\n"
-    "    sw         $s3, %lo(D_80103680)($at)\n"
-    "    lui        $v0, %hi(D_8009BF78)\n"
-    "    lw         $v0, %lo(D_8009BF78)($v0)\n"
-    "    lui        $a0, %hi(D_8009BF80)\n"
-    "    lw         $a0, %lo(D_8009BF80)($a0)\n"
-    "    addiu      $v0, $v0, 0x1\n"
-    "    andi       $v0, $v0, 0x3F\n"
-    "    lui        $at, %hi(D_8009BF78)\n"
-    "    sw         $v0, %lo(D_8009BF78)($at)\n"
-    "    jal        motion_make_table\n"
-    "    nop\n"
-    "    jal        func_8007D6D8\n"
-    "    nop\n"
-    "    lui        $v0, %hi(D_8009BF78)\n"
-    "    lw         $v0, %lo(D_8009BF78)($v0)\n"
-    "    lui        $v1, %hi(D_8009BF7C)\n"
-    "    lw         $v1, %lo(D_8009BF7C)($v1)\n"
-    "    nop\n"
-    "    subu       $v0, $v0, $v1\n"
-    "    andi       $v0, $v0, 0x3F\n"
-    ".Lfunc_8007D3F8_8007D6B8:\n"
-    "    lw         $ra, 32($sp)\n"
-    "    lw         $s3, 28($sp)\n"
-    "    lw         $s2, 24($sp)\n"
-    "    lw         $s1, 20($sp)\n"
-    "    lw         $s0, 16($sp)\n"
-    "    addiu      $sp, $sp, 0x28\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+extern s32 *D_8009BF48;
+extern s32 D_8009BF78;
+extern s32 D_8009BF7C;
+extern s32 func_8007DC68();
+
+s32 func_8007D6D8();                            /* extern */
+s32 func_8007DC9C();                                /* extern */
+s32 irq_AcknowledgeVblank(s32, s32 (*)()); /* extern */
+s32 motion_make_table(s32);                         /* extern */
+extern u8 D_8009BE75;
+extern s32 D_8009BE7C;
+extern s32 D_8009BE80;
+extern s32 *D_8009BF54;
+extern s32 (*D_8009BF68)(s32 *, s32);
+extern s32 *D_8009BF6C;
+extern s32 D_8009BF70;
+extern s32 D_8009BF80;
+extern s32 D_80103680;
+extern s32 D_80103684;
+extern s32 D_80103688;
+extern s32 D_8010368C;
+
+s32 func_8007D3F8(s32 (*arg0)(s32 *, s32), s32 *arg1, s32 arg2, s32 arg3) {
+    s32 *var_a3;
+    s32 temp_a0;
+    s32 temp_a1;
+    s32 var_a2;
+    s32 var_v0;
+    s32 var_v0_2;
+
+    func_8007DC68();
+    goto check_top;
+err_loop:
+    if (func_8007DC9C() != 0) {
+        return -1;
+    }
+    func_8007D6D8();
+check_top:
+    if (((D_8009BF78 + 1) & 0x3F) == D_8009BF7C) {
+        goto err_loop;
+    }
+    {
+        D_8009BF80 = motion_make_table(0);
+        D_8009BE7C = 1;
+        if ((D_8009BE75 == 0) || ((D_8009BF78 == D_8009BF7C) && !(*D_8009BF54 & 0x01000000) && (D_8009BE80 == 0))) {
+            do {
+            } while (!(*D_8009BF48 & 0x04000000));
+            arg0(arg1, arg3);
+            D_8009BF68 = arg0;
+            D_8009BF6C = arg1;
+            D_8009BF70 = arg3;
+            motion_make_table(D_8009BF80);
+            return 0;
+        }
+        irq_AcknowledgeVblank(2, func_8007D6D8);
+        var_a2 = 0;
+        if (arg2 != 0) {
+            s32 v_shift;
+            var_a3 = arg1;
+            var_v0_2 = arg2;
+loop_13:
+            if (var_v0_2 < 0) {
+                var_v0_2 += 3;
+            }
+            v_shift = var_v0_2 >> 2;
+            temp_a0 = var_a2 * 4;
+            if (var_a2 < v_shift) {
+                temp_a1 = *var_a3;
+                var_a3 += 1;
+                var_a2 += 1;
+                *(s32 *)(temp_a0 + ((D_8009BF78 * 0x60) + (s32)&D_8010368C)) = temp_a1;
+                var_v0_2 = arg2;
+                goto loop_13;
+            }
+            *(s32 **)((s32)&D_80103684 + (*(volatile s32 *)&D_8009BF78 * 0x60)) = (s32 *)((*(volatile s32 *)&D_8009BF78 * 0x60) + (s32)&D_8010368C);
+        } else {
+            *(s32 **)((s32)&D_80103684 + (D_8009BF78 * 0x60)) = arg1;
+        }
+        *(s32 *)((s32)&D_80103688 + (*(volatile s32 *)&D_8009BF78 * 0x60)) = arg3;
+        *(s32 (**)(s32 *, s32))((s32)&D_80103680 + (*(volatile s32 *)&D_8009BF78 * 0x60)) = arg0;
+        D_8009BF78 = (D_8009BF78 + 1) & 0x3F;
+        motion_make_table(D_8009BF80);
+        func_8007D6D8();
+        var_v0 = (D_8009BF78 - D_8009BF7C) & 0x3F;
+        return var_v0;
+    }
+}
 __asm__(
     "    .set\tnoat\n"
     "    .set\tnoreorder\n"
