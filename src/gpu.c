@@ -31,48 +31,93 @@ extern s32 D_8009BF08[];
 
 /* --- Functions 0x8007A28C - 0x8007B234 --- */
 
-__asm__(
-    ".set\tnoreorder\n"
-    ".set noreorder\n"
-    ".set\tnoat\n"
-    ".set noat\n"
-    "glabel func_8007A28C\n"
-    "\tsltu\t$v0,$a0,$a1\n"
-    "\tbnez\t$v0,.L8007A2CC\n"
-    "\taddu\t$v0,$a2,$zero\n"
-    "\tblez\t$v0,.L8007A2F0\n"
-    "\taddiu\t$a2,$a2,-1\n"
-    "\taddu\t$a3,$a2,$a0\n"
-    "\taddu\t$a1,$a2,$a1\n"
-    ".L8007A2A8:\n"
-    "\tlbu\t$v0,0($a1)\n"
-    "\taddiu\t$a1,$a1,-1\n"
-    "\taddu\t$v1,$a2,$zero\n"
-    "\taddiu\t$a2,$a2,-1\n"
-    "\tsb\t$v0,0($a3)\n"
-    "\tbgtz\t$v1,.L8007A2A8\n"
-    "\taddiu\t$a3,$a3,-1\n"
-    "\tj\t.L8007A2F0\n"
-    "\tnop\n"
-    ".L8007A2CC:\n"
-    "\tblez\t$v0,.L8007A2F0\n"
-    "\taddiu\t$a2,$a2,-1\n"
-    ".L8007A2D4:\n"
-    "\tlbu\t$v0,0($a1)\n"
-    "\taddiu\t$a1,$a1,1\n"
-    "\taddu\t$v1,$a2,$zero\n"
-    "\taddiu\t$a2,$a2,-1\n"
-    "\tsb\t$v0,0($a0)\n"
-    "\tbgtz\t$v1,.L8007A2D4\n"
-    "\taddiu\t$a0,$a0,1\n"
-    ".L8007A2F0:\n"
-    "\tjr\t$ra\n"
-    "\taddu\t$v0,$a0,$zero\n"
-    ".set\treorder\n"
-    ".set reorder\n"
-    ".set\tat\n"
-    ".set at\n"
-);
+typedef unsigned char u8;
+typedef signed char s8;
+typedef unsigned short u16;
+typedef signed short s16;
+typedef unsigned int u32;
+typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
+typedef volatile u8 vu8;
+typedef volatile s8 vs8;
+typedef volatile u16 vu16;
+typedef volatile s16 vs16;
+typedef volatile u32 vu32;
+typedef volatile s32 vs32;
+#define NULL ((void *)0)
+
+typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
+typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
+typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
+typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
+typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
+typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
+typedef struct CVECTOR { u8 r, g, b, cd; } CVECTOR;
+typedef struct DVECTOR { s16 vx, vy; } DVECTOR;
+typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
+
+/* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
+ * field layout is the union of all observed accesses; m2c picks the type
+ * that best fits each access site. Mirroring smart_match.py's layout. */
+typedef struct GameObj {
+    u8 field_00; u8 field_01; s16 field_02;
+    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
+    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
+    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
+    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
+    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
+    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
+    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
+    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
+    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
+    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
+    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
+    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
+    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
+    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
+    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
+    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
+    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
+    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
+    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
+    s16 field_FA; s32 field_FC;
+} GameObj;
+u8 *func_8007A28C(u8 *dst, u8 *src, s32 n) {
+    s32 cnt;
+    u8 *de;
+    u8 *se;
+    u8 b;
+
+    if ((u32)dst >= (u32)src) {
+        if (n > 0) {
+            n -= 1;
+            de = dst + n;
+            se = src + n;
+            do {
+                b = *se;
+                se -= 1;
+                cnt = n;
+                n -= 1;
+                *de = b;
+                de -= 1;
+            } while (cnt > 0);
+        }
+    } else {
+        if (n > 0) {
+            n -= 1;
+            do {
+                b = *src;
+                src += 1;
+                cnt = n;
+                n -= 1;
+                *dst = b;
+                dst += 1;
+            } while (cnt > 0);
+        }
+    }
+    return dst;
+}
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
