@@ -13,7 +13,7 @@ This prints current state (build status, active function marker, queue freshness
 **Decide what to do next based on the user's directive AND the briefing:**
 
 **Solo mode** (default — user named one function, or said "do the next one"):
-1. **`Active: <funcname>`** → resume that function. Hook is enforcing — `dc.sh next` and `git commit` blocked until you match. Don't revert src/ files (also blocked); edit forward instead. Use `dc.sh diff <funcname>` and `dc.sh verify <funcname>` to see where you are.
+1. **`Active: <funcname>`** → resume that function. Hook is enforcing — all `dc.sh next*` queue pulls and `git commit` are blocked until you match. Don't revert src/ files (also blocked); edit forward instead. Use `dc.sh diff <funcname>` and `dc.sh verify <funcname>` to see where you are.
 2. **`Active: NONE`** → `bash tools/dc.sh next --with-context` (pulls top, sets marker, runs agent-brief).
 
 **Autonomous mode** (user said "run through the queue", "work for N hours", "do the next 10 without stopping"):
@@ -171,9 +171,14 @@ Add these to `base.c` to guide the search:
 
 **FORBIDDEN:** tabling, skipping, declaring "too hard", hunting for easier targets after starting, leaving inline `__asm__()` as the answer, leaving `replace_with_asmfile` as a final state, switching to a different function because you're stuck (stuck = switch *technique*, not target).
 
-**The only valid out-of-scope categories** (auto-detected by `dc.sh classify`):
-- `permanently_blocked:<reason>` — toolchain physically can't emit (`break`, `add`/`sub`/`addi` overflow ops, `$sp` swap, no `jr $ra`)
-- `bios_or_syscall`, `psyq_stdlib_*`, `multi_function`, `aspsx_delay_swra` — accepted-as-asm exceptions
+**The only valid permanent out-of-scope categories** (auto-detected by `dc.sh classify`):
+- `permanently_blocked:<reason>` — toolchain physically can't emit non-div-guard `break`, COP0 ops, `add`/`sub`/`addi` overflow ops, `$sp`/context restore, or data-as-code fragments
+- `bios_or_syscall:*` — canonical BIOS/kernel trampolines or raw syscall/break wrappers
+- `not_code_symbol` / `not_found` — labels that are data/empty symbols or missing from `asm/funcs`
+
+**Structural roadblocks are not permanent asm:** `needs_delay_slot_ra`, `needs_function_split`, `needs_rodata_split`, `needs_lwl_fix`, and `gte_function` are work categories. Some are in the normal queue; `needs_function_split` is deferred until function boundaries are split.
+
+`psyq_stdlib_*` is also not a permanent blocker; it means the function matches a known library idiom and should use the library/C replacement path rather than ordinary one-function matching.
 
 Anything else, you finish. "Hard" / "high score plateau" / "needs novel tooling" are NOT stopping points — they are signals to switch technique or build tooling. See `feedback_workflow_rules.md` THE HARD RULE for full text.
 
@@ -184,19 +189,21 @@ The canonical, ordered work queue lives at `WORK_QUEUE.md` (project root). Pull 
 ```
 bash tools/dc.sh next       # print top 1 AND set active function in .bb2_active_func
 bash tools/dc.sh next 5     # preview top 5 (does not set active marker)
+bash tools/dc.sh next-structural  # pull structural split queue
+bash tools/dc.sh next-asmfix      # pull asmfix retirement queue
 ```
 
-`WORK_QUEUE.md` already filters out the auto-gated out-of-scope categories (`permanently_blocked`, `bios_or_syscall`, `psyq_stdlib_*`, `multi_function`, `aspsx_delay_swra`, `not_found`) so anything in the queue is in-scope and gets finished.
+`WORK_QUEUE.md` has three pullable queues: the default active decomp queue, a structural split queue for `needs_function_split`, and an asmfix retirement queue for `replace_with_asmfile` cleanup. It still filters the true permanent/accepted-asm categories (`permanently_blocked`, `bios_or_syscall`, `not_code_symbol`, `not_found`) out of ordinary decomp work. Anything in a pullable queue is work to finish under that queue's workflow.
 
 **THE HOOK** (`tools/hooks/active_func_guard.sh`, configured in `.claude/settings.local.json`) reads `.bb2_active_func` and BLOCKS the following while a function is active:
 - `git commit` — unless `dc.sh verify <active>` reports MATCH (then it auto-clears the marker and allows the commit)
 - `git checkout` / `git restore` / `git reset --` on `src/*.c`, `regfix.txt`, `asmfix.txt`, `undefined_syms_auto.txt`, `named_syms.txt`, `sdata*.txt`, `expand_lb_funcs.txt`
-- `dc.sh next` — refuses to hand out another function while one is active
+- `dc.sh next` / `next-structural` / `next-asmfix` — refuses to hand out another function while one is active
 
 You literally cannot skip a started function or commit a partial state — the harness blocks the tool calls. This is the enforcement of THE HARD RULE.
 
 **Lifecycle:**
-- `dc.sh next` → writes function name to `.bb2_active_func`
+- `dc.sh next` / `next-structural` / `next-asmfix` → writes function name to `.bb2_active_func`
 - Function matches → `git commit` succeeds → hook auto-clears `.bb2_active_func`
 - `dc.sh refresh-queue` → also clears (belt-and-suspenders)
 - `dc.sh release` → ONLY escape hatch; requires typing the function name to confirm. **User-driven, NEVER agent-driven.** If you think a function should be abandoned, ask the user; do not run `release` yourself.
@@ -211,18 +218,18 @@ After matching: commit, then `bash tools/dc.sh refresh-queue` to regenerate (mat
 - **Manually deleting/editing `.bb2_active_func`** to bypass the hook — directly contradicts the rule the hook enforces. The only valid clear paths are: a successful `git commit` (auto-clear), `dc.sh refresh-queue` (post-match), or user-driven `dc.sh release`.
 - **Reverting WIP src/* files** to "start fresh" on the same function — the hook blocks this for a reason. If the function got into a confusing state, edit forward (write the corrected body via WSL python3) instead of `git checkout`.
 
-If the user says "do the next 5", "work through 10", or anything similar, pull from `dc.sh next` in order. If the user names a specific function, work that one. Either way, no hunting.
+If the user says "do the next 5", "work through 10", or anything similar, pull from `dc.sh next` in order unless they explicitly ask for structural split or asmfix retirement work. If the user names a specific function, work that one. Either way, no hunting.
 
 ### Per function (attempt-first)
 
 The **attempt-first** flow runs all the cheap mechanical steps before the model intervenes. The deterministic pipeline does what it can; you handle the rest.
 
-1. **`dc.sh classify <func>`** — instant pre-dive. Read the recommendation. If it returns one of the out-of-scope categories above, the function is gated out (not your concern this session). For everything else, you finish the function. **Watch for `aliasing_heavy` in `blocker_tags`** — flagged for ptr-chasing patterns where instruction count under-predicts difficulty (queue already pushes them later); use `dc.sh diff` early on these to spot the asymmetric reload patterns.
+1. **`dc.sh classify <func>`** — instant pre-dive. Read the recommendation. If it returns one of the permanent out-of-scope categories above, the function is gated out (not your concern this session). For structural categories such as `needs_delay_slot_ra`, `needs_rodata_split`, `needs_lwl_fix`, or `gte_function`, finish the function using the matching workflow/tooling. **Watch for `aliasing_heavy` in `blocker_tags`** — flagged for ptr-chasing patterns where instruction count under-predicts difficulty (queue already pushes them later); use `dc.sh diff` early on these to spot the asymmetric reload patterns.
 2. **`dc.sh attempt <func>`** — runs setup → smart_match → permute_capped → gen_regfix automatically. Reports MATCHED / NEAR_MISS / HARD / SKIPPED.
    - **MATCHED** — `auto_matches/<func>.c` has the matched C. Use `dc.sh inline-replace <func> auto_matches/<func>.c`.
    - **NEAR_MISS** (score ≤ 200) — review `/tmp/<func>.regfix.suggestions`, run `dc.sh recipes <func>`, apply rules with `dc.sh add-regfix`.
    - **HARD** — pipeline didn't auto-close it. NOT a stopping point. Deepen manually via toolbox: alternative C structures → register asm → long permuter run → compound regfix → named recipes → new pipeline pass if needed. Use `dc.sh diff <func>` for build-context diff (target.s vs build pipeline output).
-   - **SKIPPED** — only fires for the out-of-scope categories above.
+   - **SKIPPED** — only fires for permanent/accepted-asm categories, not-code labels, or recognized library shortcuts.
 3. **Manual deepening** — when NEAR_MISS or HARD, work through the escalation ladder until matched. **Read the penalty-list → technique routing table** in `feedback_matching_playbook.md` to pick the right tool for the symptom. Build new tooling if the existing toolbox can't reach pure C — that's expected.
 
 ### Post-integration: regfix-suggest before manual rules (token-saving)
@@ -257,7 +264,8 @@ Stuck means switch *technique*, not target. The ladder (in order):
 - **Score regression → immediate revert.** Never build on a worse score.
 - **Same score twice on C variants → switch from C to permuter/regfix.** GCC flattens different C structures; repeating doesn't help.
 - **Hypothesis before every attempt.** If you can't articulate one, escalate to the next ladder rung — don't flail.
-- **Multi-session OK.** If the session ends before match, commit best partial state with hand-off notes; the NEXT session resumes the SAME function. Don't start a new function.
+- **You don't decide when the session ends.** A session ends when (a) the platform auto-compacts your context, or (b) the user interrupts. That's it. If your context is still healthy and the user hasn't told you to stop, you have not earned the right to wrap up. "I've made substantial progress" / "next session can continue" / "diminishing returns" / "this needs N more rules" are NOT session-end events — they are signs you stopped doing the work. The Stop-event hook (`tools/hooks/grind_check.sh`) detects wrap-up language and rejects the stop, forcing you to keep going.
+- **If you ARE auto-compacted before match,** the partial state stays in the working tree (the hook blocks `git commit` anyway) and the next session inherits the active marker. The quit-counter (`.bb2_quit_log.json`, surfaced by `dc.sh start`) tracks how many times this has happened per function. Don't be the agent that adds to that count.
 
 ### DO NOT ASK FOR DIRECTION
 
@@ -270,10 +278,11 @@ The user has explicitly directed: keep working until the function is matched. As
 - "Want me to run the permuter overnight?" — yes, just run it.
 - "I'm stuck. Should I switch to a different function?" — no, never. Switch *technique*, not target.
 - Status reports / progress dumps mid-work.
+- **Wrap-up summaries while the function is unmatched.** Phrases like "next session can continue", "preserved in the working tree", "I've made substantial progress", "diminishing returns", "given the volume", "let me leave it here", "[N]+ more rules needed", "good place to stop", "let me wrap up", "for now", "this iteration", "I've exhausted [angles]" are all trip-wires for the Stop-event hook (`tools/hooks/grind_check.sh`). Once you start narrating progress instead of doing the work, you've quit. Don't.
 
 **The only times you stop and wait for the user:**
 1. Function is matched + committed; either batch is done or it was a one-off ("do this function").
-2. Classifier returned an out-of-scope category — function is gated out by the rule.
+2. Classifier returned a permanent out-of-scope category — function is gated out by the rule.
 3. Genuinely catastrophic situation: WSL broken, build fundamentally corrupted, repo in an unexpected state requiring real decision. NOT "regfix is hard" or "I've made N attempts."
 
 If tempted to check in because you're stuck: switch technique, not direction. Build the tool. Run the long permuter. Write the 60 regfix rules. Asking permission for in-scope decomp work is itself a violation.
@@ -309,7 +318,10 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 
 | Command | Purpose |
 |---------|---------|
-| `dc.sh classify <func>` | Pre-dive report: size, blockers, BIOS/syscall/PsyQ tags, Kengo hint. Returns a `recommendation` (easy_attempt / standard / needs_rodata_split / multi_function / bios_or_syscall / psyq_stdlib_<n> / gte_function / aspsx_delay_swra / needs_lwl_fix / **permanently_blocked:&lt;reason&gt;**). The `permanently_blocked` tag is auto-detected from asm patterns (`break`, `add`/`sub`/`addi`, `$sp` swap, no `jr $ra`) plus the manual list in `known_blocked.txt`. |
+| `dc.sh next [N]` | Pull the next ordinary active-decomp queue item. With no `N`, claims top 1 and writes `.bb2_active_func`; with `N`, previews without claiming. |
+| `dc.sh next-structural [N]` | Pull/preview the structural split queue (`needs_function_split`). |
+| `dc.sh next-asmfix [N]` | Pull/preview the asmfix retirement queue (`replace_with_asmfile` cleanup). |
+| `dc.sh classify <func>` | Pre-dive report: size, blockers, BIOS/syscall/PsyQ tags, Kengo hint. Returns a `recommendation` (easy_attempt / standard / needs_delay_slot_ra / needs_function_split / needs_rodata_split / bios_or_syscall / psyq_stdlib_<n> / gte_function / needs_lwl_fix / not_code_symbol / **permanently_blocked:&lt;reason&gt;**). The `permanently_blocked` tag is auto-detected from asm patterns (non-div-guard `break`, COP0, `add`/`sub`/`addi`, `$sp`/context restore, data-as-code) plus the manual list in `known_blocked.txt`. |
 | `dc.sh attempt <func>` | Full mechanical pipeline: classify → setup → smart_match → permute_capped → gen_regfix. Reports MATCHED / NEAR_MISS / HARD / SKIPPED with elapsed time. **Run this first**; only intervene manually for NEAR_MISS. |
 | `dc.sh smart <func>` | smart_match.py: 16 automated transformation strategies (declaration reorder, cast variations, do-while barriers, register hints, etc). Pure-C exploration before permuter. |
 | `dc.sh permute <func> [--max-time N] [--max-flat-seconds K]` | permute_capped.py: bounded permuter run with flat-score early termination. |
