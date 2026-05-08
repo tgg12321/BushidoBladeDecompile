@@ -266,6 +266,30 @@ def swap_registers_in_line(line, swap_list, insn_idx):
     return line
 
 
+def _dump_lines(lines, label, func_name=None):
+    """Debug: dump (position, idx, text) when REGFIX_DEBUG_DUMP env var matches func name."""
+    target = os.environ.get('REGFIX_DEBUG_DUMP', '')
+    if not target or (func_name and target != func_name):
+        return
+    range_env = os.environ.get('REGFIX_DEBUG_RANGE', '')
+    rng = None
+    if range_env:
+        m = re.match(r'(\d+)-(\d+)', range_env)
+        if m:
+            rng = (int(m.group(1)), int(m.group(2)))
+    print(f"\n# === REGFIX DEBUG: {label} ===", file=sys.stderr)
+    pos = 0
+    for text, idx in lines:
+        text_strip = text.rstrip()
+        if idx is not None:
+            if rng is None or rng[0] <= pos <= rng[1]:
+                print(f"#   pos {pos:4d} | idx {idx:4d} | {text_strip}", file=sys.stderr)
+            pos += 1
+        else:
+            if rng is None or (pos > 0 and rng[0] <= pos - 1 <= rng[1]):
+                print(f"#   pos  --- | idx  --- | {text_strip}", file=sys.stderr)
+
+
 def process_function(lines, func_config):
     """Process a collected function's lines: apply swaps, inserts, then reorders.
 
@@ -275,6 +299,8 @@ def process_function(lines, func_config):
     subst_list = func_config.get('substs', [])
     insert_list = func_config.get('inserts', [])
     reorder_list = func_config.get('reorders', [])
+    fname = func_config.get('__name__')
+    _dump_lines(lines, "Phase 0: initial (post-maspsx)", fname)
 
     # Phase 1: Apply register swaps (on original indices)
     if swap_list:
@@ -430,6 +456,8 @@ def process_function(lines, func_config):
                     renumbered.append((text, idx))
             lines = renumbered
 
+    _dump_lines(lines, "Phase 2: after deletes", fname)
+
     # Merge in any inserts queued by drain_delay (before jal_idx, with jal_idx as the insert point)
     insert_list = insert_list + extra_inserts
 
@@ -461,6 +489,8 @@ def process_function(lines, func_config):
                     renumbered.append((text, idx))
             lines = renumbered
 
+    _dump_lines(lines, "Phase 3: after inserts", fname)
+
     # Phase 3.5: Apply insert_after (sorted by index descending to preserve positions)
     insert_after_list = func_config.get('insert_afters', [])
     if insert_after_list:
@@ -491,6 +521,8 @@ def process_function(lines, func_config):
                     renumbered.append((text, idx))
             lines = renumbered
 
+    _dump_lines(lines, "Phase 3.5: after insert_afters", fname)
+
     # Phase 3.6: Apply insert_label (sorted by index descending; no index shift)
     insert_label_list = func_config.get('insert_labels', [])
     if insert_label_list:
@@ -510,9 +542,11 @@ def process_function(lines, func_config):
             new_line = f"{label_text}\n"
             lines.insert(insert_pos, (new_line, None))
 
+    _dump_lines(lines, "Phase 3.6: after insert_labels (PRE-REORDER state — use these IDXs)", fname)
+
     # Phase 4: Apply instruction reorders (on post-insert indices)
     # Each instruction carries any preceding non-instruction lines (labels, .set, comments)
-    for reorder_start, reorder_end, new_order in reorder_list:
+    for ri, (reorder_start, reorder_end, new_order) in enumerate(reorder_list):
         # Build map of insn_idx -> line position
         idx_to_pos = {}
         for pos, (text, idx) in enumerate(lines):
@@ -614,6 +648,10 @@ def process_function(lines, func_config):
 
         # Replace the span
         lines = lines[:span_start] + reordered_section + lines[span_end:]
+
+        _dump_lines(lines, f"Phase 4.{ri}: after reorder #{ri} (range {reorder_start}-{reorder_end} -> {new_order})", fname)
+
+    _dump_lines(lines, "Phase FINAL", fname)
 
     return lines
 
