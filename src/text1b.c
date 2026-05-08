@@ -22828,197 +22828,89 @@ void func_8005D46C(s32 arg0, s32 arg1) {
     s.ret = ret;
     func_80073728((GameObj *)(&s), 0);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_8005D554\n"
-    "    .word 0x8F8301A0\n"
-    "    addiu  $sp,$sp,-120\n"
-    "    sw  $s0,80($sp)\n"
-    "    addu  $s0,$a1,$zero\n"
-    "    sw  $ra,116($sp)\n"
-    "    sw  $fp,112($sp)\n"
-    "    sw  $s7,108($sp)\n"
-    "    sw  $s6,104($sp)\n"
-    "    sw  $s5,100($sp)\n"
-    "    sw  $s4,96($sp)\n"
-    "    sw  $s3,92($sp)\n"
-    "    sw  $s2,88($sp)\n"
-    "    sw  $s1,84($sp)\n"
-    "    bgez  $v1,.L8005D594\n"
-    "    addu  $v0,$v1,$zero\n"
-    "    addiu  $v0,$v1,3\n"
-    ".L8005D594:\n"
-    "    sra  $v0,$v0,2\n"
-    "    sll  $v0,$v0,2\n"
-    "    subu  $v0,$v1,$v0\n"
-    "    .word 0xAF8201A0\n"
-    "    blez  $s0,.L8005D5B0\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    addiu  $s0,$s0,-1\n"
-    ".L8005D5B0:\n"
-    "    jal  func_80079154\n"
-    "    addu  $s2,$zero,$zero\n"
-    "    .word 0x8F83034C\n"
-    "    nop\n"
-    "    xor  $v1,$v1,$v0\n"
-    "    sll  $v0,$v1,2\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,2\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,5\n"
-    "    .word 0xAF83034C\n"
-    "    jal  func_80079154\n"
-    "    srl  $s5,$v0,15\n"
-    "    .word 0x8F83034C\n"
-    "    nop\n"
-    "    xor  $v1,$v1,$v0\n"
-    "    sll  $v0,$v1,3\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,3\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,2\n"
-    "    .word 0xAF83034C\n"
-    "    .word 0x8F8301A0\n"
-    "    nop\n"
-    "    addiu  $v1,$v1,1\n"
-    "    sll  $v1,$v1,1\n"
-    "    blez  $v1,.L8005D7D0\n"
-    "    srl  $s4,$v0,15\n"
-    "    addiu  $s3,$zero,256\n"
-    "    addiu  $s6,$zero,1\n"
-    "    sll  $v0,$s0,4\n"
-    "    subu  $v0,$v0,$s0\n"
-    "    sll  $s0,$v0,2\n"
-    "    lui  $fp,%hi(D_8009B2E0)\n"
-    "    addiu  $fp,$fp,%lo(D_8009B2E0)\n"
-    "    addiu  $v0,$fp,12\n"
-    "    addu  $v0,$s0,$v0\n"
-    "    sw  $v0,64($sp)\n"
-    "    lui  $s7,%hi(D_8009B388)\n"
-    "    addiu  $s7,$s7,%lo(D_8009B388)\n"
-    ".L8005D650:\n"
-    "    addu  $v0,$s0,$fp\n"
-    "    sb  $zero,56($sp)\n"
-    "    sw  $v0,16($sp)\n"
-    "    jal  func_80079154\n"
-    "    sw  $s7,20($sp)\n"
-    "    .word 0x8F83034C\n"
-    "    sw  $s3,52($sp)\n"
-    "    sw  $s3,48($sp)\n"
-    "    xor  $v1,$v1,$v0\n"
-    "    .word 0xAF83034C\n"
-    "    jal  func_80079154\n"
-    "    addiu  $s2,$s2,1\n"
-    "    .word 0x8F83034C\n"
-    "    addiu  $a0,$s5,-25\n"
-    "    xor  $v1,$v1,$v0\n"
-    "    sll  $v0,$v1,1\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,3\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,1\n"
-    "    srl  $v0,$v0,15\n"
-    "    addu  $a0,$a0,$v0\n"
-    "    .word 0xAF83034C\n"
-    "    jal  func_80079154\n"
-    "    sw  $a0,40($sp)\n"
-    "    addiu  $a0,$sp,16\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    .word 0x8F83034C\n"
-    "    addiu  $a2,$s4,-12\n"
-    "    sw  $zero,32($sp)\n"
-    "    sw  $s6,36($sp)\n"
-    "    sw  $s1,28($sp)\n"
-    "    xor  $v1,$v1,$v0\n"
-    "    sll  $v0,$v1,1\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,3\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    srl  $v0,$v0,15\n"
-    "    addu  $a2,$a2,$v0\n"
-    "    .word 0xAF83034C\n"
-    "    jal  func_80073728\n"
-    "    sw  $a2,44($sp)\n"
-    "    .word 0x8F83034C\n"
-    "    lui  $a3,%hi(D_8009B390)\n"
-    "    addiu  $a3,$a3,%lo(D_8009B390)\n"
-    "    sw  $a3,20($sp)\n"
-    "    lw  $a3,64($sp)\n"
-    "    addu  $s1,$v0,$zero\n"
-    "    sb  $zero,56($sp)\n"
-    "    sw  $s3,52($sp)\n"
-    "    sw  $s3,48($sp)\n"
-    "    andi  $v1,$v1,1\n"
-    "    sll  $v0,$v1,1\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $v0,$a3,$v0\n"
-    "    jal  func_80079154\n"
-    "    sw  $v0,16($sp)\n"
-    "    .word 0x8F83034C\n"
-    "    addiu  $a0,$s5,-50\n"
-    "    xor  $v1,$v1,$v0\n"
-    "    sll  $v0,$v1,1\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,3\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,2\n"
-    "    srl  $v0,$v0,15\n"
-    "    addu  $a0,$a0,$v0\n"
-    "    .word 0xAF83034C\n"
-    "    jal  func_80079154\n"
-    "    sw  $a0,40($sp)\n"
-    "    addiu  $a0,$sp,16\n"
-    "    addu  $a1,$zero,$zero\n"
-    "    .word 0x8F83034C\n"
-    "    addiu  $a2,$s4,-25\n"
-    "    sw  $zero,32($sp)\n"
-    "    sw  $s6,36($sp)\n"
-    "    sw  $s1,28($sp)\n"
-    "    xor  $v1,$v1,$v0\n"
-    "    sll  $v0,$v1,1\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,3\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,1\n"
-    "    srl  $v0,$v0,15\n"
-    "    addu  $a2,$a2,$v0\n"
-    "    .word 0xAF83034C\n"
-    "    jal  func_80073728\n"
-    "    sw  $a2,44($sp)\n"
-    "    .word 0x8F8301A0\n"
-    "    nop\n"
-    "    addiu  $v1,$v1,1\n"
-    "    sll  $v1,$v1,1\n"
-    "    slt  $v1,$s2,$v1\n"
-    "    bnez  $v1,.L8005D650\n"
-    "    addu  $s1,$v0,$zero\n"
-    ".L8005D7D0:\n"
-    "    .word 0x8F8301A0\n"
-    "    addu  $v0,$s1,$zero\n"
-    "    addiu  $v1,$v1,1\n"
-    "    .word 0xAF8301A0\n"
-    "    lw  $ra,116($sp)\n"
-    "    lw  $fp,112($sp)\n"
-    "    lw  $s7,108($sp)\n"
-    "    lw  $s6,104($sp)\n"
-    "    lw  $s5,100($sp)\n"
-    "    lw  $s4,96($sp)\n"
-    "    lw  $s3,92($sp)\n"
-    "    lw  $s2,88($sp)\n"
-    "    lw  $s1,84($sp)\n"
-    "    lw  $s0,80($sp)\n"
-    "    addiu  $sp,$sp,120\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+s32 func_8005D554(s32 arg0, s32 arg1) {
+    extern s32 func_80079154(void);
+    extern u8 D_8009B2E0;
+    extern s32 D_8009B388;
+    extern s32 D_8009B390;
+    extern s32 D_800A326C;
+    extern s32 D_800A3418;
+    S46C s;
+    s32 v3;
+    s32 v0;
+    s32 i;
+    u32 r5;
+    u32 r4;
+    s32 ret;
+    s32 stride;
+    s32 a0_offset;
+    s32 a2_offset;
+    s32 c100;
+    s32 c1;
+    s32 *p_b388;
+    u8 *p_b2e0;
+    s32 *base_offset;
+
+    v3 = D_800A326C;
+    v0 = v3;
+    if (v3 < 0) v0 = v3 + 3;
+    D_800A326C -= (v0 >> 2) * 4;
+
+    ret = arg0;
+    if (arg1 > 0) arg1 -= 1;
+    i = 0;
+
+    D_800A3418 ^= func_80079154();
+    r5 = ((u32)(D_800A3418 * 0x260)) >> 0xF;
+    D_800A3418 ^= func_80079154();
+    r4 = ((u32)(D_800A3418 * 0xDC)) >> 0xF;
+
+    if (((D_800A326C + 1) * 2) > 0) {
+        c100 = 0x100;
+        c1 = 1;
+        stride = arg1 * 0x3C;
+        p_b2e0 = (u8 *)&D_8009B2E0;
+        base_offset = (s32 *)(p_b2e0 + stride + 0xC);
+        p_b388 = &D_8009B388;
+        do {
+            s.byte28 = 0;
+            s.p0 = (void *)(p_b2e0 + stride);
+            s.p1 = p_b388;
+            D_800A3418 ^= func_80079154();
+            i += 1;
+            s.c24 = c100;
+            s.c20 = c100;
+            D_800A3418 ^= func_80079154();
+            a0_offset = (s32)r5 - 0x19 + ((u32)(D_800A3418 * 0x32) >> 0xF);
+            s.zero18 = a0_offset;
+            D_800A3418 ^= func_80079154();
+            a2_offset = (s32)r4 - 0xC + ((u32)(D_800A3418 * 0x19) >> 0xF);
+            s.zero10 = 0;
+            s.one14 = c1;
+            s.ret = ret;
+            s.zero1C = a2_offset;
+            ret = func_80073728((GameObj *)&s, 0);
+
+            s.byte28 = 0;
+            s.c24 = c100;
+            s.c20 = c100;
+            s.p1 = &D_8009B390;
+            s.p0 = (void *)((u8 *)base_offset + (D_800A3418 & 1) * 0xC);
+            D_800A3418 ^= func_80079154();
+            a0_offset = (s32)r5 - 0x32 + ((u32)(D_800A3418 * 0x64) >> 0xF);
+            s.zero18 = a0_offset;
+            D_800A3418 ^= func_80079154();
+            a2_offset = (s32)r4 - 0x19 + ((u32)(D_800A3418 * 0x32) >> 0xF);
+            s.zero10 = 0;
+            s.one14 = c1;
+            s.ret = ret;
+            s.zero1C = a2_offset;
+            ret = func_80073728((GameObj *)&s, 0);
+        } while (i < ((D_800A326C + 1) * 2));
+    }
+    D_800A326C += 1;
+    return ret;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"

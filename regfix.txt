@@ -4269,7 +4269,7 @@ func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
 func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
 func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
 func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
-func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L917" @ 110
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L925" @ 110
 # Move convergence point: insert label after lw $7,16(sp)
 func_80074B18: insert_label ".LC846:" @ 116
 func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
@@ -4304,7 +4304,7 @@ func_8007352C: subst "addu\s+\$3,\$23,-1" "addu	$2,$23,-1" @ 107
 func_8007352C: subst "addu\s+\$23,\$3,\$zero" "addu	$23,$2,$zero" @ 108
 func_8007352C: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 109
 # Idx 44 binary = idx 45 maspsx (1 nop earlier deleted): change y-check beq target to .L845 (next_compute_v_tail)
-func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L897" @ 45
+func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L905" @ 45
 # DispSleepMenuTex region scheduling - net 0 instructions
 func_8007352C: delete @ 95
 func_8007352C: delete @ 100
@@ -4492,3 +4492,96 @@ func_800770B8: insert_after "addu $2,$6,1" @ 100
 # Pre-regfix idx for beq is 99 (subst uses original idx).
 func_800770B8: insert_label ".L_post988:" @ 108
 func_800770B8: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L_post988" @ 99
+
+
+
+
+# regfix-suggest: auto-generated rules for func_8005D554
+func_8005D554: subst "subu\s+\$sp,\$sp,104" "addiu	$29,$29,-120" @ 1  # auto: was `subu	$sp,$sp,104` -> `addiu $29,$29,-120`
+func_8005D554: subst "sw\s+\$16,64\(\$sp\)" "sw	$16,80($29)" @ 2  # auto: was `sw	$16,64($sp)` -> `sw $16,80($29)`
+func_8005D554: subst "sw\s+\$31,100\(\$sp\)" "sw	$31,116($29)" @ 4  # auto: was `sw	$31,100($sp)` -> `sw $31,116($29)`
+func_8005D554: subst "sw\s+\$fp,96\(\$sp\)" "sw	$30,112($29)" @ 5  # auto: was `sw	$fp,96($sp)` -> `sw $30,112($29)`
+func_8005D554: subst "sw\s+\$23,92\(\$sp\)" "sw	$23,108($29)" @ 6  # auto: was `sw	$23,92($sp)` -> `sw $23,108($29)`
+func_8005D554: subst "sw\s+\$22,88\(\$sp\)" "sw	$22,104($29)" @ 7  # auto: was `sw	$22,88($sp)` -> `sw $22,104($29)`
+func_8005D554: subst "sw\s+\$21,84\(\$sp\)" "sw	$21,100($29)" @ 8  # auto: was `sw	$21,84($sp)` -> `sw $21,100($29)`
+func_8005D554: subst "sw\s+\$20,80\(\$sp\)" "sw	$20,96($29)" @ 9  # auto: was `sw	$20,80($sp)` -> `sw $20,96($29)`
+func_8005D554: subst "sw\s+\$19,76\(\$sp\)" "sw	$19,92($29)" @ 10  # auto: was `sw	$19,76($sp)` -> `sw $19,92($29)`
+func_8005D554: subst "sw\s+\$18,72\(\$sp\)" "sw	$18,88($29)" @ 11  # auto: was `sw	$18,72($sp)` -> `sw $18,88($29)`
+func_8005D554: subst "sw\s+\$17,68\(\$sp\)" "sw	$17,84($29)" @ 12  # auto: was `sw	$17,68($sp)` -> `sw $17,84($29)`
+func_8005D554: subst "addu\s+\$19,\$0,\$zero" "addu	$18,$0,$0" @ 24  # auto: was `addu	$19,$0,$zero` -> `addu $18,$0,$0`
+func_8005D554: subst "addiu\s+\$18,\$zero,256" "addiu	$19,$0,256" @ 51  # auto: was `addiu	$18,$zero,256` -> `addiu $19,$0,256`
+func_8005D554: delete @ 60  # auto (replace): drop `la	$6,D_8009B388`
+func_8005D554: delete @ 59  # auto (replace): drop `addu	$2,$23,$16`
+func_8005D554: delete @ 58  # auto (replace): drop `addu	$fp,$2,12`
+func_8005D554: delete @ 57  # auto (replace): drop `addu	$2,$16,$23`
+func_8005D554: delete @ 56  # auto (replace): drop `la	$23,D_8009B2E0`
+func_8005D554: insert_after "addu $2,$16,$30" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "addiu $23,$23,%lo(D_8009B388)" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "lui $23,%hi(D_8009B388)" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "sw $2,64($29)" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "addu $2,$16,$2" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "addiu $2,$30,12" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "addiu $30,$30,%lo(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "lui $30,%hi(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
+func_8005D554: subst "sw\s+\$6,20\(\$sp\)" "sw	$23,20($29)" @ 64  # auto: was `sw	$6,20($sp)` -> `sw $23,20($29)`
+func_8005D554: subst "sw\s+\$18,52\(\$sp\)" "sw	$19,52($29)" @ 66  # auto: was `sw	$18,52($sp)` -> `sw $19,52($29)`
+func_8005D554: subst "sw\s+\$18,48\(\$sp\)" "sw	$19,48($29)" @ 67  # auto: was `sw	$18,48($sp)` -> `sw $19,48($29)`
+func_8005D554: subst "addu\s+\$19,\$19,1" "addiu	$18,$18,1" @ 71  # auto: was `addu	$19,$19,1` -> `addiu $18,$18,1`
+func_8005D554: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-25" @ 73  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-25`
+func_8005D554: delete @ 82  # auto (replace): drop `addu	$2,$21,$2`
+func_8005D554: delete @ 81  # auto (replace): drop `addu	$2,$2,-25`
+func_8005D554: insert_after "addu $4,$4,$2" @ 80  # auto (replace): target has after idx 80
+func_8005D554: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 85  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
+func_8005D554: insert_after "addu $5,$0,$0" @ 86  # auto: target has this after idx 86
+func_8005D554: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-12" @ 88  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-12`
+func_8005D554: delete @ 99  # auto (replace): drop `addu	$2,$20,$2`
+func_8005D554: delete @ 98  # auto (replace): drop `addu	$2,$2,-12`
+func_8005D554: insert_after "addu $6,$6,$2" @ 97  # auto (replace): target has after idx 97
+func_8005D554: delete @ 102  # auto (replace): drop `sw	$2,44($sp)`
+func_8005D554: insert_after "lw $7,64($29)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: insert_after "sw $7,20($29)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: insert_after "addiu $7,$7,%lo(D_8009B390)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: insert_after "lui $7,%hi(D_8009B390)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: insert_after "lw $3,%gp_rel(D_800A3418)($28)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: insert_after "sw $6,44($29)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: delete @ 105  # auto: extra `la	$2,D_8009B390`
+func_8005D554: delete @ 104  # auto: extra `lw	$3,%gp_rel(D_800A3418)($gp)`
+func_8005D554: delete @ 109  # auto (replace): drop `sw	$2,20($sp)`
+func_8005D554: delete @ 108  # auto (replace): drop `sw	$18,48($sp)`
+func_8005D554: delete @ 107  # auto (replace): drop `sw	$18,52($sp)`
+func_8005D554: insert_after "sw $19,48($29)" @ 106  # auto (replace): target has after idx 106
+func_8005D554: insert_after "sw $19,52($29)" @ 106  # auto (replace): target has after idx 106
+func_8005D554: subst "addu\s+\$2,\$fp,\$2" "addu	$2,$7,$2" @ 114  # auto: was `addu	$2,$fp,$2` -> `addu $2,$7,$2`
+func_8005D554: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-50" @ 118  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-50`
+func_8005D554: delete @ 127  # auto (replace): drop `addu	$2,$21,$2`
+func_8005D554: delete @ 126  # auto (replace): drop `addu	$2,$2,-50`
+func_8005D554: insert_after "addu $4,$4,$2" @ 125  # auto (replace): target has after idx 125
+func_8005D554: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 130  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
+func_8005D554: insert_after "addu $5,$0,$0" @ 131  # auto: target has this after idx 131
+func_8005D554: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-25" @ 133  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-25`
+func_8005D554: delete @ 145  # auto (replace): drop `addu	$2,$20,$2`
+func_8005D554: delete @ 144  # auto (replace): drop `addu	$2,$2,-25`
+func_8005D554: insert_after "addu $6,$6,$2" @ 143  # auto (replace): target has after idx 143
+func_8005D554: subst "sw\s+\$2,44\(\$sp\)" "sw	$6,44($29)" @ 148  # auto: was `sw	$2,44($sp)` -> `sw $6,44($29)`
+func_8005D554: subst "slt\s+\$3,\$19,\$3" "slt	$3,$18,$3" @ 153  # auto: was `slt	$3,$19,$3` -> `slt $3,$18,$3`
+func_8005D554: subst "lw\s+\$31,100\(\$sp\)" "lw	$31,116($29)" @ 160  # auto: was `lw	$31,100($sp)` -> `lw $31,116($29)`
+func_8005D554: subst "lw\s+\$fp,96\(\$sp\)" "lw	$30,112($29)" @ 161  # auto: was `lw	$fp,96($sp)` -> `lw $30,112($29)`
+func_8005D554: subst "lw\s+\$23,92\(\$sp\)" "lw	$23,108($29)" @ 162  # auto: was `lw	$23,92($sp)` -> `lw $23,108($29)`
+func_8005D554: subst "lw\s+\$22,88\(\$sp\)" "lw	$22,104($29)" @ 163  # auto: was `lw	$22,88($sp)` -> `lw $22,104($29)`
+func_8005D554: subst "lw\s+\$21,84\(\$sp\)" "lw	$21,100($29)" @ 164  # auto: was `lw	$21,84($sp)` -> `lw $21,100($29)`
+func_8005D554: subst "lw\s+\$20,80\(\$sp\)" "lw	$20,96($29)" @ 165  # auto: was `lw	$20,80($sp)` -> `lw $20,96($29)`
+func_8005D554: subst "lw\s+\$19,76\(\$sp\)" "lw	$19,92($29)" @ 166  # auto: was `lw	$19,76($sp)` -> `lw $19,92($29)`
+func_8005D554: subst "lw\s+\$18,72\(\$sp\)" "lw	$18,88($29)" @ 167  # auto: was `lw	$18,72($sp)` -> `lw $18,88($29)`
+func_8005D554: subst "lw\s+\$17,68\(\$sp\)" "lw	$17,84($29)" @ 168  # auto: was `lw	$17,68($sp)` -> `lw $17,84($29)`
+func_8005D554: subst "lw\s+\$16,64\(\$sp\)" "lw	$16,80($29)" @ 169  # auto: was `lw	$16,64($sp)` -> `lw $16,80($29)`
+func_8005D554: subst "addu\s+\$sp,\$sp,104" "addiu	$29,$29,120" @ 170  # auto: was `addu	$sp,$sp,104` -> `addiu $29,$29,120`
+func_8005D554: reorder 89,84,85,86,87,96,88,90,91,92,93,94,95 @ 84-96
+func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+func_8005D554: reorder 165,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164 @ 148-165
+func_8005D554: reorder 108,101,102,113,114,115,116,117,118,103,104,124,125,105,106,107,109,110,111,112,119,120,121,122,123 @ 101-125
+func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+func_8005D554: reorder 153,135,136,137,138,139,140,141,142,143,144,145,146,148,147,149,150,151,152 @ 135-153
+func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+func_8005D554: reorder 145,130,131,132,133,152,134,135,136,137,138,139,140,141,142,143,144,146,165,147,148,149,150,151,153,154,155,156,157,158,159,160,161,162,163,164 @ 130-165
+func_8005D554: insert_label ".L_loopfix:" @ 62
+func_8005D554: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.L_loopfix" @ 154
