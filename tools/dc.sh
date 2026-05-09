@@ -42,6 +42,7 @@
 #   bash tools/dc.sh queue-easy [N]                — easiest N queue entries by quick-win score
 #   bash tools/dc.sh next-structural [N]           — pull/preview structural split queue
 #   bash tools/dc.sh next-asmfix [N]               — pull/preview asmfix retirement queue
+#   bash tools/dc.sh fix-asmfix-drift [--apply]    — auto-fix .L<N> rename drift in asmfix.txt
 #   bash tools/dc.sh run-log <event> [args...]    — log an autonomous-run event (run-start, func-*, run-end)
 #   bash tools/dc.sh run-summary [--all|--json]   — summarize autonomous run(s)
 #
@@ -708,6 +709,16 @@ print(f'Replaced {func} in {src}')
         # errors (only fixes rules where the build genuinely broke).
         shift || true
         python3 tools/fix_label_drift.py "$@" 2>&1
+        ;;
+
+    fix-asmfix-drift)
+        # Auto-fix .L<N> drift in asmfix.txt rename rules (the asmfix-slice
+        # version of fix-label-drift). Useful after adding pure-C stubs that
+        # shift file-wide GCC labels: each stub adds 1 to the .L<N> counter
+        # for all subsequent funcs in the same .c file, breaking
+        # rename ".L<N>" ".L<HEX_ADDR>" rules. This tool re-resolves the
+        # right .L<N> from the absolute address in the rename target.
+        python3 tools/fix_asmfix_drift.py "$@" 2>&1
         ;;
 
     diff)
