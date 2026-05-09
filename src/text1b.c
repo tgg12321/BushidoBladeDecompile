@@ -839,257 +839,102 @@ void func_80048F58(s32 a0, s32 a1) {
         dst++;
     } while (i < 7);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80048FFC\n"
-    "    addiu  $sp,$sp,-160\n"
-    "    sll  $v0,$a0,2\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,2\n"
-    "    subu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $v0,$v0,$a0\n"
-    "    sll  $v0,$v0,2\n"
-    "    lui  $v1,%hi(g_snd_ch_data)\n"
-    "    addiu  $v1,$v1,%lo(g_snd_ch_data)\n"
-    "    sw  $s6,144($sp)\n"
-    "    addu  $s6,$v0,$v1\n"
-    "    addiu  $t2,$s6,292\n"
-    "    addiu  $a2,$zero,-64\n"
-    "    lui  $v1,%hi(D_800A36AC)\n"
-    "    lw  $v1,%lo(D_800A36AC)($v1)\n"
-    "    addiu  $a3,$zero,-256\n"
-    "    sw  $ra,156($sp)\n"
-    "    sw  $fp,152($sp)\n"
-    "    sw  $s7,148($sp)\n"
-    "    sw  $s5,140($sp)\n"
-    "    sw  $s4,136($sp)\n"
-    "    sw  $s3,132($sp)\n"
-    "    sw  $s2,128($sp)\n"
-    "    sw  $s1,124($sp)\n"
-    "    sw  $s0,120($sp)\n"
-    "    lw  $s7,0($s6)\n"
-    "    andi  $v1,$v1,1\n"
-    "    sll  $v0,$v1,3\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,4\n"
-    "    addiu  $v0,$v0,4\n"
-    "    lhu  $v1,292($s6)\n"
-    "    addu  $s4,$s6,$v0\n"
-    "    sw  $t2,24($sp)\n"
-    "    sll  $v0,$v1,16\n"
-    "    sra  $a0,$v0,16\n"
-    "    and  $v1,$v1,$a2\n"
-    "    sll  $v1,$v1,16\n"
-    "    sra  $v1,$v1,16\n"
-    "    sw  $v1,32($sp)\n"
-    "    lhu  $v1,294($s6)\n"
-    "    addu  $a1,$a0,$zero\n"
-    "    and  $v0,$v1,$a3\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    bgez  $a0,.L800490C0\n"
-    "    sw  $v0,40($sp)\n"
-    "    addiu  $a1,$a0,63\n"
-    ".L800490C0:\n"
-    "    sra  $v0,$a1,6\n"
-    "    sll  $v0,$v0,6\n"
-    "    subu  $v0,$a0,$v0\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    sw  $v0,48($sp)\n"
-    "    sll  $v0,$v1,16\n"
-    "    sra  $v1,$v0,16\n"
-    "    bgez  $v1,.L800490EC\n"
-    "    addu  $v0,$v1,$zero\n"
-    "    addiu  $v0,$v1,255\n"
-    ".L800490EC:\n"
-    "    sra  $v0,$v0,8\n"
-    "    sll  $v0,$v0,8\n"
-    "    subu  $v0,$v1,$v0\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    sw  $v0,56($sp)\n"
-    "    lh  $t3,296($s6)\n"
-    "    nop\n"
-    "    sw  $t3,96($sp)\n"
-    "    lhu  $v1,300($s6)\n"
-    "    lh  $t2,298($s6)\n"
-    "    sll  $v0,$v1,16\n"
-    "    sra  $a0,$v0,16\n"
-    "    addu  $a1,$a0,$zero\n"
-    "    and  $v1,$v1,$a2\n"
-    "    sll  $v1,$v1,16\n"
-    "    sw  $t2,104($sp)\n"
-    "    lhu  $a2,302($s6)\n"
-    "    sra  $v1,$v1,16\n"
-    "    sw  $v1,64($sp)\n"
-    "    and  $v0,$a2,$a3\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    bgez  $a0,.L80049154\n"
-    "    sw  $v0,72($sp)\n"
-    "    addiu  $a1,$a0,63\n"
-    ".L80049154:\n"
-    "    sra  $v0,$a1,6\n"
-    "    sll  $v0,$v0,6\n"
-    "    subu  $v0,$a0,$v0\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    sw  $v0,80($sp)\n"
-    "    sll  $v0,$a2,16\n"
-    "    sra  $v1,$v0,16\n"
-    "    bgez  $v1,.L80049180\n"
-    "    addu  $v0,$v1,$zero\n"
-    "    addiu  $v0,$v1,255\n"
-    ".L80049180:\n"
-    "    sra  $v0,$v0,8\n"
-    "    sll  $v0,$v0,8\n"
-    "    subu  $v0,$v1,$v0\n"
-    "    sll  $v0,$v0,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    lui  $s5,255\n"
-    "    ori  $s5,$s5,65535\n"
-    "    lui  $fp,65280\n"
-    "    sw  $v0,88($sp)\n"
-    "    sw  $zero,112($sp)\n"
-    ".L800491A8:\n"
-    "    lw  $t3,64($sp)\n"
-    "    lw  $t2,80($sp)\n"
-    "    addu  $a0,$s4,$zero\n"
-    "    addu  $s1,$t3,$t2\n"
-    "    lw  $t3,72($sp)\n"
-    "    lw  $t2,88($sp)\n"
-    "    addiu  $a1,$sp,16\n"
-    "    addu  $s0,$t3,$t2\n"
-    "    lw  $t3,32($sp)\n"
-    "    lw  $t2,48($sp)\n"
-    "    nop\n"
-    "    addu  $v0,$t3,$t2\n"
-    "    lw  $t3,40($sp)\n"
-    "    lw  $t2,56($sp)\n"
-    "    addu  $a2,$s1,$zero\n"
-    "    addu  $s2,$t3,$t2\n"
-    "    lhu  $t3,96($sp)\n"
-    "    lw  $t2,104($sp)\n"
-    "    addu  $a3,$s0,$s7\n"
-    "    sh  $v0,16($sp)\n"
-    "    sh  $s2,18($sp)\n"
-    "    subu  $s3,$t2,$s7\n"
-    "    sh  $t3,20($sp)\n"
-    "    jal  initLoadImage\n"
-    "    sh  $s3,22($sp)\n"
-    "    addiu  $a1,$sp,16\n"
-    "    addu  $a2,$s1,$zero\n"
-    "    addu  $a3,$s0,$zero\n"
-    "    addu  $t1,$s7,$zero\n"
-    "    sra  $s7,$s7,1\n"
-    "    addu  $s2,$s2,$s3\n"
-    "    lw  $t3,48($sp)\n"
-    "    lw  $t2,56($sp)\n"
-    "    lui  $t0,%hi(D_800A378C)\n"
-    "    lw  $t0,%lo(D_800A378C)($t0)\n"
-    "    sra  $t3,$t3,1\n"
-    "    sw  $t3,48($sp)\n"
-    "    lw  $t3,80($sp)\n"
-    "    sra  $t2,$t2,1\n"
-    "    sw  $t2,56($sp)\n"
-    "    lw  $t2,88($sp)\n"
-    "    sra  $t3,$t3,1\n"
-    "    sw  $t3,80($sp)\n"
-    "    lw  $t3,96($sp)\n"
-    "    sra  $t2,$t2,1\n"
-    "    sw  $t2,88($sp)\n"
-    "    lw  $t2,104($sp)\n"
-    "    sra  $t3,$t3,1\n"
-    "    sw  $t3,96($sp)\n"
-    "    lw  $t3,112($sp)\n"
-    "    sra  $t2,$t2,1\n"
-    "    sw  $t2,104($sp)\n"
-    "    addiu  $t3,$t3,1\n"
-    "    sw  $t3,112($sp)\n"
-    "    lw  $v1,0($s4)\n"
-    "    lw  $v0,16380($t0)\n"
-    "    and  $v1,$v1,$fp\n"
-    "    and  $v0,$v0,$s5\n"
-    "    or  $v1,$v1,$v0\n"
-    "    sw  $v1,0($s4)\n"
-    "    and  $v1,$s4,$s5\n"
-    "    addiu  $s4,$s4,24\n"
-    "    lw  $v0,16380($t0)\n"
-    "    addu  $a0,$s4,$zero\n"
-    "    and  $v0,$v0,$fp\n"
-    "    or  $v0,$v0,$v1\n"
-    "    sw  $v0,16380($t0)\n"
-    "    sh  $s2,18($sp)\n"
-    "    jal  initLoadImage\n"
-    "    sh  $t1,22($sp)\n"
-    "    lui  $a0,%hi(D_800A378C)\n"
-    "    lw  $a0,%lo(D_800A378C)($a0)\n"
-    "    lw  $v1,0($s4)\n"
-    "    lw  $v0,16380($a0)\n"
-    "    and  $v1,$v1,$fp\n"
-    "    and  $v0,$v0,$s5\n"
-    "    or  $v1,$v1,$v0\n"
-    "    sw  $v1,0($s4)\n"
-    "    lw  $v0,16380($a0)\n"
-    "    and  $v1,$s4,$s5\n"
-    "    and  $v0,$v0,$fp\n"
-    "    or  $v0,$v0,$v1\n"
-    "    sw  $v0,16380($a0)\n"
-    "    lw  $t2,112($sp)\n"
-    "    nop\n"
-    "    slti  $v0,$t2,3\n"
-    "    bnez  $v0,.L800491A8\n"
-    "    addiu  $s4,$s4,24\n"
-    "    lw  $t3,24($sp)\n"
-    "    lw  $v1,0($s6)\n"
-    "    lh  $v0,12($t3)\n"
-    "    nop\n"
-    "    addu  $v1,$v1,$v0\n"
-    "    sw  $v1,0($s6)\n"
-    "    lh  $a0,6($t3)\n"
-    "    nop\n"
-    "    slt  $v0,$v1,$a0\n"
-    "    bnez  $v0,.L80049368\n"
-    "    nop\n"
-    "    .word 0x0064001A\n"
-    "    bnez  $a0,.L80049344\n"
-    "    nop\n"
-    "    .word 0x0007000D\n"
-    ".L80049344:\n"
-    "    addiu  $at,$zero,-1\n"
-    "    bne  $a0,$at,.L8004935C\n"
-    "    lui  $at,32768\n"
-    "    bne  $v1,$at,.L8004935C\n"
-    "    nop\n"
-    "    .word 0x0006000D\n"
-    ".L8004935C:\n"
-    "    mfhi  $v0\n"
-    "    nop\n"
-    "    sw  $v0,0($s6)\n"
-    ".L80049368:\n"
-    "    lw  $ra,156($sp)\n"
-    "    lw  $fp,152($sp)\n"
-    "    lw  $s7,148($sp)\n"
-    "    lw  $s6,144($sp)\n"
-    "    lw  $s5,140($sp)\n"
-    "    lw  $s4,136($sp)\n"
-    "    lw  $s3,132($sp)\n"
-    "    lw  $s2,128($sp)\n"
-    "    lw  $s1,124($sp)\n"
-    "    lw  $s0,120($sp)\n"
-    "    addiu  $sp,$sp,160\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A36AC;
+extern s32 D_800A378C;
+extern s32 D_800EF848;
+extern s32 initLoadImage(void *, s16 *, s32, s32);
+
+void func_80048FFC(s32 arg0) {
+    s16 sp10, sp12;
+    u16 sp14;
+    s16 sp16;
+    s32 *sp18;
+    s32 sp20, sp28, sp30, sp38;
+    s32 sp40, sp48, sp50, sp58;
+    s32 sp60, sp68;
+    s32 sp70;
+    s32 *base = (s32 *)((arg0 * 0x134) + (s32)&D_800EF848);
+    s32 *cur;
+    s32 var_s7;
+    s32 a1_1, v0_1;
+
+    var_s7 = *base;
+    sp18 = (s32 *)((s32)base + 0x124);
+    cur = (s32 *)((s32)base + ((D_800A36AC & 1) * 0x90) + 4);
+
+    {
+        u32 v1 = *(u16 *)((s32)base + 0x124);
+        u32 v1_2 = *(u16 *)((s32)base + 0x126);
+        s32 a0 = (s32)(s16)v1;
+        sp20 = (s16)((s32)v1 & 0xFFC0);
+        sp28 = (s16)((s32)v1_2 & 0xFF00);
+        a1_1 = a0;
+        if (a0 < 0) a1_1 = a0 + 0x3F;
+        sp30 = (s16)(a0 - ((a1_1 >> 6) << 6));
+        {
+            s32 v1_3 = (s32)(s16)v1_2;
+            v0_1 = v1_3;
+            if (v1_3 < 0) v0_1 = v1_3 + 0xFF;
+            sp38 = (s16)(v1_3 - ((v0_1 >> 8) << 8));
+        }
+    }
+    sp60 = *(s16 *)((s32)base + 0x128);
+    {
+        u32 v1 = *(u16 *)((s32)base + 0x12C);
+        s16 t2 = *(s16 *)((s32)base + 0x12A);
+        s32 a0 = (s32)(s16)v1;
+        u32 a2 = *(u16 *)((s32)base + 0x12E);
+        sp40 = (s16)((s32)v1 & 0xFFC0);
+        sp48 = (s16)((s32)a2 & 0xFF00);
+        sp68 = t2;
+        a1_1 = a0;
+        if (a0 < 0) a1_1 = a0 + 0x3F;
+        sp50 = (s16)(a0 - ((a1_1 >> 6) << 6));
+        {
+            s32 v1_3 = (s32)(s16)a2;
+            v0_1 = v1_3;
+            if (v1_3 < 0) v0_1 = v1_3 + 0xFF;
+            sp58 = (s16)(v1_3 - ((v0_1 >> 8) << 8));
+        }
+    }
+    sp70 = 0;
+    do {
+        s32 t_w = sp40 + sp50;
+        s32 t_h = sp48 + sp58;
+        s32 t_y = sp28 + sp38;
+        s16 t_diff = sp68 - var_s7;
+        sp10 = sp20 + sp30;
+        sp12 = (s16)t_y;
+        sp14 = (u16)sp60;
+        sp16 = t_diff;
+        initLoadImage((void *)cur, &sp10, t_w, t_h + var_s7);
+        {
+            s32 prev_s7 = var_s7;
+            var_s7 = var_s7 >> 1;
+            sp30 = sp30 >> 1;
+            sp38 = sp38 >> 1;
+            sp50 = sp50 >> 1;
+            sp58 = sp58 >> 1;
+            sp60 = sp60 >> 1;
+            sp68 = sp68 >> 1;
+            sp70 += 1;
+            *cur = (*cur & 0xFF000000) | (*(s32 *)((s32)&D_800A378C + 0x3FFC) & 0xFFFFFF);
+            *(s32 *)((s32)&D_800A378C + 0x3FFC) = (*(s32 *)((s32)&D_800A378C + 0x3FFC) & 0xFF000000) | ((s32)cur & 0xFFFFFF);
+            sp12 = (s16)(t_y + t_diff);
+            sp16 = (s16)prev_s7;
+            initLoadImage((void *)((s32)cur + 0x18), &sp10, t_w, t_h);
+            *(s32 *)((s32)cur + 0x18) = (*(s32 *)((s32)cur + 0x18) & 0xFF000000) | (*(s32 *)((s32)&D_800A378C + 0x3FFC) & 0xFFFFFF);
+            *(s32 *)((s32)&D_800A378C + 0x3FFC) = (*(s32 *)((s32)&D_800A378C + 0x3FFC) & 0xFF000000) | (((s32)cur + 0x18) & 0xFFFFFF);
+            cur = (s32 *)((s32)cur + 0x30);
+        }
+    } while (sp70 < 3);
+    {
+        s32 v = *base + *(s16 *)((s32)sp18 + 0xC);
+        s16 mod_by = *(s16 *)((s32)sp18 + 6);
+        *base = v;
+        if (v >= mod_by) *base = v % mod_by;
+    }
+}
 extern s16 D_800EF9F2;
 extern s16 D_800EF9F4;
 extern s16 D_800A33EA;
