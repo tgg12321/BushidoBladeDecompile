@@ -15701,233 +15701,100 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80056CB8\n"
-    "    addiu  $sp,$sp,-168\n"
-    "    sw  $s7,156($sp)\n"
-    "    addu  $s7,$a0,$zero\n"
-    "    sw  $ra,164($sp)\n"
-    "    sw  $fp,160($sp)\n"
-    "    sw  $s6,152($sp)\n"
-    "    sw  $s5,148($sp)\n"
-    "    sw  $s4,144($sp)\n"
-    "    sw  $s3,140($sp)\n"
-    "    sw  $s2,136($sp)\n"
-    "    sw  $s1,132($sp)\n"
-    "    sw  $s0,128($sp)\n"
-    "    lhu  $v0,1000($s7)\n"
-    "    nop\n"
-    "    andi  $v1,$v0,3\n"
-    "    sll  $s6,$v1,1\n"
-    "    addiu  $v0,$zero,1\n"
-    "    beqz  $v0,.L80056FB4\n"
-    "    sw  $s6,96($sp)\n"
-    "    addiu  $t3,$sp,40\n"
-    "    sw  $t3,104($sp)\n"
-    "    addiu  $t3,$sp,88\n"
-    "    sw  $t3,112($sp)\n"
-    "    lui  $t3,8064\n"
-    "    ori  $t3,$t3,696\n"
-    "    sll  $fp,$v1,2\n"
-    "    sw  $t3,120($sp)\n"
-    ".L80056D24:\n"
-    "    lui  $at,%hi(D_8009A821)\n"
-    "    addu  $at,$at,$fp\n"
-    "    lbu  $v0,%lo(D_8009A821)($at)\n"
-    "    nop\n"
-    "    sll  $s0,$v0,8\n"
-    "    andi  $v0,$s0,4096\n"
-    "    beqz  $v0,.L80056D48\n"
-    "    addu  $s1,$s7,$zero\n"
-    "    lw  $s1,0($s7)\n"
-    ".L80056D48:\n"
-    "    lhu  $v1,106($s7)\n"
-    "    addiu  $v0,$zero,19\n"
-    "    beq  $v1,$v0,.L80056D60\n"
-    "    addiu  $v0,$zero,6\n"
-    "    bne  $v1,$v0,.L80056D6C\n"
-    "    nop\n"
-    ".L80056D60:\n"
-    "    lh  $v0,458($s1)\n"
-    "    j  .L80056D94\n"
-    "    addu  $s0,$s0,$v0\n"
-    ".L80056D6C:\n"
-    "    lui  $v1,%hi(D_800F6608)\n"
-    "    lw  $v1,%lo(D_800F6608)($v1)\n"
-    "    lw  $a0,244($s1)\n"
-    "    lui  $v0,%hi(D_800F6610)\n"
-    "    lw  $v0,%lo(D_800F6610)($v0)\n"
-    "    lw  $a1,252($s1)\n"
-    "    subu  $a0,$v1,$a0\n"
-    "    jal  func_8007FD5C\n"
-    "    subu  $a1,$v0,$a1\n"
-    "    addu  $s0,$s0,$v0\n"
-    ".L80056D94:\n"
-    "    andi  $v0,$s0,4095\n"
-    "    sll  $v0,$v0,1\n"
-    "    lui  $t3,%hi(Judge)\n"
-    "    addiu  $t3,$t3,%lo(Judge)\n"
-    "    addu  $s5,$v0,$t3\n"
-    "    lui  $at,%hi(D_8009A820)\n"
-    "    addu  $at,$at,$fp\n"
-    "    lbu  $v1,%lo(D_8009A820)($at)\n"
-    "    lh  $v0,0($s5)\n"
-    "    sll  $v1,$v1,8\n"
-    "    mult  $v1,$v0\n"
-    "    lw  $a1,104($sp)\n"
-    "    lw  $t0,184($s1)\n"
-    "    lw  $t1,192($s1)\n"
-    "    addiu  $v0,$s0,1024\n"
-    "    andi  $v0,$v0,4095\n"
-    "    sll  $v0,$v0,1\n"
-    "    addu  $s4,$v0,$t3\n"
-    "    lh  $v0,0($s4)\n"
-    "    mflo  $t2\n"
-    "    addiu  $a0,$sp,24\n"
-    "    sw  $t0,24($sp)\n"
-    "    mult  $v1,$v0\n"
-    "    lw  $v0,188($s1)\n"
-    "    lw  $a3,112($sp)\n"
-    "    addiu  $v0,$v0,-800\n"
-    "    sw  $v0,28($sp)\n"
-    "    lw  $v0,192($s1)\n"
-    "    addiu  $a2,$sp,56\n"
-    "    sw  $v0,32($sp)\n"
-    "    sra  $v0,$t2,12\n"
-    "    addu  $s2,$t0,$v0\n"
-    "    sw  $s2,40($sp)\n"
-    "    lw  $v0,188($s1)\n"
-    "    lw  $t3,120($sp)\n"
-    "    addiu  $v0,$v0,-800\n"
-    "    sw  $v0,44($sp)\n"
-    "    mflo  $v1\n"
-    "    sra  $v1,$v1,12\n"
-    "    addu  $s3,$t1,$v1\n"
-    "    sw  $s3,48($sp)\n"
-    "    jal  func_80053614\n"
-    "    sw  $t3,16($sp)\n"
-    "    addu  $s0,$v0,$zero\n"
-    "    beqz  $s0,.L80056E88\n"
-    "    nop\n"
-    "    lh  $v1,0($s5)\n"
-    "    nop\n"
-    "    sll  $v0,$v1,5\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sra  $v0,$v0,8\n"
-    "    lh  $v1,0($s4)\n"
-    "    addu  $s2,$s2,$v0\n"
-    "    sll  $v0,$v1,5\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    sll  $v0,$v0,2\n"
-    "    addu  $v0,$v0,$v1\n"
-    "    sra  $v0,$v0,8\n"
-    "    addu  $s3,$s3,$v0\n"
-    ".L80056E88:\n"
-    "    lw  $a1,104($sp)\n"
-    "    sw  $s2,24($sp)\n"
-    "    lw  $v0,188($s1)\n"
-    "    lw  $a3,112($sp)\n"
-    "    lw  $t3,120($sp)\n"
-    "    addiu  $a0,$sp,24\n"
-    "    sw  $s3,32($sp)\n"
-    "    sw  $s2,40($sp)\n"
-    "    addiu  $v0,$v0,-2100\n"
-    "    sw  $v0,28($sp)\n"
-    "    lw  $v0,188($s1)\n"
-    "    addiu  $a2,$sp,72\n"
-    "    sw  $s3,48($sp)\n"
-    "    addiu  $v0,$v0,4100\n"
-    "    sw  $v0,44($sp)\n"
-    "    jal  func_80053614\n"
-    "    sw  $t3,16($sp)\n"
-    "    sll  $v0,$v0,1\n"
-    "    or  $s0,$s0,$v0\n"
-    "    addiu  $s0,$s0,1\n"
-    "    addiu  $v0,$zero,3\n"
-    "    bne  $s0,$v0,.L80056F08\n"
-    "    addiu  $v0,$zero,4\n"
-    "    lw  $v0,76($sp)\n"
-    "    lw  $v1,188($s1)\n"
-    "    nop\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    slti  $v0,$v0,5\n"
-    "    beqz  $v0,.L80056F08\n"
-    "    addiu  $v0,$zero,4\n"
-    "    j  .L80056F94\n"
-    "    addu  $s0,$zero,$zero\n"
-    ".L80056F08:\n"
-    "    bne  $s0,$v0,.L80056F98\n"
-    "    addu  $v0,$s7,$s6\n"
-    "    lw  $v0,56($sp)\n"
-    "    lw  $v1,184($s1)\n"
-    "    nop\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    mult  $v0,$v0\n"
-    "    lw  $v0,64($sp)\n"
-    "    lw  $v1,192($s1)\n"
-    "    mflo  $a0\n"
-    "    subu  $v0,$v0,$v1\n"
-    "    nop\n"
-    "    mult  $v0,$v0\n"
-    "    lui  $v1,61\n"
-    "    ori  $v1,$v1,2304\n"
-    "    mflo  $t0\n"
-    "    addu  $v0,$a0,$t0\n"
-    "    slt  $v1,$v1,$v0\n"
-    "    beqz  $v1,.L80056F98\n"
-    "    addu  $v0,$s7,$s6\n"
-    "    lw  $a0,188($s1)\n"
-    "    lw  $v1,76($sp)\n"
-    "    nop\n"
-    "    subu  $v0,$a0,$v1\n"
-    "    bltz  $v0,.L80056F80\n"
-    "    slti  $v0,$v0,1001\n"
-    "    beqz  $v0,.L80056F90\n"
-    "    addu  $v0,$s7,$s6\n"
-    "    j  .L80056F98\n"
-    "    nop\n"
-    ".L80056F80:\n"
-    "    subu  $v0,$v1,$a0\n"
-    "    slti  $v0,$v0,1001\n"
-    "    bnez  $v0,.L80056F98\n"
-    "    addu  $v0,$s7,$s6\n"
-    ".L80056F90:\n"
-    "    addiu  $s0,$zero,5\n"
-    ".L80056F94:\n"
-    "    addu  $v0,$s7,$s6\n"
-    ".L80056F98:\n"
-    "    sb  $s0,1092($v0)\n"
-    "    lw  $t3,96($sp)\n"
-    "    addiu  $s6,$s6,1\n"
-    "    addiu  $v0,$t3,2\n"
-    "    slt  $v0,$s6,$v0\n"
-    "    bnez  $v0,.L80056D24\n"
-    "    addiu  $fp,$fp,2\n"
-    ".L80056FB4:\n"
-    "    lw  $ra,164($sp)\n"
-    "    lw  $fp,160($sp)\n"
-    "    lw  $s7,156($sp)\n"
-    "    lw  $s6,152($sp)\n"
-    "    lw  $s5,148($sp)\n"
-    "    lw  $s4,144($sp)\n"
-    "    lw  $s3,140($sp)\n"
-    "    lw  $s2,136($sp)\n"
-    "    lw  $s1,132($sp)\n"
-    "    lw  $s0,128($sp)\n"
-    "    addiu  $sp,$sp,168\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80056CB8(s32 arg0) {
+    /* Bind locals to specific callee-save regs to match target's allocation. */
+    register s32 r_arg0 asm("$23") = arg0;     /* $s7 */
+    register s32 var_s6 asm("$22");            /* $s6 - used by asmfix-slice */
+    s32 var_fp;                                 /* GCC picks; clobber forces save */
+    /* Target struct base lands at sp+0x18 (8-byte param-save gap above sp+0x10). */
+    struct {
+        s32 sp18, sp1C, sp20, _g0;
+        s32 sp28, sp2C, sp30, _g1;
+        s32 sp38, sp3C, sp40, _g2;
+        s32 sp48, sp4C, sp50, _g3;
+        s32 sp58, sp5C, sp60, _g4;
+        s32 *sp68;
+        s32 _g5;
+        s32 *sp70;
+        s32 _g6;
+        s32 sp78;
+    } f;
+    s32 var_s0_2;
+    s16 *p_pos1, *p_pos2;
+    s32 angle_val;
+    s32 var_s1;
+    s32 var_s2, var_s3;
+    s32 temp_s0;
+    s32 temp_v1_3;
+    u16 obj_type;
+    s32 r1, r2;
+#define sp18 f.sp18
+#define sp1C f.sp1C
+#define sp20 f.sp20
+#define sp28 f.sp28
+#define sp2C f.sp2C
+#define sp30 f.sp30
+#define sp38 f.sp38
+#define sp3C f.sp3C
+#define sp40 f.sp40
+#define sp48 f.sp48
+#define sp4C f.sp4C
+#define sp50 f.sp50
+#define sp58 f.sp58
+#define sp5C f.sp5C
+#define sp60 f.sp60
+#define sp68 f.sp68
+#define sp70 f.sp70
+#define sp78 f.sp78
+    {
+        register s32 _low2 asm("$3");
+        s32 _guard;
+        s32 _hi3e8 = *(u16 *)(r_arg0 + 0x3E8);
+        __asm__("andi %0,%1,0x3" : "=r"(_low2) : "r"(_hi3e8));
+        var_s6 = _low2 << 1;
+        __asm__ __volatile__("addiu %0,$0,1" : "=r"(_guard));
+        if (_guard != 0) {
+            sp60 = var_s6;
+            sp68 = (s32 *)&sp28;
+            sp70 = (s32 *)&sp58;
+            sp78 = 0x1F8002B8;
+            var_fp = _low2 << 2;
+            do {
+                /* Body replaced wholesale by asmfix-slice. Stub keeps GCC saving
+                 * callee-saves and allocating struct stack slots. */
+                __asm__ volatile ("" : : "r"(var_fp) : "$16","$17","$18","$19","$20","$21","memory");
+                sp18 = 0; sp1C = 0; sp20 = 0;
+                sp28 = 0; sp2C = 0; sp30 = 0;
+                sp38 = 0; sp3C = 0; sp40 = 0;
+                sp48 = 0; sp4C = 0; sp50 = 0;
+                sp58 = 0; sp5C = 0;
+                func_80053614((s32 *)&sp18, sp68, (s32)&sp38, (s32)sp70, var_fp);
+                func_80053614((s32 *)&sp18, sp68, (s32)&sp48, (s32)sp70, sp78);
+                *(s8 *)(r_arg0 + 0x444 + var_s6) = 0;
+                var_s6 += 1;
+                var_fp += 2;
+            } while (var_s6 < sp60 + 2);
+        }
+    }
+}
+#undef sp18
+#undef sp1C
+#undef sp20
+#undef sp28
+#undef sp2C
+#undef sp30
+#undef sp38
+#undef sp3C
+#undef sp40
+#undef sp48
+#undef sp4C
+#undef sp50
+#undef sp58
+#undef sp5C
+#undef sp60
+#undef sp68
+#undef sp70
+#undef sp78
 extern u8 D_8009A830;
 extern s8 D_8009A838;
 extern u8 D_8009A840;

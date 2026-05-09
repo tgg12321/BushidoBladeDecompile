@@ -4269,7 +4269,7 @@ func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
 func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
 func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
 func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
-func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L940" @ 110
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L946" @ 110
 # Move convergence point: insert label after lw $7,16(sp)
 func_80074B18: insert_label ".LC846:" @ 116
 func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
@@ -4675,3 +4675,14 @@ func_80070C70: subst "addu\s+\$2,\$2,72" "addu	$3,$2,72" @ 63
 func_80070C70: subst "sw\s+\$2,28\(\$sp\)" "sw	$3,28($sp)" @ 64
 # Reorder epilogue idx 183-186 ($s2/$s3 and $s0/$s1 swap)
 func_80070C70: reorder 183,185,184,187,186 @ 183-187
+func_80056CB8: delete @ 27
+func_80056CB8: delete @ 27
+func_80056CB8: delete @ 27
+func_80056CB8: reorder 24,21,22,23,25,18,19,20,26 @ 18-26
+func_80056CB8: subst "lui\s+\$2," "lui	$11," @ 18
+func_80056CB8: subst "ori\s+\$2,\$2," "ori	$11,$11," @ 19
+func_80056CB8: subst "addu\s+\$3,\$sp,40" "addu	$11,$sp,40" @ 21
+func_80056CB8: subst "sw\s+\$3,104\(\$sp\)" "sw	$11,104($sp)" @ 22
+func_80056CB8: subst "addu\s+\$3,\$sp,88" "addu	$11,$sp,88" @ 23
+func_80056CB8: subst "sw\s+\$3,112\(\$sp\)" "sw	$11,112($sp)" @ 25
+func_80056CB8: subst "sw\s+\$2,120\(\$sp\)" "sw	$11,120($sp)" @ 26
