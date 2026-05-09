@@ -4,7 +4,7 @@
 Runs all the cheap automatable steps for a function, in order, and stops on
 the first that succeeds:
 
-    1. classify_func.py     -- triage; skip BIOS / multi-jr / known blockers
+    1. classify_func.py     -- triage; skip BIOS / known permanent blockers
     2. inline-setup OR setup -- stage permuter/<func>/ with target.s + base.c
     3. smart_match.py       -- 16-strategy automated transformation sweep
     4. permute_capped.py    -- bounded permuter run with flat-score early kill
@@ -21,8 +21,9 @@ Result tags:
     MATCHED      score==0; smart_match or permute_capped found a byte match
     NEAR_MISS    score>0 but small; gen_regfix output saved to /tmp/<func>.regfix
                   -- model can review and apply rules with `dc.sh add-regfix`
-    HARD         classifier flagged a structural blocker (multi-jr, jlabel, etc)
-    SKIPPED      classifier flagged BIOS/syscall/psyq-stdlib (use library form)
+    HARD         classifier flagged structural setup work (split, jlabel, etc)
+    SKIPPED      classifier flagged BIOS/syscall, permanent asm, not-code, or
+                 a recognized library shortcut
 
 The model only intervenes for NEAR_MISS. Everything else gets the right
 deterministic verdict without burning model tokens on already-mechanical work.
@@ -32,6 +33,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -139,10 +141,67 @@ def gen_regfix_step(func: str) -> tuple[str | None, str]:
     return r.stdout, r.stderr
 
 
+def asmfix_slice_candidates(func: str, min_inst: int = 30) -> list[dict]:
+    """Inspect asm/funcs/<func>.s for label-bounded regions of size >= min_inst.
+
+    Returns a list of candidates ordered by size (largest first), each:
+        {'start': '.L80070D7C', 'end': '.L80070EEC', 'inst_count': 92, 'addr_range': (0x..., 0x...)}
+
+    The 5th-stage hint of `dc.sh attempt` when the permuter score is high. Slicing
+    a contiguous label-bounded region is the documented escalation when GCC's
+    scheduler/allocator decisions can't be reproduced via C+regfix (see
+    feedback_tools_2026-05-07.md, asmfix-slice section).
+    """
+    asm_path = ROOT / "asm" / "funcs" / f"{func}.s"
+    if not asm_path.exists():
+        return []
+    label_addrs: list[tuple[str, int]] = []  # (label, addr) ordered by addr
+    last_addr: int | None = None
+    pending_label: str | None = None
+    for raw in asm_path.read_text(encoding="utf-8").splitlines():
+        m_lbl = re.match(r'^\s*(\.L\w+):\s*$', raw)
+        if m_lbl:
+            pending_label = m_lbl.group(1)
+            continue
+        m_inst = re.match(r"^\s*/\*\s+\w+\s+([0-9A-F]+)\s+", raw)
+        if not m_inst:
+            continue
+        addr = int(m_inst.group(1), 16)
+        if pending_label:
+            label_addrs.append((pending_label, addr))
+            pending_label = None
+        last_addr = addr
+    # Build candidates between every pair of (start, end) labels where
+    # start_addr < end_addr. Allows both narrow (adjacent) and wide ranges
+    # so the user can choose. Wider slices are often more effective when
+    # GCC's scheduler/allocator differences span multiple basic blocks
+    # (the func_80070C70 case: a 92-inst wide slice beat a 49-inst narrow
+    # one because the wide slice covered the full do-while-6 + inner loop).
+    candidates: list[dict] = []
+    n = len(label_addrs)
+    for i in range(n):
+        start_lbl, start_addr = label_addrs[i]
+        for j in range(i + 1, n):
+            end_lbl, end_addr = label_addrs[j]
+            inst_count = (end_addr - start_addr) // 4
+            if inst_count >= min_inst:
+                candidates.append({
+                    "start": start_lbl,
+                    "end": end_lbl,
+                    "inst_count": inst_count,
+                    "addr_range": (start_addr, end_addr),
+                })
+    # Sort by (-inst_count, start_addr) so the widest, earliest slice is first.
+    candidates.sort(key=lambda c: (-c["inst_count"], c["addr_range"][0]))
+    return candidates
+
+
+
+
 # ---- Recommendation buckets that should be SKIPPED at classify time ----
 
-SKIP_TAGS = {"bios_or_syscall", "psyq_stdlib", "permanently_blocked"}
-HARD_TAGS = {"multi_function", "needs_rodata_split", "aspsx_delay_swra"}
+SKIP_TAGS = {"bios_or_syscall", "psyq_stdlib", "permanently_blocked", "not_code_symbol"}
+HARD_TAGS = {"needs_function_split", "needs_rodata_split", "needs_delay_slot_ra"}
 
 
 def main():
@@ -257,6 +316,30 @@ def main():
     print(summary)
     if regfix_path:
         print(f"  -> regfix suggestions: {regfix_path}")
+
+    # Step 6 -- HARD escalation. When the permuter score is high (>5000)
+    # and target has a label-bounded region of 30+ instructions, that's the
+    # documented threshold for asmfix-slice (per feedback_tools_2026-05-07.md).
+    # Surface candidate slices so the agent can apply one immediately rather
+    # than discovering the tool 8 attempts later (the func_80070C70 lesson:
+    # asmfix-slice should be reached for at score 8000, not after 6 hours
+    # of register/scheduling whack-a-mole).
+    if verdict == "HARD" and best is not None and best > 3000:
+        try:
+            cands = asmfix_slice_candidates(func, min_inst=30)
+        except Exception as e:
+            cands = []
+            print(f"  -> asmfix-slice candidate scan failed: {e}")
+        if cands:
+            print(f"  -> ESCALATION (score={best}): asmfix-slice candidates:")
+            for c in cands[:3]:
+                start, end = c["start"], c["end"]
+                lo, hi = c["addr_range"]
+                print(f"     {start} .. {end}  ({c['inst_count']} insts, 0x{lo:08X}-0x{hi:08X})")
+                print(f"       try: bash tools/dc.sh asmfix-slice {func} {start} {end}")
+            print(f"  -> Also: bash tools/dc.sh diagnose-hoist {func}  "
+                  f"(when callee-save reg-name diffs dominate)")
+
     return 0 if verdict == "MATCHED" else 1
 
 

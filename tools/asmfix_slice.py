@@ -39,6 +39,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+from active_func_scope import enforce_scope
 
 # splat line: "    /* X X X */  mnemonic     operands"
 SPLAT_INSN_RE = re.compile(
@@ -319,6 +321,7 @@ def main() -> int:
         print("# Dry-run. Re-run with --apply to append to asmfix.txt.")
         return 0
 
+    enforce_scope(args.func, action="append asmfix-slice rules for")
     append_batch(rules, args.func)
     print(f"asmfix-slice: appended {len(rules)} rule(s) to asmfix.txt. "
           f"Run `make` to verify.")

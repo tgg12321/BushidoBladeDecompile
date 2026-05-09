@@ -40,6 +40,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+from active_func_scope import enforce_scope
 
 REG_RE = re.compile(r"^\$(?:\d+|zero|at|v[01]|a[0-3]|t[0-9]|s[0-7]|t[89]|k[01]|gp|sp|fp|ra)$")
 RANGE_RE = re.compile(r"^(\d+)\s*-\s*(\d+)$")
@@ -311,6 +313,7 @@ def main():
             print("ERROR: --raw line must start with `<func>:`", file=sys.stderr)
             return 1
         func = m.group(1)
+        enforce_scope(func, action="append regfix rule for")
         lines = []
         if args.comment:
             lines.append(f"# {args.comment}")
@@ -329,6 +332,10 @@ def main():
     if args.op is None:
         ap.print_help()
         return 1
+
+    # Refuse to add rules for non-active functions. This is the guardrail that
+    # would have prevented subagent #1's catastrophic regression of 79 rules.
+    enforce_scope(args.func, action="append regfix rule for")
 
     try:
         rule = build_rule(args)

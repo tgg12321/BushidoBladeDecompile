@@ -54,6 +54,8 @@ from pathlib import Path
 from typing import List, Tuple
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+from active_func_scope import enforce_scope
 ASM_FUNCS = ROOT / "asm" / "funcs"
 
 
@@ -344,6 +346,9 @@ def main() -> int:
         print(r)
 
     if args.apply:
+        # Refuse cross-function applies. regfix-suggest --apply is exactly the
+        # path subagent #1 used to (auto-)remove rules from func_8005D554 et al.
+        enforce_scope(args.func, action="append regfix-suggest rules for")
         target = ROOT / "regfix.txt"
         text = target.read_text(encoding="utf-8") if target.exists() else ""
         if text and not text.endswith("\n"):

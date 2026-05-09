@@ -40,6 +40,8 @@
 #   bash tools/dc.sh permute-adaptive <func>       — permuter with budget scaled to ins+del count
 #   bash tools/dc.sh clean-worktrees [--apply]     — safely prune fully-matched worktrees (preserves stuck)
 #   bash tools/dc.sh queue-easy [N]                — easiest N queue entries by quick-win score
+#   bash tools/dc.sh next-structural [N]           — pull/preview structural split queue
+#   bash tools/dc.sh next-asmfix [N]               — pull/preview asmfix retirement queue
 #   bash tools/dc.sh run-log <event> [args...]    — log an autonomous-run event (run-start, func-*, run-end)
 #   bash tools/dc.sh run-summary [--all|--json]   — summarize autonomous run(s)
 #
@@ -84,7 +86,7 @@ case "$CMD" in
             echo "Active:   $ACTIVE  (in progress — finish before pulling another)"
             echo
             echo "  Resume work on $ACTIVE. The hook is enforcing — you cannot:"
-            echo "  - 'dc.sh next' (refused while active)"
+            echo "  - 'dc.sh next*' queue pulls (refused while active)"
             echo "  - 'git commit' (refused unless dc.sh verify $ACTIVE shows MATCH)"
             echo "  - 'git checkout/restore' on src/ files"
             echo
@@ -132,7 +134,7 @@ case "$CMD" in
 
 --- THE HARD RULE (enforced by hook) ---
 
-1. Pull from WORK_QUEUE.md via `dc.sh next`. No hunting.
+1. Pull from WORK_QUEUE.md via `dc.sh next` (or an explicit alternate queue). No hunting.
 2. Once selected, the function MUST be matched in 100% pure C before
    you can commit or pull another. The hook blocks otherwise.
 3. Stuck = switch *technique*, not target. Escalate via the toolbox:
@@ -154,6 +156,8 @@ case "$CMD" in
 --- Quick command reference ---
 
   dc.sh next [--with-context]    Pull next function (sets active marker)
+  dc.sh next-structural [N]      Pull/preview structural split queue
+  dc.sh next-asmfix [N]          Pull/preview asmfix retirement queue
   dc.sh classify <func>           Pre-dive: blockers, aliasing_heavy tag
   dc.sh agent-brief <func>        Full context dump
   dc.sh attempt <func>            Auto pipeline (smart→permute→gen_regfix)
@@ -435,6 +439,34 @@ print(f'Replaced {func} in {src}')
         python3 tools/asmfix_slice.py "$FUNC_NAME" "$START_LBL" "$END_LBL" "$@" 2>&1
         ;;
 
+    find-label-at)
+        # Resolve a target byte address to the right .L<N> label (or suggest
+        # insert_label @ idx) in mine's compile. Eliminates empirical
+        # `.L905 -> .L926 -> .L922 -> ...` search when a regfix subst's
+        # hardcoded label drifted due to file-wide GCC label renumbering.
+        FUNC_NAME="$1"
+        ADDR="$2"
+        if [ -z "$FUNC_NAME" ] || [ -z "$ADDR" ]; then
+            echo "Usage: dc.sh find-label-at <func> <hex_address>"
+            echo "Example: dc.sh find-label-at func_8007352C 0x800736DC"
+            exit 1
+        fi
+        python3 tools/find_label_at.py "$FUNC_NAME" "$ADDR" 2>&1
+        ;;
+
+    diagnose-hoist)
+        # Diff GCC LICM constant hoisting between mine and target. Surfaces
+        # "mine hoists X to \$sN, target hoists Y" mismatches and recommends
+        # inline-asm-defeat / register-asm-force recipes. First tool when
+        # permuter score is high and verify shows callee-save reg-name diffs.
+        FUNC_NAME="$1"
+        if [ -z "$FUNC_NAME" ]; then
+            echo "Usage: dc.sh diagnose-hoist <func>"
+            exit 1
+        fi
+        python3 tools/diagnose_hoist.py "$FUNC_NAME" 2>&1
+        ;;
+
     post-match-validate)
         # After per-function MATCH, detect sibling regressions caused by
         # `.L<N>` numbering shifts in the same .c file. Confirms
@@ -534,21 +566,39 @@ print(f'Replaced {func} in {src}')
         python3 tools/autonomous_run_summary.py "$@" 2>&1
         ;;
 
-    next)
-        # Print the next function from WORK_QUEUE.md and SET it as the
+    next|next-structural|next-asmfix)
+        # Print the next function from one WORK_QUEUE.md queue and SET it as the
         # active function in .bb2_active_func. The PreToolUse hook will
-        # then block subsequent `git commit` (until verify passes) and
-        # `dc.sh next` calls until the active function is finished.
+        # then block subsequent `git commit` (until verify passes) and queue
+        # pulls until the active function is finished.
         #
         # Forms:
         #   dc.sh next                # top 1, set active, no auto-brief
         #   dc.sh next 5              # preview top 5 (no active change)
         #   dc.sh next --with-context # top 1 + auto-run agent-brief
+        #   dc.sh next-structural     # top structural split task
+        #   dc.sh next-asmfix         # top asmfix retirement task
+        case "$CMD" in
+            next)
+                SECTION="## Queue (top = next)"
+                QUEUE_NAME="active decomp queue"
+                ;;
+            next-structural)
+                SECTION="## Structural Split Queue (top = next-structural)"
+                QUEUE_NAME="structural split queue"
+                ;;
+            next-asmfix)
+                SECTION="## Asmfix Retirement Queue (top = next-asmfix)"
+                QUEUE_NAME="asmfix retirement queue"
+                ;;
+        esac
         WITH_CONTEXT=0
+        NO_PULL=0
         N=1
         for a in "$@"; do
             case "$a" in
                 --with-context) WITH_CONTEXT=1 ;;
+                --no-pull) NO_PULL=1 ;;
                 ''|*[!0-9]*) ;;
                 *) N="$a" ;;
             esac
@@ -564,7 +614,7 @@ print(f'Replaced {func} in {src}')
         # remote teammate) already matched. Skipped on no-network or no-
         # remote setups; failure is non-fatal (warn and continue).
         # Pass --no-pull to skip explicitly.
-        if [ "${1:-}" != "--no-pull" ] && git rev-parse --git-dir >/dev/null 2>&1; then
+        if [ "$NO_PULL" != "1" ] && git rev-parse --git-dir >/dev/null 2>&1; then
             if git remote get-url origin >/dev/null 2>&1; then
                 if ! git diff-index --quiet HEAD -- 2>/dev/null; then
                     echo "WARNING: working tree has uncommitted changes; skipping git pull." >&2
@@ -596,9 +646,9 @@ print(f'Replaced {func} in {src}')
             fi
         fi
 
-        # Extract the top N entries from the queue.
-        TOP=$(awk -v n="$N" '
-            /^## Queue/ { in_queue=1; next }
+        # Extract the top N entries from the selected queue.
+        TOP=$(awk -v n="$N" -v section="$SECTION" '
+            $0 == section { in_queue=1; next }
             in_queue && /^## / { in_queue=0 }
             in_queue && /^```$/ { in_block = !in_block; next }
             in_queue && in_block && /^[[:space:]]*[0-9]+[[:space:]]/ {
@@ -607,6 +657,10 @@ print(f'Replaced {func} in {src}')
                 if (count >= n) exit
             }
         ' WORK_QUEUE.md)
+        if [ -z "$TOP" ]; then
+            echo "No entries found in $QUEUE_NAME. Run 'dc.sh refresh-queue' if this looks stale." >&2
+            exit 1
+        fi
         echo "$TOP"
 
         # Only set the active marker for the top-1 case. `dc.sh next 5`
@@ -615,7 +669,7 @@ print(f'Replaced {func} in {src}')
             FUNC=$(echo "$TOP" | head -n 1 | awk '{print $2}')
             if [ -n "$FUNC" ]; then
                 echo "$FUNC" > .bb2_active_func
-                echo "(active function set: $FUNC)" >&2
+                echo "(active function set from $QUEUE_NAME: $FUNC)" >&2
                 if [ "$WITH_CONTEXT" = "1" ]; then
                     echo
                     echo "=== agent-brief ==="
@@ -800,6 +854,14 @@ print(f'Replaced {func} in {src}')
         python3 tools/queue_easy.py "$@" 2>&1
         ;;
 
+    queue-structural)
+        bash tools/dc.sh next-structural "${1:-10}" --no-pull
+        ;;
+
+    queue-asmfix)
+        bash tools/dc.sh next-asmfix "${1:-10}" --no-pull
+        ;;
+
     classify-batch)
         # Pre-spawn validation: classify N functions in parallel and
         # emit which ones are stale (already pure C). Use this BEFORE
@@ -938,7 +1000,8 @@ print(f'Replaced {func} in {src}')
         echo "          smart, permute, add-regfix, classify, gte, attempt,"
         echo "          recipes, apply-recipe,"
         echo "          analysis, dump-text, validate-regfix, gen-regfix, verify,"
-        echo "          next, refresh-queue, release"
+        echo "          frame-shift, asmfix-slice, find-label-at, diagnose-hoist,"
+        echo "          next, next-structural, next-asmfix, refresh-queue, release"
         exit 1
         ;;
 esac
