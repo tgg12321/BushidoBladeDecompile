@@ -4269,7 +4269,7 @@ func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
 func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
 func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
 func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
-func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L925" @ 110
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L940" @ 110
 # Move convergence point: insert label after lw $7,16(sp)
 func_80074B18: insert_label ".LC846:" @ 116
 func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
@@ -4304,7 +4304,8 @@ func_8007352C: subst "addu\s+\$3,\$23,-1" "addu	$2,$23,-1" @ 107
 func_8007352C: subst "addu\s+\$23,\$3,\$zero" "addu	$23,$2,$zero" @ 108
 func_8007352C: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 109
 # Idx 44 binary = idx 45 maspsx (1 nop earlier deleted): change y-check beq target to .L845 (next_compute_v_tail)
-func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L905" @ 45
+func_8007352C: insert_label ".LCF352C_t:" @ 105
+func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LCF352C_t" @ 45
 # DispSleepMenuTex region scheduling - net 0 instructions
 func_8007352C: delete @ 95
 func_8007352C: delete @ 100
@@ -4638,3 +4639,39 @@ func_8007D3F8: subst "lw\s+\$3,0\(\$3\)" "lw	$3,D_8009BF78" @ 95
 func_8007D3F8: subst "la\s+\$4,D_8009BF78" "lui	$3,%hi(D_8009BF78)" @ 113
 func_8007D3F8: subst "lw\s+\$3,0\(\$4\)" "lw	$3,%lo(D_8009BF78)($3)" @ 114
 func_8007D3F8: subst "lw\s+\$3,0\(\$4\)" "lw	$3,D_8009BF78" @ 120
+
+func_80070C70: $16 <-> $17 @ 1-187
+func_80070C70: $18 <-> $19 @ 1-187
+# Frame size 104 -> 128 (target uses larger frame)
+func_80070C70: subst "subu\s+\$sp,\$sp,104" "subu	$sp,$sp,128" @ 0
+func_80070C70: subst "sw\s+\$17,80\(\$sp\)" "sw	$17,108($sp)" @ 1
+func_80070C70: subst "sw\s+\$31,100\(\$sp\)" "sw	$31,124($sp)" @ 5
+func_80070C70: subst "sw\s+\$20,96\(\$sp\)" "sw	$20,120($sp)" @ 6
+func_80070C70: subst "sw\s+\$18,92\(\$sp\)" "sw	$18,112($sp)" @ 7
+func_80070C70: subst "sw\s+\$19,88\(\$sp\)" "sw	$19,116($sp)" @ 8
+func_80070C70: subst "sw\s+\$16,84\(\$sp\)" "sw	$16,104($sp)" @ 9
+func_80070C70: subst "lw\s+\$31,100\(\$sp\)" "lw	$31,124($sp)" @ 182
+func_80070C70: subst "lw\s+\$20,96\(\$sp\)" "lw	$20,120($sp)" @ 183
+func_80070C70: subst "lw\s+\$18,92\(\$sp\)" "lw	$18,112($sp)" @ 184
+func_80070C70: subst "lw\s+\$19,88\(\$sp\)" "lw	$19,116($sp)" @ 185
+func_80070C70: subst "lw\s+\$16,84\(\$sp\)" "lw	$16,104($sp)" @ 186
+func_80070C70: subst "lw\s+\$17,80\(\$sp\)" "lw	$17,108($sp)" @ 187
+func_80070C70: subst "addu\s+\$sp,\$sp,104" "addu	$sp,$sp,128" @ 188
+# Move $s4 init from idx 21 to idx 4 (target's position)
+func_80070C70: delete @ 21
+func_80070C70: insert "addiu	$20,$zero,96" @ 4
+# Reorder prologue idx 3-9 to match target's scheduling
+func_80070C70: reorder 7,4,3,5,6,9,8 @ 3-9
+# Reorder idx 18-28 to match target's prologue scheduling
+func_80070C70: reorder 28,19,20,21,18,23,22,24,27,25,26 @ 18-28
+# Use $v1 for the +12 chain (matches target's register allocation)
+func_80070C70: subst "addu\s+\$2,\$2,12" "addu	$3,$2,12" @ 23
+func_80070C70: subst "sw\s+\$2,28\(\$sp\)" "sw	$3,28($sp)" @ 24
+func_80070C70: subst "lw\s+\$2,16\(\$17\)" "lw	$3,16($17)" @ 27
+func_80070C70: subst "sw\s+\$2,32\(\$sp\)" "sw	$3,32($sp)" @ 30
+# Reorder idx 62-64 + register fix
+func_80070C70: reorder 63,62,64 @ 62-64
+func_80070C70: subst "addu\s+\$2,\$2,72" "addu	$3,$2,72" @ 63
+func_80070C70: subst "sw\s+\$2,28\(\$sp\)" "sw	$3,28($sp)" @ 64
+# Reorder epilogue idx 183-186 ($s2/$s3 and $s0/$s1 swap)
+func_80070C70: reorder 183,185,184,187,186 @ 183-187

@@ -41861,218 +41861,131 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80070C70\n"
-    "    addiu  $sp,$sp,-128\n"
-    "    sw  $s1,108($sp)\n"
-    "    addu  $s1,$a0,$zero\n"
-    "    sw  $s4,120($sp)\n"
-    "    addiu  $s4,$zero,96\n"
-    "    .word 0x8F8304DC\n"
-    "    addiu  $v0,$zero,256\n"
-    "    sw  $ra,124($sp)\n"
-    "    sw  $s3,116($sp)\n"
-    "    sw  $s2,112($sp)\n"
-    "    sw  $s0,104($sp)\n"
-    "    sw  $zero,40($sp)\n"
-    "    sw  $zero,48($sp)\n"
-    "    sw  $zero,52($sp)\n"
-    "    sw  $v0,56($sp)\n"
-    "    sw  $v0,60($sp)\n"
-    "    sb  $zero,64($sp)\n"
-    "    lw  $s2,100($v1)\n"
-    "    addiu  $a0,$sp,24\n"
-    "    sw  $zero,52($sp)\n"
-    "    sw  $zero,48($sp)\n"
-    "    lw  $v0,4($s2)\n"
-    "    addu  $s0,$zero,$zero\n"
-    "    addiu  $v1,$v0,12\n"
-    "    sw  $v0,24($sp)\n"
-    "    sw  $v1,28($sp)\n"
-    "    lw  $v1,16($s1)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    sw  $v0,44($sp)\n"
-    "    jal  func_8007352C\n"
-    "    sw  $v1,32($sp)\n"
-    "    sw  $v0,16($s1)\n"
-    "    lw  $a0,24($sp)\n"
-    "    jal  func_8006E480\n"
-    "    addiu  $a1,$zero,96\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    sw  $zero,16($sp)\n"
-    "    lw  $a0,24($s1)\n"
-    "    jal  initTexPage\n"
-    "    addu  $a3,$v0,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    lw  $a1,24($s1)\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,4\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    addiu  $a1,$sp,72\n"
-    "    lw  $v0,24($s1)\n"
-    "    addiu  $a2,$zero,1\n"
-    "    addiu  $v0,$v0,12\n"
-    "    sw  $v0,24($s1)\n"
-    "    addiu  $v0,$zero,231\n"
-    "    sh  $v0,76($sp)\n"
-    "    addiu  $v0,$zero,204\n"
-    "    sh  $v0,72($sp)\n"
-    "    addiu  $v0,$zero,37\n"
-    "    sh  $v0,74($sp)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    jal  func_80069898\n"
-    "    sh  $v0,78($sp)\n"
-    "    lw  $v0,0($s2)\n"
-    "    addiu  $s3,$zero,10\n"
-    "    addiu  $v1,$v0,72\n"
-    "    sw  $v0,24($sp)\n"
-    "    sw  $v1,28($sp)\n"
-    "    sll  $v0,$s0,6\n"
-    ".L80070D7C:\n"
-    "    sw  $v0,48($sp)\n"
-    "    lw  $v0,16($s1)\n"
-    "    addiu  $a0,$sp,24\n"
-    "    sw  $s3,44($sp)\n"
-    "    jal  func_8007352C\n"
-    "    sw  $v0,32($sp)\n"
-    "    sw  $v0,16($s1)\n"
-    "    lw  $v0,24($sp)\n"
-    "    addiu  $s0,$s0,1\n"
-    "    addiu  $v0,$v0,12\n"
-    "    sw  $v0,24($sp)\n"
-    "    slti  $v0,$s0,6\n"
-    "    bnez  $v0,.L80070D7C\n"
-    "    sll  $v0,$s0,6\n"
-    "    lw  $a0,0($s2)\n"
-    "    addu  $a1,$s4,$zero\n"
-    "    jal  func_8006E480\n"
-    "    sw  $a0,24($sp)\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    sw  $zero,16($sp)\n"
-    "    lw  $a0,24($s1)\n"
-    "    jal  initTexPage\n"
-    "    addu  $a3,$v0,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    lw  $a1,24($s1)\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,40\n"
-    "    addu  $s0,$zero,$zero\n"
-    "    .word 0x9786048C\n"
-    "    lw  $v0,24($s1)\n"
-    "    .word 0x8F8504E4\n"
-    "    addiu  $v0,$v0,12\n"
-    "    sw  $v0,24($s1)\n"
-    "    .word 0x8782048C\n"
-    "    lw  $v1,8($s2)\n"
-    "    addiu  $v0,$v0,1\n"
-    "    addu  $v0,$a1,$v0\n"
-    "    blez  $v0,.L80070EEC\n"
-    "    sw  $v1,24($sp)\n"
-    "    addiu  $s3,$zero,80\n"
-    "    addu  $s2,$zero,$zero\n"
-    ".L80070E28:\n"
-    "    lui  $at,%hi(D_800A3560)\n"
-    "    addu  $at,$at,$s2\n"
-    "    lbu  $v1,%lo(D_800A3560)($at)\n"
-    "    addiu  $v0,$zero,5\n"
-    "    beq  $v1,$v0,.L80070EC4\n"
-    "    sll  $a0,$s0,1\n"
-    "    addiu  $v0,$zero,16\n"
-    "    beq  $v1,$v0,.L80070EC4\n"
-    "    nop\n"
-    "    lw  $v0,24($sp)\n"
-    "    nop\n"
-    "    addiu  $v1,$v0,12\n"
-    "    sw  $v1,28($sp)\n"
-    "    lui  $at,%hi(D_800A3590)\n"
-    "    addu  $at,$at,$a0\n"
-    "    lh  $v0,%lo(D_800A3590)($at)\n"
-    "    nop\n"
-    "    sll  $v0,$v0,4\n"
-    "    addu  $v0,$v1,$v0\n"
-    "    sw  $v0,28($sp)\n"
-    "    sll  $v0,$a2,16\n"
-    "    sra  $v0,$v0,16\n"
-    "    addu  $v0,$a1,$v0\n"
-    "    bnez  $v0,.L80070E9C\n"
-    "    addiu  $v0,$zero,2\n"
-    "    .word 0x8F8304F0\n"
-    "    nop\n"
-    "    bne  $v1,$v0,.L80070EA4\n"
-    "    addiu  $v0,$zero,261\n"
-    ".L80070E9C:\n"
-    "    j  .L80070EA8\n"
-    "    sw  $s3,48($sp)\n"
-    ".L80070EA4:\n"
-    "    sw  $v0,48($sp)\n"
-    ".L80070EA8:\n"
-    "    addiu  $a0,$sp,24\n"
-    "    lw  $v1,16($s1)\n"
-    "    addiu  $v0,$zero,1\n"
-    "    sw  $v0,44($sp)\n"
-    "    jal  func_8007352C\n"
-    "    sw  $v1,32($sp)\n"
-    "    sw  $v0,16($s1)\n"
-    ".L80070EC4:\n"
-    "    addiu  $s3,$s3,364\n"
-    "    addiu  $s0,$s0,1\n"
-    "    .word 0x9786048C\n"
-    "    .word 0x8782048C\n"
-    "    .word 0x8F8504E4\n"
-    "    addiu  $v0,$v0,1\n"
-    "    addu  $v0,$a1,$v0\n"
-    "    slt  $v0,$s0,$v0\n"
-    "    bnez  $v0,.L80070E28\n"
-    "    addiu  $s2,$s2,3\n"
-    ".L80070EEC:\n"
-    "    lw  $a0,24($sp)\n"
-    "    jal  func_8006E480\n"
-    "    addu  $a1,$s4,$zero\n"
-    "    addiu  $a1,$zero,1\n"
-    "    addu  $a2,$zero,$zero\n"
-    "    sw  $zero,16($sp)\n"
-    "    lw  $a0,24($s1)\n"
-    "    jal  initTexPage\n"
-    "    addu  $a3,$v0,$zero\n"
-    "    lui  $a0,%hi(D_800A374C)\n"
-    "    lw  $a0,%lo(D_800A374C)($a0)\n"
-    "    lw  $a1,24($s1)\n"
-    "    jal  ot_Link\n"
-    "    addiu  $a0,$a0,4\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    lw  $v0,24($s1)\n"
-    "    addiu  $a1,$sp,24\n"
-    "    addiu  $v0,$v0,12\n"
-    "    jal  func_80070F78\n"
-    "    sw  $v0,24($s1)\n"
-    "    jal  func_8006ECF4\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    jal  func_80072E10\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    jal  func_80073200\n"
-    "    addu  $a0,$s1,$zero\n"
-    "    lw  $ra,124($sp)\n"
-    "    lw  $s4,120($sp)\n"
-    "    lw  $s3,116($sp)\n"
-    "    lw  $s2,112($sp)\n"
-    "    lw  $s1,108($sp)\n"
-    "    lw  $s0,104($sp)\n"
-    "    addiu  $sp,$sp,128\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+extern s32 D_800A3558;
+extern u8 D_800A3560;
+extern s16 D_800A3590;
+extern s32 D_800A35A8;
+extern s32 D_800A35B0;
+extern s32 D_800A35BC;
+extern s32 D_800A374C;
+extern s32 func_8007352C(s32 *prim);
+extern s32 func_8006E480(s32, s32);
+extern s32 initTexPage(s32, s32, s32, s32, s32);
+extern s32 ot_Link(s32, s32);
+extern s32 func_80069898(s32 a0, s32 *p, s32 mode);
+extern void func_80070F78(s32 a0, s32 *prim);
+extern void func_8006ECF4(s32);
+extern void func_80072E10(s32);
+extern void func_80073200(s32);
+
+typedef struct PrimC70 {
+    s32 p_geom;
+    s32 p_static;
+    s32 link;
+    s32 pad0C;
+    s32 zero10;
+    s32 code;
+    s32 mode;
+    s32 zero1C;
+    s32 width;
+    s32 height;
+    u8  byte28;
+} PrimC70;
+
+typedef struct IconC70 {
+    s16 sp48;
+    s16 sp4A;
+    s16 sp4C;
+    s16 sp4E;
+} IconC70;
+
+void func_80070C70(s32 arg0) {
+    register s32 c60 asm("$20") = 0x60;
+    PrimC70 prim;
+    IconC70 icon;
+    s32 ctx_or_var_s2;
+    s32 var_s0;
+    s32 var_s3;
+
+    prim.zero10 = 0;
+    prim.mode = 0;
+    prim.zero1C = 0;
+    prim.width = 0x100;
+    prim.height = 0x100;
+    prim.byte28 = 0;
+    ctx_or_var_s2 = (s32)*(s32 **)(D_800A35A8 + 0x64);
+    prim.zero1C = 0;
+    prim.mode = 0;
+    prim.p_geom = *(s32 *)(ctx_or_var_s2 + 4);
+    var_s0 = 0;
+    prim.p_static = prim.p_geom + 0xC;
+    { s32 _c1; __asm__ __volatile__("addiu %0,$0,1" : "=r"(_c1)); prim.code = _c1; }
+    prim.link = *(s32 *)(arg0 + 0x10);
+    *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
+    ot_Link(D_800A374C + 4, *(s32 *)(arg0 + 0x18));
+    *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
+    icon.sp4C = 0xE7;
+    icon.sp48 = 0xCC;
+    icon.sp4A = 0x25;
+    icon.sp4E = 1;
+    func_80069898(arg0, (s32 *)&icon, 1);
+    prim.p_geom = *(s32 *)(ctx_or_var_s2);
+    var_s3 = 0xA;
+    prim.p_static = prim.p_geom + 0x48;
+    do {
+        prim.mode = var_s0 << 6;
+        prim.code = var_s3;
+        prim.link = *(s32 *)(arg0 + 0x10);
+        *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
+        var_s0 += 1;
+        prim.p_geom += 0xC;
+    } while (var_s0 < 6);
+    prim.p_geom = *(s32 *)(ctx_or_var_s2);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
+    ot_Link(D_800A374C + 0x28, *(s32 *)(arg0 + 0x18));
+    var_s0 = 0;
+    *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
+    prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8);
+    if ((s32)(D_800A35B0 + ((s16)D_800A3558 + 1)) > 0) {
+        var_s3 = 0x50;
+        ctx_or_var_s2 = 0;
+        do {
+            u8 code = (&D_800A3560)[ctx_or_var_s2];
+            s32 c5, c10, c2;
+            s16 *p3590;
+            __asm__ __volatile__("addiu %0,$0,5" : "=r"(c5));
+            __asm__ __volatile__("addiu %0,$0,16" : "=r"(c10));
+            __asm__ __volatile__("addiu %0,$0,2" : "=r"(c2));
+            __asm__ __volatile__("la %0,D_800A3590" : "=r"(p3590));
+            if ((code != c5) && (code != c10)) {
+                s32 t = prim.p_geom + 0xC;
+                prim.p_static = t;
+                prim.p_static = t + (p3590[var_s0 * 2] << 4);
+                if (((D_800A35B0 + (s16)(u16)D_800A3558) != 0) || (D_800A35BC == c2)) {
+                    prim.mode = var_s3;
+                } else {
+                    s32 c105;
+                    __asm__ __volatile__("addiu %0,$0,261" : "=r"(c105));
+                    prim.mode = c105;
+                }
+                { s32 _c1; __asm__ __volatile__("addiu %0,$0,1" : "=r"(_c1)); prim.code = _c1; }
+                prim.link = *(s32 *)(arg0 + 0x10);
+                *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
+            }
+            var_s3 += 0x16C;
+            var_s0 += 1;
+            ctx_or_var_s2 += 3;
+        } while (var_s0 < (s32)(D_800A35B0 + ((s16)D_800A3558 + 1)));
+    }
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
+    ot_Link(D_800A374C + 4, *(s32 *)(arg0 + 0x18));
+    *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
+    func_80070F78(arg0, (s32 *)&prim);
+    func_8006ECF4(arg0);
+    func_80072E10(arg0);
+    func_80073200(arg0);
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
