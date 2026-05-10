@@ -2382,48 +2382,11 @@ void func_8007F2AC(s32 *a0, s32 *a1, s32 *a2) {
     *a2 = v0;
 }
 PAD_NOPS_2; /* 2 NOPs after func_8007F2AC */
-__asm__(
-    ".section .text\n"
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007F2DC\n"
-    "    lwc2   $0, 0($a0)\n"
-    "    lwc2   $1, 4($a0)\n"
-    "    lwc2   $2, 0($a1)\n"
-    "    lwc2   $3, 4($a1)\n"
-    "    lwc2   $4, 0($a2)\n"
-    "    lwc2   $5, 4($a2)\n"
-    "    nop\n"
-    "    .word 0x4A280030\n"
-    "    lw     $t0, 16($sp)\n"
-    "    lw     $t1, 20($sp)\n"
-    "    lw     $t2, 24($sp)\n"
-    "    swc2   $12, 0($t0)\n"
-    "    swc2   $13, 0($t1)\n"
-    "    swc2   $14, 0($t2)\n"
-    "    cfc2   $v1, $31\n"
-    "    lwc2   $0, 0($a3)\n"
-    "    lwc2   $1, 4($a3)\n"
-    "    nop\n"
-    "    .word 0x4A180001\n"
-    "    lw     $t0, 28($sp)\n"
-    "    lw     $t1, 32($sp)\n"
-    "    lw     $t2, 36($sp)\n"
-    "    swc2   $14, 0($t0)\n"
-    "    swc2   $8, 0($t1)\n"
-    "    cfc2   $t0, $31\n"
-    "    mfc2   $v0, $19\n"
-    "    or     $t0, $t0, $v1\n"
-    "    sw     $t0, 0($t2)\n"
-    "    jr     $ra\n"
-    "    sra    $v0, $v0, 2\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+void func_8007F2DC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007F2DC.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
 PAD_NOPS_2; /* 2 NOPs after func_8007F2DC */
 void *func_8007F35C(s16 *angle_ptr, void *arg1) {
     (void)angle_ptr;
