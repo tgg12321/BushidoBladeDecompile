@@ -36,6 +36,11 @@ def parse_config(path: Path) -> dict[str, list[tuple[str, ...]]]:
             config.setdefault(m.group(1), []).append(("replace_first", unescape_config_text(m.group(2)), unescape_config_text(m.group(3))))
             continue
 
+        m = re.match(r'(\w+)\s*:\s*replace_all\s+"([^"]+)"\s+"([^"]*)"$', line)
+        if m:
+            config.setdefault(m.group(1), []).append(("replace_all", unescape_config_text(m.group(2)), unescape_config_text(m.group(3))))
+            continue
+
         m = re.match(r'(\w+)\s*:\s*insert_before\s+"([^"]+)"\s+"([^"]*)"$', line)
         if m:
             config.setdefault(m.group(1), []).append(("insert_before", unescape_config_text(m.group(2)), unescape_config_text(m.group(3)).replace("\\n", "\n")))
@@ -87,6 +92,12 @@ def apply_ops(func_name: str, text: str, ops: list[tuple[str, ...]]) -> str:
             text, count = re.subn(op[1], op[2], text, count=1, flags=re.MULTILINE)
             if count == 0:
                 print(f'asmfix: WARNING: replace_first did not match in {func_name}: {op[1]}', file=sys.stderr)
+            continue
+
+        if kind == "replace_all":
+            text, count = re.subn(op[1], op[2], text, flags=re.MULTILINE)
+            if count == 0:
+                print(f'asmfix: WARNING: replace_all did not match in {func_name}: {op[1]}', file=sys.stderr)
             continue
 
         if kind == "insert_before":
