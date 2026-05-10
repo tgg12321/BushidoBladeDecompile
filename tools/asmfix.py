@@ -73,7 +73,14 @@ def apply_ops(func_name: str, text: str, ops: list[tuple[str, ...]]) -> str:
                 continue
 
         if kind == "rename":
-            text = text.replace(op[1], op[2])
+            # Use word-boundary regex so `.L800` doesn't match inside
+            # `.L8006BE00`. Without \b on both sides, source label being
+            # a prefix substring of a target rename's output would corrupt
+            # the cascade (this hit when stubs shifted file-wide GCC labels
+            # into the 8xx range that overlaps target's `.L8006xxxx`
+            # absolute-label prefixes).
+            pattern = re.escape(op[1]) + r"(?!\w)"
+            text = re.sub(pattern, op[2], text)
             continue
 
         if kind == "replace_first":
