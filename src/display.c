@@ -261,56 +261,11 @@ u32 *gpu_ClearOTag(u32 *a0, s32 a1) {
     *a0 = (u32)&g_gpu_ot_end & 0xFFFFFF;
     return a0;
 }
-__asm__(
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007B844\n"
-    "    lui        $v0, %hi(g_gpu_debug_level)\n"
-    "    lbu        $v0, %lo(g_gpu_debug_level)($v0)\n"
-    "    addiu      $sp, $sp, -0x20\n"
-    "    sw         $s0, 16($sp)\n"
-    "    addu       $s0, $a0, $zero\n"
-    "    sw         $s1, 20($sp)\n"
-    "    addu       $s1, $a1, $zero\n"
-    "    sltiu      $v0, $v0, 0x2\n"
-    "    bnez       $v0, .Lfunc_8007B844_8007B88C\n"
-    "    sw        $ra, 24($sp)\n"
-    "    lui        $a0, %hi(D_80015F98)\n"
-    "    addiu      $a0, $a0, %lo(D_80015F98)\n"
-    "    addu       $a1, $s0, $zero\n"
-    "    lui        $v0, %hi(g_gpu_debug_func)\n"
-    "    lw         $v0, %lo(g_gpu_debug_func)($v0)\n"
-    "    nop\n"
-    "    jalr       $v0\n"
-    "    addu      $a2, $s1, $zero\n"
-    ".Lfunc_8007B844_8007B88C:\n"
-    "    lui        $v0, %hi(g_gpu_dev_table)\n"
-    "    lw         $v0, %lo(g_gpu_dev_table)($v0)\n"
-    "    addu       $a0, $s0, $zero\n"
-    "    lw         $v0, 44($v0)\n"
-    "    nop\n"
-    "    jalr       $v0\n"
-    "    addu      $a1, $s1, $zero\n"
-    "    lui        $a0, (0xFFFFFF >> 16)\n"
-    "    ori        $a0, $a0, (0xFFFFFF & 0xFFFF)\n"
-    "    addu       $v0, $s0, $zero\n"
-    "    lui        $v1, %hi(g_gpu_ot_end)\n"
-    "    addiu      $v1, $v1, %lo(g_gpu_ot_end)\n"
-    "    and        $v1, $v1, $a0\n"
-    "    sw         $v1, 0($v0)\n"
-    "    lw         $ra, 24($sp)\n"
-    "    lw         $s1, 20($sp)\n"
-    "    lw         $s0, 16($sp)\n"
-    "    addiu      $sp, $sp, 0x20\n"
-    "    jr         $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+void func_8007B844(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007B844.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
 void gpu_SendPacket(u8 *a0) {
     u32 *dev = g_gpu_dev_table;
     u32 size = a0[3];
