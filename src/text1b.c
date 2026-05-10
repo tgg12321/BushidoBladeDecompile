@@ -10555,30 +10555,11 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80052754\n"
-    "    mtc2   $a0, $9\n"
-    "    mtc2   $a1, $10\n"
-    "    mtc2   $a2, $11\n"
-    "    nop\n"
-    "    nop\n"
-    "    sqr    0\n"
-    "    nop\n"
-    "    mfc2   $t0, $25\n"
-    "    mfc2   $t1, $26\n"
-    "    mfc2   $t2, $27\n"
-    "    addu   $v0, $t0, $t1\n"
-    "    jr     $ra\n"
-    "    addu   $v0, $v0, $t2\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80052754(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052754.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
