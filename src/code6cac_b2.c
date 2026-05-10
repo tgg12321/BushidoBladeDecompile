@@ -415,36 +415,10 @@ s32 func_80036D88(void) {
     return D_80101E62 == 0;
 }
 s32 replay_camera_Init(s32 a0, s32 a1) {
-  register s32 v0 asm("$2");
-  register s32 v1 asm("$3");
-  register s32 a3 asm("$7");
-  register volatile s16 *t0 asm("$8") = (volatile s16 *)&D_80101E62;
-
-  __asm__ volatile("lh %0, 0(%1)" : "=r"(v0) : "r"(t0));
-  a3 = a1;
-  if (v0 != 0) {
+    /* Body replaced by asmfix replace_with_asmfile. Inline-asm scaffolding
+     * retired; pure-C decomp pending. */
+    (void)a0; (void)a1;
     return 0;
-  }
-  v0 = ((s32)(a0 << 16)) >> 13;
-  D_80101E60 = a0;
-  v1 = *(s32 *)((u8 *)&SpecialCam + v0);
-  __asm__ volatile("" ::: "memory");
-  a0 = *(s32 *)((u8 *)&D_8008EC38 + v0);
-  D_80101E6C = v1;
-  __asm__ volatile("" ::: "memory");
-  D_80101E70 = a0;
-  v1 = D_80101E70;
-  __asm__ volatile("" ::: "memory");
-  a0 = 2;
-  __asm__ volatile("" ::: "memory");
-  D_80101E7C = a3;
-  D_80101E68 = 0;
-  *t0 = a0;
-  D_80101E9E = 0;
-  v1 += 0x7FF;
-  v1 = (u32)v1 >> 11;
-  D_80101E78 = v1;
-  return 1;
 }
 /* kengo:HIGH  |  nm_replay_cam/replay_camera_Init  |  39i */
 s32 func_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
