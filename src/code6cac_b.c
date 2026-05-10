@@ -3438,51 +3438,8 @@ void mottest_disp(void) {
     }
 }
 void func_80033D38(void) {
-    register u8 *t1 asm("t1") = (u8 *)&g_file_disc_size;
-    register s32 a3 asm("a3");
-    register s32 a0 asm("a0");
-    register s32 v1 asm("v1");
-    register s32 t0 asm("t0");
-    register u8 *a2 asm("a2");
-    register u8 *v0p asm("v0");
-
-    __asm__ volatile ("li %0,3" : "=r"(a3));
-    a0 = D_800A3858;
-    __asm__ volatile ("addiu %0,%1,-1" : "=r"(v1) : "r"(a3));
-loop_1:
-    __asm__ volatile ("sll %0,%1,3
-	addu %0,%2,%0" : "=r"(v0p) : "r"(v1), "r"(t1));
-    if (*((s32 *)(v0p + 0xC)) >= a0) {
-        a3 = v1;
-        v1 = a3 - 1;
-        if (a3 > 0) {
-            goto loop_1;
-        }
-    }
-    D_800A38E9 = a3;
-    if (a3 < 3) {
-        t0 = 2;
-        if (a3 < 2) {
-            a2 = t1 + 0x10;
-        loop_2:
-            {
-                s32 w0 = *((s32 *)(a2 + 0));
-                s32 w1 = *((s32 *)(a2 + 4));
-                *((s32 *)(a2 + 8)) = w0;
-                *((s32 *)(a2 + 0xC)) = w1;
-                __asm__ volatile ("" ::: "memory");
-                t0 -= 1;
-                a2 -= 8;
-            }
-            if (a3 < t0) goto loop_2;
-        }
-        {
-            register u8 *pv1 asm("v1") = t1 + (a3 * 8);
-            *((u8 *)(pv1 + 8)) = (u8)D_80101ED2;
-            *((u8 *)(pv1 + 9)) = (u8)D_80101ED6;
-            *((s32 *)(pv1 + 0xC)) = D_800A3858;
-        }
-    }
+    /* Body replaced by asmfix replace_with_asmfile. Inline-asm
+     * scaffolding retired; pure-C decomp pending. */
 }
 s32 func_80033DF4(void) {
     register u8 state asm("v1");
