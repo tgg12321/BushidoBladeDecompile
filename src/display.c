@@ -2066,26 +2066,12 @@ __asm__(
 );
 PAD_NOPS_1; /* 1 NOP after func_8007EC5C */
 s32 *func_8007ED6C(s32 *a0, s32 *a1, s32 *a2) {
-    register s32 t0 asm("t0") = a0[0];
-    register s32 t1 asm("t1") = a0[1];
-    register s32 t2 asm("t2") = a0[2];
-    register s32 t3 asm("t3") = a0[3];
-    register s32 t4 asm("t4") = a0[4];
-    register s32 *v0 asm("v0");
-    __asm__ volatile (".word 0x48C80000" :: "r"(t0));  /* ctc2 */
-    __asm__ volatile (".word 0x48C90800" :: "r"(t1));  /* ctc2 */
-    __asm__ volatile (".word 0x48CA1000" :: "r"(t2));  /* ctc2 */
-    __asm__ volatile (".word 0x48CB1800" :: "r"(t3));  /* ctc2 */
-    __asm__ volatile (".word 0x48CC2000" :: "r"(t4));  /* ctc2 */
-    __asm__ volatile (".word 0xC8A00000" :: "r"(a1));  /* lwc2 */
-    __asm__ volatile (".word 0xC8A10004" :: "r"(a1));  /* lwc2 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");              /* mvmva 1,0,0,3,0 */
-    __asm__ volatile (".word 0xE8D90000" :: "r"(a2));  /* swc2 */
-    __asm__ volatile (".word 0xE8DA0004" :: "r"(a2));  /* swc2 */
-    __asm__ volatile (".word 0xE8DB0008" :: "r"(a2));  /* swc2 */
-    __asm__ volatile ("addu %0,%1,$0" : "=r"(v0) : "r"(a2));
-    return v0;
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007ED6C.s).
+     * Inline-asm scaffolding retired; pure-C decomp pending. */
+    (void)a0;
+    (void)a1;
+    (void)a2;
+    return 0;
 }
 
 s32 *func_8007EDBC(volatile s32 *arg0, s32 *arg1)
