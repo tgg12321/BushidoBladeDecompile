@@ -10815,43 +10815,11 @@ void func_80052B44(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80052B7C\n"
-    "    lw     $t0, 0($a0)\n"
-    "    lw     $t1, 4($a0)\n"
-    "    lw     $t2, 8($a0)\n"
-    "    lw     $t3, 12($a0)\n"
-    "    lw     $t4, 16($a0)\n"
-    "    lh     $t5, 0($a1)\n"
-    "    lh     $t6, 2($a1)\n"
-    "    lh     $t7, 4($a1)\n"
-    "    ctc2   $t0, $0\n"
-    "    ctc2   $t1, $1\n"
-    "    ctc2   $t2, $2\n"
-    "    ctc2   $t3, $3\n"
-    "    ctc2   $t4, $4\n"
-    "    ctc2   $t5, $5\n"
-    "    ctc2   $t6, $6\n"
-    "    ctc2   $t7, $7\n"
-    "    lwc2   $0, 0($a2)\n"
-    "    lwc2   $1, 4($a2)\n"
-    "    nop\n"
-    "    nop\n"
-    "    rtv0tr\n"
-    "    nop\n"
-    "    swc2   $9, 0($a3)\n"
-    "    swc2   $10, 4($a3)\n"
-    "    jr     $ra\n"
-    "    swc2   $11, 8($a3)\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80052B7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052B7C.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
 void func_80052BE4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052BE4.s).
      * Pure-C decomp pending future purification work. */
