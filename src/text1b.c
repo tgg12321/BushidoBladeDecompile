@@ -11037,25 +11037,11 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80052CD4\n"
-    "    mfc2   $t0, $9\n"
-    "    mfc2   $t1, $10\n"
-    "    sra    $t0, $t0, 2\n"
-    "    sra    $t1, $t1, 2\n"
-    "    sw     $t0, 0($a0)\n"
-    "    sw     $t1, 0($a1)\n"
-    "    jr     $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80052CD4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052CD4.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
 PAD_NOPS_3; /* padding after func_80052CD4 */
 s32 func_80052D00(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052D00.s).
