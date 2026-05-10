@@ -1978,68 +1978,9 @@ void func_8002FF20(u8 *arg0, u8 arg1) {
 }
 
 void func_800300B4(u8 *arg0) {
-    s32 result[3];
-    s16 out[4];
-    s32 buf[8];
-    s32 *a0_ptr;
-    u8 se_id;
-
-    a0_ptr = *(s32 **)(((s32 *)game_GetPlayerData(*(u8 *)(arg0 + 6) < 1)) + *(u8 *)(arg0 + 9));
-
-    {
-        register s32 t4 asm("t4");
-        register s32 t5 asm("t5");
-        register s32 t6 asm("t6");
-        __asm__ volatile ("addu %0, %1, $0" : "=r"(t4) : "r"(a0_ptr));
-        t5 = *(s32 *)(t4);
-        t6 = *(s32 *)(t4 + 4);
-        __asm__ volatile (".word 0x48CD0000" :: "r"(t5));
-        __asm__ volatile (".word 0x48CE0800" :: "r"(t6));
-        t5 = *(s32 *)(t4 + 8);
-        t6 = *(s32 *)(t4 + 0xC);
-        {
-            register s32 t7 asm("t7") = *(s32 *)(t4 + 0x10);
-            __asm__ volatile (".word 0x48CD1000" :: "r"(t5));
-            __asm__ volatile (".word 0x48CE1800" :: "r"(t6));
-            __asm__ volatile (".word 0x48CF2000" :: "r"(t7));
-        }
-    }
-
-    {
-        s32 vtx_addr = (s32)(arg0 + 0x2C);
-        register s32 t4 asm("t4");
-        register s32 t6 asm("t6");
-        register s32 t5 asm("t5");
-        __asm__ volatile ("addu %0, %1, $0" : "=r"(t4) : "r"(vtx_addr));
-        t6 = *(u16 *)(t4 + 4);
-        t5 = *(u16 *)(t4);
-        t6 = t6 << 16;
-        t5 = t5 | t6;
-        __asm__ volatile (".word 0x488D0000" :: "r"(t5));
-        __asm__ volatile (".word 0xC9810008" :: "r"(t4));
-        __asm__ volatile ("nop");
-        __asm__ volatile ("nop");
-        __asm__ volatile (".word 0x4A486012");
-    }
-
-    {
-        s32 *res_ptr = result;
-        register s32 t4 asm("t4") = (s32)res_ptr;
-        __asm__ volatile (".word 0xE9990000" :: "r"(t4));
-        __asm__ volatile (".word 0xE99A0004" :: "r"(t4));
-        __asm__ volatile (".word 0xE99B0008" :: "r"(t4));
-    }
-
-    result[0] += *(s32 *)((u8 *)a0_ptr + 0x14);
-    result[1] += *(s32 *)((u8 *)a0_ptr + 0x18);
-    result[2] += *(s32 *)((u8 *)a0_ptr + 0x1C);
-
-    func_8007E4DC(a0_ptr, (s32 *)(arg0 + 0xC), buf);
-    func_8002F2D0(buf, out);
-
-    se_id = *(&D_8008EB80 + *(s16 *)(arg0 + 2));
-    func_80049718(se_id, 1, result, out);
-    saSeInit_2(*(u8 *)(arg0 + 0xA), se_id, result, out);
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800300B4.s).
+     * Inline-asm scaffolding retired; pure-C decomp pending. */
+    (void)arg0;
 }
 void func_80030208(void) {
     u8 *base;
