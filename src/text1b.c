@@ -10946,28 +10946,11 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80052BE4\n"
-    "    cfc2   $t0, $21\n"
-    "    cfc2   $t1, $22\n"
-    "    cfc2   $t2, $23\n"
-    "    srl    $t0, $t0, 4\n"
-    "    srl    $t1, $t1, 4\n"
-    "    srl    $t2, $t2, 4\n"
-    "    sb     $t0, 0($a0)\n"
-    "    sb     $t1, 1($a0)\n"
-    "    sb     $t2, 2($a0)\n"
-    "    jr     $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80052BE4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052BE4.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
 void func_80052C10(void) {
     *(volatile s32 *)0x1F800400 = 0;
 }
