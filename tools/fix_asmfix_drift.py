@@ -152,12 +152,30 @@ def main() -> int:
 
     if args.func:
         broken = {args.func}
+        dups: set[str] = set()
         print(f"# checking just {args.func} (bypassing build-driver)")
     else:
         print("# running make to detect asmfix-related drift...")
         broken, dups = run_build()
         if dups:
             print(f"# also seen duplicate-label assembler errors: {sorted(dups)}")
+            # Map dup labels back to the slice funcs that target them.
+            # When a 2-rename slice has STRUCTURALLY-SWAPPED source labels
+            # (mine's loop-start gets renamed to canonical's post-loop and
+            # vice versa), both renames succeed (no asmfix warning) but
+            # the assembler then sees mine's renamed label collide with
+            # the insert_before block's explicit label of the same name.
+            # We re-scan asmfix.txt and add the func to broken.
+            if ASMFIX.exists():
+                for raw in ASMFIX.read_text(encoding="utf-8").splitlines():
+                    s = raw.strip()
+                    m = RENAME_RE.match(s)
+                    if not m:
+                        continue
+                    func_name, _, tgt_label, _ = m.group(1), m.group(2), m.group(3), m.group(4)
+                    if tgt_label in dups:
+                        broken.add(func_name)
+                        print(f"# adding {func_name} to broken set (dup label {tgt_label})")
         if not broken:
             print("# no asmfix-related warnings — build either passes or fails for unrelated reasons")
             return 0
