@@ -707,7 +707,8 @@ print(f'Replaced {func} in {src}')
         # Auto-fix .L<N> drift in regfix.txt rules. Default is dry-run;
         # pass --apply to actually edit regfix.txt. Drives off linker
         # errors (only fixes rules where the build genuinely broke).
-        shift || true
+        # Pass --also-verify to additionally run `dc.sh verify --all` to
+        # catch existing-but-wrong-address labels (slow ~3-5 min).
         python3 tools/fix_label_drift.py "$@" 2>&1
         ;;
 
