@@ -249,7 +249,14 @@ def main() -> int:
                 # Build a sorted list of all renames by canonical-order
                 # (line order in asmfix.txt = canonical order).
                 sorted_rules = sorted(rules, key=lambda r: r[0])
-                if len(mine_label_set) == len(sorted_rules):
+                # For 2-rename slices, source-order alignment is more
+                # reliable than numerical: mine's two labels could be in
+                # either numerical order, but their SOURCE position
+                # determines structural meaning (first source-order =
+                # loop-start, last = post-loop). Skip numerical for
+                # slice 2-rename and go directly to source-order.
+                use_source_order_2 = is_slice and len(sorted_rules) == 2
+                if not use_source_order_2 and len(mine_label_set) == len(sorted_rules):
                     for (line_no, src_label, tgt_label, tgt_addr), mine_label in zip(sorted_rules, mine_label_set):
                         if mine_label == src_label:
                             continue
@@ -259,7 +266,7 @@ def main() -> int:
                         new_line = f'{func}: rename "{mine_label}" "{tgt_label}"'
                         print(f"  FIX  {func} line {line_no}: {src_label} -> {mine_label}  (numerical-order, slice-internal)")
                         fixes.append((line_no, new_line))
-                elif len(sorted_rules) == 2:
+                if len(sorted_rules) == 2:
                     # 2-rename slice (typical asmfix-slice pattern: loop-start + post-loop).
                     # Use source-position alignment: first source-order label = loop-start
                     # (1st rename), last source-order label = post-loop (2nd rename).
