@@ -163,19 +163,82 @@ def main() -> int:
         if not rules:
             print(f"  SKIP {func}: no absolute-address rename rules")
             continue
+
+        # Step 1: try address-based resolution for each rule.
+        warnings: list[tuple[int, str, str, int]] = []
         for line_no, src_label, tgt_label, tgt_addr in rules:
             tgt_offset = tgt_addr - link_addr
             if tgt_offset < 0:
                 continue
             mine_label = find_mine_label_for_offset(func, tgt_offset)
             if mine_label is None:
-                print(f"  WARN {func} line {line_no}: no label at offset 0x{tgt_offset:X} for {tgt_label}; manual check needed")
+                warnings.append((line_no, src_label, tgt_label, tgt_offset))
                 continue
             if mine_label == src_label:
                 continue  # already correct
             new_line = f'{func}: rename "{mine_label}" "{tgt_label}"'
             print(f"  FIX  {func} line {line_no}: {src_label} -> {mine_label}  (target {tgt_label} at +0x{tgt_offset:X})")
             fixes.append((line_no, new_line))
+
+        # Step 2: numerical-order fallback for slice-internal anchors.
+        # Slice rules typically have N renames in canonical order
+        # (target labels in fixed sequence). If mine has exactly N matching
+        # `.L<NUM>` labels in the function, align by numerical-order: nth
+        # mine label maps to nth canonical target. This handles labels at
+        # positions inside the asmfix-slice's deleted region (where mine
+        # has GCC-emitted labels but they don't sit at the target byte
+        # offset because mine's loop body length differs from target's).
+        if warnings:
+            insts, labels_in_func = parse_dump_text(func)
+            if labels_in_func:
+                mine_label_set = sorted(
+                    {l for _, l in labels_in_func if re.match(r"^\.L\d+$", l)},
+                    key=lambda x: int(x[2:]),
+                )
+                # Build a sorted list of all renames by canonical-order
+                # (line order in asmfix.txt = canonical order).
+                sorted_rules = sorted(rules, key=lambda r: r[0])
+                if len(mine_label_set) == len(sorted_rules):
+                    for (line_no, src_label, tgt_label, tgt_addr), mine_label in zip(sorted_rules, mine_label_set):
+                        if mine_label == src_label:
+                            continue
+                        # Skip if step-1 already proposed a fix for this line
+                        if any(ln == line_no for ln, _ in fixes):
+                            continue
+                        new_line = f'{func}: rename "{mine_label}" "{tgt_label}"'
+                        print(f"  FIX  {func} line {line_no}: {src_label} -> {mine_label}  (numerical-order, slice-internal)")
+                        fixes.append((line_no, new_line))
+                elif len(sorted_rules) == 2:
+                    # 2-rename slice (typical asmfix-slice pattern: loop-start + post-loop).
+                    # Use source-position alignment: first source-order label = loop-start
+                    # (1st rename), last source-order label = post-loop (2nd rename).
+                    source_ordered = []
+                    seen = set()
+                    for _, lbl in labels_in_func:
+                        if re.match(r"^\.L\d+$", lbl) and lbl not in seen:
+                            source_ordered.append(lbl)
+                            seen.add(lbl)
+                    if len(source_ordered) >= 2:
+                        first_lbl = source_ordered[0]
+                        last_lbl = source_ordered[-1]
+                        for (line_no, src_label, tgt_label, _), mine_label in zip(sorted_rules, [first_lbl, last_lbl]):
+                            if mine_label == src_label:
+                                continue
+                            if any(ln == line_no for ln, _ in fixes):
+                                continue
+                            new_line = f'{func}: rename "{mine_label}" "{tgt_label}"'
+                            print(f"  FIX  {func} line {line_no}: {src_label} -> {mine_label}  (source-order, 2-rename slice)")
+                            fixes.append((line_no, new_line))
+                    else:
+                        for line_no, src_label, tgt_label, tgt_offset in warnings:
+                            print(f"  WARN {func} line {line_no}: no label at offset 0x{tgt_offset:X} for {tgt_label}; manual check needed")
+                else:
+                    for line_no, src_label, tgt_label, tgt_offset in warnings:
+                        print(f"  WARN {func} line {line_no}: no label at offset 0x{tgt_offset:X} for {tgt_label}; manual check needed")
+                        print(f"        ({len(mine_label_set)} mine labels vs {len(sorted_rules)} renames — numerical-order fallback skipped)")
+            else:
+                for line_no, src_label, tgt_label, tgt_offset in warnings:
+                    print(f"  WARN {func} line {line_no}: no labels in dump-text; manual check needed")
 
     if not fixes:
         print("# no fixes proposed (rules with broken funcs all resolve correctly, or only have non-address renames)")
