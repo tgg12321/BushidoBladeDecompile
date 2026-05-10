@@ -69,7 +69,17 @@ ASM_DUP_LABEL_RE = re.compile(
 
 
 def run_build() -> tuple[set[str], set[str]]:
-    """Run `make` and return (funcs_with_asmfix_warnings, dup_labels)."""
+    """Run `make` and return (funcs_with_asmfix_warnings, dup_labels).
+
+    Removes text1b.o / display.o / main.o / code6cac.o first so asmfix-driven
+    warnings get re-emitted; otherwise stale-.o cache hides them and we
+    silently fail to detect drift.
+    """
+    for o in ("build/src/text1b.o", "build/src/display.o", "build/src/main.o", "build/src/code6cac.o"):
+        try:
+            (ROOT / o).unlink()
+        except FileNotFoundError:
+            pass
     try:
         r = subprocess.run(
             ["make"], capture_output=True, text=True, cwd=str(ROOT), timeout=240,
