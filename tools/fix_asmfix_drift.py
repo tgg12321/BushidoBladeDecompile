@@ -174,21 +174,44 @@ def main() -> int:
             print(f"  SKIP {func}: no absolute-address rename rules")
             continue
 
+        # Detect "slice" pattern: function has delete_between rules in
+        # asmfix.txt. For slice patterns, mine's label offsets DO NOT
+        # correspond to canonical offsets (because the slice replaces a
+        # variable-length region with canonical fixed bytes). So step-1
+        # (address-based) is unreliable and can produce wrong matches.
+        # Fall through directly to step-2 (numerical-order or 2-rename
+        # source-order alignment), which IS reliable for slice patterns.
+        is_slice = False
+        if ASMFIX.exists():
+            for raw in ASMFIX.read_text(encoding="utf-8").splitlines():
+                s = raw.strip()
+                if s.startswith(f"{func}:") and "delete_between" in s:
+                    is_slice = True
+                    break
+
         # Step 1: try address-based resolution for each rule.
+        # Skip step-1 entirely for slice patterns where it's unreliable
+        # (mine's label offsets don't correspond to canonical's because
+        # the slice replaces a variable-length region).
         warnings: list[tuple[int, str, str, int]] = []
-        for line_no, src_label, tgt_label, tgt_addr in rules:
-            tgt_offset = tgt_addr - link_addr
-            if tgt_offset < 0:
-                continue
-            mine_label = find_mine_label_for_offset(func, tgt_offset)
-            if mine_label is None:
+        if is_slice:
+            for line_no, src_label, tgt_label, tgt_addr in rules:
+                tgt_offset = tgt_addr - link_addr
                 warnings.append((line_no, src_label, tgt_label, tgt_offset))
-                continue
-            if mine_label == src_label:
-                continue  # already correct
-            new_line = f'{func}: rename "{mine_label}" "{tgt_label}"'
-            print(f"  FIX  {func} line {line_no}: {src_label} -> {mine_label}  (target {tgt_label} at +0x{tgt_offset:X})")
-            fixes.append((line_no, new_line))
+        else:
+            for line_no, src_label, tgt_label, tgt_addr in rules:
+                tgt_offset = tgt_addr - link_addr
+                if tgt_offset < 0:
+                    continue
+                mine_label = find_mine_label_for_offset(func, tgt_offset)
+                if mine_label is None:
+                    warnings.append((line_no, src_label, tgt_label, tgt_offset))
+                    continue
+                if mine_label == src_label:
+                    continue  # already correct
+                new_line = f'{func}: rename "{mine_label}" "{tgt_label}"'
+                print(f"  FIX  {func} line {line_no}: {src_label} -> {mine_label}  (target {tgt_label} at +0x{tgt_offset:X})")
+                fixes.append((line_no, new_line))
 
         # Step 2: numerical-order fallback for slice-internal anchors.
         # Slice rules typically have N renames in canonical order
