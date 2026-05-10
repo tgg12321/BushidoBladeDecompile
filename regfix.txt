@@ -290,7 +290,7 @@ saTan4GaugeInit: subst "sll\s+(\$18,\$5),16" "addu	$18,$5,$zero" @ 44
 saTan4GaugeInit: $2 <-> $3 @ 48-53
 saTan4GaugeInit: $3 <-> $4 @ 52-56
 # Fix outer loop branch target (.L10 -> .L13)
-saTan4GaugeInit: subst "\.L54" ".L54+4" @ 55
+saTan4GaugeInit: subst "\.L37" ".L37+4" @ 55
 # func_80034F88: register alloc + load reorder + address recompute
 func_80034F88: subst "la\t\$5," "la	$3," @ 4
 func_80034F88: subst "\$3,0\(\$5\)" "$4,0($3)" @ 5
