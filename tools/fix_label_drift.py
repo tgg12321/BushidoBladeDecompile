@@ -237,6 +237,37 @@ def fix_rule(rule_text: str, asm_data: dict[str, tuple],
     return new_rule, msg
 
 
+def find_verify_byte_diffs() -> dict[str, int]:
+    """Run `dc.sh verify --all` and parse per-function byte mismatches.
+
+    Catches the case where a regfix `.L<N>` replacement resolves to an
+    EXISTING-but-wrong-address label (linker happy, branch points wrong,
+    bytes differ from target). fix-label-drift's default linker-driven
+    mode misses this because the label is defined.
+
+    Returns {func: byte_diff_count}, empty if everything matches.
+    """
+    # When SHA1 doesn't match, `verify --all` automatically iterates per-func
+    # and reports diffs. When SHA1 matches, it short-circuits — that's the
+    # case we care about (no per-func diffs possible). So no --force needed.
+    result = subprocess.run(
+        ["bash", "tools/dc.sh", "verify", "--all"],
+        capture_output=True, text=True, cwd=str(ROOT), timeout=600,
+    )
+    out = (result.stdout or "") + (result.stderr or "")
+    # Per-func mismatch line:
+    #   func_NAME: NN instruction(s) differ (function at 0xADDR, NNN bytes)
+    diff_re = re.compile(
+        r"^(func_\w+|[A-Za-z_]\w*):\s+(\d+)\s+instruction\(s\)\s+differ\b"
+    )
+    mismatched: dict[str, int] = {}
+    for line in out.splitlines():
+        m = diff_re.match(line.strip())
+        if m:
+            mismatched[m.group(1)] = int(m.group(2))
+    return mismatched
+
+
 def find_broken_labels_from_build() -> dict[str, set[str]]:
     """Run `make` and parse linker errors. Returns {func: {label, ...}}.
     Returns empty dict if the build succeeds.
@@ -275,6 +306,13 @@ def main() -> int:
                     help="Check ALL .L<N> rules (legacy mode, may produce false "
                          "positives for synthesized labels). Default: only fix "
                          "rules implicated by linker errors from a failing build.")
+    ap.add_argument("--also-verify", action="store_true",
+                    help="After linker-driven check passes, also run "
+                         "`dc.sh verify --all` to catch byte-level mismatches "
+                         "where a `.L<N>` label resolves to an existing-but-"
+                         "wrong-address label (linker happy, encoded branch "
+                         "wrong). Slow (~3-5 min on full project). Use after "
+                         "matching commits to confirm no sibling regression.")
     args = ap.parse_args()
 
     if not REGFIX.exists():
@@ -291,7 +329,23 @@ def main() -> int:
         print("Running build to detect actual label drift...")
         broken_from_build = find_broken_labels_from_build()
         if not broken_from_build:
-            print("Build passed — no label drift detected.")
+            print("Build passed — no UNDEFINED label drift detected.")
+            if args.also_verify:
+                print("Running dc.sh verify --all (slow) to catch existing-but-wrong-address labels...")
+                mismatched = find_verify_byte_diffs()
+                if mismatched:
+                    print()
+                    print("WARNING: dc.sh verify reports byte mismatches in:")
+                    for func in sorted(mismatched):
+                        print(f"  {func}  ({mismatched[func]} byte diff(s))")
+                    print()
+                    print("If you have regfix subst rules with `.L<N>` replacements that branch")
+                    print("to a specific address, run `dc.sh find-label-at <func> <target_addr>`")
+                    print("to get the right label and update the rule. Linker-driven")
+                    print("fix-label-drift can't catch this case (label exists, just at the wrong")
+                    print("address).")
+                else:
+                    print("verify --all passed — no byte-level mismatches.")
             return 0
         print(f"Linker reports undefined labels in {len(broken_from_build)} function(s):")
         for func, labels in sorted(broken_from_build.items()):
