@@ -28809,22 +28809,11 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_1; /* padding after func_80078F50 */
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80078F60\n"
-    "    lui  $t1,%hi(jtbl_800A3620)\n"
-    "    lw  $t1,%lo(jtbl_800A3620)($t1)\n"
-    "    nop\n"
-    "    jr  $t1\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80078F60(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80078F60.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
