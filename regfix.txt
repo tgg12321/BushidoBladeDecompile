@@ -4731,3 +4731,16 @@ func_80078F74: delete @ 6
 func_80078F74: delete @ 5
 func_80078F74: delete @ 2
 func_80078F74: delete @ 1
+
+# func_80033D38: retire bridge -> pure C. fixes:
+# 1. addiu $3,$zero,2 -> addiu $3,$7,-1 (defeat constant fold of v1=a3-1)
+# 2. addu $2,$2,$9 -> addu $2,$9,$2 (operand order in addu)
+# 3. delete hoisted sll $3,$7,3 above second loop (idx 19)
+# 4. insert_label and re-point beq so branch lands BEFORE the sll at idx 29 (post-delete)
+# 5. reorder addu $8,$8,-1 to after the two sw stores
+func_80033D38: subst "addiu\s+\$3,\$zero,2" "addiu	$3,$7,-1" @ 3
+func_80033D38: subst "addu\s+\$2,\$2,\$9" "addu	$2,$9,$2" @ 5
+func_80033D38: delete @ 19
+func_80033D38: insert_label ".LfuncD38_INS:" @ 28
+func_80033D38: subst "\.L697" ".LfuncD38_INS" @ 18
+func_80033D38: reorder 24,25,23 @ 23-25
