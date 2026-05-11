@@ -2717,8 +2717,42 @@ void mottest_disp(void) {
     }
 }
 void func_80033D38(void) {
-    /* Body replaced by asmfix replace_with_asmfile. Inline-asm
-     * scaffolding retired; pure-C decomp pending. */
+    register u8 *t1 asm("t1") = (u8 *)&D_80106A50;
+    register s32 a3 asm("a3");
+    register s32 v1 asm("v1");
+    s32 a0;
+
+    a3 = 3;
+    a0 = D_800A3858;
+    v1 = a3 - 1;
+
+loop1:
+    if (*(s32 *)(t1 + v1 * 8 + 0xC) < a0) goto end1;
+    a3 = v1;
+    if (a3 > 0) {
+        v1 = a3 - 1;
+        goto loop1;
+    }
+end1:
+    D_800A38E9 = (u8)a3;
+    if (a3 < 3) {
+        if (a3 < 2) {
+            register s32 t0r asm("t0") = 2;
+            register u8 *a2r asm("a2") = t1 + 0x10;
+            do {
+                *(s32 *)(a2r + 8) = *(s32 *)(a2r + 0);
+                *(s32 *)(a2r + 0xC) = *(s32 *)(a2r + 4);
+                t0r--;
+                a2r -= 8;
+            } while (a3 < t0r);
+        }
+        {
+            register u8 *v3r asm("v1") = t1 + a3 * 8;
+            v3r[0x8] = (u8)D_80101ED2;
+            v3r[0x9] = (u8)D_80101ED6;
+            *(s32 *)(v3r + 0xC) = D_800A3858;
+        }
+    }
 }
 s32 func_80033DF4(void) {
     register u8 state asm("v1");
