@@ -148,15 +148,15 @@ extern s32 D_800A3915_ext;
 extern s32 D_800A36F4_ext;
 
 /* Extern function declarations for decompiled functions */
-extern s32 coli_RobColliScaleEditReset_80078998(s32);
-extern void coli_RobColliScaleEditReset_80078988(s32);
-extern void coli_RobColliScaleEditReset_800789A8(s32);
+extern s32 func_80078998(s32);
+extern void func_80078988(s32);
+extern void func_800789A8(s32);
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void coli_RobColliScaleEditReset_800789F8(s32, s32 *, s32);
-extern void coli_RobColliScaleEditReset_80078A18(s32);
-extern s32 coli_RobColliScaleEditReset_80078A38(s32 *, s32 *);
-extern s32 coli_RobColliScaleEditReset_80078A48(s32 *);
+extern void func_800789F8(s32, s32 *, s32);
+extern void func_80078A18(s32);
+extern s32 func_80078A38(s32 *, s32 *);
+extern s32 func_80078A48(s32 *);
 extern void func_80078BA8(s32);
 extern s32 func_80078B04(s32);
 extern void func_8007A400(void);

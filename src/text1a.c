@@ -25,7 +25,7 @@ extern s32 D_800A3398;
 extern s32 D_800A3244;
 extern s16 D_800963EE;
 extern void md_game_check_mode(s32 *, s32);
-extern void efc_ougi_Init_80054410(s32 *);
+extern void func_80054410(s32 *);
 extern s32 func_800457A0(s32);
 extern void func_80041430(s32, s32);
 extern s32 func_8004019C(s32 *, s32);

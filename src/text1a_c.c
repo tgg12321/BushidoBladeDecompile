@@ -26,7 +26,7 @@ extern s32 D_800A3398;
 extern s32 D_800A3244;
 extern s16 D_800963EE;
 extern void md_game_check_mode(s32 *, s32);
-extern void efc_ougi_Init_80054410(s32 *);
+extern void func_80054410(s32 *);
 extern s32 func_800457A0(s32);
 extern void func_80041430(s32, s32);
 extern s32 func_8004019C(s32 *, s32);
@@ -1048,7 +1048,7 @@ extern void func_8007EB4C(s32 *, s32 *);
 extern void calc_fc_frame_8007EC5C(s32 *, s32 *);
 extern void func_8007E4DC(s32 *, s32 *, s32 *);
 extern void camera_InitMatrix(void);
-extern s32 replay_camera_check_stage_8003E2C8(void);
+extern s32 func_8003E2C8(void);
 extern s32 game_GetPlayerCount(void);
 extern s32 game_GetPause(void);
 extern void func_8004A4E0(void);
@@ -1070,7 +1070,7 @@ void func_80044504(s32 a0) {
     {
         s32 v1;
         if (g_game_timer & 8) {
-            v1 = replay_camera_check_stage_8003E2C8();
+            v1 = func_8003E2C8();
         } else {
             v1 = 0x7FFFFFFF;
         }
@@ -1397,10 +1397,10 @@ void func_80044DE4(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     sp28[2] = -a1[1];
     func_8007E1AC(sp18, sp28, 0x1000 - a2, a2, a3);
 }
-s32 myRobGeneiClose_80044E64(void) {
+s32 func_80044E64(void) {
     return 0x25;
 }
-s32 myRobGeneiClose_80044E6C(void) {
+s32 func_80044E6C(void) {
     return 0x26;
 }
 extern void game_FrameLoop(void);
@@ -1444,11 +1444,11 @@ s32 func_80044FA0(s32 a0, s32 a1) {
     s32 v0;
     s32 s0;
 
-    s0 = a1 - (s32)replay_camera_check_stage_80045814();
+    s0 = a1 - (s32)func_80045814();
     if (s0 < 0) {
         goto set_from_table;
     }
-    v0 = efc_ougi_Init_80045808();
+    v0 = func_80045808();
     if (s0 >= v0) {
         goto set_from_table;
     }
@@ -1457,7 +1457,7 @@ s32 func_80044FA0(s32 a0, s32 a1) {
     } else {
         s0 = 0;
     }
-    v0 = efc_ougi_Init_800457DC();
+    v0 = func_800457DC();
     if (v0 < s0) {
         debug_printf(D_8001528C, a0, s0 - v0);
         while (1) {
@@ -1472,10 +1472,10 @@ do_return:
     return s0;
 }
 extern s16 D_800963EE;
-extern s32 efc_ougi_Init_800457DC(void);
+extern s32 func_800457DC(void);
 s32 func_80045080(s32 a0) {
     s32 val = (s32)*(s16 *)((u8 *)&D_800963EE + a0 * 4) << 11;
-    return efc_ougi_Init_800457DC() - val;
+    return func_800457DC() - val;
 }
 void seq_Start(s32 a0, s32 a1) {
     func_80044E74(a0 + 0x25, a1);
@@ -1792,10 +1792,10 @@ s32 func_800457A0(s32 a0) {
     }
     return 0;
 }
-void myRobGeneiClose_800457D4(void) {
+void func_800457D4(void) {
 }
 extern s32 D_800A33A4;
-s32 efc_ougi_Init_800457DC(void) {
+s32 func_800457DC(void) {
     return D_800A33A4;
 }
 extern s32 D_800A33A8;
@@ -1803,14 +1803,14 @@ s32 func_800457E8(void) {
     return 0x45000 - D_800A33A8;
 }
 extern s32 D_800A33A0;
-s32 efc_ougi_Init_800457FC(void) {
+s32 func_800457FC(void) {
     return D_800A33A0;
 }
-s32 efc_ougi_Init_80045808(void) {
+s32 func_80045808(void) {
     return 0x45000;
 }
 extern u8 D_800A9D10;
-void *replay_camera_check_stage_80045814(void) {
+void *func_80045814(void) {
     return &D_800A9D10;
 }
 extern void func_800520B8(s32, s32, s32);

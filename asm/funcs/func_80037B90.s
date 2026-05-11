@@ -14,7 +14,7 @@ glabel func_80037B90
     /* 283C0 80037BC0 8CE6010C */  jal        func_80079A30
     /* 283C4 80037BC4 3800B0AF */   sw        $s0, 0x38($sp)
     /* 283C8 80037BC8 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 283CC 80037BCC 7AE2010C */  jal        coli_RobColliScaleEditReset_800789E8
+    /* 283CC 80037BCC 7AE2010C */  jal        func_800789E8
     /* 283D0 80037BD0 01800534 */   ori       $a1, $zero, 0x8001
     /* 283D4 80037BD4 21804000 */  addu       $s0, $v0, $zero
     /* 283D8 80037BD8 FFFF0224 */  addiu      $v0, $zero, -0x1
@@ -27,7 +27,7 @@ glabel func_80037B90
     /* 283F4 80037BF4 00000000 */   nop
     /* 283F8 80037BF8 21200002 */  addu       $a0, $s0, $zero
     /* 283FC 80037BFC 5800A68F */  lw         $a2, 0x58($sp)
-    /* 28400 80037C00 7EE2010C */  jal        coli_RobColliScaleEditReset_800789F8
+    /* 28400 80037C00 7EE2010C */  jal        func_800789F8
     /* 28404 80037C04 21282002 */   addu      $a1, $s1, $zero
     /* 28408 80037C08 59DE000C */  jal        func_80037964
     /* 2840C 80037C0C 00000000 */   nop

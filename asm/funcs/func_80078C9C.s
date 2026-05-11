@@ -16,14 +16,14 @@ glabel func_80078C9C
     /* 694D4 80078CD4 00000000 */   nop
     /* 694D8 80078CD8 72E2010C */  jal        ExitCriticalSection
     /* 694DC 80078CDC 00000000 */   nop
-    /* 694E0 80078CE0 96E2010C */  jal        coli_RobColliScaleEditReset_80078A58
+    /* 694E0 80078CE0 96E2010C */  jal        func_80078A58
     /* 694E4 80078CE4 21200000 */   addu      $a0, $zero, $zero
     /* 694E8 80078CE8 68E3010C */  jal        func_80078DA0
     /* 694EC 80078CEC 00000000 */   nop
     /* 694F0 80078CF0 21200002 */  addu       $a0, $s0, $zero
     /* 694F4 80078CF4 21282002 */  addu       $a1, $s1, $zero
     /* 694F8 80078CF8 21304002 */  addu       $a2, $s2, $zero
-    /* 694FC 80078CFC C0E3010C */  jal        saTan0GaugeInit_80078F00
+    /* 694FC 80078CFC C0E3010C */  jal        func_80078F00
     /* 69500 80078D00 21386002 */   addu      $a3, $s3, $zero
     /* 69504 80078D04 0AE4010C */  jal        func_80079028
     /* 69508 80078D08 00000000 */   nop

@@ -7,7 +7,7 @@ glabel SetCurrentCursor
     /* 2CF28 8003C728 21804000 */   addu      $s0, $v0, $zero
     /* 2CF2C 8003C72C 225A000C */  jal        gpu_InitDisplay
     /* 2CF30 8003C730 00000000 */   nop
-    /* 2CF34 8003C734 D681010C */  jal        replay_camera_check_stage_80060758
+    /* 2CF34 8003C734 D681010C */  jal        func_80060758
     /* 2CF38 8003C738 00000000 */   nop
     /* 2CF3C 8003C73C 21400000 */  addu       $t0, $zero, $zero
     /* 2CF40 8003C740 8888073C */  lui        $a3, (0x88888889 >> 16)

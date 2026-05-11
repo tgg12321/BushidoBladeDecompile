@@ -10874,7 +10874,7 @@ void func_80053E9C(s32 arg0, s32 arg1) {
     (void)arg0; (void)arg1;
 }
 extern s32 D_800A33F0;
-void efc_ougi_Init_80054410(s32 a0) {
+void func_80054410(s32 a0) {
     D_800A33F0 = a0;
 }
 void func_8005441C(s32 a0) {
@@ -11093,11 +11093,11 @@ void func_80054FDC(s32 a0) {
     }
 }
 extern s32 D_800EFB0C;
-s32* replay_camera_check_stage_8005507C(void) {
+s32* func_8005507C(void) {
     return &D_800EFB0C;
 }
 extern s32 D_80101E1C;
-s32* replay_camera_check_stage_8005508C(void) {
+s32* func_8005508C(void) {
     return &D_80101E1C;
 }
 void func_8005509C(s32 arg0) {
@@ -12709,7 +12709,7 @@ s32 func_80060544(s32 arg0, s32 arg1) {
 }
 extern u16 D_800A32B6;
 extern u16 D_800A32B4;
-void replay_camera_check_stage_80060758(void) {
+void func_80060758(void) {
     D_800A32B6 = 0;
     D_800A32B4 = 0;
 }
@@ -16973,17 +16973,17 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_80078958\n"
+    "glabel func_80078958\n"
     "addiu $t2, $zero, 0xA0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x70\n"
-    "endlabel coli_RobColliScaleEditReset_80078958\n"
+    "endlabel func_80078958\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_80078958 */
+PAD_NOPS_1; /* padding after func_80078958 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
@@ -17003,62 +17003,62 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_80078978\n"
+    "glabel func_80078978\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x8\n"
-    "endlabel coli_RobColliScaleEditReset_80078978\n"
+    "endlabel func_80078978\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_80078978 */
+PAD_NOPS_1; /* padding after func_80078978 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_80078988\n"
+    "glabel func_80078988\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x9\n"
-    "endlabel coli_RobColliScaleEditReset_80078988\n"
+    "endlabel func_80078988\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_80078988 */
+PAD_NOPS_1; /* padding after func_80078988 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_80078998\n"
+    "glabel func_80078998\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0xB\n"
-    "endlabel coli_RobColliScaleEditReset_80078998\n"
+    "endlabel func_80078998\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_80078998 */
+PAD_NOPS_1; /* padding after func_80078998 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_800789A8\n"
+    "glabel func_800789A8\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0xC\n"
-    "endlabel coli_RobColliScaleEditReset_800789A8\n"
+    "endlabel func_800789A8\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_800789A8 */
+PAD_NOPS_1; /* padding after func_800789A8 */
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
@@ -17108,122 +17108,122 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_800789E8\n"
+    "glabel func_800789E8\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x32\n"
-    "endlabel coli_RobColliScaleEditReset_800789E8\n"
+    "endlabel func_800789E8\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_800789E8 */
+PAD_NOPS_1; /* padding after func_800789E8 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_800789F8\n"
+    "glabel func_800789F8\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x34\n"
-    "endlabel coli_RobColliScaleEditReset_800789F8\n"
+    "endlabel func_800789F8\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_800789F8 */
+PAD_NOPS_1; /* padding after func_800789F8 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_80078A08\n"
+    "glabel func_80078A08\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x35\n"
-    "endlabel coli_RobColliScaleEditReset_80078A08\n"
+    "endlabel func_80078A08\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_80078A08 */
+PAD_NOPS_1; /* padding after func_80078A08 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_80078A18\n"
+    "glabel func_80078A18\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x36\n"
-    "endlabel coli_RobColliScaleEditReset_80078A18\n"
+    "endlabel func_80078A18\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_80078A18 */
+PAD_NOPS_1; /* padding after func_80078A18 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_80078A28\n"
+    "glabel func_80078A28\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x41\n"
-    "endlabel coli_RobColliScaleEditReset_80078A28\n"
+    "endlabel func_80078A28\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_80078A28 */
+PAD_NOPS_1; /* padding after func_80078A28 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_80078A38\n"
+    "glabel func_80078A38\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x42\n"
-    "endlabel coli_RobColliScaleEditReset_80078A38\n"
+    "endlabel func_80078A38\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_80078A38 */
+PAD_NOPS_1; /* padding after func_80078A38 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_80078A48\n"
+    "glabel func_80078A48\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x43\n"
-    "endlabel coli_RobColliScaleEditReset_80078A48\n"
+    "endlabel func_80078A48\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_80078A48 */
+PAD_NOPS_1; /* padding after func_80078A48 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel coli_RobColliScaleEditReset_80078A58\n"
+    "glabel func_80078A58\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x5B\n"
-    "endlabel coli_RobColliScaleEditReset_80078A58\n"
+    "endlabel func_80078A58\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after coli_RobColliScaleEditReset_80078A58 */
+PAD_NOPS_1; /* padding after func_80078A58 */
 s32 func_80078A68(s32 arg0, s32 arg1, s32 arg2) {
     s32 a3;
     s32 t0;
@@ -17308,9 +17308,9 @@ void func_800790C0(void);
 void EnterCriticalSection(void);
 void func_80078F88(void);
 void ExitCriticalSection(void);
-void coli_RobColliScaleEditReset_80078A58(s32);
+void func_80078A58(s32);
 s32 func_80078DA0(void);
-void saTan0GaugeInit_80078F30(s32, s32, s32, s32);
+void func_80078F30(s32, s32, s32, s32);
 void func_80079028(void);
 extern s32 D_8009BD80;
 void func_80078C00(s32 a0, s32 a1, s32 a2, s32 a3) {
@@ -17318,9 +17318,9 @@ void func_80078C00(s32 a0, s32 a1, s32 a2, s32 a3) {
     EnterCriticalSection();
     func_80078F88();
     ExitCriticalSection();
-    coli_RobColliScaleEditReset_80078A58(0);
+    func_80078A58(0);
     func_80078DA0();
-    saTan0GaugeInit_80078F30(a0, a1, a2, a3);
+    func_80078F30(a0, a1, a2, a3);
     func_80079028();
     D_8009BD80 = 1;
 }
@@ -17328,9 +17328,9 @@ void func_800790C0(void);
 void EnterCriticalSection(void);
 void func_80078F88(void);
 void ExitCriticalSection(void);
-void coli_RobColliScaleEditReset_80078A58(s32);
+void func_80078A58(s32);
 s32 func_80078DA0(void);
-void saTan0GaugeInit_80078F00(s32, s32, s32, s32);
+void func_80078F00(s32, s32, s32, s32);
 void func_80079028(void);
 extern s32 D_8009BD80;
 void func_80078C9C(s32 a0, s32 a1, s32 a2, s32 a3) {
@@ -17338,34 +17338,34 @@ void func_80078C9C(s32 a0, s32 a1, s32 a2, s32 a3) {
     EnterCriticalSection();
     func_80078F88();
     ExitCriticalSection();
-    coli_RobColliScaleEditReset_80078A58(0);
+    func_80078A58(0);
     func_80078DA0();
-    saTan0GaugeInit_80078F00(a0, a1, a2, a3);
+    func_80078F00(a0, a1, a2, a3);
     func_80079028();
     D_8009BD80 = 1;
 }
-void saTan0GaugeInit_80078F10(void);
-void coli_RobColliScaleEditReset_80078A58(s32);
+void func_80078F10(void);
+void func_80078A58(s32);
 void func_80078F60(void);
 void func_80078D38(void) {
-    saTan0GaugeInit_80078F10();
-    coli_RobColliScaleEditReset_80078A58(0);
+    func_80078F10();
+    func_80078A58(0);
     func_80078F60();
 }
 extern s32 D_8009BD80;
 void func_80078F74(void);
-void saTan0GaugeInit_80078F20(void);
+void func_80078F20(void);
 s32 func_80078E20(void);
 void pad_Init(void) {
     func_80078F74();
-    saTan0GaugeInit_80078F20();
+    func_80078F20();
     func_80078E20();
     D_8009BD80 = 0;
 }
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void saTan0GaugeInit_80078F50(s32, u32 *);
-extern void saTan0GaugeInit_80078F40(s32, u32 *);
+extern void func_80078F50(s32, u32 *);
+extern void func_80078F40(s32, u32 *);
 extern void func_80078E58(void);
 extern s32 func_80078EC0(void);
 extern u32 D_800F183C;
@@ -17380,18 +17380,18 @@ s32 func_80078DA0(void) {
     D_800F1840 = (u32)func_80078EC0;
     D_800F1838 = 0;
     D_800F1844 = 0;
-    saTan0GaugeInit_80078F50(1, s0);
-    saTan0GaugeInit_80078F40(1, s0);
+    func_80078F50(1, s0);
+    func_80078F40(1, s0);
     ExitCriticalSection();
     return 1;
 }
 void EnterCriticalSection(void);
-void saTan0GaugeInit_80078F50(s32, s16*);
+void func_80078F50(s32, s16*);
 void ExitCriticalSection(void);
 extern s16 D_800F1838;
 s32 func_80078E20(void) {
     EnterCriticalSection();
-    saTan0GaugeInit_80078F50(1, &D_800F1838);
+    func_80078F50(1, &D_800F1838);
     ExitCriticalSection();
     return 1;
 }
@@ -17425,92 +17425,92 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel saTan0GaugeInit_80078F00\n"
+    "glabel func_80078F00\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x12\n"
-    "endlabel saTan0GaugeInit_80078F00\n"
+    "endlabel func_80078F00\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after saTan0GaugeInit_80078F00 */
+PAD_NOPS_1; /* padding after func_80078F00 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel saTan0GaugeInit_80078F10\n"
+    "glabel func_80078F10\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x13\n"
-    "endlabel saTan0GaugeInit_80078F10\n"
+    "endlabel func_80078F10\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after saTan0GaugeInit_80078F10 */
+PAD_NOPS_1; /* padding after func_80078F10 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel saTan0GaugeInit_80078F20\n"
+    "glabel func_80078F20\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x14\n"
-    "endlabel saTan0GaugeInit_80078F20\n"
+    "endlabel func_80078F20\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after saTan0GaugeInit_80078F20 */
+PAD_NOPS_1; /* padding after func_80078F20 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel saTan0GaugeInit_80078F30\n"
+    "glabel func_80078F30\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x15\n"
-    "endlabel saTan0GaugeInit_80078F30\n"
+    "endlabel func_80078F30\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after saTan0GaugeInit_80078F30 */
+PAD_NOPS_1; /* padding after func_80078F30 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel saTan0GaugeInit_80078F40\n"
+    "glabel func_80078F40\n"
     "addiu $t2, $zero, 0xC0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x2\n"
-    "endlabel saTan0GaugeInit_80078F40\n"
+    "endlabel func_80078F40\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after saTan0GaugeInit_80078F40 */
+PAD_NOPS_1; /* padding after func_80078F40 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel saTan0GaugeInit_80078F50\n"
+    "glabel func_80078F50\n"
     "addiu $t2, $zero, 0xC0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x3\n"
-    "endlabel saTan0GaugeInit_80078F50\n"
+    "endlabel func_80078F50\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after saTan0GaugeInit_80078F50 */
+PAD_NOPS_1; /* padding after func_80078F50 */
 void func_80078F60(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80078F60.s).
      * Pure-C decomp pending future purification work. */

@@ -20,7 +20,7 @@ glabel func_800165F8
     /* 6E40 80016640 A8590008 */  j          .L800166A0
     /* 6E44 80016644 FEFF0224 */   addiu     $v0, $zero, -0x2
   .L80016648:
-    /* 6E48 80016648 86E2010C */  jal        coli_RobColliScaleEditReset_80078A18
+    /* 6E48 80016648 86E2010C */  jal        func_80078A18
     /* 6E4C 8001664C 21202002 */   addu      $a0, $s1, $zero
     /* 6E50 80016650 A8590008 */  j          .L800166A0
     /* 6E54 80016654 FFFF0224 */   addiu     $v0, $zero, -0x1

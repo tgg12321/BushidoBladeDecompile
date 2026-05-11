@@ -5,7 +5,7 @@ glabel func_8008BE04
     /* 7C610 8008BE10 1000B0AF */   sw        $s0, 0x10($sp)
     /* 7C614 8008BE14 0A80043C */  lui        $a0, %hi(D_800A307C)
     /* 7C618 8008BE18 7C308424 */  addiu      $a0, $a0, %lo(D_800A307C)
-    /* 7C61C 8008BE1C 1434020C */  jal        saTan0GaugeInit_8008D050
+    /* 7C61C 8008BE1C 1434020C */  jal        func_8008D050
     /* 7C620 8008BE20 21804000 */   addu      $s0, $v0, $zero
     /* 7C624 8008BE24 01000224 */  addiu      $v0, $zero, 0x1
     /* 7C628 8008BE28 03000216 */  bne        $s0, $v0, .L8008BE38

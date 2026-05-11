@@ -222,6 +222,139 @@ def substitute_in_sources(to_apply: list[dict]) -> dict[str, int]:
     return edits
 
 
+def revert_rename(addr: int, asm_path: Path) -> str | None:
+    """Rename asm/funcs/<current_name>.s back to func_<ADDR>.s and update
+    the glabel/endlabel inside. Returns the old (now restored) func_XXX
+    name on success, None if nothing to do."""
+    old_func = f"func_{addr:08X}"
+    new_path = asm_path / f"{old_func}.s"
+    if new_path.exists():
+        # Already a func_XXX name -- already reverted.
+        return None
+    # Find the asm file at this address (any non-func_/non-D_ name).
+    addr_pat = re.compile(rf"\b{addr:08X}\b", re.IGNORECASE)
+    cur_path = None
+    for p in asm_path.glob("*.s"):
+        if p.stem.startswith("func_") or p.stem.startswith("D_"):
+            continue
+        lines = p.read_text(encoding="utf-8", errors="replace").splitlines()
+        if len(lines) >= 2 and addr_pat.search(lines[1]):
+            cur_path = p
+            break
+    if cur_path is None:
+        return None
+    cur_name = cur_path.stem
+    body = cur_path.read_text(encoding="utf-8", errors="replace")
+    body = re.sub(rf"\b{re.escape(cur_name)}\b", old_func, body)
+    new_path.write_text(body, encoding="utf-8", newline="\n")
+    cur_path.unlink()
+    return cur_name
+
+
+def cmd_revert(args) -> int:
+    """Revert renames listed in --revert-list (text file, one BB2 hex
+    address per line; comments after `#` allowed). Reverses every
+    artifact in lockstep: named_syms removal, src/asm substitutions,
+    asm file rename + glabel restore, jal callsite scrub."""
+    addrs: list[int] = []
+    p = Path(args.revert_list)
+    if not p.exists():
+        print(f"ERROR: revert list {args.revert_list} not found", file=sys.stderr)
+        return 1
+    for line in p.read_text().splitlines():
+        line = line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        if line.lower().startswith("0x"):
+            line = line[2:]
+        try:
+            addrs.append(int(line, 16))
+        except ValueError:
+            print(f"  WARN: ignoring non-hex line: {line}", file=sys.stderr)
+    if not addrs:
+        print("ERROR: revert list contained no addresses", file=sys.stderr)
+        return 1
+
+    # Walk asm/funcs/ to figure out current renames for each address.
+    cur_name_for: dict[int, str] = {}
+    addr_re = re.compile(r"\b(80[0-9A-Fa-f]{6})\b")
+    for f in sorted(ASM_FUNCS.glob("*.s")):
+        if f.stem.startswith("func_") or f.stem.startswith("D_"):
+            continue
+        lines = f.read_text(encoding="utf-8", errors="replace").splitlines()
+        if len(lines) >= 2:
+            m = addr_re.search(lines[1])
+            if m:
+                cur_name_for[int(m.group(1), 16)] = f.stem
+
+    plan: list[tuple[int, str]] = []  # (addr, current_name)
+    for a in addrs:
+        if a in cur_name_for:
+            plan.append((a, cur_name_for[a]))
+        else:
+            print(f"  SKIP 0x{a:08X}: no current rename found", file=sys.stderr)
+
+    print(f"Reverting {len(plan)} renames...")
+    if not args.apply:
+        for a, n in plan[:20]:
+            print(f"  0x{a:08X}  {n:<40s} -> func_{a:08X}")
+        if len(plan) > 20:
+            print(f"  ... +{len(plan)-20} more")
+        print()
+        print("(dry-run -- pass --apply to write changes)")
+        return 0
+
+    # Step 1: rename asm/funcs/<name>.s -> asm/funcs/func_<ADDR>.s
+    for a, _ in plan:
+        revert_rename(a, ASM_FUNCS)
+
+    # Step 2: substitute names back across src/include/regfix/asmfix/sdata
+    # and asm/* using the inverse map.
+    inv_map = {n: f"func_{a:08X}" for a, n in plan}
+    keys = "|".join(re.escape(k) for k in inv_map)
+    pat = re.compile(rf"\b({keys})\b")
+
+    edits: dict[str, int] = {}
+    files: list[Path] = []
+    files.extend(sorted(SRC_DIR.glob("*.c")))
+    files.extend(sorted((ROOT / "include").glob("*.h")))
+    for name in ("regfix.txt", "asmfix.txt", "sdata_funcs.txt",
+                  "sdata_exclude.txt", "expand_lb_funcs.txt"):
+        pp = ROOT / name
+        if pp.exists():
+            files.append(pp)
+    files.extend(sorted(ASM_FUNCS.glob("*.s")))
+    files.extend(sorted((ROOT / "asm").glob("*.s")))
+    files.extend(sorted((ROOT / "asm" / "data").glob("*.s")))
+    for pp in files:
+        text = pp.read_text(encoding="utf-8", errors="replace")
+        new_text, n = pat.subn(lambda m: inv_map[m.group(1)], text)
+        if n > 0:
+            pp.write_text(new_text, encoding="utf-8", newline="\n")
+            edits[str(pp.relative_to(ROOT))] = n
+    total = sum(edits.values())
+
+    # Step 3: remove the reverted entries from named_syms.txt.
+    if NAMED_SYMS.exists():
+        ns_lines = NAMED_SYMS.read_text(errors="replace").splitlines()
+        revert_names = set(inv_map.keys())
+        kept = []
+        removed = 0
+        for line in ns_lines:
+            m = SYM_LINE.match(line)
+            if m and m.group(1) in revert_names:
+                removed += 1
+                continue
+            kept.append(line)
+        NAMED_SYMS.write_text("\n".join(kept) + "\n", encoding="utf-8",
+                                newline="\n")
+        print(f"Removed {removed} entries from named_syms.txt")
+    print(f"Substituted {total} references back across {len(edits)} files")
+    print()
+    print("Verify: `wsl bash -c \"... && make\"`")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -236,7 +369,14 @@ def main() -> int:
                     help="With --include-conflicts: only apply conflict "
                          "groups that contain at least one callgraph / "
                          "caller-unique / caller-callgraph member")
+    ap.add_argument("--revert-list", metavar="FILE",
+                    help="Revert renames listed in FILE (one BB2 hex "
+                         "address per line; reverses all artifacts in "
+                         "lockstep). Pass --apply to actually write.")
     args = ap.parse_args()
+
+    if args.revert_list:
+        return cmd_revert(args)
 
     if not CSV_IN.exists():
         print(f"ERROR: {CSV_IN} missing -- run tools/kengo_match.py first.",

@@ -11,7 +11,7 @@ glabel func_8003BFC4
     /* 2C7E8 8003BFE8 01000424 */   addiu     $a0, $zero, 0x1
     /* 2C7EC 8003BFEC 1D5B000C */  jal        file_ResetDmaFlag
     /* 2C7F0 8003BFF0 00000000 */   nop
-    /* 2C7F4 8003BFF4 0516010C */  jal        replay_camera_check_stage_80045814
+    /* 2C7F4 8003BFF4 0516010C */  jal        func_80045814
     /* 2C7F8 8003BFF8 00000000 */   nop
     /* 2C7FC 8003BFFC 21204000 */  addu       $a0, $v0, $zero
     /* 2C800 8003C000 1180053C */  lui        $a1, (0x80118000 >> 16)

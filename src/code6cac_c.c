@@ -146,15 +146,15 @@ extern s32 D_800A3915_ext;
 extern s32 D_800A36F4_ext;
 
 /* Extern function declarations for decompiled functions */
-extern s32 coli_RobColliScaleEditReset_80078998(s32);
-extern void coli_RobColliScaleEditReset_80078988(s32);
-extern void coli_RobColliScaleEditReset_800789A8(s32);
+extern s32 func_80078998(s32);
+extern void func_80078988(s32);
+extern void func_800789A8(s32);
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void coli_RobColliScaleEditReset_800789F8(s32, s32 *, s32);
-extern void coli_RobColliScaleEditReset_80078A18(s32);
-extern s32 coli_RobColliScaleEditReset_80078A38(s32 *, s32 *);
-extern s32 coli_RobColliScaleEditReset_80078A48(s32 *);
+extern void func_800789F8(s32, s32 *, s32);
+extern void func_80078A18(s32);
+extern s32 func_80078A38(s32 *, s32 *);
+extern s32 func_80078A48(s32 *);
 extern void func_80078BA8(s32);
 extern s32 func_80078B04(s32);
 extern void func_8007A400(void);
@@ -175,37 +175,37 @@ extern s32 D_800F34D8;
 void pad_press_control(void) {
     func_8007A370(1);
     func_8007A3C8();
-    coli_RobColliScaleEditReset_80078958();
-    coli_RobColliScaleEditReset_80078A58(0);
+    func_80078958();
+    func_80078A58(0);
     EnterCriticalSection();
-    D_800A37DC = coli_RobColliScaleEditReset_80078978(0xF4000001, 4, 0x2000, 0);
-    D_800A37F0 = coli_RobColliScaleEditReset_80078978(0xF4000001, 0x8000, 0x2000, 0);
-    D_800A37FC = coli_RobColliScaleEditReset_80078978(0xF4000001, 0x100, 0x2000, 0);
-    D_800A3800 = coli_RobColliScaleEditReset_80078978(0xF4000001, 0x2000, 0x2000, 0);
-    D_800A3838 = coli_RobColliScaleEditReset_80078978(0xF0000011, 4, 0x2000, 0);
-    D_800A383C = coli_RobColliScaleEditReset_80078978(0xF0000011, 0x8000, 0x2000, 0);
-    D_800A3848 = coli_RobColliScaleEditReset_80078978(0xF0000011, 0x100, 0x2000, 0);
-    D_800A3850 = coli_RobColliScaleEditReset_80078978(0xF0000011, 0x2000, 0x2000, 0);
+    D_800A37DC = func_80078978(0xF4000001, 4, 0x2000, 0);
+    D_800A37F0 = func_80078978(0xF4000001, 0x8000, 0x2000, 0);
+    D_800A37FC = func_80078978(0xF4000001, 0x100, 0x2000, 0);
+    D_800A3800 = func_80078978(0xF4000001, 0x2000, 0x2000, 0);
+    D_800A3838 = func_80078978(0xF0000011, 4, 0x2000, 0);
+    D_800A383C = func_80078978(0xF0000011, 0x8000, 0x2000, 0);
+    D_800A3848 = func_80078978(0xF0000011, 0x100, 0x2000, 0);
+    D_800A3850 = func_80078978(0xF0000011, 0x2000, 0x2000, 0);
     ExitCriticalSection();
-    coli_RobColliScaleEditReset_800789A8(D_800A37DC);
-    coli_RobColliScaleEditReset_800789A8(D_800A37F0);
-    coli_RobColliScaleEditReset_800789A8(D_800A37FC);
-    coli_RobColliScaleEditReset_800789A8(D_800A3800);
-    coli_RobColliScaleEditReset_800789A8(D_800A3838);
-    coli_RobColliScaleEditReset_800789A8(D_800A383C);
-    coli_RobColliScaleEditReset_800789A8(D_800A3848);
-    coli_RobColliScaleEditReset_800789A8(D_800A3850);
+    func_800789A8(D_800A37DC);
+    func_800789A8(D_800A37F0);
+    func_800789A8(D_800A37FC);
+    func_800789A8(D_800A3800);
+    func_800789A8(D_800A3838);
+    func_800789A8(D_800A383C);
+    func_800789A8(D_800A3848);
+    func_800789A8(D_800A3850);
 }
 void func_80037774(void) {
     EnterCriticalSection();
-    coli_RobColliScaleEditReset_80078988(D_800A37DC);
-    coli_RobColliScaleEditReset_80078988(D_800A37F0);
-    coli_RobColliScaleEditReset_80078988(D_800A37FC);
-    coli_RobColliScaleEditReset_80078988(D_800A3800);
-    coli_RobColliScaleEditReset_80078988(D_800A3838);
-    coli_RobColliScaleEditReset_80078988(D_800A383C);
-    coli_RobColliScaleEditReset_80078988(D_800A3848);
-    coli_RobColliScaleEditReset_80078988(D_800A3850);
+    func_80078988(D_800A37DC);
+    func_80078988(D_800A37F0);
+    func_80078988(D_800A37FC);
+    func_80078988(D_800A3800);
+    func_80078988(D_800A3838);
+    func_80078988(D_800A383C);
+    func_80078988(D_800A3848);
+    func_80078988(D_800A3850);
     ExitCriticalSection();
     func_8007A400();
 }
@@ -214,15 +214,15 @@ s32 func_80037804(void) {
     s32 result;
     s32 one;
     s32 temp;
-    result = (coli_RobColliScaleEditReset_80078998(D_800A37DC) == 1);
+    result = (func_80078998(D_800A37DC) == 1);
     one = 1;
-    if (coli_RobColliScaleEditReset_80078998(D_800A37F0) == one) {
+    if (func_80078998(D_800A37F0) == one) {
         result = 2;
     }
-    if (coli_RobColliScaleEditReset_80078998(D_800A37FC) == one) {
+    if (func_80078998(D_800A37FC) == one) {
         result = 3;
     }
-    if (coli_RobColliScaleEditReset_80078998(D_800A3800) == one) {
+    if (func_80078998(D_800A3800) == one) {
         result = 4;
     }
     temp = D_800A3924;
@@ -233,37 +233,37 @@ s32 func_80037804(void) {
     return result;
 }
 s32 func_800378A8(void) {
-    if (coli_RobColliScaleEditReset_80078998(D_800A37DC) == 1) {
+    if (func_80078998(D_800A37DC) == 1) {
         return 1;
     }
-    if (coli_RobColliScaleEditReset_80078998(D_800A37F0) == 1) {
+    if (func_80078998(D_800A37F0) == 1) {
         return 2;
     }
-    if (coli_RobColliScaleEditReset_80078998(D_800A37FC) == 1) {
+    if (func_80078998(D_800A37FC) == 1) {
         return 3;
     }
-    return (coli_RobColliScaleEditReset_80078998(D_800A3800) == 1) * 4;
+    return (func_80078998(D_800A3800) == 1) * 4;
 }
 void func_8003791C(void) {
-    coli_RobColliScaleEditReset_80078998(D_800A37DC);
-    coli_RobColliScaleEditReset_80078998(D_800A37F0);
-    coli_RobColliScaleEditReset_80078998(D_800A37FC);
-    coli_RobColliScaleEditReset_80078998(D_800A3800);
+    func_80078998(D_800A37DC);
+    func_80078998(D_800A37F0);
+    func_80078998(D_800A37FC);
+    func_80078998(D_800A3800);
 }
 s32 func_80037964(void) {
     s32 one = 1;
 loop:
-    if (coli_RobColliScaleEditReset_80078998(D_800A3838) == one) { return 1; }
-    if (coli_RobColliScaleEditReset_80078998(D_800A383C) == one) { return 2; }
-    if (coli_RobColliScaleEditReset_80078998(D_800A3848) == one) { return 3; }
-    if (coli_RobColliScaleEditReset_80078998(D_800A3850) != one) { goto loop; }
+    if (func_80078998(D_800A3838) == one) { return 1; }
+    if (func_80078998(D_800A383C) == one) { return 2; }
+    if (func_80078998(D_800A3848) == one) { return 3; }
+    if (func_80078998(D_800A3850) != one) { goto loop; }
     return 4;
 }
 void func_800379D8(void) {
-    coli_RobColliScaleEditReset_80078998(D_800A3838);
-    coli_RobColliScaleEditReset_80078998(D_800A383C);
-    coli_RobColliScaleEditReset_80078998(D_800A3848);
-    coli_RobColliScaleEditReset_80078998(D_800A3850);
+    func_80078998(D_800A3838);
+    func_80078998(D_800A383C);
+    func_80078998(D_800A3848);
+    func_80078998(D_800A3850);
 }
 s32 func_80037A20(s32 arg0, s32 arg1)
 {
@@ -274,13 +274,13 @@ s32 func_80037A20(s32 arg0, s32 arg1)
   var_s0 = (s32 *)&D_80102810;
   func_80079A30(sp10, (s32) (&g_str_memcard_fmt), arg0, arg1);
   var_s1 = 0;
-  if (coli_RobColliScaleEditReset_80078A38(sp10, var_s0) != 0)
+  if (func_80078A38(sp10, var_s0) != 0)
   {
     __asm__("" : "=r"(var_s1) : "0"(var_s1));
     var_s1++;
     loop:
     var_s0 = (s32 *) (((u8 *) var_s0) + 0x28);
-    v0_val = coli_RobColliScaleEditReset_80078A48(var_s0);
+    v0_val = func_80078A48(var_s0);
     var_s1 += 1;
     if (v0_val) goto loop;
     var_s1 -= 1;
@@ -370,44 +370,44 @@ block_74:
 block_end:
     return 0;
 }
-extern s32 coli_RobColliScaleEditReset_800789E8(s32 *, s32);
+extern s32 func_800789E8(s32 *, s32);
 typedef void (*Func79A30_5)(s32 *, s32 *, s32, s32, s32);
 s32 func_80037B90(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 sp18[8];
     register s32 temp_v0;
 
     ((Func79A30_5)func_80079A30)(sp18, &D_800109BC, arg0, arg1, arg2);
-    temp_v0 = coli_RobColliScaleEditReset_800789E8(sp18, 0x8001);
+    temp_v0 = func_800789E8(sp18, 0x8001);
     if (temp_v0 == -1) {
         return -1;
     }
     D_800A3794 = temp_v0;
     func_8003791C();
     func_800379D8();
-    coli_RobColliScaleEditReset_800789F8(temp_v0, arg3, arg4);
+    func_800789F8(temp_v0, arg3, arg4);
     return -(func_80037964() != 1);
 }
-extern void coli_RobColliScaleEditReset_80078A18(s32);
-extern void coli_RobColliScaleEditReset_80078A08(s32, s32, s32);
+extern void func_80078A18(s32);
+extern void func_80078A08(s32, s32, s32);
 s32 func_80037C34(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
     s32 sp18[8];
     s32 temp_v0;
 
     ((Func79A30_5)func_80079A30)(sp18, &D_800109BC, arg0, arg1, arg2);
     if (arg6 != 0) {
-        temp_v0 = coli_RobColliScaleEditReset_800789E8(sp18, (arg4 << 16) | 0x200);
+        temp_v0 = func_800789E8(sp18, (arg4 << 16) | 0x200);
         if (temp_v0 == -1) {
             return -1;
         }
-        coli_RobColliScaleEditReset_80078A18(temp_v0);
+        func_80078A18(temp_v0);
     }
-    temp_v0 = coli_RobColliScaleEditReset_800789E8(sp18, 0x8002);
+    temp_v0 = func_800789E8(sp18, 0x8002);
     if (temp_v0 == -1) {
         return -1;
     }
     D_800A3794 = temp_v0;
     func_8003791C();
     func_800379D8();
-    coli_RobColliScaleEditReset_80078A08(temp_v0, arg3, arg5);
+    func_80078A08(temp_v0, arg3, arg5);
     return -(func_80037964() != 1);
 }

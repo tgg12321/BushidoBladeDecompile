@@ -88,7 +88,7 @@ s32 sys_VSync(s32 a0) {
 
 extern s32 D_80016318;
 extern void tslTm2LoadImage_2(void *);
-extern void coli_RobColliScaleEditReset_80078A58(s32);
+extern void func_80078A58(s32);
 extern void func_80082AB0(s32, s32);
 void func_80082A14(s32 a0, s32 a1) {
     volatile s32 counter = a1 << 15;
@@ -97,7 +97,7 @@ void func_80082A14(s32 a0, s32 a1) {
         do {
             if (--counter == -1) {
                 tslTm2LoadImage_2(&D_80016318);
-                coli_RobColliScaleEditReset_80078A58(0);
+                func_80078A58(0);
                 func_80082AB0(3, 0);
                 return;
             }
