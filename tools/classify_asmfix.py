@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Classify the 72 `replace_with_asmfile` functions from asmfix.txt and
+"""Classify `replace_with_asmfile` functions from asmfix.txt and
 append the rows to tmp/batch_attempt.csv. Run after batch_attempt
 --classify-only to extend the CSV with asmfix entries (which are not
 inline_asm or INCLUDE_ASM and so are missed by batch_attempt).

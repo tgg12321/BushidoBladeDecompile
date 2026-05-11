@@ -9,18 +9,20 @@ feedback_pre_dive_analysis.md.
 Output is structured key/value text by default. `--json` emits a machine-
 readable dict. The final field `recommendation` is one of:
 
-    permanently_blocked:<reason> — uses break / handwritten add/sub/addi /
-                                   $sp swap / no-jr-ra / data-as-code; cannot
-                                   be expressed in pure C with GCC 2.7.2.
+    permanently_blocked:<reason> — uses non-C-emittable traps, COP0 ops,
+                                   handwritten add/sub/addi overflow ops,
+                                   $sp/context manipulation, or data-as-code;
+                                   cannot be expressed in pure C with GCC 2.7.2.
                                    STOP -- do not attempt. See known_blocked.txt.
     easy_attempt        — low risk, run `dc.sh attempt`
-    syscall_trampoline  — BIOS jump pattern, allowed-as-asm exception
+    bios_or_syscall:*   — BIOS/kernel trampoline or raw syscall/break wrapper
     psyq_stdlib_<name>  — memcpy/memset/etc match; replace with C idiom
     needs_rodata_split  — switch with jlabel/jtbl (use feedback_cu_split_for_jtbl)
     needs_lwl_fix       — function uses lwl/swl (toggle FIX_LWL_FILES)
     gte_function        — cop2 ops present; needs gte.h macros
-    multi_function      — multiple `jr $ra` (likely merged by splat)
-    aspsx_delay_swra    — sw $ra in branch delay slot (likely intractable)
+    needs_function_split — multiple `jr $ra` (likely merged by splat)
+    needs_delay_slot_ra — sw $ra in branch delay slot; use prologue_fix support
+    not_code_symbol     — empty/data label surfaced as a candidate, not a function
     hard_blocker_<tag>  — generic flag, see notes
     standard            — nothing unusual; standard workflow applies
 
@@ -46,6 +48,12 @@ SRC_DIR = ROOT / "src"
 KENGO_REF = ROOT / "tools" / "kengo_ref.py"
 KNOWN_BLOCKED = ROOT / "known_blocked.txt"
 
+# GCC 2.7.2 emits these break traps from ordinary signed integer division:
+#   break 7 -- divide by zero
+#   break 6 -- INT_MIN / -1 overflow
+# They are normal C, not BIOS/syscall wrappers and not permanent blockers.
+GCC_DIV_BREAK_CODES = {"6", "7"}
+
 GTE_OPS = {
     "cop2", "mtc2", "mfc2", "lwc2", "swc2", "ctc2", "cfc2",
     "nclip", "rtps", "rtpt", "avsz3", "avsz4", "gpf", "gpl", "mvmva",
@@ -68,16 +76,68 @@ INSN_RE = re.compile(
 
 
 def load_asm_lines(func: str) -> list[tuple[int, str, str]] | None:
-    """Return [(addr, mnem, ops), ...] from asm/funcs/<func>.s."""
+    """Return [(addr, mnem, ops), ...] from asm/funcs/<func>.s or, for
+    hand-written inline helpers that have no splat asm file, from src/*.c."""
     p = ASM_FUNCS / f"{func}.s"
-    if not p.exists():
-        return None
-    out = []
-    for line in p.read_text(encoding="utf-8").splitlines():
-        m = INSN_RE.search(line)
-        if m:
-            out.append((int(m.group(1), 16), m.group(2), m.group(3).strip()))
+    if p.exists():
+        out = []
+        for line in p.read_text(encoding="utf-8").splitlines():
+            m = INSN_RE.search(line)
+            if m:
+                out.append((int(m.group(1), 16), m.group(2), m.group(3).strip()))
+        return out
+    return load_inline_asm_lines(func)
+
+
+def _decode_c_string_fragment(s: str) -> str:
+    """Decode a quoted C string fragment well enough for local inline asm."""
+    try:
+        return bytes(s, "utf-8").decode("unicode_escape")
+    except UnicodeDecodeError:
+        return s.replace("\\n", "\n").replace("\\t", "\t").replace('\\"', '"')
+
+
+def _parse_plain_asm_lines(text: str) -> list[tuple[int, str, str]]:
+    out: list[tuple[int, str, str]] = []
+    pseudo_addr = 0
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if "/*" in line:
+            line = line.split("/*", 1)[0].strip()
+        if not line or line.endswith(":"):
+            continue
+        if line.startswith(("glabel ", "jlabel ", "alabel ", "endlabel ")):
+            continue
+        if line.startswith(".") and not line.startswith(".word"):
+            continue
+        parts = line.split(None, 1)
+        if not parts:
+            continue
+        mnem = parts[0]
+        ops = parts[1].strip() if len(parts) > 1 else ""
+        out.append((pseudo_addr, mnem, ops))
+        pseudo_addr += 4
     return out
+
+
+def load_inline_asm_lines(func: str) -> list[tuple[int, str, str]] | None:
+    """Parse inline __asm__ string blocks for symbols that do not have
+    asm/funcs/<func>.s, such as raw BIOS helper wrappers."""
+    for src in sorted(SRC_DIR.glob("*.c")):
+        text = src.read_text(encoding="utf-8", errors="ignore")
+        for blk in re.finditer(r"__asm__\s*\((.*?)\)\s*;", text, re.DOTALL):
+            body = blk.group(1)
+            if not re.search(rf"glabel\s+{re.escape(func)}\b", body):
+                continue
+            asm_text = "".join(
+                _decode_c_string_fragment(m.group(1))
+                for m in re.finditer(r'"((?:[^"\\]|\\.)*)"', body, re.DOTALL)
+            )
+            lines = _parse_plain_asm_lines(asm_text)
+            return lines
+    return None
 
 
 # ----- Source file location ----------------------------------------------
@@ -130,7 +190,7 @@ def is_bios_trampoline(insns) -> tuple[bool, str | None]:
             .word 0x0000000C        # `syscall 0` raw
             jr    $ra
       c) Kernel break:
-            .word 0x0000000?...0D   # `break N` raw
+            .word 0x0000414D        # `break N` raw
 
     Returns (is_trampoline, kind_str)."""
     # Pure trampolines are 2-6 insns (just the BIOS jump and prep).
@@ -157,15 +217,43 @@ def is_bios_trampoline(insns) -> tuple[bool, str | None]:
         suffix = "" if len(insns) <= 6 else "_plus_dead_code"
         return True, f"bios_table_{addiu_table_match}{suffix}"
 
-    # Forms (b) and (c) -- raw `.word` encodings or splat-decoded mnemonics
-    # for `syscall` (0x0C) or `break` (0x0D).
-    for _, m, ops in insns:
-        ops_n = ops.replace(" ", "").lower()
-        if m == ".word" and re.match(r"^0x[0-9a-f]{0,6}0[cd]$", ops_n):
-            return True, "syscall_or_break"
-        if m in ("syscall", "break"):
+    # Forms (b) and (c) -- short raw kernel syscall/break wrappers.
+    # Do not scan a whole normal C function for `break`: GCC division emits
+    # break 7 / break 6 guards, and those functions still belong in the queue.
+    for _, m, ops in scan_window:
+        if m == ".word":
+            raw_kind = raw_syscall_break_kind(ops)
+            if raw_kind:
+                return True, raw_kind
+        if m == "syscall":
+            return True, m
+        if m == "break" and break_code(ops) not in GCC_DIV_BREAK_CODES:
             return True, m
     return False, None
+
+
+def raw_syscall_break_kind(ops: str) -> str | None:
+    """Decode a raw MIPS SPECIAL word enough to spot syscall/break wrappers."""
+    word_text = ops.split(None, 1)[0].rstrip(",")
+    try:
+        word = int(word_text, 0)
+    except ValueError:
+        return None
+
+    opcode = (word >> 26) & 0x3F
+    funct = word & 0x3F
+    if opcode != 0:
+        return None
+    if funct == 0x0C:
+        return "syscall_or_break"
+    if funct == 0x0D:
+        return "syscall_or_break"
+    return None
+
+
+def break_code(ops: str) -> str:
+    """Return the first break operand, normalized for guard-code checks."""
+    return ops.strip().split(",", 1)[0].strip()
 
 
 def psyq_stdlib_fingerprint(insns) -> str | None:
@@ -227,11 +315,9 @@ def detect_permanent_blockers(insns) -> list[str]:
     # (INT_MIN/-1 overflow) as guards around `div`/`divu` from normal C
     # signed integer division. Those don't count -- only flag breaks with
     # non-div-guard codes.
-    GCC_DIV_BREAK_CODES = {"6", "7"}
     for _, m, ops in insns:
         if m == "break":
-            code = ops.strip().split(",")[0].strip()
-            if code not in GCC_DIV_BREAK_CODES:
+            if break_code(ops) not in GCC_DIV_BREAK_CODES:
                 tags.append("break_instruction")
                 break
 
@@ -252,10 +338,14 @@ def detect_permanent_blockers(insns) -> list[str]:
         tags.append("handwritten_overflow_op")
 
     # $sp written from a non-immediate source (i.e., not addiu $sp,$sp,N).
-    # Pattern like `addu $sp,$aN,$zero` is a stack-swap primitive impossible in C.
+    # Pattern like `addu $sp,$aN,$zero` or `lw $sp,...` is a stack-swap /
+    # context-restore primitive impossible in C.
     sp_write_re = re.compile(r"\$sp\s*,\s*\$(?:[atvs]\d|fp|gp|ra|k\d)")
     for _, m, ops in insns:
         if m in ("addu", "or", "move", "subu") and sp_write_re.match(ops):
+            tags.append("sp_manipulation")
+            break
+        if m in ("lw", "lwl", "lwr") and re.match(r"\$sp\s*,", ops):
             tags.append("sp_manipulation")
             break
 
@@ -282,7 +372,8 @@ def detect_blockers(insns) -> list[str]:
         tags.append("jlabel_switch")
     if any(op in counts for op in GTE_OPS):
         tags.append("gte_ops")
-    # Multiple jr $ra -> probable merged functions
+    # Multiple jr $ra -> probable merged functions. Some such functions also
+    # do permanent context manipulation; detect_permanent_blockers wins later.
     jr_ra_count = sum(1 for _, m, ops in insns if m == "jr" and "$ra" in ops)
     if jr_ra_count > 1:
         tags.append("multi_jr_ra")
@@ -397,7 +488,9 @@ def classify(func: str) -> dict:
     # Manual list wins (explicit user intent). Then BIOS trampolines (more
     # specific tag than permanent_blocked). Then auto-detected permanent
     # blockers. Then everything else.
-    if manual_block:
+    if n_insns == 0:
+        recommendation = "not_code_symbol"
+    elif manual_block:
         reason, _ = manual_block
         recommendation = f"permanently_blocked:{reason}"
     elif bios:
@@ -405,11 +498,11 @@ def classify(func: str) -> dict:
     elif permanent_tags:
         recommendation = f"permanently_blocked:{permanent_tags[0]}"
     elif "multi_jr_ra" in blocker_tags:
-        recommendation = "multi_function"
+        recommendation = "needs_function_split"
     elif "jlabel_switch" in blocker_tags:
         recommendation = "needs_rodata_split"
     elif "aspsx_swra_delay" in blocker_tags:
-        recommendation = "aspsx_delay_swra"
+        recommendation = "needs_delay_slot_ra"
     elif "lwl_swl" in blocker_tags:
         recommendation = "needs_lwl_fix"
     elif "gte_ops" in blocker_tags:

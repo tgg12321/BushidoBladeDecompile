@@ -193,7 +193,7 @@ bash tools/dc.sh next-structural  # pull structural split queue
 bash tools/dc.sh next-asmfix      # pull asmfix retirement queue
 ```
 
-`WORK_QUEUE.md` has three pullable queues: the default active decomp queue, a structural split queue for `needs_function_split`, and an asmfix retirement queue for `replace_with_asmfile` cleanup. It still filters the true permanent/accepted-asm categories (`permanently_blocked`, `bios_or_syscall`, `not_code_symbol`, `not_found`) out of ordinary decomp work. Anything in a pullable queue is work to finish under that queue's workflow.
+`WORK_QUEUE.md` has three pullable queues: the default active decomp queue, a structural split queue for `needs_function_split`, and an asmfix retirement queue for `replace_with_asmfile` cleanup. It also live-scans already-committed C bodies for suspect non-canonical inline asm and tags those functions as `inline_asm_debt`; these are active queue work until the asm is removed or narrowed to accepted GTE/BIOS/data-only usage. It still filters the true permanent/accepted-asm categories (`permanently_blocked`, `bios_or_syscall`, `not_code_symbol`, `not_found`) out of ordinary decomp work. Anything in a pullable queue is work to finish under that queue's workflow.
 
 **THE HOOK** (`tools/hooks/active_func_guard.sh`, configured in `.claude/settings.local.json`) reads `.bb2_active_func` and BLOCKS the following while a function is active:
 - `git commit` — unless `dc.sh verify <active>` reports MATCH (then it auto-clears the marker and allows the commit)

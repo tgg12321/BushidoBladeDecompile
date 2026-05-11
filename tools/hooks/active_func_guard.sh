@@ -1,12 +1,13 @@
 #!/bin/bash
 # PreToolUse hook for Bash. Enforces THE HARD RULE: once a function is
-# selected (via `dc.sh next`), the agent must finish it before:
+# selected (via `dc.sh next`, `next-structural`, or `next-asmfix`), the
+# agent must finish it before:
 #   - committing code (git commit)
 #   - reverting build files (git checkout/restore on src/*.c, regfix.txt, etc.)
-#   - selecting another function (dc.sh next)
+#   - selecting another function (dc.sh next / next-structural / next-asmfix)
 #
 # State file: .bb2_active_func at project root.
-#   - Written by `dc.sh next`
+#   - Written by `dc.sh next` and its alternate queue pullers
 #   - Cleared by `dc.sh refresh-queue` (post-match) or `dc.sh release` (manual)
 #
 # Hook protocol: read JSON on stdin, exit 0 to allow, exit 2 to block
@@ -95,7 +96,7 @@ if echo "$COMMAND" | grep -qE '(^|[^a-zA-Z])git commit($|[^a-zA-Z])'; then
         exit 0
     else
         cat >&2 <<EOF
-BLOCKED: $ACTIVE is the active function (set by 'dc.sh next') but it
+BLOCKED: $ACTIVE is the active function (set by a dc.sh queue pull) but it
 does not match in the current build. Per THE HARD RULE in
 feedback_workflow_rules.md, you finish the function before committing.
 
@@ -133,7 +134,7 @@ EOF
     exit 2
 fi
 
-# === Rule 3: block `dc.sh next` while ACTIVE is set ===
+# === Rule 3: block queue pulls while ACTIVE is set ===
 # (dc.sh self-blocks too, but having the hook layer makes the intent
 # visible in the agent's output.)
 if echo "$COMMAND" | grep -qE 'dc\.sh next($|[^a-zA-Z])'; then
