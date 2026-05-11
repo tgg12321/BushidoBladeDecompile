@@ -1685,12 +1685,31 @@ void calc_fc_frame_8007EC5C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 }
 PAD_NOPS_1; /* 1 NOP after calc_fc_frame_8007EC5C */
 s32 *func_8007ED6C(s32 *a0, s32 *a1, s32 *a2) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007ED6C.s).
-     * Inline-asm scaffolding retired; pure-C decomp pending. */
-    (void)a0;
-    (void)a1;
-    (void)a2;
-    return 0;
+    register s32 t0 asm("$8");
+    register s32 t1 asm("$9");
+    register s32 t2 asm("$10");
+    register s32 t3 asm("$11");
+    register s32 t4 asm("$12");
+    register s32 *v0 asm("v0");
+    t0 = a0[0];
+    t1 = a0[1];
+    t2 = a0[2];
+    t3 = a0[3];
+    t4 = a0[4];
+    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
+    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
+    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
+    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
+    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
+    __asm__ volatile ("lwc2 $0, 0(%0)" :: "r"(a1));
+    __asm__ volatile ("lwc2 $1, 4(%0)" :: "r"(a1));
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A486012");               /* mvmva 1,0,0,3,0 */
+    __asm__ volatile ("swc2 $25, 0(%0)" :: "r"(a2));
+    __asm__ volatile (".word 0xE8DA0004" :: "r"(a2));   /* swc2 $26, 4($a2) */
+    __asm__ volatile (".word 0xE8DB0008" :: "r"(a2));   /* swc2 $27, 8($a2) */
+    __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(a2));
+    return v0;
 }
 
 s32 *func_8007EDBC(volatile s32 *arg0, s32 *arg1)
