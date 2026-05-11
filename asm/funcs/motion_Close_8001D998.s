@@ -21,8 +21,8 @@ glabel motion_Close_8001D998
     /* E1E4 8001D9E4 0F5B000C */  jal        sys_Panic
     /* E1E8 8001D9E8 00000000 */   nop
   .L8001D9EC:
-    /* E1EC 8001D9EC 1080103C */  lui        $s0, %hi(D_80104F38)
-    /* E1F0 8001D9F0 384F1026 */  addiu      $s0, $s0, %lo(D_80104F38)
+    /* E1EC 8001D9EC 1080103C */  lui        $s0, %hi(MotDataBaseAddress)
+    /* E1F0 8001D9F0 384F1026 */  addiu      $s0, $s0, %lo(MotDataBaseAddress)
     /* E1F4 8001D9F4 21200002 */  addu       $a0, $s0, $zero
     /* E1F8 8001D9F8 1980053C */  lui        $a1, (0x80190800 >> 16)
     /* E1FC 8001D9FC 0008A534 */  ori        $a1, $a1, (0x80190800 & 0xFFFF)
