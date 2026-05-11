@@ -970,12 +970,39 @@ void func_8003D330(void) {
 }
 extern u32 D_800A3930;
 void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8003D39C.s).
-     * Inline-asm scaffolding retired; pure-C decomp pending. */
-    (void)x;
-    (void)y;
-    (void)ch;
-    (void)color;
+    register s32 sx asm("t0") = x;
+    register s32 sy asm("t1") = y;
+    register s32 scolor asm("t2") = color;
+    register u32 mask_lo asm("a3");
+    register u32 mask_hi asm("a2");
+    s32 count;
+    u8 *p;
+    u32 tag;
+    u32 *ot;
+    u32 cmd_tag;
+
+    count = D_800A3358;
+    if (count == 0x20) return;
+
+    mask_lo = 0x00FFFFFF;
+    D_800A3358 = count + 1;
+    p = (u8 *)((D_800A3218 << 9) + ((count << 4) + (u32)&D_800A3930));
+    cmd_tag = 0x74000000;
+
+    p[3] = 3;
+    p[7] = 0x74;
+    p[0xC] = ((ch & 7) << 3) - 0x40;
+    p[0xD] = ((ch >> 5) << 3) - 0x20;
+    *(u16 *)(p + 0xE) = ((ch << 3) & 0xC0) | 0x773F;
+    tag = *(u32 *)p;
+    *(u32 *)(p + 4) = (scolor >> 1) | cmd_tag;
+    ot = (u32 *)D_800A374C;
+    mask_hi = 0xFF000000;
+    *(s16 *)(p + 8) = sx;
+    *(s16 *)(p + 0xA) = sy;
+    tag = (tag & mask_hi) | (*ot & mask_lo);
+    *(u32 *)p = tag;
+    *ot = (*ot & mask_hi) | ((u32)p & mask_lo);
 }
 void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
     s32 ch;
