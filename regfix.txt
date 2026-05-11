@@ -4704,3 +4704,18 @@ func_80052B00: fill_delay @ 16 <- 15
 game_2d_CheckLifeGaugeNoDisp: fill_delay @ 24 <- 23
 func_80052B7C: fill_delay @ 24 <- 23
 func_80052A88: fill_delay @ 28 <- 27
+
+# func_80078F60: 5-insn tail-call dispatcher through jtbl_800A3620 function pointer.
+# GCC 2.7.2 cannot emit sibling-call (jr $reg) for function-pointer call so we
+# build the target lui+lw+nop+jr+nop sequence via regfix.
+# Live (9 insns): 0:lw $2,jtbl  1:subu sp  2:sw ra  3:jal $31,$2  4:nop  5:lw ra  6:addu sp  7:j $31  8:nop
+# Target (5 insns): lui $9,%hi  lw $9,%lo  nop  j $9  nop
+func_80078F60: subst "\$2,jtbl_800A3620" "$9,jtbl_800A3620" @ 0
+func_80078F60: subst "jal\t\$31,\$2" "j $9" @ 3
+func_80078F60: insert_after "nop" @ 0
+func_80078F60: delete @ 8
+func_80078F60: delete @ 7
+func_80078F60: delete @ 6
+func_80078F60: delete @ 5
+func_80078F60: delete @ 2
+func_80078F60: delete @ 1
