@@ -415,10 +415,34 @@ s32 func_80036D88(void) {
     return D_80101E62 == 0;
 }
 s32 replay_camera_Init(s32 a0, s32 a1) {
-    /* Body replaced by asmfix replace_with_asmfile. Inline-asm scaffolding
-     * retired; pure-C decomp pending. */
-    (void)a0; (void)a1;
-    return 0;
+    register s32 saved_a1 asm("$7") = a1;
+    register s16 *s0 asm("$8") = &D_80101E62;
+    s32 sval;
+    s32 cam_val;
+    s32 ec_val;
+    s32 reloaded;
+
+    if (*s0 != 0) {
+        return 0;
+    }
+
+    sval = ((s32)(a0 << 16)) >> 13;
+    D_80101E60 = a0;
+    {
+        extern u8 SpecialCam;
+        cam_val = *(s32 *)((u8 *)&SpecialCam + sval);
+        ec_val = *(s32 *)((u8 *)&D_8008EC38 + sval);
+    }
+    D_80101E6C = cam_val;
+    __asm__ volatile("" ::: "memory");
+    D_80101E70 = ec_val;
+    reloaded = D_80101E70;
+    D_80101E7C = saved_a1;
+    D_80101E68 = 0;
+    *s0 = 2;
+    D_80101E9E = 0;
+    D_80101E78 = (u32)(reloaded + 0x7FF) >> 11;
+    return 1;
 }
 /* kengo:HIGH  |  nm_replay_cam/replay_camera_Init  |  39i */
 s32 special_camera_check_pos_outside_ground_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
