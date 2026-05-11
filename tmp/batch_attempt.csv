@@ -9,7 +9,10 @@ func_8007F00C,src/display.c,inline_asm,CLASSIFY,,,,,,gte_function,10,gte_ops
 func_8007F034,src/display.c,inline_asm,CLASSIFY,,,,,,gte_function,10,gte_ops
 func_8007F05C,src/display.c,inline_asm,CLASSIFY,,,,,,gte_function,15,gte_ops
 func_8007F098,src/display.c,inline_asm,CLASSIFY,,,,,,gte_function,10,gte_ops
-func_8007FF7C,src/display.c,inline_asm,CLASSIFY,,,,,,needs_function_split,68,multi_jr_ra
+func_8007FF7C,src/display.c,inline_asm,CLASSIFY,,,,,,standard,38,
+func_80080014,src/display.c,inline_asm,CLASSIFY,,,,,,standard,10,
+func_8008003C,src/display.c,inline_asm,CLASSIFY,,,,,,standard,10,
+func_80080064,src/display.c,inline_asm,CLASSIFY,,,,,,standard,10,
 func_8007F0BC,src/display.c,inline_asm,CLASSIFY,,,,,,needs_function_split,87,"gte_ops,multi_jr_ra"
 func_8007E5EC,src/display.c,inline_asm,CLASSIFY,,,,,,permanently_blocked:handwritten_overflow_op,88,gte_ops
 func_8007E1AC,src/display.c,inline_asm,CLASSIFY,,,,,,needs_function_split,163,"gte_ops,multi_jr_ra"
