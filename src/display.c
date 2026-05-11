@@ -1824,22 +1824,20 @@ __asm__(
     "    swc2   $22, 0($t2)\n"
     "    jr     $ra\n"
     "    nop\n"
-    "    .global func_8007F098\n"
-    "func_8007F098:\n"
-    "    lwc2   $9, 0($a0)\n"
-    "    lwc2   $10, 4($a0)\n"
-    "    lwc2   $11, 8($a0)\n"
-    "    mtc2   $a1, $8\n"
-    "    nop\n"
-    "    .word 0x4A980011\n"
-    "    swc2   $22, 0($a2)\n"
-    "    jr     $ra\n"
-    "    nop\n"
     "    .set\treorder\n"
     "    .set\tat\n"
     "    .set reorder\n"
     "    .set at\n"
 );
+void func_8007F098(s32 *a0, s32 a1, u32 *a2) {
+    __asm__ volatile (".word 0xC8890000" :: "r"(a0));  /* lwc2 $9, 0($a0) */
+    __asm__ volatile (".word 0xC88A0004" :: "r"(a0));  /* lwc2 $10, 4($a0) */
+    __asm__ volatile (".word 0xC88B0008" :: "r"(a0));  /* lwc2 $11, 8($a0) */
+    __asm__ volatile (".word 0x48854000" :: "r"(a1));  /* mtc2 $a1, $8 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A980011");              /* intpl */
+    __asm__ volatile (".word 0xE8D60000" :: "r"(a2));  /* swc2 $22, 0($a2) */
+}
 __asm__(
     ".section .text\n"
     "    .set\tnoat\n"
