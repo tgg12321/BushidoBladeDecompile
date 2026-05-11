@@ -1997,10 +1997,30 @@ s32 func_8007F21C(s32 *a0, s32 *a1, s32 *a2, s32 *a3) {
     return v0 >> 2;
 }
 PAD_NOPS_1; /* 1 NOP after func_8007F21C */
-void func_8007F24C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007F24C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+s32 func_8007F24C(s16 *a0, s16 *a1, s16 *a2, s32 *a3, s32 *o0, s32 *o1, s32 *o2, s32 *o3) {
+    register s32 v1 asm("v1");
+    register s32 v0 asm("v0");
+    __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
+    __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
+    __asm__ volatile (".word 0xC8A20000" :: "r"(a1));  /* lwc2 $2, 0($a1) */
+    __asm__ volatile (".word 0xC8A30004" :: "r"(a1));  /* lwc2 $3, 4($a1) */
+    __asm__ volatile (".word 0xC8C40000" :: "r"(a2));  /* lwc2 $4, 0($a2) */
+    __asm__ volatile (".word 0xC8C50004" :: "r"(a2));  /* lwc2 $5, 4($a2) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A280030");             /* rtpt */
+    __asm__ volatile (".word 0x8FA80010");             /* lw $t0, 0x10($sp) */
+    __asm__ volatile (".word 0x8FA90014");             /* lw $t1, 0x14($sp) */
+    __asm__ volatile (".word 0x8FAA0018");             /* lw $t2, 0x18($sp) */
+    __asm__ volatile (".word 0x8FAB001C");             /* lw $t3, 0x1C($sp) */
+    __asm__ volatile (".word 0xE8EC0000" :: "r"(a3));  /* swc2 $12, 0($a3) */
+    __asm__ volatile (".word 0xE90D0000");             /* swc2 $13, 0($t0) */
+    __asm__ volatile (".word 0xE92E0000");             /* swc2 $14, 0($t1) */
+    __asm__ volatile (".word 0xE9480000");             /* swc2 $8,  0($t2) */
+    __asm__ volatile (".word 0x4843F800" : "=r"(v1));  /* cfc2 $v1, $31 */
+    __asm__ volatile (".word 0x48029800" : "=r"(v0));  /* mfc2 $v0, $19 */
+    __asm__ volatile (".word 0xAD630000");             /* sw $v1, 0x0($t3) */
+    (void)o0; (void)o1; (void)o2; (void)o3;
+    return v0 >> 2;
 }
 PAD_NOPS_3; /* 3 NOPs after func_8007F24C */
 void func_8007F2AC(s32 *a0, s32 *a1, s32 *a2) {
