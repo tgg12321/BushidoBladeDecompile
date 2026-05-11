@@ -24,6 +24,7 @@ Designed to be the FIRST thing an agent runs on a function.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import re
 import subprocess
@@ -36,6 +37,33 @@ ASM_FUNCS = ROOT / "asm" / "funcs"
 SRC_DIR = ROOT / "src"
 PERMUTER = ROOT / "permuter"
 TABLED = ROOT / "archive" / "tabled_attempts"
+KENGO_MATCHES = ROOT / "kengo_matches.csv"
+
+
+# Strip our TU-static disambiguation suffix so renamed BB2 funcs can be
+# looked up against Kengo's bare names (e.g. mario_getMarioVoiceData_8001B3C0
+# is one of several BB2 instances of Kengo's mario_getMarioVoiceData).
+_ADDR_SUFFIX = re.compile(r"_[0-9A-Fa-f]{8}$")
+
+
+def strip_addr_suffix(name: str) -> str:
+    return _ADDR_SUFFIX.sub("", name)
+
+
+# Confidence tier descriptions for the agent. Helps it weight the
+# Kengo reference appropriately: strong tiers can be trusted as a
+# structural template; weak tiers are starting points only.
+_CONFIDENCE_BLURB = {
+    "name-unique":        "STRONG — BB2 and Kengo share the exact name",
+    "name-callgraph":     "STRONG — name match plus call-graph overlap",
+    "callgraph":          "STRONG — call-graph overlap with Kengo",
+    "caller-unique":      "STRONG — hard caller-graph constraint (single survivor)",
+    "caller-callgraph":   "STRONG — caller constraint plus Jaccard",
+    "affinity-unique":    "MODERATE — narrowed by per-file Kengo-author affinity",
+    "affinity-callgraph": "MODERATE — affinity plus Jaccard",
+    "seq-similarity":     "WEAK — opcode-sequence dominance only; verify carefully",
+    "size-only-unique":   "WEAK — only one Kengo candidate by size; no semantic signal",
+}
 
 
 def run(cmd: list[str], timeout: int = 60) -> subprocess.CompletedProcess:
@@ -111,11 +139,109 @@ def recipe_suggestions(func: str) -> str:
     return r.stdout.strip() or "(no recipe matches)"
 
 
+def kengo_csv_row(func: str) -> dict | None:
+    """Look up a BB2 function in kengo_matches.csv. Tries the literal
+    name first, then the suffix-stripped form for our renamed funcs."""
+    if not KENGO_MATCHES.exists():
+        return None
+    candidates = [func]
+    stripped = strip_addr_suffix(func)
+    if stripped != func:
+        candidates.append(stripped)
+    for r in csv.DictReader(KENGO_MATCHES.open()):
+        if r["bb2_func"] in candidates and r["kengo_name"]:
+            return r
+    return None
+
+
+def kengo_metadata(func: str) -> str:
+    """One-paragraph header summarizing the Kengo match: confidence,
+    source path, scoring signals. Empty string if no match."""
+    row = kengo_csv_row(func)
+    if not row:
+        return ""
+    conf = row.get("confidence", "")
+    blurb = _CONFIDENCE_BLURB.get(conf, conf)
+    lines = []
+    lines.append(f"Kengo equivalent: {row['kengo_name']}")
+    if row.get("kengo_source_file"):
+        lines.append(f"Kengo source:     {row['kengo_source_file']}")
+    lines.append(f"Confidence:       {conf}  ({blurb})")
+    sigs = []
+    if row.get("callee_overlap") and float(row["callee_overlap"]) > 0:
+        sigs.append(f"callee-J={row['callee_overlap']}")
+    if row.get("caller_overlap") and float(row["caller_overlap"]) > 0:
+        sigs.append(f"caller-J={row['caller_overlap']}")
+    if row.get("opseq_ratio") and float(row["opseq_ratio"]) > 0:
+        sigs.append(f"opseq={row['opseq_ratio']}")
+    if row.get("n_candidates"):
+        sigs.append(f"candidates={row['n_candidates']}")
+    bb2_i = row.get("bb2_insns", "?")
+    k_i = row.get("kengo_insns", "?")
+    sigs.append(f"insns BB2/Kengo={bb2_i}/{k_i}")
+    if sigs:
+        lines.append("Signals:          " + ", ".join(sigs))
+    STRONG_TIERS = {"name-unique", "name-callgraph", "callgraph",
+                    "caller-unique", "caller-callgraph"}
+    if conf not in STRONG_TIERS:
+        lines.append("Caveat:           this match is weaker — confirm by "
+                     "reading the Kengo asm below before relying on it.")
+    return "\n".join(lines)
+
+
+def kengo_callee_hints(func: str) -> str:
+    """List BB2 callees this function jals that have a confident Kengo
+    name in kengo_matches.csv but are still `func_XXXX` in our build.
+    Useful naming hints — the agent sees what each unnamed callee
+    probably does without having to dig."""
+    asm = ASM_FUNCS / f"{func}.s"
+    if not asm.exists() or not KENGO_MATCHES.exists():
+        return ""
+    callees: set[str] = set()
+    for line in asm.read_text(encoding="utf-8", errors="replace").splitlines():
+        m = re.search(r"\bjal\s+(\w+)", line)
+        if m:
+            callees.add(m.group(1))
+    if not callees:
+        return ""
+
+    STRONG = {"name-unique", "name-callgraph", "callgraph",
+              "caller-unique", "caller-callgraph",
+              "affinity-unique", "affinity-callgraph"}
+    hints: list[tuple[str, str, str]] = []
+    for r in csv.DictReader(KENGO_MATCHES.open()):
+        bb2 = r["bb2_func"]
+        if not bb2.startswith("func_"):
+            continue
+        if bb2 not in callees or not r["kengo_name"]:
+            continue
+        opr = float(r.get("opseq_ratio") or 0)
+        conf = r["confidence"]
+        if conf in STRONG:
+            hints.append((bb2, r["kengo_name"], conf))
+        elif conf == "seq-similarity" and opr >= 0.40:
+            hints.append((bb2, r["kengo_name"], f"{conf} opseq={opr:.2f}"))
+        elif conf == "size-only-ambiguous" and opr >= 0.40:
+            # Low absolute confidence but the opcode similarity is strong;
+            # still worth surfacing as a naming hint for the agent.
+            hints.append((bb2, r["kengo_name"], f"{conf} opseq={opr:.2f}"))
+    if not hints:
+        return ""
+    hints.sort()
+    return "\n".join(
+        f"  {bb2:<22s} ~= {kn:<40s} ({conf})"
+        for bb2, kn, conf in hints
+    )
+
+
 def kengo_ref(func: str) -> str:
     kr = TOOLS / "kengo_ref.py"
     if not kr.exists():
         return ""
-    r = run([sys.executable, str(kr), func, "--bb2"], 15)
+    # For BB2 funcs that have been renamed with a `_<ADDR>` suffix, the
+    # bare name lookup in Kengo is via the stripped form.
+    lookup = strip_addr_suffix(func)
+    r = run([sys.executable, str(kr), lookup, "--bb2"], 15)
     text = (r.stdout or r.stderr).strip()
     if not text or "no kengo match" in text.lower() or "not found" in text.lower():
         return ""
@@ -196,6 +322,8 @@ def build_brief(func: str, include_asm: bool = True,
         "base_c": base_c(func)[0],
         "gen_regfix": gen_regfix(func).strip(),
         "recipe_suggestions": recipe_suggestions(func),
+        "kengo_metadata": kengo_metadata(func),
+        "kengo_callee_hints": kengo_callee_hints(func),
         "kengo": kengo_ref(func),
         "tabled_notes": tabled_notes(func),
         "existing_regfix_rules": existing_regfix(func),
@@ -214,9 +342,21 @@ def render_text(b: dict) -> str:
         out.append(section("Source neighbors (subsystem context)"))
         out.append(b["src_neighbors"])
 
-    if b["kengo"]:
+    if b["kengo_metadata"] or b["kengo"]:
         out.append(section("Kengo PS2 sequel reference"))
-        out.append(b["kengo"])
+        if b["kengo_metadata"]:
+            out.append(b["kengo_metadata"])
+            out.append("")
+        if b["kengo"]:
+            out.append(b["kengo"])
+
+    if b["kengo_callee_hints"]:
+        out.append(section("Kengo-derived names for anonymous BB2 callees"))
+        out.append("These are call targets in this function that are still "
+                   "`func_XXXX` in BB2 but have a confident Kengo equivalent. "
+                   "Useful for naming and understanding what each call does.")
+        out.append("")
+        out.append(b["kengo_callee_hints"])
 
     if b["tabled_notes"]:
         out.append(section("Prior tabled-attempt notes"))
