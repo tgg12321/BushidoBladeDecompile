@@ -67,7 +67,7 @@ glabel func_8006E534
     /* 5EE24 8006E624 00000000 */   nop
   jlabel .L8006E628
     /* 5EE28 8006E628 A004848F */  lw         $a0, %gp_rel(D_800A356C)($gp)
-    /* 5EE2C 8006E62C 8ABA010C */  jal        func_8006EA28
+    /* 5EE2C 8006E62C 8ABA010C */  jal        efc_buki_ZanzouClose
     /* 5EE30 8006E630 00000000 */   nop
     /* 5EE34 8006E634 E004858F */  lw         $a1, %gp_rel(D_800A35AC)($gp)
     /* 5EE38 8006E638 21204000 */  addu       $a0, $v0, $zero

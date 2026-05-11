@@ -31,7 +31,7 @@ glabel func_80074D2C
     /* 6559C 80074D9C 2000A2AF */   sw        $v0, 0x20($sp)
     /* 655A0 80074DA0 100002AE */  sw         $v0, 0x10($s0)
     /* 655A4 80074DA4 1800A48F */  lw         $a0, 0x18($sp)
-    /* 655A8 80074DA8 20B9010C */  jal        func_8006E480
+    /* 655A8 80074DA8 20B9010C */  jal        saMotionSet
     /* 655AC 80074DAC 21280000 */   addu      $a1, $zero, $zero
     /* 655B0 80074DB0 01000524 */  addiu      $a1, $zero, 0x1
     /* 655B4 80074DB4 21300000 */  addu       $a2, $zero, $zero

@@ -34,7 +34,7 @@ glabel func_80023E40
     /* 146BC 80023EBC C000028E */  lw         $v0, 0xC0($s0)
     /* 146C0 80023EC0 10002726 */  addiu      $a3, $s1, 0x10
     /* 146C4 80023EC4 1000A3AF */  sw         $v1, 0x10($sp)
-    /* 146C8 80023EC8 854D010C */  jal        func_80053614
+    /* 146C8 80023EC8 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 146CC 80023ECC 380022AE */   sw        $v0, 0x38($s1)
     /* 146D0 80023ED0 07004010 */  beqz       $v0, .L80023EF0
     /* 146D4 80023ED4 00000000 */   nop

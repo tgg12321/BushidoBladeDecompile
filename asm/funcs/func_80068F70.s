@@ -16,7 +16,7 @@ glabel func_80068F70
     /* 597A8 80068FA8 3404848F */  lw         $a0, %gp_rel(D_800A3500)($gp)
     /* 597AC 80068FAC 00000000 */  nop
     /* 597B0 80068FB0 600684AF */  sw         $a0, %gp_rel(D_800A372C)($gp)
-    /* 597B4 80068FB4 67A4010C */  jal        func_8006919C
+    /* 597B4 80068FB4 67A4010C */  jal        efc_rob_Close
     /* 597B8 80068FB8 00000000 */   nop
     /* 597BC 80068FBC 5004858F */  lw         $a1, %gp_rel(D_800A351C)($gp)
     /* 597C0 80068FC0 21204000 */  addu       $a0, $v0, $zero

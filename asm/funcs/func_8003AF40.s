@@ -30,7 +30,7 @@ glabel func_8003AF40
     /* 2B7AC 8003AFAC 1000A0AF */   sw        $zero, 0x10($sp)
     /* 2B7B0 8003AFB0 1A5A000C */  jal        gpu_EnableDisplay
     /* 2B7B4 8003AFB4 00000000 */   nop
-    /* 2B7B8 8003AFB8 4E83000C */  jal        func_80020D38
+    /* 2B7B8 8003AFB8 4E83000C */  jal        EndADRSound
     /* 2B7BC 8003AFBC 00000000 */   nop
     /* 2B7C0 8003AFC0 21200002 */  addu       $a0, $s0, $zero
     /* 2B7C4 8003AFC4 1080013C */  lui        $at, %hi(D_8010277C)

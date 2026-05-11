@@ -94,7 +94,7 @@ glabel func_80047BE0
     /* 3853C 80047D3C 10000424 */   addiu     $a0, $zero, 0x10
     /* 38540 80047D40 21288002 */  addu       $a1, $s4, $zero
     /* 38544 80047D44 2130E002 */  addu       $a2, $s7, $zero
-    /* 38548 80047D48 302F010C */  jal        func_8004BCC0
+    /* 38548 80047D48 302F010C */  jal        saTan2LineDraw
     /* 3854C 80047D4C 21380000 */   addu      $a3, $zero, $zero
     /* 38550 80047D50 21B84000 */  addu       $s7, $v0, $zero
   .L80047D54:

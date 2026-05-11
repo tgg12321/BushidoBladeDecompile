@@ -84,7 +84,7 @@ glabel myRobGeneiMove
     /* BDAC 8001B5AC F800448C */  lw         $a0, 0xF8($v0)
     /* BDB0 8001B5B0 0A80053C */  lui        $a1, %hi(D_800A387C)
     /* BDB4 8001B5B4 7C38A58C */  lw         $a1, %lo(D_800A387C)($a1)
-    /* BDB8 8001B5B8 57FF010C */  jal        func_8007FD5C
+    /* BDB8 8001B5B8 57FF010C */  jal        single_game_getEnemyCharId
     /* BDBC 8001B5BC 23208600 */   subu      $a0, $a0, $a2
     /* BDC0 8001B5C0 00040324 */  addiu      $v1, $zero, 0x400
     /* BDC4 8001B5C4 23187000 */  subu       $v1, $v1, $s0

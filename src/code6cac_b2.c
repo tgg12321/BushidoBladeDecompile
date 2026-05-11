@@ -19,7 +19,7 @@ extern u32 D_80101E3C;
 extern u32 D_80101E44;
 
 /* Extern function declarations */
-extern void func_80023CB4(s32, s32);
+extern void cpu_get_dash_timer(s32, s32);
 extern void func_800194F4(void);
 extern void seq_Reset(void);
 extern void func_8003A39C(void);
@@ -56,7 +56,7 @@ extern void func_8003AF40(s32);
 extern void func_8003AFFC(void);
 
 extern void sys_Panic(void);
-extern s32 func_80020D38(void);
+extern s32 EndADRSound(void);
 extern s32 obj_InitTaskCamera(s32);
 extern void *D_800A38B4;
 extern s32 bb2_memcpy(s32 *, s32, s32);
@@ -69,14 +69,14 @@ extern void func_8003AA48(void);
 extern void gnd_disp_loop_ctrl(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 single_game_getEnemyCharId(s32, s32);
 extern s32 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
+extern void get_point_value(void);
 extern void func_80037774(void);
 extern void pad_Init(void);
 extern void irq_Reset(void);
@@ -199,7 +199,7 @@ void replay_camera_rob_back_loose2(s32 arg0) {
     switch (arg0) {
     case 0:
         if (D_800A31DA == 0) {
-            func_800784E4(0x80118800);
+            camera_get_rot_normal_rad(0x80118800);
             func_80035FA8();
             func_80037110(0);
             D_800A3740 = 4;
@@ -293,7 +293,7 @@ void func_80035DC8(void) {
     D_800A3834 = 0x1B;
     gpu_DisableDisplay();
 }
-void func_80035E38(void) {
+void saRobDraw(void) {
     D_800A36F1 = 1;
     func_8003553C();
     if (motion_SetMotion() != 0) {
@@ -548,7 +548,7 @@ void func_80037234(void) {
 void func_80037250(void) {
     D_80101E64 = 0;
 }
-void func_80037260(void) {
+void marionation_camera_GetMaxFrame(void) {
     while (D_80101E62 != 0x16) {
         func_8003AA48();
         special_camera_Exec();
@@ -629,7 +629,7 @@ void func_80037468(s32 a0, s32 *a1, s32 a2) {
     sys_VSync(0);
     gpu_SetDispMask(0);
     gpu_EnableDisplay();
-    func_8005B50C();
+    get_point_value();
     func_80037774();
     irq_DisableInterrupts();
     func_8007FF7C();

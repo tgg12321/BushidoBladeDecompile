@@ -20,7 +20,7 @@ glabel func_80016A18
     /* 7260 80016A60 DC0580A3 */  sb         $zero, %gp_rel(D_800A36A8)($gp)
     /* 7264 80016A64 F8D7000C */  jal        func_80035FE0
     /* 7268 80016A68 00000000 */   nop
-    /* 726C 80016A6C 7BDD000C */  jal        func_800375EC
+    /* 726C 80016A6C 7BDD000C */  jal        pad_press_control
     /* 7270 80016A70 00000000 */   nop
     /* 7274 80016A74 3E5A000C */  jal        sys_InitSound
     /* 7278 80016A78 00000000 */   nop

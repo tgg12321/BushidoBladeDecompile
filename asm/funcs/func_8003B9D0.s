@@ -30,7 +30,7 @@ glabel func_8003B9D0
     /* 2C238 8003BA38 00000000 */   nop
     /* 2C23C 8003BA3C 1A5A000C */  jal        gpu_EnableDisplay
     /* 2C240 8003BA40 00000000 */   nop
-    /* 2C244 8003BA44 4E83000C */  jal        func_80020D38
+    /* 2C244 8003BA44 4E83000C */  jal        EndADRSound
     /* 2C248 8003BA48 00000000 */   nop
     /* 2C24C 8003BA4C 01000424 */  addiu      $a0, $zero, 0x1
     /* 2C250 8003BA50 21280000 */  addu       $a1, $zero, $zero
@@ -180,7 +180,7 @@ glabel func_8003B9D0
     /* 2C464 8003BC64 02006590 */  lbu        $a1, 0x2($v1)
     /* 2C468 8003BC68 F5DB000C */  jal        mottest_rob_init
     /* 2C46C 8003BC6C 21204000 */   addu      $a0, $v0, $zero
-    /* 2C470 8003BC70 98DC000C */  jal        func_80037260
+    /* 2C470 8003BC70 98DC000C */  jal        marionation_camera_GetMaxFrame
     /* 2C474 8003BC74 00000000 */   nop
     /* 2C478 8003BC78 07000224 */  addiu      $v0, $zero, 0x7
     /* 2C47C 8003BC7C 0A80013C */  lui        $at, %hi(D_800A37B8)

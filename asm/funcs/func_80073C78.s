@@ -167,7 +167,7 @@ glabel func_80073C78
     /* 646F0 80073EF0 3000A427 */  addiu      $a0, $sp, 0x30
     /* 646F4 80073EF4 3200A0A7 */  sh         $zero, 0x32($sp)
     /* 646F8 80073EF8 3000A0A7 */  sh         $zero, 0x30($sp)
-    /* 646FC 80073EFC D7FC010C */  jal        func_8007F35C
+    /* 646FC 80073EFC D7FC010C */  jal        motutil_GetWalkDir
     /* 64700 80073F00 3400ADA7 */   sh        $t5, 0x34($sp)
     /* 64704 80073F04 F800A48F */  lw         $a0, 0xF8($sp)
     /* 64708 80073F08 0A80053C */  lui        $a1, %hi(D_8009BCD4)

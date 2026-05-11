@@ -37,7 +37,7 @@ glabel func_80069E18
     /* 5A6A4 80069EA4 4000A0A3 */  sb         $zero, 0x40($sp)
     /* 5A6A8 80069EA8 0000048E */  lw         $a0, 0x0($s0)
     /* 5A6AC 80069EAC 21280000 */  addu       $a1, $zero, $zero
-    /* 5A6B0 80069EB0 20B9010C */  jal        func_8006E480
+    /* 5A6B0 80069EB0 20B9010C */  jal        saMotionSet
     /* 5A6B4 80069EB4 1800A4AF */   sw        $a0, 0x18($sp)
     /* 5A6B8 80069EB8 01000524 */  addiu      $a1, $zero, 0x1
     /* 5A6BC 80069EBC 21300000 */  addu       $a2, $zero, $zero

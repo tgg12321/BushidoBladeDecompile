@@ -20,7 +20,7 @@ extern u32 D_80101E3C;
 extern u32 D_80101E44;
 
 /* Extern function declarations */
-extern void func_80023CB4(s32, s32);
+extern void cpu_get_dash_timer(s32, s32);
 extern s32 func_80037110(s32);
 extern void game_FrameInit(void);
 extern void game_FrameLoop(void);
@@ -63,7 +63,7 @@ extern s16 *snd_GetSeId(void);
 extern void func_8003553C(void);
 
 extern void sys_Panic(void);
-extern s32 func_80020D38(void);
+extern s32 EndADRSound(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
 extern s32 bb2_memcpy(s32 *, s32, s32);
@@ -74,14 +74,14 @@ extern void func_8005B98C(s32);
 extern s32 func_80036D88(void);
 extern void gnd_disp_loop_ctrl(void);
 extern s32 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 single_game_getEnemyCharId(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
+extern void get_point_value(void);
 extern void special_camera_get_rot_dir(s32 *);
 extern void pad_Init(void);
 extern void irq_Reset(void);
@@ -160,19 +160,19 @@ extern s32 func_80078B04(s32);
 extern void func_8007A400(void);
 extern void func_8008BE4C(void);
 extern s32 func_8006BEC4(s32, s32);
-extern void func_8003E22C(void);
+extern void gnd_open(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
-extern void func_8007EFFC(s32);
+extern void tslDmaDrawListDelAll(s32);
 extern void func_8001B6F4(void);
-extern void func_80022568(u8 *);
+extern void pad_button_info_clear(u8 *);
 extern s32 g_str_memcard_fmt;
 extern s32 D_80102810;
 extern s32 D_800F34D8;
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-void func_800375EC(void) {
+void pad_press_control(void) {
     func_8007A370(1);
     func_8007A3C8();
     func_80078958();

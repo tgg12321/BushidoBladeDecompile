@@ -233,7 +233,7 @@ glabel motion_SetMotion
     /* 297A4 80038FA4 90E40008 */  j          .L80039240
     /* 297A8 80038FA8 00000000 */   nop
   .L80038FAC:
-    /* 297AC 80038FAC DFE1000C */  jal        func_8003877C
+    /* 297AC 80038FAC DFE1000C */  jal        motion_shift_check_m_hit_stop
     /* 297B0 80038FB0 00000000 */   nop
     /* 297B4 80038FB4 90E40008 */  j          .L80039240
     /* 297B8 80038FB8 0B00222A */   slti      $v0, $s1, 0xB
@@ -326,7 +326,7 @@ glabel motion_SetMotion
   jlabel .L800390F0
     /* 298F0 800390F0 01000224 */  addiu      $v0, $zero, 0x1
     /* 298F4 800390F4 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
-    /* 298F8 800390F8 DFE1000C */  jal        func_8003877C
+    /* 298F8 800390F8 DFE1000C */  jal        motion_shift_check_m_hit_stop
     /* 298FC 800390FC 00000000 */   nop
     /* 29900 80039100 03000224 */  addiu      $v0, $zero, 0x3
     /* 29904 80039104 3B0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x3)($gp)
@@ -369,7 +369,7 @@ glabel motion_SetMotion
     /* 29984 80039184 740280A3 */  sb         $zero, %gp_rel(D_800A3340)($gp)
     /* 29988 80039188 780280A3 */  sb         $zero, %gp_rel(D_800A3344)($gp)
     /* 2998C 8003918C 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
-    /* 29990 80039190 DFE1000C */  jal        func_8003877C
+    /* 29990 80039190 DFE1000C */  jal        motion_shift_check_m_hit_stop
     /* 29994 80039194 00000000 */   nop
     /* 29998 80039198 6FE40008 */  j          .L800391BC
     /* 2999C 8003919C 02000224 */   addiu     $v0, $zero, 0x2

@@ -54,7 +54,7 @@ glabel func_8003AE5C
     /* 2B708 8003AF08 A83722A0 */  sb         $v0, %lo(D_800A37A8)($at)
     /* 2B70C 8003AF0C 1A5A000C */  jal        gpu_EnableDisplay
     /* 2B710 8003AF10 00000000 */   nop
-    /* 2B714 8003AF14 4E83000C */  jal        func_80020D38
+    /* 2B714 8003AF14 4E83000C */  jal        EndADRSound
     /* 2B718 8003AF18 00000000 */   nop
     /* 2B71C 8003AF1C 21200002 */  addu       $a0, $s0, $zero
     /* 2B720 8003AF20 AB80010C */  jal        func_800602AC

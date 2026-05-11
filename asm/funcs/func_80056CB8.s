@@ -55,7 +55,7 @@ glabel func_80056CB8
     /* 4757C 80056D7C 1066428C */  lw         $v0, %lo(D_800F6610)($v0)
     /* 47580 80056D80 FC00258E */  lw         $a1, 0xFC($s1)
     /* 47584 80056D84 23206400 */  subu       $a0, $v1, $a0
-    /* 47588 80056D88 57FF010C */  jal        func_8007FD5C
+    /* 47588 80056D88 57FF010C */  jal        single_game_getEnemyCharId
     /* 4758C 80056D8C 23284500 */   subu      $a1, $v0, $a1
     /* 47590 80056D90 21800202 */  addu       $s0, $s0, $v0
   .L80056D94:
@@ -100,7 +100,7 @@ glabel func_80056CB8
     /* 4762C 80056E2C 031B0300 */  sra        $v1, $v1, 12
     /* 47630 80056E30 21982301 */  addu       $s3, $t1, $v1
     /* 47634 80056E34 3000B3AF */  sw         $s3, 0x30($sp)
-    /* 47638 80056E38 854D010C */  jal        func_80053614
+    /* 47638 80056E38 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 4763C 80056E3C 1000ABAF */   sw        $t3, 0x10($sp)
     /* 47640 80056E40 21804000 */  addu       $s0, $v0, $zero
     /* 47644 80056E44 10000012 */  beqz       $s0, .L80056E88
@@ -136,7 +136,7 @@ glabel func_80056CB8
     /* 476B8 80056EB8 3000B3AF */  sw         $s3, 0x30($sp)
     /* 476BC 80056EBC 04104224 */  addiu      $v0, $v0, 0x1004
     /* 476C0 80056EC0 2C00A2AF */  sw         $v0, 0x2C($sp)
-    /* 476C4 80056EC4 854D010C */  jal        func_80053614
+    /* 476C4 80056EC4 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 476C8 80056EC8 1000ABAF */   sw        $t3, 0x10($sp)
     /* 476CC 80056ECC 40100200 */  sll        $v0, $v0, 1
     /* 476D0 80056ED0 25800202 */  or         $s0, $s0, $v0

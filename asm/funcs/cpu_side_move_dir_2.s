@@ -158,7 +158,7 @@ glabel cpu_side_move_dir_2
     /* 2CA7C 8003C27C 01000592 */  lbu        $a1, 0x1($s0)
     /* 2CA80 8003C280 F5DB000C */  jal        mottest_rob_init
     /* 2CA84 8003C284 21204000 */   addu      $a0, $v0, $zero
-    /* 2CA88 8003C288 98DC000C */  jal        func_80037260
+    /* 2CA88 8003C288 98DC000C */  jal        marionation_camera_GetMaxFrame
     /* 2CA8C 8003C28C 00000000 */   nop
     /* 2CA90 8003C290 13000224 */  addiu      $v0, $zero, 0x13
   .L8003C294:

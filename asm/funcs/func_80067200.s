@@ -266,7 +266,7 @@ glabel func_80067200
     /* 57DE0 800675E0 040020A6 */  sh         $zero, 0x4($s1)
     /* 57DE4 800675E4 020020A6 */  sh         $zero, 0x2($s1)
     /* 57DE8 800675E8 000020A6 */  sh         $zero, 0x0($s1)
-    /* 57DEC 800675EC D7FC010C */  jal        func_8007F35C
+    /* 57DEC 800675EC D7FC010C */  jal        motutil_GetWalkDir
     /* 57DF0 800675F0 100022A6 */   sh        $v0, 0x10($s1)
     /* 57DF4 800675F4 00000C8E */  lw         $t4, 0x0($s0)
     /* 57DF8 800675F8 04000D8E */  lw         $t5, 0x4($s0)

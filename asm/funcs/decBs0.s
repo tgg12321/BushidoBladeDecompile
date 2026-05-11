@@ -90,7 +90,7 @@ glabel decBs0
   .L80041FEC:
     /* 327EC 80041FEC 21208002 */  addu       $a0, $s4, $zero
   .L80041FF0:
-    /* 327F0 80041FF0 57FF010C */  jal        func_8007FD5C
+    /* 327F0 80041FF0 57FF010C */  jal        single_game_getEnemyCharId
     /* 327F4 80041FF4 21284002 */   addu      $a1, $s2, $zero
     /* 327F8 80041FF8 21884000 */  addu       $s1, $v0, $zero
     /* 327FC 80041FFC FBF7010C */  jal        math_Cos
@@ -106,7 +106,7 @@ glabel decBs0
     /* 32824 80042024 2120A002 */  addu       $a0, $s5, $zero
     /* 32828 80042028 12400000 */  mflo       $t0
     /* 3282C 8004202C 21286800 */  addu       $a1, $v1, $t0
-    /* 32830 80042030 57FF010C */  jal        func_8007FD5C
+    /* 32830 80042030 57FF010C */  jal        single_game_getEnemyCharId
     /* 32834 80042034 032B0500 */   sra       $a1, $a1, 12
     /* 32838 80042038 23100200 */  negu       $v0, $v0
     /* 3283C 8004203C 080062A6 */  sh         $v0, 0x8($s3)

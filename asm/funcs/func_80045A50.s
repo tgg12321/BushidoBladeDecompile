@@ -3,7 +3,7 @@ glabel func_80045A50
     /* 36254 80045A54 1000B0AF */  sw         $s0, 0x10($sp)
     /* 36258 80045A58 21808000 */  addu       $s0, $a0, $zero
     /* 3625C 80045A5C 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 36260 80045A60 916D010C */  jal        func_8005B644
+    /* 36260 80045A60 916D010C */  jal        GetAllocPacketSize
     /* 36264 80045A64 1400B1AF */   sw        $s1, 0x14($sp)
     /* 36268 80045A68 03001126 */  addiu      $s1, $s0, 0x3
     /* 3626C 80045A6C BC15010C */  jal        func_800456F0

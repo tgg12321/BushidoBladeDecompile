@@ -16,7 +16,7 @@ glabel func_80016918
     /* 7150 80016950 78000524 */   addiu     $a1, $zero, 0x78
     /* 7154 80016954 B159000C */  jal        disp_CalcFov
     /* 7158 80016958 2D000424 */   addiu     $a0, $zero, 0x2D
-    /* 715C 8001695C FFFB010C */  jal        func_8007EFFC
+    /* 715C 8001695C FFFB010C */  jal        tslDmaDrawListDelAll
     /* 7160 80016960 21204000 */   addu      $a0, $v0, $zero
     /* 7164 80016964 0F80113C */  lui        $s1, %hi(D_800F7438)
     /* 7168 80016968 38743126 */  addiu      $s1, $s1, %lo(D_800F7438)

@@ -14,13 +14,13 @@ glabel func_8003CE18
     /* 2D648 8003CE48 21300000 */  addu       $a2, $zero, $zero
     /* 2D64C 8003CE4C DA59000C */  jal        disp_SetFramebufferMode
     /* 2D650 8003CE50 21380000 */   addu      $a3, $zero, $zero
-    /* 2D654 8003CE54 8BF8000C */  jal        func_8003E22C
+    /* 2D654 8003CE54 8BF8000C */  jal        gnd_open
     /* 2D658 8003CE58 00000000 */   nop
     /* 2D65C 8003CE5C 86FC000C */  jal        game_SetPlayerCount
     /* 2D660 8003CE60 21200000 */   addu      $a0, $zero, $zero
     /* 2D664 8003CE64 B159000C */  jal        disp_CalcFov
     /* 2D668 8003CE68 2D000424 */   addiu     $a0, $zero, 0x2D
-    /* 2D66C 8003CE6C FFFB010C */  jal        func_8007EFFC
+    /* 2D66C 8003CE6C FFFB010C */  jal        tslDmaDrawListDelAll
     /* 2D670 8003CE70 21204000 */   addu      $a0, $v0, $zero
     /* 2D674 8003CE74 0A80033C */  lui        $v1, %hi(D_800A3748)
     /* 2D678 8003CE78 48376380 */  lb         $v1, %lo(D_800A3748)($v1)

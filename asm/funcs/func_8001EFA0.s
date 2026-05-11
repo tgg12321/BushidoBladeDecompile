@@ -40,7 +40,7 @@ glabel func_8001EFA0
     /* F838 8001F038 00000000 */   nop
     /* F83C 8001F03C 1B80000C */  jal        func_8002006C
     /* F840 8001F040 00000000 */   nop
-    /* F844 8001F044 826F000C */  jal        func_8001BE08
+    /* F844 8001F044 826F000C */  jal        LWCard_SetAccessData
     /* F848 8001F048 1000A427 */   addiu     $a0, $sp, 0x10
     /* F84C 8001F04C 21200000 */  addu       $a0, $zero, $zero
     /* F850 8001F050 C28F000C */  jal        func_80023F08

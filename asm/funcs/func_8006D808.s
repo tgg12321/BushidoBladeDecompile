@@ -48,7 +48,7 @@ glabel func_8006D808
     /* 5E0BC 8006D8BC 000042AE */   sw        $v0, 0x0($s2)
     /* 5E0C0 8006D8C0 0000848E */  lw         $a0, 0x0($s4)
     /* 5E0C4 8006D8C4 21280000 */  addu       $a1, $zero, $zero
-    /* 5E0C8 8006D8C8 20B9010C */  jal        func_8006E480
+    /* 5E0C8 8006D8C8 20B9010C */  jal        saMotionSet
     /* 5E0CC 8006D8CC 1800A4AF */   sw        $a0, 0x18($sp)
     /* 5E0D0 8006D8D0 01000524 */  addiu      $a1, $zero, 0x1
     /* 5E0D4 8006D8D4 21300000 */  addu       $a2, $zero, $zero
@@ -152,7 +152,7 @@ glabel func_8006D808
     /* 5E244 8006DA44 5800A8AF */  sw         $t0, 0x58($sp)
     /* 5E248 8006DA48 0C00848E */  lw         $a0, 0xC($s4)
     /* 5E24C 8006DA4C 6666153C */  lui        $s5, (0x66666667 >> 16)
-    /* 5E250 8006DA50 20B9010C */  jal        func_8006E480
+    /* 5E250 8006DA50 20B9010C */  jal        saMotionSet
     /* 5E254 8006DA54 1800A4AF */   sw        $a0, 0x18($sp)
     /* 5E258 8006DA58 01000524 */  addiu      $a1, $zero, 0x1
     /* 5E25C 8006DA5C 21300000 */  addu       $a2, $zero, $zero
@@ -344,7 +344,7 @@ glabel func_8006D808
     /* 5E50C 8006DD0C 62FF4014 */  bnez       $v0, .L8006DA98
     /* 5E510 8006DD10 21280000 */   addu      $a1, $zero, $zero
     /* 5E514 8006DD14 1400848E */  lw         $a0, 0x14($s4)
-    /* 5E518 8006DD18 20B9010C */  jal        func_8006E480
+    /* 5E518 8006DD18 20B9010C */  jal        saMotionSet
     /* 5E51C 8006DD1C 1800A4AF */   sw        $a0, 0x18($sp)
     /* 5E520 8006DD20 01000524 */  addiu      $a1, $zero, 0x1
     /* 5E524 8006DD24 21300000 */  addu       $a2, $zero, $zero

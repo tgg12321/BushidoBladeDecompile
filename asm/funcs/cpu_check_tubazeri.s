@@ -63,7 +63,7 @@ glabel cpu_check_tubazeri
     /* 20574 8002FD74 0000448C */  lw         $a0, 0x0($v0)
     /* 20578 8002FD78 801F053C */  lui        $a1, (0x1F800388 >> 16)
     /* 2057C 8002FD7C 8803A58C */  lw         $a1, (0x1F800388 & 0xFFFF)($a1)
-    /* 20580 8002FD80 57FF010C */  jal        func_8007FD5C
+    /* 20580 8002FD80 57FF010C */  jal        single_game_getEnemyCharId
     /* 20584 8002FD84 00000000 */   nop
     /* 20588 8002FD88 801F033C */  lui        $v1, (0x1F800384 >> 16)
     /* 2058C 8002FD8C 8403638C */  lw         $v1, (0x1F800384 & 0xFFFF)($v1)

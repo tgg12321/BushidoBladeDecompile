@@ -88,7 +88,7 @@ glabel saTan0KiWareMoveB
   .L8002DC28:
     /* 1E428 8002DC28 C800248E */  lw         $a0, 0xC8($s1)
     /* 1E42C 8002DC2C D000258E */  lw         $a1, 0xD0($s1)
-    /* 1E430 8002DC30 57FF010C */  jal        func_8007FD5C
+    /* 1E430 8002DC30 57FF010C */  jal        single_game_getEnemyCharId
     /* 1E434 8002DC34 00000000 */   nop
     /* 1E438 8002DC38 C800238E */  lw         $v1, 0xC8($s1)
     /* 1E43C 8002DC3C 00000000 */  nop
@@ -146,7 +146,7 @@ glabel saTan0KiWareMoveB
     /* 1E504 8002DD04 06284400 */  srlv       $a1, $a0, $v0
   .L8002DD08:
     /* 1E508 8002DD08 CC00248E */  lw         $a0, 0xCC($s1)
-    /* 1E50C 8002DD0C 57FF010C */  jal        func_8007FD5C
+    /* 1E50C 8002DD0C 57FF010C */  jal        single_game_getEnemyCharId
     /* 1E510 8002DD10 D8003026 */   addiu     $s0, $s1, 0xD8
     /* 1E514 8002DD14 21280002 */  addu       $a1, $s0, $zero
     /* 1E518 8002DD18 00080324 */  addiu      $v1, $zero, 0x800

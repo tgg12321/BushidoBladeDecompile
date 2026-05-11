@@ -49,7 +49,7 @@ glabel func_80016514
     /* 6DC0 800165C0 F5FF201E */  bgtz       $s1, .L80016598
     /* 6DC4 800165C4 21987002 */   addu      $s3, $s3, $s0
   .L800165C8:
-    /* 6DC8 800165C8 AE0D020C */  jal        func_800836B8
+    /* 6DC8 800165C8 AE0D020C */  jal        md_gview_init
     /* 6DCC 800165CC 21204002 */   addu      $a0, $s2, $zero
     /* 6DD0 800165D0 21108002 */  addu       $v0, $s4, $zero
   .L800165D4:

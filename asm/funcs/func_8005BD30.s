@@ -27,7 +27,7 @@ glabel func_8005BD30
     /* 4C58C 8005BD8C 0A80013C */  lui        $at, %hi(D_8009AD18)
     /* 4C590 8005BD90 21082200 */  addu       $at, $at, $v0
     /* 4C594 8005BD94 18AD2590 */  lbu        $a1, %lo(D_8009AD18)($at)
-    /* 4C598 8005BD98 3071010C */  jal        func_8005C4C0
+    /* 4C598 8005BD98 3071010C */  jal        saFidLoad
     /* 4C59C 8005BD9C 01001026 */   addiu     $s0, $s0, 0x1
     /* 4C5A0 8005BDA0 FF000232 */  andi       $v0, $s0, 0xFF
     /* 4C5A4 8005BDA4 2B105200 */  sltu       $v0, $v0, $s2

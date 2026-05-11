@@ -49,7 +49,7 @@ glabel camera_set_zoom
     /* 14180 80023980 C000028E */  lw         $v0, 0xC0($s0)
     /* 14184 80023984 4800A727 */  addiu      $a3, $sp, 0x48
     /* 14188 80023988 3000A2AF */  sw         $v0, 0x30($sp)
-    /* 1418C 8002398C 854D010C */  jal        func_80053614
+    /* 1418C 8002398C 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 14190 80023990 1000B4AF */   sw        $s4, 0x10($sp)
     /* 14194 80023994 21884000 */  addu       $s1, $v0, $zero
     /* 14198 80023998 2B002012 */  beqz       $s1, .L80023A48
@@ -94,7 +94,7 @@ glabel camera_set_zoom
     /* 14228 80023A28 C3180800 */  sra        $v1, $t0, 3
     /* 1422C 80023A2C 21104300 */  addu       $v0, $v0, $v1
     /* 14230 80023A30 3000A2AF */  sw         $v0, 0x30($sp)
-    /* 14234 80023A34 854D010C */  jal        func_80053614
+    /* 14234 80023A34 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 14238 80023A38 1000B4AF */   sw        $s4, 0x10($sp)
     /* 1423C 80023A3C 928E0008 */  j          .L80023A48
     /* 14240 80023A40 0100422C */   sltiu     $v0, $v0, 0x1
@@ -157,7 +157,7 @@ glabel camera_set_zoom
   .L80023B00:
     /* 14300 80023B00 4800A487 */  lh         $a0, 0x48($sp)
     /* 14304 80023B04 4C00A587 */  lh         $a1, 0x4C($sp)
-    /* 14308 80023B08 57FF010C */  jal        func_8007FD5C
+    /* 14308 80023B08 57FF010C */  jal        single_game_getEnemyCharId
     /* 1430C 80023B0C 00000000 */   nop
     /* 14310 80023B10 CA010386 */  lh         $v1, 0x1CA($s0)
     /* 14314 80023B14 00000000 */  nop

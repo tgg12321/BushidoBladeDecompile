@@ -81,14 +81,14 @@ extern void func_8003AA48(void);
 extern void gnd_disp_loop_ctrl(void);
 extern void func_8003AAB0(void);
 extern u8 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 single_game_getEnemyCharId(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern s32 stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
+extern void get_point_value(void);
 extern void func_80037774(void);
 extern void special_camera_get_rot_dir(s32 *);
 extern void pad_Init(void);
@@ -125,7 +125,7 @@ extern s32 func_8007E11C(s32);
 extern void func_8007F87C(s32, s32);
 extern void func_8007FA1C(s32, s32);
 extern void func_8007FBBC(s32, s32);
-extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
+extern s32 camera_check_inside_screen_rob_dpos(s32 *, s32 *, s32 *, s32 *, s32);
 extern u16 D_8008D59C;
 extern s16 D_8008EB40;
 extern u8 D_800F5F68;
@@ -134,9 +134,9 @@ extern void func_80033BC0(void);
 extern void func_8001DA2C(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
-extern void func_8007EFFC(s32);
+extern void tslDmaDrawListDelAll(s32);
 extern void func_8003F3D4(s16 *);
-extern void func_80055138(s32, s32, s32);
+extern void single_game_SetStatusUpData(s32, s32, s32);
 extern void func_8003FFE0(s32);
 extern s32 D_80101F90;
 extern s32 D_801020C0;
@@ -1056,7 +1056,7 @@ void func_8001B138(s32 *arg0) {
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
-void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6638 = 0x64;    D_800F663A = 0;    D_800F663C = 0x64;    D_800F6640 = 0x64;    D_800F6642 = 0;    D_800F6644 = 0x64;    game_SetControllerPorts(0);    D_800F6608 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F660C = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6618 = 0;        D_800F6610 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = func_8007FD5C(dx, dy);    }    D_800F661A = 0x400 - v0;    D_800F661C = 0;    D_800F6620 = 0x1388;    D_800F6626 = 0;}
+void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6638 = 0x64;    D_800F663A = 0;    D_800F663C = 0x64;    D_800F6640 = 0x64;    D_800F6642 = 0;    D_800F6644 = 0x64;    game_SetControllerPorts(0);    D_800F6608 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F660C = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6618 = 0;        D_800F6610 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = single_game_getEnemyCharId(dx, dy);    }    D_800F661A = 0x400 - v0;    D_800F661C = 0;    D_800F6620 = 0x1388;    D_800F6626 = 0;}
 void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5358 = 0x64;    D_800F535A = 0;    D_800F535C = 0x64;    D_800F5360 = 0x64;    D_800F5362 = 0;    D_800F5364 = 0x64;    game_SetControllerPorts(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5330 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5368 = 0;        D_800F532C = v;    }}
 void myRobGeneiMove(s32 arg0) {
     u8 *obj = (u8 *)arg0;
@@ -1108,7 +1108,7 @@ void myRobGeneiMove(s32 arg0) {
 
             {
                 s32 base_val = *(s32 *)(*(s32 *)obj + 0xF8);
-                s32 result = func_8007FD5C(base_val - a2, D_800A387C);
+                s32 result = single_game_getEnemyCharId(base_val - a2, D_800A387C);
                 val = (result * (0x400 - angle)) >> 10;
             }
         }
@@ -1273,7 +1273,7 @@ void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
     } else {
         var_s3 = 0x1000;
     }
-    temp_a2 = func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4),
+    temp_a2 = single_game_getEnemyCharId(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4),
                              *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8));
     var_v1 = arg2;
     if (arg2 < 0) {
@@ -1288,9 +1288,9 @@ void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
 void func_8001BBD8(s32 *arg0, s32 *arg1, s32 *arg2) {
     s32 temp_s0;
     temp_s0 = (D_800A387C < 0x2711) << 0xB;
-    DispPracticeMenuTex_A((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
+    DispPracticeMenuTex_A((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - single_game_getEnemyCharId(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
 }
-void func_8001BC70(u8 *arg0, s32 arg1) {
+void cpu_check_move_dir_pattern_enemy_attack(u8 *arg0, s32 arg1) {
     typedef struct { s32 x, y, z; } Vec3;
     Vec3 *dst;
     Vec3 *src;
@@ -1326,7 +1326,7 @@ void func_8001BCF0(u8 *arg0, s32 arg1) {
         D_800F661A = val - lhu_val;
     }
 }
-void func_8001BE08(s32 *arg0) {
+void LWCard_SetAccessData(s32 *arg0) {
     arg0[2] = 0;
     arg0[3] = 0;
     arg0[4] = 0;
@@ -1501,7 +1501,7 @@ void se_data_set(void) {
         || *(&D_8008E5A8 + D_8010277D) != D_800A30FD) {
         s8 *p = (s8 *)&D_8010277C;
 
-        func_80020D38();
+        EndADRSound();
         game_StageCleanup(D_800A36A4, s2);
         func_8002906C();
         func_8005BDF0();
@@ -1527,7 +1527,7 @@ void func_8001D904(void) {
     s32 s1;
     s32 *s0;
     gpu_EnableDisplay();
-    func_80020D38();
+    EndADRSound();
     obj_InitTask();
     s1 = obj_InitTaskCamera((s32)0x80190800);
     if (s1 >= 0xE81) {
@@ -1542,7 +1542,7 @@ void func_8001D998(void) {
     s32 s1;
     s32 *s0;
     gpu_EnableDisplay();
-    func_80020D38();
+    EndADRSound();
     obj_InitPair();
     s1 = func_8005B8B8((s32)0x80190800);
     if (s1 >= 0x1B19) {
@@ -1679,7 +1679,7 @@ void func_8001E404(void) {
             if (D_800A36FA == 0) {
                 fov = 0x50;
             }
-            func_8007EFFC(disp_CalcFov(fov));
+            tslDmaDrawListDelAll(disp_CalcFov(fov));
         }
 
         if (D_800A36FA == 0) {
@@ -1825,11 +1825,11 @@ void cpu_get_move_pattern_table_number(void) {
     if (D_800A3748 == 0) {
         base += 0x44C;
     }
-    func_8001BC70(base, D_800A37B8 << 3);
+    cpu_check_move_dir_pattern_enemy_attack(base, D_800A37B8 << 3);
     func_8001E404();
     func_80039320();
     func_8002006C();
-    func_8001BE08(sp10);
+    LWCard_SetAccessData(sp10);
     func_80023F08(0, (s32)sp10);
     func_80023F08(1, (s32)sp10);
     func_8002C61C();
@@ -1933,7 +1933,7 @@ void func_8001EFA0(void) {
     func_8001E404();
     func_80039320();
     func_8002006C();
-    func_8001BE08(sp10);
+    LWCard_SetAccessData(sp10);
     func_80023F08(0, (s32)sp10);
     func_80023F08(1, (s32)sp10);
     func_8002C61C();
@@ -1983,8 +1983,8 @@ void func_8001EFA0(void) {
 void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
     s16 temp_v1;
     if (!(*(u8 *)(arg1 + 0x18) & 0x80)) {
-        func_80027334((s32 *)arg2);
-        func_80027334((s32 *)arg3);
+        katinuki_game_getMyWeaponId((s32 *)arg2);
+        katinuki_game_getMyWeaponId((s32 *)arg3);
     }
     func_8002F770((s32 *)(arg2 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
     func_8002F770((s32 *)(arg3 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
@@ -2329,7 +2329,7 @@ void func_80020CDC(void) {
     D_800A38C1 = 0xFF;
     D_800A38C0 = 0xFF;
 }
-void func_80020D38(void) {
+void EndADRSound(void) {
     if (D_800A38C6 == 0xFFFF) {
         seq_Reset();
     }
@@ -2698,7 +2698,7 @@ loop:
     }
     return 0;
 }
-void func_80022568(s16 *arg0) {
+void pad_button_info_clear(s16 *arg0) {
     arg0[0x136] = 1;
     arg0[0x137] = 0;
     arg0[0x138] = 0;
@@ -2741,7 +2741,7 @@ loop_22F34:
                 a0 = *(u8 **)a0;
                 {
                     s16 idx2 = *(s16 *)(a0 + 0x4A);
-                    func_80055138(i, val1, (&D_801027BC)[idx2 * 5]);
+                    single_game_SetStatusUpData(i, val1, (&D_801027BC)[idx2 * 5]);
                 }
             }
         }
@@ -2891,14 +2891,14 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         }
     }
 
-    if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+    if (camera_check_inside_screen_rob_dpos(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
         return 0;
     }
 
     *(PackedPair_233AC *)(arg0 + 0x98) = *(PackedPair_233AC *)out1;
 
     {
-        s32 fwd_angle = func_8007FD5C(out1[0], out1[2]);
+        s32 fwd_angle = single_game_getEnemyCharId(out1[0], out1[2]);
         s32 fwd_800;
 
         pos[0] = *(s32 *)(arg0 + 0xB8);
@@ -2921,7 +2921,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
             off[2] = pos[2] + jv4 / 8;
         }
 
-        if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) != 0) {
+        if (camera_check_inside_screen_rob_dpos(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) != 0) {
             return 0;
         }
 
@@ -2929,7 +2929,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         pos[1] = off[1] + 0x190;
         pos[2] = off[2];
 
-        if (func_80053614(off, pos, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+        if (camera_check_inside_screen_rob_dpos(off, pos, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
             return 0;
         }
 
@@ -3072,7 +3072,7 @@ int camera_set_zoom(u8 *arg0)
     dst[0] = *((s32 *) (arg0 + 0xB8));
     dst[1] = (*((s32 *) (arg0 + 0xBC))) + 0x514;
     dst[2] = *((s32 *) (arg0 + 0xC0));
-    s1 = func_80053614(src, dst, out, (s32 *) offsets, scratchpad);
+    s1 = camera_check_inside_screen_rob_dpos(src, dst, out, (s32 *) offsets, scratchpad);
     ok = 1;
     if (s1 != 0)
     {
@@ -3097,7 +3097,7 @@ int camera_set_zoom(u8 *arg0)
                 tmp += 7;
             }
             dst[2] += tmp >> 3;
-            ok = func_80053614(src, dst, out, (s32 *) offsets2, scratchpad) == 0;
+            ok = camera_check_inside_screen_rob_dpos(src, dst, out, (s32 *) offsets2, scratchpad) == 0;
             goto ok_check;
         }
     }
@@ -3145,7 +3145,7 @@ int camera_set_zoom(u8 *arg0)
     }
     {
         s32 kind;
-        s1 = ((*((s16 *) (arg0 + 0x1CA))) - func_8007FD5C(offsets[0], offsets[2])) & 0xFFF;
+        s1 = ((*((s16 *) (arg0 + 0x1CA))) - single_game_getEnemyCharId(offsets[0], offsets[2])) & 0xFFF;
         if (s1 >= 0x800) {
             s1 = 0x1000 - s1;
         }
@@ -3199,7 +3199,7 @@ void func_80023C30(s32 arg0, s32 arg1, s32 arg2, s16 *arg3) {
     func_8007FA1C(arg1, (s32)arg3);
     func_8007FBBC(arg2, (s32)arg3);
 }
-void func_80023CB4(s16 *arg0, s16 arg1) {
+void cpu_get_dash_timer(s16 *arg0, s16 arg1) {
     s16 v;
     *(u16 *)((u8 *)arg0 + 0x31A) += 1;
     v = *(s16 *)((u8 *)arg0 + 0x31A);
@@ -3215,7 +3215,7 @@ void func_80023CB4(s16 *arg0, s16 arg1) {
     }
 }
 void func_80023D08(s32 arg0) {
-    func_80023CB4(arg0, 0x200);
+    cpu_get_dash_timer(arg0, 0x200);
 }
 void func_80023D28(u8 *arg0) {
     if (*(s32 *)(arg0 + 0x108) < 0) {
@@ -3252,7 +3252,7 @@ void func_80023E40(u8 *arg0) {
         s1[0xC] = *(s32 *)(arg0 + 0xB8);
         s1[0xD] = *(s32 *)(arg0 + 0xBC) + 0x1F40;
         s1[0xE] = *(s32 *)(arg0 + 0xC0);
-        v0 = func_80053614((s32 *)(arg0 + 0xB8), &s1[0xC], s1, &s1[4], (s32)v3);
+        v0 = camera_check_inside_screen_rob_dpos((s32 *)(arg0 + 0xB8), &s1[0xC], s1, &s1[4], (s32)v3);
         if (v0 == 0) goto done;
         *(s32 *)(arg0 + 0x148) = s1[1];
         goto done;

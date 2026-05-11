@@ -143,7 +143,7 @@ glabel func_8005BA8C
     /* 4C4A0 8005BCA0 18AD2590 */  lbu        $a1, %lo(D_8009AD18)($at)
     /* 4C4A4 8005BCA4 0000248E */  lw         $a0, 0x0($s1)
     /* 4C4A8 8005BCA8 01005226 */  addiu      $s2, $s2, 0x1
-    /* 4C4AC 8005BCAC 3071010C */  jal        func_8005C4C0
+    /* 4C4AC 8005BCAC 3071010C */  jal        saFidLoad
     /* 4C4B0 8005BCB0 23206402 */   subu      $a0, $s3, $a0
     /* 4C4B4 8005BCB4 000033AE */  sw         $s3, 0x0($s1)
     /* 4C4B8 8005BCB8 1800028E */  lw         $v0, 0x18($s0)

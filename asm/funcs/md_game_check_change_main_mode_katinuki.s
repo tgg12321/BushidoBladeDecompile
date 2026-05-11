@@ -85,7 +85,7 @@ glabel md_game_check_change_main_mode_katinuki
     /* 7B250 8008AA50 0A80043C */  lui        $a0, %hi(D_800A2870)
     /* 7B254 8008AA54 7028848C */  lw         $a0, %lo(D_800A2870)($a0)
     /* 7B258 8008AA58 00FC3126 */  addiu      $s1, $s1, -0x400
-    /* 7B25C 8008AA5C B12A020C */  jal        func_8008AAC4
+    /* 7B25C 8008AA5C B12A020C */  jal        CheckFadeEnd
     /* 7B260 8008AA60 00045226 */   addiu     $s2, $s2, 0x400
     /* 7B264 8008AA64 EBFF6016 */  bnez       $s3, .L8008AA14
     /* 7B268 8008AA68 0104222E */   sltiu     $v0, $s1, 0x401

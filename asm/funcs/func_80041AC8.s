@@ -31,7 +31,7 @@ glabel func_80041AC8
     /* 3233C 80041B3C 0980013C */  lui        $at, %hi(D_80094DF0)
     /* 32340 80041B40 21082200 */  addu       $at, $at, $v0
     /* 32344 80041B44 F04D308C */  lw         $s0, %lo(D_80094DF0)($at)
-    /* 32348 80041B48 A8F8000C */  jal        func_8003E2A0
+    /* 32348 80041B48 A8F8000C */  jal        single_game_SetStageId
     /* 3234C 80041B4C 00000000 */   nop
     /* 32350 80041B50 04005114 */  bne        $v0, $s1, .L80041B64
     /* 32354 80041B54 80001324 */   addiu     $s3, $zero, 0x80

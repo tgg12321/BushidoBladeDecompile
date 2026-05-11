@@ -32,7 +32,7 @@ glabel func_80070C70
     /* 614E8 80070CE8 2000A3AF */   sw        $v1, 0x20($sp)
     /* 614EC 80070CEC 100022AE */  sw         $v0, 0x10($s1)
     /* 614F0 80070CF0 1800A48F */  lw         $a0, 0x18($sp)
-    /* 614F4 80070CF4 20B9010C */  jal        func_8006E480
+    /* 614F4 80070CF4 20B9010C */  jal        saMotionSet
     /* 614F8 80070CF8 60000524 */   addiu     $a1, $zero, 0x60
     /* 614FC 80070CFC 01000524 */  addiu      $a1, $zero, 0x1
     /* 61500 80070D00 21300000 */  addu       $a2, $zero, $zero
@@ -83,7 +83,7 @@ glabel func_80070C70
     /* 615B0 80070DB0 80111000 */   sll       $v0, $s0, 6
     /* 615B4 80070DB4 0000448E */  lw         $a0, 0x0($s2)
     /* 615B8 80070DB8 21288002 */  addu       $a1, $s4, $zero
-    /* 615BC 80070DBC 20B9010C */  jal        func_8006E480
+    /* 615BC 80070DBC 20B9010C */  jal        saMotionSet
     /* 615C0 80070DC0 1800A4AF */   sw        $a0, 0x18($sp)
     /* 615C4 80070DC4 01000524 */  addiu      $a1, $zero, 0x1
     /* 615C8 80070DC8 21300000 */  addu       $a2, $zero, $zero
@@ -166,7 +166,7 @@ glabel func_80070C70
     /* 616E8 80070EE8 03005226 */   addiu     $s2, $s2, 0x3
   .L80070EEC:
     /* 616EC 80070EEC 1800A48F */  lw         $a0, 0x18($sp)
-    /* 616F0 80070EF0 20B9010C */  jal        func_8006E480
+    /* 616F0 80070EF0 20B9010C */  jal        saMotionSet
     /* 616F4 80070EF4 21288002 */   addu      $a1, $s4, $zero
     /* 616F8 80070EF8 01000524 */  addiu      $a1, $zero, 0x1
     /* 616FC 80070EFC 21300000 */  addu       $a2, $zero, $zero
@@ -183,7 +183,7 @@ glabel func_80070C70
     /* 61728 80070F28 1800228E */  lw         $v0, 0x18($s1)
     /* 6172C 80070F2C 1800A527 */  addiu      $a1, $sp, 0x18
     /* 61730 80070F30 0C004224 */  addiu      $v0, $v0, 0xC
-    /* 61734 80070F34 DEC3010C */  jal        func_80070F78
+    /* 61734 80070F34 DEC3010C */  jal        motion_ShiftControl
     /* 61738 80070F38 180022AE */   sw        $v0, 0x18($s1)
     /* 6173C 80070F3C 3DBB010C */  jal        func_8006ECF4
     /* 61740 80070F40 21202002 */   addu      $a0, $s1, $zero

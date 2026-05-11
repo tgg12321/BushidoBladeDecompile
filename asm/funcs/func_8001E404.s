@@ -74,7 +74,7 @@ glabel func_8001E404
   .L8001E508:
     /* ED08 8001E508 B159000C */  jal        disp_CalcFov
     /* ED0C 8001E50C 00000000 */   nop
-    /* ED10 8001E510 FFFB010C */  jal        func_8007EFFC
+    /* ED10 8001E510 FFFB010C */  jal        tslDmaDrawListDelAll
     /* ED14 8001E514 21204000 */   addu      $a0, $v0, $zero
     /* ED18 8001E518 0A80023C */  lui        $v0, %hi(D_800A36FA)
     /* ED1C 8001E51C FA364290 */  lbu        $v0, %lo(D_800A36FA)($v0)

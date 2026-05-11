@@ -20,7 +20,7 @@ extern u32 D_80101E3C;
 extern u32 D_80101E44;
 
 /* Extern function declarations */
-extern void func_80023CB4(s32, s32);
+extern void cpu_get_dash_timer(s32, s32);
 extern s32 func_80037110(s32);
 extern void game_FrameInit(void);
 extern void game_FrameLoop(void);
@@ -63,7 +63,7 @@ extern s16 *snd_GetSeId(void);
 extern void func_8003553C(void);
 
 extern void sys_Panic(void);
-extern s32 func_80020D38(void);
+extern s32 EndADRSound(void);
 extern void func_800602AC(s32, s32);
 extern void md_menu_logo_exec(void);
 extern s32 obj_InitTaskCamera(s32);
@@ -76,14 +76,14 @@ extern void func_8005B98C(s32);
 extern s32 func_80036D88(void);
 extern void gnd_disp_loop_ctrl(void);
 extern s32 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 single_game_getEnemyCharId(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
+extern void get_point_value(void);
 extern void special_camera_get_rot_dir(s32 *);
 extern void pad_Init(void);
 extern void irq_Reset(void);
@@ -162,12 +162,12 @@ extern s32 func_80078B04(s32);
 extern void func_8007A400(void);
 extern void func_8008BE4C(void);
 extern s32 func_8006BEC4(s32, s32);
-extern void func_8003E22C(void);
+extern void gnd_open(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
-extern void func_8007EFFC(s32);
+extern void tslDmaDrawListDelAll(s32);
 extern void func_8001B6F4(void);
-extern void func_80022568(u8 *);
+extern void pad_button_info_clear(u8 *);
 extern s32 g_str_memcard_fmt;
 extern s32 D_80102810;
 extern s32 D_800F34D8;
@@ -335,7 +335,7 @@ void func_8003AE5C(u8 *arg0) {
     if (result >= 0) {
         (&D_800A37A8)[D_800A37A0] = *(u16 *)&D_800A36A4;
         gpu_EnableDisplay();
-        func_80020D38();
+        EndADRSound();
         func_800602AC(result, addr);
     }
 }
@@ -348,7 +348,7 @@ void func_8003AF40(s32 arg0) {
     }
     func_80022580(arg0, ((s8 *)&D_80102780)[arg0], ((s8 *)&D_8010277C)[arg0], ((s8 *)&D_8010277E)[arg0], 0);
     gpu_EnableDisplay();
-    func_80020D38();
+    EndADRSound();
     func_80040510(arg0, (&D_8008D578)[(s8)(&D_8010277C)[arg0]], (s32)0x80190800);
 }
 void func_8003AFFC(void) {
@@ -360,7 +360,7 @@ void func_8003AFFC(void) {
     s32 v1;
 
     gpu_EnableDisplay();
-    func_80020D38();
+    EndADRSound();
     func_8004939C();
 
     tbl = &D_8008E5CC;
@@ -393,7 +393,7 @@ void func_8003B10C(s32 arg0) {
     s32 v0;
 
     gpu_EnableDisplay();
-    func_80020D38();
+    EndADRSound();
     func_8004939C();
 
     s0 = arg0 * 1100;
@@ -455,7 +455,7 @@ void func_8003B328(void) {
     *p = v_3836;
     D_800A376A = v_36C8;
     player_SetCharId(0, v_36C8);
-    func_80022568(&D_80101EC8);
+    pad_button_info_clear(&D_80101EC8);
 }
 s32 func_8003B3A4(u8 *arg0) {
     u8 idx;
@@ -569,7 +569,7 @@ void suDispMentalBar(void) {
                 (&D_800A37A8)[counter] = byte;
                 D_800A3834 = 22;
                 done = 1;
-                func_80022568(&D_80101EC8);
+                pad_button_info_clear(&D_80101EC8);
                 D_800A3907 = 0;
                 break;
             }

@@ -26,7 +26,7 @@ glabel func_8006D338
     /* 5DB98 8006D398 02000524 */  addiu      $a1, $zero, 0x2
     /* 5DB9C 8006D39C B9A6010C */  jal        func_80069AE4
     /* 5DBA0 8006D3A0 21300002 */   addu      $a2, $s0, $zero
-    /* 5DBA4 8006D3A4 87B0010C */  jal        func_8006C21C
+    /* 5DBA4 8006D3A4 87B0010C */  jal        saTan4GaugeMain
     /* 5DBA8 8006D3A8 1000A427 */   addiu     $a0, $sp, 0x10
     /* 5DBAC 8006D3AC EFB3010C */  jal        func_8006CFBC
     /* 5DBB0 8006D3B0 1000A427 */   addiu     $a0, $sp, 0x10

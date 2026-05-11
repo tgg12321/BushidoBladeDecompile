@@ -14,7 +14,7 @@ glabel DispSchoolBG
     /* 1F40C 8002EC0C 00002486 */  lh         $a0, 0x0($s1)
     /* 1F410 8002EC10 04002586 */  lh         $a1, 0x4($s1)
     /* 1F414 8002EC14 4800B58F */  lw         $s5, 0x48($sp)
-    /* 1F418 8002EC18 57FF010C */  jal        func_8007FD5C
+    /* 1F418 8002EC18 57FF010C */  jal        single_game_getEnemyCharId
     /* 1F41C 8002EC1C 21A0E000 */   addu      $s4, $a3, $zero
     /* 1F420 8002EC20 00080324 */  addiu      $v1, $zero, 0x800
     /* 1F424 8002EC24 23186200 */  subu       $v1, $v1, $v0
@@ -65,7 +65,7 @@ glabel DispSchoolBG
     /* 1F4D0 8002ECD0 06284400 */  srlv       $a1, $a0, $v0
   .L8002ECD4:
     /* 1F4D4 8002ECD4 02002486 */  lh         $a0, 0x2($s1)
-    /* 1F4D8 8002ECD8 57FF010C */  jal        func_8007FD5C
+    /* 1F4D8 8002ECD8 57FF010C */  jal        single_game_getEnemyCharId
     /* 1F4DC 8002ECDC D8001126 */   addiu     $s1, $s0, 0xD8
     /* 1F4E0 8002ECE0 21282002 */  addu       $a1, $s1, $zero
     /* 1F4E4 8002ECE4 00080324 */  addiu      $v1, $zero, 0x800

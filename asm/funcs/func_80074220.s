@@ -59,7 +59,7 @@ glabel func_80074220
     /* 64AFC 800742FC F3FF4014 */  bnez       $v0, .L800742CC
     /* 64B00 80074300 21280000 */   addu      $a1, $zero, $zero
     /* 64B04 80074304 0000448E */  lw         $a0, 0x0($s2)
-    /* 64B08 80074308 20B9010C */  jal        func_8006E480
+    /* 64B08 80074308 20B9010C */  jal        saMotionSet
     /* 64B0C 8007430C 1800A4AF */   sw        $a0, 0x18($sp)
     /* 64B10 80074310 01000524 */  addiu      $a1, $zero, 0x1
     /* 64B14 80074314 21300000 */  addu       $a2, $zero, $zero

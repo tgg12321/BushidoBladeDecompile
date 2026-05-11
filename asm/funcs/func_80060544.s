@@ -112,7 +112,7 @@ glabel func_80060544
     /* 50EDC 800606DC F6FF4014 */  bnez       $v0, .L800606B8
     /* 50EE0 800606E0 0C001026 */   addiu     $s0, $s0, 0xC
     /* 50EE4 800606E4 1800A48F */  lw         $a0, 0x18($sp)
-    /* 50EE8 800606E8 20B9010C */  jal        func_8006E480
+    /* 50EE8 800606E8 20B9010C */  jal        saMotionSet
     /* 50EEC 800606EC 21280000 */   addu      $a1, $zero, $zero
     /* 50EF0 800606F0 2120C002 */  addu       $a0, $s6, $zero
     /* 50EF4 800606F4 01000524 */  addiu      $a1, $zero, 0x1

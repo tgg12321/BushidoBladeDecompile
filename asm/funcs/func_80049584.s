@@ -98,7 +98,7 @@ glabel func_80049584
     /* 39ED8 800496D8 21280002 */  addu       $a1, $s0, $zero
     /* 39EDC 800496DC 0F80063C */  lui        $a2, %hi(D_800EF980)
     /* 39EE0 800496E0 80F9C624 */  addiu      $a2, $a2, %lo(D_800EF980)
-    /* 39EE4 800496E4 DA16010C */  jal        func_80045B68
+    /* 39EE4 800496E4 DA16010C */  jal        efc_rob_set_type_particle
     /* 39EE8 800496E8 21384002 */   addu      $a3, $s2, $zero
     /* 39EEC 800496EC 48F8000C */  jal        func_8003E120
     /* 39EF0 800496F0 00000000 */   nop

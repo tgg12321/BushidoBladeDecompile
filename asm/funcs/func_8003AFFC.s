@@ -9,7 +9,7 @@ glabel func_8003AFFC
     /* 2B818 8003B018 1400B1AF */  sw         $s1, 0x14($sp)
     /* 2B81C 8003B01C 1A5A000C */  jal        gpu_EnableDisplay
     /* 2B820 8003B020 1000B0AF */   sw        $s0, 0x10($sp)
-    /* 2B824 8003B024 4E83000C */  jal        func_80020D38
+    /* 2B824 8003B024 4E83000C */  jal        EndADRSound
     /* 2B828 8003B028 21900000 */   addu      $s2, $zero, $zero
     /* 2B82C 8003B02C E724010C */  jal        func_8004939C
     /* 2B830 8003B030 21800000 */   addu      $s0, $zero, $zero

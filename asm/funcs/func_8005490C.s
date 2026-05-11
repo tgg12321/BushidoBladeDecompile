@@ -388,7 +388,7 @@ glabel func_8005490C
     /* 456DC 80054EDC 0000658C */  lw         $a1, 0x0($v1)
     /* 456E0 80054EE0 83130200 */  sra        $v0, $v0, 14
     /* 456E4 80054EE4 06284500 */  srlv       $a1, $a1, $v0
-    /* 456E8 80054EE8 C100010C */  jal        func_80040304
+    /* 456E8 80054EE8 C100010C */  jal        efc_rob_Init
     /* 456EC 80054EEC 0F00A530 */   andi      $a1, $a1, 0xF
   .L80054EF0:
     /* 456F0 80054EF0 02005226 */  addiu      $s2, $s2, 0x2

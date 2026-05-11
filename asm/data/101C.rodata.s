@@ -4300,9 +4300,9 @@ nonmatching D_80015470
 
 dlabel D_80015470
     /* 5C70 80015470 E4B60480 */ .word 0x8004B6E4
-    /* 5C74 80015474 C0BC0480 */ .word func_8004BCC0
-    /* 5C78 80015478 102C0580 */ .word func_80052C10
-    /* 5C7C 8001547C 102C0580 */ .word func_80052C10
+    /* 5C74 80015474 C0BC0480 */ .word saTan2LineDraw
+    /* 5C78 80015478 102C0580 */ .word InitFadePanel
+    /* 5C7C 8001547C 102C0580 */ .word InitFadePanel
 enddlabel D_80015470
 
 nonmatching D_80015480

@@ -100,7 +100,7 @@ glabel suDispMentalBar
     /* 2BF10 8003B710 A83725A0 */  sb         $a1, %lo(D_800A37A8)($at)
     /* 2BF14 8003B714 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 2BF18 8003B718 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
-    /* 2BF1C 8003B71C 5A89000C */  jal        func_80022568
+    /* 2BF1C 8003B71C 5A89000C */  jal        pad_button_info_clear
     /* 2BF20 8003B720 01001024 */   addiu     $s0, $zero, 0x1
     /* 2BF24 8003B724 0A80013C */  lui        $at, %hi(D_800A3907)
     /* 2BF28 8003B728 073920A0 */  sb         $zero, %lo(D_800A3907)($at)

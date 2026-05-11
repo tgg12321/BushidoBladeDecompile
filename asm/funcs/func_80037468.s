@@ -13,7 +13,7 @@ glabel func_80037468
     /* 27C94 80037494 21200000 */   addu      $a0, $zero, $zero
     /* 27C98 80037498 1A5A000C */  jal        gpu_EnableDisplay
     /* 27C9C 8003749C 00000000 */   nop
-    /* 27CA0 800374A0 436D010C */  jal        func_8005B50C
+    /* 27CA0 800374A0 436D010C */  jal        get_point_value
     /* 27CA4 800374A4 00000000 */   nop
     /* 27CA8 800374A8 DDDD000C */  jal        func_80037774
     /* 27CAC 800374AC 00000000 */   nop

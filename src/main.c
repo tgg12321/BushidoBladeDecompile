@@ -1239,10 +1239,10 @@ void func_80087F64(s16 a0) {
 }
 extern u8 g_snd_ch_status[];
 
-s16 func_80087FE8(s16 a0) {
+s16 tslCDFileRead(s16 a0) {
     if ((u16)a0 < 0x11) {
         if (g_snd_ch_status[a0] == 2) {
-            func_8008AF58(0);
+            ReturnVSMode(0);
             g_snd_ch_status[a0] = 1;
             return a0;
         }
@@ -1271,11 +1271,11 @@ extern s32 func_8008AE24(s32);
 extern s32 func_8008ADC4(s32, s32);
 s16 func_800884C4(s32 a0, s16 a1) {
     if ((u16)a1 >= 0x11) {
-        func_8008AF58(0);
+        ReturnVSMode(0);
         return -1;
     }
     if (g_snd_ch_status[a1] != 2) {
-        func_8008AF58(0);
+        ReturnVSMode(0);
         return -1;
     }
     {
@@ -2139,7 +2139,7 @@ loop:
     saTan0GaugeDraw(2, s2_val);
     saTan0GaugeDraw(1);
     saTan0GaugeDraw(3, &D_800A28D4, chunk);
-    func_8008AAC4(D_800A2870);
+    CheckFadeEnd(D_800A2870);
     s1_val -= 0x400;
     s2_val += 0x400;
     if (s3_flag != 0) {
@@ -2157,12 +2157,12 @@ loop:
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel func_8008AAC4\n"
+    "glabel CheckFadeEnd\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0xA\n"
     "    nop\n"
-    "endlabel func_8008AAC4\n"
+    "endlabel CheckFadeEnd\n"
     ".set reorder\n"
     ".set at\n"
 );
@@ -2335,7 +2335,7 @@ block_8:
     }
     return var_v0;
 }
-void func_8008AF58(s32 a0) {
+void ReturnVSMode(s32 a0) {
     if (a0 == 1) {
         g_spu_busy = 0;
     } else {

@@ -631,7 +631,7 @@ s32 func_8007C97C(u8 *arg0) {
 }
 extern u8 D_8009BE74;
 extern u8 D_8009BE77;
-s32 func_8007CA00(s16 *arg0) {
+s32 reset_rob_rmd(s16 *arg0) {
     int new_var;
     switch (D_8009BE74) {
     case 1:
@@ -1778,7 +1778,7 @@ __asm__(
     "    .set\tnoreorder\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_8007EFFC\n"
+    "glabel tslDmaDrawListDelAll\n"
     "    ctc2   $a0, $26\n"
     "    jr     $ra\n"
     "    nop\n"
@@ -1992,11 +1992,11 @@ void func_8007F2DC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
 PAD_NOPS_2; /* 2 NOPs after func_8007F2DC */
-void *func_8007F35C(s16 *angle_ptr, void *arg1) {
+void *motutil_GetWalkDir(s16 *angle_ptr, void *arg1) {
     (void)angle_ptr;
     return arg1;
 }
-PAD_NOPS_1; /* 1 NOP after func_8007F35C */
+PAD_NOPS_1; /* 1 NOP after motutil_GetWalkDir */
 void *func_8007F5EC(s16 *angle_ptr, void *arg1) {
     (void)angle_ptr;
     return arg1;
@@ -2071,7 +2071,7 @@ typedef struct GameObj {
 } GameObj;
 extern s16 D_800A0928[];
 
-s32 func_8007FD5C(s32 arg0, s32 arg1) {
+s32 single_game_getEnemyCharId(s32 arg0, s32 arg1) {
     s32 var_v1;
     s32 var_v0;
     s32 var_a0;

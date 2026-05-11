@@ -17,9 +17,9 @@ extern s32 g_game_flag_b;
 extern s32 g_game_flag_a;
 extern s32 g_stage_init_tbl;
 extern void func_8001924C(s32 *, s32);
-extern void func_80045A28(s32, s32);
-extern void func_80052A20(s32 *, s32 *, s16 *);
-extern void func_80052C10(void);
+extern void tslFileClose(s32, s32);
+extern void game_2d_CheckLifeGaugeNoDisp(s32 *, s32 *, s16 *);
+extern void InitFadePanel(void);
 
 /* Externs for globals */
 extern u8 g_char_data;
@@ -198,14 +198,14 @@ void func_8003F62C(s32 *a0) {
     if (s0[1]) {
         func_8004001C((u8 *)s0);
     }
-    func_8003F6D8(s0);
+    ang_near_dif(s0);
     func_8001924C((s32 *)((u8 *)s0 + 0x418), s0[0]);
     if (s0[1]) {
         func_80040068((u8 *)s0);
         s0[1] = 0;
     }
 }
-void func_8003F6D8(s16 *arg0) {
+void ang_near_dif(s16 *arg0) {
     volatile s32 _arg0_spill;
     volatile s32 _p0, _p1, _p2, _p3, _p4;
     volatile s32 sp28;
@@ -255,8 +255,8 @@ L8003F750:
                     temp_s0 = *(s32 *)((u8 *)var_s3 + 4);
                     var_s3 = (void *)((u8 *)var_s3 + 4);
                     temp_s0 += 0x18;
-                    func_80052A20((s32 *)temp_s0, call_a1, call_a2);
-                    func_80052A20((s32 *)temp_s0, (s32 *)((u8 *)var_s2 + 8), (s16 *)((u8 *)temp_s1 + 0x10));
+                    game_2d_CheckLifeGaugeNoDisp((s32 *)temp_s0, call_a1, call_a2);
+                    game_2d_CheckLifeGaugeNoDisp((s32 *)temp_s0, (s32 *)((u8 *)var_s2 + 8), (s16 *)((u8 *)temp_s1 + 0x10));
                 }
                 var_s2 = (void *)((u8 *)temp_s4 + var_s5);
                 var_s7 += 1;
@@ -321,7 +321,7 @@ outer_loop:
     if (new_var3 == new_var5) goto past_marker;
     new_var = (s16 *)s3;
     if (*((s16 *)s3) >= 5) {
-        func_80052C10();
+        InitFadePanel();
     }
     cur = (*new_var) * 0xD0 + 8;
     s2 = s3 + cur;
@@ -373,7 +373,7 @@ past_marker:
     if (s5 != -3) { s5++; goto outer_loop; }
 check_arg1:
     if (arg1_s7 != 0) {
-        func_80045A28(
+        tslFileClose(
             (s32)(*((s16 *)(arg0_s4 + 0x4))),
             (s32)(s0 - *((u8 **)(arg0_s4 + 0x1C))));
     }

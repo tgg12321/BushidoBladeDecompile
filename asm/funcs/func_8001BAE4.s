@@ -25,7 +25,7 @@ glabel func_8001BAE4
     /* C338 8001BB38 08004286 */  lh         $v0, 0x8($s2)
     /* C33C 8001BB3C 08002586 */  lh         $a1, 0x8($s1)
     /* C340 8001BB40 23206400 */  subu       $a0, $v1, $a0
-    /* C344 8001BB44 57FF010C */  jal        func_8007FD5C
+    /* C344 8001BB44 57FF010C */  jal        single_game_getEnemyCharId
     /* C348 8001BB48 23284500 */   subu      $a1, $v0, $a1
     /* C34C 8001BB4C 21180002 */  addu       $v1, $s0, $zero
     /* C350 8001BB50 02000106 */  bgez       $s0, .L8001BB5C

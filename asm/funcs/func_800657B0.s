@@ -1,7 +1,7 @@
 glabel func_800657B0
     /* 55FB0 800657B0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 55FB4 800657B4 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 55FB8 800657B8 0096010C */  jal        func_80065800
+    /* 55FB8 800657B8 0096010C */  jal        motion_SetExMotion
     /* 55FBC 800657BC 11000424 */   addiu     $a0, $zero, 0x11
     /* 55FC0 800657C0 0F80043C */  lui        $a0, %hi(D_800F0BCA)
     /* 55FC4 800657C4 CA0B8424 */  addiu      $a0, $a0, %lo(D_800F0BCA)

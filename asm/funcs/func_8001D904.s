@@ -7,7 +7,7 @@ glabel func_8001D904
     /* E118 8001D918 1400B1AF */  sw         $s1, 0x14($sp)
     /* E11C 8001D91C 1A5A000C */  jal        gpu_EnableDisplay
     /* E120 8001D920 1000B0AF */   sw        $s0, 0x10($sp)
-    /* E124 8001D924 4E83000C */  jal        func_80020D38
+    /* E124 8001D924 4E83000C */  jal        EndADRSound
     /* E128 8001D928 00000000 */   nop
     /* E12C 8001D92C 716E010C */  jal        obj_InitTask
     /* E130 8001D930 00000000 */   nop

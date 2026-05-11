@@ -76,7 +76,7 @@ glabel func_8006BD28
     /* 5C638 8006BE38 00000000 */   nop
   .L8006BE3C:
     /* 5C63C 8006BE3C 0000248E */  lw         $a0, 0x0($s1)
-    /* 5C640 8006BE40 20B9010C */  jal        func_8006E480
+    /* 5C640 8006BE40 20B9010C */  jal        saMotionSet
     /* 5C644 8006BE44 21280000 */   addu      $a1, $zero, $zero
     /* 5C648 8006BE48 01000524 */  addiu      $a1, $zero, 0x1
     /* 5C64C 8006BE4C 21300000 */  addu       $a2, $zero, $zero
