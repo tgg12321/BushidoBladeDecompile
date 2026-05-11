@@ -671,12 +671,25 @@ print(f'Replaced {func} in {src}')
         if [ "$N" = "1" ]; then
             FUNC=$(echo "$TOP" | head -n 1 | awk '{print $2}')
             if [ -n "$FUNC" ]; then
-                echo "$FUNC" > .bb2_active_func
-                echo "(active function set from $QUEUE_NAME: $FUNC)" >&2
+                # Resolve to the canonical name from asm/funcs/. The CSV
+                # (and thus the queue) can carry stale `func_<addr>` raw
+                # names from before the function was renamed in
+                # asm-by-address. The hook runs `dc.sh verify <ACTIVE>`
+                # to decide whether to clear the marker on commit, and
+                # that lookup is by exact symbol name -- so the marker
+                # MUST be the renamed form (`motion_SavePreCalcData_<addr>`),
+                # not the queue's raw form.
+                CANON=$(python3 tools/canonical_funcname.py "$FUNC" 2>/dev/null)
+                if [ -z "$CANON" ]; then CANON="$FUNC"; fi
+                if [ "$CANON" != "$FUNC" ]; then
+                    echo "(queue name '$FUNC' resolved to '$CANON' from asm/funcs/)" >&2
+                fi
+                echo "$CANON" > .bb2_active_func
+                echo "(active function set from $QUEUE_NAME: $CANON)" >&2
                 if [ "$WITH_CONTEXT" = "1" ]; then
                     echo
                     echo "=== agent-brief ==="
-                    python3 tools/agent_brief.py "$FUNC" 2>&1
+                    python3 tools/agent_brief.py "$CANON" 2>&1
                 fi
             fi
         fi
@@ -780,10 +793,18 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         # Refresh classifier CSV + regenerate WORK_QUEUE.md. Run after a
         # batch of matches so the queue drops them. ~2 minutes.
         # ALSO clears .bb2_active_func -- if you got here, you matched.
-        echo "[1/5] Capturing recipe from latest commit (if it's a match)..."
+        echo "[1/6] Capturing recipe from latest commit (if it's a match)..."
         python3 tools/capture_recipe.py HEAD 2>&1 | tail -5 || true
         echo
-        echo "[2/5] Cleaning up completed retirements (# RETIRE: lines now matching)..."
+        echo "[2/6] Stripping orphan named_syms.txt assignments..."
+        # Orphans are `<name> = 0x<addr>;` entries that shadow a real
+        # text-section symbol now defined by a C .o (typically because
+        # the function got decompiled but its old asm-link assignment
+        # was left behind). The shadow form breaks `dc.sh verify <name>`
+        # symbol lookups in the linker map.
+        python3 tools/audit_named_syms_orphans.py --apply 2>&1 | tail -3 || true
+        echo
+        echo "[3/6] Cleaning up completed retirements (# RETIRE: lines now matching)..."
         # If a `# RETIRE: <func>: replace_with_asmfile ...` line exists AND
         # the build matches AND the function is no longer the active marker,
         # the retirement succeeded — remove the commented bridge rule.
@@ -815,13 +836,13 @@ else:
 "
         fi
         echo
-        echo "[3/5] Classifying inline_asm + INCLUDE_ASM (batch_attempt --classify-only)..."
+        echo "[4/6] Classifying inline_asm + INCLUDE_ASM (batch_attempt --classify-only)..."
         python3 tools/batch_attempt.py --classify-only 2>&1 | tail -3
         echo
-        echo "[4/5] Classifying replace_with_asmfile entries..."
+        echo "[5/6] Classifying replace_with_asmfile entries..."
         python3 tools/classify_asmfix.py 2>&1 | tail -3
         echo
-        echo "[5/5] Generating WORK_QUEUE.md..."
+        echo "[6/6] Generating WORK_QUEUE.md..."
         python3 tools/gen_work_queue.py 2>&1
         # Belt-and-suspenders: the commit-via-hook path already cleared
         # the marker, but if for some reason a refresh runs while it's
