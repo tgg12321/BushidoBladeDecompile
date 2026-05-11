@@ -19,7 +19,7 @@ glabel func_80040510
     /* 30D54 80040554 21200002 */  addu       $a0, $s0, $zero
     /* 30D58 80040558 09FE000C */  jal        tslPrintScreen
     /* 30D5C 8004055C 01000524 */   addiu     $a1, $zero, 0x1
-    /* 30D60 80040560 F1FF000C */  jal        func_8003FFC4
+    /* 30D60 80040560 F1FF000C */  jal        FadeOut_8003FFC4
     /* 30D64 80040564 21200002 */   addu      $a0, $s0, $zero
     /* 30D68 80040568 2E03010C */  jal        audioDecBeginPut
     /* 30D6C 8004056C 21200002 */   addu      $a0, $s0, $zero

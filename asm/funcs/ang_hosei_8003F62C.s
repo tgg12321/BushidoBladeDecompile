@@ -23,7 +23,7 @@ glabel ang_hosei_8003F62C
     /* 2FE7C 8003F67C 00000000 */  nop
     /* 2FE80 8003F680 03004010 */  beqz       $v0, .L8003F690
     /* 2FE84 8003F684 00000000 */   nop
-    /* 2FE88 8003F688 0700010C */  jal        func_8004001C
+    /* 2FE88 8003F688 0700010C */  jal        md_option_reset_8004001C
     /* 2FE8C 8003F68C 21200002 */   addu      $a0, $s0, $zero
   .L8003F690:
     /* 2FE90 8003F690 B6FD000C */  jal        md_game_restart_init2
@@ -35,7 +35,7 @@ glabel ang_hosei_8003F62C
     /* 2FEA8 8003F6A8 00000000 */  nop
     /* 2FEAC 8003F6AC 04004010 */  beqz       $v0, .L8003F6C0
     /* 2FEB0 8003F6B0 00000000 */   nop
-    /* 2FEB4 8003F6B4 1A00010C */  jal        func_80040068
+    /* 2FEB4 8003F6B4 1A00010C */  jal        md_option_reset_80040068
     /* 2FEB8 8003F6B8 21200002 */   addu      $a0, $s0, $zero
     /* 2FEBC 8003F6BC 020000A6 */  sh         $zero, 0x2($s0)
   .L8003F6C0:

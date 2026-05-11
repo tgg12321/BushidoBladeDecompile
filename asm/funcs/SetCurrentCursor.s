@@ -1,13 +1,13 @@
 glabel SetCurrentCursor
     /* 2CF14 8003C714 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2CF18 8003C718 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* 2CF1C 8003C71C 40DF010C */  jal        func_80077D00
+    /* 2CF1C 8003C71C 40DF010C */  jal        saTan2GaugeInit_80077D00
     /* 2CF20 8003C720 1800B0AF */   sw        $s0, 0x18($sp)
     /* 2CF24 8003C724 B0DC000C */  jal        func_800372C0
     /* 2CF28 8003C728 21804000 */   addu      $s0, $v0, $zero
     /* 2CF2C 8003C72C 225A000C */  jal        gpu_InitDisplay
     /* 2CF30 8003C730 00000000 */   nop
-    /* 2CF34 8003C734 D681010C */  jal        func_80060758
+    /* 2CF34 8003C734 D681010C */  jal        replay_camera_check_stage_80060758
     /* 2CF38 8003C738 00000000 */   nop
     /* 2CF3C 8003C73C 21400000 */  addu       $t0, $zero, $zero
     /* 2CF40 8003C740 8888073C */  lui        $a3, (0x88888889 >> 16)

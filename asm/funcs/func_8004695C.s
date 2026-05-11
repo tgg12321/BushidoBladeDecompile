@@ -5,7 +5,7 @@ glabel func_8004695C
     /* 37168 80046968 8C14010C */  jal        saTan5TakeGetPos_80045230
     /* 3716C 8004696C 21808000 */   addu      $s0, $a0, $zero
     /* 37170 80046970 09000424 */  addiu      $a0, $zero, 0x9
-    /* 37174 80046974 8015010C */  jal        func_80045600
+    /* 37174 80046974 8015010C */  jal        saSeMain_80045600
     /* 37178 80046978 21280002 */   addu      $a1, $s0, $zero
     /* 3717C 8004697C 0480053C */  lui        $a1, %hi(snd_SeNullCallback)
     /* 37180 80046980 5469A524 */  addiu      $a1, $a1, %lo(snd_SeNullCallback)

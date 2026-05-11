@@ -180,7 +180,7 @@ glabel func_80082D34
     /* 737D4 80082FD4 08002016 */  bnez       $s1, .L80082FF8
     /* 737D8 80082FD8 04000224 */   addiu     $v0, $zero, 0x4
     /* 737DC 80082FDC 0100502E */  sltiu      $s0, $s2, 0x1
-    /* 737E0 80082FE0 96E2010C */  jal        func_80078A58
+    /* 737E0 80082FE0 96E2010C */  jal        coli_RobColliScaleEditReset_80078A58
     /* 737E4 80082FE4 21200002 */   addu      $a0, $s0, $zero
     /* 737E8 80082FE8 03000424 */  addiu      $a0, $zero, 0x3
     /* 737EC 80082FEC AC0A020C */  jal        func_80082AB0

@@ -7,7 +7,7 @@ glabel func_80046AA0
     /* 372B4 80046AB4 01000424 */   addiu     $a0, $zero, 0x1
     /* 372B8 80046AB8 A319010C */  jal        func_8004668C
     /* 372BC 80046ABC 00000000 */   nop
-    /* 372C0 80046AC0 0818010C */  jal        func_80046020
+    /* 372C0 80046AC0 0818010C */  jal        saTanMainDispGnd_80046020
     /* 372C4 80046AC4 00000000 */   nop
     /* 372C8 80046AC8 8727010C */  jal        func_80049E1C
     /* 372CC 80046ACC 00000000 */   nop

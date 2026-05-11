@@ -36,7 +36,7 @@ glabel saFidLoad
     /* 4CD48 8005C548 21083300 */  addu       $at, $at, $s3
     /* 4CD4C 8005C54C 38FB268C */  lw         $a2, %lo(D_800EFB38)($at)
     /* 4CD50 8005C550 0400448C */  lw         $a0, 0x4($v0)
-    /* 4CD54 8005C554 2E20020C */  jal        func_800880B8
+    /* 4CD54 8005C554 2E20020C */  jal        coli_CheckBukiPreHit_800880B8
     /* 4CD58 8005C558 21284002 */   addu      $a1, $s2, $zero
     /* 4CD5C 8005C55C 00140200 */  sll        $v0, $v0, 16
     /* 4CD60 8005C560 03140200 */  sra        $v0, $v0, 16

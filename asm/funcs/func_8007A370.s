@@ -3,7 +3,7 @@ glabel func_8007A370
     /* 6AB74 8007A374 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6AB78 8007A378 21808000 */  addu       $s0, $a0, $zero
     /* 6AB7C 8007A37C 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 6AB80 8007A380 96E2010C */  jal        func_80078A58
+    /* 6AB80 8007A380 96E2010C */  jal        coli_RobColliScaleEditReset_80078A58
     /* 6AB84 8007A384 21200000 */   addu      $a0, $zero, $zero
     /* 6AB88 8007A388 6EE2010C */  jal        EnterCriticalSection
     /* 6AB8C 8007A38C 00000000 */   nop

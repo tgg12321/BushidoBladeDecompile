@@ -19,7 +19,7 @@ glabel md_game_check_change_sub_mode
   .L8003BCF8:
     /* 2C4F8 8003BCF8 B0DC000C */  jal        func_800372C0
     /* 2C4FC 8003BCFC 00000000 */   nop
-    /* 2C500 8003BD00 3752010C */  jal        func_800548DC
+    /* 2C500 8003BD00 3752010C */  jal        katinuki_game_setData_800548DC
     /* 2C504 8003BD04 00000000 */   nop
     /* 2C508 8003BD08 0A80023C */  lui        $v0, %hi(D_800A38DC)
     /* 2C50C 8003BD0C DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)

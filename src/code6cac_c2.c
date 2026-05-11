@@ -100,15 +100,15 @@ extern s32 game_GetPlayerCount(void);
 extern s32 func_80052C28(s32, s32);
 extern s32 func_800788B0(void);
 extern void func_800372C0(void);
-extern void func_800548DC(void);
+extern void katinuki_game_setData_800548DC(void);
 extern s32 func_8005FC9C(s32, s32);
 extern s32 func_80054F68(void);
 extern void disp_SetFramebufferMode(s32, s32, s32, s32);
 extern void func_8003B5A4(void);
 extern s32 func_8005E54C(s32, s32, s32);
 extern void func_8005C650(s32, s32, s32);
-extern s32 *func_80077D00(void);
-extern void func_80060758(void);
+extern s32 *saTan2GaugeInit_80077D00(void);
+extern void replay_camera_check_stage_80060758(void);
 extern void func_8001CD68(u8 *);
 extern void func_80046BF4(s16 *, s32, s32);
 extern void game_StageInit(s32);
@@ -258,7 +258,7 @@ void md_game_check_change_sub_mode(void) {
     }
 
     func_800372C0();
-    func_800548DC();
+    katinuki_game_setData_800548DC();
 
     if (D_800A38DC != 0) {
         return;
@@ -400,7 +400,7 @@ void func_8003BFC4(void) {
     player_Destroy(0);
     player_Destroy(1);
     file_ResetDmaFlag();
-    v = func_80045814();
+    v = replay_camera_check_stage_80045814();
     func_80037540(v, (s32)0x80118000, 1, 0xCF8, 0xB01);
     game_Init();
     D_800A3834 = 8;
@@ -526,7 +526,7 @@ void func_8003C2C0(void) {
             func_800372C0();
             state = D_800A3834;
             if (state != 0x12) {
-                func_800548DC();
+                katinuki_game_setData_800548DC();
             }
         }
     }
@@ -637,10 +637,10 @@ void SetCurrentCursor(void) {
     register u8 *src asm("a2");
     register u8 *dst asm("a1");
 
-    s0 = func_80077D00();
+    s0 = saTan2GaugeInit_80077D00();
     func_800372C0();
     gpu_InitDisplay();
-    func_80060758();
+    replay_camera_check_stage_80060758();
     i = 0;
     src = (u8 *)&D_80106A58;
     dst = (u8 *)s0;
@@ -848,8 +848,8 @@ void func_8003CE18(void) {
 extern void mk_leaf_newpos(void);
 extern void func_80021D10(s32, s32 *, s32);
 extern void func_800618B4(s32 *, s32 *);
-extern s32 *func_8005507C(void);
-extern s32 *func_8005508C(void);
+extern s32 *replay_camera_check_stage_8005507C(void);
+extern s32 *replay_camera_check_stage_8005508C(void);
 extern void func_80061064(s32 *, s32 *);
 extern void func_8001979C(s32, u32 *);
 extern void func_8003B328(void);
@@ -896,14 +896,14 @@ void func_8003CF84(void) {
         vp[2] += D_8008EB18;
         func_800618B4(vp, &D_800A312C);
     }
-    a = func_8005507C();
-    b = func_8005508C();
+    a = replay_camera_check_stage_8005507C();
+    b = replay_camera_check_stage_8005508C();
     func_80061064(a, b);
     if (func_80054F68() == 0) {
         s1 = 1;
     }
     if (s1 != 0 || (D_80102794 & 0x400040) != 0) {
-        func_800548DC();
+        katinuki_game_setData_800548DC();
         if (D_800A38DC == 4 || D_800A38DC == 6) {
             (&D_800A37D2)[D_800A3748] = (&D_800A37D2)[D_800A3748] + 1;
         }
@@ -922,7 +922,7 @@ void func_8003CF84(void) {
     }
     D_800A37B8 = D_800A37B8 + 1;
 }
-void func_8003D2C4(void) {
+void katinuki_game_setData_8003D2C4(void) {
     gpu_LoadImage((s32)&D_800A3220, (s32)&D_80090178);
 }
 extern s32 D_800A3364;
@@ -1506,7 +1506,7 @@ void func_8003E2AC(void) {
     u16 *p = &g_game_p1_ctrl;
     *p = *p & 0xFFFD;
 }
-u32 func_8003E2C8(void) {
+u32 replay_camera_check_stage_8003E2C8(void) {
     return D_800905F8;
 }
 void replay_camera_get_attack_number(s32 a0, s32 a1, s32 a2, s32 a3) {

@@ -4,28 +4,28 @@ glabel func_80037774
     /* 27F7C 8003777C 6EE2010C */  jal        EnterCriticalSection
     /* 27F80 80037780 00000000 */   nop
     /* 27F84 80037784 1007848F */  lw         $a0, %gp_rel(D_800A37DC)($gp)
-    /* 27F88 80037788 62E2010C */  jal        func_80078988
+    /* 27F88 80037788 62E2010C */  jal        coli_RobColliScaleEditReset_80078988
     /* 27F8C 8003778C 00000000 */   nop
     /* 27F90 80037790 2407848F */  lw         $a0, %gp_rel(D_800A37F0)($gp)
-    /* 27F94 80037794 62E2010C */  jal        func_80078988
+    /* 27F94 80037794 62E2010C */  jal        coli_RobColliScaleEditReset_80078988
     /* 27F98 80037798 00000000 */   nop
     /* 27F9C 8003779C 3007848F */  lw         $a0, %gp_rel(D_800A37FC)($gp)
-    /* 27FA0 800377A0 62E2010C */  jal        func_80078988
+    /* 27FA0 800377A0 62E2010C */  jal        coli_RobColliScaleEditReset_80078988
     /* 27FA4 800377A4 00000000 */   nop
     /* 27FA8 800377A8 3407848F */  lw         $a0, %gp_rel(D_800A3800)($gp)
-    /* 27FAC 800377AC 62E2010C */  jal        func_80078988
+    /* 27FAC 800377AC 62E2010C */  jal        coli_RobColliScaleEditReset_80078988
     /* 27FB0 800377B0 00000000 */   nop
     /* 27FB4 800377B4 6C07848F */  lw         $a0, %gp_rel(D_800A3838)($gp)
-    /* 27FB8 800377B8 62E2010C */  jal        func_80078988
+    /* 27FB8 800377B8 62E2010C */  jal        coli_RobColliScaleEditReset_80078988
     /* 27FBC 800377BC 00000000 */   nop
     /* 27FC0 800377C0 7007848F */  lw         $a0, %gp_rel(D_800A383C)($gp)
-    /* 27FC4 800377C4 62E2010C */  jal        func_80078988
+    /* 27FC4 800377C4 62E2010C */  jal        coli_RobColliScaleEditReset_80078988
     /* 27FC8 800377C8 00000000 */   nop
     /* 27FCC 800377CC 7C07848F */  lw         $a0, %gp_rel(D_800A3848)($gp)
-    /* 27FD0 800377D0 62E2010C */  jal        func_80078988
+    /* 27FD0 800377D0 62E2010C */  jal        coli_RobColliScaleEditReset_80078988
     /* 27FD4 800377D4 00000000 */   nop
     /* 27FD8 800377D8 8407848F */  lw         $a0, %gp_rel(D_800A3850)($gp)
-    /* 27FDC 800377DC 62E2010C */  jal        func_80078988
+    /* 27FDC 800377DC 62E2010C */  jal        coli_RobColliScaleEditReset_80078988
     /* 27FE0 800377E0 00000000 */   nop
     /* 27FE4 800377E4 72E2010C */  jal        ExitCriticalSection
     /* 27FE8 800377E8 00000000 */   nop

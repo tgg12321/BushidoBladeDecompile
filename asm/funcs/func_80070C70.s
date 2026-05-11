@@ -189,7 +189,7 @@ glabel func_80070C70
     /* 61740 80070F40 21202002 */   addu      $a0, $s1, $zero
     /* 61744 80070F44 84CB010C */  jal        func_80072E10
     /* 61748 80070F48 21202002 */   addu      $a0, $s1, $zero
-    /* 6174C 80070F4C 80CC010C */  jal        func_80073200
+    /* 6174C 80070F4C 80CC010C */  jal        saTan3GaugeMain_80073200
     /* 61750 80070F50 21202002 */   addu      $a0, $s1, $zero
     /* 61754 80070F54 7C00BF8F */  lw         $ra, 0x7C($sp)
     /* 61758 80070F58 7800B48F */  lw         $s4, 0x78($sp)

@@ -35,7 +35,7 @@ glabel suDispMentalBar
   jlabel .L8003B620
     /* 2BE20 8003B620 0A80043C */  lui        $a0, %hi(D_800A3844)
     /* 2BE24 8003B624 4438848C */  lw         $a0, %lo(D_800A3844)($a0)
-    /* 2BE28 8003B628 21ED000C */  jal        func_8003B484
+    /* 2BE28 8003B628 21ED000C */  jal        coli_cancel_hit_pause_katana_8003B484
     /* 2BE2C 8003B62C 00000000 */   nop
   .L8003B630:
     /* 2BE30 8003B630 0A80033C */  lui        $v1, %hi(D_800A3844)
@@ -151,7 +151,7 @@ glabel suDispMentalBar
     /* 2BFCC 8003B7CC 1D004224 */  addiu      $v0, $v0, 0x1D
     /* 2BFD0 8003B7D0 0A80013C */  lui        $at, %hi(D_800A3844)
     /* 2BFD4 8003B7D4 443822AC */  sw         $v0, %lo(D_800A3844)($at)
-    /* 2BFD8 8003B7D8 B2EC000C */  jal        func_8003B2C8
+    /* 2BFD8 8003B7D8 B2EC000C */  jal        coli_cancel_hit_pause_katana_8003B2C8
     /* 2BFDC 8003B7DC 00000000 */   nop
     /* 2BFE0 8003B7E0 D0EB000C */  jal        func_8003AF40
     /* 2BFE4 8003B7E4 21200000 */   addu      $a0, $zero, $zero
@@ -177,7 +177,7 @@ glabel suDispMentalBar
     /* 2C02C 8003B82C 0C004224 */  addiu      $v0, $v0, 0xC
     /* 2C030 8003B830 0A80013C */  lui        $at, %hi(D_800A3844)
     /* 2C034 8003B834 443822AC */  sw         $v0, %lo(D_800A3844)($at)
-    /* 2C038 8003B838 37ED000C */  jal        func_8003B4DC
+    /* 2C038 8003B838 37ED000C */  jal        coli_cancel_hit_pause_katana_8003B4DC
     /* 2C03C 8003B83C 01001024 */   addiu     $s0, $zero, 0x1
     /* 2C040 8003B840 5BED000C */  jal        func_8003B56C
     /* 2C044 8003B844 01000424 */   addiu     $a0, $zero, 0x1

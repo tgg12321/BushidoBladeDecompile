@@ -111,14 +111,14 @@ glabel func_80054604
     /* 44FA4 800547A4 21200000 */   addu      $a0, $zero, $zero
     /* 44FA8 800547A8 03004010 */  beqz       $v0, .L800547B8
     /* 44FAC 800547AC 00000000 */   nop
-    /* 44FB0 800547B0 F1FF000C */  jal        func_8003FFC4
+    /* 44FB0 800547B0 F1FF000C */  jal        FadeOut_8003FFC4
     /* 44FB4 800547B4 21204000 */   addu      $a0, $v0, $zero
   .L800547B8:
     /* 44FB8 800547B8 4F05010C */  jal        func_8004153C
     /* 44FBC 800547BC 01000424 */   addiu     $a0, $zero, 0x1
     /* 44FC0 800547C0 03004010 */  beqz       $v0, .L800547D0
     /* 44FC4 800547C4 00000000 */   nop
-    /* 44FC8 800547C8 F1FF000C */  jal        func_8003FFC4
+    /* 44FC8 800547C8 F1FF000C */  jal        FadeOut_8003FFC4
     /* 44FCC 800547CC 21204000 */   addu      $a0, $v0, $zero
   .L800547D0:
     /* 44FD0 800547D0 21200000 */  addu       $a0, $zero, $zero

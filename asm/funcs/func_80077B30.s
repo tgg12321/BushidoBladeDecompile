@@ -64,7 +64,7 @@ glabel func_80077B30
   jlabel .L80077C14
     /* 68414 80077C14 21900000 */  addu       $s2, $zero, $zero
     /* 68418 80077C18 21200002 */  addu       $a0, $s0, $zero
-    /* 6841C 80077C1C 7FB0010C */  jal        func_8006C1FC
+    /* 6841C 80077C1C 7FB0010C */  jal        saTan2InfoInit_8006C1FC
     /* 68420 80077C20 21282002 */   addu      $a1, $s1, $zero
     /* 68424 80077C24 21184000 */  addu       $v1, $v0, $zero
     /* 68428 80077C28 01000224 */  addiu      $v0, $zero, 0x1

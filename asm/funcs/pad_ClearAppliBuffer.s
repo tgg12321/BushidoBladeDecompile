@@ -17,12 +17,12 @@ glabel pad_ClearAppliBuffer
     /* 2ADD8 8003A5D8 21800000 */  addu       $s0, $zero, $zero
   .L8003A5DC:
     /* 2ADDC 8003A5DC 6C06848F */  lw         $a0, %gp_rel(D_800A3738)($gp)
-    /* 2ADE0 8003A5E0 66E2010C */  jal        func_80078998
+    /* 2ADE0 8003A5E0 66E2010C */  jal        coli_RobColliScaleEditReset_80078998
     /* 2ADE4 8003A5E4 00000000 */   nop
     /* 2ADE8 8003A5E8 27004014 */  bnez       $v0, .L8003A688
     /* 2ADEC 8003A5EC 00000000 */   nop
     /* 2ADF0 8003A5F0 4407848F */  lw         $a0, %gp_rel(D_800A3810)($gp)
-    /* 2ADF4 8003A5F4 66E2010C */  jal        func_80078998
+    /* 2ADF4 8003A5F4 66E2010C */  jal        coli_RobColliScaleEditReset_80078998
     /* 2ADF8 8003A5F8 00000000 */   nop
     /* 2ADFC 8003A5FC 0E004010 */  beqz       $v0, .L8003A638
     /* 2AE00 8003A600 21200000 */   addu      $a0, $zero, $zero
@@ -33,7 +33,7 @@ glabel pad_ClearAppliBuffer
     /* 2AE14 8003A614 21280000 */  addu       $a1, $zero, $zero
     /* 2AE18 8003A618 1931020C */  jal        func_8008C464
     /* 2AE1C 8003A61C 21300000 */   addu      $a2, $zero, $zero
-    /* 2AE20 8003A620 5DE9000C */  jal        func_8003A574
+    /* 2AE20 8003A620 5DE9000C */  jal        motion_SavePreCalcData_8003A574
     /* 2AE24 8003A624 21800000 */   addu      $s0, $zero, $zero
     /* 2AE28 8003A628 00F2043C */  lui        $a0, (0xF2000001 >> 16)
     /* 2AE2C 8003A62C EAE2010C */  jal        func_80078BA8

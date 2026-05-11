@@ -53,7 +53,7 @@ glabel func_80044504
     /* 34DC8 800445C8 08006330 */  andi       $v1, $v1, 0x8
     /* 34DCC 800445CC 05006010 */  beqz       $v1, .L800445E4
     /* 34DD0 800445D0 FF7F023C */   lui       $v0, (0x7FFFFFFF >> 16)
-    /* 34DD4 800445D4 B2F8000C */  jal        func_8003E2C8
+    /* 34DD4 800445D4 B2F8000C */  jal        replay_camera_check_stage_8003E2C8
     /* 34DD8 800445D8 00000000 */   nop
     /* 34DDC 800445DC 7A110108 */  j          .L800445E8
     /* 34DE0 800445E0 00000000 */   nop

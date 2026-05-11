@@ -3,7 +3,7 @@ glabel pad_Init
     /* 6956C 80078D6C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 69570 80078D70 DDE3010C */  jal        func_80078F74
     /* 69574 80078D74 00000000 */   nop
-    /* 69578 80078D78 C8E3010C */  jal        func_80078F20
+    /* 69578 80078D78 C8E3010C */  jal        saTan0GaugeInit_80078F20
     /* 6957C 80078D7C 00000000 */   nop
     /* 69580 80078D80 88E3010C */  jal        func_80078E20
     /* 69584 80078D84 00000000 */   nop

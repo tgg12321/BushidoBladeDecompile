@@ -92,7 +92,7 @@ glabel func_80049584
   .L800496C4:
     /* 39EC4 800496C4 0B002016 */  bnez       $s1, .L800496F4
     /* 39EC8 800496C8 00000000 */   nop
-    /* 39ECC 800496CC 0818010C */  jal        func_80046020
+    /* 39ECC 800496CC 0818010C */  jal        saTanMainDispGnd_80046020
     /* 39ED0 800496D0 00000000 */   nop
     /* 39ED4 800496D4 2003848F */  lw         $a0, %gp_rel(D_800A33EC)($gp)
     /* 39ED8 800496D8 21280002 */  addu       $a1, $s0, $zero

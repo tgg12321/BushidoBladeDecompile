@@ -127,9 +127,9 @@ glabel func_8003CF84
     /* 2D960 8003D160 2D86010C */  jal        func_800618B4
     /* 2D964 8003D164 2800A3AF */   sw        $v1, 0x28($sp)
   .L8003D168:
-    /* 2D968 8003D168 1F54010C */  jal        func_8005507C
+    /* 2D968 8003D168 1F54010C */  jal        replay_camera_check_stage_8005507C
     /* 2D96C 8003D16C 00000000 */   nop
-    /* 2D970 8003D170 2354010C */  jal        func_8005508C
+    /* 2D970 8003D170 2354010C */  jal        replay_camera_check_stage_8005508C
     /* 2D974 8003D174 21804000 */   addu      $s0, $v0, $zero
     /* 2D978 8003D178 21200002 */  addu       $a0, $s0, $zero
     /* 2D97C 8003D17C 1984010C */  jal        func_80061064
@@ -149,7 +149,7 @@ glabel func_8003CF84
     /* 2D9B0 8003D1B0 38004010 */  beqz       $v0, .L8003D294
     /* 2D9B4 8003D1B4 00000000 */   nop
   .L8003D1B8:
-    /* 2D9B8 8003D1B8 3752010C */  jal        func_800548DC
+    /* 2D9B8 8003D1B8 3752010C */  jal        katinuki_game_setData_800548DC
     /* 2D9BC 8003D1BC 00000000 */   nop
     /* 2D9C0 8003D1C0 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* 2D9C4 8003D1C4 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)

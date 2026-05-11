@@ -167,7 +167,7 @@ __asm__(
     ".set at\n"
 );
 void func_8007A370(s32 a0) {
-    func_80078A58(0);
+    coli_RobColliScaleEditReset_80078A58(0);
     EnterCriticalSection();
     if (func_80078BF0() == 0) {
         a0 = 0;
@@ -178,7 +178,7 @@ void func_8007A370(s32 a0) {
 void func_8007A3C8(void) {
     EnterCriticalSection();
     func_8007A438();
-    func_80078A58(0);
+    coli_RobColliScaleEditReset_80078A58(0);
     ExitCriticalSection();
 }
 

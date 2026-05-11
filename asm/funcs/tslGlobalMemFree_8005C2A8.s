@@ -10,7 +10,7 @@ glabel tslGlobalMemFree_8005C2A8
     /* 4CAC8 8005C2C8 2400B5AF */  sw         $s5, 0x24($sp)
     /* 4CACC 8005C2CC 2000B4AF */  sw         $s4, 0x20($sp)
     /* 4CAD0 8005C2D0 1C00B3AF */  sw         $s3, 0x1C($sp)
-    /* 4CAD4 8005C2D4 40DF010C */  jal        func_80077D00
+    /* 4CAD4 8005C2D4 40DF010C */  jal        saTan2GaugeInit_80077D00
     /* 4CAD8 8005C2D8 1800B2AF */   sw        $s2, 0x18($sp)
     /* 4CADC 8005C2DC 1400428C */  lw         $v0, 0x14($v0)
     /* 4CAE0 8005C2E0 03000324 */  addiu      $v1, $zero, 0x3

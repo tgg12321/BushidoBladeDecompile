@@ -14,7 +14,7 @@ glabel func_80044E74
     /* 356A4 80044EA4 0980013C */  lui        $at, %hi(D_800963EE)
     /* 356A8 80044EA8 21083000 */  addu       $at, $at, $s0
     /* 356AC 80044EAC EE632784 */  lh         $a3, %lo(D_800963EE)($at)
-    /* 356B0 80044EB0 8DDB000C */  jal        func_80036E34
+    /* 356B0 80044EB0 8DDB000C */  jal        special_camera_check_pos_outside_ground_80036E34
     /* 356B4 80044EB4 21282002 */   addu      $a1, $s1, $zero
     /* 356B8 80044EB8 D0DB000C */  jal        game_FrameLoop
     /* 356BC 80044EBC 00000000 */   nop

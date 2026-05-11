@@ -3,7 +3,7 @@ glabel game_Cleanup
     /* 5197C 8006117C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 51980 80061180 1883010C */  jal        saTan1GaugeInit
     /* 51984 80061184 00000000 */   nop
-    /* 51988 80061188 6908010C */  jal        func_800421A4
+    /* 51988 80061188 6908010C */  jal        leaf_muki_awase_800421A4
     /* 5198C 8006118C 00000000 */   nop
     /* 51990 80061190 F00180AF */  sw         $zero, %gp_rel(D_800A32BC)($gp)
     /* 51994 80061194 1000BF8F */  lw         $ra, 0x10($sp)
