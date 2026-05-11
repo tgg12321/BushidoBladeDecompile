@@ -152,28 +152,70 @@ def get_expected_address(root, func_name):
 
 
 def get_func_address_range(root, func_name):
-    """Get function start address and size from the linker map."""
+    """Get function start address and size from the linker map.
+
+    Two map shapes need handling:
+      A. real section symbol from a .o file:
+           "                0x80080014                motion_SavePreCalcData_80080014"
+      B. absolute assignment from named_syms.txt/undefined_syms_auto.txt:
+           "                0x80080014                motion_SavePreCalcData_80080014 = 0x80080014"
+
+    Form B fires when a name in named_syms.txt shadows the real .o
+    symbol (e.g. a leftover `<name> = <addr>;` entry that wasn't
+    stripped after the function got decompiled to C). Verify still
+    needs to work in that case -- the bytes at that address are what
+    we compare against the original.
+
+    Size: prefer the next-symbol gap in the map; fall back to counting
+    instructions in asm/funcs/<name>.s when the map doesn't give us
+    one (e.g. only the absolute assignment is present).
+    """
     map_file = root / 'build' / 'bb2.map'
     if not map_file.exists():
         return None, None
 
     map_text = map_file.read_text()
-    pattern = rf'^\s+0x([0-9a-f]+)\s+{re.escape(func_name)}$'
-    m = re.search(pattern, map_text, re.MULTILINE)
+    # Form A: bare symbol at end of line.
+    pattern_a = rf'^\s+0x([0-9a-f]+)\s+{re.escape(func_name)}$'
+    m = re.search(pattern_a, map_text, re.MULTILINE)
+    if not m:
+        # Form B: absolute assignment "<name> = 0x<addr>".
+        pattern_b = rf'^\s+0x([0-9a-f]+)\s+{re.escape(func_name)}\s*=\s*0x[0-9a-f]+\s*$'
+        m = re.search(pattern_b, map_text, re.MULTILINE)
     if not m:
         return None, None
 
     func_addr = int(m.group(1), 16)
 
-    # Find the next symbol after this one to determine size
-    all_syms = re.findall(r'^\s+0x([0-9a-f]+)\s+(\S+)$', map_text, re.MULTILINE)
+    # Find the next symbol after this one to determine size.
+    # Accept both forms (bare symbol or "name = 0x...").
+    all_syms = re.findall(
+        r'^\s+0x([0-9a-f]+)\s+(\S+)(?:\s*=\s*0x[0-9a-f]+)?\s*$',
+        map_text, re.MULTILINE,
+    )
     syms_sorted = sorted(set((int(a, 16), n) for a, n in all_syms))
     for i, (addr, name) in enumerate(syms_sorted):
         if addr == func_addr and name == func_name:
-            if i + 1 < len(syms_sorted):
-                next_addr = syms_sorted[i + 1][0]
-                return func_addr, next_addr - func_addr
+            # Walk forward to the first symbol at a strictly greater
+            # address (skip aliases at the same address, e.g. D_<addr>
+            # and the function name both pointing at the function).
+            for j in range(i + 1, len(syms_sorted)):
+                if syms_sorted[j][0] > func_addr:
+                    return func_addr, syms_sorted[j][0] - func_addr
             break
+
+    # Map size unknown — fall back to counting instructions in
+    # asm/funcs/<name>.s (4 bytes each). Splat keeps these files
+    # even for matched C functions, so this is reliable.
+    asm_path = root / 'asm' / 'funcs' / f'{func_name}.s'
+    if asm_path.exists():
+        insns = sum(
+            1 for line in asm_path.read_text(encoding='utf-8',
+                                             errors='ignore').splitlines()
+            if '/* ' in line and ' */' in line
+        )
+        if insns:
+            return func_addr, insns * 4
 
     return func_addr, None
 

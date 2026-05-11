@@ -406,7 +406,16 @@ def main():
 
     if args.full:
         args.asm_max_lines = 10000
-    b = build_brief(args.func, include_asm=not args.no_asm,
+    # Resolve raw `func_<addr>` queue names to the canonical asm/funcs/
+    # stem if the function has been renamed-in-asm. Without this the
+    # brief comes back empty ("no asm/funcs/<raw>.s") for any rename.
+    sys.path.insert(0, str(TOOLS))
+    from canonical_funcname import canonicalize
+    func = canonicalize(args.func)
+    if func != args.func:
+        print(f"(input '{args.func}' resolved to canonical '{func}' from asm/funcs/)",
+              file=sys.stderr)
+    b = build_brief(func, include_asm=not args.no_asm,
                     asm_max_lines=args.asm_max_lines)
     if args.json:
         print(json.dumps(b, indent=2))
