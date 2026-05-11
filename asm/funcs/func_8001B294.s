@@ -55,7 +55,7 @@ glabel func_8001B294
     /* BB68 8001B368 FC00028E */  lw         $v0, 0xFC($s0)
     /* BB6C 8001B36C FC00258E */  lw         $a1, 0xFC($s1)
     /* BB70 8001B370 23206400 */  subu       $a0, $v1, $a0
-    /* BB74 8001B374 57FF010C */  jal        func_8007FD5C
+    /* BB74 8001B374 57FF010C */  jal        single_game_getEnemyCharId
     /* BB78 8001B378 23284500 */   subu      $a1, $v0, $a1
     /* BB7C 8001B37C 00040324 */  addiu      $v1, $zero, 0x400
     /* BB80 8001B380 23186200 */  subu       $v1, $v1, $v0

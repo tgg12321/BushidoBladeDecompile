@@ -84,7 +84,7 @@ glabel func_800233AC
     /* 13CE4 800234E4 83100200 */  sra        $v0, $v0, 2
     /* 13CE8 800234E8 21100201 */  addu       $v0, $t0, $v0
     /* 13CEC 800234EC 3000A2AF */  sw         $v0, 0x30($sp)
-    /* 13CF0 800234F0 854D010C */  jal        func_80053614
+    /* 13CF0 800234F0 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 13CF4 800234F4 1000B5AF */   sw        $s5, 0x10($sp)
     /* 13CF8 800234F8 48004010 */  beqz       $v0, .L8002361C
     /* 13CFC 800234FC 21100000 */   addu      $v0, $zero, $zero
@@ -98,7 +98,7 @@ glabel func_800233AC
     /* 13D1C 8002351C 9C0003BA */  swr        $v1, 0x9C($s0)
     /* 13D20 80023520 3800A487 */  lh         $a0, 0x38($sp)
     /* 13D24 80023524 3C00A587 */  lh         $a1, 0x3C($sp)
-    /* 13D28 80023528 57FF010C */  jal        func_8007FD5C
+    /* 13D28 80023528 57FF010C */  jal        single_game_getEnemyCharId
     /* 13D2C 8002352C 00000000 */   nop
     /* 13D30 80023530 B800058E */  lw         $a1, 0xB8($s0)
     /* 13D34 80023534 00000000 */  nop
@@ -139,7 +139,7 @@ glabel func_800233AC
     /* 13DB8 800235B8 C3100200 */  sra        $v0, $v0, 3
     /* 13DBC 800235BC 21100201 */  addu       $v0, $t0, $v0
     /* 13DC0 800235C0 3000A2AF */  sw         $v0, 0x30($sp)
-    /* 13DC4 800235C4 854D010C */  jal        func_80053614
+    /* 13DC4 800235C4 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 13DC8 800235C8 1000B5AF */   sw        $s5, 0x10($sp)
     /* 13DCC 800235CC 13004014 */  bnez       $v0, .L8002361C
     /* 13DD0 800235D0 21100000 */   addu      $v0, $zero, $zero
@@ -154,7 +154,7 @@ glabel func_800233AC
     /* 13DF4 800235F4 2000A3AF */  sw         $v1, 0x20($sp)
     /* 13DF8 800235F8 90014224 */  addiu      $v0, $v0, 0x190
     /* 13DFC 800235FC 1C00A2AF */  sw         $v0, 0x1C($sp)
-    /* 13E00 80023600 854D010C */  jal        func_80053614
+    /* 13E00 80023600 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 13E04 80023604 1000B5AF */   sw        $s5, 0x10($sp)
     /* 13E08 80023608 03004010 */  beqz       $v0, .L80023618
     /* 13E0C 8002360C 01000224 */   addiu     $v0, $zero, 0x1

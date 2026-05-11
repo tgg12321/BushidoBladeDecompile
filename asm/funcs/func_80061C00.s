@@ -27,7 +27,7 @@ glabel func_80061C00
     /* 52460 80061C60 2000A0AF */  sw         $zero, 0x20($sp)
     /* 52464 80061C64 1A00A3A7 */  sh         $v1, 0x1A($sp)
     /* 52468 80061C68 1C00A0A7 */  sh         $zero, 0x1C($sp)
-    /* 5246C 80061C6C D7FC010C */  jal        func_8007F35C
+    /* 5246C 80061C6C D7FC010C */  jal        motutil_GetWalkDir
     /* 52470 80061C70 1800A0A7 */   sh        $zero, 0x18($sp)
     /* 52474 80061C74 21200002 */  addu       $a0, $s0, $zero
     /* 52478 80061C78 4C00A0AF */  sw         $zero, 0x4C($sp)

@@ -18,7 +18,7 @@ glabel func_8006A880
     /* 5B0C0 8006A8C0 08BCD68E */  lw         $s6, %lo(D_8009BC08)($s6)
     /* 5B0C4 8006A8C4 0000448E */  lw         $a0, 0x0($s2)
     /* 5B0C8 8006A8C8 21280000 */  addu       $a1, $zero, $zero
-    /* 5B0CC 8006A8CC 20B9010C */  jal        func_8006E480
+    /* 5B0CC 8006A8CC 20B9010C */  jal        saMotionSet
     /* 5B0D0 8006A8D0 1800A4AF */   sw        $a0, 0x18($sp)
     /* 5B0D4 8006A8D4 01000524 */  addiu      $a1, $zero, 0x1
     /* 5B0D8 8006A8D8 21300000 */  addu       $a2, $zero, $zero
@@ -170,7 +170,7 @@ glabel func_8006A880
     /* 5B308 8006AB08 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5B30C 8006AB0C 140002AE */  sw         $v0, 0x14($s0)
     /* 5B310 8006AB10 1800A48F */  lw         $a0, 0x18($sp)
-    /* 5B314 8006AB14 20B9010C */  jal        func_8006E480
+    /* 5B314 8006AB14 20B9010C */  jal        saMotionSet
     /* 5B318 8006AB18 21280000 */   addu      $a1, $zero, $zero
     /* 5B31C 8006AB1C 01000524 */  addiu      $a1, $zero, 0x1
     /* 5B320 8006AB20 21300000 */  addu       $a2, $zero, $zero
@@ -222,7 +222,7 @@ glabel func_8006A880
     /* 5B3D8 8006ABD8 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5B3DC 8006ABDC 140002AE */  sw         $v0, 0x14($s0)
     /* 5B3E0 8006ABE0 1800A48F */  lw         $a0, 0x18($sp)
-    /* 5B3E4 8006ABE4 20B9010C */  jal        func_8006E480
+    /* 5B3E4 8006ABE4 20B9010C */  jal        saMotionSet
     /* 5B3E8 8006ABE8 21280000 */   addu      $a1, $zero, $zero
     /* 5B3EC 8006ABEC 01000524 */  addiu      $a1, $zero, 0x1
     /* 5B3F0 8006ABF0 21300000 */  addu       $a2, $zero, $zero
@@ -369,7 +369,7 @@ glabel func_8006A880
     /* 5B614 8006AE14 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5B618 8006AE18 140002AE */  sw         $v0, 0x14($s0)
     /* 5B61C 8006AE1C 1800A48F */  lw         $a0, 0x18($sp)
-    /* 5B620 8006AE20 20B9010C */  jal        func_8006E480
+    /* 5B620 8006AE20 20B9010C */  jal        saMotionSet
     /* 5B624 8006AE24 21280000 */   addu      $a1, $zero, $zero
     /* 5B628 8006AE28 01000524 */  addiu      $a1, $zero, 0x1
     /* 5B62C 8006AE2C 21300000 */  addu       $a2, $zero, $zero
@@ -398,7 +398,7 @@ glabel func_8006A880
     /* 5B688 8006AE88 1800A527 */   addiu     $a1, $sp, 0x18
     /* 5B68C 8006AE8C 1800A48F */  lw         $a0, 0x18($sp)
     /* 5B690 8006AE90 21280000 */  addu       $a1, $zero, $zero
-    /* 5B694 8006AE94 20B9010C */  jal        func_8006E480
+    /* 5B694 8006AE94 20B9010C */  jal        saMotionSet
     /* 5B698 8006AE98 4000A0A3 */   sb        $zero, 0x40($sp)
     /* 5B69C 8006AE9C 01000524 */  addiu      $a1, $zero, 0x1
     /* 5B6A0 8006AEA0 21300000 */  addu       $a2, $zero, $zero
@@ -416,7 +416,7 @@ glabel func_8006A880
     /* 5B6D0 8006AED0 0C004224 */  addiu      $v0, $v0, 0xC
     /* 5B6D4 8006AED4 1C0002AE */  sw         $v0, 0x1C($s0)
     /* 5B6D8 8006AED8 1800A48F */  lw         $a0, 0x18($sp)
-    /* 5B6DC 8006AEDC 20B9010C */  jal        func_8006E480
+    /* 5B6DC 8006AEDC 20B9010C */  jal        saMotionSet
     /* 5B6E0 8006AEE0 21280000 */   addu      $a1, $zero, $zero
     /* 5B6E4 8006AEE4 01000524 */  addiu      $a1, $zero, 0x1
     /* 5B6E8 8006AEE8 21300000 */  addu       $a2, $zero, $zero
@@ -454,7 +454,7 @@ glabel func_8006A880
     /* 5B768 8006AF68 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5B76C 8006AF6C 140002AE */  sw         $v0, 0x14($s0)
     /* 5B770 8006AF70 1800A48F */  lw         $a0, 0x18($sp)
-    /* 5B774 8006AF74 20B9010C */  jal        func_8006E480
+    /* 5B774 8006AF74 20B9010C */  jal        saMotionSet
     /* 5B778 8006AF78 21280000 */   addu      $a1, $zero, $zero
     /* 5B77C 8006AF7C 01000524 */  addiu      $a1, $zero, 0x1
     /* 5B780 8006AF80 21300000 */  addu       $a2, $zero, $zero
@@ -531,7 +531,7 @@ glabel func_8006A880
     /* 5B89C 8006B09C 10004224 */  addiu      $v0, $v0, 0x10
     /* 5B8A0 8006B0A0 180002AE */  sw         $v0, 0x18($s0)
     /* 5B8A4 8006B0A4 1800A48F */  lw         $a0, 0x18($sp)
-    /* 5B8A8 8006B0A8 20B9010C */  jal        func_8006E480
+    /* 5B8A8 8006B0A8 20B9010C */  jal        saMotionSet
     /* 5B8AC 8006B0AC 21280000 */   addu      $a1, $zero, $zero
     /* 5B8B0 8006B0B0 01000524 */  addiu      $a1, $zero, 0x1
     /* 5B8B4 8006B0B4 21300000 */  addu       $a2, $zero, $zero

@@ -18,7 +18,7 @@ extern s32 D_800A33A4;
 extern s32 D_800A33A8;
 extern u8 D_800A9D10;
 extern void func_80049E1C(void);
-extern void func_80052C10(void);
+extern void InitFadePanel(void);
 extern void func_80044098(s16);
 extern void func_80044010(s32 *, s16);
 extern s32 D_800A3240;
@@ -179,7 +179,7 @@ void func_8004283C(s32 a0) {
     }
 }
 extern s16 D_800F6650;
-s32 func_80042864(void) {
+s32 rob_ScaleMarioInit(void) {
     return D_800F6650;
 }
 extern s16 Judge[];
@@ -452,7 +452,7 @@ void func_80042F10(s32 *a0, s32 *a1, s32 a2) {
     *a0 = (sin_x - cos_y) >> 12;
 }
 extern s32 *func_8007ED6C(s32 *, s16 *, s32 *);
-extern s16 func_8007FD5C(s32, s32);
+extern s16 single_game_getEnemyCharId(s32, s32);
 extern s32 math_Cos(s32);
 extern s32 math_Sin(s32);
 extern void func_8007EB4C(s32 *, s32 *);
@@ -470,13 +470,13 @@ void func_80042FA0(s32 *a0, s16 *a1) {
     rot[2] = 0x1000;
     func_8007ED6C(a0, rot, result);
 
-    angle1 = func_8007FD5C(result[0], result[2]);
+    angle1 = single_game_getEnemyCharId(result[0], result[2]);
 
     cos_val = math_Cos((s16)angle1);
     sin_val = math_Sin((s16)angle1);
 
     combined = (cos_val * result[2] + sin_val * result[0]) >> 12;
-    neg_angle2 = -func_8007FD5C(result[1], combined);
+    neg_angle2 = -single_game_getEnemyCharId(result[1], combined);
 
     rot[0] = -neg_angle2;
     rot[1] = -angle1;
@@ -492,7 +492,7 @@ void func_80042FA0(s32 *a0, s16 *a1) {
 
     {
         s16 angle3;
-        angle3 = func_8007FD5C(result[0], result[1]);
+        angle3 = single_game_getEnemyCharId(result[0], result[1]);
         a1[0] = neg_angle2;
         a1[1] = angle1;
         a1[2] = -angle3;
@@ -898,7 +898,7 @@ s32 func_80044170(s32 *a0, ...) {
             varptr++;
             entry = *(varptr - 1);
             if (entry >= old_first) {
-                func_80052C10();
+                InitFadePanel();
             }
             count--;
             tbl = (s32 *)((entry * 4) + (s32)(*(volatile s32 **)&a0));
@@ -1094,9 +1094,9 @@ void func_80044504(s32 a0) {
     game_SetPause(1);
     D_800A3820 = (s32)&D_80102C00;
 }
-extern void func_80052C10(void);
+extern void InitFadePanel(void);
 void func_80044650(void) {
-    func_80052C10();
+    InitFadePanel();
 }
 extern s16 D_800A9CF8;
 extern s32 D_800A9D00;
@@ -1547,7 +1547,7 @@ void func_80045230(s32 a0) {
     }
     D_800A33A8 = v1;
     if (a0 > 0x44FFF) {
-        func_80052C10();
+        InitFadePanel();
     }
 }
 void func_80045294(s32 a0, s32 a1) {
@@ -1735,7 +1735,7 @@ found:
         return;
     }
 not_found:
-    func_80052C10();
+    InitFadePanel();
 }
 extern s16 D_800EED10[];
 extern s32 D_800EED1C[];
@@ -1814,7 +1814,7 @@ void *func_80045814(void) {
     return &D_800A9D10;
 }
 extern void func_800520B8(s32, s32, s32);
-void func_80045824(s32 a0, s32 a1, s32 a2) {
+void md_mtest_init(s32 a0, s32 a1, s32 a2) {
     func_80045230(a1 + a2);
     func_800520B8(a0, a1, a2);
 }
@@ -1825,7 +1825,7 @@ extern void func_80044ED8(s32, s32);
 extern s32 *func_8004574C(s32);
 extern s32 *func_800455AC(s32);
 extern void func_80045600(s32, s32);
-extern void func_80045AA4(s32, s32);
+extern void myRobGeneiInit(s32, s32);
 
 void func_80045878(s32 a0, s32 a1, s32 a2) {
     s32 s3 = a0 + 3;
@@ -1839,7 +1839,7 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
         s1 = (s16 *) func_800455AC(a0);
         func_80045600(a0, 0x1A88 + ((s32) s1));
         func_80045230(0);
-        func_80045694(a0, (s32) (&func_80045AA4));
+        func_80045694(a0, (s32) (&myRobGeneiInit));
         s1[4] = -1;
         s1[3] = 0;
         s3 = a0 - -3;
@@ -1861,7 +1861,7 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
             func_80045230(s0);
         }
         func_80045600(s3, s0);
-        func_80045694(s3, (s32) (&func_80045AA4));
+        func_80045694(s3, (s32) (&myRobGeneiInit));
         s1[3] = 1;
         *((s32 *) (((s32) s1) + 0x24)) = 0;
         *((s32 *) s1) = 0;
@@ -1873,23 +1873,23 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
     s1[8] = a0;
     *((s32 *) (((s32) s1) + 0x18)) = 0x8000;
 }
-void func_80045A28(s32 a0, s32 a1) {
+void tslFileClose(s32 a0, s32 a1) {
     func_80045510(a0 + 3, a1);
     func_80045230(0);
 }
-extern void func_8005B644(void);
+extern void GetAllocPacketSize(void);
 extern void func_800456F0(s32);
 void func_80045A50(s32 a0) {
     s32 a0p3 = a0 + 3;
-    func_8005B644();
+    GetAllocPacketSize();
     func_800456F0(a0p3);
     func_800456F0(a0);
     func_800453E0(a0p3);
     func_800453E0(a0);
 }
 extern void func_80044100(s32, s32);
-extern void func_8005C4C0(s32, s32);
-void func_80045AA4(s32 a0, s32 a1) {
+extern void saFidLoad(s32, s32);
+void myRobGeneiInit(s32 a0, s32 a1) {
     s32 *ptr;
     s32 idx;
     if (a0 < 3) {
@@ -1906,10 +1906,10 @@ void func_80045AA4(s32 a0, s32 a1) {
     if ((ptr[0] >> 1) & 1) {
         s32 val = *(s16 *)((u8 *)ptr + 4);
         idx = 3 * val + 1;
-        func_8005C4C0(a1, idx);
+        saFidLoad(a1, idx);
     }
 }
-void func_80045B68(s32 a0, s32 a1, s32 a2, s32 a3) {
+void efc_rob_set_type_particle(s32 a0, s32 a1, s32 a2, s32 a3) {
     (void)a0;
     (void)a1;
     (void)a2;
@@ -1920,7 +1920,7 @@ void func_80046020(void) {
     func_800453E0(6);
     func_8005B6AC();
 }
-extern void func_8005C4C0(s32, s32);
+extern void saFidLoad(s32, s32);
 void func_80046048(s32 a0, s32 a1) {
     s32 *s0;
     s32 count;
@@ -1943,7 +1943,7 @@ void func_80046048(s32 a0, s32 a1) {
     }
     s0++;
     do {
-        func_8005C4C0(a1, *s0++);
+        saFidLoad(a1, *s0++);
         count--;
     } while (count != -1);
 }

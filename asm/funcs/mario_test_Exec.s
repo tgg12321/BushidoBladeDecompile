@@ -19,7 +19,7 @@ glabel mario_test_Exec
     /* E4F0 8001DCF0 00000000 */   nop
     /* E4F4 8001DCF4 1A5A000C */  jal        gpu_EnableDisplay
     /* E4F8 8001DCF8 00000000 */   nop
-    /* E4FC 8001DCFC 8BF8000C */  jal        func_8003E22C
+    /* E4FC 8001DCFC 8BF8000C */  jal        gnd_open
     /* E500 8001DD00 00000000 */   nop
     /* E504 8001DD04 0FC1000C */  jal        func_8003043C
     /* E508 8001DD08 00000000 */   nop
@@ -38,7 +38,7 @@ glabel mario_test_Exec
   .L8001DD3C:
     /* E53C 8001DD3C B159000C */  jal        disp_CalcFov
     /* E540 8001DD40 21800000 */   addu      $s0, $zero, $zero
-    /* E544 8001DD44 FFFB010C */  jal        func_8007EFFC
+    /* E544 8001DD44 FFFB010C */  jal        tslDmaDrawListDelAll
     /* E548 8001DD48 21204000 */   addu      $a0, $v0, $zero
   .L8001DD4C:
     /* E54C 8001DD4C 0A80023C */  lui        $v0, %hi(D_800A38DC)
@@ -89,7 +89,7 @@ glabel mario_test_Exec
     /* E5F8 8001DDF8 05000224 */   addiu     $v0, $zero, 0x5
     /* E5FC 8001DDFC E724010C */  jal        func_8004939C
     /* E600 8001DE00 1980123C */   lui       $s2, (0x80190800 >> 16)
-    /* E604 8001DE04 4E83000C */  jal        func_80020D38
+    /* E604 8001DE04 4E83000C */  jal        EndADRSound
     /* E608 8001DE08 00085236 */   ori       $s2, $s2, (0x80190800 & 0xFFFF)
     /* E60C 8001DE0C 21800000 */  addu       $s0, $zero, $zero
     /* E610 8001DE10 21880000 */  addu       $s1, $zero, $zero

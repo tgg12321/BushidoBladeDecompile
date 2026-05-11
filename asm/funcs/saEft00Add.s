@@ -15,7 +15,7 @@ glabel saEft00Add
     /* 72C50 80082450 01004230 */  andi       $v0, $v0, 0x1
     /* 72C54 80082454 03004010 */  beqz       $v0, .L80082464
     /* 72C58 80082458 00000000 */   nop
-    /* 72C5C 8008245C 9801020C */  jal        func_80080660
+    /* 72C5C 8008245C 9801020C */  jal        tslTmlGetHeda
     /* 72C60 80082460 21200000 */   addu      $a0, $zero, $zero
   .L80082464:
     /* 72C64 80082464 2700020C */  jal        cdrom_GetMode
@@ -111,7 +111,7 @@ glabel saEft00Add
     /* 72DB8 800825B8 06000424 */   addiu     $a0, $zero, 0x6
     /* 72DBC 800825BC 0880043C */  lui        $a0, %hi(D_80082320)
     /* 72DC0 800825C0 20238424 */  addiu      $a0, $a0, %lo(D_80082320)
-    /* 72DC4 800825C4 9801020C */  jal        func_80080660
+    /* 72DC4 800825C4 9801020C */  jal        tslTmlGetHeda
     /* 72DC8 800825C8 00000000 */   nop
     /* 72DCC 800825CC 06000424 */  addiu      $a0, $zero, 0x6
   .L800825D0:
@@ -170,7 +170,7 @@ glabel saEft00Add
     /* 72E98 80082698 09000424 */   addiu     $a0, $zero, 0x9
     /* 72E9C 8008269C 0A80043C */  lui        $a0, %hi(D_800A14FC)
     /* 72EA0 800826A0 FC14848C */  lw         $a0, %lo(D_800A14FC)($a0)
-    /* 72EA4 800826A4 9801020C */  jal        func_80080660
+    /* 72EA4 800826A4 9801020C */  jal        tslTmlGetHeda
     /* 72EA8 800826A8 00000000 */   nop
     /* 72EAC 800826AC 09000424 */  addiu      $a0, $zero, 0x9
   .L800826B0:

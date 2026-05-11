@@ -4,7 +4,7 @@ glabel md_game_end
     /* 77020 80086820 21888000 */  addu       $s1, $a0, $zero
     /* 77024 80086824 21200000 */  addu       $a0, $zero, $zero
     /* 77028 80086828 5800BFAF */  sw         $ra, 0x58($sp)
-    /* 7702C 8008682C D62B020C */  jal        func_8008AF58
+    /* 7702C 8008682C D62B020C */  jal        ReturnVSMode
     /* 77030 80086830 5000B0AF */   sw        $s0, 0x50($sp)
     /* 77034 80086834 0F80053C */  lui        $a1, %hi(MarioCam_str)
     /* 77038 80086838 D019A524 */  addiu      $a1, $a1, %lo(MarioCam_str)

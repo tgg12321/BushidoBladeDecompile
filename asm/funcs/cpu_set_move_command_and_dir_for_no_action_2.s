@@ -50,9 +50,9 @@ glabel cpu_set_move_command_and_dir_for_no_action_2
     /* 7AB8 800172B8 0000428C */  lw         $v0, 0x0($v0)
     /* 7ABC 800172BC 800690AF */  sw         $s0, %gp_rel(D_800A374C)($gp)
     /* 7AC0 800172C0 E80782AF */  sw         $v0, %gp_rel(D_800A38B4)($gp)
-    /* 7AC4 800172C4 8183010C */  jal        func_80060E04
+    /* 7AC4 800172C4 8183010C */  jal        gnd_get_fog
     /* 7AC8 800172C8 21202002 */   addu      $a0, $s1, $zero
-    /* 7ACC 800172CC BDF4000C */  jal        func_8003D2F4
+    /* 7ACC 800172CC BDF4000C */  jal        change_shadow_tex_reg
     /* 7AD0 800172D0 00000000 */   nop
     /* 7AD4 800172D4 5A65000C */  jal        single_game_VoiceContorol
     /* 7AD8 800172D8 21206002 */   addu      $a0, $s3, $zero

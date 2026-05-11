@@ -17,7 +17,7 @@ extern s32 D_800A33A4;
 extern s32 D_800A33A8;
 extern u8 D_800A9D10;
 extern void func_80049E1C(void);
-extern void func_80052C10(void);
+extern void InitFadePanel(void);
 extern void func_80044098(s16);
 extern void func_80044010(s32 *, s16);
 extern s32 D_800A3240;
@@ -76,7 +76,7 @@ void PutShadowRmd(s32 a0, s32 a1, s32 a2) {
         ot[0x3FFC / 4] = (ot[0x3FFC / 4] & 0xFF000000) | ((s32)pkt & 0xFFFFFF);
     }
 }
-void func_80040304(s32 a0, s32 a1) {
+void efc_rob_Init(s32 a0, s32 a1) {
     s32 ptr;
     s32 mask;
     s32 i;
@@ -162,7 +162,7 @@ void func_800404A0(s16 *a0, s32 a1) {
 }
 extern s32 g_player_ptrs[];
 extern s32 g_player_char_ids[];
-void func_800404D8(void) {
+void saTan5TakeGetCnt(void) {
     s32 i;
     for (i = 0; i < 3; i++) {
         g_player_ptrs[i] = 0;
@@ -216,7 +216,7 @@ void AllocRobRmd(s32 *a0)
     if (((s16 *)a0)[2] == 1) goto after_b644;
 
 call_b644:
-    func_8005B644(((s16 *)a0)[2]);
+    GetAllocPacketSize(((s16 *)a0)[2]);
 
 after_b644:
     if (count < 6) goto simple;
@@ -230,7 +230,7 @@ after_b644:
         ptr = (s32 *)((s32)ptr + func_8005C2A8(ptr, idx, (s32 *)((s32)rmd + next_off)));
 
         if (ptr == 0) {
-            func_80052C10();
+            InitFadePanel();
         }
 
         a0[0] |= 2;
@@ -247,7 +247,7 @@ after_select:
         func_800520B8(a0[8], a0[7], off);
         rmd = (s32 *)a0[7];
         if ((a0[0] >> 1) & 1) {
-            func_8005C4C0((s32)rmd - a0[8], ((s16 *)a0)[2] * 3 + 1);
+            saFidLoad((s32)rmd - a0[8], ((s16 *)a0)[2] * 3 + 1);
         }
     }
 
@@ -267,14 +267,14 @@ after_select:
         if (player != 0) goto done_cases;
 
         func_80047EE8(sec, 0);
-        if (func_8003E2A0() != 0) goto done_cases;
+        if (single_game_SetStageId() != 0) goto done_cases;
         videoDecCreate(((s16 *)a0)[10], 0, 0, -0x140, 0xE8);
         func_800480C0(sec, 0, 0, 0, -0x140, 0xF0);
         goto done_cases;
 
     case_1:
         func_80047FBC(sec, 0, 0x80, 0);
-        if (func_8003E2A0() != player) goto case_1_else;
+        if (single_game_SetStageId() != player) goto case_1_else;
         videoDecCreate(((s16 *)a0)[10], 0x80, 0, -0x140, 0xE8);
         func_800480C0(sec, 0, 0x80, 0, -0x140, 0xF0);
         goto case_1_done;
@@ -299,7 +299,7 @@ done_cases:
 
     gpu_DrawSync(0);
     a0[9] = a0[7] + off;
-    func_80045A28(((s16 *)a0)[2], off);
+    tslFileClose(((s16 *)a0)[2], off);
 }
 
 
@@ -801,18 +801,18 @@ void hirahira_w_ctrl(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 
 /* kengo:MED  |  my_hirahira/hirahira_w_ctrl  |  132i  |  x2 size collision */
 extern s32 *D_80015820[];
-extern s32 func_800545F4;
+extern s32 myRobGeneiOpen;
 extern s32 D_800545F8;
 extern s32 D_800545FC;
 extern s32 D_80054600;
-void func_80041398(s32 a0) {
+void gnd_load_tex(s32 a0) {
     register s32 **t0 asm("t0") = D_80015820;
     register s32 t1 asm("t1") = 0;
     s32 mask8 = ~0xFF;
     s32 a1 = (a0 >> 16) & 0xFF;
     s32 mask16 = (s32)0xFFFF0000;
     s32 a0lo = a0 & 0xFFFF;
-    s32 t3 = (func_800545F4 & mask8) | a1;
+    s32 t3 = (myRobGeneiOpen & mask8) | a1;
     s32 t2 = (D_800545F8 & mask16) | a0lo;
     s32 v1 = (D_800545FC & mask8) | a1;
     s32 a4 = (D_80054600 & mask16) | a0lo;
@@ -837,9 +837,9 @@ void func_80041430(s32 a0, s32 a1) {
     base = (s32 *)((u8 *)g_player_ptrs + a0 * 4);
     s0 = (s32 *)(*base + a1);
     *base = (s32)s0;
-    func_800414FC(a1, (s16 *)((u8 *)s0 + 0x2C), 0x15);
-    func_800414FC(a1, (s16 *)((u8 *)s0 + 0x8B4), 0x14);
-    func_800414FC(a1, (s16 *)((u8 *)s0 + 0x10D4), 0x14);
+    save_vc_ctrl(a1, (s16 *)((u8 *)s0 + 0x2C), 0x15);
+    save_vc_ctrl(a1, (s16 *)((u8 *)s0 + 0x8B4), 0x14);
+    save_vc_ctrl(a1, (s16 *)((u8 *)s0 + 0x10D4), 0x14);
     {
         s32 *v1 = (s32 *)((u8 *)s0 + 0x112C);
         do {
@@ -867,7 +867,7 @@ void func_80041430(s32 a0, s32 a1) {
     }
     func_80040A78((s32)s0);
 }
-void func_800414FC(s32 a0, s16 *a1, s32 a2) {
+void save_vc_ctrl(s32 a0, s16 *a1, s32 a2) {
     volatile s32 sp;
     s32 i = a2 - 1;
     if (a2 == 0) {
@@ -888,7 +888,7 @@ extern s32 g_player_ptrs[];
 s32 func_8004153C(s32 a0) {
     return g_player_ptrs[a0];
 }
-s32 func_80041554(s32 a0) {
+s32 efc_buki_ZanzouDispInit(s32 a0) {
     s16 *ptr = (s16 *)g_player_ptrs[a0];
     if (ptr) {
         return ptr[4];
@@ -934,7 +934,7 @@ s32 func_80041650(s32 a0) {
 }
 extern s32 func_800486FC(s32);
 extern s32 func_8004881C(s32, s32, s32);
-extern void func_80041398(s32);
+extern void gnd_load_tex(s32);
 
 void func_80041688(s32 arg0, s32 arg1) {
     s32 *player;
@@ -979,12 +979,12 @@ after2:
         g = *((u8 *)player + 0x19);
         b = *((u8 *)player + 0x1A);
         v = func_8004881C(b, g, r);
-        func_80041398((v << 16) | (v << 8) | v);
+        gnd_load_tex((v << 16) | (v << 8) | v);
     } else {
         r = *((u8 *)player + 0x18);
         g = *((u8 *)player + 0x19);
         b = *((u8 *)player + 0x1A);
-        func_80041398(b | ((r << 16) | (g << 8)));
+        gnd_load_tex(b | ((r << 16) | (g << 8)));
     }
     (void)sp10;
 }
@@ -1054,14 +1054,14 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
         }
         goto shift;
     case0:
-        if (func_8003E2A0() == 0) {
+        if (single_game_SetStageId() == 0) {
             func_800480C0(a3, id, 0, 0, -0x140, 0xE8);
         } else {
             func_80047EE8(a3, id);
         }
         goto shift;
     case1:
-        if (func_8003E2A0() == a0) {
+        if (single_game_SetStageId() == a0) {
             func_800480C0(a3, id, 0x80, 0, -0x140, 0xE8);
         } else {
             func_80047FBC(a3, id, 0x80, 0);
@@ -1096,7 +1096,7 @@ void func_80041AC8(s16 *arg0)
   }
   D_800A9A20 = arg0[4];
   var_s0 = (s16 *) D_80094DF0[D_80094E08[arg0[4]]];
-  if (func_8003E2A0() != 1)
+  if (single_game_SetStageId() != 1)
   {
     goto else_lbl;
   }
@@ -1132,7 +1132,7 @@ void func_80041AC8(s16 *arg0)
 }
 extern void gpu_LoadImage(s32, s32);
 extern void func_80048A7C(s16, s16, s32, s32, s32, s32);
-extern s32 func_8003E2A0(void);
+extern s32 single_game_SetStageId(void);
 void saTan4FireDisp(s32 a0, s32 a1, s32 a2)
 {
   s32 *fp_ptr;
@@ -1190,7 +1190,7 @@ void saTan4FireDisp(s32 a0, s32 a1, s32 a2)
   if (r >= 0) { goto inner_body; }
   outer++;
   if (outer < 2) { goto loop_outer; }
-  if (func_8003E2A0() == 1) { func_8003E120(); }
+  if (single_game_SetStageId() == 1) { func_8003E120(); }
 }
 extern s16 g_anim_select;
 extern s16 D_800A323A;
@@ -1203,7 +1203,7 @@ void func_80041E10(Block16 *a0, s32 a1) {
     D_800A9B28 = *a0;
 }
 extern s32 func_80052754(s32, s32, s32);
-extern s32 func_8007FD5C(s32, s32);
+extern s32 single_game_getEnemyCharId(s32, s32);
 extern s32 math_Cos(s32);
 extern s32 math_Sin(s32);
 extern s32 func_8004A1FC(s32);
@@ -1264,12 +1264,12 @@ dist_check:
     if (func_80052754(dx, dy, dz) > 0x17D7840) { goto skip; }
 
 calc:
-    angle = func_8007FD5C(dx, dz);
+    angle = single_game_getEnemyCharId(dx, dz);
     cos_val = math_Cos(angle);
     {
         s32 sin_val = math_Sin(angle);
         s32 cross = (cos_val * dz + sin_val * dx) >> 12;
-        tbl[4] = (s16)-func_8007FD5C(dy, cross);
+        tbl[4] = (s16)-single_game_getEnemyCharId(dy, cross);
     }
     tbl[5] = (s16)angle;
     tbl[6] = 1;

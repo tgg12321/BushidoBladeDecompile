@@ -13,9 +13,9 @@ glabel func_8001F1C4
     /* F9F0 8001F1F0 80004230 */  andi       $v0, $v0, 0x80
     /* F9F4 8001F1F4 05004014 */  bnez       $v0, .L8001F20C
     /* F9F8 8001F1F8 2190E000 */   addu      $s2, $a3, $zero
-    /* F9FC 8001F1FC CD9C000C */  jal        func_80027334
+    /* F9FC 8001F1FC CD9C000C */  jal        katinuki_game_getMyWeaponId
     /* FA00 8001F200 21202002 */   addu      $a0, $s1, $zero
-    /* FA04 8001F204 CD9C000C */  jal        func_80027334
+    /* FA04 8001F204 CD9C000C */  jal        katinuki_game_getMyWeaponId
     /* FA08 8001F208 21204002 */   addu      $a0, $s2, $zero
   .L8001F20C:
     /* FA0C 8001F20C 36002426 */  addiu      $a0, $s1, 0x36

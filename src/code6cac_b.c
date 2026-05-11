@@ -24,7 +24,7 @@ extern u32 D_80101E3C;
 extern u32 D_80101E44;
 
 /* Extern function declarations */
-extern void func_80023CB4(s32, s32);
+extern void cpu_get_dash_timer(s32, s32);
 extern s32 func_80037110(s32);
 extern void game_FrameInit(void);
 extern void game_FrameLoop(void);
@@ -71,7 +71,7 @@ extern void func_8003AF40(s32);
 extern void func_8003AFFC(void);
 
 extern void sys_Panic(void);
-extern s32 func_80020D38(void);
+extern s32 EndADRSound(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
 extern s32 bb2_memcpy(s32 *, s32, s32);
@@ -88,7 +88,7 @@ extern s32 D_800A384C;
 extern u8 D_8008E908;
 extern u8 D_8008EC24;
 extern s32 D_80106A50;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 single_game_getEnemyCharId(s32, s32);
 extern s32 func_80079154(void);
 extern void func_8007F87C(s32, s32 *);
 extern void func_8007FA1C(s32, s32 *);
@@ -99,7 +99,7 @@ extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern s32 stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
+extern void get_point_value(void);
 extern void func_80037774(void);
 extern void special_camera_get_rot_dir(s32 *);
 extern void pad_Init(void);
@@ -175,7 +175,7 @@ s32 func_800272FC(s32 a0) {
     }
     return v1;
 }
-void func_80027334(s16 *arg0) {
+void katinuki_game_getMyWeaponId(s16 *arg0) {
     arg0[0x1E] = 0x3F5;
     arg0[0x1F] = 0x2B6;
     arg0[0x20] = 0x77A;
@@ -385,7 +385,7 @@ void cpu_side_move_dir(s32 arg0)
 }
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir  |  160i  |  x4 size collision */
 extern s32 func_80032854(s32, s32, u8 *, s16 *);
-void func_800278C0(s32 a0, s32 *ptr, s32 cmd, s32 a3, u8 *stack_a2, s32 stack_v1) {
+void mk_g2l(s32 a0, s32 *ptr, s32 cmd, s32 a3, u8 *stack_a2, s32 stack_v1) {
     s32 v1_obj;
     u8 *arg_a2 = stack_a2;
     s32 arg_v1 = stack_v1;
@@ -508,7 +508,7 @@ void func_80027A58(s32 *a0) {
     }
 }
 INCLUDE_RODATA("asm/rodata", jtbl_80010548);
-s32 func_80027AD8() {
+s32 calc_teasi_loc_fw() {
     return 0;
 }
 s32 saTan2KabutoWareMove(u8 *arg0, u8 *arg1) {
@@ -874,7 +874,7 @@ void func_8002C0DC(void) {
         arg2 = *(s32 *)(var_s0 + 0xE0);
         arg1 = *(s32 *)(ptr + 0xD8) - arg1;
         arg2 = *(s32 *)(ptr + 0xE0) - arg2;
-        func_8001F860((s16 *)var_s0, func_8007FD5C(arg1, arg2));
+        func_8001F860((s16 *)var_s0, single_game_getEnemyCharId(arg1, arg2));
         var_s0 += 0x44C;
     } while (var_s1 < 2);
 
@@ -1533,7 +1533,7 @@ void cpu_get_dist(s32 *a0, s16 *a1) {
     s32 rx;
     s32 rz;
     s32 v48;
-    angle = func_8007FD5C(a1[0], a1[2]);
+    angle = single_game_getEnemyCharId(a1[0], a1[2]);
     cos_val = *((&Judge) + ((angle + 0x400) & 0xFFF));
     vx = *((s32 *)(((u8 *)a0) + 0x44));
     do {

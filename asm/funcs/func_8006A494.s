@@ -28,7 +28,7 @@ glabel func_8006A494
     /* 5ACFC 8006A4FC 0C0002AE */   sw        $v0, 0xC($s0)
     /* 5AD00 8006A500 080022AE */  sw         $v0, 0x8($s1)
     /* 5AD04 8006A504 0000048E */  lw         $a0, 0x0($s0)
-    /* 5AD08 8006A508 20B9010C */  jal        func_8006E480
+    /* 5AD08 8006A508 20B9010C */  jal        saMotionSet
     /* 5AD0C 8006A50C 21280000 */   addu      $a1, $zero, $zero
     /* 5AD10 8006A510 01000524 */  addiu      $a1, $zero, 0x1
     /* 5AD14 8006A514 21300000 */  addu       $a2, $zero, $zero

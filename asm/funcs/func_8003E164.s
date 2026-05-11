@@ -6,7 +6,7 @@ glabel func_8003E164
     /* 2E974 8003E174 2800BFAF */  sw         $ra, 0x28($sp)
     /* 2E978 8003E178 25005110 */  beq        $v0, $s1, .L8003E210
     /* 2E97C 8003E17C 2000B0AF */   sw        $s0, 0x20($sp)
-    /* 2E980 8003E180 8BF8000C */  jal        func_8003E22C
+    /* 2E980 8003E180 8BF8000C */  jal        gnd_open
     /* 2E984 8003E184 00000000 */   nop
     /* 2E988 8003E188 4F05010C */  jal        func_8004153C
     /* 2E98C 8003E18C 21202002 */   addu      $a0, $s1, $zero

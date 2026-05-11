@@ -275,7 +275,7 @@ glabel func_8005E098
     /* 4EC9C 8005E49C 00000000 */   nop
   .L8005E4A0:
     /* 4ECA0 8005E4A0 E8FFE426 */  addiu      $a0, $s7, -0x18
-    /* 4ECA4 8005E4A4 20B9010C */  jal        func_8006E480
+    /* 4ECA4 8005E4A4 20B9010C */  jal        saMotionSet
     /* 4ECA8 8005E4A8 21280000 */   addu      $a1, $zero, $zero
     /* 4ECAC 8005E4AC 01000524 */  addiu      $a1, $zero, 0x1
     /* 4ECB0 8005E4B0 21300000 */  addu       $a2, $zero, $zero

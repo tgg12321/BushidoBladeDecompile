@@ -3203,7 +3203,7 @@ glabel func_8001A820
     /* B4CC 8001ACCC 0200E2A6 */   sh        $v0, (0x1F800002 & 0xFFFF)($s7)
   .L8001ACD0:
     /* B4D0 8001ACD0 21202002 */  addu       $a0, $s1, $zero
-    /* B4D4 8001ACD4 57FF010C */  jal        func_8007FD5C
+    /* B4D4 8001ACD4 57FF010C */  jal        single_game_getEnemyCharId
     /* B4D8 8001ACD8 21280002 */   addu      $a1, $s0, $zero
     /* B4DC 8001ACDC 00040324 */  addiu      $v1, $zero, 0x400
     /* B4E0 8001ACE0 23186200 */  subu       $v1, $v1, $v0
@@ -3275,7 +3275,7 @@ glabel func_8001A820
     /* B5D8 8001ADD8 6000E226 */  addiu      $v0, $s7, %lo(D_1F800060)
     /* B5DC 8001ADDC 1000A2AF */  sw         $v0, 0x10($sp)
     /* B5E0 8001ADE0 38FF6324 */  addiu      $v1, $v1, -0xC8
-    /* B5E4 8001ADE4 854D010C */  jal        func_80053614
+    /* B5E4 8001ADE4 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* B5E8 8001ADE8 2C00E3AE */   sw        $v1, (0x1F80002C & 0xFFFF)($s7)
     /* B5EC 8001ADEC 53004010 */  beqz       $v0, .L8001AF3C
     /* B5F0 8001ADF0 00000000 */   nop
@@ -3345,7 +3345,7 @@ glabel func_8001A820
     /* B6D4 8001AED4 3800E626 */  addiu      $a2, $s7, %lo(D_1F800038)
     /* B6D8 8001AED8 5800E726 */  addiu      $a3, $s7, %lo(D_1F800058)
     /* B6DC 8001AEDC 6000E226 */  addiu      $v0, $s7, %lo(D_1F800060)
-    /* B6E0 8001AEE0 854D010C */  jal        func_80053614
+    /* B6E0 8001AEE0 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* B6E4 8001AEE4 1000A2AF */   sw        $v0, 0x10($sp)
     /* B6E8 8001AEE8 0B004010 */  beqz       $v0, .L8001AF18
     /* B6EC 8001AEEC 00000000 */   nop
@@ -3427,7 +3427,7 @@ glabel func_8001A820
     /* B7F4 8001AFF4 5800E726 */  addiu      $a3, $s7, %lo(D_1F800058)
     /* B7F8 8001AFF8 4800A68F */  lw         $a2, 0x48($sp)
     /* B7FC 8001AFFC 6000E226 */  addiu      $v0, $s7, %lo(D_1F800060)
-    /* B800 8001B000 854D010C */  jal        func_80053614
+    /* B800 8001B000 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* B804 8001B004 1000A2AF */   sw        $v0, 0x10($sp)
     /* B808 8001B008 0E004010 */  beqz       $v0, .L8001B044
     /* B80C 8001B00C 00000000 */   nop
@@ -3673,7 +3673,7 @@ glabel func_8001B294
     /* BB68 8001B368 FC00028E */  lw         $v0, 0xFC($s0)
     /* BB6C 8001B36C FC00258E */  lw         $a1, 0xFC($s1)
     /* BB70 8001B370 23206400 */  subu       $a0, $v1, $a0
-    /* BB74 8001B374 57FF010C */  jal        func_8007FD5C
+    /* BB74 8001B374 57FF010C */  jal        single_game_getEnemyCharId
     /* BB78 8001B378 23284500 */   subu      $a1, $v0, $a1
     /* BB7C 8001B37C 00040324 */  addiu      $v1, $zero, 0x400
     /* BB80 8001B380 23186200 */  subu       $v1, $v1, $v0
@@ -3834,7 +3834,7 @@ glabel func_8001B478
     /* BDAC 8001B5AC F800448C */  lw         $a0, 0xF8($v0)
     /* BDB0 8001B5B0 0A80053C */  lui        $a1, %hi(D_800A387C)
     /* BDB4 8001B5B4 7C38A58C */  lw         $a1, %lo(D_800A387C)($a1)
-    /* BDB8 8001B5B8 57FF010C */  jal        func_8007FD5C
+    /* BDB8 8001B5B8 57FF010C */  jal        single_game_getEnemyCharId
     /* BDBC 8001B5BC 23208600 */   subu      $a0, $a0, $a2
     /* BDC0 8001B5C0 00040324 */  addiu      $v1, $zero, 0x400
     /* BDC4 8001B5C4 23187000 */  subu       $v1, $v1, $s0
@@ -4230,7 +4230,7 @@ glabel func_8001BAE4
     /* C338 8001BB38 08004286 */  lh         $v0, 0x8($s2)
     /* C33C 8001BB3C 08002586 */  lh         $a1, 0x8($s1)
     /* C340 8001BB40 23206400 */  subu       $a0, $v1, $a0
-    /* C344 8001BB44 57FF010C */  jal        func_8007FD5C
+    /* C344 8001BB44 57FF010C */  jal        single_game_getEnemyCharId
     /* C348 8001BB48 23284500 */   subu      $a1, $v0, $a1
     /* C34C 8001BB4C 21180002 */  addu       $v1, $s0, $zero
     /* C350 8001BB50 02000106 */  bgez       $s0, .L8001BB5C
@@ -4292,7 +4292,7 @@ glabel func_8001BBD8
     /* C414 8001BC14 1127102A */  slti       $s0, $s0, 0x2711
     /* C418 8001BC18 08004286 */  lh         $v0, 0x8($s2)
     /* C41C 8001BC1C C0821000 */  sll        $s0, $s0, 11
-    /* C420 8001BC20 57FF010C */  jal        func_8007FD5C
+    /* C420 8001BC20 57FF010C */  jal        single_game_getEnemyCharId
     /* C424 8001BC24 23284500 */   subu      $a1, $v0, $a1
     /* C428 8001BC28 0F80043C */  lui        $a0, %hi(D_800F5328)
     /* C42C 8001BC2C 28538424 */  addiu      $a0, $a0, %lo(D_800F5328)
@@ -4314,9 +4314,9 @@ glabel func_8001BBD8
     /* C46C 8001BC6C 00000000 */   nop
 endlabel func_8001BBD8
 
-nonmatching func_8001BC70, 0x80
+nonmatching cpu_check_move_dir_pattern_enemy_attack, 0x80
 
-glabel func_8001BC70
+glabel cpu_check_move_dir_pattern_enemy_attack
     /* C470 8001BC70 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* C474 8001BC74 1000B0AF */  sw         $s0, 0x10($sp)
     /* C478 8001BC78 21808000 */  addu       $s0, $a0, $zero
@@ -4349,7 +4349,7 @@ glabel func_8001BC70
     /* C4E4 8001BCE4 2000BD27 */  addiu      $sp, $sp, 0x20
     /* C4E8 8001BCE8 0800E003 */  jr         $ra
     /* C4EC 8001BCEC 00000000 */   nop
-endlabel func_8001BC70
+endlabel cpu_check_move_dir_pattern_enemy_attack
 
 nonmatching suLeagueSystemInit, 0x118
 
@@ -4428,16 +4428,16 @@ glabel func_8001BCF0
     /* C604 8001BE04 00000000 */   nop
 endlabel func_8001BCF0
 
-nonmatching func_8001BE08, 0x18
+nonmatching LWCard_SetAccessData, 0x18
 
-glabel func_8001BE08
+glabel LWCard_SetAccessData
     /* C608 8001BE08 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* C60C 8001BE0C 080080AC */  sw         $zero, 0x8($a0)
     /* C610 8001BE10 0C0080AC */  sw         $zero, 0xC($a0)
     /* C614 8001BE14 100080AC */  sw         $zero, 0x10($a0)
     /* C618 8001BE18 0800E003 */  jr         $ra
     /* C61C 8001BE1C 140082AC */   sw        $v0, 0x14($a0)
-endlabel func_8001BE08
+endlabel LWCard_SetAccessData
 
 nonmatching func_8001BE20, 0x624
 
@@ -4795,7 +4795,7 @@ glabel func_8001BE20
     /* CB0C 8001C30C 04004010 */  beqz       $v0, .L8001C320
     /* CB10 8001C310 01000224 */   addiu     $v0, $zero, 0x1
   .L8001C314:
-    /* CB14 8001C314 826F000C */  jal        func_8001BE08
+    /* CB14 8001C314 826F000C */  jal        LWCard_SetAccessData
     /* CB18 8001C318 21200002 */   addu      $a0, $s0, $zero
     /* CB1C 8001C31C 01000224 */  addiu      $v0, $zero, 0x1
   .L8001C320:
@@ -6267,7 +6267,7 @@ glabel func_8001D790
     /* E008 8001D808 37006210 */  beq        $v1, $v0, .L8001D8E8
     /* E00C 8001D80C 00000000 */   nop
   .L8001D810:
-    /* E010 8001D810 4E83000C */  jal        func_80020D38
+    /* E010 8001D810 4E83000C */  jal        EndADRSound
     /* E014 8001D814 00000000 */   nop
     /* E018 8001D818 0A80043C */  lui        $a0, %hi(D_800A36A4)
     /* E01C 8001D81C A4368484 */  lh         $a0, %lo(D_800A36A4)($a0)
@@ -6343,7 +6343,7 @@ glabel func_8001D904
     /* E118 8001D918 1400B1AF */  sw         $s1, 0x14($sp)
     /* E11C 8001D91C 1A5A000C */  jal        gpu_EnableDisplay
     /* E120 8001D920 1000B0AF */   sw        $s0, 0x10($sp)
-    /* E124 8001D924 4E83000C */  jal        func_80020D38
+    /* E124 8001D924 4E83000C */  jal        EndADRSound
     /* E128 8001D928 00000000 */   nop
     /* E12C 8001D92C 716E010C */  jal        obj_InitTask
     /* E130 8001D930 00000000 */   nop
@@ -6386,7 +6386,7 @@ glabel func_8001D998
     /* E1AC 8001D9AC 1400B1AF */  sw         $s1, 0x14($sp)
     /* E1B0 8001D9B0 1A5A000C */  jal        gpu_EnableDisplay
     /* E1B4 8001D9B4 1000B0AF */   sw        $s0, 0x10($sp)
-    /* E1B8 8001D9B8 4E83000C */  jal        func_80020D38
+    /* E1B8 8001D9B8 4E83000C */  jal        EndADRSound
     /* E1BC 8001D9BC 00000000 */   nop
     /* E1C0 8001D9C0 1A6E010C */  jal        obj_InitPair
     /* E1C4 8001D9C4 00000000 */   nop
@@ -6642,7 +6642,7 @@ glabel func_8001DCB0
     /* E4F0 8001DCF0 00000000 */   nop
     /* E4F4 8001DCF4 1A5A000C */  jal        gpu_EnableDisplay
     /* E4F8 8001DCF8 00000000 */   nop
-    /* E4FC 8001DCFC 8BF8000C */  jal        func_8003E22C
+    /* E4FC 8001DCFC 8BF8000C */  jal        gnd_open
     /* E500 8001DD00 00000000 */   nop
     /* E504 8001DD04 0FC1000C */  jal        func_8003043C
     /* E508 8001DD08 00000000 */   nop
@@ -6661,7 +6661,7 @@ glabel func_8001DCB0
   .L8001DD3C:
     /* E53C 8001DD3C B159000C */  jal        disp_CalcFov
     /* E540 8001DD40 21800000 */   addu      $s0, $zero, $zero
-    /* E544 8001DD44 FFFB010C */  jal        func_8007EFFC
+    /* E544 8001DD44 FFFB010C */  jal        tslDmaDrawListDelAll
     /* E548 8001DD48 21204000 */   addu      $a0, $v0, $zero
   .L8001DD4C:
     /* E54C 8001DD4C 0A80023C */  lui        $v0, %hi(D_800A38DC)
@@ -6712,7 +6712,7 @@ glabel func_8001DCB0
     /* E5F8 8001DDF8 05000224 */   addiu     $v0, $zero, 0x5
     /* E5FC 8001DDFC E724010C */  jal        func_8004939C
     /* E600 8001DE00 1980123C */   lui       $s2, (0x80190800 >> 16)
-    /* E604 8001DE04 4E83000C */  jal        func_80020D38
+    /* E604 8001DE04 4E83000C */  jal        EndADRSound
     /* E608 8001DE08 00085236 */   ori       $s2, $s2, (0x80190800 & 0xFFFF)
     /* E60C 8001DE0C 21800000 */  addu       $s0, $zero, $zero
     /* E610 8001DE10 21880000 */  addu       $s1, $zero, $zero
@@ -7203,7 +7203,7 @@ glabel func_8001E404
   .L8001E508:
     /* ED08 8001E508 B159000C */  jal        disp_CalcFov
     /* ED0C 8001E50C 00000000 */   nop
-    /* ED10 8001E510 FFFB010C */  jal        func_8007EFFC
+    /* ED10 8001E510 FFFB010C */  jal        tslDmaDrawListDelAll
     /* ED14 8001E514 21204000 */   addu      $a0, $v0, $zero
     /* ED18 8001E518 0A80023C */  lui        $v0, %hi(D_800A36FA)
     /* ED1C 8001E51C FA364290 */  lbu        $v0, %lo(D_800A36FA)($v0)
@@ -7610,7 +7610,7 @@ glabel func_8001EA84
   .L8001EAD0:
     /* F2D0 8001EAD0 0A80053C */  lui        $a1, %hi(D_800A37B8)
     /* F2D4 8001EAD4 B837A58C */  lw         $a1, %lo(D_800A37B8)($a1)
-    /* F2D8 8001EAD8 1C6F000C */  jal        func_8001BC70
+    /* F2D8 8001EAD8 1C6F000C */  jal        cpu_check_move_dir_pattern_enemy_attack
     /* F2DC 8001EADC C0280500 */   sll       $a1, $a1, 3
     /* F2E0 8001EAE0 0179000C */  jal        func_8001E404
     /* F2E4 8001EAE4 00000000 */   nop
@@ -7618,7 +7618,7 @@ glabel func_8001EA84
     /* F2EC 8001EAEC 00000000 */   nop
     /* F2F0 8001EAF0 1B80000C */  jal        func_8002006C
     /* F2F4 8001EAF4 00000000 */   nop
-    /* F2F8 8001EAF8 826F000C */  jal        func_8001BE08
+    /* F2F8 8001EAF8 826F000C */  jal        LWCard_SetAccessData
     /* F2FC 8001EAFC 1000A427 */   addiu     $a0, $sp, 0x10
     /* F300 8001EB00 21200000 */  addu       $a0, $zero, $zero
     /* F304 8001EB04 C28F000C */  jal        func_80023F08
@@ -7983,7 +7983,7 @@ glabel func_8001EFA0
     /* F838 8001F038 00000000 */   nop
     /* F83C 8001F03C 1B80000C */  jal        func_8002006C
     /* F840 8001F040 00000000 */   nop
-    /* F844 8001F044 826F000C */  jal        func_8001BE08
+    /* F844 8001F044 826F000C */  jal        LWCard_SetAccessData
     /* F848 8001F048 1000A427 */   addiu     $a0, $sp, 0x10
     /* F84C 8001F04C 21200000 */  addu       $a0, $zero, $zero
     /* F850 8001F050 C28F000C */  jal        func_80023F08
@@ -8106,9 +8106,9 @@ glabel func_8001F1C4
     /* F9F0 8001F1F0 80004230 */  andi       $v0, $v0, 0x80
     /* F9F4 8001F1F4 05004014 */  bnez       $v0, .L8001F20C
     /* F9F8 8001F1F8 2190E000 */   addu      $s2, $a3, $zero
-    /* F9FC 8001F1FC CD9C000C */  jal        func_80027334
+    /* F9FC 8001F1FC CD9C000C */  jal        katinuki_game_getMyWeaponId
     /* FA00 8001F200 21202002 */   addu      $a0, $s1, $zero
-    /* FA04 8001F204 CD9C000C */  jal        func_80027334
+    /* FA04 8001F204 CD9C000C */  jal        katinuki_game_getMyWeaponId
     /* FA08 8001F208 21204002 */   addu      $a0, $s2, $zero
   .L8001F20C:
     /* FA0C 8001F20C 36002426 */  addiu      $a0, $s1, 0x36
@@ -8187,9 +8187,9 @@ glabel func_8001F2E4
     /* FB0C 8001F30C 00000000 */  nop
     /* FB10 8001F310 05004014 */  bnez       $v0, .L8001F328
     /* FB14 8001F314 21A0C000 */   addu      $s4, $a2, $zero
-    /* FB18 8001F318 CD9C000C */  jal        func_80027334
+    /* FB18 8001F318 CD9C000C */  jal        katinuki_game_getMyWeaponId
     /* FB1C 8001F31C 21206002 */   addu      $a0, $s3, $zero
-    /* FB20 8001F320 CD9C000C */  jal        func_80027334
+    /* FB20 8001F320 CD9C000C */  jal        katinuki_game_getMyWeaponId
     /* FB24 8001F324 21208002 */   addu      $a0, $s4, $zero
   .L8001F328:
     /* FB28 8001F328 6A000396 */  lhu        $v1, 0x6A($s0)
@@ -8277,7 +8277,7 @@ glabel func_8001F2E4
     /* FC50 8001F450 0000028E */  lw         $v0, 0x0($s0)
     /* FC54 8001F454 8401058E */  lw         $a1, 0x184($s0)
     /* FC58 8001F458 8401428C */  lw         $v0, 0x184($v0)
-    /* FC5C 8001F45C 57FF010C */  jal        func_8007FD5C
+    /* FC5C 8001F45C 57FF010C */  jal        single_game_getEnemyCharId
     /* FC60 8001F460 23284500 */   subu      $a1, $v0, $a1
     /* FC64 8001F464 00040324 */  addiu      $v1, $zero, 0x400
     /* FC68 8001F468 23286200 */  subu       $a1, $v1, $v0
@@ -8357,7 +8357,7 @@ glabel func_8001F2E4
     /* FD68 8001F568 F800428C */  lw         $v0, 0xF8($v0)
     /* FD6C 8001F56C 0A80043C */  lui        $a0, %hi(D_800A387C)
     /* FD70 8001F570 7C38848C */  lw         $a0, %lo(D_800A387C)($a0)
-    /* FD74 8001F574 57FF010C */  jal        func_8007FD5C
+    /* FD74 8001F574 57FF010C */  jal        single_game_getEnemyCharId
     /* FD78 8001F578 23284500 */   subu      $a1, $v0, $a1
     /* FD7C 8001F57C 00FC4224 */  addiu      $v0, $v0, -0x400
     /* FD80 8001F580 FF0F4430 */  andi       $a0, $v0, 0xFFF
@@ -8458,7 +8458,7 @@ glabel func_8001F2E4
     /* FEDC 8001F6DC 0000028E */  lw         $v0, 0x0($s0)
     /* FEE0 8001F6E0 6002058E */  lw         $a1, 0x260($s0)
     /* FEE4 8001F6E4 F800428C */  lw         $v0, 0xF8($v0)
-    /* FEE8 8001F6E8 57FF010C */  jal        func_8007FD5C
+    /* FEE8 8001F6E8 57FF010C */  jal        single_game_getEnemyCharId
     /* FEEC 8001F6EC 23284500 */   subu      $a1, $v0, $a1
     /* FEF0 8001F6F0 00FC4224 */  addiu      $v0, $v0, -0x400
     /* FEF4 8001F6F4 FF0F4530 */  andi       $a1, $v0, 0xFFF
@@ -9961,7 +9961,7 @@ glabel func_800207C8
     /* 11428 80020C28 A001038E */  lw         $v1, 0x1A0($s0)
     /* 1142C 80020C2C 38006226 */  addiu      $v0, $s3, 0x38
     /* 11430 80020C30 1000A2AF */  sw         $v0, 0x10($sp)
-    /* 11434 80020C34 854D010C */  jal        func_80053614
+    /* 11434 80020C34 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 11438 80020C38 180063AE */   sw        $v1, 0x18($s3)
     /* 1143C 80020C3C 04004010 */  beqz       $v0, .L80020C50
     /* 11440 80020C40 00000000 */   nop
@@ -9982,7 +9982,7 @@ glabel func_800207C8
     /* 11474 80020C74 00000000 */  nop
     /* 11478 80020C78 0400C484 */  lh         $a0, 0x4($a2)
     /* 1147C 80020C7C 1000C584 */  lh         $a1, 0x10($a2)
-    /* 11480 80020C80 57FF010C */  jal        func_8007FD5C
+    /* 11480 80020C80 57FF010C */  jal        single_game_getEnemyCharId
     /* 11484 80020C84 00000000 */   nop
     /* 11488 80020C88 00084224 */  addiu      $v0, $v0, 0x800
     /* 1148C 80020C8C BA0182A6 */  sh         $v0, 0x1BA($s4)
@@ -9990,7 +9990,7 @@ glabel func_800207C8
     /* 11494 80020C94 00000000 */  nop
     /* 11498 80020C98 0400C484 */  lh         $a0, 0x4($a2)
     /* 1149C 80020C9C 1000C584 */  lh         $a1, 0x10($a2)
-    /* 114A0 80020CA0 57FF010C */  jal        func_8007FD5C
+    /* 114A0 80020CA0 57FF010C */  jal        single_game_getEnemyCharId
     /* 114A4 80020CA4 00000000 */   nop
     /* 114A8 80020CA8 00084224 */  addiu      $v0, $v0, 0x800
     /* 114AC 80020CAC C20182A6 */  sh         $v0, 0x1C2($s4)
@@ -10036,9 +10036,9 @@ glabel func_80020CDC
     /* 11534 80020D34 00000000 */   nop
 endlabel func_80020CDC
 
-nonmatching func_80020D38, 0x38
+nonmatching EndADRSound, 0x38
 
-glabel func_80020D38
+glabel EndADRSound
     /* 11538 80020D38 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 1153C 80020D3C 0A80033C */  lui        $v1, %hi(D_800A38C6)
     /* 11540 80020D40 C6386394 */  lhu        $v1, %lo(D_800A38C6)($v1)
@@ -10054,7 +10054,7 @@ glabel func_80020D38
     /* 11564 80020D64 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 11568 80020D68 0800E003 */  jr         $ra
     /* 1156C 80020D6C 00000000 */   nop
-endlabel func_80020D38
+endlabel EndADRSound
 
 nonmatching func_80020D70, 0x6C
 
@@ -11341,7 +11341,7 @@ glabel func_80021DB0
     /* 12714 80021F14 3800A2AF */  sw         $v0, 0x38($sp)
     /* 12718 80021F18 3C00A8AF */  sw         $t0, 0x3C($sp)
     /* 1271C 80021F1C 4000A3AF */  sw         $v1, 0x40($sp)
-    /* 12720 80021F20 854D010C */  jal        func_80053614
+    /* 12720 80021F20 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 12724 80021F24 1000AAAF */   sw        $t2, 0x10($sp)
     /* 12728 80021F28 6D004014 */  bnez       $v0, .L800220E0
     /* 1272C 80021F2C 4800B727 */   addiu     $s7, $sp, 0x48
@@ -11417,7 +11417,7 @@ glabel func_80021DB0
     /* 1283C 8002203C 8000AA8F */  lw         $t2, 0x80($sp)
     /* 12840 80022040 A00F4224 */  addiu      $v0, $v0, 0xFA0
     /* 12844 80022044 3C00A2AF */  sw         $v0, 0x3C($sp)
-    /* 12848 80022048 854D010C */  jal        func_80053614
+    /* 12848 80022048 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 1284C 8002204C 1000AAAF */   sw        $t2, 0x10($sp)
     /* 12850 80022050 23004010 */  beqz       $v0, .L800220E0
     /* 12854 80022054 00F00224 */   addiu     $v0, $zero, -0x1000
@@ -11783,16 +11783,16 @@ glabel func_800224E0
     /* 12D64 80022564 00000000 */   nop
 endlabel func_800224E0
 
-nonmatching func_80022568, 0x18
+nonmatching pad_button_info_clear, 0x18
 
-glabel func_80022568
+glabel pad_button_info_clear
     /* 12D68 80022568 01000224 */  addiu      $v0, $zero, 0x1
     /* 12D6C 8002256C 6C0282A4 */  sh         $v0, 0x26C($a0)
     /* 12D70 80022570 6E0280A4 */  sh         $zero, 0x26E($a0)
     /* 12D74 80022574 700280A4 */  sh         $zero, 0x270($a0)
     /* 12D78 80022578 0800E003 */  jr         $ra
     /* 12D7C 8002257C 720280A4 */   sh        $zero, 0x272($a0)
-endlabel func_80022568
+endlabel pad_button_info_clear
 
 nonmatching func_80022580, 0x9B4
 
@@ -12224,7 +12224,7 @@ glabel func_80022580
     /* 133BC 80022BBC 1800A28F */  lw         $v0, 0x18($sp)
     /* 133C0 80022BC0 FC00058E */  lw         $a1, 0xFC($s0)
     /* 133C4 80022BC4 23206400 */  subu       $a0, $v1, $a0
-    /* 133C8 80022BC8 57FF010C */  jal        func_8007FD5C
+    /* 133C8 80022BC8 57FF010C */  jal        single_game_getEnemyCharId
     /* 133CC 80022BCC 23284500 */   subu      $a1, $v0, $a1
     /* 133D0 80022BD0 21204000 */  addu       $a0, $v0, $zero
     /* 133D4 80022BD4 0C000386 */  lh         $v1, 0xC($s0)
@@ -12266,7 +12266,7 @@ glabel func_80022580
     /* 13460 80022C60 04004010 */  beqz       $v0, .L80022C74
     /* 13464 80022C64 21280000 */   addu      $a1, $zero, $zero
   .L80022C68:
-    /* 13468 80022C68 5A89000C */  jal        func_80022568
+    /* 13468 80022C68 5A89000C */  jal        pad_button_info_clear
     /* 1346C 80022C6C 21200002 */   addu      $a0, $s0, $zero
     /* 13470 80022C70 21280000 */  addu       $a1, $zero, $zero
   .L80022C74:
@@ -12530,7 +12530,7 @@ glabel func_80022F34
     /* 13808 80023008 1080013C */  lui        $at, %hi(D_801027BC)
     /* 1380C 8002300C 21082200 */  addu       $at, $at, $v0
     /* 13810 80023010 BC27268C */  lw         $a2, %lo(D_801027BC)($at)
-    /* 13814 80023014 4E54010C */  jal        func_80055138
+    /* 13814 80023014 4E54010C */  jal        single_game_SetStatusUpData
     /* 13818 80023018 21200002 */   addu      $a0, $s0, $zero
   .L8002301C:
     /* 1381C 8002301C 02005226 */  addiu      $s2, $s2, 0x2
@@ -12868,7 +12868,7 @@ glabel func_800233AC
     /* 13CE4 800234E4 83100200 */  sra        $v0, $v0, 2
     /* 13CE8 800234E8 21100201 */  addu       $v0, $t0, $v0
     /* 13CEC 800234EC 3000A2AF */  sw         $v0, 0x30($sp)
-    /* 13CF0 800234F0 854D010C */  jal        func_80053614
+    /* 13CF0 800234F0 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 13CF4 800234F4 1000B5AF */   sw        $s5, 0x10($sp)
     /* 13CF8 800234F8 48004010 */  beqz       $v0, .L8002361C
     /* 13CFC 800234FC 21100000 */   addu      $v0, $zero, $zero
@@ -12882,7 +12882,7 @@ glabel func_800233AC
     /* 13D1C 8002351C 9C0003BA */  swr        $v1, 0x9C($s0)
     /* 13D20 80023520 3800A487 */  lh         $a0, 0x38($sp)
     /* 13D24 80023524 3C00A587 */  lh         $a1, 0x3C($sp)
-    /* 13D28 80023528 57FF010C */  jal        func_8007FD5C
+    /* 13D28 80023528 57FF010C */  jal        single_game_getEnemyCharId
     /* 13D2C 8002352C 00000000 */   nop
     /* 13D30 80023530 B800058E */  lw         $a1, 0xB8($s0)
     /* 13D34 80023534 00000000 */  nop
@@ -12923,7 +12923,7 @@ glabel func_800233AC
     /* 13DB8 800235B8 C3100200 */  sra        $v0, $v0, 3
     /* 13DBC 800235BC 21100201 */  addu       $v0, $t0, $v0
     /* 13DC0 800235C0 3000A2AF */  sw         $v0, 0x30($sp)
-    /* 13DC4 800235C4 854D010C */  jal        func_80053614
+    /* 13DC4 800235C4 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 13DC8 800235C8 1000B5AF */   sw        $s5, 0x10($sp)
     /* 13DCC 800235CC 13004014 */  bnez       $v0, .L8002361C
     /* 13DD0 800235D0 21100000 */   addu      $v0, $zero, $zero
@@ -12938,7 +12938,7 @@ glabel func_800233AC
     /* 13DF4 800235F4 2000A3AF */  sw         $v1, 0x20($sp)
     /* 13DF8 800235F8 90014224 */  addiu      $v0, $v0, 0x190
     /* 13DFC 800235FC 1C00A2AF */  sw         $v0, 0x1C($sp)
-    /* 13E00 80023600 854D010C */  jal        func_80053614
+    /* 13E00 80023600 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 13E04 80023604 1000B5AF */   sw        $s5, 0x10($sp)
     /* 13E08 80023608 03004010 */  beqz       $v0, .L80023618
     /* 13E0C 8002360C 01000224 */   addiu     $v0, $zero, 0x1
@@ -13192,7 +13192,7 @@ glabel func_800238C4
     /* 14180 80023980 C000028E */  lw         $v0, 0xC0($s0)
     /* 14184 80023984 4800A727 */  addiu      $a3, $sp, 0x48
     /* 14188 80023988 3000A2AF */  sw         $v0, 0x30($sp)
-    /* 1418C 8002398C 854D010C */  jal        func_80053614
+    /* 1418C 8002398C 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 14190 80023990 1000B4AF */   sw        $s4, 0x10($sp)
     /* 14194 80023994 21884000 */  addu       $s1, $v0, $zero
     /* 14198 80023998 2B002012 */  beqz       $s1, .L80023A48
@@ -13237,7 +13237,7 @@ glabel func_800238C4
     /* 14228 80023A28 C3180800 */  sra        $v1, $t0, 3
     /* 1422C 80023A2C 21104300 */  addu       $v0, $v0, $v1
     /* 14230 80023A30 3000A2AF */  sw         $v0, 0x30($sp)
-    /* 14234 80023A34 854D010C */  jal        func_80053614
+    /* 14234 80023A34 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 14238 80023A38 1000B4AF */   sw        $s4, 0x10($sp)
     /* 1423C 80023A3C 928E0008 */  j          .L80023A48
     /* 14240 80023A40 0100422C */   sltiu     $v0, $v0, 0x1
@@ -13300,7 +13300,7 @@ glabel func_800238C4
   .L80023B00:
     /* 14300 80023B00 4800A487 */  lh         $a0, 0x48($sp)
     /* 14304 80023B04 4C00A587 */  lh         $a1, 0x4C($sp)
-    /* 14308 80023B08 57FF010C */  jal        func_8007FD5C
+    /* 14308 80023B08 57FF010C */  jal        single_game_getEnemyCharId
     /* 1430C 80023B0C 00000000 */   nop
     /* 14310 80023B10 CA010386 */  lh         $v1, 0x1CA($s0)
     /* 14314 80023B14 00000000 */  nop
@@ -13425,9 +13425,9 @@ glabel func_80023C30
     /* 144B0 80023CB0 00000000 */   nop
 endlabel func_80023C30
 
-nonmatching func_80023CB4, 0x54
+nonmatching cpu_get_dash_timer, 0x54
 
-glabel func_80023CB4
+glabel cpu_get_dash_timer
     /* 144B4 80023CB4 1A038294 */  lhu        $v0, 0x31A($a0)
     /* 144B8 80023CB8 01000324 */  addiu      $v1, $zero, 0x1
     /* 144BC 80023CBC 01004224 */  addiu      $v0, $v0, 0x1
@@ -13451,14 +13451,14 @@ glabel func_80023CB4
   .L80023D00:
     /* 14500 80023D00 0800E003 */  jr         $ra
     /* 14504 80023D04 00000000 */   nop
-endlabel func_80023CB4
+endlabel cpu_get_dash_timer
 
 nonmatching func_80023D08, 0x20
 
 glabel func_80023D08
     /* 14508 80023D08 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 1450C 80023D0C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 14510 80023D10 2D8F000C */  jal        func_80023CB4
+    /* 14510 80023D10 2D8F000C */  jal        cpu_get_dash_timer
     /* 14514 80023D14 00020524 */   addiu     $a1, $zero, 0x200
     /* 14518 80023D18 1000BF8F */  lw         $ra, 0x10($sp)
     /* 1451C 80023D1C 1800BD27 */  addiu      $sp, $sp, 0x18
@@ -13588,7 +13588,7 @@ glabel func_80023E40
     /* 146BC 80023EBC C000028E */  lw         $v0, 0xC0($s0)
     /* 146C0 80023EC0 10002726 */  addiu      $a3, $s1, 0x10
     /* 146C4 80023EC4 1000A3AF */  sw         $v1, 0x10($sp)
-    /* 146C8 80023EC8 854D010C */  jal        func_80053614
+    /* 146C8 80023EC8 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 146CC 80023ECC 380022AE */   sw        $v0, 0x38($s1)
     /* 146D0 80023ED0 07004010 */  beqz       $v0, .L80023EF0
     /* 146D4 80023ED4 00000000 */   nop
@@ -14550,7 +14550,7 @@ glabel func_80023F08
     /* 15494 80024C94 00000000 */  nop
     /* 15498 80024C98 05006214 */  bne        $v1, $v0, .L80024CB0
     /* 1549C 80024C9C 21202002 */   addu      $a0, $s1, $zero
-    /* 154A0 80024CA0 2D8F000C */  jal        func_80023CB4
+    /* 154A0 80024CA0 2D8F000C */  jal        cpu_get_dash_timer
     /* 154A4 80024CA4 00040524 */   addiu     $a1, $zero, 0x400
     /* 154A8 80024CA8 5B930008 */  j          .L80024D6C
     /* 154AC 80024CAC 00000000 */   nop
@@ -14839,11 +14839,11 @@ glabel func_80023F08
     /* 158C0 800250C0 9801A727 */   addiu     $a3, $sp, 0x198
     /* 158C4 800250C4 7801A487 */  lh         $a0, 0x178($sp)
     /* 158C8 800250C8 8401A587 */  lh         $a1, 0x184($sp)
-    /* 158CC 800250CC 57FF010C */  jal        func_8007FD5C
+    /* 158CC 800250CC 57FF010C */  jal        single_game_getEnemyCharId
     /* 158D0 800250D0 00000000 */   nop
     /* 158D4 800250D4 9801A487 */  lh         $a0, 0x198($sp)
     /* 158D8 800250D8 A401A587 */  lh         $a1, 0x1A4($sp)
-    /* 158DC 800250DC 57FF010C */  jal        func_8007FD5C
+    /* 158DC 800250DC 57FF010C */  jal        single_game_getEnemyCharId
     /* 158E0 800250E0 21804000 */   addu      $s0, $v0, $zero
     /* 158E4 800250E4 23285000 */  subu       $a1, $v0, $s0
     /* 158E8 800250E8 CA012296 */  lhu        $v0, 0x1CA($s1)
@@ -16182,7 +16182,7 @@ glabel func_80023F08
     /* 16C5C 8002645C F400438C */  lw         $v1, 0xF4($v0)
     /* 16C60 80026460 FC00428C */  lw         $v0, 0xFC($v0)
     /* 16C64 80026464 23206400 */  subu       $a0, $v1, $a0
-    /* 16C68 80026468 57FF010C */  jal        func_8007FD5C
+    /* 16C68 80026468 57FF010C */  jal        single_game_getEnemyCharId
     /* 16C6C 8002646C 23284500 */   subu      $a1, $v0, $a1
     /* 16C70 80026470 D80122A6 */  sh         $v0, 0x1D8($s1)
     /* 16C74 80026474 0401228E */  lw         $v0, 0x104($s1)
@@ -16800,7 +16800,7 @@ glabel func_80023F08
     /* 17550 80026D50 B30022A2 */  sb         $v0, 0xB3($s1)
   .L80026D54:
     /* 17554 80026D54 B3002592 */  lbu        $a1, 0xB3($s1)
-    /* 17558 80026D58 C100010C */  jal        func_80040304
+    /* 17558 80026D58 C100010C */  jal        efc_rob_Init
     /* 1755C 80026D5C 21206002 */   addu      $a0, $s3, $zero
     /* 17560 80026D60 3081000C */  jal        single_game_SetAbilityData
     /* 17564 80026D64 21202002 */   addu      $a0, $s1, $zero
@@ -17225,9 +17225,9 @@ glabel func_800272FC
     /* 17B30 80027330 21106000 */   addu      $v0, $v1, $zero
 endlabel func_800272FC
 
-nonmatching func_80027334, 0x58
+nonmatching katinuki_game_getMyWeaponId, 0x58
 
-glabel func_80027334
+glabel katinuki_game_getMyWeaponId
     /* 17B34 80027334 F5030224 */  addiu      $v0, $zero, 0x3F5
     /* 17B38 80027338 3C0082A4 */  sh         $v0, 0x3C($a0)
     /* 17B3C 8002733C B6020224 */  addiu      $v0, $zero, 0x2B6
@@ -17250,7 +17250,7 @@ glabel func_80027334
     /* 17B80 80027380 4C0080A4 */  sh         $zero, 0x4C($a0)
     /* 17B84 80027384 0800E003 */  jr         $ra
     /* 17B88 80027388 520082A4 */   sh        $v0, 0x52($a0)
-endlabel func_80027334
+endlabel katinuki_game_getMyWeaponId
 
 nonmatching tslDrTex1Init, 0xAC
 
@@ -17632,9 +17632,9 @@ glabel func_80027640
     /* 180BC 800278BC 00000000 */   nop
 endlabel func_80027640
 
-nonmatching func_800278C0, 0xCC
+nonmatching mk_g2l, 0xCC
 
-glabel func_800278C0
+glabel mk_g2l
     /* 180C0 800278C0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 180C4 800278C4 2140A000 */  addu       $t0, $a1, $zero
     /* 180C8 800278C8 2128C000 */  addu       $a1, $a2, $zero
@@ -17694,7 +17694,7 @@ glabel func_800278C0
     /* 18180 80027980 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 18184 80027984 0800E003 */  jr         $ra
     /* 18188 80027988 00000000 */   nop
-endlabel func_800278C0
+endlabel mk_g2l
 
 nonmatching func_8002798C, 0xCC
 
@@ -17793,9 +17793,9 @@ glabel func_80027A58
     /* 182D4 80027AD4 00000000 */   nop
 endlabel func_80027A58
 
-nonmatching func_80027AD8, 0x8F8
+nonmatching calc_teasi_loc_fw, 0x8F8
 
-glabel func_80027AD8
+glabel calc_teasi_loc_fw
     /* 182D8 80027AD8 B0FFBD27 */  addiu      $sp, $sp, -0x50
     /* 182DC 80027ADC 3800B4AF */  sw         $s4, 0x38($sp)
     /* 182E0 80027AE0 21A08000 */  addu       $s4, $a0, $zero
@@ -17923,7 +17923,7 @@ glabel func_80027AD8
     /* 184A4 80027CA4 6800A88F */  lw         $t0, 0x68($sp)
     /* 184A8 80027CA8 2138C003 */  addu       $a3, $fp, $zero
     /* 184AC 80027CAC 1000B3AF */  sw         $s3, 0x10($sp)
-    /* 184B0 80027CB0 309E000C */  jal        func_800278C0
+    /* 184B0 80027CB0 309E000C */  jal        mk_g2l
     /* 184B4 80027CB4 1400A8AF */   sw        $t0, 0x14($sp)
     /* 184B8 80027CB8 E7A00008 */  j          .L8002839C
     /* 184BC 80027CBC 01000224 */   addiu     $v0, $zero, 0x1
@@ -17942,7 +17942,7 @@ glabel func_80027AD8
     /* 184EC 80027CEC 6800A88F */  lw         $t0, 0x68($sp)
     /* 184F0 80027CF0 2138C003 */  addu       $a3, $fp, $zero
     /* 184F4 80027CF4 1000B3AF */  sw         $s3, 0x10($sp)
-    /* 184F8 80027CF8 309E000C */  jal        func_800278C0
+    /* 184F8 80027CF8 309E000C */  jal        mk_g2l
     /* 184FC 80027CFC 1400A8AF */   sw        $t0, 0x14($sp)
     /* 18500 80027D00 01000224 */  addiu      $v0, $zero, 0x1
     /* 18504 80027D04 07000324 */  addiu      $v1, $zero, 0x7
@@ -18073,7 +18073,7 @@ glabel func_80027AD8
     /* 186DC 80027EDC 2A102201 */  slt        $v0, $t1, $v0
     /* 186E0 80027EE0 2E014010 */  beqz       $v0, .L8002839C
     /* 186E4 80027EE4 21100000 */   addu      $v0, $zero, $zero
-    /* 186E8 80027EE8 57FF010C */  jal        func_8007FD5C
+    /* 186E8 80027EE8 57FF010C */  jal        single_game_getEnemyCharId
     /* 186EC 80027EEC 00000000 */   nop
     /* 186F0 80027EF0 21202002 */  addu       $a0, $s1, $zero
     /* 186F4 80027EF4 187E000C */  jal        func_8001F860
@@ -18132,7 +18132,7 @@ glabel func_80027AD8
     /* 187B8 80027FB8 860222A6 */  sh         $v0, 0x286($s1)
     /* 187BC 80027FBC 0000E486 */  lh         $a0, 0x0($s7)
     /* 187C0 80027FC0 0400E586 */  lh         $a1, 0x4($s7)
-    /* 187C4 80027FC4 57FF010C */  jal        func_8007FD5C
+    /* 187C4 80027FC4 57FF010C */  jal        single_game_getEnemyCharId
     /* 187C8 80027FC8 00000000 */   nop
     /* 187CC 80027FCC 21202002 */  addu       $a0, $s1, $zero
     /* 187D0 80027FD0 187E000C */  jal        func_8001F860
@@ -18181,7 +18181,7 @@ glabel func_80027AD8
     /* 18864 80028064 6800A88F */  lw         $t0, 0x68($sp)
     /* 18868 80028068 2138C003 */  addu       $a3, $fp, $zero
     /* 1886C 8002806C 1000B3AF */  sw         $s3, 0x10($sp)
-    /* 18870 80028070 309E000C */  jal        func_800278C0
+    /* 18870 80028070 309E000C */  jal        mk_g2l
     /* 18874 80028074 1400A8AF */   sw        $t0, 0x14($sp)
     /* 18878 80028078 6A002396 */  lhu        $v1, 0x6A($s1)
     /* 1887C 8002807C 06000224 */  addiu      $v0, $zero, 0x6
@@ -18423,7 +18423,7 @@ glabel func_80027AD8
     /* 18BC4 800283C4 5000BD27 */  addiu      $sp, $sp, 0x50
     /* 18BC8 800283C8 0800E003 */  jr         $ra
     /* 18BCC 800283CC 00000000 */   nop
-endlabel func_80027AD8
+endlabel calc_teasi_loc_fw
 
 nonmatching saTan2KabutoWareMove, 0x35C
 
@@ -20759,7 +20759,7 @@ glabel func_8002A458
     /* 1AD08 8002A508 21204002 */  addu       $a0, $s2, $zero
     /* 1AD0C 8002A50C 2398C500 */  subu       $s3, $a2, $a1
     /* 1AD10 8002A510 23886200 */  subu       $s1, $v1, $v0
-    /* 1AD14 8002A514 57FF010C */  jal        func_8007FD5C
+    /* 1AD14 8002A514 57FF010C */  jal        single_game_getEnemyCharId
     /* 1AD18 8002A518 21282002 */   addu      $a1, $s1, $zero
     /* 1AD1C 8002A51C D8010386 */  lh         $v1, 0x1D8($s0)
     /* 1AD20 8002A520 00000000 */  nop
@@ -20821,12 +20821,12 @@ glabel func_8002A458
     /* 1ADF4 8002A5F4 00240400 */  sll        $a0, $a0, 16
     /* 1ADF8 8002A5F8 06284400 */  srlv       $a1, $a0, $v0
   .L8002A5FC:
-    /* 1ADFC 8002A5FC 57FF010C */  jal        func_8007FD5C
+    /* 1ADFC 8002A5FC 57FF010C */  jal        single_game_getEnemyCharId
     /* 1AE00 8002A600 21206002 */   addu      $a0, $s3, $zero
     /* 1AE04 8002A604 21204002 */  addu       $a0, $s2, $zero
     /* 1AE08 8002A608 21282002 */  addu       $a1, $s1, $zero
     /* 1AE0C 8002A60C 23100200 */  negu       $v0, $v0
-    /* 1AE10 8002A610 57FF010C */  jal        func_8007FD5C
+    /* 1AE10 8002A610 57FF010C */  jal        single_game_getEnemyCharId
     /* 1AE14 8002A614 F800A2A6 */   sh        $v0, 0xF8($s5)
     /* 1AE18 8002A618 FA00A2A6 */  sh         $v0, 0xFA($s5)
     /* 1AE1C 8002A61C FC00A0A6 */  sh         $zero, 0xFC($s5)
@@ -21064,7 +21064,7 @@ glabel func_8002A458
     /* 1B17C 8002A97C 1000A3AF */  sw         $v1, 0x10($sp)
     /* 1B180 8002A980 83180800 */  sra        $v1, $t0, 2
     /* 1B184 8002A984 23104300 */  subu       $v0, $v0, $v1
-    /* 1B188 8002A988 854D010C */  jal        func_80053614
+    /* 1B188 8002A988 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 1B18C 8002A98C B000A2AE */   sw        $v0, 0xB0($s5)
     /* 1B190 8002A990 43004010 */  beqz       $v0, .L8002AAA0
     /* 1B194 8002A994 00000000 */   nop
@@ -22098,7 +22098,7 @@ glabel func_8002AB08
     /* 1C084 8002B884 23881100 */  negu       $s1, $s1
     /* 1C088 8002B888 21200002 */  addu       $a0, $s0, $zero
   .L8002B88C:
-    /* 1C08C 8002B88C 57FF010C */  jal        func_8007FD5C
+    /* 1C08C 8002B88C 57FF010C */  jal        single_game_getEnemyCharId
     /* 1C090 8002B890 21282002 */   addu      $a1, $s1, $zero
     /* 1C094 8002B894 D8016386 */  lh         $v1, 0x1D8($s3)
     /* 1C098 8002B898 00000000 */  nop
@@ -22116,7 +22116,7 @@ glabel func_8002AB08
     /* 1C0C4 8002B8C4 21106202 */  addu       $v0, $s3, $v0
     /* 1C0C8 8002B8C8 1401448C */  lw         $a0, 0x114($v0)
     /* 1C0CC 8002B8CC 1C01458C */  lw         $a1, 0x11C($v0)
-    /* 1C0D0 8002B8D0 57FF010C */  jal        func_8007FD5C
+    /* 1C0D0 8002B8D0 57FF010C */  jal        single_game_getEnemyCharId
     /* 1C0D4 8002B8D4 00000000 */   nop
     /* 1C0D8 8002B8D8 3000AB8F */  lw         $t3, 0x30($sp)
     /* 1C0DC 8002B8DC 00000000 */  nop
@@ -22344,7 +22344,7 @@ glabel func_8002AB08
     /* 1C404 8002BC04 1000A8AF */  sw         $t0, 0x10($sp)
     /* 1C408 8002BC08 1400BEAF */  sw         $fp, 0x14($sp)
     /* 1C40C 8002BC0C 1800B1AF */  sw         $s1, 0x18($sp)
-    /* 1C410 8002BC10 B69E000C */  jal        func_80027AD8
+    /* 1C410 8002BC10 B69E000C */  jal        calc_teasi_loc_fw
     /* 1C414 8002BC14 1C00A0AF */   sw        $zero, 0x1C($sp)
     /* 1C418 8002BC18 AD0060A2 */  sb         $zero, 0xAD($s3)
   .L8002BC1C:
@@ -22714,7 +22714,7 @@ glabel func_8002C0DC
     /* 1C91C 8002C11C D800438C */  lw         $v1, 0xD8($v0)
     /* 1C920 8002C120 E000428C */  lw         $v0, 0xE0($v0)
     /* 1C924 8002C124 23206400 */  subu       $a0, $v1, $a0
-    /* 1C928 8002C128 57FF010C */  jal        func_8007FD5C
+    /* 1C928 8002C128 57FF010C */  jal        single_game_getEnemyCharId
     /* 1C92C 8002C12C 23284500 */   subu      $a1, $v0, $a1
     /* 1C930 8002C130 21200002 */  addu       $a0, $s0, $zero
     /* 1C934 8002C134 187E000C */  jal        func_8001F860
@@ -23683,7 +23683,7 @@ glabel func_8002CD58
     /* 1D768 8002CF68 00000000 */   nop
     /* 1D76C 8002CF6C A800248E */  lw         $a0, 0xA8($s1)
     /* 1D770 8002CF70 B000258E */  lw         $a1, 0xB0($s1)
-    /* 1D774 8002CF74 57FF010C */  jal        func_8007FD5C
+    /* 1D774 8002CF74 57FF010C */  jal        single_game_getEnemyCharId
     /* 1D778 8002CF78 00000000 */   nop
     /* 1D77C 8002CF7C A800238E */  lw         $v1, 0xA8($s1)
     /* 1D780 8002CF80 00000000 */  nop
@@ -23731,7 +23731,7 @@ glabel func_8002CD58
     /* 1D820 8002D020 06284400 */  srlv       $a1, $a0, $v0
   .L8002D024:
     /* 1D824 8002D024 AC00248E */  lw         $a0, 0xAC($s1)
-    /* 1D828 8002D028 57FF010C */  jal        func_8007FD5C
+    /* 1D828 8002D028 57FF010C */  jal        single_game_getEnemyCharId
     /* 1D82C 8002D02C D8003026 */   addiu     $s0, $s1, 0xD8
     /* 1D830 8002D030 21280002 */  addu       $a1, $s0, $zero
     /* 1D834 8002D034 00080324 */  addiu      $v1, $zero, 0x800
@@ -23798,7 +23798,7 @@ glabel func_8002CD58
   .L8002D128:
     /* 1D928 8002D128 C800248E */  lw         $a0, 0xC8($s1)
     /* 1D92C 8002D12C D000258E */  lw         $a1, 0xD0($s1)
-    /* 1D930 8002D130 57FF010C */  jal        func_8007FD5C
+    /* 1D930 8002D130 57FF010C */  jal        single_game_getEnemyCharId
     /* 1D934 8002D134 00000000 */   nop
     /* 1D938 8002D138 C800238E */  lw         $v1, 0xC8($s1)
     /* 1D93C 8002D13C 00000000 */  nop
@@ -23856,7 +23856,7 @@ glabel func_8002CD58
     /* 1DA04 8002D204 06284400 */  srlv       $a1, $a0, $v0
   .L8002D208:
     /* 1DA08 8002D208 CC00248E */  lw         $a0, 0xCC($s1)
-    /* 1DA0C 8002D20C 57FF010C */  jal        func_8007FD5C
+    /* 1DA0C 8002D20C 57FF010C */  jal        single_game_getEnemyCharId
     /* 1DA10 8002D210 D8003026 */   addiu     $s0, $s1, 0xD8
     /* 1DA14 8002D214 21280002 */  addu       $a1, $s0, $zero
     /* 1DA18 8002D218 00080324 */  addiu      $v1, $zero, 0x800
@@ -24560,7 +24560,7 @@ glabel func_8002DAD0
   .L8002DC28:
     /* 1E428 8002DC28 C800248E */  lw         $a0, 0xC8($s1)
     /* 1E42C 8002DC2C D000258E */  lw         $a1, 0xD0($s1)
-    /* 1E430 8002DC30 57FF010C */  jal        func_8007FD5C
+    /* 1E430 8002DC30 57FF010C */  jal        single_game_getEnemyCharId
     /* 1E434 8002DC34 00000000 */   nop
     /* 1E438 8002DC38 C800238E */  lw         $v1, 0xC8($s1)
     /* 1E43C 8002DC3C 00000000 */  nop
@@ -24618,7 +24618,7 @@ glabel func_8002DAD0
     /* 1E504 8002DD04 06284400 */  srlv       $a1, $a0, $v0
   .L8002DD08:
     /* 1E508 8002DD08 CC00248E */  lw         $a0, 0xCC($s1)
-    /* 1E50C 8002DD0C 57FF010C */  jal        func_8007FD5C
+    /* 1E50C 8002DD0C 57FF010C */  jal        single_game_getEnemyCharId
     /* 1E510 8002DD10 D8003026 */   addiu     $s0, $s1, 0xD8
     /* 1E514 8002DD14 21280002 */  addu       $a1, $s0, $zero
     /* 1E518 8002DD18 00080324 */  addiu      $v1, $zero, 0x800
@@ -25404,7 +25404,7 @@ glabel func_8002E838
     /* 1F090 8002E890 0800628C */  lw         $v0, 0x8($v1)
     /* 1F094 8002E894 A800248E */  lw         $a0, 0xA8($s1)
     /* 1F098 8002E898 2328A200 */  subu       $a1, $a1, $v0
-    /* 1F09C 8002E89C 57FF010C */  jal        func_8007FD5C
+    /* 1F09C 8002E89C 57FF010C */  jal        single_game_getEnemyCharId
     /* 1F0A0 8002E8A0 B00025AE */   sw        $a1, 0xB0($s1)
     /* 1F0A4 8002E8A4 A800238E */  lw         $v1, 0xA8($s1)
     /* 1F0A8 8002E8A8 00000000 */  nop
@@ -25452,7 +25452,7 @@ glabel func_8002E838
     /* 1F148 8002E948 06284400 */  srlv       $a1, $a0, $v0
   .L8002E94C:
     /* 1F14C 8002E94C AC00248E */  lw         $a0, 0xAC($s1)
-    /* 1F150 8002E950 57FF010C */  jal        func_8007FD5C
+    /* 1F150 8002E950 57FF010C */  jal        single_game_getEnemyCharId
     /* 1F154 8002E954 D8003026 */   addiu     $s0, $s1, 0xD8
     /* 1F158 8002E958 21280002 */  addu       $a1, $s0, $zero
     /* 1F15C 8002E95C 00080324 */  addiu      $v1, $zero, 0x800
@@ -25648,7 +25648,7 @@ glabel func_8002EBDC
     /* 1F40C 8002EC0C 00002486 */  lh         $a0, 0x0($s1)
     /* 1F410 8002EC10 04002586 */  lh         $a1, 0x4($s1)
     /* 1F414 8002EC14 4800B58F */  lw         $s5, 0x48($sp)
-    /* 1F418 8002EC18 57FF010C */  jal        func_8007FD5C
+    /* 1F418 8002EC18 57FF010C */  jal        single_game_getEnemyCharId
     /* 1F41C 8002EC1C 21A0E000 */   addu      $s4, $a3, $zero
     /* 1F420 8002EC20 00080324 */  addiu      $v1, $zero, 0x800
     /* 1F424 8002EC24 23186200 */  subu       $v1, $v1, $v0
@@ -25699,7 +25699,7 @@ glabel func_8002EBDC
     /* 1F4D0 8002ECD0 06284400 */  srlv       $a1, $a0, $v0
   .L8002ECD4:
     /* 1F4D4 8002ECD4 02002486 */  lh         $a0, 0x2($s1)
-    /* 1F4D8 8002ECD8 57FF010C */  jal        func_8007FD5C
+    /* 1F4D8 8002ECD8 57FF010C */  jal        single_game_getEnemyCharId
     /* 1F4DC 8002ECDC D8001126 */   addiu     $s1, $s0, 0xD8
     /* 1F4E0 8002ECE0 21282002 */  addu       $a1, $s1, $zero
     /* 1F4E4 8002ECE4 00080324 */  addiu      $v1, $zero, 0x800
@@ -26308,7 +26308,7 @@ glabel func_8002F2D0
   .L8002F5A4:
     /* 1FDA4 8002F5A4 12B00000 */  mflo       $s6
     /* 1FDA8 8002F5A8 21200002 */  addu       $a0, $s0, $zero
-    /* 1FDAC 8002F5AC 57FF010C */  jal        func_8007FD5C
+    /* 1FDAC 8002F5AC 57FF010C */  jal        single_game_getEnemyCharId
     /* 1FDB0 8002F5B0 21282002 */   addu      $a1, $s1, $zero
     /* 1FDB4 8002F5B4 18003102 */  mult       $s1, $s1
     /* 1FDB8 8002F5B8 12180000 */  mflo       $v1
@@ -26354,7 +26354,7 @@ glabel func_8002F2D0
     /* 1FE50 8002F650 06504400 */  srlv       $t2, $a0, $v0
   .L8002F654:
     /* 1FE54 8002F654 21208002 */  addu       $a0, $s4, $zero
-    /* 1FE58 8002F658 57FF010C */  jal        func_8007FD5C
+    /* 1FE58 8002F658 57FF010C */  jal        single_game_getEnemyCharId
     /* 1FE5C 8002F65C 21284001 */   addu      $a1, $t2, $zero
     /* 1FE60 8002F660 2120A002 */  addu       $a0, $s5, $zero
     /* 1FE64 8002F664 D8005026 */  addiu      $s0, $s2, 0xD8
@@ -26405,7 +26405,7 @@ glabel func_8002F2D0
     /* 1FF18 8002F718 08009BE9 */  swc2       $27, 0x8($t4) /* handwritten instruction */
     /* 1FF1C 8002F71C B000448E */  lw         $a0, 0xB0($s2)
     /* 1FF20 8002F720 AC00458E */  lw         $a1, 0xAC($s2)
-    /* 1FF24 8002F724 57FF010C */  jal        func_8007FD5C
+    /* 1FF24 8002F724 57FF010C */  jal        single_game_getEnemyCharId
     /* 1FF28 8002F728 23881100 */   negu      $s1, $s1
     /* 1FF2C 8002F72C 000062A6 */  sh         $v0, 0x0($s3)
     /* 1FF30 8002F730 23101500 */  negu       $v0, $s5
@@ -26653,7 +26653,7 @@ glabel func_8002F770
   .L8002FAB4:
     /* 202B4 8002FAB4 12B00000 */  mflo       $s6
     /* 202B8 8002FAB8 21200002 */  addu       $a0, $s0, $zero
-    /* 202BC 8002FABC 57FF010C */  jal        func_8007FD5C
+    /* 202BC 8002FABC 57FF010C */  jal        single_game_getEnemyCharId
     /* 202C0 8002FAC0 21282002 */   addu      $a1, $s1, $zero
     /* 202C4 8002FAC4 18003102 */  mult       $s1, $s1
     /* 202C8 8002FAC8 12180000 */  mflo       $v1
@@ -26699,7 +26699,7 @@ glabel func_8002F770
     /* 20360 8002FB60 06504400 */  srlv       $t2, $a0, $v0
   .L8002FB64:
     /* 20364 8002FB64 21208002 */  addu       $a0, $s4, $zero
-    /* 20368 8002FB68 57FF010C */  jal        func_8007FD5C
+    /* 20368 8002FB68 57FF010C */  jal        single_game_getEnemyCharId
     /* 2036C 8002FB6C 21284001 */   addu      $a1, $t2, $zero
     /* 20370 8002FB70 2120A002 */  addu       $a0, $s5, $zero
     /* 20374 8002FB74 D8005026 */  addiu      $s0, $s2, 0xD8
@@ -26750,7 +26750,7 @@ glabel func_8002F770
     /* 20428 8002FC28 08009BE9 */  swc2       $27, 0x8($t4) /* handwritten instruction */
     /* 2042C 8002FC2C B000448E */  lw         $a0, 0xB0($s2)
     /* 20430 8002FC30 AC00458E */  lw         $a1, 0xAC($s2)
-    /* 20434 8002FC34 57FF010C */  jal        func_8007FD5C
+    /* 20434 8002FC34 57FF010C */  jal        single_game_getEnemyCharId
     /* 20438 8002FC38 23881100 */   negu      $s1, $s1
     /* 2043C 8002FC3C 000062A6 */  sh         $v0, 0x0($s3)
     /* 20440 8002FC40 23101500 */  negu       $v0, $s5
@@ -26839,7 +26839,7 @@ glabel func_8002FC80
     /* 20574 8002FD74 0000448C */  lw         $a0, 0x0($v0)
     /* 20578 8002FD78 801F053C */  lui        $a1, (0x1F800388 >> 16)
     /* 2057C 8002FD7C 8803A58C */  lw         $a1, (0x1F800388 & 0xFFFF)($a1)
-    /* 20580 8002FD80 57FF010C */  jal        func_8007FD5C
+    /* 20580 8002FD80 57FF010C */  jal        single_game_getEnemyCharId
     /* 20584 8002FD84 00000000 */   nop
     /* 20588 8002FD88 801F033C */  lui        $v1, (0x1F800384 >> 16)
     /* 2058C 8002FD8C 8403638C */  lw         $v1, (0x1F800384 & 0xFFFF)($v1)
@@ -27244,7 +27244,7 @@ glabel func_8003032C
     /* 20B38 80030338 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 20B3C 8003033C 0000A484 */  lh         $a0, 0x0($a1)
     /* 20B40 80030340 0400A584 */  lh         $a1, 0x4($a1)
-    /* 20B44 80030344 57FF010C */  jal        func_8007FD5C
+    /* 20B44 80030344 57FF010C */  jal        single_game_getEnemyCharId
     /* 20B48 80030348 00000000 */   nop
     /* 20B4C 8003034C 00044324 */  addiu      $v1, $v0, 0x400
     /* 20B50 80030350 FF0F6330 */  andi       $v1, $v1, 0xFFF
@@ -28076,7 +28076,7 @@ glabel func_80030D7C
     /* 21678 80030E78 00000000 */   nop
     /* 2167C 80030E7C 4200048E */  lw         $a0, 0x42($s0)
     /* 21680 80030E80 4A00058E */  lw         $a1, 0x4A($s0)
-    /* 21684 80030E84 57FF010C */  jal        func_8007FD5C
+    /* 21684 80030E84 57FF010C */  jal        single_game_getEnemyCharId
     /* 21688 80030E88 00000000 */   nop
     /* 2168C 80030E8C 21A04000 */  addu       $s4, $v0, $zero
     /* 21690 80030E90 0000C286 */  lh         $v0, 0x0($s6)
@@ -29118,7 +29118,7 @@ glabel func_80031B24
     /* 22590 80031D90 00000000 */   nop
     /* 22594 80031D94 4000648E */  lw         $a0, 0x40($s3)
     /* 22598 80031D98 4800658E */  lw         $a1, 0x48($s3)
-    /* 2259C 80031D9C 57FF010C */  jal        func_8007FD5C
+    /* 2259C 80031D9C 57FF010C */  jal        single_game_getEnemyCharId
     /* 225A0 80031DA0 00000000 */   nop
     /* 225A4 80031DA4 5000A88F */  lw         $t0, 0x50($sp)
     /* 225A8 80031DA8 00000000 */  nop
@@ -29173,7 +29173,7 @@ glabel func_80031B24
     /* 22668 80031E68 0980033C */  lui        $v1, %hi(D_8008E194)
     /* 2266C 80031E6C 94E16324 */  addiu      $v1, $v1, %lo(D_8008E194)
     /* 22670 80031E70 21104300 */  addu       $v0, $v0, $v1
-    /* 22674 80031E74 B69E000C */  jal        func_80027AD8
+    /* 22674 80031E74 B69E000C */  jal        calc_teasi_loc_fw
     /* 22678 80031E78 1400A2AF */   sw        $v0, 0x14($sp)
     /* 2267C 80031E7C 21184000 */  addu       $v1, $v0, $zero
     /* 22680 80031E80 02000224 */  addiu      $v0, $zero, 0x2
@@ -33283,7 +33283,7 @@ glabel func_80035618
     /* 25E48 80035648 00000000 */  nop
     /* 25E4C 8003564C 0B004014 */  bnez       $v0, .L8003567C
     /* 25E50 80035650 1180043C */   lui       $a0, (0x80118800 >> 16)
-    /* 25E54 80035654 39E1010C */  jal        func_800784E4
+    /* 25E54 80035654 39E1010C */  jal        camera_get_rot_normal_rad
     /* 25E58 80035658 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25E5C 8003565C EAD7000C */  jal        func_80035FA8
     /* 25E60 80035660 00000000 */   nop
@@ -33847,9 +33847,9 @@ glabel func_80035DC8
     /* 26634 80035E34 00000000 */   nop
 endlabel func_80035DC8
 
-nonmatching func_80035E38, 0x50
+nonmatching saRobDraw, 0x50
 
-glabel func_80035E38
+glabel saRobDraw
     /* 26638 80035E38 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2663C 80035E3C 01000224 */  addiu      $v0, $zero, 0x1
     /* 26640 80035E40 1000BFAF */  sw         $ra, 0x10($sp)
@@ -33871,7 +33871,7 @@ glabel func_80035E38
     /* 2667C 80035E7C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 26680 80035E80 0800E003 */  jr         $ra
     /* 26684 80035E84 00000000 */   nop
-endlabel func_80035E38
+endlabel saRobDraw
 
 nonmatching func_80035E88, 0x54
 
@@ -35358,9 +35358,9 @@ glabel func_80037250
     /* 27A5C 8003725C 00000000 */   nop
 endlabel func_80037250
 
-nonmatching func_80037260, 0x60
+nonmatching marionation_camera_GetMaxFrame, 0x60
 
-glabel func_80037260
+glabel marionation_camera_GetMaxFrame
     /* 27A60 80037260 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 27A64 80037264 1080033C */  lui        $v1, %hi(D_80101E62)
     /* 27A68 80037268 621E6384 */  lh         $v1, %lo(D_80101E62)($v1)
@@ -35387,7 +35387,7 @@ glabel func_80037260
     /* 27AB4 800372B4 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 27AB8 800372B8 0800E003 */  jr         $ra
     /* 27ABC 800372BC 00000000 */   nop
-endlabel func_80037260
+endlabel marionation_camera_GetMaxFrame
 
 nonmatching func_800372C0, 0x34
 
@@ -35533,7 +35533,7 @@ glabel func_80037468
     /* 27C94 80037494 21200000 */   addu      $a0, $zero, $zero
     /* 27C98 80037498 1A5A000C */  jal        gpu_EnableDisplay
     /* 27C9C 8003749C 00000000 */   nop
-    /* 27CA0 800374A0 436D010C */  jal        func_8005B50C
+    /* 27CA0 800374A0 436D010C */  jal        get_point_value
     /* 27CA4 800374A4 00000000 */   nop
     /* 27CA8 800374A8 DDDD000C */  jal        func_80037774
     /* 27CAC 800374AC 00000000 */   nop
@@ -35623,9 +35623,9 @@ glabel func_80037540
     /* 27DE8 800375E8 00000000 */   nop
 endlabel func_80037540
 
-nonmatching func_800375EC, 0x188
+nonmatching pad_press_control, 0x188
 
-glabel func_800375EC
+glabel pad_press_control
     /* 27DEC 800375EC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 27DF0 800375F0 1000BFAF */  sw         $ra, 0x10($sp)
     /* 27DF4 800375F4 DCE8010C */  jal        func_8007A370
@@ -35724,7 +35724,7 @@ glabel func_800375EC
     /* 27F68 80037768 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 27F6C 8003776C 0800E003 */  jr         $ra
     /* 27F70 80037770 00000000 */   nop
-endlabel func_800375EC
+endlabel pad_press_control
 
 nonmatching func_80037774, 0x90
 
@@ -36943,9 +36943,9 @@ glabel func_80038734
     /* 28F78 80038778 00000000 */   nop
 endlabel func_80038734
 
-nonmatching func_8003877C, 0x20
+nonmatching motion_shift_check_m_hit_stop, 0x20
 
-glabel func_8003877C
+glabel motion_shift_check_m_hit_stop
     /* 28F7C 8003877C 04000224 */  addiu      $v0, $zero, 0x4
     /* 28F80 80038780 D20682A7 */  sh         $v0, %gp_rel(D_800A379E)($gp)
     /* 28F84 80038784 01000224 */  addiu      $v0, $zero, 0x1
@@ -36954,7 +36954,7 @@ glabel func_8003877C
     /* 28F90 80038790 280182AF */  sw         $v0, %gp_rel(D_800A31F4)($gp)
     /* 28F94 80038794 0800E003 */  jr         $ra
     /* 28F98 80038798 00000000 */   nop
-endlabel func_8003877C
+endlabel motion_shift_check_m_hit_stop
 
 nonmatching func_8003879C, 0x24
 
@@ -37011,7 +37011,7 @@ glabel func_8003880C
     /* 29024 80038824 01000224 */  addiu      $v0, $zero, 0x1
     /* 29028 80038828 370180A3 */  sb         $zero, %gp_rel(D_800A3203)($gp)
     /* 2902C 8003882C 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
-    /* 29030 80038830 DFE1000C */  jal        func_8003877C
+    /* 29030 80038830 DFE1000C */  jal        motion_shift_check_m_hit_stop
     /* 29034 80038834 00000000 */   nop
   .L80038838:
     /* 29038 80038838 CDE1000C */  jal        func_80038734
@@ -37131,7 +37131,7 @@ glabel func_80038988
     /* 291B4 800389B4 5C0280A3 */  sb         $zero, %gp_rel(D_800A3328)($gp)
     /* 291B8 800389B8 600280A3 */  sb         $zero, %gp_rel(D_800A332C)($gp)
     /* 291BC 800389BC 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
-    /* 291C0 800389C0 DFE1000C */  jal        func_8003877C
+    /* 291C0 800389C0 DFE1000C */  jal        motion_shift_check_m_hit_stop
     /* 291C4 800389C4 00000000 */   nop
     /* 291C8 800389C8 5A000224 */  addiu      $v0, $zero, 0x5A
     /* 291CC 800389CC 390180A3 */  sb         $zero, %gp_rel(D_800A3204 + 0x1)($gp)
@@ -37276,7 +37276,7 @@ glabel func_80038988
     /* 293A8 80038BA8 300180A3 */  sb         $zero, %gp_rel(D_800A31FC)($gp)
     /* 293AC 80038BAC 6C0282A3 */  sb         $v0, %gp_rel(D_800A3338)($gp)
   .L80038BB0:
-    /* 293B0 80038BB0 DFE1000C */  jal        func_8003877C
+    /* 293B0 80038BB0 DFE1000C */  jal        motion_shift_check_m_hit_stop
     /* 293B4 80038BB4 00000000 */   nop
     /* 293B8 80038BB8 12E30008 */  j          .L80038C48
     /* 293BC 80038BBC 00000000 */   nop
@@ -37570,7 +37570,7 @@ glabel func_80038C70
     /* 297A4 80038FA4 90E40008 */  j          .L80039240
     /* 297A8 80038FA8 00000000 */   nop
   .L80038FAC:
-    /* 297AC 80038FAC DFE1000C */  jal        func_8003877C
+    /* 297AC 80038FAC DFE1000C */  jal        motion_shift_check_m_hit_stop
     /* 297B0 80038FB0 00000000 */   nop
     /* 297B4 80038FB4 90E40008 */  j          .L80039240
     /* 297B8 80038FB8 0B00222A */   slti      $v0, $s1, 0xB
@@ -37663,7 +37663,7 @@ glabel func_80038C70
   jlabel .L800390F0
     /* 298F0 800390F0 01000224 */  addiu      $v0, $zero, 0x1
     /* 298F4 800390F4 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
-    /* 298F8 800390F8 DFE1000C */  jal        func_8003877C
+    /* 298F8 800390F8 DFE1000C */  jal        motion_shift_check_m_hit_stop
     /* 298FC 800390FC 00000000 */   nop
     /* 29900 80039100 03000224 */  addiu      $v0, $zero, 0x3
     /* 29904 80039104 3B0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x3)($gp)
@@ -37706,7 +37706,7 @@ glabel func_80038C70
     /* 29984 80039184 740280A3 */  sb         $zero, %gp_rel(D_800A3340)($gp)
     /* 29988 80039188 780280A3 */  sb         $zero, %gp_rel(D_800A3344)($gp)
     /* 2998C 8003918C 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
-    /* 29990 80039190 DFE1000C */  jal        func_8003877C
+    /* 29990 80039190 DFE1000C */  jal        motion_shift_check_m_hit_stop
     /* 29994 80039194 00000000 */   nop
     /* 29998 80039198 6FE40008 */  j          .L800391BC
     /* 2999C 8003919C 02000224 */   addiu     $v0, $zero, 0x2
@@ -38183,13 +38183,13 @@ glabel func_800397D4
     /* 29FD8 800397D8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 29FDC 800397DC 1A5A000C */  jal        gpu_EnableDisplay
     /* 29FE0 800397E0 00000000 */   nop
-    /* 29FE4 800397E4 8BF8000C */  jal        func_8003E22C
+    /* 29FE4 800397E4 8BF8000C */  jal        gnd_open
     /* 29FE8 800397E8 00000000 */   nop
     /* 29FEC 800397EC 86FC000C */  jal        game_SetPlayerCount
     /* 29FF0 800397F0 21200000 */   addu      $a0, $zero, $zero
     /* 29FF4 800397F4 B159000C */  jal        disp_CalcFov
     /* 29FF8 800397F8 2D000424 */   addiu     $a0, $zero, 0x2D
-    /* 29FFC 800397FC FFFB010C */  jal        func_8007EFFC
+    /* 29FFC 800397FC FFFB010C */  jal        tslDmaDrawListDelAll
     /* 2A000 80039800 21204000 */   addu      $a0, $v0, $zero
     /* 2A004 80039804 21200000 */  addu       $a0, $zero, $zero
     /* 2A008 80039808 A205010C */  jal        func_80041688
@@ -38575,7 +38575,7 @@ glabel func_8003993C
     /* 2A588 80039D88 0A000596 */  lhu        $a1, 0xA($s0)
     /* 2A58C 80039D8C 01007326 */  addiu      $s3, $s3, 0x1
     /* 2A590 80039D90 022B0500 */  srl        $a1, $a1, 12
-    /* 2A594 80039D94 C100010C */  jal        func_80040304
+    /* 2A594 80039D94 C100010C */  jal        efc_rob_Init
     /* 2A598 80039D98 0700A530 */   andi      $a1, $a1, 0x7
     /* 2A59C 80039D9C 0200622A */  slti       $v0, $s3, 0x2
     /* 2A5A0 80039DA0 45FF4014 */  bnez       $v0, .L80039AB8
@@ -39880,7 +39880,7 @@ glabel func_8003AE5C
     /* 2B708 8003AF08 A83722A0 */  sb         $v0, %lo(D_800A37A8)($at)
     /* 2B70C 8003AF0C 1A5A000C */  jal        gpu_EnableDisplay
     /* 2B710 8003AF10 00000000 */   nop
-    /* 2B714 8003AF14 4E83000C */  jal        func_80020D38
+    /* 2B714 8003AF14 4E83000C */  jal        EndADRSound
     /* 2B718 8003AF18 00000000 */   nop
     /* 2B71C 8003AF1C 21200002 */  addu       $a0, $s0, $zero
     /* 2B720 8003AF20 AB80010C */  jal        func_800602AC
@@ -39928,7 +39928,7 @@ glabel func_8003AF40
     /* 2B7AC 8003AFAC 1000A0AF */   sw        $zero, 0x10($sp)
     /* 2B7B0 8003AFB0 1A5A000C */  jal        gpu_EnableDisplay
     /* 2B7B4 8003AFB4 00000000 */   nop
-    /* 2B7B8 8003AFB8 4E83000C */  jal        func_80020D38
+    /* 2B7B8 8003AFB8 4E83000C */  jal        EndADRSound
     /* 2B7BC 8003AFBC 00000000 */   nop
     /* 2B7C0 8003AFC0 21200002 */  addu       $a0, $s0, $zero
     /* 2B7C4 8003AFC4 1080013C */  lui        $at, %hi(D_8010277C)
@@ -39960,7 +39960,7 @@ glabel func_8003AFFC
     /* 2B818 8003B018 1400B1AF */  sw         $s1, 0x14($sp)
     /* 2B81C 8003B01C 1A5A000C */  jal        gpu_EnableDisplay
     /* 2B820 8003B020 1000B0AF */   sw        $s0, 0x10($sp)
-    /* 2B824 8003B024 4E83000C */  jal        func_80020D38
+    /* 2B824 8003B024 4E83000C */  jal        EndADRSound
     /* 2B828 8003B028 21900000 */   addu      $s2, $zero, $zero
     /* 2B82C 8003B02C E724010C */  jal        func_8004939C
     /* 2B830 8003B030 21800000 */   addu      $s0, $zero, $zero
@@ -40033,7 +40033,7 @@ glabel func_8003B10C
     /* 2B920 8003B120 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 2B924 8003B124 1A5A000C */  jal        gpu_EnableDisplay
     /* 2B928 8003B128 1000B0AF */   sw        $s0, 0x10($sp)
-    /* 2B92C 8003B12C 4E83000C */  jal        func_80020D38
+    /* 2B92C 8003B12C 4E83000C */  jal        EndADRSound
     /* 2B930 8003B130 00085236 */   ori       $s2, $s2, (0x80190800 & 0xFFFF)
     /* 2B934 8003B134 E724010C */  jal        func_8004939C
     /* 2B938 8003B138 00000000 */   nop
@@ -40202,7 +40202,7 @@ glabel func_8003B328
     /* 2BB80 8003B380 21200000 */   addu      $a0, $zero, $zero
     /* 2BB84 8003B384 1080043C */  lui        $a0, %hi(D_80101EC8)
     /* 2BB88 8003B388 C81E8424 */  addiu      $a0, $a0, %lo(D_80101EC8)
-    /* 2BB8C 8003B38C 5A89000C */  jal        func_80022568
+    /* 2BB8C 8003B38C 5A89000C */  jal        pad_button_info_clear
     /* 2BB90 8003B390 00000000 */   nop
     /* 2BB94 8003B394 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2BB98 8003B398 1800BD27 */  addiu      $sp, $sp, 0x18
@@ -40470,7 +40470,7 @@ glabel func_8003B5A4
     /* 2BF10 8003B710 A83725A0 */  sb         $a1, %lo(D_800A37A8)($at)
     /* 2BF14 8003B714 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 2BF18 8003B718 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
-    /* 2BF1C 8003B71C 5A89000C */  jal        func_80022568
+    /* 2BF1C 8003B71C 5A89000C */  jal        pad_button_info_clear
     /* 2BF20 8003B720 01001024 */   addiu     $s0, $zero, 0x1
     /* 2BF24 8003B724 0A80013C */  lui        $at, %hi(D_800A3907)
     /* 2BF28 8003B728 073920A0 */  sb         $zero, %lo(D_800A3907)($at)
@@ -40699,7 +40699,7 @@ glabel func_8003B9D0
     /* 2C238 8003BA38 00000000 */   nop
     /* 2C23C 8003BA3C 1A5A000C */  jal        gpu_EnableDisplay
     /* 2C240 8003BA40 00000000 */   nop
-    /* 2C244 8003BA44 4E83000C */  jal        func_80020D38
+    /* 2C244 8003BA44 4E83000C */  jal        EndADRSound
     /* 2C248 8003BA48 00000000 */   nop
     /* 2C24C 8003BA4C 01000424 */  addiu      $a0, $zero, 0x1
     /* 2C250 8003BA50 21280000 */  addu       $a1, $zero, $zero
@@ -40849,7 +40849,7 @@ glabel func_8003B9D0
     /* 2C464 8003BC64 02006590 */  lbu        $a1, 0x2($v1)
     /* 2C468 8003BC68 F5DB000C */  jal        mottest_rob_init
     /* 2C46C 8003BC6C 21204000 */   addu      $a0, $v0, $zero
-    /* 2C470 8003BC70 98DC000C */  jal        func_80037260
+    /* 2C470 8003BC70 98DC000C */  jal        marionation_camera_GetMaxFrame
     /* 2C474 8003BC74 00000000 */   nop
     /* 2C478 8003BC78 07000224 */  addiu      $v0, $zero, 0x7
     /* 2C47C 8003BC7C 0A80013C */  lui        $at, %hi(D_800A37B8)
@@ -40998,7 +40998,7 @@ glabel func_8003BE10
     /* 2C670 8003BE70 21204000 */  addu       $a0, $v0, $zero
     /* 2C674 8003BE74 F5DB000C */  jal        mottest_rob_init
     /* 2C678 8003BE78 04000524 */   addiu     $a1, $zero, 0x4
-    /* 2C67C 8003BE7C 98DC000C */  jal        func_80037260
+    /* 2C67C 8003BE7C 98DC000C */  jal        marionation_camera_GetMaxFrame
     /* 2C680 8003BE80 00000000 */   nop
     /* 2C684 8003BE84 0B000224 */  addiu      $v0, $zero, 0xB
     /* 2C688 8003BE88 0A80013C */  lui        $at, %hi(D_800A3834)
@@ -41292,7 +41292,7 @@ glabel func_8003C040
     /* 2CA7C 8003C27C 01000592 */  lbu        $a1, 0x1($s0)
     /* 2CA80 8003C280 F5DB000C */  jal        mottest_rob_init
     /* 2CA84 8003C284 21204000 */   addu      $a0, $v0, $zero
-    /* 2CA88 8003C288 98DC000C */  jal        func_80037260
+    /* 2CA88 8003C288 98DC000C */  jal        marionation_camera_GetMaxFrame
     /* 2CA8C 8003C28C 00000000 */   nop
     /* 2CA90 8003C290 13000224 */  addiu      $v0, $zero, 0x13
   .L8003C294:
@@ -42140,13 +42140,13 @@ glabel func_8003CE18
     /* 2D648 8003CE48 21300000 */  addu       $a2, $zero, $zero
     /* 2D64C 8003CE4C DA59000C */  jal        disp_SetFramebufferMode
     /* 2D650 8003CE50 21380000 */   addu      $a3, $zero, $zero
-    /* 2D654 8003CE54 8BF8000C */  jal        func_8003E22C
+    /* 2D654 8003CE54 8BF8000C */  jal        gnd_open
     /* 2D658 8003CE58 00000000 */   nop
     /* 2D65C 8003CE5C 86FC000C */  jal        game_SetPlayerCount
     /* 2D660 8003CE60 21200000 */   addu      $a0, $zero, $zero
     /* 2D664 8003CE64 B159000C */  jal        disp_CalcFov
     /* 2D668 8003CE68 2D000424 */   addiu     $a0, $zero, 0x2D
-    /* 2D66C 8003CE6C FFFB010C */  jal        func_8007EFFC
+    /* 2D66C 8003CE6C FFFB010C */  jal        tslDmaDrawListDelAll
     /* 2D670 8003CE70 21204000 */   addu      $a0, $v0, $zero
     /* 2D674 8003CE74 0A80033C */  lui        $v1, %hi(D_800A3748)
     /* 2D678 8003CE78 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
@@ -42464,9 +42464,9 @@ glabel func_8003D2C4
     /* 2DAF0 8003D2F0 00000000 */   nop
 endlabel func_8003D2C4
 
-nonmatching func_8003D2F4, 0x3C
+nonmatching change_shadow_tex_reg, 0x3C
 
-glabel func_8003D2F4
+glabel change_shadow_tex_reg
     /* 2DAF4 8003D2F4 F000023C */  lui        $v0, (0xF0F0F0 >> 16)
     /* 2DAF8 8003D2F8 F0F04234 */  ori        $v0, $v0, (0xF0F0F0 & 0xFFFF)
     /* 2DAFC 8003D2FC 980282AF */  sw         $v0, %gp_rel(D_800A3364)($gp)
@@ -42483,7 +42483,7 @@ glabel func_8003D2F4
   .L8003D328:
     /* 2DB28 8003D328 0800E003 */  jr         $ra
     /* 2DB2C 8003D32C 00000000 */   nop
-endlabel func_8003D2F4
+endlabel change_shadow_tex_reg
 
 nonmatching ReturnVTMenu, 0x6C
 
@@ -43539,7 +43539,7 @@ glabel func_8003E164
     /* 2E974 8003E174 2800BFAF */  sw         $ra, 0x28($sp)
     /* 2E978 8003E178 25005110 */  beq        $v0, $s1, .L8003E210
     /* 2E97C 8003E17C 2000B0AF */   sw        $s0, 0x20($sp)
-    /* 2E980 8003E180 8BF8000C */  jal        func_8003E22C
+    /* 2E980 8003E180 8BF8000C */  jal        gnd_open
     /* 2E984 8003E184 00000000 */   nop
     /* 2E988 8003E188 4F05010C */  jal        func_8004153C
     /* 2E98C 8003E18C 21202002 */   addu      $a0, $s1, $zero
@@ -43588,9 +43588,9 @@ glabel func_8003E164
     /* 2EA28 8003E228 00000000 */   nop
 endlabel func_8003E164
 
-nonmatching func_8003E22C, 0x74
+nonmatching gnd_open, 0x74
 
-glabel func_8003E22C
+glabel gnd_open
     /* 2EA2C 8003E22C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2EA30 8003E230 5C01848F */  lw         $a0, %gp_rel(D_800A3228)($gp)
     /* 2EA34 8003E234 FFFF0224 */  addiu      $v0, $zero, -0x1
@@ -43624,15 +43624,15 @@ glabel func_8003E22C
     /* 2EA94 8003E294 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 2EA98 8003E298 0800E003 */  jr         $ra
     /* 2EA9C 8003E29C 00000000 */   nop
-endlabel func_8003E22C
+endlabel gnd_open
 
-nonmatching func_8003E2A0, 0xC
+nonmatching single_game_SetStageId, 0xC
 
-glabel func_8003E2A0
+glabel single_game_SetStageId
     /* 2EAA0 8003E2A0 5C01828F */  lw         $v0, %gp_rel(D_800A3228)($gp)
     /* 2EAA4 8003E2A4 0800E003 */  jr         $ra
     /* 2EAA8 8003E2A8 00000000 */   nop
-endlabel func_8003E2A0
+endlabel single_game_SetStageId
 
 nonmatching func_8003E2AC, 0x1C
 
@@ -44008,7 +44008,7 @@ glabel func_8003E6D8
     /* 2EFBC 8003E7BC 08009BE9 */  swc2       $27, 0x8($t4) /* handwritten instruction */
     /* 2EFC0 8003E7C0 3800A48F */  lw         $a0, 0x38($sp)
     /* 2EFC4 8003E7C4 4000A58F */  lw         $a1, 0x40($sp)
-    /* 2EFC8 8003E7C8 57FF010C */  jal        func_8007FD5C
+    /* 2EFC8 8003E7C8 57FF010C */  jal        single_game_getEnemyCharId
     /* 2EFCC 8003E7CC 00000000 */   nop
     /* 2EFD0 8003E7D0 F1FF2426 */  addiu      $a0, $s1, -0xF
     /* 2EFD4 8003E7D4 F1FF0526 */  addiu      $a1, $s0, -0xF
@@ -44196,7 +44196,7 @@ glabel func_8003E6D8
     /* 2F268 8003EA68 00240400 */   sll       $a0, $a0, 16
     /* 2F26C 8003EA6C 03240400 */  sra        $a0, $a0, 16
     /* 2F270 8003EA70 002C0500 */  sll        $a1, $a1, 16
-    /* 2F274 8003EA74 E1FA000C */  jal        func_8003EB84
+    /* 2F274 8003EA74 E1FA000C */  jal        CalcHiraNormal
     /* 2F278 8003EA78 032C0500 */   sra       $a1, $a1, 16
     /* 2F27C 8003EA7C 21304000 */  addu       $a2, $v0, $zero
   .L8003EA80:
@@ -44270,9 +44270,9 @@ glabel func_8003E6D8
     /* 2F380 8003EB80 00000000 */   nop
 endlabel func_8003E6D8
 
-nonmatching func_8003EB84, 0x23C
+nonmatching CalcHiraNormal, 0x23C
 
-glabel func_8003EB84
+glabel CalcHiraNormal
     /* 2F384 8003EB84 06008004 */  bltz       $a0, .L8003EBA0
     /* 2F388 8003EB88 78FFBD27 */   addiu     $sp, $sp, -0x88
     /* 2F38C 8003EB8C 20008228 */  slti       $v0, $a0, 0x20
@@ -44435,7 +44435,7 @@ glabel func_8003EB84
     /* 2F5B4 8003EDB4 8800BD27 */  addiu      $sp, $sp, 0x88
     /* 2F5B8 8003EDB8 0800E003 */  jr         $ra
     /* 2F5BC 8003EDBC 00000000 */   nop
-endlabel func_8003EB84
+endlabel CalcHiraNormal
 
 nonmatching md_game_check_mode, 0x3A8
 
@@ -44675,7 +44675,7 @@ glabel func_8003EDC0
     /* 2F918 8003F118 E8038228 */  slti       $v0, $a0, 0x3E8
     /* 2F91C 8003F11C 03004014 */  bnez       $v0, .L8003F12C
     /* 2F920 8003F120 00000000 */   nop
-    /* 2F924 8003F124 044B010C */  jal        func_80052C10
+    /* 2F924 8003F124 044B010C */  jal        InitFadePanel
     /* 2F928 8003F128 00000000 */   nop
   .L8003F12C:
     /* 2F92C 8003F12C 0A80013C */  lui        $at, %hi(D_800A3678)

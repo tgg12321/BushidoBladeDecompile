@@ -79,7 +79,7 @@ glabel func_80077374
     /* 67C94 80077494 4BD3010C */  jal        func_80074D2C
     /* 67C98 80077498 03340600 */   sra       $a2, $a2, 16
     /* 67C9C 8007749C 21204002 */  addu       $a0, $s2, $zero
-    /* 67CA0 800774A0 F6D4010C */  jal        func_800753D8
+    /* 67CA0 800774A0 F6D4010C */  jal        saTan1GaugeMain
     /* 67CA4 800774A4 21280002 */   addu      $a1, $s0, $zero
     /* 67CA8 800774A8 B5DD0108 */  j          .L800776D4
     /* 67CAC 800774AC 21204002 */   addu      $a0, $s2, $zero

@@ -59,7 +59,7 @@ glabel DispHira
     /* 2EFBC 8003E7BC 08009BE9 */  swc2       $27, 0x8($t4) /* handwritten instruction */
     /* 2EFC0 8003E7C0 3800A48F */  lw         $a0, 0x38($sp)
     /* 2EFC4 8003E7C4 4000A58F */  lw         $a1, 0x40($sp)
-    /* 2EFC8 8003E7C8 57FF010C */  jal        func_8007FD5C
+    /* 2EFC8 8003E7C8 57FF010C */  jal        single_game_getEnemyCharId
     /* 2EFCC 8003E7CC 00000000 */   nop
     /* 2EFD0 8003E7D0 F1FF2426 */  addiu      $a0, $s1, -0xF
     /* 2EFD4 8003E7D4 F1FF0526 */  addiu      $a1, $s0, -0xF
@@ -247,7 +247,7 @@ glabel DispHira
     /* 2F268 8003EA68 00240400 */   sll       $a0, $a0, 16
     /* 2F26C 8003EA6C 03240400 */  sra        $a0, $a0, 16
     /* 2F270 8003EA70 002C0500 */  sll        $a1, $a1, 16
-    /* 2F274 8003EA74 E1FA000C */  jal        func_8003EB84
+    /* 2F274 8003EA74 E1FA000C */  jal        CalcHiraNormal
     /* 2F278 8003EA78 032C0500 */   sra       $a1, $a1, 16
     /* 2F27C 8003EA7C 21304000 */  addu       $a2, $v0, $zero
   .L8003EA80:

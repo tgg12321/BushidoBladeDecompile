@@ -20,7 +20,7 @@ extern void func_80048FFC(s32);
 extern void *func_8004153C(void);
 extern s32 func_800477E8(void);
 extern void func_80047A90(void);
-extern void func_80048B8C(s32);
+extern void saTan5GetTakeCutAnimType(s32);
 extern void func_80044100(s32, s32);
 extern void func_80045600(s32, s32);
 extern void func_80045694(s32, void (*)(void));
@@ -36,7 +36,7 @@ extern void func_80049E1C(void);
 extern void camera_InitRotation(u8 *);
 extern void func_80042A88(s32 *, s32 *);
 extern void func_8007ED6C(s32 *, s16 *, s32 *);
-extern s16 func_8007FD5C(s32, s32);
+extern s16 single_game_getEnemyCharId(s32, s32);
 extern s16 Judge[];
 extern s16 D_800A33C8;
 extern s16 D_800A33CA;
@@ -98,7 +98,7 @@ extern void func_80044498(void);
 extern void func_80049E4C(void);
 extern void func_80049F4C(void);
 extern void func_8003D91C(void);
-extern void func_800404D8(void);
+extern void saTan5TakeGetCnt(void);
 extern void func_8003F7F4(void);
 extern s16 D_800F6650;
 extern s16 g_color_mode;
@@ -169,7 +169,7 @@ void snd_PlayBgm(s32 a0) {
 }
 
 void snd_BgmCallback(s32 a0, s32 a1) {
-    func_80048B8C(a1);
+    saTan5GetTakeCutAnimType(a1);
     func_80044100(9, a1);
 }
 
@@ -252,7 +252,7 @@ void game_Init(void) {
     func_80049E4C();
     func_80049F4C();
     func_8003D91C();
-    func_800404D8();
+    saTan5TakeGetCnt();
     func_8003F7F4();
     one = 1;
     two = 2;
@@ -535,11 +535,11 @@ s16 *camera_CalcAngles(void) {
     rot[1] = 0;
     rot[2] = 0x1000;
     func_8007ED6C(pos, rot, sp18);
-    s0 = func_8007FD5C(sp18[0], sp18[2]);
+    s0 = single_game_getEnemyCharId(sp18[0], sp18[2]);
     a1 = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
          + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
     sp18[2] = a1;
-    D_800A33C8 = -func_8007FD5C(sp18[1], a1);
+    D_800A33C8 = -single_game_getEnemyCharId(sp18[1], a1);
     D_800A33CA = s0;
     return &D_800A33C8;
 }
@@ -608,13 +608,13 @@ void func_800475A4(void) {
     rot[2] = 0x6590;
     func_8007ED6C((s32 *)&D_80101E08, rot, result);
 
-    angle = func_8007FD5C(result[0], result[2]);
+    angle = single_game_getEnemyCharId(result[0], result[2]);
 
     computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
     result[2] = computed;
 
     {
-        s16 neg = -func_8007FD5C(result[1], computed);
+        s16 neg = -single_game_getEnemyCharId(result[1], computed);
         base = &g_cam_bone_data2;
         D_800EEE00 = neg;
     }
@@ -896,7 +896,7 @@ void func_80047A90(void) {
 
 extern void func_8007F24C(s16 *, s16 *, s16 *, s32 *, s32 *, s32 *, s32 *, s32 *);
 extern void gte_GetScreenXY(s32 *, s32 *, s32 *);
-extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
+extern s16 *saTan2LineDraw(s32, s16 *, s16 *, s32);
 extern s16 D_800EF0D8;
 extern s16 D_800EF168;
 void func_80047BE0(void) {
@@ -971,7 +971,7 @@ inner2:
     dst16++;
     if (j < 6) goto inner2;
     if (i != 0) {
-        s7val = func_8004BCC0(0x10, base, s7val, 0);
+        s7val = saTan2LineDraw(0x10, base, s7val, 0);
     }
     i++;
     src += 17;

@@ -16,13 +16,13 @@ glabel func_80057094
     /* 478CC 800570CC 1066428C */  lw         $v0, %lo(D_800F6610)($v0)
     /* 478D0 800570D0 FC00458E */  lw         $a1, 0xFC($s2)
     /* 478D4 800570D4 23206400 */  subu       $a0, $v1, $a0
-    /* 478D8 800570D8 57FF010C */  jal        func_8007FD5C
+    /* 478D8 800570D8 57FF010C */  jal        single_game_getEnemyCharId
     /* 478DC 800570DC 23284500 */   subu      $a1, $v0, $a1
     /* 478E0 800570E0 F400448E */  lw         $a0, 0xF4($s2)
     /* 478E4 800570E4 FC00458E */  lw         $a1, 0xFC($s2)
     /* 478E8 800570E8 23200402 */  subu       $a0, $s0, $a0
     /* 478EC 800570EC 23282502 */  subu       $a1, $s1, $a1
-    /* 478F0 800570F0 57FF010C */  jal        func_8007FD5C
+    /* 478F0 800570F0 57FF010C */  jal        single_game_getEnemyCharId
     /* 478F4 800570F4 21804000 */   addu      $s0, $v0, $zero
     /* 478F8 800570F8 23800202 */  subu       $s0, $s0, $v0
     /* 478FC 800570FC 00FF1026 */  addiu      $s0, $s0, -0x100

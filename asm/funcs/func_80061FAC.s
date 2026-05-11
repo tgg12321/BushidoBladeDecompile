@@ -12,7 +12,7 @@ glabel func_80061FAC
     /* 527D4 80061FD4 020082A4 */  sh         $v0, 0x2($a0)
     /* 527D8 80061FD8 04006294 */  lhu        $v0, 0x4($v1)
     /* 527DC 80061FDC 21280002 */  addu       $a1, $s0, $zero
-    /* 527E0 80061FE0 D7FC010C */  jal        func_8007F35C
+    /* 527E0 80061FE0 D7FC010C */  jal        motutil_GetWalkDir
     /* 527E4 80061FE4 040082A4 */   sh        $v0, 0x4($a0)
     /* 527E8 80061FE8 21200002 */  addu       $a0, $s0, $zero
     /* 527EC 80061FEC 0A80053C */  lui        $a1, %hi(D_8009BB74)

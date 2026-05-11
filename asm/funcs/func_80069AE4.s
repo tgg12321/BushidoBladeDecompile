@@ -113,7 +113,7 @@ glabel func_80069AE4
     /* 5A48C 80069C8C F3FF4014 */  bnez       $v0, .L80069C5C
     /* 5A490 80069C90 21280000 */   addu      $a1, $zero, $zero
     /* 5A494 80069C94 0000448E */  lw         $a0, 0x0($s2)
-    /* 5A498 80069C98 20B9010C */  jal        func_8006E480
+    /* 5A498 80069C98 20B9010C */  jal        saMotionSet
     /* 5A49C 80069C9C 1800A4AF */   sw        $a0, 0x18($sp)
     /* 5A4A0 80069CA0 01000524 */  addiu      $a1, $zero, 0x1
     /* 5A4A4 80069CA4 21300000 */  addu       $a2, $zero, $zero

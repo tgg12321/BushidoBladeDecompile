@@ -39,7 +39,7 @@ glabel AllocRobRmd
     /* 30E20 80040620 0600022A */   slti      $v0, $s0, 0x6
   .L80040624:
     /* 30E24 80040624 04004486 */  lh         $a0, 0x4($s2)
-    /* 30E28 80040628 916D010C */  jal        func_8005B644
+    /* 30E28 80040628 916D010C */  jal        GetAllocPacketSize
     /* 30E2C 8004062C 00000000 */   nop
     /* 30E30 80040630 0600022A */  slti       $v0, $s0, 0x6
   .L80040634:
@@ -63,7 +63,7 @@ glabel AllocRobRmd
     /* 30E78 80040678 21800202 */  addu       $s0, $s0, $v0
     /* 30E7C 8004067C 03000016 */  bnez       $s0, .L8004068C
     /* 30E80 80040680 00000000 */   nop
-    /* 30E84 80040684 044B010C */  jal        func_80052C10
+    /* 30E84 80040684 044B010C */  jal        InitFadePanel
     /* 30E88 80040688 00000000 */   nop
   .L8004068C:
     /* 30E8C 8004068C 0000428E */  lw         $v0, 0x0($s2)
@@ -92,7 +92,7 @@ glabel AllocRobRmd
     /* 30EE0 800406E0 23202402 */  subu       $a0, $s1, $a0
     /* 30EE4 800406E4 40280200 */  sll        $a1, $v0, 1
     /* 30EE8 800406E8 2128A200 */  addu       $a1, $a1, $v0
-    /* 30EEC 800406EC 3071010C */  jal        func_8005C4C0
+    /* 30EEC 800406EC 3071010C */  jal        saFidLoad
     /* 30EF0 800406F0 0100A524 */   addiu     $a1, $a1, 0x1
   .L800406F4:
     /* 30EF4 800406F4 0400248E */  lw         $a0, 0x4($s1)
@@ -124,7 +124,7 @@ glabel AllocRobRmd
     /* 30F5C 8004075C 21206002 */  addu       $a0, $s3, $zero
     /* 30F60 80040760 BA1F010C */  jal        func_80047EE8
     /* 30F64 80040764 21280000 */   addu      $a1, $zero, $zero
-    /* 30F68 80040768 A8F8000C */  jal        func_8003E2A0
+    /* 30F68 80040768 A8F8000C */  jal        single_game_SetStageId
     /* 30F6C 8004076C 00000000 */   nop
     /* 30F70 80040770 34004014 */  bnez       $v0, .L80040844
     /* 30F74 80040774 21280000 */   addu      $a1, $zero, $zero
@@ -151,7 +151,7 @@ glabel AllocRobRmd
     /* 30FC4 800407C4 80000624 */  addiu      $a2, $zero, 0x80
     /* 30FC8 800407C8 EF1F010C */  jal        func_80047FBC
     /* 30FCC 800407CC 21380000 */   addu      $a3, $zero, $zero
-    /* 30FD0 800407D0 A8F8000C */  jal        func_8003E2A0
+    /* 30FD0 800407D0 A8F8000C */  jal        single_game_SetStageId
     /* 30FD4 800407D4 00000000 */   nop
     /* 30FD8 800407D8 13005014 */  bne        $v0, $s0, .L80040828
     /* 30FDC 800407DC 02000524 */   addiu     $a1, $zero, 0x2
@@ -217,7 +217,7 @@ glabel AllocRobRmd
     /* 310C0 800408C0 1C00428E */  lw         $v0, 0x1C($s2)
     /* 310C4 800408C4 04004486 */  lh         $a0, 0x4($s2)
     /* 310C8 800408C8 21104500 */  addu       $v0, $v0, $a1
-    /* 310CC 800408CC 8A16010C */  jal        func_80045A28
+    /* 310CC 800408CC 8A16010C */  jal        tslFileClose
     /* 310D0 800408D0 240042AE */   sw        $v0, 0x24($s2)
   .L800408D4:
     /* 310D4 800408D4 3C00BF8F */  lw         $ra, 0x3C($sp)

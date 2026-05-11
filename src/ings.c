@@ -31,7 +31,7 @@ extern s32 func_80083698(s32, s32, s32);
 extern s32 ang_hosei(s32, s32, s32);
 extern s32 bios_FileRead(s32, u8 *, s32);
 extern void func_80078A18(s32);
-extern void func_800836B8(s32);
+extern void md_gview_init(s32);
 
 
 extern u8 D_800A30E8;
@@ -64,18 +64,18 @@ extern void func_800372C0(void);
 extern void motion_Open(void);
 extern void func_800789D8(u32);
 extern void func_80078968(s32);
-extern void func_80060E04(s32);
-extern void func_8003D2F4(void);
+extern void gnd_get_fog(s32);
+extern void change_shadow_tex_reg(void);
 extern void ReturnVTMenu(void);
 extern void single_game_VoiceContorol();
 extern u8 D_800A3768;
 extern u32 D_8008D090;
 extern u8 D_80010034;
 extern void func_8003D330(void);
-extern u8 *func_8005D46C(u8 *);
-extern u8 *func_8005D554(u8 *, u8);
+extern u8 *gnd_load_data(u8 *);
+extern u8 *gnd_land_hit_char_tsuba(u8 *, u8);
 extern void func_8005E54C(s32, u8 *, s32);
-extern void func_80060414(s32, u8 *, s32);
+extern void gnd_set_scene(s32, u8 *, s32);
 extern void gte_SetRotMatrix(u8 *);
 extern void gte_SetTransVector(u8 *);
 extern void func_8007F2AC(u8 *, s32 *, s32 *);
@@ -155,7 +155,7 @@ s32 file_LoadAll(s32 a0, u8 *dest) {
             dest += chunk;
         } while (remaining > 0);
     }
-    func_800836B8(fd);
+    md_gview_init(fd);
     return total;
 }
 s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
@@ -179,7 +179,7 @@ s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
             dest += 0x800;
         } while (i < count);
     }
-    func_800836B8(fd);
+    md_gview_init(fd);
     return count << 11;
 }
 s32 disp_CalcFov(s32 a0) {
@@ -222,7 +222,7 @@ u32 file_GetFlag2(void) {
     return (g_file_flags >> 2) & 1;
 }
 
-void func_800167EC(void) {
+void kgm_clamp_patch_init(void) {
     register s32 i asm("a0") = 0;
     register u32 c asm("a1") = 0x1A5E0;
     register u8 *tmp asm("v0");
@@ -270,7 +270,7 @@ void sys_InitSound(void) {
 extern void gpu_SetDebugLevel(s32);
 extern void func_8007E094(void);
 extern void gte_SetScreenOffset(s32, s32);
-extern void func_8007EFFC(s32);
+extern void tslDmaDrawListDelAll(s32);
 extern void gpu_InitDrawEnv(u8 *, s32, s32, s32, s32);
 extern void gpu_InitDispEnv(u8 *, s32, s32, s32, s32);
 void disp_Init(void) {
@@ -281,7 +281,7 @@ void disp_Init(void) {
     gpu_SetDispMask(0);
     func_8007E094();
     gte_SetScreenOffset(0x140, 0x78);
-    func_8007EFFC(disp_CalcFov(0x2D));
+    tslDmaDrawListDelAll(disp_CalcFov(0x2D));
     base = &g_disp_fb_base;
     gpu_InitDrawEnv(base, 0, 0, 0x280, 0xF0);
     gpu_InitDrawEnv(base + 0x4090, 0, 0xF0, 0x280, 0xF0);
@@ -295,7 +295,7 @@ extern void func_80078C9C(u8 *, s32, u8 *, s32);
 extern void func_80078D38(void);
 extern void func_80078A58(s32);
 extern void func_80035FE0(void);
-extern void func_800375EC(void);
+extern void pad_press_control(void);
 extern u8 g_pad_data;
 void sys_Init(void) {
     u8 *base = &g_pad_data;
@@ -307,7 +307,7 @@ void sys_Init(void) {
     g_disp_enable = DISP_DISABLED;
     g_disp_fade = 0;
     func_80035FE0();
-    func_800375EC();
+    pad_press_control();
     sys_InitSound();
 }
 void func_80016A8C(u8 *arg0) {
@@ -383,7 +383,7 @@ void file_LoadOverlay(void) {
 extern void func_8005B43C(void);
 extern s32 func_8005B7C4(u32);
 extern void bb2_memcpy(u32, u32, s32);
-extern void func_8005C4C0(u32, s32);
+extern void saFidLoad(u32, s32);
 extern void func_8005C614(void);
 void file_LoadSoundData(void) {
     s32 size;
@@ -394,7 +394,7 @@ void file_LoadSoundData(void) {
         sys_Panic();
     }
     bb2_memcpy(0x8010DB00, 0x801D8800, size);
-    func_8005C4C0(0xFFF35300, 0);
+    saFidLoad(0xFFF35300, 0);
     func_8005C614();
     D_800A3906 = 1;
 }
@@ -413,7 +413,7 @@ extern void func_8003D2C4(void);
 extern void func_8001C444(void);
 void sys_GameInit(void) {
     debug_printf((s32)&g_str_limit, 0x8010DB00);
-    func_800167EC();
+    kgm_clamp_patch_init();
     func_80020D70();
     D_800A3770 = 0x801D8800;
     D_800A3774 = 0x801EBC00;
@@ -608,8 +608,8 @@ loop:
     func_8007B844(ot, 0x1008);
     D_800A374C = ot;
     D_800A38B4 = tbl[idx];
-    func_80060E04(idx);
-    func_8003D2F4();
+    gnd_get_fog(idx);
+    change_shadow_tex_reg();
     single_game_VoiceContorol(voice);
     special_camera_Exec();
     func_8005C6D0();
@@ -701,7 +701,7 @@ void gnd_disp_loop_ctrl(void) {
     switch (g_disp_enable) {
     case 1:
     case 2:
-        s2_var = (s32)func_8005D46C((u8 *)s2_var);
+        s2_var = (s32)gnd_load_data((u8 *)s2_var);
         if (g_disp_fade != new_var2) {
             s32 v0;
             s32 a0_temp;
@@ -713,7 +713,7 @@ void gnd_disp_loop_ctrl(void) {
                 a0_temp = s2_var;
                 inner_loop:
                 s0_var++;
-                s2_var = (s32)func_8005D554((u8 *)a0_temp, g_disp_enable);
+                s2_var = (s32)gnd_land_hit_char_tsuba((u8 *)a0_temp, g_disp_enable);
                 if (s0_var >= s1_var) {
                     break;
                 }
@@ -721,7 +721,7 @@ void gnd_disp_loop_ctrl(void) {
                 goto inner_loop;
             }
         } else if ((func_80079154() & 7) == new_var2) {
-            func_8005D554((u8 *)s2_var, g_disp_enable);
+            gnd_land_hit_char_tsuba((u8 *)s2_var, g_disp_enable);
         }
         break;
     case 10:
@@ -756,7 +756,7 @@ void gnd_disp_loop_ctrl(void) {
                 if ((a1_val && a1_val) && a1_val) {
                 }
             }
-            func_80060414(s1_var, (u8 *)s2_var, new_var2);
+            gnd_set_scene(s1_var, (u8 *)s2_var, new_var2);
         }
         break;
     }
@@ -798,7 +798,7 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
     func_8007F0BC(in, out);
     return func_8007E43C(out[0] + out[1] + out[2]) << 4;
 }
-s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
+s32 kgm_init(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     register u8 *ctxp asm("s2") = ctx;
     register s32 saved_arg1 asm("s5") = arg1;
     register s32 sa asm("s4") = slot_a;
@@ -870,7 +870,7 @@ void func_80017A44(void *a0, u8 *a1) {
     (void)a1;
 }
 extern void func_80017A44(void *, u8 *);
-s32 func_80017D84(void *a0) {
+s32 kgm_map(void *a0) {
     register u8 *obj_base asm("a3");
     register void *saved_a0 asm("t0");
     s32 i;

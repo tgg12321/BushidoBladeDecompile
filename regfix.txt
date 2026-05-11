@@ -322,22 +322,22 @@ func_80034F88: insert "la	$4,D_80106A73" @ 23
 func_80034F88: reorder 10,9 @ 9-10
 func_80034F88: reorder 18,17 @ 17-18
 func_80034F88: reorder 26,25 @ 25-26
-# func_800278C0 (camera_SetMatrix): ptr v1->t0, 6th param t0->v1
-func_800278C0: $3 <-> $8
+# mk_g2l (camera_SetMatrix): ptr v1->t0, 6th param t0->v1
+mk_g2l: $3 <-> $8
 # obj/f86 register rotation in field-check section
-func_800278C0: $3 <-> $4 @ 13-29
+mk_g2l: $3 <-> $4 @ 13-29
 # fix overswapped lh dest at indices 20 and 29
-func_800278C0: subst "\$3," "$4," @ 20
-func_800278C0: subst "\$3," "$4," @ 29
+mk_g2l: subst "\$3," "$4," @ 20
+mk_g2l: subst "\$3," "$4," @ 29
 # *ptr load dest a0->v0 at branch-entry loads
-func_800278C0: subst "\$4," "$2," @ 10
-func_800278C0: subst "\$4," "$2," @ 34
-func_800278C0: subst "\$4," "$2," @ 39
-func_800278C0: subst "\$4," "$2," @ 42
+mk_g2l: subst "\$4," "$2," @ 10
+mk_g2l: subst "\$4," "$2," @ 34
+mk_g2l: subst "\$4," "$2," @ 39
+mk_g2l: subst "\$4," "$2," @ 42
 # call_with_field4 base reg a0->v0
-func_800278C0: subst "4\(\$4\)" "4($2)" @ 44
+mk_g2l: subst "4\(\$4\)" "4($2)" @ 44
 # reorder stack param loads (5th before 6th)
-func_800278C0: reorder 4,3 @ 3-4
+mk_g2l: reorder 4,3 @ 3-4
 
 # calc_fc_frame: register + prologue + scheduling fixes
 # Indices are CORRECT — nop debug lines at [20] and [23] are counted as instructions
@@ -861,7 +861,7 @@ func_8001EFA0: subst "j\s+\.L351" "j\t.L355" @ 98
 tslPrintScreen: $3 <-> $4 @ 18-19
 tslPrintScreen: $3 <-> $4 @ 28-32
 tslPrintScreen: subst "\.L70" ".L88" @ 34
-# func_80052C10 neighborhood and s0 carry.
+# InitFadePanel neighborhood and s0 carry.
 tslPrintScreen: subst "\.L71" ".L71+4" @ 39
 tslPrintScreen: subst "addu.*" "addu\t$5,$17,$zero" @ 40
 tslPrintScreen: subst "lh.*" "lh\t$3,0($19)" @ 43
@@ -3395,8 +3395,8 @@ cpu_check_run_attack: reorder 77,76 @ 76-77
 cpu_check_run_attack: reorder 82,81 @ 81-82
 cpu_check_run_attack: reorder 117,116 @ 116-117
 cpu_check_run_attack: reorder 206,205 @ 205-206
-# func_80052C10: scratchpad write -- target uses $t9 ($25), GCC picked $v0 ($2)
-func_80052C10: $2 <-> $25 @ 0-2
+# InitFadePanel: scratchpad write -- target uses $t9 ($25), GCC picked $v0 ($2)
+InitFadePanel: $2 <-> $25 @ 0-2
 # func_800550E8: byte-array indexing into D_80101EC8 -- target keeps 0x415 offset on lbu/sb; GCC pre-folds it. Reverse via 3 substs.
 func_800550E8: subst "la\s+\$3,D_80101EC8\+1045" "la	$3,D_80101EC8" @ 8
 func_800550E8: subst "lbu\s+\$2,0\(\$3\)" "lbu	$2,1045($3)" @ 10
@@ -3423,7 +3423,7 @@ func_8007C748: subst "\$6" "$2" @ 18
 func_8007C748: subst "\$6" "$2" @ 18
 # func_8007C748 idx 20: 3-cycle full-insn subst
 func_8007C748: subst "or\s+\$2,\$2,\$6" "or	$2,$3,$2" @ 20
-func_80060E04: insert "nop" @ 6
+gnd_get_fog: insert "nop" @ 6
 func_80078B04: $2 <-> $3 @ 3-6
 func_80078B04: subst "\$4" "$3" @ 0
 func_80078B04: subst "\$4" "$3" @ 1
@@ -3518,15 +3518,15 @@ func_80053694: subst "addu\s+\$2,\$7,\$zero" "nop" @ 47
 func_8005BD30: delete @ 17
 func_8005BD30: insert_label ".LfuncBD30_target:" @ 29
 func_8005BD30: subst "\.L\d+" ".LfuncBD30_target" @ 16
-func_8007CA00: subst "j\s+\.L\d+" "subu	$2,$2,$3" @ 14
-func_8007CA00: subst "subu\s+\$2,\$2,\$3" "j	.LCA00_RET" @ 15
-func_8007CA00: insert_after "subu	$2,$2,$4" @ 15
-func_8007CA00: delete @ 28
-func_8007CA00: delete @ 29
-func_8007CA00: delete @ 30
-func_8007CA00: insert "j	.LCA00_TAIL" @ 27
-func_8007CA00: insert_label ".LCA00_TAIL:" @ 13
-func_8007CA00: insert_label ".LCA00_RET:" @ 38
+reset_rob_rmd: subst "j\s+\.L\d+" "subu	$2,$2,$3" @ 14
+reset_rob_rmd: subst "subu\s+\$2,\$2,\$3" "j	.LCA00_RET" @ 15
+reset_rob_rmd: insert_after "subu	$2,$2,$4" @ 15
+reset_rob_rmd: delete @ 28
+reset_rob_rmd: delete @ 29
+reset_rob_rmd: delete @ 30
+reset_rob_rmd: insert "j	.LCA00_TAIL" @ 27
+reset_rob_rmd: insert_label ".LCA00_TAIL:" @ 13
+reset_rob_rmd: insert_label ".LCA00_RET:" @ 38
 
 # func_8007C7A0: regfix the 22 register/frame diffs from score-105 base in build context
 func_8007C7A0: subst "subu\s+\$sp,\$sp,24" "subu	$sp,$sp,16" @ 4
@@ -3694,17 +3694,17 @@ func_80047FBC: subst "lw\s+\$17,28" "lw	$17,60" @ 58
 func_80047FBC: subst "lw\s+\$16,24" "lw	$16,56" @ 59
 func_80047FBC: subst "addu\s+\$sp,\$sp,48" "addu	$sp,$sp,80" @ 60
 
-func_8007CA00: $2 <-> $3 @ 30-36
-func_8007CA00: subst "sra\s+\$2,\$2,1" "sra	$2,$3,1" @ 38
-func_8007CA00: subst "lh\s+\$3,0\(\$4\)" "lh	$3,4($4)" @ 12
-func_8007CA00: subst "lh\s+\$4,4\(\$4\)" "lh	$4,0($4)" @ 13
-func_8005C4C0: reorder 45,44 @ 44-45
-func_8005C4C0: insert_after "sll	$2,$2,16" @ 46
-func_8005C4C0: reorder 13,12,14 @ 12-14
-func_8005C4C0: delete @ 46
-func_8005C4C0: insert "sra	$2,$2,16" @ 47
-func_8005C4C0: insert_label ".LfuncC4C0_target:" @ 48
-func_8005C4C0: subst "\.L\d+" ".LfuncC4C0_target" @ 40
+reset_rob_rmd: $2 <-> $3 @ 30-36
+reset_rob_rmd: subst "sra\s+\$2,\$2,1" "sra	$2,$3,1" @ 38
+reset_rob_rmd: subst "lh\s+\$3,0\(\$4\)" "lh	$3,4($4)" @ 12
+reset_rob_rmd: subst "lh\s+\$4,4\(\$4\)" "lh	$4,0($4)" @ 13
+saFidLoad: reorder 45,44 @ 44-45
+saFidLoad: insert_after "sll	$2,$2,16" @ 46
+saFidLoad: reorder 13,12,14 @ 12-14
+saFidLoad: delete @ 46
+saFidLoad: insert "sra	$2,$2,16" @ 47
+saFidLoad: insert_label ".LfuncC4C0_target:" @ 48
+saFidLoad: subst "\.L\d+" ".LfuncC4C0_target" @ 40
 func_80048530: subst "addu\s+\$8,\$4,\$zero" "addu $v1,$a0,$zero" @ 1
 func_80048530: subst "addu\s+\$5,\$5,\$8" "addu $a1,$a1,$v1" @ 3
 func_80048530: insert_after "addu $t0,$v1,$zero" @ 3
@@ -3771,7 +3771,7 @@ func_80060B70: delete @ 31
 func_80060B70: reorder 30,29 @ 29-30
 # Move li t6,1 to early position (target #3)
 func_800692C0: reorder 6,3,4,5 @ 3-6
-func_800482C8: subst "lhu\t\$18,1090\(\$sp\)" "lhu\t$18,1088($sp)" @ 10
+efc_buki_draw_zanzou: subst "lhu\t\$18,1090\(\$sp\)" "lhu\t$18,1088($sp)" @ 10
 func_800485EC: subst "\$8" "$3" @ 10
 func_800485EC: subst "lw\s+\$4," "lhu	$4," @ 11
 func_800485EC: subst "lw\s+\$6," "lhu	$5," @ 12
@@ -4497,95 +4497,95 @@ func_800770B8: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L_post988" @ 99
 
 
 
-# regfix-suggest: auto-generated rules for func_8005D554
-func_8005D554: subst "subu\s+\$sp,\$sp,104" "addiu	$29,$29,-120" @ 1  # auto: was `subu	$sp,$sp,104` -> `addiu $29,$29,-120`
-func_8005D554: subst "sw\s+\$16,64\(\$sp\)" "sw	$16,80($29)" @ 2  # auto: was `sw	$16,64($sp)` -> `sw $16,80($29)`
-func_8005D554: subst "sw\s+\$31,100\(\$sp\)" "sw	$31,116($29)" @ 4  # auto: was `sw	$31,100($sp)` -> `sw $31,116($29)`
-func_8005D554: subst "sw\s+\$fp,96\(\$sp\)" "sw	$30,112($29)" @ 5  # auto: was `sw	$fp,96($sp)` -> `sw $30,112($29)`
-func_8005D554: subst "sw\s+\$23,92\(\$sp\)" "sw	$23,108($29)" @ 6  # auto: was `sw	$23,92($sp)` -> `sw $23,108($29)`
-func_8005D554: subst "sw\s+\$22,88\(\$sp\)" "sw	$22,104($29)" @ 7  # auto: was `sw	$22,88($sp)` -> `sw $22,104($29)`
-func_8005D554: subst "sw\s+\$21,84\(\$sp\)" "sw	$21,100($29)" @ 8  # auto: was `sw	$21,84($sp)` -> `sw $21,100($29)`
-func_8005D554: subst "sw\s+\$20,80\(\$sp\)" "sw	$20,96($29)" @ 9  # auto: was `sw	$20,80($sp)` -> `sw $20,96($29)`
-func_8005D554: subst "sw\s+\$19,76\(\$sp\)" "sw	$19,92($29)" @ 10  # auto: was `sw	$19,76($sp)` -> `sw $19,92($29)`
-func_8005D554: subst "sw\s+\$18,72\(\$sp\)" "sw	$18,88($29)" @ 11  # auto: was `sw	$18,72($sp)` -> `sw $18,88($29)`
-func_8005D554: subst "sw\s+\$17,68\(\$sp\)" "sw	$17,84($29)" @ 12  # auto: was `sw	$17,68($sp)` -> `sw $17,84($29)`
-func_8005D554: subst "addu\s+\$19,\$0,\$zero" "addu	$18,$0,$0" @ 24  # auto: was `addu	$19,$0,$zero` -> `addu $18,$0,$0`
-func_8005D554: subst "addiu\s+\$18,\$zero,256" "addiu	$19,$0,256" @ 51  # auto: was `addiu	$18,$zero,256` -> `addiu $19,$0,256`
-func_8005D554: delete @ 60  # auto (replace): drop `la	$6,D_8009B388`
-func_8005D554: delete @ 59  # auto (replace): drop `addu	$2,$23,$16`
-func_8005D554: delete @ 58  # auto (replace): drop `addu	$fp,$2,12`
-func_8005D554: delete @ 57  # auto (replace): drop `addu	$2,$16,$23`
-func_8005D554: delete @ 56  # auto (replace): drop `la	$23,D_8009B2E0`
-func_8005D554: insert_after "addu $2,$16,$30" @ 55  # auto (replace): target has after idx 55
-func_8005D554: insert_after "addiu $23,$23,%lo(D_8009B388)" @ 55  # auto (replace): target has after idx 55
-func_8005D554: insert_after "lui $23,%hi(D_8009B388)" @ 55  # auto (replace): target has after idx 55
-func_8005D554: insert_after "sw $2,64($29)" @ 55  # auto (replace): target has after idx 55
-func_8005D554: insert_after "addu $2,$16,$2" @ 55  # auto (replace): target has after idx 55
-func_8005D554: insert_after "addiu $2,$30,12" @ 55  # auto (replace): target has after idx 55
-func_8005D554: insert_after "addiu $30,$30,%lo(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
-func_8005D554: insert_after "lui $30,%hi(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
-func_8005D554: subst "sw\s+\$6,20\(\$sp\)" "sw	$23,20($29)" @ 64  # auto: was `sw	$6,20($sp)` -> `sw $23,20($29)`
-func_8005D554: subst "sw\s+\$18,52\(\$sp\)" "sw	$19,52($29)" @ 66  # auto: was `sw	$18,52($sp)` -> `sw $19,52($29)`
-func_8005D554: subst "sw\s+\$18,48\(\$sp\)" "sw	$19,48($29)" @ 67  # auto: was `sw	$18,48($sp)` -> `sw $19,48($29)`
-func_8005D554: subst "addu\s+\$19,\$19,1" "addiu	$18,$18,1" @ 71  # auto: was `addu	$19,$19,1` -> `addiu $18,$18,1`
-func_8005D554: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-25" @ 73  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-25`
-func_8005D554: delete @ 82  # auto (replace): drop `addu	$2,$21,$2`
-func_8005D554: delete @ 81  # auto (replace): drop `addu	$2,$2,-25`
-func_8005D554: insert_after "addu $4,$4,$2" @ 80  # auto (replace): target has after idx 80
-func_8005D554: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 85  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
-func_8005D554: insert_after "addu $5,$0,$0" @ 86  # auto: target has this after idx 86
-func_8005D554: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-12" @ 88  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-12`
-func_8005D554: delete @ 99  # auto (replace): drop `addu	$2,$20,$2`
-func_8005D554: delete @ 98  # auto (replace): drop `addu	$2,$2,-12`
-func_8005D554: insert_after "addu $6,$6,$2" @ 97  # auto (replace): target has after idx 97
-func_8005D554: delete @ 102  # auto (replace): drop `sw	$2,44($sp)`
-func_8005D554: insert_after "lw $7,64($29)" @ 101  # auto (replace): target has after idx 101
-func_8005D554: insert_after "sw $7,20($29)" @ 101  # auto (replace): target has after idx 101
-func_8005D554: insert_after "addiu $7,$7,%lo(D_8009B390)" @ 101  # auto (replace): target has after idx 101
-func_8005D554: insert_after "lui $7,%hi(D_8009B390)" @ 101  # auto (replace): target has after idx 101
-func_8005D554: insert_after "lw $3,%gp_rel(D_800A3418)($28)" @ 101  # auto (replace): target has after idx 101
-func_8005D554: insert_after "sw $6,44($29)" @ 101  # auto (replace): target has after idx 101
-func_8005D554: delete @ 105  # auto: extra `la	$2,D_8009B390`
-func_8005D554: delete @ 104  # auto: extra `lw	$3,%gp_rel(D_800A3418)($gp)`
-func_8005D554: delete @ 109  # auto (replace): drop `sw	$2,20($sp)`
-func_8005D554: delete @ 108  # auto (replace): drop `sw	$18,48($sp)`
-func_8005D554: delete @ 107  # auto (replace): drop `sw	$18,52($sp)`
-func_8005D554: insert_after "sw $19,48($29)" @ 106  # auto (replace): target has after idx 106
-func_8005D554: insert_after "sw $19,52($29)" @ 106  # auto (replace): target has after idx 106
-func_8005D554: subst "addu\s+\$2,\$fp,\$2" "addu	$2,$7,$2" @ 114  # auto: was `addu	$2,$fp,$2` -> `addu $2,$7,$2`
-func_8005D554: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-50" @ 118  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-50`
-func_8005D554: delete @ 127  # auto (replace): drop `addu	$2,$21,$2`
-func_8005D554: delete @ 126  # auto (replace): drop `addu	$2,$2,-50`
-func_8005D554: insert_after "addu $4,$4,$2" @ 125  # auto (replace): target has after idx 125
-func_8005D554: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 130  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
-func_8005D554: insert_after "addu $5,$0,$0" @ 131  # auto: target has this after idx 131
-func_8005D554: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-25" @ 133  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-25`
-func_8005D554: delete @ 145  # auto (replace): drop `addu	$2,$20,$2`
-func_8005D554: delete @ 144  # auto (replace): drop `addu	$2,$2,-25`
-func_8005D554: insert_after "addu $6,$6,$2" @ 143  # auto (replace): target has after idx 143
-func_8005D554: subst "sw\s+\$2,44\(\$sp\)" "sw	$6,44($29)" @ 148  # auto: was `sw	$2,44($sp)` -> `sw $6,44($29)`
-func_8005D554: subst "slt\s+\$3,\$19,\$3" "slt	$3,$18,$3" @ 153  # auto: was `slt	$3,$19,$3` -> `slt $3,$18,$3`
-func_8005D554: subst "lw\s+\$31,100\(\$sp\)" "lw	$31,116($29)" @ 160  # auto: was `lw	$31,100($sp)` -> `lw $31,116($29)`
-func_8005D554: subst "lw\s+\$fp,96\(\$sp\)" "lw	$30,112($29)" @ 161  # auto: was `lw	$fp,96($sp)` -> `lw $30,112($29)`
-func_8005D554: subst "lw\s+\$23,92\(\$sp\)" "lw	$23,108($29)" @ 162  # auto: was `lw	$23,92($sp)` -> `lw $23,108($29)`
-func_8005D554: subst "lw\s+\$22,88\(\$sp\)" "lw	$22,104($29)" @ 163  # auto: was `lw	$22,88($sp)` -> `lw $22,104($29)`
-func_8005D554: subst "lw\s+\$21,84\(\$sp\)" "lw	$21,100($29)" @ 164  # auto: was `lw	$21,84($sp)` -> `lw $21,100($29)`
-func_8005D554: subst "lw\s+\$20,80\(\$sp\)" "lw	$20,96($29)" @ 165  # auto: was `lw	$20,80($sp)` -> `lw $20,96($29)`
-func_8005D554: subst "lw\s+\$19,76\(\$sp\)" "lw	$19,92($29)" @ 166  # auto: was `lw	$19,76($sp)` -> `lw $19,92($29)`
-func_8005D554: subst "lw\s+\$18,72\(\$sp\)" "lw	$18,88($29)" @ 167  # auto: was `lw	$18,72($sp)` -> `lw $18,88($29)`
-func_8005D554: subst "lw\s+\$17,68\(\$sp\)" "lw	$17,84($29)" @ 168  # auto: was `lw	$17,68($sp)` -> `lw $17,84($29)`
-func_8005D554: subst "lw\s+\$16,64\(\$sp\)" "lw	$16,80($29)" @ 169  # auto: was `lw	$16,64($sp)` -> `lw $16,80($29)`
-func_8005D554: subst "addu\s+\$sp,\$sp,104" "addiu	$29,$29,120" @ 170  # auto: was `addu	$sp,$sp,104` -> `addiu $29,$29,120`
-func_8005D554: reorder 89,84,85,86,87,96,88,90,91,92,93,94,95 @ 84-96
-func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
-func_8005D554: reorder 165,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164 @ 148-165
-func_8005D554: reorder 108,101,102,113,114,115,116,117,118,103,104,124,125,105,106,107,109,110,111,112,119,120,121,122,123 @ 101-125
-func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
-func_8005D554: reorder 153,135,136,137,138,139,140,141,142,143,144,145,146,148,147,149,150,151,152 @ 135-153
-func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
-func_8005D554: reorder 145,130,131,132,133,152,134,135,136,137,138,139,140,141,142,143,144,146,165,147,148,149,150,151,153,154,155,156,157,158,159,160,161,162,163,164 @ 130-165
-func_8005D554: insert_label ".L_loopfix:" @ 62
-func_8005D554: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.L_loopfix" @ 154
+# regfix-suggest: auto-generated rules for gnd_land_hit_char_tsuba
+gnd_land_hit_char_tsuba: subst "subu\s+\$sp,\$sp,104" "addiu	$29,$29,-120" @ 1  # auto: was `subu	$sp,$sp,104` -> `addiu $29,$29,-120`
+gnd_land_hit_char_tsuba: subst "sw\s+\$16,64\(\$sp\)" "sw	$16,80($29)" @ 2  # auto: was `sw	$16,64($sp)` -> `sw $16,80($29)`
+gnd_land_hit_char_tsuba: subst "sw\s+\$31,100\(\$sp\)" "sw	$31,116($29)" @ 4  # auto: was `sw	$31,100($sp)` -> `sw $31,116($29)`
+gnd_land_hit_char_tsuba: subst "sw\s+\$fp,96\(\$sp\)" "sw	$30,112($29)" @ 5  # auto: was `sw	$fp,96($sp)` -> `sw $30,112($29)`
+gnd_land_hit_char_tsuba: subst "sw\s+\$23,92\(\$sp\)" "sw	$23,108($29)" @ 6  # auto: was `sw	$23,92($sp)` -> `sw $23,108($29)`
+gnd_land_hit_char_tsuba: subst "sw\s+\$22,88\(\$sp\)" "sw	$22,104($29)" @ 7  # auto: was `sw	$22,88($sp)` -> `sw $22,104($29)`
+gnd_land_hit_char_tsuba: subst "sw\s+\$21,84\(\$sp\)" "sw	$21,100($29)" @ 8  # auto: was `sw	$21,84($sp)` -> `sw $21,100($29)`
+gnd_land_hit_char_tsuba: subst "sw\s+\$20,80\(\$sp\)" "sw	$20,96($29)" @ 9  # auto: was `sw	$20,80($sp)` -> `sw $20,96($29)`
+gnd_land_hit_char_tsuba: subst "sw\s+\$19,76\(\$sp\)" "sw	$19,92($29)" @ 10  # auto: was `sw	$19,76($sp)` -> `sw $19,92($29)`
+gnd_land_hit_char_tsuba: subst "sw\s+\$18,72\(\$sp\)" "sw	$18,88($29)" @ 11  # auto: was `sw	$18,72($sp)` -> `sw $18,88($29)`
+gnd_land_hit_char_tsuba: subst "sw\s+\$17,68\(\$sp\)" "sw	$17,84($29)" @ 12  # auto: was `sw	$17,68($sp)` -> `sw $17,84($29)`
+gnd_land_hit_char_tsuba: subst "addu\s+\$19,\$0,\$zero" "addu	$18,$0,$0" @ 24  # auto: was `addu	$19,$0,$zero` -> `addu $18,$0,$0`
+gnd_land_hit_char_tsuba: subst "addiu\s+\$18,\$zero,256" "addiu	$19,$0,256" @ 51  # auto: was `addiu	$18,$zero,256` -> `addiu $19,$0,256`
+gnd_land_hit_char_tsuba: delete @ 60  # auto (replace): drop `la	$6,D_8009B388`
+gnd_land_hit_char_tsuba: delete @ 59  # auto (replace): drop `addu	$2,$23,$16`
+gnd_land_hit_char_tsuba: delete @ 58  # auto (replace): drop `addu	$fp,$2,12`
+gnd_land_hit_char_tsuba: delete @ 57  # auto (replace): drop `addu	$2,$16,$23`
+gnd_land_hit_char_tsuba: delete @ 56  # auto (replace): drop `la	$23,D_8009B2E0`
+gnd_land_hit_char_tsuba: insert_after "addu $2,$16,$30" @ 55  # auto (replace): target has after idx 55
+gnd_land_hit_char_tsuba: insert_after "addiu $23,$23,%lo(D_8009B388)" @ 55  # auto (replace): target has after idx 55
+gnd_land_hit_char_tsuba: insert_after "lui $23,%hi(D_8009B388)" @ 55  # auto (replace): target has after idx 55
+gnd_land_hit_char_tsuba: insert_after "sw $2,64($29)" @ 55  # auto (replace): target has after idx 55
+gnd_land_hit_char_tsuba: insert_after "addu $2,$16,$2" @ 55  # auto (replace): target has after idx 55
+gnd_land_hit_char_tsuba: insert_after "addiu $2,$30,12" @ 55  # auto (replace): target has after idx 55
+gnd_land_hit_char_tsuba: insert_after "addiu $30,$30,%lo(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
+gnd_land_hit_char_tsuba: insert_after "lui $30,%hi(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
+gnd_land_hit_char_tsuba: subst "sw\s+\$6,20\(\$sp\)" "sw	$23,20($29)" @ 64  # auto: was `sw	$6,20($sp)` -> `sw $23,20($29)`
+gnd_land_hit_char_tsuba: subst "sw\s+\$18,52\(\$sp\)" "sw	$19,52($29)" @ 66  # auto: was `sw	$18,52($sp)` -> `sw $19,52($29)`
+gnd_land_hit_char_tsuba: subst "sw\s+\$18,48\(\$sp\)" "sw	$19,48($29)" @ 67  # auto: was `sw	$18,48($sp)` -> `sw $19,48($29)`
+gnd_land_hit_char_tsuba: subst "addu\s+\$19,\$19,1" "addiu	$18,$18,1" @ 71  # auto: was `addu	$19,$19,1` -> `addiu $18,$18,1`
+gnd_land_hit_char_tsuba: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-25" @ 73  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-25`
+gnd_land_hit_char_tsuba: delete @ 82  # auto (replace): drop `addu	$2,$21,$2`
+gnd_land_hit_char_tsuba: delete @ 81  # auto (replace): drop `addu	$2,$2,-25`
+gnd_land_hit_char_tsuba: insert_after "addu $4,$4,$2" @ 80  # auto (replace): target has after idx 80
+gnd_land_hit_char_tsuba: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 85  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
+gnd_land_hit_char_tsuba: insert_after "addu $5,$0,$0" @ 86  # auto: target has this after idx 86
+gnd_land_hit_char_tsuba: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-12" @ 88  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-12`
+gnd_land_hit_char_tsuba: delete @ 99  # auto (replace): drop `addu	$2,$20,$2`
+gnd_land_hit_char_tsuba: delete @ 98  # auto (replace): drop `addu	$2,$2,-12`
+gnd_land_hit_char_tsuba: insert_after "addu $6,$6,$2" @ 97  # auto (replace): target has after idx 97
+gnd_land_hit_char_tsuba: delete @ 102  # auto (replace): drop `sw	$2,44($sp)`
+gnd_land_hit_char_tsuba: insert_after "lw $7,64($29)" @ 101  # auto (replace): target has after idx 101
+gnd_land_hit_char_tsuba: insert_after "sw $7,20($29)" @ 101  # auto (replace): target has after idx 101
+gnd_land_hit_char_tsuba: insert_after "addiu $7,$7,%lo(D_8009B390)" @ 101  # auto (replace): target has after idx 101
+gnd_land_hit_char_tsuba: insert_after "lui $7,%hi(D_8009B390)" @ 101  # auto (replace): target has after idx 101
+gnd_land_hit_char_tsuba: insert_after "lw $3,%gp_rel(D_800A3418)($28)" @ 101  # auto (replace): target has after idx 101
+gnd_land_hit_char_tsuba: insert_after "sw $6,44($29)" @ 101  # auto (replace): target has after idx 101
+gnd_land_hit_char_tsuba: delete @ 105  # auto: extra `la	$2,D_8009B390`
+gnd_land_hit_char_tsuba: delete @ 104  # auto: extra `lw	$3,%gp_rel(D_800A3418)($gp)`
+gnd_land_hit_char_tsuba: delete @ 109  # auto (replace): drop `sw	$2,20($sp)`
+gnd_land_hit_char_tsuba: delete @ 108  # auto (replace): drop `sw	$18,48($sp)`
+gnd_land_hit_char_tsuba: delete @ 107  # auto (replace): drop `sw	$18,52($sp)`
+gnd_land_hit_char_tsuba: insert_after "sw $19,48($29)" @ 106  # auto (replace): target has after idx 106
+gnd_land_hit_char_tsuba: insert_after "sw $19,52($29)" @ 106  # auto (replace): target has after idx 106
+gnd_land_hit_char_tsuba: subst "addu\s+\$2,\$fp,\$2" "addu	$2,$7,$2" @ 114  # auto: was `addu	$2,$fp,$2` -> `addu $2,$7,$2`
+gnd_land_hit_char_tsuba: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-50" @ 118  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-50`
+gnd_land_hit_char_tsuba: delete @ 127  # auto (replace): drop `addu	$2,$21,$2`
+gnd_land_hit_char_tsuba: delete @ 126  # auto (replace): drop `addu	$2,$2,-50`
+gnd_land_hit_char_tsuba: insert_after "addu $4,$4,$2" @ 125  # auto (replace): target has after idx 125
+gnd_land_hit_char_tsuba: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 130  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
+gnd_land_hit_char_tsuba: insert_after "addu $5,$0,$0" @ 131  # auto: target has this after idx 131
+gnd_land_hit_char_tsuba: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-25" @ 133  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-25`
+gnd_land_hit_char_tsuba: delete @ 145  # auto (replace): drop `addu	$2,$20,$2`
+gnd_land_hit_char_tsuba: delete @ 144  # auto (replace): drop `addu	$2,$2,-25`
+gnd_land_hit_char_tsuba: insert_after "addu $6,$6,$2" @ 143  # auto (replace): target has after idx 143
+gnd_land_hit_char_tsuba: subst "sw\s+\$2,44\(\$sp\)" "sw	$6,44($29)" @ 148  # auto: was `sw	$2,44($sp)` -> `sw $6,44($29)`
+gnd_land_hit_char_tsuba: subst "slt\s+\$3,\$19,\$3" "slt	$3,$18,$3" @ 153  # auto: was `slt	$3,$19,$3` -> `slt $3,$18,$3`
+gnd_land_hit_char_tsuba: subst "lw\s+\$31,100\(\$sp\)" "lw	$31,116($29)" @ 160  # auto: was `lw	$31,100($sp)` -> `lw $31,116($29)`
+gnd_land_hit_char_tsuba: subst "lw\s+\$fp,96\(\$sp\)" "lw	$30,112($29)" @ 161  # auto: was `lw	$fp,96($sp)` -> `lw $30,112($29)`
+gnd_land_hit_char_tsuba: subst "lw\s+\$23,92\(\$sp\)" "lw	$23,108($29)" @ 162  # auto: was `lw	$23,92($sp)` -> `lw $23,108($29)`
+gnd_land_hit_char_tsuba: subst "lw\s+\$22,88\(\$sp\)" "lw	$22,104($29)" @ 163  # auto: was `lw	$22,88($sp)` -> `lw $22,104($29)`
+gnd_land_hit_char_tsuba: subst "lw\s+\$21,84\(\$sp\)" "lw	$21,100($29)" @ 164  # auto: was `lw	$21,84($sp)` -> `lw $21,100($29)`
+gnd_land_hit_char_tsuba: subst "lw\s+\$20,80\(\$sp\)" "lw	$20,96($29)" @ 165  # auto: was `lw	$20,80($sp)` -> `lw $20,96($29)`
+gnd_land_hit_char_tsuba: subst "lw\s+\$19,76\(\$sp\)" "lw	$19,92($29)" @ 166  # auto: was `lw	$19,76($sp)` -> `lw $19,92($29)`
+gnd_land_hit_char_tsuba: subst "lw\s+\$18,72\(\$sp\)" "lw	$18,88($29)" @ 167  # auto: was `lw	$18,72($sp)` -> `lw $18,88($29)`
+gnd_land_hit_char_tsuba: subst "lw\s+\$17,68\(\$sp\)" "lw	$17,84($29)" @ 168  # auto: was `lw	$17,68($sp)` -> `lw $17,84($29)`
+gnd_land_hit_char_tsuba: subst "lw\s+\$16,64\(\$sp\)" "lw	$16,80($29)" @ 169  # auto: was `lw	$16,64($sp)` -> `lw $16,80($29)`
+gnd_land_hit_char_tsuba: subst "addu\s+\$sp,\$sp,104" "addiu	$29,$29,120" @ 170  # auto: was `addu	$sp,$sp,104` -> `addiu $29,$29,120`
+gnd_land_hit_char_tsuba: reorder 89,84,85,86,87,96,88,90,91,92,93,94,95 @ 84-96
+gnd_land_hit_char_tsuba: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+gnd_land_hit_char_tsuba: reorder 165,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164 @ 148-165
+gnd_land_hit_char_tsuba: reorder 108,101,102,113,114,115,116,117,118,103,104,124,125,105,106,107,109,110,111,112,119,120,121,122,123 @ 101-125
+gnd_land_hit_char_tsuba: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+gnd_land_hit_char_tsuba: reorder 153,135,136,137,138,139,140,141,142,143,144,145,146,148,147,149,150,151,152 @ 135-153
+gnd_land_hit_char_tsuba: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+gnd_land_hit_char_tsuba: reorder 145,130,131,132,133,152,134,135,136,137,138,139,140,141,142,143,144,146,165,147,148,149,150,151,153,154,155,156,157,158,159,160,161,162,163,164 @ 130-165
+gnd_land_hit_char_tsuba: insert_label ".L_loopfix:" @ 62
+gnd_land_hit_char_tsuba: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.L_loopfix" @ 154
 func_8007A28C: fill_delay @ 3 <- 5
 func_8007A28C: fill_delay @ 17 <- 19
 func_8007A28C: subst "nop\s+#\s+DEBUG:\s+branch/jump" "addu	$2,$6,$0" @ 2

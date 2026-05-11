@@ -12,7 +12,7 @@ extern s32 D_800A33B4;
 extern s32 *func_800457A0(s32);
 extern s32 *func_800455AC(s32);
 extern void func_80044F30(s32, s32);
-extern void func_80045824(s32, s32, s32);
+extern void md_mtest_init(s32, s32, s32);
 extern void func_80045230(s32);
 extern void func_80044010(s32, s32);
 extern void md_game_check_mode(s32, s32);
@@ -82,7 +82,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     if (arg1 != 0) {
         s32 *p = (s32 *)arg1;
         s3 = p[0];
-        func_80045824(arg1, (s32)s0, p[s3]);
+        md_mtest_init(arg1, (s32)s0, p[s3]);
     }
 
     {

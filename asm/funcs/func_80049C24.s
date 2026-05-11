@@ -65,7 +65,7 @@ glabel func_80049C24
     /* 3A504 80049D04 36270108 */  j          .L80049CD8
     /* 3A508 80049D08 01001024 */   addiu     $s0, $zero, 0x1
   .L80049D0C:
-    /* 3A50C 80049D0C 044B010C */  jal        func_80052C10
+    /* 3A50C 80049D0C 044B010C */  jal        InitFadePanel
     /* 3A510 80049D10 00000000 */   nop
   .L80049D14:
     /* 3A514 80049D14 27101000 */  nor        $v0, $zero, $s0

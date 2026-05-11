@@ -7,7 +7,7 @@ glabel func_8001D998
     /* E1AC 8001D9AC 1400B1AF */  sw         $s1, 0x14($sp)
     /* E1B0 8001D9B0 1A5A000C */  jal        gpu_EnableDisplay
     /* E1B4 8001D9B4 1000B0AF */   sw        $s0, 0x10($sp)
-    /* E1B8 8001D9B8 4E83000C */  jal        func_80020D38
+    /* E1B8 8001D9B8 4E83000C */  jal        EndADRSound
     /* E1BC 8001D9BC 00000000 */   nop
     /* E1C0 8001D9C0 1A6E010C */  jal        obj_InitPair
     /* E1C4 8001D9C4 00000000 */   nop

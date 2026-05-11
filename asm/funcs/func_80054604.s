@@ -126,7 +126,7 @@ glabel func_80054604
     /* 44FD8 800547D8 080033A6 */   sh        $s3, 0x8($s1)
     /* 44FDC 800547DC B159000C */  jal        disp_CalcFov
     /* 44FE0 800547E0 2D000424 */   addiu     $a0, $zero, 0x2D
-    /* 44FE4 800547E4 FFFB010C */  jal        func_8007EFFC
+    /* 44FE4 800547E4 FFFB010C */  jal        tslDmaDrawListDelAll
     /* 44FE8 800547E8 21204000 */   addu      $a0, $v0, $zero
     /* 44FEC 800547EC 0400228E */  lw         $v0, 0x4($s1)
     /* 44FF0 800547F0 00000000 */  nop

@@ -24,7 +24,7 @@ glabel func_8003B328
     /* 2BB80 8003B380 21200000 */   addu      $a0, $zero, $zero
     /* 2BB84 8003B384 1080043C */  lui        $a0, %hi(D_80101EC8)
     /* 2BB88 8003B388 C81E8424 */  addiu      $a0, $a0, %lo(D_80101EC8)
-    /* 2BB8C 8003B38C 5A89000C */  jal        func_80022568
+    /* 2BB8C 8003B38C 5A89000C */  jal        pad_button_info_clear
     /* 2BB90 8003B390 00000000 */   nop
     /* 2BB94 8003B394 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2BB98 8003B398 1800BD27 */  addiu      $sp, $sp, 0x18

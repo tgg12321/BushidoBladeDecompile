@@ -234,7 +234,7 @@ glabel md_game_check_mode
     /* 2F918 8003F118 E8038228 */  slti       $v0, $a0, 0x3E8
     /* 2F91C 8003F11C 03004014 */  bnez       $v0, .L8003F12C
     /* 2F920 8003F120 00000000 */   nop
-    /* 2F924 8003F124 044B010C */  jal        func_80052C10
+    /* 2F924 8003F124 044B010C */  jal        InitFadePanel
     /* 2F928 8003F128 00000000 */   nop
   .L8003F12C:
     /* 2F92C 8003F12C 0A80013C */  lui        $at, %hi(D_800A3678)

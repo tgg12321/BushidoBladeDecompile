@@ -19,7 +19,7 @@ glabel func_800475A4
     /* 37DE8 800475E8 1400A2A7 */   sh        $v0, 0x14($sp)
     /* 37DEC 800475EC 1800A48F */  lw         $a0, 0x18($sp)
     /* 37DF0 800475F0 2000A58F */  lw         $a1, 0x20($sp)
-    /* 37DF4 800475F4 57FF010C */  jal        func_8007FD5C
+    /* 37DF4 800475F4 57FF010C */  jal        single_game_getEnemyCharId
     /* 37DF8 800475F8 00000000 */   nop
     /* 37DFC 800475FC 21804000 */  addu       $s0, $v0, $zero
     /* 37E00 80047600 00141000 */  sll        $v0, $s0, 16
@@ -46,7 +46,7 @@ glabel func_800475A4
     /* 37E54 80047654 12180000 */  mflo       $v1
     /* 37E58 80047658 2128A300 */  addu       $a1, $a1, $v1
     /* 37E5C 8004765C 032B0500 */  sra        $a1, $a1, 12
-    /* 37E60 80047660 57FF010C */  jal        func_8007FD5C
+    /* 37E60 80047660 57FF010C */  jal        single_game_getEnemyCharId
     /* 37E64 80047664 2000A5AF */   sw        $a1, 0x20($sp)
     /* 37E68 80047668 23100200 */  negu       $v0, $v0
     /* 37E6C 8004766C 0F80113C */  lui        $s1, %hi(D_800EEDF0)

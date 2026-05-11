@@ -85,14 +85,14 @@ glabel func_800571C0
     /* 47B08 80057308 3000A3AF */  sw         $v1, 0x30($sp)
     /* 47B0C 8005730C 05004224 */  addiu      $v0, $v0, 0x5
     /* 47B10 80057310 2C00A2AF */  sw         $v0, 0x2C($sp)
-    /* 47B14 80057314 854D010C */  jal        func_80053614
+    /* 47B14 80057314 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 47B18 80057318 1000B7AF */   sw        $s7, 0x10($sp)
     /* 47B1C 8005731C 08004010 */  beqz       $v0, .L80057340
     /* 47B20 80057320 3800A427 */   addiu     $a0, $sp, 0x38
     /* 47B24 80057324 1800A527 */  addiu      $a1, $sp, 0x18
     /* 47B28 80057328 7800A68F */  lw         $a2, 0x78($sp)
     /* 47B2C 8005732C 2138C003 */  addu       $a3, $fp, $zero
-    /* 47B30 80057330 854D010C */  jal        func_80053614
+    /* 47B30 80057330 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 47B34 80057334 1000B7AF */   sw        $s7, 0x10($sp)
     /* 47B38 80057338 0100422C */  sltiu      $v0, $v0, 0x1
     /* 47B3C 8005733C 21984000 */  addu       $s3, $v0, $zero
@@ -155,14 +155,14 @@ glabel func_800571C0
     /* 47C14 80057414 3000A3AF */  sw         $v1, 0x30($sp)
     /* 47C18 80057418 05004224 */  addiu      $v0, $v0, 0x5
     /* 47C1C 8005741C 2C00A2AF */  sw         $v0, 0x2C($sp)
-    /* 47C20 80057420 854D010C */  jal        func_80053614
+    /* 47C20 80057420 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 47C24 80057424 1000B7AF */   sw        $s7, 0x10($sp)
     /* 47C28 80057428 08004010 */  beqz       $v0, .L8005744C
     /* 47C2C 8005742C 4800A427 */   addiu     $a0, $sp, 0x48
     /* 47C30 80057430 1800A527 */  addiu      $a1, $sp, 0x18
     /* 47C34 80057434 7800A68F */  lw         $a2, 0x78($sp)
     /* 47C38 80057438 2138C003 */  addu       $a3, $fp, $zero
-    /* 47C3C 8005743C 854D010C */  jal        func_80053614
+    /* 47C3C 8005743C 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 47C40 80057440 1000B7AF */   sw        $s7, 0x10($sp)
     /* 47C44 80057444 0100422C */  sltiu      $v0, $v0, 0x1
     /* 47C48 80057448 21A04000 */  addu       $s4, $v0, $zero

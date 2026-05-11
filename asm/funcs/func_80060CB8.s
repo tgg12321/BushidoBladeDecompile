@@ -70,7 +70,7 @@ glabel func_80060CB8
     /* 515B4 80060DB4 1600A2A7 */   sh        $v0, 0x16($sp)
     /* 515B8 80060DB8 CFEC010C */  jal        gpu_DrawSync
     /* 515BC 80060DBC 21200000 */   addu      $a0, $zero, $zero
-    /* 515C0 80060DC0 1883010C */  jal        func_80060C60
+    /* 515C0 80060DC0 1883010C */  jal        saTan1GaugeInit
     /* 515C4 80060DC4 00000000 */   nop
     /* 515C8 80060DC8 55E4010C */  jal        func_80079154
     /* 515CC 80060DCC 00000000 */   nop

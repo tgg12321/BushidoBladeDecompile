@@ -15,7 +15,7 @@ glabel replay_camera_rob_back_loose2
     /* 25E48 80035648 00000000 */  nop
     /* 25E4C 8003564C 0B004014 */  bnez       $v0, .L8003567C
     /* 25E50 80035650 1180043C */   lui       $a0, (0x80118800 >> 16)
-    /* 25E54 80035654 39E1010C */  jal        func_800784E4
+    /* 25E54 80035654 39E1010C */  jal        camera_get_rot_normal_rad
     /* 25E58 80035658 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25E5C 8003565C EAD7000C */  jal        func_80035FA8
     /* 25E60 80035660 00000000 */   nop

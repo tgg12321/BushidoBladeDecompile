@@ -5,7 +5,7 @@ glabel cpu_get_dist
     /* 20B38 80030338 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 20B3C 8003033C 0000A484 */  lh         $a0, 0x0($a1)
     /* 20B40 80030340 0400A584 */  lh         $a1, 0x4($a1)
-    /* 20B44 80030344 57FF010C */  jal        func_8007FD5C
+    /* 20B44 80030344 57FF010C */  jal        single_game_getEnemyCharId
     /* 20B48 80030348 00000000 */   nop
     /* 20B4C 8003034C 00044324 */  addiu      $v1, $v0, 0x400
     /* 20B50 80030350 FF0F6330 */  andi       $v1, $v1, 0xFFF

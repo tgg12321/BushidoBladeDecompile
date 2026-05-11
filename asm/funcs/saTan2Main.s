@@ -19,7 +19,7 @@ glabel saTan2Main
     /* 7892C 8008812C 27210208 */  j          .L8008849C
     /* 78930 80088130 FFFF0224 */   addiu     $v0, $zero, -0x1
   .L80088134:
-    /* 78934 80088134 D62B020C */  jal        func_8008AF58
+    /* 78934 80088134 D62B020C */  jal        ReturnVSMode
     /* 78938 80088138 01000424 */   addiu     $a0, $zero, 0x1
     /* 7893C 8008813C 00141000 */  sll        $v0, $s0, 16
     /* 78940 80088140 031C0200 */  sra        $v1, $v0, 16
@@ -74,7 +74,7 @@ glabel saTan2Main
     /* 789F0 800881F0 05004014 */  bnez       $v0, .L80088208
     /* 789F4 800881F4 21306002 */   addu      $a2, $s3, $zero
   .L800881F8:
-    /* 789F8 800881F8 D62B020C */  jal        func_8008AF58
+    /* 789F8 800881F8 D62B020C */  jal        ReturnVSMode
     /* 789FC 800881FC 21200000 */   addu      $a0, $zero, $zero
     /* 78A00 80088200 27210208 */  j          .L8008849C
     /* 78A04 80088204 FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -201,7 +201,7 @@ glabel saTan2Main
     /* 78BB4 800883B4 21082200 */  addu       $at, $at, $v0
     /* 78BB8 800883B8 682A20A0 */  sb         $zero, %lo(D_80102A68)($at)
   .L800883BC:
-    /* 78BBC 800883BC D62B020C */  jal        func_8008AF58
+    /* 78BBC 800883BC D62B020C */  jal        ReturnVSMode
     /* 78BC0 800883C0 00000000 */   nop
     /* 78BC4 800883C4 1080033C */  lui        $v1, %hi(D_80107808)
     /* 78BC8 800883C8 08786394 */  lhu        $v1, %lo(D_80107808)($v1)

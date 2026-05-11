@@ -49,7 +49,7 @@ void func_80047EE8(s32 arg0, s32 arg1)
             new_var2 = word >> 2;
             v0v = (s16) (*((u16 *) p));
             p = (u32 *) (((s32) p) + 2);
-            func_800482C8(arg0 + (new_var2 << 2), new_var, a2v, a3v, v0v);
+            efc_buki_draw_zanzou(arg0 + (new_var2 << 2), new_var, a2v, a3v, v0v);
         }
         while ((count--) != 0);
     }
@@ -89,7 +89,7 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
             p = (u32 *)(((s32)p) + 2);
             v_plus_arg3 = (s32)v0v + sx_arg3;
             new_var2 = word >> 2;
-            func_800482C8(new_var + (new_var2 << 2),
+            efc_buki_draw_zanzou(new_var + (new_var2 << 2),
                           (s32)a1v + sx_arg2,
                           (s32)a2v + sx_arg3,
                           (s32)a3v + sx_arg2,
@@ -136,7 +136,7 @@ void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
             p = (u32 *)(((s32)p) + 2);
             v_plus = (s32)v0v + sx_arg5;
             new_var2 = word >> 2;
-            func_800482C8(saved_arg0 + (new_var2 << 2),
+            efc_buki_draw_zanzou(saved_arg0 + (new_var2 << 2),
                           (s32)a1v + sx_arg2,
                           (s32)a2v + sx_arg3,
                           (s32)a3v + sx_arg4,
@@ -178,7 +178,7 @@ void func_800481E8(s32 arg0, s32 arg1)
                 p = (u32 *)(((s32)p) + 2);
                 v0v += 1;
             }
-            func_800482C8(a0_for_call,
+            efc_buki_draw_zanzou(a0_for_call,
                           (s32)a1v,
                           (s32)a2v,
                           (s32)a3v,
@@ -186,7 +186,7 @@ void func_800481E8(s32 arg0, s32 arg1)
         } while ((count--) != 0);
     }
 }
-void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
+void efc_buki_draw_zanzou(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
     s16 rect[4];
     s16 buf[512];
     u8 *p_alt;
@@ -557,7 +557,7 @@ s32 func_80048AD0(s32 arg0) {
     return 1;
 }
 extern s32 g_snd_play_count;
-void func_80048B8C(s32 a0) {
+void saTan5GetTakeCutAnimType(s32 a0) {
     g_snd_play_count += a0;
 }
 void func_80048BA4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -567,7 +567,7 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 }
 extern u8 g_snd_ch_data[];
 extern u16 g_snd_se_bank[];
-extern void func_80052C10(void);
+extern void InitFadePanel(void);
 void func_80048F58(s32 a0, s32 a1) {
     s32 s1 = a0;
     s32 s0 = a1;
@@ -576,7 +576,7 @@ void func_80048F58(s32 a0, s32 a1) {
     u16 *dst;
     u8 *base;
     if (s0 > 0) {
-        func_80052C10();
+        InitFadePanel();
     }
     base = g_snd_ch_data + s0 * 308;
     *(u32 *)base = 0;
@@ -705,7 +705,7 @@ void func_8004939C(void) {
     D_800A33E8 = -1;
     D_800A33EC = -1;
 }
-extern s32 func_80052C10();
+extern s32 InitFadePanel();
 extern u8 D_80099CC8[];
 extern u8 D_80099CC9[];
 extern s32 D_800A33EC;
@@ -723,10 +723,10 @@ void func_800493E4(s32 arg0) {
         }
     } else {
         if (D_800A33EC == 0 && !(arg0 < 0x33)) {
-            func_80052C10();
+            InitFadePanel();
         }
         if (D_800A33EC == 1 && arg0 < 0x33) {
-            func_80052C10();
+            InitFadePanel();
         }
     }
     idx = arg0 * 2;
@@ -739,7 +739,7 @@ void func_800493E4(s32 arg0) {
 }
 extern s32 D_800A33EC;
 extern s16 D_800A33E8;
-extern void func_80052C10(void);
+extern void InitFadePanel(void);
 void func_800494D4(s32 arg0, s32 arg1) {
     register s32 idx asm("$17") = arg0;
     s32 new_var;
@@ -751,11 +751,11 @@ void func_800494D4(s32 arg0, s32 arg1) {
         cond = val < 8;
     }
     if (!cond) {
-        func_80052C10();
+        InitFadePanel();
     }
     new_var = idx;
     if (((u32)new_var) >= 2U) {
-        func_80052C10();
+        InitFadePanel();
     }
     (&D_800A33E8)[new_var] = (s16)val;
 }
@@ -781,7 +781,7 @@ extern s16 D_800A33EA;
 extern s32 D_800A324C;
 extern s32 func_8004954C(s32, s32, s32);
 extern s32 func_80046020();
-extern s32 func_80045B68(s32, s32, s16 *, s32);
+extern s32 efc_rob_set_type_particle(s32, s32, s16 *, s32);
 extern s32 func_8003E120();
 void func_80049584(s32 arg0) {
     register s32 var_s2 asm("$18") = arg0;
@@ -854,7 +854,7 @@ end:
     }
     if (var_s1 == 0) {
         func_80046020();
-        func_80045B68(D_800A33EC, var_s0_3, D_800EF980, var_s2);
+        efc_rob_set_type_particle(D_800A33EC, var_s0_3, D_800EF980, var_s2);
         func_8003E120();
     }
     (void) var_s2;
@@ -867,7 +867,7 @@ extern u8 *D_800A38B4;
 extern s16 D_800EF980[];
 extern s32 (*g_anim_func_table)(s16 *, s16 *);
 extern u8 *func_8004153C(s32);
-extern void func_80052C10(void);
+extern void InitFadePanel(void);
 extern void func_8007E4DC(s16 *, s16 *, s16 *);
 extern void func_8007ED6C(s32, s16 *, s32 *);
 
@@ -887,7 +887,7 @@ void func_80049718(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     do {
         var_s3 = arg1;
         if ((*p_anim) < 0) {
-            func_80052C10();
+            InitFadePanel();
         }
     } while (0);
     obj = D_800A38B4;
@@ -992,7 +992,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     new_var8 = (u8 *) D_800EF980;
     p_anim = (s16 *) (new_var8 + (temp_v1 * 2));
     if ((*p_anim) < 0) {
-        func_80052C10();
+        InitFadePanel();
     }
     vehicle = (u8 *) func_8004153C(arg1 >> 1);
     obj = D_800A38B4;
@@ -1100,7 +1100,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
         var_s0 = 1;
         var_s2 = 0;
     } else {
-        func_80052C10();
+        InitFadePanel();
     }
 
     v1 = var_s3;
@@ -2975,7 +2975,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8004BCC0\n"
+    "glabel saTan2LineDraw\n"
     "    lui   $t0,0x1F80\n"
     "    sw   $ra,492($t0)\n"
     "    sw   $fp,496($t0)\n"
@@ -3825,7 +3825,7 @@ __asm__(
     "    addiu   $s0,$s0,0x2\n"
     "    beqz   $t0,.L8004C930\n"
     "    nop\n"
-    "    j   func_80052C10\n"
+    "    j   InitFadePanel\n"
     "    nop\n"
     ".L8004C930:\n"
     "    lui   $v0,%hi(D_800A3820)\n"
@@ -10645,8 +10645,8 @@ void func_80052930(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-void func_80052A20(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052A20.s).
+void game_2d_CheckLifeGaugeNoDisp(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/game_2d_CheckLifeGaugeNoDisp.s).
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
@@ -10675,10 +10675,10 @@ void func_80052BE4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-void func_80052C10(void) {
+void InitFadePanel(void) {
     *(volatile s32 *)0x1F800400 = 0;
 }
-PAD_NOPS_1; /* padding after func_80052C10 */
+PAD_NOPS_1; /* padding after InitFadePanel */
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
@@ -10834,7 +10834,7 @@ void func_80053584(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
     func_80052D00(arg2, arg3);
 }
 typedef struct { s32 a, b, c, d; } _S16_53614;
-void func_80053614(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
+void camera_check_inside_screen_rob_dpos(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     D_800A33F4 = arg4;
     *(_S16_53614 *)((u8 *)D_800A33F4 + 8) = *(_S16_53614 *)arg0;
     *(_S16_53614 *)((u8 *)D_800A33F4 + 0x18) = *(_S16_53614 *)arg1;
@@ -11013,7 +11013,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_800545F4\n"
+    "glabel myRobGeneiOpen\n"
     "    lui  $t0,19584\n"
     "alabel D_800545F8\n"
     "    ori  $t0,$t0,32896\n"
@@ -11120,8 +11120,8 @@ void func_800550E8(s32 arg0) {
         p += 2;
     } while (i < 8);
 }
-void func_80055138(s32 arg0, s32 arg1) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80055138.s).
+void single_game_SetStatusUpData(s32 arg0, s32 arg1) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/single_game_SetStatusUpData.s).
      * 516 inst, 57 branches, 5 jal, 63 loads, 72 stores. m2c output had
      * type errors. Pure-C decomp pending. */
     (void)arg0; (void)arg1;
@@ -11287,8 +11287,8 @@ void func_80056CB8(s32 arg0) {
                 sp38 = 0; sp3C = 0; sp40 = 0;
                 sp48 = 0; sp4C = 0; sp50 = 0;
                 sp58 = 0; sp5C = 0;
-                func_80053614((s32 *)&sp18, sp68, (s32)&sp38, (s32)sp70, var_fp);
-                func_80053614((s32 *)&sp18, sp68, (s32)&sp48, (s32)sp70, sp78);
+                camera_check_inside_screen_rob_dpos((s32 *)&sp18, sp68, (s32)&sp38, (s32)sp70, var_fp);
+                camera_check_inside_screen_rob_dpos((s32 *)&sp18, sp68, (s32)&sp48, (s32)sp70, sp78);
                 *(s8 *)(r_arg0 + 0x444 + var_s6) = 0;
                 var_s6 += 1;
                 var_fp += 2;
@@ -11337,7 +11337,7 @@ s32 func_80056FE8(s32 arg0) {
         return partial + (*((s16 *) ((*((s32 *) arg0)) + 0x40A))) + 0x12C;
     }
 }
-extern s32 func_8007FD5C(s32, s32);
+extern s32 single_game_getEnemyCharId(s32, s32);
 extern s32 func_800233AC(void *, s32 *);
 extern s32 D_8009AA50[];
 
@@ -11348,8 +11348,8 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_v1;
     s32 var_v0;
 
-    temp_s0 = func_8007FD5C(D_800F6608 - *(s32 *)((s32)arg0 + 0xF4), D_800F6610 - *(s32 *)((s32)arg0 + 0xFC));
-    var_v0 = temp_s0 - func_8007FD5C(arg1 - *(s32 *)((s32)arg0 + 0xF4), arg2 - *(s32 *)((s32)arg0 + 0xFC));
+    temp_s0 = single_game_getEnemyCharId(D_800F6608 - *(s32 *)((s32)arg0 + 0xF4), D_800F6610 - *(s32 *)((s32)arg0 + 0xFC));
+    var_v0 = temp_s0 - single_game_getEnemyCharId(arg1 - *(s32 *)((s32)arg0 + 0xF4), arg2 - *(s32 *)((s32)arg0 + 0xFC));
     var_v0 -= 0x100;
     temp_v0 = (s32)var_v0 >> 9;
     temp_v1 = temp_v0 & 7;
@@ -11396,7 +11396,7 @@ void func_80057ACC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-extern s32 func_8007FD5C(s32, s32);
+extern s32 single_game_getEnemyCharId(s32, s32);
 extern s16 Judge;
 void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
@@ -11431,9 +11431,9 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     }
 
     p = (s16 *)((s32)table + (((s32)(prev_idx << 16) >> 16) << 2));
-    ang_prev = func_8007FD5C(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
+    ang_prev = single_game_getEnemyCharId(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
     p = (s16 *)((s32)(*(s16 **)(arg0 + 4)) + (((s32)(next_idx << 16) >> 16) << 2));
-    ang_next = func_8007FD5C(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
+    ang_next = single_game_getEnemyCharId(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
 
     if (ang_next < ang_prev) {
         base = ang_prev + 0x800;
@@ -11521,7 +11521,7 @@ void spu_Reset(void);
 extern s32 D_800EFB38[];
 extern s32 D_800EFC38[];
 extern s32 D_800A3408;
-void func_8005B50C(void) {
+void get_point_value(void) {
     s32 i;
     s32 *a0;
     s32 *v1;
@@ -11825,7 +11825,7 @@ extern s32 D_80101E40;
 extern s32 D_80101E44;
 extern s32 D_80103624;
 extern s32 D_800EFB38;
-void func_8005B644(s32 a0) {
+void GetAllocPacketSize(s32 a0) {
     s32 v;
     func_800858D0(0);
     v = a0 * 2 + a0 + 1;
@@ -12008,10 +12008,10 @@ s32 func_8005B8B8(s32 arg0) {
     game_FrameLoop();
     return func_8005C2A8(arg0 + ret_a, 4, arg0 + t1_2) + ret_a;
 }
-void func_8005C4C0(s32, s32);
+void saFidLoad(s32, s32);
 void func_8005B98C(s32 a0) {
-    func_8005C4C0(a0, 8);
-    func_8005C4C0(a0, 4);
+    saFidLoad(a0, 8);
+    saFidLoad(a0, 4);
 }
 extern s32 D_800EFC5C;
 extern s32 D_800EFB5C;
@@ -12039,9 +12039,9 @@ void obj_InitTaskCamera(s32 a0) {
     game_FrameLoop();
     func_8005C2A8(a0, 9, a0 + s1);
 }
-void func_8005C4C0(s32, s32);
+void saFidLoad(s32, s32);
 void obj_ExecTask(s32 a0) {
-    func_8005C4C0(a0, 9);
+    saFidLoad(a0, 9);
 }
 s32 func_8005BA8C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005BA8C.s).
@@ -12050,7 +12050,7 @@ s32 func_8005BA8C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     return 0;
 }
 extern void title_mv_exec2(s32);
-extern void func_8005C4C0(s32, s32);
+extern void saFidLoad(s32, s32);
 extern s32 D_800EFC50;
 extern s32 D_800EFC44;
 extern u8 D_8009AD18;
@@ -12063,7 +12063,7 @@ void func_8005BD30(s32 arg0) {
         i = 0;
         do {
             u8 byte = (&D_8009AD18)[i & 0xFF];
-            func_8005C4C0(arg0, byte);
+            saFidLoad(arg0, byte);
             i += 1;
         } while ((u32)(i & 0xFF) < (u32)count);
     }
@@ -12132,7 +12132,7 @@ void obj_Reset(void) {
     func_80085E4C(0, 0);
 }
 extern s32 func_80087F64();
-extern s32 func_80087FE8();
+extern s32 tslCDFileRead();
 extern s32 func_800880B8();
 extern s32 func_8008AD64();
 extern s32 func_8008ADC4();
@@ -12151,7 +12151,7 @@ s32 func_8005BF78(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     func_8008ADC4(arg0, D_800EFC38[arg1][3]);
     func_8008AEB0(1);
     func_800880B8(D_800EFC38[arg1][1], (s16) arg1, arg2);
-    func_80087FE8((s16) arg1);
+    tslCDFileRead((s16) arg1);
     D_800EFB38[arg1] = arg2;
     return arg2 + D_800EFC38[arg1][3];
 }
@@ -12169,8 +12169,8 @@ s32 func_8005C2A8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 extern s32 D_800EFC38;
 extern s32 func_80087F64(s32);
 extern s16 func_800880B8(s32, s32, s32);
-extern s16 func_80087FE8(s16);
-s32 func_8005C4C0(s32 arg0, s16 arg1) {
+extern s16 tslCDFileRead(s16);
+s32 saFidLoad(s32 arg0, s16 arg1) {
     s32 **p;
     s32 *v;
     s32 *vv;
@@ -12187,7 +12187,7 @@ s32 func_8005C4C0(s32 arg0, s16 arg1) {
         func_80087F64(arg1);
         ret = func_800880B8(*(s32 *)((u8 *)*p + 4), arg1, *(s32 *)((u8 *)&D_800EFB38 + arg1 * 4));
         if (ret == arg1) {
-            return (s16)func_80087FE8(ret);
+            return (s16)tslCDFileRead(ret);
         }
         return ret;
     }
@@ -12261,7 +12261,7 @@ typedef struct {
     s32 c24;
     s8 byte28;
 } S46C;
-void func_8005D46C(s32 arg0, s32 arg1) {
+void gnd_load_data(s32 arg0, s32 arg1) {
     S46C s;
     s32 stride;
     s32 ret;
@@ -12294,7 +12294,7 @@ void func_8005D46C(s32 arg0, s32 arg1) {
     s.ret = ret;
     func_80073728((GameObj *)(&s), 0);
 }
-s32 func_8005D554(s32 arg0, s32 arg1) {
+s32 gnd_land_hit_char_tsuba(s32 arg0, s32 arg1) {
     extern s32 func_80079154(void);
     extern u8 D_8009B2E0;
     extern s32 D_8009B388;
@@ -12462,7 +12462,7 @@ extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern s32 ot_Link(s32, s32);
 extern s32 gpu_SetSemiTransp(s32, s32);
 extern s32 func_8007352C(s32);
-extern s32 func_8006E480(s32, s32);
+extern s32 saMotionSet(s32, s32);
 
 void func_8005FC9C(s32 arg0, s32 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005FC9C.s).
@@ -12534,7 +12534,7 @@ loop_60C8:
         i += 1;
         if (i < 2) goto loop_60C8;
     }
-    initTexPage(dist_off, 1, 0, func_8006E480((s32 *)&D_8009B6F0, 0), 0);
+    initTexPage(dist_off, 1, 0, saMotionSet((s32 *)&D_8009B6F0, 0), 0);
     ot_Link(D_800A374C + (arg2 * 4), dist_off);
     return end_off - arg1;
 }
@@ -12543,7 +12543,7 @@ void func_800602AC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-extern s32 func_8006E480();
+extern s32 saMotionSet();
 extern s32 func_8007352C();
 extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern s32 ot_Link(s32, s32);
@@ -12566,7 +12566,7 @@ typedef struct {
     s32 pad24;
     s8 byte28;
 } S414;
-s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
+s32 gnd_set_scene(s16 arg0, s32 arg1, s32 arg2) {
     S414 s;
     s32 dist_off;
     s32 end_off;
@@ -12589,7 +12589,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     s.p_static = &D_800A328C;
     s.arg1_field = new_var;
     func_8007352C((s32)(&s));
-    initTexPage(dist_off, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
+    initTexPage(dist_off, 1, 0, saMotionSet((s32)s.p_geom, 0), 0);
     ot_Link(D_800A374C + (arg2 * 4), dist_off);
     return end_off - arg1;
 }
@@ -12702,7 +12702,7 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         j += 1;
         p0 = (s32 *)(((s32)p0) + 0xC);
     } while (j < 2);
-    initTexPage(new_var3, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
+    initTexPage(new_var3, 1, 0, saMotionSet((s32)s.p_geom, 0), 0);
     ot_Link(D_800A374C + (new_var * 4), new_var3);
     new_var3 = new_var4;
     return new_var3 - arg0;
@@ -12852,7 +12852,7 @@ extern s32 D_800A344C;
 extern s32 D_800A3460;
 extern s32 D_800A3444;
 extern s32 D_800A3448;
-void func_80060C60(void) {
+void saTan1GaugeInit(void) {
     s32 i = 0;
     s32 *p = D_800F10D0;
     do {
@@ -12912,7 +12912,7 @@ s32 func_80060CB8(s32 arg0, s32 arg1) {
     s.sp16 = 0x24;
     gpu_LoadImage(&s.sp10, arg0 + 0x1DC00);
     gpu_DrawSync(0);
-    func_80060C60();
+    saTan1GaugeInit();
     func_80079184(func_80079154());
     ret = arg1 + 0x4650;
     D_800A3420 = arg1;
@@ -12923,7 +12923,7 @@ extern s32 D_800A3420;
 extern s32 D_800A3424;
 extern volatile s32 D_800A37D4;
 extern s32 D_800A3720;
-void func_80060E04(s32 arg0) {
+void gnd_get_fog(s32 arg0) {
     s32 v0;
     if (arg0 != 0) {
         v0 = D_800A3424;
@@ -13040,10 +13040,10 @@ void func_80061064(void) {
     }
 }
 extern s32 D_800A32BC;
-void func_80060C60(void);
+void saTan1GaugeInit(void);
 void func_800421A4(void);
 void game_Cleanup(void) {
-    func_80060C60();
+    saTan1GaugeInit();
     func_800421A4();
     D_800A32BC = 0;
 }
@@ -13452,7 +13452,7 @@ void func_80061C00(s32 arg0, s16 arg1, s32 arg2) {
     sp18[1] = arg1;
     sp18[2] = 0;
     sp18[0] = 0;
-    func_8007F35C(sp18, sp30);
+    motutil_GetWalkDir(sp18, sp30);
     *(s32 *)(sp30 + 0x1C) = 0;
     *(s32 *)(sp30 + 0x18) = 0;
     *(s32 *)(sp30 + 0x14) = 0;
@@ -13486,7 +13486,7 @@ end:
 }
 extern u8 D_800F1168[];
 void func_8007F2AC(s16 *, s32 *, s32 *);
-void func_8007F35C(s16 *, u8 *);
+void motutil_GetWalkDir(s16 *, u8 *);
 void gte_SetRotMatrix(u8 *);
 void gte_SetTransVector(u8 *);
 void func_80061D74(s32 arg0, s16 arg1) {
@@ -13506,7 +13506,7 @@ void func_80061D74(s32 arg0, s16 arg1) {
     sp18[2] = 0;
     sp18[1] = arg1;
     sp18[0] = 0;
-    func_8007F35C(sp18, sp30);
+    motutil_GetWalkDir(sp18, sp30);
     *(s32 *)(sp30 + 0x1C) = 0;
     *(s32 *)(sp30 + 0x18) = 0;
     *(s32 *)(sp30 + 0x14) = 0;
@@ -13578,7 +13578,7 @@ end:
 }
 extern s32 D_800A34EC;
 extern u8 D_8009BB74[];
-void func_8007F35C(u16*, u8*);
+void motutil_GetWalkDir(u16*, u8*);
 void func_8007E8DC(u8*, u8*);
 void gte_SetRotMatrix(u8*);
 void func_80061FAC(u16 *a0, s32 a1, u8 *a2) {
@@ -13588,7 +13588,7 @@ void func_80061FAC(u16 *a0, s32 a1, u8 *a2) {
     dest[0] = v1[0];
     dest[1] = v1[1];
     dest[2] = v1[2];
-    func_8007F35C(dest, s0);
+    motutil_GetWalkDir(dest, s0);
     *(s32 *)(s0 + 0x1C) = 0;
     *(s32 *)(s0 + 0x18) = 0;
     *(s32 *)(s0 + 0x14) = 0;
@@ -13788,7 +13788,7 @@ void func_800644FC(s32 *arg0, s32 arg1, s32 arg2)
             if ((*bits_p) & mask) {
                 u8 *base;
                 __asm__ volatile ("" : "=r"(base) : "0"(&D_800F1000));
-                func_8007F35C((u16 *)(base + mul50 + (i << 3)), (u8 *)ptr);
+                motutil_GetWalkDir((u16 *)(base + mul50 + (i << 3)), (u8 *)ptr);
             }
             i += 1;
             ptr += 0x20;
@@ -14080,9 +14080,9 @@ void func_800652AC(void) {
     D_800F0D74 = (s32)p;
 }
 extern s16 D_800F0BA8;
-u8 func_80065800(s32);
+u8 motion_SetExMotion(s32);
 u8 func_800652F4(void) {
-    u8 v0 = func_80065800(0);
+    u8 v0 = motion_SetExMotion(0);
     s16 *p = &D_800F0BA8;
     s16 v1 = *p;
     v1 += 0x1FF;
@@ -14094,7 +14094,7 @@ u8 func_800652F4(void) {
 }
 extern s16 D_800F0BAA;
 u8 func_80065344(void) {
-    u8 v0 = func_80065800(1);
+    u8 v0 = motion_SetExMotion(1);
     s16 *p = &D_800F0BAA;
     s16 v1 = *p;
     v1 += 0x1C6;
@@ -14106,7 +14106,7 @@ u8 func_80065344(void) {
 }
 extern s16 D_800F0BAC;
 u8 func_80065394(void) {
-    u8 v0 = func_80065800(2);
+    u8 v0 = motion_SetExMotion(2);
     s16 *p = &D_800F0BAC;
     s16 v1 = *p;
     v1 += 0x1C6;
@@ -14118,7 +14118,7 @@ u8 func_80065394(void) {
 }
 extern s16 D_800F0BAE;
 u8 func_800653E4(void) {
-    u8 v0 = func_80065800(3);
+    u8 v0 = motion_SetExMotion(3);
     s16 *p = &D_800F0BAE;
     s16 v1 = *p;
     v1 += 0x19;
@@ -14130,7 +14130,7 @@ u8 func_800653E4(void) {
 }
 extern s16 D_800F0BB0;
 u8 func_80065434(void) {
-    u8 v0 = func_80065800(4);
+    u8 v0 = motion_SetExMotion(4);
     s16 *p = &D_800F0BB0;
     s16 v1 = *p;
     v1 += 0x19;
@@ -14145,7 +14145,7 @@ s32 func_80065484(void) {
     unsigned int temp_v1;
     s32 ret;
     *D_800A3484 = (s32)*(s16 *)&D_800A3440;
-    ret = func_80065800(5);
+    ret = motion_SetExMotion(5);
     temp_v1 = *D_800A3484;
     switch (temp_v1) {
     case 0: {
@@ -14171,7 +14171,7 @@ s32 func_80065484(void) {
 }
 extern s16 D_800F0BB4;
 u8 func_80065540(void) {
-    u8 v0 = func_80065800(6);
+    u8 v0 = motion_SetExMotion(6);
     s16 *p = &D_800F0BB4;
     s16 v1 = *p;
     v1 += 0x32;
@@ -14183,7 +14183,7 @@ u8 func_80065540(void) {
 }
 extern s16 D_800F0BB6;
 u8 func_80065590(void) {
-    u8 v0 = func_80065800(7);
+    u8 v0 = motion_SetExMotion(7);
     s16 *p = &D_800F0BB6;
     s16 v1 = *p;
     v1 += 0x32;
@@ -14195,7 +14195,7 @@ u8 func_80065590(void) {
 }
 extern s16 D_800F0BBC;
 u8 func_800655E0(void) {
-    u8 v0 = func_80065800(0xA);
+    u8 v0 = motion_SetExMotion(0xA);
     s16 *p = &D_800F0BBC;
     s16 v1 = *p;
     v1 += 0x32;
@@ -14207,7 +14207,7 @@ u8 func_800655E0(void) {
 }
 extern s16 D_800F0BBE;
 u8 func_80065630(void) {
-    u8 v0 = func_80065800(0xB);
+    u8 v0 = motion_SetExMotion(0xB);
     s16 *p = &D_800F0BBE;
     s16 v1 = *p;
     v1 += 0x32;
@@ -14217,17 +14217,17 @@ u8 func_80065630(void) {
     }
     return 0;
 }
-extern s32 func_80065800(s32);
+extern s32 motion_SetExMotion(s32);
 extern u16 D_800F0BC0;
 extern s16 D_800F0BC4;
 s32 func_80065680(void) {
     u16 *v1;
     s32 v0;
-    func_80065800(0xC);
+    motion_SetExMotion(0xC);
     v1 = &D_800F0BC0;
     v0 = *v1 + 1;
     *v1 = v0;
-    v0 = func_80065800(0xE);
+    v0 = motion_SetExMotion(0xE);
     D_800F0BC4 = D_800F0BC4 + 1;
     if ((s16)D_800F0BC4 < 11) {
         return v0 & 0xFF;
@@ -14239,9 +14239,9 @@ extern u16 D_800F0BC6;
 s32 func_800656EC(void) {
     u16 *s0 = &D_800F0BC2;
     s32 v0;
-    func_80065800(0xD);
+    motion_SetExMotion(0xD);
     *s0 = *s0 + 1;
-    v0 = func_80065800(0xF);
+    v0 = motion_SetExMotion(0xF);
     D_800F0BC6 = D_800F0BC6 + 1;
     if ((s16)*s0 < 11) {
         return v0 & 0xFF;
@@ -14250,7 +14250,7 @@ s32 func_800656EC(void) {
 }
 extern s16 D_800F0BC8;
 u8 func_80065760(void) {
-    u8 v0 = func_80065800(0x10);
+    u8 v0 = motion_SetExMotion(0x10);
     s16 *p = &D_800F0BC8;
     s16 v1 = *p;
     v1 += 0x1C6;
@@ -14262,7 +14262,7 @@ u8 func_80065760(void) {
 }
 extern s16 D_800F0BCA;
 u8 func_800657B0(void) {
-    u8 v0 = func_80065800(0x11);
+    u8 v0 = motion_SetExMotion(0x11);
     s16 *p = &D_800F0BCA;
     s16 v1 = *p;
     v1 += 0x1C6;
@@ -14272,8 +14272,8 @@ u8 func_800657B0(void) {
     }
     return 0;
 }
-s32 func_80065800(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80065800.s).
+s32 motion_SetExMotion(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/motion_SetExMotion.s).
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
     return 0;
@@ -14516,7 +14516,7 @@ s32 *func_80069120(s32 a0) {
 
 void func_8006920C(s32 *, s32);
 void func_8005C2A8(s32, s32, s32);
-s32 func_8006919C(s32 *a0) {
+s32 efc_rob_Close(s32 *a0) {
     s32 i = 0;
     s32 *p = &a0[5];
     do {
@@ -14708,7 +14708,7 @@ typedef struct {
     s8 sp40;
 } S_69AE4;
 
-extern s32 func_8006E480(s32, s32);
+extern s32 saMotionSet(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern void initPolyF4(u8 *p);
@@ -14781,7 +14781,7 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
     {
         s32 first = qbase[0];
         s.sp18 = first;
-        initTexPage(arg0[7], 1, 0, func_8006E480(first, 0), 0);
+        initTexPage(arg0[7], 1, 0, saMotionSet(first, 0), 0);
     }
     ot_Link(D_800A374C + 0x48, arg0[7]);
 
@@ -14847,7 +14847,7 @@ void func_8006A1A0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-extern s32 func_8006E480(s32, s32);
+extern s32 saMotionSet(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern s32 ot_Link(s32, s32);
@@ -14863,7 +14863,7 @@ void func_8006A3CC(s32 *arg0, u8 *arg1) {
     *(s32 *)(arg1 + 4) = v + 0xC;
     *(s32 *)(arg1 + 8) = arg0[5];
     arg0[5] = func_8007352C((s32)arg1);
-    initTexPage(arg0[7], 1, 0, func_8006E480(*(s32 *)(arg1 + 0), 0), 0);
+    initTexPage(arg0[7], 1, 0, saMotionSet(*(s32 *)(arg1 + 0), 0), 0);
     ot_Link(D_800A374C + 4, arg0[7]);
     arg0[7] += 0xC;
 }
@@ -14882,7 +14882,7 @@ void func_8006A494(s32 *arg0, u8 *arg1) {
     *(s32 *)(arg1 + 4) = v + 0xC;
     *(s32 *)(arg1 + 0xC) = arg0[2];
     arg0[2] = func_80073728((s32)arg1, 0);
-    initTexPage(arg0[7], 1, 0, func_8006E480(*(s32 *)(arg1 + 0), 0), 0);
+    initTexPage(arg0[7], 1, 0, saMotionSet(*(s32 *)(arg1 + 0), 0), 0);
     ot_Link(D_800A374C + 4, arg0[7]);
     arg0[7] += 0xC;
 }
@@ -15000,7 +15000,7 @@ extern s32 D_800A34FC;
 extern s32 D_800A36E0;
 extern s32 D_800A36E4;
 extern s32 D_800A374C;
-extern s32 func_8006E480();
+extern s32 saMotionSet();
 extern s32 func_8007352C();
 extern void initTexPage();
 extern void ot_Link();
@@ -15054,7 +15054,7 @@ void func_8006BD28(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             } while (j < n);
         }
 
-        initTexPage(D_800A36E0, 1, 0, func_8006E480(*(s32 *)(arg2 + 0), 0), 0);
+        initTexPage(D_800A36E0, 1, 0, saMotionSet(*(s32 *)(arg2 + 0), 0), 0);
         ot_Link(D_800A374C + 0x20, D_800A36E0);
         i++;
         D_800A36E0 += 12;
@@ -15081,8 +15081,8 @@ s32 func_8006C168(s32, s32);
 s32 func_8006C1FC(s32 a0, s32 a1) {
     return func_8006C168(a0, a1);
 }
-void func_8006C21C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006C21C.s).
+void saTan4GaugeMain(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/saTan4GaugeMain.s).
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
@@ -15125,12 +15125,12 @@ void func_8006CFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
 extern s32 D_800A34FC;
-void func_8006D324(void) {
+void cpu_reset_dir(void) {
     s16 *v1 = (s16 *)D_800A34FC;
     v1[0x15] = 5;
     v1[0x14] = 5;
 }
-extern s32 func_8006C21C();
+extern s32 saTan4GaugeMain();
 extern s32 func_8006CFBC();
 extern s32 func_8006CCC8();
 void func_8006D338(s32 arg0, s32 arg1) {
@@ -15141,7 +15141,7 @@ void func_8006D338(s32 arg0, s32 arg1) {
     t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 2, t);
-    func_8006C21C(sp10);
+    saTan4GaugeMain(sp10);
     r = func_8006CFBC(sp10);
     func_8006CCC8(&arg0, &arg1, (s32)((r << 16) >> 16));
 }
@@ -15308,7 +15308,7 @@ void func_8006E440(s32 *a0) {
         p++;
     }
 }
-s32 func_8006E480(u8 *a0, s32 a1) {
+s32 saMotionSet(u8 *a0, s32 a1) {
     s32 v0 = a0[0] & 0xFE1F;
     s32 v1 = a0[1] << 7;
     return v0 + v1 + a1;
@@ -15412,7 +15412,7 @@ void func_8006E950(s32 *a0, s32 *a1) {
 }
 void func_8006920C(s32 *, s32);
 void func_8005C2A8(s32, s32, s32);
-s32 func_8006EA28(s32 *a0) {
+s32 efc_buki_ZanzouClose(s32 *a0) {
     func_8006920C(a0, a0[21]);
     func_8006920C(a0, a0[22]);
     func_8006920C(a0, a0[23]);
@@ -15524,8 +15524,8 @@ void func_8006F97C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-void func_80070188(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80070188.s).
+void replay_camera_attack(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/replay_camera_attack.s).
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
@@ -15537,11 +15537,11 @@ extern s32 D_800A35B0;
 extern s32 D_800A35BC;
 extern s32 D_800A374C;
 extern s32 func_8007352C(s32 *prim);
-extern s32 func_8006E480(s32, s32);
+extern s32 saMotionSet(s32, s32);
 extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern s32 ot_Link(s32, s32);
 extern s32 func_80069898(s32 a0, s32 *p, s32 mode);
-extern void func_80070F78(s32 a0, s32 *prim);
+extern void motion_ShiftControl(s32 a0, s32 *prim);
 extern void func_8006ECF4(s32);
 extern void func_80072E10(s32);
 extern void func_80073200(s32);
@@ -15590,7 +15590,7 @@ void func_80070C70(s32 arg0) {
     { s32 _c1; __asm__ __volatile__("addiu %0,$0,1" : "=r"(_c1)); prim.code = _c1; }
     prim.link = *(s32 *)(arg0 + 0x10);
     *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
-    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(prim.p_geom, c60), 0);
     ot_Link(D_800A374C + 4, *(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
     icon.sp4C = 0xE7;
@@ -15610,7 +15610,7 @@ void func_80070C70(s32 arg0) {
         prim.p_geom += 0xC;
     } while (var_s0 < 6);
     prim.p_geom = *(s32 *)(ctx_or_var_s2);
-    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(prim.p_geom, c60), 0);
     ot_Link(D_800A374C + 0x28, *(s32 *)(arg0 + 0x18));
     var_s0 = 0;
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
@@ -15646,16 +15646,16 @@ void func_80070C70(s32 arg0) {
             ctx_or_var_s2 += 3;
         } while (var_s0 < (s32)(D_800A35B0 + ((s16)D_800A3558 + 1)));
     }
-    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(prim.p_geom, c60), 0);
     ot_Link(D_800A374C + 4, *(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
-    func_80070F78(arg0, (s32 *)&prim);
+    motion_ShiftControl(arg0, (s32 *)&prim);
     func_8006ECF4(arg0);
     func_80072E10(arg0);
     func_80073200(arg0);
 }
-void func_80070F78(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80070F78.s).
+void motion_ShiftControl(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/motion_ShiftControl.s).
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
@@ -16108,7 +16108,7 @@ skip_init:
     {
         s32 _t = *temp_s2;
         sp[0] = _t;
-        a3 = func_8006E480(_t, 0);
+        a3 = saMotionSet(_t, 0);
     }
     initTexPage(arg0[6], 1, 0, a3, 0);
     ot_Link(D_800A374C + 0x7C, arg0[6]);
@@ -16282,7 +16282,7 @@ void func_80074D2C(s32 arg0, s32 arg1, s32 arg2) {
     s.sp2C = var_s1;
     s.sp20 = *(s32 *)(arg0 + 0x10);
     *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
-    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(s.sp18, 0), 0);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(s.sp18, 0), 0);
     ot_Link(D_800A374C + var_s1 * 4, *(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) += 0xC;
 }
@@ -16347,8 +16347,8 @@ void func_8007526C(void) {
         p += 2;
     } while (i < 2);
 }
-void func_800753D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800753D8.s).
+void saTan1GaugeMain(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/saTan1GaugeMain.s).
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
@@ -16776,7 +16776,7 @@ void func_80077D94(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-s32 func_800784E4(s32 arg0) {
+s32 camera_get_rot_normal_rad(s32 arg0) {
     s32 s0;
     s32 r;
 
@@ -16841,7 +16841,7 @@ extern s32 D_800A360C;
 s32 func_80078634(s32 a0) {
     return D_800A360C + a0 * 44;
 }
-extern s32 func_8006E480(s32, s32);
+extern s32 saMotionSet(s32, s32);
 extern s32 func_8007352C(s32 *);
 extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern s32 ot_Link(s32, s32);
@@ -16892,7 +16892,7 @@ void func_80078654(s32 *arg0) {
         }
         s.c = arg0[3];
         arg0[3] = func_8007352C(&s.a);
-        initTexPage(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
+        initTexPage(arg0[5], 1, 0, saMotionSet(s.a, zero), 0);
         ot_Link(D_800A374C + (s.f * 4), arg0[5]);
         arg0[5] = arg0[5] + 0xC;
     }
@@ -16904,7 +16904,7 @@ loop:
     s.h = -D_800A3608;
     s.c = arg0[3];
     arg0[3] = func_8007352C(&s.a);
-    initTexPage(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
+    initTexPage(arg0[5], 1, 0, saMotionSet(s.a, zero), 0);
     ot_Link(D_800A374C + (s.f * 4), arg0[5]);
     var_s0++;
     arg0[5] = arg0[5] + 0xC;

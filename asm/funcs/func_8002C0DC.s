@@ -19,7 +19,7 @@ glabel func_8002C0DC
     /* 1C91C 8002C11C D800438C */  lw         $v1, 0xD8($v0)
     /* 1C920 8002C120 E000428C */  lw         $v0, 0xE0($v0)
     /* 1C924 8002C124 23206400 */  subu       $a0, $v1, $a0
-    /* 1C928 8002C128 57FF010C */  jal        func_8007FD5C
+    /* 1C928 8002C128 57FF010C */  jal        single_game_getEnemyCharId
     /* 1C92C 8002C12C 23284500 */   subu      $a1, $v0, $a1
     /* 1C930 8002C130 21200002 */  addu       $a0, $s0, $zero
     /* 1C934 8002C134 187E000C */  jal        func_8001F860

@@ -20,7 +20,7 @@ extern u32 D_80101E3C;
 extern u32 D_80101E44;
 
 /* Extern function declarations */
-extern void func_80023CB4(s32, s32);
+extern void cpu_get_dash_timer(s32, s32);
 extern s32 func_80037110(s32);
 extern void game_FrameInit(void);
 extern void game_FrameLoop(void);
@@ -63,7 +63,7 @@ extern s16 *snd_GetSeId(void);
 extern void func_8003553C(void);
 
 extern void sys_Panic(void);
-extern s32 func_80020D38(void);
+extern s32 EndADRSound(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
 extern s32 bb2_memcpy(s32 *, s32, s32);
@@ -74,14 +74,14 @@ extern void func_8005B98C(s32);
 extern s32 func_80036D88(void);
 extern void gnd_disp_loop_ctrl(void);
 extern s32 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 single_game_getEnemyCharId(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
+extern void get_point_value(void);
 extern void special_camera_get_rot_dir(s32 *);
 extern void pad_Init(void);
 extern void irq_Reset(void);
@@ -160,12 +160,12 @@ extern s32 func_80078B04(s32);
 extern void func_8007A400(void);
 extern void func_8008BE4C(void);
 extern s32 func_8006BEC4(s32, s32);
-extern void func_8003E22C(void);
+extern void gnd_open(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
-extern void func_8007EFFC(s32);
+extern void tslDmaDrawListDelAll(s32);
 extern void func_8001B6F4(void);
-extern void func_80022568(u8 *);
+extern void pad_button_info_clear(u8 *);
 extern s32 g_str_memcard_fmt;
 extern s32 D_80102810;
 extern s32 D_800F34D8;
@@ -604,7 +604,7 @@ s32 func_80038734(void) {
     func_80038658();
     return D_800A379E;
 }
-void func_8003877C(void) {
+void motion_shift_check_m_hit_stop(void) {
     D_800A379E = 4;
     D_800A3814 = 0;
     D_800A37C8 = 0;
@@ -632,7 +632,7 @@ void func_800387E8(void) {
 }
 extern u8 D_800A3203;
 extern u8 D_800A31FC;
-extern void func_8003877C(void);
+extern void motion_shift_check_m_hit_stop(void);
 extern s32 func_80038734(void);
 extern s32 func_8006BEC4(s32, s32);
 
@@ -644,7 +644,7 @@ s32 func_8003880C(void) {
     if (D_800A3203) {
         D_800A3203 = 0;
         D_800A31FC = 1;
-        func_8003877C();
+        motion_shift_check_m_hit_stop();
     }
     v0 = func_80038734();
     switch (v0 - 4) {
@@ -746,7 +746,7 @@ s32 func_80038988(void) {
         D_800A3328 = 0;
         D_800A332C = 0;
         D_800A31FC = 1;
-        func_8003877C();
+        motion_shift_check_m_hit_stop();
         D_800A3205 = 0;
         D_800A3330 = 0x5A;
         D_800A3334 = 0;
@@ -803,7 +803,7 @@ s32 func_80038988(void) {
                 D_800A3330 = 0x5A;
                 break;
             }
-            func_8003877C();
+            motion_shift_check_m_hit_stop();
             break;
         case 11:
             D_800A332C++;
@@ -811,7 +811,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            func_8003877C();
+            motion_shift_check_m_hit_stop();
             break;
         case 6:
             D_800A3328++;
@@ -819,7 +819,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            func_8003877C();
+            motion_shift_check_m_hit_stop();
             break;
         case 10:
             D_800A3324++;
@@ -827,7 +827,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            func_8003877C();
+            motion_shift_check_m_hit_stop();
             break;
         case 2:
             D_800A31FC = 0;
@@ -838,7 +838,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 D_800A3338 = 1;
             }
-            func_8003877C();
+            motion_shift_check_m_hit_stop();
             break;
         default:
             break;
@@ -891,7 +891,7 @@ s32 motion_SetMotion(void) {
     extern u8 D_800A3348;
     extern s32 func_8006BEC4(s32, s32);
     extern void func_8005C650(s32, s32, s32);
-    extern void func_8003877C(void);
+    extern void motion_shift_check_m_hit_stop(void);
     extern void func_8003879C(void);
     extern void func_800387C0(void);
     extern void func_800387E8(void);
@@ -1027,7 +1027,7 @@ sel_dispatch:
                 D_800A334C = 0x5A;
                 break;
             }
-            func_8003877C();
+            motion_shift_check_m_hit_stop();
             break;
         case 1: case 2: case 3:
         case 9: case 10: case 11:
@@ -1037,7 +1037,7 @@ sel_dispatch:
                 func_8003879C();
                 break;
             }
-            func_8003877C();
+            motion_shift_check_m_hit_stop();
             break;
         case 6:
             D_800A3344++;
@@ -1045,7 +1045,7 @@ sel_dispatch:
                 D_800A31FC = 0;
                 break;
             }
-            func_8003877C();
+            motion_shift_check_m_hit_stop();
             break;
         default:
             break;
@@ -1097,7 +1097,7 @@ sel_dispatch:
             break;
         case 11:
             D_800A31FC = 1;
-            func_8003877C();
+            motion_shift_check_m_hit_stop();
             D_800A3207 = 3;
             D_800A334C = 0x5A;
             break;
@@ -1125,7 +1125,7 @@ sel_dispatch:
                     D_800A3340 = 0;
                     D_800A3344 = 0;
                     D_800A31FC = 1;
-                    func_8003877C();
+                    motion_shift_check_m_hit_stop();
                 } else {
                     if (D_800A3350 != 0) goto area_c_long;
                     func_800387C0();
@@ -1448,9 +1448,9 @@ void func_800397A0(void) {
 }
 void func_800397D4(void) {
     gpu_EnableDisplay();
-    func_8003E22C();
+    gnd_open();
     game_SetPlayerCount(0);
-    func_8007EFFC(disp_CalcFov(0x2D));
+    tslDmaDrawListDelAll(disp_CalcFov(0x2D));
     func_80041688(0, 0);
     func_80041688(1, 0);
     func_8001B6F4();

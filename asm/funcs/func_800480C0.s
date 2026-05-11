@@ -58,7 +58,7 @@ glabel func_800480C0
     /* 3899C 8004819C 2128B600 */  addu       $a1, $a1, $s6
     /* 389A0 800481A0 2130D500 */  addu       $a2, $a2, $s5
     /* 389A4 800481A4 2138F400 */  addu       $a3, $a3, $s4
-    /* 389A8 800481A8 B220010C */  jal        func_800482C8
+    /* 389A8 800481A8 B220010C */  jal        efc_buki_draw_zanzou
     /* 389AC 800481AC 1000A2AF */   sw        $v0, 0x10($sp)
     /* 389B0 800481B0 21102002 */  addu       $v0, $s1, $zero
     /* 389B4 800481B4 E3FF4014 */  bnez       $v0, .L80048144

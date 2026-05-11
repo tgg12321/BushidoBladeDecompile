@@ -2,14 +2,14 @@ glabel func_800656EC
     /* 55EEC 800656EC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 55EF0 800656F0 0D000424 */  addiu      $a0, $zero, 0xD
     /* 55EF4 800656F4 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 55EF8 800656F8 0096010C */  jal        func_80065800
+    /* 55EF8 800656F8 0096010C */  jal        motion_SetExMotion
     /* 55EFC 800656FC 1000B0AF */   sw        $s0, 0x10($sp)
     /* 55F00 80065700 0F80103C */  lui        $s0, %hi(D_800F0BC2)
     /* 55F04 80065704 C20B1026 */  addiu      $s0, $s0, %lo(D_800F0BC2)
     /* 55F08 80065708 00000296 */  lhu        $v0, 0x0($s0)
     /* 55F0C 8006570C 0F000424 */  addiu      $a0, $zero, 0xF
     /* 55F10 80065710 01004224 */  addiu      $v0, $v0, 0x1
-    /* 55F14 80065714 0096010C */  jal        func_80065800
+    /* 55F14 80065714 0096010C */  jal        motion_SetExMotion
     /* 55F18 80065718 000002A6 */   sh        $v0, 0x0($s0)
     /* 55F1C 8006571C 0F80033C */  lui        $v1, %hi(D_800F0BC6)
     /* 55F20 80065720 C60B6394 */  lhu        $v1, %lo(D_800F0BC6)($v1)

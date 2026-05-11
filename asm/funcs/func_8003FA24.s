@@ -239,7 +239,7 @@ glabel func_8003FA24
     /* 30590 8003FD90 00000000 */   nop
     /* 30594 8003FD94 0180043C */  lui        $a0, %hi(D_80010D8C)
     /* 30598 8003FD98 8C0D8424 */  addiu      $a0, $a0, %lo(D_80010D8C)
-    /* 3059C 8003FD9C 044B010C */  jal        func_80052C10
+    /* 3059C 8003FD9C 044B010C */  jal        InitFadePanel
     /* 305A0 8003FDA0 00000000 */   nop
   .L8003FDA4:
     /* 305A4 8003FDA4 1400A48F */  lw         $a0, 0x14($sp)

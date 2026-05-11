@@ -11,7 +11,7 @@ extern void marionation_Exec(void);
 extern s32 cdrom_SendCmd();
 extern s32 cdrom_DmaToRam();
 extern s32 cdrom_DmaChain();
-extern s32 func_80080660_ret(s32) asm("func_80080660");
+extern s32 func_80080660_ret(s32) asm("tslTmlGetHeda");
 extern void irq_AcknowledgeVblank(s32, s32);
 extern s32 saEft00Add_ret(s32) asm("saEft00Add");
 extern s32 saEft01Init(s32);
@@ -295,7 +295,7 @@ s32 func_80080640(void) {
     return cdrom_DmaChain() == 0;
 }
 
-void func_80080660(s32 a0) {
+void tslTmlGetHeda(s32 a0) {
     irq_AcknowledgeVblank(3, a0);
 }
 
@@ -985,7 +985,7 @@ s32 saEft00Add(s32 arg0) {
     cdrom_SetCallbackA(0);
     cdrom_SetCallbackB(0);
     if (*(volatile s32 *)&D_800A1500 & 1) {
-        func_80080660(0);
+        tslTmlGetHeda(0);
     }
     if (cdrom_GetMode() & 0x10) {
         if (!(sys_VSync(-1) & 0x3F)) {
@@ -1021,7 +1021,7 @@ common_path:
     D_800A14F0 = cdrom_BcdToFrames(func_800800CC());
     cdrom_SetCallbackB((s32)&D_80082050);
     if (D_800A1500 & 1) {
-        func_80080660((s32)&D_80082320);
+        tslTmlGetHeda((s32)&D_80082320);
     }
     D_800A14D8 = D_800A14D4;
     func_80080390(6, 0);
@@ -1041,7 +1041,7 @@ void saEft00Add_sub(void) {
     cdrom_SetCallbackA(D_800A14F4);
     cdrom_SetCallbackB(D_800A14F8);
     if (*p & 1) {
-        func_80080660(D_800A14FC);
+        tslTmlGetHeda(D_800A14FC);
     }
     func_80080390(9, 0);
 }

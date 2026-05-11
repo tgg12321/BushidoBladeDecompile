@@ -32,7 +32,7 @@ glabel se_data_set
     /* E008 8001D808 37006210 */  beq        $v1, $v0, .L8001D8E8
     /* E00C 8001D80C 00000000 */   nop
   .L8001D810:
-    /* E010 8001D810 4E83000C */  jal        func_80020D38
+    /* E010 8001D810 4E83000C */  jal        EndADRSound
     /* E014 8001D814 00000000 */   nop
     /* E018 8001D818 0A80043C */  lui        $a0, %hi(D_800A36A4)
     /* E01C 8001D81C A4368484 */  lh         $a0, %lo(D_800A36A4)($a0)

@@ -544,7 +544,7 @@ glabel func_8005D814
     /* 4E814 8005E014 00000000 */   nop
     /* 4E818 8005E018 0A80043C */  lui        $a0, %hi(D_8009B398)
     /* 4E81C 8005E01C 98B38424 */  addiu      $a0, $a0, %lo(D_8009B398)
-    /* 4E820 8005E020 20B9010C */  jal        func_8006E480
+    /* 4E820 8005E020 20B9010C */  jal        saMotionSet
     /* 4E824 8005E024 21280000 */   addu      $a1, $zero, $zero
     /* 4E828 8005E028 01000524 */  addiu      $a1, $zero, 0x1
     /* 4E82C 8005E02C 21300000 */  addu       $a2, $zero, $zero

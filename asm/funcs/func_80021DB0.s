@@ -94,7 +94,7 @@ glabel func_80021DB0
     /* 12714 80021F14 3800A2AF */  sw         $v0, 0x38($sp)
     /* 12718 80021F18 3C00A8AF */  sw         $t0, 0x3C($sp)
     /* 1271C 80021F1C 4000A3AF */  sw         $v1, 0x40($sp)
-    /* 12720 80021F20 854D010C */  jal        func_80053614
+    /* 12720 80021F20 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 12724 80021F24 1000AAAF */   sw        $t2, 0x10($sp)
     /* 12728 80021F28 6D004014 */  bnez       $v0, .L800220E0
     /* 1272C 80021F2C 4800B727 */   addiu     $s7, $sp, 0x48
@@ -170,7 +170,7 @@ glabel func_80021DB0
     /* 1283C 8002203C 8000AA8F */  lw         $t2, 0x80($sp)
     /* 12840 80022040 A00F4224 */  addiu      $v0, $v0, 0xFA0
     /* 12844 80022044 3C00A2AF */  sw         $v0, 0x3C($sp)
-    /* 12848 80022048 854D010C */  jal        func_80053614
+    /* 12848 80022048 854D010C */  jal        camera_check_inside_screen_rob_dpos
     /* 1284C 8002204C 1000AAAF */   sw        $t2, 0x10($sp)
     /* 12850 80022050 23004010 */  beqz       $v0, .L800220E0
     /* 12854 80022054 00F00224 */   addiu     $v0, $zero, -0x1000

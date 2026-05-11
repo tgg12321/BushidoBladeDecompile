@@ -12,9 +12,9 @@ glabel md_game_rob_data_init
     /* FB0C 8001F30C 00000000 */  nop
     /* FB10 8001F310 05004014 */  bnez       $v0, .L8001F328
     /* FB14 8001F314 21A0C000 */   addu      $s4, $a2, $zero
-    /* FB18 8001F318 CD9C000C */  jal        func_80027334
+    /* FB18 8001F318 CD9C000C */  jal        katinuki_game_getMyWeaponId
     /* FB1C 8001F31C 21206002 */   addu      $a0, $s3, $zero
-    /* FB20 8001F320 CD9C000C */  jal        func_80027334
+    /* FB20 8001F320 CD9C000C */  jal        katinuki_game_getMyWeaponId
     /* FB24 8001F324 21208002 */   addu      $a0, $s4, $zero
   .L8001F328:
     /* FB28 8001F328 6A000396 */  lhu        $v1, 0x6A($s0)
@@ -102,7 +102,7 @@ glabel md_game_rob_data_init
     /* FC50 8001F450 0000028E */  lw         $v0, 0x0($s0)
     /* FC54 8001F454 8401058E */  lw         $a1, 0x184($s0)
     /* FC58 8001F458 8401428C */  lw         $v0, 0x184($v0)
-    /* FC5C 8001F45C 57FF010C */  jal        func_8007FD5C
+    /* FC5C 8001F45C 57FF010C */  jal        single_game_getEnemyCharId
     /* FC60 8001F460 23284500 */   subu      $a1, $v0, $a1
     /* FC64 8001F464 00040324 */  addiu      $v1, $zero, 0x400
     /* FC68 8001F468 23286200 */  subu       $a1, $v1, $v0
@@ -182,7 +182,7 @@ glabel md_game_rob_data_init
     /* FD68 8001F568 F800428C */  lw         $v0, 0xF8($v0)
     /* FD6C 8001F56C 0A80043C */  lui        $a0, %hi(D_800A387C)
     /* FD70 8001F570 7C38848C */  lw         $a0, %lo(D_800A387C)($a0)
-    /* FD74 8001F574 57FF010C */  jal        func_8007FD5C
+    /* FD74 8001F574 57FF010C */  jal        single_game_getEnemyCharId
     /* FD78 8001F578 23284500 */   subu      $a1, $v0, $a1
     /* FD7C 8001F57C 00FC4224 */  addiu      $v0, $v0, -0x400
     /* FD80 8001F580 FF0F4430 */  andi       $a0, $v0, 0xFFF
@@ -283,7 +283,7 @@ glabel md_game_rob_data_init
     /* FEDC 8001F6DC 0000028E */  lw         $v0, 0x0($s0)
     /* FEE0 8001F6E0 6002058E */  lw         $a1, 0x260($s0)
     /* FEE4 8001F6E4 F800428C */  lw         $v0, 0xF8($v0)
-    /* FEE8 8001F6E8 57FF010C */  jal        func_8007FD5C
+    /* FEE8 8001F6E8 57FF010C */  jal        single_game_getEnemyCharId
     /* FEEC 8001F6EC 23284500 */   subu      $a1, $v0, $a1
     /* FEF0 8001F6F0 00FC4224 */  addiu      $v0, $v0, -0x400
     /* FEF4 8001F6F4 FF0F4530 */  andi       $a1, $v0, 0xFFF

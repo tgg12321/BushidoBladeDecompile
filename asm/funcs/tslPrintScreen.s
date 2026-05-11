@@ -42,7 +42,7 @@ glabel tslPrintScreen
     /* 300BC 8003F8BC 05004228 */  slti       $v0, $v0, 0x5
     /* 300C0 8003F8C0 04004014 */  bnez       $v0, .L8003F8D4
     /* 300C4 8003F8C4 21282002 */   addu      $a1, $s1, $zero
-    /* 300C8 8003F8C8 044B010C */  jal        func_80052C10
+    /* 300C8 8003F8C8 044B010C */  jal        InitFadePanel
     /* 300CC 8003F8CC 00000000 */   nop
     /* 300D0 8003F8D0 21282002 */  addu       $a1, $s1, $zero
   .L8003F8D4:
@@ -122,7 +122,7 @@ glabel tslPrintScreen
     /* 301E0 8003F9E0 00000000 */   nop
     /* 301E4 8003F9E4 1C00858E */  lw         $a1, 0x1C($s4)
     /* 301E8 8003F9E8 04008486 */  lh         $a0, 0x4($s4)
-    /* 301EC 8003F9EC 8A16010C */  jal        func_80045A28
+    /* 301EC 8003F9EC 8A16010C */  jal        tslFileClose
     /* 301F0 8003F9F0 23280502 */   subu      $a1, $s0, $a1
   .L8003F9F4:
     /* 301F4 8003F9F4 4000BF8F */  lw         $ra, 0x40($sp)

@@ -120,7 +120,7 @@ glabel saTan4FireDisp
     /* 325B4 80041DB4 0200422A */  slti       $v0, $s2, 0x2
     /* 325B8 80041DB8 CFFF4014 */  bnez       $v0, .L80041CF8
     /* 325BC 80041DBC 00000000 */   nop
-    /* 325C0 80041DC0 A8F8000C */  jal        func_8003E2A0
+    /* 325C0 80041DC0 A8F8000C */  jal        single_game_SetStageId
     /* 325C4 80041DC4 00000000 */   nop
     /* 325C8 80041DC8 01000824 */  addiu      $t0, $zero, 0x1
     /* 325CC 80041DCC 03004814 */  bne        $v0, $t0, .L80041DDC

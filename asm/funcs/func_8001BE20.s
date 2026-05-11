@@ -352,7 +352,7 @@ glabel func_8001BE20
     /* CB0C 8001C30C 04004010 */  beqz       $v0, .L8001C320
     /* CB10 8001C310 01000224 */   addiu     $v0, $zero, 0x1
   .L8001C314:
-    /* CB14 8001C314 826F000C */  jal        func_8001BE08
+    /* CB14 8001C314 826F000C */  jal        LWCard_SetAccessData
     /* CB18 8001C318 21200002 */   addu      $a0, $s0, $zero
     /* CB1C 8001C31C 01000224 */  addiu      $v0, $zero, 0x1
   .L8001C320:

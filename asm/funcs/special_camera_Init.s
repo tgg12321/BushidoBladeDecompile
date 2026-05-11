@@ -137,7 +137,7 @@ glabel special_camera_Init
     /* 1D768 8002CF68 00000000 */   nop
     /* 1D76C 8002CF6C A800248E */  lw         $a0, 0xA8($s1)
     /* 1D770 8002CF70 B000258E */  lw         $a1, 0xB0($s1)
-    /* 1D774 8002CF74 57FF010C */  jal        func_8007FD5C
+    /* 1D774 8002CF74 57FF010C */  jal        single_game_getEnemyCharId
     /* 1D778 8002CF78 00000000 */   nop
     /* 1D77C 8002CF7C A800238E */  lw         $v1, 0xA8($s1)
     /* 1D780 8002CF80 00000000 */  nop
@@ -185,7 +185,7 @@ glabel special_camera_Init
     /* 1D820 8002D020 06284400 */  srlv       $a1, $a0, $v0
   .L8002D024:
     /* 1D824 8002D024 AC00248E */  lw         $a0, 0xAC($s1)
-    /* 1D828 8002D028 57FF010C */  jal        func_8007FD5C
+    /* 1D828 8002D028 57FF010C */  jal        single_game_getEnemyCharId
     /* 1D82C 8002D02C D8003026 */   addiu     $s0, $s1, 0xD8
     /* 1D830 8002D030 21280002 */  addu       $a1, $s0, $zero
     /* 1D834 8002D034 00080324 */  addiu      $v1, $zero, 0x800
@@ -252,7 +252,7 @@ glabel special_camera_Init
   .L8002D128:
     /* 1D928 8002D128 C800248E */  lw         $a0, 0xC8($s1)
     /* 1D92C 8002D12C D000258E */  lw         $a1, 0xD0($s1)
-    /* 1D930 8002D130 57FF010C */  jal        func_8007FD5C
+    /* 1D930 8002D130 57FF010C */  jal        single_game_getEnemyCharId
     /* 1D934 8002D134 00000000 */   nop
     /* 1D938 8002D138 C800238E */  lw         $v1, 0xC8($s1)
     /* 1D93C 8002D13C 00000000 */  nop
@@ -310,7 +310,7 @@ glabel special_camera_Init
     /* 1DA04 8002D204 06284400 */  srlv       $a1, $a0, $v0
   .L8002D208:
     /* 1DA08 8002D208 CC00248E */  lw         $a0, 0xCC($s1)
-    /* 1DA0C 8002D20C 57FF010C */  jal        func_8007FD5C
+    /* 1DA0C 8002D20C 57FF010C */  jal        single_game_getEnemyCharId
     /* 1DA10 8002D210 D8003026 */   addiu     $s0, $s1, 0xD8
     /* 1DA14 8002D214 21280002 */  addu       $a1, $s0, $zero
     /* 1DA18 8002D218 00080324 */  addiu      $v1, $zero, 0x800

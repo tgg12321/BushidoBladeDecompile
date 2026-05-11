@@ -222,7 +222,7 @@ glabel func_8002F770
   .L8002FAB4:
     /* 202B4 8002FAB4 12B00000 */  mflo       $s6
     /* 202B8 8002FAB8 21200002 */  addu       $a0, $s0, $zero
-    /* 202BC 8002FABC 57FF010C */  jal        func_8007FD5C
+    /* 202BC 8002FABC 57FF010C */  jal        single_game_getEnemyCharId
     /* 202C0 8002FAC0 21282002 */   addu      $a1, $s1, $zero
     /* 202C4 8002FAC4 18003102 */  mult       $s1, $s1
     /* 202C8 8002FAC8 12180000 */  mflo       $v1
@@ -268,7 +268,7 @@ glabel func_8002F770
     /* 20360 8002FB60 06504400 */  srlv       $t2, $a0, $v0
   .L8002FB64:
     /* 20364 8002FB64 21208002 */  addu       $a0, $s4, $zero
-    /* 20368 8002FB68 57FF010C */  jal        func_8007FD5C
+    /* 20368 8002FB68 57FF010C */  jal        single_game_getEnemyCharId
     /* 2036C 8002FB6C 21284001 */   addu      $a1, $t2, $zero
     /* 20370 8002FB70 2120A002 */  addu       $a0, $s5, $zero
     /* 20374 8002FB74 D8005026 */  addiu      $s0, $s2, 0xD8
@@ -319,7 +319,7 @@ glabel func_8002F770
     /* 20428 8002FC28 08009BE9 */  swc2       $27, 0x8($t4) /* handwritten instruction */
     /* 2042C 8002FC2C B000448E */  lw         $a0, 0xB0($s2)
     /* 20430 8002FC30 AC00458E */  lw         $a1, 0xAC($s2)
-    /* 20434 8002FC34 57FF010C */  jal        func_8007FD5C
+    /* 20434 8002FC34 57FF010C */  jal        single_game_getEnemyCharId
     /* 20438 8002FC38 23881100 */   negu      $s1, $s1
     /* 2043C 8002FC3C 000062A6 */  sh         $v0, 0x0($s3)
     /* 20440 8002FC40 23101500 */  negu       $v0, $s5

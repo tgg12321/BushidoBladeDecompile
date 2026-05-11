@@ -19,7 +19,7 @@ extern u32 D_80101E3C;
 extern u32 D_80101E44;
 
 /* Extern function declarations */
-extern void func_80023CB4(s32, s32);
+extern void cpu_get_dash_timer(s32, s32);
 extern s32 func_80037110(s32);
 extern void game_FrameInit(void);
 extern void game_FrameLoop(void);
@@ -73,7 +73,7 @@ extern void func_8003AFFC(void);
 extern void md_menu_logo_exec(void);
 
 extern void sys_Panic(void);
-extern s32 func_80020D38(void);
+extern s32 EndADRSound(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
 extern s32 bb2_memcpy(s32 *, s32, s32);
@@ -87,14 +87,14 @@ extern void func_8003AA48(void);
 extern void gnd_disp_loop_ctrl(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 single_game_getEnemyCharId(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
+extern void get_point_value(void);
 extern void initLoadImage(u32 *, s16 *, s32, s32);
 extern s32 game_GetPlayerCount(void);
 extern s32 func_80052C28(s32, s32);
@@ -169,13 +169,13 @@ extern void gpu_DisableDisplay(void);
 extern void gpu_EnableDisplay(void);
 extern void md_menu_logo_exec(void);
 extern void func_80020CDC(void);
-extern void func_80020D38(void);
+extern void EndADRSound(void);
 extern void func_80041688(s32, s32);
 extern void func_8004659C(s32);
 extern void func_80035FA8(void);
 extern s32 func_80036EA8(s32, s32);
 extern void mottest_rob_init(s32, s32);
-extern void func_80037260(void);
+extern void marionation_camera_GetMaxFrame(void);
 extern void saTan4FireDisp(s32, s32, s32);
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
@@ -196,7 +196,7 @@ void func_8003B9D0(void) {
     if (D_800A3768 != 0xFF) gpu_DisableDisplay();
     gnd_disp_loop_ctrl();
     gpu_EnableDisplay();
-    func_80020D38();
+    EndADRSound();
     disp_SetFramebufferMode(1, 0, 0, 0);
     if (((u8 *)D_800A3878)[3] & 0x80) {
         func_80020CDC();
@@ -241,7 +241,7 @@ void func_8003B9D0(void) {
     func_80035FA8();
     v0 = func_80036EA8(5, ((u8 *)D_800A3878)[1]);
     mottest_rob_init(v0, ((u8 *)D_800A3878)[2]);
-    func_80037260();
+    marionation_camera_GetMaxFrame();
     D_800A37B8 = 0;
     D_800A3834 = 7;
     gpu_DisableDisplay();
@@ -310,7 +310,7 @@ extern void obj_InitAll(void);
 extern void func_80078824(s32);
 extern void func_80035FA8(void);
 extern void func_80036FD4(s32, s32);
-extern void func_80037260(void);
+extern void marionation_camera_GetMaxFrame(void);
 void func_8003BE10(void) {
     gpu_EnableDisplay();
     gpu_InitDisplay();
@@ -325,7 +325,7 @@ void func_8003BE10(void) {
         s32 v0 = func_80036EA8(5, 0x20);
         func_80036FD4(v0, 4);
     }
-    func_80037260();
+    marionation_camera_GetMaxFrame();
     D_800A3834 = 0xB;
     gpu_DisableDisplay();
 }
@@ -483,7 +483,7 @@ void cpu_side_move_dir_2(void) {
     if (p[0] >= 0) {
         func_80035FA8();
         mottest_rob_init(func_80036EA8(5, p[0]), (u8)p[1]);
-        func_80037260();
+        marionation_camera_GetMaxFrame();
     }
     D_800A37B8 = 0;
     D_800A3834 = 0x13;
@@ -794,8 +794,8 @@ extern u16 D_80101ED6;
 extern s32 D_800A3818;
 extern void func_8001DA2C(void);
 extern s32 disp_CalcFov(s32);
-extern void func_8007EFFC(s32);
-extern void func_8003E22C(void);
+extern void tslDmaDrawListDelAll(s32);
+extern void gnd_open(void);
 extern void game_SetPlayerCount(s32);
 extern s32 func_80022408(s32 *);
 extern void func_80054884(s32, s32, s32, s32, s32, s32, s32, s32);
@@ -809,10 +809,10 @@ void func_8003CE18(void) {
     gpu_InitDisplay();
     gpu_EnableDisplay();
     disp_SetFramebufferMode(1, 0, 0, 0);
-    func_8003E22C();
+    gnd_open();
     game_SetPlayerCount(0);
     v0 = disp_CalcFov(0x2D);
-    func_8007EFFC(v0);
+    tslDmaDrawListDelAll(v0);
     player = D_800A3748;
     {
         u16 val = *((u16 *)((u8 *)&D_80101ED6 + player * 1100));
@@ -931,7 +931,7 @@ extern s32 D_800A321C;
 extern s32 D_800A3358;
 extern s32 D_800A335C;
 extern s32 D_800A3360;
-void func_8003D2F4(void) {
+void change_shadow_tex_reg(void) {
     s32 v0;
     s32 v1;
     D_800A3364 = 0xF0F0F0;
@@ -1457,7 +1457,7 @@ void func_8003E164(s32 arg0) {
     if (D_800A3228 == arg0) {
         goto end;
     }
-    func_8003E22C();
+    gnd_open();
     s0 = func_8004153C(arg0);
     if (s0 == 0) {
         goto end;
@@ -1482,7 +1482,7 @@ end:
     D_800A3228 = arg0;
 }
 extern s32 D_800A3228;
-void func_8003E22C(void) {
+void gnd_open(void) {
     s32 *v1;
 
     if (D_800A3228 != -1) {
@@ -1498,7 +1498,7 @@ void func_8003E22C(void) {
     }
 }
 extern s32 D_800A3228;
-s32 func_8003E2A0(void) {
+s32 single_game_SetStageId(void) {
     return D_800A3228;
 }
 extern u16 g_game_p1_ctrl;
@@ -1523,7 +1523,7 @@ void DispHira(s32 a0) {
     (void)a0;
 }
 /* kengo:MED  |  am_rmd/DispHira  |  299i */
-s32 *func_8003EB84(s32 a0, s32 a1, s32 *out) {
+s32 *CalcHiraNormal(s32 a0, s32 a1, s32 *out) {
     /* Body replaced by asmfix replace_with_asmfile. Inline-asm
      * scaffolding retired; pure-C decomp pending. */
     (void)a0; (void)a1;
