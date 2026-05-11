@@ -12,6 +12,7 @@
 /* Forward declarations */
 extern s32 sys_VSync(s32);
 extern s32 bb2_memcpy(s32, void *, s32);
+extern void func_8008008C(s32, s32);
 
 /* Externs for globals */
 extern volatile u32 *g_gpu_stat_reg;
@@ -2221,19 +2222,22 @@ __asm__(
     "    addiu $sp, $sp, 0x18\n"
     "    jr $ra\n"
     "    nop\n"
-    "    .global motion_SavePreCalcData_80080014\n"
-    "D_80080014:\n"
-    "motion_SavePreCalcData_80080014:\n"
-    "    addiu $sp, $sp, -0x18\n"
-    "    sw $ra, 16($sp)\n"
-    "    lui $a0, (0xF0000003 >> 16)\n"
-    "    ori $a0, $a0, (0xF0000003 & 0xFFFF)\n"
-    "    jal func_8008008C\n"
-    "    addiu $a1, $zero, 0x20\n"
-    "    lw $ra, 16($sp)\n"
-    "    addiu $sp, $sp, 0x18\n"
-    "    jr $ra\n"
-    "    nop\n"
+    "    .set\treorder\n"
+    "    .set\tat\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+
+void motion_SavePreCalcData_80080014(void) {
+    func_8008008C(0xF0000003, 0x20);
+}
+
+__asm__(
+    ".section .text\n"
+    "    .set\tnoat\n"
+    "    .set\tnoreorder\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
     "    .global motion_SavePreCalcData_8008003C\n"
     "D_8008003C:\n"
     "motion_SavePreCalcData_8008003C:\n"
