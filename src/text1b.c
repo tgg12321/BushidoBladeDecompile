@@ -10671,10 +10671,25 @@ void func_80052B00(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-void func_80052B44(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052B44.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+void func_80052B44(s32 *matrix) {
+    register s32 t0 asm("$8");
+    register s32 t1 asm("$9");
+    register s32 t2 asm("$10");
+    register s32 t3 asm("$11");
+    register s32 t4 asm("$12");
+    t0 = matrix[0];
+    t1 = matrix[1];
+    t2 = matrix[2];
+    t3 = matrix[3];
+    t4 = matrix[4];
+    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
+    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
+    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
+    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
+    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
+    __asm__ volatile ("ctc2 $0, $5");
+    __asm__ volatile ("ctc2 $0, $6");
+    __asm__ volatile ("ctc2 $0, $7");
 }
 void func_80052B7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052B7C.s).

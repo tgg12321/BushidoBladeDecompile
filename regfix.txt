@@ -4699,3 +4699,4 @@ func_8007B844: subst "la\s+\$2,g_gpu_ot_end" "la	$3,g_gpu_ot_end" @ 23
 func_8007B844: subst "and\s+\$2,\$2,\$3" "and	$3,$3,$4" @ 24
 func_8007B844: subst "sw\s+\$2,0\(\$16\)" "sw	$3,0($2)" @ 25
 func_8007B844: reorder 26,23,24,25 @ 23-26
+func_80052B44: fill_delay @ 13 <- 12
