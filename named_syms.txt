@@ -466,3 +466,6 @@ suDraw2DLib_8007A62C = 0x8007A62C;
 motion_LoadPreCalcData_8007DC68 = 0x8007DC68;
 calc_fc_frame_8007EC5C = 0x8007EC5C;
 tslGlobalMemFree_800861BC = 0x800861BC;
+
+/* === Kengo-derived globals (kengo_globals.py) === */
+MotDataBaseAddress = 0x80104F38;

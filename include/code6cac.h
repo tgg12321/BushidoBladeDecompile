@@ -422,7 +422,7 @@ extern s32 D_801027BC;
 extern s32 D_801027C0;
 extern s32 D_801027D4;
 extern u8 D_80104E88;
-extern s32 D_80104F38;
+extern s32 MotDataBaseAddress;
 extern u8 D_80106A70;
 extern u8 D_80106A71;
 extern u8 D_80106A72;

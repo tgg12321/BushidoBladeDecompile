@@ -1533,7 +1533,7 @@ void motion_Close_8001D904(void) {
     if (s1 >= 0xE81) {
         sys_Panic();
     }
-    s0 = &D_80104F38;
+    s0 = &MotDataBaseAddress;
     bb2_memcpy(s0, (s32)0x80190800, s1);
     obj_ExecTask((s32)s0 - s2);
 }
@@ -1548,7 +1548,7 @@ void motion_Close_8001D998(void) {
     if (s1 >= 0x1B19) {
         sys_Panic();
     }
-    s0 = &D_80104F38;
+    s0 = &MotDataBaseAddress;
     bb2_memcpy(s0, (s32)0x80190800, s1);
     motion_LoadPreCalcData_8005B98C((s32)s0 - s2);
 }
