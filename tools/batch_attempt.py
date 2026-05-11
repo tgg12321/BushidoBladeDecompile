@@ -49,7 +49,12 @@ def collect_candidates() -> list[tuple[str, str, str]]:
     candidates: list[tuple[str, str, str]] = []
     seen: set[str] = set()
 
+    # Detect inline-asm function entries in two forms:
+    #   1) `glabel <name>` (the asmpsx macro)
+    #   2) `.global <name>` + `<name>:` (raw form used by structural splits)
+    # Both expand to the same asm semantics; both should populate the queue.
     inline_re = re.compile(r"glabel\s+(\w+)")
+    raw_global_re = re.compile(r'^\s*"?\s*\.global\s+(\w+)', re.MULTILINE)
     include_re = re.compile(r'INCLUDE_ASM\s*\(\s*"asm/funcs"\s*,\s*(\w+)\s*\)')
 
     for src in sorted(SRC_DIR.glob("*.c")):
@@ -57,6 +62,17 @@ def collect_candidates() -> list[tuple[str, str, str]]:
         for m in inline_re.finditer(text):
             name = m.group(1)
             if name in seen:
+                continue
+            seen.add(name)
+            candidates.append((name, "inline_asm", str(src.relative_to(ROOT))))
+        # Second pass for raw `.global` form (must not double-count vs glabel).
+        for m in raw_global_re.finditer(text):
+            name = m.group(1)
+            if name in seen:
+                continue
+            # Sanity: only count it as an inline_asm function entry if
+            # `<name>:` actually appears (label definition, not extern ref).
+            if not re.search(rf'"{re.escape(name)}:\\n"|\b{re.escape(name)}\s*:', text):
                 continue
             seen.add(name)
             candidates.append((name, "inline_asm", str(src.relative_to(ROOT))))
