@@ -2036,10 +2036,39 @@ void func_8007F2AC(s32 *a0, s32 *a1, s32 *a2) {
     *a2 = v0;
 }
 PAD_NOPS_2; /* 2 NOPs after func_8007F2AC */
-void func_8007F2DC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007F2DC.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+s32 func_8007F2DC(s16 *a0, s16 *a1, s16 *a2, s16 *a3, s32 *o0, s32 *o1, s32 *o2, s32 *o3, s32 *o4, s32 *o5) {
+    register s32 v1 asm("v1");
+    register s32 v0 asm("v0");
+    __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
+    __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
+    __asm__ volatile (".word 0xC8A20000" :: "r"(a1));  /* lwc2 $2, 0($a1) */
+    __asm__ volatile (".word 0xC8A30004" :: "r"(a1));  /* lwc2 $3, 4($a1) */
+    __asm__ volatile (".word 0xC8C40000" :: "r"(a2));  /* lwc2 $4, 0($a2) */
+    __asm__ volatile (".word 0xC8C50004" :: "r"(a2));  /* lwc2 $5, 4($a2) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A280030");             /* rtpt */
+    __asm__ volatile (".word 0x8FA80010");             /* lw $t0, 0x10($sp) */
+    __asm__ volatile (".word 0x8FA90014");             /* lw $t1, 0x14($sp) */
+    __asm__ volatile (".word 0x8FAA0018");             /* lw $t2, 0x18($sp) */
+    __asm__ volatile (".word 0xE90C0000");             /* swc2 $12, 0($t0) */
+    __asm__ volatile (".word 0xE92D0000");             /* swc2 $13, 0($t1) */
+    __asm__ volatile (".word 0xE94E0000");             /* swc2 $14, 0($t2) */
+    __asm__ volatile (".word 0x4843F800" : "=r"(v1));  /* cfc2 $v1, $31 (FLAG1) */
+    __asm__ volatile (".word 0xC8E00000" :: "r"(a3));  /* lwc2 $0, 0($a3) */
+    __asm__ volatile (".word 0xC8E10004" :: "r"(a3));  /* lwc2 $1, 4($a3) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A180001");             /* rtps */
+    __asm__ volatile (".word 0x8FA8001C");             /* lw $t0, 0x1C($sp) */
+    __asm__ volatile (".word 0x8FA90020");             /* lw $t1, 0x20($sp) */
+    __asm__ volatile (".word 0x8FAA0024");             /* lw $t2, 0x24($sp) */
+    __asm__ volatile (".word 0xE90E0000");             /* swc2 $14, 0($t0) */
+    __asm__ volatile (".word 0xE9280000");             /* swc2 $8,  0($t1) */
+    __asm__ volatile (".word 0x4848F800");             /* cfc2 $t0, $31 (FLAG2) */
+    __asm__ volatile (".word 0x48029800" : "=r"(v0));  /* mfc2 $v0, $19 (SZ3) */
+    __asm__ volatile (".word 0x01034025" :: "r"(v1));  /* or $t0, $t0, $v1 (combine FLAGs) */
+    __asm__ volatile (".word 0xAD480000");             /* sw $t0, 0($t2) */
+    (void)o0; (void)o1; (void)o2; (void)o3; (void)o4; (void)o5;
+    return v0 >> 2;
 }
 PAD_NOPS_2; /* 2 NOPs after func_8007F2DC */
 void *motutil_GetWalkDir(s16 *angle_ptr, void *arg1) {
