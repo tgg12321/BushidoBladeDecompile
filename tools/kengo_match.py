@@ -260,6 +260,17 @@ BB2_INSN = re.compile(r"^\s*/\*\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s*\
 BB2_JAL = re.compile(r"\bjal\s+(\w+)")
 
 
+# Strip our TU-static disambiguation suffix so the matcher can recognize
+# `mario_getMarioVoiceData_8001B3C0` as a same-name candidate for Kengo's
+# `mario_getMarioVoiceData`. Pattern: 8-hex-digit suffix introduced by
+# apply_kengo_names.py for multi-claimant conflict groups.
+_ADDR_SUFFIX = re.compile(r"_[0-9A-Fa-f]{8}$")
+
+
+def strip_addr_suffix(name: str) -> str:
+    return _ADDR_SUFFIX.sub("", name)
+
+
 def parse_bb2_functions() -> list[dict]:
     """Return [{name, size_insns, callees, callers, src_file}] for every BB2
     function with an `asm/funcs/<name>.s` entry. `callers` is the reverse
@@ -430,12 +441,19 @@ def match_all(bb2: list[dict], kengo: list[dict], tol: float,
     for k in kengo:
         kengo_by_name[k["name"]].append(k)
 
-    # Seed translation with unique-name matches.
+    # Seed translation with unique-name matches. Also try the suffix-stripped
+    # form so `<base>_<ADDR>` BB2 names match Kengo's bare `<base>`.
     xlat: dict[str, str] = {}
     for b in bb2:
         same = kengo_by_name.get(b["name"], [])
         if len(same) == 1:
             xlat[b["name"]] = b["name"]
+            continue
+        stripped = strip_addr_suffix(b["name"])
+        if stripped != b["name"]:
+            same = kengo_by_name.get(stripped, [])
+            if len(same) >= 1:
+                xlat[b["name"]] = stripped
 
     # Build a kengo lookup by name for fast caller-constraint resolution.
     kengo_callees_of: dict[str, set[str]] = defaultdict(set)
@@ -453,6 +471,11 @@ def match_all(bb2: list[dict], kengo: list[dict], tol: float,
 
             cands = size_candidates(bsize, kengo, tol)
             same_name = kengo_by_name.get(b["name"], [])
+            if not same_name:
+                # Try suffix-stripped form for our TU-static disambiguated names.
+                stripped = strip_addr_suffix(b["name"])
+                if stripped != b["name"]:
+                    same_name = kengo_by_name.get(stripped, [])
             if same_name:
                 size_same = [k for k in same_name
                              if abs(k["size_insns"] - bsize) / max(bsize, 1) <= tol]
