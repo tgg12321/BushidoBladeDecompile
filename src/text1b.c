@@ -10744,10 +10744,14 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void func_80052CD4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052CD4.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+void func_80052CD4(s32 *a0, s32 *a1) {
+    register s32 t0 asm("$8");
+    register s32 t1 asm("$9");
+    __asm__ volatile (".word 0x48084800" : "=r"(t0));  /* mfc2 $t0, $9 */
+    __asm__ volatile (".word 0x48095000" : "=r"(t1));  /* mfc2 $t1, $10 */
+    *a0 = t0 >> 2;
+    *a1 = t1 >> 2;
+    __asm__ volatile ("" ::: "memory");
 }
 PAD_NOPS_3; /* padding after func_80052CD4 */
 s32 func_80052D00(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
