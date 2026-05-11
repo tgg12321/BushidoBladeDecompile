@@ -177,10 +177,18 @@ u32 *gpu_ClearOTag(u32 *a0, s32 a1) {
     *a0 = (u32)&g_gpu_ot_end & 0xFFFFFF;
     return a0;
 }
-void func_8007B844(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007B844.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+extern u32 D_80015F98;
+
+u32 *func_8007B844(u32 *ot, s32 n) {
+    if (g_gpu_debug_level >= 2) {
+        g_gpu_debug_func(&D_80015F98, ot, n);
+    }
+    {
+        u32 *v0 = g_gpu_dev_table;
+        ((void (*)(u32 *, s32))v0[11])(ot, n);
+    }
+    *ot = ((u32)&g_gpu_ot_end) & 0xFFFFFF;
+    return ot;
 }
 void gpu_SendPacket(u8 *a0) {
     u32 *dev = g_gpu_dev_table;
