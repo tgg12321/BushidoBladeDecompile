@@ -20,7 +20,7 @@ extern u32 D_80101E3C;
 extern u32 D_80101E44;
 
 /* Extern function declarations */
-extern void cpu_get_dash_timer(s32, s32);
+extern void func_80023CB4(s32, s32);
 extern s32 func_80037110(s32);
 extern void game_FrameInit(void);
 extern void game_FrameLoop(void);

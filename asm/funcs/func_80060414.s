@@ -1,4 +1,4 @@
-glabel gnd_set_scene
+glabel func_80060414
     /* 50C14 80060414 A0FFBD27 */  addiu      $sp, $sp, -0x60
     /* 50C18 80060418 4800B0AF */  sw         $s0, 0x48($sp)
     /* 50C1C 8006041C 2180A000 */  addu       $s0, $a1, $zero
@@ -78,4 +78,4 @@ glabel gnd_set_scene
     /* 50D38 80060538 6000BD27 */  addiu      $sp, $sp, 0x60
     /* 50D3C 8006053C 0800E003 */  jr         $ra
     /* 50D40 80060540 00000000 */   nop
-endlabel gnd_set_scene
+endlabel func_80060414

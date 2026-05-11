@@ -1,4 +1,4 @@
-glabel gnd_load_data
+glabel func_8005D46C
     /* 4DC6C 8005D46C A8FFBD27 */  addiu      $sp, $sp, -0x58
     /* 4DC70 8005D470 21188000 */  addu       $v1, $a0, $zero
     /* 4DC74 8005D474 2110A000 */  addu       $v0, $a1, $zero
@@ -58,4 +58,4 @@ glabel gnd_load_data
     /* 4DD48 8005D548 5800BD27 */  addiu      $sp, $sp, 0x58
     /* 4DD4C 8005D54C 0800E003 */  jr         $ra
     /* 4DD50 8005D550 00000000 */   nop
-endlabel gnd_load_data
+endlabel func_8005D46C

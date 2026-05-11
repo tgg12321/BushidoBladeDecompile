@@ -1,4 +1,4 @@
-glabel reset_rob_rmd
+glabel func_8007CA00
     /* 6D200 8007CA00 0A80033C */  lui        $v1, %hi(D_8009BE74)
     /* 6D204 8007CA04 74BE6390 */  lbu        $v1, %lo(D_8009BE74)($v1)
     /* 6D208 8007CA08 01000224 */  addiu      $v0, $zero, 0x1
@@ -49,4 +49,4 @@ glabel reset_rob_rmd
   .L8007CAA8:
     /* 6D2A8 8007CAA8 0800E003 */  jr         $ra
     /* 6D2AC 8007CAAC 00000000 */   nop
-endlabel reset_rob_rmd
+endlabel func_8007CA00

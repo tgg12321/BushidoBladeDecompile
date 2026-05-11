@@ -631,7 +631,7 @@ s32 func_8007C97C(u8 *arg0) {
 }
 extern u8 D_8009BE74;
 extern u8 D_8009BE77;
-s32 reset_rob_rmd(s16 *arg0) {
+s32 func_8007CA00(s16 *arg0) {
     int new_var;
     switch (D_8009BE74) {
     case 1:

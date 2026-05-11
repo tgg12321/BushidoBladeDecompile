@@ -43,7 +43,7 @@ glabel gnd_disp_loop_ctrl
     /* 7D94 80017594 00000000 */   nop
     /* 7D98 80017598 5200A010 */  beqz       $a1, .L800176E4
     /* 7D9C 8001759C 00000000 */   nop
-    /* 7DA0 800175A0 1B75010C */  jal        gnd_load_data
+    /* 7DA0 800175A0 1B75010C */  jal        func_8005D46C
     /* 7DA4 800175A4 21204002 */   addu      $a0, $s2, $zero
     /* 7DA8 800175A8 DC058393 */  lbu        $v1, %gp_rel(D_800A36A8)($gp)
     /* 7DAC 800175AC 00000000 */  nop
@@ -130,7 +130,7 @@ glabel gnd_disp_loop_ctrl
   .L800176D4:
     /* 7ED4 800176D4 21202002 */  addu       $a0, $s1, $zero
     /* 7ED8 800176D8 21284002 */  addu       $a1, $s2, $zero
-    /* 7EDC 800176DC 0581010C */  jal        gnd_set_scene
+    /* 7EDC 800176DC 0581010C */  jal        func_80060414
     /* 7EE0 800176E0 21300000 */   addu      $a2, $zero, $zero
   .L800176E4:
     /* 7EE4 800176E4 8006848F */  lw         $a0, %gp_rel(D_800A374C)($gp)

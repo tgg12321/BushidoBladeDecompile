@@ -1,4 +1,4 @@
-glabel kgm_map
+glabel func_80017D84
     /* 8584 80017D84 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 8588 80017D88 21408000 */  addu       $t0, $a0, $zero
     /* 858C 80017D8C 0F80073C */  lui        $a3, %hi(D_800F6740)
@@ -69,4 +69,4 @@ glabel kgm_map
     /* 8680 80017E80 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 8684 80017E84 0800E003 */  jr         $ra
     /* 8688 80017E88 00000000 */   nop
-endlabel kgm_map
+endlabel func_80017D84

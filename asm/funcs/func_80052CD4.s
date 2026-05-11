@@ -1,4 +1,4 @@
-glabel saTan2InfoInit_80052CD4
+glabel func_80052CD4
     /* 434D4 80052CD4 00480848 */  mfc2       $t0, $9 /* handwritten instruction */
     /* 434D8 80052CD8 00500948 */  mfc2       $t1, $10 /* handwritten instruction */
     /* 434DC 80052CDC 83400800 */  sra        $t0, $t0, 2
@@ -7,4 +7,4 @@ glabel saTan2InfoInit_80052CD4
     /* 434E8 80052CE8 0000A9AC */  sw         $t1, 0x0($a1)
     /* 434EC 80052CEC 0800E003 */  jr         $ra
     /* 434F0 80052CF0 00000000 */   nop
-endlabel saTan2InfoInit_80052CD4
+endlabel func_80052CD4

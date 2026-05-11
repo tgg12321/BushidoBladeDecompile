@@ -72,10 +72,10 @@ extern u8 D_800A3768;
 extern u32 D_8008D090;
 extern u8 D_80010034;
 extern void func_8003D330(void);
-extern u8 *gnd_load_data(u8 *);
+extern u8 *func_8005D46C(u8 *);
 extern u8 *gnd_land_hit_char_tsuba(u8 *, u8);
 extern void func_8005E54C(s32, u8 *, s32);
-extern void gnd_set_scene(s32, u8 *, s32);
+extern void func_80060414(s32, u8 *, s32);
 extern void gte_SetRotMatrix(u8 *);
 extern void gte_SetTransVector(u8 *);
 extern void func_8007F2AC(u8 *, s32 *, s32 *);
@@ -701,7 +701,7 @@ void gnd_disp_loop_ctrl(void) {
     switch (g_disp_enable) {
     case 1:
     case 2:
-        s2_var = (s32)gnd_load_data((u8 *)s2_var);
+        s2_var = (s32)func_8005D46C((u8 *)s2_var);
         if (g_disp_fade != new_var2) {
             s32 v0;
             s32 a0_temp;
@@ -756,7 +756,7 @@ void gnd_disp_loop_ctrl(void) {
                 if ((a1_val && a1_val) && a1_val) {
                 }
             }
-            gnd_set_scene(s1_var, (u8 *)s2_var, new_var2);
+            func_80060414(s1_var, (u8 *)s2_var, new_var2);
         }
         break;
     }
@@ -798,7 +798,7 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
     func_8007F0BC(in, out);
     return func_8007E43C(out[0] + out[1] + out[2]) << 4;
 }
-s32 kgm_init(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
+s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     register u8 *ctxp asm("s2") = ctx;
     register s32 saved_arg1 asm("s5") = arg1;
     register s32 sa asm("s4") = slot_a;
@@ -870,7 +870,7 @@ void func_80017A44(void *a0, u8 *a1) {
     (void)a1;
 }
 extern void func_80017A44(void *, u8 *);
-s32 kgm_map(void *a0) {
+s32 func_80017D84(void *a0) {
     register u8 *obj_base asm("a3");
     register void *saved_a0 asm("t0");
     s32 i;

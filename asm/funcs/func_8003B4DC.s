@@ -1,4 +1,4 @@
-glabel coli_cancel_hit_pause_katana_8003B4DC
+glabel func_8003B4DC
     /* 2BCDC 8003B4DC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2BCE0 8003B4E0 01000224 */  addiu      $v0, $zero, 0x1
     /* 2BCE4 8003B4E4 0A80013C */  lui        $at, %hi(D_800A3712)
@@ -21,4 +21,4 @@ glabel coli_cancel_hit_pause_katana_8003B4DC
     /* 2BD28 8003B528 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2BD2C 8003B52C 0800E003 */  jr         $ra
     /* 2BD30 8003B530 00000000 */   nop
-endlabel coli_cancel_hit_pause_katana_8003B4DC
+endlabel func_8003B4DC

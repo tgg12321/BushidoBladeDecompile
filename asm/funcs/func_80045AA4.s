@@ -1,4 +1,4 @@
-glabel myRobGeneiInit
+glabel func_80045AA4
     /* 362A4 80045AA4 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 362A8 80045AA8 1000B0AF */  sw         $s0, 0x10($sp)
     /* 362AC 80045AAC 21808000 */  addu       $s0, $a0, $zero
@@ -50,4 +50,4 @@ glabel myRobGeneiInit
     /* 3635C 80045B5C 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 36360 80045B60 0800E003 */  jr         $ra
     /* 36364 80045B64 00000000 */   nop
-endlabel myRobGeneiInit
+endlabel func_80045AA4

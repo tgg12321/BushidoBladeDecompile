@@ -1,4 +1,4 @@
-glabel kgm_init
+glabel func_80017848
     /* 8048 80017848 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 804C 8001784C 2800B2AF */  sw         $s2, 0x28($sp)
     /* 8050 80017850 21908000 */  addu       $s2, $a0, $zero
@@ -133,4 +133,4 @@ glabel kgm_init
     /* 8238 80017A38 4000BD27 */  addiu      $sp, $sp, 0x40
     /* 823C 80017A3C 0800E003 */  jr         $ra
     /* 8240 80017A40 00000000 */   nop
-endlabel kgm_init
+endlabel func_80017848

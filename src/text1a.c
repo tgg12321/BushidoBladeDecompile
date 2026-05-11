@@ -888,7 +888,7 @@ extern s32 g_player_ptrs[];
 s32 func_8004153C(s32 a0) {
     return g_player_ptrs[a0];
 }
-s32 efc_buki_ZanzouDispInit(s32 a0) {
+s32 func_80041554(s32 a0) {
     s16 *ptr = (s16 *)g_player_ptrs[a0];
     if (ptr) {
         return ptr[4];
