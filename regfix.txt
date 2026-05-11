@@ -4719,3 +4719,15 @@ func_80078F60: delete @ 6
 func_80078F60: delete @ 5
 func_80078F60: delete @ 2
 func_80078F60: delete @ 1
+
+# func_80078F74: clone of func_80078F60 - same 5-insn tail-call dispatcher
+# but through jtbl_800A3624 (the second function pointer in the .data slot).
+func_80078F74: subst "\$2,jtbl_800A3624" "$9,jtbl_800A3624" @ 0
+func_80078F74: subst "jal\t\$31,\$2" "j $9" @ 3
+func_80078F74: insert_after "nop" @ 0
+func_80078F74: delete @ 8
+func_80078F74: delete @ 7
+func_80078F74: delete @ 6
+func_80078F74: delete @ 5
+func_80078F74: delete @ 2
+func_80078F74: delete @ 1
