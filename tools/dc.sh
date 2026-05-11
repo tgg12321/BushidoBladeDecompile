@@ -19,6 +19,8 @@
 #   bash tools/dc.sh frame-shift <func> [--delta N] [--apply] — auto-cascade regfix when frame size differs
 #   bash tools/dc.sh asmfix-slice <func> <start> <end> [--apply] — lift target asm slice into asmfix.txt
 #   bash tools/dc.sh post-match-validate <func>  — sibling-regression check after a match
+#   bash tools/dc.sh retire <func>                — start retirement of a bridged function (see feedback_bridge_is_not_decomp.md)
+#   bash tools/dc.sh audit-bridges                — caller-signature audit on 209 bridged funcs
 #   bash tools/dc.sh classify <func>              — pre-dive classification report
 #   bash tools/dc.sh gte <func>                    — gte_*() macro suggestion report
 #   bash tools/dc.sh attempt <func>               — full mechanical attempt pipeline
@@ -697,10 +699,40 @@ print(f'Replaced {func} in {src}')
         if [ "$CONFIRM" = "$ACTIVE" ]; then
             : > .bb2_active_func
             echo "Released $ACTIVE. The hook will no longer block on this function."
+            # If this was a retirement-in-progress, restore the bridge by
+            # un-commenting the `# RETIRE: ...` line in asmfix.txt.
+            if grep -q "^# RETIRE: ${ACTIVE}: replace_with_asmfile" asmfix.txt 2>/dev/null; then
+                python3 -c "
+import re, sys
+from pathlib import Path
+p = Path('asmfix.txt')
+lines = p.read_text(encoding='utf-8').splitlines()
+fn = '$ACTIVE'
+out = []
+restored = 0
+for line in lines:
+    if line.startswith('# RETIRE: ') and re.match(rf'^# RETIRE: {re.escape(fn)}\s*:\s*replace_with_asmfile\b', line):
+        out.append(line[len('# RETIRE: '):])
+        restored += 1
+    else:
+        out.append(line)
+p.write_text('\n'.join(out) + '\n', encoding='utf-8')
+print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
+"
+            fi
         else
             echo "Mismatch (expected '$ACTIVE', got '$CONFIRM'). Not releasing." >&2
             exit 1
         fi
+        ;;
+
+    retire)
+        # Start retirement of a bridged (replace_with_asmfile) function:
+        # comment out the asmfix rule, set active marker, point at C body.
+        # See feedback_bridge_is_not_decomp.md.
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh retire <func>"; exit 1; }
+        python3 tools/dc_retire.py "$FUNC_NAME" 2>&1
         ;;
 
     fix-label-drift)
@@ -748,16 +780,48 @@ print(f'Replaced {func} in {src}')
         # Refresh classifier CSV + regenerate WORK_QUEUE.md. Run after a
         # batch of matches so the queue drops them. ~2 minutes.
         # ALSO clears .bb2_active_func -- if you got here, you matched.
-        echo "[1/4] Capturing recipe from latest commit (if it's a match)..."
+        echo "[1/5] Capturing recipe from latest commit (if it's a match)..."
         python3 tools/capture_recipe.py HEAD 2>&1 | tail -5 || true
         echo
-        echo "[2/4] Classifying inline_asm + INCLUDE_ASM (batch_attempt --classify-only)..."
+        echo "[2/5] Cleaning up completed retirements (# RETIRE: lines now matching)..."
+        # If a `# RETIRE: <func>: replace_with_asmfile ...` line exists AND
+        # the build matches AND the function is no longer the active marker,
+        # the retirement succeeded — remove the commented bridge rule.
+        if grep -q "^# RETIRE: " asmfix.txt 2>/dev/null; then
+            python3 -c "
+import re, subprocess
+from pathlib import Path
+p = Path('asmfix.txt')
+lines = p.read_text(encoding='utf-8').splitlines()
+# Active marker (must NOT be the function whose retirement we'd remove)
+am = Path('.bb2_active_func')
+active = am.read_text(encoding='utf-8').strip() if am.exists() else ''
+# Only purge retirements once build is SHA1-clean
+res = subprocess.run(['bash', 'tools/dc.sh', 'verify', '--all'], capture_output=True, text=True, timeout=60)
+clean = 'SHA1 match:' in res.stdout
+if not clean:
+    print('  build not clean; leaving # RETIRE lines in place')
+else:
+    out, purged = [], 0
+    for line in lines:
+        m = re.match(r'^# RETIRE:\s*(\w+)\s*:\s*replace_with_asmfile\b', line)
+        if m and m.group(1) != active:
+            purged += 1
+            continue
+        out.append(line)
+    if purged:
+        p.write_text('\n'.join(out) + '\n', encoding='utf-8')
+    print(f'  purged {purged} completed retirement(s)')
+"
+        fi
+        echo
+        echo "[3/5] Classifying inline_asm + INCLUDE_ASM (batch_attempt --classify-only)..."
         python3 tools/batch_attempt.py --classify-only 2>&1 | tail -3
         echo
-        echo "[3/4] Classifying replace_with_asmfile entries..."
+        echo "[4/5] Classifying replace_with_asmfile entries..."
         python3 tools/classify_asmfix.py 2>&1 | tail -3
         echo
-        echo "[4/4] Generating WORK_QUEUE.md..."
+        echo "[5/5] Generating WORK_QUEUE.md..."
         python3 tools/gen_work_queue.py 2>&1
         # Belt-and-suspenders: the commit-via-hook path already cleared
         # the marker, but if for some reason a refresh runs while it's
@@ -1005,6 +1069,15 @@ print(f'Replaced {func} in {src}')
         echo "[integrate] OK: $BRANCH integrated as $FINAL_SHA"
         ;;
 
+    audit-bridges)
+        # Audit caller signatures vs stub signatures for all bridged
+        # (replace_with_asmfile) functions. Reports ACTIVE / latent /
+        # informational issues. JSON written to tmp/bridge_signature_audit.json.
+        # See feedback_bridge_signature_audit.md.
+        mkdir -p tmp
+        python3 tools/audit_bridge_signatures.py "$@"
+        ;;
+
     *)
         echo "Unknown command: $CMD"
         echo "Commands: compile, score, debug, build, replace, setup,"
@@ -1013,7 +1086,8 @@ print(f'Replaced {func} in {src}')
         echo "          recipes, apply-recipe,"
         echo "          analysis, dump-text, validate-regfix, gen-regfix, verify,"
         echo "          frame-shift, asmfix-slice, find-label-at, diagnose-hoist,"
-        echo "          next, next-structural, next-asmfix, refresh-queue, release"
+        echo "          next, next-structural, next-asmfix, refresh-queue, release,"
+        echo "          retire, audit-bridges"
         exit 1
         ;;
 esac

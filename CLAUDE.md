@@ -171,6 +171,8 @@ Add these to `base.c` to guide the search:
 
 **FORBIDDEN:** tabling, skipping, declaring "too hard", hunting for easier targets after starting, leaving inline `__asm__()` as the answer, leaving `replace_with_asmfile` as a final state, switching to a different function because you're stuck (stuck = switch *technique*, not target).
 
+**Bridging (`replace_with_asmfile`) is NOT a default response to difficulty.** Across rounds 5–11 the project accumulated 209 bridged functions while real decomp progress stayed at zero — exactly the trap THE HARD RULE forbids. Bridging requires explicit per-function user authorization. If your escalation ladder is exhausted and you're tempted to bridge, stop and ask the user — do not pre-emptively write the asmfix rule, do not invoke the asmfile pattern from `feedback_replace_with_asmfile_pattern.md` on your own judgment. The retirement queue (`dc.sh next-asmfix`) goes the *opposite* direction — bridge → C. Don't bridge a function you're retiring. See `feedback_bridge_is_not_decomp.md`.
+
 **The only valid permanent out-of-scope categories** (auto-detected by `dc.sh classify`):
 - `permanently_blocked:<reason>` — toolchain physically can't emit non-div-guard `break`, COP0 ops, `add`/`sub`/`addi` overflow ops, `$sp`/context restore, or data-as-code fragments
 - `bios_or_syscall:*` — canonical BIOS/kernel trampolines or raw syscall/break wrappers
@@ -332,6 +334,8 @@ wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash
 | `dc.sh add-regfix <func> <op> ...` | Append a validated regfix rule (replaces ad-hoc tmp/add_regfix*.py). **Pre-validates** against live `dump_text_indices` before append (catches `$0`-vs-`$zero` patterns and out-of-bounds idx without a build round-trip). **Auto-rolls back** on live-build validation failure. `--no-prevalidate` to skip the cheap check, `--no-validate` to skip both. Ops: swap, subst, delete, insert, insert_after, reorder, fill_delay, drain_delay. |
 | `dc.sh regfix-suggest <func> [--apply]` | **Run this BEFORE writing any regfix rule by hand.** Diffs target.s vs the live post-regfix build pipeline and emits `delete`/`insert_after`/`subst` rules that close the gap. Catches gp-rel pseudo expansions (emits `sdata_exclude.txt` hints) and label drift (emits hints, not auto-rewrites). Conservative on reorders — emits insert+delete pairs to avoid the label-attachment trap. `--apply` appends the rules to regfix.txt. `--max-rules N` caps output (default 40 — anything more usually means structural mismatch, reach for permuter instead). |
 | `dc.sh caller-audit <func>` | Scan src/*.c for callers and report max args passed. Auto-runs as part of `dc.sh inline-replace` and BLOCKS the integration if the C signature is too narrow (catches the cascade-regression case where GCC dead-codes extra-arg computations in callers). |
+| `dc.sh retire <func>` | Start retirement of a bridged (`replace_with_asmfile`) function: comments out the asmfix rule with `# RETIRE: `, sets the active marker, prints C-body location. Refuses if not bridged or if build is mismatched. `dc.sh release <func>` restores the bridge if you need to abandon. See `feedback_bridge_is_not_decomp.md`. |
+| `dc.sh audit-bridges` | Caller-signature audit on all 209 bridged functions — writes `tmp/bridge_signature_audit.json` with canonical signatures inferred from extern decls + caller usage. See `feedback_bridge_signature_audit.md`. |
 
 ### Inline-asm-aware setup (399 functions still inline)
 
