@@ -10507,10 +10507,21 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void func_80052754(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052754.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+s32 func_80052754(s32 arg0, s32 arg1, s32 arg2) {
+    register s32 t0 asm("$8");
+    register s32 t1 asm("$9");
+    register s32 t2 asm("$10");
+    __asm__ volatile ("mtc2 %0, $9" :: "r"(arg0));
+    __asm__ volatile ("mtc2 %0, $10" :: "r"(arg1));
+    __asm__ volatile ("mtc2 %0, $11" :: "r"(arg2));
+    __asm__ volatile ("nop");
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4AA00428");
+    __asm__ volatile ("nop");
+    __asm__ volatile ("mfc2 %0, $25" : "=r"(t0));
+    __asm__ volatile ("mfc2 %0, $26" : "=r"(t1));
+    __asm__ volatile ("mfc2 %0, $27" : "=r"(t2));
+    return t0 + t1 + t2;
 }
 __asm__(
     ".set\tnoat\n"
