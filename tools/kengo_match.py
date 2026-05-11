@@ -50,6 +50,87 @@ OBJDUMP = "mipsel-linux-gnu-objdump"
 PS2_ONLY_MODULES = frozenset({"mpc", "pack", "eecdvd", "tty", "init"})
 
 
+# Per-BB2-file preferred Kengo module substrings. When a BB2 function lives
+# in one of these files, Kengo candidates whose module name contains one of
+# the listed substrings get a candidate-pool preference. Substring match so
+# "sa_tan" covers sa_tan0..sa_tan4. Falls back to all modules if nothing fits.
+FILE_MODULE_AFFINITY: dict[str, list[str]] = {
+    "code6cac.c": [
+        "nm_camera", "nm_single_game", "nm_cpu", "nm_mario", "nm_mario_test",
+        "nm_replay_cam", "md_game", "is_motion", "common", "am_rmd",
+    ],
+    "code6cac_b.c": [
+        "is_motion", "is_pad", "is_action", "is_tanren", "is_coli",
+        "is_ki_control", "nm_cpu", "nm_single_game",
+        "sa_tan", "sa_se", "am_rmd", "se_fc", "se_qt",
+    ],
+    "code6cac_b2.c": [
+        "nm_special_cam", "nm_mario_cam", "nm_replay_cam", "nm_tanren_cam",
+    ],
+    "code6cac_c.c": [
+        "is_coli", "is_ki_control", "is_damage_calc",
+        "is_action", "is_motion", "is_pad",
+    ],
+    "code6cac_c_ab.c": [
+        "is_coli", "is_action", "common",
+    ],
+    "code6cac_c_mid.c": [
+        "is_coli", "is_action", "is_motion",
+    ],
+    "code6cac_c2.c": [
+        "nm_replay_cam", "nm_katinuki_game", "nm_single_game",
+        "md_game", "am_rmd", "nm_cpu",
+    ],
+    "text1a.c": [
+        "is_efc", "my_rob", "my_eff", "my_hirahira",
+        "se_fc", "se_qt", "am_rmd",
+    ],
+    "text1a_c.c": [
+        "is_efc", "my_rob", "my_eff", "se_fc",
+    ],
+    "text1b.c": [
+        "is_motion", "is_action", "is_coli", "is_ki_control",
+        "is_tanren", "is_pad", "is_efc",
+        "nm_cpu", "nm_replay_cam",
+        "sa_tan", "se_fc", "se_qt",
+    ],
+    "main.c": [
+        "md_game", "md_dummy", "md_sel", "is_learn", "is_league",
+        "is_stats", "is_status", "is_replay", "is_rob_test",
+        "am_rmd", "is_action", "is_coli", "sa_tan", "common",
+    ],
+    "system.c": [
+        "tsl_", "sa_se", "sa_load", "sa_main", "sa_eft",
+        "nm_mario", "am_rmd",
+    ],
+    "display.c": [
+        "am_rmd", "is_motion", "common",
+    ],
+    "ings.c": [
+        "hi_curpad", "hi_gnd", "hi_landhit", "hi_gview", "hi_kgm", "common",
+    ],
+    "ings2.c": [
+        "common", "is_motion",
+    ],
+    "config.c": [
+        "md_option", "fade", "game_2d", "common",
+    ],
+    "sound.c": [
+        "sa_se", "sa_load", "sa_main", "sa_tan",
+    ],
+}
+
+
+def affinity_set(bb2_file: str) -> list[str]:
+    if not bb2_file:
+        return []
+    return FILE_MODULE_AFFINITY.get(bb2_file, [])
+
+
+def is_affinity_preferred(kengo_module: str, preferred: list[str]) -> bool:
+    return any(p in kengo_module for p in preferred)
+
+
 # ---------------------------------------------------------------------------
 # Kengo side
 # ---------------------------------------------------------------------------
@@ -118,8 +199,13 @@ KENGO_JAL = re.compile(r"\bjal\s+[0-9a-f]+\s+<(\w+)>")
 
 def populate_kengo_callees(funcs: list[dict]) -> None:
     """Walk the Kengo disassembly, assign each `jal <name>` to the
-    enclosing function (keyed by address)."""
+    enclosing function (keyed by address). Also populates the reverse
+    map (callee → set of callers) on each function dict."""
     by_addr = {f["addr"]: f for f in funcs}
+    by_name: dict[str, list[dict]] = defaultdict(list)
+    for f in funcs:
+        by_name[f["name"]].append(f)
+        f.setdefault("callers", set())
     text = disassemble_kengo()
     cur: dict | None = None
     for line in text.splitlines():
@@ -131,7 +217,10 @@ def populate_kengo_callees(funcs: list[dict]) -> None:
             continue
         j = KENGO_JAL.search(line)
         if j:
-            cur["callees"].add(j.group(1))
+            callee_name = j.group(1)
+            cur["callees"].add(callee_name)
+            for target in by_name.get(callee_name, []):
+                target["callers"].add(cur["name"])
 
 
 # ---------------------------------------------------------------------------
@@ -143,9 +232,10 @@ BB2_JAL = re.compile(r"\bjal\s+(\w+)")
 
 
 def parse_bb2_functions() -> list[dict]:
-    """Return [{name, size_insns, callees, src_file}] for every BB2 function
-    with an `asm/funcs/<name>.s` entry. `src_file` is inferred by which
-    src/*.c file references the function's name.
+    """Return [{name, size_insns, callees, callers, src_file}] for every BB2
+    function with an `asm/funcs/<name>.s` entry. `callers` is the reverse
+    of `callees` (who jals to this function). `src_file` is inferred by
+    which src/*.c file references the function's name.
     """
     name_index: dict[str, set[str]] = defaultdict(set)
     name_re = re.compile(r"\b(func_[0-9A-Fa-f]{8}|[A-Za-z_][A-Za-z0-9_]+)\b")
@@ -155,10 +245,9 @@ def parse_bb2_functions() -> list[dict]:
             name_index[m.group(1)].add(c.name)
 
     funcs: list[dict] = []
+    callers_of: dict[str, set[str]] = defaultdict(set)
     for p in sorted(ASM_FUNCS.glob("*.s")):
         name = p.stem
-        # Skip data symbols (D_8001XXXX etc.) that landed in asm/funcs/
-        # accidentally — splat sometimes emits them; they aren't functions.
         if name.startswith("D_"):
             continue
         size = 0
@@ -175,8 +264,13 @@ def parse_bb2_functions() -> list[dict]:
             "name": name,
             "size_insns": size,
             "callees": callees,
+            "callers": set(),
             "src_file": src,
         })
+        for c in callees:
+            callers_of[c].add(name)
+    for f in funcs:
+        f["callers"] = callers_of.get(f["name"], set())
     return funcs
 
 
@@ -205,27 +299,57 @@ def translate_callees(callees: set[str], xlat: dict[str, str]) -> set[str]:
     return {xlat.get(c, c) for c in callees}
 
 
+def combined_score(bcallees_x: set[str], bcallers_x: set[str],
+                   k: dict, w_callee: float = 0.6, w_caller: float = 0.4) -> tuple[float, float, float]:
+    """Return (combined, callee_jaccard, caller_jaccard).
+
+    Caller graph is a useful additional signal: an unnamed BB2 function
+    whose callers are themselves named (or already mapped) constrains the
+    Kengo candidate set even when the function's own callees give no
+    overlap.
+    """
+    cje = jaccard(bcallees_x, k["callees"])
+    cjr = jaccard(bcallers_x, k.get("callers", set()))
+    combined = w_callee * cje + w_caller * cjr
+    return combined, cje, cjr
+
+
 def match_all(bb2: list[dict], kengo: list[dict], tol: float,
-              passes: int = 3, score_threshold: float = 0.2) -> dict[str, dict]:
-    """Iterate to a fixpoint and return {bb2_name: result}."""
+              passes: int = 6, score_threshold: float = 0.15,
+              verbose: bool = False) -> dict[str, dict]:
+    """Iterate to a fixpoint and return {bb2_name: result}.
+
+    Each pass:
+      1. Translate BB2 callees and callers through the current xlat map.
+      2. Restrict size-band candidates to module-affinity-preferred set
+         when the BB2 source file maps to a known author group.
+      3. Score candidates by combined callee+caller Jaccard.
+      4. Promote high-score matches into xlat for the next pass.
+    """
     kengo_by_name: dict[str, list[dict]] = defaultdict(list)
     for k in kengo:
         kengo_by_name[k["name"]].append(k)
 
-    # Seed translation map with unique-name matches: BB2 name == Kengo name
-    # and there is exactly one Kengo function with that name.
+    # Seed translation with unique-name matches.
     xlat: dict[str, str] = {}
     for b in bb2:
         same = kengo_by_name.get(b["name"], [])
         if len(same) == 1:
             xlat[b["name"]] = b["name"]
 
+    # Build a kengo lookup by name for fast caller-constraint resolution.
+    kengo_callees_of: dict[str, set[str]] = defaultdict(set)
+    for k in kengo:
+        kengo_callees_of[k["name"]] |= k["callees"]
+
     results: dict[str, dict] = {}
-    for it in range(passes):
+    for pass_n in range(passes):
         new_xlat = dict(xlat)
         for b in bb2:
             bsize = b["size_insns"]
             bcallees_x = translate_callees(b["callees"], xlat)
+            bcallers_x = translate_callees(b["callers"], xlat)
+            preferred = affinity_set(b["src_file"])
 
             cands = size_candidates(bsize, kengo, tol)
             same_name = kengo_by_name.get(b["name"], [])
@@ -235,14 +359,41 @@ def match_all(bb2: list[dict], kengo: list[dict], tol: float,
                 if size_same:
                     cands = size_same
 
+            # Caller constraint: if any BB2 caller already maps to a Kengo
+            # function K, then this BB2 function's equivalent must be among
+            # K's callees. Hard filter (when it leaves >=1 candidate).
+            caller_constrained = False
+            if not same_name:
+                allowed_names: set[str] = set()
+                for caller in b["callers"]:
+                    mapped = xlat.get(caller)
+                    if mapped:
+                        allowed_names |= kengo_callees_of.get(mapped, set())
+                if allowed_names:
+                    constrained = [k for k in cands if k["name"] in allowed_names]
+                    if constrained:
+                        cands = constrained
+                        caller_constrained = True
+
+            # Apply affinity prefer if any candidates fit; otherwise fall back
+            # to the unrestricted size band (don't silently drop the function).
+            affinity_used = False
+            if preferred and not same_name and not caller_constrained:
+                pref = [k for k in cands if is_affinity_preferred(k["module"], preferred)]
+                if pref:
+                    cands = pref
+                    affinity_used = True
+
             scored = []
             for k in cands:
-                s = jaccard(bcallees_x, k["callees"])
-                scored.append((s, k))
-            scored.sort(key=lambda x: (-x[0], abs(x[1]["size_insns"] - bsize)))
+                combined, cje, cjr = combined_score(bcallees_x, bcallers_x, k)
+                scored.append((combined, cje, cjr, k))
+            scored.sort(key=lambda x: (-x[0], abs(x[3]["size_insns"] - bsize)))
 
-            best = scored[0][1] if scored else None
+            best = scored[0][3] if scored else None
             best_score = scored[0][0] if scored else 0.0
+            best_cje = scored[0][1] if scored else 0.0
+            best_cjr = scored[0][2] if scored else 0.0
 
             if not cands:
                 conf = "no-match"
@@ -252,6 +403,14 @@ def match_all(bb2: list[dict], kengo: list[dict], tol: float,
                 conf = "name-callgraph"
             elif best_score >= score_threshold and len(cands) > 1:
                 conf = "callgraph"
+            elif caller_constrained and len(cands) == 1:
+                conf = "caller-unique"
+            elif caller_constrained and best_score >= score_threshold / 2:
+                conf = "caller-callgraph"
+            elif affinity_used and len(cands) == 1:
+                conf = "affinity-unique"
+            elif affinity_used and best_score >= score_threshold / 2:
+                conf = "affinity-callgraph"
             elif len(cands) == 1:
                 conf = "size-only-unique"
             else:
@@ -268,13 +427,21 @@ def match_all(bb2: list[dict], kengo: list[dict], tol: float,
                 "kengo_source_file": best["src_file"] if best else "",
                 "confidence": conf,
                 "n_candidates": len(cands),
-                "callee_overlap": f"{best_score:.2f}",
+                "callee_overlap": f"{best_cje:.2f}",
+                "caller_overlap": f"{best_cjr:.2f}",
+                "combined_score": f"{best_score:.2f}",
                 "_scored": scored,
             }
 
-            if best and conf in ("name-unique", "name-callgraph", "callgraph"):
+            if best and conf in ("name-unique", "name-callgraph", "callgraph",
+                                  "caller-unique", "caller-callgraph",
+                                  "affinity-unique", "affinity-callgraph"):
                 new_xlat[b["name"]] = best["name"]
 
+        added = len(new_xlat) - len(xlat)
+        if verbose:
+            print(f"  pass {pass_n + 1}: xlat size {len(new_xlat)} (+{added})",
+                  file=sys.stderr)
         if new_xlat == xlat:
             break
         xlat = new_xlat
@@ -290,7 +457,8 @@ CSV_COLS = [
     "bb2_func", "bb2_file", "bb2_insns",
     "kengo_name", "kengo_insns", "diff",
     "kengo_module", "kengo_source_file",
-    "confidence", "n_candidates", "callee_overlap",
+    "confidence", "n_candidates",
+    "callee_overlap", "caller_overlap", "combined_score",
 ]
 
 
@@ -311,6 +479,8 @@ def report_summary(results: dict[str, dict]) -> None:
     print()
     print(f"BB2 functions matched: {total}")
     order = ["name-unique", "name-callgraph", "callgraph",
+             "caller-unique", "caller-callgraph",
+             "affinity-unique", "affinity-callgraph",
              "size-only-unique", "size-only-ambiguous", "no-match"]
     for k in order:
         n = by_conf.get(k, 0)
@@ -325,12 +495,15 @@ def print_focused(name: str, results: dict[str, dict]) -> None:
         return
     print(f"BB2: {r['bb2_func']}  ({r['bb2_insns']} insns, {r['bb2_file'] or '?'})")
     print(f"Confidence: {r['confidence']}, candidates={r['n_candidates']}, "
-          f"best Jaccard={r['callee_overlap']}")
+          f"combined={r['combined_score']} "
+          f"(callee={r['callee_overlap']}, caller={r['caller_overlap']})")
     print()
     scored = r.get("_scored", [])[:10]
-    print(f"{'score':>6s}  {'insns':>5s}  {'name':<40s}  {'module':<24s}  src")
-    for s, k in scored:
-        print(f"{s:>6.2f}  {k['size_insns']:>5d}  {k['name']:<40s}  "
+    print(f"{'score':>6s}  {'cee':>4s}  {'cer':>4s}  {'insns':>5s}  "
+          f"{'name':<40s}  {'module':<24s}  src")
+    for combined, cje, cjr, k in scored:
+        print(f"{combined:>6.2f}  {cje:>4.2f}  {cjr:>4.2f}  "
+              f"{k['size_insns']:>5d}  {k['name']:<40s}  "
               f"{k['module']:<24s}  {k['src_file']}")
 
 
@@ -348,8 +521,10 @@ def main() -> int:
                     help="Filter summary/CSV to queue functions only")
     ap.add_argument("--no-write", action="store_true",
                     help="Don't write kengo_matches.csv; just print summary")
-    ap.add_argument("--passes", type=int, default=3,
-                    help="Iteration count for call-graph propagation (default 3)")
+    ap.add_argument("--passes", type=int, default=6,
+                    help="Iteration count for call-graph propagation (default 6)")
+    ap.add_argument("--verbose", "-v", action="store_true",
+                    help="Print per-pass translation map growth")
     args = ap.parse_args()
 
     print("Loading Kengo functions...", file=sys.stderr)
@@ -366,7 +541,8 @@ def main() -> int:
     print(f"  {len(bb2)} BB2 functions from asm/funcs/", file=sys.stderr)
 
     print("Matching (call-graph propagation)...", file=sys.stderr)
-    results = match_all(bb2, kengo, tol=args.tolerance, passes=args.passes)
+    results = match_all(bb2, kengo, tol=args.tolerance, passes=args.passes,
+                        verbose=args.verbose)
 
     if args.bb2:
         print_focused(args.bb2, results)
