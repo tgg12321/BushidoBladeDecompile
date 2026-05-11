@@ -2,7 +2,7 @@ glabel func_80069A8C
     /* 5A28C 80069A8C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 5A290 80069A90 1000B0AF */  sw         $s0, 0x10($sp)
     /* 5A294 80069A94 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 5A298 80069A98 40DF010C */  jal        func_80077D00
+    /* 5A298 80069A98 40DF010C */  jal        saTan2GaugeInit_80077D00
     /* 5A29C 80069A9C 21808000 */   addu      $s0, $a0, $zero
     /* 5A2A0 80069AA0 2000428C */  lw         $v0, 0x20($v0)
     /* 5A2A4 80069AA4 00000000 */  nop

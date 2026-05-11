@@ -34,7 +34,7 @@ glabel func_8006F100
     /* 5F978 8006F178 21204002 */   addu      $a0, $s2, $zero
     /* 5F97C 8006F17C 84CB010C */  jal        func_80072E10
     /* 5F980 8006F180 21204002 */   addu      $a0, $s2, $zero
-    /* 5F984 8006F184 80CC010C */  jal        func_80073200
+    /* 5F984 8006F184 80CC010C */  jal        saTan3GaugeMain_80073200
     /* 5F988 8006F188 21204002 */   addu      $a0, $s2, $zero
     /* 5F98C 8006F18C 3EBD0108 */  j          .L8006F4F8
     /* 5F990 8006F190 00000000 */   nop

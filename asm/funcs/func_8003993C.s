@@ -479,7 +479,7 @@ glabel func_8003993C
     /* 2A844 8003A044 36E80008 */  j          .L8003A0D8
     /* 2A848 8003A048 03000424 */   addiu     $a0, $zero, 0x3
   .L8003A04C:
-    /* 2A84C 8003A04C 21ED000C */  jal        func_8003B484
+    /* 2A84C 8003A04C 21ED000C */  jal        coli_cancel_hit_pause_katana_8003B484
     /* 2A850 8003A050 06008424 */   addiu     $a0, $a0, 0x6
     /* 2A854 8003A054 20000012 */  beqz       $s0, .L8003A0D8
     /* 2A858 8003A058 05000424 */   addiu     $a0, $zero, 0x5

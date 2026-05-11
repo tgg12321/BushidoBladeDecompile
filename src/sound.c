@@ -7,7 +7,7 @@
 /* Forward declarations for called functions */
 extern void func_800453E0(s32);
 extern s32 *func_800455AC(s32);
-extern void func_80045510(s32, s32);
+extern void saSeMain_80045510(s32, s32);
 extern void saTan5TakeGetPos_80045230(s32);
 extern void func_80054FDC(s32);
 extern void func_80078A68(u32, s32, s32);
@@ -22,7 +22,7 @@ extern s32 func_800477E8(void);
 extern void func_80047A90(void);
 extern void saTan5GetTakeCutAnimType(s32);
 extern void func_80044100(s32, s32);
-extern void func_80045600(s32, s32);
+extern void saSeMain_80045600(s32, s32);
 extern void saTan5TakeGetPos_80045694(s32, void (*)(void));
 extern void func_800460E4(s32);
 extern void func_800421C8(s32);
@@ -31,7 +31,7 @@ extern void DispHira(s32);
 extern void func_8003DA8C(s32, s32);
 extern void player_Destroy(s32);
 extern void func_8004668C(void);
-extern void func_80046020(void);
+extern void saTanMainDispGnd_80046020(void);
 extern void func_80049E1C(void);
 extern void camera_InitRotation(u8 *);
 extern void func_80042A88(s32 *, s32 *);
@@ -42,7 +42,7 @@ extern s16 D_800A33C8;
 extern s16 D_800A33CA;
 extern s32 D_800A3708;
 extern void func_8004211C(void);
-extern void func_800444BC(void);
+extern void saTanMainDispGnd_800444BC(void);
 extern void func_80052930(void *, void *, void *);
 extern void func_80044FA0(s32, s32 *);
 extern s16 g_pad_selection;
@@ -107,7 +107,7 @@ extern s16 D_800F665A;
 extern s32 D_800A33BC;
 extern s32 func_800486FC(void);
 extern s32 *func_8004574C(s32);
-extern void func_80044F80(s32, s32 *);
+extern void saTan2InfoInit_80044F80(s32, s32 *);
 extern void func_80044010(s32 *, s32);
 extern s16 D_800A3248;
 
@@ -146,7 +146,7 @@ s32 *snd_LoadBgm(s32 a0) {
             s32 *s1;
             s32 *s0;
             s2 = func_800455AC(chan);
-            func_80044F80(arg, s2);
+            saTan2InfoInit_80044F80(arg, s2);
             {
                 s32 off1 = (u32)s2[2] >> 2 << 2;
                 s32 off0 = (u32)s2[1] >> 2 << 2;
@@ -155,7 +155,7 @@ s32 *snd_LoadBgm(s32 a0) {
             }
             saTan5TakeGetPos_80045230((s32)s1);
             func_80044010(s0, 9);
-            func_80045600(chan, (s32)s1);
+            saSeMain_80045600(chan, (s32)s1);
             D_800A3248 = arg;
         }
     }
@@ -164,7 +164,7 @@ s32 *snd_LoadBgm(s32 a0) {
 }
 
 void snd_PlayBgm(s32 a0) {
-    func_80045510(8, a0);
+    saSeMain_80045510(8, a0);
     saTan5TakeGetPos_80045230(0);
 }
 
@@ -186,12 +186,12 @@ void snd_SeNullCallback(void) {
 
 void snd_LoadSe(s32 a0) {
     saTan5TakeGetPos_80045230(a0);
-    func_80045600(9, a0);
+    saSeMain_80045600(9, a0);
     saTan5TakeGetPos_80045694(9, snd_SeNullCallback);
 }
 
 void snd_PlaySe(s32 a0) {
-    func_80045510(9, a0);
+    saSeMain_80045510(9, a0);
 }
 
 void snd_SelectionCallback(s32, s32);
@@ -206,7 +206,7 @@ s32 *snd_LoadSelection(s32 a0) {
     {
         s32 *s0 = (s32 *)((u8 *)v0 + offset);
         saTan5TakeGetPos_80045230((s32)s0);
-        func_80045600(0xA, (s32)s0);
+        saSeMain_80045600(0xA, (s32)s0);
     }
     g_pad_selection = (s16)a0;
     saTan5TakeGetPos_80045694(0xA, snd_SelectionCallback);
@@ -225,7 +225,7 @@ void snd_StopAll(void) {
     player_Destroy(0);
     player_Destroy(1);
     func_8004668C();
-    func_80046020();
+    saTanMainDispGnd_80046020();
     func_80049E1C();
     snd_StopBgm();
 }
@@ -332,7 +332,7 @@ void game_StageInit(s32 a0) {
         game_InitStageSound(g_snd_stage_bgm);
     }
     func_8004211C();
-    func_800444BC();
+    saTanMainDispGnd_800444BC();
 }
 
 s32 game_GetDummyFlag(void) {

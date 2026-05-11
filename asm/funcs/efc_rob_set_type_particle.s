@@ -319,7 +319,7 @@ glabel efc_rob_set_type_particle
     /* 367CC 80045FCC 000000AD */  sw         $zero, 0x0($t0)
     /* 367D0 80045FD0 06000424 */  addiu      $a0, $zero, 0x6
   .L80045FD4:
-    /* 367D4 80045FD4 8015010C */  jal        func_80045600
+    /* 367D4 80045FD4 8015010C */  jal        saSeMain_80045600
     /* 367D8 80045FD8 21286002 */   addu      $a1, $s3, $zero
     /* 367DC 80045FDC 0480053C */  lui        $a1, %hi(func_80046048)
     /* 367E0 80045FE0 4860A524 */  addiu      $a1, $a1, %lo(func_80046048)

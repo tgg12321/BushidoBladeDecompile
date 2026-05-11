@@ -1,7 +1,7 @@
 glabel func_80034F88
     /* 25788 80034F88 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2578C 80034F8C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 25790 80034F90 40DF010C */  jal        func_80077D00
+    /* 25790 80034F90 40DF010C */  jal        saTan2GaugeInit_80077D00
     /* 25794 80034F94 00000000 */   nop
     /* 25798 80034F98 1080033C */  lui        $v1, %hi(D_80106A73)
     /* 2579C 80034F9C 736A6324 */  addiu      $v1, $v1, %lo(D_80106A73)

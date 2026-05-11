@@ -112,11 +112,11 @@ done:
     return ret;
 }
 
-void func_800801E8(void) {
+void Vu0SetLightColMatrix_800801E8(void) {
     cpu_side_move_dir_4();
 }
 
-void func_80080208(void) {
+void Vu0SetLightColMatrix_80080208(void) {
     marionation_Exec();
 }
 
@@ -291,7 +291,7 @@ s32 func_80080620(void) {
     return cdrom_DmaToRam() == 0;
 }
 
-s32 func_80080640(void) {
+s32 Vu0SetLightColMatrix_80080640(void) {
     return cdrom_DmaChain() == 0;
 }
 
@@ -299,7 +299,7 @@ void tslTmlGetHeda(s32 a0) {
     irq_AcknowledgeVblank(3, a0);
 }
 
-void func_80080684(s32 a0) {
+void Vu0SetLightColMatrix_80080684(s32 a0) {
     saEft01Init(a0);
 }
 
@@ -1035,7 +1035,7 @@ void saEft00Add_sub(void) {
     s32 *p = &D_800A1500;
 
     if (*p & 1) {
-        func_80080684(0);
+        Vu0SetLightColMatrix_80080684(0);
     }
     D_800A14E4 = 0;
     cdrom_SetCallbackA(D_800A14F4);
@@ -1095,7 +1095,7 @@ s32 func_800826CC(s32 arg0, s32 arg1, s32 arg2) {
     return temp_v0 > 0;
 }
 
-s32 func_800827D0(s32 a0, s32 a1) {
+s32 marionation_camera_Init_800827D0(s32 a0, s32 a1) {
     s32 *p = &D_800A14EC;
     s32 result;
 
@@ -1118,6 +1118,6 @@ do_seek:
         }
         if (a0 != 0) break;
     } while (result > 0);
-    ((void (*)(s32, s32))func_80080208)(1, a1);
+    ((void (*)(s32, s32))Vu0SetLightColMatrix_80080208)(1, a1);
     return result;
 }

@@ -89,7 +89,7 @@ glabel func_8003C2C0
     /* 2CC08 8003C408 12000224 */  addiu      $v0, $zero, 0x12
     /* 2CC0C 8003C40C 03006210 */  beq        $v1, $v0, .L8003C41C
     /* 2CC10 8003C410 00000000 */   nop
-    /* 2CC14 8003C414 3752010C */  jal        func_800548DC
+    /* 2CC14 8003C414 3752010C */  jal        katinuki_game_setData_800548DC
     /* 2CC18 8003C418 00000000 */   nop
   .L8003C41C:
     /* 2CC1C 8003C41C 1000BF8F */  lw         $ra, 0x10($sp)

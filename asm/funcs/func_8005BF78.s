@@ -41,7 +41,7 @@ glabel func_8005BF78
     /* 4C814 8005C014 0000028E */  lw         $v0, 0x0($s0)
     /* 4C818 8005C018 21282002 */  addu       $a1, $s1, $zero
     /* 4C81C 8005C01C 0400448C */  lw         $a0, 0x4($v0)
-    /* 4C820 8005C020 2E20020C */  jal        func_800880B8
+    /* 4C820 8005C020 2E20020C */  jal        coli_CheckBukiPreHit_800880B8
     /* 4C824 8005C024 21306002 */   addu      $a2, $s3, $zero
     /* 4C828 8005C028 FA1F020C */  jal        tslCDFileRead
     /* 4C82C 8005C02C 21202002 */   addu      $a0, $s1, $zero

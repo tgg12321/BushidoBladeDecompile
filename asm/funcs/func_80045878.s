@@ -21,7 +21,7 @@ glabel func_80045878
     /* 360C0 800458C0 21204002 */   addu      $a0, $s2, $zero
     /* 360C4 800458C4 21884000 */  addu       $s1, $v0, $zero
     /* 360C8 800458C8 21204002 */  addu       $a0, $s2, $zero
-    /* 360CC 800458CC 8015010C */  jal        func_80045600
+    /* 360CC 800458CC 8015010C */  jal        saSeMain_80045600
     /* 360D0 800458D0 881A2526 */   addiu     $a1, $s1, 0x1A88
     /* 360D4 800458D4 8C14010C */  jal        saTan5TakeGetPos_80045230
     /* 360D8 800458D8 21200000 */   addu      $a0, $zero, $zero
@@ -84,7 +84,7 @@ glabel func_80045878
     /* 361AC 800459AC 21200002 */   addu      $a0, $s0, $zero
     /* 361B0 800459B0 21206002 */  addu       $a0, $s3, $zero
   .L800459B4:
-    /* 361B4 800459B4 8015010C */  jal        func_80045600
+    /* 361B4 800459B4 8015010C */  jal        saSeMain_80045600
     /* 361B8 800459B8 21280002 */   addu      $a1, $s0, $zero
     /* 361BC 800459BC 0480053C */  lui        $a1, %hi(myRobGeneiInit)
     /* 361C0 800459C0 A45AA524 */  addiu      $a1, $a1, %lo(myRobGeneiInit)

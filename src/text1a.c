@@ -25,7 +25,7 @@ extern s32 D_800A3398;
 extern s32 D_800A3244;
 extern s16 D_800963EE;
 extern void md_game_check_mode(s32 *, s32);
-extern void func_80054410(s32 *);
+extern void efc_ougi_Init_80054410(s32 *);
 extern s32 func_800457A0(s32);
 extern void func_80041430(s32, s32);
 extern s32 func_8004019C(s32 *, s32);
@@ -174,7 +174,7 @@ extern void rob_life_ctrl(s32 *);
 extern void rob_calc_2d_position(s32 *);
 extern s32 *func_80045878(s32);
 extern void func_8003F824(s32 *, s32);
-extern void func_8003FFC4(s32 *);
+extern void FadeOut_8003FFC4(s32 *);
 extern void func_8003E120(void);
 s32 *func_80040510(s32 a0) {
     s32 *ptr;
@@ -183,7 +183,7 @@ s32 *func_80040510(s32 a0) {
     g_player_ptrs[idx] = (s32)ptr;
     AllocRobRmd(ptr);
     do { rob_life_ctrl(ptr); rob_calc_2d_position(ptr); func_8003F824(ptr, 1); } while (0);
-    func_8003FFC4(ptr);
+    FadeOut_8003FFC4(ptr);
     func_80040CB8(ptr);
     func_8003E120();
     return ptr;
@@ -541,7 +541,7 @@ extern s32 D_80094CFC[];
 extern s32 D_800A3820;
 extern FuncPtr_40D48 D_800F66A0;
 extern void func_800417D0(s32 *);
-extern void func_800400B0(s32 *, s32);
+extern void md_option_reset_800400B0(s32 *, s32);
 extern void ang_hosei_8003F62C(s32 *);
 extern void func_800420E8(s32, s32);
 void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
@@ -722,7 +722,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 
     func_800404A0((s16 *)(s4 + 0x8B4), arg5);
     *(s16 *)(s4 + 0x1A84) = (s16)arg5;
-    func_800400B0((s32 *)s4, arg5);
+    md_option_reset_800400B0((s32 *)s4, arg5);
     ang_hosei_8003F62C((s32 *)s4);
     func_800420E8(a0_s7, (s32)(s3 + 0x2C));
 }
@@ -1320,7 +1320,7 @@ void func_8004211C(void) {
     }
 }
 extern void func_80041EB0(s32, s32);
-void func_800421A4(void) {
+void leaf_muki_awase_800421A4(void) {
     func_80041EB0(0, 0);
 }
 extern void func_800422BC(s32, s32, s32, s32);

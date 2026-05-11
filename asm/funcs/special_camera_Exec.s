@@ -45,7 +45,7 @@ glabel special_camera_Exec
   jlabel .L800369DC
     /* 271DC 800369DC 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 271E0 800369E0 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
-    /* 271E4 800369E4 7A00020C */  jal        func_800801E8
+    /* 271E4 800369E4 7A00020C */  jal        Vu0SetLightColMatrix_800801E8
     /* 271E8 800369E8 01000424 */   addiu     $a0, $zero, 0x1
     /* 271EC 800369EC 21184000 */  addu       $v1, $v0, $zero
     /* 271F0 800369F0 02000224 */  addiu      $v0, $zero, 0x2
@@ -107,14 +107,14 @@ glabel special_camera_Exec
   jlabel .L80036AC8
     /* 272C8 80036AC8 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 272CC 80036ACC 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
-    /* 272D0 80036AD0 7A00020C */  jal        func_800801E8
+    /* 272D0 80036AD0 7A00020C */  jal        Vu0SetLightColMatrix_800801E8
     /* 272D4 80036AD4 01000424 */   addiu     $a0, $zero, 0x1
     /* 272D8 80036AD8 21184000 */  addu       $v1, $v0, $zero
     /* 272DC 80036ADC 02000224 */  addiu      $v0, $zero, 0x2
     /* 272E0 80036AE0 0C006214 */  bne        $v1, $v0, .L80036B14
     /* 272E4 80036AE4 05000224 */   addiu     $v0, $zero, 0x5
-    /* 272E8 80036AE8 0380043C */  lui        $a0, %hi(func_80036064)
-    /* 272EC 80036AEC 64608424 */  addiu      $a0, $a0, %lo(func_80036064)
+    /* 272E8 80036AE8 0380043C */  lui        $a0, %hi(marionation_camera_Init_80036064)
+    /* 272EC 80036AEC 64608424 */  addiu      $a0, $a0, %lo(marionation_camera_Init_80036064)
     /* 272F0 80036AF0 1080103C */  lui        $s0, %hi(D_80101E98)
     /* 272F4 80036AF4 981E1026 */  addiu      $s0, $s0, %lo(D_80101E98)
     /* 272F8 80036AF8 9000020C */  jal        cdrom_SetCallbackB
@@ -143,7 +143,7 @@ glabel special_camera_Exec
   jlabel .L80036B50
     /* 27350 80036B50 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 27354 80036B54 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
-    /* 27358 80036B58 7A00020C */  jal        func_800801E8
+    /* 27358 80036B58 7A00020C */  jal        Vu0SetLightColMatrix_800801E8
     /* 2735C 80036B5C 01000424 */   addiu     $a0, $zero, 0x1
     /* 27360 80036B60 21184000 */  addu       $v1, $v0, $zero
     /* 27364 80036B64 02000224 */  addiu      $v0, $zero, 0x2
@@ -214,7 +214,7 @@ glabel special_camera_Exec
   jlabel .L80036C54
     /* 27454 80036C54 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 27458 80036C58 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
-    /* 2745C 80036C5C 7A00020C */  jal        func_800801E8
+    /* 2745C 80036C5C 7A00020C */  jal        Vu0SetLightColMatrix_800801E8
     /* 27460 80036C60 01000424 */   addiu     $a0, $zero, 0x1
     /* 27464 80036C64 21184000 */  addu       $v1, $v0, $zero
     /* 27468 80036C68 02000224 */  addiu      $v0, $zero, 0x2
@@ -253,7 +253,7 @@ glabel special_camera_Exec
   jlabel .L80036CE0
     /* 274E0 80036CE0 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 274E4 80036CE4 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
-    /* 274E8 80036CE8 7A00020C */  jal        func_800801E8
+    /* 274E8 80036CE8 7A00020C */  jal        Vu0SetLightColMatrix_800801E8
     /* 274EC 80036CEC 01000424 */   addiu     $a0, $zero, 0x1
     /* 274F0 80036CF0 21184000 */  addu       $v1, $v0, $zero
     /* 274F4 80036CF4 02000224 */  addiu      $v0, $zero, 0x2

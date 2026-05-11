@@ -51,9 +51,9 @@ glabel tslTm2LoadImage_2
     /* 728B8 800820B8 9801020C */  jal        tslTmlGetHeda
     /* 728BC 800820BC 21200000 */   addu      $a0, $zero, $zero
     /* 728C0 800820C0 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 728C4 800820C4 9001020C */  jal        func_80080640
+    /* 728C4 800820C4 9001020C */  jal        Vu0SetLightColMatrix_80080640
     /* 728C8 800820C8 03000524 */   addiu     $a1, $zero, 0x3
-    /* 728CC 800820CC A101020C */  jal        func_80080684
+    /* 728CC 800820CC A101020C */  jal        Vu0SetLightColMatrix_80080684
     /* 728D0 800820D0 21200000 */   addu      $a0, $zero, $zero
     /* 728D4 800820D4 0880043C */  lui        $a0, %hi(D_80082320)
     /* 728D8 800820D8 20238424 */  addiu      $a0, $a0, %lo(D_80082320)
@@ -92,7 +92,7 @@ glabel tslTm2LoadImage_2
     /* 72950 80082150 D814848C */  lw         $a0, %lo(D_800A14D8)($a0)
     /* 72954 80082154 0A80053C */  lui        $a1, %hi(D_800A14E0)
     /* 72958 80082158 E014A58C */  lw         $a1, %lo(D_800A14E0)($a1)
-    /* 7295C 8008215C 9001020C */  jal        func_80080640
+    /* 7295C 8008215C 9001020C */  jal        Vu0SetLightColMatrix_80080640
     /* 72960 80082160 00000000 */   nop
     /* 72964 80082164 7D080208 */  j          .L800821F4
     /* 72968 80082168 00000000 */   nop

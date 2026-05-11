@@ -119,14 +119,14 @@ void func_80035438(void) {
     func_80068ECC(a0);
 }
 extern u8 D_800A31D8;
-extern void func_8003A41C(void);
+extern void replay_camera_check_stage_8003A41C(void);
 extern void func_80020CDC(void);
 void func_80035480(void) {
     s32 v0;
     gpu_EnableDisplay();
     gpu_InitDisplay();
     if (D_800A31DA == 0) {
-        func_8003A41C();
+        replay_camera_check_stage_8003A41C();
     }
     func_80020CDC();
     player_Destroy(0);
@@ -281,7 +281,7 @@ void replay_camera_rob_back_loose2(s32 arg0) {
     }
 }
 void func_80035828(void) {}
-void func_80035DC8(void) {
+void special_camera_check_pos_outside_ground_80035DC8(void) {
     gpu_EnableDisplay();
     gpu_InitDisplay();
     func_80020CDC();
@@ -377,7 +377,7 @@ void func_80036034(void) {
 }
 extern void func_80080620(s32, s32);
 extern s32 cdrom_BcdToFrames(s32);
-void func_80036064(u8 arg0) {
+void marionation_camera_Init_80036064(u8 arg0) {
     s32 sp[4];
     if (arg0 == 1) {
         D_80101E98 = 0;
@@ -421,7 +421,7 @@ s32 replay_camera_Init(s32 a0, s32 a1) {
     return 0;
 }
 /* kengo:HIGH  |  nm_replay_cam/replay_camera_Init  |  39i */
-s32 func_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 special_camera_check_pos_outside_ground_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (replay_camera_Init(arg0, arg1) == 0) {
         return 0;
     }
@@ -545,7 +545,7 @@ void func_80037234(void) {
     D_80101E64 = 0;
     D_80101E68 = 1;
 }
-void func_80037250(void) {
+void replay_camera_check_stage_80037250(void) {
     D_80101E64 = 0;
 }
 void marionation_camera_GetMaxFrame(void) {
@@ -574,7 +574,7 @@ s32 func_800372F4(s32 arg0) {
     }
     func_800826CC(v >> 11);
     do {
-        v = func_800827D0(1, 0);
+        v = marionation_camera_Init_800827D0(1, 0);
         if (v > 0) {
             sys_VSync(0);
         }
@@ -624,7 +624,7 @@ retry:
     if (v0 != 0) goto retry;
 }
 /* kengo:MED  |  nm_special_cam/special_camera_get_rot_dir  |  66i  |  +6 9.1% */
-void func_80037468(s32 a0, s32 *a1, s32 a2) {
+void marionation_camera_Init_80037468(s32 a0, s32 *a1, s32 a2) {
     s32 sp[16];
     sys_VSync(0);
     gpu_SetDispMask(0);
@@ -648,7 +648,7 @@ void func_80037468(s32 a0, s32 *a1, s32 a2) {
     gpu_SetDispMask(1);
 }
 extern s32 func_800392B8(void);
-extern void func_80037468(s32, s32 *, s32);
+extern void marionation_camera_Init_80037468(s32, s32 *, s32);
 void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     s32 sp[8];
     s32 v0;
@@ -662,5 +662,5 @@ void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     sp[4] = (s32)&SpecialCam + v0 * 8;
     sp[5] = a4;
     v0 = func_800392B8();
-    func_80037468(6, sp, v0 + 0x7FC);
+    marionation_camera_Init_80037468(6, sp, v0 + 0x7FC);
 }

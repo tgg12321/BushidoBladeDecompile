@@ -9,7 +9,7 @@ glabel func_80046DA8
   .L80046DC4:
     /* 375C4 80046DC4 4708010C */  jal        func_8004211C
     /* 375C8 80046DC8 00000000 */   nop
-    /* 375CC 80046DCC 2F11010C */  jal        func_800444BC
+    /* 375CC 80046DCC 2F11010C */  jal        saTanMainDispGnd_800444BC
     /* 375D0 80046DD0 00000000 */   nop
     /* 375D4 80046DD4 1000BF8F */  lw         $ra, 0x10($sp)
     /* 375D8 80046DD8 1800BD27 */  addiu      $sp, $sp, 0x18

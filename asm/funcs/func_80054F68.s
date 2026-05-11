@@ -20,7 +20,7 @@ glabel func_80054F68
     /* 457B0 80054FB0 8C3723AC */  sw         $v1, %lo(D_800A378C)($at)
     /* 457B4 80054FB4 4352010C */  jal        func_8005490C
     /* 457B8 80054FB8 00000000 */   nop
-    /* 457BC 80054FBC 3811010C */  jal        func_800444E0
+    /* 457BC 80054FBC 3811010C */  jal        leaf_muki_awase_800444E0
     /* 457C0 80054FC0 21804000 */   addu      $s0, $v0, $zero
     /* 457C4 80054FC4 21100002 */  addu       $v0, $s0, $zero
     /* 457C8 80054FC8 1400BF8F */  lw         $ra, 0x14($sp)

@@ -17,12 +17,12 @@ glabel func_800886C4
     /* 78F00 80088700 09008434 */  ori        $a0, $a0, (0xF0000009 & 0xFFFF)
     /* 78F04 80088704 20000524 */  addiu      $a1, $zero, 0x20
     /* 78F08 80088708 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 78F0C 8008870C 5EE2010C */  jal        func_80078978
+    /* 78F0C 8008870C 5EE2010C */  jal        coli_RobColliScaleEditReset_80078978
     /* 78F10 80088710 21380000 */   addu      $a3, $zero, $zero
     /* 78F14 80088714 21204000 */  addu       $a0, $v0, $zero
     /* 78F18 80088718 0A80013C */  lui        $at, %hi(D_800A2870)
     /* 78F1C 8008871C 702824AC */  sw         $a0, %lo(D_800A2870)($at)
-    /* 78F20 80088720 6AE2010C */  jal        func_800789A8
+    /* 78F20 80088720 6AE2010C */  jal        coli_RobColliScaleEditReset_800789A8
     /* 78F24 80088724 00000000 */   nop
     /* 78F28 80088728 72E2010C */  jal        ExitCriticalSection
     /* 78F2C 8008872C 00000000 */   nop

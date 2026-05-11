@@ -23,7 +23,7 @@ glabel func_800469C4
     /* 37218 80046A18 8C14010C */  jal        saTan5TakeGetPos_80045230
     /* 3721C 80046A1C 21200002 */   addu      $a0, $s0, $zero
     /* 37220 80046A20 0A000424 */  addiu      $a0, $zero, 0xA
-    /* 37224 80046A24 8015010C */  jal        func_80045600
+    /* 37224 80046A24 8015010C */  jal        saSeMain_80045600
     /* 37228 80046A28 21280002 */   addu      $a1, $s0, $zero
     /* 3722C 80046A2C 0480053C */  lui        $a1, %hi(snd_SelectionCallback)
     /* 37230 80046A30 806AA524 */  addiu      $a1, $a1, %lo(snd_SelectionCallback)

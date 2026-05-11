@@ -123,7 +123,7 @@ extern u16 D_80101E02;
 extern u16 D_80101E04;
 extern u8 D_80106A73;
 extern u8 D_80106A78;
-extern s32 *func_80077D00(void);
+extern s32 *saTan2GaugeInit_80077D00(void);
 extern s32 D_80106A58;
 extern s16 D_80101ED6;
 extern s32 g_file_disc_size;
@@ -3071,7 +3071,7 @@ void func_80034F88(void) {
     u8 val2;
     s32 i;
 
-    p = func_80077D00();
+    p = saTan2GaugeInit_80077D00();
     ptr = &D_80106A73;
     *ptr &= 0xF8;
     asm volatile("" ::: "memory");
@@ -3112,7 +3112,7 @@ void func_8003504C(void) {
     s8 val;
     u8 tmp;
 
-    p = func_80077D00();
+    p = saTan2GaugeInit_80077D00();
     i = 0;
     src = (u8 *)p;
     base = &D_80102785;
@@ -3196,7 +3196,7 @@ void single_game_SetWazaData(void) {
     s32 v;
     volatile u8 *pbit;
 
-    p = func_80077D00();
+    p = saTan2GaugeInit_80077D00();
     pbit = &D_80106A73;
     v = p[8];
     v = v & (~1);

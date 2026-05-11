@@ -31,7 +31,7 @@ glabel func_80037540
     /* 27DB4 800375B4 2400B4AF */   sw        $s4, 0x24($sp)
     /* 27DB8 800375B8 06000424 */  addiu      $a0, $zero, 0x6
     /* 27DBC 800375BC 1000A527 */  addiu      $a1, $sp, 0x10
-    /* 27DC0 800375C0 1ADD000C */  jal        func_80037468
+    /* 27DC0 800375C0 1ADD000C */  jal        marionation_camera_Init_80037468
     /* 27DC4 800375C4 FC074624 */   addiu     $a2, $v0, 0x7FC
     /* 27DC8 800375C8 4400BF8F */  lw         $ra, 0x44($sp)
     /* 27DCC 800375CC 4000B48F */  lw         $s4, 0x40($sp)

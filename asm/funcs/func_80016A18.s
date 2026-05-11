@@ -11,7 +11,7 @@ glabel func_80016A18
     /* 723C 80016A3C 08000724 */   addiu     $a3, $zero, 0x8
     /* 7240 80016A40 4EE3010C */  jal        func_80078D38
     /* 7244 80016A44 00000000 */   nop
-    /* 7248 80016A48 96E2010C */  jal        func_80078A58
+    /* 7248 80016A48 96E2010C */  jal        coli_RobColliScaleEditReset_80078A58
     /* 724C 80016A4C 21200000 */   addu      $a0, $zero, $zero
     /* 7250 80016A50 465A000C */  jal        disp_Init
     /* 7254 80016A54 00000000 */   nop

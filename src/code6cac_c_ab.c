@@ -148,15 +148,15 @@ extern s32 D_800A3915_ext;
 extern s32 D_800A36F4_ext;
 
 /* Extern function declarations for decompiled functions */
-extern s32 func_80078998(s32);
-extern void func_80078988(s32);
-extern void func_800789A8(s32);
+extern s32 coli_RobColliScaleEditReset_80078998(s32);
+extern void coli_RobColliScaleEditReset_80078988(s32);
+extern void coli_RobColliScaleEditReset_800789A8(s32);
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void func_800789F8(s32, s32 *, s32);
-extern void func_80078A18(s32);
-extern s32 func_80078A38(s32 *, s32 *);
-extern s32 func_80078A48(s32 *);
+extern void coli_RobColliScaleEditReset_800789F8(s32, s32 *, s32);
+extern void coli_RobColliScaleEditReset_80078A18(s32);
+extern s32 coli_RobColliScaleEditReset_80078A38(s32 *, s32 *);
+extern s32 coli_RobColliScaleEditReset_80078A48(s32 *);
 extern void func_80078BA8(s32);
 extern s32 func_80078B04(s32);
 extern void func_8007A400(void);
@@ -430,7 +430,7 @@ void func_8003B20C(s32 arg0) {
 }
 extern u8 *D_800A3894;
 extern void player_SetCharId(s32, s32);
-void func_8003B2C8(void) {
+void coli_cancel_hit_pause_katana_8003B2C8(void) {
     u8 *p = &D_8010277C;
     D_800A3836 = *p;
     {
@@ -488,7 +488,7 @@ s32 func_8003B3A4(u8 *arg0) {
     func_8003AFFC();
     return 5;
 }
-s32 func_8003B484(u8 *arg0) {
+s32 coli_cancel_hit_pause_katana_8003B484(u8 *arg0) {
     D_800A3712 = 1;
     D_8010277D = arg0[0];
     D_8010277F = arg0[1];
@@ -497,7 +497,7 @@ s32 func_8003B484(u8 *arg0) {
     func_8003AFFC();
     return 3;
 }
-void func_8003B4DC(void) {
+void coli_cancel_hit_pause_katana_8003B4DC(void) {
     D_800A3712 = 1;
     D_8010277E = 0;
     D_8010277D = 0x1F;
@@ -538,7 +538,7 @@ void suDispMentalBar(void) {
             }
 
             case 17: {
-                s32 ret = func_8003B484((u8 *)D_800A3844);
+                s32 ret = coli_cancel_hit_pause_katana_8003B484((u8 *)D_800A3844);
                 D_800A3844 += ret;
                 break;
             }
@@ -594,7 +594,7 @@ void suDispMentalBar(void) {
             case 2:
                 D_800A3894 = (u8 *)D_800A3844;
                 D_800A3844 += 0x1D;
-                func_8003B2C8();
+                coli_cancel_hit_pause_katana_8003B2C8();
                 func_8003AF40(0);
                 func_8003B3A4(D_800A3894 + 1);
             case 18:
@@ -607,7 +607,7 @@ void suDispMentalBar(void) {
                 D_800A385C = (u8 *)D_800A3844;
                 D_800A3844 += 12;
                 done = 1;
-                func_8003B4DC();
+                coli_cancel_hit_pause_katana_8003B4DC();
                 func_8003B56C(1);
                 D_800A38BA = 0;
                 break;

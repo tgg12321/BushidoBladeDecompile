@@ -1,7 +1,7 @@
 glabel single_game_SetWazaData
     /* 25A80 80035280 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 25A84 80035284 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 25A88 80035288 40DF010C */  jal        func_80077D00
+    /* 25A88 80035288 40DF010C */  jal        saTan2GaugeInit_80077D00
     /* 25A8C 8003528C 00000000 */   nop
     /* 25A90 80035290 21380000 */  addu       $a3, $zero, $zero
     /* 25A94 80035294 1080053C */  lui        $a1, %hi(D_80106A73)

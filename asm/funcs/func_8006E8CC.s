@@ -2,7 +2,7 @@ glabel func_8006E8CC
     /* 5F0CC 8006E8CC E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 5F0D0 8006E8D0 1800B0AF */  sw         $s0, 0x18($sp)
     /* 5F0D4 8006E8D4 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* 5F0D8 8006E8D8 40DF010C */  jal        func_80077D00
+    /* 5F0D8 8006E8D8 40DF010C */  jal        saTan2GaugeInit_80077D00
     /* 5F0DC 8006E8DC 21808000 */   addu      $s0, $a0, $zero
     /* 5F0E0 8006E8E0 2000428C */  lw         $v0, 0x20($v0)
     /* 5F0E4 8006E8E4 00000000 */  nop

@@ -26,7 +26,7 @@ glabel func_80016D78
     /* 75D8 80016DD8 00000000 */   nop
     /* 75DC 80016DDC 4D65000C */  jal        func_80019534
     /* 75E0 80016DE0 00000000 */   nop
-    /* 75E4 80016DE4 B1F4000C */  jal        func_8003D2C4
+    /* 75E4 80016DE4 B1F4000C */  jal        katinuki_game_setData_8003D2C4
     /* 75E8 80016DE8 00000000 */   nop
     /* 75EC 80016DEC 1171000C */  jal        func_8001C444
     /* 75F0 80016DF0 00000000 */   nop

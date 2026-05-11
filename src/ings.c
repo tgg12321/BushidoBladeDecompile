@@ -30,7 +30,7 @@ extern s16 Judge[];
 extern s32 func_80083698(s32, s32, s32);
 extern s32 ang_hosei(s32, s32, s32);
 extern s32 bios_FileRead(s32, u8 *, s32);
-extern void func_80078A18(s32);
+extern void coli_RobColliScaleEditReset_80078A18(s32);
 extern void md_gview_init(s32);
 
 
@@ -148,7 +148,7 @@ s32 file_LoadAll(s32 a0, u8 *dest) {
                 chunk = remaining;
             }
             if (bios_FileRead(fd, dest, chunk) != chunk) {
-                func_80078A18(fd);
+                coli_RobColliScaleEditReset_80078A18(fd);
                 return -1;
             }
             remaining -= chunk;
@@ -172,7 +172,7 @@ s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
     if (count > 0) {
         do {
             if (bios_FileRead(fd, dest, 0x800) != 0x800) {
-                func_80078A18(fd);
+                coli_RobColliScaleEditReset_80078A18(fd);
                 return -1;
             }
             i += 1;
@@ -293,7 +293,7 @@ void disp_Init(void) {
 }
 extern void func_80078C9C(u8 *, s32, u8 *, s32);
 extern void func_80078D38(void);
-extern void func_80078A58(s32);
+extern void coli_RobColliScaleEditReset_80078A58(s32);
 extern void func_80035FE0(void);
 extern void pad_press_control(void);
 extern u8 g_pad_data;
@@ -302,7 +302,7 @@ void sys_Init(void) {
     irq_DisableInterrupts();
     func_80078C9C(base, 8, base + 0x24, 8);
     func_80078D38();
-    func_80078A58(0);
+    coli_RobColliScaleEditReset_80078A58(0);
     disp_Init();
     g_disp_enable = DISP_DISABLED;
     g_disp_fade = 0;
@@ -409,7 +409,7 @@ extern void func_80020D70(void);
 extern void game_Init(void);
 extern u8 D_800A36B0;
 extern void func_80019534(void);
-extern void func_8003D2C4(void);
+extern void katinuki_game_setData_8003D2C4(void);
 extern void func_8001C444(void);
 void sys_GameInit(void) {
     debug_printf((s32)&g_str_limit, 0x8010DB00);
@@ -422,7 +422,7 @@ void sys_GameInit(void) {
     D_800A3906 = 0;
     file_LoadSoundData();
     func_80019534();
-    func_8003D2C4();
+    katinuki_game_setData_8003D2C4();
     func_8001C444();
     D_800A36F9 = 0;
     D_800A3690 = 0;

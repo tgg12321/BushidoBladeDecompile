@@ -20,13 +20,13 @@ extern s32 func_80044670(s32, s32, s32);
 extern void snd_SetVolume(s32);
 extern s32 snd_GetMaxFade(void);
 extern void func_800481E8(s32, s32);
-extern void func_80054410(s32);
-extern void func_80045600(s32, s32);
+extern void efc_ougi_Init_80054410(s32);
+extern void saSeMain_80045600(s32, s32);
 extern void saTan5TakeGetPos_80045694(s32, s32);
 extern void stage_ExecInitFunc(void);
 extern void func_8004659C(s32);
 extern void func_800466C0(void);
-extern void func_80045510(s32, s32);
+extern void saSeMain_80045510(s32, s32);
 extern void func_80044098(s32);
 extern void func_800453E0(s32);
 
@@ -162,11 +162,11 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     func_80044010((s32)s6, 7);
     func_800481E8((s32)fp_ptr, 0);
     md_game_check_mode((s32)s4, 7);
-    func_80054410((s32)sp10);
+    efc_ougi_Init_80054410((s32)sp10);
     D_800A33B0 = (s32)sp18;
     D_800A33B4 = (s32)sp20;
     gpu_DrawSync(0);
-    func_80045600(s7, (s32)s1);
+    saSeMain_80045600(s7, (s32)s1);
     saTan5TakeGetPos_80045694(s7, (s32)func_800466C0);
     stage_ExecInitFunc();
     if (D_800A38DC != 0) {
@@ -200,7 +200,7 @@ void func_800464C4(void) {
     }
     func_80044010(a0, 7);
     md_game_check_mode(s1, 7);
-    func_80045510(7, (s32)((u8 *)s1 - (u8 *)s0));
+    saSeMain_80045510(7, (s32)((u8 *)s1 - (u8 *)s0));
     g_stage_variant = 0;
 }
 void func_8004659C(s32 a0) {
@@ -232,7 +232,7 @@ void func_8004659C(s32 a0) {
     s0p = (s32 *)((u8 *)s0 + *(s32 *)(v0 + 4));
     func_80044098(7);
     func_80044010(s2, 7);
-    func_80054410(s3);
+    efc_ougi_Init_80054410(s3);
     g_snd_bgm_id = (s32)s4p;
     g_snd_se_id = (s32)s1p;
     md_game_check_mode(s0p, 7);

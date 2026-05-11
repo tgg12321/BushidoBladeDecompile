@@ -90,7 +90,7 @@ glabel func_8004A4E0
     /* 3AE28 8004A628 B4022626 */  addiu      $a2, $s1, 0x2B4
     /* 3AE2C 8004A62C DB29010C */  jal        func_8004A76C
     /* 3AE30 8004A630 00000000 */   nop
-    /* 3AE34 8004A634 502A010C */  jal        func_8004A940
+    /* 3AE34 8004A634 502A010C */  jal        calc_loc_mat_fw_8004A940
     /* 3AE38 8004A638 00000000 */   nop
     /* 3AE3C 8004A63C 70290108 */  j          .L8004A5C0
     /* 3AE40 8004A640 00000000 */   nop
@@ -111,7 +111,7 @@ glabel func_8004A4E0
     /* 3AE78 8004A678 00000000 */   nop
     /* 3AE7C 8004A67C B0009422 */  addi       $s4, $s4, 0xB0 /* handwritten instruction */
   .L8004A680:
-    /* 3AE80 8004A680 502A010C */  jal        func_8004A940
+    /* 3AE80 8004A680 502A010C */  jal        calc_loc_mat_fw_8004A940
     /* 3AE84 8004A684 00000000 */   nop
     /* 3AE88 8004A688 1C00348E */  lw         $s4, 0x1C($s1)
     /* 3AE8C 8004A68C 70290108 */  j          .L8004A5C0
@@ -135,7 +135,7 @@ glabel func_8004A4E0
     /* 3AED0 8004A6D0 00C8C948 */  ctc2       $t1, $25 /* handwritten instruction */
     /* 3AED4 8004A6D4 0980143C */  lui        $s4, %hi(D_80095508)
     /* 3AED8 8004A6D8 08559426 */  addiu      $s4, $s4, %lo(D_80095508)
-    /* 3AEDC 8004A6DC 502A010C */  jal        func_8004A940
+    /* 3AEDC 8004A6DC 502A010C */  jal        calc_loc_mat_fw_8004A940
     /* 3AEE0 8004A6E0 00000000 */   nop
     /* 3AEE4 8004A6E4 1C00348E */  lw         $s4, 0x1C($s1)
     /* 3AEE8 8004A6E8 70290108 */  j          .L8004A5C0
@@ -152,7 +152,7 @@ glabel func_8004A4E0
     /* 3AF10 8004A710 0980143C */  lui        $s4, %hi(D_80095328)
     /* 3AF14 8004A714 28539426 */  addiu      $s4, $s4, %lo(D_80095328)
     /* 3AF18 8004A718 00000000 */  nop
-    /* 3AF1C 8004A71C 502A010C */  jal        func_8004A940
+    /* 3AF1C 8004A71C 502A010C */  jal        calc_loc_mat_fw_8004A940
     /* 3AF20 8004A720 00000000 */   nop
     /* 3AF24 8004A724 1C00348E */  lw         $s4, 0x1C($s1)
     /* 3AF28 8004A728 70290108 */  j          .L8004A5C0
@@ -168,7 +168,7 @@ glabel func_8004A4E0
     /* 3AF4C 8004A74C 00000000 */   nop
     /* 3AF50 8004A750 0980143C */  lui        $s4, %hi(D_80095488)
     /* 3AF54 8004A754 88549426 */  addiu      $s4, $s4, %lo(D_80095488)
-    /* 3AF58 8004A758 502A010C */  jal        func_8004A940
+    /* 3AF58 8004A758 502A010C */  jal        calc_loc_mat_fw_8004A940
     /* 3AF5C 8004A75C 00000000 */   nop
     /* 3AF60 8004A760 1C00348E */  lw         $s4, 0x1C($s1)
     /* 3AF64 8004A764 70290108 */  j          .L8004A5C0

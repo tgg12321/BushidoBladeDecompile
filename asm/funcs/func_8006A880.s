@@ -193,7 +193,7 @@ glabel func_8006A880
     /* 5B364 8006AB64 01001E24 */  addiu      $fp, $zero, 0x1
     /* 5B368 8006AB68 0C004224 */  addiu      $v0, $v0, 0xC
     /* 5B36C 8006AB6C 1C0002AE */  sw         $v0, 0x1C($s0)
-    /* 5B370 8006AB70 59A9010C */  jal        func_8006A564
+    /* 5B370 8006AB70 59A9010C */  jal        saTan3GaugeMain_8006A564
     /* 5B374 8006AB74 4000BEA3 */   sb        $fp, 0x40($sp)
     /* 5B378 8006AB78 0700222A */  slti       $v0, $s1, 0x7
     /* 5B37C 8006AB7C 9CFF4014 */  bnez       $v0, .L8006A9F0
@@ -391,7 +391,7 @@ glabel func_8006A880
     /* 5B66C 8006AE6C 0C004224 */  addiu      $v0, $v0, 0xC
     /* 5B670 8006AE70 1C0002AE */  sw         $v0, 0x1C($s0)
     /* 5B674 8006AE74 01000224 */  addiu      $v0, $zero, 0x1
-    /* 5B678 8006AE78 59A9010C */  jal        func_8006A564
+    /* 5B678 8006AE78 59A9010C */  jal        saTan3GaugeMain_8006A564
     /* 5B67C 8006AE7C 4000A2A3 */   sb        $v0, 0x40($sp)
     /* 5B680 8006AE80 21200002 */  addu       $a0, $s0, $zero
     /* 5B684 8006AE84 25A9010C */  jal        func_8006A494

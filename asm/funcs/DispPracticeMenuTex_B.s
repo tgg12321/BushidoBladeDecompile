@@ -50,7 +50,7 @@ glabel DispPracticeMenuTex_B
     /* 11724 80020F24 C0301000 */  sll        $a2, $s0, 3
     /* 11728 80020F28 2330D000 */  subu       $a2, $a2, $s0
     /* 1172C 80020F2C 0000658E */  lw         $a1, 0x0($s3)
-    /* 11730 80020F30 8DDB000C */  jal        func_80036E34
+    /* 11730 80020F30 8DDB000C */  jal        special_camera_check_pos_outside_ground_80036E34
     /* 11734 80020F34 07000724 */   addiu     $a3, $zero, 0x7
     /* 11738 80020F38 D0DB000C */  jal        game_FrameLoop
     /* 1173C 80020F3C 00000000 */   nop
