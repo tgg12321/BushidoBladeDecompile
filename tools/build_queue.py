@@ -93,10 +93,10 @@ def main():
     still_inline = load_already_matched()
 
     def is_tractable(rec: str) -> bool:
-        if rec in ("easy_attempt", "standard"):
+        if rec in ("easy_attempt", "standard", "needs_delay_slot_ra"):
             return True
         # Defensive: anything starting with "permanently_blocked",
-        # "bios_or_syscall", "psyq_stdlib", or that names a func in
+        # "bios_or_syscall", "not_code_symbol", or that names a func in
         # known_blocked.txt is filtered out below.
         return False
 
@@ -134,7 +134,7 @@ def main():
         })
 
     # Sort: smallest first, then by recommendation (easy_attempt before standard)
-    rec_order = {"easy_attempt": 0, "standard": 1}
+    rec_order = {"easy_attempt": 0, "standard": 1, "needs_delay_slot_ra": 2}
     enriched.sort(key=lambda r: (r["size"], rec_order.get(r["rec"], 9), r["func"]))
 
     # Write queue + CSV

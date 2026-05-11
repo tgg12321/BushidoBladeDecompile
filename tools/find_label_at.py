@@ -324,8 +324,10 @@ def main() -> int:
     target_text_idx: int | None = None
     prev_idx: int | None = None
     landed_inside_pseudo = False
+    binary = 0
     for idx, _text, is_pseudo in insts:
         b = text_idx_to_binary_idx(insts, idx, inserts, insert_afters, deletes)
+        binary = b
         if b == target_binary_idx:
             target_text_idx = idx
             suggested_idx = prev_idx if prev_idx is not None else idx - 1

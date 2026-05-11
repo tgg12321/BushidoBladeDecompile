@@ -5,3 +5,7 @@
 # can fill the delay slot naturally.
 func_80082A14
 func_800826CC
+func_8006EC0C
+func_8007997C
+func_8007B3A8
+func_8007B844
