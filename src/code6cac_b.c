@@ -1801,11 +1801,36 @@ void cpu_set_move_command_and_dir(s32 *a0, s32 a1, s32 *a2) {
 
 
 s32 func_80030B10(u8 *arg0, s32 arg1) {
-    /* Already matching with inline-asm scaffolding; bridged via
-     * replace_with_asmfile to retire the inline-asm debt. Pure-C
-     * decomp pending. */
-    (void)arg0; (void)arg1;
-    return 0;
+    s32 count = *(s16 *)(arg0 + 0x330);
+    u16 c;
+    if (count == 0xC) {
+        return 0;
+    }
+    if (*(s16 *)(arg0 + 0x88) == -1) {
+        goto skip_shift;
+    }
+    if (arg1 != *(s16 *)(arg0 + 0x14)) {
+        goto skip_shift;
+    }
+    if (count > 0) {
+        s32 i = count;
+        do {
+            *(u16 *)(arg0 + i * 2 + 0x332) = *(u16 *)(arg0 + i * 2 + 0x330);
+            i--;
+        } while (i > 0);
+    }
+    {
+        u16 cc = *(u16 *)(arg0 + 0x330);
+        *(u16 *)(arg0 + 0x332) = (u16)arg1;
+        *(u16 *)(arg0 + 0x330) = cc + 1;
+        goto done;
+    }
+skip_shift:
+    c = *(u16 *)(arg0 + 0x330);
+    *(u16 *)(arg0 + 0x330) = c + 1;
+    *(u16 *)(arg0 + (s16)c * 2 + 0x332) = (u16)arg1;
+done:
+    return 1;
 }
 
 s32 func_80030BA8(u8 *arg0) {
