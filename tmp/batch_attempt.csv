@@ -281,7 +281,6 @@ func_8006E10C,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_lwl_fix,103,lwl_swl
 func_80068F70,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_lwl_fix,108,lwl_swl
 func_80057E84,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_lwl_fix,447,"lwl_swl,aliasing_heavy"
 calc_loc_mat_fw_80055B60,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_lwl_fix,1110,"lwl_swl,aliasing_heavy"
-func_80078F60,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,5,jlabel_switch
 func_80078F74,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,5,jlabel_switch
 func_80077B30,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,116,jlabel_switch
 func_8006B578,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,200,jlabel_switch

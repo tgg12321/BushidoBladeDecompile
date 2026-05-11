@@ -17713,10 +17713,9 @@ extern void (*jtbl_800A3620)(void);
 void func_80078F60(void) {
     jtbl_800A3620();
 }
-void func_80078F74(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80078F74.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+extern void (*jtbl_800A3624)(void);
+void func_80078F74(void) {
+    jtbl_800A3624();
 }
 __asm__(
     ".set\tnoat\n"
