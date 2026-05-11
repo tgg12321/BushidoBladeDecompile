@@ -74,7 +74,7 @@ extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 func_80054434(void);
 extern void DispSchoolBG(s16 *, s16 *, s32 *, s32, s32);
 
-extern void func_8005B98C(s32);
+extern void motion_LoadPreCalcData_8005B98C(s32);
 extern void func_8003AA78(void);
 extern s32 func_80036D88(void);
 extern void func_8003AA48(void);
@@ -96,7 +96,7 @@ extern void irq_Reset(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
-extern s32 func_8004939C(void);
+extern s32 gnd_close_8004939C(void);
 extern s32 func_800392B8(void);
 extern s16 Judge;
 extern s16 D_800A3678;
@@ -1056,8 +1056,8 @@ void func_8001B138(s32 *arg0) {
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
-void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6638 = 0x64;    D_800F663A = 0;    D_800F663C = 0x64;    D_800F6640 = 0x64;    D_800F6642 = 0;    D_800F6644 = 0x64;    game_SetControllerPorts(0);    D_800F6608 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F660C = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6618 = 0;        D_800F6610 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = single_game_getEnemyCharId(dx, dy);    }    D_800F661A = 0x400 - v0;    D_800F661C = 0;    D_800F6620 = 0x1388;    D_800F6626 = 0;}
-void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5358 = 0x64;    D_800F535A = 0;    D_800F535C = 0x64;    D_800F5360 = 0x64;    D_800F5362 = 0;    D_800F5364 = 0x64;    game_SetControllerPorts(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5330 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5368 = 0;        D_800F532C = v;    }}
+void gnd_init_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6638 = 0x64;    D_800F663A = 0;    D_800F663C = 0x64;    D_800F6640 = 0x64;    D_800F6642 = 0;    D_800F6644 = 0x64;    game_SetControllerPorts(0);    D_800F6608 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F660C = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6618 = 0;        D_800F6610 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = single_game_getEnemyCharId(dx, dy);    }    D_800F661A = 0x400 - v0;    D_800F661C = 0;    D_800F6620 = 0x1388;    D_800F6626 = 0;}
+void mario_getMarioVoiceData_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5358 = 0x64;    D_800F535A = 0;    D_800F535C = 0x64;    D_800F5360 = 0x64;    D_800F5362 = 0;    D_800F5364 = 0x64;    game_SetControllerPorts(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5330 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5368 = 0;        D_800F532C = v;    }}
 void myRobGeneiMove(s32 arg0) {
     u8 *obj = (u8 *)arg0;
     u8 *s2 = (u8 *)&D_800F5328;
@@ -1173,8 +1173,8 @@ void func_8001B690(s32 arg0, s32 arg1) {
     }
 }
 void func_8001B6F4(void) {
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    gnd_init_80041688(0, 0);
+    gnd_init_80041688(1, 0);
     D_800A36FA = 1;
     D_800F6627 = 0;
     D_800F5347 = 0;
@@ -1378,7 +1378,7 @@ void func_8001C51C(void) {
     D_800A3748 = -1;
     func_80030524();
     func_80030D04();
-    func_8001B294((s32)((u8 *)s0 - 0x4AA), (s32)((u8 *)s0 - 0x5E));
+    gnd_init_8001B294((s32)((u8 *)s0 - 0x4AA), (s32)((u8 *)s0 - 0x5E));
     func_800392C8();
     func_80021280(1);
 }
@@ -1441,7 +1441,7 @@ void func_8001C624(void) {
     D_80102010 = D_80101F84;
     func_8003FFE0(0);
 }
-void func_8001C820(void) {
+void mario_getMarioVoiceData_8001C820(void) {
     s16 *s0 = &D_80101ED2;
     s32 a0;
     if ((&D_8008D9EC)[*s0] != 0) {
@@ -1522,7 +1522,7 @@ void se_data_set(void) {
     }
 }
 /* kengo:HIGH  |  md_game/se_data_set  |  93i */
-void func_8001D904(void) {
+void motion_Close_8001D904(void) {
     s32 s2 = (s32)0x80190800;
     s32 s1;
     s32 *s0;
@@ -1537,7 +1537,7 @@ void func_8001D904(void) {
     bb2_memcpy(s0, (s32)0x80190800, s1);
     obj_ExecTask((s32)s0 - s2);
 }
-void func_8001D998(void) {
+void motion_Close_8001D998(void) {
     s32 s2 = (s32)0x80190800;
     s32 s1;
     s32 *s0;
@@ -1550,7 +1550,7 @@ void func_8001D998(void) {
     }
     s0 = &D_80104F38;
     bb2_memcpy(s0, (s32)0x80190800, s1);
-    func_8005B98C((s32)s0 - s2);
+    motion_LoadPreCalcData_8005B98C((s32)s0 - s2);
 }
 void func_8001DA2C(void) {
     obj_InitChars();
@@ -1562,7 +1562,7 @@ void func_8001DA2C(void) {
         obj_InitPair();
     }
 }
-void func_8001DA8C(void) {
+void camera_SetMatrix_8001DA8C(void) {
     func_80035FA8();
     if (file_GetFlag2()) {
         return;
@@ -1604,11 +1604,11 @@ s32 func_8001DB58(void) {
     }
     return 1;
 }
-void func_8001DB9C(void) {
+void gnd_close_8001DB9C(void) {
     seq_Start((&D_8008D9EC)[D_80101ED2] < 1, (s32)0x80190800);
     D_800A38C6 = (u16)0xFFFF;
 }
-void func_8001DBE4(void) {
+void camera_SetMatrix_8001DBE4(void) {
     s32 i;
 
     if (g_disp_enable != DISP_ACTIVE) {
@@ -1683,11 +1683,11 @@ void func_8001E404(void) {
         }
 
         if (D_800A36FA == 0) {
-            func_80041688(D_800A36F6, 1);
-            func_80041688(D_800A36F6 == 0, 0);
+            gnd_init_80041688(D_800A36F6, 1);
+            gnd_init_80041688(D_800A36F6 == 0, 0);
         } else {
-            func_80041688(0, 0);
-            func_80041688(1, 0);
+            gnd_init_80041688(0, 0);
+            gnd_init_80041688(1, 0);
         }
         goto common_tail;
     }
@@ -1801,8 +1801,8 @@ void func_8001E878(void) {
 }
 void func_8001EA04(void) {
     u8 v;
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    gnd_init_80041688(0, 0);
+    gnd_init_80041688(1, 0);
     game_Cleanup();
     v = D_800A38D4;
     D_8010262E = 0;
@@ -2202,8 +2202,8 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
         }
     }
 }
-void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800203B4.s).
+void calc_fc_frame_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/calc_fc_frame_800203B4.s).
      * Inline-asm scaffolding retired; pure-C decomp pending. */
     (void)arg0;
     (void)arg1;
@@ -2838,7 +2838,7 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
 }
 typedef struct { s32 a; s32 b; } __attribute__((packed)) PackedPair_233AC;
 
-s32 func_800233AC(u8 *arg0, s32 *arg1) {
+s32 SetPacketData_800233AC(u8 *arg0, s32 *arg1) {
     s32 pos[3];
     s32 off[3];
     s16 out1[4];

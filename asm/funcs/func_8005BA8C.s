@@ -99,7 +99,7 @@ glabel func_8005BA8C
     /* 4C400 8005BC00 0A80013C */  lui        $at, %hi(D_8009AD18)
     /* 4C404 8005BC04 21083200 */  addu       $at, $at, $s2
     /* 4C408 8005BC08 18AD2590 */  lbu        $a1, %lo(D_8009AD18)($at)
-    /* 4C40C 8005BC0C AA70010C */  jal        func_8005C2A8
+    /* 4C40C 8005BC0C AA70010C */  jal        tslGlobalMemFree_8005C2A8
     /* 4C410 8005BC10 01005226 */   addiu     $s2, $s2, 0x1
     /* 4C414 8005BC14 180022AE */  sw         $v0, 0x18($s1)
     /* 4C418 8005BC18 2A105402 */  slt        $v0, $s2, $s4

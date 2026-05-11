@@ -12,10 +12,10 @@ glabel func_800397D4
     /* 29FFC 800397FC FFFB010C */  jal        tslDmaDrawListDelAll
     /* 2A000 80039800 21204000 */   addu      $a0, $v0, $zero
     /* 2A004 80039804 21200000 */  addu       $a0, $zero, $zero
-    /* 2A008 80039808 A205010C */  jal        func_80041688
+    /* 2A008 80039808 A205010C */  jal        gnd_init_80041688
     /* 2A00C 8003980C 21280000 */   addu      $a1, $zero, $zero
     /* 2A010 80039810 01000424 */  addiu      $a0, $zero, 0x1
-    /* 2A014 80039814 A205010C */  jal        func_80041688
+    /* 2A014 80039814 A205010C */  jal        gnd_init_80041688
     /* 2A018 80039818 21280000 */   addu      $a1, $zero, $zero
     /* 2A01C 8003981C BD6D000C */  jal        func_8001B6F4
     /* 2A020 80039820 00000000 */   nop

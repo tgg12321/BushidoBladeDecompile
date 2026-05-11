@@ -63,7 +63,7 @@ extern s32 bb2_memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
-extern void func_8005B98C(s32);
+extern void motion_LoadPreCalcData_8005B98C(s32);
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
 extern void gnd_disp_loop_ctrl(void);
@@ -83,7 +83,7 @@ extern void irq_Reset(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
-extern s32 func_8004939C(void);
+extern s32 gnd_close_8004939C(void);
 extern s32 func_800392B8(void);
 extern s16 Judge;
 extern s16 D_800A3678;

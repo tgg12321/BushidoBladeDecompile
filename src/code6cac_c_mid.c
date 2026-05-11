@@ -70,7 +70,7 @@ extern s32 bb2_memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
-extern void func_8005B98C(s32);
+extern void motion_LoadPreCalcData_8005B98C(s32);
 extern s32 func_80036D88(void);
 extern void gnd_disp_loop_ctrl(void);
 extern s32 D_800A384C;
@@ -90,7 +90,7 @@ extern void func_8008BE04(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
-extern s32 func_8004939C(void);
+extern s32 gnd_close_8004939C(void);
 extern u8 D_8008E6A4;
 extern s16 Judge;
 extern s16 D_800A3678;
@@ -181,7 +181,7 @@ extern s32 func_80037F08_ret(s32, s32);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-void func_80037F08(s32 a0, s32 a1) {
+void motion_LoadPreCalcData_80037F08(s32 a0, s32 a1) {
     s32 buf[2];
     func_80079A30(buf, &D_800109C8, a0, a1);
     func_80078A28(buf);
@@ -189,7 +189,7 @@ void func_80037F08(s32 a0, s32 a1) {
 __asm__(
     ".globl func_80037F08_ret
 "
-    "func_80037F08_ret = func_80037F08
+    "func_80037F08_ret = motion_LoadPreCalcData_80037F08
 "
 );
 
@@ -1451,8 +1451,8 @@ void func_800397D4(void) {
     gnd_open();
     game_SetPlayerCount(0);
     tslDmaDrawListDelAll(disp_CalcFov(0x2D));
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    gnd_init_80041688(0, 0);
+    gnd_init_80041688(1, 0);
     func_8001B6F4();
     game_Cleanup();
     D_800A37D0 = 0;

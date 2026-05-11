@@ -174,7 +174,7 @@ glabel pad_FuncAnalog
     /* 28E18 80038618 8FE10008 */  j          .L8003863C
     /* 28E1C 8003861C 00000000 */   nop
   .L80038620:
-    /* 28E20 80038620 C2DF000C */  jal        func_80037F08
+    /* 28E20 80038620 C2DF000C */  jal        motion_LoadPreCalcData_80037F08
     /* 28E24 80038624 21280000 */   addu      $a1, $zero, $zero
     /* 28E28 80038628 02004014 */  bnez       $v0, .L80038634
     /* 28E2C 8003862C 0B000224 */   addiu     $v0, $zero, 0xB

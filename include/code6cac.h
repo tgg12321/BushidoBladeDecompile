@@ -446,7 +446,7 @@ extern void func_8003A728(s32);
 extern void func_8003AE5C(s32);
 extern void func_8003DE14(s32 *, s32);
 extern void game_SetControllerPorts(s32);
-extern void func_80041688(s32, s32);
+extern void gnd_init_80041688(s32, s32);
 extern void func_80048BA4(s32, s32, s32);
 extern void func_800493E4(s32);
 extern void func_800494D4(s32, s32);

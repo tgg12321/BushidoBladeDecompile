@@ -58,7 +58,7 @@ glabel AllocRobRmd
     /* 30E64 80040664 21302602 */  addu       $a2, $s1, $a2
     /* 30E68 80040668 40280200 */  sll        $a1, $v0, 1
     /* 30E6C 8004066C 2128A200 */  addu       $a1, $a1, $v0
-    /* 30E70 80040670 AA70010C */  jal        func_8005C2A8
+    /* 30E70 80040670 AA70010C */  jal        tslGlobalMemFree_8005C2A8
     /* 30E74 80040674 0100A524 */   addiu     $a1, $a1, 0x1
     /* 30E78 80040678 21800202 */  addu       $s0, $s0, $v0
     /* 30E7C 8004067C 03000016 */  bnez       $s0, .L8004068C
@@ -122,7 +122,7 @@ glabel AllocRobRmd
     /* 30F54 80040754 3B000016 */  bnez       $s0, .L80040844
     /* 30F58 80040758 00000000 */   nop
     /* 30F5C 8004075C 21206002 */  addu       $a0, $s3, $zero
-    /* 30F60 80040760 BA1F010C */  jal        func_80047EE8
+    /* 30F60 80040760 BA1F010C */  jal        AddTbpOfst_80047EE8
     /* 30F64 80040764 21280000 */   addu      $a1, $zero, $zero
     /* 30F68 80040768 A8F8000C */  jal        single_game_SetStageId
     /* 30F6C 8004076C 00000000 */   nop
@@ -141,7 +141,7 @@ glabel AllocRobRmd
     /* 30FA0 800407A0 C0FE0224 */  addiu      $v0, $zero, -0x140
     /* 30FA4 800407A4 1000A2AF */  sw         $v0, 0x10($sp)
     /* 30FA8 800407A8 F0000224 */  addiu      $v0, $zero, 0xF0
-    /* 30FAC 800407AC 3020010C */  jal        func_800480C0
+    /* 30FAC 800407AC 3020010C */  jal        InitHiraRmd_800480C0
     /* 30FB0 800407B0 1400A2AF */   sw        $v0, 0x14($sp)
     /* 30FB4 800407B4 11020108 */  j          .L80040844
     /* 30FB8 800407B8 00000000 */   nop
@@ -149,7 +149,7 @@ glabel AllocRobRmd
     /* 30FBC 800407BC 21206002 */  addu       $a0, $s3, $zero
     /* 30FC0 800407C0 21280000 */  addu       $a1, $zero, $zero
     /* 30FC4 800407C4 80000624 */  addiu      $a2, $zero, 0x80
-    /* 30FC8 800407C8 EF1F010C */  jal        func_80047FBC
+    /* 30FC8 800407C8 EF1F010C */  jal        InitHiraRmd_80047FBC
     /* 30FCC 800407CC 21380000 */   addu      $a3, $zero, $zero
     /* 30FD0 800407D0 A8F8000C */  jal        single_game_SetStageId
     /* 30FD4 800407D4 00000000 */   nop
@@ -169,7 +169,7 @@ glabel AllocRobRmd
     /* 3100C 8004080C C0FE0224 */  addiu      $v0, $zero, -0x140
     /* 31010 80040810 1000A2AF */  sw         $v0, 0x10($sp)
     /* 31014 80040814 F0000224 */  addiu      $v0, $zero, 0xF0
-    /* 31018 80040818 3020010C */  jal        func_800480C0
+    /* 31018 80040818 3020010C */  jal        InitHiraRmd_800480C0
     /* 3101C 8004081C 1400A2AF */   sw        $v0, 0x14($sp)
     /* 31020 80040820 0F020108 */  j          .L8004083C
     /* 31024 80040824 00000000 */   nop
@@ -180,7 +180,7 @@ glabel AllocRobRmd
     /* 31034 80040834 E60C010C */  jal        func_80043398
     /* 31038 80040838 1000A0AF */   sw        $zero, 0x10($sp)
   .L8004083C:
-    /* 3103C 8004083C B206010C */  jal        func_80041AC8
+    /* 3103C 8004083C B206010C */  jal        InitHiraRmd_80041AC8
     /* 31040 80040840 21204002 */   addu      $a0, $s2, $zero
   .L80040844:
     /* 31044 80040844 CFEC010C */  jal        gpu_DrawSync

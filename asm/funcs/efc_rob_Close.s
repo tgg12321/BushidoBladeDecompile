@@ -18,7 +18,7 @@ glabel efc_rob_Close
     /* 599D8 800691D8 21204002 */   addu      $a0, $s2, $zero
     /* 599DC 800691DC 0000448E */  lw         $a0, 0x0($s2)
     /* 599E0 800691E0 0400468E */  lw         $a2, 0x4($s2)
-    /* 599E4 800691E4 AA70010C */  jal        func_8005C2A8
+    /* 599E4 800691E4 AA70010C */  jal        tslGlobalMemFree_8005C2A8
     /* 599E8 800691E8 01000524 */   addiu     $a1, $zero, 0x1
     /* 599EC 800691EC 0400428E */  lw         $v0, 0x4($s2)
     /* 599F0 800691F0 1C00BF8F */  lw         $ra, 0x1C($sp)

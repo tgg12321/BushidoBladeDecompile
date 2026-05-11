@@ -71,7 +71,7 @@ glabel mario_test_Exec
     /* E5B4 8001DDB4 00000000 */  nop
     /* E5B8 8001DDB8 03005014 */  bne        $v0, $s0, .L8001DDC8
     /* E5BC 8001DDBC 00000000 */   nop
-    /* E5C0 8001DDC0 59F8000C */  jal        func_8003E164
+    /* E5C0 8001DDC0 59F8000C */  jal        camera_SetMatrix_8003E164
     /* E5C4 8001DDC4 0100042E */   sltiu     $a0, $s0, 0x1
   .L8001DDC8:
     /* E5C8 8001DDC8 01001026 */  addiu      $s0, $s0, 0x1
@@ -87,7 +87,7 @@ glabel mario_test_Exec
     /* E5F0 8001DDF0 00000000 */  nop
     /* E5F4 8001DDF4 DA004014 */  bnez       $v0, .L8001E160
     /* E5F8 8001DDF8 05000224 */   addiu     $v0, $zero, 0x5
-    /* E5FC 8001DDFC E724010C */  jal        func_8004939C
+    /* E5FC 8001DDFC E724010C */  jal        gnd_close_8004939C
     /* E600 8001DE00 1980123C */   lui       $s2, (0x80190800 >> 16)
     /* E604 8001DE04 4E83000C */  jal        EndADRSound
     /* E608 8001DE08 00085236 */   ori       $s2, $s2, (0x80190800 & 0xFFFF)
@@ -112,7 +112,7 @@ glabel mario_test_Exec
     /* E650 8001DE50 78D52590 */  lbu        $a1, %lo(D_8008D578)($at)
     /* E654 8001DE54 4401010C */  jal        func_80040510
     /* E658 8001DE58 21304002 */   addu      $a2, $s2, $zero
-    /* E65C 8001DE5C B422010C */  jal        func_80048AD0
+    /* E65C 8001DE5C B422010C */  jal        mario_getMarioVoiceData_80048AD0
     /* E660 8001DE60 21200002 */   addu      $a0, $s0, $zero
     /* E664 8001DE64 B0770008 */  j          .L8001DEC0
     /* E668 8001DE68 00000000 */   nop
@@ -225,10 +225,10 @@ glabel mario_test_Exec
     /* E7E8 8001DFE8 6125010C */  jal        func_80049584
     /* E7EC 8001DFEC 21204002 */   addu      $a0, $s2, $zero
     /* E7F0 8001DFF0 21200000 */  addu       $a0, $zero, $zero
-    /* E7F4 8001DFF4 A205010C */  jal        func_80041688
+    /* E7F4 8001DFF4 A205010C */  jal        gnd_init_80041688
     /* E7F8 8001DFF8 21280000 */   addu      $a1, $zero, $zero
     /* E7FC 8001DFFC 01000424 */  addiu      $a0, $zero, 0x1
-    /* E800 8001E000 A205010C */  jal        func_80041688
+    /* E800 8001E000 A205010C */  jal        gnd_init_80041688
     /* E804 8001E004 21280000 */   addu      $a1, $zero, $zero
     /* E808 8001E008 0A80023C */  lui        $v0, %hi(D_800A38DC)
     /* E80C 8001E00C DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
@@ -291,7 +291,7 @@ glabel mario_test_Exec
     /* E8E0 8001E0E0 05000224 */  addiu      $v0, $zero, 0x5
     /* E8E4 8001E0E4 06006214 */  bne        $v1, $v0, .L8001E100
     /* E8E8 8001E0E8 03000224 */   addiu     $v0, $zero, 0x3
-    /* E8EC 8001E0EC 4176000C */  jal        func_8001D904
+    /* E8EC 8001E0EC 4176000C */  jal        motion_Close_8001D904
     /* E8F0 8001E0F0 00000000 */   nop
     /* E8F4 8001E0F4 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* E8F8 8001E0F8 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
@@ -299,9 +299,9 @@ glabel mario_test_Exec
   .L8001E100:
     /* E900 8001E100 05006214 */  bne        $v1, $v0, .L8001E118
     /* E904 8001E104 00000000 */   nop
-    /* E908 8001E108 6676000C */  jal        func_8001D998
+    /* E908 8001E108 6676000C */  jal        motion_Close_8001D998
     /* E90C 8001E10C 00000000 */   nop
-    /* E910 8001E110 E776000C */  jal        func_8001DB9C
+    /* E910 8001E110 E776000C */  jal        gnd_close_8001DB9C
     /* E914 8001E114 00000000 */   nop
   .L8001E118:
     /* E918 8001E118 1080053C */  lui        $a1, %hi(D_8010277E)
@@ -445,21 +445,21 @@ glabel mario_test_Exec
     /* EB24 8001E324 2E3820A4 */  sh         $zero, %lo(D_800A382E)($at)
     /* EB28 8001E328 0A80013C */  lui        $at, %hi(D_800A3748)
     /* EB2C 8001E32C 483722A0 */  sb         $v0, %lo(D_800A3748)($at)
-    /* EB30 8001E330 A56C000C */  jal        func_8001B294
+    /* EB30 8001E330 A56C000C */  jal        gnd_init_8001B294
     /* EB34 8001E334 21282002 */   addu      $a1, $s1, $zero
     /* EB38 8001E338 0A80023C */  lui        $v0, %hi(D_800A38BA)
     /* EB3C 8001E33C BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
     /* EB40 8001E340 00000000 */  nop
     /* EB44 8001E344 03004010 */  beqz       $v0, .L8001E354
     /* EB48 8001E348 21200002 */   addu      $a0, $s0, $zero
-    /* EB4C 8001E34C F06C000C */  jal        func_8001B3C0
+    /* EB4C 8001E34C F06C000C */  jal        mario_getMarioVoiceData_8001B3C0
     /* EB50 8001E350 21282002 */   addu      $a1, $s1, $zero
   .L8001E354:
     /* EB54 8001E354 B2E4000C */  jal        func_800392C8
     /* EB58 8001E358 00000000 */   nop
     /* EB5C 8001E35C 5E84010C */  jal        game_Cleanup
     /* EB60 8001E360 00000000 */   nop
-    /* EB64 8001E364 F976000C */  jal        func_8001DBE4
+    /* EB64 8001E364 F976000C */  jal        camera_SetMatrix_8001DBE4
     /* EB68 8001E368 00000000 */   nop
     /* EB6C 8001E36C FF000224 */  addiu      $v0, $zero, 0xFF
     /* EB70 8001E370 0A80013C */  lui        $at, %hi(D_800A3768)
@@ -473,15 +473,15 @@ glabel mario_test_Exec
     /* EB90 8001E390 703620A0 */  sb         $zero, %lo(D_800A3670)($at)
     /* EB94 8001E394 0A80013C */  lui        $at, %hi(D_800A3834)
     /* EB98 8001E398 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
-    /* EB9C 8001E39C 0872000C */  jal        func_8001C820
+    /* EB9C 8001E39C 0872000C */  jal        mario_getMarioVoiceData_8001C820
     /* EBA0 8001E3A0 00000000 */   nop
-    /* EBA4 8001E3A4 A376000C */  jal        func_8001DA8C
+    /* EBA4 8001E3A4 A376000C */  jal        camera_SetMatrix_8001DA8C
     /* EBA8 8001E3A8 00000000 */   nop
     /* EBAC 8001E3AC 44CD000C */  jal        func_80033510
     /* EBB0 8001E3B0 00000000 */   nop
     /* EBB4 8001E3B4 0A80043C */  lui        $a0, %hi(D_800A36A4)
     /* EBB8 8001E3B8 A4368484 */  lh         $a0, %lo(D_800A36A4)($a0)
-    /* EBBC 8001E3BC A16F010C */  jal        func_8005BE84
+    /* EBBC 8001E3BC A16F010C */  jal        mario_getMarioVoiceData_8005BE84
     /* EBC0 8001E3C0 00000000 */   nop
     /* EBC4 8001E3C4 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* EBC8 8001E3C8 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)

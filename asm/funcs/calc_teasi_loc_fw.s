@@ -118,7 +118,7 @@ glabel calc_teasi_loc_fw
   .L80027C88:
     /* 18488 80027C88 21202002 */  addu       $a0, $s1, $zero
     /* 1848C 80027C8C 21280002 */  addu       $a1, $s0, $zero
-    /* 18490 80027C90 ED80000C */  jal        func_800203B4
+    /* 18490 80027C90 ED80000C */  jal        calc_fc_frame_800203B4
     /* 18494 80027C94 2130E002 */   addu      $a2, $s7, $zero
     /* 18498 80027C98 21208002 */  addu       $a0, $s4, $zero
     /* 1849C 80027C9C 21282002 */  addu       $a1, $s1, $zero
@@ -137,7 +137,7 @@ glabel calc_teasi_loc_fw
     /* 184CC 80027CCC 02000224 */   addiu     $v0, $zero, 0x2
     /* 184D0 80027CD0 21202002 */  addu       $a0, $s1, $zero
     /* 184D4 80027CD4 21280002 */  addu       $a1, $s0, $zero
-    /* 184D8 80027CD8 ED80000C */  jal        func_800203B4
+    /* 184D8 80027CD8 ED80000C */  jal        calc_fc_frame_800203B4
     /* 184DC 80027CDC 2130E002 */   addu      $a2, $s7, $zero
     /* 184E0 80027CE0 21208002 */  addu       $a0, $s4, $zero
     /* 184E4 80027CE4 21282002 */  addu       $a1, $s1, $zero
@@ -406,7 +406,7 @@ glabel calc_teasi_loc_fw
     /* 188B4 800280B4 860223A6 */  sh         $v1, 0x286($s1)
     /* 188B8 800280B8 21202002 */  addu       $a0, $s1, $zero
     /* 188BC 800280BC 21280002 */  addu       $a1, $s0, $zero
-    /* 188C0 800280C0 ED80000C */  jal        func_800203B4
+    /* 188C0 800280C0 ED80000C */  jal        calc_fc_frame_800203B4
     /* 188C4 800280C4 2130E002 */   addu      $a2, $s7, $zero
     /* 188C8 800280C8 E7A00008 */  j          .L8002839C
     /* 188CC 800280CC 01000224 */   addiu     $v0, $zero, 0x1
@@ -542,7 +542,7 @@ glabel calc_teasi_loc_fw
     /* 18A94 80028294 860222A6 */  sh         $v0, 0x286($s1)
     /* 18A98 80028298 21202002 */  addu       $a0, $s1, $zero
     /* 18A9C 8002829C 21280002 */  addu       $a1, $s0, $zero
-    /* 18AA0 800282A0 ED80000C */  jal        func_800203B4
+    /* 18AA0 800282A0 ED80000C */  jal        calc_fc_frame_800203B4
     /* 18AA4 800282A4 2130E002 */   addu      $a2, $s7, $zero
     /* 18AA8 800282A8 969E000C */  jal        func_80027A58
     /* 18AAC 800282AC 21202002 */   addu      $a0, $s1, $zero

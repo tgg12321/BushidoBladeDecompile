@@ -29,7 +29,7 @@ glabel func_8005B7C4
     /* 4C030 8005B830 3C0380AF */  sw         $zero, %gp_rel(D_800A3408)($gp)
     /* 4C034 8005B834 400382AF */  sw         $v0, %gp_rel(D_800A340C)($gp)
     /* 4C038 8005B838 380382AF */  sw         $v0, %gp_rel(D_800A3404)($gp)
-    /* 4C03C 8005B83C AA70010C */  jal        func_8005C2A8
+    /* 4C03C 8005B83C AA70010C */  jal        tslGlobalMemFree_8005C2A8
     /* 4C040 8005B840 21309000 */   addu      $a2, $a0, $s0
     /* 4C044 8005B844 3803838F */  lw         $v1, %gp_rel(D_800A3404)($gp)
     /* 4C048 8005B848 00000000 */  nop

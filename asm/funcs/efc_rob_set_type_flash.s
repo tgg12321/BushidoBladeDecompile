@@ -64,7 +64,7 @@ glabel efc_rob_set_type_flash
     /* 350F4 800448F4 F405010C */  jal        func_800417D0
     /* 350F8 800448F8 140042A6 */   sh        $v0, 0x14($s2)
     /* 350FC 800448FC 2120E002 */  addu       $a0, $s7, $zero
-    /* 35100 80044900 17FB010C */  jal        func_8007EC5C
+    /* 35100 80044900 17FB010C */  jal        calc_fc_frame_8007EC5C
     /* 35104 80044904 18004526 */   addiu     $a1, $s2, 0x18
     /* 35108 80044908 00040226 */  addiu      $v0, $s0, 0x400
     /* 3510C 8004490C FF0F4230 */  andi       $v0, $v0, 0xFFF

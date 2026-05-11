@@ -3,7 +3,7 @@ glabel tslFileClose
     /* 3622C 80045A2C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 36230 80045A30 4415010C */  jal        func_80045510
     /* 36234 80045A34 03008424 */   addiu     $a0, $a0, 0x3
-    /* 36238 80045A38 8C14010C */  jal        func_80045230
+    /* 36238 80045A38 8C14010C */  jal        saTan5TakeGetPos_80045230
     /* 3623C 80045A3C 21200000 */   addu      $a0, $zero, $zero
     /* 36240 80045A40 1000BF8F */  lw         $ra, 0x10($sp)
     /* 36244 80045A44 1800BD27 */  addiu      $sp, $sp, 0x18

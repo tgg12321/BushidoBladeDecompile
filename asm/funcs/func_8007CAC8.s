@@ -28,7 +28,7 @@ glabel func_8007CAC8
     /* 6D330 8007CB30 60BF428C */  lw         $v0, %lo(D_8009BF60)($v0)
     /* 6D334 8007CB34 02006334 */  ori        $v1, $v1, (0x11000002 & 0xFFFF)
     /* 6D338 8007CB38 000043AC */  sw         $v1, 0x0($v0)
-    /* 6D33C 8007CB3C 1AF7010C */  jal        func_8007DC68
+    /* 6D33C 8007CB3C 1AF7010C */  jal        motion_LoadPreCalcData_8007DC68
     /* 6D340 8007CB40 00000000 */   nop
     /* 6D344 8007CB44 0A80023C */  lui        $v0, %hi(D_8009BF60)
     /* 6D348 8007CB48 60BF428C */  lw         $v0, %lo(D_8009BF60)($v0)

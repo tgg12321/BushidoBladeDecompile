@@ -114,7 +114,7 @@ glabel func_8001C8DC
   .L8001CA80:
     /* D280 8001CA80 4771000C */  jal        func_8001C51C
     /* D284 8001CA84 00000000 */   nop
-    /* D288 8001CA88 0872000C */  jal        func_8001C820
+    /* D288 8001CA88 0872000C */  jal        mario_getMarioVoiceData_8001C820
     /* D28C 8001CA8C 00000000 */   nop
     /* D290 8001CA90 44730008 */  j          .L8001CD10
     /* D294 8001CA94 00000000 */   nop

@@ -4,7 +4,7 @@ glabel func_800468B0
     /* 370B8 800468B8 21288000 */  addu       $a1, $a0, $zero
     /* 370BC 800468BC 4415010C */  jal        func_80045510
     /* 370C0 800468C0 08000424 */   addiu     $a0, $zero, 0x8
-    /* 370C4 800468C4 8C14010C */  jal        func_80045230
+    /* 370C4 800468C4 8C14010C */  jal        saTan5TakeGetPos_80045230
     /* 370C8 800468C8 21200000 */   addu      $a0, $zero, $zero
     /* 370CC 800468CC 1000BF8F */  lw         $ra, 0x10($sp)
     /* 370D0 800468D0 1800BD27 */  addiu      $sp, $sp, 0x18

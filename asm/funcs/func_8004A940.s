@@ -359,7 +359,7 @@ glabel func_8004A940
     /* 3B6C0 8004AEC0 1800CAEA */  swc2       $10, 0x18($s6)
     /* 3B6C4 8004AEC4 1C00CBEA */  swc2       $11, 0x1C($s6)
     /* 3B6C8 8004AEC8 2120C002 */  addu       $a0, $s6, $zero
-    /* 3B6CC 8004AECC 17FB010C */  jal        func_8007EC5C
+    /* 3B6CC 8004AECC 17FB010C */  jal        calc_fc_frame_8007EC5C
     /* 3B6D0 8004AED0 28002526 */   addiu     $a1, $s1, 0x28
     /* 3B6D4 8004AED4 1400C88E */  lw         $t0, 0x14($s6)
     /* 3B6D8 8004AED8 1800C98E */  lw         $t1, 0x18($s6)

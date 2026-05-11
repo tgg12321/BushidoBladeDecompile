@@ -940,7 +940,7 @@ extern s16 D_80102A7E;
 extern s16 D_80102A80;
 extern s16 D_80102A82;
 extern s32 D_80107898[];
-void func_800861BC(void)
+void tslGlobalMemFree_800861BC(void)
 {
   s32 new_var;
   s32 i;

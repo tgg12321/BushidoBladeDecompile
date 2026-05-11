@@ -126,10 +126,10 @@ glabel func_8003B9D0
     /* 2C398 8003BB98 2152010C */  jal        func_80054884
     /* 2C39C 8003BB9C 1C00B3AF */   sw        $s3, 0x1C($sp)
     /* 2C3A0 8003BBA0 21200000 */  addu       $a0, $zero, $zero
-    /* 2C3A4 8003BBA4 A205010C */  jal        func_80041688
+    /* 2C3A4 8003BBA4 A205010C */  jal        gnd_init_80041688
     /* 2C3A8 8003BBA8 21280000 */   addu      $a1, $zero, $zero
     /* 2C3AC 8003BBAC 01000424 */  addiu      $a0, $zero, 0x1
-    /* 2C3B0 8003BBB0 A205010C */  jal        func_80041688
+    /* 2C3B0 8003BBB0 A205010C */  jal        gnd_init_80041688
     /* 2C3B4 8003BBB4 21280000 */   addu      $a1, $zero, $zero
     /* 2C3B8 8003BBB8 0A80023C */  lui        $v0, %hi(D_800A3878)
     /* 2C3BC 8003BBBC 7838428C */  lw         $v0, %lo(D_800A3878)($v0)
@@ -159,7 +159,7 @@ glabel func_8003B9D0
     /* 2C414 8003BC14 FD06010C */  jal        saTan4FireDisp
     /* 2C418 8003BC18 00000000 */   nop
   .L8003BC1C:
-    /* 2C41C 8003BC1C F976000C */  jal        func_8001DBE4
+    /* 2C41C 8003BC1C F976000C */  jal        camera_SetMatrix_8001DBE4
     /* 2C420 8003BC20 00000000 */   nop
     /* 2C424 8003BC24 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 2C428 8003BC28 0A80013C */  lui        $at, %hi(D_800A3768)

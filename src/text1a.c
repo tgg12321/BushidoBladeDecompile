@@ -227,7 +227,7 @@ after_b644:
         s32 idx;
         ptr = (s32 *)((s32)rmd + prev_off);
         idx = ((s16 *)a0)[2] * 3 + 1;
-        ptr = (s32 *)((s32)ptr + func_8005C2A8(ptr, idx, (s32 *)((s32)rmd + next_off)));
+        ptr = (s32 *)((s32)ptr + tslGlobalMemFree_8005C2A8(ptr, idx, (s32 *)((s32)rmd + next_off)));
 
         if (ptr == 0) {
             InitFadePanel();
@@ -266,24 +266,24 @@ after_select:
         if (player >= 2) goto done_cases;
         if (player != 0) goto done_cases;
 
-        func_80047EE8(sec, 0);
+        AddTbpOfst_80047EE8(sec, 0);
         if (single_game_SetStageId() != 0) goto done_cases;
         videoDecCreate(((s16 *)a0)[10], 0, 0, -0x140, 0xE8);
-        func_800480C0(sec, 0, 0, 0, -0x140, 0xF0);
+        InitHiraRmd_800480C0(sec, 0, 0, 0, -0x140, 0xF0);
         goto done_cases;
 
     case_1:
-        func_80047FBC(sec, 0, 0x80, 0);
+        InitHiraRmd_80047FBC(sec, 0, 0x80, 0);
         if (single_game_SetStageId() != player) goto case_1_else;
         videoDecCreate(((s16 *)a0)[10], 0x80, 0, -0x140, 0xE8);
-        func_800480C0(sec, 0, 0x80, 0, -0x140, 0xF0);
+        InitHiraRmd_800480C0(sec, 0, 0x80, 0, -0x140, 0xF0);
         goto case_1_done;
 
     case_1_else:
         func_80043398(((s16 *)a0)[10], 2, 0, 2, 0);
 
     case_1_done:
-        func_80041AC8((s16 *)a0);
+        InitHiraRmd_80041AC8((s16 *)a0);
     }
 
 done_cases:
@@ -542,7 +542,7 @@ extern s32 D_800A3820;
 extern FuncPtr_40D48 D_800F66A0;
 extern void func_800417D0(s32 *);
 extern void func_800400B0(s32 *, s32);
-extern void func_8003F62C(s32 *);
+extern void ang_hosei_8003F62C(s32 *);
 extern void func_800420E8(s32, s32);
 void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     register s32 a0_s7 asm("s7") = a0;
@@ -723,7 +723,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     func_800404A0((s16 *)(s4 + 0x8B4), arg5);
     *(s16 *)(s4 + 0x1A84) = (s16)arg5;
     func_800400B0((s32 *)s4, arg5);
-    func_8003F62C((s32 *)s4);
+    ang_hosei_8003F62C((s32 *)s4);
     func_800420E8(a0_s7, (s32)(s3 + 0x2C));
 }
 
@@ -936,7 +936,7 @@ extern s32 func_800486FC(s32);
 extern s32 func_8004881C(s32, s32, s32);
 extern void gnd_load_tex(s32);
 
-void func_80041688(s32 arg0, s32 arg1) {
+void gnd_init_80041688(s32 arg0, s32 arg1) {
     s32 *player;
     s32 i;
     u8 *p;
@@ -1055,16 +1055,16 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
         goto shift;
     case0:
         if (single_game_SetStageId() == 0) {
-            func_800480C0(a3, id, 0, 0, -0x140, 0xE8);
+            InitHiraRmd_800480C0(a3, id, 0, 0, -0x140, 0xE8);
         } else {
-            func_80047EE8(a3, id);
+            AddTbpOfst_80047EE8(a3, id);
         }
         goto shift;
     case1:
         if (single_game_SetStageId() == a0) {
-            func_800480C0(a3, id, 0x80, 0, -0x140, 0xE8);
+            InitHiraRmd_800480C0(a3, id, 0x80, 0, -0x140, 0xE8);
         } else {
-            func_80047FBC(a3, id, 0x80, 0);
+            InitHiraRmd_80047FBC(a3, id, 0x80, 0);
         }
     next:
     shift:
@@ -1078,7 +1078,7 @@ extern s32 D_80094DF0[];
 extern u8 D_80094E08[];
 extern s16 D_800A9A20;
 extern u16 D_800A9A24;
-void func_80041AC8(s16 *arg0)
+void InitHiraRmd_80041AC8(s16 *arg0)
 {
   s16 rect[4];
   s16 *var_s0;

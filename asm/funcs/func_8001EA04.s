@@ -2,10 +2,10 @@ glabel func_8001EA04
     /* F204 8001EA04 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* F208 8001EA08 21200000 */  addu       $a0, $zero, $zero
     /* F20C 8001EA0C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* F210 8001EA10 A205010C */  jal        func_80041688
+    /* F210 8001EA10 A205010C */  jal        gnd_init_80041688
     /* F214 8001EA14 21280000 */   addu      $a1, $zero, $zero
     /* F218 8001EA18 01000424 */  addiu      $a0, $zero, 0x1
-    /* F21C 8001EA1C A205010C */  jal        func_80041688
+    /* F21C 8001EA1C A205010C */  jal        gnd_init_80041688
     /* F220 8001EA20 21280000 */   addu      $a1, $zero, $zero
     /* F224 8001EA24 5E84010C */  jal        game_Cleanup
     /* F228 8001EA28 00000000 */   nop

@@ -8,7 +8,7 @@
 extern void func_800453E0(s32);
 extern s32 *func_800455AC(s32);
 extern void func_80045510(s32, s32);
-extern void func_80045230(s32);
+extern void saTan5TakeGetPos_80045230(s32);
 extern void func_80054FDC(s32);
 extern void func_80078A68(u32, s32, s32);
 extern void func_80078B04(u32);
@@ -23,7 +23,7 @@ extern void func_80047A90(void);
 extern void saTan5GetTakeCutAnimType(s32);
 extern void func_80044100(s32, s32);
 extern void func_80045600(s32, s32);
-extern void func_80045694(s32, void (*)(void));
+extern void saTan5TakeGetPos_80045694(s32, void (*)(void));
 extern void func_800460E4(s32);
 extern void func_800421C8(s32);
 extern void func_8003E0E0(void);
@@ -153,19 +153,19 @@ s32 *snd_LoadBgm(s32 a0) {
                 s1 = (s32 *)((u8 *)s2 + off1);
                 s0 = (s32 *)((u8 *)s2 + off0);
             }
-            func_80045230((s32)s1);
+            saTan5TakeGetPos_80045230((s32)s1);
             func_80044010(s0, 9);
             func_80045600(chan, (s32)s1);
             D_800A3248 = arg;
         }
     }
-    func_80045694(chan, snd_BgmCallback);
+    saTan5TakeGetPos_80045694(chan, snd_BgmCallback);
     return s2;
 }
 
 void snd_PlayBgm(s32 a0) {
     func_80045510(8, a0);
-    func_80045230(0);
+    saTan5TakeGetPos_80045230(0);
 }
 
 void snd_BgmCallback(s32 a0, s32 a1) {
@@ -185,9 +185,9 @@ void snd_SeNullCallback(void) {
 }
 
 void snd_LoadSe(s32 a0) {
-    func_80045230(a0);
+    saTan5TakeGetPos_80045230(a0);
     func_80045600(9, a0);
-    func_80045694(9, snd_SeNullCallback);
+    saTan5TakeGetPos_80045694(9, snd_SeNullCallback);
 }
 
 void snd_PlaySe(s32 a0) {
@@ -205,11 +205,11 @@ s32 *snd_LoadSelection(s32 a0) {
     offset = (u32)v0[v0[0] + 1] >> 2 << 2;
     {
         s32 *s0 = (s32 *)((u8 *)v0 + offset);
-        func_80045230((s32)s0);
+        saTan5TakeGetPos_80045230((s32)s0);
         func_80045600(0xA, (s32)s0);
     }
     g_pad_selection = (s16)a0;
-    func_80045694(0xA, snd_SelectionCallback);
+    saTan5TakeGetPos_80045694(0xA, snd_SelectionCallback);
     return v0;
 }
 

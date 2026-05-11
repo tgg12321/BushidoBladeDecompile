@@ -32,7 +32,7 @@ glabel efc_buki_ZanzouClose
     /* 5F2A0 8006EAA0 21200002 */   addu      $a0, $s0, $zero
     /* 5F2A4 8006EAA4 0000048E */  lw         $a0, 0x0($s0)
     /* 5F2A8 8006EAA8 0400068E */  lw         $a2, 0x4($s0)
-    /* 5F2AC 8006EAAC AA70010C */  jal        func_8005C2A8
+    /* 5F2AC 8006EAAC AA70010C */  jal        tslGlobalMemFree_8005C2A8
     /* 5F2B0 8006EAB0 01000524 */   addiu     $a1, $zero, 0x1
     /* 5F2B4 8006EAB4 0400028E */  lw         $v0, 0x4($s0)
     /* 5F2B8 8006EAB8 1400BF8F */  lw         $ra, 0x14($sp)

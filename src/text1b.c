@@ -16,7 +16,7 @@ void func_80047ED0(s32 a0) {
     g_snd_volume += a0;
 }
 
-void func_80047EE8(s32 arg0, s32 arg1)
+void AddTbpOfst_80047EE8(s32 arg0, s32 arg1)
 {
     u32 *p;
     s16 new_var;
@@ -54,7 +54,7 @@ void func_80047EE8(s32 arg0, s32 arg1)
         while ((count--) != 0);
     }
 }
-void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
+void InitHiraRmd_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 {
     u32 *p;
     s32 count;
@@ -97,7 +97,7 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
         } while ((count--) != 0);
     }
 }
-void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
+void InitHiraRmd_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
 {
     register s32 saved_arg0 asm("$18");
     register s32 sx_arg2 asm("$22");
@@ -405,7 +405,7 @@ s32 func_8004881C(s32 arg0, s32 arg1, s32 arg2) {
     return sum >> 12;
 }
 
-void func_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 dx, s32 dy)
+void saTan4FireDisp_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 dx, s32 dy)
 {
   u16 src_buf[256];
   u16 dst_buf[256];
@@ -512,7 +512,7 @@ void func_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 
   gpu_DrawSync(0);
 }
 void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
-    func_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
+    saTan4FireDisp_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
 extern s32 snd_LoadBgm(u8);
 extern s32 snd_PlayBgm(s32);
@@ -520,7 +520,7 @@ extern u8 D_80099BCC;
 extern s32 D_800A33E0;
 extern s32 D_800A33E4;
 extern s32 func_8004153C(s32);
-s32 func_80048AD0(s32 arg0) {
+s32 mario_getMarioVoiceData_80048AD0(s32 arg0) {
     s32 temp_v0;
     u8 sound;
     u8 *base;
@@ -691,7 +691,7 @@ extern s16 D_800EF9F4;
 extern s16 D_800A33EA;
 extern s16 D_800A33E8;
 extern s32 D_800A33EC;
-void func_8004939C(void) {
+void gnd_close_8004939C(void) {
     s16 val = -1;
     s32 i = 0x39;
     s16 *p = &D_800EF9F2;
@@ -1121,8 +1121,8 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             func_800520B8(var_s6, var_s1, var_s4);
             a0_arg = var_s1 + var_s4;
         }
-        func_80045230(a0_arg);
-        var_s1 += func_8005C2A8(var_s1, 2, var_s7);
+        saTan5TakeGetPos_80045230(a0_arg);
+        var_s1 += tslGlobalMemFree_8005C2A8(var_s1, 2, var_s7);
     }
 
     if (var_s2 >= 0) {
@@ -1134,8 +1134,8 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             func_800520B8(var_s6, var_s1, var_s4);
             a0_arg = var_s1 + var_s4;
         }
-        func_80045230(a0_arg);
-        var_s1 += func_8005C2A8(var_s1, 5, var_s7);
+        saTan5TakeGetPos_80045230(a0_arg);
+        var_s1 += tslGlobalMemFree_8005C2A8(var_s1, 5, var_s7);
     }
     return var_s1;
 }
@@ -2043,7 +2043,7 @@ __asm__(
     "    swc2  $10,24($s6)\n"
     "    swc2  $11,28($s6)\n"
     "    addu  $a0,$s6,$zero\n"
-    "    jal  func_8007EC5C\n"
+    "    jal  calc_fc_frame_8007EC5C\n"
     "    addiu  $a1,$s1,40\n"
     "    lw  $t0,20($s6)\n"
     "    lw  $t1,24($s6)\n"
@@ -11317,7 +11317,7 @@ void func_80056CB8(s32 arg0) {
 extern u8 D_8009A830;
 extern s8 D_8009A838;
 extern u8 D_8009A840;
-s32 func_80056FE8(s32 arg0) {
+s32 ang_hosei_80056FE8(s32 arg0) {
     s32 a2 = *((s32 *) arg0);
     s32 a3 = *((u8 *) ((*((s32 *) (a2 + 0x58))) + 3));
     s32 base = a3 * 40;
@@ -11338,7 +11338,7 @@ s32 func_80056FE8(s32 arg0) {
     }
 }
 extern s32 single_game_getEnemyCharId(s32, s32);
-extern s32 func_800233AC(void *, s32 *);
+extern s32 SetPacketData_800233AC(void *, s32 *);
 extern s32 D_8009AA50[];
 
 s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -11371,7 +11371,7 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (arg3 == 1) {
         var_v0 |= 4;
     }
-    if (func_800233AC(arg0, &sp10) != 0) {
+    if (SetPacketData_800233AC(arg0, &sp10) != 0) {
         var_v0 |= 8;
     }
     return var_v0;
@@ -11940,7 +11940,7 @@ typedef struct GameObj {
 } GameObj;
 extern s32 func_80036EA8();
 extern s32 func_80036F28();
-extern s32 func_8005C2A8();
+extern s32 tslGlobalMemFree_8005C2A8();
 
 s32 debug_printf(s32 *, s32);               /* extern */
 s32 game_FrameLoop();                           /* extern */
@@ -11965,7 +11965,7 @@ void func_8005B7C4(s32 arg0) {
     D_800A3408 = 0;
     D_800A340C = 0x1010;
     D_800A3404 = 0x1010;
-    func_8005C2A8((GameObj *) arg0, 0, arg0 + temp_s0);
+    tslGlobalMemFree_8005C2A8((GameObj *) arg0, 0, arg0 + temp_s0);
     D_800A340C = D_800A3404;
 }
 extern s32 D_800EFC58;
@@ -11985,7 +11985,7 @@ void obj_InitPair(void) {
 }
 extern s32 func_80036EA8(s32, s32);
 extern s32 func_80036F28(s32);
-extern s32 func_8005C2A8(s32, s32, s32);
+extern s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
 extern void obj_InitPair(void);
 extern void func_800858D0(s32);
 extern void replay_camera_Init(s32, s32);
@@ -12000,16 +12000,16 @@ s32 func_8005B8B8(s32 arg0) {
     t1 = func_80036F28(t0);
     game_FrameLoop();
     asm volatile("" : "=r"(t0) : "0"(t0));
-    ret_a = func_8005C2A8(arg0, 8, arg0 + t1);
+    ret_a = tslGlobalMemFree_8005C2A8(arg0, 8, arg0 + t1);
     t0_2 = func_80036EA8(2, 0x5E);
     game_FrameLoop();
     replay_camera_Init(t0_2, arg0 + ret_a);
     t1_2 = func_80036F28(t0_2) + ret_a;
     game_FrameLoop();
-    return func_8005C2A8(arg0 + ret_a, 4, arg0 + t1_2) + ret_a;
+    return tslGlobalMemFree_8005C2A8(arg0 + ret_a, 4, arg0 + t1_2) + ret_a;
 }
 void saFidLoad(s32, s32);
-void func_8005B98C(s32 a0) {
+void motion_LoadPreCalcData_8005B98C(s32 a0) {
     saFidLoad(a0, 8);
     saFidLoad(a0, 4);
 }
@@ -12028,7 +12028,7 @@ s32 func_80036EA8(s32, s32);
 s32 game_FrameLoop(void);
 void replay_camera_Init(s32, s32);
 s32 func_80036F28(s32);
-void func_8005C2A8(s32, s32, s32);
+void tslGlobalMemFree_8005C2A8(s32, s32, s32);
 void obj_InitTaskCamera(s32 a0) {
     s32 s1;
     obj_InitTask();
@@ -12037,7 +12037,7 @@ void obj_InitTaskCamera(s32 a0) {
     replay_camera_Init(s1, a0);
     s1 = func_80036F28(s1);
     game_FrameLoop();
-    func_8005C2A8(a0, 9, a0 + s1);
+    tslGlobalMemFree_8005C2A8(a0, 9, a0 + s1);
 }
 void saFidLoad(s32, s32);
 void obj_ExecTask(s32 a0) {
@@ -12095,7 +12095,7 @@ extern s32 func_80085EE4(s16);
 extern s32 func_80085E4C(s16, s16);
 extern s32 func_80085FB8();
 extern s32 md_game_check_change_main_mode_katinuki(s16);
-s32 func_8005BE84(s32 arg0) {
+s32 mario_getMarioVoiceData_8005BE84(s32 arg0) {
     register s32 arg_save asm("$16") = arg0;
     s32 result;
     s16 *p;
@@ -12160,8 +12160,8 @@ void func_8005C074(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-s32 func_8005C2A8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005C2A8.s).
+s32 tslGlobalMemFree_8005C2A8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/tslGlobalMemFree_8005C2A8.s).
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
     return 0;
@@ -14515,7 +14515,7 @@ s32 *func_80069120(s32 a0) {
 }
 
 void func_8006920C(s32 *, s32);
-void func_8005C2A8(s32, s32, s32);
+void tslGlobalMemFree_8005C2A8(s32, s32, s32);
 s32 efc_rob_Close(s32 *a0) {
     s32 i = 0;
     s32 *p = &a0[5];
@@ -14524,7 +14524,7 @@ s32 efc_rob_Close(s32 *a0) {
         p++;
         i++;
     } while (i < 12);
-    func_8005C2A8(a0[0], 1, a0[1]);
+    tslGlobalMemFree_8005C2A8(a0[0], 1, a0[1]);
     return a0[1];
 }
 void func_8006920C(s32 *a0, s32 a1) {
@@ -15411,7 +15411,7 @@ void func_8006E950(s32 *a0, s32 *a1) {
     func_8006E8CC(s1);
 }
 void func_8006920C(s32 *, s32);
-void func_8005C2A8(s32, s32, s32);
+void tslGlobalMemFree_8005C2A8(s32, s32, s32);
 s32 efc_buki_ZanzouClose(s32 *a0) {
     func_8006920C(a0, a0[21]);
     func_8006920C(a0, a0[22]);
@@ -15422,7 +15422,7 @@ s32 efc_buki_ZanzouClose(s32 *a0) {
     func_8006920C(a0, a0[27]);
     func_8006920C(a0, a0[28]);
     func_8006920C(a0, a0[29]);
-    func_8005C2A8(a0[0], 1, a0[1]);
+    tslGlobalMemFree_8005C2A8(a0[0], 1, a0[1]);
     return a0[1];
 }
 extern s32 D_8009BC1C;
