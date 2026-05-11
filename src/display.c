@@ -654,7 +654,7 @@ s32 reset_rob_rmd(s16 *arg0) {
 u32 func_8007CAB0(void) {
     return *g_gpu_stat_reg;
 }
-extern s32 func_8007DC68();
+extern s32 motion_LoadPreCalcData_8007DC68();
 extern s32 func_8007DC9C();
 extern s32 *D_8009BF58;
 extern s32 *D_8009BF5C;
@@ -667,7 +667,7 @@ s32 func_8007CAC8(s32 arg0, s32 arg1) {
     *D_8009BF5C = arg1;
     *D_8009BF60 = 0x11000002;
     asm volatile("");
-    func_8007DC68();
+    motion_LoadPreCalcData_8007DC68();
     if (*D_8009BF60 & 0x01000000) {
         do {
             if (func_8007DC9C() != 0) {
@@ -699,7 +699,7 @@ s32 func_8007CE0C(_GpuChunkHdr_CE0C *arg0, s32 *arg1) {
     s32 a0_tmp;
     s32 v0_ext;
 
-    func_8007DC68();
+    motion_LoadPreCalcData_8007DC68();
 
     x = arg0->x;
     if (x < 0) goto x_neg;
@@ -809,7 +809,7 @@ void func_8007D3D4(s32 a0, s32 a1, s32 a2) {
 extern s32 *D_8009BF48;
 extern s32 D_8009BF78;
 extern s32 D_8009BF7C;
-extern s32 func_8007DC68();
+extern s32 motion_LoadPreCalcData_8007DC68();
 
 s32 func_8007D6D8();                            /* extern */
 s32 func_8007DC9C();                                /* extern */
@@ -836,7 +836,7 @@ s32 func_8007D3F8(s32 (*arg0)(s32 *, s32), s32 *arg1, s32 arg2, s32 arg3) {
     s32 var_v0;
     s32 var_v0_2;
 
-    func_8007DC68();
+    motion_LoadPreCalcData_8007DC68();
     goto check_top;
 err_loop:
     if (func_8007DC9C() != 0) {
@@ -949,7 +949,7 @@ s32 func_8007DB20(s32 arg0) {
     s32 ret;
 
     if (arg0 == 0) {
-        func_8007DC68();
+        motion_LoadPreCalcData_8007DC68();
         while (D_8009BF78 != D_8009BF7C) {
             func_8007D6D8();
             if (func_8007DC9C() != 0) return -1;
@@ -974,7 +974,7 @@ s32 func_8007DB20(s32 arg0) {
     }
     return ret;
 }
-void func_8007DC68(void) {
+void motion_LoadPreCalcData_8007DC68(void) {
     g_gpu_vcount = sys_VSync(-1) + 0xF0;
     g_gpu_draw_count = 0;
 }
@@ -1643,12 +1643,12 @@ void func_8007EB4C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
 PAD_NOPS_1; /* 1 NOP after func_8007EB4C */
-void func_8007EC5C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007EC5C.s).
+void calc_fc_frame_8007EC5C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/calc_fc_frame_8007EC5C.s).
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-PAD_NOPS_1; /* 1 NOP after func_8007EC5C */
+PAD_NOPS_1; /* 1 NOP after calc_fc_frame_8007EC5C */
 s32 *func_8007ED6C(s32 *a0, s32 *a1, s32 *a2) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007ED6C.s).
      * Inline-asm scaffolding retired; pure-C decomp pending. */

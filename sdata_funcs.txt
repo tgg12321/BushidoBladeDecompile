@@ -83,7 +83,7 @@ change_shadow_tex_reg
 func_8003D330
 func_8003D39C
 DispSleepMenuTex
-func_8003E164
+camera_SetMatrix_8003E164
 gnd_open
 single_game_SetStageId
 DispHira
@@ -109,13 +109,13 @@ func_800450F4
 seq_Reset
 seq_GetState
 func_800451D0
-func_80045230
+saTan5TakeGetPos_80045230
 func_80045294
 func_800453E0
 func_80045510
 func_800455AC
 func_80045600
-func_80045694
+saTan5TakeGetPos_80045694
 func_800456F0
 func_8004574C
 func_800457DC
@@ -138,10 +138,10 @@ func_80047BE0
 snd_CalcFade
 snd_GetFadeCurve
 func_80047ED0
-func_80048AD0
+mario_getMarioVoiceData_80048AD0
 saTan5GetTakeCutAnimType
 func_80048BA4
-func_8004939C
+gnd_close_8004939C
 func_800493E4
 func_800494D4
 func_80049584
@@ -163,7 +163,7 @@ func_8005B43C
 get_point_value
 obj_InitAll
 func_8005B7C4
-func_8005C2A8
+tslGlobalMemFree_8005C2A8
 func_8005C5A8
 gnd_land_hit_char_tsuba
 func_8005FBC8

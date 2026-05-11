@@ -8,7 +8,7 @@ glabel func_8007CE0C
     /* 6D624 8007CE24 4400B5AF */  sw         $s5, 0x44($sp)
     /* 6D628 8007CE28 4000B4AF */  sw         $s4, 0x40($sp)
     /* 6D62C 8007CE2C 3C00B3AF */  sw         $s3, 0x3C($sp)
-    /* 6D630 8007CE30 1AF7010C */  jal        func_8007DC68
+    /* 6D630 8007CE30 1AF7010C */  jal        motion_LoadPreCalcData_8007DC68
     /* 6D634 8007CE34 3000B0AF */   sw        $s0, 0x30($sp)
     /* 6D638 8007CE38 04002586 */  lh         $a1, 0x4($s1)
     /* 6D63C 8007CE3C 21A80000 */  addu       $s5, $zero, $zero

@@ -80,7 +80,7 @@ extern s32 bb2_memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
-extern void func_8005B98C(s32);
+extern void motion_LoadPreCalcData_8005B98C(s32);
 extern void func_8003AA78(void);
 extern s32 func_80036D88(void);
 extern void func_8003AA48(void);
@@ -117,7 +117,7 @@ extern void func_8001DA2C(void);
 extern void func_8003B10C(s32);
 extern void func_8005FBC8(s32, s32);
 extern void func_80054884(s32, s32, s32, s32, s32, s32, s32, s32);
-extern void func_8001DBE4(void);
+extern void camera_SetMatrix_8001DBE4(void);
 extern void func_80041BF4(s32, s32, s32);
 extern void func_8004659C(s32);
 extern s32 func_8005C8A8(s32, s32, s32, s32);
@@ -134,7 +134,7 @@ extern void irq_Reset(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
-extern s32 func_8004939C(void);
+extern s32 gnd_close_8004939C(void);
 extern s32 func_800392B8(void);
 extern s8 D_8008EA70;
 extern s32 D_8009060C;
@@ -170,7 +170,7 @@ extern void gpu_EnableDisplay(void);
 extern void md_menu_logo_exec(void);
 extern void func_80020CDC(void);
 extern void EndADRSound(void);
-extern void func_80041688(s32, s32);
+extern void gnd_init_80041688(s32, s32);
 extern void func_8004659C(s32);
 extern void func_80035FA8(void);
 extern s32 func_80036EA8(s32, s32);
@@ -229,13 +229,13 @@ void func_8003B9D0(void) {
     if (flags & 0x20) a0_arg = 0x32;
     D_800A390F = 0;
     func_80054884(D_800A376C, p[0], 0, a3_arg, a0_arg, -1, -1, magic);
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    gnd_init_80041688(0, 0);
+    gnd_init_80041688(1, 0);
     if (((u8 *)D_800A3878)[3] & 0x40) func_8004659C(-1);
     if (D_8010277D == 0xE || D_8010277D == 0x1D) {
         saTan4FireDisp(D_800A37B4, D_800A37B5, D_800A37B6);
     }
-    func_8001DBE4();
+    camera_SetMatrix_8001DBE4();
     D_800A3768 = 0xFF;
     D_800A36A8 = 0;
     func_80035FA8();
@@ -476,8 +476,8 @@ void cpu_side_move_dir_2(void) {
     skip_copy:;
     }
     func_80054884(0x16, (&D_8009016C)[D_800A38A4], 0, D_80101EDA, -1, -1, -1, (s32)0x80118800);
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    gnd_init_80041688(0, 0);
+    gnd_init_80041688(1, 0);
     game_Cleanup();
     p = (s8 *)(((s8 *)(&D_8008EA70)) + (D_800A38A4 << 1));
     if (p[0] >= 0) {
@@ -838,8 +838,8 @@ void func_8003CE18(void) {
         D_800A3818 = result;
         func_80054884(0x16, s0, result, (s32)D_80101EDA, (s32)D_80102326, -1, -1, 0);
     }
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    gnd_init_80041688(0, 0);
+    gnd_init_80041688(1, 0);
     game_Cleanup();
     D_800A37B8 = 0;
     D_800A3834 = 0x1D;
@@ -1450,7 +1450,7 @@ void func_8003E120(void) {
 }
 extern s32 D_800A3228;
 extern void func_8007B6C8(s16 *, s32, s32);
-void func_8003E164(s32 arg0) {
+void camera_SetMatrix_8003E164(s32 arg0) {
     s16 buf[4];
     s32 *s0;
 

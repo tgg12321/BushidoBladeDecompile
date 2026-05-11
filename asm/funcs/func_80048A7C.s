@@ -14,7 +14,7 @@ glabel func_80048A7C
     /* 392AC 80048AAC 1C00A8AF */  sw         $t0, 0x1C($sp)
     /* 392B0 80048AB0 2000A9AF */  sw         $t1, 0x20($sp)
     /* 392B4 80048AB4 1400A2AF */  sw         $v0, 0x14($sp)
-    /* 392B8 80048AB8 1922010C */  jal        func_80048864
+    /* 392B8 80048AB8 1922010C */  jal        saTan4FireDisp_80048864
     /* 392BC 80048ABC 1800A3AF */   sw        $v1, 0x18($sp)
     /* 392C0 80048AC0 2800BF8F */  lw         $ra, 0x28($sp)
     /* 392C4 80048AC4 3000BD27 */  addiu      $sp, $sp, 0x30

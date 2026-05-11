@@ -3,7 +3,7 @@ glabel func_8007DB20
     /* 6E324 8007DB24 1400BFAF */  sw         $ra, 0x14($sp)
     /* 6E328 8007DB28 2A008014 */  bnez       $a0, .L8007DBD4
     /* 6E32C 8007DB2C 1000B0AF */   sw        $s0, 0x10($sp)
-    /* 6E330 8007DB30 1AF7010C */  jal        func_8007DC68
+    /* 6E330 8007DB30 1AF7010C */  jal        motion_LoadPreCalcData_8007DC68
     /* 6E334 8007DB34 00000000 */   nop
     /* 6E338 8007DB38 D6F60108 */  j          .L8007DB58
     /* 6E33C 8007DB3C 00000000 */   nop

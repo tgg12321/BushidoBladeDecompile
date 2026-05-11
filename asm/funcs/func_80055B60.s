@@ -670,7 +670,7 @@ glabel func_80055B60
   .L800564C4:
     /* 46CC4 800564C4 280445A6 */  sh         $a1, 0x428($s2)
     /* 46CC8 800564C8 4000A893 */  lbu        $t0, 0x40($sp)
-    /* 46CCC 800564CC FA5B010C */  jal        func_80056FE8
+    /* 46CCC 800564CC FA5B010C */  jal        ang_hosei_80056FE8
     /* 46CD0 800564D0 270448A2 */   sb        $t0, 0x427($s2)
     /* 46CD4 800564D4 21A04000 */  addu       $s4, $v0, $zero
     /* 46CD8 800564D8 42044292 */  lbu        $v0, 0x442($s2)

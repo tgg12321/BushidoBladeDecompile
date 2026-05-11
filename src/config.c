@@ -186,7 +186,7 @@ void stage_ApplyLighting(void) {
     sys_StubEmpty3(D_800A93B8, D_800A93C4, 2);
 }
 
-void func_8003F62C(s32 *a0) {
+void ang_hosei_8003F62C(s32 *a0) {
     s16 *s0;
     s32 *s1 = a0;
     s0 = (s16 *)s1[9];

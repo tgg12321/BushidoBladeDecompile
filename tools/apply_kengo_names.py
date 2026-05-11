@@ -90,15 +90,25 @@ def parse_csv(min_opseq_ratio: float) -> list[dict]:
 
 
 def classify(rows: list[dict], existing: dict[str, int],
-             include_conflicts: bool) -> tuple[list[dict], list[dict]]:
-    """Split rows into (to_apply, to_skip). A row is skipped when:
-      - the Kengo name is claimed by multiple anonymous BB2 funcs
-        (TU-static instances or spurious matches; needs manual review)
-      - the Kengo name already exists in named_syms/symbol_addrs at a
-        different address
-      - asm/funcs/<kengo_name>.s already exists (BB2 has another
-        function with that name not in the sym files — happens for
-        symbols introduced by prior renames or extern declarations)."""
+             include_conflicts: bool,
+             strict_conflicts: bool = False) -> tuple[list[dict], list[dict]]:
+    """Split rows into (to_apply, to_skip).
+
+    Skip conditions:
+      - the Kengo name is already in named_syms/symbol_addrs at a
+        different address (hard collision)
+      - the Kengo name has multiple anonymous BB2 claimants AND
+        include_conflicts is False
+      - strict_conflicts is True AND no group member has strong-tier
+        confidence (callgraph / caller-unique / caller-callgraph)
+
+    Conflict / asm-collision handling (--include-conflicts):
+      - Apply every group member with `_<ADDR>` suffix so each anon BB2
+        func gets a distinct readable name.
+      - If only one member exists but asm/funcs/<kn>.s already exists
+        for another function, apply with suffix too.
+    """
+    STRONG = {"callgraph", "caller-unique", "caller-callgraph"}
     by_kn: dict[str, list[dict]] = defaultdict(list)
     for r in rows:
         by_kn[r["kn"]].append(r)
@@ -108,33 +118,58 @@ def classify(rows: list[dict], existing: dict[str, int],
     for kn, group in by_kn.items():
         existing_addr = existing.get(kn)
         existing_asm = (ASM_FUNCS / f"{kn}.s").exists()
-        if len(group) == 1:
+
+        if existing_addr is not None and len(group) == 1 and existing_addr == group[0]["addr"]:
+            # Same name already maps to the same address — idempotent, skip.
+            to_skip.append({**group[0],
+                            "_skip_reason": "already named (idempotent)"})
+            continue
+
+        if len(group) == 1 and not existing_asm:
             row = group[0]
             if existing_addr is not None and existing_addr != row["addr"]:
                 row["_skip_reason"] = (
                     f"name already used at 0x{existing_addr:08X}")
                 to_skip.append(row)
-            elif existing_asm:
-                row["_skip_reason"] = (
-                    f"asm/funcs/{kn}.s already exists for another func")
-                to_skip.append(row)
             else:
                 to_apply.append(row)
-        else:
-            if include_conflicts:
-                for r in group:
-                    r["_suffixed"] = f"{kn}_{r['addr']:08X}"
-                    if (ASM_FUNCS / f"{r['_suffixed']}.s").exists():
-                        r["_skip_reason"] = (
-                            f"suffixed asm/funcs/{r['_suffixed']}.s exists")
-                        to_skip.append(r)
-                    else:
-                        to_apply.append(r)
-            else:
-                for r in group:
+            continue
+
+        # Either a multi-member conflict OR a single-member asm-collision.
+        # Both want `_<ADDR>` suffix when --include-conflicts is on.
+        if not include_conflicts:
+            for r in group:
+                if existing_asm:
+                    r["_skip_reason"] = (
+                        f"asm/funcs/{kn}.s already exists for another func")
+                else:
                     r["_skip_reason"] = (
                         f"conflict: {len(group)} BB2 funcs claim {kn}")
-                    to_skip.append(r)
+                to_skip.append(r)
+            continue
+
+        # strict_conflicts gates only the multi-claimant case. A single-
+        # member asm-collision is not really a "conflict" — it's just a
+        # rename target that needs a suffix because the name is already
+        # used by a different (already-named) BB2 function. No ambiguity
+        # there, so always apply when --include-conflicts is on.
+        if (strict_conflicts and len(group) > 1
+                and not any(r["conf"] in STRONG for r in group)):
+            for r in group:
+                r["_skip_reason"] = (
+                    f"strict-conflicts: no strong-tier member in group "
+                    f"(size {len(group)})")
+                to_skip.append(r)
+            continue
+
+        for r in group:
+            r["_suffixed"] = f"{kn}_{r['addr']:08X}"
+            if (ASM_FUNCS / f"{r['_suffixed']}.s").exists():
+                r["_skip_reason"] = (
+                    f"suffixed asm/funcs/{r['_suffixed']}.s exists")
+                to_skip.append(r)
+            else:
+                to_apply.append(r)
     return to_apply, to_skip
 
 
@@ -195,7 +230,12 @@ def main() -> int:
     ap.add_argument("--min-opseq-ratio", type=float, default=0.30,
                     help="Min opseq ratio for seq-similarity rows (default 0.30)")
     ap.add_argument("--include-conflicts", action="store_true",
-                    help="Apply N>1 BB2-to-same-Kengo cases with _<addr> suffix")
+                    help="Apply N>1 BB2-to-same-Kengo cases (and asm-name "
+                         "collisions) with _<ADDR> suffix")
+    ap.add_argument("--strict-conflicts", action="store_true",
+                    help="With --include-conflicts: only apply conflict "
+                         "groups that contain at least one callgraph / "
+                         "caller-unique / caller-callgraph member")
     args = ap.parse_args()
 
     if not CSV_IN.exists():
@@ -205,7 +245,9 @@ def main() -> int:
 
     existing = load_existing_names()
     rows = parse_csv(args.min_opseq_ratio)
-    to_apply, to_skip = classify(rows, existing, args.include_conflicts)
+    to_apply, to_skip = classify(rows, existing,
+                                  args.include_conflicts,
+                                  args.strict_conflicts)
 
     by_conf = defaultdict(int)
     for r in to_apply:

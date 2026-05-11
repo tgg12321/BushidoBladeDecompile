@@ -20,7 +20,7 @@ glabel func_800469C4
     /* 3720C 80046A0C 82801000 */  srl        $s0, $s0, 2
     /* 37210 80046A10 80801000 */  sll        $s0, $s0, 2
     /* 37214 80046A14 21803002 */  addu       $s0, $s1, $s0
-    /* 37218 80046A18 8C14010C */  jal        func_80045230
+    /* 37218 80046A18 8C14010C */  jal        saTan5TakeGetPos_80045230
     /* 3721C 80046A1C 21200002 */   addu      $a0, $s0, $zero
     /* 37220 80046A20 0A000424 */  addiu      $a0, $zero, 0xA
     /* 37224 80046A24 8015010C */  jal        func_80045600
@@ -28,7 +28,7 @@ glabel func_800469C4
     /* 3722C 80046A2C 0480053C */  lui        $a1, %hi(snd_SelectionCallback)
     /* 37230 80046A30 806AA524 */  addiu      $a1, $a1, %lo(snd_SelectionCallback)
     /* 37234 80046A34 7E0192A7 */  sh         $s2, %gp_rel(D_800A324A)($gp)
-    /* 37238 80046A38 A515010C */  jal        func_80045694
+    /* 37238 80046A38 A515010C */  jal        saTan5TakeGetPos_80045694
     /* 3723C 80046A3C 0A000424 */   addiu     $a0, $zero, 0xA
     /* 37240 80046A40 21102002 */  addu       $v0, $s1, $zero
     /* 37244 80046A44 1C00BF8F */  lw         $ra, 0x1C($sp)

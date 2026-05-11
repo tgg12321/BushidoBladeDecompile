@@ -1045,7 +1045,7 @@ extern s16 D_80095328;
 extern s32 D_80102C00;
 extern void func_80042874(s32 *, s32 *);
 extern void func_8007EB4C(s32 *, s32 *);
-extern void func_8007EC5C(s32 *, s32 *);
+extern void calc_fc_frame_8007EC5C(s32 *, s32 *);
 extern void func_8007E4DC(s32 *, s32 *, s32 *);
 extern void camera_InitMatrix(void);
 extern s32 func_8003E2C8(void);
@@ -1057,7 +1057,7 @@ void func_80044504(s32 a0) {
     s32 *s0 = &D_80101BD0;
     func_80042874(&D_800A3678, s0);
     func_8007EB4C(s0, (s32 *)(D_800A3708 + 0x18));
-    func_8007EC5C((s32 *)(D_800A370C + 0x18), s0);
+    calc_fc_frame_8007EC5C((s32 *)(D_800A370C + 0x18), s0);
     func_8007E4DC((s32 *)(D_800A370C + 0x18), (s32 *)(D_800A3708 + 0x18), &D_800FF610);
     if (D_800A36AC & 1) {
         *(s32 *)0x1F800014 = -1;
@@ -1227,7 +1227,7 @@ void efc_rob_set_type_flash(void) {
                 *(s16 *)(obj + 0x14) = *(u16 *)(scan + 1);
                 *(s16 *)(obj + 0x6) = 0;
                 func_800417D0((s32 *)obj);
-                func_8007EC5C((s32 *)sp18, (s32 *)(obj + 0x18));
+                calc_fc_frame_8007EC5C((s32 *)sp18, (s32 *)(obj + 0x18));
 
                 cos_val = judge_base[(angle + 0x400) & 0xFFF];
 
@@ -1535,7 +1535,7 @@ L_loop:
     D_800A33A8 = 0;
     func_80049E1C();
 }
-void func_80045230(s32 a0) {
+void saTan5TakeGetPos_80045230(s32 a0) {
     s32 v1;
     if (!a0) {
         a0 = D_800A33A0;
@@ -1740,7 +1740,7 @@ not_found:
 extern s16 D_800EED10[];
 extern s32 D_800EED1C[];
 extern s32 D_800A33AC;
-void func_80045694(s32 a0, s32 a1) {
+void saTan5TakeGetPos_80045694(s32 a0, s32 a1) {
     s32 i;
     s32 count = D_800A33AC;
     if (count <= 0) return;
@@ -1815,11 +1815,11 @@ void *func_80045814(void) {
 }
 extern void func_800520B8(s32, s32, s32);
 void md_mtest_init(s32 a0, s32 a1, s32 a2) {
-    func_80045230(a1 + a2);
+    saTan5TakeGetPos_80045230(a1 + a2);
     func_800520B8(a0, a1, a2);
 }
-extern void func_80045230(s32);
-extern void func_80045694(s32, s32);
+extern void saTan5TakeGetPos_80045230(s32);
+extern void saTan5TakeGetPos_80045694(s32, s32);
 extern void func_800400F8(s32);
 extern void func_80044ED8(s32, s32);
 extern s32 *func_8004574C(s32);
@@ -1838,8 +1838,8 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
     } else {
         s1 = (s16 *) func_800455AC(a0);
         func_80045600(a0, 0x1A88 + ((s32) s1));
-        func_80045230(0);
-        func_80045694(a0, (s32) (&myRobGeneiInit));
+        saTan5TakeGetPos_80045230(0);
+        saTan5TakeGetPos_80045694(a0, (s32) (&myRobGeneiInit));
         s1[4] = -1;
         s1[3] = 0;
         s3 = a0 - -3;
@@ -1858,10 +1858,10 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
         } else {
             func_80044ED8(a1, s0);
             s0 = s0 + ((((u32) ((s32 *) s0)[*((s32 *) s0)]) >> 2) << 2);
-            func_80045230(s0);
+            saTan5TakeGetPos_80045230(s0);
         }
         func_80045600(s3, s0);
-        func_80045694(s3, (s32) (&myRobGeneiInit));
+        saTan5TakeGetPos_80045694(s3, (s32) (&myRobGeneiInit));
         s1[3] = 1;
         *((s32 *) (((s32) s1) + 0x24)) = 0;
         *((s32 *) s1) = 0;
@@ -1875,7 +1875,7 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
 }
 void tslFileClose(s32 a0, s32 a1) {
     func_80045510(a0 + 3, a1);
-    func_80045230(0);
+    saTan5TakeGetPos_80045230(0);
 }
 extern void GetAllocPacketSize(void);
 extern void func_800456F0(s32);

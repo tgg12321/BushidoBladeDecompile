@@ -74,10 +74,10 @@ glabel func_8003CE18
     /* 2D72C 8003CF2C 2152010C */  jal        func_80054884
     /* 2D730 8003CF30 1000A2AF */   sw        $v0, 0x10($sp)
     /* 2D734 8003CF34 21200000 */  addu       $a0, $zero, $zero
-    /* 2D738 8003CF38 A205010C */  jal        func_80041688
+    /* 2D738 8003CF38 A205010C */  jal        gnd_init_80041688
     /* 2D73C 8003CF3C 21280000 */   addu      $a1, $zero, $zero
     /* 2D740 8003CF40 01000424 */  addiu      $a0, $zero, 0x1
-    /* 2D744 8003CF44 A205010C */  jal        func_80041688
+    /* 2D744 8003CF44 A205010C */  jal        gnd_init_80041688
     /* 2D748 8003CF48 21280000 */   addu      $a1, $zero, $zero
     /* 2D74C 8003CF4C 5E84010C */  jal        game_Cleanup
     /* 2D750 8003CF50 00000000 */   nop

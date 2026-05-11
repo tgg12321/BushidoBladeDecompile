@@ -190,7 +190,7 @@ glabel func_8005490C
     /* 453DC 80054BDC 09F84000 */  jalr       $v0
     /* 453E0 80054BE0 21280002 */   addu      $a1, $s0, $zero
     /* 453E4 80054BE4 21204002 */  addu       $a0, $s2, $zero
-    /* 453E8 80054BE8 17FB010C */  jal        func_8007EC5C
+    /* 453E8 80054BE8 17FB010C */  jal        calc_fc_frame_8007EC5C
     /* 453EC 80054BEC 21280002 */   addu      $a1, $s0, $zero
     /* 453F0 80054BF0 21200002 */  addu       $a0, $s0, $zero
     /* 453F4 80054BF4 E80B010C */  jal        func_80042FA0

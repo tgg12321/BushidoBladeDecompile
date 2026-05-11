@@ -19,7 +19,7 @@ glabel obj_InitTaskCamera
     /* 4C240 8005BA40 21884000 */   addu      $s1, $v0, $zero
     /* 4C244 8005BA44 21200002 */  addu       $a0, $s0, $zero
     /* 4C248 8005BA48 09000524 */  addiu      $a1, $zero, 0x9
-    /* 4C24C 8005BA4C AA70010C */  jal        func_8005C2A8
+    /* 4C24C 8005BA4C AA70010C */  jal        tslGlobalMemFree_8005C2A8
     /* 4C250 8005BA50 21309100 */   addu      $a2, $a0, $s1
     /* 4C254 8005BA54 1800BF8F */  lw         $ra, 0x18($sp)
     /* 4C258 8005BA58 1400B18F */  lw         $s1, 0x14($sp)

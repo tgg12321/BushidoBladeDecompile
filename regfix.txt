@@ -579,12 +579,12 @@ func_800430E4: delete @ 12
 func_800430E4: delete @ 13
 func_800430E4: delete @ 14
 
-# func_80041688: FALSE color branch in text1a.c
+# gnd_init_80041688: FALSE color branch in text1a.c
 # Target loads in order (b=$3, r=$4, g=$2); mine loads (r=$4, g=$2, b=$3).
 # Swap register+offset in-place at each load index to match target order.
-func_80041688: subst "\$4,24\(\$16\)" "$3,26($16)" @ 68
-func_80041688: subst "\$2,25\(\$16\)" "$4,24($16)" @ 69
-func_80041688: subst "\$3,26\(\$16\)" "$2,25($16)" @ 70
+gnd_init_80041688: subst "\$4,24\(\$16\)" "$3,26($16)" @ 68
+gnd_init_80041688: subst "\$2,25\(\$16\)" "$4,24($16)" @ 69
+gnd_init_80041688: subst "\$3,26\(\$16\)" "$2,25($16)" @ 70
 
 # saTan1SyuryoDraw: val+step delay slot fill uses $v1 intermediate,
 # target has nop in beqz delay and addu $a1,$a1,$a0 after D_800A2D0C load.
@@ -827,10 +827,10 @@ func_80045878: subst "ori\s+\$2,\$zero,32768" "sh $18,20($2)" @ 92
 func_80045878: subst "sh\s+\$21,8\(\$17\)" "sh $18,16($2)" @ 93
 func_80045878: subst "sw\s+\$2,24\(\$17\)" "sw $3,24($2)" @ 94
 
-# func_80041AC8: reorder lh/la-sh pair (move lh after la-sh)
-func_80041AC8: reorder 22,21 @ 21-22
-# func_80041AC8: reorder loop preheader (move la after li s5/s4)
-func_80041AC8: reorder 44,45,43 @ 43-45
+# InitHiraRmd_80041AC8: reorder lh/la-sh pair (move lh after la-sh)
+InitHiraRmd_80041AC8: reorder 22,21 @ 21-22
+# InitHiraRmd_80041AC8: reorder loop preheader (move la after li s5/s4)
+InitHiraRmd_80041AC8: reorder 44,45,43 @ 43-45
 
 # func_8001F938: same pattern as func_8001EEB4 - GCC split lhu+andi
 # Pre-fix: swap v1/a1 at lhu (1) and at the 3 addiu sub instructions
@@ -1081,50 +1081,50 @@ func_8003504C: insert "addu $8,$0,$zero" @ 87
 # Post-insert: swap la $9 and lw to get: j=0, la $10, lw, la $9
 func_8003504C: reorder 90,89 @ 89-90
 
-# func_800861BC: compound regfix - 30 rules (0-based TEXT indices)
+# tslGlobalMemFree_800861BC: compound regfix - 30 rules (0-based TEXT indices)
 # Prologue register renames
-func_800861BC: subst "\$8" "$3" @ 4
-func_800861BC: subst "\$9" "$8" @ 2
-func_800861BC: subst "\$8" "$3" @ 6
+tslGlobalMemFree_800861BC: subst "\$8" "$3" @ 4
+tslGlobalMemFree_800861BC: subst "\$9" "$8" @ 2
+tslGlobalMemFree_800861BC: subst "\$8" "$3" @ 6
 # Loop: precomputed pointer offset + register swap
-func_800861BC: subst "-2\(\$8\)" "0($9)" @ 19
-func_800861BC: subst "\$9" "$8" @ 21
+tslGlobalMemFree_800861BC: subst "-2\(\$8\)" "0($9)" @ 19
+tslGlobalMemFree_800861BC: subst "\$9" "$8" @ 21
 # Branch: beq -> blez
-func_800861BC: subst "beq" "blez" @ 31
-func_800861BC: subst ",\$0" "" @ 31
+tslGlobalMemFree_800861BC: subst "beq" "blez" @ 31
+tslGlobalMemFree_800861BC: subst ",\$0" "" @ 31
 # If-branch v0<->v1 swap
-func_800861BC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 40
-func_800861BC: subst "\$2," "$3," @ 41
-func_800861BC: subst "\$3,12\(\$3\)" "$2,12($2)" @ 42
-func_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 44
+tslGlobalMemFree_800861BC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 40
+tslGlobalMemFree_800861BC: subst "\$2," "$3," @ 41
+tslGlobalMemFree_800861BC: subst "\$3,12\(\$3\)" "$2,12($2)" @ 42
+tslGlobalMemFree_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 44
 # Else-branch v0<->v1 swap
-func_800861BC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 52
-func_800861BC: subst "\$2," "$3," @ 53
-func_800861BC: subst "\$3,14\(\$3\)" "$2,14($2)" @ 54
-func_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 55
+tslGlobalMemFree_800861BC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 52
+tslGlobalMemFree_800861BC: subst "\$2," "$3," @ 53
+tslGlobalMemFree_800861BC: subst "\$3,14\(\$3\)" "$2,14($2)" @ 54
+tslGlobalMemFree_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 55
 # Merge point: sh operands v0<->v1
-func_800861BC: subst "\$3,D_80102A7E\(\$2\)" "$2,D_80102A7E($3)" @ 56
+tslGlobalMemFree_800861BC: subst "\$3,D_80102A7E\(\$2\)" "$2,D_80102A7E($3)" @ 56
 # Tail block 1: base in v0, D_8010280C via a1
-func_800861BC: subst "\$5," "$2," @ 70
-func_800861BC: subst "\$2,0\(\$8\)" "$3,0($5)" @ 71
-func_800861BC: subst "\$3,16\(\$5\)" "$2,16($2)" @ 72
-func_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 73
-func_800861BC: subst "\$3,D_80102A80\(\$2\)" "$2,D_80102A80($3)" @ 74
+tslGlobalMemFree_800861BC: subst "\$5," "$2," @ 70
+tslGlobalMemFree_800861BC: subst "\$2,0\(\$8\)" "$3,0($5)" @ 71
+tslGlobalMemFree_800861BC: subst "\$3,16\(\$5\)" "$2,16($2)" @ 72
+tslGlobalMemFree_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 73
+tslGlobalMemFree_800861BC: subst "\$3,D_80102A80\(\$2\)" "$2,D_80102A80($3)" @ 74
 # Tail block 2
-func_800861BC: subst "\$5," "$2," @ 80
-func_800861BC: subst "0\(\$8\)" "0($5)" @ 81
-func_800861BC: subst "18\(\$5\)" "18($2)" @ 82
+tslGlobalMemFree_800861BC: subst "\$5," "$2," @ 80
+tslGlobalMemFree_800861BC: subst "0\(\$8\)" "0($5)" @ 81
+tslGlobalMemFree_800861BC: subst "18\(\$5\)" "18($2)" @ 82
 # Final D_8010280A: lhu -> lh
-func_800861BC: subst "lhu" "lh" @ 87
+tslGlobalMemFree_800861BC: subst "lhu" "lh" @ 87
 # Prologue/epilogue frame inserts (0-based: first insn=0, last=94)
-func_800861BC: insert "addiu $sp,$sp,-8" @ 0
-func_800861BC: insert "addiu $sp,$sp,8" @ 94
+tslGlobalMemFree_800861BC: insert "addiu $sp,$sp,-8" @ 0
+tslGlobalMemFree_800861BC: insert "addiu $sp,$sp,8" @ 94
 # Insert precompute t1=v1-2 (post-insert: T4 la shifted to idx 5)
-func_800861BC: insert_after "addiu $9,$3,-2" @ 5
+tslGlobalMemFree_800861BC: insert_after "addiu $9,$3,-2" @ 5
 # Insert tail reload (post-insert: T63 sb shifted to idx 64)
-func_800861BC: insert_after "la $5,D_8010280C" @ 64
+tslGlobalMemFree_800861BC: insert_after "la $5,D_8010280C" @ 64
 # Reorder prologue (post-all-inserts: indices 1-6)
-func_800861BC: reorder 2,5,6,3,4,1 @ 1-6
+tslGlobalMemFree_800861BC: reorder 2,5,6,3,4,1 @ 1-6
 
 # func_80084A7C: 156-insn motion state handler (main.c)
 # Phase 1: swap a2/a3 for base_ptr/offset register assignment
@@ -2760,10 +2760,10 @@ func_80040D48: subst "\$4" "$6" @ 233
 func_80040D48: subst "\$4" "$6" @ 233
 func_80040D48: subst "\$4" "$6" @ 234
 func_80040D48: subst "\$5" "$4" @ 236
-func_800233AC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 27
-func_800233AC: subst "\$2," "$3," @ 28
-func_800233AC: subst "\$2,\$2,\$3" "$3,$3,$2" @ 29
-func_800233AC: subst "\(\$2\)" "($3)" @ 31
+SetPacketData_800233AC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 27
+SetPacketData_800233AC: subst "\$2," "$3," @ 28
+SetPacketData_800233AC: subst "\$2,\$2,\$3" "$3,$3,$2" @ 29
+SetPacketData_800233AC: subst "\(\$2\)" "($3)" @ 31
 
 cpu_set_move_command_and_dir_for_no_action: reorder 8,9,1,2,3,4,5,10,11,6,7 @ 1-11
 cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L706" "beq\t$2,$0,.L707" @ 146
@@ -3501,7 +3501,7 @@ func_8007B564: subst "or\s+\$7,\$7,\$2" "or	$17,$17,$16" @ 20
 func_8007B564: subst "or\s+\$7,\$7,\$18" "or	$7,$17,$18" @ 28
 func_80062FEC: $5 <-> $6
 func_80078A68: reorder 12,11 @ 11-12
-func_8005BE84: reorder 15,14,13 @ 13-15
+mario_getMarioVoiceData_8005BE84: reorder 15,14,13 @ 13-15
 func_8004876C: $3 <-> $7 @ 9-13
 func_8004876C: $3 <-> $4 @ 16-31
 func_8004876C: $2 <-> $3 @ 28-31
@@ -3574,26 +3574,26 @@ func_8007C86C: subst "lui\s+\$8,\(-469762048" "lui	$4,(-469762048" @ 42
 func_8007C86C: subst "or\s+\$2,\$2,\$8" "or	$2,$2,$4" @ 43
 func_8007C86C: subst "addu\s+\$sp,\$sp,24" "addu	$sp,$sp,16" @ 45
 
-# func_80047EE8: 1) frame -40 -> -72 + stack offsets +32; 2) register flips
+# AddTbpOfst_80047EE8: 1) frame -40 -> -72 + stack offsets +32; 2) register flips
 #    s2->s0 saved arg0 -> working ptr base; 3) insert missing addu $18,$16,$zero
 #    after sw $18.
-func_80047EE8: subst "subu\s+\$sp,\$sp,40" "subu	$sp,$sp,72" @ 0
-func_80047EE8: subst "sw\s+\$18,32" "sw	$16,56" @ 1
-func_80047EE8: subst "addu\s+\$18,\$4,\$zero" "addu	$16,$4,$zero" @ 2
-func_80047EE8: subst "sw\s+\$17,28" "sw	$18,64" @ 3
-func_80047EE8: subst "sll\s+\$17,\$5,16" "sll	$5,$5,16" @ 4
-func_80047EE8: subst "sra\s+\$2,\$17,14" "sra	$5,$5,14" @ 5
-func_80047EE8: subst "addu\s+\$17,\$18,\$2" "addu	$16,$16,$5" @ 6
-func_80047EE8: subst "sw\s+\$31,36" "sw	$31,68" @ 7
-func_80047EE8: subst "sw\s+\$16,24" "sw	$17,60" @ 8
-func_80047EE8: subst "lw\s+\$2,0\(\$17\)" "lw	$2,0($16)" @ 9
-func_80047EE8: insert "addu	$18,$16,$zero" @ 4
+AddTbpOfst_80047EE8: subst "subu\s+\$sp,\$sp,40" "subu	$sp,$sp,72" @ 0
+AddTbpOfst_80047EE8: subst "sw\s+\$18,32" "sw	$16,56" @ 1
+AddTbpOfst_80047EE8: subst "addu\s+\$18,\$4,\$zero" "addu	$16,$4,$zero" @ 2
+AddTbpOfst_80047EE8: subst "sw\s+\$17,28" "sw	$18,64" @ 3
+AddTbpOfst_80047EE8: subst "sll\s+\$17,\$5,16" "sll	$5,$5,16" @ 4
+AddTbpOfst_80047EE8: subst "sra\s+\$2,\$17,14" "sra	$5,$5,14" @ 5
+AddTbpOfst_80047EE8: subst "addu\s+\$17,\$18,\$2" "addu	$16,$16,$5" @ 6
+AddTbpOfst_80047EE8: subst "sw\s+\$31,36" "sw	$31,68" @ 7
+AddTbpOfst_80047EE8: subst "sw\s+\$16,24" "sw	$17,60" @ 8
+AddTbpOfst_80047EE8: subst "lw\s+\$2,0\(\$17\)" "lw	$2,0($16)" @ 9
+AddTbpOfst_80047EE8: insert "addu	$18,$16,$zero" @ 4
 # Epilogue stack offsets and frame restore
-func_80047EE8: subst "lw\s+\$31,36" "lw	$31,68" @ 45
-func_80047EE8: subst "lw\s+\$18,32" "lw	$18,64" @ 46
-func_80047EE8: subst "lw\s+\$17,28" "lw	$17,60" @ 47
-func_80047EE8: subst "lw\s+\$16,24" "lw	$16,56" @ 48
-func_80047EE8: subst "addu\s+\$sp,\$sp,40" "addu	$sp,$sp,72" @ 49
+AddTbpOfst_80047EE8: subst "lw\s+\$31,36" "lw	$31,68" @ 45
+AddTbpOfst_80047EE8: subst "lw\s+\$18,32" "lw	$18,64" @ 46
+AddTbpOfst_80047EE8: subst "lw\s+\$17,28" "lw	$17,60" @ 47
+AddTbpOfst_80047EE8: subst "lw\s+\$16,24" "lw	$16,56" @ 48
+AddTbpOfst_80047EE8: subst "addu\s+\$sp,\$sp,40" "addu	$sp,$sp,72" @ 49
 
 # func_800483DC: prologue reorder + s0/a1 swap. Mine puts arg0+offset directly
 # in $16, then later sets $20=arg0 fresh; target sets $16=arg0 first, uses $a1
@@ -3605,43 +3605,43 @@ func_800483DC: subst "addu\s+\$16,\$4,\$2" "addu	$16,$16,$2" @ 12
 func_800483DC: insert_after "addu	$16,$4,$zero" @ 3
 func_800483DC: reorder 3,4,1,2,5 @ 1-5
 
-# func_800480C0: 6-arg call-loop with sx_arg2/3/4/5 + arg0_saved (7 callee-saves).
+# InitHiraRmd_800480C0: 6-arg call-loop with sx_arg2/3/4/5 + arg0_saved (7 callee-saves).
 # Same prologue restructure recipe as 800483DC/47FBC + frame +32 + stack offset
 # substs, with 2 stack-arg lws shifting position.
-func_800480C0: subst "subu\s+\$sp,\$sp,56" "subu	$sp,$sp,88" @ 0
-func_800480C0: subst "sw\s+\$16,24" "sw	$16,56" @ 3
-func_800480C0: subst "addu\s+\$16,\$4,\$5" "addu	$16,$16,$5" @ 4
-func_800480C0: subst "sw\s+\$18,32" "sw	$18,64" @ 5
-func_800480C0: subst "addu\s+\$18,\$4,\$zero" "addu	$18,$16,$zero" @ 6
-func_800480C0: subst "sw\s+\$31,52" "sw	$31,84" @ 7
-func_800480C0: subst "sw\s+\$22,48" "sw	$22,80" @ 8
-func_800480C0: subst "sw\s+\$21,44" "sw	$21,76" @ 9
-func_800480C0: subst "sw\s+\$20,40" "sw	$20,72" @ 10
-func_800480C0: subst "sw\s+\$19,36" "sw	$19,68" @ 11
-func_800480C0: subst "sw\s+\$17,28" "sw	$17,60" @ 12
-func_800480C0: subst "lw\s+\$20,72" "lw	$3,104" @ 14
-func_800480C0: subst "lw\s+\$19,76" "lw	$4,108" @ 15
-func_800480C0: subst "addu\s+\$16,\$4,\$2" "addu	$16,$18,$2" @ 18
-func_800480C0: subst "sll\s+\$22,\$6,16" "sll	$2,$6,16" @ 24
-func_800480C0: subst "sra\s+\$22,\$22,16" "sra	$22,$2,16" @ 25
-func_800480C0: subst "sll\s+\$21,\$7,16" "sll	$2,$7,16" @ 26
-func_800480C0: subst "sra\s+\$21,\$21,16" "sra	$21,$2,16" @ 27
-func_800480C0: subst "sll\s+\$20,\$20,16" "sll	$2,$3,16" @ 28
-func_800480C0: subst "sra\s+\$20,\$20,16" "sra	$20,$2,16" @ 29
-func_800480C0: subst "sll\s+\$19,\$19,16" "sll	$2,$4,16" @ 30
-func_800480C0: subst "sra\s+\$19,\$19,16" "sra	$19,$2,16" @ 31
-func_800480C0: insert_after "addu	$16,$4,$zero" @ 3
-func_800480C0: reorder 3,4,6,7,1,2,5 @ 1-7
+InitHiraRmd_800480C0: subst "subu\s+\$sp,\$sp,56" "subu	$sp,$sp,88" @ 0
+InitHiraRmd_800480C0: subst "sw\s+\$16,24" "sw	$16,56" @ 3
+InitHiraRmd_800480C0: subst "addu\s+\$16,\$4,\$5" "addu	$16,$16,$5" @ 4
+InitHiraRmd_800480C0: subst "sw\s+\$18,32" "sw	$18,64" @ 5
+InitHiraRmd_800480C0: subst "addu\s+\$18,\$4,\$zero" "addu	$18,$16,$zero" @ 6
+InitHiraRmd_800480C0: subst "sw\s+\$31,52" "sw	$31,84" @ 7
+InitHiraRmd_800480C0: subst "sw\s+\$22,48" "sw	$22,80" @ 8
+InitHiraRmd_800480C0: subst "sw\s+\$21,44" "sw	$21,76" @ 9
+InitHiraRmd_800480C0: subst "sw\s+\$20,40" "sw	$20,72" @ 10
+InitHiraRmd_800480C0: subst "sw\s+\$19,36" "sw	$19,68" @ 11
+InitHiraRmd_800480C0: subst "sw\s+\$17,28" "sw	$17,60" @ 12
+InitHiraRmd_800480C0: subst "lw\s+\$20,72" "lw	$3,104" @ 14
+InitHiraRmd_800480C0: subst "lw\s+\$19,76" "lw	$4,108" @ 15
+InitHiraRmd_800480C0: subst "addu\s+\$16,\$4,\$2" "addu	$16,$18,$2" @ 18
+InitHiraRmd_800480C0: subst "sll\s+\$22,\$6,16" "sll	$2,$6,16" @ 24
+InitHiraRmd_800480C0: subst "sra\s+\$22,\$22,16" "sra	$22,$2,16" @ 25
+InitHiraRmd_800480C0: subst "sll\s+\$21,\$7,16" "sll	$2,$7,16" @ 26
+InitHiraRmd_800480C0: subst "sra\s+\$21,\$21,16" "sra	$21,$2,16" @ 27
+InitHiraRmd_800480C0: subst "sll\s+\$20,\$20,16" "sll	$2,$3,16" @ 28
+InitHiraRmd_800480C0: subst "sra\s+\$20,\$20,16" "sra	$20,$2,16" @ 29
+InitHiraRmd_800480C0: subst "sll\s+\$19,\$19,16" "sll	$2,$4,16" @ 30
+InitHiraRmd_800480C0: subst "sra\s+\$19,\$19,16" "sra	$19,$2,16" @ 31
+InitHiraRmd_800480C0: insert_after "addu	$16,$4,$zero" @ 3
+InitHiraRmd_800480C0: reorder 3,4,6,7,1,2,5 @ 1-7
 # Epilogue
-func_800480C0: subst "lw\s+\$31,52" "lw	$31,84" @ 62
-func_800480C0: subst "lw\s+\$22,48" "lw	$22,80" @ 63
-func_800480C0: subst "lw\s+\$21,44" "lw	$21,76" @ 64
-func_800480C0: subst "lw\s+\$20,40" "lw	$20,72" @ 65
-func_800480C0: subst "lw\s+\$19,36" "lw	$19,68" @ 66
-func_800480C0: subst "lw\s+\$18,32" "lw	$18,64" @ 67
-func_800480C0: subst "lw\s+\$17,28" "lw	$17,60" @ 68
-func_800480C0: subst "lw\s+\$16,24" "lw	$16,56" @ 69
-func_800480C0: subst "addu\s+\$sp,\$sp,56" "addu	$sp,$sp,88" @ 70
+InitHiraRmd_800480C0: subst "lw\s+\$31,52" "lw	$31,84" @ 62
+InitHiraRmd_800480C0: subst "lw\s+\$22,48" "lw	$22,80" @ 63
+InitHiraRmd_800480C0: subst "lw\s+\$21,44" "lw	$21,76" @ 64
+InitHiraRmd_800480C0: subst "lw\s+\$20,40" "lw	$20,72" @ 65
+InitHiraRmd_800480C0: subst "lw\s+\$19,36" "lw	$19,68" @ 66
+InitHiraRmd_800480C0: subst "lw\s+\$18,32" "lw	$18,64" @ 67
+InitHiraRmd_800480C0: subst "lw\s+\$17,28" "lw	$17,60" @ 68
+InitHiraRmd_800480C0: subst "lw\s+\$16,24" "lw	$16,56" @ 69
+InitHiraRmd_800480C0: subst "addu\s+\$sp,\$sp,56" "addu	$sp,$sp,88" @ 70
 
 # func_800481E8: same call-loop family with conditional v0v++.
 # Same prologue recipe as 80047EE8, plus $v0/$v1 swap in loop body to match
@@ -3669,30 +3669,30 @@ func_800481E8: subst "lw\s+\$17,28" "lw	$17,60" @ 49
 func_800481E8: subst "lw\s+\$16,24" "lw	$16,56" @ 50
 func_800481E8: subst "addu\s+\$sp,\$sp,40" "addu	$sp,$sp,72" @ 51
 
-# func_80047FBC: extension of 800483DC recipe, frame -80 vs -48 + extra
+# InitHiraRmd_80047FBC: extension of 800483DC recipe, frame -80 vs -48 + extra
 # "addu $20,$16,$zero" early prologue copy. Same call-loop family.
-func_80047FBC: subst "subu\s+\$sp,\$sp,48" "subu	$sp,$sp,80" @ 0
-func_80047FBC: subst "sw\s+\$16,24" "sw	$16,56" @ 3
-func_80047FBC: subst "addu\s+\$16,\$4,\$5" "addu	$16,$16,$5" @ 4
-func_80047FBC: subst "sw\s+\$31,44" "sw	$31,76" @ 5
-func_80047FBC: subst "sw\s+\$20,40" "sw	$20,72" @ 6
-func_80047FBC: subst "sw\s+\$19,36" "sw	$19,68" @ 7
-func_80047FBC: subst "sw\s+\$18,32" "sw	$18,64" @ 8
-func_80047FBC: subst "sw\s+\$17,28" "sw	$17,60" @ 9
-func_80047FBC: subst "addu\s+\$16,\$4,\$2" "addu	$16,$20,$2" @ 14
-func_80047FBC: delete @ 11
-func_80047FBC: insert_after "addu	$16,$4,$zero" @ 3
-func_80047FBC: insert_after "addu	$20,$16,$zero" @ 6
-func_80047FBC: insert_after "nop" @ 10
-func_80047FBC: reorder 3,4,7,8,1,2,5,6 @ 1-8
+InitHiraRmd_80047FBC: subst "subu\s+\$sp,\$sp,48" "subu	$sp,$sp,80" @ 0
+InitHiraRmd_80047FBC: subst "sw\s+\$16,24" "sw	$16,56" @ 3
+InitHiraRmd_80047FBC: subst "addu\s+\$16,\$4,\$5" "addu	$16,$16,$5" @ 4
+InitHiraRmd_80047FBC: subst "sw\s+\$31,44" "sw	$31,76" @ 5
+InitHiraRmd_80047FBC: subst "sw\s+\$20,40" "sw	$20,72" @ 6
+InitHiraRmd_80047FBC: subst "sw\s+\$19,36" "sw	$19,68" @ 7
+InitHiraRmd_80047FBC: subst "sw\s+\$18,32" "sw	$18,64" @ 8
+InitHiraRmd_80047FBC: subst "sw\s+\$17,28" "sw	$17,60" @ 9
+InitHiraRmd_80047FBC: subst "addu\s+\$16,\$4,\$2" "addu	$16,$20,$2" @ 14
+InitHiraRmd_80047FBC: delete @ 11
+InitHiraRmd_80047FBC: insert_after "addu	$16,$4,$zero" @ 3
+InitHiraRmd_80047FBC: insert_after "addu	$20,$16,$zero" @ 6
+InitHiraRmd_80047FBC: insert_after "nop" @ 10
+InitHiraRmd_80047FBC: reorder 3,4,7,8,1,2,5,6 @ 1-8
 # Epilogue (substs run on original indices, before delete shifts)
-func_80047FBC: subst "lw\s+\$31,44" "lw	$31,76" @ 54
-func_80047FBC: subst "lw\s+\$20,40" "lw	$20,72" @ 55
-func_80047FBC: subst "lw\s+\$19,36" "lw	$19,68" @ 56
-func_80047FBC: subst "lw\s+\$18,32" "lw	$18,64" @ 57
-func_80047FBC: subst "lw\s+\$17,28" "lw	$17,60" @ 58
-func_80047FBC: subst "lw\s+\$16,24" "lw	$16,56" @ 59
-func_80047FBC: subst "addu\s+\$sp,\$sp,48" "addu	$sp,$sp,80" @ 60
+InitHiraRmd_80047FBC: subst "lw\s+\$31,44" "lw	$31,76" @ 54
+InitHiraRmd_80047FBC: subst "lw\s+\$20,40" "lw	$20,72" @ 55
+InitHiraRmd_80047FBC: subst "lw\s+\$19,36" "lw	$19,68" @ 56
+InitHiraRmd_80047FBC: subst "lw\s+\$18,32" "lw	$18,64" @ 57
+InitHiraRmd_80047FBC: subst "lw\s+\$17,28" "lw	$17,60" @ 58
+InitHiraRmd_80047FBC: subst "lw\s+\$16,24" "lw	$16,56" @ 59
+InitHiraRmd_80047FBC: subst "addu\s+\$sp,\$sp,48" "addu	$sp,$sp,80" @ 60
 
 reset_rob_rmd: $2 <-> $3 @ 30-36
 reset_rob_rmd: subst "sra\s+\$2,\$2,1" "sra	$2,$3,1" @ 38
@@ -4312,51 +4312,51 @@ func_8007352C: delete @ 100
 func_8007352C: insert_after "sw	$2,20($20)" @ 96
 func_8007352C: insert "addu	$5,$21,$zero" @ 93
 func_8007E8DC: fill_delay @ 72 <- 71
-# func_80048864: regfix recipe (post strength-reduce inlining)
-func_80048864: delete @ 36
-func_80048864: delete @ 44
-func_80048864: insert "addiu	$2,$0,1" @ 53
-func_80048864: insert_after "addu	$12,$12,2" @ 50
-func_80048864: $11 <-> $12
-func_80048864: $10 <-> $13
-func_80048864: $9 <-> $10
+# saTan4FireDisp_80048864: regfix recipe (post strength-reduce inlining)
+saTan4FireDisp_80048864: delete @ 36
+saTan4FireDisp_80048864: delete @ 44
+saTan4FireDisp_80048864: insert "addiu	$2,$0,1" @ 53
+saTan4FireDisp_80048864: insert_after "addu	$12,$12,2" @ 50
+saTan4FireDisp_80048864: $11 <-> $12
+saTan4FireDisp_80048864: $10 <-> $13
+saTan4FireDisp_80048864: $9 <-> $10
 # Move sll $2,$10,14 (g_term) earlier in case 1 (post-regfix idx 85 -> 78)
-func_80048864: reorder 85,78,79,80,81,82,83,84 @ 78-85
-# func_80048864: subst register names for case 1 entry
-func_80048864: subst "andi\s+\$3,\$2,0x001f" "andi	$9,$2,0x001f" @ 51
-func_80048864: subst "sll\s+\$5,\$3,3" "sll	$5,$9,3" @ 52
-func_80048864: subst "beq\s+\$18,\$9,\.L\d+" "beq	$18,$2,.L75" @ 55
-# func_80048864: case 1 r-term register renames (correct)
-func_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 73
-func_80048864: subst "sll\s+\$2,\$6,6" "sll	$2,$2,6" @ 74
-func_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 75
-func_80048864: subst "sll\s+\$2,\$6,3" "sll	$3,$2,3" @ 76
-func_80048864: subst "subu\s+\$6,\$2,\$6" "subu	$4,$3,$2" @ 77
-func_80048864: subst "addu\s+\$6,\$6,\$2" "addu	$2,$4,$6" @ 86
-# func_80048864: g-term subst
-func_80048864: subst "sll\s+\$2,\$10,14" "sll	$6,$10,14" @ 85
-# func_80048864: b-term register/shift renames
-func_80048864: subst "sll\s+\$2,\$3,1" "sll	$2,$9,4" @ 78
-func_80048864: subst "addu\s+\$2,\$2,\$3" "addu	$2,$2,$5" @ 79
-func_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 81
-func_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 83
-func_80048864: subst "sll\s+\$13,\$2,6" "sll	$5,$2,3" @ 84
-# func_80048864: lum/packing register renames
-func_80048864: subst "addu\s+\$6,\$6,\$13" "addu	$2,$2,$5" @ 87
-func_80048864: subst "sra\s+\$13,\$6,15" "sra	$4,$2,15" @ 88
-func_80048864: subst "mult\s+\$13,\$22" "mult	$4,$22" @ 89
-func_80048864: subst "or\s+\$4,\$7,\$4" "or	$2,$7,$4" @ 104
-func_80048864: subst "sll\s+\$6,\$6,5" "sll	$3,$6,5" @ 105
-func_80048864: subst "or\s+\$4,\$4,\$6" "or	$2,$2,$3" @ 106
-func_80048864: subst "sll\s+\$5,\$5,10" "sll	$3,$5,10" @ 107
-func_80048864: subst "or\s+\$4,\$4,\$5" "or	$2,$2,$3" @ 108
-func_80048864: subst "sh\s+\$4,0\(\$11\)" "sh	$2,0($11)" @ 109
+saTan4FireDisp_80048864: reorder 85,78,79,80,81,82,83,84 @ 78-85
+# saTan4FireDisp_80048864: subst register names for case 1 entry
+saTan4FireDisp_80048864: subst "andi\s+\$3,\$2,0x001f" "andi	$9,$2,0x001f" @ 51
+saTan4FireDisp_80048864: subst "sll\s+\$5,\$3,3" "sll	$5,$9,3" @ 52
+saTan4FireDisp_80048864: subst "beq\s+\$18,\$9,\.L\d+" "beq	$18,$2,.L75" @ 55
+# saTan4FireDisp_80048864: case 1 r-term register renames (correct)
+saTan4FireDisp_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 73
+saTan4FireDisp_80048864: subst "sll\s+\$2,\$6,6" "sll	$2,$2,6" @ 74
+saTan4FireDisp_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 75
+saTan4FireDisp_80048864: subst "sll\s+\$2,\$6,3" "sll	$3,$2,3" @ 76
+saTan4FireDisp_80048864: subst "subu\s+\$6,\$2,\$6" "subu	$4,$3,$2" @ 77
+saTan4FireDisp_80048864: subst "addu\s+\$6,\$6,\$2" "addu	$2,$4,$6" @ 86
+# saTan4FireDisp_80048864: g-term subst
+saTan4FireDisp_80048864: subst "sll\s+\$2,\$10,14" "sll	$6,$10,14" @ 85
+# saTan4FireDisp_80048864: b-term register/shift renames
+saTan4FireDisp_80048864: subst "sll\s+\$2,\$3,1" "sll	$2,$9,4" @ 78
+saTan4FireDisp_80048864: subst "addu\s+\$2,\$2,\$3" "addu	$2,$2,$5" @ 79
+saTan4FireDisp_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 81
+saTan4FireDisp_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 83
+saTan4FireDisp_80048864: subst "sll\s+\$13,\$2,6" "sll	$5,$2,3" @ 84
+# saTan4FireDisp_80048864: lum/packing register renames
+saTan4FireDisp_80048864: subst "addu\s+\$6,\$6,\$13" "addu	$2,$2,$5" @ 87
+saTan4FireDisp_80048864: subst "sra\s+\$13,\$6,15" "sra	$4,$2,15" @ 88
+saTan4FireDisp_80048864: subst "mult\s+\$13,\$22" "mult	$4,$22" @ 89
+saTan4FireDisp_80048864: subst "or\s+\$4,\$7,\$4" "or	$2,$7,$4" @ 104
+saTan4FireDisp_80048864: subst "sll\s+\$6,\$6,5" "sll	$3,$6,5" @ 105
+saTan4FireDisp_80048864: subst "or\s+\$4,\$4,\$6" "or	$2,$2,$3" @ 106
+saTan4FireDisp_80048864: subst "sll\s+\$5,\$5,10" "sll	$3,$5,10" @ 107
+saTan4FireDisp_80048864: subst "or\s+\$4,\$4,\$5" "or	$2,$2,$3" @ 108
+saTan4FireDisp_80048864: subst "sh\s+\$4,0\(\$11\)" "sh	$2,0($11)" @ 109
 # Insert new label after addu $12,$12,2 to fix bne target
-func_80048864: insert_label ".LBNE_TGT:" @ 43
-func_80048864: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.LBNE_TGT" @ 40
+saTan4FireDisp_80048864: insert_label ".LBNE_TGT:" @ 43
+saTan4FireDisp_80048864: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.LBNE_TGT" @ 40
 # Insert label between two andi for j to skip first
-func_80048864: insert_label ".LJMP_TGT:" @ 101
-func_80048864: subst "j\s+\.L\d+" "j	.LJMP_TGT" @ 57
+saTan4FireDisp_80048864: insert_label ".LJMP_TGT:" @ 101
+saTan4FireDisp_80048864: subst "j\s+\.L\d+" "j	.LJMP_TGT" @ 57
 # Reorder prologue saves
 func_80049718: reorder 13,18,3,4,8,7,9,10,11,12,14,5,15,16,17,6 @ 3-18
 # Mode==1 store order: sh v0,4 last in target

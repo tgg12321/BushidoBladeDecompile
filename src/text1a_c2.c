@@ -13,7 +13,7 @@ extern s32 *func_800457A0(s32);
 extern s32 *func_800455AC(s32);
 extern void func_80044F30(s32, s32);
 extern void md_mtest_init(s32, s32, s32);
-extern void func_80045230(s32);
+extern void saTan5TakeGetPos_80045230(s32);
 extern void func_80044010(s32, s32);
 extern void md_game_check_mode(s32, s32);
 extern s32 func_80044670(s32, s32, s32);
@@ -22,7 +22,7 @@ extern s32 snd_GetMaxFade(void);
 extern void func_800481E8(s32, s32);
 extern void func_80054410(s32);
 extern void func_80045600(s32, s32);
-extern void func_80045694(s32, s32);
+extern void saTan5TakeGetPos_80045694(s32, s32);
 extern void stage_ExecInitFunc(void);
 extern void func_8004659C(s32);
 extern void func_800466C0(void);
@@ -109,7 +109,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
                 fp_ptr = s2;
                 {
                     s32 off3 = ALIGN4(a0_ptr[1]);
-                    func_80045230(PTR_OFF(s0, off3));
+                    saTan5TakeGetPos_80045230(PTR_OFF(s0, off3));
                 }
             }
         }
@@ -167,7 +167,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     D_800A33B4 = (s32)sp20;
     gpu_DrawSync(0);
     func_80045600(s7, (s32)s1);
-    func_80045694(s7, (s32)func_800466C0);
+    saTan5TakeGetPos_80045694(s7, (s32)func_800466C0);
     stage_ExecInitFunc();
     if (D_800A38DC != 0) {
         if (stage_id != 0x22) {

@@ -133,10 +133,10 @@ glabel cpu_side_move_dir_2
     /* 2CA18 8003C218 2152010C */  jal        func_80054884
     /* 2CA1C 8003C21C 1C00A3AF */   sw        $v1, 0x1C($sp)
     /* 2CA20 8003C220 21200000 */  addu       $a0, $zero, $zero
-    /* 2CA24 8003C224 A205010C */  jal        func_80041688
+    /* 2CA24 8003C224 A205010C */  jal        gnd_init_80041688
     /* 2CA28 8003C228 21280000 */   addu      $a1, $zero, $zero
     /* 2CA2C 8003C22C 01000424 */  addiu      $a0, $zero, 0x1
-    /* 2CA30 8003C230 A205010C */  jal        func_80041688
+    /* 2CA30 8003C230 A205010C */  jal        gnd_init_80041688
     /* 2CA34 8003C234 21280000 */   addu      $a1, $zero, $zero
     /* 2CA38 8003C238 5E84010C */  jal        game_Cleanup
     /* 2CA3C 8003C23C 00000000 */   nop

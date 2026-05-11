@@ -2,10 +2,10 @@ glabel func_8001B6F4
     /* BEF4 8001B6F4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* BEF8 8001B6F8 21200000 */  addu       $a0, $zero, $zero
     /* BEFC 8001B6FC 1000BFAF */  sw         $ra, 0x10($sp)
-    /* BF00 8001B700 A205010C */  jal        func_80041688
+    /* BF00 8001B700 A205010C */  jal        gnd_init_80041688
     /* BF04 8001B704 21280000 */   addu      $a1, $zero, $zero
     /* BF08 8001B708 01000424 */  addiu      $a0, $zero, 0x1
-    /* BF0C 8001B70C A205010C */  jal        func_80041688
+    /* BF0C 8001B70C A205010C */  jal        gnd_init_80041688
     /* BF10 8001B710 21280000 */   addu      $a1, $zero, $zero
     /* BF14 8001B714 01000224 */  addiu      $v0, $zero, 0x1
     /* BF18 8001B718 0A80013C */  lui        $at, %hi(D_800A36FA)

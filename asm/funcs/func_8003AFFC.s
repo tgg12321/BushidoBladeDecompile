@@ -11,7 +11,7 @@ glabel func_8003AFFC
     /* 2B820 8003B020 1000B0AF */   sw        $s0, 0x10($sp)
     /* 2B824 8003B024 4E83000C */  jal        EndADRSound
     /* 2B828 8003B028 21900000 */   addu      $s2, $zero, $zero
-    /* 2B82C 8003B02C E724010C */  jal        func_8004939C
+    /* 2B82C 8003B02C E724010C */  jal        gnd_close_8004939C
     /* 2B830 8003B030 21800000 */   addu      $s0, $zero, $zero
     /* 2B834 8003B034 0980143C */  lui        $s4, %hi(D_8008E5CC)
     /* 2B838 8003B038 CCE59426 */  addiu      $s4, $s4, %lo(D_8008E5CC)

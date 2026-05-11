@@ -146,7 +146,7 @@ glabel efc_rob_set_type_particle
   .L80045D74:
     /* 36574 80045D74 1400B5AF */  sw         $s5, 0x14($sp)
   .L80045D78:
-    /* 36578 80045D78 3020010C */  jal        func_800480C0
+    /* 36578 80045D78 3020010C */  jal        InitHiraRmd_800480C0
     /* 3657C 80045D7C 00000000 */   nop
     /* 36580 80045D80 F00050A6 */  sh         $s0, 0xF0($s2)
   .L80045D84:
@@ -217,7 +217,7 @@ glabel efc_rob_set_type_particle
   .L80045E64:
     /* 36664 80045E64 0410010C */  jal        func_80044010
     /* 36668 80045E68 06000524 */   addiu     $a1, $zero, 0x6
-    /* 3666C 80045E6C 8C14010C */  jal        func_80045230
+    /* 3666C 80045E6C 8C14010C */  jal        saTan5TakeGetPos_80045230
     /* 36670 80045E70 21206002 */   addu      $a0, $s3, $zero
     /* 36674 80045E74 1800B027 */  addiu      $s0, $sp, 0x18
     /* 36678 80045E78 1800A387 */  lh         $v1, 0x18($sp)
@@ -309,7 +309,7 @@ glabel efc_rob_set_type_particle
     /* 367A8 80045FA8 0927010C */  jal        func_80049C24
     /* 367AC 80045FAC 21286002 */   addu      $a1, $s3, $zero
     /* 367B0 80045FB0 21984000 */  addu       $s3, $v0, $zero
-    /* 367B4 80045FB4 8C14010C */  jal        func_80045230
+    /* 367B4 80045FB4 8C14010C */  jal        saTan5TakeGetPos_80045230
     /* 367B8 80045FB8 21206002 */   addu      $a0, $s3, $zero
     /* 367BC 80045FBC F5170108 */  j          .L80045FD4
     /* 367C0 80045FC0 06000424 */   addiu     $a0, $zero, 0x6
@@ -323,7 +323,7 @@ glabel efc_rob_set_type_particle
     /* 367D8 80045FD8 21286002 */   addu      $a1, $s3, $zero
     /* 367DC 80045FDC 0480053C */  lui        $a1, %hi(func_80046048)
     /* 367E0 80045FE0 4860A524 */  addiu      $a1, $a1, %lo(func_80046048)
-    /* 367E4 80045FE4 A515010C */  jal        func_80045694
+    /* 367E4 80045FE4 A515010C */  jal        saTan5TakeGetPos_80045694
     /* 367E8 80045FE8 06000424 */   addiu     $a0, $zero, 0x6
     /* 367EC 80045FEC A401BF8F */  lw         $ra, 0x1A4($sp)
     /* 367F0 80045FF0 A001BE8F */  lw         $fp, 0x1A0($sp)
