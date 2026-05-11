@@ -10670,10 +10670,17 @@ void func_80052B7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-void func_80052BE4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052BE4.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+void func_80052BE4(u8 *a0) {
+    register u32 t0 asm("$8");
+    register u32 t1 asm("$9");
+    register u32 t2 asm("$10");
+    __asm__ volatile (".word 0x4848A800" : "=r"(t0));  /* cfc2 $t0, $21 */
+    __asm__ volatile (".word 0x4849B000" : "=r"(t1));  /* cfc2 $t1, $22 */
+    __asm__ volatile (".word 0x484AB800" : "=r"(t2));  /* cfc2 $t2, $23 */
+    a0[0] = t0 >> 4;
+    a0[1] = t1 >> 4;
+    a0[2] = t2 >> 4;
+    __asm__ volatile ("" ::: "memory");
 }
 void InitFadePanel(void) {
     *(volatile s32 *)0x1F800400 = 0;
