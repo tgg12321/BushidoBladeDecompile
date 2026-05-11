@@ -1901,41 +1901,28 @@ void func_8007F150(s32 *a0, s16 *a1, s32 *a2) {
     __asm__ volatile (".word 0x48CE1000");             /* ctc2 $t6, $2 */
     __asm__ volatile (".word 0x48CF2000");             /* ctc2 $t7, $4 */
 }
-__asm__(
-    ".section .text\n"
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "    .global func_8007F1A8\n"
-    "func_8007F1A8:\n"
-    "    cfc2 $t5, $0\n"
-    "    cfc2 $t6, $2\n"
-    "    cfc2 $t7, $4\n"
-    "    lw $t0, 0($a0)\n"
-    "    lw $t1, 4($a0)\n"
-    "    lw $t2, 8($a0)\n"
-    "    ctc2 $t0, $0\n"
-    "    ctc2 $t1, $2\n"
-    "    ctc2 $t2, $4\n"
-    "    lwc2 $11, 8($a1)\n"
-    "    lwc2 $9, 0($a1)\n"
-    "    lwc2 $10, 4($a1)\n"
-    "    nop\n"
-    "    op 0\n"
-    "    swc2 $25, 0($a2)\n"
-    "    swc2 $26, 4($a2)\n"
-    "    swc2 $27, 8($a2)\n"
-    "    ctc2 $t5, $0\n"
-    "    ctc2 $t6, $2\n"
-    "    ctc2 $t7, $4\n"
-    "    jr $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+void func_8007F1A8(s32 *a0, s16 *a1, s32 *a2) {
+    __asm__ volatile (".word 0x484D0000");             /* cfc2 $t5, $0 */
+    __asm__ volatile (".word 0x484E1000");             /* cfc2 $t6, $2 */
+    __asm__ volatile (".word 0x484F2000");             /* cfc2 $t7, $4 */
+    __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
+    __asm__ volatile (".word 0x8C890004" :: "r"(a0));  /* lw $t1, 4($a0) */
+    __asm__ volatile (".word 0x8C8A0008" :: "r"(a0));  /* lw $t2, 8($a0) */
+    __asm__ volatile (".word 0x48C80000");             /* ctc2 $t0, $0 */
+    __asm__ volatile (".word 0x48C91000");             /* ctc2 $t1, $2 */
+    __asm__ volatile (".word 0x48CA2000");             /* ctc2 $t2, $4 */
+    __asm__ volatile (".word 0xC8AB0008" :: "r"(a1));  /* lwc2 $11, 8($a1) */
+    __asm__ volatile (".word 0xC8A90000" :: "r"(a1));  /* lwc2 $9,  0($a1) */
+    __asm__ volatile (".word 0xC8AA0004" :: "r"(a1));  /* lwc2 $10, 4($a1) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B70000C");             /* op 0 */
+    __asm__ volatile (".word 0xE8D90000" :: "r"(a2));  /* swc2 $25, 0($a2) */
+    __asm__ volatile (".word 0xE8DA0004" :: "r"(a2));  /* swc2 $26, 4($a2) */
+    __asm__ volatile (".word 0xE8DB0008" :: "r"(a2));  /* swc2 $27, 8($a2) */
+    __asm__ volatile (".word 0x48CD0000");             /* ctc2 $t5, $0 */
+    __asm__ volatile (".word 0x48CE1000");             /* ctc2 $t6, $2 */
+    __asm__ volatile (".word 0x48CF2000");             /* ctc2 $t7, $4 */
+}
 s32 func_8007F200(s32 a0) {
     register s32 v0 asm("v0");
     __asm__ volatile (".word 0x4884F000" :: "r"(a0));  /* mtc2 $a0, $30 */
