@@ -499,7 +499,6 @@ saTan2GaugeInit_80077B20 = 0x80077B20;
 saTan2GaugeInit_80077D00 = 0x80077D00;
 tslSmdSendVu1Code_8007A87C = 0x8007A87C;
 tslSmdSendVu1Code_8007A898 = 0x8007A898;
-motion_SavePreCalcData_80080014 = 0x80080014;
 motion_SavePreCalcData_8008003C = 0x8008003C;
 motion_SavePreCalcData_80080064 = 0x80080064;
 Vu0SetLightColMatrix_800801E8 = 0x800801E8;
