@@ -197,15 +197,21 @@ KENGO_FUNC_HEADER = re.compile(r"^([0-9a-f]+) <(\w+)>:")
 KENGO_JAL = re.compile(r"\bjal\s+[0-9a-f]+\s+<(\w+)>")
 
 
+KENGO_INSN_MNEM = re.compile(r"^\s+[0-9a-f]+:\s+[0-9a-f]+\s+(\S+)")
+
+
 def populate_kengo_callees(funcs: list[dict]) -> None:
-    """Walk the Kengo disassembly, assign each `jal <name>` to the
-    enclosing function (keyed by address). Also populates the reverse
-    map (callee → set of callers) on each function dict."""
+    """Walk the Kengo disassembly once and populate per-function:
+      - callees (set of `jal <name>` targets)
+      - callers (reverse of callees)
+      - opseq (list of mnemonic strings in order)
+    """
     by_addr = {f["addr"]: f for f in funcs}
     by_name: dict[str, list[dict]] = defaultdict(list)
     for f in funcs:
         by_name[f["name"]].append(f)
         f.setdefault("callers", set())
+        f.setdefault("opseq", [])
     text = disassemble_kengo()
     cur: dict | None = None
     for line in text.splitlines():
@@ -215,6 +221,9 @@ def populate_kengo_callees(funcs: list[dict]) -> None:
             continue
         if cur is None:
             continue
+        m = KENGO_INSN_MNEM.match(line)
+        if m:
+            cur["opseq"].append(normalize_mnemonic(m.group(1)))
         j = KENGO_JAL.search(line)
         if j:
             callee_name = j.group(1)
@@ -223,11 +232,31 @@ def populate_kengo_callees(funcs: list[dict]) -> None:
                 target["callers"].add(cur["name"])
 
 
+# Cross-ISA mnemonic aliasing. PS2 EE is 64-bit so the Kengo build often
+# emits 64-bit variants (sd/ld) where BB2's 32-bit PS1 build uses sw/lw.
+# Collapse to the BB2-side spelling so opcode sequences are comparable.
+_MNEM_ALIAS = {
+    "sd": "sw", "ld": "lw",       # 64-bit store/load
+    "daddu": "addu", "daddiu": "addiu",
+    "dsll": "sll", "dsra": "sra", "dsrl": "srl",
+    "dsubu": "subu",
+    "move": "addu",               # objdump pseudo for `addu rd, rs, zero`
+    "li": "addiu",                # objdump pseudo for `addiu rd, zero, imm`
+    "b": "beq",                   # objdump pseudo for `beq zero, zero, lbl`
+    "bnez": "bne", "beqz": "beq",
+    "bnezl": "bnel", "beqzl": "beql",
+}
+
+
+def normalize_mnemonic(m: str) -> str:
+    return _MNEM_ALIAS.get(m, m)
+
+
 # ---------------------------------------------------------------------------
 # BB2 side
 # ---------------------------------------------------------------------------
 
-BB2_INSN = re.compile(r"^\s*/\*\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s*\*/")
+BB2_INSN = re.compile(r"^\s*/\*\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s*\*/\s+(\S+)")
 BB2_JAL = re.compile(r"\bjal\s+(\w+)")
 
 
@@ -250,11 +279,12 @@ def parse_bb2_functions() -> list[dict]:
         name = p.stem
         if name.startswith("D_"):
             continue
-        size = 0
         callees: set[str] = set()
+        opseq: list[str] = []
         for line in p.read_text(errors="replace").splitlines():
-            if BB2_INSN.match(line):
-                size += 1
+            m = BB2_INSN.match(line)
+            if m:
+                opseq.append(normalize_mnemonic(m.group(1)))
             j = BB2_JAL.search(line)
             if j:
                 callees.add(j.group(1))
@@ -262,9 +292,10 @@ def parse_bb2_functions() -> list[dict]:
         src = sorted(srcs)[0] if srcs else ""
         funcs.append({
             "name": name,
-            "size_insns": size,
+            "size_insns": len(opseq),
             "callees": callees,
             "callers": set(),
+            "opseq": opseq,
             "src_file": src,
         })
         for c in callees:
@@ -312,6 +343,75 @@ def combined_score(bcallees_x: set[str], bcallers_x: set[str],
     cjr = jaccard(bcallers_x, k.get("callers", set()))
     combined = w_callee * cje + w_caller * cjr
     return combined, cje, cjr
+
+
+def opseq_similarity(a: list[str], b: list[str]) -> float:
+    """Difflib ratio on mnemonic sequences. 0..1, higher = more similar.
+
+    Quick path: skip if sizes diverge by >25% (ratio will be low anyway).
+    """
+    if not a or not b:
+        return 0.0
+    la, lb = len(a), len(b)
+    if abs(la - lb) / max(la, lb) > 0.25:
+        return 0.0
+    import difflib
+    return difflib.SequenceMatcher(None, a, b, autojunk=False).ratio()
+
+
+def disambiguate_by_opseq(results: dict[str, dict], bb2_by_name: dict[str, dict],
+                          min_top_ratio: float = 0.15,
+                          min_margin: float = 0.05,
+                          min_dominance: float = 1.4) -> int:
+    """Post-pass: for each `size-only-ambiguous` BB2 function, compute
+    opcode-sequence similarity against each candidate. Promote to
+    `seq-similarity` if the top candidate satisfies ALL of:
+      - top_ratio >= min_top_ratio (absolute similarity floor)
+      - top_ratio - second_ratio >= min_margin (absolute lead)
+      - top_ratio / max(second_ratio, 0.01) >= min_dominance (relative lead)
+
+    PS1 vs PS2 codegen differs enough that genuine matches commonly score
+    in the 0.15–0.30 range (not 0.50+). The dominance ratio guards
+    against false positives when raw ratios are all low.
+
+    Returns count of newly-resolved functions.
+    """
+    promoted = 0
+    for name, r in results.items():
+        if r["confidence"] != "size-only-ambiguous":
+            continue
+        scored = r.get("_scored") or []
+        if not scored:
+            continue
+        b = bb2_by_name.get(name)
+        if not b or not b.get("opseq"):
+            continue
+        bops = b["opseq"]
+        ranked = []
+        for _, _, _, k in scored:
+            kops = k.get("opseq") or []
+            ratio = opseq_similarity(bops, kops)
+            ranked.append((ratio, k))
+        ranked.sort(key=lambda x: -x[0])
+        if not ranked:
+            continue
+        top_ratio, top_k = ranked[0]
+        second_ratio = ranked[1][0] if len(ranked) > 1 else 0.0
+        margin = top_ratio - second_ratio
+        dominance = top_ratio / max(second_ratio, 0.01)
+        r["opseq_ratio"] = f"{top_ratio:.2f}"
+        r["opseq_margin"] = f"{margin:.2f}"
+        if (top_ratio >= min_top_ratio
+                and margin >= min_margin
+                and dominance >= min_dominance):
+            r["kengo_name"] = top_k["name"]
+            r["kengo_insns"] = top_k["size_insns"]
+            r["diff"] = top_k["size_insns"] - r["bb2_insns"]
+            r["kengo_module"] = top_k["module"]
+            r["kengo_source_file"] = top_k["src_file"]
+            r["confidence"] = "seq-similarity"
+            promoted += 1
+    return promoted
 
 
 def match_all(bb2: list[dict], kengo: list[dict], tol: float,
@@ -431,6 +531,7 @@ def match_all(bb2: list[dict], kengo: list[dict], tol: float,
                 "caller_overlap": f"{best_cjr:.2f}",
                 "combined_score": f"{best_score:.2f}",
                 "_scored": scored,
+                "_bops": b.get("opseq"),
             }
 
             if best and conf in ("name-unique", "name-callgraph", "callgraph",
@@ -459,6 +560,7 @@ CSV_COLS = [
     "kengo_module", "kengo_source_file",
     "confidence", "n_candidates",
     "callee_overlap", "caller_overlap", "combined_score",
+    "opseq_ratio", "opseq_margin",
 ]
 
 
@@ -481,6 +583,7 @@ def report_summary(results: dict[str, dict]) -> None:
     order = ["name-unique", "name-callgraph", "callgraph",
              "caller-unique", "caller-callgraph",
              "affinity-unique", "affinity-callgraph",
+             "seq-similarity",
              "size-only-unique", "size-only-ambiguous", "no-match"]
     for k in order:
         n = by_conf.get(k, 0)
@@ -497,12 +600,17 @@ def print_focused(name: str, results: dict[str, dict]) -> None:
     print(f"Confidence: {r['confidence']}, candidates={r['n_candidates']}, "
           f"combined={r['combined_score']} "
           f"(callee={r['callee_overlap']}, caller={r['caller_overlap']})")
+    opr = r.get("opseq_ratio")
+    if opr:
+        print(f"Opcode-seq: top ratio={opr}, margin={r.get('opseq_margin','-')}")
     print()
     scored = r.get("_scored", [])[:10]
-    print(f"{'score':>6s}  {'cee':>4s}  {'cer':>4s}  {'insns':>5s}  "
+    print(f"{'comb':>5s}  {'cee':>4s}  {'cer':>4s}  {'op':>4s}  {'insns':>5s}  "
           f"{'name':<40s}  {'module':<24s}  src")
+    bops = (r.get("_bops") or [])
     for combined, cje, cjr, k in scored:
-        print(f"{combined:>6.2f}  {cje:>4.2f}  {cjr:>4.2f}  "
+        opr = opseq_similarity(bops, k.get("opseq") or []) if bops else 0.0
+        print(f"{combined:>5.2f}  {cje:>4.2f}  {cjr:>4.2f}  {opr:>4.2f}  "
               f"{k['size_insns']:>5d}  {k['name']:<40s}  "
               f"{k['module']:<24s}  {k['src_file']}")
 
@@ -543,6 +651,12 @@ def main() -> int:
     print("Matching (call-graph propagation)...", file=sys.stderr)
     results = match_all(bb2, kengo, tol=args.tolerance, passes=args.passes,
                         verbose=args.verbose)
+
+    print("Disambiguating remaining ambiguous via opcode-sequence "
+          "similarity...", file=sys.stderr)
+    bb2_by_name = {b["name"]: b for b in bb2}
+    promoted = disambiguate_by_opseq(results, bb2_by_name)
+    print(f"  {promoted} promoted to seq-similarity", file=sys.stderr)
 
     if args.bb2:
         print_focused(args.bb2, results)
