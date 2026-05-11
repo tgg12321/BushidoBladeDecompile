@@ -347,8 +347,19 @@ def main() -> int:
     # Functions with replace_with_asmfile in asmfix.txt are tagged kind=asmfix.
     # Their bytes come from the .s file regardless of C — they are not in
     # the pure-C work queue. Surface them in their own section instead.
-    asmfix_rows = [r for r in rows if r.get("kind") == "asmfix"]
+    # Permanently-blocked / bios_or_syscall asmfix entries can never be
+    # retired to pure C — they belong in the permanent out-of-scope group,
+    # not the retirement queue.
+    def _is_permanent_asmfix(r):
+        rec = r.get("recommendation", "")
+        return rec.startswith("permanently_blocked:") or rec.startswith("bios_or_syscall:")
+
+    asmfix_rows = [r for r in rows if r.get("kind") == "asmfix" and not _is_permanent_asmfix(r)]
+    asmfix_permanent_rows = [r for r in rows if r.get("kind") == "asmfix" and _is_permanent_asmfix(r)]
     pure_c_rows = [r for r in rows if r.get("kind") != "asmfix"]
+    # Permanent-bridged entries are surfaced under the existing out-of-scope
+    # categorization (so they're visible but clearly not work).
+    pure_c_rows = pure_c_rows + asmfix_permanent_rows
     in_scope = [r for r in pure_c_rows if r["recommendation"] in IN_SCOPE]
     deferred_rows = [
         r for r in pure_c_rows
