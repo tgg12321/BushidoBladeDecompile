@@ -1209,34 +1209,35 @@ s32 func_8007E1AC(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
     (void)out;
     return v0;
 }
+s32 func_8007E1FC(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
+    register s32 v0 asm("v0");
+    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
+    __asm__ volatile (".word 0xC8890000" :: "r"(a0));  /* lwc2 $9, 0($a0) */
+    __asm__ volatile (".word 0xC88A0004" :: "r"(a0));  /* lwc2 $10, 4($a0) */
+    __asm__ volatile (".word 0xC88B0008" :: "r"(a0));  /* lwc2 $11, 8($a0) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B90003D");             /* gpf 0 */
+    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
+    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
+    __asm__ volatile (".word 0xC8A90000" :: "r"(a1));  /* lwc2 $9, 0($a1) */
+    __asm__ volatile (".word 0xC8AA0004" :: "r"(a1));  /* lwc2 $10, 4($a1) */
+    __asm__ volatile (".word 0xC8AB0008" :: "r"(a1));  /* lwc2 $11, 8($a1) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4BA0003E");             /* gpl 0 */
+    __asm__ volatile (".word 0x8FA80010");             /* lw $t0, 0x10($sp) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0xE9090000");             /* swc2 $9, 0($t0) */
+    __asm__ volatile (".word 0xE90A0004");             /* swc2 $10, 4($t0) */
+    __asm__ volatile (".word 0xE90B0008");             /* swc2 $11, 8($t0) */
+    (void)out;
+    return v0;
+}
 __asm__(
     ".section .text\n"
     "    .set\tnoat\n"
     "    .set\tnoreorder\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "    .global func_8007E1FC\n"
-    "func_8007E1FC:\n"
-    "    mtc2 $a2, $8\n"
-    "    lwc2 $9, 0($a0)\n"
-    "    lwc2 $10, 4($a0)\n"
-    "    lwc2 $11, 8($a0)\n"
-    "    nop\n"
-    "    gpf 0\n"
-    "    mfc2 $v0, $31\n"
-    "    mtc2 $a3, $8\n"
-    "    lwc2 $9, 0($a1)\n"
-    "    lwc2 $10, 4($a1)\n"
-    "    lwc2 $11, 8($a1)\n"
-    "    nop\n"
-    "    gpl 0\n"
-    "    lw $t0, 16($sp)\n"
-    "    nop\n"
-    "    swc2 $9, 0($t0)\n"
-    "    swc2 $10, 4($t0)\n"
-    "    swc2 $11, 8($t0)\n"
-    "    jr $ra\n"
-    "    nop\n"
     "    .global func_8007E24C\n"
     "func_8007E24C:\n"
     "    lw $t0, 0($a0)\n"
