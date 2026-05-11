@@ -2174,59 +2174,30 @@ __asm__(
     "    .set at\n"
 );
 PAD_NOPS_1; /* 1 NOP after func_8007FEDC */
-__asm__(
-    ".section .text\n"
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel func_8007FF7C\n"
-    "    addiu $sp, $sp, -0x18\n"
-    "    sw $s0, 16($sp)\n"
-    "    addiu $s0, $zero, 0x4\n"
-    "    sw $ra, 20($sp)\n"
-    ".L8007FF8C:\n"
-    "    jal cdrom_CheckReady\n"
-    "    addiu $a0, $zero, 0x1\n"
-    "    addiu $v1, $zero, 0x1\n"
-    "    bne $v0, $v1, .L8007FFE0\n"
-    "    addiu $s0, $s0, -0x1\n"
-    "    lui $a0, %hi(D_80080014)\n"
-    "    addiu $a0, $a0, %lo(D_80080014)\n"
-    "    jal cdrom_SetCallbackA\n"
-    "    nop\n"
-    "    lui $a0, %hi(D_8008003C)\n"
-    "    addiu $a0, $a0, %lo(D_8008003C)\n"
-    "    jal cdrom_SetCallbackB\n"
-    "    nop\n"
-    "    lui $a0, %hi(D_80080064)\n"
-    "    addiu $a0, $a0, %lo(D_80080064)\n"
-    "    jal sys_SetVsyncMode\n"
-    "    nop\n"
-    "    jal sys_SetTimer\n"
-    "    addu $a0, $zero, $zero\n"
-    "    j .L80080000\n"
-    "    addiu $v0, $zero, 0x1\n"
-    ".L8007FFE0:\n"
-    "    addiu $v0, $zero, -0x1\n"
-    "    bne $s0, $v0, .L8007FF8C\n"
-    "    nop\n"
-    "    lui $a0, %hi(g_str_cdinit_fail)\n"
-    "    addiu $a0, $a0, %lo(g_str_cdinit_fail)\n"
-    "    jal debug_printf\n"
-    "    nop\n"
-    "    addu $v0, $zero, $zero\n"
-    ".L80080000:\n"
-    "    lw $ra, 20($sp)\n"
-    "    lw $s0, 16($sp)\n"
-    "    addiu $sp, $sp, 0x18\n"
-    "    jr $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+extern s32 cdrom_CheckReady(s32);
+extern s32 cdrom_SetCallbackA(s32);
+extern s32 sys_SetVsyncMode(s32);
+extern s32 sys_SetTimer(s32);
+extern s32 D_80080014;
+extern s32 D_8008003C;
+extern s32 D_80080064;
+extern u32 g_str_cdinit_fail;
+
+s32 func_8007FF7C(void) {
+    s32 retries = 4;
+loop:
+    if (cdrom_CheckReady(1) != 1) {
+        retries--;
+        if (retries != -1) goto loop;
+        debug_printf(&g_str_cdinit_fail);
+        return 0;
+    }
+    cdrom_SetCallbackA((s32)&D_80080014);
+    cdrom_SetCallbackB((s32)&D_8008003C);
+    sys_SetVsyncMode((s32)&D_80080064);
+    sys_SetTimer(0);
+    return 1;
+}
 
 void motion_SavePreCalcData_80080014(void) {
     func_8008008C(0xF0000003, 0x20);
