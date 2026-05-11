@@ -4702,3 +4702,4 @@ func_8007B844: reorder 26,23,24,25 @ 23-26
 func_80052B44: fill_delay @ 13 <- 12
 func_80052B00: fill_delay @ 16 <- 15
 game_2d_CheckLifeGaugeNoDisp: fill_delay @ 24 <- 23
+func_80052B7C: fill_delay @ 24 <- 23

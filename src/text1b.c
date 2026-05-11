@@ -10742,10 +10742,40 @@ void func_80052B44(s32 *matrix) {
     __asm__ volatile ("ctc2 $0, $6");
     __asm__ volatile ("ctc2 $0, $7");
 }
-void func_80052B7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052B7C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+void func_80052B7C(s32 *matrix5, s16 *tr3, s32 *vec, s32 *out) {
+    register s32 t0 asm("$8");
+    register s32 t1 asm("$9");
+    register s32 t2 asm("$10");
+    register s32 t3 asm("$11");
+    register s32 t4 asm("$12");
+    register s32 t5 asm("$13");
+    register s32 t6 asm("$14");
+    register s32 t7 asm("$15");
+    t0 = matrix5[0];
+    t1 = matrix5[1];
+    t2 = matrix5[2];
+    t3 = matrix5[3];
+    t4 = matrix5[4];
+    t5 = tr3[0];
+    t6 = tr3[1];
+    t7 = tr3[2];
+    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
+    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
+    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
+    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
+    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
+    __asm__ volatile ("ctc2 %0, $5" :: "r"(t5));
+    __asm__ volatile ("ctc2 %0, $6" :: "r"(t6));
+    __asm__ volatile ("ctc2 %0, $7" :: "r"(t7));
+    __asm__ volatile ("lwc2 $0, 0(%0)" :: "r"(vec));
+    __asm__ volatile ("lwc2 $1, 4(%0)" :: "r"(vec));
+    __asm__ volatile ("nop");
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A480012");               /* mvmva 1,0,0,0,0 */
+    __asm__ volatile ("nop");
+    __asm__ volatile ("swc2 $9, 0(%0)" :: "r"(out));
+    __asm__ volatile ("swc2 $10, 4(%0)" :: "r"(out));
+    __asm__ volatile ("swc2 $11, 8(%0)" :: "r"(out));
 }
 void func_80052BE4(u8 *a0) {
     register u32 t0 asm("$8");
