@@ -1888,17 +1888,28 @@ __asm__(
     "    .set\tnoreorder\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "    .global func_8007F12C\n"
-    "func_8007F12C:\n"
-    "    mtc2 $a0, $16\n"
-    "    mtc2 $a1, $17\n"
-    "    mtc2 $a2, $18\n"
-    "    mtc2 $a3, $19\n"
-    "    nop\n"
-    "    avsz4\n"
-    "    mfc2 $v0, $7\n"
-    "    jr $ra\n"
-    "    nop\n"
+    "    .set\treorder\n"
+    "    .set\tat\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+s32 func_8007F12C(s32 a0, s32 a1, s32 a2, s32 a3) {
+    register s32 v0 asm("v0");
+    __asm__ volatile (".word 0x48848000" :: "r"(a0));  /* mtc2 $a0, $16 */
+    __asm__ volatile (".word 0x48858800" :: "r"(a1));  /* mtc2 $a1, $17 */
+    __asm__ volatile (".word 0x48869000" :: "r"(a2));  /* mtc2 $a2, $18 */
+    __asm__ volatile (".word 0x48879800" :: "r"(a3));  /* mtc2 $a3, $19 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B68002E");              /* avsz4 */
+    __asm__ volatile (".word 0x48023800" : "=r"(v0));  /* mfc2 $v0, $7 */
+    return v0;
+}
+__asm__(
+    ".section .text\n"
+    "    .set\tnoat\n"
+    "    .set\tnoreorder\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
     "    .global func_8007F150\n"
     "func_8007F150:\n"
     "    cfc2 $t5, $0\n"
