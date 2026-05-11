@@ -4703,3 +4703,4 @@ func_80052B44: fill_delay @ 13 <- 12
 func_80052B00: fill_delay @ 16 <- 15
 game_2d_CheckLifeGaugeNoDisp: fill_delay @ 24 <- 23
 func_80052B7C: fill_delay @ 24 <- 23
+func_80052A88: fill_delay @ 28 <- 27
