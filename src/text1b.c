@@ -10744,12 +10744,12 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void saTan2InfoInit_80052CD4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/saTan2InfoInit_80052CD4.s).
+void func_80052CD4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052CD4.s).
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-PAD_NOPS_3; /* padding after saTan2InfoInit_80052CD4 */
+PAD_NOPS_3; /* padding after func_80052CD4 */
 s32 func_80052D00(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052D00.s).
      * Pure-C decomp pending future purification work. */
@@ -11338,7 +11338,7 @@ s32 ang_hosei_80056FE8(s32 arg0) {
     }
 }
 extern s32 single_game_getEnemyCharId(s32, s32);
-extern s32 SetPacketData_800233AC(void *, s32 *);
+extern s32 func_800233AC(void *, s32 *);
 extern s32 D_8009AA50[];
 
 s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -11371,7 +11371,7 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (arg3 == 1) {
         var_v0 |= 4;
     }
-    if (SetPacketData_800233AC(arg0, &sp10) != 0) {
+    if (func_800233AC(arg0, &sp10) != 0) {
         var_v0 |= 8;
     }
     return var_v0;
@@ -12261,7 +12261,7 @@ typedef struct {
     s32 c24;
     s8 byte28;
 } S46C;
-void gnd_load_data(s32 arg0, s32 arg1) {
+void func_8005D46C(s32 arg0, s32 arg1) {
     S46C s;
     s32 stride;
     s32 ret;
@@ -12566,7 +12566,7 @@ typedef struct {
     s32 pad24;
     s8 byte28;
 } S414;
-s32 gnd_set_scene(s16 arg0, s32 arg1, s32 arg2) {
+s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     S414 s;
     s32 dist_off;
     s32 end_off;

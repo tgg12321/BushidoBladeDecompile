@@ -19,7 +19,7 @@ extern u32 D_80101E3C;
 extern u32 D_80101E44;
 
 /* Extern function declarations */
-extern void cpu_get_dash_timer(s32, s32);
+extern void func_80023CB4(s32, s32);
 extern void func_800194F4(void);
 extern void seq_Reset(void);
 extern void func_8003A39C(void);
@@ -574,7 +574,7 @@ s32 func_800372F4(s32 arg0) {
     }
     func_800826CC(v >> 11);
     do {
-        v = marionation_camera_Init_800827D0(1, 0);
+        v = func_800827D0(1, 0);
         if (v > 0) {
             sys_VSync(0);
         }

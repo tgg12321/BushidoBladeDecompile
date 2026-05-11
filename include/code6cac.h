@@ -465,7 +465,7 @@ extern void cdrom_SetDebugLevel(s32);
 extern void cdrom_SetCallbackB(s32);
 extern void func_80080390(s32, s32);
 extern void func_800826CC(s32);
-extern s32 marionation_camera_Init_800827D0(s32, s32);
+extern s32 func_800827D0(s32, s32);
 extern void func_80085448(s32, s32, s32);
 extern s32 func_8008C464(s32, s32, s32);
 extern s32 motion_SetMotion(void);

@@ -2838,7 +2838,7 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
 }
 typedef struct { s32 a; s32 b; } __attribute__((packed)) PackedPair_233AC;
 
-s32 SetPacketData_800233AC(u8 *arg0, s32 *arg1) {
+s32 func_800233AC(u8 *arg0, s32 *arg1) {
     s32 pos[3];
     s32 off[3];
     s16 out1[4];
@@ -3199,7 +3199,7 @@ void func_80023C30(s32 arg0, s32 arg1, s32 arg2, s16 *arg3) {
     func_8007FA1C(arg1, (s32)arg3);
     func_8007FBBC(arg2, (s32)arg3);
 }
-void cpu_get_dash_timer(s16 *arg0, s16 arg1) {
+void func_80023CB4(s16 *arg0, s16 arg1) {
     s16 v;
     *(u16 *)((u8 *)arg0 + 0x31A) += 1;
     v = *(s16 *)((u8 *)arg0 + 0x31A);
@@ -3215,7 +3215,7 @@ void cpu_get_dash_timer(s16 *arg0, s16 arg1) {
     }
 }
 void func_80023D08(s32 arg0) {
-    cpu_get_dash_timer(arg0, 0x200);
+    func_80023CB4(arg0, 0x200);
 }
 void func_80023D28(u8 *arg0) {
     if (*(s32 *)(arg0 + 0x108) < 0) {

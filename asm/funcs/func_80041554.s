@@ -1,4 +1,4 @@
-glabel efc_buki_ZanzouDispInit
+glabel func_80041554
     /* 31D54 80041554 80200400 */  sll        $a0, $a0, 2
     /* 31D58 80041558 0B80013C */  lui        $at, %hi(D_800A9A10)
     /* 31D5C 8004155C 21082400 */  addu       $at, $at, $a0
@@ -13,4 +13,4 @@ glabel efc_buki_ZanzouDispInit
   .L8004157C:
     /* 31D7C 8004157C 0800E003 */  jr         $ra
     /* 31D80 80041580 00000000 */   nop
-endlabel efc_buki_ZanzouDispInit
+endlabel func_80041554

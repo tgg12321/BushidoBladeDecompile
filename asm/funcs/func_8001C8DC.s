@@ -90,7 +90,7 @@ glabel func_8001C8DC
     /* D228 8001CA28 00000000 */  nop
     /* D22C 8001CA2C 10008010 */  beqz       $a0, .L8001CA70
     /* D230 8001CA30 00000000 */   nop
-    /* D234 8001CA34 21ED000C */  jal        coli_cancel_hit_pause_katana_8003B484
+    /* D234 8001CA34 21ED000C */  jal        func_8003B484
     /* D238 8001CA38 06008424 */   addiu     $a0, $a0, 0x6
     /* D23C 8001CA3C 0A80033C */  lui        $v1, %hi(D_800A3836)
     /* D240 8001CA40 36386390 */  lbu        $v1, %lo(D_800A3836)($v1)

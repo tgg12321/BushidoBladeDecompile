@@ -1,4 +1,4 @@
-glabel marionation_camera_Init_800827D0
+glabel func_800827D0
     /* 72FD0 800827D0 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 72FD4 800827D4 1800B2AF */  sw         $s2, 0x18($sp)
     /* 72FD8 800827D8 21908000 */  addu       $s2, $a0, $zero
@@ -55,4 +55,4 @@ glabel marionation_camera_Init_800827D0
     /* 73090 80082890 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 73094 80082894 0800E003 */  jr         $ra
     /* 73098 80082898 00000000 */   nop
-endlabel marionation_camera_Init_800827D0
+endlabel func_800827D0

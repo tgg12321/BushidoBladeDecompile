@@ -256,7 +256,7 @@ glabel func_80053E9C
     /* 44A5C 8005425C 02003126 */  addiu      $s1, $s1, 0x2
     /* 44A60 80054260 01000224 */  addiu      $v0, $zero, 0x1
     /* 44A64 80054264 E00062AC */  sw         $v0, 0xE0($v1)
-    /* 44A68 80054268 354B010C */  jal        saTan2InfoInit_80052CD4
+    /* 44A68 80054268 354B010C */  jal        func_80052CD4
     /* 44A6C 8005426C B80066AC */   sw        $a2, 0xB8($v1)
     /* 44A70 80054270 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 44A74 80054274 1D000212 */  beq        $s0, $v0, .L800542EC

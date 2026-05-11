@@ -1,4 +1,4 @@
-glabel SetPacketData_800233AC
+glabel func_800233AC
     /* 13BAC 800233AC 88FFBD27 */  addiu      $sp, $sp, -0x78
     /* 13BB0 800233B0 5800B0AF */  sw         $s0, 0x58($sp)
     /* 13BB4 800233B4 21808000 */  addu       $s0, $a0, $zero
@@ -174,4 +174,4 @@ glabel SetPacketData_800233AC
     /* 13E3C 8002363C 7800BD27 */  addiu      $sp, $sp, 0x78
     /* 13E40 80023640 0800E003 */  jr         $ra
     /* 13E44 80023644 00000000 */   nop
-endlabel SetPacketData_800233AC
+endlabel func_800233AC

@@ -1,4 +1,4 @@
-glabel cpu_get_dash_timer
+glabel func_80023CB4
     /* 144B4 80023CB4 1A038294 */  lhu        $v0, 0x31A($a0)
     /* 144B8 80023CB8 01000324 */  addiu      $v1, $zero, 0x1
     /* 144BC 80023CBC 01004224 */  addiu      $v0, $v0, 0x1
@@ -22,4 +22,4 @@ glabel cpu_get_dash_timer
   .L80023D00:
     /* 14500 80023D00 0800E003 */  jr         $ra
     /* 14504 80023D04 00000000 */   nop
-endlabel cpu_get_dash_timer
+endlabel func_80023CB4

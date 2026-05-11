@@ -26,7 +26,7 @@ glabel func_8007BC08
     /* 6C464 8007BC64 0200422C */  sltiu      $v0, $v0, 0x2
     /* 6C468 8007BC68 0A004010 */  beqz       $v0, .L8007BC94
     /* 6C46C 8007BC6C 00000000 */   nop
-    /* 6C470 8007BC70 80F2010C */  jal        reset_rob_rmd
+    /* 6C470 8007BC70 80F2010C */  jal        func_8007CA00
     /* 6C474 8007BC74 21200002 */   addu      $a0, $s0, $zero
     /* 6C478 8007BC78 02000396 */  lhu        $v1, 0x2($s0)
     /* 6C47C 8007BC7C FF0F4230 */  andi       $v0, $v0, 0xFFF

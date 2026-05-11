@@ -1095,7 +1095,7 @@ s32 func_800826CC(s32 arg0, s32 arg1, s32 arg2) {
     return temp_v0 > 0;
 }
 
-s32 marionation_camera_Init_800827D0(s32 a0, s32 a1) {
+s32 func_800827D0(s32 a0, s32 a1) {
     s32 *p = &D_800A14EC;
     s32 result;
 

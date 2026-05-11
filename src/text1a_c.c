@@ -1825,7 +1825,7 @@ extern void func_80044ED8(s32, s32);
 extern s32 *func_8004574C(s32);
 extern s32 *func_800455AC(s32);
 extern void saSeMain_80045600(s32, s32);
-extern void myRobGeneiInit(s32, s32);
+extern void func_80045AA4(s32, s32);
 
 void func_80045878(s32 a0, s32 a1, s32 a2) {
     s32 s3 = a0 + 3;
@@ -1839,7 +1839,7 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
         s1 = (s16 *) func_800455AC(a0);
         saSeMain_80045600(a0, 0x1A88 + ((s32) s1));
         saTan5TakeGetPos_80045230(0);
-        saTan5TakeGetPos_80045694(a0, (s32) (&myRobGeneiInit));
+        saTan5TakeGetPos_80045694(a0, (s32) (&func_80045AA4));
         s1[4] = -1;
         s1[3] = 0;
         s3 = a0 - -3;
@@ -1861,7 +1861,7 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
             saTan5TakeGetPos_80045230(s0);
         }
         saSeMain_80045600(s3, s0);
-        saTan5TakeGetPos_80045694(s3, (s32) (&myRobGeneiInit));
+        saTan5TakeGetPos_80045694(s3, (s32) (&func_80045AA4));
         s1[3] = 1;
         *((s32 *) (((s32) s1) + 0x24)) = 0;
         *((s32 *) s1) = 0;
@@ -1889,7 +1889,7 @@ void func_80045A50(s32 a0) {
 }
 extern void func_80044100(s32, s32);
 extern void saFidLoad(s32, s32);
-void myRobGeneiInit(s32 a0, s32 a1) {
+void func_80045AA4(s32 a0, s32 a1) {
     s32 *ptr;
     s32 idx;
     if (a0 < 3) {

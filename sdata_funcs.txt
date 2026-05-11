@@ -9,7 +9,7 @@ rng_SetSeed
 rng_Next
 cpu_set_move_command_and_dir_for_no_action_2
 gnd_disp_loop_ctrl
-kgm_map
+func_80017D84
 func_800198D0
 DispPracticeMenuTex_A
 se_data_set
