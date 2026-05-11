@@ -1564,10 +1564,18 @@ void func_8007E74C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
 s32 *func_8007E8AC(s32 *a0, s32 *a1, s32 *a2) {
-    /* Body replaced by asmfix replace_with_asmfile. GTE inline-asm
-     * scaffolding retired; pure-C decomp pending. */
-    (void)a0; (void)a1;
-    return a2;
+    register s32 *v0 asm("v0");
+    __asm__ volatile (".word 0x8C880000" :: "r"(a0));   /* lw $t0, 0($a0) */
+    __asm__ volatile (".word 0x8C890004" :: "r"(a0));   /* lw $t1, 4($a0) */
+    __asm__ volatile (".word 0x48880000");               /* mtc2 $t0, $0 */
+    __asm__ volatile (".word 0x48890800");               /* mtc2 $t1, $1 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A486012");               /* mvmva 1,0,0,3,0 */
+    __asm__ volatile (".word 0xE8A90000" :: "r"(a1));   /* swc2 $9, 0($a1) */
+    __asm__ volatile (".word 0xE8AA0004" :: "r"(a1));   /* swc2 $10, 4($a1) */
+    __asm__ volatile (".word 0xE8AB0008" :: "r"(a1));   /* swc2 $11, 8($a1) */
+    __asm__ volatile ("addu %0, %1, $zero" : "=r"(v0) : "r"(a2));
+    return v0;
 }
 void *func_8007E8DC(s32 *arg0, s32 *arg1) {
     register s32 t0 asm("t0");
