@@ -2236,27 +2236,6 @@ void motion_SavePreCalcData_8008003C(void) {
     func_8008008C(0xF0000003, 0x40);
 }
 
-__asm__(
-    ".section .text\n"
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "    .global motion_SavePreCalcData_80080064\n"
-    "D_80080064:\n"
-    "motion_SavePreCalcData_80080064:\n"
-    "    addiu $sp, $sp, -0x18\n"
-    "    sw $ra, 16($sp)\n"
-    "    lui $a0, (0xF0000003 >> 16)\n"
-    "    ori $a0, $a0, (0xF0000003 & 0xFFFF)\n"
-    "    jal func_8008008C\n"
-    "    addiu $a1, $zero, 0x40\n"
-    "    lw $ra, 16($sp)\n"
-    "    addiu $sp, $sp, 0x18\n"
-    "    jr $ra\n"
-    "    nop\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+void motion_SavePreCalcData_80080064(void) {
+    func_8008008C(0xF0000003, 0x40);
+}
