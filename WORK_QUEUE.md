@@ -35,8 +35,7 @@ After matching: commit the result, then `dc.sh refresh-queue` to regenerate this
 
 | Tier | Count | Description |
 |------|-------|-------------|
-| 1 |   4 | standard / small (<=40 insns) |
-| 9 |  18 | gte_function (cop2 inline asm allowed for ops) |
+| 1 |  22 | Tier 1 -- Trivial / Easy |
 
 ---
 
@@ -44,18 +43,13 @@ After matching: commit the result, then `dc.sh refresh-queue` to regenerate this
 
 Format: `<#>  <func>  <size insns>  <rec>  <src>  [tags]`
 
-### standard / small (<=40 insns)
+### Tier 1 -- Trivial / Easy
 
 ```
    1  func_80080014                       10  standard              display.c
    2  func_8008003C                       10  standard              display.c
    3  func_80080064                       10  standard              display.c
    4  func_8007FF7C                       38  standard              display.c
-```
-
-### gte_function (cop2 inline asm allowed for ops)
-
-```
    5  func_8007EFFC                        4  gte_function          display.c                 [gte_ops]
    6  func_8007F200                        6  gte_function          display.c                 [gte_ops]
    7  func_8007F10C                        8  gte_function          display.c                 [gte_ops]
@@ -103,215 +97,232 @@ Use `bash tools/dc.sh next-asmfix` to claim one of these. Entries classified as 
 
 Format: `<#>  <func>  <size insns>  <rec>  <src>  [tags]`
 
+### Tier 1 -- Trivial / Easy
+
 ```
    1  func_80030B10                       38  standard                        code6cac_b.c
    2  replay_camera_Init                  39  standard                        code6cac.c
-   3  func_80033D38                       47  standard                        code6cac_b.c
-   4  func_8003D39C                       55  standard                        code6cac_c2.c
-   5  func_8007F87C                      102  standard                        code6cac.c
-   6  func_8007FA1C                      102  standard                        code6cac.c
-   7  func_8007FBBC                      102  standard                        code6cac.c
-   8  func_8001F938                      107  standard                        code6cac.c
-   9  func_8001EFA0                      137  standard                        code6cac.c
-  10  func_8003EB84                      143  standard                        code6cac_c2.c
-  11  func_8007CE0C                      143  standard                        display.c
-  12  func_8007F35C                      163  standard                        display.c
-  13  func_8007F5EC                      163  standard                        display.c
-  14  saTan0GaugeDraw                    164  standard                        main.c
-  15  coli_HitPauseKatana                178  standard                        main.c
-  16  exec_game                          194  standard                        main.c
-  17  func_80060A68                       66  standard                        text1b.c                  [aliasing_heavy]
-  18  func_80068D88                       81  standard                        text1b.c                  [aliasing_heavy]
-  19  func_80069E18                       90  standard                        text1b.c                  [aliasing_heavy]
-  20  saTan2KabutoWareMove               215  standard                        code6cac_b.c
-  21  DispPracticeMenuTex_A              231  standard                        code6cac.c
-  22  func_80048FFC                      232  standard                        sound.c
-  23  md_game_check_mode                 234  standard                        code6cac_c2.c
-  24  replay_camera_get_attack_number    242  standard                        code6cac_c2.c
-  25  saTan2Main                         247  standard                        main.c
-  26  PutRobShadow                       252  standard                        code6cac_b.c
-  27  func_8005FC9C                      267  standard                        code6cac_c2.c
-  28  action_CheckHitZangeki             271  standard                        main.c
-  29  func_8005E098                      289  standard                        text1b.c
-  30  func_8005763C                      292  standard                        text1b.c
-  31  func_8007BC08                      298  standard                        display.c
-  32  func_80045B68                      302  standard                        text1a_c.c
-  33  func_800872A4                      307  standard                        main.c
-  34  func_80086CF8                      311  standard                        main.c
-  35  func_80089F3C                      318  standard                        main.c
-  36  func_80087770                      335  standard                        main.c
-  37  func_80073728                      340  standard                        text1b.c
-  38  func_80053E9C                      349  standard                        text1b.c
-  39  func_8006D808                      355  standard                        text1b.c
-  40  func_80053754                      466  standard                        text1b.c
-  41  mario_test_Exec                    469  standard                        code6cac.c
-  42  func_80043454                      479  standard                        text1a_c.c
-  43  func_80055138                      516  standard                        code6cac.c
-  44  func_8005D814                      545  standard                        code6cac.c
-  45  camera_set_target_zoom             588  standard                        code6cac.c
-  46  func_8005C8A8                      753  standard                        code6cac.c
-  47  func_80075830                      104  standard                        text1b.c                  [aliasing_heavy]
-  48  func_8006BB68                      112  standard                        text1b.c                  [aliasing_heavy]
-  49  func_8006DD94                      117  standard                        text1b.c                  [aliasing_heavy]
-  50  func_8005C6D0                      118  standard                        code6cac_b2.c             [aliasing_heavy]
-  51  func_8006D3DC                      126  standard                        text1b.c                  [aliasing_heavy]
-  52  func_80057ACC                      127  standard                        text1b.c                  [aliasing_heavy]
-  53  func_8005C2A8                      134  standard                        text1a.c                  [aliasing_heavy]
-  54  func_80069F80                      136  standard                        text1b.c                  [aliasing_heavy]
-  55  func_8006A1A0                      139  standard                        text1b.c                  [aliasing_heavy]
-  56  func_8005C074                      141  standard                        text1b.c                  [aliasing_heavy]
-  57  func_80063BD0                      144  standard                        text1b.c                  [aliasing_heavy]
-  58  func_8007CBB0                      151  standard                        display.c                 [aliasing_heavy]
-  59  SetPacketData                      159  standard                        main.c                    [aliasing_heavy]
-  60  func_80054604                      160  standard                        text1b.c                  [aliasing_heavy]
-  61  func_8007D048                      161  standard                        display.c                 [aliasing_heavy]
-  62  func_80076D74                      161  standard                        text1b.c                  [aliasing_heavy]
-  63  func_800753D8                      166  standard                        text1b.c                  [aliasing_heavy]
-  64  func_8005BA8C                      169  standard                        code6cac.c                [aliasing_heavy]
-  65  func_8006BEC4                      169  standard                        code6cac_c.c              [aliasing_heavy]
-  66  coli_HitPauseKatana_2              178  standard                        main.c                    [aliasing_heavy]
-  67  func_8007D6D8                      187  standard                        display.c                 [aliasing_heavy]
-  68  func_8006CCC8                      189  standard                        text1b.c                  [aliasing_heavy]
-  69  func_8006A564                      199  standard                        text1b.c                  [aliasing_heavy]
-  70  func_800841E0                      200  standard                        main.c                    [aliasing_heavy]
-  71  func_80073200                      203  standard                        text1b.c                  [aliasing_heavy]
-  72  func_80017A44                      208  standard                        ings.c                    [aliasing_heavy]
-  73  func_80074488                      212  standard                        text1b.c                  [aliasing_heavy]
-  74  func_8006CFBC                      218  standard                        text1b.c                  [aliasing_heavy]
-  75  DispPracticeMenuTex_B              231  standard                        code6cac.c                [aliasing_heavy]
-  76  DispPracticeMenuTex_C              231  standard                        code6cac_b.c              [aliasing_heavy]
-  77  func_80084500                      235  standard                        main.c                    [aliasing_heavy]
-  78  func_80048BA4                      237  standard                        code6cac.c                [aliasing_heavy]
-  79  func_80075F80                      251  standard                        text1b.c                  [aliasing_heavy]
-  80  func_8003FA24                      263  standard                        config.c                  [aliasing_heavy]
-  81  tslTm2LoadImage                    263  standard                        system.c                  [aliasing_heavy]
-  82  func_8006F100                      266  standard                        text1b.c                  [aliasing_heavy]
-  83  func_80071C4C                      270  standard                        text1b.c                  [aliasing_heavy]
-  84  func_8006F528                      277  standard                        text1b.c                  [aliasing_heavy]
-  85  func_8006B120                      278  standard                        text1b.c                  [aliasing_heavy]
-  86  func_80074E08                      281  standard                        text1b.c                  [aliasing_heavy]
-  87  func_80021DB0                      285  standard                        code6cac.c                [aliasing_heavy]
-  88  func_800571C0                      287  standard                        text1b.c                  [aliasing_heavy]
-  89  single_game_CheckStatusUpDataTotalOver   289  standard                        code6cac.c                [aliasing_heavy]
-  90  func_800768DC                      294  standard                        text1b.c                  [aliasing_heavy]
-  91  func_800693CC                      307  standard                        text1b.c                  [aliasing_heavy]
-  92  func_80031B24                      327  standard                        code6cac_b.c              [aliasing_heavy]
-  93  func_8007636C                      348  standard                        text1b.c                  [aliasing_heavy]
-  94  func_80073C78                      362  standard                        text1b.c                  [aliasing_heavy]
-  95  func_800759D0                      364  standard                        text1b.c                  [aliasing_heavy]
-  96  func_80052D00                      385  standard                        text1b.c                  [aliasing_heavy]
-  97  func_8005490C                      407  standard                        text1b.c                  [aliasing_heavy]
-  98  func_8006F97C                      515  standard                        text1b.c                  [aliasing_heavy]
-  99  func_8003993C                      526  standard                        code6cac_c_mid.c          [aliasing_heavy]
- 100  func_8006A880                      552  standard                        text1b.c                  [aliasing_heavy]
- 101  func_8005F1C8                      564  standard                        text1b.c                  [aliasing_heavy]
- 102  func_8006C21C                      622  standard                        text1b.c                  [aliasing_heavy]
- 103  func_800720FC                      690  standard                        text1b.c                  [aliasing_heavy]
- 104  func_80070188                      698  standard                        text1b.c                  [aliasing_heavy]
- 105  func_80030D7C                      709  standard                        code6cac.c                [aliasing_heavy]
- 106  func_800198D0                      749  standard                        code6cac.c                [aliasing_heavy]
- 107  func_8005E54C                      799  standard                        code6cac_c2.c             [aliasing_heavy]
- 108  func_80070F78                      810  standard                        text1b.c                  [aliasing_heavy]
- 109  func_80029454                     1025  standard                        code6cac_b.c              [aliasing_heavy]
- 110  calc_loc_mat_fw                   1112  standard                        code6cac_b.c              [aliasing_heavy]
- 111  func_8007B844                       38  needs_delay_slot_ra             display.c                 [aspsx_swra_delay]
- 112  func_8007997C                       45  needs_delay_slot_ra             text1b.c                  [aspsx_swra_delay]
- 113  func_8006EC0C                       58  needs_delay_slot_ra             text1b.c                  [aspsx_swra_delay]
- 114  func_8007B3A8                       74  needs_delay_slot_ra             display.c                 [aspsx_swra_delay]
- 115  func_8001BE20                      393  needs_delay_slot_ra             code6cac.c                [aspsx_swra_delay]
- 116  func_8005FBC8                       53  needs_lwl_fix                   code6cac_c2.c             [lwl_swl]
- 117  func_8006E2A8                       58  needs_lwl_fix                   text1b.c                  [lwl_swl]
- 118  func_80049F4C                       84  needs_lwl_fix                   sound.c                   [lwl_swl]
- 119  func_800602AC                       90  needs_lwl_fix                   code6cac_c_ab.c           [lwl_swl]
- 120  func_8006E10C                      103  needs_lwl_fix                   text1b.c                  [lwl_swl]
- 121  func_80068F70                      108  needs_lwl_fix                   text1b.c                  [lwl_swl]
- 122  func_80057E84                      447  needs_lwl_fix                   text1b.c                  [lwl_swl,aliasing_heavy]
- 123  func_80022580                      621  needs_lwl_fix                   code6cac.c                [lwl_swl,aliasing_heavy]
- 124  func_80055B60                     1110  needs_lwl_fix                   text1b.c                  [lwl_swl,aliasing_heavy]
- 125  func_80023F08                     2983  needs_lwl_fix                   code6cac.c                [lwl_swl,aliasing_heavy]
- 126  func_80078F60                        5  needs_rodata_split              text1b.c                  [jlabel_switch]
- 127  func_80078F74                        5  needs_rodata_split              text1b.c                  [jlabel_switch]
- 128  func_80077B30                      116  needs_rodata_split              text1b.c                  [jlabel_switch]
- 129  func_8006B578                      200  needs_rodata_split              text1b.c                  [jlabel_switch]
- 130  func_800747D8                      208  needs_rodata_split              text1b.c                  [jlabel_switch,aliasing_heavy]
- 131  func_8006ECF4                      209  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]
- 132  func_8006E534                      222  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch]
- 133  func_80077374                      236  needs_rodata_split              text1b.c                  [jlabel_switch]
- 134  special_camera_Exec                274  needs_rodata_split              code6cac_b2.c             [jlabel_switch]
- 135  func_8001C8DC                      291  needs_rodata_split              code6cac.c                [jlabel_switch]
- 136  func_80021424                      297  needs_rodata_split              code6cac.c                [jlabel_switch,aliasing_heavy]
- 137  func_80026DA4                      342  needs_rodata_split              code6cac_b.c              [jlabel_switch,aliasing_heavy]
- 138  func_80080828                      354  needs_rodata_split              system.c                  [jlabel_switch]
- 139  func_80035828                      360  needs_rodata_split              code6cac_b2.c             [jlabel_switch]
- 140  func_80079244                      418  needs_rodata_split              text1b.c                  [jlabel_switch]
- 141  func_80032C50                      467  needs_rodata_split              code6cac_b.c              [jlabel_switch,aspsx_swra_delay,aliasing_heavy]
- 142  func_80077D94                      468  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]
- 143  special_camera_set_win_cam         512  needs_rodata_split              code6cac_b2.c             [lwl_swl,jlabel_switch,aliasing_heavy]
- 144  func_80079A30                      535  needs_rodata_split              code6cac_c.c              [jlabel_switch,aliasing_heavy]
- 145  func_80034708                      544  needs_rodata_split              code6cac_b.c              [jlabel_switch]
- 146  func_80027AD8                      574  needs_rodata_split              code6cac_b.c              [jlabel_switch]
- 147  func_80065800                     1456  needs_rodata_split              text1b.c                  [jlabel_switch,gte_ops,aliasing_heavy]
- 148  func_80058580                     2991  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]
- 149  func_80052CD4                        8  gte_function                    text1b.c                  [gte_ops]
- 150  func_80052BE4                       11  gte_function                    code6cac_c2.c             [gte_ops]
- 151  func_8007E8AC                       12  gte_function                    display.c                 [gte_ops]
- 152  func_80052754                       13  gte_function                    text1a.c                  [gte_ops]
- 153  func_80052B44                       14  gte_function                    text1b.c                  [gte_ops]
- 154  func_80052B00                       17  gte_function                    text1b.c                  [gte_ops]
- 155  func_8007ED6C                       20  gte_function                    display.c                 [gte_ops]
- 156  func_8007F24C                       21  gte_function                    display.c                 [gte_ops]
- 157  func_80052A20                       26  gte_function                    config.c                  [gte_ops]
- 158  func_80052B7C                       26  gte_function                    text1b.c                  [gte_ops]
- 159  func_8007F2DC                       30  gte_function                    display.c                 [gte_ops]
- 160  func_80052A88                       30  gte_function                    text1a.c                  [gte_ops]
- 161  func_8004A76C                       39  gte_function                    text1b.c                  [gte_ops]
- 162  func_80052930                       60  gte_function                    sound.c                   [gte_ops]
- 163  func_800203B4                       67  gte_function                    code6cac.c                [gte_ops]
- 164  func_8007E4DC                       67  gte_function                    display.c                 [gte_ops]
- 165  func_8007EB4C                       67  gte_function                    display.c                 [gte_ops]
- 166  func_8007EC5C                       67  gte_function                    display.c                 [gte_ops]
- 167  cpu_check_tubazeri                  76  gte_function                    code6cac_b.c              [gte_ops]
- 168  func_8007EA0C                       78  gte_function                    display.c                 [gte_ops]
- 169  func_800300B4                       85  gte_function                    code6cac_b.c              [gte_ops]
- 170  func_8007E74C                       88  gte_function                    display.c                 [gte_ops]
- 171  coli_check_circle_hit_line          92  gte_function                    code6cac_b.c              [gte_ops]
- 172  func_8002FF20                      101  gte_function                    code6cac_b.c              [gte_ops]
- 173  func_8002EA24                      110  gte_function                    code6cac_b.c              [gte_ops]
- 174  saSeInit                           123  gte_function                    code6cac_b.c              [gte_ops]
- 175  func_8002D320                      126  gte_function                    code6cac_b.c              [gte_ops]
- 176  func_800325E0                      157  gte_function                    code6cac.c                [gte_ops]
- 177  func_80031890                      165  gte_function                    code6cac_b.c              [gte_ops]
- 178  DispSchoolBG                       188  gte_function                    code6cac.c                [gte_ops]
- 179  saTan0KiWareMoveB                  212  gte_function                    code6cac_b.c              [gte_ops]
- 180  func_800678A8                      283  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 181  func_8002F2D0                      296  gte_function                    code6cac_b.c              [gte_ops]
- 182  DispHira                           299  gte_function                    code6cac_c2.c             [gte_ops,aliasing_heavy]
- 183  func_80067200                      306  gte_function                    text1b.c                  [gte_ops]
- 184  cpu_check_run_attack               317  gte_function                    code6cac.c                [gte_ops]
- 185  func_8002F770                      324  gte_function                    code6cac.c                [gte_ops]
- 186  func_800207C8                      325  gte_function                    code6cac.c                [gte_ops,aliasing_heavy]
- 187  md_game_rob_data_init              351  gte_function                    code6cac.c                [gte_ops]
- 188  special_camera_Init                370  gte_function                    code6cac_b.c              [gte_ops]
- 189  func_8006295C                      420  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 190  func_8002A458                      428  gte_function                    code6cac_b.c              [gte_ops,aliasing_heavy]
- 191  func_80063E10                      443  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 192  saTan3MainJump                     489  gte_function                    code6cac_b.c              [gte_ops]
- 193  func_800646E8                      490  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 194  func_800620B8                      501  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 195  func_8002DE20                      548  gte_function                    code6cac_b.c              [gte_ops]
- 196  func_8001A820                      582  gte_function                    code6cac.c                [gte_ops,aliasing_heavy]
- 197  single_game_setModeRequest         662  gte_function                    code6cac.c                [gte_ops]
- 198  func_80063084                      667  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 199  func_80067D14                     1053  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 200  DispUpdateStatusMessage            206  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay,aliasing_heavy]
- 201  DispStuff                          209  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay,aliasing_heavy]
- 202  md_game_end                        249  needs_function_split            ings2.c                   [multi_jr_ra]
- 203  AllocBukiRmd                       259  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay]
- 204  tslTm2LoadImage_2                  263  needs_function_split            ings2.c                   [multi_jr_ra,aspsx_swra_delay]
- 205  func_8008AF9C                      281  needs_function_split            ings2.c                   [jlabel_switch,multi_jr_ra,aliasing_heavy]
- 206  func_80082D34                      299  needs_function_split            ings2.c                   [multi_jr_ra,aliasing_heavy]
- 207  saTan1MainJump                     423  needs_function_split            main.c                    [jlabel_switch,multi_jr_ra,aliasing_heavy]
- 208  func_8008C464                      763  needs_function_split            code6cac_c_ab.c           [multi_jr_ra,aliasing_heavy]
+   3  func_8007B844                       38  needs_delay_slot_ra             display.c                 [aspsx_swra_delay]
+   4  func_80052CD4                        8  gte_function                    text1b.c                  [gte_ops]
+   5  func_80052BE4                       11  gte_function                    code6cac_c2.c             [gte_ops]
+   6  func_8007E8AC                       12  gte_function                    display.c                 [gte_ops]
+   7  func_80052754                       13  gte_function                    text1a.c                  [gte_ops]
+   8  func_80052B44                       14  gte_function                    text1b.c                  [gte_ops]
+   9  func_80052B00                       17  gte_function                    text1b.c                  [gte_ops]
+  10  func_8007ED6C                       20  gte_function                    display.c                 [gte_ops]
+  11  func_8007F24C                       21  gte_function                    display.c                 [gte_ops]
+  12  func_80052A20                       26  gte_function                    config.c                  [gte_ops]
+  13  func_80052B7C                       26  gte_function                    text1b.c                  [gte_ops]
+  14  func_8007F2DC                       30  gte_function                    display.c                 [gte_ops]
+  15  func_80052A88                       30  gte_function                    text1a.c                  [gte_ops]
+  16  func_8004A76C                       39  gte_function                    text1b.c                  [gte_ops]
+  17  func_80078F60                        5  needs_rodata_split              text1b.c                  [jlabel_switch]
+  18  func_80078F74                        5  needs_rodata_split              text1b.c                  [jlabel_switch]
+  19  func_80033D38                       47  standard                        code6cac_b.c
+  20  func_8003D39C                       55  standard                        code6cac_c2.c
+  21  func_8007997C                       45  needs_delay_slot_ra             text1b.c                  [aspsx_swra_delay]
+  22  func_8006EC0C                       58  needs_delay_slot_ra             text1b.c                  [aspsx_swra_delay]
+  23  func_8007B3A8                       74  needs_delay_slot_ra             display.c                 [aspsx_swra_delay]
+  24  func_80052930                       60  gte_function                    sound.c                   [gte_ops]
+  25  func_800203B4                       67  gte_function                    code6cac.c                [gte_ops]
+  26  func_8007E4DC                       67  gte_function                    display.c                 [gte_ops]
+  27  func_8007EB4C                       67  gte_function                    display.c                 [gte_ops]
+  28  func_8007EC5C                       67  gte_function                    display.c                 [gte_ops]
+  29  cpu_check_tubazeri                  76  gte_function                    code6cac_b.c              [gte_ops]
+  30  func_8007EA0C                       78  gte_function                    display.c                 [gte_ops]
+  31  func_800300B4                       85  gte_function                    code6cac_b.c              [gte_ops]
+  32  func_8007E74C                       88  gte_function                    display.c                 [gte_ops]
+  33  coli_check_circle_hit_line          92  gte_function                    code6cac_b.c              [gte_ops]
+  34  func_8005FBC8                       53  needs_lwl_fix                   code6cac_c2.c             [lwl_swl]
+  35  func_8006E2A8                       58  needs_lwl_fix                   text1b.c                  [lwl_swl]
+  36  func_80049F4C                       84  needs_lwl_fix                   sound.c                   [lwl_swl]
+  37  func_800602AC                       90  needs_lwl_fix                   code6cac_c_ab.c           [lwl_swl]
+```
+
+### Tier 2 -- Moderate
+
+```
+  38  func_80060A68                       66  standard                        text1b.c                  [aliasing_heavy]
+  39  func_80068D88                       81  standard                        text1b.c                  [aliasing_heavy]
+  40  func_80069E18                       90  standard                        text1b.c                  [aliasing_heavy]
+  41  func_8007F87C                      102  standard                        code6cac.c
+  42  func_8007FA1C                      102  standard                        code6cac.c
+  43  func_8007FBBC                      102  standard                        code6cac.c
+  44  func_8001F938                      107  standard                        code6cac.c
+  45  func_8001EFA0                      137  standard                        code6cac.c
+  46  func_8003EB84                      143  standard                        code6cac_c2.c
+  47  func_8007CE0C                      143  standard                        display.c
+  48  func_8007F35C                      163  standard                        display.c
+  49  func_8007F5EC                      163  standard                        display.c
+  50  saTan0GaugeDraw                    164  standard                        main.c
+  51  coli_HitPauseKatana                178  standard                        main.c
+  52  exec_game                          194  standard                        main.c
+  53  func_8002FF20                      101  gte_function                    code6cac_b.c              [gte_ops]
+  54  func_8002EA24                      110  gte_function                    code6cac_b.c              [gte_ops]
+  55  saSeInit                           123  gte_function                    code6cac_b.c              [gte_ops]
+  56  func_8002D320                      126  gte_function                    code6cac_b.c              [gte_ops]
+  57  func_800325E0                      157  gte_function                    code6cac.c                [gte_ops]
+  58  func_80031890                      165  gte_function                    code6cac_b.c              [gte_ops]
+  59  DispSchoolBG                       188  gte_function                    code6cac.c                [gte_ops]
+  60  func_8006E10C                      103  needs_lwl_fix                   text1b.c                  [lwl_swl]
+  61  func_80068F70                      108  needs_lwl_fix                   text1b.c                  [lwl_swl]
+  62  func_80077B30                      116  needs_rodata_split              text1b.c                  [jlabel_switch]
+  63  func_8006B578                      200  needs_rodata_split              text1b.c                  [jlabel_switch]
+  64  saTan2KabutoWareMove               215  standard                        code6cac_b.c
+  65  DispPracticeMenuTex_A              231  standard                        code6cac.c
+  66  func_80048FFC                      232  standard                        sound.c
+  67  md_game_check_mode                 234  standard                        code6cac_c2.c
+  68  replay_camera_get_attack_number    242  standard                        code6cac_c2.c
+  69  saTan2Main                         247  standard                        main.c
+  70  PutRobShadow                       252  standard                        code6cac_b.c
+  71  func_8005FC9C                      267  standard                        code6cac_c2.c
+  72  action_CheckHitZangeki             271  standard                        main.c
+  73  func_8005E098                      289  standard                        text1b.c
+  74  func_8005763C                      292  standard                        text1b.c
+  75  func_8007BC08                      298  standard                        display.c
+  76  func_80045B68                      302  standard                        text1a_c.c
+  77  func_800872A4                      307  standard                        main.c
+  78  func_80086CF8                      311  standard                        main.c
+  79  func_80089F3C                      318  standard                        main.c
+  80  func_80087770                      335  standard                        main.c
+  81  func_80073728                      340  standard                        text1b.c
+  82  func_80053E9C                      349  standard                        text1b.c
+  83  func_8006D808                      355  standard                        text1b.c
+  84  func_80075830                      104  standard                        text1b.c                  [aliasing_heavy]
+  85  func_8006BB68                      112  standard                        text1b.c                  [aliasing_heavy]
+  86  func_8006DD94                      117  standard                        text1b.c                  [aliasing_heavy]
+  87  func_8005C6D0                      118  standard                        code6cac_b2.c             [aliasing_heavy]
+  88  func_8006D3DC                      126  standard                        text1b.c                  [aliasing_heavy]
+  89  func_80057ACC                      127  standard                        text1b.c                  [aliasing_heavy]
+  90  func_8005C2A8                      134  standard                        text1a.c                  [aliasing_heavy]
+  91  func_80069F80                      136  standard                        text1b.c                  [aliasing_heavy]
+  92  func_8006A1A0                      139  standard                        text1b.c                  [aliasing_heavy]
+  93  func_8005C074                      141  standard                        text1b.c                  [aliasing_heavy]
+  94  func_80063BD0                      144  standard                        text1b.c                  [aliasing_heavy]
+  95  func_8007CBB0                      151  standard                        display.c                 [aliasing_heavy]
+  96  SetPacketData                      159  standard                        main.c                    [aliasing_heavy]
+  97  func_80054604                      160  standard                        text1b.c                  [aliasing_heavy]
+  98  func_8007D048                      161  standard                        display.c                 [aliasing_heavy]
+  99  func_80076D74                      161  standard                        text1b.c                  [aliasing_heavy]
+ 100  func_800753D8                      166  standard                        text1b.c                  [aliasing_heavy]
+ 101  func_8005BA8C                      169  standard                        code6cac.c                [aliasing_heavy]
+ 102  func_8006BEC4                      169  standard                        code6cac_c.c              [aliasing_heavy]
+ 103  coli_HitPauseKatana_2              178  standard                        main.c                    [aliasing_heavy]
+ 104  func_8007D6D8                      187  standard                        display.c                 [aliasing_heavy]
+ 105  func_8006CCC8                      189  standard                        text1b.c                  [aliasing_heavy]
+ 106  func_8006A564                      199  standard                        text1b.c                  [aliasing_heavy]
+ 107  func_800841E0                      200  standard                        main.c                    [aliasing_heavy]
+```
+
+### Tier 3 -- Hard
+
+```
+ 108  func_8001BE20                      393  needs_delay_slot_ra             code6cac.c                [aspsx_swra_delay]
+ 109  saTan0KiWareMoveB                  212  gte_function                    code6cac_b.c              [gte_ops]
+ 110  func_8002F2D0                      296  gte_function                    code6cac_b.c              [gte_ops]
+ 111  func_80067200                      306  gte_function                    text1b.c                  [gte_ops]
+ 112  cpu_check_run_attack               317  gte_function                    code6cac.c                [gte_ops]
+ 113  func_8002F770                      324  gte_function                    code6cac.c                [gte_ops]
+ 114  md_game_rob_data_init              351  gte_function                    code6cac.c                [gte_ops]
+ 115  special_camera_Init                370  gte_function                    code6cac_b.c              [gte_ops]
+ 116  func_80053754                      466  standard                        text1b.c
+ 117  mario_test_Exec                    469  standard                        code6cac.c
+ 118  func_80043454                      479  standard                        text1a_c.c
+ 119  func_80055138                      516  standard                        code6cac.c
+ 120  func_8005D814                      545  standard                        code6cac.c
+ 121  camera_set_target_zoom             588  standard                        code6cac.c
+ 122  func_8006E534                      222  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch]
+ 123  func_80077374                      236  needs_rodata_split              text1b.c                  [jlabel_switch]
+ 124  special_camera_Exec                274  needs_rodata_split              code6cac_b2.c             [jlabel_switch]
+ 125  func_8001C8DC                      291  needs_rodata_split              code6cac.c                [jlabel_switch]
+ 126  func_80080828                      354  needs_rodata_split              system.c                  [jlabel_switch]
+ 127  func_80035828                      360  needs_rodata_split              code6cac_b2.c             [jlabel_switch]
+ 128  func_80073200                      203  standard                        text1b.c                  [aliasing_heavy]
+ 129  func_80017A44                      208  standard                        ings.c                    [aliasing_heavy]
+ 130  func_80074488                      212  standard                        text1b.c                  [aliasing_heavy]
+ 131  func_8006CFBC                      218  standard                        text1b.c                  [aliasing_heavy]
+ 132  DispPracticeMenuTex_B              231  standard                        code6cac.c                [aliasing_heavy]
+ 133  DispPracticeMenuTex_C              231  standard                        code6cac_b.c              [aliasing_heavy]
+ 134  func_80084500                      235  standard                        main.c                    [aliasing_heavy]
+ 135  func_80048BA4                      237  standard                        code6cac.c                [aliasing_heavy]
+ 136  func_80075F80                      251  standard                        text1b.c                  [aliasing_heavy]
+ 137  func_8003FA24                      263  standard                        config.c                  [aliasing_heavy]
+ 138  tslTm2LoadImage                    263  standard                        system.c                  [aliasing_heavy]
+ 139  func_8006F100                      266  standard                        text1b.c                  [aliasing_heavy]
+ 140  func_80071C4C                      270  standard                        text1b.c                  [aliasing_heavy]
+ 141  func_8006F528                      277  standard                        text1b.c                  [aliasing_heavy]
+ 142  func_8006B120                      278  standard                        text1b.c                  [aliasing_heavy]
+ 143  func_80074E08                      281  standard                        text1b.c                  [aliasing_heavy]
+ 144  func_80021DB0                      285  standard                        code6cac.c                [aliasing_heavy]
+ 145  func_800571C0                      287  standard                        text1b.c                  [aliasing_heavy]
+ 146  single_game_CheckStatusUpDataTotalOver   289  standard                        code6cac.c                [aliasing_heavy]
+ 147  func_800768DC                      294  standard                        text1b.c                  [aliasing_heavy]
+ 148  func_800693CC                      307  standard                        text1b.c                  [aliasing_heavy]
+ 149  func_80031B24                      327  standard                        code6cac_b.c              [aliasing_heavy]
+ 150  func_8007636C                      348  standard                        text1b.c                  [aliasing_heavy]
+ 151  func_80073C78                      362  standard                        text1b.c                  [aliasing_heavy]
+ 152  func_800759D0                      364  standard                        text1b.c                  [aliasing_heavy]
+ 153  func_80052D00                      385  standard                        text1b.c                  [aliasing_heavy]
+ 154  saTan3MainJump                     489  gte_function                    code6cac_b.c              [gte_ops]
+ 155  func_8002DE20                      548  gte_function                    code6cac_b.c              [gte_ops]
+ 156  single_game_setModeRequest         662  gte_function                    code6cac.c                [gte_ops]
+ 157  md_game_end                        249  needs_function_split            ings2.c                   [multi_jr_ra]
+ 158  AllocBukiRmd                       259  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay]
+ 159  tslTm2LoadImage_2                  263  needs_function_split            ings2.c                   [multi_jr_ra,aspsx_swra_delay]
+ 160  func_8005C8A8                      753  standard                        code6cac.c
+```
+
+### Tier 4 -- Slog
+
+```
+ 161  func_800678A8                      283  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
+ 162  DispHira                           299  gte_function                    code6cac_c2.c             [gte_ops,aliasing_heavy]
+ 163  func_800207C8                      325  gte_function                    code6cac.c                [gte_ops,aliasing_heavy]
+ 164  func_80079244                      418  needs_rodata_split              text1b.c                  [jlabel_switch]
+ 165  func_80034708                      544  needs_rodata_split              code6cac_b.c              [jlabel_switch]
+ 166  func_80027AD8                      574  needs_rodata_split              code6cac_b.c              [jlabel_switch]
+ 167  func_8005490C                      407  standard                        text1b.c                  [aliasing_heavy]
+ 168  func_8006F97C                      515  standard                        text1b.c                  [aliasing_heavy]
+ 169  func_8003993C                      526  standard                        code6cac_c_mid.c          [aliasing_heavy]
+ 170  func_8006A880                      552  standard                        text1b.c                  [aliasing_heavy]
+ 171  func_8005F1C8                      564  standard                        text1b.c                  [aliasing_heavy]
+ 172  func_8006C21C                      622  standard                        text1b.c                  [aliasing_heavy]
+ 173  func_800720FC                      690  standard                        text1b.c                  [aliasing_heavy]
+ 174  func_80070188                      698  standard                        text1b.c                  [aliasing_heavy]
+ 175  func_800747D8                      208  needs_rodata_split              text1b.c                  [jlabel_switch,aliasing_heavy]
+ 176  func_8006ECF4                      209  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]
+ 177  func_80021424                      297  needs_rodata_split              code6cac.c                [jlabel_switch,aliasing_heavy]
+ 178  func_80026DA4                      342  needs_rodata_split              code6cac_b.c              [jlabel_switch,aliasing_heavy]
+ 179  func_8006295C                      420  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
+ 180  func_8002A458                      428  gte_function                    code6cac_b.c              [gte_ops,aliasing_heavy]
+ 181  func_80063E10                      443  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
+ 182  func_800646E8                      490  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
+ 183  func_800620B8                      501  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
+ 184  func_8001A820                      582  gte_function                    code6cac.c                [gte_ops,aliasing_heavy]
+ 185  func_80063084                      667  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
+ 186  DispUpdateStatusMessage            206  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay,aliasing_heavy]
+ 187  DispStuff                          209  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay,aliasing_heavy]
+ 188  func_8008AF9C                      281  needs_function_split            ings2.c                   [jlabel_switch,multi_jr_ra,aliasing_heavy]
+ 189  func_80082D34                      299  needs_function_split            ings2.c                   [multi_jr_ra,aliasing_heavy]
+ 190  func_80057E84                      447  needs_lwl_fix                   text1b.c                  [lwl_swl,aliasing_heavy]
+ 191  func_80022580                      621  needs_lwl_fix                   code6cac.c                [lwl_swl,aliasing_heavy]
+ 192  func_80030D7C                      709  standard                        code6cac.c                [aliasing_heavy]
+ 193  func_800198D0                      749  standard                        code6cac.c                [aliasing_heavy]
+ 194  func_8005E54C                      799  standard                        code6cac_c2.c             [aliasing_heavy]
+ 195  func_80070F78                      810  standard                        text1b.c                  [aliasing_heavy]
+ 196  func_80029454                     1025  standard                        code6cac_b.c              [aliasing_heavy]
+ 197  calc_loc_mat_fw                   1112  standard                        code6cac_b.c              [aliasing_heavy]
+ 198  func_80032C50                      467  needs_rodata_split              code6cac_b.c              [jlabel_switch,aspsx_swra_delay,aliasing_heavy]
+ 199  func_80077D94                      468  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]
+ 200  special_camera_set_win_cam         512  needs_rodata_split              code6cac_b2.c             [lwl_swl,jlabel_switch,aliasing_heavy]
+ 201  func_80079A30                      535  needs_rodata_split              code6cac_c.c              [jlabel_switch,aliasing_heavy]
+ 202  func_80067D14                     1053  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
+ 203  saTan1MainJump                     423  needs_function_split            main.c                    [jlabel_switch,multi_jr_ra,aliasing_heavy]
+ 204  func_80055B60                     1110  needs_lwl_fix                   text1b.c                  [lwl_swl,aliasing_heavy]
+ 205  func_80023F08                     2983  needs_lwl_fix                   code6cac.c                [lwl_swl,aliasing_heavy]
+ 206  func_8008C464                      763  needs_function_split            code6cac_c_ab.c           [multi_jr_ra,aliasing_heavy]
+ 207  func_80065800                     1456  needs_rodata_split              text1b.c                  [jlabel_switch,gte_ops,aliasing_heavy]
+ 208  func_80058580                     2991  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]
 ```
 
 ---

@@ -6,19 +6,23 @@ Reads tmp/batch_attempt.csv, live-scans asmfix.txt for `replace_with_asmfile`
 entries, scans already-committed C bodies for suspect inline-asm debt, filters
 to in-scope categories, and writes a Markdown queue grouped by complexity tier.
 
-Tier ordering (top of queue = pull these first):
-  1. easy_attempt/standard, small      (<=40 insns)
-  2. easy_attempt/standard, medium     (41-100)
-  3. easy_attempt/standard, large      (101-200)
-  4. easy_attempt/standard, huge       (201+)
-  5. needs_delay_slot_ra  (any size, in size order)
-  6. needs_lwl_fix        (any size, in size order)
-  7. needs_rodata_split   (any size, in size order)
-  8. gte_function         (any size, in size order)
+Tier ordering (top of queue = pull these first) — effort-based, mixing
+recommendation + instruction count + aliasing_heavy into a single score:
 
-Within each tier, functions are sorted by ascending instruction count,
-with src file as a tiebreaker so siblings (which often share a recipe)
-sit next to each other.
+  1. Trivial / Easy   (effort < 1.6)
+  2. Moderate         (effort < 3.5)
+  3. Hard             (effort < 7.0)
+  4. Slog             (effort >= 7.0)
+
+Effort = base(rec) * size_factor(insns) * (1.8 if aliasing_heavy else 1).
+Base: standard 1.0, delay_slot_ra 1.2, gte 1.3, lwl 1.4, rodata_split
+1.6, function_split 2.0. Size factor: <=40 -> 0.5, <=100 -> 1.0,
+<=200 -> 1.8, <=400 -> 3.0, <=700 -> 4.5, <=1200 -> 6.5, else 9.0.
+
+Within each tier, entries are sorted by effort score asc, then size,
+then src file (siblings cluster), then name. The result is a smooth
+difficulty ramp: a 4-insn gte helper outranks a 753-insn standard
+function, which outranks a 1112-insn aliasing_heavy beast.
 
 Out-of-scope categories (permanently_blocked, bios_or_syscall,
 not_code_symbol, not_found) are NOT in the queue. Structural split work
@@ -249,57 +253,79 @@ def row_entry(r: dict) -> dict:
     }
 
 
+_REC_BASE = {
+    "standard": 1.0,
+    "easy_attempt": 1.0,
+    "needs_delay_slot_ra": 1.2,
+    "gte_function": 1.3,
+    "needs_lwl_fix": 1.4,
+    "needs_rodata_split": 1.6,
+    "needs_function_split": 2.0,
+}
+
+
+def effort_score(rec: str, size: int, tags: str) -> float:
+    """Single difficulty estimate for the queue ordering.
+
+    Combines per-recommendation base effort, instruction count (in
+    coarse buckets so siblings cluster), and the aliasing_heavy tag.
+    See module docstring for the threshold definitions.
+    """
+    base = _REC_BASE.get(rec or "", 1.0)
+    if "aliasing_heavy" in (tags or ""):
+        base *= 1.8
+    if size <= 40:
+        size_factor = 0.5
+    elif size <= 100:
+        size_factor = 1.0
+    elif size <= 200:
+        size_factor = 1.8
+    elif size <= 400:
+        size_factor = 3.0
+    elif size <= 700:
+        size_factor = 4.5
+    elif size <= 1200:
+        size_factor = 6.5
+    else:
+        size_factor = 9.0
+    return base * size_factor
+
+
 def tier_for(rec: str, size: int, tags: str) -> tuple[int, str]:
     """Return (tier_index, tier_label). Lower tier_index = higher priority.
 
-    `tags` is the comma-separated blocker_tags from the classifier.
-    Functions tagged `aliasing_heavy` are pushed to a later tier even
-    if their `recommendation` is `standard`, because their pointer-
-    chasing patterns hide complexity that instruction count doesn't
-    predict (see func_80060B70 post-mortem).
+    Out-of-scope categories map to indices 90+ so they never appear in
+    any pullable queue. In-scope work is bucketed by `effort_score()`
+    into 4 effort tiers: Trivial/Easy, Moderate, Hard, Slog. This mixes
+    recommendation categories so a tiny gte/lwl/rodata-split function
+    surfaces above a 700-insn standard one — the queue rewards small
+    wins first regardless of category.
     """
-    is_aliasing_heavy = "aliasing_heavy" in (tags or "")
+    rec_l = rec or ""
+    if rec_l.startswith("permanently_blocked:"):
+        return (90, rec_l)
+    if rec_l.startswith("bios_or_syscall:"):
+        return (91, rec_l)
+    if rec_l == "not_code_symbol":
+        return (92, rec_l)
+    if rec_l not in _REC_BASE:
+        return (99, f"other ({rec_l})")
 
-    if rec in {"easy_attempt", "standard"}:
-        rec_label = "easy_attempt" if rec == "easy_attempt" else "standard"
-        if is_aliasing_heavy:
-            # Bump aliasing-heavy `standard` functions to a dedicated
-            # later tier — same kind of work but expect more iterations.
-            if size <= 100:
-                return (4, f"{rec_label}, aliasing_heavy / small (<=100)")
-            if size <= 200:
-                return (5, f"{rec_label}, aliasing_heavy / medium (101-200)")
-            return (5, f"{rec_label}, aliasing_heavy / large (201+)")
-        if size <= 40:
-            return (1, f"{rec_label} / small (<=40 insns)")
-        if size <= 100:
-            return (2, f"{rec_label} / medium (41-100)")
-        if size <= 200:
-            return (3, f"{rec_label} / large (101-200)")
-        return (4, f"{rec_label} / huge (201+)")
-    if rec == "needs_lwl_fix":
-        return (7, "needs_lwl_fix")
-    if rec == "needs_rodata_split":
-        return (8, "needs_rodata_split")
-    if rec == "needs_delay_slot_ra":
-        return (6, "needs_delay_slot_ra")
-    if rec == "gte_function":
-        return (9, "gte_function (cop2 inline asm allowed for ops)")
-    if rec == "needs_function_split":
-        return (10, "needs_function_split")
-    if rec.startswith("permanently_blocked:"):
-        return (90, rec)
-    if rec.startswith("bios_or_syscall:"):
-        return (91, rec)
-    if rec == "not_code_symbol":
-        return (92, rec)
-    return (99, f"other ({rec})")
+    score = effort_score(rec_l, size, tags or "")
+    if score < 1.6:
+        return (1, "Tier 1 -- Trivial / Easy")
+    if score < 3.5:
+        return (2, "Tier 2 -- Moderate")
+    if score < 7.0:
+        return (3, "Tier 3 -- Hard")
+    return (4, "Tier 4 -- Slog")
 
 
 def sort_entries(entries: list[dict]) -> None:
     entries.sort(
         key=lambda x: (
             tier_for(x["rec"], x["size"], x["tags"])[0],
+            effort_score(x["rec"], x["size"], x["tags"]),
             x["size"],
             x["src"],
             x["func"],
@@ -307,9 +333,40 @@ def sort_entries(entries: list[dict]) -> None:
     )
 
 
-def append_numbered_queue(lines: list[str], entries: list[dict]) -> None:
-    lines.append("```")
-    for pos, entry in enumerate(entries, 1):
+def append_numbered_queue(
+    lines: list[str], entries: list[dict], group_by_tier: bool = False
+) -> None:
+    """Append a single numbered code block, or one block per tier if
+    `group_by_tier` is set — tier headers help readers see where the
+    easy/moderate/hard/slog cutoffs are without counting items.
+    """
+    if not group_by_tier:
+        lines.append("```")
+        for pos, entry in enumerate(entries, 1):
+            tags = f"  [{entry['tags']}]" if entry["tags"] else ""
+            lines.append(
+                f"{pos:>4}  {entry['func']:<32s}  "
+                f"{entry['size']:>4d}  "
+                f"{entry['rec']:<30s}  "
+                f"{entry['src']:<24s}{tags}"
+            )
+        lines.append("```")
+        lines.append("")
+        return
+
+    cur_label: str | None = None
+    pos = 0
+    for entry in entries:
+        _, label = tier_for(entry["rec"], entry["size"], entry["tags"])
+        if label != cur_label:
+            if cur_label is not None:
+                lines.append("```")
+                lines.append("")
+            lines.append(f"### {label}")
+            lines.append("")
+            lines.append("```")
+            cur_label = label
+        pos += 1
         tags = f"  [{entry['tags']}]" if entry["tags"] else ""
         lines.append(
             f"{pos:>4}  {entry['func']:<32s}  "
@@ -317,8 +374,9 @@ def append_numbered_queue(lines: list[str], entries: list[dict]) -> None:
             f"{entry['rec']:<30s}  "
             f"{entry['src']:<24s}{tags}"
         )
-    lines.append("```")
-    lines.append("")
+    if cur_label is not None:
+        lines.append("```")
+        lines.append("")
 
 
 def main() -> int:
@@ -383,9 +441,17 @@ def main() -> int:
         tier = tier_for(r["recommendation"], size, r.get("blocker_tags", ""))
         tiers[tier].append(row_entry(r))
 
-    # Sort within each tier: by size asc, then src (siblings together), then name
+    # Sort within each tier by effort score (so a 4-insn gte beats a
+    # 100-insn standard), then size, then src (siblings cluster), then name.
     for tier in tiers:
-        tiers[tier].sort(key=lambda x: (x["size"], x["src"], x["func"]))
+        tiers[tier].sort(
+            key=lambda x: (
+                effort_score(x["rec"], x["size"], x["tags"]),
+                x["size"],
+                x["src"],
+                x["func"],
+            )
+        )
 
     # Build flat ordered queue
     ordered: list[dict] = []
@@ -558,7 +624,7 @@ def main() -> int:
     lines.append("")
     lines.append("Format: `<#>  <func>  <size insns>  <rec>  <src>  [tags]`")
     lines.append("")
-    append_numbered_queue(lines, asmfix_entries)
+    append_numbered_queue(lines, asmfix_entries, group_by_tier=True)
 
     if library_rows:
         lines.append("---")
