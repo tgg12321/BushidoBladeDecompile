@@ -9,7 +9,7 @@ glabel func_80035480
     /* 25C9C 8003549C 00000000 */  nop
     /* 25CA0 800354A0 03004014 */  bnez       $v0, .L800354B0
     /* 25CA4 800354A4 00000000 */   nop
-    /* 25CA8 800354A8 07E9000C */  jal        replay_camera_check_stage_8003A41C
+    /* 25CA8 800354A8 07E9000C */  jal        func_8003A41C
     /* 25CAC 800354AC 00000000 */   nop
   .L800354B0:
     /* 25CB0 800354B0 3783000C */  jal        func_80020CDC

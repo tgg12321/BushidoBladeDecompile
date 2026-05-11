@@ -1,6 +1,0 @@
-glabel replay_camera_check_stage_80045814
-    /* 36014 80045814 0B80023C */  lui        $v0, %hi(D_800A9D10)
-    /* 36018 80045818 109D4224 */  addiu      $v0, $v0, %lo(D_800A9D10)
-    /* 3601C 8004581C 0800E003 */  jr         $ra
-    /* 36020 80045820 00000000 */   nop
-endlabel replay_camera_check_stage_80045814

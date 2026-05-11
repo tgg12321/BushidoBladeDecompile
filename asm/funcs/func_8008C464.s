@@ -651,10 +651,10 @@ glabel func_8008C464
     /* 7D604 8008CE04 E21A4294 */  lhu        $v0, %lo(D_800F1AE2)($v0)
     /* 7D608 8008CE08 21280002 */  addu       $a1, $s0, $zero
     /* 7D60C 8008CE0C 0A0062A4 */  sh         $v0, 0xA($v1)
-    /* 7D610 8008CE10 D4E3010C */  jal        saTan0GaugeInit_80078F50
+    /* 7D610 8008CE10 D4E3010C */  jal        func_80078F50
     /* 7D614 8008CE14 00000000 */   nop
     /* 7D618 8008CE18 03000424 */  addiu      $a0, $zero, 0x3
-    /* 7D61C 8008CE1C D0E3010C */  jal        saTan0GaugeInit_80078F40
+    /* 7D61C 8008CE1C D0E3010C */  jal        func_80078F40
     /* 7D620 8008CE20 21280002 */   addu      $a1, $s0, $zero
     /* 7D624 8008CE24 0A80033C */  lui        $v1, %hi(D_800A305C)
     /* 7D628 8008CE28 5C30638C */  lw         $v1, %lo(D_800A305C)($v1)
@@ -714,7 +714,7 @@ glabel func_8008C464
     /* 7D700 8008CF00 0A80053C */  lui        $a1, %hi(D_800A304C)
     /* 7D704 8008CF04 4C30A524 */  addiu      $a1, $a1, %lo(D_800A304C)
     /* 7D708 8008CF08 0A0062A4 */  sh         $v0, 0xA($v1)
-    /* 7D70C 8008CF0C D4E3010C */  jal        saTan0GaugeInit_80078F50
+    /* 7D70C 8008CF0C D4E3010C */  jal        func_80078F50
     /* 7D710 8008CF10 00000000 */   nop
     /* 7D714 8008CF14 0F80023C */  lui        $v0, %hi(D_800F1AFC)
     /* 7D718 8008CF18 FC1A4224 */  addiu      $v0, $v0, %lo(D_800F1AFC)

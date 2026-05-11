@@ -28,10 +28,10 @@ extern u16 g_spu_xfer_addr;
 extern s32 g_spu_addr_shift;
 extern s32 EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void saTan0GaugeInit_8008D050(s32 *);
+extern void func_8008D050(s32 *);
 extern s32 g_snd_callback;
 extern s32 D_80106F28;
-extern s32 coli_RobColliScaleEditReset_80078998(s32);
+extern s32 func_80078998(s32);
 extern void func_80088740(s32);
 extern void func_80087770(s32, s32, s32, s32);
 extern s16 func_80087CAC(s32, s16 *, s16 *);
@@ -1343,9 +1343,9 @@ void spu_InitIrq(void) {
         g_snd_init_flag = 1;
         EnterCriticalSection();
         spu_SetCallback((s32)&g_snd_irq_data);
-        v0 = coli_RobColliScaleEditReset_80078978((s32)0xF0000009, 0x20, 0x2000, 0);
+        v0 = func_80078978((s32)0xF0000009, 0x20, 0x2000, 0);
         g_snd_irq_handle = v0;
-        coli_RobColliScaleEditReset_800789A8(v0);
+        func_800789A8(v0);
         ExitCriticalSection();
     }
 }
@@ -1646,20 +1646,20 @@ void func_800892F8(void) {
         g_spu_init_flag = 0;
         g_spu_timer = 0;
         spu_SetCallback(0);
-        coli_RobColliScaleEditReset_80078988(g_snd_irq_handle);
-        saTan0GaugeInit_80089374(g_snd_irq_handle);
+        func_80078988(g_snd_irq_handle);
+        func_80089374(g_snd_irq_handle);
         ExitCriticalSection();
     }
 }
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel saTan0GaugeInit_80089374\n"
+    "glabel func_80089374\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0xD\n"
     "    nop\n"
-    "endlabel saTan0GaugeInit_80089374\n"
+    "endlabel func_80089374\n"
     ".set reorder\n"
     ".set at\n"
 );
@@ -2319,11 +2319,11 @@ s32 func_8008AEB0(s32 arg0) {
     if ((g_snd_reverb_flag == 1) || (g_spu_busy == 1)) {
         return 1;
     }
-    var_v0 = coli_RobColliScaleEditReset_80078998(g_snd_irq_handle);
+    var_v0 = func_80078998(g_snd_irq_handle);
     if (arg0 == 1) {
         if (var_v0 == 0) {
             do {
-                var_v0 = coli_RobColliScaleEditReset_80078998(g_snd_irq_handle);
+                var_v0 = func_80078998(g_snd_irq_handle);
             } while (var_v0 == 0);
         }
         var_v0 = 1;
@@ -2603,7 +2603,7 @@ void func_8008BDE8(s32 a0, u16 *a1) {
 void func_8008BE04(void) {
     s32 v0;
     v0 = EnterCriticalSection();
-    saTan0GaugeInit_8008D050(&g_snd_callback);
+    func_8008D050(&g_snd_callback);
     if (v0 == 1) {
         ExitCriticalSection();
     }
@@ -2866,12 +2866,12 @@ s32 func_8008C464(s32 arg0, s32 arg1, s32 arg2) {
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel saTan0GaugeInit_8008D050\n"
+    "glabel func_8008D050\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x47\n"
     "    nop\n"
-    "endlabel saTan0GaugeInit_8008D050\n"
+    "endlabel func_8008D050\n"
     ".set reorder\n"
     ".set at\n"
 );

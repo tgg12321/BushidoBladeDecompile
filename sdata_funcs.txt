@@ -49,7 +49,7 @@ func_80038658
 func_80038734
 motion_shift_check_m_hit_stop
 func_8003879C
-motion_SavePreCalcData_800387C0
+func_800387C0
 func_800387E8
 func_8003880C
 func_800388A8
@@ -67,7 +67,7 @@ func_8003A174
 func_8003A264
 func_8003A360
 func_8003A39C
-replay_camera_check_stage_8003A41C
+func_8003A41C
 func_8003A42C
 func_8003A450
 motion_SavePreCalcData_8003A574
@@ -118,9 +118,9 @@ saSeMain_80045600
 saTan5TakeGetPos_80045694
 func_800456F0
 func_8004574C
-efc_ougi_Init_800457DC
+func_800457DC
 func_800457E8
-efc_ougi_Init_800457FC
+func_800457FC
 func_800460E4
 func_8004659C
 func_800466C0
@@ -155,7 +155,7 @@ camera_check_inside_screen_rob_dpos
 func_80053694
 func_80053754
 func_80053E9C
-efc_ougi_Init_80054410
+func_80054410
 func_8005441C
 func_80054434
 func_8005490C
@@ -168,7 +168,7 @@ func_8005C5A8
 gnd_land_hit_char_tsuba
 func_8005FBC8
 func_8005FC9C
-replay_camera_check_stage_80060758
+func_80060758
 func_80060768
 func_80060A68
 func_80060B70

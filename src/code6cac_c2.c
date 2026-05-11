@@ -108,7 +108,7 @@ extern void func_8003B5A4(void);
 extern s32 func_8005E54C(s32, s32, s32);
 extern void func_8005C650(s32, s32, s32);
 extern s32 *saTan2GaugeInit_80077D00(void);
-extern void replay_camera_check_stage_80060758(void);
+extern void func_80060758(void);
 extern void func_8001CD68(u8 *);
 extern void func_80046BF4(s16 *, s32, s32);
 extern void game_StageInit(s32);
@@ -400,7 +400,7 @@ void func_8003BFC4(void) {
     player_Destroy(0);
     player_Destroy(1);
     file_ResetDmaFlag();
-    v = replay_camera_check_stage_80045814();
+    v = func_80045814();
     func_80037540(v, (s32)0x80118000, 1, 0xCF8, 0xB01);
     game_Init();
     D_800A3834 = 8;
@@ -640,7 +640,7 @@ void SetCurrentCursor(void) {
     s0 = saTan2GaugeInit_80077D00();
     func_800372C0();
     gpu_InitDisplay();
-    replay_camera_check_stage_80060758();
+    func_80060758();
     i = 0;
     src = (u8 *)&D_80106A58;
     dst = (u8 *)s0;
@@ -848,8 +848,8 @@ void func_8003CE18(void) {
 extern void mk_leaf_newpos(void);
 extern void func_80021D10(s32, s32 *, s32);
 extern void func_800618B4(s32 *, s32 *);
-extern s32 *replay_camera_check_stage_8005507C(void);
-extern s32 *replay_camera_check_stage_8005508C(void);
+extern s32 *func_8005507C(void);
+extern s32 *func_8005508C(void);
 extern void func_80061064(s32 *, s32 *);
 extern void func_8001979C(s32, u32 *);
 extern void func_8003B328(void);
@@ -896,8 +896,8 @@ void func_8003CF84(void) {
         vp[2] += D_8008EB18;
         func_800618B4(vp, &D_800A312C);
     }
-    a = replay_camera_check_stage_8005507C();
-    b = replay_camera_check_stage_8005508C();
+    a = func_8005507C();
+    b = func_8005508C();
     func_80061064(a, b);
     if (func_80054F68() == 0) {
         s1 = 1;
@@ -1506,7 +1506,7 @@ void func_8003E2AC(void) {
     u16 *p = &g_game_p1_ctrl;
     *p = *p & 0xFFFD;
 }
-u32 replay_camera_check_stage_8003E2C8(void) {
+u32 func_8003E2C8(void) {
     return D_800905F8;
 }
 void replay_camera_get_attack_number(s32 a0, s32 a1, s32 a2, s32 a3) {

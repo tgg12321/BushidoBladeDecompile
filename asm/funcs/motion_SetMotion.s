@@ -378,7 +378,7 @@ glabel motion_SetMotion
     /* 299A4 800391A4 00000000 */  nop
     /* 299A8 800391A8 07004014 */  bnez       $v0, .L800391C8
     /* 299AC 800391AC 01000224 */   addiu     $v0, $zero, 0x1
-    /* 299B0 800391B0 F0E1000C */  jal        motion_SavePreCalcData_800387C0
+    /* 299B0 800391B0 F0E1000C */  jal        func_800387C0
     /* 299B4 800391B4 00000000 */   nop
     /* 299B8 800391B8 02000224 */  addiu      $v0, $zero, 0x2
   .L800391BC:

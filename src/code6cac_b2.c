@@ -119,14 +119,14 @@ void func_80035438(void) {
     func_80068ECC(a0);
 }
 extern u8 D_800A31D8;
-extern void replay_camera_check_stage_8003A41C(void);
+extern void func_8003A41C(void);
 extern void func_80020CDC(void);
 void func_80035480(void) {
     s32 v0;
     gpu_EnableDisplay();
     gpu_InitDisplay();
     if (D_800A31DA == 0) {
-        replay_camera_check_stage_8003A41C();
+        func_8003A41C();
     }
     func_80020CDC();
     player_Destroy(0);
@@ -545,7 +545,7 @@ void func_80037234(void) {
     D_80101E64 = 0;
     D_80101E68 = 1;
 }
-void replay_camera_check_stage_80037250(void) {
+void func_80037250(void) {
     D_80101E64 = 0;
 }
 void marionation_camera_GetMaxFrame(void) {
