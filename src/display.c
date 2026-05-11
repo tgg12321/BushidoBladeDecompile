@@ -1773,17 +1773,16 @@ void gte_SetScreenOffset(s32 a0, s32 a1) {
     __asm__ volatile (".word 0x48C5C800" :: "r"(a1));  /* ctc2 $a1, $25 */
 }
 PAD_NOPS_2; /* 2 NOPs after gte_SetScreenOffset */
+void tslDmaDrawListDelAll(s32 a0) {
+    __asm__ volatile (".word 0x48C4D000" :: "r"(a0));  /* ctc2 $a0, $26 */
+}
+PAD_NOPS_1; /* 1 NOP after tslDmaDrawListDelAll */
 __asm__(
     ".section .text\n"
     "    .set\tnoat\n"
     "    .set\tnoreorder\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel tslDmaDrawListDelAll\n"
-    "    ctc2   $a0, $26\n"
-    "    jr     $ra\n"
-    "    nop\n"
-    "    nop\n"
     "    .global func_8007F00C\n"
     "func_8007F00C:\n"
     "    lwc2   $9, 0($a0)\n"
