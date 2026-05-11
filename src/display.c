@@ -1938,20 +1938,20 @@ __asm__(
     "    ctc2 $t7, $4\n"
     "    jr $ra\n"
     "    nop\n"
-    "    .global func_8007F200\n"
-    "func_8007F200:\n"
-    "    mtc2 $a0, $30\n"
-    "    nop\n"
-    "    nop\n"
-    "    mfc2 $v0, $31\n"
-    "    jr $ra\n"
-    "    nop\n"
     "    .set\treorder\n"
     "    .set\tat\n"
     "    .set reorder\n"
     "    .set at\n"
 );
-PAD_NOPS_1; /* 1 NOP after func_8007F0BC */
+s32 func_8007F200(s32 a0) {
+    register s32 v0 asm("v0");
+    __asm__ volatile (".word 0x4884F000" :: "r"(a0));  /* mtc2 $a0, $30 */
+    __asm__ volatile ("nop");
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
+    return v0;
+}
+PAD_NOPS_1; /* 1 NOP after func_8007F200 */
 s32 func_8007F21C(s32 *a0, s32 *a1, s32 *a2, s32 *a3) {
     register s32 v1 asm("v1");
     register s32 v0 asm("v0");
