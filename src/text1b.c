@@ -12336,7 +12336,6 @@ void func_8005BD30(s32 arg0) {
         D_800EFC50 = D_800EFC44;
     }
 }
-}
 extern u32 D_800EFC38[];
 extern u32 D_800EFB38[];
 extern u8 D_8009AD18[];
@@ -13794,17 +13793,6 @@ void func_80061D74(s32 arg0, s16 arg1) {
         }
         if (D_800F1168[0] != 0) goto check_one_zero;
     }
-    *(s32 *)(D_800A3468 + 0x14) = (s32)D_800F1168;
-    *(s32 *)D_800A3468 = 0x10018;
-    goto end;
-check_one_zero:
-    if (D_800F1168[1] == 0) {
-        *(s32 *)(D_800A3468 + 0x14) = (s32)(D_800F1168 + 1);
-        *(s32 *)D_800A3468 = 0x10019;
-    }
-end:
-    func_80060A68();
-}
     *(s32 *)(D_800A3468 + 0x14) = (s32)D_800F1168;
     *(s32 *)D_800A3468 = 0x10018;
     goto end;
