@@ -36,6 +36,9 @@ extern u32 g_gpu_draw_mode;
 
 extern u32 g_str_setdispmask;
 extern u32 g_str_clearimage;
+extern u8 D_80015F2C;
+extern u8 D_80015F38;
+extern u8 D_80015F4C;
 
 /* --- Functions 0x8007B244 - 0x8007FF7C (text2 segment) --- */
 
@@ -74,14 +77,40 @@ void gpu_DrawSync(s32 a0) {
         ((void (*)(s32))v0[15])(a0);
     }
 }
-void func_8007B3A8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007B3A8.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+void func_8007B3A8(u8 *str, s16 *rect) {
+    s16 w, x, y, h;
+    if (g_gpu_debug_level == 1) goto level_1;
+    if (g_gpu_debug_level == 2) goto level_2;
+    goto end;
+level_1:
+    w = rect[2];
+    if (D_8009BE78 < w) goto bad;
+    x = rect[0];
+    if (D_8009BE78 < w + x) goto bad;
+    y = rect[1];
+    if (D_8009BE7A < y) goto bad;
+    h = rect[3];
+    if (D_8009BE7A < y + h) goto bad;
+    if (w <= 0) goto bad;
+    if (x < 0) goto bad;
+    if (y < 0) goto bad;
+    if (h > 0) goto end;
+bad:
+    g_gpu_debug_func(&D_80015F2C, str);
+    goto common;
+level_2:
+    g_gpu_debug_func(&D_80015F4C, str);
+common:
+    {
+        register void (*fn)() asm("$3") = g_gpu_debug_func;
+        fn(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
+    }
+end:
+    ;
 }
 extern u8 g_str_clearimage;
 extern s32 g_gpu_dev_table;
-extern void func_8007B3A8(u8 *, s32);
+extern void func_8007B3A8(u8 *, s16 *);
 
 void func_8007B4D0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     register s32 a asm("$19") = arg0;

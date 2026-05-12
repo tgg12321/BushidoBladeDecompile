@@ -3731,7 +3731,7 @@ func_800644FC: subst "\.L\d+" ".Lfunc44FC_after_call" @ 22
 func_8007B6C8: subst "beq\s+\$2,\$0,\.L\d+" "bne	$2,$0,.LbodyB6C8" @ 17
 func_8007B6C8: subst "addiu\s+\$2,\$zero,-1" "sll	$2,$17,16" @ 18
 func_8007B6C8: insert_after "addiu	$2,$zero,-1" @ 18
-func_8007B6C8: insert_after "j	.L17" @ 18
+func_8007B6C8: insert_after "j	.L32" @ 18
 func_8007B6C8: insert_label ".LbodyB6C8:" @ 20
 # Body register flip: $v0->$a1 (bf24), $v1->$a0 (arg0[0]), $a3->$v1 (g_gpu_dev_table), $a2->$v0 (arg0[1])
 func_8007B6C8: subst "la\s+\$2,D_8009BF24" "la	$5,D_8009BF24" @ 19
@@ -4751,3 +4751,9 @@ func_8003D39C: reorder 6,14,7,8,9,10,11,13,12 @ 6-14
 
 # func_8006EC0C: u16-typed D_800A3578 emits lhu; target uses lbu for entry byte read
 func_8006EC0C: subst "lhu\s+\$3,%gp_rel\(D_800A3578\)" "lbu	$3,%gp_rel(D_800A3578)" @ 1
+
+func_8007B3A8: $4 <-> $5 @ 14-37
+func_8007B3A8: subst "lh\s+\$3,D_8009BE78" "lh	$5,4($16)" @ 13
+func_8007B3A8: subst "lh\s+\$3,2\(\$16\)" "lh	$4,D_8009BE7A" @ 26
+func_8007B3A8: subst "lh\s+\$5,4\(\$16\)" "lh	$3,D_8009BE78" @ 14
+func_8007B3A8: subst "lh\s+\$4,D_8009BE7A" "lh	$3,2($16)" @ 25
