@@ -129,7 +129,58 @@ def base_c(func: str) -> tuple[str, bool]:
     return "\n".join(lines[keep_from:]), True
 
 
+def is_bridged(func: str) -> bool:
+    """True if asmfix.txt has an active (non-commented) replace_with_asmfile
+    rule for this function. Bridged functions have no C body to diff against,
+    so gen_regfix output is meaningless (every target instruction is "missing")."""
+    asmfix = ROOT / "asmfix.txt"
+    if not asmfix.is_file():
+        return False
+    needle = f"{func}: replace_with_asmfile"
+    for line in asmfix.read_text(encoding="utf-8", errors="replace").splitlines():
+        stripped = line.lstrip()
+        if stripped.startswith("#"):
+            continue
+        if stripped.startswith(needle):
+            return True
+    return False
+
+
+def is_retiring(func: str) -> bool:
+    """True if asmfix.txt has a `# RETIRE: <func>: replace_with_asmfile` line
+    (bridge commented out, retirement in progress)."""
+    asmfix = ROOT / "asmfix.txt"
+    if not asmfix.is_file():
+        return False
+    needle = f"# RETIRE: {func}: replace_with_asmfile"
+    for line in asmfix.read_text(encoding="utf-8", errors="replace").splitlines():
+        if line.lstrip().startswith(needle):
+            return True
+    return False
+
+
+def function_state(func: str) -> str:
+    """One-line state describing where this function is in the lifecycle.
+    Surfaced at the top of agent-brief so the agent picks the right tools."""
+    if is_bridged(func):
+        return ("BRIDGED (active replace_with_asmfile in asmfix.txt). The "
+                "linked binary contains the original asm bytes, not C codegen. "
+                "To start pure-C work: `dc.sh retire " + func + "`.")
+    if is_retiring(func):
+        return ("RETIRING (bridge commented out as `# RETIRE: ...`). The C "
+                "body in src/ is now the source of truth. Iterate, then "
+                "verify with `dc.sh build-active " + func + "` (NOT plain "
+                "`dc.sh verify` — that's bridge-blind).")
+    return "NORMAL (no bridge in asmfix.txt; standard decomp queue work)."
+
+
 def gen_regfix(func: str) -> str:
+    if is_bridged(func):
+        return ("(skipped — function is currently BRIDGED via "
+                "replace_with_asmfile in asmfix.txt; gen_regfix output would "
+                "show every target instruction as 'missing'. Run "
+                "`dc.sh retire " + func + "` first to comment out the bridge, "
+                "then re-run agent-brief to see the real diff.)")
     r = run([sys.executable, str(TOOLS / "gen_regfix.py"), func], 60)
     return r.stdout if r.returncode == 0 else f"(gen_regfix failed: {r.stderr.strip()[:200]})"
 
@@ -315,6 +366,7 @@ def build_brief(func: str, include_asm: bool = True,
 
     return {
         "func": func,
+        "function_state": function_state(func),
         "classify": cls_raw.strip(),
         "classify_dict": cls_dict,
         "asm_body": asm_body(func, asm_max_lines if include_asm else 0)
@@ -334,6 +386,10 @@ def build_brief(func: str, include_asm: bool = True,
 def render_text(b: dict) -> str:
     out = []
     out.append(f"AGENT BRIEF: {b['func']}")
+
+    if b.get("function_state"):
+        out.append(section("Function state"))
+        out.append(b["function_state"])
 
     out.append(section("Classification"))
     out.append(b["classify"] or "(classify failed)")

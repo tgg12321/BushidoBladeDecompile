@@ -77,16 +77,34 @@ case "$CMD" in
         # Active marker state
         if [ -s ".bb2_active_func" ]; then
             ACTIVE=$(tr -d '[:space:]' < .bb2_active_func)
-            echo "Active:   $ACTIVE  (in progress — finish before pulling another)"
+            # Detect retirement state: an active `# RETIRE: <func>:` line in
+            # asmfix.txt means the bridge is commented out and we're working
+            # toward a pure-C body. The bridge-aware verify-c / diff-align
+            # are the correct diagnostics; plain verify is bridge-blind.
+            IS_RETIREMENT=0
+            if grep -q "^# RETIRE: ${ACTIVE}: replace_with_asmfile" asmfix.txt 2>/dev/null; then
+                IS_RETIREMENT=1
+            fi
+            if [ "$IS_RETIREMENT" = "1" ]; then
+                echo "Active:   $ACTIVE  (RETIREMENT in progress — bridge commented out)"
+            else
+                echo "Active:   $ACTIVE  (in progress — finish before pulling another)"
+            fi
             echo
             echo "  Resume work on $ACTIVE. The hook is enforcing — you cannot:"
             echo "  - 'dc.sh next*' queue pulls (refused while active)"
-            echo "  - 'git commit' (refused unless dc.sh verify $ACTIVE shows MATCH)"
+            echo "  - 'git commit' (refused unless verify shows MATCH)"
             echo "  - 'git checkout/restore' on src/ files"
             echo
             echo "  Diagnostic:"
-            echo "    bash tools/dc.sh verify $ACTIVE"
-            echo "    bash tools/dc.sh diff $ACTIVE"
+            if [ "$IS_RETIREMENT" = "1" ]; then
+                echo "    bash tools/dc.sh build-active $ACTIVE   # rebuild + bridge-aware verify-c"
+                echo "    bash tools/dc.sh diff-align $ACTIVE     # real structural diffs"
+                echo "    bash tools/dc.sh diff-summary $ACTIVE   # categorized verdict + next action"
+            else
+                echo "    bash tools/dc.sh verify $ACTIVE"
+                echo "    bash tools/dc.sh diff $ACTIVE"
+            fi
         else
             echo "Active:   NONE (clear to pull from queue)"
         fi
@@ -107,7 +125,7 @@ case "$CMD" in
         echo
         echo "--- Top of queue ---"
         if [ -f "WORK_QUEUE.md" ] && [ ! -s ".bb2_active_func" ]; then
-            awk -v n=3 '
+            QUEUE_OUT=$(awk -v n=3 '
                 /^## Queue/ { in_queue=1; next }
                 in_queue && /^## / { in_queue=0 }
                 in_queue && /^```$/ { in_block = !in_block; next }
@@ -116,7 +134,22 @@ case "$CMD" in
                     count++
                     if (count >= n) exit
                 }
-            ' WORK_QUEUE.md
+            ' WORK_QUEUE.md)
+            if [ -n "$QUEUE_OUT" ]; then
+                echo "$QUEUE_OUT"
+                echo "  (pull with: bash tools/dc.sh next --with-context)"
+            else
+                # Active decomp queue empty — surface what IS pullable so
+                # the agent/user doesn't read the blank section as "done."
+                echo "  Active decomp queue: EMPTY"
+                STRUCT_COUNT=$(awk '/^\| Structural Split Queue \|/ { gsub(/[^0-9]/, "", $4); print $4; exit }' WORK_QUEUE.md 2>/dev/null)
+                ASMFIX_COUNT=$(awk '/^\| Asmfix Retirement Queue \|/ { gsub(/[^0-9]/, "", $4); print $4; exit }' WORK_QUEUE.md 2>/dev/null)
+                [ -n "$STRUCT_COUNT" ] && [ "$STRUCT_COUNT" -gt 0 ] 2>/dev/null && echo "  Structural Split Queue: $STRUCT_COUNT items — pull with: bash tools/dc.sh next-structural --with-context"
+                [ -n "$ASMFIX_COUNT" ] && [ "$ASMFIX_COUNT" -gt 0 ] 2>/dev/null && echo "  Asmfix Retirement Queue: $ASMFIX_COUNT items — pull with: bash tools/dc.sh next-asmfix --with-context"
+                if [ -z "$STRUCT_COUNT$ASMFIX_COUNT" ] || { [ "${STRUCT_COUNT:-0}" = "0" ] && [ "${ASMFIX_COUNT:-0}" = "0" ]; }; then
+                    echo "  All queues empty — decomp work complete."
+                fi
+            fi
         elif [ -s ".bb2_active_func" ]; then
             echo "  (suppressed — finish active function first)"
         fi
@@ -386,6 +419,24 @@ print(f'Replaced {func} in {src}')
             echo "  bash tools/dc.sh retire ${FUNC_NAME}   # comment out the bridge" >&2
             echo "  bash tools/dc.sh verify-c ${FUNC_NAME}" >&2
             exit 1
+        fi
+        # Stale-build guard: if asmfix.txt is newer than build/bb2.exe, the
+        # binary on disk still reflects the *previous* asmfix state (e.g.,
+        # the bridge bytes), and any verify will be a lie. This catches the
+        # `retire` → `verify-c` → false-MATCH trap.
+        if [ -f build/bb2.exe ]; then
+            ASMFIX_MTIME=$(stat -c %Y asmfix.txt 2>/dev/null || stat -f %m asmfix.txt 2>/dev/null || echo 0)
+            BIN_MTIME=$(stat -c %Y build/bb2.exe 2>/dev/null || stat -f %m build/bb2.exe 2>/dev/null || echo 0)
+            if [ "$ASMFIX_MTIME" -gt "$BIN_MTIME" ] 2>/dev/null; then
+                echo "REFUSED: asmfix.txt was modified after the last build (build/bb2.exe is stale)." >&2
+                echo "Any verify against the on-disk binary now would reflect the PREVIOUS asmfix" >&2
+                echo "state (e.g., the bridge bytes) — guaranteeing a false MATCH." >&2
+                echo >&2
+                echo "Rebuild first, then re-run verify-c:" >&2
+                echo "  bash tools/dc.sh build-active ${FUNC_NAME}    # incremental rebuild + verify-c" >&2
+                echo "  bash tools/dc.sh verify-c ${FUNC_NAME}        # standalone re-verify" >&2
+                exit 1
+            fi
         fi
         echo "[verify-c] No active bridge for ${FUNC_NAME}; running normal verify..."
         python3 tools/regfix_verify.py "$FUNC_NAME" 2>&1
@@ -673,12 +724,12 @@ PYEOF
         # then block subsequent `git commit` (until verify passes) and queue
         # pulls until the active function is finished.
         #
-        # Forms:
-        #   dc.sh next                # top 1, set active, no auto-brief
-        #   dc.sh next 5              # preview top 5 (no active change)
-        #   dc.sh next --with-context # top 1 + auto-run agent-brief
-        #   dc.sh next-structural     # top structural split task
-        #   dc.sh next-asmfix         # top asmfix retirement task
+        # Forms (all three queues support the same flags):
+        #   dc.sh next                          # top 1, set active, no auto-brief
+        #   dc.sh next 5                        # preview top 5 (no active change)
+        #   dc.sh next --with-context           # top 1 + auto-run agent-brief
+        #   dc.sh next-structural [--with-context] [N]
+        #   dc.sh next-asmfix     [--with-context] [N]
         case "$CMD" in
             next)
                 SECTION="## Queue (top = next)"
@@ -716,7 +767,12 @@ PYEOF
         # Pass --no-pull to skip explicitly.
         if [ "$NO_PULL" != "1" ] && git rev-parse --git-dir >/dev/null 2>&1; then
             if git remote get-url origin >/dev/null 2>&1; then
-                if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+                # Refresh the index first so stat-only differences (mtime/
+                # ctime) don't fire a false "uncommitted changes" warning
+                # on a content-clean tree. Then use the porcelain status
+                # which only reports real content/staging differences.
+                git update-index --refresh >/dev/null 2>&1 || true
+                if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
                     echo "WARNING: working tree has uncommitted changes; skipping git pull." >&2
                 else
                     if ! git pull --rebase --quiet origin main 2>/tmp/dc_next_pull_err; then

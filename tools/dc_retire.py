@@ -161,10 +161,10 @@ def main():
 
     print()
     print("Next steps:")
-    print(f"  1. dc.sh build                # see the mismatch (it WILL mismatch)")
+    print(f"  1. dc.sh build-active {func}  # incremental rebuild + bridge-aware verify-c")
     print(f"  2. dc.sh diff-align {func}    # see what changed (the bridge is now gone)")
     print(f"  3. Edit src/* to iterate (smart_match, permuter, regfix, …)")
-    print(f"  4. dc.sh verify {func}        # confirm pure-C body matches the asm")
+    print(f"  4. dc.sh verify-c {func}      # bridge-aware verify (NOT plain `verify` — that's bridge-blind)")
     print(f"  5. git commit                 # hook auto-clears active marker")
     print(f"  6. dc.sh refresh-queue        # removes the `# RETIRE: ` line entirely")
     print()

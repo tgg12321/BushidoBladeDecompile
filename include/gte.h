@@ -75,4 +75,28 @@ typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
 #define gte_cc()     __asm__ volatile (".word 0x4B38041C")  /* color col                  */
 #define gte_dpcl()   __asm__ volatile (".word 0x4A680029")  /* depth cue color light      */
 
+/* ---- MVMVA: multiply matrix by vector + accumulate ------------------ *
+ * sf  -- shift fraction (0: no shift / Q12; 1: >>12 / Q0).
+ * mx  -- matrix select (0=R, 1=L, 2=Lcolor, 3=garbage).
+ * v   -- vector select (0=V0, 1=V1, 2=V2, 3=IR vec).
+ * cv  -- translation/color vector (0=TR, 1=BK, 2=FC bugged, 3=none).
+ * lm  -- clamp negative results to 0 (0/1).
+ * Base opcode 0x4A400012; sf/mx/v/cv/lm pack into the immediate. The
+ * assembler computes the constant at assembly time via GAS expressions.
+ * Reference: PsyQ libgte gte_MVMVA in inline_n.h (replaces `cop2 IMM`
+ * with `.word` form so neither maspsx nor as need GTE-aware decoding). */
+#define gte_mvmva(sf, mx, v, cv, lm) \
+    __asm__ volatile (".word 0x4A400012 + (" #sf "<<19) + (" #mx "<<17) + (" #v "<<15) + (" #cv "<<13) + (" #lm "<<10)")
+
+/* ---- Generic control-register / data-register transfer -------------- *
+ * These wrap the GTE move-to/from coprocessor ops with explicit register
+ * indices. The PsyQ SDK uses Sony's named-helper variants
+ * (gte_SetRotMatrix, gte_SetTransVector, ...) which decompose into
+ * sequences of these. For matching decomp work it's often clearer to
+ * emit the raw transfers and let the surrounding C be obvious.        */
+#define gte_ctc2(val, reg) __asm__ volatile ("ctc2 %0, $" #reg :: "r"(val))   /* CPU -> GTE ctrl reg */
+#define gte_mtc2(val, reg) __asm__ volatile ("mtc2 %0, $" #reg :: "r"(val))   /* CPU -> GTE data reg */
+#define gte_cfc2(reg)      ({ s32 _r; __asm__ volatile ("cfc2 %0, $" #reg : "=r"(_r)); _r; })
+#define gte_mfc2(reg)      ({ s32 _r; __asm__ volatile ("mfc2 %0, $" #reg : "=r"(_r)); _r; })
+
 #endif /* GTE_H */

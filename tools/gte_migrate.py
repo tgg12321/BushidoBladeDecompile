@@ -128,14 +128,31 @@ def translate_one(insn: str) -> tuple[str, bool]:
             return (f'({{ s32 _t; __asm__ volatile("mfc2 %0, {cop_reg}" '
                     f': "=r"(_t)); _t; }})'), True
 
-    # mtc2 $rS, $copN  -> proper-constrained inline asm write
+    # mtc2 $rS, $copN  -> gte_mtc2 macro (now in include/gte.h)
     if mnem == "mtc2":
-        m = re.match(r"\$([\w]+),\s*(\$\d+)", operands)
+        m = re.match(r"\$([\w]+),\s*\$(\d+)", operands)
         if m:
             src_reg = m.group(1)
-            cop_reg = m.group(2)
-            return (f'__asm__ volatile("mtc2 %0, {cop_reg}" :: "r"'
-                    f"(/* TODO: var holding {src_reg} */))"), True
+            cop_idx = m.group(2)
+            if src_reg in ("zero", "0"):
+                return f"gte_mtc2(0, {cop_idx})", True
+            return f"gte_mtc2(/* TODO: var holding {src_reg} */, {cop_idx})", True
+
+    # ctc2 $rS, $copN  -> gte_ctc2 macro (now in include/gte.h)
+    if mnem == "ctc2":
+        m = re.match(r"\$([\w]+),\s*\$(\d+)", operands)
+        if m:
+            src_reg = m.group(1)
+            cop_idx = m.group(2)
+            if src_reg in ("zero", "0"):
+                return f"gte_ctc2(0, {cop_idx})", True
+            return f"gte_ctc2(/* TODO: var holding {src_reg} */, {cop_idx})", True
+
+    # mvmva sf, mx, v, cv, lm  -> gte_mvmva macro
+    if mnem == "mvmva":
+        m = re.match(r"([0-9x]+),\s*([0-9x]+),\s*([0-9x]+),\s*([0-9x]+),\s*([0-9x]+)", operands)
+        if m:
+            return f"gte_mvmva({m.group(1)}, {m.group(2)}, {m.group(3)}, {m.group(4)}, {m.group(5)})", True
 
     # swc2 $copN, offset($base)  -> gte_stsxy(p) etc.
     if mnem == "swc2":
