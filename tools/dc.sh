@@ -506,6 +506,14 @@ for idx, fname in candidates:
     if ": MATCH " in res.stdout:
         print(f"  PURGE {fname}: verify-c says MATCH (C body produces correct bytes)")
         purgable.add(idx)
+        # Post-match cleanup: clear iter_log so the next retirement of
+        # this function (rare, but possible) starts with a fresh log.
+        try:
+            log = Path(".bb2_iter_log") / f"{fname}.jsonl"
+            if log.is_file():
+                log.unlink()
+        except Exception:
+            pass
     else:
         print(f"  KEEP  {fname}: verify-c did not report MATCH")
         if res.stdout.strip():
@@ -936,7 +944,16 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         # the edit-iterate loop. The full clean-rebuild gate at commit
         # time (active_func_guard hook) still protects against cache
         # lag — this is just for tight iteration.
+        # Also appends to .bb2_iter_log/<func>.jsonl and surfaces the
+        # trajectory + plateau advice (see iter_log.py for the rule).
         python3 tools/build_active.py "$@" 2>&1
+        ;;
+
+    iter-log)
+        # Per-function build trajectory: shows recent rounds + plateau
+        # advice. Auto-fed by `build-active`. Use to check if you're
+        # stuck on the same diff count and should switch technique.
+        python3 tools/iter_log.py "$@"
         ;;
 
     regfix-drift-immune)

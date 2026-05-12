@@ -129,6 +129,104 @@ def base_c(func: str) -> tuple[str, bool]:
     return "\n".join(lines[keep_from:]), True
 
 
+def m2c_structural_reading(func: str) -> str:
+    """Surface STRUCTURE-revealing observations from m2c's base.c body.
+
+    m2c often reads the original C's *expression-level* structure better
+    than agents do (it has no GCC-allocator bias). When the agent gets
+    walled by register cascade, re-reading m2c's body for high-level
+    shape clues (esp. whether a store is folded INTO an expression that
+    contains a call, vs. statements on separate lines) is often the unlock.
+
+    This function extracts those clues at the top of the brief so the
+    agent doesn't have to scroll past the typedef preamble to see them.
+
+    Observations surfaced:
+      - Function calls inside other expressions (suggests delay-slot fill
+        opportunity; classic store-before-jal pattern).
+      - Pre-call writes to memory (`*ptr = ...; jal(...);`) — same hint.
+      - Pre-computed temps fed to calls vs. inline-computed args.
+      - Whether the function reads back a value via the same pointer it
+        just stored to (suggests store + reload-from-memory + cast pattern).
+    """
+    body, ok = base_c(func)
+    if not ok:
+        return ""
+    # Find the function's brace body.
+    m = re.search(
+        rf"\b{re.escape(func)}\s*\([^)]*\)\s*\{{(.*)\n\}}",
+        body, re.DOTALL,
+    )
+    if not m:
+        return ""
+    bd = m.group(1)
+
+    observations = []
+
+    # 1) Find statements where a function call appears INSIDE a larger
+    #    expression (e.g., `*(ptr) = ... + jal(...);` or `func(jal(...))`).
+    nested_call_lines = []
+    for line in bd.splitlines():
+        ls = line.strip()
+        if not ls or ls.startswith("/*") or ls.startswith("//"):
+            continue
+        # Skip control-flow constructs — the "function call nested in
+        # condition" of an if/while is a control-flow shape, not a
+        # delay-slot fill candidate.
+        if re.match(r"^(if|while|for|switch|else if)\b", ls):
+            continue
+        # We're looking for: a function call that appears INSIDE a
+        # store-RHS expression or some arithmetic, with a store target
+        # or arithmetic operator visible on the SAME line. This is the
+        # classic store-before-jal / delay-slot-fill shape.
+        if not re.search(r"\b[a-zA-Z_]\w*\s*\([^)]*\)", ls):
+            continue
+        stripped = re.sub(r"\b[a-zA-Z_]\w*\s*\([^()]*\)", "@CALL@", ls)
+        # The line must:
+        #   (a) reference a memory store (`*ptr = ...`) or a typed cast
+        #       deref on the LHS (`*(s32 *)... =`), OR
+        #   (b) compute an arithmetic expression *containing* the call.
+        # AND must NOT be a plain function-call statement (`fn(x);`).
+        has_store = bool(re.search(r"\*\s*\(?[\w]+.*?=", stripped))
+        has_arith_around = bool(
+            re.search(r"@CALL@\s*[+\-*<<>>|&^]", stripped)
+            or re.search(r"[+\-*<<>>|&^]\s*@CALL@", stripped)
+        )
+        bare_call_stmt = re.fullmatch(r"\s*@CALL@\s*;\s*", stripped)
+        if (has_store or has_arith_around) and not bare_call_stmt:
+            nested_call_lines.append(ls)
+    if nested_call_lines:
+        observations.append(
+            "Call(s) embedded in larger expressions — this is m2c's read of "
+            "the original C's delay-slot-fill structure. Replicate the "
+            "expression shape verbatim in src/ (don't hoist the call into "
+            "a separate temp). See feedback_store_before_jal.md."
+        )
+        for ln in nested_call_lines[:3]:
+            observations.append(f"  • {ln[:120]}")
+
+    # 2) Pre-call store followed by call (and possibly read-back).
+    lines = [ln.rstrip() for ln in bd.splitlines() if ln.strip() and not ln.strip().startswith("/*")]
+    pre_call_store = False
+    for i, ln in enumerate(lines[:-1]):
+        if re.match(r"\s*\*\s*\(", ln) and "=" in ln and not "==" in ln:
+            # Looks like a memory store.
+            nxt = lines[i + 1] if i + 1 < len(lines) else ""
+            if re.search(r"\b[a-zA-Z_]\w*\s*\(", nxt) and "=" in nxt:
+                pre_call_store = True
+                break
+    if pre_call_store:
+        observations.append(
+            "Pre-call store-to-memory immediately followed by a function "
+            "call — same delay-slot-fill hint. GCC can move the sh into the "
+            "jal's delay slot if the C order is `store; call;`."
+        )
+
+    if not observations:
+        return ""
+    return "\n".join(observations)
+
+
 def is_bridged(func: str) -> bool:
     """True if asmfix.txt has an active (non-commented) replace_with_asmfile
     rule for this function. Bridged functions have no C body to diff against,
@@ -367,6 +465,7 @@ def build_brief(func: str, include_asm: bool = True,
     return {
         "func": func,
         "function_state": function_state(func),
+        "m2c_reading": m2c_structural_reading(func),
         "classify": cls_raw.strip(),
         "classify_dict": cls_dict,
         "asm_body": asm_body(func, asm_max_lines if include_asm else 0)
@@ -390,6 +489,16 @@ def render_text(b: dict) -> str:
     if b.get("function_state"):
         out.append(section("Function state"))
         out.append(b["function_state"])
+
+    if b.get("m2c_reading"):
+        out.append(section("READ ME FIRST: m2c's structural reading"))
+        out.append(
+            "m2c (the decompiler that generated this function's base.c) often "
+            "reads the original C's expression-level shape better than an "
+            "agent eyeballing the asm. Below are observations from m2c's "
+            "output that frequently matter for matching:")
+        out.append("")
+        out.append(b["m2c_reading"])
 
     out.append(section("Classification"))
     out.append(b["classify"] or "(classify failed)")

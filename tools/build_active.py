@@ -117,7 +117,58 @@ def main() -> int:
 
     print()
     print(f"[build-active] Running verify-c for {args.func}...")
-    rc = run(["bash", "tools/dc.sh", "verify-c", args.func])
+    # Capture verify-c output so we can extract the diff count for the
+    # iteration log (and still stream it to the user).
+    proc = subprocess.run(
+        ["bash", "tools/dc.sh", "verify-c", args.func],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+    )
+    out_text = (proc.stdout or "") + (proc.stderr or "")
+    sys.stdout.write(proc.stdout or "")
+    sys.stderr.write(proc.stderr or "")
+    rc = proc.returncode
+
+    # Parse the verify-c output for "MATCH (0 diffs in N bytes)" or
+    # "N instruction(s) differ (... K bytes)" and record to iter_log.
+    diffs = None
+    bytes_off = None
+    matched = False
+    sha1_ok = False
+    m_match = re.search(r"MATCH \((\d+) diffs in (\d+) bytes\)", out_text)
+    m_differ = re.search(r": (\d+) instruction\(s\) differ.*?(\d+) bytes\)", out_text)
+    if m_match:
+        diffs = int(m_match.group(1))
+        matched = (diffs == 0)
+    elif m_differ:
+        diffs = int(m_differ.group(1))
+        # Try to compute bytes_off from "function at 0xADDR, N bytes" vs target.
+        # We don't have target size here; leave bytes_off as None unless we can
+        # find it (the binary verify output prints "X bytes" = mine's size).
+    # Try to detect SHA1 match from the make tail (the verify --all output
+    # in build-active doesn't run, but a successful incremental build that
+    # then matches one function doesn't imply whole-binary SHA1. Keep it
+    # conservative: only set sha1_ok when verify-c reports MATCH AND the
+    # build succeeded.)
+    sha1_ok = matched
+
+    try:
+        from iter_log import record as iter_record, plateau_check, render_trajectory, render_plateau_advice  # noqa: E402
+        iter_record(args.func, diffs, bytes_off, matched, sha1_ok)
+        traj = render_trajectory(args.func, last=5)
+        if traj:
+            print()
+            print(f"[build-active] Trajectory for {args.func} (last 5 rounds):")
+            print(traj)
+        check = plateau_check(args.func)
+        advice = render_plateau_advice(check)
+        if advice.strip():
+            print()
+            print(advice.rstrip())
+    except Exception as e:
+        print(f"[build-active] (iter_log warning: {e})", file=sys.stderr)
+
     return 0 if rc == 0 else 1
 
 

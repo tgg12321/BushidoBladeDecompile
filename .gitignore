@@ -96,6 +96,9 @@ codex_lab/
 # Active function marker (used by .claude/hooks/active_func_guard.sh)
 .bb2_active_func
 
+# Per-function build-active iteration log (mutates per build)
+.bb2_iter_log/
+
 # Per-function quit log (mutates between sessions; not source)
 .bb2_quit_log.json
 

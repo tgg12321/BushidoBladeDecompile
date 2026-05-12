@@ -190,6 +190,12 @@ Sequence-aligned diff with relocation masking. Plain `dc.sh diff` cascades (1 mi
 
 Reading raw `dc.sh diff` output before `diff-align` is wasted tokens. Don't.
 
+### 4.1.b `dc.sh iter-log show <func>` — trajectory + plateau detection
+
+`dc.sh build-active` auto-records each round's diff count to `.bb2_iter_log/<func>.jsonl` and surfaces the recent trajectory + plateau advice. After 3 rounds at the same diff count, the advice escalates to "PLATEAU detected: switch technique." Don't keep iterating the same knob.
+
+This was retrofitted after a previous session's 25-round push to match `calc_fc_frame_800203B4` bounced 35→39→35→40→35 across 8 rounds without realizing the plateau. Each round looked productive in isolation (diff count was reasonable); the trajectory is what surfaces "you're stuck."
+
 ### 4.2 `dc.sh diff-summary <func>` — categorized verdict
 
 One-line-per-category classification of every differing instruction:
@@ -200,8 +206,12 @@ One-line-per-category classification of every differing instruction:
 | register-rename | `dc.sh add-regfix <func> swap $X $Y @ <idx>` — NOT permuter |
 | immediate | Check signed vs unsigned cast at the source level |
 | branch-offset | Label drift — `dc.sh fix-label-drift --apply` |
-| structural | Permuter or new C variant (§5) |
+| structural (1–2) | Targeted fix via `dc.sh diff-align` |
+| structural (3–15) | `dc.sh permute-adaptive <func>` — permuter territory |
+| structural (>15) | Re-read m2c base.c (top of `agent-brief`); restructure the C shape, then re-run programmatic pipeline |
 | cascade | False alarm — re-read `diff-align` |
+
+`diff-summary` also runs a callee-save count diagnostic. If it reports `+N callee-save vs target`, that's almost always the lookup-store-via-delay-slot pattern (see `feedback_store_before_jal.md`) — fix that before anything else; the other diffs likely cascade from it.
 
 ### 4.3 `dc.sh recipes <func>` — named-recipe lookup
 
