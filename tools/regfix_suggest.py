@@ -301,8 +301,14 @@ def main() -> int:
                     help="Append the suggested rules to regfix.txt")
     ap.add_argument("--comment", default=None,
                     help="Prepend a `# <comment>` line above the rules")
-    ap.add_argument("--max-rules", type=int, default=40,
-                    help="Cap on emitted rules; >max means likely structural mismatch")
+    ap.add_argument("--max-rules", type=int, default=15,
+                    help="Cap on emitted rules. >15 usually means the structural "
+                         "shape is wrong (auto-suggest doesn't track index-shift "
+                         "cascades from interleaved insert/delete, so big rule "
+                         "sets often regress). Lowered from 40 after the "
+                         "cpu_check_tubazeri retrospective: a 43-rule auto-apply "
+                         "regressed mine from 32→44 diffs because the rules "
+                         "operated on each other's intermediate indices.")
     args = ap.parse_args()
 
     rules, hints, stats = suggest(args.func)
@@ -321,8 +327,13 @@ def main() -> int:
     if len(rules) > args.max_rules:
         print(f"# regfix-suggest: WARNING — {len(rules)} suggested rules exceeds "
               f"--max-rules={args.max_rules}.")
-        print(f"# Likely a structural C-level mismatch; reach for "
-              f"`dc.sh permute` / `smart_match` BEFORE adding {len(rules)} regfix lines.")
+        print(f"# Likely a structural C-level mismatch; auto-apply will probably")
+        print(f"# REGRESS the build because rules operate on each other's intermediate")
+        print(f"# indices and don't account for as-pass delay-slot fills.")
+        print(f"# Switch tactic INSTEAD of stretching the cap:")
+        print(f"#   - re-read m2c base.c for shape mismatch (top of `dc.sh agent-brief`)")
+        print(f"#   - try `dc.sh permute-adaptive {args.func}` for C-structural search")
+        print(f"#   - pick 3-5 KEY rules by hand from this output, not all of them")
         print(f"# (Showing first {args.max_rules}; pass --max-rules 0 to disable cap.)")
         if args.max_rules > 0:
             rules = rules[: args.max_rules]

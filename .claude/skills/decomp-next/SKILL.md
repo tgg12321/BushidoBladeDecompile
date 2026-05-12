@@ -56,6 +56,7 @@ When you think you're walled, you are wrong about *yourself*, not the function. 
 - Build a new transformation pass / regfix op / named recipe.
 - Different optimization flag (`-fno-strength-reduce`, etc. — see `NO_SR_FILES` in Makefile for the per-file mechanism).
 - Read other memory files for matching patterns (`feedback_matching_playbook.md`, `feedback_regfix_reference.md`, `feedback_70C70_lessons.md`).
+- **Memory recipes you read EARLIER but dismissed as "not applicable" — re-evaluate.** When the cpu_check_tubazeri match was stuck at 32 diffs, the agent read `feedback_quick_reference.md:391` ("`lui+ori+sw 0(reg) → lui+sw offset($at)` | 2 substs + 1 delete") and dismissed it as "not my pattern." The eventual fix was structurally identical (delete + reorder + 2 substs). When you've plateaued, go back to recipes you skimmed and TRY them — your initial "doesn't apply" judgment was made before you understood the gap.
 
 The list is open-ended on purpose: if you've tried every item above and the function still doesn't match, the next item is *invent the technique this function needs and write it down in a new feedback file*.
 
@@ -233,6 +234,8 @@ Diffs target.s vs the build pipeline output and emits `delete`/`insert_after`/`s
 
 **Never write regfix rules from scratch before running this.** The indices are easy to get wrong (`lw $X, sym` is 1 maspsx instruction, not 2; `addiu $5,$zero,1` not `$0`; deletes/inserts shift indices in different phases). `regfix-suggest` knows the conventions.
 
+**Suggest output > 15 rules → STOP, don't `--apply`.** The tool's default `--max-rules` is now 15 (lowered from 40 after the cpu_check_tubazeri retrospective: a 43-rule auto-apply regressed mine 32→44 diffs because rules operate on each other's intermediate indices and don't account for `as` delay-slot fills). When the cap fires, the right move is to RE-READ m2c base.c for shape mismatch, run `dc.sh permute-adaptive`, OR pick 3-5 KEY rules from the output by hand. Do NOT raise `--max-rules` to bypass the cap.
+
 ### 4.6 `dc.sh permute-adaptive <func>` — budget-scaled permuter
 
 Budget scales with ins/del count: 1-2 → 90s; 3-5 → 5min; 6-10 → 15min; >10 → 30min. Run this; wait for it.
@@ -271,6 +274,12 @@ The ladder (in order — each rung is a TECHNIQUE switch, never a TARGET switch)
 3. **Long permuter runs** — `--max-time 3600` (1 hour), or overnight. Most cheap structural variants surface in the first 90s; long runs find the obscure ones. Acceptable.
 
 4. **regfix at assembly stream** — `swap`, `subst`, `delete`, `insert`, `insert_after`, `insert_label`, `reorder`, `fill_delay`, `drain_delay`. Use `dc.sh add-regfix` (it pre-validates against live `dump_text_indices` before append). NEVER edit `regfix.txt` directly with `Edit`/`Write` — the `regfix_scope_guard.sh` hook will block you anyway, and you'll waste a tool call.
+
+   **Maspsx idx vs binary idx** — these are NOT the same number. `dc.sh dump-text` shows MASPSX OUTPUT indices (post-cc1, pre-`as`). `dc.sh verify-c` shows BINARY indices (post-`as` expansion). A single maspsx line like `sw $X, 0x1F800360` is 1 maspsx idx but 2 binary insns (`as` expands it to `lui $at, hi; sw $X, lo($at)`). **Regfix rules (`subst`, `delete`, `insert_after`, `reorder`) operate on MASPSX indices**, not binary — get the idx by reading `dc.sh dump-text` (where `lw $X, ABS_ADDR` shows as a single line), NOT `dc.sh verify-c` (where it shows as the post-expansion lui+lw pair). Confusing them is the #1 reason regfix rules target the wrong instruction.
+
+   **`subst > reorder` near jal/branch** — when target wants two instructions in swapped order and they're immediately before a jal, prefer two `subst` rules that swap the LINE TEXT in place over a `reorder` that moves them. The reorder produces e.g. `[lw $a0, lw $a1, jal, nop]` and `as` (with default `.set reorder`) auto-fills the jal delay slot from the immediately preceding instruction (`lw $a1`), giving `[lw $a0, jal, lw $a1 in delay]` — wrong byte sequence. The subst-swap leaves both instructions in their source positions so `as` doesn't promote either. See `feedback_scratchpad_gte_recipe.md` for the cpu_check_tubazeri reference.
+
+   **`add-regfix insert/insert_after/subst` and `$N` shell escaping** — `wsl bash -c '... add-regfix insert "lui $7, ..."'` STRIPS `$7` (positional arg expansion). The tool now detects `lui ,` / `,,` / ` , ` patterns and aborts with an error, but the canonical safe pattern is to write a `tmp/inject_*.py` script that calls `Path("regfix.txt").write_text(... + rule + "\n", newline="\n")` — same Python idiom as the C-body injection in §5.x. NEVER pass `$N`-bearing asm text through a `bash -c` quoted string.
 
 5. **Compound regfix layering** — 10+ rules across multiple blocker classes for one function is normal. The `dc.sh asmfix-slice` tool can lift a small region into `asmfix.txt` if the surrounding C is correct but a sub-region is structurally unrepresentable (e.g., scratchpad pointer math GCC won't emit).
 

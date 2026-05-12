@@ -46,6 +46,34 @@ from active_func_scope import enforce_scope
 REG_RE = re.compile(r"^\$(?:\d+|zero|at|v[01]|a[0-3]|t[0-9]|s[0-7]|t[89]|k[01]|gp|sp|fp|ra)$")
 RANGE_RE = re.compile(r"^(\d+)\s*-\s*(\d+)$")
 
+# Patterns indicating asm_text was passed through a shell that ate `$N`
+# positional-arg literals (e.g. `wsl bash -c '... "lui $7, ..."'` strips $7
+# because no positional args bound). Symptoms in the surviving text:
+#   - opcode followed immediately by a comma (`lui ,` instead of `lui $7,`)
+#   - two adjacent commas (`,,` from `$7,$7` collapsing)
+#   - operand starting with bare `,` after whitespace (` , `)
+# Catch these BEFORE the rule lands so the agent fixes the quoting instead
+# of debugging a silent build mismatch later.
+_SHELL_STRIPPED_RE = re.compile(
+    r"(?:\b[a-z][a-z0-9.]*\s+,)|(?:,,)|(?:,\s*,)|(?:\s,\s)",
+    re.IGNORECASE,
+)
+
+
+def detect_shell_stripped_dollars(asm_text: str) -> str | None:
+    """Return a hint message if asm_text looks like shell ate $N literals."""
+    if _SHELL_STRIPPED_RE.search(asm_text):
+        return (
+            f"asm_text {asm_text!r} contains a stripped-register pattern "
+            f"(e.g. `lui ,` or `,,`). This usually means the shell "
+            f"interpreted `$N` literals as positional args and substituted "
+            f"empty strings.\n"
+            f"FIX: pass the rule via `--raw \"<full line>\"` instead, OR "
+            f"build it through a Python tmp/inject_*.py script (Path.write_text "
+            f"with newline='\\n') instead of a `wsl bash -c '...'` command line."
+        )
+    return None
+
 
 def parse_range(s: str) -> tuple[int, int]:
     m = RANGE_RE.match(s)
@@ -78,6 +106,9 @@ def build_rule(args) -> str:
     if op == "subst":
         # Defensive escaping — leave the user's pattern verbatim, but warn if
         # they used a bare $ that isn't escaped or trailing.
+        hint = detect_shell_stripped_dollars(args.replacement)
+        if hint:
+            raise ValueError(hint)
         return f'{f}: subst "{args.pattern}" "{args.replacement}" @ {args.idx}'
 
     if op == "delete":
@@ -97,9 +128,15 @@ def build_rule(args) -> str:
             "      the ORIGINAL pre-delete index of the anchor. See\n"
             "      memory/feedback_retirement_recipes.md gotcha #4.\n"
         )
+        hint = detect_shell_stripped_dollars(args.asm_text)
+        if hint:
+            raise ValueError(hint)
         return f'{f}: insert "{args.asm_text}" @ {args.idx}'
 
     if op == "insert_after":
+        hint = detect_shell_stripped_dollars(args.asm_text)
+        if hint:
+            raise ValueError(hint)
         return f'{f}: insert_after "{args.asm_text}" @ {args.idx}'
 
     if op == "reorder":
