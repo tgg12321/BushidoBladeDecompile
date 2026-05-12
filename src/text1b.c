@@ -15550,10 +15550,30 @@ void func_8006E10C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-void func_8006E2A8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006E2A8.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+extern s32 D_800A3518;
+extern s32 D_800F7438;
+extern u8 D_800A32E0[8];
+extern void func_8007B9B0(s32);
+extern void func_8007BC08(s32);
+extern void func_8007B4D0(s32, s32, s32, s32);
+extern void gpu_SetDispMask(s32);
+extern void gpu_DrawSync(s32);
+extern void disp_SetFramebufferMode(s32, s32, s32, s32);
+s32 func_8006E2A8(void) {
+    u8 rect[8];
+    s32 base;
+    gpu_SetDispMask(0);
+    base = ((D_800A3518 & 1) * 0x4090) + (s32)&D_800F7438;
+    func_8007B9B0(base);
+    base = ((D_800A3518 & 1) * 0x4090) + (s32)&D_800F7438 + 0x5C;
+    func_8007BC08(base);
+    gpu_DrawSync(0);
+    __builtin_memcpy(rect, D_800A32E0, 8);
+    func_8007B4D0((s32)rect, 0, 0, 0);
+    gpu_DrawSync(0);
+    disp_SetFramebufferMode(1, 0, 0, 0);
+    gpu_SetDispMask(1);
+    return 1;
 }
 extern s32 D_800A34FC;
 extern s32 D_800A3520;
