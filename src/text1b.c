@@ -10719,77 +10719,10 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void func_80052930(s32 *matrix, s32 *vec, s16 *out) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-    register s32 t6 asm("$14");
-    register s32 t7 asm("$15");
-    register u32 t9 asm("$25");
-    register s32 v0 asm("$2");
-    register s32 v1 asm("$3");
-    t0 = matrix[0];
-    t1 = matrix[1];
-    t2 = matrix[2];
-    t3 = matrix[3];
-    t4 = matrix[4];
-    __asm__ volatile ("lui $25, 0xFFFF" : "=r"(t9));
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    __asm__ volatile ("ctc2 $0, $5");
-    __asm__ volatile ("ctc2 $0, $6");
-    __asm__ volatile ("ctc2 $0, $7");
-    t0 = vec[0];
-    t1 = vec[1];
-    t2 = vec[2];
-    t3 = vec[3];
-    t4 = vec[4];
-    t5 = t1 & t9;
-    t6 = t0 & 0xFFFF;
-    t5 = t5 | t6;
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t5));
-    t6 = t3 & 0xFFFF;
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(t6));
-    v0 = t2 << 16;
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A480012");  /* mvmva 1,0,0,0,0 */
-    v1 = (u32)t0 >> 16;
-    v0 = v0 | v1;
-    v1 = (u32)t3 >> 16;
-    __asm__ volatile ("mfc2 %0, $9" : "=r"(t5));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t6));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t7));
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(v0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(v1));
-    out[0] = t5;
-    out[3] = t6;
-    out[6] = t7;
-    __asm__ volatile (".word 0x4A480012");  /* mvmva 1,0,0,0,0 */
-    v0 = t2 & t9;
-    v1 = t1 & 0xFFFF;
-    v0 = v0 | v1;
-    v1 = t4 & 0xFFFF;
-    __asm__ volatile ("mfc2 %0, $9" : "=r"(t5));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t6));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t7));
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(v0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(v1));
-    out[1] = t5;
-    out[4] = t6;
-    out[7] = t7;
-    __asm__ volatile (".word 0x4A480012");  /* mvmva 1,0,0,0,0 */
-    __asm__ volatile ("mfc2 %0, $9" : "=r"(t5));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t6));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t7));
-    out[2] = t5;
-    out[5] = t6;
-    out[8] = t7;
+void func_80052930(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052930.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
 void game_2d_CheckLifeGaugeNoDisp(s32 *matrix, s32 *vec, s16 *out) {
     register s32 t0 asm("$8");
