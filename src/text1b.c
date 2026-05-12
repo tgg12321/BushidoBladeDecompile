@@ -15667,10 +15667,44 @@ s32 func_8006EACC(s32 arg0, s32 arg1) {
     ((void (*)(s32 *))(&D_8009BC1C)[D_800A3580])(sp10);
     return D_800A35A0;
 }
-void func_8006EC0C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006EC0C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+extern s16 D_800A3570;
+extern u16 D_800A3578;
+extern s16 D_800A3584;
+void func_8006EC0C(void) {
+    s32 state = D_800A3578;  /* lhu gp-rel; regfix converts to lbu at idx 1 */
+
+    if (state == 2) goto fade_out;
+    if (state < 3) {
+        if (state == 1) goto ramp_up;
+        goto done;
+    }
+    if (state == 3) goto ramp_up;
+    if (state == 4) goto fade_out;
+    goto done;
+
+ramp_up:
+    D_800A3570 = (s16)(D_800A3570 + 0x20);
+    if ((s32)(s16)D_800A3570 < 0x1E8) goto done;
+    {
+        s16 v3584 = D_800A3584;
+        u16 word = D_800A3578;
+        D_800A3570 = 0x1E8;
+        D_800A3580 = v3584;
+        if ((word >> 8) != 0) goto done;
+        D_800A3578 = word + 1;
+    }
+    goto done;
+
+fade_out:
+    if (D_800A3570 == 0x1E8) {
+        func_8005C650(5, 0x7F, 0x7F);
+    }
+    D_800A3570 = (s16)(D_800A3570 - 0x20);
+    if ((s32)(s16)D_800A3570 > 0) goto done;
+    D_800A3570 = 0;
+    D_800A3578 = 0;
+
+done: ;
 }
 void func_8006ECF4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006ECF4.s).
