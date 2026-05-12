@@ -6,12 +6,11 @@ Reads `.bb2_active_func` and provides:
   enforce_scope(target_func) -> None     raises SystemExit if target_func differs
                                           from the active marker
 
-This prevents the failure mode where a subagent (or a misconfigured tool run)
-edits regfix rules for FUNCTIONS OTHER THAN THE ACTIVE ONE, which has happened
-when:
-- subagent #1 on func_8007D3F8 deleted 79 regfix rules from func_8005D554,
-  func_80074B18, func_8007352C — those functions had no business being edited
-  during work on func_8007D3F8.
+This prevents the failure mode where a tool run (misconfigured or otherwise)
+edits regfix rules for FUNCTIONS OTHER THAN THE ACTIVE ONE. Past incident:
+an agent on func_8007D3F8 deleted 79 regfix rules from func_8005D554,
+func_80074B18, func_8007352C — those functions had no business being edited
+during work on func_8007D3F8.
 
 Set BB2_SCOPE_OVERRIDE=1 to bypass (only for explicit cross-function edits
 authorized by the user, e.g., post-match label-drift fixes).
@@ -65,9 +64,9 @@ def enforce_scope(target_func: str, *, action: str = "modify regfix/asmfix rules
     print(
         f"REFUSED: cannot {action} `{target_func}` while active function is `{active}`.\n"
         f"\n"
-        f"Cross-function regfix edits during active work caused subagent #1's regression of\n"
-        f"79 rules across func_8005D554/func_80074B18/func_8007352C while it was nominally\n"
-        f"working on func_8007D3F8. Tools refuse this by default.\n"
+        f"Cross-function regfix edits during active work caused a regression of\n"
+        f"79 rules across func_8005D554/func_80074B18/func_8007352C while the active\n"
+        f"function was func_8007D3F8. Tools refuse this by default.\n"
         f"\n"
         f"Valid escape hatches:\n"
         f"  1. Finish the active function and clear the marker (commit auto-clears it).\n"

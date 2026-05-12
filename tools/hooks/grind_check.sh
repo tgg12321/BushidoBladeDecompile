@@ -177,7 +177,7 @@ PATTERNS=(
     "[0-9]+\+? hours"
     "[0-9]+ iterations"
     "diminishing"
-    # Subagent-rationalization patterns observed in func_80070C70 STUCK returns:
+    # Rationalization patterns observed in func_80070C70 STUCK returns:
     "tractable bound"
     "exceeds the tool"
     "cannot be coerced"

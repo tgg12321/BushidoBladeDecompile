@@ -347,7 +347,7 @@ def main() -> int:
 
     if args.apply:
         # Refuse cross-function applies. regfix-suggest --apply is exactly the
-        # path subagent #1 used to (auto-)remove rules from func_8005D554 et al.
+        # path an earlier agent used to (auto-)remove rules from func_8005D554 et al.
         enforce_scope(args.func, action="append regfix-suggest rules for")
         target = ROOT / "regfix.txt"
         text = target.read_text(encoding="utf-8") if target.exists() else ""

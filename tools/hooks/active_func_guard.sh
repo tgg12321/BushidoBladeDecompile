@@ -15,15 +15,9 @@
 
 set -e
 
-# Resolve project root: prefer the cwd's git toplevel (correct for both
-# main-session and worktree subagent contexts since each session has its
-# own cwd). Fall back to $CLAUDE_PROJECT_DIR, then to the script's own
-# location's grandparent (script lives at <root>/tools/hooks/...).
-#
-# Why not hardcode: subagents spawned with isolation="worktree" run from
-# their own worktree path. A hardcoded main path makes the hook check the
-# main repo's .bb2_active_func and verify against main's build, while the
-# subagent is editing a different working tree entirely.
+# Resolve project root: prefer the cwd's git toplevel. Fall back to
+# $CLAUDE_PROJECT_DIR, then to the script's own location's grandparent
+# (script lives at <root>/tools/hooks/...).
 PROJECT_ROOT=""
 if ROOT_FROM_CWD=$(git rev-parse --show-toplevel 2>/dev/null) && [ -d "$ROOT_FROM_CWD" ]; then
     PROJECT_ROOT="$ROOT_FROM_CWD"

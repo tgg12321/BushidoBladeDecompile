@@ -1,165 +1,155 @@
-#!/bin/bash
-# tools/worktree_setup.sh
+#!/usr/bin/env bash
+# tools/worktree_setup.sh — make a git worktree buildable.
 #
-# Run this at the start of any worktree agent session to symlink
-# gitignored tools and data from the main repo. Without this,
-# builds will silently succeed against missing binaries and produce
-# false SHA1 matches.
+# Worktrees inherit the tracked source tree but NOT gitignored
+# directories. The build pipeline needs:
+#   tools/gcc-2.7.2/        (compiler — gitignored, large)
+#   tools/decomp-permuter/  (matching tool — gitignored, separate clone)
+#   tools/m2c/              (decompiler — gitignored, separate clone)
+#   .venv/                  (Python venv — gitignored)
+#   disc/                   (extracted ISO — gitignored, large)
 #
-# Usage (from within a worktree):
-#   bash tools/worktree_setup.sh
-
-set -e
-
-# === PATH NORMALIZATION (MUST RUN BEFORE ANY GIT CALL) ===
-# Claude Code's isolation="worktree" spawns worktrees via Git-for-Windows,
-# which writes Windows-format paths ("C:/...") into the worktree's .git file
-# and the main repo's .git/worktrees/<name>/gitdir pointer. WSL's native git
-# cannot parse those paths and will fail with "not a .git file".
+# Without these, the maspsx step fails silently, mipsel-as receives
+# nothing, and every .o is a 788-byte empty ELF stub. Builds appear
+# to succeed but every object is empty — guaranteed mismatch.
 #
-# Agents run all their work (dc.sh, make, permuter, commits) via WSL, so we
-# rewrite both pointer files to the /mnt/c/... form here, using only plain
-# bash — no git calls, because git itself is what's broken until this runs.
+# This script symlinks them in from the main worktree. Idempotent:
+# correct symlinks are left alone, empty placeholders are replaced,
+# non-empty user dirs are skipped (don't trample work).
 #
-# The orchestrator must use tools/worktree_cleanup.sh (via WSL) to remove
-# worktrees so the format stays consistent. Git-for-Windows can still run
-# read-only ops (log, branch, diff, merge by ref) on WSL-format worktrees.
-normalize_worktree_paths() {
-    local git_file=".git"
-    [ -f "$git_file" ] || return 0
+# Run as the FIRST action in any worker subagent's worktree.
 
-    local line drive rest wsl_path
-    line=$(head -n1 "$git_file")
-    case "$line" in
-        "gitdir: "[A-Za-z]:/*)
-            drive=$(printf '%s' "${line:8:1}" | tr '[:upper:]' '[:lower:]')
-            rest="${line:10}"  # everything after "gitdir: X:"
-            wsl_path="/mnt/${drive}${rest}"
-            printf 'gitdir: %s\n' "$wsl_path" > "$git_file"
-            echo "normalize: rewrote $git_file → $wsl_path"
+set -euo pipefail
 
-            # Also rewrite the main-side gitdir pointer, which holds the
-            # reverse path ("back to the worktree's .git file").
-            if [ -f "$wsl_path/gitdir" ]; then
-                local back_line bdrive brest
-                back_line=$(head -n1 "$wsl_path/gitdir")
-                case "$back_line" in
-                    [A-Za-z]:/*)
-                        bdrive=$(printf '%s' "${back_line:0:1}" | tr '[:upper:]' '[:lower:]')
-                        brest="${back_line:2}"
-                        printf '/mnt/%s%s\n' "$bdrive" "$brest" > "$wsl_path/gitdir"
-                        echo "normalize: rewrote $wsl_path/gitdir"
-                        ;;
-                esac
-            fi
+# Auto-relaunch under WSL if invoked from a Windows shell (git bash /
+# MSYS / Cygwin). Those shells fake `ln -s` as empty dirs or shortcuts,
+# unusable by the WSL build pipeline. Re-exec inside WSL so symlinks
+# are real Unix symlinks.
+to_wsl_path() {
+    case "$1" in
+        /[a-zA-Z]/*)
+            # Already bash form: /c/foo -> /mnt/c/foo
+            local drive
+            drive=$(printf '%s' "$1" | cut -c2 | tr '[:upper:]' '[:lower:]')
+            printf '/mnt/%s%s\n' "$drive" "${1:2}"
             ;;
+        [a-zA-Z]:[/\\]*)
+            # Windows form: C:/foo or C:\foo -> /mnt/c/foo
+            local drive
+            drive=$(printf '%s' "$1" | cut -c1 | tr '[:upper:]' '[:lower:]')
+            local rest="${1:2}"
+            rest="${rest//\\//}"
+            printf '/mnt/%s%s\n' "$drive" "$rest"
+            ;;
+        *) printf '%s\n' "$1" ;;
     esac
 }
-normalize_worktree_paths
+case "${OSTYPE:-}" in
+    msys*|cygwin*|win32*)
+        if [ -z "${WORKTREE_SETUP_IN_WSL:-}" ]; then
+            WT_WSL=$(to_wsl_path "$(pwd)")
+            SCRIPT_WSL=$(to_wsl_path "$(realpath "$0")")
+            export WORKTREE_SETUP_IN_WSL=1
+            exec wsl bash -c "cd '$WT_WSL' && WORKTREE_SETUP_IN_WSL=1 bash '$SCRIPT_WSL'"
+        fi
+        ;;
+esac
 
-# Get the current worktree's WSL path
-CURRENT=$(git rev-parse --show-toplevel)
-
-# Get the main (primary) worktree path from git.
-# 'git worktree list --porcelain' outputs "worktree <path>" as the first line.
-# Use sed to grab the full path (handles spaces), then convert Windows path to WSL if needed.
-MAIN_REPO_RAW=$(git worktree list --porcelain | sed -n '1s/^worktree //p')
-
-# Convert Windows path (C:/...) to WSL path (/mnt/c/...) if needed
-if [[ "$MAIN_REPO_RAW" == [A-Za-z]:/* ]]; then
-    DRIVE=$(echo "$MAIN_REPO_RAW" | cut -c1 | tr '[:upper:]' '[:lower:]')
-    REST=$(echo "$MAIN_REPO_RAW" | cut -c3-)
-    MAIN_REPO="/mnt/${DRIVE}${REST}"
-else
-    MAIN_REPO="$MAIN_REPO_RAW"
+# Fix the .git file's gitdir reference if it points to a Windows-form path
+# (C:/foo or C:\foo). When `git worktree add` runs from git-bash on Windows
+# it writes the gitdir in Windows form, which WSL git can't follow. Rewrite
+# to a relative path — works from both git-bash AND WSL.
+if [ -f .git ] && [ ! -d .git ]; then
+    GITDIR_LINE=$(head -1 .git)
+    GITDIR_PATH="${GITDIR_LINE#gitdir: }"
+    if [ "$GITDIR_PATH" != "$GITDIR_LINE" ]; then
+        case "$GITDIR_PATH" in
+            [a-zA-Z]:[/\\]*)
+                # Convert Windows path to a real filesystem path WSL understands,
+                # then to a path relative to the worktree (this .git file's dir).
+                GITDIR_WSL=$(to_wsl_path "$GITDIR_PATH")
+                if [ -d "$GITDIR_WSL" ]; then
+                    RELATIVE=$(python3 -c "import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))" "$GITDIR_WSL" "$(pwd)")
+                    echo "[worktree-setup] FIX:  .git gitdir (Windows -> relative: $RELATIVE)"
+                    printf 'gitdir: %s\n' "$RELATIVE" > .git
+                else
+                    echo "[worktree-setup] WARN: .git gitdir target $GITDIR_WSL not found, leaving alone" >&2
+                fi
+                ;;
+        esac
+    fi
 fi
 
-if [ -z "$MAIN_REPO" ]; then
-    echo "ERROR: could not determine main repo path" >&2
+# Discover main repo root from git common dir. From a worktree,
+# `git rev-parse --git-common-dir` returns the main repo's .git/, so
+# its parent is the main worktree root.
+MAIN_GITDIR=$(git rev-parse --git-common-dir 2>/dev/null || echo "")
+if [ -z "$MAIN_GITDIR" ]; then
+    echo "[worktree-setup] ERROR: not in a git repo" >&2
     exit 1
 fi
 
-# If we're already in the main worktree, nothing to do
-if [ "$CURRENT" = "$MAIN_REPO" ]; then
-    echo "Already in the main worktree — setup not needed."
+# Resolve to absolute and normalize through cd/pwd so both paths come out
+# in the same shell form. On git-bash for Windows, the raw outputs can be
+# /c/foo (from --git-common-dir) vs C:/foo (from --show-toplevel) for the
+# same physical location — string-comparing them then misidentifies main
+# as a worktree.
+MAIN_GITDIR=$(cd "$MAIN_GITDIR" && pwd)
+MAIN_ROOT=$(cd "$(dirname "$MAIN_GITDIR")" && pwd)
+WT_ROOT=$(cd "$(git rev-parse --show-toplevel)" && pwd)
+
+if [ "$MAIN_ROOT" = "$WT_ROOT" ]; then
+    echo "[worktree-setup] running in main repo at $MAIN_ROOT — nothing to do"
     exit 0
 fi
 
-echo "Main repo:     $MAIN_REPO"
-echo "This worktree: $CURRENT"
-echo ""
+echo "[worktree-setup] main:     $MAIN_ROOT"
+echo "[worktree-setup] worktree: $WT_ROOT"
 
-# === FRESHNESS CHECK (MANDATORY) ===
-# A worktree's base must be reachable from main's current HEAD. If main has
-# moved on since this worktree was created, the agent will produce work
-# against an outdated base — GCC 2.7.2's codegen is sensitive to surrounding
-# declarations, so context drift causes silent merge failures.
-MAIN_HEAD=$(git -C "$MAIN_REPO" rev-parse main 2>/dev/null)
-WORKTREE_BASE=$(git rev-parse HEAD 2>/dev/null)
+cd "$WT_ROOT"
 
-if [ -z "$MAIN_HEAD" ] || [ -z "$WORKTREE_BASE" ]; then
-    echo "ERROR: could not determine HEAD commits" >&2
-    exit 1
-fi
-
-if [ "$MAIN_HEAD" != "$WORKTREE_BASE" ]; then
-    # Worktree is not exactly at main HEAD — check whether it is an ancestor
-    if git -C "$MAIN_REPO" merge-base --is-ancestor "$WORKTREE_BASE" "$MAIN_HEAD" 2>/dev/null; then
-        # WORKTREE_BASE is reachable from MAIN_HEAD — count how far behind
-        BEHIND=$(git -C "$MAIN_REPO" rev-list --count "${WORKTREE_BASE}..${MAIN_HEAD}" 2>/dev/null)
-        echo "ERROR: WORKTREE IS STALE — $BEHIND commits behind main HEAD" >&2
-        echo "  worktree base:  $WORKTREE_BASE" >&2
-        echo "  main HEAD:      $MAIN_HEAD" >&2
-        echo "" >&2
-        echo "GCC 2.7.2 codegen is sensitive to surrounding declarations." >&2
-        echo "Working from a stale base risks silent merge failure." >&2
-        echo "" >&2
-        echo "STOP and report this error to the orchestrator." >&2
-        echo "DO NOT try to git pull, fetch, or rebase — the orchestrator" >&2
-        echo "must spawn a fresh worktree." >&2
-        exit 2
-    else
-        # Disjoint history — completely wrong branch
-        echo "ERROR: worktree base is not reachable from main HEAD" >&2
-        echo "  worktree base:  $WORKTREE_BASE" >&2
-        echo "  main HEAD:      $MAIN_HEAD" >&2
-        echo "STOP and report to the orchestrator." >&2
-        exit 2
-    fi
-fi
-echo "Freshness OK: worktree at main HEAD ($MAIN_HEAD)"
-echo ""
-
-# Items to symlink (gitignored, needed for builds)
-ITEMS=(
+# relative-path-in-worktree -> absolute-source-in-main
+LINKS=(
     "tools/gcc-2.7.2"
-    "tools/maspsx"
     "tools/decomp-permuter"
     "tools/m2c"
     ".venv"
     "disc"
 )
 
-for item in "${ITEMS[@]}"; do
-    src="$MAIN_REPO/$item"
-    dst="$CURRENT/$item"
-    # If dst is a symlink already, skip
-    if [ -L "$dst" ]; then
-        echo "  skip (linked):  $item"
-    # If dst is an empty directory (git placeholder for nested repo), replace it
-    elif [ -d "$dst" ] && [ -z "$(ls -A "$dst" 2>/dev/null)" ]; then
-        rmdir "$dst"
-        ln -sf "$src" "$dst"
-        echo "  linked (replaced empty dir): $item -> $src"
-    elif [ -e "$dst" ]; then
-        echo "  skip (exists):  $item"
-    elif [ -e "$src" ]; then
-        ln -sf "$src" "$dst"
-        echo "  linked:         $item -> $src"
-    else
-        echo "  WARNING: not found in main repo: $src"
+for rel in "${LINKS[@]}"; do
+    target="$MAIN_ROOT/$rel"
+    if [ ! -e "$target" ]; then
+        echo "[worktree-setup] WARN: source $target missing in main, skipping"
+        continue
     fi
+
+    if [ -L "$rel" ]; then
+        cur=$(readlink "$rel")
+        if [ "$cur" = "$target" ]; then
+            echo "[worktree-setup] OK:   $rel"
+            continue
+        fi
+        echo "[worktree-setup] FIX:  $rel (relink: $cur -> $target)"
+        rm "$rel"
+    elif [ -d "$rel" ]; then
+        # Empty placeholder = git worktree's empty dir for a gitignored path.
+        # Non-empty = something the worker (or splat) created — leave alone.
+        if [ -z "$(ls -A "$rel" 2>/dev/null)" ]; then
+            echo "[worktree-setup] FIX:  $rel (replace empty placeholder)"
+            rmdir "$rel"
+        else
+            echo "[worktree-setup] SKIP: $rel (non-empty directory exists)"
+            continue
+        fi
+    elif [ -e "$rel" ]; then
+        echo "[worktree-setup] SKIP: $rel (file exists, not symlink/dir)"
+        continue
+    fi
+
+    mkdir -p "$(dirname "$rel")"
+    ln -s "$target" "$rel"
+    echo "[worktree-setup] LINK: $rel -> $target"
 done
 
-echo ""
-echo "Setup complete. Now run: source .venv/bin/activate"
+echo "[worktree-setup] done"

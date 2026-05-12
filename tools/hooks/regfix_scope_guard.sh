@@ -2,10 +2,10 @@
 # PreToolUse hook on Edit/Write. Blocks edits to regfix.txt/asmfix.txt that
 # REMOVE rules for functions other than the active one.
 #
-# Why: subagent #1 on func_8007D3F8 used Write/Edit to strip 79 rules across
-# func_8005D554, func_80074B18, func_8007352C — destroying matched-function
-# state. The PreToolUse hook on Bash (active_func_guard.sh) doesn't catch
-# Edit/Write tool calls. This hook does.
+# Why: an earlier agent on func_8007D3F8 used Write/Edit to strip 79 rules
+# across func_8005D554, func_80074B18, func_8007352C — destroying matched-
+# function state. The PreToolUse hook on Bash (active_func_guard.sh) doesn't
+# catch Edit/Write tool calls. This hook does.
 #
 # Logic:
 #   - Read .bb2_active_func.
@@ -190,7 +190,7 @@ BLOCKED: this Write would remove regfix/asmfix rules for non-active function(s):
 Active marker: $ACTIVE  (file: $ACTIVE_FILE)
 Target file:   $FILE_PATH
 
-This is the failure mode that subagent #1 fell into on func_8007D3F8.
+This is the failure mode that an earlier agent fell into on func_8007D3F8.
 Either narrow your Write to add-only changes for $ACTIVE, or finish that
 function first and let the marker clear.
 EOF

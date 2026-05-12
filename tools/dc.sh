@@ -33,20 +33,11 @@
 #   bash tools/dc.sh gen-regfix <func_name> [src] — auto-generate regfix rules from diff
 #   bash tools/dc.sh verify <func_name>           — binary-level verify function against original
 #   bash tools/dc.sh verify --all                  — verify all C functions
-#   bash tools/dc.sh subagent-prompt <func>       — generate worker-subagent prompt (autonomous mode)
-#   bash tools/dc.sh integrate <branch>           — merge worker branch into main with full verification
-#   bash tools/dc.sh agent-status                  — drop-in view of running parallel-worker progress
-#   bash tools/dc.sh port-prior <func> <branch>   — quick-port src+regfix from prior worker (deep-retry)
-#   bash tools/dc.sh stuck-clusters                — scan logs for cluster-level toolchain gaps
-#   bash tools/dc.sh classify-batch <funcs...>     — pre-spawn validation; flags already-pure-C entries
+#   bash tools/dc.sh classify-batch <funcs...>     — classify a list of funcs; flags stale (already-pure-C) entries
 #   bash tools/dc.sh permute-adaptive <func>       — permuter with budget scaled to ins+del count
-#   bash tools/dc.sh clean-worktrees [--apply]     — safely prune fully-matched worktrees (preserves stuck)
-#   bash tools/dc.sh queue-easy [N]                — easiest N queue entries by quick-win score
 #   bash tools/dc.sh next-structural [N]           — pull/preview structural split queue
 #   bash tools/dc.sh next-asmfix [N]               — pull/preview asmfix retirement queue
 #   bash tools/dc.sh fix-asmfix-drift [--apply]    — auto-fix .L<N> rename drift in asmfix.txt
-#   bash tools/dc.sh run-log <event> [args...]    — log an autonomous-run event (run-start, func-*, run-end)
-#   bash tools/dc.sh run-summary [--all|--json]   — summarize autonomous run(s)
 #
 set -eo pipefail
 
@@ -113,9 +104,6 @@ case "$CMD" in
             echo "Queue:    WORK_QUEUE.md missing — run 'dc.sh refresh-queue' first"
         fi
 
-        # Unclosed-autonomous-run warning (silent if log is clean)
-        python3 tools/autonomous_run_summary.py --check-open 2>/dev/null
-
         echo
         echo "--- Top of queue ---"
         if [ -f "WORK_QUEUE.md" ] && [ ! -s ".bb2_active_func" ]; then
@@ -146,16 +134,6 @@ case "$CMD" in
 4. Don't ask the user for direction. Don't run `dc.sh release`
    yourself. Build new tools without asking.
 
---- Modes ---
-
-  Solo (default):       work one function end-to-end yourself.
-  Autonomous (user opt-in: "run through queue", "work for N hours",
-              "do the next 10 without stopping"):
-                        spawn ONE fresh subagent per function via the
-                        Agent tool. Subagent context discards on
-                        return; main context stays lean over hours.
-                        See feedback_workflow_rules.md "Autonomous mode".
-
 --- Quick command reference ---
 
   dc.sh next [--with-context]    Pull next function (sets active marker)
@@ -168,10 +146,6 @@ case "$CMD" in
   dc.sh verify <func>             Binary diff one function
   dc.sh fix-label-drift           Auto-fix .L<N> drift after match
   dc.sh refresh-queue             Regen WORK_QUEUE.md (post-match)
-  dc.sh subagent-prompt <func>    Generate worker-subagent prompt
-                                  (autonomous mode only)
-  dc.sh run-log <event> ...       Log autonomous-run event (autonomous mode)
-  dc.sh run-summary [--all|--json] Stats from last autonomous run
   dc.sh release                   ESCAPE HATCH (user-only, typed confirm)
 
 --- Where to read ---
@@ -241,16 +215,10 @@ EOF
         [ -z "$C_FILE" ] && { echo "Usage: dc.sh replace <src_file> <func_name> <c_file>"; exit 1; }
         [ ! -f "$SRC_FILE" ] && { echo "ERROR: $SRC_FILE not found"; exit 1; }
         [ ! -f "$C_FILE" ] && { echo "ERROR: $C_FILE not found"; exit 1; }
-        # Loudly identify which repo we are operating on. Past agents have hit
-        # the main repo instead of their worktree because dc.sh cd's to its own
-        # SCRIPT_DIR/.. — print the absolute resolved path so the caller can
-        # spot the wrong target before damage is done.
+        # Identify which file we're modifying so the caller can spot a wrong
+        # target before damage is done.
         ABS_SRC="$(cd "$(dirname "$SRC_FILE")" && pwd)/$(basename "$SRC_FILE")"
-        BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || echo '<detached>')"
-        echo "REPLACE: $ABS_SRC (branch: $BRANCH)"
-        if [ "$BRANCH" = "main" ]; then
-            echo "WARNING: operating on main branch — if you intended a worktree, abort now."
-        fi
+        echo "REPLACE: $ABS_SRC"
         # Read replacement C code (strip any CR)
         REPLACEMENT="$(tr -d '\r' < "$C_FILE")"
         # Do the replacement using python (safe with any content)
@@ -699,74 +667,6 @@ PYEOF
         python3 tools/recipes.py apply "$RECIPE" "$FUNC_NAME" 2>&1
         ;;
 
-    subagent-prompt)
-        # Generate the canonical worker-subagent prompt for a function.
-        # Used by autonomous-mode loops where the main agent spawns a
-        # fresh subagent per function (keeps main context lean).
-        # Pass --worktree for the parallel-orchestration variant.
-        FUNC_NAME="$1"
-        shift || true
-        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh subagent-prompt <func> [--worktree]"; exit 1; }
-        python3 tools/gen_subagent_prompt.py "$FUNC_NAME" "$@" 2>&1
-        ;;
-
-    run-log)
-        # Append an event to the autonomous run log. Subcommands:
-        #   run-start --budget N [--note ...]
-        #   func-start <func>
-        #   func-end <func> MATCHED|STUCK [--duration N --commit SHA
-        #     --retro SHA --recipe "..." --retro-summary "..."
-        #     --stuck-reason "..." --note "..."]
-        #   run-end [--note ...]
-        #
-        # `run-start` does a CLEAN-REBUILD SHA1 baseline check before
-        # opening the run. If the clean build doesn't SHA1-match, the
-        # run-start refuses to log — the agent should diagnose the
-        # baseline mismatch BEFORE doing more work. Skips with
-        # --skip-baseline if the user explicitly knows the build is
-        # broken and wants to proceed anyway (e.g., fix-forward work
-        # during a regression).
-        #
-        # Why this gate exists: cached .o files can hide regressions
-        # for many commits at a time (this happened between 54a5e54
-        # and c71ff0a — 7 commits accumulated on a broken baseline).
-        # Forcing the clean-baseline check at run-start localizes the
-        # cost to once per batch and surfaces problems before they
-        # compound.
-        if [ "$1" = "run-start" ]; then
-            SKIP_BASELINE=0
-            for a in "$@"; do
-                case "$a" in --skip-baseline) SKIP_BASELINE=1 ;; esac
-            done
-            if [ "$SKIP_BASELINE" = "0" ]; then
-                echo "[run-start] Clean-rebuild SHA1 baseline check..." >&2
-                rm -rf build
-                if [ -d ".venv" ]; then
-                    # shellcheck disable=SC1091
-                    source .venv/bin/activate 2>/dev/null || true
-                fi
-                if ! make 2>&1 | tail -1 | grep -q "OK: bb2 matches!"; then
-                    echo "ERROR: clean rebuild does NOT SHA1-match the original." >&2
-                    echo "       This means the baseline is already broken." >&2
-                    echo "       Investigate (\`dc.sh verify --all --force\`) and fix" >&2
-                    echo "       BEFORE starting a new autonomous run, otherwise the" >&2
-                    echo "       run will compound on a broken state." >&2
-                    echo "       To proceed anyway (e.g., fix-forward work), use:" >&2
-                    echo "         dc.sh run-log run-start --budget N --skip-baseline" >&2
-                    exit 1
-                fi
-                echo "[run-start] Baseline clean — proceeding to log run." >&2
-            fi
-        fi
-        python3 tools/autonomous_run_log.py "$@" 2>&1
-        ;;
-
-    run-summary)
-        # Print stats for the last autonomous run (or --all for the
-        # full log, or --json for machine-readable).
-        python3 tools/autonomous_run_summary.py "$@" 2>&1
-        ;;
-
     next|next-structural|next-asmfix)
         # Print the next function from one WORK_QUEUE.md queue and SET it as the
         # active function in .bb2_active_func. The PreToolUse hook will
@@ -811,9 +711,8 @@ PYEOF
         }
 
         # Pull from origin first so we don't hand out a function that
-        # someone else (a parallel session, an agent worktree, or a
-        # remote teammate) already matched. Skipped on no-network or no-
-        # remote setups; failure is non-fatal (warn and continue).
+        # a remote teammate already matched. Skipped on no-network or
+        # no-remote setups; failure is non-fatal (warn and continue).
         # Pass --no-pull to skip explicitly.
         if [ "$NO_PULL" != "1" ] && git rev-parse --git-dir >/dev/null 2>&1; then
             if git remote get-url origin >/dev/null 2>&1; then
@@ -955,24 +854,6 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         python3 tools/fix_label_drift.py "$@" 2>&1
         ;;
 
-    attempt-or-bail)
-        # Time-boxed auto-retirement attempt: preflight → retire →
-        # attempt → build-active → verify-c → commit. Returns one
-        # structured line: MATCHED / STUCK / OUT_OF_SCOPE. For
-        # autonomous coordinators that need bounded wall-clock per
-        # function. Default budget: 30 min (--budget-seconds N).
-        python3 tools/attempt_or_bail.py "$@" 2>&1
-        ;;
-
-    subagent-prompt-smart)
-        # Class-aware subagent prompt: detects function class (GTE
-        # wrapper, state dispatch, leaf arith, branch-heavy, inline-
-        # asm-dom, generic) from the asm and emits a focused prompt
-        # with only the relevant gotchas/recipes. Typically 40-80%
-        # fewer tokens than the default subagent-prompt template.
-        python3 tools/gen_subagent_prompt_smart.py "$@" 2>&1
-        ;;
-
     preflight)
         # Single focused brief before starting work on a function:
         # bridge state, source location, classification, size, blockers,
@@ -1057,9 +938,9 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
 
         # --fast: skip the slow batch_attempt --classify-only pass
         # (~3 min on the current backlog). Use between consecutive
-        # autonomous-mode matches when only one function changed and the
-        # CSV doesn't need a full re-scan. Phases [1] capture-recipe,
-        # [2] strip orphans, [3] regen WORK_QUEUE.md from the existing CSV.
+        # matches when only one function changed and the CSV doesn't
+        # need a full re-scan. Phases [1] capture-recipe, [2] strip
+        # orphans, [3] regen WORK_QUEUE.md from the existing CSV.
         # Full mode adds phases for batch_attempt + classify_asmfix.
         #
         # CHANGED 2026-05-12: refresh-queue no longer auto-purges
@@ -1131,79 +1012,6 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         : > .bb2_active_func 2>/dev/null || true
         ;;
 
-    agent-status)
-        # Snapshot of all running parallel-orchestration workers.
-        # Reads tmp/parallel_logs/<func>.log from each worker (written
-        # via tools/agent_log.sh) and prints a per-worker summary.
-        # Safe to run any time; doesn't touch worker state.
-        python3 tools/agent_status.py "$@" 2>&1
-        ;;
-
-    port-prior)
-        # Deep-retry quick-port: copy src body + regfix rules for <func>
-        # from a prior worker branch into the current worktree, then run
-        # fix-label-drift, build, and verify. Does NOT commit -- the
-        # worker reviews and commits explicitly.
-        #
-        # Usage: dc.sh port-prior <func> <prior_branch>
-        #
-        # Audit-driven: deep retries that ported prior work matched in
-        # 9-21min (~150K tokens). Ones that re-ran the search took
-        # 90-150min (~400-600K tokens).
-        FUNC_NAME="$1"
-        PRIOR_BRANCH="$2"
-        [ -z "$PRIOR_BRANCH" ] && { echo "Usage: dc.sh port-prior <func> <prior_branch>"; exit 1; }
-
-        if ! git rev-parse --verify "$PRIOR_BRANCH" >/dev/null 2>&1; then
-            echo "ERROR: branch '$PRIOR_BRANCH' not found" >&2
-            exit 1
-        fi
-
-        # Find which src/<file>.c contains the function on the prior branch
-        SRC_FILE=$(git show "$PRIOR_BRANCH" --name-only --format= | grep '^src/.*\.c$' | head -1)
-        if [ -z "$SRC_FILE" ]; then
-            echo "ERROR: prior branch didn't change any src/*.c" >&2
-            exit 1
-        fi
-        echo "[port-prior] src file: $SRC_FILE"
-
-        # Use python to splice in just the function body (between the
-        # first occurrence of '<type> <FUNC_NAME>(' and the closing brace)
-        python3 tools/port_prior.py "$FUNC_NAME" "$PRIOR_BRANCH" "$SRC_FILE" 2>&1 || {
-            echo "ERROR: port_prior.py failed" >&2
-            exit 1
-        }
-
-        # Apply prior regfix rules (append, dedup at file level)
-        echo "[port-prior] applying regfix rules..."
-        git show "$PRIOR_BRANCH" -- regfix.txt > /tmp/port_prior_regfix_diff.patch 2>/dev/null || true
-
-        # Drift fix
-        echo "[port-prior] running fix-label-drift..."
-        python3 tools/fix_label_drift.py --apply 2>&1 | tail -3
-
-        # Build
-        echo "[port-prior] building..."
-        BUILD_OUT=$(make 2>&1 | tail -5)
-        echo "$BUILD_OUT" | tail -3
-
-        if echo "$BUILD_OUT" | grep -q "OK: bb2 matches"; then
-            echo "[port-prior] BUILD OK -- function should match. Run 'dc.sh verify $FUNC_NAME' to confirm, then commit."
-        else
-            echo "[port-prior] BUILD MISMATCH. Run 'dc.sh diff $FUNC_NAME' to see what's off (likely 1-2 instructions)."
-        fi
-        ;;
-
-    stuck-clusters)
-        # Scan tmp/parallel_logs/ for STUCK events that share toolchain
-        # gap keywords (multu, schedule-insns, register-cycle, etc.).
-        # Emits a CLUSTER ALERT when 2+ functions match the same
-        # pattern -- coordinator should pause spawning and have ONE
-        # worker build the shared fix before re-spawning cluster
-        # members.
-        python3 tools/agent_status.py 2>&1 | sed -n '/CLUSTER ALERT/,/Action:/p'
-        ;;
-
     permute-adaptive)
         # Run permuter with budget scaled to ins+del penalty count.
         # 0 ins/del -> skip; 1-2 -> 90s; 3-5 -> 5min; 6-10 -> 15min; >10 -> 30min.
@@ -1212,23 +1020,6 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         shift || true
         [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh permute-adaptive <func> [--dry-run]"; exit 1; }
         python3 tools/permute_adaptive.py "$FUNC_NAME" "$@" 2>&1
-        ;;
-
-    clean-worktrees)
-        # Safely prune fully-matched worker worktrees. SAFETY:
-        # only worktrees with 0 commits ahead OR fully-merged branches
-        # are removed. Preserved-stuck branches (unique commits not
-        # in main) are NEVER deleted.
-        # Backed by tools/worktree_janitor.py.
-        # Default is dry-run; pass --apply to actually remove.
-        python3 tools/worktree_janitor.py "$@" 2>&1
-        ;;
-
-    queue-easy)
-        # Show easiest N queue entries by 'expected ease' score
-        # (lower = quicker win). Recommends quick-win prioritization.
-        # Backed by tools/queue_easy.py.
-        python3 tools/queue_easy.py "$@" 2>&1
         ;;
 
     queue-structural)
@@ -1240,9 +1031,8 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         ;;
 
     classify-batch)
-        # Pre-spawn validation: classify N functions in parallel and
-        # emit which ones are stale (already pure C). Use this BEFORE
-        # spawning workers so you skip no-op queue entries.
+        # Classify N functions and flag stale (already pure C) entries
+        # so you can skip no-op queue items.
         #
         # Usage: dc.sh classify-batch <func1> [<func2> ...]
         [ -z "$1" ] && { echo "Usage: dc.sh classify-batch <func1> [<func2> ...]"; exit 1; }
@@ -1256,118 +1046,6 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
                 printf '  ?      %-32s (%s)\n' "$FUNC_NAME" "$CAT"
             fi
         done
-        ;;
-
-    integrate)
-        # Sequential integration of a worker subagent's branch into main.
-        # Used by parallel orchestration: workers match on their own
-        # branches, then the coordinator (parent agent) calls this once
-        # per successful worker to merge into main with full verification.
-        #
-        # On failure the merge is reverted and the branch is left intact
-        # for inspection. Exit codes:
-        #   0  integrated cleanly
-        #   1  preflight failure (wrong branch, dirty tree, branch missing)
-        #   2  merge/build/verify failure (auto-reverted)
-        BRANCH="$1"
-        [ -z "$BRANCH" ] && { echo "Usage: dc.sh integrate <branch>"; exit 1; }
-
-        # Preflight: must be on main, clean tree, no active marker
-        CUR_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
-        if [ "$CUR_BRANCH" != "main" ]; then
-            echo "ERROR: must be on main (currently: '$CUR_BRANCH')" >&2
-            exit 1
-        fi
-        if [ -n "$(git status --porcelain)" ]; then
-            echo "ERROR: working tree not clean — commit or stash first" >&2
-            git status --short >&2
-            exit 1
-        fi
-        if [ -s ".bb2_active_func" ]; then
-            ACTIVE=$(tr -d '[:space:]' < .bb2_active_func)
-            echo "ERROR: main has an active function set ($ACTIVE); refusing to integrate" >&2
-            echo "  Coordinator should never have an active marker on main." >&2
-            exit 1
-        fi
-        if ! git rev-parse --verify "$BRANCH" >/dev/null 2>&1; then
-            echo "ERROR: branch '$BRANCH' not found" >&2
-            exit 1
-        fi
-
-        AHEAD=$(git rev-list --count "main..$BRANCH")
-        if [ "$AHEAD" = "0" ]; then
-            echo "[integrate] $BRANCH has no commits ahead of main — nothing to do"
-            exit 0
-        fi
-        echo "[integrate] $BRANCH has $AHEAD commit(s) ahead of main"
-
-        PRE_SHA=$(git rev-parse HEAD)
-        echo "[integrate] pre-state: $PRE_SHA"
-
-        # Merge with --no-ff so the integration is visible in history.
-        # --no-edit keeps the default merge message and avoids spawning
-        # an editor (which would block in non-interactive contexts).
-        if ! git merge --no-ff --no-edit "$BRANCH" 2>&1; then
-            echo "[integrate] FAIL: merge conflict — manual resolution required"
-            git merge --abort 2>/dev/null || true
-            git reset --hard "$PRE_SHA" 2>/dev/null || true
-            exit 2
-        fi
-        POST_MERGE_SHA=$(git rev-parse HEAD)
-        echo "[integrate] merged at $POST_MERGE_SHA"
-
-        # Build and check SHA1
-        echo "[integrate] building..."
-        BUILD_OUT=$(make 2>&1 | tail -10)
-        echo "$BUILD_OUT" | tail -3
-
-        BUILD_OK=0
-        if echo "$BUILD_OUT" | grep -q "OK: bb2 matches"; then
-            BUILD_OK=1
-            echo "[integrate] build OK on first try"
-        else
-            echo "[integrate] build mismatch — trying fix-label-drift"
-            DRIFT_OUT=$(python3 tools/fix_label_drift.py --apply 2>&1 | tail -5)
-            echo "$DRIFT_OUT"
-            BUILD_OUT=$(make 2>&1 | tail -10)
-            echo "$BUILD_OUT" | tail -3
-            if echo "$BUILD_OUT" | grep -q "OK: bb2 matches"; then
-                BUILD_OK=1
-                echo "[integrate] build OK after fix-label-drift"
-                if [ -n "$(git status --porcelain)" ]; then
-                    git add -A
-                    git commit -m "Auto: fix-label-drift after integrating $BRANCH" >/dev/null
-                fi
-            fi
-        fi
-
-        if [ "$BUILD_OK" != "1" ]; then
-            echo "[integrate] FAIL: build still broken — reverting to $PRE_SHA"
-            git reset --hard "$PRE_SHA"
-            exit 2
-        fi
-
-        # verify --all: any per-function regression triggers revert
-        echo "[integrate] verify --all..."
-        VERIFY_OUT=$(python3 tools/regfix_verify.py --all 2>&1)
-        echo "$VERIFY_OUT" | tail -3
-        if echo "$VERIFY_OUT" | grep -qiE "FAIL|MISMATCH|differ"; then
-            echo "[integrate] FAIL: verify --all reported regressions — reverting to $PRE_SHA"
-            echo "$VERIFY_OUT" | grep -iE "FAIL|MISMATCH|differ" | head -10 >&2
-            git reset --hard "$PRE_SHA"
-            exit 2
-        fi
-
-        # Refresh queue (drops the matched function) and commit any updates
-        echo "[integrate] refresh queue..."
-        bash tools/dc.sh refresh-queue 2>&1 | tail -3
-        if [ -n "$(git status --porcelain)" ]; then
-            git add -A
-            git commit -m "Auto: refresh queue after integrating $BRANCH" >/dev/null
-        fi
-
-        FINAL_SHA=$(git rev-parse HEAD)
-        echo "[integrate] OK: $BRANCH integrated as $FINAL_SHA"
         ;;
 
     audit-bridges)

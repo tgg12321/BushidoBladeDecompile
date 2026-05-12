@@ -12,17 +12,12 @@ This prints current state (build status, active function marker, queue freshness
 
 **Decide what to do next based on the user's directive AND the briefing:**
 
-**Solo mode** (default — user named one function, or said "do the next one"):
 1. **`Active: <funcname>`** → resume that function. Hook is enforcing — all `dc.sh next*` queue pulls and `git commit` are blocked until you match. Don't revert src/ files (also blocked); edit forward instead. Use `dc.sh diff <funcname>` and `dc.sh verify <funcname>` to see where you are.
 2. **`Active: NONE`** → `bash tools/dc.sh next --with-context` (pulls top, sets marker, runs agent-brief).
 
-**Autonomous mode** (user said "run through the queue", "work for N hours", "do the next 10 without stopping"):
-- See `feedback_workflow_rules.md` § "Autonomous mode (subagent-per-function)".
-- Main agent becomes a thin coordinator: per function, run `dc.sh next`, run `dc.sh subagent-prompt <func>`, spawn `Agent(prompt=...)`, wait, check, refresh-queue, loop.
-- Subagents work in isolation (fresh context); only their one-line `MATCHED ...` / `STUCK ...` return lands in main's context. Keeps main lean over hours of work.
-- If a subagent returns `STUCK`, the loop pauses and reports to user (you cannot release on your own).
+Work is solo end-to-end on a single function. No sub-agents, no worktrees, no orchestrator delegation — one focused session per function, technique-switch when stuck.
 
-**Build: MISMATCH** at session start → STOP regardless of mode. Don't pull more work. Investigate (`dc.sh verify --all`, recent commits) before any function work. The hook can't help here because there's no active marker — it's a repo state problem.
+**Build: MISMATCH** at session start → STOP. Don't pull more work. Investigate (`dc.sh verify --all`, recent commits) before any function work. The hook can't help here because there's no active marker — it's a repo state problem.
 
 ## Project Overview
 

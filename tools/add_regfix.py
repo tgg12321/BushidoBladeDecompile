@@ -347,7 +347,7 @@ def main():
         return 1
 
     # Refuse to add rules for non-active functions. This is the guardrail that
-    # would have prevented subagent #1's catastrophic regression of 79 rules.
+    # would have prevented an earlier catastrophic regression of 79 rules.
     enforce_scope(args.func, action="append regfix rule for")
 
     try:
