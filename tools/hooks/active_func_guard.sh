@@ -84,7 +84,30 @@ esac
 # Cost: ~2-3 minutes per commit. Worth it — the alternative is silent
 # regressions accumulating across many commits.
 verify_active_matches() {
-    local out per_func sha1_ok
+    local out per_func sha1_ok bridge_active
+    # First check: is the function STILL actively bridged in asmfix.txt?
+    # If so, the "matched" binary is the bridge's bytes, not the C body's.
+    # This was the func_8007B3A8 trap (commit 836d9a1, reverted in ae1420a):
+    # the dc.sh retire workflow's `# RETIRE:` comment got purged by
+    # refresh-queue before the match commit, leaving the active bridge
+    # entry. The C body's bytes were dead code; SHA1 only matched because
+    # the bridge was producing the right bytes.
+    bridge_active=$(wsl bash -c "cd '$WSL_ROOT' && grep -E '^${ACTIVE}: replace_with_asmfile' asmfix.txt 2>/dev/null | wc -l" 2>/dev/null)
+    if [ "${bridge_active:-0}" -gt 0 ]; then
+        cat >&2 <<EOF
+BLOCKED: $ACTIVE still has an ACTIVE bridge entry in asmfix.txt:
+   $(wsl bash -c "cd '$WSL_ROOT' && grep -E '^${ACTIVE}: replace_with_asmfile' asmfix.txt")
+
+Your C body is DEAD CODE — asmfix overrides the compiled bytes with
+asm/funcs/${ACTIVE}.s. A match here is meaningless.
+
+To proceed: comment out the bridge line (\`# RETIRE: \`) or remove
+it entirely, then re-run the build. Use:
+  wsl bash -c "cd '$WSL_ROOT' && bash tools/dc.sh retire $ACTIVE"
+to do this through the standard workflow.
+EOF
+        return 1
+    fi
     out=$(wsl bash -c "cd '$WSL_ROOT' && rm -rf build && source .venv/bin/activate 2>/dev/null; make 2>&1 | tail -3 && echo '---SEP---' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null)
     # SHA1 line shows up as "OK: bb2 matches!" on full match.
     case "$out" in
