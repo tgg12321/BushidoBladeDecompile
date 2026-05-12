@@ -1,4 +1,4 @@
-glabel motion_SavePreCalcData_8003A574
+glabel pad_ReadSioPacket_8003A574
     /* 2AD74 8003A574 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2AD78 8003A578 0A80053C */  lui        $a1, %hi(D_800A3688)
     /* 2AD7C 8003A57C 8836A524 */  addiu      $a1, $a1, %lo(D_800A3688)
@@ -10,4 +10,4 @@ glabel motion_SavePreCalcData_8003A574
     /* 2AD94 8003A594 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2AD98 8003A598 0800E003 */  jr         $ra
     /* 2AD9C 8003A59C 00000000 */   nop
-endlabel motion_SavePreCalcData_8003A574
+endlabel pad_ReadSioPacket_8003A574

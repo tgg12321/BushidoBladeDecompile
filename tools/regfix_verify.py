@@ -156,9 +156,9 @@ def get_func_address_range(root, func_name):
 
     Two map shapes need handling:
       A. real section symbol from a .o file:
-           "                0x80080014                motion_SavePreCalcData_80080014"
+           "                0x80080014                cdrom_CallbackA_80080014"
       B. absolute assignment from named_syms.txt/undefined_syms_auto.txt:
-           "                0x80080014                motion_SavePreCalcData_80080014 = 0x80080014"
+           "                0x80080014                cdrom_CallbackA_80080014 = 0x80080014"
 
     Form B fires when a name in named_syms.txt shadows the real .o
     symbol (e.g. a leftover `<name> = <addr>;` entry that wasn't

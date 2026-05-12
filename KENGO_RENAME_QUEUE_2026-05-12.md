@@ -8,29 +8,46 @@ Command:
 python3 tools/audit_kengo_renames.py --decided-only
 ```
 
-## Reviewed Action Queue
+## Resolved In Rename Batch 1
 
-| Symbol | Address | Decision | Why |
-| --- | --- | --- | --- |
-| `cpu_get_dist_2` | `0x800324D0` | demote/review | Body decodes command-pattern bytes from the actor command stream; it is not a distance helper. |
-| `katinuki_game_get_katinuki_max_num_80016868` | `0x80016868` | demote/replace | One-call wrapper to `gpu_SetMode(1)`; already corresponds to `gpu_EnableDisplay`. |
-| `katinuki_game_get_katinuki_max_num_800168D0` | `0x800168D0` | demote/replace | One-call wrapper to `gpu_SetDispMask(1)`; already corresponds to `gpu_DisableDisplay`. |
-| `katinuki_game_get_katinuki_max_num_80046914` | `0x80046914` | demote | One-call wrapper to `func_800453E0(8)`; not a katinuki max-count query. |
-| `katinuki_game_get_katinuki_max_num_80046934` | `0x80046934` | demote | One-call wrapper to `func_800455AC(9)`; not a katinuki max-count query. |
-| `katinuki_game_get_katinuki_max_num_80046A60` | `0x80046A60` | demote | One-call wrapper to `func_800453E0(0xA)`; not a katinuki max-count query. |
-| `motion_SavePreCalcData_8003A3F0` | `0x8003A3F0` | demote/review | Calls `func_8003A39C()` and sets `D_800A3928`; grouped sequence match only. |
-| `motion_SavePreCalcData_8003A574` | `0x8003A574` | demote/review | Calls `func_800789F8(D_800A3734, &D_800A3688, 8)` and appears in CD/init retry flow. |
-| `motion_SavePreCalcData_80080014` | `0x80080014` | demote/review | Callback wrapper for `func_8008008C(0xF0000003, 0x20)`. |
-| `motion_SavePreCalcData_8008003C` | `0x8008003C` | demote/review | Callback wrapper for `func_8008008C(0xF0000003, 0x40)`. |
-| `motion_SavePreCalcData_80080064` | `0x80080064` | demote/review | VSync-mode callback wrapper for `func_8008008C(0xF0000003, 0x40)`. |
+These stale Kengo aliases were removed from `named_syms.txt`, and their split
+`asm/funcs` labels/files were renamed to the real symbols already present in C:
+
+| Old symbol | New symbol | Address |
+| --- | --- | --- |
+| `katinuki_game_get_katinuki_max_num_80016868` | `gpu_EnableDisplay` | `0x80016868` |
+| `katinuki_game_get_katinuki_max_num_800168D0` | `gpu_DisableDisplay` | `0x800168D0` |
+| `katinuki_game_get_katinuki_max_num_80046914` | `snd_StopBgm` | `0x80046914` |
+| `katinuki_game_get_katinuki_max_num_80046934` | `snd_AllocSe` | `0x80046934` |
+| `katinuki_game_get_katinuki_max_num_80046A60` | `snd_StopSelection` | `0x80046A60` |
+
+## Resolved In Rename Batch 2
+
+This misleading CPU helper name was replaced with a local semantic name after
+reviewing its caller and the actor fields it fills:
+
+| Old symbol | New symbol | Address |
+| --- | --- | --- |
+| `cpu_get_dist_2` | `cpu_decode_move_pattern_params` | `0x800324D0` |
+
+## Resolved In Rename Batch 3
+
+These grouped Kengo `motion_SavePreCalcData` matches were false positives.
+They now use local names based on their BB2 callers:
+
+| Old symbol | New symbol | Address |
+| --- | --- | --- |
+| `motion_SavePreCalcData_8003A3F0` | `pad_ResetSioOnError_8003A3F0` | `0x8003A3F0` |
+| `motion_SavePreCalcData_8003A574` | `pad_ReadSioPacket_8003A574` | `0x8003A574` |
+| `motion_SavePreCalcData_80080014` | `cdrom_CallbackA_80080014` | `0x80080014` |
+| `motion_SavePreCalcData_8008003C` | `cdrom_CallbackB_8008003C` | `0x8008003C` |
+| `motion_SavePreCalcData_80080064` | `cdrom_VsyncCallback_80080064` | `0x80080064` |
+
+## Remaining Reviewed Action Queue
+
+No reviewed Kengo rename actions remain from this audit pass.
 
 ## Suggested Order
 
-1. Start with the two display aliases at `0x80016868` and `0x800168D0`;
-   they already have better names in current C and `undefined_syms_auto.txt`.
-2. Next demote the three `katinuki_game_get_katinuki_max_num_800469*`
-   wrappers to address names unless the `func_800453E0`/`func_800455AC`
-   channel subsystem is named first.
-3. Leave `cpu_get_dist_2` and the five `motion_SavePreCalcData_*` names for
-   caller-review batches. They need better local semantic names, not just
-   address-name demotion.
+1. Start the next naming pass from a fresh subsystem review rather than the
+   resolved Kengo suspicion list.

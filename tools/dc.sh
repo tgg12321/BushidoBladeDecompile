@@ -743,7 +743,7 @@ print(f'Replaced {func} in {src}')
                 # asm-by-address. The hook runs `dc.sh verify <ACTIVE>`
                 # to decide whether to clear the marker on commit, and
                 # that lookup is by exact symbol name -- so the marker
-                # MUST be the renamed form (`motion_SavePreCalcData_<addr>`),
+                # MUST be the renamed form (`cdrom_CallbackA_<addr>`, etc.),
                 # not the queue's raw form.
                 CANON=$(python3 tools/canonical_funcname.py "$FUNC" 2>/dev/null)
                 if [ -z "$CANON" ]; then CANON="$FUNC"; fi

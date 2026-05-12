@@ -1,4 +1,4 @@
-glabel cpu_get_dist_2
+glabel cpu_decode_move_pattern_params
     /* 22CD0 800324D0 5800838C */  lw         $v1, 0x58($a0)
     /* 22CD4 800324D4 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 22CD8 800324D8 A10082A0 */  sb         $v0, 0xA1($a0)
@@ -84,4 +84,4 @@ glabel cpu_get_dist_2
   .L800325D8:
     /* 22DD8 800325D8 0800E003 */  jr         $ra
     /* 22DDC 800325DC 00000000 */   nop
-endlabel cpu_get_dist_2
+endlabel cpu_decode_move_pattern_params

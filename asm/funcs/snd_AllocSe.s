@@ -1,4 +1,4 @@
-glabel katinuki_game_get_katinuki_max_num_80046934
+glabel snd_AllocSe
     /* 37134 80046934 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 37138 80046938 1000BFAF */  sw         $ra, 0x10($sp)
     /* 3713C 8004693C 6B15010C */  jal        func_800455AC
@@ -7,4 +7,4 @@ glabel katinuki_game_get_katinuki_max_num_80046934
     /* 37148 80046948 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 3714C 8004694C 0800E003 */  jr         $ra
     /* 37150 80046950 00000000 */   nop
-endlabel katinuki_game_get_katinuki_max_num_80046934
+endlabel snd_AllocSe

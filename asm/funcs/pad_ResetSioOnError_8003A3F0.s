@@ -1,4 +1,4 @@
-glabel motion_SavePreCalcData_8003A3F0
+glabel pad_ResetSioOnError_8003A3F0
     /* 2ABF0 8003A3F0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2ABF4 8003A3F4 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2ABF8 8003A3F8 E7E8000C */  jal        func_8003A39C
@@ -10,4 +10,4 @@ glabel motion_SavePreCalcData_8003A3F0
     /* 2AC10 8003A410 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2AC14 8003A414 0800E003 */  jr         $ra
     /* 2AC18 8003A418 00000000 */   nop
-endlabel motion_SavePreCalcData_8003A3F0
+endlabel pad_ResetSioOnError_8003A3F0

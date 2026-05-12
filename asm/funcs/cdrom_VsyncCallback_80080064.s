@@ -1,4 +1,4 @@
-glabel motion_SavePreCalcData_80080064
+glabel cdrom_VsyncCallback_80080064
     /* 70864 80080064 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 70868 80080068 1000BFAF */  sw         $ra, 0x10($sp)
     /* 7086C 8008006C 00F0043C */  lui        $a0, (0xF0000003 >> 16)
@@ -9,4 +9,4 @@ glabel motion_SavePreCalcData_80080064
     /* 70880 80080080 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 70884 80080084 0800E003 */  jr         $ra
     /* 70888 80080088 00000000 */   nop
-endlabel motion_SavePreCalcData_80080064
+endlabel cdrom_VsyncCallback_80080064

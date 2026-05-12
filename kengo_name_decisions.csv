@@ -1,18 +1,18 @@
 renamed_to,decision,confidence,reason,next_action
 cpu_check_same_dir_timer,keep,high,Live CSV row is name-unique and nearby source has kengo HIGH nm_cpu evidence,Suppress fallback-CSV artifact
 cpu_get_dist,keep,medium,Live CSV row is name-unique and body matches a CPU vector/direction helper,Keep but avoid assuming pure distance semantics
-cpu_get_dist_2,demote,medium,Live CSV row is size-only-ambiguous and body decodes command stream bytes rather than distance,Review callers and rename or demote
+cpu_decode_move_pattern_params,keep,medium,Replaces misleading cpu_get_dist_2 name; body decodes action/move-pattern stream bytes into actor parameter slots,Suppress resolved local rename
 cpu_set_move_command_and_dir,keep,high,Live CSV row is name-unique and body builds move/collision command state,Suppress fallback-CSV artifact
 replay_camera_Init,keep,high,Live CSV row is name-unique and nearby source has kengo HIGH nm_replay_cam evidence,Suppress fallback-CSV artifact
 special_camera_get_rot_dir,keep,medium,Live CSV row is name-unique and body reads SpecialCam rotation/control data,Keep provisional until SpecialCam layout is named
-katinuki_game_get_katinuki_max_num_80016868,demote,high,Assembly is gpu_SetMode(1) wrapper already identified as gpu_EnableDisplay,Replace stale Kengo alias in a rename-only byte-checked patch
-katinuki_game_get_katinuki_max_num_800168D0,demote,high,Assembly is gpu_SetDispMask(1) wrapper already identified as gpu_DisableDisplay,Replace stale Kengo alias in a rename-only byte-checked patch
-katinuki_game_get_katinuki_max_num_80046914,demote,high,Assembly calls func_800453E0(8) and does not query katinuki max count,Demote to address name until channel helper is named
-katinuki_game_get_katinuki_max_num_80046934,demote,high,Assembly calls func_800455AC(9) and does not query katinuki max count,Demote to address name until channel helper is named
-katinuki_game_get_katinuki_max_num_80046A60,demote,high,Assembly calls func_800453E0(0xA) and does not query katinuki max count,Demote to address name until channel helper is named
-motion_SavePreCalcData_8003A3F0,demote,medium,Body calls func_8003A39C then sets D_800A3928 and only has grouped seq-similarity evidence,Review callers around func_8003A728 before choosing a new name
-motion_SavePreCalcData_8003A574,demote,medium,Body calls func_800789F8 and appears in pad_ClearAppliBuffer CD-init retry flow,Review queue or command-buffer semantics before choosing a new name
-motion_SavePreCalcData_80080014,demote,medium,Body calls func_8008008C with flag 0x20 and is installed as a callback,Name with callback subsystem once func_8008008C is understood
-motion_SavePreCalcData_8008003C,demote,medium,Body calls func_8008008C with flag 0x40 and is installed as a callback,Name with callback subsystem once func_8008008C is understood
-motion_SavePreCalcData_80080064,demote,medium,Body calls func_8008008C with flag 0x40 and is installed through sys_SetVsyncMode,Name with callback or vsync-mode subsystem once func_8008008C is understood
+gpu_EnableDisplay,keep,high,Replaces stale katinuki_game_get_katinuki_max_num_80016868 alias and matches C plus linker symbol,Suppress resolved alias
+gpu_DisableDisplay,keep,high,Replaces stale katinuki_game_get_katinuki_max_num_800168D0 alias and matches C plus linker symbol,Suppress resolved alias
+snd_StopBgm,keep,high,Replaces stale katinuki_game_get_katinuki_max_num_80046914 alias and matches src sound symbol,Suppress resolved alias
+snd_AllocSe,keep,high,Replaces stale katinuki_game_get_katinuki_max_num_80046934 alias and matches src sound symbol,Suppress resolved alias
+snd_StopSelection,keep,high,Replaces stale katinuki_game_get_katinuki_max_num_80046A60 alias and matches src sound symbol,Suppress resolved alias
+pad_ResetSioOnError_8003A3F0,keep,medium,Replaces false motion_SavePreCalcData_8003A3F0 name; caller uses it after SIO pad packet failure and it resets pad state plus raises D_800A3928,Suppress resolved local rename
+pad_ReadSioPacket_8003A574,keep,high,Replaces false motion_SavePreCalcData_8003A574 name; reads 8 bytes from the sio: handle into D_800A3688,Suppress resolved local rename
+cdrom_CallbackA_80080014,keep,high,Replaces false motion_SavePreCalcData_80080014 name; installed through cdrom_SetCallbackA and delivers CDROM event 0x20,Suppress resolved callback rename
+cdrom_CallbackB_8008003C,keep,high,Replaces false motion_SavePreCalcData_8008003C name; installed through cdrom_SetCallbackB and delivers CDROM event 0x40,Suppress resolved callback rename
+cdrom_VsyncCallback_80080064,keep,high,Replaces false motion_SavePreCalcData_80080064 name; installed through sys_SetVsyncMode and delivers CDROM event 0x40,Suppress resolved callback rename
 saTanMainDispGnd_80046020,keep,low,Tiny grouped seq-similarity match but address suffix preserves uncertainty,Keep provisional and do not promote to bare semantic name

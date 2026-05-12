@@ -70,7 +70,7 @@ func_8003A39C
 func_8003A41C
 func_8003A42C
 func_8003A450
-motion_SavePreCalcData_8003A574
+pad_ReadSioPacket_8003A574
 pad_ClearAppliBuffer
 func_8003A728
 func_8003AA78

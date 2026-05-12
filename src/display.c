@@ -2277,14 +2277,14 @@ loop:
     return 1;
 }
 
-void motion_SavePreCalcData_80080014(void) {
+void cdrom_CallbackA_80080014(void) {
     func_8008008C(0xF0000003, 0x20);
 }
 
-void motion_SavePreCalcData_8008003C(void) {
+void cdrom_CallbackB_8008003C(void) {
     func_8008008C(0xF0000003, 0x40);
 }
 
-void motion_SavePreCalcData_80080064(void) {
+void cdrom_VsyncCallback_80080064(void) {
     func_8008008C(0xF0000003, 0x40);
 }

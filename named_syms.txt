@@ -256,10 +256,5 @@ suDraw2DLib_8007A62C = 0x8007A62C;
 MotDataBaseAddress = 0x80104F38;
 
 /* === Kengo-derived names (apply_kengo_names.py) === */
-katinuki_game_get_katinuki_max_num_80016868 = 0x80016868;
-katinuki_game_get_katinuki_max_num_800168D0 = 0x800168D0;
-katinuki_game_get_katinuki_max_num_80046914 = 0x80046914;
-katinuki_game_get_katinuki_max_num_80046934 = 0x80046934;
-katinuki_game_get_katinuki_max_num_80046A60 = 0x80046A60;
 tslSmdSendVu1Code_8007A87C = 0x8007A87C;
 tslSmdSendVu1Code_8007A898 = 0x8007A898;

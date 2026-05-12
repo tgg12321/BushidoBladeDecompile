@@ -159,7 +159,7 @@ typedef struct GameObj {
     /* 0x54 */ s16 field_54;        /* 20 funcs; saTan4GaugeInit reads */
     /* 0x56 */ s16 field_56;        /* 6 funcs */
     /* 0x58 */ s32 timer;           /* 26 funcs; efc_rob_set_type_flash loads as frame index/timer;
-                                       cpu_check_same_dir_timer loads; cpu_get_dist_2 loads;
+                                       cpu_check_same_dir_timer loads; cpu_decode_move_pattern_params loads;
                                        md_game_check_mode clears (sb zero) */
     /* 0x5C */ s16 ang_vel_x;      /* 17 funcs; CONFIRMED angular velocity: cpu_set_move_command_and_dir
                                        assigns random rotation speed (0x200..0x5FF or negative);

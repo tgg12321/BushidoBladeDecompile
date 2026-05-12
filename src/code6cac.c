@@ -60,7 +60,7 @@ extern s8 D_8010277F;
 extern s16 D_800A391D;
 extern s32 file_GetFlag2(void);
 extern s16 *snd_GetSeId(void);
-extern void cpu_get_dist_2(u8 *);
+extern void cpu_decode_move_pattern_params(u8 *);
 extern void func_8003553C(void);
 extern void func_8003AF40(s32);
 extern void func_8003AFFC(void);
@@ -2525,7 +2525,7 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
                 }
                 *((u8 *) (s0 + 0xAD)) = a0_flag;
             }
-            cpu_get_dist_2(s0);
+            cpu_decode_move_pattern_params(s0);
             {
                 s32 kind2 = *((u16 *) (s0 + 0x6A));
                 s32 v1k = kind2 & 0xFFFF;

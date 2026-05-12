@@ -1557,7 +1557,7 @@ void func_8003A39C(void) {
     func_8003A264();
     D_800A3834 = 8;
 }
-void motion_SavePreCalcData_8003A3F0(void) {
+void pad_ResetSioOnError_8003A3F0(void) {
     func_8003A39C();
     D_800A3928 = 1;
 }
@@ -1615,7 +1615,7 @@ check_retry:
     func_8008C464(1, 1, 0);
     return D_800A382C;
 }
-void motion_SavePreCalcData_8003A574(void) {
+void pad_ReadSioPacket_8003A574(void) {
     func_800789F8(D_800A3734, &D_800A3688, 8);
 }
 extern s32 D_800A38D0;
@@ -1648,7 +1648,7 @@ loop_check:
     }
     func_8008C464(2, 0, 0);
     s0 = 0;
-    motion_SavePreCalcData_8003A574();
+    pad_ReadSioPacket_8003A574();
     func_80078BA8(0xF2000001);
 poll:
     v0 = (func_8008C464(0, 0, 0) >> 7) & 3;
@@ -1742,13 +1742,13 @@ void func_8003A728(s32 a0) {
     if (D_800A3916 == 0) goto path_pad;
 
     if (vsync == 0) {
-        motion_SavePreCalcData_8003A574();
+        pad_ReadSioPacket_8003A574();
         goto post_8F4;
     }
 
     if (((FuncBufType)func_8003A450)(&D_800A3698) == 0) goto err_no_check;
     D_800A3908 += func_8003A6FC(lower);
-    motion_SavePreCalcData_8003A574();
+    pad_ReadSioPacket_8003A574();
     goto post_8F4;
 
 path_pad:
@@ -1760,11 +1760,11 @@ path_pad:
 retry_a450:
     if (((FuncBufType)func_8003A450)(&D_800A3698) != 0) goto continue_a450;
 err_no_check:
-    motion_SavePreCalcData_8003A3F0();
+    pad_ResetSioOnError_8003A3F0();
     return;
 continue_a450:
     D_800A3908 += func_8003A6FC(buf8 & 0xFFFF);
-    motion_SavePreCalcData_8003A574();
+    pad_ReadSioPacket_8003A574();
     if (D_800A38A0 != 0) goto post_8F4;
     if (D_800A3730 != 0) goto err_with_check;
     if ((D_800A36C0 & 0x40000000) == 0) goto post_8F4;

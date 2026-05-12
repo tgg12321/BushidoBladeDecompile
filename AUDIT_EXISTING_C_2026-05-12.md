@@ -40,7 +40,7 @@ Second pass:
 
 ## Naming Suspects
 
-`tools/audit_kengo_renames.py` flags 17 score-4 names as likely false positives or too weak to trust without manual review:
+Initial `tools/audit_kengo_renames.py` triage flagged 17 score-4 names as likely false positives or too weak to trust without manual review:
 
 - `cpu_check_same_dir_timer`
 - `cpu_get_dist`
@@ -63,13 +63,29 @@ Second pass:
 Recommended handling: do not mass-rename these from the Kengo audit alone. Compare callers, data touched, and nearby known functions first. If evidence stays weak, demote to address-bearing names or keep the semantic name only as a comment.
 
 Follow-up triage is recorded in `NAMING_TRIAGE_2026-05-12.md`. Short version:
-five CPU/camera names are strong enough to keep, `cpu_get_dist_2` is misleading,
-the five `katinuki_game_get_katinuki_max_num_*` aliases should be demoted or
-replaced, the five `motion_SavePreCalcData_*` names need local evidence before
-promotion, and `saTanMainDispGnd_80046020` should stay address-suffixed.
+five CPU/camera names are strong enough to keep, `cpu_get_dist_2` was resolved
+as `cpu_decode_move_pattern_params`, the five
+`katinuki_game_get_katinuki_max_num_*` aliases were resolved in rename batch 1,
+the five `motion_SavePreCalcData_*` false positives were resolved in rename
+batch 3, and `saTanMainDispGnd_80046020` should stay address-suffixed.
 The reviewed decisions are machine-readable in `kengo_name_decisions.csv`, and
 `tools/audit_kengo_renames.py --decided-only` now prints the actionable queue.
 The current reviewed queue is also summarized in `KENGO_RENAME_QUEUE_2026-05-12.md`.
+
+Rename batch 1 resolved the five `katinuki_game_get_katinuki_max_num_*`
+aliases. The split asm labels now use the existing real symbols
+`gpu_EnableDisplay`, `gpu_DisableDisplay`, `snd_StopBgm`, `snd_AllocSe`, and
+`snd_StopSelection`, and the stale `named_syms.txt` aliases were removed.
+
+Rename batch 2 resolved `cpu_get_dist_2` as
+`cpu_decode_move_pattern_params`. The function decodes the actor move-pattern
+stream referenced from actor offset `0x58` into parameter bytes near
+`0xA1..0xAC`, so it is no longer presented as a distance helper.
+
+Rename batch 3 resolved the five `motion_SavePreCalcData_*` false positives as
+`pad_ResetSioOnError_8003A3F0`, `pad_ReadSioPacket_8003A574`,
+`cdrom_CallbackA_80080014`, `cdrom_CallbackB_8008003C`, and
+`cdrom_VsyncCallback_80080064`.
 
 ## Subsystem Map
 

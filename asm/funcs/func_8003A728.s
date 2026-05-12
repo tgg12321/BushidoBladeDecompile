@@ -39,7 +39,7 @@ glabel func_8003A728
     /* 2AFBC 8003A7BC 00000000 */   nop
     /* 2AFC0 8003A7C0 0500A014 */  bnez       $a1, .L8003A7D8
     /* 2AFC4 8003A7C4 00000000 */   nop
-    /* 2AFC8 8003A7C8 5DE9000C */  jal        motion_SavePreCalcData_8003A574
+    /* 2AFC8 8003A7C8 5DE9000C */  jal        pad_ReadSioPacket_8003A574
     /* 2AFCC 8003A7CC 00000000 */   nop
     /* 2AFD0 8003A7D0 3DEA0008 */  j          .L8003A8F4
     /* 2AFD4 8003A7D4 00000000 */   nop
@@ -56,7 +56,7 @@ glabel func_8003A728
     /* 2AFFC 8003A7FC 00000000 */  nop
     /* 2B000 8003A800 21186200 */  addu       $v1, $v1, $v0
     /* 2B004 8003A804 3C0883AF */  sw         $v1, %gp_rel(D_800A3908)($gp)
-    /* 2B008 8003A808 5DE9000C */  jal        motion_SavePreCalcData_8003A574
+    /* 2B008 8003A808 5DE9000C */  jal        pad_ReadSioPacket_8003A574
     /* 2B00C 8003A80C 00000000 */   nop
     /* 2B010 8003A810 3DEA0008 */  j          .L8003A8F4
     /* 2B014 8003A814 00000000 */   nop
@@ -88,7 +88,7 @@ glabel func_8003A728
     /* 2B074 8003A874 05004014 */  bnez       $v0, .L8003A88C
     /* 2B078 8003A878 00000000 */   nop
   .L8003A87C:
-    /* 2B07C 8003A87C FCE8000C */  jal        motion_SavePreCalcData_8003A3F0
+    /* 2B07C 8003A87C FCE8000C */  jal        pad_ResetSioOnError_8003A3F0
     /* 2B080 8003A880 00000000 */   nop
     /* 2B084 8003A884 8BEA0008 */  j          .L8003AA2C
     /* 2B088 8003A888 00000000 */   nop
@@ -99,7 +99,7 @@ glabel func_8003A728
     /* 2B098 8003A898 00000000 */  nop
     /* 2B09C 8003A89C 21186200 */  addu       $v1, $v1, $v0
     /* 2B0A0 8003A8A0 3C0883AF */  sw         $v1, %gp_rel(D_800A3908)($gp)
-    /* 2B0A4 8003A8A4 5DE9000C */  jal        motion_SavePreCalcData_8003A574
+    /* 2B0A4 8003A8A4 5DE9000C */  jal        pad_ReadSioPacket_8003A574
     /* 2B0A8 8003A8A8 00000000 */   nop
     /* 2B0AC 8003A8AC 0A80023C */  lui        $v0, %hi(D_800A38A0)
     /* 2B0B0 8003A8B0 A038428C */  lw         $v0, %lo(D_800A38A0)($v0)

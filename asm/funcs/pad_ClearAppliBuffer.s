@@ -33,7 +33,7 @@ glabel pad_ClearAppliBuffer
     /* 2AE14 8003A614 21280000 */  addu       $a1, $zero, $zero
     /* 2AE18 8003A618 1931020C */  jal        func_8008C464
     /* 2AE1C 8003A61C 21300000 */   addu      $a2, $zero, $zero
-    /* 2AE20 8003A620 5DE9000C */  jal        motion_SavePreCalcData_8003A574
+    /* 2AE20 8003A620 5DE9000C */  jal        pad_ReadSioPacket_8003A574
     /* 2AE24 8003A624 21800000 */   addu      $s0, $zero, $zero
     /* 2AE28 8003A628 00F2043C */  lui        $a0, (0xF2000001 >> 16)
     /* 2AE2C 8003A62C EAE2010C */  jal        func_80078BA8

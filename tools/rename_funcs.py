@@ -174,7 +174,7 @@ RENAMES = {
     "func_8003032C": "cpu_get_dist",
     "func_80030A2C": "cpu_set_move_command_and_dir",
     "func_800307D0": "cpu_check_tubazeri_2",
-    "func_800324D0": "cpu_get_dist_2",
+    "func_800324D0": "cpu_decode_move_pattern_params",
     "func_80032314": "Pad_Prs",
     "func_8003339C": "cpu_check_same_dir_timer",
     "func_80036D98": "replay_camera_Init",

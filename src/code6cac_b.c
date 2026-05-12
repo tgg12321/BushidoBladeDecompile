@@ -2092,7 +2092,7 @@ next:
     if (t1 < 4) goto loop;
 }
 /* kengo:HIGH  |  is_pad/Pad_Prs  |  111i */
-void cpu_get_dist_2(u8 *a0) {
+void cpu_decode_move_pattern_params(u8 *a0) {
     register u8 *v1 asm("v1");
     register u8 v0 asm("v0");
     register u32 a2 asm("a2");
