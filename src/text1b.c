@@ -12712,10 +12712,24 @@ s32 func_8005FA98(s32 arg0, s32 arg1, s32 arg2) {
     func_80073728((GameObj *)(&s), 0);
     return end - arg1;
 }
-void func_8005FBC8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005FBC8.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+extern u8 D_800A327C[8];
+extern u8 D_800A3284[8];
+extern s32 D_800A3278;
+
+void func_8005FBC8(s32 arg0, u8 *arg1) {
+    u8 r1[8], r2[8];
+    s32 s0;
+    s0 = func_80036EA8(2, arg0 + 0x33);
+    replay_camera_Init(s0, (s32)arg1);
+    game_FrameLoop();
+    func_80036F28(s0);
+    __builtin_memcpy(r1, D_800A327C, 8);
+    __builtin_memcpy(r2, D_800A3284, 8);
+    gpu_LoadImage((s32)r1, (s32)(arg1 + 0x40));
+    gpu_DrawSync(0);
+    gpu_LoadImage((s32)r2, (s32)(arg1 + 0x14));
+    gpu_DrawSync(0);
+    D_800A3278 = 0;
 }
 extern s32 D_800A36AC;
 extern s32 D_800A374C;
