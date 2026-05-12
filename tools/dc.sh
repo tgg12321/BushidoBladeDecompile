@@ -372,7 +372,139 @@ print(f'Replaced {func} in {src}')
             python3 tools/regfix_verify.py --all "$@" 2>&1
             exit $?
         fi
+        # Pre-check: if the function has an active asmfix bridge entry,
+        # warn loudly. The verify report below will say MATCH no matter
+        # what's in src/ because asmfix.py overwrites the .o bytes
+        # with asm/funcs/<func>.s content. The match is meaningless
+        # for retirement work — your C body is dead code.
+        if grep -qE "^${ARG1}: replace_with_asmfile" asmfix.txt 2>/dev/null; then
+            echo "WARNING: ${ARG1} has an ACTIVE asmfix bridge in asmfix.txt." >&2
+            echo "         The bytes you're about to verify are from asm/funcs/${ARG1}.s," >&2
+            echo "         NOT from your C body. To verify the C body produces matching" >&2
+            echo "         bytes on its own, use \`dc.sh verify-c ${ARG1}\` instead." >&2
+            echo >&2
+        fi
         python3 tools/regfix_verify.py "$ARG1" 2>&1
+        ;;
+
+    verify-c)
+        # Bridge-aware verify: refuses if the function is bridged
+        # (because then the "match" is meaningless — asmfix.py is
+        # producing the bytes, not the C body). Use this during
+        # retirement work to confirm the C body actually compiles to
+        # matching bytes on its own.
+        FUNC_NAME="${1:-}"
+        if [ -z "$FUNC_NAME" ] || [ "$FUNC_NAME" = "--help" ]; then
+            echo "Usage: dc.sh verify-c <func_name>"
+            echo
+            echo "  Verifies that the C body for <func> compiles to byte-matching"
+            echo "  bytes WITHOUT an active asmfix bridge masking it. If the bridge"
+            echo "  is still active, this command refuses — comment it out via"
+            echo "  \`dc.sh retire $func\` first."
+            echo
+            echo "  Use this during retirement work. \`dc.sh verify <func>\` is"
+            echo "  bridge-blind and will falsely report MATCH for bridged functions."
+            exit 1
+        fi
+        if grep -qE "^${FUNC_NAME}: replace_with_asmfile" asmfix.txt 2>/dev/null; then
+            echo "REFUSED: ${FUNC_NAME} has an ACTIVE asmfix bridge in asmfix.txt:" >&2
+            grep -nE "^${FUNC_NAME}: replace_with_asmfile" asmfix.txt >&2
+            echo >&2
+            echo "Any verify against the linked binary at this address reads the" >&2
+            echo "asm/funcs/${FUNC_NAME}.s content (i.e., the original game bytes)," >&2
+            echo "NOT your C body's compiled output. The C body is DEAD CODE." >&2
+            echo >&2
+            echo "To verify the C body honestly:" >&2
+            echo "  bash tools/dc.sh retire ${FUNC_NAME}   # comment out the bridge" >&2
+            echo "  bash tools/dc.sh verify-c ${FUNC_NAME}" >&2
+            exit 1
+        fi
+        echo "[verify-c] No active bridge for ${FUNC_NAME}; running normal verify..."
+        python3 tools/regfix_verify.py "$FUNC_NAME" 2>&1
+        ;;
+
+    purge-retirements)
+        # Manually purge `# RETIRE: <func>: replace_with_asmfile ...`
+        # lines from asmfix.txt. The auto-purge that used to live in
+        # refresh-queue was removed because it couldn't tell whether a
+        # SHA1 match was "C body produces correct bytes" or "bridge is
+        # still producing the bytes from a non-comment source." This
+        # tool is the safe, deliberate replacement.
+        #
+        # For each `# RETIRE: <func>: ...` line, the safe purge proves
+        # the C body matches WITHOUT the bridge by:
+        #   1. Verifying the line is commented (no active bridge for <func>)
+        #   2. Running `dc.sh verify-c <func>` (which refuses if any
+        #      active bridge exists) — must report MATCH
+        # If both pass, the line is removed. Otherwise, it stays.
+        if [ "$1" = "--help" ]; then
+            echo "Usage: dc.sh purge-retirements [--dry-run]"
+            echo
+            echo "  Manually purge \`# RETIRE: <func>: replace_with_asmfile\`"
+            echo "  lines from asmfix.txt, ONLY for functions that pass"
+            echo "  bridge-aware verification (\`dc.sh verify-c\`)."
+            echo
+            echo "  --dry-run: report what would be purged, don't write."
+            exit 1
+        fi
+        DRY_RUN=0
+        for a in "$@"; do
+            case "$a" in --dry-run) DRY_RUN=1 ;; esac
+        done
+        python3 - "$DRY_RUN" <<'PYEOF'
+import re, subprocess, sys
+from pathlib import Path
+
+dry_run = sys.argv[1] == "1"
+p = Path("asmfix.txt")
+lines = p.read_text(encoding="utf-8").splitlines()
+candidates = []
+for i, line in enumerate(lines):
+    m = re.match(r"^# RETIRE:\s*(\w+)\s*:\s*replace_with_asmfile\b", line)
+    if m:
+        candidates.append((i, m.group(1)))
+
+if not candidates:
+    print("No `# RETIRE: ` lines in asmfix.txt.")
+    sys.exit(0)
+
+print(f"Found {len(candidates)} `# RETIRE: ` line(s). Verifying each...")
+purgable = set()
+for idx, fname in candidates:
+    # Safety: ensure NO active bridge for this function exists
+    active_bridge = any(
+        re.match(rf"^{re.escape(fname)}:\s*replace_with_asmfile", L)
+        for L in lines
+    )
+    if active_bridge:
+        print(f"  KEEP  {fname}: has an active bridge line too — refusing to purge")
+        continue
+    # Run verify-c
+    res = subprocess.run(
+        ["bash", "tools/dc.sh", "verify-c", fname],
+        capture_output=True, text=True, timeout=120,
+    )
+    if ": MATCH " in res.stdout:
+        print(f"  PURGE {fname}: verify-c says MATCH (C body produces correct bytes)")
+        purgable.add(idx)
+    else:
+        print(f"  KEEP  {fname}: verify-c did not report MATCH")
+        if res.stdout.strip():
+            for ln in res.stdout.splitlines()[:3]:
+                print(f"           {ln}")
+
+if not purgable:
+    print(f"\nNothing to purge.")
+    sys.exit(0)
+
+if dry_run:
+    print(f"\n(dry-run) {len(purgable)} line(s) would be purged.")
+    sys.exit(0)
+
+out = [L for i, L in enumerate(lines) if i not in purgable]
+p.write_text("\n".join(out) + "\n", encoding="utf-8")
+print(f"\nPurged {len(purgable)} line(s) from asmfix.txt.")
+PYEOF
         ;;
 
     inline-locate)
@@ -871,46 +1003,33 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         # (~3 min on the current backlog). Use between consecutive
         # autonomous-mode matches when only one function changed and the
         # CSV doesn't need a full re-scan. Phases [1] capture-recipe,
-        # [2] strip orphans, [3] purge `# RETIRE:` lines on clean build,
-        # and [4] regen WORK_QUEUE.md from the existing CSV still run.
+        # [2] strip orphans, [3] regen WORK_QUEUE.md from the existing CSV.
         # Full mode adds phases for batch_attempt + classify_asmfix.
+        #
+        # CHANGED 2026-05-12: refresh-queue no longer auto-purges
+        # `# RETIRE: ` lines. The old auto-purge tried to detect "the
+        # retirement succeeded" by checking SHA1 match, but a SHA1
+        # match doesn't prove the C body produces the correct bytes —
+        # the asmfix bridge could still be silently producing them
+        # (this was the func_8007B3A8 trap, commit 836d9a1). Now
+        # `# RETIRE: <func>: ` lines are kept as permanent historical
+        # markers. Run `dc.sh purge-retirements` explicitly to clean
+        # them up after manually confirming each function retires correctly.
         if [ "$FAST_MODE" = "1" ]; then
-            echo "[1/4] (FAST) Capturing recipe from latest commit..."
+            echo "[1/3] (FAST) Capturing recipe from latest commit..."
             python3 tools/capture_recipe.py HEAD 2>&1 | tail -5 || true
             echo
-            echo "[2/4] (FAST) Stripping orphan named_syms.txt assignments..."
+            echo "[2/3] (FAST) Stripping orphan named_syms.txt assignments..."
             python3 tools/audit_named_syms_orphans.py --apply 2>&1 | tail -3 || true
             echo
-            echo "[3/4] (FAST) Cleaning up completed # RETIRE: lines..."
-            if grep -q "^# RETIRE: " asmfix.txt 2>/dev/null; then
-                python3 -c "
-import re, subprocess
-from pathlib import Path
-p = Path('asmfix.txt')
-lines = p.read_text(encoding='utf-8').splitlines()
-am = Path('.bb2_active_func')
-active = am.read_text(encoding='utf-8').strip() if am.exists() else ''
-res = subprocess.run(['bash', 'tools/dc.sh', 'verify', '--all'], capture_output=True, text=True, timeout=60)
-clean = 'SHA1 match:' in res.stdout
-if not clean:
-    print('  build not clean; leaving # RETIRE lines in place')
-else:
-    out, purged = [], 0
-    for line in lines:
-        m = re.match(r'^# RETIRE:\s*(\w+)\s*:\s*replace_with_asmfile\b', line)
-        if m and m.group(1) != active:
-            purged += 1
-            continue
-        out.append(line)
-    if purged:
-        p.write_text('\n'.join(out) + '\n', encoding='utf-8')
-    print(f'  purged {purged} completed retirement(s)')
-"
-            fi
-            echo
-            echo "[4/4] (FAST) Regenerating WORK_QUEUE.md from existing CSV..."
+            echo "[3/3] (FAST) Regenerating WORK_QUEUE.md from existing CSV..."
             python3 tools/gen_work_queue.py 2>&1 | tail -5
             : > .bb2_active_func 2>/dev/null || true
+            RETIRE_COUNT=$(grep -c "^# RETIRE: " asmfix.txt 2>/dev/null || echo 0)
+            if [ "$RETIRE_COUNT" -gt 0 ] 2>/dev/null; then
+                echo
+                echo "Note: $RETIRE_COUNT \`# RETIRE: \` line(s) in asmfix.txt (historical markers — run \`dc.sh purge-retirements\` to clean up after manual verification)."
+            fi
             exit 0
         fi
 
@@ -925,36 +1044,20 @@ else:
         # symbol lookups in the linker map.
         python3 tools/audit_named_syms_orphans.py --apply 2>&1 | tail -3 || true
         echo
-        echo "[3/6] Cleaning up completed retirements (# RETIRE: lines now matching)..."
-        # If a `# RETIRE: <func>: replace_with_asmfile ...` line exists AND
-        # the build matches AND the function is no longer the active marker,
-        # the retirement succeeded — remove the commented bridge rule.
-        if grep -q "^# RETIRE: " asmfix.txt 2>/dev/null; then
-            python3 -c "
-import re, subprocess
-from pathlib import Path
-p = Path('asmfix.txt')
-lines = p.read_text(encoding='utf-8').splitlines()
-# Active marker (must NOT be the function whose retirement we'd remove)
-am = Path('.bb2_active_func')
-active = am.read_text(encoding='utf-8').strip() if am.exists() else ''
-# Only purge retirements once build is SHA1-clean
-res = subprocess.run(['bash', 'tools/dc.sh', 'verify', '--all'], capture_output=True, text=True, timeout=60)
-clean = 'SHA1 match:' in res.stdout
-if not clean:
-    print('  build not clean; leaving # RETIRE lines in place')
-else:
-    out, purged = [], 0
-    for line in lines:
-        m = re.match(r'^# RETIRE:\s*(\w+)\s*:\s*replace_with_asmfile\b', line)
-        if m and m.group(1) != active:
-            purged += 1
-            continue
-        out.append(line)
-    if purged:
-        p.write_text('\n'.join(out) + '\n', encoding='utf-8')
-    print(f'  purged {purged} completed retirement(s)')
-"
+        echo "[3/6] (note) \`# RETIRE: \` lines kept as historical markers..."
+        # Auto-purging the `# RETIRE: ` lines is unsafe: a SHA1-match
+        # condition doesn't prove the C body matches — the asmfix
+        # bridge could still be silently producing the bytes (this is
+        # what trapped commit 836d9a1 for func_8007B3A8). Run
+        # `dc.sh purge-retirements` explicitly after MANUALLY
+        # confirming each function retires correctly under a clean
+        # rebuild WITHOUT its bridge entry.
+        RETIRE_COUNT=$(grep -c "^# RETIRE: " asmfix.txt 2>/dev/null || echo 0)
+        if [ "$RETIRE_COUNT" -gt 0 ] 2>/dev/null; then
+            echo "  $RETIRE_COUNT \`# RETIRE: \` line(s) in asmfix.txt"
+            echo "  Run \`dc.sh purge-retirements\` to clean up after manual verification."
+        else
+            echo "  No \`# RETIRE: \` lines in asmfix.txt."
         fi
         echo
         echo "[4/6] Classifying inline_asm + INCLUDE_ASM (batch_attempt --classify-only)..."
