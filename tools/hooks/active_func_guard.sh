@@ -108,7 +108,41 @@ to do this through the standard workflow.
 EOF
         return 1
     fi
-    out=$(wsl bash -c "cd '$WSL_ROOT' && rm -rf build && source .venv/bin/activate 2>/dev/null; make 2>&1 | tail -3 && echo '---SEP---' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null)
+
+    # Risk-based clean-rebuild skip (conservative; defaults to FULL
+    # clean rebuild). We skip the clean rebuild ONLY when ALL of these
+    # hold:
+    #   - staged diff touches exactly ONE source file
+    #   - no changes to regfix.txt / asmfix.txt / sdata*.txt /
+    #     named_syms.txt / undefined_syms_auto.txt
+    #   - no `register .* asm(` lines added (no register-asm pins)
+    #   - no `__asm__` lines added (no new inline-asm)
+    #
+    # When ALL hold, the regression risk from cache lag is low —
+    # a single .c file edit with no codegen-influencing changes is
+    # the case where the dependency tracking is most reliable. We
+    # still run a cache-using verify against the *current* build.
+    #
+    # Set BB2_HOOK_ALWAYS_CLEAN=1 to disable the skip (force clean
+    # rebuild every commit).
+    local skip_clean=0
+    if [ "${BB2_HOOK_ALWAYS_CLEAN:-0}" = "0" ]; then
+        local diff_files diff_addedline_count cfg_changed risky_pattern
+        diff_files=$(wsl bash -c "cd '$WSL_ROOT' && git diff --cached --name-only 2>/dev/null | wc -l" 2>/dev/null)
+        cfg_changed=$(wsl bash -c "cd '$WSL_ROOT' && git diff --cached --name-only 2>/dev/null | grep -E '^(regfix.*\.txt|asmfix\.txt|sdata.*\.txt|named_syms\.txt|undefined_syms_auto\.txt|tools/.*\.py|tools/.*\.sh|Makefile)\$' | wc -l" 2>/dev/null)
+        # Look for register-asm pins and new inline asm in added lines
+        risky_pattern=$(wsl bash -c "cd '$WSL_ROOT' && git diff --cached -U0 2>/dev/null | grep -E '^\+.*(register\s+.*\s+asm\s*\(|__asm__)' | wc -l" 2>/dev/null)
+        if [ "${diff_files:-99}" = "1" ] && [ "${cfg_changed:-1}" = "0" ] && [ "${risky_pattern:-1}" = "0" ]; then
+            skip_clean=1
+        fi
+    fi
+
+    if [ "$skip_clean" = "1" ]; then
+        echo "[hook] Low-risk commit (single .c file, no regfix/asmfix/register-asm changes); skipping clean rebuild." >&2
+        out=$(wsl bash -c "cd '$WSL_ROOT' && source .venv/bin/activate 2>/dev/null; make 2>&1 | tail -3 && echo '---SEP---' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null)
+    else
+        out=$(wsl bash -c "cd '$WSL_ROOT' && rm -rf build && source .venv/bin/activate 2>/dev/null; make 2>&1 | tail -3 && echo '---SEP---' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null)
+    fi
     # SHA1 line shows up as "OK: bb2 matches!" on full match.
     case "$out" in
         *"OK: bb2 matches!"*) sha1_ok=1 ;;

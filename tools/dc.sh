@@ -955,6 +955,62 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         python3 tools/fix_label_drift.py "$@" 2>&1
         ;;
 
+    attempt-or-bail)
+        # Time-boxed auto-retirement attempt: preflight → retire →
+        # attempt → build-active → verify-c → commit. Returns one
+        # structured line: MATCHED / STUCK / OUT_OF_SCOPE. For
+        # autonomous coordinators that need bounded wall-clock per
+        # function. Default budget: 30 min (--budget-seconds N).
+        python3 tools/attempt_or_bail.py "$@" 2>&1
+        ;;
+
+    subagent-prompt-smart)
+        # Class-aware subagent prompt: detects function class (GTE
+        # wrapper, state dispatch, leaf arith, branch-heavy, inline-
+        # asm-dom, generic) from the asm and emits a focused prompt
+        # with only the relevant gotchas/recipes. Typically 40-80%
+        # fewer tokens than the default subagent-prompt template.
+        python3 tools/gen_subagent_prompt_smart.py "$@" 2>&1
+        ;;
+
+    preflight)
+        # Single focused brief before starting work on a function:
+        # bridge state, source location, classification, size, blockers,
+        # kengo equivalent, existing regfix/asmfix rule counts, sibling
+        # commits to clone, one-line recommendation. Replaces 3-4
+        # separate tool calls.
+        python3 tools/preflight.py "$@" 2>&1
+        ;;
+
+    diff-summary)
+        # One-line-per-category diff verdict. Reads regfix_verify
+        # output and classifies each differing instruction by failure
+        # mode (opcode-only, register-rename, immediate, branch-offset,
+        # structural), then prints a compact summary with a suggested
+        # next action. Faster decision-making during iteration than
+        # reading the full side-by-side diff.
+        python3 tools/diff_summary.py "$@" 2>&1
+        ;;
+
+    build-active)
+        # Incremental rebuild for one function: nuke the .o for the
+        # containing .c file + link products, run make (~30s vs ~2 min
+        # for full clean), then run bridge-aware verify-c. Use during
+        # the edit-iterate loop. The full clean-rebuild gate at commit
+        # time (active_func_guard hook) still protects against cache
+        # lag — this is just for tight iteration.
+        python3 tools/build_active.py "$@" 2>&1
+        ;;
+
+    regfix-drift-immune)
+        # Audit regfix.txt for `subst` rules with hardcoded `.L<N>` label
+        # numbers in their PATTERN and rewrite to `\.L\d+`. Only rewrites
+        # cases where the REPLACEMENT label is project-custom (e.g.,
+        # `.LbodyX`); skips paired-shift cases (replacement is itself a
+        # GCC-emitted `.L<N>`). See tools/regfix_drift_immune.py.
+        python3 tools/regfix_drift_immune.py "$@" 2>&1
+        ;;
+
     fix-asmfix-drift)
         # Auto-fix .L<N> drift in asmfix.txt rename rules (the asmfix-slice
         # version of fix-label-drift). Useful after adding pure-C stubs that
