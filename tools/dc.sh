@@ -344,7 +344,33 @@ print(f'Replaced {func} in {src}')
         if [ "$ARG1" = "--help" ]; then
             echo "Usage: dc.sh verify <func_name>   — verify one function"
             echo "       dc.sh verify --all          — verify all C functions"
+            echo "       dc.sh verify --clean        — clean rebuild then verify"
+            echo
+            echo "  --clean: removes build/ and rebuilds before checking. Use when"
+            echo "  you suspect cached .o files are hiding regressions (e.g., as a"
+            echo "  pre-commit safety check after register-allocation-sensitive work)."
             exit 1
+        fi
+        # --clean: clean rebuild then verify --all. Catches regressions
+        # hidden by stale .o cache (the trap that broke func_8003D39C
+        # between commits 54a5e54 and c71ff0a — a function's "matched"
+        # state on the build cache silently diverged from a fresh
+        # build's output).
+        if [ "$ARG1" = "--clean" ]; then
+            echo "[verify --clean] Removing build/ and rebuilding from source..."
+            rm -rf build
+            if [ -d ".venv" ]; then
+                # shellcheck disable=SC1091
+                source .venv/bin/activate 2>/dev/null || true
+            fi
+            if ! make 2>&1 | tail -3; then
+                echo "ERROR: make failed during --clean rebuild" >&2
+                exit 1
+            fi
+            shift || true
+            echo "[verify --clean] Running verify --all on fresh build..."
+            python3 tools/regfix_verify.py --all "$@" 2>&1
+            exit $?
         fi
         python3 tools/regfix_verify.py "$ARG1" 2>&1
         ;;
@@ -560,6 +586,46 @@ print(f'Replaced {func} in {src}')
         #     --retro SHA --recipe "..." --retro-summary "..."
         #     --stuck-reason "..." --note "..."]
         #   run-end [--note ...]
+        #
+        # `run-start` does a CLEAN-REBUILD SHA1 baseline check before
+        # opening the run. If the clean build doesn't SHA1-match, the
+        # run-start refuses to log — the agent should diagnose the
+        # baseline mismatch BEFORE doing more work. Skips with
+        # --skip-baseline if the user explicitly knows the build is
+        # broken and wants to proceed anyway (e.g., fix-forward work
+        # during a regression).
+        #
+        # Why this gate exists: cached .o files can hide regressions
+        # for many commits at a time (this happened between 54a5e54
+        # and c71ff0a — 7 commits accumulated on a broken baseline).
+        # Forcing the clean-baseline check at run-start localizes the
+        # cost to once per batch and surfaces problems before they
+        # compound.
+        if [ "$1" = "run-start" ]; then
+            SKIP_BASELINE=0
+            for a in "$@"; do
+                case "$a" in --skip-baseline) SKIP_BASELINE=1 ;; esac
+            done
+            if [ "$SKIP_BASELINE" = "0" ]; then
+                echo "[run-start] Clean-rebuild SHA1 baseline check..." >&2
+                rm -rf build
+                if [ -d ".venv" ]; then
+                    # shellcheck disable=SC1091
+                    source .venv/bin/activate 2>/dev/null || true
+                fi
+                if ! make 2>&1 | tail -1 | grep -q "OK: bb2 matches!"; then
+                    echo "ERROR: clean rebuild does NOT SHA1-match the original." >&2
+                    echo "       This means the baseline is already broken." >&2
+                    echo "       Investigate (\`dc.sh verify --all --force\`) and fix" >&2
+                    echo "       BEFORE starting a new autonomous run, otherwise the" >&2
+                    echo "       run will compound on a broken state." >&2
+                    echo "       To proceed anyway (e.g., fix-forward work), use:" >&2
+                    echo "         dc.sh run-log run-start --budget N --skip-baseline" >&2
+                    exit 1
+                fi
+                echo "[run-start] Baseline clean — proceeding to log run." >&2
+            fi
+        fi
         python3 tools/autonomous_run_log.py "$@" 2>&1
         ;;
 
