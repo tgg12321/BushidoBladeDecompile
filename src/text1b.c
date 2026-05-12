@@ -1204,10 +1204,30 @@ void func_80049E4C(void) {
     D_800A3708 = p1;
     D_800A370C = p2;
 }
-void func_80049F4C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80049F4C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+extern u8 D_800153F0;
+extern u8 D_800F62E0;
+extern s32 D_800F6318;
+extern u8 D_800F6338;
+extern u8 D_800F6339;
+extern u8 D_800F633A;
+extern void func_8004A09C(s32, u16 *);
+extern void gte_SetColorMatrix(s32 *);
+extern void gte_SetBackColor(s32, s32, s32);
+
+void func_80049F4C(void) {
+    s32 sp10[12];
+    s32 i;
+    u8 *base;
+    __builtin_memcpy(sp10, &D_800153F0, 44);
+    i = 0;
+    base = &D_800F62E0;
+    do {
+        func_8004A09C((s32)base, (u16 *)sp10);
+        i++;
+        base += 0x60;
+    } while (i < 8);
+    gte_SetColorMatrix(&D_800F6318);
+    gte_SetBackColor(D_800F6338, D_800F6339, D_800F633A);
 }
 void func_8004A09C(s32 arg0, u16 *arg1) {
     *(s16 *)(arg0 + 0x38) = *arg1++;
