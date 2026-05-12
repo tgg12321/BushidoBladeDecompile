@@ -1044,7 +1044,7 @@ func_8003DBE4: subst ",56" ",64" @ 125
 # Step computation: direct s2 → shared v0 intermediate + single subu at merge
 # Branch target: .L172 is past subu, but bnez should go TO the shared subu (.L172-4)
 func_8003DBE4: subst "addiu.*" "nop" @ 28
-func_8003DBE4: subst "\.L279" ".L279-4" @ 29
+func_8003DBE4: subst "\.L\d+" ".L280-4" @ 29
 func_8003DBE4: subst "subu.*" "addiu\t$2,$zero,22000" @ 30
 func_8003DBE4: subst "\$18,\$zero" "$2,$zero" @ 31
 func_8003DBE4: subst "\$18,\$18" "$18,$2" @ 32
@@ -2333,7 +2333,7 @@ func_8003DE14: subst "\$2,6" "$3,6" @ 135
 # loop tail: mult operand swap
 func_8003DE14: subst "\$3,\$2" "$2,$3" @ 137
 # backward branch: redirect to bne (skip addu count-1)
-func_8003DE14: subst "\.L300" ".L_DE14_LOOP" @ 141
+func_8003DE14: subst "\.L\d+" ".L_DE14_LOOP" @ 141
 # backward branch delay slot fill
 func_8003DE14: subst "nop.*" "addu\t$2,$18,-1" @ 142
 # Delete (Phase 2): remove extra move s6,a0
@@ -4744,3 +4744,7 @@ func_80033D38: delete @ 19
 func_80033D38: insert_label ".LfuncD38_INS:" @ 28
 func_80033D38: subst "\.L697" ".LfuncD38_INS" @ 18
 func_80033D38: reorder 24,25,23 @ 23-25
+# swap top: move count load after sx,sy saves
+func_8003D39C: reorder 1,2,0 @ 0-2
+# fix scheduling: ori mask_lo immediate, lui cmd_tag late
+func_8003D39C: reorder 6,14,7,8,9,10,11,13,12 @ 6-14
