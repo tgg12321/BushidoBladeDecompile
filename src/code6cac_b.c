@@ -90,8 +90,8 @@ extern u8 D_8008EC24;
 extern s32 D_80106A50;
 extern s32 single_game_getEnemyCharId(s32, s32);
 extern s32 func_80079154(void);
-extern void func_8007F87C(s32, s32 *);
-extern void func_8007FA1C(s32, s32 *);
+extern void *func_8007F87C(s32, s32 *);
+extern void *func_8007FA1C(s32, s32 *);
 extern s16 D_80101E74;
 extern void motutil_CheckKamaeReq(void);
 
