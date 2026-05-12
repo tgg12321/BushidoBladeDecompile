@@ -74,42 +74,10 @@ void gpu_DrawSync(s32 a0) {
         ((void (*)(s32))v0[15])(a0);
     }
 }
-extern u8 D_8009BE76;     /* g_gpu_debug_level (u8) */
-extern u32 D_8009BE70;    /* g_gpu_debug_func (fn ptr) */
-extern u8 g_str_bad_rect;
-extern u8 D_80015F38;
-extern u8 D_80015F4C;
-typedef struct { s16 x, y, w, h; } _bb_rect;
-void func_8007B3A8(u8 *caller_str, _bb_rect *r) {
-    u8 level = D_8009BE76;
-
-    if (level == 1) {
-        s16 w = r->w;
-        if (D_8009BE78 < w) goto bad;
-        {
-            s16 x = r->x;
-            if (D_8009BE78 < w + x) goto bad;
-            {
-                s16 y = r->y;
-                if (D_8009BE7A < y) goto bad;
-                {
-                    s16 h = r->h;
-                    if (D_8009BE7A < y + h) goto bad;
-                    if (w <= 0) goto bad;
-                    if (x < 0) goto bad;
-                    if (y < 0) goto bad;
-                    if (h > 0) return;
-                }
-            }
-        }
-    bad:
-        ((void (*)(u8 *, u8 *))D_8009BE70)(&g_str_bad_rect, caller_str);
-        goto print_rect;
-    }
-    if (level != 2) return;
-    ((void (*)(u8 *, u8 *))D_8009BE70)(&D_80015F4C, caller_str);
-print_rect:
-    ((void (*)(u8 *, s16, s16, s16, s16))D_8009BE70)(&D_80015F38, r->x, r->y, r->w, r->h);
+void func_8007B3A8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007B3A8.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
 extern u8 g_str_clearimage;
 extern s32 g_gpu_dev_table;
