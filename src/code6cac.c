@@ -2203,11 +2203,62 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
     }
 }
 void calc_fc_frame_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/calc_fc_frame_800203B4.s).
-     * Inline-asm scaffolding retired; pure-C decomp pending. */
-    (void)arg0;
-    (void)arg1;
-    (void)arg2;
+    s32 mat[7];
+    s32 sp30[3];
+    s32 pd;
+    s32 idx;
+    register u8 *s0 asm("$16") = arg0;
+    register s16 *s1 asm("$17") = arg2;
+    *(s16 *)(s0 + 0x350) = 1;
+    *(s16 *)(s0 + 0x352) = *(u16 *)((u8 *)&D_8008D59E + arg1 * 20);
+    pd = game_GetPlayerData(*(s16 *)(s0 + 0x4));
+    idx = *(s16 *)(s0 + 0x352);
+    func_8002EECC(*(s32 *)(pd + idx * 4), mat);
+    {
+        register s32 *v0 asm("v0") = mat;
+        __asm__ volatile (
+            ".word 0x00406021\n"
+            "\t.word 0x8D8D0000\n"
+            "\t.word 0x8D8E0004\n"
+            "\t.word 0x48CD0000\n"
+            "\t.word 0x48CE0800\n"
+            "\t.word 0x8D8D0008\n"
+            "\t.word 0x8D8E000C\n"
+            "\t.word 0x8D8F0010\n"
+            "\t.word 0x48CD1000\n"
+            "\t.word 0x48CE1800\n"
+            "\t.word 0x48CF2000\n"
+            :: "r"(v0)
+        );
+    }
+    sp30[0] = s1[0];
+    sp30[1] = s1[1];
+    sp30[2] = s1[2];
+    __asm__ volatile ("" ::: "memory");
+    {
+        register s32 *v0 asm("v0") = sp30;
+        __asm__ volatile (
+            ".word 0x00406021\n"
+            "\t.word 0x958E0004\n"
+            "\t.word 0x958D0000\n"
+            "\t.word 0x000E7400\n"
+            "\t.word 0x01AE6825\n"
+            "\t.word 0x488D0000\n"
+            "\t.word 0xC9810008\n"
+            "\tnop\n"
+            "\tnop\n"
+            "\t.word 0x4A486012\n"
+            :: "r"(v0)
+        );
+    }
+    s0 += 0x354;
+    __asm__ volatile (
+        ".word 0x02006021\n"
+        "\t.word 0xE9990000\n"
+        "\t.word 0xE99A0004\n"
+        "\t.word 0xE99B0008\n"
+        :: "r"(s0)
+    );
 }
 void single_game_SetAbilityData(u8 *arg0) {
     long temp_s1;
