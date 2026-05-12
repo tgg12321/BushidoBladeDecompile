@@ -17,6 +17,8 @@ Run with:
   python3 tools/audit_kengo_renames.py
   python3 tools/audit_kengo_renames.py --top 50         # only worst N
   python3 tools/audit_kengo_renames.py --suspect-only   # only suspect score >=2
+  python3 tools/audit_kengo_renames.py --decided-only   # reviewed action queue
+  python3 tools/audit_kengo_renames.py --include-suppressed
 """
 from __future__ import annotations
 
@@ -36,6 +38,8 @@ CSV_PATH = ROOT / "kengo_matches.csv"
 # We want the ORIGINAL confidence that drove each rename — that's in
 # the pre-iteration snapshot.
 CSV_PRE_PATH = ROOT / "tmp" / "kengo_matches_pre.csv"
+DECISIONS_PATH = ROOT / "kengo_name_decisions.csv"
+SUPPRESSED_DECISIONS = {"keep", "byte-sensitive"}
 
 
 def addr_re(line: str) -> int | None:
@@ -74,6 +78,26 @@ def load_renames() -> list[dict]:
             r["addr"] = addr
             out.append(r)
     return out
+
+
+def load_decisions(path: Path) -> dict[str, dict]:
+    """Load reviewed naming decisions keyed by current renamed symbol."""
+    if not path.exists():
+        return {}
+
+    decisions: dict[str, dict] = {}
+    with path.open(newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            name = (row.get("renamed_to") or "").strip()
+            if not name:
+                continue
+            decisions[name] = {
+                "decision": (row.get("decision") or "").strip(),
+                "confidence": (row.get("confidence") or "").strip(),
+                "reason": (row.get("reason") or "").strip(),
+                "next_action": (row.get("next_action") or "").strip(),
+            }
+    return decisions
 
 
 # Suspicion scoring weights (higher = more suspect).
@@ -165,12 +189,19 @@ def main() -> int:
                     help="Only show entries with suspicion score >= 2")
     ap.add_argument("--csv", action="store_true",
                     help="CSV output for spreadsheet review")
+    ap.add_argument("--decisions", type=Path, default=DECISIONS_PATH,
+                    help=f"Decision CSV path (default: {DECISIONS_PATH.relative_to(ROOT)})")
+    ap.add_argument("--include-suppressed", action="store_true",
+                    help="Include decision=keep/byte-sensitive rows in output")
+    ap.add_argument("--decided-only", action="store_true",
+                    help="Only show rows that have a loaded decision")
     args = ap.parse_args()
 
     rows = load_renames()
     if not rows:
         print("No renames detected — is asm/funcs/ regenerated?", file=sys.stderr)
         return 1
+    decisions = load_decisions(args.decisions)
 
     # Group by bare Kengo name (strip _<ADDR> suffix).
     SUFFIX = re.compile(r"_[0-9A-Fa-f]{8}$")
@@ -184,12 +215,22 @@ def main() -> int:
         bare = SUFFIX.sub("", r["renamed_to"])
         n = group_count[bare]
         s, reasons = score_one(r, n)
+        decision = decisions.get(r["renamed_to"], {})
         r["_score"] = s
         r["_reasons"] = ", ".join(reasons)
         r["_group_n"] = n
+        r["_decision"] = decision.get("decision", "")
+        r["_decision_confidence"] = decision.get("confidence", "")
+        r["_decision_reason"] = decision.get("reason", "")
+        r["_next_action"] = decision.get("next_action", "")
         scored.append(r)
 
     scored.sort(key=lambda r: -r["_score"])
+    all_scored = list(scored)
+    if not args.include_suppressed:
+        scored = [r for r in scored if r["_decision"] not in SUPPRESSED_DECISIONS]
+    if args.decided_only:
+        scored = [r for r in scored if r["_decision"]]
     if args.suspect_only:
         scored = [r for r in scored if r["_score"] >= 2]
     if args.top > 0:
@@ -199,31 +240,39 @@ def main() -> int:
         w = csv.writer(sys.stdout)
         w.writerow(["score", "renamed_to", "bb2_addr", "bb2_insns",
                     "kengo_insns", "confidence", "opseq_ratio",
-                    "group", "reasons"])
+                    "group", "decision", "decision_confidence",
+                    "reasons", "decision_reason", "next_action"])
         for r in scored:
             w.writerow([
                 f"{r['_score']:.0f}", r["renamed_to"],
                 f"0x{r['addr']:08X}", r["bb2_insns"], r["kengo_insns"],
                 r["confidence"], r.get("opseq_ratio", ""), r["_group_n"],
-                r["_reasons"],
+                r["_decision"], r["_decision_confidence"], r["_reasons"],
+                r["_decision_reason"], r["_next_action"],
             ])
         return 0
 
     print(f"{'sc':>3s}  {'renamed_to':<48s}  {'BB2':>4s}/{'Kg':<4s}  "
-          f"{'group':>5s}  {'conf':<22s}  reasons")
-    print("-" * 130)
+          f"{'group':>5s}  {'conf':<22s}  {'decision':<12s}  reasons")
+    print("-" * 146)
     for r in scored:
         bb_k = f"{r['bb2_insns']}/{r['kengo_insns']}"
         print(f"{r['_score']:>3.0f}  {r['renamed_to']:<48s}  {bb_k:<9s}  "
-              f"{r['_group_n']:>5d}  {r['confidence']:<22s}  {r['_reasons']}")
+              f"{r['_group_n']:>5d}  {r['confidence']:<22s}  "
+              f"{r['_decision']:<12s}  {r['_reasons']}")
 
     print()
-    print(f"Total renames audited: {len(rows)}")
-    print(f"  suspect-score >=4 (likely FP):  "
+    suppressed = sum(1 for r in all_scored if r["_decision"] in SUPPRESSED_DECISIONS)
+    print(f"Total renames audited: {len(all_scored)}")
+    print(f"  decisions loaded: {len(decisions)}")
+    if not args.include_suppressed:
+        print(f"  suppressed reviewed keep/byte-sensitive rows: {suppressed}")
+    print(f"  rows shown: {len(scored)}")
+    print(f"  shown suspect-score >=4:  "
           f"{sum(1 for r in scored if r['_score']>=4)}")
-    print(f"  suspect-score 2-3 (worth a glance): "
+    print(f"  shown suspect-score 2-3: "
           f"{sum(1 for r in scored if 2 <= r['_score'] < 4)}")
-    print(f"  suspect-score 0-1 (probably correct): "
+    print(f"  shown suspect-score 0-1: "
           f"{sum(1 for r in scored if r['_score'] < 2)}")
     return 0
 

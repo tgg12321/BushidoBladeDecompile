@@ -820,7 +820,7 @@ extern s32 D_8009BF78;
 extern s32 D_8009BF7C;
 extern s32 motion_LoadPreCalcData_8007DC68();
 
-s32 func_8007D6D8();                            /* extern */
+void func_8007D6D8();                           /* extern */
 s32 func_8007DC9C();                                /* extern */
 s32 irq_AcknowledgeVblank(s32, s32 (*)()); /* extern */
 s32 motion_make_table(s32);                         /* extern */
@@ -952,7 +952,7 @@ s32 func_8007D9C4(s32 arg0) {
     }
     return func_8007DE08(arg0);
 }
-extern s32 func_8007D6D8();
+extern void func_8007D6D8();
 s32 func_8007DB20(s32 arg0) {
     s32 temp_s0;
     s32 ret;
