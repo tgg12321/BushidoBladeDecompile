@@ -141,6 +141,7 @@ EOF
         echo "[hook] Low-risk commit (single .c file, no regfix/asmfix/register-asm changes); skipping clean rebuild." >&2
         out=$(wsl bash -c "cd '$WSL_ROOT' && source .venv/bin/activate 2>/dev/null; make 2>&1 | tail -3 && echo '---SEP---' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null)
     else
+        echo "[hook] Higher-risk commit (config / register-asm / multi-file change); doing full clean rebuild." >&2
         out=$(wsl bash -c "cd '$WSL_ROOT' && rm -rf build && source .venv/bin/activate 2>/dev/null; make 2>&1 | tail -3 && echo '---SEP---' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null)
     fi
     # SHA1 line shows up as "OK: bb2 matches!" on full match.
