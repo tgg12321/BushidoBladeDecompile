@@ -17961,10 +17961,30 @@ loop:
     if (len >= 0) goto loop;
     return 0;
 }
-void func_8007997C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007997C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+void func_80078A08(s32, u8 *, s32);
+void func_8007997C(s8 arg0) {
+    u8 sp10;
+    s32 temp_a0;
+
+    sp10 = arg0;
+    temp_a0 = arg0 & 0xFF;
+    if (temp_a0 == 9) goto loop;
+    if (temp_a0 == 0xA) {
+        func_8007997C(0xD);
+        D_800F1850 = 0;
+        goto tail;
+    }
+    goto def;
+loop:
+    func_8007997C(0x20);
+    if ((D_800F1850 & 7) == 0) return;
+    goto loop;
+def:
+    if ((&D_8009BD8D)[temp_a0] & 0x97) {
+        D_800F1850 += 1;
+    }
+tail:
+    func_80078A08(1, &sp10, 1);
 }
 void func_80079A30(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80079A30.s).
