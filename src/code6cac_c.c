@@ -159,7 +159,7 @@ extern void func_80078BA8(s32);
 extern s32 func_80078B04(s32);
 extern void func_8007A400(void);
 extern void func_8008BE4C(void);
-extern s32 func_8006BEC4(s32, s32);
+extern void func_8006BEC4(s32, s32);
 extern void gnd_open(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);

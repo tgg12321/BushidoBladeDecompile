@@ -159,7 +159,7 @@ extern void func_80078BA8(s32);
 extern s32 func_80078B04(s32);
 extern void func_8007A400(void);
 extern void func_8008BE4C(void);
-extern s32 func_8006BEC4(s32, s32);
+extern void func_8006BEC4(s32, s32);
 extern void gnd_open(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
@@ -634,7 +634,7 @@ extern u8 D_800A3203;
 extern u8 D_800A31FC;
 extern void motion_shift_check_m_hit_stop(void);
 extern s32 func_80038734(void);
-extern s32 func_8006BEC4(s32, s32);
+extern void func_8006BEC4(s32, s32);
 
 s32 func_8003880C(void) {
     s32 s0;
@@ -889,7 +889,7 @@ s32 motion_SetMotion(void) {
     extern u8 D_800A3340;
     extern u8 D_800A3344;
     extern u8 D_800A3348;
-    extern s32 func_8006BEC4(s32, s32);
+    extern void func_8006BEC4(s32, s32);
     extern void func_8005C650(s32, s32, s32);
     extern void motion_shift_check_m_hit_stop(void);
     extern void func_8003879C(void);
