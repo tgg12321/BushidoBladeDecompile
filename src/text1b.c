@@ -12840,10 +12840,35 @@ loop_60C8:
     ot_Link(D_800A374C + (arg2 * 4), dist_off);
     return end_off - arg1;
 }
-void func_800602AC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800602AC.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+extern u8 D_800A3294[8];
+extern u8 D_800A329C[8];
+extern u8 D_800A32A4[8];
+extern u8 D_800A32AC[8];
+
+void func_800602AC(s32 arg0, s32 *arg1) {
+    u8 r1[8], r2[8], r3[8], r4[8];
+    s32 s1;
+    u8 *p;
+    s1 = func_80036EA8(2, arg0 + 0x3D);
+    replay_camera_Init(s1, (s32)arg1);
+    game_FrameLoop();
+    func_80036F28(s1);
+    arg1[0] = arg1[0] + (s32)arg1;
+    arg1[1] = arg1[1] + (s32)arg1;
+    __builtin_memcpy(r1, D_800A3294, 8);
+    __builtin_memcpy(r2, D_800A329C, 8);
+    p = (u8 *)arg1[0];
+    gpu_LoadImage((s32)r1, (s32)(p + 0x40));
+    gpu_DrawSync(0);
+    gpu_LoadImage((s32)r2, (s32)(p + 0x14));
+    gpu_DrawSync(0);
+    __builtin_memcpy(r3, D_800A32A4, 8);
+    __builtin_memcpy(r4, D_800A32AC, 8);
+    arg1 = (s32 *)arg1[1];
+    gpu_LoadImage((s32)r3, (s32)((u8 *)arg1 + 0x60));
+    gpu_DrawSync(0);
+    gpu_LoadImage((s32)r4, (s32)((u8 *)arg1 + 0x14));
+    gpu_DrawSync(0);
 }
 extern s32 saMotionSet();
 extern s32 func_8007352C();
