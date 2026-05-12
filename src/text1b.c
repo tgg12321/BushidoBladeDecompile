@@ -781,7 +781,7 @@ extern s16 D_800A33EA;
 extern s32 D_800A324C;
 extern s32 func_8004954C(s32, s32, s32);
 extern s32 saTanMainDispGnd_80046020();
-extern s32 efc_rob_set_type_particle(s32, s32, s16 *, s32);
+extern void efc_rob_set_type_particle(s32, s32, s16 *, s32);
 extern s32 func_8003E120();
 void func_80049584(s32 arg0) {
     register s32 var_s2 asm("$18") = arg0;
@@ -11224,10 +11224,10 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void func_80054604(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_80054604(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80054604.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3; (void)arg4; (void)arg5; (void)arg6;
 }
 extern s16 InfoPosYTbl1[];
 extern void func_80054604(s32, s32, s32, s32, s32, s32, s32);
@@ -11318,11 +11318,11 @@ void func_800550E8(s32 arg0) {
         p += 2;
     } while (i < 8);
 }
-void single_game_SetStatusUpData(s32 arg0, s32 arg1) {
+void single_game_SetStatusUpData(s32 arg0, s32 arg1, s32 arg2) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/single_game_SetStatusUpData.s).
      * 516 inst, 57 branches, 5 jal, 63 loads, 72 stores. m2c output had
      * type errors. Pure-C decomp pending. */
-    (void)arg0; (void)arg1;
+    (void)arg0; (void)arg1; (void)arg2;
 }
 extern u16 D_80099D88;
 
@@ -11662,7 +11662,7 @@ extern s32 D_800EFB38;
 extern s32 D_800EFB78;
 extern s32 D_800EFB7C;
 extern s32 D_800EFC38;
-extern s32 DispStuff(void);
+extern void DispStuff(void);
 extern s32 SetBloodSpot(s32);
 extern s32 memcard_SetSlot(s32);
 extern s32 sys_Shutdown(void);
@@ -12138,7 +12138,7 @@ typedef struct GameObj {
 } GameObj;
 extern s32 func_80036EA8();
 extern s32 func_80036F28();
-extern s32 tslGlobalMemFree_8005C2A8();
+extern s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
 
 s32 debug_printf(s32 *, s32);               /* extern */
 s32 game_FrameLoop();                           /* extern */
@@ -12226,7 +12226,7 @@ s32 func_80036EA8(s32, s32);
 s32 game_FrameLoop(void);
 void replay_camera_Init(s32, s32);
 s32 func_80036F28(s32);
-void tslGlobalMemFree_8005C2A8(s32, s32, s32);
+s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
 void obj_InitTaskCamera(s32 a0) {
     s32 s1;
     obj_InitTask();
@@ -12431,16 +12431,17 @@ void func_8005C650(s32 a0, s32 a1, s32 a2) {
         a3 = (s16)(a3 + 1);
     } while ((s16)a3 < 0x18);
 }
-void func_8005C6D0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 func_8005C6D0(void) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005C6D0.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    return 0;
 }
-void func_8005C8A8(s32 arg0) {
+s32 func_8005C8A8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005C8A8.s).
      * 753 inst, 69 branches, 29 jal, 80 loads, 162 stores. m2c output had
      * duplicate sp variable declarations. Pure-C decomp pending. */
-    (void)arg0;
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    return 0;
 }
 extern s32 func_80073728();
 extern s32 D_8009B2C8;
@@ -12575,28 +12576,30 @@ s32 gnd_land_hit_char_tsuba(s32 arg0, s32 arg1) {
     D_800A326C += 1;
     return ret;
 }
-void func_8005D814(s32 arg0, s32 arg1) {
+s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005D814.s).
      * 545 inst, 46 branches, 12 jal, 45 loads, 86 stores. m2c output had
      * duplicate sp variable declarations. Pure-C decomp pending. */
-    (void)arg0; (void)arg1;
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    return 0;
 }
 extern s16 D_8009B488;
 extern s8 D_8009B48E;
 
-void func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005E098.s).
      * Pure C decomp pending. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    return 0;
 }
 s32 func_8005E098(s32, s32, s32, s32);
 s32 func_8005E51C(s32 a0, s32 a1, s32 a2) {
     return func_8005E098(-1, a0 - 1, a1, a2);
 }
-s32 func_8005E54C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 func_8005E54C(s32 arg0, s32 arg1, s32 arg2) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005E54C.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0; (void)arg1; (void)arg2;
     return 0;
 }
 void func_8005F1C8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -12662,10 +12665,11 @@ extern s32 gpu_SetSemiTransp(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 saMotionSet(s32, s32);
 
-void func_8005FC9C(s32 arg0, s32 arg1) {
+s32 func_8005FC9C(s32 arg0, s32 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005FC9C.s).
      * Pure C decomp pending; m2c output incomplete (M2C_ERROR markers). */
     (void)arg0; (void)arg1;
+    return 0;
 }
 typedef struct {
     s32 *p0;
@@ -12913,7 +12917,7 @@ void func_80060758(void) {
 }
 extern s32 D_8009B0C0;
 extern s32 D_800A374C;
-extern s32 func_8006D808(s32 *, s32 *, s32 *, s32, s32);
+extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 extern s32 gpu_SetSemiTransp(void *, s32);
 extern s32 initTexPage(void *, s32, s32, s32, s32);
 extern s32 initTile(void *);
@@ -13684,7 +13688,7 @@ end:
 }
 extern u8 D_800F1168[];
 void func_8007F2AC(s16 *, s32 *, s32 *);
-void motutil_GetWalkDir(s16 *, u8 *);
+void *motutil_GetWalkDir(s16 *, u8 *);
 void gte_SetRotMatrix(u8 *);
 void gte_SetTransVector(u8 *);
 void func_80061D74(s32 arg0, s16 arg1) {
@@ -13776,7 +13780,7 @@ end:
 }
 extern s32 D_800A34EC;
 extern u8 D_8009BB74[];
-void motutil_GetWalkDir(u16*, u8*);
+void *motutil_GetWalkDir(u16*, u8*);
 void func_8007E8DC(u8*, u8*);
 void gte_SetRotMatrix(u8*);
 void func_80061FAC(u16 *a0, s32 a1, u8 *a2) {
@@ -13953,10 +13957,10 @@ u8 func_80063BA4(void) {
     *(s32 *)D_800A3480 = D_800A345E;
     return func_80063E10(1);
 }
-s32 func_80063BD0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+u8 func_80063BD0(s32 arg0) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80063BD0.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0;
     return 0;
 }
 s32 func_80063E10(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -14470,10 +14474,10 @@ u8 func_800657B0(void) {
     }
     return 0;
 }
-s32 motion_SetExMotion(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+u8 motion_SetExMotion(s32 arg0) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/motion_SetExMotion.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0;
     return 0;
 }
 extern s32 D_800F10D8;
@@ -14588,10 +14592,10 @@ u8 func_800671CC(void) {
     D_800F1134 = 2;
     return ret;
 }
-s32 func_80067200(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80067200.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0; (void)arg1; (void)arg2;
     return 0;
 }
 u8 func_800678A8(s32, s32);
@@ -14658,20 +14662,23 @@ u8 func_8006786C(void) {
     func_80067D14(7, 2);
     return func_80068D88(7, 2);
 }
-void func_800678A8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+u8 func_800678A8(s32 arg0, s32 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800678A8.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0; (void)arg1;
+    return 0;
 }
-void func_80067D14(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+u8 func_80067D14(s32 arg0, s32 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80067D14.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0; (void)arg1;
+    return 0;
 }
-void func_80068D88(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+u8 func_80068D88(s32 arg0, s32 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80068D88.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0; (void)arg1;
+    return 0;
 }
 void func_80068ECC(s32 arg0) {
     s32 *p = &D_8009BC04;
@@ -14713,7 +14720,7 @@ s32 *func_80069120(s32 a0) {
 }
 
 void func_8006920C(s32 *, s32);
-void tslGlobalMemFree_8005C2A8(s32, s32, s32);
+s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
 s32 efc_rob_Close(s32 *a0) {
     s32 i = 0;
     s32 *p = &a0[5];
@@ -14736,7 +14743,7 @@ void func_8006920C(s32 *a0, s32 a1) {
     }
 }
 extern s32 func_8005C650();
-extern s32 func_80069E18();
+extern void func_80069E18(s32, s32);
 extern s32 func_8006E390();
 extern s32 D_800A3514;
 extern s32 D_800A3518;
@@ -15030,10 +15037,10 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
     arg0[3] = (s32)poly;
 }
 
-void func_80069E18(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_80069E18(s32 arg0, s32 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80069E18.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0; (void)arg1;
 }
 void func_80069F80(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80069F80.s).
@@ -15186,10 +15193,10 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
     return var_s0;
 }
 
-void func_8006BB68(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_8006BB68(s32 arg0) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006BB68.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0;
 }
 typedef unsigned char u8_lcl;
 typedef signed char s8_lcl;
@@ -15258,12 +15265,12 @@ void func_8006BD28(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         D_800A36E0 += 12;
     } while (i < 2);
 }
-void func_8006BEC4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_8006BEC4(s32 arg0, s32 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006BEC4.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0; (void)arg1;
 }
-extern s32 func_8006BB68();
+extern void func_8006BB68(s32);
 extern s32 func_8006B92C();
 void func_8006C168(s32 arg0, s32 arg1) {
     s32 sp10[22];
@@ -15279,10 +15286,10 @@ s32 func_8006C168(s32, s32);
 s32 saTan2InfoInit_8006C1FC(s32 a0, s32 a1) {
     return func_8006C168(a0, a1);
 }
-void saTan4GaugeMain(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void saTan4GaugeMain(s32 arg0) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/saTan4GaugeMain.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0;
 }
 extern s32 D_800A34FC;
 extern s32 D_800A3524;
@@ -15312,15 +15319,16 @@ void func_8006CBD4(s32 arg0, s32 arg1) {
         }
     }
 }
-void func_8006CCC8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_8006CCC8(s32 arg0, s32 arg1, s32 arg2) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006CCC8.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0; (void)arg1; (void)arg2;
 }
-void func_8006CFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 func_8006CFBC(s32 arg0) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006CFBC.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0;
+    return 0;
 }
 extern s32 D_800A34FC;
 void cpu_reset_dir(void) {
@@ -15328,9 +15336,9 @@ void cpu_reset_dir(void) {
     v1[0x15] = 5;
     v1[0x14] = 5;
 }
-extern s32 saTan4GaugeMain();
-extern s32 func_8006CFBC();
-extern s32 func_8006CCC8();
+extern void saTan4GaugeMain(s32);
+extern s32 func_8006CFBC(s32);
+extern void func_8006CCC8(s32, s32, s32);
 void func_8006D338(s32 arg0, s32 arg1) {
     s32 sp10[22];
     u8 *t;
@@ -15343,10 +15351,10 @@ void func_8006D338(s32 arg0, s32 arg1) {
     r = func_8006CFBC(sp10);
     func_8006CCC8(&arg0, &arg1, (s32)((r << 16) >> 16));
 }
-void func_8006D3DC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_8006D3DC(s32 arg0) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006D3DC.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0;
 }
 extern s32 D_800A350C;
 extern void *D_800A3524;
@@ -15395,9 +15403,9 @@ extern s32 D_800A36AC;
 extern s32 D_800F7438;
 extern s32 func_8006E390(s32, s32);
 extern s32 func_80069AE4(s32, s32, s32);
-extern s32 func_8006D3DC(s32);
+extern void func_8006D3DC(s32);
 extern s32 func_8006D5D4(s32, u32);
-extern s32 func_8005C6D0();
+extern s32 func_8005C6D0(void);
 s32 func_8006D74C(s32 arg0, s32 arg1) {
     s32 sp_buf[22];
     s32 result;
@@ -15416,16 +15424,16 @@ s32 func_8006D7FC(void) {
     D_800A352C = 0;
     return 1;
 }
-void func_8006D808(s32 arg0, s32 arg1, s32 arg2) {
+void func_8006D808(s32 *arg0, s32 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006D808.s).
      * 355 inst, 39 branches, 14 jal, 56 loads, 65 stores. m2c output had
      * type errors. Pure-C decomp pending. */
-    (void)arg0; (void)arg1; (void)arg2;
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3; (void)arg4;
 }
-void func_8006DD94(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_8006DD94(s32 arg0) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006DD94.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0;
 }
 extern s32 func_800692C0();
 extern s32 D_800A350C;
@@ -15456,7 +15464,7 @@ s32 func_8006DF68(s32 arg0, u32 arg1) {
     func_8005C6D0();
     return result;
 }
-extern s32 func_8006DD94();
+extern void func_8006DD94(s32);
 extern s32 func_8006DF68();
 void func_8006E068(s32 arg0, s32 arg1) {
     s32 sp10[22];
@@ -15609,7 +15617,7 @@ void func_8006E950(s32 *a0, s32 *a1) {
     func_8006E8CC(s1);
 }
 void func_8006920C(s32 *, s32);
-void tslGlobalMemFree_8005C2A8(s32, s32, s32);
+s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
 s32 efc_buki_ZanzouClose(s32 *a0) {
     func_8006920C(a0, a0[21]);
     func_8006920C(a0, a0[22]);
@@ -15633,8 +15641,8 @@ extern s32 D_800A35A8;
 extern s32 D_800A35BC;
 extern s32 D_800A35C0;
 extern void *D_800A35C4;
-s32 func_8006EC0C(void);
-s32 func_8006F528(s32 *);
+void func_8006EC0C(void);
+void func_8006F528(s32 *);
 s32 func_8006EACC(s32 arg0, s32 arg1) {
     s32 sp10[10];
     s32 *temp_v0;
@@ -15667,10 +15675,9 @@ s32 func_8006EACC(s32 arg0, s32 arg1) {
     ((void (*)(s32 *))(&D_8009BC1C)[D_800A3580])(sp10);
     return D_800A35A0;
 }
-void func_8006EC0C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_8006EC0C(void) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006EC0C.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
 void func_8006ECF4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006ECF4.s).
@@ -15712,10 +15719,10 @@ void func_8006F100(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-void func_8006F528(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_8006F528(s32 *arg0) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006F528.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0;
 }
 void func_8006F97C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006F97C.s).
@@ -16249,11 +16256,12 @@ exit:
     return buf;
 }
 
-void func_80073728(s32 arg0) {
+s32 func_80073728(s32 arg0, s32 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80073728.s).
      * 340 inst, 31 branches, 6 jal, 88 loads, 57 stores. m2c output had
      * structure-member errors. Pure-C decomp pending. */
-    (void)arg0;
+    (void)arg0; (void)arg1;
+    return 0;
 }
 void func_80073C78(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80073C78.s).
@@ -16781,14 +16789,14 @@ void func_800770B8(s32 arg0_in, s32 arg1, long arg2)
   arg0 = 1;
   D_800A35DC = arg0;
 }
-void func_80077374(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_80077374(s32 arg0, s32 *arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80077374.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0; (void)arg1;
 }
 extern s32 D_800A36AC;
 extern s32 *func_80077098(s32);
-extern s32 func_80077374(s32, s32 *);
+extern void func_80077374(s32, s32 *);
 extern s32 *D_800A36A0;
 extern s32 D_800F7438;
 typedef struct {
@@ -16969,10 +16977,10 @@ extern s32 D_800A3600;
 s32 func_80077D74(s32 a0) {
     return D_800A35F4 + a0 * 44;
 }
-void func_80077D94(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_80077D94(s32 *arg0) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80077D94.s).
      * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+    (void)arg0;
 }
 s32 camera_get_rot_normal_rad(s32 arg0) {
     s32 s0;
@@ -16991,7 +16999,7 @@ s32 camera_get_rot_normal_rad(s32 arg0) {
     return 1;
 }
 extern s32 *func_80077D74(s32);
-extern s32 func_80077D94(s32 *);
+extern void func_80077D94(s32 *);
 extern s32 D_800A35F0;
 extern s32 *D_800A35F8;
 extern s32 D_800A35FC;
@@ -17961,10 +17969,30 @@ loop:
     if (len >= 0) goto loop;
     return 0;
 }
-void func_8007997C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007997C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+void func_80078A08(s32, u8 *, s32);
+void func_8007997C(s8 arg0) {
+    u8 sp10;
+    s32 temp_a0;
+
+    sp10 = arg0;
+    temp_a0 = arg0 & 0xFF;
+    if (temp_a0 == 9) goto loop;
+    if (temp_a0 == 0xA) {
+        func_8007997C(0xD);
+        D_800F1850 = 0;
+        goto tail;
+    }
+    goto def;
+loop:
+    func_8007997C(0x20);
+    if ((D_800F1850 & 7) == 0) return;
+    goto loop;
+def:
+    if ((&D_8009BD8D)[temp_a0] & 0x97) {
+        D_800F1850 += 1;
+    }
+tail:
+    func_80078A08(1, &sp10, 1);
 }
 void func_80079A30(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80079A30.s).
