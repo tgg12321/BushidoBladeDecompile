@@ -59,6 +59,31 @@ def parse_target_asm(func_name: str) -> list[str] | None:
     return out
 
 
+# GTE coprocessor instructions and other ops that maspsx emits as
+# `.word 0xXXXXXXXX` (because mipsel-as can't assemble the mnemonic) are
+# real instructions in the binary. Including them in the diff list keeps
+# alignment correct with target.s (which uses the disassembled mnemonic
+# like `mvmva 1,0,0,3,0`); they'll show as textually different but won't
+# cascade subsequent rows out of alignment. _DOTWORD_GTE_TABLE maps known
+# encodings to their mnemonic so the diff treats them as equivalent.
+_DOTWORD_INSN_RE = re.compile(r"^\s*\.word\s+(0x[0-9a-fA-F]+)\s*$")
+_DOTWORD_GTE_TABLE = {
+    # mvmva variants (cop2 fn=0x12); only the most common shapes here.
+    # Add more as new GTE wrappers surface.
+    0x4A486012: "mvmva 1,0,0,3,0",
+}
+
+
+def _normalize_dotword(hex_str: str) -> str:
+    """Map known .word GTE encodings to their canonical mnemonic so the
+    diff considers them equal to target.s's disassembled form."""
+    try:
+        v = int(hex_str, 16)
+    except ValueError:
+        return f".word {hex_str}"
+    return _DOTWORD_GTE_TABLE.get(v, f".word {hex_str}")
+
+
 def parse_build_asm(func_name: str) -> tuple[list[str] | None, str | None]:
     """Run dump_text_indices and extract instructions for a function."""
     src = find_source_file(func_name)
@@ -89,6 +114,7 @@ def parse_build_asm(func_name: str) -> tuple[list[str] | None, str | None]:
 
     in_func = False
     out: list[str] = []
+    dotword_count = 0
     func_label = re.compile(rf'^{re.escape(func_name)}:$')
     for line in asm_text.splitlines():
         s = line.strip()
@@ -98,11 +124,20 @@ def parse_build_asm(func_name: str) -> tuple[list[str] | None, str | None]:
         if in_func:
             if re.match(rf'^\s*\.end\s+{re.escape(func_name)}', s):
                 break
+            dw_m = _DOTWORD_INSN_RE.match(s)
+            if dw_m:
+                # Real instruction emitted as a raw word; include in the
+                # diff list (with mnemonic mapping when known) so the
+                # alignment with target.s stays correct.
+                dotword_count += 1
+                out.append(normalize_insn(_normalize_dotword(dw_m.group(1))))
+                continue
             if not s or s.startswith(".") or s.startswith("#"):
                 continue
             if s.endswith(":"):
                 continue
             out.append(normalize_insn(s))
+    parse_build_asm.last_dotword_count = dotword_count  # type: ignore[attr-defined]
     return out, None
 
 
@@ -263,9 +298,15 @@ def main() -> int:
     if mine is None or not mine:
         print(f"ERROR: empty build output for {func}", file=sys.stderr)
         return 1
+    dotword = getattr(parse_build_asm, "last_dotword_count", 0)
+    mine_label = (
+        f"{len(mine)} insns (incl. {dotword} `.word` raw encodings)"
+        if dotword
+        else f"{len(mine)} insns"
+    )
     print(f"=== {func} ===")
     print(f"  target: asm/funcs/{func}.s ({len(target)} insns)")
-    print(f"  mine:   build pipeline post-regfix/asmfix ({len(mine)} insns)")
+    print(f"  mine:   build pipeline post-regfix/asmfix ({mine_label})")
     print()
     color_diff(target, mine, hunks_only=not args.full, context=args.context)
     return 0

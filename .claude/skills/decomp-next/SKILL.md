@@ -126,6 +126,8 @@ For **retirement queue items** (or any function whose `Function state` is BRIDGE
 
 **You do not write C by hand before this pipeline runs.** Trust the automation; it's been tuned over hundreds of matches.
 
+**The `agent-brief` you got in §2 is authoritative — re-scroll your context for it before re-grepping or re-reading.** It already contains: classification, full target.s, m2c base.c, neighbor functions in the same source file, kengo reference, existing regfix/asmfix rules, recipe suggestions. Reaching for `Read src/<file>.c` to inspect the surrounding function preamble or `Grep` for sibling templates is almost always wasted — that material was in the brief. Re-running `dc.sh agent-brief <func>` is also fine and cheap if your context has scrolled.
+
 ### 3.0 GTE pre-route (only if classification = `gte_function`)
 
 `dc.sh attempt` crashes at the setup stage for GTE functions because `mipsel-linux-gnu-as` can't assemble raw `mvmva`/`ctc2`/`mtc2`/`mfc2`/`cop2` mnemonics — target.s is left with an empty .text section. Skip §3.1 and start here instead:
@@ -292,6 +294,10 @@ CLAUDE.md mandates all build-file edits go through WSL (CRLF rule). The naive pa
 **What NOT to do:** `wsl bash -c 'python3 << "PYEOF" ... PYEOF'` with the body inline. The outer `bash -c '...'` and inner heredoc-with-quoted-delimiter interact unpredictably; even with `'PYEOF'` (quoted, "no expansion"), the outer bash has already consumed the `$N` tokens before the heredoc sees them.
 
 When you suspect this trap fired: grep the cpp output of the file for the function name and look at the literal `register asm("...")` strings. If you see `asm("")`, `asm("0")`, `asm("1")` instead of `asm("$8")`, `asm("$10")`, `asm("$11")`, you've been bitten. Re-write the injection script via tmp file.
+
+**Iterating after the first injection:** the injection regex matches the original BRIDGE STUB, so it won't match again once your body is in place. Do **not** reach for `git checkout src/<file>.c` to "reset and re-inject" — the active-marker hook blocks that on every WIP build file (it would erase your work; the block is the rule, not a bug). **Edit forward** via the `Edit` tool on src/ directly — it preserves the file's existing line endings, so the LF discipline is maintained. The hex-vs-decimal swc2 fix in the calc_fc_frame_8007EC5C run was a one-character `Edit` swap; reaching for `git checkout` first cost a tool call.
+
+**Inline-asm offset format:** maspsx parses load/store offsets as decimal-only. `__asm__ volatile ("swc2 $11, 0x10(%0)" :: ...)` raises `invalid literal for int() with base 10: '0x10'` and breaks the build mid-pipeline. Use `__asm__ volatile ("swc2 $11, 16(%0)" :: ...)`. `dc.sh build-active` now pre-flights this and aborts before make if any `__asm__ volatile (".*<load_or_store> ..., 0x[0-9a-f]+(...")` slips through, but write decimal in the first place to avoid the round-trip.
 
 ---
 
