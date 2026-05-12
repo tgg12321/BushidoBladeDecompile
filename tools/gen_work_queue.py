@@ -70,12 +70,22 @@ DEFERRED_STRUCTURAL = {"needs_function_split"}
 # Same policy as tools/audit_inline_asm.py: GTE/BIOS/data asm may be
 # legitimate, but ordinary MIPS scheduling/register scaffolding inside a C
 # body is still decompilation debt and must remain visible in WORK_QUEUE.md.
+#
+# GTE encoded as `.word 0xXX......`: coprocessor-2 instructions
+# (op=0b010010 → top byte 0x48-0x4B for COP2 family, op=0b110010 →
+# 0xC8-0xCB for lwc2, op=0b111010 → 0xE8-0xEB for swc2). These are
+# the canonical form when maspsx can't parse the symbolic GTE
+# mnemonic (most BB2 GTE wrappers use this).
 ACCEPTABLE_INLINE_ASM_OPS = re.compile(
-    r"\b("
+    r"(\b("
     r"mfc2|cfc2|mtc2|ctc2|lwc2|swc2|"
     r"syscall|break|"
+    r"move|"  # pseudo-mnemonic for `addu rd, rs, $zero` placement-control move
     r"\.incbin|\.section\s+\.data|\.pushsection|\.popsection"
-    r")\b"
+    r")\b)"
+    r"|"
+    # GTE/lwc2/swc2 encoded as `.word 0x{48-4B,C8-CB,E8-EB}........`
+    r"\.word\s+0x(4[89A-Ba-b]|[Cc][89A-Ba-b]|[Ee][89A-Ba-b])[0-9A-Fa-f]{6}\b"
 )
 SUSPECT_INLINE_ASM_OPS = re.compile(
     r"\b("
@@ -85,6 +95,31 @@ SUSPECT_INLINE_ASM_OPS = re.compile(
     r"bgez|blez|bne|beq|bltz|bgtz|j\s|jal\s|jr"
     r")\b"
 )
+
+# Functions where file-scope `__asm__()` retirement is canonical per
+# project policy (hand-written-asm with non-C-expressible patterns).
+# Loaded once at import; checked by the inline-asm-debt scanner.
+INLINE_ASM_CANONICAL_FILE = ROOT / "inline_asm_canonical.txt"
+
+
+def load_canonical_inline_asm() -> set[str]:
+    if not INLINE_ASM_CANONICAL_FILE.exists():
+        return set()
+    names: set[str] = set()
+    for line in INLINE_ASM_CANONICAL_FILE.read_text(
+        encoding="utf-8", errors="ignore"
+    ).splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        # Strip trailing `# comment`
+        name = line.split("#", 1)[0].strip()
+        if name:
+            names.add(name)
+    return names
+
+
+_CANONICAL_INLINE_ASM_NAMES = load_canonical_inline_asm()
 INLINE_ASM_RE = re.compile(r"\b__asm__\s*(?:volatile)?\s*\(")
 FUNC_DEF_RE = re.compile(
     r"(?m)^[A-Za-z_][\w *]*?\s\**(\w+)\s*\([^)]*\)\s*\{",
@@ -196,6 +231,12 @@ def scan_inline_asm_debt() -> list[dict]:
         for func_match in FUNC_DEF_RE.finditer(text):
             name = func_match.group(1)
             if name in {"if", "while", "for", "switch", "do"}:
+                continue
+            # Canonical inline-asm retirement: original was hand-written
+            # assembly with non-C-expressible patterns. The function is
+            # accepted in its file-scope `__asm__()` form per project
+            # policy (see inline_asm_canonical.txt).
+            if name in _CANONICAL_INLINE_ASM_NAMES:
                 continue
             bounds = find_function_bounds(text, func_match)
             if not bounds:

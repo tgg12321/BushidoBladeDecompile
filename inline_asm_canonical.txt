@@ -1,0 +1,21 @@
+# Functions where file-scope `__asm__()` retirement is the canonical form.
+#
+# These are functions whose ORIGINAL CODE was hand-written assembly
+# (custom calling conventions, non-standard register conventions, or
+# constructs that GCC 2.7.2 simply cannot emit). Per project policy:
+# "no inline asm unless the original canonical code was assembly" —
+# these functions qualify, so the in-file `__asm__()` block IS the
+# accepted retirement form.
+#
+# Tools that scan for `inline_asm_debt` (batch_attempt.py,
+# gen_work_queue.py) skip names listed here. The bridge in asmfix.txt
+# is removed; the function body lives directly in the source file.
+#
+# Format: one function name per line. Blank lines and `#`-prefixed
+# comments are ignored. Trailing comments after the name are allowed.
+#
+# To add a function: get explicit user authorization per
+# `feedback_bridge_is_not_decomp.md`, then add it here with a
+# one-line `# justification` after the name.
+
+func_8004A76C  # custom $s0 ABI: caller passes vec ptr via $s0 without prologue save, function mutates $s0. GCC 2.7.2 cannot express. See commit bc04b47.

@@ -791,8 +791,63 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
 
     refresh-queue)
         # Refresh classifier CSV + regenerate WORK_QUEUE.md. Run after a
-        # batch of matches so the queue drops them. ~2 minutes.
+        # batch of matches so the queue drops them. ~2 minutes full, ~10s
+        # in --fast mode.
         # ALSO clears .bb2_active_func -- if you got here, you matched.
+        FAST_MODE=0
+        for a in "$@"; do
+            case "$a" in
+                --fast) FAST_MODE=1 ;;
+            esac
+        done
+
+        # --fast: skip the slow batch_attempt --classify-only pass
+        # (~3 min on the current backlog). Use between consecutive
+        # autonomous-mode matches when only one function changed and the
+        # CSV doesn't need a full re-scan. Phases [1] capture-recipe,
+        # [2] strip orphans, [3] purge `# RETIRE:` lines on clean build,
+        # and [4] regen WORK_QUEUE.md from the existing CSV still run.
+        # Full mode adds phases for batch_attempt + classify_asmfix.
+        if [ "$FAST_MODE" = "1" ]; then
+            echo "[1/4] (FAST) Capturing recipe from latest commit..."
+            python3 tools/capture_recipe.py HEAD 2>&1 | tail -5 || true
+            echo
+            echo "[2/4] (FAST) Stripping orphan named_syms.txt assignments..."
+            python3 tools/audit_named_syms_orphans.py --apply 2>&1 | tail -3 || true
+            echo
+            echo "[3/4] (FAST) Cleaning up completed # RETIRE: lines..."
+            if grep -q "^# RETIRE: " asmfix.txt 2>/dev/null; then
+                python3 -c "
+import re, subprocess
+from pathlib import Path
+p = Path('asmfix.txt')
+lines = p.read_text(encoding='utf-8').splitlines()
+am = Path('.bb2_active_func')
+active = am.read_text(encoding='utf-8').strip() if am.exists() else ''
+res = subprocess.run(['bash', 'tools/dc.sh', 'verify', '--all'], capture_output=True, text=True, timeout=60)
+clean = 'SHA1 match:' in res.stdout
+if not clean:
+    print('  build not clean; leaving # RETIRE lines in place')
+else:
+    out, purged = [], 0
+    for line in lines:
+        m = re.match(r'^# RETIRE:\s*(\w+)\s*:\s*replace_with_asmfile\b', line)
+        if m and m.group(1) != active:
+            purged += 1
+            continue
+        out.append(line)
+    if purged:
+        p.write_text('\n'.join(out) + '\n', encoding='utf-8')
+    print(f'  purged {purged} completed retirement(s)')
+"
+            fi
+            echo
+            echo "[4/4] (FAST) Regenerating WORK_QUEUE.md from existing CSV..."
+            python3 tools/gen_work_queue.py 2>&1 | tail -5
+            : > .bb2_active_func 2>/dev/null || true
+            exit 0
+        fi
+
         echo "[1/6] Capturing recipe from latest commit (if it's a match)..."
         python3 tools/capture_recipe.py HEAD 2>&1 | tail -5 || true
         echo

@@ -25,12 +25,22 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
 
 # Patterns that indicate ACCEPTABLE inline asm (whitelisted).
+#
+# GTE ops encoded as `.word 0xXX......` are the canonical form in BB2
+# when the assembler can't parse the symbolic mnemonic (most BB2
+# wrappers use this). Acceptable opcode-byte prefixes:
+#   0x48-0x4B  → COP2 family (mfc2/cfc2/mtc2/ctc2/avsz/gpf/gpl/mvmva/...)
+#   0xC8-0xCB  → lwc2
+#   0xE8-0xEB  → swc2
 ACCEPTABLE_OPS = re.compile(
-    r"\b("
-    r"mfc2|cfc2|mtc2|ctc2|lwc2|swc2|"  # GTE cop2
+    r"(\b("
+    r"mfc2|cfc2|mtc2|ctc2|lwc2|swc2|"  # GTE cop2 (symbolic)
     r"syscall|break|"  # BIOS / trap
+    r"move|"  # pseudo-mnemonic for `addu rd, rs, $zero` placement-control
     r"\.incbin|\.section\s+\.data|\.pushsection|\.popsection"  # data
-    r")\b"
+    r")\b)"
+    r"|"
+    r"\.word\s+0x(4[89A-Ba-b]|[Cc][89A-Ba-b]|[Ee][89A-Ba-b])[0-9A-Fa-f]{6}\b"
 )
 
 # Patterns that indicate UNACCEPTABLE body-wrapper inline asm.

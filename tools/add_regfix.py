@@ -84,6 +84,19 @@ def build_rule(args) -> str:
         return f"{f}: delete @ {args.idx}"
 
     if op == "insert":
+        # Warn when this rule is paired with deletes: `insert @ N` uses
+        # the CURRENT (post-prior-rule) index, which after deletes is
+        # often NOT what the caller meant. The 8b1f6bf retro on
+        # func_80078F60 surfaced this trap — they tried `insert @ 3`,
+        # hit the renumbering issue, and had to switch to
+        # `insert_after @ 0`. Print a hint here; don't block.
+        sys.stderr.write(
+            "HINT: `insert @ N` uses the index AFTER prior deletes have\n"
+            "      already shifted things. If you have any `delete` rules\n"
+            "      earlier in the recipe, prefer `insert_after @ M` with\n"
+            "      the ORIGINAL pre-delete index of the anchor. See\n"
+            "      memory/feedback_retirement_recipes.md gotcha #4.\n"
+        )
         return f'{f}: insert "{args.asm_text}" @ {args.idx}'
 
     if op == "insert_after":

@@ -40,6 +40,31 @@ TMP.mkdir(exist_ok=True)
 CSV_PATH = TMP / "batch_attempt.csv"
 LOG_PATH = TMP / "batch_attempt.log"
 
+# Functions where file-scope `__asm__()` retirement is canonical per
+# project policy (see inline_asm_canonical.txt). These are NOT
+# inline-asm debt — they're the accepted form for hand-written-asm
+# functions GCC 2.7.2 cannot express.
+INLINE_ASM_CANONICAL_FILE = ROOT / "inline_asm_canonical.txt"
+
+
+def _load_canonical_inline_asm() -> set[str]:
+    if not INLINE_ASM_CANONICAL_FILE.exists():
+        return set()
+    names: set[str] = set()
+    for line in INLINE_ASM_CANONICAL_FILE.read_text(
+        encoding="utf-8", errors="ignore"
+    ).splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        name = line.split("#", 1)[0].strip()
+        if name:
+            names.add(name)
+    return names
+
+
+CANONICAL_INLINE_ASM = _load_canonical_inline_asm()
+
 
 def collect_candidates() -> list[tuple[str, str, str]]:
     """Return [(func, kind, src_relpath), ...] for every function that is
@@ -63,6 +88,12 @@ def collect_candidates() -> list[tuple[str, str, str]]:
             name = m.group(1)
             if name in seen:
                 continue
+            # Skip functions explicitly accepted as canonical in-file
+            # `__asm__()` retirement (hand-written-asm; see
+            # inline_asm_canonical.txt).
+            if name in CANONICAL_INLINE_ASM:
+                seen.add(name)
+                continue
             seen.add(name)
             candidates.append((name, "inline_asm", str(src.relative_to(ROOT))))
         # Second pass for raw `.global` form (must not double-count vs glabel).
@@ -74,11 +105,17 @@ def collect_candidates() -> list[tuple[str, str, str]]:
             # `<name>:` actually appears (label definition, not extern ref).
             if not re.search(rf'"{re.escape(name)}:\\n"|\b{re.escape(name)}\s*:', text):
                 continue
+            if name in CANONICAL_INLINE_ASM:
+                seen.add(name)
+                continue
             seen.add(name)
             candidates.append((name, "inline_asm", str(src.relative_to(ROOT))))
         for m in include_re.finditer(text):
             name = m.group(1)
             if name in seen:
+                continue
+            if name in CANONICAL_INLINE_ASM:
+                seen.add(name)
                 continue
             seen.add(name)
             candidates.append((name, "include_asm", str(src.relative_to(ROOT))))
