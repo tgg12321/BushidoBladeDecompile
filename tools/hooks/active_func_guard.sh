@@ -72,17 +72,35 @@ case "$PROJECT_ROOT" in
     *)           WSL_ROOT="$PROJECT_ROOT" ;;
 esac
 
-# Helper: run dc.sh verify <ACTIVE> via WSL, return 0 if MATCH.
-# regfix_verify.py prints e.g. "func_X: MATCH (0 diffs in N bytes)" on
-# success, or "func_X: M instruction(s) differ" on diff. We grep for
-# "MATCH" — only the success case has that token in the first line.
+# Helper: clean-rebuild + verify the active function AND the full
+# binary via WSL. Returns 0 only if BOTH pass.
+#
+# Why clean rebuild: cached build/src/*.o files can hide regressions
+# (the 54a5e54 → c71ff0a trap — a "matched" function compiled in a
+# stale cache silently diverged from fresh-build output for 7 commits).
+# Forcing a clean rebuild at commit time is the only way to guarantee
+# the committed source actually produces the matching binary.
+#
+# Cost: ~2-3 minutes per commit. Worth it — the alternative is silent
+# regressions accumulating across many commits.
 verify_active_matches() {
-    local out
-    out=$(wsl bash -c "cd '$WSL_ROOT' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null | head -1)
+    local out per_func sha1_ok
+    out=$(wsl bash -c "cd '$WSL_ROOT' && rm -rf build && source .venv/bin/activate 2>/dev/null; make 2>&1 | tail -3 && echo '---SEP---' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null)
+    # SHA1 line shows up as "OK: bb2 matches!" on full match.
     case "$out" in
-        *": MATCH "*) return 0 ;;
-        *) return 1 ;;
+        *"OK: bb2 matches!"*) sha1_ok=1 ;;
+        *) sha1_ok=0 ;;
     esac
+    # Per-function line — only matters if SHA1 didn't already match
+    # (SHA1-clean implies all functions match).
+    case "$out" in
+        *": MATCH "*) per_func=1 ;;
+        *) per_func=0 ;;
+    esac
+    if [ "$sha1_ok" = "1" ]; then
+        return 0
+    fi
+    return 1
 }
 
 # === Rule 1: block `git commit` unless ACTIVE matches in the build ===
@@ -96,14 +114,19 @@ if echo "$COMMAND" | grep -qE '(^|[^a-zA-Z])git commit($|[^a-zA-Z])'; then
         exit 0
     else
         cat >&2 <<EOF
-BLOCKED: $ACTIVE is the active function (set by a dc.sh queue pull) but it
-does not match in the current build. Per THE HARD RULE in
-feedback_workflow_rules.md, you finish the function before committing.
+BLOCKED: $ACTIVE is the active function (set by a dc.sh queue pull) but
+the CLEAN REBUILD (rm -rf build && make) does NOT SHA1-match the
+original. Per THE HARD RULE in feedback_workflow_rules.md, you finish
+the function before committing.
+
+Note: this hook does a clean rebuild on every commit attempt, not a
+cached \`verify\`. This is intentional — cached .o files have hidden
+regressions across many commits in the past (the 54a5e54 trap).
 
 Repo:  $PROJECT_ROOT
 
 To diagnose:
-  wsl bash -c "cd '$WSL_ROOT' && bash tools/dc.sh verify $ACTIVE"
+  wsl bash -c "cd '$WSL_ROOT' && bash tools/dc.sh verify --clean"
 
 To proceed: get the function to match (work the toolbox until score=0
 and verify reports MATCH), then re-attempt the commit. The hook will
