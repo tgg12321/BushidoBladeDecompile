@@ -282,7 +282,6 @@ func_80077D94,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,468,"lwl_swl,
 func_80079A30,src/code6cac_c.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,535,"jlabel_switch,aliasing_heavy"
 motion_SetExMotion,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,1456,"jlabel_switch,gte_ops,aliasing_heavy"
 func_80058580,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,2991,"lwl_swl,jlabel_switch,aliasing_heavy"
-func_80052930,src/sound.c,asmfix,CLASSIFY,,,,,,gte_function,60,gte_ops
 calc_fc_frame_800203B4,src/code6cac.c,asmfix,CLASSIFY,,,,,,gte_function,67,gte_ops
 func_8007E4DC,src/display.c,asmfix,CLASSIFY,,,,,,gte_function,67,gte_ops
 func_8007EB4C,src/display.c,asmfix,CLASSIFY,,,,,,gte_function,67,gte_ops

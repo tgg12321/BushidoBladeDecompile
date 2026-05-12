@@ -68,8 +68,11 @@ m2c_triage/
 # Temporary/experimental scripts (not source)
 tmp/
 
-# Claude Code session files
-.claude/
+# Claude Code session files (transient state). Skills are CARVED OUT:
+# the workflow rules in .claude/skills/ are project-essential and
+# should travel with the repo.
+.claude/*
+!.claude/skills/
 .crush/
 
 # Local model config

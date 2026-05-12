@@ -1009,27 +1009,38 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         # markers. Run `dc.sh purge-retirements` explicitly to clean
         # them up after manually confirming each function retires correctly.
         if [ "$FAST_MODE" = "1" ]; then
-            echo "[1/3] (FAST) Capturing recipe from latest commit..."
+            echo "[1/4] (FAST) Capturing recipe from latest commit..."
             python3 tools/capture_recipe.py HEAD 2>&1 | tail -5 || true
             echo
-            echo "[2/3] (FAST) Stripping orphan named_syms.txt assignments..."
+            echo "[2/4] (FAST) Auto-purging verified \`# RETIRE: \` lines..."
+            # Safe to auto-purge: purge-retirements runs verify-c per function,
+            # which refuses if any bridge is still active. Only lines whose C
+            # body genuinely produces matching bytes (without bridge masking)
+            # are removed. See feedback_retirement_recipes.md gotcha #7.
+            bash "$0" purge-retirements 2>&1 | tail -5 || true
+            echo
+            echo "[3/4] (FAST) Stripping orphan named_syms.txt assignments..."
             python3 tools/audit_named_syms_orphans.py --apply 2>&1 | tail -3 || true
             echo
-            echo "[3/3] (FAST) Regenerating WORK_QUEUE.md from existing CSV..."
+            echo "[4/4] (FAST) Regenerating WORK_QUEUE.md from existing CSV..."
             python3 tools/gen_work_queue.py 2>&1 | tail -5
             : > .bb2_active_func 2>/dev/null || true
-            RETIRE_COUNT=$(grep -c "^# RETIRE: " asmfix.txt 2>/dev/null || echo 0)
-            if [ "$RETIRE_COUNT" -gt 0 ] 2>/dev/null; then
-                echo
-                echo "Note: $RETIRE_COUNT \`# RETIRE: \` line(s) in asmfix.txt (historical markers — run \`dc.sh purge-retirements\` to clean up after manual verification)."
-            fi
             exit 0
         fi
 
-        echo "[1/6] Capturing recipe from latest commit (if it's a match)..."
+        echo "[1/7] Capturing recipe from latest commit (if it's a match)..."
         python3 tools/capture_recipe.py HEAD 2>&1 | tail -5 || true
         echo
-        echo "[2/6] Stripping orphan named_syms.txt assignments..."
+        echo "[2/7] Auto-purging verified \`# RETIRE: \` lines from asmfix.txt..."
+        # Safe to auto-purge: purge-retirements runs verify-c per function,
+        # which refuses if any bridge is still active. Only lines whose C
+        # body genuinely produces matching bytes (without bridge masking)
+        # are removed — this avoids the historical SHA1-only-trap (commit
+        # 836d9a1, func_8007B3A8) where the bridge was silently masking
+        # a broken C body. See feedback_retirement_recipes.md gotcha #7.
+        bash "$0" purge-retirements 2>&1 | tail -10 || true
+        echo
+        echo "[3/7] Stripping orphan named_syms.txt assignments..."
         # Orphans are `<name> = 0x<addr>;` entries that shadow a real
         # text-section symbol now defined by a C .o (typically because
         # the function got decompiled but its old asm-link assignment
@@ -1037,29 +1048,23 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         # symbol lookups in the linker map.
         python3 tools/audit_named_syms_orphans.py --apply 2>&1 | tail -3 || true
         echo
-        echo "[3/6] (note) \`# RETIRE: \` lines kept as historical markers..."
-        # Auto-purging the `# RETIRE: ` lines is unsafe: a SHA1-match
-        # condition doesn't prove the C body matches — the asmfix
-        # bridge could still be silently producing the bytes (this is
-        # what trapped commit 836d9a1 for func_8007B3A8). Run
-        # `dc.sh purge-retirements` explicitly after MANUALLY
-        # confirming each function retires correctly under a clean
-        # rebuild WITHOUT its bridge entry.
-        RETIRE_COUNT=$(grep -c "^# RETIRE: " asmfix.txt 2>/dev/null || echo 0)
-        if [ "$RETIRE_COUNT" -gt 0 ] 2>/dev/null; then
-            echo "  $RETIRE_COUNT \`# RETIRE: \` line(s) in asmfix.txt"
-            echo "  Run \`dc.sh purge-retirements\` to clean up after manual verification."
-        else
-            echo "  No \`# RETIRE: \` lines in asmfix.txt."
-        fi
-        echo
-        echo "[4/6] Classifying inline_asm + INCLUDE_ASM (batch_attempt --classify-only)..."
+        echo "[4/7] Classifying inline_asm + INCLUDE_ASM (batch_attempt --classify-only)..."
         python3 tools/batch_attempt.py --classify-only 2>&1 | tail -3
         echo
-        echo "[5/6] Classifying replace_with_asmfile entries..."
+        echo "[5/7] Classifying replace_with_asmfile entries..."
         python3 tools/classify_asmfix.py 2>&1 | tail -3
         echo
-        echo "[6/6] Generating WORK_QUEUE.md..."
+        echo "[6/7] Reporting any \`# RETIRE: \` lines that didn't pass auto-purge..."
+        RETIRE_COUNT=$(grep -c "^# RETIRE: " asmfix.txt 2>/dev/null || echo 0)
+        if [ "$RETIRE_COUNT" -gt 0 ] 2>/dev/null; then
+            echo "  $RETIRE_COUNT line(s) remain (auto-purge couldn't verify these — usually means the C body still doesn't compile-match):"
+            grep -nE "^# RETIRE: " asmfix.txt | head -10 | sed 's/^/    /'
+            echo "  Investigate manually or finish the retirement before next refresh."
+        else
+            echo "  None — asmfix.txt is clean."
+        fi
+        echo
+        echo "[7/7] Generating WORK_QUEUE.md..."
         python3 tools/gen_work_queue.py 2>&1
         # Belt-and-suspenders: the commit-via-hook path already cleared
         # the marker, but if for some reason a refresh runs while it's

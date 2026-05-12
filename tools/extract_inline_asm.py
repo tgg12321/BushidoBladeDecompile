@@ -255,7 +255,12 @@ def write_target_s(func_name, dest):
     p = ASM_FUNCS / f"{func_name}.s"
     if p.exists():
         # Replicate permuter_setup.sh's transformation:
-        #   glabel X -> X:, drop endlabel, strip /* */ comments
+        #   glabel X -> X:, drop endlabel
+        # KEEP the /* offset addr HEXBYTES */ prefix comment — fix_gte_asm.py
+        # needs the HEXBYTES to convert GTE mnemonics (mvmva, ctc2, mtc2, ...)
+        # to .word encodings the modern assembler can handle. Stripping them
+        # here meant GTE functions silently fell through fix_gte and the
+        # assembler rejected the resulting target.s with "unrecognized opcode."
         with open(p, encoding="utf-8") as f:
             raw = f.read()
         lines = []
@@ -263,7 +268,10 @@ def write_target_s(func_name, dest):
             line = re.sub(r"^glabel (.*)", r"\1:", line)
             if line.strip().startswith("endlabel"):
                 continue
-            line = re.sub(r"/\*[^*]*\*/  ", "", line)
+            # Strip the trailing "/* handwritten instruction */" marker
+            # (added by splat for GTE/cop2 ops). Leaving it in would create
+            # nested /* */ comments after fix_gte rewrites the line.
+            line = re.sub(r"\s*/\*\s*handwritten instruction\s*\*/\s*$", "", line)
             lines.append(line)
         body = "\n".join(lines)
     else:
