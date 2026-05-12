@@ -93,6 +93,17 @@ codex_lab/
 # Active function marker (used by .claude/hooks/active_func_guard.sh)
 .bb2_active_func
 
+# Per-function quit log (mutates between sessions; not source)
+.bb2_quit_log.json
+
+# Makefile auto-generated dependency file
+bb2.d
+
+# Stray splat output — the linker uses split 800.rodata_pre.s + _post.s,
+# but `python3 -m splat split` still regenerates the unified 800.rodata.s
+# at the top of the .rodata segment.
+asm/data/800.rodata.s
+
 # Path-mangled artifacts from prior sessions
 /2
 /Blade
