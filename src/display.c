@@ -1481,10 +1481,85 @@ __asm__(
     "    .set at\n"
 );
 PAD_NOPS_3; /* 3 NOPs after func_8007E43C */
-void func_8007E4DC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007E4DC.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+s32 *func_8007E4DC(s32 *matrix, s32 *vec, s32 *out) {
+    register s32 t0 asm("$8");
+    register s32 t1 asm("$9");
+    register s32 t2 asm("$10");
+    register s32 t3 asm("$11");
+    register s32 t4 asm("$12");
+    register s32 t5 asm("$13");
+    register s32 t6 asm("$14");
+    register s32 t7 asm("$15");
+    register s32 t8 asm("$24");
+    t0 = matrix[0];
+    t1 = matrix[1];
+    t2 = matrix[2];
+    t3 = matrix[3];
+    t4 = matrix[4];
+    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
+    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
+    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
+    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
+    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
+    t0 = ((u16 *)vec)[0];
+    t1 = vec[1];
+    t2 = vec[3];
+    __asm__ volatile (".set noat\n\tlui $1, 0xFFFF\n\tand %0, %0, $1\n\t.set at" : "=r"(t1) : "0"(t1));
+    t0 = t0 | t1;
+    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
+    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A486012");
+    t0 = ((u16 *)vec)[1];
+    t1 = vec[2];
+    t2 = ((s16 *)vec)[7];
+    t1 = t1 << 16;
+    t0 = t0 | t1;
+    __asm__ volatile ("mfc2 %0, $9" : "=r"(t3));
+    __asm__ volatile ("mfc2 %0, $10" : "=r"(t4));
+    __asm__ volatile ("mfc2 %0, $11" : "=r"(t5));
+    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
+    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A486012");
+    t0 = ((u16 *)vec)[2];
+    t1 = vec[2];
+    t2 = vec[4];
+    __asm__ volatile (".set noat\n\tlui $1, 0xFFFF\n\tand %0, %0, $1\n\t.set at" : "=r"(t1) : "0"(t1));
+    t0 = t0 | t1;
+    __asm__ volatile ("mfc2 %0, $9" : "=r"(t6));
+    __asm__ volatile ("mfc2 %0, $10" : "=r"(t7));
+    __asm__ volatile ("mfc2 %0, $11" : "=r"(t8));
+    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
+    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A486012");
+    t3 = t3 & 0xFFFF;
+    t6 = t6 << 16;
+    t6 = t6 | t3;
+    out[0] = t6;
+    __asm__ volatile ("" ::: "memory");
+    t5 = t5 & 0xFFFF;
+    t8 = t8 << 16;
+    t8 = t8 | t5;
+    out[3] = t8;
+    __asm__ volatile ("mfc2 %0, $9" : "=r"(t0));
+    __asm__ volatile ("mfc2 %0, $10" : "=r"(t1));
+    t0 = t0 & 0xFFFF;
+    t4 = t4 << 16;
+    t0 = t0 | t4;
+    out[1] = t0;
+    __asm__ volatile ("" ::: "memory");
+    t7 = t7 & 0xFFFF;
+    t1 = t1 << 16;
+    t1 = t1 | t7;
+    out[2] = t1;
+    __asm__ volatile ("swc2 $11, 16(%0)" :: "r"(out));
+    {
+        register s32 *v0 asm("$2");
+        __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(out));
+        return v0;
+    }
 }
 PAD_NOPS_1; /* 1 NOP after func_8007E4DC */
 __asm__(
