@@ -145,6 +145,74 @@ def _is_branch_with_label(s: str) -> Tuple[str, str] | None:
     return None
 
 
+_J_LABEL_RE = re.compile(r"^j\s+(\.L\w+)\s*$")
+_B_LABEL_RE = re.compile(r"^b\s+(\.L\w+)\s*$")
+_NOP_RE = re.compile(r"^nop\b")
+
+
+def _detect_j_to_b_with_delay_fill(
+    mine: List[Tuple[int, str, str]], target: List[str], func: str
+) -> List[str]:
+    """Detect the pattern where mine has `[X, j .L<N>, nop]` and target has
+    `[b .L<N>, X-equivalent-in-delay-slot]` at the same logical position.
+
+    When found, emit a paired `fill_delay` + `subst j->b` rule (hint-style)
+    so the agent doesn't have to discover the recipe manually.
+
+    Detection heuristic (per maspsx position k in mine):
+      - mine[k]   text matches `^j\\s+(\\.L\\w+)$`        (J-format jump)
+      - mine[k+1] text matches `^nop\\b`                  (delay slot is nop)
+      - mine[k-1] text exists and is a regular insn       (the candidate)
+      - target has a `b .L<N>` near the same logical position
+      - target's instruction in the b's delay slot text-matches mine[k-1]
+
+    Emits both `fill_delay` and `subst` as a hint string (not a rule)
+    so the agent can audit before applying. Recurring pattern from
+    func_8007EA0C (3 occurrences) and similar GTE+sign-preserving multiplies.
+    """
+    hints: List[str] = []
+    target_norm = [t.strip() for t in target]
+
+    # Use RAW text for the j/b detection (not normalized): diff_build's
+    # normalize_insn aliases `b` -> `j` for byte-comparison purposes, but
+    # they have different MIPS encodings (BEQ vs J format). We want to
+    # detect mine's actual `j` and target's actual `b`.
+    target_raw = [t.strip() for t in target]
+
+    for k in range(1, len(mine) - 1):
+        idx_mine, raw_mine, _norm_mine = mine[k]
+        m_j = _J_LABEL_RE.match(raw_mine.strip())
+        if not m_j:
+            continue
+        if not _NOP_RE.match(mine[k + 1][1].strip()):
+            continue
+        candidate_raw = mine[k - 1][1].strip()
+        candidate_idx = mine[k - 1][0]
+        # Look in target for `b .L<N>` near k (within +/-3)
+        for tj in range(max(0, k - 3), min(len(target_raw), k + 3)):
+            m_b = _B_LABEL_RE.match(target_raw[tj])
+            if not m_b:
+                continue
+            # Verify target's delay slot matches mine's candidate (raw text).
+            # Use a loose match: same opcode + at least the destination reg.
+            if tj + 1 >= len(target_raw):
+                continue
+            if target_raw[tj + 1].split()[:1] != candidate_raw.split()[:1]:
+                continue
+            hints.append(
+                f"J->B+FILL-DELAY at mine idx {idx_mine}: mine has "
+                f"`{candidate_raw}; j {m_j.group(1)}; nop` but target has "
+                f"`b {m_b.group(1)}; {target_raw[tj+1]} (in delay)`. Paired recipe:\n"
+                f"    {func}: fill_delay @ {idx_mine} <- {candidate_idx}\n"
+                f"    {func}: subst \"j\\\\s+\\\\{m_j.group(1)}\" \"b\\t{m_j.group(1)}\" @ {idx_mine}\n"
+                f"  (Don't apply via regfix-suggest --apply — these don't compose with "
+                f"the difflib-emitted delete+insert rules. Add by hand via add-regfix or tmp/inject_*.py.)"
+            )
+            break  # one match per j
+
+    return hints
+
+
 def suggest(func: str) -> Tuple[List[str], List[str], dict]:
     """Run alignment, return (rules, hints, stats).
 
@@ -167,8 +235,16 @@ def suggest(func: str) -> Tuple[List[str], List[str], dict]:
     hints: List[str] = []
     stats = {
         "delete": 0, "insert": 0, "subst": 0,
-        "label_mismatch": 0, "gp_rel_hint": 0,
+        "label_mismatch": 0, "gp_rel_hint": 0, "j_to_b_paired": 0,
     }
+
+    # Pre-pass: detect the j+nop ↔ b+useful-insn pattern (recurring in
+    # GTE wrappers and sign-preserving multiplies, e.g. func_8007EA0C).
+    # Emits hint-style paired recipes that don't compose well with the
+    # difflib-emitted delete/insert rules.
+    j_to_b_hints = _detect_j_to_b_with_delay_fill(mine, target, func)
+    hints.extend(j_to_b_hints)
+    stats["j_to_b_paired"] = len(j_to_b_hints)
 
     # Detect gp-rel pseudo on mine that target has as lui+lw — emit
     # sdata_exclude hint before we fight it with regfix. When the hint
@@ -348,7 +424,8 @@ def main() -> int:
         f"{stats['insert']} insert, "
         f"{stats['subst']} subst, "
         f"{stats['label_mismatch']} label-mismatch hint(s), "
-        f"{stats['gp_rel_hint']} sdata-exclude hint(s)"
+        f"{stats['gp_rel_hint']} sdata-exclude hint(s), "
+        f"{stats.get('j_to_b_paired', 0)} j->b+fill-delay paired hint(s)"
     )
     print(summary)
     print()
