@@ -15228,10 +15228,75 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
     arg0[3] = (s32)poly;
 }
 
-void func_80069E18(s32 arg0, s32 arg1) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80069E18.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1;
+typedef struct {
+    s32 *p0;
+    s32 *p1;
+    s32 in_tex;
+    s32 pad0C;
+    s32 zero10;
+    s32 arg2;
+    s32 width;
+    s32 zero1C;
+    s32 pad20;
+    s32 pad24;
+    s8 byte28;
+} S69E18;
+void func_80069E18(s32 arg0) {
+    extern s32 D_800A374C;
+    s32 tile;
+    s32 ptr;
+    S69E18 s;
+    s32 motion_v0;
+
+    tile = *(s32 *)(arg0 + 0x18);
+    initTile(tile);
+    *(u8 *)(tile + 4) = 0xFF;
+    *(u8 *)(tile + 5) = 0xFF;
+    *(u8 *)(tile + 6) = 0xFF;
+    *(s16 *)(tile + 0xC) = 0x280;
+    *(s16 *)(tile + 8) = 0;
+    *(s16 *)(tile + 0xA) = 0;
+    *(s16 *)(tile + 0xE) = 0xF0;
+    gpu_SetSemiTransp(tile, 0);
+    ot_Link(D_800A374C + 0x50, tile);
+    *(s32 *)(arg0 + 0x18) = tile + 0x10;
+
+    ptr = *(s32 *)(*(s32 *)(arg0 + 4) + 0x14);
+    s.arg2 = 0x10;
+    s.zero10 = 0;
+    s.width = 0;
+    s.zero1C = 0;
+    s.byte28 = 0;
+
+    s.p0 = (s32 *)*(s32 *)ptr;
+    initTexPage(*(s32 *)(arg0 + 0x1C), 1, 0, saMotionSet((s32)s.p0, 0), 0);
+    ot_Link(D_800A374C + 0x44, *(s32 *)(arg0 + 0x1C));
+    *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
+
+    {
+        register s32 p0v asm("$2") = (s32)s.p0;
+        register s32 p1v asm("$3") = p0v + 0xC;
+        s.p1 = (s32 *)p1v;
+        (void)p0v;
+    }
+    s.in_tex = *(s32 *)(arg0 + 0x14);
+    *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
+
+    s.p0 = (s32 *)*(s32 *)(ptr + 4);
+    {
+        register s32 p1v asm("$3") = (s32)s.p0 + 0xC;
+        s.p1 = (s32 *)p1v;
+    }
+    s.in_tex = *(s32 *)(arg0 + 0x14);
+    *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
+
+    s.p0 = (s32 *)*(s32 *)(ptr + 8);
+    {
+        register s32 p1v asm("$3") = (s32)s.p0 + 0xC;
+        s.p1 = (s32 *)p1v;
+    }
+    s.in_tex = *(s32 *)(arg0 + 0x14);
+    *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
 }
 void func_80069F80(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80069F80.s).
