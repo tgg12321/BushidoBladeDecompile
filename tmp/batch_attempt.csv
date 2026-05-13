@@ -149,7 +149,6 @@ func_80053754,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,466,
 single_game_SetStatusUpData,src/code6cac.c,asmfix,CLASSIFY,,,,,,standard,516,
 func_8005D814,src/code6cac.c,asmfix,CLASSIFY,,,,,,standard,545,
 func_8005C8A8,src/code6cac.c,asmfix,CLASSIFY,,,,,,standard,753,
-func_80060A68,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,66,aliasing_heavy
 special_camera_set_win_cam,src/code6cac_b2.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,512,"lwl_swl,jlabel_switch,aliasing_heavy"
 special_camera_Exec,src/code6cac_b2.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,274,jlabel_switch
 saTan1MainJump,src/main.c,asmfix,CLASSIFY,,,,,,needs_function_split,423,"jlabel_switch,multi_jr_ra,aliasing_heavy"
@@ -208,15 +207,12 @@ SetPacketData,src/main.c,asmfix,CLASSIFY,,,,,,standard,159,aliasing_heavy
 func_8007F87C,src/code6cac.c,asmfix,CLASSIFY,,,,,,standard,102,
 func_8002D320,src/code6cac_b.c,asmfix,CLASSIFY,,,,,,gte_function,126,gte_ops
 func_8002EA24,src/code6cac_b.c,asmfix,CLASSIFY,,,,,,gte_function,110,gte_ops
-cpu_check_tubazeri,src/code6cac_b.c,asmfix,CLASSIFY,,,,,,gte_function,76,gte_ops
-coli_check_circle_hit_line,src/code6cac_b.c,asmfix,CLASSIFY,,,,,,gte_function,92,gte_ops
 func_8007FA1C,src/code6cac.c,asmfix,CLASSIFY,,,,,,standard,102,
 func_8007FBBC,src/code6cac.c,asmfix,CLASSIFY,,,,,,standard,102,
 motutil_GetWalkDir,src/display.c,asmfix,CLASSIFY,,,,,,standard,163,
 func_8007F5EC,src/display.c,asmfix,CLASSIFY,,,,,,standard,163,
 func_8007CE0C,src/display.c,asmfix,CLASSIFY,,,,,,standard,143,
 func_80068D88,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,81,aliasing_heavy
-func_80069E18,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,90,aliasing_heavy
 saTan3GaugeMain_80073200,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,203,aliasing_heavy
 func_80074488,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,212,aliasing_heavy
 func_8006CFBC,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,218,aliasing_heavy
@@ -282,13 +278,6 @@ func_80077D94,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,468,"lwl_swl,
 func_80079A30,src/code6cac_c.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,535,"jlabel_switch,aliasing_heavy"
 motion_SetExMotion,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,1456,"jlabel_switch,gte_ops,aliasing_heavy"
 func_80058580,src/text1b.c,asmfix,CLASSIFY,,,,,,needs_rodata_split,2991,"lwl_swl,jlabel_switch,aliasing_heavy"
-calc_fc_frame_800203B4,src/code6cac.c,asmfix,CLASSIFY,,,,,,gte_function,67,gte_ops
-func_8007E4DC,src/display.c,asmfix,CLASSIFY,,,,,,gte_function,67,gte_ops
-func_8007EB4C,src/display.c,asmfix,CLASSIFY,,,,,,gte_function,67,gte_ops
-calc_fc_frame_8007EC5C,src/display.c,asmfix,CLASSIFY,,,,,,gte_function,67,gte_ops
-func_8007EA0C,src/display.c,asmfix,CLASSIFY,,,,,,gte_function,78,gte_ops
-func_800300B4,src/code6cac_b.c,asmfix,CLASSIFY,,,,,,gte_function,85,gte_ops
-func_8007E74C,src/display.c,asmfix,CLASSIFY,,,,,,gte_function,88,gte_ops
 func_8002FF20,src/code6cac_b.c,asmfix,CLASSIFY,,,,,,gte_function,101,gte_ops
 saSeInit,src/code6cac_b.c,asmfix,CLASSIFY,,,,,,gte_function,123,gte_ops
 func_800325E0,src/code6cac.c,asmfix,CLASSIFY,,,,,,gte_function,157,gte_ops
