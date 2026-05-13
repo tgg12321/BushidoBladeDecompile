@@ -14821,11 +14821,55 @@ u8 func_80067D14(s32 arg0, s32 arg1) {
     (void)arg0; (void)arg1;
     return 0;
 }
-u8 func_80068D88(s32 arg0, s32 arg1) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80068D88.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1;
-    return 0;
+s32 func_80068D88(void) {
+    extern s32 D_800A34EC;
+    extern s32 D_800A37D4;
+    extern s32 D_800A3724;
+    extern s32 D_800A34E4;
+    extern s32 D_800A34E8;
+    extern s32 D_800A374C;
+    register s32 prev_a7 asm("$7");
+    register s16 *p_idx asm("$8");
+    register u32 *p_prev asm("$10");
+    register u32 *p_cur asm("$6");
+    s32 outer;
+    u32 cur;
+    s32 ret;
+
+    outer = D_800A34EC;
+    prev_a7 = D_800A37D4;
+    D_800A3724 = outer + 0x1AC;
+    p_idx = (s16 *)(outer + 0x6E);
+    p_prev = (u32 *)(outer + 0x7C);
+    p_cur = (u32 *)(outer + 0x80);
+    cur = *(volatile u32 *)(outer + 0x80);
+    __asm__ volatile ("" : "=r"(p_cur) : "0"(p_cur));
+    __asm__ volatile ("" : "=r"(p_prev) : "0"(p_prev));
+    __asm__ volatile ("" : "=r"(p_idx) : "0"(p_idx));
+    if ((s32)(-((s32)(cur - prev_a7) * 0x33333333) >> 3) != 0) {
+        register s32 *p_matrix asm("$12") = (s32 *)(outer + 0x8C);
+        *(volatile u32 *)(outer + 0x80) = (u32)prev_a7;
+        *(volatile u32 *)(outer + 0x7C) = cur;
+        ret = 1;
+        *(s16 *)(outer + 0x6E) = 0;
+        __asm__ volatile ("" : "=r"(p_matrix) : "0"(p_matrix));
+        if (*(volatile u32 *)(outer + 0x80) < *(volatile u32 *)(outer + 0x7C)) {
+            do {
+                s32 *temp_a0 = (s32 *)(D_800A374C + (*(u16 *)((s32)p_matrix + *p_idx * 2)) * 4);
+                u32 temp_a1 = *p_cur;
+                D_800A34E4 = (s32)temp_a0;
+                D_800A34E8 = (s32)temp_a1;
+                *(u32 *)temp_a1 = (*(u32 *)temp_a1 & 0xFF000000) | (*temp_a0 & 0xFFFFFF);
+                *(s32 *)D_800A34E4 = (D_800A34E8 & 0xFFFFFF) | (*(s32 *)D_800A34E4 & 0xFF000000);
+                *p_cur += 0x28;
+                *p_idx = (s16)(*(u16 *)p_idx + 1);
+            } while (*p_cur < *p_prev);
+        }
+        D_800A37D4 = (s32)*p_prev;
+    } else {
+        ret = 0;
+    }
+    return ret;
 }
 void func_80068ECC(s32 arg0) {
     s32 *p = &D_8009BC04;
