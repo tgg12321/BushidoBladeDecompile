@@ -212,7 +212,6 @@ func_8007FBBC,src/code6cac.c,asmfix,CLASSIFY,,,,,,standard,102,
 motutil_GetWalkDir,src/display.c,asmfix,CLASSIFY,,,,,,standard,163,
 func_8007F5EC,src/display.c,asmfix,CLASSIFY,,,,,,standard,163,
 func_8007CE0C,src/display.c,asmfix,CLASSIFY,,,,,,standard,143,
-func_80068D88,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,81,aliasing_heavy
 saTan3GaugeMain_80073200,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,203,aliasing_heavy
 func_80074488,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,212,aliasing_heavy
 func_8006CFBC,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,218,aliasing_heavy
