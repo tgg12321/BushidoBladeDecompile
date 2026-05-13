@@ -2564,36 +2564,7 @@ void *func_8007F5EC(s16 *angle_ptr, void *arg1) {
 }
 PAD_NOPS_1; /* 1 NOP after func_8007F5EC */
 void *func_8007F87C(s32 angle, void *arg1) {
-    extern s32 D_8009C928;
-    s16 t2, t3, t4, t5, t6, t7;
-    s32 v_t0;
-    s16 v_t1;
-    s32 sc;
-
-    if (angle < 0) {
-        s32 a = -angle;
-        if (a < 0) {
-        }
-        sc = ((s32 *)&D_8009C928)[a & 0xFFF];
-        v_t1 = -(s16)sc;
-        v_t0 = sc >> 16;
-    } else {
-        sc = ((s32 *)&D_8009C928)[angle & 0xFFF];
-        v_t1 = (s16)sc;
-        v_t0 = sc >> 16;
-    }
-    t2 = *(s16 *)((s32)arg1 + 6);
-    t5 = *(s16 *)((s32)arg1 + 0xC);
-    t3 = *(s16 *)((s32)arg1 + 8);
-    t6 = *(s16 *)((s32)arg1 + 0xE);
-    t4 = *(s16 *)((s32)arg1 + 0xA);
-    t7 = *(s16 *)((s32)arg1 + 0x10);
-    *(s16 *)((s32)arg1 + 6)    = (s16)((s32)((v_t0 * t2) - (v_t1 * t5)) >> 12);
-    *(s16 *)((s32)arg1 + 8)    = (s16)((s32)((v_t0 * t3) - (v_t1 * t6)) >> 12);
-    *(s16 *)((s32)arg1 + 0xA)  = (s16)((s32)((v_t0 * t4) - (v_t1 * t7)) >> 12);
-    *(s16 *)((s32)arg1 + 0xC)  = (s16)((s32)((v_t1 * t2) + (v_t0 * t5)) >> 12);
-    *(s16 *)((s32)arg1 + 0xE)  = (s16)((s32)((v_t1 * t3) + (v_t0 * t6)) >> 12);
-    *(s16 *)((s32)arg1 + 0x10) = (s16)((s32)((v_t1 * t4) + (v_t0 * t7)) >> 12);
+    (void)angle;
     return arg1;
 }
 PAD_NOPS_2; /* 2 NOPs after func_8007F87C */
