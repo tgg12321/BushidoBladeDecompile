@@ -1,6 +1,6 @@
 ---
 name: decomp-next
-description: End-to-end matching decompilation of one function from WORK_QUEUE.md. Invoke whenever the user asks to "decomp the next function", "do the next one", "match the next function", "work the next N functions", "run through the queue", "do N more", or similar BB2-decomp phrasings. ONE FUNCTION PER INVOCATION — for multi-function batches, re-invoke this skill after each successful commit so the guardrails reload fresh. Runs the programmatic pipeline first (attempt → diff-align → recipes → near-miss → regfix-suggest → permute-adaptive); escalates to manual technique only when automation is exhausted. Hard guardrails against inline-asm / asmfix-bridge cheats. Resilient — runs until 100% pure C + byte-matching commit, never quits for fatigue or iteration count.
+description: End-to-end matching decompilation of one function from WORK_QUEUE.md. Invoke whenever the user asks to "decomp the next function", "do the next one", "match the next function", "work the next N functions", "run through the queue", "do N more", or similar BB2-decomp phrasings. ONE FUNCTION PER INVOCATION — for multi-function batches, re-invoke this skill after each successful commit so the guardrails reload fresh. Mandatory §2.5 pre-work (memory-check + explicit C-vs-asm determination) BEFORE pipeline launch, so prior memory/gotchas surface early and hand-coded-asm functions aren't pure-C-attacked for hours. Programmatic pipeline (attempt → diff-align → recipes → near-miss → regfix-suggest → permute-adaptive); escalates to manual technique only when automation is exhausted. Hard guardrails against inline-asm / asmfix-bridge cheats; rare canonically-asm functions go through inline_asm_canonical.txt with per-function user authorization. Resilient — runs until 100% pure C + byte-matching commit, never quits for fatigue or iteration count.
 ---
 
 # /decomp-next — single-invocation, end-to-end function match
@@ -35,7 +35,9 @@ Read this entire skill before doing anything. The rules below are the contract.
 
 If yes — and it almost always is for this codebase (Lightweight, GCC 2.7.2, PsyQ SDK 3.5, 1998 commercial PS1 game) — then a pure-C body that emits matching bytes **exists**. The toolchain is deterministic; the answer space is finite; you just haven't found the right structure yet.
 
-How to tell if a function is canonically C:
+This question is answered EXPLICITLY in §2.5.b before §3 launches — not implicitly at the wall point. By the time you reach this check, you've already classified the function as C-canonical or asm-canonical with evidence; if you're walled on a C-canonical function, the answer is "keep trying," and if the function is on `inline_asm_canonical.txt` you wouldn't be in pure-C deepening in the first place. Re-reaching for "maybe this IS asm" after §3 has been running is rarely the right move — it's almost always a signal to switch technique within the C path.
+
+How to tell if a function is canonically C (this is the §2.5.b checklist condensed):
 
 - The `/* handwritten instruction */` markers in `asm/funcs/*.s` only flag GTE cop2 ops (ctc2/mtc2/mfc2/swc2/lwc2/cfc2/cop2/mvmva). Those legitimately come from inline asm *inside* C source. Their presence is NOT evidence of hand-written-asm function.
 - Callers passing normal arguments (`func(a, b, c)`) → callee is a regular C function.
@@ -43,7 +45,7 @@ How to tell if a function is canonically C:
 - Function is in a `.c` file in `src/` and has been getting compiled (even with parse errors) → meant to be C.
 - Sibling functions in the same file are already matched in C with similar shape → this one matches in C too.
 
-Vanishingly few functions in this codebase are canonically asm. They are gated out by the classifier (`bios_or_syscall:*`, `permanently_blocked:*`); if you got it from a queue pull, **it's C**.
+Vanishingly few functions in this codebase are canonically asm. They are gated out by the classifier (`bios_or_syscall:*`, `permanently_blocked:*`) or already authorized in `inline_asm_canonical.txt`. If you got the function from a queue pull and `dc.sh memory-check` shows `CANONICAL_ASM: no`, **it's C** — keep pushing the pure-C ladder.
 
 When you think you're walled, you are wrong about *yourself*, not the function. The avenues you haven't tried always exist; surface them and try them.
 
@@ -123,7 +125,110 @@ For **retirement queue items** (or any function whose `Function state` is BRIDGE
 
 ---
 
+## §2.5. PRE-WORK INVESTIGATION (mandatory before §3)
+
+Two cheap, high-leverage checks before any decomp work. They catch the two failure modes that wasted the most time historically: agents re-deriving documented gotchas, and agents pure-C-attacking functions whose original source was hand-coded asm.
+
+### 2.5.a Memory & gotcha lookup — `dc.sh memory-check <func>`
+
+```
+bash tools/dc.sh memory-check <func>
+```
+
+Surfaces:
+- Whether the function is in `inline_asm_canonical.txt` (authorized hand-coded-asm list)
+- Memory files mentioning the function by name (with first context line)
+- Memory files mentioning the function's neighbors in the same .c file (cluster context)
+
+**Read every memory file the tool surfaces before launching §3.** A prior incident, named recipe, register-cycle pattern, or cluster-wide gotcha is documented in there — re-deriving it from scratch is the failure mode this step exists to prevent.
+
+If `memory-check` reports `CANONICAL_ASM: yes`: the function is already authorized as hand-coded asm. **Skip §3. Go to §2.5.c.** The programmatic pipeline is tuned for pure-C matching and will not converge on a hand-coded byte sequence.
+
+### 2.5.b Canonical form determination (C vs asm) — explicit, mandatory
+
+Before §3, decide explicitly: **is this function canonically C or canonically asm?**
+
+The default — and the right answer for ~99% of queue items — is C. THE PHYSICS CHECK (§0) applies, the §3 pipeline + §5 ladder will reach 0 diffs, you just have to keep trying. **Do not abuse this step to declare "asm-canonical" as an exit from a hard pure-C function.** The user's standing rule: *"we have to confirm with extreme confidence that the source was asm not C before using inline asm in any circumstance."*
+
+Decision flow:
+
+| memory-check result | Action |
+|---|---|
+| `CANONICAL_ASM: yes` | Asm-canonical. Skip §3. Use §2.5.c inline-asm path. |
+| Cluster memory hits but not listed | Read the linked memory files. They may flag this as a known cluster member, in which case escalate evidence to user. Otherwise proceed to §3. |
+| No memory hits, standard prologue/epilogue, regular call semantics, $a0/$a1 args | C-canonical. Proceed to §3. |
+| Function looks suspicious (see signals below) | Apply the strong-signal checklist below. |
+
+**Strong signals for hand-coded asm** (from `memory/feedback_hand_coded_asm_recognition.md`). Need **3+** independent signals to even consider asking for authorization:
+
+1. **Uniform `multu`/`mflo` pacing** — every multu/mflo pair separated by exactly 2 cycles, even when the in-between insns are unrelated nops. GCC's scheduler tightens to 0-cycle gap when no useful work exists; a hand-coder cares about the R3000 pipeline stall and writes uniform pacing.
+2. **Front-loaded loads** — 4+ input loads in the first ~6 insns of a long kernel, interleaved with only the first 1–2 multus. GCC schedules load-compute pair-by-pair; hand-coders pre-load everything.
+3. **Tight register packing with no spills** — 60+ instruction kernel holding 8+ values in fixed registers with NO `sw/lw` to `$sp`, registers staying in their roles consistently (e.g., `$t0=cos, $t1=sin, $t2–$t7=inputs, $t8/$t9=scratch`).
+4. **Idiom signatures GCC doesn't emit** — `bgez X, .L_dead; andi X, X, 0xFFF` where `.L_dead` is the very next instruction (INT_MIN guard with empty `if (x<0){}` body); initial `addu $t7, $a0, $zero; addu $v0, $a1, $zero` arg copies in a leaf function with no apparent need.
+5. **Cluster behavior** — multiple siblings in the same .c file share the same skeletal pattern with only operand differences (e.g., 5 sin/cos rotation routines with different stride offsets).
+
+Verdict:
+
+- **< 3 signals** → C-canonical. Proceed to §3. You may still need single-instruction asm primitives (register-pin allocator hints, scheduling barriers — §6.1 allows these) inside otherwise-C bodies.
+- **≥ 3 signals** → **STOP. Surface evidence to user. Ask for per-function authorization.** Do NOT pre-authorize yourself. List the specific signals you see in the target.s. The user decides; the agent does not.
+
+Weak signals that are NOT enough on their own (require corroborating strong signals):
+- A documented cc1 register-allocator divergence (could be cc1 fault, could be hand-coded — don't conclude from this alone)
+- Pure-C plateau after N attempts (you haven't exhausted the §5 ladder)
+- Kengo source has a function with this name (Kengo is the PS2 sequel; may have been rewritten)
+- "The function feels hard"
+
+### 2.5.c Inline-asm canonical path (only when §2.5.b authorizes)
+
+When the function is in `inline_asm_canonical.txt` OR the user has just authorized this specific function:
+
+1. **Replace the C stub with file-scope `__asm__`.** Pattern (display.c has reference implementations: `func_8007F87C`, `func_8007FA1C`):
+
+   ```c
+   /* <func>: hand-coded asm in original PSY-Q source.
+    * Evidence: <list the strong signals you confirmed>.
+    * Authorization: <user message ref / commit ref>.
+    * See memory/feedback_hand_coded_asm_recognition.md. */
+   __asm__(
+       ".section .text\n"
+       ".set\tnoreorder\n"   /* TAB, not space — see below */
+       ".set\tnoat\n"
+       "glabel <func>\n"
+       "    <target.s body verbatim, decimal offsets>\n"
+       "    jr         $ra\n"
+       "     nop\n"
+       "endlabel <func>\n"
+       ".set\treorder\n"
+       ".set\tat\n"
+   );
+   ```
+
+2. **Maspsx gotchas (the two that bit prior matches in this cluster):**
+
+   - **TAB after `.set`, not space.** Maspsx's `is_reorder` tracking requires `.set\tnoreorder` (literal `\t` in the C string). Space-separated `.set noreorder` slips through to gas but maspsx still injects `nop  # DEBUG: branch/jump` after every branch/jump in the asm — silent +N-instruction inflation that diff-aligns to an off-by-N mismatch.
+   - **Decimal offsets only.** `lh $t2, 0x6($a1)` crashes maspsx at `int(operand)` base-10 parsing. Convert all hex offsets to decimal (`lh $t2, 6($a1)`). The immediates inside arithmetic ops (e.g., `andi $t9, $t7, 0xFFF`) parse fine — only the `N($reg)` offset form is affected.
+
+3. **Skip §3 and §5.** Both are pure-C pipelines.
+
+4. **Build with `dc.sh build-active <func>`.** A byte-exact inline asm should match on first build. If it doesn't, your asm doesn't match target.s — diff and fix the asm, not your decomp approach.
+
+5. **After MATCH: add the function to `inline_asm_canonical.txt`** with a one-line justification:
+
+   ```
+   <func>  # <one-line summary of evidence>. User-authorized <date>. See <memory_file> and commit <sha>.
+   ```
+
+   This prevents the inline-asm-debt scanner from re-listing the function as active work.
+
+6. **Continue to §6 (anti-cheat gate — honors the canonical list) and §7 (commit).**
+
+This path is a **recognized exception** to §6.1's multi-instruction-asm rule, scoped to functions on `inline_asm_canonical.txt`. It is NOT a general escape hatch from hard pure-C functions.
+
+---
+
 ## §3. PROGRAMMATIC PIPELINE (mandatory first pass)
+
+**Precondition: §2.5 must have run.** If `memory-check` returned `CANONICAL_ASM: yes` or you confirmed ≥3 hand-coded signals in §2.5.b with user authorization, you are NOT in §3 — you are in §2.5.c. The §3 pipeline is for pure-C matching only; running it on a hand-coded function burns hours converging on nothing.
 
 **You do not write C by hand before this pipeline runs.** Trust the automation; it's been tuned over hundreds of matches.
 
@@ -346,7 +451,9 @@ Concretely:
 - `replace_with_asmfile "<func>"` still ACTIVE in `asmfix.txt` (not preceded by `# RETIRE: `). The bridge is the original asm pasted in — that's not C.
 - `INCLUDE_ASM("asm/funcs", <func>);` in src/.
 
-**The test, when in doubt:** could a human reader figure out what the function computes by reading only the C, treating each one-instruction asm as a labeled primitive (e.g. "this `lui` materializes 0xFFFF0000 in $t9 here")? If yes, it's allowed. If the asm is doing the actual work and the C is just scaffolding, it's not.
+**EXCEPTION — `inline_asm_canonical.txt`.** Functions listed in `inline_asm_canonical.txt` are explicitly authorized to use file-scope `__asm__()` with `glabel`/`endlabel` containing the function body (the §2.5.c form). The list is small, per-function-authorized, and gated on the strong-signal evidence in §2.5.b. The inline-asm-debt scanner skips these names. **If you wrote a §2.5.c inline-asm body but did NOT add the function to `inline_asm_canonical.txt` first (or get user authorization), this gate FAILS.** No silent slips: every authorized inline-asm function leaves a paper trail in `inline_asm_canonical.txt`.
+
+**The test, when in doubt:** could a human reader figure out what the function computes by reading only the C, treating each one-instruction asm as a labeled primitive (e.g. "this `lui` materializes 0xFFFF0000 in $t9 here")? If yes, it's allowed. If the asm is doing the actual work and the C is just scaffolding, it's not — UNLESS the function is on `inline_asm_canonical.txt` (and the authorization is current).
 
 If any forbidden pattern is present: strip it. Switch technique (§5). The function is **not done**.
 
@@ -521,6 +628,7 @@ If you find yourself wanting to abort, you almost certainly are at a technique-s
 | Full GTE 3x3 recipe + reference matches | `feedback_gte_3x3_recipe.md` |
 | Bridge signature audit data (41 mismatched stubs) | `feedback_bridge_signature_audit.md` |
 | Tempted to bridge unauthorized | `feedback_bridge_is_not_decomp.md` |
+| Suspected hand-coded asm — strong-signal checklist + authorization rules | `feedback_hand_coded_asm_recognition.md` |
 | Stop-language patterns blocked by grind_check.sh | `feedback_voluntary_stop_forbidden.md` |
 | HARD RULE / queue-driven selection / WSL discipline | `feedback_workflow_rules.md` |
 
@@ -530,4 +638,4 @@ Do not read everything up front. Read `feedback_quick_reference.md` once at the 
 
 ## TL;DR (one-paragraph contract)
 
-Pre-flight → pull from queue → `dc.sh attempt` → if not matched, run programmatic deepening (diff-align → diff-summary → recipes → near-miss → regfix-suggest → permute-adaptive) → if still not matched, manual ladder (C variants → register hints → long permuter → regfix → compound → named recipes → new tool) → before commit, anti-cheat gate (read body for forbidden asm, verify-c, verify --clean, caller-audit, post-match-validate) → commit → refresh-queue → done. One function, end-to-end, no quitting, no cheating.
+Pre-flight → pull from queue → **`dc.sh memory-check <func>` + explicit C-vs-asm determination (§2.5)** → if asm-canonical, §2.5.c inline-asm path → otherwise `dc.sh attempt` → if not matched, run programmatic deepening (diff-align → diff-summary → recipes → near-miss → regfix-suggest → permute-adaptive) → if still not matched, manual ladder (C variants → register hints → long permuter → regfix → compound → named recipes → new tool) → before commit, anti-cheat gate (read body for forbidden asm, verify-c, verify --clean, caller-audit, post-match-validate) → commit → refresh-queue → done. One function, end-to-end, no quitting, no cheating.
