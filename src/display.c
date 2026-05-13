@@ -1781,10 +1781,104 @@ void *func_8007E8DC(s32 *arg0, s32 *arg1) {
     return v0;
 }
 PAD_NOPS_3; /* 3 NOPs after func_8007E8DC */
-void func_8007EA0C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007EA0C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+s32 *func_8007EA0C(s32 *vec_in, s32 *vec_out) {
+    register s32 t0 asm("$8");
+    register s32 t1 asm("$9");
+    register s32 t2 asm("$10");
+    register s32 t3 asm("$11");
+    register s32 t4 asm("$12");
+    register s32 t5 asm("$13");
+    register s32 *v0 asm("v0");
+    /* Read 3 input components */
+    t0 = vec_in[0];
+    t1 = vec_in[1];
+    t2 = vec_in[2];
+    /* Signed split: t0_orig = (t3 << 15) + t0_lo, with sign preserved on both halves.
+     * Negative branch goes through abs+sra+andi+negate; positive branch is direct sra+andi. */
+    /* Source order matches target: compute sra+andi first, then negate.
+     * The trailing -t0 conveniently lands in the b's delay slot. */
+    if (t0 < 0) {
+        s32 a = -t0;
+        t3 = a >> 15;
+        a = a & 0x7FFF;
+        t3 = -t3;
+        t0 = -a;
+    } else {
+        t3 = t0 >> 15;
+        t0 = t0 & 0x7FFF;
+    }
+    if (t1 < 0) {
+        s32 a = -t1;
+        t4 = a >> 15;
+        a = a & 0x7FFF;
+        t4 = -t4;
+        t1 = -a;
+    } else {
+        t4 = t1 >> 15;
+        t1 = t1 & 0x7FFF;
+    }
+    if (t2 < 0) {
+        s32 a = -t2;
+        t5 = a >> 15;
+        a = a & 0x7FFF;
+        t5 = -t5;
+        t2 = -a;
+    } else {
+        t5 = t2 >> 15;
+        t2 = t2 & 0x7FFF;
+    }
+    /* High parts → IR1/IR2/IR3, run mvmva with R matrix (m=0,v=0,c=3,sf=3) */
+    __asm__ volatile ("mtc2 %0, $9"  :: "r"(t3));
+    __asm__ volatile ("mtc2 %0, $10" :: "r"(t4));
+    __asm__ volatile ("mtc2 %0, $11" :: "r"(t5));
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A41E012");  /* mvmva 0,0,3,3,0 */
+    __asm__ volatile ("mfc2 %0, $25" : "=r"(t3));
+    __asm__ volatile ("mfc2 %0, $26" : "=r"(t4));
+    __asm__ volatile ("mfc2 %0, $27" : "=r"(t5));
+    /* Low parts → IR1/IR2/IR3, run mvmva with L matrix (m=1,v=0,c=3,sf=3) */
+    __asm__ volatile ("mtc2 %0, $9"  :: "r"(t0));
+    __asm__ volatile ("mtc2 %0, $10" :: "r"(t1));
+    __asm__ volatile ("mtc2 %0, $11" :: "r"(t2));
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A49E012");  /* mvmva 1,0,3,3,0 */
+    /* Multiply each high result by 8 with sign-preservation. Plain
+     * `if (t<0) -((-t)<<3); else t<<3` strength-reduces to a single sll
+     * because GCC sees the branches as mathematically equivalent.
+     * Use single-instruction `negu` asm to keep the branches opaque. */
+    if (t3 < 0) {
+        __asm__ volatile ("negu %0, %1" : "=r"(t3) : "r"(t3));
+        t3 = t3 << 3;
+        __asm__ volatile ("negu %0, %1" : "=r"(t3) : "r"(t3));
+    } else {
+        t3 = t3 << 3;
+    }
+    if (t4 < 0) {
+        __asm__ volatile ("negu %0, %1" : "=r"(t4) : "r"(t4));
+        t4 = t4 << 3;
+        __asm__ volatile ("negu %0, %1" : "=r"(t4) : "r"(t4));
+    } else {
+        t4 = t4 << 3;
+    }
+    if (t5 < 0) {
+        __asm__ volatile ("negu %0, %1" : "=r"(t5) : "r"(t5));
+        t5 = t5 << 3;
+        __asm__ volatile ("negu %0, %1" : "=r"(t5) : "r"(t5));
+    } else {
+        t5 = t5 << 3;
+    }
+    /* Read low result and add high*8 */
+    __asm__ volatile ("mfc2 %0, $25" : "=r"(t0));
+    __asm__ volatile ("mfc2 %0, $26" : "=r"(t1));
+    __asm__ volatile ("mfc2 %0, $27" : "=r"(t2));
+    t0 = t0 + t3;
+    t1 = t1 + t4;
+    t2 = t2 + t5;
+    vec_out[0] = t0;
+    vec_out[1] = t1;
+    vec_out[2] = t2;
+    __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(vec_out));
+    return v0;
 }
 PAD_NOPS_2; /* 2 NOPs after func_8007EA0C */
 s32 *func_8007EB4C(s32 *out, s32 *vec) {

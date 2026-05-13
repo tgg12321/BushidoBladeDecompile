@@ -4763,3 +4763,23 @@ cpu_check_tubazeri: delete @ 29
 cpu_check_tubazeri: reorder 31,32,29,30 @ 29-32
 cpu_check_tubazeri: subst "lw \$5, 0x1F800388" "lw $4,0($2)" @ 55
 cpu_check_tubazeri: subst "lw\s+\$4,0\(\$2\)" "lw $5, 0x1F800388" @ 56
+
+
+# func_8007EA0C: pre-mvmva sign-split needs j->b + fill_delay (negu_t in delay) + dead sra after delay slot
+func_8007EA0C: subst "j\s+\.L292" "b	.L292" @ 9
+func_8007EA0C: insert_after "sra	$11,$8,15" @ 10
+func_8007EA0C: subst "j\s+\.L294" "b	.L294" @ 18
+func_8007EA0C: insert_after "sra	$12,$9,15" @ 19
+func_8007EA0C: subst "j\s+\.L296" "b	.L296" @ 27
+func_8007EA0C: insert_after "sra	$13,$10,15" @ 28
+
+# func_8007EA0C: post-mvmva sll-by-8 — fill_delay (move negu into j delay) + j->b
+func_8007EA0C: fill_delay @ 46 <- 45
+func_8007EA0C: subst "j\s+\.L298" "b	.L298" @ 46
+func_8007EA0C: fill_delay @ 54 <- 53
+func_8007EA0C: subst "j\s+\.L300" "b	.L300" @ 54
+func_8007EA0C: fill_delay @ 62 <- 61
+func_8007EA0C: subst "j\s+\.L302" "b	.L302" @ 62
+
+# func_8007EA0C: jr ra delay slot fill (move addu $v0,$a1,$zero into delay)
+func_8007EA0C: fill_delay @ 75 <- 74
