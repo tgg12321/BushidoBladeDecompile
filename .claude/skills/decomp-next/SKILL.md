@@ -150,27 +150,26 @@ Before §3, decide explicitly: **is this function canonically C or canonically a
 
 The default — and the right answer for ~99% of queue items — is C. THE PHYSICS CHECK (§0) applies, the §3 pipeline + §5 ladder will reach 0 diffs, you just have to keep trying. **Do not abuse this step to declare "asm-canonical" as an exit from a hard pure-C function.** The user's standing rule: *"we have to confirm with extreme confidence that the source was asm not C before using inline asm in any circumstance."*
 
-Decision flow:
+**`dc.sh memory-check` auto-runs the data-driven hand-coded-asm scan** (`tools/scan_hand_coded.py`) and reports one of four tiers. Trust the tier as your primary input:
 
-| memory-check result | Action |
-|---|---|
-| `CANONICAL_ASM: yes` | Asm-canonical. Skip §3. Use §2.5.c inline-asm path. |
-| Cluster memory hits but not listed | Read the linked memory files. They may flag this as a known cluster member, in which case escalate evidence to user. Otherwise proceed to §3. |
-| No memory hits, standard prologue/epilogue, regular call semantics, $a0/$a1 args | C-canonical. Proceed to §3. |
-| Function looks suspicious (see signals below) | Apply the strong-signal checklist below. |
+| Tier | Meaning | Action |
+|---|---|---|
+| `STRONG` | S1 (uniform `multu` pacing) and/or S2 (empty-body branch) fired. Both are effectively impossible in GCC output. | Treat as hand-coded asm. If on `inline_asm_canonical.txt`: §2.5.c. If not: confirm signals by reading target.s, then surface evidence to user and request authorization. **Do not self-authorize.** |
+| `POSSIBLE` | One GCC-impossible signal fired without tightness backing. | Read the target.s; could be hand-coded or an edge case (small GTE wrapper). Lean toward §3 unless additional review reveals more evidence. |
+| `TIGHT_C` | Tightness signals (S3/S4/S5) but no GCC-impossible signal. | **Pure-C cluster, NOT hand-coded.** Do not use the asm-canonical path. Proceed to §3 and prioritize the §3.0.a sibling-template lookup. |
+| `LOW` | Nothing suggests hand-coded. | Default: C-canonical. Proceed to §3. |
 
-**Strong signals for hand-coded asm** (from `memory/feedback_hand_coded_asm_recognition.md`). Need **3+** independent signals to even consider asking for authorization:
+**The five signals** (computed automatically by `scan_hand_coded.py`):
 
-1. **Uniform `multu`/`mflo` pacing** — every multu/mflo pair separated by exactly 2 cycles, even when the in-between insns are unrelated nops. GCC's scheduler tightens to 0-cycle gap when no useful work exists; a hand-coder cares about the R3000 pipeline stall and writes uniform pacing.
-2. **Front-loaded loads** — 4+ input loads in the first ~6 insns of a long kernel, interleaved with only the first 1–2 multus. GCC schedules load-compute pair-by-pair; hand-coders pre-load everything.
-3. **Tight register packing with no spills** — 60+ instruction kernel holding 8+ values in fixed registers with NO `sw/lw` to `$sp`, registers staying in their roles consistently (e.g., `$t0=cos, $t1=sin, $t2–$t7=inputs, $t8/$t9=scratch`).
-4. **Idiom signatures GCC doesn't emit** — `bgez X, .L_dead; andi X, X, 0xFFF` where `.L_dead` is the very next instruction (INT_MIN guard with empty `if (x<0){}` body); initial `addu $t7, $a0, $zero; addu $v0, $a1, $zero` arg copies in a leaf function with no apparent need.
-5. **Cluster behavior** — multiple siblings in the same .c file share the same skeletal pattern with only operand differences (e.g., 5 sin/cos rotation routines with different stride offsets).
+1. **S1 — Uniform `multu`/`mflo` pacing.** Every multu/mflo pair separated by exactly 2 cycles, across ≥2 pairs. **GCC-impossible.** GCC's scheduler tightens to 0-cycle gap when useful work exists.
+2. **S2 — Empty-body branch.** `bgez/bltz/.../bne` whose target label is the instruction immediately after the delay slot — both paths converge with no body. **GCC-impossible.** GCC elides empty `if` bodies.
+3. **S3 — No callee-save spills in 40+ insn function.** GCC spills under any meaningful pressure of that size; absence indicates hand-allocated. Tightness signal — also seen in tight pure-C.
+4. **S4 — Load burst.** ≥4 loads from non-$sp base within any 8-insn window. Tightness signal.
+5. **S5 — Cluster behavior.** Approximate-match opcode-sequence k-mer similarity (Jaccard ≥0.5) with ≥1 sibling. Tightness signal — also seen in C function families (GTE 3x3, calc_fc_frame).
 
-Verdict:
+**S1 and S2 are the decisive discriminators.** S3/S4/S5 are tightness signals; they fire on tight pure-C clusters too. A 5/5 score with S1 and S2 is essentially certain. A 3/5 score from only S3/S4/S5 is a tight-C cluster.
 
-- **< 3 signals** → C-canonical. Proceed to §3. You may still need single-instruction asm primitives (register-pin allocator hints, scheduling barriers — §6.1 allows these) inside otherwise-C bodies.
-- **≥ 3 signals** → **STOP. Surface evidence to user. Ask for per-function authorization.** Do NOT pre-authorize yourself. List the specific signals you see in the target.s. The user decides; the agent does not.
+**For the entire project landscape**: `bash tools/dc.sh scan-hand-coded --all` lists every function in each tier. As of the initial scan: 5 STRONG (the sin/cos rotation cluster), 0 POSSIBLE, 9 TIGHT_C (GTE 3x3 + calc_fc_frame + others), ~1305 LOW. The asm-canonical population is small and bounded.
 
 Weak signals that are NOT enough on their own (require corroborating strong signals):
 - A documented cc1 register-allocator divergence (could be cc1 fault, could be hand-coded — don't conclude from this alone)

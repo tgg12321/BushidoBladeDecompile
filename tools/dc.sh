@@ -1139,14 +1139,27 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         # §2.5 of the decomp-next skill: surface project memory + prior-work
         # context for one function BEFORE launching the §3 pipeline.
         # Reports CANONICAL_ASM status (from inline_asm_canonical.txt),
-        # direct memory mentions of the function, and sibling memory hits
-        # (functions adjacent in the same .c file). Closes the two failure
-        # modes the user flagged: agents re-deriving documented gotchas,
-        # and agents pure-C-attacking functions that were canonically asm.
+        # direct memory mentions of the function, sibling memory hits
+        # (functions adjacent in the same .c file), and the data-driven
+        # hand-coded-asm signal tier (STRONG / POSSIBLE / TIGHT_C / LOW).
+        # Closes the two failure modes the user flagged: agents
+        # re-deriving documented gotchas, and agents pure-C-attacking
+        # functions that were canonically asm.
         FUNC_NAME="$1"
         [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh memory-check <func> [--quiet]"; exit 1; }
         shift
         python3 tools/memory_check.py "$FUNC_NAME" "$@"
+        ;;
+
+    scan-hand-coded)
+        # Bulk hand-coded-asm scanner over asm/funcs/*.s. Reports STRONG /
+        # POSSIBLE / TIGHT_C tiers based on the 5 signals from
+        # feedback_hand_coded_asm_recognition.md. The S1 (uniform multu
+        # pacing) and S2 (empty-body branch) signals are the
+        # GCC-impossible discriminators; functions with neither are not
+        # hand-coded regardless of how many tightness signals fire.
+        # Flags: --single <func>, --all, --json, --min-score N
+        python3 tools/scan_hand_coded.py "$@"
         ;;
 
     *)
@@ -1154,7 +1167,7 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         echo "Commands: compile, score, debug, build, replace, setup,"
         echo "          inline-locate, inline-verify, inline-setup, inline-replace,"
         echo "          smart, permute, add-regfix, classify, gte, attempt,"
-        echo "          recipes, apply-recipe, memory-check,"
+        echo "          recipes, apply-recipe, memory-check, scan-hand-coded,"
         echo "          analysis, dump-text, validate-regfix, gen-regfix, verify,"
         echo "          frame-shift, asmfix-slice, find-label-at, diagnose-hoist,"
         echo "          next, next-structural, next-asmfix, refresh-queue, release,"

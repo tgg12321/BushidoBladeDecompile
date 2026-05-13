@@ -171,6 +171,28 @@ def main() -> int:
         print("CANONICAL_ASM: no  (not listed in inline_asm_canonical.txt)")
         print()
 
+    # 2. Automated hand-coded-asm signal scan (data-driven §2.5.b)
+    try:
+        from scan_hand_coded import analyze_one, fmt_signals_human, ASM_DIR
+        s = analyze_one(ASM_DIR, func)
+        if s is not None:
+            print(fmt_signals_human(s))
+            print()
+            if s.tier == "STRONG" and not canonical:
+                print("  >>> STRONG tier + NOT on inline_asm_canonical.txt.")
+                print("      This is the case the §2.5.b checklist exists for.")
+                print("      Confirm signals by reading asm/funcs/<func>.s, then")
+                print("      surface evidence to the user and request authorization.")
+                print()
+            elif s.tier == "TIGHT_C":
+                print("  >>> TIGHT_C tier. This is a pure-C function (probably part")
+                print("      of a C cluster like GTE 3x3 or calc_fc_frame family).")
+                print("      Proceed to §3 with extra attention to sibling templates.")
+                print()
+    except Exception as e:
+        print(f"(hand-coded-asm scan unavailable: {e})")
+        print()
+
     if not mem_dirs:
         print("MEMORY_DIR: not found")
         print("  Set BB2_MEMORY_DIR env var if memory lives elsewhere.")
