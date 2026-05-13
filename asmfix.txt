@@ -230,7 +230,7 @@ func_8002CA8C: insert_before "^\\.end\\s+func_8002CA8C$" ".frame $sp,96,$31\n.ma
 func_8002D320: replace_with_asmfile "asm/funcs/func_8002D320.s"
 func_8002EA24: replace_with_asmfile "asm/funcs/func_8002EA24.s"
 # RETIRE: func_8007FBBC: replace_with_asmfile "asm/funcs/func_8007FBBC.s"
-motutil_GetWalkDir: replace_with_asmfile "asm/funcs/motutil_GetWalkDir.s"
+# RETIRE: motutil_GetWalkDir: replace_with_asmfile "asm/funcs/motutil_GetWalkDir.s"
 # RETIRE: func_8007F5EC: replace_with_asmfile "asm/funcs/func_8007F5EC.s"
 
 # func_8006BD28: replace inner loop with target's exact asm

@@ -23,3 +23,4 @@ func_8007F87C  # sin/cos rotation kernel, hand-coded (uniform multu pacing, fron
 func_8007FA1C  # sibling of func_8007F87C with mirrored sin negation and 0..0x10 offsets. Same cluster authorization (5 strong signals confirmed). 2026-05-13.
 func_8007FBBC  # sibling of func_8007F87C with jaccard=1.00 (structurally identical, 0..0xA offsets). Same cluster authorization. STRONG 5/5 per scan_hand_coded. 2026-05-13.
 func_8007F5EC  # 3-axis Euler rotation, 163 insns, hand-coded. Three INT_MIN-guard idioms (X/Y/Z angles), zero spills with 10+ live regs, hand-scheduled multu (3-cycle pair holds bgez+andi in pipeline-stall window). Scanner STRONG 3/5; manual review confirmed. 2026-05-13.
+motutil_GetWalkDir  # cluster sibling of func_8007F5EC (jaccard=0.68). Same 3-axis Euler skeleton, different rotation-matrix signs and output offsets. 163 insns hand-coded. Scanner STRONG 3/5; manual review confirmed. 2026-05-13.
