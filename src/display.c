@@ -1673,10 +1673,111 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-void func_8007E74C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007E74C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+s32 *func_8007E74C(s32 *mat, s32 *vec_in, s32 *vec_out) {
+    register s32 t0 asm("$8");
+    register s32 t1 asm("$9");
+    register s32 t2 asm("$10");
+    register s32 t3 asm("$11");
+    register s32 t4 asm("$12");
+    register s32 t5 asm("$13");
+    register s32 *v0 asm("v0");
+    /* Load 5-word rotation matrix into GTE cop2 control regs 0-4 */
+    t0 = mat[0];
+    t1 = mat[1];
+    t2 = mat[2];
+    t3 = mat[3];
+    t4 = mat[4];
+    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
+    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
+    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
+    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
+    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
+    /* Read 3 input components */
+    t0 = vec_in[0];
+    t1 = vec_in[1];
+    t2 = vec_in[2];
+    /* Signed split: hi = sra(x,15), lo = x & 0x7FFF, both sign-preserved */
+    if (t0 < 0) {
+        s32 a = -t0;
+        t3 = a >> 15;
+        a = a & 0x7FFF;
+        t3 = -t3;
+        t0 = -a;
+    } else {
+        t3 = t0 >> 15;
+        t0 = t0 & 0x7FFF;
+    }
+    if (t1 < 0) {
+        s32 a = -t1;
+        t4 = a >> 15;
+        a = a & 0x7FFF;
+        t4 = -t4;
+        t1 = -a;
+    } else {
+        t4 = t1 >> 15;
+        t1 = t1 & 0x7FFF;
+    }
+    if (t2 < 0) {
+        s32 a = -t2;
+        t5 = a >> 15;
+        a = a & 0x7FFF;
+        t5 = -t5;
+        t2 = -a;
+    } else {
+        t5 = t2 >> 15;
+        t2 = t2 & 0x7FFF;
+    }
+    /* High parts -> IR1/IR2/IR3, mvmva 0,0,3,3,0 */
+    __asm__ volatile ("mtc2 %0, $9"  :: "r"(t3));
+    __asm__ volatile ("mtc2 %0, $10" :: "r"(t4));
+    __asm__ volatile ("mtc2 %0, $11" :: "r"(t5));
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A41E012");  /* mvmva 0,0,3,3,0 */
+    __asm__ volatile ("mfc2 %0, $25" : "=r"(t3));
+    __asm__ volatile ("mfc2 %0, $26" : "=r"(t4));
+    __asm__ volatile ("mfc2 %0, $27" : "=r"(t5));
+    /* Low parts -> IR1/IR2/IR3, mvmva 1,0,3,3,0 */
+    __asm__ volatile ("mtc2 %0, $9"  :: "r"(t0));
+    __asm__ volatile ("mtc2 %0, $10" :: "r"(t1));
+    __asm__ volatile ("mtc2 %0, $11" :: "r"(t2));
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A49E012");  /* mvmva 1,0,3,3,0 */
+    /* Sign-preserving multiply hi result by 8 (single-instruction negu
+     * asm blocks GCC's strength-reduction on the mathematically equal
+     * branches). */
+    if (t3 < 0) {
+        __asm__ volatile ("negu %0, %1" : "=r"(t3) : "r"(t3));
+        t3 = t3 << 3;
+        __asm__ volatile ("negu %0, %1" : "=r"(t3) : "r"(t3));
+    } else {
+        t3 = t3 << 3;
+    }
+    if (t4 < 0) {
+        __asm__ volatile ("negu %0, %1" : "=r"(t4) : "r"(t4));
+        t4 = t4 << 3;
+        __asm__ volatile ("negu %0, %1" : "=r"(t4) : "r"(t4));
+    } else {
+        t4 = t4 << 3;
+    }
+    if (t5 < 0) {
+        __asm__ volatile ("negu %0, %1" : "=r"(t5) : "r"(t5));
+        t5 = t5 << 3;
+        __asm__ volatile ("negu %0, %1" : "=r"(t5) : "r"(t5));
+    } else {
+        t5 = t5 << 3;
+    }
+    /* Low result + hi*8 -> out */
+    __asm__ volatile ("mfc2 %0, $25" : "=r"(t0));
+    __asm__ volatile ("mfc2 %0, $26" : "=r"(t1));
+    __asm__ volatile ("mfc2 %0, $27" : "=r"(t2));
+    t0 = t0 + t3;
+    t1 = t1 + t4;
+    t2 = t2 + t5;
+    vec_out[0] = t0;
+    vec_out[1] = t1;
+    vec_out[2] = t2;
+    __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(vec_out));
+    return v0;
 }
 s32 *func_8007E8AC(s32 *a0, s32 *a1, s32 *a2) {
     register s32 *v0 asm("v0");
