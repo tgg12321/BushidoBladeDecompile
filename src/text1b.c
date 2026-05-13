@@ -13145,7 +13145,7 @@ void func_80060A68(void) {
 
     outer = D_800A3468;
     idx = *(u16 *)outer;
-    __asm__ volatile ("sw $0, D_800F10D0(%0)" : : "r"(idx * 4));
+    *(s32 *)((s32)&D_800F10D0 + idx * 4) = 0;
     (void)_frame_pad;
 
     *(s32 *)(outer + 0x20) = *(s32 *)(*(s32 *)(outer + 0xC) + 0);
