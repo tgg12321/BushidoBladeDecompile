@@ -22,3 +22,4 @@ func_8004A76C  # custom $s0 ABI: caller passes vec ptr via $s0 without prologue 
 func_8007F87C  # sin/cos rotation kernel, hand-coded (uniform multu pacing, front-loaded loads, INT_MIN guard idiom, cluster behavior). User-authorized 2026-05-13. See memory/feedback_hand_coded_asm_recognition.md and commit 39e9bf0.
 func_8007FA1C  # sibling of func_8007F87C with mirrored sin negation and 0..0x10 offsets. Same cluster authorization (5 strong signals confirmed). 2026-05-13.
 func_8007FBBC  # sibling of func_8007F87C with jaccard=1.00 (structurally identical, 0..0xA offsets). Same cluster authorization. STRONG 5/5 per scan_hand_coded. 2026-05-13.
+func_8007F5EC  # 3-axis Euler rotation, 163 insns, hand-coded. Three INT_MIN-guard idioms (X/Y/Z angles), zero spills with 10+ live regs, hand-scheduled multu (3-cycle pair holds bgez+andi in pipeline-stall window). Scanner STRONG 3/5; manual review confirmed. 2026-05-13.
