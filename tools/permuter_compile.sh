@@ -44,7 +44,10 @@ mipsel-linux-gnu-cpp \
       "--sdata-syms=$ROOT/sdata_syms.txt" \
       "--sdata-funcs=$ROOT/sdata_funcs.txt" \
       "--sdata-exclude=$ROOT/sdata_exclude.txt" \
+      --expand-lb \
+      "--expand-lb-funcs=$ROOT/expand_lb_funcs.txt" \
       "--multu-funcs=$ROOT/multu_funcs.txt" \
+      "--expand-dest-funcs=$ROOT/expand_dest_funcs.txt" \
   | mipsel-linux-gnu-as "-I$ROOT/include" -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0 -o "$OUTPUT"
 
 # Validate output was produced
