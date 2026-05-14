@@ -246,6 +246,33 @@ def _show_context(insn_map: dict[int, str], idx: int, radius: int = 2) -> str:
     return "\n".join(out_lines)
 
 
+def _diagnose_zero_mismatch(pattern: str, line: str) -> str | None:
+    """If `pattern` fails on `line` but matching after canonicalizing
+    `$zero` <-> `$0` succeeds, the failure is purely a `$0`/`$zero` token
+    disagreement. Return a specific actionable hint; else None.
+
+    maspsx is INCONSISTENT — it emits `$0` for some instructions (`subu
+    $4,$0,$6`) and `$zero` for others (`addiu $4,$zero,19`) in the same
+    function. A pattern written with one form silently no-ops on the other.
+    This was the time-sink in the func_8002EA24 match (2026-05-13)."""
+    norm_pattern = pattern.replace("$zero", "$0")
+    norm_line = line.replace("$zero", "$0")
+    try:
+        if re.search(norm_pattern, norm_line) and not re.search(pattern, line):
+            return (
+                f"  >>> $0/$zero MISMATCH detected. Your pattern and the maspsx\n"
+                f"      line disagree only on `$0` vs `$zero`. maspsx emits BOTH\n"
+                f"      forms depending on the instruction -- don't assume either.\n"
+                f"      pattern: {pattern}\n"
+                f"      line   : {line}\n"
+                f"      FIX: write `\\$(?:0|zero)` in the pattern to match either,\n"
+                f"      or copy the exact `$0`/`$zero` token from the line above."
+            )
+    except re.error:
+        return None
+    return None
+
+
 def pre_validate_rule(args) -> tuple[bool, str]:
     """Cheap static check against the pre-regfix maspsx output for `args.func`.
 
@@ -284,10 +311,15 @@ def pre_validate_rule(args) -> tuple[bool, str]:
         line = insn_map[idx]
         try:
             if not re.search(args.pattern, line):
-                return False, (
+                base = (
                     f"  pre-validate FAILED: subst pattern {args.pattern!r} does not\n"
                     f"  match the line at idx {idx}:\n"
                     f"      {line}\n"
+                )
+                zero_hint = _diagnose_zero_mismatch(args.pattern, line)
+                if zero_hint:
+                    return False, base + zero_hint
+                return False, base + (
                     f"  Common gotcha: maspsx writes `$zero` not `$0`. See\n"
                     f"  memory/feedback_regfix_reference.md."
                 )
@@ -305,10 +337,15 @@ def pre_validate_rule(args) -> tuple[bool, str]:
         line = insn_map[idx]
         try:
             if not re.search(args.pattern, line):
-                return False, (
+                base = (
                     f"  pre-validate FAILED: subst_multi pattern {args.pattern!r}\n"
                     f"  does not match the line at idx {idx}:\n"
                     f"      {line}\n"
+                )
+                zero_hint = _diagnose_zero_mismatch(args.pattern, line)
+                if zero_hint:
+                    return False, base + zero_hint
+                return False, base + (
                     f"  Common gotcha: maspsx writes `$zero` not `$0`. The\n"
                     f"  pattern must consume enough of the line for the new\n"
                     f"  multi-line replacement to land cleanly (typically\n"
