@@ -315,6 +315,13 @@ def main():
         if args.func not in rules:
             print(f"No rules found for {args.func}", file=sys.stderr)
             sys.exit(0)
+        # Scope ALL checks (static + live) to this function. Previously only
+        # check_live honored --func; check_static ran across the whole file,
+        # so a pre-existing static error in an UNRELATED function made
+        # `validate_regfix --func FOO` exit 1. That spuriously rolled back
+        # frame_shift.py's --apply batch (append_batch treats any non-zero
+        # exit as a validation failure for FOO and restores the original).
+        rules = {args.func: rules[args.func]}
 
     # Static checks
     print("\n=== Static Checks ===", file=sys.stderr)

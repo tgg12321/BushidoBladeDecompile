@@ -102,6 +102,9 @@ codex_lab/
 # Per-function quit log (mutates between sessions; not source)
 .bb2_quit_log.json
 
+# regfix-warning baseline snapshot (refreshed by `verify --clean`; build state)
+.bb2_regfix_warning_baseline.txt
+
 # Makefile auto-generated dependency file
 bb2.d
 

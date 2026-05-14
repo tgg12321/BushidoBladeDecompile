@@ -116,15 +116,13 @@ def find_src_for_func(func: str) -> Path | None:
     return None
 
 
-def run(cmd: list[str], quiet: bool = False) -> int:
-    """Run a command, streaming output unless quiet."""
+def run_make(quiet: bool = False) -> int:
+    """Run make via make_check.py, which surfaces silently-no-op'd regfix
+    rules (drift-broken literal-`.L<N>` labels) that otherwise scroll past in
+    the build log. Streams output live; --tail mode in quiet."""
+    cmd = ["python3", "tools/make_check.py"]
     if quiet:
-        result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
-        # Show only the last 3 lines on stderr in quiet mode (matches `make` tail).
-        tail = "\n".join((result.stdout + result.stderr).splitlines()[-3:])
-        if tail.strip():
-            print(tail)
-        return result.returncode
+        cmd += ["--tail", "3"]
     return subprocess.run(cmd, cwd=str(ROOT)).returncode
 
 
@@ -180,7 +178,7 @@ def main() -> int:
             print(f"WARNING: could not remove {t}: {e}", file=sys.stderr)
 
     print(f"[build-active] Recompiling {rel} and relinking...")
-    rc = run(["make"], quiet=args.quiet)
+    rc = run_make(quiet=args.quiet)
     if rc != 0:
         print(f"[build-active] make FAILED (exit {rc})", file=sys.stderr)
         return 2

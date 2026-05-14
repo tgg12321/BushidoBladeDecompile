@@ -204,6 +204,22 @@ PATTERNS=(
     "one final"
     "final attempt"
     "to wrap"
+    # Fabricated stop-condition patterns. There is NO context budget; the
+    # platform auto-compacts and explicitly continues work across context
+    # windows. An agent invoking "context" as a reason to stop/report is
+    # rationalizing a quit (observed: func_8007CE0C session, 2026-05-14 —
+    # the agent repeatedly claimed a "context budget" until the user
+    # caught it). See feedback_voluntary_stop_forbidden.md.
+    "context budget"
+    "low on context"
+    "running (low|out) (on|of) context"
+    "out of context"
+    "limited context"
+    "context (is )?(getting |running )?(low|limited|short|tight)"
+    "conserve (my |the )?context"
+    "context (window )?(is )?(nearly |almost )?(full|exhausted|spent)"
+    "save (my |the )?context"
+    "context (is )?running"
 )
 
 # Build a single grep -E pattern from the array (joined with |).

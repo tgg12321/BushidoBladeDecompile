@@ -236,8 +236,10 @@ EOF
         ;;
 
     build)
-        # Incremental build + SHA1 check
-        make 2>&1 | tail -5
+        # Incremental build + SHA1 check. make_check.py surfaces any regfix
+        # rules that silently no-op'd during the build (drift-broken literal
+        # labels) — otherwise they scroll past in the build log.
+        python3 tools/make_check.py --tail 5
         ;;
 
     replace)
@@ -322,6 +324,15 @@ print(f'Replaced {func} in {src}')
         python3 tools/check_gp_layout.py "$@"
         ;;
 
+    check-permuter-parity)
+        # Verify tools/permuter_compile.sh's cc1 + maspsx flags match the
+        # Makefile's. If they drift, the permuter scores base.c against
+        # different codegen than the real build (the func_8007CE0C trap:
+        # permuter_compile.sh was missing --expand-lb/--expand-dest-funcs).
+        # exit 1 = drift.
+        python3 tools/check_permuter_parity.py "$@"
+        ;;
+
     validate-regfix)
         # Validate regfix.txt rules
         python3 tools/validate_regfix.py "$@" 2>&1
@@ -364,14 +375,30 @@ print(f'Replaced {func} in {src}')
                 # shellcheck disable=SC1091
                 source .venv/bin/activate 2>/dev/null || true
             fi
-            if ! make 2>&1 | tail -3; then
+            # make_check.py surfaces silently-no-op'd regfix rules. This is
+            # the canonical full rebuild, so refresh the regfix-warning
+            # baseline here (and only here) on a match.
+            if ! python3 tools/make_check.py --tail 3 --update-baseline; then
                 echo "ERROR: make failed during --clean rebuild" >&2
                 exit 1
             fi
             shift || true
             echo "[verify --clean] Running verify --all on fresh build..."
             python3 tools/regfix_verify.py --all "$@" 2>&1
-            exit $?
+            VERIFY_RC=$?
+            if [ "$VERIFY_RC" -ne 0 ]; then
+                # Whole-binary SHA1 failed. verify --all's per-function loop
+                # only checks functions its return-type regex recognizes, so
+                # it can miss the actual regression (this is exactly how the
+                # func_8007CE0C sibling regression hid behind "all match").
+                # diagnose_mismatch.py works off the linker map — it maps
+                # EVERY differing byte to its function and flags drift-prone
+                # regfix rules.
+                echo
+                echo "[verify --clean] Whole-binary mismatch — running diagnosis..."
+                python3 tools/diagnose_mismatch.py 2>&1 || true
+            fi
+            exit "$VERIFY_RC"
         fi
         # Pre-check: if the function has an active asmfix bridge entry,
         # warn loudly. The verify report below will say MATCH no matter
@@ -1041,6 +1068,9 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
             echo
             echo "[4/4] (FAST) Regenerating WORK_QUEUE.md from existing CSV..."
             python3 tools/gen_work_queue.py 2>&1 | tail -5
+            echo
+            echo "[lint] Auditing regfix.txt for drift-fragile literal-.L<N> rules..."
+            python3 tools/regfix_drift_immune.py 2>&1 | tail -10 || true
             : > .bb2_active_func 2>/dev/null || true
             exit 0
         fi
@@ -1083,6 +1113,13 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         echo
         echo "[7/7] Generating WORK_QUEUE.md..."
         python3 tools/gen_work_queue.py 2>&1
+        echo
+        echo "[lint] Auditing regfix.txt for drift-fragile literal-.L<N> rules..."
+        # A literal `.L<N>` in a subst pattern silently no-ops if a sibling
+        # function's C body shifts GCC's file-wide label numbering. This
+        # audit (dry-run) flags them; `dc.sh regfix-drift-immune --apply`
+        # rewrites the safe ones. See the func_8007CE0C retrospective.
+        python3 tools/regfix_drift_immune.py 2>&1 | tail -12 || true
         # Belt-and-suspenders: the commit-via-hook path already cleared
         # the marker, but if for some reason a refresh runs while it's
         # set, we know the queue is being regenerated and the active

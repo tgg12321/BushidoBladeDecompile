@@ -68,16 +68,39 @@ except Exception:
         return re.sub(r"\s+", " ", s.strip())
 
 
-def parse_target(func: str) -> List[str] | None:
+def _clean_ws(s: str) -> str:
+    """Collapse whitespace to a single `mnemonic\\toperands` form, commas tight.
+
+    Keeps the REAL opcode and operands (unlike normalize_insn, which aliases
+    opcodes and rewrites hex for byte-comparison) — safe to use as a regfix
+    replacement that `as` will assemble."""
+    s = re.sub(r"#.*$", "", s).strip()
+    s = re.sub(r"\s*,\s*", ",", s)
+    s = re.sub(r"\s+", " ", s)
+    return s.replace(" ", "\t", 1)
+
+
+def parse_target(func: str) -> List[Tuple[str, str]] | None:
+    """Return [(raw, norm)] per target instruction.
+
+    raw  = whitespace-cleaned actual instruction text (safe as a regfix
+           replacement — real opcode, real operands).
+    norm = normalize_insn() output (lossy: opcode aliases, hex->dec) — used
+           ONLY for difflib alignment / byte-equivalence comparison.
+
+    Using `norm` as a replacement is the bug this split fixes: normalize_insn
+    rewrites `subu $X,$Y,N` -> `addiu $X,$Y,-N` and aliases `b`/`j`, so a
+    suggested rule would emit different bytes than target actually has."""
     p = ASM_FUNCS / f"{func}.s"
     if not p.exists():
         return None
-    out: List[str] = []
+    out: List[Tuple[str, str]] = []
     insn_re = re.compile(r"/\*\s*[\dA-Fa-f]+\s+[\dA-Fa-f]+\s+[\dA-Fa-f]+\s*\*/\s+(.+)$")
     for line in p.read_text(encoding="utf-8").splitlines():
         m = insn_re.match(line.strip())
         if m:
-            out.append(normalize_insn(m.group(1).strip()))
+            raw = m.group(1).strip()
+            out.append((_clean_ws(raw), normalize_insn(raw)))
     return out
 
 
@@ -202,9 +225,11 @@ def _detect_j_to_b_with_delay_fill(
             hints.append(
                 f"J->B+FILL-DELAY at mine idx {idx_mine}: mine has "
                 f"`{candidate_raw}; j {m_j.group(1)}; nop` but target has "
-                f"`b {m_b.group(1)}; {target_raw[tj+1]} (in delay)`. Paired recipe:\n"
+                f"`b {m_b.group(1)}; {target_raw[tj+1]} (in delay)`. Paired recipe "
+                f"(the subst is the drift-immune mnemonic-only form — touches only "
+                f"the `j`, no label reference, so it survives .L<N> renumbering):\n"
                 f"    {func}: fill_delay @ {idx_mine} <- {candidate_idx}\n"
-                f"    {func}: subst \"j\\\\s+\\\\{m_j.group(1)}\" \"b\\t{m_j.group(1)}\" @ {idx_mine}\n"
+                f"    {func}: subst \"\\bj\\b\" \"b\" @ {idx_mine}\n"
                 f"  (Don't apply via regfix-suggest --apply — these don't compose with "
                 f"the difflib-emitted delete+insert rules. Add by hand via add-regfix or tmp/inject_*.py.)"
             )
@@ -230,6 +255,10 @@ def suggest(func: str) -> Tuple[List[str], List[str], dict]:
     if not mine:
         return [], [f"FAIL: no instructions extracted for {func}"], {}
 
+    # raw  = byte-correct instruction text (use for rule REPLACEMENTS)
+    # norm = lossy normalized text (use ONLY for difflib alignment)
+    target_raw = [r for (r, _) in target]
+    target_norm = [n for (_, n) in target]
     mine_norm = [n for (_, _, n) in mine]
     rules: List[str] = []
     hints: List[str] = []
@@ -242,7 +271,7 @@ def suggest(func: str) -> Tuple[List[str], List[str], dict]:
     # GTE wrappers and sign-preserving multiplies, e.g. func_8007EA0C).
     # Emits hint-style paired recipes that don't compose well with the
     # difflib-emitted delete/insert rules.
-    j_to_b_hints = _detect_j_to_b_with_delay_fill(mine, target, func)
+    j_to_b_hints = _detect_j_to_b_with_delay_fill(mine, target_raw, func)
     hints.extend(j_to_b_hints)
     stats["j_to_b_paired"] = len(j_to_b_hints)
 
@@ -257,7 +286,7 @@ def suggest(func: str) -> Tuple[List[str], List[str], dict]:
         if not sym or sym in seen_syms:
             continue
         seen_syms.add(sym)
-        for tline in target:
+        for tline in target_raw:
             if re.search(rf"%hi\({re.escape(sym)}\)", tline):
                 hints.append(
                     f"sdata_exclude hint: target uses lui+lw for {sym} but mine emits "
@@ -269,7 +298,7 @@ def suggest(func: str) -> Tuple[List[str], List[str], dict]:
                 gp_rel_skip_syms.add(sym)
                 break
 
-    sm = difflib.SequenceMatcher(None, mine_norm, target, autojunk=False)
+    sm = difflib.SequenceMatcher(None, mine_norm, target_norm, autojunk=False)
     for tag, i1, i2, j1, j2 in sm.get_opcodes():
         if tag == "equal":
             continue
@@ -289,7 +318,7 @@ def suggest(func: str) -> Tuple[List[str], List[str], dict]:
             if i1 == 0:
                 hints.append(
                     f"INSERT-AT-START: target[{j1}..{j2}] = "
-                    f"{[target[j] for j in range(j1, j2)][:3]}... — must insert "
+                    f"{target_raw[j1:j2][:3]}... — must insert "
                     f"before mine idx 0; emit `insert` (not `insert_after`) by hand."
                 )
                 continue
@@ -298,9 +327,11 @@ def suggest(func: str) -> Tuple[List[str], List[str], dict]:
             # the same idx as LIFO, so write target's instructions in REVERSE
             # so that the FIRST written rule ends up FARTHEST from the anchor
             # (which matches target order: anchor, target[j1], target[j1+1], ...).
+            # RAW target text — normalize_insn aliases opcodes (subu->addiu,
+            # b<->j), which would assemble to different bytes.
             for j in range(j2 - 1, j1 - 1, -1):
                 rules.append(
-                    f'{func}: insert_after "{target[j]}" @ {anchor_idx}  '
+                    f'{func}: insert_after "{target_raw[j]}" @ {anchor_idx}  '
                     f"# auto: target has this after idx {anchor_idx}"
                 )
                 stats["insert"] += 1
@@ -313,7 +344,7 @@ def suggest(func: str) -> Tuple[List[str], List[str], dict]:
             if (i2 - i1 == 1) and (j2 - j1 == 2):
                 mine_sym = _gp_rel_pseudo(mine_norm[i1])
                 if mine_sym and mine_sym in gp_rel_skip_syms:
-                    if re.search(rf"%hi\({re.escape(mine_sym)}\)", target[j1]):
+                    if re.search(rf"%hi\({re.escape(mine_sym)}\)", target_raw[j1]):
                         continue
 
             # Both sides have content. If lengths match, emit per-line subst.
@@ -321,7 +352,8 @@ def suggest(func: str) -> Tuple[List[str], List[str], dict]:
             if (i2 - i1) == (j2 - j1):
                 for off in range(i2 - i1):
                     idx, raw, mine_n = mine[i1 + off]
-                    target_n = target[j1 + off]
+                    target_n = target_norm[j1 + off]   # alignment / detection only
+                    target_r = target_raw[j1 + off]    # byte-correct replacement
                     # Branch label mismatch — flag, don't auto-rewrite.
                     mb = _is_branch_with_label(mine_n)
                     tb = _is_branch_with_label(target_n)
@@ -336,12 +368,14 @@ def suggest(func: str) -> Tuple[List[str], List[str], dict]:
                         stats["label_mismatch"] += 1
                         continue
                     pattern = _escape_for_regex_subst(raw)
-                    # Replacement: write target's normalized text. Tabs are
-                    # canonicalized to `\t` so the file is readable.
-                    repl = target_n.replace(" ", "\t", 1)
+                    # Replacement: target's RAW text (already `mnemonic\toperands`
+                    # from _clean_ws). NOT target_n — normalize_insn aliases
+                    # opcodes (subu->addiu, b<->j) and rewrites hex, which would
+                    # make the rule assemble to different bytes than target.
+                    repl = target_r
                     rules.append(
                         f'{func}: subst "{pattern}" "{repl}" @ {idx}  '
-                        f"# auto: was `{raw}` -> `{target_n}`"
+                        f"# auto: was `{raw}` -> `{target_r}`"
                     )
                     stats["subst"] += 1
             else:
@@ -362,7 +396,7 @@ def suggest(func: str) -> Tuple[List[str], List[str], dict]:
                 else:
                     for j in range(j2 - 1, j1 - 1, -1):
                         rules.append(
-                            f'{func}: insert_after "{target[j]}" @ {anchor_idx}  '
+                            f'{func}: insert_after "{target_raw[j]}" @ {anchor_idx}  '
                             f"# auto (replace): target has after idx {anchor_idx}"
                         )
                         stats["insert"] += 1
