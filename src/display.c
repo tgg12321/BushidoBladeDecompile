@@ -16,7 +16,7 @@ extern void func_8008008C(s32, s32);
 
 /* Externs for globals */
 extern volatile u32 *g_gpu_stat_reg;
-extern u32 *g_gpu_data_reg;
+extern volatile u32 *g_gpu_data_reg;
 extern u32 *g_gpu_dma_madr;
 extern u32 *g_gpu_dma_bcr;
 extern volatile u32 *g_gpu_dma_chcr;
@@ -727,22 +727,22 @@ typedef struct {
 } _GpuChunkHdr_CE0C;
 
 s32 func_8007CE0C(_GpuChunkHdr_CE0C *arg0, s32 *arg1) {
-    register s32 var_s5 asm("s5") = 0;
+    register s32 var_s5 asm("s5");
+    s16 coord;
     s32 half_size;
     s32 big_size;
     s32 remainder;
-    s16 x;
-    s16 y;
     s32 v1_tmp;
-    s32 a0_tmp;
+    u16 a0_tmp;
     s32 v0_ext;
 
     motion_LoadPreCalcData_8007DC68();
 
-    x = arg0->x;
-    if (x < 0) goto x_neg;
-    v1_tmp = x;
-    if (D_8009BE78 < x) {
+    coord = (v1_tmp = arg0->x);
+    var_s5 = 0;
+    __asm__ volatile("" : "=r"(var_s5) : "0"(var_s5));
+    if (coord < 0) goto x_neg;
+    if (D_8009BE78 < coord) {
         v1_tmp = D_8009BE78;
     }
     goto x_done;
@@ -751,11 +751,11 @@ x_neg:
 x_done:
     arg0->x = (s16)v1_tmp;
 
-    y = arg0->y;
-    if (y < 0) goto y_neg;
-    a0_tmp = y;
+    coord = arg0->y;
+    if (coord < 0) goto y_neg;
+    a0_tmp = coord;
     v0_ext = a0_tmp << 16;
-    if (D_8009BE7A < y) {
+    if (D_8009BE7A < coord) {
         a0_tmp = D_8009BE7A;
         goto y_block_8;
     }
@@ -770,15 +770,16 @@ y_done:
     {
         s32 y_ext = v0_ext >> 16;
         s32 prod = (s32)arg0->x * y_ext + 1;
-        half_size = prod / 2;
-        big_size = prod >> 5;
+        s32 rounded = prod + ((u32)prod >> 31);
+        half_size = rounded >> 1;
+        big_size = rounded >> 5;
     }
 
     if (half_size <= 0) {
         return -1;
     }
 
-    remainder = (half_size - big_size * 16) - 1;
+    remainder = half_size - big_size * 16;
 
     if (!((*g_gpu_stat_reg) & 0x04000000)) {
         do {
@@ -792,13 +793,10 @@ y_done:
     *g_gpu_data_reg = 0x01000000;
     *g_gpu_data_reg = (var_s5 != 0) ? 0xB0000000 : 0xA0000000;
     *g_gpu_data_reg = arg0->unk0;
-    *g_gpu_data_reg = (s32)arg0->x;
+    *g_gpu_data_reg = *(s32 *)&arg0->x;
 
-    if (remainder != -1) {
-        do {
-            *g_gpu_data_reg = *arg1++;
-            remainder--;
-        } while (remainder != -1);
+    while (--remainder != -1) {
+        *g_gpu_data_reg = *arg1++;
     }
 
     if (big_size != 0) {

@@ -4768,39 +4768,39 @@ cpu_check_tubazeri: subst "lw\s+\$4,0\(\$2\)" "lw $5, 0x1F800388" @ 56
 
 
 # func_8007EA0C: pre-mvmva sign-split needs j->b + fill_delay (negu_t in delay) + dead sra after delay slot
-func_8007EA0C: subst "j\s+\.L304" "b	.L304" @ 9
+func_8007EA0C: subst "\bj\b" "b" @ 9
 func_8007EA0C: insert_after "sra	$11,$8,15" @ 10
-func_8007EA0C: subst "j\s+\.L306" "b	.L306" @ 18
+func_8007EA0C: subst "\bj\b" "b" @ 18
 func_8007EA0C: insert_after "sra	$12,$9,15" @ 19
-func_8007EA0C: subst "j\s+\.L308" "b	.L308" @ 27
+func_8007EA0C: subst "\bj\b" "b" @ 27
 func_8007EA0C: insert_after "sra	$13,$10,15" @ 28
 
 # func_8007EA0C: post-mvmva sll-by-8 — fill_delay (move negu into j delay) + j->b
 func_8007EA0C: fill_delay @ 46 <- 45
-func_8007EA0C: subst "j\s+\.L310" "b	.L310" @ 46
+func_8007EA0C: subst "\bj\b" "b" @ 46
 func_8007EA0C: fill_delay @ 54 <- 53
-func_8007EA0C: subst "j\s+\.L312" "b	.L312" @ 54
+func_8007EA0C: subst "\bj\b" "b" @ 54
 func_8007EA0C: fill_delay @ 62 <- 61
-func_8007EA0C: subst "j\s+\.L314" "b	.L314" @ 62
+func_8007EA0C: subst "\bj\b" "b" @ 62
 
 # func_8007EA0C: jr ra delay slot fill (move addu $v0,$a1,$zero into delay)
 func_8007EA0C: fill_delay @ 75 <- 74
 
 # func_8007E74C: pre-mvmva sign-split needs j->b + dead-sra-insert (branch-likely scheduling artifact)
-func_8007E74C: subst "j\s+\.L289" "b	.L289" @ 19
+func_8007E74C: subst "\bj\b" "b" @ 19
 func_8007E74C: insert_after "sra	$11,$8,15" @ 20
-func_8007E74C: subst "j\s+\.L291" "b	.L291" @ 28
+func_8007E74C: subst "\bj\b" "b" @ 28
 func_8007E74C: insert_after "sra	$12,$9,15" @ 29
-func_8007E74C: subst "j\s+\.L293" "b	.L293" @ 37
+func_8007E74C: subst "\bj\b" "b" @ 37
 func_8007E74C: insert_after "sra	$13,$10,15" @ 38
 
 # func_8007E74C: post-mvmva sll-by-8 — fill_delay (move negu into j delay) + j->b
 func_8007E74C: fill_delay @ 56 <- 55
-func_8007E74C: subst "j\s+\.L295" "b	.L295" @ 56
+func_8007E74C: subst "\bj\b" "b" @ 56
 func_8007E74C: fill_delay @ 64 <- 63
-func_8007E74C: subst "j\s+\.L297" "b	.L297" @ 64
+func_8007E74C: subst "\bj\b" "b" @ 64
 func_8007E74C: fill_delay @ 72 <- 71
-func_8007E74C: subst "j\s+\.L299" "b	.L299" @ 72
+func_8007E74C: subst "\bj\b" "b" @ 72
 
 # func_8007E74C: jr ra delay slot fill (move addu $v0,$a2,$zero into delay)
 func_8007E74C: fill_delay @ 85 <- 84
@@ -4833,3 +4833,26 @@ func_8002EA24: subst "srl\s+\$4,\$2,\$4" "srl\t$4,$4,$2" @ 82
 func_8002EA24: subst "slt\s+\$5,\$5,\$2" "slt\t$2,$5,$2" @ 94
 func_8002EA24: subst "bne\s+\$5,\$0,\.L341" "bne\t$2,$0,.L341" @ 95
 func_8002EA24: subst_multi "xori\s+\$2,\$2,0x0001" "bne\t$2,$0,.L341" "addu\t$2,$0,$zero" "addiu\t$2,$0,1" @ 99
+func_8007CE0C: splice 11..23 "lh\t$5,4($17)" "addu\t$21,$0,$zero" "bltz\t$5,.L152" "addu\t$3,$5,$zero" "lui\t$2,%hi(D_8009BE78)" "lh\t$2,%lo(D_8009BE78)($2)" "nop" "addu\t$4,$2,$zero" "slt\t$2,$2,$5" "beq\t$2,$0,.L154" "nop" "j\t.L154" "addu\t$3,$4,$zero"
+func_8007CE0C: subst "addu\s+\$4,\$0,\$zero" "addu\t$3,$0,$zero" @ 24
+func_8007CE0C: splice 25..37 "lh\t$5,6($17)" "sh\t$3,4($17)" "bltz\t$5,.L156" "addu\t$3,$5,$zero" "lui\t$2,%hi(D_8009BE7A)" "lh\t$2,%lo(D_8009BE7A)($2)" "addu\t$4,$3,$zero" "addu\t$3,$2,$zero" "slt\t$2,$2,$5" "beq\t$2,$0,.L159" "sll\t$2,$4,16" "j\t.L158" "addu\t$4,$3,$zero"
+func_8007CE0C: subst "sll\s+\$5,\$4,16" "sll\t$2,$4,16" @ 39
+func_8007CE0C: splice 40..52 "lh\t$3,4($17)" "sra\t$2,$2,16" "mult\t$3,$2" "sh\t$4,6($17)" "mflo\t$6" "addiu\t$3,$6,1" "srl\t$2,$3,31" "addu\t$3,$3,$2" "sra\t$4,$3,1" "bgtz\t$4,.L160" "sra\t$16,$3,5" "j\t.L174" "addiu\t$2,$zero,-1"
+func_8007CE0C: splice 53..56 "addu\t$3,$16,$zero" "sll\t$2,$3,4" "subu\t$16,$4,$2" "lui\t$2,%hi(D_8009BF48)" "lw\t$2,%lo(D_8009BF48)($2)" "addu\t$20,$3,$zero" "lw\t$2,0($2)"
+func_8007CE0C: subst "subu\s+\$sp,\$sp,64" "addiu\t$29,$29,-80" @ 0
+func_8007CE0C: subst "sw\s+\$17,36\(\$sp\)" "sw\t$17,52($29)" @ 1
+func_8007CE0C: subst "sw\s+\$18,40\(\$sp\)" "sw\t$18,56($29)" @ 3
+func_8007CE0C: subst "sw\s+\$31,56\(\$sp\)" "sw\t$31,72($29)" @ 5
+func_8007CE0C: subst "sw\s+\$21,52\(\$sp\)" "sw\t$21,68($29)" @ 6
+func_8007CE0C: subst "sw\s+\$20,48\(\$sp\)" "sw\t$20,64($29)" @ 7
+func_8007CE0C: subst "sw\s+\$19,44\(\$sp\)" "sw\t$19,60($29)" @ 8
+func_8007CE0C: subst "sw\s+\$16,32\(\$sp\)" "sw\t$16,48($29)" @ 10
+func_8007CE0C: subst "lw\s+\$31,56\(\$sp\)" "lw\t$31,72($29)" @ 119
+func_8007CE0C: subst "lw\s+\$21,52\(\$sp\)" "lw\t$21,68($29)" @ 120
+func_8007CE0C: subst "lw\s+\$20,48\(\$sp\)" "lw\t$20,64($29)" @ 121
+func_8007CE0C: subst "lw\s+\$19,44\(\$sp\)" "lw\t$19,60($29)" @ 122
+func_8007CE0C: subst "lw\s+\$18,40\(\$sp\)" "lw\t$18,56($29)" @ 123
+func_8007CE0C: subst "lw\s+\$17,36\(\$sp\)" "lw\t$17,52($29)" @ 124
+func_8007CE0C: subst "lw\s+\$16,32\(\$sp\)" "lw\t$16,48($29)" @ 125
+func_8007CE0C: subst "addu\s+\$sp,\$sp,64" "addiu\t$29,$29,80" @ 126
+func_8007CE0C: subst "lui\s+\$4,\(-1610612736 >> 16\) & 0xFFFF" "nop" @ 63
