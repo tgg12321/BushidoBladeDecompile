@@ -1946,7 +1946,7 @@ coli_HitPauseKatana: subst "\$3" "$17" @ 29
 coli_HitPauseKatana: subst "\$2" "$3" @ 29
 coli_HitPauseKatana: subst "0\(\$4\)" "0($2)" @ 30
 # Branch-to-label + delay slot change
-coli_HitPauseKatana: subst "\.L450" ".L440" @ 42
+coli_HitPauseKatana: subst "\.L406" ".L396" @ 42
 coli_HitPauseKatana: subst "addiu\t\$2,\$zero,-1" "sll\t$2,$16,3" @ 43
 # Loop init: g_spu_voice_key_c into v1($3)
 coli_HitPauseKatana: subst "\$4" "$3" @ 47
@@ -1971,7 +1971,7 @@ coli_HitPauseKatana: subst "\$9" "$8" @ 110
 coli_HitPauseKatana: subst "\$4" "$6" @ 113
 coli_HitPauseKatana: subst "\$4" "$6" @ 116
 # No-flag branch: redirect .L333 to .L339 (skip redundant lui when mask already loaded)
-coli_HitPauseKatana: subst "\.L446" ".L452" @ 117
+coli_HitPauseKatana: subst "\.L402" ".L408" @ 117
 # No-flag kb: delay slot + instruction rewrite
 coli_HitPauseKatana: subst "sll\t\$4,\$4,3" "addu\t$3,$3,$17" @ 118
 coli_HitPauseKatana: subst "addu\t\$4,\$8,\$4" "sll\t$2,$6,3" @ 119
@@ -2016,7 +2016,7 @@ coli_HitPauseKatana: insert_after "addu\t$4,$2,$3" @ 46
 coli_HitPauseKatana: insert_after "nop" @ 46
 # Stop-flag inline return after lw g_spu_voice_key_c (PP3 107; 5 insns, file order = furthest first)
 coli_HitPauseKatana: insert_after "nop" @ 107
-coli_HitPauseKatana: insert_after "j\t.L438" @ 107
+coli_HitPauseKatana: insert_after "j\t.L403" @ 107
 coli_HitPauseKatana: insert_after "lw\t$2,0($2)" @ 107
 coli_HitPauseKatana: insert_after "addu\t$2,$16,$2" @ 107
 coli_HitPauseKatana: insert_after "nop" @ 107
