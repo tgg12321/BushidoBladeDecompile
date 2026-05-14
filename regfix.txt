@@ -1676,7 +1676,7 @@ SetPacketData: delete @ 16
 
 # Pre-loop reload of D_800F1AF4 (target re-reads global instead of using cached r_arg1).
 # Subst beq to test the reloaded $2; insert lw+nop before it (post-delete idx 41).
-SetPacketData: subst "beq\s+\$20,\$0,\.L774" "beq $2,$0,.L774" @ 43
+SetPacketData: subst "beq\s+\$20,\$0," "beq $2,$0," @ 43
 
 # Bne delay slot fill: target keeps a `s1=0;` dead-store that GCC eliminated in mine
 SetPacketData: subst "nop" "addu $17,$0,$zero" @ 101
@@ -1767,8 +1767,8 @@ DispPracticeMenuTex_A: subst "\$2,\$2,12" "$3,$2,12" @ 110
 DispPracticeMenuTex_A: subst "\$3,%gp_rel" "$2,%gp_rel" @ 111
 DispPracticeMenuTex_A: subst "\$2,\$2,\$4" "$3,$3,$4" @ 112
 DispPracticeMenuTex_A: subst "\$3,\$3,11" "$2,$2,11" @ 113
-DispPracticeMenuTex_A: subst "bgez\t\$2,\.L183" "bgez\t$3,.L183" @ 114
-DispPracticeMenuTex_A: subst "\$2,\.L183" "$3,.L183" @ 114
+DispPracticeMenuTex_A: subst "bgez\t\$2," "bgez\t$3," @ 114
+DispPracticeMenuTex_A: subst "\$2," "$3," @ 114
 DispPracticeMenuTex_A: subst "\$3,0x0001" "$2,0x0001" @ 115
 DispPracticeMenuTex_A: subst "\$2,\$2,15" "$3,$3,15" @ 116
 DispPracticeMenuTex_A: subst "\$2,\$2,4" "$2,$3,4" @ 117
@@ -4831,7 +4831,7 @@ func_8002EA24: subst "addiu\s+\$4,\$zero,19" "subu\t$2,$2,$3" @ 80
 func_8002EA24: subst "subu\s+\$4,\$4,\$3" "sll\t$4,$4,16" @ 81
 func_8002EA24: subst "srl\s+\$4,\$2,\$4" "srl\t$4,$4,$2" @ 82
 func_8002EA24: subst "slt\s+\$5,\$5,\$2" "slt\t$2,$5,$2" @ 94
-func_8002EA24: subst "bne\s+\$5,\$0,\.L341" "bne\t$2,$0,.L341" @ 95
+func_8002EA24: subst "bne\s+\$5,\$0," "bne\t$2,$0," @ 95
 func_8002EA24: subst_multi "xori\s+\$2,\$2,0x0001" "bne\t$2,$0,.L341" "addu\t$2,$0,$zero" "addiu\t$2,$0,1" @ 99
 func_8007CE0C: splice 11..23 "lh\t$5,4($17)" "addu\t$21,$0,$zero" "bltz\t$5,.L152" "addu\t$3,$5,$zero" "lui\t$2,%hi(D_8009BE78)" "lh\t$2,%lo(D_8009BE78)($2)" "nop" "addu\t$4,$2,$zero" "slt\t$2,$2,$5" "beq\t$2,$0,.L154" "nop" "j\t.L154" "addu\t$3,$4,$zero"
 func_8007CE0C: subst "addu\s+\$4,\$0,\$zero" "addu\t$3,$0,$zero" @ 24
