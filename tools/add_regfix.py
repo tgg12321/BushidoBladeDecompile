@@ -14,9 +14,14 @@ Subcommands (one rule per invocation):
     delete <func> --idx N
     insert <func> <asm_text> --idx N
     insert_after <func> <asm_text> --idx N
+    insert_label <func> <label> --idx N
     reorder <func> <indices_csv> --range N-M
     fill_delay <func> --jal-idx N --src-idx M
     drain_delay <func> --jal-idx N
+    modify <func> --old "<rule line>" --new "<rule line>"
+
+NOTE: the subcommand (op) comes FIRST, then <func>:
+    add_regfix.py insert_label func_8001F938 ".LfuncF938_join:" --idx 80
 
 subst_multi:
     1-to-N regex-driven substitution. Replaces the matched maspsx line
@@ -33,6 +38,25 @@ splice:
     multi-instruction GCC idiom needs to collapse or expand to a
     different shape (e.g., mine's `li $tN,1; move $vM,$tN; move $vM,$tN`
     → target's `addiu $vM,$0,1`).
+
+insert_label:
+    Inserts a label (with no instruction index) right after the
+    instruction at idx N. Use it to synthesize a stable, project-
+    controlled branch target — e.g. `.LfuncXXXX_join:` — so a subst or
+    insert rule can point at it instead of a file-wide GCC `.L<N>`
+    auto-label. GCC's `.L<N>` numbers drift whenever another function in
+    the same .c file is added or removed; a synthesized label cannot.
+    idx is a POST-INSERT-phase index (regfix.py phase 9) — see the
+    phase-ordering docstring in regfix.py.
+
+modify:
+    Replace one existing rule line for <func> in place — a scoped,
+    validated find-and-replace. Both --old and --new must be complete
+    rule lines beginning with `<func>:` (it cannot reassign a rule to a
+    different function). --old must appear exactly once. The edit is
+    live-validated and rolled back on failure. Use this to repair a
+    drifted label reference (or any stale operand) in an existing rule
+    without hand-editing regfix.txt.
 
 Common flags (any subcommand):
     --stage2          Append to regfix_stage2.txt instead of regfix.txt
@@ -180,6 +204,22 @@ def build_rule(args) -> str:
         if hint:
             raise ValueError(hint)
         return f'{f}: insert_after "{args.asm_text}" @ {args.idx}'
+
+    if op == "insert_label":
+        label = args.label.strip()
+        if '"' in label:
+            raise ValueError("insert_label label must not contain a double-quote")
+        if not label.endswith(":"):
+            raise ValueError(
+                f"insert_label label must end with ':' (got {label!r}); "
+                f"regfix emits it as a label-definition line"
+            )
+        if not re.match(r"^[.A-Za-z_][\w.]*:$", label):
+            raise ValueError(
+                f"insert_label label {label!r} doesn't look like a valid asm "
+                f"label (expected e.g. `.LfuncXXXX_join:`)"
+            )
+        return f'{f}: insert_label "{label}" @ {args.idx}'
 
     if op == "reorder":
         order = [s.strip() for s in args.indices_csv.split(",") if s.strip()]
@@ -404,6 +444,25 @@ def pre_validate_rule(args) -> tuple[bool, str]:
             return True, f"  pre-validate OK: {op} relative to idx {idx} = {insn_map[idx]!r}"
         return True, f"  pre-validate: idx {idx} bounds OK (semantics vary by phase order; live check authoritative)"
 
+    if op == "insert_label":
+        idx = args.idx
+        # insert_label uses POST-INSERT-phase indices (regfix.py phase 9),
+        # which can legitimately exceed the pre-regfix max when the
+        # function's own regfix rules net-add instructions. Don't hard-fail
+        # on bounds here — the live build is authoritative for placement.
+        if idx in insn_map:
+            return True, (
+                f"  pre-validate: insert_label after pre-regfix idx {idx} "
+                f"= {insn_map[idx]!r}\n"
+                f"  NOTE: idx is POST-INSERT-phase; if this function has "
+                f"insert/delete rules the live position may differ."
+            )
+        return True, (
+            f"  pre-validate: insert_label idx {idx} not in pre-regfix map "
+            f"(max={max_idx}) — expected if it's a post-insert-phase idx; "
+            f"live check authoritative."
+        )
+
     return True, "  pre-validate: skipped (op not pre-validatable)"
 
 
@@ -429,6 +488,80 @@ def append_with_rollback(target: Path, lines: list[str], func: str,
     # Roll back
     target.write_bytes(original)
     print("VALIDATION FAILED — rolled back. validate_regfix output:", file=sys.stderr)
+    print(out, file=sys.stderr)
+    return 2
+
+
+def handle_modify(args) -> int:
+    """Replace one existing rule line for args.func in place.
+
+    Scoped find-and-replace: both --old and --new must be complete rule
+    lines for the active function, --old must appear exactly once (matched
+    on whole-line strip-equality, never as a substring), and the result is
+    live-validated — rolled back on failure. Mirrors --raw's "trust the
+    live build" stance: no static pre-validation of the new rule."""
+    func = args.func
+    old_line = args.old.strip()
+    new_line = args.new.strip()
+    enforce_scope(func, action="modify regfix rule for")
+
+    for flag, line in (("--old", old_line), ("--new", new_line)):
+        m = re.match(r"^(\w+)\s*:", line)
+        if not m:
+            print(f"ERROR: {flag} line must start with `<func>:` — got: {line!r}",
+                  file=sys.stderr)
+            return 1
+        if m.group(1) != func:
+            print(f"ERROR: {flag} line is for {m.group(1)!r}, not the active "
+                  f"function {func!r}. modify cannot reassign a rule to another "
+                  f"function.", file=sys.stderr)
+            return 1
+    if old_line == new_line:
+        print("ERROR: --old and --new are identical; nothing to modify",
+              file=sys.stderr)
+        return 1
+
+    target = regfix_path(args.stage2)
+    if not target.exists():
+        print(f"ERROR: {target} does not exist", file=sys.stderr)
+        return 3
+    original = target.read_bytes()
+    file_lines = original.decode("utf-8").split("\n")
+    hits = [i for i, l in enumerate(file_lines) if l.strip() == old_line]
+    if not hits:
+        print(f"ERROR: --old line not found in {target.name}:\n  {old_line}\n"
+              f"  (matched on whole-line equality after strip — check exact text)",
+              file=sys.stderr)
+        return 1
+    if len(hits) > 1:
+        print(f"ERROR: --old line appears {len(hits)} times in {target.name}; "
+              f"refusing ambiguous modify.\n  {old_line}", file=sys.stderr)
+        return 1
+
+    if args.dry_run:
+        print(f"(dry-run) would modify {target.name} (line {hits[0] + 1}):")
+        print(f"  - {old_line}")
+        print(f"  + {new_line}")
+        return 0
+
+    file_lines[hits[0]] = new_line
+    target.write_bytes("\n".join(file_lines).encode("utf-8"))
+
+    if args.no_validate:
+        print(f"Modified {target.name} (line {hits[0] + 1}):")
+        print(f"  - {old_line}")
+        print(f"  + {new_line}")
+        return 0
+
+    ok, out = validate_live(func)
+    if ok:
+        print(f"Modified {target.name} (line {hits[0] + 1}):")
+        print(f"  - {old_line}")
+        print(f"  + {new_line}")
+        return 0
+    target.write_bytes(original)
+    print("VALIDATION FAILED — rolled back. validate_regfix output:",
+          file=sys.stderr)
     print(out, file=sys.stderr)
     return 2
 
@@ -485,6 +618,12 @@ def main():
     p.add_argument("func"); p.add_argument("asm_text")
     p.add_argument("--idx", type=int, required=True)
 
+    p = sub.add_parser("insert_label",
+                       help="Insert a synthesized label (stable branch target)")
+    p.add_argument("func")
+    p.add_argument("label", help="Label text ending in ':' e.g. .LfuncXXXX_join:")
+    p.add_argument("--idx", type=int, required=True)
+
     p = sub.add_parser("reorder")
     p.add_argument("func"); p.add_argument("indices_csv")
     p.add_argument("--range", required=True, help="N-M (1-based inclusive)")
@@ -497,6 +636,14 @@ def main():
     p = sub.add_parser("drain_delay")
     p.add_argument("func")
     p.add_argument("--jal-idx", dest="jal_idx", type=int, required=True)
+
+    p = sub.add_parser("modify",
+                       help="Replace an existing rule line for <func> in place")
+    p.add_argument("func")
+    p.add_argument("--old", required=True,
+                   help="Exact existing rule line to replace (must start with <func>:)")
+    p.add_argument("--new", required=True,
+                   help="Replacement rule line (must start with <func>:)")
 
     args = ap.parse_args()
 
@@ -527,6 +674,11 @@ def main():
     if args.op is None:
         ap.print_help()
         return 1
+
+    # `modify` is a find-and-replace on an existing rule, not a rule build —
+    # intercept before build_rule (which constructs a NEW rule from op args).
+    if args.op == "modify":
+        return handle_modify(args)
 
     # Refuse to add rules for non-active functions. This is the guardrail that
     # would have prevented an earlier catastrophic regression of 79 rules.

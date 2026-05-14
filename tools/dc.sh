@@ -15,7 +15,7 @@
 #   bash tools/dc.sh inline-replace <func> <c>    — replace inline __asm__ block with C from <c>
 #   bash tools/dc.sh smart <func>                  — run smart_match.py 16-strategy sweep
 #   bash tools/dc.sh permute <func> [opts]        — run permuter with early-termination cap
-#   bash tools/dc.sh add-regfix <func> <op> <args> @ <idx>  — append validated regfix rule
+#   bash tools/dc.sh add-regfix <op> <func> <args>  — append/modify validated regfix rule (op comes FIRST)
 #   bash tools/dc.sh frame-shift <func> [--delta N] [--apply] — auto-cascade regfix when frame size differs
 #   bash tools/dc.sh asmfix-slice <func> <start> <end> [--apply] — lift target asm slice into asmfix.txt
 #   bash tools/dc.sh post-match-validate <func>  — sibling-regression check after a match
@@ -590,7 +590,7 @@ PYEOF
         ;;
 
     add-regfix)
-        [ -z "$1" ] && { echo "Usage: dc.sh add-regfix <func> <op> <args...> @ <idx>"; exit 1; }
+        [ -z "$1" ] && { echo "Usage: dc.sh add-regfix <op> <func> <args...>   (op FIRST; run 'python3 tools/add_regfix.py --help' for ops)"; exit 1; }
         python3 tools/add_regfix.py "$@" 2>&1
         ;;
 
