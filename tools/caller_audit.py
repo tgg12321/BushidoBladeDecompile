@@ -284,23 +284,37 @@ def find_declarations(func_name: str, src_dir: Path) -> List[dict]:
             is_def = stripped[tail] == "{"
             if not args_text or args_text == "void":
                 arg_count = 0
+                variadic = False
             else:
+                # Split on top-level commas so we can spot a trailing `...`.
                 depth = 0
-                commas = 0
+                parts: List[str] = []
+                cur = ""
                 for ch in args_text:
                     if ch == "(":
                         depth += 1
+                        cur += ch
                     elif ch == ")":
                         depth -= 1
+                        cur += ch
                     elif ch == "," and depth == 0:
-                        commas += 1
-                arg_count = commas + 1
+                        parts.append(cur.strip())
+                        cur = ""
+                    else:
+                        cur += ch
+                if cur.strip():
+                    parts.append(cur.strip())
+                # A `...` ellipsis is not a real parameter — it means the
+                # function is variadic and legitimately accepts extra args.
+                variadic = any(p == "..." for p in parts)
+                arg_count = len([p for p in parts if p != "..."])
             line_no = raw[: m.start()].count("\n") + 1
             decls.append({
                 "file": c_file.name,
                 "line": line_no,
                 "args": arg_count,
                 "is_def": is_def,
+                "variadic": variadic,
             })
     return decls
 
@@ -323,16 +337,24 @@ def main() -> int:
     max_observed = max((c["args"] for c in callers), default=0)
     declared = None
     declared_loc = None
+    declared_variadic = False
     for d in decls:
         if d["is_def"]:
             declared = d["args"]
             declared_loc = f"{d['file']}:{d['line']}"
+            declared_variadic = d.get("variadic", False)
             break
     if declared is None and decls:
         declared = decls[0]["args"]
         declared_loc = f"{decls[0]['file']}:{decls[0]['line']}"
+        declared_variadic = decls[0].get("variadic", False)
 
-    mismatch = (declared is not None and declared < max_observed)
+    # A variadic `(..., ...)` declaration legitimately accepts more args than
+    # its fixed-param count — GCC does NOT dead-code extra args for `...`
+    # decls. So "callers pass more than declared" is expected, not a cascade
+    # risk. Only NON-variadic narrow declarations are a mismatch.
+    mismatch = (declared is not None and declared < max_observed
+                and not declared_variadic)
 
     if args.json:
         out = {
@@ -340,6 +362,7 @@ def main() -> int:
             "max_observed": max_observed,
             "declared": declared,
             "declared_loc": declared_loc,
+            "declared_variadic": declared_variadic,
             "callers": callers,
             "decls": decls,
             "mismatch": mismatch,
@@ -362,9 +385,17 @@ def main() -> int:
             print(f"    {n}-arg: {hist[n]} call(s)")
         print(f"  max args observed: {max_observed}")
     if declared is not None:
-        print(f"  declared arity: {declared} (at {declared_loc})")
+        vtag = "  (variadic — `...`, accepts extra args)" if declared_variadic else ""
+        print(f"  declared arity: {declared}{vtag} (at {declared_loc})")
     else:
         print(f"  declared arity: <not found in C; may be inline_asm or extern only>")
+
+    if declared_variadic and declared is not None and declared < max_observed:
+        print()
+        print(f"  OK: variadic function — callers passing up to {max_observed} args is")
+        print(f"      expected. GCC does not dead-code extra args for a `...` decl,")
+        print(f"      so there's no cascade-regression risk.")
+        return 0
 
     if mismatch:
         print()

@@ -10,7 +10,7 @@ shifts. The hardcoded pattern then fails to match, producing wrong bytes
 silently — no build error, no linker error. (func_8007CE0C, 2026-05-14: 12
 drift-broken rules in two sibling functions cost a full session to find.)
 
-Two rewrite strategies, tried in this order per rule:
+Three rewrite strategies, tried in this order per rule:
 
 1. **Mnemonic-only swap** (best — fully drift-immune). When the pattern and
    the replacement are the SAME instruction except for the leading mnemonic,
@@ -25,7 +25,19 @@ Two rewrite strategies, tried in this order per rule:
    safe: the @ idx pin is function-local and stable; only label *numbers*
    drift, never instruction indices.
 
-2. **Pattern relaxation** (`.L<N>` -> `\\.L\\d+` in the pattern only).
+2. **Shared trailing-label strip** (also fully drift-immune). When the
+   pattern AND replacement both end in the SAME literal `.L<N>` label — i.e.
+   the rule is a register/operand rename that carried the label only for
+   targeting — strip the label from both:
+
+     before:  func_X: subst "beq\\s+\\$4,\\$3,\\.L348" "beq $4,$6,.L348" @ 8
+     after:   func_X: subst "beq\\s+\\$4,\\$3,"        "beq $4,$6,"       @ 8
+
+   The `@ idx` pin already targets the instruction; the trailing label was
+   pure drift surface. Skipped when the labels DIFFER (genuine paired-shift —
+   that needs fix-label-drift, not a strip).
+
+3. **Pattern relaxation** (`.L<N>` -> `\\.L\\d+` in the pattern only).
    Applied only when the REPLACEMENT label is CUSTOM (project-controlled —
    e.g. `.LbodyX` defined via `insert_label`). If the replacement is itself
    a GCC-emitted `.L<digits>` label and it is NOT a mnemonic-only swap,
@@ -140,12 +152,50 @@ def try_mnemonic_only_swap(pat: str, repl: str) -> tuple[str, str] | None:
     return (r"\b" + m1 + r"\b", m2)
 
 
+# A literal `.L<digits>` anchored at the end of a string. The pattern form
+# may carry the `\.` escape (`\.L348`); the replacement form does not (`.L348`).
+_PAT_TRAIL_LABEL_RE = re.compile(r"(?:\\\.|\.)L(\d+)$")
+_REPL_TRAIL_LABEL_RE = re.compile(r"\.L(\d+)$")
+
+
+def try_trailing_label_strip(pat: str, repl: str) -> tuple[str, str] | None:
+    """If the pattern AND replacement both END in the SAME literal `.L<N>`
+    label, strip it from both. The rule is index-pinned (`@ idx`), so the
+    trailing label is redundant for *targeting* — it only made the rule
+    drift-fragile. Dropping it preserves the real edit (a register/operand
+    rename) and makes the rule label-agnostic.
+
+      pat="beq\\s+\\$4,\\$3,\\.L348"  repl="beq $4,$6,.L348"
+      -> ("beq\\s+\\$4,\\$3,", "beq $4,$6,")
+
+    Returns None when the labels differ (genuine paired-shift — needs
+    fix-label-drift, not a strip) or when stripping would empty either side
+    (a label-only rule — leave it alone).
+    """
+    pm = _PAT_TRAIL_LABEL_RE.search(pat)
+    rm = _REPL_TRAIL_LABEL_RE.search(repl)
+    if not pm or not rm:
+        return None
+    if pm.group(1) != rm.group(1):
+        return None  # different labels -> paired-shift, not strippable
+    new_pat = pat[:pm.start()]
+    new_repl = repl[:rm.start()]
+    if not new_pat.strip() or not new_repl.strip():
+        return None  # label-only rule -> nothing left to anchor on
+    if new_pat == pat or new_repl == repl:
+        return None
+    return (new_pat, new_repl)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--apply", action="store_true",
                     help="Write changes to regfix.txt. Default is dry-run.")
     ap.add_argument("--verbose", action="store_true",
                     help="Show before/after for each rewritten line.")
+    ap.add_argument("--func", default=None,
+                    help="Only audit/rewrite rules for this function "
+                         "(scopes --apply to one function's rules).")
     args = ap.parse_args()
 
     if not REGFIX.exists():
@@ -166,6 +216,11 @@ def main() -> int:
             continue
         func, pat, repl, idx = m.groups()
 
+        # Scope to one function if requested.
+        if args.func and func != args.func:
+            new_lines.append(line)
+            continue
+
         # Only rules with a literal `.L<N>` in the pattern can drift.
         if not LITERAL_LABEL_RE.search(pat):
             new_lines.append(line)
@@ -181,7 +236,20 @@ def main() -> int:
                 changes.append((lineno, line, new_line, "mnemonic-swap"))
                 continue
 
-        # Strategy 2: relax the literal label in the PATTERN to `\.L\d+`,
+        # Strategy 2: shared trailing-label strip. Pattern and replacement
+        # both end in the SAME literal `.L<N>` -> the label is redundant with
+        # the `@ idx` pin; drop it from both so the rule (a register/operand
+        # rename) survives label renumbering.
+        strip = try_trailing_label_strip(pat, repl)
+        if strip is not None:
+            new_pat, new_repl = strip
+            new_line = f'{func}: subst "{new_pat}" "{new_repl}" @ {idx}'
+            if new_line != line:
+                new_lines.append(new_line)
+                changes.append((lineno, line, new_line, "label-strip"))
+                continue
+
+        # Strategy 3: relax the literal label in the PATTERN to `\.L\d+`,
         # but only when the REPLACEMENT label is custom.
         new_pat, n_repl = rewrite_pattern(pat)
         if n_repl == 0 or new_pat == pat:
@@ -213,9 +281,10 @@ def main() -> int:
         return 0
 
     n_swap = sum(1 for *_, kind in changes if kind == "mnemonic-swap")
+    n_strip = sum(1 for *_, kind in changes if kind == "label-strip")
     n_relax = sum(1 for *_, kind in changes if kind == "pattern-relax")
     print(f"Found {len(changes)} subst rule(s) safe to drift-immunize "
-          f"({n_swap} mnemonic-swap, {n_relax} pattern-relax):")
+          f"({n_swap} mnemonic-swap, {n_strip} label-strip, {n_relax} pattern-relax):")
     for lineno, before, after, kind in changes:
         if args.verbose:
             print()

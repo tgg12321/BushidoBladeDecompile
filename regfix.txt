@@ -1696,9 +1696,9 @@ SetPacketData: insert "la $2,D_800F1AF4" @ 118
 # saTan0GaugeDraw: compound regfix (Cluster A const-1 + Cluster F home store)
 # Cluster A: const-1 register $3 (v1) -> $6 (a2)
 saTan0GaugeDraw: subst "addiu\s+\$3,\$zero,1" "addiu $6,$zero,1" @ 7
-saTan0GaugeDraw: subst "beq\s+\$4,\$3,\.L348" "beq $4,$6,.L348" @ 8
+saTan0GaugeDraw: subst "beq\s+\$4,\$3," "beq $4,$6," @ 8
 saTan0GaugeDraw: subst "sw\s+\$3,D_800A2D2C" "sw $6,D_800A2D2C" @ 57
-saTan0GaugeDraw: subst "bne\s+\$2,\$3,\.L369" "bne $2,$6,.L369" @ 81
+saTan0GaugeDraw: subst "bne\s+\$2,\$3," "bne $2,$6," @ 81
 # Cluster F: move sw ra before beq, insert sw a0 in beq delay slot
 saTan0GaugeDraw: delete @ 24
 saTan0GaugeDraw: delete @ 9
