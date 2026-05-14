@@ -4821,3 +4821,13 @@ func_8002D320: subst "addu\s+\$2,\$8,\$zero" "addu\t$2,$0,$0" @ 112
 func_8002D320: subst "addu\s+\$2,\$8,\$zero" "addu\t$2,$0,$0" @ 116
 func_8002D320: subst "addiu\s+\$8,\$zero,1" "addiu\t$2,$0,1" @ 117
 func_8002D320: delete @ 118
+func_8002EA24: subst "subu\s+\$4,\$0,\$6" "subu\t$9,$0,$6" @ 29
+func_8002EA24: subst "slt\s+\$2,\$5,\$4" "slt\t$2,$5,$9" @ 30
+func_8002EA24: subst "slt\s+\$2,\$3,\$4" "slt\t$2,$3,$9" @ 38
+func_8002EA24: subst "sll\s+\$2,\$4,16" "addiu\t$2,$0,19" @ 79
+func_8002EA24: subst "addiu\s+\$4,\$zero,19" "subu\t$2,$2,$3" @ 80
+func_8002EA24: subst "subu\s+\$4,\$4,\$3" "sll\t$4,$4,16" @ 81
+func_8002EA24: subst "srl\s+\$4,\$2,\$4" "srl\t$4,$4,$2" @ 82
+func_8002EA24: subst "slt\s+\$5,\$5,\$2" "slt\t$2,$5,$2" @ 94
+func_8002EA24: subst "bne\s+\$5,\$0,\.L341" "bne\t$2,$0,.L341" @ 95
+func_8002EA24: subst_multi "xori\s+\$2,\$2,0x0001" "bne\t$2,$0,.L341" "addu\t$2,$0,$zero" "addiu\t$2,$0,1" @ 99
