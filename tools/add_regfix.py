@@ -9,12 +9,30 @@ Subcommands (one rule per invocation):
 
     swap <func> <regA> <regB> [--range N-M]
     subst <func> <pattern> <replacement> --idx N
+    subst_multi <func> <pattern> <line1> <line2> [<line3>...] --idx N
+    splice <func> <line1> [<line2>...] --range N-M
     delete <func> --idx N
     insert <func> <asm_text> --idx N
     insert_after <func> <asm_text> --idx N
     reorder <func> <indices_csv> --range N-M
     fill_delay <func> --jal-idx N --src-idx M
     drain_delay <func> --jal-idx N
+
+subst_multi:
+    1-to-N regex-driven substitution. Replaces the matched maspsx line
+    at idx N with multiple output lines. Each replacement string becomes
+    its own line; indentation is taken from the original line. Use when
+    GCC emits 1 instruction where target emits 2+ (e.g., GCC's blez vs
+    target's slt+beq for non-zero comparisons).
+
+splice:
+    K-to-N range replacement (no regex). Removes every instruction line
+    in [start, end] inclusive and emits the listed replacement strings
+    in their place. K is the number of instructions in the range; N is
+    the number of replacement strings. K and N may differ. Use when a
+    multi-instruction GCC idiom needs to collapse or expand to a
+    different shape (e.g., mine's `li $tN,1; move $vM,$tN; move $vM,$tN`
+    → target's `addiu $vM,$0,1`).
 
 Common flags (any subcommand):
     --stage2          Append to regfix_stage2.txt instead of regfix.txt
@@ -110,6 +128,30 @@ def build_rule(args) -> str:
         if hint:
             raise ValueError(hint)
         return f'{f}: subst "{args.pattern}" "{args.replacement}" @ {args.idx}'
+
+    if op == "subst_multi":
+        if len(args.replacements) < 1:
+            raise ValueError(
+                "subst_multi needs at least one replacement line (with one, "
+                "it's equivalent to subst; with two or more it expands 1-to-N)"
+            )
+        for r in args.replacements:
+            hint = detect_shell_stripped_dollars(r)
+            if hint:
+                raise ValueError(hint)
+        quoted = " ".join(f'"{r}"' for r in args.replacements)
+        return f'{f}: subst_multi "{args.pattern}" {quoted} @ {args.idx}'
+
+    if op == "splice":
+        a, b = parse_range(args.range)
+        if len(args.replacements) < 1:
+            raise ValueError("splice needs at least one replacement line")
+        for r in args.replacements:
+            hint = detect_shell_stripped_dollars(r)
+            if hint:
+                raise ValueError(hint)
+        quoted = " ".join(f'"{r}"' for r in args.replacements)
+        return f"{f}: splice {a}..{b} {quoted}"
 
     if op == "delete":
         return f"{f}: delete @ {args.idx}"
@@ -253,6 +295,57 @@ def pre_validate_rule(args) -> tuple[bool, str]:
             return False, f"  pre-validate FAILED: invalid regex {args.pattern!r}: {e}"
         return True, f"  pre-validate OK: idx {idx} = {line!r}"
 
+    if op == "subst_multi":
+        idx = args.idx
+        if idx not in insn_map:
+            return False, (
+                f"  pre-validate FAILED: idx {idx} out of bounds (max={max_idx}).\n"
+                f"  Nearby:\n{_show_context(insn_map, idx)}"
+            )
+        line = insn_map[idx]
+        try:
+            if not re.search(args.pattern, line):
+                return False, (
+                    f"  pre-validate FAILED: subst_multi pattern {args.pattern!r}\n"
+                    f"  does not match the line at idx {idx}:\n"
+                    f"      {line}\n"
+                    f"  Common gotcha: maspsx writes `$zero` not `$0`. The\n"
+                    f"  pattern must consume enough of the line for the new\n"
+                    f"  multi-line replacement to land cleanly (typically\n"
+                    f"  use `.*` to consume any trailing label/operand)."
+                )
+        except re.error as e:
+            return False, f"  pre-validate FAILED: invalid regex {args.pattern!r}: {e}"
+        n = len(args.replacements)
+        return True, (
+            f"  pre-validate OK: idx {idx} = {line!r}\n"
+            f"  will emit {n} replacement line{'s' if n != 1 else ''}"
+        )
+
+    if op == "splice":
+        a, b = parse_range(args.range)
+        if a not in insn_map:
+            return False, (
+                f"  pre-validate FAILED: splice start idx {a} out of bounds "
+                f"(max={max_idx}).\n"
+                f"  Nearby:\n{_show_context(insn_map, a)}"
+            )
+        if b not in insn_map:
+            return False, (
+                f"  pre-validate FAILED: splice end idx {b} out of bounds "
+                f"(max={max_idx}).\n"
+                f"  Nearby:\n{_show_context(insn_map, b)}"
+            )
+        k = sum(1 for i in range(a, b + 1) if i in insn_map)
+        n = len(args.replacements)
+        return True, (
+            f"  pre-validate OK: splice {a}..{b} replaces {k} insn(s) "
+            f"with {n} line(s)\n"
+            f"  Range content:\n"
+            + "\n".join(f"     {i:>4}: {insn_map[i]}"
+                       for i in range(a, b + 1) if i in insn_map)
+        )
+
     if op == "delete":
         idx = args.idx
         if idx not in insn_map:
@@ -328,6 +421,21 @@ def main():
     p = sub.add_parser("subst")
     p.add_argument("func"); p.add_argument("pattern"); p.add_argument("replacement")
     p.add_argument("--idx", type=int, required=True)
+
+    p = sub.add_parser("subst_multi",
+                       help="1-to-N regex substitution (replace 1 line with K lines)")
+    p.add_argument("func")
+    p.add_argument("pattern")
+    p.add_argument("replacements", nargs="+",
+                   help="One or more replacement lines (each becomes its own output line)")
+    p.add_argument("--idx", type=int, required=True)
+
+    p = sub.add_parser("splice",
+                       help="K-to-N range replacement (no regex)")
+    p.add_argument("func")
+    p.add_argument("replacements", nargs="+",
+                   help="One or more replacement lines (each becomes its own output line)")
+    p.add_argument("--range", required=True, help="N-M (inclusive)")
 
     p = sub.add_parser("delete")
     p.add_argument("func"); p.add_argument("--idx", type=int, required=True)

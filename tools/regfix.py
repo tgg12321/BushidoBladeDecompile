@@ -38,6 +38,51 @@ Config file format (regfix.txt):
   changes that bidirectional swaps cannot handle (e.g., changing only
   the destination register when source uses the same register number).
 
+  # 1-to-N regex substitution (replace 1 maspsx line with K output lines):
+  func_8002D320: subst_multi "blez\\s+\\$2,\\.L273" "slt\\t$2,$6,$3" "beq\\t$2,$0,.L273" @ 94
+
+  Like `subst` but expands a single matched line into MULTIPLE output
+  lines. Takes a regex pattern plus 2+ replacement strings; each string
+  becomes its own line in the maspsx output. Indentation from the
+  original line is preserved on every output line.
+
+  The matched line's instruction-idx stays attached to the FIRST output
+  line; subsequent output lines get idx=None (synthesized, can't be
+  targeted by other rules). Other rules at @ idx > N still work — they
+  use ORIGINAL indices, which subst_multi doesn't perturb. insert_after
+  @ N puts new lines after the WHOLE multi-line block.
+
+  Use case: GCC emits `blez $rN, .L` (one instruction) where target
+  emits `slt $rD, $rA, $rN; beq $rD, $zero, .L` (two instructions) —
+  the standard MIPS expansion of `if (a < b) goto L` when `a` is not
+  $zero. `subst` alone can't fix this (it's 1-to-1). Without
+  `subst_multi`, every workaround leaks: subst+insert_after races with
+  maspsx debug nops, source-level barriers misaligned all the carefully
+  indexed surrounding rules.
+
+  Limit: the replacement strings cannot themselves contain embedded
+  newlines or unescaped double-quotes. If you need that, use the
+  `splice` op below.
+
+  # Replace a contiguous range of K maspsx lines with N output lines:
+  func_8002D320: splice 92..94 "slt\\t$2,$6,$3" "beq\\t$2,$0,.L273" "nop"
+
+  K-to-N block replacement (no regex pattern; positional). Removes
+  every instruction line in the [start, end] inclusive range and emits
+  the listed replacement strings in their place. Indentation taken
+  from the line at `start`.
+
+  K is determined by counting maspsx-output lines whose idx falls in
+  [start, end]; N is the number of quoted replacement strings. K and
+  N may differ. Subsequent rules' @ indices reference ORIGINAL pre-
+  splice positions; splice doesn't shift other rules.
+
+  Use case: a recognizable multi-line GCC idiom (e.g. mine's
+  `li $tN, 1; addu $vM, $tN, $0; addu $vM, $tN, $0`) needs to be
+  collapsed into a different shape (`addiu $vM, $0, 1`). 3-to-1
+  reductions are awkward with delete+subst chains because of how
+  delete renumbers — splice handles the whole block atomically.
+
   # Instruction delete (remove the instruction at index N):
   func_80017FA0: delete @ 8
 
@@ -89,11 +134,14 @@ Config file format (regfix.txt):
   becomes a no-op.
 
 Order of operations: register swaps first (on original indices),
-then substitutions (on original indices), then fill_delay (reads
-post-subst source, replaces nop, queues source deletion), then
-deletes (on original indices), then inserts (shifts indices), then
-insert_afters (shifts indices), then insert_labels (no index shift),
-then reorders (on post-insert indices).
+then substitutions (on original indices), then subst_multi (on
+original indices; produces multi-line output but doesn't reshape
+the tuple list), then splice (on original indices; replaces a
+range with K replacement lines in one block), then fill_delay
+(reads post-subst source, replaces nop, queues source deletion),
+then deletes (on original indices), then inserts (shifts indices),
+then insert_afters (shifts indices), then insert_labels (no index
+shift), then reorders (on post-insert indices).
 Instruction indices count actual instructions (not directives, labels,
 or comments) from the function entry point, 0-based.
 """
@@ -118,7 +166,7 @@ def load_config(config_path):
         if m:
             func = m.group(1)
             idx = int(m.group(2))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'subst_multis': [], 'splices': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['deletes'].append(idx)
             continue
 
@@ -128,7 +176,7 @@ def load_config(config_path):
             func = m.group(1)
             jal_idx = int(m.group(2))
             source_idx = int(m.group(3))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'subst_multis': [], 'splices': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['fill_delays'].append((jal_idx, source_idx))
             continue
 
@@ -137,7 +185,7 @@ def load_config(config_path):
         if m:
             func = m.group(1)
             jal_idx = int(m.group(2))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'subst_multis': [], 'splices': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['drain_delays'].append(jal_idx)
             continue
 
@@ -162,7 +210,7 @@ def load_config(config_path):
                     f"feedback_regfix_label_attachment.md.",
                     file=sys.stderr
                 )
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'subst_multis': [], 'splices': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['reorders'].append((start, end, order))
             continue
 
@@ -187,7 +235,7 @@ def load_config(config_path):
                     f"instead. See memory/feedback_label_renumber_breaks_regfix.md.",
                     file=sys.stderr
                 )
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'subst_multis': [], 'splices': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['inserts'].append((idx, asm_text))
             continue
 
@@ -197,7 +245,7 @@ def load_config(config_path):
             func = m.group(1)
             asm_text = m.group(2).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(3))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'subst_multis': [], 'splices': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['insert_afters'].append((idx, asm_text))
             continue
 
@@ -209,7 +257,7 @@ def load_config(config_path):
             func = m.group(1)
             label_text = m.group(2).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(3))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'subst_multis': [], 'splices': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['insert_labels'].append((idx, label_text))
             continue
 
@@ -220,8 +268,71 @@ def load_config(config_path):
             pattern = m.group(2)
             replacement = m.group(3).replace('\\n', '\n').replace('\\t', '\t')
             idx = int(m.group(4))
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'subst_multis': [], 'splices': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['substs'].append((idx, pattern, replacement))
+            continue
+
+        # Parse subst_multi: func_name: subst_multi "pattern" "line1" "line2" [...] @ index
+        # 1-to-N substitution: replace the matched line with multiple output
+        # lines. The first quoted arg is the regex pattern; the remaining
+        # quoted args are the output lines (in order). At least one output
+        # line is required (with one, this is equivalent to `subst`).
+        m = re.match(r'(\w+)\s*:\s*subst_multi\s+(.+?)\s*@\s*(\d+)\s*$', line)
+        if m:
+            func = m.group(1)
+            args_part = m.group(2)
+            idx = int(m.group(3))
+            # Extract all "..." quoted strings from args_part. Allow escaped
+            # quotes via \" though they're rare in regfix patterns.
+            quoted = re.findall(r'"((?:[^"\\]|\\.)*)"', args_part)
+            if len(quoted) < 2:
+                print(
+                    f"regfix: ERROR: {func}: subst_multi @ {idx} needs at least "
+                    f"a pattern and ONE replacement string; got {len(quoted)} "
+                    f"quoted args. Skipping.",
+                    file=sys.stderr,
+                )
+                continue
+            pattern = quoted[0]
+            replacements = [
+                s.replace('\\n', '\n').replace('\\t', '\t')
+                for s in quoted[1:]
+            ]
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'subst_multis': [], 'splices': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config[func]['subst_multis'].append((idx, pattern, replacements))
+            continue
+
+        # Parse splice: func_name: splice start..end "line1" "line2" [...]
+        # K-to-N range replacement (no regex). Removes all maspsx lines in
+        # [start, end] inclusive and emits the listed replacement strings
+        # in their place.
+        m = re.match(r'(\w+)\s*:\s*splice\s+(\d+)\.\.(\d+)\s+(.+?)\s*$', line)
+        if m:
+            func = m.group(1)
+            start = int(m.group(2))
+            end = int(m.group(3))
+            args_part = m.group(4)
+            if start > end:
+                print(
+                    f"regfix: ERROR: {func}: splice {start}..{end} has start > end. "
+                    f"Skipping.",
+                    file=sys.stderr,
+                )
+                continue
+            quoted = re.findall(r'"((?:[^"\\]|\\.)*)"', args_part)
+            if not quoted:
+                print(
+                    f"regfix: ERROR: {func}: splice {start}..{end} needs at least "
+                    f"one replacement string. Skipping.",
+                    file=sys.stderr,
+                )
+                continue
+            replacements = [
+                s.replace('\\n', '\n').replace('\\t', '\t')
+                for s in quoted
+            ]
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'subst_multis': [], 'splices': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config[func]['splices'].append((start, end, replacements))
             continue
 
         # Parse register swap: func_name: $X <-> $Y [@ start-end]
@@ -232,7 +343,7 @@ def load_config(config_path):
             reg_b = m.group(3)
             start = int(m.group(4)) if m.group(4) is not None else None
             end = int(m.group(5)) if m.group(5) is not None else None
-            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
+            config.setdefault(func, {'swaps': [], 'reorders': [], 'inserts': [], 'insert_afters': [], 'insert_labels': [], 'substs': [], 'subst_multis': [], 'splices': [], 'deletes': [], 'fill_delays': [], 'drain_delays': []})
             config[func]['swaps'].append((reg_a, reg_b, start, end))
             continue
 
@@ -356,6 +467,144 @@ def process_function(lines, func_config):
                     f"pattern={pat!r}. Rule was silently ignored.",
                     file=sys.stderr
                 )
+
+    # Phase 1.55: Apply subst_multi (1-to-N substitution).
+    #
+    # For each matching tuple at idx N, splits the replacement strings into
+    # K separate (text, idx) entries. The first entry keeps idx=N so other
+    # rules can still address it; subsequent entries get idx=None (they're
+    # synthesized, can't be a regfix target). insert_after @ N continues to
+    # find idx N at the FIRST entry of the block — to insert AFTER the
+    # whole block, use insert_after @ (next original idx) instead.
+    #
+    # Indentation is preserved from the original line. The replacement
+    # strings themselves can include leading whitespace; whitespace is
+    # left alone (use \t in the rule for explicit indents).
+    subst_multi_list = func_config.get('subst_multis', [])
+    if subst_multi_list:
+        sm_status = {
+            (sm_idx, pat): {'visited': False, 'matched': False}
+            for sm_idx, pat, _repls in subst_multi_list
+        }
+        new_lines = []
+        for text, idx in lines:
+            consumed = False
+            if idx is not None:
+                for sm_idx, pattern, replacements in subst_multi_list:
+                    if idx != sm_idx:
+                        continue
+                    sm_status[(sm_idx, pattern)]['visited'] = True
+                    try:
+                        if not re.search(pattern, text):
+                            continue
+                    except re.error as e:
+                        print(
+                            f"regfix: WARNING: {fname}: subst_multi @ {sm_idx} "
+                            f"invalid regex {pattern!r}: {e}",
+                            file=sys.stderr,
+                        )
+                        continue
+                    sm_status[(sm_idx, pattern)]['matched'] = True
+                    # Capture indentation from original line. Trailing
+                    # newline (if any) is preserved on the LAST emitted
+                    # line only.
+                    m_indent = re.match(r'^(\s*)', text)
+                    indent = m_indent.group(1) if m_indent else '\t'
+                    trailing_newline = '\n' if text.endswith('\n') else ''
+                    n_repls = len(replacements)
+                    for i, repl in enumerate(replacements):
+                        # Strip user-provided leading whitespace; we own it.
+                        body = repl.lstrip()
+                        # The first entry inherits the matched line's idx;
+                        # subsequent are synthesized (idx None).
+                        out_idx = sm_idx if i == 0 else None
+                        suffix = trailing_newline if i == n_repls - 1 else '\n'
+                        new_lines.append((f"{indent}{body}{suffix}", out_idx))
+                    consumed = True
+                    break
+            if not consumed:
+                new_lines.append((text, idx))
+        lines = new_lines
+
+        # Warn on rules that visited their idx but didn't match
+        for (s_idx, pat), status in sm_status.items():
+            if status['visited'] and not status['matched']:
+                print(
+                    f"regfix: WARNING: {fname}: subst_multi pattern did not match "
+                    f"at idx {s_idx}: pattern={pat!r}. Rule was silently ignored.",
+                    file=sys.stderr,
+                )
+            elif not status['visited']:
+                print(
+                    f"regfix: WARNING: {fname}: subst_multi @ idx {s_idx} not "
+                    f"found in function output. pattern={pat!r}.",
+                    file=sys.stderr,
+                )
+
+    _dump_lines(lines, "Phase 1.55: after subst_multi", fname)
+
+    # Phase 1.65: Apply splice (K-to-N range replacement).
+    #
+    # Removes every instruction-bearing line whose idx falls in [start, end]
+    # and emits the listed replacement strings in their place. Non-
+    # instruction lines (labels, .set directives, comments) within the
+    # range are PRESERVED in their original positions — splice only
+    # touches lines with a non-None idx.
+    #
+    # The first replacement line takes the start idx. Subsequent
+    # replacement lines get idx=None (synthesized). All other lines in
+    # (start, end] are removed entirely (no idx left behind).
+    splice_list = func_config.get('splices', [])
+    if splice_list:
+        for sp_start, sp_end, replacements in splice_list:
+            # Collect the positions of instruction lines in [start, end]
+            in_range_positions = []
+            for pos, (_text, idx) in enumerate(lines):
+                if idx is not None and sp_start <= idx <= sp_end:
+                    in_range_positions.append((pos, idx))
+
+            if not in_range_positions:
+                print(
+                    f"regfix: WARNING: {fname}: splice {sp_start}..{sp_end} "
+                    f"found no instructions in range. Skipping.",
+                    file=sys.stderr,
+                )
+                continue
+
+            # Indent inherited from the line at start (or first matching line).
+            first_pos = in_range_positions[0][0]
+            first_text = lines[first_pos][0]
+            m_indent = re.match(r'^(\s*)', first_text)
+            indent = m_indent.group(1) if m_indent else '\t'
+            trailing_newline = '\n' if first_text.endswith('\n') else '\n'
+
+            # Build replacement tuples.
+            n_repls = len(replacements)
+            replacement_tuples = []
+            for i, repl in enumerate(replacements):
+                body = repl.lstrip()
+                out_idx = sp_start if i == 0 else None
+                replacement_tuples.append((f"{indent}{body}{trailing_newline}", out_idx))
+
+            # Replace lines in-range: first matching pos gets the replacement
+            # block; the rest are dropped.
+            positions_to_drop = {p for p, _ in in_range_positions[1:]}
+            new_lines = []
+            inserted_block = False
+            for pos, entry in enumerate(lines):
+                if pos == first_pos:
+                    new_lines.extend(replacement_tuples)
+                    inserted_block = True
+                elif pos in positions_to_drop:
+                    continue
+                else:
+                    new_lines.append(entry)
+            if not inserted_block:
+                # Should be unreachable given the guard above, but defend.
+                new_lines = replacement_tuples + new_lines
+            lines = new_lines
+
+    _dump_lines(lines, "Phase 1.65: after splice", fname)
 
     # Phase 1.7: Apply fill_delay (read source post-swap/subst, replace nop, queue source for deletion)
     fill_delay_list = func_config.get('fill_delays', [])

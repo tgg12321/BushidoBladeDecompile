@@ -377,7 +377,12 @@ The ladder (in order — each rung is a TECHNIQUE switch, never a TARGET switch)
 
 3. **Long permuter runs** — `--max-time 3600` (1 hour), or overnight. Most cheap structural variants surface in the first 90s; long runs find the obscure ones. Acceptable.
 
-4. **regfix at assembly stream** — `swap`, `subst`, `delete`, `insert`, `insert_after`, `insert_label`, `reorder`, `fill_delay`, `drain_delay`. Use `dc.sh add-regfix` (it pre-validates against live `dump_text_indices` before append). NEVER edit `regfix.txt` directly with `Edit`/`Write` — the `regfix_scope_guard.sh` hook will block you anyway, and you'll waste a tool call.
+4. **regfix at assembly stream** — `swap`, `subst`, `subst_multi`, `splice`, `delete`, `insert`, `insert_after`, `insert_label`, `reorder`, `fill_delay`, `drain_delay`. Use `dc.sh add-regfix` (it pre-validates against live `dump_text_indices` before append). NEVER edit `regfix.txt` directly with `Edit`/`Write` — the `regfix_scope_guard.sh` hook will block you anyway, and you'll waste a tool call.
+
+   **K-to-N transformations** (added 2026-05-13). When `subst` (1-to-1) + `insert_after` chains race with a maspsx-emitted debug nop (the most common reason a "subst plus insert" recipe regresses after working on paper), reach for `subst_multi` or `splice`:
+   - **`subst_multi @ N "pattern" "line1" "line2" [...]`** — regex match at idx N, replace with K output lines. Closes the `blez $rN, .L` (mine, 1 insn) vs `slt $rD, $rA, $rN; beq $rD, $zero, .L` (target, 2 insns) gap.
+   - **`splice start..end "line1" [...]`** — positional K-to-N range replacement (no regex). Use for known multi-instruction idioms (e.g. `li $tN, 1; move $vM, $tN; move $vM, $tN` collapse).
+   - **Length accounting**: subst_multi/splice change line count. If after applying you see a sudden flood of `[branch-offset]` diffs in `diff-summary`, you have a length imbalance — pair with a `delete @ M` or another rule to rebalance. See `feedback_regfix_subst_multi_and_splice.md`.
 
    **Maspsx idx vs binary idx** — these are NOT the same number. `dc.sh dump-text` shows MASPSX OUTPUT indices (post-cc1, pre-`as`). `dc.sh verify-c` shows BINARY indices (post-`as` expansion). A single maspsx line like `sw $X, 0x1F800360` is 1 maspsx idx but 2 binary insns (`as` expands it to `lui $at, hi; sw $X, lo($at)`). **Regfix rules (`subst`, `delete`, `insert_after`, `reorder`) operate on MASPSX indices**, not binary — get the idx by reading `dc.sh dump-text` (where `lw $X, ABS_ADDR` shows as a single line), NOT `dc.sh verify-c` (where it shows as the post-expansion lui+lw pair). Confusing them is the #1 reason regfix rules target the wrong instruction.
 
