@@ -87,22 +87,16 @@ Branch on the briefing:
 
 ## §2. PULL THE NEXT FUNCTION
 
-```
-bash tools/dc.sh next --with-context
-```
-
-This atomically:
-- Sets `.bb2_active_func` to the next queue entry
-- Auto-runs `dc.sh agent-brief <func>` (classification + asm + neighbor functions + kengo reference + existing regfix/asmfix rules)
-
-If the **active decomp queue is empty** (`No entries found in active decomp queue`), fall through to the retirement queue:
+All remaining decomp work is in the **asmfix retirement queue** — bridged functions (`replace_with_asmfile`) to convert back to pure C. Pull from it:
 
 ```
 bash tools/dc.sh next-asmfix
 bash tools/dc.sh agent-brief <func>
 ```
 
-If **both queues are empty**: report "all decomp work complete" and stop — there's nothing to do.
+`next-asmfix` sets `.bb2_active_func` to the next queue entry. `agent-brief` then gives you the full context dump: classification, asm, neighbor functions, kengo reference, existing regfix/asmfix rules.
+
+If the **retirement queue is empty** (`No entries found`): report "all decomp work complete" and stop — there's nothing to do.
 
 Read the brief carefully. The very top of the brief now shows a **`Function state`** line — `BRIDGED` / `RETIRING` / `NORMAL`. This decides whether you need `dc.sh retire` (BRIDGED) or which verify command to use (RETIRING → `verify-c`, NORMAL → `verify`).
 
@@ -117,7 +111,7 @@ Then the `recommendation` field tells you the function class:
 | `needs_function_split` / `needs_rodata_split` / `needs_delay_slot_ra` | Structural; specific tooling exists — see `feedback_workflow_rules.md` |
 | `permanently_blocked:*` / `bios_or_syscall:*` | Should never appear (queue filters them). If it does, something's wrong — investigate before continuing |
 
-For **retirement queue items** (or any function whose `Function state` is BRIDGED):
+Each function comes in **BRIDGED** (`Function state: BRIDGED` at the top of the brief). To start pure-C work:
 
 1. Run `dc.sh retire <func>` — comments out the bridge with `# RETIRE: ` so the C body becomes the source of truth.
 2. **Check the stub signature against canonical**: read `tmp/bridge_signature_audit.json` (refresh with `bash tools/dc.sh audit-bridges` if stale). 41/209 bridged stubs have a wrong arity/type. If the stub disagrees with `caller_max_arity` from the audit, fix the decl in src/ to match canonical BEFORE iterating — wrong stubs cause cascade-regressions through callers (the §6.4 caller-audit case, but for *retirement* you can catch it up front).
@@ -520,7 +514,7 @@ Report one line:
 
 1. Track progress in your own text (e.g., "3/10 done").
 2. **Re-invoke this skill via the Skill tool** — `Skill({skill: "decomp-next"})`. That starts the next function with a fresh load of this entire contract.
-3. Repeat until: (a) the user's count is reached, (b) the queue is empty, or (c) a `§0` stop condition fires (build mismatch / catastrophic state).
+3. Repeat until: (a) the user's count is reached, (b) the retirement queue is empty, or (c) a `§0` stop condition fires (build mismatch / catastrophic state).
 
 **If the user asked for one function** (or said "decomp the next one" / "do the next" / similar singular phrasing): stop here. Don't auto-continue. The user will re-invoke or move on as they choose.
 
