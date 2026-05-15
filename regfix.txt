@@ -4857,8 +4857,8 @@ func_8007CE0C: subst "addu\s+\$sp,\$sp,64" "addiu\t$29,$29,80" @ 126
 func_8007CE0C: subst "lui\s+\$4,\(-1610612736 >> 16\) & 0xFFFF" "nop" @ 63
 
 # exec_game phase 1
-exec_game: subst "bltz\s+\$2,\.L410" ".word\t0x04400034" @ 2
-exec_game: subst "beq\s+\$2,\$0,\.L422" ".word\t0x1040FFF7" @ 67
+exec_game: subst "bltz\s+\$2,\.L\d+" ".word\t0x04400034" @ 2
+exec_game: subst "beq\s+\$2,\$0,\.L\d+" ".word\t0x1040FFF7" @ 67
 
  (maspsx idx 0-51): register map + LICM unhoist + SR-IV elim + prologue reorder
 # reg map mine->target: $10<->$11 (2FFF/0FFF consts), cur $8->$7, base $13->$8
@@ -4880,7 +4880,7 @@ exec_game: insert "sll\t$2,$6,3" @ 24
 exec_game: reorder 4,6,3,7,8,5,9,10 @ 3-10
 # exec_game phase 2 (idx 52-68): register substs + in-place reorder
 exec_game: subst "lw\s+\$11,D_800A2D3C" "lw\t$2,D_800A2D3C" @ 52
-exec_game: subst "bltz\s+\$11,\.L457" ".word\t0x04400010" @ 54
+exec_game: subst "bltz\s+\$11,\.L\d+" ".word\t0x04400010" @ 54
 exec_game: subst "nop" "addu\t$9,$0,$zero" @ 55
 exec_game: subst "addu\s+\$9,\$0,\$zero" "lui\t$5,(805240832 >> 16) & 0xFFFF" @ 56
 exec_game: subst "lw\s+\$5,D_800A2D40" "ori\t$5,$5,0xffff" @ 57
@@ -4892,7 +4892,7 @@ exec_game: subst "slt\s+\$2,\$11,\$9" "slt\t$2,$4,$9" @ 66
 exec_game: subst "addu\s+\$5,\$5,8" "addu\t$3,$3,8" @ 68
 # exec_game phase 3 (idx 69-118): register-rename substs + SR-IV elim (LICM $25 deferred)
 exec_game: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" "nop" @ 69
-exec_game: subst "bltz\s+\$11,\.L432" "bltz\t$3,.L432" @ 70
+exec_game: subst "bltz\s+\$11," "bltz\t$3," @ 70
 exec_game: delete @ 71
 exec_game: subst "lui\s+\$24,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$12,(268369920 >> 16) & 0xFFFF" @ 74
 exec_game: subst "lw\s+\$13,D_800A2D40" "lui\t$14,(1073741824 >> 16) & 0xFFFF" @ 73
@@ -4946,7 +4946,7 @@ exec_game: delete @ 175
 exec_game: subst "sw\s+\$3,0\(\$4\)" "sw\t$2,4($4)" @ 177
 # exec_game phase 4 (idx 119-148): register-rename substs (gen_substs.py)
 exec_game: subst "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" @ 119
-exec_game: subst "bltz\s+\$11,\.L447" "bltz\t$a1,.L447" @ 121
+exec_game: subst "bltz\s+\$11," "bltz\t$a1," @ 121
 exec_game: subst "addu\s+\$9,\$0,\$zero" "addu\t$t1,$zero,$zero" @ 122
 exec_game: subst "lw\s+\$5,D_800A2D40" "lui\t$8,(1073741824 >> 16) & 0xFFFF" @ 123
 exec_game: subst "lui\s+\$6,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$7,(805240832 >> 16) & 0xFFFF" @ 124
@@ -4955,7 +4955,7 @@ exec_game: subst "ori\s+\$4,\$4,0xffff" "ori\t$a3,$a3,0xffff" @ 126
 exec_game: subst "addu\s+\$13,\$5,\$zero" "addu\t$a0,$a2,$zero" @ 127
 exec_game: subst "lw\s+\$3,0\(\$5\)" "lw\t$v1,0($a0)" @ 128
 exec_game: subst "and\s+\$2,\$3,\$6" "and\t$v0,$v1,$t0" @ 130
-exec_game: subst "bne\s+\$3,\$4,\.L448" "bne\t$v1,$a3,.L448" @ 133
+exec_game: subst "bne\s+\$3,\$4," "bne\t$v1,$a3," @ 133
 exec_game: subst "sll\s+\$2,\$11,3" "sll\t$v0,$a1,3" @ 134
 exec_game: subst "addu\s+\$2,\$13,\$2" "addu\t$v0,$v0,$a2" @ 135
 exec_game: subst "lw\s+\$3,0\(\$2\)" "lw\t$v1,0($v0)" @ 136
