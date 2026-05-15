@@ -4246,7 +4246,7 @@ func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
 func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
 func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
 func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
-func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L1067" @ 110
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L1072" @ 110
 # Move convergence point: insert label after lw $7,16(sp)
 func_80074B18: insert_label ".LC846:" @ 116
 func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
@@ -5017,3 +5017,38 @@ DispSchoolBG: reorder 29,28 @ 28-29
 
 # Hoist 0x1000 load before first matrix sh
 DispSchoolBG: reorder 71,67,68,69,70 @ 67-71
+func_80068F70: reorder 29,28 @ 28-29
+func_80068F70: reorder 34,33 @ 33-34
+func_80068F70: subst "addiu\s+\$3,\$zero,-16" "addiu\t$2,$zero,-16" @ 28
+func_80068F70: subst "lw\s+\$2,\%gp_rel\(D_800A34F8\)\(\$gp\)" "lw\t$3,%gp_rel(D_800A34F8)($gp)" @ 30
+func_80068F70: subst "lw\s+\$6,D_8009BC04" "lw\t$4,D_8009BC04" @ 31
+func_80068F70: subst "and\s+\$2,\$2,\$3" "and\t$3,$3,$2" @ 32
+func_80068F70: subst "andi\s+\$2,\$6,0x0001" "andi\t$2,$4,0x0001" @ 34
+func_80068F70: subst "sw\s+\$2,\%gp_rel\(D_800A34F8\)\(\$gp\)" "sw\t$3,%gp_rel(D_800A34F8)($gp)" @ 33
+func_80068F70: subst "nop\s+# DEBUG: branch/jump" "addiu\t$2,$zero,5" @ 36
+func_80068F70: subst "nop\s+# DEBUG: branch/jump" "addiu\t$2,$zero,5" @ 46
+func_80068F70: subst "nop\s+# DEBUG: branch/jump" "addiu\t$2,$zero,5" @ 56
+func_80068F70: delete @ 58
+func_80068F70: insert_after "addu\t$6,$4,$zero" @ 36
+func_80068F70: insert_after "addiu\t$5,$zero,-16" @ 36
+func_80068F70: subst "addiu\s+\$2,\$zero,-16" "addiu\t$2,$4,0x1" @ 42
+func_80068F70: subst "and\s+\$2,\$3,\$2" "and\t$2,$3,$5" @ 43
+func_80068F70: subst "and\s+\$2,\$3,\$2" "and\t$3,$3,$5" @ 47
+func_80068F70: delete @ 48
+func_80068F70: subst "andi\s+\$4,\$4,0x000f" "andi\t$2,$2,0x000f" @ 49
+func_80068F70: subst "or\s+\$2,\$2,\$4" "or\t$3,$3,$2" @ 50
+func_80068F70: subst "sw\s+\$2,\%gp_rel\(D_800A34F8\)" "sw\t$3,%gp_rel(D_800A34F8)" @ 51
+func_80068F70: subst "andi\s+\$2,\$2,0x000f" "andi\t$3,$3,0x000f" @ 52
+func_80068F70: subst "srl\s+\$2,\$6,\$2" "srl\t$3,$6,$3" @ 53
+func_80068F70: subst "andi\s+\$2,\$2,0x0001" "andi\t$3,$3,0x0001" @ 54
+func_80068F70: subst "beq\s+\$2,\$0,\.L769" "beq\t$3,$0,.L769" @ 55
+func_80068F70: $2 <-> $3 @ 64-76
+func_80068F70: $4 <-> $5 @ 64-76
+func_80068F70: subst "lw\s+\$4,\%gp_rel\(D_800A34FC\)\(\$gp\)" "lw\t$5,%gp_rel(D_800A34FC)($gp)" @ 57
+func_80068F70: subst "sh\s+\$2,42\(\$4\)" "sh\t$2,42($5)" @ 62
+func_80068F70: subst "sh\s+\$2,40\(\$4\)" "sh\t$2,40($5)" @ 63
+func_80068F70: subst "la\s+\$5,D_800A32C0" "la\t$6,D_800A32C0" @ 77
+func_80068F70: subst "lwl\s+\$2,3\(\$5\)" "lwl\t$2,3($6)" @ 78
+func_80068F70: subst "lwr\s+\$2,0\(\$5\)" "lwr\t$2,0($6)" @ 79
+func_80068F70: subst "lwl\s+\$3,7\(\$5\)" "lwl\t$3,7($6)" @ 80
+func_80068F70: subst "lwr\s+\$3,4\(\$5\)" "lwr\t$3,4($6)" @ 81
