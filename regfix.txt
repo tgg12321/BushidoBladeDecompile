@@ -3,7 +3,6 @@
 # Without @range, swap applies to ALL instructions in the function.
 # Reorder: func_name: reorder i,j,k,... @ start-end
 #   Rearranges instructions in range to new order (i,j,k are original indices).
-
 # cdrom_FramesToBcd: GCC picks t2 ($10) for mfhi temp, target uses t3 ($11)
 cdrom_FramesToBcd: $10 <-> $11
 
@@ -4856,3 +4855,120 @@ func_8007CE0C: subst "lw\s+\$17,36\(\$sp\)" "lw\t$17,52($29)" @ 124
 func_8007CE0C: subst "lw\s+\$16,32\(\$sp\)" "lw\t$16,48($29)" @ 125
 func_8007CE0C: subst "addu\s+\$sp,\$sp,64" "addiu\t$29,$29,80" @ 126
 func_8007CE0C: subst "lui\s+\$4,\(-1610612736 >> 16\) & 0xFFFF" "nop" @ 63
+
+# exec_game phase 1
+exec_game: subst "bltz\s+\$2,\.L410" ".word\t0x04400034" @ 2
+exec_game: subst "beq\s+\$2,\$0,\.L422" ".word\t0x1040FFF7" @ 67
+
+ (maspsx idx 0-51): register map + LICM unhoist + SR-IV elim + prologue reorder
+# reg map mine->target: $10<->$11 (2FFF/0FFF consts), cur $8->$7, base $13->$8
+exec_game: $10 <-> $11 @ 0-51
+exec_game: $8 <-> $7 @ 0-51
+exec_game: $13 <-> $8 @ 0-51
+exec_game: $5 <-> $3 @ 19-24
+exec_game: delete @ 10
+exec_game: delete @ 12
+exec_game: delete @ 46
+exec_game: subst "lw\s+\$4,0\(\$13\)" "lw\t$4,4($7)" @ 34
+exec_game: subst "lw\s+\$2,0\(\$13\)" "lw\t$2,4($7)" @ 40
+exec_game: subst "sw\s+\$2,0\(\$13\)" "sw\t$2,4($7)" @ 45
+exec_game: subst_multi "slt\s+\$2,\$14,\$9" "lw\t$2,D_800A2D3C" "nop" "slt\t$2,$2,$9" @ 49
+exec_game: subst "addu\s+\$3,\$8,\$2" "addu\t$3,$2,$8" @ 19
+exec_game: subst "addu\s+\$5,\$8,\$2" "addu\t$5,$2,$8" @ 27
+exec_game: delete @ 23
+exec_game: insert "sll\t$2,$6,3" @ 24
+exec_game: reorder 4,6,3,7,8,5,9,10 @ 3-10
+# exec_game phase 2 (idx 52-68): register substs + in-place reorder
+exec_game: subst "lw\s+\$11,D_800A2D3C" "lw\t$2,D_800A2D3C" @ 52
+exec_game: subst "bltz\s+\$11,\.L457" ".word\t0x04400010" @ 54
+exec_game: subst "nop" "addu\t$9,$0,$zero" @ 55
+exec_game: subst "addu\s+\$9,\$0,\$zero" "lui\t$5,(805240832 >> 16) & 0xFFFF" @ 56
+exec_game: subst "lw\s+\$5,D_800A2D40" "ori\t$5,$5,0xffff" @ 57
+exec_game: subst "lui\s+\$3,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "addu\t$4,$2,$zero" @ 58
+exec_game: subst_multi "ori\s+\$3,\$3,0xffff" "lw\t$3,D_800A2D40" "nop" @ 59
+exec_game: subst "lw\s+\$2,4\(\$5\)" "lw\t$2,4($3)" @ 60
+exec_game: subst "sw\s+\$3,0\(\$5\)" "sw\t$5,0($3)" @ 64
+exec_game: subst "slt\s+\$2,\$11,\$9" "slt\t$2,$4,$9" @ 66
+exec_game: subst "addu\s+\$5,\$5,8" "addu\t$3,$3,8" @ 68
+# exec_game phase 3 (idx 69-118): register-rename substs + SR-IV elim (LICM $25 deferred)
+exec_game: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" "nop" @ 69
+exec_game: subst "bltz\s+\$11,\.L432" "bltz\t$3,.L432" @ 70
+exec_game: delete @ 71
+exec_game: subst "lui\s+\$24,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$12,(268369920 >> 16) & 0xFFFF" @ 74
+exec_game: subst "lw\s+\$13,D_800A2D40" "lui\t$14,(1073741824 >> 16) & 0xFFFF" @ 73
+exec_game: subst "lui\s+\$15,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$13,D_800A2D40" @ 75
+exec_game: subst "ori\s+\$15,\$15,0xffff" "ori\t$12,$12,0xffff" @ 76
+exec_game: delete @ 77
+exec_game: subst "and\s+\$2,\$2,\$24" "and\t$2,$2,$14" @ 82
+exec_game: subst "slt\s+\$2,\$11,\$6" "slt\t$2,$3,$6" @ 86
+exec_game: insert "addu\t$8,$10,$zero" @ 82
+exec_game: subst "lw\s+\$14,D_800A2D3C" "lw\t$11,D_800A2D3C" @ 89
+exec_game: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$13" @ 90
+exec_game: subst "lw\s+\$4,0\(\$5\)" "lw\t$5,0($4)" @ 92
+exec_game: subst "and\s+\$2,\$4,\$24" "and\t$2,$5,$14" @ 94
+exec_game: subst "and\s+\$2,\$4,\$15" "and\t$2,$5,$12" @ 96
+exec_game: subst "lw\s+\$7,0\(\$10\)" "lw\t$7,0($8)" @ 97
+exec_game: subst "and\s+\$3,\$7,\$15" "and\t$3,$7,$12" @ 99
+exec_game: subst "sw\s+\$4,0\(\$10\)" "sw\t$5,0($8)" @ 103
+exec_game: subst "sw\s+\$7,0\(\$5\)" "sw\t$7,0($4)" @ 107
+exec_game: subst "slt\s+\$2,\$14,\$6" "slt\t$2,$11,$6" @ 111
+exec_game: subst "addu\s+\$5,\$5,8" "addu\t$4,$4,8" @ 113
+exec_game: subst_multi "slt\s+\$2,\$25,\$9" "lw\t$3,D_800A2D3C" "addu\t$t1,$t1,1" "slt\t$2,$3,$9" @ 116
+exec_game: delete @ 79
+exec_game: delete @ 91
+exec_game: delete @ 110
+exec_game: delete @ 115
+exec_game: delete @ 114
+exec_game: subst "lw\s+\$2,0\(\$8\)" "lw\t$2,4($4)" @ 104
+exec_game: subst "lw\s+\$3,0\(\$12\)" "lw\t$3,4($8)" @ 105
+exec_game: subst "sw\s+\$2,0\(\$12\)" "sw\t$2,4($8)" @ 106
+exec_game: subst "sw\s+\$3,0\(\$8\)" "sw\t$3,4($4)" @ 108
+# exec_game phase 5 (idx 149-179): register-rename substs + SR-IV elim
+exec_game: subst "lw\s+\$13,D_800A2D40" "lui\t$8,(-2147483648 >> 16) & 0xFFFF" @ 154
+exec_game: subst "lui\s+\$8,\(-2147483648\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$6,(268369920 >> 16) & 0xFFFF" @ 155
+exec_game: subst "lui\s+\$6,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "ori\t$6,$6,0xffff" @ 156
+exec_game: subst "ori\s+\$6,\$6,0xffff" "lui\t$7,(1073741824 >> 16) & 0xFFFF" @ 157
+exec_game: subst_multi "lui\s+\$7,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$5,D_800A2D40" "nop" @ 158
+exec_game: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$5" @ 159
+exec_game: subst "lw\s+\$3,0\(\$5\)" "lw\t$3,0($4)" @ 161
+exec_game: subst "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" @ 166
+exec_game: subst "sw\s+\$9,D_800A2D3C" "or\t$2,$2,$7" @ 167
+exec_game: subst "addu\s+\$9,\$9,-1" "sw\t$2,0($4)" @ 168
+exec_game: subst "or\s+\$2,\$2,\$7" "lw\t$2,4($4)" @ 169
+exec_game: subst "sw\s+\$2,0\(\$5\)" "sw\t$9,D_800A2D3C" @ 170
+exec_game: subst "lw\s+\$3,0\(\$4\)" "sll\t$3,$3,3" @ 171
+exec_game: subst "sll\s+\$2,\$11,3" "addu\t$3,$3,$5" @ 172
+exec_game: subst "addu\s+\$2,\$2,\$13" "lw\t$3,4($3)" @ 173
+exec_game: subst "lw\s+\$2,4\(\$2\)" "addu\t$9,$9,-1" @ 174
+exec_game: subst "addu\s+\$3,\$3,\$2" "addu\t$2,$2,$3" @ 176
+exec_game: delete @ 160
+exec_game: delete @ 175
+exec_game: subst "sw\s+\$3,0\(\$4\)" "sw\t$2,4($4)" @ 177
+# exec_game phase 4 (idx 119-148): register-rename substs (gen_substs.py)
+exec_game: subst "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" @ 119
+exec_game: subst "bltz\s+\$11,\.L447" "bltz\t$a1,.L447" @ 121
+exec_game: subst "addu\s+\$9,\$0,\$zero" "addu\t$t1,$zero,$zero" @ 122
+exec_game: subst "lw\s+\$5,D_800A2D40" "lui\t$8,(1073741824 >> 16) & 0xFFFF" @ 123
+exec_game: subst "lui\s+\$6,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$7,(805240832 >> 16) & 0xFFFF" @ 124
+exec_game: subst "lui\s+\$4,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$6,D_800A2D40" @ 125
+exec_game: subst "ori\s+\$4,\$4,0xffff" "ori\t$a3,$a3,0xffff" @ 126
+exec_game: subst "addu\s+\$13,\$5,\$zero" "addu\t$a0,$a2,$zero" @ 127
+exec_game: subst "lw\s+\$3,0\(\$5\)" "lw\t$v1,0($a0)" @ 128
+exec_game: subst "and\s+\$2,\$3,\$6" "and\t$v0,$v1,$t0" @ 130
+exec_game: subst "bne\s+\$3,\$4,\.L448" "bne\t$v1,$a3,.L448" @ 133
+exec_game: subst "sll\s+\$2,\$11,3" "sll\t$v0,$a1,3" @ 134
+exec_game: subst "addu\s+\$2,\$13,\$2" "addu\t$v0,$v0,$a2" @ 135
+exec_game: subst "lw\s+\$3,0\(\$2\)" "lw\t$v1,0($v0)" @ 136
+exec_game: subst "sw\s+\$3,0\(\$5\)" "sw\t$v1,0($a0)" @ 138
+exec_game: subst "lw\s+\$2,4\(\$2\)" "lw\t$v0,4($v0)" @ 139
+exec_game: subst "sw\s+\$9,D_800A2D3C" "sw\t$t1,D_800A2D3C" @ 140
+exec_game: subst "sw\s+\$2,4\(\$5\)" "sw\t$v0,4($a0)" @ 142
+exec_game: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" "addu\t$t1,$t1,1" @ 144
+exec_game: delete @ 145
+exec_game: delete @ 143
+exec_game: subst "slt\s+\$2,\$11,\$9" "slt\t$v0,$a1,$t1" @ 146
+exec_game: subst "addu\s+\$5,\$5,8" "addu\t$a0,$a0,8" @ 148
+
+
+
+
