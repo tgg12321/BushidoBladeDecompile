@@ -15743,13 +15743,71 @@ void func_8006E068(s32 arg0, s32 arg1) {
     func_8006DD94(sp10);
     func_8006DF68(arg0, arg1);
 }
-void func_8006E10C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006E10C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+extern u8 D_800A32D8[8];
+extern void *D_800A3524;
+extern s32 D_800A3500;
+extern u8 D_800F74A4;
+extern u8 D_800F74A5;
+extern u8 D_800FB534;
+extern u8 D_800FB535;
+extern s32 D_800F7438;
+extern s32 func_80036EA8(s32, s32);
+extern void func_80036F28(s32);
+extern void replay_camera_Init(s32, s32);
+extern void game_FrameLoop(void);
+extern void gpu_InitDrawEnv(s32, s32, s32, s32, s32);
+extern void gpu_InitDispEnv(s32, s32, s32, s32, s32);
+extern void gpu_LoadImage(u8 *, s32);
+extern void func_8007B4D0(s32, s32, s32, s32);
+extern void func_8007B9B0(s32);
+extern void func_8007BC08(s32);
+extern void gpu_SetDispMask(s32);
+extern void gpu_DrawSync(s32);
+s32 func_8006E10C(void) {
+    register s32 ff0 asm("$17");
+    register s32 temp_s3 asm("$19") = D_800A3500;
+    u8 rect[8];
+    s32 v0;
+    register s32 a0v asm("$4");
+    register s32 a1v asm("$5");
+    s32 base;
+    s32 base2;
+
+    __builtin_memcpy(rect, D_800A32D8, 8);
+    if (((s32 *)D_800A3524)[8] & 1) {
+        a0v = 2;
+        a1v = 0x60;
+    } else {
+        a0v = 2;
+        a1v = 7;
+    }
+    ff0 = 0xF0;
+    v0 = func_80036EA8(a0v, a1v);
+    replay_camera_Init(v0, D_800A3500);
+    game_FrameLoop();
+    func_80036F28(v0);
+    gpu_SetDispMask(0);
+    base = (s32)&D_800F7438;
+    gpu_InitDrawEnv(base, 0, 0, 0x280, ff0);
+    gpu_InitDrawEnv(base + 0x4090, 0, ff0, 0x280, ff0);
+    gpu_InitDispEnv(base + 0x5C, 0, ff0, 0x280, ff0);
+    base2 = base + 0x40EC;
+    gpu_InitDispEnv(base2, 0, 0, 0x280, ff0);
+    D_800F74A4 = 0;
+    D_800FB534 = 0;
+    D_800F74A5 = 0;
+    D_800FB535 = 0;
+    gpu_DrawSync(0);
+    func_8007B4D0((s32)rect, 0, 0, 0);
+    gpu_DrawSync(0);
+    gpu_LoadImage(rect, temp_s3 + 0x14);
+    gpu_DrawSync(0);
+    func_8007B9B0(base);
+    func_8007BC08(base2);
+    gpu_SetDispMask(1);
+    return 1;
 }
 extern s32 D_800A3518;
-extern s32 D_800F7438;
 extern u8 D_800A32E0[8];
 extern void func_8007B9B0(s32);
 extern void func_8007BC08(s32);
