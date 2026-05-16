@@ -41,6 +41,7 @@
 #   bash tools/dc.sh fix-asmfix-drift [--apply]    — auto-fix .L<N> rename drift in asmfix.txt
 #   bash tools/dc.sh auto-repair                    — build + detect cascade-drift + auto-run repair tools (used by build-active)
 #   bash tools/dc.sh preflight-cascade <func>       — read-only impact report: how many sibling rules at risk of label drift
+#   bash tools/dc.sh suggest <func>                  — lean rollup: state + top techniques + don't-tries + next step (auto pre/post)
 #
 set -eo pipefail
 
@@ -1028,6 +1029,15 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         # next action. Faster decision-making during iteration than
         # reading the full side-by-side diff.
         python3 tools/diff_summary.py "$@" 2>&1
+        ;;
+
+    suggest)
+        # Lean per-function rollup: state + top 3 techniques + don't-tries
+        # + next single command, plus (post-build) diff routing and recipe
+        # candidates. Cheap enough to run on every function, short enough
+        # to actually be read. Complements agent-brief (the full dump) by
+        # serving as the orientation pass before drilling in.
+        python3 tools/suggest_func.py "$@" 2>&1
         ;;
 
     build-active)
