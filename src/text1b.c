@@ -18171,6 +18171,11 @@ extern void (*jtbl_800A3624)(void);
 void func_80078F74(void) {
     jtbl_800A3624();
 }
+/* func_80078F88: hand-coded asm in original PSY-Q source (Kengo: pad_open).
+ * Same cluster as func_800790C0: BIOS B-table call (jalr $t2, $t1 in delay slot),
+ * manual $ra save/restore to global D_800A3618, trapping addi (x2, for jtbl
+ * pointer setup at offsets 0x884/0x894). PSY-Q hand-coded pad-init wrapper.
+ * User-authorized 2026-05-16. See memory/feedback_hand_coded_asm_recognition.md. */
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
