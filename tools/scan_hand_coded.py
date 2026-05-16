@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Detect candidate hand-coded-asm functions by static signature.
 
-The 5 strong signals from memory/feedback_hand_coded_asm_recognition.md
+The 6 strong signals from memory/feedback_hand_coded_asm_recognition.md
 that are tractable to detect from target.s alone:
 
   S1. Uniform `multu`/`mflo` pacing. Every multu/mflo pair separated
@@ -23,6 +23,16 @@ that are tractable to detect from target.s alone:
 
   S5. Cluster behavior. Function's opcode-only signature (ignoring
       registers and immediates) matches ≥1 sibling in the same file.
+
+  S6. BIOS jumptable call with function-ID register set in the indirect
+      call's delay slot. Pattern:
+        addiu $tN, $zero, <0xA0|0xB0|0xC0>   # BIOS table address
+        jalr/jr $tN                            # call dispatcher
+        addiu $tM, $zero, <small>              # function ID, IN delay slot
+      GCC 2.7.2 has no way to express "load $tM in the delay slot of an
+      indirect call to $tN" — the kernel dispatcher reads $tM after the
+      jump is committed. Like S1/S2, this is GCC-impossible: even one
+      occurrence is decisive evidence of hand-coded asm.
 
 Output modes:
   --single <func>  : JSON for one function (consumed by memory_check.py)
@@ -82,29 +92,38 @@ class FuncSignals:
     s4_detail: str
     s5_cluster: bool
     s5_detail: str
-    score: int      # total signals hit (0-5)
+    s6_bios_jumptable: bool
+    s6_detail: str
+    score: int      # total signals hit (0-6)
     tier: str       # STRONG / POSSIBLE / TIGHT_C / LOW
     tier_reason: str
     opcode_sig: str  # hash key for cluster detection
 
 
-def classify_tier(s1: bool, s2: bool, score: int) -> tuple[str, str]:
+def classify_tier(s1: bool, s2: bool, s6: bool, score: int) -> tuple[str, str]:
     """Tier the function by which signals fire.
 
-    S1 (uniform multu pacing) and S2 (empty-body branch) are the
-    "GCC-impossible" signals — observed only in hand-coded asm.
-    S3/S4/S5 are tightness/cluster signals — also common in tight
-    pure-C functions (e.g. the calc_fc_frame_8007EC5C GTE family).
+    S1 (uniform multu pacing), S2 (empty-body branch), and S6 (BIOS
+    jumptable with delay-slot register setup) are the "GCC-impossible"
+    signals — patterns the compiler has no way to emit. S3/S4/S5 are
+    tightness/cluster signals — also common in tight pure-C functions
+    (e.g. the calc_fc_frame_8007EC5C GTE family).
 
-    A 3+ score WITHOUT S1 or S2 is most likely a tight-C cluster, not
-    hand-coded asm. Conversely, S1 OR S2 alone is enough to warrant
-    investigation."""
+    A 3+ score WITHOUT any GCC-impossible signal is most likely a
+    tight-C cluster, not hand-coded asm. Conversely, S6 alone is
+    decisive (the pattern is too specific to occur by accident); S1 or
+    S2 alone is enough to warrant investigation."""
+    impossible_hits = [name for name, hit in (("S1", s1), ("S2", s2), ("S6", s6)) if hit]
+    if s6:
+        # S6 is the most specific GCC-impossible pattern: a single match
+        # is essentially proof of hand-coded asm. Skip the tightness gate.
+        return "STRONG", f"S6 (BIOS jumptable with delay-slot register setup) — GCC-impossible, decisive"
     if s1 and s2 and score >= 4:
         return "STRONG", "S1+S2 (both GCC-impossible) plus tightness — almost certainly hand-coded"
-    if (s1 or s2) and score >= 3:
-        return "STRONG", f"{'S1' if s1 else 'S2'} (GCC-impossible) plus 2+ tightness signals"
-    if s1 or s2:
-        return "POSSIBLE", f"{'S1' if s1 else 'S2'} alone is rare in GCC output — investigate"
+    if impossible_hits and score >= 3:
+        return "STRONG", f"{'+'.join(impossible_hits)} (GCC-impossible) plus 2+ tightness signals"
+    if impossible_hits:
+        return "POSSIBLE", f"{'+'.join(impossible_hits)} alone is rare in GCC output — investigate"
     if score >= 3:
         return "TIGHT_C", "tight pure-C function or cluster (no GCC-impossible signals)"
     return "LOW", "no strong hand-coded indicators"
@@ -257,6 +276,94 @@ def signal_front_loads(insns: list[Insn]) -> tuple[bool, str]:
     return False, f"max load burst was {best} in any 8-insn window"
 
 
+BIOS_TABLE_ADDRS = (0xA0, 0xB0, 0xC0)
+JUMP_TARGET_REG_RE = re.compile(r"^(t\d|k[01]|v[01])$")
+DELAY_LOAD_REG_RE = re.compile(r"^(t\d|k[01]|a[0-3]|v[01])$")
+REG_IMM_LOAD_RE = re.compile(r"^\$(\w+)\s*,\s*(?:\$zero\s*,\s*)?(.+)$")
+
+
+def _parse_imm(s: str) -> int | None:
+    """Parse a MIPS immediate operand (decimal, 0xHEX, or trailing 0x...)."""
+    s = s.split("#")[0].strip()
+    # strip surrounding parens or whitespace from any 0(reg) artifacts (shouldn't occur for li)
+    s = s.split("(")[0].strip()
+    if not s:
+        return None
+    try:
+        return int(s, 0)
+    except ValueError:
+        return None
+
+
+def signal_bios_jumptable(insns: list[Insn]) -> tuple[bool, str]:
+    """S6: BIOS jumptable call with function-ID register set in the
+    indirect call's delay slot. Looks for the canonical PSY-Q BIOS
+    pattern:
+        addiu $tN, $zero, <0xA0|0xB0|0xC0>   # BIOS table address
+        jalr/jr $tN                            # call dispatcher
+        addiu $tM, $zero, <small>              # function ID in delay slot
+
+    GCC 2.7.2 cannot pin a register load into an indirect call's delay
+    slot via natural C: function-pointer calls compile to `jal/jalr`
+    with a nop or scheduling-promoted instruction in the delay slot, and
+    there's no syntax to demand the delay slot hold a specific
+    `addiu $tM, $zero, IMM`. A single match is decisive evidence."""
+    for i, ins in enumerate(insns):
+        if ins.mnemonic not in ("jalr", "jr"):
+            continue
+        # Operands: `jalr $tN` or `jalr $ra, $tN` — last register is the
+        # jump target.
+        regs = re.findall(r"\$(\w+)", ins.operands)
+        if not regs:
+            continue
+        jump_reg = regs[-1]
+        if not JUMP_TARGET_REG_RE.match(jump_reg):
+            continue
+        # Walk back up to 8 insns looking for the load of $jump_reg with
+        # one of the BIOS table addresses.
+        loaded_val: int | None = None
+        for j in range(i - 1, max(-1, i - 9), -1):
+            prev = insns[j]
+            if prev.mnemonic not in ("addiu", "li", "ori"):
+                continue
+            m = REG_IMM_LOAD_RE.match(prev.operands)
+            if not m or m.group(1) != jump_reg:
+                continue
+            val = _parse_imm(m.group(2))
+            if val is None:
+                continue
+            if val in BIOS_TABLE_ADDRS:
+                loaded_val = val
+            # First write to $jump_reg wins (either match or stop looking).
+            break
+        if loaded_val is None:
+            continue
+        # Check the delay slot for an addiu/li loading a small constant
+        # into a different register.
+        if i + 1 >= len(insns):
+            continue
+        delay = insns[i + 1]
+        if delay.mnemonic not in ("addiu", "li"):
+            continue
+        m = REG_IMM_LOAD_RE.match(delay.operands)
+        if not m:
+            continue
+        delay_reg = m.group(1)
+        if delay_reg == jump_reg:
+            continue
+        if not DELAY_LOAD_REG_RE.match(delay_reg):
+            continue
+        delay_val = _parse_imm(m.group(2))
+        if delay_val is None or not (0 <= delay_val <= 0xFF):
+            continue
+        kind = "jalr" if ins.mnemonic == "jalr" else "jr (tail-call)"
+        return True, (
+            f"BIOS 0x{loaded_val:X}({delay_val:#x}) @ insn {i}: "
+            f"{kind} ${jump_reg} with ${delay_reg}={delay_val:#x} in delay slot"
+        )
+    return False, "no BIOS jumptable call pattern"
+
+
 def compute_opcode_sig(insns: list[Insn]) -> str:
     """Build a loose opcode-only signature for cluster detection.
     Strips registers, immediates, and operands entirely — keeps the
@@ -350,9 +457,10 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
             s5d = f"{len(siblings)} approx-sibling(s): {', '.join(sib_strs)}{tail}"
         else:
             s5d = "no high-similarity siblings (jaccard < 0.5)"
+        s6, s6d = signal_bios_jumptable(insns)
 
-        score = sum([s1, s2, s3, s4, s5])
-        tier, tier_reason = classify_tier(s1, s2, score)
+        score = sum([s1, s2, s3, s4, s5, s6])
+        tier, tier_reason = classify_tier(s1, s2, s6, score)
         out.append(FuncSignals(
             func=name,
             src_file=str(p.relative_to(ROOT)),
@@ -363,6 +471,7 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
             s3_no_spills=s3, s3_detail=s3d,
             s4_front_loads=s4, s4_detail=s4d,
             s5_cluster=s5, s5_detail=s5d,
+            s6_bios_jumptable=s6, s6_detail=s6d,
             score=score,
             tier=tier,
             tier_reason=tier_reason,
@@ -391,9 +500,10 @@ def fmt_signals_human(s: FuncSignals) -> str:
         ("S3 no spills     ", s.s3_no_spills, s.s3_detail),
         ("S4 front loads   ", s.s4_front_loads, s.s4_detail),
         ("S5 cluster       ", s.s5_cluster, s.s5_detail),
+        ("S6 BIOS jumptable ", s.s6_bios_jumptable, s.s6_detail),
     ]
     lines = [
-        f"  HAND_CODED: tier={s.tier}  score={s.score}/5  ({s.func}, {s.insn_count} insns)",
+        f"  HAND_CODED: tier={s.tier}  score={s.score}/6  ({s.func}, {s.insn_count} insns)",
         f"    Reason: {s.tier_reason}",
     ]
     for label, hit, detail in rows:
@@ -459,11 +569,15 @@ def main() -> int:
                 "3" if s.s3_no_spills else ".",
                 "4" if s.s4_front_loads else ".",
                 "5" if s.s5_cluster else ".",
+                "6" if s.s6_bios_jumptable else ".",
             ])
-            cluster_note = ""
+            note_bits = []
             if s.s5_cluster:
-                cluster_note = f"  cluster: {s.s5_detail.split(': ', 1)[-1]}"
-            print(f"   {s.score}/5    {s.insn_count:5}  {s.multu_count:6}  {s.func:40}  [{sig_letters}]{cluster_note}")
+                note_bits.append(f"cluster: {s.s5_detail.split(': ', 1)[-1]}")
+            if s.s6_bios_jumptable:
+                note_bits.append(f"bios: {s.s6_detail.split(': ', 1)[-1]}")
+            extra_note = ("  " + "  ".join(note_bits)) if note_bits else ""
+            print(f"   {s.score}/6    {s.insn_count:5}  {s.multu_count:6}  {s.func:40}  [{sig_letters}]{extra_note}")
         print()
 
     print(f"# scan_hand_coded: {len(sigs)} functions scanned in asm/funcs/")
@@ -472,15 +586,16 @@ def main() -> int:
     print_block(
         "STRONG candidates — almost certainly hand-coded asm",
         strong,
-        "S1 (uniform multu pacing) and/or S2 (empty-body branch) fire — "
-        "both effectively impossible in GCC output. Treat as canonically-asm "
+        "S1 (uniform multu pacing), S2 (empty-body branch), and/or S6 "
+        "(BIOS jumptable with delay-slot register setup) fire — all "
+        "effectively impossible in GCC output. Treat as canonically-asm "
         "absent strong counter-evidence; if not in inline_asm_canonical.txt, "
         "investigate per skill §2.5.b.",
     )
     print_block(
         "POSSIBLE candidates — investigate",
         possible,
-        "Exactly one GCC-impossible signal fires (S1 or S2) without "
+        "Exactly one GCC-impossible signal (S1, S2, or S6) fires without "
         "supporting tightness signals. Could be hand-coded, could be an "
         "edge case (e.g. small GTE wrapper). Read the target.s.",
     )

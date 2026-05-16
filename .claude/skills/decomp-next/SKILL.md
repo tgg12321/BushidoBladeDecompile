@@ -176,22 +176,23 @@ The default — and the right answer for ~99% of queue items — is C. THE PHYSI
 
 | Tier | Meaning | Action |
 |---|---|---|
-| `STRONG` | S1 (uniform `multu` pacing) and/or S2 (empty-body branch) fired. Both are effectively impossible in GCC output. | Treat as hand-coded asm. If on `inline_asm_canonical.txt`: §2.5.c. If not: confirm signals by reading target.s, then surface evidence to user and request authorization. **Do not self-authorize.** |
-| `POSSIBLE` | One GCC-impossible signal fired without tightness backing. | Read the target.s; could be hand-coded or an edge case (small GTE wrapper). Lean toward §3 unless additional review reveals more evidence. |
+| `STRONG` | A GCC-impossible signal fired — S1 (uniform `multu` pacing), S2 (empty-body branch), or S6 (BIOS jumptable with delay-slot register setup). | Treat as hand-coded asm. If on `inline_asm_canonical.txt`: §2.5.c. If not: confirm signals by reading target.s, then surface evidence to user and request authorization. **Do not self-authorize.** |
+| `POSSIBLE` | A GCC-impossible signal (S1, S2) fired without tightness backing. | Read the target.s; could be hand-coded or an edge case (small GTE wrapper). Lean toward §3 unless additional review reveals more evidence. |
 | `TIGHT_C` | Tightness signals (S3/S4/S5) but no GCC-impossible signal. | **Pure-C cluster, NOT hand-coded.** Do not use the asm-canonical path. Proceed to §3 and prioritize the §3.0.a sibling-template lookup. |
 | `LOW` | Nothing suggests hand-coded. | Default: C-canonical. Proceed to §3. |
 
-**The five signals** (computed automatically by `scan_hand_coded.py`):
+**The six signals** (computed automatically by `scan_hand_coded.py`):
 
 1. **S1 — Uniform `multu`/`mflo` pacing.** Every multu/mflo pair separated by exactly 2 cycles, across ≥2 pairs. **GCC-impossible.** GCC's scheduler tightens to 0-cycle gap when useful work exists.
 2. **S2 — Empty-body branch.** `bgez/bltz/.../bne` whose target label is the instruction immediately after the delay slot — both paths converge with no body. **GCC-impossible.** GCC elides empty `if` bodies.
 3. **S3 — No callee-save spills in 40+ insn function.** GCC spills under any meaningful pressure of that size; absence indicates hand-allocated. Tightness signal — also seen in tight pure-C.
 4. **S4 — Load burst.** ≥4 loads from non-$sp base within any 8-insn window. Tightness signal.
 5. **S5 — Cluster behavior.** Approximate-match opcode-sequence k-mer similarity (Jaccard ≥0.5) with ≥1 sibling. Tightness signal — also seen in C function families (GTE 3x3, calc_fc_frame).
+6. **S6 — BIOS jumptable with delay-slot register setup.** `addiu $tN, $zero, <0xA0|0xB0|0xC0>; jalr/jr $tN; addiu $tM, $zero, <small>` — function ID register set IN the indirect call's delay slot. **GCC-impossible:** function-pointer calls have no syntax to pin a specific `addiu` into the delay slot. A single match is decisive — auto-promotes to STRONG.
 
-**S1 and S2 are the decisive discriminators.** S3/S4/S5 are tightness signals; they fire on tight pure-C clusters too. A 5/5 score with S1 and S2 is essentially certain. A 3/5 score from only S3/S4/S5 is a tight-C cluster.
+**S1, S2, and S6 are the decisive discriminators.** S3/S4/S5 are tightness signals; they fire on tight pure-C clusters too. A 5/6 score with S1+S2 is essentially certain. A 1/6 score from S6 alone is also decisive (the pattern is too specific to occur accidentally). A 3/6 score from only S3/S4/S5 is a tight-C cluster.
 
-**For the entire project landscape**: `bash tools/dc.sh scan-hand-coded --all` lists every function in each tier. As of the initial scan: 5 STRONG (the sin/cos rotation cluster), 0 POSSIBLE, 9 TIGHT_C (GTE 3x3 + calc_fc_frame + others), ~1305 LOW. The asm-canonical population is small and bounded.
+**For the entire project landscape**: `bash tools/dc.sh scan-hand-coded --all` lists every function in each tier. Current scan: ~13 STRONG (sin/cos rotation cluster + Euler family + BIOS jumptable wrappers), 0 POSSIBLE, 9 TIGHT_C (GTE 3x3 + calc_fc_frame + others), ~1297 LOW. The asm-canonical population is small and bounded.
 
 Weak signals that are NOT enough on their own (require corroborating strong signals):
 - A documented cc1 register-allocator divergence (could be cc1 fault, could be hand-coded — don't conclude from this alone)
@@ -249,7 +250,7 @@ This path is a **recognized exception** to §6.1's multi-instruction-asm rule, s
 
 ## §3. PROGRAMMATIC PIPELINE (mandatory first pass)
 
-**Precondition: §2.5 must have run.** If `memory-check` returned `CANONICAL_ASM: yes` or you confirmed ≥3 hand-coded signals in §2.5.b with user authorization, you are NOT in §3 — you are in §2.5.c. The §3 pipeline is for pure-C matching only; running it on a hand-coded function burns hours converging on nothing.
+**Precondition: §2.5 must have run.** If `memory-check` returned `CANONICAL_ASM: yes` or you confirmed a STRONG tier from `scan_hand_coded.py` in §2.5.b with user authorization, you are NOT in §3 — you are in §2.5.c. The §3 pipeline is for pure-C matching only; running it on a hand-coded function burns hours converging on nothing.
 
 **You do not write C by hand before this pipeline runs.** Trust the automation; it's been tuned over hundreds of matches.
 
