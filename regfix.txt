@@ -5055,3 +5055,25 @@ func_80068F70: subst "lwr\s+\$3,4\(\$5\)" "lwr\t$3,4($6)" @ 81
 func_80052720: delete @ 11
 func_80052720: delete @ 13
 func_80052720: delete @ 14
+
+# func_80077B30: cases 1+5 s2=0 inits (GCC constant-folded them away)
+func_80077B30: insert_after "addu\t$18,$0,$zero" @ 52
+func_80077B30: insert_after "addu\t$18,$0,$zero" @ 80
+
+# func_80077B30: cases 1-5 substs (register cycles, v0=s2 returns)
+func_80077B30: subst "j\s+\.L5" "j\t.L21" @ 37
+func_80077B30: subst "addu\s+\$2,\$0,\$zero" "addu\t$2,$18,$zero" @ 63
+func_80077B30: subst "addu\s+\$2,\$0,\$zero" "addu\t$2,$18,$zero" @ 66
+func_80077B30: subst "j\s+\.L24" "j\t.L21" @ 68
+func_80077B30: subst "addiu\s+\$2,\$zero,2" "addiu\t$18,$zero,2" @ 69
+func_80077B30: subst "j\s+\.L24" "j\t.L21" @ 71
+func_80077B30: subst "addiu\s+\$2,\$zero,3" "addiu\t$18,$zero,3" @ 72
+func_80077B30: subst "lbu\s+\$3,D_8009BD3B" "lbu\t$2,D_8009BD3B" @ 88
+func_80077B30: subst "lbu\s+\$4,D_8009BD3C" "lbu\t$3,D_8009BD3C" @ 89
+func_80077B30: subst "lbu\s+\$5,D_8009BD3D" "lbu\t$4,D_8009BD3D" @ 90
+func_80077B30: subst "sb\s+\$3,D_8009BD41" "sb\t$2,D_8009BD41" @ 92
+func_80077B30: subst "sb\s+\$4,D_8009BD42" "sb\t$3,D_8009BD42" @ 93
+func_80077B30: subst "sb\s+\$5,D_8009BD43" "sb\t$4,D_8009BD43" @ 94
+func_80077B30: subst "addu\s+\$2,\$0,\$zero" "addu\t$2,$18,$zero" @ 96
+func_80077B30: subst "addu\s+\$2,\$0,\$zero" "addu\t$2,$18,$zero" @ 98
+func_80077B30: subst "addu\s+\$2,\$0,\$zero" "addu\t$2,$18,$zero" @ 100

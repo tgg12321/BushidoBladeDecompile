@@ -118,7 +118,7 @@ FIX_LWL_FILES := code6cac text1b
 # GCC 2.7.2 emits .align 3 (8-byte) for switch tables in .rodata.
 # When rodata is split across objects, this creates unwanted padding.
 # Downgrade to .align 2 (4-byte) for files whose rodata is sandwiched.
-RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_c code6cac_c0 code6cac_c_ab code6cac_c_mid code6cac_c2 text1a text1a_b text1a_c text1a_c2 main
+RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_c code6cac_c0 code6cac_c_ab code6cac_c_mid code6cac_c2 text1a text1a_b text1a_c text1a_c2 text1b_b main
 
 # -- Per-file -fno-strength-reduce opt-in --
 # Some functions were originally compiled without GCC's loop strength-reduction.

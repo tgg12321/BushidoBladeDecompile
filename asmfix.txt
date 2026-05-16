@@ -285,7 +285,7 @@ saTan3GaugeMain_8006A564: replace_with_asmfile "asm/funcs/saTan3GaugeMain_8006A5
 func_800841E0: replace_with_asmfile "asm/funcs/func_800841E0.s"
 func_80057E84: replace_with_asmfile "asm/funcs/func_80057E84.s"
 calc_loc_mat_fw_80055B60: replace_with_asmfile "asm/funcs/calc_loc_mat_fw_80055B60.s"
-func_80077B30: replace_with_asmfile "asm/funcs/func_80077B30.s"
+# RETIRE: func_80077B30: replace_with_asmfile "asm/funcs/func_80077B30.s"
 func_8006B578: replace_with_asmfile "asm/funcs/func_8006B578.s"
 func_800747D8: replace_with_asmfile "asm/funcs/func_800747D8.s"
 func_8006ECF4: replace_with_asmfile "asm/funcs/func_8006ECF4.s"

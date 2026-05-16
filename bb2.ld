@@ -42,7 +42,9 @@ SECTIONS
         build/asm/data/101C.rodata_text1a_a.o(.rodata);
         build/src/text1a_c2.o(.rodata);
         build/src/text1a_b.o(.rodata);
-        build/asm/data/101C.rodata_text1a_b.o(.rodata);
+        build/asm/data/101C.rodata_text1a_b_pre.o(.rodata);
+        build/src/text1b_b.o(.rodata);
+        build/asm/data/101C.rodata_text1a_b_post.o(.rodata);
         build/src/main.o(.rodata);
         build/asm/data/101C.rodata_main_post.o(.rodata);
         build/src/code6cac_b2.o(.rodata);
@@ -72,6 +74,7 @@ SECTIONS
         build/src/text1a_b.o(.text);
         build/src/sound.o(.text);
         build/src/text1b.o(.text);
+        build/src/text1b_b.o(.text);
         build/src/gpu.o(.text);
         build/src/display.o(.text);
         build/src/system.o(.text);
@@ -97,6 +100,7 @@ SECTIONS
         build/src/text1a_b.o(.data);
         build/src/sound.o(.data);
         build/src/text1b.o(.data);
+        build/src/text1b_b.o(.data);
         build/src/gpu.o(.data);
         build/src/display.o(.data);
         build/src/system.o(.data);
@@ -123,6 +127,7 @@ SECTIONS
         build/src/text1a_b.o(.bss);
         build/src/sound.o(.bss);
         build/src/text1b.o(.bss);
+        build/src/text1b_b.o(.bss);
         build/src/gpu.o(.bss);
         build/src/display.o(.bss);
         build/src/system.o(.bss);
