@@ -137,3 +137,4 @@ func_800164AC          # Pure .word function-pointer table (19 entries, 0x8008C4
 
 # BIOS jumptable installer (same pattern as authorized func_80078F88 / func_80079028)
 func_8007A458          # BIOS B(0x56) jumptable installer: EnterCriticalSection + `jalr $t2; $t1=0x56` + jumptable copy loop (D_8007A4C0..D_8007A4CC range) + ExitCriticalSection. Trailing 6x `.word 0` padding. Same canonical pattern as func_80078F88/func_80079028 already in this file.
+func_800790C0      # BIOS jumptable wrapper (Kengo: pad_SetActDirect): `addiu $t2,0xB0; jalr $t2; addiu $t1,0x57` (function-id in delay slot, GCC 2.7.2 cannot emit), manual $ra save/restore via global D_800A3638 (no stack frame), trapping `addi $v1,$v0,0x62C`. PSY-Q hand-coded convention, cluster pattern across display.c/gpu.c/text1b.c/ings2.c. User-authorized 2026-05-16.

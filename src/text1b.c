@@ -18292,36 +18292,44 @@ __asm__(
 );
 PAD_NOPS_3; /* padding after func_800790A4 */
 PAD_NOPS_3; /* padding after func_800790A4 */
+/* func_800790C0: hand-coded asm in original PSY-Q source (Kengo: pad_SetActDirect).
+ * Evidence: (1) BIOS B-table jumptable call `addiu $t2,0xB0; jalr $t2; addiu $t1,0x57`
+ * with the function-id register set in the delay slot — GCC 2.7.2 cannot emit this
+ * calling convention; (2) manual $ra save/restore to global D_800A3638 instead of a
+ * stack frame; (3) trapping `addi $v1,$v0,0x62C` (GCC emits non-trapping addiu);
+ * (4) cluster of similar BIOS wrappers across display.c, gpu.c, text1b.c, ings2.c
+ * left as file-scope inline asm — clear PSY-Q hand-coded convention.
+ * User-authorized 2026-05-16. See memory/feedback_hand_coded_asm_recognition.md. */
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
     "glabel func_800790C0\n"
-    "    lui  $at,%hi(D_800A3638)\n"
-    "    sw  $ra,%lo(D_800A3638)($at)\n"
-    "    jal  EnterCriticalSection\n"
-    "    nop\n"
-    "    addiu  $t2,$zero,176\n"
-    "    jalr  $t2\n"
-    "    addiu  $t1,$zero,87\n"
-    "    lw  $v0,364($v0)\n"
-    "    addiu  $t2,$zero,9\n"
-    "    addi  $v1,$v0,1580\n"
+    "    lui        $at, %hi(D_800A3638)\n"
+    "    sw         $ra, %lo(D_800A3638)($at)\n"
+    "    jal        EnterCriticalSection\n"
+    "     nop\n"
+    "    addiu      $t2, $zero, 0xB0\n"
+    "    jalr       $t2\n"
+    "     addiu     $t1, $zero, 0x57\n"
+    "    lw         $v0, 364($v0)\n"
+    "    addiu      $t2, $zero, 0x9\n"
+    "    addi       $v1, $v0, 0x62C\n"
     ".L800790E8:\n"
-    "    addiu  $t2,$t2,-1\n"
-    "    sw  $zero,0($v1)\n"
-    "    bnez  $t2,.L800790E8\n"
-    "    addiu  $v1,$v1,4\n"
-    "    jal  func_80078FF0\n"
+    "    addiu      $t2, $t2, -0x1\n"
+    "    sw         $zero, 0($v1)\n"
+    "    bnez       $t2, .L800790E8\n"
+    "     addiu     $v1, $v1, 0x4\n"
+    "    jal        func_80078FF0\n"
+    "     nop\n"
+    "    jal        ExitCriticalSection\n"
+    "     nop\n"
+    "    lui        $ra, %hi(D_800A3638)\n"
+    "    lw         $ra, %lo(D_800A3638)($ra)\n"
     "    nop\n"
-    "    jal  ExitCriticalSection\n"
-    "    nop\n"
-    "    lui  $ra,%hi(D_800A3638)\n"
-    "    lw  $ra,%lo(D_800A3638)($ra)\n"
-    "    nop\n"
-    "    jr  $ra\n"
-    "    nop\n"
+    "    jr         $ra\n"
+    "     nop\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
