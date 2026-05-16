@@ -11,13 +11,26 @@ Total D_* symbols analyzed: 1505; with usage patterns: 1467
 
 > NOTE: GTE access usually goes through a pointer-loaded base address rather than a direct D_<addr> reference. So this section is sparse; most GTE matrices live behind indirect pointer chains and require body inspection to identify.
 
-## Function pointer / callback candidates (0)
+## Function pointer / callback candidates (12)
 
-(none)
+| current | address | proposed | usage |
+|---|---|---|---|
+| `D_80015470` | `0x80015470` | `fp_80015470` | {'lui': 1, 'lw': 1, 'fp_call': 1} |
+| `D_8008D090` | `0x8008D090` | `fp_8008D090` | {'lui': 1, 'lw': 1, 'fp_call': 1} |
+| `D_8009BC1C` | `0x8009BC1C` | `fp_8009BC1C` | {'lui': 1, 'lw': 1, 'fp_call': 1} |
+| `D_800A26D4` | `0x800A26D4` | `fp_800A26D4` | {'lui': 4, 'lw': 4, 'fp_call': 2} |
+| `D_800A2D14` | `0x800A2D14` | `fp_800A2D14` | {'lui': 10, 'lw': 6, 'fp_call': 1, 'sw': 4} |
+| `D_800A362C` | `0x800A362C` | `fp_800A362C` | {'lui': 3, 'lw': 2, 'fp_call': 1, 'sw': 1} |
+| `D_800F3340` | `0x800F3340` | `fp_800F3340` | {'lui': 2, 'lw': 2, 'fp_call': 1} |
+| `D_800F3348` | `0x800F3348` | `fp_800F3348` | {'lui': 1, 'lw': 1, 'fp_call': 1} |
+| `D_800F66A0` | `0x800F66A0` | `fp_800F66A0` | {'lui': 11, 'addiu': 2, 'lw': 8, 'fp_call': 8, 'sw': 1} |
+| `D_801027E8` | `0x801027E8` | `fp_801027E8` | {'lui': 1, 'lw': 1, 'fp_call': 1} |
+| `D_80102BF8` | `0x80102BF8` | `fp_80102BF8` | {'lui': 1, 'lw': 1, 'fp_call': 1} |
+| `D_80103680` | `0x80103680` | `fp_80103680` | {'lui': 4, 'sw': 1, 'lw': 2, 'fp_call': 1, 'addiu': 1} |
 
 > NOTE: Same caveat as above -- function-pointer tables are typically loaded into a register first and then `jalr`'d, so the direct-reference pattern misses most of them.
 
-## Word-table candidates (lw/sw only access) (272)
+## Word-table candidates (lw/sw only access) (267)
 
 | current | address | proposed | usage |
 |---|---|---|---|
@@ -51,7 +64,6 @@ Total D_* symbols analyzed: 1505; with usage patterns: 1467
 | `D_800A2668` | `0x800A2668` | `wtbl_800A2668` | {'lui': 3, 'lw': 2, 'sw': 1} |
 | `D_800A26CC` | `0x800A26CC` | `wtbl_800A26CC` | {'lui': 6, 'lw': 2, 'sw': 4} |
 | `D_800A26D0` | `0x800A26D0` | `wtbl_800A26D0` | {'lui': 4, 'lw': 1, 'addiu': 1, 'sw': 2} |
-| `D_800A26D4` | `0x800A26D4` | `wtbl_800A26D4` | {'lui': 4, 'lw': 4} |
 | `D_800A26D8` | `0x800A26D8` | `wtbl_800A26D8` | {'lui': 5, 'lw': 2, 'sw': 3} |
 | `D_800A2870` | `0x800A2870` | `wtbl_800A2870` | {'lui': 6, 'sw': 1, 'lw': 5} |
 | `D_800A2874` | `0x800A2874` | `wtbl_800A2874` | {'lui': 7, 'sw': 2, 'lw': 5} |
@@ -71,7 +83,8 @@ Total D_* symbols analyzed: 1505; with usage patterns: 1467
 | `D_800A2CF8` | `0x800A2CF8` | `wtbl_800A2CF8` | {'lui': 7, 'sw': 5, 'lw': 2} |
 | `D_800A2D04` | `0x800A2D04` | `wtbl_800A2D04` | {'lui': 14, 'lw': 13, 'sw': 1} |
 | `D_800A2D0C` | `0x800A2D0C` | `wtbl_800A2D0C` | {'lui': 3, 'lw': 2, 'sw': 1} |
-| ... 222 more | | | |
+| `D_800A2D10` | `0x800A2D10` | `wtbl_800A2D10` | {'lui': 8, 'sw': 6, 'lw': 2} |
+| ... 217 more | | | |
 
 ## Short-table candidates (lh/sh only access) (137)
 

@@ -128,15 +128,28 @@ def render_subsystem_clusters(rows: list[dict]) -> str:
     named subsystem."""
     # Re-parse the call graph briefly
     sys.path.insert(0, str(ROOT / "tools"))
-    from propose_function_names import parse_all_funcs, build_call_graph, subsystem_prefix  # type: ignore
+    from propose_function_names import (parse_all_funcs, build_call_graph,
+                                          subsystem_prefix, _is_trustworthy_anchor)  # type: ignore
     funcs = parse_all_funcs()
     callers, callees = build_call_graph(funcs)
     unnamed = [f["name"] for f in funcs if f["name"].startswith("func_")]
-    # For each unnamed, find dominant subsystem prefix in callers
+    # For each unnamed, find dominant subsystem prefix in callers.
+    # Same rule as caller_cluster() in the analyzer: trustworthy callers only,
+    # dominant prefix needs >=2 callers AND >=50% share to count as a cluster.
     cluster: dict[str, list[str]] = defaultdict(list)
     no_pfx: list[str] = []
+    sole_caller_cluster: dict[str, list[str]] = defaultdict(list)
     for fn in unnamed:
-        cs = callers.get(fn, set())
+        all_cs = list(callers.get(fn, set()))
+        cs = [c for c in all_cs if _is_trustworthy_anchor(c)]
+        # Sole-caller case promotes that caller's subsystem (matches sole_caller_path)
+        if len(cs) == 1:
+            sp = subsystem_prefix(cs[0])
+            if sp:
+                sole_caller_cluster[sp].append(fn)
+                continue
+            no_pfx.append(fn)
+            continue
         pfx_count = Counter()
         for c in cs:
             p = subsystem_prefix(c)
@@ -144,12 +157,16 @@ def render_subsystem_clusters(rows: list[dict]) -> str:
                 pfx_count[p] += 1
         if pfx_count:
             top, n = pfx_count.most_common(1)[0]
-            if n >= 2 or (len(cs) == 1 and n == 1):
+            if n >= 2 and n / len(cs) >= 0.5:
                 cluster[top].append(fn)
             else:
                 no_pfx.append(fn)
         else:
             no_pfx.append(fn)
+    # Merge sole-caller cluster into main cluster (they both indicate a "this
+    # function belongs to subsystem X" relationship).
+    for k, v in sole_caller_cluster.items():
+        cluster[k].extend(v)
     out = []
     out.append("# Subsystem Clusters (unnamed functions)")
     out.append("")
@@ -267,13 +284,15 @@ def scan_data_symbols() -> str:
 
     # Per-line scan: for any line that references a D_<addr> symbol, note
     # the mnemonic of that line as the kind of access. Faster and more
-    # accurate than the prior O(N*M) approach.
+    # accurate than the prior O(N*M) approach. Also tracks function-pointer
+    # patterns where `lw $vN, ..(D_xxx)` is followed within 3 lines by a
+    # `jalr $vN` -- a common load-and-jumpvia-table idiom.
     use_patterns: dict[str, dict[str, int]] = defaultdict(Counter)
     sym_pat = re.compile(r"\b(D_[0-9A-Fa-f]{8})\b")
-    mnem_pat = re.compile(r"/\*[^*]+\*/\s+(\S+)")
+    mnem_pat = re.compile(r"/\*[^*]+\*/\s+(\S+)\s*(.*)")
     for f in ASM_FUNCS.glob("*.s"):
-        text = f.read_text(errors="replace")
-        for line in text.splitlines():
+        lines = f.read_text(errors="replace").splitlines()
+        for i, line in enumerate(lines):
             sm = sym_pat.search(line)
             if not sm:
                 continue
@@ -284,7 +303,18 @@ def scan_data_symbols() -> str:
             if not mm:
                 continue
             mnem = mm.group(1).lower()
+            ops = mm.group(2)
             use_patterns[sym][mnem] += 1
+            # Function-pointer pattern: lw $vN, ... followed by jalr $vN soon.
+            if mnem == "lw":
+                reg_m = re.search(r"\$(v[01]|s[0-9]|t[0-9])", ops)
+                if reg_m:
+                    reg = reg_m.group(0)
+                    for j in range(i + 1, min(i + 4, len(lines))):
+                        if f"jalr {reg}" in lines[j] or re.search(
+                                rf"jalr\s+{re.escape(reg)}\b", lines[j]):
+                            use_patterns[sym]["fp_call"] += 1
+                            break
 
     # Categorize. Mnemonics we care about:
     #   lwc2 / swc2 / mtc2 / mfc2  -> GTE matrix/vector candidate
@@ -305,7 +335,7 @@ def scan_data_symbols() -> str:
         if gte_uses >= 1:
             matrix_cands.append((sym, addr, dict(p)))
             continue
-        if p.get("jalr", 0) + p.get("jal", 0) >= 1:
+        if p.get("fp_call", 0) >= 1 or p.get("jalr", 0) + p.get("jal", 0) >= 1:
             function_ptr_cands.append((sym, addr, dict(p)))
             continue
         b_uses = p.get("lb", 0) + p.get("lbu", 0) + p.get("sb", 0)
