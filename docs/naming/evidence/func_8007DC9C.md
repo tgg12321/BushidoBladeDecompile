@@ -13,7 +13,7 @@
 ### string_adjacent  (rank=low)
 
 - proposed: `debug_func_8007DC9C`
-- detail: loads strings: ["0x80016044='func=(%08x)(%08x,%08x)\\n'", "0x80016010='GPU timeout:que=%d,stat=%08x,chcr=%08x,m'", 'g_str_gpu_timeout // GPU timeout debug']
+- detail: loads strings: ["0x80016010='GPU timeout:que=%d,stat=%08x,chcr=%08x,m'", "0x80016044='func=(%08x)(%08x,%08x)\\n'", 'g_str_gpu_timeout // GPU timeout debug']
 
 ## First 20 instructions
 

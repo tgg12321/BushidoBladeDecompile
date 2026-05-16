@@ -783,7 +783,7 @@ def caller_cluster(func_name: str, callers: dict[str, set[str]]) -> tuple[str | 
     """Look at named callers; if a single subsystem dominates, return
     (proposed_name, evidence, contributing_callers).
     """
-    all_cs = list(callers.get(func_name, set()))
+    all_cs = sorted(callers.get(func_name, set()))
     cs = [c for c in all_cs if _is_trustworthy_anchor(c)]
     if not cs:
         return None, None, all_cs
@@ -882,10 +882,14 @@ def address_neighborhood(func_name: str, addr_to_named: dict[int, str]) -> tuple
 
 def string_evidence(func_data: dict, addr_to_named: dict[int, str],
                     rodata: dict[int, str], sym_comments: dict[str, str]) -> tuple[list[str], list[str]]:
-    """Return (named_string_syms, raw_strings) referenced by this function."""
+    """Return (named_string_syms, raw_strings) referenced by this function.
+
+    Sorted alphabetically by symbol name for deterministic output across
+    runs (set iteration order otherwise varies).
+    """
     named: list[str] = []
     raw: list[str] = []
-    for sref in func_data["sym_refs"]:
+    for sref in sorted(func_data["sym_refs"]):
         # If sref points at a known g_str_*
         m_d = re.match(r"^D_([0-9A-Fa-f]{8})$", sref)
         if m_d:
