@@ -265,4 +265,3 @@ tslSmdSendVu1Code_8007A87C = 0x8007A87C;
 tslSmdSendVu1Code_8007A898 = 0x8007A898;
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
-bios_GPU_cw = 0x8007DF10;
