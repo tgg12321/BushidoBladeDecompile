@@ -441,6 +441,21 @@ def scan_orphan_cheats(existing_funcs: set[str]) -> list[dict]:
     )
     orphan_funcs = all_cheat_funcs - existing_funcs
 
+    # Count TOTAL regfix rules per function (cheat + non-cheat). Cheats wedged
+    # inside many auxiliary rules are structurally harder to retire than
+    # isolated ones — see feedback_cheat_cleanup_techniques.md. Total-rule
+    # count is a much better difficulty proxy than cheat-rule count alone.
+    import re as _re_total
+    total_rules: dict[str, int] = {}
+    for fname in ("regfix.txt", "regfix_stage2.txt"):
+        p = Path(fname)
+        if not p.exists():
+            continue
+        for line in p.read_text(encoding="utf-8", errors="ignore").splitlines():
+            m = _re_total.match(r'^\s*([A-Za-z_][\w]*)\s*:', line)
+            if m:
+                total_rules[m.group(1)] = total_rules.get(m.group(1), 0) + 1
+
     entries: list[dict] = []
     for func in sorted(orphan_funcs):
         size = asm_insn_count(func)
@@ -471,9 +486,14 @@ def scan_orphan_cheats(existing_funcs: set[str]) -> list[dict]:
             "kind": "cheat_cleanup",
             "tags": ",".join(types),
             "rule_count": rule_count,
+            "total_rules": total_rules.get(func, 0),
         })
 
-    entries.sort(key=lambda e: (e["rule_count"], e["size"], e["func"]))
+    # Primary sort: total regfix rule count (lower = simpler to retire).
+    # Secondary: cheat-rule count, then size, then name. Empirical: success
+    # rate ~75% for total_rules <= 9, 0% for total_rules >= 12 in single-
+    # session quick retirements.
+    entries.sort(key=lambda e: (e["total_rules"], e["rule_count"], e["size"], e["func"]))
     return entries
 
 
@@ -990,7 +1010,12 @@ def main() -> int:
             f"**Total cheat cleanup queue: {len(cheat_orphan_entries)} functions.**"
         )
         lines.append("")
-        lines.append("Format: `<#>  <func>  <size insns>  <rule_count>  <src>  [cheat_types]`")
+        lines.append("Format: `<#>  <func>  <size insns>  total=<N>  cheat=<N>  <src>  [cheat_types]`")
+        lines.append(
+            "(Sorted by `total` ascending. Empirically `total ≤ 9` is "
+            "single-session retirable; `total ≥ 12` usually needs a deeper "
+            "structural rework. See `feedback_cheat_cleanup_techniques.md`.)"
+        )
         lines.append("")
         lines.append("```")
         for pos, e in enumerate(cheat_orphan_entries, 1):
@@ -998,7 +1023,8 @@ def main() -> int:
             lines.append(
                 f"{pos:>4}  {e['func']:<40s}  "
                 f"{e['size']:>4d}  "
-                f"rules={e['rule_count']:<3d}  "
+                f"total={e['total_rules']:<3d}  "
+                f"cheat={e['rule_count']:<3d}  "
                 f"{e['src']:<24s}{tags}"
             )
         lines.append("```")
