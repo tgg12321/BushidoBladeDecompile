@@ -347,6 +347,27 @@ def load_config(config_path):
             config[func]['swaps'].append((reg_a, reg_b, start, end))
             continue
 
+        # Specific-typo detection: `<func>: swap $X <-> $Y` is the common
+        # mistake — the actual syntax has NO `swap` keyword (the `<->` token
+        # itself is the operation). Loud warning so the agent sees the rule
+        # was silently dropped. From the exec_game retrospective (the
+        # malformed warnings were buried in unrelated function noise for
+        # hours).
+        m_typo = re.match(r'(\w+)\s*:\s*swap\s+(\$\w+)\s*<->\s*(\$\w+)', line)
+        if m_typo:
+            func = m_typo.group(1)
+            ra = m_typo.group(2)
+            rb = m_typo.group(3)
+            print(
+                f"regfix: ERROR: {func}: SWAP-KEYWORD TYPO — the `swap` "
+                f"keyword is not part of the syntax. Drop it:\n"
+                f"  Wrong: {func}: swap {ra} <-> {rb} ...\n"
+                f"  Right: {func}: {ra} <-> {rb} ...\n"
+                f"  (Line silently dropped — fix and rebuild.)",
+                file=sys.stderr,
+            )
+            continue
+
         print(f"regfix: WARNING: ignoring malformed line: {line}", file=sys.stderr)
     return config
 
