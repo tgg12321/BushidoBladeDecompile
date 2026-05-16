@@ -39,6 +39,8 @@
 #   bash tools/dc.sh next-asmfix [N]               — pull/preview asmfix retirement queue
 #   bash tools/dc.sh next-cheat [N]                — pull/preview inline-asm cheat-fix work (active queue filtered to inline_asm_debt)
 #   bash tools/dc.sh fix-asmfix-drift [--apply]    — auto-fix .L<N> rename drift in asmfix.txt
+#   bash tools/dc.sh auto-repair                    — build + detect cascade-drift + auto-run repair tools (used by build-active)
+#   bash tools/dc.sh preflight-cascade <func>       — read-only impact report: how many sibling rules at risk of label drift
 #
 set -eo pipefail
 
@@ -1055,6 +1057,28 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         # rename ".L<N>" ".L<HEX_ADDR>" rules. This tool re-resolves the
         # right .L<N> from the absolute address in the rename target.
         python3 tools/fix_asmfix_drift.py "$@" 2>&1
+        ;;
+
+    auto-repair)
+        # Build wrapper that detects cascade-drift symptoms (asmfix
+        # `did not match` warnings, doubly-defined `.LN` labels, regfix
+        # subst no-match) and auto-runs fix-asmfix-drift + fix-label-drift
+        # then rebuilds. Used by `dc.sh build-active` by default; can also
+        # be called directly to retry a stuck build. See
+        # memory/feedback_auto_drift_repair.md for full behaviour.
+        python3 tools/auto_drift_repair.py "$@" 2>&1
+        ;;
+
+    preflight-cascade)
+        # Pre-integration impact report (read-only). Lists how many sibling
+        # rules in the function's .c file use literal `.LN` labels — those
+        # are the rules that can silently break when the integration shifts
+        # GCC's file-wide label counter. Auto-repair (in build-active)
+        # handles drift after the fact; this just sets expectations.
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh preflight-cascade <func> [--verbose]"; exit 1; }
+        python3 tools/preflight_cascade.py "$FUNC_NAME" "$@" 2>&1
         ;;
 
     diff)

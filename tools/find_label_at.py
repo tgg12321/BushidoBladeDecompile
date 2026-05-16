@@ -79,6 +79,18 @@ def get_func_link_address(func: str) -> int | None:
                 m = re.search(r"\b(0x80[0-9a-fA-F]{6})\b", line)
                 if m:
                     return int(m.group(1), 16)
+    # Last-resort fallback: splat's `func_<8 hex digits>` convention encodes
+    # the canonical link address in the function name itself. This rescues
+    # the case where the build has just failed (no bb2.map) — which is
+    # precisely when fix_asmfix_drift / auto_drift_repair need to look up
+    # addresses to repair the cascade.
+    m = re.fullmatch(r"func_([0-9A-Fa-f]{8})", func)
+    if m:
+        addr = int(m.group(1), 16)
+        # Only trust this when the address is in the game's text range
+        # (KSEG0, .text section bounds for SLUS-00663).
+        if 0x80010000 <= addr <= 0x80100000:
+            return addr
     return None
 
 

@@ -116,13 +116,28 @@ def find_src_for_func(func: str) -> Path | None:
     return None
 
 
-def run_make(quiet: bool = False) -> int:
-    """Run make via make_check.py, which surfaces silently-no-op'd regfix
-    rules (drift-broken literal-`.L<N>` labels) that otherwise scroll past in
-    the build log. Streams output live; --tail mode in quiet."""
-    cmd = ["python3", "tools/make_check.py"]
-    if quiet:
-        cmd += ["--tail", "3"]
+def run_make(quiet: bool = False, no_auto_repair: bool = False) -> int:
+    """Run the build, optionally auto-repairing cascade drift.
+
+    Default behaviour: invoke `tools/auto_drift_repair.py`, which runs
+    `make_check.py` first (the baselined-regfix-warning wrapper) and, when
+    the build fails with cascade-drift symptoms, automatically runs
+    `fix-asmfix-drift --apply` + `fix-label-drift --apply` and retries.
+    `[auto-repair]` lines on stderr tell the agent when the repair fired
+    and which files were modified (asmfix.txt / regfix.txt).
+
+    `--no-auto-repair` falls back to the legacy plain `make_check.py` path
+    — same behaviour as before this command was wired up. Useful when an
+    agent specifically wants to see raw drift symptoms without auto-fix.
+    """
+    if no_auto_repair:
+        cmd = ["python3", "tools/make_check.py"]
+        if quiet:
+            cmd += ["--tail", "3"]
+    else:
+        cmd = ["python3", "tools/auto_drift_repair.py"]
+        if quiet:
+            cmd += ["--quiet"]
     return subprocess.run(cmd, cwd=str(ROOT)).returncode
 
 
@@ -133,6 +148,9 @@ def main() -> int:
                     help="Skip the verify-c step. Just rebuild.")
     ap.add_argument("--quiet", action="store_true",
                     help="Suppress make output except for the tail summary.")
+    ap.add_argument("--no-auto-repair", action="store_true",
+                    help="Use plain make_check.py instead of auto_drift_repair.py "
+                         "(no automatic fix-asmfix-drift / fix-label-drift retry)")
     args = ap.parse_args()
 
     src_path = find_src_for_func(args.func)
@@ -177,8 +195,8 @@ def main() -> int:
         except Exception as e:
             print(f"WARNING: could not remove {t}: {e}", file=sys.stderr)
 
-    print(f"[build-active] Recompiling {rel} and relinking...")
-    rc = run_make(quiet=args.quiet)
+    print(f"[build-active] Recompiling {rel} and relinking...", flush=True)
+    rc = run_make(quiet=args.quiet, no_auto_repair=args.no_auto_repair)
     if rc != 0:
         print(f"[build-active] make FAILED (exit {rc})", file=sys.stderr)
         return 2
