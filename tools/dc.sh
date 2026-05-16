@@ -122,6 +122,17 @@ case "$CMD" in
             echo "Queue:    WORK_QUEUE.md missing — run 'dc.sh refresh-queue' first"
         fi
 
+        # Asm-cheat debt. A "cheat" is a function whose binary bytes
+        # come from regfix splice or file-scope `__asm__("glabel ...")`
+        # instead of from real C compilation — functionally equivalent
+        # to a `replace_with_asmfile` bridge but historically invisible
+        # to the bridge guard. The active_func_guard hook blocks NEW
+        # cheats; this line surfaces the EXISTING ones that should be
+        # revisited.
+        if [ -f "tools/audit_asm_cheats.py" ]; then
+            python3 tools/audit_asm_cheats.py --summary 2>/dev/null || true
+        fi
+
         echo
         echo "--- Top of queue ---"
         if [ -f "WORK_QUEUE.md" ] && [ ! -s ".bb2_active_func" ]; then
@@ -753,6 +764,28 @@ PYEOF
         python3 tools/recipes.py apply "$RECIPE" "$FUNC_NAME" 2>&1
         ;;
 
+    cheats)
+        # Wrapper for tools/audit_asm_cheats.py. Surfaces existing
+        # asm-cheat patterns (large splice rules in regfix.txt, inline
+        # __asm__ glabel function bodies in src/*.c). The hook blocks
+        # NEW cheats; this command shows existing ones for cleanup.
+        #
+        #   dc.sh cheats              # full report
+        #   dc.sh cheats <funcname>   # check one function
+        #   dc.sh cheats --summary    # one-line count (also runs in dc.sh start)
+        #   dc.sh cheats --list       # one function name per line
+        if [ "$#" -eq 0 ]; then
+            python3 tools/audit_asm_cheats.py --all
+        else
+            case "$1" in
+                --summary) python3 tools/audit_asm_cheats.py --summary ;;
+                --list)    python3 tools/audit_asm_cheats.py --list-funcs ;;
+                --*)       python3 tools/audit_asm_cheats.py "$1" ;;
+                *)         python3 tools/audit_asm_cheats.py --func "$1" ;;
+            esac
+        fi
+        ;;
+
     next|next-structural|next-asmfix)
         # Print the next function from one WORK_QUEUE.md queue and SET it as the
         # active function in .bb2_active_func. The PreToolUse hook will
@@ -1024,6 +1057,69 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         python3 tools/diff_align.py "$FUNC_NAME" "$@" 2>&1
         ;;
 
+    side-by-side)
+        # Shape-aligned binary diff with per-row category (MATCH / REG-RENAME
+        # / BRANCH-OFFSET / STRUCTURAL). Cascade-immune by construction —
+        # difflib aligns on opcode+register-blind shape, so a 1-instruction
+        # length difference does NOT cause all subsequent rows to show as
+        # different.
+        #
+        # Use this when verify-c reports a high diff count and you want to
+        # know which are real structural changes vs pure register renames vs
+        # branch-offset drift (which routes to fix-branch-drift).
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh side-by-side <func> [--all] [--no-color]"; exit 1; }
+        python3 tools/binary_diff.py side-by-side "$FUNC_NAME" "$@" 2>&1
+        ;;
+
+    gen-substs)
+        # Auto-generate regfix `subst` rules for REG-RENAME diff rows from
+        # the shape-aligned binary diff. Output goes to stdout by default;
+        # pass --apply to append directly to regfix.txt.
+        #
+        # This is the high-leverage tool from the exec_game retrospective:
+        # what was 4 hours of manual subst-writing collapses to one command.
+        # Always re-run after every build that closes structural gaps —
+        # the only register renames it can emit are the ones at MATCHED
+        # shape positions, which means structural fixes must come first.
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh gen-substs <func> [--apply]"; exit 1; }
+        python3 tools/binary_diff.py gen-substs "$FUNC_NAME" "$@" 2>&1
+        ;;
+
+    binary-diff-count)
+        # JSON: {structural, rename, branch_offset, total} for one function.
+        # Used by build_active.py to drive cascade-immune REGRESSION
+        # detection in iter_log.
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh binary-diff-count <func>"; exit 1; }
+        python3 tools/binary_diff.py count "$FUNC_NAME" 2>&1
+        ;;
+
+    branch-offsets)
+        # JSON dump of BRANCH-OFFSET rows — branch instructions whose
+        # opcode+registers match but whose immediate differs. Consumed by
+        # fix-branch-drift to emit .word-encoded subst rules.
+        FUNC_NAME="$1"
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh branch-offsets <func>"; exit 1; }
+        python3 tools/binary_diff.py branch-offsets "$FUNC_NAME" 2>&1
+        ;;
+
+    fix-branch-drift)
+        # Auto-emit .word-encoded subst rules for BRANCH-OFFSET diffs —
+        # the residual end-game when all STRUCTURAL/REG-RENAME diffs are
+        # gone but a few branch instructions still differ in immediate only
+        # (label drift that survives gen-substs). The .word escape hatch
+        # forces the assembler to emit the exact target bytes, bypassing
+        # the label resolution. From the exec_game match (commit 10ee50c).
+        FUNC_NAME="$1"
+        shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh fix-branch-drift <func> [--apply]"; exit 1; }
+        python3 tools/word_branches.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
     refresh-queue)
         # Refresh classifier CSV + regenerate WORK_QUEUE.md. Run after a
         # batch of matches so the queue drops them. ~2 minutes full, ~10s
@@ -1208,7 +1304,9 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         echo "          analysis, dump-text, validate-regfix, gen-regfix, verify,"
         echo "          frame-shift, asmfix-slice, find-label-at, diagnose-hoist,"
         echo "          next, next-structural, next-asmfix, refresh-queue, release,"
-        echo "          retire, audit-bridges"
+        echo "          retire, audit-bridges,"
+        echo "          side-by-side, gen-substs, binary-diff-count, branch-offsets,"
+        echo "          fix-branch-drift"
         exit 1
         ;;
 esac

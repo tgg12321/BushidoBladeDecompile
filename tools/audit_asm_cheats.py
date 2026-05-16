@@ -26,9 +26,13 @@ Anything not on that list is an UNAUTHORIZED cheat.
 
 Modes:
   --all          : full report, exit 0
+  --summary      : one-line counts ("S splices, I inline-asm, B BIOS trampolines"),
+                   exit 0. Used by `dc.sh start` for session briefing.
   --func NAME    : check one function; exit 1 if unauthorized cheat found
   --check-new    : compare current state vs HEAD; exit 1 if new cheats added.
                    (Used by the active_func_guard hook before commit.)
+  --list-funcs   : print one unauthorized function name per line, exit 0.
+                   Used by queue generators to surface cheat-fix work.
 """
 import argparse
 import re
@@ -268,15 +272,56 @@ def cmd_check_new():
     return 1
 
 
+def cmd_summary():
+    """One-line counts of unauthorized cheats. For session briefing."""
+    auth = load_authorized()
+    cur_splice, cur_inline, cur_bios = get_current_cheats(auth)
+    n_splice = len(cur_splice)
+    n_inline = len(cur_inline)
+    n_bios = len(cur_bios)
+    total = n_splice + n_inline
+    if total == 0 and n_bios == 0:
+        print("Cheats:   none — all inline asm and large splices are authorized")
+    else:
+        parts = []
+        if n_splice:
+            parts.append(f"{n_splice} splice")
+        if n_inline:
+            parts.append(f"{n_inline} inline-asm")
+        if n_bios:
+            parts.append(f"{n_bios} BIOS-trampoline (recommend adding to authorized list)")
+        msg = ", ".join(parts)
+        print(f"Cheats:   {total} unauthorized ({msg})")
+        print(f"          run 'python3 tools/audit_asm_cheats.py --all' to list, or")
+        print(f"          'dc.sh next-cheat' to pull a cheat-fix work item")
+    return 0
+
+
+def cmd_list_funcs():
+    """Print one unauthorized function name per line."""
+    auth = load_authorized()
+    cur_splice, cur_inline, cur_bios = get_current_cheats(auth)
+    for f in sorted(cur_splice | cur_inline):
+        print(f)
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     g = ap.add_mutually_exclusive_group()
     g.add_argument("--all", action="store_true", help="full report of all cheats (default)")
+    g.add_argument("--summary", action="store_true", help="one-line cheat counts")
     g.add_argument("--func", help="check one function; non-zero exit if unauthorized")
     g.add_argument("--check-new", action="store_true",
                    help="compare current state vs HEAD; non-zero exit if new cheats added")
+    g.add_argument("--list-funcs", action="store_true",
+                   help="print unauthorized function names, one per line")
     args = ap.parse_args()
+    if args.summary:
+        return cmd_summary()
+    if args.list_funcs:
+        return cmd_list_funcs()
     if args.check_new:
         return cmd_check_new()
     if args.func:
