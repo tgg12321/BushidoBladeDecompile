@@ -87,16 +87,23 @@ Branch on the briefing:
 
 ## §2. PULL THE NEXT FUNCTION
 
-All remaining decomp work is in the **asmfix retirement queue** — bridged functions (`replace_with_asmfile`) to convert back to pure C. Pull from it:
+There are now TWO classes of remaining decomp work, with **separate queues**:
+
+1. **Active decomp queue** (`dc.sh next`) — inline-asm cheats: functions with a file-scope `__asm__("glabel <func> ...")` block in `src/*.c` that emits verbatim asm bytes instead of doing real C decomp. Each row carries the `inline_asm_debt` blocker tag. **74 items as of 2026-05-16.**
+2. **Asmfix retirement queue** (`dc.sh next-asmfix`) — bridged functions (`replace_with_asmfile` in `asmfix.txt`) to convert back to pure C.
+
+Pull from the active queue first (default), since cheats are higher priority — they look like decomp progress but aren't:
 
 ```
-bash tools/dc.sh next-asmfix
-bash tools/dc.sh agent-brief <func>
+bash tools/dc.sh next                 # active queue (cheats first, then anything else)
+bash tools/dc.sh next-cheat           # active queue filtered to inline_asm_debt rows
+bash tools/dc.sh next-asmfix          # fall back to this when active queue is empty
+bash tools/dc.sh agent-brief <func>   # always run after a pull (full context dump)
 ```
 
-`next-asmfix` sets `.bb2_active_func` to the next queue entry. `agent-brief` then gives you the full context dump: classification, asm, neighbor functions, kengo reference, existing regfix/asmfix rules.
+`next` / `next-cheat` / `next-asmfix` all set `.bb2_active_func` to the entry pulled. `agent-brief` gives you the full context dump: classification, asm, neighbor functions, kengo reference, existing regfix/asmfix rules.
 
-If the **retirement queue is empty** (`No entries found`): report "all decomp work complete" and stop — there's nothing to do.
+If **both queues are empty** (`No entries found` in each): report "all decomp work complete" and stop — there's nothing to do.
 
 Read the brief carefully. The very top of the brief now shows a **`Function state`** line — `BRIDGED` / `RETIRING` / `NORMAL`. This decides whether you need `dc.sh retire` (BRIDGED) or which verify command to use (RETIRING → `verify-c`, NORMAL → `verify`).
 
@@ -110,12 +117,28 @@ Then the `recommendation` field tells you the function class:
 | `aliasing_heavy` (tag) | Use `dc.sh diff-align` early; expect asymmetric reload patterns |
 | `needs_function_split` / `needs_rodata_split` / `needs_delay_slot_ra` | Structural; specific tooling exists — see `feedback_workflow_rules.md` |
 | `permanently_blocked:*` / `bios_or_syscall:*` | Should never appear (queue filters them). If it does, something's wrong — investigate before continuing |
+| `standard` + `inline_asm_debt` (tag) | **Cheat work item.** See §2.5.d below before §3 — the function has a file-scope `__asm__` body in src/ that must be stripped and replaced with C. |
 
-Each function comes in **BRIDGED** (`Function state: BRIDGED` at the top of the brief). To start pure-C work:
+**On the `classifier_said:<verdict>` blocker tag** (only present on inline_asm_debt rows): `classify_func` reads `asm/funcs/<func>.s` to make its `bios_or_syscall:*` / `permanently_blocked:*` calls. For cheats, that asm IS the cheat body — so the tag reports what classify_func thought *based on the cheated bytes*, NOT what the original function actually requires. Treat the tag as a HINT for what patterns to look out for (e.g., `classifier_said:permanently_blocked:cop0_op` means watch for a single COP0 op surrounded by ordinary C-decompilable work) — **never** as authorization to add the function to `inline_asm_canonical.txt` without going through §2.5.b's strong-signal evidence check.
+
+The first-step action depends on the **`Function state`** line at the top of the brief:
+
+**`Function state: BRIDGED`** (function pulled from asmfix retirement queue — `replace_with_asmfile` line still active in `asmfix.txt`):
 
 1. Run `dc.sh retire <func>` — comments out the bridge with `# RETIRE: ` so the C body becomes the source of truth.
 2. **Check the stub signature against canonical**: read `tmp/bridge_signature_audit.json` (refresh with `bash tools/dc.sh audit-bridges` if stale). 41/209 bridged stubs have a wrong arity/type. If the stub disagrees with `caller_max_arity` from the audit, fix the decl in src/ to match canonical BEFORE iterating — wrong stubs cause cascade-regressions through callers (the §6.4 caller-audit case, but for *retirement* you can catch it up front).
 3. Re-run `dc.sh agent-brief <func>` so `Function state` shows RETIRING (not BRIDGED) and `gen_regfix` runs against the real C body, not the bridge.
+
+**`Function state: NORMAL`** + `inline_asm_debt` blocker tag (function pulled from active queue / `next-cheat` — the body is a file-scope `__asm__("glabel <func> ...")` block in `src/*.c`, not a `replace_with_asmfile` bridge):
+
+1. **Read the cheat body in src/.** `bash tools/dc.sh inline-locate <func>` prints the file and line of the existing `__asm__` block. Open the file and read it so you know what bytes the previous agent injected verbatim — this tells you the function's shape and is the closest thing to "the answer" you'll see for free.
+2. Run `bash tools/dc.sh inline-setup <func>` — stages `permuter/<func>/` with `target.s` + m2c'd `base.c`. Same setup the BRIDGED path gets from `dc.sh retire`, just sourced from the file-scope `__asm__` block instead of from `asmfix.txt`.
+3. Do NOT run `dc.sh retire <func>` — it's bridge-only and will refuse for cheats (no asmfix entry). Conversely, the `__asm__` block stays in place during iteration; you replace it with the matched C via `dc.sh inline-replace <func> <c_file>` at integration time (or hand-write the body via the §5.x WSL injection pattern).
+4. There is no `# RETIRE: ` marker for cheats. The "source of truth" flip happens when the `__asm__` block is removed from src/ and the C body takes its place.
+
+**`Function state: RETIRING`** (mid-flight from a prior session): skip 1; proceed directly to §2.5.
+
+**`Function state: NORMAL`** without `inline_asm_debt`: standard pre-cheat queue work (asm only exists in `asm/funcs/`, no inline body in src/). Skip step 1 of either path above and proceed directly to §2.5.
 
 ---
 
