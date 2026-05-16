@@ -4246,7 +4246,7 @@ func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
 func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
 func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
 func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
-func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L1072" @ 110
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L1073" @ 110
 # Move convergence point: insert label after lw $7,16(sp)
 func_80074B18: insert_label ".LC846:" @ 116
 func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
@@ -5041,7 +5041,7 @@ func_80068F70: subst "sw\s+\$2,\%gp_rel\(D_800A34F8\)" "sw\t$3,%gp_rel(D_800A34F
 func_80068F70: subst "andi\s+\$2,\$2,0x000f" "andi\t$3,$3,0x000f" @ 52
 func_80068F70: subst "srl\s+\$2,\$6,\$2" "srl\t$3,$6,$3" @ 53
 func_80068F70: subst "andi\s+\$2,\$2,0x0001" "andi\t$3,$3,0x0001" @ 54
-func_80068F70: subst "beq\s+\$2,\$0,\.L769" "beq\t$3,$0,.L769" @ 55
+func_80068F70: subst "beq\s+\$2,\$0," "beq\t$3,$0," @ 55
 func_80068F70: $2 <-> $3 @ 64-76
 func_80068F70: $4 <-> $5 @ 64-76
 func_80068F70: subst "lw\s+\$4,\%gp_rel\(D_800A34FC\)\(\$gp\)" "lw\t$5,%gp_rel(D_800A34FC)($gp)" @ 57
