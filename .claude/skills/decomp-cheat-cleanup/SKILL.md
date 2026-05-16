@@ -145,7 +145,23 @@ Compare this to target.s and to the regfix rules. The regfix rules transform `du
 
 Try in this order. Each rung requires SHA1 to either stay matching or break in a way that gets you closer to a clean removal. **Revert immediately on regression.**
 
-### 5.0 Remove the cheat rule first (controlled break)
+### 5.-1 ALWAYS TRY FIRST: remove ALL the function's regfix rules (free if stale)
+
+**Per `feedback_cheat_cleanup_techniques.md` §0** — on the 2026-05-16 session, 22 of 28 cheat orphans (79%) had ALL their regfix rules stale. The C source had been refactored over time; rules were no-ops but still in regfix.txt. Deleting them was free.
+
+```bash
+sed -i "/^<func>:/d" regfix.txt
+rm -f build/src/<file>.o
+bash tools/dc.sh build && bash tools/dc.sh verify <func>
+```
+
+If `bb2 matches!` AND per-function verify clean → commit the deletion. Done.
+
+If broken → restore (`cp /tmp/regfix.bak regfix.txt`) and proceed to §5.0.
+
+**Caveat:** doesn't apply to `c_body_multi_insn` cheats (cheat is in src/, not regfix). Doesn't apply to file-scope `__asm__(glabel)` cheats (different category). For those, jump to §5.1+.
+
+### 5.0 Remove just the cheat rule (controlled break — diagnostic only)
 
 Edit `regfix.txt` / `asmfix.txt` / src/*.c to remove the cheat. Build:
 
