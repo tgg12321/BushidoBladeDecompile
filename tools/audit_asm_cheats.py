@@ -48,6 +48,12 @@ CUMULATIVE_RULE_LINES = 60        # sum across all multi-line ops per function �
                                   # split-evasion attack (e.g., 4x20-line splices to dodge
                                   # the per-rule 30 threshold). 60 leaves headroom for
                                   # legit complex recipes (func_8007CE0C currently 46).
+WILDCARD_SUBST_LIMIT = 10         # max `subst ".*"` / `subst ".+"` / `subst ""` rules per
+                                  # function. Wildcard substs force-overwrite whatever the
+                                  # C source compiled to with the rule's literal text —
+                                  # functionally equivalent to replace_with_asmfile (the
+                                  # bytes come from the rules, not C codegen). >=10 in
+                                  # regfix.txt + regfix_stage2.txt combined = cheat.
 GLABEL_BODY_LINES = 5
 
 # 3-instruction BIOS trampoline: addiu $tN, $zero, 0xXX; jr $tN; addiu $tM,...
@@ -102,6 +108,27 @@ def scan_regfix_subst_multi(content):
             n_repl = max(0, len(quoted) - 1)
             cheats.append((m.group(1), n_repl, i))
     return cheats
+
+
+def scan_regfix_wildcard_substs(content):
+    """Return {func: wildcard_count} for `subst` rules whose pattern matches
+    ANY input (`.*`, `.+`, empty string). These force-overwrite the C-source
+    output at index N with the rule's literal text — functionally identical
+    to replace_with_asmfile (binary content from the rule, not from C codegen)
+    but applied via N small rules per function instead of one big bridge.
+
+    A function with WILDCARD_SUBST_LIMIT+ of these is having its entire
+    instruction stream rewritten by regfix — the C source is decorative."""
+    from collections import defaultdict
+    counts = defaultdict(int)
+    for line in content.split("\n"):
+        m = re.match(r'^(\w+):\s+subst\s+"([^"]*)"\s+"', line)
+        if not m:
+            continue
+        func, pat = m.group(1), m.group(2)
+        if pat in (".*", ".+", ""):
+            counts[func] += 1
+    return dict(counts)
 
 
 def scan_regfix_cumulative(content):
@@ -340,17 +367,24 @@ def get_current_cheats(auth):
     bios_funcs = set()
     c_body_funcs = set()
 
-    regfix = Path("regfix.txt")
-    if regfix.exists():
-        content = regfix.read_text(encoding="utf-8")
-        for func, k, n, line in scan_regfix_splices(content):
+    # Combine stage1 + stage2 regfix content for unified per-function checks.
+    regfix_content = ""
+    for fname in ("regfix.txt", "regfix_stage2.txt"):
+        p = Path(fname)
+        if p.exists():
+            regfix_content += p.read_text(encoding="utf-8", errors="ignore") + "\n"
+    if regfix_content:
+        for func, k, n, line in scan_regfix_splices(regfix_content):
             if n >= LARGE_SPLICE_LINES and func not in auth:
                 splice_funcs.add(func)
-        for func, n, line in scan_regfix_subst_multi(content):
+        for func, n, line in scan_regfix_subst_multi(regfix_content):
             if n >= LARGE_SUBST_MULTI_LINES and func not in auth:
                 splice_funcs.add(func)
-        for func, total in scan_regfix_cumulative(content).items():
+        for func, total in scan_regfix_cumulative(regfix_content).items():
             if total >= CUMULATIVE_RULE_LINES and func not in auth:
+                splice_funcs.add(func)
+        for func, wcount in scan_regfix_wildcard_substs(regfix_content).items():
+            if wcount >= WILDCARD_SUBST_LIMIT and func not in auth:
                 splice_funcs.add(func)
 
     for src in sorted(Path("src").glob("*.c")):
@@ -377,11 +411,16 @@ def get_head_cheats(auth):
     inline_funcs = set()
     c_body_funcs = set()
 
-    try:
-        head_regfix = subprocess.run(
-            ["git", "show", "HEAD:regfix.txt"],
-            capture_output=True, text=True, check=True,
-        ).stdout
+    head_regfix = ""
+    for fname in ("regfix.txt", "regfix_stage2.txt"):
+        try:
+            head_regfix += subprocess.run(
+                ["git", "show", f"HEAD:{fname}"],
+                capture_output=True, text=True, check=True,
+            ).stdout + "\n"
+        except subprocess.CalledProcessError:
+            pass
+    if head_regfix:
         for func, k, n, line in scan_regfix_splices(head_regfix):
             if n >= LARGE_SPLICE_LINES and func not in auth:
                 splice_funcs.add(func)
@@ -391,8 +430,9 @@ def get_head_cheats(auth):
         for func, total in scan_regfix_cumulative(head_regfix).items():
             if total >= CUMULATIVE_RULE_LINES and func not in auth:
                 splice_funcs.add(func)
-    except subprocess.CalledProcessError:
-        pass
+        for func, wcount in scan_regfix_wildcard_substs(head_regfix).items():
+            if wcount >= WILDCARD_SUBST_LIMIT and func not in auth:
+                splice_funcs.add(func)
 
     # All .c files tracked at HEAD
     src_list = subprocess.run(
@@ -424,7 +464,12 @@ def get_head_cheats(auth):
 
 def cmd_all():
     auth = load_authorized()
-    regfix_content = Path("regfix.txt").read_text(encoding="utf-8") if Path("regfix.txt").exists() else ""
+    # Combine stage1 + stage2 regfix files for unified per-function checks.
+    regfix_content = ""
+    for fname in ("regfix.txt", "regfix_stage2.txt"):
+        p = Path(fname)
+        if p.exists():
+            regfix_content += p.read_text(encoding="utf-8", errors="ignore") + "\n"
     splices = scan_regfix_splices(regfix_content)
     full_splices = [s for s in splices if s[2] >= LARGE_SPLICE_LINES]
     unauth_splices = [s for s in full_splices if s[0] not in auth]
@@ -437,6 +482,13 @@ def cmd_all():
     over_cumulative = sorted(
         ((fn, total) for fn, total in cumulative.items()
          if total >= CUMULATIVE_RULE_LINES and fn not in auth),
+        key=lambda x: -x[1],
+    )
+
+    wildcard = scan_regfix_wildcard_substs(regfix_content)
+    over_wildcard = sorted(
+        ((fn, n) for fn, n in wildcard.items()
+         if n >= WILDCARD_SUBST_LIMIT and fn not in auth),
         key=lambda x: -x[1],
     )
 
@@ -460,6 +512,14 @@ def cmd_all():
     print(f"  {len(over_cumulative)} UNAUTHORIZED over threshold:")
     for fn, total in over_cumulative:
         print(f"    {fn:32s}  total_lines={total}")
+
+    print()
+    print(f"=== regfix wildcard `subst \".*\"` rules per function ===")
+    print(f"  {sum(1 for v in wildcard.values() if v > 0)} functions have wildcard substs")
+    print(f"  threshold: {WILDCARD_SUBST_LIMIT}+ wildcard substs = force-overwrite cheat")
+    print(f"  {len(over_wildcard)} UNAUTHORIZED over threshold:")
+    for fn, n in over_wildcard:
+        print(f"    {fn:32s}  wildcard_count={n}")
 
     print()
     print(f"=== Inline __asm__ glabel function bodies in src/*.c ===")
@@ -498,11 +558,12 @@ def cmd_all():
 
     print()
     # De-dup across regfix categories: a single func can hit splice + subst_multi
-    # + cumulative all at once.
+    # + cumulative + wildcard all at once.
     regfix_unauth_funcs = (
         {s[0] for s in unauth_splices}
         | {s[0] for s in unauth_subst_multis}
         | {fn for fn, _ in over_cumulative}
+        | {fn for fn, _ in over_wildcard}
     )
     c_body_unauth_funcs = {c[3] for c in c_body_unauth}
     total_unauth = len(regfix_unauth_funcs) + len(unauth) + len(c_body_unauth_funcs)
@@ -518,7 +579,11 @@ def cmd_func(name):
     auth = load_authorized()
     if name in auth:
         return 0
-    regfix_content = Path("regfix.txt").read_text(encoding="utf-8") if Path("regfix.txt").exists() else ""
+    regfix_content = ""
+    for fname in ("regfix.txt", "regfix_stage2.txt"):
+        p = Path(fname)
+        if p.exists():
+            regfix_content += p.read_text(encoding="utf-8", errors="ignore") + "\n"
     for func, k, n, line in scan_regfix_splices(regfix_content):
         if func == name and n >= LARGE_SPLICE_LINES:
             print(f"UNAUTHORIZED: {name} has full-body splice in regfix.txt:{line} "
@@ -536,6 +601,15 @@ def cmd_func(name):
         print(f"UNAUTHORIZED: {name} has {total} cumulative regfix-injected lines "
               f"(threshold {CUMULATIVE_RULE_LINES}). Looks like split-evasion of the "
               f"per-rule splice threshold. Add to inline_asm_canonical.txt or do real C decomp.",
+              file=sys.stderr)
+        return 1
+    wcount = scan_regfix_wildcard_substs(regfix_content).get(name, 0)
+    if wcount >= WILDCARD_SUBST_LIMIT:
+        print(f"UNAUTHORIZED: {name} has {wcount} wildcard `subst \".*\"` rules in regfix.txt/"
+              f"regfix_stage2.txt (threshold {WILDCARD_SUBST_LIMIT}). These force-overwrite "
+              f"the C source's compiled output line-by-line — functionally equivalent to "
+              f"replace_with_asmfile. Remove the substs and write real C, or add to "
+              f"inline_asm_canonical.txt with authorization.",
               file=sys.stderr)
         return 1
     for src in sorted(Path("src").glob("*.c")):

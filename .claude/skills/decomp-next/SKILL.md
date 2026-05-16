@@ -87,11 +87,12 @@ Branch on the briefing:
 
 ## §2. PULL THE NEXT FUNCTION
 
-There are now THREE classes of remaining decomp work, all surfaced through the queue system:
+There are now FOUR classes of remaining decomp work, all surfaced through the queue system:
 
-1. **Active decomp queue** (`dc.sh next`) — two kinds of inline-asm cheats:
+1. **Active decomp queue** (`dc.sh next`) — three kinds of inline-asm cheats:
    - **`inline_asm_debt`** tag: file-scope `__asm__("glabel <func> ...")` blocks in `src/*.c` that emit verbatim asm bytes instead of doing real C decomp.
    - **`c_body_asm_debt`** tag: multi-instruction `__asm__` blocks INSIDE C function bodies that smuggle non-GTE/non-scheduling work via `\n`-concatenation. Refactor by splitting into per-instruction `__asm__` blocks or moving the non-GTE work into pure C. Reference template: `src/text1b.c` GTE wrappers (`game_2d_CheckLifeGaugeNoDisp` et al. — 8 register pins + one single-instruction `__asm__ volatile` per GTE op).
+   - **`regfix_overwrite_debt`** tag: 10+ wildcard `subst ".*"` rules in `regfix.txt` / `regfix_stage2.txt` per function. These force-overwrite the C-source's compiled output line-by-line with the rule's literal text — same effect as `replace_with_asmfile` (the bytes come from the rules, not C codegen). Fix path: remove the wildcard substs from `regfix*.txt` and write real C that produces the target bytes naturally.
 2. **Asmfix retirement queue** (`dc.sh next-asmfix`) — bridged functions (`replace_with_asmfile` in `asmfix.txt`) to convert back to pure C.
 
 Pull from the active queue first (default), since cheats are higher priority — they look like decomp progress but aren't:
@@ -121,6 +122,7 @@ Then the `recommendation` field tells you the function class:
 | `permanently_blocked:*` / `bios_or_syscall:*` | Should never appear (queue filters them). If it does, something's wrong — investigate before continuing |
 | `standard` + `inline_asm_debt` (tag) | **File-scope cheat work item.** See §2.5.d below before §3 — the function has a file-scope `__asm__` body in src/ that must be stripped and replaced with C. |
 | `standard` + `c_body_asm_debt` (tag) | **C-body multi-insn cheat work item.** The function HAS C scaffolding but contains a multi-instruction `__asm__` block inside its body. Read the C body in src/ (the function definition, NOT a file-scope block) to see the offending `__asm__` block; refactor it into per-instruction `__asm__` blocks (per §6.1) or move non-GTE work into pure C. The text1b.c GTE wrappers are the reference pattern. |
+| `standard` + `regfix_overwrite_debt` (tag) | **Wildcard-subst force-overwrite cheat work item.** The function has 10+ `subst ".*"` rules in `regfix.txt`/`regfix_stage2.txt` that force-overwrite the C-source's compiled output. The C body is decorative — the bytes come from the rules. `grep '^<func>:' regfix.txt regfix_stage2.txt` to find them. Fix path: remove the wildcard substs and write real C that produces the target bytes naturally. The `blocker_tags` will include `wildcard_substs=N` showing the count. |
 
 **On the `classifier_said:<verdict>` blocker tag** (only present on inline_asm_debt rows): `classify_func` reads `asm/funcs/<func>.s` to make its `bios_or_syscall:*` / `permanently_blocked:*` calls. For cheats, that asm IS the cheat body — so the tag reports what classify_func thought *based on the cheated bytes*, NOT what the original function actually requires. Treat the tag as a HINT for what patterns to look out for (e.g., `classifier_said:permanently_blocked:cop0_op` means watch for a single COP0 op surrounded by ordinary C-decompilable work) — **never** as authorization to add the function to `inline_asm_canonical.txt` without going through §2.5.b's strong-signal evidence check.
 

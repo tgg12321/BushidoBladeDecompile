@@ -817,13 +817,13 @@ PYEOF
                 QUEUE_NAME="asmfix retirement queue"
                 ;;
             next-cheat)
-                # Cheat-fix work shares the active queue, but filters to
-                # cheat-tagged entries: inline_asm_debt (file-scope cheats)
-                # AND c_body_asm_debt (C-body multi-insn smuggling cheats).
-                # Awk filter matches either substring in the bracketed tag column.
+                # Cheat-fix work shares the active queue, but filters to any
+                # *_debt tag: inline_asm_debt (file-scope cheats),
+                # c_body_asm_debt (C-body multi-insn smuggling cheats),
+                # regfix_overwrite_debt (wildcard-subst force-rewrite cheats).
                 SECTION="## Queue (top = next)"
-                QUEUE_NAME="active decomp queue (filtered: inline_asm_debt | c_body_asm_debt)"
-                TAG_FILTER="asm_debt"
+                QUEUE_NAME="active decomp queue (filtered: *_debt tags)"
+                TAG_FILTER="_debt"
                 ;;
         esac
         WITH_CONTEXT=0

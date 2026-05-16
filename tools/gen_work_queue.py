@@ -247,6 +247,62 @@ def scan_inline_asm_debt() -> list[dict]:
     return debt
 
 
+def scan_regfix_overwrite_debt() -> list[dict]:
+    """Surface functions with wildcard `subst ".*"` rule clusters in regfix.txt
+    or regfix_stage2.txt — these force-overwrite the C-source's compiled
+    output line-by-line with the rule's literal text. Functionally equivalent
+    to replace_with_asmfile (binary content from rules, not C codegen).
+
+    Tag: `regfix_overwrite_debt`. Fix path: remove the wildcard substs from
+    regfix*.txt and write real C that produces the target bytes naturally
+    (or authorize via inline_asm_canonical.txt if proven canonical asm)."""
+    tools_path = str(ROOT / "tools")
+    if tools_path not in sys.path:
+        sys.path.insert(0, tools_path)
+    from audit_asm_cheats import scan_regfix_wildcard_substs, WILDCARD_SUBST_LIMIT
+
+    regfix_content = ""
+    for fname in ("regfix.txt", "regfix_stage2.txt"):
+        p = Path(fname)
+        if p.exists():
+            regfix_content += p.read_text(encoding="utf-8", errors="ignore") + "\n"
+    if not regfix_content:
+        return []
+
+    debt: list[dict] = []
+    counts = scan_regfix_wildcard_substs(regfix_content)
+    for fname, wcount in counts.items():
+        if wcount < WILDCARD_SUBST_LIMIT:
+            continue
+        if fname in _CANONICAL_INLINE_ASM_NAMES:
+            continue
+        info = classify_info(fname)
+        rec = info.get("recommendation", "standard")
+        tags = list(info.get("blocker_tags", []))
+        if "regfix_overwrite_debt" not in tags:
+            tags.append("regfix_overwrite_debt")
+        tags.append(f"wildcard_substs={wcount}")
+        if rec.startswith("permanently_blocked:") or rec.startswith("bios_or_syscall:"):
+            tags.append(f"classifier_said:{rec}")
+            rec = "standard"
+        src_path = find_src_for_func(fname)
+        debt.append({
+            "func": fname,
+            "src": src_path,
+            "kind": "regfix_overwrite_debt",
+            "result": "CLASSIFY",
+            "score": "",
+            "stage": "",
+            "reason": "",
+            "elapsed": "",
+            "attempts": "",
+            "recommendation": rec,
+            "size_insns": str(info.get("size", {}).get("insns", 0)),
+            "blocker_tags": ",".join(tags),
+        })
+    return debt
+
+
 def scan_c_body_asm_debt() -> list[dict]:
     """Surface multi-instruction __asm__ blocks inside C function bodies that
     smuggle non-§6.1-whitelisted instructions (lw/sw/addu/etc.) via
@@ -550,27 +606,35 @@ def main() -> int:
         if r["func"] not in live_asmfix_funcs
     ]
     file_scope_debt_funcs = {r["func"] for r in file_scope_debt_rows}
-    # C-body multi-insn smuggling cheats — same override pattern as file-scope.
     c_body_debt_rows = [
         r for r in scan_c_body_asm_debt()
         if r["func"] not in live_asmfix_funcs
         and r["func"] not in file_scope_debt_funcs
     ]
     c_body_debt_funcs = {r["func"] for r in c_body_debt_rows}
+    regfix_overwrite_debt_rows = [
+        r for r in scan_regfix_overwrite_debt()
+        if r["func"] not in live_asmfix_funcs
+        and r["func"] not in file_scope_debt_funcs
+        and r["func"] not in c_body_debt_funcs
+    ]
+    regfix_overwrite_debt_funcs = {r["func"] for r in regfix_overwrite_debt_rows}
     # asmfix.txt is the source of truth for replacement-backed functions.
-    # Drop stale CSV rows for asmfix names AND for asm-debt names of either
-    # variant (their fresh classification supersedes the CSV).
+    # Drop stale CSV rows for asmfix names AND for any asm-debt variant
+    # (their fresh classification supersedes the CSV).
     rows = [
         r for r in rows
         if r["func"] not in live_asmfix_funcs
         and r["func"] not in file_scope_debt_funcs
         and r["func"] not in c_body_debt_funcs
+        and r["func"] not in regfix_overwrite_debt_funcs
     ]
     existing_funcs = (
         {r["func"] for r in rows}
         | live_asmfix_funcs
         | file_scope_debt_funcs
         | c_body_debt_funcs
+        | regfix_overwrite_debt_funcs
     )
     debt_rows = [
         r for r in scan_inline_asm_debt()
@@ -580,6 +644,7 @@ def main() -> int:
     rows.extend(debt_rows)
     rows.extend(file_scope_debt_rows)
     rows.extend(c_body_debt_rows)
+    rows.extend(regfix_overwrite_debt_rows)
     # Functions with replace_with_asmfile in asmfix.txt are tagged kind=asmfix.
     # Their bytes come from the .s file regardless of C — they are not in
     # the pure-C work queue. Surface them in their own section instead.
