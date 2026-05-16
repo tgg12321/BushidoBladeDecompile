@@ -105,3 +105,35 @@ md_gview_init          # Marionation engine call: `.word 0x0000410D` (break with
 bios_FileReadRaw       # Same break-instruction pattern (`.word 0x0000414D`, code 0x105) plus custom return-value handling. No C representation.
 func_800790A4          # Single-instruction code fragment (`and $v0,$v0,$s5`, no jr $ra) — fall-through into func_80079028's tail. Cannot be a standalone C function.
 myRobGeneiOpen         # Data-as-code fragment in text1b.c: 4 lui/ori instructions encoding two GTE-opcode constants (0x4C808080, 0x48808080) into $t0, no jr $ra. Mid-body alabels (D_800545F8/FC/_80054600) referenced externally as data — engine reads the bytes as GTE opcode templates. Kengo's same-named function is unrelated (tslGlobalMemAlloc wrapper). classify_func: permanently_blocked:no_return_fragment. Same category as func_800790A4. User-authorized 2026-05-16.
+
+# === Canonical-only MIPS ops (2026-05-16 broader-sweep batch) ===
+# Functions whose original asm uses constructs GCC 2.7.2 cannot emit:
+#   - COP0 ops (mfc0/mtc0) for System Control Coprocessor
+#   - break instructions with custom codes (raw .word encoding)
+#   - $k0 kernel temp register manipulation in interrupt handlers
+#   - BIOS jumptable installation (EnterCritical + magic $t1 BIOS call
+#     + jumptable copy + ExitCritical pattern)
+#   - .word function-pointer tables masquerading as functions
+#   - BIOS trampolines with trailing padding nops or embedded data tables
+#     (the audit's is_bios heuristic missed these — fixed in same commit)
+# All confirmed via classify_func's permanently_blocked:* / bios_or_syscall:*
+# verdicts on asm/funcs/<func>.s (the original splat-disassembled bytes).
+# User-authorized 2026-05-16 after manual review of each function body.
+
+# BIOS trampolines with padding/data tables (extends the 39 already authorized)
+func_800831D8          # BIOS A(0x72) trampoline + 3 trailing alignment-padding nops. Identical to authorized 39; only the trailing nops pushed line count past auditor's is_bios threshold (now fixed).
+func_8008D060          # BIOS B(0x48) trampoline + module-table data block (g_data_start, g_module_func_tbl 34 entries, g_module_type_tbl). The tables are .word data exposed as globals; embedded under this symbol because the BIOS call patches their offsets at runtime.
+
+# COP0 / kernel-register manipulation
+func_8007E094          # COP0 Status register manipulation: `mfc0 $v0, $12; mtc0 $v0, $12` with bit-set. Sets the COP2 Usable bit in Status to enable GTE. GCC 2.7.2 has no C construct for mfc0/mtc0.
+func_8007FEDC          # BIOS jumptable installer (jalr $t2 with $t1=0x56) + $k0 kernel-temp-register interrupt handler at D_8007FF44 (`addiu $k0, $zero, 0x100; lw $k0, 8($k0); lw $k0, 0($k0)`). Low-level kernel code not expressible in C.
+
+# break-instruction primitives
+func_800164F8          # break-instruction test: encoded as .word stream `0x2402270F (addiu); 0x0001000D (break code 0x10); 0x2442FFFF (addiu); 0x0441FFFD (bgez); 0x03E00008 (jr $ra)`. Tests the break-trap mechanism via raw word encoding because maspsx can't emit `break` with arbitrary code field.
+func_80083698          # break instruction `.word 0x000040CD` (break with code 0x103) plus return-value handling. Same pattern as authorized md_gview_init/bios_FileReadRaw; Marionation-engine custom kernel call.
+
+# Data-as-code (function-pointer tables)
+func_800164AC          # Pure .word function-pointer table (19 entries, 0x8008C49C..0x8008C6DC). Data block exposed under a function symbol because callers reference the offsets as if calling the function; no executable code.
+
+# BIOS jumptable installer (same pattern as authorized func_80078F88 / func_80079028)
+func_8007A458          # BIOS B(0x56) jumptable installer: EnterCriticalSection + `jalr $t2; $t1=0x56` + jumptable copy loop (D_8007A4C0..D_8007A4CC range) + ExitCriticalSection. Trailing 6x `.word 0` padding. Same canonical pattern as func_80078F88/func_80079028 already in this file.

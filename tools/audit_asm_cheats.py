@@ -122,9 +122,37 @@ def scan_regfix_cumulative(content):
     return dict(totals)
 
 
+def _trampoline_at_start(block):
+    """Return True if the trampoline pattern (addiu $tN, $zero, 0xVEC;
+    jr $tN; addiu $tM, $zero, FUNC#) appears at the START of the function
+    body — within the first ~5 instruction lines after glabel.
+
+    This catches BIOS-trampoline-style functions regardless of trailing
+    content (padding nops, embedded data tables, jumptable installation
+    code, etc.). The original `insn_count <= 12 and BIOS_TRAMPOLINE.search()`
+    check missed func_800831D8 (trampoline + 3 padding nops, 13 lines) and
+    func_8008D060 (trampoline + 50-line module table)."""
+    # Find glabel position; only look in the first ~400 chars after it
+    gm = re.search(r"glabel\s+\w+", block)
+    if not gm:
+        return False
+    # The first 400 chars after glabel covers: optional .set directives,
+    # the 3 trampoline instructions, and small amounts of whitespace. The
+    # original 80-char-gap regex requires the 3 pattern parts within tight
+    # proximity; we just additionally constrain that they're NEAR the start.
+    head = block[gm.end():gm.end() + 400]
+    return bool(BIOS_TRAMPOLINE.search(head))
+
+
 def scan_inline_asm_bodies(content, source_name):
     """Return list of (file, line_no, asm_lines, func_name, is_bios) for
-    `__asm__` blocks containing `glabel funcname`."""
+    `__asm__` blocks containing `glabel funcname`.
+
+    `is_bios=True` covers any block whose body STARTS with the 3-instruction
+    BIOS trampoline pattern, regardless of trailing content. Padding nops,
+    embedded module tables, jumptable installation code — all valid trailing
+    content for a BIOS-related function. The trampoline-at-start is the
+    discriminator."""
     cheats = []
     for m in re.finditer(r"__asm__\s*(?:volatile\s*)?\(([^)]+)\)", content):
         block = m.group(1)
@@ -134,11 +162,7 @@ def scan_inline_asm_bodies(content, source_name):
         fname = glabel_match.group(1)
         insn_count = block.count("\\n")
         line_no = content[:m.start()].count("\n") + 1
-        # BIOS trampoline: short block (only the 3 trampoline insns plus
-        # section/set/glabel/endlabel scaffolding), and the trampoline
-        # pattern is present. Reject larger blocks that happen to start
-        # with the pattern but continue with .word data tables etc.
-        is_bios = insn_count <= 12 and bool(BIOS_TRAMPOLINE.search(block))
+        is_bios = _trampoline_at_start(block)
         cheats.append((source_name, line_no, insn_count, fname, is_bios))
     return cheats
 
