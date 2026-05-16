@@ -136,6 +136,15 @@ case "$CMD" in
             python3 tools/audit_asm_cheats.py --summary 2>/dev/null || true
         fi
 
+        # Cascade-drift surface (literal-`.LN` rules across asmfix+regfix).
+        # Auto-repair handles drift on rebuild, but tracking the surface
+        # count over time is a useful trend metric — if it keeps growing,
+        # the architectural Phase 3 fix (`rename @ <idx>` syntax) becomes
+        # worth building. See memory/feedback_auto_drift_repair.md.
+        if [ -f "tools/drift_surface_summary.py" ]; then
+            python3 tools/drift_surface_summary.py 2>/dev/null || true
+        fi
+
         echo
         echo "--- Top of queue ---"
         if [ -f "WORK_QUEUE.md" ] && [ ! -s ".bb2_active_func" ]; then

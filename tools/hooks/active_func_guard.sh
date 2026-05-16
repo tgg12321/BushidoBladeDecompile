@@ -218,6 +218,15 @@ Repo:  $PROJECT_ROOT
 To diagnose:
   wsl bash -c "cd '$WSL_ROOT' && bash tools/dc.sh verify --clean"
 
+If the clean rebuild above failed with cascade-drift symptoms ("symbol
+\`.L<hex>' is already defined", asmfix "did not match in <func>"), try
+auto-repair first — it runs fix-asmfix-drift + fix-label-drift and
+rebuilds:
+  wsl bash -c "cd '$WSL_ROOT' && bash tools/dc.sh auto-repair"
+
+(Auto-repair is a no-op if there's no drift, so it's safe to try even
+if you're not sure — see memory/feedback_auto_drift_repair.md.)
+
 To proceed: get the function to match (work the toolbox until score=0
 and verify reports MATCH), then re-attempt the commit. The hook will
 auto-clear the active marker on success.
