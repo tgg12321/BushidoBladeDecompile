@@ -10586,46 +10586,47 @@ s32 func_80052754(s32 arg0, s32 arg1, s32 arg2) {
     __asm__ volatile ("mfc2 %0, $27" : "=r"(t2));
     return t0 + t1 + t2;
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80052788\n"
-    "    lh     $t0, 0($a0)\n"
-    "    lh     $t1, 2($a0)\n"
-    "    lh     $t2, 4($a0)\n"
-    "    ori    $t3, $zero, 0x1000\n"
-    "    sub    $t3, $t3, $a2\n"
-    "    mtc2   $t3, $8\n"
-    "    mtc2   $t0, $9\n"
-    "    mtc2   $t1, $10\n"
-    "    mtc2   $t2, $11\n"
-    "    lh     $t0, 0($a1)\n"
-    "    nop\n"
-    "    gpf    1\n"
-    "    lh     $t1, 2($a1)\n"
-    "    lh     $t2, 4($a1)\n"
-    "    mtc2   $a2, $8\n"
-    "    mtc2   $t0, $9\n"
-    "    mtc2   $t1, $10\n"
-    "    mtc2   $t2, $11\n"
-    "    nop\n"
-    "    nop\n"
-    "    gpl    1\n"
-    "    mfc2   $t0, $9\n"
-    "    mfc2   $t0, $9\n"
-    "    mfc2   $t1, $10\n"
-    "    mfc2   $t2, $11\n"
-    "    sh     $t0, 0($a3)\n"
-    "    sh     $t1, 2($a3)\n"
-    "    jr     $ra\n"
-    "    sh     $t2, 4($a3)\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80052788(s16 *arg0, s16 *arg1, s32 arg2, s16 *arg3) {
+    register s32 t0 asm("$8");
+    register s32 t1 asm("$9");
+    register s32 t2 asm("$10");
+    register s32 t3 asm("$11");
+
+    t0 = arg0[0];
+    t1 = arg0[1];
+    t2 = arg0[2];
+    __asm__ volatile ("ori %0, $zero, 0x1000" : "=r"(t3));
+    __asm__ volatile ("sub $11, $11, $6" : "=r"(t3) : "0"(t3), "r"(arg2));
+
+    __asm__ volatile ("mtc2 %0, $8" :: "r"(t3));
+    __asm__ volatile ("mtc2 %0, $9" :: "r"(t0));
+    __asm__ volatile ("mtc2 %0, $10" :: "r"(t1));
+    __asm__ volatile ("mtc2 %0, $11" :: "r"(t2));
+
+    t0 = arg1[0];
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B98003D");
+    t1 = arg1[1];
+    t2 = arg1[2];
+
+    __asm__ volatile ("mtc2 %0, $8" :: "r"(arg2));
+    __asm__ volatile ("mtc2 %0, $9" :: "r"(t0));
+    __asm__ volatile ("mtc2 %0, $10" :: "r"(t1));
+    __asm__ volatile ("mtc2 %0, $11" :: "r"(t2));
+
+    __asm__ volatile ("nop");
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4BA8003E");
+
+    __asm__ volatile ("mfc2 %0, $9" : "=r"(t0));
+    __asm__ volatile ("mfc2 %0, $9" : "=r"(t0));
+    __asm__ volatile ("mfc2 %0, $10" : "=r"(t1));
+    __asm__ volatile ("mfc2 %0, $11" : "=r"(t2));
+
+    arg3[0] = t0;
+    arg3[1] = t1;
+    arg3[2] = t2;
+}
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
