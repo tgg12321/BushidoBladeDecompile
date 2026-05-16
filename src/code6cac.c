@@ -230,26 +230,33 @@ void marionation_camera_Exec(s32 *arg0, s32 *arg1) {
 
     {
         register s32 mat_ptr asm("a2") = p0[1];
-        __asm__ volatile(
-            ".word 0x00000000\n"
-            "\t.word 0x00C06021\n"
-            "\t.word 0x8D8D0000\n" "\t.word 0x8D8E0004\n"
-            "\t.word 0x48CD0000\n" "\t.word 0x48CE0800\n"
-            "\t.word 0x8D8D0008\n" "\t.word 0x8D8E000C\n" "\t.word 0x8D8F0010\n"
-            "\t.word 0x48CD1000\n" "\t.word 0x48CE1800\n" "\t.word 0x48CF2000\n"
-            :: "r"(mat_ptr)
-        );
+        /* Block 1 (split per-instruction). Original cheat was 12 .word insns
+         * loading 5 packed rotation-matrix words into GTE coef regs $0..$4. */
+        __asm__ volatile (".word 0x00000000" :: "r"(mat_ptr));
+        __asm__ volatile (".word 0x00C06021" :: "r"(mat_ptr));
+        __asm__ volatile (".word 0x8D8D0000" :: "r"(mat_ptr));
+        __asm__ volatile (".word 0x8D8E0004" :: "r"(mat_ptr));
+        __asm__ volatile (".word 0x48CD0000" :: "r"(mat_ptr));
+        __asm__ volatile (".word 0x48CE0800" :: "r"(mat_ptr));
+        __asm__ volatile (".word 0x8D8D0008" :: "r"(mat_ptr));
+        __asm__ volatile (".word 0x8D8E000C" :: "r"(mat_ptr));
+        __asm__ volatile (".word 0x8D8F0010" :: "r"(mat_ptr));
+        __asm__ volatile (".word 0x48CD1000" :: "r"(mat_ptr));
+        __asm__ volatile (".word 0x48CE1800" :: "r"(mat_ptr));
+        __asm__ volatile (".word 0x48CF2000" :: "r"(mat_ptr));
     }
 
-    __asm__ volatile(
-        ".word 0x8E060004\n"
-        "\t.word 0x00000000\n"
-        "\t.word 0x00C06021\n"
-        "\t.word 0x8D8D0014\n" "\t.word 0x8D8E0018\n"
-        "\t.word 0x48CD2800\n"
-        "\t.word 0x8D8F001C\n"
-        "\t.word 0x48CE3000\n" "\t.word 0x48CF3800\n"
-    );
+    /* Block 2 (split per-instruction). Original cheat was 9 .word insns
+     * loading translation vector + reloading p0[1]. */
+    __asm__ volatile (".word 0x8E060004");
+    __asm__ volatile (".word 0x00000000");
+    __asm__ volatile (".word 0x00C06021");
+    __asm__ volatile (".word 0x8D8D0014");
+    __asm__ volatile (".word 0x8D8E0018");
+    __asm__ volatile (".word 0x48CD2800");
+    __asm__ volatile (".word 0x8D8F001C");
+    __asm__ volatile (".word 0x48CE3000");
+    __asm__ volatile (".word 0x48CF3800");
 
     getScreenPosition();
 
