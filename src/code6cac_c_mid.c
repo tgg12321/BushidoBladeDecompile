@@ -1591,6 +1591,7 @@ poll_loop:
     return 0;
 
 got_vsync:
+    __asm__ volatile("" ::: "memory");  /* prevent GCC from hoisting s0=0 into earlier delay slot - cheat-cleanup 2026-05-16 */
     s0 = 0;
 
 retry_loop:
