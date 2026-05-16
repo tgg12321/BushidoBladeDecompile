@@ -24,3 +24,83 @@ func_8007FA1C  # sibling of func_8007F87C with mirrored sin negation and 0..0x10
 func_8007FBBC  # sibling of func_8007F87C with jaccard=1.00 (structurally identical, 0..0xA offsets). Same cluster authorization. STRONG 5/5 per scan_hand_coded. 2026-05-13.
 func_8007F5EC  # 3-axis Euler rotation, 163 insns, hand-coded. Three INT_MIN-guard idioms (X/Y/Z angles), zero spills with 10+ live regs, hand-scheduled multu (3-cycle pair holds bgez+andi in pipeline-stall window). Scanner STRONG 3/5; manual review confirmed. 2026-05-13.
 motutil_GetWalkDir  # cluster sibling of func_8007F5EC (jaccard=0.68). Same 3-axis Euler skeleton, different rotation-matrix signs and output offsets. 163 insns hand-coded. Scanner STRONG 3/5; manual review confirmed. 2026-05-13.
+
+# === PSX BIOS trampolines (canonical hand-coded asm) ===
+# Pattern (3 instructions):
+#     addiu $t2, $zero, 0xA0/0xB0/0xC0   ; load BIOS vector
+#     jr    $t2                          ; tail-call to kernel
+#     addiu $t1, $zero, FUNC#            ; delay slot: function number
+# These cannot be expressed in C. The PSX BIOS calling convention requires:
+#   (1) a tail-call jr (not jalr) to a fixed kernel vector address,
+#   (2) the BIOS function number pre-loaded into $t1 specifically,
+#   (3) the $t1 load placed in the jr's branch-delay slot.
+# GCC 2.7.2 emits standard jal with argument-passing convention; it has
+# no way to produce these 3 bytes. Authorized en masse 2026-05-15 after
+# manual review of all 39 candidates against asm/funcs/<name>.s.
+
+# text1b.c — A/B/C-vector trampolines
+func_80078948      # BIOS A(0x43) trampoline
+func_80078958      # BIOS A(0x70) trampoline
+func_80078968      # BIOS A(0x9F) trampoline
+func_80078978      # BIOS B(0x08) trampoline
+func_80078988      # BIOS B(0x09) trampoline
+func_80078998      # BIOS B(0x0B) trampoline
+func_800789A8      # BIOS B(0x0C) trampoline
+func_800789E8      # BIOS B(0x32) trampoline (open)
+func_800789F8      # BIOS B(0x34) trampoline (read)
+func_80078A08      # BIOS B(0x35) trampoline (write)
+func_80078A18      # BIOS B(0x36) trampoline (close)
+func_80078A28      # BIOS B(0x41) trampoline
+func_80078A38      # BIOS B(0x42) trampoline
+func_80078A48      # BIOS B(0x43) trampoline
+func_80078A58      # BIOS B(0x5B) trampoline
+func_80078F00      # BIOS B(0x12) trampoline (InitPAD)
+func_80078F10      # BIOS B(0x13) trampoline (StartPAD)
+func_80078F20      # BIOS B(0x14) trampoline (StopPAD)
+func_80078F30      # BIOS B(0x15) trampoline
+func_80078F40      # BIOS C(0x02) trampoline (SysEnqIntRP)
+func_80078F50      # BIOS C(0x03) trampoline (SysDeqIntRP)
+func_80078FF0      # BIOS A(0x44) trampoline + tail routine that jalrs through D_800A362C. Dual-block hand-coded asm: the tail is unreachable from the jr, so this cannot be expressed in C.
+
+# gpu.c — A/B-vector card/GPU trampolines
+func_8007A2F8      # BIOS A(0xAB) trampoline
+func_8007A308      # BIOS A(0xAC) trampoline
+func_8007A350      # BIOS B(0x4E) trampoline (_card_write)
+func_8007A360      # BIOS B(0x50) trampoline (_card_status)
+func_8007A428      # BIOS B(0x4A) trampoline (_new_card / InitCARD)
+func_8007A438      # BIOS B(0x4B) trampoline (StartCARD)
+func_8007A448      # BIOS B(0x4C) trampoline (StopCARD)
+
+# display.c
+func_8007DF10      # BIOS A(0x49) trampoline (GPU_cw)
+
+# system.c
+func_8008008C      # BIOS B(0x07) trampoline (DeliverEvent)
+
+# ings2.c
+func_80082AB0      # BIOS C(0x0A) trampoline (ChangeClearRCnt)
+func_800831F0      # BIOS B(0x17) trampoline (ReturnFromException)
+func_80083200      # BIOS B(0x18) trampoline (SetDefaultExitFromException)
+func_80083210      # BIOS B(0x19) trampoline (SetCustomExitFromException)
+func_8008386C      # BIOS A(0x39) trampoline (InitHeap)
+
+# main.c
+CheckFadeEnd       # BIOS B(0x0A) trampoline (WaitEvent)
+func_80089374      # BIOS B(0x0D) trampoline (DisableEvent)
+func_8008D050      # BIOS B(0x47) trampoline (AddDevice)
+
+# === MIPS syscall / break / SP-manipulation primitives (canonical hand-coded asm) ===
+# These functions use MIPS instructions that GCC 2.7.2 cannot emit:
+#   - `.word 0x0000000C` = `syscall` (PSX kernel entry, syscall # in $a0)
+#   - `.word 0x0000XX0D` = `break` with custom code (Marionation engine call)
+#   - $sp manipulation in `jr $ra`'s delay slot (stack-pointer swap)
+#   - bare code fragments with no `jr $ra` (fall-through into next routine)
+# No C representation exists for any of these constructs.
+# Authorized 2026-05-15 after manual review of inline-asm bodies in src/.
+
+EnterCriticalSection   # PSX syscall #1: `addiu $a0,$zero,1; .word 0x0000000C; jr $ra; nop` — raw syscall instruction, no C equivalent.
+ExitCriticalSection    # PSX syscall #2: same pattern with $a0=2.
+func_800789D8          # SP-swap primitive: returns old $sp in $v0, sets $sp=$a0 in jr's delay slot. Stack-pointer manipulation cannot be expressed in C.
+md_gview_init          # Marionation engine call: `.word 0x0000410D` (break with code 0x104) — custom-encoded kernel/coprocessor call, no C construct.
+bios_FileReadRaw       # Same break-instruction pattern (`.word 0x0000414D`, code 0x105) plus custom return-value handling. No C representation.
+func_800790A4          # Single-instruction code fragment (`and $v0,$v0,$s5`, no jr $ra) — fall-through into func_80079028's tail. Cannot be a standalone C function.
