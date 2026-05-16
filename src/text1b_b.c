@@ -847,49 +847,39 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
     s32 s2;
     s32 result;
 
-    if ((u32)D_800A35E4 >= 6) {
-        return 0;
-    }
+    if ((u32)D_800A35E4 >= 6) goto end;
     switch (D_800A35E4) {
     case 0:
         __asm__("jlabel .L80077B74");
         s2 = 0;
         result = func_8006B898(arg0, arg1);
         switch (result) {
-        case 1: s2 = -1; break;
-        case 2: D_800A35E4 = 1; break;
+        case 1: s2 = -1; goto end;
+        case 2: D_800A35E4 = 1; goto end;
         case 3:
             D_8009BD3B = D_8009BD41;
             D_8009BD3C = D_8009BD42;
             D_8009BD3D = D_8009BD43;
             D_800A35E4 = 4;
-            break;
+            goto end;
         }
-        return s2;
+        goto end;
     case 1:
         __asm__("jlabel .L80077C14");
         s2 = 0;
         result = saTan2InfoInit_8006C1FC(arg0, arg1);
-        if (result == 1) {
-            D_800A35E4 = 0;
-            return s2;
-        }
-        if (result == 2) {
-            D_800A35E4 = result;
-            return s2;
-        }
-        if (result == 3) {
-            D_800A35E4 = result;
-        }
-        return s2;
+        if (result == 1) { D_800A35E4 = 0; goto end; }
+        if (result == 2) { D_800A35E4 = result; goto end; }
+        if (result == 3) { D_800A35E4 = result; }
+        goto end;
     case 2:
         __asm__("jlabel .L80077C50");
         s2 = 2;
-        return s2;
+        goto end;
     case 3:
         __asm__("jlabel .L80077C58");
         s2 = 3;
-        return s2;
+        goto end;
     case 4:
         __asm__("jlabel .L80077C60");
         cpu_reset_dir();
@@ -904,14 +894,13 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
             D_8009BD41 = D_8009BD3B;
             D_8009BD42 = D_8009BD3C;
             D_8009BD43 = D_8009BD3D;
-            return s2;
+            goto end;
         }
-        if (result == -1) {
-            D_800A35E4 = 0;
-        }
-        return s2;
+        if (result == -1) { D_800A35E4 = 0; }
+        goto end;
     }
-    return 0;
+end:
+    return s2;
 }
 extern s32 D_8009BD24;
 s32* saTan2GaugeInit_80077D00(void) {
