@@ -5052,21 +5052,3 @@ func_80068F70: subst "lwl\s+\$2,3\(\$5\)" "lwl\t$2,3($6)" @ 78
 func_80068F70: subst "lwr\s+\$2,0\(\$5\)" "lwr\t$2,0($6)" @ 79
 func_80068F70: subst "lwl\s+\$3,7\(\$5\)" "lwl\t$3,7($6)" @ 80
 func_80068F70: subst "lwr\s+\$3,4\(\$5\)" "lwr\t$3,4($6)" @ 81
-func_80077B30: splice 18..49 "addu	$18,$0,$zero" "addu	$4,$16,$zero" "jal	func_8006B898" "addu	$5,$17,$zero" "addu	$3,$2,$zero" "addiu	$2,$zero,2" "beq	$3,$2,.L_NB30_BC8" "slti	$2,$3,3" "beq	$2,$0,.L_NB30_BAC" "addiu	$2,$zero,1" "beq	$3,$2,.L_NB30_BC0" "addu	$2,$18,$zero" "j	.L23" "nop" ".L_NB30_BAC:" "addiu	$2,$zero,3" "beq	$3,$2,.L_NB30_BD8" "addiu	$2,$zero,4" "j	.L23" "addu	$2,$18,$zero" ".L_NB30_BC0:" "j	.L20" "addiu	$18,$zero,-1" ".L_NB30_BC8:" "addiu	$2,$zero,1" "sw	$2,%gp_rel(D_800A35E4)($28)" "j	.L23" "addu	$2,$18,$zero" ".L_NB30_BD8:" "lbu	$3,D_8009BD41" "lbu	$4,D_8009BD42" "lbu	$5,D_8009BD43" "sw	$2,%gp_rel(D_800A35E4)($28)" "sb	$3,D_8009BD3B" "sb	$4,D_8009BD3C" "sb	$5,D_8009BD3D" "j	.L23" "addu	$2,$18,$zero"
-func_80077B30: insert_after "addu\t$18,$zero,$zero" @ 50
-func_80077B30: insert_after "addu\t$18,$zero,$zero" @ 78
-func_80077B30: subst "addu\s+\$2,\$0,\$zero" "addu\t$2,$18,$zero" @ 61
-func_80077B30: subst "addu\s+\$2,\$0,\$zero" "addu\t$2,$18,$zero" @ 64
-func_80077B30: subst "lbu\s+\$3,D_8009BD3B" "lbu\t$2,D_8009BD3B" @ 86
-func_80077B30: subst "lbu\s+\$4,D_8009BD3C" "lbu\t$3,D_8009BD3C" @ 87
-func_80077B30: subst "lbu\s+\$5,D_8009BD3D" "lbu\t$4,D_8009BD3D" @ 88
-func_80077B30: subst "sb\s+\$3,D_8009BD41" "sb\t$2,D_8009BD41" @ 90
-func_80077B30: subst "sb\s+\$4,D_8009BD42" "sb\t$3,D_8009BD42" @ 91
-func_80077B30: subst "sb\s+\$5,D_8009BD43" "sb\t$4,D_8009BD43" @ 92
-func_80077B30: subst "addu\s+\$2,\$0,\$zero" "addu\t$2,$18,$zero" @ 94
-func_80077B30: subst "addu\s+\$2,\$0,\$zero" "addu\t$2,$18,$zero" @ 96
-func_80077B30: subst "addu\s+\$2,\$0,\$zero" "addu\t$2,$18,$zero" @ 98
-func_80077B30: subst "j\s+\.L23" "j\t.L20" @ 66
-func_80077B30: subst "addiu\s+\$2,\$zero,2" "addiu\t$18,$zero,2" @ 67
-func_80077B30: subst "j\s+\.L23" "j\t.L20" @ 69
-func_80077B30: subst "addiu\s+\$2,\$zero,3" "addiu\t$18,$zero,3" @ 70

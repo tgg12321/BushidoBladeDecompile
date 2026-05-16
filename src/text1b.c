@@ -17411,3 +17411,1051 @@ extern s32 D_800A35E4;
 void saTan2GaugeInit_80077B20(void) {
     D_800A35E4 = 1;
 }
+void func_80077B30(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80077B30.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern s32 D_8009BD24;
+s32* saTan2GaugeInit_80077D00(void) {
+    return &D_8009BD24;
+}
+void func_8006920C(s32*, s32);
+s32 func_80077D10(s32 *a0) {
+    func_8006920C(a0, a0[6]);
+    func_8006920C(a0, a0[7]);
+    func_8006920C(a0, a0[8]);
+    func_8006920C(a0, a0[9]);
+    func_8006920C(a0, a0[10]);
+    return a0[1];
+}
+extern s32 D_800A35F4;
+extern s32 D_800A35F0;
+extern s32 D_800A35F8;
+extern s32 D_800A35FC;
+extern s32 D_800A3600;
+s32 func_80077D74(s32 a0) {
+    return D_800A35F4 + a0 * 44;
+}
+void func_80077D94(s32 *arg0) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80077D94.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0;
+}
+s32 camera_get_rot_normal_rad(s32 arg0) {
+    s32 s0;
+    s32 r;
+
+    func_8007B844(D_800A374C, 0x1008);
+    s0 = arg0 + 0x58;
+    D_800A35F4 = arg0;
+    D_800A35F8 = s0;
+    func_8006E950(0x32, s0);
+    r = func_80077D10(s0);
+    func_8006E49C(r, D_800A35F4);
+    D_800A35FC = 0;
+    D_800A35F0 = 0;
+    D_800A3600 = 0;
+    return 1;
+}
+extern s32 *func_80077D74(s32);
+extern void func_80077D94(s32 *);
+extern s32 D_800A35F0;
+extern s32 *D_800A35F8;
+extern s32 D_800A35FC;
+typedef struct {
+    s32 sp10;
+    s32 sp14;
+    s32 sp18;
+    s32 sp1C;
+    s32 sp20;
+    s32 sp24;
+    s32 sp28;
+    s32 sp2C;
+    s32 sp30;
+} S855C;
+s32 func_8007855C(s32 arg0) {
+    S855C s;
+    s32 *p;
+    s32 c;
+    c = D_800A35FC + 1;
+    D_800A35FC = c;
+    p = func_80077D74(c & 1);
+    s.sp14 = p[0];
+    s.sp1C = p[2];
+    s.sp20 = p[4];
+    s.sp24 = p[3];
+    s.sp28 = p[5];
+    s.sp2C = p[6];
+    s.sp30 = p[7];
+    if (D_800A35F0 > 0 && (arg0 & 0x40)) {
+        return 1;
+    }
+    func_80077D94(&s.sp10);
+    {
+        s32 *p_struct = *(s32 **)((s32)D_800A35F8 + 0x34);
+        s32 new_val = D_800A35F0 + 1;
+        int cond = new_val < *(s16 *)((s32)p_struct + 0xA);
+        D_800A35F0 = new_val;
+        return cond ? 0 : 1;
+    }
+}
+s32 func_80078628(s32 *a0) {
+    return a0[1];
+}
+extern s32 D_800A360C;
+s32 func_80078634(s32 a0) {
+    return D_800A360C + a0 * 44;
+}
+extern s32 saMotionSet(s32, s32);
+extern s32 func_8007352C(s32 *);
+extern s32 initTexPage(s32, s32, s32, s32, s32);
+extern s32 ot_Link(s32, s32);
+extern s32 D_800A3608;
+extern s32 *D_800A3610;
+extern s32 D_800A374C;
+
+typedef struct {
+    s32 a;       /* sp18 - 0x00 */
+    s32 b;       /* sp1C - 0x04 */
+    s32 c;       /* sp20 - 0x08 */
+    s32 d;       /* sp24 - 0x0C - unused */
+    s32 e;       /* sp28 - 0x10 */
+    s32 f;       /* sp2C - 0x14 */
+    s32 g;       /* sp30 - 0x18 */
+    s32 h;       /* sp34 - 0x1C */
+    s32 i;       /* sp38 - 0x20 - unused */
+    s32 j;       /* sp3C - 0x24 - unused */
+    u8 cd_flag;  /* sp40 - 0x28 */
+    u8 r;        /* sp41 - 0x29 */
+    u8 g_;       /* sp42 - 0x2A */
+    u8 b_;       /* sp43 - 0x2B */
+} S78654;
+
+void func_80078654(s32 *arg0) {
+    S78654 s;
+    s32 v;
+    s32 *var_s0;
+    s32 zero;
+
+    zero = 0;
+    s.f = 2;
+    s.cd_flag = 0;
+    s.e = 0;
+    s.g = 0;
+    s.a = D_800A3610[0xF];
+    s.h = 0;
+    s.b = s.a + 0xC;
+    var_s0 = D_800A3610 + 5;
+    if (D_800A3608 >= 0xAAA) {
+        if (D_800A3608 >= 0xB04) {
+            s.cd_flag = 1;
+            v = 0x80 - (((D_800A3608 - 0xB04) << 7) / 15);
+            if ((s32)(v << 16) < 0) {
+                v = 0;
+            }
+            s.r = (s.g_ = (s.b_ = (u8) v));
+        }
+        s.c = arg0[3];
+        arg0[3] = func_8007352C(&s.a);
+        initTexPage(arg0[5], 1, 0, saMotionSet(s.a, zero), 0);
+        ot_Link(D_800A374C + (s.f * 4), arg0[5]);
+        arg0[5] = arg0[5] + 0xC;
+    }
+    s.cd_flag = 0;
+    goto check;
+loop:
+    s.a = var_s0[0];
+    s.b = s.a + 0xC;
+    s.h = -D_800A3608;
+    s.c = arg0[3];
+    arg0[3] = func_8007352C(&s.a);
+    initTexPage(arg0[5], 1, 0, saMotionSet(s.a, zero), 0);
+    ot_Link(D_800A374C + (s.f * 4), arg0[5]);
+    var_s0++;
+    arg0[5] = arg0[5] + 0xC;
+check:
+    if (var_s0[1] != -1) goto loop;
+}
+extern s32 D_800A3610;
+extern s32 D_800A3614;
+extern s32 D_800A3304;
+extern s32 D_800A3608;
+extern s32 func_80078628(s32);
+s32 func_80078824(s32 arg0) {
+    s32 s0;
+    s32 r;
+
+    func_8007B844(D_800A374C, 0x1008);
+    s0 = arg0 + 0x58;
+    D_800A360C = arg0;
+    D_800A3610 = s0;
+    func_8006E950(0x5F, s0);
+    r = func_80078628(s0);
+    func_8006E49C(r, D_800A360C);
+    D_800A3304 = 0;
+    D_800A3608 = 0;
+    D_800A3614 = 0;
+    disp_SetFramebufferMode(1, 0, 0, 0);
+    return 1;
+}
+extern s32 D_800A3304;
+extern s32 D_800A3608;
+s32 *func_80078634(s32);
+void func_80078654(s32 *);
+s32 func_800788B0(void) {
+    s32 buf[8];
+    s32 *v0;
+    D_800A3304++;
+    v0 = func_80078634(D_800A3304 & 1);
+    buf[0] = v0[0];
+    buf[2] = v0[2];
+    buf[3] = v0[4];
+    buf[4] = v0[3];
+    buf[5] = v0[5];
+    buf[6] = v0[6];
+    buf[7] = v0[7];
+    func_80078654(buf);
+    D_800A3608++;
+    return D_800A3608 >= 0xB40;
+}
+
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078948\n"
+    "addiu $t2, $zero, 0xA0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x43\n"
+    "endlabel func_80078948\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078948 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078958\n"
+    "addiu $t2, $zero, 0xA0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x70\n"
+    "endlabel func_80078958\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078958 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078968\n"
+    "addiu $t2, $zero, 0xA0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x9F\n"
+    "endlabel func_80078968\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078968 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078978\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x8\n"
+    "endlabel func_80078978\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078978 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078988\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x9\n"
+    "endlabel func_80078988\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078988 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078998\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0xB\n"
+    "endlabel func_80078998\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078998 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_800789A8\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0xC\n"
+    "endlabel func_800789A8\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_800789A8 */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel EnterCriticalSection\n"
+    "    addiu  $a0,$zero,1\n"
+    "    .word 0x0000000C\n"
+    "    jr  $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel ExitCriticalSection\n"
+    "    addiu  $a0,$zero,2\n"
+    "    .word 0x0000000C\n"
+    "    jr  $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_800789D8\n"
+    "    addu  $v0,$sp,$zero\n"
+    "    jr  $ra\n"
+    "    addu  $sp,$a0,$zero\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_800789D8 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_800789E8\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x32\n"
+    "endlabel func_800789E8\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_800789E8 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_800789F8\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x34\n"
+    "endlabel func_800789F8\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_800789F8 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A08\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x35\n"
+    "endlabel func_80078A08\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078A08 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A18\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x36\n"
+    "endlabel func_80078A18\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078A18 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A28\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x41\n"
+    "endlabel func_80078A28\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078A28 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A38\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x42\n"
+    "endlabel func_80078A38\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078A38 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A48\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x43\n"
+    "endlabel func_80078A48\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078A48 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078A58\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x5B\n"
+    "endlabel func_80078A58\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078A58 */
+s32 func_80078A68(s32 arg0, s32 arg1, s32 arg2) {
+    s32 a3;
+    s32 t0;
+    s32 v0;
+    s32 base;
+    t0 = arg0 & 0xFFFF;
+    a3 = 0x48;
+    if (t0 >= 3) {
+        return 0;
+    }
+    base = (t0 * 0x10) + D_8009BD6C;
+    *((s16 *) (base + 4)) = 0;
+    *((s16 *) (base + 8)) = (s16) arg1;
+    if (((u32) t0) < 2U) {
+        if (arg2 & 0x10) {
+            a3 = 0x49;
+        }
+        v0 = arg2 & 0x1000;
+        if (!(arg2 & 1)) {
+            a3 |= 0x100;
+        }
+    } else {
+        v0 = arg2 & 0x1000;
+        if (t0 == 2) {
+            ;
+            if (!(arg2 & 1)) {
+                a3 = 0x248;
+            }
+        }
+    }
+    if ((arg2 & 0x1000) != 0) {
+        a3 |= 0x10;
+    }
+    *((s16 *) (((t0 * 0x10) + D_8009BD6C) + 4)) = a3;
+    return 1;
+}
+s32 func_80078B04(s32 arg0) {
+    s32 v = arg0 & 0xFFFF;
+    s32 result;
+    if (v < 3) {
+        result = *(u16 *)(D_8009BD6C + v * 0x10);
+    } else {
+        result = 0;
+    }
+    return result;
+}
+s32 func_80078B3C(s32 arg0) {
+    s32 v;
+    s32 *base;
+    v = arg0 & 0xFFFF;
+    base = D_8009BD68;
+    base[1] = base[1] | (&D_8009BD70)[v];
+    return v < 3;
+}
+s32 func_80078B70(s32 arg0) {
+    s32 v;
+    s32 *base;
+    v = arg0 & 0xFFFF;
+    base = D_8009BD68;
+    base[1] = base[1] & ~(&D_8009BD70)[v];
+    return 1;
+}
+s32 func_80078BA8(s32 arg0) {
+    s32 v = arg0 & 0xFFFF;
+    s32 result = 1;
+    if (v < 3) {
+        *(volatile u16 *)(D_8009BD6C + v * 0x10) = 0;
+    } else {
+        result = 0;
+    }
+    return result;
+}
+extern s32 D_8009BD80;
+void func_80078BE0(s32 a0) {
+    D_8009BD80 = a0;
+}
+extern s32 D_8009BD80;
+s32 func_80078BF0(void) {
+    return D_8009BD80;
+}
+void func_800790C0(void);
+void EnterCriticalSection(void);
+void func_80078F88(void);
+void ExitCriticalSection(void);
+void func_80078A58(s32);
+s32 func_80078DA0(void);
+void func_80078F30(s32, s32, s32, s32);
+void func_80079028(void);
+extern s32 D_8009BD80;
+void func_80078C00(s32 a0, s32 a1, s32 a2, s32 a3) {
+    func_800790C0();
+    EnterCriticalSection();
+    func_80078F88();
+    ExitCriticalSection();
+    func_80078A58(0);
+    func_80078DA0();
+    func_80078F30(a0, a1, a2, a3);
+    func_80079028();
+    D_8009BD80 = 1;
+}
+void func_800790C0(void);
+void EnterCriticalSection(void);
+void func_80078F88(void);
+void ExitCriticalSection(void);
+void func_80078A58(s32);
+s32 func_80078DA0(void);
+void func_80078F00(s32, s32, s32, s32);
+void func_80079028(void);
+extern s32 D_8009BD80;
+void func_80078C9C(s32 a0, s32 a1, s32 a2, s32 a3) {
+    func_800790C0();
+    EnterCriticalSection();
+    func_80078F88();
+    ExitCriticalSection();
+    func_80078A58(0);
+    func_80078DA0();
+    func_80078F00(a0, a1, a2, a3);
+    func_80079028();
+    D_8009BD80 = 1;
+}
+void func_80078F10(void);
+void func_80078A58(s32);
+void func_80078F60(void);
+void func_80078D38(void) {
+    func_80078F10();
+    func_80078A58(0);
+    func_80078F60();
+}
+extern s32 D_8009BD80;
+void func_80078F74(void);
+void func_80078F20(void);
+s32 func_80078E20(void);
+void pad_Init(void) {
+    func_80078F74();
+    func_80078F20();
+    func_80078E20();
+    D_8009BD80 = 0;
+}
+extern void EnterCriticalSection(void);
+extern void ExitCriticalSection(void);
+extern void func_80078F50(s32, u32 *);
+extern void func_80078F40(s32, u32 *);
+extern void func_80078E58(void);
+extern s32 func_80078EC0(void);
+extern u32 D_800F183C;
+extern u32 D_800F1840;
+extern u32 D_800F1838;
+extern u32 D_800F1844;
+s32 func_80078DA0(void) {
+    u32 *v1 = &D_800F183C;
+    u32 *s0 = v1 - 1;
+    EnterCriticalSection();
+    *v1 = (u32)func_80078E58;
+    D_800F1840 = (u32)func_80078EC0;
+    D_800F1838 = 0;
+    D_800F1844 = 0;
+    func_80078F50(1, s0);
+    func_80078F40(1, s0);
+    ExitCriticalSection();
+    return 1;
+}
+void EnterCriticalSection(void);
+void func_80078F50(s32, s16*);
+void ExitCriticalSection(void);
+extern s16 D_800F1838;
+s32 func_80078E20(void) {
+    EnterCriticalSection();
+    func_80078F50(1, &D_800F1838);
+    ExitCriticalSection();
+    return 1;
+}
+s32 func_80078E58(void) {
+    volatile s32 i;
+    s32 pad[2];
+    *(s16 *)((u8 *)D_8009BD84 + 0xA) = 0;
+    i = 10;
+    i = i - 1;
+    if (i != -1) {
+        do {
+            i = i - 1;
+        } while (i != -1);
+    }
+    return 0;
+}
+s32 func_80078EC0(void) {
+    register s32 *p asm("$3") = (s32 *)D_8009BD88;
+    register volatile s32 ret asm("$2") = 0;
+    if ((p[1] & 1) == 0) goto end;
+    if ((p[0] & 1) != 0) {
+        ret = 1;
+        goto end;
+    }
+    ret = 1;
+    ret = 0;
+end:
+    return ret;
+}
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F00\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x12\n"
+    "endlabel func_80078F00\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078F00 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F10\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x13\n"
+    "endlabel func_80078F10\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078F10 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F20\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x14\n"
+    "endlabel func_80078F20\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078F20 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F30\n"
+    "addiu $t2, $zero, 0xB0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x15\n"
+    "endlabel func_80078F30\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078F30 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F40\n"
+    "addiu $t2, $zero, 0xC0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x2\n"
+    "endlabel func_80078F40\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078F40 */
+__asm__(
+    ".section .text\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F50\n"
+    "addiu $t2, $zero, 0xC0\n"
+    "jr    $t2\n"
+    "addiu $t1, $zero, 0x3\n"
+    "endlabel func_80078F50\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_80078F50 */
+extern void (*jtbl_800A3620)(void);
+void func_80078F60(void) {
+    jtbl_800A3620();
+}
+extern void (*jtbl_800A3624)(void);
+void func_80078F74(void) {
+    jtbl_800A3624();
+}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F88\n"
+    "    lui  $at,%hi(D_800A3618)\n"
+    "    sw  $ra,%lo(D_800A3618)($at)\n"
+    "    jal  EnterCriticalSection\n"
+    "    nop\n"
+    "    addiu  $t2,$zero,176\n"
+    "    jalr  $t2\n"
+    "    addiu  $t1,$zero,87\n"
+    "    lw  $v0,364($v0)\n"
+    "    lui  $at,%hi(jtbl_800A3620)\n"
+    "    addi  $v1,$v0,2180\n"
+    "    sw  $v1,%lo(jtbl_800A3620)($at)\n"
+    "    lui  $at,%hi(jtbl_800A3624)\n"
+    "    addi  $v1,$v0,2196\n"
+    "    addiu  $t1,$zero,11\n"
+    "    sw  $v1,%lo(jtbl_800A3624)($at)\n"
+    ".L80078FC4:\n"
+    "    addiu  $t1,$t1,-1\n"
+    "    sw  $zero,1428($v0)\n"
+    "    bnez  $t1,.L80078FC4\n"
+    "    addiu  $v0,$v0,4\n"
+    "    jal  func_80078FF0\n"
+    "    nop\n"
+    "    lui  $ra,%hi(D_800A3618)\n"
+    "    lw  $ra,%lo(D_800A3618)($ra)\n"
+    "    nop\n"
+    "    jr  $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078FF0\n"
+    "    addiu $t2, $zero, 0xA0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0x44\n"
+    "    nop\n"
+    "    lui   $t1, %hi(D_800A362C)\n"
+    "    lw    $t1, %lo(D_800A362C)($t1)\n"
+    "    addiu $sp, $sp, -24\n"
+    "    sw    $ra, 20($sp)\n"
+    "    jalr  $t1\n"
+    "    nop\n"
+    "    lw    $ra, 20($sp)\n"
+    "    addiu $sp, $sp, 24\n"
+    "    jr    $ra\n"
+    "    nop\n"
+    "endlabel func_80078FF0\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80079028\n"
+    "    lui  $at,%hi(D_800A3628)\n"
+    "    sw  $ra,%lo(D_800A3628)($at)\n"
+    "    jal  EnterCriticalSection\n"
+    "    nop\n"
+    "    addiu  $t2,$zero,176\n"
+    "    jalr  $t2\n"
+    "    addiu  $t1,$zero,87\n"
+    "    lw  $v0,364($v0)\n"
+    "    lui  $t2,%hi(func_800790A4)\n"
+    "    lui  $t1,%hi(D_800790B4)\n"
+    "    lui  $at,%hi(D_800A362C)\n"
+    "    addi  $v1,$v0,1952\n"
+    "    addiu  $t2,$t2,%lo(func_800790A4)\n"
+    "    addiu  $t1,$t1,%lo(D_800790B4)\n"
+    "    sw  $v1,%lo(D_800A362C)($at)\n"
+    ".L80079064:\n"
+    "    lw  $v1,0($t2)\n"
+    "    addiu  $t2,$t2,4\n"
+    "    sw  $v1,984($v0)\n"
+    "    addiu  $v0,$v0,4\n"
+    "    bne  $t2,$t1,.L80079064\n"
+    "    sw  $v1,1244($v0)\n"
+    "    jal  func_80078FF0\n"
+    "    nop\n"
+    "    jal  ExitCriticalSection\n"
+    "    nop\n"
+    "    lui  $ra,%hi(D_800A3628)\n"
+    "    lw  $ra,%lo(D_800A3628)($ra)\n"
+    "    lui  $v0,%hi(D_800A362C)\n"
+    "    lw  $v0,%lo(D_800A362C)($v0)\n"
+    "    jr  $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_800790A4\n"
+    "    and  $v0,$v0,$s5\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_3; /* padding after func_800790A4 */
+PAD_NOPS_3; /* padding after func_800790A4 */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_800790C0\n"
+    "    lui  $at,%hi(D_800A3638)\n"
+    "    sw  $ra,%lo(D_800A3638)($at)\n"
+    "    jal  EnterCriticalSection\n"
+    "    nop\n"
+    "    addiu  $t2,$zero,176\n"
+    "    jalr  $t2\n"
+    "    addiu  $t1,$zero,87\n"
+    "    lw  $v0,364($v0)\n"
+    "    addiu  $t2,$zero,9\n"
+    "    addi  $v1,$v0,1580\n"
+    ".L800790E8:\n"
+    "    addiu  $t2,$t2,-1\n"
+    "    sw  $zero,0($v1)\n"
+    "    bnez  $t2,.L800790E8\n"
+    "    addiu  $v1,$v1,4\n"
+    "    jal  func_80078FF0\n"
+    "    nop\n"
+    "    jal  ExitCriticalSection\n"
+    "    nop\n"
+    "    lui  $ra,%hi(D_800A3638)\n"
+    "    lw  $ra,%lo(D_800A3638)($ra)\n"
+    "    nop\n"
+    "    jr  $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* padding after func_800790C0 */
+u8* bb2_memcpy(u8 *dst, u8 *src, s32 len) {
+    u8 *ret;
+    if (!dst) {
+        return 0;
+    }
+    ret = dst;
+    while (len > 0) {
+        *dst = *src;
+        src++;
+        len--;
+        dst++;
+    }
+    return ret;
+}
+extern u32 D_800F1848;
+s32 func_80079154(void) {
+    D_800F1848 = D_800F1848 * 0x41C64E6D + 0x3039;
+    return (D_800F1848 >> 16) & 0x7FFF;
+}
+extern s32 D_800F1848;
+void func_80079184(s32 a0) {
+    D_800F1848 = a0;
+}
+u8 *func_80079194(u8 *a0, u8 *a1) {
+    u8 *v1;
+    if (!a0) {
+        return 0;
+    }
+    if (!a1) {
+        return 0;
+    }
+    v1 = a0;
+    while ((*a0++ = *a1++) != 0) {
+    }
+    return v1;
+}
+s32 func_800791D8(u8 *a0) {
+    s32 v1 = 0;
+    if (!a0) {
+        return 0;
+    }
+    while (*a0++ != 0) {
+        v1++;
+    }
+    return v1;
+}
+void debug_printf(s32 fmt, s32 a, ...) {
+    func_80079244(1, fmt, &a);
+}
+void func_80079244(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80079244.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern u8 D_8009BD8D;
+u8 func_800798CC(u8 a0) {
+    u8 c = a0;
+    if ((&D_8009BD8D)[c] & 2) {
+        c = a0 - 0x20;
+    }
+    return c;
+}
+extern u8 D_8009BD8D;
+u8 func_800798FC(u8 a0) {
+    u8 c = a0;
+    if ((&D_8009BD8D)[c] & 1) {
+        c = a0 + 0x20;
+    }
+    return c;
+}
+u8 *func_8007992C(u8 *buf, s32 ch, s32 len) {
+    if (buf == 0) return 0;
+    if (len <= 0) return 0;
+    len--;
+    goto check;
+found:
+    return buf - 1;
+check:
+    if (len < 0) return 0;
+    ch &= 0xFF;
+loop:
+    if (*buf == ch) goto found;
+    ++buf;
+    --len;
+    if (len >= 0) goto loop;
+    return 0;
+}
+void func_80078A08(s32, u8 *, s32);
+void func_8007997C(s8 arg0) {
+    u8 sp10;
+    s32 temp_a0;
+
+    sp10 = arg0;
+    temp_a0 = arg0 & 0xFF;
+    if (temp_a0 == 9) goto loop;
+    if (temp_a0 == 0xA) {
+        func_8007997C(0xD);
+        D_800F1850 = 0;
+        goto tail;
+    }
+    goto def;
+loop:
+    func_8007997C(0x20);
+    if ((D_800F1850 & 7) == 0) return;
+    goto loop;
+def:
+    if ((&D_8009BD8D)[temp_a0] & 0x97) {
+        D_800F1850 += 1;
+    }
+tail:
+    func_80078A08(1, &sp10, 1);
+}
+void func_80079A30(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80079A30.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
