@@ -122,6 +122,166 @@ def scan_regfix_cumulative(content):
     return dict(totals)
 
 
+def _extract_balanced_asm_blocks(text):
+    """Yield (start_pos, end_pos, body) for each __asm__(...) block in `text`.
+    Properly handles nested parens (offsets like `0($sp)` contain `)`).
+
+    The original `__asm__\\s*\\(...\\([^)]+\\)` regex stops at the first `)`,
+    truncating long asm bodies. This generator tracks paren depth."""
+    i = 0
+    while i < len(text):
+        m = re.search(r"__asm__\s*(?:volatile\s*)?\(", text[i:])
+        if not m:
+            return
+        start = i + m.start()
+        body_start = i + m.end()
+        depth = 1
+        j = body_start
+        while j < len(text) and depth > 0:
+            if text[j] == "(":
+                depth += 1
+            elif text[j] == ")":
+                depth -= 1
+            j += 1
+        yield start, j, text[body_start:j - 1]
+        i = j
+
+
+def _count_real_insns(block):
+    """Count actual asm instructions in a __asm__ block body.
+
+    Strips: directives (.set/.section), labels (glabel/endlabel/alabel/.L1:),
+    quote scaffolding. Handles smuggled multi-insn-per-line (\\n separator
+    inside a single quoted string)."""
+    n = 0
+    for src_line in block.split("\n"):
+        s = src_line.strip()
+        qm = re.match(r'^"(.+)\\n"$', s) or re.match(r'^"(.+)"$', s)
+        if not qm:
+            continue
+        asm = qm.group(1).rstrip("\\n").strip()
+        if not asm:
+            continue
+        if asm.startswith(".") or asm.startswith("glabel") or asm.startswith("endlabel") \
+                or asm.startswith("alabel") or asm.endswith(":"):
+            continue
+        # Each \n inside the quoted string is another insn (smuggling pattern)
+        n += asm.count("\\n") + 1
+    return n
+
+
+def _is_whitelisted_insn(insn):
+    """Per §6.1: instructions allowed in any inline-asm block (single or multi).
+
+    GTE coprocessor primitives, scheduling barriers (nop), and GTE ops encoded
+    as raw words. Anything else is "function logic" and must be split into
+    separate single-insn blocks (or expressed in pure C)."""
+    insn = insn.strip()
+    if insn == "nop":
+        return True
+    if re.match(r"(cop2|ctc2|mtc2|mfc2|cfc2|lwc2|swc2)\b", insn):
+        return True
+    # GTE/COP2 .word encodings: 0x4[89A-F]xxxxxx (cop2/ctc2/mtc2/...),
+    # 0xC[89A-B]xxxxxx (lwc2), 0xE[89A-B]xxxxxx (swc2)
+    if re.match(r"\.word\s+0x[4Cc][89A-Fa-f][0-9A-Fa-f]{6}\b", insn):
+        return True
+    if re.match(r"\.word\s+0x[Ee][89A-Bb][0-9A-Fa-f]{6}\b", insn):
+        return True
+    return False
+
+
+def _enclosing_func_name(text, asm_start):
+    """Find the C function definition that contains the asm block at asm_start.
+    Returns the function name, or None if at file scope / not in a function."""
+    depth = 0
+    last_func = None
+    pos = 0
+    # Walk through the source character by character, tracking brace depth.
+    # When depth transitions 0→1, the immediately preceding `name(args)` is
+    # the function we're entering.
+    func_def_re = re.compile(r"([A-Za-z_]\w*)\s*\([^)]*\)\s*$")
+    while pos < asm_start:
+        c = text[pos]
+        if c == "{":
+            if depth == 0:
+                # Look back for the function name
+                # Scan back through whitespace/newlines to find `name(args)`
+                back = pos
+                while back > 0 and text[back - 1] in " \t\n":
+                    back -= 1
+                # Find the matching `(`/`)` pair ending at `back`
+                if back > 0 and text[back - 1] == ")":
+                    # Find matching `(`
+                    d = 1
+                    k = back - 2
+                    while k > 0 and d > 0:
+                        if text[k] == ")":
+                            d += 1
+                        elif text[k] == "(":
+                            d -= 1
+                        k -= 1
+                    # k+1 is at the `(`, scan back for the identifier
+                    name_end = k + 1
+                    name_start = name_end
+                    while name_start > 0 and (text[name_start - 1].isalnum() or text[name_start - 1] == "_"):
+                        name_start -= 1
+                    if name_end > name_start:
+                        last_func = text[name_start:name_end]
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                last_func = None
+        pos += 1
+    return last_func if depth > 0 else None
+
+
+def scan_c_body_smuggled_work(content, source_name):
+    """Return list of (file, line_no, insn_count, enclosing_func, insns) for
+    multi-instruction __asm__ blocks INSIDE C function bodies that contain at
+    least one instruction not on the §6.1 whitelist.
+
+    §6.1's "single instruction per asm block" rule is violated by ANY
+    multi-insn block, but the high-severity case is multi-insn blocks
+    smuggling non-GTE/non-scheduling work via \\n-concatenation. Those are
+    what this scanner flags as cheats."""
+    cheats = []
+    for asm_start, _, body in _extract_balanced_asm_blocks(content):
+        insn_count = _count_real_insns(body)
+        if insn_count <= 1:
+            continue
+        # Skip file-scope blocks (those go through scan_inline_asm_bodies)
+        if _enclosing_func_name(content, asm_start) is None:
+            continue
+        # Skip blocks with glabel (file-scope cheats, in case is_file_scope missed)
+        if re.search(r"glabel\s+\w+", body):
+            continue
+        # Extract instruction lines and check whitelist
+        insns = []
+        for src_line in body.split("\n"):
+            s = src_line.strip()
+            qm = re.match(r'^"(.+)\\n"$', s) or re.match(r'^"(.+)"$', s)
+            if not qm:
+                continue
+            asm = qm.group(1).rstrip("\\n").strip()
+            if not asm or asm.startswith(".") and not asm.startswith(".word"):
+                continue
+            if asm.endswith(":") or asm.startswith("glabel") or asm.startswith("endlabel") or asm.startswith("alabel"):
+                continue
+            # Handle smuggled multi-insn-per-line via \n
+            for sub in asm.split("\\n"):
+                sub = sub.strip()
+                if sub:
+                    insns.append(sub)
+        has_smuggled_work = any(not _is_whitelisted_insn(i) for i in insns)
+        if not has_smuggled_work:
+            continue
+        line_no = content[:asm_start].count("\n") + 1
+        func = _enclosing_func_name(content, asm_start)
+        cheats.append((source_name, line_no, insn_count, func, insns))
+    return cheats
+
+
 def _trampoline_at_start(block):
     """Return True if the trampoline pattern (addiu $tN, $zero, 0xVEC;
     jr $tN; addiu $tM, $zero, FUNC#) appears at the START of the function
@@ -168,14 +328,17 @@ def scan_inline_asm_bodies(content, source_name):
 
 
 def get_current_cheats(auth):
-    """Scan current working tree. Return (splice_funcs, inline_funcs, bios_funcs).
+    """Scan current working tree. Return (splice_funcs, inline_funcs,
+    bios_funcs, c_body_funcs).
 
-    `splice_funcs` is the unified set of functions whose binary content comes
-    from any multi-line regfix op: a per-rule large splice OR a per-rule large
-    subst_multi OR a per-function cumulative-line-count overflow."""
+    `splice_funcs` covers all regfix-injection cheats. `inline_funcs` covers
+    file-scope __asm__(glabel) cheats. `c_body_funcs` covers multi-instruction
+    __asm__ blocks INSIDE C function bodies that smuggle non-GTE/non-scheduling
+    work via \\n-concatenation."""
     splice_funcs = set()
     inline_funcs = set()
     bios_funcs = set()
+    c_body_funcs = set()
 
     regfix = Path("regfix.txt")
     if regfix.exists():
@@ -191,9 +354,8 @@ def get_current_cheats(auth):
                 splice_funcs.add(func)
 
     for src in sorted(Path("src").glob("*.c")):
-        for f, l, n, fname, is_bios in scan_inline_asm_bodies(
-            src.read_text(encoding="utf-8"), src.name
-        ):
+        text = src.read_text(encoding="utf-8")
+        for f, l, n, fname, is_bios in scan_inline_asm_bodies(text, src.name):
             if n < GLABEL_BODY_LINES:
                 continue
             if fname in auth:
@@ -202,14 +364,18 @@ def get_current_cheats(auth):
                 bios_funcs.add(fname)
             else:
                 inline_funcs.add(fname)
+        for f, l, n, fname, _insns in scan_c_body_smuggled_work(text, src.name):
+            if fname and fname not in auth:
+                c_body_funcs.add(fname)
 
-    return splice_funcs, inline_funcs, bios_funcs
+    return splice_funcs, inline_funcs, bios_funcs, c_body_funcs
 
 
 def get_head_cheats(auth):
     """Same scan but against HEAD revision (for --check-new diff)."""
     splice_funcs = set()
     inline_funcs = set()
+    c_body_funcs = set()
 
     try:
         head_regfix = subprocess.run(
@@ -249,8 +415,11 @@ def get_head_cheats(auth):
             if fname in auth or is_bios:
                 continue
             inline_funcs.add(fname)
+        for f, l, n, fname, _insns in scan_c_body_smuggled_work(head_content, src_path):
+            if fname and fname not in auth:
+                c_body_funcs.add(fname)
 
-    return splice_funcs, inline_funcs
+    return splice_funcs, inline_funcs, c_body_funcs
 
 
 def cmd_all():
@@ -313,6 +482,21 @@ def cmd_all():
         print(f"    ... and {len(unauth) - 25} more")
 
     print()
+    print(f"=== Multi-instruction __asm__ inside C function bodies ===")
+    c_body_all = []
+    for src in sorted(Path("src").glob("*.c")):
+        c_body_all.extend(
+            scan_c_body_smuggled_work(src.read_text(encoding="utf-8"), src.name)
+        )
+    c_body_unauth = [c for c in c_body_all if c[3] and c[3] not in auth]
+    print(f"  {len(c_body_all)} multi-insn blocks containing non-§6.1-whitelisted instructions")
+    print(f"  {len(c_body_unauth)} UNAUTHORIZED (host function not in inline_asm_canonical.txt):")
+    for f, l, n, fname, insns in sorted(c_body_unauth, key=lambda x: -x[2])[:15]:
+        print(f"    {f:25s}:{l:6d}  in {fname:30s}  ({n} insns)")
+    if len(c_body_unauth) > 15:
+        print(f"    ... and {len(c_body_unauth) - 15} more")
+
+    print()
     # De-dup across regfix categories: a single func can hit splice + subst_multi
     # + cumulative all at once.
     regfix_unauth_funcs = (
@@ -320,7 +504,8 @@ def cmd_all():
         | {s[0] for s in unauth_subst_multis}
         | {fn for fn, _ in over_cumulative}
     )
-    total_unauth = len(regfix_unauth_funcs) + len(unauth)
+    c_body_unauth_funcs = {c[3] for c in c_body_unauth}
+    total_unauth = len(regfix_unauth_funcs) + len(unauth) + len(c_body_unauth_funcs)
     if total_unauth > 0:
         print(f"TOTAL UNAUTHORIZED ASM CHEATS: {total_unauth}")
         print(f"  ({len(bios)} BIOS trampolines should also be added to inline_asm_canonical.txt)")
@@ -354,12 +539,18 @@ def cmd_func(name):
               file=sys.stderr)
         return 1
     for src in sorted(Path("src").glob("*.c")):
-        for f, l, n, fname, is_bios in scan_inline_asm_bodies(
-            src.read_text(encoding="utf-8"), src.name
-        ):
+        text = src.read_text(encoding="utf-8")
+        for f, l, n, fname, is_bios in scan_inline_asm_bodies(text, src.name):
             if fname == name and n >= GLABEL_BODY_LINES and not is_bios:
                 print(f"UNAUTHORIZED: {name} has inline __asm__ body in {f}:{l} "
                       f"(~{n} lines). Add to inline_asm_canonical.txt or do real C decomp.",
+                      file=sys.stderr)
+                return 1
+        for f, l, n, fname, _insns in scan_c_body_smuggled_work(text, src.name):
+            if fname == name:
+                print(f"UNAUTHORIZED: {name} has multi-insn __asm__ block in {f}:{l} "
+                      f"({n} insns) containing non-§6.1-whitelisted instructions. "
+                      f"Split into per-instruction __asm__ blocks or do real C decomp.",
                       file=sys.stderr)
                 return 1
     return 0
@@ -368,13 +559,14 @@ def cmd_func(name):
 def cmd_check_new():
     """Return 1 if working tree has cheats not present at HEAD."""
     auth = load_authorized()
-    cur_splice, cur_inline, cur_bios = get_current_cheats(auth)
-    head_splice, head_inline = get_head_cheats(auth)
+    cur_splice, cur_inline, cur_bios, cur_c_body = get_current_cheats(auth)
+    head_splice, head_inline, head_c_body = get_head_cheats(auth)
 
     new_splices = cur_splice - head_splice
     new_inline = cur_inline - head_inline
+    new_c_body = cur_c_body - head_c_body
 
-    if not new_splices and not new_inline:
+    if not new_splices and not new_inline and not new_c_body:
         return 0
 
     print("ASM-CHEAT GUARD: new unauthorized asm-cheat patterns since HEAD:", file=sys.stderr)
@@ -383,10 +575,14 @@ def cmd_check_new():
               f"cumulative >= {CUMULATIVE_RULE_LINES} lines) in regfix.txt", file=sys.stderr)
     for fname in sorted(new_inline):
         print(f"  Inline __asm__ glabel body for {fname} in src/*.c", file=sys.stderr)
+    for fname in sorted(new_c_body):
+        print(f"  Multi-insn __asm__ block inside C body of {fname} "
+              f"(non-§6.1-whitelisted insns smuggled via \\n-concatenation)", file=sys.stderr)
     print(file=sys.stderr)
     print("These patterns make the binary match without the C source", file=sys.stderr)
     print("actually corresponding to the emitted bytes (the bytes come from", file=sys.stderr)
-    print("asm injected via splice/subst_multi/insert chains, or file-scope __asm__).", file=sys.stderr)
+    print("asm injected via splice/subst_multi/insert chains, file-scope __asm__,", file=sys.stderr)
+    print("or multi-instruction asm blocks smuggling work).", file=sys.stderr)
     print(file=sys.stderr)
     print("If the original was hand-coded asm (see memory/", file=sys.stderr)
     print("feedback_hand_coded_asm_recognition.md), add the function name", file=sys.stderr)
@@ -401,11 +597,12 @@ def cmd_check_new():
 def cmd_summary():
     """One-line counts of unauthorized cheats. For session briefing."""
     auth = load_authorized()
-    cur_splice, cur_inline, cur_bios = get_current_cheats(auth)
+    cur_splice, cur_inline, cur_bios, cur_c_body = get_current_cheats(auth)
     n_splice = len(cur_splice)
     n_inline = len(cur_inline)
     n_bios = len(cur_bios)
-    total = n_splice + n_inline
+    n_c_body = len(cur_c_body)
+    total = n_splice + n_inline + n_c_body
     if total == 0 and n_bios == 0:
         print("Cheats:   none — all inline asm and large splices are authorized")
     else:
@@ -414,6 +611,8 @@ def cmd_summary():
             parts.append(f"{n_splice} splice")
         if n_inline:
             parts.append(f"{n_inline} inline-asm")
+        if n_c_body:
+            parts.append(f"{n_c_body} c-body-multi-insn")
         if n_bios:
             parts.append(f"{n_bios} BIOS-trampoline (recommend adding to authorized list)")
         msg = ", ".join(parts)
@@ -426,8 +625,8 @@ def cmd_summary():
 def cmd_list_funcs():
     """Print one unauthorized function name per line."""
     auth = load_authorized()
-    cur_splice, cur_inline, cur_bios = get_current_cheats(auth)
-    for f in sorted(cur_splice | cur_inline):
+    cur_splice, cur_inline, cur_bios, cur_c_body = get_current_cheats(auth)
+    for f in sorted(cur_splice | cur_inline | cur_c_body):
         print(f)
     return 0
 

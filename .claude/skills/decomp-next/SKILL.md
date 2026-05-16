@@ -87,9 +87,11 @@ Branch on the briefing:
 
 ## §2. PULL THE NEXT FUNCTION
 
-There are now TWO classes of remaining decomp work, with **separate queues**:
+There are now THREE classes of remaining decomp work, all surfaced through the queue system:
 
-1. **Active decomp queue** (`dc.sh next`) — inline-asm cheats: functions with a file-scope `__asm__("glabel <func> ...")` block in `src/*.c` that emits verbatim asm bytes instead of doing real C decomp. Each row carries the `inline_asm_debt` blocker tag. **74 items as of 2026-05-16.**
+1. **Active decomp queue** (`dc.sh next`) — two kinds of inline-asm cheats:
+   - **`inline_asm_debt`** tag: file-scope `__asm__("glabel <func> ...")` blocks in `src/*.c` that emit verbatim asm bytes instead of doing real C decomp.
+   - **`c_body_asm_debt`** tag: multi-instruction `__asm__` blocks INSIDE C function bodies that smuggle non-GTE/non-scheduling work via `\n`-concatenation. Refactor by splitting into per-instruction `__asm__` blocks or moving the non-GTE work into pure C. Reference template: `src/text1b.c` GTE wrappers (`game_2d_CheckLifeGaugeNoDisp` et al. — 8 register pins + one single-instruction `__asm__ volatile` per GTE op).
 2. **Asmfix retirement queue** (`dc.sh next-asmfix`) — bridged functions (`replace_with_asmfile` in `asmfix.txt`) to convert back to pure C.
 
 Pull from the active queue first (default), since cheats are higher priority — they look like decomp progress but aren't:
@@ -117,7 +119,8 @@ Then the `recommendation` field tells you the function class:
 | `aliasing_heavy` (tag) | Use `dc.sh diff-align` early; expect asymmetric reload patterns |
 | `needs_function_split` / `needs_rodata_split` / `needs_delay_slot_ra` | Structural; specific tooling exists — see `feedback_workflow_rules.md` |
 | `permanently_blocked:*` / `bios_or_syscall:*` | Should never appear (queue filters them). If it does, something's wrong — investigate before continuing |
-| `standard` + `inline_asm_debt` (tag) | **Cheat work item.** See §2.5.d below before §3 — the function has a file-scope `__asm__` body in src/ that must be stripped and replaced with C. |
+| `standard` + `inline_asm_debt` (tag) | **File-scope cheat work item.** See §2.5.d below before §3 — the function has a file-scope `__asm__` body in src/ that must be stripped and replaced with C. |
+| `standard` + `c_body_asm_debt` (tag) | **C-body multi-insn cheat work item.** The function HAS C scaffolding but contains a multi-instruction `__asm__` block inside its body. Read the C body in src/ (the function definition, NOT a file-scope block) to see the offending `__asm__` block; refactor it into per-instruction `__asm__` blocks (per §6.1) or move non-GTE work into pure C. The text1b.c GTE wrappers are the reference pattern. |
 
 **On the `classifier_said:<verdict>` blocker tag** (only present on inline_asm_debt rows): `classify_func` reads `asm/funcs/<func>.s` to make its `bios_or_syscall:*` / `permanently_blocked:*` calls. For cheats, that asm IS the cheat body — so the tag reports what classify_func thought *based on the cheated bytes*, NOT what the original function actually requires. Treat the tag as a HINT for what patterns to look out for (e.g., `classifier_said:permanently_blocked:cop0_op` means watch for a single COP0 op surrounded by ordinary C-decompilable work) — **never** as authorization to add the function to `inline_asm_canonical.txt` without going through §2.5.b's strong-signal evidence check.
 
@@ -468,7 +471,7 @@ Concretely:
 
 - Top-level `__asm__("...")` block doing the function's actual computational work. This is "inline-asm-as-decomp" — the reverted-on-2026-05-12 anti-pattern.
 - `register T x asm("$N") = K;` followed by a multi-instruction `asm volatile("...")` block that emits the rest of the function. The pin is fine; the body in asm is not.
-- Multi-instruction `asm volatile (...)` blocks (newlines inside the asm string, or `\t...\n\t...`) that compute, branch, load, or store as part of function logic. The single-instruction rule above is *single instruction per asm block* — don't smuggle work in via concatenation.
+- Multi-instruction `asm volatile (...)` blocks (newlines inside the asm string, or `\t...\n\t...`) that compute, branch, load, or store as part of function logic. The single-instruction rule above is *single instruction per asm block* — don't smuggle work in via concatenation. **This explicitly includes "concentrated GTE sequences in one block"** — even when every instruction is a GTE primitive (ctc2/mtc2/mfc2/lwc2/swc2/cop2/`.word 0x4_______`), they must be split into separate single-instruction `__asm__ volatile` blocks. Multi-insn-GTE compresses syntax but violates the single-instruction-per-block rule and is not a recognized exception. Reference: `src/text1b.c` GTE wrappers (`game_2d_CheckLifeGaugeNoDisp`, `func_80052A88`, etc.) — each GTE op is a separate `__asm__ volatile` line. The `audit_asm_cheats.py` scanner flags violations via the `c_body_asm_debt` work-queue tag.
 - `replace_with_asmfile "<func>"` still ACTIVE in `asmfix.txt` (not preceded by `# RETIRE: `). The bridge is the original asm pasted in — that's not C.
 - `INCLUDE_ASM("asm/funcs", <func>);` in src/.
 

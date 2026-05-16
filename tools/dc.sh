@@ -817,12 +817,13 @@ PYEOF
                 QUEUE_NAME="asmfix retirement queue"
                 ;;
             next-cheat)
-                # Cheat-fix work shares the active queue, but filters to entries
-                # tagged inline_asm_debt — the unauthorized file-scope asm
-                # bodies surfaced by audit_asm_cheats.py.
+                # Cheat-fix work shares the active queue, but filters to
+                # cheat-tagged entries: inline_asm_debt (file-scope cheats)
+                # AND c_body_asm_debt (C-body multi-insn smuggling cheats).
+                # Awk filter matches either substring in the bracketed tag column.
                 SECTION="## Queue (top = next)"
-                QUEUE_NAME="active decomp queue (filtered: inline_asm_debt)"
-                TAG_FILTER="inline_asm_debt"
+                QUEUE_NAME="active decomp queue (filtered: inline_asm_debt | c_body_asm_debt)"
+                TAG_FILTER="asm_debt"
                 ;;
         esac
         WITH_CONTEXT=0
