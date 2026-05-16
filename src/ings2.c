@@ -534,7 +534,8 @@ void motion_Open(void) {
             do {
                 register void (*f)(void) asm("t0") = *p;
                 p++;
-                __asm__ volatile("jalr %1\n addiu $17, $17, -1" : "=r"(count) : "r"(f), "0"(count) : "ra", "memory");
+                __asm__ volatile("jalr %0" :: "r"(f) : "ra", "memory");
+                __asm__ volatile("addiu $17, $17, -1" : "=r"(count) : "0"(count));
             } while (count != 0);
         }
     }
@@ -551,7 +552,8 @@ void motion_Close(void) {
             do {
                 register void (*f)(void) asm("t0") = *p;
                 p++;
-                __asm__ volatile("jalr %1\n addiu $17, $17, -1" : "=r"(count) : "r"(f), "0"(count) : "ra", "memory");
+                __asm__ volatile("jalr %0" :: "r"(f) : "ra", "memory");
+                __asm__ volatile("addiu $17, $17, -1" : "=r"(count) : "0"(count));
             } while (count != 0);
         }
     }
