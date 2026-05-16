@@ -1,0 +1,33 @@
+{
+  "name": "shared_end_label",
+  "title": "Defeat GCC constant-prop in switch-with-return via single shared end-label",
+  "summary": "Switch-with-return where each case sets a return variable and explicitly returns: if at least one case always returns 0 (or another constant matching the var's natural initial value), GCC constant-folds `return s2;` to `return 0;` and dead-store-eliminates the `s2 = 0;` instruction. Restructure with `goto end; ... end: return s2;` so GCC sees s2 as potentially varying across cases.",
+  "from_memory": "feedback_shared_end_label_recipe.md",
+  "fingerprint": {
+    "structural": [
+      "Switch with 2+ cases, each ending with `return <var>;`",
+      "At least one case always returns 0 (the constant-fold trigger)",
+      "Function is 1-N instructions short, specifically missing `addu $sN, $0, $zero` at case heads",
+      "OR: regfix has `insert_after \"addu $sN, $0, $zero\" @ idx` rules restoring the missing inits"
+    ],
+    "blocker_class": "constant_prop_dead_store"
+  },
+  "rule_skeleton": [
+    {"op": "c_restructure", "comment": "Replace per-case `return s2;` with `goto end;`",
+     "before": "case N: ...; s2 = K; return s2;",
+     "after":  "case N: ...; s2 = K; goto end;"},
+    {"op": "c_restructure", "comment": "Single return at end label",
+     "before": "<close switch>\n    return 0;\n}",
+     "after":  "<close switch>\nend:\n    return s2;\n}"},
+    {"op": "c_restructure", "comment": "Bounds-check also gotos end (matches target's $s2-from-entry return)",
+     "before": "if (cond) return 0;",
+     "after":  "if (cond) goto end;"}
+  ],
+  "notes": [
+    "Reference: func_80077B30 (commit 0f206e5). Switch on D_800A35E4 with cases 0-5; cases 1 and 5 always return 0. Restructure removed 2 insert_after cheats AND all 17 register/label substs — became 100% pure C with zero regfix rules.",
+    "Does NOT apply to single-case or 2-case switches (different GCC optimization landscape).",
+    "Does NOT apply when cases return through different exit paths (not all going to same end).",
+    "Try this FIRST when you see `lost_codegen` audit warnings or a function 1-2 instructions short with missing `addu $sN, $0, $zero` at case heads.",
+    "If the bounds-check failure path returns a literal (not the return variable), changing it to `goto end` matches GCC's natural treatment of an uninitialized callee-save register at the shared exit — that pattern is common in target.s and worth replicating."
+  ]
+}
