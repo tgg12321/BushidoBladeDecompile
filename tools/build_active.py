@@ -224,9 +224,47 @@ def main() -> int:
     # build succeeded.)
     sha1_ok = matched
 
+    # Compute cascade-immune structural diff (binary_diff). Falls back to
+    # None on any error — the legacy byte-diff still feeds iter_log so the
+    # trajectory remains complete even if binary_diff bails.
+    structural = rename = branch_offset = None
+    try:
+        sys.path.insert(0, str(ROOT / "tools"))
+        from binary_diff import compute_diffs  # noqa: E402
+        rep = compute_diffs(args.func)
+        structural = rep.structural_count
+        rename = rep.rename_count
+        branch_offset = rep.branch_offset_count
+    except Exception as e:
+        # Common reasons: function not yet linked (build failed), no .s in
+        # asm/funcs (split missing). Don't spam unless verbose.
+        if not args.quiet:
+            print(f"[build-active] (binary_diff skipped: {e})", file=sys.stderr)
+
     try:
         from iter_log import record as iter_record, plateau_check, render_trajectory, render_plateau_advice  # noqa: E402
-        iter_record(args.func, diffs, bytes_off, matched, sha1_ok)
+        iter_record(args.func, diffs, bytes_off, matched, sha1_ok,
+                    structural=structural, rename=rename,
+                    branch_offset=branch_offset)
+        # Echo the structural breakdown right after verify-c output so the
+        # agent sees both numbers side by side. The mismatch (e.g.
+        # "140 bytes / 1 structural") is the signal that builds with delete
+        # rules are progress, not regressions.
+        if structural is not None:
+            print()
+            parts = [f"S={structural}"]
+            if rename is not None:
+                parts.append(f"R={rename}")
+            if branch_offset is not None:
+                parts.append(f"B={branch_offset}")
+            print(f"[build-active] Structural breakdown: {' '.join(parts)}"
+                  f"  (cascade-immune; primary metric for plateau/regression)")
+            if structural == 0 and rename == 0 and (branch_offset or 0) > 0 and not matched:
+                print(f"[build-active]   → branch-offset end-game; "
+                      f"try: bash tools/dc.sh fix-branch-drift {args.func}")
+            elif structural == 0 and (rename or 0) > 0:
+                print(f"[build-active]   → no structural diff; "
+                      f"try: bash tools/dc.sh gen-substs {args.func} --apply")
         traj = render_trajectory(args.func, last=5)
         if traj:
             print()
