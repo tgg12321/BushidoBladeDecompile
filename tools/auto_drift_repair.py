@@ -81,6 +81,19 @@ _RE_REGFIX_NO_MATCH = re.compile(
 # Linker undefined-reference to a `.LN`-style label — the regfix subst's
 # replacement label drifted out of existence.
 _RE_LD_UNDEF_LABEL = re.compile(r"undefined reference to `(\.L\d+)'")
+# SHA1 mismatch: the build linked, the size is right, but bytes differ
+# from the original. `make` returns exit 0 in this case (the sha1sum -c
+# step prints "MISMATCH" without propagating a failure code), so without
+# this signal an SHA1-silent regression looks like a clean build.
+#
+# This typically means PAIR-SHIFT drift: a regfix subst whose pattern
+# AND replacement both hardcode `.L<N>` labels — the pattern (often a
+# `\.L\d+` regex) still matches, but the replacement writes a literal
+# label that has drifted to a different position. No warning, no error,
+# just wrong bytes. The repair tools (fix-asmfix-drift, fix-label-drift)
+# can't auto-resolve this class because there's no linker error to
+# anchor the lookup; manual `cmp -l` + `dc.sh find-label-at` is needed.
+_RE_SHA1_MISMATCH = re.compile(r"MISMATCH:\s+bb2 does not match")
 
 
 def detect_drift(output: str) -> dict[str, set[str]]:
@@ -88,12 +101,18 @@ def detect_drift(output: str) -> dict[str, set[str]]:
 
     Returns a dict with sets of involved names per signal kind. Empty
     sets across the board = no drift detected.
+
+    `sha1_mismatch` is a sentinel single-element set — there's no per-
+    function granularity available from the SHA1 step (build/bb2.exe
+    is the whole binary), but using a set keeps the dict shape uniform
+    so has_hard_drift / _print_signals don't need a special case.
     """
     return {
         "asmfix_funcs": {m.group(1) for m in _RE_ASMFIX_DID_NOT_MATCH.finditer(output)},
         "dup_labels": {m.group(1) for m in _RE_DUP_LABEL.finditer(output)},
         "regfix_funcs": {m.group(1) for m in _RE_REGFIX_NO_MATCH.finditer(output)},
         "ld_undef_labels": {m.group(1) for m in _RE_LD_UNDEF_LABEL.finditer(output)},
+        "sha1_mismatch": {"build/bb2.exe"} if _RE_SHA1_MISMATCH.search(output) else set(),
     }
 
 
@@ -107,11 +126,16 @@ def has_hard_drift(signals: dict[str, set[str]]) -> bool:
     failed silently first).
     `ld_undef_labels`: linker can't find a `.LN` that a regfix subst wrote
     into its replacement (the label drifted out of existence).
+    `sha1_mismatch`: linked binary differs from the original even though
+    make returned 0. The actual byte difference is somewhere — usually
+    pair-shift drift (literal label in regfix subst replacement) that
+    silently writes wrong bytes with no warning.
     """
     return bool(
         signals["asmfix_funcs"]
         or signals["dup_labels"]
         or signals["ld_undef_labels"]
+        or signals["sha1_mismatch"]
     )
 
 
@@ -181,6 +205,39 @@ def _print_signals(signals: dict[str, set[str]], indent: str = "  ") -> None:
     if signals["ld_undef_labels"]:
         print(f"{indent}linker undefined `.LN` refs: {sorted(signals['ld_undef_labels'])}",
               file=sys.stderr)
+    if signals["sha1_mismatch"]:
+        print(f"{indent}SHA1 mismatch: linked binary differs from original "
+              f"(silent — likely pair-shift drift)", file=sys.stderr)
+
+
+def _print_pair_shift_diagnostic() -> None:
+    """Print the manual recovery recipe for SHA1-silent pair-shift drift.
+
+    Pair-shift = a regfix subst rule whose pattern is drift-immune
+    (e.g. `\\.L\\d+` regex) but whose replacement contains a literal
+    `.L<N>` that has drifted. No linker error fires — the wrong label
+    still exists, just at a different position — so the existing repair
+    tools can't help.
+    """
+    print("[auto-repair] SHA1-silent pair-shift drift — repair tools can't auto-fix",
+          file=sys.stderr)
+    print("[auto-repair] this class. Recovery recipe:", file=sys.stderr)
+    print("[auto-repair]   1. Find diff offset:", file=sys.stderr)
+    print("[auto-repair]      cmp -l build/bb2.exe disc/SLUS_006.63 | head", file=sys.stderr)
+    print("[auto-repair]   2. Map to function: grep that hex addr in build/bb2.map",
+          file=sys.stderr)
+    print("[auto-repair]      (the func with the largest <= addr in the .text section)",
+          file=sys.stderr)
+    print("[auto-repair]   3. Verify which instruction differs:", file=sys.stderr)
+    print("[auto-repair]      bash tools/dc.sh verify <func>", file=sys.stderr)
+    print("[auto-repair]   4. Find what label is currently at the intended target addr:",
+          file=sys.stderr)
+    print("[auto-repair]      bash tools/dc.sh find-label-at <func> <intended-addr>",
+          file=sys.stderr)
+    print("[auto-repair]   5. Update the offending regfix rule's replacement label",
+          file=sys.stderr)
+    print("[auto-repair]      (grep '<func>.*\\.L<old-N>' regfix.txt to locate it).",
+          file=sys.stderr)
 
 
 def _extract_fix_lines(repair_output: str, limit: int = 12) -> list[str]:
@@ -293,6 +350,19 @@ def main() -> int:
             print("[auto-repair]   fix-label-drift made no changes.", file=sys.stderr)
 
     if not (asmfix_applied or label_applied):
+        # Special case: when SHA1 mismatch is the ONLY signal (no warnings,
+        # no linker errors), the repair tools have nothing to anchor on.
+        # This is the pair-shift class — needs the manual recovery recipe.
+        sha1_only = (
+            signals["sha1_mismatch"]
+            and not signals["asmfix_funcs"]
+            and not signals["dup_labels"]
+            and not signals["ld_undef_labels"]
+        )
+        if sha1_only:
+            _print_pair_shift_diagnostic()
+            return 1
+
         print("[auto-repair] No repairs applied — drift symptoms present but the",
               file=sys.stderr)
         print("              repair tools could not resolve them. This is a",
@@ -303,6 +373,10 @@ def main() -> int:
             example_func = sorted(signals["asmfix_funcs"])[0]
             print(f"              bash tools/dc.sh diff-align {example_func}",
                   file=sys.stderr)
+        if signals["sha1_mismatch"]:
+            print("              (SHA1 mismatch also present — see pair-shift recipe below)",
+                  file=sys.stderr)
+            _print_pair_shift_diagnostic()
         return 1
 
     # --- Final rebuild after repair ----------------------------------------
@@ -316,8 +390,13 @@ def main() -> int:
     # noise — make_check.py reports ~300 of them on a clean fully-matching
     # build, none of which are drift. The high-signal "is the cascade fixed?"
     # criteria are: build rc==0, no doubly-defined labels, no asmfix
-    # did-not-match warnings (those are the symptoms repair was meant to fix).
-    hard_residuals = bool(final_signals["dup_labels"] or final_signals["asmfix_funcs"])
+    # did-not-match warnings, and no SHA1 mismatch (the last one catches
+    # silent pair-shift drift that the repair tools can't address).
+    hard_residuals = bool(
+        final_signals["dup_labels"]
+        or final_signals["asmfix_funcs"]
+        or final_signals["sha1_mismatch"]
+    )
     if rc == 0 and not hard_residuals:
         print("[auto-repair] Build clean after repair.", file=sys.stderr)
         modified = []
@@ -336,6 +415,22 @@ def main() -> int:
         return 0
 
     if rc == 0 and hard_residuals:
+        # SHA1-only residual after repair = pair-shift drift the repair
+        # tools couldn't catch. Show the manual recipe.
+        sha1_only_residual = (
+            final_signals["sha1_mismatch"]
+            and not final_signals["asmfix_funcs"]
+            and not final_signals["dup_labels"]
+        )
+        if sha1_only_residual:
+            print("[auto-repair] Repair landed but SHA1 still mismatches — silent",
+                  file=sys.stderr)
+            print("              pair-shift drift remains (a different rule from",
+                  file=sys.stderr)
+            print("              what repair tools handle).", file=sys.stderr)
+            _print_pair_shift_diagnostic()
+            return 1
+
         print("[auto-repair] Build OK but HARD residual drift signals remain:",
               file=sys.stderr)
         if final_signals["asmfix_funcs"]:
