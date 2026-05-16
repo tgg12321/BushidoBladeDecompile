@@ -187,11 +187,21 @@ def cmd_png(path, out_path, clut_index=0):
         for i in range(c["width_entries"]):
             w = struct.unpack_from("<H", blob, clut_off + i * 2)[0]
             palette.append(_bgr555_to_rgb888(w))
-        # Build pixel rows
+
+        # Compute actual available image bytes (may be truncated)
+        max_image_bytes = len(blob) - img_off
+        # Truncate height to fit available data
+        bytes_per_row = img["width_words"] * 2
+        max_rows = max_image_bytes // bytes_per_row
+        if max_rows < ph:
+            print(f"  NOTE: image data truncated to {max_rows} rows "
+                  f"(header claims {ph})", file=sys.stderr)
+            ph = max_rows
+
         if pmode == 0:
             pixels = bytearray()
             for row in range(ph):
-                row_off = img_off + row * img["width_words"] * 2
+                row_off = img_off + row * bytes_per_row
                 for word_idx in range(img["width_words"]):
                     w = struct.unpack_from("<H", blob, row_off + word_idx * 2)[0]
                     pixels.append(w & 0xF)
@@ -201,7 +211,7 @@ def cmd_png(path, out_path, clut_index=0):
         else:  # pmode 1, 8-bit
             pixels = bytearray()
             for row in range(ph):
-                row_off = img_off + row * img["width_words"] * 2
+                row_off = img_off + row * bytes_per_row
                 for word_idx in range(img["width_words"]):
                     w = struct.unpack_from("<H", blob, row_off + word_idx * 2)[0]
                     pixels.append(w & 0xFF)
