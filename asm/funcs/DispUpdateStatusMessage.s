@@ -172,7 +172,7 @@ glabel DispUpdateStatusMessage
     /* 79440 80088C40 00000000 */   nop
   .L80088C44:
     /* 79444 80088C44 09008434 */  ori        $a0, $a0, (0xF0000009 & 0xFFFF)
-    /* 79448 80088C48 2300020C */  jal        func_8008008C
+    /* 79448 80088C48 2300020C */  jal        bios_DeliverEvent
     /* 7944C 80088C4C 20000524 */   addiu     $a1, $zero, 0x20
   .L80088C50:
     /* 79450 80088C50 1000BF8F */  lw         $ra, 0x10($sp)

@@ -44,7 +44,7 @@ glabel ang_hosei
     /* 73F68 80083768 0A801C3C */  lui        $gp, %hi(_gp)
     /* 73F6C 8008376C CC309C27 */  addiu      $gp, $gp, %lo(_gp)
     /* 73F70 80083770 21F0A003 */  addu       $fp, $sp, $zero
-    /* 73F74 80083774 1B0E020C */  jal        func_8008386C
+    /* 73F74 80083774 1B0E020C */  jal        bios_InitHeap
     /* 73F78 80083778 04008420 */   addi      $a0, $a0, %lo(D_80000004) /* handwritten instruction */
     /* 73F7C 8008377C 0A801F3C */  lui        $ra, %hi(D_800A3668)
     /* 73F80 80083780 6836FF8F */  lw         $ra, %lo(D_800A3668)($ra)

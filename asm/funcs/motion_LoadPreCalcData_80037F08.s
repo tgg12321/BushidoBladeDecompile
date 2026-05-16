@@ -7,7 +7,7 @@ glabel motion_LoadPreCalcData_80037F08
     /* 2871C 80037F1C C809A524 */  addiu      $a1, $a1, %lo(D_800109C8)
     /* 28720 80037F20 8CE6010C */  jal        func_80079A30
     /* 28724 80037F24 1000A427 */   addiu     $a0, $sp, 0x10
-    /* 28728 80037F28 8AE2010C */  jal        func_80078A28
+    /* 28728 80037F28 8AE2010C */  jal        bios_FormatDevice_B
     /* 2872C 80037F2C 1000A427 */   addiu     $a0, $sp, 0x10
     /* 28730 80037F30 1800BF8F */  lw         $ra, 0x18($sp)
     /* 28734 80037F34 2000BD27 */  addiu      $sp, $sp, 0x20

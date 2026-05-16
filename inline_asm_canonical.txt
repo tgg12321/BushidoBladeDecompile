@@ -39,55 +39,55 @@ motutil_GetWalkDir  # cluster sibling of func_8007F5EC (jaccard=0.68). Same 3-ax
 # manual review of all 39 candidates against asm/funcs/<name>.s.
 
 # text1b.c — A/B/C-vector trampolines
-func_80078948      # BIOS A(0x43) trampoline
-func_80078958      # BIOS A(0x70) trampoline
-func_80078968      # BIOS A(0x9F) trampoline
-func_80078978      # BIOS B(0x08) trampoline
-func_80078988      # BIOS B(0x09) trampoline
-func_80078998      # BIOS B(0x0B) trampoline
-func_800789A8      # BIOS B(0x0C) trampoline
-func_800789E8      # BIOS B(0x32) trampoline (open)
-func_800789F8      # BIOS B(0x34) trampoline (read)
-func_80078A08      # BIOS B(0x35) trampoline (write)
-func_80078A18      # BIOS B(0x36) trampoline (close)
-func_80078A28      # BIOS B(0x41) trampoline
-func_80078A38      # BIOS B(0x42) trampoline
-func_80078A48      # BIOS B(0x43) trampoline
-func_80078A58      # BIOS B(0x5B) trampoline
-func_80078F00      # BIOS B(0x12) trampoline (InitPAD)
-func_80078F10      # BIOS B(0x13) trampoline (StartPAD)
-func_80078F20      # BIOS B(0x14) trampoline (StopPAD)
-func_80078F30      # BIOS B(0x15) trampoline
-func_80078F40      # BIOS C(0x02) trampoline (SysEnqIntRP)
-func_80078F50      # BIOS C(0x03) trampoline (SysDeqIntRP)
+bios_Exec      # BIOS A(0x43) trampoline
+bios__bu_init_A0      # BIOS A(0x70) trampoline
+bios_SetMem      # BIOS A(0x9F) trampoline
+bios_OpenEvent      # BIOS B(0x08) trampoline
+bios_CloseEvent      # BIOS B(0x09) trampoline
+bios_TestEvent      # BIOS B(0x0B) trampoline
+bios_EnableEvent      # BIOS B(0x0C) trampoline
+bios_FileOpen_B      # BIOS B(0x32) trampoline (open)
+bios_FileRead_B      # BIOS B(0x34) trampoline (read)
+bios_FileWrite_B      # BIOS B(0x35) trampoline (write)
+bios_FileClose_B      # BIOS B(0x36) trampoline (close)
+bios_FormatDevice_B      # BIOS B(0x41) trampoline
+bios_firstfile_B      # BIOS B(0x42) trampoline
+bios_nextfile_B      # BIOS B(0x43) trampoline
+bios_ChangeClearPad      # BIOS B(0x5B) trampoline
+bios_InitPad      # BIOS B(0x12) trampoline (InitPAD)
+bios_StartPad      # BIOS B(0x13) trampoline (StartPAD)
+bios_StopPad      # BIOS B(0x14) trampoline (StopPAD)
+bios_OutdatedPadInitAndStart      # BIOS B(0x15) trampoline
+bios_SysEnqIntRP      # BIOS C(0x02) trampoline (SysEnqIntRP)
+bios_SysDeqIntRP      # BIOS C(0x03) trampoline (SysDeqIntRP)
 func_80078FF0      # BIOS A(0x44) trampoline + tail routine that jalrs through D_800A362C. Dual-block hand-coded asm: the tail is unreachable from the jr, so this cannot be expressed in C.
 
 # gpu.c — A/B-vector card/GPU trampolines
-func_8007A2F8      # BIOS A(0xAB) trampoline
-func_8007A308      # BIOS A(0xAC) trampoline
-func_8007A350      # BIOS B(0x4E) trampoline (_card_write)
-func_8007A360      # BIOS B(0x50) trampoline (_card_status)
-func_8007A428      # BIOS B(0x4A) trampoline (_new_card / InitCARD)
-func_8007A438      # BIOS B(0x4B) trampoline (StartCARD)
-func_8007A448      # BIOS B(0x4C) trampoline (StopCARD)
+bios_A0_0xAB_wrapper      # BIOS A(0xAB) trampoline
+bios_A0_0xAC_wrapper      # BIOS A(0xAC) trampoline
+bios__card_write      # BIOS B(0x4E) trampoline (_card_write)
+bios__new_card      # BIOS B(0x50) trampoline (_card_status)
+bios_InitCard      # BIOS B(0x4A) trampoline (_new_card / InitCARD)
+bios_StartCard      # BIOS B(0x4B) trampoline (StartCARD)
+bios_StopCard      # BIOS B(0x4C) trampoline (StopCARD)
 
 # display.c
-func_8007DF10      # BIOS A(0x49) trampoline (GPU_cw)
+bios_GPU_cw      # BIOS A(0x49) trampoline (GPU_cw)
 
 # system.c
-func_8008008C      # BIOS B(0x07) trampoline (DeliverEvent)
+bios_DeliverEvent      # BIOS B(0x07) trampoline (DeliverEvent)
 
 # ings2.c
-func_80082AB0      # BIOS C(0x0A) trampoline (ChangeClearRCnt)
-func_800831F0      # BIOS B(0x17) trampoline (ReturnFromException)
-func_80083200      # BIOS B(0x18) trampoline (SetDefaultExitFromException)
-func_80083210      # BIOS B(0x19) trampoline (SetCustomExitFromException)
-func_8008386C      # BIOS A(0x39) trampoline (InitHeap)
+bios_ChangeClearRCnt      # BIOS C(0x0A) trampoline (ChangeClearRCnt)
+bios_ReturnFromException      # BIOS B(0x17) trampoline (ReturnFromException)
+bios_SetDefaultExitFromException      # BIOS B(0x18) trampoline (SetDefaultExitFromException)
+bios_SetCustomExitFromException      # BIOS B(0x19) trampoline (SetCustomExitFromException)
+bios_InitHeap      # BIOS A(0x39) trampoline (InitHeap)
 
 # main.c
 CheckFadeEnd       # BIOS B(0x0A) trampoline (WaitEvent)
-func_80089374      # BIOS B(0x0D) trampoline (DisableEvent)
-func_8008D050      # BIOS B(0x47) trampoline (AddDevice)
+bios_DisableEvent      # BIOS B(0x0D) trampoline (DisableEvent)
+bios_AddDevice_B      # BIOS B(0x47) trampoline (AddDevice)
 
 # === MIPS syscall / break / SP-manipulation primitives (canonical hand-coded asm) ===
 # These functions use MIPS instructions that GCC 2.7.2 cannot emit:
@@ -121,7 +121,7 @@ myRobGeneiOpen         # Data-as-code fragment in text1b.c: 4 lui/ori instructio
 # User-authorized 2026-05-16 after manual review of each function body.
 
 # BIOS trampolines with padding/data tables (extends the 39 already authorized)
-func_800831D8          # BIOS A(0x72) trampoline + 3 trailing alignment-padding nops. Identical to authorized 39; only the trailing nops pushed line count past auditor's is_bios threshold (now fixed).
+bios_CdRemove_A0          # BIOS A(0x72) trampoline + 3 trailing alignment-padding nops. Identical to authorized 39; only the trailing nops pushed line count past auditor's is_bios threshold (now fixed).
 func_8008D060          # BIOS B(0x48) trampoline + module-table data block (g_data_start, g_module_func_tbl 34 entries, g_module_type_tbl). The tables are .word data exposed as globals; embedded under this symbol because the BIOS call patches their offsets at runtime.
 
 # COP0 / kernel-register manipulation

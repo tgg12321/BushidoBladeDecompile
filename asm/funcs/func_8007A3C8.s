@@ -3,9 +3,9 @@ glabel func_8007A3C8
     /* 6ABCC 8007A3CC 1000BFAF */  sw         $ra, 0x10($sp)
     /* 6ABD0 8007A3D0 6EE2010C */  jal        EnterCriticalSection
     /* 6ABD4 8007A3D4 00000000 */   nop
-    /* 6ABD8 8007A3D8 0EE9010C */  jal        func_8007A438
+    /* 6ABD8 8007A3D8 0EE9010C */  jal        bios_StartCard
     /* 6ABDC 8007A3DC 00000000 */   nop
-    /* 6ABE0 8007A3E0 96E2010C */  jal        func_80078A58
+    /* 6ABE0 8007A3E0 96E2010C */  jal        bios_ChangeClearPad
     /* 6ABE4 8007A3E4 21200000 */   addu      $a0, $zero, $zero
     /* 6ABE8 8007A3E8 72E2010C */  jal        ExitCriticalSection
     /* 6ABEC 8007A3EC 00000000 */   nop

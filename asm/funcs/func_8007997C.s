@@ -41,7 +41,7 @@ glabel func_8007997C
     /* 6A210 80079A10 501822AC */  sw         $v0, %lo(D_800F1850)($at)
   .L80079A14:
     /* 6A214 80079A14 1000A527 */  addiu      $a1, $sp, 0x10
-    /* 6A218 80079A18 82E2010C */  jal        func_80078A08
+    /* 6A218 80079A18 82E2010C */  jal        bios_FileWrite_B
     /* 6A21C 80079A1C 01000624 */   addiu     $a2, $zero, 0x1
   .L80079A20:
     /* 6A220 80079A20 1800BF8F */  lw         $ra, 0x18($sp)

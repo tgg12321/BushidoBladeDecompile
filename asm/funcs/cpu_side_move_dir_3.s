@@ -37,7 +37,7 @@ glabel cpu_side_move_dir_3
     /* 7C78C 8008BF8C 00800534 */  ori        $a1, $zero, 0x8000
     /* 7C790 8008BF90 DFFF4230 */  andi       $v0, $v0, 0xFFDF
     /* 7C794 8008BF94 0A00C2A4 */  sh         $v0, 0xA($a2)
-    /* 7C798 8008BF98 2300020C */  jal        func_8008008C
+    /* 7C798 8008BF98 2300020C */  jal        bios_DeliverEvent
     /* 7C79C 8008BF9C 00000000 */   nop
     /* 7C7A0 8008BFA0 53300208 */  j          .L8008C14C
     /* 7C7A4 8008BFA4 00000000 */   nop
@@ -50,7 +50,7 @@ glabel cpu_side_move_dir_3
     /* 7C7BC 8008BFBC 00010524 */  addiu      $a1, $zero, 0x100
     /* 7C7C0 8008BFC0 DFFF4230 */  andi       $v0, $v0, 0xFFDF
     /* 7C7C4 8008BFC4 0A0062A4 */  sh         $v0, 0xA($v1)
-    /* 7C7C8 8008BFC8 2300020C */  jal        func_8008008C
+    /* 7C7C8 8008BFC8 2300020C */  jal        bios_DeliverEvent
     /* 7C7CC 8008BFCC 00000000 */   nop
     /* 7C7D0 8008BFD0 53300208 */  j          .L8008C14C
     /* 7C7D4 8008BFD4 00000000 */   nop

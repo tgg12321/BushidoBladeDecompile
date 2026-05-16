@@ -4,7 +4,7 @@ glabel motion_SavePreCalcData_8003A574
     /* 2AD7C 8003A57C 8836A524 */  addiu      $a1, $a1, %lo(D_800A3688)
     /* 2AD80 8003A580 6806848F */  lw         $a0, %gp_rel(D_800A3734)($gp)
     /* 2AD84 8003A584 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2AD88 8003A588 7EE2010C */  jal        func_800789F8
+    /* 2AD88 8003A588 7EE2010C */  jal        bios_FileRead_B
     /* 2AD8C 8003A58C 08000624 */   addiu     $a2, $zero, 0x8
     /* 2AD90 8003A590 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2AD94 8003A594 1800BD27 */  addiu      $sp, $sp, 0x18

@@ -7,7 +7,6 @@ g_data_start,src/main.c,inline_asm,CLASSIFY,,,,,,not_found,0,
 g_module_func_tbl,src/main.c,inline_asm,CLASSIFY,,,,,,not_found,0,
 g_module_type_tbl,src/main.c,inline_asm,CLASSIFY,,,,,,not_found,0,
 D_80081F1C,src/system.c,inline_asm,CLASSIFY,,,,,,not_code_symbol,0,
-func_800526A0,src/text1b.c,inline_asm,CLASSIFY,,,,,,permanently_blocked:handwritten_overflow_op,30,"gte_ops,multi_jr_ra"
 func_80079028,src/text1b.c,inline_asm,CLASSIFY,,,,,,permanently_blocked:handwritten_overflow_op,31,
 func_80052C4C,src/text1b.c,inline_asm,CLASSIFY,,,,,,permanently_blocked:handwritten_overflow_op,34,gte_ops
 func_800525D8,src/text1b.c,inline_asm,CLASSIFY,,,,,,permanently_blocked:handwritten_overflow_op,50,gte_ops

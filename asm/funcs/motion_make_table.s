@@ -41,7 +41,7 @@ glabel motion_make_table
     /* 734D4 80082CD4 B4151026 */  addiu      $s0, $s0, %lo(D_800A15B4)
     /* 734D8 80082CD8 FCFF0426 */  addiu      $a0, $s0, -0x4
     /* 734DC 80082CDC DC0F0226 */  addiu      $v0, $s0, 0xFDC
-    /* 734E0 80082CE0 840C020C */  jal        func_80083210
+    /* 734E0 80082CE0 840C020C */  jal        bios_SetCustomExitFromException
     /* 734E4 80082CE4 000002AE */   sw        $v0, 0x0($s0)
     /* 734E8 80082CE8 01000224 */  addiu      $v0, $zero, 0x1
     /* 734EC 80082CEC A80C020C */  jal        disp_mario_jimaku
@@ -52,7 +52,7 @@ glabel motion_make_table
     /* 73500 80082D00 140062AC */   sw        $v0, 0x14($v1)
     /* 73504 80082D04 0A80043C */  lui        $a0, %hi(D_800A2600)
     /* 73508 80082D08 0026848C */  lw         $a0, %lo(D_800A2600)($a0)
-    /* 7350C 80082D0C 760C020C */  jal        func_800831D8
+    /* 7350C 80082D0C 760C020C */  jal        bios_CdRemove_A0
     /* 73510 80082D10 040082AC */   sw        $v0, 0x4($a0)
     /* 73514 80082D14 72E2010C */  jal        ExitCriticalSection
     /* 73518 80082D18 C4FF1026 */   addiu     $s0, $s0, -0x3C

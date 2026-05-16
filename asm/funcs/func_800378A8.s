@@ -2,23 +2,23 @@ glabel func_800378A8
     /* 280A8 800378A8 1007848F */  lw         $a0, %gp_rel(D_800A37DC)($gp)
     /* 280AC 800378AC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 280B0 800378B0 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 280B4 800378B4 66E2010C */  jal        func_80078998
+    /* 280B4 800378B4 66E2010C */  jal        bios_TestEvent
     /* 280B8 800378B8 1000B0AF */   sw        $s0, 0x10($sp)
     /* 280BC 800378BC 01001024 */  addiu      $s0, $zero, 0x1
     /* 280C0 800378C0 11005010 */  beq        $v0, $s0, .L80037908
     /* 280C4 800378C4 01000224 */   addiu     $v0, $zero, 0x1
     /* 280C8 800378C8 2407848F */  lw         $a0, %gp_rel(D_800A37F0)($gp)
-    /* 280CC 800378CC 66E2010C */  jal        func_80078998
+    /* 280CC 800378CC 66E2010C */  jal        bios_TestEvent
     /* 280D0 800378D0 00000000 */   nop
     /* 280D4 800378D4 0C005010 */  beq        $v0, $s0, .L80037908
     /* 280D8 800378D8 02000224 */   addiu     $v0, $zero, 0x2
     /* 280DC 800378DC 3007848F */  lw         $a0, %gp_rel(D_800A37FC)($gp)
-    /* 280E0 800378E0 66E2010C */  jal        func_80078998
+    /* 280E0 800378E0 66E2010C */  jal        bios_TestEvent
     /* 280E4 800378E4 00000000 */   nop
     /* 280E8 800378E8 07005010 */  beq        $v0, $s0, .L80037908
     /* 280EC 800378EC 03000224 */   addiu     $v0, $zero, 0x3
     /* 280F0 800378F0 3407848F */  lw         $a0, %gp_rel(D_800A3800)($gp)
-    /* 280F4 800378F4 66E2010C */  jal        func_80078998
+    /* 280F4 800378F4 66E2010C */  jal        bios_TestEvent
     /* 280F8 800378F8 00000000 */   nop
     /* 280FC 800378FC 01004238 */  xori       $v0, $v0, 0x1
     /* 28100 80037900 0100422C */  sltiu      $v0, $v0, 0x1

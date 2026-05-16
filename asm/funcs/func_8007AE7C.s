@@ -42,7 +42,7 @@ glabel func_8007AE7C
     /* 6B710 8007AF10 0A80043C */  lui        $a0, %hi(D_8009BE6C)
     /* 6B714 8007AF14 6CBE848C */  lw         $a0, %lo(D_8009BE6C)($a0)
     /* 6B718 8007AF18 FFFF4234 */  ori        $v0, $v0, (0xFFFFFF & 0xFFFF)
-    /* 6B71C 8007AF1C C4F7010C */  jal        func_8007DF10
+    /* 6B71C 8007AF1C C4F7010C */  jal        bios_GPU_cw
     /* 6B720 8007AF20 24208200 */   and       $a0, $a0, $v0
     /* 6B724 8007AF24 71F6010C */  jal        func_8007D9C4
     /* 6B728 8007AF28 21202002 */   addu      $a0, $s1, $zero

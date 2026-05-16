@@ -6,18 +6,23 @@
 #   psyq_<name>     PsyQ stdlib heuristic match (replace with C idiom)
 #   handwritten_asm uses GCC-unfriendly mnemonics; pin to asm or rewrite
 
+# 2026-05-16: removed 13 false-positive psyq_memcpy/psyq_memset entries.
+#   Per tools/propose_function_names.py stricter detector, these were
+#   in-place transforms or contextually unrelated lbu/sb loops (halving,
+#   bit-twiddle, eff_init, etc.), NOT memcpy/memset implementations.
+#   Source and destination base registers were the same.
+#   Removed: func_80016C80, func_80035438, func_80035FE0, func_800397A0,
+#            func_8003A42C, func_800550E8, func_80079194, func_8007A28C,
+#            func_8008339C, func_80083644, func_80086014, func_80087F34,
+#            func_8008AE7C
+
 EnterCriticalSection                  syscall_kernel            4 insns, BIOS trampoline shape
 ExitCriticalSection                   syscall_kernel            4 insns, BIOS trampoline shape
 ang_hosei                             handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 bb2_memcpy                            psyq_memcpy               13 insns, lbu/sb loop
 func_80016768                         psyq_memset               17 insns, store-loop with no load
-func_80016C80                         psyq_memcpy               30 insns, lbu/sb loop
 func_8003043C                         psyq_memset               16 insns, store-loop with no load
-func_80035438                         psyq_memcpy               18 insns, lbu/sb loop
-func_80035FE0                         psyq_memcpy               21 insns, lbu/sb loop
 func_80038148                         psyq_memset               10 insns, store-loop with no load
-func_800397A0                         psyq_memcpy               13 insns, lbu/sb loop
-func_8003A42C                         psyq_memset               9 insns, store-loop with no load
 func_800404D8                         psyq_memset               14 insns, store-loop with no load
 func_8004A348                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_8004A4E0                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
@@ -78,61 +83,53 @@ func_800527FC                         handwritten_asm           uses GCC-unfrien
 func_80052C28                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_80052C4C                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_80054440                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
-func_800550E8                         psyq_memcpy               20 insns, lbu/sb loop
-func_80078948                         bios_table_0xA0           3 insns, BIOS trampoline shape
-func_80078958                         bios_table_0xA0           3 insns, BIOS trampoline shape
-func_80078968                         bios_table_0xA0           3 insns, BIOS trampoline shape
-func_80078978                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078988                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078998                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_800789A8                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_800789E8                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_800789F8                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078A08                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078A18                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078A28                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078A38                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078A48                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078A58                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078F00                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078F10                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078F20                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078F30                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_80078F40                         bios_table_0xC0           3 insns, BIOS trampoline shape
-func_80078F50                         bios_table_0xC0           3 insns, BIOS trampoline shape
+bios_Exec                         bios_table_0xA0           3 insns, BIOS trampoline shape
+bios__bu_init_A0                         bios_table_0xA0           3 insns, BIOS trampoline shape
+bios_SetMem                         bios_table_0xA0           3 insns, BIOS trampoline shape
+bios_OpenEvent                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_CloseEvent                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_TestEvent                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_EnableEvent                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_FileOpen_B                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_FileRead_B                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_FileWrite_B                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_FileClose_B                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_FormatDevice_B                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_firstfile_B                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_nextfile_B                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_ChangeClearPad                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_InitPad                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_StartPad                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_StopPad                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_OutdatedPadInitAndStart                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_SysEnqIntRP                         bios_table_0xC0           3 insns, BIOS trampoline shape
+bios_SysDeqIntRP                         bios_table_0xC0           3 insns, BIOS trampoline shape
 func_80078F88                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_80079028                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_800790C0                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
-func_80079194                         psyq_memcpy               17 insns, lbu/sb loop
-func_8007A28C                         psyq_memcpy               27 insns, lbu/sb loop
-func_8007A2F8                         bios_table_0xA0           4 insns, BIOS trampoline shape
-func_8007A308                         bios_table_0xA0           4 insns, BIOS trampoline shape
-func_8007A350                         bios_table_0xB0           4 insns, BIOS trampoline shape
-func_8007A360                         bios_table_0xB0           4 insns, BIOS trampoline shape
-func_8007A428                         bios_table_0xB0           4 insns, BIOS trampoline shape
-func_8007A438                         bios_table_0xB0           4 insns, BIOS trampoline shape
-func_8007A448                         bios_table_0xB0           4 insns, BIOS trampoline shape
+bios_A0_0xAB_wrapper                         bios_table_0xA0           4 insns, BIOS trampoline shape
+bios_A0_0xAC_wrapper                         bios_table_0xA0           4 insns, BIOS trampoline shape
+bios__card_write                         bios_table_0xB0           4 insns, BIOS trampoline shape
+bios__new_card                         bios_table_0xB0           4 insns, BIOS trampoline shape
+bios_InitCard                         bios_table_0xB0           4 insns, BIOS trampoline shape
+bios_StartCard                         bios_table_0xB0           4 insns, BIOS trampoline shape
+bios_StopCard                         bios_table_0xB0           4 insns, BIOS trampoline shape
 func_8007DEE4                         psyq_memset               11 insns, store-loop with no load
-func_8007DF10                         bios_table_0xA0           3 insns, BIOS trampoline shape
+bios_GPU_cw                         bios_table_0xA0           3 insns, BIOS trampoline shape
 func_8007E11C                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_8007E43C                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_8007E5EC                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_8007FEDC                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
-func_8008008C                         bios_table_0xB0           4 insns, BIOS trampoline shape
-func_80082AB0                         bios_table_0xC0           4 insns, BIOS trampoline shape
-func_800831D8                         bios_table_0xA0           6 insns, BIOS trampoline shape
-func_800831F0                         bios_table_0xB0           4 insns, BIOS trampoline shape
-func_80083200                         bios_table_0xB0           4 insns, BIOS trampoline shape
-func_80083210                         bios_table_0xB0           4 insns, BIOS trampoline shape
-func_8008339C                         psyq_memset               11 insns, store-loop with no load
-func_80083644                         psyq_memset               11 insns, store-loop with no load
+bios_DeliverEvent                         bios_table_0xB0           4 insns, BIOS trampoline shape
+bios_ChangeClearRCnt                         bios_table_0xC0           4 insns, BIOS trampoline shape
+bios_CdRemove_A0                         bios_table_0xA0           6 insns, BIOS trampoline shape
+bios_ReturnFromException                         bios_table_0xB0           4 insns, BIOS trampoline shape
+bios_SetDefaultExitFromException                         bios_table_0xB0           4 insns, BIOS trampoline shape
+bios_SetCustomExitFromException                         bios_table_0xB0           4 insns, BIOS trampoline shape
 func_800836B8                         syscall_kernel            4 insns, BIOS trampoline shape
-func_8008386C                         bios_table_0xA0           4 insns, BIOS trampoline shape
+bios_InitHeap                         bios_table_0xA0           4 insns, BIOS trampoline shape
 func_8008393C                         syscall_kernel            6 insns, BIOS trampoline shape
-func_80086014                         psyq_memcpy               27 insns, lbu/sb loop
-func_80087F34                         psyq_memset               12 insns, store-loop with no load
-func_80089374                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_DisableEvent                         bios_table_0xB0           3 insns, BIOS trampoline shape
 func_8008AAC4                         bios_table_0xB0           3 insns, BIOS trampoline shape
-func_8008AE7C                         psyq_memset               13 insns, store-loop with no load
 func_8008AF58                         psyq_memset               11 insns, store-loop with no load
-func_8008D050                         bios_table_0xB0           3 insns, BIOS trampoline shape
+bios_AddDevice_B                         bios_table_0xB0           3 insns, BIOS trampoline shape

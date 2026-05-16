@@ -146,15 +146,15 @@ extern s32 D_800A3915_ext;
 extern s32 D_800A36F4_ext;
 
 /* Extern function declarations for decompiled functions */
-extern s32 func_80078998(s32);
-extern void func_80078988(s32);
-extern void func_800789A8(s32);
+extern s32 bios_TestEvent(s32);
+extern void bios_CloseEvent(s32);
+extern void bios_EnableEvent(s32);
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void func_800789F8(s32, s32 *, s32);
-extern void func_80078A18(s32);
-extern s32 func_80078A38(s32 *, s32 *);
-extern s32 func_80078A48(s32 *);
+extern void bios_FileRead_B(s32, s32 *, s32);
+extern void bios_FileClose_B(s32);
+extern s32 bios_firstfile_B(s32 *, s32 *);
+extern s32 bios_nextfile_B(s32 *);
 extern void func_80078BA8(s32);
 extern s32 func_80078B04(s32);
 extern void func_8007A400(void);
@@ -184,7 +184,7 @@ extern s32 func_80037F08_ret(s32, s32);
 void motion_LoadPreCalcData_80037F08(s32 a0, s32 a1) {
     s32 buf[2];
     func_80079A30(buf, &D_800109C8, a0, a1);
-    func_80078A28(buf);
+    bios_FormatDevice_B(buf);
 }
 __asm__(
     ".globl func_80037F08_ret
@@ -505,7 +505,7 @@ setup_load:
     func_80038170(&D_800F33D8);
     camera_SetMatrix(&D_800F33D8 + 0x100);
     if (func_80037C34(0, 0, D_800A31F0, &D_800F33D8, 1, 0x200, var_s1) != 0) {
-        func_80078A18(D_800A3794);
+        bios_FileClose_B(D_800A3794);
         var_v0 = 3;
         goto finish;
     }
@@ -522,7 +522,7 @@ state_5:
     D_800A379E = 4;
     func_80038148();
     if (func_80037B90(0, 0, D_800A31F0, &D_800F33D8, 0x200) != 0) {
-        func_80078A18(D_800A3794);
+        bios_FileClose_B(D_800A3794);
         var_v0 = 6;
         goto finish;
     }
@@ -562,7 +562,7 @@ block_4:
     if (var_s0 == 0) {
         goto block_store;
     }
-    func_80078A18(D_800A3794);
+    bios_FileClose_B(D_800A3794);
     var_v0 = 1;
     if (var_s0 != var_v0) {
         var_v0 = 3;
@@ -576,7 +576,7 @@ block_6:
     if (var_s0 == 0) {
         goto block_store;
     }
-    func_80078A18(D_800A3794);
+    bios_FileClose_B(D_800A3794);
     var_v0 = 1;
     if (var_s0 != var_v0) {
         var_v0 = 6;
@@ -1500,33 +1500,33 @@ void func_8003A174(void) {
     EnterCriticalSection();
     neg1 = -1;
     do {
-        D_800A3738 = func_80078978(0xF000000B, 0x400, 0x2000, 0);
+        D_800A3738 = bios_OpenEvent(0xF000000B, 0x400, 0x2000, 0);
     } while (D_800A3738 == neg1);
     neg1 = -1;
     do {
-        D_800A3810 = func_80078978(0xF000000B, 0x8000, 0x2000, 0);
+        D_800A3810 = bios_OpenEvent(0xF000000B, 0x8000, 0x2000, 0);
     } while (D_800A3810 == neg1);
     ExitCriticalSection();
     neg1 = -1;
     sys_VSync(2);
     func_8008BE04();
     do {
-        D_800A373C = func_800789E8(&D_800A3210, 2);
+        D_800A373C = bios_FileOpen_B(&D_800A3210, 2);
     } while (D_800A373C == neg1);
     neg1 = -1;
     do {
-        D_800A3734 = func_800789E8(&D_800A3210, 0x8001);
+        D_800A3734 = bios_FileOpen_B(&D_800A3210, 0x8001);
     } while (D_800A3734 == neg1);
     func_8008C464(2, 0, 0);
     func_8008C464(1, 3, 0xE100);
     func_8008C464(1, 4, 1);
 }
 void func_8003A264(void) {
-    func_80078A18(D_800A3734);
-    func_80078A18(D_800A373C);
+    bios_FileClose_B(D_800A3734);
+    bios_FileClose_B(D_800A373C);
     EnterCriticalSection();
-    func_80078988(D_800A3738);
-    func_80078988(D_800A3810);
+    bios_CloseEvent(D_800A3738);
+    bios_CloseEvent(D_800A3810);
     ExitCriticalSection();
     sys_VSync(2);
     func_8008BE4C();
@@ -1544,8 +1544,8 @@ void func_8003A308(void) {
     func_8008C464(3, 0, 1);
 }
 void func_8003A360(void) {
-    func_800789A8(D_800A3810);
-    func_800789A8(D_800A3738);
+    bios_EnableEvent(D_800A3810);
+    bios_EnableEvent(D_800A3738);
     D_800A320C = 1;
     D_800A3730 = 0;
 }
@@ -1610,13 +1610,13 @@ check_retry:
     func_8008C464(1, 1, 1);
     D_800A382C = 1;
     func_8008C464(4, 0, (s32)&func_8003A42C);
-    func_80078A08(D_800A373C, &D_800A3698, 8);
+    bios_FileWrite_B(D_800A373C, &D_800A3698, 8);
     func_8008C464(4, 0, 0);
     func_8008C464(1, 1, 0);
     return D_800A382C;
 }
 void motion_SavePreCalcData_8003A574(void) {
-    func_800789F8(D_800A3734, &D_800A3688, 8);
+    bios_FileRead_B(D_800A3734, &D_800A3688, 8);
 }
 extern s32 D_800A38D0;
 s32 pad_ClearAppliBuffer(void) {
@@ -1636,10 +1636,10 @@ overflow:
     func_80078BA8(0xF2000001);
     s0 = 0;
 loop_check:
-    if (func_80078998(D_800A3738) != 0) {
+    if (bios_TestEvent(D_800A3738) != 0) {
         goto success;
     }
-    if (func_80078998(D_800A3810) == 0) {
+    if (bios_TestEvent(D_800A3810) == 0) {
         goto poll;
     }
     s1 += 1;

@@ -54348,67 +54348,67 @@ glabel func_800788B0
     /* 69144 80078944 3800BD27 */   addiu     $sp, $sp, 0x38
 endlabel func_800788B0
 
-nonmatching func_80078948, 0xC
+nonmatching bios_Exec, 0xC
 
-glabel func_80078948
+glabel bios_Exec
     /* 69148 80078948 A0000A24 */  addiu      $t2, $zero, 0xA0
     /* 6914C 8007894C 08004001 */  jr         $t2
     /* 69150 80078950 43000924 */   addiu     $t1, $zero, 0x43
-endlabel func_80078948
+endlabel bios_Exec
     /* 69154 80078954 00000000 */  nop
 
-nonmatching func_80078958, 0xC
+nonmatching bios__bu_init_A0, 0xC
 
-glabel func_80078958
+glabel bios__bu_init_A0
     /* 69158 80078958 A0000A24 */  addiu      $t2, $zero, 0xA0
     /* 6915C 8007895C 08004001 */  jr         $t2
     /* 69160 80078960 70000924 */   addiu     $t1, $zero, 0x70
-endlabel func_80078958
+endlabel bios__bu_init_A0
     /* 69164 80078964 00000000 */  nop
 
-nonmatching func_80078968, 0xC
+nonmatching bios_SetMem, 0xC
 
-glabel func_80078968
+glabel bios_SetMem
     /* 69168 80078968 A0000A24 */  addiu      $t2, $zero, 0xA0
     /* 6916C 8007896C 08004001 */  jr         $t2
     /* 69170 80078970 9F000924 */   addiu     $t1, $zero, 0x9F
-endlabel func_80078968
+endlabel bios_SetMem
     /* 69174 80078974 00000000 */  nop
 
-nonmatching func_80078978, 0xC
+nonmatching bios_OpenEvent, 0xC
 
-glabel func_80078978
+glabel bios_OpenEvent
     /* 69178 80078978 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 6917C 8007897C 08004001 */  jr         $t2
     /* 69180 80078980 08000924 */   addiu     $t1, $zero, 0x8
-endlabel func_80078978
+endlabel bios_OpenEvent
     /* 69184 80078984 00000000 */  nop
 
-nonmatching func_80078988, 0xC
+nonmatching bios_CloseEvent, 0xC
 
-glabel func_80078988
+glabel bios_CloseEvent
     /* 69188 80078988 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 6918C 8007898C 08004001 */  jr         $t2
     /* 69190 80078990 09000924 */   addiu     $t1, $zero, 0x9
-endlabel func_80078988
+endlabel bios_CloseEvent
     /* 69194 80078994 00000000 */  nop
 
-nonmatching func_80078998, 0xC
+nonmatching bios_TestEvent, 0xC
 
-glabel func_80078998
+glabel bios_TestEvent
     /* 69198 80078998 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 6919C 8007899C 08004001 */  jr         $t2
     /* 691A0 800789A0 0B000924 */   addiu     $t1, $zero, 0xB
-endlabel func_80078998
+endlabel bios_TestEvent
     /* 691A4 800789A4 00000000 */  nop
 
-nonmatching func_800789A8, 0xC
+nonmatching bios_EnableEvent, 0xC
 
-glabel func_800789A8
+glabel bios_EnableEvent
     /* 691A8 800789A8 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 691AC 800789AC 08004001 */  jr         $t2
     /* 691B0 800789B0 0C000924 */   addiu     $t1, $zero, 0xC
-endlabel func_800789A8
+endlabel bios_EnableEvent
     /* 691B4 800789B4 00000000 */  nop
 
 /* Handwritten function */
@@ -54440,76 +54440,76 @@ glabel func_800789D8
 endlabel func_800789D8
     /* 691E4 800789E4 00000000 */  nop
 
-nonmatching func_800789E8, 0xC
+nonmatching bios_FileOpen_B, 0xC
 
-glabel func_800789E8
+glabel bios_FileOpen_B
     /* 691E8 800789E8 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 691EC 800789EC 08004001 */  jr         $t2
     /* 691F0 800789F0 32000924 */   addiu     $t1, $zero, 0x32
-endlabel func_800789E8
+endlabel bios_FileOpen_B
     /* 691F4 800789F4 00000000 */  nop
 
-nonmatching func_800789F8, 0xC
+nonmatching bios_FileRead_B, 0xC
 
-glabel func_800789F8
+glabel bios_FileRead_B
     /* 691F8 800789F8 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 691FC 800789FC 08004001 */  jr         $t2
     /* 69200 80078A00 34000924 */   addiu     $t1, $zero, 0x34
-endlabel func_800789F8
+endlabel bios_FileRead_B
     /* 69204 80078A04 00000000 */  nop
 
-nonmatching func_80078A08, 0xC
+nonmatching bios_FileWrite_B, 0xC
 
-glabel func_80078A08
+glabel bios_FileWrite_B
     /* 69208 80078A08 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 6920C 80078A0C 08004001 */  jr         $t2
     /* 69210 80078A10 35000924 */   addiu     $t1, $zero, 0x35
-endlabel func_80078A08
+endlabel bios_FileWrite_B
     /* 69214 80078A14 00000000 */  nop
 
-nonmatching func_80078A18, 0xC
+nonmatching bios_FileClose_B, 0xC
 
-glabel func_80078A18
+glabel bios_FileClose_B
     /* 69218 80078A18 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 6921C 80078A1C 08004001 */  jr         $t2
     /* 69220 80078A20 36000924 */   addiu     $t1, $zero, 0x36
-endlabel func_80078A18
+endlabel bios_FileClose_B
     /* 69224 80078A24 00000000 */  nop
 
-nonmatching func_80078A28, 0xC
+nonmatching bios_FormatDevice_B, 0xC
 
-glabel func_80078A28
+glabel bios_FormatDevice_B
     /* 69228 80078A28 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 6922C 80078A2C 08004001 */  jr         $t2
     /* 69230 80078A30 41000924 */   addiu     $t1, $zero, 0x41
-endlabel func_80078A28
+endlabel bios_FormatDevice_B
     /* 69234 80078A34 00000000 */  nop
 
-nonmatching func_80078A38, 0xC
+nonmatching bios_firstfile_B, 0xC
 
-glabel func_80078A38
+glabel bios_firstfile_B
     /* 69238 80078A38 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 6923C 80078A3C 08004001 */  jr         $t2
     /* 69240 80078A40 42000924 */   addiu     $t1, $zero, 0x42
-endlabel func_80078A38
+endlabel bios_firstfile_B
     /* 69244 80078A44 00000000 */  nop
 
-nonmatching func_80078A48, 0xC
+nonmatching bios_nextfile_B, 0xC
 
-glabel func_80078A48
+glabel bios_nextfile_B
     /* 69248 80078A48 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 6924C 80078A4C 08004001 */  jr         $t2
     /* 69250 80078A50 43000924 */   addiu     $t1, $zero, 0x43
-endlabel func_80078A48
+endlabel bios_nextfile_B
     /* 69254 80078A54 00000000 */  nop
 
-nonmatching func_80078A58, 0xC
+nonmatching bios_ChangeClearPad, 0xC
 
-glabel func_80078A58
+glabel bios_ChangeClearPad
     /* 69258 80078A58 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 6925C 80078A5C 08004001 */  jr         $t2
     /* 69260 80078A60 5B000924 */   addiu     $t1, $zero, 0x5B
-endlabel func_80078A58
+endlabel bios_ChangeClearPad
     /* 69264 80078A64 00000000 */  nop
 
 nonmatching func_80078A68, 0x9C
@@ -54679,14 +54679,14 @@ glabel func_80078C00
     /* 69438 80078C38 00000000 */   nop
     /* 6943C 80078C3C 72E2010C */  jal        ExitCriticalSection
     /* 69440 80078C40 00000000 */   nop
-    /* 69444 80078C44 96E2010C */  jal        func_80078A58
+    /* 69444 80078C44 96E2010C */  jal        bios_ChangeClearPad
     /* 69448 80078C48 21200000 */   addu      $a0, $zero, $zero
     /* 6944C 80078C4C 68E3010C */  jal        func_80078DA0
     /* 69450 80078C50 00000000 */   nop
     /* 69454 80078C54 21200002 */  addu       $a0, $s0, $zero
     /* 69458 80078C58 21282002 */  addu       $a1, $s1, $zero
     /* 6945C 80078C5C 21304002 */  addu       $a2, $s2, $zero
-    /* 69460 80078C60 CCE3010C */  jal        func_80078F30
+    /* 69460 80078C60 CCE3010C */  jal        bios_OutdatedPadInitAndStart
     /* 69464 80078C64 21386002 */   addu      $a3, $s3, $zero
     /* 69468 80078C68 0AE4010C */  jal        func_80079028
     /* 6946C 80078C6C 00000000 */   nop
@@ -54723,14 +54723,14 @@ glabel func_80078C9C
     /* 694D4 80078CD4 00000000 */   nop
     /* 694D8 80078CD8 72E2010C */  jal        ExitCriticalSection
     /* 694DC 80078CDC 00000000 */   nop
-    /* 694E0 80078CE0 96E2010C */  jal        func_80078A58
+    /* 694E0 80078CE0 96E2010C */  jal        bios_ChangeClearPad
     /* 694E4 80078CE4 21200000 */   addu      $a0, $zero, $zero
     /* 694E8 80078CE8 68E3010C */  jal        func_80078DA0
     /* 694EC 80078CEC 00000000 */   nop
     /* 694F0 80078CF0 21200002 */  addu       $a0, $s0, $zero
     /* 694F4 80078CF4 21282002 */  addu       $a1, $s1, $zero
     /* 694F8 80078CF8 21304002 */  addu       $a2, $s2, $zero
-    /* 694FC 80078CFC C0E3010C */  jal        func_80078F00
+    /* 694FC 80078CFC C0E3010C */  jal        bios_InitPad
     /* 69500 80078D00 21386002 */   addu      $a3, $s3, $zero
     /* 69504 80078D04 0AE4010C */  jal        func_80079028
     /* 69508 80078D08 00000000 */   nop
@@ -54752,9 +54752,9 @@ nonmatching func_80078D38, 0x30
 glabel func_80078D38
     /* 69538 80078D38 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6953C 80078D3C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 69540 80078D40 C4E3010C */  jal        func_80078F10
+    /* 69540 80078D40 C4E3010C */  jal        bios_StartPad
     /* 69544 80078D44 00000000 */   nop
-    /* 69548 80078D48 96E2010C */  jal        func_80078A58
+    /* 69548 80078D48 96E2010C */  jal        bios_ChangeClearPad
     /* 6954C 80078D4C 21200000 */   addu      $a0, $zero, $zero
     /* 69550 80078D50 D8E3010C */  jal        func_80078F60
     /* 69554 80078D54 00000000 */   nop
@@ -54771,7 +54771,7 @@ glabel pad_Init
     /* 6956C 80078D6C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 69570 80078D70 DDE3010C */  jal        func_80078F74
     /* 69574 80078D74 00000000 */   nop
-    /* 69578 80078D78 C8E3010C */  jal        func_80078F20
+    /* 69578 80078D78 C8E3010C */  jal        bios_StopPad
     /* 6957C 80078D7C 00000000 */   nop
     /* 69580 80078D80 88E3010C */  jal        func_80078E20
     /* 69584 80078D84 00000000 */   nop
@@ -54805,10 +54805,10 @@ glabel func_80078DA0
     /* 695E0 80078DE0 381820AC */  sw         $zero, %lo(D_800F1838)($at)
     /* 695E4 80078DE4 0F80013C */  lui        $at, %hi(D_800F1844)
     /* 695E8 80078DE8 441820AC */  sw         $zero, %lo(D_800F1844)($at)
-    /* 695EC 80078DEC D4E3010C */  jal        func_80078F50
+    /* 695EC 80078DEC D4E3010C */  jal        bios_SysDeqIntRP
     /* 695F0 80078DF0 21280002 */   addu      $a1, $s0, $zero
     /* 695F4 80078DF4 01000424 */  addiu      $a0, $zero, 0x1
-    /* 695F8 80078DF8 D0E3010C */  jal        func_80078F40
+    /* 695F8 80078DF8 D0E3010C */  jal        bios_SysEnqIntRP
     /* 695FC 80078DFC 21280002 */   addu      $a1, $s0, $zero
     /* 69600 80078E00 72E2010C */  jal        ExitCriticalSection
     /* 69604 80078E04 00000000 */   nop
@@ -54829,7 +54829,7 @@ glabel func_80078E20
     /* 6962C 80078E2C 00000000 */   nop
     /* 69630 80078E30 0F80053C */  lui        $a1, %hi(D_800F1838)
     /* 69634 80078E34 3818A524 */  addiu      $a1, $a1, %lo(D_800F1838)
-    /* 69638 80078E38 D4E3010C */  jal        func_80078F50
+    /* 69638 80078E38 D4E3010C */  jal        bios_SysDeqIntRP
     /* 6963C 80078E3C 01000424 */   addiu     $a0, $zero, 0x1
     /* 69640 80078E40 72E2010C */  jal        ExitCriticalSection
     /* 69644 80078E44 00000000 */   nop
@@ -54894,58 +54894,58 @@ glabel func_80078EC0
     /* 696FC 80078EFC 00000000 */   nop
 endlabel func_80078EC0
 
-nonmatching func_80078F00, 0xC
+nonmatching bios_InitPad, 0xC
 
-glabel func_80078F00
+glabel bios_InitPad
     /* 69700 80078F00 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 69704 80078F04 08004001 */  jr         $t2
     /* 69708 80078F08 12000924 */   addiu     $t1, $zero, 0x12
-endlabel func_80078F00
+endlabel bios_InitPad
     /* 6970C 80078F0C 00000000 */  nop
 
-nonmatching func_80078F10, 0xC
+nonmatching bios_StartPad, 0xC
 
-glabel func_80078F10
+glabel bios_StartPad
     /* 69710 80078F10 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 69714 80078F14 08004001 */  jr         $t2
     /* 69718 80078F18 13000924 */   addiu     $t1, $zero, 0x13
-endlabel func_80078F10
+endlabel bios_StartPad
     /* 6971C 80078F1C 00000000 */  nop
 
-nonmatching func_80078F20, 0xC
+nonmatching bios_StopPad, 0xC
 
-glabel func_80078F20
+glabel bios_StopPad
     /* 69720 80078F20 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 69724 80078F24 08004001 */  jr         $t2
     /* 69728 80078F28 14000924 */   addiu     $t1, $zero, 0x14
-endlabel func_80078F20
+endlabel bios_StopPad
     /* 6972C 80078F2C 00000000 */  nop
 
-nonmatching func_80078F30, 0xC
+nonmatching bios_OutdatedPadInitAndStart, 0xC
 
-glabel func_80078F30
+glabel bios_OutdatedPadInitAndStart
     /* 69730 80078F30 B0000A24 */  addiu      $t2, $zero, 0xB0
     /* 69734 80078F34 08004001 */  jr         $t2
     /* 69738 80078F38 15000924 */   addiu     $t1, $zero, 0x15
-endlabel func_80078F30
+endlabel bios_OutdatedPadInitAndStart
     /* 6973C 80078F3C 00000000 */  nop
 
-nonmatching func_80078F40, 0xC
+nonmatching bios_SysEnqIntRP, 0xC
 
-glabel func_80078F40
+glabel bios_SysEnqIntRP
     /* 69740 80078F40 C0000A24 */  addiu      $t2, $zero, 0xC0
     /* 69744 80078F44 08004001 */  jr         $t2
     /* 69748 80078F48 02000924 */   addiu     $t1, $zero, 0x2
-endlabel func_80078F40
+endlabel bios_SysEnqIntRP
     /* 6974C 80078F4C 00000000 */  nop
 
-nonmatching func_80078F50, 0xC
+nonmatching bios_SysDeqIntRP, 0xC
 
-glabel func_80078F50
+glabel bios_SysDeqIntRP
     /* 69750 80078F50 C0000A24 */  addiu      $t2, $zero, 0xC0
     /* 69754 80078F54 08004001 */  jr         $t2
     /* 69758 80078F58 03000924 */   addiu     $t1, $zero, 0x3
-endlabel func_80078F50
+endlabel bios_SysDeqIntRP
     /* 6975C 80078F5C 00000000 */  nop
 
 nonmatching func_80078F60, 0x14
@@ -55821,7 +55821,7 @@ glabel func_8007997C
     /* 6A210 80079A10 501822AC */  sw         $v0, %lo(D_800F1850)($at)
   .L80079A14:
     /* 6A214 80079A14 1000A527 */  addiu      $a1, $sp, 0x10
-    /* 6A218 80079A18 82E2010C */  jal        func_80078A08
+    /* 6A218 80079A18 82E2010C */  jal        bios_FileWrite_B
     /* 6A21C 80079A1C 01000624 */   addiu     $a2, $zero, 0x1
   .L80079A20:
     /* 6A220 80079A20 1800BF8F */  lw         $ra, 0x18($sp)

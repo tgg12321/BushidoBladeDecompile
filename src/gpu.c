@@ -4,7 +4,7 @@
 #include "psx.h"
 
 /* Forward declarations */
-extern void func_8007A448(void);
+extern void bios_StopCard(void);
 extern void func_8007A458(void);
 
 /* Externs for globals */
@@ -121,7 +121,7 @@ u8 *func_8007A28C(u8 *dst, u8 *src, s32 n) {
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel func_8007A2F8\n"
+    "glabel bios_A0_0xAB_wrapper\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0xAB\n"
@@ -132,7 +132,7 @@ __asm__(
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel func_8007A308\n"
+    "glabel bios_A0_0xAC_wrapper\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0xAC\n"
@@ -141,13 +141,13 @@ __asm__(
     ".set at\n"
 );
 void func_8007A318(s32 a0) {
-    func_8007A360(a0);
-    func_8007A350(a0, 0x3F, 0);
+    bios__new_card(a0);
+    bios__card_write(a0, 0x3F, 0);
 }
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel func_8007A350\n"
+    "glabel bios__card_write\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x4E\n"
@@ -158,7 +158,7 @@ __asm__(
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel func_8007A360\n"
+    "glabel bios__new_card\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x50\n"
@@ -167,30 +167,30 @@ __asm__(
     ".set at\n"
 );
 void func_8007A370(s32 a0) {
-    func_80078A58(0);
+    bios_ChangeClearPad(0);
     EnterCriticalSection();
     if (func_80078BF0() == 0) {
         a0 = 0;
     }
-    func_8007A428(a0);
+    bios_InitCard(a0);
     ExitCriticalSection();
 }
 void func_8007A3C8(void) {
     EnterCriticalSection();
-    func_8007A438();
-    func_80078A58(0);
+    bios_StartCard();
+    bios_ChangeClearPad(0);
     ExitCriticalSection();
 }
 
 void func_8007A400(void) {
-    func_8007A448();
+    bios_StopCard();
     func_8007A458();
 }
 
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel func_8007A428\n"
+    "glabel bios_InitCard\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x4A\n"
@@ -201,7 +201,7 @@ __asm__(
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel func_8007A438\n"
+    "glabel bios_StartCard\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x4B\n"
@@ -212,7 +212,7 @@ __asm__(
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel func_8007A448\n"
+    "glabel bios_StopCard\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x4C\n"
@@ -601,7 +601,7 @@ u32 gpu_SetMode(s32 a0) {
         s0 = (GpuConfig *)&g_gpu_type;
         bb2_memset(s0, 0, 0x80);
         irq_DisableInterrupts();
-        func_8007DF10((u32)g_gpu_dev_table & 0xFFFFFF);
+        bios_GPU_cw((u32)g_gpu_dev_table & 0xFFFFFF);
         s0->mode = (idx = func_8007D9C4(a0));
         idx = (u8)idx;
         s0->active = 1;

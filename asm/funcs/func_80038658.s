@@ -18,7 +18,7 @@ glabel func_80038658
     /* 28E94 80038694 01000224 */   addiu     $v0, $zero, 0x1
     /* 28E98 80038698 0A80043C */  lui        $a0, %hi(D_800A3794)
     /* 28E9C 8003869C 9437848C */  lw         $a0, %lo(D_800A3794)($a0)
-    /* 28EA0 800386A0 86E2010C */  jal        func_80078A18
+    /* 28EA0 800386A0 86E2010C */  jal        bios_FileClose_B
     /* 28EA4 800386A4 00000000 */   nop
     /* 28EA8 800386A8 01000224 */  addiu      $v0, $zero, 0x1
     /* 28EAC 800386AC 17000216 */  bne        $s0, $v0, .L8003870C
@@ -33,7 +33,7 @@ glabel func_80038658
     /* 28ECC 800386CC 04000224 */   addiu     $v0, $zero, 0x4
     /* 28ED0 800386D0 0A80043C */  lui        $a0, %hi(D_800A3794)
     /* 28ED4 800386D4 9437848C */  lw         $a0, %lo(D_800A3794)($a0)
-    /* 28ED8 800386D8 86E2010C */  jal        func_80078A18
+    /* 28ED8 800386D8 86E2010C */  jal        bios_FileClose_B
     /* 28EDC 800386DC 00000000 */   nop
     /* 28EE0 800386E0 01000224 */  addiu      $v0, $zero, 0x1
     /* 28EE4 800386E4 09000216 */  bne        $s0, $v0, .L8003870C

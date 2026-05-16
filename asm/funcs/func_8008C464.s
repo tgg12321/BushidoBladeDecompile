@@ -419,7 +419,7 @@ glabel func_8008C464
     /* 7D294 8008CA94 00800534 */  ori        $a1, $zero, 0x8000
     /* 7D298 8008CA98 10004234 */  ori        $v0, $v0, 0x10
     /* 7D29C 8008CA9C 0A00C2A4 */  sh         $v0, 0xA($a2)
-    /* 7D2A0 8008CAA0 2300020C */  jal        func_8008008C
+    /* 7D2A0 8008CAA0 2300020C */  jal        bios_DeliverEvent
     /* 7D2A4 8008CAA4 00000000 */   nop
     /* 7D2A8 8008CAA8 5F330208 */  j          .L8008CD7C
     /* 7D2AC 8008CAAC 21100000 */   addu      $v0, $zero, $zero
@@ -535,7 +535,7 @@ glabel func_8008C464
     /* 7D448 8008CC48 00040524 */  addiu      $a1, $zero, 0x400
     /* 7D44C 8008CC4C DFF74230 */  andi       $v0, $v0, 0xF7DF
     /* 7D450 8008CC50 0A0062A4 */  sh         $v0, 0xA($v1)
-    /* 7D454 8008CC54 2300020C */  jal        func_8008008C
+    /* 7D454 8008CC54 2300020C */  jal        bios_DeliverEvent
     /* 7D458 8008CC58 00000000 */   nop
   .L8008CC5C:
     /* 7D45C 8008CC5C 0A80033C */  lui        $v1, %hi(D_800A3044)
@@ -572,7 +572,7 @@ glabel func_8008C464
     /* 7D4D4 8008CCD4 000080AC */  sw         $zero, 0x0($a0)
     /* 7D4D8 8008CCD8 00F0043C */  lui        $a0, (0xF000000B >> 16)
     /* 7D4DC 8008CCDC 0B008434 */  ori        $a0, $a0, (0xF000000B & 0xFFFF)
-    /* 7D4E0 8008CCE0 2300020C */  jal        func_8008008C
+    /* 7D4E0 8008CCE0 2300020C */  jal        bios_DeliverEvent
     /* 7D4E4 8008CCE4 00080524 */   addiu     $a1, $zero, 0x800
     /* 7D4E8 8008CCE8 58330208 */  j          .L8008CD60
     /* 7D4EC 8008CCEC 00000000 */   nop
@@ -651,10 +651,10 @@ glabel func_8008C464
     /* 7D604 8008CE04 E21A4294 */  lhu        $v0, %lo(D_800F1AE2)($v0)
     /* 7D608 8008CE08 21280002 */  addu       $a1, $s0, $zero
     /* 7D60C 8008CE0C 0A0062A4 */  sh         $v0, 0xA($v1)
-    /* 7D610 8008CE10 D4E3010C */  jal        func_80078F50
+    /* 7D610 8008CE10 D4E3010C */  jal        bios_SysDeqIntRP
     /* 7D614 8008CE14 00000000 */   nop
     /* 7D618 8008CE18 03000424 */  addiu      $a0, $zero, 0x3
-    /* 7D61C 8008CE1C D0E3010C */  jal        func_80078F40
+    /* 7D61C 8008CE1C D0E3010C */  jal        bios_SysEnqIntRP
     /* 7D620 8008CE20 21280002 */   addu      $a1, $s0, $zero
     /* 7D624 8008CE24 0A80033C */  lui        $v1, %hi(D_800A305C)
     /* 7D628 8008CE28 5C30638C */  lw         $v1, %lo(D_800A305C)($v1)
@@ -714,7 +714,7 @@ glabel func_8008C464
     /* 7D700 8008CF00 0A80053C */  lui        $a1, %hi(D_800A304C)
     /* 7D704 8008CF04 4C30A524 */  addiu      $a1, $a1, %lo(D_800A304C)
     /* 7D708 8008CF08 0A0062A4 */  sh         $v0, 0xA($v1)
-    /* 7D70C 8008CF0C D4E3010C */  jal        func_80078F50
+    /* 7D70C 8008CF0C D4E3010C */  jal        bios_SysDeqIntRP
     /* 7D710 8008CF10 00000000 */   nop
     /* 7D714 8008CF14 0F80023C */  lui        $v0, %hi(D_800F1AFC)
     /* 7D718 8008CF18 FC1A4224 */  addiu      $v0, $v0, %lo(D_800F1AFC)

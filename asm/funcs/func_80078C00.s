@@ -16,14 +16,14 @@ glabel func_80078C00
     /* 69438 80078C38 00000000 */   nop
     /* 6943C 80078C3C 72E2010C */  jal        ExitCriticalSection
     /* 69440 80078C40 00000000 */   nop
-    /* 69444 80078C44 96E2010C */  jal        func_80078A58
+    /* 69444 80078C44 96E2010C */  jal        bios_ChangeClearPad
     /* 69448 80078C48 21200000 */   addu      $a0, $zero, $zero
     /* 6944C 80078C4C 68E3010C */  jal        func_80078DA0
     /* 69450 80078C50 00000000 */   nop
     /* 69454 80078C54 21200002 */  addu       $a0, $s0, $zero
     /* 69458 80078C58 21282002 */  addu       $a1, $s1, $zero
     /* 6945C 80078C5C 21304002 */  addu       $a2, $s2, $zero
-    /* 69460 80078C60 CCE3010C */  jal        func_80078F30
+    /* 69460 80078C60 CCE3010C */  jal        bios_OutdatedPadInitAndStart
     /* 69464 80078C64 21386002 */   addu      $a3, $s3, $zero
     /* 69468 80078C68 0AE4010C */  jal        func_80079028
     /* 6946C 80078C6C 00000000 */   nop

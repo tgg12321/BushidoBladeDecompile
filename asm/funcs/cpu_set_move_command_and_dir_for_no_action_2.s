@@ -10,7 +10,7 @@ glabel cpu_set_move_command_and_dir_for_no_action_2
     /* 7A20 80017220 1F80043C */  lui        $a0, (0x801FFF00 >> 16)
     /* 7A24 80017224 76E2010C */  jal        func_800789D8
     /* 7A28 80017228 00FF8434 */   ori       $a0, $a0, (0x801FFF00 & 0xFFFF)
-    /* 7A2C 8001722C 5AE2010C */  jal        func_80078968
+    /* 7A2C 8001722C 5AE2010C */  jal        bios_SetMem
     /* 7A30 80017230 02000424 */   addiu     $a0, $zero, 0x2
     /* 7A34 80017234 865A000C */  jal        sys_Init
     /* 7A38 80017238 00000000 */   nop

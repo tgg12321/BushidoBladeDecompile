@@ -9,7 +9,7 @@ glabel func_8003A174
     /* 2A98C 8003A18C 0B008434 */  ori        $a0, $a0, (0xF000000B & 0xFFFF)
     /* 2A990 8003A190 00040524 */  addiu      $a1, $zero, 0x400
     /* 2A994 8003A194 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 2A998 8003A198 5EE2010C */  jal        func_80078978
+    /* 2A998 8003A198 5EE2010C */  jal        bios_OpenEvent
     /* 2A99C 8003A19C 21380000 */   addu      $a3, $zero, $zero
     /* 2A9A0 8003A1A0 6C0682AF */  sw         $v0, %gp_rel(D_800A3738)($gp)
     /* 2A9A4 8003A1A4 F9FF5010 */  beq        $v0, $s0, .L8003A18C
@@ -19,7 +19,7 @@ glabel func_8003A174
     /* 2A9B0 8003A1B0 0B008434 */  ori        $a0, $a0, (0xF000000B & 0xFFFF)
     /* 2A9B4 8003A1B4 00800534 */  ori        $a1, $zero, 0x8000
     /* 2A9B8 8003A1B8 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 2A9BC 8003A1BC 5EE2010C */  jal        func_80078978
+    /* 2A9BC 8003A1BC 5EE2010C */  jal        bios_OpenEvent
     /* 2A9C0 8003A1C0 21380000 */   addu      $a3, $zero, $zero
     /* 2A9C4 8003A1C4 440782AF */  sw         $v0, %gp_rel(D_800A3810)($gp)
     /* 2A9C8 8003A1C8 F9FF5010 */  beq        $v0, $s0, .L8003A1B0
@@ -33,7 +33,7 @@ glabel func_8003A174
   .L8003A1E8:
     /* 2A9E8 8003A1E8 0A80043C */  lui        $a0, %hi(D_800A3210)
     /* 2A9EC 8003A1EC 10328424 */  addiu      $a0, $a0, %lo(D_800A3210)
-    /* 2A9F0 8003A1F0 7AE2010C */  jal        func_800789E8
+    /* 2A9F0 8003A1F0 7AE2010C */  jal        bios_FileOpen_B
     /* 2A9F4 8003A1F4 02000524 */   addiu     $a1, $zero, 0x2
     /* 2A9F8 8003A1F8 700682AF */  sw         $v0, %gp_rel(D_800A373C)($gp)
     /* 2A9FC 8003A1FC FAFF5010 */  beq        $v0, $s0, .L8003A1E8
@@ -42,7 +42,7 @@ glabel func_8003A174
   .L8003A208:
     /* 2AA08 8003A208 0A80043C */  lui        $a0, %hi(D_800A3210)
     /* 2AA0C 8003A20C 10328424 */  addiu      $a0, $a0, %lo(D_800A3210)
-    /* 2AA10 8003A210 7AE2010C */  jal        func_800789E8
+    /* 2AA10 8003A210 7AE2010C */  jal        bios_FileOpen_B
     /* 2AA14 8003A214 01800534 */   ori       $a1, $zero, 0x8001
     /* 2AA18 8003A218 680682AF */  sw         $v0, %gp_rel(D_800A3734)($gp)
     /* 2AA1C 8003A21C FAFF5010 */  beq        $v0, $s0, .L8003A208

@@ -19,14 +19,14 @@ glabel SetPacketData
   .L8008C22C:
     /* 7CA2C 8008C22C 00F0043C */  lui        $a0, (0xF000000B >> 16)
     /* 7CA30 8008C230 0B008434 */  ori        $a0, $a0, (0xF000000B & 0xFFFF)
-    /* 7CA34 8008C234 2300020C */  jal        func_8008008C
+    /* 7CA34 8008C234 2300020C */  jal        bios_DeliverEvent
     /* 7CA38 8008C238 00010524 */   addiu     $a1, $zero, 0x100
     /* 7CA3C 8008C23C 0A310208 */  j          .L8008C428
     /* 7CA40 8008C240 00000000 */   nop
   .L8008C244:
     /* 7CA44 8008C244 00F0043C */  lui        $a0, (0xF000000B >> 16)
     /* 7CA48 8008C248 0B008434 */  ori        $a0, $a0, (0xF000000B & 0xFFFF)
-    /* 7CA4C 8008C24C 2300020C */  jal        func_8008008C
+    /* 7CA4C 8008C24C 2300020C */  jal        bios_DeliverEvent
     /* 7CA50 8008C250 00010524 */   addiu     $a1, $zero, 0x100
     /* 7CA54 8008C254 0F80023C */  lui        $v0, %hi(D_800F1AF4)
     /* 7CA58 8008C258 F41A4224 */  addiu      $v0, $v0, %lo(D_800F1AF4)

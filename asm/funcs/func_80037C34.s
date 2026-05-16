@@ -19,17 +19,17 @@ glabel func_80037C34
     /* 28478 80037C78 0A000012 */  beqz       $s0, .L80037CA4
     /* 2847C 80037C7C 1800A427 */   addiu     $a0, $sp, 0x18
     /* 28480 80037C80 002C1200 */  sll        $a1, $s2, 16
-    /* 28484 80037C84 7AE2010C */  jal        func_800789E8
+    /* 28484 80037C84 7AE2010C */  jal        bios_FileOpen_B
     /* 28488 80037C88 0002A534 */   ori       $a1, $a1, 0x200
     /* 2848C 80037C8C 21804000 */  addu       $s0, $v0, $zero
     /* 28490 80037C90 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 28494 80037C94 18000212 */  beq        $s0, $v0, .L80037CF8
     /* 28498 80037C98 00000000 */   nop
-    /* 2849C 80037C9C 86E2010C */  jal        func_80078A18
+    /* 2849C 80037C9C 86E2010C */  jal        bios_FileClose_B
     /* 284A0 80037CA0 21200002 */   addu      $a0, $s0, $zero
   .L80037CA4:
     /* 284A4 80037CA4 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 284A8 80037CA8 7AE2010C */  jal        func_800789E8
+    /* 284A8 80037CA8 7AE2010C */  jal        bios_FileOpen_B
     /* 284AC 80037CAC 02800534 */   ori       $a1, $zero, 0x8002
     /* 284B0 80037CB0 21804000 */  addu       $s0, $v0, $zero
     /* 284B4 80037CB4 FFFF0224 */  addiu      $v0, $zero, -0x1
@@ -42,7 +42,7 @@ glabel func_80037C34
     /* 284D0 80037CD0 00000000 */   nop
     /* 284D4 80037CD4 21200002 */  addu       $a0, $s0, $zero
     /* 284D8 80037CD8 5C00A68F */  lw         $a2, 0x5C($sp)
-    /* 284DC 80037CDC 82E2010C */  jal        func_80078A08
+    /* 284DC 80037CDC 82E2010C */  jal        bios_FileWrite_B
     /* 284E0 80037CE0 21282002 */   addu      $a1, $s1, $zero
     /* 284E4 80037CE4 59DE000C */  jal        func_80037964
     /* 284E8 80037CE8 00000000 */   nop

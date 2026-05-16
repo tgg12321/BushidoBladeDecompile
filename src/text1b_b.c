@@ -1110,107 +1110,107 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078948\n"
+    "glabel bios_Exec\n"
     "addiu $t2, $zero, 0xA0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x43\n"
-    "endlabel func_80078948\n"
+    "endlabel bios_Exec\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078948 */
+PAD_NOPS_1; /* padding after bios_Exec */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078958\n"
+    "glabel bios__bu_init_A0\n"
     "addiu $t2, $zero, 0xA0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x70\n"
-    "endlabel func_80078958\n"
+    "endlabel bios__bu_init_A0\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078958 */
+PAD_NOPS_1; /* padding after bios__bu_init_A0 */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078968\n"
+    "glabel bios_SetMem\n"
     "addiu $t2, $zero, 0xA0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x9F\n"
-    "endlabel func_80078968\n"
+    "endlabel bios_SetMem\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078968 */
+PAD_NOPS_1; /* padding after bios_SetMem */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078978\n"
+    "glabel bios_OpenEvent\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x8\n"
-    "endlabel func_80078978\n"
+    "endlabel bios_OpenEvent\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078978 */
+PAD_NOPS_1; /* padding after bios_OpenEvent */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078988\n"
+    "glabel bios_CloseEvent\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x9\n"
-    "endlabel func_80078988\n"
+    "endlabel bios_CloseEvent\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078988 */
+PAD_NOPS_1; /* padding after bios_CloseEvent */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078998\n"
+    "glabel bios_TestEvent\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0xB\n"
-    "endlabel func_80078998\n"
+    "endlabel bios_TestEvent\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078998 */
+PAD_NOPS_1; /* padding after bios_TestEvent */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_800789A8\n"
+    "glabel bios_EnableEvent\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0xC\n"
-    "endlabel func_800789A8\n"
+    "endlabel bios_EnableEvent\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_800789A8 */
+PAD_NOPS_1; /* padding after bios_EnableEvent */
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
@@ -1260,122 +1260,122 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_800789E8\n"
+    "glabel bios_FileOpen_B\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x32\n"
-    "endlabel func_800789E8\n"
+    "endlabel bios_FileOpen_B\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_800789E8 */
+PAD_NOPS_1; /* padding after bios_FileOpen_B */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_800789F8\n"
+    "glabel bios_FileRead_B\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x34\n"
-    "endlabel func_800789F8\n"
+    "endlabel bios_FileRead_B\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_800789F8 */
+PAD_NOPS_1; /* padding after bios_FileRead_B */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078A08\n"
+    "glabel bios_FileWrite_B\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x35\n"
-    "endlabel func_80078A08\n"
+    "endlabel bios_FileWrite_B\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078A08 */
+PAD_NOPS_1; /* padding after bios_FileWrite_B */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078A18\n"
+    "glabel bios_FileClose_B\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x36\n"
-    "endlabel func_80078A18\n"
+    "endlabel bios_FileClose_B\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078A18 */
+PAD_NOPS_1; /* padding after bios_FileClose_B */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078A28\n"
+    "glabel bios_FormatDevice_B\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x41\n"
-    "endlabel func_80078A28\n"
+    "endlabel bios_FormatDevice_B\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078A28 */
+PAD_NOPS_1; /* padding after bios_FormatDevice_B */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078A38\n"
+    "glabel bios_firstfile_B\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x42\n"
-    "endlabel func_80078A38\n"
+    "endlabel bios_firstfile_B\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078A38 */
+PAD_NOPS_1; /* padding after bios_firstfile_B */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078A48\n"
+    "glabel bios_nextfile_B\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x43\n"
-    "endlabel func_80078A48\n"
+    "endlabel bios_nextfile_B\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078A48 */
+PAD_NOPS_1; /* padding after bios_nextfile_B */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078A58\n"
+    "glabel bios_ChangeClearPad\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x5B\n"
-    "endlabel func_80078A58\n"
+    "endlabel bios_ChangeClearPad\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078A58 */
+PAD_NOPS_1; /* padding after bios_ChangeClearPad */
 s32 func_80078A68(s32 arg0, s32 arg1, s32 arg2) {
     s32 a3;
     s32 t0;
@@ -1460,9 +1460,9 @@ void func_800790C0(void);
 void EnterCriticalSection(void);
 void func_80078F88(void);
 void ExitCriticalSection(void);
-void func_80078A58(s32);
+void bios_ChangeClearPad(s32);
 s32 func_80078DA0(void);
-void func_80078F30(s32, s32, s32, s32);
+void bios_OutdatedPadInitAndStart(s32, s32, s32, s32);
 void func_80079028(void);
 extern s32 D_8009BD80;
 void func_80078C00(s32 a0, s32 a1, s32 a2, s32 a3) {
@@ -1470,9 +1470,9 @@ void func_80078C00(s32 a0, s32 a1, s32 a2, s32 a3) {
     EnterCriticalSection();
     func_80078F88();
     ExitCriticalSection();
-    func_80078A58(0);
+    bios_ChangeClearPad(0);
     func_80078DA0();
-    func_80078F30(a0, a1, a2, a3);
+    bios_OutdatedPadInitAndStart(a0, a1, a2, a3);
     func_80079028();
     D_8009BD80 = 1;
 }
@@ -1480,9 +1480,9 @@ void func_800790C0(void);
 void EnterCriticalSection(void);
 void func_80078F88(void);
 void ExitCriticalSection(void);
-void func_80078A58(s32);
+void bios_ChangeClearPad(s32);
 s32 func_80078DA0(void);
-void func_80078F00(s32, s32, s32, s32);
+void bios_InitPad(s32, s32, s32, s32);
 void func_80079028(void);
 extern s32 D_8009BD80;
 void func_80078C9C(s32 a0, s32 a1, s32 a2, s32 a3) {
@@ -1490,34 +1490,34 @@ void func_80078C9C(s32 a0, s32 a1, s32 a2, s32 a3) {
     EnterCriticalSection();
     func_80078F88();
     ExitCriticalSection();
-    func_80078A58(0);
+    bios_ChangeClearPad(0);
     func_80078DA0();
-    func_80078F00(a0, a1, a2, a3);
+    bios_InitPad(a0, a1, a2, a3);
     func_80079028();
     D_8009BD80 = 1;
 }
-void func_80078F10(void);
-void func_80078A58(s32);
+void bios_StartPad(void);
+void bios_ChangeClearPad(s32);
 void func_80078F60(void);
 void func_80078D38(void) {
-    func_80078F10();
-    func_80078A58(0);
+    bios_StartPad();
+    bios_ChangeClearPad(0);
     func_80078F60();
 }
 extern s32 D_8009BD80;
 void func_80078F74(void);
-void func_80078F20(void);
+void bios_StopPad(void);
 s32 func_80078E20(void);
 void pad_Init(void) {
     func_80078F74();
-    func_80078F20();
+    bios_StopPad();
     func_80078E20();
     D_8009BD80 = 0;
 }
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void func_80078F50(s32, u32 *);
-extern void func_80078F40(s32, u32 *);
+extern void bios_SysDeqIntRP(s32, u32 *);
+extern void bios_SysEnqIntRP(s32, u32 *);
 extern void func_80078E58(void);
 extern s32 func_80078EC0(void);
 extern u32 D_800F183C;
@@ -1532,18 +1532,18 @@ s32 func_80078DA0(void) {
     D_800F1840 = (u32)func_80078EC0;
     D_800F1838 = 0;
     D_800F1844 = 0;
-    func_80078F50(1, s0);
-    func_80078F40(1, s0);
+    bios_SysDeqIntRP(1, s0);
+    bios_SysEnqIntRP(1, s0);
     ExitCriticalSection();
     return 1;
 }
 void EnterCriticalSection(void);
-void func_80078F50(s32, s16*);
+void bios_SysDeqIntRP(s32, s16*);
 void ExitCriticalSection(void);
 extern s16 D_800F1838;
 s32 func_80078E20(void) {
     EnterCriticalSection();
-    func_80078F50(1, &D_800F1838);
+    bios_SysDeqIntRP(1, &D_800F1838);
     ExitCriticalSection();
     return 1;
 }
@@ -1577,92 +1577,92 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078F00\n"
+    "glabel bios_InitPad\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x12\n"
-    "endlabel func_80078F00\n"
+    "endlabel bios_InitPad\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078F00 */
+PAD_NOPS_1; /* padding after bios_InitPad */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078F10\n"
+    "glabel bios_StartPad\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x13\n"
-    "endlabel func_80078F10\n"
+    "endlabel bios_StartPad\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078F10 */
+PAD_NOPS_1; /* padding after bios_StartPad */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078F20\n"
+    "glabel bios_StopPad\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x14\n"
-    "endlabel func_80078F20\n"
+    "endlabel bios_StopPad\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078F20 */
+PAD_NOPS_1; /* padding after bios_StopPad */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078F30\n"
+    "glabel bios_OutdatedPadInitAndStart\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x15\n"
-    "endlabel func_80078F30\n"
+    "endlabel bios_OutdatedPadInitAndStart\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078F30 */
+PAD_NOPS_1; /* padding after bios_OutdatedPadInitAndStart */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078F40\n"
+    "glabel bios_SysEnqIntRP\n"
     "addiu $t2, $zero, 0xC0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x2\n"
-    "endlabel func_80078F40\n"
+    "endlabel bios_SysEnqIntRP\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078F40 */
+PAD_NOPS_1; /* padding after bios_SysEnqIntRP */
 __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078F50\n"
+    "glabel bios_SysDeqIntRP\n"
     "addiu $t2, $zero, 0xC0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x3\n"
-    "endlabel func_80078F50\n"
+    "endlabel bios_SysDeqIntRP\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* padding after func_80078F50 */
+PAD_NOPS_1; /* padding after bios_SysDeqIntRP */
 extern void (*jtbl_800A3620)(void);
 void func_80078F60(void) {
     jtbl_800A3620();
@@ -1915,7 +1915,7 @@ loop:
     if (len >= 0) goto loop;
     return 0;
 }
-void func_80078A08(s32, u8 *, s32);
+void bios_FileWrite_B(s32, u8 *, s32);
 void func_8007997C(s8 arg0) {
     u8 sp10;
     s32 temp_a0;
@@ -1938,7 +1938,7 @@ def:
         D_800F1850 += 1;
     }
 tail:
-    func_80078A08(1, &sp10, 1);
+    bios_FileWrite_B(1, &sp10, 1);
 }
 void func_80079A30(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80079A30.s).

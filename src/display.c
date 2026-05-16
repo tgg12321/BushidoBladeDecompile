@@ -12,7 +12,7 @@
 /* Forward declarations */
 extern s32 sys_VSync(s32);
 extern s32 bb2_memcpy(s32, void *, s32);
-extern void func_8008008C(s32, s32);
+extern void bios_DeliverEvent(s32, s32);
 
 /* Externs for globals */
 extern volatile u32 *g_gpu_stat_reg;
@@ -1066,14 +1066,14 @@ void bb2_memset(u8 *a0, u8 a1, s32 a2) {
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel func_8007DF10\n"
+    "glabel bios_GPU_cw\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x49\n"
     ".set reorder\n"
     ".set at\n"
 );
-PAD_NOPS_1; /* 1 NOP after func_8007DF10 */
+PAD_NOPS_1; /* 1 NOP after bios_GPU_cw */
 extern s32 math_SinLookup(s32);
 s32 math_Sin(s32 a0) {
     s32 v;
@@ -3482,13 +3482,13 @@ loop:
 }
 
 void motion_SavePreCalcData_80080014(void) {
-    func_8008008C(0xF0000003, 0x20);
+    bios_DeliverEvent(0xF0000003, 0x20);
 }
 
 void motion_SavePreCalcData_8008003C(void) {
-    func_8008008C(0xF0000003, 0x40);
+    bios_DeliverEvent(0xF0000003, 0x40);
 }
 
 void motion_SavePreCalcData_80080064(void) {
-    func_8008008C(0xF0000003, 0x40);
+    bios_DeliverEvent(0xF0000003, 0x40);
 }

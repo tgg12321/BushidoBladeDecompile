@@ -665,7 +665,7 @@ void marionation_camera_Init_80037468(s32 a0, s32 *a1, s32 a2) {
     sp[8] = a2;
     sp[9] = 0;
     EnterCriticalSection();
-    func_80078948(sp, a0, a1);
+    bios_Exec(sp, a0, a1);
     sys_Init();
     file_LoadSoundData();
     sys_VSync(0);

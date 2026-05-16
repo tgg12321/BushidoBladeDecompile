@@ -6,8 +6,8 @@ extern s32 D_800A3890;
 extern s32 D_800A3924;
 extern s32 D_800A37F4;
 
-extern void func_8007A2F8(s32);
-extern void func_8007A308(s32);
+extern void bios_A0_0xAB_wrapper(s32);
+extern void bios_A0_0xAC_wrapper(s32);
 extern void func_8007A318(s32);
 extern s32  func_80037804(void);
 extern void func_800379D8(void);
@@ -21,7 +21,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
 
     switch (D_800A31EC) {
     case 0:
-        func_8007A2F8(p);
+        bios_A0_0xAB_wrapper(p);
         D_800A31EC = 1;
         D_800A3924 = 0;
         D_800A3890 = 0;
@@ -67,7 +67,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
     }
     case 2:
         func_8003791C();
-        func_8007A308(p);
+        bios_A0_0xAC_wrapper(p);
         D_800A31EC = 3;
         D_800A3924 = 0;
         break;

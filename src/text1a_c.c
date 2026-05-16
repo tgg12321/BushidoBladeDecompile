@@ -1406,12 +1406,12 @@ s32 func_80044E6C(void) {
 extern void game_FrameLoop(void);
 extern void special_camera_check_pos_outside_ground_80036E34(s32, s32, s32, s32);
 
-typedef struct { s16 x; s16 y; } Coord;
-extern Coord D_800963EC[];
+typedef struct { s16 start_sector; s16 length_sectors; } NdataInfEntry;
+extern NdataInfEntry D_800963EC[];
 
 void func_80044E74(s32 a0, s32 a1) {
     game_FrameLoop();
-    special_camera_check_pos_outside_ground_80036E34(0, a1, D_800963EC[a0].x, D_800963EC[a0].y);
+    special_camera_check_pos_outside_ground_80036E34(0, a1, D_800963EC[a0].start_sector, D_800963EC[a0].length_sectors);
     game_FrameLoop();
 }
 void func_80044ED8(s32 a0, s32 a1) {

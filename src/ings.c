@@ -30,7 +30,7 @@ extern s16 Judge[];
 extern s32 func_80083698(s32, s32, s32);
 extern s32 ang_hosei(s32, s32, s32);
 extern s32 bios_FileRead(s32, u8 *, s32);
-extern void func_80078A18(s32);
+extern void bios_FileClose_B(s32);
 extern void md_gview_init(s32);
 
 
@@ -63,7 +63,7 @@ extern s32 func_80079154(void);
 extern void func_800372C0(void);
 extern void motion_Open(void);
 extern void func_800789D8(u32);
-extern void func_80078968(s32);
+extern void bios_SetMem(s32);
 extern void gnd_get_fog(s32);
 extern void change_shadow_tex_reg(void);
 extern void ReturnVTMenu(void);
@@ -148,7 +148,7 @@ s32 file_LoadAll(s32 a0, u8 *dest) {
                 chunk = remaining;
             }
             if (bios_FileRead(fd, dest, chunk) != chunk) {
-                func_80078A18(fd);
+                bios_FileClose_B(fd);
                 return -1;
             }
             remaining -= chunk;
@@ -172,7 +172,7 @@ s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
     if (count > 0) {
         do {
             if (bios_FileRead(fd, dest, 0x800) != 0x800) {
-                func_80078A18(fd);
+                bios_FileClose_B(fd);
                 return -1;
             }
             i += 1;
@@ -293,7 +293,7 @@ void disp_Init(void) {
 }
 extern void func_80078C9C(u8 *, s32, u8 *, s32);
 extern void func_80078D38(void);
-extern void func_80078A58(s32);
+extern void bios_ChangeClearPad(s32);
 extern void func_80035FE0(void);
 extern void pad_press_control(void);
 extern u8 g_pad_data;
@@ -302,7 +302,7 @@ void sys_Init(void) {
     irq_DisableInterrupts();
     func_80078C9C(base, 8, base + 0x24, 8);
     func_80078D38();
-    func_80078A58(0);
+    bios_ChangeClearPad(0);
     disp_Init();
     g_disp_enable = DISP_DISABLED;
     g_disp_fade = 0;
@@ -590,7 +590,7 @@ void cpu_set_move_command_and_dir_for_no_action_2(void) {
 
     motion_Open();
     func_800789D8(0x801FFF00);
-    func_80078968(2);
+    bios_SetMem(2);
     sys_Init();
     sys_GameInit();
     gpu_SetDispMask(1);

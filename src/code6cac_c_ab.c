@@ -148,15 +148,15 @@ extern s32 D_800A3915_ext;
 extern s32 D_800A36F4_ext;
 
 /* Extern function declarations for decompiled functions */
-extern s32 func_80078998(s32);
-extern void func_80078988(s32);
-extern void func_800789A8(s32);
+extern s32 bios_TestEvent(s32);
+extern void bios_CloseEvent(s32);
+extern void bios_EnableEvent(s32);
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void func_800789F8(s32, s32 *, s32);
-extern void func_80078A18(s32);
-extern s32 func_80078A38(s32 *, s32 *);
-extern s32 func_80078A48(s32 *);
+extern void bios_FileRead_B(s32, s32 *, s32);
+extern void bios_FileClose_B(s32);
+extern s32 bios_firstfile_B(s32 *, s32 *);
+extern s32 bios_nextfile_B(s32 *);
 extern void func_80078BA8(s32);
 extern s32 func_80078B04(s32);
 extern void func_8007A400(void);

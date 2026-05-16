@@ -19,7 +19,7 @@ glabel func_8008AEB0
   .L8008AEF0:
     /* 7B6F0 8008AEF0 0A80043C */  lui        $a0, %hi(D_800A2870)
     /* 7B6F4 8008AEF4 7028848C */  lw         $a0, %lo(D_800A2870)($a0)
-    /* 7B6F8 8008AEF8 66E2010C */  jal        func_80078998
+    /* 7B6F8 8008AEF8 66E2010C */  jal        bios_TestEvent
     /* 7B6FC 8008AEFC 00000000 */   nop
     /* 7B700 8008AF00 0B003016 */  bne        $s1, $s0, .L8008AF30
     /* 7B704 8008AF04 00000000 */   nop
@@ -28,7 +28,7 @@ glabel func_8008AEB0
   .L8008AF10:
     /* 7B710 8008AF10 0A80043C */  lui        $a0, %hi(D_800A2870)
     /* 7B714 8008AF14 7028848C */  lw         $a0, %lo(D_800A2870)($a0)
-    /* 7B718 8008AF18 66E2010C */  jal        func_80078998
+    /* 7B718 8008AF18 66E2010C */  jal        bios_TestEvent
     /* 7B71C 8008AF1C 00000000 */   nop
     /* 7B720 8008AF20 FBFF4010 */  beqz       $v0, .L8008AF10
     /* 7B724 8008AF24 01000224 */   addiu     $v0, $zero, 0x1

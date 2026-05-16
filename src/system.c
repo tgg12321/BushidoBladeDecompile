@@ -29,7 +29,7 @@ extern s32 g_cd_callback_b;
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel func_8008008C\n"
+    "glabel bios_DeliverEvent\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x7\n"

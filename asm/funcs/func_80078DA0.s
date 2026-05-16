@@ -18,10 +18,10 @@ glabel func_80078DA0
     /* 695E0 80078DE0 381820AC */  sw         $zero, %lo(D_800F1838)($at)
     /* 695E4 80078DE4 0F80013C */  lui        $at, %hi(D_800F1844)
     /* 695E8 80078DE8 441820AC */  sw         $zero, %lo(D_800F1844)($at)
-    /* 695EC 80078DEC D4E3010C */  jal        func_80078F50
+    /* 695EC 80078DEC D4E3010C */  jal        bios_SysDeqIntRP
     /* 695F0 80078DF0 21280002 */   addu      $a1, $s0, $zero
     /* 695F4 80078DF4 01000424 */  addiu      $a0, $zero, 0x1
-    /* 695F8 80078DF8 D0E3010C */  jal        func_80078F40
+    /* 695F8 80078DF8 D0E3010C */  jal        bios_SysEnqIntRP
     /* 695FC 80078DFC 21280002 */   addu      $a1, $s0, $zero
     /* 69600 80078E00 72E2010C */  jal        ExitCriticalSection
     /* 69604 80078E04 00000000 */   nop

@@ -60,7 +60,7 @@ glabel func_8003A450
     /* 2AD24 8003A524 0A80053C */  lui        $a1, %hi(D_800A3698)
     /* 2AD28 8003A528 9836A524 */  addiu      $a1, $a1, %lo(D_800A3698)
     /* 2AD2C 8003A52C 7006848F */  lw         $a0, %gp_rel(D_800A373C)($gp)
-    /* 2AD30 8003A530 82E2010C */  jal        func_80078A08
+    /* 2AD30 8003A530 82E2010C */  jal        bios_FileWrite_B
     /* 2AD34 8003A534 08000624 */   addiu     $a2, $zero, 0x8
     /* 2AD38 8003A538 04000424 */  addiu      $a0, $zero, 0x4
     /* 2AD3C 8003A53C 21280000 */  addu       $a1, $zero, $zero

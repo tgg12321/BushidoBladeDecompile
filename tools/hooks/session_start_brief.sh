@@ -12,8 +12,36 @@
 
 set -e
 
-PROJECT_ROOT="/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile"
-WSL_ROOT="/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile"
+# Resolve project root from cwd's git toplevel so this hook works correctly
+# in git worktrees (sub-agent isolation). Fall back to $CLAUDE_PROJECT_DIR
+# then to the script's own grandparent. Same pattern as active_func_guard.sh
+# and grind_check.sh — keep these three in sync.
+PROJECT_ROOT=""
+if ROOT_FROM_CWD=$(git rev-parse --show-toplevel 2>/dev/null) && [ -d "$ROOT_FROM_CWD" ]; then
+    PROJECT_ROOT="$ROOT_FROM_CWD"
+elif [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -d "$CLAUDE_PROJECT_DIR" ]; then
+    PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
+else
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+    PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+fi
+
+# Normalize Windows-style paths (C:/foo or C:\foo) to bash form (/c/foo).
+case "$PROJECT_ROOT" in
+    [A-Za-z]:[/\\]*)
+        DRIVE=$(echo "$PROJECT_ROOT" | cut -c1 | tr '[:upper:]' '[:lower:]')
+        REST="${PROJECT_ROOT#?:}"
+        REST="${REST//\\//}"
+        PROJECT_ROOT="/$DRIVE$REST"
+        ;;
+esac
+
+# Derive WSL mount path for the wsl bash -c invocations below.
+case "$PROJECT_ROOT" in
+    /[a-zA-Z]/*) WSL_ROOT="/mnt$PROJECT_ROOT" ;;
+    *)           WSL_ROOT="$PROJECT_ROOT" ;;
+esac
+
 ACTIVE_FILE="$PROJECT_ROOT/.bb2_active_func"
 QUIT_LOG="$PROJECT_ROOT/.bb2_quit_log.json"
 

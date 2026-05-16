@@ -88,8 +88,8 @@ s32 sys_VSync(s32 a0) {
 
 extern s32 D_80016318;
 extern void tslTm2LoadImage_2(void *);
-extern void func_80078A58(s32);
-extern void func_80082AB0(s32, s32);
+extern void bios_ChangeClearPad(s32);
+extern void bios_ChangeClearRCnt(s32, s32);
 void func_80082A14(s32 a0, s32 a1) {
     volatile s32 counter = a1 << 15;
     asm volatile("" ::: "memory");
@@ -97,8 +97,8 @@ void func_80082A14(s32 a0, s32 a1) {
         do {
             if (--counter == -1) {
                 tslTm2LoadImage_2(&D_80016318);
-                func_80078A58(0);
-                func_80082AB0(3, 0);
+                bios_ChangeClearPad(0);
+                bios_ChangeClearRCnt(3, 0);
                 return;
             }
         } while (g_sys_dma_region < a0);
@@ -108,12 +108,12 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_80082AB0\n"
+    "glabel bios_ChangeClearRCnt\n"
     "    addiu $t2, $zero, 0xC0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0xA\n"
     "    nop\n"
-    "endlabel func_80082AB0\n"
+    "endlabel bios_ChangeClearRCnt\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -155,10 +155,10 @@ extern s32 D_800A15B4;
 extern s32 func_800831A4(u16 *, s32);
 extern s32 func_80083220(u16 *);
 extern void func_80082D34(void);
-extern void func_80083210(s32 *);
+extern void bios_SetCustomExitFromException(s32 *);
 extern s32 func_800832A0(void);
 extern s32 conv_matrix_rotation(void);
-extern s32 func_800831D8(s32 *);
+extern s32 bios_CdRemove_A0(s32 *);
 u16 motion_make_table(u16 arg0) {
     u16 *ptr = g_sys_irq_counter;
     u16 old = *ptr;
@@ -198,7 +198,7 @@ u16 *func_80082C58(void) {
         s32 *s0b = &D_800A15B4;
 
         *s0b = (s32)s0b + 0xFDC;
-        func_80083210(s0b - 1);
+        bios_SetCustomExitFromException(s0b - 1);
 
         asm volatile("" : "=r"(s0b) : "0"(s0b));
         ((s16 *)s0b)[-0x1E] = 1;
@@ -212,7 +212,7 @@ u16 *func_80082C58(void) {
         {
             s32 *a0 = g_sys_irq_vtable;
             a0[1] = result;
-            func_800831D8(a0);
+            bios_CdRemove_A0(a0);
         }
         asm volatile("" : "=r"(s0b) : "0"(s0b));
         s0b = (s32 *)((char *)s0b - 0x3C);
@@ -226,14 +226,14 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_800831D8\n"
+    "glabel bios_CdRemove_A0\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0x72\n"
     "    nop\n"
     "    nop\n"
     "    nop\n"
-    "endlabel func_800831D8\n"
+    "endlabel bios_CdRemove_A0\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -241,12 +241,12 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_800831F0\n"
+    "glabel bios_ReturnFromException\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0x17\n"
     "    nop\n"
-    "endlabel func_800831F0\n"
+    "endlabel bios_ReturnFromException\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -254,12 +254,12 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_80083200\n"
+    "glabel bios_SetDefaultExitFromException\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0x18\n"
     "    nop\n"
-    "endlabel func_80083200\n"
+    "endlabel bios_SetDefaultExitFromException\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -267,12 +267,12 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_80083210\n"
+    "glabel bios_SetCustomExitFromException\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0x19\n"
     "    nop\n"
-    "endlabel func_80083210\n"
+    "endlabel bios_SetCustomExitFromException\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -561,12 +561,12 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_8008386C\n"
+    "glabel bios_InitHeap\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0x39\n"
     "    nop\n"
-    "endlabel func_8008386C\n"
+    "endlabel bios_InitHeap\n"
     "    .set reorder\n"
     "    .set at\n"
 );

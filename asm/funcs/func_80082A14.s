@@ -22,10 +22,10 @@ glabel func_80082A14
     /* 73260 80082A60 18638424 */  addiu      $a0, $a0, %lo(D_80016318)
     /* 73264 80082A64 0008020C */  jal        tslTm2LoadImage_2
     /* 73268 80082A68 00000000 */   nop
-    /* 7326C 80082A6C 96E2010C */  jal        func_80078A58
+    /* 7326C 80082A6C 96E2010C */  jal        bios_ChangeClearPad
     /* 73270 80082A70 21200000 */   addu      $a0, $zero, $zero
     /* 73274 80082A74 03000424 */  addiu      $a0, $zero, 0x3
-    /* 73278 80082A78 AC0A020C */  jal        func_80082AB0
+    /* 73278 80082A78 AC0A020C */  jal        bios_ChangeClearRCnt
     /* 7327C 80082A7C 21280000 */   addu      $a1, $zero, $zero
     /* 73280 80082A80 A80A0208 */  j          .L80082AA0
     /* 73284 80082A84 00000000 */   nop

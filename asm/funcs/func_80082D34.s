@@ -20,7 +20,7 @@ glabel func_80082D34
     /* 7357C 80082D7C 5C638424 */  addiu      $a0, $a0, %lo(D_8001635C)
     /* 73580 80082D80 82E4010C */  jal        debug_printf
     /* 73584 80082D84 00000000 */   nop
-    /* 73588 80082D88 7C0C020C */  jal        func_800831F0
+    /* 73588 80082D88 7C0C020C */  jal        bios_ReturnFromException
     /* 7358C 80082D8C 00000000 */   nop
   .L80082D90:
     /* 73590 80082D90 0A80043C */  lui        $a0, %hi(D_800A2604)
@@ -118,7 +118,7 @@ glabel func_80082D34
   .L80082EE8:
     /* 736E8 80082EE8 0A80013C */  lui        $at, %hi(D_800A157A)
     /* 736EC 80082EEC 7A1520A4 */  sh         $zero, %lo(D_800A157A)($at)
-    /* 736F0 80082EF0 7C0C020C */  jal        func_800831F0
+    /* 736F0 80082EF0 7C0C020C */  jal        bios_ReturnFromException
     /* 736F4 80082EF4 00000000 */   nop
     /* 736F8 80082EF8 2400BF8F */  lw         $ra, 0x24($sp)
     /* 736FC 80082EFC 2000B48F */  lw         $s4, 0x20($sp)
@@ -180,30 +180,30 @@ glabel func_80082D34
     /* 737D4 80082FD4 08002016 */  bnez       $s1, .L80082FF8
     /* 737D8 80082FD8 04000224 */   addiu     $v0, $zero, 0x4
     /* 737DC 80082FDC 0100502E */  sltiu      $s0, $s2, 0x1
-    /* 737E0 80082FE0 96E2010C */  jal        func_80078A58
+    /* 737E0 80082FE0 96E2010C */  jal        bios_ChangeClearPad
     /* 737E4 80082FE4 21200002 */   addu      $a0, $s0, $zero
     /* 737E8 80082FE8 03000424 */  addiu      $a0, $zero, 0x3
-    /* 737EC 80082FEC AC0A020C */  jal        func_80082AB0
+    /* 737EC 80082FEC AC0A020C */  jal        bios_ChangeClearRCnt
     /* 737F0 80082FF0 21280002 */   addu      $a1, $s0, $zero
     /* 737F4 80082FF4 04000224 */  addiu      $v0, $zero, 0x4
   .L80082FF8:
     /* 737F8 80082FF8 05002216 */  bne        $s1, $v0, .L80083010
     /* 737FC 80082FFC 05000224 */   addiu     $v0, $zero, 0x5
     /* 73800 80083000 21200000 */  addu       $a0, $zero, $zero
-    /* 73804 80083004 AC0A020C */  jal        func_80082AB0
+    /* 73804 80083004 AC0A020C */  jal        bios_ChangeClearRCnt
     /* 73808 80083008 0100452E */   sltiu     $a1, $s2, 0x1
     /* 7380C 8008300C 05000224 */  addiu      $v0, $zero, 0x5
   .L80083010:
     /* 73810 80083010 05002216 */  bne        $s1, $v0, .L80083028
     /* 73814 80083014 06000224 */   addiu     $v0, $zero, 0x6
     /* 73818 80083018 01000424 */  addiu      $a0, $zero, 0x1
-    /* 7381C 8008301C AC0A020C */  jal        func_80082AB0
+    /* 7381C 8008301C AC0A020C */  jal        bios_ChangeClearRCnt
     /* 73820 80083020 0100452E */   sltiu     $a1, $s2, 0x1
     /* 73824 80083024 06000224 */  addiu      $v0, $zero, 0x6
   .L80083028:
     /* 73828 80083028 03002216 */  bne        $s1, $v0, .L80083038
     /* 7382C 8008302C 02000424 */   addiu     $a0, $zero, 0x2
-    /* 73830 80083030 AC0A020C */  jal        func_80082AB0
+    /* 73830 80083030 AC0A020C */  jal        bios_ChangeClearRCnt
     /* 73834 80083034 0100452E */   sltiu     $a1, $s2, 0x1
   .L80083038:
     /* 73838 80083038 0A80023C */  lui        $v0, %hi(D_800A2608)
@@ -255,7 +255,7 @@ glabel func_80082D34
     /* 738EC 800830EC 77776334 */  ori        $v1, $v1, (0x77777777 & 0xFFFF)
     /* 738F0 800830F0 24104300 */  and        $v0, $v0, $v1
     /* 738F4 800830F4 000082AC */  sw         $v0, 0x0($a0)
-    /* 738F8 800830F8 800C020C */  jal        func_80083200
+    /* 738F8 800830F8 800C020C */  jal        bios_SetDefaultExitFromException
     /* 738FC 800830FC 00000000 */   nop
     /* 73900 80083100 21100002 */  addu       $v0, $s0, $zero
     /* 73904 80083104 000040A4 */  sh         $zero, 0x0($v0)
@@ -274,7 +274,7 @@ glabel func_80082D34
     /* 73934 80083134 00000000 */  nop
     /* 73938 80083138 14004014 */  bnez       $v0, .L8008318C
     /* 7393C 8008313C 00000000 */   nop
-    /* 73940 80083140 840C020C */  jal        func_80083210
+    /* 73940 80083140 840C020C */  jal        bios_SetCustomExitFromException
     /* 73944 80083144 38000426 */   addiu     $a0, $s0, 0x38
     /* 73948 80083148 0A80043C */  lui        $a0, %hi(D_800A2608)
     /* 7394C 8008314C 0826848C */  lw         $a0, %lo(D_800A2608)($a0)

@@ -3301,13 +3301,13 @@ glabel func_8007DEE4
     /* 6E70C 8007DF0C 00000000 */   nop
 endlabel func_8007DEE4
 
-nonmatching func_8007DF10, 0xC
+nonmatching bios_GPU_cw, 0xC
 
-glabel func_8007DF10
+glabel bios_GPU_cw
     /* 6E710 8007DF10 A0000A24 */  addiu      $t2, $zero, 0xA0
     /* 6E714 8007DF14 08004001 */  jr         $t2
     /* 6E718 8007DF18 49000924 */   addiu     $t1, $zero, 0x49
-endlabel func_8007DF10
+endlabel bios_GPU_cw
     /* 6E71C 8007DF1C 00000000 */  nop
 
 nonmatching math_Sin, 0x3C
@@ -5741,7 +5741,7 @@ glabel func_8007FF7C
     /* 70818 80080018 1000BFAF */  sw         $ra, 0x10($sp)
     /* 7081C 8008001C 00F0043C */  lui        $a0, (0xF0000003 >> 16)
     /* 70820 80080020 03008434 */  ori        $a0, $a0, (0xF0000003 & 0xFFFF)
-    /* 70824 80080024 2300020C */  jal        func_8008008C
+    /* 70824 80080024 2300020C */  jal        bios_DeliverEvent
     /* 70828 80080028 20000524 */   addiu     $a1, $zero, 0x20
     /* 7082C 8008002C 1000BF8F */  lw         $ra, 0x10($sp)
     /* 70830 80080030 1800BD27 */  addiu      $sp, $sp, 0x18
@@ -5752,7 +5752,7 @@ glabel func_8007FF7C
     /* 70840 80080040 1000BFAF */  sw         $ra, 0x10($sp)
     /* 70844 80080044 00F0043C */  lui        $a0, (0xF0000003 >> 16)
     /* 70848 80080048 03008434 */  ori        $a0, $a0, (0xF0000003 & 0xFFFF)
-    /* 7084C 8008004C 2300020C */  jal        func_8008008C
+    /* 7084C 8008004C 2300020C */  jal        bios_DeliverEvent
     /* 70850 80080050 40000524 */   addiu     $a1, $zero, 0x40
     /* 70854 80080054 1000BF8F */  lw         $ra, 0x10($sp)
     /* 70858 80080058 1800BD27 */  addiu      $sp, $sp, 0x18
@@ -5763,7 +5763,7 @@ glabel func_8007FF7C
     /* 70868 80080068 1000BFAF */  sw         $ra, 0x10($sp)
     /* 7086C 8008006C 00F0043C */  lui        $a0, (0xF0000003 >> 16)
     /* 70870 80080070 03008434 */  ori        $a0, $a0, (0xF0000003 & 0xFFFF)
-    /* 70874 80080074 2300020C */  jal        func_8008008C
+    /* 70874 80080074 2300020C */  jal        bios_DeliverEvent
     /* 70878 80080078 40000524 */   addiu     $a1, $zero, 0x40
     /* 7087C 8008007C 1000BF8F */  lw         $ra, 0x10($sp)
     /* 70880 80080080 1800BD27 */  addiu      $sp, $sp, 0x18

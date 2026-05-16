@@ -35556,7 +35556,7 @@ glabel marionation_camera_Init_80037468
     /* 27CF0 800374F0 3400A0AF */   sw        $zero, 0x34($sp)
     /* 27CF4 800374F4 1000A427 */  addiu      $a0, $sp, 0x10
     /* 27CF8 800374F8 21280002 */  addu       $a1, $s0, $zero
-    /* 27CFC 800374FC 52E2010C */  jal        func_80078948
+    /* 27CFC 800374FC 52E2010C */  jal        bios_Exec
     /* 27D00 80037500 21304002 */   addu      $a2, $s2, $zero
     /* 27D04 80037504 865A000C */  jal        sys_Init
     /* 27D08 80037508 00000000 */   nop
@@ -35632,9 +35632,9 @@ glabel pad_press_control
     /* 27DF8 800375F8 01000424 */   addiu     $a0, $zero, 0x1
     /* 27DFC 800375FC F2E8010C */  jal        func_8007A3C8
     /* 27E00 80037600 00000000 */   nop
-    /* 27E04 80037604 56E2010C */  jal        func_80078958
+    /* 27E04 80037604 56E2010C */  jal        bios__bu_init_A0
     /* 27E08 80037608 00000000 */   nop
-    /* 27E0C 8003760C 96E2010C */  jal        func_80078A58
+    /* 27E0C 8003760C 96E2010C */  jal        bios_ChangeClearPad
     /* 27E10 80037610 21200000 */   addu      $a0, $zero, $zero
     /* 27E14 80037614 6EE2010C */  jal        EnterCriticalSection
     /* 27E18 80037618 00000000 */   nop
@@ -35642,83 +35642,83 @@ glabel pad_press_control
     /* 27E20 80037620 01008434 */  ori        $a0, $a0, (0xF4000001 & 0xFFFF)
     /* 27E24 80037624 04000524 */  addiu      $a1, $zero, 0x4
     /* 27E28 80037628 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 27E2C 8003762C 5EE2010C */  jal        func_80078978
+    /* 27E2C 8003762C 5EE2010C */  jal        bios_OpenEvent
     /* 27E30 80037630 21380000 */   addu      $a3, $zero, $zero
     /* 27E34 80037634 00F4043C */  lui        $a0, (0xF4000001 >> 16)
     /* 27E38 80037638 01008434 */  ori        $a0, $a0, (0xF4000001 & 0xFFFF)
     /* 27E3C 8003763C 00800534 */  ori        $a1, $zero, 0x8000
     /* 27E40 80037640 00200624 */  addiu      $a2, $zero, 0x2000
     /* 27E44 80037644 100782AF */  sw         $v0, %gp_rel(D_800A37DC)($gp)
-    /* 27E48 80037648 5EE2010C */  jal        func_80078978
+    /* 27E48 80037648 5EE2010C */  jal        bios_OpenEvent
     /* 27E4C 8003764C 21380000 */   addu      $a3, $zero, $zero
     /* 27E50 80037650 00F4043C */  lui        $a0, (0xF4000001 >> 16)
     /* 27E54 80037654 01008434 */  ori        $a0, $a0, (0xF4000001 & 0xFFFF)
     /* 27E58 80037658 00010524 */  addiu      $a1, $zero, 0x100
     /* 27E5C 8003765C 00200624 */  addiu      $a2, $zero, 0x2000
     /* 27E60 80037660 240782AF */  sw         $v0, %gp_rel(D_800A37F0)($gp)
-    /* 27E64 80037664 5EE2010C */  jal        func_80078978
+    /* 27E64 80037664 5EE2010C */  jal        bios_OpenEvent
     /* 27E68 80037668 21380000 */   addu      $a3, $zero, $zero
     /* 27E6C 8003766C 00F4043C */  lui        $a0, (0xF4000001 >> 16)
     /* 27E70 80037670 01008434 */  ori        $a0, $a0, (0xF4000001 & 0xFFFF)
     /* 27E74 80037674 00200524 */  addiu      $a1, $zero, 0x2000
     /* 27E78 80037678 00200624 */  addiu      $a2, $zero, 0x2000
     /* 27E7C 8003767C 300782AF */  sw         $v0, %gp_rel(D_800A37FC)($gp)
-    /* 27E80 80037680 5EE2010C */  jal        func_80078978
+    /* 27E80 80037680 5EE2010C */  jal        bios_OpenEvent
     /* 27E84 80037684 21380000 */   addu      $a3, $zero, $zero
     /* 27E88 80037688 00F0043C */  lui        $a0, (0xF0000011 >> 16)
     /* 27E8C 8003768C 11008434 */  ori        $a0, $a0, (0xF0000011 & 0xFFFF)
     /* 27E90 80037690 04000524 */  addiu      $a1, $zero, 0x4
     /* 27E94 80037694 00200624 */  addiu      $a2, $zero, 0x2000
     /* 27E98 80037698 340782AF */  sw         $v0, %gp_rel(D_800A3800)($gp)
-    /* 27E9C 8003769C 5EE2010C */  jal        func_80078978
+    /* 27E9C 8003769C 5EE2010C */  jal        bios_OpenEvent
     /* 27EA0 800376A0 21380000 */   addu      $a3, $zero, $zero
     /* 27EA4 800376A4 00F0043C */  lui        $a0, (0xF0000011 >> 16)
     /* 27EA8 800376A8 11008434 */  ori        $a0, $a0, (0xF0000011 & 0xFFFF)
     /* 27EAC 800376AC 00800534 */  ori        $a1, $zero, 0x8000
     /* 27EB0 800376B0 00200624 */  addiu      $a2, $zero, 0x2000
     /* 27EB4 800376B4 6C0782AF */  sw         $v0, %gp_rel(D_800A3838)($gp)
-    /* 27EB8 800376B8 5EE2010C */  jal        func_80078978
+    /* 27EB8 800376B8 5EE2010C */  jal        bios_OpenEvent
     /* 27EBC 800376BC 21380000 */   addu      $a3, $zero, $zero
     /* 27EC0 800376C0 00F0043C */  lui        $a0, (0xF0000011 >> 16)
     /* 27EC4 800376C4 11008434 */  ori        $a0, $a0, (0xF0000011 & 0xFFFF)
     /* 27EC8 800376C8 00010524 */  addiu      $a1, $zero, 0x100
     /* 27ECC 800376CC 00200624 */  addiu      $a2, $zero, 0x2000
     /* 27ED0 800376D0 700782AF */  sw         $v0, %gp_rel(D_800A383C)($gp)
-    /* 27ED4 800376D4 5EE2010C */  jal        func_80078978
+    /* 27ED4 800376D4 5EE2010C */  jal        bios_OpenEvent
     /* 27ED8 800376D8 21380000 */   addu      $a3, $zero, $zero
     /* 27EDC 800376DC 00F0043C */  lui        $a0, (0xF0000011 >> 16)
     /* 27EE0 800376E0 11008434 */  ori        $a0, $a0, (0xF0000011 & 0xFFFF)
     /* 27EE4 800376E4 00200524 */  addiu      $a1, $zero, 0x2000
     /* 27EE8 800376E8 00200624 */  addiu      $a2, $zero, 0x2000
     /* 27EEC 800376EC 7C0782AF */  sw         $v0, %gp_rel(D_800A3848)($gp)
-    /* 27EF0 800376F0 5EE2010C */  jal        func_80078978
+    /* 27EF0 800376F0 5EE2010C */  jal        bios_OpenEvent
     /* 27EF4 800376F4 21380000 */   addu      $a3, $zero, $zero
     /* 27EF8 800376F8 840782AF */  sw         $v0, %gp_rel(D_800A3850)($gp)
     /* 27EFC 800376FC 72E2010C */  jal        ExitCriticalSection
     /* 27F00 80037700 00000000 */   nop
     /* 27F04 80037704 1007848F */  lw         $a0, %gp_rel(D_800A37DC)($gp)
-    /* 27F08 80037708 6AE2010C */  jal        func_800789A8
+    /* 27F08 80037708 6AE2010C */  jal        bios_EnableEvent
     /* 27F0C 8003770C 00000000 */   nop
     /* 27F10 80037710 2407848F */  lw         $a0, %gp_rel(D_800A37F0)($gp)
-    /* 27F14 80037714 6AE2010C */  jal        func_800789A8
+    /* 27F14 80037714 6AE2010C */  jal        bios_EnableEvent
     /* 27F18 80037718 00000000 */   nop
     /* 27F1C 8003771C 3007848F */  lw         $a0, %gp_rel(D_800A37FC)($gp)
-    /* 27F20 80037720 6AE2010C */  jal        func_800789A8
+    /* 27F20 80037720 6AE2010C */  jal        bios_EnableEvent
     /* 27F24 80037724 00000000 */   nop
     /* 27F28 80037728 3407848F */  lw         $a0, %gp_rel(D_800A3800)($gp)
-    /* 27F2C 8003772C 6AE2010C */  jal        func_800789A8
+    /* 27F2C 8003772C 6AE2010C */  jal        bios_EnableEvent
     /* 27F30 80037730 00000000 */   nop
     /* 27F34 80037734 6C07848F */  lw         $a0, %gp_rel(D_800A3838)($gp)
-    /* 27F38 80037738 6AE2010C */  jal        func_800789A8
+    /* 27F38 80037738 6AE2010C */  jal        bios_EnableEvent
     /* 27F3C 8003773C 00000000 */   nop
     /* 27F40 80037740 7007848F */  lw         $a0, %gp_rel(D_800A383C)($gp)
-    /* 27F44 80037744 6AE2010C */  jal        func_800789A8
+    /* 27F44 80037744 6AE2010C */  jal        bios_EnableEvent
     /* 27F48 80037748 00000000 */   nop
     /* 27F4C 8003774C 7C07848F */  lw         $a0, %gp_rel(D_800A3848)($gp)
-    /* 27F50 80037750 6AE2010C */  jal        func_800789A8
+    /* 27F50 80037750 6AE2010C */  jal        bios_EnableEvent
     /* 27F54 80037754 00000000 */   nop
     /* 27F58 80037758 8407848F */  lw         $a0, %gp_rel(D_800A3850)($gp)
-    /* 27F5C 8003775C 6AE2010C */  jal        func_800789A8
+    /* 27F5C 8003775C 6AE2010C */  jal        bios_EnableEvent
     /* 27F60 80037760 00000000 */   nop
     /* 27F64 80037764 1000BF8F */  lw         $ra, 0x10($sp)
     /* 27F68 80037768 1800BD27 */  addiu      $sp, $sp, 0x18
@@ -35734,28 +35734,28 @@ glabel func_80037774
     /* 27F7C 8003777C 6EE2010C */  jal        EnterCriticalSection
     /* 27F80 80037780 00000000 */   nop
     /* 27F84 80037784 1007848F */  lw         $a0, %gp_rel(D_800A37DC)($gp)
-    /* 27F88 80037788 62E2010C */  jal        func_80078988
+    /* 27F88 80037788 62E2010C */  jal        bios_CloseEvent
     /* 27F8C 8003778C 00000000 */   nop
     /* 27F90 80037790 2407848F */  lw         $a0, %gp_rel(D_800A37F0)($gp)
-    /* 27F94 80037794 62E2010C */  jal        func_80078988
+    /* 27F94 80037794 62E2010C */  jal        bios_CloseEvent
     /* 27F98 80037798 00000000 */   nop
     /* 27F9C 8003779C 3007848F */  lw         $a0, %gp_rel(D_800A37FC)($gp)
-    /* 27FA0 800377A0 62E2010C */  jal        func_80078988
+    /* 27FA0 800377A0 62E2010C */  jal        bios_CloseEvent
     /* 27FA4 800377A4 00000000 */   nop
     /* 27FA8 800377A8 3407848F */  lw         $a0, %gp_rel(D_800A3800)($gp)
-    /* 27FAC 800377AC 62E2010C */  jal        func_80078988
+    /* 27FAC 800377AC 62E2010C */  jal        bios_CloseEvent
     /* 27FB0 800377B0 00000000 */   nop
     /* 27FB4 800377B4 6C07848F */  lw         $a0, %gp_rel(D_800A3838)($gp)
-    /* 27FB8 800377B8 62E2010C */  jal        func_80078988
+    /* 27FB8 800377B8 62E2010C */  jal        bios_CloseEvent
     /* 27FBC 800377BC 00000000 */   nop
     /* 27FC0 800377C0 7007848F */  lw         $a0, %gp_rel(D_800A383C)($gp)
-    /* 27FC4 800377C4 62E2010C */  jal        func_80078988
+    /* 27FC4 800377C4 62E2010C */  jal        bios_CloseEvent
     /* 27FC8 800377C8 00000000 */   nop
     /* 27FCC 800377CC 7C07848F */  lw         $a0, %gp_rel(D_800A3848)($gp)
-    /* 27FD0 800377D0 62E2010C */  jal        func_80078988
+    /* 27FD0 800377D0 62E2010C */  jal        bios_CloseEvent
     /* 27FD4 800377D4 00000000 */   nop
     /* 27FD8 800377D8 8407848F */  lw         $a0, %gp_rel(D_800A3850)($gp)
-    /* 27FDC 800377DC 62E2010C */  jal        func_80078988
+    /* 27FDC 800377DC 62E2010C */  jal        bios_CloseEvent
     /* 27FE0 800377E0 00000000 */   nop
     /* 27FE4 800377E4 72E2010C */  jal        ExitCriticalSection
     /* 27FE8 800377E8 00000000 */   nop
@@ -35774,11 +35774,11 @@ glabel func_80037804
     /* 28008 80037808 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2800C 8003780C 1800BFAF */  sw         $ra, 0x18($sp)
     /* 28010 80037810 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 28014 80037814 66E2010C */  jal        func_80078998
+    /* 28014 80037814 66E2010C */  jal        bios_TestEvent
     /* 28018 80037818 1000B0AF */   sw        $s0, 0x10($sp)
     /* 2801C 8003781C 01004238 */  xori       $v0, $v0, 0x1
     /* 28020 80037820 2407848F */  lw         $a0, %gp_rel(D_800A37F0)($gp)
-    /* 28024 80037824 66E2010C */  jal        func_80078998
+    /* 28024 80037824 66E2010C */  jal        bios_TestEvent
     /* 28028 80037828 0100502C */   sltiu     $s0, $v0, 0x1
     /* 2802C 8003782C 01001124 */  addiu      $s1, $zero, 0x1
     /* 28030 80037830 02005114 */  bne        $v0, $s1, .L8003783C
@@ -35786,14 +35786,14 @@ glabel func_80037804
     /* 28038 80037838 02001024 */  addiu      $s0, $zero, 0x2
   .L8003783C:
     /* 2803C 8003783C 3007848F */  lw         $a0, %gp_rel(D_800A37FC)($gp)
-    /* 28040 80037840 66E2010C */  jal        func_80078998
+    /* 28040 80037840 66E2010C */  jal        bios_TestEvent
     /* 28044 80037844 00000000 */   nop
     /* 28048 80037848 02005114 */  bne        $v0, $s1, .L80037854
     /* 2804C 8003784C 00000000 */   nop
     /* 28050 80037850 03001024 */  addiu      $s0, $zero, 0x3
   .L80037854:
     /* 28054 80037854 3407848F */  lw         $a0, %gp_rel(D_800A3800)($gp)
-    /* 28058 80037858 66E2010C */  jal        func_80078998
+    /* 28058 80037858 66E2010C */  jal        bios_TestEvent
     /* 2805C 8003785C 00000000 */   nop
     /* 28060 80037860 02005114 */  bne        $v0, $s1, .L8003786C
     /* 28064 80037864 00000000 */   nop
@@ -35823,23 +35823,23 @@ glabel func_800378A8
     /* 280A8 800378A8 1007848F */  lw         $a0, %gp_rel(D_800A37DC)($gp)
     /* 280AC 800378AC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 280B0 800378B0 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 280B4 800378B4 66E2010C */  jal        func_80078998
+    /* 280B4 800378B4 66E2010C */  jal        bios_TestEvent
     /* 280B8 800378B8 1000B0AF */   sw        $s0, 0x10($sp)
     /* 280BC 800378BC 01001024 */  addiu      $s0, $zero, 0x1
     /* 280C0 800378C0 11005010 */  beq        $v0, $s0, .L80037908
     /* 280C4 800378C4 01000224 */   addiu     $v0, $zero, 0x1
     /* 280C8 800378C8 2407848F */  lw         $a0, %gp_rel(D_800A37F0)($gp)
-    /* 280CC 800378CC 66E2010C */  jal        func_80078998
+    /* 280CC 800378CC 66E2010C */  jal        bios_TestEvent
     /* 280D0 800378D0 00000000 */   nop
     /* 280D4 800378D4 0C005010 */  beq        $v0, $s0, .L80037908
     /* 280D8 800378D8 02000224 */   addiu     $v0, $zero, 0x2
     /* 280DC 800378DC 3007848F */  lw         $a0, %gp_rel(D_800A37FC)($gp)
-    /* 280E0 800378E0 66E2010C */  jal        func_80078998
+    /* 280E0 800378E0 66E2010C */  jal        bios_TestEvent
     /* 280E4 800378E4 00000000 */   nop
     /* 280E8 800378E8 07005010 */  beq        $v0, $s0, .L80037908
     /* 280EC 800378EC 03000224 */   addiu     $v0, $zero, 0x3
     /* 280F0 800378F0 3407848F */  lw         $a0, %gp_rel(D_800A3800)($gp)
-    /* 280F4 800378F4 66E2010C */  jal        func_80078998
+    /* 280F4 800378F4 66E2010C */  jal        bios_TestEvent
     /* 280F8 800378F8 00000000 */   nop
     /* 280FC 800378FC 01004238 */  xori       $v0, $v0, 0x1
     /* 28100 80037900 0100422C */  sltiu      $v0, $v0, 0x1
@@ -35858,16 +35858,16 @@ glabel func_8003791C
     /* 2811C 8003791C 1007848F */  lw         $a0, %gp_rel(D_800A37DC)($gp)
     /* 28120 80037920 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 28124 80037924 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 28128 80037928 66E2010C */  jal        func_80078998
+    /* 28128 80037928 66E2010C */  jal        bios_TestEvent
     /* 2812C 8003792C 00000000 */   nop
     /* 28130 80037930 2407848F */  lw         $a0, %gp_rel(D_800A37F0)($gp)
-    /* 28134 80037934 66E2010C */  jal        func_80078998
+    /* 28134 80037934 66E2010C */  jal        bios_TestEvent
     /* 28138 80037938 00000000 */   nop
     /* 2813C 8003793C 3007848F */  lw         $a0, %gp_rel(D_800A37FC)($gp)
-    /* 28140 80037940 66E2010C */  jal        func_80078998
+    /* 28140 80037940 66E2010C */  jal        bios_TestEvent
     /* 28144 80037944 00000000 */   nop
     /* 28148 80037948 3407848F */  lw         $a0, %gp_rel(D_800A3800)($gp)
-    /* 2814C 8003794C 66E2010C */  jal        func_80078998
+    /* 2814C 8003794C 66E2010C */  jal        bios_TestEvent
     /* 28150 80037950 00000000 */   nop
     /* 28154 80037954 1000BF8F */  lw         $ra, 0x10($sp)
     /* 28158 80037958 1800BD27 */  addiu      $sp, $sp, 0x18
@@ -35884,22 +35884,22 @@ glabel func_80037964
     /* 28170 80037970 1400BFAF */  sw         $ra, 0x14($sp)
   .L80037974:
     /* 28174 80037974 6C07848F */  lw         $a0, %gp_rel(D_800A3838)($gp)
-    /* 28178 80037978 66E2010C */  jal        func_80078998
+    /* 28178 80037978 66E2010C */  jal        bios_TestEvent
     /* 2817C 8003797C 00000000 */   nop
     /* 28180 80037980 10005010 */  beq        $v0, $s0, .L800379C4
     /* 28184 80037984 01000224 */   addiu     $v0, $zero, 0x1
     /* 28188 80037988 7007848F */  lw         $a0, %gp_rel(D_800A383C)($gp)
-    /* 2818C 8003798C 66E2010C */  jal        func_80078998
+    /* 2818C 8003798C 66E2010C */  jal        bios_TestEvent
     /* 28190 80037990 00000000 */   nop
     /* 28194 80037994 0B005010 */  beq        $v0, $s0, .L800379C4
     /* 28198 80037998 02000224 */   addiu     $v0, $zero, 0x2
     /* 2819C 8003799C 7C07848F */  lw         $a0, %gp_rel(D_800A3848)($gp)
-    /* 281A0 800379A0 66E2010C */  jal        func_80078998
+    /* 281A0 800379A0 66E2010C */  jal        bios_TestEvent
     /* 281A4 800379A4 00000000 */   nop
     /* 281A8 800379A8 06005010 */  beq        $v0, $s0, .L800379C4
     /* 281AC 800379AC 03000224 */   addiu     $v0, $zero, 0x3
     /* 281B0 800379B0 8407848F */  lw         $a0, %gp_rel(D_800A3850)($gp)
-    /* 281B4 800379B4 66E2010C */  jal        func_80078998
+    /* 281B4 800379B4 66E2010C */  jal        bios_TestEvent
     /* 281B8 800379B8 00000000 */   nop
     /* 281BC 800379BC EDFF5014 */  bne        $v0, $s0, .L80037974
     /* 281C0 800379C0 04000224 */   addiu     $v0, $zero, 0x4
@@ -35917,16 +35917,16 @@ glabel func_800379D8
     /* 281D8 800379D8 6C07848F */  lw         $a0, %gp_rel(D_800A3838)($gp)
     /* 281DC 800379DC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 281E0 800379E0 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 281E4 800379E4 66E2010C */  jal        func_80078998
+    /* 281E4 800379E4 66E2010C */  jal        bios_TestEvent
     /* 281E8 800379E8 00000000 */   nop
     /* 281EC 800379EC 7007848F */  lw         $a0, %gp_rel(D_800A383C)($gp)
-    /* 281F0 800379F0 66E2010C */  jal        func_80078998
+    /* 281F0 800379F0 66E2010C */  jal        bios_TestEvent
     /* 281F4 800379F4 00000000 */   nop
     /* 281F8 800379F8 7C07848F */  lw         $a0, %gp_rel(D_800A3848)($gp)
-    /* 281FC 800379FC 66E2010C */  jal        func_80078998
+    /* 281FC 800379FC 66E2010C */  jal        bios_TestEvent
     /* 28200 80037A00 00000000 */   nop
     /* 28204 80037A04 8407848F */  lw         $a0, %gp_rel(D_800A3850)($gp)
-    /* 28208 80037A08 66E2010C */  jal        func_80078998
+    /* 28208 80037A08 66E2010C */  jal        bios_TestEvent
     /* 2820C 80037A0C 00000000 */   nop
     /* 28210 80037A10 1000BF8F */  lw         $ra, 0x10($sp)
     /* 28214 80037A14 1800BD27 */  addiu      $sp, $sp, 0x18
@@ -35951,14 +35951,14 @@ glabel func_80037A20
     /* 2824C 80037A4C 3400B1AF */   sw        $s1, 0x34($sp)
     /* 28250 80037A50 21880000 */  addu       $s1, $zero, $zero
     /* 28254 80037A54 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 28258 80037A58 8EE2010C */  jal        func_80078A38
+    /* 28258 80037A58 8EE2010C */  jal        bios_firstfile_B
     /* 2825C 80037A5C 21280002 */   addu      $a1, $s0, $zero
     /* 28260 80037A60 08004010 */  beqz       $v0, .L80037A84
     /* 28264 80037A64 00000000 */   nop
     /* 28268 80037A68 01003126 */  addiu      $s1, $s1, 0x1
   .L80037A6C:
     /* 2826C 80037A6C 28001026 */  addiu      $s0, $s0, 0x28
-    /* 28270 80037A70 92E2010C */  jal        func_80078A48
+    /* 28270 80037A70 92E2010C */  jal        bios_nextfile_B
     /* 28274 80037A74 21200002 */   addu      $a0, $s0, $zero
     /* 28278 80037A78 FCFF4014 */  bnez       $v0, .L80037A6C
     /* 2827C 80037A7C 01003126 */   addiu     $s1, $s1, 0x1
@@ -36071,7 +36071,7 @@ glabel func_80037B90
     /* 283C0 80037BC0 8CE6010C */  jal        func_80079A30
     /* 283C4 80037BC4 3800B0AF */   sw        $s0, 0x38($sp)
     /* 283C8 80037BC8 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 283CC 80037BCC 7AE2010C */  jal        func_800789E8
+    /* 283CC 80037BCC 7AE2010C */  jal        bios_FileOpen_B
     /* 283D0 80037BD0 01800534 */   ori       $a1, $zero, 0x8001
     /* 283D4 80037BD4 21804000 */  addu       $s0, $v0, $zero
     /* 283D8 80037BD8 FFFF0224 */  addiu      $v0, $zero, -0x1
@@ -36084,7 +36084,7 @@ glabel func_80037B90
     /* 283F4 80037BF4 00000000 */   nop
     /* 283F8 80037BF8 21200002 */  addu       $a0, $s0, $zero
     /* 283FC 80037BFC 5800A68F */  lw         $a2, 0x58($sp)
-    /* 28400 80037C00 7EE2010C */  jal        func_800789F8
+    /* 28400 80037C00 7EE2010C */  jal        bios_FileRead_B
     /* 28404 80037C04 21282002 */   addu      $a1, $s1, $zero
     /* 28408 80037C08 59DE000C */  jal        func_80037964
     /* 2840C 80037C0C 00000000 */   nop
@@ -36123,17 +36123,17 @@ glabel func_80037C34
     /* 28478 80037C78 0A000012 */  beqz       $s0, .L80037CA4
     /* 2847C 80037C7C 1800A427 */   addiu     $a0, $sp, 0x18
     /* 28480 80037C80 002C1200 */  sll        $a1, $s2, 16
-    /* 28484 80037C84 7AE2010C */  jal        func_800789E8
+    /* 28484 80037C84 7AE2010C */  jal        bios_FileOpen_B
     /* 28488 80037C88 0002A534 */   ori       $a1, $a1, 0x200
     /* 2848C 80037C8C 21804000 */  addu       $s0, $v0, $zero
     /* 28490 80037C90 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 28494 80037C94 18000212 */  beq        $s0, $v0, .L80037CF8
     /* 28498 80037C98 00000000 */   nop
-    /* 2849C 80037C9C 86E2010C */  jal        func_80078A18
+    /* 2849C 80037C9C 86E2010C */  jal        bios_FileClose_B
     /* 284A0 80037CA0 21200002 */   addu      $a0, $s0, $zero
   .L80037CA4:
     /* 284A4 80037CA4 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 284A8 80037CA8 7AE2010C */  jal        func_800789E8
+    /* 284A8 80037CA8 7AE2010C */  jal        bios_FileOpen_B
     /* 284AC 80037CAC 02800534 */   ori       $a1, $zero, 0x8002
     /* 284B0 80037CB0 21804000 */  addu       $s0, $v0, $zero
     /* 284B4 80037CB4 FFFF0224 */  addiu      $v0, $zero, -0x1
@@ -36146,7 +36146,7 @@ glabel func_80037C34
     /* 284D0 80037CD0 00000000 */   nop
     /* 284D4 80037CD4 21200002 */  addu       $a0, $s0, $zero
     /* 284D8 80037CD8 5C00A68F */  lw         $a2, 0x5C($sp)
-    /* 284DC 80037CDC 82E2010C */  jal        func_80078A08
+    /* 284DC 80037CDC 82E2010C */  jal        bios_FileWrite_B
     /* 284E0 80037CE0 21282002 */   addu      $a1, $s1, $zero
     /* 284E4 80037CE4 59DE000C */  jal        func_80037964
     /* 284E8 80037CE8 00000000 */   nop
@@ -36183,7 +36183,7 @@ glabel func_80037D14
     /* 2854C 80037D4C 08004000 */  jr         $v0
     /* 28550 80037D50 00000000 */   nop
   jlabel .L80037D54
-    /* 28554 80037D54 BEE8010C */  jal        func_8007A2F8
+    /* 28554 80037D54 BEE8010C */  jal        bios_A0_0xAB_wrapper
     /* 28558 80037D58 21200002 */   addu      $a0, $s0, $zero
     /* 2855C 80037D5C 01000224 */  addiu      $v0, $zero, 0x1
     /* 28560 80037D60 200182AF */  sw         $v0, %gp_rel(D_800A31EC)($gp)
@@ -36252,7 +36252,7 @@ glabel func_80037D14
   jlabel .L80037E3C
     /* 2863C 80037E3C 47DE000C */  jal        func_8003791C
     /* 28640 80037E40 00000000 */   nop
-    /* 28644 80037E44 C2E8010C */  jal        func_8007A308
+    /* 28644 80037E44 C2E8010C */  jal        bios_A0_0xAC_wrapper
     /* 28648 80037E48 21200002 */   addu      $a0, $s0, $zero
     /* 2864C 80037E4C 03000224 */  addiu      $v0, $zero, 0x3
     /* 28650 80037E50 200182AF */  sw         $v0, %gp_rel(D_800A31EC)($gp)
@@ -36322,7 +36322,7 @@ glabel motion_LoadPreCalcData_80037F08
     /* 2871C 80037F1C C809A524 */  addiu      $a1, $a1, %lo(D_800109C8)
     /* 28720 80037F20 8CE6010C */  jal        func_80079A30
     /* 28724 80037F24 1000A427 */   addiu     $a0, $sp, 0x10
-    /* 28728 80037F28 8AE2010C */  jal        func_80078A28
+    /* 28728 80037F28 8AE2010C */  jal        bios_FormatDevice_B
     /* 2872C 80037F2C 1000A427 */   addiu     $a0, $sp, 0x10
     /* 28730 80037F30 1800BF8F */  lw         $ra, 0x18($sp)
     /* 28734 80037F34 2000BD27 */  addiu      $sp, $sp, 0x20
@@ -36789,7 +36789,7 @@ glabel func_800383A4
     /* 28D70 80038570 04000224 */   addiu     $v0, $zero, 0x4
     /* 28D74 80038574 0A80043C */  lui        $a0, %hi(D_800A3794)
     /* 28D78 80038578 9437848C */  lw         $a0, %lo(D_800A3794)($a0)
-    /* 28D7C 8003857C 86E2010C */  jal        func_80078A18
+    /* 28D7C 8003857C 86E2010C */  jal        bios_FileClose_B
     /* 28D80 80038580 00000000 */   nop
     /* 28D84 80038584 8DE10008 */  j          .L80038634
     /* 28D88 80038588 03000224 */   addiu     $v0, $zero, 0x3
@@ -36826,7 +36826,7 @@ glabel func_800383A4
     /* 28DF8 800385F8 06000224 */   addiu     $v0, $zero, 0x6
     /* 28DFC 800385FC 0A80043C */  lui        $a0, %hi(D_800A3794)
     /* 28E00 80038600 9437848C */  lw         $a0, %lo(D_800A3794)($a0)
-    /* 28E04 80038604 86E2010C */  jal        func_80078A18
+    /* 28E04 80038604 86E2010C */  jal        bios_FileClose_B
     /* 28E08 80038608 00000000 */   nop
     /* 28E0C 8003860C 8DE10008 */  j          .L80038634
     /* 28E10 80038610 06000224 */   addiu     $v0, $zero, 0x6
@@ -36875,7 +36875,7 @@ glabel func_80038658
     /* 28E94 80038694 01000224 */   addiu     $v0, $zero, 0x1
     /* 28E98 80038698 0A80043C */  lui        $a0, %hi(D_800A3794)
     /* 28E9C 8003869C 9437848C */  lw         $a0, %lo(D_800A3794)($a0)
-    /* 28EA0 800386A0 86E2010C */  jal        func_80078A18
+    /* 28EA0 800386A0 86E2010C */  jal        bios_FileClose_B
     /* 28EA4 800386A4 00000000 */   nop
     /* 28EA8 800386A8 01000224 */  addiu      $v0, $zero, 0x1
     /* 28EAC 800386AC 17000216 */  bne        $s0, $v0, .L8003870C
@@ -36890,7 +36890,7 @@ glabel func_80038658
     /* 28ECC 800386CC 04000224 */   addiu     $v0, $zero, 0x4
     /* 28ED0 800386D0 0A80043C */  lui        $a0, %hi(D_800A3794)
     /* 28ED4 800386D4 9437848C */  lw         $a0, %lo(D_800A3794)($a0)
-    /* 28ED8 800386D8 86E2010C */  jal        func_80078A18
+    /* 28ED8 800386D8 86E2010C */  jal        bios_FileClose_B
     /* 28EDC 800386DC 00000000 */   nop
     /* 28EE0 800386E0 01000224 */  addiu      $v0, $zero, 0x1
     /* 28EE4 800386E4 09000216 */  bne        $s0, $v0, .L8003870C
@@ -38859,7 +38859,7 @@ glabel func_8003A174
     /* 2A98C 8003A18C 0B008434 */  ori        $a0, $a0, (0xF000000B & 0xFFFF)
     /* 2A990 8003A190 00040524 */  addiu      $a1, $zero, 0x400
     /* 2A994 8003A194 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 2A998 8003A198 5EE2010C */  jal        func_80078978
+    /* 2A998 8003A198 5EE2010C */  jal        bios_OpenEvent
     /* 2A99C 8003A19C 21380000 */   addu      $a3, $zero, $zero
     /* 2A9A0 8003A1A0 6C0682AF */  sw         $v0, %gp_rel(D_800A3738)($gp)
     /* 2A9A4 8003A1A4 F9FF5010 */  beq        $v0, $s0, .L8003A18C
@@ -38869,7 +38869,7 @@ glabel func_8003A174
     /* 2A9B0 8003A1B0 0B008434 */  ori        $a0, $a0, (0xF000000B & 0xFFFF)
     /* 2A9B4 8003A1B4 00800534 */  ori        $a1, $zero, 0x8000
     /* 2A9B8 8003A1B8 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 2A9BC 8003A1BC 5EE2010C */  jal        func_80078978
+    /* 2A9BC 8003A1BC 5EE2010C */  jal        bios_OpenEvent
     /* 2A9C0 8003A1C0 21380000 */   addu      $a3, $zero, $zero
     /* 2A9C4 8003A1C4 440782AF */  sw         $v0, %gp_rel(D_800A3810)($gp)
     /* 2A9C8 8003A1C8 F9FF5010 */  beq        $v0, $s0, .L8003A1B0
@@ -38883,7 +38883,7 @@ glabel func_8003A174
   .L8003A1E8:
     /* 2A9E8 8003A1E8 0A80043C */  lui        $a0, %hi(D_800A3210)
     /* 2A9EC 8003A1EC 10328424 */  addiu      $a0, $a0, %lo(D_800A3210)
-    /* 2A9F0 8003A1F0 7AE2010C */  jal        func_800789E8
+    /* 2A9F0 8003A1F0 7AE2010C */  jal        bios_FileOpen_B
     /* 2A9F4 8003A1F4 02000524 */   addiu     $a1, $zero, 0x2
     /* 2A9F8 8003A1F8 700682AF */  sw         $v0, %gp_rel(D_800A373C)($gp)
     /* 2A9FC 8003A1FC FAFF5010 */  beq        $v0, $s0, .L8003A1E8
@@ -38892,7 +38892,7 @@ glabel func_8003A174
   .L8003A208:
     /* 2AA08 8003A208 0A80043C */  lui        $a0, %hi(D_800A3210)
     /* 2AA0C 8003A20C 10328424 */  addiu      $a0, $a0, %lo(D_800A3210)
-    /* 2AA10 8003A210 7AE2010C */  jal        func_800789E8
+    /* 2AA10 8003A210 7AE2010C */  jal        bios_FileOpen_B
     /* 2AA14 8003A214 01800534 */   ori       $a1, $zero, 0x8001
     /* 2AA18 8003A218 680682AF */  sw         $v0, %gp_rel(D_800A3734)($gp)
     /* 2AA1C 8003A21C FAFF5010 */  beq        $v0, $s0, .L8003A208
@@ -38921,18 +38921,18 @@ glabel func_8003A264
     /* 2AA64 8003A264 6806848F */  lw         $a0, %gp_rel(D_800A3734)($gp)
     /* 2AA68 8003A268 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2AA6C 8003A26C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2AA70 8003A270 86E2010C */  jal        func_80078A18
+    /* 2AA70 8003A270 86E2010C */  jal        bios_FileClose_B
     /* 2AA74 8003A274 00000000 */   nop
     /* 2AA78 8003A278 7006848F */  lw         $a0, %gp_rel(D_800A373C)($gp)
-    /* 2AA7C 8003A27C 86E2010C */  jal        func_80078A18
+    /* 2AA7C 8003A27C 86E2010C */  jal        bios_FileClose_B
     /* 2AA80 8003A280 00000000 */   nop
     /* 2AA84 8003A284 6EE2010C */  jal        EnterCriticalSection
     /* 2AA88 8003A288 00000000 */   nop
     /* 2AA8C 8003A28C 6C06848F */  lw         $a0, %gp_rel(D_800A3738)($gp)
-    /* 2AA90 8003A290 62E2010C */  jal        func_80078988
+    /* 2AA90 8003A290 62E2010C */  jal        bios_CloseEvent
     /* 2AA94 8003A294 00000000 */   nop
     /* 2AA98 8003A298 4407848F */  lw         $a0, %gp_rel(D_800A3810)($gp)
-    /* 2AA9C 8003A29C 62E2010C */  jal        func_80078988
+    /* 2AA9C 8003A29C 62E2010C */  jal        bios_CloseEvent
     /* 2AAA0 8003A2A0 00000000 */   nop
     /* 2AAA4 8003A2A4 72E2010C */  jal        ExitCriticalSection
     /* 2AAA8 8003A2A8 00000000 */   nop
@@ -39001,10 +39001,10 @@ glabel func_8003A360
     /* 2AB60 8003A360 4407848F */  lw         $a0, %gp_rel(D_800A3810)($gp)
     /* 2AB64 8003A364 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2AB68 8003A368 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2AB6C 8003A36C 6AE2010C */  jal        func_800789A8
+    /* 2AB6C 8003A36C 6AE2010C */  jal        bios_EnableEvent
     /* 2AB70 8003A370 00000000 */   nop
     /* 2AB74 8003A374 6C06848F */  lw         $a0, %gp_rel(D_800A3738)($gp)
-    /* 2AB78 8003A378 6AE2010C */  jal        func_800789A8
+    /* 2AB78 8003A378 6AE2010C */  jal        bios_EnableEvent
     /* 2AB7C 8003A37C 00000000 */   nop
     /* 2AB80 8003A380 01000224 */  addiu      $v0, $zero, 0x1
     /* 2AB84 8003A384 400182A3 */  sb         $v0, %gp_rel(D_800A320C)($gp)
@@ -39146,7 +39146,7 @@ glabel func_8003A450
     /* 2AD24 8003A524 0A80053C */  lui        $a1, %hi(D_800A3698)
     /* 2AD28 8003A528 9836A524 */  addiu      $a1, $a1, %lo(D_800A3698)
     /* 2AD2C 8003A52C 7006848F */  lw         $a0, %gp_rel(D_800A373C)($gp)
-    /* 2AD30 8003A530 82E2010C */  jal        func_80078A08
+    /* 2AD30 8003A530 82E2010C */  jal        bios_FileWrite_B
     /* 2AD34 8003A534 08000624 */   addiu     $a2, $zero, 0x8
     /* 2AD38 8003A538 04000424 */  addiu      $a0, $zero, 0x4
     /* 2AD3C 8003A53C 21280000 */  addu       $a1, $zero, $zero
@@ -39174,7 +39174,7 @@ glabel motion_SavePreCalcData_8003A574
     /* 2AD7C 8003A57C 8836A524 */  addiu      $a1, $a1, %lo(D_800A3688)
     /* 2AD80 8003A580 6806848F */  lw         $a0, %gp_rel(D_800A3734)($gp)
     /* 2AD84 8003A584 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2AD88 8003A588 7EE2010C */  jal        func_800789F8
+    /* 2AD88 8003A588 7EE2010C */  jal        bios_FileRead_B
     /* 2AD8C 8003A58C 08000624 */   addiu     $a2, $zero, 0x8
     /* 2AD90 8003A590 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2AD94 8003A594 1800BD27 */  addiu      $sp, $sp, 0x18
@@ -39203,12 +39203,12 @@ glabel func_8003A5A0
     /* 2ADD8 8003A5D8 21800000 */  addu       $s0, $zero, $zero
   .L8003A5DC:
     /* 2ADDC 8003A5DC 6C06848F */  lw         $a0, %gp_rel(D_800A3738)($gp)
-    /* 2ADE0 8003A5E0 66E2010C */  jal        func_80078998
+    /* 2ADE0 8003A5E0 66E2010C */  jal        bios_TestEvent
     /* 2ADE4 8003A5E4 00000000 */   nop
     /* 2ADE8 8003A5E8 27004014 */  bnez       $v0, .L8003A688
     /* 2ADEC 8003A5EC 00000000 */   nop
     /* 2ADF0 8003A5F0 4407848F */  lw         $a0, %gp_rel(D_800A3810)($gp)
-    /* 2ADF4 8003A5F4 66E2010C */  jal        func_80078998
+    /* 2ADF4 8003A5F4 66E2010C */  jal        bios_TestEvent
     /* 2ADF8 8003A5F8 00000000 */   nop
     /* 2ADFC 8003A5FC 0E004010 */  beqz       $v0, .L8003A638
     /* 2AE00 8003A600 21200000 */   addu      $a0, $zero, $zero

@@ -36,7 +36,7 @@ glabel marionation_camera_Init_80037468
     /* 27CF0 800374F0 3400A0AF */   sw        $zero, 0x34($sp)
     /* 27CF4 800374F4 1000A427 */  addiu      $a0, $sp, 0x10
     /* 27CF8 800374F8 21280002 */  addu       $a1, $s0, $zero
-    /* 27CFC 800374FC 52E2010C */  jal        func_80078948
+    /* 27CFC 800374FC 52E2010C */  jal        bios_Exec
     /* 27D00 80037500 21304002 */   addu      $a2, $s2, $zero
     /* 27D04 80037504 865A000C */  jal        sys_Init
     /* 27D08 80037508 00000000 */   nop

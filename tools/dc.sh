@@ -38,6 +38,7 @@
 #   bash tools/dc.sh next-structural [N]           — pull/preview structural split queue
 #   bash tools/dc.sh next-asmfix [N]               — pull/preview asmfix retirement queue
 #   bash tools/dc.sh next-cheat [N]                — pull/preview inline-asm cheat-fix work (active queue filtered to inline_asm_debt)
+#   bash tools/dc.sh next-for-file <files> [N]     — pull/preview active queue filtered to comma-separated src files (parallel sub-agent partition)
 #   bash tools/dc.sh fix-asmfix-drift [--apply]    — auto-fix .L<N> rename drift in asmfix.txt
 #   bash tools/dc.sh auto-repair                    — build + detect cascade-drift + auto-run repair tools (used by build-active)
 #   bash tools/dc.sh preflight-cascade <func>       — read-only impact report: how many sibling rules at risk of label drift
@@ -197,6 +198,7 @@ case "$CMD" in
   dc.sh next-structural [N]      Pull/preview structural split queue
   dc.sh next-asmfix [N]          Pull/preview asmfix retirement queue
   dc.sh next-cheat [N]           Pull next inline-asm cheat-fix work item
+  dc.sh next-for-file <files> [N]  Pull next active-queue item from given .c file(s) (parallel sub-agent use)
   dc.sh classify <func>           Pre-dive: blockers, aliasing_heavy tag
   dc.sh agent-brief <func>        Full context dump
   dc.sh attempt <func>            Auto pipeline (smart→permute→gen_regfix)
@@ -800,13 +802,13 @@ PYEOF
         fi
         ;;
 
-    next|next-structural|next-asmfix|next-cheat)
+    next|next-structural|next-asmfix|next-cheat|next-for-file)
         # Print the next function from one WORK_QUEUE.md queue and SET it as the
         # active function in .bb2_active_func. The PreToolUse hook will
         # then block subsequent `git commit` (until verify passes) and queue
         # pulls until the active function is finished.
         #
-        # Forms (all four queues support the same flags):
+        # Forms (all five queues support the same flags):
         #   dc.sh next                          # top 1, set active, no auto-brief
         #   dc.sh next 5                        # preview top 5 (no active change)
         #   dc.sh next --with-context           # top 1 + auto-run agent-brief
@@ -814,7 +816,14 @@ PYEOF
         #   dc.sh next-asmfix     [--with-context] [N]
         #   dc.sh next-cheat      [--with-context] [N]  # like `next` but filtered
         #                                                # to inline_asm_debt entries
+        #   dc.sh next-for-file <files> [--with-context] [N]
+        #       # Active-decomp queue filtered to entries whose src column
+        #       # contains any of the comma-separated <files>. Used by
+        #       # parallel sub-agent workers so two workers in separate
+        #       # worktrees can pull from disjoint file partitions without
+        #       # colliding on the same .c file's label numbering.
         TAG_FILTER=""
+        FILE_FILTER=""
         case "$CMD" in
             next)
                 SECTION="## Queue (top = next)"
@@ -836,6 +845,22 @@ PYEOF
                 SECTION="## Queue (top = next)"
                 QUEUE_NAME="active decomp queue (filtered: *_debt tags)"
                 TAG_FILTER="_debt"
+                ;;
+            next-for-file)
+                if [ -z "${1:-}" ] || case "$1" in --*|''|*[!a-zA-Z0-9_.,-]*) true ;; *) false ;; esac; then
+                    echo "ERROR: next-for-file requires a file pattern as the first argument." >&2
+                    echo "Usage: bash tools/dc.sh next-for-file <files> [--with-context] [N]" >&2
+                    echo "  <files> is a comma-separated list of substrings matched against the src column." >&2
+                    echo "  Examples:" >&2
+                    echo "    bash tools/dc.sh next-for-file text1b.c" >&2
+                    echo "    bash tools/dc.sh next-for-file display.c,main.c,sound.c" >&2
+                    echo "    bash tools/dc.sh next-for-file text1b.c 5    # preview top 5" >&2
+                    exit 1
+                fi
+                FILE_FILTER="$1"
+                shift
+                SECTION="## Queue (top = next)"
+                QUEUE_NAME="active decomp queue (filtered: src matches '$FILE_FILTER')"
                 ;;
         esac
         WITH_CONTEXT=0
@@ -899,19 +924,38 @@ PYEOF
         # Extract the top N entries from the selected queue.
         # When TAG_FILTER is set (next-cheat), only count rows whose
         # bracketed tag column contains the filter string.
-        TOP=$(awk -v n="$N" -v section="$SECTION" -v tag="$TAG_FILTER" '
+        # When FILE_FILTER is set (next-for-file), only count rows whose
+        # src column matches any of the comma-separated substrings.
+        TOP=$(awk -v n="$N" -v section="$SECTION" -v tag="$TAG_FILTER" -v files="$FILE_FILTER" '
+            BEGIN {
+                if (files != "") {
+                    nf = split(files, file_list, ",")
+                } else { nf = 0 }
+            }
             $0 == section { in_queue=1; next }
             in_queue && /^## / { in_queue=0 }
             in_queue && /^```$/ { in_block = !in_block; next }
             in_queue && in_block && /^[[:space:]]*[0-9]+[[:space:]]/ {
                 if (tag != "" && index($0, tag) == 0) next
+                if (nf > 0) {
+                    matched = 0
+                    for (i = 1; i <= nf; i++) {
+                        if (file_list[i] != "" && index($0, file_list[i]) > 0) {
+                            matched = 1; break
+                        }
+                    }
+                    if (!matched) next
+                }
                 print
                 count++
                 if (count >= n) exit
             }
         ' WORK_QUEUE.md)
         if [ -z "$TOP" ]; then
-            if [ -n "$TAG_FILTER" ]; then
+            if [ -n "$FILE_FILTER" ]; then
+                echo "No entries in $QUEUE_NAME (no rows match files '$FILE_FILTER')." >&2
+                echo "Check that those .c files have entries in WORK_QUEUE.md." >&2
+            elif [ -n "$TAG_FILTER" ]; then
                 echo "No entries in $QUEUE_NAME (no rows tagged '$TAG_FILTER')." >&2
                 echo "Run 'python3 tools/audit_asm_cheats.py --summary' to verify there are unauthorized cheats." >&2
             else
@@ -1185,6 +1229,35 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         python3 tools/word_branches.py "$FUNC_NAME" "$@" 2>&1
         ;;
 
+    whereami)
+        # Worker self-verification: print the current working tree, branch,
+        # whether it's a sub-agent worktree, and the active marker. Designed
+        # to be the first command a parallel sub-agent runs to confirm it
+        # is in its own worktree and not the main repo.
+        GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+        if [ -z "$GIT_ROOT" ]; then
+            echo "ERROR: not inside a git working tree." >&2
+            exit 1
+        fi
+        BRANCH=$(git branch --show-current 2>/dev/null)
+        [ -z "$BRANCH" ] && BRANCH="(detached HEAD)"
+        case "$GIT_ROOT" in
+            *.claude/worktrees/agent-*) TREE_KIND="sub-agent worktree (parallel-safe)" ;;
+            *) TREE_KIND="main repo (NOT a worktree -- sub-agents should NEVER be here)" ;;
+        esac
+        ACTIVE="(none)"
+        if [ -s "$GIT_ROOT/.bb2_active_func" ]; then
+            ACTIVE=$(tr -d '[:space:]' < "$GIT_ROOT/.bb2_active_func")
+        fi
+        echo "Working tree: $GIT_ROOT"
+        echo "Branch:       $BRANCH"
+        echo "Tree kind:    $TREE_KIND"
+        echo "Active func:  $ACTIVE"
+        echo
+        echo "(If you are a parallel sub-agent and 'Tree kind' shows 'main repo',"
+        echo " STOP -- you have escaped your worktree. Report to user immediately.)"
+        ;;
+
     refresh-queue)
         # Refresh classifier CSV + regenerate WORK_QUEUE.md. Run after a
         # batch of matches so the queue drops them. ~2 minutes full, ~10s
@@ -1368,7 +1441,7 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         echo "          recipes, apply-recipe, memory-check, scan-hand-coded,"
         echo "          analysis, dump-text, validate-regfix, gen-regfix, verify,"
         echo "          frame-shift, asmfix-slice, find-label-at, diagnose-hoist,"
-        echo "          next, next-structural, next-asmfix, next-cheat, refresh-queue, release,"
+        echo "          next, next-structural, next-asmfix, next-cheat, next-for-file, refresh-queue, release,"
         echo "          retire, audit-bridges,"
         echo "          side-by-side, gen-substs, binary-diff-count, branch-offsets,"
         echo "          fix-branch-drift"
