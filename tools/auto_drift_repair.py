@@ -61,6 +61,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+ASMFIX_TXT = ROOT / "asmfix.txt"
+REGFIX_TXT = ROOT / "regfix.txt"
 
 # --- drift-symptom patterns --------------------------------------------------
 
@@ -192,6 +194,27 @@ def run_repair(name: str, script: str) -> tuple[bool, str]:
     return changes, output
 
 
+def _signal_count(signals: dict[str, set[str]]) -> int:
+    """Total drift-signal count across all categories.
+
+    Used by the rollback safety net to decide whether a repair was
+    actually productive: if `_signal_count(after) >= _signal_count(before)`
+    then the repair did not strictly reduce drift, and any file
+    modifications it made are at best ineffective (at worst a
+    misdiagnosis like the maspsx-set-noreorder-stripping case where
+    fix-label-drift rewrites a regfix rule's label to a different but
+    equally-wrong target). The agent is better off seeing the original
+    state and the diagnostic recipe than a "fix" that didn't help.
+    """
+    return (
+        len(signals["asmfix_funcs"])
+        + len(signals["dup_labels"])
+        + len(signals["regfix_funcs"])
+        + len(signals["ld_undef_labels"])
+        + (1 if signals["sha1_mismatch"] else 0)
+    )
+
+
 def _print_signals(signals: dict[str, set[str]], indent: str = "  ") -> None:
     if signals["asmfix_funcs"]:
         print(f"{indent}asmfix `did not match` in: {sorted(signals['asmfix_funcs'])}",
@@ -208,6 +231,102 @@ def _print_signals(signals: dict[str, set[str]], indent: str = "  ") -> None:
     if signals["sha1_mismatch"]:
         print(f"{indent}SHA1 mismatch: linked binary differs from original "
               f"(silent — likely pair-shift drift)", file=sys.stderr)
+
+
+def _scan_unbalanced_set_directives() -> list[tuple[str, int, str]]:
+    """Find file-scope `__asm__` blocks with TAB-form `.set` directives
+    that are missing SPACE-form duplicates.
+
+    Returns list of (filepath, line_number, directive) tuples. Empty list
+    means no problems found.
+
+    Background: maspsx silently strips lines that exactly equal
+    `.set\\tnoreorder`, `.set\\treorder`, `.set\\tnoat`, `.set\\tat`
+    (the TAB form — see tools/maspsx/maspsx/__init__.py:894). A
+    file-scope `__asm__()` block that uses ONLY TAB-form directives
+    has all of them stripped before `as` runs, so:
+      - The body of the block stays in `.set reorder` mode (the default
+        carried over from the previous endlabel), which makes `as`
+        auto-fill delay slots inside the asm body — wrong bytes.
+      - The directives at the END of the block (e.g. `.set\\treorder`
+        to restore reorder mode) are also stripped, so functions AFTER
+        the block in the same file stay in `.set noreorder` mode if
+        cc1 didn't emit its own per-function `.set noreorder` —
+        meaning `as` does NOT auto-fill THEIR delay slots either,
+        growing them with unfilled-slot nops.
+
+    The fix is to duplicate every TAB-form `.set` directive with a
+    SPACE-form (`.set noreorder` etc.). The SPACE form survives maspsx
+    stripping and reaches `as`. See feedback_maspsx_set_noreorder_stripping.md
+    for the func_800526A0 incident that motivated this check, and
+    inline_asm_canonical.txt convention (e.g. func_8004A76C) for the
+    canonical TAB+SPACE-duplicate format.
+    """
+    src_dir = ROOT / "src"
+    if not src_dir.is_dir():
+        return []
+    issues: list[tuple[str, int, str]] = []
+    # Cheap heuristic: a file-scope `__asm__(` followed within ~60 lines
+    # by `glabel` indicates a canonical-asm block. We only check those —
+    # function-body `__asm__ volatile (...)` blocks don't use these
+    # directives.
+    block_re = re.compile(
+        r'^__asm__\s*\(\s*\n((?:\s*"[^"\n]*"\s*\n){2,80})\s*\)\s*;',
+        re.MULTILINE,
+    )
+    tab_directive = re.compile(r'"\.set\\t(noreorder|noat|reorder|at)\\n"')
+    space_directive = re.compile(r'"\.set\s+(noreorder|noat|reorder|at)\\n"')
+    glabel_re = re.compile(r'"glabel\s+\w+\\n"')
+    for c in sorted(src_dir.glob("*.c")):
+        try:
+            text = c.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for m in block_re.finditer(text):
+            body = m.group(1)
+            if not glabel_re.search(body):
+                continue  # not a glabel block — skip
+            tab_dirs = {d for d in tab_directive.findall(body)}
+            space_dirs = {d for d in space_directive.findall(body)}
+            missing = tab_dirs - space_dirs
+            if missing:
+                # Find the line number of the __asm__( opening in c.
+                line_no = text[:m.start()].count("\n") + 1
+                for d in sorted(missing):
+                    issues.append((str(c.relative_to(ROOT)), line_no, d))
+    return issues
+
+
+def _print_maspsx_stripping_hint(issues: list[tuple[str, int, str]]) -> None:
+    """Print a focused hint when maspsx is stripping `.set` directives."""
+    print(
+        "[auto-repair] HINT: detected file-scope `__asm__()` block(s) with "
+        "TAB-form `.set` directives MISSING SPACE-form duplicates:",
+        file=sys.stderr,
+    )
+    for path, line_no, directive in issues[:6]:
+        print(
+            f"[auto-repair]   {path}:{line_no}  missing SPACE-form "
+            f"`.set {directive}` duplicate",
+            file=sys.stderr,
+        )
+    if len(issues) > 6:
+        print(f"[auto-repair]   ... and {len(issues) - 6} more", file=sys.stderr)
+    print(
+        "[auto-repair] maspsx silently strips TAB-form directives (see "
+        "tools/maspsx/maspsx/__init__.py:894). When the TAB form is the "
+        "only form, the directive never reaches `as`, leaving subsequent "
+        "functions in the wrong `.set reorder`/`noreorder` mode. This "
+        "causes SHA1 mismatch in functions AFTER the block in the same "
+        ".c file (different bytes from unfilled-vs-filled delay slots).",
+        file=sys.stderr,
+    )
+    print(
+        "[auto-repair] Fix: for each TAB-form directive, add a matching "
+        "SPACE-form duplicate. Reference: src/text1b.c func_8004A76C and "
+        "the canonical pattern in feedback_maspsx_set_noreorder_stripping.md.",
+        file=sys.stderr,
+    )
 
 
 def _print_pair_shift_diagnostic() -> None:
@@ -323,6 +442,18 @@ def main() -> int:
     asmfix_applied = False
     label_applied = False
 
+    # Snapshot rule files BEFORE repair so we can roll back if the post-repair
+    # rebuild shows no improvement (false-positive repair). The motivating case
+    # is fix-label-drift renaming `.L1076` -> `.L1080` when the actual root
+    # cause was elsewhere (maspsx silently stripping a TAB-form
+    # `.set noreorder` directive and propagating noreorder mode into
+    # subsequent functions, growing them via unfilled delay slots). The
+    # renamed rule resolved to a different but equally-wrong byte position;
+    # the agent had to detect and revert manually.
+    pre_asmfix = ASMFIX_TXT.read_text(encoding="utf-8") if ASMFIX_TXT.exists() else None
+    pre_regfix = REGFIX_TXT.read_text(encoding="utf-8") if REGFIX_TXT.exists() else None
+    pre_signal_count = _signal_count(signals)
+
     # fix-asmfix-drift handles asmfix.txt `rename ".LN"` rules. Trigger on
     # asmfix warnings OR duplicate-label errors (the slice-collision signature).
     if signals["asmfix_funcs"] or signals["dup_labels"]:
@@ -360,6 +491,9 @@ def main() -> int:
             and not signals["ld_undef_labels"]
         )
         if sha1_only:
+            stripping_issues = _scan_unbalanced_set_directives()
+            if stripping_issues:
+                _print_maspsx_stripping_hint(stripping_issues)
             _print_pair_shift_diagnostic()
             return 1
 
@@ -386,6 +520,57 @@ def main() -> int:
         sys.stdout.write(output)
 
     final_signals = detect_drift(output)
+
+    # --- Rollback safety net ------------------------------------------------
+    # If repair modified asmfix.txt / regfix.txt but the post-repair drift
+    # signals did NOT strictly improve, the repair was likely a misdiagnosis.
+    # Revert the files and surface the true symptoms instead of leaving the
+    # bogus rewrite in place for the agent to chase. The classic case is
+    # fix-label-drift renaming a `.L<N>` label in a regfix subst rule when
+    # the actual problem was upstream (e.g. maspsx-directive stripping).
+    post_signal_count = _signal_count(final_signals)
+    repair_modified_files = asmfix_applied or label_applied
+    repair_did_not_help = (
+        rc != 0 or post_signal_count >= pre_signal_count
+    )
+    if repair_modified_files and repair_did_not_help:
+        reverted: list[str] = []
+        if asmfix_applied and pre_asmfix is not None:
+            ASMFIX_TXT.write_text(pre_asmfix, encoding="utf-8", newline="\n")
+            reverted.append("asmfix.txt")
+        if label_applied and pre_regfix is not None:
+            REGFIX_TXT.write_text(pre_regfix, encoding="utf-8", newline="\n")
+            reverted.append("regfix.txt")
+        if reverted:
+            print(
+                f"[auto-repair] ROLLBACK: post-repair drift signals did not "
+                f"improve (pre={pre_signal_count}, post={post_signal_count}) — "
+                f"reverted {' + '.join(reverted)} to pre-repair state.",
+                file=sys.stderr,
+            )
+            print(
+                "[auto-repair] The repair was a likely misdiagnosis. Common "
+                "causes: file-scope `__asm__` block with TAB-form `.set "
+                "noreorder` directives stripped by maspsx (add SPACE-form "
+                "duplicates — see feedback_maspsx_set_noreorder_stripping.md), "
+                "or a real source-level bug that looks like cascade drift.",
+                file=sys.stderr,
+            )
+            # Re-run the build one more time so the on-disk binary reflects
+            # the reverted-rule state, not the bogus-rewrite state, and
+            # update the signals dict so the downstream branches see the
+            # original symptoms (not the partially-repaired ones).
+            print(
+                "[auto-repair] Rebuilding with reverted rules for clean "
+                "diagnostic output...",
+                file=sys.stderr,
+            )
+            rc, output = run_build(quiet=args.quiet)
+            if not args.quiet:
+                sys.stdout.write(output)
+            final_signals = detect_drift(output)
+            asmfix_applied = False
+            label_applied = False
     # When the build passes after repair, treat regfix WARNINGs as baseline
     # noise — make_check.py reports ~300 of them on a clean fully-matching
     # build, none of which are drift. The high-signal "is the cascade fixed?"
@@ -428,6 +613,9 @@ def main() -> int:
             print("              pair-shift drift remains (a different rule from",
                   file=sys.stderr)
             print("              what repair tools handle).", file=sys.stderr)
+            stripping_issues = _scan_unbalanced_set_directives()
+            if stripping_issues:
+                _print_maspsx_stripping_hint(stripping_issues)
             _print_pair_shift_diagnostic()
             return 1
 
