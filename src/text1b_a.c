@@ -12,6 +12,836 @@
 
 /* --- Functions from text1b segment (0x80047ED0 - 0x80079A30) --- */
 
+typedef unsigned char u8;
+typedef signed char s8;
+typedef unsigned short u16;
+typedef signed short s16;
+typedef unsigned int u32;
+typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
+typedef volatile u8 vu8;
+typedef volatile s8 vs8;
+typedef volatile u16 vu16;
+typedef volatile s16 vs16;
+typedef volatile u32 vu32;
+typedef volatile s32 vs32;
+#define NULL ((void *)0)
+
+typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
+typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
+typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
+typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
+typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
+typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
+typedef struct CVECTOR { u8 r, g, b, cd; } CVECTOR;
+typedef struct DVECTOR { s16 vx, vy; } DVECTOR;
+typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
+
+/* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
+ * field layout is the union of all observed accesses; m2c picks the type
+ * that best fits each access site. Mirroring smart_match.py's layout. */
+typedef struct GameObj {
+    u8 field_00; u8 field_01; s16 field_02;
+    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
+    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
+    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
+    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
+    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
+    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
+    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
+    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
+    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
+    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
+    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
+    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
+    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
+    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
+    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
+    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
+    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
+    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
+    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
+    s16 field_FA; s32 field_FC;
+} GameObj;
+
+/* === ALL externs aggregated at top (for post-#endif visibility) === */
+extern s32 func_800484A0(s32, s32, s32);
+extern void func_800485EC(s32, s32, s32, s32, s32, s32);
+extern s16 g_color_mode;
+extern s32 snd_LoadBgm(u8);
+extern s32 snd_PlayBgm(s32);
+extern u8 D_80099BCC;
+extern s32 D_800A33E0;
+extern s32 D_800A33E4;
+extern s32 func_8004153C(s32);
+extern s32 g_snd_play_count;
+extern u8 g_snd_ch_data[];
+extern u16 g_snd_se_bank[];
+extern void InitFadePanel(void);
+extern s32 D_800A36AC;
+extern s32 D_800A378C;
+extern s32 D_800EF848;
+extern s32 initLoadImage(void *, s16 *, s32, s32);
+extern s16 D_800EF9F2;
+extern s16 D_800EF9F4;
+extern s16 D_800A33EA;
+extern s16 D_800A33E8;
+extern s32 D_800A33EC;
+extern s32 InitFadePanel();
+extern u8 D_80099CC8[];
+extern u8 D_80099CC9[];
+extern s16 D_800EF980[];
+extern s16 D_80099C50[];
+extern s32 D_800A324C;
+extern s32 func_8004954C(s32, s32, s32);
+extern s32 saTanMainDispGnd_80046020();
+extern void efc_rob_set_type_particle(s32, s32, s16 *, s32);
+extern s32 func_8003E120();
+extern u8 *D_800A3820;
+extern u8 *D_800A38B4;
+extern s32 (*g_anim_func_table)(s16 *, s16 *);
+extern u8 *func_8004153C(s32);
+extern void func_8007E4DC(s16 *, s16 *, s16 *);
+extern void func_8007ED6C(s32, s16 *, s32 *);
+extern s16 D_80099D3C[];
+extern void func_800417D0(s32 *);
+extern s16 D_80099CC2;
+extern s32 func_800418D0();
+extern s32 func_8004A1FC();
+extern void *D_800A3708;
+extern void *D_800A370C;
+extern u8 D_800FF638;
+extern s8 D_800FF639;
+extern s16 D_800FF640;
+extern s32 D_800FF644;
+extern s16 D_800FF648;
+extern s16 D_800FF64A;
+extern s16 D_800FF64C;
+extern s32 D_800FF684;
+extern s32 D_800FF688;
+extern s32 D_800FF68C;
+extern u8 D_80101DF0;
+extern s8 D_80101DF1;
+extern s16 D_80101DF8;
+extern s32 D_80101DFC;
+extern s16 D_80101E00;
+extern s16 D_80101E02;
+extern s16 D_80101E04;
+extern s32 D_80101E3C;
+extern s32 D_80101E40;
+extern s32 D_80101E44;
+extern u8 D_800153F0;
+extern u8 D_800F62E0;
+extern s32 D_800F6318;
+extern u8 D_800F6338;
+extern u8 D_800F6339;
+extern u8 D_800F633A;
+extern void func_8004A09C(s32, u16 *);
+extern void gte_SetColorMatrix(s32 *);
+extern void gte_SetBackColor(s32, s32, s32);
+extern s32 math_Cos();
+extern s32 math_Sin();
+extern s32 func_80052754(s32, s32, s32);
+extern s32 func_80052D00();
+extern void func_80053754();
+extern void func_80053E9C();
+extern u8 D_800EFA00;
+extern u8 D_800EF9F8;
+extern s32 D_800A33F4;
+extern s32 func_80052754(s32, s32, s32, s32);
+extern s32 func_80052D00(s32, s32);
+extern u8 *D_800A33F4;
+extern u16 D_800A33F8;
+extern s32 D_800A33F0;
+extern s16 D_800A33F8;
+extern s16 InfoPosYTbl1[];
+extern void func_80054604(s32, s32, s32, s32, s32, s32, s32);
+extern u32 D_80102C00;
+extern u16 D_800A38D6;
+extern s32 D_800A374C;
+extern s32 D_800A3808;
+extern s32 func_8005490C(void);
+extern void leaf_muki_awase_800444E0(void);
+extern s32 D_800EFB14;
+extern s32 D_800EFB18;
+extern s32 D_800EFB1C;
+extern s32 D_800EFB20;
+extern s32 D_800EFB24;
+extern s32 D_800EFB28;
+extern s32 D_800EFB0C;
+extern s32 D_80101E1C;
+extern u16 D_80099D88;
+extern u8 D_8009A830;
+extern s8 D_8009A838;
+extern u8 D_8009A840;
+extern s32 single_game_getEnemyCharId(s32, s32);
+extern s32 func_800233AC(void *, s32 *);
+extern s32 D_8009AA50[];
+extern s16 Judge;
+extern s16 D_800A3400;
+extern s32 D_800A3408;
+extern s32 D_800EFB38;
+extern s32 D_800EFB78;
+extern s32 D_800EFB7C;
+extern s32 D_800EFC38;
+extern void DispStuff(void);
+extern s32 SetBloodSpot(s32);
+extern s32 memcard_SetSlot(s32);
+extern s32 sys_Shutdown(void);
+extern s32 title_mv_exec2(s32);
+extern s32 func_80085E4C(s32, s32);
+extern s32 func_80085EE4(s32);
+extern s32 func_80085F98(void);
+extern s32 D_800EFB38[];
+extern s32 D_800EFC38[];
+extern void func_800858D0(s32);
+extern void func_80086130(s32, s32, s32);
+extern u32 D_800EFB78[];
+extern u8 D_800EFB7C[];
+extern s32 D_80015470;
+extern u8 D_80099CC8;
+extern u8 D_80099CC9;
+extern u8 D_80099D8B;
+extern u8 D_80099D8C;
+extern u8 D_80099D8D;
+extern u8 D_80099D8E;
+extern u8 D_80099D8F;
+extern u8 D_80099D94;
+extern u8 D_80099D9C;
+extern u8 D_80099D9D;
+extern u8 D_8009A088;
+extern u8 D_8009A820;
+extern u8 D_8009A821;
+extern u8 D_8009A850;
+extern u8 D_8009A851;
+extern u8 D_8009A852;
+extern u8 D_8009A853;
+extern u16 D_8009A8CA;
+extern u8 D_8009AD18;
+extern u8 D_8009B14E;
+extern s16 D_8009B16C;
+extern s16 D_8009B17C;
+extern s16 D_8009B18C;
+extern s16 D_8009B2BC;
+extern s16 D_8009B2BE;
+extern s16 D_8009B2C4;
+extern u16 D_8009B450;
+extern u16 D_8009B452;
+extern u8 D_8009B48E;
+extern u8 D_8009B58C;
+extern u8 D_8009BA60;
+extern s32 chractar_use_pset_combo_id_table;
+extern s32 D_8009BC04;
+extern s32 D_8009BC08;
+extern u8 D_8009BC0C;
+extern u8 D_8009BC0D;
+extern s32 D_8009BC1C;
+extern u8 D_8009BC38;
+extern u8 D_8009BC40;
+extern u8 D_8009BC41;
+extern u8 D_8009BC44;
+extern u8 D_8009BC72;
+extern u8 D_8009BC76;
+extern u8 D_8009BC7C;
+extern s16 D_8009BC94;
+extern s16 D_8009BC96;
+extern u16 D_8009BCC4;
+extern u16 D_8009BCC6;
+extern s16 D_8009BCD0;
+extern s16 D_8009BCD2;
+extern u8 D_8009BCE4;
+extern u8 D_8009BCF8;
+extern u8 D_8009BCF9;
+extern u8 D_8009BD20;
+extern u8 D_8009BD21;
+extern s32 D_8009BD38;
+extern u8 D_8009BD3C;
+extern u8 D_8009BD41;
+extern u8 D_8009BD42;
+extern s32 D_8009BD44;
+extern u8 D_8009BD58;
+extern u8 D_8009BD59;
+extern s32 D_8009BD68;
+extern s32 D_8009BD6C;
+extern s32 D_8009BD70;
+extern s32 D_8009BD84;
+extern s32 D_8009BD88;
+extern u8 D_800A3270;
+extern s32 D_800A32C8;
+extern s16 D_800A3438;
+extern s32 D_800A344C;
+extern s16 D_800A34E8;
+extern s16 D_800A3530;
+extern s16 D_800A3534;
+extern s16 D_800A3540;
+extern s16 D_800A3544;
+extern u8 D_800A3560;
+extern u8 D_800A3561;
+extern u8 D_800A3562;
+extern s16 D_800A3588;
+extern s16 D_800A358C;
+extern s16 D_800A3590;
+extern s16 D_800A3594;
+extern s32 D_800A3618;
+extern s32 D_800A3628;
+extern s32 D_800A362C;
+extern s32 D_800A3638;
+extern s32 D_800A3708;
+extern s32 D_800A370C;
+extern s32 D_800A3828;
+extern s32 D_800A38B4;
+extern s32 D_800A38D8;
+extern s32 D_800EFC44;
+extern s32 D_800EFC50;
+extern u16 D_800EFC8A;
+extern s16 D_800F0B78;
+extern s16 D_800F0B7C;
+extern s16 D_800F0B98;
+extern s16 D_800F0BA4;
+extern s16 D_800F0BB2;
+extern s16 D_800F0BCC;
+extern s16 D_800F0BEC;
+extern s32 D_800F0C10;
+extern s32 D_800F0C14;
+extern s32 D_800F0C18;
+extern s32 D_800F0CA0;
+extern s32 D_800F0CA4;
+extern s32 D_800F0CA8;
+extern s32 D_800F0CAC;
+extern s32 D_800F0CB0;
+extern s32 D_800F0CB4;
+extern s32 D_800F0CB8;
+extern s32 D_800F0CBC;
+extern s32 D_800F0CC0;
+extern s32 D_800F0CC4;
+extern s32 D_800F0CC8;
+extern s32 D_800F0CCC;
+extern s32 D_800F0CD0;
+extern s32 D_800F0CD4;
+extern s32 D_800F0CD8;
+extern s32 D_800F0CDC;
+extern s32 D_800F0CE0;
+extern s32 D_800F0CE4;
+extern s32 D_800F0CE8;
+extern s32 D_800F0CEC;
+extern s32 D_800F0CF0;
+extern s32 D_800F0CF4;
+extern s32 D_800F0CF8;
+extern s32 D_800F0CFC;
+extern s32 D_800F0D18;
+extern s32 D_800F0D1C;
+extern s32 D_800F0D20;
+extern s32 D_800F0D24;
+extern s32 D_800F0D28;
+extern s32 D_800F0D2C;
+extern s32 D_800F0D30;
+extern s32 D_800F0D34;
+extern s32 D_800F0D38;
+extern s32 D_800F0D3C;
+extern s32 D_800F0D40;
+extern s32 D_800F0D44;
+extern s32 D_800F0D48;
+extern s32 D_800F0D4C;
+extern s32 D_800F0D50;
+extern s32 D_800F0D54;
+extern s32 D_800F0D58;
+extern s32 D_800F0D5C;
+extern s32 D_800F0D60;
+extern s32 D_800F0D64;
+extern s32 D_800F0D68;
+extern s32 D_800F0D6C;
+extern s32 D_800F0D70;
+extern s32 D_800F0D74;
+extern s32 D_800F0D78;
+extern s32 D_800F0D7C;
+extern s32 videoDec;
+extern s32 D_800F0E38;
+extern s32 D_800F0E3C;
+extern s32 D_800F0E40;
+extern s32 D_800F0EC8;
+extern s32 D_800F0ECC;
+extern s32 D_800F0ED0;
+extern s32 D_800F0FB8;
+extern s32 D_800F0FBC;
+extern s32 D_800F0FC0;
+extern s16 D_800F1000;
+extern s16 D_800F1002;
+extern s16 D_800F1004;
+extern s16 D_800F10A0;
+extern s16 D_800F10A2;
+extern s16 D_800F10A4;
+extern s32 D_800F10D0;
+extern s32 D_800F10D4;
+extern s32 D_800F10E0;
+extern s32 D_800F10E4;
+extern s32 D_800F10E8;
+extern s32 D_800F10EC;
+extern s32 D_800F10F0;
+extern s32 D_800F10F4;
+extern s32 D_800F10F8;
+extern s32 D_800F10FC;
+extern s32 D_800F1100;
+extern s32 D_800F1104;
+extern s32 D_800F1108;
+extern s32 D_800F110C;
+extern s32 D_800F1110;
+extern s32 D_800F1114;
+extern s32 D_800F1118;
+extern s32 D_800F111C;
+extern s32 D_800F1138;
+extern s32 D_800F1140;
+extern s32 D_800F1144;
+extern s32 D_800F1148;
+extern u8 D_800F1150;
+extern s32 D_800F1178;
+extern s32 D_800F117C;
+extern s32 D_800F1180;
+extern s32 D_800F1198;
+extern s32 D_800F119C;
+extern s32 D_800F11A0;
+extern s32 D_800F1850;
+extern s32 g_anim_func_table;
+extern u8 D_800F74A4;
+extern u8 D_800F74A5;
+extern u8 D_800FB534;
+extern u8 D_800FB535;
+extern s16 D_800FF558;
+extern s16 D_800FF55A;
+extern s16 D_800FF55C;
+extern s16 D_800FF55E;
+extern s16 D_800FF560;
+extern s16 D_800FF562;
+extern s16 D_800FF564;
+extern s16 D_800FF566;
+extern s16 D_800FF568;
+extern s32 D_800FF570;
+extern s32 D_800FF574;
+extern u8 D_800FF639;
+extern u8 D_80101DF1;
+extern u16 D_80101E02;
+extern u16 D_80101E04;
+extern s32 D_80103624;
+extern s32 D_800EFC40;
+extern s32 D_800EFB40;
+extern s32 D_800EFC4C;
+extern s32 D_800EFB4C;
+extern s32 D_800EFC3C;
+extern s32 D_800EFB3C;
+extern s32 D_800EFB3C[];
+extern s32 D_800EFC3C[];
+extern s32 func_80036EA8();
+extern s32 func_80036F28();
+extern s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
+extern s32 D_800158B4;
+extern s32 D_800A3404;
+extern s32 D_800A340C;
+extern s32 D_800EFC58;
+extern s32 D_800EFB58;
+extern s32 D_800EFC48;
+extern s32 D_800EFB48;
+extern s32 func_80036EA8(s32, s32);
+extern s32 func_80036F28(s32);
+extern void obj_InitPair(void);
+extern void replay_camera_Init(s32, s32);
+extern s32 D_800EFC5C;
+extern s32 D_800EFB5C;
+extern void title_mv_exec2(s32);
+extern void saFidLoad(s32, s32);
+extern u32 D_800EFC38[];
+extern u32 D_800EFB38[];
+extern u8 D_8009AD18[];
+extern void func_80087F64(s32);
+extern s32 D_8009AD1C;
+extern s32 func_80085F98();
+extern s32 func_80085EE4(s16);
+extern s32 func_80085E4C(s16, s16);
+extern s32 func_80085FB8();
+extern s32 md_game_check_change_main_mode_katinuki(s16);
+extern s32 func_80087F64();
+extern s32 tslCDFileRead();
+extern s32 coli_CheckBukiPreHit_800880B8();
+extern s32 func_8008AD64();
+extern s32 func_8008ADC4();
+extern s32 func_8008AE24();
+extern s32 func_8008AEB0();
+extern s32 *D_800EFC38[];
+extern s32 func_80087F64(s32);
+extern s16 coli_CheckBukiPreHit_800880B8(s32, s32, s32);
+extern s16 tslCDFileRead(s16);
+extern s32 D_8009AA70;
+extern u8 D_800EFB7C;
+extern u8 D_800EFB7D;
+extern s32 func_80073728();
+extern s32 D_8009B2C8;
+extern s32 D_8009B340;
+extern s32 D_8009B358;
+    extern s32 func_80079154(void);
+    extern u8 D_8009B2E0;
+    extern s32 D_8009B388;
+    extern s32 D_8009B390;
+    extern s32 D_800A326C;
+    extern s32 D_800A3418;
+extern s16 D_8009B488;
+extern s8 D_8009B48E;
+extern s32 D_8009B610;
+extern s32 D_8009B634;
+extern s32 D_8009B63C;
+extern s32 D_8009B660;
+extern s32 D_8009B670;
+extern s32 D_8009B678;
+extern u8 D_800A327C[8];
+extern u8 D_800A3284[8];
+extern s32 D_800A3278;
+extern s32 D_8009B698;
+extern s32 D_8009B6B0;
+extern s32 D_800F7438;
+extern s32 initDrawArea(s32, u16 *);
+extern s32 initPolyG4(s32);
+extern s32 initTexPage(s32, s32, s32, s32, s32);
+extern s32 ot_Link(s32, s32);
+extern s32 gpu_SetSemiTransp(s32, s32);
+extern s32 func_8007352C(s32);
+extern s32 saMotionSet(s32, s32);
+extern s32 D_8009B6F0;
+extern s32 D_8009B6FC;
+extern s32 D_8009B708;
+extern s32 D_8009B758;
+extern u8 D_800A3294[8];
+extern u8 D_800A329C[8];
+extern u8 D_800A32A4[8];
+extern u8 D_800A32AC[8];
+extern s32 saMotionSet();
+extern s32 func_8007352C();
+extern s32 D_8009B7AC;
+extern s32 D_8009B7B8;
+extern s32 D_8009B7C4;
+extern u16 D_8009B850;
+extern u8 D_8009BD24;
+extern s32 D_800A328C;
+extern s32 D_8009B3B0;
+extern s32 D_8009B770;
+extern s32 D_8009B7A0;
+extern s32 D_8009B7D0;
+extern s32 D_8009B7D8;
+extern s32 D_8009B800;
+extern s32 D_8009B820;
+extern s32 D_8009B840;
+extern u16 D_800A32B6;
+extern u16 D_800A32B4;
+extern s32 D_8009B0C0;
+extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
+extern s32 gpu_SetSemiTransp(void *, s32);
+extern s32 initTexPage(void *, s32, s32, s32, s32);
+extern s32 initTile(void *);
+extern s32 ot_Link(s32, void *);
+    extern s32 D_800A3468;
+    extern s32 D_800A3478;
+    extern s32 D_800A347C;
+    extern s32 D_800A32BC;
+    extern u8 D_8009BA60;
+    extern s32 D_800F10D0;
+    extern s32 chractar_use_pset_combo_id_table;
+    extern s32 D_800A346C;
+    extern s32 D_800A3470;
+    extern s32 D_800A3474;
+    extern void func_80061FAC(s32, s32, s32);
+extern s32 D_800F10D0[];
+extern u8 D_800F1150[];
+extern s16 D_800A345E;
+extern s16 D_800A345C;
+extern s32 D_800A3458;
+extern s32 D_800A3454;
+extern s32 D_800A3450;
+extern s32 D_800A3460;
+extern s32 D_800A3444;
+extern s32 D_800A3448;
+extern s32 D_800A3420;
+extern s32 D_800A3424;
+extern volatile s32 D_800A37D4;
+extern s32 D_800A3720;
+extern s32 D_800A3468;
+extern s32 D_800A346C;
+extern s32 D_800A3470;
+extern s32 D_800A3474;
+extern s32 D_800A3480;
+extern s32 D_800A3484;
+extern s32 D_800A3488;
+extern s32 D_800A348C;
+extern s32 D_800A3490;
+extern s32 D_800A3494;
+extern s32 D_800A3498;
+extern s32 D_800A349C;
+extern s32 D_800A34A0;
+extern s32 D_800A34A4;
+extern s32 D_800A34A8;
+extern s32 D_800A34AC;
+extern s32 D_800A34B0;
+extern s32 D_800A34B4;
+extern s32 D_800A34B8;
+extern s32 D_800A34BC;
+extern s32 D_800A34C0;
+extern s32 D_800A34C4;
+extern s32 D_800A34C8;
+extern s32 D_800A34CC;
+extern s32 D_800A34D0;
+extern s32 D_800A34D4;
+extern s32 D_800A34D8;
+extern s32 D_800A34DC;
+extern s32 D_800A34E0;
+extern s32 D_800A34E4;
+extern s32 D_800A34E8;
+extern s32 D_800A34EC;
+extern s32 func_80041E10();
+extern s32 leaf_muki_awase_800421A4();
+extern s32 func_80060B70();
+extern s32 func_80060E38();
+extern s32 debug_printf(s32 *, s32);
+extern s32 D_800158E0;
+extern s32 D_800A32BC;
+extern s32 D_800A3464;
+extern s32 *D_800A3468;
+extern s32 D_800A37D4;
+extern u8 D_800F116A;
+extern s32 D_800F116C;
+extern volatile u8 D_800F1159;
+extern u8 D_800F1154;
+extern u8 D_800F115B;
+extern u8 D_800F115C;
+extern u8 D_800F1160[];
+extern u8 D_800F1152[];
+extern s32 D_800F1158;
+extern u8 D_800F1154[];
+extern u8 D_800F1151;
+extern u8 D_800F1164[];
+extern s16 D_800A34F0;
+extern s16 D_800A34F2;
+extern u8 D_800F1168[];
+extern u8 D_8009BB74[];
+extern s32 D_800A32B8;
+    extern s32 D_800A3460;
+    extern volatile s32 D_800A347C;
+    extern volatile s32 D_800A3478;
+    extern s16 D_800F0C04;
+    extern s32 D_800F0FB8;
+    extern s32 D_800F0FBC;
+    extern s32 D_800F0FC0;
+    extern s32 D_800F10A0;
+    extern s32 D_800F10A2;
+    extern s32 D_800F10A4;
+    extern s32 D_800F1138;
+extern volatile s32 D_800A347C;
+extern s32 func_80079154(void);
+extern void *D_800A347C;
+extern volatile s32 D_800F0CA0;
+extern volatile s32 D_800F0CA4;
+extern volatile s32 D_800F0CA8;
+extern volatile s32 D_800F10E0;
+extern volatile s16 D_800F0BA8;
+extern volatile s32 D_800F0CAC;
+extern volatile s32 D_800F0CB0;
+extern volatile s32 D_800F0CB4;
+extern volatile s32 D_800F10E4;
+extern volatile s16 D_800F0BAA;
+extern volatile s32 D_800F0CB8;
+extern volatile s32 D_800F0CBC;
+extern volatile s32 D_800F0CC0;
+extern volatile s32 D_800F10E8;
+extern volatile s16 D_800F0BAC;
+extern s16 D_800F0BAE;
+extern s16 D_800F0BB0;
+extern volatile s32 D_800A3468;
+extern volatile s32 D_800F0CDC;
+extern volatile s32 D_800F0CE0;
+extern volatile s32 D_800F0CE4;
+extern volatile s32 D_800F10FC;
+extern volatile s16 D_800F0BB2;
+extern volatile s16 D_800A3440;
+extern volatile s32 D_800F0CE8;
+extern volatile s32 D_800F0CEC;
+extern volatile s32 D_800F0CF0;
+extern volatile s32 D_800F1100;
+extern volatile s16 D_800F0BB4;
+extern volatile s32 D_800F0CF4;
+extern volatile s32 D_800F0CF8;
+extern volatile s32 D_800F0CFC;
+extern volatile s32 D_800F1104;
+extern volatile s16 D_800F0BB6;
+extern volatile s32 D_800F0D18;
+extern volatile s32 D_800F0D1C;
+extern volatile s32 D_800F0D20;
+extern volatile s32 D_800F1108;
+extern volatile s16 D_800F0BBC;
+extern volatile s32 D_800F0D24;
+extern volatile s32 D_800F0D28;
+extern volatile s32 D_800F0D2C;
+extern volatile s32 D_800F110C;
+extern volatile s16 D_800F0BBE;
+extern u16 D_800F0BC0;
+extern u16 D_800F0BC4;
+extern u16 D_800F0BC2;
+extern u16 D_800F0BC6;
+extern volatile s32 D_800F0D60;
+extern volatile s32 D_800F0D64;
+extern volatile s32 D_800F0D68;
+extern volatile s32 D_800F1118;
+extern volatile s16 D_800F0BC8;
+extern volatile s32 D_800F0D6C;
+extern volatile s32 D_800F0D70;
+extern volatile s32 D_800F0D74;
+extern volatile s32 D_800F111C;
+extern volatile s16 D_800F0BCA;
+extern s16 D_800F0BA8;
+extern s16 D_800F0BAA;
+extern s16 D_800F0BAC;
+extern s32 *D_800A3484;
+extern s16 D_800F0BB4;
+extern s16 D_800F0BB6;
+extern s16 D_800F0BBC;
+extern s16 D_800F0BBE;
+extern s32 motion_SetExMotion(s32);
+extern s16 D_800F0BC4;
+extern s16 D_800F0BC8;
+extern s16 D_800F0BCA;
+extern s32 D_800F10D8;
+extern s32 D_800F10DC;
+extern s32 D_800F1120;
+extern s32 D_800F1124;
+extern s32 D_800F1128;
+extern s32 D_800F112C;
+extern s32 D_800F1130;
+extern s32 D_800F1134;
+    extern s32 D_800A34EC;
+    extern s32 D_800A37D4;
+    extern s32 D_800A3724;
+    extern s32 D_800A34E4;
+    extern s32 D_800A34E8;
+    extern s32 D_800A374C;
+extern s32 D_800A3500;
+extern s32 D_800A351C;
+extern s32 D_800A3524;
+extern s32 D_800A34FC;
+extern s32 D_800A372C;
+extern s32 D_800A3518;
+extern u32 D_800A34F8;
+extern s16 D_800A3528;
+extern s16 D_800A3512;
+extern s16 D_800A3510;
+extern s16 D_800A350E;
+extern s16 D_800A350C;
+extern u8 D_800A32C0[8];
+extern s32 snd_StopAll(void);
+extern s32 func_8006E950(s32, s32);
+extern s32 efc_rob_Close(s32);
+extern s32 *func_8006E49C(s32, s32);
+extern s32 gpu_DrawSync(s32);
+extern s32 func_8007B6C8(u8 *, s32, s32);
+extern s32 func_8005C650();
+extern void func_80069E18(s32, s32);
+extern s32 func_8006E390();
+extern s32 D_800A3514;
+extern u32 D_800A32D0;
+extern void initTile(u8 *p);
+extern void gpu_SetSemiTransp(u8 *p, s32 semi);
+extern void ot_Link(u32 *ot, u32 *prim);
+extern void initPolyF4(u8 *p);
+extern void func_80069A8C(u8 *p);
+extern s32 func_80073728(s32, s32);
+extern s32 D_800A350C;
+extern s32 func_800692C0(s32 *, s32, s32, s32 *);
+extern void func_8005C650(s32, s32, s32);
+extern u8 g_disp_fb_base;
+extern s32 D_800A36E0;
+extern s32 D_800A36E4;
+extern void initTexPage();
+extern void ot_Link();
+extern void func_8006BB68(s32);
+extern s32 func_8006B92C();
+extern void saTan4GaugeMain(s32);
+extern s32 func_8006CFBC(s32);
+extern void func_8006CCC8(s32, s32, s32);
+extern void *D_800A3524;
+extern u16 D_800A3528;
+extern s32 func_8006E390(s32, s32);
+extern s32 func_80069AE4(s32, s32, s32);
+extern void func_8006D3DC(s32);
+extern s32 func_8006D5D4(s32, u32);
+extern s32 func_8005C6D0(void);
+extern s32 D_800A352C;
+extern s32 func_800692C0();
+extern void func_8006DD94(s32);
+extern s32 func_8006DF68();
+extern u8 D_800A32D8[8];
+extern void func_80036F28(s32);
+extern void game_FrameLoop(void);
+extern void gpu_InitDrawEnv(s32, s32, s32, s32, s32);
+extern void gpu_InitDispEnv(s32, s32, s32, s32, s32);
+extern void gpu_LoadImage(u8 *, s32);
+extern void func_8007B4D0(s32, s32, s32, s32);
+extern void func_8007B9B0(s32);
+extern void func_8007BC08(s32);
+extern void gpu_SetDispMask(s32);
+extern void gpu_DrawSync(s32);
+extern u8 D_800A32E0[8];
+extern void disp_SetFramebufferMode(s32, s32, s32, s32);
+extern s32 D_800A3520;
+extern s32 D_800A35AC;
+extern s32 D_800A3548;
+extern s32 D_800A354C;
+extern s16 D_800A3580;
+extern s32 D_800A35A0;
+extern void *D_800A35A4;
+extern s32 D_800A35A8;
+extern s32 D_800A35BC;
+extern s32 D_800A35C0;
+extern void *D_800A35C4;
+extern s16 D_800A3570;
+extern u16 D_800A3578;
+extern s16 D_800A3584;
+extern volatile u16 D_800A3550;
+extern s32 initTile(s32);
+extern s32 D_800A3558;
+extern s32 D_800A35B0;
+extern s32 func_8007352C(s32 *prim);
+extern s32 func_80069898(s32 a0, s32 *p, s32 mode);
+extern void motion_ShiftControl(s32 a0, s32 *prim);
+extern void func_8006ECF4(s32);
+extern void func_80072E10(s32);
+extern void saTan3GaugeMain_80073200(s32);
+extern u8 D_8009BC7C[];
+extern s32 gpu_SetSemiTransp(GameObj *, s32);
+extern s32 initPolyG4(GameObj *);
+extern s32 ot_Link(s32, GameObj *);
+extern s32 func_80073060(s32);
+extern s32 func_80072CD4(s32, GameObj *);
+extern s32 initSprt(s32, s16);
+extern s32 gpu_SetRawTexture(s32, s32);
+extern s32 DispSleepMenuTex(s32 *, s32);
+extern s32 gpu_CalcClut(u16, u16);
+extern s32 D_800159A0;
+extern void initPolyF4(s32);
+extern s32 func_80069A8C(s32);
+extern s32 func_8007352C(s32 *);
+extern s32 initTile(GameObj *);
+extern u8 *D_800A36A0;
+extern s16 D_800A35D0;
+extern s32 func_8005C650(s32, s32, s32);
+extern s32 D_800A35D8;
+extern s8 D_800A35DC;
+extern s32 func_8007B844(s32, s32);
+extern s32 func_8006E950(s32, s32 *);
+extern s32 func_80076FF8(s32 *);
+extern u8 *func_8006E49C(s32, s32);
+extern s32 *func_80077098(s32);
+extern void func_80077374(s32, s32 *);
+extern s32 *D_800A36A0;
+extern s32 D_800A35E4;
+extern s32 D_8009BD24;
+extern s32 D_800A35E0;
+extern s32 D_800A35E8;
+extern u8 D_8009BD24[];
+
+#if 0  /* pre-funcs compiled in text1b.c */
 void func_80047ED0(s32 a0) {
     g_snd_volume += a0;
 }
@@ -12171,58 +13001,6 @@ void obj_InitAll(void) {
     obj_InitChars();
 }
 
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
-typedef volatile u8 vu8;
-typedef volatile s8 vs8;
-typedef volatile u16 vu16;
-typedef volatile s16 vs16;
-typedef volatile u32 vu32;
-typedef volatile s32 vs32;
-#define NULL ((void *)0)
-
-typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
-typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
-typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
-typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
-typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
-typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
-typedef struct CVECTOR { u8 r, g, b, cd; } CVECTOR;
-typedef struct DVECTOR { s16 vx, vy; } DVECTOR;
-typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
-
-/* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
- * field layout is the union of all observed accesses; m2c picks the type
- * that best fits each access site. Mirroring smart_match.py's layout. */
-typedef struct GameObj {
-    u8 field_00; u8 field_01; s16 field_02;
-    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
-    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
-    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
-    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
-    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
-    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
-    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
-    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
-    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
-    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
-    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
-    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
-    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
-    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
-    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
-    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
-    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
-    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
-    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
-    s16 field_FA; s32 field_FC;
-} GameObj;
 extern s32 func_80036EA8();
 extern s32 func_80036F28();
 extern s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
@@ -15452,4 +16230,2015 @@ void func_8006B120(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006B120.s).
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+#endif  /* pre-funcs */
+
+extern s32 D_800A34FC;
+extern s32 D_800A350C;
+extern u32 D_800A34F8;
+extern s32 D_800A3514;
+extern s32 D_800A3524;
+extern s32 func_800692C0(s32 *, s32, s32, s32 *);
+extern void func_8005C650(s32, s32, s32);
+
+__asm__(
+    ".section .rodata\n"
+    ".align 2\n"
+    ".globl jtbl_80015988\n"
+    "jtbl_80015988:\n"
+    "    .word .L8006B6B8\n"
+    "    .word .L8006B6E8\n"
+    "    .word .L8006B720\n"
+    "    .word .L8006B7B4\n"
+    "    .word .L8006B7FC\n"
+    "    .word .L8006B828\n"
+    ".section .text\n"
+);
+
+s32 func_8006B578(s32 *arg0, s32 *arg1) {
+    s32 sp10;
+    s32 s2 = 0;
+    s32 s0;
+    s32 v1;
+
+    (void)arg0;
+    sp10 = *arg1;
+    s0 = func_800692C0(&sp10, 0, D_800A34FC + 0xC, &D_800A350C);
+    v1 = (u32)D_800A34F8;
+    if (s2 == 0) {
+        __asm__("jlabel .L8006B5E8");
+        __asm__("jlabel .L8006B610");
+        __asm__("jlabel .L8006B624");
+        __asm__("jlabel .L8006B650");
+        __asm__("jlabel .L8006B660");
+        __asm__("jlabel .L8006B674");
+        __asm__("jlabel .L8006B684");
+        __asm__("jlabel .L8006B6B8");
+        __asm__("jlabel .L8006B754");
+        __asm__("jlabel .L8006B6E8");
+        __asm__("jlabel .L8006B720");
+        __asm__("jlabel .L8006B760");
+        __asm__("jlabel .L8006B7B4");
+        __asm__("jlabel .L8006B7FC");
+        __asm__("jlabel .L8006B828");
+        __asm__("jlabel .L8006B850");
+        __asm__("jlabel .L8006B854");
+        __asm__("jlabel .L8006B878");
+        func_8005C650(0, 0x7F, 0x7F);
+        s2 = s0 + v1;
+    }
+    return s2;
+}
+extern s32 D_800A36AC;
+extern u8 g_disp_fb_base;
+void func_8006B898(s32 arg0, s32 arg1) {
+    s32 sp10[10];
+    u8 *t;
+    D_800A3514 += 1;
+    t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
+    func_8006E390(sp10, &D_800A3518);
+    func_80069AE4(sp10, 1, t);
+    func_8006B120(sp10);
+    func_8006B578(&arg0, &arg1);
+}
+extern u32 D_800A34F8;
+extern s32 D_800A350C;
+s32 func_8006B92C(s32 *unused, u32 *arg1) {
+    s32 sp10;
+    s32 ret;
+    s32 idx;
+    s32 var_v0;
+    register u32 var_v1 asm("v1");
+    s32 var_s0 = 0;
+    u32 v;
+    u32 a0;
+    v = *arg1;
+    sp10 = (v & 0xFFFF) | (v >> 16);
+    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, &D_800A350C);
+    ret >>= 16;
+    switch (ret) {
+    case 1:
+        a0 = D_800A34F8;
+        if ((a0 & 0xE000) == 0x4000) {
+            D_800A34F8 = a0 & 0xFFFF1FFF;
+        } else {
+            var_v1 = a0 & 0xFFFF1FFF;
+            var_v0 = ((a0 >> 13) & 7) + 1;
+            D_800A34F8 = var_v1 | ((var_v0 & 7) << 13);
+        }
+        func_8005C650(0, 0x7F, 0x7F);
+        break;
+    case 2:
+        a0 = D_800A34F8;
+        if ((a0 & 0xE000) == 0) {
+            D_800A34F8 = (a0 & 0xFFFF1FFF) | 0x4000;
+        } else {
+            var_v1 = a0 & 0xFFFF1FFF;
+            var_v0 = ((a0 >> 13) & 7) - 1;
+            D_800A34F8 = var_v1 | ((var_v0 & 7) << 13);
+        }
+        func_8005C650(0, 0x7F, 0x7F);
+        break;
+    }
+
+    idx = (D_800A34F8 >> 13) & 7;
+    switch (idx) {
+    case 0:
+        if (*arg1 & 0x400040) {
+            func_8005C650(1, 0x7F, 0x7F);
+            var_s0 = 2;
+        }
+        break;
+    case 1:
+        if (*arg1 & 0x400040) {
+            func_8005C650(1, 0x7F, 0x7F);
+            var_s0 = 3;
+        }
+        break;
+    case 2:
+        if (*arg1 & 0x400040) {
+            func_8005C650(1, 0x7F, 0x7F);
+            var_s0 = 1;
+            D_800A34F8 = (D_800A34F8 & ~0x1C00) | (((((D_800A34F8 >> 10) & 7) + 1) & 7) << 10);
+        }
+        break;
+    }
+
+    if (*arg1 & 0x100010) {
+        func_8005C650(2, 0x7F, 0x7F);
+        var_s0 = 1;
+    }
+    return var_s0;
+}
+
+void func_8006BB68(s32 arg0) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006BB68.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0;
+}
+typedef unsigned char u8_lcl;
+typedef signed char s8_lcl;
+
+extern s32 D_800A34FC;
+extern s32 D_800A36E0;
+extern s32 D_800A36E4;
+extern s32 D_800A374C;
+extern s32 saMotionSet();
+extern s32 func_8007352C();
+extern void initTexPage();
+extern void ot_Link();
+
+typedef struct { s32 a; s32 b; } _Pair_BD28;
+
+void func_8006BD28(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    s32 i, j, n;
+    s32 v;
+    s32 base;
+    s32 offset;
+    _Pair_BD28 *p;
+
+    offset = arg0 * 8;
+    base = *(s32 *)(*(s32 *)((s32)D_800A34FC + 0x24) + 0x20);
+
+    *(s8 *)(arg2 + 0x2B) = 0x30;
+    *(s8 *)(arg2 + 0x2A) = 0x30;
+    *(s8 *)(arg2 + 0x29) = 0x30;
+
+    i = 0;
+    do {
+        s32 idx = i * 4 + base;
+        __asm__ __volatile__("" : "=r"(idx) : "0"(idx));
+        v = *(s32 *)(idx + offset);
+        *(s32 *)(arg2 + 0) = v;
+        if (v == -1) return;
+
+        n = 1;
+        if (arg0 == 0x12) {
+            n = 3;
+        }
+
+        j = 0;
+        if (n != 0) {
+            do {
+                if (arg0 == 0x12 && j != arg3 && j != 2) {
+                    *(s8 *)(arg2 + 0x28) = 1;
+                } else {
+                    *(s8 *)(arg2 + 0x28) = 0;
+                }
+                *(s32 *)(arg2 + 0x18) = 0;
+                *(s32 *)(arg2 + 0x1C) = arg1;
+                *(s32 *)(arg2 + 0x14) = 8;
+                *(s32 *)(arg2 + 0x10) = 0;
+                *(s32 *)(arg2 + 8) = D_800A36E4;
+                p = (_Pair_BD28 *)((s32)*(s32 *)(arg2 + 0) + 0xC);
+                *(s32 *)(arg2 + 4) = (s32)&p[j];
+                D_800A36E4 = func_8007352C(arg2);
+                j++;
+            } while (j < n);
+        }
+
+        initTexPage(D_800A36E0, 1, 0, saMotionSet(*(s32 *)(arg2 + 0), 0), 0);
+        ot_Link(D_800A374C + 0x20, D_800A36E0);
+        i++;
+        D_800A36E0 += 12;
+    } while (i < 2);
+}
+void func_8006BEC4(s32 arg0, s32 arg1) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006BEC4.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1;
+}
+extern void func_8006BB68(s32);
+extern s32 func_8006B92C();
+void func_8006C168(s32 arg0, s32 arg1) {
+    s32 sp10[22];
+    u8 *t;
+    D_800A3514 += 1;
+    t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
+    func_8006E390(sp10, &D_800A3518);
+    func_80069AE4(sp10, 1, t);
+    func_8006BB68(sp10);
+    func_8006B92C(&arg0, &arg1);
+}
+s32 func_8006C168(s32, s32);
+s32 saTan2InfoInit_8006C1FC(s32 a0, s32 a1) {
+    return func_8006C168(a0, a1);
+}
+void saTan4GaugeMain(s32 arg0) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/saTan4GaugeMain.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0;
+}
+extern s32 D_800A34FC;
+extern s32 D_800A3524;
+
+void func_8006CBD4(s32 arg0, s32 arg1) {
+    s32 code;
+    s16 i;
+    s32 mask;
+
+    if (arg1 & (0x10 << (arg0 * 16))) {
+        code = 1;
+    } else if (arg1 & (0x40 << (arg0 * 16))) {
+        code = 2;
+    } else if (arg1 & (0x80 << (arg0 * 16))) {
+        code = 3;
+    } else if (arg1 & (0x20 << (arg0 * 16))) {
+        code = 0;
+    }
+
+    mask = (1 << code) << (arg0 * 4);
+
+    for (i = 0; i < 3; i++) {
+        if (i == *(s16 *)((u8 *)D_800A34FC + (arg0 * 2) + 0x28)) {
+            *((u8 *)D_800A3524 + i + 0x17) |= mask;
+        } else {
+            *((u8 *)D_800A3524 + i + 0x17) &= ~mask;
+        }
+    }
+}
+void func_8006CCC8(s32 arg0, s32 arg1, s32 arg2) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006CCC8.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2;
+}
+s32 func_8006CFBC(s32 arg0) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006CFBC.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0;
+    return 0;
+}
+extern s32 D_800A34FC;
+void cpu_reset_dir(void) {
+    s16 *v1 = (s16 *)D_800A34FC;
+    v1[0x15] = 5;
+    v1[0x14] = 5;
+}
+extern void saTan4GaugeMain(s32);
+extern s32 func_8006CFBC(s32);
+extern void func_8006CCC8(s32, s32, s32);
+void func_8006D338(s32 arg0, s32 arg1) {
+    s32 sp10[22];
+    u8 *t;
+    s32 r;
+    D_800A3514 += 1;
+    t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
+    func_8006E390(sp10, &D_800A3518);
+    func_80069AE4(sp10, 2, t);
+    saTan4GaugeMain(sp10);
+    r = func_8006CFBC(sp10);
+    func_8006CCC8(&arg0, &arg1, (s32)((r << 16) >> 16));
+}
+void func_8006D3DC(s32 arg0) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006D3DC.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0;
+}
+extern s32 D_800A350C;
+extern void *D_800A3524;
+extern u16 D_800A3528;
+s32 func_8006D5D4(s32 arg0, u32 arg1) {
+    s32 sp10;
+    s32 result = 0;
+    s32 ret;
+    s32 *p;
+    s32 v;
+    s32 sval;
+
+    sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
+    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, &D_800A350C);
+    if ((ret >> 16) == 1) {
+        D_800A3528 = D_800A3528 + 1;
+        func_8005C650(0, 0x7F, 0x7F);
+    } else if ((ret >> 16) == 2) {
+        D_800A3528 = D_800A3528 - 1;
+        func_8005C650(0, 0x7F, 0x7F);
+    }
+    if ((s16) D_800A3528 < 0) {
+        D_800A3528 = 2;
+    }
+    D_800A3528 = (s16) D_800A3528 % 3;
+    if (arg1 & 0x100010) {
+        func_8005C650(2, 0x7F, 0x7F);
+        result = -1;
+    } else if (arg1 & 0x400040) {
+        func_8005C650(1, 0x7F, 0x7F);
+        sval = (s16) D_800A3528;
+        if (sval == 2) {
+            result = -1;
+        } else {
+            p = (s32 *)((s32)D_800A3524 + 0x14);
+            v = *p;
+            *p = (v & 0xFFFDFFFF) | ((sval & 1) << 17);
+            result = 1;
+        }
+    }
+    return result;
+}
+extern s32 D_800A3514;
+extern s32 D_800A3518;
+extern s32 D_800A36AC;
+extern s32 D_800F7438;
+extern s32 func_8006E390(s32, s32);
+extern s32 func_80069AE4(s32, s32, s32);
+extern void func_8006D3DC(s32);
+extern s32 func_8006D5D4(s32, u32);
+extern s32 func_8005C6D0(void);
+s32 func_8006D74C(s32 arg0, s32 arg1) {
+    s32 sp_buf[22];
+    s32 result;
+    s32 ptr_offset;
+    D_800A3514 += 1;
+    ptr_offset = ((D_800A36AC & 1) * 0x4090) + (s32)&D_800F7438;
+    func_8006E390((s32)&sp_buf[0], (s32)&D_800A3518);
+    func_80069AE4((s32)&sp_buf[0], 1, ptr_offset);
+    func_8006D3DC((s32)&sp_buf[0]);
+    result = func_8006D5D4(arg0, arg1);
+    func_8005C6D0();
+    return result;
+}
+extern s32 D_800A352C;
+s32 func_8006D7FC(void) {
+    D_800A352C = 0;
+    return 1;
+}
+void func_8006D808(s32 *arg0, s32 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006D808.s).
+     * 355 inst, 39 branches, 14 jal, 56 loads, 65 stores. m2c output had
+     * type errors. Pure-C decomp pending. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3; (void)arg4;
+}
+void func_8006DD94(s32 arg0) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006DD94.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0;
+}
+extern s32 func_800692C0();
+extern s32 D_800A350C;
+
+s32 func_8006DF68(s32 arg0, u32 arg1) {
+    s32 sp10;
+    s32 ret;
+    s32 result = 0;
+
+    sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
+    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, &D_800A350C);
+    if (((ret >> 16) & 0xFF) != 0) {
+        D_800A352C += 1;
+        func_8005C650(0, 0x7F, 0x7F);
+    }
+    D_800A352C &= 1;
+    if ((arg1 & 0x100010) != 0) {
+        result = -1;
+        func_8005C650(2, 0x7F, 0x7F);
+    } else if ((arg1 & 0x400040) != 0) {
+        func_8005C650(1, 0x7F, 0x7F);
+        if (D_800A352C != 0) {
+            result = -1;
+        } else {
+            result = 1;
+        }
+    }
+    func_8005C6D0();
+    return result;
+}
+extern void func_8006DD94(s32);
+extern s32 func_8006DF68();
+void func_8006E068(s32 arg0, s32 arg1) {
+    s32 sp10[22];
+    u8 *t;
+    D_800A3514 += 1;
+    t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
+    func_8006E390(sp10, &D_800A3518);
+    func_80069AE4(sp10, 1, t);
+    func_8006DD94(sp10);
+    func_8006DF68(arg0, arg1);
+}
+extern u8 D_800A32D8[8];
+extern void *D_800A3524;
+extern s32 D_800A3500;
+extern u8 D_800F74A4;
+extern u8 D_800F74A5;
+extern u8 D_800FB534;
+extern u8 D_800FB535;
+extern s32 D_800F7438;
+extern s32 func_80036EA8(s32, s32);
+extern void func_80036F28(s32);
+extern void replay_camera_Init(s32, s32);
+extern void game_FrameLoop(void);
+extern void gpu_InitDrawEnv(s32, s32, s32, s32, s32);
+extern void gpu_InitDispEnv(s32, s32, s32, s32, s32);
+extern void gpu_LoadImage(u8 *, s32);
+extern void func_8007B4D0(s32, s32, s32, s32);
+extern void func_8007B9B0(s32);
+extern void func_8007BC08(s32);
+extern void gpu_SetDispMask(s32);
+extern void gpu_DrawSync(s32);
+s32 func_8006E10C(void) {
+    register s32 ff0 asm("$17");
+    register s32 temp_s3 asm("$19") = D_800A3500;
+    u8 rect[8];
+    s32 v0;
+    register s32 a0v asm("$4");
+    register s32 a1v asm("$5");
+    s32 base;
+    s32 base2;
+
+    __builtin_memcpy(rect, D_800A32D8, 8);
+    if (((s32 *)D_800A3524)[8] & 1) {
+        a0v = 2;
+        a1v = 0x60;
+    } else {
+        a0v = 2;
+        a1v = 7;
+    }
+    ff0 = 0xF0;
+    v0 = func_80036EA8(a0v, a1v);
+    replay_camera_Init(v0, D_800A3500);
+    game_FrameLoop();
+    func_80036F28(v0);
+    gpu_SetDispMask(0);
+    base = (s32)&D_800F7438;
+    gpu_InitDrawEnv(base, 0, 0, 0x280, ff0);
+    gpu_InitDrawEnv(base + 0x4090, 0, ff0, 0x280, ff0);
+    gpu_InitDispEnv(base + 0x5C, 0, ff0, 0x280, ff0);
+    base2 = base + 0x40EC;
+    gpu_InitDispEnv(base2, 0, 0, 0x280, ff0);
+    D_800F74A4 = 0;
+    D_800FB534 = 0;
+    D_800F74A5 = 0;
+    D_800FB535 = 0;
+    gpu_DrawSync(0);
+    func_8007B4D0((s32)rect, 0, 0, 0);
+    gpu_DrawSync(0);
+    gpu_LoadImage(rect, temp_s3 + 0x14);
+    gpu_DrawSync(0);
+    func_8007B9B0(base);
+    func_8007BC08(base2);
+    gpu_SetDispMask(1);
+    return 1;
+}
+extern s32 D_800A3518;
+extern u8 D_800A32E0[8];
+extern void func_8007B9B0(s32);
+extern void func_8007BC08(s32);
+extern void func_8007B4D0(s32, s32, s32, s32);
+extern void gpu_SetDispMask(s32);
+extern void gpu_DrawSync(s32);
+extern void disp_SetFramebufferMode(s32, s32, s32, s32);
+s32 func_8006E2A8(void) {
+    u8 rect[8];
+    s32 base;
+    gpu_SetDispMask(0);
+    base = ((D_800A3518 & 1) * 0x4090) + (s32)&D_800F7438;
+    func_8007B9B0(base);
+    base = ((D_800A3518 & 1) * 0x4090) + (s32)&D_800F7438 + 0x5C;
+    func_8007BC08(base);
+    gpu_DrawSync(0);
+    __builtin_memcpy(rect, D_800A32E0, 8);
+    func_8007B4D0((s32)rect, 0, 0, 0);
+    gpu_DrawSync(0);
+    disp_SetFramebufferMode(1, 0, 0, 0);
+    gpu_SetDispMask(1);
+    return 1;
+}
+extern s32 D_800A34FC;
+extern s32 D_800A3520;
+s32 *func_80069120(s32);
+void func_8006E390(s32 *a0, s32 *a1) {
+    s32 *s0 = a0;
+    s32 *v0;
+    a1[0]++;
+    v0 = func_80069120(a1[0] & 1);
+    s0[1] = ((s32 *)D_800A34FC)[9];
+    s0[3] = v0[1];
+    s0[2] = v0[0];
+    s0[4] = v0[2];
+    s0[5] = v0[4];
+    s0[6] = v0[3];
+    s0[7] = v0[5];
+    s0[8] = v0[6];
+    D_800A3520 = (s32)v0;
+    s0[9] = v0[7];
+}
+
+void func_8006E440(s32 *a0) {
+    s32 *p = a0;
+    if (*p == -1) return;
+    while (*p != -1) {
+        *p = *p + (s32)a0;
+        p++;
+    }
+}
+s32 saMotionSet(u8 *a0, s32 a1) {
+    s32 v0 = a0[0] & 0xFE1F;
+    s32 v1 = a0[1] << 7;
+    return v0 + v1 + a1;
+}
+s32 func_8006E49C(s32 arg0, s32 *arg1) {
+    s32 a;
+    s32 b;
+    int new_var2;
+    int new_var;
+    s32 c;
+    arg1[0] = arg0;
+    a = (new_var = arg0 + 0x9C40);
+    arg1[2] = a + 0x5DC0;
+    arg1[1] = a;
+    b = a + 0x6838;
+    arg1[3] = a + 0x61F8;
+    arg1[5] = b + 0x1B58;
+    arg1[6] = b + 0x1DB0;
+    arg1[7] = b + 0x1E28;
+    arg1[8] = b + 0x1EA0;
+    arg1[4] = b;
+    arg1[0xB] = b + 0x1FB0;
+    new_var2 = 0x1FB0;
+    a = (b + new_var2) + 0x9C40;
+    arg1[0xD] = a + 0x5DC0;
+    arg1[0xC] = a;
+    c = a + 0x6838;
+    arg1[0xE] = a + 0x61F8;
+    arg1[0x10] = c + 0x1B58;
+    arg1[0x11] = c + 0x1DB0;
+    arg1[0x12] = c + 0x1E28;
+    arg1[0x13] = c + 0x1EA0;
+    arg1[0xF] = c;
+    return c + new_var2;
+}
+void func_8006E534(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006E534.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern s32 D_800A35AC;
+s32 func_8006E8AC(s32 a0) {
+    return D_800A35AC + a0 * 44;
+}
+s32* saTan2GaugeInit_80077D00(void);
+void gpu_DrawSync(s32);
+void gpu_LoadImage(s16*, s32);
+void func_8006E8CC(s32 *a0) {
+    s32 *p;
+    s32 data;
+    s16 rect[4];
+    p = saTan2GaugeInit_80077D00();
+    if (p[8] & 1) {
+        data = a0[4];
+    } else {
+        data = a0[3];
+    }
+    rect[0] = 0;
+    rect[1] = 0x1E0;
+    rect[2] = 0x280;
+    rect[3] = 0x20;
+    gpu_DrawSync(0);
+    gpu_LoadImage(rect, data);
+    gpu_DrawSync(0);
+}
+void func_8006E950(s32 *a0, s32 *a1) {
+    s32 *s1 = a1;
+    s32 s2;
+    s32 s3;
+    s32 s0;
+    s32 s0_addr;
+    s32 v0;
+    s16 rect[4];
+
+    s0_addr = (s32)a0;
+    game_FrameLoop();
+    v0 = func_80036EA8(2, s0_addr);
+    replay_camera_Init(v0, (s32)s1);
+    game_FrameLoop();
+    s2 = 0x280;
+    func_8006E440(s1);
+
+    s3 = ((s32 *)((unsigned char *)s1 + 8))[0];
+    s0 = 0x1DC;
+
+    rect[0] = (s16)s2;
+    rect[1] = 0;
+    rect[2] = 0x180;
+    rect[3] = (s16)s0;
+    gpu_DrawSync(0);
+    gpu_LoadImage(rect, s3);
+
+    rect[2] = 0x170;
+    rect[0] = (s16)s2;
+    rect[1] = (s16)s0;
+    rect[3] = 0x24;
+    gpu_DrawSync(0);
+    gpu_LoadImage(rect, s3 + 0x59400);
+
+    func_8006E8CC(s1);
+}
+void func_8006920C(s32 *, s32);
+s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
+s32 efc_buki_ZanzouClose(s32 *a0) {
+    func_8006920C(a0, a0[21]);
+    func_8006920C(a0, a0[22]);
+    func_8006920C(a0, a0[23]);
+    func_8006920C(a0, a0[24]);
+    func_8006920C(a0, a0[25]);
+    func_8006920C(a0, a0[26]);
+    func_8006920C(a0, a0[27]);
+    func_8006920C(a0, a0[28]);
+    func_8006920C(a0, a0[29]);
+    tslGlobalMemFree_8005C2A8(a0[0], 1, a0[1]);
+    return a0[1];
+}
+extern s32 D_8009BC1C;
+extern s32 D_800A3548;
+extern s32 D_800A354C;
+extern s16 D_800A3580;
+extern s32 D_800A35A0;
+extern void *D_800A35A4;
+extern s32 D_800A35A8;
+extern s32 D_800A35BC;
+extern s32 D_800A35C0;
+extern void *D_800A35C4;
+void func_8006EC0C(void);
+void func_8006F528(s32 *);
+s32 func_8006EACC(s32 arg0, s32 arg1) {
+    s32 sp10[10];
+    s32 *temp_v0;
+    s32 temp_v1;
+
+    D_800A35C0 = ((D_800A36AC & 1) * 0x4090) + (s32)&D_800F7438;
+    D_800A3548 = arg0;
+    D_800A354C = arg1;
+    if (D_800A35BC == 2) {
+        D_800A354C = arg1 & 0xFFFF;
+    }
+    func_8006EC0C();
+    temp_v1 = ((s32 *)D_800A35C4)[3] + 1;
+    ((s32 *)D_800A35C4)[2] = ((s32 *)D_800A35C4)[2] + 1;
+    ((s32 *)D_800A35C4)[3] = temp_v1;
+    temp_v0 = (s32 *)func_8006E8AC(temp_v1 & 1);
+    sp10[0] = D_800A35A8;
+    sp10[1] = temp_v0[0];
+    sp10[3] = temp_v0[2];
+    sp10[4] = temp_v0[4];
+    sp10[5] = temp_v0[3];
+    sp10[6] = temp_v0[5];
+    sp10[7] = temp_v0[6];
+    D_800A35A4 = temp_v0;
+    sp10[8] = temp_v0[7];
+    sp10[9] = temp_v0[8];
+    if ((u16)(D_800A3580 - 2) >= 2U) {
+        func_8006F528(sp10);
+    }
+    ((void (*)(s32 *))(&D_8009BC1C)[D_800A3580])(sp10);
+    return D_800A35A0;
+}
+extern s16 D_800A3570;
+extern u16 D_800A3578;
+extern s16 D_800A3584;
+void func_8006EC0C(void) {
+    s32 state = D_800A3578;  /* lhu gp-rel; regfix converts to lbu at idx 1 */
+
+    if (state == 2) goto fade_out;
+    if (state < 3) {
+        if (state == 1) goto ramp_up;
+        goto done;
+    }
+    if (state == 3) goto ramp_up;
+    if (state == 4) goto fade_out;
+    goto done;
+
+ramp_up:
+    D_800A3570 = (s16)(D_800A3570 + 0x20);
+    if ((s32)(s16)D_800A3570 < 0x1E8) goto done;
+    {
+        s16 v3584 = D_800A3584;
+        u16 word = D_800A3578;
+        D_800A3570 = 0x1E8;
+        D_800A3580 = v3584;
+        if ((word >> 8) != 0) goto done;
+        D_800A3578 = word + 1;
+    }
+    goto done;
+
+fade_out:
+    if (D_800A3570 == 0x1E8) {
+        func_8005C650(5, 0x7F, 0x7F);
+    }
+    D_800A3570 = (s16)(D_800A3570 - 0x20);
+    if ((s32)(s16)D_800A3570 > 0) goto done;
+    D_800A3570 = 0;
+    D_800A3578 = 0;
+
+done: ;
+}
+void func_8006ECF4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006ECF4.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern volatile u16 D_800A3550;
+extern s32 gpu_SetSemiTransp(s32, s32);
+extern s32 initTile(s32);
+void func_8006F038(s32 arg0) {
+    s32 temp_s0;
+    s32 v;
+
+    temp_s0 = *((s32 *)(((s32)arg0) + 0x14));
+    initTile(temp_s0);
+    v = (s8)D_800A3550;
+    *((s16 *)(((s32)temp_s0) + 8)) = 0;
+    *((s8 *)(((s32)temp_s0) + 4)) = v;
+    *((s16 *)(((s32)temp_s0) + 0xA)) = 0;
+    v = (s8)D_800A3550;
+    *((s8 *)(((s32)temp_s0) + 5)) = v;
+    *((s16 *)(((s32)temp_s0) + 0xC)) = 0x280;
+    v = (s8)D_800A3550;
+    *((s8 *)(((s32)temp_s0) + 6)) = v;
+    *((s16 *)(((s32)temp_s0) + 0xE)) = 0xF0;
+    gpu_SetSemiTransp(temp_s0, 1);
+    {
+        s32 saved = temp_s0;
+        ot_Link(D_800A374C, temp_s0);
+        temp_s0 = saved + 0x10;
+    }
+    *((s32 *)(((s32)arg0) + 0x14)) = temp_s0;
+    initTexPage(*((s32 *)(((s32)arg0) + 0x18)), 1, 0, 0x40, 0);
+    ot_Link(D_800A374C, *((s32 *)(((s32)arg0) + 0x18)));
+    *((s32 *)(((s32)arg0) + 0x18)) = (s32)(*((s32 *)(((s32)arg0) + 0x18)) + 0xC);
+}
+void func_8006F100(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006F100.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+void func_8006F528(s32 *arg0) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006F528.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0;
+}
+void func_8006F97C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006F97C.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+void replay_camera_attack(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/replay_camera_attack.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern s32 D_800A3558;
+extern u8 D_800A3560;
+extern s16 D_800A3590;
+extern s32 D_800A35A8;
+extern s32 D_800A35B0;
+extern s32 D_800A35BC;
+extern s32 D_800A374C;
+extern s32 func_8007352C(s32 *prim);
+extern s32 saMotionSet(s32, s32);
+extern s32 initTexPage(s32, s32, s32, s32, s32);
+extern s32 ot_Link(s32, s32);
+extern s32 func_80069898(s32 a0, s32 *p, s32 mode);
+extern void motion_ShiftControl(s32 a0, s32 *prim);
+extern void func_8006ECF4(s32);
+extern void func_80072E10(s32);
+extern void saTan3GaugeMain_80073200(s32);
+
+typedef struct PrimC70 {
+    s32 p_geom;
+    s32 p_static;
+    s32 link;
+    s32 pad0C;
+    s32 zero10;
+    s32 code;
+    s32 mode;
+    s32 zero1C;
+    s32 width;
+    s32 height;
+    u8  byte28;
+} PrimC70;
+
+typedef struct IconC70 {
+    s16 sp48;
+    s16 sp4A;
+    s16 sp4C;
+    s16 sp4E;
+} IconC70;
+
+void func_80070C70(s32 arg0) {
+    register s32 c60 asm("$20") = 0x60;
+    PrimC70 prim;
+    IconC70 icon;
+    s32 ctx_or_var_s2;
+    s32 var_s0;
+    s32 var_s3;
+
+    prim.zero10 = 0;
+    prim.mode = 0;
+    prim.zero1C = 0;
+    prim.width = 0x100;
+    prim.height = 0x100;
+    prim.byte28 = 0;
+    ctx_or_var_s2 = (s32)*(s32 **)(D_800A35A8 + 0x64);
+    prim.zero1C = 0;
+    prim.mode = 0;
+    prim.p_geom = *(s32 *)(ctx_or_var_s2 + 4);
+    var_s0 = 0;
+    prim.p_static = prim.p_geom + 0xC;
+    { s32 _c1; __asm__ __volatile__("addiu %0,$0,1" : "=r"(_c1)); prim.code = _c1; }
+    prim.link = *(s32 *)(arg0 + 0x10);
+    *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(prim.p_geom, c60), 0);
+    ot_Link(D_800A374C + 4, *(s32 *)(arg0 + 0x18));
+    *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
+    icon.sp4C = 0xE7;
+    icon.sp48 = 0xCC;
+    icon.sp4A = 0x25;
+    icon.sp4E = 1;
+    func_80069898(arg0, (s32 *)&icon, 1);
+    prim.p_geom = *(s32 *)(ctx_or_var_s2);
+    var_s3 = 0xA;
+    prim.p_static = prim.p_geom + 0x48;
+    do {
+        prim.mode = var_s0 << 6;
+        prim.code = var_s3;
+        prim.link = *(s32 *)(arg0 + 0x10);
+        *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
+        var_s0 += 1;
+        prim.p_geom += 0xC;
+    } while (var_s0 < 6);
+    prim.p_geom = *(s32 *)(ctx_or_var_s2);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(prim.p_geom, c60), 0);
+    ot_Link(D_800A374C + 0x28, *(s32 *)(arg0 + 0x18));
+    var_s0 = 0;
+    *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
+    prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8);
+    if ((s32)(D_800A35B0 + ((s16)D_800A3558 + 1)) > 0) {
+        var_s3 = 0x50;
+        ctx_or_var_s2 = 0;
+        do {
+            u8 code = (&D_800A3560)[ctx_or_var_s2];
+            s32 c5, c10, c2;
+            s16 *p3590;
+            __asm__ __volatile__("addiu %0,$0,5" : "=r"(c5));
+            __asm__ __volatile__("addiu %0,$0,16" : "=r"(c10));
+            __asm__ __volatile__("addiu %0,$0,2" : "=r"(c2));
+            __asm__ __volatile__("la %0,D_800A3590" : "=r"(p3590));
+            if ((code != c5) && (code != c10)) {
+                s32 t = prim.p_geom + 0xC;
+                prim.p_static = t;
+                prim.p_static = t + (p3590[var_s0 * 2] << 4);
+                if (((D_800A35B0 + (s16)(u16)D_800A3558) != 0) || (D_800A35BC == c2)) {
+                    prim.mode = var_s3;
+                } else {
+                    s32 c105;
+                    __asm__ __volatile__("addiu %0,$0,261" : "=r"(c105));
+                    prim.mode = c105;
+                }
+                { s32 _c1; __asm__ __volatile__("addiu %0,$0,1" : "=r"(_c1)); prim.code = _c1; }
+                prim.link = *(s32 *)(arg0 + 0x10);
+                *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
+            }
+            var_s3 += 0x16C;
+            var_s0 += 1;
+            ctx_or_var_s2 += 3;
+        } while (var_s0 < (s32)(D_800A35B0 + ((s16)D_800A3558 + 1)));
+    }
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(prim.p_geom, c60), 0);
+    ot_Link(D_800A374C + 4, *(s32 *)(arg0 + 0x18));
+    *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
+    motion_ShiftControl(arg0, (s32 *)&prim);
+    func_8006ECF4(arg0);
+    func_80072E10(arg0);
+    saTan3GaugeMain_80073200(arg0);
+}
+void motion_ShiftControl(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/motion_ShiftControl.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern u8 D_800A3561;
+extern u8 D_8009BC7C[];
+s32 func_80071C20(void) {
+    s32 v1;
+    v1 = 3;
+    if (D_8009BC7C[D_800A3561] & 2) {
+        v1 = 9;
+    }
+    return v1;
+}
+void func_80071C4C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80071C4C.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern s32 D_800A35A8;
+void func_800720FC(s32, s32, s32);
+void func_80072084(s32 a0) {
+    s32 *v0 = (s32 *)D_800A35A8;
+    func_800720FC(a0, v0[0x1A], 0);
+}
+void func_800720AC(s32 a0) {
+    s32 *v0 = (s32 *)D_800A35A8;
+    func_800720FC(a0, v0[0x1B], 1);
+}
+void func_800720D4(s32 a0) {
+    s32 *v0 = (s32 *)D_800A35A8;
+    func_800720FC(a0, v0[0x1C], 2);
+}
+void func_800720FC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800720FC.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern s32 D_800A374C;
+extern s32 gpu_SetSemiTransp(GameObj *, s32);
+extern s32 initPolyG4(GameObj *);
+extern s32 ot_Link(s32, GameObj *);
+extern void *D_800A35C4;
+s32 func_80072BC4(s32 arg0, GameObj *arg1) {
+    register u8 var_v0 asm("$2");
+    int fc_const;
+
+    initPolyG4(arg1);
+    gpu_SetSemiTransp(arg1, 0);
+    fc_const = 0xFC;
+    if (arg0 < 4) {
+        *(u8 *)((s32)(arg1) + 4) = 0;
+        *(u8 *)((s32)(arg1) + 5) = 0;
+        *(u8 *)((s32)(arg1) + 6) = 0;
+        *(u8 *)((s32)(arg1) + 0xC) = fc_const;
+        *(u8 *)((s32)(arg1) + 0xD) = 0x82;
+        *(u8 *)((s32)(arg1) + 0xE) = 0;
+        *(u8 *)((s32)(arg1) + 0x14) = fc_const;
+        *(u8 *)((s32)(arg1) + 0x15) = 0x82;
+        *(u8 *)((s32)(arg1) + 0x16) = 0;
+        if (*(s32 *)((s32)(D_800A35C4) + 8) & 4) {
+            *(u8 *)((s32)(arg1) + 0x1D) = 0xC3;
+            var_v0 = 0x1E;
+        } else {
+            *(u8 *)((s32)(arg1) + 0x1D) = 0xC3;
+            var_v0 = 0x50;
+        }
+        *(u8 *)((s32)(arg1) + 0x1C) = fc_const;
+        *(u8 *)((s32)(arg1) + 0x1E) = var_v0;
+    } else {
+        *(u8 *)((s32)(arg1) + 4) = 0;
+        *(u8 *)((s32)(arg1) + 5) = 0;
+        *(u8 *)((s32)(arg1) + 6) = 0;
+        *(u8 *)((s32)(arg1) + 0xC) = 0x40;
+        *(u8 *)((s32)(arg1) + 0xD) = 0;
+        *(u8 *)((s32)(arg1) + 0xE) = 0x80;
+        *(u8 *)((s32)(arg1) + 0x14) = 0x50;
+        *(u8 *)((s32)(arg1) + 0x15) = 0xA0;
+        *(u8 *)((s32)(arg1) + 0x16) = 0x40;
+        *(u8 *)((s32)(arg1) + 0x1C) = 0x10;
+        *(u8 *)((s32)(arg1) + 0x1D) = 0x40;
+        *(u8 *)((s32)(arg1) + 0x1E) = 0x80;
+    }
+    ot_Link(D_800A374C + 0x60, arg1);
+    return (s32)((u8 *)arg1 + 0x24);
+}
+s32 func_80072CD4(s32 arg0, GameObj *arg1)
+{
+  u8 var_v0;
+  s32 new_var;
+  initPolyG4(arg1);
+  gpu_SetSemiTransp(arg1, 0);
+  if (arg0 < 4)
+  {
+    var_v0 = 0x46;
+    if ((*((s32 *) (((s32) D_800A35C4) + 8))) & 4)
+    {
+      *((u8 *) (((s32) arg1) + 5)) = 0xC3;
+      *((u8 *) (((s32) arg1) + 6)) = 0x1E;
+      *((u8 *) (((s32) arg1) + 0xD)) = 0xC8;
+      do
+      {
+      }
+      while (0);
+      var_v0 = 0x32;
+    }
+    else
+    {
+      *((u8 *) (((s32) arg1) + 5)) = 0xC3;
+      *((u8 *) (((s32) arg1) + 6)) = 0x50;
+      *((u8 *) (((s32) arg1) + 0xD)) = 0xDC;
+    }
+    new_var = 0xFC;
+    *((u8 *) (((s32) arg1) + 0xC)) = new_var;
+    *((u8 *) (((s32) arg1) + 0xE)) = var_v0;
+    *((u8 *) (((s32) arg1) + 0x14)) = new_var;
+    do
+    {
+      *((u8 *) (((s32) arg1) + 4)) = 0xFC;
+    }
+    while (0);
+    *((u8 *) (((s32) arg1) + 0x15)) = 0x82;
+    *((u8 *) (((s32) arg1) + 0x1C)) = 0x32;
+    *((u8 *) (((s32) arg1) + 0x1D)) = 0x28;
+    *((u8 *) (((s32) arg1) + 0x16)) = 0;
+    *((u8 *) (((s32) arg1) + 0x1E)) = 0xA;
+  }
+  else
+  {
+    new_var = (s32) arg1;
+    *((u8 *) (new_var + 4)) = 0x10;
+    *((u8 *) (((s32) arg1) + 5)) = 0x30;
+    *((u8 *) (((s32) arg1) + 6)) = 0x60;
+    *((u8 *) (((s32) arg1) + 0xD)) = 0;
+    *((u8 *) (((s32) arg1) + 0xE)) = 0x40;
+    *((u8 *) (((s32) arg1) + 0x14)) = 0x30;
+    *((u8 *) (((s32) arg1) + 0x15)) = 0;
+    *((u8 *) (((s32) arg1) + 0x16)) = 0x60;
+    *((u8 *) (((s32) arg1) + 0xC)) = 0x18;
+    *((u8 *) (((s32) arg1) + 0x1C)) = 0;
+    *((u8 *) (((s32) arg1) + 0x1D)) = 0;
+    *((u8 *) (((s32) arg1) + 0x1E)) = 0;
+  }
+  ot_Link(D_800A374C + 0x60, arg1);
+  return (s32) (((u8 *) arg1) + 0x24);
+}
+extern s32 func_80073060(s32);
+extern s32 func_80072CD4(s32, GameObj *);
+extern s16 D_800A3580;
+void func_80072E10(s32 arg0) {
+    GameObj *p;
+    func_80073060(arg0);
+    p = *(GameObj **)((s32)arg0 + 0xC);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x08) = 0x50;
+    *(s16 *)((s32)p + 0x0A) = 0x32;
+    *(s16 *)((s32)p + 0x10) = 0x50;
+    *(s16 *)((s32)p + 0x12) = 0x52;
+    *(s16 *)((s32)p + 0x18) = 0x140;
+    *(s16 *)((s32)p + 0x1A) = 0x32;
+    *(s16 *)((s32)p + 0x20) = 0x140;
+    *(s16 *)((s32)p + 0x22) = 0x52;
+    p = (GameObj *)func_80072BC4((s32)D_800A3580, p);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x08) = 0x231;
+    *(s16 *)((s32)p + 0x0A) = 0x32;
+    *(s16 *)((s32)p + 0x10) = 0x231;
+    *(s16 *)((s32)p + 0x12) = 0x52;
+    *(s16 *)((s32)p + 0x18) = 0x140;
+    *(s16 *)((s32)p + 0x1A) = 0x32;
+    *(s16 *)((s32)p + 0x20) = 0x140;
+    *(s16 *)((s32)p + 0x22) = 0x52;
+    p = (GameObj *)func_80072BC4((s32)D_800A3580, p);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x08) = 0x140;
+    *(s16 *)((s32)p + 0x0A) = 0x52;
+    *(s16 *)((s32)p + 0x10) = 0x140;
+    *(s16 *)((s32)p + 0x12) = 0x71;
+    *(s16 *)((s32)p + 0x18) = 0x50;
+    *(s16 *)((s32)p + 0x1A) = 0x52;
+    *(s16 *)((s32)p + 0x20) = 0x50;
+    *(s16 *)((s32)p + 0x22) = 0x71;
+    p = (GameObj *)func_80072CD4((s32)D_800A3580, p);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x08) = 0x140;
+    *(s16 *)((s32)p + 0x0A) = 0x52;
+    *(s16 *)((s32)p + 0x10) = 0x140;
+    *(s16 *)((s32)p + 0x12) = 0x71;
+    *(s16 *)((s32)p + 0x18) = 0x231;
+    *(s16 *)((s32)p + 0x1A) = 0x52;
+    *(s16 *)((s32)p + 0x20) = 0x231;
+    *(s16 *)((s32)p + 0x22) = 0x71;
+    p = (GameObj *)func_80072CD4((s32)D_800A3580, p);
+    *(GameObj **)((s32)arg0 + 0xC) = p;
+}
+void initTile(s32);
+void gpu_SetSemiTransp(s32, s32);
+extern s32 D_800A374C;
+void ot_Link(s32, s32);
+s32 *func_80072F30(s32 a0, u8 *a1) {
+    initTile((s32)a1);
+    if (a0 < 4) {
+        a1[4] = 0x9E;
+        a1[5] = 0x64;
+        a1[6] = 0;
+        gpu_SetSemiTransp((s32)a1, 1);
+    } else {
+        a1[4] = 0x28;
+        a1[5] = 0x28;
+        a1[6] = 0x18;
+        gpu_SetSemiTransp((s32)a1, 0);
+    }
+    ot_Link(D_800A374C + 0x5C, (s32)a1);
+    return (s32 *)(a1 + 0x10);
+}
+extern s16 D_800A3580;
+s32 *func_80072FCC(s32 ignored, u8 *a1) {
+    initTile((s32)a1);
+    if (D_800A3580 < 4) {
+        a1[4] = 0x46;
+        a1[5] = 0x24;
+        a1[6] = 0x0A;
+        gpu_SetSemiTransp((s32)a1, 1);
+    } else {
+        a1[4] = 0;
+        a1[5] = 0;
+        a1[6] = 0;
+        gpu_SetSemiTransp((s32)a1, 0);
+    }
+    ot_Link(D_800A374C + 0x5C, (s32)a1);
+    return (s32 *)(a1 + 0x10);
+}
+void func_80073060(s32 arg0) {
+    GameObj *p;
+    s32 i;
+    s32 j;
+    p = *(GameObj **)((s32)arg0 + 0x14);
+    j = 0x6F;
+    do {
+        if (D_800A3580) {}
+        *(s16 *)((s32)p + 0x8) = j;
+        j += 0x20;
+        *(s16 *)((s32)p + 0xA) = 0x32;
+        *(s16 *)((s32)p + 0xC) = 2;
+        *(s16 *)((s32)p + 0xE) = 0x3F;
+        p = (GameObj *)func_80072F30((s32)D_800A3580, (u8 *)p);
+    } while (j < 0x210);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x8) = 0x51;
+    *(s16 *)((s32)p + 0xA) = 0x41;
+    *(s16 *)((s32)p + 0xC) = 0x1E0;
+    *(s16 *)((s32)p + 0xE) = 1;
+    p = (GameObj *)func_80072F30((s32)D_800A3580, (u8 *)p);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0x8) = 0x51;
+    *(s16 *)((s32)p + 0xA) = 0x61;
+    *(s16 *)((s32)p + 0xC) = 0x1E0;
+    *(s16 *)((s32)p + 0xE) = 1;
+    p = (GameObj *)func_80072F30((s32)D_800A3580, (u8 *)p);
+    if (D_800A3580) {}
+    *(s16 *)((s32)p + 0xA) = 0x50;
+    *(s16 *)((s32)p + 0x8) = 0x51;
+    *(s16 *)((s32)p + 0xC) = 0x1E0;
+    *(s16 *)((s32)p + 0xE) = 2;
+    p = (GameObj *)func_80072F30((s32)D_800A3580, (u8 *)p);
+    i = 0;
+    j = 0x6A;
+    do {
+        s32 v;
+        *(s16 *)((s32)p + 0x8) = j;
+        j += 0x21;
+        if (D_800A3580) {}
+        v = 5 - i;
+        i += 1;
+        *(s16 *)((s32)p + 0xA) = 0x32;
+        *(s16 *)((s32)p + 0xC) = v;
+        *(s16 *)((s32)p + 0xE) = 0x3F;
+        p = (GameObj *)func_80072FCC((s32)D_800A3580, (u8 *)p);
+    } while (i < 5);
+    i = 0;
+    j = 0x211;
+    do {
+        s32 v;
+        *(s16 *)((s32)p + 0x8) = j;
+        j -= 0x20;
+        if (D_800A3580) {}
+        v = 5 - i;
+        i += 1;
+        *(s16 *)((s32)p + 0xC) = v;
+        *(s16 *)((s32)p + 0xA) = 0x32;
+        *(s16 *)((s32)p + 0xE) = 0x3F;
+        p = (GameObj *)func_80072FCC((s32)D_800A3580, (u8 *)p);
+    } while (i < 5);
+    *(GameObj **)((s32)arg0 + 0x14) = p;
+}
+void saTan3GaugeMain_80073200(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/saTan3GaugeMain_80073200.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern s32 initSprt(s32, s16);
+extern s32 gpu_SetRawTexture(s32, s32);
+extern s32 gpu_SetSemiTransp(s32, s32);
+extern s32 ot_Link(s32, s32);
+extern s32 DispSleepMenuTex(s32 *, s32);
+extern s32 gpu_CalcClut(u16, u16);
+extern s32 D_800159A0;
+
+typedef struct EnvA {
+    s32 *header;
+    s8  *table;
+    s32  out;
+    s32  pad0C;
+    s32  semi;
+    u32  ot_idx;
+    s32  x;
+    s32  y;
+    s32  pad20, pad24;
+    u8   has_color;
+    u8   col_r;
+    u8   col_g;
+    u8   col_b;
+} EnvA;
+
+s32 func_8007352C(EnvA *_env) {
+    register EnvA *env asm("s4") = _env;
+    register s32 *hdr asm("s6") = env->header;
+    register s32 buf asm("s5") = env->out;
+    s32 fp;
+    register s32 i asm("s7");
+    register s32 dst asm("s3");
+    s32 v_tail;
+    s8 *e;
+    s32 a1, x, y, v1;
+    s32 raw;
+    s32 saved_buf;
+
+    {
+        register s32 j asm("v1");
+        raw = gpu_CalcClut(*((u16 *)hdr + 2), *((u16 *)hdr + 3));
+        j = (s32)*((u8 *)hdr + 2) - 1;
+        fp = raw & 0xFFFF;
+        if (j < 0) goto exit;
+        i = j;
+    }
+    dst = buf + 6;
+
+loop_top:
+    e = env->table + ((i << 16) >> 13);
+    a1 = *(s16 *)(e + 0);
+    x = a1 + env->x;
+    y = *(s16 *)(e + 2) + env->y;
+    {
+        s32 x_check = x + (s32)*((u8 *)e + 6);
+        v1 = y + (s32)*((u8 *)e + 7);
+        if (x_check <= 0) goto next_compute_v_tail;
+    }
+    v_tail = i - 1;
+    if (x >= 0x280) goto merge_v_tail;
+    if (y >= 0xF0) goto next_compute_v_tail;
+    v_tail = i - 1;
+    if (v1 <= 0) goto merge_v_tail;
+    initSprt(buf, (s16)a1);
+    *(s16 *)(dst + 8) = (s16)fp;
+    *(s16 *)(dst + 2) = (s16)x;
+    *(s16 *)(dst + 4) = (s16)y;
+    *(s8 *)(dst + 6) = (s8)((s32)*((u8 *)e + 4) + (s32)*((u8 *)hdr + 8));
+    *(s8 *)(dst + 7) = (s8)((s32)*((u8 *)e + 5) + (s32)*((u8 *)hdr + 0xA));
+    *(s16 *)(dst + 0xA) = (s16)*((u8 *)e + 6);
+    *(s16 *)(dst + 0xC) = (s16)*((u8 *)e + 7);
+    if (env->has_color != 0) {
+        gpu_SetRawTexture(buf, 0);
+        *((u8 *)dst - 2) = env->col_r;
+        *((u8 *)dst - 1) = env->col_g;
+        *((u8 *)dst + 0) = env->col_b;
+    } else {
+        gpu_SetRawTexture(buf, 1);
+    }
+    gpu_SetSemiTransp(buf, env->semi);
+    if (env->ot_idx >= 0x1006U) {
+        env->ot_idx = 1U;
+        DispSleepMenuTex(&D_800159A0, buf);
+    }
+    saved_buf = buf;
+    dst += 0x14;
+    buf += 0x14;
+    ot_Link(D_800A374C + env->ot_idx * 4, saved_buf);
+next_compute_v_tail:
+    v_tail = i - 1;
+merge_v_tail:
+    i = v_tail;
+    if ((v_tail << 16) >= 0) goto loop_top;
+exit:
+    return buf;
+}
+
+s32 func_80073728(s32 arg0, s32 arg1) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80073728.s).
+     * 340 inst, 31 branches, 6 jal, 88 loads, 57 stores. m2c output had
+     * structure-member errors. Pure-C decomp pending. */
+    (void)arg0; (void)arg1;
+    return 0;
+}
+void func_80073C78(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80073C78.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern void initPolyF4(s32);
+extern s32 func_80069A8C(s32);
+extern s32 func_8007352C(s32 *);
+
+void func_80074220(s32 *arg0, s32 arg1) {
+    s32 sp[12];
+    s32 *p;
+    s32 i;
+    s32 *temp_s2;
+    s32 v;
+    s32 t;
+    s32 q;
+    s32 a3;
+
+    if (arg1 != 0) goto skip_init;
+    t = arg0[5];
+    initTile(t);
+    func_80069A30(t);
+    *(s16 *)(t + 8) = 0x3F;
+    *(s16 *)(t + 0xA) = 0x30;
+    *(s16 *)(t + 0xC) = 0x202;
+    *(s16 *)(t + 0xE) = 0xB0;
+    gpu_SetSemiTransp(t, 1);
+    ot_Link(D_800A374C + 0x78, t);
+    arg0[5] = t + 0x10;
+skip_init:
+    sp[5] = 0x1F;
+    *(s8 *)((s32)&sp[0] + 0x28) = 0;
+    sp[4] = 0;
+    temp_s2 = *(s32 **)((s32)arg0[0] + 0x38);
+    sp[6] = 0;
+    sp[7] = 0;
+    p = temp_s2;
+    i = 0;
+    do {
+        v = *p++;
+        sp[0] = v;
+        sp[1] = v + 0xC;
+        sp[2] = arg0[4];
+        arg0[4] = func_8007352C(sp);
+        i++;
+    } while (i < 3);
+
+    {
+        s32 _t = *temp_s2;
+        sp[0] = _t;
+        a3 = saMotionSet(_t, 0);
+    }
+    initTexPage(arg0[6], 1, 0, a3, 0);
+    ot_Link(D_800A374C + 0x7C, arg0[6]);
+    q = arg0[2];
+    arg0[6] = arg0[6] + 0xC;
+    initPolyF4(q);
+    func_80069A8C(q);
+    *(s16 *)(q + 0x8) = 0;
+    *(s16 *)(q + 0xA) = 0xB9;
+    *(s16 *)(q + 0xC) = 0x122;
+    *(s16 *)(q + 0xE) = 0;
+    *(s16 *)(q + 0x10) = 0;
+    *(s16 *)(q + 0x12) = 0xEF;
+    *(s16 *)(q + 0x14) = 0x122;
+    *(s16 *)(q + 0x16) = 0xEF;
+    gpu_SetSemiTransp(q, 0);
+    ot_Link(D_800A374C + 0x80, q);
+    q += 0x18;
+
+    initPolyF4(q);
+    func_80069A8C(q);
+    *(s16 *)(q + 0xC) = 0x27F;
+    *(s16 *)(q + 0x14) = 0x27F;
+    *(s16 *)(q + 0x8) = 0x15E;
+    *(s16 *)(q + 0xA) = 0;
+    *(s16 *)(q + 0xE) = 0;
+    *(s16 *)(q + 0x10) = 0x15E;
+    *(s16 *)(q + 0x12) = 0xEF;
+    *(s16 *)(q + 0x16) = 0x36;
+    gpu_SetSemiTransp(q, 0);
+    ot_Link(D_800A374C + 0x80, q);
+    q += 0x18;
+
+    initPolyF4(q);
+    func_80069A8C(q);
+    *(s16 *)(q + 0x8) = 0x122;
+    *(s16 *)(q + 0xA) = 0;
+    *(s16 *)(q + 0xC) = 0x15E;
+    *(s16 *)(q + 0xE) = 0;
+    *(s16 *)(q + 0x10) = 0x122;
+    *(s16 *)(q + 0x12) = 0xEF;
+    *(s16 *)(q + 0x14) = 0x15E;
+    *(s16 *)(q + 0x16) = 0xEF;
+    gpu_SetSemiTransp(q, 0);
+    ot_Link(D_800A374C + 0x80, q);
+    q += 0x18;
+
+    arg0[2] = q;
+}
+void func_80074488(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80074488.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+void func_800747D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800747D8.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+typedef unsigned char u8;
+typedef signed char s8;
+typedef unsigned short u16;
+typedef signed short s16;
+typedef unsigned int u32;
+typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
+
+/* opaque - to satisfy GameObj * pointer-arg signatures without struct */
+typedef struct GameObj { s32 dummy; } GameObj;
+extern s32 gpu_SetSemiTransp(GameObj *, s32);
+extern s32 initTile(GameObj *);
+extern s32 ot_Link(s32, GameObj *);
+extern u8 *D_800A36A0;
+extern s32 D_800A374C;
+
+void func_80074B18(s32 arg0, s32 arg1, s32 arg2) {
+    s32 var_v1;
+    s32 var_s3;
+    s32 var_fp;
+    s32 var_s4;
+    s32 var_s5;
+    s32 var_s7;
+    register s32 var_s6 asm("s6");
+    s32 var_s2;
+    register s32 var_s1 asm("s1");
+    register s32 var_s0 asm("s0");
+    s32 v0;
+    s32 a0_loc;
+
+    var_v1 = 5;
+    if (arg2 != 0) {
+        var_v1 = 8;
+    }
+    a0_loc = (s32)D_800A36A0;
+    var_s3 = *(s32 *)(arg0 + 0x14);
+    var_fp = 0;
+    if (((s32) *(u8 *)(a0_loc + 0x65)) + 3 != 0) {
+        s32 sp28 = var_v1;
+        s32 sp30 = (var_v1 > 0);
+        var_s6 = ((arg1 << 4) - arg1) << 4;
+        do {
+            var_s2 = *(s32 *)(*(s32 *)(a0_loc + 4) + 0x3C);
+            var_s4 = 0;
+            if (sp30 != 0) {
+                var_s5 = (((var_fp << 16) >> 16) << 4) + ((var_fp << 16) >> 16);
+                var_s7 = var_s5 << 1;
+                var_s1 = var_s2 + 2;
+                var_s0 = var_s3 + 0xA;
+                do {
+                    initTile((GameObj *)var_s3);
+                    *(u8 *)(var_s0 - 6) = *(u8 *)(var_s1 + 6);
+                    *(u8 *)(var_s0 - 5) = *(u8 *)(var_s1 + 7);
+                    *(u8 *)(var_s0 - 4) = *(u8 *)(var_s1 + 8);
+                    *(u16 *)(var_s0 + 2) = *(u16 *)(var_s1 + 2);
+                    *(u16 *)(var_s0 + 4) = *(u16 *)(var_s1 + 4);
+                    gpu_SetSemiTransp((GameObj *)var_s3, 0);
+                    if (arg2 != 0) {
+                        *(s16 *)(var_s0 - 2) = *(u16 *)var_s2 + var_s6;
+                        v0 = *(u16 *)var_s1 + var_s7 + 0x2B;
+                    } else {
+                        *(s16 *)(var_s0 - 2) = *(u16 *)var_s2 + var_s6;
+                        v0 = *(u16 *)var_s1 + var_s5 + 0x7C;
+                    }
+                    *(s16 *)var_s0 = v0;
+                    if (arg1 != 0) {
+                        a0_loc = 0x15;
+                    } else {
+                        a0_loc = 0xB;
+                    }
+                    {
+                        s32 a3_loc = var_s3;
+                        var_s0 += 0x10;
+                        var_s3 += 0x10;
+                        var_s1 += 0xC;
+                        var_s2 += 0xC;
+                        ot_Link(D_800A374C + (a0_loc << 2), (GameObj *)a3_loc);
+                    }
+                    var_s4 += 1;
+                } while ((s16)var_s4 < sp28);
+            }
+            var_fp += 1;
+            a0_loc = (s32)D_800A36A0;
+        } while ((s16)var_fp < (((s32) *(u8 *)(a0_loc + 0x65)) + 3));
+    }
+    *(s32 *)(arg0 + 0x14) = var_s3;
+}
+typedef struct {
+    s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
+    s8 sp40;
+} S_80074D2C;
+
+void func_80074D2C(s32 arg0, s32 arg1, s32 arg2) {
+    S_80074D2C s;
+    s32 var_s1;
+    s32 sp18_val;
+    s32 inner_ptr;
+
+    var_s1 = 0xC;
+    s.sp28 = 0;
+    s.sp40 = 0;
+    inner_ptr = *(s32 *)((s32)*(s32 *)arg0 + 0x1C);
+    sp18_val = *(s32 *)(((arg2 << 16) >> 14) + inner_ptr);
+    s.sp30 = arg1 * 0xF0;
+    s.sp34 = 0;
+    s.sp18 = sp18_val;
+    s.sp1C = sp18_val + 0xC;
+    if (arg1 != 0) {
+        var_s1 = 0x16;
+    }
+    s.sp2C = var_s1;
+    s.sp20 = *(s32 *)(arg0 + 0x10);
+    *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(s.sp18, 0), 0);
+    ot_Link(D_800A374C + var_s1 * 4, *(s32 *)(arg0 + 0x18));
+    *(s32 *)(arg0 + 0x18) += 0xC;
+}
+void func_80074E08(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80074E08.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern u8 *D_800A36A0;
+void func_8007526C(void) {
+    register u8 *p asm("a0");
+    register s32 i asm("a2");
+
+    i = 0;
+    p = D_800A36A0;
+    do {
+        switch (*(u8 *)(p + 0x10)) {
+        case 1:
+            *(u16 *)(p + 8) = *(u16 *)(p + 8) + 0xA;
+            *(u16 *)(p + 0xC) = *(u16 *)(p + 0xC) + 0xA;
+            if ((s16)*(u16 *)(p + 0xC) >= 0xC8) {
+                if ((*(u16 *)(p + 0x10) >> 8) == 0) {
+                    *(u16 *)(p + 0x10) = *(u16 *)(p + 0x10) + 1;
+                }
+                *(u16 *)(p + 8) = 0;
+                *(u16 *)(p + 0xC) = 0xC8;
+                *(u16 *)(p + 0x14) = *(u16 *)(p + 0x18);
+                *(u16 *)(p + 0x3C) = *(u16 *)(p + 0x38);
+            }
+            break;
+        case 3:
+            *(u16 *)(p + 0xC) = *(u16 *)(p + 0xC) + 0xA;
+            if ((s16)*(u16 *)(p + 0xC) >= 0xC8) {
+                *(u16 *)(p + 8) = 0xC8;
+                *(u16 *)(p + 0xC) = 0xC8;
+                *(u16 *)(p + 0x14) = *(u16 *)(p + 0x18);
+                *(u16 *)(p + 0x3C) = *(u16 *)(p + 0x38);
+                if ((*(u16 *)(p + 0x10) >> 8) == 0) {
+                    *(u16 *)(p + 0x10) = *(u16 *)(p + 0x10) + 1;
+                }
+            }
+            break;
+        case 2:
+            *(u16 *)(p + 0xC) = *(u16 *)(p + 0xC) - 0xA;
+            if ((s16)*(u16 *)(p + 0xC) <= 0) {
+                *(u16 *)(p + 8) = 0;
+                *(u16 *)(p + 0xC) = 0;
+                *(u16 *)(p + 0x10) = 0;
+            }
+            break;
+        case 4:
+            *(u16 *)(p + 8) = *(u16 *)(p + 8) - 0xA;
+            *(u16 *)(p + 0xC) = *(u16 *)(p + 0xC) - 0xA;
+            if ((s16)*(u16 *)(p + 0xC) <= 0) {
+                *(u16 *)(p + 8) = 0;
+                *(u16 *)(p + 0xC) = 0;
+                *(u16 *)(p + 0x10) = 0;
+            }
+            break;
+        }
+        i++;
+        p += 2;
+    } while (i < 2);
+}
+void saTan1GaugeMain(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/saTan1GaugeMain.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+extern u8 *D_800A36A0;
+extern s16 D_800A35D0;
+extern s32 func_8005C650(s32, s32, s32);
+extern s32 func_800692C0();
+void func_80075670(s32 arg0, s32 arg1) {
+    s16 i;
+    u8 *base;
+    s16 *p;
+
+    base = D_800A36A0;
+    if (*(s32 *)(base + 0x10) != 0) {
+        return;
+    }
+    if ((func_800692C0(&arg0, arg1, (s16 *)(base + (arg1 * 4 + 0x40)), (&D_800A35D0) + (arg1 * 2)) >> 16) != 0) {
+        ;
+        *(s16 *)(D_800A36A0 + 0x34) = 0;
+        *(u8 *)(D_800A36A0 + arg1 + 0x68) = *(u8 *)(D_800A36A0 + arg1 + 0x68) + 1;
+        base = D_800A36A0;
+        *(u8 *)(base + arg1 + 0x68) &= 1;
+        func_8005C650(0, 0x7F, 0x7F);
+    }
+    base = D_800A36A0;
+    p = p;
+    *(s16 *)(base + arg1 * 2 + 0x3C) = *(u8 *)(base + arg1 + 0x68);
+    if (arg0 & (0x40 << (arg1 * 16))) {
+        for (i = 0; i < 2; i++) {
+            base = D_800A36A0;
+            ;
+            ((s16 *)(base + i * 2))[0x38 / 2] = 0;
+            ((s16 *)(base + i * 2))[0x10 / 2] = 1;
+            ((s16 *)(base + i * 2))[0x18 / 2] = 2;
+        }
+        base = D_800A36A0;
+        *(u8 *)(base + ((arg1 + 1) & 1) + 0x68) = (*(u8 *)(base + arg1 + 0x68) + 1) & 1;
+        func_8005C650(1, 0x7F, 0x7F);
+        return;
+    }
+    if (arg0 & (0x10 << (arg1 * 16))) {
+        if (arg1 != 0) {
+            p = (s16 *)(base + 0x14);
+        } else {
+            p = (s16 *)(base + 0x16);
+        }
+        if (*p == 1) {
+            for (i = 0; i < 2; i++) {
+                ;
+                ((s16 *)(base + i * 2))[0x38 / 2] = 0;
+                ((s16 *)(base + i * 2))[0x10 / 2] = 3;
+                ((s16 *)(base + i * 2))[0x18 / 2] = 0;
+            }
+            func_8005C650(2, 0x7F, 0x7F);
+        } else {
+            func_8005C650(4, 0x7F, 0x7F);
+        }
+    }
+}
+void func_80075830(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80075830.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+void func_800759D0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800759D0.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+void func_80075F80(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80075F80.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+void func_8007636C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007636C.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+void func_800768DC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800768DC.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+void func_80076D74(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80076D74.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
+}
+void func_8006920C(s32 *, s32);
+s32 func_80076FF8(s32 *a0) {
+    func_8006920C(a0, a0[5]);
+    func_8006920C(a0, a0[6]);
+    func_8006920C(a0, a0[7]);
+    func_8006920C(a0, a0[8]);
+    func_8006920C(a0, a0[9]);
+    func_8006920C(a0, a0[10]);
+    func_8006920C(a0, a0[11]);
+    func_8006920C(a0, a0[12]);
+    func_8006920C(a0, a0[13]);
+    func_8006920C(a0, a0[14]);
+    return a0[1];
+}
+extern s32 D_800A35D8;
+s32 func_80077098(s32 a0) {
+    return D_800A35D8 + a0 * 44;
+}
+
+typedef unsigned char u8;
+typedef signed char s8;
+typedef unsigned short u16;
+typedef signed short s16;
+typedef unsigned int u32;
+typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
+typedef volatile u8 vu8;
+typedef volatile s8 vs8;
+typedef volatile u16 vu16;
+typedef volatile s16 vs16;
+typedef volatile u32 vu32;
+typedef volatile s32 vs32;
+extern u8 *D_800A36A0;
+extern s32 D_800A35D8;
+extern s8 D_800A35DC;
+extern u8 D_8009BCE4;
+extern u8 D_8009BD21;
+extern s16 D_800A35D0;
+extern s32 D_800A374C;
+extern s32 func_8007B844(s32, s32);
+extern s32 snd_StopAll(void);
+extern s32 func_8006E950(s32, s32 *);
+extern s32 func_80076FF8(s32 *);
+extern u8 *func_8006E49C(s32, s32);
+void func_800770B8(s32 arg0_in, s32 arg1, long arg2)
+{
+  register s32 arg0 asm("$16") = arg0_in;
+  u16 sp[2];
+  s32 *p_old;
+  u8 *p;
+  s32 r;
+  s16 t0;
+  s16 a2;
+  p_old = (s32 *) (arg0 + 0x58);
+  __asm__ volatile("" : : "r"(arg1) : "memory");
+  sp[0] = 0;
+  sp[1] = 0;
+  func_8007B844(D_800A374C, 0x1008);
+  D_800A35D8 = arg0;
+  snd_StopAll();
+  func_8006E950(6, p_old);
+  r = func_80076FF8(p_old);
+  {
+    s32 *prev = p_old;
+    p_old = (s32 *) func_8006E49C(r, D_800A35D8);
+    D_800A36A0 = (u8 *) p_old;
+    *((s32 *) ((u8 *) p_old + 4)) = (s32) prev;
+    *((s32 *) ((u8 *) p_old + 0x30)) = 0;
+    *((s16 *) ((u8 *) p_old + 0x34)) = 0;
+    p = (u8 *) p_old;
+  }
+  t0 = 0;
+  a2 = 0;
+  do
+  {
+    u8 *base = D_800A36A0;
+    *((s16 *) ((base + (t0 * 2)) + 0x10)) = 0;
+    *((s16 *) ((base + (t0 * 2)) + 0x8)) = 0;
+    *((s16 *) ((base + (t0 * 2)) + 0xC)) = 0;
+    *((s16 *) ((base + (t0 * 2)) + 0x14)) = 0;
+    *((s16 *) ((base + (t0 * 2)) + 0x3C)) = 0;
+    {
+      s16 *p_d0 = &(&D_800A35D0)[t0 * 2];
+      p_d0[1] = 0;
+      p_d0[0] = 0;
+    }
+    *((s16 *) ((base + (t0 * 4)) + 0x42)) = 0;
+    *((s16 *) ((base + (t0 * 4)) + 0x40)) = 0;
+    *((u8 *) ((base + t0) + 0x68)) = (u8) t0;
+    {
+      s16 *p_6a = (s16 *) ((D_800A36A0 + (t0 * 10)) + 0x6A);
+      s16 *p_7e = (s16 *) ((D_800A36A0 + (t0 * 10)) + 0x7E);
+      do
+      {
+        p_6a[a2] = -1;
+        p_7e[a2] = 0;
+        a2 = (s16) (a2 + 1);
+      }
+      while (a2 < 5);
+    }
+    a2 = 0;
+    *((s16 *) ((D_800A36A0 + (t0 * 2)) + 0x5C)) = 0;
+    *((s16 *) ((D_800A36A0 + (t0 * 2)) + 0x60)) = 5;
+    do
+    {
+      s16 idx = (s16) (a2 + (t0 * 10));
+      (&D_8009BCE4)[idx] = (u8) ((&D_8009BCE4)[idx] & 0xF2);
+      if ((arg2 & (1 << idx)) != 0)
+      {
+        (&D_8009BCE4)[idx] = (u8) ((&D_8009BCE4)[idx] | 1);
+        sp[t0] += 1;
+      }
+      a2 = (s16) (a2 + 1);
+    }
+    while (a2 < 0xA);
+    t0 = (s16) (t0 + 1);
+    a2 = 0;
+  }
+  while (t0 < 2);
+  p = D_800A36A0;
+  *((s32 *) (p + 0x20)) = 0;
+  *((s32 *) (p + 0x1C)) = 0;
+  if (((s16) sp[0]) < ((s16) sp[1]))
+  {
+    *((s8 *) (p + 0x64)) = (s8) (((s16) sp[0]) - 3);
+  }
+  else
+  {
+    *((s8 *) (p + 0x64)) = (s8) (((s16) sp[1]) - 3);
+  }
+  if ((*((u8 *) (D_800A36A0 + 0x64))) >= 3)
+  {
+    *((u8 *) (D_800A36A0 + 0x64)) = 2;
+  }
+  p = D_800A36A0;
+  *((s32 *) p) = arg1;
+  *((s8 *) (p + 0x65)) = 0;
+  p = D_800A36A0;
+  *((u8 *) (p + 0x67)) = 1;
+  p = D_800A36A0;
+  *((u8 *) (p + 0x66)) = (&D_8009BD21)[(*((u8 *) (p + 0x67))) * 2];
+  arg0 = 1;
+  D_800A35DC = arg0;
+}
+void func_80077374(s32 arg0, s32 *arg1) {
+    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80077374.s).
+     * Pure-C decomp pending future purification work. */
+    (void)arg0; (void)arg1;
+}
+extern s32 D_800A36AC;
+extern s32 *func_80077098(s32);
+extern void func_80077374(s32, s32 *);
+extern s32 *D_800A36A0;
+extern s32 D_800F7438;
+typedef struct {
+    s32 sp10;
+    s32 sp14;
+    s32 sp18;
+    s32 sp1C;
+    s32 sp20;
+    s32 sp24;
+    s32 sp28;
+    s32 sp2C;
+    s32 sp30;
+    s32 sp34;
+} S7724;
+void func_80077724(s32 arg0, s32 arg1) {
+    S7724 s;
+    s32 *p;
+    s32 temp_v1;
+    *(s32 **)((s32)D_800A36A0 + 0x24) = (s32 *)(((D_800A36AC & 1) * 0x4090) + (s32)&D_800F7438);
+    temp_v1 = *(s32 *)((s32)D_800A36A0 + 0x30) + 1;
+    *(u16 *)((s32)D_800A36A0 + 0x34) = (u16)(*(u16 *)((s32)D_800A36A0 + 0x34) + 1);
+    *(s32 *)((s32)D_800A36A0 + 0x30) = temp_v1;
+    p = func_80077098(temp_v1 & 1);
+    *(s32 **)((s32)D_800A36A0 + 0x2C) = p;
+    s.sp10 = *(s32 *)((s32)D_800A36A0 + 4);
+    s.sp14 = p[0];
+    s.sp18 = p[1];
+    s.sp1C = p[2];
+    s.sp20 = p[4];
+    s.sp24 = p[3];
+    s.sp28 = p[5];
+    s.sp2C = p[6];
+    s.sp30 = p[7];
+    s.sp34 = p[8];
+    func_80077374(arg1, &s.sp10);
+}
+extern s32 D_800A35E4;
+void func_80068F70(s32, s32 *);
+extern s32 D_8009BD24;
+s32 disp_SetFramebufferMode(s32, s32, s32, s32);
+s32 func_80077820(s32 a0) {
+    func_80068F70(a0, (s32 *)&D_8009BD24);
+    disp_SetFramebufferMode(1, 0, 0, 0);
+    D_800A35E4 = 0;
+    return 1;
+}
+
+extern s32 D_800A35E4;
+s32 func_80069250(void);
+s32 func_80077860(void) {
+    if (func_80069250() == 1) {
+        D_800A35E4 = 0;
+        return 1;
+    }
+    return 0;
+}
+s32 func_80077894(void) {
+    register s32 ret asm("$16") = 0;
+    register s32 result asm("$5") = func_800693CC();
+    register s32 mask asm("$2");
+    register s32 *p asm("$4");
+    register s32 cur asm("$3");
+    register s32 bits asm("$2");
+    if (result < 0) goto fail;
+    mask = -0x10;
+    p = (s32 *)&D_8009BD38;
+    ret = 1;
+    cur = *p;
+    D_800A35E4 = 0;
+    cur = cur & mask;
+    bits = result & 0xF;
+    cur = cur | bits;
+    *p = cur;
+    goto end;
+fail:
+    if (result == -2) ret = -1;
+end:
+    return ret;
+}
+extern s32 D_800A35E0;
+s32 func_80077904(void) {
+    s32 i;
+
+    D_800A35E4 = 0;
+    i = (D_8009BD38 & 0xF) * 2;
+    D_800A35E0 = *((u8 *)&D_8009BD59 + i);
+    return *((u8 *)&D_8009BD58 + i);
+}
+extern s32 D_800A35E8;
+void func_80077940(s32 arg0) {
+    D_800A35E8 = (arg0 & 0x3FF) + ((u32) (arg0 & 0x3FF000) >> 2) + ((u32) (arg0 & 0x01000000) >> 4) + ((u32) (arg0 & 0x04000000) >> 5);
+}
+extern s32 D_800A35E0;
+extern s32 D_800A35E8;
+extern u8 D_8009BD24[];
+void func_8006E534(s32, s32, u8*, s32);
+s32 func_80077984(s32 a0) {
+    func_8006E534(a0, D_800A35E0, D_8009BD24, D_800A35E8);
+    disp_SetFramebufferMode(1, 0, 0, 0);
+    return 1;
+}
+s32 func_8006EACC(void);
+void func_8005B6FC(void);
+s32 func_800779C8(void) {
+    s32 ret = func_8006EACC();
+    if (ret) {
+        func_8005B6FC();
+    }
+    return ret;
+}
+extern s32 D_800A35E4;
+void func_8006D74C(s32, s32);
+void saTanMainDispGnd_80077A04(s32 a0, s32 a1) {
+    D_800A35E4 = 0;
+    func_8006D74C(a0, a1);
+}
+extern s32 D_800A35E4;
+void disp_SetFramebufferMode(s32, s32, s32, s32);
+s32 func_8006D7FC(void);
+void func_80077A28(void) {
+    D_800A35E4 = 0;
+    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_8006D7FC();
+}
+void func_8006E068(void);
+void saTan2InfoInit_80077A60(void) {
+    func_8006E068();
+}
+extern s32 D_800A35E8;
+extern s32 D_8009BD24;
+void func_800770B8(s32, s32 *, s32);
+s32 disp_SetFramebufferMode(s32, s32, s32, s32);
+s32 func_80077A80(s32 a0) {
+    func_800770B8(a0, (s32 *)&D_8009BD24, D_800A35E8);
+    disp_SetFramebufferMode(1, 0, 0, 0);
+    return 1;
+}
+
+void func_80077724(void);
+void saTan2InfoInit_80077AC0(void) {
+    func_80077724();
+}
+void func_8006E10C(void);
+void func_80077AE0(void) {
+    func_8006E10C();
+}
+void func_8006E2A8(void);
+void func_80077B00(void) {
+    func_8006E2A8();
+}
+extern s32 D_800A35E4;
+void saTan2GaugeInit_80077B20(void) {
+    D_800A35E4 = 1;
 }
