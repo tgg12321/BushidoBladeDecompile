@@ -38,6 +38,7 @@
 #   bash tools/dc.sh next-structural [N]           — pull/preview structural split queue
 #   bash tools/dc.sh next-asmfix [N]               — pull/preview asmfix retirement queue
 #   bash tools/dc.sh next-cheat [N]                — pull/preview inline-asm cheat-fix work (active queue filtered to inline_asm_debt)
+#   bash tools/dc.sh next-cheat-cleanup [N]        — pull/preview cheat-cleanup queue (matching-via-cheat funcs not in any other queue)
 #   bash tools/dc.sh next-for-file <files> [N]     — pull/preview active queue filtered to comma-separated src files (parallel sub-agent partition)
 #   bash tools/dc.sh fix-asmfix-drift [--apply]    — auto-fix .L<N> rename drift in asmfix.txt
 #   bash tools/dc.sh auto-repair                    — build + detect cascade-drift + auto-run repair tools (used by build-active)
@@ -198,6 +199,7 @@ case "$CMD" in
   dc.sh next-structural [N]      Pull/preview structural split queue
   dc.sh next-asmfix [N]          Pull/preview asmfix retirement queue
   dc.sh next-cheat [N]           Pull next inline-asm cheat-fix work item
+  dc.sh next-cheat-cleanup [N]   Pull next cheat-cleanup work item (matching-via-cheat funcs)
   dc.sh next-for-file <files> [N]  Pull next active-queue item from given .c file(s) (parallel sub-agent use)
   dc.sh classify <func>           Pre-dive: blockers, aliasing_heavy tag
   dc.sh agent-brief <func>        Full context dump
@@ -802,7 +804,7 @@ PYEOF
         fi
         ;;
 
-    next|next-structural|next-asmfix|next-cheat|next-for-file)
+    next|next-structural|next-asmfix|next-cheat|next-cheat-cleanup|next-for-file)
         # Print the next function from one WORK_QUEUE.md queue and SET it as the
         # active function in .bb2_active_func. The PreToolUse hook will
         # then block subsequent `git commit` (until verify passes) and queue
@@ -845,6 +847,15 @@ PYEOF
                 SECTION="## Queue (top = next)"
                 QUEUE_NAME="active decomp queue (filtered: *_debt tags)"
                 TAG_FILTER="_debt"
+                ;;
+            next-cheat-cleanup)
+                # Cheat-cleanup queue: functions currently SHA1-matching only
+                # because of a regfix/asmfix/inline-__asm__ cheat. They aren't
+                # in the active queue (already match) and aren't bridged
+                # (not in retirement queue). Work is to remove the cheat and
+                # coerce the C source to emit equivalent codegen naturally.
+                SECTION="## Cheat Cleanup Queue (top = next-cheat-cleanup)"
+                QUEUE_NAME="cheat cleanup queue"
                 ;;
             next-for-file)
                 if [ -z "${1:-}" ] || case "$1" in --*|''|*[!a-zA-Z0-9_.,-]*) true ;; *) false ;; esac; then

@@ -410,6 +410,73 @@ def scan_file_scope_asm_debt() -> list[dict]:
     return debt
 
 
+def scan_orphan_cheats(existing_funcs: set[str]) -> list[dict]:
+    """Functions with audit-flagged cheats but NOT in any other queue.
+    These currently SHA1-match (via the cheat); the cleanup work is to
+    remove the cheat rules + coerce the C source to produce equivalent
+    codegen naturally.
+
+    Excludes funcs already in:
+      - active decomp queue (kind != asmfix entries)
+      - asmfix retirement queue (kind == asmfix entries)
+      - any of the *_debt scans (inline_asm / c_body / regfix_overwrite)
+    so we only surface cheats that aren't picked up by an existing queue.
+
+    Sort: ascending by cheat rule count (smaller = easier to retire),
+    then by size, then by name.
+    """
+    try:
+        import audit_asm_cheats as audit
+    except Exception:
+        return []
+
+    auth = audit.load_authorized()
+    splice_funcs, inline_funcs, bios_funcs, c_body_funcs, instruction_insert_funcs = (
+        audit.get_current_cheats(auth)
+    )
+
+    all_cheat_funcs = (
+        splice_funcs | inline_funcs | bios_funcs | c_body_funcs
+        | set(instruction_insert_funcs.keys())
+    )
+    orphan_funcs = all_cheat_funcs - existing_funcs
+
+    entries: list[dict] = []
+    for func in sorted(orphan_funcs):
+        size = asm_insn_count(func)
+        src = find_src_for_func(func)
+        types: list[str] = []
+        rule_count = 0
+        if func in splice_funcs:
+            types.append("splice")
+            rule_count += 1
+        if func in inline_funcs:
+            types.append("inline_asm")
+            rule_count += 1
+        if func in bios_funcs:
+            types.append("bios_inline")
+            rule_count += 1
+        if func in c_body_funcs:
+            types.append("c_body_multi_insn")
+            rule_count += 1
+        if func in instruction_insert_funcs:
+            n = instruction_insert_funcs[func]
+            types.append(f"lost_codegen({n})")
+            rule_count += n
+        entries.append({
+            "func": func,
+            "size": size,
+            "rec": "cheat_cleanup",
+            "src": src.replace("src/", "") if src else "",
+            "kind": "cheat_cleanup",
+            "tags": ",".join(types),
+            "rule_count": rule_count,
+        })
+
+    entries.sort(key=lambda e: (e["rule_count"], e["size"], e["func"]))
+    return entries
+
+
 def classify_asmfix_row(func: str) -> dict:
     info = classify_info(func)
     size = asm_insn_count(func) or int(info.get("size", {}).get("insns", 0) or 0)
@@ -709,6 +776,17 @@ def main() -> int:
     asmfix_entries = [row_entry(r) for r in asmfix_rows]
     sort_entries(asmfix_entries)
 
+    # Cheat cleanup queue: audit-flagged cheats not in any other queue.
+    # Computed AFTER the active/asmfix/deferred queues so we know what's
+    # already scheduled and only surface the leftovers.
+    queued_funcs = (
+        {e["func"] for e in ordered}
+        | {e["func"] for e in deferred_entries}
+        | {e["func"] for e in asmfix_entries}
+        | {r["func"] for r in library_rows}
+    )
+    cheat_orphan_entries = scan_orphan_cheats(queued_funcs)
+
     # Out-of-scope grouped by recommendation, alphabetized
     out_groups: dict[str, list[str]] = defaultdict(list)
     for r in out_scope:
@@ -746,6 +824,10 @@ def main() -> int:
         f"| Asmfix Retirement Queue | {len(asmfix_entries)} | "
         "`bash tools/dc.sh next-asmfix` |"
     )
+    lines.append(
+        f"| Cheat Cleanup Queue | {len(cheat_orphan_entries)} | "
+        "`bash tools/dc.sh next-cheat-cleanup` |"
+    )
     lines.append(f"| Permanent Out-of-scope | {len(out_scope)} | none |")
     lines.append("")
     lines.append(
@@ -757,6 +839,11 @@ def main() -> int:
         f"{len(ordered) + len(deferred_entries) + len(asmfix_entries)} "
         "functions.**"
     )
+    if cheat_orphan_entries:
+        lines.append(
+            f"**Total cheat cleanup backlog (orphan cheats outside other queues): "
+            f"{len(cheat_orphan_entries)} functions.**"
+        )
     lines.append("")
     lines.append("## How to use")
     lines.append("")
@@ -869,6 +956,54 @@ def main() -> int:
     lines.append("")
     append_numbered_queue(lines, asmfix_entries, group_by_tier=True)
 
+    if cheat_orphan_entries:
+        lines.append("---")
+        lines.append("")
+        lines.append("## Cheat Cleanup Queue (top = next-cheat-cleanup)")
+        lines.append("")
+        lines.append(
+            "These functions are currently SHA1-matching, but only because a "
+            "non-canonical asm cheat in `regfix.txt` / `asmfix.txt` / src/*.c "
+            "fills a gap that the C source cannot produce naturally. They are "
+            "NOT in any other queue (already match, so the active queue "
+            "doesn't surface them). The work is to remove the cheat rule(s) "
+            "and coerce the C source to emit equivalent codegen — same effort "
+            "level as ordinary decomp, just starting from a matching-via-cheat "
+            "state instead of an unmatched stub."
+        )
+        lines.append("")
+        lines.append(
+            "Cheat types: `splice` (regfix splice rule), `inline_asm` "
+            "(file-scope `__asm__(glabel)` cheat in src/*.c), `bios_inline` "
+            "(BIOS-style file-scope cheat), `c_body_multi_insn` (multi-instruction "
+            "`__asm__` block inside a C function body), `lost_codegen(N)` "
+            "(N single-instruction inserts of `addu/or RD,RS,$zero` and "
+            "similar GCC-collapsed copies)."
+        )
+        lines.append("")
+        lines.append(
+            "Sorted by cheat rule count (ascending — easiest to retire first), "
+            "then size. Use `bash tools/dc.sh next-cheat-cleanup` to claim one."
+        )
+        lines.append("")
+        lines.append(
+            f"**Total cheat cleanup queue: {len(cheat_orphan_entries)} functions.**"
+        )
+        lines.append("")
+        lines.append("Format: `<#>  <func>  <size insns>  <rule_count>  <src>  [cheat_types]`")
+        lines.append("")
+        lines.append("```")
+        for pos, e in enumerate(cheat_orphan_entries, 1):
+            tags = f"  [{e['tags']}]" if e["tags"] else ""
+            lines.append(
+                f"{pos:>4}  {e['func']:<40s}  "
+                f"{e['size']:>4d}  "
+                f"rules={e['rule_count']:<3d}  "
+                f"{e['src']:<24s}{tags}"
+            )
+        lines.append("```")
+        lines.append("")
+
     if library_rows:
         lines.append("---")
         lines.append("")
@@ -928,6 +1063,7 @@ def main() -> int:
     print(
         f"Wrote {OUT.relative_to(ROOT)} ({len(ordered)} in-scope, "
         f"{len(asmfix_rows)} asmfix-replaced, {len(deferred_rows)} deferred, "
+        f"{len(cheat_orphan_entries)} cheat-cleanup, "
         f"{len(library_rows)} library, {len(out_scope)} out-of-scope)"
     )
 
