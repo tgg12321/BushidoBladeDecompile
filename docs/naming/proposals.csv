@@ -16,7 +16,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80016A8C,func_80016A8C,cpu_set_move_command_and_dir_for_no_action_2_helper_80016A8C,medium,sole_caller_path=cpu_set_move_command_and_dir_for_no_action_2_helper_80016A8C,docs/naming/evidence/func_80016A8C.md
 0x80016C3C,func_80016C3C,overflow_func_80016C3C,low,string_adjacent=overflow_func_80016C3C,docs/naming/evidence/func_80016C3C.md
 0x80016C74,func_80016C74,,none,,
-0x80016C80,func_80016C80,psyq_memcpy_80016C80,high,psyq_idiom=psyq_memcpy_80016C80; string_adjacent=eff_init_func_80016C80,docs/naming/evidence/func_80016C80.md
+0x80016C80,func_80016C80,psyq_memcpy_legacy_80016C80,medium,psyq_idiom_legacy=psyq_memcpy_legacy_80016C80; string_adjacent=eff_init_func_80016C80,docs/naming/evidence/func_80016C80.md
 0x80016CF8,func_80016CF8,,none,,
 0x80016D78,func_80016D78,,none,string_adjacent_info=?,docs/naming/evidence/func_80016D78.md
 0x80016E40,func_80016E40,,none,,
@@ -175,7 +175,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80034F88,func_80034F88,,none,,
 0x8003504C,func_8003504C,,none,,
 0x80035430,func_80035430,,none,,
-0x80035438,func_80035438,psyq_memcpy_80035438,high,psyq_idiom=psyq_memcpy_80035438,docs/naming/evidence/func_80035438.md
+0x80035438,func_80035438,psyq_memcpy_legacy_80035438,low,psyq_idiom_legacy=psyq_memcpy_legacy_80035438,docs/naming/evidence/func_80035438.md
 0x80035480,func_80035480,,none,,
 0x8003553C,func_8003553C,,none,,
 0x800355E8,func_800355E8,,none,,
@@ -185,7 +185,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80035F30,func_80035F30,,none,,
 0x80035F78,func_80035F78,,none,,
 0x80035FA8,func_80035FA8,,none,,
-0x80035FE0,func_80035FE0,psyq_memcpy_80035FE0,high,psyq_idiom=psyq_memcpy_80035FE0,docs/naming/evidence/func_80035FE0.md
+0x80035FE0,func_80035FE0,psyq_memcpy_legacy_80035FE0,low,psyq_idiom_legacy=psyq_memcpy_legacy_80035FE0,docs/naming/evidence/func_80035FE0.md
 0x80036034,func_80036034,,none,,
 0x80036D88,func_80036D88,game_FrameLoop_helper_80036D88,medium,sole_caller_path=game_FrameLoop_helper_80036D88,docs/naming/evidence/func_80036D88.md
 0x80036D98,func_80036D98,,none,,
@@ -229,7 +229,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80039320,func_80039320,,none,,
 0x800395B4,func_800395B4,,none,,
 0x80039680,func_80039680,,none,,
-0x800397A0,func_800397A0,psyq_memcpy_800397A0,high,psyq_idiom=psyq_memcpy_800397A0,docs/naming/evidence/func_800397A0.md
+0x800397A0,func_800397A0,psyq_memcpy_legacy_800397A0,low,psyq_idiom_legacy=psyq_memcpy_legacy_800397A0,docs/naming/evidence/func_800397A0.md
 0x800397D4,func_800397D4,,none,,
 0x8003984C,func_8003984C,,none,,
 0x8003993C,func_8003993C,,none,,
@@ -240,7 +240,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x8003A360,func_8003A360,,none,,
 0x8003A39C,func_8003A39C,,none,,
 0x8003A41C,func_8003A41C,replay_camera_check_stage_8003A41C,medium,kengo_pattern=replay_camera_check_stage_8003A41C,docs/naming/evidence/func_8003A41C.md
-0x8003A42C,func_8003A42C,psyq_memset_8003A42C,high,psyq_idiom=psyq_memset_8003A42C,docs/naming/evidence/func_8003A42C.md
+0x8003A42C,func_8003A42C,psyq_memset_legacy_8003A42C,low,psyq_idiom_legacy=psyq_memset_legacy_8003A42C,docs/naming/evidence/func_8003A42C.md
 0x8003A450,func_8003A450,,none,,
 0x8003A6FC,func_8003A6FC,,none,,
 0x8003A728,func_8003A728,,none,,
@@ -571,7 +571,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x8005507C,func_8005507C,replay_camera_check_stage_8005507C,medium,kengo_pattern=replay_camera_check_stage_8005507C,docs/naming/evidence/func_8005507C.md
 0x8005508C,func_8005508C,replay_camera_check_stage_8005508C,medium,kengo_pattern=replay_camera_check_stage_8005508C,docs/naming/evidence/func_8005508C.md
 0x8005509C,func_8005509C,psyq_memset_8005509C,high,psyq_idiom=psyq_memset_8005509C,docs/naming/evidence/func_8005509C.md
-0x800550E8,func_800550E8,psyq_memcpy_800550E8,high,psyq_idiom=psyq_memcpy_800550E8; sole_caller_path=cpu_get_move_pattern_table_number_helper_800550E8,docs/naming/evidence/func_800550E8.md
+0x800550E8,func_800550E8,cpu_get_move_pattern_table_number_helper_800550E8,medium,psyq_idiom_legacy=psyq_memcpy_legacy_800550E8; sole_caller_path=cpu_get_move_pattern_table_number_helper_800550E8,docs/naming/evidence/func_800550E8.md
 0x80055948,func_80055948,,none,,
 0x80055B44,func_80055B44,,none,,
 0x80056CB8,func_80056CB8,,none,,
@@ -862,7 +862,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800790C0,func_800790C0,,none,,
 0x80079154,func_80079154,,none,,
 0x80079184,func_80079184,,none,,
-0x80079194,func_80079194,psyq_memcpy_80079194,high,psyq_idiom=psyq_memcpy_80079194,docs/naming/evidence/func_80079194.md
+0x80079194,func_80079194,psyq_memcpy_legacy_80079194,low,psyq_idiom_legacy=psyq_memcpy_legacy_80079194,docs/naming/evidence/func_80079194.md
 0x800791D8,func_800791D8,,none,,
 0x80079244,func_80079244,debug_printf_helper_80079244,medium,sole_caller_path=debug_printf_helper_80079244; string_adjacent_info=?,docs/naming/evidence/func_80079244.md
 0x800798CC,func_800798CC,,none,,
@@ -870,7 +870,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x8007992C,func_8007992C,,none,,
 0x8007997C,func_8007997C,,none,,
 0x80079A30,func_80079A30,,none,string_adjacent_info=?,docs/naming/evidence/func_80079A30.md
-0x8007A28C,func_8007A28C,psyq_memcpy_8007A28C,high,psyq_idiom=psyq_memcpy_8007A28C,docs/naming/evidence/func_8007A28C.md
+0x8007A28C,func_8007A28C,psyq_memcpy_legacy_8007A28C,low,psyq_idiom_legacy=psyq_memcpy_legacy_8007A28C,docs/naming/evidence/func_8007A28C.md
 0x8007A2F8,func_8007A2F8,bios_A0_0xAB_wrapper,high,bios_jumptable=bios_A0_0xAB_wrapper,docs/naming/evidence/func_8007A2F8.md
 0x8007A308,func_8007A308,bios_A0_0xAC_wrapper,high,bios_jumptable=bios_A0_0xAC_wrapper,docs/naming/evidence/func_8007A308.md
 0x8007A318,func_8007A318,,none,,
@@ -1063,8 +1063,8 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80083210,func_80083210,bios_SetCustomExitFromException,high,bios_jumptable=bios_SetCustomExitFromException,docs/naming/evidence/func_80083210.md
 0x80083220,func_80083220,motion_make_table_helper_80083220,medium,sole_caller_path=motion_make_table_helper_80083220,docs/naming/evidence/func_80083220.md
 0x800832A0,func_800832A0,,none,,
-0x8008339C,func_8008339C,psyq_memset_8008339C,high,psyq_idiom=psyq_memset_8008339C,docs/naming/evidence/func_8008339C.md
-0x80083644,func_80083644,psyq_memset_80083644,high,psyq_idiom=psyq_memset_80083644,docs/naming/evidence/func_80083644.md
+0x8008339C,func_8008339C,psyq_memset_legacy_8008339C,low,psyq_idiom_legacy=psyq_memset_legacy_8008339C,docs/naming/evidence/func_8008339C.md
+0x80083644,func_80083644,psyq_memset_legacy_80083644,low,psyq_idiom_legacy=psyq_memset_legacy_80083644,docs/naming/evidence/func_80083644.md
 0x80083688,func_80083688,,none,,
 0x80083698,func_80083698,syscall_wrapper_break_80083698,high,syscall_wrapper=syscall_wrapper_break_80083698,docs/naming/evidence/func_80083698.md
 0x8008386C,func_8008386C,bios_InitHeap,high,bios_jumptable=bios_InitHeap; sole_caller_path=ang_hosei_helper_8008386C,docs/naming/evidence/func_8008386C.md
@@ -1092,7 +1092,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80085EE4,func_80085EE4,obj_helper_80085EE4,medium,call_graph_cluster=obj_helper_80085EE4,docs/naming/evidence/func_80085EE4.md
 0x80085F98,func_80085F98,obj_helper_80085F98,medium,call_graph_cluster=obj_helper_80085F98,docs/naming/evidence/func_80085F98.md
 0x80085FB8,func_80085FB8,,none,,
-0x80086014,func_80086014,psyq_memcpy_80086014,high,psyq_idiom=psyq_memcpy_80086014,docs/naming/evidence/func_80086014.md
+0x80086014,func_80086014,psyq_memcpy_legacy_80086014,low,psyq_idiom_legacy=psyq_memcpy_legacy_80086014,docs/naming/evidence/func_80086014.md
 0x80086130,func_80086130,,none,,
 0x800863CC,func_800863CC,,none,,
 0x80086BFC,func_80086BFC,,none,,
@@ -1104,7 +1104,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80087DA0,func_80087DA0,,none,,
 0x80087F00,func_80087F00,,none,,
 0x80087F24,func_80087F24,,none,,
-0x80087F34,func_80087F34,psyq_memset_80087F34,high,psyq_idiom=psyq_memset_80087F34,docs/naming/evidence/func_80087F34.md
+0x80087F34,func_80087F34,psyq_memset_legacy_80087F34,low,psyq_idiom_legacy=psyq_memset_legacy_80087F34,docs/naming/evidence/func_80087F34.md
 0x80087F64,func_80087F64,obj_helper_80087F64,medium,call_graph_cluster=obj_helper_80087F64,docs/naming/evidence/func_80087F64.md
 0x800884C4,func_800884C4,,none,,
 0x80088584,func_80088584,,none,,
@@ -1135,7 +1135,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x8008AD64,func_8008AD64,,none,,
 0x8008ADC4,func_8008ADC4,,none,,
 0x8008AE24,func_8008AE24,,none,,
-0x8008AE7C,func_8008AE7C,psyq_memset_8008AE7C,high,psyq_idiom=psyq_memset_8008AE7C,docs/naming/evidence/func_8008AE7C.md
+0x8008AE7C,func_8008AE7C,psyq_memset_legacy_8008AE7C,low,psyq_idiom_legacy=psyq_memset_legacy_8008AE7C,docs/naming/evidence/func_8008AE7C.md
 0x8008AEB0,func_8008AEB0,,none,,
 0x8008AF84,func_8008AF84,saTan2Main_helper_8008AF84,medium,sole_caller_path=saTan2Main_helper_8008AF84,docs/naming/evidence/func_8008AF84.md
 0x8008AF9C,func_8008AF9C,,none,,

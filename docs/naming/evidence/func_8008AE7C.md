@@ -4,15 +4,15 @@
 - Size: 13 instructions
 - Asm file: `asm/funcs/func_8008AE7C.s`
 - Callers (1): ['func_800884C4']
-- Proposed name: `psyq_memset_8008AE7C`
-- Confidence: **high**
+- Proposed name: `psyq_memset_legacy_8008AE7C`
+- Confidence: **low**
 
 ## Evidence
 
-### psyq_idiom  (rank=high)
+### psyq_idiom_legacy  (rank=low)
 
-- proposed: `psyq_memset_8008AE7C`
-- detail: known_psyq_stdlib.txt: 13 insns, store-loop with no load
+- proposed: `psyq_memset_legacy_8008AE7C`
+- detail: known_psyq_stdlib.txt: 13 insns, store-loop with no load; live detector rejected (likely in-place transform, not a memcpy/memset)
 
 ## First 20 instructions
 

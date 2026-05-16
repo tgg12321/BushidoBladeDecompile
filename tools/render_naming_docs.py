@@ -494,7 +494,7 @@ def render_methodology() -> str:
         "|---|---|---|\n"
         "| `bios_jumptable` | high | 3-4 insn body matching `addiu $tN,$zero,0xA0|0xB0|0xC0; jr $tN; addiu $t1,$zero,<idx>`. The `<idx>` is looked up in standard PsyQ/nocash A0/B0/C0 tables to propose the canonical BIOS name (e.g., `bios_FileRead`). |\n"
         "| `syscall_wrapper` | high | Body contains a raw `syscall` or `break`. Address-suffixed because multiple wrappers can exist. |\n"
-        "| `psyq_idiom` | high | Tight `lbu`-`sb` pair-loop with stride+1, no `jal`, no jumptable -> `psyq_memcpy`. Store-only loop with no load and stride+1 -> `psyq_memset`. Both address-suffixed. |\n"
+        "| `psyq_idiom` | high | Tight `lbu`-`sb` pair-loop with DIFFERENT base registers, stride+1, no `jal`, no jumptable -> `psyq_memcpy`. Store-only loop with no load and stride+1 -> `psyq_memset`. Both address-suffixed. NOTE: `psyq_memset` may also fire for structured init loops that write per-iteration-constant values (not necessarily zero) -- the heuristic captures shape, not the precise type. The legacy `known_psyq_stdlib.txt` scanner over-matched (e.g., halving loops with same-base lbu/sb); when the live detector disagrees with the legacy scanner the proposal is demoted to `low` with kind `psyq_idiom_legacy`. |\n"
         "| `data_as_code` | high | Function body is >=70% `lb $t0, neg_offset($zero)` with no actual logic -- a data table that splat misclassified as code. |\n"
         "| `kengo_unique` | high | Kengo `name-unique` match with `|diff| <= 1` insns. Demoted to `medium` if multi-claimant. |\n"
         "| `kengo_unique` | medium | Kengo `name-unique` / `name-callgraph` match with larger but still-small size diff. |\n"

@@ -3,7 +3,7 @@
 High-confidence proposals that match PsyQ stdlib/BIOS idioms. These are the lowest-risk renames in the corpus. The detection heuristics in `tools/propose_function_names.py` are conservative and require both shape signals AND tight loop body pairing.
 
 
-- PsyQ memcpy/memset: **18**
+- PsyQ memcpy/memset: **17**
 - BIOS A0/B0/C0 jumptable wrappers: **38**
 - Raw syscall/break wrappers: **3**
 
@@ -55,23 +55,22 @@ High-confidence proposals that match PsyQ stdlib/BIOS idioms. These are the lowe
 | address | current | proposed | evidence |
 |---|---|---|---|
 | `0x80016768` | `func_80016768` | `psyq_memset_80016768` | psyq_idiom=psyq_memset_80016768 |
-| `0x80016C80` | `func_80016C80` | `psyq_memcpy_80016C80` | psyq_idiom=psyq_memcpy_80016C80; string_adjacent=eff_init_func_80016C80 |
+| `0x80016C80` | `func_80016C80` | `psyq_memcpy_legacy_80016C80` | psyq_idiom_legacy=psyq_memcpy_legacy_80016C80; string_adjacent=eff_init_func_80016C80 |
 | `0x8003043C` | `func_8003043C` | `psyq_memset_8003043C` | psyq_idiom=psyq_memset_8003043C; sole_caller_path=mario_test_Exec_helper_8003043C |
-| `0x80035438` | `func_80035438` | `psyq_memcpy_80035438` | psyq_idiom=psyq_memcpy_80035438 |
-| `0x80035FE0` | `func_80035FE0` | `psyq_memcpy_80035FE0` | psyq_idiom=psyq_memcpy_80035FE0 |
+| `0x80035438` | `func_80035438` | `psyq_memcpy_legacy_80035438` | psyq_idiom_legacy=psyq_memcpy_legacy_80035438 |
+| `0x80035FE0` | `func_80035FE0` | `psyq_memcpy_legacy_80035FE0` | psyq_idiom_legacy=psyq_memcpy_legacy_80035FE0 |
 | `0x80038148` | `func_80038148` | `psyq_memset_80038148` | psyq_idiom=psyq_memset_80038148; sole_caller_path=pad_FuncAnalog_helper_80038148 |
-| `0x800397A0` | `func_800397A0` | `psyq_memcpy_800397A0` | psyq_idiom=psyq_memcpy_800397A0 |
-| `0x8003A42C` | `func_8003A42C` | `psyq_memset_8003A42C` | psyq_idiom=psyq_memset_8003A42C |
+| `0x800397A0` | `func_800397A0` | `psyq_memcpy_legacy_800397A0` | psyq_idiom_legacy=psyq_memcpy_legacy_800397A0 |
+| `0x8003A42C` | `func_8003A42C` | `psyq_memset_legacy_8003A42C` | psyq_idiom_legacy=psyq_memset_legacy_8003A42C |
 | `0x8005509C` | `func_8005509C` | `psyq_memset_8005509C` | psyq_idiom=psyq_memset_8005509C |
-| `0x800550E8` | `func_800550E8` | `psyq_memcpy_800550E8` | psyq_idiom=psyq_memcpy_800550E8; sole_caller_path=cpu_get_move_pattern_table_number_helper_800550E8 |
-| `0x80079194` | `func_80079194` | `psyq_memcpy_80079194` | psyq_idiom=psyq_memcpy_80079194 |
-| `0x8007A28C` | `func_8007A28C` | `psyq_memcpy_8007A28C` | psyq_idiom=psyq_memcpy_8007A28C |
+| `0x80079194` | `func_80079194` | `psyq_memcpy_legacy_80079194` | psyq_idiom_legacy=psyq_memcpy_legacy_80079194 |
+| `0x8007A28C` | `func_8007A28C` | `psyq_memcpy_legacy_8007A28C` | psyq_idiom_legacy=psyq_memcpy_legacy_8007A28C |
 | `0x8007DEE4` | `func_8007DEE4` | `psyq_memset_8007DEE4` | psyq_idiom=psyq_memset_8007DEE4 |
-| `0x8008339C` | `func_8008339C` | `psyq_memset_8008339C` | psyq_idiom=psyq_memset_8008339C |
-| `0x80083644` | `func_80083644` | `psyq_memset_80083644` | psyq_idiom=psyq_memset_80083644 |
-| `0x80086014` | `func_80086014` | `psyq_memcpy_80086014` | psyq_idiom=psyq_memcpy_80086014 |
-| `0x80087F34` | `func_80087F34` | `psyq_memset_80087F34` | psyq_idiom=psyq_memset_80087F34 |
-| `0x8008AE7C` | `func_8008AE7C` | `psyq_memset_8008AE7C` | psyq_idiom=psyq_memset_8008AE7C |
+| `0x8008339C` | `func_8008339C` | `psyq_memset_legacy_8008339C` | psyq_idiom_legacy=psyq_memset_legacy_8008339C |
+| `0x80083644` | `func_80083644` | `psyq_memset_legacy_80083644` | psyq_idiom_legacy=psyq_memset_legacy_80083644 |
+| `0x80086014` | `func_80086014` | `psyq_memcpy_legacy_80086014` | psyq_idiom_legacy=psyq_memcpy_legacy_80086014 |
+| `0x80087F34` | `func_80087F34` | `psyq_memset_legacy_80087F34` | psyq_idiom_legacy=psyq_memset_legacy_80087F34 |
+| `0x8008AE7C` | `func_8008AE7C` | `psyq_memset_legacy_8008AE7C` | psyq_idiom_legacy=psyq_memset_legacy_8008AE7C |
 
 ## Syscall / break wrappers
 

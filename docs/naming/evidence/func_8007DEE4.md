@@ -12,7 +12,7 @@
 ### psyq_idiom  (rank=high)
 
 - proposed: `psyq_memset_8007DEE4`
-- detail: 11 insns, store loop no load; also known_psyq_stdlib.txt=psyq_memset
+- detail: 11 insns, store loop no load; agrees with known_psyq_stdlib.txt=psyq_memset
 
 ## First 20 instructions
 

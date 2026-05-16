@@ -2,7 +2,7 @@
 
 **Medium confidence**: weak Kengo match (size-diff > 1 but same name), single named caller (`sole_caller_path` proposal: `<caller>_helper_<addr>`), or call-graph subsystem cluster. These need callsite/body inspection before applying.
 
-Total Medium: **101**
+Total Medium: **103**
 
 ## Primary evidence: `sole_caller_path` (74)
 
@@ -117,6 +117,13 @@ Total Medium: **101**
 | `0x80085EE4` | `func_80085EE4` | `obj_helper_80085EE4` | call_graph_cluster=obj_helper_80085EE4 | [md](evidence/func_80085EE4.md) |
 | `0x80085F98` | `func_80085F98` | `obj_helper_80085F98` | call_graph_cluster=obj_helper_80085F98 | [md](evidence/func_80085F98.md) |
 | `0x80087F64` | `func_80087F64` | `obj_helper_80087F64` | call_graph_cluster=obj_helper_80087F64 | [md](evidence/func_80087F64.md) |
+
+## Primary evidence: `psyq_idiom_legacy` (2)
+
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80016C80` | `func_80016C80` | `psyq_memcpy_legacy_80016C80` | psyq_idiom_legacy=psyq_memcpy_legacy_80016C80; string_adjacent=eff_init_func_80016C80 | [md](evidence/func_80016C80.md) |
+| `0x800550E8` | `func_800550E8` | `cpu_get_move_pattern_table_number_helper_800550E8` | psyq_idiom_legacy=psyq_memcpy_legacy_800550E8; sole_caller_path=cpu_get_move_pattern_table_number_helper_800550E8 | [md](evidence/func_800550E8.md) |
 
 ## Primary evidence: `gte_op` (2)
 

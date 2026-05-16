@@ -6,7 +6,7 @@
 
 **Workflow**: copy the proposed name into `named_syms.txt`, run `make setup && make`, verify SHA1 unchanged, commit.
 
-Total High: **61**
+Total High: **48**
 
 ## Primary evidence: `bios_jumptable` (38)
 
@@ -51,28 +51,15 @@ Total High: **61**
 | `0x80089374` | `func_80089374` | `bios_DisableEvent` | bios_jumptable=bios_DisableEvent; kengo_pattern=saTan0GaugeInit_80089374 | [md](evidence/func_80089374.md) |
 | `0x8008D050` | `func_8008D050` | `bios_AddDevice_B` | bios_jumptable=bios_AddDevice_B; kengo_pattern=saTan0GaugeInit_8008D050; address_neighborhood=g_local_8008D050 | [md](evidence/func_8008D050.md) |
 
-## Primary evidence: `psyq_idiom` (18)
+## Primary evidence: `psyq_idiom` (5)
 
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
 | `0x80016768` | `func_80016768` | `psyq_memset_80016768` | psyq_idiom=psyq_memset_80016768 | [md](evidence/func_80016768.md) |
-| `0x80016C80` | `func_80016C80` | `psyq_memcpy_80016C80` | psyq_idiom=psyq_memcpy_80016C80; string_adjacent=eff_init_func_80016C80 | [md](evidence/func_80016C80.md) |
 | `0x8003043C` | `func_8003043C` | `psyq_memset_8003043C` | psyq_idiom=psyq_memset_8003043C; sole_caller_path=mario_test_Exec_helper_8003043C | [md](evidence/func_8003043C.md) |
-| `0x80035438` | `func_80035438` | `psyq_memcpy_80035438` | psyq_idiom=psyq_memcpy_80035438 | [md](evidence/func_80035438.md) |
-| `0x80035FE0` | `func_80035FE0` | `psyq_memcpy_80035FE0` | psyq_idiom=psyq_memcpy_80035FE0 | [md](evidence/func_80035FE0.md) |
 | `0x80038148` | `func_80038148` | `psyq_memset_80038148` | psyq_idiom=psyq_memset_80038148; sole_caller_path=pad_FuncAnalog_helper_80038148 | [md](evidence/func_80038148.md) |
-| `0x800397A0` | `func_800397A0` | `psyq_memcpy_800397A0` | psyq_idiom=psyq_memcpy_800397A0 | [md](evidence/func_800397A0.md) |
-| `0x8003A42C` | `func_8003A42C` | `psyq_memset_8003A42C` | psyq_idiom=psyq_memset_8003A42C | [md](evidence/func_8003A42C.md) |
 | `0x8005509C` | `func_8005509C` | `psyq_memset_8005509C` | psyq_idiom=psyq_memset_8005509C | [md](evidence/func_8005509C.md) |
-| `0x800550E8` | `func_800550E8` | `psyq_memcpy_800550E8` | psyq_idiom=psyq_memcpy_800550E8; sole_caller_path=cpu_get_move_pattern_table_number_helper_800550E8 | [md](evidence/func_800550E8.md) |
-| `0x80079194` | `func_80079194` | `psyq_memcpy_80079194` | psyq_idiom=psyq_memcpy_80079194 | [md](evidence/func_80079194.md) |
-| `0x8007A28C` | `func_8007A28C` | `psyq_memcpy_8007A28C` | psyq_idiom=psyq_memcpy_8007A28C | [md](evidence/func_8007A28C.md) |
 | `0x8007DEE4` | `func_8007DEE4` | `psyq_memset_8007DEE4` | psyq_idiom=psyq_memset_8007DEE4 | [md](evidence/func_8007DEE4.md) |
-| `0x8008339C` | `func_8008339C` | `psyq_memset_8008339C` | psyq_idiom=psyq_memset_8008339C | [md](evidence/func_8008339C.md) |
-| `0x80083644` | `func_80083644` | `psyq_memset_80083644` | psyq_idiom=psyq_memset_80083644 | [md](evidence/func_80083644.md) |
-| `0x80086014` | `func_80086014` | `psyq_memcpy_80086014` | psyq_idiom=psyq_memcpy_80086014 | [md](evidence/func_80086014.md) |
-| `0x80087F34` | `func_80087F34` | `psyq_memset_80087F34` | psyq_idiom=psyq_memset_80087F34 | [md](evidence/func_80087F34.md) |
-| `0x8008AE7C` | `func_8008AE7C` | `psyq_memset_8008AE7C` | psyq_idiom=psyq_memset_8008AE7C | [md](evidence/func_8008AE7C.md) |
 
 ## Primary evidence: `syscall_wrapper` (3)
 
