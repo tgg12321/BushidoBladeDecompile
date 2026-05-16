@@ -160,6 +160,44 @@ EOF
 # `git commit -F`, heredocs, etc.). We deliberately don't try to parse
 # arguments -- if the command says "git commit" anywhere, we gate it.
 if echo "$COMMAND" | grep -qE '(^|[^a-zA-Z])git commit($|[^a-zA-Z])'; then
+    # Rule 1a: asm-cheat scan. Block if the staged state introduces a
+    # large splice in regfix.txt or an inline `__asm__("glabel ...")`
+    # function body in src/*.c that wasn't already in HEAD. These
+    # patterns make the binary match without the C source actually
+    # producing the emitted bytes — they're functionally equivalent to
+    # `replace_with_asmfile` bridges but invisible to the existing
+    # bridge guard. Cheap (~1s); runs before the expensive clean
+    # rebuild so the agent sees the failure fast.
+    cheat_out=$(wsl bash -c "cd '$WSL_ROOT' && python3 tools/audit_asm_cheats.py --check-new 2>&1")
+    cheat_exit=$?
+    if [ "$cheat_exit" -ne 0 ]; then
+        echo "$cheat_out" >&2
+        cat >&2 <<EOF
+
+BLOCKED: see ASM-CHEAT GUARD message above.
+
+This guard exists because `splice` (in regfix.txt) and inline
+\`__asm__("glabel ...")\` function bodies (in src/*.c) are functionally
+equivalent to the \`replace_with_asmfile\` bridge — the C source
+emits no useful bytes, the binary content comes from asm injected
+through regfix or written verbatim in inline asm. The existing
+bridge guard only checks asmfix.txt, so these patterns slipped
+through historically.
+
+To proceed:
+  - If the original function was hand-coded asm (3+ strong signals
+    per memory/feedback_hand_coded_asm_recognition.md), add it to
+    inline_asm_canonical.txt with a justification comment, then
+    re-attempt the commit.
+  - Otherwise (~99% of functions are canonically C), do a real C
+    decomp instead of wrapping the asm.
+
+To audit existing state:
+  wsl bash -c "cd '$WSL_ROOT' && python3 tools/audit_asm_cheats.py --all"
+EOF
+        exit 2
+    fi
+
     if verify_active_matches; then
         # Function matches; allow commit and clear the state.
         : > "$ACTIVE_FILE"
