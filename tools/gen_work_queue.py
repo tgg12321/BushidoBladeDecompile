@@ -67,7 +67,7 @@ IN_SCOPE = {
 }
 DEFERRED_STRUCTURAL = {"needs_function_split"}
 
-# Same policy as tools/audit_inline_asm.py: GTE/BIOS/data asm may be
+# Same policy as tools/audit_asm_cheats.py: GTE/BIOS/data asm may be
 # legitimate, but ordinary MIPS scheduling/register scaffolding inside a C
 # body is still decompilation debt and must remain visible in WORK_QUEUE.md.
 #
@@ -244,6 +244,57 @@ def scan_inline_asm_debt() -> list[dict]:
             body_start, body_end = bounds
             if is_inline_asm_debt(text[body_start:body_end]):
                 debt.append(classify_inline_asm_debt(name, src))
+    return debt
+
+
+def scan_file_scope_asm_debt() -> list[dict]:
+    """Surface file-scope `__asm__(... glabel funcname ...)` cheats as
+    inline_asm_debt work items.
+
+    The scan_inline_asm_debt() function above only finds inline asm inside
+    C-shaped function bodies. Agents have historically also dumped verbatim
+    asm at FILE SCOPE (no C wrapper, `glabel` inside the asm block defining
+    the symbol). The audit_asm_cheats.py auditor catches those; this scanner
+    surfaces them as queue work so they actually get decompiled.
+
+    Note: classify_func reads asm/funcs/<func>.s and may return
+    `permanently_blocked:<reason>` because the original asm contains
+    cop0/break/overflow ops. For known cheats (not in inline_asm_canonical.txt)
+    we override to `standard` so they land in the active queue. The user
+    decides per-function at decomp time: authorize as canonical (add to
+    inline_asm_canonical.txt with justification) or write real C."""
+    tools_path = str(ROOT / "tools")
+    if tools_path not in sys.path:
+        sys.path.insert(0, tools_path)
+    from audit_asm_cheats import scan_inline_asm_bodies, GLABEL_BODY_LINES
+
+    debt: list[dict] = []
+    seen: set[str] = set()
+    for src in sorted(SRC_DIR.glob("*.c")):
+        text = src.read_text(encoding="utf-8", errors="ignore")
+        for _f, _l, n, fname, is_bios in scan_inline_asm_bodies(text, src.name):
+            if n < GLABEL_BODY_LINES:
+                continue
+            if fname in _CANONICAL_INLINE_ASM_NAMES:
+                continue
+            if is_bios:
+                continue  # 3-insn BIOS trampolines belong in canonical list, not work queue
+            if fname in seen:
+                continue
+            seen.add(fname)
+            row = classify_inline_asm_debt(fname, src)
+            rec = row.get("recommendation", "")
+            if rec.startswith("permanently_blocked:") or rec.startswith("bios_or_syscall:"):
+                # Classifier read the cheated asm and concluded canonical, but
+                # the function is NOT in inline_asm_canonical.txt. Force into
+                # active queue for user audit; tag the original verdict so the
+                # decomp session can see what classify_func found.
+                row["blocker_tags"] = ",".join(
+                    [t for t in row["blocker_tags"].split(",") if t]
+                    + [f"classifier_said:{rec}"]
+                )
+                row["recommendation"] = "standard"
+            debt.append(row)
     return debt
 
 
@@ -432,17 +483,33 @@ def main() -> int:
     rows = list(csv.DictReader(CSV_PATH.open()))
     live_asmfix_rows = scan_asmfix_rows()
     live_asmfix_funcs = {r["func"] for r in live_asmfix_rows}
+    # File-scope `__asm__("glabel ...")` cheats. The CSV classifies these
+    # as permanently_blocked because classify_func reads the cheated asm
+    # and sees cop0/break/etc — but they're known cheats not on the
+    # canonical list. We OVERRIDE the stale CSV row so they land in the
+    # active queue, not out-of-scope. asmfix bridging takes precedence
+    # if both are present (kind=asmfix → retirement queue).
+    file_scope_debt_rows = [
+        r for r in scan_file_scope_asm_debt()
+        if r["func"] not in live_asmfix_funcs
+    ]
+    file_scope_debt_funcs = {r["func"] for r in file_scope_debt_rows}
     # asmfix.txt is the source of truth for replacement-backed functions.
-    # Drop stale CSV rows for those names so newly bridged functions are
-    # surfaced in the retirement queue immediately.
-    rows = [r for r in rows if r["func"] not in live_asmfix_funcs]
-    existing_funcs = {r["func"] for r in rows} | live_asmfix_funcs
+    # Drop stale CSV rows for asmfix names AND for file-scope-debt names
+    # (their fresh classification supersedes the CSV).
+    rows = [
+        r for r in rows
+        if r["func"] not in live_asmfix_funcs
+        and r["func"] not in file_scope_debt_funcs
+    ]
+    existing_funcs = {r["func"] for r in rows} | live_asmfix_funcs | file_scope_debt_funcs
     debt_rows = [
         r for r in scan_inline_asm_debt()
         if r["func"] not in existing_funcs
     ]
     rows.extend(live_asmfix_rows)
     rows.extend(debt_rows)
+    rows.extend(file_scope_debt_rows)
     # Functions with replace_with_asmfile in asmfix.txt are tagged kind=asmfix.
     # Their bytes come from the .s file regardless of C — they are not in
     # the pure-C work queue. Surface them in their own section instead.

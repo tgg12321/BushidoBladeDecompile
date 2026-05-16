@@ -42,7 +42,12 @@ from pathlib import Path
 
 # Thresholds: tuned to distinguish "small structural transform"
 # (legitimate splice usage) from "full-body asm replacement".
-LARGE_SPLICE_LINES = 30
+LARGE_SPLICE_LINES = 30           # single splice rule with >= this many replacement lines
+LARGE_SUBST_MULTI_LINES = 30      # single subst_multi rule with >= this many replacement lines
+CUMULATIVE_RULE_LINES = 60        # sum across all multi-line ops per function — catches the
+                                  # split-evasion attack (e.g., 4x20-line splices to dodge
+                                  # the per-rule 30 threshold). 60 leaves headroom for
+                                  # legit complex recipes (func_8007CE0C currently 46).
 GLABEL_BODY_LINES = 5
 
 # 3-instruction BIOS trampoline: addiu $tN, $zero, 0xXX; jr $tN; addiu $tM,...
@@ -84,6 +89,39 @@ def scan_regfix_splices(content):
     return cheats
 
 
+def scan_regfix_subst_multi(content):
+    """Return list of (func, N_repl, line_no) for subst_multi rules.
+
+    Syntax: `func: subst_multi "pattern" "line1" "line2" ... [@ idx]`.
+    Replacement-line count = (quoted strings) - 1 (pattern is the first arg)."""
+    cheats = []
+    for i, line in enumerate(content.split("\n"), 1):
+        m = re.match(r"^(\w+):\s+subst_multi\s+(.+)$", line)
+        if m:
+            quoted = re.findall(r'"[^"]*"', m.group(2))
+            n_repl = max(0, len(quoted) - 1)
+            cheats.append((m.group(1), n_repl, i))
+    return cheats
+
+
+def scan_regfix_cumulative(content):
+    """Return {func: total_injected_lines} summed across all multi-line ops
+    (splice + subst_multi + insert_after/before/label). Used to catch the
+    split-evasion attack — splitting one giant splice into N medium-sized
+    ones under the per-rule threshold."""
+    from collections import defaultdict
+    totals = defaultdict(int)
+    for func, _k, n_repl, _line in scan_regfix_splices(content):
+        totals[func] += n_repl
+    for func, n_repl, _line in scan_regfix_subst_multi(content):
+        totals[func] += n_repl
+    for line in content.split("\n"):
+        m = re.match(r"^(\w+):\s+(insert_after|insert_before|insert_label)\s+", line)
+        if m:
+            totals[m.group(1)] += 1
+    return dict(totals)
+
+
 def scan_inline_asm_bodies(content, source_name):
     """Return list of (file, line_no, asm_lines, func_name, is_bios) for
     `__asm__` blocks containing `glabel funcname`."""
@@ -106,15 +144,26 @@ def scan_inline_asm_bodies(content, source_name):
 
 
 def get_current_cheats(auth):
-    """Scan current working tree. Return (splice_funcs, inline_funcs, bios_funcs)."""
+    """Scan current working tree. Return (splice_funcs, inline_funcs, bios_funcs).
+
+    `splice_funcs` is the unified set of functions whose binary content comes
+    from any multi-line regfix op: a per-rule large splice OR a per-rule large
+    subst_multi OR a per-function cumulative-line-count overflow."""
     splice_funcs = set()
     inline_funcs = set()
     bios_funcs = set()
 
     regfix = Path("regfix.txt")
     if regfix.exists():
-        for func, k, n, line in scan_regfix_splices(regfix.read_text(encoding="utf-8")):
+        content = regfix.read_text(encoding="utf-8")
+        for func, k, n, line in scan_regfix_splices(content):
             if n >= LARGE_SPLICE_LINES and func not in auth:
+                splice_funcs.add(func)
+        for func, n, line in scan_regfix_subst_multi(content):
+            if n >= LARGE_SUBST_MULTI_LINES and func not in auth:
+                splice_funcs.add(func)
+        for func, total in scan_regfix_cumulative(content).items():
+            if total >= CUMULATIVE_RULE_LINES and func not in auth:
                 splice_funcs.add(func)
 
     for src in sorted(Path("src").glob("*.c")):
@@ -145,6 +194,12 @@ def get_head_cheats(auth):
         ).stdout
         for func, k, n, line in scan_regfix_splices(head_regfix):
             if n >= LARGE_SPLICE_LINES and func not in auth:
+                splice_funcs.add(func)
+        for func, n, line in scan_regfix_subst_multi(head_regfix):
+            if n >= LARGE_SUBST_MULTI_LINES and func not in auth:
+                splice_funcs.add(func)
+        for func, total in scan_regfix_cumulative(head_regfix).items():
+            if total >= CUMULATIVE_RULE_LINES and func not in auth:
                 splice_funcs.add(func)
     except subprocess.CalledProcessError:
         pass
@@ -181,11 +236,37 @@ def cmd_all():
     full_splices = [s for s in splices if s[2] >= LARGE_SPLICE_LINES]
     unauth_splices = [s for s in full_splices if s[0] not in auth]
 
+    subst_multis = scan_regfix_subst_multi(regfix_content)
+    large_subst_multis = [s for s in subst_multis if s[1] >= LARGE_SUBST_MULTI_LINES]
+    unauth_subst_multis = [s for s in large_subst_multis if s[0] not in auth]
+
+    cumulative = scan_regfix_cumulative(regfix_content)
+    over_cumulative = sorted(
+        ((fn, total) for fn, total in cumulative.items()
+         if total >= CUMULATIVE_RULE_LINES and fn not in auth),
+        key=lambda x: -x[1],
+    )
+
     print(f"=== regfix.txt splice rules ===")
     print(f"  {len(splices)} total, {len(full_splices)} full-body (>= {LARGE_SPLICE_LINES} replacement lines)")
     print(f"  {len(unauth_splices)} UNAUTHORIZED:")
     for func, k, n, line in sorted(unauth_splices, key=lambda x: -x[2]):
         print(f"    line {line:5d}  {func:32s}  orig_K={k:4d}  replace_N={n:4d}")
+
+    print()
+    print(f"=== regfix.txt subst_multi rules ===")
+    print(f"  {len(subst_multis)} total, {len(large_subst_multis)} large (>= {LARGE_SUBST_MULTI_LINES} replacement lines)")
+    print(f"  {len(unauth_subst_multis)} UNAUTHORIZED:")
+    for func, n, line in sorted(unauth_subst_multis, key=lambda x: -x[1]):
+        print(f"    line {line:5d}  {func:32s}  replace_N={n:4d}")
+
+    print()
+    print(f"=== regfix.txt cumulative rule volume per function ===")
+    print(f"  {sum(1 for v in cumulative.values() if v > 0)} functions have multi-line rules")
+    print(f"  threshold: {CUMULATIVE_RULE_LINES} cumulative lines (splice + subst_multi + insert_*)")
+    print(f"  {len(over_cumulative)} UNAUTHORIZED over threshold:")
+    for fn, total in over_cumulative:
+        print(f"    {fn:32s}  total_lines={total}")
 
     print()
     print(f"=== Inline __asm__ glabel function bodies in src/*.c ===")
@@ -208,12 +289,19 @@ def cmd_all():
         print(f"    ... and {len(unauth) - 25} more")
 
     print()
-    total_unauth = len(unauth_splices) + len(unauth)
+    # De-dup across regfix categories: a single func can hit splice + subst_multi
+    # + cumulative all at once.
+    regfix_unauth_funcs = (
+        {s[0] for s in unauth_splices}
+        | {s[0] for s in unauth_subst_multis}
+        | {fn for fn, _ in over_cumulative}
+    )
+    total_unauth = len(regfix_unauth_funcs) + len(unauth)
     if total_unauth > 0:
         print(f"TOTAL UNAUTHORIZED ASM CHEATS: {total_unauth}")
         print(f"  ({len(bios)} BIOS trampolines should also be added to inline_asm_canonical.txt)")
     else:
-        print("No unauthorized asm cheats. All inline-asm bodies and full-body splices are accounted for.")
+        print("No unauthorized asm cheats. All inline-asm bodies and regfix injections are accounted for.")
     return 0
 
 
@@ -228,6 +316,19 @@ def cmd_func(name):
                   f"({n}-line replacement). Add to inline_asm_canonical.txt or do real C decomp.",
                   file=sys.stderr)
             return 1
+    for func, n, line in scan_regfix_subst_multi(regfix_content):
+        if func == name and n >= LARGE_SUBST_MULTI_LINES:
+            print(f"UNAUTHORIZED: {name} has large subst_multi in regfix.txt:{line} "
+                  f"({n}-line replacement). Add to inline_asm_canonical.txt or do real C decomp.",
+                  file=sys.stderr)
+            return 1
+    total = scan_regfix_cumulative(regfix_content).get(name, 0)
+    if total >= CUMULATIVE_RULE_LINES:
+        print(f"UNAUTHORIZED: {name} has {total} cumulative regfix-injected lines "
+              f"(threshold {CUMULATIVE_RULE_LINES}). Looks like split-evasion of the "
+              f"per-rule splice threshold. Add to inline_asm_canonical.txt or do real C decomp.",
+              file=sys.stderr)
+        return 1
     for src in sorted(Path("src").glob("*.c")):
         for f, l, n, fname, is_bios in scan_inline_asm_bodies(
             src.read_text(encoding="utf-8"), src.name
@@ -254,13 +355,14 @@ def cmd_check_new():
 
     print("ASM-CHEAT GUARD: new unauthorized asm-cheat patterns since HEAD:", file=sys.stderr)
     for func in sorted(new_splices):
-        print(f"  Large splice for {func} in regfix.txt", file=sys.stderr)
+        print(f"  Regfix injection for {func} (large splice / large subst_multi / "
+              f"cumulative >= {CUMULATIVE_RULE_LINES} lines) in regfix.txt", file=sys.stderr)
     for fname in sorted(new_inline):
         print(f"  Inline __asm__ glabel body for {fname} in src/*.c", file=sys.stderr)
     print(file=sys.stderr)
     print("These patterns make the binary match without the C source", file=sys.stderr)
     print("actually corresponding to the emitted bytes (the bytes come from", file=sys.stderr)
-    print("asm injected via splice or file-scope __asm__).", file=sys.stderr)
+    print("asm injected via splice/subst_multi/insert chains, or file-scope __asm__).", file=sys.stderr)
     print(file=sys.stderr)
     print("If the original was hand-coded asm (see memory/", file=sys.stderr)
     print("feedback_hand_coded_asm_recognition.md), add the function name", file=sys.stderr)

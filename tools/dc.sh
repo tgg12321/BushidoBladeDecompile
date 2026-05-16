@@ -37,6 +37,7 @@
 #   bash tools/dc.sh permute-adaptive <func>       — permuter with budget scaled to ins+del count
 #   bash tools/dc.sh next-structural [N]           — pull/preview structural split queue
 #   bash tools/dc.sh next-asmfix [N]               — pull/preview asmfix retirement queue
+#   bash tools/dc.sh next-cheat [N]                — pull/preview inline-asm cheat-fix work (active queue filtered to inline_asm_debt)
 #   bash tools/dc.sh fix-asmfix-drift [--apply]    — auto-fix .L<N> rename drift in asmfix.txt
 #
 set -eo pipefail
@@ -183,6 +184,7 @@ case "$CMD" in
   dc.sh next [--with-context]    Pull next function (sets active marker)
   dc.sh next-structural [N]      Pull/preview structural split queue
   dc.sh next-asmfix [N]          Pull/preview asmfix retirement queue
+  dc.sh next-cheat [N]           Pull next inline-asm cheat-fix work item
   dc.sh classify <func>           Pre-dive: blockers, aliasing_heavy tag
   dc.sh agent-brief <func>        Full context dump
   dc.sh attempt <func>            Auto pipeline (smart→permute→gen_regfix)
@@ -786,18 +788,21 @@ PYEOF
         fi
         ;;
 
-    next|next-structural|next-asmfix)
+    next|next-structural|next-asmfix|next-cheat)
         # Print the next function from one WORK_QUEUE.md queue and SET it as the
         # active function in .bb2_active_func. The PreToolUse hook will
         # then block subsequent `git commit` (until verify passes) and queue
         # pulls until the active function is finished.
         #
-        # Forms (all three queues support the same flags):
+        # Forms (all four queues support the same flags):
         #   dc.sh next                          # top 1, set active, no auto-brief
         #   dc.sh next 5                        # preview top 5 (no active change)
         #   dc.sh next --with-context           # top 1 + auto-run agent-brief
         #   dc.sh next-structural [--with-context] [N]
         #   dc.sh next-asmfix     [--with-context] [N]
+        #   dc.sh next-cheat      [--with-context] [N]  # like `next` but filtered
+        #                                                # to inline_asm_debt entries
+        TAG_FILTER=""
         case "$CMD" in
             next)
                 SECTION="## Queue (top = next)"
@@ -810,6 +815,14 @@ PYEOF
             next-asmfix)
                 SECTION="## Asmfix Retirement Queue (top = next-asmfix)"
                 QUEUE_NAME="asmfix retirement queue"
+                ;;
+            next-cheat)
+                # Cheat-fix work shares the active queue, but filters to entries
+                # tagged inline_asm_debt — the unauthorized file-scope asm
+                # bodies surfaced by audit_asm_cheats.py.
+                SECTION="## Queue (top = next)"
+                QUEUE_NAME="active decomp queue (filtered: inline_asm_debt)"
+                TAG_FILTER="inline_asm_debt"
                 ;;
         esac
         WITH_CONTEXT=0
@@ -871,18 +884,26 @@ PYEOF
         fi
 
         # Extract the top N entries from the selected queue.
-        TOP=$(awk -v n="$N" -v section="$SECTION" '
+        # When TAG_FILTER is set (next-cheat), only count rows whose
+        # bracketed tag column contains the filter string.
+        TOP=$(awk -v n="$N" -v section="$SECTION" -v tag="$TAG_FILTER" '
             $0 == section { in_queue=1; next }
             in_queue && /^## / { in_queue=0 }
             in_queue && /^```$/ { in_block = !in_block; next }
             in_queue && in_block && /^[[:space:]]*[0-9]+[[:space:]]/ {
+                if (tag != "" && index($0, tag) == 0) next
                 print
                 count++
                 if (count >= n) exit
             }
         ' WORK_QUEUE.md)
         if [ -z "$TOP" ]; then
-            echo "No entries found in $QUEUE_NAME. Run 'dc.sh refresh-queue' if this looks stale." >&2
+            if [ -n "$TAG_FILTER" ]; then
+                echo "No entries in $QUEUE_NAME (no rows tagged '$TAG_FILTER')." >&2
+                echo "Run 'python3 tools/audit_asm_cheats.py --summary' to verify there are unauthorized cheats." >&2
+            else
+                echo "No entries found in $QUEUE_NAME. Run 'dc.sh refresh-queue' if this looks stale." >&2
+            fi
             exit 1
         fi
         echo "$TOP"
@@ -1303,7 +1324,7 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         echo "          recipes, apply-recipe, memory-check, scan-hand-coded,"
         echo "          analysis, dump-text, validate-regfix, gen-regfix, verify,"
         echo "          frame-shift, asmfix-slice, find-label-at, diagnose-hoist,"
-        echo "          next, next-structural, next-asmfix, refresh-queue, release,"
+        echo "          next, next-structural, next-asmfix, next-cheat, refresh-queue, release,"
         echo "          retire, audit-bridges,"
         echo "          side-by-side, gen-substs, binary-diff-count, branch-offsets,"
         echo "          fix-branch-drift"
