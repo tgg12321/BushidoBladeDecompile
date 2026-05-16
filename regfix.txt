@@ -4246,7 +4246,7 @@ func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
 func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
 func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
 func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
-func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L1073" @ 110
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L1074" @ 110
 # Move convergence point: insert label after lw $7,16(sp)
 func_80074B18: insert_label ".LC846:" @ 116
 func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
@@ -5052,3 +5052,6 @@ func_80068F70: subst "lwl\s+\$2,3\(\$5\)" "lwl\t$2,3($6)" @ 78
 func_80068F70: subst "lwr\s+\$2,0\(\$5\)" "lwr\t$2,0($6)" @ 79
 func_80068F70: subst "lwl\s+\$3,7\(\$5\)" "lwl\t$3,7($6)" @ 80
 func_80068F70: subst "lwr\s+\$3,4\(\$5\)" "lwr\t$3,4($6)" @ 81
+func_80052720: delete @ 11
+func_80052720: delete @ 13
+func_80052720: delete @ 14

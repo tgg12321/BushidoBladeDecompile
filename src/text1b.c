@@ -10551,30 +10551,25 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_2; /* padding after func_800526A0 */
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_80052720\n"
-    "    mtc2   $a0, $9\n"
-    "    mtc2   $a1, $10\n"
-    "    mtc2   $a2, $11\n"
-    "    nop\n"
-    "    nop\n"
-    "    sqr    0\n"
-    "    nop\n"
-    "    mfc2   $t0, $25\n"
-    "    mfc2   $t1, $26\n"
-    "    mfc2   $t2, $27\n"
-    "    add    $a0, $t0, $t1\n"
-    "    j      func_800526A0\n"
-    "    add    $a0, $a0, $t2\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void func_80052720(s32 arg0, s32 arg1, s32 arg2) {
+    register s32 t0 asm("$8");
+    register s32 t1 asm("$9");
+    register s32 t2 asm("$10");
+
+    __asm__ volatile ("mtc2 %0, $9" :: "r"(arg0));
+    __asm__ volatile ("mtc2 %0, $10" :: "r"(arg1));
+    __asm__ volatile ("mtc2 %0, $11" :: "r"(arg2));
+    __asm__ volatile ("nop");
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4AA00428");
+    __asm__ volatile ("nop");
+    __asm__ volatile ("mfc2 %0, $25" : "=r"(t0));
+    __asm__ volatile ("mfc2 %0, $26" : "=r"(t1));
+    __asm__ volatile ("mfc2 %0, $27" : "=r"(t2));
+    __asm__ volatile ("add $4, $8, $9");
+    __asm__ volatile ("j func_800526A0");
+    __asm__ volatile ("add $4, $4, $10");
+}
 s32 func_80052754(s32 arg0, s32 arg1, s32 arg2) {
     register s32 t0 asm("$8");
     register s32 t1 asm("$9");
