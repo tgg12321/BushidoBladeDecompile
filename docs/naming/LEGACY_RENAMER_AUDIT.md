@@ -190,17 +190,68 @@ PsyQ-style functions with unambiguous semantics from a single read.
 
 **Score:** 32 Adopted / 0 Rejected / 0 Held / 1 already-adopted = 33 total.
 
+## What the ings2.c cluster audit (2026-05-17) did
+
+Pulled the 21-function band at `0x8008289C..0x80083B50` from
+`rename_funcs.py` lines 105-125. **16 of 21 Adopted (76%).**
+
+Breakdown: 1 already-applied (sys_GetVideoMode); 4 STALE (addresses
+not present in current binary as separate functions:
+`func_80082B84/BE4/C24, func_80083670`). The 4 stale entries are
+remnants of an earlier splat configuration where those addresses
+were standalone functions; they're now interior code of their
+preceding functions (irq_SetAlarm/irq_Reset/sys_GetVblankCount).
+
+**Adopted (16 names + 5 data names):** sys_SetVsyncMode/SetTimer,
+irq_DisableInterrupts/EnableInterrupts/AcknowledgeVblank/SetAlarm/Reset
+(all jalr a vector-table function pointer from g_psyq_io_vec_table),
+sys_GetVblankCount, sys_MemClear/MemClear2, bios_FileRead/FileReadRaw,
+irq_ProcessPending (supersedes my batch-6 medium kernel_alarm_cancel
+proposal), sys_Shutdown, spu_Reset/SetVolume.
+
+**Data names landed:**
+- `g_psyq_io_vec_table` (0x800A2600) -- the IRQ dispatch vector table
+- `g_vsync_mode` (0x800A14CC), `g_timer_setting` (0x800A1500)
+- `g_vblank_count` (0x800A157A), `g_irq_counter_ptr` (0x800A2608)
+
+## Major finding: Kengo bands already applied (~110 entries)
+
+Quick-scan of all 381 rename_funcs.py entries finds:
+
+- **252 still unrenamed** (have `func_XXXXXXXX.s` in `asm/funcs/`):
+  these are the candidates for the audit.
+- **110 already applied via .s file rename** (have `<legacy>.s` --
+  the rename was propagated through `tools/rename_funcs.py --apply`
+  at some earlier point but the names were never added to
+  `named_syms.txt`).  These work because the symbols are defined by
+  glabel inside the .s files.
+- **19 not in asm/funcs**: in src/ as decompiled C, or stale.
+
+**Implication:** the Kengo affinity HIGH/MED cluster (lines 167-204)
+that the original audit doc flagged as "best signal-to-noise" is
+already-applied -- no audit work needed.  The Kengo size-match
+batch (lines 127-164) is mostly already-applied (27 of 38).
+
+**Going forward:** only the 252 unrenamed entries need cross-validation.
+After sound.c (56) + ings.c (33) + ings2.c (21) = 110 audited, 142
+unrenamed entries remain.  The bulk is in "Item 6 readability" band
+(~120 entries: GPU primitives initPolyF3/G3/F4/G4 etc., GPU OT/CLUT
+helpers, GTE wrappers, math helpers, CDROM helpers, memcard/SPU).
+These are typically tiny canonical PsyQ-style wrappers; expected
+adoption rate is high (75%+).
+
 ## Pending audit work
 
-The legacy map has ~400 entries. The audit so far has touched:
-- batch-6 refinement (2026-05-17): 17 entries (3 Adopted)
-- sound.c cluster (2026-05-17): 56 entries (28 newly Adopted + 5 already)
-- ings.c cluster (2026-05-17): 33 entries (32 newly Adopted + 1 already)
+The legacy map has 381 entries.  Audit so far:
+- batch-6 refinement: 17 entries (3 Adopted)
+- sound.c cluster: 56 entries (28 newly + 5 already)
+- ings.c cluster: 33 entries (32 newly + 1 already)
+- ings2.c cluster: 21 entries (16 newly + 1 already + 4 stale)
 
-**Cumulative: 63 newly-adopted names + 6 already-adopted = 69 of 106
-audited (65% overall adoption rate).**
+**Cumulative: 79 newly-adopted + 7 already-adopted = 86 of 127
+audited (68% overall adoption rate, 90% excluding stales).**
 
-Roughly 294 entries remain.  Suggested next clusters in
+Roughly 254 entries remain.  Suggested next clusters in
 `rename_funcs.py` order:
 
 | Lines | Cluster | Approx funcs | Notes |

@@ -521,4 +521,42 @@ g_rng_state                     = 0x800A38BC;  /* LCG state word; written by rng
 g_file_flags_byte               = 0x80106A73;  /* 8-bit flag byte; bits 0/1/2 read by file_GetFlag0/1/2 */
 g_scratchpad_save               = 0x800F5370;  /* 0x3E0-byte main-RAM backup of PSX scratchpad RAM (0x1F800000); used by IRQ context save/restore */
 
+/* === Legacy renamer audit: ings2.c cluster (2026-05-17) === */
+/* 16 high-confidence cross-validated names from `tools/rename_funcs.py` */
+/* (ings2.c band, rename_funcs.py lines 105-125).  21 entries total: */
+/* 1 already-adopted (sys_GetVideoMode -> get_sys_video_mode_80083688), */
+/* 4 stale (addresses not present in current binary as separate functions: */
+/* func_80082B84/BE4/C24, func_80083670). */
+/* See LEGACY_RENAMER_AUDIT.md for the full triage. */
+/* System config setters (2) */
+sys_SetVsyncMode_8008289C       = 0x8008289C;  /* swap-and-return on g_vsync_mode */
+sys_SetTimer_800828B4           = 0x800828B4;  /* swap-and-return on g_timer_setting */
+/* IRQ vector-table dispatchers (5) -- each calls g_psyq_io_vec_table->fn at fixed offset */
+irq_DisableInterrupts_80082AC0  = 0x80082AC0;  /* jalr [g_psyq_io_vec_table+0xC] */
+irq_EnableInterrupts_80082AF0   = 0x80082AF0;  /* jalr [g_psyq_io_vec_table+0x8] */
+irq_AcknowledgeVblank_80082B20  = 0x80082B20;  /* jalr [g_psyq_io_vec_table+0x4] */
+irq_SetAlarm_80082B50           = 0x80082B50;  /* jalr [g_psyq_io_vec_table+0x14] with $a0=4, $a1=arg */
+irq_Reset_80082BB4              = 0x80082BB4;  /* jalr [g_psyq_io_vec_table+0x10] */
+/* System counters (1) */
+sys_GetVblankCount_80082C14     = 0x80082C14;  /* lhu of g_vblank_count */
+/* Memory clear (2; identical bodies, position-distinct) */
+sys_MemClear_8008339C           = 0x8008339C;  /* word-by-word `for (i=a1; i>0; i--) *a0++ = 0` */
+sys_MemClear2_80083644          = 0x80083644;  /* identical body, distinct address */
+/* BIOS file IO (2) */
+bios_FileRead_8008387C          = 0x8008387C;  /* chunked reader wrapping bios_FileReadRaw */
+bios_FileReadRaw_8008393C       = 0x8008393C;  /* 6-insn raw BIOS file-read trap */
+/* Interrupt processing + shutdown (2) */
+irq_ProcessPending_80083954     = 0x80083954;  /* critsec + alarm/IRQ state-machine processing (was proposed as kernel_alarm_cancel in batch 6) */
+sys_Shutdown_80083A18           = 0x80083A18;  /* irq_DisableInterrupts + spu_Init + state cleanup */
+/* SPU (2) */
+spu_Reset_80083B30              = 0x80083B30;  /* 8-insn wrapper around func_800892F8 */
+spu_SetVolume_80083B50          = 0x80083B50;  /* 37-insn wrapper around func_8008AF9C (PsyQ SsVoVol-style) */
+
+/* === Data names landed by the ings2.c cluster audit (5) === */
+g_psyq_io_vec_table             = 0x800A2600;  /* function-pointer table for IRQ dispatch (irq_Enable/Disable/Ack/Set/Reset all load from here) */
+g_vsync_mode                    = 0x800A14CC;  /* word swapped by sys_SetVsyncMode */
+g_timer_setting                 = 0x800A1500;  /* word swapped by sys_SetTimer */
+g_vblank_count                  = 0x800A157A;  /* halfword incremented per vblank; returned by sys_GetVblankCount */
+g_irq_counter_ptr               = 0x800A2608;  /* pointer to a halfword counter; deref'd by sys_GetIrqCounter (which itself isn't a separate function) */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
