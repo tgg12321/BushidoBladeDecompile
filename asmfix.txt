@@ -99,8 +99,8 @@ cpu_set_move_command_and_dir_for_no_action: replace_first "^j\t\\.L[0-9]+(?=\nno
 
 # func_8001EFA0: keep the ==6 case and shared default target stable after
 # upstream helper-swaps renumber nearby local labels.
-func_8001EFA0: replace_first "^bne\t\\$3,\\$2,\\.L349$" "beq\t$3,$2,.L345"
-func_8001EFA0: replace_first "^j\t\\.L345$" "j\t.L349"
+func_8001EFA0: replace_first "^bne\t\\$3,\\$2,\\.L354$" "beq\t$3,$2,.L350"
+func_8001EFA0: replace_first "^j\t\\.L350$" "j\t.L354"
 
 # Stub replacement helper path: keep a real C symbol in the source tree while
 # swapping the emitted function block back to the exact split asm file.
@@ -207,10 +207,6 @@ cpu_check_run_attack: replace_first "\.word 0x488C4000\nnop\naddu\t\$12,\$3,\$ze
 
 # single_game_VoiceContorol: redirect break-cases (0,5,7) from the generated
 # after-switch label to the target's j+clear default trampoline.
-single_game_VoiceContorol: replace_first "^beq\t\\$2,\\$0,\\.L8[34]$" "beq\t$2,$0,.Ldefault"
-single_game_VoiceContorol: replace_first "^\.word\t\.L8[34]$" ".word\t.Ldefault"
-single_game_VoiceContorol: replace_first "^\.word\t\.L8[34]$" ".word\t.Ldefault"
-single_game_VoiceContorol: replace_first "^\.word\t\.L8[34]$" ".word\t.Ldefault"
 
 # CalcHiraNormal: semantic C is integrated, but GCC 2.7.2 keeps choosing the
 # wrong invariant hoists; replace the function-local body with the verified

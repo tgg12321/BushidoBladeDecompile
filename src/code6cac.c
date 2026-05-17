@@ -728,6 +728,7 @@ void single_game_VoiceContorol(s32 arg0) {
         u8 b1;
         u8 b2;
         u8 b3;
+        u8 _pad[4];
     } VoicePacket;
     struct {
         s16 output[4];
@@ -738,69 +739,87 @@ void single_game_VoiceContorol(s32 arg0) {
         s32 packets[4];
     } sp;
     register s32 arg0_reg asm("s0") = arg0;
-    s32 voice_mask;
+    register s16 *output asm("a2");
+    register VoicePacket *packets asm("a3");
+    register s32 i asm("t0");
+    register s32 voice_mask asm("t1");
     s32 old_mask;
-    s32 i;
-    VoicePacket *packet;
+    s32 *D_80102790_p;
+    s16 *base_addr;
+    s16 *dst1;
+    s16 *dst0;
+    s16 *src;
 
     voice_mask = 0;
+    i = 0;
+    output = &sp.output[0];
     sp.packets[0] = D_800FF580;
     sp.packets[1] = D_800FF584;
     sp.packets[2] = D_800FF5A4;
     sp.packets[3] = D_800FF5A8;
+    packets = (VoicePacket *)&sp.packets[0];
+    do {
+        register s32 bits asm("v1");
 
-    packet = (VoicePacket *)&sp.packets[0];
-    for (i = 0; i < 2; i++) {
-        s32 bits = 0;
+        if (packets->b0 == 0) {
+            register s32 voice asm("v0");
+            s32 voice2;
 
-        if (packet->b0 == 0) {
-            s32 voice = packet->b1 >> 4;
+            voice = packets->b1 >> 4;
+            output[0] = voice;
+            __asm__ volatile ("addiu %0, $zero, 1" : "=r"(voice));
+            output[2] = voice;
+            voice2 = (s16)((u16)output[0] - 1);
 
-            sp.output[i] = voice;
-            sp.output[i + 2] = 1;
-            voice = (s16)((u16)sp.output[i] - 1);
-
-            if ((u32)voice < 8) {
-                switch (voice) {
+            if ((u32)voice2 < 8) {
+                switch (voice2) {
                 case 4:
                 case 6:
-                    sp.output[i] = 4;
-                    /* fallthrough */
+                    output[0] = 4;
                 case 1:
                 case 2:
                 case 3:
-                    bits = ~((packet->b2 << 8) | packet->b3);
+                    bits = ~((packets->b2 << 8) | packets->b3);
                     break;
                 case 0:
                 case 5:
                 case 7:
                 default:
+                    bits = 0;
                     break;
                 }
+            } else {
+                bits = 0;
             }
         } else {
-            sp.output[i] = 4;
-            sp.output[i + 2] = 0;
+            output[0] = 4;
+            output[2] = 0;
+            bits = 0;
         }
 
-        voice_mask = ((u32)voice_mask >> 16) | (bits << 16);
-        packet = (VoicePacket *)((u8 *)packet + 8);
-    }
+        {
+            register s32 vm_shifted asm("v0");
+            __asm__ volatile ("srl %0, %1, 16" : "=r"(vm_shifted) : "r"(voice_mask));
+            voice_mask = vm_shifted | (bits << 16);
+        }
+        output++;
+        i++;
+        packets = (VoicePacket *)((u8 *)packets + 8);
+    } while (i < 2);
 
     sp.voice_mask = voice_mask;
     func_8001B138(&sp.voice_mask);
 
     if (D_800A3834 == 1 && arg0_reg == 0) {
-        u16 voice_state = D_800A38DC;
+        s32 voice_state = D_800A38DC;
 
-        if (voice_state < 7) {
+        if ((u32)voice_state < 7) {
             switch (voice_state) {
             case 4:
             case 5:
                 if (D_8010278E == 0) {
                     sp.voice_mask |= 0x08000800;
                 }
-                /* fallthrough */
             case 0:
             case 1:
             case 2:
@@ -816,23 +835,25 @@ void single_game_VoiceContorol(s32 arg0) {
 
     func_8003A728((s32)&sp.output[0]);
 
-    {
-        s16 *src = &sp.output[0];
-        s16 *dst0 = &D_80102788;
-        s16 *dst1 = &D_8010278C;
+    __asm__ volatile ("addu %0, $zero, $zero" : "=r"(i));
+    base_addr = &D_80102788;
+    dst1 = base_addr + 2;
+    dst0 = base_addr;
+    src = &sp.output[0];
 
-        for (i = 0; i < 2; i++) {
-            dst0[0] = src[0];
-            dst0++;
-            dst1[0] = src[2];
-            dst1++;
-            src++;
-        }
-    }
+    do {
+        dst0[0] = src[0];
+        dst0++;
+        dst1[0] = src[2];
+        src++;
+        i++;
+        dst1++;
+    } while (i < 2);
 
-    old_mask = D_80102790;
+    D_80102790_p = &D_80102790;
+    old_mask = *D_80102790_p;
+    *D_80102790_p = sp.voice_mask;
     arg0_reg = (D_80102794 = sp.voice_mask & ~old_mask);
-    D_80102790 = sp.voice_mask;
     D_8010279C = ~sp.voice_mask;
     D_80102798 = ~sp.voice_mask & old_mask;
 }
