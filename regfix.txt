@@ -2050,16 +2050,6 @@ saTan5TakeAnim2: subst "\$6,\$4" "$5,$3" @ 147
 # return result: a2->a1
 saTan5TakeAnim2: subst "\$6" "$5" @ 148
 
-# func_80084500: same table/offset/prologue scheduling family as func_800841E0.
-func_80084500: reorder 2,4,3,8,12,13,14,15,16,17,18,9,19,5,6,7,10,11 @ 2-19
-func_80084500: subst "\$2,\$2,\$18" "$2,$18,$2" @ 30
-func_80084500: subst "\$3" "$6" @ 34
-func_80084500: fill_delay @ 34 <- 33
-func_80084500: subst "nop.*" "sll\t$4,$20,8" @ 49
-func_80084500: subst "\$20" "$5" @ 56
-func_80084500: subst "\$17,\$21" "$2,$7" @ 57
-func_80084500: subst "\$17,\$17" "$2,$2" @ 58
-func_80084500: subst "\$17,\$17" "$17,$2" @ 59
 
 # camera_set_zoom: delay slot fills (fix +8 bytes)
 camera_set_zoom: subst "nop" "addiu\t$2,$zero,1" @ 24
