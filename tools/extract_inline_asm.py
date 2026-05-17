@@ -266,6 +266,11 @@ def write_target_s(func_name, dest):
         lines = []
         for line in raw.splitlines():
             line = re.sub(r"^glabel (.*)", r"\1:", line)
+            # `jlabel .LXXX` is a splat macro marking a label that is
+            # referenced from a jump table (.rodata). The permuter target.s
+            # is assembled without macro.inc, so the macro form blows up
+            # with "unrecognized opcode `jlabel'". Convert to a plain label.
+            line = re.sub(r"^(\s*)jlabel\s+(\S+)\s*$", r"\1\2:", line)
             if line.strip().startswith("endlabel"):
                 continue
             # Strip the trailing "/* handwritten instruction */" marker
