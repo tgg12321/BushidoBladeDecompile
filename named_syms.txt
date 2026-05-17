@@ -2228,6 +2228,15 @@ g_cdread_dest_buffer                                    = 0x80101E84;  /* destin
 g_cdread_expected_bcd_frame                             = 0x80101EA0;  /* next-expected CD position in BCD; mismatch with cdrom_BcdToFrames triggers error */
 g_event_class_lookup_table                              = 0x8008EC38;  /* lookup table indexed by `arg0 * 2`; likely PSX BIOS event class IDs */
 
+/* === Mottest (motion test mode) sequencer (2026-05-17) -- 5 highs === */
+/* From code6cac_b.c mottest_disp (line 3622): walks through test slots */
+/* until counter reaches max, then dispatches anim ID. */
+g_mottest_current_idx                                   = 0x800A3783;  /* current test index; incremented per call; reaches g_mottest_test_count = done */
+g_mottest_secondary_idx                                 = 0x800A37BC;  /* secondary counter (= 0 init); used as index into g_mottest_slot_value_table */
+g_mottest_test_count                                    = 0x800A391F;  /* max test count; when current_idx == this, dispatch unlock anim */
+g_mottest_substate                                      = 0x800A376B;  /* reset to 0 alongside indices */
+g_mottest_slot_value_table                              = 0x8008E748;  /* s8 table indexed by g_mottest_secondary_idx */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
