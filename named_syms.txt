@@ -730,7 +730,7 @@ game_EffStop_8004779C           = 0x8004779C;  /* same body as game_EffCleanup (
 /* game_SndCleanup_80047550 (body calls saEft03Start) -- names don't match bodies. */
 
 /* === Data names landed by the final sound.c sweep (4) === */
-g_camera_matrix_data            = 0x800EEDB0;  /* base of camera matrix struct; +0x4-+0xC are matrix fields written by camera_InitMatrix */
+g_camera_matrix_data            = 0x800EEDB0;  /* base of camera matrix struct (9 s16, +0..+0x10); written by camera_InitMatrix. Layout: m[0]=g_cam_matrix=0x1000, m[1]=cos-derived (Y-projection), m[2..6]=0, m[7]=sin-derived (Z-projection), m[8]=0x1000 */
 g_snd_fade_state                = 0x800EF7BC;  /* snd_CalcFade state (paired with D_800EF7C0) */
 g_snd_fade_curve_table          = 0x800EF800;  /* snd_GetFadeCurve lookup table base (paired with D_800EF804) */
 g_camera_rotation_data          = 0x800F66A0;  /* camera_InitRotation state */
@@ -1330,6 +1330,307 @@ mottest_rob_init_andmark                                = 0x800371F8;  /* mottes
 memcard_PollEvents                                      = 0x800378A8;  /* tests 4 events at D_800A37DC/F0/FC/3800; returns 1-4 (which fired) or 0 */
 memcard_AckEvents                                       = 0x8003791C;  /* unconditionally acks/consumes 4 memcard events */
 rcnt0_AckEvents                                         = 0x800379D8;  /* unconditionally acks/consumes 4 rcnt0 events */
+
+/* === Motion-shift sibling functions (2026-05-17) -- 4 highs === */
+/* These 3 setters share a 4-field state set with the existing named */
+/* motion_shift_check_m_hit_stop (which sets D_800A37C8 = 0).  The */
+/* setters all zero D_800A3814 (counter) and set D_800A31F4 = 1 */
+/* (state-machine init). */
+motion_shift_set_mode1                                  = 0x8003879C;  /* sub-id=1, mode=1 (g_motion_state_code=1, g_pad_analog_substate=1) */
+motion_shift_set_mode2                                  = 0x800387C0;  /* sub-id=1, mode=2 */
+motion_shift_set_mode3                                  = 0x800387E8;  /* sub-id=9, mode=3 */
+g_motion_shift_flag2                                    = 0x800A38CC;  /* zeroed in motion_shift_set_mode1/2 but not in mode3 or hit_stop */
+
+/* === Sound subsystem cluster (2026-05-17) -- 3 highs === */
+/* From sound.c around line 780-820 (init) and 829 (func_80047A90 */
+/* wave-gen): the engine maintains 9 audio channels x 17 samples each */
+/* for wave synthesis, indexed by per-channel phase counters that step */
+/* through the Judge[] sin/cos lookup table. */
+g_snd_voice_init_block                                  = 0x800EF070;  /* SPU voice descriptor struct passed to func_800417D0 init; first byte = 0xE (cmd), +0x6 +0xC -0xFA0 etc. */
+g_snd_wave_phase_table                                  = 0x800EF558;  /* 17 s32 entries; phase indices stepped by 0x12 per call to func_80047A90; used as Judge[] index */
+g_snd_wave_output_table                                 = 0x800EF59C;  /* 9 channels x 17 s32 samples (153 total, stride 0x44); audio wave-synthesis output via (Judge[idx] * 0x271) >> 10 */
+
+/* === SPU init/config cluster (2026-05-17) -- 5 highs === */
+/* From main.c func_80088740 (spu_FlushVoiceChannels) and spu init flow */
+/* around line 1320-1340.  Constants used during SPU register setup. */
+g_spu_ctrl_reg_ptr                                      = 0x800A2CEC;  /* pointer to SPU control register; *D_800A2CEC |= 0xB0000 turns on capture/transfer bits */
+g_spu_init_const_a                                      = 0x800A2D00;  /* SPU init constant = 2 (paired with g_spu_addr_shift=3) */
+g_spu_init_const_c                                      = 0x800A2D08;  /* SPU init constant = 8 */
+g_spu_init_mask                                         = 0x800A2D0C;  /* SPU init mask = 7 (3 bits); used as `& ~D_800A2D0C` to round-down */
+g_spu_init_reg_D1_val                                   = 0x800A2D44;  /* default value written to SPU register 0xD1 via spu_WriteReg */
+
+/* === Stage lighting + collision (2026-05-17) -- 5 highs === */
+/* From config.c stage_ClearLighting / stage_ApplyLighting: there are */
+/* 3 lights (pos+dir pairs), already named [0] but indices [1] and [2] */
+/* were unnamed.  `(&g_stage_light_pos)[a2]` indexes from the base. */
+g_stage_light_pos_1                                     = 0x800A93B4;  /* (&g_stage_light_pos)[1] -- second light position */
+g_stage_light_pos_2                                     = 0x800A93B8;  /* (&g_stage_light_pos)[2] -- third light position */
+g_stage_light_dir_1                                     = 0x800A93C0;  /* (&g_stage_light_dir)[1] -- second light direction */
+g_stage_light_dir_2                                     = 0x800A93C4;  /* (&g_stage_light_dir)[2] -- third light direction */
+g_default_collision_pattern                             = 0x80094A6C;  /* 16 u32 entries; each encodes a 16x16 grid row of 2-bit collision flags applied to g_stage_collision */
+
+/* === CD-ROM streaming state (2026-05-17) -- 12 highs === */
+/* From system.c func_800826CC and surrounding CD-ROM stream-control flow */
+/* (around lines 990-1090).  Cluster of per-stream state variables saved */
+/* across BIOS callback transitions. */
+g_cdrom_streaming_arg1                                  = 0x800A14D4;  /* arg1 saved in func_800826CC; copied to D8 in saEft00Add_sub */
+g_cdrom_streaming_arg1_copy                             = 0x800A14D8;  /* = g_cdrom_streaming_arg1 (read-back copy) */
+g_cdrom_mode_flags                                      = 0x800A14DC;  /* volatile s32 mode bits; 0x30 mask -> 200/246/249 setting; bit 0x20 = busy flag set during op */
+g_cdrom_setting_word                                    = 0x800A14E0;  /* setting word derived from mode (200/246/249 based on mode bits) */
+g_cdrom_vsync_pre                                       = 0x800A14E8;  /* sys_VSync(-1) reading at op start */
+g_cdrom_vsync_post                                      = 0x800A14EC;  /* sys_VSync(-1) reading at op end */
+g_cdrom_pos_frames                                      = 0x800A14F0;  /* cdrom_BcdToFrames(func_800800CC()) -- current position in frames */
+g_cdrom_callback_a_saved                                = 0x800A14F4;  /* saved cdrom_SetCallbackA return; restored in saEft00Add_sub */
+g_cdrom_callback_b_saved                                = 0x800A14F8;  /* saved cdrom_SetCallbackB return */
+g_cdrom_header_ptr_saved                                = 0x800A14FC;  /* saved func_80080660_ret -- header pointer */
+g_cdrom_callback_b_obj                                  = 0x80082050;  /* object passed to cdrom_SetCallbackB((s32)&D_80082050) */
+g_cdrom_header_obj                                      = 0x80082320;  /* object passed to tslTmlGetHeda((s32)&D_80082320) */
+
+/* === IRQ handlers + supporting state (2026-05-17) -- 11 highs === */
+/* From ings2.c around line 320-400: vsync (IRQ 0) and CD-ROM (IRQ 3) */
+/* interrupt handlers, plus their callback slot arrays and registrar */
+/* functions.  These are NAMED FUNCTIONS POINTED-TO BY THE IRQ TABLE. */
+/* */
+/* NOTE: conv_matrix_rotation (0x80083320 area) is MISNAMED -- it */
+/* actually initializes the CD-ROM IRQ handler, not matrix rotation. */
+/* See MISNOMERS.md.  Renaming would touch sibling files. */
+irq_vsync_handler                                       = 0x800832F8;  /* IRQ 0 vsync handler: ++g_irq_vsync_counter, dispatches g_irq_vsync_callbacks[0..7] */
+irq_vsync_register_callback                             = 0x80083370;  /* registrar: g_irq_vsync_callbacks[slot] = fn */
+irq_cdrom_handler                                       = 0x80083418;  /* IRQ 3 CD-ROM handler: reads (*g_irq_cdrom_ctrl_reg_ptr >> 24) & 0x7F status bits */
+irq_cdrom_register_callback                             = 0x8008359C;  /* registrar companion to irq_cdrom_handler */
+g_irq_vsync_callbacks                                   = 0x800A2614;  /* 8 x s32 callback slots dispatched by irq_vsync_handler */
+g_irq_vsync_counter                                     = 0x800A2634;  /* volatile s32 vsync tick counter (++D in handler) */
+g_irq_vsync_ctrl_reg_ptr                                = 0x800A2638;  /* pointer to vsync IRQ control register (set to 0x107 in vsync init) */
+g_irq_cdrom_callbacks                                   = 0x800A2640;  /* 8 x s32 callback slots for CD-ROM IRQ; cleared by sys_MemClear2(&D, 8) */
+g_irq_cdrom_ctrl_reg_ptr                                = 0x800A263C;  /* pointer to CD-ROM IRQ control/status register */
+g_irq_cdrom_initialized                                 = 0x800A2668;  /* boolean: 0 = not init, then set to 1 */
+g_ings2_vsync_block_ptr                                 = 0x800A1510;  /* pointer to a vsync timing block; *p read for timing calculations */
+
+/* === Intro/video framebuffer + render state (2026-05-17) -- 6 highs === */
+/* From ings.c: sys_GameInit (line 414) sets up the FMV overlay region; */
+/* func_80016E60 is the intro render loop that double-buffers between */
+/* D_800A3770 and D_800A3774 (toggled by D_800A36AC & 1). */
+g_video_fb_a                                            = 0x800A3770;  /* FMV overlay framebuffer A (= 0x801D8800 in sys_GameInit) */
+g_video_fb_b                                            = 0x800A3774;  /* FMV overlay framebuffer B (= 0x801EBC00); paired with _a, indexed by vsync parity */
+g_video_fb_size                                         = 0x800A3798;  /* = 0x13400 (78848 bytes) -- FMV region total size */
+g_intro_render_active                                   = 0x800A36B0;  /* flag: 0/1; set to 1 during intro render loop */
+g_intro_render_busy                                     = 0x800A3906;  /* flag: 0 init, set during intro/video render */
+g_pad_input_combined                                    = 0x80102794;  /* combined pad input s32; bits 0x100010 = start+select, 0x400040 = cross+circle, 0x10001000 = ? */
+
+/* === GPU packet queue + motion-save state (2026-05-17) -- 7 highs === */
+/* From display.c around lines 880-960.  Additional fields of the GPU */
+/* packet-submission flow that wasn't fully named.  Complement existing */
+/* g_gpu_packet_buffer_64x96 / g_gpu_packet_write_idx / etc. */
+g_gpu_packet_queue_base                                 = 0x80103680;  /* function-pointer field (offset 0) of each 0x60-byte slot in the 64-slot queue; paired with g_gpu_packet_buffer_64x96 (+4) */
+g_gpu_packet_pending_fn                                 = 0x8009BF68;  /* saved arg0 (callback fn) from last GPU-packet submit */
+g_gpu_packet_pending_arg1                               = 0x8009BF6C;  /* saved arg1 from last GPU-packet submit */
+g_gpu_motion_save_a                                     = 0x8009BF80;  /* motion_make_table(0) state saved during async draw */
+g_gpu_motion_save_b                                     = 0x8009BF88;  /* parallel motion_make_table save for outer caller */
+g_gpu_loop_flag                                         = 0x8009BE7C;  /* set to 1 during successful packet submit */
+g_gpu_status_alt_reg                                    = 0x8009BF60;  /* parallel GPU status reg; cleared and written 0x11000002 (GPU primitive header) */
+
+/* === Effect/physics object cluster (2026-05-17) -- 4 highs === */
+/* From text1b.c func_80053304 (line 11052) + func_8005344C (11082): */
+/* D_800A33F4 is the active effect-state pointer; the struct it points */
+/* to has a 96-byte layout with: */
+/*   +0x8/+0xC/+0x10 = vx/vy/vz (current position) */
+/*   +0x18/+0x1C/+0x20 = bx/by/bz (target/base position) */
+/*   +0x5C = handler function pointer */
+/* The flow: compute |b-v| via func_80052754, if <= 0x9C3F (40000) */
+/* reflect v to opposite side of b and set handler = func_80053754; */
+/* otherwise set handler = func_80053E9C. */
+g_effect_active_ptr                                     = 0x800A33F4;  /* pointer to currently-active effect/physics state struct */
+g_effect_struct_a                                       = 0x800EF9F8;  /* effect state struct base (assigned to g_effect_active_ptr in func_80053304) */
+g_effect_struct_a_vfield                                = 0x800EFA00;  /* effect_struct_a + 8 (first vector field, vx) */
+g_effect_struct_b                                       = 0x800EFC38;  /* second effect state struct (parallel to g_effect_struct_a) */
+
+/* === Mode-state pointer cluster (2026-05-17) -- 2 highs === */
+/* From text1b.c around line 17170-17190: same mode-state-alloc */
+/* pattern as practice mode (g_menuctl_mode_state_ptr at 0x800A34FC) */
+/* but for mode 6 (likely result/winner-display, given snd_StopAll() */
+/* preceding).  Used as struct pointer with offsets +0x4 (prev), */
+/* +0x30, +0x34, +0x65 (count), +0x68+i (per-index counters). */
+g_mode_state_ptr_alt                                    = 0x800A36A0;  /* mode-state struct pointer assigned via func_8006E49C; parallel to g_menuctl_mode_state_ptr but for mode 6 (result/winner?) */
+g_mode_state_arg_alt                                    = 0x800A35D8;  /* arg0 saved before func_8006E49C call; parallel to D_800A351C for menuctl */
+
+/* === Fade/transition state machine (2026-05-17) -- 4 highs === */
+/* From text1b.c func_8006EC0C (line 16108): fade-in/out state machine */
+/* with ramp value (D_800A3570: 0..0x1E8 in 0x20 steps), state */
+/* (D_800A3578: 1-4), dispatch table index (D_800A3580), deferred next */
+/* index (D_800A3584). */
+/* Note: D_800A3578 and D_800A35A0 are already named */
+/* g_replay_motion_shared_state_a/b -- the addresses are reused across */
+/* fade + replay-camera + motion-shift contexts. */
+g_fade_value                                            = 0x800A3570;  /* s16 fade ramp value, 0..0x1E8 (488); stepped by +/-0x20 */
+g_fade_dispatch_idx                                     = 0x800A3580;  /* index into g_fade_dispatch_table (= D_8009BC1C) for current fade handler */
+g_fade_next_dispatch_idx                                = 0x800A3584;  /* deferred next dispatch idx (loaded into g_fade_dispatch_idx when ramp completes) */
+g_fade_dispatch_table                                   = 0x8009BC1C;  /* fade-state dispatch table -- (&D_8009BC1C)[g_fade_dispatch_idx](sp10) */
+
+/* === text1b render-state cluster (2026-05-17) -- 7 highs === */
+/* From text1b.c func_800617C8 (line 13643) etc.  Complements existing */
+/* g_text1b_render_state (0x800F116C base), g_text1b_glyph_cursor */
+/* (0x800F1180), g_text1b_render_arg_cache (0x800F1178). */
+/* Multiple "slot families" (a/b/c) each have a 2-byte busy-flag array */
+/* checked before submit; primitive header words 0/1/2 are filled */
+/* from arg0[0..2]. */
+g_text1b_prim_header_0                                  = 0x800F1140;  /* first word of GPU primitive header (filled from arg0[0]) */
+g_text1b_prim_header_1                                  = 0x800F1144;  /* second word (arg0[1]) */
+g_text1b_prim_header_2                                  = 0x800F1148;  /* third word (arg0[2]) */
+g_text1b_slot_a_flags                                   = 0x800F1160;  /* u8[2] busy/active flags for slot family A (gpu cmd 0x210010/11) */
+g_text1b_slot_b_flags                                   = 0x800F1152;  /* u8[2] busy/active flags for slot family B (gpu cmd 0x210002/03) */
+g_text1b_slot_c_flags                                   = 0x800F1164;  /* u8[2] busy/active flags for slot family C */
+g_text1b_render_arg1_cache                              = 0x800F117C;  /* cached caller-arg1 (parallel to g_text1b_render_arg_cache at +0x10) */
+
+/* === Ground/target select cluster (2026-05-17) -- 2 highs === */
+/* From text1b.c func_800493E4 (line 718).  Companion to existing */
+/* g_gnd_target_id_array at 0x800A33E8.  The "group mode" flag */
+/* decides whether the active slot is in the low (<0x33) or high */
+/* (>=0x33) range; arg0 0..0x32 = low, 0x33..0x65 = high. */
+g_gnd_target_group_mode                                 = 0x800A33EC;  /* s32: -1 = uninit, 0 = low-range group (<0x33), 1 = high-range group */
+g_gnd_target_active_slots                               = 0x800EF980;  /* s16 array; D[arg0] = 1 to mark slot active; size >= 0x65 entries */
+
+/* === text1b render color (2026-05-17) -- 1 high === */
+/* Color/flag mask passed to func_80041E10 alongside the text1b render */
+/* state struct.  Set to 24-bit color values like 0xFFFFEF (light yellow), */
+/* 0xC06013 (orange-brown), etc -- BB2's text render-color uniform. */
+g_text1b_render_color                                   = 0x800A3464;  /* 24-bit color/flag mask for text1b primitives; sourced from various per-context setters */
+
+/* === GPU mode tables (2026-05-17) -- 2 highs === */
+/* From gpu.c around line 608-610: gpu init reads (width, height) pairs */
+/* indexed by mode.  Note: 0x8009BEF4 already named */
+/* g_bitmask_table_5_8009BEF4 (5 entries) but is actually */
+/* g_gpu_mode_widths_table (parallel to the heights table below). */
+g_gpu_mode_heights_table                                = 0x8009BF08;  /* 5 s16/s32 height values indexed by GPU mode (paired with widths table at BEF4); s0->height = D[idx] */
+g_gpu_init_msg_buf                                      = 0x8009BE2C;  /* passed as buffer to debug_printf along with &g_gpu_type at gpu init time */
+
+/* === code6cac.c game-state cluster (2026-05-17) -- 9 highs === */
+/* From code6cac.c around lines 827-1500: various game/audio/stage state */
+/* globals discovered through usage-pattern analysis. */
+g_voice_play_state                                      = 0x800A38DC;  /* voice/audio play state (u16): tested with D_800A38DC == 3 etc */
+g_gnd_init_flag                                         = 0x800A36FA;  /* gnd init flag (set to 0 in gnd_init_8001B294) */
+g_stage_id_current                                      = 0x800A36A4;  /* current stage ID passed to game_StageCleanup */
+g_stage_id_prev                                         = 0x800A390E;  /* previous stage ID compared with current for transition detection */
+g_mario_voice_data                                      = 0x800F5328;  /* Mario character voice data block; referenced in mario_getMarioVoiceData_8001B3C0 */
+g_char_class_table                                      = 0x8008E5A8;  /* per-char class lookup; indexed by g_practice_lesson_char_id (D_8010277C) */
+g_round_total_score                                     = 0x800A387C;  /* round score; tested < 0x2711 (10001) limit */
+g_practice_dispatch_active                              = 0x800A38BA;  /* practice mode is dispatching (tested != 0 alongside g_practice_mode_dispatch_idx == 1) */
+g_gnd_init_arg_saved                                    = 0x800A36F6;  /* saved arg from gnd init (`if D_800A36F6 != arg0` re-init check) */
+
+/* === code6cac_b.c char-class lookup tables (2026-05-17) -- 5 highs === */
+/* From code6cac_b.c func_80033DF4 (line 3601, 3645) and surrounding: */
+/* two parallel lookup tables in .data drive the per-character lesson */
+/* and class-offset mapping.  Plus a "pos pointer" used in fighting */
+/* distance calc and a packed state word. */
+g_char_class_id_table                                   = 0x8008D538;  /* per-character class ID lookup; (&D)[char_id] -> class */
+g_char_lesson_idx_table                                 = 0x8008D55C;  /* per-character lesson index table; (&D)[idx] -> lesson byte */
+g_attacker_pos_ptr                                      = 0x800A36B4;  /* attacker struct pointer; +0x20 = pos.x, +0x24 = pos.y (read for dx/dy in coli check) */
+g_practice_state_word                                   = 0x800A3824;  /* practice mode state bitfield (& 1 tested) */
+g_practice_byte_table                                   = 0x801077B0;  /* u8 array indexed in practice flow */
+
+/* === text1a.c text/title render cluster (2026-05-17) -- 7 highs === */
+/* From text1a.c around lines 55, 1093, 1201, 1235 etc.  Stage lighting */
+/* dispatch (paired with already-named g_stage_lighting_ptr_array_6) */
+/* plus a record-pointer system and color conversion. */
+g_text1a_record_ptr                                     = 0x800A3378;  /* current record pointer (240-byte stride array at &D_800A9830 or D_800A9920) */
+g_text1a_record_idx                                     = 0x800A3234;  /* current record index (matched against arg `a2`) */
+g_stage_lighting_idx_table                              = 0x80094E08;  /* u8 lookup; values index into g_stage_lighting_ptr_array_6 */
+g_text1a_buffer_a                                       = 0x800F6340;  /* data buffer passed to func_8004A1FC */
+g_text1a_texture_data                                   = 0x800A9A24;  /* TIM/texture data buffer passed to gpu_LoadImage */
+g_text1a_color_green                                    = 0x800A323A;  /* 12-bit fixed-point green channel ((a1 >> 8) & 0xFF) << 12 / 255 */
+g_text1a_color_blue                                     = 0x800A323C;  /* 12-bit fixed-point blue channel (a1 & 0xFF) << 12 / 255 */
+
+/* === Shadow texture render state (2026-05-17) -- 3 highs === */
+/* From code6cac_c2.c change_shadow_tex_reg (line 935): shadow rendering */
+/* color + state values.  Note: D_800A3358/3360/335C are already named */
+/* g_sleep_menu_cursor_* -- those addresses are reused across subsystems. */
+g_shadow_tex_color                                      = 0x800A3364;  /* shadow texture color (0xF0F0F0 = near-white default) */
+g_shadow_tex_state_a                                    = 0x800A3218;  /* shadow texture state A; converted to bool via `< 1u` */
+g_shadow_tex_state_b                                    = 0x800A321C;  /* shadow texture state B (paired with _a); == 0 check */
+
+/* === Kengo-HIGH function name promotions (2026-05-17) -- 18 highs === */
+/* Functions marked with `kengo:HIGH` comments in src/ -- Kengo (PS2 */
+/* sequel) reused most of BB2's engine code, so its symbol names are */
+/* generally accurate for BB2 functions where the function body matches. */
+/* These were noted in src/ comments but never promoted into */
+/* named_syms.txt. */
+single_game_setModeRequest                              = 0x8001924C;  /* in code6cac.c */
+md_game_rob_data_init                                   = 0x8001F860;
+single_game_CheckStatusUpDataTotalOver                  = 0x8002006C;
+single_game_SetAbilityData                              = 0x800206B0;
+camera_set_zoom                                         = 0x80023C30;
+special_camera_Init                                     = 0x8002D320;
+saTan2LinePrimInit                                      = 0x8002EA24;
+coli_check_circle_hit_line                              = 0x8002FF20;
+special_camera_Exec                                     = 0x80036D88;
+md_game_check_change_sub_mode                           = 0x80054F68;
+cpu_side_move_dir_2                                     = 0x8003C2C0;
+damage_DebugDisp                                        = 0x80038148;
+pad_ClearAppliBuffer                                    = 0x8003A6FC;
+motion_make_table                                       = 0x80082D34;
+coli_HitPauseKatana_2                                   = 0x80089D10;
+cpu_side_move_dir_3                                     = 0x8008C184;
+saEft00Add                                              = 0x800826CC;
+efc_rob_set_type_flash                                  = 0x80044B30;
+/* Skipped: replay_camera_get_attack_number at 0x8003E6A0 -- name */
+/* collides with same-named real impl that BB2's wrapper at this addr */
+/* calls (already named separately as replay_camera_get_attack_number_2arg). */
+
+/* === Mario character voice/gauge data cluster (2026-05-17) -- 9 highs === */
+/* From code6cac.c:1068 mario_getMarioVoiceData_8001B3C0 (one-line def). */
+/* The function copies voice data block fields (a0+0x180/+0x184/+0x188) */
+/* into g_mario_voice_data and resets a 4-gauge max/cur pair set to */
+/* 100/0 defaults.  Each gauge has a max and cur field at adjacent halfwords. */
+g_mario_voice_pos_x                                     = 0x800F532C;
+g_mario_voice_pos_y                                     = 0x800F5330;
+g_mario_gauge_a_max                                     = 0x800F5358;  /* init 0x64 */
+g_mario_gauge_a_cur                                     = 0x800F535A;  /* init 0 */
+g_mario_gauge_b_max                                     = 0x800F535C;  /* init 0x64 */
+g_mario_gauge_c_max                                     = 0x800F5360;  /* init 0x64 */
+g_mario_gauge_c_cur                                     = 0x800F5362;  /* init 0 */
+g_mario_gauge_d_max                                     = 0x800F5364;  /* init 0x64 */
+g_mario_voice_init_flag                                 = 0x800F5368;
+
+/* === Ground/arena init cluster (2026-05-17) -- 14 highs === */
+/* From code6cac.c:1067 gnd_init_8001B294(p1_char_ptr, p2_char_ptr). */
+/* Sets up midpoint X/Y/Z of the two fighters (camera anchor), 4 gauge */
+/* fields with max/cur defaults (100/0), facing angle, and round timer. */
+g_gnd_midpoint_x                                        = 0x800F6608;  /* midpoint of P1/P2 X positions (camera anchor) */
+g_gnd_midpoint_y                                        = 0x800F660C;  /* midpoint Y */
+g_gnd_midpoint_z                                        = 0x800F6610;  /* midpoint Z */
+g_gnd_camera_flag                                       = 0x800F6618;  /* reset to 0 (some camera/state flag) */
+g_gnd_facing_angle                                      = 0x800F661A;  /* facing angle in BAM (0x400 - enemy_char_id) */
+g_gnd_misc_counter                                      = 0x800F661C;  /* counter reset to 0 */
+g_gnd_round_time_max                                    = 0x800F6620;  /* round timer max = 0x1388 (5000 frames) */
+g_gnd_init_complete_flag                                = 0x800F6626;  /* init flag (reset to 0 at end of init) */
+g_gnd_gauge_a_max                                       = 0x800F6638;  /* gauge A max = 0x64 (100) */
+g_gnd_gauge_a_cur                                       = 0x800F663A;  /* gauge A current = 0 */
+g_gnd_gauge_b_max                                       = 0x800F663C;  /* gauge B max = 0x64 */
+g_gnd_gauge_c_max                                       = 0x800F6640;  /* gauge C max = 0x64 */
+g_gnd_gauge_c_cur                                       = 0x800F6642;  /* gauge C current = 0 */
+g_gnd_gauge_d_max                                       = 0x800F6644;  /* gauge D max = 0x64 */
+
+/* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
+/* Medium-confidence Kengo matches.  Bodies have similar shape but */
+/* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
+/* as a starting point for future analysis. */
+myRobGeneiMove                                          = 0x8001B690;
+mario_test_Exec                                         = 0x8001E404;
+calc_loc_mat_fw                                         = 0x8002BC68;
+PutRobShadow                                            = 0x8002C61C;
+saTan0KiWareMoveB                                       = 0x8002DE20;
+motion_SetMotion                                        = 0x800392B8;
+saSeInit_2                                              = 0x800395B4;
+saTan5TakeAnim2_2                                       = 0x800841E0;
+saTan4GaugeInit                                         = 0x80084A7C;
+SetBloodSpot                                            = 0x800856B0;
+AllocBukiRmd                                            = 0x80089F3C;
+saTan2Main                                              = 0x8008AE24;
+saTan1MainJump                                          = 0x8008BB24;
+SetPacketData                                           = 0x8008C464;
+rob_life_ctrl                                           = 0x80040A78;
+mot_data_set                                            = 0x8004283C;
+hirahira_w_ctrl_2                                       = 0x8004A348;
+hirahira_w_frie                                         = 0x800520B8;
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
@@ -1350,3 +1651,254 @@ g_rcnt0_event_timeout                                   = 0x800A3850;  /* bios_O
 g_memcard1_poll_count                                   = 0x800A3924;  /* incremented in memcard_PollEventsWithTimeout; forces result=2 after >=0x78 ticks */
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
+
+/* === Bulk-promotion: 222 semantic-named functions defined in src/ (2026-05-17) === */
+/* These functions had proper names in their C source but no addr binding */
+/* in named_syms.txt.  Addresses derived from asm/funcs/<name>.s. */
+AddTbpOfst                                              = 0x80087E3C;
+AddTbpOfst_80047EE8                                     = 0x80047EE8;
+AllocRobRmd                                             = 0x80040594;
+DispHira                                                = 0x8003E6D8;
+DispPracticeMenuTex_A                                   = 0x8001B748;
+DispPracticeMenuTex_B                                   = 0x80020E74;
+DispPracticeMenuTex_C                                   = 0x800290B8;
+DispSamnailWindow                                       = 0x800344B4;
+DispSchoolBG                                            = 0x8002EBDC;
+DispSleepMenuTex                                        = 0x8003D52C;
+DispStuff                                               = 0x80083E9C;
+DispUpdateStatusMessage                                 = 0x800889D4;
+EndADRSound                                             = 0x80020D38;
+FadeOut_8003FFA8                                        = 0x8003FFA8;
+FadeOut_8003FFC4                                        = 0x8003FFC4;
+GetAllocPacketSize                                      = 0x8005B644;
+InitFadePanel                                           = 0x80052C10;
+InitHiraRmd_80041AC8                                    = 0x80041AC8;
+InitHiraRmd_80047FBC                                    = 0x80047FBC;
+InitHiraRmd_800480C0                                    = 0x800480C0;
+LWCard_SetAccessData                                    = 0x8001BE08;
+Pad_Prs                                                 = 0x80032314;
+PutShadowRmd                                            = 0x800401CC;
+ReturnVSMode                                            = 0x8008AF58;
+SetCurrentCursor                                        = 0x8003C714;
+Vu0SetLightColMatrix_800801E8                           = 0x800801E8;
+Vu0SetLightColMatrix_80080208                           = 0x80080208;
+Vu0SetLightColMatrix_80080640                           = 0x80080640;
+Vu0SetLightColMatrix_80080684                           = 0x80080684;
+action_CheckHitZangeki                                  = 0x800863DC;
+ang_hosei                                               = 0x800836C8;
+ang_hosei_8003F62C                                      = 0x8003F62C;
+ang_hosei_80056FE8                                      = 0x80056FE8;
+bb2_memcpy                                              = 0x80079120;
+calc_fc_frame                                           = 0x80044378;
+calc_fc_frame_800203B4                                  = 0x800203B4;
+calc_loc_mat_fw_80055B60                                = 0x80055B60;
+calc_teasi_loc_fw                                       = 0x80027AD8;
+camera_SetMatrix_8001DA8C                               = 0x8001DA8C;
+camera_SetMatrix_8001DBE4                               = 0x8001DBE4;
+camera_SetMatrix_8003E164                               = 0x8003E164;
+camera_check_inside_screen_rob_dpos                     = 0x80053614;
+camera_get_rot_normal_rad                               = 0x800784E4;
+camera_set_target_zoom                                  = 0x8001CE60;
+change_shadow_tex_reg                                   = 0x8003D2F4;
+coli_CheckBukiPreHit_80088088                           = 0x80088088;
+coli_CheckBukiPreHit_800880B8                           = 0x800880B8;
+coli_HitPauseKatana                                     = 0x800893D8;
+conv_matrix_rotation                                    = 0x800833C8;
+cpu_check_move_dir_pattern_enemy_attack                 = 0x8001BC70;
+cpu_check_run_attack                                    = 0x80018300;
+cpu_check_tubazeri                                      = 0x8002FC80;
+cpu_check_tubazeri_2                                    = 0x800307D0;
+cpu_get_move_pattern_table_number                       = 0x8001EA84;
+cpu_reset_dir                                           = 0x8006D324;
+cpu_set_move_command_and_dir_for_no_action              = 0x800338CC;
+cpu_set_move_command_and_dir_for_no_action_2            = 0x80017200;
+cpu_side_move_dir                                       = 0x80027640;
+cpu_side_move_dir_4                                     = 0x80080DB0;
+debug_printf                                            = 0x80079208;
+efc_buki_ZanzouClose                                    = 0x8006EA28;
+efc_buki_draw_zanzou                                    = 0x800482C8;
+efc_rob_Close                                           = 0x8006919C;
+efc_rob_Init                                            = 0x80040304;
+efc_rob_set_type_particle                               = 0x80045B68;
+exec_game                                               = 0x800896A0;
+game_2d_CheckLifeGaugeNoDisp                            = 0x80052A20;
+game_Cleanup                                            = 0x80061178;
+game_FrameInit                                          = 0x80036EC0;
+game_FrameLoop                                          = 0x80036F40;
+get_point_value                                         = 0x8005B50C;
+gnd_close_8001DB9C                                      = 0x8001DB9C;
+gnd_close_8004939C                                      = 0x8004939C;
+gnd_disp_loop_ctrl                                      = 0x800174F4;
+gnd_get_fog                                             = 0x80060E04;
+gnd_init_8001B294                                       = 0x8001B294;
+gnd_init_80041688                                       = 0x80041688;
+gnd_land_hit_char_tsuba                                 = 0x8005D554;
+gnd_load_tex                                            = 0x80041398;
+gnd_open                                                = 0x8003E22C;
+gpu_DrawOTag                                            = 0x8007B93C;
+gpu_DrawSync                                            = 0x8007B33C;
+gpu_GetDrawEnv                                          = 0x8007BBD0;
+gpu_LoadImage                                           = 0x8007B600;
+gpu_SendPacket                                          = 0x8007B8DC;
+gpu_SetDispMask                                         = 0x8007B2A0;
+gpu_StoreImage                                          = 0x8007B664;
+hirahira_w_ctrl                                         = 0x80041188;
+katinuki_game_getMyWeaponId                             = 0x80027334;
+katinuki_game_setData_8003D2C4                          = 0x8003D2C4;
+katinuki_game_setData_800548DC                          = 0x800548DC;
+leaf_muki_awase_800421A4                                = 0x800421A4;
+leaf_muki_awase_800444E0                                = 0x800444E0;
+mario_getMarioVoiceData_8001B3C0                        = 0x8001B3C0;
+mario_getMarioVoiceData_8001C820                        = 0x8001C820;
+mario_getMarioVoiceData_80048AD0                        = 0x80048AD0;
+mario_getMarioVoiceData_8005BE84                        = 0x8005BE84;
+marionation_Exec                                        = 0x80081030;
+marionation_camera_Exec                                 = 0x80018094;
+marionation_camera_GetMaxFrame                          = 0x80037260;
+md_game_check_change_main_mode_katinuki                 = 0x8008A928;
+md_game_check_mode                                      = 0x8003EDC0;
+md_game_end                                             = 0x80086818;
+md_mtest_init                                           = 0x80045824;
+md_option_reset_8004001C                                = 0x8004001C;
+md_option_reset_80040068                                = 0x80040068;
+md_option_reset_800400B0                                = 0x800400B0;
+mk_g2l                                                  = 0x800278C0;
+motion_Close_8001D904                                   = 0x8001D904;
+motion_Close_8001D998                                   = 0x8001D998;
+motion_LoadPreCalcData_80037F08                         = 0x80037F08;
+motion_LoadPreCalcData_8005B98C                         = 0x8005B98C;
+motion_LoadPreCalcData_8007DC68                         = 0x8007DC68;
+motion_Open                                             = 0x80083794;
+motion_SavePreCalcData_8003A3F0                         = 0x8003A3F0;
+motion_SavePreCalcData_8003A574                         = 0x8003A574;
+motion_SavePreCalcData_80080014                         = 0x80080014;
+motion_SavePreCalcData_8008003C                         = 0x8008003C;
+motion_SavePreCalcData_80080064                         = 0x80080064;
+motion_SetExMotion                                      = 0x80065800;
+motion_ShiftControl                                     = 0x80070F78;
+motion_shift_check_m_hit_stop                           = 0x8003877C;
+mottest_disp                                            = 0x80033BC0;
+obj_ExecTask                                            = 0x8005BA6C;
+obj_InitAll                                             = 0x8005B72C;
+obj_InitChars                                           = 0x8005B5AC;
+obj_InitPair                                            = 0x8005B868;
+obj_InitTask                                            = 0x8005B9C4;
+obj_InitTaskCamera                                      = 0x8005B9FC;
+obj_Reset                                               = 0x8005BF3C;
+pad_FuncAnalog                                          = 0x800383A4;
+pad_Init                                                = 0x80078D68;
+pad_button_info_clear                                   = 0x80022568;
+pad_main_control                                        = 0x8002E6B0;
+player_Destroy                                          = 0x800415C4;
+player_SetCharId                                        = 0x80041604;
+replay_camera_attack                                    = 0x80070188;
+replay_camera_get_attack_number                         = 0x8003E2D8;
+replay_camera_rob_back_loose2                           = 0x80035618;
+rob_ScaleMarioInit                                      = 0x80042864;
+rob_calc_2d_position                                    = 0x80040B44;
+rob_life_ctrl_2                                         = 0x80042504;
+saEft01Init                                             = 0x80081BB0;
+saFidLoad                                               = 0x8005C4C0;
+saMotionSet                                             = 0x8006E480;
+saRobDraw                                               = 0x80035E38;
+saSeInit                                                = 0x8002E838;
+saSeMain_80045510                                       = 0x80045510;
+saSeMain_80045600                                       = 0x80045600;
+saTan0GaugeDraw                                         = 0x80088D0C;
+saTan0KiWareMoveA                                       = 0x8002D780;
+saTan0Main                                              = 0x80084CC0;
+saTan1GaugeInit                                         = 0x80060C60;
+saTan1GaugeMain                                         = 0x800753D8;
+saTan2GaugeInit_80077B20                                = 0x80077B20;
+saTan2GaugeInit_80077D00                                = 0x80077D00;
+saTan2InfoInit_80044F80                                 = 0x80044F80;
+saTan2InfoInit_8006C1FC                                 = 0x8006C1FC;
+saTan2InfoInit_80077A60                                 = 0x80077A60;
+saTan2InfoInit_80077AC0                                 = 0x80077AC0;
+saTan2KabutoWareMove                                    = 0x800283D0;
+saTan3GaugeMain_8006A564                                = 0x8006A564;
+saTan3GaugeMain_80073200                                = 0x80073200;
+saTan3MainJump                                          = 0x800288C8;
+saTan4FireDisp_80048864                                 = 0x80048864;
+saTan4GaugeMain                                         = 0x8006C21C;
+saTan5GetTakeCutAnimType                                = 0x80048B8C;
+saTan5TakeAnim2                                         = 0x8002D518;
+saTan5TakeGetCnt                                        = 0x800404D8;
+saTan5TakeGetPos_80045230                               = 0x80045230;
+saTan5TakeGetPos_80045694                               = 0x80045694;
+saTanMainDispGnd_800444BC                               = 0x800444BC;
+saTanMainDispGnd_80046020                               = 0x80046020;
+saTanMainDispGnd_80077A04                               = 0x80077A04;
+save_vc_ctrl                                            = 0x800414FC;
+se_data_set                                             = 0x8001D790;
+seq_GetState                                            = 0x80045194;
+seq_Reset                                               = 0x80045188;
+seq_Start                                               = 0x800450BC;
+single_game_SetStageId                                  = 0x8003E2A0;
+single_game_SetStatusUpData                             = 0x80055138;
+single_game_getEnemyCharId                              = 0x8007FD5C;
+special_camera_set_win_cam                              = 0x80036140;
+sys_VSync                                               = 0x800828CC;
+tslCDFileRead                                           = 0x80087FE8;
+tslDmaDrawListDelAll                                    = 0x8007EFFC;
+tslFileClose                                            = 0x80045A28;
+tslGlobalMemFree_8005C2A8                               = 0x8005C2A8;
+tslGlobalMemFree_800861BC                               = 0x800861BC;
+tslPolyF4Init                                           = 0x800804BC;
+tslTm2LoadImage                                         = 0x800812FC;
+tslTm2LoadImage_2                                       = 0x80082000;
+tslTmlGetHeda                                           = 0x80080660;
+
+/* === asm/funcs bulk promotion: 51 BIOS/library wrappers + helpers (2026-05-17) === */
+/* asm/funcs/<name>.s files with semantic names not yet in named_syms.txt. */
+coli_hit_body_weapon                                    = 0x80030580;
+CalcHiraNormal                                          = 0x8003EB84;
+calc_loc_mat_fw_8004A940                                = 0x8004A940;
+saTan2LineDraw                                          = 0x8004BCC0;
+myRobGeneiOpen                                          = 0x800545F4;
+bios_Exec                                               = 0x80078948;
+bios__bu_init_A0                                        = 0x80078958;
+bios_SetMem                                             = 0x80078968;
+bios_OpenEvent                                          = 0x80078978;
+bios_CloseEvent                                         = 0x80078988;
+bios_TestEvent                                          = 0x80078998;
+bios_EnableEvent                                        = 0x800789A8;
+EnterCriticalSection                                    = 0x800789B8;
+ExitCriticalSection                                     = 0x800789C8;
+bios_FileOpen_B                                         = 0x800789E8;
+bios_FileRead_B                                         = 0x800789F8;
+bios_FileWrite_B                                        = 0x80078A08;
+bios_FileClose_B                                        = 0x80078A18;
+bios_FormatDevice_B                                     = 0x80078A28;
+bios_firstfile_B                                        = 0x80078A38;
+bios_nextfile_B                                         = 0x80078A48;
+bios_ChangeClearPad                                     = 0x80078A58;
+bios_InitPad                                            = 0x80078F00;
+bios_StartPad                                           = 0x80078F10;
+bios_StopPad                                            = 0x80078F20;
+bios_OutdatedPadInitAndStart                            = 0x80078F30;
+bios_SysEnqIntRP                                        = 0x80078F40;
+bios_SysDeqIntRP                                        = 0x80078F50;
+bios_A0_0xAB_wrapper                                    = 0x8007A2F8;
+bios_A0_0xAC_wrapper                                    = 0x8007A308;
+bios__card_write                                        = 0x8007A350;
+bios__new_card                                          = 0x8007A360;
+bios_InitCard                                           = 0x8007A428;
+bios_StartCard                                          = 0x8007A438;
+bios_StopCard                                           = 0x8007A448;
+gpu_ClearOTag                                           = 0x8007B78C;
+bios_GPU_cw                                             = 0x8007DF10;
+D_8007E08C                                              = 0x8007E08C;
+calc_fc_frame_8007EC5C                                  = 0x8007EC5C;
+motutil_GetWalkDir                                      = 0x8007F35C;
+bios_DeliverEvent                                       = 0x8008008C;
+bios_ChangeClearRCnt                                    = 0x80082AB0;
+bios_CdRemove_A0                                        = 0x800831D8;
+bios_ReturnFromException                                = 0x800831F0;
+bios_SetDefaultExitFromException                        = 0x80083200;
+bios_SetCustomExitFromException                         = 0x80083210;
+md_gview_init                                           = 0x800836B8;
+bios_InitHeap                                           = 0x8008386C;
+bios_DisableEvent                                       = 0x80089374;
+CheckFadeEnd                                            = 0x8008AAC4;
+bios_AddDevice_B                                        = 0x8008D050;
