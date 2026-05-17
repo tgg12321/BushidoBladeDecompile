@@ -1195,6 +1195,25 @@ g_motion_ex_state_id1_pos                               = 0x800F0CAC;  /* record
 g_motion_ex_state_id1_extra                             = 0x800F0CB0;
 g_motion_ex_state_id1_data_ptr                          = 0x800F0CB4;
 
+/* === Pulled from symbol_addrs.txt (2026-05-17) -- 14 names === */
+/* Pre-existing semantic names in symbol_addrs.txt that hadn't been */
+/* promoted into named_syms.txt.  These are project-blessed names */
+/* from prior analysis. */
+g_data_start                                            = 0x8008D070;  /* start of .data section */
+g_module_func_tbl                                       = 0x8008D090;  /* mode dispatch table (D_800A3834 indexes into this) */
+menuDat                                                 = 0x8008DCCC;  /* menu data block */
+cpu_practice_honmokuroku_data_tbl                       = 0x8008E778;  /* CPU practice exercise list ("honmokuroku") */
+single_dojo_yaburi_char_id_tbl                          = 0x8008EB56;  /* single-player dojo-challenge character IDs */
+SpecialCam                                              = 0x8008EC34;  /* special camera data block (referenced by replay-camera) */
+StatusUpBuf                                             = 0x800906A6;  /* status-up display buffer */
+InfoPosYTbl1                                            = 0x80099D54;  /* info Y-position table */
+UesrWorkDef                                             = 0x8009ADD8;  /* user work def (sic: original spelling) */
+chractar_use_pset_combo_id_table                        = 0x8009BA7C;  /* character preset-combo ID table (sic) */
+light_effect_col                                        = 0x800A3D70;  /* light effect color value */
+videoDec                                                = 0x800F0D80;  /* video decoder state */
+MarioCam_str                                            = 0x800F19D0;  /* MarioCam structure */
+selCharaID                                              = 0x80102092;  /* selected character ID */
+
 /* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
 /* Clusters driven by already-named consumer functions; semantic name */
 /* derived from consumer role.  See docs/naming/RODATA_RECORD_SCHEMA.md */
