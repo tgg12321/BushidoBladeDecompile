@@ -1061,4 +1061,17 @@ g_bitmask_table_4_8009BCD4                              = 0x8009BCD4;  /* 4 entr
 g_bitmask_table_4_8009BD70                              = 0x8009BD70;  /* 4 entries */
 g_bitmask_table_5_8009BEF4                              = 0x8009BEF4;  /* 5 entries */
 
+/* === Rodata record-cluster pass (2026-05-17) -- 9 high-confidence === */
+/* Fixed-stride record clusters identified by sequential-label stride scan. */
+/* See docs/naming/RODATA_RECORD_SCHEMA.md for the full 114-cluster catalog. */
+g_motion_descriptor_table_5x16                          = 0x8008D754;  /* 5 records x 16 bytes (referenced from g_per_record_ptr_table_8008D86C) */
+g_motion_descriptor_table_10x16                         = 0x8008D7C4;  /* 10 records x 16 bytes (companion cluster) */
+g_char_pose_data_table_3x68                             = 0x8008DA50;  /* 3 records x 68 bytes (.short) -- per-character pose/position data */
+g_char_anim_curve_table_3x324                           = 0x8008DE34;  /* 3 records x 324 bytes (.word) -- per-character animation curves */
+g_move_pattern_table_a_4x204                            = 0x8008F220;  /* 4 records x 204 bytes -- per-character move pattern A */
+g_move_pattern_table_b_4x204                            = 0x8008F6C8;  /* 4 records x 204 bytes -- per-character move pattern B (same header as A) */
+g_move_pattern_table_c_5x224                            = 0x8008FA0C;  /* 5 records x 224 bytes -- per-character move pattern C */
+g_move_pattern_table_d_3x224                            = 0x8008FF2C;  /* 3 records x 224 bytes -- per-character move pattern D */
+g_char_sprite_bitmap_block_3x8320                       = 0x80090740;  /* 3 records x 8320 bytes -- per-character sprite/font bitmap (16-bit row data) */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
