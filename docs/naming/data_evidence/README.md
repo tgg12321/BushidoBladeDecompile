@@ -33,6 +33,21 @@ already-named functions from the 10-function batch in `evidence/`:
 | [D_8009BD24.md](D_8009BD24.md) | `g_disp_config` | medium-high | Display-config struct loaded by `disp_load_config_from_buf` |
 | [D_800A379E.md](D_800A379E.md) | `g_motion_state_code` | medium-high | Motion-state s16 returned by `game_state_advance` |
 
+Per-character state struct batch (2026-05-17), three symbols + one
+struct-shape documentation:
+
+| File | Proposed name | Confidence | Why |
+|------|---------------|-----------:|-----|
+| [D_80101F00_char_state.md](D_80101F00_char_state.md) | `g_char_state[]` (struct base) | medium | 1100-byte per-character struct; partial field layout decoded |
+| [D_800A3860.md](D_800A3860.md) | `g_motion_data_base_ptr` | medium-high | Array of per-character data-region base pointers (3 sibling slots initialised together at known upper-RAM addresses) |
+| [D_801027B0.md](D_801027B0.md) | `g_motion_keyframe_table_ptr` | medium | 20-byte-stride per-character motion-keyframe table pointer array (5 tables per character?) |
+
+The per-character struct base (`D_80101F00`) doesn't have an
+auto-detected symbol -- no asm references byte 0 of the struct
+directly. The evidence file documents the struct *shape* and the
+decoded fields so a future reviewer can either name the base
+manually or name each field-level symbol consistently.
+
 ## Workflow
 
 Each evidence file follows the same skeleton:
