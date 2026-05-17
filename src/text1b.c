@@ -15237,6 +15237,9 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
         *(s16 *)(p + 10) = 0x30;
         *(s16 *)(p + 12) = 0xCC;
         *(s16 *)(p + 14) = 0xB0;
+        gpu_SetSemiTransp(p, 1);
+        ot_Link((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        p += 0x10;
     } else if (mode == 1) {
         initTile(p);
         func_80069A30(p);
@@ -15244,6 +15247,9 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
         *(s16 *)(p + 10) = 0x30;
         *(s16 *)(p + 12) = 0x202;
         *(s16 *)(p + 14) = 0xB0;
+        gpu_SetSemiTransp(p, 1);
+        ot_Link((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        p += 0x10;
     } else {
         initTile(p);
         func_80069A30(p);
@@ -15251,12 +15257,11 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
         *(s16 *)(p + 10) = 0x3A;
         *(s16 *)(p + 12) = 0x126;
         *(s16 *)(p + 14) = 0xAB;
+        gpu_SetSemiTransp(p, 1);
+        ot_Link((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        p += 0x10;
     }
-    gpu_SetSemiTransp(p, 1);
-    ot_Link((u32 *)(D_800A374C + 0x44), (u32 *)p);
-    p += 0x10;
     arg0[6] = (s32)p;
-
     s.sp2C = 0x12;
     s.sp40 = 0;
     s.sp28 = 0;
