@@ -2265,6 +2265,12 @@ g_pad_rec_bit_count_a                                   = 0x800A3908;  /* accumu
 g_pad_rec_bit_count_b                                   = 0x800A38FC;  /* accumulated count of set bits in g_pad_rec_validated_packed's lo word */
 g_pad_rec_misc_counter                                  = 0x800A38D0;  /* paired counter reset alongside _a/_b in func_8003B130 / func_80037804 */
 
+/* === Scene init flags + arg saves (2026-05-17) -- 4 highs === */
+g_scene_already_init_flag                               = 0x800A31D8;  /* 0 = first init, != 0 = re-init (triggers obj_InitAll cleanup); always set to 1 after */
+g_scene_another_init_flag                               = 0x800A31E4;  /* paired init flag (= 0 / = 1 set) */
+g_scene_arg_saved                                       = 0x800A3854;  /* arg saved by scene setter; reset to 0 then assigned arg0 */
+g_scene_alt_arg_saved                                   = 0x800A3840;  /* paired arg save (reset to 0 in same flow) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
