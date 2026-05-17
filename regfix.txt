@@ -499,11 +499,11 @@ func_80019310: subst "\$12,\$6" "$3,$6" @ 21
 # After swap, TEXT 22 is "addu $12,$2,$12" -> change to "addu $2,$2,$3"
 func_80019310: subst "\$12,\$2,\$12" "$2,$2,$3" @ 22
 # Insert "move t4,v0" (addu $12,$2,$0) right after TEXT 23 (post-insert idx) before .word lwc2
-func_80019310: insert_after "addu $12,$2,$zero" @ 23
 # Prologue: insert nop at TEXT 3 for load-use hazard after reorder
 func_80019310: insert "nop" @ 3
 # Prologue: reorder TEXT 1-2 (post-insert indices) to swap lw and move
 func_80019310: reorder 2,1 @ 1-2
+func_80019310: $3 <-> $5 @ 46-46
 
 # func_80045294: move i++ to fill load delay slot in first loop
 # Delete i++ at 21 and nop at 25 (original maspsx indices)
