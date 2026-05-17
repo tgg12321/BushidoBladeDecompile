@@ -74,6 +74,32 @@ unnamed `D_*` pool:
 The 6 highs from this batch were applied to `named_syms.txt` in the
 same commit (SHA1-verified clean rebuild).
 
+Continuing pass batch 5 (2026-05-17), next 18 symbols from ranks 31-60:
+
+| File | Proposed name | Confidence | Why |
+|------|---------------|-----------:|-----|
+| [D_800A3044.md](D_800A3044.md) | `g_spu_reg_base_ptr` | high | SPU register block pointer; volatile-u16 +0xA OR'd with 0x20 == voice on/off |
+| [D_80106F28.md](D_80106F28.md) | `g_seq_bank_table` | high | bank pointer table; per-channel stride 0xB0 matches func_8008{5114,5210,5064} |
+| [D_800A334C.md](D_800A334C.md) | `g_motion_play_countdown` | high | u8 watchdog set to 0x5A (1.5s); paired with g_seq_active_voice_mask |
+| [D_800A3874.md](D_800A3874.md) | `g_match_round_index` | high | monotonic round counter; indexes D_800A377C and the per-round ranking table |
+| [D_800A3418.md](D_800A3418.md) | `g_gnd_landing_rand_seed` | medium | XOR'd with bb2_rand each tick; scaled to spawn-offset values |
+| [D_800A377C.md](D_800A377C.md) | `g_match_round_result_table` | medium | byte array indexed by g_match_round_index; {0,1,2} outcomes |
+| [D_800F33D8.md](D_800F33D8.md) | `g_pad_analog_state` | medium | block address passed to pad_FuncAnalog helpers |
+| [D_80104E80.md](D_80104E80.md) | `g_blood_spot_timer` | medium | SetBloodSpot countdown (60 or 120 frames) |
+| [D_800A36A4.md](D_800A36A4.md) | `g_se_active_set_id` | medium | currently-loaded SE data set ID in se_data_set |
+| [D_800F1140.md](D_800F1140.md) | `g_text_render_v3_0` | medium | first of 3 consecutive cached vector slots in text/UI render |
+| [D_800F1144.md](D_800F1144.md) | `g_text_render_v3_1` | medium | second of the v3 triple |
+| [D_800F1148.md](D_800F1148.md) | `g_text_render_v3_2` | medium | third of the v3 triple |
+| [D_800A3464.md](D_800A3464.md) | `g_text_render_mask` | medium | mask companion to the v3 triple |
+| [D_800A31F4.md](D_800A31F4.md) | `g_pad_analog_mode` | medium | small enum (3/5) in pad_FuncAnalog |
+| [D_800A3207.md](D_800A3207.md) | `g_motion_init_flag` | medium | init-once flag in motion_SetMotion |
+| [D_800A3894.md](D_800A3894.md) | `g_seq_start_pending` | medium | pending-seq-start flag checked in md_game_check_change_sub_mode |
+| [D_800A3844.md](D_800A3844.md) | `g_mental_bar_cursor` | medium | suDispMentalBar packet append cursor |
+| [D_800A38A4.md](D_800A38A4.md) | `g_cpu_move_dir_state` | medium | CPU AI move-dir sub-state, range-checked {4,5} |
+
+The 4 highs from this batch were applied to `named_syms.txt` in the
+same commit.
+
 ## Workflow
 
 Each evidence file follows the same skeleton:
