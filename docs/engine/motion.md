@@ -268,5 +268,90 @@ previous frame's pose, blended into the framebuffer.
   functions in the binary (1000+ instructions each)
 - Much of the `text1b.c` 11421-13840 range (motion utility helpers,
   ex-motion state tables, etc.)
-- `motion_make_table` (referenced in `display.c:853`) — motion-table
-  precomputer
+- `motion_make_table` — now identified at `0x80082D34` (was previously
+  marked "referenced in display.c:853" without a known location)
+
+## Motion-ex per-id state arrays (2026-05-17)
+
+The engine maintains 8 parallel "motion-ex" slots (IDs 0-7), each with
+a 12-byte state block plus per-id flag and counter cells.  Each slot
+is initialized by its own dedicated `motion_ex_Init_idN` function.
+
+### State block table — `0x800F0CA0`
+
+Stride 12 bytes per ID, 8 IDs total:
+
+| ID | Pos field | Extra field | Data ptr field |
+|----|-----------|-------------|----------------|
+| 0  | `g_motion_ex_state_id0_pos` (0x800F0CA0) | _id0_extra (0x800F0CA4) | _id0_data_ptr (0x800F0CA8) |
+| 1  | _id1_pos (0x800F0CAC) | _id1_extra (0x800F0CB0) | _id1_data_ptr (0x800F0CB4) |
+| 2  | _id2_pos (0x800F0CB8) | _id2_extra (0x800F0CBC) | _id2_data_ptr (0x800F0CC0) |
+| 3  | _id3_pos (0x800F0CC4) | _id3_extra (0x800F0CC8) | _id3_data_ptr (0x800F0CCC) |
+| 4  | _id4_pos (0x800F0CD0) | _id4_extra (0x800F0CD4) | _id4_data_ptr (0x800F0CD8) |
+| 5  | _id5_pos (0x800F0CDC) | _id5_extra (0x800F0CE0) | _id5_data_ptr (0x800F0CE4) |
+| 6  | _id6_pos (0x800F0CE8) | _id6_extra (0x800F0CEC) | _id6_data_ptr (0x800F0CF0) |
+| 7  | _id7_pos (0x800F0CF4) | _id7_extra (0x800F0CF8) | _id7_data_ptr (0x800F0CFC) |
+
+(All entries named `g_motion_ex_state_idN_*`; abbreviated above for table width.)
+
+### Per-id init functions
+
+| ID | Init function | Address |
+|----|--------------|---------|
+| 1 | `motion_ex_Init_id1` | `0x80064ED8` |
+| 2 | `motion_ex_Init_id2` | `0x80064F20` |
+| 3 | `motion_ex_Init_id3` | `0x80064F68` |
+| 4 | `motion_ex_Init_id4` | `0x80064FB4` |
+| 5 | `motion_ex_Init_id5` | `0x80065000` |
+
+Each init reads 3 fields from `g_text1b_render_buf_ptr` (D_800A347C),
+writes them to its state block, sets the per-id flag, resets the
+per-id counter.
+
+### Per-id flag table — `g_motion_state_flag_table` (`0x800F10D0`)
+
+24-entry s32 flag table; index from `*(u16*)D_800A3468` (the text1b
+render state).  The previously-named `g_motion_ex_flag_table_4`
+(`0x800F10E0`) is actually +0x10 from the true base — it's index 4
+of this larger table.  Per-id flag aliases for IDs 1-3 exist
+(`g_motion_ex_flag_id1/2/3` at +4/+8/+0xC); IDs 4-7 don't follow
+strict +4 stride (see init functions for actual mapping).
+
+### Per-id counter table — `g_motion_ex_counter_table_base` (`0x800F0BA8`)
+
+2-byte stride per motion ID; tick counter (reset to 0 in init):
+
+| ID | Counter address | Default |
+|----|----------------|---------|
+| 1 | `g_motion_ex_counter_id1` (0x800F0BAA) | 0 |
+| 2 | `g_motion_ex_counter_id2` (0x800F0BAC) | 0 |
+| 3 | `g_motion_ex_counter_id3` (0x800F0BAE) | 0x40 (64 frames) |
+| 4 | `g_motion_ex_counter_id4` (0x800F0BB0) | 0x40 |
+| 5 | `g_motion_ex_counter_id5` (0x800F0BB2) | 0 |
+
+Plus `g_motion_ex_counter_p1` (0x800F0BC0) and `g_motion_ex_counter_p2`
+(0x800F0BC4) for the per-player counters at offsets +0x18 and +0x1C
+from the table base.
+
+## Motion-shift state cluster (2026-05-17)
+
+The "motion shift" subsystem (related to motion blending / state
+transitions) maintains a small state cluster.  Note that the variables
+overlap with the misnomer `pad_FuncAnalog` (which is actually a
+memcard state machine, not pad-analog handling) — the variables are
+reused across both subsystems.
+
+| Symbol | Address | Role |
+|--------|---------|------|
+| `g_motion_state_code` | `0x800A379E` | Sub-id (1, 4, 9, 0xA) |
+| `g_pad_analog_substate` | `0x800A37C8` | Mode (0=hit-stop, 1/2/3=others) |
+| `g_pad_analog_mode` | `0x800A31F4` | State-machine variable |
+| `g_pad_analog_frame_counter` | `0x800A3814` | Per-frame tick |
+| `g_motion_shift_flag2` | `0x800A38CC` | Zeroed in mode 1/2 setters, NOT in mode 3 or hit_stop |
+
+| Function | Address | Role |
+|----------|---------|------|
+| `motion_shift_check_m_hit_stop` | (existing) | Sets state to 0 (hit-stop) |
+| `motion_shift_set_mode1` | `0x8003879C` | Mode 1, sub-id 1 |
+| `motion_shift_set_mode2` | `0x800387C0` | Mode 2, sub-id 1 |
+| `motion_shift_set_mode3` | `0x800387E8` | Mode 3, sub-id 9 |
