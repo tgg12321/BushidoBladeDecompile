@@ -147,29 +147,84 @@ decompile — listed here as a hypothesis only.
 
 ---
 
-## 3. Related multi-record container BIN files
+## 3. Related multi-record container BIN files (`wrap5` family)
 
-Other `.BIN` files in `disc/TIM2D/` use yet-different container layouts:
+Other `.BIN` files in `disc/TIM2D/` open with a 5-u32 outer TOC instead of
+the STAGE\*.BIN 13-u32 layout. The first 5 u32s are segment-start offsets;
+duplicated values mean "this segment is empty / zero-length" (the value
+between two equal pointers occupies zero bytes).
 
-| File         | Size      | First 5 u32 (apparent offsets)                              |
-|--------------|----------:|-------------------------------------------------------------|
-| `SEL.BIN`    | 774,388   | `0x1E33C, 0x49574, 0x49574, 0xA90F4, 0xB30F4` (5 segments)  |
-| `SEL1.BIN`   | 774,364   | (same layout family)                                        |
-| `SEL2.BIN`   | 774,364   | (same layout family)                                        |
-| `D_SEL.BIN`  | 477,936   | `0x00F70, 0x00F70, 0x00F70, 0x60AF0, 0x6AAF0` (5 segments)  |
-| `NAR.BIN`    | 596,544   | `0x1DEC0, 0x1DEC0, 0x1DEC0, 0x7DA40, 0x87A40` (5 segments)  |
-| `MOD.BIN`    | 656,904   | `0x15850, 0x40A88, 0x40A88, 0x01850, 0x0B850` (5 segments)  |
-| `STAFF.BIN`  | 434,504   | `0x005C8, 0x005C8, 0x005C8, 0x60148, 0x60148` (5 segments)  |
+### Per-file findings
 
-Common pattern: a 5-u32 outer TOC where some entries are intentionally
-duplicated (the 2nd and 3rd offsets are the same in 4 of these files, which
-encodes "this segment is empty / zero-length"). After the 5 outer pointers
-comes a secondary u32 table of inner section sizes, typically 9 to 16 more
-words. These containers carry select-screen graphics, narration, and staff-
-credits data — they share the "TOC + multiple TIM/VAB sub-records" pattern of
-STAGE\*.BIN but with different segment counts and content. Detailed
-documentation per file would require finishing the corresponding loaders;
-this entry exists primarily as a pointer for future investigation.
+| File         | Size    | Outer 5-u32 TOC                                  | Embedded resources                                                        |
+|--------------|--------:|--------------------------------------------------|---------------------------------------------------------------------------|
+| `SEL.BIN`    | 774,388 | `0x1E33C, 0x49574, 0x49574, 0xA90F4, 0xB30F4`    | 1× VAB-VH at 0x1E3BC (v7, 2 progs / 28 tones / 28 VAGs, fsize=0x2B1B0)    |
+| `SEL1.BIN`   | 774,364 | `0x1E324, 0x4955C, 0x4955C, 0xA90DC, 0xB30DC`    | 1× VAB-VH at 0x1E3A4 (same VAB schema as SEL.BIN; offsets shifted by -24) |
+| `SEL2.BIN`   | 774,364 | (TOC matches SEL1.BIN)                           | 1× VAB-VH at 0x1E3A4 (same TOC + sound as SEL1; graphics segment differs) |
+| `D_SEL.BIN`  | 477,936 | `0x00F70, 0x00F70, 0x00F70, 0x60AF0, 0x6AAF0`    | No TIM/VAB headers found — segments are raw VRAM-ready pages              |
+| `NAR.BIN`    | 596,544 | `0x1DEC0, 0x1DEC0, 0x1DEC0, 0x7DA40, 0x87A40`    | 5× TIMs (128×184 8bpp+CLUT, 0x5E20 bytes each) at 0x820 + i×0x5E20        |
+| `MOD.BIN`    | 656,904 | `0x15850, 0x40A88, 0x40A88, 0x01850, 0x0B850`    | 1× VAB-VH at 0x158D0 (same VAB schema as SEL/SEL1/SEL2)                   |
+| `STAFF.BIN`  | 434,504 | `0x005C8, 0x005C8, 0x005C8, 0x60148, 0x60148`    | No TIM/VAB headers found — segments are raw VRAM-ready pages              |
+
+The same VAB-VH schema (`v7, 2 progs, 28 tones, 28 VAGs, fsize=0x2B1B0`)
+appears in `SEL/SEL1/SEL2.BIN` and `MOD.BIN`, suggesting these select-screen
+containers share a common UI/menu sound bank.
+
+`NAR.BIN`'s 5 TIMs are evenly stride'd at exactly 0x5E20 bytes (= 12 bytes
+TIM header + 12 bytes CLUT sub-header + 0x200 CLUT bytes + 12 bytes pixel
+sub-header + 128 × 184 = 23552 pixel bytes). The 5 portraits live in
+segment 0 (before the first outer-TOC offset at 0x1DEC0); segments 3 and 4
+hold large raw blocks (0x5FB80 + 0xA000 bytes) consistent with pre-rendered
+VRAM upload pages.
+
+### Outer-TOC interpretation
+
+Common pattern across this family — segment boundaries come from the 5 outer
+u32 values plus an implicit "header-end" at 0x14 (just after the TOC) and
+an implicit "file-end" at EOF. Segment `i` runs from `boundary[i]` to
+`boundary[i+1]`:
+
+```
+seg 0 :  0x14 .. outer[0]
+seg 1 :  outer[0] .. outer[1]
+seg 2 :  outer[1] .. outer[2]
+seg 3 :  outer[2] .. outer[3]
+seg 4 :  outer[3] .. outer[4]
+seg 5 :  outer[4] .. EOF
+```
+
+Duplicated outer values collapse adjacent segments to zero length. The
+typical layout these files use is **segment 0 = inner TOC + early payload,
+segments 1–2 = empty markers, segment 3 = bulk graphics, segment 4 = small
+trailing CLUT/page**.
+
+### Inner secondary table
+
+The 9 u32s following the outer-5 (at file offsets 0x14..0x37) form a
+secondary table whose semantics are file-specific:
+- For `D_SEL` and `NAR.BIN` the values are small (`0x44..0x378`) and look
+  like sizes of fixed-format sub-records.
+- For `SEL/SEL1/SEL2` the values are larger (`0xB0FC..0x18324`) and look
+  like sub-segment sizes within the bulk graphics segment.
+- For `STAFF.BIN` they are an ascending sequence (`0x44, 0xF8, 0x1AC, …`)
+  consistent with an inner offset table for the credits text-page strip.
+
+These have not been fully cross-checked against runtime loaders — the
+schema is "one secondary u32 table per file, but the unit (size vs offset)
+varies by file."
+
+### Inspector tools
+
+```
+python tools/scan_container.py disc/TIM2D/NAR.BIN     # list embedded TIM/VAB
+python tools/scan_container.py disc/TIM2D/            # scan every BIN in dir
+python tools/inspect_stage.py disc/TIM2D/SEL.BIN      # outer-TOC summary
+python tools/inspect_stage.py disc/TIM2D/SEL.BIN --dump OUT   # segment dump
+```
+
+`scan_container.py` validates TIM headers strictly (only known flag bits, sane
+CLUT/pixel sizes, w/h in 1..2048), so its hit count reflects real embeds
+rather than coincidental `10 00 00 00` byte patterns.
 
 ---
 
@@ -212,5 +267,12 @@ records with `--dump` and feed the VAB to `inspect_bnk.py` and any TIMs to
 
 * Specific role of each of the 6 records inside a `STAGE\*.BIN`.
 * Per-byte layout of the post-VAB Marionation geometry stream.
-* Container layout of `SEL*.BIN`, `D_SEL.BIN`, `NAR.BIN`, `MOD.BIN`,
-  `STAFF.BIN` beyond the outer-5-u32 TOC.
+* Semantics of the 9-u32 secondary table in the `wrap5` family — confirmed
+  to vary per file (mix of sizes and offsets), needs per-loader trace.
+* Schema of the raw VRAM-ready blocks in segments 3 and 4 of `D_SEL.BIN`,
+  `STAFF.BIN`, and `SEL/SEL1/SEL2.BIN` (no TIM headers — direct VRAM upload
+  via `LoadImage` / `LoadClut`, format implied by destination rect).
+* What distinguishes `SEL1.BIN` from `SEL2.BIN` — they share the outer TOC
+  and embedded sound bank but their bulk graphics segments (file offsets
+  0x49565..0xB50B9) differ in ~5.6% of bytes, suggesting two select-screen
+  variants for distinct game modes; runtime trace would confirm.
