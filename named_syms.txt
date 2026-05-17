@@ -1358,6 +1358,16 @@ g_spu_init_const_a                                      = 0x800A2D00;  /* SPU in
 g_spu_init_const_c                                      = 0x800A2D08;  /* SPU init constant = 8 */
 g_spu_init_mask                                         = 0x800A2D0C;  /* SPU init mask = 7 (3 bits); used as `& ~D_800A2D0C` to round-down */
 g_spu_init_reg_D1_val                                   = 0x800A2D44;  /* default value written to SPU register 0xD1 via spu_WriteReg */
+
+/* === Stage lighting + collision (2026-05-17) -- 5 highs === */
+/* From config.c stage_ClearLighting / stage_ApplyLighting: there are */
+/* 3 lights (pos+dir pairs), already named [0] but indices [1] and [2] */
+/* were unnamed.  `(&g_stage_light_pos)[a2]` indexes from the base. */
+g_stage_light_pos_1                                     = 0x800A93B4;  /* (&g_stage_light_pos)[1] -- second light position */
+g_stage_light_pos_2                                     = 0x800A93B8;  /* (&g_stage_light_pos)[2] -- third light position */
+g_stage_light_dir_1                                     = 0x800A93C0;  /* (&g_stage_light_dir)[1] -- second light direction */
+g_stage_light_dir_2                                     = 0x800A93C4;  /* (&g_stage_light_dir)[2] -- third light direction */
+g_default_collision_pattern                             = 0x80094A6C;  /* 16 u32 entries; each encodes a 16x16 grid row of 2-bit collision flags applied to g_stage_collision */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
