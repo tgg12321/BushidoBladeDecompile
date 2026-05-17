@@ -1538,6 +1538,14 @@ g_text1a_buffer_a                                       = 0x800F6340;  /* data b
 g_text1a_texture_data                                   = 0x800A9A24;  /* TIM/texture data buffer passed to gpu_LoadImage */
 g_text1a_color_green                                    = 0x800A323A;  /* 12-bit fixed-point green channel ((a1 >> 8) & 0xFF) << 12 / 255 */
 g_text1a_color_blue                                     = 0x800A323C;  /* 12-bit fixed-point blue channel (a1 & 0xFF) << 12 / 255 */
+
+/* === Shadow texture render state (2026-05-17) -- 3 highs === */
+/* From code6cac_c2.c change_shadow_tex_reg (line 935): shadow rendering */
+/* color + state values.  Note: D_800A3358/3360/335C are already named */
+/* g_sleep_menu_cursor_* -- those addresses are reused across subsystems. */
+g_shadow_tex_color                                      = 0x800A3364;  /* shadow texture color (0xF0F0F0 = near-white default) */
+g_shadow_tex_state_a                                    = 0x800A3218;  /* shadow texture state A; converted to bool via `< 1u` */
+g_shadow_tex_state_b                                    = 0x800A321C;  /* shadow texture state B (paired with _a); == 0 check */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
