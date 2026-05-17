@@ -219,3 +219,83 @@ non-training modes — only the naming convention is sound-engine specific.
   SE bank loaders
 - Most of the `text1a_c*.c` 0x42504-0x460E4 range (effect-channel mgmt)
 - All `saTan*` functions except a few small wrappers
+
+## SPU init/config state (2026-05-17)
+
+The SPU initialization writes 4 constants used during channel setup,
+located adjacent to `g_spu_base_addr`:
+
+| Symbol | Address | Value | Role |
+|--------|---------|-------|------|
+| `g_spu_ctrl_reg_ptr` | `0x800A2CEC` | ptr | Pointer to SPU control register; `*p \|= 0xB0000` enables capture/transfer bits |
+| `g_spu_init_const_a` | `0x800A2D00` | `2` | Used during channel setup |
+| `g_spu_addr_shift` | `0x800A2D04` | `3` | Existing name; shift amount for channel addressing |
+| `g_spu_init_const_c` | `0x800A2D08` | `8` | |
+| `g_spu_init_mask` | `0x800A2D0C` | `7` | 3-bit mask; used as `& ~D_800A2D0C` to round-down channel index |
+| `g_spu_init_reg_D1_val` | `0x800A2D44` | reg val | Default value written to SPU register 0xD1 via `spu_WriteReg` |
+
+`g_spu_init_reg_D1_val` is cached in `D_800A2884` after writing to SPU reg 0xD1
+on every call to `spu_InitEx`.
+
+### Voice volume table
+
+`g_spu_voice_vol_table` (`0x800A28A4`) is a 24-entry u16 default-volume table.
+When `spu_InitEx(0)` runs, it fills the table by decrementing from
+`D_800A28D2` down to `D_800A28A4` with `0xC000` (near-max volume).
+
+Located between `g_spu_voice_mask` (`0x800A28A0`) and
+`g_satan0_gauge_data_block` (`0x800A28D4`).
+
+## Wave synthesis tables (2026-05-17)
+
+The engine generates audio waveforms by indexing into the global `Judge[]`
+sin/cos table with per-channel phase counters.
+
+| Symbol | Address | Layout | Role |
+|--------|---------|--------|------|
+| `g_snd_voice_init_block` | `0x800EF070` | struct | SPU voice descriptor passed to `func_800417D0`; first byte = 0xE (cmd) |
+| `g_snd_wave_phase_table` | `0x800EF558` | 17 × s32 | Phase indices, stepped by 0x12 per call to `func_80047A90` |
+| `g_snd_wave_output_table` | `0x800EF59C` | 9 × 17 s32 | Audio wave-synthesis output: `(Judge[phase_idx] * 0x271) >> 10` |
+
+The output is 9 audio channels × 17 samples = 153 entries (stride 0x44).
+Each channel runs its own phase counter through `Judge[]`. See `sound.c:780-860`
+(`func_80047A90`).
+
+## Voice-control state cluster (2026-05-17)
+
+From `code6cac.c:775-790` and `1031-1038` (the `single_game_VoiceContorol`
+init/reset path via `func_8001B138`):
+
+| Symbol | Address | Role |
+|--------|---------|------|
+| `g_voice_packet_base_0` | `0x800FF580` | `sp.packets[0]` base (VoicePacket struct) |
+| `g_voice_packet_base_1` | `0x800FF584` | `sp.packets[1]` base |
+| `g_voice_packet_base_2` | `0x800FF5A4` | `sp.packets[2]` base |
+| `g_voice_packet_base_3` | `0x800FF5A8` | `sp.packets[3]` base |
+| `g_voice_state_word_a-c` | `0x800FF5C8-D0` | State cells cleared by `func_8001B138` |
+| `g_voice_state_half_a-b` | `0x800FF5D8/DA` | s16 state cells |
+| `g_voice_state_word_d-e` | `0x800FF5DC/E0` | More state cells |
+
+## Sound-channel texture metadata (2026-05-17)
+
+`AddTbpOfst` (`main.c:1181`) looks up texture metadata for an animated sprite
+associated with each sound channel. There are 3 parallel per-channel tables
+indexed by `g_snd_ch_status[idx]`:
+
+| Symbol | Address | Per-entry purpose |
+|--------|---------|-------------------|
+| `g_snd_ch_status` | `0x80102A68` | u8 × 16, channel state (must == 1 for valid) |
+| `g_snd_ch_texture_base_ptr` | `0x800F6660` | Base ptr to texture data |
+| `g_snd_ch_texture_tpage` | `0x800F66B8` | TPage / u32 value |
+| `g_snd_ch_texture_meta_ptr` | `0x800F6700` | Secondary ptr |
+| `g_snd_ch_texture_max_frame` | `0x800FF634` | Max frame offset (compared against arg) |
+
+## Named function helpers (2026-05-17)
+
+| Function | Address | Purpose |
+|----------|---------|---------|
+| `spu_FlushVoiceChannels` | `0x80088740` | Clears SPU control regs, polls voice-status (mask 0x7FF) with timeout. Debug: `"SPU:T/O [%s]"`. |
+| `snd_ChannelDmaFlush` | `0x80087F64` | Per-channel DMA cleanup + decrement count. |
+| `snd_ClearAllSeBuffer` | `0x8002906C` | Walks `snd_GetSeId()` list, zeroes +2 of each 0x10-byte entry. |
+| `spu_TransferDirect_capped` | `0x8008AD64` | `spu_TransferDirect(a0, min(a1, 0x7EFF0))` + clear busy if !init. |
+| `spu_TransferData_capped` | `0x8008ADC4` | Same with `spu_TransferData`. |
