@@ -48,6 +48,32 @@ directly. The evidence file documents the struct *shape* and the
 decoded fields so a future reviewer can either name the base
 manually or name each field-level symbol consistently.
 
+Top-30 most-referenced unnamed globals batch (2026-05-17, batch 4),
+16 symbols mined from the highest-reference-count entries in the
+unnamed `D_*` pool:
+
+| File | Proposed name | Confidence | Why |
+|------|---------------|-----------:|-----|
+| [D_8008D118.md](D_8008D118.md) | `g_isqrt_lut` | high | byte LUT indexed by sum-of-squares; used in marionation_camera_Exec + cpu_check_run_attack distance computations |
+| [D_800A36AC.md](D_800A36AC.md) | `g_frame_parity` | high | `& 1` selector for alternating framebuffers/CLUTs in func_80016E60 + func_8003DBE4 |
+| [D_800A3708.md](D_800A3708.md) | `g_stage_data_ptr` | high | stage data pointer; +0x4C/+0x54 are collision centers in stage_InitCollision |
+| [D_80101EC8.md](D_80101EC8.md) | `g_practice_menu_table` | high | base of per-character records, stride 0x44C matches D_80101F00 char_state stride |
+| [D_800A3748.md](D_800A3748.md) | `g_practice_menu_index` | high | index into g_practice_menu_table; -1 sentinel |
+| [D_800A378C.md](D_800A378C.md) | `g_palette_base_ptr` | medium | 4-byte-stride palette table indexed in func_8003DBE4 / func_8003DDF8 |
+| [D_80102794.md](D_80102794.md) | `g_seq_active_voice_mask` | medium | bitmask of currently-active SEQ voices, diffed each tick in single_game_VoiceContorol |
+| [D_8009BC1C.md](D_8009BC1C.md) | `g_efc_buki_dispatch_table` | medium | function-pointer table indexed by D_800A3580 in func_8006EACC |
+| [D_800A3580.md](D_800A3580.md) | `g_efc_buki_dispatch_idx` | medium | index into above; range-check `(idx - 2) >= 2U` |
+| [D_800A3820.md](D_800A3820.md) | `g_hira_packet_cursor` | medium | s32-stride packet write cursor in DispHira; reset to &D_80102C00 |
+| [D_800F62E0.md](D_800F62E0.md) | `g_mdec_fp_buf` | medium | s16 coefficient buffer used by decBs0 (MDEC bitstream decoder) |
+| [D_800A38B4.md](D_800A38B4.md) | `g_cpu_move_pattern_cursor` | medium | 4-byte-aligned cursor in cpu_get_move_pattern_table_number (198 references, the most-referenced unnamed global) |
+| [D_800A374C.md](D_800A374C.md) | `g_dma_buf_base` | medium | shared >16 KiB workspace; base for OT in _GetBattleSwichData, data buffer at +0x401C |
+| [D_800A3834.md](D_800A3834.md) | `g_game_mode_code` | medium | game state enum (0/1/9/0xD/0x1B); set by scene_teardown variants |
+| [D_800A38DC.md](D_800A38DC.md) | `g_voice_state_code` | medium | voice subsystem state (0/3/5), companion to g_game_mode_code |
+| [D_800A31FC.md](D_800A31FC.md) | `g_damage_debug_enabled` | medium | toggle for damage_DebugDisp HUD |
+
+The 6 highs from this batch were applied to `named_syms.txt` in the
+same commit (SHA1-verified clean rebuild).
+
 ## Workflow
 
 Each evidence file follows the same skeleton:

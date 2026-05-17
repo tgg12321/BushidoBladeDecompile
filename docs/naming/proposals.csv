@@ -25,7 +25,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800171B8,func_800171B8,,none,,
 0x80017714,func_80017714,clear_file_data_table_80017714,medium,stride0x34_clear_8_entries_in_g_file_data_buf,docs/naming/evidence/func_80017714.md
 0x80017738,func_80017738,pack_offset_64x16_80017738,low,(a0<<6)+(a1<<4)_pure_math,docs/naming/evidence/func_80017738.md
-0x80017748,func_80017748,vec3_diff_div4_then_sum_80017748,low,vec3_sub_sra2+func_8007F0BC+sum+func_8007E43C_sll2,docs/naming/evidence/func_80017748.md
+0x80017748,func_80017748,math_Distance3D_80017748,high,vec3_magnitude_w_overflow_guard;legacy_rename_match,docs/naming/evidence/func_80017748.md
 0x800177C8,func_800177C8,,none,,
 0x80017848,func_80017848,link_add_with_dist_check_80017848,medium,"manual_review=Adds a bidirectional link between two slots in a context-managed graph. Checks for existing links (returns 0 if already linked), then computes Euclidean 3D distance via the named math_Distance3D, stores a 16-byte link record with the distance + 3x distance + a tag + the slot i...",docs/naming/evidence/func_80017848.md
 0x80017A44,func_80017A44,,none,,
@@ -430,7 +430,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80046F24,func_80046F24,,none,,
 0x8004700C,func_8004700C,,none,,
 0x800470B0,func_800470B0,,none,,
-0x80047210,func_80047210,camera_bone_load_default_80047210,medium,"memcpy(g_cam_bone_data,D_80101E08,0x20)+halve_3_halfwords",docs/naming/evidence/func_80047210.md
+0x80047210,func_80047210,camera_InitBoneData_80047210,high,memcpy_default+halve_halfwords;legacy_rename_match,docs/naming/evidence/func_80047210.md
 0x800472B0,func_800472B0,,none,,
 0x800472C0,func_800472C0,,none,,
 0x80047384,func_80047384,camera_replay_compute_rot_80047384,medium,replay_camera_rob_back_loose3+single_game_getEnemyCharId+Judge_table,docs/naming/evidence/func_80047384.md
@@ -442,7 +442,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80047510,func_80047510,call_efc_rob_set_type_flash_80047510,low,5insn_zero_arg_wrapper,docs/naming/evidence/func_80047510.md
 0x80047530,func_80047530,call_motion_CheckSituation_80047530,low,5insn_zero_arg_wrapper,docs/naming/evidence/func_80047530.md
 0x80047550,func_80047550,call_saEft03Start_80047550,low,5insn_zero_arg_wrapper,docs/naming/evidence/func_80047550.md
-0x80047570,func_80047570,camera_bone2_init_default_80047570,medium,camera_InitRotation(&g_cam_bone_data2);g_cam_interp=4,docs/naming/evidence/func_80047570.md
+0x80047570,func_80047570,camera_InitBone2_80047570,high,camera_InitRotation(&bone2)+g_cam_interp=4;legacy_rename_match,docs/naming/evidence/func_80047570.md
 0x800475A4,func_800475A4,,none,,
 0x80047738,func_80047738,call_func_80048F58_id1_80047738,low,"5insn_2arg_wrapper(1,0)",docs/naming/evidence/func_80047738.md
 0x8004775C,func_8004775C,,none,,

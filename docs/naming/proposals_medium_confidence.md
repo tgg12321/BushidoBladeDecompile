@@ -1,9 +1,9 @@
 # Naming Proposals -- Medium confidence
 **Medium confidence**: distinctive symbol-driven shape (sole-caller path with semantic hint, neighbor-cluster naming, library-idiom with caveats, callsite-derived role). Apply selectively after sanity-checking the evidence file. SHA1-safe by construction.
 
-Total Medium: **212**
+Total Medium: **210**
 
-## Primary evidence: `manual_review` (107)
+## Primary evidence: `manual_review` (106)
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
 | `0x80016514` | `func_80016514` | `file_read_chunked_80016514` | FileOpen+chunked_FileRead(0x4000)+md_gview_init+Close | [md](evidence/func_80016514.md) |
@@ -48,7 +48,6 @@ Total Medium: **212**
 | `0x80045080` | `func_80045080` | `ndata_offset_minus_inf_len_80045080` | manual_review=Reads D_800963EE[a0] as an s16 (4-byte stride from the [NDATA.md](../formats/NDATA.md) in-RAM mirror -- this is the length-sectors view), shifts left 11 (= multiply by 2048 = sector size). Returns the current value of func_800457DC() minus that byte length. | [md](evidence/func_80045080.md) |
 | `0x80045878` | `func_80045878` | `audio_seq_load_or_get_80045878` | manual_review=load-if-absent / get-if-present for audio sequence records; chains saSeMain_80045600 + saTan5TakeGetPos_* + func_80045AA4 callback; manages paired slots a0 and a0+3 | [md](evidence/func_80045878.md) |
 | `0x80046048` | `func_80046048` | `audio_chain_fade_load_80046048` | manual_review=Chains: (1) relocate TPAGE slot 6 by a1 bytes (via the named func_80044100 = prim_buffer_relocate_slot), (2) fetch slot 6's payload, (3) skip past a leading offset header, (4) iterate the entries and call saFidLoad(a1, entry) for each. | [md](evidence/func_80046048.md) |
-| `0x80047210` | `func_80047210` | `camera_bone_load_default_80047210` | memcpy(g_cam_bone_data,D_80101E08,0x20)+halve_3_halfwords | [md](evidence/func_80047210.md) |
 | `0x80047384` | `func_80047384` | `camera_replay_compute_rot_80047384` | replay_camera_rob_back_loose3+single_game_getEnemyCharId+Judge_table | [md](evidence/func_80047384.md) |
 | `0x80048530` | `func_80048530` | `variable_lookup_table_dispatch_80048530` | manual_review=Two-level table indexer: arg0 is a base pointer, arg1 selects a sub-table (its offset is at base[arg1]), arg2 selects an entry within that sub-table (12-byte stride). Reads 4 fields from the entry (a, b unsigned, c, d signed) and dispatches to func_800485EC(addr+offset, arg3, ... | [md](evidence/func_80048530.md) |
 | `0x80049584` | `func_80049584` | `efc_rob_type_dispatch_80049584` | manual_review=Effect-state dispatcher: compares per-frame state in D_800EF980 (0x3A entries) to last-frame state in D_80099C50, detects sign-bit changes, then computes a new effect mode and dispatches efc_rob_set_type_particle (already-named) only if state changed. | [md](evidence/func_80049584.md) |
@@ -236,11 +235,6 @@ Total Medium: **212**
 |---|---|---|---|---|
 | `0x80016C80` | `func_80016C80` | `psyq_memcpy_legacy_80016C80` | psyq_idiom_legacy=psyq_memcpy_legacy_80016C80; string_adjacent=eff_init_func_80016C80 | [md](evidence/func_80016C80.md) |
 | `0x800550E8` | `func_800550E8` | `cpu_get_move_pattern_table_number_helper_800550E8` | psyq_idiom_legacy=psyq_memcpy_legacy_800550E8; sole_caller_path=cpu_get_move_pattern_table_number_helper_800550E8 | [md](evidence/func_800550E8.md) |
-
-## Primary evidence: `camera_InitRotation(&g_cam_bone_data2);g_cam_interp` (1)
-| address | current | proposed | evidence_summary | evidence_file |
-|---|---|---|---|---|
-| `0x80047570` | `func_80047570` | `camera_bone2_init_default_80047570` | camera_InitRotation(&g_cam_bone_data2);g_cam_interp=4 | [md](evidence/func_80047570.md) |
 
 ## Primary evidence: `full_disp_init` (1)
 | address | current | proposed | evidence_summary | evidence_file |

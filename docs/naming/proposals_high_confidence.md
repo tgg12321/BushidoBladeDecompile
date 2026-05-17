@@ -5,7 +5,7 @@
 
 **Workflow**: copy the proposed name into `named_syms.txt`, run `make setup && make`, verify SHA1 unchanged, commit.
 
-Total High: **72**
+Total High: **75**
 
 ## Primary evidence: `bios_jumptable` (38)
 | address | current | proposed | evidence_summary | evidence_file |
@@ -49,9 +49,10 @@ Total High: **72**
 | `0x80089374` | `func_80089374` | `bios_DisableEvent` | bios_jumptable=bios_DisableEvent; kengo_pattern=saTan0GaugeInit_80089374 | [md](evidence/func_80089374.md) |
 | `0x8008D050` | `func_8008D050` | `bios_AddDevice_B` | bios_jumptable=bios_AddDevice_B; kengo_pattern=saTan0GaugeInit_8008D050; address_neighborhood=g_local_8008D050 | [md](evidence/func_8008D050.md) |
 
-## Primary evidence: `manual_review` (21)
+## Primary evidence: `manual_review` (23)
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
+| `0x80017748` | `func_80017748` | `math_Distance3D_80017748` | vec3_magnitude_w_overflow_guard;legacy_rename_match | [md](evidence/func_80017748.md) |
 | `0x80035480` | `func_80035480` | `scene_teardown_variant_80035480` | manual_review=Direct sibling of scene_teardown_80035DC8 (named in commit b6e72b8 as a misnomer-replacement alias). Same player_Destroy(0,1) + disp_load_config_from_buf(0x80118800) shape, but adds a few extras: conditional func_8003A41C call, conditional obj_InitAll + D_800A390E = -1 based o... | [md](evidence/func_80035480.md) |
 | `0x80037774` | `func_80037774` | `memcard_event_pool_close_80037774` | manual_review=closes all 8 memcard events (4 in class 0xF4000001 + 4 in class 0xF0000011) opened by pad_press_control (which itself is a misnomer -- it does memcard init); was named game_event_shutdown_* before the OpenEvent owner was identified | [md](evidence/func_80037774.md) |
 | `0x80037804` | `func_80037804` | `memcard_event_wait_class0xF4000001_with_timeout_80037804` | manual_review=spin-poll the 4 class-0xF4000001 events (D_800A37DC/F0/FC/3800) with 2-sec timeout via D_800A3924 counter; these are the memcard I/O-complete class opened by pad_press_control | [md](evidence/func_80037804.md) |
@@ -61,6 +62,7 @@ Total High: **72**
 | `0x80042478` | `func_80042478` | `disp_set_fade_color_80042478` | manual_review=Unpacks 0xRRGGBB from a0, optionally desaturates to grayscale (when func_800486FC -- likely 'is_grayscale_mode' -- returns true), then calls two named display helpers: disp_SetFramebufferMode(1, r, g, b) (sets the clear color) and gte_SetFarColor(r, g, b) (sets the GTE fog far... | [md](evidence/func_80042478.md) |
 | `0x80044650` | `func_80044650` | `init_fade_panel_wrapper_80044650` | manual_review=1-line wrapper around named InitFadePanel(). Pure trampoline. | [md](evidence/func_80044650.md) |
 | `0x80046954` | `func_80046954` | `empty_stub_80046954` | empty_jr_ra_nop | [md](evidence/func_80046954.md) |
+| `0x80047210` | `func_80047210` | `camera_InitBoneData_80047210` | memcpy_default+halve_halfwords;legacy_rename_match | [md](evidence/func_80047210.md) |
 | `0x80048744` | `func_80048744` | `set_color_mode_80048744` | manual_review=2-line setter for the named global g_color_mode to 0 or 1 based on input truthiness. Equivalent to g_color_mode = !!a0; but written as a branch (likely for codegen reasons). | [md](evidence/func_80048744.md) |
 | `0x80065344` | `func_80065344` | `motion_ex_play_id1_80065344` | manual_review=Family member: calls motion_SetExMotion(1), increments per-id counter D_800F0BAA by 0x1C6, returns the motion id 1 result if counter < 0x11C8 (else 0). 0x11C8 / 0x1C6 = 10 -- so this motion can play 10 times before the counter saturates. | [md](evidence/func_80065344.md) |
 | `0x80065394` | `func_80065394` | `motion_ex_play_id2_80065394` | manual_review=Family member: motion_SetExMotion(2), counter D_800F0BAC, same 10-play cap. Direct sibling of func_80065344 with different motion id and counter slot. | [md](evidence/func_80065394.md) |
@@ -96,6 +98,11 @@ Total High: **72**
 | `0x800164F8` | `func_800164F8` | `syscall_wrapper_break_800164F8` | syscall_wrapper=syscall_wrapper_break_800164F8 | [md](evidence/func_800164F8.md) |
 | `0x80083698` | `func_80083698` | `syscall_wrapper_break_80083698` | syscall_wrapper=syscall_wrapper_break_80083698 | [md](evidence/func_80083698.md) |
 | `0x8008393C` | `func_8008393C` | `syscall_wrapper_break_8008393C` | syscall_wrapper=syscall_wrapper_break_8008393C | [md](evidence/func_8008393C.md) |
+
+## Primary evidence: `camera_InitRotation(&bone2)+g_cam_interp` (1)
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80047570` | `func_80047570` | `camera_InitBone2_80047570` | camera_InitRotation(&bone2)+g_cam_interp=4;legacy_rename_match | [md](evidence/func_80047570.md) |
 
 ## Primary evidence: `data_as_code` (1)
 | address | current | proposed | evidence_summary | evidence_file |
