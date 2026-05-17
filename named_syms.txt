@@ -1696,6 +1696,17 @@ g_voice_state_word_e                                    = 0x800FF5E0;
 /* and g_satan0_gauge_data_block (28D4). */
 g_spu_voice_vol_table                                   = 0x800A28A4;  /* 24 u16 default-volume entries; spu_InitEx fills with 0xC000 */
 
+/* === Per-effect GTE color matrix + back-color siblings (2026-05-17) -- 4 highs === */
+/* From text1a.c gnd_land_hit_char_die_main (line 1373): the engine */
+/* maintains 3 "effect" slots (A/B/C), each with a (color_matrix, */
+/* back_color) pair.  Effect A is already named */
+/* (g_gte_color_matrix_data, g_gte_back_color_r/g/b at 0x800F6318/6338); */
+/* B and C are at +0x60 and +0x180 offsets. */
+g_gte_color_matrix_data_b                               = 0x800F6378;  /* effect B 3x3 color matrix (mirror of g_gte_color_matrix_data + 0x60) */
+g_gte_back_color_b_r                                    = 0x800F6398;  /* effect B back-color R (mirror of g_gte_back_color_r + 0x60) */
+g_gte_color_matrix_data_c                               = 0x800F6498;  /* effect C 3x3 color matrix (alt path) */
+g_gte_back_color_c_r                                    = 0x800F64B8;  /* effect C back-color R */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
