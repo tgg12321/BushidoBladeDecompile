@@ -2250,6 +2250,14 @@ g_sound_3d_pos_x_src                                    = 0x80101E1C;  /* source
 g_sound_3d_pos_y_src                                    = 0x80101E20;  /* source Y for g_snd_3d_pos_y copy */
 g_sound_3d_pos_z_src                                    = 0x80101E24;  /* source Z; gets +0x6590 offset when copied to g_snd_3d_pos_z */
 
+/* === Memcard operation state (2026-05-17) -- 3 highs === */
+/* From code6cac_c_mid.c around line 489-509: memcard file open/read/write */
+/* operations.  D_800F33D8 (draw-state struct) is reused as the 0x200-byte */
+/* memcard save data buffer in this context. */
+g_memcard_filename_buf                                  = 0x800A31F0;  /* filename buffer passed to func_80037B00 (file-open) and func_80037C34 (file-read with len 0x200) */
+g_memcard_op_active_flag                                = 0x800A320C;  /* = 1 set during memcard op, = 0 reset */
+g_memcard_op_substate                                   = 0x800A382C;  /* = 0/= 1; secondary state flag */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
