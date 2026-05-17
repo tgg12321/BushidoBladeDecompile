@@ -1995,6 +1995,15 @@ g_menuctl_arg0_saved                                     = 0x800A351C;  /* saved
 g_menuctl_call_counter                                   = 0x800A3528;  /* per-frame call counter (incremented inside menu-mode update) */
 g_menuctl_effect_handle                                  = 0x800A372C;  /* effect/rob-close handle stored after efc_rob_Close call in init */
 
+/* === Effect slot pools (2026-05-17) -- 4 highs === */
+/* From text1b.c func_8005B43C and get_point_value: 3 parallel slot */
+/* pools cleared together on system shutdown / reset.  Paired with */
+/* already-named g_effect_struct_b (D_800EFC38). */
+g_effect_pool_a_16                                      = 0x800EFB38;  /* 16-entry s32 array; cleared in sync with g_effect_struct_b */
+g_effect_pool_b_24                                      = 0x800EFB78;  /* 24-entry x 8-byte struct array; +0..3 = s32 (cleared to 0), +4..5 = u8 (set to 0x7F) */
+g_effect_pool_b_24_field_4                              = 0x800EFB7C;  /* u8 field at offset +4 of each 8-byte entry of g_effect_pool_b_24 (init = 0x7F) */
+g_effect_init_flag                                      = 0x800A3408;  /* flag reset to 0 at end of pool-init flow */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
