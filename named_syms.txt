@@ -1775,6 +1775,19 @@ mode_handler_33_RebootBegin                             = 0x8003CD10;  /* mirror
 /*     specific unlock-animation character/move combo */
 mode_handler_18_UnlockAnimDispatch                      = 0x8003C040;  /* dispatches unlock-anim based on g_practice_unlock_anim_id (6/7=P1, 8/9=P2) */
 
+/* === g_module_func_tbl mode handler decode (cont'd 2) -- 8 highs === */
+/* Additional handlers identified from body analysis. */
+/* 4 of these are EMPTY functions (no-op placeholders for state transitions */
+/* where no actual work is done -- the dispatch happens elsewhere). */
+mode_handler_03_NoOp                                    = 0x80034708;  /* empty body -- no-op placeholder handler */
+mode_handler_05_NoOp                                    = 0x8003993C;  /* empty body -- no-op */
+mode_handler_06_GameTeardownVariant                     = 0x8003B9D0;  /* func_8001DA2C + game_Cleanup + conditional gpu_InitDisplay/gpu_DisableDisplay */
+mode_handler_09_NoOp                                    = 0x80035828;  /* empty body -- no-op */
+mode_handler_14_NoOp                                    = 0x80035430;  /* empty body -- no-op */
+mode_handler_20_CountIterator                           = 0x8003C42C;  /* counts D_800A377C[] entries into local 8-cell histogram */
+mode_handler_21_FrameTimerSfx                           = 0x8003C560;  /* increments g_practice_loop_frame, plays SFX 0xA4/0xA7 at counter==0x1E (30 frames) */
+mode_handler_29_StageLeafUpdate                         = 0x8003CF84;  /* calls mk_leaf_newpos + reads char struct fields via &D_80101ED2 + D_800A3748 * 0x44C */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
