@@ -69,11 +69,16 @@ INSTRUCTION_INSERT_RE = re.compile(
     r'^(\w+):\s+(insert|insert_after|insert_before)\s+"([^"]*)"\s+@\s+\d+\s*$',
     re.MULTILINE,
 )
-# Patterns we KNOW are "lost-codegen restoration" (most severe):
+# Patterns we KNOW are "lost-codegen restoration" (most severe).
+# `_ZERO` matches both `$0` and `$zero` aliases (same physical register,
+# different spelling); same for `_ZWO` (covers `$0`/`$zero` as second/third
+# operand). Earlier patterns required the literal `$zero` and missed cases
+# like `addu $12, $2, $0` which is semantically identical.
+_ZERO = r"\$(?:0|zero)"
 LOST_CODEGEN_PATTERNS = (
-    re.compile(r"^addu\s+\$\w+,\s*\$0,\s*\$zero"),       # zero-move (s2=0 etc.)
-    re.compile(r"^addu\s+\$\w+,\s*\$\w+,\s*\$zero"),     # reg-move (move rd, rs)
-    re.compile(r"^addu\s+\$\w+,\s*\$zero,\s*\$\w+"),     # reg-move (move rd, rs, alt)
+    re.compile(rf"^addu\s+\$\w+,\s*{_ZERO},\s*{_ZERO}"),       # zero-move (s2=0)
+    re.compile(rf"^addu\s+\$\w+,\s*\$\w+,\s*{_ZERO}"),         # reg-move (move rd, rs)
+    re.compile(rf"^addu\s+\$\w+,\s*{_ZERO},\s*\$\w+"),         # reg-move (move rd, rs, alt)
 )
 
 # 3-instruction BIOS trampoline: addiu $tN, $zero, 0xXX; jr $tN; addiu $tM,...
@@ -372,11 +377,17 @@ def scan_inline_asm_lost_codegen_injection(content, source_name):
             continue
         if re.search(r"glabel\s+\w+", body):
             continue
-        # Extract the single instruction text
+        # Split body on `:` to isolate the asm-template portion from the
+        # constraint/clobber portions. A barrier like `__asm__("" ::: "$5")`
+        # has empty template + clobber list; without this split the raw
+        # regex below captures `" ::: "$5` as a fake "instruction" and
+        # mis-flags the clobber's `$5` as a hardcoded GPR.
+        template_part = body.split(":", 1)[0]
+        # Extract the single instruction text from the template part only
         insns = []
-        for src_line in body.split("\n"):
+        for src_line in template_part.split("\n"):
             s = src_line.strip()
-            qm = re.match(r'^"(.+)\\n"$', s) or re.match(r'^"(.+)"$', s)
+            qm = re.match(r'^"(.*)\\n"$', s) or re.match(r'^"(.*)"$', s)
             if not qm:
                 continue
             asm = qm.group(1).rstrip("\\n").strip()
