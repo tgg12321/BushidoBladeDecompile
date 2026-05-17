@@ -1627,6 +1627,30 @@ g_practice_lesson_count_b                               = 0x80102785;  /* lesson
 g_practice_lesson_flag_a                                = 0x80102786;  /* lesson flag A (init 0) */
 g_practice_lesson_flag_b                                = 0x80102787;  /* lesson flag B (init 0) */
 
+/* === Motion-ex state IDs 2-7 (2026-05-17) -- 18 highs === */
+/* Extension of the existing motion-ex state cluster (IDs 0-1 named */
+/* earlier in this naming sprint).  Each ID has 12-byte state block: */
+/*   +0x0 = pos, +0x4 = extra, +0x8 = data_ptr */
+/* Spanning 0x800F0CA0 (id0) through 0x800F0CFC (id7) = 24 entries x 4 bytes. */
+g_motion_ex_state_id2_pos                               = 0x800F0CB8;
+g_motion_ex_state_id2_extra                             = 0x800F0CBC;
+g_motion_ex_state_id2_data_ptr                          = 0x800F0CC0;
+g_motion_ex_state_id3_pos                               = 0x800F0CC4;
+g_motion_ex_state_id3_extra                             = 0x800F0CC8;
+g_motion_ex_state_id3_data_ptr                          = 0x800F0CCC;
+g_motion_ex_state_id4_pos                               = 0x800F0CD0;
+g_motion_ex_state_id4_extra                             = 0x800F0CD4;
+g_motion_ex_state_id4_data_ptr                          = 0x800F0CD8;
+g_motion_ex_state_id5_pos                               = 0x800F0CDC;
+g_motion_ex_state_id5_extra                             = 0x800F0CE0;
+g_motion_ex_state_id5_data_ptr                          = 0x800F0CE4;
+g_motion_ex_state_id6_pos                               = 0x800F0CE8;
+g_motion_ex_state_id6_extra                             = 0x800F0CEC;
+g_motion_ex_state_id6_data_ptr                          = 0x800F0CF0;
+g_motion_ex_state_id7_pos                               = 0x800F0CF4;
+g_motion_ex_state_id7_extra                             = 0x800F0CF8;
+g_motion_ex_state_id7_data_ptr                          = 0x800F0CFC;
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
