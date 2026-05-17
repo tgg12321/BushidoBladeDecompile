@@ -2115,6 +2115,18 @@ g_weapon_frame_row                                      = 0x801027F7;  /* row co
 g_weapon_frame_col                                      = 0x801027FC;  /* col coord 0..15 */
 g_weapon_frame_player_flag                              = 0x80102808;  /* player select (& 1 for parity-indexed lookup) */
 
+/* === saTan1 gauge init + secondary motion flags (2026-05-17) -- 7 highs === */
+/* From text1b.c saTan1GaugeInit (line 13215): clears 28 entries each */
+/* of g_motion_state_flag_table and g_motion_state_secondary_flags, */
+/* plus 6 gauge state cells. */
+g_motion_state_secondary_flags                          = 0x800F1150;  /* 28-byte array paired with g_motion_state_flag_table (each motion-flag entry has a corresponding byte) */
+g_satan1_gauge_state_a                                  = 0x800A344C;
+g_satan1_gauge_state_b                                  = 0x800A3450;
+g_satan1_gauge_state_c                                  = 0x800A3454;
+g_satan1_gauge_state_d                                  = 0x800A3458;
+g_satan1_gauge_state_e                                  = 0x800A345C;
+g_satan1_gauge_state_f                                  = 0x800A345E;
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
