@@ -1494,6 +1494,14 @@ g_gnd_target_active_slots                               = 0x800EF980;  /* s16 ar
 /* state struct.  Set to 24-bit color values like 0xFFFFEF (light yellow), */
 /* 0xC06013 (orange-brown), etc -- BB2's text render-color uniform. */
 g_text1b_render_color                                   = 0x800A3464;  /* 24-bit color/flag mask for text1b primitives; sourced from various per-context setters */
+
+/* === GPU mode tables (2026-05-17) -- 2 highs === */
+/* From gpu.c around line 608-610: gpu init reads (width, height) pairs */
+/* indexed by mode.  Note: 0x8009BEF4 already named */
+/* g_bitmask_table_5_8009BEF4 (5 entries) but is actually */
+/* g_gpu_mode_widths_table (parallel to the heights table below). */
+g_gpu_mode_heights_table                                = 0x8009BF08;  /* 5 s16/s32 height values indexed by GPU mode (paired with widths table at BEF4); s0->height = D[idx] */
+g_gpu_init_msg_buf                                      = 0x8009BE2C;  /* passed as buffer to debug_printf along with &g_gpu_type at gpu init time */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
