@@ -1944,6 +1944,15 @@ g_file_overlay_arg_saved                                = 0x800A3844;  /* saved 
 g_char_id_saved_a                                       = 0x800A3836;  /* saved char ID (0xFF = invalid); part of context-preserve set */
 g_char_id_saved_b                                       = 0x800A3915;  /* paired char ID save (0xFF default) */
 
+/* === CD-ROM playback control cluster (2026-05-17) -- 4 highs === */
+/* From code6cac_b2.c around line 430-465: a 4-field BCD-tracked CD */
+/* playback state.  D_80101E6C is the current BCD frame position; */
+/* `cdrom_FramesToBcd(cdrom_BcdToFrames(D) + arg2, D)` advances it. */
+g_cd_playback_arg                                       = 0x80101E60;  /* stored arg0 (playback start address?) */
+g_cd_playback_flag_a                                    = 0x80101E64;  /* 0/1 state flag */
+g_cd_playback_flag_b                                    = 0x80101E68;  /* 0/1 state flag (paired) */
+g_cd_playback_bcd_pos                                   = 0x80101E6C;  /* BCD-encoded current CD frame position */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
