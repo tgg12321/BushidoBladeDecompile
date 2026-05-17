@@ -192,7 +192,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80036EA8,func_80036EA8,,none,,
 0x80036F28,func_80036F28,,none,,
 0x80036FD4,func_80036FD4,,none,,
-0x80037110,func_80037110,special_cam_lookup_table_entry_80037110,medium,"manual_review=indexes D_8008F13C (8-byte stride), reads SpecialCam + D_80101E60*8, schedules deferred read",docs/naming/evidence/func_80037110.md
+0x80037110,func_80037110,special_cam_issue_command_80037110,medium,"manual_review=callers pass small command codes {0, 1, 8, 9, 10, 11} from state-machine cases; arg0 is a command code, not a generic table index",docs/naming/evidence/func_80037110.md
 0x800371AC,func_800371AC,,none,,
 0x800371E8,func_800371E8,,none,,
 0x800371F8,func_800371F8,,none,,
@@ -217,7 +217,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80038148,func_80038148,psyq_memset_80038148,high,psyq_idiom=psyq_memset_80038148; sole_caller_path=pad_FuncAnalog_helper_80038148,docs/naming/evidence/func_80038148.md
 0x80038170,func_80038170,pad_FuncAnalog_helper_80038170,medium,sole_caller_path=pad_FuncAnalog_helper_80038170,docs/naming/evidence/func_80038170.md
 0x80038658,func_80038658,,none,,
-0x80038734,func_80038734,game_input_tick_80038734,medium,"manual_review=calls pad_FuncAnalog + func_80038658 per frame, returns D_800A379E state byte; 4 callers all in code6cac_c_mid.c motion subsystem",docs/naming/evidence/func_80038734.md
+0x80038734,func_80038734,game_state_advance_80038734,medium,manual_review=callers do `switch (v0 - 4)` on return; state-machine advance not input tick; body polls pad + advances state + returns state code,docs/naming/evidence/func_80038734.md
 0x8003879C,func_8003879C,motion_SetMotion_helper_8003879C,medium,sole_caller_path=motion_SetMotion_helper_8003879C,docs/naming/evidence/func_8003879C.md
 0x800387C0,func_800387C0,motion_SetMotion_helper_800387C0,medium,kengo_pattern=motion_SavePreCalcData_800387C0; sole_caller_path=motion_SetMotion_helper_800387C0,docs/naming/evidence/func_800387C0.md
 0x800387E8,func_800387E8,motion_SetMotion_helper_800387E8,medium,sole_caller_path=motion_SetMotion_helper_800387E8,docs/naming/evidence/func_800387E8.md
@@ -318,7 +318,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80040400,func_80040400,,none,,
 0x8004046C,func_8004046C,,none,,
 0x800404A0,func_800404A0,,none,,
-0x80040510,func_80040510,player_rob_Init,medium,"manual_review=allocates player via func_80045878, stores in g_player_ptrs[idx], chains AllocRobRmd + rob_life_ctrl + rob_calc_2d_position + FadeOut_8003FFC4",docs/naming/evidence/func_80040510.md
+0x80040510,func_80040510,player_rob_Init,high,"manual_review=stores in g_player_ptrs[idx]; chains AllocRobRmd + 4 rob_* helpers; single caller at fight-start (post-gpu-enable, post-sound-end) with (slot, model_id, heap_base=0x80190800)",docs/naming/evidence/func_80040510.md
 0x80040A78,func_80040A78,,none,,
 0x80040CB8,func_80040CB8,,none,,
 0x80040D48,func_80040D48,,none,,
@@ -796,7 +796,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800770B8,func_800770B8,,none,,
 0x80077374,func_80077374,,none,,
 0x80077724,func_80077724,,none,,
-0x80077820,func_80077820,disp_init_for_mode_80077820,medium,"manual_review=calls func_80068F70(a0, D_8009BD24) then disp_SetFramebufferMode(1,0,0,0), resets D_800A35E4",docs/naming/evidence/func_80077820.md
+0x80077820,func_80077820,disp_load_config_from_buf_80077820,medium,"manual_review=both callers pass fixed buffer addr 0x80118800; disp_SetFramebufferMode call is unconditional (not mode-parametrised); func_80068F70(src, &D_8009BD24) is the actual copy",docs/naming/evidence/func_80077820.md
 0x80077860,func_80077860,,none,,
 0x80077894,func_80077894,,none,,
 0x80077904,func_80077904,,none,,
@@ -1030,7 +1030,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80080168,func_80080168,cd_func_80080168,low,string_adjacent=cd_func_80080168,docs/naming/evidence/func_80080168.md
 0x80080228,func_80080228,,none,,
 0x80080240,func_80080240,,none,,
-0x80080258,func_80080258,tim2_load_with_retry_80080258,medium,manual_review=3-retry wrapper around tslTm2LoadImage with g_cd_callback_a save/restore; mode-1/2/N call sequence,docs/naming/evidence/func_80080258.md
+0x80080258,func_80080258,tslTm2_command_with_retry_80080258,medium,"manual_review=3-retry wrapper around tslTm2LoadImage (general op dispatcher, not TIM-only -- modes {2, 9, 0xE} seen at call sites; mode 9 passes arg1=0); g_cd_callback_a save/restore",docs/naming/evidence/func_80080258.md
 0x80080390,func_80080390,,none,,
 0x80080600,func_80080600,,none,,
 0x80080620,func_80080620,,none,,
