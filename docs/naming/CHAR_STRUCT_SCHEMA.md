@@ -1,0 +1,165 @@
+# Per-character struct schema (`g_practice_menu_table`)
+
+The per-character struct is an array indexed by character/slot id.
+Each record is **0x44C bytes (1100)**.  The array base is at
+`g_practice_menu_table = 0x80101EC8`.  Record N spans
+`0x80101EC8 + N * 0x44C` to `0x80101EC8 + (N+1) * 0x44C - 1`.
+
+| Record | Start | End |
+|---|---|---|
+| 0 | 0x80101EC8 | 0x80102313 |
+| 1 | 0x80102314 | 0x8010275F |
+| 2 | 0x80102760 | 0x80102BAB |
+| 3 | 0x80102BAC | 0x80102FF7 |
+
+A 4th and 5th record (if they exist) would continue at 0x80102FF8
+and 0x80103444 respectively; only 4 records show observable
+accesses across the codebase.
+
+## How this schema was derived
+
+Scanned all `D_<addr>` references in `src/*.c` and `asm/funcs/*.s`.
+For each address that fell within `0x80101EC8 + r*0x44C` for some r,
+computed its offset within the record.  Offsets that appeared in
+**at least 2 different records** were classified as true struct
+fields (rather than coincidental hits on isolated globals near the
+same address).
+
+Result: **27 confirmed struct fields** out of 141 unique offsets
+within the address range.  The other 114 are globals that happen to
+fall in the address range but are not per-character struct fields
+(e.g., the `g_se_voice_*` cluster at record 2's first ~0x40 bytes,
+which only has record-2 references).
+
+## Field layout
+
+| Offset | Width | Records | Refs | Sample callsite | Role hint |
+|--:|:-:|:-:|--:|---|---|
+| +0x000 | (base) | 0,1,2 | 104 | `u8 *base = (u8 *)&g_practice_menu_table + idx * 0x44C` | record base (table indexing entry point) |
+| +0x006 | s16 | 0,1 | 5 | `if (D_8010231A != 0)` | flag/state at offset 6 |
+| +0x00E | s16 | 0,1 | 34 | `v3r[0x9] = (u8)D_80101ED6;` | byte/halfword cell read into v3r[9] |
+| +0x012 | s16 | 0,1 | 28 | `s16 *eda = &D_80101EDA;` | pointer-taken s16 field |
+| +0x020 | s8  | 0,1,2 | 20 | `func_80022580(arg0, ((s8 *)&D_80102780)[arg0], ...)` | indexed byte (within sub-array) |
+| +0x03C | s32 | 0,1,2 | 12 | `D_8010279C = -1;` then `~sp.voice_mask` | voice/state mask (-1 sentinel) |
+| +0x040 | u8  | 0,2   | 10 | `u8 *a1 = &D_801027A0;` | byte-array start |
+| +0x048 | ?   | 0,1   | 4  | (asm-only refs) | -- |
+| +0x04C | s32 | 0,3   | 4  | (asm-only refs) | -- |
+| +0x054 | s32 | 2,3   | 24 | `s32 v0 = (&D_801027B4)[idx] + (v1 * 4);` | base of indexed table |
+| +0x05E | ?   | 0,1   | 22 | `D_80101F26 = 0;` and `s0 = &D_80102372` | cleared cell + base-of-array |
+| **+0x06A** | s16 | 0,1   | 57 | `if ((u16)D_80101F32 == 0x11 \|\| (u16)D_8010237E == 0x11)` | **SEQ subsystem state code** (formerly named `g_seq_state_p1`; really per-character) |
+| +0x07A | ?   | 0,1   | 4  | (asm-only refs) | -- |
+| +0x084 | s16 | 0,2   | 12 | `*(u16 *)((u8 *)&D_80101F4E + offset) = *(u16 *)((u8 *)&D_80101F4C + offset);` | **previous-frame keyframe field** (copy-old-to-new pattern) |
+| +0x096 | s16 | 0,1,2 | 55 | `if (D_80101F5E != 0 \|\| D_801023AA != 0)` | flag tested across records (player-1 vs player-2 OR) |
+| +0x0AD | s8  | 0,1   | 12 | `if (D_80101F75 != 0 \|\| D_801023C1 != 0); D_801023C1 = 0; D_80101F75 = 0;` | one-shot trigger flag |
+| +0x0B1 | s8  | 0,1   | 4  | (asm-only refs) | -- |
+| +0x0D8 | s32 | 0,1   | 6  | `temp_a3 = D_80101FA0 - D_801023EC` | **inter-player X-delta** (subtraction between records) |
+| +0x0E0 | s32 | 0,1   | 7  | `temp_t1 = D_80101FA8 - D_801023F4` | **inter-player Z-delta** (paired with +0xD8) |
+| **+0x0F4** | s32 | 0,1   | 36 | `D_80101FBC = a1; func_8003E6A0(D_80101FBC, D_80101FC4)` | **position arg A** (formerly `g_replay_camera_target_a`) |
+| **+0x0FC** | s32 | 0,1   | 21 | `D_80101FC4 = a0_val; func_8003E6A0(D_80101FBC, D_80101FC4)` | **position arg B** (passed paired with +0x0F4) |
+| +0x134 | s32 | 0,1   | 7  | `D_80101FFC = 0;` | cleared cell |
+| +0x13C | s32 | 0,1   | 9  | `D_80102004 = 0;` | cleared cell |
+| +0x14E | s16 | 0,1   | 5  | `D_80102016 = 0;` | cleared cell |
+| +0x286 | s16 | 0,1   | 24 | `lui $at, %hi(D_8010214E)` | (asm-only; needs caller decode) |
+| +0x28C | s32 | 0,1   | 4  | `lui $a0, %hi(D_80102154)` | (asm-only) |
+| +0x31A | s16 | 0,1,2 | 21 | `D_8010262E = 0; D_801021E2 = 0;` | cleared cell across all records |
+
+## Notable findings
+
+### 1. Existing global names that are actually per-character fields
+
+Two names in `named_syms.txt` turn out to be record-0 field accesses,
+not standalone globals:
+
+- **`g_seq_state_p1 = 0x80101F32`** is `record[0] + 0x6A`.  The
+  corresponding fields in records 1, 2, 3 are at 0x8010237E, 0x801027CA,
+  0x80102C16.  The current name is fine but slightly misleading -- it's
+  not just "player 1's seq state", it's the SEQ field of record 0.
+- **`g_replay_camera_target_a = 0x80101FBC`** is `record[0] + 0xF4`.
+  Same situation -- it's record 0's "position arg A", not a single global.
+
+These names are kept as-is because (a) they're already in code, and
+(b) the record-0 interpretation makes sense for the single-player flow
+where record 0 is always the active player.
+
+### 2. Inter-player delta computations
+
+The pair `+0xD8` and `+0xE0` are used in computations like:
+
+```c
+temp_a3 = D_80101FA0 - D_801023EC;  // record[0] +0xD8 - record[1] +0xD8
+temp_t1 = D_80101FA8 - D_801023F4;  // record[0] +0xE0 - record[1] +0xE0
+```
+
+These are inter-character position deltas (X-distance and Z-distance
+between players).  Used by CPU AI for range estimation.
+
+### 3. Position arg pair (+0xF4 / +0xFC)
+
+The pair at `+0xF4` and `+0xFC` is consistently passed together:
+
+```c
+func_8003E6A0(D_80101FBC, D_80101FC4);   // record[0] +0xF4 and +0xFC
+func_8003E6A0(D_80102408, D_80102410);   // record[1] +0xF4 and +0xFC
+```
+
+The function (`func_8003E6A0`, called by `replay_camera_get_attack_number`)
+takes these as a (x, z) coordinate pair.  Confirms the +0xF4/+0xFC
+fields are world-space position components.
+
+### 4. Two-arm flag pattern (`X || sibling`)
+
+The pattern at `+0x96` and `+0xAD`:
+
+```c
+if (D_80101F5E != 0 || D_801023AA != 0)   // either record's +0x96 set
+if (D_80101F75 != 0 || D_801023C1 != 0)   // either record's +0xAD set
+```
+
+These are flags that trigger global behavior when *any* character has
+them set.  Cleared together in one-shot trigger fashion.
+
+## How to use this schema
+
+When decompiling a function that accesses a `D_80101XXX` or
+`D_80102XXX` address within the table range:
+
+1. Compute the offset: `(addr - 0x80101EC8) % 0x44C`.
+2. Look up the offset in the table above.
+3. If it's a confirmed field, use the role hint to interpret the access.
+4. If it's not in the table, check whether the access is via the
+   `&D_80101EC8 + N * 0x44C` indexing pattern -- if so, it's a struct
+   field; if not, it might be a separate global.
+
+## Caveats
+
+- Width inferences are heuristic (based on extern decls and asm
+  load instructions).
+- Some "fields" at offsets like +0x048 and +0x048 have only asm-only
+  references with no readable C body; their roles are inferred from
+  the records pattern alone.
+- Record 3 has very few field accesses observed, suggesting it may
+  be a less-used slot (e.g., a tournament-mode tag-team partner or
+  spectator record).
+- The 504 "unclassified" rodata labels from
+  [RODATA_CATALOG.md](RODATA_CATALOG.md) are mostly **fixed-stride
+  per-character record DATA** (the actual record content for each
+  character), separate from this schema (which describes the per-game
+  state struct).
+
+## Future work
+
+1. **Decode the remaining 114 single-record offsets** -- many are
+   probably true fields whose accesses are localized to one record
+   in the observable C source.  As more functions get decompiled,
+   more cross-record accesses will appear.
+2. **Type each field** more precisely -- the width inferences are
+   heuristic; reading the GENERATED `.h` from the per-character
+   struct typedef (if any) would give exact types.
+3. **Sub-struct identification** -- the +0x040..+0x064 block looks
+   like an SE voice descriptor (matches the g_se_voice_* cluster
+   semantics); the +0x0D8..+0x100 block looks like position+velocity
+   state.  Could be broken into named sub-structs.
+4. **The +0x286/+0x28C/+0x31A fields in the second half of the
+   record are sparsely accessed** -- there's probably a larger
+   embedded struct from +0x100 to +0x44C that we can decode
+   per-subsystem (combat state, animation state, AI state).
