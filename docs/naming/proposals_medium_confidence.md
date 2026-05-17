@@ -2,7 +2,35 @@
 
 **Medium confidence**: weak Kengo match (size-diff > 1 but same name), single named caller (`sole_caller_path` proposal: `<caller>_helper_<addr>`), or call-graph subsystem cluster. These need callsite/body inspection before applying.
 
-Total Medium: **103**
+Total Medium: **111**
+
+## Primary evidence: `manual_review` (8)
+
+These rows were added by hand-review of functions previously tagged
+`confidence=none` by the automated analyzer. Each row links to a
+prose evidence file that walks through the C body, caller pattern,
+and reasoning; the evidence files are intentionally more discursive
+than the auto-generated ones. Reviewer should still confirm the
+exact slug -- the address suffix indicates the *category* of the
+name is well-supported but the *precise wording* is a hypothesis to
+be tightened by a downstream caller-side trace.
+
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80032854` | `func_80032854` | `motion_dispatch_event_handler_80032854` | manual_review=30-case switch on arg1, dispatches to func_8006xxxx family; 19 callers all in motion subsystem | [md](evidence/func_80032854.md) |
+| `0x80037110` | `func_80037110` | `special_cam_lookup_table_entry_80037110` | manual_review=indexes D_8008F13C (8-byte stride), reads SpecialCam + D_80101E60*8, schedules deferred read | [md](evidence/func_80037110.md) |
+| `0x80038734` | `func_80038734` | `game_input_tick_80038734` | manual_review=calls pad_FuncAnalog + func_80038658 per frame, returns D_800A379E state byte; 4 callers all in code6cac_c_mid.c motion subsystem | [md](evidence/func_80038734.md) |
+| `0x80040510` | `func_80040510` | `player_rob_Init` | manual_review=allocates player via func_80045878, stores in g_player_ptrs[idx], chains AllocRobRmd + rob_life_ctrl + rob_calc_2d_position + FadeOut_8003FFC4 | [md](evidence/func_80040510.md) |
+| `0x80044010` | `func_80044010` | `prim_buffer_open_slot_80044010` | manual_review=marks header `*a0 \|= 0x8000`, stores ptr+count in D_80103608/D_80103658 slot a1; paired with func_80044100 | [md](evidence/func_80044010.md) |
+| `0x80044100` | `func_80044100` | `prim_buffer_relocate_slot_80044100` | manual_review=advances D_80103608[a0] by a1 bytes and patches each entry by +a1 (offset-list relocation); paired with func_80044010 | [md](evidence/func_80044100.md) |
+| `0x80077820` | `func_80077820` | `disp_init_for_mode_80077820` | manual_review=calls func_80068F70(a0, D_8009BD24) then disp_SetFramebufferMode(1,0,0,0), resets D_800A35E4 | [md](evidence/func_80077820.md) |
+| `0x80080258` | `func_80080258` | `tim2_load_with_retry_80080258` | manual_review=3-retry wrapper around tslTm2LoadImage with g_cd_callback_a save/restore; mode-1/2/N call sequence | [md](evidence/func_80080258.md) |
+
+Note: `func_80021974` from the same batch is genuinely low-confidence
+(`rank=low` in CSV) and is not listed above. There is no
+`proposals_low_confidence.md` file yet; reviewers can find the
+low-confidence entries directly in `proposals.csv` filtered by
+`confidence=low`.
 
 ## Primary evidence: `sole_caller_path` (74)
 

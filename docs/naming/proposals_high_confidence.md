@@ -6,7 +6,19 @@
 
 **Workflow**: copy the proposed name into `named_syms.txt`, run `make setup && make`, verify SHA1 unchanged, commit.
 
-Total High: **48**
+Total High: **49**
+
+## Primary evidence: `manual_review` (1)
+
+These rows were added by hand-review of a function previously tagged
+`confidence=none` by the automated analyzer. Each row links to a
+prose evidence file that walks through the C body, caller pattern,
+and reasoning; the evidence files are intentionally more discursive
+than the auto-generated ones.
+
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80079154` | `func_80079154` | `bb2_rand` | manual_review=BSD libc LCG (0x41C64E6D * x + 0x3039, >> 16 & 0x7FFF); 29 callers across 6 files | [md](evidence/func_80079154.md) |
 
 ## Primary evidence: `bios_jumptable` (38)
 
