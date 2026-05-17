@@ -471,10 +471,23 @@ def scan_orphan_cheats(existing_funcs: set[str] | dict[str, str] | None = None) 
         audit.get_current_cheats(auth)
     )
 
+    # Manual debt list: LLM-auditor-flagged commits whose retirement
+    # mechanism is itself a deviation (register pins, scheduling-control
+    # inline asm, etc.) that the programmatic scanners don't catch.
+    # One funcname per non-comment line of cheat_retirement_debt.txt.
+    retirement_debt_funcs: set[str] = set()
+    debt_file = ROOT / "cheat_retirement_debt.txt"
+    if debt_file.exists():
+        for line in debt_file.read_text(encoding="utf-8", errors="ignore").splitlines():
+            name = line.split("#")[0].strip()
+            if name:
+                retirement_debt_funcs.add(name)
+
     all_cheat_funcs = (
         splice_funcs | inline_funcs | bios_funcs | c_body_funcs
         | set(instruction_insert_funcs.keys())
         | set(asm_injection_funcs.keys())
+        | retirement_debt_funcs
     )
 
     # Count TOTAL regfix rules per function (cheat + non-cheat). Cheats wedged
@@ -518,6 +531,10 @@ def scan_orphan_cheats(existing_funcs: set[str] | dict[str, str] | None = None) 
             n = asm_injection_funcs[func]
             types.append(f"asm_injection({n})")
             rule_count += n
+        if func in retirement_debt_funcs:
+            types.append("retirement_debt")
+            # Treat as a single retirement work item for sort weighting.
+            rule_count += 1
         if func in other_queue:
             types.append(f"also:{other_queue[func]}")
         entries.append({
