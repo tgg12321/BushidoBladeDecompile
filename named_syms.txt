@@ -1502,6 +1502,19 @@ g_text1b_render_color                                   = 0x800A3464;  /* 24-bit
 /* g_gpu_mode_widths_table (parallel to the heights table below). */
 g_gpu_mode_heights_table                                = 0x8009BF08;  /* 5 s16/s32 height values indexed by GPU mode (paired with widths table at BEF4); s0->height = D[idx] */
 g_gpu_init_msg_buf                                      = 0x8009BE2C;  /* passed as buffer to debug_printf along with &g_gpu_type at gpu init time */
+
+/* === code6cac.c game-state cluster (2026-05-17) -- 9 highs === */
+/* From code6cac.c around lines 827-1500: various game/audio/stage state */
+/* globals discovered through usage-pattern analysis. */
+g_voice_play_state                                      = 0x800A38DC;  /* voice/audio play state (u16): tested with D_800A38DC == 3 etc */
+g_gnd_init_flag                                         = 0x800A36FA;  /* gnd init flag (set to 0 in gnd_init_8001B294) */
+g_stage_id_current                                      = 0x800A36A4;  /* current stage ID passed to game_StageCleanup */
+g_stage_id_prev                                         = 0x800A390E;  /* previous stage ID compared with current for transition detection */
+g_mario_voice_data                                      = 0x800F5328;  /* Mario character voice data block; referenced in mario_getMarioVoiceData_8001B3C0 */
+g_char_class_table                                      = 0x8008E5A8;  /* per-char class lookup; indexed by g_practice_lesson_char_id (D_8010277C) */
+g_round_total_score                                     = 0x800A387C;  /* round score; tested < 0x2711 (10001) limit */
+g_practice_dispatch_active                              = 0x800A38BA;  /* practice mode is dispatching (tested != 0 alongside g_practice_mode_dispatch_idx == 1) */
+g_gnd_init_arg_saved                                    = 0x800A36F6;  /* saved arg from gnd init (`if D_800A36F6 != arg0` re-init check) */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
