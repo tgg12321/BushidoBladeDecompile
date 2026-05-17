@@ -1922,6 +1922,12 @@ g_match_p1_tiebreaker                                   = 0x800A38AA;  /* P1 sec
 g_match_p2_tiebreaker                                   = 0x800A38AB;  /* P2 secondary score */
 g_match_round_byte_a_paired                             = 0x800F65F9;  /* sibling byte to g_match_round_byte_a (P1/P2 score history per round) */
 
+/* === Misc state arrays in code6cac_b.c (2026-05-17) -- 4 highs === */
+g_char_class_state_array                                = 0x800A36F2;  /* per-char class state array; entries copied from D_8008E338 (5-byte stride); XOR'd with 0xE for state check */
+g_active_slot_table_12                                  = 0x80106A7A;  /* 12 entries x 0x64 bytes; first s16 = id (-1 = empty); cleared when paired flag is set */
+g_active_slot_flags_12                                  = 0x80106A80;  /* per-slot u8 flag; if non-zero, paired slot in g_active_slot_table_12 is cleared (set to -1) */
+g_effect_slot_table_4                                   = 0x80104E88;  /* 4 entries x 0x2C bytes; flag byte at offset 0 (== 0 = empty slot); allocated by func_80032064 */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
