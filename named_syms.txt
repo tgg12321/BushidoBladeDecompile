@@ -2076,6 +2076,11 @@ g_fade_dispatch_sp10_0                                  = 0x800A35A8;  /* first 
 g_fade_dispatch_state_ptr                               = 0x800A35C4;  /* struct ptr with 4 s32 fields; [2] = counter A, [3] = counter B (both incremented per frame) */
 g_fade_dispatch_arg1_cache                              = 0x800A354C;  /* cached arg1 (masked with 0xFFFF when g_replay_motion_shared_state_c == 2) */
 
+/* === text1b slot D flags (2026-05-17) -- 1 high === */
+/* From text1b.c around line 13446: same pattern as g_text1b_slot_a/c_flags */
+/* -- u8[2] busy-flag pair for 4th slot family (gpu cmd 0x210009/0A). */
+g_text1b_slot_d_flags                                   = 0x800F1159;  /* u8[2] busy-flag pair for slot family D (sibling to slot_a/b/c) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
