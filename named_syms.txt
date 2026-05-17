@@ -1329,7 +1329,24 @@ stage_GetTriple                                         = 0x80021D10;  /* reads 
 mottest_rob_init_andmark                                = 0x800371F8;  /* mottest_rob_init() + sets D_80101E64=1 on success */
 memcard_PollEvents                                      = 0x800378A8;  /* tests 4 events at D_800A37DC/F0/FC/3800; returns 1-4 (which fired) or 0 */
 memcard_AckEvents                                       = 0x8003791C;  /* unconditionally acks/consumes 4 memcard events */
-memcard_PollEventsBlocking_B                            = 0x80037964;  /* blocking variant on alt event set D_800A3838/3C/48/50; loops until event 4 fires */
-memcard_AckEvents_B                                     = 0x800379D8;  /* unconditionally acks/consumes alt event set */
+rcnt0_AckEvents                                         = 0x800379D8;  /* unconditionally acks/consumes 4 rcnt0 events */
+/* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
+/* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
+/* keeping those over my proposed shorter names. */
+
+/* === BIOS event handle globals (2026-05-17) -- 9 highs === */
+/* Opened by pad_press_control (= memcard_OpenAllEvents) via */
+/* bios_OpenEvent.  Two event sets, 4 events each: */
+/*   memcard slot 1 (class 0xF4000001): IOE / ERROR / NEW / TIMEOUT */
+/*   root counter 0 (class 0xF0000011): IOE / ERROR / NEW / TIMEOUT */
+g_memcard1_event_ioe                                    = 0x800A37DC;  /* bios_OpenEvent(0xF4000001, 0x0004, ...) -- end of I/O */
+g_memcard1_event_err                                    = 0x800A37F0;  /* bios_OpenEvent(0xF4000001, 0x8000, ...) -- error */
+g_memcard1_event_new                                    = 0x800A37FC;  /* bios_OpenEvent(0xF4000001, 0x0100, ...) -- new card inserted */
+g_memcard1_event_timeout                                = 0x800A3800;  /* bios_OpenEvent(0xF4000001, 0x2000, ...) -- timeout */
+g_rcnt0_event_ioe                                       = 0x800A3838;  /* bios_OpenEvent(0xF0000011, 0x0004, ...) -- root counter end of I/O */
+g_rcnt0_event_err                                       = 0x800A383C;  /* bios_OpenEvent(0xF0000011, 0x8000, ...) -- root counter error */
+g_rcnt0_event_new                                       = 0x800A3848;  /* bios_OpenEvent(0xF0000011, 0x0100, ...) -- root counter "new" */
+g_rcnt0_event_timeout                                   = 0x800A3850;  /* bios_OpenEvent(0xF0000011, 0x2000, ...) -- root counter timeout */
+g_memcard1_poll_count                                   = 0x800A3924;  /* incremented in memcard_PollEventsWithTimeout; forces result=2 after >=0x78 ticks */
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
