@@ -6,9 +6,9 @@
 
 **Workflow**: copy the proposed name into `named_syms.txt`, run `make setup && make`, verify SHA1 unchanged, commit.
 
-Total High: **54**
+Total High: **58**
 
-## Primary evidence: `manual_review` (6)
+## Primary evidence: `manual_review` (10)
 
 Hand-review rows for functions previously tagged `confidence=none` by
 the automated analyzer. Each row links to a prose evidence file that
@@ -24,6 +24,15 @@ discursive than the auto-generated evidence files.
 | `0x80040510` | `func_80040510` | `player_rob_Init` | manual_review=stores in g_player_ptrs[idx]; chains AllocRobRmd + 4 rob_* helpers; single caller at fight-start with (slot, model_id, heap_base=0x80190800); promoted from medium 2026-05-17 after 3-of-3 medium-evidence agreement | [md](evidence/func_80040510.md) |
 | `0x80079154` | `func_80079154` | `bb2_rand` | manual_review=BSD libc LCG (0x41C64E6D * x + 0x3039, >> 16 & 0x7FFF); 29 callers across 6 files all use return as a random number | [md](evidence/func_80079154.md) |
 | `0x80080620` | `func_80080620` | `cd_dma_idle_80080620` | manual_review=1-line inversion of cdrom_DmaToRam() == 0; returns 1 when no CD-DMA-to-RAM transfer is active | [md](evidence/func_80080620.md) |
+
+### Batch 4 additions (2026-05-17)
+
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80042478` | `func_80042478` | `disp_set_fade_color_80042478` | manual_review=Unpacks 0xRRGGBB from a0, optionally desaturates to grayscale, then calls disp_SetFramebufferMode(1, r, g, b) and gte_SetFarColor(r, g, b); per-frame fade-tint helper | [md](evidence/func_80042478.md) |
+| `0x80044650` | `func_80044650` | `init_fade_panel_wrapper_80044650` | manual_review=1-line wrapper around named InitFadePanel(); pure trampoline | [md](evidence/func_80044650.md) |
+| `0x80079184` | `func_80079184` | `bb2_srand_80079184` | manual_review=1-line setter for g_rand_state (D_800F1848); by construction the srand() counterpart of bb2_rand | [md](evidence/func_80079184.md) |
+| `0x80080600` | `func_80080600` | `cd_send_cmd_80080600` | manual_review=1-line wrapper around named cdrom_SendCmd() returning 1; interface-adapter for dispatch table | [md](evidence/func_80080600.md) |
 
 ## Primary evidence: `bios_jumptable` (38)
 
