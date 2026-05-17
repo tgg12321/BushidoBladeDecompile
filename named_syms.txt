@@ -1318,4 +1318,18 @@ g_practice_lesson_param1                                = 0x800A38EC;  /* lesson
 g_practice_lesson_param2                                = 0x800A38ED;  /* lesson table[2] */
 g_practice_lesson_param3                                = 0x800A38EE;  /* lesson table[3] */
 
+/* === bios_TestEvent wrapper functions (2026-05-17) -- 8 highs === */
+/* Each of these tests/acks a fixed set of 4 BIOS event handles. */
+/* The 0x37DC family is opened by pad_press_control (misnomer: actually */
+/* memcard init -- see MISNOMERS.md) with class 0xF4000001 (memcard). */
+/* The 0x3838 family is a separate event group also opened during init. */
+file_GetFlag2_StageGated                                = 0x8001DB58;  /* range-check on D_800A38DC: if v<2 or v>=5 returns 1; else calls file_GetFlag2() */
+seq_ConditionalReset                                    = 0x80020CDC;  /* if D_800A38C6==0xFFFF calls seq_Reset(); zeroes D_800A3880/38C0-C6 state cluster */
+stage_GetTriple                                         = 0x80021D10;  /* reads 3 s16 from stage_GetDataPtr() at indexed offset, widens to s32 */
+mottest_rob_init_andmark                                = 0x800371F8;  /* mottest_rob_init() + sets D_80101E64=1 on success */
+memcard_PollEvents                                      = 0x800378A8;  /* tests 4 events at D_800A37DC/F0/FC/3800; returns 1-4 (which fired) or 0 */
+memcard_AckEvents                                       = 0x8003791C;  /* unconditionally acks/consumes 4 memcard events */
+memcard_PollEventsBlocking_B                            = 0x80037964;  /* blocking variant on alt event set D_800A3838/3C/48/50; loops until event 4 fires */
+memcard_AckEvents_B                                     = 0x800379D8;  /* unconditionally acks/consumes alt event set */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
