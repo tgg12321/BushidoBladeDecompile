@@ -2271,6 +2271,14 @@ g_scene_another_init_flag                               = 0x800A31E4;  /* paired
 g_scene_arg_saved                                       = 0x800A3854;  /* arg saved by scene setter; reset to 0 then assigned arg0 */
 g_scene_alt_arg_saved                                   = 0x800A3840;  /* paired arg save (reset to 0 in same flow) */
 
+/* === Memcard async operation state machine (2026-05-17) -- 4 highs === */
+/* From code6cac_c0.c func_80037D14: 5-state machine driving memcard */
+/* bios_A0_0xAB / 0xAC operations with event polling and completion. */
+g_memcard_op_state                                      = 0x800A31EC;  /* state 0-4 (0 = start AB, 1 = poll AB, 2 = start AC, 3 = poll AC, 4 = done/err) */
+g_memcard_op_input_flag                                 = 0x800A31E8;  /* input flag routing state 1 result (0 -> state 2, != 0 -> state 4) */
+g_memcard_op_result_code                                = 0x800A37F4;  /* result code (-1/-3 = errors, 1-4 = poll result codes) */
+g_memcard_op_completion_code                            = 0x800A3890;  /* copy of g_memcard_op_result_code at end (caller reads this) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
