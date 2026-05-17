@@ -1298,10 +1298,14 @@ gpu_DrawTimeoutCheck                                    = 0x8007DC9C;  /* checks
 /* Functions whose body is a clear single-purpose wrapper around a */
 /* named function with extra logic (clamp, walk list, set+return old). */
 snd_ClearAllSeBuffer                                    = 0x8002906C;  /* walks snd_GetSeId() list, zeroes +2 of each 0x10-byte entry until terminator */
-gpu_SetDrawMode                                         = 0x8007B244;  /* g_gpu_draw_mode setter (returns old) -- debug-traces via g_gpu_debug_func at level>=2 */
+gpu_DrawSyncCallback                                    = 0x8007B244;  /* PSX libgpu DrawSyncCallback: saves old g_gpu_draw_mode (= prev callback), sets new, returns old; debug-traces "DrawSyncCallback(%08x)" */
 snd_ChannelDmaFlush                                     = 0x80087F64;  /* if g_snd_ch_status[idx]==1: spu_DmaTransfer(g_snd_ch_addr[idx]), clear status, decrement g_snd_ch_count */
 spu_TransferDirect_capped                               = 0x8008AD64;  /* spu_TransferDirect(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
 spu_TransferData_capped                                 = 0x8008ADC4;  /* spu_TransferData(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
 coli_HitPauseKatana_3                                   = 0x8008A904;  /* coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD) -- sibling wrapper with motion-ID constants */
+
+/* === More GPU/display wrapper functions (2026-05-17) -- 2 highs === */
+gpu_DebugCheckRect                                      = 0x8007B3A8;  /* PSX-style rect validator: at debug-level 1 validates against D_8009BE78/7A (screen w/h); logs "%s:bad RECT" + "(%d,%d)-(%d,%d)" via g_gpu_debug_func */
+gpu_DrawOTagEnv                                         = 0x8007BAB4;  /* PSX libgpu DrawOTagEnv: copies _drawenv_q struct, submits via g_gpu_dev_table cmd 0x40; logs "DrawOTagEnv(%08x,%08x)" */
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
