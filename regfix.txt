@@ -4201,11 +4201,6 @@ func_8007352C: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 109
 # Idx 44 binary = idx 45 maspsx (1 nop earlier deleted): change y-check beq target to .L845 (next_compute_v_tail)
 func_8007352C: insert_label ".LCF352C_t:" @ 105
 func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LCF352C_t" @ 45
-# DispSleepMenuTex region scheduling - net 0 instructions
-func_8007352C: delete @ 95
-func_8007352C: delete @ 100
-func_8007352C: insert_after "sw	$2,20($20)" @ 96
-func_8007352C: insert "addu	$5,$21,$zero" @ 93
 func_8007E8DC: fill_delay @ 72 <- 71
 # saTan4FireDisp_80048864: regfix recipe (post strength-reduce inlining)
 saTan4FireDisp_80048864: delete @ 36
