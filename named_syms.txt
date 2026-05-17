@@ -281,6 +281,21 @@ channel_helper_A_80046A60     = 0x80046A60;
 /* (gpu_EnableDisplay / gpu_DisableDisplay are already in */
 /* undefined_syms_auto.txt -- no need to re-declare here.) */
 
+/* === Batch 5 high-confidence renames (2026-05-17) === */
+/* The motion_ex_play_* family of 7 wrappers around motion_SetExMotion(N) */
+/* with per-id play-counters and 5- or 10-play caps. See evidence files. */
+motion_ex_play_id1_80065344     = 0x80065344;
+motion_ex_play_id2_80065394     = 0x80065394;
+motion_ex_play_id4_80065434     = 0x80065434;
+motion_ex_play_id6_80065540     = 0x80065540;
+motion_ex_play_id7_80065590     = 0x80065590;
+motion_ex_play_idB_80065630     = 0x80065630;
+motion_ex_play_id10_80065760    = 0x80065760;
+/* Other batch-5 high: see evidence files */
+scene_teardown_variant_80035480 = 0x80035480;  /* sibling of scene_teardown_80035DC8, mode-9 outcome */
+set_color_mode_80048744         = 0x80048744;  /* 2-line setter for g_color_mode */
+player_find_empty_slot_80041584 = 0x80041584;  /* find first NULL in g_player_ptrs[0..2] */
+
 /* === Kengo conflicts: hand-review alternative aliases (2026-05-17 audit) === */
 /* Five of seven Kengo conflicts (from MISNOMERS.md Category 2) where */
 /* the Kengo name is clearly wrong per body audit; our hand-review name */
