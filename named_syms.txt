@@ -2038,6 +2038,11 @@ g_char_class_table                                      = 0x8009BD8D;  /* 256-by
 bb2_toupper                                             = 0x800798CC;  /* if (class_table[c] & 2) c -= 0x20  (lower -> upper) */
 bb2_tolower                                             = 0x800798FC;  /* if (class_table[c] & 1) c += 0x20  (upper -> lower) */
 
+/* === bb2 libc helpers + stdout state (2026-05-17) -- 3 highs === */
+bb2_memchr                                              = 0x8007992C;  /* memchr(buf, ch, len): linear search; returns buf-1 on found, 0 on not found / null buf / nonpositive len */
+bb2_putchar_stdout                                      = 0x8007997C;  /* fputc to stdout (fd 1): expands TAB (9) to spaces, converts LF (0xA) to CRLF, tracks column; submits via bios_FileWrite_B(1, &c, 1) */
+g_stdout_column_counter                                 = 0x800F1850;  /* stdout column counter; reset to 0 on newline, incremented on printable chars (class table bit 0x97) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
