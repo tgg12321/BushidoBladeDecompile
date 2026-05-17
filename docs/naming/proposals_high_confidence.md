@@ -6,19 +6,20 @@
 
 **Workflow**: copy the proposed name into `named_syms.txt`, run `make setup && make`, verify SHA1 unchanged, commit.
 
-Total High: **49**
+Total High: **50**
 
-## Primary evidence: `manual_review` (1)
+## Primary evidence: `manual_review` (2)
 
-These rows were added by hand-review of a function previously tagged
-`confidence=none` by the automated analyzer. Each row links to a
-prose evidence file that walks through the C body, caller pattern,
-and reasoning; the evidence files are intentionally more discursive
-than the auto-generated ones.
+Hand-review rows for functions previously tagged `confidence=none` by
+the automated analyzer. Each row links to a prose evidence file that
+walks through the C body, the caller pattern, the (almost always
+weak) Kengo cross-reference, and the reasoning -- intentionally more
+discursive than the auto-generated evidence files.
 
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
-| `0x80079154` | `func_80079154` | `bb2_rand` | manual_review=BSD libc LCG (0x41C64E6D * x + 0x3039, >> 16 & 0x7FFF); 29 callers across 6 files | [md](evidence/func_80079154.md) |
+| `0x80040510` | `func_80040510` | `player_rob_Init` | manual_review=stores in g_player_ptrs[idx]; chains AllocRobRmd + 4 rob_* helpers; single caller at fight-start with (slot, model_id, heap_base=0x80190800); promoted from medium 2026-05-17 after 3-of-3 medium-evidence agreement | [md](evidence/func_80040510.md) |
+| `0x80079154` | `func_80079154` | `bb2_rand` | manual_review=BSD libc LCG (0x41C64E6D * x + 0x3039, >> 16 & 0x7FFF); 29 callers across 6 files all use return as a random number | [md](evidence/func_80079154.md) |
 
 ## Primary evidence: `bios_jumptable` (38)
 
