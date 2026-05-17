@@ -1035,12 +1035,14 @@ void func_80078654(s32 *arg0) {
     var_s0 = D_800A3610 + 5;
     if (D_800A3608 >= 0xAAA) {
         if (D_800A3608 >= 0xB04) {
+            s32 v_copy;
             s.cd_flag = 1;
             v = 0x80 - (((D_800A3608 - 0xB04) << 7) / 15);
+            __asm__ volatile("move %0, %1" : "=r"(v_copy) : "r"(v));
             if ((s32)(v << 16) < 0) {
-                v = 0;
+                v_copy = 0;
             }
-            s.r = (s.g_ = (s.b_ = (u8) v));
+            s.r = (s.g_ = (s.b_ = (u8) v_copy));
         }
         s.c = arg0[3];
         arg0[3] = func_8007352C(&s.a);
