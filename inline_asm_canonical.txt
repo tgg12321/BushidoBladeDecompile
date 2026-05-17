@@ -158,3 +158,12 @@ func_80079028      # Pad-init BIOS wrapper sibling of func_80078F88/func_800790C
 func_8007E11C      # display.c GTE helper (36 insns, 144 bytes): cop2 op 0x0F (mtc2 $a0,$30 → mfc2 $v0,$31 sqrt) wrapper with branch-table fast path. Trapping `sub $t1,$t1,$t2`, `addi $t3,$t2,-0x18`, `addi $t4,$t4,-0x40`. multi_jr_ra (two separate epilogues, GCC -O2 always CSEs). Display-side sibling of func_800526A0 GTE pattern. classify_func: permanently_blocked:handwritten_overflow_op. User-authorized 2026-05-16 (cluster bulk).
 func_8007E43C      # display.c GTE helper (40 insns, 160 bytes). Trapping `sub $t1,$t1,$t2`. Same cluster pattern as func_8007E11C (display.c GTE wrapper, multi_jr_ra). classify_func: permanently_blocked:handwritten_overflow_op. User-authorized 2026-05-16 (cluster bulk).
 func_8007E5EC      # display.c GTE helper (88 insns, 352 bytes). Trapping `add $t0,$t0,$t3`. Same cluster pattern as func_8007E11C / func_8007E43C. classify_func: permanently_blocked:handwritten_overflow_op. User-authorized 2026-05-16 (cluster bulk).
+
+# === Per-function authorization (2026-05-16) — scanner missed signals ===
+# These functions tier=LOW on scan_hand_coded (S1-S6 don't capture their
+# evidence) but have STRONGER signals the scanner doesn't measure: custom
+# calling conventions and trapping-arithmetic ops GCC 2.7.2 physically
+# cannot emit. Each authorized per-function with attempt-first evidence,
+# not bulk-authorized off known_blocked.txt tag alone.
+
+func_800525D8      # text1b.c GTE LZCS/LZCR fast 1/sqrt helper for vector normalization (50 insns, 200 bytes; Kengo: tanren_Tan5EndControl). DECISIVE evidence the scanner missed: (1) CUSTOM CALLING CONVENTION — caller (func_800523E0 @ 0x42C80) reads outputs from $t0/$t1/$t2 (caller-saved temps), which GCC cannot generate (always uses $v0/$v1). (2) 5 trapping arith ops (2 add, 2 sub, 1 addi) GCC 2.7.2 won't emit (always emits addu/subu/addiu). (3) Tight delay-slot layout: `sra $t6,$t6,1` in delay slot of `bltz` is needed on BOTH paths — GCC won't schedule needed-on-both into a branch delay. Cluster sibling: func_800526A0 (line 142, same LZCS pattern). Attempt evidence: dc.sh attempt SKIPPED (classifier read cheat); manual C+asm-primitives candidate scored 1225 / 27 structural diffs; permuter 3000 iter best 1105 plateau then drifted to 33 errors. classify_func: permanently_blocked:handwritten_overflow_op. User-authorized 2026-05-16 (per-function, attempt-first evidence).
