@@ -283,13 +283,18 @@ void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
 }
 extern void func_800485EC(s32, s32, s32, s32, s32, s32);
 s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
+    register u32 v1_init asm("v1");
+    register s32 save asm("t0");
+    register s32 a1_arg3 asm("a1");
     u8 *p;
     s32 count;
     s32 entry_off;
     s32 a, b, c, d;
     u32 cv, dv;
+    __asm__ volatile("addu %0, %1, $zero" : "=r"(v1_init) : "r"(arg0));
+    __asm__ volatile("addu %0, %1, $zero" : "=r"(save) : "r"(v1_init));
     p = (u8 *)arg0 + ((s32 *)arg0)[arg1];
-    asm volatile("" : "=r"(arg3) : "0"(arg3));
+    __asm__ volatile("addu %0, %1, $zero" : "=r"(a1_arg3) : "r"(arg3));
     count = *(s32 *)p;
     if (arg2 >= (u32)count) return -1;
     p += 4;
@@ -298,7 +303,7 @@ s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     p = p + 4;
     a = (s32)*(u16 *)p;
     p = p + 2;
-    entry_off = entry_off + arg0;
+    entry_off = entry_off + save;
     b = (s32)*(u16 *)p;
     p = p + 2;
     cv = *(u16 *)p;
@@ -307,7 +312,7 @@ s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     asm volatile("" : "=r"(dv) : "0"(dv));
     c = (s32)(s16)cv;
     d = (s32)(s16)dv;
-    func_800485EC(entry_off, arg3, (s16)a, (s16)b, c, d);
+    func_800485EC(entry_off, a1_arg3, (s16)a, (s16)b, c, d);
     return count;
 }
 void func_800485EC(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5)
