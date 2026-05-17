@@ -1294,4 +1294,14 @@ eff_FrameUpdate                                         = 0x80061064;  /* per-fr
 spu_FlushVoiceChannels                                  = 0x80088740;  /* clears SPU control regs, polls voice-status (mask 0x7FF) with timeout, prints "SPU:T/O" on failure */
 gpu_DrawTimeoutCheck                                    = 0x8007DC9C;  /* checks if GPU draw exceeded vsync window (>0xF0000 cycles); prints g_str_gpu_timeout + "func=(%08x)(%08x,%08x)" + recovers state */
 
+/* === Wrapper/curried function names (2026-05-17) -- 6 highs === */
+/* Functions whose body is a clear single-purpose wrapper around a */
+/* named function with extra logic (clamp, walk list, set+return old). */
+snd_ClearAllSeBuffer                                    = 0x8002906C;  /* walks snd_GetSeId() list, zeroes +2 of each 0x10-byte entry until terminator */
+gpu_SetDrawMode                                         = 0x8007B244;  /* g_gpu_draw_mode setter (returns old) -- debug-traces via g_gpu_debug_func at level>=2 */
+snd_ChannelDmaFlush                                     = 0x80087F64;  /* if g_snd_ch_status[idx]==1: spu_DmaTransfer(g_snd_ch_addr[idx]), clear status, decrement g_snd_ch_count */
+spu_TransferDirect_capped                               = 0x8008AD64;  /* spu_TransferDirect(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
+spu_TransferData_capped                                 = 0x8008ADC4;  /* spu_TransferData(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
+coli_HitPauseKatana_3                                   = 0x8008A904;  /* coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD) -- sibling wrapper with motion-ID constants */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
