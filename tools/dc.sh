@@ -39,7 +39,7 @@
 #   bash tools/dc.sh next-structural [N]           — pull/preview structural split queue
 #   bash tools/dc.sh next-asmfix [N]               — pull/preview asmfix retirement queue
 #   bash tools/dc.sh next-cheat [N]                — pull/preview inline-asm cheat-fix work (active queue filtered to inline_asm_debt)
-#   bash tools/dc.sh next-cheat-cleanup [N]        — pull/preview cheat-cleanup queue (matching-via-cheat funcs not in any other queue)
+#   bash tools/dc.sh next-cheat-cleanup [N]        — pull/preview cheat-cleanup queue (every audit-flagged cheat func; entries also queued elsewhere get an `also:<queue>` tag)
 #   bash tools/dc.sh next-for-file <files> [N]     — pull/preview active queue filtered to comma-separated src files (parallel sub-agent partition)
 #   bash tools/dc.sh fix-asmfix-drift [--apply]    — auto-fix .L<N> rename drift in asmfix.txt
 #   bash tools/dc.sh auto-repair                    — build + detect cascade-drift + auto-run repair tools (used by build-active)
@@ -863,11 +863,14 @@ PYEOF
                 TAG_FILTER="_debt"
                 ;;
             next-cheat-cleanup)
-                # Cheat-cleanup queue: functions currently SHA1-matching only
-                # because of a regfix/asmfix/inline-__asm__ cheat. They aren't
-                # in the active queue (already match) and aren't bridged
-                # (not in retirement queue). Work is to remove the cheat and
-                # coerce the C source to emit equivalent codegen naturally.
+                # Cheat-cleanup queue: every audit-flagged cheat function,
+                # sorted by retirement difficulty. SHA1 matches today only
+                # because of a regfix/asmfix/inline-__asm__ cheat; work is
+                # to remove the cheat and coerce the C source to emit
+                # equivalent codegen naturally. Funcs that ALSO appear in
+                # the active/asmfix/structural queue are still listed here
+                # (single source of truth for the cheat set) and carry an
+                # `also:<queue>` tag indicating the overlap.
                 SECTION="## Cheat Cleanup Queue (top = next-cheat-cleanup)"
                 QUEUE_NAME="cheat cleanup queue"
                 ;;

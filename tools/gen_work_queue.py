@@ -435,25 +435,35 @@ def scan_file_scope_asm_debt() -> list[dict]:
     return debt
 
 
-def scan_orphan_cheats(existing_funcs: set[str]) -> list[dict]:
-    """Functions with audit-flagged cheats but NOT in any other queue.
-    These currently SHA1-match (via the cheat); the cleanup work is to
-    remove the cheat rules + coerce the C source to produce equivalent
-    codegen naturally.
+def scan_orphan_cheats(existing_funcs: set[str] | dict[str, str] | None = None) -> list[dict]:
+    """Functions with audit-flagged cheats — ALL of them, sorted by
+    retirement difficulty. They currently SHA1-match (via the cheat);
+    the cleanup work is to remove the cheat rules + coerce the C source
+    to produce equivalent codegen naturally.
 
-    Excludes funcs already in:
-      - active decomp queue (kind != asmfix entries)
-      - asmfix retirement queue (kind == asmfix entries)
-      - any of the *_debt scans (inline_asm / c_body / regfix_overwrite)
-    so we only surface cheats that aren't picked up by an existing queue.
+    This queue is intentionally a comprehensive single-source-of-truth
+    view of the audit cheat set, so nothing falls through the cracks
+    between the active / asmfix / structural queues. Funcs that ALSO
+    appear in another queue are still included; the `also:<queue>` tag
+    on each entry indicates the overlap.
 
-    Sort: ascending by cheat rule count (smaller = easier to retire),
-    then by size, then by name.
+    `existing_funcs` may be a dict mapping func → other-queue-name for
+    overlap annotation, or a bare set / None for no annotation.
+
+    Sort: ascending by total regfix rule count (simpler = easier to
+    retire), then cheat-rule count, then size, then name.
     """
     try:
         import audit_asm_cheats as audit
     except Exception:
         return []
+
+    if existing_funcs is None:
+        other_queue: dict[str, str] = {}
+    elif isinstance(existing_funcs, dict):
+        other_queue = existing_funcs
+    else:
+        other_queue = {f: "other" for f in existing_funcs}
 
     auth = audit.load_authorized()
     (splice_funcs, inline_funcs, bios_funcs, c_body_funcs,
@@ -466,7 +476,6 @@ def scan_orphan_cheats(existing_funcs: set[str]) -> list[dict]:
         | set(instruction_insert_funcs.keys())
         | set(asm_injection_funcs.keys())
     )
-    orphan_funcs = all_cheat_funcs - existing_funcs
 
     # Count TOTAL regfix rules per function (cheat + non-cheat). Cheats wedged
     # inside many auxiliary rules are structurally harder to retire than
@@ -484,7 +493,7 @@ def scan_orphan_cheats(existing_funcs: set[str]) -> list[dict]:
                 total_rules[m.group(1)] = total_rules.get(m.group(1), 0) + 1
 
     entries: list[dict] = []
-    for func in sorted(orphan_funcs):
+    for func in sorted(all_cheat_funcs):
         size = asm_insn_count(func)
         src = find_src_for_func(func)
         types: list[str] = []
@@ -509,6 +518,8 @@ def scan_orphan_cheats(existing_funcs: set[str]) -> list[dict]:
             n = asm_injection_funcs[func]
             types.append(f"asm_injection({n})")
             rule_count += n
+        if func in other_queue:
+            types.append(f"also:{other_queue[func]}")
         entries.append({
             "func": func,
             "size": size,
@@ -827,16 +838,23 @@ def main() -> int:
     asmfix_entries = [row_entry(r) for r in asmfix_rows]
     sort_entries(asmfix_entries)
 
-    # Cheat cleanup queue: audit-flagged cheats not in any other queue.
-    # Computed AFTER the active/asmfix/deferred queues so we know what's
-    # already scheduled and only surface the leftovers.
-    queued_funcs = (
-        {e["func"] for e in ordered}
-        | {e["func"] for e in deferred_entries}
-        | {e["func"] for e in asmfix_entries}
-        | {r["func"] for r in library_rows}
-    )
-    cheat_orphan_entries = scan_orphan_cheats(queued_funcs)
+    # Cheat cleanup queue: ALL audit-flagged cheats, sorted by retirement
+    # difficulty. Computed AFTER the active/asmfix/deferred queues so we
+    # can annotate each entry with where it ALSO appears (`also:active` /
+    # `also:asmfix` / `also:structural` / `also:library`). Funcs in
+    # another queue are still included here so this is the single source
+    # of truth for the audit cheat set — nothing slips through the cracks
+    # because it got picked up by another scan first.
+    queue_origin: dict[str, str] = {}
+    for e in ordered:
+        queue_origin.setdefault(e["func"], "active")
+    for e in deferred_entries:
+        queue_origin.setdefault(e["func"], "structural")
+    for e in asmfix_entries:
+        queue_origin.setdefault(e["func"], "asmfix")
+    for r in library_rows:
+        queue_origin.setdefault(r["func"], "library")
+    cheat_orphan_entries = scan_orphan_cheats(queue_origin)
 
     # Out-of-scope grouped by recommendation, alphabetized
     out_groups: dict[str, list[str]] = defaultdict(list)
@@ -1013,23 +1031,35 @@ def main() -> int:
         lines.append("## Cheat Cleanup Queue (top = next-cheat-cleanup)")
         lines.append("")
         lines.append(
-            "These functions are currently SHA1-matching, but only because a "
+            "Every audit-flagged cheat function, sorted by retirement "
+            "difficulty. They currently SHA1-match, but only because a "
             "non-canonical asm cheat in `regfix.txt` / `asmfix.txt` / src/*.c "
-            "fills a gap that the C source cannot produce naturally. They are "
-            "NOT in any other queue (already match, so the active queue "
-            "doesn't surface them). The work is to remove the cheat rule(s) "
-            "and coerce the C source to emit equivalent codegen — same effort "
-            "level as ordinary decomp, just starting from a matching-via-cheat "
-            "state instead of an unmatched stub."
+            "fills a gap that the C source cannot produce naturally. The work "
+            "is to remove the cheat rule(s) and coerce the C source to emit "
+            "equivalent codegen — same effort level as ordinary decomp, just "
+            "starting from a matching-via-cheat state instead of an unmatched "
+            "stub."
         )
         lines.append("")
         lines.append(
-            "Cheat types: `splice` (regfix splice rule), `inline_asm` "
+            "This queue is the single source of truth for the audit cheat "
+            "set — entries that also appear in the active / asmfix / "
+            "structural queues are still listed here, tagged with "
+            "`also:<queue>` so the overlap is visible. Pull from here when "
+            "doing cheat-cleanup work; pull from the source queue when doing "
+            "ordinary decomp (and incidentally clear the cheat)."
+        )
+        lines.append("")
+        lines.append(
+            "Cheat types: `splice` (regfix splice rule / large subst_multi / "
+            "high cumulative volume / wildcard `subst \".*\"`), `inline_asm` "
             "(file-scope `__asm__(glabel)` cheat in src/*.c), `bios_inline` "
             "(BIOS-style file-scope cheat), `c_body_multi_insn` (multi-instruction "
             "`__asm__` block inside a C function body), `lost_codegen(N)` "
             "(N single-instruction inserts of `addu/or RD,RS,$zero` and "
-            "similar GCC-collapsed copies)."
+            "similar GCC-collapsed copies), `asm_injection(N)` (same lost-"
+            "codegen pattern smuggled into C source as hardcoded-register "
+            "`__asm__` without `%N` placeholders)."
         )
         lines.append("")
         lines.append(
