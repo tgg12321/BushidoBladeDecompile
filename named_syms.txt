@@ -2215,6 +2215,11 @@ g_text1b_packed_arg                                     = 0x800A35E8;  /* bit-pa
 g_text1b_cached_byte                                    = 0x800A35E0;  /* u8 cached from D_8009BD59[i] for use across function calls */
 g_text1b_last_frame_id                                  = 0x800A324C;  /* cached previous frame ID; when changed, resets var_s1 */
 
+/* === GPU LoadImage packet buffer + status-up cache (2026-05-17) -- 3 highs === */
+g_gpu_loadimage_packet_buf                              = 0x800A4340;  /* 19-entry x 0x30 = 912-byte packet buffer for func_8003D9A0 initLoadImage loop */
+g_status_up_cached_idx                                  = 0x800905F8;  /* 0xFFFF sentinel or current idx cache for status-up records (paired with existing StatusUpBuf) */
+g_gpu_shadow_prim_base                                  = 0x800A3D30;  /* base pointer to shadow primitive data (used by func_8003D330) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
