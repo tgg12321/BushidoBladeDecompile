@@ -3889,26 +3889,22 @@ func_80075670: subst "104\(\$3\)" "104($7)" @ 74
 # Else branch + 3-cycle 2nd loop (idx 75-101): same swap pattern
 func_80075670: $7 <-> $5 @ 75-101
 func_80075670: $7 <-> $6 @ 75-101
+# func_80078654: lost-codegen cheat (insert_after addu @ 37) removed via
+# inline_move_aliasing in src/text1b_b.c (move %0,%1 in =r/r binding).
+# The remaining $16<->$17 swap + sw/lw substs + epilog reorder coerce
+# GCC's natural arg0/var_s0 register pick from $s0/$s1 -> $s1/$s0.
 # Pre-swap regs: $16=arg0, $17=var_s0, $18=zero
 # Target regs:   $16=var_s0, $17=arg0, $18=zero
-# Single swap: 16 <-> 17 (swaps arg0 and var_s0 positions)
 func_80078654: $16 <-> $17
-
-# Fix save offsets after register swap
-# Pre-swap saves at $16:72(arg0), $17:76(var_s0), $18:80(zero) - standard
-# Post-swap: $17(arg0)@72, $16(var_s0)@76, $18(zero)@80
-# Target: $16(var_s0)@72, $17(arg0)@76, $18(zero)@80
-# Need to swap offsets 72<->76 between $16 and $17
+# Fix save offsets after register swap (swap moved $17@72 + $16@76;
+# target wants $16@72 + $17@76).
 func_80078654: subst "sw\s+\$17,72" "sw	$17,76" @ 1
 func_80078654: subst "sw\s+\$16,76" "sw	$16,72" @ 9
-# Fix epilog loads
-func_80078654: subst "lw\s+\$16,76" "lw	$16,72" @ 108
-func_80078654: subst "lw\s+\$17,72" "lw	$17,76" @ 109
-# Fix divide block: subu dest, insert addu, sll source
-func_80078654: subst "subu\s+\$3,\$2,\$3" "subu	$2,$2,$3" @ 37
-func_80078654: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 38
-func_80078654: insert_after "addu	$3,$2,$zero" @ 37
-# Reorder epilog loads: mine has s0,s1 but target has s1,s0 (post-insert indices)
+# Fix epilog load offsets (indices shifted +1 from original cheat-era
+# config because inline_move_aliasing emits one instruction at idx 38).
+func_80078654: subst "lw\s+\$16,76" "lw	$16,72" @ 109
+func_80078654: subst "lw\s+\$17,72" "lw	$17,76" @ 110
+# Reorder epilog loads: mine has s0,s1 but target has s1,s0.
 func_80078654: reorder 110,109 @ 109-110
 func_80060544: reorder 17,18,15,16 @ 15-18
 func_80060544: subst "la\s+\$3,D_8009B770" "la\t$2,D_8009B770" @ 29
