@@ -2258,6 +2258,13 @@ g_memcard_filename_buf                                  = 0x800A31F0;  /* filena
 g_memcard_op_active_flag                                = 0x800A320C;  /* = 1 set during memcard op, = 0 reset */
 g_memcard_op_substate                                   = 0x800A382C;  /* = 0/= 1; secondary state flag */
 
+/* === Pad-rec bit counters + companion cluster (2026-05-17) -- 3 highs === */
+/* Companions to existing g_pad_rec_validated_packed / g_pad_rec_skip_flag */
+/* etc.  These accumulate bit counts from pad-input via func_8003A6FC. */
+g_pad_rec_bit_count_a                                   = 0x800A3908;  /* accumulated count of set bits in current pad input (incremented in func_8003A728) */
+g_pad_rec_bit_count_b                                   = 0x800A38FC;  /* accumulated count of set bits in g_pad_rec_validated_packed's lo word */
+g_pad_rec_misc_counter                                  = 0x800A38D0;  /* paired counter reset alongside _a/_b in func_8003B130 / func_80037804 */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
