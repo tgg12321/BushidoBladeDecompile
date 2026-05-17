@@ -2139,6 +2139,12 @@ g_text_render_cursor_b                                  = 0x800A32B6;  /* u16 pa
 g_panel_sibling_lookup_a                                = 0x80099CC8;  /* first byte of each 2-byte sibling pair (paired with _b at offset +1) */
 g_panel_sibling_lookup_b                                = 0x80099CC9;  /* second byte = &D_80099CC8 + 1 */
 
+/* === Effect cached values (2026-05-17) -- 2 highs === */
+/* From text1b.c around line 11145, 11163.  Companions to */
+/* g_effect_active_ptr (0x800A33F4). */
+g_effect_cached_id                                      = 0x800A33F8;  /* u16 cached from effect struct (+4 offset); returned by func_80054434 getter */
+g_effect_accumulator                                    = 0x800A33F0;  /* s32 set by func_80054410 / incremented by func_8005441C */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
