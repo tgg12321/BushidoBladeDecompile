@@ -1866,6 +1866,11 @@ g_snd_3d_pos_x                                          = 0x800EEE1C;  /* positi
 g_snd_3d_pos_y                                          = 0x800EEE20;  /* position triple Y (from D_80101E20) */
 g_snd_3d_pos_z                                          = 0x800EEE24;  /* position triple Z (from D_80101E24 + 0x6590) */
 
+/* === Animation interp / camera transition counters (2026-05-17) -- 3 highs === */
+g_anim_stability_counter                                = 0x800A3310;  /* counts consecutive "stable" interp frames in dst[0x1F]-marked struct; >= 0xB switches to high-precision update */
+g_cam_transition_timer                                  = 0x800A36FC;  /* camera transition countdown; while != 0, runs interp + decrement on s2[+0x12] angle */
+g_char_pose_id_p1                                       = 0x800A30FC;  /* current char pose ID for P1 (compared against `*(&D_8008E5A8 + char_id)` for re-init check) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
