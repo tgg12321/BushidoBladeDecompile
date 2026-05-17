@@ -1690,61 +1690,20 @@ saTan0GaugeDraw: reorder 25,26,27,28,29,32,30,31 @ 25-32
 
 # === coli_HitPauseKatana_2 regfix rules ===
 # Base pointer: $3 -> $4
-coli_HitPauseKatana_2: subst "\$3," "$4," @ 7
-coli_HitPauseKatana_2: subst "\$3," "$4," @ 10
-coli_HitPauseKatana_2: subst ",\$3$" ",$4" @ 12
-coli_HitPauseKatana_2: subst ",\$3$" ",$4" @ 15
 # Arg3: $4 -> $7 in preamble shifts
-coli_HitPauseKatana_2: subst ",\$4," ",$7," @ 9
-coli_HitPauseKatana_2: subst ",\$4," ",$7," @ 11
 # Intermediate: $10 -> $3 in preamble
-coli_HitPauseKatana_2: subst "\$10," "$3," @ 13
-coli_HitPauseKatana_2: subst "\$10" "$3" @ 18
-coli_HitPauseKatana_2: subst "\$10" "$3" @ 18
-coli_HitPauseKatana_2: subst "\$10" "$3" @ 19
-coli_HitPauseKatana_2: subst "\$10" "$3" @ 19
-coli_HitPauseKatana_2: subst ",\$10$" ",$3" @ 21
 # Constant 1: $6 -> $11
-coli_HitPauseKatana_2: subst "\$6," "$11," @ 16
-coli_HitPauseKatana_2: subst ",\$6," ",$11," @ 20
 # Arg2: $11 -> $6 (across all cases)
-coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 38
-coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 51
-coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 80
-coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 94
-coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 129
-coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 136
-coli_HitPauseKatana_2: subst ",\$11," ",$6," @ 144
 # Constant 1 in sllv: $6 -> $11
-coli_HitPauseKatana_2: subst ",\$6," ",$11," @ 54
-coli_HitPauseKatana_2: subst ",\$6," ",$11," @ 98
-coli_HitPauseKatana_2: subst ",\$6," ",$11," @ 139
 # Case 1 tail: mask temp $8 -> $2
-coli_HitPauseKatana_2: subst "\$8," "$2," @ 73
-coli_HitPauseKatana_2: subst ",\$8$" ",$2" @ 75
 # Case 0 tail: $8 -> $2, jump target, nor $8 -> $2
-coli_HitPauseKatana_2: subst "\$8," "$2," @ 120
-coli_HitPauseKatana_2: subst "\$8," "$2," @ 122
-coli_HitPauseKatana_2: subst ",\$8" ",$2" @ 122
-coli_HitPauseKatana_2: subst "\.L483" ".L466" @ 121
 # Case 8 tail: $10 -> $2 for mask materialization
-coli_HitPauseKatana_2: subst "\$10," "$2," @ 143
-coli_HitPauseKatana_2: subst "\$10," "$2," @ 153
-coli_HitPauseKatana_2: subst "\$10" "$2" @ 154
-coli_HitPauseKatana_2: subst "\$10" "$2" @ 154
-coli_HitPauseKatana_2: subst ",\$10$" ",$2" @ 155
 # Delete arg3 copy
-coli_HitPauseKatana_2: delete @ 1
 # Insert case 0 combine into delay slot (post-delete idx)
-coli_HitPauseKatana_2: insert_after "and\t$10,$10,$2" @ 121
 # Reorder: preamble - move addiu after sll block (post-insert indices)
-coli_HitPauseKatana_2: reorder 16,17,18,15 @ 15-18
 # Reorder: case 1 - move sh after addu,sra
-coli_HitPauseKatana_2: reorder 50,51,49 @ 49-51
 # Reorder: case 0 - move sh after sll,addu
-coli_HitPauseKatana_2: reorder 86,87,85 @ 85-87
 # Reorder: case 0 tail - swap j and nor
-coli_HitPauseKatana_2: reorder 121,120,122 @ 120-122
 
 # cpu_side_move_dir_4: register + scheduling fix for debug_printf block
 cpu_side_move_dir_4: subst "lbu\t\$3,0\(\$18\)" "lbu\t$4,0($18)" @ 39
