@@ -2,9 +2,9 @@
 
 **Medium confidence**: weak Kengo match (size-diff > 1 but same name), single named caller (`sole_caller_path` proposal: `<caller>_helper_<addr>`), or call-graph subsystem cluster. These need callsite/body inspection before applying.
 
-Total Medium: **165**
+Total Medium: **169**
 
-## Primary evidence: `manual_review` (62)
+## Primary evidence: `manual_review` (66)
 
 Hand-review rows for functions previously tagged `confidence=none` by
 the automated analyzer. Each row links to a prose evidence file that
@@ -103,6 +103,20 @@ Concise per-function evidence files; see
 | `0x80078824` | `func_80078824` | `disp_init_video_overlay_80078824` | manual_review=video/overlay subsystem init; matches disp-init family tail (disp_SetFramebufferMode(1,0,0,0); return 1) | [md](evidence/func_80078824.md) |
 | `0x80085270` | `func_80085270` | `spu_channel_reset_80085270` | manual_review=per-channel SPU reset; uses spu_NotifyChannel/spu_ResetCounter; 0xB0-byte per-channel record stride | [md](evidence/func_80085270.md) |
 | `0x80085448` | `func_80085448` | `settings_set_volume_pair_80085448` | manual_review=2-channel SPU volume setter; clamps to 0x7F and applies 129*2 = 258 PSX volume scale | [md](evidence/func_80085448.md) |
+
+### Batch 5 (2026-05-17, family-parent deepen pass)
+
+Names the parent dispatchers that the batch-4 function families
+(`trigger_event_*`, `multi_stage_init_*`) flow through. Naming
+these 4 lifts the 14 child names from address-suffix placeholders
+toward clean semantic names.
+
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80067200` | `func_80067200` | `efc_gte_setup_and_draw_80067200` | manual_review=GTE-using effect dispatcher; loads rotation matrix from D_800A3474 via ctc2 (cop2 regs 0..4); branches on size class to set texture-coord limits 0x40/0x20 vs 0x60/0x30 (texture page sizes); called by the 6-member trigger_event_* family | [md](evidence/func_80067200.md) |
+| `0x800678A8` | `func_800678A8` | `efc_init_phase1_setup_buffer_800678A8` | manual_review=phase 1 of 3-helper effect-init triple; sets primitive type code 0x2E, default texture sizes 0x40/0x20, per-mode init values in the effect buffer at D_800A34EC | [md](evidence/func_800678a8.md) |
+| `0x80067D14` | `func_80067D14` | `efc_init_phase2_randomize_80067D14` | manual_review=phase 2 of effect-init triple (1108 asm lines, largest); calls bb2_rand early; walks effect buffer at 8 offsets writing randomised values; heavy GTE usage for per-particle transforms | [md](evidence/func_80067d14.md) |
+| `0x80068D88` | `func_80068D88` | `efc_init_phase3_finalize_80068D88` | manual_review=phase 3 of effect-init triple (87 asm lines, smallest); computes derived summary value via reciprocal-multiply / divide-by-8 sequence; updates buffer +0x80 / +0x7C fields | [md](evidence/func_80068d88.md) |
 
 Note: `func_80021974` (batch 1) and `func_80054434` (batch 2) are
 genuinely low-confidence (`rank=low` in CSV) and are not listed

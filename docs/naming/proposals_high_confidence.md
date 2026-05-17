@@ -18,9 +18,9 @@ discursive than the auto-generated evidence files.
 
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
-| `0x80037774` | `func_80037774` | `game_event_shutdown_80037774` | manual_review=EnterCriticalSection + bios_CloseEvent x 8 + ExitCriticalSection + post-shutdown hook; canonical event-pool shutdown pattern | [md](evidence/func_80037774.md) |
-| `0x80037804` | `func_80037804` | `game_event_wait_any_with_timeout_80037804` | manual_review=first-half-event waiter (tests 4 of the 8 events closed by game_event_shutdown_80037774); adds 0x78 (=2sec) timeout via D_800A3924 counter | [md](evidence/func_80037804.md) |
-| `0x80037964` | `func_80037964` | `game_event_wait_any_80037964` | manual_review=spin-poll 4 bios_TestEvent and return 1..4 index of first signaled; canonical wait-for-any pattern | [md](evidence/func_80037964.md) |
+| `0x80037774` | `func_80037774` | `memcard_event_pool_close_80037774` | manual_review=closes all 8 memcard events (4 class 0xF4000001 + 4 class 0xF0000011) opened by pad_press_control (which itself is misnamed -- it does memcard init); was named game_event_shutdown_* before OpenEvent owner was found 2026-05-17 | [md](evidence/func_80037774.md) |
+| `0x80037804` | `func_80037804` | `memcard_event_wait_class0xF4000001_with_timeout_80037804` | manual_review=spin-poll the 4 class-0xF4000001 events (D_800A37DC/F0/FC/3800 = memcard I/O-complete class) with 2-sec timeout via D_800A3924 counter | [md](evidence/func_80037804.md) |
+| `0x80037964` | `func_80037964` | `memcard_event_wait_class0xF0000011_80037964` | manual_review=spin-poll the 4 class-0xF0000011 events (D_800A3838/3C/48/50 = memcard error/notification class) opened by pad_press_control | [md](evidence/func_80037964.md) |
 | `0x80040510` | `func_80040510` | `player_rob_Init` | manual_review=stores in g_player_ptrs[idx]; chains AllocRobRmd + 4 rob_* helpers; single caller at fight-start with (slot, model_id, heap_base=0x80190800); promoted from medium 2026-05-17 after 3-of-3 medium-evidence agreement | [md](evidence/func_80040510.md) |
 | `0x80079154` | `func_80079154` | `bb2_rand` | manual_review=BSD libc LCG (0x41C64E6D * x + 0x3039, >> 16 & 0x7FFF); 29 callers across 6 files all use return as a random number | [md](evidence/func_80079154.md) |
 | `0x80080620` | `func_80080620` | `cd_dma_idle_80080620` | manual_review=1-line inversion of cdrom_DmaToRam() == 0; returns 1 when no CD-DMA-to-RAM transfer is active | [md](evidence/func_80080620.md) |

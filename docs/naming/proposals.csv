@@ -202,11 +202,11 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800372F4,func_800372F4,,none,,
 0x80037348,func_80037348,,none,,
 0x80037540,func_80037540,special_cam_init_with_two_lookups_80037540,medium,"manual_review=Special-camera init wrapper: looks up two SpecialCam table entries via func_80036EA8(6, idx), packs 6 fields into a stack buffer along with caller args, then dispatches marionation_camera_Init_80037468(6, sp, v0 + 0x7FC).",docs/naming/evidence/func_80037540.md
-0x80037774,func_80037774,game_event_shutdown_80037774,high,manual_review=EnterCriticalSection + bios_CloseEvent x 8 + ExitCriticalSection + post-shutdown hook; canonical event-pool shutdown pattern,docs/naming/evidence/func_80037774.md
-0x80037804,func_80037804,game_event_wait_any_with_timeout_80037804,high,"manual_review=first-half-event waiter (tests 4 of the 8 events closed by game_event_shutdown_80037774, complementing game_event_wait_any_80037964); adds 0x78 (=2sec) timeout via D_800A3924 counter forcing result=2",docs/naming/evidence/func_80037804.md
+0x80037774,func_80037774,memcard_event_pool_close_80037774,high,manual_review=closes all 8 memcard events (4 in class 0xF4000001 + 4 in class 0xF0000011) opened by pad_press_control (which itself is a misnomer -- it does memcard init); was named game_event_shutdown_* before the OpenEvent owner was identified,docs/naming/evidence/func_80037774.md
+0x80037804,func_80037804,memcard_event_wait_class0xF4000001_with_timeout_80037804,high,manual_review=spin-poll the 4 class-0xF4000001 events (D_800A37DC/F0/FC/3800) with 2-sec timeout via D_800A3924 counter; these are the memcard I/O-complete class opened by pad_press_control,docs/naming/evidence/func_80037804.md
 0x800378A8,func_800378A8,,none,,
 0x8003791C,func_8003791C,,none,,
-0x80037964,func_80037964,game_event_wait_any_80037964,high,manual_review=spin-poll 4 bios_TestEvent and return 1..4 index of first signaled; canonical wait-for-any pattern; tested events are subset of func_80037774's closed pool,docs/naming/evidence/func_80037964.md
+0x80037964,func_80037964,memcard_event_wait_class0xF0000011_80037964,high,manual_review=spin-poll the 4 class-0xF0000011 events (D_800A3838/3C/48/50); these are the memcard error/notification class opened by pad_press_control; was named game_event_wait_any_* before the OpenEvent owner was identified,docs/naming/evidence/func_80037964.md
 0x800379D8,func_800379D8,,none,,
 0x80037A20,func_80037A20,memcard_func_80037A20,low,string_adjacent=memcard_func_80037A20,docs/naming/evidence/func_80037A20.md
 0x80037AA4,func_80037AA4,pad_FuncAnalog_helper_80037AA4,medium,sole_caller_path=pad_FuncAnalog_helper_80037AA4,docs/naming/evidence/func_80037AA4.md
@@ -696,7 +696,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80067164,func_80067164,trigger_event_6_3_with_flag_80067164,medium,"manual_review=Family member: event-pair (6, 3), flag=1, sets D_800F1130 = 2.",docs/naming/evidence/func_80067164.md
 0x80067198,func_80067198,trigger_event_7_2_no_flag_80067198,medium,"manual_review=Family member: event-pair (7, 2), flag=0, sets D_800F1134 = 1.",docs/naming/evidence/func_80067198.md
 0x800671CC,func_800671CC,trigger_event_7_2_with_flag_800671CC,medium,"manual_review=Family member: event-pair (7, 2), flag=1, sets D_800F1134 = 2.",docs/naming/evidence/func_800671cc.md
-0x80067200,func_80067200,gte_mvmva_wrapper_80067200,low,gte_op=gte_mvmva_wrapper_80067200,docs/naming/evidence/func_80067200.md
+0x80067200,func_80067200,efc_gte_setup_and_draw_80067200,medium,manual_review=The asm body opens with GTE matrix setup -- a series of lw + ctc2 instructions reading from D_800A3474 (the cached matrix data) and writing into GTE cop2 control registers 0..4. These five register slots hold the rotation matrix (ROT11..ROT33 in PSX SDK naming).,docs/naming/evidence/func_80067200.md
 0x800676C8,func_800676C8,multi_stage_init_0_0_800676C8,medium,"manual_review=Family member: calls 3 helpers in sequence (func_800678A8, func_80067D14, func_80068D88) each with (0, 0). The 8-member family covers args (0,0) through (7, ...).",docs/naming/evidence/func_800676c8.md
 0x80067704,func_80067704,multi_stage_init_1_1_80067704,medium,"manual_review=Family member: 3-helper init with mode (1, 1).",docs/naming/evidence/func_80067704.md
 0x80067740,func_80067740,multi_stage_init_2_1_80067740,medium,"manual_review=Family member: 3-helper init with mode (2, 1).",docs/naming/evidence/func_80067740.md
@@ -705,9 +705,9 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800677F4,func_800677F4,multi_stage_init_5_3_800677F4,medium,"manual_review=Family member: 3-helper init with mode (5, 3).",docs/naming/evidence/func_800677f4.md
 0x80067830,func_80067830,multi_stage_init_6_3_80067830,medium,"manual_review=Family member: 3-helper init with mode (6, 3).",docs/naming/evidence/func_80067830.md
 0x8006786C,func_8006786C,multi_stage_init_7_2_8006786C,medium,"manual_review=Family member: 3-helper init with mode (7, 2). Completes the 8-member family.",docs/naming/evidence/func_8006786c.md
-0x800678A8,func_800678A8,gte_helper_800678A8,low,gte_op=gte_helper_800678A8,docs/naming/evidence/func_800678A8.md
-0x80067D14,func_80067D14,gte_mvmva_wrapper_80067D14,low,gte_op=gte_mvmva_wrapper_80067D14,docs/naming/evidence/func_80067D14.md
-0x80068D88,func_80068D88,,none,,
+0x800678A8,func_800678A8,efc_init_phase1_setup_buffer_800678A8,medium,"manual_review=Phase 1 of a 3-helper effect-init triple (the other two are func_80067D14 and func_80068D88). All three are called sequentially by the 8 multi_stage_init_* wrappers (batch 4) with the same (mode_a, mode_b) pair.",docs/naming/evidence/func_800678a8.md
+0x80067D14,func_80067D14,efc_init_phase2_randomize_80067D14,medium,"manual_review=Phase 2 of the effect-init triple. Calls bb2_rand (func_80079154) early to obtain a per-init random seed, then walks the effect buffer at ~8 different offsets writing randomised values.",docs/naming/evidence/func_80067d14.md
+0x80068D88,func_80068D88,efc_init_phase3_finalize_80068D88,medium,"manual_review=Phase 3 of the effect-init triple. Computes a derived value from the difference between two fields in the effect buffer (+0x80 and D_800A37D4), then either updates +0x80 / +0x7C (committing the new value) or branches to a no-op path.",docs/naming/evidence/func_80068d88.md
 0x80068ECC,func_80068ECC,,none,,
 0x80068F70,func_80068F70,,none,,
 0x80069120,func_80069120,sync_flag_check_advance_80069120,medium,"manual_review=Compares a flag stored at D_800A34FC[+0x30] with the low bit of D_800A3524[+8]. If they differ, calls a sync helper (func_8006E8CC). Then writes the current flag and returns a pointer into D_800A351C + a0 * 44.",docs/naming/evidence/func_80069120.md
