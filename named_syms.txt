@@ -2021,6 +2021,16 @@ g_menu_screen_b_state_ptr                               = 0x800A35F8;  /* pointe
 g_menu_screen_b_frame_counter                           = 0x800A35FC;  /* per-frame counter (incremented in handler) */
 g_menu_screen_b_init_flag                               = 0x800A3600;  /* init flag (reset to 0) */
 
+/* === Intro/title screen state extension (2026-05-17) -- 4 highs === */
+/* From text1b_b.c around line 1078: a 3rd "screen" init follows the */
+/* same pattern as menuctl + screen_b -- stores arg pointer, allocates */
+/* mode-state via func_8006E49C, resets counters.  Companion to */
+/* existing g_intro_fade_phase (0x800A3608). */
+g_intro_dbuf_parity                                     = 0x800A3304;  /* incremented & ANDed with 1 to select alternating buffer in func_80078634 */
+g_intro_state_arg                                       = 0x800A360C;  /* arg passed to func_8006E49C (mode-state allocator) */
+g_intro_sprite_data_ptr                                 = 0x800A3610;  /* sprite/vertex data array base; [0xF] and [5+] accessed */
+g_intro_extra_state                                     = 0x800A3614;  /* extra state cell (reset to 0 in init) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
