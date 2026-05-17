@@ -2432,6 +2432,13 @@ g_snd_voice_init_byte_A                                 = 0x800EF07A;  /* +A (in
 g_snd_voice_init_byte_C                                 = 0x800EF07C;  /* +C */
 g_snd_callback_func_ptr                                 = 0x800F66B0;  /* callback function pointer (void(*)(u8*, s32*)) for sound subsystem */
 
+/* === Sound stream stage + camera sector data (2026-05-17) -- 5 highs === */
+g_scratchpad_cached_data_ptr                            = 0x80095328;  /* pointer stashed into scratchpad 0x1F80001C for fast access */
+g_snd_stream_stage                                      = 0x800A9CFC;  /* stage value used during audio streaming (= v0 saved, returned as 'stage') */
+g_snd_stream_header_field_8                             = 0x800A9D08;  /* offset -0x8 from g_snd_stream_buffer; struct field accessed at base+0 and base-0x10 */
+g_camera_sector_data_table                              = 0x800963EC;  /* camera per-entry data table; each entry has .start_sector field used by special_camera_check_pos_outside_ground */
+g_snd_stream_slot_field_4                               = 0x800EED14;  /* offset +4 of g_snd_stream_slot_table entries (per-slot data) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
