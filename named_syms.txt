@@ -256,13 +256,42 @@ suDraw2DLib_8007A62C = 0x8007A62C;
 MotDataBaseAddress = 0x80104F38;
 
 /* === Kengo-derived names (apply_kengo_names.py) === */
-katinuki_game_get_katinuki_max_num_80016868 = 0x80016868;
-katinuki_game_get_katinuki_max_num_800168D0 = 0x800168D0;
-katinuki_game_get_katinuki_max_num_80046914 = 0x80046914;
-katinuki_game_get_katinuki_max_num_80046934 = 0x80046934;
-katinuki_game_get_katinuki_max_num_80046A60 = 0x80046A60;
-tslSmdSendVu1Code_8007A87C = 0x8007A87C;
-tslSmdSendVu1Code_8007A898 = 0x8007A898;
+/* NOTE: the entries below were retained as aliases by the Kengo */
+/* apply pass but body audit (2026-05-17) shows the names are wrong. */
+/* See docs/naming/MISNOMERS.md for the audit. The replacement aliases */
+/* with the correct semantic names are added at the same addresses */
+/* in the "Misnomer-replacement aliases" section further down. */
+katinuki_game_get_katinuki_max_num_80016868 = 0x80016868;  /* MISNAMED: actually gpu_EnableDisplay (already in undefined_syms_auto.txt at this addr) */
+katinuki_game_get_katinuki_max_num_800168D0 = 0x800168D0;  /* MISNAMED: actually gpu_DisableDisplay (already in undefined_syms_auto.txt at this addr) */
+katinuki_game_get_katinuki_max_num_80046914 = 0x80046914;  /* MISNAMED: 1-line wrapper func_800453E0(8); not katinuki-related */
+katinuki_game_get_katinuki_max_num_80046934 = 0x80046934;  /* MISNAMED: 1-line wrapper func_800455AC(9); not katinuki-related */
+katinuki_game_get_katinuki_max_num_80046A60 = 0x80046A60;  /* MISNAMED: 1-line wrapper func_800453E0(0xA); not katinuki-related */
+tslSmdSendVu1Code_8007A87C = 0x8007A87C;  /* MISNAMED: VU1 is PS2-only; actually a ptr-to-KSEG0 converter (top byte = 0x80) */
+tslSmdSendVu1Code_8007A898 = 0x8007A898;  /* MISNAMED: VU1 is PS2-only; actually an OT-terminator check (low 24 bits all 1?) */
+
+/* === Misnomer-replacement aliases (2026-05-17 audit) === */
+/* Replacement names for the Kengo entries above, derived from asm body */
+/* analysis. The Kengo aliases stay for compat but readers should use */
+/* these instead. See docs/naming/MISNOMERS.md. */
+ptr_load_kseg0_8007A87C       = 0x8007A87C;
+is_ot_terminator_8007A898     = 0x8007A898;
+channel_helper_8_80046914     = 0x80046914;
+channel_helper_9_80046934     = 0x80046934;
+channel_helper_A_80046A60     = 0x80046A60;
+/* (gpu_EnableDisplay / gpu_DisableDisplay are already in */
+/* undefined_syms_auto.txt -- no need to re-declare here.) */
+
+/* === Kengo conflicts: hand-review alternative aliases (2026-05-17 audit) === */
+/* Five of seven Kengo conflicts (from MISNOMERS.md Category 2) where */
+/* the Kengo name is clearly wrong per body audit; our hand-review name */
+/* is added as the primary alias. The Kengo names retained higher in */
+/* this file remain valid aliases for back-compat but should be treated */
+/* as deprecated. */
+char_motion_nibble_scan_80021280              = 0x80021280;  /* supersedes title_mv_exec (motion subsystem, not title screen) */
+tslTm2_command_with_retry_80080258            = 0x80080258;  /* supersedes _DispCharacterName (clearly a TIM/CD-load retry wrapper, not name display) */
+tslTm2_command_with_retry_no_arg3_80080390    = 0x80080390;  /* supersedes myRobGeneiDraw3 (2-arg twin of above; not draw) */
+char_store_pos_pair_80086130                  = 0x80086130;  /* supersedes action_check_defense (stores paired values into 16-byte slot records; not defense check) */
+spawn_hit_particle_80030900                   = 0x80030900;  /* parallel to myRobGeneiDraw (compatible; the "afterimage" might be one kind of hit particle this spawns) */
 
 /* === Hand-reviewed manual_review names (2026-05-17) === */
 /* SHA1-invariance verified on 2026-05-17: clean rebuild with and without */
