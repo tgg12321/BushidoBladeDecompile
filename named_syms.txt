@@ -2380,6 +2380,12 @@ g_text1b_glyph_data_b2                                  = 0x800F115C;  /* paired
 g_eff_particle_remaining                                = 0x800A326C;  /* signed remaining count for particle generation; rounded down to multiple of 4 per call */
 g_eff_particle_template_table                           = 0x8009B2E0;  /* particle effect templates (0x3C-byte stride per entry, arg1 indexes it) */
 
+/* === Char struct +0xE field + lookup tables (2026-05-17) -- 4 highs === */
+g_char_struct_p1_field_E                                = 0x80101ED6;  /* per-char field at +0xE; sibling to g_char_class_idx_p1 (+0xA); s16 access via (D + s0) where s0 = 0 or 0x44C */
+g_char_lookup_table_b                                   = 0x8008E5CC;  /* sibling to g_char_class_id_table (D_8008D538); per-char data lookup */
+g_char_lookup_table_c                                   = 0x8008E6A4;  /* another per-char data table */
+g_char_id_saved_d                                       = 0x800A36C8;  /* companion to g_char_id_saved_a/b; preserved during char_id context-save */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
