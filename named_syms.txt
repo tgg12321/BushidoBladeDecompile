@@ -744,4 +744,15 @@ g_replay_pos_z                  = 0x80101E44;  /* word Z of replay-camera pos tr
 g_pad_analog_substate           = 0x800A37C8;  /* halfword; sub-state for pad_FuncAnalog (values {0, 3}); paired with g_pad_analog_mode (D_800A31F4) */
 g_match_round_byte_a            = 0x800F65F8;  /* byte array indexed by g_match_round_index * 2 -- per-round result byte (paired with D_800F65F9 byte_b) */
 
+/* === Data-symbol batch 7 (2026-05-17) -- highest-ref unproposed === */
+/* 8 high-confidence names landed; 18 more proposals in data_evidence/. */
+g_practice_loop_frame           = 0x800A37B8;  /* frame counter; `<<3` for byte stride, `<<12 / 105` for BAM angle conversion */
+g_cpu_attack_idx                = 0x800A3817;  /* CPU AI attack-pattern index; compared to g_cpu_prev_attack_idx (D_800A3804) */
+g_text1b_render_state           = 0x800F116C;  /* base of text1b render state struct; ptr stashed in g_text1b_render_state_ptr */
+g_text1b_render_state_ptr       = 0x800A3468;  /* pointer to g_text1b_render_state; +0x0 has 0x200000 valid-flag, +0x14 has output cursor */
+g_text1b_render_buf_ptr         = 0x800A347C;  /* volatile pointer to render buffer (state + 0x20); concurrent with IRQ/DMA */
+g_text1b_glyph_cursor           = 0x800F1180;  /* pointer-cursor over glyph data; reset per render-init path */
+g_text1b_render_arg_cache       = 0x800F1178;  /* cached caller-arg0 in text1b render path; consumed by deeper functions */
+g_replay_attack_pos_x           = 0x80101E3C;  /* X position for replay-camera attack-number selection; paired with D_80101E44 */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
