@@ -1452,6 +1452,19 @@ g_effect_struct_b                                       = 0x800EFC38;  /* second
 /* +0x30, +0x34, +0x65 (count), +0x68+i (per-index counters). */
 g_mode_state_ptr_alt                                    = 0x800A36A0;  /* mode-state struct pointer assigned via func_8006E49C; parallel to g_menuctl_mode_state_ptr but for mode 6 (result/winner?) */
 g_mode_state_arg_alt                                    = 0x800A35D8;  /* arg0 saved before func_8006E49C call; parallel to D_800A351C for menuctl */
+
+/* === Fade/transition state machine (2026-05-17) -- 4 highs === */
+/* From text1b.c func_8006EC0C (line 16108): fade-in/out state machine */
+/* with ramp value (D_800A3570: 0..0x1E8 in 0x20 steps), state */
+/* (D_800A3578: 1-4), dispatch table index (D_800A3580), deferred next */
+/* index (D_800A3584). */
+/* Note: D_800A3578 and D_800A35A0 are already named */
+/* g_replay_motion_shared_state_a/b -- the addresses are reused across */
+/* fade + replay-camera + motion-shift contexts. */
+g_fade_value                                            = 0x800A3570;  /* s16 fade ramp value, 0..0x1E8 (488); stepped by +/-0x20 */
+g_fade_dispatch_idx                                     = 0x800A3580;  /* index into g_fade_dispatch_table (= D_8009BC1C) for current fade handler */
+g_fade_next_dispatch_idx                                = 0x800A3584;  /* deferred next dispatch idx (loaded into g_fade_dispatch_idx when ramp completes) */
+g_fade_dispatch_table                                   = 0x8009BC1C;  /* fade-state dispatch table -- (&D_8009BC1C)[g_fade_dispatch_idx](sp10) */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
