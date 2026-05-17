@@ -1983,6 +1983,18 @@ g_vsync_counter_ptr                                     = 0x800A1514;  /* pointe
 g_vsync_counter_snapshot                                = 0x800A1518;  /* snapshot of *g_vsync_counter_ptr from prev call (for delta calc) */
 g_vsync_dma_region_snapshot                             = 0x800A151C;  /* snapshot of g_sys_dma_region at end of last sys_VSync */
 
+/* === Menuctl state cluster extension (2026-05-17) -- 8 highs === */
+/* From text1b.c func_80068F70 (menu-mode init): additional state cells */
+/* alongside the previously-named menuctl cluster (D_800A34F8/4FC/50C/3514). */
+g_menuctl_scratch_ctx                                   = 0x800A3500;  /* transient context global -- multiply-overwritten arg-passing channel */
+g_menuctl_pad_result_1                                   = 0x800A350E;  /* pad-decode result entry 1 (s16) -- 2nd of g_menuctl_pad_result_buf 4-tuple */
+g_menuctl_pad_result_2                                   = 0x800A3510;  /* pad-decode result entry 2 */
+g_menuctl_pad_result_3                                   = 0x800A3512;  /* pad-decode result entry 3 */
+g_menuctl_init_state                                     = 0x800A3518;  /* state cell reset to 0 in func_80068F70; passed by ref to func_8006E390 */
+g_menuctl_arg0_saved                                     = 0x800A351C;  /* saved arg0 of menu-init function (= original screen base before transform) */
+g_menuctl_call_counter                                   = 0x800A3528;  /* per-frame call counter (incremented inside menu-mode update) */
+g_menuctl_effect_handle                                  = 0x800A372C;  /* effect/rob-close handle stored after efc_rob_Close call in init */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
