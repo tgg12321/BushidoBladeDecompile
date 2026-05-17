@@ -1832,6 +1832,17 @@ g_cam_bone_data_h1                                      = 0x800EEDD8;  /* s16 fi
 g_sound_3d_angle_h                                      = 0x800A33C8;  /* horizontal angle (-single_game_getEnemyCharId(y, dist)) */
 g_sound_3d_angle_v                                      = 0x800A33CA;  /* vertical angle (single_game_getEnemyCharId(x, z) result) */
 
+/* === ings.c main-loop state names (2026-05-17) -- 8 highs === */
+/* These were referenced in main_loop.md but not yet bound to names. */
+g_global_reset_request                                  = 0x800A3928;  /* if != 0 the main loop forces mode=8 (title teardown) -- see main_loop.md step 3 */
+g_ot_remaining_min                                      = 0x800A30DC;  /* min observed OT primitive-pool remaining; tripping <0 triggers sys_Panic ("common prim over flow") */
+g_ot_used_max                                           = 0x800A30E8;  /* high-watermark of OT usage `if D_800A30E8 < i then D_800A30E8 = i` */
+g_voice_skip_count                                      = 0x800A390D;  /* voice frame-skip counter; decrements before frame submit */
+g_select_pause_countdown                                = 0x800A3713;  /* countdown gating the SELECT-pause submenu entry; main_loop.md step 13 */
+g_global_frame_counter                                  = 0x800A37C0;  /* global frame counter (monotonic, never reset) */
+g_intro_demo_duration                                   = 0x80106A5C;  /* intro/demo duration cap (= 0x6978 = 27000 frames) */
+g_intro_select_packed_state                             = 0x800A3788;  /* packed state value combined with menu `select` in func_8005C8A8 call */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
