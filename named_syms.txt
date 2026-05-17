@@ -2952,3 +2952,11 @@ g_file_flags_plus_5                                     = 0x80106A78;  /* +5 fro
 g_active_slot_flags_12_plus_2                           = 0x80106A82;  /* +2 from g_active_slot_flags_12 (0x80106A80) */
 g_leaf_position_table_plus_4                            = 0x80107854;  /* +4 from g_leaf_position_table (0x80107850) */
 g_leaf_position_table_plus_8                            = 0x80107858;  /* +8 from g_leaf_position_table (0x80107850) */
+
+/* === Tier 2 batch: cross-character P2..PN paired fields (2026-05-17) === */
+/* 4 P2..PN addresses for already-named P1 fields in */
+/* g_practice_menu_table (0x44C stride per char, 28 chars). */
+g_practice_menu_table_p2                                = 0x80102314;  /* P2 of g_practice_menu_table (P1 = 0x80101EC8) */
+g_char_world_pos_x_p2                                   = 0x801023EC;  /* P2 of g_char_world_pos_x (P1 = 0x80101FA0) */
+g_char_world_pos_z_p2                                   = 0x801023F4;  /* P2 of g_char_world_pos_z (P1 = 0x80101FA8) */
+g_char_curr_keyframe_idx_p3                             = 0x801027E4;  /* P3 of g_char_curr_keyframe_idx (P1 = 0x80101F4C) */
