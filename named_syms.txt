@@ -2368,6 +2368,11 @@ g_bios_callback_v0_1952                                 = 0x800A362C;  /* cached
 g_kernel_intr_ra_save_a                                 = 0x800A3618;  /* return-address save slot for kernel interrupt handler A */
 g_kernel_intr_ra_save_b                                 = 0x800A3628;  /* paired ra-save slot for handler B */
 
+/* === Motion-ex counter id15 + text1b glyph data (2026-05-17) -- 3 highs === */
+g_motion_ex_counter_id15                                = 0x800F0BC6;  /* +0x1E from g_motion_ex_counter_table_base; 2-byte stride; incremented per frame */
+g_text1b_glyph_data_b1                                  = 0x800F115B;  /* glyph buffer data; D_800F1180 set to point at this (cursor target) */
+g_text1b_glyph_data_b2                                  = 0x800F115C;  /* paired with _b1; accessed via &D + 0/+1 */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
