@@ -2373,6 +2373,13 @@ g_motion_ex_counter_id15                                = 0x800F0BC6;  /* +0x1E 
 g_text1b_glyph_data_b1                                  = 0x800F115B;  /* glyph buffer data; D_800F1180 set to point at this (cursor target) */
 g_text1b_glyph_data_b2                                  = 0x800F115C;  /* paired with _b1; accessed via &D + 0/+1 */
 
+/* === Effect particle generator state (2026-05-17) -- 2 highs === */
+/* From text1b.c around line 12605: particle generation function with */
+/* a signed budget counter that gets decremented (rounded down by 4) */
+/* per call.  Uses g_effect_rng_state for random offsets. */
+g_eff_particle_remaining                                = 0x800A326C;  /* signed remaining count for particle generation; rounded down to multiple of 4 per call */
+g_eff_particle_template_table                           = 0x8009B2E0;  /* particle effect templates (0x3C-byte stride per entry, arg1 indexes it) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
