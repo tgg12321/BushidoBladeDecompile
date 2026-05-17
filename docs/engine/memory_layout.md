@@ -108,7 +108,7 @@ Observed usage (from `code6cac.c`, `code6cac_b.c`):
 
 The full 1 KB is saved/restored once per major mode transition by
 `scratchpad_Save` / `scratchpad_Restore` (`ings.c:941, 949`), copying `0xF8`
-words (0x3E0 = 992 bytes; the top 8 words are skipped) to `D_800F5370` in main
+words (0x3E0 = 992 bytes; the top 8 words are skipped) to `g_scratchpad_save` (D_800F5370) in main
 RAM. The two functions do nothing else; the only call sites use them as
 "checkpoint" markers around mode transitions.
 

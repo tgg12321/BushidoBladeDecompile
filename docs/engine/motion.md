@@ -114,9 +114,9 @@ The "set/transition motion" decision function. Run by `saRobDraw`
 
 - `D_800A3207` — current motion-system state (1..4 represent boot, normal,
   hit-stop, special, reset)
-- `D_800A334C` — frame counter (decrements 0x5A=90 down to 0)
+- `g_motion_play_countdown` (D_800A334C) — frame counter (decrements 0x5A=90 down to 0)
 - `D_800A3354` — special state flag (transition pending)
-- `D_800A31FC` — "no input" flag
+- `g_damage_debug_enabled` (D_800A31FC) — "no input" flag
 - `D_80102794` — pad input mask
 - `func_80038734()` — gets the current "selected motion index"
 

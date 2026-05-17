@@ -92,6 +92,7 @@ boundaries. Treat them as containers for the address ranges given in
 | Memory map | (data symbols project-wide) | n/a | [memory_layout.md](memory_layout.md) |
 | Cross-reference | (this doc + above) | n/a | [cross_reference.md](cross_reference.md) |
 | PsyQ library usage | (libgpu, libcd, libapi, libspu, MDEC) | n/a | [psyq_usage.md](psyq_usage.md) |
+| Recent naming-pass findings | (BIOS events, scratchpad cache, match-round, replay-pos, text1b render-state, GTE/SPU/IRQ clusters) | n/a | [recent_naming_findings.md](recent_naming_findings.md) |
 
 ## Key globals to know
 
@@ -112,7 +113,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 - `g_disp_enable` (0x800A3768) — 0xFF = display off / loading; 0x14 = active;
   10 = loading. See `bb2_const.h`.
 - `g_disp_fade` (0x800A36A8) — 0..255 fade-to-black amount.
-- `D_800A36AC` — frame counter, low bit selects the active double-buffer slot.
+- `g_frame_parity` (D_800A36AC) — frame counter, low bit selects the active double-buffer slot.
 - `g_disp_fb_base` (0x800F7438) — base of the two 0x4090-byte
   drawenv+dispenv+OT structures (one per buffer).
 
