@@ -699,8 +699,8 @@ void func_80019310(volatile s32 *arg0, s32 *arg1) {
         if (count > 0) {
             do {
                 s32 *base = (s32 *)t0[0];
-                t4 = (s32 *)((u8 *)base + (i << 3));
-                __asm__ volatile ("addu $12, $2, $0"); /* cheat-cleanup: $t4 = base ($v0); was insert_after @ 23 */
+                s32 *p = (s32 *)((u8 *)base + (i << 3));
+                __asm__ volatile ("move %0, %1" : "=r"(t4) : "r"(p));
                 __asm__ volatile (".word 0xC9800000" :: "r"(t4));
                 __asm__ volatile (".word 0xC9810004" :: "r"(t4));
                 __asm__ volatile ("nop");
