@@ -316,3 +316,68 @@ follow-up but deferred to the decomp-agent's normal flow.
 For reference until the rename happens: `docs/engine/recent_naming_findings.md`
 uses `D_80106A50` directly with the "move-enable bitmap" interpretation
 called out inline.
+
+## Audit pass 2 (2026-05-17) -- naming-pattern verification
+
+Ran a heuristic audit (`tools/...` -- in `/c/tmp/bb2_misnomer_audit.py`)
+against all 614 semantic names in `named_syms.txt`.  The audit checks
+for mismatches between the name's implied role and the actual usage:
+
+- `_counter` / `_count` / `_ticks` -- should be incremented/decremented
+- `_timer` / `_countdown` / `_deadline` -- should be decremented
+- `_ptr` / `_addr` -- should be deref'd somewhere
+- `_mask` / `_bitmask` / `_bits` -- should be bitwise-operated
+
+The audit scanned both `src/*.c` and `asm/funcs/*.s` (asm coverage is
+necessary because many counters/timers are modified only in still-
+asm functions).
+
+**Results: 22 flagged, mostly false positives.** Verified-true issues:
+
+### True misnomer 1: `g_file_io_state_event_counter_17` (0x800A3338)
+
+I named these "counter" cells in the rodata cluster-consumers pass.
+Verification: they're 17 x 4-byte zero-init cells consumed by
+`file_io_state_dispatch_80038988` -- the consumer RESETS them (sets
+to 0 conditionally) but never increments.  These are state-machine
+**event cells** (booleans / state codes), not counters.
+
+**Renamed in this commit** to `g_file_io_state_event_cells_17`.
+
+### True misnomer 2: duplicate name at 0x800A3790
+
+`g_game_timer` (pre-existing, line 130) and `g_round_timer`
+(line 468, added 2026-05-17 batch 5) both alias the same address.
+Both names describe the same role (the per-round/per-game frame
+countdown reset by `game_ResetTimer_80046E8C` to 0x23 = 35 frames).
+The linker accepts duplicate names at the same address; this is
+benign cosmetic clutter rather than a functional bug.
+
+**Action: left both names.** They're consistent with the role and
+having two synonyms doesn't hurt searchability.  A future cleanup
+pass could drop the older `g_game_timer` alias since `g_round_timer`
+has the more accurate body-derived semantic.
+
+### False positives (20)
+
+Most of the audit's flags were false positives due to:
+- "counter" names where the increment is in an asm function and the
+  pattern crosses two lines (`addiu` then `sh`/`sw`), which the
+  line-based audit doesn't detect.  Example: `g_pad_analog_frame_counter`
+  is incremented in `pad_FuncAnalog.s` via:
+  ```
+  lhu  $v0, %gp_rel(D_800A3814)($gp)
+  addiu $v0, $v0, 0x1
+  sh   $v0, %gp_rel(D_800A3814)($gp)
+  ```
+- "ptr" names that are passed by address (e.g., as function arg) but
+  not deref'd in C source -- the C-source heuristic misses this.
+- `g_root_counter_*` -- the "counter" in the name refers to the PSX
+  root-counter subsystem (hardware timer), not the variable being a
+  counter.
+- `g_bitmask_table_*` -- table of mask VALUES, applied with bitwise
+  ops at the consumer, not in the table itself.
+
+The audit is a useful smell-test but its line-based heuristics need
+manual triage.  Worth re-running periodically as the symbol table
+grows.
