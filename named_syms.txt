@@ -2306,6 +2306,9 @@ g_motion_table_flag                                     = 0x800F6650;  /* motion
 g_snd_stream_slot_field_8                               = 0x800EED18;  /* offset +8 of each g_snd_stream_slot_table entry (sum accumulator / data ptr) */
 g_gte_vector_template                                   = 0x800FF610;  /* 28-byte struct used as vector template for func_8007E4DC */
 
+/* === Effect vertex buffer (2026-05-17) -- 1 high === */
+g_eff_vertex_buffer                                     = 0x800F1198;  /* 3-s32-per-vertex buffer; src a0 loop copies xyz triples (stride 12); terminator = bit 0 of first s32 set */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
