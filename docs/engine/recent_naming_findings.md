@@ -33,6 +33,15 @@ Two parallel pairs of 4 events (memcard class + kernel class), each
 covering completion / disconnect / count / general error.  After
 opening, each handle is `bios_EnableEvent`'d.
 
+> **Note on dual naming**: a second naming convention exists for these
+> same 8 handles in `named_syms.txt`: `g_memcard1_event_ioe/err/new/timeout`
+> (for class 0xF4000001) and `g_rcnt0_event_ioe/err/new/timeout` (for
+> class 0xF0000011).  Both sets are valid aliases for the same addresses;
+> the `_ioe/err/new/timeout` names are derived from PSX BIOS event-type
+> bit codes (0x0004 = IOE, 0x8000 = ERROR, 0x0100 = NEW, 0x2000 = TIMOUT)
+> and match the BIOS docs more directly.  Use either set; the build
+> resolves both.
+
 Two additional event handles for the root-counter (timer/vblank) class
 sit nearby:
 
@@ -113,7 +122,7 @@ and consumed by `replay_camera_get_attack_number`:
 |---|---|---|
 | `g_replay_attack_pos_x` | 0x80101E3C | `result[0] + a0[0]` |
 | `g_replay_attack_pos_y` | 0x80101E40 | `result[1] + a0[1]` |
-| `g_replay_attack_pos_z` | 0x80101E44 | `result[2] + a0[2]` |
+| `g_replay_pos_z` | 0x80101E44 | `result[2] + a0[2]` (canonical name in named_syms.txt; doc previously called this `g_replay_attack_pos_z`) |
 
 There's also a separate (X, Y, Z) for the "input position" with
 negated components:
@@ -161,14 +170,20 @@ Three different entry points (`func_800611A4`, `func_80061250`,
 (`&D_800F116A`, `&D_800F1159+1`, `&D_800F1154`); the deeper render
 walker then advances it as it consumes glyphs.
 
-Glyph buffers in the same address neighborhood:
+Glyph buffer / slot-status entries in the same address neighborhood:
 
-| Symbol | Address |
-|---|---|
-| `g_text1b_glyph_buf_b` | 0x800F1154 |
-| `g_text1b_glyph_buf_c` | 0x800F1160 |
-| `g_text1b_glyph_buf_d` | 0x800F1164 |
-| `g_text1b_glyph_buf_e` | 0x800F1168 |
+| Symbol | Address | Notes |
+|---|---|---|
+| `g_text1b_glyph_buf_b` | 0x800F1154 | |
+| `g_text1b_slot_a_flags` | 0x800F1160 | u8[2] busy-flag pair (was `g_text1b_glyph_buf_c` in earlier doc; renamed after body re-analysis showed it's used as a 2-byte status check) |
+| `g_text1b_slot_c_flags` | 0x800F1164 | u8[2] busy-flag pair (was `g_text1b_glyph_buf_d`) |
+| `g_text1b_glyph_buf_e` | 0x800F1168 | |
+
+Note: `g_text1b_slot_b_flags` (0x800F1152) is a sibling 2-byte busy-flag
+pair from func_800618B4's slot family.  The bytes act as a "buffer
+status pair": if `[0]` and `[1]` are both set, the consumer treats the
+slot as fully-used and clears both; otherwise it submits a primitive
+referencing the slot.
 
 The bit `0x200000` at struct +0x0 is the "render valid" flag; the
 byte at +0x14 is the output-cursor pointer.

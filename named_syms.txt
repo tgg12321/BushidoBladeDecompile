@@ -1795,6 +1795,16 @@ mode_handler_07_SubModeTransition                       = 0x8003BCB4;  /* increm
 
 /* g_module_func_tbl coverage: 34/34 modes named (100% complete) */
 
+/* === Doc reconciliation: names proposed in recent_naming_findings.md but not yet in named_syms.txt (2026-05-17) -- 5 highs === */
+/* These names appear in docs/engine/recent_naming_findings.md but */
+/* hadn't been promoted into named_syms.txt yet.  Adding so the doc's */
+/* references resolve correctly. */
+g_replay_camera_state                                   = 0x80101E70;  /* volatile state (concurrent with IRQ?) */
+g_replay_camera_init_done                               = 0x80101E62;  /* init-done flag */
+g_replay_camera_mode                                    = 0x800A3740;  /* mode enum {1, 3, 4} */
+g_text1b_glyph_buf_e                                    = 0x800F1168;  /* additional glyph buffer slot in the same family as g_text1b_slot_a/b/c_flags */
+g_irq_dispatch_counter                                  = 0x800F19BC;  /* IRQ dispatch sequence counter (already noted as g_cdrom_init_counter elsewhere in IRQ subsystem) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
