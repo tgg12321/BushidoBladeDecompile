@@ -1097,4 +1097,15 @@ g_text1b_state_record_table_4x36                        = 0x800A3460;  /* 36 x 4
 g_motion_ex_state_table_8x5                             = 0x8009B8C8;  /* 5 x 8-byte records consumed by motion_SetExMotion */
 g_motion_ex_state_table_8x4                             = 0x8009B9D8;  /* 4 x 8-byte records, sibling for motion_SetExMotion */
 
+/* === Per-char struct sub-fields (2026-05-17) -- record-0 instances === */
+/* See docs/naming/CHAR_STRUCT_SCHEMA.md for the second-half decode. */
+/* Each name is record[0] of g_practice_menu_table; same field in records */
+/* 1/2/3 is at base + N * 0x44C. */
+g_char_pos_midpoint_x                                   = 0x8010203C;  /* +0x174 in char_state -- midpoint X of (a1[-5] + a1[-2]) / 2 */
+g_char_pos_midpoint_y                                   = 0x80102040;  /* +0x178 -- midpoint Y of (a1[-4] + a1[-1]) / 2 */
+g_char_pos_midpoint_z                                   = 0x80102044;  /* +0x17C -- midpoint Z of (a1[-3] + a1[0]) / 2 */
+g_char_pos_centroid_x                                   = 0x80102054;  /* +0x18C -- centroid X of (a1[-14] + a1[-11] + a1[-8]) / 3 */
+g_char_pos_centroid_y                                   = 0x80102058;  /* +0x190 -- centroid Y */
+g_char_pos_centroid_z                                   = 0x8010205C;  /* +0x194 -- centroid Z */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
