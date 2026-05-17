@@ -381,3 +381,38 @@ Most of the audit's flags were false positives due to:
 The audit is a useful smell-test but its line-based heuristics need
 manual triage.  Worth re-running periodically as the symbol table
 grows.
+
+---
+
+## Pass 3: Cluster-consumer cross-check (2026-05-17)
+
+While naming the pad-recording cluster at 0x800A36C0-36D4 (commit b230220
+neighborhood), discovered an overlap with an existing named symbol.
+
+### `g_memcard_file_write_buf` (0x800A3698) -- actually pad-recording buf
+
+The address `0x800A3698` was named `g_memcard_file_write_buf` because
+it gets passed to `bios_FileWrite_B`.  However, the primary use is as
+the **current-frame packed pad-record buffer** in
+`func_8003A728` (code6cac_c_mid.c:1714):
+
+```c
+D_800A3698 = packed;          // store packed pad input
+// ... later in same function ...
+D_800A36D0 = D_800A3698;      // copy to "previous" slot at end of frame
+```
+
+The memcard `bios_FileWrite_B` call reuses the address as a generic
+scratch buffer between pad-record updates; it isn't memcard-owned
+storage.
+
+**Action: kept the existing name.** Renaming would touch the existing
+`g_memcard_file_write_buf` reference in src/code6cac.c, and the role
+genuinely is "general-purpose scratch for both memcard and pad-rec".
+A future cleanup could rename to `g_scratch_buf_3698` and document
+both uses, but that's a higher-touch change with SHA1 risk that's
+not worth it for a single name.
+
+Filing this as a soft misnomer (don't act, but document so future
+analysts don't get confused).
+

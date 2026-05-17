@@ -1251,4 +1251,21 @@ g_menuctl_mode_state_ptr                                = 0x800A34FC;  /* curren
 g_menuctl_pad_result_buf                                = 0x800A350C;  /* s16 pad-decode result base (4 entries: 350C/350E/3510/3512) */
 g_menuctl_frame_counter                                 = 0x800A3514;  /* per-frame tick counter (reset to 0, += 1 each frame) */
 
+/* === Pad-recording subsystem at 0x800A36C0-36D4 (2026-05-17) -- 7 highs === */
+/* Source: code6cac_c_mid.c:1714 (func_8003A728), the pad-recording */
+/* update.  Pad input is packed into a 32-bit word, hashed against a */
+/* seed, and dual-buffered (current/validated/prev) for replay sync. */
+/* */
+/* See also: D_800A3698 (already named g_memcard_file_write_buf -- */
+/* MISNOMER, see docs/naming/MISNOMERS.md; primary use is the pad-rec */
+/* "current packed" buffer.  Memcard write reuses the address as scratch */
+/* via bios_FileWrite_B.). */
+g_pad_rec_current_hash                                  = 0x800A369C;  /* current-frame hashed pad-record signature */
+g_pad_rec_validated_packed                              = 0x800A36C0;  /* validated current-frame packed pad-record (set by func_8003A450 on hash match) */
+g_pad_rec_validated_hash                                = 0x800A36C4;  /* matching hash for validated record */
+g_pad_rec_prev_packed                                   = 0x800A36D0;  /* previous-frame packed pad-record (copy of 3698 at end of update) */
+g_pad_rec_prev_hash                                     = 0x800A36D4;  /* matching hash for previous-frame record */
+g_pad_rec_playback_mode                                 = 0x800A38A0;  /* "vsync" flag: 0=record, 1=playback */
+g_pad_rec_skip_flag                                     = 0x800A3916;  /* 1 = skip buffer-update on this frame */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
