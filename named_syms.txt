@@ -1590,6 +1590,25 @@ g_mario_gauge_c_cur                                     = 0x800F5362;  /* init 0
 g_mario_gauge_d_max                                     = 0x800F5364;  /* init 0x64 */
 g_mario_voice_init_flag                                 = 0x800F5368;
 
+/* === Ground/arena init cluster (2026-05-17) -- 14 highs === */
+/* From code6cac.c:1067 gnd_init_8001B294(p1_char_ptr, p2_char_ptr). */
+/* Sets up midpoint X/Y/Z of the two fighters (camera anchor), 4 gauge */
+/* fields with max/cur defaults (100/0), facing angle, and round timer. */
+g_gnd_midpoint_x                                        = 0x800F6608;  /* midpoint of P1/P2 X positions (camera anchor) */
+g_gnd_midpoint_y                                        = 0x800F660C;  /* midpoint Y */
+g_gnd_midpoint_z                                        = 0x800F6610;  /* midpoint Z */
+g_gnd_camera_flag                                       = 0x800F6618;  /* reset to 0 (some camera/state flag) */
+g_gnd_facing_angle                                      = 0x800F661A;  /* facing angle in BAM (0x400 - enemy_char_id) */
+g_gnd_misc_counter                                      = 0x800F661C;  /* counter reset to 0 */
+g_gnd_round_time_max                                    = 0x800F6620;  /* round timer max = 0x1388 (5000 frames) */
+g_gnd_init_complete_flag                                = 0x800F6626;  /* init flag (reset to 0 at end of init) */
+g_gnd_gauge_a_max                                       = 0x800F6638;  /* gauge A max = 0x64 (100) */
+g_gnd_gauge_a_cur                                       = 0x800F663A;  /* gauge A current = 0 */
+g_gnd_gauge_b_max                                       = 0x800F663C;  /* gauge B max = 0x64 */
+g_gnd_gauge_c_max                                       = 0x800F6640;  /* gauge C max = 0x64 */
+g_gnd_gauge_c_cur                                       = 0x800F6642;  /* gauge C current = 0 */
+g_gnd_gauge_d_max                                       = 0x800F6644;  /* gauge D max = 0x64 */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
