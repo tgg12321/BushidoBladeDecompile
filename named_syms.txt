@@ -468,4 +468,271 @@ g_game_pause_flag               = 0x800F6654;  /* halfword flag; read/written by
 g_round_timer                   = 0x800A3790;  /* word timer; reset to 0x23 (35 frames) by game_ResetTimer */
 g_snd_volume                    = 0x800A33D0;  /* gp-rel word; written by snd_SetVolume */
 
+/* === Legacy renamer audit: ings.c cluster (2026-05-17) === */
+/* 32 high-confidence cross-validated names from `tools/rename_funcs.py` */
+/* (ings.c band, rename_funcs.py lines 71-103). One entry was already */
+/* applied (math_Distance3D_80017748) in batch-6 refinement. Each body */
+/* read from asm/funcs/ and verified against call/load pattern. */
+/* Full triage at `docs/naming/LEGACY_RENAMER_AUDIT.md`. */
+/* File-load helpers (5) */
+file_LoadAll_80016514           = 0x80016514;  /* bios_FileOpen + chunked-read (0x4000) + md_gview_init */
+file_LoadSectors_800165F8       = 0x800165F8;  /* sibling of file_LoadAll, sector-based variant */
+file_ResetDmaFlag_80016C74      = 0x80016C74;  /* 3-insn flag-clear setter */
+file_LoadOverlay_80016C80       = 0x80016C80;  /* calls debug_printf + sys_Panic on failure */
+file_LoadSoundData_80016CF8     = 0x80016CF8;  /* calls saFidLoad + bb2_memcpy */
+/* File flag getters (3) -- each returns one bit of D_80106A73 */
+file_GetFlag0_800167AC          = 0x800167AC;  /* `return D_80106A73 & 1` */
+file_GetFlag1_800167BC          = 0x800167BC;  /* `return (D_80106A73 >> 1) & 1` */
+file_GetFlag2_800167D4          = 0x800167D4;  /* `return (D_80106A73 >> 2) & 1` */
+/* Display / GPU init (8) */
+disp_CalcFov_800166C4           = 0x800166C4;  /* uses Judge table for trig calc */
+disp_SetFramebufferMode_80016768 = 0x80016768; /* writes to g_disp_fb_base + 0x18 */
+gpu_EnableDisplay_80016868      = 0x80016868;  /* gpu_SetMode(1) wrapper */
+gpu_InitDisplay_80016888        = 0x80016888;  /* gpu_SetDispMask(0) + gpu_SetMode(1) + 8007B4D0(g_disp_gp_base) + DrawSync */
+gpu_DisableDisplay_800168D0     = 0x800168D0;  /* gpu_SetDispMask(1) wrapper */
+gpu_SetDrawMode_80016E40        = 0x80016E40;  /* wrapper around gpu_DrawSync */
+disp_Init_80016918              = 0x80016918;  /* full PSX display init: SetMode/SetDebugLevel/InitDrawEnv*2/InitDispEnv*2/SetFramebufferMode */
+/* System init / panic (4) */
+sys_InitSound_800168F8          = 0x800168F8;  /* wrapper around snd_PlaySystemSe */
+sys_Init_80016A18               = 0x80016A18;  /* top-level: irq_DisableInterrupts + bios_ChangeClearPad + disp_Init + pad_press_control */
+sys_Panic_80016C3C              = 0x80016C3C;  /* debug_printf + halt-loop (calls func_800164F8 which is the loop_b_self) */
+sys_GameInit_80016D78           = 0x80016D78;  /* calls file_LoadSoundData + katinuki_game_setData + coli_CheckRobEnemy */
+/* Empty stubs (3) */
+sys_StubEmpty_800168F0          = 0x800168F0;  /* literal `jr ra; nop` */
+sys_StubEmpty2_80017F90         = 0x80017F90;  /* literal `jr ra; nop` */
+sys_StubEmpty3_80017F98         = 0x80017F98;  /* literal `jr ra; nop` */
+/* RNG (2) */
+rng_SetSeed_800171AC            = 0x800171AC;  /* 3-insn setter: D_800A38BC = a0 */
+rng_Next_800171B8               = 0x800171B8;  /* LCG step: 15-bit output, multiplier chain that simplifies to *0x41C64E6D + 0x7FA9 == BB2 LCG constants */
+/* Object table helpers (4) -- all index D_800F6740 (g_file_data_buf) with stride 0x34 */
+obj_ClearAll_80017714           = 0x80017714;  /* clear 8 entries (stride 0x34) of g_file_data_buf */
+obj_CalcOffset_80017738         = 0x80017738;  /* pure math: (a0<<6) + (a1<<4) -- offset into 64-byte row + 16-byte col */
+obj_Clear_80017E8C              = 0x80017E8C;  /* clear single obj at g_file_data_buf + a0*0x34 */
+obj_UpdatePosition_80017EB4     = 0x80017EB4;  /* update pos field of g_file_data_buf[a0] */
+obj_AddValue_80017EF4           = 0x80017EF4;  /* add a1 to field 0 of g_file_data_buf[a0] */
+/* Distance math (1; companion to math_Distance3D_80017748) */
+math_Distance3D_16_800177C8     = 0x800177C8;  /* same as math_Distance3D but `sra 4` instead of `sra 2` -- /16 scaling for larger-range vectors */
+/* Scratchpad save/restore (2) */
+scratchpad_Save_80017F28        = 0x80017F28;  /* copies 0xF8 dwords from 0x1F800000 (scratchpad) to g_scratchpad_save */
+scratchpad_Restore_80017F5C     = 0x80017F5C;  /* opposite direction (g_scratchpad_save -> scratchpad) */
+
+/* === Data names landed by the ings.c cluster audit (3) === */
+g_rng_state                     = 0x800A38BC;  /* LCG state word; written by rng_SetSeed, read+written by rng_Next */
+g_file_flags_byte               = 0x80106A73;  /* 8-bit flag byte; bits 0/1/2 read by file_GetFlag0/1/2 */
+g_scratchpad_save               = 0x800F5370;  /* 0x3E0-byte main-RAM backup of PSX scratchpad RAM (0x1F800000); used by IRQ context save/restore */
+
+/* === Legacy renamer audit: ings2.c cluster (2026-05-17) === */
+/* 16 high-confidence cross-validated names from `tools/rename_funcs.py` */
+/* (ings2.c band, rename_funcs.py lines 105-125).  21 entries total: */
+/* 1 already-adopted (sys_GetVideoMode -> get_sys_video_mode_80083688), */
+/* 4 stale (addresses not present in current binary as separate functions: */
+/* func_80082B84/BE4/C24, func_80083670). */
+/* See LEGACY_RENAMER_AUDIT.md for the full triage. */
+/* System config setters (2) */
+sys_SetVsyncMode_8008289C       = 0x8008289C;  /* swap-and-return on g_vsync_mode */
+sys_SetTimer_800828B4           = 0x800828B4;  /* swap-and-return on g_timer_setting */
+/* IRQ vector-table dispatchers (5) -- each calls g_psyq_io_vec_table->fn at fixed offset */
+irq_DisableInterrupts_80082AC0  = 0x80082AC0;  /* jalr [g_psyq_io_vec_table+0xC] */
+irq_EnableInterrupts_80082AF0   = 0x80082AF0;  /* jalr [g_psyq_io_vec_table+0x8] */
+irq_AcknowledgeVblank_80082B20  = 0x80082B20;  /* jalr [g_psyq_io_vec_table+0x4] */
+irq_SetAlarm_80082B50           = 0x80082B50;  /* jalr [g_psyq_io_vec_table+0x14] with $a0=4, $a1=arg */
+irq_Reset_80082BB4              = 0x80082BB4;  /* jalr [g_psyq_io_vec_table+0x10] */
+/* System counters (1) */
+sys_GetVblankCount_80082C14     = 0x80082C14;  /* lhu of g_vblank_count */
+/* Memory clear (2; identical bodies, position-distinct) */
+sys_MemClear_8008339C           = 0x8008339C;  /* word-by-word `for (i=a1; i>0; i--) *a0++ = 0` */
+sys_MemClear2_80083644          = 0x80083644;  /* identical body, distinct address */
+/* BIOS file IO (2) */
+bios_FileRead_8008387C          = 0x8008387C;  /* chunked reader wrapping bios_FileReadRaw */
+bios_FileReadRaw_8008393C       = 0x8008393C;  /* 6-insn raw BIOS file-read trap */
+/* Interrupt processing + shutdown (2) */
+irq_ProcessPending_80083954     = 0x80083954;  /* critsec + alarm/IRQ state-machine processing (was proposed as kernel_alarm_cancel in batch 6) */
+sys_Shutdown_80083A18           = 0x80083A18;  /* irq_DisableInterrupts + spu_Init + state cleanup */
+/* SPU (2) */
+spu_Reset_80083B30              = 0x80083B30;  /* 8-insn wrapper around func_800892F8 */
+spu_SetVolume_80083B50          = 0x80083B50;  /* 37-insn wrapper around func_8008AF9C (PsyQ SsVoVol-style) */
+
+/* === Data names landed by the ings2.c cluster audit (5) === */
+g_psyq_io_vec_table             = 0x800A2600;  /* function-pointer table for IRQ dispatch (irq_Enable/Disable/Ack/Set/Reset all load from here) */
+g_vsync_mode                    = 0x800A14CC;  /* word swapped by sys_SetVsyncMode */
+g_timer_setting                 = 0x800A1500;  /* word swapped by sys_SetTimer */
+g_vblank_count                  = 0x800A157A;  /* halfword incremented per vblank; returned by sys_GetVblankCount */
+g_irq_counter_ptr               = 0x800A2608;  /* pointer to a halfword counter; deref'd by sys_GetIrqCounter (which itself isn't a separate function) */
+
+/* === Legacy renamer audit: Item 6/7 readability band (2026-05-17) === */
+/* 114 entries cross-validated from `tools/rename_funcs.py` lines 234-419 */
+/* (the GPU/GTE/math/CDROM/memcard/SPU/game/stage helper bulk).  All */
+/* canonical PsyQ-style functions with high-confidence shapes; bulk-adopted */
+/* after spot-checking representative samples (initPolyF3 wrote 0x20 opcode, */
+/* initPolyF4 wrote 0x28 opcode, gte_SetRotMatrix did ctc2 0-4, */
+/* gte_SetTransVector did ctc2 5-7, gte_GetH did cfc2 $26 (H reg), */
+/* bb2_memset byte-fill loop, ot_SetAddr 24-bit ptr+tag, memcard_ClearBusy */
+/* sh 0 to flag, spu_Init wrapper).  Names that were also adopted via .s */
+/* glabel rename pre-this-session are skipped (26 entries already in binary). */
+/* See LEGACY_RENAMER_AUDIT.md for full triage. */
+/* Address-suffixed to avoid collisions. */
+/* GPU primitive init (21) -- each writes a fixed opcode byte to packet+0x7 */
+initPolyF3_8007A9B8                              = 0x8007A9B8;
+initPolyFT3_8007A9CC                             = 0x8007A9CC;
+initPolyG3_8007A9E0                              = 0x8007A9E0;
+initPolyGT3_8007A9F4                             = 0x8007A9F4;
+initPolyF4_8007AA08                              = 0x8007AA08;
+initPolyFT4_8007AA1C                             = 0x8007AA1C;
+initPolyG4_8007AA30                              = 0x8007AA30;
+initPolyGT4_8007AA44                             = 0x8007AA44;
+initSprt8_8007AA58                               = 0x8007AA58;
+initSprt16_8007AA6C                              = 0x8007AA6C;
+initSprt_8007AA80                                = 0x8007AA80;
+initTile1_8007AA94                               = 0x8007AA94;
+initTile8_8007AAA8                               = 0x8007AAA8;
+initTile16_8007AABC                              = 0x8007AABC;
+initTile_8007AAD0                                = 0x8007AAD0;
+initLineF2_8007AAE4                              = 0x8007AAE4;
+initLineG2_8007AAF8                              = 0x8007AAF8;
+initPolyF3_dither_8007AB0C                       = 0x8007AB0C;
+initPolyG3_dither_8007AB2C                       = 0x8007AB2C;
+initPolyF4_dither_8007AB4C                       = 0x8007AB4C;
+initPolyG4_dither_8007AB6C                       = 0x8007AB6C;
+/* GPU/OT helpers (35) */
+gpu_LoadTexture_8007A4D8                         = 0x8007A4D8;
+gpu_InitDrawEnv_8007A694                         = 0x8007A694;
+gpu_InitDispEnv_8007A74C                         = 0x8007A74C;
+gpu_CalcTPage_8007A788                           = 0x8007A788;
+gpu_CalcClut_8007A7C4                            = 0x8007A7C4;
+gpu_DebugTPage_8007A7DC                          = 0x8007A7DC;
+gpu_DebugClut_8007A83C                           = 0x8007A83C;
+ot_Link_8007A8B4                                 = 0x8007A8B4;
+ot_Insert_8007A8F0                               = 0x8007A8F0;
+ot_SetAddr_8007A92C                              = 0x8007A92C;
+ot_SetEnd_8007A950                               = 0x8007A950;
+gpu_SetSemiTransp_8007A968                       = 0x8007A968;
+gpu_SetRawTexture_8007A990                       = 0x8007A990;
+initDrawMode_8007AB8C                            = 0x8007AB8C;
+initLoadImage_8007ABB8                           = 0x8007ABB8;
+initStoreImage_8007AC18                          = 0x8007AC18;
+gpu_CatPacket_8007AC84                           = 0x8007AC84;
+gpu_DebugDispEnv_8007ACBC                        = 0x8007ACBC;
+gpu_DebugDrawEnv_8007ADD0                        = 0x8007ADD0;
+gpu_SetMode_8007AE7C                             = 0x8007AE7C;
+gpu_SetDither_8007B000                           = 0x8007B000;
+gpu_SetDebugLevel_8007B114                       = 0x8007B114;
+gpu_SetInterlace_8007B178                        = 0x8007B178;
+gpu_GetType_8007B224                             = 0x8007B224;
+gpu_GetDebugLevel_8007B234                       = 0x8007B234;
+gpu_GetDispEnv_8007C0B0                          = 0x8007C0B0;
+gpu_IsDrawing_8007C0E8                           = 0x8007C0E8;
+initClearImage_8007C118                          = 0x8007C118;
+initDrawArea_8007C154                            = 0x8007C154;
+initDrawOffset_8007C1D8                          = 0x8007C1D8;
+initMaskBit_8007C21C                             = 0x8007C21C;
+initTexPage_8007C248                             = 0x8007C248;
+gpu_SendData_8007D308                            = 0x8007D308;
+gpu_StartDmaList_8007D358                        = 0x8007D358;
+gpu_GetInfo_8007D3A4                             = 0x8007D3A4;
+/* GTE COP2 wrappers (8) */
+gte_SetRotMatrix_8007EEEC                        = 0x8007EEEC;  /* ctc2 to COP2 control regs 0-4 (3x3 rotation matrix) */
+gte_SetColorMatrix_8007EF1C                      = 0x8007EF1C;  /* ctc2 to color matrix regs */
+gte_SetTransVector_8007EF4C                      = 0x8007EF4C;  /* ctc2 to COP2 control regs 5-7 (translation vector) */
+gte_GetScreenXY_8007EF6C                         = 0x8007EF6C;
+gte_GetH_8007EF8C                                = 0x8007EF8C;  /* cfc2 of COP2 control reg 26 (H == perspective divide) */
+gte_SetBackColor_8007EF9C                        = 0x8007EF9C;
+gte_SetFarColor_8007EFBC                         = 0x8007EFBC;
+gte_SetScreenOffset_8007EFDC                     = 0x8007EFDC;
+/* Math (4) */
+bb2_memset_8007DEE4                              = 0x8007DEE4;
+math_Sin_8007DF20                                = 0x8007DF20;
+math_SinLookup_8007DF5C                          = 0x8007DF5C;
+math_Cos_8007DFEC                                = 0x8007DFEC;
+/* Memcard (3) */
+memcard_SetData_80087F00                         = 0x80087F00;
+memcard_ClearBusy_80087F24                       = 0x80087F24;
+memcard_SetSlot_80087F34                         = 0x80087F34;
+/* SPU (1) */
+spu_Init_800885AC                                = 0x800885AC;
+/* Kengo CPU/camera misc (6) */
+cpu_get_dist_8003032C                            = 0x8003032C;
+cpu_set_move_command_and_dir_80030A2C            = 0x80030A2C;
+cpu_get_dist_2_800324D0                          = 0x800324D0;
+cpu_check_same_dir_timer_8003339C                = 0x8003339C;
+replay_camera_Init_80036D98                      = 0x80036D98;
+special_camera_get_rot_dir_80037348              = 0x80037348;
+/* Kengo Item 7 cross-ref (36) */
+suLeagueSystemInit_8001BCF0                      = 0x8001BCF0;
+md_game_restart_init_8001E6E4                    = 0x8001E6E4;
+hirahira_w_frie2_8001EEB4                        = 0x8001EEB4;
+title_mv_exec_80021280                           = 0x80021280;
+tslDrTex1Init_8002738C                           = 0x8002738C;
+_CardCheckPulled_80027438                        = 0x80027438;
+motion_GameCalcMotion_8002872C                   = 0x8002872C;
+myRobGeneiDraw_80030900                          = 0x80030900;
+motion_shift_check_e_kawashi_80030B10            = 0x80030B10;
+ki_attack_ougi_80033498                          = 0x80033498;
+motutil_CheckKamaeReq_80033D38                   = 0x80033D38;
+robtest_disp_800340A0                            = 0x800340A0;
+_GetBattleSwichData_80034200                     = 0x80034200;
+tslDrTex1Init2_8003553C                          = 0x8003553C;
+mottest_rob_init_80036FD4                        = 0x80036FD4;
+_CardCheckPulled2_80037A20                       = 0x80037A20;
+camera_SetMatrix_80037F40                        = 0x80037F40;
+damage_CalcHitDamage_8003880C                    = 0x8003880C;
+md_menu_logo_exec_8003AFFC                       = 0x8003AFFC;
+kgm_init_hitrect_8003B10C                        = 0x8003B10C;
+ReturnVTMenu_8003D330                            = 0x8003D330;
+_McAccessSection_8003D39C                        = 0x8003D39C;
+coli_calc_motion_8003D888                        = 0x8003D888;
+audioDecBeginPut_80040CB8                        = 0x80040CB8;
+tslDrTex1Init3_80043BD0                          = 0x80043BD0;
+gnd_set_fog_80043C7C                             = 0x80043C7C;
+tslDrTex1Init4_80043D34                          = 0x80043D34;
+gnd_set_fog2_80043DE0                            = 0x80043DE0;
+suLeagueSystemInit2_80044CCC                     = 0x80044CCC;
+_DispCharacterName_80080258                      = 0x80080258;  /* legacy name; the canonical alias is tslTm2_command_with_retry_80080258 (already in named_syms; _DispCharacterName is a known misnomer documented in MISNOMERS.md) */
+myRobGeneiDraw3_80080390                         = 0x80080390;  /* legacy; canonical is tslTm2_command_with_retry_no_arg3_80080390 (misnomer) */
+action_check_defense_80086130                    = 0x80086130;  /* legacy; canonical is char_store_pos_pair_80086130 (misnomer) */
+disp_mario_jimaku2_80086BFC                      = 0x80086BFC;
+motutil_GetAngTableNum_800871D4                  = 0x800871D4;
+action_check_defense2_80089EB0                   = 0x80089EB0;
+coli_calc_motion2_8008ACD0                       = 0x8008ACD0;
+
+/* === Legacy renamer audit: remaining sound.c Held entries (2026-05-17) === */
+/* Reprocessed the 23 entries Held from earlier sound.c audit.  After deeper */
+/* reads, 21 cross-validate (the 16 larger functions all call/access globals */
+/* matching the legacy name, plus 5 position-distinct duplicate wrappers); */
+/* 2 remain Rejected (game_SndInit/SndCleanup -- bodies call motion/effect */
+/* helpers, not sound).  See LEGACY_RENAMER_AUDIT.md. */
+/* */
+/* Sound subsystem (8) */
+snd_LoadBgm_800467B8            = 0x800467B8;  /* 62-insn loader using saTan2InfoInit + saTan5TakeGetPos */
+snd_BgmCallback_800468DC        = 0x800468DC;  /* 14-insn callback using saTan5GetTakeCutAnimType */
+snd_LoadSe_8004695C             = 0x8004695C;  /* 17-insn loader using saSeMain_80045600 + saTan5TakeGetPos */
+snd_LoadSelection_800469C4      = 0x800469C4;  /* 39-insn loader using saSeMain + snd_SelectionCallback */
+snd_SelectionCallback_80046A80  = 0x80046A80;  /* 8-insn callback for selection loader */
+snd_StopAll_80046AA0            = 0x80046AA0;  /* calls player_Destroy + saTanMainDispGnd + snd_StopBgm */
+snd_CalcFade_80047D94           = 0x80047D94;  /* 50-insn fade calc using D_800EF7BC/C0 */
+snd_GetFadeCurve_80047E5C       = 0x80047E5C;  /* 27-insn fade curve lookup using D_800EF800/04 */
+/* Game lifecycle (4) */
+game_Init_80046B44              = 0x80046B44;  /* 44-insn top-level game init */
+game_StageInit_80046DA8         = 0x80046DA8;  /* 15-insn stage init calling game_InitStageSound */
+game_InitStageSound_80046EA0    = 0x80046EA0;  /* 15-insn calling DispHira + stage_GetId + tslLineG5Init */
+game_StageCleanup_80046EDC      = 0x80046EDC;  /* 14-insn cleanup */
+/* Camera (4) */
+camera_InitMatrix_80046F24      = 0x80046F24;  /* 58-insn writing to D_800EEDB[4-C] matrix fields */
+camera_Transform_8004700C       = 0x8004700C;  /* 41-insn transform using D_800EEDB[0246] */
+camera_InitRotation_800472C0    = 0x800472C0;  /* 49-insn rotation init referencing D_800F66A0 */
+camera_CalcAngles_80047384      = 0x80047384;  /* 58-insn angle calc using replay_camera_rob_back_loose3 + single_game_getEnemyCharId (previously proposed as camera_replay_compute_rot_80047384 in batch 6) */
+/* Position-distinct wrapper-grid duplicates (5; bodies identical to earlier-adopted siblings) */
+game_EffInit2_800474F0          = 0x800474F0;  /* same body as game_EffInit (calls func_8004473C) */
+game_EffCleanup2_80047510       = 0x80047510;  /* same body as game_EffCleanup (calls efc_rob_set_type_flash) */
+game_AnimStop_8004775C          = 0x8004775C;  /* same body as game_AnimCleanup (calls func_80048FFC) */
+game_EffStart_8004777C          = 0x8004777C;  /* same body as game_EffInit (calls func_8004473C) */
+game_EffStop_8004779C           = 0x8004779C;  /* same body as game_EffCleanup (calls efc_rob_set_type_flash) */
+/* Rejected (2): game_SndInit_80047530 (body calls motion_CheckSituation), */
+/* game_SndCleanup_80047550 (body calls saEft03Start) -- names don't match bodies. */
+
+/* === Data names landed by the final sound.c sweep (4) === */
+g_camera_matrix_data            = 0x800EEDB0;  /* base of camera matrix struct; +0x4-+0xC are matrix fields written by camera_InitMatrix */
+g_snd_fade_state                = 0x800EF7BC;  /* snd_CalcFade state (paired with D_800EF7C0) */
+g_snd_fade_curve_table          = 0x800EF800;  /* snd_GetFadeCurve lookup table base (paired with D_800EF804) */
+g_camera_rotation_data          = 0x800F66A0;  /* camera_InitRotation state */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */

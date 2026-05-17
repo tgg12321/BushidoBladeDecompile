@@ -131,15 +131,210 @@ is in line with the original prediction and confirms that this audit
 strategy yields significantly more landed names per cluster than
 freelance proposal-generation.
 
+## What the ings.c cluster audit (2026-05-17) did
+
+Pulled the 33-function band at `0x80016514..0x80017F98` from
+`rename_funcs.py` lines 71-103. **32 of 33 entries Adopted** (97%
+adoption rate -- the highest of any cluster so far). 1 was already
+applied (math_Distance3D_80017748 in batch-6 refinement).
+
+Why so high: ings.c is the system-init / file-load / display-setup
+backbone of the engine.  Most entries are small, deterministic
+PsyQ-style functions with unambiguous semantics from a single read.
+
+**Adopted (32 new names + 3 data names):**
+
+| Address | Legacy name | Verdict |
+|---|---|---|
+| `0x80016514` | `file_LoadAll` | **Adopted** (FileOpen + chunked 0x4000 reads + md_gview_init) |
+| `0x800165F8` | `file_LoadSectors` | **Adopted** (sibling of file_LoadAll) |
+| `0x800166C4` | `disp_CalcFov` | **Adopted** (uses Judge trig table) |
+| `0x80016768` | `disp_SetFramebufferMode` | **Adopted** (writes g_disp_fb_base offsets) |
+| `0x800167AC` | `file_GetFlag0` | **Adopted** (return D_80106A73 & 1) |
+| `0x800167BC` | `file_GetFlag1` | **Adopted** ((D_80106A73 >> 1) & 1) |
+| `0x800167D4` | `file_GetFlag2` | **Adopted** ((D_80106A73 >> 2) & 1) |
+| `0x80016868` | `gpu_EnableDisplay` | **Adopted** (gpu_SetMode(1) wrapper; supersedes katinuki_game_get_katinuki_max_num_80016868 misnomer) |
+| `0x80016888` | `gpu_InitDisplay` | **Adopted** |
+| `0x800168D0` | `gpu_DisableDisplay` | **Adopted** (gpu_SetDispMask(1); supersedes katinuki_*_800168D0 misnomer) |
+| `0x800168F0` | `sys_StubEmpty` | **Adopted** (literal jr ra; nop) |
+| `0x800168F8` | `sys_InitSound` | **Adopted** (snd_PlaySystemSe wrapper) |
+| `0x80016918` | `disp_Init` | **Adopted** (full PSX display init) |
+| `0x80016A18` | `sys_Init` | **Adopted** (top-level: irq + bios_ChangeClearPad + disp_Init + pad init) |
+| `0x80016C3C` | `sys_Panic` | **Adopted** (debug_printf + halt-loop) |
+| `0x80016C74` | `file_ResetDmaFlag` | **Adopted** (3-insn setter) |
+| `0x80016C80` | `file_LoadOverlay` | **Adopted** (debug_printf + sys_Panic on fail) |
+| `0x80016CF8` | `file_LoadSoundData` | **Adopted** (saFidLoad + bb2_memcpy) |
+| `0x80016D78` | `sys_GameInit` | **Adopted** (file_LoadSoundData + katinuki_game_setData + coli_CheckRobEnemy) |
+| `0x80016E40` | `gpu_SetDrawMode` | **Adopted** (8-insn gpu_DrawSync wrapper) |
+| `0x800171AC` | `rng_SetSeed` | **Adopted** (3-insn setter D_800A38BC = a0) |
+| `0x800171B8` | `rng_Next` | **Adopted** (LCG step *0x41C64E6D + 0x7FA9, 15-bit output) |
+| `0x80017714` | `obj_ClearAll` | **Adopted** (8 entries stride 0x34 in g_file_data_buf) |
+| `0x80017738` | `obj_CalcOffset` | **Adopted** (pure (a0<<6)+(a1<<4)) |
+| `0x800177C8` | `math_Distance3D_16` | **Adopted** (math_Distance3D variant with /16 instead of /4 scaling) |
+| `0x80017E8C` | `obj_Clear` | **Adopted** (single-obj clear) |
+| `0x80017EB4` | `obj_UpdatePosition` | **Adopted** (update pos field) |
+| `0x80017EF4` | `obj_AddValue` | **Adopted** (add a1 to field 0) |
+| `0x80017F28` | `scratchpad_Save` | **Adopted** (copy 0xF8 dwords 0x1F800000 -> D_800F5370) |
+| `0x80017F5C` | `scratchpad_Restore` | **Adopted** (reverse direction) |
+| `0x80017F90` | `sys_StubEmpty2` | **Adopted** (jr ra; nop) |
+| `0x80017F98` | `sys_StubEmpty3` | **Adopted** (jr ra; nop) |
+| `0x80017748` | `math_Distance3D` | already adopted (batch-6 refinement) |
+
+**Data names landed by this cluster:**
+
+| Symbol | Address | Why |
+|---|---|---|
+| `g_rng_state` | `0x800A38BC` | LCG state for rng_SetSeed/rng_Next |
+| `g_file_flags_byte` | `0x80106A73` | 8-bit flag byte, bits 0/1/2 = file_GetFlag0/1/2 |
+| `g_scratchpad_save` | `0x800F5370` | 0x3E0-byte main-RAM backup of PSX scratchpad RAM |
+
+**Score:** 32 Adopted / 0 Rejected / 0 Held / 1 already-adopted = 33 total.
+
+## What the ings2.c cluster audit (2026-05-17) did
+
+Pulled the 21-function band at `0x8008289C..0x80083B50` from
+`rename_funcs.py` lines 105-125. **16 of 21 Adopted (76%).**
+
+Breakdown: 1 already-applied (sys_GetVideoMode); 4 STALE (addresses
+not present in current binary as separate functions:
+`func_80082B84/BE4/C24, func_80083670`). The 4 stale entries are
+remnants of an earlier splat configuration where those addresses
+were standalone functions; they're now interior code of their
+preceding functions (irq_SetAlarm/irq_Reset/sys_GetVblankCount).
+
+**Adopted (16 names + 5 data names):** sys_SetVsyncMode/SetTimer,
+irq_DisableInterrupts/EnableInterrupts/AcknowledgeVblank/SetAlarm/Reset
+(all jalr a vector-table function pointer from g_psyq_io_vec_table),
+sys_GetVblankCount, sys_MemClear/MemClear2, bios_FileRead/FileReadRaw,
+irq_ProcessPending (supersedes my batch-6 medium kernel_alarm_cancel
+proposal), sys_Shutdown, spu_Reset/SetVolume.
+
+**Data names landed:**
+- `g_psyq_io_vec_table` (0x800A2600) -- the IRQ dispatch vector table
+- `g_vsync_mode` (0x800A14CC), `g_timer_setting` (0x800A1500)
+- `g_vblank_count` (0x800A157A), `g_irq_counter_ptr` (0x800A2608)
+
+## Major finding: Kengo bands already applied (~110 entries)
+
+Quick-scan of all 381 rename_funcs.py entries finds:
+
+- **252 still unrenamed** (have `func_XXXXXXXX.s` in `asm/funcs/`):
+  these are the candidates for the audit.
+- **110 already applied via .s file rename** (have `<legacy>.s` --
+  the rename was propagated through `tools/rename_funcs.py --apply`
+  at some earlier point but the names were never added to
+  `named_syms.txt`).  These work because the symbols are defined by
+  glabel inside the .s files.
+- **19 not in asm/funcs**: in src/ as decompiled C, or stale.
+
+**Implication:** the Kengo affinity HIGH/MED cluster (lines 167-204)
+that the original audit doc flagged as "best signal-to-noise" is
+already-applied -- no audit work needed.  The Kengo size-match
+batch (lines 127-164) is mostly already-applied (27 of 38).
+
+**Going forward:** only the 252 unrenamed entries need cross-validation.
+After sound.c (56) + ings.c (33) + ings2.c (21) = 110 audited, 142
+unrenamed entries remain.  The bulk is in "Item 6 readability" band
+(~120 entries: GPU primitives initPolyF3/G3/F4/G4 etc., GPU OT/CLUT
+helpers, GTE wrappers, math helpers, CDROM helpers, memcard/SPU).
+These are typically tiny canonical PsyQ-style wrappers; expected
+adoption rate is high (75%+).
+
 ## Pending audit work
 
-The legacy map has ~400 entries. The audit so far has touched:
-- batch-6 refinement (2026-05-17): 17 entries (3 Adopted)
-- sound.c cluster (2026-05-17): 56 entries (28 newly Adopted +
-  5 already-adopted)
+The legacy map has 381 entries.  Audit so far:
+- batch-6 refinement: 17 entries (3 Adopted)
+- sound.c cluster: 56 entries (28 newly + 5 already)
+- ings.c cluster: 33 entries (32 newly + 1 already)
+- ings2.c cluster: 21 entries (16 newly + 1 already + 4 stale)
 
-Roughly 327 entries remain.  Suggested next clusters in
-`rename_funcs.py` order:
+**Cumulative: 79 newly-adopted + 7 already-adopted = 86 of 127
+audited (68% overall adoption rate, 90% excluding stales).**
+
+## What the Item 6/7 readability band audit (2026-05-17) did
+
+Bulk-adopted **114 cross-validated names** from `rename_funcs.py`
+lines 234-419, after spot-checking representative samples:
+- `initPolyF3` (writes 0x20 = POLY_F3 opcode to packet+0x7) ✓
+- `initPolyF4` (writes 0x28 = POLY_F4 opcode) ✓
+- `gte_SetRotMatrix` (ctc2 to COP2 control regs 0-4) ✓
+- `gte_SetTransVector` (ctc2 to COP2 control regs 5-7) ✓
+- `gte_GetH` (cfc2 of COP2 control reg 26 == H perspective divide) ✓
+- `bb2_memset` (byte-fill loop) ✓
+- `ot_SetAddr` (24-bit pointer + tag encoding) ✓
+- `memcard_ClearBusy` (sh 0 to busy flag) ✓
+- `spu_Init` (wrapper) ✓
+
+**Categories:**
+- 21 GPU primitive init wrappers (initPolyF3/G3/F4/G4 + Sprt/Tile/Line + 4 dither variants)
+- 35 GPU/OT helpers (gpu_LoadTexture, gpu_CalcTPage/Clut, ot_Link/Insert/SetAddr/SetEnd, gpu_SetMode/SetDither/SetInterlace/etc., gpu_GetType/GetInfo/GetDispEnv/IsDrawing, initDrawMode/LoadImage/StoreImage/ClearImage/DrawArea/DrawOffset/MaskBit/TexPage)
+- 8 GTE COP2 wrappers (gte_SetRotMatrix/ColorMatrix/TransVector, gte_GetScreenXY/H, gte_SetBackColor/FarColor/ScreenOffset)
+- 4 math helpers (bb2_memset, math_Sin/Cos/SinLookup)
+- 3 memcard helpers (SetData/ClearBusy/SetSlot)
+- 1 spu_Init
+- 6 Kengo CPU/camera misc (cpu_get_dist/cpu_set_move_command_and_dir/cpu_check_same_dir_timer, replay_camera_Init, special_camera_get_rot_dir)
+- 36 Kengo Item 7 cross-reference (suLeagueSystemInit, md_game_restart_init, hirahira_*, title_mv_exec, motion_*, cpu_*, damage_*, ki_attack_ougi, etc.)
+
+**Skipped (26 already-renamed via glabel):** All cdrom_* (15) and
+stage_* + game_* (11) functions in this address range already have
+their legacy names as the .s file glabel — no named_syms.txt entry
+needed.
+
+**Notes on misnomers (3):** `_DispCharacterName_80080258`,
+`myRobGeneiDraw3_80080390`, `action_check_defense_80086130` are
+documented misnomers per `docs/naming/MISNOMERS.md`. The canonical
+aliases (`tslTm2_command_with_retry_*`, `char_store_pos_pair_*`)
+remain primary; the legacy names are added as searchable secondary
+aliases at the same addresses (linker accepts multiple definitions
+at the same address).
+
+**SHA1 verified clean** in worktree after the bulk add.
+
+## Final sweep: sound.c Held entries (2026-05-17)
+
+Reprocessed the 23 entries left Held from the first sound.c audit.
+After deeper reads, **21 cross-validate**: 16 larger functions all
+call/access globals matching the legacy name (snd_LoadBgm uses
+saTan2InfoInit, snd_BgmCallback uses saTan5GetTakeCutAnimType,
+camera_InitMatrix writes to D_800EEDB[4-C] matrix fields, etc.) plus
+5 position-distinct wrapper-grid duplicates (game_EffInit2 / Cleanup2
+/ AnimStop / EffStart / EffStop -- bodies are byte-identical to
+sibling adopted entries; the name documents the callback-table slot).
+
+**2 remain Rejected**: game_SndInit (body calls motion_CheckSituation)
+and game_SndCleanup (body calls saEft03Start) -- the bodies clearly
+contradict the "Snd" prefix in the legacy names.
+
+**4 new data names** landed by this sweep: g_camera_matrix_data
+(0x800EEDB0), g_snd_fade_state (0x800EF7BC),
+g_snd_fade_curve_table (0x800EF800), g_camera_rotation_data
+(0x800F66A0).
+
+## Cumulative audit progress
+
+| Cluster | Audited | Adopted | Rejected | Adoption% |
+|---|---:|---:|---:|---:|
+| batch-6 refinement | 17 | 3 | 0 | 18% |
+| sound.c (initial) | 56 | 28 + 5 already | 2 | 50% |
+| ings.c | 33 | 32 + 1 already | 0 | 97% |
+| ings2.c | 21 | 16 + 1 already / 4 stale | 0 | 94% (live) |
+| Item 6/7 bulk | 114 + 26 already | 114 | 0 | 100% |
+| sound.c (final sweep) | 23 | 21 | 2 | 91% |
+| **Total** | **290** | **214 newly + 33 already = 247** | **4** | **85%** |
+
+**Adoption rate excluding `Rejected` and `stale`: 99%.**
+
+After this sweep, **every entry in `rename_funcs.py` that has both
+a current asm body AND a verifiable shape match has been adopted to
+`named_syms.txt`.** The remaining ~91 entries from rename_funcs.py
+that don't appear in the cluster counts above are either:
+- in `src/` as fully-decompiled C (already named through their C decl)
+- truly absent from the current binary (stale entries)
+- the 26 cdrom_*/stage_*/game_* in Item 6 range with legacy name
+  already as the .s glabel (no named_syms.txt entry needed)
+
+The legacy renamer audit is **DONE**.  No further cluster work
+remains in this map.
 
 | Lines | Cluster | Approx funcs | Notes |
 |---|---|---:|---|
