@@ -2393,6 +2393,10 @@ g_input_pause_pending_clear                             = 0x800A3204;  /* != 0 =
 g_input_retry_counter_a                                 = 0x800A331C;  /* paired retry counter; ++ per failed input */
 g_input_retry_counter_b                                 = 0x800A3320;  /* paired counter (sibling) */
 
+/* === P2 paired char-struct fields (2026-05-17) -- 2 highs === */
+g_replay_camera_target_b                                = 0x80102408;  /* P2 counterpart to g_replay_camera_target_a (= P1 + 0x44C); per-char field +0xF4 of entry 1 */
+g_char_struct_p2_field_FC                               = 0x80102410;  /* P2 counterpart to g_char_struct_p1_field_FC (= P1 + 0x44C); +0xFC of entry 1 */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
