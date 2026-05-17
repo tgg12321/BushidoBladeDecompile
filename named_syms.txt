@@ -2043,6 +2043,18 @@ bb2_memchr                                              = 0x8007992C;  /* memchr
 bb2_putchar_stdout                                      = 0x8007997C;  /* fputc to stdout (fd 1): expands TAB (9) to spaces, converts LF (0xA) to CRLF, tracks column; submits via bios_FileWrite_B(1, &c, 1) */
 g_stdout_column_counter                                 = 0x800F1850;  /* stdout column counter; reset to 0 on newline, incremented on printable chars (class table bit 0x97) */
 
+/* === Menu screen state backup/restore (2026-05-17) -- 6 highs === */
+/* From text1b_b.c around line 860/894: 3-byte save/restore pair driven */
+/* by g_menu_screen_result_pending state transitions.  When state=3, */
+/* live -> backup; when state transitions back via state=4/5 result==1, */
+/* backup -> live. */
+g_menu_screen_backup_byte_a                             = 0x8009BD3B;  /* saved copy of g_menu_screen_live_byte_a */
+g_menu_screen_backup_byte_b                             = 0x8009BD3C;  /* saved copy of g_menu_screen_live_byte_b */
+g_menu_screen_backup_byte_c                             = 0x8009BD3D;  /* saved copy of g_menu_screen_live_byte_c */
+g_menu_screen_live_byte_a                               = 0x8009BD41;  /* live menu screen state byte */
+g_menu_screen_live_byte_b                               = 0x8009BD42;
+g_menu_screen_live_byte_c                               = 0x8009BD43;
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
