@@ -1,0 +1,28 @@
+# Cheat retirement debt -- functions with cheats not auto-detectable by
+# audit_asm_cheats.py that still need pure-C retirement per SOTN-grade
+# policy (user directive 2026-05-17: "If it can be C, it should be C").
+#
+# Use this file when the LLM auditor flags a commit retroactively (after
+# the cheat is already merged) and the agent's "retirement" mechanism is
+# itself a deviation: register-asm pins to force allocation, aliasing
+# barriers used for scheduling control, etc. These don't trip the
+# programmatic detectors (which look at regfix.txt patterns and src/
+# `__asm__` syntax) but they ARE debt per policy.
+#
+# Format: one entry per line -- `<funcname>  # reason / source-commit`
+#
+# Entries are surfaced via `dc.sh next-cheat-cleanup` alongside the
+# auto-detected cheat queue, tagged `retirement_debt`. Sort behaviour
+# follows the rest of the cheat queue (simpler-to-retire first).
+#
+# Lifecycle:
+#   - Add an entry when LLM auditor flags a deviation that landed before
+#     the programmatic gate was tightened, OR when a deviation is
+#     subjectively a cheat but mechanically allowed.
+#   - Remove the entry when the function has been retired to true pure C
+#     (no inline asm, no register pins, no regfix rules).
+#   - Existing pre-Tier-1-gates aliasing barriers in code6cac.c (lines
+#     703, 2234, 2254, etc.) are NOT listed here — they're grandfathered
+#     SOTN-bar debt and a separate sweep should track them.
+
+func_800483DC  # commit 9cf742c — agent moved lost_codegen cheat from regfix.txt to src/text1b.c by adding (1) `register s32 cached asm("$16")` pin to force GCC's interleaved-prologue codegen, and (2) `__asm__ volatile("move %0, %1" ...)` with a self-described "fake v0_tmp input constraint" to manipulate instruction scheduling. LLM auditor REJECTED on re-audit with 5 violations (register_pin reward-hacking, inline_asm without INLINE_MOVE_ALIASING doc, scheduling-control disguised as aliasing, weak_evidence, debt motion not reduction). Retire to true pure-C via decl reorder / intermediate vars / structural alternatives. See commit 9baa4c3 for the new policy.

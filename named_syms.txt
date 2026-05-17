@@ -1076,7 +1076,7 @@ g_char_sprite_bitmap_block_3x8320                       = 0x80090740;  /* 3 reco
 
 /* === Rodata record-cluster pass 2 (2026-05-17) -- consumer-tied highs === */
 /* Clusters where the consumer function uniquely identifies the role. */
-g_file_io_state_event_counter_17                        = 0x800A3338;  /* 17 x 4-byte counters (zero-init); consumed by file_io_state_dispatch_80038988 */
+g_file_io_state_event_cells_17                          = 0x800A3338;  /* 17 x 4-byte cells (zero-init, never incremented; consumed by file_io_state_dispatch_80038988). Renamed from _event_counter_ since they're not actually counters. */
 g_ang_hosei_state_pairs_3                               = 0x800A3308;  /* 3 x 8-byte state pairs (zero-init); consumed by ang_hosei */
 g_irq_state_table_14                                    = 0x800A14D0;  /* 14 x 4-byte IRQ state cells (zero-init); consumed by system.c IRQ helpers */
 g_text1b_const_pair_table_12                            = 0x8009B940;  /* 12 x 8-byte (.word, .word) const pairs; consumed by text1b func_80063084 */
@@ -1096,5 +1096,257 @@ g_text1b_state_record_table_12x5_a                      = 0x8009B7A0;  /* 5 x 12
 g_text1b_state_record_table_4x36                        = 0x800A3460;  /* 36 x 4-byte text1b state cells */
 g_motion_ex_state_table_8x5                             = 0x8009B8C8;  /* 5 x 8-byte records consumed by motion_SetExMotion */
 g_motion_ex_state_table_8x4                             = 0x8009B9D8;  /* 4 x 8-byte records, sibling for motion_SetExMotion */
+
+/* === Per-char struct sub-fields (2026-05-17) -- record-0 instances === */
+/* See docs/naming/CHAR_STRUCT_SCHEMA.md for the second-half decode. */
+/* Each name is record[0] of g_practice_menu_table; same field in records */
+/* 1/2/3 is at base + N * 0x44C. */
+g_char_pos_midpoint_x                                   = 0x8010203C;  /* +0x174 in char_state -- midpoint X of (a1[-5] + a1[-2]) / 2 */
+g_char_pos_midpoint_y                                   = 0x80102040;  /* +0x178 -- midpoint Y of (a1[-4] + a1[-1]) / 2 */
+g_char_pos_midpoint_z                                   = 0x80102044;  /* +0x17C -- midpoint Z of (a1[-3] + a1[0]) / 2 */
+g_char_pos_centroid_x                                   = 0x80102054;  /* +0x18C -- centroid X of (a1[-14] + a1[-11] + a1[-8]) / 3 */
+g_char_pos_centroid_y                                   = 0x80102058;  /* +0x190 -- centroid Y */
+g_char_pos_centroid_z                                   = 0x8010205C;  /* +0x194 -- centroid Z */
+
+/* === Per-char struct sub-fields part 2 (2026-05-17) -- vec3 pair blocks === */
+/* Found via Vec3i cast pattern: `(Vec3i *)&D_801020D8` and */
+/* `(Vec3i *)((u8 *)&D_801020D8 + 0x44C)` -- confirms vec3 spans across records. */
+/* Two pairs of (position, delta) vec3s at +0x210 and +0x234. */
+g_char_vec3_a_pos_x                                     = 0x801020D8;  /* +0x210 -- vec3 A position X (record 0) */
+g_char_vec3_a_pos_y                                     = 0x801020DC;  /* +0x214 -- vec3 A position Y */
+g_char_vec3_a_pos_z                                     = 0x801020E0;  /* +0x218 -- vec3 A position Z */
+g_char_vec3_a_delta_x                                   = 0x801020E4;  /* +0x21C -- vec3 A delta X (added to pos_x in scratchpad write) */
+g_char_vec3_a_delta_y                                   = 0x801020E8;  /* +0x220 -- vec3 A delta Y */
+g_char_vec3_a_delta_z                                   = 0x801020EC;  /* +0x224 -- vec3 A delta Z */
+g_char_vec3_b_pos_x                                     = 0x801020FC;  /* +0x234 -- vec3 B position X */
+g_char_vec3_b_pos_y                                     = 0x80102100;  /* +0x238 -- vec3 B position Y */
+g_char_vec3_b_pos_z                                     = 0x80102104;  /* +0x23C -- vec3 B position Z */
+g_char_vec3_b_delta_x                                   = 0x80102108;  /* +0x240 -- vec3 B delta X */
+g_char_vec3_b_delta_y                                   = 0x8010210C;  /* +0x244 -- vec3 B delta Y */
+g_char_vec3_b_delta_z                                   = 0x80102110;  /* +0x248 -- vec3 B delta Z */
+g_char_vec3_b_w_or_alpha                                = 0x80102114;  /* +0x24C -- separately-accessed 7th word, likely W or alpha */
+
+/* World-position vec3 at +0xD8 -- delta'd between players for 2D distance via g_isqrt_lut */
+g_char_world_pos_x                                      = 0x80101FA0;  /* +0xD8 -- world position X (record 0) */
+g_char_world_pos_y                                      = 0x80101FA4;  /* +0xDC -- world position Y */
+g_char_world_pos_z                                      = 0x80101FA8;  /* +0xE0 -- world position Z (paired with X for 2D distance) */
+/* Replay/stored position vec3 at +0xF4 -- mirrored from world_pos with -0x384 Y bias */
+g_char_stored_pos_y                                     = 0x80101FC0;  /* +0xF8 -- stored Y = world_pos_y - 0x384 (time bonus offset) */
+/* Char ID + keyframe pair -- decoded from func_80021904 / func_80021974 logic */
+g_char_id                                               = 0x80101F12;  /* +0x4A -- character ID (s16); used to index g_motion_data_base_ptr */
+g_char_curr_keyframe_idx                                = 0x80101F4C;  /* +0x84 -- current motion keyframe index (s16) */
+g_char_prev_keyframe_idx                                = 0x80101F4E;  /* +0x86 -- previous motion keyframe (curr -> prev at frame start) */
+
+/* === Second per-character struct (saTan1 slot state, 54-byte stride) === */
+/* Found in main.c init loop: `*(s16 *)(&D_800F4E1A + idx * 54) = ...` */
+/* Bound iterations to D_80101BCC slots; consumed by saTan1MainJump. */
+g_satan1_slot_state_table                               = 0x800F4E1A;  /* base of 54-byte stride slot array; init writes 0x18 to +0x00 */
+g_satan1_slot_state_field_at_4                          = 0x800F4E1E;  /* +0x04 -- counter (max 0x7FFF) */
+g_satan1_slot_state_field_at_E                          = 0x800F4E28;  /* +0x0E -- init to 0xFF */
+g_satan1_slot_state_field_at_10                         = 0x800F4E2A;  /* +0x10 -- init to 0 */
+g_satan1_slot_state_field_at_12                         = 0x800F4E2C;  /* +0x12 -- init to 0 */
+g_satan1_slot_state_field_at_14                         = 0x800F4E2E;  /* +0x14 -- init to 0xFF */
+
+/* === More indexed struct tables discovered (2026-05-17) === */
+g_sleep_menu_cursor_state_table                         = 0x800A3D40;  /* 24-byte stride per slot; 3 s32 + 6 s16 layout; consumed by DispSleepMenuTex */
+g_type_descriptor_table_8008EA00                        = 0x8008EA00;  /* 16-byte stride per `type`; consumed by func_800325E0 */
+g_status_flag_record_table_80099D88                     = 0x80099D88;  /* 12-byte stride; u16 record indexed by `idx`; bit-tested with 0xBF00 mask */
+
+/* === GPU packet buffer + shadow tables (2026-05-17) === */
+g_gpu_packet_buffer_64x96                               = 0x80103684;  /* 64 entries x 96 bytes; OT-link/packet queue; indexed by D_8009BF78 */
+g_gpu_packet_buffer_data_8010368C                       = 0x8010368C;  /* +8 from g_gpu_packet_buffer_64x96; per-entry data start */
+g_gpu_packet_write_idx                                  = 0x8009BF78;  /* increments by 1 with & 0x3F mask (64 entries) */
+g_gpu_packet_read_idx                                   = 0x8009BF7C;  /* paired with write_idx; equality test for buffer empty */
+g_gpu_packet_pending_target                             = 0x8009BF70;  /* set to arg3 of submit function */
+/* Shadow record arrays (text1a) */
+g_shadow_record_a_table_240                             = 0x800A9830;  /* 240-byte per-shadow records; PutShadowRmd; indexed by a2 */
+g_shadow_record_b_table_240                             = 0x800A9920;  /* sibling 240-byte records; PutShadowRmd; indexed by v0 */
+/* SE slot table */
+g_se_slot_table_16                                      = 0x800F68E0;  /* 16-byte per-slot SE table; indexed by value*0x10 in code6cac_c_mid */
+g_per_char_motion_buffer_table_1392                     = 0x800F1B18;  /* 1392-byte (0x570) per-character motion buffer, indexed by arg0 */
+g_per_char_record_440                                   = 0x800F5F68;  /* 440-byte (0x1B8) per-character record, indexed by arg0 */
+g_record_table_16_800A4750                              = 0x800A4750;  /* 16-byte stride, indexed by v1 in code6cac_c2 */
+
+/* === Address-taken buffers passed to named functions (2026-05-17) === */
+/* Each consumer's role identifies the buffer's purpose. */
+g_irq_handler_block_80081F1C                            = 0x80081F1C;  /* passed to irq_EnableInterrupts as the IRQ handler / context */
+g_seq_start_buffer_8008D9EC                             = 0x8008D9EC;  /* passed to seq_Start; SEQ packet or VAB data buffer */
+g_sys_mem_clear_dst_800A2614                            = 0x800A2614;  /* destination buffer for sys_MemClear */
+g_satan0_gauge_data_block_800A28D4                      = 0x800A28D4;  /* passed to saTan0GaugeDraw; gauge data block */
+g_memcard_file_read_buf                                 = 0x800A3688;  /* passed to bios_FileRead_B; memcard read destination */
+g_memcard_file_write_buf                                = 0x800A3698;  /* passed to bios_FileWrite_B; memcard write source */
+g_sys_int_rp_table                                      = 0x800F1838;  /* passed to bios_SysDeqIntRP; interrupt routine pointer table */
+/* g_pad_analog_state at 0x800F33D8 already named in batch 5; ALSO passed to camera_SetMatrix in code6cac_c_mid (shared state buffer) */
+g_damage_debug_disp_buf                                 = 0x800F34D8;  /* passed to damage_DebugDisp; damage debug display buffer */
+g_gte_color_matrix_data                                 = 0x800F6318;  /* passed to gte_SetColorMatrix; 9 x s16 = 18-byte 3x3 color matrix */
+g_disp_env_init_block                                   = 0x800FB524;  /* passed to gpu_InitDispEnv; display environment init data */
+g_status_up_data_buf                                    = 0x801027BC;  /* passed to single_game_SetStatusUpData; status-up data buffer */
+
+/* === Motion-ex per-id state arrays (2026-05-17) === */
+/* Found in text1b.c:14205-14223 init pattern: 12-byte state + 4-byte flag + 2-byte counter per motion id. */
+/* Existing g_motion_ex_counter_p1 (D_800F0BC0) and _p2 (D_800F0BC4) are at offsets +0x18/+0x1C from D_800F0BA8. */
+g_motion_ex_state_block_table_12                        = 0x800F0CA0;  /* 12-byte stride per motion id: [pos0, pos1, pos2_ptr] */
+g_motion_ex_flag_table_4                                = 0x800F10E0;  /* 4-byte stride per motion id: init-done flag (set to 1) */
+g_motion_ex_counter_table_base                          = 0x800F0BA8;  /* 2-byte stride per motion id: tick counter (reset to 0 in init) */
+g_motion_ex_state_id0_pos                               = 0x800F0CA0;  /* alias for record 0 of g_motion_ex_state_block_table_12 */
+g_motion_ex_state_id0_extra                             = 0x800F0CA4;  /* +4 from id0_pos */
+g_motion_ex_state_id0_data_ptr                          = 0x800F0CA8;  /* +8: pointer-to-data field */
+g_motion_ex_state_id1_pos                               = 0x800F0CAC;  /* record 1 +0 */
+g_motion_ex_state_id1_extra                             = 0x800F0CB0;
+g_motion_ex_state_id1_data_ptr                          = 0x800F0CB4;
+
+/* === Pulled from symbol_addrs.txt (2026-05-17) -- 14 names === */
+/* Pre-existing semantic names in symbol_addrs.txt that hadn't been */
+/* promoted into named_syms.txt.  These are project-blessed names */
+/* from prior analysis. */
+g_data_start                                            = 0x8008D070;  /* start of .data section */
+g_module_func_tbl                                       = 0x8008D090;  /* mode dispatch table (D_800A3834 indexes into this) */
+menuDat                                                 = 0x8008DCCC;  /* menu data block */
+cpu_practice_honmokuroku_data_tbl                       = 0x8008E778;  /* CPU practice exercise list ("honmokuroku") */
+single_dojo_yaburi_char_id_tbl                          = 0x8008EB56;  /* single-player dojo-challenge character IDs */
+SpecialCam                                              = 0x8008EC34;  /* special camera data block (referenced by replay-camera) */
+StatusUpBuf                                             = 0x800906A6;  /* status-up display buffer */
+InfoPosYTbl1                                            = 0x80099D54;  /* info Y-position table */
+UesrWorkDef                                             = 0x8009ADD8;  /* user work def (sic: original spelling) */
+chractar_use_pset_combo_id_table                        = 0x8009BA7C;  /* character preset-combo ID table (sic) */
+light_effect_col                                        = 0x800A3D70;  /* light effect color value */
+videoDec                                                = 0x800F0D80;  /* video decoder state */
+MarioCam_str                                            = 0x800F19D0;  /* MarioCam structure */
+selCharaID                                              = 0x80102092;  /* selected character ID */
+
+/* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
+/* Clusters driven by already-named consumer functions; semantic name */
+/* derived from consumer role.  See docs/naming/RODATA_RECORD_SCHEMA.md */
+/* for the multiplier analysis. */
+g_dma_chcr_ch4_ptr                                      = 0x800A2CE0;  /* holds 0x1F8010C0 (PSX DMA channel 4 MADR); used by saTan0GaugeDraw */
+g_satan0_gauge_state_word                               = 0x800A2D30;  /* zero-init state cell; consumer: saTan0GaugeDraw */
+g_special_cam_win_byte_a                                = 0x800A36B8;  /* byte state for special_camera_set_win_cam */
+g_special_cam_win_byte_b                                = 0x800A3718;  /* byte state for special_camera_set_win_cam */
+g_special_cam_win_byte_c                                = 0x800A3763;  /* byte state for special_camera_set_win_cam */
+g_replay_motion_shared_state_a                          = 0x800A3578;  /* halfword pair; shared between replay_camera_attack + motion_ShiftControl */
+g_replay_motion_shared_state_b                          = 0x800A35A0;  /* word; same consumers */
+g_replay_motion_shared_state_c                          = 0x800A35BC;  /* word; same consumers */
+g_replay_motion_shared_state_d                          = 0x800A358A;  /* halfword; same consumers */
+g_replay_motion_shared_state_e                          = 0x800A3560;  /* byte; same consumers */
+g_motion_shift_state_a                                  = 0x800A3550;  /* shorts; consumer: motion_ShiftControl */
+g_status_up_data_state_a                                = 0x800A371C;  /* word; consumer: single_game_CheckStatusUpDataTotalOver */
+g_status_up_data_state_b                                = 0x800A3769;  /* byte; consumer: single_game_CheckStatusUpDataTotalOver */
+
+/* === Menu-control cluster at 0x800A34F8-3514 (2026-05-17) -- 4 highs === */
+/* Discovered via cluster-consumer analysis: D_800A34F8/350C/3514 are */
+/* the top "naming multiplier" cluster -- 6+ consumer functions all */
+/* reference these together.  text1b.c:14910-15533 shows the pattern: */
+/*   - D_800A34F8 is a packed bitfield with cycling sub-fields */
+/*     (bits 0-3 = rotating slot index, bits 10-12 = sub-cursor, */
+/*      bits 13-15 = main cursor position) */
+/*   - D_800A34FC is a struct pointer assigned from func_8006E49C */
+/*     (the mode-state allocator), accessed at offsets 0x12/0x10/0xE/ */
+/*     0xC/0x28/0x2A/0x30 */
+/*   - D_800A3514 is a pure frame counter (only += 1 or = 0) */
+/*   - func_8006B92C is a menu input handler: parses pad input, */
+/*     decodes direction (1=down, 2=up), navigates cursor, */
+/*     calls func_8005C650 for menu sound effects */
+g_menuctl_state_bitfield                                = 0x800A34F8;  /* packed cursor/slot state */
+g_menuctl_mode_state_ptr                                = 0x800A34FC;  /* current screen's state struct pointer */
+g_menuctl_pad_result_buf                                = 0x800A350C;  /* s16 pad-decode result base (4 entries: 350C/350E/3510/3512) */
+g_menuctl_frame_counter                                 = 0x800A3514;  /* per-frame tick counter (reset to 0, += 1 each frame) */
+
+/* === Pad-recording subsystem at 0x800A36C0-36D4 (2026-05-17) -- 7 highs === */
+/* Source: code6cac_c_mid.c:1714 (func_8003A728), the pad-recording */
+/* update.  Pad input is packed into a 32-bit word, hashed against a */
+/* seed, and dual-buffered (current/validated/prev) for replay sync. */
+/* */
+/* See also: D_800A3698 (already named g_memcard_file_write_buf -- */
+/* MISNOMER, see docs/naming/MISNOMERS.md; primary use is the pad-rec */
+/* "current packed" buffer.  Memcard write reuses the address as scratch */
+/* via bios_FileWrite_B.). */
+g_pad_rec_current_hash                                  = 0x800A369C;  /* current-frame hashed pad-record signature */
+g_pad_rec_validated_packed                              = 0x800A36C0;  /* validated current-frame packed pad-record (set by func_8003A450 on hash match) */
+g_pad_rec_validated_hash                                = 0x800A36C4;  /* matching hash for validated record */
+g_pad_rec_prev_packed                                   = 0x800A36D0;  /* previous-frame packed pad-record (copy of 3698 at end of update) */
+g_pad_rec_prev_hash                                     = 0x800A36D4;  /* matching hash for previous-frame record */
+g_pad_rec_playback_mode                                 = 0x800A38A0;  /* "vsync" flag: 0=record, 1=playback */
+g_pad_rec_skip_flag                                     = 0x800A3916;  /* 1 = skip buffer-update on this frame */
+
+/* === Practice-mode lesson + move-unlock cluster (2026-05-17) -- 7 highs === */
+/* Source: code6cac_b.c:3709 (func_80033DF4) and 3787 (func_80033FE4). */
+/* */
+/* func_80033DF4 is the per-frame practice-mode lesson-progress checker: */
+/* reads g_practice_lesson_progress, when it hits 0x64 (complete) the */
+/* function queries the move-enable bitmap at &D_80106A50 */
+/* (g_file_disc_size -- MISNOMER, see MISNOMERS.md) and sets pending- */
+/* unlock flags for P1 and P2 depending on which moves they completed. */
+/* */
+/* func_80033FE4 then drives the unlock-celebration display, dispatching */
+/* mode 6/7 for P1, 8/9 for P2 via g_practice_mode_dispatch_idx. */
+g_particle_slot_bitmap                                  = 0x800A3444;  /* 32-bit slot-allocation bitmap for the particle/effect pool (text1b.c:14169 reads/sets via 1<<slot mask) */
+g_practice_p1_move_unlock_pending                       = 0x800A36F0;  /* bool: P1 just unlocked a move this lesson */
+g_practice_p2_move_unlock_pending                       = 0x800A3781;  /* bool: P2 just unlocked a move this lesson */
+g_practice_mode_dispatch_idx                            = 0x800A3834;  /* mode-dispatch index into g_module_func_tbl (0x4 = continue, 0x12 = unlock anim, 0x1A = end) */
+g_practice_unlock_anim_id                               = 0x800A38A4;  /* unlock-celebration animation ID (6/7 for P1, 8/9 for P2) */
+g_practice_lesson_progress                              = 0x800A38E2;  /* lesson progress counter (0x64 = complete) */
+g_practice_lesson_char_id                               = 0x8010277C;  /* character ID being practiced */
+
+/* === Function names from debug-string analysis (2026-05-17) -- 4 highs === */
+/* Functions whose debug_printf strings reveal their purpose. */
+marionation_GetFrameOffset                              = 0x80044FA0;  /* fetches byte offset for an animation frame; infinite-loops on "Marionation over flow" (Marionation = BB2's engine) */
+eff_FrameUpdate                                         = 0x80061064;  /* per-frame effect-system update: processes 28 effect slots, reports "eff prim over" if primitive budget (~450) exceeded */
+spu_FlushVoiceChannels                                  = 0x80088740;  /* clears SPU control regs, polls voice-status (mask 0x7FF) with timeout, prints "SPU:T/O" on failure */
+gpu_DrawTimeoutCheck                                    = 0x8007DC9C;  /* checks if GPU draw exceeded vsync window (>0xF0000 cycles); prints g_str_gpu_timeout + "func=(%08x)(%08x,%08x)" + recovers state */
+
+/* === Wrapper/curried function names (2026-05-17) -- 6 highs === */
+/* Functions whose body is a clear single-purpose wrapper around a */
+/* named function with extra logic (clamp, walk list, set+return old). */
+snd_ClearAllSeBuffer                                    = 0x8002906C;  /* walks snd_GetSeId() list, zeroes +2 of each 0x10-byte entry until terminator */
+gpu_DrawSyncCallback                                    = 0x8007B244;  /* PSX libgpu DrawSyncCallback: saves old g_gpu_draw_mode (= prev callback), sets new, returns old; debug-traces "DrawSyncCallback(%08x)" */
+snd_ChannelDmaFlush                                     = 0x80087F64;  /* if g_snd_ch_status[idx]==1: spu_DmaTransfer(g_snd_ch_addr[idx]), clear status, decrement g_snd_ch_count */
+spu_TransferDirect_capped                               = 0x8008AD64;  /* spu_TransferDirect(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
+spu_TransferData_capped                                 = 0x8008ADC4;  /* spu_TransferData(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
+coli_HitPauseKatana_3                                   = 0x8008A904;  /* coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD) -- sibling wrapper with motion-ID constants */
+
+/* === More GPU/display wrapper functions (2026-05-17) -- 2 highs === */
+gpu_DebugCheckRect                                      = 0x8007B3A8;  /* PSX-style rect validator: at debug-level 1 validates against D_8009BE78/7A (screen w/h); logs "%s:bad RECT" + "(%d,%d)-(%d,%d)" via g_gpu_debug_func */
+gpu_DrawOTagEnv                                         = 0x8007BAB4;  /* PSX libgpu DrawOTagEnv: copies _drawenv_q struct, submits via g_gpu_dev_table cmd 0x40; logs "DrawOTagEnv(%08x,%08x)" */
+
+/* === Practice-lesson state struct continued (2026-05-17) -- 5 highs === */
+/* From code6cac_b.c func_80033DF4 lines 3765-3783: each lesson entry */
+/* in cpu_practice_honmokuroku_data_tbl is 4 bytes (table[0..3]).  The */
+/* fetcher copies them into per-frame state globals. */
+g_practice_lesson_subcounter                            = 0x800A38E9;  /* lesson sub-counter; func_80033FE4 reads "if (D_800A38E9 < 3)" to decide end-of-lesson mode */
+g_practice_lesson_param0                                = 0x800A38DE;  /* lesson table fetch via &D_8008EC24 + char-class offset */
+g_practice_lesson_param1                                = 0x800A38EC;  /* lesson table[1] (current honmokuroku entry) */
+g_practice_lesson_param2                                = 0x800A38ED;  /* lesson table[2] */
+g_practice_lesson_param3                                = 0x800A38EE;  /* lesson table[3] */
+
+/* === bios_TestEvent wrapper functions (2026-05-17) -- 8 highs === */
+/* Each of these tests/acks a fixed set of 4 BIOS event handles. */
+/* The 0x37DC family is opened by pad_press_control (misnomer: actually */
+/* memcard init -- see MISNOMERS.md) with class 0xF4000001 (memcard). */
+/* The 0x3838 family is a separate event group also opened during init. */
+file_GetFlag2_StageGated                                = 0x8001DB58;  /* range-check on D_800A38DC: if v<2 or v>=5 returns 1; else calls file_GetFlag2() */
+seq_ConditionalReset                                    = 0x80020CDC;  /* if D_800A38C6==0xFFFF calls seq_Reset(); zeroes D_800A3880/38C0-C6 state cluster */
+stage_GetTriple                                         = 0x80021D10;  /* reads 3 s16 from stage_GetDataPtr() at indexed offset, widens to s32 */
+mottest_rob_init_andmark                                = 0x800371F8;  /* mottest_rob_init() + sets D_80101E64=1 on success */
+memcard_PollEvents                                      = 0x800378A8;  /* tests 4 events at D_800A37DC/F0/FC/3800; returns 1-4 (which fired) or 0 */
+memcard_AckEvents                                       = 0x8003791C;  /* unconditionally acks/consumes 4 memcard events */
+rcnt0_AckEvents                                         = 0x800379D8;  /* unconditionally acks/consumes 4 rcnt0 events */
+/* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
+/* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
+/* keeping those over my proposed shorter names. */
+
+/* === BIOS event handle globals (2026-05-17) -- 9 highs === */
+/* Opened by pad_press_control (= memcard_OpenAllEvents) via */
+/* bios_OpenEvent.  Two event sets, 4 events each: */
+/*   memcard slot 1 (class 0xF4000001): IOE / ERROR / NEW / TIMEOUT */
+/*   root counter 0 (class 0xF0000011): IOE / ERROR / NEW / TIMEOUT */
+g_memcard1_event_ioe                                    = 0x800A37DC;  /* bios_OpenEvent(0xF4000001, 0x0004, ...) -- end of I/O */
+g_memcard1_event_err                                    = 0x800A37F0;  /* bios_OpenEvent(0xF4000001, 0x8000, ...) -- error */
+g_memcard1_event_new                                    = 0x800A37FC;  /* bios_OpenEvent(0xF4000001, 0x0100, ...) -- new card inserted */
+g_memcard1_event_timeout                                = 0x800A3800;  /* bios_OpenEvent(0xF4000001, 0x2000, ...) -- timeout */
+g_rcnt0_event_ioe                                       = 0x800A3838;  /* bios_OpenEvent(0xF0000011, 0x0004, ...) -- root counter end of I/O */
+g_rcnt0_event_err                                       = 0x800A383C;  /* bios_OpenEvent(0xF0000011, 0x8000, ...) -- root counter error */
+g_rcnt0_event_new                                       = 0x800A3848;  /* bios_OpenEvent(0xF0000011, 0x0100, ...) -- root counter "new" */
+g_rcnt0_event_timeout                                   = 0x800A3850;  /* bios_OpenEvent(0xF0000011, 0x2000, ...) -- root counter timeout */
+g_memcard1_poll_count                                   = 0x800A3924;  /* incremented in memcard_PollEventsWithTimeout; forces result=2 after >=0x78 ticks */
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
