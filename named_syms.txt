@@ -2960,3 +2960,60 @@ g_practice_menu_table_p2                                = 0x80102314;  /* P2 of 
 g_char_world_pos_x_p2                                   = 0x801023EC;  /* P2 of g_char_world_pos_x (P1 = 0x80101FA0) */
 g_char_world_pos_z_p2                                   = 0x801023F4;  /* P2 of g_char_world_pos_z (P1 = 0x80101FA8) */
 g_char_curr_keyframe_idx_p3                             = 0x801027E4;  /* P3 of g_char_curr_keyframe_idx (P1 = 0x80101F4C) */
+
+/* === Tier 3 batch: high-ref (>=5) unnamed addresses (2026-05-17) === */
+/* 53 addresses, pattern-based naming for motion-ex */
+/* state/flag/counter extensions + generic g_high_ref_<addr> fallback */
+g_high_ref_8009BD38                                     = 0x8009BD38;  /* 5 refs */
+g_high_ref_8009C928                                     = 0x8009C928;  /* 36 refs */
+g_high_ref_800A289C                                     = 0x800A289C;  /* 5 refs */
+g_high_ref_800A35D0                                     = 0x800A35D0;  /* 5 refs */
+g_high_ref_800A36E0                                     = 0x800A36E0;  /* 5 refs */
+g_high_ref_800A36EC                                     = 0x800A36EC;  /* 5 refs */
+g_high_ref_800EFB1C                                     = 0x800EFB1C;  /* 5 refs */
+g_high_ref_800EFB20                                     = 0x800EFB20;  /* 5 refs */
+g_high_ref_800EFB24                                     = 0x800EFB24;  /* 5 refs */
+g_high_ref_800EFB28                                     = 0x800EFB28;  /* 5 refs */
+g_effect_struct_b_off_C                                 = 0x800EFC44;  /* 5 refs */
+g_effect_struct_b_off_18                                = 0x800EFC50;  /* 5 refs */
+g_motion_ex_counter_slot10                              = 0x800F0BBC;  /* 6 refs */
+g_motion_ex_counter_slot11                              = 0x800F0BBE;  /* 6 refs */
+g_motion_ex_counter_slot12                              = 0x800F0BC0;  /* 5 refs */
+g_motion_ex_counter_slot13                              = 0x800F0BC2;  /* 5 refs */
+g_motion_ex_state_id10_pos                              = 0x800F0D18;  /* 5 refs */
+g_motion_ex_state_id10_extra                            = 0x800F0D1C;  /* 5 refs */
+g_motion_ex_state_id10_data_ptr                         = 0x800F0D20;  /* 5 refs */
+g_motion_ex_state_id11_pos                              = 0x800F0D24;  /* 5 refs */
+g_motion_ex_state_id11_extra                            = 0x800F0D28;  /* 5 refs */
+g_motion_ex_state_id11_data_ptr                         = 0x800F0D2C;  /* 5 refs */
+g_motion_ex_state_id16_pos                              = 0x800F0D60;  /* 5 refs */
+g_motion_ex_state_id16_extra                            = 0x800F0D64;  /* 5 refs */
+g_motion_ex_state_id16_data_ptr                         = 0x800F0D68;  /* 5 refs */
+g_motion_ex_state_id17_pos                              = 0x800F0D6C;  /* 5 refs */
+g_motion_ex_state_id17_extra                            = 0x800F0D70;  /* 5 refs */
+g_motion_ex_state_id17_data_ptr                         = 0x800F0D74;  /* 5 refs */
+g_motion_ex_extra_at_0                                  = 0x800F0FB8;  /* 5 refs */
+g_motion_ex_extra_at_4                                  = 0x800F0FBC;  /* 5 refs */
+g_motion_ex_extra_at_8                                  = 0x800F0FC0;  /* 5 refs */
+g_motion_state_aux_at_0                                 = 0x800F10A0;  /* 5 refs */
+g_motion_state_aux_at_2                                 = 0x800F10A2;  /* 5 refs */
+g_motion_state_aux_at_4                                 = 0x800F10A4;  /* 5 refs */
+g_motion_state_flag_at_3                                = 0x800F10DC;  /* 5 refs */
+g_motion_state_flag_at_11                               = 0x800F10FC;  /* 5 refs */
+g_motion_state_flag_at_12                               = 0x800F1100;  /* 5 refs */
+g_motion_state_flag_at_13                               = 0x800F1104;  /* 5 refs */
+g_motion_state_flag_at_14                               = 0x800F1108;  /* 5 refs */
+g_motion_state_flag_at_15                               = 0x800F110C;  /* 5 refs */
+g_motion_state_flag_at_18                               = 0x800F1118;  /* 5 refs */
+g_motion_state_flag_at_19                               = 0x800F111C;  /* 5 refs */
+g_motion_state_flag_at_20                               = 0x800F1120;  /* 5 refs */
+g_motion_state_flag_at_21                               = 0x800F1124;  /* 5 refs */
+g_motion_state_flag_at_22                               = 0x800F1128;  /* 5 refs */
+g_motion_state_flag_at_23                               = 0x800F112C;  /* 5 refs */
+g_motion_state_flag_at_24                               = 0x800F1130;  /* 5 refs */
+g_motion_state_flag_at_25                               = 0x800F1134;  /* 5 refs */
+g_motion_state_flag_at_26                               = 0x800F1138;  /* 5 refs */
+g_high_ref_800F2B70                                     = 0x800F2B70;  /* 10 refs */
+g_high_ref_800F33D8                                     = 0x800F33D8;  /* 16 refs */
+g_high_ref_800FF558                                     = 0x800FF558;  /* 8 refs */
+g_high_ref_800FF6A0                                     = 0x800FF6A0;  /* 5 refs */
