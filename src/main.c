@@ -1003,8 +1003,9 @@ extern s32 D_80101BC8;
 extern u16 D_800A26E4[];
 
 u16 func_80086BFC(s32 a0, s16 a1) {
+    register s32 col asm("$7");
     u8 *entry;
-    s32 val, div8, col, overflow, total, row, rem, shift;
+    s32 val, div8, overflow, total, row, rem, shift;
     u16 result;
 
     {
@@ -1037,7 +1038,13 @@ u16 func_80086BFC(s32 a0, s16 a1) {
     rem = total - row * 12;
 
     {
-        s32 index = ((s16)rem << 4) + (s16)col;
+        s32 rem_se4 = (s16)rem << 4;
+        s32 col_se;
+        s32 col_tmp;
+        s32 index;
+        __asm__ ("sll %0,%1,16" : "=r"(col_tmp) : "r"(col));
+        __asm__ ("sra %0,%1,16" : "=r"(col_se) : "r"(col_tmp));
+        index = rem_se4 + col_se;
         shift = (s16)(row - 5);
         result = D_800A26E4[index];
     }
