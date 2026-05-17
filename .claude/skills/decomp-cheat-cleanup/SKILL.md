@@ -183,7 +183,9 @@ register T src asm("$RS");
 __asm__ volatile("move %0, %1" : "=r"(dst) : "r"(src));
 ```
 
-This emits exactly one `addu RD, RS, $zero` instruction. **Single-instruction `__asm__` is NOT a cheat** (the audit only flags multi-instruction inline asm and file-scope inline-asm bodies). This is a documented and accepted technique.
+This emits exactly one `addu RD, RS, $zero` instruction.
+
+**The constraint detail is load-bearing — read [[feedback-inline-asm-lost-codegen-injection]] before reaching for this.** The template must use `%N` operand placeholders bound via `=r` / `r` constraints to `register T x asm("$N")` C variables. GCC then chooses the registers (steered by the pins) and tracks the operation. **If you write `__asm__ volatile("addu $8, $3, $zero")` with hardcoded `$N` registers and no `%N` placeholders, that is the lost_codegen regfix cheat re-spelled in C — same bytes, no GCC tracking — and `audit_asm_cheats.py --check-new` will block your commit (the `asm_injection` cheat type, added 2026-05-17 after two sessions of this skill hit the trap 4 hours apart: `c5e11ae` kept-and-flagged, `9118925` reverted).** Single-insn `__asm__` is allowed for codegen *control*, not for byte-for-byte injection.
 
 Place the `__asm__` in the C source where the target wants the addu to appear. If the cheat was `insert "addu $16,$0,$zero" @ 28`, the addu needs to land at maspsx position 28 — work backward from `dump-text` output to figure out which C statement produces position 28.
 
@@ -287,7 +289,8 @@ The function should drop off the Cheat Cleanup Queue automatically (it's no long
 ## §7. ANTI-PATTERNS — DO NOT
 
 - **Don't re-add the cheat under a different name.** If you remove `insert "addu ..."` and replace with `subst ".*" "addu ..."`, you've moved the cheat, not retired it. The auditor will catch both forms.
-- **Don't introduce multi-instruction inline `__asm__` to fix a lost_codegen cheat.** That's c_body_asm_debt — a different cheat. The §5.1 trick uses SINGLE-instruction `__asm__ volatile("move ...")`, which is accepted.
+- **Don't write `__asm__ volatile("addu $X, $Y, $0/$zero")` with hardcoded `$N` registers and no `%N` placeholders** to replace a lost_codegen regfix cheat. That is the cheat under a different name — same MIPS bytes, no GCC tracking, just moved from regfix.txt into the C source. The audit detects this as `asm_injection` and blocks at commit (added 2026-05-17). The §5.1 trick is the **placeholder-bound** form with `=r`/`r` constraints; see [[feedback-inline-asm-lost-codegen-injection]] for the trap and [[feedback-inline-move-aliasing]] for the legitimate pattern.
+- **Don't introduce multi-instruction inline `__asm__` to fix a lost_codegen cheat.** That's c_body_asm_debt — a different cheat. The §5.1 trick uses SINGLE-instruction `__asm__ volatile("move %0, %1" : "=r"(dst) : "r"(src))` with operand placeholders, NOT hardcoded `$N` literals.
 - **Don't authorize the function as canonical asm unless §0's strong-signal check actually fires.** Self-authorization is forbidden. Per `feedback_bridge_is_not_decomp.md` and `feedback_hand_coded_asm_recognition.md`.
 - **Don't commit with SHA1 mismatch.** The hook should block this, but if you bypass somehow, you've broken the build.
 - **Don't bundle unrelated changes.** Your commit should touch only the cheat-retirement files (regfix.txt, the src/*.c file, and `WORK_QUEUE.md` if regenerated). Avoid `git add -A` — the decomp agent's WIP shouldn't be in your commit (see `feedback_parallel_worktree_work.md`).

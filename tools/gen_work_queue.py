@@ -456,13 +456,15 @@ def scan_orphan_cheats(existing_funcs: set[str]) -> list[dict]:
         return []
 
     auth = audit.load_authorized()
-    splice_funcs, inline_funcs, bios_funcs, c_body_funcs, instruction_insert_funcs = (
+    (splice_funcs, inline_funcs, bios_funcs, c_body_funcs,
+     instruction_insert_funcs, asm_injection_funcs) = (
         audit.get_current_cheats(auth)
     )
 
     all_cheat_funcs = (
         splice_funcs | inline_funcs | bios_funcs | c_body_funcs
         | set(instruction_insert_funcs.keys())
+        | set(asm_injection_funcs.keys())
     )
     orphan_funcs = all_cheat_funcs - existing_funcs
 
@@ -502,6 +504,10 @@ def scan_orphan_cheats(existing_funcs: set[str]) -> list[dict]:
         if func in instruction_insert_funcs:
             n = instruction_insert_funcs[func]
             types.append(f"lost_codegen({n})")
+            rule_count += n
+        if func in asm_injection_funcs:
+            n = asm_injection_funcs[func]
+            types.append(f"asm_injection({n})")
             rule_count += n
         entries.append({
             "func": func,
