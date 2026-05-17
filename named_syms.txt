@@ -1849,6 +1849,15 @@ g_char_class_idx_p1                                     = 0x80101ED2;  /* per-ch
 g_vsync_target_frames                                   = 0x800A36F1;  /* vsync target frame count (default 2 = 30 FPS); main loop uses `(D-1)<<8 + 0x80` for vsync window deadline */
 g_stage_id_arg                                          = 0x800A3228;  /* stage ID set by single_game_SetStageId; read by gnd_open + camera_SetMatrix_8003E164 */
 
+/* === SPU voice allocator state pair (2026-05-17) -- 2 highs === */
+/* From main.c coli_HitPauseKatana (actually SPU voice allocator) + */
+/* spu_InitEx + saEft03Start2.  D_800A2880 is the "currently-allocated */
+/* arg0" tracker; D_800A2884 caches g_spu_init_reg_D1_val and is used */
+/* as `(0x10000 - D_800A2884) << g_spu_addr_shift` to compute the */
+/* shift_val applied to incoming alloc requests. */
+g_spu_voice_alloc_current_a0                            = 0x800A2880;  /* current allocator a0 (0 = none); compared against incoming alloc requests */
+g_spu_voice_alloc_offset                                = 0x800A2884;  /* offset for voice-address calc; (0x10000 - D) << g_spu_addr_shift */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
