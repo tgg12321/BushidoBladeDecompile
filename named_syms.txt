@@ -2189,6 +2189,16 @@ g_practice_lesson_init_done                             = 0x8010278C;  /* init f
 g_attack_angle_offset_table                             = 0x8008EB40;  /* s16 2D table; rows 3-wide indexed by attack-dir, cols by sub-dir; values added to char angle (BAM) for attack direction offset */
 g_char_struct_p2_field_6A                               = 0x8010237E;  /* per-char field +0x6A for P2 (= P1's g_char_struct_p1_field_6A + 0x44C); same 0x11 mode check */
 
+/* === Sprite rect tables + buffer banks (2026-05-17) -- 5 highs === */
+/* From text1a.c around line 55-77: sprite/texture loading.  D_80094AF4 */
+/* is a 6-s32-per-row rect/UV table.  D_800A9830 / D_800A9920 are 240- */
+/* byte-stride sprite-data banks. */
+g_sprite_rect_table                                     = 0x80094AF4;  /* 6 s32 per row (rect+uv); indexed by sprite ID * 6 */
+g_sprite_data_bank_a                                    = 0x800A9830;  /* 240-byte stride sprite data bank A */
+g_sprite_data_bank_b                                    = 0x800A9920;  /* 240-byte stride sprite data bank B (paired) */
+g_sprite_class_mask_table                               = 0x80094B48;  /* mask lookup indexed by class (`mask &= D[class]`) */
+g_sprite_anim_table                                     = 0x80094D40;  /* per-anim mask table indexed by a1 */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
