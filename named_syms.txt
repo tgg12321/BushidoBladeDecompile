@@ -292,5 +292,13 @@ g_motion_data_base_ptr      = 0x800A3860;
 game_event_shutdown_80037774 = 0x80037774;
 game_event_wait_any_80037964 = 0x80037964;
 
+/* === Batch 3 high-confidence function renames (2026-05-17) === */
+/* See docs/naming/evidence/func_{80037804,80080620}.md */
+/* SHA1-clean rebuild verified. */
+/* The trio game_event_{shutdown,wait_any,wait_any_with_timeout} together */
+/* manages the 8-event per-module pool. */
+game_event_wait_any_with_timeout_80037804 = 0x80037804;
+cd_dma_idle_80080620                       = 0x80080620;
+
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
