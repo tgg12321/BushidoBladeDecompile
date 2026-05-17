@@ -1030,4 +1030,35 @@ sync_flag_check_advance_80069120                        = 0x80069120;  /* 44-byt
 clear_array_8010367E_80044498                           = 0x80044498;  /* clears g_tpage_slot_count[0..19] (20-entry s16 array zero loop) */
 audio_chain_fade_load_80046048                          = 0x80046048;  /* chained saFidLoad on tpage_slot_relocate(6, ...) */
 
+/* === rodata constant-table pass (2026-05-17) -- 21 entries === */
+/* Pattern-classified D_* labels in rodata + .data sections.  Each */
+/* comment lists the table shape; see docs/naming/RODATA_CATALOG.md */
+/* for the full classification report (incl. 504 unclassified). */
+/* Function-pointer / callback tables (5) */
+g_text1a_seq_start_callback_table                       = 0x80015470;  /* 4 ptrs: saTan2LineDraw, InitFadePanel x2, func_8004B6E4 */
+g_text1a_seq_step_callback_table                        = 0x80015480;  /* 8 ptrs: func_8004C994 .. func_80051754 */
+g_text1b_packed_handler_table_8                         = 0x80015820;  /* 8 ptrs in 0x80050xxx-0x80051xxx range */
+g_uniform_handler_array_func_80044650                   = 0x800951D8;  /* 42 entries all = func_80044650 (uniform default) */
+g_uniform_handler_array_b_80095280                      = 0x80095280;  /* 42 entries, sibling of D_800951D8 */
+/* Per-record / descriptor pointer arrays (3) */
+g_per_record_ptr_table_8008D86C                         = 0x8008D86C;  /* 8 ptrs into D_8008D754-base (16-byte stride records) */
+g_per_char_descriptor_table_32                          = 0x800900EC;  /* 32 ptrs into D_8008Fxxx (per-character descriptors) */
+g_stage_lighting_ptr_array_6                            = 0x80094DF0;  /* 6 ptrs to D_80094Dxx (stage lighting dispatch) */
+/* Lookup / step tables (5) */
+g_pitch_lookup_table_128                                = 0x80015620;  /* 128 .word = 256 packed s16; monotonic pairs (pitch/freq curve) */
+g_byte_index_map_8008EB28                               = 0x8008EB28;  /* 16 bytes: {0..9, 8, 9, 0x2E, 0x2F, 0x2E, 0x2F} per-slot index map */
+g_step_lookup_5_8008EBCC                                = 0x8008EBCC;  /* 5 entries: {0, 0x33, 0x3A, 0x41, 0x48} -- step values */
+g_lookup_14entries_8008EB80                             = 0x8008EB80;  /* 14-entry monotonic lookup */
+g_lookup_8entries_80099C14                              = 0x80099C14;  /* 8-entry monotonic lookup */
+g_lookup_4entries_800A3074                              = 0x800A3074;  /* 4-entry monotonic lookup */
+/* CLUT palettes (3) -- 16 colors @ 32 bytes each, +0x80 stride */
+g_palette_32_800A127C                                   = 0x800A127C;  /* 32-entry CLUT palette */
+g_palette_32_800A12FC                                   = 0x800A12FC;  /* sibling +0x80 */
+g_palette_32_800A137C                                   = 0x800A137C;  /* sibling +0x100 */
+/* Bitmask tables (4) -- power-of-2 .word values */
+g_bitmask_table_4_8009BB74                              = 0x8009BB74;  /* 4 entries */
+g_bitmask_table_4_8009BCD4                              = 0x8009BCD4;  /* 4 entries */
+g_bitmask_table_4_8009BD70                              = 0x8009BD70;  /* 4 entries */
+g_bitmask_table_5_8009BEF4                              = 0x8009BEF4;  /* 5 entries */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
