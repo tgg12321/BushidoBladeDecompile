@@ -11,7 +11,8 @@ Evidence-backed function-name proposals for the 1217 unnamed `func_XXXXXXXX` fun
 - `proposals_medium_confidence.md` -- review table for `medium`-tier proposals
 - `psyq_library_matches.md` -- focused view on PsyQ stdlib / BIOS jumptable / syscall wrapper proposals
 - `subsystem_clusters.md` -- call-graph cluster analysis (which subsystem do unnamed funcs belong to)
-- `data_symbols_quick_wins.md` -- naming hints for `D_*` undefined symbols based on access pattern
+- `data_symbols_quick_wins.md` -- mechanical width-based naming hints for `D_*` undefined symbols
+- `data_evidence/<D_addr>.md` -- per-symbol prose evidence for hand-reviewed data names (the deeper version of the same work)
 - `methodology.md` -- analyzer design + evidence kinds + scoring + known caveats
 - `evidence/<func_name>.md` -- per-function evidence detail file
 

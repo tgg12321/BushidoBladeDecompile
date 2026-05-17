@@ -2,6 +2,13 @@
 
 Scan of `undefined_syms_auto.txt` (1735 D_* labels) for cases where the access pattern in code gives away the underlying type or purpose. These are PROPOSALS, not renames. Apply with care.
 
+> **See also: [data_evidence/](data_evidence/) for hand-reviewed,
+> semantically-meaningful names.** The proposals on this page are
+> width-based mechanical hints (`wtbl_*` / `stbl_*` / `btbl_*` /
+> `fp_*`) and explicitly are not suitable for bulk renaming. The
+> `data_evidence/` directory holds per-symbol prose evidence with
+> proper semantic names (e.g. `g_rand_state`, `g_disp_config`,
+> `g_tpage_slot_ptr`) -- the deeper version of the same review.
 
 Total D_* symbols analyzed: 1505; with usage patterns: 1467
 
