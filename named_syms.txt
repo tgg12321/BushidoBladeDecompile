@@ -2220,6 +2220,14 @@ g_gpu_loadimage_packet_buf                              = 0x800A4340;  /* 19-ent
 g_status_up_cached_idx                                  = 0x800905F8;  /* 0xFFFF sentinel or current idx cache for status-up records (paired with existing StatusUpBuf) */
 g_gpu_shadow_prim_base                                  = 0x800A3D30;  /* base pointer to shadow primitive data (used by func_8003D330) */
 
+/* === CD-ROM stream reader state (2026-05-17) -- 4 highs === */
+/* From code6cac_b2.c around line 388-408: CD-ROM streaming callback */
+/* reads sectors into a buffer, checking BCD position for sync. */
+g_cdread_sectors_remaining                              = 0x80101E80;  /* sectors left to read; decremented per chunk; 0 = done, -1 = error, -2 = position mismatch */
+g_cdread_dest_buffer                                    = 0x80101E84;  /* destination buffer ptr; advances by 0x800 (2048 = sector size) per read */
+g_cdread_expected_bcd_frame                             = 0x80101EA0;  /* next-expected CD position in BCD; mismatch with cdrom_BcdToFrames triggers error */
+g_event_class_lookup_table                              = 0x8008EC38;  /* lookup table indexed by `arg0 * 2`; likely PSX BIOS event class IDs */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
