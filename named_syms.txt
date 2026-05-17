@@ -2350,6 +2350,14 @@ g_replay_camera_init_flag                               = 0x800A3400;  /* reset 
 g_buki_pre_hit_arg                                      = 0x800A3404;  /* = 0x1010 default; passed to coli_CheckBukiPreHit_80088088 */
 g_buki_pre_hit_arg_alt                                  = 0x800A340C;  /* paired with _arg (init to same value, later set to _arg) */
 
+/* === Ground fog state pair (2026-05-17) -- 4 highs === */
+/* From text1b.c gnd_get_fog (line 13286): selects fog value per */
+/* framebuffer parity. */
+g_gnd_fog_value_a                                       = 0x800A3420;  /* fog value for buffer A (arg0 == 0) */
+g_gnd_fog_value_b                                       = 0x800A3424;  /* fog value for buffer B (arg0 != 0) */
+g_gnd_fog_active                                        = 0x800A37D4;  /* currently selected fog value (also used as multi-purpose scratch by other systems -- see main_loop.md) */
+g_gnd_fog_prev                                          = 0x800A3720;  /* snapshot of previously-active fog value */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
