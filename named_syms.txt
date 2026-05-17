@@ -1368,6 +1368,23 @@ g_stage_light_pos_2                                     = 0x800A93B8;  /* (&g_st
 g_stage_light_dir_1                                     = 0x800A93C0;  /* (&g_stage_light_dir)[1] -- second light direction */
 g_stage_light_dir_2                                     = 0x800A93C4;  /* (&g_stage_light_dir)[2] -- third light direction */
 g_default_collision_pattern                             = 0x80094A6C;  /* 16 u32 entries; each encodes a 16x16 grid row of 2-bit collision flags applied to g_stage_collision */
+
+/* === CD-ROM streaming state (2026-05-17) -- 12 highs === */
+/* From system.c func_800826CC and surrounding CD-ROM stream-control flow */
+/* (around lines 990-1090).  Cluster of per-stream state variables saved */
+/* across BIOS callback transitions. */
+g_cdrom_streaming_arg1                                  = 0x800A14D4;  /* arg1 saved in func_800826CC; copied to D8 in saEft00Add_sub */
+g_cdrom_streaming_arg1_copy                             = 0x800A14D8;  /* = g_cdrom_streaming_arg1 (read-back copy) */
+g_cdrom_mode_flags                                      = 0x800A14DC;  /* volatile s32 mode bits; 0x30 mask -> 200/246/249 setting; bit 0x20 = busy flag set during op */
+g_cdrom_setting_word                                    = 0x800A14E0;  /* setting word derived from mode (200/246/249 based on mode bits) */
+g_cdrom_vsync_pre                                       = 0x800A14E8;  /* sys_VSync(-1) reading at op start */
+g_cdrom_vsync_post                                      = 0x800A14EC;  /* sys_VSync(-1) reading at op end */
+g_cdrom_pos_frames                                      = 0x800A14F0;  /* cdrom_BcdToFrames(func_800800CC()) -- current position in frames */
+g_cdrom_callback_a_saved                                = 0x800A14F4;  /* saved cdrom_SetCallbackA return; restored in saEft00Add_sub */
+g_cdrom_callback_b_saved                                = 0x800A14F8;  /* saved cdrom_SetCallbackB return */
+g_cdrom_header_ptr_saved                                = 0x800A14FC;  /* saved func_80080660_ret -- header pointer */
+g_cdrom_callback_b_obj                                  = 0x80082050;  /* object passed to cdrom_SetCallbackB((s32)&D_80082050) */
+g_cdrom_header_obj                                      = 0x80082320;  /* object passed to tslTmlGetHeda((s32)&D_80082320) */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
