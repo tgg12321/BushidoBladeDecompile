@@ -230,13 +230,21 @@ extern s32 func_800484A0(s32, s32, s32);
 
 void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 {
+    register s32 cached asm("$16");
     s32 *p;
     s32 count;
     s32 new_var;
-    p = (s32 *)(arg0 + (((s32)(arg1 << 16)) >> 14));
-    p = (s32 *)(arg0 + (*p));
+    s32 v0_tmp;
+    cached = arg0;
+    arg1 = (((s32)(arg1 << 16)) >> 14) + cached;
+    v0_tmp = *(s32 *)arg1;
+    /* The fake "r"(v0_tmp) input constraint creates a data dep on the lw,
+       so GCC schedules the redundant `new_var = cached` move AFTER the load
+       (target wants it at the position the lw would otherwise stall). */
+    __asm__ volatile("move %0, %1" : "=r"(new_var) : "r"(cached), "r"(v0_tmp));
+    cached = cached + v0_tmp;
+    p = (s32 *)cached;
     count = *(p++);
-    new_var = arg0;
     if (count != 0) {
         s32 sx_arg2;
         s32 sx_arg3;
