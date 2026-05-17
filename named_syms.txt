@@ -1132,6 +1132,10 @@ g_char_world_pos_y                                      = 0x80101FA4;  /* +0xDC 
 g_char_world_pos_z                                      = 0x80101FA8;  /* +0xE0 -- world position Z (paired with X for 2D distance) */
 /* Replay/stored position vec3 at +0xF4 -- mirrored from world_pos with -0x384 Y bias */
 g_char_stored_pos_y                                     = 0x80101FC0;  /* +0xF8 -- stored Y = world_pos_y - 0x384 (time bonus offset) */
+/* Char ID + keyframe pair -- decoded from func_80021904 / func_80021974 logic */
+g_char_id                                               = 0x80101F12;  /* +0x4A -- character ID (s16); used to index g_motion_data_base_ptr */
+g_char_curr_keyframe_idx                                = 0x80101F4C;  /* +0x84 -- current motion keyframe index (s16) */
+g_char_prev_keyframe_idx                                = 0x80101F4E;  /* +0x86 -- previous motion keyframe (curr -> prev at frame start) */
 
 /* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
 /* Clusters driven by already-named consumer functions; semantic name */
