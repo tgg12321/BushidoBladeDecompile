@@ -1137,6 +1137,16 @@ g_char_id                                               = 0x80101F12;  /* +0x4A 
 g_char_curr_keyframe_idx                                = 0x80101F4C;  /* +0x84 -- current motion keyframe index (s16) */
 g_char_prev_keyframe_idx                                = 0x80101F4E;  /* +0x86 -- previous motion keyframe (curr -> prev at frame start) */
 
+/* === Second per-character struct (saTan1 slot state, 54-byte stride) === */
+/* Found in main.c init loop: `*(s16 *)(&D_800F4E1A + idx * 54) = ...` */
+/* Bound iterations to D_80101BCC slots; consumed by saTan1MainJump. */
+g_satan1_slot_state_table                               = 0x800F4E1A;  /* base of 54-byte stride slot array; init writes 0x18 to +0x00 */
+g_satan1_slot_state_field_at_4                          = 0x800F4E1E;  /* +0x04 -- counter (max 0x7FFF) */
+g_satan1_slot_state_field_at_E                          = 0x800F4E28;  /* +0x0E -- init to 0xFF */
+g_satan1_slot_state_field_at_10                         = 0x800F4E2A;  /* +0x10 -- init to 0 */
+g_satan1_slot_state_field_at_12                         = 0x800F4E2C;  /* +0x12 -- init to 0 */
+g_satan1_slot_state_field_at_14                         = 0x800F4E2E;  /* +0x14 -- init to 0xFF */
+
 /* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
 /* Clusters driven by already-named consumer functions; semantic name */
 /* derived from consumer role.  See docs/naming/RODATA_RECORD_SCHEMA.md */
