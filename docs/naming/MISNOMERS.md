@@ -416,3 +416,25 @@ not worth it for a single name.
 Filing this as a soft misnomer (don't act, but document so future
 analysts don't get confused).
 
+### `conv_matrix_rotation` (src/ings2.c:372) -- actually CD-ROM IRQ init
+
+The function body has NOTHING to do with matrix rotation conversion:
+
+```c
+s32 conv_matrix_rotation(void) {
+    sys_MemClear2((s32 *)&D_800A2640, 8);       // clear g_irq_cdrom_callbacks
+    *(volatile s32 *)D_800A263C = 0;            // clear CD-ROM IRQ control reg
+    ((void (*)(s32, void *))irq_EnableInterrupts)(3, (void *)D_80083418);
+                                                // hook IRQ 3 to irq_cdrom_handler
+    return (s32)D_8008359C;                     // return registrar
+}
+```
+
+It's the **CD-ROM IRQ initialization** function (a parallel to `func_800832A0`
+which is `vsync_Init`).  The "matrix rotation" name is completely wrong
+and may have come from misclassification during early naming.
+
+**Action: left existing name.** Renaming would touch sibling files.
+Proposed canonical name: `irq_cdrom_init` (parallel to `vsync_Init`).
+
+

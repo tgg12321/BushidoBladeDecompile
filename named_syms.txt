@@ -1385,6 +1385,26 @@ g_cdrom_callback_b_saved                                = 0x800A14F8;  /* saved 
 g_cdrom_header_ptr_saved                                = 0x800A14FC;  /* saved func_80080660_ret -- header pointer */
 g_cdrom_callback_b_obj                                  = 0x80082050;  /* object passed to cdrom_SetCallbackB((s32)&D_80082050) */
 g_cdrom_header_obj                                      = 0x80082320;  /* object passed to tslTmlGetHeda((s32)&D_80082320) */
+
+/* === IRQ handlers + supporting state (2026-05-17) -- 11 highs === */
+/* From ings2.c around line 320-400: vsync (IRQ 0) and CD-ROM (IRQ 3) */
+/* interrupt handlers, plus their callback slot arrays and registrar */
+/* functions.  These are NAMED FUNCTIONS POINTED-TO BY THE IRQ TABLE. */
+/* */
+/* NOTE: conv_matrix_rotation (0x80083320 area) is MISNAMED -- it */
+/* actually initializes the CD-ROM IRQ handler, not matrix rotation. */
+/* See MISNOMERS.md.  Renaming would touch sibling files. */
+irq_vsync_handler                                       = 0x800832F8;  /* IRQ 0 vsync handler: ++g_irq_vsync_counter, dispatches g_irq_vsync_callbacks[0..7] */
+irq_vsync_register_callback                             = 0x80083370;  /* registrar: g_irq_vsync_callbacks[slot] = fn */
+irq_cdrom_handler                                       = 0x80083418;  /* IRQ 3 CD-ROM handler: reads (*g_irq_cdrom_ctrl_reg_ptr >> 24) & 0x7F status bits */
+irq_cdrom_register_callback                             = 0x8008359C;  /* registrar companion to irq_cdrom_handler */
+g_irq_vsync_callbacks                                   = 0x800A2614;  /* 8 x s32 callback slots dispatched by irq_vsync_handler */
+g_irq_vsync_counter                                     = 0x800A2634;  /* volatile s32 vsync tick counter (++D in handler) */
+g_irq_vsync_ctrl_reg_ptr                                = 0x800A2638;  /* pointer to vsync IRQ control register (set to 0x107 in vsync init) */
+g_irq_cdrom_callbacks                                   = 0x800A2640;  /* 8 x s32 callback slots for CD-ROM IRQ; cleared by sys_MemClear2(&D, 8) */
+g_irq_cdrom_ctrl_reg_ptr                                = 0x800A263C;  /* pointer to CD-ROM IRQ control/status register */
+g_irq_cdrom_initialized                                 = 0x800A2668;  /* boolean: 0 = not init, then set to 1 */
+g_ings2_vsync_block_ptr                                 = 0x800A1510;  /* pointer to a vsync timing block; *p read for timing calculations */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
