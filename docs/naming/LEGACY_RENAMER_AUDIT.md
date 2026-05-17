@@ -131,14 +131,76 @@ is in line with the original prediction and confirms that this audit
 strategy yields significantly more landed names per cluster than
 freelance proposal-generation.
 
+## What the ings.c cluster audit (2026-05-17) did
+
+Pulled the 33-function band at `0x80016514..0x80017F98` from
+`rename_funcs.py` lines 71-103. **32 of 33 entries Adopted** (97%
+adoption rate -- the highest of any cluster so far). 1 was already
+applied (math_Distance3D_80017748 in batch-6 refinement).
+
+Why so high: ings.c is the system-init / file-load / display-setup
+backbone of the engine.  Most entries are small, deterministic
+PsyQ-style functions with unambiguous semantics from a single read.
+
+**Adopted (32 new names + 3 data names):**
+
+| Address | Legacy name | Verdict |
+|---|---|---|
+| `0x80016514` | `file_LoadAll` | **Adopted** (FileOpen + chunked 0x4000 reads + md_gview_init) |
+| `0x800165F8` | `file_LoadSectors` | **Adopted** (sibling of file_LoadAll) |
+| `0x800166C4` | `disp_CalcFov` | **Adopted** (uses Judge trig table) |
+| `0x80016768` | `disp_SetFramebufferMode` | **Adopted** (writes g_disp_fb_base offsets) |
+| `0x800167AC` | `file_GetFlag0` | **Adopted** (return D_80106A73 & 1) |
+| `0x800167BC` | `file_GetFlag1` | **Adopted** ((D_80106A73 >> 1) & 1) |
+| `0x800167D4` | `file_GetFlag2` | **Adopted** ((D_80106A73 >> 2) & 1) |
+| `0x80016868` | `gpu_EnableDisplay` | **Adopted** (gpu_SetMode(1) wrapper; supersedes katinuki_game_get_katinuki_max_num_80016868 misnomer) |
+| `0x80016888` | `gpu_InitDisplay` | **Adopted** |
+| `0x800168D0` | `gpu_DisableDisplay` | **Adopted** (gpu_SetDispMask(1); supersedes katinuki_*_800168D0 misnomer) |
+| `0x800168F0` | `sys_StubEmpty` | **Adopted** (literal jr ra; nop) |
+| `0x800168F8` | `sys_InitSound` | **Adopted** (snd_PlaySystemSe wrapper) |
+| `0x80016918` | `disp_Init` | **Adopted** (full PSX display init) |
+| `0x80016A18` | `sys_Init` | **Adopted** (top-level: irq + bios_ChangeClearPad + disp_Init + pad init) |
+| `0x80016C3C` | `sys_Panic` | **Adopted** (debug_printf + halt-loop) |
+| `0x80016C74` | `file_ResetDmaFlag` | **Adopted** (3-insn setter) |
+| `0x80016C80` | `file_LoadOverlay` | **Adopted** (debug_printf + sys_Panic on fail) |
+| `0x80016CF8` | `file_LoadSoundData` | **Adopted** (saFidLoad + bb2_memcpy) |
+| `0x80016D78` | `sys_GameInit` | **Adopted** (file_LoadSoundData + katinuki_game_setData + coli_CheckRobEnemy) |
+| `0x80016E40` | `gpu_SetDrawMode` | **Adopted** (8-insn gpu_DrawSync wrapper) |
+| `0x800171AC` | `rng_SetSeed` | **Adopted** (3-insn setter D_800A38BC = a0) |
+| `0x800171B8` | `rng_Next` | **Adopted** (LCG step *0x41C64E6D + 0x7FA9, 15-bit output) |
+| `0x80017714` | `obj_ClearAll` | **Adopted** (8 entries stride 0x34 in g_file_data_buf) |
+| `0x80017738` | `obj_CalcOffset` | **Adopted** (pure (a0<<6)+(a1<<4)) |
+| `0x800177C8` | `math_Distance3D_16` | **Adopted** (math_Distance3D variant with /16 instead of /4 scaling) |
+| `0x80017E8C` | `obj_Clear` | **Adopted** (single-obj clear) |
+| `0x80017EB4` | `obj_UpdatePosition` | **Adopted** (update pos field) |
+| `0x80017EF4` | `obj_AddValue` | **Adopted** (add a1 to field 0) |
+| `0x80017F28` | `scratchpad_Save` | **Adopted** (copy 0xF8 dwords 0x1F800000 -> D_800F5370) |
+| `0x80017F5C` | `scratchpad_Restore` | **Adopted** (reverse direction) |
+| `0x80017F90` | `sys_StubEmpty2` | **Adopted** (jr ra; nop) |
+| `0x80017F98` | `sys_StubEmpty3` | **Adopted** (jr ra; nop) |
+| `0x80017748` | `math_Distance3D` | already adopted (batch-6 refinement) |
+
+**Data names landed by this cluster:**
+
+| Symbol | Address | Why |
+|---|---|---|
+| `g_rng_state` | `0x800A38BC` | LCG state for rng_SetSeed/rng_Next |
+| `g_file_flags_byte` | `0x80106A73` | 8-bit flag byte, bits 0/1/2 = file_GetFlag0/1/2 |
+| `g_scratchpad_save` | `0x800F5370` | 0x3E0-byte main-RAM backup of PSX scratchpad RAM |
+
+**Score:** 32 Adopted / 0 Rejected / 0 Held / 1 already-adopted = 33 total.
+
 ## Pending audit work
 
 The legacy map has ~400 entries. The audit so far has touched:
 - batch-6 refinement (2026-05-17): 17 entries (3 Adopted)
-- sound.c cluster (2026-05-17): 56 entries (28 newly Adopted +
-  5 already-adopted)
+- sound.c cluster (2026-05-17): 56 entries (28 newly Adopted + 5 already)
+- ings.c cluster (2026-05-17): 33 entries (32 newly Adopted + 1 already)
 
-Roughly 327 entries remain.  Suggested next clusters in
+**Cumulative: 63 newly-adopted names + 6 already-adopted = 69 of 106
+audited (65% overall adoption rate).**
+
+Roughly 294 entries remain.  Suggested next clusters in
 `rename_funcs.py` order:
 
 | Lines | Cluster | Approx funcs | Notes |

@@ -468,4 +468,57 @@ g_game_pause_flag               = 0x800F6654;  /* halfword flag; read/written by
 g_round_timer                   = 0x800A3790;  /* word timer; reset to 0x23 (35 frames) by game_ResetTimer */
 g_snd_volume                    = 0x800A33D0;  /* gp-rel word; written by snd_SetVolume */
 
+/* === Legacy renamer audit: ings.c cluster (2026-05-17) === */
+/* 32 high-confidence cross-validated names from `tools/rename_funcs.py` */
+/* (ings.c band, rename_funcs.py lines 71-103). One entry was already */
+/* applied (math_Distance3D_80017748) in batch-6 refinement. Each body */
+/* read from asm/funcs/ and verified against call/load pattern. */
+/* Full triage at `docs/naming/LEGACY_RENAMER_AUDIT.md`. */
+/* File-load helpers (5) */
+file_LoadAll_80016514           = 0x80016514;  /* bios_FileOpen + chunked-read (0x4000) + md_gview_init */
+file_LoadSectors_800165F8       = 0x800165F8;  /* sibling of file_LoadAll, sector-based variant */
+file_ResetDmaFlag_80016C74      = 0x80016C74;  /* 3-insn flag-clear setter */
+file_LoadOverlay_80016C80       = 0x80016C80;  /* calls debug_printf + sys_Panic on failure */
+file_LoadSoundData_80016CF8     = 0x80016CF8;  /* calls saFidLoad + bb2_memcpy */
+/* File flag getters (3) -- each returns one bit of D_80106A73 */
+file_GetFlag0_800167AC          = 0x800167AC;  /* `return D_80106A73 & 1` */
+file_GetFlag1_800167BC          = 0x800167BC;  /* `return (D_80106A73 >> 1) & 1` */
+file_GetFlag2_800167D4          = 0x800167D4;  /* `return (D_80106A73 >> 2) & 1` */
+/* Display / GPU init (8) */
+disp_CalcFov_800166C4           = 0x800166C4;  /* uses Judge table for trig calc */
+disp_SetFramebufferMode_80016768 = 0x80016768; /* writes to g_disp_fb_base + 0x18 */
+gpu_EnableDisplay_80016868      = 0x80016868;  /* gpu_SetMode(1) wrapper */
+gpu_InitDisplay_80016888        = 0x80016888;  /* gpu_SetDispMask(0) + gpu_SetMode(1) + 8007B4D0(g_disp_gp_base) + DrawSync */
+gpu_DisableDisplay_800168D0     = 0x800168D0;  /* gpu_SetDispMask(1) wrapper */
+gpu_SetDrawMode_80016E40        = 0x80016E40;  /* wrapper around gpu_DrawSync */
+disp_Init_80016918              = 0x80016918;  /* full PSX display init: SetMode/SetDebugLevel/InitDrawEnv*2/InitDispEnv*2/SetFramebufferMode */
+/* System init / panic (4) */
+sys_InitSound_800168F8          = 0x800168F8;  /* wrapper around snd_PlaySystemSe */
+sys_Init_80016A18               = 0x80016A18;  /* top-level: irq_DisableInterrupts + bios_ChangeClearPad + disp_Init + pad_press_control */
+sys_Panic_80016C3C              = 0x80016C3C;  /* debug_printf + halt-loop (calls func_800164F8 which is the loop_b_self) */
+sys_GameInit_80016D78           = 0x80016D78;  /* calls file_LoadSoundData + katinuki_game_setData + coli_CheckRobEnemy */
+/* Empty stubs (3) */
+sys_StubEmpty_800168F0          = 0x800168F0;  /* literal `jr ra; nop` */
+sys_StubEmpty2_80017F90         = 0x80017F90;  /* literal `jr ra; nop` */
+sys_StubEmpty3_80017F98         = 0x80017F98;  /* literal `jr ra; nop` */
+/* RNG (2) */
+rng_SetSeed_800171AC            = 0x800171AC;  /* 3-insn setter: D_800A38BC = a0 */
+rng_Next_800171B8               = 0x800171B8;  /* LCG step: 15-bit output, multiplier chain that simplifies to *0x41C64E6D + 0x7FA9 == BB2 LCG constants */
+/* Object table helpers (4) -- all index D_800F6740 (g_file_data_buf) with stride 0x34 */
+obj_ClearAll_80017714           = 0x80017714;  /* clear 8 entries (stride 0x34) of g_file_data_buf */
+obj_CalcOffset_80017738         = 0x80017738;  /* pure math: (a0<<6) + (a1<<4) -- offset into 64-byte row + 16-byte col */
+obj_Clear_80017E8C              = 0x80017E8C;  /* clear single obj at g_file_data_buf + a0*0x34 */
+obj_UpdatePosition_80017EB4     = 0x80017EB4;  /* update pos field of g_file_data_buf[a0] */
+obj_AddValue_80017EF4           = 0x80017EF4;  /* add a1 to field 0 of g_file_data_buf[a0] */
+/* Distance math (1; companion to math_Distance3D_80017748) */
+math_Distance3D_16_800177C8     = 0x800177C8;  /* same as math_Distance3D but `sra 4` instead of `sra 2` -- /16 scaling for larger-range vectors */
+/* Scratchpad save/restore (2) */
+scratchpad_Save_80017F28        = 0x80017F28;  /* copies 0xF8 dwords from 0x1F800000 (scratchpad) to g_scratchpad_save */
+scratchpad_Restore_80017F5C     = 0x80017F5C;  /* opposite direction (g_scratchpad_save -> scratchpad) */
+
+/* === Data names landed by the ings.c cluster audit (3) === */
+g_rng_state                     = 0x800A38BC;  /* LCG state word; written by rng_SetSeed, read+written by rng_Next */
+g_file_flags_byte               = 0x80106A73;  /* 8-bit flag byte; bits 0/1/2 read by file_GetFlag0/1/2 */
+g_scratchpad_save               = 0x800F5370;  /* 0x3E0-byte main-RAM backup of PSX scratchpad RAM (0x1F800000); used by IRQ context save/restore */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
