@@ -191,15 +191,40 @@ def iter_asm_blocks(body: str):
             i += 1
 
 
+def _block_insn_count(block: str) -> int:
+    """Count distinct asm instructions in a single __asm__ template block.
+
+    Sum of SUSPECT + ACCEPTABLE mnemonic occurrences. Single-instruction
+    blocks are codegen hints (allowed per skill §6.1); multi-instruction
+    blocks smuggle function work in concatenated form.
+
+    The block is the C-string content of `__asm__ ( "<here>" )` — strings
+    typically contain a single mnemonic or `\\n`-separated instructions."""
+    return (len(SUSPECT_INLINE_ASM_OPS.findall(block))
+            + len(ACCEPTABLE_INLINE_ASM_OPS.findall(block)))
+
+
 def is_inline_asm_debt(body: str) -> bool:
     asm_blocks = list(iter_asm_blocks(body))
     if not asm_blocks:
         return False
     asm_chars = sum(len(block) for block in asm_blocks)
     asm_ratio = asm_chars / len(body) if body else 0
-    has_suspect = any(SUSPECT_INLINE_ASM_OPS.search(block) for block in asm_blocks)
-    has_acceptable = any(ACCEPTABLE_INLINE_ASM_OPS.search(block) for block in asm_blocks)
-    return has_suspect and (not has_acceptable or asm_ratio > 0.5)
+    suspect_blocks = [b for b in asm_blocks if SUSPECT_INLINE_ASM_OPS.search(b)]
+    if not suspect_blocks:
+        return False
+    has_acceptable = any(ACCEPTABLE_INLINE_ASM_OPS.search(b) for b in asm_blocks)
+    # Single-instruction suspect blocks are §6.1-allowed codegen hints
+    # (e.g. `__asm__ ("sll %0,%1,16" : "=r"(t) : "r"(x))` for (s16)x cast).
+    # Only flag when at least one suspect block carries multiple
+    # instructions — that's the smuggle-work-via-concatenation pattern.
+    multi_insn_suspect = any(_block_insn_count(b) > 1 for b in suspect_blocks)
+    if not multi_insn_suspect:
+        # ALL suspect blocks are single-instruction. Still flag if asm
+        # dominates the function body (cumulative many-narrow-blocks
+        # smuggle = same effect as a file-scope cheat).
+        return asm_ratio > 0.5
+    return not has_acceptable or asm_ratio > 0.5
 
 
 def classify_inline_asm_debt(func: str, src: Path) -> dict:
