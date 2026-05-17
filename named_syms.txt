@@ -2358,6 +2358,9 @@ g_gnd_fog_value_b                                       = 0x800A3424;  /* fog va
 g_gnd_fog_active                                        = 0x800A37D4;  /* currently selected fog value (also used as multi-purpose scratch by other systems -- see main_loop.md) */
 g_gnd_fog_prev                                          = 0x800A3720;  /* snapshot of previously-active fog value */
 
+/* === Per-player slot active flag array (2026-05-17) -- 1 high === */
+g_per_player_slot_flags_20                              = 0x8009BCE4;  /* 20 u8 entries (10 per player x 2 players); bit 0 = active, bits 2/3 = preserved; updated from arg2 bitmask in mode 6 (saTan2InfoInit_8006C1FC) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
