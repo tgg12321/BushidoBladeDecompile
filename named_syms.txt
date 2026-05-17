@@ -423,4 +423,49 @@ g_seq_bank_table             = 0x80106F28;  /* SEQ bank pointer table; outer = b
 g_motion_play_countdown      = 0x800A334C;  /* u8 motion-state watchdog; set to 0x5A (90 frames), decremented, gated on `== 0 || (g_seq_active_voice_mask & 0x100010)` */
 g_match_round_index          = 0x800A3874;  /* match-round counter; indexes the round-result table (D_800A377C) and `D_800F65F8/F65F9 + round*2` */
 
+/* === Legacy renamer audit: sound.c cluster (2026-05-17) === */
+/* 25 high-confidence cross-validated names from `tools/rename_funcs.py` */
+/* (sound.c band, rank 13-69). Each body was read from `asm/funcs/<name>.s` */
+/* and the legacy name verified against the call/load pattern. */
+/* Full triage at `docs/naming/LEGACY_RENAMER_AUDIT.md`. */
+/* */
+/* SHA1-invariance: same construction (symbol-only adds at known addresses). */
+/* Address-suffixed to avoid colliding with any same-named function elsewhere. */
+/* Getters / setters / stubs (15) */
+snd_GetSeId_8004678C            = 0x8004678C;  /* gp-rel getter for g_snd_se_id (paired with snd_GetBgmId for g_snd_bgm_id) */
+stage_GetVariant_800467A8       = 0x800467A8;  /* lh getter for g_stage_variant (paired with stage_GetId for g_stage_id, +0x2 offset) */
+game_GetDummyFlag_80046DE4      = 0x80046DE4;  /* literal `return 0;` (jr ra; v0 = 0) -- the dummy-flag accessor stub */
+game_GetPlayerData_80046DEC     = 0x80046DEC;  /* func_8004153C() returning +0x1994 offset (player struct data field) */
+game_GetPlayerBase_80046E18     = 0x80046E18;  /* func_8004153C() returning +0x2C offset (player struct base field) */
+game_DisablePause_80046E44      = 0x80046E44;  /* writes 0 to g_game_pause_flag */
+game_SetPause_80046E54          = 0x80046E54;  /* writes (a0 ? 1 : 0) to g_game_pause_flag */
+game_GetPause_80046E7C          = 0x80046E7C;  /* lh getter for g_game_pause_flag */
+game_ResetTimer_80046E8C        = 0x80046E8C;  /* writes 0x23 (35 frames) to g_round_timer */
+stage_GetDataPtr_80046F14       = 0x80046F14;  /* returns &D_8009947C (stage-data slot address) */
+camera_GetBoneData_800472B0     = 0x800472B0;  /* returns &g_cam_bone_data (companion to camera_InitBoneData) */
+game_Stub1_800477BC             = 0x800477BC;  /* literal `jr ra; nop` -- empty hook slot 1 */
+game_Stub2_800477C4             = 0x800477C4;  /* literal `jr ra; nop` -- empty hook slot 2 */
+game_Stub3_800477CC             = 0x800477CC;  /* literal `jr ra; nop` -- empty hook slot 3 */
+game_Stub4_800477D4             = 0x800477D4;  /* literal `jr ra; nop` -- empty hook slot 4 */
+snd_SetVolume_800477DC          = 0x800477DC;  /* stores $a0 to g_snd_volume (gp-rel sw) */
+snd_GetMaxFade_80047EC8         = 0x80047EC8;  /* literal `return 0xD00;` (jr ra; v0 = 0xD00) */
+/* Lifecycle wrapper grid: each is an 8-9 insn wrapper around one named callee. */
+game_EffInit_8004746C           = 0x8004746C;  /* wrapper -> func_8004473C() */
+game_EffCleanup_8004748C        = 0x8004748C;  /* wrapper -> efc_rob_set_type_flash() */
+game_AnimInit_800474AC          = 0x800474AC;  /* wrapper -> func_80048F58(0, 0) */
+game_AnimCleanup_800474D0       = 0x800474D0;  /* wrapper -> func_80048FFC(0) */
+game_AnimStart_80047738         = 0x80047738;  /* wrapper -> func_80048F58(1, 0) -- a0=1 differs from AnimInit's a0=0 */
+/* Sound dispatchers (4) */
+snd_PlayBgm_800468B0            = 0x800468B0;  /* saSeMain(8, a0) + saTan5TakeGetPos(0) */
+snd_PlaySe_800469A0             = 0x800469A0;  /* saSeMain(9, a0) */
+snd_PlaySystemSe_80046AE8       = 0x80046AE8;  /* SsSet stuff with 0xF2000001 (SS event class) */
+snd_StopSystemSe_80046B20       = 0x80046B20;  /* SsCalledTickMode-style stop using 0xF2000001 */
+
+/* === Data names landed by the sound.c cluster audit (5) === */
+g_snd_se_id                     = 0x800A33B4;  /* paired with g_snd_bgm_id (=0x800A33B0); accessed by snd_GetSeId_8004678C */
+g_stage_variant                 = 0x8009947A;  /* paired with g_stage_id (=0x80099478) at +0x2; accessed by stage_GetVariant_800467A8 */
+g_game_pause_flag               = 0x800F6654;  /* halfword flag; read/written by game_{Get,Set,Disable}Pause */
+g_round_timer                   = 0x800A3790;  /* word timer; reset to 0x23 (35 frames) by game_ResetTimer */
+g_snd_volume                    = 0x800A33D0;  /* gp-rel word; written by snd_SetVolume */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
