@@ -1232,4 +1232,23 @@ g_motion_shift_state_a                                  = 0x800A3550;  /* shorts
 g_status_up_data_state_a                                = 0x800A371C;  /* word; consumer: single_game_CheckStatusUpDataTotalOver */
 g_status_up_data_state_b                                = 0x800A3769;  /* byte; consumer: single_game_CheckStatusUpDataTotalOver */
 
+/* === Menu-control cluster at 0x800A34F8-3514 (2026-05-17) -- 4 highs === */
+/* Discovered via cluster-consumer analysis: D_800A34F8/350C/3514 are */
+/* the top "naming multiplier" cluster -- 6+ consumer functions all */
+/* reference these together.  text1b.c:14910-15533 shows the pattern: */
+/*   - D_800A34F8 is a packed bitfield with cycling sub-fields */
+/*     (bits 0-3 = rotating slot index, bits 10-12 = sub-cursor, */
+/*      bits 13-15 = main cursor position) */
+/*   - D_800A34FC is a struct pointer assigned from func_8006E49C */
+/*     (the mode-state allocator), accessed at offsets 0x12/0x10/0xE/ */
+/*     0xC/0x28/0x2A/0x30 */
+/*   - D_800A3514 is a pure frame counter (only += 1 or = 0) */
+/*   - func_8006B92C is a menu input handler: parses pad input, */
+/*     decodes direction (1=down, 2=up), navigates cursor, */
+/*     calls func_8005C650 for menu sound effects */
+g_menuctl_state_bitfield                                = 0x800A34F8;  /* packed cursor/slot state */
+g_menuctl_mode_state_ptr                                = 0x800A34FC;  /* current screen's state struct pointer */
+g_menuctl_pad_result_buf                                = 0x800A350C;  /* s16 pad-decode result base (4 entries: 350C/350E/3510/3512) */
+g_menuctl_frame_counter                                 = 0x800A3514;  /* per-frame tick counter (reset to 0, += 1 each frame) */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
