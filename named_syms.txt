@@ -2031,6 +2031,13 @@ g_intro_state_arg                                       = 0x800A360C;  /* arg pa
 g_intro_sprite_data_ptr                                 = 0x800A3610;  /* sprite/vertex data array base; [0xF] and [5+] accessed */
 g_intro_extra_state                                     = 0x800A3614;  /* extra state cell (reset to 0 in init) */
 
+/* === Char-class / ctype table + toupper/tolower (2026-05-17) -- 3 highs === */
+/* From text1b_b.c func_800798CC and func_800798FC: classic libc-style */
+/* char-class lookup + case conversion. */
+g_char_class_table                                      = 0x8009BD8D;  /* 256-byte char-class lookup; bit 1 = is_upper, bit 2 = is_lower */
+bb2_toupper                                             = 0x800798CC;  /* if (class_table[c] & 2) c -= 0x20  (lower -> upper) */
+bb2_tolower                                             = 0x800798FC;  /* if (class_table[c] & 1) c += 0x20  (upper -> lower) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
