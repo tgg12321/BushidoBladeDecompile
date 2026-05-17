@@ -35,17 +35,21 @@ For ~99% of queue items, yes — Lightweight, GCC 2.7.2, PsyQ SDK 3.5, 1998. A p
 
 **If you genuinely believe the cheat is canonical asm**, the path is:
 1. Run `dc.sh scan-hand-coded --func <func>` to get the hand-coded-asm tier
-2. **Autonomous canonical-asm authorization (per user authorization 2026-05-17):** You may self-authorize when ALL of these hold:
-   - Hand-coded scanner returns `STRONG` (S1/S2/S6 GCC-impossible signal fired), OR
-   - The function has been documented as intractable across multiple sessions (e.g., a `feedback_*_intractable.md` memory file exists with ≥10 documented C-source variants all plateauing well above 0 diffs), AND
-   - You have read the target.s yourself and confirmed the divergence pattern is not a known C-decomposable pattern, AND
-   - The §5 coercion ladder has been genuinely exhausted (not just "I'm tired")
-3. **When in doubt, don't self-authorize.** The user's standing rule: *"we have to confirm with extreme confidence that the source was asm not C before using inline asm in any circumstance."* "Extreme confidence" means the evidence is unambiguous — a single STRONG signal alone is not sufficient unless the function's cluster context corroborates.
-4. If authorizing: replace the C body with the canonical retirement form (see §5.7), add to `inline_asm_canonical.txt` with one-line evidence, build, verify, commit. Document the authorization in a memory file.
+2. **Autonomous canonical-asm authorization (per user rule, tightened 2026-05-17):** Self-authorization is permitted ONLY when you have *direct evidence* the original source was hand-coded asm. The bar is "extreme confidence", not "I gave up on pure-C." Direct evidence means ALL of:
+   - Hand-coded scanner returns `STRONG` with a GCC-impossible signal — **S1** (uniform multu/mflo pacing across multiple pairs), **S2** (empty-body branch — both paths converge with zero instructions), or **S6** (BIOS jumptable with delay-slot register setup). These three patterns are mechanically impossible for GCC to emit.
+   - You read the target.s yourself and confirmed the GCC-impossible signal is genuinely present (the scanner can false-positive on edge cases).
+   - Cluster corroboration when possible: ≥1 sibling in the function's k-mer-similar group is already in `inline_asm_canonical.txt`, OR the function's role in the binary (e.g., low-level BIOS trampoline, sin/cos rotation primitive) makes hand-coded asm the obvious authorship.
+3. **The following are NOT evidence of canonical asm** — do not self-authorize on these alone or in combination:
+   - Documented intractability across N C-source attempts ("v1-v24 plateaued"). This is evidence that *you haven't found the right C structure*, not that no C structure exists. Keep pushing the §5 ladder, or surface to the user with the variants documented and let them decide.
+   - High wildcard count in regfix (e.g., "94% of function is overwritten"). This is evidence the *current* C body is wrong, not that a correct C body is impossible. Treat as a §5 challenge.
+   - LICM + strength-reduction divergence, register-allocator divergence, scheduling divergence. These are cc1 behaviors that source structure CAN affect — keep trying.
+   - "I'm running out of context budget" or "this would take hours." These are scheduling concerns, not evidence about the source.
+4. **When in doubt, surface to the user.** The user's standing rule: *"I don't want to authorize unless we are confident it was inline asm."* If you're not confident it was asm — even if you're confident pure-C is hard — escalate, don't self-authorize.
+5. If authorizing (after the gate genuinely passes): replace the C body with the canonical retirement form (see §5.7), add to `inline_asm_canonical.txt` with one-line evidence citing the specific STRONG signal + target.s line, build, verify, commit. Document the authorization in a memory file with the evidence trail.
 
-If the function is on the cheat queue and NOT on the strong-signal hand-coded list AND has fewer than 5 documented intractability attempts, **it's C** — keep pushing the §5 coercion ladder.
+If the function is on the cheat queue and lacks a STRONG signal, **it's C** — keep pushing the §5 coercion ladder until you find the right structure, or build new tooling, or surface variants to the user.
 
-**Asking the user to release / accept partial / accept the cheat as canonical is forbidden while §5 avenues remain unexplored.** Self-authorizing for routine difficulty (no STRONG signal, no documented intractability) is also forbidden.
+**Asking the user to release / accept partial / accept the cheat as canonical is forbidden while §5 avenues remain unexplored.** Self-authorizing without a STRONG GCC-impossible signal is forbidden.
 
 ---
 
@@ -282,7 +286,7 @@ If the existing toolbox can't close the gap, write a new regfix op, new transfor
 
 ### 5.7 Canonical-asm retirement (after §0 authorization gate is met)
 
-If you've cleared the §0 autonomous-authorization gate, this is the retirement form. **Default for most files: inline `__asm__` block.** **Exception for `code6cac.c`: the cheat-supported C body has the structured-loop bug** ([[project_build_and_internals]] §code6cac) — inline `__asm__` blocks cause cc1 to silently drop later functions. Use the bridge form for code6cac instead.
+If — and only if — you've cleared the §0 STRONG-signal gate, this is the retirement form. Apply ONLY when the original source was demonstrably hand-coded asm (not just "we can't decomp it").
 
 **Inline `__asm__` block form** (most files — works for text1b.c, sound.c, etc.):
 
@@ -299,44 +303,9 @@ __asm__(
 
 Source the asm content from `asm/funcs/<func>.s`, stripping the `/* HEX HEX BYTES */` comments. The inline block goes at file scope, replacing the C function body entirely.
 
-**Bridge form** (code6cac.c, or when the function emits rodata jtbls that cc1 generated from a switch):
+**Known limitation: `code6cac.c` cannot use inline `__asm__`** due to the structured-loop bug ([[project_build_and_internals]] §code6cac) — cc1 silently drops later top-level `__asm__` blocks when earlier functions have for/while/do-while loops. If a function in code6cac.c passes the §0 gate, **escalate to the user**: either accept inline-asm-via-CU-split (requires splitting code6cac.c — multi-hour structural work), or accept that the function stays as-is until decomp can match it. Do NOT use bridge+rodata as a canonical-asm form — that pattern is bridge debt, not canonical asm.
 
-1. **Stub the C body:** `void <func>(s32 arg0) { (void)arg0; }`
-2. **Add asmfix bridge:** `<func>: replace_with_asmfile "asm/funcs/<func>.s"` in `asmfix.txt`
-3. **Handle rodata jtbls if present.** If the original function had a `switch` that cc1 compiled to a jumptable, the jtbl bytes were in `code6cac.o(.rodata)`. Removing the switch removes them. Create a new asm rodata file:
-
-```
-# asm/data/<addr>.rodata_<func>_jtbls.s
-.include "macro.inc"
-.section .rodata, "a"
-
-.align 2
-nonmatching jtbl_<addr>
-
-dlabel jtbl_<addr>
-    /* offset addr */ .word .L<target_addr>
-    ...
-.align 2
-enddlabel jtbl_<addr>
-```
-
-   Extract jtbl entry addresses from the disc directly:
-   ```python
-   with open('disc/SLUS_006.63', 'rb') as f:
-       f.seek(jtbl_file_offset)  # = jtbl_addr - 0x80010000 + 0x800
-       data = f.read(num_entries * 4)
-   # struct.unpack each 4-byte little-endian word
-   ```
-
-4. **Insert the new rodata file into `bb2.ld`** at the slot where the original jtbls landed (e.g., BEFORE `code6cac.o(.rodata)` if the jtbls were at the start of that section).
-
-5. **Strip cheats:** `sed -i '/^<func>:/d' regfix.txt regfix_stage2.txt asmfix.txt` (excluding your new replace_with_asmfile line — re-add it after).
-
-6. **Build + verify.** A few sibling regfix rules may break due to `.L<N>` label drift (file-wide GCC numbering shifts when you remove a function's labels). Auto-fix via `dc.sh fix-label-drift` or manually update the rules to use `\.L\d+` regex + the current target labels (read `dc.sh dump-text <sibling_func>` to find them).
-
-7. **Add to `inline_asm_canonical.txt`** with one-line evidence note.
-
-**Reference example:** `single_game_VoiceContorol` (commit c0375a5, 2026-05-17) — code6cac.c bridge form with separate `asm/data/10068.rodata_voice_jtbls.s` for the two switch jumptables.
+After the inline asm block is in place: add to `inline_asm_canonical.txt` with one-line evidence citing the specific STRONG signal (S1/S2/S6 — name the line in target.s), build, verify, commit.
 
 ---
 
@@ -425,7 +394,8 @@ The function should drop off the Cheat Cleanup Queue automatically (it's no long
 - **Don't re-add the cheat under a different name.** If you remove `insert "addu ..."` and replace with `subst ".*" "addu ..."`, you've moved the cheat, not retired it. The auditor will catch both forms.
 - **Don't write `__asm__ volatile("addu $X, $Y, $0/$zero")` with hardcoded `$N` registers and no `%N` placeholders** to replace a lost_codegen regfix cheat. That is the cheat under a different name — same MIPS bytes, no GCC tracking, just moved from regfix.txt into the C source. The audit detects this as `asm_injection` and blocks at commit (added 2026-05-17). The §5.1 trick is the **placeholder-bound** form with `=r`/`r` constraints; see [[feedback-inline-asm-lost-codegen-injection]] for the trap and [[feedback-inline-move-aliasing]] for the legitimate pattern.
 - **Don't introduce multi-instruction inline `__asm__` to fix a lost_codegen cheat.** That's c_body_asm_debt — a different cheat. The §5.1 trick uses SINGLE-instruction `__asm__ volatile("move %0, %1" : "=r"(dst) : "r"(src))` with operand placeholders, NOT hardcoded `$N` literals.
-- **Don't authorize the function as canonical asm unless §0's autonomous-authorization gate is met** (STRONG signal OR documented intractability + target.s confirmation + exhausted §5 ladder). Per `feedback_bridge_is_not_decomp.md`, `feedback_hand_coded_asm_recognition.md`, and `feedback_canonical_asm_retirement.md`.
+- **Don't authorize the function as canonical asm without a STRONG GCC-impossible signal** (S1 / S2 / S6). "Documented intractability" / "we tried 20 C variants" / "huge wildcard count" are NOT evidence the original was asm — they're evidence we haven't found the right C structure. Per `feedback_bridge_is_not_decomp.md`, `feedback_hand_coded_asm_recognition.md`, and `feedback_canonical_asm_retirement.md`.
+- **Don't use the bridge+rodata pattern as a "canonical-asm" retirement form.** That pattern (replace_with_asmfile + separate jtbl rodata file) is BRIDGE DEBT regardless of how it's labeled. Canonical-asm retirement uses inline file-scope `__asm__` blocks. If a function can't take the inline form (e.g., code6cac structured-loop bug), surface to the user — don't relabel a bridge as canonical.
 - **Don't commit with SHA1 mismatch.** The hook should block this, but if you bypass somehow, you've broken the build.
 - **Don't bundle unrelated changes.** Your commit should touch only the cheat-retirement files (regfix.txt, the src/*.c file, and `WORK_QUEUE.md` if regenerated). Avoid `git add -A` — the decomp agent's WIP shouldn't be in your commit (see `feedback_parallel_worktree_work.md`).
 - **Don't quit because "the cheat is structural" / "GCC can't emit this" / "this would require a new pipeline pass."** See §0. Switch technique, build the tool.
