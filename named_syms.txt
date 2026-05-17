@@ -1330,6 +1330,16 @@ mottest_rob_init_andmark                                = 0x800371F8;  /* mottes
 memcard_PollEvents                                      = 0x800378A8;  /* tests 4 events at D_800A37DC/F0/FC/3800; returns 1-4 (which fired) or 0 */
 memcard_AckEvents                                       = 0x8003791C;  /* unconditionally acks/consumes 4 memcard events */
 rcnt0_AckEvents                                         = 0x800379D8;  /* unconditionally acks/consumes 4 rcnt0 events */
+
+/* === Motion-shift sibling functions (2026-05-17) -- 4 highs === */
+/* These 3 setters share a 4-field state set with the existing named */
+/* motion_shift_check_m_hit_stop (which sets D_800A37C8 = 0).  The */
+/* setters all zero D_800A3814 (counter) and set D_800A31F4 = 1 */
+/* (state-machine init). */
+motion_shift_set_mode1                                  = 0x8003879C;  /* sub-id=1, mode=1 (g_motion_state_code=1, g_pad_analog_substate=1) */
+motion_shift_set_mode2                                  = 0x800387C0;  /* sub-id=1, mode=2 */
+motion_shift_set_mode3                                  = 0x800387E8;  /* sub-id=9, mode=3 */
+g_motion_shift_flag2                                    = 0x800A38CC;  /* zeroed in motion_shift_set_mode1/2 but not in mode3 or hit_stop */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
