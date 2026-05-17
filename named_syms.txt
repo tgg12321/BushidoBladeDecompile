@@ -2185,6 +2185,10 @@ g_char_struct_p1_field_6A                               = 0x80101F32;  /* per-ch
 g_char_struct_p1_field_FC                               = 0x80101FC4;  /* per-char field +0xFC; set to a0_val + passed to func_8003E6A0 */
 g_practice_lesson_init_done                             = 0x8010278C;  /* init flag (set to 1 by func_80019534; == 0 means needs init) */
 
+/* === Attack-angle offset table + char field paired (2026-05-17) -- 2 highs === */
+g_attack_angle_offset_table                             = 0x8008EB40;  /* s16 2D table; rows 3-wide indexed by attack-dir, cols by sub-dir; values added to char angle (BAM) for attack direction offset */
+g_char_struct_p2_field_6A                               = 0x8010237E;  /* per-char field +0x6A for P2 (= P1's g_char_struct_p1_field_6A + 0x44C); same 0x11 mode check */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
