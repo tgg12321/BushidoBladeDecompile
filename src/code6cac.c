@@ -428,29 +428,23 @@ range_check:
         tmp = dz >> 3;
         __asm__ volatile("sw\t%0, 0x1F800008" :: "r"(tmp));
 
-        __asm__ volatile(
-            "addu\t$12, %0, $0\n"
-            ".word 0xC9890000\n"
-            ".word 0xC98A0004\n"
-            ".word 0xC98B0008\n"
-            "nop\n"
-            "nop\n"
-            ".word 0x4AA00428\n"
-            : "=r"(sp_addr) : "0"(sp_addr)
-        );
+        __asm__ volatile("addu\t$12, %0, $0" : "=r"(sp_addr) : "0"(sp_addr));
+        __asm__ volatile(".word 0xC9890000");
+        __asm__ volatile(".word 0xC98A0004");
+        __asm__ volatile(".word 0xC98B0008");
+        __asm__ volatile("nop");
+        __asm__ volatile("nop");
+        __asm__ volatile(".word 0x4AA00428");
 
         data = (s32 *)((u8 *)data + 0x10);
         count--;
 
         sp_addr = 0x1F80000C;
         pair = data[1];
-        __asm__ volatile(
-            "addu\t$12, %0, $0\n"
-            ".word 0xE9990000\n"
-            ".word 0xE99A0004\n"
-            ".word 0xE99B0008\n"
-            : "=r"(sp_addr) : "0"(sp_addr)
-        );
+        __asm__ volatile("addu\t$12, %0, $0" : "=r"(sp_addr) : "0"(sp_addr));
+        __asm__ volatile(".word 0xE9990000");
+        __asm__ volatile(".word 0xE99A0004");
+        __asm__ volatile(".word 0xE99B0008");
 
         {
             s32 rd0, rd1, rd2;
@@ -489,13 +483,10 @@ range_check:
         }
 
         sp_addr = 0x1F800000;
-        __asm__ volatile(
-            "addu\t$12, %0, $0\n"
-            ".word 0xC9890000\n"
-            ".word 0xC98A0004\n"
-            ".word 0xC98B0008\n"
-            : "=r"(sp_addr) : "0"(sp_addr)
-        );
+        __asm__ volatile("addu\t$12, %0, $0" : "=r"(sp_addr) : "0"(sp_addr));
+        __asm__ volatile(".word 0xC9890000");
+        __asm__ volatile(".word 0xC98A0004");
+        __asm__ volatile(".word 0xC98B0008");
 
         {
             t4 = (sqrt_val - radius) << 14;
@@ -505,13 +496,10 @@ range_check:
                 thresh = radius * 2 + radius;
                 neg_thresh = -thresh;
 
-                __asm__ volatile(
-                    ".word 0x488C4000\n"
-                    "nop\n"
-                    "nop\n"
-                    ".word 0x4B98003D\n"
-                    :: "r"(t4)
-                );
+                __asm__ volatile(".word 0x488C4000" :: "r"(t4));
+                __asm__ volatile("nop");
+                __asm__ volatile("nop");
+                __asm__ volatile(".word 0x4B98003D");
             }
         }
 
@@ -520,12 +508,9 @@ range_check:
         dy = nodeB[1] - nodeA[1];
         dz = nodeB[2] - nodeA[2];
 
-        __asm__ volatile(
-            ".word 0xE9890000\n"
-            ".word 0xE98A0004\n"
-            ".word 0xE98B0008\n"
-            :: "r"(t4)
-        );
+        __asm__ volatile(".word 0xE9890000" :: "r"(t4));
+        __asm__ volatile(".word 0xE98A0004");
+        __asm__ volatile(".word 0xE98B0008");
         out = (s32 *)((u8 *)out + 0xC);
     }
 
@@ -544,25 +529,19 @@ post_loop:
         tmp = dz >> 3;
         __asm__ volatile("sw\t%0, 0x1F800008" :: "r"(tmp));
 
-        __asm__ volatile(
-            "addu\t$12, %0, $0\n"
-            ".word 0xC9890000\n"
-            ".word 0xC98A0004\n"
-            ".word 0xC98B0008\n"
-            "nop\n"
-            "nop\n"
-            ".word 0x4AA00428\n"
-            : "=r"(sp_addr) : "0"(sp_addr)
-        );
+        __asm__ volatile("addu\t$12, %0, $0" : "=r"(sp_addr) : "0"(sp_addr));
+        __asm__ volatile(".word 0xC9890000");
+        __asm__ volatile(".word 0xC98A0004");
+        __asm__ volatile(".word 0xC98B0008");
+        __asm__ volatile("nop");
+        __asm__ volatile("nop");
+        __asm__ volatile(".word 0x4AA00428");
 
         sp_addr = 0x1F80000C;
-        __asm__ volatile(
-            "addu\t$12, %0, $0\n"
-            ".word 0xE9990000\n"
-            ".word 0xE99A0004\n"
-            ".word 0xE99B0008\n"
-            : "=r"(sp_addr) : "0"(sp_addr)
-        );
+        __asm__ volatile("addu\t$12, %0, $0" : "=r"(sp_addr) : "0"(sp_addr));
+        __asm__ volatile(".word 0xE9990000");
+        __asm__ volatile(".word 0xE99A0004");
+        __asm__ volatile(".word 0xE99B0008");
 
         {
             s32 rd0, rd1, rd2;
@@ -579,12 +558,9 @@ post_loop:
             s32 shift_a, shift_b;
 
             t4 = sum_sq;
-            __asm__ volatile(
-                ".word 0x488CF000\n"
-                "nop\n"
-                "nop\n"
-                :: "r"(t4)
-            );
+            __asm__ volatile(".word 0x488CF000" :: "r"(t4));
+            __asm__ volatile("nop");
+            __asm__ volatile("nop");
 
             t4 = (s32)&sp_buf[0];
             __asm__ volatile(".word 0xE99F0000" :: "r"(t4));
@@ -601,34 +577,25 @@ post_loop:
         }
 
         sp_addr = 0x1F800000;
-        __asm__ volatile(
-            "addu\t$12, %0, $0\n"
-            ".word 0xC9890000\n"
-            ".word 0xC98A0004\n"
-            ".word 0xC98B0008\n"
-            : "=r"(sp_addr) : "0"(sp_addr)
-        );
+        __asm__ volatile("addu\t$12, %0, $0" : "=r"(sp_addr) : "0"(sp_addr));
+        __asm__ volatile(".word 0xC9890000");
+        __asm__ volatile(".word 0xC98A0004");
+        __asm__ volatile(".word 0xC98B0008");
 
         {
             t4 = (sqrt_val - radius) << 14;
             t4 = t4 / sqrt_val;
 
-            __asm__ volatile(
-                ".word 0x488C4000\n"
-                "nop\n"
-                "nop\n"
-                ".word 0x4B98003D\n"
-                :: "r"(t4)
-            );
+            __asm__ volatile(".word 0x488C4000" :: "r"(t4));
+            __asm__ volatile("nop");
+            __asm__ volatile("nop");
+            __asm__ volatile(".word 0x4B98003D");
         }
 
         t4 = (s32)out;
-        __asm__ volatile(
-            ".word 0xE9890000\n"
-            ".word 0xE98A0004\n"
-            ".word 0xE98B0008\n"
-            :: "r"(t4)
-        );
+        __asm__ volatile(".word 0xE9890000" :: "r"(t4));
+        __asm__ volatile(".word 0xE98A0004");
+        __asm__ volatile(".word 0xE98B0008");
     }
 }
 /* kengo:HIGH  |  nm_cpu/cpu_check_run_attack  |  322i  |  +5 near-exact */

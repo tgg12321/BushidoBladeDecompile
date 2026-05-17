@@ -3149,124 +3149,32 @@ func_8002304C: insert "andi $3,$4,0xFFFF" @ 168
 func_8002304C: insert_after "ori $23,$23,0x02B8" @ 17
 func_8002304C: insert_after "lui $23,0x1F80" @ 17
 
-# cpu_check_run_attack: compound regfix (0-based TEXT indices)
 
 # Prologue: register allocation renames
-cpu_check_run_attack: subst "\$16,6" "$2,6" @ 6
-cpu_check_run_attack: subst "\$14," "$24," @ 7
-cpu_check_run_attack: subst "\$13," "$11," @ 8
-cpu_check_run_attack: subst ",\$16,-" ",$2,-" @ 9
-cpu_check_run_attack: subst "\$5," "$9," @ 10
-cpu_check_run_attack: subst "\$14\)" "$24)" @ 10
-cpu_check_run_attack: subst "\$10," "$25," @ 11
-cpu_check_run_attack: subst "\$14\)" "$24)" @ 11
 
 # Setup: derived value renames
-cpu_check_run_attack: subst "\$5," "$9," @ 12
-cpu_check_run_attack: subst "\$13," "$11," @ 14
-cpu_check_run_attack: subst "\$5," "$9," @ 15
-cpu_check_run_attack: subst "\$13," "$11," @ 17
-cpu_check_run_attack: subst "\$10," "$25," @ 18
-cpu_check_run_attack: subst "\$10" "$25" @ 19
-cpu_check_run_attack: subst "\$11," "$10," @ 20
 
 # Jump delay slot: t3->t2
-cpu_check_run_attack: subst "\$11" "$10" @ 32
 
 # BISECT /4 for a2 pointer (TEXT 53-68)
-cpu_check_run_attack: subst "\$2,\$2,1" "$4,$2,1" @ 53
-cpu_check_run_attack: subst "\$3,12" "$2,12" @ 54
-cpu_check_run_attack: subst "\$2,8" "$4,8" @ 57
-cpu_check_run_attack: subst "\$3," "$2," @ 58
-cpu_check_run_attack: delete @ 59
-cpu_check_run_attack: subst "\$3,3" "$2,3" @ 60
-cpu_check_run_attack: subst "\$3,16" "$4,16" @ 61
-cpu_check_run_attack: subst "\$3," "$4," @ 64
-cpu_check_run_attack: delete @ 65
-cpu_check_run_attack: subst "\$2,\$3,3" "$4,$4,3" @ 66
-cpu_check_run_attack: subst "\$2,\$2,2" "$2,$4,2" @ 68
 
 # BISECT /4 for a3 pointer (TEXT 75-89)
-cpu_check_run_attack: subst "\$3,12" "$2,12" @ 75
-cpu_check_run_attack: subst "\$2,8" "$4,8" @ 78
-cpu_check_run_attack: subst "\$3," "$2," @ 79
-cpu_check_run_attack: delete @ 80
-cpu_check_run_attack: subst "\$3,3" "$2,3" @ 81
-cpu_check_run_attack: subst "\$3,16" "$4,16" @ 82
-cpu_check_run_attack: subst "\$3," "$4," @ 85
-cpu_check_run_attack: delete @ 86
-cpu_check_run_attack: subst "\$2,\$3,3" "$4,$4,3" @ 87
-cpu_check_run_attack: subst "\$2,\$2,2" "$2,$4,2" @ 89
 
 # RANGE CHECK delay slot fills (TEXT 104-122)
-cpu_check_run_attack: subst "\$11" "$10" @ 104
-cpu_check_run_attack: subst "\$11" "$10" @ 110
-cpu_check_run_attack: subst "\$11" "$10" @ 116
-cpu_check_run_attack: fill_delay @ 105 <- 107
-cpu_check_run_attack: fill_delay @ 108 <- 110
-cpu_check_run_attack: fill_delay @ 111 <- 113
-cpu_check_run_attack: fill_delay @ 114 <- 116
-cpu_check_run_attack: fill_delay @ 117 <- 119
-cpu_check_run_attack: fill_delay @ 120 <- 122
 
 # POST RANGE CHECK: sra reorder + data ptr rename (TEXT 126-136)
-cpu_check_run_attack: subst "\$14" "$24" @ 132
-cpu_check_run_attack: subst "\$14" "$24" @ 132
-cpu_check_run_attack: subst "\$5," "$9," @ 136
-cpu_check_run_attack: subst "\$14\)" "$24)" @ 136
 
 # IN-LOOP RANGE CHECK: pair + base renames (TEXT 145-161)
-cpu_check_run_attack: subst "\$5," "$9," @ 145
-cpu_check_run_attack: subst "\$4," "$3," @ 148
-cpu_check_run_attack: subst "\$13," "$11," @ 150
-cpu_check_run_attack: subst "\$5," "$9," @ 151
-cpu_check_run_attack: subst "\$13," "$11," @ 154
 
 # SQRT SECTION renames (TEXT 155-161)
-cpu_check_run_attack: subst "\$5," "$9," @ 156
-cpu_check_run_attack: subst "\$13," "$11," @ 158
-cpu_check_run_attack: subst "\$5," "$9," @ 159
-cpu_check_run_attack: subst "\$13," "$11," @ 161
 
 # FIRST DIVISION SECTION (TEXT 176-198)
-cpu_check_run_attack: subst "srl\t\$4,\$4" "srl\t$3,$4" @ 176
-cpu_check_run_attack: subst "\$12,\$4,\$10" "$2,$3,$25" @ 179
-cpu_check_run_attack: subst "\$12,\$12" "$2,$2" @ 180
-cpu_check_run_attack: subst "\$10,0\(\$14\)" "$25,0($24)" @ 181
-cpu_check_run_attack: subst "\$12,\$4" "$2,$3" @ 182
-cpu_check_run_attack: subst "\$4," "$3," @ 183
-cpu_check_run_attack: subst "\$4," "$3," @ 187
-cpu_check_run_attack: subst "\$12," "$2," @ 189
-cpu_check_run_attack: subst "\$12" "$3" @ 192
-cpu_check_run_attack: subst "\$10," "$25," @ 193
-cpu_check_run_attack: subst "\$10" "$25" @ 194
-cpu_check_run_attack: subst "\$11," "$10," @ 195
-cpu_check_run_attack: insert_after "addu\t$12,$3,$zero" @ 185
 
 # POST-LOOP SECOND RANGE CHECK (TEXT 229-235)
-cpu_check_run_attack: subst "addu\t\$12,\$4,\$zero" "lui\t$18,0x1F80" @ 230
-cpu_check_run_attack: subst "lbu\t\$2," "lbu\t$3," @ 233
-cpu_check_run_attack: subst "lui\t\$18,.*" "nop" @ 235
 
 # SECOND DIVISION SECTION (TEXT 252-270)
-cpu_check_run_attack: subst "srl\t\$2,\$4" "srl\t$3,$4" @ 252
-cpu_check_run_attack: subst "\$12,\$2,\$10" "$2,$3,$25" @ 255
-cpu_check_run_attack: subst "\$12,\$12" "$2,$2" @ 256
-cpu_check_run_attack: subst "\$12,\$2" "$2,$3" @ 257
-cpu_check_run_attack: subst "\$2," "$3," @ 258
-cpu_check_run_attack: subst "\$2," "$3," @ 262
-cpu_check_run_attack: subst "\$12," "$2," @ 264
-cpu_check_run_attack: subst "\$12" "$3" @ 267
-cpu_check_run_attack: subst "nop" "addu\t$12,$3,$zero" @ 269
 
 # REORDER rules (Phase 4: post-delete + post-insert indices)
-cpu_check_run_attack: reorder 190,191,192,193,194,195,196,197,198,189 @ 189-198
-cpu_check_run_attack: reorder 58,57 @ 57-58
-cpu_check_run_attack: reorder 63,62 @ 62-63
-cpu_check_run_attack: reorder 77,76 @ 76-77
-cpu_check_run_attack: reorder 82,81 @ 81-82
-cpu_check_run_attack: reorder 117,116 @ 116-117
-cpu_check_run_attack: reorder 206,205 @ 205-206
 # InitFadePanel: scratchpad write -- target uses $t9 ($25), GCC picked $v0 ($2)
 InitFadePanel: $2 <-> $25 @ 0-2
 # func_800550E8: byte-array indexing into D_80101EC8 -- target keeps 0x415 offset on lbu/sb; GCC pre-folds it. Reverse via 3 substs.
