@@ -2279,6 +2279,16 @@ g_memcard_op_input_flag                                 = 0x800A31E8;  /* input 
 g_memcard_op_result_code                                = 0x800A37F4;  /* result code (-1/-3 = errors, 1-4 = poll result codes) */
 g_memcard_op_completion_code                            = 0x800A3890;  /* copy of g_memcard_op_result_code at end (caller reads this) */
 
+/* === sys_GameInit reset cluster (2026-05-17) -- 6 highs === */
+/* From ings.c sys_GameInit around line 427-436: state cells reset */
+/* during the game-data init phase. */
+g_init_screen_rect                                      = 0x800A30D4;  /* 16-byte Rect used as draw target (read as *Rect at line 317) */
+g_sys_init_byte_a                                       = 0x800A3744;  /* one of 3 init bytes reset in sys_GameInit */
+g_sys_init_byte_b                                       = 0x800A3745;
+g_sys_init_byte_c                                       = 0x800A3746;
+g_sys_init_flag                                         = 0x800A36F9;  /* init flag reset in sys_GameInit */
+g_sys_init_substate                                     = 0x800A3690;  /* paired init substate */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
