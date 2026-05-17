@@ -3670,11 +3670,6 @@ saFidLoad: delete @ 46
 saFidLoad: insert "sra	$2,$2,16" @ 47
 saFidLoad: insert_label ".LfuncC4C0_target:" @ 48
 saFidLoad: subst "\.L\d+" ".LfuncC4C0_target" @ 40
-func_80048530: subst "addu\s+\$8,\$4,\$zero" "addu $v1,$a0,$zero" @ 1
-func_80048530: subst "addu\s+\$5,\$5,\$8" "addu $a1,$a1,$v1" @ 3
-func_80048530: insert_after "addu $t0,$v1,$zero" @ 3
-func_80048530: subst "addu\s+\$3,\$8,\$2" "addu $v1,$v0,$v1" @ 8
-func_80048530: reorder 28,29,30,31,32,33,27 @ 27-33
 func_8004A09C: reorder 66,67,68,65,69 @ 65-69
 
 # func_800644FC: 6-callee-saved bits dispatcher; LICM unhoist + 2 nop fills
@@ -5044,3 +5039,8 @@ func_80052720: delete @ 11
 func_80052720: delete @ 13
 func_80052720: delete @ 14
 
+func_80048530: subst "addu\s+\$8,\$4,\$zero" "addu $v1,$a0,$zero" @ 1
+func_80048530: subst "addu\s+\$5,\$5,\$8" "addu $a1,$a1,$v1" @ 3
+func_80048530: subst "addu\s+\$3,\$8,\$2" "addu $v1,$v0,$v1" @ 8
+func_80048530: reorder 9,4,5,6,7,8 @ 4-9
+func_80048530: reorder 28,29,30,31,32,33,27 @ 27-33
