@@ -1805,6 +1805,26 @@ g_replay_camera_mode                                    = 0x800A3740;  /* mode e
 g_text1b_glyph_buf_e                                    = 0x800F1168;  /* additional glyph buffer slot in the same family as g_text1b_slot_a/b/c_flags */
 g_irq_dispatch_counter                                  = 0x800F19BC;  /* IRQ dispatch sequence counter (already noted as g_cdrom_init_counter elsewhere in IRQ subsystem) */
 
+/* === Camera matrix individual elements (2026-05-17) -- 8 highs === */
+/* The camera matrix at g_camera_matrix_data (0x800EEDB0) is a 9 s16 */
+/* matrix laid out at offsets +0..+0x10 (stride 2).  Element [0] is */
+/* the existing g_cam_matrix (identity 0x1000); elements [1..8] are: */
+g_cam_matrix_m1                                         = 0x800EEDB2;  /* cos-derived (Y-projection), camera_InitMatrix sets to -((s32)(g_cam_fov_x<<12)/g_cam_fov_div) */
+g_cam_matrix_m2                                         = 0x800EEDB4;  /* always 0 in init */
+g_cam_matrix_m3                                         = 0x800EEDB6;  /* always 0 */
+g_cam_matrix_m4                                         = 0x800EEDB8;  /* always 0 */
+g_cam_matrix_m5                                         = 0x800EEDBA;  /* always 0 */
+g_cam_matrix_m6                                         = 0x800EEDBC;  /* always 0 */
+g_cam_matrix_m7                                         = 0x800EEDBE;  /* sin-derived (Z-projection), -((s32)(g_cam_fov_z<<12)/g_cam_fov_div) */
+g_cam_matrix_m8                                         = 0x800EEDC0;  /* identity 0x1000 (bottom-right) */
+
+/* === Camera bone data init halves (2026-05-17) -- 3 highs === */
+/* From sound.c camera_InitBoneData (line 460): copies 32-byte */
+/* g_cam_bone_data from D_80101E08, then halves 3 specific s16 fields. */
+g_cam_bone_data_template                                = 0x80101E08;  /* 32-byte source block copied to g_cam_bone_data on init */
+g_cam_bone_data_h0                                      = 0x800EEDD6;  /* s16 field halved by camera_InitBoneData (h >> 1) */
+g_cam_bone_data_h1                                      = 0x800EEDD8;  /* s16 field halved by camera_InitBoneData; new_var pointer base */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
