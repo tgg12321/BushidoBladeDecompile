@@ -1953,6 +1953,11 @@ g_cd_playback_flag_a                                    = 0x80101E64;  /* 0/1 st
 g_cd_playback_flag_b                                    = 0x80101E68;  /* 0/1 state flag (paired) */
 g_cd_playback_bcd_pos                                   = 0x80101E6C;  /* BCD-encoded current CD frame position */
 
+/* === Memcard file-list state (2026-05-17) -- 3 highs === */
+g_memcard_file_list                                     = 0x80102810;  /* base of memcard file-list array (filled by bios_firstfile_B; stride 0x28 per file entry) */
+g_memcard_file_count                                    = 0x800A38C8;  /* number of files found in memcard scan */
+g_memcard_file_handle_current                           = 0x800A3794;  /* current open file handle from bios_FileOpen_B (saved across read/write) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
