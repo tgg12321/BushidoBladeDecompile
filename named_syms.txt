@@ -2345,6 +2345,11 @@ g_char_v0_pointer_table                                 = 0x800A3860;  /* 4-byte
 g_practice_halfword_table                               = 0x80102760;  /* u16 table base; D + idx*2 = idx'th halfword */
 g_input_idle_flag                                       = 0x800A3804;  /* bool (v < 1); paired with D_800A3817 != check for state change detect */
 
+/* === Replay camera init + buki pre-hit args (2026-05-17) -- 3 highs === */
+g_replay_camera_init_flag                               = 0x800A3400;  /* reset to 0 in replay_camera_Init setup */
+g_buki_pre_hit_arg                                      = 0x800A3404;  /* = 0x1010 default; passed to coli_CheckBukiPreHit_80088088 */
+g_buki_pre_hit_arg_alt                                  = 0x800A340C;  /* paired with _arg (init to same value, later set to _arg) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
