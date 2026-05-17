@@ -2386,6 +2386,13 @@ g_char_lookup_table_b                                   = 0x8008E5CC;  /* siblin
 g_char_lookup_table_c                                   = 0x8008E6A4;  /* another per-char data table */
 g_char_id_saved_d                                       = 0x800A36C8;  /* companion to g_char_id_saved_a/b; preserved during char_id context-save */
 
+/* === Misc state cells in code6cac_c_mid.c (2026-05-17) -- 5 highs === */
+g_result_timer_complete_flag                            = 0x800A333C;  /* = 0 reset, != 0 = result timer complete; tested before timer countdown */
+g_memcard_op_alt_handle                                 = 0x800A31F8;  /* alt memcard op handle (from func_80037D14 result) */
+g_input_pause_pending_clear                             = 0x800A3204;  /* != 0 = clear pause-menu state on next frame */
+g_input_retry_counter_a                                 = 0x800A331C;  /* paired retry counter; ++ per failed input */
+g_input_retry_counter_b                                 = 0x800A3320;  /* paired counter (sibling) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
