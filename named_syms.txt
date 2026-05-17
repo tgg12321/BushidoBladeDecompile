@@ -1546,6 +1546,34 @@ g_text1a_color_blue                                     = 0x800A323C;  /* 12-bit
 g_shadow_tex_color                                      = 0x800A3364;  /* shadow texture color (0xF0F0F0 = near-white default) */
 g_shadow_tex_state_a                                    = 0x800A3218;  /* shadow texture state A; converted to bool via `< 1u` */
 g_shadow_tex_state_b                                    = 0x800A321C;  /* shadow texture state B (paired with _a); == 0 check */
+
+/* === Kengo-HIGH function name promotions (2026-05-17) -- 18 highs === */
+/* Functions marked with `kengo:HIGH` comments in src/ -- Kengo (PS2 */
+/* sequel) reused most of BB2's engine code, so its symbol names are */
+/* generally accurate for BB2 functions where the function body matches. */
+/* These were noted in src/ comments but never promoted into */
+/* named_syms.txt. */
+single_game_setModeRequest                              = 0x8001924C;  /* in code6cac.c */
+md_game_rob_data_init                                   = 0x8001F860;
+single_game_CheckStatusUpDataTotalOver                  = 0x8002006C;
+single_game_SetAbilityData                              = 0x800206B0;
+camera_set_zoom                                         = 0x80023C30;
+special_camera_Init                                     = 0x8002D320;
+saTan2LinePrimInit                                      = 0x8002EA24;
+coli_check_circle_hit_line                              = 0x8002FF20;
+special_camera_Exec                                     = 0x80036D88;
+md_game_check_change_sub_mode                           = 0x80054F68;
+cpu_side_move_dir_2                                     = 0x8003C2C0;
+damage_DebugDisp                                        = 0x80038148;
+pad_ClearAppliBuffer                                    = 0x8003A6FC;
+motion_make_table                                       = 0x80082D34;
+coli_HitPauseKatana_2                                   = 0x80089D10;
+cpu_side_move_dir_3                                     = 0x8008C184;
+saEft00Add                                              = 0x800826CC;
+efc_rob_set_type_flash                                  = 0x80044B30;
+/* Skipped: replay_camera_get_attack_number at 0x8003E6A0 -- name */
+/* collides with same-named real impl that BB2's wrapper at this addr */
+/* calls (already named separately as replay_camera_get_attack_number_2arg). */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
