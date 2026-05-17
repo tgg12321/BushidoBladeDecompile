@@ -1967,6 +1967,14 @@ g_gpu_prim_packet_header_1                              = 0x8009BF28;  /* second
 g_gpu_prim_packet_header_2                              = 0x8009BF2C;  /* third word: rect extent (=arg0[1]) */
 g_gpu_unknown_reg_ptr                                   = 0x8009BF5C;  /* pointer to a GPU control register (written via *p = arg1) */
 
+/* === Voice-slot 24-entry allocator state (2026-05-17) -- 3 highs === */
+/* From main.c around line 870: a 24-entry slot allocator with 3 parallel */
+/* arrays.  Each slot has a flag byte (bits 0/1 set when active) plus */
+/* two s16 fields stored at 0x10-byte stride. */
+g_voice_slot_24_flags                                   = 0x800F65E0;  /* 24-byte flag array (one per voice slot); OR'd with 3 to mark active */
+g_voice_slot_24_arr_a                                   = 0x80102A78;  /* s16 array, 0x10-byte stride per entry, 24 entries */
+g_voice_slot_24_arr_b                                   = 0x80102A7A;  /* s16 array paired with _a (offset +2) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
