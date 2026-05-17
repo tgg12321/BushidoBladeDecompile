@@ -1287,4 +1287,11 @@ g_practice_unlock_anim_id                               = 0x800A38A4;  /* unlock
 g_practice_lesson_progress                              = 0x800A38E2;  /* lesson progress counter (0x64 = complete) */
 g_practice_lesson_char_id                               = 0x8010277C;  /* character ID being practiced */
 
+/* === Function names from debug-string analysis (2026-05-17) -- 4 highs === */
+/* Functions whose debug_printf strings reveal their purpose. */
+marionation_GetFrameOffset                              = 0x80044FA0;  /* fetches byte offset for an animation frame; infinite-loops on "Marionation over flow" (Marionation = BB2's engine) */
+eff_FrameUpdate                                         = 0x80061064;  /* per-frame effect-system update: processes 28 effect slots, reports "eff prim over" if primitive budget (~450) exceeded */
+spu_FlushVoiceChannels                                  = 0x80088740;  /* clears SPU control regs, polls voice-status (mask 0x7FF) with timeout, prints "SPU:T/O" on failure */
+gpu_DrawTimeoutCheck                                    = 0x8007DC9C;  /* checks if GPU draw exceeded vsync window (>0xF0000 cycles); prints g_str_gpu_timeout + "func=(%08x)(%08x,%08x)" + recovers state */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
