@@ -837,4 +837,102 @@ g_pad_press_tick_counter        = 0x800A3924;  /* tick counter in pad-press code
 /* the remaining 1032 unnamed D_* globals (refs mostly <= 5). */
 g_scratchpad_ptr_a8             = 0x800A3480;  /* -> 0x1F8000A8, sibling of A4/AC/B8 scratchpad cache */
 
+/* === Rodata string literals (2026-05-17) -- 89 entries === */
+/* Auto-generated names derived from .asciz content via bb2_string_names.py. */
+/* Each name documents the actual string at that address; suffix `_fmt` */
+/* marks format strings (contain %d/%s/%x etc).  String content shown as */
+/* a comment for searchability. */
+/* */
+/* Coverage: all 89 unnamed-with-.asciz rodata labels in asm/data/*.s. */
+/* All other rodata strings were already named (34 g_str_* from earlier work). */
+g_str_cr_n_80010834_fmt                              = 0x80010834;  /* '%sCR%3d\n' */
+g_str_co_n_80010840_fmt                              = 0x80010840;  /* '%sCO%3d\n' */
+g_str_bu_800109BC_fmt                                = 0x800109BC;  /* 'bu%1d%1d:%s' */
+g_str_bu_800109C8_fmt                                = 0x800109C8;  /* 'bu%1d%1d:' */
+g_str_multipul_model_80010D8C                        = 0x80010D8C;  /* 'Multipul Model' */
+g_str_path_80010DEC                                  = 0x80010DEC;  /* 'DATA1\\HAND.DAT' (extends to a long pipe-delimited file list) */
+g_str_marionation_overflow_8001528C_fmt              = 0x8001528C;  /* 'Marionation over flow. No.%d (-%dbyte)\n' (the famous engine panic) */
+g_str_destruction_tiny_model_80015840                = 0x80015840;  /* 'Destruction tiny model.\n' */
+g_str_common_vab_start_800158B4_fmt                  = 0x800158B4;  /* 'common_vab start:%08x\n' */
+g_str_vab_id_mistake_800158CC_fmt                    = 0x800158CC;  /* 'vab id:%d mistake\n' */
+g_str_eff_prim_over_800158E0_fmt                     = 0x800158E0;  /* 'eff prim over :%d \n' */
+g_str_warning_800159A0                               = 0x800159A0;  /* 'warning\n' */
+g_str_hex_lower_80015A68                             = 0x80015A68;  /* '0123456789abcdef' (printf hex digit table) */
+g_str_null_marker_80015A7C                           = 0x80015A7C;  /* '(null)' (printf null-pointer marker) */
+g_str_hex_upper_80015A84                             = 0x80015A84;  /* '0123456789ABCDEF' */
+g_str_hex_upper_80015C7C                             = 0x80015C7C;  /* '0123456789ABCDEF' (duplicate in another TU) */
+g_str_hex_lower_80015C90                             = 0x80015C90;  /* '0123456789abcdef' (duplicate in another TU) */
+g_str_tpage_80015D58_fmt                             = 0x80015D58;  /* 'tpage: (%d,%d,%d,%d)\n' (PsyQ libgpu sys.c) */
+g_str_clut_80015D70_fmt                              = 0x80015D70;  /* 'clut: (%d,%d)\n' */
+g_str_clip_80015D80_fmt                              = 0x80015D80;  /* 'clip (%3d,%3d)-(%d,%d)\n' */
+g_str_ofs_80015D98_fmt                               = 0x80015D98;  /* 'ofs  (%3d,%3d)\n' */
+g_str_tw_80015DA8_fmt                                = 0x80015DA8;  /* 'tw   (%d,%d)-(%d,%d)\n' */
+g_str_dtd_80015DC0_fmt                               = 0x80015DC0;  /* 'dtd   %d\n' */
+g_str_dfe_80015DCC_fmt                               = 0x80015DCC;  /* 'dfe   %d\n' */
+g_str_disp_80015DD8_fmt                              = 0x80015DD8;  /* 'disp   (%3d,%3d)-(%d,%d)\n' */
+g_str_screen_80015DF4_fmt                            = 0x80015DF4;  /* 'screen (%3d,%3d)-(%d,%d)\n' */
+g_str_isinter_80015E10_fmt                           = 0x80015E10;  /* 'isinter %d\n' */
+g_str_isrgb24_80015E1C_fmt                           = 0x80015E1C;  /* 'isrgb24 %d\n' (precedes the libgpu sys.c $Id stamp) */
+g_str_resetgraph_jtb_env_80015E5C_fmt                = 0x80015E5C;  /* 'ResetGraph:jtb=%08x,env=%08x\n' */
+g_str_resetgraph_80015E7C_fmt                        = 0x80015E7C;  /* 'ResetGraph(%d)...\n' */
+g_str_setgraphreverse_80015E90_fmt                   = 0x80015E90;  /* 'SetGraphReverse(%d)...\n' */
+g_str_setgraphdebug_80015EA8_fmt                     = 0x80015EA8;  /* 'SetGraphDebug:level:%d,type:%d reverse:%d\n' */
+g_str_setgrapque_80015ED4_fmt                        = 0x80015ED4;  /* 'SetGrapQue(%d)...\n' */
+g_str_drawsynccallback_80015EE8_fmt                  = 0x80015EE8;  /* 'DrawSyncCallback(%08x)...\n' */
+g_str_rect_80015F38_fmt                              = 0x80015F38;  /* '(%d,%d)-(%d,%d)\n' (PsyQ generic Rect fmt) */
+g_str_libgpu_label_80015F4C_fmt                      = 0x80015F4C;  /* '%s:' (label prefix used by libgpu prints) */
+g_str_moveimage_80015F74                             = 0x80015F74;  /* 'MoveImage' */
+g_str_clearotagr_80015F98_fmt                        = 0x80015F98;  /* 'ClearOTagR(%08x,%d)...\n' */
+g_str_drawotagenv_80015FDC_fmt                       = 0x80015FDC;  /* 'DrawOTagEnv(%08x,&08x)...\n' */
+g_str_func_call_80016044_fmt                         = 0x80016044;  /* 'func=(%08x)(%08x,%08x)\n' */
+g_str_sync_ready_800161C8_fmt                        = 0x800161C8;  /* '%s:(%s) Sync=%s, Ready=%s\n' (CDROM cmd status) */
+g_str_diskerror_800161E4                             = 0x800161E4;  /* 'DiskError: ' */
+g_str_com_code_800161F0_fmt                          = 0x800161F0;  /* 'com=%s,code=(%02x:%02x)\n' (CDROM error fmt) */
+g_str_cdrom_unknown_intr_8001620C                    = 0x8001620C;  /* 'CDROM: unknown intr' */
+g_str_paren_n_80016220_fmt                           = 0x80016220;  /* '(%d)\n' */
+g_str_cd_sync_80016240                               = 0x80016240;  /* 'CD_sync' */
+g_str_cd_ready_80016248                              = 0x80016248;  /* 'CD_ready' */
+g_str_dots_80016254_fmt                              = 0x80016254;  /* '%s...\n' */
+g_str_no_param_8001625C_fmt                          = 0x8001625C;  /* '%s: no param\n' */
+g_str_cd_cw_8001626C                                 = 0x8001626C;  /* 'CD_cw' */
+g_str_cd_init_800162A8                               = 0x800162A8;  /* 'CD_init:' */
+g_str_addr_800162B4_fmt                              = 0x800162B4;  /* 'addr=%08x\n' */
+g_str_cd_datasync_800162C0                           = 0x800162C0;  /* 'CD_datasync' */
+g_str_null_angled_800162CC                           = 0x800162CC;  /* '<NULL>' (debug-print null marker, distinct from "(null)" at 0x80015A7C) */
+g_str_cdread_sector_error_800162D4                   = 0x800162D4;  /* 'CdRead: sector error\n' */
+g_str_cdread_shell_open_800162EC                     = 0x800162EC;  /* 'CdRead: Shell open...\n' */
+g_str_cdread_retry_80016304                          = 0x80016304;  /* 'CdRead: retry...\n' */
+g_str_vsync_timeout_80016318                         = 0x80016318;  /* 'VSync: timeout\n' */
+g_str_unexpected_interrupt_8001635C_fmt              = 0x8001635C;  /* 'unexpected interrupt(%04x)\n' */
+g_str_intr_timeout_80016378_fmt                      = 0x80016378;  /* 'intr timeout(%04x:%04x)\n' */
+g_str_dma_bus_error_80016394_fmt                     = 0x80016394;  /* 'DMA bus error: code=%08x\n' */
+g_str_madr_800163B0_fmt                              = 0x800163B0;  /* 'MADR[%d]=%08x\n' */
+g_str_wait_reset_800163E8                            = 0x800163E8;  /* 'wait (reset)' */
+g_str_wait_wrdy_h_l_800163F8                         = 0x800163F8;  /* 'wait (wrdy H -> L)' */
+g_str_wait_dmaf_clear_w_8001640C                     = 0x8001640C;  /* 'wait (dmaf clear/W)' */
+g_str_r_8009BBEC                                     = 0x8009BBEC;  /* 'R' (single-char label) */
+g_str_r_8009BBFC                                     = 0x8009BBFC;  /* 'R' (duplicate in another TU) */
+g_str_on_bbm_800A3114                                = 0x800A3114;  /* 'ON.BBM' (character motion file) */
+g_str_gs_bbm_800A311C                                = 0x800A311C;  /* 'GS.BBM' */
+g_str_gn_bbm_800A3124                                = 0x800A3124;  /* 'GN.BBM' */
+g_str_mode_network_800A3150                          = 0x800A3150;  /* 'NETWORK' (game mode name) */
+g_str_mode_team_800A3158                             = 0x800A3158;  /* 'TEAM' */
+g_str_mode_vs_800A3160                               = 0x800A3160;  /* 'VS' */
+g_str_mode_vscpu_800A3164                            = 0x800A3164;  /* 'VSCPU' */
+g_str_mode_story_800A316C                            = 0x800A316C;  /* 'STORY' */
+g_str_c777_800A3178                                  = 0x800A3178;  /* '~c777' (color/clut code) */
+g_str_c737_800A3180                                  = 0x800A3180;  /* '~c737' */
+g_str_pct_s5d_800A3188_fmt                           = 0x800A3188;  /* '%s%5d' */
+g_str_pct_s3d_n_800A3190_fmt                         = 0x800A3190;  /* '%s%3d\n' */
+g_str_c4d_800A3198_fmt                               = 0x800A3198;  /* '%sC%4d' */
+g_str_cl3x_800A31A0_fmt                              = 0x800A31A0;  /* '%sCL%3x' */
+g_str_pct_s3x_n_800A31A8_fmt                         = 0x800A31A8;  /* '%s%3x\n' */
+g_str_pct_s5d_n_800A31B0_fmt                         = 0x800A31B0;  /* '%s%5d\n' */
+g_str_o4d_n_800A31B8_fmt                             = 0x800A31B8;  /* '%sO%4d\n' */
+g_str_l4d_n_800A31C0_fmt                             = 0x800A31C0;  /* '%sL%4d\n' */
+g_str_m4d_n_800A31C8_fmt                             = 0x800A31C8;  /* '%sM%4d\n' */
+g_str_d4d_n_800A31D0_fmt                             = 0x800A31D0;  /* '%sD%4d\n' */
+g_str_pct_s_800A31DC_fmt                             = 0x800A31DC;  /* '%s' */
+g_str_sio_800A3210                                   = 0x800A3210;  /* 'sio:' (memcard device prefix used by bios_FileOpen_B) */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
