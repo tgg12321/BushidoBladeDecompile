@@ -2327,6 +2327,17 @@ g_scratchpad_ptr_6a                                     = 0x800A34AC;  /* -> 0x1
 g_scratchpad_ptr_6c                                     = 0x800A34B0;  /* -> 0x1F80006C */
 g_scratchpad_ptr_70                                     = 0x800A34B4;  /* -> 0x1F800070 */
 g_scratchpad_ptr_74                                     = 0x800A34B8;  /* -> 0x1F800074 */
+g_scratchpad_ptr_80                                     = 0x800A34BC;  /* -> 0x1F800080 */
+g_scratchpad_ptr_82                                     = 0x800A34C0;  /* -> 0x1F800082 */
+g_scratchpad_ptr_84                                     = 0x800A34C4;  /* -> 0x1F800084 */
+g_scratchpad_ptr_88                                     = 0x800A34C8;  /* -> 0x1F800088 */
+g_scratchpad_ptr_8c                                     = 0x800A34CC;  /* -> 0x1F80008C */
+g_scratchpad_ptr_90                                     = 0x800A34D0;  /* -> 0x1F800090 */
+g_scratchpad_ptr_98                                     = 0x800A34D4;  /* -> 0x1F800098 */
+g_scratchpad_ptr_9a                                     = 0x800A34D8;  /* -> 0x1F80009A */
+g_scratchpad_ptr_9c                                     = 0x800A34DC;  /* -> 0x1F80009C */
+g_scratchpad_ptr_9e                                     = 0x800A34E0;  /* -> 0x1F80009E */
+g_scratchpad_ptr_a0                                     = 0x800A34E4;  /* -> 0x1F8000A0 */
 
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
