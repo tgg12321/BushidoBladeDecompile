@@ -2,9 +2,9 @@
 
 **Medium confidence**: weak Kengo match (size-diff > 1 but same name), single named caller (`sole_caller_path` proposal: `<caller>_helper_<addr>`), or call-graph subsystem cluster. These need callsite/body inspection before applying.
 
-Total Medium: **169**
+Total Medium: **199**
 
-## Primary evidence: `manual_review` (66)
+## Primary evidence: `manual_review` (96)
 
 Hand-review rows for functions previously tagged `confidence=none` by
 the automated analyzer. Each row links to a prose evidence file that
@@ -117,6 +117,47 @@ toward clean semantic names.
 | `0x800678A8` | `func_800678A8` | `efc_init_phase1_setup_buffer_800678A8` | manual_review=phase 1 of 3-helper effect-init triple; sets primitive type code 0x2E, default texture sizes 0x40/0x20, per-mode init values in the effect buffer at D_800A34EC | [md](evidence/func_800678a8.md) |
 | `0x80067D14` | `func_80067D14` | `efc_init_phase2_randomize_80067D14` | manual_review=phase 2 of effect-init triple (1108 asm lines, largest); calls bb2_rand early; walks effect buffer at 8 offsets writing randomised values; heavy GTE usage for per-particle transforms | [md](evidence/func_80067d14.md) |
 | `0x80068D88` | `func_80068D88` | `efc_init_phase3_finalize_80068D88` | manual_review=phase 3 of effect-init triple (87 asm lines, smallest); computes derived summary value via reciprocal-multiply / divide-by-8 sequence; updates buffer +0x80 / +0x7C fields | [md](evidence/func_80068d88.md) |
+
+### Batch 5 (2026-05-17, 30 medium entries)
+
+Going deeper into the queue (0-caller leaf utilities + small wrappers).
+Includes the motion-ex-init triple, player-slot getters, scratchpad
+helpers, scene/state functions, audio chain triggers, HUD emitters,
+varargs entry-table builder.
+
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80017848` | `func_80017848` | `link_add_with_dist_check_80017848` | manual_review=adds bidirectional link between 2 slots in a context graph (checks duplicates, computes math_Distance3D, stores 16-byte link record) | [md](evidence/func_80017848.md) |
+| `0x80021904` | `func_80021904` | `char_get_motion_keyframe_table_entry_prev_80021904` | manual_review=direct sibling of func_80021974 (named char_get_motion_keyframe_*); reads D_80101F4E (PREVIOUS keyframe) instead of D_80101F4C (current) | [md](evidence/func_80021904.md) |
+| `0x80022224` | `func_80022224` | `stage_find_far_corners_with_rand_80022224` | manual_review=picks one of the 2 furthest stage corners via bb2_rand & 1; companion to stage_find_nearest_corner_80022408 (batch 4) | [md](evidence/func_80022224.md) |
+| `0x80023648` | `func_80023648` | `char_physics_step_horizontal_velocity_80023648` | manual_review=per-frame horizontal-velocity update using sin/cos from named Judge LUT; updates position +0xD8/+0xE0 | [md](evidence/func_80023648.md) |
+| `0x80030208` | `func_80030208` | `hit_queue_process_pending_80030208` | manual_review=per-frame processor of 12 entries at D_80106A78 (0x64 stride); dispatches via func_80049718 (= efc_anim_vehicle_setup) + saSeInit_2 | [md](evidence/func_80030208.md) |
+| `0x80032064` | `func_80032064` | `particle_spawn_entry_80032064` | manual_review=spawns particle into 4-slot pool at D_80104E88 (0x2C stride); uses named Judge sin LUT; dispatches via func_80032854 (motion_dispatch_event_handler) | [md](evidence/func_80032064.md) |
+| `0x80038988` | `func_80038988` | `file_io_state_dispatch_80038988` | manual_review=state-machine on game_state_advance_80038734's return; maintains 5 per-state counters with 5-shot thresholds; 1.5-sec timeout | [md](evidence/func_80038988.md) |
+| `0x80039680` | `func_80039680` | `snapshot_char_state_for_record_80039680` | manual_review=snapshots char state (position, rotation, motion id, flags) into 28-byte slot in ring buffer indexed by D_800A36F8; 2 chars per frame | [md](evidence/func_80039680.md) |
+| `0x80040400` | `func_80040400` | `anim_chain_insert_entry_80040400` | manual_review=appends entry to per-player 0x68-byte animation chain (matches player_rob_relocate's +0x112C chain stride) | [md](evidence/func_80040400.md) |
+| `0x80041554` | `func_80041554` | `player_get_field_8_80041554` | manual_review=1-line getter for halfword[4] (byte +8) of g_player_ptrs[a0]; returns -1 if slot empty | [md](evidence/func_80041554.md) |
+| `0x80041650` | `func_80041650` | `player_get_field_2_low5_80041650` | manual_review=1-line getter for halfword[1] & 0x1F (low 5 bits at +2) of player struct | [md](evidence/func_80041650.md) |
+| `0x80043244` | `func_80043244` | `classify_magnitude_4bins_80043244` | manual_review=4-bin distance-magnitude classifier with threshold structure consistent with LOD tier selection | [md](evidence/func_80043244.md) |
+| `0x80043278` | `func_80043278` | `scratchpad_fixed_point_op_80043278` | manual_review=scratchpad-accessing bit op using shift amount from 0x1F800008; extracts 12-bit result | [md](evidence/func_80043278.md) |
+| `0x80044170` | `func_80044170` | `packed_entry_table_builder_80044170` | manual_review=varargs builder for packed entry-table; copies subset of entries selected by index list, rebuilds offsets | [md](evidence/func_80044170.md) |
+| `0x80046048` | `func_80046048` | `audio_chain_fade_load_80046048` | manual_review=chains tpage_slot_relocate(6, a1) + walks slot 6 payload + saFidLoad for each entry | [md](evidence/func_80046048.md) |
+| `0x80048530` | `func_80048530` | `variable_lookup_table_dispatch_80048530` | manual_review=2-level table indexer + dispatch (arg1 picks sub-table, arg2 picks 12-byte entry); calls func_800485EC with 6 fields | [md](evidence/func_80048530.md) |
+| `0x80053304` | `func_80053304` | `setup_struct_53584_ricochet_variant_80053304` | manual_review=variant of setup_struct_53584_callback; for close-range targets (squared dist <= 0x9C3F) computes reflected target and uses func_80053754 callback | [md](evidence/func_80053304.md) |
+| `0x80053694` | `func_80053694` | `read_struct_53694_position_80053694` | manual_review=reads position + rotation from the struct at D_800A33F4 (managed by setup_struct_53584_callback batch 4); returns 0 if sentinel 0x7FFFFFFF | [md](evidence/func_80053694.md) |
+| `0x80055948` | `func_80055948` | `flag_command_stream_interpreter_80055948` | manual_review=walks compressed bytecode stream that sets/clears bits in 32-bit flag word at +0x3C8 of arg0; uses inter-command delay bytes | [md](evidence/func_80055948.md) |
+| `0x80057094` | `func_80057094` | `ai_compute_target_direction_80057094` | manual_review=AI helper using named single_game_getEnemyCharId to compute 8-direction command code from current+target position | [md](evidence/func_80057094.md) |
+| `0x80062020` | `func_80062020` | `copy_terminated_triples_80062020` | manual_review=linked-list copier for 12-byte (3 s32) records terminated by low-bit-clear flag; output to D_800F1198 | [md](evidence/func_80062020.md) |
+| `0x80065000` | `func_80065000` | `motion_ex_init_state_80065000` | manual_review=init/reset for motion-ex-play family state; copies 3 fields from D_800A347C; clears counter; stores stage selector from packed bits | [md](evidence/func_80065000.md) |
+| `0x80065134` | `func_80065134` | `motion_ex_init_state_b_80065134` | manual_review=2nd init for motion-ex-play (mirrors 80065000 but different slot D_800F0D24..0xD2C; clears id 0xB counter) | [md](evidence/func_80065134.md) |
+| `0x80065264` | `func_80065264` | `motion_ex_init_state_c_80065264` | manual_review=3rd init for motion-ex-play (different slot D_800F0D60..0xD68; clears id 0x10 counter) | [md](evidence/func_80065264.md) |
+| `0x80065484` | `func_80065484` | `motion_ex_play_id5_dynamic_80065484` | manual_review=variable-rate variant of motion-ex-play family; per-stage step multiplier 1x/2x/3x for motion id 5 | [md](evidence/func_80065484.md) |
+| `0x80065680` | `func_80065680` | `motion_ex_play_idCE_80065680` | manual_review=combined wrapper: plays motion id 0xC AND 0xE in sequence with separate counters and 11-play cap | [md](evidence/func_80065680.md) |
+| `0x80074220` | `func_80074220` | `hud_emit_4tile_layout_80074220` | manual_review=fixed multi-layer HUD layout: 1 tile + 3 polygon prims (loop) + textured page + 3 PolyF4 quads to OT slots 0x78/7C/80 | [md](evidence/func_80074220.md) |
+| `0x80075670` | `func_80075670` | `pad_handle_swap_80075670` | manual_review=per-player pad-input handler with right-button swap + left-button conditional swap + per-button SFX feedback | [md](evidence/func_80075670.md) |
+| `0x80077860` | `func_80077860` | `pad_check_dispatch_wrapper_80077860` | manual_review=wrapper around named pad_check_dispatch_80069250; clears D_800A35E4 on input-consumed | [md](evidence/func_80077860.md) |
+| `0x80077894` | `func_80077894` | `get_disp_config_lookup_index_80077894` | manual_review=pad-input-driven setter for low 4 bits of D_8009BD38 (the disp-config selector); companion to disp_lookup_config_pair_80077904 | [md](evidence/func_80077894.md) |
+| `0x80077904` | `func_80077904` | `disp_lookup_config_pair_80077904` | manual_review=indexes paired-byte tables D_8009BD58/D_8009BD59 by (D_8009BD38 & 0xF) * 2; stores one byte in D_800A35E0, returns the other | [md](evidence/func_80077904.md) |
 
 Note: `func_80021974` (batch 1) and `func_80054434` (batch 2) are
 genuinely low-confidence (`rank=low` in CSV) and are not listed

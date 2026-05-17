@@ -27,7 +27,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80017738,func_80017738,,none,,
 0x80017748,func_80017748,,none,,
 0x800177C8,func_800177C8,,none,,
-0x80017848,func_80017848,,none,,
+0x80017848,func_80017848,link_add_with_dist_check_80017848,medium,"manual_review=Adds a bidirectional link between two slots in a context-managed graph. Checks for existing links (returns 0 if already linked), then computes Euclidean 3D distance via the named math_Distance3D, stores a 16-byte link record with the distance + 3x distance + a tag + the slot i...",docs/naming/evidence/func_80017848.md
 0x80017A44,func_80017A44,,none,,
 0x80017D84,func_80017D84,,none,,
 0x80017E8C,func_80017E8C,,none,,
@@ -92,21 +92,21 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800213A0,func_800213A0,,none,,
 0x80021424,func_80021424,,none,,
 0x800218C8,func_800218C8,,none,,
-0x80021904,func_80021904,,none,,
+0x80021904,func_80021904,char_get_motion_keyframe_table_entry_prev_80021904,medium,"manual_review=Direct sibling of func_80021974 (proposed char_get_motion_keyframe_table_entry_* in batch 1). The only difference: reads D_80101F4E (the PREVIOUS keyframe slot, per [g_char_state[].keyframe_idx_prev](../data_evidence/D_80101F00_char_state.md)) instead of D_80101F4C (current). ...",docs/naming/evidence/func_80021904.md
 0x80021974,func_80021974,char_get_motion_keyframe_table_entry_80021974,low,manual_review=per-character (1100-byte stride) chained lookup returning tbl + idx*2 pointer; pure function,docs/naming/evidence/func_80021974.md
 0x800219E4,func_800219E4,mario_test_Exec_helper_800219E4,medium,sole_caller_path=mario_test_Exec_helper_800219E4,docs/naming/evidence/func_800219E4.md
 0x80021A3C,func_80021A3C,,none,,
 0x80021A98,func_80021A98,,none,,
 0x80021D10,func_80021D10,,none,,
 0x80021DB0,func_80021DB0,,none,,
-0x80022224,func_80022224,,none,,
+0x80022224,func_80022224,stage_find_far_corners_with_rand_80022224,medium,"manual_review=Stage corner picker: iterates 4 corners from stage_GetDataPtr() + D_800A36A4 * 0x30, computes 2D distance squared to query point, then finds the 2 furthest corners (twice picking and eliminating the closest), and randomly picks one of the 2 via func_80079154() & 1 (= bb2_rand(...",docs/naming/evidence/func_80022224.md
 0x80022408,func_80022408,stage_find_nearest_corner_80022408,medium,"manual_review=reads stage_GetDataPtr() + D_800A36A4*48 byte offset, iterates 4 records (6 s16 each = segment endpoints), returns idx of nearest by 2D distance squared",docs/naming/evidence/func_80022408.md
 0x800224E0,func_800224E0,,none,,
 0x80022580,func_80022580,,none,,
 0x80022F34,func_80022F34,,none,,
 0x8002304C,func_8002304C,,none,,
 0x800233AC,func_800233AC,,none,,
-0x80023648,func_80023648,,none,,
+0x80023648,func_80023648,char_physics_step_horizontal_velocity_80023648,medium,"manual_review=Per-frame physics step for character at arg0. Branches on motion kind: kinds 0x13/0x1B/0x30 are 'moving' kinds that compute speed via deceleration + table lookup + sin/cos vectors (the named Judge LUT used as a 4096-entry sin table), updating position fields +0xD8 (x) and +0xE...",docs/naming/evidence/func_80023648.md
 0x80023C30,func_80023C30,,none,,
 0x80023CB4,func_80023CB4,,none,,
 0x80023D08,func_80023D08,,none,,
@@ -138,7 +138,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x8002F770,func_8002F770,gte_mvmva_wrapper_8002F770,low,gte_op=gte_mvmva_wrapper_8002F770,docs/naming/evidence/func_8002F770.md
 0x8002FF20,func_8002FF20,gte_mvmva_wrapper_8002FF20,low,gte_op=gte_mvmva_wrapper_8002FF20,docs/naming/evidence/func_8002FF20.md
 0x800300B4,func_800300B4,gte_mvmva_wrapper_800300B4,low,gte_op=gte_mvmva_wrapper_800300B4,docs/naming/evidence/func_800300B4.md
-0x80030208,func_80030208,,none,,
+0x80030208,func_80030208,hit_queue_process_pending_80030208,medium,"manual_review=Per-frame processor of 12 entries at D_80106A78 (0x64-byte stride). For each entry: if marked pending (byte +2 != 0), call func_800300B4. Otherwise look up event type from D_8008EB80 LUT and dispatch via func_80049718 (= efc_anim_vehicle_setup_*, batch 3) + saSeInit_2.",docs/naming/evidence/func_80030208.md
 0x8003032C,func_8003032C,,none,,
 0x8003043C,func_8003043C,psyq_memset_8003043C,high,psyq_idiom=psyq_memset_8003043C; sole_caller_path=mario_test_Exec_helper_8003043C,docs/naming/evidence/func_8003043C.md
 0x8003047C,func_8003047C,,none,,
@@ -154,7 +154,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80031890,func_80031890,gte_mvmva_wrapper_80031890,low,gte_op=gte_mvmva_wrapper_80031890,docs/naming/evidence/func_80031890.md
 0x80031B24,func_80031B24,,none,,
 0x80032040,func_80032040,mario_test_Exec_helper_80032040,medium,sole_caller_path=mario_test_Exec_helper_80032040,docs/naming/evidence/func_80032040.md
-0x80032064,func_80032064,,none,,
+0x80032064,func_80032064,particle_spawn_entry_80032064,medium,"manual_review=Spawns a particle/entity into the 4-slot pool at D_80104E88 (0x2C-byte stride). If pool full, returns 0. Initialises the slot with type code, position (+0x4 = x, +0x8 = z, +0xC = y), trigonometric values from the named Judge sine LUT, then dispatches via func_80032854 (= motio...",docs/naming/evidence/func_80032064.md
 0x800324D0,func_800324D0,,none,,
 0x800325E0,func_800325E0,,none,,
 0x80032854,func_80032854,motion_dispatch_event_handler_80032854,medium,"manual_review=30-case switch on arg1, dispatches to func_8006xxxx family; 19 callers all in motion subsystem",docs/naming/evidence/func_80032854.md
@@ -176,7 +176,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x8003504C,func_8003504C,,none,,
 0x80035430,func_80035430,,none,,
 0x80035438,func_80035438,psyq_memcpy_legacy_80035438,low,psyq_idiom_legacy=psyq_memcpy_legacy_80035438,docs/naming/evidence/func_80035438.md
-0x80035480,func_80035480,,none,,
+0x80035480,func_80035480,scene_teardown_variant_80035480,high,"manual_review=Direct sibling of scene_teardown_80035DC8 (named in commit b6e72b8 as a misnomer-replacement alias). Same player_Destroy(0,1) + disp_load_config_from_buf(0x80118800) shape, but adds a few extras: conditional func_8003A41C call, conditional obj_InitAll + D_800A390E = -1 based o...",docs/naming/evidence/func_80035480.md
 0x8003553C,func_8003553C,,none,,
 0x800355E8,func_800355E8,,none,,
 0x80035828,func_80035828,,none,,
@@ -223,12 +223,12 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800387E8,func_800387E8,motion_SetMotion_helper_800387E8,medium,sole_caller_path=motion_SetMotion_helper_800387E8,docs/naming/evidence/func_800387E8.md
 0x8003880C,func_8003880C,,none,,
 0x800388A8,func_800388A8,,none,,
-0x80038988,func_80038988,,none,,
+0x80038988,func_80038988,file_io_state_dispatch_80038988,medium,"manual_review=State-machine dispatcher built on top of game_state_advance_80038734 (named). Maintains 5 per-state counters (D_800A331C..D_800A3338) each with a 5-shot threshold; calls func_8006BEC4(sel, -1) based on the state code. Has a 0x5A (= 90 ticks = 1.5 sec) timeout via D_800A3330.",docs/naming/evidence/func_80038988.md
 0x800392B8,func_800392B8,,none,,
 0x800392C8,func_800392C8,,none,,
 0x80039320,func_80039320,timer_event_table_tick_80039320,medium,manual_review=two sequential 16-byte-stride table scans: loop 1 releases slots matching D_800A36F8 in D_80101BF0 (32 entries); loop 2 ticks counters in D_800F68E0 and expires past threshold,docs/naming/evidence/func_80039320.md
 0x800395B4,func_800395B4,,none,,
-0x80039680,func_80039680,,none,,
+0x80039680,func_80039680,snapshot_char_state_for_record_80039680,medium,"manual_review=Snapshots a character's state (position, motion id, flags, blink/idle state) into a 28-byte slot in a per-snapshot ring buffer at D_800A36EC + D_800A36F8 * 56. The 56-byte outer stride (2x28-byte) suggests 2 chars per snapshot frame, and the snapshot index D_800A36F8 is the ri...",docs/naming/evidence/func_80039680.md
 0x800397A0,func_800397A0,psyq_memcpy_legacy_800397A0,low,psyq_idiom_legacy=psyq_memcpy_legacy_800397A0,docs/naming/evidence/func_800397A0.md
 0x800397D4,func_800397D4,,none,,
 0x8003984C,func_8003984C,,none,,
@@ -315,7 +315,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800400F8,func_800400F8,,none,,
 0x8004016C,func_8004016C,,none,,
 0x8004019C,func_8004019C,,none,,
-0x80040400,func_80040400,,none,,
+0x80040400,func_80040400,anim_chain_insert_entry_80040400,medium,"manual_review=Walks a chain of 0x68-byte entries linked via field +0x6A=-1 sentinel; appends a new entry at the end. The 0x68 stride matches the player_rob_relocate_80041430's pointer-chain at offset +0x112C, suggesting this is the SAME chain (animation entries inside the player record). In...",docs/naming/evidence/func_80040400.md
 0x8004046C,func_8004046C,,none,,
 0x800404A0,func_800404A0,,none,,
 0x80040510,func_80040510,player_rob_Init,high,"manual_review=stores in g_player_ptrs[idx]; chains AllocRobRmd + 4 rob_* helpers; single caller at fight-start (post-gpu-enable, post-sound-end) with (slot, model_id, heap_base=0x80190800)",docs/naming/evidence/func_80040510.md
@@ -324,9 +324,9 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80040D48,func_80040D48,,none,,
 0x80041430,func_80041430,player_rob_relocate_80041430,medium,"manual_review=advances g_player_ptrs[a0] by a1 bytes and patches embedded sub-pointers at +0x2C, +0x8B4, +0x10D4, +0x112C (0x68 stride chain), +0x1A34 (20 entries); analog of prim_buffer_relocate_slot_80044100 for player records",docs/naming/evidence/func_80041430.md
 0x8004153C,func_8004153C,,none,,
-0x80041554,func_80041554,,none,,
-0x80041584,func_80041584,,none,,
-0x80041650,func_80041650,,none,,
+0x80041554,func_80041554,player_get_field_8_80041554,medium,manual_review=1-line getter: dereferences g_player_ptrs[a0] as s16* and returns halfword[4] (byte offset +8). Returns -1 if slot is empty (NULL ptr).,docs/naming/evidence/func_80041554.md
+0x80041584,func_80041584,player_find_empty_slot_80041584,high,manual_review=Iterates the 3 player slots in g_player_ptrs and returns the index of the first NULL slot (or -1 if all 3 are used). Standard 'find empty slot' pattern.,docs/naming/evidence/func_80041584.md
+0x80041650,func_80041650,player_get_field_2_low5_80041650,medium,manual_review=1-line getter: returns halfword[1] (byte offset +2) masked to low 5 bits (0..31).,docs/naming/evidence/func_80041650.md
 0x800417D0,func_800417D0,,none,,
 0x800418D0,func_800418D0,,none,,
 0x80041988,func_80041988,AllocRobRmd_helper_80041988,medium,sole_caller_path=AllocRobRmd_helper_80041988,docs/naming/evidence/func_80041988.md
@@ -342,8 +342,8 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80042F10,func_80042F10,,none,,
 0x80042FA0,func_80042FA0,,none,,
 0x800430E4,func_800430E4,,none,,
-0x80043244,func_80043244,,none,,
-0x80043278,func_80043278,,none,,
+0x80043244,func_80043244,classify_magnitude_4bins_80043244,medium,"manual_review=Classifies the input integer into one of 4 buckets {0, 1, 2, 3} by ordered threshold comparison. Thresholds 0x5A01, 0xB500, 0x16A09 are approximately sqrt(0x40000), sqrt(0x100000), sqrt(0x400000) -- these are the magnitudes at which a squared distance would cross 256K/1M/4M bo...",docs/naming/evidence/func_80043244.md
+0x80043278,func_80043278,scratchpad_fixed_point_op_80043278,low,"manual_review=Scratchpad-accessing fixed-point bit-manipulation. Reads a shift amount from 0x1F800008 (scratchpad word #2), uses it to shift a0, then does a two-stage extract that ends with v0 & 0xFFF (12-bit result).",docs/naming/evidence/func_80043278.md
 0x80043398,func_80043398,AllocRobRmd_helper_80043398,medium,sole_caller_path=AllocRobRmd_helper_80043398,docs/naming/evidence/func_80043398.md
 0x800433E4,func_800433E4,efc_rob_set_type_particle_helper_800433E4,medium,sole_caller_path=efc_rob_set_type_particle_helper_800433E4,docs/naming/evidence/func_800433E4.md
 0x80043454,func_80043454,,none,,
@@ -358,7 +358,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80044010,func_80044010,prim_buffer_open_slot_80044010,medium,"manual_review=marks header *a0 |= 0x8000, stores ptr+count in D_80103608/D_80103658 slot a1; paired with func_80044100",docs/naming/evidence/func_80044010.md
 0x80044098,func_80044098,tpage_slot_release_80044098,medium,"manual_review=inverse of prim_buffer_open_slot_80044010 (clears in-use bit, un-relocates payload by subtracting header ptr); 3rd function of the slot-pool lifecycle (open/relocate/release)",docs/naming/evidence/func_80044098.md
 0x80044100,func_80044100,prim_buffer_relocate_slot_80044100,medium,manual_review=advances D_80103608[a0] by a1 bytes and patches each entry by +a1 (offset-list relocation); paired with func_80044010,docs/naming/evidence/func_80044100.md
-0x80044170,func_80044170,,none,,
+0x80044170,func_80044170,packed_entry_table_builder_80044170,medium,"manual_review=Varargs function (PSX SDK uses the &args+4 pattern for varargs). Takes a base buffer + count + a list of (entry_index) integers; for each entry-index, looks up (cur_off, size) from the table at base, copies size bytes via func_800520B8 (a memcpy), and records the new offset in...",docs/naming/evidence/func_80044170.md
 0x80044498,func_80044498,clear_array_8010367E_80044498,medium,manual_review=Clears 20 (= 0x13 + 1) s16 entries at addresses D_8010367E down through D_80103658. The walk-backwards iteration with *p-- = 0 is GCC 2.7.2's idiomatic short-form for memset-of-aligned-s16.,docs/naming/evidence/func_80044498.md
 0x80044504,func_80044504,frame_context_init_scratchpad_80044504,medium,manual_review=writes 5 scratchpad words at 0x1F80000C..0x1F80001C as inputs for a per-frame compute kernel; calls camera_InitMatrix + game_SetPause(1); chains func_8004A4E0 (likely the hot loop),docs/naming/evidence/func_80044504.md
 0x80044650,func_80044650,init_fade_panel_wrapper_80044650,high,manual_review=1-line wrapper around named InitFadePanel(). Pure trampoline.,docs/naming/evidence/func_80044650.md
@@ -393,7 +393,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80045878,func_80045878,audio_seq_load_or_get_80045878,medium,manual_review=load-if-absent / get-if-present for audio sequence records; chains saSeMain_80045600 + saTan5TakeGetPos_* + func_80045AA4 callback; manages paired slots a0 and a0+3,docs/naming/evidence/func_80045878.md
 0x80045A50,func_80045A50,player_Destroy_helper_80045A50,medium,sole_caller_path=player_Destroy_helper_80045A50,docs/naming/evidence/func_80045A50.md
 0x80045AA4,func_80045AA4,,none,,
-0x80046048,func_80046048,,none,,
+0x80046048,func_80046048,audio_chain_fade_load_80046048,medium,"manual_review=Chains: (1) relocate TPAGE slot 6 by a1 bytes (via the named func_80044100 = prim_buffer_relocate_slot), (2) fetch slot 6's payload, (3) skip past a leading offset header, (4) iterate the entries and call saFidLoad(a1, entry) for each.",docs/naming/evidence/func_80046048.md
 0x800460E4,func_800460E4,,none,,
 0x800464C4,func_800464C4,,none,,
 0x8004659C,func_8004659C,,none,,
@@ -463,10 +463,10 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800481E8,func_800481E8,,none,,
 0x800483DC,func_800483DC,,none,,
 0x800484A0,func_800484A0,,none,,
-0x80048530,func_80048530,,none,,
+0x80048530,func_80048530,variable_lookup_table_dispatch_80048530,medium,"manual_review=Two-level table indexer: arg0 is a base pointer, arg1 selects a sub-table (its offset is at base[arg1]), arg2 selects an entry within that sub-table (12-byte stride). Reads 4 fields from the entry (a, b unsigned, c, d signed) and dispatches to func_800485EC(addr+offset, arg3, ...",docs/naming/evidence/func_80048530.md
 0x800485EC,func_800485EC,,none,,
 0x800486FC,func_800486FC,,none,,
-0x80048744,func_80048744,,none,,
+0x80048744,func_80048744,set_color_mode_80048744,high,manual_review=2-line setter for the named global g_color_mode to 0 or 1 based on input truthiness. Equivalent to g_color_mode = !!a0; but written as a branch (likely for codegen reasons).,docs/naming/evidence/func_80048744.md
 0x8004876C,func_8004876C,,none,,
 0x8004881C,func_8004881C,,none,,
 0x80048A7C,func_80048A7C,saTan4FireDisp_helper_80048A7C,medium,sole_caller_path=saTan4FireDisp_helper_80048A7C,docs/naming/evidence/func_80048A7C.md
@@ -553,10 +553,10 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80052C28,func_80052C28,,none,,
 0x80052C4C,func_80052C4C,gte_mvmva_wrapper_80052C4C,low,gte_op=gte_mvmva_wrapper_80052C4C,docs/naming/evidence/func_80052C4C.md
 0x80052D00,func_80052D00,,none,,
-0x80053304,func_80053304,,none,,
+0x80053304,func_80053304,setup_struct_53584_ricochet_variant_80053304,medium,"manual_review=Variant of setup_struct_53584_callback_80053584 (batch 4): same base setup (copy arg0, arg1 into the D_800EF9F8 struct), but adds a distance threshold check: if the squared distance between arg0 and arg1 is <= 0x9C3F (= ~157^2), it computes a 'reflected' target position (mirro...",docs/naming/evidence/func_80053304.md
 0x8005344C,func_8005344C,,none,,
 0x80053584,func_80053584,setup_struct_53584_callback_80053584,medium,"manual_review=Stores a base address in D_800A33F4, copies the _S16_53584 struct at offset 0 (from arg0) and offset 0x18 (from arg1), installs a callback function pointer (func_80053E9C) at offset 0x5C, then dispatches func_80052D00(arg2, arg3).",docs/naming/evidence/func_80053584.md
-0x80053694,func_80053694,,none,,
+0x80053694,func_80053694,read_struct_53694_position_80053694,medium,"manual_review=Reads from the same struct at D_800A33F4 that setup_struct_53584_callback_80053584 sets up (batch 4). Reads position fields (+0x38..0x40) with offset adjustments based on +0x48/+0x4A slot indices, plus rotation (+0x28..0x30 right-shifted 2). Sentinel 0x7FFFFFFF at offset 0 mea...",docs/naming/evidence/func_80053694.md
 0x80053754,func_80053754,,none,,
 0x80053E9C,func_80053E9C,,none,,
 0x80054410,func_80054410,efc_ougi_Init_80054410,medium,kengo_pattern=efc_ougi_Init_80054410,docs/naming/evidence/func_80054410.md
@@ -572,10 +572,10 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x8005508C,func_8005508C,replay_camera_check_stage_8005508C,medium,kengo_pattern=replay_camera_check_stage_8005508C,docs/naming/evidence/func_8005508C.md
 0x8005509C,func_8005509C,psyq_memset_8005509C,high,psyq_idiom=psyq_memset_8005509C,docs/naming/evidence/func_8005509C.md
 0x800550E8,func_800550E8,cpu_get_move_pattern_table_number_helper_800550E8,medium,psyq_idiom_legacy=psyq_memcpy_legacy_800550E8; sole_caller_path=cpu_get_move_pattern_table_number_helper_800550E8,docs/naming/evidence/func_800550E8.md
-0x80055948,func_80055948,,none,,
+0x80055948,func_80055948,flag_command_stream_interpreter_80055948,medium,"manual_review=Bytecode interpreter for a flag-mutation command stream: each byte is either a counter byte (top bit set; the low 7 bits are an inter-command delay) or a flag-op (bit 0x10 = set or clear, low 4 bits = which bit in the 32-bit flag word). Sentinel byte resets the cursor. Modifie...",docs/naming/evidence/func_80055948.md
 0x80055B44,func_80055B44,,none,,
 0x80056CB8,func_80056CB8,,none,,
-0x80057094,func_80057094,,none,,
+0x80057094,func_80057094,ai_compute_target_direction_80057094,medium,"manual_review=Uses the named single_game_getEnemyCharId (which is actually an angle-from-vector function despite the misnamed name -- per its own evidence file) to compute the angular delta from arg0's current facing to a target position (arg1, arg2). Quantises to 8 directions; looks up com...",docs/naming/evidence/func_80057094.md
 0x800571C0,func_800571C0,,none,,
 0x8005763C,func_8005763C,,none,,
 0x80057ACC,func_80057ACC,,none,,
@@ -637,7 +637,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80061D74,func_80061D74,,none,,
 0x80061EC0,func_80061EC0,,none,,
 0x80061FAC,func_80061FAC,,none,,
-0x80062020,func_80062020,,none,,
+0x80062020,func_80062020,copy_terminated_triples_80062020,medium,manual_review=Copies a list of 12-byte (3 s32) records from arg0 into the destination buffer at D_800F1198+. Terminates when the source's first field's low bit is no longer set. Pads the dest with a zero-terminator triple.,docs/naming/evidence/func_80062020.md
 0x800620B8,func_800620B8,DispHira_helper_800620B8,medium,sole_caller_path=DispHira_helper_800620B8,docs/naming/evidence/func_800620B8.md
 0x8006288C,func_8006288C,,none,,
 0x8006295C,func_8006295C,,none,,
@@ -657,28 +657,28 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80064F20,func_80064F20,,none,,
 0x80064F68,func_80064F68,,none,,
 0x80064FB4,func_80064FB4,,none,,
-0x80065000,func_80065000,,none,,
+0x80065000,func_80065000,motion_ex_init_state_80065000,medium,"manual_review=Initialises the state for the motion-ex-play family: copies 3 fields from D_800A347C to per-id storage at D_800F0CDC..0xCE4, sets enabled flag D_800F10FC=1, clears counter D_800F0BB2 (for id 5), stores stage selector D_800A3440 from a packed field in D_800A3468.",docs/naming/evidence/func_80065000.md
 0x8006505C,func_8006505C,,none,,
 0x800650A4,func_800650A4,,none,,
 0x800650EC,func_800650EC,,none,,
-0x80065134,func_80065134,,none,,
+0x80065134,func_80065134,motion_ex_init_state_b_80065134,medium,manual_review=Sibling init function -- mirrors func_80065000 but stores into D_800F0D24..0xD2C and clears the id-0xB counter D_800F0BBE.,docs/naming/evidence/func_80065134.md
 0x8006517C,func_8006517C,,none,,
 0x800651F0,func_800651F0,,none,,
-0x80065264,func_80065264,,none,,
+0x80065264,func_80065264,motion_ex_init_state_c_80065264,medium,manual_review=Third sibling init function -- mirrors the above two but stores into D_800F0D60..0xD68 and clears the id-0x10 counter D_800F0BC8.,docs/naming/evidence/func_80065264.md
 0x800652AC,func_800652AC,,none,,
 0x800652F4,func_800652F4,,none,,
-0x80065344,func_80065344,,none,,
-0x80065394,func_80065394,,none,,
+0x80065344,func_80065344,motion_ex_play_id1_80065344,high,"manual_review=Family member: calls motion_SetExMotion(1), increments per-id counter D_800F0BAA by 0x1C6, returns the motion id 1 result if counter < 0x11C8 (else 0). 0x11C8 / 0x1C6 = 10 -- so this motion can play 10 times before the counter saturates.",docs/naming/evidence/func_80065344.md
+0x80065394,func_80065394,motion_ex_play_id2_80065394,high,"manual_review=Family member: motion_SetExMotion(2), counter D_800F0BAC, same 10-play cap. Direct sibling of func_80065344 with different motion id and counter slot.",docs/naming/evidence/func_80065394.md
 0x800653E4,func_800653E4,,none,,
-0x80065434,func_80065434,,none,,
-0x80065484,func_80065484,,none,,
-0x80065540,func_80065540,,none,,
-0x80065590,func_80065590,,none,,
+0x80065434,func_80065434,motion_ex_play_id4_80065434,high,"manual_review=Family member: motion_SetExMotion(4), counter D_800F0BB0, step 0x19, threshold 0xC9. 0xC9 / 0x19 = ~10.5 -- so still ~10 plays but with smaller increments.",docs/naming/evidence/func_80065434.md
+0x80065484,func_80065484,motion_ex_play_id5_dynamic_80065484,medium,"manual_review=Variant of the family: motion id 5, but the counter step varies based on a stage/mode selector at *D_800A3484 (= 0x1FF, 0x3FE, or 0x5FD = 1x/2x/3x step). Threshold 0x2001 gives a ~10-play cap at 1x speed, ~5 at 2x, ~3 at 3x.",docs/naming/evidence/func_80065484.md
+0x80065540,func_80065540,motion_ex_play_id6_80065540,high,"manual_review=Family member: motion id 6, step 0x32, threshold 0x100. 0x100 / 0x32 = ~5.1 -- only ~5 plays.",docs/naming/evidence/func_80065540.md
+0x80065590,func_80065590,motion_ex_play_id7_80065590,high,"manual_review=Family member: motion id 7, identical structure to func_80065540 (5-play cap).",docs/naming/evidence/func_80065590.md
 0x800655E0,func_800655E0,,none,,
-0x80065630,func_80065630,,none,,
-0x80065680,func_80065680,,none,,
+0x80065630,func_80065630,motion_ex_play_idB_80065630,high,"manual_review=Family member: motion id 0xB (11), step 0x32, threshold 0x100 (5-play cap).",docs/naming/evidence/func_80065630.md
+0x80065680,func_80065680,motion_ex_play_idCE_80065680,medium,"manual_review=Combined wrapper: plays BOTH motion id 0xC and 0xE in sequence, with separate counters. The 'paired' nature suggests these two motions are always played together (probably a left-right or fade-in/fade-out pair). Step is 1 and threshold 11 -- a flat 11-play cap.",docs/naming/evidence/func_80065680.md
 0x800656EC,func_800656EC,,none,,
-0x80065760,func_80065760,,none,,
+0x80065760,func_80065760,motion_ex_play_id10_80065760,high,"manual_review=Family member: motion id 0x10 (16), counter D_800F0BC8, 10-play cap (same as id 1).",docs/naming/evidence/func_80065760.md
 0x800657B0,func_800657B0,,none,,
 0x80066EC0,func_80066EC0,,none,,
 0x80066EF4,func_80066EF4,,none,,
@@ -777,14 +777,14 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x8007352C,func_8007352C,satan_helper_8007352C,medium,call_graph_cluster=satan_helper_8007352C; string_adjacent_info=?,docs/naming/evidence/func_8007352C.md
 0x80073728,func_80073728,,none,,
 0x80073C78,func_80073C78,,none,,
-0x80074220,func_80074220,,none,,
+0x80074220,func_80074220,hud_emit_4tile_layout_80074220,medium,"manual_review=Emits a fixed multi-layer HUD layout: optional 1 init tile + 3 polygon prims (loop using func_8007352C) + 1 textured-page anchor + 3 PolyF4 quads. All ot_Linked to consecutive OT slots (0x78, 0x7C, 0x80). The fixed coordinate values (0x3F, 0x30, 0x202, 0xB0) and quad sizes (0x...",docs/naming/evidence/func_80074220.md
 0x80074488,func_80074488,,none,,
 0x800747D8,func_800747D8,,none,,
 0x80074B18,func_80074B18,,none,,
 0x80074D2C,func_80074D2C,,none,,
 0x80074E08,func_80074E08,,none,,
 0x8007526C,func_8007526C,,none,,
-0x80075670,func_80075670,,none,,
+0x80075670,func_80075670,pad_handle_swap_80075670,medium,manual_review=Pad-input handler for player arg1 checking arg0 for specific button bits. Per-player counter at +0x68 of D_800A36A0 increments per press; right-button triggers a swap of both players' state + plays SFX 1; left-button triggers a conditional swap based on +0x14/+0x16 state.,docs/naming/evidence/func_80075670.md
 0x80075830,func_80075830,,none,,
 0x800759D0,func_800759D0,,none,,
 0x80075F80,func_80075F80,,none,,
@@ -797,9 +797,9 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80077374,func_80077374,,none,,
 0x80077724,func_80077724,setup_double_buffer_swap_80077724,medium,"manual_review=Per-frame double-buffer swap setup: toggles a buffer pointer between &D_800F7438 and &D_800F7438 + 0x4090 based on a low-bit, increments two counters (a u32 frame counter at +0x30 and a u16 sub-counter at +0x34), gets the swapped buffer via func_80077098(temp_v1 & 1), copies 9...",docs/naming/evidence/func_80077724.md
 0x80077820,func_80077820,disp_load_config_from_buf_80077820,medium,"manual_review=both callers pass fixed buffer addr 0x80118800; disp_SetFramebufferMode call is unconditional (not mode-parametrised); func_80068F70(src, &D_8009BD24) is the actual copy",docs/naming/evidence/func_80077820.md
-0x80077860,func_80077860,,none,,
-0x80077894,func_80077894,,none,,
-0x80077904,func_80077904,,none,,
+0x80077860,func_80077860,pad_check_dispatch_wrapper_80077860,medium,"manual_review=Calls the named pad_check_dispatch_80069250 (batch 4); if it consumed the input (returned 1), this wrapper also clears D_800A35E4 and returns 1. Otherwise returns 0.",docs/naming/evidence/func_80077860.md
+0x80077894,func_80077894,get_disp_config_lookup_index_80077894,medium,"manual_review=Calls func_800693CC() to get a config index (< 0 = error). On success, patches the low 4 bits of D_8009BD38 (the same global indexed by disp_lookup_config_pair_80077904) and clears D_800A35E4. Returns 1 on success, -1 on -2 error, 0 on other errors.",docs/naming/evidence/func_80077894.md
+0x80077904,func_80077904,disp_lookup_config_pair_80077904,medium,manual_review=Indexes two parallel byte tables D_8009BD58 and D_8009BD59 by (D_8009BD38 & 0xF) * 2 (so each entry is 2 bytes apart -- standard interleaved layout for paired bytes). Stores one byte into D_800A35E0; returns the other. Also clears D_800A35E4.,docs/naming/evidence/func_80077904.md
 0x80077940,func_80077940,disp_pack_gpu_command_word_80077940,medium,manual_review=packs 4 disjoint bit-fields (10+10+1+1 bits) from sparse 26-bit arg0 into compact 22-bit D_800A35E8; matches PSX GPU coord-pack command shape,docs/naming/evidence/func_80077940.md
 0x80077984,func_80077984,disp_apply_config_with_state_80077984,medium,"manual_review=sibling of disp_load_config_from_buf_80077820 (same disp_SetFramebufferMode tail), uses func_8006E534(a0, D_800A35E0, g_disp_config, D_800A35E8) to apply already-loaded config + per-frame state",docs/naming/evidence/func_80077984.md
 0x800779C8,func_800779C8,,none,,
