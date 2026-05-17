@@ -2570,51 +2570,6 @@ cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 147
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 154
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 155
 
-saTan2KabutoWareMove: subst "\$19" "$18" @ 5
-saTan2KabutoWareMove: subst "\$5" "$6" @ 6
-saTan2KabutoWareMove: subst "\$3" "$5" @ 12
-saTan2KabutoWareMove: subst "\$5" "$6" @ 14
-saTan2KabutoWareMove: subst "\$5" "$6" @ 21
-saTan2KabutoWareMove: subst "\$3" "$5" @ 26
-saTan2KabutoWareMove: subst "\$19" "$18" @ 84
-saTan2KabutoWareMove: subst "\$19" "$18" @ 89
-saTan2KabutoWareMove: subst "\$19" "$18" @ 101
-saTan2KabutoWareMove: subst "\$19" "$18" @ 106
-saTan2KabutoWareMove: subst "\$19" "$18" @ 141
-saTan2KabutoWareMove: subst "\$19" "$18" @ 146
-saTan2KabutoWareMove: subst "\$18" "$19" @ 95
-saTan2KabutoWareMove: subst "\$18" "$19" @ 96
-saTan2KabutoWareMove: subst "\$18" "$19" @ 110
-saTan2KabutoWareMove: subst "\$2,648" "$3,648" @ 70
-saTan2KabutoWareMove: subst "bne\t\$2" "bne\t$3" @ 72
-saTan2KabutoWareMove: subst "addu\t\$3,\$4,\$zero" "sll\t$2,$5,1" @ 73
-saTan2KabutoWareMove: subst "\$16,\$4" "$2,$16" @ 74
-saTan2KabutoWareMove: subst "bne" "beq" @ 43
-saTan2KabutoWareMove: subst "\.L145" ".L115" @ 43
-saTan2KabutoWareMove: subst "addu.*" "nop" @ 44
-saTan2KabutoWareMove: subst "\.L115" ".L145" @ 45
-saTan2KabutoWareMove: subst "nop.*" "addiu\t$2,$zero,1" @ 46
-saTan2KabutoWareMove: subst "j\t" ".L902:\n\tj\t" @ 45
-saTan2KabutoWareMove: subst "\.L114" ".L902" @ 14
-saTan2KabutoWareMove: subst "\.L114" ".L902" @ 21
-saTan2KabutoWareMove: subst "\.L114" ".L902" @ 23
-saTan2KabutoWareMove: subst "\.L129" ".L900" @ 118
-saTan2KabutoWareMove: subst "bne" "beq" @ 124
-saTan2KabutoWareMove: subst "\.L129" ".L901" @ 124
-saTan2KabutoWareMove: subst "\$3" "$2" @ 125
-saTan2KabutoWareMove: subst "\$3" "$2" @ 126
-saTan2KabutoWareMove: subst "\$3" "$2" @ 127
-saTan2KabutoWareMove: subst "\$3" "$2" @ 128
-saTan2KabutoWareMove: subst "\$16,\$3" "$2,$16" @ 95
-saTan2KabutoWareMove: subst "\$3" "$2" @ 96
-saTan2KabutoWareMove: subst "bne\t\$3,\$2" "bne\t$2,$3" @ 98
-saTan2KabutoWareMove: subst "slt\t\$2,\$2,\$3" "slt\t$2,$3,$2" @ 99
-saTan2KabutoWareMove: $4 <-> $5 @ 152-173
-saTan2KabutoWareMove: subst "280\(\$5\)" "280($4)" @ 174
-saTan2KabutoWareMove: delete @ 67
-saTan2KabutoWareMove: insert_after "andi\t$3,$5,0xffff" @ 13
-saTan2KabutoWareMove: insert ".L900:\n\tbne\t$17,$0,.LsaTan2KabutoWareMove_store\n\taddiu\t$2,$zero,25\n\tj\t.LsaTan2KabutoWareMove_store\n\taddiu\t$2,$zero,11\n.L901:" @ 125
-saTan2KabutoWareMove: reorder 10,5,3,6,7,8,9,4 @ 3-10
 
 # ===== func_8008BB24: compound regfix (79-insn fixed-point attenuation) =====
 # C structure: v7 (2-multiply loop, 3 volatile for 16-byte frame)
