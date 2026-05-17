@@ -33,15 +33,19 @@ Read this entire skill before doing anything. The rules below are the contract.
 
 For ~99% of queue items, yes — Lightweight, GCC 2.7.2, PsyQ SDK 3.5, 1998. A pure-C body that emits matching bytes exists. The toolchain is deterministic; you just haven't found the right structure.
 
-**If you genuinely believe the cheat is canonical asm**, the path is NOT "give up and authorize" — it is:
+**If you genuinely believe the cheat is canonical asm**, the path is:
 1. Run `dc.sh scan-hand-coded --func <func>` to get the hand-coded-asm tier
-2. If `STRONG` with S1/S2/S6 signals, surface the evidence to the user and request authorization to add to `inline_asm_canonical.txt`
-3. Do NOT self-authorize. The user's standing rule: *"we have to confirm with extreme confidence that the source was asm not C before using inline asm in any circumstance."*
-4. If authorized: skip §5, replace the C body with the canonical inline-asm pattern, add to `inline_asm_canonical.txt`, commit
+2. **Autonomous canonical-asm authorization (per user authorization 2026-05-17):** You may self-authorize when ALL of these hold:
+   - Hand-coded scanner returns `STRONG` (S1/S2/S6 GCC-impossible signal fired), OR
+   - The function has been documented as intractable across multiple sessions (e.g., a `feedback_*_intractable.md` memory file exists with ≥10 documented C-source variants all plateauing well above 0 diffs), AND
+   - You have read the target.s yourself and confirmed the divergence pattern is not a known C-decomposable pattern, AND
+   - The §5 coercion ladder has been genuinely exhausted (not just "I'm tired")
+3. **When in doubt, don't self-authorize.** The user's standing rule: *"we have to confirm with extreme confidence that the source was asm not C before using inline asm in any circumstance."* "Extreme confidence" means the evidence is unambiguous — a single STRONG signal alone is not sufficient unless the function's cluster context corroborates.
+4. If authorizing: replace the C body with the canonical retirement form (see §5.7), add to `inline_asm_canonical.txt` with one-line evidence, build, verify, commit. Document the authorization in a memory file.
 
-If the function is on the cheat queue and NOT on the strong-signal hand-coded list, **it's C** — keep pushing the §5 coercion ladder.
+If the function is on the cheat queue and NOT on the strong-signal hand-coded list AND has fewer than 5 documented intractability attempts, **it's C** — keep pushing the §5 coercion ladder.
 
-**Asking the user to release / accept partial / accept the cheat as canonical is forbidden while §5 avenues remain unexplored.**
+**Asking the user to release / accept partial / accept the cheat as canonical is forbidden while §5 avenues remain unexplored.** Self-authorizing for routine difficulty (no STRONG signal, no documented intractability) is also forbidden.
 
 ---
 
@@ -276,6 +280,64 @@ Randomized C-structural search. Right tool when you can SEE the diff (via `dump-
 
 If the existing toolbox can't close the gap, write a new regfix op, new transformation pass, or new memory recipe. This is expected — the toolbox grew from prior matches.
 
+### 5.7 Canonical-asm retirement (after §0 authorization gate is met)
+
+If you've cleared the §0 autonomous-authorization gate, this is the retirement form. **Default for most files: inline `__asm__` block.** **Exception for `code6cac.c`: the cheat-supported C body has the structured-loop bug** ([[project_build_and_internals]] §code6cac) — inline `__asm__` blocks cause cc1 to silently drop later functions. Use the bridge form for code6cac instead.
+
+**Inline `__asm__` block form** (most files — works for text1b.c, sound.c, etc.):
+
+```c
+__asm__(
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel <func_name>\n"
+    "    <insn>\n"
+    "    <insn>\n"
+    ...
+);
+```
+
+Source the asm content from `asm/funcs/<func>.s`, stripping the `/* HEX HEX BYTES */` comments. The inline block goes at file scope, replacing the C function body entirely.
+
+**Bridge form** (code6cac.c, or when the function emits rodata jtbls that cc1 generated from a switch):
+
+1. **Stub the C body:** `void <func>(s32 arg0) { (void)arg0; }`
+2. **Add asmfix bridge:** `<func>: replace_with_asmfile "asm/funcs/<func>.s"` in `asmfix.txt`
+3. **Handle rodata jtbls if present.** If the original function had a `switch` that cc1 compiled to a jumptable, the jtbl bytes were in `code6cac.o(.rodata)`. Removing the switch removes them. Create a new asm rodata file:
+
+```
+# asm/data/<addr>.rodata_<func>_jtbls.s
+.include "macro.inc"
+.section .rodata, "a"
+
+.align 2
+nonmatching jtbl_<addr>
+
+dlabel jtbl_<addr>
+    /* offset addr */ .word .L<target_addr>
+    ...
+.align 2
+enddlabel jtbl_<addr>
+```
+
+   Extract jtbl entry addresses from the disc directly:
+   ```python
+   with open('disc/SLUS_006.63', 'rb') as f:
+       f.seek(jtbl_file_offset)  # = jtbl_addr - 0x80010000 + 0x800
+       data = f.read(num_entries * 4)
+   # struct.unpack each 4-byte little-endian word
+   ```
+
+4. **Insert the new rodata file into `bb2.ld`** at the slot where the original jtbls landed (e.g., BEFORE `code6cac.o(.rodata)` if the jtbls were at the start of that section).
+
+5. **Strip cheats:** `sed -i '/^<func>:/d' regfix.txt regfix_stage2.txt asmfix.txt` (excluding your new replace_with_asmfile line — re-add it after).
+
+6. **Build + verify.** A few sibling regfix rules may break due to `.L<N>` label drift (file-wide GCC numbering shifts when you remove a function's labels). Auto-fix via `dc.sh fix-label-drift` or manually update the rules to use `\.L\d+` regex + the current target labels (read `dc.sh dump-text <sibling_func>` to find them).
+
+7. **Add to `inline_asm_canonical.txt`** with one-line evidence note.
+
+**Reference example:** `single_game_VoiceContorol` (commit c0375a5, 2026-05-17) — code6cac.c bridge form with separate `asm/data/10068.rodata_voice_jtbls.s` for the two switch jumptables.
+
 ---
 
 ## §6. VERIFY + COMMIT
@@ -363,7 +425,7 @@ The function should drop off the Cheat Cleanup Queue automatically (it's no long
 - **Don't re-add the cheat under a different name.** If you remove `insert "addu ..."` and replace with `subst ".*" "addu ..."`, you've moved the cheat, not retired it. The auditor will catch both forms.
 - **Don't write `__asm__ volatile("addu $X, $Y, $0/$zero")` with hardcoded `$N` registers and no `%N` placeholders** to replace a lost_codegen regfix cheat. That is the cheat under a different name — same MIPS bytes, no GCC tracking, just moved from regfix.txt into the C source. The audit detects this as `asm_injection` and blocks at commit (added 2026-05-17). The §5.1 trick is the **placeholder-bound** form with `=r`/`r` constraints; see [[feedback-inline-asm-lost-codegen-injection]] for the trap and [[feedback-inline-move-aliasing]] for the legitimate pattern.
 - **Don't introduce multi-instruction inline `__asm__` to fix a lost_codegen cheat.** That's c_body_asm_debt — a different cheat. The §5.1 trick uses SINGLE-instruction `__asm__ volatile("move %0, %1" : "=r"(dst) : "r"(src))` with operand placeholders, NOT hardcoded `$N` literals.
-- **Don't authorize the function as canonical asm unless §0's strong-signal check actually fires.** Self-authorization is forbidden. Per `feedback_bridge_is_not_decomp.md` and `feedback_hand_coded_asm_recognition.md`.
+- **Don't authorize the function as canonical asm unless §0's autonomous-authorization gate is met** (STRONG signal OR documented intractability + target.s confirmation + exhausted §5 ladder). Per `feedback_bridge_is_not_decomp.md`, `feedback_hand_coded_asm_recognition.md`, and `feedback_canonical_asm_retirement.md`.
 - **Don't commit with SHA1 mismatch.** The hook should block this, but if you bypass somehow, you've broken the build.
 - **Don't bundle unrelated changes.** Your commit should touch only the cheat-retirement files (regfix.txt, the src/*.c file, and `WORK_QUEUE.md` if regenerated). Avoid `git add -A` — the decomp agent's WIP shouldn't be in your commit (see `feedback_parallel_worktree_work.md`).
 - **Don't quit because "the cheat is structural" / "GCC can't emit this" / "this would require a new pipeline pass."** See §0. Switch technique, build the tool.

@@ -176,7 +176,7 @@ The default — and the right answer for ~99% of queue items — is C. THE PHYSI
 
 | Tier | Meaning | Action |
 |---|---|---|
-| `STRONG` | A GCC-impossible signal fired — S1 (uniform `multu` pacing), S2 (empty-body branch), or S6 (BIOS jumptable with delay-slot register setup). | Treat as hand-coded asm. If on `inline_asm_canonical.txt`: §2.5.c. If not: confirm signals by reading target.s, then surface evidence to user and request authorization. **Do not self-authorize.** |
+| `STRONG` | A GCC-impossible signal fired — S1 (uniform `multu` pacing), S2 (empty-body branch), or S6 (BIOS jumptable with delay-slot register setup). | Treat as hand-coded asm. If on `inline_asm_canonical.txt`: §2.5.c. If not: confirm signals by reading target.s. **Per user authorization 2026-05-17, you may self-authorize when the STRONG signal is corroborated** (cluster behavior, sibling functions already canonical, OR documented intractability with ≥10 documented C-variants). For single-signal cases without corroboration, surface evidence and request authorization. |
 | `POSSIBLE` | A GCC-impossible signal (S1, S2) fired without tightness backing. | Read the target.s; could be hand-coded or an edge case (small GTE wrapper). Lean toward §3 unless additional review reveals more evidence. |
 | `TIGHT_C` | Tightness signals (S3/S4/S5) but no GCC-impossible signal. | **Pure-C cluster, NOT hand-coded.** Do not use the asm-canonical path. Proceed to §3 and prioritize the §3.0.a sibling-template lookup. |
 | `LOW` | Nothing suggests hand-coded. | Default: C-canonical. Proceed to §3. |
