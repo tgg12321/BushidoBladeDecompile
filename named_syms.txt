@@ -385,9 +385,35 @@ ndata_disc_read_scheduler_80036E34                = 0x80036E34;
 /* SHA1-invariance: symbol-only additions cannot affect the byte output */
 /* (PS-X EXE strips ELF symbols via `objcopy -O binary`); verified before */
 /* commit by the rebuild script. */
-get_snd_bgm_id_80046780      = 0x80046780;  /* 3-insn gp-rel getter for g_snd_bgm_id */
-get_stage_id_80046798        = 0x80046798;  /* 4-insn lh-based signed getter for g_stage_id */
-get_sys_video_mode_80083688  = 0x80083688;  /* 4-insn lw-based getter for g_sys_video_mode */
-empty_stub_80046954          = 0x80046954;  /* literal `jr ra; nop` -- 2 insns total */
+get_snd_bgm_id_80046780      = 0x80046780;  /* 3-insn gp-rel getter for g_snd_bgm_id (legacy renamer: snd_GetBgmId) */
+get_stage_id_80046798        = 0x80046798;  /* 4-insn lh-based signed getter for g_stage_id (legacy renamer: stage_GetId) */
+get_sys_video_mode_80083688  = 0x80083688;  /* 4-insn lw-based getter for g_sys_video_mode (legacy renamer: sys_GetVideoMode) */
+empty_stub_80046954          = 0x80046954;  /* literal `jr ra; nop` -- 2 insns total (legacy renamer: snd_SeNullCallback -- a null SE callback table slot) */
+
+/* === Batch 6 refinement (2026-05-17) -- cross-validate `tools/rename_funcs.py` === */
+/* `tools/rename_funcs.py` ships a ~400-entry legacy rename map assembled from */
+/* prior Kengo affinity / size-match research that was never propagated into */
+/* `named_syms.txt`. The three entries below pass cross-validation against the */
+/* current asm bodies; the rest of the file's 7 batch-6 'low' wrappers either */
+/* (a) have legacy names that conflict with their body's named callees, or */
+/* (b) lack callsite context to distinguish their role.  See */
+/* `docs/naming/MISNOMERS.md` and `tools/rename_funcs.py` for the full delta. */
+math_Distance3D_80017748     = 0x80017748;  /* vec3 sub + >>2 + sum-after-helper + <<2 == magnitude-with-overflow-guard. Exact match with legacy `math_Distance3D`. */
+camera_InitBoneData_80047210 = 0x80047210;  /* memcpy(g_cam_bone_data, D_80101E08, 0x20) + halve 3 halfword fields. Legacy `camera_InitBoneData` is an exact-shape match. */
+camera_InitBone2_80047570    = 0x80047570;  /* camera_InitRotation(&g_cam_bone_data2) + g_cam_interp=4. Legacy `camera_InitBone2` matches the body 1:1 (it's the second cam bone bank init). */
+
+/* === Batch 4 data-symbol renames (2026-05-17) === */
+/* Six high-confidence data globals identified by access-pattern review */
+/* of the top-30 most-referenced unnamed D_* symbols.  See evidence at */
+/* docs/naming/data_evidence/{addr}.md for each. */
+/* */
+/* SHA1-invariance: same construction as the batch-6 function renames -- */
+/* symbol-only additions cannot affect PS-X EXE bytes (objcopy strips ELF). */
+g_isqrt_lut                  = 0x8008D118;  /* byte LUT: `lbu val,LUT($at)`, indexed by sum-of-squares for magnitude estimation */
+g_frame_parity               = 0x800A36AC;  /* double-buffer parity word, `& 1` mask used to alternate framebuffers/CLUTs */
+g_stage_data_ptr             = 0x800A3708;  /* pointer to current stage data; +0x4C/+0x54 are collision center fields */
+g_practice_menu_table        = 0x80101EC8;  /* base of per-character/practice-menu records, stride 0x44C (1100 bytes; matches D_80101F00 char struct) */
+g_practice_menu_index        = 0x800A3748;  /* index into g_practice_menu_table; -1 == none */
+g_palette_base_ptr           = 0x800A378C;  /* base of palette/CLUT table, 4-byte stride, dynamically allocated */
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
