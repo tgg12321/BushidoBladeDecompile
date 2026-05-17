@@ -2081,6 +2081,14 @@ g_fade_dispatch_arg1_cache                              = 0x800A354C;  /* cached
 /* -- u8[2] busy-flag pair for 4th slot family (gpu cmd 0x210009/0A). */
 g_text1b_slot_d_flags                                   = 0x800F1159;  /* u8[2] busy-flag pair for slot family D (sibling to slot_a/b/c) */
 
+/* === Tournament round char-id tables (2026-05-17) -- 2 highs === */
+/* From code6cac_b.c around line 3920: 2 parallel u8 tables indexed */
+/* by g_match_round_index (D_800A3874) * 2 + variant; each round/variant */
+/* combination yields a character ID written to g_practice_lesson_char_id */
+/* (D_8010277C + variant).  Used in AI-vs-AI or tournament mode setup. */
+g_round_p1_char_id_table                                = 0x801027A0;  /* per-round P1 character pick table (u8, stride 2 per round) */
+g_round_p2_char_id_table                                = 0x801027D8;  /* per-round P2 character pick table (parallel to _p1) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
