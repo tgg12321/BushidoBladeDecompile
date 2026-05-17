@@ -985,4 +985,49 @@ g_replay_camera_target_a                                = 0x80101FBC;  /* ref: g
 g_motion_keyframe_table_ptr                             = 0x801027B0;  /* ref: g_motion_data_base_ptr */
 g_blood_spot_timer                                      = 0x80104E80;  /* ref: md_game_check_change_main_mode_default */
 
+/* === Function-medium promotion pass 2 (2026-05-17) -- 30 entries === */
+/* Promotion of function mediums where the body's call-graph + data-refs */
+/* uniquely identify the function's role.  Each was verified via the */
+/* evidence file's body summary + an asm-fingerprint pass.  All are at */
+/* not-yet-named addresses (no co-alias conflict).  See */
+/* docs/naming/evidence/ for per-function evidence. */
+/* Char / motion subsystem (4) */
+char_get_motion_keyframe_table_entry_prev_80021904      = 0x80021904;  /* reads D_80101F4E (prev keyframe field, +0x4E in char_state) */
+motion_dispatch_event_handler_80032854                  = 0x80032854;  /* 255-insn motion dispatcher; calls func_80061250/61658/etc text1b emitters */
+motion_ex_init_state_b_80065134                         = 0x80065134;  /* 2nd motion-ex init: writes D_800F0BBE counter (paired with g_motion_ex_counter_p2) */
+motion_ex_init_state_c_80065264                         = 0x80065264;  /* 3rd motion-ex init: writes D_800F0BC8 counter */
+motion_ex_play_id5_dynamic_80065484                     = 0x80065484;  /* motion_SetExMotion(5) with 1x/2x/3x step multiplier */
+motion_ex_play_idCE_80065680                            = 0x80065680;  /* motion_SetExMotion(0xC) + (0xE) with 11-play cap */
+/* File-IO / game-input state machine (3) */
+file_io_state_advance_80038658                          = 0x80038658;  /* state-machine advance on D_800A31F4; bios_FileClose_B on completion */
+game_input_tick_80038734                                = 0x80038734;  /* pad_FuncAnalog + file_io_state_advance per-frame; returns g_motion_state_code */
+file_io_state_dispatch_80038988                         = 0x80038988;  /* 186-insn higher-level dispatcher on game_input_tick result */
+/* Effect / particle subsystem (5) */
+efc_anim_vehicle_setup_80049718                         = 0x80049718;  /* 197-insn: emits per-effect OT entries; handles free vs vehicle-mounted */
+efc_rob_type_dispatch_80049584                          = 0x80049584;  /* diffs D_80099C50 vs D_800EF980, dispatches efc_rob_set_type_particle on change */
+efc_gte_setup_and_draw_80067200                         = 0x80067200;  /* GTE rotation matrix loaded from g_scratchpad_ptr_30, textured-quad render */
+efc_init_phase1_setup_buffer_800678A8                   = 0x800678A8;  /* effect-init phase 1: type code + texture dims + per-mode defaults */
+efc_init_phase2_randomize_80067D14                      = 0x80067D14;  /* effect-init phase 2: per-particle randomisation via bb2_rand + GTE transforms */
+/* SEQ / SPU channel control (3) -- D_80106F28 = g_seq_bank_table */
+seq_channel_byte_advance_80085064                       = 0x80085064;  /* SEQ delta-time decoder: 7-bit varint -> ch[0x88] */
+seq_channel_state_init_80085114                         = 0x80085114;  /* per-channel state-init in g_seq_bank_table */
+spu_channel_reset_80085270                              = 0x80085270;  /* single SPU channel reset (calls spu_NotifyChannel + spu_ResetCounter) */
+/* HUD / display (5) */
+disp_init_for_mode_80077820                             = 0x80077820;  /* loads config + disp_SetFramebufferMode + clears g_satan2_gauge_state */
+disp_apply_config_with_state_80077984                   = 0x80077984;  /* config + disp_SetFramebufferMode tail (sibling of disp_init_for_mode) */
+disp_init_video_overlay_80078824                        = 0x80078824;  /* video/overlay init: 3 progress counters + disp_SetFramebufferMode */
+hud_emit_warning_tiles_80060768                         = 0x80060768;  /* red-tinted warning tile emission; pulses via D_800A32B4/6 */
+hud_layout_emit_tiles_80073060                          = 0x80073060;  /* HUD multi-tile emission helper */
+/* Animation emit / text1b family (1) */
+anim_emit_21000CD_80061658                              = 0x80061658;  /* 2-variant opcode emitter (0x21000C/D) with cyan tint; sibling of anim_emit_210009 */
+/* AI + utility (5) */
+ai_compute_target_direction_80057094                    = 0x80057094;  /* AI 8-dir command translator using g_grid_pos_vec3 + getEnemyCharId */
+pack_status_nibble_triplet_80019488                     = 0x80019488;  /* returns 12-bit packed status: (D_80106A70/71/72 & 0xF) << {0,4,8} */
+stage_find_far_corners_with_rand_80022224               = 0x80022224;  /* picks 1 of 2 furthest stage corners; uses bb2_rand */
+gpu_enable_and_state_reset_80033898                     = 0x80033898;  /* mode-transition hook: gpu_EnableDisplay + reset frame_counter + mode=3 */
+sync_flag_check_advance_80069120                        = 0x80069120;  /* 44-byte record table accessor with dirty-bit sync side-effect */
+/* Misc (2) */
+clear_array_8010367E_80044498                           = 0x80044498;  /* clears g_tpage_slot_count[0..19] (20-entry s16 array zero loop) */
+audio_chain_fade_load_80046048                          = 0x80046048;  /* chained saFidLoad on tpage_slot_relocate(6, ...) */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
