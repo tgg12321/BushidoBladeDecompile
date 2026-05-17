@@ -31,7 +31,7 @@
 # --- break instruction (trap with code) ---
 func_800164F8   break_instruction        break 1; 10000-iter countdown loop
 func_80083698   break_instruction        break 0,259; div-by-zero handler shape
-func_800836B8   break_instruction        break 0,260; raw kernel/file trap wrapper
+md_gview_init   break_instruction        break 0,260; raw kernel/file trap wrapper (renamed from func_800836B8)
 
 # --- handwritten overflow-trapping ops ---
 func_80052C28   handwritten_overflow_op  sub $a1,$t0,$a1; addi $a0,$a0,-0x1000
@@ -44,7 +44,7 @@ func_80083220   sp_manipulation          setjmp/longjmp-style context save/resto
 
 # --- no jr $ra in body / orphaned fragment ---
 func_800790A4   no_return_fragment       1-insn `and $v0,$v0,$s5` only; falls through to next func
-func_800545F4   data_as_code             4 magic-constant lui+ori embedded as code; alabels D_800545F8/FC/00 access them as data
+myRobGeneiOpen  data_as_code             4 magic-constant lui+ori embedded as code; alabels D_800545F8/FC/00 access them as data (renamed from func_800545F4)
 func_800164AC   data_as_code             19 consecutive `lb $t0,off($zero)` discarding; no jr $ra
 
 # --- BIOS jumptable / syscall pattern (also catches as bios_or_syscall) ---
@@ -64,9 +64,9 @@ func_8007FEDC   cop0_op                  mfc0 $v0,$13 (Cause register); also Ent
 func_8004A348   handwritten_overflow_op  add $t0,$t0,$t0; text1b.c math lib
 func_8004A4E0   handwritten_overflow_op  addi $s0,$s0,0x4; text1b.c math lib
 func_8004A808   handwritten_overflow_op  add $a0,$a0,$a0; text1b.c math lib
-func_8004A940   handwritten_overflow_op  sub $t3,$t3,$t6; text1b.c math lib (1162 insns)
+calc_loc_mat_fw_8004A940  handwritten_overflow_op  sub $t3,$t3,$t6; text1b.c math lib (1162 insns) (renamed from func_8004A940)
 func_8004BB68   handwritten_overflow_op  addi $s4,$s4,0x20; text1b.c math lib
-func_8004BCC0   handwritten_overflow_op  addi $a0,$a0,-0x1; text1b.c math lib
+saTan2LineDraw  handwritten_overflow_op  addi $a0,$a0,-0x1; text1b.c math lib (renamed from func_8004BCC0)
 func_8004C1F4   handwritten_overflow_op  addi $s4,$s4,0x28; text1b.c math lib
 func_8004C404   handwritten_overflow_op  sub $t0,$t0,$s4; text1b.c math lib
 func_8004C994   handwritten_overflow_op  addi $a3,$a3,-0x1; text1b.c math lib
