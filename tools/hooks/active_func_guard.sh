@@ -59,6 +59,73 @@ if [ -z "$COMMAND" ]; then
     exit 0
 fi
 
+# === Worktree-aware short-circuit ===
+# The hook above resolved PROJECT_ROOT from the parent shell's cwd
+# (= the main repo). If the command is going to `cd` into a *different*
+# git worktree before running the gated git/dc operation, the relevant
+# state is THAT worktree's, not main's. A parallel sub-agent / parallel
+# docs worktree on its own branch should not be blocked by main's WIP.
+#
+# We only handle the leading `cd <path> && ...` form because that is
+# how the harness's Bash tool invocations target a worktree (no chdir
+# is otherwise possible from this side). Quoted and unquoted paths are
+# both supported. If the cd target resolves to a git toplevel different
+# from PROJECT_ROOT, we consult that worktree's own .bb2_active_func
+# and allow when it is absent / empty.
+parse_cd_target() {
+    local cmd="$1" rest target
+    case "$cmd" in
+        "cd "*) rest="${cmd#cd }" ;;
+        *)      printf '' ; return ;;
+    esac
+    # Trim leading whitespace
+    rest="${rest#"${rest%%[![:space:]]*}"}"
+    # Quoted form: pull everything between matched outer quotes
+    if [ "${rest#\"}" != "$rest" ]; then
+        target="${rest#\"}"
+        target="${target%%\"*}"
+    elif [ "${rest#\'}" != "$rest" ]; then
+        target="${rest#\'}"
+        target="${target%%\'*}"
+    else
+        # Unquoted: stop at the first ` && `, `;`, or trailing whitespace
+        target="${rest%% &&*}"
+        target="${target%%;*}"
+    fi
+    printf '%s' "$target"
+}
+
+TARGET_PATH="$(parse_cd_target "$COMMAND")"
+if [ -n "$TARGET_PATH" ] && [ -d "$TARGET_PATH" ]; then
+    TARGET_ROOT=$(git -C "$TARGET_PATH" rev-parse --show-toplevel 2>/dev/null)
+    case "$TARGET_ROOT" in
+        [A-Za-z]:[/\\]*)
+            DRIVE=$(echo "$TARGET_ROOT" | cut -c1 | tr '[:upper:]' '[:lower:]')
+            REST="${TARGET_ROOT#?:}"
+            REST="${REST//\\//}"
+            TARGET_ROOT="/$DRIVE$REST"
+            ;;
+    esac
+    if [ -n "$TARGET_ROOT" ] && [ "$TARGET_ROOT" != "$PROJECT_ROOT" ]; then
+        # Command will execute in a different git worktree.
+        TARGET_MARKER="$TARGET_ROOT/.bb2_active_func"
+        if [ ! -s "$TARGET_MARKER" ]; then
+            # That worktree is between functions (or has no marker at all).
+            # The branch is logically independent of main's state. Allow.
+            echo "[hook] command targets worktree $TARGET_ROOT (no active marker); main's marker '$ACTIVE' does not apply." >&2
+            exit 0
+        fi
+        # Worktree has its own active marker. Re-target everything below
+        # to operate on that worktree instead of PROJECT_ROOT.
+        PROJECT_ROOT="$TARGET_ROOT"
+        ACTIVE_FILE="$TARGET_MARKER"
+        ACTIVE=$(tr -d '[:space:]' < "$ACTIVE_FILE")
+        if [ -z "$ACTIVE" ]; then
+            exit 0
+        fi
+    fi
+fi
+
 # Convert PROJECT_ROOT to a WSL-mountable path: /c/foo -> /mnt/c/foo.
 # Already-WSL or non-Windows paths pass through unchanged.
 case "$PROJECT_ROOT" in

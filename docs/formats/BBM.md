@@ -184,23 +184,112 @@ K123.BBM section 5 start:
 ```
 
 Not interpreted further by this document — the encoding requires reverse
-engineering the Marionation runtime functions in `src/code6cac_c_mid.c`
-(`motion_LoadPreCalcData_80037F08`, `motion_SetMotion`, `motion_make_table`,
-`motion_shift_check_m_hit_stop`, etc.).
+engineering the Marionation runtime functions. **Caveat:** the relevant
+runtime is *not* the obviously-named functions in `src/code6cac_c_mid.c`:
+
+* `motion_LoadPreCalcData_80037F08` is a 3-line wrapper around
+  `func_80079A30` + `bios_FormatDevice_B` — it doesn't touch BBM bytes.
+* `motion_SetMotion` is a game-state machine that selects motion IDs
+  based on input + character state — it never parses bytes either.
+* `motion_make_table` (in `src/ings2.c:162`) builds the global motion
+  index table.
+
+The actual section-5 decoder is likely a separate per-frame interpreter
+called from the main game loop after the BBM has been loaded into RAM;
+finding it requires either dynamic tracing or hunting for the function
+that reads from `D_800A38xx` motion-pointer storage with a per-joint
+stride that matches the K123.BBM section-5 byte pattern shown above.
 
 ## WIN.DAT
 
-`disc/MOTION/WIN.DAT` (387,072 bytes) does NOT use the BBM magic. Its first
-bytes are:
+`disc/MOTION/WIN.DAT` (387,072 = 0x5E800 bytes) is a fixed-stride table of
+**27 records of 0x3800 (14336) bytes each**. It does NOT carry the BBM `MC`/
+`MW` magic and uses a different (related) on-disc layout for victory-pose data
+consumed by the win-animation system.
+
+### File layout
 
 ```
-0000: 5804 81fe 4f00 9cfb 0000 01fc eeff b000
-0010: 7800 0000 0000 2cff 40fc abfc 12f8 c800
++0x00000  record  0  (0x3800 bytes)
++0x03800  record  1
++0x07000  record  2
+   ...
++0x5B000  record 26
+=0x5E800  EOF
 ```
 
-The file appears to be a fixed-stride table (~128 bytes per record visible in
-the hex pattern) of post-win pose / camera setup vectors used by the victory-
-animation system. Not a BBM bundle — not parsed by inspect_bbm.
+### Per-record layout
+
+Each 0x3800 record uses only the first `0x30F0` (12528) bytes; the trailing
+0x710 bytes are zero padding. (A few records pad starting one or two halfwords
+later — see `inspect_windat.py` summary column `used_bytes` for the exact
+boundary.)
+
+The used region is an array of 16-bit signed values. Their range across all
+27 records is `[-2048, +2048]` (one outlier of 5035 in records 8, 11, 23),
+matching the PSX SDK's standard `1.0 = 4096` (Q3.12) / `1.0 = 1024` (Q5.10)
+fixed-point conventions used by `gte_*` and `SVECTOR` data.
+
+A small set of field positions hold near-constant values across records,
+indicating they are anchored slots (not free-form):
+
+| Halfword offset | Typical value(s) | Likely role                          |
+|-----------------|------------------|--------------------------------------|
+| `0..1`          | (~1100, ±~1500)  | Per-pose tunable (varies per record) |
+| `5`             | `(0, -1023..-1024)` | Constant world-down unit vector?  |
+| `9`             | `(0, 0)` (~22/27 recs) | Sentinel / zero padding slot   |
+
+The combination of (a) fixed record stride, (b) tight i16 range typical of
+fixed-point geometry, and (c) recurring `0, -1024` slot strongly suggests
+each record is a sequence of `SVECTOR`/`MATRIX`-style transform keyframes for
+one victory pose. Exact per-frame schema (frame stride, packed component
+ordering, channel mapping) is not yet decoded.
+
+### Why 27 records?
+
+The number 27 has no obvious correspondence with the game's 8-character
+roster. Plausible (unverified) breakdowns: 8 characters × 3 win poses + 3
+shared cinematic poses; or 9 win-camera setups × 3 environments. Confirmation
+would require tracing the loader from `motion_*` runtime calls.
+
+### Related code
+
+* `src/code6cac_c_mid.c:184` — `motion_LoadPreCalcData_80037F08(a0, a1)`
+* `src/code6cac_c_mid.c:607` — `motion_shift_check_m_hit_stop`
+* `src/code6cac_c_mid.c:883` — `motion_SetMotion`
+* `src/ings2.c:162`  — `motion_make_table`
+* `src/ings2.c:525`  — `motion_Open`
+
+(The same set of motion-system callers consume both BBM and WIN.DAT.)
+
+### Inspector
+
+```
+python tools/inspect_windat.py disc/MOTION/WIN.DAT            # summary table
+python tools/inspect_windat.py disc/MOTION/WIN.DAT --rec 0    # hex + i16 preview
+python tools/inspect_windat.py disc/MOTION/WIN.DAT --dump OUT # extract recNN.bin
+python tools/inspect_windat.py disc/MOTION/WIN.DAT --csv      # all values as CSV
+```
+
+### Verified by
+
+* All 27 records are exactly 0x3800 bytes (file size 0x5E800 / 0x3800 = 27.0).
+* Zero-run analysis: largest zero runs across the file occur every 0x3800
+  bytes (at file offsets 0x30F0, 0x68F0, 0xA0F0, 0xD8F0, …), confirming the
+  record boundary.
+* i16 range across all 27 records is `[-2048, +2048]` with three single-record
+  outliers (5035) — consistent with PS1 fixed-point geometry data, not RGBA,
+  audio samples, or compressed text.
+* Halfword position 5 contains `(0, -1023)` or `(0, -1024)` in 19 of 27
+  records and stays within `±32` of zero / `±64` of -1024 in the remaining
+  records (no record contains a wildly different value at this slot).
+
+### Unverified / TODO
+
+* Per-frame structure of each record (frame stride, channel order).
+* Mapping of record index → character / win pose / camera setup.
+* Whether WIN.DAT is a stripped variant of BBM section 5 or a fully distinct
+  schema (the absence of any per-record header argues for the latter).
 
 ## Related code
 
@@ -248,5 +337,5 @@ python tools/inspect_bbm.py <dir>/               # iterate every BBM in a dir
   `0x000C` / `0x80xx` series).
 * Section 5 keyframe encoding (would require dynamic analysis of
   `motion_SetMotion` and the Marionation step functions).
-* Whether `WIN.DAT` is a variant of BBM section 5 or an entirely distinct
-  format.
+* See "Unverified / TODO" under the WIN.DAT section above for that file's
+  open items.

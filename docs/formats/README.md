@@ -7,13 +7,15 @@ the Bushido Blade 2 (SLUS-00663) disc.
 
 | Format     | Spec                  | Inspector tool             | Status                | Files on disc            |
 |------------|-----------------------|----------------------------|-----------------------|--------------------------|
-| **NDATA**  | [NDATA.md](NDATA.md)  | `tools/inspect_ndata.py`   | Fully reversed        | `disc/NDATA/NDATA.{DAT,INF}` |
+| **NDATA**  | [NDATA.md](NDATA.md)  | `tools/inspect_ndata.py`, `tools/extract_ndata_names.py` | Fully reversed; file-ID -> name map in `ndata_filemap.csv` | `disc/NDATA/NDATA.{DAT,INF}` |
 | **BBM**    | [BBM.md](BBM.md)      | `tools/inspect_bbm.py`     | Partially reversed (containers, not section-5 keyframe encoding) | `disc/MOTION/*.BBM` |
+| **WIN.DAT**| [BBM.md#WIN.DAT](BBM.md#windat) | `tools/inspect_windat.py` | Structure reversed (27×0x3800 records, i16 fixed-point); per-frame schema TBD | `disc/MOTION/WIN.DAT` |
 | **TIM**    | [TIM.md](TIM.md)      | `tools/inspect_tim.py`     | Standard PSX format — fully implemented (PNG export) | `disc/TIM2D/*.TIM`, `disc/STR/TITLE.TIM` |
-| **STAGE_BIN** | [STAGE_BIN.md](STAGE_BIN.md) | `tools/inspect_stage.py`   | Container reversed; inner Marionation geometry partial | `disc/{LOADSE,LOADSE1}/STAGE*.BIN`, `disc/U_PIC/STG*.BIN`, `disc/TIM2D/STG*.BIN`, plus SEL/NAR/MOD/STAFF/D_SEL BINs |
+| **STAGE_BIN** | [STAGE_BIN.md](STAGE_BIN.md) | `tools/inspect_stage.py`, `tools/scan_container.py` | Container reversed (incl. wrap5 family TIM/VAB embeds); inner Marionation geometry partial | `disc/{LOADSE,LOADSE1}/STAGE*.BIN`, `disc/U_PIC/STG*.BIN`, `disc/TIM2D/STG*.BIN`, plus SEL/NAR/MOD/STAFF/D_SEL BINs |
 | **BNK**    | [BNK.md](BNK.md)      | `tools/inspect_bnk.py`     | Reversed (VAB body)   | `disc/TIM2D/GAME*.BNK`   |
 | **SE**     | [SE.md](SE.md)        | (uses `inspect_bnk.py` / `inspect_stage.py`) | Container reversed (= one STAGE record) | `disc/LOADSE/*.SE` |
 | **STR**    | [STR.md](STR.md)      | `tools/inspect_str.py`     | Standard PSX format — documented and inspected | `disc/STR/OPENING.STR` |
+| **MOVOVL** | [MOVOVL.md](MOVOVL.md)| `tools/inspect_movovl.py`  | PS-X EXE overlay characterised (header, BIOS, libs); decoder internals from PsyQ library | `disc/STR/MOVOVL.EXE` |
 | **XA**     | [XA.md](XA.md)        | (external tools)           | Standard PSX format — documented | `disc/XA_{0,1}/*.XA`, `disc/LOADSE/BB2_M*.XA` |
 
 ## Bird's-eye view of the disc
@@ -28,7 +30,7 @@ disc/
 ├── MOTION/
 │   ├── COMMON.BBM (162 KB)      System animations (MC magic)
 │   ├── {GN,GS,K123,...}.BBM     Per-character motion bundles (MW magic)
-│   └── WIN.DAT (378 KB)         Victory-pose tables (separate format)
+│   └── WIN.DAT (378 KB)         Victory-pose tables: 27 x 0x3800 fixed-stride records
 ├── LOADSE/                      Stage 00–09 bundle + system audio
 │   ├── STAGE{00..09}.BIN        6-record container per stage
 │   ├── BB2_M{1,2,3}.XA          Music banks
