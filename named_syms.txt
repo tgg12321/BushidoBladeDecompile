@@ -755,4 +755,14 @@ g_text1b_glyph_cursor           = 0x800F1180;  /* pointer-cursor over glyph data
 g_text1b_render_arg_cache       = 0x800F1178;  /* cached caller-arg0 in text1b render path; consumed by deeper functions */
 g_replay_attack_pos_x           = 0x80101E3C;  /* X position for replay-camera attack-number selection; paired with D_80101E44 */
 
+/* === Data-symbol batch 8 (2026-05-17) -- 8 highs + 18 mediums === */
+g_alarm_active_sentinel         = 0x800A26DE;  /* 0x7F = alarm armed, 0 = inactive; tested in irq_ProcessPending */
+g_spu_reg_pair                  = 0x800F7420;  /* volatile u16[2] SPU register pair; written by spu_WriteReg16 */
+g_memcard_event_io_complete     = 0x800A37DC;  /* BIOS event handle: class 0xF4000001 mode 4 (memcard I/O complete) */
+g_memcard_event_disconnect      = 0x800A37F0;  /* BIOS event handle: class 0xF4000001 mode 0x8000 (memcard disconnect/error) */
+g_mental_bar_packet_count       = 0x800A37A0;  /* packet-count companion to g_mental_bar_packet_buf at D_800A37A8 (+8 offset) */
+g_pad_analog_frame_counter      = 0x800A3814;  /* halfword incremented per frame in pad_FuncAnalog */
+g_round_frame_counter           = 0x800A3858;  /* match-elapsed-frame counter; centiseconds via (val % 30) * 100 / 30 */
+g_blood_spot_pos                = 0x800A26CC;  /* 12-bit packed position written by SetBloodSpot (paired with g_blood_spot_timer) */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
