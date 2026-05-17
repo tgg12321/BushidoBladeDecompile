@@ -1736,6 +1736,13 @@ g_leaf_random_buffer                                    = 0x800A3750;  /* s16 ra
 /* clears entries indexed by *(u16*)D_800A3468 (the text1b render state). */
 g_motion_state_flag_table                               = 0x800F10D0;  /* 24-entry s32 flag table; idx from *(u16*)D_800A3468; (g_motion_ex_flag_table_4 at +0x10 is the same array offset 4) */
 
+/* === GPU MoveImage wrapper (2026-05-17) -- 1 high === */
+/* func_8007B6C8: calls gpu_DebugCheckRect with the literal string */
+/* "MoveImage" (at D_80015F74), validates rect, packs (x,y) args, */
+/* submits via g_gpu_dev_table[2] with cmd 0x14 (=20 bytes = RECT prim). */
+/* Signature (RECT*, s16 x, s16 y) matches PSX libgpu's MoveImage. */
+gpu_MoveImage                                           = 0x8007B6C8;  /* PSX libgpu MoveImage(RECT *rect, int x, int y) -- VRAM rect-copy primitive */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
