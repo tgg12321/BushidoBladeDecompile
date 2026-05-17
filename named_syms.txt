@@ -2452,6 +2452,13 @@ g_spu_dma_chcr_reg_ptr                                  = 0x800A2CE8;  /* pointe
 g_weapon_frame_data_base                                = 0x80101BC8;  /* base ptr to weapon frame data; addressed as (row*16 + col)*32 + base (= 32-byte cell stride) */
 g_weapon_frame_y_offset                                 = 0x800F66F8;  /* Y-offset added to *(u16*)(base + 0x12); reset to 0 by spu_ResetCounter (likely misnamed; actually wave/frame offset reset) */
 
+/* === Attack scale factor extensions + effect slot field+2 (2026-05-17) -- 5 highs === */
+g_attack_scale_w                                        = 0x80094B9C;  /* attack scale factor (extends _x/_y/_z series at +6) */
+g_attack_scale_v                                        = 0x80094B9E;  /* attack scale factor (+8) */
+g_effect_slot_a_field_2                                 = 0x800F6462;  /* effect slot A field at +2 (= val & 0xFFF; 12-bit value) */
+g_effect_slot_b_field_2                                 = 0x800F6342;  /* effect slot B field +2; +0x120 stride from slot A */
+g_effect_slot_c_field_2                                 = 0x800F62E2;  /* effect slot C field +2 */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
