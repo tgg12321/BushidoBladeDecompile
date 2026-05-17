@@ -1858,6 +1858,14 @@ g_stage_id_arg                                          = 0x800A3228;  /* stage 
 g_spu_voice_alloc_current_a0                            = 0x800A2880;  /* current allocator a0 (0 = none); compared against incoming alloc requests */
 g_spu_voice_alloc_offset                                = 0x800A2884;  /* offset for voice-address calc; (0x10000 - D) << g_spu_addr_shift */
 
+/* === Sound subsystem misc state (2026-05-17) -- 6 highs === */
+g_snd_cached_bgm_arg                                    = 0x800A3248;  /* memoization cache for snd_PlayBgm helper -- skip re-init if arg matches */
+g_snd_3d_angle_h_b                                      = 0x800EEE00;  /* sibling pair to g_sound_3d_angle_h/v but for the bone-data2 audio context */
+g_snd_3d_angle_v_b                                      = 0x800EEE02;  /* sibling pair */
+g_snd_3d_pos_x                                          = 0x800EEE1C;  /* position triple X (from D_80101E1C) */
+g_snd_3d_pos_y                                          = 0x800EEE20;  /* position triple Y (from D_80101E20) */
+g_snd_3d_pos_z                                          = 0x800EEE24;  /* position triple Z (from D_80101E24 + 0x6590) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
