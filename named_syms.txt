@@ -2132,6 +2132,13 @@ g_effect_rng_state                                      = 0x800A3418;  /* persis
 g_text_render_cursor_a                                  = 0x800A32B4;  /* u16 cursor used by func_80060768; reset by func_80060758 */
 g_text_render_cursor_b                                  = 0x800A32B6;  /* u16 paired cursor */
 
+/* === Panel sibling-activation lookup (2026-05-17) -- 2 highs === */
+/* From text1b.c func_800493E4: when a panel/slot is activated, also */
+/* activate its sibling pair from these tables.  Indexed by arg0 * 2 */
+/* (so each arg0 entry is 2 bytes: sibling_a, sibling_b; 0xFF = none). */
+g_panel_sibling_lookup_a                                = 0x80099CC8;  /* first byte of each 2-byte sibling pair (paired with _b at offset +1) */
+g_panel_sibling_lookup_b                                = 0x80099CC9;  /* second byte = &D_80099CC8 + 1 */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
