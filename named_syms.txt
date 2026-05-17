@@ -2448,6 +2448,10 @@ g_spu_dma_madr_reg_ptr                                  = 0x800A2CE0;  /* pointe
 g_spu_dma_bcr_reg_ptr                                   = 0x800A2CE4;  /* pointer to SPU DMA BCR register (block count) */
 g_spu_dma_chcr_reg_ptr                                  = 0x800A2CE8;  /* pointer to SPU DMA CHCR register (channel control) */
 
+/* === Weapon frame data base + Y-offset (2026-05-17) -- 2 highs === */
+g_weapon_frame_data_base                                = 0x80101BC8;  /* base ptr to weapon frame data; addressed as (row*16 + col)*32 + base (= 32-byte cell stride) */
+g_weapon_frame_y_offset                                 = 0x800F66F8;  /* Y-offset added to *(u16*)(base + 0x12); reset to 0 by spu_ResetCounter (likely misnamed; actually wave/frame offset reset) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
