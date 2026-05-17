@@ -2242,6 +2242,14 @@ g_motion_func_dispatch_offset                           = 0x8009BA60;  /* per-id
 g_byte_lookup_table_256                                 = 0x8009AD18;  /* 256-byte table indexed by `i & 0xFF`; used in text1b.c per-byte processing */
 g_player_byte_flags_table                               = 0x8009BC7C;  /* per-player byte flags indexed by D_800A3561; bit & 2 test */
 
+/* === 3D sound data buffer cluster (2026-05-17) -- 6 highs === */
+g_sound_3d_data_buffer                                  = 0x80102C00;  /* base of 3D-sound data buffer; cursor advances per primitive */
+g_sound_3d_cursor                                       = 0x800A3820;  /* current cursor into g_sound_3d_data_buffer */
+g_sound_3d_dma_snapshot                                 = 0x800A3808;  /* snapshot of g_dma_buf_base at start of 3D sound batch */
+g_sound_3d_pos_x_src                                    = 0x80101E1C;  /* source X for g_snd_3d_pos_x copy */
+g_sound_3d_pos_y_src                                    = 0x80101E20;  /* source Y for g_snd_3d_pos_y copy */
+g_sound_3d_pos_z_src                                    = 0x80101E24;  /* source Z; gets +0x6590 offset when copied to g_snd_3d_pos_z */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
