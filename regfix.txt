@@ -1984,28 +1984,7 @@ single_game_VoiceContorol: reorder 8,5,7,6 @ 5-8
 # func_8005C8A8 path; target materializes zero in a0.
 func_80016E60: subst ".*" "addu\t$4,$0,$zero" @ 66
 
-# func_800841E0: interleave table setup, offset arithmetic, and callee-save
 # stores to match the original scheduling.
-func_800841E0: reorder 2,4,3,8,12,13,14,15,16,17,18,9,19,5,6,7,10,11 @ 2-19
-func_800841E0: subst "\$2,\$2,\$18" "$2,$18,$2" @ 30
-func_800841E0: subst "\$3" "$6" @ 34
-func_800841E0: fill_delay @ 34 <- 33
-func_800841E0: subst "nop.*" "sll\t$4,$20,8" @ 49
-func_800841E0: subst "\$20" "$5" @ 56
-func_800841E0: subst "\$17,\$21" "$2,$7" @ 57
-func_800841E0: subst "\$17,\$17" "$2,$2" @ 58
-func_800841E0: subst "\$17,\$17" "$17,$2" @ 59
-func_800841E0: subst "\$3,\$2,\$3" "$2,$2,$3" @ 67
-func_800841E0: subst "\$2,\$2,1" "$4,$2,1" @ 68
-func_800841E0: subst "\$3,\$3,\$2" "$2,$2,$4" @ 69
-func_800841E0: subst "bne\t\$3" "bne\t$2" @ 70
-func_800841E0: subst ".*" "addu\t$2,$2,$3" @ 67
-func_800841E0: subst ".*" "addu\t$4,$2,1" @ 68
-func_800841E0: subst ".*" "slt\t$2,$2,$4" @ 69
-func_800841E0: subst ".*" "bne\t$2,$0,.L35" @ 70
-func_800841E0: reorder 68,67,69,70,71 @ 67-71
-func_800841E0: subst "\$3" "$6" @ 81
-func_800841E0: subst "nop.*" "sll\t$4,$20,8" @ 82
 
 # saTan5TakeAnim2: 154-insn line-sphere intersection, compound regfix
 # 152 TEXT instructions (0-151) from dump_text_indices (--expand-div, .word not counted)
