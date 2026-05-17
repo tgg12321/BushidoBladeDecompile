@@ -1825,6 +1825,13 @@ g_cam_bone_data_template                                = 0x80101E08;  /* 32-byt
 g_cam_bone_data_h0                                      = 0x800EEDD6;  /* s16 field halved by camera_InitBoneData (h >> 1) */
 g_cam_bone_data_h1                                      = 0x800EEDD8;  /* s16 field halved by camera_InitBoneData; new_var pointer base */
 
+/* === 3D sound positioning result pair (2026-05-17) -- 2 highs === */
+/* From sound.c around line 542: a helper computes 3D-sound-positioning */
+/* angles using single_game_getEnemyCharId and stores them as a paired */
+/* {s16, s16} returned via &D_800A33C8 to the caller. */
+g_sound_3d_angle_h                                      = 0x800A33C8;  /* horizontal angle (-single_game_getEnemyCharId(y, dist)) */
+g_sound_3d_angle_v                                      = 0x800A33CA;  /* vertical angle (single_game_getEnemyCharId(x, z) result) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
