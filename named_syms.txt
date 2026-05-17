@@ -2439,6 +2439,15 @@ g_snd_stream_header_field_8                             = 0x800A9D08;  /* offset
 g_camera_sector_data_table                              = 0x800963EC;  /* camera per-entry data table; each entry has .start_sector field used by special_camera_check_pos_outside_ground */
 g_snd_stream_slot_field_4                               = 0x800EED14;  /* offset +4 of g_snd_stream_slot_table entries (per-slot data) */
 
+/* === SPU DMA control registers + transfer state (2026-05-17) -- 5 highs === */
+/* From main.c spu_TransferData family around line 1545-1557.  These */
+/* are SPU DMA register pointers + cached addr/length values. */
+g_spu_dma_madr_low                                      = 0x800A2D30;  /* SPU DMA source address (low word; args[-1]) */
+g_spu_dma_madr_high                                     = 0x800A2D34;  /* SPU DMA upper part / block count = (args[0] >> 6) + (args[0] & 0x3F != 0) */
+g_spu_dma_madr_reg_ptr                                  = 0x800A2CE0;  /* pointer to SPU DMA MADR register */
+g_spu_dma_bcr_reg_ptr                                   = 0x800A2CE4;  /* pointer to SPU DMA BCR register (block count) */
+g_spu_dma_chcr_reg_ptr                                  = 0x800A2CE8;  /* pointer to SPU DMA CHCR register (channel control) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
