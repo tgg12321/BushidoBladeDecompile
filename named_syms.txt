@@ -1716,6 +1716,19 @@ g_snd_ch_texture_tpage                                  = 0x800F66B8;  /* per-ch
 g_snd_ch_texture_meta_ptr                               = 0x800F6700;  /* per-channel secondary ptr */
 g_snd_ch_texture_max_frame                              = 0x800FF634;  /* max frame offset (compared against arg) */
 
+/* === Leaf/foliage placement cluster (2026-05-17) -- 8 highs === */
+/* From code6cac_b.c mk_leaf_newpos (line 3388): places 6 leaves per */
+/* stage, with per-cat action lookup tables and random placement. */
+/* "leaf" likely refers to foliage/falling-leaves stage effect. */
+g_leaf_slot_state                                       = 0x800A3918;  /* 6-byte slot state table (per-leaf counter byte) */
+g_leaf_slot_state_end                                   = 0x800A391E;  /* end marker for slot iteration (6 bytes after base) */
+g_leaf_position_table                                   = 0x80107850;  /* 12-byte stride per leaf, 6 entries = 72-byte position array */
+g_leaf_stage_data_table                                 = 0x8008E914;  /* per-stage leaf data (8-byte stride, indexed by g_stage_id_current) */
+g_leaf_action_id_base                                   = 0x8008EBF4;  /* per-cat base action IDs */
+g_leaf_action_threshold_a                               = 0x8008EBFC;  /* per-cat threshold (cat*2 index) */
+g_leaf_action_threshold_b                               = 0x8008EBFD;  /* per-cat threshold paired with _a */
+g_leaf_random_buffer                                    = 0x800A3750;  /* s16 random/scratch buffer (~0x7B entries) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
