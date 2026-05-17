@@ -1788,6 +1788,13 @@ mode_handler_20_CountIterator                           = 0x8003C42C;  /* counts
 mode_handler_21_FrameTimerSfx                           = 0x8003C560;  /* increments g_practice_loop_frame, plays SFX 0xA4/0xA7 at counter==0x1E (30 frames) */
 mode_handler_29_StageLeafUpdate                         = 0x8003CF84;  /* calls mk_leaf_newpos + reads char struct fields via &D_80101ED2 + D_800A3748 * 0x44C */
 
+/* === Final 2 mode handlers from asm (2026-05-17) -- 2 highs === */
+/* Modes 0 and 7 are asm-only; decoded directly from asm/6CAC.s. */
+mode_handler_00_GameInit                                = 0x8001DCB0;  /* main game-init: obj_InitChars + gpu_InitDisplay/Disable (conditional on D_800A3768 != 0x14) + gnd_disp_loop_ctrl + gpu_EnableDisplay + gnd_open */
+mode_handler_07_SubModeTransition                       = 0x8003BCB4;  /* increments g_practice_loop_frame, calls md_game_check_change_sub_mode, branches on pad input (0x400040 = cross+circle), then katinuki_game_setData */
+
+/* g_module_func_tbl coverage: 34/34 modes named (100% complete) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
