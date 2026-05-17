@@ -441,7 +441,12 @@ print(f'Replaced {func} in {src}')
             echo "         bytes on its own, use \`dc.sh verify-c ${ARG1}\` instead." >&2
             echo >&2
         fi
-        python3 tools/regfix_verify.py "$ARG1" 2>&1
+        # Forward ALL args (not just $ARG1) so flags like `--force` reach
+        # regfix_verify.py. Previously `dc.sh verify --all --force` silently
+        # dropped `--force` and ran the SHA1 short-circuit path, hiding
+        # cascading per-function regressions until they accumulated enough
+        # to break a downstream commit. See feedback_cheat_cleanup_techniques.md.
+        python3 tools/regfix_verify.py "$@" 2>&1
         ;;
 
     verify-c)
