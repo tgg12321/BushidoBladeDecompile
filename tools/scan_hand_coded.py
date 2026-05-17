@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Detect candidate hand-coded-asm functions by static signature.
 
-The 6 strong signals from memory/feedback_hand_coded_asm_recognition.md
+The 7 strong signals from memory/feedback_hand_coded_asm_recognition.md
 that are tractable to detect from target.s alone:
 
   S1. Uniform `multu`/`mflo` pacing. Every multu/mflo pair separated
@@ -33,6 +33,22 @@ that are tractable to detect from target.s alone:
       indirect call to $tN" — the kernel dispatcher reads $tM after the
       jump is committed. Like S1/S2, this is GCC-impossible: even one
       occurrence is decisive evidence of hand-coded asm.
+
+  S7. Callee-saved register read with no corresponding save. Any
+      $s0-$s7 appears in instruction operands (as source, destination,
+      or load/store base) but no `sw $sN, K($sp)` save exists anywhere
+      in the function. GCC 2.7.2 unconditionally generates the save when
+      it allocates a callee-saved register; absence indicates a custom
+      calling convention where the caller has set up $sN as input and
+      the callee is permitted to clobber it. ($fp/$30 is excluded — GCC
+      2.7.2 with PsyQ flags treats $30 in register-asm-pinned contexts
+      as not-callee-saved, so $fp use-without-save can appear in pure-C
+      output and is not decisive on its own.) Like S6, even one match is
+      decisive evidence of hand-coded asm: there is no C-level mechanism
+      to read from $s0 (or write to it) while preventing GCC from
+      generating the prologue save. Originated 2026-05-16 from the
+      func_8004A808 / func_8004BB68 / func_8004C1F4 / func_80050774
+      polygon-dispatch cluster that S1-S6 miss.
 
 Output modes:
   --single <func>  : JSON for one function (consumed by memory_check.py)
@@ -68,6 +84,14 @@ ENDLABEL_RE = re.compile(r"^\s*endlabel\s+\w+")
 LOAD_OPS = {"lb", "lbu", "lh", "lhu", "lw", "lwl", "lwr"}
 STORE_OPS = {"sb", "sh", "sw", "swl", "swr"}
 
+# Callee-saved general registers tracked by S7. $fp ($30) is excluded —
+# GCC 2.7.2 with PsyQ flags doesn't always emit the save for $30 when it
+# appears via register-asm pin, so a $fp-without-save case is not decisive
+# on its own.
+CALLEE_SAVES = {f"s{i}" for i in range(8)}
+# `sw $reg, K($sp)` — matches `sw $s1, 16($sp)` or `sw $s1, -16($sp)` etc.
+SP_REL_SAVE_RE = re.compile(r"^\$(\w+)\s*,\s*-?\w+\(\$sp\)\s*$")
+
 
 @dataclass
 class Insn:
@@ -94,30 +118,38 @@ class FuncSignals:
     s5_detail: str
     s6_bios_jumptable: bool
     s6_detail: str
-    score: int      # total signals hit (0-6)
+    s7_no_save_callee_use: bool
+    s7_detail: str
+    score: int      # total signals hit (0-7)
     tier: str       # STRONG / POSSIBLE / TIGHT_C / LOW
     tier_reason: str
     opcode_sig: str  # hash key for cluster detection
 
 
-def classify_tier(s1: bool, s2: bool, s6: bool, score: int) -> tuple[str, str]:
+def classify_tier(s1: bool, s2: bool, s6: bool, s7: bool, score: int) -> tuple[str, str]:
     """Tier the function by which signals fire.
 
-    S1 (uniform multu pacing), S2 (empty-body branch), and S6 (BIOS
-    jumptable with delay-slot register setup) are the "GCC-impossible"
+    S1 (uniform multu pacing), S2 (empty-body branch), S6 (BIOS
+    jumptable with delay-slot register setup), and S7 (callee-saved
+    register read with no corresponding save) are the "GCC-impossible"
     signals — patterns the compiler has no way to emit. S3/S4/S5 are
     tightness/cluster signals — also common in tight pure-C functions
     (e.g. the calc_fc_frame_8007EC5C GTE family).
 
     A 3+ score WITHOUT any GCC-impossible signal is most likely a
-    tight-C cluster, not hand-coded asm. Conversely, S6 alone is
-    decisive (the pattern is too specific to occur by accident); S1 or
-    S2 alone is enough to warrant investigation."""
-    impossible_hits = [name for name, hit in (("S1", s1), ("S2", s2), ("S6", s6)) if hit]
+    tight-C cluster, not hand-coded asm. Conversely, S6 or S7 alone is
+    decisive (both patterns are too specific to occur by accident); S1
+    or S2 alone is enough to warrant investigation."""
+    impossible_hits = [name for name, hit in (("S1", s1), ("S2", s2), ("S6", s6), ("S7", s7)) if hit]
     if s6:
         # S6 is the most specific GCC-impossible pattern: a single match
         # is essentially proof of hand-coded asm. Skip the tightness gate.
         return "STRONG", f"S6 (BIOS jumptable with delay-slot register setup) — GCC-impossible, decisive"
+    if s7:
+        # S7 is similarly decisive: there is no C-level mechanism to use
+        # $sN without forcing GCC to emit the prologue save. Even one
+        # unsaved callee-save use proves custom ABI.
+        return "STRONG", f"S7 (callee-saved register used without save) — GCC-impossible, decisive"
     if s1 and s2 and score >= 4:
         return "STRONG", "S1+S2 (both GCC-impossible) plus tightness — almost certainly hand-coded"
     if impossible_hits and score >= 3:
@@ -364,6 +396,43 @@ def signal_bios_jumptable(insns: list[Insn]) -> tuple[bool, str]:
     return False, "no BIOS jumptable call pattern"
 
 
+def signal_no_save_callee_use(insns: list[Insn]) -> tuple[bool, str]:
+    """S7: a callee-saved $sN ($s0-$s7) appears in instruction operands
+    (as source, destination, or load/store base) but no `sw $sN, K($sp)`
+    save exists in the function. GCC 2.7.2 unconditionally generates the
+    save when it allocates a callee-save. Absence means the caller has
+    set up $sN as input and the callee is allowed to clobber it (custom
+    calling convention, GCC-impossible to express in standard C).
+
+    Saves AND restores (`sw`/`lw $sN, K($sp)`) are excluded from the
+    "use" scan — they are prologue/epilogue artifacts paired with the
+    save, not function-body uses. $fp/$30 is also excluded — see
+    docstring at top of file."""
+    saved: set[str] = set()
+    used: set[str] = set()
+    for ins in insns:
+        # Sp-relative loads/stores: pair the save side, skip operand scan.
+        if ins.mnemonic in ("sw", "lw"):
+            m = SP_REL_SAVE_RE.match(ins.operands)
+            if m:
+                reg = m.group(1)
+                if ins.mnemonic == "sw" and reg in CALLEE_SAVES:
+                    saved.add(reg)
+                continue
+        # All other instructions: any $sN appearance counts as a use.
+        for r in re.findall(r"\$(\w+)", ins.operands):
+            if r in CALLEE_SAVES:
+                used.add(r)
+    unsaved = used - saved
+    if unsaved:
+        sorted_unsaved = sorted(unsaved, key=lambda r: int(r[1:]))
+        return True, (
+            f"{len(unsaved)} unsaved callee-save use(s): "
+            f"{', '.join('$' + r for r in sorted_unsaved)}"
+        )
+    return False, "all callee-save uses have $sp save (or no callee-saves used)"
+
+
 def compute_opcode_sig(insns: list[Insn]) -> str:
     """Build a loose opcode-only signature for cluster detection.
     Strips registers, immediates, and operands entirely — keeps the
@@ -458,9 +527,10 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
         else:
             s5d = "no high-similarity siblings (jaccard < 0.5)"
         s6, s6d = signal_bios_jumptable(insns)
+        s7, s7d = signal_no_save_callee_use(insns)
 
-        score = sum([s1, s2, s3, s4, s5, s6])
-        tier, tier_reason = classify_tier(s1, s2, s6, score)
+        score = sum([s1, s2, s3, s4, s5, s6, s7])
+        tier, tier_reason = classify_tier(s1, s2, s6, s7, score)
         out.append(FuncSignals(
             func=name,
             src_file=str(p.relative_to(ROOT)),
@@ -472,6 +542,7 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
             s4_front_loads=s4, s4_detail=s4d,
             s5_cluster=s5, s5_detail=s5d,
             s6_bios_jumptable=s6, s6_detail=s6d,
+            s7_no_save_callee_use=s7, s7_detail=s7d,
             score=score,
             tier=tier,
             tier_reason=tier_reason,
@@ -501,9 +572,10 @@ def fmt_signals_human(s: FuncSignals) -> str:
         ("S4 front loads   ", s.s4_front_loads, s.s4_detail),
         ("S5 cluster       ", s.s5_cluster, s.s5_detail),
         ("S6 BIOS jumptable ", s.s6_bios_jumptable, s.s6_detail),
+        ("S7 unsaved $sN use", s.s7_no_save_callee_use, s.s7_detail),
     ]
     lines = [
-        f"  HAND_CODED: tier={s.tier}  score={s.score}/6  ({s.func}, {s.insn_count} insns)",
+        f"  HAND_CODED: tier={s.tier}  score={s.score}/7  ({s.func}, {s.insn_count} insns)",
         f"    Reason: {s.tier_reason}",
     ]
     for label, hit, detail in rows:
@@ -570,14 +642,17 @@ def main() -> int:
                 "4" if s.s4_front_loads else ".",
                 "5" if s.s5_cluster else ".",
                 "6" if s.s6_bios_jumptable else ".",
+                "7" if s.s7_no_save_callee_use else ".",
             ])
             note_bits = []
             if s.s5_cluster:
                 note_bits.append(f"cluster: {s.s5_detail.split(': ', 1)[-1]}")
             if s.s6_bios_jumptable:
                 note_bits.append(f"bios: {s.s6_detail.split(': ', 1)[-1]}")
+            if s.s7_no_save_callee_use:
+                note_bits.append(f"unsaved: {s.s7_detail.split(': ', 1)[-1]}")
             extra_note = ("  " + "  ".join(note_bits)) if note_bits else ""
-            print(f"   {s.score}/6    {s.insn_count:5}  {s.multu_count:6}  {s.func:40}  [{sig_letters}]{extra_note}")
+            print(f"   {s.score}/7    {s.insn_count:5}  {s.multu_count:6}  {s.func:40}  [{sig_letters}]{extra_note}")
         print()
 
     print(f"# scan_hand_coded: {len(sigs)} functions scanned in asm/funcs/")
@@ -586,11 +661,11 @@ def main() -> int:
     print_block(
         "STRONG candidates — almost certainly hand-coded asm",
         strong,
-        "S1 (uniform multu pacing), S2 (empty-body branch), and/or S6 "
-        "(BIOS jumptable with delay-slot register setup) fire — all "
-        "effectively impossible in GCC output. Treat as canonically-asm "
-        "absent strong counter-evidence; if not in inline_asm_canonical.txt, "
-        "investigate per skill §2.5.b.",
+        "S1 (uniform multu pacing), S2 (empty-body branch), S6 (BIOS "
+        "jumptable with delay-slot register setup), and/or S7 (unsaved "
+        "callee-save use) fire — all effectively impossible in GCC "
+        "output. Treat as canonically-asm absent strong counter-evidence; "
+        "if not in inline_asm_canonical.txt, investigate per skill §2.5.b.",
     )
     print_block(
         "POSSIBLE candidates — investigate",
