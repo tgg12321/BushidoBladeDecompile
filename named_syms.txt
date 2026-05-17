@@ -1673,6 +1673,22 @@ g_motion_ex_counter_id3                                 = 0x800F0BAE;  /* defaul
 g_motion_ex_counter_id4                                 = 0x800F0BB0;  /* default 0x40 */
 g_motion_ex_counter_id5                                 = 0x800F0BB2;
 
+/* === Voice-control state cluster (2026-05-17) -- 11 highs === */
+/* From code6cac.c around line 775-790 (voice packet table assignment) */
+/* and 1031-1038 (single_game_VoiceContorol's func_8001B138 reset). */
+/* sp.packets[0..3] are loaded from 4 VoicePacket-base addresses. */
+g_voice_packet_base_0                                   = 0x800FF580;  /* sp.packets[0] base (VoicePacket struct) */
+g_voice_packet_base_1                                   = 0x800FF584;  /* sp.packets[1] base */
+g_voice_packet_base_2                                   = 0x800FF5A4;  /* sp.packets[2] base */
+g_voice_packet_base_3                                   = 0x800FF5A8;  /* sp.packets[3] base */
+g_voice_state_word_a                                    = 0x800FF5C8;  /* state cluster cleared by func_8001B138 (single_game_VoiceContorol helper) */
+g_voice_state_word_b                                    = 0x800FF5CC;
+g_voice_state_word_c                                    = 0x800FF5D0;
+g_voice_state_half_a                                    = 0x800FF5D8;  /* s16 */
+g_voice_state_half_b                                    = 0x800FF5DA;  /* s16 */
+g_voice_state_word_d                                    = 0x800FF5DC;
+g_voice_state_word_e                                    = 0x800FF5E0;
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
