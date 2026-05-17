@@ -4193,7 +4193,7 @@ func_80074B18: subst "sra\s+\$3,\$fp,16" "sra	$2,$2,16" @ 107
 func_80074B18: subst "lbu\s+\$2,101\(\$4\)" "lbu	$3,101($4)" @ 106
 func_80074B18: subst "addu\s+\$2,\$2,3" "addu	$3,$3,3" @ 108
 func_80074B18: subst "slt\s+\$3,\$3,\$2" "slt	$2,$2,$3" @ 109
-func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L1076" @ 110
+func_80074B18: subst "bne\s+\$3,\$0,\.L\d+" "bne	$2,$0,.L1077" @ 110
 # Move convergence point: insert label after lw $7,16(sp)
 func_80074B18: insert_label ".LC846:" @ 116
 func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
@@ -4292,17 +4292,6 @@ func_8007C2A0: reorder 3,4,1,2 @ 1-4
 
 # func_80069AE4: hoist a0=p, a1=1 setup into each of the 3 branch tail blocks
 # (target schedules these inside branches; GCC defers them to merge point)
-func_80069AE4: insert_after "addiu	$5,$0,1" @ 35
-func_80069AE4: insert_after "addu	$4,$19,$0" @ 35
-func_80069AE4: insert_after "addiu	$5,$0,1" @ 47
-func_80069AE4: insert_after "addu	$4,$19,$0" @ 47
-func_80069AE4: insert_after "addiu	$5,$0,1" @ 59
-func_80069AE4: insert_after "addu	$4,$19,$0" @ 59
-func_80069AE4: delete @ 68
-func_80069AE4: subst "addiu\s+\$5,\$zero,1" "addu	$17,$0,$zero" @ 70
-func_80069AE4: delete @ 84
-func_80069AE4: delete @ 90
-func_80069AE4: insert "addu	$4,$sp,24" @ 86
 
 # regfix-suggest: auto-generated rules for func_8006BD28
 
@@ -5009,3 +4998,9 @@ func_80048530: subst "addu\s+\$3,\$4,\$2" "addu $v1,$v0,$v1" @ 9
 func_80048530: delete @ 8
 func_80048530: reorder 3,5,6,4,1,2,7,9,8 @ 1-9
 func_80048530: reorder 28,29,30,31,32,33,27,34,35 @ 27-35
+# scheduling: target hoists addiu sp+24 to loop top (GCC scheduler picks different perm)
+func_80069AE4: reorder 94,92,93 @ 92-94
+# label moves with reordered first insn
+func_80069AE4: insert_label ".L_LOOP_TOP:" @ 93
+# retarget loop branch to new label after reorder
+func_80069AE4: subst "\.L825" ".L_LOOP_TOP" @ 104
