@@ -1935,6 +1935,15 @@ g_result_screen_countdown                               = 0x800A334C;  /* 0x5A (
 g_result_screen_active_flag                             = 0x800A3354;  /* != 0 = display active; reset to 0 on exit */
 g_result_screen_active_marker                           = 0x800A36F8;  /* byte value compared against array entries at D_80101BF0 to find/clear matching slots */
 
+/* === Overlay-load char-context save/restore (2026-05-17) -- 4 highs === */
+/* From code6cac_c_ab.c around line 420-454: a save/restore pattern */
+/* preserves char-id context across file_LoadOverlay calls.  0xFF is */
+/* the "invalid/no-char" sentinel. */
+g_overlay_load_counter                                  = 0x800A37D8;  /* monotonic counter incremented per overlay-load operation */
+g_file_overlay_arg_saved                                = 0x800A3844;  /* saved arg0 passed to file_LoadOverlay then re-used by func_8003AE5C */
+g_char_id_saved_a                                       = 0x800A3836;  /* saved char ID (0xFF = invalid); part of context-preserve set */
+g_char_id_saved_b                                       = 0x800A3915;  /* paired char ID save (0xFF default) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
