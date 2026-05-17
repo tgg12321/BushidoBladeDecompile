@@ -2199,6 +2199,17 @@ g_sprite_data_bank_b                                    = 0x800A9920;  /* 240-by
 g_sprite_class_mask_table                               = 0x80094B48;  /* mask lookup indexed by class (`mask &= D[class]`) */
 g_sprite_anim_table                                     = 0x80094D40;  /* per-anim mask table indexed by a1 */
 
+/* === Attack scale factors + lookup tables (2026-05-17) -- 7 highs === */
+/* From text1a.c around lines 317, 347, 353-354: fixed-point scale */
+/* factors and dispatch tables for attack/animation. */
+g_char_field12_lookup_table                             = 0x80094C68;  /* u16 table; values stored into per-char struct +0x12 (g_char_struct_p?_field12) */
+g_attack_scale_x                                        = 0x80094B96;  /* s16 fixed-point (12.4) scale factor for X */
+g_attack_scale_y                                        = 0x80094B98;  /* s16 fixed-point scale factor for Y */
+g_attack_scale_z                                        = 0x80094B9A;  /* s16 fixed-point scale factor for Z */
+g_attack_state_ptr                                      = 0x800A3388;  /* passed to func_80041EB0 (anim hit handler) */
+g_cam_saved_a0_data                                     = 0x800A9B28;  /* stored from *a0; reused as camera data pointer base later */
+g_anim_event_arg4_cached                                = 0x800A9A20;  /* = arg0[4] cached; compared against (s16*)fp_ptr[4] for change detection */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
