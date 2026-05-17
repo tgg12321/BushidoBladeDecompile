@@ -41,10 +41,10 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x8001924C,func_8001924C,,none,,
 0x80019310,func_80019310,gte_mvmva_wrapper_80019310,low,gte_op=gte_mvmva_wrapper_80019310,docs/naming/evidence/func_80019310.md
 0x8001945C,func_8001945C,kgm_clamp_patch_init_helper_8001945C,medium,sole_caller_path=kgm_clamp_patch_init_helper_8001945C,docs/naming/evidence/func_8001945C.md
-0x80019488,func_80019488,,none,,
+0x80019488,func_80019488,pack_status_nibble_triplet_80019488,medium,"manual_review=Packs the low nibble of 3 consecutive bytes (D_80106A70, +1, +2) into a single u32 with each nibble in its own 4-bit field (bits 0-3, 4-7, 8-11).",docs/naming/evidence/func_80019488.md
 0x800194C0,func_800194C0,,none,,
 0x800194F4,func_800194F4,,none,,
-0x80019534,func_80019534,,none,,
+0x80019534,func_80019534,func_800194F4_with_flag_set_80019534,low,manual_review=Calls func_800194F4() (also unnamed) and sets two consecutive 16-bit (2-byte stride) flags. Placeholder until either the callee or the flags are named.,docs/naming/evidence/func_80019534.md
 0x8001979C,func_8001979C,,none,,
 0x800198D0,func_800198D0,,none,,
 0x8001A484,func_8001A484,,none,,
@@ -88,7 +88,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80020D70,func_80020D70,,none,,
 0x80020DDC,func_80020DDC,DispPracticeMenuTex_B_helper_80020DDC,medium,sole_caller_path=DispPracticeMenuTex_B_helper_80020DDC,docs/naming/evidence/func_80020DDC.md
 0x80021210,func_80021210,mario_test_Exec_helper_80021210,medium,sole_caller_path=mario_test_Exec_helper_80021210,docs/naming/evidence/func_80021210.md
-0x80021280,func_80021280,,none,,
+0x80021280,func_80021280,char_motion_nibble_scan_80021280,medium,"manual_review=Per-character motion stage parser: reads a 16-bit value at g_char_state[a0].field_48 (the per-char 1100-byte struct), scans its 4 nibbles, and for nibbles == 4 or 5 stashes the nibble position and a copy of field_26C into a 'pending stage' record at offsets +0x88/+0x8A and +0x...",docs/naming/evidence/func_80021280.md
 0x800213A0,func_800213A0,,none,,
 0x80021424,func_80021424,,none,,
 0x800218C8,func_800218C8,,none,,
@@ -123,7 +123,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80027A58,func_80027A58,,none,,
 0x8002872C,func_8002872C,,none,,
 0x8002906C,func_8002906C,se_data_set_helper_8002906C,medium,sole_caller_path=se_data_set_helper_8002906C,docs/naming/evidence/func_8002906C.md
-0x80029454,func_80029454,,none,,
+0x80029454,func_80029454,returns_zero_stub_80029454,low,"manual_review=Trivial 1-line return 0. With 2 callers, it's likely a placeholder for a feature that's permanently disabled (always-fail predicate, no-op handler that the dispatch table expects to exist).",docs/naming/evidence/func_80029454.md
 0x8002A458,func_8002A458,calc_loc_mat_fw_helper_8002A458,medium,gte_op=gte_helper_8002A458; sole_caller_path=calc_loc_mat_fw_helper_8002A458,docs/naming/evidence/func_8002A458.md
 0x8002BC68,func_8002BC68,,none,,
 0x8002BEA0,func_8002BEA0,,none,,
@@ -142,8 +142,8 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x8003032C,func_8003032C,,none,,
 0x8003043C,func_8003043C,psyq_memset_8003043C,high,psyq_idiom=psyq_memset_8003043C; sole_caller_path=mario_test_Exec_helper_8003043C,docs/naming/evidence/func_8003043C.md
 0x8003047C,func_8003047C,,none,,
-0x80030524,func_80030524,,none,,
-0x80030900,func_80030900,,none,,
+0x80030524,func_80030524,clear_entries_marked_in_flag_table_80030524,medium,"manual_review=Iterates 12 entries at D_80106A7A with 0x64-byte stride. For each entry: if it's not already -1 (sentinel) AND a parallel flag at &D_80106A80 + off (0x6 bytes after the entry, same stride) is non-zero, clears it to -1.",docs/naming/evidence/func_80030524.md
+0x80030900,func_80030900,spawn_hit_particle_80030900,medium,"manual_review=Spawns a particle from a hit event: gets a new particle slot via coli_hit_body_weapon (already-named -- collision/hit detector), copies the impact position from *a1 into the particle's +0x2C field, then randomises:",docs/naming/evidence/func_80030900.md
 0x80030A2C,func_80030A2C,,none,,
 0x80030B10,func_80030B10,,none,,
 0x80030BA8,func_80030BA8,,none,,
@@ -160,10 +160,10 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80032854,func_80032854,motion_dispatch_event_handler_80032854,medium,"manual_review=30-case switch on arg1, dispatches to func_8006xxxx family; 19 callers all in motion subsystem",docs/naming/evidence/func_80032854.md
 0x80032C50,func_80032C50,,none,,
 0x8003339C,func_8003339C,,none,,
-0x80033498,func_80033498,,none,,
+0x80033498,func_80033498,get_stage_idx_80033498,medium,"manual_review=Pure-function stage-index mapper. Reads D_800A36A4 (the stage selector global -- 23 lui hits per data_symbols_quick_wins.md), subtracts 2, and maps the result through a 6-case switch to a small index 0..5 (or 0xFF for 'no match').",docs/naming/evidence/func_80033498.md
 0x80033510,func_80033510,mario_test_Exec_helper_80033510,medium,sole_caller_path=mario_test_Exec_helper_80033510,docs/naming/evidence/func_80033510.md
 0x80033550,func_80033550,DispPracticeMenuTex_C_helper_80033550,medium,sole_caller_path=DispPracticeMenuTex_C_helper_80033550,docs/naming/evidence/func_80033550.md
-0x80033898,func_80033898,,none,,
+0x80033898,func_80033898,gpu_enable_and_state_reset_80033898,medium,manual_review=Calls named gpu_EnableDisplay() then sets two state globals: D_800A37B8 = 0 and D_800A3834 = 3. The 'enable display and reset state' pattern -- typical mode-transition / scene-init hook.,docs/naming/evidence/func_80033898.md
 0x80033D38,func_80033D38,,none,,
 0x80033DF4,func_80033DF4,,none,,
 0x80033FE4,func_80033FE4,,none,,
@@ -186,7 +186,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80035F78,func_80035F78,,none,,
 0x80035FA8,func_80035FA8,,none,,
 0x80035FE0,func_80035FE0,psyq_memcpy_legacy_80035FE0,low,psyq_idiom_legacy=psyq_memcpy_legacy_80035FE0,docs/naming/evidence/func_80035FE0.md
-0x80036034,func_80036034,,none,,
+0x80036034,func_80036034,vsync_4_with_helpers_80036034,medium,"manual_review=Calls two unnamed helpers (func_80080148, func_8007FF7C) then sys_VSync(4) -- the named PSX SDK helper that waits for 4 vblank periods (= 4 frames = ~67ms at 60fps).",docs/naming/evidence/func_80036034.md
 0x80036D88,func_80036D88,game_FrameLoop_helper_80036D88,medium,sole_caller_path=game_FrameLoop_helper_80036D88,docs/naming/evidence/func_80036D88.md
 0x80036D98,func_80036D98,,none,,
 0x80036EA8,func_80036EA8,,none,,
@@ -196,12 +196,12 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800371AC,func_800371AC,,none,,
 0x800371E8,func_800371E8,,none,,
 0x800371F8,func_800371F8,,none,,
-0x80037234,func_80037234,,none,,
+0x80037234,func_80037234,file_io_state_clear_80037234,low,"manual_review=2-line state setter: clears D_80101E64 and sets D_80101E68 = 1. Both globals are in the D_80101Exx range used by special-cam / replay code per [func_80037110.md](func_80037110.md). Likely the 'cancel current operation, mark as ready' state setter.",docs/naming/evidence/func_80037234.md
 0x80037250,func_80037250,replay_camera_check_stage_80037250,medium,kengo_pattern=replay_camera_check_stage_80037250,docs/naming/evidence/func_80037250.md
 0x800372C0,func_800372C0,cpu_helper_800372C0,medium,call_graph_cluster=cpu_helper_800372C0,docs/naming/evidence/func_800372C0.md
 0x800372F4,func_800372F4,,none,,
 0x80037348,func_80037348,,none,,
-0x80037540,func_80037540,,none,,
+0x80037540,func_80037540,special_cam_init_with_two_lookups_80037540,medium,"manual_review=Special-camera init wrapper: looks up two SpecialCam table entries via func_80036EA8(6, idx), packs 6 fields into a stack buffer along with caller args, then dispatches marionation_camera_Init_80037468(6, sp, v0 + 0x7FC).",docs/naming/evidence/func_80037540.md
 0x80037774,func_80037774,game_event_shutdown_80037774,high,manual_review=EnterCriticalSection + bios_CloseEvent x 8 + ExitCriticalSection + post-shutdown hook; canonical event-pool shutdown pattern,docs/naming/evidence/func_80037774.md
 0x80037804,func_80037804,game_event_wait_any_with_timeout_80037804,high,"manual_review=first-half-event waiter (tests 4 of the 8 events closed by game_event_shutdown_80037774, complementing game_event_wait_any_80037964); adds 0x78 (=2sec) timeout via D_800A3924 counter forcing result=2",docs/naming/evidence/func_80037804.md
 0x800378A8,func_800378A8,,none,,
@@ -216,7 +216,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80037F40,func_80037F40,,none,,
 0x80038148,func_80038148,psyq_memset_80038148,high,psyq_idiom=psyq_memset_80038148; sole_caller_path=pad_FuncAnalog_helper_80038148,docs/naming/evidence/func_80038148.md
 0x80038170,func_80038170,pad_FuncAnalog_helper_80038170,medium,sole_caller_path=pad_FuncAnalog_helper_80038170,docs/naming/evidence/func_80038170.md
-0x80038658,func_80038658,,none,,
+0x80038658,func_80038658,file_io_state_advance_80038658,medium,manual_review=State-machine advance for the file-I/O subsystem state in D_800A31F4. Two active states (4 and 6) each:,docs/naming/evidence/func_80038658.md
 0x80038734,func_80038734,game_state_advance_80038734,medium,manual_review=callers do `switch (v0 - 4)` on return; state-machine advance not input tick; body polls pad + advances state + returns state code,docs/naming/evidence/func_80038734.md
 0x8003879C,func_8003879C,motion_SetMotion_helper_8003879C,medium,sole_caller_path=motion_SetMotion_helper_8003879C,docs/naming/evidence/func_8003879C.md
 0x800387C0,func_800387C0,motion_SetMotion_helper_800387C0,medium,kengo_pattern=motion_SavePreCalcData_800387C0; sole_caller_path=motion_SetMotion_helper_800387C0,docs/naming/evidence/func_800387C0.md
@@ -335,7 +335,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800420E8,func_800420E8,,none,,
 0x8004211C,func_8004211C,,none,,
 0x800421C8,func_800421C8,,none,,
-0x80042478,func_80042478,,none,,
+0x80042478,func_80042478,disp_set_fade_color_80042478,high,"manual_review=Unpacks 0xRRGGBB from a0, optionally desaturates to grayscale (when func_800486FC -- likely 'is_grayscale_mode' -- returns true), then calls two named display helpers: disp_SetFramebufferMode(1, r, g, b) (sets the clear color) and gte_SetFarColor(r, g, b) (sets the GTE fog far...",docs/naming/evidence/func_80042478.md
 0x8004283C,func_8004283C,,none,,
 0x80042E90,func_80042E90,,none,,
 0x80042ED8,func_80042ED8,,none,,
@@ -359,9 +359,9 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80044098,func_80044098,tpage_slot_release_80044098,medium,"manual_review=inverse of prim_buffer_open_slot_80044010 (clears in-use bit, un-relocates payload by subtracting header ptr); 3rd function of the slot-pool lifecycle (open/relocate/release)",docs/naming/evidence/func_80044098.md
 0x80044100,func_80044100,prim_buffer_relocate_slot_80044100,medium,manual_review=advances D_80103608[a0] by a1 bytes and patches each entry by +a1 (offset-list relocation); paired with func_80044010,docs/naming/evidence/func_80044100.md
 0x80044170,func_80044170,,none,,
-0x80044498,func_80044498,,none,,
+0x80044498,func_80044498,clear_array_8010367E_80044498,medium,manual_review=Clears 20 (= 0x13 + 1) s16 entries at addresses D_8010367E down through D_80103658. The walk-backwards iteration with *p-- = 0 is GCC 2.7.2's idiomatic short-form for memset-of-aligned-s16.,docs/naming/evidence/func_80044498.md
 0x80044504,func_80044504,frame_context_init_scratchpad_80044504,medium,manual_review=writes 5 scratchpad words at 0x1F80000C..0x1F80001C as inputs for a per-frame compute kernel; calls camera_InitMatrix + game_SetPause(1); chains func_8004A4E0 (likely the hot loop),docs/naming/evidence/func_80044504.md
-0x80044650,func_80044650,,none,,
+0x80044650,func_80044650,init_fade_panel_wrapper_80044650,high,manual_review=1-line wrapper around named InitFadePanel(). Pure trampoline.,docs/naming/evidence/func_80044650.md
 0x80044670,func_80044670,seq_state_set_with_stage_offset_80044670,medium,manual_review=writes a 14-byte state record (D_800A9CF8..D_800A9D04) including stage_GetId result; returns a2 + per_stage_offset * 0x68 (104-byte stride matches func_80041430's pointer chain),docs/naming/evidence/func_80044670.md
 0x8004473C,func_8004473C,,none,,
 0x80044B30,func_80044B30,DispPracticeMenuTex_C_helper_80044B30,medium,sole_caller_path=DispPracticeMenuTex_C_helper_80044B30,docs/naming/evidence/func_80044B30.md
@@ -375,7 +375,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80044F30,func_80044F30,,none,,
 0x80044F50,func_80044F50,efc_rob_set_type_particle_helper_80044F50,medium,sole_caller_path=efc_rob_set_type_particle_helper_80044F50,docs/naming/evidence/func_80044F50.md
 0x80044FA0,func_80044FA0,overflow_func_80044FA0,low,string_adjacent=overflow_func_80044FA0,docs/naming/evidence/func_80044FA0.md
-0x80045080,func_80045080,,none,,
+0x80045080,func_80045080,ndata_offset_minus_inf_len_80045080,medium,"manual_review=Reads D_800963EE[a0] as an s16 (4-byte stride from the [NDATA.md](../formats/NDATA.md) in-RAM mirror -- this is the length-sectors view), shifts left 11 (= multiply by 2048 = sector size). Returns the current value of func_800457DC() minus that byte length.",docs/naming/evidence/func_80045080.md
 0x800450F4,func_800450F4,,none,,
 0x800451A0,func_800451A0,,none,,
 0x800451D0,func_800451D0,,none,,
@@ -476,9 +476,9 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800493E4,func_800493E4,,none,,
 0x800494D4,func_800494D4,,none,,
 0x8004954C,func_8004954C,,none,,
-0x80049584,func_80049584,,none,,
+0x80049584,func_80049584,efc_rob_type_dispatch_80049584,medium,"manual_review=Effect-state dispatcher: compares per-frame state in D_800EF980 (0x3A entries) to last-frame state in D_80099C50, detects sign-bit changes, then computes a new effect mode and dispatches efc_rob_set_type_particle (already-named) only if state changed.",docs/naming/evidence/func_80049584.md
 0x80049710,func_80049710,,none,,
-0x80049718,func_80049718,,none,,
+0x80049718,func_80049718,efc_anim_vehicle_setup_80049718,medium,manual_review=Per-effect setup: indexes D_800EF980[arg0] (the animation-state array from func_80049584) and emits one or two 0x68-byte effect entries into the D_800A38B4 cursor / D_800A3820 OT chain.,docs/naming/evidence/func_80049718.md
 0x80049A2C,func_80049A2C,,none,,
 0x80049C24,func_80049C24,efc_rob_set_type_particle_helper_80049C24,medium,sole_caller_path=efc_rob_set_type_particle_helper_80049C24,docs/naming/evidence/func_80049C24.md
 0x80049E1C,func_80049E1C,,none,,
@@ -555,7 +555,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80052D00,func_80052D00,,none,,
 0x80053304,func_80053304,,none,,
 0x8005344C,func_8005344C,,none,,
-0x80053584,func_80053584,,none,,
+0x80053584,func_80053584,setup_struct_53584_callback_80053584,medium,"manual_review=Stores a base address in D_800A33F4, copies the _S16_53584 struct at offset 0 (from arg0) and offset 0x18 (from arg1), installs a callback function pointer (func_80053E9C) at offset 0x5C, then dispatches func_80052D00(arg2, arg3).",docs/naming/evidence/func_80053584.md
 0x80053694,func_80053694,,none,,
 0x80053754,func_80053754,,none,,
 0x80053E9C,func_80053E9C,,none,,
@@ -610,23 +610,23 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800600C8,func_800600C8,,none,,
 0x800602AC,func_800602AC,,none,,
 0x80060414,func_80060414,gnd_disp_loop_ctrl_helper_80060414,medium,sole_caller_path=gnd_disp_loop_ctrl_helper_80060414,docs/naming/evidence/func_80060414.md
-0x80060544,func_80060544,,none,,
+0x80060544,func_80060544,hud_emit_5part_layout_80060544,medium,manual_review=Multi-part HUD layout emitter using staticgeom records from &D_8009B7D0/D8/E0/F0/800/820/840 plus dynamic geometry from &D_8009B770 (4 records) and &D_8009B3B0 (2 records).,docs/naming/evidence/func_80060544.md
 0x80060758,func_80060758,replay_camera_check_stage_80060758,high,kengo_pattern=replay_camera_check_stage_80060758; sole_caller_path=SetCurrentCursor_helper_80060758,docs/naming/evidence/func_80060758.md
-0x80060768,func_80060768,,none,,
+0x80060768,func_80060768,hud_emit_warning_tiles_80060768,medium,"manual_review=Emits 4 HUD tiles at fixed coordinates with red foreground (0xFF, 0, 0) and decreasing Y based on D_800A32B4 counter. Uses the same D_800A32B4 / 0x1E stride as 'damage flash' HUD elements.",docs/naming/evidence/func_80060768.md
 0x80060A68,func_80060A68,,none,,
 0x80060B70,func_80060B70,,none,,
 0x80060CB8,func_80060CB8,,none,,
 0x80060E38,func_80060E38,,none,,
 0x80061064,func_80061064,prim_overflow_func_80061064,low,string_adjacent=prim_overflow_func_80061064,docs/naming/evidence/func_80061064.md
 0x800611A4,func_800611A4,,none,,
-0x80061250,func_80061250,,none,,
+0x80061250,func_80061250,anim_emit_210009_with_setup_80061250,medium,manual_review=Variant of the opcode-emitter family (compare func_80061454/func_80061658/func_80061710): emits 0x210009 or 0x21000A depending on the state of two consecutive flag bytes at D_800F1159/+1.,docs/naming/evidence/func_80061250.md
 0x8006133C,func_8006133C,,none,,
 0x800613C8,func_800613C8,,none,,
-0x80061454,func_80061454,,none,,
+0x80061454,func_80061454,anim_emit_29000B_80061454,medium,"manual_review=Animation-command emitter for opcode 0x29000B. Writes the opcode into D_800F116C, stashes the input vec3 a0[0..2] into 3 globals at D_800F1140/44/48, sets a color tint at D_800A3464 = 0x8080FF (light-blue), and dispatches func_80060A68().",docs/naming/evidence/func_80061454.md
 0x800614E0,func_800614E0,,none,,
 0x8006156C,func_8006156C,,none,,
-0x80061658,func_80061658,,none,,
-0x80061710,func_80061710,,none,,
+0x80061658,func_80061658,anim_emit_21000CD_80061658,medium,manual_review=Switch on arg1 between opcodes 0x21000C (case 0) and 0x21000D (case 1) -- same opcode family as func_80061250 (0x210009/A). Color tint 0x10FFFF (cyan).,docs/naming/evidence/func_80061658.md
+0x80061710,func_80061710,anim_emit_21000EF_80061710,medium,"manual_review=Direct sibling of func_80061658: same shape, opcodes 0x21000E/0x21000F instead, color 0x10FF10 (green).",docs/naming/evidence/func_80061710.md
 0x800617C8,func_800617C8,,none,,
 0x800618B4,func_800618B4,,none,,
 0x800619A4,func_800619A4,,none,,
@@ -688,31 +688,31 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80066FC4,func_80066FC4,,none,,
 0x80066FF8,func_80066FF8,,none,,
 0x8006702C,func_8006702C,,none,,
-0x80067060,func_80067060,,none,,
-0x80067094,func_80067094,,none,,
+0x80067060,func_80067060,trigger_event_4_2_no_flag_80067060,medium,"manual_review=Family member: calls func_80067200(4, 2, 0) (the dispatcher -- currently asmfix-bridged, see [func_80067200](../naming/proposals.csv)), sets D_800F1128 = 1, returns the dispatcher result. The 6-member family func_80067060/094/130/164/198/1CC follows the pattern func_80067200(a...",docs/naming/evidence/func_80067060.md
+0x80067094,func_80067094,trigger_event_4_2_with_flag_80067094,medium,"manual_review=Family member: paired with func_80067060 -- same dispatch (4, 2) but flag=1, sets state to 2 instead of 1.",docs/naming/evidence/func_80067094.md
 0x800670C8,func_800670C8,,none,,
 0x800670FC,func_800670FC,,none,,
-0x80067130,func_80067130,,none,,
-0x80067164,func_80067164,,none,,
-0x80067198,func_80067198,,none,,
-0x800671CC,func_800671CC,,none,,
+0x80067130,func_80067130,trigger_event_6_3_no_flag_80067130,medium,"manual_review=Family member: event-pair (6, 3), flag=0, sets D_800F1130 = 1.",docs/naming/evidence/func_80067130.md
+0x80067164,func_80067164,trigger_event_6_3_with_flag_80067164,medium,"manual_review=Family member: event-pair (6, 3), flag=1, sets D_800F1130 = 2.",docs/naming/evidence/func_80067164.md
+0x80067198,func_80067198,trigger_event_7_2_no_flag_80067198,medium,"manual_review=Family member: event-pair (7, 2), flag=0, sets D_800F1134 = 1.",docs/naming/evidence/func_80067198.md
+0x800671CC,func_800671CC,trigger_event_7_2_with_flag_800671CC,medium,"manual_review=Family member: event-pair (7, 2), flag=1, sets D_800F1134 = 2.",docs/naming/evidence/func_800671cc.md
 0x80067200,func_80067200,gte_mvmva_wrapper_80067200,low,gte_op=gte_mvmva_wrapper_80067200,docs/naming/evidence/func_80067200.md
-0x800676C8,func_800676C8,,none,,
-0x80067704,func_80067704,,none,,
-0x80067740,func_80067740,,none,,
-0x8006777C,func_8006777C,,none,,
-0x800677B8,func_800677B8,,none,,
-0x800677F4,func_800677F4,,none,,
-0x80067830,func_80067830,,none,,
-0x8006786C,func_8006786C,,none,,
+0x800676C8,func_800676C8,multi_stage_init_0_0_800676C8,medium,"manual_review=Family member: calls 3 helpers in sequence (func_800678A8, func_80067D14, func_80068D88) each with (0, 0). The 8-member family covers args (0,0) through (7, ...).",docs/naming/evidence/func_800676c8.md
+0x80067704,func_80067704,multi_stage_init_1_1_80067704,medium,"manual_review=Family member: 3-helper init with mode (1, 1).",docs/naming/evidence/func_80067704.md
+0x80067740,func_80067740,multi_stage_init_2_1_80067740,medium,"manual_review=Family member: 3-helper init with mode (2, 1).",docs/naming/evidence/func_80067740.md
+0x8006777C,func_8006777C,multi_stage_init_3_0_8006777C,medium,"manual_review=Family member: 3-helper init with mode (3, 0).",docs/naming/evidence/func_8006777c.md
+0x800677B8,func_800677B8,multi_stage_init_4_2_800677B8,medium,"manual_review=Family member: 3-helper init with mode (4, 2).",docs/naming/evidence/func_800677b8.md
+0x800677F4,func_800677F4,multi_stage_init_5_3_800677F4,medium,"manual_review=Family member: 3-helper init with mode (5, 3).",docs/naming/evidence/func_800677f4.md
+0x80067830,func_80067830,multi_stage_init_6_3_80067830,medium,"manual_review=Family member: 3-helper init with mode (6, 3).",docs/naming/evidence/func_80067830.md
+0x8006786C,func_8006786C,multi_stage_init_7_2_8006786C,medium,"manual_review=Family member: 3-helper init with mode (7, 2). Completes the 8-member family.",docs/naming/evidence/func_8006786c.md
 0x800678A8,func_800678A8,gte_helper_800678A8,low,gte_op=gte_helper_800678A8,docs/naming/evidence/func_800678A8.md
 0x80067D14,func_80067D14,gte_mvmva_wrapper_80067D14,low,gte_op=gte_mvmva_wrapper_80067D14,docs/naming/evidence/func_80067D14.md
 0x80068D88,func_80068D88,,none,,
 0x80068ECC,func_80068ECC,,none,,
 0x80068F70,func_80068F70,,none,,
-0x80069120,func_80069120,,none,,
+0x80069120,func_80069120,sync_flag_check_advance_80069120,medium,"manual_review=Compares a flag stored at D_800A34FC[+0x30] with the low bit of D_800A3524[+8]. If they differ, calls a sync helper (func_8006E8CC). Then writes the current flag and returns a pointer into D_800A351C + a0 * 44.",docs/naming/evidence/func_80069120.md
 0x8006920C,func_8006920C,efc_helper_8006920C,medium,call_graph_cluster=efc_helper_8006920C,docs/naming/evidence/func_8006920C.md
-0x80069250,func_80069250,,none,,
+0x80069250,func_80069250,pad_check_dispatch_80069250,medium,"manual_review=Pad-input check: tests arg1 & 0x400040 (PAD_CIRCLE + PAD_TRIANGLE / select+start combo). If pressed, plays a sound (func_8005C650(1, 0x7F, 0x7F) -- volume 127 left+right) and returns 1.",docs/naming/evidence/func_80069250.md
 0x800692C0,func_800692C0,,none,,
 0x800693CC,func_800693CC,,none,,
 0x80069898,func_80069898,draw_shadow_3tile_stack_80069898,medium,"manual_review=emits 3 consecutive PSX tile primitives stacked vertically (y, y-1, y-2) with progressively dimmer RGB (0x80/0x80/0x40) and increasing alpha modes; canonical 3-tile soft-shadow/glow pattern via initTile + gpu_SetSemiTransp + ot_Link",docs/naming/evidence/func_80069898.md
@@ -764,7 +764,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80070C70,func_80070C70,,none,,
 0x80071C20,func_80071C20,,none,,
 0x80071C4C,func_80071C4C,,none,,
-0x80072084,func_80072084,,none,,
+0x80072084,func_80072084,text_render_dispatch_80072084,low,"manual_review=Reads D_800A35A8 as a pointer, dereferences at offset +0x68 (s32[0x1A]), passes that and arg0 to func_800720FC. Pure dispatcher.",docs/naming/evidence/func_80072084.md
 0x800720AC,func_800720AC,,none,,
 0x800720D4,func_800720D4,,none,,
 0x800720FC,func_800720FC,,none,,
@@ -795,7 +795,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80077098,func_80077098,get_table_44_offset_80077098,low,manual_review=1-line pointer arithmetic returning D_800A35D8 + a0 * 44; placeholder name until D_800A35D8 (44-byte record table) is named,docs/naming/evidence/func_80077098.md
 0x800770B8,func_800770B8,,none,,
 0x80077374,func_80077374,,none,,
-0x80077724,func_80077724,,none,,
+0x80077724,func_80077724,setup_double_buffer_swap_80077724,medium,"manual_review=Per-frame double-buffer swap setup: toggles a buffer pointer between &D_800F7438 and &D_800F7438 + 0x4090 based on a low-bit, increments two counters (a u32 frame counter at +0x30 and a u16 sub-counter at +0x34), gets the swapped buffer via func_80077098(temp_v1 & 1), copies 9...",docs/naming/evidence/func_80077724.md
 0x80077820,func_80077820,disp_load_config_from_buf_80077820,medium,"manual_review=both callers pass fixed buffer addr 0x80118800; disp_SetFramebufferMode call is unconditional (not mode-parametrised); func_80068F70(src, &D_8009BD24) is the actual copy",docs/naming/evidence/func_80077820.md
 0x80077860,func_80077860,,none,,
 0x80077894,func_80077894,,none,,
@@ -812,10 +812,10 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80077D74,func_80077D74,,none,,
 0x80077D94,func_80077D94,,none,,
 0x8007855C,func_8007855C,,none,,
-0x80078628,func_80078628,,none,,
-0x80078634,func_80078634,,none,,
-0x80078654,func_80078654,,none,,
-0x80078824,func_80078824,,none,,
+0x80078628,func_80078628,get_field_4_80078628,low,"manual_review=1-line struct-field getter. Returns the s32 at offset +4 of the passed pointer. Used as the second-arg of func_8006E49C(r, D_800A360C) inside func_80078824 -- so r is a struct field accessed for a draw-helper call.",docs/naming/evidence/func_80078628.md
+0x80078634,func_80078634,get_table_44_offset_80078634,low,"manual_review=Sibling of func_80077098 (also 1-line D_800A_XX + a0 * 44). Same 44-byte record-stride pattern, different base global (D_800A360C instead of D_800A35D8).",docs/naming/evidence/func_80078634.md
+0x80078654,func_80078654,draw_progress_crossfade_80078654,medium,"manual_review=Per-frame progress-bar / loading-bar emitter that fades out near the end (D_800A3608 >= 0xB04, where the fade ramps 128->0 over 15 ticks via 0x80 - ((counter - 0xB04) << 7) / 15).",docs/naming/evidence/func_80078654.md
+0x80078824,func_80078824,disp_init_video_overlay_80078824,medium,"manual_review=Initialises a video / overlay subsystem: stashes arg0 + (arg0+0x58) into globals D_800A360C / D_800A3610, calls a setup helper (func_8006E950(0x5F, s0)), zeros 3 progress counters, then ends with the canonical disp_SetFramebufferMode(1,0,0,0); return 1; tail.",docs/naming/evidence/func_80078824.md
 0x800788B0,func_800788B0,,none,,
 0x80078948,func_80078948,bios_Exec,high,bios_jumptable=bios_Exec,docs/naming/evidence/func_80078948.md
 0x80078958,func_80078958,bios__bu_init_A0,high,bios_jumptable=bios__bu_init_A0; kengo_pattern=coli_RobColliScaleEditReset_80078958; sole_caller_path=pad_press_control_helper_80078958,docs/naming/evidence/func_80078958.md
@@ -861,7 +861,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800790A4,func_800790A4,,none,,
 0x800790C0,func_800790C0,,none,,
 0x80079154,func_80079154,bb2_rand,high,"manual_review=BSD libc LCG (0x41C64E6D * x + 0x3039, >> 16 & 0x7FFF); 29 callers across 6 files",docs/naming/evidence/func_80079154.md
-0x80079184,func_80079184,,none,,
+0x80079184,func_80079184,bb2_srand_80079184,high,manual_review=1-line setter for D_800F1848 -- which is named g_rand_state (see [D_800F1848.md](../data_evidence/D_800F1848.md)) and is the LCG state of bb2_rand.,docs/naming/evidence/func_80079184.md
 0x80079194,func_80079194,psyq_memcpy_legacy_80079194,low,psyq_idiom_legacy=psyq_memcpy_legacy_80079194,docs/naming/evidence/func_80079194.md
 0x800791D8,func_800791D8,,none,,
 0x80079244,func_80079244,debug_printf_helper_80079244,medium,sole_caller_path=debug_printf_helper_80079244; string_adjacent_info=?,docs/naming/evidence/func_80079244.md
@@ -1032,7 +1032,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80080240,func_80080240,,none,,
 0x80080258,func_80080258,tslTm2_command_with_retry_80080258,medium,"manual_review=3-retry wrapper around tslTm2LoadImage (general op dispatcher, not TIM-only -- modes {2, 9, 0xE} seen at call sites; mode 9 passes arg1=0); g_cd_callback_a save/restore",docs/naming/evidence/func_80080258.md
 0x80080390,func_80080390,tslTm2_command_with_retry_no_arg3_80080390,medium,manual_review=2-arg twin of tslTm2_command_with_retry_80080258; hardcodes a2=0 and uses different terminal tslTm2LoadImage mode (last-arg=1 vs 0),docs/naming/evidence/func_80080390.md
-0x80080600,func_80080600,,none,,
+0x80080600,func_80080600,cd_send_cmd_80080600,high,manual_review=1-line wrapper around named cdrom_SendCmd() that always returns 1 (success). Adds nothing to the underlying helper -- likely an interface adapter to a dispatch table that requires s32 () return signature.,docs/naming/evidence/func_80080600.md
 0x80080620,func_80080620,cd_dma_idle_80080620,high,manual_review=1-line inversion of cdrom_DmaToRam() == 0; returns 1 when no CD-DMA-to-RAM transfer is active,docs/naming/evidence/func_80080620.md
 0x800806A4,func_800806A4,,none,,
 0x800807A8,func_800807A8,,none,,
@@ -1084,8 +1084,8 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80085064,func_80085064,,none,,
 0x80085114,func_80085114,,none,,
 0x80085210,func_80085210,,none,,
-0x80085270,func_80085270,,none,,
-0x80085448,func_80085448,,none,,
+0x80085270,func_80085270,spu_channel_reset_80085270,medium,"manual_review=Per-channel SPU reset: indexes D_80106F28 by a0 (group?) and reads a pointer into a 0xB0-byte per-channel record at offset a1 * 0xB0. Clears channel flags, calls two named SPU helpers (spu_NotifyChannel and spu_ResetCounter), zero-fills the byte-state area at offsets 0x14..0x2...",docs/naming/evidence/func_80085270.md
+0x80085448,func_80085448,settings_set_volume_pair_80085448,medium,"manual_review=Branches on a0 == 0 or a0 == 1 (two channels), clamps the two values a1, a2 to 0x7F max (PSX volume convention), multiplies by 129 * 2 = 258 (the standard PSX SPU volume scale), packs into a buffer at slot-specific offsets (0x10/0x12 for channel 0, 0x1C/0x1E for channel 1), an...",docs/naming/evidence/func_80085448.md
 0x800856B0,func_800856B0,DispStuff_helper_800856B0,medium,sole_caller_path=DispStuff_helper_800856B0,docs/naming/evidence/func_800856B0.md
 0x800859F0,func_800859F0,,none,,
 0x80085E4C,func_80085E4C,obj_helper_80085E4C,medium,call_graph_cluster=obj_helper_80085E4C,docs/naming/evidence/func_80085E4C.md
@@ -1093,7 +1093,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80085F98,func_80085F98,obj_helper_80085F98,medium,call_graph_cluster=obj_helper_80085F98,docs/naming/evidence/func_80085F98.md
 0x80085FB8,func_80085FB8,,none,,
 0x80086014,func_80086014,psyq_memcpy_legacy_80086014,low,psyq_idiom_legacy=psyq_memcpy_legacy_80086014,docs/naming/evidence/func_80086014.md
-0x80086130,func_80086130,,none,,
+0x80086130,func_80086130,char_store_pos_pair_80086130,low,"manual_review=Validates a0 < 0x18 (24 slot indices), uses 16-byte stride (a0 << 4) to address records in two parallel arrays at D_80102A78/D_80102A7A. Sets a 2-bit 0x3 flag in a u8 byte at D_800F65E0[a0].",docs/naming/evidence/func_80086130.md
 0x800863CC,func_800863CC,,none,,
 0x80086BFC,func_80086BFC,,none,,
 0x80086CF8,func_80086CF8,AllocBukiRmd_helper_80086CF8,medium,sole_caller_path=AllocBukiRmd_helper_80086CF8,docs/naming/evidence/func_80086CF8.md
@@ -1107,7 +1107,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80087F34,func_80087F34,psyq_memset_legacy_80087F34,low,psyq_idiom_legacy=psyq_memset_legacy_80087F34,docs/naming/evidence/func_80087F34.md
 0x80087F64,func_80087F64,obj_helper_80087F64,medium,call_graph_cluster=obj_helper_80087F64,docs/naming/evidence/func_80087F64.md
 0x800884C4,func_800884C4,,none,,
-0x80088584,func_80088584,,none,,
+0x80088584,func_80088584,func_8008AEB0_wrapper_80088584,low,manual_review=1-line wrapper around unnamed func_8008AEB0. Pure passthrough.,docs/naming/evidence/func_80088584.md
 0x800885AC,func_800885AC,,none,,
 0x800885CC,func_800885CC,,none,,
 0x800886C4,func_800886C4,,none,,
