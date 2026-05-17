@@ -1053,11 +1053,6 @@ func_8003504C: subst "\$3" "$2" @ 49
 func_8003504C: subst "\$3" "$2" @ 50
 func_8003504C: subst "\$3" "$2" @ 50
 func_8003504C: subst "\$3" "$2" @ 51
-# Nested-loop init: delete j=0 from pos 90, insert before la (under .L468 label)
-func_8003504C: delete @ 90
-func_8003504C: insert "addu $8,$0,$zero" @ 87
-# Post-insert: swap la $9 and lw to get: j=0, la $10, lw, la $9
-func_8003504C: reorder 90,89 @ 89-90
 
 # tslGlobalMemFree_800861BC: compound regfix - 30 rules (0-based TEXT indices)
 # Prologue register renames

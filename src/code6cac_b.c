@@ -4167,9 +4167,9 @@ void func_8003504C(void) {
         D_800A37F8 = sel;
         D_800A38E1 = ((u32)p[5] >> 15) & 3;
         {
+            s32 j = 0;
             u8 *dst_d = &D_801027D8;
             u8 *dst_a = &D_801027A0;
-            s32 j = 0;
             do {
                 s32 k = 0;
                 u8 *da = dst_d;

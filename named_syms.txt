@@ -798,4 +798,191 @@ g_panic_msg_format_ptr          = 0x800F19C0;  /* cached pointer to panic format
 g_alarm_armed_flag              = 0x800A26D0;  /* alarm-armed boolean (distinct from g_alarm_active_sentinel at 0x800A26DE) */
 g_irq_alarm_handle              = 0x800A14E4;  /* volatile alarm handle; -1 = no alarm */
 
+/* === Data-symbol batches 12-14 (2026-05-17) -- 19 highs landed === */
+/* GTE background color (RGB triple) */
+g_gte_back_color_r              = 0x800F6338;  /* R, passed to gte_SetBackColor */
+g_gte_back_color_g              = 0x800F6339;  /* G */
+g_gte_back_color_b              = 0x800F633A;  /* B */
+/* Scratchpad pointer cache (extending the A4/AC/B8 set from batch 9-11) */
+g_scratchpad_ptr_18             = 0x800A346C;  /* -> 0x1F800018 */
+g_scratchpad_ptr_20             = 0x800A3470;  /* -> 0x1F800020 */
+g_scratchpad_ptr_30             = 0x800A3474;  /* -> 0x1F800030 */
+/* Replay-attack position triple (Y completes the X/Y/Z trio) */
+g_replay_attack_pos_y           = 0x80101E40;  /* Y, computed result[1] + a0[1] */
+/* IRQ alarm callback state */
+g_alarm_callback_ptr            = 0x800A26D8;  /* function-pointer/arg for pending alarm */
+g_alarm_callback_pending        = 0x800A26DC;  /* boolean: alarm callback pending */
+/* CDROM callback buffers */
+g_cdrom_callback_buf_a          = 0x800F19A0;  /* 8-byte payload buffer for Callback A */
+g_cdrom_callback_buf_b          = 0x800F19A8;  /* 8-byte payload buffer for Callback B */
+/* text1b render struct: dst_ptr (sibling of buf_ptr at state +0x20) */
+g_text1b_render_dst_ptr         = 0x800A3478;  /* volatile pointer to render state +0x18 */
+/* SPU state additions */
+g_spu_pending_irq_mask          = 0x800A2CD4;  /* SPU IRQ/pending-op mask */
+g_spu_xfer_callback_arg         = 0x800A287C;  /* SPU transfer callback arg cache */
+g_spu_xfer_pending              = 0x800A2D2C;  /* SPU transfer-pending flag */
+/* GPU register pointer + text1a stream cursors */
+g_gpu_stat_reg_ptr              = 0x8009BF64;  /* pointer to GPU status/control register */
+g_text1a_size_remaining         = 0x800A33A4;  /* decremented per chunk consumed (init 0x45000) */
+g_text1a_size_cursor            = 0x800A33A8;  /* upper-bound position cursor */
+/* Misc state */
+g_pad_press_countdown           = 0x800A3330;  /* 0x5A-frame countdown (pad press handler) */
+g_sleep_menu_cursor_y           = 0x800A3360;  /* row (paired with g_sleep_menu_cursor_x at D_800A335C) */
+g_packet_data_dma_addr          = 0x800F1AF4;  /* volatile DMA-list address for SetPacketData */
+g_camera_settle_countdown       = 0x80101E80;  /* marionation_camera_Init settle counter (-2 sentinel) */
+g_pad_press_tick_counter        = 0x800A3924;  /* tick counter in pad-press code */
+
+/* === Data-symbol auto-classifier pass (2026-05-17) -- final scratchpad ptr === */
+/* See docs/naming/REMAINING_DATA_CATALOG.md for mechanical classification of */
+/* the remaining 1032 unnamed D_* globals (refs mostly <= 5). */
+g_scratchpad_ptr_a8             = 0x800A3480;  /* -> 0x1F8000A8, sibling of A4/AC/B8 scratchpad cache */
+
+/* === Rodata string literals (2026-05-17) -- 89 entries === */
+/* Auto-generated names derived from .asciz content via bb2_string_names.py. */
+/* Each name documents the actual string at that address; suffix `_fmt` */
+/* marks format strings (contain %d/%s/%x etc).  String content shown as */
+/* a comment for searchability. */
+/* */
+/* Coverage: all 89 unnamed-with-.asciz rodata labels in asm/data/*.s. */
+/* All other rodata strings were already named (34 g_str_* from earlier work). */
+g_str_cr_n_80010834_fmt                              = 0x80010834;  /* '%sCR%3d\n' */
+g_str_co_n_80010840_fmt                              = 0x80010840;  /* '%sCO%3d\n' */
+g_str_bu_800109BC_fmt                                = 0x800109BC;  /* 'bu%1d%1d:%s' */
+g_str_bu_800109C8_fmt                                = 0x800109C8;  /* 'bu%1d%1d:' */
+g_str_multipul_model_80010D8C                        = 0x80010D8C;  /* 'Multipul Model' */
+g_str_path_80010DEC                                  = 0x80010DEC;  /* 'DATA1\\HAND.DAT' (extends to a long pipe-delimited file list) */
+g_str_marionation_overflow_8001528C_fmt              = 0x8001528C;  /* 'Marionation over flow. No.%d (-%dbyte)\n' (the famous engine panic) */
+g_str_destruction_tiny_model_80015840                = 0x80015840;  /* 'Destruction tiny model.\n' */
+g_str_common_vab_start_800158B4_fmt                  = 0x800158B4;  /* 'common_vab start:%08x\n' */
+g_str_vab_id_mistake_800158CC_fmt                    = 0x800158CC;  /* 'vab id:%d mistake\n' */
+g_str_eff_prim_over_800158E0_fmt                     = 0x800158E0;  /* 'eff prim over :%d \n' */
+g_str_warning_800159A0                               = 0x800159A0;  /* 'warning\n' */
+g_str_hex_lower_80015A68                             = 0x80015A68;  /* '0123456789abcdef' (printf hex digit table) */
+g_str_null_marker_80015A7C                           = 0x80015A7C;  /* '(null)' (printf null-pointer marker) */
+g_str_hex_upper_80015A84                             = 0x80015A84;  /* '0123456789ABCDEF' */
+g_str_hex_upper_80015C7C                             = 0x80015C7C;  /* '0123456789ABCDEF' (duplicate in another TU) */
+g_str_hex_lower_80015C90                             = 0x80015C90;  /* '0123456789abcdef' (duplicate in another TU) */
+g_str_tpage_80015D58_fmt                             = 0x80015D58;  /* 'tpage: (%d,%d,%d,%d)\n' (PsyQ libgpu sys.c) */
+g_str_clut_80015D70_fmt                              = 0x80015D70;  /* 'clut: (%d,%d)\n' */
+g_str_clip_80015D80_fmt                              = 0x80015D80;  /* 'clip (%3d,%3d)-(%d,%d)\n' */
+g_str_ofs_80015D98_fmt                               = 0x80015D98;  /* 'ofs  (%3d,%3d)\n' */
+g_str_tw_80015DA8_fmt                                = 0x80015DA8;  /* 'tw   (%d,%d)-(%d,%d)\n' */
+g_str_dtd_80015DC0_fmt                               = 0x80015DC0;  /* 'dtd   %d\n' */
+g_str_dfe_80015DCC_fmt                               = 0x80015DCC;  /* 'dfe   %d\n' */
+g_str_disp_80015DD8_fmt                              = 0x80015DD8;  /* 'disp   (%3d,%3d)-(%d,%d)\n' */
+g_str_screen_80015DF4_fmt                            = 0x80015DF4;  /* 'screen (%3d,%3d)-(%d,%d)\n' */
+g_str_isinter_80015E10_fmt                           = 0x80015E10;  /* 'isinter %d\n' */
+g_str_isrgb24_80015E1C_fmt                           = 0x80015E1C;  /* 'isrgb24 %d\n' (precedes the libgpu sys.c $Id stamp) */
+g_str_resetgraph_jtb_env_80015E5C_fmt                = 0x80015E5C;  /* 'ResetGraph:jtb=%08x,env=%08x\n' */
+g_str_resetgraph_80015E7C_fmt                        = 0x80015E7C;  /* 'ResetGraph(%d)...\n' */
+g_str_setgraphreverse_80015E90_fmt                   = 0x80015E90;  /* 'SetGraphReverse(%d)...\n' */
+g_str_setgraphdebug_80015EA8_fmt                     = 0x80015EA8;  /* 'SetGraphDebug:level:%d,type:%d reverse:%d\n' */
+g_str_setgrapque_80015ED4_fmt                        = 0x80015ED4;  /* 'SetGrapQue(%d)...\n' */
+g_str_drawsynccallback_80015EE8_fmt                  = 0x80015EE8;  /* 'DrawSyncCallback(%08x)...\n' */
+g_str_rect_80015F38_fmt                              = 0x80015F38;  /* '(%d,%d)-(%d,%d)\n' (PsyQ generic Rect fmt) */
+g_str_libgpu_label_80015F4C_fmt                      = 0x80015F4C;  /* '%s:' (label prefix used by libgpu prints) */
+g_str_moveimage_80015F74                             = 0x80015F74;  /* 'MoveImage' */
+g_str_clearotagr_80015F98_fmt                        = 0x80015F98;  /* 'ClearOTagR(%08x,%d)...\n' */
+g_str_drawotagenv_80015FDC_fmt                       = 0x80015FDC;  /* 'DrawOTagEnv(%08x,&08x)...\n' */
+g_str_func_call_80016044_fmt                         = 0x80016044;  /* 'func=(%08x)(%08x,%08x)\n' */
+g_str_sync_ready_800161C8_fmt                        = 0x800161C8;  /* '%s:(%s) Sync=%s, Ready=%s\n' (CDROM cmd status) */
+g_str_diskerror_800161E4                             = 0x800161E4;  /* 'DiskError: ' */
+g_str_com_code_800161F0_fmt                          = 0x800161F0;  /* 'com=%s,code=(%02x:%02x)\n' (CDROM error fmt) */
+g_str_cdrom_unknown_intr_8001620C                    = 0x8001620C;  /* 'CDROM: unknown intr' */
+g_str_paren_n_80016220_fmt                           = 0x80016220;  /* '(%d)\n' */
+g_str_cd_sync_80016240                               = 0x80016240;  /* 'CD_sync' */
+g_str_cd_ready_80016248                              = 0x80016248;  /* 'CD_ready' */
+g_str_dots_80016254_fmt                              = 0x80016254;  /* '%s...\n' */
+g_str_no_param_8001625C_fmt                          = 0x8001625C;  /* '%s: no param\n' */
+g_str_cd_cw_8001626C                                 = 0x8001626C;  /* 'CD_cw' */
+g_str_cd_init_800162A8                               = 0x800162A8;  /* 'CD_init:' */
+g_str_addr_800162B4_fmt                              = 0x800162B4;  /* 'addr=%08x\n' */
+g_str_cd_datasync_800162C0                           = 0x800162C0;  /* 'CD_datasync' */
+g_str_null_angled_800162CC                           = 0x800162CC;  /* '<NULL>' (debug-print null marker, distinct from "(null)" at 0x80015A7C) */
+g_str_cdread_sector_error_800162D4                   = 0x800162D4;  /* 'CdRead: sector error\n' */
+g_str_cdread_shell_open_800162EC                     = 0x800162EC;  /* 'CdRead: Shell open...\n' */
+g_str_cdread_retry_80016304                          = 0x80016304;  /* 'CdRead: retry...\n' */
+g_str_vsync_timeout_80016318                         = 0x80016318;  /* 'VSync: timeout\n' */
+g_str_unexpected_interrupt_8001635C_fmt              = 0x8001635C;  /* 'unexpected interrupt(%04x)\n' */
+g_str_intr_timeout_80016378_fmt                      = 0x80016378;  /* 'intr timeout(%04x:%04x)\n' */
+g_str_dma_bus_error_80016394_fmt                     = 0x80016394;  /* 'DMA bus error: code=%08x\n' */
+g_str_madr_800163B0_fmt                              = 0x800163B0;  /* 'MADR[%d]=%08x\n' */
+g_str_wait_reset_800163E8                            = 0x800163E8;  /* 'wait (reset)' */
+g_str_wait_wrdy_h_l_800163F8                         = 0x800163F8;  /* 'wait (wrdy H -> L)' */
+g_str_wait_dmaf_clear_w_8001640C                     = 0x8001640C;  /* 'wait (dmaf clear/W)' */
+g_str_r_8009BBEC                                     = 0x8009BBEC;  /* 'R' (single-char label) */
+g_str_r_8009BBFC                                     = 0x8009BBFC;  /* 'R' (duplicate in another TU) */
+g_str_on_bbm_800A3114                                = 0x800A3114;  /* 'ON.BBM' (character motion file) */
+g_str_gs_bbm_800A311C                                = 0x800A311C;  /* 'GS.BBM' */
+g_str_gn_bbm_800A3124                                = 0x800A3124;  /* 'GN.BBM' */
+g_str_mode_network_800A3150                          = 0x800A3150;  /* 'NETWORK' (game mode name) */
+g_str_mode_team_800A3158                             = 0x800A3158;  /* 'TEAM' */
+g_str_mode_vs_800A3160                               = 0x800A3160;  /* 'VS' */
+g_str_mode_vscpu_800A3164                            = 0x800A3164;  /* 'VSCPU' */
+g_str_mode_story_800A316C                            = 0x800A316C;  /* 'STORY' */
+g_str_c777_800A3178                                  = 0x800A3178;  /* '~c777' (color/clut code) */
+g_str_c737_800A3180                                  = 0x800A3180;  /* '~c737' */
+g_str_pct_s5d_800A3188_fmt                           = 0x800A3188;  /* '%s%5d' */
+g_str_pct_s3d_n_800A3190_fmt                         = 0x800A3190;  /* '%s%3d\n' */
+g_str_c4d_800A3198_fmt                               = 0x800A3198;  /* '%sC%4d' */
+g_str_cl3x_800A31A0_fmt                              = 0x800A31A0;  /* '%sCL%3x' */
+g_str_pct_s3x_n_800A31A8_fmt                         = 0x800A31A8;  /* '%s%3x\n' */
+g_str_pct_s5d_n_800A31B0_fmt                         = 0x800A31B0;  /* '%s%5d\n' */
+g_str_o4d_n_800A31B8_fmt                             = 0x800A31B8;  /* '%sO%4d\n' */
+g_str_l4d_n_800A31C0_fmt                             = 0x800A31C0;  /* '%sL%4d\n' */
+g_str_m4d_n_800A31C8_fmt                             = 0x800A31C8;  /* '%sM%4d\n' */
+g_str_d4d_n_800A31D0_fmt                             = 0x800A31D0;  /* '%sD%4d\n' */
+g_str_pct_s_800A31DC_fmt                             = 0x800A31DC;  /* '%s' */
+g_str_sio_800A3210                                   = 0x800A3210;  /* 'sio:' (memcard device prefix used by bios_FileOpen_B) */
+
+/* === Medium-confidence promotion pass (2026-05-17) -- 39 entries === */
+/* Mediums promoted to highs after the relevant callees/data refs were */
+/* themselves named in the recent batches (BIOS events, scratchpad cache, */
+/* match-round cluster, text1b render state, etc.).  Each entry has 1+ */
+/* newly-named symbol referenced in its evidence file.  See */
+/* docs/naming/{evidence,data_evidence}/ for full prose. */
+
+/* Tier 1 -- 2+ newly-named refs (function + data) */
+special_cam_lookup_table_entry_80037110                 = 0x80037110;  /* [func] refs: g_special_cam_command_table, mottest_rob_init */
+prim_buffer_open_slot_80044010                          = 0x80044010;  /* [func] refs: g_tpage_slot_ptr, g_tpage_slot_count */
+prim_buffer_relocate_slot_80044100                      = 0x80044100;  /* [func] refs: g_tpage_slot_ptr, g_tpage_slot_count */
+anim_emit_210009_with_setup_80061250                    = 0x80061250;  /* [func] refs: g_text1b_glyph_cursor, g_text1b_render_state_ptr, g_text1b_render_state, g_text1b_render_arg_cache */
+anim_emit_29000B_80061454                               = 0x80061454;  /* [func] refs: g_text1b_glyph_cursor, g_text1b_render_state_ptr, g_text1b_render_state, g_text1b_render_arg_cache */
+motion_ex_init_state_80065000                           = 0x80065000;  /* [func] refs: g_text1b_render_state_ptr, g_text1b_render_buf_ptr */
+setup_double_buffer_swap_80077724                       = 0x80077724;  /* [func] refs: g_disp_fb_base, g_frame_parity */
+g_match_round_result_table                              = 0x800A377C;  /* [data] refs: g_match_round_index, robtest_disp */
+g_match_round_byte_b                                    = 0x800A389B;  /* [data] refs: g_match_round_byte_a, g_match_round_index, _GetBattleSwichData */
+
+/* Tier 2 -- 1 newly-named ref (data only -- lower-risk promotions) */
+g_game_session_running                                  = 0x800A31DA;  /* ref: scene_teardown_variant_80035480 */
+g_pad_analog_mode                                       = 0x800A31F4;  /* ref: g_pad_analog_substate */
+g_damage_debug_enabled                                  = 0x800A31FC;  /* ref: damage_CalcHitDamage */
+g_damage_debug_pending                                  = 0x800A3203;  /* ref: damage_CalcHitDamage */
+g_text1a_active_count                                   = 0x800A33AC;  /* ref: saTan0Init */
+g_gnd_landing_rand_seed                                 = 0x800A3418;  /* ref: bb2_rand */
+g_text1b_arg1_struct_ptr                                = 0x800A3524;  /* ref: g_text1b_render_arg_cache */
+g_leaf_muki_buffer                                      = 0x800A3678;  /* ref: func_80042874 */
+g_replay_camera_target_ptr_b                            = 0x800A370C;  /* ref: g_stage_data_ptr */
+g_dma_buf_base                                          = 0x800A374C;  /* ref: tslDrTex1Init2 */
+g_tslTm_loaded_flags                                    = 0x800A376A;  /* ref: tslDrTex1Init */
+g_mental_bar_packet_buf                                 = 0x800A37A8;  /* ref: g_mental_bar_packet_count (paired) */
+g_hira_packet_cursor                                    = 0x800A3820;  /* ref: replay_camera_rob_back_win_near */
+g_practice_select_cursor                                = 0x800A384C;  /* ref: title_mv_exec */
+g_seq_check_pending                                     = 0x800A385C;  /* ref: title_mv_exec */
+g_voice_dialog_state                                    = 0x800A38AC;  /* ref: func_80019568 */
+g_cpu_move_pattern_cursor                               = 0x800A38B4;  /* ref: g_cpu_attack_idx */
+g_title_seq_state                                       = 0x800A38C4;  /* ref: title_mv_exec */
+g_replay_pos_change_count                               = 0x800A38D6;  /* ref: replay_camera_rob_back_win_near */
+g_motion_select_byte                                    = 0x800A391D;  /* ref: ki_attack_ougi */
+g_cpu_pattern_tick                                      = 0x800A3929;  /* ref: g_cpu_attack_idx */
+g_sound_buf_b                                           = 0x800EFB78;  /* ref: action_check_defense */
+g_text1b_glyph_buf_b                                    = 0x800F1154;  /* ref: g_text1b_glyph_cursor */
+g_mdec_fp_buf                                           = 0x800F62E0;  /* ref: replay_camera_rob_back_win_near */
+g_grid_pos_vec3                                         = 0x800F6608;  /* ref: suLeagueSystemInit */
+g_replay_frame_offset                                   = 0x80101E74;  /* ref: mottest_rob_init */
+g_char_state                                            = 0x80101F00;  /* per-character struct base, 1100-byte stride (ref: g_motion_data_base_ptr) */
+g_replay_camera_target_a                                = 0x80101FBC;  /* ref: g_practice_menu_index */
+g_motion_keyframe_table_ptr                             = 0x801027B0;  /* ref: g_motion_data_base_ptr */
+g_blood_spot_timer                                      = 0x80104E80;  /* ref: md_game_check_change_main_mode_default */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
