@@ -15,6 +15,7 @@ the Bushido Blade 2 (SLUS-00663) disc.
 | **BNK**    | [BNK.md](BNK.md)      | `tools/inspect_bnk.py`     | Reversed (VAB body)   | `disc/TIM2D/GAME*.BNK`   |
 | **SE**     | [SE.md](SE.md)        | (uses `inspect_bnk.py` / `inspect_stage.py`) | Container reversed (= one STAGE record) | `disc/LOADSE/*.SE` |
 | **STR**    | [STR.md](STR.md)      | `tools/inspect_str.py`     | Standard PSX format — documented and inspected | `disc/STR/OPENING.STR` |
+| **MOVOVL** | [MOVOVL.md](MOVOVL.md)| `tools/inspect_movovl.py`  | PS-X EXE overlay characterised (header, BIOS, libs); decoder internals from PsyQ library | `disc/STR/MOVOVL.EXE` |
 | **XA**     | [XA.md](XA.md)        | (external tools)           | Standard PSX format — documented | `disc/XA_{0,1}/*.XA`, `disc/LOADSE/BB2_M*.XA` |
 
 ## Bird's-eye view of the disc

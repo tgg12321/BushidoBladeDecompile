@@ -65,20 +65,20 @@ data after the original CD-XA subheader was stripped). See
 
 ## Overlay (MOVOVL.EXE)
 
-`disc/STR/MOVOVL.EXE` is a standard PS-X EXE:
+`disc/STR/MOVOVL.EXE` is a standalone PS-X EXE — see
+**[MOVOVL.md](MOVOVL.md)** for the full breakdown (header layout, BIOS
+calls, PsyQ library identification, relationship to the main EXE,
+inspector tool).
 
-```
-PS-X EXE header (0x800 bytes)
-  load_address  = 0x801D8800
-  entry_point   = 0x801DA084
-  text+data     = 0x01E000 (122,880 bytes ≈ 120 KB)
-  stack         = 0x801FFFF0
-```
-
-It is DMA'd in via `file_LoadOverlay` (`src/ings.c:370`) which uses
-`func_80060CB8(0x801D8800, 0x8010E800)` to copy the overlay into a separate
-RAM region. The overlay carries its own MDEC decoder and a small XA-ADPCM
-playback routine.
+Summary: 122,880 bytes loaded at `0x801D8800`, entry point `0x801DA084`,
+links statically against PsyQ libgpu / libpress / libapi (identical SDK
+versions to the main EXE), uses 17 BIOS calls to set up its own minimal
+pad / interrupt / GPU / CD environment, and reaches the MDEC hardware
+exclusively through libpress wrappers (no inlined `0x1F801820` /
+`0x1F801824` register access). The overlay is invoked at boot before
+the main EXE; `file_LoadOverlay` at `src/ings.c:370` is almost
+certainly a *different* overlay loader (the size guard `0xA000` rules
+out the 122 KB MOVOVL.EXE).
 
 ## Verified by
 
