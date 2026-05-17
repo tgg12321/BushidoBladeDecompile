@@ -765,4 +765,37 @@ g_pad_analog_frame_counter      = 0x800A3814;  /* halfword incremented per frame
 g_round_frame_counter           = 0x800A3858;  /* match-elapsed-frame counter; centiseconds via (val % 30) * 100 / 30 */
 g_blood_spot_pos                = 0x800A26CC;  /* 12-bit packed position written by SetBloodSpot (paired with g_blood_spot_timer) */
 
+/* === Data-symbol batches 9-11 (2026-05-17) -- 21 highs landed === */
+/* BIOS memcard event handles (4 modes x 2 classes) -- opened by memcard_event_init */
+g_memcard_event_count_io        = 0x800A37FC;  /* bios_OpenEvent(0xF4000001, 0x100) */
+g_memcard_event_general_error   = 0x800A3800;  /* bios_OpenEvent(0xF4000001, 0x2000) */
+g_kernel_event_io_complete      = 0x800A3838;  /* bios_OpenEvent(0xF0000011, 4) */
+g_kernel_event_disconnect       = 0x800A383C;  /* bios_OpenEvent(0xF0000011, 0x8000) */
+g_kernel_event_count_io         = 0x800A3848;  /* bios_OpenEvent(0xF0000011, 0x100) */
+g_kernel_event_general_error    = 0x800A3850;  /* bios_OpenEvent(0xF0000011, 0x2000) */
+g_root_counter_event_handle     = 0x800A3810;  /* bios_OpenEvent(0xF000000B, 0x8000) -- root counter */
+g_root_counter_callback_event   = 0x800A3738;  /* bios_OpenEvent(0xF000000B, 0x400) */
+/* BIOS file handles for memcard */
+g_memcard_file_handle_a         = 0x800A3734;  /* bios_FileOpen_B mode 0x8001 (write-create-exclusive) */
+g_memcard_file_handle_b         = 0x800A373C;  /* bios_FileOpen_B mode 2 (read) */
+/* SPU register / state cluster */
+g_spu_reg_pair_b                = 0x800F7424;  /* volatile u16[2], adjacent to g_spu_reg_pair at 0x800F7420 */
+g_spu_reg_voice_array           = 0x800F7298;  /* volatile u16[] SPU voice registers */
+g_spu_xfer_mask                 = 0x800A2874;  /* SPU transfer/channel mask; OR'd with bit-masks */
+g_spu_voice_mask                = 0x800A28A0;  /* SPU voice key-on/off mask; bit = (regaddr - 0xC6) >> 1 */
+/* Scratchpad pointer cache (text1b) */
+g_scratchpad_ptr_a4             = 0x800A34E8;  /* points to 0x1F8000A4 (scratchpad RAM) */
+g_scratchpad_ptr_b8             = 0x800A34EC;  /* points to 0x1F8000B8; deref'd as u16* */
+g_scratchpad_ptr_ac             = 0x800A3484;  /* points to 0x1F8000AC */
+/* Counters / state */
+g_gnd_target_id_array           = 0x800A33E8;  /* array base for gnd-target IDs (s16 each); -1 sentinel */
+g_seq_init_pending              = 0x800A38C6;  /* 0xFFFF = pending init request, 0 = inited */
+g_mental_bar_max_packets        = 0x800A38F8;  /* max-count cap for mental-bar busy-wait (paired with g_mental_bar_packet_count) */
+g_motion_ex_counter_p2          = 0x800F0BC4;  /* p2's motion-ex counter (paired with D_800F0BC0 p1) */
+g_dma_madr_ptr                  = 0x800A263C;  /* pointer to DMA register; (val >> 24) & 0x7F = status read */
+g_vsync_timeout_deadline        = 0x800F19B8;  /* sys_VSync(-1) + 0x3C0 timeout frame number */
+g_panic_msg_format_ptr          = 0x800F19C0;  /* cached pointer to panic format string (&D_80016240) */
+g_alarm_armed_flag              = 0x800A26D0;  /* alarm-armed boolean (distinct from g_alarm_active_sentinel at 0x800A26DE) */
+g_irq_alarm_handle              = 0x800A14E4;  /* volatile alarm handle; -1 = no alarm */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
