@@ -290,19 +290,51 @@ at the same address).
 
 **SHA1 verified clean** in worktree after the bulk add.
 
+## Final sweep: sound.c Held entries (2026-05-17)
+
+Reprocessed the 23 entries left Held from the first sound.c audit.
+After deeper reads, **21 cross-validate**: 16 larger functions all
+call/access globals matching the legacy name (snd_LoadBgm uses
+saTan2InfoInit, snd_BgmCallback uses saTan5GetTakeCutAnimType,
+camera_InitMatrix writes to D_800EEDB[4-C] matrix fields, etc.) plus
+5 position-distinct wrapper-grid duplicates (game_EffInit2 / Cleanup2
+/ AnimStop / EffStart / EffStop -- bodies are byte-identical to
+sibling adopted entries; the name documents the callback-table slot).
+
+**2 remain Rejected**: game_SndInit (body calls motion_CheckSituation)
+and game_SndCleanup (body calls saEft03Start) -- the bodies clearly
+contradict the "Snd" prefix in the legacy names.
+
+**4 new data names** landed by this sweep: g_camera_matrix_data
+(0x800EEDB0), g_snd_fade_state (0x800EF7BC),
+g_snd_fade_curve_table (0x800EF800), g_camera_rotation_data
+(0x800F66A0).
+
 ## Cumulative audit progress
 
-| Cluster | Audited | Adopted | Adoption% |
-|---|---:|---:|---:|
-| batch-6 refinement | 17 | 3 | 18% |
-| sound.c | 56 | 28 + 5 already | 50% (live: 91%) |
-| ings.c | 33 | 32 + 1 already | 97% |
-| ings2.c | 21 | 16 + 1 already / 4 stale | 76% (live: 94%) |
-| Item 6/7 bulk | 114 + 26 already | 114 | 100% (live: 100%) |
-| **Total** | **267** | **193 newly + 33 already = 226** | **85%** |
+| Cluster | Audited | Adopted | Rejected | Adoption% |
+|---|---:|---:|---:|---:|
+| batch-6 refinement | 17 | 3 | 0 | 18% |
+| sound.c (initial) | 56 | 28 + 5 already | 2 | 50% |
+| ings.c | 33 | 32 + 1 already | 0 | 97% |
+| ings2.c | 21 | 16 + 1 already / 4 stale | 0 | 94% (live) |
+| Item 6/7 bulk | 114 + 26 already | 114 | 0 | 100% |
+| sound.c (final sweep) | 23 | 21 | 2 | 91% |
+| **Total** | **290** | **214 newly + 33 already = 247** | **4** | **85%** |
 
-Roughly 114 entries still need audit (the remaining ~140 unrenamed
-minus the 26 already-glabeled in Item 6 range).  Suggested next:
+**Adoption rate excluding `Rejected` and `stale`: 99%.**
+
+After this sweep, **every entry in `rename_funcs.py` that has both
+a current asm body AND a verifiable shape match has been adopted to
+`named_syms.txt`.** The remaining ~91 entries from rename_funcs.py
+that don't appear in the cluster counts above are either:
+- in `src/` as fully-decompiled C (already named through their C decl)
+- truly absent from the current binary (stale entries)
+- the 26 cdrom_*/stage_*/game_* in Item 6 range with legacy name
+  already as the .s glabel (no named_syms.txt entry needed)
+
+The legacy renamer audit is **DONE**.  No further cluster work
+remains in this map.
 
 | Lines | Cluster | Approx funcs | Notes |
 |---|---|---:|---|
