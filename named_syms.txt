@@ -1574,6 +1574,29 @@ efc_rob_set_type_flash                                  = 0x80044B30;
 /* Skipped: replay_camera_get_attack_number at 0x8003E6A0 -- name */
 /* collides with same-named real impl that BB2's wrapper at this addr */
 /* calls (already named separately as replay_camera_get_attack_number_2arg). */
+
+/* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
+/* Medium-confidence Kengo matches.  Bodies have similar shape but */
+/* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
+/* as a starting point for future analysis. */
+myRobGeneiMove                                          = 0x8001B690;
+mario_test_Exec                                         = 0x8001E404;
+calc_loc_mat_fw                                         = 0x8002BC68;
+PutRobShadow                                            = 0x8002C61C;
+saTan0KiWareMoveB                                       = 0x8002DE20;
+motion_SetMotion                                        = 0x800392B8;
+saSeInit_2                                              = 0x800395B4;
+saTan5TakeAnim2_2                                       = 0x800841E0;
+saTan4GaugeInit                                         = 0x80084A7C;
+SetBloodSpot                                            = 0x800856B0;
+AllocBukiRmd                                            = 0x80089F3C;
+saTan2Main                                              = 0x8008AE24;
+saTan1MainJump                                          = 0x8008BB24;
+SetPacketData                                           = 0x8008C464;
+rob_life_ctrl                                           = 0x80040A78;
+mot_data_set                                            = 0x8004283C;
+hirahira_w_ctrl_2                                       = 0x8004A348;
+hirahira_w_frie                                         = 0x800520B8;
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
