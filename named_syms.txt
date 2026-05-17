@@ -1707,6 +1707,15 @@ g_gte_back_color_b_r                                    = 0x800F6398;  /* effect
 g_gte_color_matrix_data_c                               = 0x800F6498;  /* effect C 3x3 color matrix (alt path) */
 g_gte_back_color_c_r                                    = 0x800F64B8;  /* effect C back-color R */
 
+/* === Sound-channel texture metadata (2026-05-17) -- 4 highs === */
+/* From main.c AddTbpOfst (line 1181): looks up texture metadata for an */
+/* animated sprite associated with a sound channel (D_80102A68 = */
+/* g_snd_ch_status, 16 channels max).  Three parallel per-channel tables. */
+g_snd_ch_texture_base_ptr                               = 0x800F6660;  /* per-channel base ptr to texture data */
+g_snd_ch_texture_tpage                                  = 0x800F66B8;  /* per-channel TPage/u32 value */
+g_snd_ch_texture_meta_ptr                               = 0x800F6700;  /* per-channel secondary ptr */
+g_snd_ch_texture_max_frame                              = 0x800FF634;  /* max frame offset (compared against arg) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
