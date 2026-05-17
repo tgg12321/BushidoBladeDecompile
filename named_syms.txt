@@ -2167,6 +2167,17 @@ g_pad_rec_param_a                                       = 0x800A3870;  /* 2-bit 
 g_input_pause_pending_flag                              = 0x800A3318;  /* != 0 gates pause-menu entry; tested after D_800A3204 input flag (set in func_80038988) */
 g_result_screen_state_c                                  = 0x800A3350;  /* companion to g_result_screen_active_flag (0x800A3354); reset to 0 in same flow */
 
+/* === Practice-lesson arg dispatch state (2026-05-17) -- 6 highs === */
+/* From code6cac_c_ab.c func_8003B3A4 / func_8003B484: 2 alternate */
+/* arg-passing formats for lesson dispatch.  D_800A3712 selects format */
+/* (0 = primary, 1 = alternate). */
+g_practice_lesson_arg_format                            = 0x800A3712;  /* 0 = primary arg-format, 1 = alternate */
+g_lesson_override_flag                                   = 0x800A37A0;  /* when 1, forces a1 to 0 (overrides D_8008D9EC[class] lookup) */
+g_practice_lesson_byte_6                                = 0x80102783;  /* +6 in practice lesson range; arg0[1] passthrough */
+g_lesson_extra_arg_b                                    = 0x800A37B4;  /* arg0[2] passthrough */
+g_lesson_extra_arg_c                                    = 0x800A37B5;
+g_lesson_extra_arg_d                                    = 0x800A37B6;
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
