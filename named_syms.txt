@@ -1609,6 +1609,24 @@ g_gnd_gauge_c_max                                       = 0x800F6640;  /* gauge 
 g_gnd_gauge_c_cur                                       = 0x800F6642;  /* gauge C current = 0 */
 g_gnd_gauge_d_max                                       = 0x800F6644;  /* gauge D max = 0x64 */
 
+/* === Practice-lesson init cluster (2026-05-17) -- 11 highs === */
+/* From code6cac.c:1345 func_8001C444 (init): sets up the lesson */
+/* parameters at 0x80102778-80102787.  D_8010277C is already named */
+/* g_practice_lesson_char_id (the lesson character).  These siblings */
+/* hold size/class/slot/state/count/flag fields used by lesson dispatch */
+/* (func_80022580 takes class+slots+flag as args). */
+g_practice_lesson_size_a                                = 0x80102778;  /* = 0x800 (lesson dimension A) */
+g_practice_lesson_size_b                                = 0x8010277A;  /* = 0x800 (lesson dimension B) */
+g_practice_lesson_class                                 = 0x8010277D;  /* = 0x10 (lesson class ID, passed as arg3 to func_80022580) */
+g_practice_lesson_slot_0                                = 0x8010277E;  /* lesson slot 0 (init 0) */
+g_practice_lesson_slot_1                                = 0x8010277F;  /* lesson slot 1 (init 0; passed as arg4 to func_80022580) */
+g_practice_lesson_state                                 = 0x80102780;  /* lesson state (init 0) */
+g_practice_lesson_init_param                            = 0x80102781;  /* lesson init param (init 0; passed as arg2 to func_80022580; distinct from g_practice_lesson_param0 at 0x800A38DE) */
+g_practice_lesson_count_a                               = 0x80102784;  /* lesson count A (= 0xC) */
+g_practice_lesson_count_b                               = 0x80102785;  /* lesson count B (= 4) */
+g_practice_lesson_flag_a                                = 0x80102786;  /* lesson flag A (init 0) */
+g_practice_lesson_flag_b                                = 0x80102787;  /* lesson flag B (init 0) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
