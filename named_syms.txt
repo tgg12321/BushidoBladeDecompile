@@ -300,5 +300,12 @@ game_event_wait_any_80037964 = 0x80037964;
 game_event_wait_any_with_timeout_80037804 = 0x80037804;
 cd_dma_idle_80080620                       = 0x80080620;
 
+/* === Batch 4 high-confidence function renames (2026-05-17) === */
+/* See docs/naming/evidence/func_{80042478,80044650,80079184,80080600}.md */
+disp_set_fade_color_80042478       = 0x80042478;
+init_fade_panel_wrapper_80044650   = 0x80044650;
+bb2_srand_80079184                 = 0x80079184;
+cd_send_cmd_80080600               = 0x80080600;
+
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
