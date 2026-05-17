@@ -2008,6 +2008,10 @@ g_effect_init_flag                                      = 0x800A3408;  /* flag r
 g_text1b_post_render_countdown                          = 0x800A32BC;  /* set to 0xA (10) when text1b render-state +0x0 bit 0x200000 is set; decremented per frame; tested >= 2 and == 1 in main loop */
 g_menu_screen_result_pending                            = 0x800A35E4;  /* cleared (= 0) when menu screens transition or func_80069250 returns 1; tracks "pending result" state */
 
+/* === Intro/title fade timer + setter-getter pair (2026-05-17) -- 2 highs === */
+g_intro_fade_phase                                      = 0x800A3608;  /* intro/title fade phase counter; >= 0xAAA enables, >= 0xB04 starts 15-frame fade-out (color = 0x80 - (D - 0xB04)*128/15) */
+g_intro_get_set_value                                   = 0x8009BD80;  /* simple cached value set by func_80078BE0(a0), read by func_80078BF0() */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
