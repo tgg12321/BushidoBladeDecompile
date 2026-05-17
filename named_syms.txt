@@ -1911,6 +1911,17 @@ g_snd_stream_count                                      = 0x800A33AC;  /* sequen
 g_snd_stream_header_state                               = 0x800A9CFE;  /* header state at -0x12 from buffer base; values 0x11/2/0xA */
 g_snd_stream_header_ptr                                 = 0x800A9D04;  /* header pointer at -0xC from buffer base */
 
+/* === Match-round scoring cluster (2026-05-17) -- 6 highs === */
+/* From code6cac_b.c func_800340A0: per-round result computation. */
+/* Each round: compare P1 vs P2 primary scores; on tie, compare */
+/* secondary tiebreakers; on tie again, mark round as draw (2). */
+g_match_p1_score                                        = 0x800A3898;  /* P1 primary round score (incremented on win) */
+g_match_p2_score                                        = 0x800A3899;  /* P2 primary round score (paired with P1) */
+g_match_win_threshold                                   = 0x800A37F8;  /* compared via == against P1/P2 score; matching = instant win for that player */
+g_match_p1_tiebreaker                                   = 0x800A38AA;  /* P1 secondary score (used on primary tie) */
+g_match_p2_tiebreaker                                   = 0x800A38AB;  /* P2 secondary score */
+g_match_round_byte_a_paired                             = 0x800F65F9;  /* sibling byte to g_match_round_byte_a (P1/P2 score history per round) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
