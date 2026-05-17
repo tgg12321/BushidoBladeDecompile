@@ -2089,6 +2089,11 @@ g_text1b_slot_d_flags                                   = 0x800F1159;  /* u8[2] 
 g_round_p1_char_id_table                                = 0x801027A0;  /* per-round P1 character pick table (u8, stride 2 per round) */
 g_round_p2_char_id_table                                = 0x801027D8;  /* per-round P2 character pick table (parallel to _p1) */
 
+/* === Misc state from code6cac_b.c (2026-05-17) -- 3 highs === */
+g_text1b_render_call_result                             = 0x800A3910;  /* return value of func_8006133C(arg2) text1b render call */
+g_voice_state_flag                                      = 0x800A389A;  /* boolean tested with g_voice_play_state == 2 (multi-condition voice gate) */
+g_practice_round_active_flag                            = 0x800A38A8;  /* set to 1, tested != 0; gates practice-round logic */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
