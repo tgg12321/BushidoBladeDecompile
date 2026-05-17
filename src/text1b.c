@@ -289,7 +289,6 @@ s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     s32 a, b, c, d;
     u32 cv, dv;
     p = (u8 *)arg0 + ((s32 *)arg0)[arg1];
-    __asm__ volatile("addu $8, $3, $zero");
     asm volatile("" : "=r"(arg3) : "0"(arg3));
     count = *(s32 *)p;
     if (arg2 >= (u32)count) return -1;
