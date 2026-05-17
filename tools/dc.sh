@@ -21,6 +21,7 @@
 #   bash tools/dc.sh post-match-validate <func>  — sibling-regression check after a match
 #   bash tools/dc.sh retire <func>                — start retirement of a bridged function (see feedback_bridge_is_not_decomp.md)
 #   bash tools/dc.sh audit-bridges                — caller-signature audit on 209 bridged funcs
+#   bash tools/dc.sh scan-canonical [--single F] [--diff]  — unified Tier 1/2 canonical-asm classifier + registry drift report
 #   bash tools/dc.sh classify <func>              — pre-dive classification report
 #   bash tools/dc.sh gte <func>                    — gte_*() macro suggestion report
 #   bash tools/dc.sh attempt <func>               — full mechanical attempt pipeline
@@ -729,6 +730,14 @@ PYEOF
         FUNC_NAME="$1"
         [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh classify <func>"; exit 1; }
         python3 tools/classify_func.py "$FUNC_NAME" 2>&1
+        ;;
+
+    scan-canonical)
+        # Unified canonical-asm classifier. With no args, scans every
+        # function and reports Tier 1/2 hits plus registry drift. Pass
+        # --single <func> for a one-function report, --diff to also
+        # write proposed registry appends to tmp/canonical_asm_diff.txt.
+        python3 tools/scan_canonical_asm.py "$@" 2>&1
         ;;
 
     gte)

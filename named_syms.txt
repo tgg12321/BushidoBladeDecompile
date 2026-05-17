@@ -281,6 +281,21 @@ channel_helper_A_80046A60     = 0x80046A60;
 /* (gpu_EnableDisplay / gpu_DisableDisplay are already in */
 /* undefined_syms_auto.txt -- no need to re-declare here.) */
 
+/* === Batch 5 high-confidence renames (2026-05-17) === */
+/* The motion_ex_play_* family of 7 wrappers around motion_SetExMotion(N) */
+/* with per-id play-counters and 5- or 10-play caps. See evidence files. */
+motion_ex_play_id1_80065344     = 0x80065344;
+motion_ex_play_id2_80065394     = 0x80065394;
+motion_ex_play_id4_80065434     = 0x80065434;
+motion_ex_play_id6_80065540     = 0x80065540;
+motion_ex_play_id7_80065590     = 0x80065590;
+motion_ex_play_idB_80065630     = 0x80065630;
+motion_ex_play_id10_80065760    = 0x80065760;
+/* Other batch-5 high: see evidence files */
+scene_teardown_variant_80035480 = 0x80035480;  /* sibling of scene_teardown_80035DC8, mode-9 outcome */
+set_color_mode_80048744         = 0x80048744;  /* 2-line setter for g_color_mode */
+player_find_empty_slot_80041584 = 0x80041584;  /* find first NULL in g_player_ptrs[0..2] */
+
 /* === Kengo conflicts: hand-review alternative aliases (2026-05-17 audit) === */
 /* Five of seven Kengo conflicts (from MISNOMERS.md Category 2) where */
 /* the Kengo name is clearly wrong per body audit; our hand-review name */
@@ -363,5 +378,49 @@ scene_teardown_80035DC8                           = 0x80035DC8;
 /* See docs/formats/NDATA.md "Reader (func_80044E74)". */
 ndata_disc_read_scheduler_80036E34                = 0x80036E34;
 
+/* === Batch 6 high-confidence renames (2026-05-17, asm-only pool) === */
+/* Three pure-getter accessors of already-named globals + one literal */
+/* empty stub. All are deterministic by inspection -- see evidence files. */
+/* */
+/* SHA1-invariance: symbol-only additions cannot affect the byte output */
+/* (PS-X EXE strips ELF symbols via `objcopy -O binary`); verified before */
+/* commit by the rebuild script. */
+get_snd_bgm_id_80046780      = 0x80046780;  /* 3-insn gp-rel getter for g_snd_bgm_id (legacy renamer: snd_GetBgmId) */
+get_stage_id_80046798        = 0x80046798;  /* 4-insn lh-based signed getter for g_stage_id (legacy renamer: stage_GetId) */
+get_sys_video_mode_80083688  = 0x80083688;  /* 4-insn lw-based getter for g_sys_video_mode (legacy renamer: sys_GetVideoMode) */
+empty_stub_80046954          = 0x80046954;  /* literal `jr ra; nop` -- 2 insns total (legacy renamer: snd_SeNullCallback -- a null SE callback table slot) */
+
+/* === Batch 6 refinement (2026-05-17) -- cross-validate `tools/rename_funcs.py` === */
+/* `tools/rename_funcs.py` ships a ~400-entry legacy rename map assembled from */
+/* prior Kengo affinity / size-match research that was never propagated into */
+/* `named_syms.txt`. The three entries below pass cross-validation against the */
+/* current asm bodies; the rest of the file's 7 batch-6 'low' wrappers either */
+/* (a) have legacy names that conflict with their body's named callees, or */
+/* (b) lack callsite context to distinguish their role.  See */
+/* `docs/naming/MISNOMERS.md` and `tools/rename_funcs.py` for the full delta. */
+math_Distance3D_80017748     = 0x80017748;  /* vec3 sub + >>2 + sum-after-helper + <<2 == magnitude-with-overflow-guard. Exact match with legacy `math_Distance3D`. */
+camera_InitBoneData_80047210 = 0x80047210;  /* memcpy(g_cam_bone_data, D_80101E08, 0x20) + halve 3 halfword fields. Legacy `camera_InitBoneData` is an exact-shape match. */
+camera_InitBone2_80047570    = 0x80047570;  /* camera_InitRotation(&g_cam_bone_data2) + g_cam_interp=4. Legacy `camera_InitBone2` matches the body 1:1 (it's the second cam bone bank init). */
+
+/* === Batch 4 data-symbol renames (2026-05-17) === */
+/* Six high-confidence data globals identified by access-pattern review */
+/* of the top-30 most-referenced unnamed D_* symbols.  See evidence at */
+/* docs/naming/data_evidence/{addr}.md for each. */
+/* */
+/* SHA1-invariance: same construction as the batch-6 function renames -- */
+/* symbol-only additions cannot affect PS-X EXE bytes (objcopy strips ELF). */
+g_isqrt_lut                  = 0x8008D118;  /* byte LUT: `lbu val,LUT($at)`, indexed by sum-of-squares for magnitude estimation */
+g_frame_parity               = 0x800A36AC;  /* double-buffer parity word, `& 1` mask used to alternate framebuffers/CLUTs */
+g_stage_data_ptr             = 0x800A3708;  /* pointer to current stage data; +0x4C/+0x54 are collision center fields */
+g_practice_menu_table        = 0x80101EC8;  /* base of per-character/practice-menu records, stride 0x44C (1100 bytes; matches D_80101F00 char struct) */
+g_practice_menu_index        = 0x800A3748;  /* index into g_practice_menu_table; -1 == none */
+g_palette_base_ptr           = 0x800A378C;  /* base of palette/CLUT table, 4-byte stride, dynamically allocated */
+
+/* === Batch 5 data-symbol renames (2026-05-17) -- next 4 highs from rank 31-60 === */
+/* See docs/naming/data_evidence/D_{800A3044,80106F28,800A334C,800A3874}.md */
+g_spu_reg_base_ptr           = 0x800A3044;  /* SPU register block pointer; volatile-u16 +0xA |= 0x20 == channel-control */
+g_seq_bank_table             = 0x80106F28;  /* SEQ bank pointer table; outer = bank id, inner stride 0xB0 == per-channel control block (matches func_8008{5114,5210,5064}) */
+g_motion_play_countdown      = 0x800A334C;  /* u8 motion-state watchdog; set to 0x5A (90 frames), decremented, gated on `== 0 || (g_seq_active_voice_mask & 0x100010)` */
+g_match_round_index          = 0x800A3874;  /* match-round counter; indexes the round-result table (D_800A377C) and `D_800F65F8/F65F9 + round*2` */
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
