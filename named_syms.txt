@@ -2055,6 +2055,18 @@ g_menu_screen_live_byte_a                               = 0x8009BD41;  /* live m
 g_menu_screen_live_byte_b                               = 0x8009BD42;
 g_menu_screen_live_byte_c                               = 0x8009BD43;
 
+/* === IRQ event slot management (2026-05-17) -- 8 highs === */
+/* From text1b_b.c func_80078A68 / B04 / B3C / B70 / BA8: manages 3 */
+/* IRQ event slots with per-slot u16 control word + global bitmask. */
+g_irq_event_struct_ptr                                  = 0x8009BD68;  /* IRQ event state struct ptr; base[1] = per-slot enable bitmask */
+g_irq_event_slots_3x16                                  = 0x8009BD6C;  /* 3-entry table x 16-byte stride; per-slot config (u16 at +4 = mode) */
+g_irq_event_masks_3                                     = 0x8009BD70;  /* 3-entry per-slot bit-mask values (used to set/clear bits in g_irq_event_struct_ptr->bitmask) */
+irq_event_slot_configure                                = 0x80078A68;  /* func_80078A68(slot, arg1, arg2): writes config to slot */
+irq_event_slot_read                                     = 0x80078B04;  /* func_80078B04(slot): reads u16 from slot */
+irq_event_slot_enable                                   = 0x80078B3C;  /* func_80078B3C(slot): OR slot's mask into bitmask */
+irq_event_slot_disable                                  = 0x80078B70;  /* func_80078B70(slot): AND-NOT slot's mask from bitmask */
+irq_event_slot_clear                                    = 0x80078BA8;  /* func_80078BA8(slot): zero u16 at slot offset */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
