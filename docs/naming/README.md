@@ -15,6 +15,7 @@ Evidence-backed function-name proposals for the 1217 unnamed `func_XXXXXXXX` fun
 - `data_evidence/<D_addr>.md` -- per-symbol prose evidence for hand-reviewed data names (the deeper version of the same work)
 - `methodology.md` -- analyzer design + evidence kinds + scoring + known caveats
 - `evidence/<func_name>.md` -- per-function evidence detail file
+- `MISNOMERS.md` -- catalogue of known-wrong names in `src/*.c` + Kengo-vs-hand-review naming conflicts (2026-05-17)
 
 ## How to use
 
