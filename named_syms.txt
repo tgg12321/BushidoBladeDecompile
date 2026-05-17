@@ -2289,6 +2289,15 @@ g_sys_init_byte_c                                       = 0x800A3746;
 g_sys_init_flag                                         = 0x800A36F9;  /* init flag reset in sys_GameInit */
 g_sys_init_substate                                     = 0x800A3690;  /* paired init substate */
 
+/* === SPU transfer single-slot state (2026-05-17) -- 5 highs === */
+/* From main.c around line 2871-2924: a single-slot SPU transfer */
+/* queue with callback, busy flag, saved args, and status snapshot. */
+g_spu_xfer_callback                                     = 0x800F1AE8;  /* SPU transfer callback fn pointer */
+g_spu_xfer_busy_flag                                    = 0x800F1AEC;  /* != 0 = busy (caller returns -1); set to 1 when starting */
+g_spu_xfer_arg0_saved                                   = 0x800F1AF0;  /* arg0 saved for callback */
+g_spu_xfer_arg1_saved                                   = 0x800F1AF4;  /* arg1 saved */
+g_spu_xfer_status_snapshot                              = 0x800F1AF8;  /* SPU reg+4 bit 0x80 snapshot taken at transfer start */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
