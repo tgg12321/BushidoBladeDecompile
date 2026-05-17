@@ -276,3 +276,94 @@ globals. See [sound.md](sound.md) for details.
   — actual damage calculation.
 - Big chunks of the `code6cac_b.c` `func_8003XXX` cluster (over 100 functions
   that wrap the AI/move dispatch).
+
+## Ground / arena init (2026-05-17)
+
+`gnd_init_8001B294(p1_char_ptr, p2_char_ptr)` (`code6cac.c:1067`) sets
+up the per-round arena state when a fight starts.  It builds:
+
+- **Camera midpoint** (X/Y/Z averages of P1/P2 positions, +0xF4/+0xF8/+0xFC)
+- **4 gauge slots** with max/cur defaults (max=100, cur=0)
+- **Facing angle** (BAM): `0x400 - single_game_getEnemyCharId(dx, dy)`
+- **Round timer max** = 0x1388 (5000 frames)
+- **Init flag** (reset to 0 at end)
+
+| Symbol | Address | Role |
+|--------|---------|------|
+| `g_gnd_midpoint_x` | `0x800F6608` | Midpoint of P1/P2 X positions |
+| `g_gnd_midpoint_y` | `0x800F660C` | Midpoint Y |
+| `g_gnd_midpoint_z` | `0x800F6610` | Midpoint Z |
+| `g_gnd_camera_flag` | `0x800F6618` | Camera/state flag |
+| `g_gnd_facing_angle` | `0x800F661A` | Facing angle in BAM |
+| `g_gnd_misc_counter` | `0x800F661C` | Counter |
+| `g_gnd_round_time_max` | `0x800F6620` | Round timer max = 0x1388 |
+| `g_gnd_init_complete_flag` | `0x800F6626` | Init flag (reset to 0 at end) |
+| `g_gnd_gauge_a_max` | `0x800F6638` | Gauge A max = 0x64 (100) |
+| `g_gnd_gauge_a_cur` | `0x800F663A` | Gauge A current = 0 |
+| `g_gnd_gauge_b_max` | `0x800F663C` | Gauge B max |
+| `g_gnd_gauge_c_max` | `0x800F6640` | Gauge C max |
+| `g_gnd_gauge_c_cur` | `0x800F6642` | Gauge C current |
+| `g_gnd_gauge_d_max` | `0x800F6644` | Gauge D max |
+
+A parallel cluster exists for Mario character at `g_mario_voice_data`
+(`0x800F5328` — see [sound.md](sound.md)).
+
+## Practice-lesson cluster (2026-05-17)
+
+The practice mode tracks lesson progress + move-unlock state through
+several state cells, driven by `func_80033DF4` (lesson-progress
+checker) and `func_80033FE4` (move-unlock dispatcher).
+
+### Lesson-progress state
+
+| Symbol | Address | Role |
+|--------|---------|------|
+| `g_practice_lesson_progress` | `0x800A38E2` | Progress counter (0x64 = complete) |
+| `g_practice_lesson_subcounter` | `0x800A38E9` | Sub-counter (< 3 triggers end-of-lesson) |
+| `g_practice_p1_move_unlock_pending` | `0x800A36F0` | bool: P1 unlocked a move |
+| `g_practice_p2_move_unlock_pending` | `0x800A3781` | bool: P2 unlocked a move |
+| `g_practice_unlock_anim_id` | `0x800A38A4` | Animation ID (6/7=P1, 8/9=P2) |
+| `g_practice_mode_dispatch_idx` | `0x800A3834` | g_module_func_tbl index |
+
+### Lesson init params (set by func_8001C444)
+
+| Symbol | Address | Default |
+|--------|---------|---------|
+| `g_practice_lesson_size_a` | `0x80102778` | 0x800 |
+| `g_practice_lesson_size_b` | `0x8010277A` | 0x800 |
+| `g_practice_lesson_char_id` | `0x8010277C` | 1 |
+| `g_practice_lesson_class` | `0x8010277D` | 0x10 |
+| `g_practice_lesson_slot_0` | `0x8010277E` | 0 |
+| `g_practice_lesson_slot_1` | `0x8010277F` | 0 |
+| `g_practice_lesson_state` | `0x80102780` | 0 |
+| `g_practice_lesson_init_param` | `0x80102781` | 0 |
+| `g_practice_lesson_count_a` | `0x80102784` | 0xC |
+| `g_practice_lesson_count_b` | `0x80102785` | 4 |
+| `g_practice_lesson_flag_a/b` | `0x80102786/87` | 0 |
+
+### Lesson runtime params (fetched from `cpu_practice_honmokuroku_data_tbl`)
+
+| Symbol | Address | Role |
+|--------|---------|------|
+| `g_practice_lesson_param0` | `0x800A38DE` | Lesson table fetch via `&D_8008EC24 + char-class offset` |
+| `g_practice_lesson_param1` | `0x800A38EC` | Lesson table[1] |
+| `g_practice_lesson_param2` | `0x800A38ED` | Lesson table[2] |
+| `g_practice_lesson_param3` | `0x800A38EE` | Lesson table[3] |
+
+### Cross-reference with mode handlers
+
+Practice mode flows through several `g_module_func_tbl` entries
+(see [main_loop.md](main_loop.md) for full table):
+
+- `mode_handler_18_UnlockAnimDispatch` (`0x8003C040`, mode 0x12) is
+  the unlock-celebration dispatcher.  Reads `g_practice_unlock_anim_id`
+  to choose the specific character/move combo for the animation.
+- Mode 0x1A (`scene_teardown_80035DC8`) is the post-celebration teardown.
+
+### Move-enable bitmap
+
+`g_file_disc_size` at `0x80106A50` is **MISNAMED** — it's actually the
+per-character move-enable bitmap.  `func_80033DF4` queries it as
+`&D_80106A50` and tests bits like `0x20`, `0x10000`, `0x1000000`,
+`0x4000000` to decide which characters can use which moves.  See
+[../naming/MISNOMERS.md](../naming/MISNOMERS.md).
