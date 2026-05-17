@@ -208,53 +208,116 @@ the per-frame mode dispatch, which is a separate array starting at
 ## Mode dispatch — `g_module_func_tbl` at `D_8008D090`
 
 The main loop's `((void (*)(void))(&D_8008D090)[D_800A3834])()` call uses
-`D_800A3834` (the current "main game mode") as an index into a table of
-function pointers. Each function is one frame of that mode.
+`D_800A3834` (the current "main game mode" / `g_practice_mode_dispatch_idx`)
+as an index into a 34-entry table of function pointers. Each function is one
+frame of that mode.
 
-Mode values observed in `src/`:
+**The table is statically initialized**, not BSS as previously thought — it's
+defined inline in `main.c:3055` as a `.global g_module_func_tbl` block of 34
+`.word` entries. Earlier docs assumed BSS-init based on the entries being
+zero in `asm/data/7D920.data.s`; the actual definition is in the inline asm
+of `main.c`.
 
-| Mode | Set by | Meaning (inferred) |
-| --- | --- | --- |
-| 0 | `cpu_get_move_pattern_table_number` (code6cac.c:1889), various | "menu/title" — null mode, advances to next |
-| 1 | (initial in saRobDraw, code6cac_b2.c:296) | game-running, motion playback (`motion_SetMotion`) |
-| 2 | code6cac_b.c:3756 | game-running variant |
-| 3 | `cpu_set_move_command_and_dir_for_no_action` (code6cac_b.c:3510) | reset main loop |
-| 4 | code6cac_b.c:3756 | gameplay |
-| 7 | code6cac_c2.c:247 | sub-mode transition |
-| 8 | many — global reset uses this | title / menu logo |
-| 9 | code6cac_b2.c:146,250 | special-camera variant |
-| 0xB | code6cac_c2.c:330 | menu |
-| 0xD | code6cac.c:1812 (func_8001EA04) | post-cleanup mode |
-| 0xF | initial value set by `cpu_set_move_command_and_dir_for_no_action_2` | **boot mode** — what the engine starts in |
-| 0x11 | func_8001EEB4 (code6cac.c:1924) | "after-fight" cleanup mode |
-| 0x12, 0x14, 0x1A, 0x1B, 0x1C, 0x20 | various combat / menu transitions | scenario-specific |
+### Complete 34-mode dispatch table (decoded 2026-05-17)
 
-Most of the actual function pointer values are not yet labeled in
-`asm/data/7D920.data.s` (the data file starts at `D_8008D120` with what looks
-like a curve table, suggesting `D_8008D070..D_8008D120` is in BSS and zero-
-initialized at runtime).
+| Mode | Address | Handler | Role |
+|------|---------|---------|------|
+| 0  (0x00) | 0x8001DCB0 | `mode_handler_00_GameInit` | **Game init**: obj_InitChars + gpu_InitDisplay/Disable + gnd_disp_loop_ctrl + gnd_open |
+| 1  (0x01) | 0x8001E878 | `mode_handler_01_GameFrameUpdate` | **Main per-frame fight**: camera, characters, collision, motion, stage tick |
+| 2  (0x02) | 0x80033898 | `gpu_enable_and_state_reset_80033898` | Display reset + transitions to mode 3 |
+| 3  (0x03) | 0x80034708 | `mode_handler_03_NoOp` | Empty (no-op placeholder) |
+| 4  (0x04) | 0x800397D4 | `mode_handler_04_GameSetup` | **Full game setup**: gpu_EnableDisplay + gnd_open + player count + DMA list |
+| 5  (0x05) | 0x8003993C | `mode_handler_05_NoOp` | Empty |
+| 6  (0x06) | 0x8003B9D0 | `mode_handler_06_GameTeardownVariant` | func_8001DA2C + game_Cleanup + conditional GPU |
+| 7  (0x07) | 0x8003BCB4 | `mode_handler_07_SubModeTransition` | md_game_check_change_sub_mode + pad input check |
+| 8  (0x08) | 0x80035480 | `scene_teardown_variant_80035480` | Scene cleanup variant; also the **global-reset target** (D_800A3928 trigger) |
+| 9  (0x09) | 0x80035828 | `mode_handler_09_NoOp` | Empty |
+| 10 (0x0A) | 0x8003BE10 | `mode_handler_10_GameTeardown` | gpu_EnableDisplay + player_Destroy(0/1) |
+| 11 (0x0B) | 0x8003BEA8 | `mode_handler_11_PadInputCheck` | Checks pad input mask 0x40 (action button) |
+| 12 (0x0C) | 0x8001EA04 | `mode_handler_12_RoundCleanup` | gnd_init_80041688(0/1) + game_Cleanup; end-of-round |
+| 13 (0x0D) | 0x8001EA84 | `cpu_get_move_pattern_table_number` | CPU AI move-pattern lookup |
+| 14 (0x0E) | 0x80035430 | `mode_handler_14_NoOp` | Empty |
+| 15 (0x0F) | 0x8003BFC4 | `mode_handler_15_TeardownVariant` | Variant of mode 10 |
+| 16 (0x10) | 0x8001EEB4 | `hirahira_w_frie2` | "Falling/particles 2" — likely petal/snow effect |
+| 17 (0x11) | 0x8001EFA0 | `mode_handler_17_GameContinueFrame` | Increments g_practice_loop_frame, camera_GetBoneData |
+| 18 (0x12) | 0x8003C040 | `mode_handler_18_UnlockAnimDispatch` | **Unlock-celebration dispatch**: reads g_practice_unlock_anim_id (6/7=P1, 8/9=P2) |
+| 19 (0x13) | 0x8003C2C0 | `cpu_side_move_dir_2` | CPU AI sidestep direction |
+| 20 (0x14) | 0x8003C42C | `mode_handler_20_CountIterator` | Counts D_800A377C[] entries into 8-cell histogram |
+| 21 (0x15) | 0x8003C560 | `mode_handler_21_FrameTimerSfx` | Plays SFX 0xA4/0xA7 at counter==30 frames |
+| 22 (0x16) | 0x8003B870 | `mode_handler_22_VsModeInit` | **VS mode init**: player_SetCharId(0/1) + obj_InitChars + disp_SetFramebufferMode(1) |
+| 23 (0x17) | 0x8003B8E4 | `mode_handler_23_FrameDelay3` | Returns until frame counter >= 3 |
+| 24 (0x18) | 0x8003C958 | `mode_handler_24_DispatchToMode25` | gpu_InitDisplay + reset state + sets dispatch_idx = 0x19 |
+| 25 (0x19) | 0x8003C9A4 | `mode_handler_25_PostBattleSetup` | Reads g_gnd_midpoint_x, game_SetControllerPorts(0) |
+| 26 (0x1A) | 0x80035DC8 | `scene_teardown_80035DC8` | Scene cleanup |
+| 27 (0x1B) | 0x80035E38 | `saRobDraw` | Draws robot AI (saRob = "sa" team rob) |
+| 28 (0x1C) | 0x8003CE18 | `mode_handler_28_PostBattleMisc` | func_8001DA2C + func_800372C0 |
+| 29 (0x1D) | 0x8003CF84 | `mode_handler_29_StageLeafUpdate` | mk_leaf_newpos + reads char struct fields |
+| 30 (0x1E) | 0x8003C714 | `SetCurrentCursor` | Menu cursor positioning |
+| 31 (0x1F) | 0x8003C8B4 | `mode_handler_31_TimerLoop` | Counts up to 241 frames or pad-input exit |
+| 32 (0x20) | 0x8003CCCC | `mode_handler_32_RebootDispatch` | gpu_InitDisplay + game_Cleanup + dispatch to 0x21 |
+| 33 (0x21) | 0x8003CD10 | `mode_handler_33_RebootBegin` | Mirrors mode_25 setup; final teardown |
 
-The implication: each mode's function pointer is INSTALLED at runtime — it is
-not statically linked at load time. The "module init" array at `D_8008D070`
-likely populates the dispatch table. This is consistent with how Marionation
-loads sub-engines (e.g., the replay-camera module sets its own per-mode
-function on init).
+### Observed mode transitions and state flow
 
-Looking ahead to a research item: nobody has yet enumerated which function
-each `D_800A3834` value points to at runtime. This would require tracing each
-"`D_8008D090[N] = func_XXX`" assignment in the bring-up path. A few examples
-that ARE visible in `src/`:
+From dispatch-assignment evidence in the source, several mode-flow chains
+are visible:
 
-- `D_8008D090[N]` is reassigned during `cpu_get_move_pattern_table_number`
-  via `D_800A3834 = ...` followed by an immediate flow change.
-- `D_800A3834 = 8` after a global reset jumps to "title/menu logo" — the
-  Kengo function `md_menu_logo_exec` (renamed in `named_syms.txt`) is at
-  `0x8003AFFC` and is one of these handlers.
-- `md_game_end` (`main.c:997`) is one mode handler — currently empty in
-  the matched code, indicating it was inlined or moved.
-- `md_game_check_change_main_mode_default` at `0x80083A48` and
-  `md_game_check_change_main_mode_katinuki` at `main.c:2240` are both
-  mode-transition handlers.
+**Game flow (main fight):**
+```
+mode 4 (GameSetup) --> mode 1 (GameFrameUpdate, looped)
+mode 1 --> mode 18 (when lesson completes + P1/P2 unlock pending)
+        --> mode 12 (round cleanup)
+        --> mode 8 (title -- via global reset)
+```
+
+**Lesson / practice flow:**
+```
+func_80033DF4 (lesson check):
+  if (D_800A38E2 == 0x64 && unlocks pending):
+      sets g_practice_unlock_anim_id = 6/7/8/9
+      sets mode_dispatch_idx = 0x12  --> mode_handler_18_UnlockAnimDispatch
+      mode 18 reads unlock_anim_id and runs the right celebration
+
+func_80033FE4 (unlock dispatch):
+  P1 unlocked  --> sets unlock_id = 6 or 7
+  P2 unlocked  --> sets unlock_id = 8 or 9
+  else if D_800A38E9 < 3  --> mode 0x1A (scene_teardown_80035DC8)
+  else                    --> mode 8 (title)
+```
+
+**Post-battle reboot sequence:**
+```
+mode 22 (VsModeInit) --> mode 23 (FrameDelay3, wait 3 frames)
+                     --> mode 24 (DispatchToMode25)
+                     --> mode 25 (PostBattleSetup)
+                     --> mode 31 (TimerLoop, up to 241 frames or pad)
+                     --> mode 32 (RebootDispatch, sets dispatch to 0x21)
+                     --> mode 33 (RebootBegin, final teardown)
+```
+
+### Notable observations from the table
+
+1. **5 modes (3, 5, 9, 14) are empty placeholders.** These are no-op handlers
+   reserved for state transitions where the dispatch mechanism is used but no
+   per-frame work happens. The next frame's dispatch handles the actual logic.
+
+2. **Mode 8 is the "global reset target".** When `D_800A3928 != 0` triggers a
+   global reset, the main loop forces `g_practice_mode_dispatch_idx = 8` and
+   thus jumps to `scene_teardown_variant_80035480`. Many other paths also
+   end at mode 8 to reach the title.
+
+3. **Mode 18 is the unlock-celebration dispatcher.** It bridges the practice-
+   mode lesson-progress flow (modes 1/4/etc.) to the unlock-animation modes
+   selected via `g_practice_unlock_anim_id`.
+
+4. **Modes 16, 19, 27, 30** are Kengo-derived names that don't fit the
+   `mode_handler_NN_*` pattern but still map to specific game features
+   (particles, CPU AI, robot draw, menu cursor).
+
+5. **The table is statically defined** in `main.c:3055` inline asm. This
+   contradicts an earlier note that suggested runtime population — the
+   "module init" mechanism at `D_8008D070` is separate (CTOR pointers, not
+   the dispatch table).
 
 ## Per-frame order of operations (one iteration of `loop:`)
 
