@@ -251,8 +251,58 @@ The legacy map has 381 entries.  Audit so far:
 **Cumulative: 79 newly-adopted + 7 already-adopted = 86 of 127
 audited (68% overall adoption rate, 90% excluding stales).**
 
-Roughly 254 entries remain.  Suggested next clusters in
-`rename_funcs.py` order:
+## What the Item 6/7 readability band audit (2026-05-17) did
+
+Bulk-adopted **114 cross-validated names** from `rename_funcs.py`
+lines 234-419, after spot-checking representative samples:
+- `initPolyF3` (writes 0x20 = POLY_F3 opcode to packet+0x7) ✓
+- `initPolyF4` (writes 0x28 = POLY_F4 opcode) ✓
+- `gte_SetRotMatrix` (ctc2 to COP2 control regs 0-4) ✓
+- `gte_SetTransVector` (ctc2 to COP2 control regs 5-7) ✓
+- `gte_GetH` (cfc2 of COP2 control reg 26 == H perspective divide) ✓
+- `bb2_memset` (byte-fill loop) ✓
+- `ot_SetAddr` (24-bit pointer + tag encoding) ✓
+- `memcard_ClearBusy` (sh 0 to busy flag) ✓
+- `spu_Init` (wrapper) ✓
+
+**Categories:**
+- 21 GPU primitive init wrappers (initPolyF3/G3/F4/G4 + Sprt/Tile/Line + 4 dither variants)
+- 35 GPU/OT helpers (gpu_LoadTexture, gpu_CalcTPage/Clut, ot_Link/Insert/SetAddr/SetEnd, gpu_SetMode/SetDither/SetInterlace/etc., gpu_GetType/GetInfo/GetDispEnv/IsDrawing, initDrawMode/LoadImage/StoreImage/ClearImage/DrawArea/DrawOffset/MaskBit/TexPage)
+- 8 GTE COP2 wrappers (gte_SetRotMatrix/ColorMatrix/TransVector, gte_GetScreenXY/H, gte_SetBackColor/FarColor/ScreenOffset)
+- 4 math helpers (bb2_memset, math_Sin/Cos/SinLookup)
+- 3 memcard helpers (SetData/ClearBusy/SetSlot)
+- 1 spu_Init
+- 6 Kengo CPU/camera misc (cpu_get_dist/cpu_set_move_command_and_dir/cpu_check_same_dir_timer, replay_camera_Init, special_camera_get_rot_dir)
+- 36 Kengo Item 7 cross-reference (suLeagueSystemInit, md_game_restart_init, hirahira_*, title_mv_exec, motion_*, cpu_*, damage_*, ki_attack_ougi, etc.)
+
+**Skipped (26 already-renamed via glabel):** All cdrom_* (15) and
+stage_* + game_* (11) functions in this address range already have
+their legacy names as the .s file glabel — no named_syms.txt entry
+needed.
+
+**Notes on misnomers (3):** `_DispCharacterName_80080258`,
+`myRobGeneiDraw3_80080390`, `action_check_defense_80086130` are
+documented misnomers per `docs/naming/MISNOMERS.md`. The canonical
+aliases (`tslTm2_command_with_retry_*`, `char_store_pos_pair_*`)
+remain primary; the legacy names are added as searchable secondary
+aliases at the same addresses (linker accepts multiple definitions
+at the same address).
+
+**SHA1 verified clean** in worktree after the bulk add.
+
+## Cumulative audit progress
+
+| Cluster | Audited | Adopted | Adoption% |
+|---|---:|---:|---:|
+| batch-6 refinement | 17 | 3 | 18% |
+| sound.c | 56 | 28 + 5 already | 50% (live: 91%) |
+| ings.c | 33 | 32 + 1 already | 97% |
+| ings2.c | 21 | 16 + 1 already / 4 stale | 76% (live: 94%) |
+| Item 6/7 bulk | 114 + 26 already | 114 | 100% (live: 100%) |
+| **Total** | **267** | **193 newly + 33 already = 226** | **85%** |
+
+Roughly 114 entries still need audit (the remaining ~140 unrenamed
+minus the 26 already-glabeled in Item 6 range).  Suggested next:
 
 | Lines | Cluster | Approx funcs | Notes |
 |---|---|---:|---|

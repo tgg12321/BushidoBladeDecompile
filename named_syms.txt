@@ -559,4 +559,139 @@ g_timer_setting                 = 0x800A1500;  /* word swapped by sys_SetTimer *
 g_vblank_count                  = 0x800A157A;  /* halfword incremented per vblank; returned by sys_GetVblankCount */
 g_irq_counter_ptr               = 0x800A2608;  /* pointer to a halfword counter; deref'd by sys_GetIrqCounter (which itself isn't a separate function) */
 
+/* === Legacy renamer audit: Item 6/7 readability band (2026-05-17) === */
+/* 114 entries cross-validated from `tools/rename_funcs.py` lines 234-419 */
+/* (the GPU/GTE/math/CDROM/memcard/SPU/game/stage helper bulk).  All */
+/* canonical PsyQ-style functions with high-confidence shapes; bulk-adopted */
+/* after spot-checking representative samples (initPolyF3 wrote 0x20 opcode, */
+/* initPolyF4 wrote 0x28 opcode, gte_SetRotMatrix did ctc2 0-4, */
+/* gte_SetTransVector did ctc2 5-7, gte_GetH did cfc2 $26 (H reg), */
+/* bb2_memset byte-fill loop, ot_SetAddr 24-bit ptr+tag, memcard_ClearBusy */
+/* sh 0 to flag, spu_Init wrapper).  Names that were also adopted via .s */
+/* glabel rename pre-this-session are skipped (26 entries already in binary). */
+/* See LEGACY_RENAMER_AUDIT.md for full triage. */
+/* Address-suffixed to avoid collisions. */
+/* GPU primitive init (21) -- each writes a fixed opcode byte to packet+0x7 */
+initPolyF3_8007A9B8                              = 0x8007A9B8;
+initPolyFT3_8007A9CC                             = 0x8007A9CC;
+initPolyG3_8007A9E0                              = 0x8007A9E0;
+initPolyGT3_8007A9F4                             = 0x8007A9F4;
+initPolyF4_8007AA08                              = 0x8007AA08;
+initPolyFT4_8007AA1C                             = 0x8007AA1C;
+initPolyG4_8007AA30                              = 0x8007AA30;
+initPolyGT4_8007AA44                             = 0x8007AA44;
+initSprt8_8007AA58                               = 0x8007AA58;
+initSprt16_8007AA6C                              = 0x8007AA6C;
+initSprt_8007AA80                                = 0x8007AA80;
+initTile1_8007AA94                               = 0x8007AA94;
+initTile8_8007AAA8                               = 0x8007AAA8;
+initTile16_8007AABC                              = 0x8007AABC;
+initTile_8007AAD0                                = 0x8007AAD0;
+initLineF2_8007AAE4                              = 0x8007AAE4;
+initLineG2_8007AAF8                              = 0x8007AAF8;
+initPolyF3_dither_8007AB0C                       = 0x8007AB0C;
+initPolyG3_dither_8007AB2C                       = 0x8007AB2C;
+initPolyF4_dither_8007AB4C                       = 0x8007AB4C;
+initPolyG4_dither_8007AB6C                       = 0x8007AB6C;
+/* GPU/OT helpers (35) */
+gpu_LoadTexture_8007A4D8                         = 0x8007A4D8;
+gpu_InitDrawEnv_8007A694                         = 0x8007A694;
+gpu_InitDispEnv_8007A74C                         = 0x8007A74C;
+gpu_CalcTPage_8007A788                           = 0x8007A788;
+gpu_CalcClut_8007A7C4                            = 0x8007A7C4;
+gpu_DebugTPage_8007A7DC                          = 0x8007A7DC;
+gpu_DebugClut_8007A83C                           = 0x8007A83C;
+ot_Link_8007A8B4                                 = 0x8007A8B4;
+ot_Insert_8007A8F0                               = 0x8007A8F0;
+ot_SetAddr_8007A92C                              = 0x8007A92C;
+ot_SetEnd_8007A950                               = 0x8007A950;
+gpu_SetSemiTransp_8007A968                       = 0x8007A968;
+gpu_SetRawTexture_8007A990                       = 0x8007A990;
+initDrawMode_8007AB8C                            = 0x8007AB8C;
+initLoadImage_8007ABB8                           = 0x8007ABB8;
+initStoreImage_8007AC18                          = 0x8007AC18;
+gpu_CatPacket_8007AC84                           = 0x8007AC84;
+gpu_DebugDispEnv_8007ACBC                        = 0x8007ACBC;
+gpu_DebugDrawEnv_8007ADD0                        = 0x8007ADD0;
+gpu_SetMode_8007AE7C                             = 0x8007AE7C;
+gpu_SetDither_8007B000                           = 0x8007B000;
+gpu_SetDebugLevel_8007B114                       = 0x8007B114;
+gpu_SetInterlace_8007B178                        = 0x8007B178;
+gpu_GetType_8007B224                             = 0x8007B224;
+gpu_GetDebugLevel_8007B234                       = 0x8007B234;
+gpu_GetDispEnv_8007C0B0                          = 0x8007C0B0;
+gpu_IsDrawing_8007C0E8                           = 0x8007C0E8;
+initClearImage_8007C118                          = 0x8007C118;
+initDrawArea_8007C154                            = 0x8007C154;
+initDrawOffset_8007C1D8                          = 0x8007C1D8;
+initMaskBit_8007C21C                             = 0x8007C21C;
+initTexPage_8007C248                             = 0x8007C248;
+gpu_SendData_8007D308                            = 0x8007D308;
+gpu_StartDmaList_8007D358                        = 0x8007D358;
+gpu_GetInfo_8007D3A4                             = 0x8007D3A4;
+/* GTE COP2 wrappers (8) */
+gte_SetRotMatrix_8007EEEC                        = 0x8007EEEC;  /* ctc2 to COP2 control regs 0-4 (3x3 rotation matrix) */
+gte_SetColorMatrix_8007EF1C                      = 0x8007EF1C;  /* ctc2 to color matrix regs */
+gte_SetTransVector_8007EF4C                      = 0x8007EF4C;  /* ctc2 to COP2 control regs 5-7 (translation vector) */
+gte_GetScreenXY_8007EF6C                         = 0x8007EF6C;
+gte_GetH_8007EF8C                                = 0x8007EF8C;  /* cfc2 of COP2 control reg 26 (H == perspective divide) */
+gte_SetBackColor_8007EF9C                        = 0x8007EF9C;
+gte_SetFarColor_8007EFBC                         = 0x8007EFBC;
+gte_SetScreenOffset_8007EFDC                     = 0x8007EFDC;
+/* Math (4) */
+bb2_memset_8007DEE4                              = 0x8007DEE4;
+math_Sin_8007DF20                                = 0x8007DF20;
+math_SinLookup_8007DF5C                          = 0x8007DF5C;
+math_Cos_8007DFEC                                = 0x8007DFEC;
+/* Memcard (3) */
+memcard_SetData_80087F00                         = 0x80087F00;
+memcard_ClearBusy_80087F24                       = 0x80087F24;
+memcard_SetSlot_80087F34                         = 0x80087F34;
+/* SPU (1) */
+spu_Init_800885AC                                = 0x800885AC;
+/* Kengo CPU/camera misc (6) */
+cpu_get_dist_8003032C                            = 0x8003032C;
+cpu_set_move_command_and_dir_80030A2C            = 0x80030A2C;
+cpu_get_dist_2_800324D0                          = 0x800324D0;
+cpu_check_same_dir_timer_8003339C                = 0x8003339C;
+replay_camera_Init_80036D98                      = 0x80036D98;
+special_camera_get_rot_dir_80037348              = 0x80037348;
+/* Kengo Item 7 cross-ref (36) */
+suLeagueSystemInit_8001BCF0                      = 0x8001BCF0;
+md_game_restart_init_8001E6E4                    = 0x8001E6E4;
+hirahira_w_frie2_8001EEB4                        = 0x8001EEB4;
+title_mv_exec_80021280                           = 0x80021280;
+tslDrTex1Init_8002738C                           = 0x8002738C;
+_CardCheckPulled_80027438                        = 0x80027438;
+motion_GameCalcMotion_8002872C                   = 0x8002872C;
+myRobGeneiDraw_80030900                          = 0x80030900;
+motion_shift_check_e_kawashi_80030B10            = 0x80030B10;
+ki_attack_ougi_80033498                          = 0x80033498;
+motutil_CheckKamaeReq_80033D38                   = 0x80033D38;
+robtest_disp_800340A0                            = 0x800340A0;
+_GetBattleSwichData_80034200                     = 0x80034200;
+tslDrTex1Init2_8003553C                          = 0x8003553C;
+mottest_rob_init_80036FD4                        = 0x80036FD4;
+_CardCheckPulled2_80037A20                       = 0x80037A20;
+camera_SetMatrix_80037F40                        = 0x80037F40;
+damage_CalcHitDamage_8003880C                    = 0x8003880C;
+md_menu_logo_exec_8003AFFC                       = 0x8003AFFC;
+kgm_init_hitrect_8003B10C                        = 0x8003B10C;
+ReturnVTMenu_8003D330                            = 0x8003D330;
+_McAccessSection_8003D39C                        = 0x8003D39C;
+coli_calc_motion_8003D888                        = 0x8003D888;
+audioDecBeginPut_80040CB8                        = 0x80040CB8;
+tslDrTex1Init3_80043BD0                          = 0x80043BD0;
+gnd_set_fog_80043C7C                             = 0x80043C7C;
+tslDrTex1Init4_80043D34                          = 0x80043D34;
+gnd_set_fog2_80043DE0                            = 0x80043DE0;
+suLeagueSystemInit2_80044CCC                     = 0x80044CCC;
+_DispCharacterName_80080258                      = 0x80080258;  /* legacy name; the canonical alias is tslTm2_command_with_retry_80080258 (already in named_syms; _DispCharacterName is a known misnomer documented in MISNOMERS.md) */
+myRobGeneiDraw3_80080390                         = 0x80080390;  /* legacy; canonical is tslTm2_command_with_retry_no_arg3_80080390 (misnomer) */
+action_check_defense_80086130                    = 0x80086130;  /* legacy; canonical is char_store_pos_pair_80086130 (misnomer) */
+disp_mario_jimaku2_80086BFC                      = 0x80086BFC;
+motutil_GetAngTableNum_800871D4                  = 0x800871D4;
+action_check_defense2_80089EB0                   = 0x80089EB0;
+coli_calc_motion2_8008ACD0                       = 0x8008ACD0;
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
