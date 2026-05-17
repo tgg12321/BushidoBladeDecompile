@@ -798,4 +798,38 @@ g_panic_msg_format_ptr          = 0x800F19C0;  /* cached pointer to panic format
 g_alarm_armed_flag              = 0x800A26D0;  /* alarm-armed boolean (distinct from g_alarm_active_sentinel at 0x800A26DE) */
 g_irq_alarm_handle              = 0x800A14E4;  /* volatile alarm handle; -1 = no alarm */
 
+/* === Data-symbol batches 12-14 (2026-05-17) -- 19 highs landed === */
+/* GTE background color (RGB triple) */
+g_gte_back_color_r              = 0x800F6338;  /* R, passed to gte_SetBackColor */
+g_gte_back_color_g              = 0x800F6339;  /* G */
+g_gte_back_color_b              = 0x800F633A;  /* B */
+/* Scratchpad pointer cache (extending the A4/AC/B8 set from batch 9-11) */
+g_scratchpad_ptr_18             = 0x800A346C;  /* -> 0x1F800018 */
+g_scratchpad_ptr_20             = 0x800A3470;  /* -> 0x1F800020 */
+g_scratchpad_ptr_30             = 0x800A3474;  /* -> 0x1F800030 */
+/* Replay-attack position triple (Y completes the X/Y/Z trio) */
+g_replay_attack_pos_y           = 0x80101E40;  /* Y, computed result[1] + a0[1] */
+/* IRQ alarm callback state */
+g_alarm_callback_ptr            = 0x800A26D8;  /* function-pointer/arg for pending alarm */
+g_alarm_callback_pending        = 0x800A26DC;  /* boolean: alarm callback pending */
+/* CDROM callback buffers */
+g_cdrom_callback_buf_a          = 0x800F19A0;  /* 8-byte payload buffer for Callback A */
+g_cdrom_callback_buf_b          = 0x800F19A8;  /* 8-byte payload buffer for Callback B */
+/* text1b render struct: dst_ptr (sibling of buf_ptr at state +0x20) */
+g_text1b_render_dst_ptr         = 0x800A3478;  /* volatile pointer to render state +0x18 */
+/* SPU state additions */
+g_spu_pending_irq_mask          = 0x800A2CD4;  /* SPU IRQ/pending-op mask */
+g_spu_xfer_callback_arg         = 0x800A287C;  /* SPU transfer callback arg cache */
+g_spu_xfer_pending              = 0x800A2D2C;  /* SPU transfer-pending flag */
+/* GPU register pointer + text1a stream cursors */
+g_gpu_stat_reg_ptr              = 0x8009BF64;  /* pointer to GPU status/control register */
+g_text1a_size_remaining         = 0x800A33A4;  /* decremented per chunk consumed (init 0x45000) */
+g_text1a_size_cursor            = 0x800A33A8;  /* upper-bound position cursor */
+/* Misc state */
+g_pad_press_countdown           = 0x800A3330;  /* 0x5A-frame countdown (pad press handler) */
+g_sleep_menu_cursor_y           = 0x800A3360;  /* row (paired with g_sleep_menu_cursor_x at D_800A335C) */
+g_packet_data_dma_addr          = 0x800F1AF4;  /* volatile DMA-list address for SetPacketData */
+g_camera_settle_countdown       = 0x80101E80;  /* marionation_camera_Init settle counter (-2 sentinel) */
+g_pad_press_tick_counter        = 0x800A3924;  /* tick counter in pad-press code */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
