@@ -1108,6 +1108,24 @@ g_char_pos_centroid_x                                   = 0x80102054;  /* +0x18C
 g_char_pos_centroid_y                                   = 0x80102058;  /* +0x190 -- centroid Y */
 g_char_pos_centroid_z                                   = 0x8010205C;  /* +0x194 -- centroid Z */
 
+/* === Per-char struct sub-fields part 2 (2026-05-17) -- vec3 pair blocks === */
+/* Found via Vec3i cast pattern: `(Vec3i *)&D_801020D8` and */
+/* `(Vec3i *)((u8 *)&D_801020D8 + 0x44C)` -- confirms vec3 spans across records. */
+/* Two pairs of (position, delta) vec3s at +0x210 and +0x234. */
+g_char_vec3_a_pos_x                                     = 0x801020D8;  /* +0x210 -- vec3 A position X (record 0) */
+g_char_vec3_a_pos_y                                     = 0x801020DC;  /* +0x214 -- vec3 A position Y */
+g_char_vec3_a_pos_z                                     = 0x801020E0;  /* +0x218 -- vec3 A position Z */
+g_char_vec3_a_delta_x                                   = 0x801020E4;  /* +0x21C -- vec3 A delta X (added to pos_x in scratchpad write) */
+g_char_vec3_a_delta_y                                   = 0x801020E8;  /* +0x220 -- vec3 A delta Y */
+g_char_vec3_a_delta_z                                   = 0x801020EC;  /* +0x224 -- vec3 A delta Z */
+g_char_vec3_b_pos_x                                     = 0x801020FC;  /* +0x234 -- vec3 B position X */
+g_char_vec3_b_pos_y                                     = 0x80102100;  /* +0x238 -- vec3 B position Y */
+g_char_vec3_b_pos_z                                     = 0x80102104;  /* +0x23C -- vec3 B position Z */
+g_char_vec3_b_delta_x                                   = 0x80102108;  /* +0x240 -- vec3 B delta X */
+g_char_vec3_b_delta_y                                   = 0x8010210C;  /* +0x244 -- vec3 B delta Y */
+g_char_vec3_b_delta_z                                   = 0x80102110;  /* +0x248 -- vec3 B delta Z */
+g_char_vec3_b_w_or_alpha                                = 0x80102114;  /* +0x24C -- separately-accessed 7th word, likely W or alpha */
+
 /* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
 /* Clusters driven by already-named consumer functions; semantic name */
 /* derived from consumer role.  See docs/naming/RODATA_RECORD_SCHEMA.md */

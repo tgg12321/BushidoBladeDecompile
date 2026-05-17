@@ -183,15 +183,49 @@ This is a **per-frame state reset zone** (called e.g. by
 `func_8005B43C` / `func_8005B6FC` audio init).  Likely the working
 buffer for one tick of the character's combat-state machine.
 
-### Sequential s32 blocks (+0x210..+0x227, +0x234..+0x24F)
+### Sequential s32 blocks (+0x210..+0x224, +0x234..+0x24F) -- DECODED
 
-| Offset | Cells | Likely role |
+Found via `(Vec3i *)&D_801020D8` cast pattern in code6cac_b.c:1070:
+
+```c
+Vec3i *dst_a = (Vec3i *)&D_801020D8;        // +0x210 in record[0]
+Vec3i *dst_b = (Vec3i *)((u8 *)&D_801020D8 + 0x44C);  // +0x210 in record[1]
+```
+
+And usage pattern at code6cac_b.c:944-969:
+
+```c
+*(volatile s32 *)0x1F800370 = D_801020D8;                      // pos written to scratchpad
+*(volatile s32 *)0x1F800370 = D_801020D8 + D_801020E4;          // pos + delta
+```
+
+This decodes to **two pairs of (position, delta) vec3 sub-structs**:
+
+| Offset | Field (record 0) | Role |
 |---|---|---|
-| +0x210..+0x224 | 6 s32 (24 bytes) | Two vec3 OR 3x2 matrix |
-| +0x234..+0x24F | 7 s32 (28 bytes) | Likely a quaternion + scalar, or 7-field combat-stats block |
+| +0x210 | `vec3_a_pos.x` (0x801020D8) | vec3 A position X |
+| +0x214 | `vec3_a_pos.y` (0x801020DC) | vec3 A position Y |
+| +0x218 | `vec3_a_pos.z` (0x801020E0) | vec3 A position Z |
+| +0x21C | `vec3_a_delta.x` (0x801020E4) | vec3 A delta X |
+| +0x220 | `vec3_a_delta.y` (0x801020E8) | vec3 A delta Y |
+| +0x224 | `vec3_a_delta.z` (0x801020EC) | vec3 A delta Z |
+| +0x234 | `vec3_b_pos.x` (0x801020FC) | vec3 B position X |
+| +0x238 | `vec3_b_pos.y` (0x80102100) | vec3 B position Y |
+| +0x23C | `vec3_b_pos.z` (0x80102104) | vec3 B position Z |
+| +0x240 | `vec3_b_delta.x` (0x80102108) | vec3 B delta X |
+| +0x244 | `vec3_b_delta.y` (0x8010210C) | vec3 B delta Y |
+| +0x248 | `vec3_b_delta.z` (0x80102110) | vec3 B delta Z |
+| +0x24C | `vec3_b_w_or_alpha` (0x80102114) | separately-accessed 7th word (W or alpha?) |
 
-These accessed only at record-0 in C source; record 1/2/3 instances
-should appear once their consumer functions get decompiled.
+The fact that `pos` and `delta` are summed in the scratchpad write
+strongly suggests these are **animation vec3 keyframes with delta
+interpolation** -- the current position is `pos + delta * t` style.
+
+The +0x230 word between the two blocks (offset +0x230..+0x233) isn't
+referenced separately, may be a 4-byte gap or part of vec3 B.
+
+13 new field names landed in named_syms.txt as `g_char_vec3_{a,b}_{pos,delta}_{x,y,z}`
+plus `g_char_vec3_b_w_or_alpha`.
 
 ### Record-2-only sub-arrays
 
