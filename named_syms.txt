@@ -2309,6 +2309,25 @@ g_gte_vector_template                                   = 0x800FF610;  /* 28-byt
 /* === Effect vertex buffer (2026-05-17) -- 1 high === */
 g_eff_vertex_buffer                                     = 0x800F1198;  /* 3-s32-per-vertex buffer; src a0 loop copies xyz triples (stride 12); terminator = bit 0 of first s32 set */
 
+/* === Scratchpad pointer cache extension (2026-05-17) -- 13 highs === */
+/* Per func_80060E38 (text1b.c:13328): caches PSX scratchpad RAM */
+/* (0x1F8000xx) pointers as ordinary main-RAM globals for fast access. */
+/* Naming convention: g_scratchpad_ptr_<hex offset> (per existing */
+/* g_scratchpad_ptr_18/20/30/etc. in recent_naming_findings.md). */
+g_scratchpad_ptr_50                                     = 0x800A3488;  /* -> 0x1F800050 */
+g_scratchpad_ptr_b0                                     = 0x800A348C;  /* -> 0x1F8000B0 */
+g_scratchpad_ptr_58                                     = 0x800A3490;  /* -> 0x1F800058 */
+g_scratchpad_ptr_5c                                     = 0x800A3494;  /* -> 0x1F80005C */
+g_scratchpad_ptr_60                                     = 0x800A3498;  /* -> 0x1F800060 */
+g_scratchpad_ptr_62                                     = 0x800A349C;  /* -> 0x1F800062 */
+g_scratchpad_ptr_64                                     = 0x800A34A0;  /* -> 0x1F800064 */
+g_scratchpad_ptr_66                                     = 0x800A34A4;  /* -> 0x1F800066 */
+g_scratchpad_ptr_68                                     = 0x800A34A8;  /* -> 0x1F800068 */
+g_scratchpad_ptr_6a                                     = 0x800A34AC;  /* -> 0x1F80006A */
+g_scratchpad_ptr_6c                                     = 0x800A34B0;  /* -> 0x1F80006C */
+g_scratchpad_ptr_70                                     = 0x800A34B4;  /* -> 0x1F800070 */
+g_scratchpad_ptr_74                                     = 0x800A34B8;  /* -> 0x1F800074 */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
