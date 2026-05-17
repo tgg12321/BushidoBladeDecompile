@@ -2403,6 +2403,17 @@ g_unlock_anim_char_table                                = 0x8009016C;  /* char I
 g_misc_counter_380C                                     = 0x800A380C;  /* simple incrementing counter (++D pattern) */
 g_misc_init_flag_390F                                   = 0x800A390F;  /* reset to 0 in screen init flow */
 
+/* === Packed-nibble color values + components (2026-05-17) -- 6 highs === */
+/* From code6cac.c func_8001945C / func_80019488 / func_800194C0: */
+/* RGB-like triple stored as 3 separate bytes (low nibble of each) */
+/* combined into a 12-bit packed value (R | G<<4 | B<<8). */
+g_default_color_r                                       = 0x80106A70;  /* default nibble for component R (init = 0x11) */
+g_default_color_g                                       = 0x80106A71;  /* init = 0x44 */
+g_default_color_b                                       = 0x80106A72;  /* init = 0x88 */
+g_current_color_r                                       = 0x800A3912;  /* unpacked component R (arg0 & 0xF) */
+g_current_color_g                                       = 0x800A3913;  /* (arg0 >> 4) & 0xF */
+g_current_color_b                                       = 0x800A3914;  /* (arg0 >> 8) & 0xF */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
