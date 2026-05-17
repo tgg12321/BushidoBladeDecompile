@@ -1766,6 +1766,15 @@ mode_handler_31_TimerLoop                               = 0x8003C8B4;  /* increm
 mode_handler_32_RebootDispatch                          = 0x8003CCCC;  /* gpu_InitDisplay + game_Cleanup + sets dispatch_idx = 0x21 + gpu_DisableDisplay */
 mode_handler_33_RebootBegin                             = 0x8003CD10;  /* mirrors mode_25 setup; final teardown state */
 
+/* === g_module_func_tbl mode handler decode (cont'd) -- 1 high === */
+/* Mode 18 confirmed from asm at asm/6CAC.s:41135: */
+/*   - gpu_InitDisplay + gpu_EnableDisplay */
+/*   - func_80020CDC (seq_ConditionalReset) */
+/*   - Reads g_practice_unlock_anim_id (D_800A38A4): cases 6, 7, 8, 9 */
+/*   - Each case sets g_practice_lesson_char_id + slot for the */
+/*     specific unlock-animation character/move combo */
+mode_handler_18_UnlockAnimDispatch                      = 0x8003C040;  /* dispatches unlock-anim based on g_practice_unlock_anim_id (6/7=P1, 8/9=P2) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
