@@ -2103,6 +2103,18 @@ g_buki_cmd_buf_arg                                      = 0x800F5754;  /* s32 ar
 g_buki_cmd_buf_x                                        = 0x800F5758;  /* s16 X (scaled from pad -127..127 to -32767..32767) */
 g_buki_cmd_buf_y                                        = 0x800F575A;  /* s16 Y */
 
+/* === Weapon frame selection state (2026-05-17) -- 6 highs === */
+/* From main.c around line 954-984: weapon-frame selection logic. */
+/* (D_801027F7, D_801027FC) form a (row, col) coordinate for the */
+/* weapon-frame grid; D_8010280A selects the weapon entry; D_80102808 */
+/* selects the player.  Lookup data lives at D_800FF6A0 (16-byte stride). */
+g_weapon_frame_idx                                      = 0x8010280A;  /* current weapon-frame index */
+g_weapon_frame_cursor                                   = 0x8010280C;  /* derived cursor (= idx * 8) */
+g_weapon_frame_packed_pos                               = 0x8010280E;  /* packed (col + row << 4) */
+g_weapon_frame_row                                      = 0x801027F7;  /* row coord 0..15 */
+g_weapon_frame_col                                      = 0x801027FC;  /* col coord 0..15 */
+g_weapon_frame_player_flag                              = 0x80102808;  /* player select (& 1 for parity-indexed lookup) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
