@@ -1349,6 +1349,15 @@ g_motion_shift_flag2                                    = 0x800A38CC;  /* zeroed
 g_snd_voice_init_block                                  = 0x800EF070;  /* SPU voice descriptor struct passed to func_800417D0 init; first byte = 0xE (cmd), +0x6 +0xC -0xFA0 etc. */
 g_snd_wave_phase_table                                  = 0x800EF558;  /* 17 s32 entries; phase indices stepped by 0x12 per call to func_80047A90; used as Judge[] index */
 g_snd_wave_output_table                                 = 0x800EF59C;  /* 9 channels x 17 s32 samples (153 total, stride 0x44); audio wave-synthesis output via (Judge[idx] * 0x271) >> 10 */
+
+/* === SPU init/config cluster (2026-05-17) -- 5 highs === */
+/* From main.c func_80088740 (spu_FlushVoiceChannels) and spu init flow */
+/* around line 1320-1340.  Constants used during SPU register setup. */
+g_spu_ctrl_reg_ptr                                      = 0x800A2CEC;  /* pointer to SPU control register; *D_800A2CEC |= 0xB0000 turns on capture/transfer bits */
+g_spu_init_const_a                                      = 0x800A2D00;  /* SPU init constant = 2 (paired with g_spu_addr_shift=3) */
+g_spu_init_const_c                                      = 0x800A2D08;  /* SPU init constant = 8 */
+g_spu_init_mask                                         = 0x800A2D0C;  /* SPU init mask = 7 (3 bits); used as `& ~D_800A2D0C` to round-down */
+g_spu_init_reg_D1_val                                   = 0x800A2D44;  /* default value written to SPU register 0xD1 via spu_WriteReg */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
