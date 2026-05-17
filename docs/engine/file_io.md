@@ -183,3 +183,97 @@ sizes and the disc layout is fixed.
 - `cdrom_Initialize`, `cdrom_Shutdown`, `cdrom_ConfigSPU`
 - `cdrom_SendCmd`, `cdrom_DmaToRam`, `cdrom_DmaChain` cores
 - Several `func_8008XXXX` helpers that look like CD-IRQ handlers
+
+## CD-ROM streaming state (2026-05-17)
+
+`func_800826CC` (= Kengo `saEft00Add`) is the CD-ROM stream-control setup
+function (`system.c:1049`). It maintains a per-stream state cluster in
+the `0x800A14D0`-`0x800A14FC` range, saved across BIOS callback transitions:
+
+| Symbol | Address | Role |
+|--------|---------|------|
+| `g_cdrom_streaming_arg1` | `0x800A14D4` | arg1 saved at op start |
+| `g_cdrom_streaming_arg1_copy` | `0x800A14D8` | = `g_cdrom_streaming_arg1` (read-back copy) |
+| `g_cdrom_mode_flags` | `0x800A14DC` | volatile s32 mode bits; mask `0x30` selects 200/246/249 |
+| `g_cdrom_setting_word` | `0x800A14E0` | Setting word derived from mode |
+| `g_irq_alarm_handle` | `0x800A14E4` | (existing) -1 = no alarm |
+| `g_cdrom_vsync_pre` | `0x800A14E8` | `sys_VSync(-1)` at op start |
+| `g_cdrom_vsync_post` | `0x800A14EC` | `sys_VSync(-1)` at op end |
+| `g_cdrom_pos_frames` | `0x800A14F0` | `cdrom_BcdToFrames(func_800800CC())` |
+| `g_cdrom_callback_a_saved` | `0x800A14F4` | Saved `cdrom_SetCallbackA` return |
+| `g_cdrom_callback_b_saved` | `0x800A14F8` | Saved `cdrom_SetCallbackB` return |
+| `g_cdrom_header_ptr_saved` | `0x800A14FC` | Saved `func_80080660_ret` header pointer |
+| `g_cdrom_callback_b_obj` | `0x80082050` | Object passed to `cdrom_SetCallbackB((s32)&D)` |
+| `g_cdrom_header_obj` | `0x80082320` | Object passed to `tslTmlGetHeda((s32)&D)` |
+
+## IRQ handlers (vsync + CD-ROM)
+
+From `ings2.c:320-400`, the engine installs interrupt handlers for IRQ 0
+(vsync) and IRQ 3 (CD-ROM). Each handler has its own callback-slot array
+and registration function:
+
+### Vsync handler (IRQ 0)
+
+`irq_vsync_handler` (`0x800832F8`) fires on every vsync. Body:
+```
+++g_irq_vsync_counter;
+for (i = 0; i < 8; i++) {
+    if (g_irq_vsync_callbacks[i] != 0)
+        ((void(*)(void))g_irq_vsync_callbacks[i])();
+}
+```
+
+`irq_vsync_register_callback` (`0x80083370`) sets `callbacks[slot] = fn`.
+`func_800832A0` is the vsync init: writes `0x107` to control reg, clears
+counters/slots, hooks IRQ 0 to `irq_vsync_handler`.
+
+### CD-ROM handler (IRQ 3)
+
+`irq_cdrom_handler` (`0x80083418`) fires on CD-ROM status changes:
+```
+bits = (*g_irq_cdrom_ctrl_reg_ptr >> 24) & 0x7F;
+// dispatch on status bits...
+```
+
+`irq_cdrom_register_callback` (`0x8008359C`) — registrar companion.
+
+**MISNOMER**: `conv_matrix_rotation` (`ings2.c:372`) is actually
+`irq_cdrom_init` — clears callback slots, clears CD-ROM IRQ control reg,
+hooks IRQ 3 to `irq_cdrom_handler`.  Body has nothing to do with matrix
+rotation; see `docs/naming/MISNOMERS.md`.
+
+### IRQ state cluster
+
+| Symbol | Address | Role |
+|--------|---------|------|
+| `g_irq_vsync_callbacks` | `0x800A2614` | 8 × s32 vsync callback slots |
+| `g_irq_vsync_counter` | `0x800A2634` | volatile tick counter (++ in handler) |
+| `g_irq_vsync_ctrl_reg_ptr` | `0x800A2638` | pointer to vsync IRQ control reg (init `0x107`) |
+| `g_irq_cdrom_callbacks` | `0x800A2640` | 8 × s32 CD-ROM callback slots |
+| `g_irq_cdrom_ctrl_reg_ptr` | `0x800A263C` | pointer to CD-ROM IRQ control/status reg |
+| `g_irq_cdrom_initialized` | `0x800A2668` | boolean init flag |
+
+## Memcard helpers (2026-05-17)
+
+`pad_press_control` (MISNAMED — actually `memcard_event_init_800375EC`)
+opens 8 BIOS events at boot via `bios_OpenEvent`:
+
+**4 memcard events** (class `0xF4000001`):
+- `g_memcard1_event_ioe` (`0x800A37DC`) — end of I/O
+- `g_memcard1_event_err` (`0x800A37F0`) — error
+- `g_memcard1_event_new` (`0x800A37FC`) — new card inserted
+- `g_memcard1_event_timeout` (`0x800A3800`) — timeout
+
+**4 root-counter 0 events** (class `0xF0000011`):
+- `g_rcnt0_event_ioe/err/new/timeout` (`0x800A3838/3C/48/50`)
+
+| Function | Address | Role |
+|----------|---------|------|
+| `memcard_PollEvents` | `0x800378A8` | Tests 4 memcard events, returns 1-4 (which fired) |
+| `memcard_AckEvents` | `0x8003791C` | Acks all 4 memcard events |
+| `rcnt0_AckEvents` | `0x800379D8` | Acks all 4 rcnt0 events |
+| `memcard_event_pool_close_80037774` | `0x80037774` | Closes all 8 events (existing) |
+| `memcard_event_wait_class0xF4000001_with_timeout_80037804` | `0x80037804` | Polled wait with timeout (existing) |
+
+`g_memcard1_poll_count` (`0x800A3924`) is incremented per poll; forces
+result=2 after ≥0x78 (120) ticks.
