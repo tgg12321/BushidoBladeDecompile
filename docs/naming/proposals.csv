@@ -168,7 +168,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80033DF4,func_80033DF4,,none,,
 0x80033FE4,func_80033FE4,,none,,
 0x800340A0,func_800340A0,,none,,
-0x80034200,func_80034200,,none,,
+0x80034200,func_80034200,pack_player_input_bitstream_80034200,medium,manual_review=packs N x 2 byte values from D_800F65F8 input buffer into 2-bit slots of a single u32 stored at D_800A3784; sets g_disp_enable = DISP_LOADING (suggests non-trivial per-frame compute),docs/naming/evidence/func_80034200.md
 0x800342A0,func_800342A0,,none,,
 0x800343F0,func_800343F0,DispSamnailWindow_helper_800343F0,medium,sole_caller_path=DispSamnailWindow_helper_800343F0,docs/naming/evidence/func_800343F0.md
 0x80034708,func_80034708,,none,string_adjacent_info=?,docs/naming/evidence/func_80034708.md
@@ -203,7 +203,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80037348,func_80037348,,none,,
 0x80037540,func_80037540,,none,,
 0x80037774,func_80037774,game_event_shutdown_80037774,high,manual_review=EnterCriticalSection + bios_CloseEvent x 8 + ExitCriticalSection + post-shutdown hook; canonical event-pool shutdown pattern,docs/naming/evidence/func_80037774.md
-0x80037804,func_80037804,,none,,
+0x80037804,func_80037804,game_event_wait_any_with_timeout_80037804,high,"manual_review=first-half-event waiter (tests 4 of the 8 events closed by game_event_shutdown_80037774, complementing game_event_wait_any_80037964); adds 0x78 (=2sec) timeout via D_800A3924 counter forcing result=2",docs/naming/evidence/func_80037804.md
 0x800378A8,func_800378A8,,none,,
 0x8003791C,func_8003791C,,none,,
 0x80037964,func_80037964,game_event_wait_any_80037964,high,manual_review=spin-poll 4 bios_TestEvent and return 1..4 index of first signaled; canonical wait-for-any pattern; tested events are subset of func_80037774's closed pool,docs/naming/evidence/func_80037964.md
@@ -322,7 +322,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80040A78,func_80040A78,,none,,
 0x80040CB8,func_80040CB8,,none,,
 0x80040D48,func_80040D48,,none,,
-0x80041430,func_80041430,,none,,
+0x80041430,func_80041430,player_rob_relocate_80041430,medium,"manual_review=advances g_player_ptrs[a0] by a1 bytes and patches embedded sub-pointers at +0x2C, +0x8B4, +0x10D4, +0x112C (0x68 stride chain), +0x1A34 (20 entries); analog of prim_buffer_relocate_slot_80044100 for player records",docs/naming/evidence/func_80041430.md
 0x8004153C,func_8004153C,,none,,
 0x80041554,func_80041554,,none,,
 0x80041584,func_80041584,,none,,
@@ -360,9 +360,9 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80044100,func_80044100,prim_buffer_relocate_slot_80044100,medium,manual_review=advances D_80103608[a0] by a1 bytes and patches each entry by +a1 (offset-list relocation); paired with func_80044010,docs/naming/evidence/func_80044100.md
 0x80044170,func_80044170,,none,,
 0x80044498,func_80044498,,none,,
-0x80044504,func_80044504,,none,,
+0x80044504,func_80044504,frame_context_init_scratchpad_80044504,medium,manual_review=writes 5 scratchpad words at 0x1F80000C..0x1F80001C as inputs for a per-frame compute kernel; calls camera_InitMatrix + game_SetPause(1); chains func_8004A4E0 (likely the hot loop),docs/naming/evidence/func_80044504.md
 0x80044650,func_80044650,,none,,
-0x80044670,func_80044670,,none,,
+0x80044670,func_80044670,seq_state_set_with_stage_offset_80044670,medium,manual_review=writes a 14-byte state record (D_800A9CF8..D_800A9D04) including stage_GetId result; returns a2 + per_stage_offset * 0x68 (104-byte stride matches func_80041430's pointer chain),docs/naming/evidence/func_80044670.md
 0x8004473C,func_8004473C,,none,,
 0x80044B30,func_80044B30,DispPracticeMenuTex_C_helper_80044B30,medium,sole_caller_path=DispPracticeMenuTex_C_helper_80044B30,docs/naming/evidence/func_80044B30.md
 0x80044C70,func_80044C70,,none,,
@@ -390,7 +390,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800457FC,func_800457FC,efc_ougi_Init_800457FC,medium,kengo_pattern=efc_ougi_Init_800457FC,docs/naming/evidence/func_800457FC.md
 0x80045808,func_80045808,efc_ougi_Init_80045808,medium,kengo_pattern=efc_ougi_Init_80045808,docs/naming/evidence/func_80045808.md
 0x80045814,func_80045814,replay_camera_check_stage_80045814,medium,kengo_pattern=replay_camera_check_stage_80045814,docs/naming/evidence/func_80045814.md
-0x80045878,func_80045878,,none,,
+0x80045878,func_80045878,audio_seq_load_or_get_80045878,medium,manual_review=load-if-absent / get-if-present for audio sequence records; chains saSeMain_80045600 + saTan5TakeGetPos_* + func_80045AA4 callback; manages paired slots a0 and a0+3,docs/naming/evidence/func_80045878.md
 0x80045A50,func_80045A50,player_Destroy_helper_80045A50,medium,sole_caller_path=player_Destroy_helper_80045A50,docs/naming/evidence/func_80045A50.md
 0x80045AA4,func_80045AA4,,none,,
 0x80046048,func_80046048,,none,,
@@ -715,7 +715,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80069250,func_80069250,,none,,
 0x800692C0,func_800692C0,,none,,
 0x800693CC,func_800693CC,,none,,
-0x80069898,func_80069898,,none,,
+0x80069898,func_80069898,draw_shadow_3tile_stack_80069898,medium,"manual_review=emits 3 consecutive PSX tile primitives stacked vertically (y, y-1, y-2) with progressively dimmer RGB (0x80/0x80/0x40) and increasing alpha modes; canonical 3-tile soft-shadow/glow pattern via initTile + gpu_SetSemiTransp + ot_Link",docs/naming/evidence/func_80069898.md
 0x80069A30,func_80069A30,,none,,
 0x80069A8C,func_80069A8C,,none,,
 0x80069AE4,func_80069AE4,,none,,
@@ -773,7 +773,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80072E10,func_80072E10,,none,,
 0x80072F30,func_80072F30,,none,,
 0x80072FCC,func_80072FCC,,none,,
-0x80073060,func_80073060,,none,,
+0x80073060,func_80073060,hud_layout_emit_tiles_80073060,medium,manual_review=emits a fixed HUD layout via func_80072F30 / func_80072FCC: 17-tile horizontal row + 3 large widgets + 5-tile countdown meter; uses D_800A3580 as prim-buffer base,docs/naming/evidence/func_80073060.md
 0x8007352C,func_8007352C,satan_helper_8007352C,medium,call_graph_cluster=satan_helper_8007352C; string_adjacent_info=?,docs/naming/evidence/func_8007352C.md
 0x80073728,func_80073728,,none,,
 0x80073C78,func_80073C78,,none,,
@@ -792,7 +792,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800768DC,func_800768DC,,none,,
 0x80076D74,func_80076D74,,none,,
 0x80076FF8,func_80076FF8,,none,,
-0x80077098,func_80077098,,none,,
+0x80077098,func_80077098,get_table_44_offset_80077098,low,manual_review=1-line pointer arithmetic returning D_800A35D8 + a0 * 44; placeholder name until D_800A35D8 (44-byte record table) is named,docs/naming/evidence/func_80077098.md
 0x800770B8,func_800770B8,,none,,
 0x80077374,func_80077374,,none,,
 0x80077724,func_80077724,,none,,
@@ -1033,7 +1033,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80080258,func_80080258,tslTm2_command_with_retry_80080258,medium,"manual_review=3-retry wrapper around tslTm2LoadImage (general op dispatcher, not TIM-only -- modes {2, 9, 0xE} seen at call sites; mode 9 passes arg1=0); g_cd_callback_a save/restore",docs/naming/evidence/func_80080258.md
 0x80080390,func_80080390,tslTm2_command_with_retry_no_arg3_80080390,medium,manual_review=2-arg twin of tslTm2_command_with_retry_80080258; hardcodes a2=0 and uses different terminal tslTm2LoadImage mode (last-arg=1 vs 0),docs/naming/evidence/func_80080390.md
 0x80080600,func_80080600,,none,,
-0x80080620,func_80080620,,none,,
+0x80080620,func_80080620,cd_dma_idle_80080620,high,manual_review=1-line inversion of cdrom_DmaToRam() == 0; returns 1 when no CD-DMA-to-RAM transfer is active,docs/naming/evidence/func_80080620.md
 0x800806A4,func_800806A4,,none,,
 0x800807A8,func_800807A8,,none,,
 0x80080828,func_80080828,error_func_80080828,low,string_adjacent=error_func_80080828,docs/naming/evidence/func_80080828.md
