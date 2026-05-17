@@ -286,19 +286,16 @@ g_disp_config               = 0x8009BD24;
 g_motion_state_code         = 0x800A379E;
 g_motion_data_base_ptr      = 0x800A3860;
 
-/* === Batch 2 high-confidence function renames (2026-05-17) === */
-/* See docs/naming/evidence/func_{80037774,80037964}.md */
-/* SHA1-clean rebuild verified -- name aliases don't change emitted bytes. */
-game_event_shutdown_80037774 = 0x80037774;
-game_event_wait_any_80037964 = 0x80037964;
-
-/* === Batch 3 high-confidence function renames (2026-05-17) === */
-/* See docs/naming/evidence/func_{80037804,80080620}.md */
-/* SHA1-clean rebuild verified. */
-/* The trio game_event_{shutdown,wait_any,wait_any_with_timeout} together */
-/* manages the 8-event per-module pool. */
-game_event_wait_any_with_timeout_80037804 = 0x80037804;
-cd_dma_idle_80080620                       = 0x80080620;
+/* === Batch 2/3 memcard-event function renames (2026-05-17, refined) === */
+/* The 3 functions originally named game_event_* were refined to */
+/* memcard_event_* after the OpenEvent owner pad_press_control was */
+/* identified at src/code6cac_c.c:175 -- it does memcard init plus */
+/* opens 8 events across PSX BIOS classes 0xF4000001 (I/O complete) */
+/* and 0xF0000011 (error/notification). See evidence files. */
+memcard_event_pool_close_80037774                       = 0x80037774;
+memcard_event_wait_class0xF0000011_80037964             = 0x80037964;
+memcard_event_wait_class0xF4000001_with_timeout_80037804 = 0x80037804;
+cd_dma_idle_80080620                                     = 0x80080620;
 
 /* === Batch 4 high-confidence function renames (2026-05-17) === */
 /* See docs/naming/evidence/func_{80042478,80044650,80079184,80080600}.md */
@@ -306,6 +303,36 @@ disp_set_fade_color_80042478       = 0x80042478;
 init_fade_panel_wrapper_80044650   = 0x80044650;
 bb2_srand_80079184                 = 0x80079184;
 cd_send_cmd_80080600               = 0x80080600;
+
+/* === Misnomer aliases (2026-05-17 deepen-pass) === */
+/* Five functions whose names in src/*.c are demonstrably wrong but */
+/* cannot be renamed at the C-source level during the decomp agent's */
+/* active work session. These aliases provide the correct semantic */
+/* names at the same addresses; the C source's misnamed declarations */
+/* remain valid until a future pass replaces them. */
+/* */
+/* See docs/naming/MISNOMERS.md for the analysis. */
+/* */
+/* pad_press_control (src/code6cac_c.c:175) -- does memcard init, */
+/* not pad press handling. Calls bios__bu_init_A0 + opens 8 memcard */
+/* events. */
+memcard_event_init_800375EC                       = 0x800375EC;
+/* marionation_camera_Init_80036064 (src/code6cac_b2.c:380) -- a */
+/* CD streaming callback that loads 0x200 sectors via func_80080620. */
+/* Uses cdrom_BcdToFrames and cdrom_SetCallbackB. */
+cdrom_stream_callback_80036064                    = 0x80036064;
+/* marionation_camera_Init_80037468 (src/code6cac_b2.c:651) -- a */
+/* system-restart wrapper around bios_Exec(sp, a0, a1). Sets up GPU, */
+/* interrupts, critical section then EXECs a new PS-X EXE. */
+bios_exec_wrapper_with_setup_80037468             = 0x80037468;
+/* special_camera_check_pos_outside_ground_80035DC8 -- scene teardown: */
+/* gpu_EnableDisplay + player_Destroy(0,1) + obj_InitAll + disp config */
+/* swap. NOT a position check. */
+scene_teardown_80035DC8                           = 0x80035DC8;
+/* special_camera_check_pos_outside_ground_80036E34 -- NDATA disc-read */
+/* scheduler. Called by func_800451A0 to DMA NDATA files into RAM. */
+/* See docs/formats/NDATA.md "Reader (func_80044E74)". */
+ndata_disc_read_scheduler_80036E34                = 0x80036E34;
 
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
