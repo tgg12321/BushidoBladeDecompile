@@ -46,6 +46,14 @@ CALLEE_SAVE_REGS = {
     '$s0', '$s1', '$s2', '$s3', '$s4', '$s5', '$s6', '$s7', '$fp',
 }
 PROLOGUE_TEMP_REGS = {'$v0', '$v1', '$at'}
+# Argument registers — sometimes get arithmetic in the prologue when target
+# computes argN-derived offsets in place (e.g., sll $a1,$a1,16 / sra $a1,$a1,14
+# in AddTbpOfst_80047EE8) before storing into a saved register. Opt-in per
+# function via PROLOGUE_ACCEPT_ARG_REGS_FUNCS.
+PROLOGUE_ARG_REGS = {'$a0', '$a1', '$a2', '$a3'}
+PROLOGUE_ACCEPT_ARG_REGS_FUNCS = {
+    'AddTbpOfst_80047EE8',
+}
 
 
 def normalize_regs(text):
@@ -283,7 +291,7 @@ def action_matches(gcc_action, target_action):
     return False
 
 
-def find_prologue_region(lines, start_idx):
+def find_prologue_region(lines, start_idx, func_name=None):
     """Find prologue instructions in GCC output starting from start_idx.
 
     The prologue consists of:
@@ -317,6 +325,13 @@ def find_prologue_region(lines, start_idx):
 
         # Skip #nop comments
         if stripped == '#nop':
+            i += 1
+            continue
+
+        # Skip GCC inline-asm markers (#APP, #NO_APP). The instruction(s)
+        # between them are real and will be classified normally; the markers
+        # themselves don't affect the prologue.
+        if stripped == '#APP' or stripped == '#NO_APP':
             i += 1
             continue
 
@@ -390,9 +405,16 @@ def find_prologue_region(lines, start_idx):
             else:
                 break
         elif a_type == 'alu':
-            # ALU/shift into saved register or temp feeding saved register
+            # ALU/shift into saved register or temp feeding saved register.
+            # Per-function opt-in: also accept arg-register in-place
+            # computation (e.g., `sll $a1, $a1, 16` for arg sign-extension)
+            # when followed by use in a saved-register computation. See
+            # PROLOGUE_ACCEPT_ARG_REGS_FUNCS.
             dst = action[2]  # ('alu', mnemonic, dst, rest)
-            if dst in CALLEE_SAVE_REGS or dst in PROLOGUE_TEMP_REGS:
+            ok_regs = CALLEE_SAVE_REGS | PROLOGUE_TEMP_REGS
+            if func_name in PROLOGUE_ACCEPT_ARG_REGS_FUNCS:
+                ok_regs = ok_regs | PROLOGUE_ARG_REGS
+            if dst in ok_regs:
                 result.append((i, line, action))
             else:
                 break
@@ -452,7 +474,7 @@ def reorder_prologue(lines, func_name, target_insns):
         return False
 
     # Extract GCC prologue
-    gcc_pro = find_prologue_region(lines, label_idx + 1)
+    gcc_pro = find_prologue_region(lines, label_idx + 1, func_name=func_name)
     if len(gcc_pro) < 2:
         return False
 

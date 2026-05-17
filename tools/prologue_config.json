@@ -1,4 +1,16 @@
 {
+  "AddTbpOfst_80047EE8": [
+    "addiu\t$sp, $sp, -0x48",
+    "sw\t$s0, 0x38($sp)",
+    "addu\t$s0, $a0, $zero",
+    "sw\t$s2, 0x40($sp)",
+    "addu\t$s2, $s0, $zero",
+    "sll\t$a1, $a1, 16",
+    "sra\t$a1, $a1, 14",
+    "addu\t$s0, $s0, $a1",
+    "sw\t$ra, 0x44($sp)",
+    "sw\t$s1, 0x3C($sp)"
+  ],
   "marionation_camera_Exec": [
     "addiu\t$sp, $sp, -0x30",
     "sw\t$s0, 0x20($sp)",

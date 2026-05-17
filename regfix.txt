@@ -3502,26 +3502,12 @@ func_8007C86C: subst "lui\s+\$8,\(-469762048" "lui	$4,(-469762048" @ 42
 func_8007C86C: subst "or\s+\$2,\$2,\$8" "or	$2,$2,$4" @ 43
 func_8007C86C: subst "addu\s+\$sp,\$sp,24" "addu	$sp,$sp,16" @ 45
 
-# AddTbpOfst_80047EE8: 1) frame -40 -> -72 + stack offsets +32; 2) register flips
-#    s2->s0 saved arg0 -> working ptr base; 3) insert missing addu $18,$16,$zero
-#    after sw $18.
-AddTbpOfst_80047EE8: subst "subu\s+\$sp,\$sp,40" "subu	$sp,$sp,72" @ 0
-AddTbpOfst_80047EE8: subst "sw\s+\$18,32" "sw	$16,56" @ 1
-AddTbpOfst_80047EE8: subst "addu\s+\$18,\$4,\$zero" "addu	$16,$4,$zero" @ 2
-AddTbpOfst_80047EE8: subst "sw\s+\$17,28" "sw	$18,64" @ 3
-AddTbpOfst_80047EE8: subst "sll\s+\$17,\$5,16" "sll	$5,$5,16" @ 4
-AddTbpOfst_80047EE8: subst "sra\s+\$2,\$17,14" "sra	$5,$5,14" @ 5
-AddTbpOfst_80047EE8: subst "addu\s+\$17,\$18,\$2" "addu	$16,$16,$5" @ 6
-AddTbpOfst_80047EE8: subst "sw\s+\$31,36" "sw	$31,68" @ 7
-AddTbpOfst_80047EE8: subst "sw\s+\$16,24" "sw	$17,60" @ 8
-AddTbpOfst_80047EE8: subst "lw\s+\$2,0\(\$17\)" "lw	$2,0($16)" @ 9
-AddTbpOfst_80047EE8: insert "addu	$18,$16,$zero" @ 4
-# Epilogue stack offsets and frame restore
-AddTbpOfst_80047EE8: subst "lw\s+\$31,36" "lw	$31,68" @ 45
-AddTbpOfst_80047EE8: subst "lw\s+\$18,32" "lw	$18,64" @ 46
-AddTbpOfst_80047EE8: subst "lw\s+\$17,28" "lw	$17,60" @ 47
-AddTbpOfst_80047EE8: subst "lw\s+\$16,24" "lw	$16,56" @ 48
-AddTbpOfst_80047EE8: subst "addu\s+\$sp,\$sp,40" "addu	$sp,$sp,72" @ 49
+# AddTbpOfst_80047EE8: 16 rules RETIRED via cheat-cleanup.
+# Replaced with: src/text1b.c uses register-pin + unused_slack[8] + inline_move_aliasing
+# to force the redundant addu $s2,$s0,$0 insn target emits, plus
+# tools/prologue_config.json entry handles prologue reordering (no regfix needed).
+# Required prologue_fix.py extension: PROLOGUE_ACCEPT_ARG_REGS_FUNCS for in-prologue
+# arg-reg ALU (sll/sra $a1).
 
 # InitHiraRmd_800480C0: 6-arg call-loop with sx_arg2/3/4/5 + arg0_saved (7 callee-saves).
 # Same prologue restructure recipe as 800483DC/47FBC + frame +32 + stack offset
