@@ -146,6 +146,63 @@ When decompiling a function that accesses a `D_80101XXX` or
   character), separate from this schema (which describes the per-game
   state struct).
 
+## Second-half decode (2026-05-17 follow-up)
+
+The second half of the record (+0x100..+0x44B) is sparsely accessed
+in the observable C source (record 0 mostly) but exposed enough
+structure to identify several sub-fields and clusters:
+
+### Position-pair sub-structs (+0x174 and +0x18C)
+
+Two adjacent vec3 sub-structs, both **computed averages** of nearby
+caller-supplied vectors:
+
+| Offset | Field | Computation |
+|---|---|---|
+| +0x174 | `pos_midpoint.x` (`g_char_pos_midpoint_x` @ rec[0]: 0x8010203C) | `(a1[-5] + a1[-2]) / 2` |
+| +0x178 | `pos_midpoint.y` (rec[0]: 0x80102040) | `(a1[-4] + a1[-1]) / 2` |
+| +0x17C | `pos_midpoint.z` (rec[0]: 0x80102044) | `(a1[-3] + a1[0]) / 2` |
+| +0x18C | `pos_centroid.x` (`g_char_pos_centroid_x` @ rec[0]: 0x80102054) | `(a1[-14] + a1[-11] + a1[-8]) / 3` |
+| +0x190 | `pos_centroid.y` (rec[0]: 0x80102058) | `(a1[-13] + a1[-10] + a1[-7]) / 3` |
+| +0x194 | `pos_centroid.z` (rec[0]: 0x8010205C) | `(a1[-12] + a1[-9] + a1[-6]) / 3` |
+
+The midpoint is averaged from 2 vectors (player + opponent?  body
+joint pair?); the centroid is averaged from 3 vectors (probably the
+body's 3 control points -- waist + head + feet or similar).  Both are
+stored in `char_state[N]`, computed per-frame.
+
+### Reset block (+0x104..+0x14F)
+
+A large clear-to-zero block: 17+ separate `D_8010xxxx = 0;`
+assignments in func init code, spanning offsets +0x104, +0x108,
++0x10C, +0x114, +0x118, +0x11C, +0x124, +0x128, +0x12C, +0x134
+(2-record), +0x138, +0x13C (2-record), +0x144, +0x148, +0x14C, +0x14E,
++0x150, +0x152.
+
+This is a **per-frame state reset zone** (called e.g. by
+`func_8005B43C` / `func_8005B6FC` audio init).  Likely the working
+buffer for one tick of the character's combat-state machine.
+
+### Sequential s32 blocks (+0x210..+0x227, +0x234..+0x24F)
+
+| Offset | Cells | Likely role |
+|---|---|---|
+| +0x210..+0x224 | 6 s32 (24 bytes) | Two vec3 OR 3x2 matrix |
+| +0x234..+0x24F | 7 s32 (28 bytes) | Likely a quaternion + scalar, or 7-field combat-stats block |
+
+These accessed only at record-0 in C source; record 1/2/3 instances
+should appear once their consumer functions get decompiled.
+
+### Record-2-only sub-arrays
+
+| Offset | Size | Use |
+|---|---|---|
+| +0x308 | u8[N] | `extern u8 D_80102A68[];` -- per-record byte buffer (34 refs) |
+| +0x318 | s16[N] | `extern s16 D_80102A78[];` -- per-record halfword buffer (19 refs) |
+
+These are buffers carved out within the second half of record 2 only
+(possibly a debug/log buffer that only player 2's record uses).
+
 ## Future work
 
 1. **Decode the remaining 114 single-record offsets** -- many are
@@ -159,7 +216,5 @@ When decompiling a function that accesses a `D_80101XXX` or
    like an SE voice descriptor (matches the g_se_voice_* cluster
    semantics); the +0x0D8..+0x100 block looks like position+velocity
    state.  Could be broken into named sub-structs.
-4. **The +0x286/+0x28C/+0x31A fields in the second half of the
-   record are sparsely accessed** -- there's probably a larger
-   embedded struct from +0x100 to +0x44C that we can decode
-   per-subsystem (combat state, animation state, AI state).
+4. **+0x308 / +0x318 record-2 buffers** -- inspect record 2's
+   consumer functions to identify what's being logged/buffered.
