@@ -1575,6 +1575,21 @@ efc_rob_set_type_flash                                  = 0x80044B30;
 /* collides with same-named real impl that BB2's wrapper at this addr */
 /* calls (already named separately as replay_camera_get_attack_number_2arg). */
 
+/* === Mario character voice/gauge data cluster (2026-05-17) -- 9 highs === */
+/* From code6cac.c:1068 mario_getMarioVoiceData_8001B3C0 (one-line def). */
+/* The function copies voice data block fields (a0+0x180/+0x184/+0x188) */
+/* into g_mario_voice_data and resets a 4-gauge max/cur pair set to */
+/* 100/0 defaults.  Each gauge has a max and cur field at adjacent halfwords. */
+g_mario_voice_pos_x                                     = 0x800F532C;
+g_mario_voice_pos_y                                     = 0x800F5330;
+g_mario_gauge_a_max                                     = 0x800F5358;  /* init 0x64 */
+g_mario_gauge_a_cur                                     = 0x800F535A;  /* init 0 */
+g_mario_gauge_b_max                                     = 0x800F535C;  /* init 0x64 */
+g_mario_gauge_c_max                                     = 0x800F5360;  /* init 0x64 */
+g_mario_gauge_c_cur                                     = 0x800F5362;  /* init 0 */
+g_mario_gauge_d_max                                     = 0x800F5364;  /* init 0x64 */
+g_mario_voice_init_flag                                 = 0x800F5368;
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
