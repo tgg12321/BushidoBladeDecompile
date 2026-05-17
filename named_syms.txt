@@ -2237,6 +2237,11 @@ g_mottest_test_count                                    = 0x800A391F;  /* max te
 g_mottest_substate                                      = 0x800A376B;  /* reset to 0 alongside indices */
 g_mottest_slot_value_table                              = 0x8008E748;  /* s8 table indexed by g_mottest_secondary_idx */
 
+/* === Motion func dispatch + lookup tables (2026-05-17) -- 3 highs === */
+g_motion_func_dispatch_offset                           = 0x8009BA60;  /* per-idx offset combined with g_motion_state_flag_table to select function pointer in chractar_use_pset_combo_id_table */
+g_byte_lookup_table_256                                 = 0x8009AD18;  /* 256-byte table indexed by `i & 0xFF`; used in text1b.c per-byte processing */
+g_player_byte_flags_table                               = 0x8009BC7C;  /* per-player byte flags indexed by D_800A3561; bit & 2 test */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
