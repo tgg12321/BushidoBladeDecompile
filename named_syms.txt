@@ -416,4 +416,11 @@ g_practice_menu_table        = 0x80101EC8;  /* base of per-character/practice-me
 g_practice_menu_index        = 0x800A3748;  /* index into g_practice_menu_table; -1 == none */
 g_palette_base_ptr           = 0x800A378C;  /* base of palette/CLUT table, 4-byte stride, dynamically allocated */
 
+/* === Batch 5 data-symbol renames (2026-05-17) -- next 4 highs from rank 31-60 === */
+/* See docs/naming/data_evidence/D_{800A3044,80106F28,800A334C,800A3874}.md */
+g_spu_reg_base_ptr           = 0x800A3044;  /* SPU register block pointer; volatile-u16 +0xA |= 0x20 == channel-control */
+g_seq_bank_table             = 0x80106F28;  /* SEQ bank pointer table; outer = bank id, inner stride 0xB0 == per-channel control block (matches func_8008{5114,5210,5064}) */
+g_motion_play_countdown      = 0x800A334C;  /* u8 motion-state watchdog; set to 0x5A (90 frames), decremented, gated on `== 0 || (g_seq_active_voice_mask & 0x100010)` */
+g_match_round_index          = 0x800A3874;  /* match-round counter; indexes the round-result table (D_800A377C) and `D_800F65F8/F65F9 + round*2` */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
