@@ -212,3 +212,69 @@ layer just chooses which CPU mode to enable.
 - All `pad_*` controller helpers (asm-only)
 - `_DispCharacterName` (asm-only at 0x80080258)
 - `md_game_check_change_main_mode_default` (asm-only at 0x80083A48)
+
+## Menu-control state cluster (2026-05-17)
+
+Discovered via cluster-consumer analysis — 6+ consumer functions all
+reference these together (highest "naming multiplier" cluster).
+
+| Symbol | Address | Role |
+|--------|---------|------|
+| `g_menuctl_state_bitfield` | `0x800A34F8` | Packed cursor/slot state |
+| `g_menuctl_mode_state_ptr` | `0x800A34FC` | Current screen's state struct ptr (from `func_8006E49C`) |
+| `g_menuctl_pad_result_buf` | `0x800A350C` | s16 pad-decode result base (4 entries: 350C/350E/3510/3512) |
+| `g_menuctl_frame_counter` | `0x800A3514` | Per-frame tick counter |
+
+### Bitfield layout of `g_menuctl_state_bitfield`
+
+- **bits 0-3**: rotating slot index (cycles 0..15 via the bit-cache
+  at `D_8009BC04`)
+- **bits 10-12**: sub-cursor (advanced by case-2 action handlers)
+- **bits 13-15**: main cursor position (incremented/decremented by
+  directional input)
+
+### Menu input handler — `func_8006B92C`
+
+Per-frame menu input handler:
+1. Reads pad input (combines P1/P2 controllers high/low halves)
+2. Calls `func_800692C0` to decode direction (code 1 = down, 2 = up)
+3. Direction code → navigate cursor (incr/decr bits 13-15)
+4. Each cursor position has its own action when cross/circle pressed
+   (mask `0x400040`)
+5. Plays menu sounds via `func_8005C650(N, 0x7F, 0x7F)`
+
+### Cross-reference with mode handlers
+
+Several menu-related mode handlers exist in `g_module_func_tbl`
+(see [main_loop.md](main_loop.md) for full table):
+
+- Mode 30 (`SetCurrentCursor`, `0x8003C714`) — menu cursor positioning
+- Mode 11 (`mode_handler_11_PadInputCheck`, `0x8003BEA8`) — pad input
+  check (mask `0x40` = action button)
+- Mode 7 (`mode_handler_07_SubModeTransition`, `0x8003BCB4`) —
+  sub-mode transition triggered by cross+circle (`0x400040`)
+- Mode 21 (`mode_handler_21_FrameTimerSfx`, `0x8003C560`) — plays
+  SFX 0xA4/0xA7 at frame counter == 0x1E
+
+## Fade / transition state machine (2026-05-17)
+
+The fade-in/fade-out state machine at `func_8006EC0C` (`text1b.c:16108`)
+ramps a value (0..0x1E8 in 0x20 steps) under control of a dispatch
+table:
+
+| Symbol | Address | Role |
+|--------|---------|------|
+| `g_fade_value` | `0x800A3570` | s16 ramp value, 0..0x1E8 (488) |
+| `g_fade_dispatch_idx` | `0x800A3580` | Index into g_fade_dispatch_table |
+| `g_fade_next_dispatch_idx` | `0x800A3584` | Deferred next (loaded when ramp completes) |
+| `g_fade_dispatch_table` | `0x8009BC1C` | 5+ function-pointer entries |
+
+State values (1-4):
+- 1 = ramp up
+- 2 = fade out
+- 3 = ramp up alt
+- 4 = fade out alt (plays sfx 5 at peak)
+
+Note: `D_800A3578` (fade state value) is also named
+`g_replay_motion_shared_state_a` — the address is reused across the
+fade + replay-camera + motion-shift subsystems.
