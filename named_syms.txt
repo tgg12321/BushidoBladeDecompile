@@ -1163,6 +1163,9 @@ g_shadow_record_a_table_240                             = 0x800A9830;  /* 240-by
 g_shadow_record_b_table_240                             = 0x800A9920;  /* sibling 240-byte records; PutShadowRmd; indexed by v0 */
 /* SE slot table */
 g_se_slot_table_16                                      = 0x800F68E0;  /* 16-byte per-slot SE table; indexed by value*0x10 in code6cac_c_mid */
+g_per_char_motion_buffer_table_1392                     = 0x800F1B18;  /* 1392-byte (0x570) per-character motion buffer, indexed by arg0 */
+g_per_char_record_440                                   = 0x800F5F68;  /* 440-byte (0x1B8) per-character record, indexed by arg0 */
+g_record_table_16_800A4750                              = 0x800A4750;  /* 16-byte stride, indexed by v1 in code6cac_c2 */
 
 /* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
 /* Clusters driven by already-named consumer functions; semantic name */
