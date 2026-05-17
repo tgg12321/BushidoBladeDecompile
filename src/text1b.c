@@ -16714,11 +16714,34 @@ loop_top:
         gpu_SetRawTexture(buf, 1);
     }
     gpu_SetSemiTransp(buf, env->semi);
-    if (env->ot_idx >= 0x1006U) {
-        env->ot_idx = 1U;
-        DispSleepMenuTex(&D_800159A0, buf);
+    {
+        register s32 sleep_arg asm("$5") = buf;
+        if (env->ot_idx >= 0x1006U) {
+            env->ot_idx = 1U;
+            DispSleepMenuTex(&D_800159A0, buf);
+            /* INLINE_MOVE_ALIASING: target re-emits `addu $a1,$s5,$zero` after
+             * DispSleepMenuTex at 0x800736b8 (lost_codegen pattern from regfix
+             * line 4222: `insert "addu $5,$21,$zero" @ 93`). Plain `saved_buf
+             * = buf;` is folded by CSE; this barrier forces a real re-emission.
+             * Placed INSIDE the if-body so it's skipped when branch taken
+             * (matches target's bnez offset of 7 not 6).
+             *   - technique=plain_copy: `saved_buf = buf;` per dump-text —
+             *     GCC scheduled the move into jal-delay-slot ONLY (1 less insn
+             *     than target; the second emission was elided by CSE since
+             *     $s5 unchanged across the call).
+             *   - technique=decl_reorder: moving `saved_buf = buf;` BEFORE the
+             *     if block created an extra `addu $s0,$s5,$zero` (1 extra
+             *     instruction); GCC promoted saved_buf to a callee-save reg
+             *     to preserve it across DispSleepMenuTex.
+             *   - technique=plain_inline_after: placing `__asm__ ("move %0,%1")`
+             *     AFTER if-block produced correct 508-byte function with all
+             *     instructions present but bnez offset off by 1 (the move was
+             *     outside the if-body, target wants it inside).
+             * Per feedback_inline_move_aliasing.md, single-insn escape valve. */
+            __asm__ volatile("move %0, %1" : "=r"(sleep_arg) : "r"(buf));
+        }
+        saved_buf = sleep_arg;
     }
-    saved_buf = buf;
     dst += 0x14;
     buf += 0x14;
     ot_Link(D_800A374C + env->ot_idx * 4, saved_buf);
