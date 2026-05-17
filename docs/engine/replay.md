@@ -88,7 +88,7 @@ State machine variables in the `D_80101E5C..D_80101EA0` range:
 | `D_80101E68` | "stopped" flag |
 | `D_80101E6C` | CD sector pointer |
 | `D_80101E70` | total bytes to read |
-| `D_80101E74` | frame counter |
+| `g_replay_frame_offset` (D_80101E74) | frame counter |
 | `D_80101E78` | sectors remaining |
 | `D_80101E7C` | per-sequence callback |
 | `D_80101E80..D_80101EA4` | per-sector load state machine |

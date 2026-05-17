@@ -279,3 +279,40 @@ added in a new "Misnomer-replacement aliases" section:
 
 The named_syms.txt is now substantially more accurate than before
 this audit pass.
+
+## Late finding (2026-05-17): `g_file_disc_size` at 0x80106A50
+
+Discovered during the engine-doc rewrite pass.  The address
+`0x80106A50` is mapped to `g_file_disc_size` in `named_syms.txt:152`
+(pre-existing name; not from this session's work).
+
+**The name is wrong.**  Actual usage in `src/code6cac_b.c:3524`:
+
+```c
+s32 bits = D_80106A50 & mask;
+if (D_80106A50 & 0x10020) ...
+```
+
+And in `docs/engine/ai.md`:
+
+> "No action" = AI is between moves. Builds a shuffled list of which
+> moves are currently legal (from a mask in `D_80106A50` against
+> waza-enable bits in `D_8008D538[stance]`).  Walks bits 0..26 of
+> `D_80106A50` masked against the stance's enable bitmap; for each
+> enabled bit, appends the move ID to a buffer ...
+
+This is a **27-bit move-enable bitmap**, not a disc size.
+
+**Suggested replacement name:** `g_move_enable_bitmap`.
+
+**Why not renamed yet:** the existing name `g_file_disc_size` is
+referenced from `src/ings.c`, `src/code6cac_b.c`, `src/code6cac_c_ab.c`,
+`src/code6cac_c_mid.c` (as `extern u32` and `extern s32`).  A rename
+requires updating these `extern` decls in `src/*.c` files, which
+carries SHA1-mismatch risk if any of the using functions get
+recompiled differently due to the type change.  The rename is a good
+follow-up but deferred to the decomp-agent's normal flow.
+
+For reference until the rename happens: `docs/engine/recent_naming_findings.md`
+uses `D_80106A50` directly with the "move-enable bitmap" interpretation
+called out inline.

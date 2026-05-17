@@ -297,8 +297,8 @@ The mode-1 (gameplay) handler is part of `gnd_disp_loop_ctrl`, defined at
 - Walks the ground/scene draw pipeline using `s2` as a pointer to
   `D_800F33D8` (a global draw-state struct).
 
-This function works closely with the OT in `D_800A374C` (the live OT pointer)
-and `D_800A38B4` (the live primitive heap pointer).
+This function works closely with the OT in `g_dma_buf_base` (D_800A374C) (the live OT pointer)
+and `g_cpu_move_pattern_cursor` (D_800A38B4) (the live primitive heap pointer).
 
 ## Pause / select submenu — `func_80016E60`
 

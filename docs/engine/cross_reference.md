@@ -11,7 +11,7 @@ know which subsystem owns it, look here.
 - **Key functions:** `cpu_set_move_command_and_dir_for_no_action_2`
   (main entry, ings.c:584), `sys_Init`, `sys_GameInit`, `motion_Open`
   (CTOR runner), `gnd_disp_loop_ctrl`
-- **Key globals:** `D_800A3834` (mode), `D_800A36AC` (frame slot),
+- **Key globals:** `D_800A3834` (mode), `g_frame_parity` (D_800A36AC) (frame slot),
   `g_disp_enable` (display), `D_8008D070` (CTOR table), `D_8008D090`
   (mode dispatch table)
 - **Doc:** [main_loop.md](main_loop.md)
@@ -55,7 +55,7 @@ know which subsystem owns it, look here.
   `motion_shift_check_*`, `calc_loc_mat_fw*` (matrix builders),
   `myRobGenei*` (afterimage)
 - **Key globals:** `MotDataBaseAddress` (0x80104F38), `D_800A3207`
-  (motion FSM state), `D_800A334C` (motion frame counter)
+  (motion FSM state), `g_motion_play_countdown` (D_800A334C) (motion frame counter)
 - **Doc:** [motion.md](motion.md)
 
 ### GPU / Render
