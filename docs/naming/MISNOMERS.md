@@ -216,12 +216,66 @@ action needed -- both names can co-exist at the same address.
 
 Names worth investigating in subsequent passes:
 
-* All `katinuki_game_get_katinuki_max_num_*` (5 functions) -- per
-  methodology.md these are known false-positive Kengo names; some
-  have been demoted via `kengo_name_decisions.csv`.
+* ~~All `katinuki_game_get_katinuki_max_num_*` (5 functions)~~
+  **Done 2026-05-17** -- see "Audit verdicts" below.
+* ~~The `tslSmdSendVu1Code_*` family~~
+  **Done 2026-05-17** -- see "Audit verdicts" below.
 * All `_helper_<addr>` suffixed names -- these were proposed by the
   `sole_caller_path` heuristic and should be verified against the
-  caller's actual usage.
-* The `tslSmdSendVu1Code_*` family -- `Vu1` is the PS2 vector unit,
-  not present on PSX. Anyone with name `tslSmdSendVu1Code_*` on a
-  PSX function is mis-aliased.
+  caller's actual usage. Currently none are applied to
+  `named_syms.txt` (they live in `proposals.csv` only), so they're
+  evidence-only suspect rather than active misnomers. Lower
+  priority for audit.
+
+---
+
+## Audit verdicts (2026-05-17 deepen-pass)
+
+### Category 1 audit-found misnomers (5 functions)
+
+All 5 had replacement aliases added in named_syms.txt commit `b6e72b8`.
+See the per-function entries above (`pad_press_control` →
+`memcard_event_init`, etc.).
+
+### Category 2 Kengo conflict verdicts (named_syms.txt commit `8ef467f`)
+
+Per-conflict resolution after body audit:
+
+| Address | Kengo | Hand-review | Verdict |
+|---------|-------|-------------|---------|
+| `0x80021280` | `title_mv_exec` | `char_motion_nibble_scan` | **Hand-review wins** -- demoted Kengo, added hand-review alias |
+| `0x80030900` | `myRobGeneiDraw` | `spawn_hit_particle` | **Compatible** -- both retained as aliases |
+| `0x80033498` | `ki_attack_ougi` | `get_stage_idx` | **Ambiguous** -- kept Kengo; needs caller-side trace |
+| `0x80034200` | `_GetBattleSwichData` | `pack_player_input_bitstream` | **Ambiguous** -- kept Kengo; may be same thing |
+| `0x80080258` | `_DispCharacterName` | `tslTm2_command_with_retry` | **Hand-review wins** -- demoted Kengo, added hand-review alias |
+| `0x80080390` | `myRobGeneiDraw3` | `tslTm2_command_with_retry_no_arg3` | **Hand-review wins** -- demoted Kengo, added hand-review alias |
+| `0x80086130` | `action_check_defense` | `char_store_pos_pair` | **Hand-review wins** -- demoted Kengo, added hand-review alias |
+
+### Broader sweep verdicts (named_syms.txt commit `8ef467f`)
+
+7 Kengo aliases demoted with `/* MISNAMED: ... */` inline comments
+documenting the body's actual behaviour. 5 replacement aliases
+added in a new "Misnomer-replacement aliases" section:
+
+| Wrong Kengo name | Address | Body actually is | Replacement alias |
+|------------------|--------:|------------------|-------------------|
+| `katinuki_game_get_katinuki_max_num_80016868` | `0x80016868` | `gpu_SetMode(1)` wrapper | `gpu_EnableDisplay` (already in undefined_syms_auto.txt) |
+| `katinuki_game_get_katinuki_max_num_800168D0` | `0x800168D0` | `gpu_SetDispMask(1)` wrapper | `gpu_DisableDisplay` (already in undefined_syms_auto.txt) |
+| `katinuki_game_get_katinuki_max_num_80046914` | `0x80046914` | `func_800453E0(8)` wrapper | `channel_helper_8_80046914` |
+| `katinuki_game_get_katinuki_max_num_80046934` | `0x80046934` | `func_800455AC(9)` wrapper | `channel_helper_9_80046934` |
+| `katinuki_game_get_katinuki_max_num_80046A60` | `0x80046A60` | `func_800453E0(0xA)` wrapper | `channel_helper_A_80046A60` |
+| `tslSmdSendVu1Code_8007A87C` | `0x8007A87C` | 5-insn: `*a0 & 0xFFFFFF \| 0x80000000` (rel-to-KSEG0) | `ptr_load_kseg0_8007A87C` |
+| `tslSmdSendVu1Code_8007A898` | `0x8007A898` | 5-insn: `(*a0 & 0xFFFFFF) == 0xFFFFFF` (OT-sentinel check) | `is_ot_terminator_8007A898` |
+
+### Summary of named_syms.txt state after audit
+
+* 7 entries marked `/* MISNAMED: ... */` (kept as back-compat aliases).
+* 9 new replacement aliases added (5 misnomer fixes + 4 Kengo conflict
+  resolutions).
+* 1 compatible-with-Kengo alias added (`spawn_hit_particle_80030900`
+  alongside `myRobGeneiDraw`).
+* 2 Kengo aliases left untouched pending further investigation
+  (`ki_attack_ougi`, `_GetBattleSwichData`).
+
+The named_syms.txt is now substantially more accurate than before
+this audit pass.
