@@ -1108,4 +1108,22 @@ g_char_pos_centroid_x                                   = 0x80102054;  /* +0x18C
 g_char_pos_centroid_y                                   = 0x80102058;  /* +0x190 -- centroid Y */
 g_char_pos_centroid_z                                   = 0x8010205C;  /* +0x194 -- centroid Z */
 
+/* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
+/* Clusters driven by already-named consumer functions; semantic name */
+/* derived from consumer role.  See docs/naming/RODATA_RECORD_SCHEMA.md */
+/* for the multiplier analysis. */
+g_dma_chcr_ch4_ptr                                      = 0x800A2CE0;  /* holds 0x1F8010C0 (PSX DMA channel 4 MADR); used by saTan0GaugeDraw */
+g_satan0_gauge_state_word                               = 0x800A2D30;  /* zero-init state cell; consumer: saTan0GaugeDraw */
+g_special_cam_win_byte_a                                = 0x800A36B8;  /* byte state for special_camera_set_win_cam */
+g_special_cam_win_byte_b                                = 0x800A3718;  /* byte state for special_camera_set_win_cam */
+g_special_cam_win_byte_c                                = 0x800A3763;  /* byte state for special_camera_set_win_cam */
+g_replay_motion_shared_state_a                          = 0x800A3578;  /* halfword pair; shared between replay_camera_attack + motion_ShiftControl */
+g_replay_motion_shared_state_b                          = 0x800A35A0;  /* word; same consumers */
+g_replay_motion_shared_state_c                          = 0x800A35BC;  /* word; same consumers */
+g_replay_motion_shared_state_d                          = 0x800A358A;  /* halfword; same consumers */
+g_replay_motion_shared_state_e                          = 0x800A3560;  /* byte; same consumers */
+g_motion_shift_state_a                                  = 0x800A3550;  /* shorts; consumer: motion_ShiftControl */
+g_status_up_data_state_a                                = 0x800A371C;  /* word; consumer: single_game_CheckStatusUpDataTotalOver */
+g_status_up_data_state_b                                = 0x800A3769;  /* byte; consumer: single_game_CheckStatusUpDataTotalOver */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
