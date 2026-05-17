@@ -735,4 +735,13 @@ g_snd_fade_state                = 0x800EF7BC;  /* snd_CalcFade state (paired wit
 g_snd_fade_curve_table          = 0x800EF800;  /* snd_GetFadeCurve lookup table base (paired with D_800EF804) */
 g_camera_rotation_data          = 0x800F66A0;  /* camera_InitRotation state */
 
+/* === Data-symbol batch 6 (2026-05-17) -- ranks 61-90 === */
+/* 5 high-confidence + 22 medium proposals (full evidence in */
+/* docs/naming/data_evidence/). The 5 highs landed below. */
+g_replay_pos_x                  = 0x80101E02;  /* halfword X of replay-camera pos triple; paired with g_replay_pos_y/z */
+g_replay_pos_y                  = 0x80101E04;  /* halfword Y of replay-camera pos triple */
+g_replay_pos_z                  = 0x80101E44;  /* word Z of replay-camera pos triple; passed to replay_camera_get_attack_number */
+g_pad_analog_substate           = 0x800A37C8;  /* halfword; sub-state for pad_FuncAnalog (values {0, 3}); paired with g_pad_analog_mode (D_800A31F4) */
+g_match_round_byte_a            = 0x800F65F8;  /* byte array indexed by g_match_round_index * 2 -- per-round result byte (paired with D_800F65F9 byte_b) */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */

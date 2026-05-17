@@ -100,6 +100,40 @@ Continuing pass batch 5 (2026-05-17), next 18 symbols from ranks 31-60:
 The 4 highs from this batch were applied to `named_syms.txt` in the
 same commit.
 
+Continuing pass batch 6 (2026-05-17), next 27 symbols from ranks 61-90:
+
+| File | Proposed name | Confidence | Why |
+|------|---------------|-----------:|-----|
+| [D_80101E02.md](D_80101E02.md) | `g_replay_pos_x` | high | X of replay-camera pos triple (paired with E04/E44) |
+| [D_80101E04.md](D_80101E04.md) | `g_replay_pos_y` | high | Y of replay-camera pos triple |
+| [D_80101E44.md](D_80101E44.md) | `g_replay_pos_z` | high | Z of replay-camera pos triple; passed to replay_camera_get_attack_number |
+| [D_800A37C8.md](D_800A37C8.md) | `g_pad_analog_substate` | high | gates pad_FuncAnalog state transitions {0, 3} |
+| [D_800F65F8.md](D_800F65F8.md) | `g_match_round_byte_a` | high | per-round byte indexed by g_match_round_index * 2 |
+| [D_800F19BC.md](D_800F19BC.md) | `g_irq_dispatch_counter` | medium | sequence counter in system.c IRQ dispatch |
+| [D_80101E70.md](D_80101E70.md) | `g_replay_camera_state` | medium | volatile state in replay_camera_Init |
+| [D_800A33EA.md](D_800A33EA.md) | `g_gnd_target_id` | medium | -1 sentinel; target ID in gnd_close |
+| [D_800A3740.md](D_800A3740.md) | `g_replay_camera_mode` | medium | small enum {1, 3, 4} in replay_camera_rob_back_loose2 |
+| [D_800A36FA.md](D_800A36FA.md) | `g_gnd_init_flag` | medium | init flag cleared by gnd_init helpers |
+| [D_80101F32.md](D_80101F32.md) | `g_seq_state_p1` | medium | SEQ state code (paired with D_8010237E p2 side) |
+| [D_800A38C4.md](D_800A38C4.md) | `g_title_seq_state` | medium | title-screen SEQ active flag |
+| [D_800A384C.md](D_800A384C.md) | `g_practice_select_cursor` | medium | indexes halfword table at D_8008EB1C stride 2 |
+| [D_800A3500.md](D_800A3500.md) | `g_text1b_passthrough_arg` | medium | stashed arg passed to func_8006E950 |
+| [D_800A3518.md](D_800A3518.md) | `g_text1b_audio_state_a` | medium | audio-stream state, address-passed to func_8006E390 |
+| [D_800A3528.md](D_800A3528.md) | `g_text1b_audio_counter` | medium | tick counter paired with audio_state_a |
+| [D_800A37A8.md](D_800A37A8.md) | `g_mental_bar_packet_buf` | medium | byte array, indexed by D_800A37A0 counter |
+| [D_800F6608.md](D_800F6608.md) | `g_grid_pos_vec3` | medium | Vec3 of position; copied from player struct +0xB8 |
+| [D_800A3929.md](D_800A3929.md) | `g_cpu_pattern_tick` | medium | tick counter in cpu_get_move_pattern_table_number |
+| [D_800A376A.md](D_800A376A.md) | `g_tslTm_loaded_flags` | medium | per-slot 4-bit flags in tslDrTex1Init |
+| [D_800EFB38.md](D_800EFB38.md) | `g_sound_buf_a` | medium | sound buffer A (paired with B at D_800EFB78) |
+| [D_800EFB78.md](D_800EFB78.md) | `g_sound_buf_b` | medium | sound buffer B |
+| [D_8010277E.md](D_8010277E.md) | `g_cpu_dir_buffer_e` | medium | byte in D_8010277C-F CPU AI dir cluster |
+| [D_800A32BC.md](D_800A32BC.md) | `g_text1b_render_timer` | medium | 10-frame decrementing render timer |
+| [D_800A37D4.md](D_800A37D4.md) | `g_gnd_fog_value` | medium | volatile fog value mirrored to D_800A3720 |
+| [D_800A38A0.md](D_800A38A0.md) | `g_dialog_active_flag` | medium | dialog/samnail-window active flag |
+| [D_800A3878.md](D_800A3878.md) | `g_input_flag_struct_ptr` | medium | pointer to struct with bit-flag field at +0x3 |
+
+5 highs applied to named_syms.txt this batch.
+
 ## Workflow
 
 Each evidence file follows the same skeleton:
