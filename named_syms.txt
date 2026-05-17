@@ -2414,6 +2414,14 @@ g_current_color_r                                       = 0x800A3912;  /* unpack
 g_current_color_g                                       = 0x800A3913;  /* (arg0 >> 4) & 0xF */
 g_current_color_b                                       = 0x800A3914;  /* (arg0 >> 8) & 0xF */
 
+/* === P1 char-struct field block-copy cluster (2026-05-17) -- 4 highs === */
+/* From code6cac.c around line 1410-1420: 16-byte block copy + 12-byte */
+/* block copy of per-character struct fields. */
+g_char_struct_p1_field_B8                               = 0x80101F80;  /* per-char field +0xB8 (saved arg a) */
+g_char_struct_p1_field_BC                               = 0x80101F84;  /* per-char field +0xBC (saved arg b) */
+g_char_struct_p1_block_dst                              = 0x80101F90;  /* per-char field +0xC8; 16-byte Blk16 copy dst (from +0xB8 src) */
+g_char_struct_p1_block_dst_b                            = 0x801020C0;  /* per-char field +0x1F8; 12-byte Blk12 copy dst (from +0xE8 src) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
