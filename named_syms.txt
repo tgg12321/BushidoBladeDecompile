@@ -1488,6 +1488,12 @@ g_text1b_render_arg1_cache                              = 0x800F117C;  /* cached
 /* (>=0x33) range; arg0 0..0x32 = low, 0x33..0x65 = high. */
 g_gnd_target_group_mode                                 = 0x800A33EC;  /* s32: -1 = uninit, 0 = low-range group (<0x33), 1 = high-range group */
 g_gnd_target_active_slots                               = 0x800EF980;  /* s16 array; D[arg0] = 1 to mark slot active; size >= 0x65 entries */
+
+/* === text1b render color (2026-05-17) -- 1 high === */
+/* Color/flag mask passed to func_80041E10 alongside the text1b render */
+/* state struct.  Set to 24-bit color values like 0xFFFFEF (light yellow), */
+/* 0xC06013 (orange-brown), etc -- BB2's text render-color uniform. */
+g_text1b_render_color                                   = 0x800A3464;  /* 24-bit color/flag mask for text1b primitives; sourced from various per-context setters */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
