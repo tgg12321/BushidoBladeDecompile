@@ -1182,6 +1182,19 @@ g_gte_color_matrix_data                                 = 0x800F6318;  /* passed
 g_disp_env_init_block                                   = 0x800FB524;  /* passed to gpu_InitDispEnv; display environment init data */
 g_status_up_data_buf                                    = 0x801027BC;  /* passed to single_game_SetStatusUpData; status-up data buffer */
 
+/* === Motion-ex per-id state arrays (2026-05-17) === */
+/* Found in text1b.c:14205-14223 init pattern: 12-byte state + 4-byte flag + 2-byte counter per motion id. */
+/* Existing g_motion_ex_counter_p1 (D_800F0BC0) and _p2 (D_800F0BC4) are at offsets +0x18/+0x1C from D_800F0BA8. */
+g_motion_ex_state_block_table_12                        = 0x800F0CA0;  /* 12-byte stride per motion id: [pos0, pos1, pos2_ptr] */
+g_motion_ex_flag_table_4                                = 0x800F10E0;  /* 4-byte stride per motion id: init-done flag (set to 1) */
+g_motion_ex_counter_table_base                          = 0x800F0BA8;  /* 2-byte stride per motion id: tick counter (reset to 0 in init) */
+g_motion_ex_state_id0_pos                               = 0x800F0CA0;  /* alias for record 0 of g_motion_ex_state_block_table_12 */
+g_motion_ex_state_id0_extra                             = 0x800F0CA4;  /* +4 from id0_pos */
+g_motion_ex_state_id0_data_ptr                          = 0x800F0CA8;  /* +8: pointer-to-data field */
+g_motion_ex_state_id1_pos                               = 0x800F0CAC;  /* record 1 +0 */
+g_motion_ex_state_id1_extra                             = 0x800F0CB0;
+g_motion_ex_state_id1_data_ptr                          = 0x800F0CB4;
+
 /* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
 /* Clusters driven by already-named consumer functions; semantic name */
 /* derived from consumer role.  See docs/naming/RODATA_RECORD_SCHEMA.md */
