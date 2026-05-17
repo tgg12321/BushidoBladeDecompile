@@ -2178,6 +2178,13 @@ g_lesson_extra_arg_b                                    = 0x800A37B4;  /* arg0[2
 g_lesson_extra_arg_c                                    = 0x800A37B5;
 g_lesson_extra_arg_d                                    = 0x800A37B6;
 
+/* === code6cac.c misc state (2026-05-17) -- 5 highs === */
+g_char_pose_id_p2                                       = 0x800A30FD;  /* P2 char pose ID (paired with g_char_pose_id_p1 at +1; re-init check) */
+g_cam_bone_data_cached                                  = 0x800A3778;  /* cached camera_GetBoneData() return; reread once per frame */
+g_char_struct_p1_field_6A                               = 0x80101F32;  /* per-char field +0x6A (u16; mode == 0x11 check) */
+g_char_struct_p1_field_FC                               = 0x80101FC4;  /* per-char field +0xFC; set to a0_val + passed to func_8003E6A0 */
+g_practice_lesson_init_done                             = 0x8010278C;  /* init flag (set to 1 by func_80019534; == 0 means needs init) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
