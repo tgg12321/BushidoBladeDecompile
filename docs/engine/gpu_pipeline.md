@@ -239,3 +239,54 @@ backdrop for one stage. `tslDrTex1Init*` family functions
 - Many `Vu0SetLightColMatrix*` functions in `system.c` — light-color matrix
   setup
 - Most of the `text1b.c` 10558-11227 range (projection/screen helpers)
+
+## PSX libgpu wrappers identified (2026-05-17)
+
+The engine wraps several PSX libgpu primitive submission routines in named
+helper functions, identified by their debug-trace strings:
+
+| Helper | Address | Body / debug string |
+|--------|---------|---------------------|
+| `gpu_DrawSyncCallback` | `0x8007B244` | Save old `g_gpu_draw_mode`, set new, return old. Debug trace: `"DrawSyncCallback(%08x)"`. PSX libgpu DrawSyncCallback equivalent. |
+| `gpu_DebugCheckRect` | `0x8007B3A8` | Validates rect against `D_8009BE78/7A` (screen width/height). Debug-logs `"%s:bad RECT"` and `"(%d,%d)-(%d,%d)"`. Called by other primitive wrappers as a pre-check. |
+| `gpu_MoveImage` | `0x8007B6C8` | `MoveImage(RECT *rect, int x, int y)` — VRAM rect-copy primitive. Submits cmd 0x14 via `g_gpu_dev_table[2]`. |
+| `gpu_DrawOTagEnv` | `0x8007BAB4` | `DrawOTagEnv(u_long *ot, DRAWENV *env)` — submits cmd 0x40 (= 64-byte DRAWENV size). Copies `_drawenv_q` struct. |
+
+## GPU packet queue — async draw infrastructure
+
+The engine maintains a 64-slot circular queue of GPU "draw packets" submitted
+via callbacks, located at `g_gpu_packet_queue_base` (`0x80103680`):
+
+| Field | Address | Type | Purpose |
+|-------|---------|------|---------|
+| `g_gpu_packet_queue_base` | `0x80103680` | array | Slot[i] = callback fn ptr (offset 0 in 0x60-byte slot) |
+| `g_gpu_packet_buffer_64x96` | `0x80103684` | array | Slot[i] = arg1 (offset 4); 64 slots × 96 bytes total |
+| | `0x80103688` | array | Slot[i] = arg3 (offset 8) |
+| | `0x8010368C` | array | Slot[i] = data buffer (offset 0xC) |
+| `g_gpu_packet_write_idx` | `0x8009BF78` | s32 | Head pointer (mod 0x40 = 64) |
+| `g_gpu_packet_read_idx` | `0x8009BF7C` | volatile s32 | Tail pointer (drained by handler) |
+| `g_gpu_packet_pending_fn` | `0x8009BF68` | fn ptr | Last submitted callback fn |
+| `g_gpu_packet_pending_arg1` | `0x8009BF6C` | s32 | Last submitted arg1 |
+| `g_gpu_packet_pending_target` | `0x8009BF70` | s32 | Last submitted arg3 |
+| `g_gpu_motion_save_a` | `0x8009BF80` | s32 | `motion_make_table(0)` state saved during async draw |
+| `g_gpu_motion_save_b` | `0x8009BF88` | s32 | Parallel save for outer caller |
+| `g_gpu_loop_flag` | `0x8009BE7C` | s32 | Set to 1 during successful packet submit |
+| `g_gpu_status_alt_reg` | `0x8009BF60` | u32* | Parallel status reg; written `0x11000002` (GPU primitive header) |
+
+Each queue entry is a 0x60-byte slot containing a callback function and its
+saved args. When the GPU is ready, the handler dispatches the queued callback
+to actually emit primitives. See `display.c:880-960` for the enqueue path
+(`func_8007D9C4` and family).
+
+## GPU mode tables
+
+The engine supports multiple video modes (height/width combinations):
+
+| Symbol | Address | Purpose |
+|--------|---------|---------|
+| `g_gpu_mode_heights_table` | `0x8009BF08` | 5 s16/s32 height values indexed by mode |
+| `g_bitmask_table_5_8009BEF4` | `0x8009BEF4` | 5 width values (MISNAMED — actually `g_gpu_mode_widths_table`, see MISNOMERS.md) |
+| `g_gpu_init_msg_buf` | `0x8009BE2C` | Buffer passed to debug_printf with `g_gpu_type` at gpu init |
+
+The `s0->width = D_8009BEF4[idx]` / `s0->height = D_8009BF08[idx]` pattern
+in `gpu.c:608-610` confirms the tables are paired and idx is the mode code.
