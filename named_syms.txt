@@ -2012,6 +2012,15 @@ g_menu_screen_result_pending                            = 0x800A35E4;  /* cleare
 g_intro_fade_phase                                      = 0x800A3608;  /* intro/title fade phase counter; >= 0xAAA enables, >= 0xB04 starts 15-frame fade-out (color = 0x80 - (D - 0xB04)*128/15) */
 g_intro_get_set_value                                   = 0x8009BD80;  /* simple cached value set by func_80078BE0(a0), read by func_80078BF0() */
 
+/* === 2nd menu screen state cluster at 0x800A35F0-3600 (2026-05-17) -- 5 highs === */
+/* Parallel to the menuctl cluster (at 0x800A34F8-3528) but for a */
+/* second menu screen handler.  text1b_b.c func_8007855C uses this. */
+g_menu_screen_b_active                                  = 0x800A35F0;  /* state value (init 0; > 0 = active) */
+g_menu_screen_b_state_arg                               = 0x800A35F4;  /* arg passed to func_8006E49C (mode-state allocator) */
+g_menu_screen_b_state_ptr                               = 0x800A35F8;  /* pointer to allocated state struct */
+g_menu_screen_b_frame_counter                           = 0x800A35FC;  /* per-frame counter (incremented in handler) */
+g_menu_screen_b_init_flag                               = 0x800A3600;  /* init flag (reset to 0) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
