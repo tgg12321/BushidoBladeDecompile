@@ -1076,7 +1076,7 @@ g_char_sprite_bitmap_block_3x8320                       = 0x80090740;  /* 3 reco
 
 /* === Rodata record-cluster pass 2 (2026-05-17) -- consumer-tied highs === */
 /* Clusters where the consumer function uniquely identifies the role. */
-g_file_io_state_event_counter_17                        = 0x800A3338;  /* 17 x 4-byte counters (zero-init); consumed by file_io_state_dispatch_80038988 */
+g_file_io_state_event_cells_17                          = 0x800A3338;  /* 17 x 4-byte cells (zero-init, never incremented; consumed by file_io_state_dispatch_80038988). Renamed from _event_counter_ since they're not actually counters. */
 g_ang_hosei_state_pairs_3                               = 0x800A3308;  /* 3 x 8-byte state pairs (zero-init); consumed by ang_hosei */
 g_irq_state_table_14                                    = 0x800A14D0;  /* 14 x 4-byte IRQ state cells (zero-init); consumed by system.c IRQ helpers */
 g_text1b_const_pair_table_12                            = 0x8009B940;  /* 12 x 8-byte (.word, .word) const pairs; consumed by text1b func_80063084 */
