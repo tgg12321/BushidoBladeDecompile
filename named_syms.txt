@@ -1416,6 +1416,18 @@ g_video_fb_size                                         = 0x800A3798;  /* = 0x13
 g_intro_render_active                                   = 0x800A36B0;  /* flag: 0/1; set to 1 during intro render loop */
 g_intro_render_busy                                     = 0x800A3906;  /* flag: 0 init, set during intro/video render */
 g_pad_input_combined                                    = 0x80102794;  /* combined pad input s32; bits 0x100010 = start+select, 0x400040 = cross+circle, 0x10001000 = ? */
+
+/* === GPU packet queue + motion-save state (2026-05-17) -- 7 highs === */
+/* From display.c around lines 880-960.  Additional fields of the GPU */
+/* packet-submission flow that wasn't fully named.  Complement existing */
+/* g_gpu_packet_buffer_64x96 / g_gpu_packet_write_idx / etc. */
+g_gpu_packet_queue_base                                 = 0x80103680;  /* function-pointer field (offset 0) of each 0x60-byte slot in the 64-slot queue; paired with g_gpu_packet_buffer_64x96 (+4) */
+g_gpu_packet_pending_fn                                 = 0x8009BF68;  /* saved arg0 (callback fn) from last GPU-packet submit */
+g_gpu_packet_pending_arg1                               = 0x8009BF6C;  /* saved arg1 from last GPU-packet submit */
+g_gpu_motion_save_a                                     = 0x8009BF80;  /* motion_make_table(0) state saved during async draw */
+g_gpu_motion_save_b                                     = 0x8009BF88;  /* parallel motion_make_table save for outer caller */
+g_gpu_loop_flag                                         = 0x8009BE7C;  /* set to 1 during successful packet submit */
+g_gpu_status_alt_reg                                    = 0x8009BF60;  /* parallel GPU status reg; cleared and written 0x11000002 (GPU primitive header) */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
