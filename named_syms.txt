@@ -286,5 +286,11 @@ g_disp_config               = 0x8009BD24;
 g_motion_state_code         = 0x800A379E;
 g_motion_data_base_ptr      = 0x800A3860;
 
+/* === Batch 2 high-confidence function renames (2026-05-17) === */
+/* See docs/naming/evidence/func_{80037774,80037964}.md */
+/* SHA1-clean rebuild verified -- name aliases don't change emitted bytes. */
+game_event_shutdown_80037774 = 0x80037774;
+game_event_wait_any_80037964 = 0x80037964;
+
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
