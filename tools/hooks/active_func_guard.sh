@@ -265,6 +265,70 @@ EOF
         exit 2
     fi
 
+    # Rule 1b: adversarial LLM auditor. A fresh `claude -p --bare` session
+    # running Opus 4.7 with no tools, no parent CLAUDE.md, no auto-memory.
+    # Reads the staged diff and emits a JSON verdict on whether the diff
+    # cheats — i.e., introduces bytes via something other than honest C
+    # compilation (inline __asm__, register-asm pins forcing allocation,
+    # whole-block regfix substs, asmfix bridges, etc.).
+    #
+    # The programmatic audit above catches mechanical patterns (size
+    # thresholds, wildcard substs, glabel-body inline asm). This layer
+    # catches the semantic cases: clever workarounds the regex doesn't
+    # know about, "give up" wrappers where a tiny C body wraps a large
+    # __asm__ block doing the real work, register-asm pins used as
+    # codegen-forcing cheats rather than real ABI constraints.
+    #
+    # Runs BEFORE verify_active_matches so we don't spend ~3 minutes on a
+    # clean rebuild for a commit the auditor will reject anyway.
+    #
+    # The auditor pre-filters internally: diffs that touch no asm-relevant
+    # file and add no asm-flavored tokens skip the LLM call entirely
+    # (no $ cost on routine commits).
+    #
+    # Per project policy: no override mechanism. The auditor's verdict is
+    # final for this commit attempt; the agent must address the violations
+    # and re-attempt. Fail-closed on any auditor failure (network, quota,
+    # parse error) — better to inconvenience the user than leak cheats.
+    SCRIPT_DIR_FOR_AUDIT="$(cd "$(dirname "$0")" && pwd)"
+    if [ -x "$SCRIPT_DIR_FOR_AUDIT/llm_audit.sh" ]; then
+        # Extract the -m / --message argument from the git commit command
+        # so the auditor sees the real commit message (not the stale
+        # .git/COMMIT_EDITMSG). Uses shlex for proper quote handling.
+        COMMIT_MSG_FROM_CMD=$(python3 -c "
+import shlex, sys
+try:
+    args = shlex.split(sys.argv[1])
+except Exception:
+    sys.exit(0)
+# Find git commit and walk its arguments looking for -m / --message / -F
+in_commit = False
+for i, a in enumerate(args):
+    if a == 'git':
+        if i + 1 < len(args) and args[i+1] == 'commit':
+            in_commit = True
+        continue
+    if in_commit:
+        if a in ('-m', '--message') and i + 1 < len(args):
+            print(args[i+1])
+            break
+        if a.startswith('--message='):
+            print(a[len('--message='):])
+            break
+" "$COMMAND" 2>/dev/null)
+        BB2_AUDIT_ROOT="$PROJECT_ROOT" \
+        BB2_AUDIT_COMMIT_MSG="$COMMIT_MSG_FROM_CMD" \
+            bash "$SCRIPT_DIR_FOR_AUDIT/llm_audit.sh"
+        audit_rc=$?
+        if [ "$audit_rc" -ne 0 ]; then
+            # llm_audit.sh has already printed a structured BLOCKED message
+            # to stderr. Just propagate the exit code.
+            exit 2
+        fi
+    else
+        echo "[hook] WARNING: $SCRIPT_DIR_FOR_AUDIT/llm_audit.sh not found or not executable; LLM audit skipped." >&2
+    fi
+
     if verify_active_matches; then
         # Function matches; allow commit and clear the state.
         : > "$ACTIVE_FILE"
