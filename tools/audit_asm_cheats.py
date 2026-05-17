@@ -330,6 +330,81 @@ def _enclosing_func_name(text, asm_start):
     return last_func if depth > 0 else None
 
 
+def _has_hardcoded_gpr(insn):
+    """True if the instruction contains explicit MIPS GPR references.
+
+    Matches: $0-$31, $zero, $at, $v0/$v1, $a0-$a3, $t0-$t9, $s0-$s7/$fp,
+    $k0/$k1, $gp, $sp, $ra. Caller is responsible for first filtering out
+    coprocessor instructions (ctc2/cfc2/mtc2/mfc2/lwc2/swc2/.word-encoded
+    GTE) — those `$N` operands refer to COP2 registers, not GPRs."""
+    return bool(re.search(
+        r"\$(?:[0-9]+|zero|at|v[01]|a[0-3]|t[0-9]|s[0-7]|fp|k[01]|gp|sp|ra)\b",
+        insn,
+    ))
+
+
+def scan_inline_asm_lost_codegen_injection(content, source_name):
+    """Return list of (file, line_no, func_name, insn) for single-instruction
+    `__asm__` blocks INSIDE C function bodies whose template:
+      1. Contains zero `%N` / `%[name]` operand placeholders, AND
+      2. Contains hardcoded GPR register references (`$8`, `$v1`, etc.), AND
+      3. Matches a `_classify_insert_body` lost_codegen pattern
+         (`addu $rD, $rS, $zero`, `addu $rD, $0, $zero`, `addu $rD, $zero, $rS`).
+
+    These are the lost-codegen cheat migrated from regfix.txt into the C
+    source. The bytes still don't come from compilation — they come from the
+    asm template verbatim with no GCC tracking. Functionally identical to
+    `insert_after "addu $t0,$v1,$zero" @ N` in regfix; we must catch both
+    forms.
+
+    Excluded (legitimate single-insn asm — these all pass):
+      - Templates with `%N` placeholders (proper codegen hints; GCC picks regs)
+      - Coprocessor ops (ctc2/cfc2/mtc2/mfc2/lwc2/swc2/COP2 .word) — `$N` there
+        is a COP2 register, not GPR
+      - Non-lost-codegen single insns (sll/lui/nop/etc.) — those are scheduling
+        / barrier / constant-materialization hints, not the cheat pattern."""
+    cheats = []
+    for asm_start, _end, body in _extract_balanced_asm_blocks(content):
+        if _count_real_insns(body) != 1:
+            continue
+        func_name = _enclosing_func_name(content, asm_start)
+        if func_name is None:
+            continue
+        if re.search(r"glabel\s+\w+", body):
+            continue
+        # Extract the single instruction text
+        insns = []
+        for src_line in body.split("\n"):
+            s = src_line.strip()
+            qm = re.match(r'^"(.+)\\n"$', s) or re.match(r'^"(.+)"$', s)
+            if not qm:
+                continue
+            asm = qm.group(1).rstrip("\\n").strip()
+            if not asm or (asm.startswith(".") and not asm.startswith(".word")):
+                continue
+            if asm.endswith(":") or asm.startswith("glabel") or asm.startswith("endlabel") \
+                    or asm.startswith("alabel"):
+                continue
+            for sub in asm.split("\\n"):
+                sub = sub.strip()
+                if sub:
+                    insns.append(sub)
+        if len(insns) != 1:
+            continue
+        insn = insns[0]
+        if re.search(r"%[0-9]+|%\[", insn):
+            continue
+        if _is_whitelisted_insn(insn):
+            continue
+        if not _has_hardcoded_gpr(insn):
+            continue
+        if _classify_insert_body(insn) != "lost_codegen":
+            continue
+        line_no = content[:asm_start].count("\n") + 1
+        cheats.append((source_name, line_no, func_name, insn))
+    return cheats
+
+
 def scan_c_body_smuggled_work(content, source_name):
     """Return list of (file, line_no, insn_count, enclosing_func, insns) for
     multi-instruction __asm__ blocks INSIDE C function bodies that contain at
@@ -423,21 +498,25 @@ def scan_inline_asm_bodies(content, source_name):
 
 def get_current_cheats(auth):
     """Scan current working tree. Return (splice_funcs, inline_funcs,
-    bios_funcs, c_body_funcs, instruction_insert_funcs).
+    bios_funcs, c_body_funcs, instruction_insert_funcs, asm_injection_funcs).
 
     `splice_funcs` covers all regfix-injection cheats (large splice / large
     subst_multi / cumulative-volume / wildcard subst). `inline_funcs` covers
     file-scope __asm__(glabel) cheats. `c_body_funcs` covers multi-instruction
     __asm__ blocks INSIDE C function bodies that smuggle non-GTE/non-scheduling
     work via \\n-concatenation. `instruction_insert_funcs` covers per-function
-    counts of single-instruction lost-codegen insert rules (zero-move / reg-
-    move — these inject what GCC's optimizer ate, sub-threshold for the
-    cumulative line check but still asm injection)."""
+    counts of single-instruction lost-codegen insert rules in regfix.txt (zero-
+    move / reg-move — these inject what GCC's optimizer ate, sub-threshold for
+    the cumulative line check but still asm injection). `asm_injection_funcs`
+    covers single-instruction `__asm__` blocks in C bodies whose template is
+    a hardcoded lost-codegen-pattern instruction with no `%N` placeholders
+    (the same cheat moved from regfix to C source)."""
     splice_funcs = set()
     inline_funcs = set()
     bios_funcs = set()
     c_body_funcs = set()
     instruction_insert_funcs = {}
+    asm_injection_funcs = {}
 
     # Combine stage1 + stage2 regfix content for unified per-function checks.
     regfix_content = ""
@@ -482,8 +561,12 @@ def get_current_cheats(auth):
         for f, l, n, fname, _insns in scan_c_body_smuggled_work(text, src.name):
             if fname and fname not in auth:
                 c_body_funcs.add(fname)
+        for f, l, fname, _insn in scan_inline_asm_lost_codegen_injection(text, src.name):
+            if fname and fname not in auth:
+                asm_injection_funcs[fname] = asm_injection_funcs.get(fname, 0) + 1
 
-    return splice_funcs, inline_funcs, bios_funcs, c_body_funcs, instruction_insert_funcs
+    return (splice_funcs, inline_funcs, bios_funcs, c_body_funcs,
+            instruction_insert_funcs, asm_injection_funcs)
 
 
 def get_head_cheats(auth):
@@ -492,13 +575,14 @@ def get_head_cheats(auth):
     inline_funcs = set()
     c_body_funcs = set()
     instruction_insert_funcs = {}
+    asm_injection_funcs = {}
 
     head_regfix = ""
     for fname in ("regfix.txt", "regfix_stage2.txt"):
         try:
             head_regfix += subprocess.run(
                 ["git", "show", f"HEAD:{fname}"],
-                capture_output=True, text=True, check=True,
+                capture_output=True, text=True, check=True, encoding="utf-8", errors="replace",
             ).stdout + "\n"
         except subprocess.CalledProcessError:
             pass
@@ -526,7 +610,7 @@ def get_head_cheats(auth):
     # All .c files tracked at HEAD
     src_list = subprocess.run(
         ["git", "ls-tree", "-r", "--name-only", "HEAD", "src/"],
-        capture_output=True, text=True,
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
     ).stdout.split("\n")
     for src_path in src_list:
         if not src_path.endswith(".c"):
@@ -534,7 +618,7 @@ def get_head_cheats(auth):
         try:
             head_content = subprocess.run(
                 ["git", "show", f"HEAD:{src_path}"],
-                capture_output=True, text=True, check=True,
+                capture_output=True, text=True, check=True, encoding="utf-8", errors="replace",
             ).stdout
         except subprocess.CalledProcessError:
             continue
@@ -547,8 +631,12 @@ def get_head_cheats(auth):
         for f, l, n, fname, _insns in scan_c_body_smuggled_work(head_content, src_path):
             if fname and fname not in auth:
                 c_body_funcs.add(fname)
+        for f, l, fname, _insn in scan_inline_asm_lost_codegen_injection(head_content, src_path):
+            if fname and fname not in auth:
+                asm_injection_funcs[fname] = asm_injection_funcs.get(fname, 0) + 1
 
-    return splice_funcs, inline_funcs, c_body_funcs, instruction_insert_funcs
+    return (splice_funcs, inline_funcs, c_body_funcs, instruction_insert_funcs,
+            asm_injection_funcs)
 
 
 def cmd_all():
@@ -671,8 +759,32 @@ def cmd_all():
         print(f"    ... and {len(c_body_unauth) - 15} more")
 
     print()
+    print(f"=== Inline-asm lost-codegen INJECTIONS inside C function bodies ===")
+    print(f"  Single-instruction __asm__ blocks with hardcoded `$N` registers (no `%N`")
+    print(f"  placeholders) emitting `addu RD,RS,$zero`-style moves — the same lost-")
+    print(f"  codegen cheat migrated from regfix.txt into the C source. Bytes still")
+    print(f"  don't come from compilation; GCC has no view into the operation.")
+    asm_inj_all = []
+    for src in sorted(Path("src").glob("*.c")):
+        asm_inj_all.extend(
+            scan_inline_asm_lost_codegen_injection(src.read_text(encoding="utf-8"), src.name)
+        )
+    asm_inj_unauth = [c for c in asm_inj_all if c[2] and c[2] not in auth]
+    asm_inj_by_func = {}
+    for f, l, fname, insn in asm_inj_unauth:
+        asm_inj_by_func.setdefault(fname, []).append((f, l, insn))
+    print(f"  {len(asm_inj_all)} injection blocks across all src/*.c")
+    print(f"  {len(asm_inj_by_func)} UNAUTHORIZED functions (not in inline_asm_canonical.txt):")
+    for fname, entries in sorted(asm_inj_by_func.items(), key=lambda x: -len(x[1])):
+        print(f"    {fname:32s}  count={len(entries)}")
+        for f, l, insn in entries[:3]:
+            print(f"      {f}:{l}  __asm__(\"{insn}\")")
+        if len(entries) > 3:
+            print(f"      ... and {len(entries) - 3} more")
+
+    print()
     # De-dup across regfix categories: a single func can hit splice + subst_multi
-    # + cumulative + wildcard + lost-codegen inserts all at once.
+    # + cumulative + wildcard + lost-codegen inserts + inline-asm-injection at once.
     regfix_unauth_funcs = (
         {s[0] for s in unauth_splices}
         | {s[0] for s in unauth_subst_multis}
@@ -681,7 +793,9 @@ def cmd_all():
         | set(insert_lost_per_func.keys())
     )
     c_body_unauth_funcs = {c[3] for c in c_body_unauth}
-    total_unauth = len(regfix_unauth_funcs) + len(unauth) + len(c_body_unauth_funcs)
+    asm_inj_unauth_funcs = set(asm_inj_by_func.keys())
+    total_unauth = (len(regfix_unauth_funcs) + len(unauth)
+                    + len(c_body_unauth_funcs) + len(asm_inj_unauth_funcs))
     if total_unauth > 0:
         print(f"TOTAL UNAUTHORIZED ASM CHEATS: {total_unauth}")
         print(f"  ({len(bios)} BIOS trampolines should also be added to inline_asm_canonical.txt)")
@@ -755,14 +869,32 @@ def cmd_func(name):
                       f"Split into per-instruction __asm__ blocks or do real C decomp.",
                       file=sys.stderr)
                 return 1
+        injections = [(f, l, insn) for f, l, fn, insn
+                      in scan_inline_asm_lost_codegen_injection(text, src.name)
+                      if fn == name]
+        if injections:
+            print(f"UNAUTHORIZED: {name} has {len(injections)} inline-asm "
+                  f"lost-codegen INJECTION(s) (hardcoded `$N` registers, no `%N` "
+                  f"placeholders, body matches lost_codegen pattern):", file=sys.stderr)
+            for f, l, insn in injections:
+                print(f"  {f}:{l}  __asm__(\"{insn}\")", file=sys.stderr)
+            print(f"These emit the same MIPS bytes as `insert_after \"addu RD,RS,$zero\" @ N` "
+                  f"would — just sourced from inline asm with no GCC tracking. The cheat "
+                  f"under a different name (per skill §7 anti-pattern). Use proper operand "
+                  f"constraints (`%0`/`%1` with `=r`/`r` binding to `register T x asm(\"$N\")` "
+                  f"variables) so GCC tracks the operation, or restructure the C to defeat "
+                  f"the optimizer.", file=sys.stderr)
+            return 1
     return 0
 
 
 def cmd_check_new():
     """Return 1 if working tree has cheats not present at HEAD."""
     auth = load_authorized()
-    cur_splice, cur_inline, cur_bios, cur_c_body, cur_inserts = get_current_cheats(auth)
-    head_splice, head_inline, head_c_body, head_inserts = get_head_cheats(auth)
+    (cur_splice, cur_inline, cur_bios, cur_c_body, cur_inserts,
+     cur_asm_inj) = get_current_cheats(auth)
+    (head_splice, head_inline, head_c_body, head_inserts,
+     head_asm_inj) = get_head_cheats(auth)
 
     new_splices = cur_splice - head_splice
     new_inline = cur_inline - head_inline
@@ -774,9 +906,16 @@ def cmd_check_new():
         head_n = head_inserts.get(fn, 0)
         if n > head_n:
             new_inserts[fn] = (head_n, n)
+    # New inline-asm lost-codegen INJECTIONS in src/*.c (same cheat moved
+    # from regfix to C source — the §7 "anti-pattern under a different name").
+    new_asm_inj = {}
+    for fn, n in cur_asm_inj.items():
+        head_n = head_asm_inj.get(fn, 0)
+        if n > head_n:
+            new_asm_inj[fn] = (head_n, n)
 
     if (not new_splices and not new_inline and not new_c_body
-            and not new_inserts):
+            and not new_inserts and not new_asm_inj):
         return 0
 
     print("ASM-CHEAT GUARD: new unauthorized asm-cheat patterns since HEAD:", file=sys.stderr)
@@ -793,6 +932,16 @@ def cmd_check_new():
         print(f"  Lost-codegen insert(s) for {fn}: HEAD had {head_n}, now {cur_n} "
               f"(+{delta}). Single-instruction `insert_after \"addu $sN,$0,$zero\"` rules "
               f"inject what GCC's optimizer ate — those bytes don't come from C", file=sys.stderr)
+    for fn, (head_n, cur_n) in sorted(new_asm_inj.items()):
+        delta = cur_n - head_n
+        print(f"  Inline-asm lost-codegen INJECTION for {fn}: HEAD had {head_n}, "
+              f"now {cur_n} (+{delta}). Single-instruction `__asm__` block with "
+              f"hardcoded `$N` registers (no `%N` placeholders) emitting `addu RD,RS,$zero` "
+              f"-style move — the same lost-codegen cheat migrated from regfix.txt into "
+              f"the C source. Bytes still don't come from compilation; GCC has no view "
+              f"into the operation. Use proper operand constraints (`%0`/`%1` with `=r`/`r` "
+              f"binding to `register T x asm(\"$N\")` variables) so GCC tracks it, or "
+              f"restructure the C to defeat the optimizer.", file=sys.stderr)
     print(file=sys.stderr)
     print("These patterns make the binary match without the C source", file=sys.stderr)
     print("actually corresponding to the emitted bytes (the bytes come from", file=sys.stderr)
@@ -815,13 +964,15 @@ def cmd_check_new():
 def cmd_summary():
     """One-line counts of unauthorized cheats. For session briefing."""
     auth = load_authorized()
-    cur_splice, cur_inline, cur_bios, cur_c_body, cur_inserts = get_current_cheats(auth)
+    (cur_splice, cur_inline, cur_bios, cur_c_body, cur_inserts,
+     cur_asm_inj) = get_current_cheats(auth)
     n_splice = len(cur_splice)
     n_inline = len(cur_inline)
     n_bios = len(cur_bios)
     n_c_body = len(cur_c_body)
     n_inserts = len(cur_inserts)
-    total = n_splice + n_inline + n_c_body + n_inserts
+    n_asm_inj = len(cur_asm_inj)
+    total = n_splice + n_inline + n_c_body + n_inserts + n_asm_inj
     if total == 0 and n_bios == 0:
         print("Cheats:   none — all inline asm and regfix injections are authorized")
     else:
@@ -835,6 +986,9 @@ def cmd_summary():
         if n_inserts:
             total_lost = sum(cur_inserts.values())
             parts.append(f"{n_inserts} func(s) w/ lost-codegen inserts ({total_lost} insn(s))")
+        if n_asm_inj:
+            total_inj = sum(cur_asm_inj.values())
+            parts.append(f"{n_asm_inj} func(s) w/ inline-asm injection ({total_inj} insn(s))")
         if n_bios:
             parts.append(f"{n_bios} BIOS-trampoline (recommend adding to authorized list)")
         msg = ", ".join(parts)
@@ -847,8 +1001,10 @@ def cmd_summary():
 def cmd_list_funcs():
     """Print one unauthorized function name per line."""
     auth = load_authorized()
-    cur_splice, cur_inline, cur_bios, cur_c_body, cur_inserts = get_current_cheats(auth)
-    for f in sorted(cur_splice | cur_inline | cur_c_body | set(cur_inserts.keys())):
+    (cur_splice, cur_inline, cur_bios, cur_c_body, cur_inserts,
+     cur_asm_inj) = get_current_cheats(auth)
+    for f in sorted(cur_splice | cur_inline | cur_c_body
+                    | set(cur_inserts.keys()) | set(cur_asm_inj.keys())):
         print(f)
     return 0
 
