@@ -1,17 +1,17 @@
 address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_file
 0x800164AC,func_800164AC,data_as_code_lb_table_800164AC,high,data_as_code=data_as_code_lb_table_800164AC,docs/naming/evidence/func_800164AC.md
 0x800164F8,func_800164F8,syscall_wrapper_break_800164F8,high,syscall_wrapper=syscall_wrapper_break_800164F8,docs/naming/evidence/func_800164F8.md
-0x80016514,func_80016514,,none,,
+0x80016514,func_80016514,file_read_chunked_80016514,medium,FileOpen+chunked_FileRead(0x4000)+md_gview_init+Close,docs/naming/evidence/func_80016514.md
 0x800165F8,func_800165F8,,none,,
 0x800166C4,func_800166C4,,none,,
 0x80016768,func_80016768,psyq_memset_80016768,high,psyq_idiom=psyq_memset_80016768,docs/naming/evidence/func_80016768.md
 0x800167AC,func_800167AC,,none,,
 0x800167BC,func_800167BC,,none,,
 0x800167D4,func_800167D4,,none,,
-0x80016888,func_80016888,,none,,
+0x80016888,func_80016888,display_drawot_flush_80016888,medium,SetDispMask(0)+SetMode(1)+8007B4D0(g_disp_gp_base)+DrawSync,docs/naming/evidence/func_80016888.md
 0x800168F0,func_800168F0,,none,,
 0x800168F8,func_800168F8,,none,,
-0x80016918,func_80016918,,none,,
+0x80016918,func_80016918,display_init_default_80016918,medium,full_disp_init=SetMode+SetDebugLevel+SetDispMask+gte_SetScreenOffset+disp_CalcFov+gpu_InitDrawEnv*2+gpu_InitDispEnv*2,docs/naming/evidence/func_80016918.md
 0x80016A18,func_80016A18,,none,,
 0x80016A8C,func_80016A8C,cpu_set_move_command_and_dir_for_no_action_2_helper_80016A8C,medium,sole_caller_path=cpu_set_move_command_and_dir_for_no_action_2_helper_80016A8C,docs/naming/evidence/func_80016A8C.md
 0x80016C3C,func_80016C3C,overflow_func_80016C3C,low,string_adjacent=overflow_func_80016C3C,docs/naming/evidence/func_80016C3C.md
@@ -23,9 +23,9 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80016E60,func_80016E60,cpu_set_move_command_and_dir_for_no_action_2_helper_80016E60,medium,sole_caller_path=cpu_set_move_command_and_dir_for_no_action_2_helper_80016E60,docs/naming/evidence/func_80016E60.md
 0x800171AC,func_800171AC,,none,,
 0x800171B8,func_800171B8,,none,,
-0x80017714,func_80017714,,none,,
-0x80017738,func_80017738,,none,,
-0x80017748,func_80017748,,none,,
+0x80017714,func_80017714,clear_file_data_table_80017714,medium,stride0x34_clear_8_entries_in_g_file_data_buf,docs/naming/evidence/func_80017714.md
+0x80017738,func_80017738,pack_offset_64x16_80017738,low,(a0<<6)+(a1<<4)_pure_math,docs/naming/evidence/func_80017738.md
+0x80017748,func_80017748,vec3_diff_div4_then_sum_80017748,low,vec3_sub_sra2+func_8007F0BC+sum+func_8007E43C_sll2,docs/naming/evidence/func_80017748.md
 0x800177C8,func_800177C8,,none,,
 0x80017848,func_80017848,link_add_with_dist_check_80017848,medium,"manual_review=Adds a bidirectional link between two slots in a context-managed graph. Checks for existing links (returns 0 if already linked), then computes Euclidean 3D distance via the named math_Distance3D, stores a 16-byte link record with the distance + 3x distance + a tag + the slot i...",docs/naming/evidence/func_80017848.md
 0x80017A44,func_80017A44,,none,,
@@ -200,7 +200,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80037250,func_80037250,replay_camera_check_stage_80037250,medium,kengo_pattern=replay_camera_check_stage_80037250,docs/naming/evidence/func_80037250.md
 0x800372C0,func_800372C0,cpu_helper_800372C0,medium,call_graph_cluster=cpu_helper_800372C0,docs/naming/evidence/func_800372C0.md
 0x800372F4,func_800372F4,,none,,
-0x80037348,func_80037348,,none,,
+0x80037348,func_80037348,tslTm2_load_animframe_advance_80037348,medium,tslTm2_command_with_retry+cdrom_BcdToFrames+FramesToBcd_loop,docs/naming/evidence/func_80037348.md
 0x80037540,func_80037540,special_cam_init_with_two_lookups_80037540,medium,"manual_review=Special-camera init wrapper: looks up two SpecialCam table entries via func_80036EA8(6, idx), packs 6 fields into a stack buffer along with caller args, then dispatches marionation_camera_Init_80037468(6, sp, v0 + 0x7FC).",docs/naming/evidence/func_80037540.md
 0x80037774,func_80037774,memcard_event_pool_close_80037774,high,manual_review=closes all 8 memcard events (4 in class 0xF4000001 + 4 in class 0xF0000011) opened by pad_press_control (which itself is a misnomer -- it does memcard init); was named game_event_shutdown_* before the OpenEvent owner was identified,docs/naming/evidence/func_80037774.md
 0x80037804,func_80037804,memcard_event_wait_class0xF4000001_with_timeout_80037804,high,manual_review=spin-poll the 4 class-0xF4000001 events (D_800A37DC/F0/FC/3800) with 2-sec timeout via D_800A3924 counter; these are the memcard I/O-complete class opened by pad_press_control,docs/naming/evidence/func_80037804.md
@@ -399,14 +399,14 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x8004659C,func_8004659C,,none,,
 0x8004668C,func_8004668C,,none,,
 0x800466C0,func_800466C0,,none,,
-0x80046780,func_80046780,,none,,
+0x80046780,func_80046780,get_snd_bgm_id_80046780,high,pure_getter=g_snd_bgm_id,docs/naming/evidence/func_80046780.md
 0x8004678C,func_8004678C,,none,,
-0x80046798,func_80046798,,none,,
+0x80046798,func_80046798,get_stage_id_80046798,high,pure_getter=g_stage_id_signed,docs/naming/evidence/func_80046798.md
 0x800467A8,func_800467A8,,none,,
 0x800467B8,func_800467B8,,none,,
 0x800468B0,func_800468B0,,none,,
 0x800468DC,func_800468DC,,none,,
-0x80046954,func_80046954,,none,,
+0x80046954,func_80046954,empty_stub_80046954,high,empty_jr_ra_nop,docs/naming/evidence/func_80046954.md
 0x8004695C,func_8004695C,,none,,
 0x800469A0,func_800469A0,,none,,
 0x800469C4,func_800469C4,,none,,
@@ -430,21 +430,21 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80046F24,func_80046F24,,none,,
 0x8004700C,func_8004700C,,none,,
 0x800470B0,func_800470B0,,none,,
-0x80047210,func_80047210,,none,,
+0x80047210,func_80047210,camera_bone_load_default_80047210,medium,"memcpy(g_cam_bone_data,D_80101E08,0x20)+halve_3_halfwords",docs/naming/evidence/func_80047210.md
 0x800472B0,func_800472B0,,none,,
 0x800472C0,func_800472C0,,none,,
-0x80047384,func_80047384,,none,,
+0x80047384,func_80047384,camera_replay_compute_rot_80047384,medium,replay_camera_rob_back_loose3+single_game_getEnemyCharId+Judge_table,docs/naming/evidence/func_80047384.md
 0x8004746C,func_8004746C,,none,,
 0x8004748C,func_8004748C,,none,,
 0x800474AC,func_800474AC,,none,,
 0x800474D0,func_800474D0,,none,,
 0x800474F0,func_800474F0,,none,,
-0x80047510,func_80047510,,none,,
-0x80047530,func_80047530,,none,,
-0x80047550,func_80047550,,none,,
-0x80047570,func_80047570,,none,,
+0x80047510,func_80047510,call_efc_rob_set_type_flash_80047510,low,5insn_zero_arg_wrapper,docs/naming/evidence/func_80047510.md
+0x80047530,func_80047530,call_motion_CheckSituation_80047530,low,5insn_zero_arg_wrapper,docs/naming/evidence/func_80047530.md
+0x80047550,func_80047550,call_saEft03Start_80047550,low,5insn_zero_arg_wrapper,docs/naming/evidence/func_80047550.md
+0x80047570,func_80047570,camera_bone2_init_default_80047570,medium,camera_InitRotation(&g_cam_bone_data2);g_cam_interp=4,docs/naming/evidence/func_80047570.md
 0x800475A4,func_800475A4,,none,,
-0x80047738,func_80047738,,none,,
+0x80047738,func_80047738,call_func_80048F58_id1_80047738,low,"5insn_2arg_wrapper(1,0)",docs/naming/evidence/func_80047738.md
 0x8004775C,func_8004775C,,none,,
 0x8004777C,func_8004777C,,none,,
 0x8004779C,func_8004779C,,none,,
@@ -1065,12 +1065,12 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800832A0,func_800832A0,,none,,
 0x8008339C,func_8008339C,psyq_memset_legacy_8008339C,low,psyq_idiom_legacy=psyq_memset_legacy_8008339C,docs/naming/evidence/func_8008339C.md
 0x80083644,func_80083644,psyq_memset_legacy_80083644,low,psyq_idiom_legacy=psyq_memset_legacy_80083644,docs/naming/evidence/func_80083644.md
-0x80083688,func_80083688,,none,,
+0x80083688,func_80083688,get_sys_video_mode_80083688,high,pure_getter=g_sys_video_mode,docs/naming/evidence/func_80083688.md
 0x80083698,func_80083698,syscall_wrapper_break_80083698,high,syscall_wrapper=syscall_wrapper_break_80083698,docs/naming/evidence/func_80083698.md
 0x8008386C,func_8008386C,bios_InitHeap,high,bios_jumptable=bios_InitHeap; sole_caller_path=ang_hosei_helper_8008386C,docs/naming/evidence/func_8008386C.md
 0x8008387C,func_8008387C,,none,,
 0x8008393C,func_8008393C,syscall_wrapper_break_8008393C,high,syscall_wrapper=syscall_wrapper_break_8008393C,docs/naming/evidence/func_8008393C.md
-0x80083954,func_80083954,,none,,
+0x80083954,func_80083954,kernel_alarm_cancel_80083954,medium,critsec+irq_SetAlarm(0)+irq_EnableInterrupts+sentinel_0x7F,docs/naming/evidence/func_80083954.md
 0x80083A18,func_80083A18,,none,,
 0x80083A48,func_80083A48,,none,,
 0x80083B30,func_80083B30,,none,,
@@ -1079,11 +1079,11 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800841E0,func_800841E0,DispStuff_helper_800841E0,medium,sole_caller_path=DispStuff_helper_800841E0,docs/naming/evidence/func_800841E0.md
 0x80084500,func_80084500,DispStuff_helper_80084500,medium,sole_caller_path=DispStuff_helper_80084500,docs/naming/evidence/func_80084500.md
 0x800848AC,func_800848AC,,none,,
-0x80084948,func_80084948,,none,,
+0x80084948,func_80084948,saTan4GaugeInit_call_signext_80084948,low,wrapper_signext+call_saTan4GaugeInit,docs/naming/evidence/func_80084948.md
 0x80084A7C,func_80084A7C,saTan0Main_helper_80084A7C,medium,sole_caller_path=saTan0Main_helper_80084A7C,docs/naming/evidence/func_80084A7C.md
-0x80085064,func_80085064,,none,,
-0x80085114,func_80085114,,none,,
-0x80085210,func_80085210,,none,,
+0x80085064,func_80085064,seq_channel_byte_advance_80085064,medium,D_80106F28+7bit_varint+writes_ch[0x88],docs/naming/evidence/func_80085064.md
+0x80085114,func_80085114,seq_channel_state_init_80085114,medium,D_80106F28[bank][ch*0x58]+5_bit_clears+state_reset,docs/naming/evidence/func_80085114.md
+0x80085210,func_80085210,seq_channel_state_clear_loop_80085210,medium,D_80106F28[bank][ch*0x58]+set_loop_flag+clear_bit3,docs/naming/evidence/func_80085210.md
 0x80085270,func_80085270,spu_channel_reset_80085270,medium,"manual_review=Per-channel SPU reset: indexes D_80106F28 by a0 (group?) and reads a pointer into a 0xB0-byte per-channel record at offset a1 * 0xB0. Clears channel flags, calls two named SPU helpers (spu_NotifyChannel and spu_ResetCounter), zero-fills the byte-state area at offsets 0x14..0x2...",docs/naming/evidence/func_80085270.md
 0x80085448,func_80085448,settings_set_volume_pair_80085448,medium,"manual_review=Branches on a0 == 0 or a0 == 1 (two channels), clamps the two values a1, a2 to 0x7F max (PSX volume convention), multiplies by 129 * 2 = 258 (the standard PSX SPU volume scale), packs into a buffer at slot-specific offsets (0x10/0x12 for channel 0, 0x1C/0x1E for channel 1), an...",docs/naming/evidence/func_80085448.md
 0x800856B0,func_800856B0,DispStuff_helper_800856B0,medium,sole_caller_path=DispStuff_helper_800856B0,docs/naming/evidence/func_800856B0.md
@@ -1113,7 +1113,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800886C4,func_800886C4,,none,,
 0x80088740,func_80088740,debug_func_80088740,low,string_adjacent=debug_func_80088740,docs/naming/evidence/func_80088740.md
 0x80088F9C,func_80088F9C,,none,,
-0x80089024,func_80089024,,none,,
+0x80089024,func_80089024,saTan0_draw_three_pass_80089024,medium,"saTan0GaugeDraw(2,..);saTan0GaugeDraw(0);saTan0GaugeDraw(3,a0,a1)",docs/naming/evidence/func_80089024.md
 0x8008908C,func_8008908C,,none,,
 0x80089214,func_80089214,,none,,
 0x80089240,func_80089240,,none,,

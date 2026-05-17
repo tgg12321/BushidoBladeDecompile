@@ -1,174 +1,120 @@
 # Naming Proposals -- Medium confidence
+**Medium confidence**: distinctive symbol-driven shape (sole-caller path with semantic hint, neighbor-cluster naming, library-idiom with caveats, callsite-derived role). Apply selectively after sanity-checking the evidence file. SHA1-safe by construction.
 
-**Medium confidence**: weak Kengo match (size-diff > 1 but same name), single named caller (`sole_caller_path` proposal: `<caller>_helper_<addr>`), or call-graph subsystem cluster. These need callsite/body inspection before applying.
+Total Medium: **212**
 
-Total Medium: **199**
-
-## Primary evidence: `manual_review` (96)
-
-Hand-review rows for functions previously tagged `confidence=none` by
-the automated analyzer. Each row links to a prose evidence file that
-walks through the C body, the caller-side pattern, the (almost always
-weak) Kengo cross-reference, and the reasoning. The 2026-05-17
-caller-side audit pass refined several slugs and promoted one row
-(`player_rob_Init`) up to the high-confidence table after three
-independent medium-rank evidence rows agreed. Batch 2 (2026-05-17)
-added 7 more medium entries plus 2 high (now in the high-confidence
-table).
-
-### Batch 1 (2026-05-12 + 2026-05-17 reinforcement)
-
+## Primary evidence: `manual_review` (107)
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
-| `0x80032854` | `func_80032854` | `motion_dispatch_event_handler_80032854` | manual_review=30-case switch on arg1, dispatches to func_8006xxxx family; 19 callers all in motion subsystem; arg0 is 2-player slot index | [md](evidence/func_80032854.md) |
-| `0x80037110` | `func_80037110` | `special_cam_issue_command_80037110` | manual_review=callers pass small command codes {0, 1, 8, 9, 10, 11} from state-machine cases; arg0 is a command code, not a generic table index (slug refined 2026-05-17) | [md](evidence/func_80037110.md) |
-| `0x80038734` | `func_80038734` | `game_state_advance_80038734` | manual_review=callers do `switch (v0 - 4)` on return; state-machine advance not input tick; body polls pad + advances state + returns state code (slug refined 2026-05-17) | [md](evidence/func_80038734.md) |
-| `0x80044010` | `func_80044010` | `prim_buffer_open_slot_80044010` | manual_review=marks header `*a0 \|= 0x8000`, stores ptr+count in D_80103608/D_80103658 slot a1; caller-side audit confirms texA/texB texture-page pointers -- consider rename to `rmd_AddTbp_*` to match the Kengo partial-agreement hint | [md](evidence/func_80044010.md) |
-| `0x80044100` | `func_80044100` | `prim_buffer_relocate_slot_80044100` | manual_review=advances D_80103608[a0] by a1 bytes and patches each entry by +a1 (offset-list relocation); paired with func_80044010; consider rename to `rmd_AddTbpOfst_*` | [md](evidence/func_80044100.md) |
-| `0x80077820` | `func_80077820` | `disp_load_config_from_buf_80077820` | manual_review=both callers pass fixed buffer addr 0x80118800; disp_SetFramebufferMode(1,0,0,0) is unconditional (not mode-parametrised); func_80068F70(src, &D_8009BD24) is the actual copy (slug refined 2026-05-17 -- original "init_for_mode" was wrong) | [md](evidence/func_80077820.md) |
-| `0x80080258` | `func_80080258` | `tslTm2_command_with_retry_80080258` | manual_review=3-retry wrapper around tslTm2LoadImage (general op dispatcher, not TIM-only -- modes {2, 9, 0xE} seen at call sites; mode 9 passes arg1=0); g_cd_callback_a save/restore (slug refined 2026-05-17) | [md](evidence/func_80080258.md) |
-
-### Batch 2 (2026-05-17)
-
-| address | current | proposed | evidence_summary | evidence_file |
-|---|---|---|---|---|
+| `0x80016514` | `func_80016514` | `file_read_chunked_80016514` | FileOpen+chunked_FileRead(0x4000)+md_gview_init+Close | [md](evidence/func_80016514.md) |
+| `0x80016888` | `func_80016888` | `display_drawot_flush_80016888` | SetDispMask(0)+SetMode(1)+8007B4D0(g_disp_gp_base)+DrawSync | [md](evidence/func_80016888.md) |
+| `0x80017714` | `func_80017714` | `clear_file_data_table_80017714` | stride0x34_clear_8_entries_in_g_file_data_buf | [md](evidence/func_80017714.md) |
+| `0x80017848` | `func_80017848` | `link_add_with_dist_check_80017848` | manual_review=Adds a bidirectional link between two slots in a context-managed graph. Checks for existing links (returns 0 if already linked), then computes Euclidean 3D distance via the named math_Distance3D, stores a 16-byte link record with the distance + 3x distance + a tag + the slot i... | [md](evidence/func_80017848.md) |
+| `0x80019488` | `func_80019488` | `pack_status_nibble_triplet_80019488` | manual_review=Packs the low nibble of 3 consecutive bytes (D_80106A70, +1, +2) into a single u32 with each nibble in its own 4-bit field (bits 0-3, 4-7, 8-11). | [md](evidence/func_80019488.md) |
+| `0x80021280` | `func_80021280` | `char_motion_nibble_scan_80021280` | manual_review=Per-character motion stage parser: reads a 16-bit value at g_char_state[a0].field_48 (the per-char 1100-byte struct), scans its 4 nibbles, and for nibbles == 4 or 5 stashes the nibble position and a copy of field_26C into a 'pending stage' record at offsets +0x88/+0x8A and +0x... | [md](evidence/func_80021280.md) |
+| `0x80021904` | `func_80021904` | `char_get_motion_keyframe_table_entry_prev_80021904` | manual_review=Direct sibling of func_80021974 (proposed char_get_motion_keyframe_table_entry_* in batch 1). The only difference: reads D_80101F4E (the PREVIOUS keyframe slot, per [g_char_state[].keyframe_idx_prev](../data_evidence/D_80101F00_char_state.md)) instead of D_80101F4C (current). ... | [md](evidence/func_80021904.md) |
+| `0x80022224` | `func_80022224` | `stage_find_far_corners_with_rand_80022224` | manual_review=Stage corner picker: iterates 4 corners from stage_GetDataPtr() + D_800A36A4 * 0x30, computes 2D distance squared to query point, then finds the 2 furthest corners (twice picking and eliminating the closest), and randomly picks one of the 2 via func_80079154() & 1 (= bb2_rand(... | [md](evidence/func_80022224.md) |
 | `0x80022408` | `func_80022408` | `stage_find_nearest_corner_80022408` | manual_review=reads stage_GetDataPtr() + D_800A36A4*48 byte offset, iterates 4 records (6 s16 each = segment endpoints), returns idx of nearest by 2D distance squared | [md](evidence/func_80022408.md) |
-| `0x80039320` | `func_80039320` | `timer_event_table_tick_80039320` | manual_review=two sequential 16-byte-stride table scans: loop 1 releases slots matching D_800A36F8 in D_80101BF0; loop 2 ticks counters in D_800F68E0 and expires past threshold | [md](evidence/func_80039320.md) |
-| `0x80044098` | `func_80044098` | `tpage_slot_release_80044098` | manual_review=inverse of prim_buffer_open_slot_80044010 (clears in-use bit, un-relocates payload); 3rd function of the slot-pool lifecycle (open/relocate/release) | [md](evidence/func_80044098.md) |
-| `0x80054884` | `func_80054884` | `info_draw_at_yslot_80054884` | manual_review=8-arg wrapper around func_80054604; resolves Y coord as InfoPosYTbl1[a0] + a1 - 0x131 then forwards remaining 7 args | [md](evidence/func_80054884.md) |
-| `0x80077940` | `func_80077940` | `disp_pack_gpu_command_word_80077940` | manual_review=packs 4 disjoint bit-fields (10+10+1+1 bits) from sparse 26-bit arg0 into compact 22-bit D_800A35E8; matches PSX GPU coord-pack command shape | [md](evidence/func_80077940.md) |
-| `0x80077984` | `func_80077984` | `disp_apply_config_with_state_80077984` | manual_review=sibling of disp_load_config_from_buf_80077820 (same disp_SetFramebufferMode tail); uses func_8006E534(a0, D_800A35E0, g_disp_config, D_800A35E8) | [md](evidence/func_80077984.md) |
-| `0x80080390` | `func_80080390` | `tslTm2_command_with_retry_no_arg3_80080390` | manual_review=2-arg twin of tslTm2_command_with_retry_80080258; hardcodes a2=0 and uses different terminal tslTm2LoadImage mode | [md](evidence/func_80080390.md) |
-
-### Batch 3 (2026-05-17)
-
-| address | current | proposed | evidence_summary | evidence_file |
-|---|---|---|---|---|
-| `0x80034200` | `func_80034200` | `pack_player_input_bitstream_80034200` | manual_review=packs N x 2 byte values from D_800F65F8 into 2-bit slots of a single u32 stored at D_800A3784; sets g_disp_enable = DISP_LOADING during the compute | [md](evidence/func_80034200.md) |
+| `0x80023648` | `func_80023648` | `char_physics_step_horizontal_velocity_80023648` | manual_review=Per-frame physics step for character at arg0. Branches on motion kind: kinds 0x13/0x1B/0x30 are 'moving' kinds that compute speed via deceleration + table lookup + sin/cos vectors (the named Judge LUT used as a 4096-entry sin table), updating position fields +0xD8 (x) and +0xE... | [md](evidence/func_80023648.md) |
+| `0x80030208` | `func_80030208` | `hit_queue_process_pending_80030208` | manual_review=Per-frame processor of 12 entries at D_80106A78 (0x64-byte stride). For each entry: if marked pending (byte +2 != 0), call func_800300B4. Otherwise look up event type from D_8008EB80 LUT and dispatch via func_80049718 (= efc_anim_vehicle_setup_*, batch 3) + saSeInit_2. | [md](evidence/func_80030208.md) |
+| `0x80030524` | `func_80030524` | `clear_entries_marked_in_flag_table_80030524` | manual_review=Iterates 12 entries at D_80106A7A with 0x64-byte stride. For each entry: if it's not already -1 (sentinel) AND a parallel flag at &D_80106A80 + off (0x6 bytes after the entry, same stride) is non-zero, clears it to -1. | [md](evidence/func_80030524.md) |
+| `0x80030900` | `func_80030900` | `spawn_hit_particle_80030900` | manual_review=Spawns a particle from a hit event: gets a new particle slot via coli_hit_body_weapon (already-named -- collision/hit detector), copies the impact position from *a1 into the particle's +0x2C field, then randomises: | [md](evidence/func_80030900.md) |
+| `0x80032064` | `func_80032064` | `particle_spawn_entry_80032064` | manual_review=Spawns a particle/entity into the 4-slot pool at D_80104E88 (0x2C-byte stride). If pool full, returns 0. Initialises the slot with type code, position (+0x4 = x, +0x8 = z, +0xC = y), trigonometric values from the named Judge sine LUT, then dispatches via func_80032854 (= motio... | [md](evidence/func_80032064.md) |
+| `0x80032854` | `func_80032854` | `motion_dispatch_event_handler_80032854` | manual_review=30-case switch on arg1, dispatches to func_8006xxxx family; 19 callers all in motion subsystem | [md](evidence/func_80032854.md) |
+| `0x80033498` | `func_80033498` | `get_stage_idx_80033498` | manual_review=Pure-function stage-index mapper. Reads D_800A36A4 (the stage selector global -- 23 lui hits per data_symbols_quick_wins.md), subtracts 2, and maps the result through a 6-case switch to a small index 0..5 (or 0xFF for 'no match'). | [md](evidence/func_80033498.md) |
+| `0x80033898` | `func_80033898` | `gpu_enable_and_state_reset_80033898` | manual_review=Calls named gpu_EnableDisplay() then sets two state globals: D_800A37B8 = 0 and D_800A3834 = 3. The 'enable display and reset state' pattern -- typical mode-transition / scene-init hook. | [md](evidence/func_80033898.md) |
+| `0x80034200` | `func_80034200` | `pack_player_input_bitstream_80034200` | manual_review=packs N x 2 byte values from D_800F65F8 input buffer into 2-bit slots of a single u32 stored at D_800A3784; sets g_disp_enable = DISP_LOADING (suggests non-trivial per-frame compute) | [md](evidence/func_80034200.md) |
+| `0x80036034` | `func_80036034` | `vsync_4_with_helpers_80036034` | manual_review=Calls two unnamed helpers (func_80080148, func_8007FF7C) then sys_VSync(4) -- the named PSX SDK helper that waits for 4 vblank periods (= 4 frames = ~67ms at 60fps). | [md](evidence/func_80036034.md) |
+| `0x80037110` | `func_80037110` | `special_cam_issue_command_80037110` | manual_review=callers pass small command codes {0, 1, 8, 9, 10, 11} from state-machine cases; arg0 is a command code, not a generic table index | [md](evidence/func_80037110.md) |
+| `0x80037348` | `func_80037348` | `tslTm2_load_animframe_advance_80037348` | tslTm2_command_with_retry+cdrom_BcdToFrames+FramesToBcd_loop | [md](evidence/func_80037348.md) |
+| `0x80037540` | `func_80037540` | `special_cam_init_with_two_lookups_80037540` | manual_review=Special-camera init wrapper: looks up two SpecialCam table entries via func_80036EA8(6, idx), packs 6 fields into a stack buffer along with caller args, then dispatches marionation_camera_Init_80037468(6, sp, v0 + 0x7FC). | [md](evidence/func_80037540.md) |
+| `0x80038658` | `func_80038658` | `file_io_state_advance_80038658` | manual_review=State-machine advance for the file-I/O subsystem state in D_800A31F4. Two active states (4 and 6) each: | [md](evidence/func_80038658.md) |
+| `0x80038734` | `func_80038734` | `game_state_advance_80038734` | manual_review=callers do `switch (v0 - 4)` on return; state-machine advance not input tick; body polls pad + advances state + returns state code | [md](evidence/func_80038734.md) |
+| `0x80038988` | `func_80038988` | `file_io_state_dispatch_80038988` | manual_review=State-machine dispatcher built on top of game_state_advance_80038734 (named). Maintains 5 per-state counters (D_800A331C..D_800A3338) each with a 5-shot threshold; calls func_8006BEC4(sel, -1) based on the state code. Has a 0x5A (= 90 ticks = 1.5 sec) timeout via D_800A3330. | [md](evidence/func_80038988.md) |
+| `0x80039320` | `func_80039320` | `timer_event_table_tick_80039320` | manual_review=two sequential 16-byte-stride table scans: loop 1 releases slots matching D_800A36F8 in D_80101BF0 (32 entries); loop 2 ticks counters in D_800F68E0 and expires past threshold | [md](evidence/func_80039320.md) |
+| `0x80039680` | `func_80039680` | `snapshot_char_state_for_record_80039680` | manual_review=Snapshots a character's state (position, motion id, flags, blink/idle state) into a 28-byte slot in a per-snapshot ring buffer at D_800A36EC + D_800A36F8 * 56. The 56-byte outer stride (2x28-byte) suggests 2 chars per snapshot frame, and the snapshot index D_800A36F8 is the ri... | [md](evidence/func_80039680.md) |
+| `0x80040400` | `func_80040400` | `anim_chain_insert_entry_80040400` | manual_review=Walks a chain of 0x68-byte entries linked via field +0x6A=-1 sentinel; appends a new entry at the end. The 0x68 stride matches the player_rob_relocate_80041430's pointer-chain at offset +0x112C, suggesting this is the SAME chain (animation entries inside the player record). In... | [md](evidence/func_80040400.md) |
 | `0x80041430` | `func_80041430` | `player_rob_relocate_80041430` | manual_review=advances g_player_ptrs[a0] by a1 bytes and patches embedded sub-pointers at +0x2C, +0x8B4, +0x10D4, +0x112C (0x68 stride chain), +0x1A34 (20 entries); analog of prim_buffer_relocate_slot_80044100 for player records | [md](evidence/func_80041430.md) |
+| `0x80041554` | `func_80041554` | `player_get_field_8_80041554` | manual_review=1-line getter: dereferences g_player_ptrs[a0] as s16* and returns halfword[4] (byte offset +8). Returns -1 if slot is empty (NULL ptr). | [md](evidence/func_80041554.md) |
+| `0x80041650` | `func_80041650` | `player_get_field_2_low5_80041650` | manual_review=1-line getter: returns halfword[1] (byte offset +2) masked to low 5 bits (0..31). | [md](evidence/func_80041650.md) |
+| `0x80043244` | `func_80043244` | `classify_magnitude_4bins_80043244` | manual_review=Classifies the input integer into one of 4 buckets {0, 1, 2, 3} by ordered threshold comparison. Thresholds 0x5A01, 0xB500, 0x16A09 are approximately sqrt(0x40000), sqrt(0x100000), sqrt(0x400000) -- these are the magnitudes at which a squared distance would cross 256K/1M/4M bo... | [md](evidence/func_80043244.md) |
+| `0x80044010` | `func_80044010` | `prim_buffer_open_slot_80044010` | manual_review=marks header *a0 |= 0x8000, stores ptr+count in D_80103608/D_80103658 slot a1; paired with func_80044100 | [md](evidence/func_80044010.md) |
+| `0x80044098` | `func_80044098` | `tpage_slot_release_80044098` | manual_review=inverse of prim_buffer_open_slot_80044010 (clears in-use bit, un-relocates payload by subtracting header ptr); 3rd function of the slot-pool lifecycle (open/relocate/release) | [md](evidence/func_80044098.md) |
+| `0x80044100` | `func_80044100` | `prim_buffer_relocate_slot_80044100` | manual_review=advances D_80103608[a0] by a1 bytes and patches each entry by +a1 (offset-list relocation); paired with func_80044010 | [md](evidence/func_80044100.md) |
+| `0x80044170` | `func_80044170` | `packed_entry_table_builder_80044170` | manual_review=Varargs function (PSX SDK uses the &args+4 pattern for varargs). Takes a base buffer + count + a list of (entry_index) integers; for each entry-index, looks up (cur_off, size) from the table at base, copies size bytes via func_800520B8 (a memcpy), and records the new offset in... | [md](evidence/func_80044170.md) |
+| `0x80044498` | `func_80044498` | `clear_array_8010367E_80044498` | manual_review=Clears 20 (= 0x13 + 1) s16 entries at addresses D_8010367E down through D_80103658. The walk-backwards iteration with *p-- = 0 is GCC 2.7.2's idiomatic short-form for memset-of-aligned-s16. | [md](evidence/func_80044498.md) |
 | `0x80044504` | `func_80044504` | `frame_context_init_scratchpad_80044504` | manual_review=writes 5 scratchpad words at 0x1F80000C..0x1F80001C as inputs for a per-frame compute kernel; calls camera_InitMatrix + game_SetPause(1); chains func_8004A4E0 (likely the hot loop) | [md](evidence/func_80044504.md) |
-| `0x80044670` | `func_80044670` | `seq_state_set_with_stage_offset_80044670` | manual_review=writes a 14-byte state record (D_800A9CF8..D_800A9D04) including stage_GetId result; returns a2 + per_stage_offset * 0x68 | [md](evidence/func_80044670.md) |
+| `0x80044670` | `func_80044670` | `seq_state_set_with_stage_offset_80044670` | manual_review=writes a 14-byte state record (D_800A9CF8..D_800A9D04) including stage_GetId result; returns a2 + per_stage_offset * 0x68 (104-byte stride matches func_80041430's pointer chain) | [md](evidence/func_80044670.md) |
+| `0x80045080` | `func_80045080` | `ndata_offset_minus_inf_len_80045080` | manual_review=Reads D_800963EE[a0] as an s16 (4-byte stride from the [NDATA.md](../formats/NDATA.md) in-RAM mirror -- this is the length-sectors view), shifts left 11 (= multiply by 2048 = sector size). Returns the current value of func_800457DC() minus that byte length. | [md](evidence/func_80045080.md) |
 | `0x80045878` | `func_80045878` | `audio_seq_load_or_get_80045878` | manual_review=load-if-absent / get-if-present for audio sequence records; chains saSeMain_80045600 + saTan5TakeGetPos_* + func_80045AA4 callback; manages paired slots a0 and a0+3 | [md](evidence/func_80045878.md) |
-| `0x80069898` | `func_80069898` | `draw_shadow_3tile_stack_80069898` | manual_review=emits 3 consecutive PSX tile primitives stacked vertically with progressively dimmer RGB and increasing alpha modes; canonical 3-tile soft-shadow pattern | [md](evidence/func_80069898.md) |
-| `0x80073060` | `func_80073060` | `hud_layout_emit_tiles_80073060` | manual_review=emits a fixed HUD layout via func_80072F30 / func_80072FCC: 17-tile horizontal row + 3 large widgets + 5-tile countdown meter | [md](evidence/func_80073060.md) |
-
-### Batch 4 (2026-05-17, 41 entries)
-
-First batch at 50-target scale. Includes two recognised function
-families: `trigger_event_*` (6 members, 3 event-pair codes × 2 flag
-states) and `multi_stage_init_*` (8 members, one per character slot).
-Concise per-function evidence files; see
-[evidence/](evidence/) for the full prose.
-
-| address | current | proposed | evidence_summary | evidence_file |
-|---|---|---|---|---|
-| `0x80019488` | `func_80019488` | `pack_status_nibble_triplet_80019488` | manual_review=packs low nibbles of D_80106A70..72 into a 12-bit u32 | [md](evidence/func_80019488.md) |
-| `0x80021280` | `func_80021280` | `char_motion_nibble_scan_80021280` | manual_review=per-char (1100-byte stride) scans 4 nibbles of field_48 for type-4/5 stage markers, stashes positions | [md](evidence/func_80021280.md) |
-| `0x80030524` | `func_80030524` | `clear_entries_marked_in_flag_table_80030524` | manual_review=iterates 12 entries at D_80106A7A (0x64 stride); clears those marked in parallel flag table | [md](evidence/func_80030524.md) |
-| `0x80030900` | `func_80030900` | `spawn_hit_particle_80030900` | manual_review=spawns particle via coli_hit_body_weapon; randomises vel/spin/rotation; pops front of per-char hit queue | [md](evidence/func_80030900.md) |
-| `0x80033498` | `func_80033498` | `get_stage_idx_80033498` | manual_review=pure switch on D_800A36A4 -- 2 mapping 6 specific stage values to indices 0..5 (else 0xFF) | [md](evidence/func_80033498.md) |
-| `0x80033898` | `func_80033898` | `gpu_enable_and_state_reset_80033898` | manual_review=calls gpu_EnableDisplay then sets D_800A37B8=0, D_800A3834=3; mode-transition / scene-init hook | [md](evidence/func_80033898.md) |
-| `0x80036034` | `func_80036034` | `vsync_4_with_helpers_80036034` | manual_review=runs 2 helpers + sys_VSync(4); 4-frame pause between work units | [md](evidence/func_80036034.md) |
-| `0x80037540` | `func_80037540` | `special_cam_init_with_two_lookups_80037540` | manual_review=looks up 2 SpecialCam entries; dispatches marionation_camera_Init_80037468 for a transition | [md](evidence/func_80037540.md) |
-| `0x80038658` | `func_80038658` | `file_io_state_advance_80038658` | manual_review=state-machine advance for file-I/O in D_800A31F4; writes result to g_motion_state_code | [md](evidence/func_80038658.md) |
-| `0x80044498` | `func_80044498` | `clear_array_8010367E_80044498` | manual_review=clears 20 s16 entries at D_8010367E down to D_80103658; resets the g_tpage_slot_count[] array | [md](evidence/func_80044498.md) |
-| `0x80045080` | `func_80045080` | `ndata_offset_minus_inf_len_80045080` | manual_review=reads D_800963EE[a0] as NDATA length-sectors, multiplies by 2048; computes buffer-remaining check | [md](evidence/func_80045080.md) |
-| `0x80049584` | `func_80049584` | `efc_rob_type_dispatch_80049584` | manual_review=compares per-frame state vs last-frame in D_800EF980; dispatches efc_rob_set_type_particle only if state changed | [md](evidence/func_80049584.md) |
-| `0x80049718` | `func_80049718` | `efc_anim_vehicle_setup_80049718` | manual_review=emits one or two 0x68-byte effect entries into OT chain; handles free-floating and vehicle-mounted modes | [md](evidence/func_80049718.md) |
-| `0x80053584` | `func_80053584` | `setup_struct_53584_callback_80053584` | manual_review=copies 2 input structs into D_800EFA00; installs func_80053E9C as callback; dispatches func_80052D00 | [md](evidence/func_80053584.md) |
-| `0x80060544` | `func_80060544` | `hud_emit_5part_layout_80060544` | manual_review=multi-part HUD layout emitter using static-geometry record pointers; emits 7 prim entries | [md](evidence/func_80060544.md) |
-| `0x80060768` | `func_80060768` | `hud_emit_warning_tiles_80060768` | manual_review=emits 4 red-tinted HUD tiles with D_800A32B4/D_800A32B6 frame-counter Y-position pulse | [md](evidence/func_80060768.md) |
-| `0x80061250` | `func_80061250` | `anim_emit_210009_with_setup_80061250` | manual_review=opcode-family emitter (0x210009 or 0x21000A); magenta tint 0xFF0060; vec3 from arg0 | [md](evidence/func_80061250.md) |
-| `0x80061454` | `func_80061454` | `anim_emit_29000B_80061454` | manual_review=opcode 0x29000B emitter with light-blue 0x8080FF tint; vec3 from arg0 | [md](evidence/func_80061454.md) |
-| `0x80061658` | `func_80061658` | `anim_emit_21000CD_80061658` | manual_review=switch on arg1 between opcodes 0x21000C / 0x21000D; cyan 0x10FFFF tint | [md](evidence/func_80061658.md) |
-| `0x80061710` | `func_80061710` | `anim_emit_21000EF_80061710` | manual_review=switch on arg1 between opcodes 0x21000E / 0x21000F; green 0x10FF10 tint | [md](evidence/func_80061710.md) |
-| `0x80067060` | `func_80067060` | `trigger_event_4_2_no_flag_80067060` | manual_review=family member: func_80067200(4, 2, 0); sets D_800F1128 = 1 | [md](evidence/func_80067060.md) |
-| `0x80067094` | `func_80067094` | `trigger_event_4_2_with_flag_80067094` | manual_review=family member: func_80067200(4, 2, 1); sets D_800F1128 = 2 | [md](evidence/func_80067094.md) |
-| `0x80067130` | `func_80067130` | `trigger_event_6_3_no_flag_80067130` | manual_review=family member: func_80067200(6, 3, 0); sets D_800F1130 = 1 | [md](evidence/func_80067130.md) |
-| `0x80067164` | `func_80067164` | `trigger_event_6_3_with_flag_80067164` | manual_review=family member: func_80067200(6, 3, 1); sets D_800F1130 = 2 | [md](evidence/func_80067164.md) |
-| `0x80067198` | `func_80067198` | `trigger_event_7_2_no_flag_80067198` | manual_review=family member: func_80067200(7, 2, 0); sets D_800F1134 = 1 | [md](evidence/func_80067198.md) |
-| `0x800671CC` | `func_800671CC` | `trigger_event_7_2_with_flag_800671CC` | manual_review=family member: func_80067200(7, 2, 1); sets D_800F1134 = 2 | [md](evidence/func_800671cc.md) |
-| `0x800676C8` | `func_800676C8` | `multi_stage_init_0_0_800676C8` | manual_review=family member: 3-helper init chain with mode (0, 0) | [md](evidence/func_800676c8.md) |
-| `0x80067704` | `func_80067704` | `multi_stage_init_1_1_80067704` | manual_review=family member: 3-helper init with mode (1, 1) | [md](evidence/func_80067704.md) |
-| `0x80067740` | `func_80067740` | `multi_stage_init_2_1_80067740` | manual_review=family member: 3-helper init with mode (2, 1) | [md](evidence/func_80067740.md) |
-| `0x8006777C` | `func_8006777C` | `multi_stage_init_3_0_8006777C` | manual_review=family member: 3-helper init with mode (3, 0) | [md](evidence/func_8006777c.md) |
-| `0x800677B8` | `func_800677B8` | `multi_stage_init_4_2_800677B8` | manual_review=family member: 3-helper init with mode (4, 2) | [md](evidence/func_800677b8.md) |
-| `0x800677F4` | `func_800677F4` | `multi_stage_init_5_3_800677F4` | manual_review=family member: 3-helper init with mode (5, 3) | [md](evidence/func_800677f4.md) |
-| `0x80067830` | `func_80067830` | `multi_stage_init_6_3_80067830` | manual_review=family member: 3-helper init with mode (6, 3) | [md](evidence/func_80067830.md) |
-| `0x8006786C` | `func_8006786C` | `multi_stage_init_7_2_8006786C` | manual_review=family member: 3-helper init with mode (7, 2); completes 8-member family | [md](evidence/func_8006786c.md) |
-| `0x80069120` | `func_80069120` | `sync_flag_check_advance_80069120` | manual_review=returns 44-byte record table entry; side-effect sync via func_8006E8CC on dirty-bit change | [md](evidence/func_80069120.md) |
-| `0x80069250` | `func_80069250` | `pad_check_dispatch_80069250` | manual_review=per-frame pad handler; on PAD_CIRCLE+TRIANGLE plays SFX volume 127 and returns 1 | [md](evidence/func_80069250.md) |
-| `0x80077724` | `func_80077724` | `setup_double_buffer_swap_80077724` | manual_review=per-frame double-buffer swap; toggles buffer ptr, advances frame counters, dispatches draw via func_80077374 | [md](evidence/func_80077724.md) |
-| `0x80078654` | `func_80078654` | `draw_progress_crossfade_80078654` | manual_review=per-frame progress/loading-bar emitter with 15-tick fade-out past threshold D_800A3608 >= 0xB04 | [md](evidence/func_80078654.md) |
-| `0x80078824` | `func_80078824` | `disp_init_video_overlay_80078824` | manual_review=video/overlay subsystem init; matches disp-init family tail (disp_SetFramebufferMode(1,0,0,0); return 1) | [md](evidence/func_80078824.md) |
-| `0x80085270` | `func_80085270` | `spu_channel_reset_80085270` | manual_review=per-channel SPU reset; uses spu_NotifyChannel/spu_ResetCounter; 0xB0-byte per-channel record stride | [md](evidence/func_80085270.md) |
-| `0x80085448` | `func_80085448` | `settings_set_volume_pair_80085448` | manual_review=2-channel SPU volume setter; clamps to 0x7F and applies 129*2 = 258 PSX volume scale | [md](evidence/func_80085448.md) |
-
-### Batch 5 (2026-05-17, family-parent deepen pass)
-
-Names the parent dispatchers that the batch-4 function families
-(`trigger_event_*`, `multi_stage_init_*`) flow through. Naming
-these 4 lifts the 14 child names from address-suffix placeholders
-toward clean semantic names.
-
-| address | current | proposed | evidence_summary | evidence_file |
-|---|---|---|---|---|
-| `0x80067200` | `func_80067200` | `efc_gte_setup_and_draw_80067200` | manual_review=GTE-using effect dispatcher; loads rotation matrix from D_800A3474 via ctc2 (cop2 regs 0..4); branches on size class to set texture-coord limits 0x40/0x20 vs 0x60/0x30 (texture page sizes); called by the 6-member trigger_event_* family | [md](evidence/func_80067200.md) |
-| `0x800678A8` | `func_800678A8` | `efc_init_phase1_setup_buffer_800678A8` | manual_review=phase 1 of 3-helper effect-init triple; sets primitive type code 0x2E, default texture sizes 0x40/0x20, per-mode init values in the effect buffer at D_800A34EC | [md](evidence/func_800678a8.md) |
-| `0x80067D14` | `func_80067D14` | `efc_init_phase2_randomize_80067D14` | manual_review=phase 2 of effect-init triple (1108 asm lines, largest); calls bb2_rand early; walks effect buffer at 8 offsets writing randomised values; heavy GTE usage for per-particle transforms | [md](evidence/func_80067d14.md) |
-| `0x80068D88` | `func_80068D88` | `efc_init_phase3_finalize_80068D88` | manual_review=phase 3 of effect-init triple (87 asm lines, smallest); computes derived summary value via reciprocal-multiply / divide-by-8 sequence; updates buffer +0x80 / +0x7C fields | [md](evidence/func_80068d88.md) |
-
-### Batch 5 (2026-05-17, 30 medium entries)
-
-Going deeper into the queue (0-caller leaf utilities + small wrappers).
-Includes the motion-ex-init triple, player-slot getters, scratchpad
-helpers, scene/state functions, audio chain triggers, HUD emitters,
-varargs entry-table builder.
-
-| address | current | proposed | evidence_summary | evidence_file |
-|---|---|---|---|---|
-| `0x80017848` | `func_80017848` | `link_add_with_dist_check_80017848` | manual_review=adds bidirectional link between 2 slots in a context graph (checks duplicates, computes math_Distance3D, stores 16-byte link record) | [md](evidence/func_80017848.md) |
-| `0x80021904` | `func_80021904` | `char_get_motion_keyframe_table_entry_prev_80021904` | manual_review=direct sibling of func_80021974 (named char_get_motion_keyframe_*); reads D_80101F4E (PREVIOUS keyframe) instead of D_80101F4C (current) | [md](evidence/func_80021904.md) |
-| `0x80022224` | `func_80022224` | `stage_find_far_corners_with_rand_80022224` | manual_review=picks one of the 2 furthest stage corners via bb2_rand & 1; companion to stage_find_nearest_corner_80022408 (batch 4) | [md](evidence/func_80022224.md) |
-| `0x80023648` | `func_80023648` | `char_physics_step_horizontal_velocity_80023648` | manual_review=per-frame horizontal-velocity update using sin/cos from named Judge LUT; updates position +0xD8/+0xE0 | [md](evidence/func_80023648.md) |
-| `0x80030208` | `func_80030208` | `hit_queue_process_pending_80030208` | manual_review=per-frame processor of 12 entries at D_80106A78 (0x64 stride); dispatches via func_80049718 (= efc_anim_vehicle_setup) + saSeInit_2 | [md](evidence/func_80030208.md) |
-| `0x80032064` | `func_80032064` | `particle_spawn_entry_80032064` | manual_review=spawns particle into 4-slot pool at D_80104E88 (0x2C stride); uses named Judge sin LUT; dispatches via func_80032854 (motion_dispatch_event_handler) | [md](evidence/func_80032064.md) |
-| `0x80038988` | `func_80038988` | `file_io_state_dispatch_80038988` | manual_review=state-machine on game_state_advance_80038734's return; maintains 5 per-state counters with 5-shot thresholds; 1.5-sec timeout | [md](evidence/func_80038988.md) |
-| `0x80039680` | `func_80039680` | `snapshot_char_state_for_record_80039680` | manual_review=snapshots char state (position, rotation, motion id, flags) into 28-byte slot in ring buffer indexed by D_800A36F8; 2 chars per frame | [md](evidence/func_80039680.md) |
-| `0x80040400` | `func_80040400` | `anim_chain_insert_entry_80040400` | manual_review=appends entry to per-player 0x68-byte animation chain (matches player_rob_relocate's +0x112C chain stride) | [md](evidence/func_80040400.md) |
-| `0x80041554` | `func_80041554` | `player_get_field_8_80041554` | manual_review=1-line getter for halfword[4] (byte +8) of g_player_ptrs[a0]; returns -1 if slot empty | [md](evidence/func_80041554.md) |
-| `0x80041650` | `func_80041650` | `player_get_field_2_low5_80041650` | manual_review=1-line getter for halfword[1] & 0x1F (low 5 bits at +2) of player struct | [md](evidence/func_80041650.md) |
-| `0x80043244` | `func_80043244` | `classify_magnitude_4bins_80043244` | manual_review=4-bin distance-magnitude classifier with threshold structure consistent with LOD tier selection | [md](evidence/func_80043244.md) |
-| `0x80043278` | `func_80043278` | `scratchpad_fixed_point_op_80043278` | manual_review=scratchpad-accessing bit op using shift amount from 0x1F800008; extracts 12-bit result | [md](evidence/func_80043278.md) |
-| `0x80044170` | `func_80044170` | `packed_entry_table_builder_80044170` | manual_review=varargs builder for packed entry-table; copies subset of entries selected by index list, rebuilds offsets | [md](evidence/func_80044170.md) |
-| `0x80046048` | `func_80046048` | `audio_chain_fade_load_80046048` | manual_review=chains tpage_slot_relocate(6, a1) + walks slot 6 payload + saFidLoad for each entry | [md](evidence/func_80046048.md) |
-| `0x80048530` | `func_80048530` | `variable_lookup_table_dispatch_80048530` | manual_review=2-level table indexer + dispatch (arg1 picks sub-table, arg2 picks 12-byte entry); calls func_800485EC with 6 fields | [md](evidence/func_80048530.md) |
-| `0x80053304` | `func_80053304` | `setup_struct_53584_ricochet_variant_80053304` | manual_review=variant of setup_struct_53584_callback; for close-range targets (squared dist <= 0x9C3F) computes reflected target and uses func_80053754 callback | [md](evidence/func_80053304.md) |
-| `0x80053694` | `func_80053694` | `read_struct_53694_position_80053694` | manual_review=reads position + rotation from the struct at D_800A33F4 (managed by setup_struct_53584_callback batch 4); returns 0 if sentinel 0x7FFFFFFF | [md](evidence/func_80053694.md) |
-| `0x80055948` | `func_80055948` | `flag_command_stream_interpreter_80055948` | manual_review=walks compressed bytecode stream that sets/clears bits in 32-bit flag word at +0x3C8 of arg0; uses inter-command delay bytes | [md](evidence/func_80055948.md) |
-| `0x80057094` | `func_80057094` | `ai_compute_target_direction_80057094` | manual_review=AI helper using named single_game_getEnemyCharId to compute 8-direction command code from current+target position | [md](evidence/func_80057094.md) |
-| `0x80062020` | `func_80062020` | `copy_terminated_triples_80062020` | manual_review=linked-list copier for 12-byte (3 s32) records terminated by low-bit-clear flag; output to D_800F1198 | [md](evidence/func_80062020.md) |
-| `0x80065000` | `func_80065000` | `motion_ex_init_state_80065000` | manual_review=init/reset for motion-ex-play family state; copies 3 fields from D_800A347C; clears counter; stores stage selector from packed bits | [md](evidence/func_80065000.md) |
-| `0x80065134` | `func_80065134` | `motion_ex_init_state_b_80065134` | manual_review=2nd init for motion-ex-play (mirrors 80065000 but different slot D_800F0D24..0xD2C; clears id 0xB counter) | [md](evidence/func_80065134.md) |
-| `0x80065264` | `func_80065264` | `motion_ex_init_state_c_80065264` | manual_review=3rd init for motion-ex-play (different slot D_800F0D60..0xD68; clears id 0x10 counter) | [md](evidence/func_80065264.md) |
-| `0x80065484` | `func_80065484` | `motion_ex_play_id5_dynamic_80065484` | manual_review=variable-rate variant of motion-ex-play family; per-stage step multiplier 1x/2x/3x for motion id 5 | [md](evidence/func_80065484.md) |
-| `0x80065680` | `func_80065680` | `motion_ex_play_idCE_80065680` | manual_review=combined wrapper: plays motion id 0xC AND 0xE in sequence with separate counters and 11-play cap | [md](evidence/func_80065680.md) |
-| `0x80074220` | `func_80074220` | `hud_emit_4tile_layout_80074220` | manual_review=fixed multi-layer HUD layout: 1 tile + 3 polygon prims (loop) + textured page + 3 PolyF4 quads to OT slots 0x78/7C/80 | [md](evidence/func_80074220.md) |
-| `0x80075670` | `func_80075670` | `pad_handle_swap_80075670` | manual_review=per-player pad-input handler with right-button swap + left-button conditional swap + per-button SFX feedback | [md](evidence/func_80075670.md) |
-| `0x80077860` | `func_80077860` | `pad_check_dispatch_wrapper_80077860` | manual_review=wrapper around named pad_check_dispatch_80069250; clears D_800A35E4 on input-consumed | [md](evidence/func_80077860.md) |
-| `0x80077894` | `func_80077894` | `get_disp_config_lookup_index_80077894` | manual_review=pad-input-driven setter for low 4 bits of D_8009BD38 (the disp-config selector); companion to disp_lookup_config_pair_80077904 | [md](evidence/func_80077894.md) |
-| `0x80077904` | `func_80077904` | `disp_lookup_config_pair_80077904` | manual_review=indexes paired-byte tables D_8009BD58/D_8009BD59 by (D_8009BD38 & 0xF) * 2; stores one byte in D_800A35E0, returns the other | [md](evidence/func_80077904.md) |
-
-Note: `func_80021974` (batch 1) and `func_80054434` (batch 2) are
-genuinely low-confidence (`rank=low` in CSV) and are not listed
-above. There is no `proposals_low_confidence.md` file yet; reviewers
-can find the low-confidence entries directly in `proposals.csv`
-filtered by `confidence=low`. `func_80040510` was promoted from
-batch 1 to the high-confidence table; batch 2 added two more high
-entries (`game_event_shutdown_*` and `game_event_wait_any_*`).
+| `0x80046048` | `func_80046048` | `audio_chain_fade_load_80046048` | manual_review=Chains: (1) relocate TPAGE slot 6 by a1 bytes (via the named func_80044100 = prim_buffer_relocate_slot), (2) fetch slot 6's payload, (3) skip past a leading offset header, (4) iterate the entries and call saFidLoad(a1, entry) for each. | [md](evidence/func_80046048.md) |
+| `0x80047210` | `func_80047210` | `camera_bone_load_default_80047210` | memcpy(g_cam_bone_data,D_80101E08,0x20)+halve_3_halfwords | [md](evidence/func_80047210.md) |
+| `0x80047384` | `func_80047384` | `camera_replay_compute_rot_80047384` | replay_camera_rob_back_loose3+single_game_getEnemyCharId+Judge_table | [md](evidence/func_80047384.md) |
+| `0x80048530` | `func_80048530` | `variable_lookup_table_dispatch_80048530` | manual_review=Two-level table indexer: arg0 is a base pointer, arg1 selects a sub-table (its offset is at base[arg1]), arg2 selects an entry within that sub-table (12-byte stride). Reads 4 fields from the entry (a, b unsigned, c, d signed) and dispatches to func_800485EC(addr+offset, arg3, ... | [md](evidence/func_80048530.md) |
+| `0x80049584` | `func_80049584` | `efc_rob_type_dispatch_80049584` | manual_review=Effect-state dispatcher: compares per-frame state in D_800EF980 (0x3A entries) to last-frame state in D_80099C50, detects sign-bit changes, then computes a new effect mode and dispatches efc_rob_set_type_particle (already-named) only if state changed. | [md](evidence/func_80049584.md) |
+| `0x80049718` | `func_80049718` | `efc_anim_vehicle_setup_80049718` | manual_review=Per-effect setup: indexes D_800EF980[arg0] (the animation-state array from func_80049584) and emits one or two 0x68-byte effect entries into the D_800A38B4 cursor / D_800A3820 OT chain. | [md](evidence/func_80049718.md) |
+| `0x80053304` | `func_80053304` | `setup_struct_53584_ricochet_variant_80053304` | manual_review=Variant of setup_struct_53584_callback_80053584 (batch 4): same base setup (copy arg0, arg1 into the D_800EF9F8 struct), but adds a distance threshold check: if the squared distance between arg0 and arg1 is <= 0x9C3F (= ~157^2), it computes a 'reflected' target position (mirro... | [md](evidence/func_80053304.md) |
+| `0x80053584` | `func_80053584` | `setup_struct_53584_callback_80053584` | manual_review=Stores a base address in D_800A33F4, copies the _S16_53584 struct at offset 0 (from arg0) and offset 0x18 (from arg1), installs a callback function pointer (func_80053E9C) at offset 0x5C, then dispatches func_80052D00(arg2, arg3). | [md](evidence/func_80053584.md) |
+| `0x80053694` | `func_80053694` | `read_struct_53694_position_80053694` | manual_review=Reads from the same struct at D_800A33F4 that setup_struct_53584_callback_80053584 sets up (batch 4). Reads position fields (+0x38..0x40) with offset adjustments based on +0x48/+0x4A slot indices, plus rotation (+0x28..0x30 right-shifted 2). Sentinel 0x7FFFFFFF at offset 0 mea... | [md](evidence/func_80053694.md) |
+| `0x80054884` | `func_80054884` | `info_draw_at_yslot_80054884` | manual_review=8-arg wrapper around func_80054604; resolves Y coord as InfoPosYTbl1[a0] + a1 - 0x131 then forwards remaining 7 args to draw helper | [md](evidence/func_80054884.md) |
+| `0x80055948` | `func_80055948` | `flag_command_stream_interpreter_80055948` | manual_review=Bytecode interpreter for a flag-mutation command stream: each byte is either a counter byte (top bit set; the low 7 bits are an inter-command delay) or a flag-op (bit 0x10 = set or clear, low 4 bits = which bit in the 32-bit flag word). Sentinel byte resets the cursor. Modifie... | [md](evidence/func_80055948.md) |
+| `0x80057094` | `func_80057094` | `ai_compute_target_direction_80057094` | manual_review=Uses the named single_game_getEnemyCharId (which is actually an angle-from-vector function despite the misnamed name -- per its own evidence file) to compute the angular delta from arg0's current facing to a target position (arg1, arg2). Quantises to 8 directions; looks up com... | [md](evidence/func_80057094.md) |
+| `0x80060544` | `func_80060544` | `hud_emit_5part_layout_80060544` | manual_review=Multi-part HUD layout emitter using staticgeom records from &D_8009B7D0/D8/E0/F0/800/820/840 plus dynamic geometry from &D_8009B770 (4 records) and &D_8009B3B0 (2 records). | [md](evidence/func_80060544.md) |
+| `0x80060768` | `func_80060768` | `hud_emit_warning_tiles_80060768` | manual_review=Emits 4 HUD tiles at fixed coordinates with red foreground (0xFF, 0, 0) and decreasing Y based on D_800A32B4 counter. Uses the same D_800A32B4 / 0x1E stride as 'damage flash' HUD elements. | [md](evidence/func_80060768.md) |
+| `0x80061250` | `func_80061250` | `anim_emit_210009_with_setup_80061250` | manual_review=Variant of the opcode-emitter family (compare func_80061454/func_80061658/func_80061710): emits 0x210009 or 0x21000A depending on the state of two consecutive flag bytes at D_800F1159/+1. | [md](evidence/func_80061250.md) |
+| `0x80061454` | `func_80061454` | `anim_emit_29000B_80061454` | manual_review=Animation-command emitter for opcode 0x29000B. Writes the opcode into D_800F116C, stashes the input vec3 a0[0..2] into 3 globals at D_800F1140/44/48, sets a color tint at D_800A3464 = 0x8080FF (light-blue), and dispatches func_80060A68(). | [md](evidence/func_80061454.md) |
+| `0x80061658` | `func_80061658` | `anim_emit_21000CD_80061658` | manual_review=Switch on arg1 between opcodes 0x21000C (case 0) and 0x21000D (case 1) -- same opcode family as func_80061250 (0x210009/A). Color tint 0x10FFFF (cyan). | [md](evidence/func_80061658.md) |
+| `0x80061710` | `func_80061710` | `anim_emit_21000EF_80061710` | manual_review=Direct sibling of func_80061658: same shape, opcodes 0x21000E/0x21000F instead, color 0x10FF10 (green). | [md](evidence/func_80061710.md) |
+| `0x80062020` | `func_80062020` | `copy_terminated_triples_80062020` | manual_review=Copies a list of 12-byte (3 s32) records from arg0 into the destination buffer at D_800F1198+. Terminates when the source's first field's low bit is no longer set. Pads the dest with a zero-terminator triple. | [md](evidence/func_80062020.md) |
+| `0x80065000` | `func_80065000` | `motion_ex_init_state_80065000` | manual_review=Initialises the state for the motion-ex-play family: copies 3 fields from D_800A347C to per-id storage at D_800F0CDC..0xCE4, sets enabled flag D_800F10FC=1, clears counter D_800F0BB2 (for id 5), stores stage selector D_800A3440 from a packed field in D_800A3468. | [md](evidence/func_80065000.md) |
+| `0x80065134` | `func_80065134` | `motion_ex_init_state_b_80065134` | manual_review=Sibling init function -- mirrors func_80065000 but stores into D_800F0D24..0xD2C and clears the id-0xB counter D_800F0BBE. | [md](evidence/func_80065134.md) |
+| `0x80065264` | `func_80065264` | `motion_ex_init_state_c_80065264` | manual_review=Third sibling init function -- mirrors the above two but stores into D_800F0D60..0xD68 and clears the id-0x10 counter D_800F0BC8. | [md](evidence/func_80065264.md) |
+| `0x80065484` | `func_80065484` | `motion_ex_play_id5_dynamic_80065484` | manual_review=Variant of the family: motion id 5, but the counter step varies based on a stage/mode selector at *D_800A3484 (= 0x1FF, 0x3FE, or 0x5FD = 1x/2x/3x step). Threshold 0x2001 gives a ~10-play cap at 1x speed, ~5 at 2x, ~3 at 3x. | [md](evidence/func_80065484.md) |
+| `0x80065680` | `func_80065680` | `motion_ex_play_idCE_80065680` | manual_review=Combined wrapper: plays BOTH motion id 0xC and 0xE in sequence, with separate counters. The 'paired' nature suggests these two motions are always played together (probably a left-right or fade-in/fade-out pair). Step is 1 and threshold 11 -- a flat 11-play cap. | [md](evidence/func_80065680.md) |
+| `0x80067060` | `func_80067060` | `trigger_event_4_2_no_flag_80067060` | manual_review=Family member: calls func_80067200(4, 2, 0) (the dispatcher -- currently asmfix-bridged, see [func_80067200](../naming/proposals.csv)), sets D_800F1128 = 1, returns the dispatcher result. The 6-member family func_80067060/094/130/164/198/1CC follows the pattern func_80067200(a... | [md](evidence/func_80067060.md) |
+| `0x80067094` | `func_80067094` | `trigger_event_4_2_with_flag_80067094` | manual_review=Family member: paired with func_80067060 -- same dispatch (4, 2) but flag=1, sets state to 2 instead of 1. | [md](evidence/func_80067094.md) |
+| `0x80067130` | `func_80067130` | `trigger_event_6_3_no_flag_80067130` | manual_review=Family member: event-pair (6, 3), flag=0, sets D_800F1130 = 1. | [md](evidence/func_80067130.md) |
+| `0x80067164` | `func_80067164` | `trigger_event_6_3_with_flag_80067164` | manual_review=Family member: event-pair (6, 3), flag=1, sets D_800F1130 = 2. | [md](evidence/func_80067164.md) |
+| `0x80067198` | `func_80067198` | `trigger_event_7_2_no_flag_80067198` | manual_review=Family member: event-pair (7, 2), flag=0, sets D_800F1134 = 1. | [md](evidence/func_80067198.md) |
+| `0x800671CC` | `func_800671CC` | `trigger_event_7_2_with_flag_800671CC` | manual_review=Family member: event-pair (7, 2), flag=1, sets D_800F1134 = 2. | [md](evidence/func_800671cc.md) |
+| `0x80067200` | `func_80067200` | `efc_gte_setup_and_draw_80067200` | manual_review=The asm body opens with GTE matrix setup -- a series of lw + ctc2 instructions reading from D_800A3474 (the cached matrix data) and writing into GTE cop2 control registers 0..4. These five register slots hold the rotation matrix (ROT11..ROT33 in PSX SDK naming). | [md](evidence/func_80067200.md) |
+| `0x800676C8` | `func_800676C8` | `multi_stage_init_0_0_800676C8` | manual_review=Family member: calls 3 helpers in sequence (func_800678A8, func_80067D14, func_80068D88) each with (0, 0). The 8-member family covers args (0,0) through (7, ...). | [md](evidence/func_800676c8.md) |
+| `0x80067704` | `func_80067704` | `multi_stage_init_1_1_80067704` | manual_review=Family member: 3-helper init with mode (1, 1). | [md](evidence/func_80067704.md) |
+| `0x80067740` | `func_80067740` | `multi_stage_init_2_1_80067740` | manual_review=Family member: 3-helper init with mode (2, 1). | [md](evidence/func_80067740.md) |
+| `0x8006777C` | `func_8006777C` | `multi_stage_init_3_0_8006777C` | manual_review=Family member: 3-helper init with mode (3, 0). | [md](evidence/func_8006777c.md) |
+| `0x800677B8` | `func_800677B8` | `multi_stage_init_4_2_800677B8` | manual_review=Family member: 3-helper init with mode (4, 2). | [md](evidence/func_800677b8.md) |
+| `0x800677F4` | `func_800677F4` | `multi_stage_init_5_3_800677F4` | manual_review=Family member: 3-helper init with mode (5, 3). | [md](evidence/func_800677f4.md) |
+| `0x80067830` | `func_80067830` | `multi_stage_init_6_3_80067830` | manual_review=Family member: 3-helper init with mode (6, 3). | [md](evidence/func_80067830.md) |
+| `0x8006786C` | `func_8006786C` | `multi_stage_init_7_2_8006786C` | manual_review=Family member: 3-helper init with mode (7, 2). Completes the 8-member family. | [md](evidence/func_8006786c.md) |
+| `0x800678A8` | `func_800678A8` | `efc_init_phase1_setup_buffer_800678A8` | manual_review=Phase 1 of a 3-helper effect-init triple (the other two are func_80067D14 and func_80068D88). All three are called sequentially by the 8 multi_stage_init_* wrappers (batch 4) with the same (mode_a, mode_b) pair. | [md](evidence/func_800678a8.md) |
+| `0x80067D14` | `func_80067D14` | `efc_init_phase2_randomize_80067D14` | manual_review=Phase 2 of the effect-init triple. Calls bb2_rand (func_80079154) early to obtain a per-init random seed, then walks the effect buffer at ~8 different offsets writing randomised values. | [md](evidence/func_80067d14.md) |
+| `0x80068D88` | `func_80068D88` | `efc_init_phase3_finalize_80068D88` | manual_review=Phase 3 of the effect-init triple. Computes a derived value from the difference between two fields in the effect buffer (+0x80 and D_800A37D4), then either updates +0x80 / +0x7C (committing the new value) or branches to a no-op path. | [md](evidence/func_80068d88.md) |
+| `0x80069120` | `func_80069120` | `sync_flag_check_advance_80069120` | manual_review=Compares a flag stored at D_800A34FC[+0x30] with the low bit of D_800A3524[+8]. If they differ, calls a sync helper (func_8006E8CC). Then writes the current flag and returns a pointer into D_800A351C + a0 * 44. | [md](evidence/func_80069120.md) |
+| `0x80069250` | `func_80069250` | `pad_check_dispatch_80069250` | manual_review=Pad-input check: tests arg1 & 0x400040 (PAD_CIRCLE + PAD_TRIANGLE / select+start combo). If pressed, plays a sound (func_8005C650(1, 0x7F, 0x7F) -- volume 127 left+right) and returns 1. | [md](evidence/func_80069250.md) |
+| `0x80069898` | `func_80069898` | `draw_shadow_3tile_stack_80069898` | manual_review=emits 3 consecutive PSX tile primitives stacked vertically (y, y-1, y-2) with progressively dimmer RGB (0x80/0x80/0x40) and increasing alpha modes; canonical 3-tile soft-shadow/glow pattern via initTile + gpu_SetSemiTransp + ot_Link | [md](evidence/func_80069898.md) |
+| `0x80073060` | `func_80073060` | `hud_layout_emit_tiles_80073060` | manual_review=emits a fixed HUD layout via func_80072F30 / func_80072FCC: 17-tile horizontal row + 3 large widgets + 5-tile countdown meter; uses D_800A3580 as prim-buffer base | [md](evidence/func_80073060.md) |
+| `0x80074220` | `func_80074220` | `hud_emit_4tile_layout_80074220` | manual_review=Emits a fixed multi-layer HUD layout: optional 1 init tile + 3 polygon prims (loop using func_8007352C) + 1 textured-page anchor + 3 PolyF4 quads. All ot_Linked to consecutive OT slots (0x78, 0x7C, 0x80). The fixed coordinate values (0x3F, 0x30, 0x202, 0xB0) and quad sizes (0x... | [md](evidence/func_80074220.md) |
+| `0x80075670` | `func_80075670` | `pad_handle_swap_80075670` | manual_review=Pad-input handler for player arg1 checking arg0 for specific button bits. Per-player counter at +0x68 of D_800A36A0 increments per press; right-button triggers a swap of both players' state + plays SFX 1; left-button triggers a conditional swap based on +0x14/+0x16 state. | [md](evidence/func_80075670.md) |
+| `0x80077724` | `func_80077724` | `setup_double_buffer_swap_80077724` | manual_review=Per-frame double-buffer swap setup: toggles a buffer pointer between &D_800F7438 and &D_800F7438 + 0x4090 based on a low-bit, increments two counters (a u32 frame counter at +0x30 and a u16 sub-counter at +0x34), gets the swapped buffer via func_80077098(temp_v1 & 1), copies 9... | [md](evidence/func_80077724.md) |
+| `0x80077820` | `func_80077820` | `disp_load_config_from_buf_80077820` | manual_review=both callers pass fixed buffer addr 0x80118800; disp_SetFramebufferMode call is unconditional (not mode-parametrised); func_80068F70(src, &D_8009BD24) is the actual copy | [md](evidence/func_80077820.md) |
+| `0x80077860` | `func_80077860` | `pad_check_dispatch_wrapper_80077860` | manual_review=Calls the named pad_check_dispatch_80069250 (batch 4); if it consumed the input (returned 1), this wrapper also clears D_800A35E4 and returns 1. Otherwise returns 0. | [md](evidence/func_80077860.md) |
+| `0x80077894` | `func_80077894` | `get_disp_config_lookup_index_80077894` | manual_review=Calls func_800693CC() to get a config index (< 0 = error). On success, patches the low 4 bits of D_8009BD38 (the same global indexed by disp_lookup_config_pair_80077904) and clears D_800A35E4. Returns 1 on success, -1 on -2 error, 0 on other errors. | [md](evidence/func_80077894.md) |
+| `0x80077904` | `func_80077904` | `disp_lookup_config_pair_80077904` | manual_review=Indexes two parallel byte tables D_8009BD58 and D_8009BD59 by (D_8009BD38 & 0xF) * 2 (so each entry is 2 bytes apart -- standard interleaved layout for paired bytes). Stores one byte into D_800A35E0; returns the other. Also clears D_800A35E4. | [md](evidence/func_80077904.md) |
+| `0x80077940` | `func_80077940` | `disp_pack_gpu_command_word_80077940` | manual_review=packs 4 disjoint bit-fields (10+10+1+1 bits) from sparse 26-bit arg0 into compact 22-bit D_800A35E8; matches PSX GPU coord-pack command shape | [md](evidence/func_80077940.md) |
+| `0x80077984` | `func_80077984` | `disp_apply_config_with_state_80077984` | manual_review=sibling of disp_load_config_from_buf_80077820 (same disp_SetFramebufferMode tail), uses func_8006E534(a0, D_800A35E0, g_disp_config, D_800A35E8) to apply already-loaded config + per-frame state | [md](evidence/func_80077984.md) |
+| `0x80078654` | `func_80078654` | `draw_progress_crossfade_80078654` | manual_review=Per-frame progress-bar / loading-bar emitter that fades out near the end (D_800A3608 >= 0xB04, where the fade ramps 128->0 over 15 ticks via 0x80 - ((counter - 0xB04) << 7) / 15). | [md](evidence/func_80078654.md) |
+| `0x80078824` | `func_80078824` | `disp_init_video_overlay_80078824` | manual_review=Initialises a video / overlay subsystem: stashes arg0 + (arg0+0x58) into globals D_800A360C / D_800A3610, calls a setup helper (func_8006E950(0x5F, s0)), zeros 3 progress counters, then ends with the canonical disp_SetFramebufferMode(1,0,0,0); return 1; tail. | [md](evidence/func_80078824.md) |
+| `0x80080258` | `func_80080258` | `tslTm2_command_with_retry_80080258` | manual_review=3-retry wrapper around tslTm2LoadImage (general op dispatcher, not TIM-only -- modes {2, 9, 0xE} seen at call sites; mode 9 passes arg1=0); g_cd_callback_a save/restore | [md](evidence/func_80080258.md) |
+| `0x80080390` | `func_80080390` | `tslTm2_command_with_retry_no_arg3_80080390` | manual_review=2-arg twin of tslTm2_command_with_retry_80080258; hardcodes a2=0 and uses different terminal tslTm2LoadImage mode (last-arg=1 vs 0) | [md](evidence/func_80080390.md) |
+| `0x80083954` | `func_80083954` | `kernel_alarm_cancel_80083954` | critsec+irq_SetAlarm(0)+irq_EnableInterrupts+sentinel_0x7F | [md](evidence/func_80083954.md) |
+| `0x80085064` | `func_80085064` | `seq_channel_byte_advance_80085064` | D_80106F28+7bit_varint+writes_ch[0x88] | [md](evidence/func_80085064.md) |
+| `0x80085114` | `func_80085114` | `seq_channel_state_init_80085114` | D_80106F28[bank][ch*0x58]+5_bit_clears+state_reset | [md](evidence/func_80085114.md) |
+| `0x80085210` | `func_80085210` | `seq_channel_state_clear_loop_80085210` | D_80106F28[bank][ch*0x58]+set_loop_flag+clear_bit3 | [md](evidence/func_80085210.md) |
+| `0x80085270` | `func_80085270` | `spu_channel_reset_80085270` | manual_review=Per-channel SPU reset: indexes D_80106F28 by a0 (group?) and reads a pointer into a 0xB0-byte per-channel record at offset a1 * 0xB0. Clears channel flags, calls two named SPU helpers (spu_NotifyChannel and spu_ResetCounter), zero-fills the byte-state area at offsets 0x14..0x2... | [md](evidence/func_80085270.md) |
+| `0x80085448` | `func_80085448` | `settings_set_volume_pair_80085448` | manual_review=Branches on a0 == 0 or a0 == 1 (two channels), clamps the two values a1, a2 to 0x7F max (PSX volume convention), multiplies by 129 * 2 = 258 (the standard PSX SPU volume scale), packs into a buffer at slot-specific offsets (0x10/0x12 for channel 0, 0x1C/0x1E for channel 1), an... | [md](evidence/func_80085448.md) |
+| `0x80089024` | `func_80089024` | `saTan0_draw_three_pass_80089024` | saTan0GaugeDraw(2,..);saTan0GaugeDraw(0);saTan0GaugeDraw(3,a0,a1) | [md](evidence/func_80089024.md) |
 
 ## Primary evidence: `sole_caller_path` (74)
-
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
 | `0x80016A8C` | `func_80016A8C` | `cpu_set_move_command_and_dir_for_no_action_2_helper_80016A8C` | sole_caller_path=cpu_set_move_command_and_dir_for_no_action_2_helper_80016A8C | [md](evidence/func_80016A8C.md) |
@@ -247,7 +193,6 @@ entries (`game_event_shutdown_*` and `game_event_wait_any_*`).
 | `0x8008BDE8` | `func_8008BDE8` | `action_CheckHitZangeki_helper_8008BDE8` | sole_caller_path=action_CheckHitZangeki_helper_8008BDE8 | [md](evidence/func_8008BDE8.md) |
 
 ## Primary evidence: `kengo_pattern` (16)
-
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
 | `0x80037250` | `func_80037250` | `replay_camera_check_stage_80037250` | kengo_pattern=replay_camera_check_stage_80037250 | [md](evidence/func_80037250.md) |
@@ -268,7 +213,6 @@ entries (`game_event_shutdown_*` and `game_event_wait_any_*`).
 | `0x8005508C` | `func_8005508C` | `replay_camera_check_stage_8005508C` | kengo_pattern=replay_camera_check_stage_8005508C | [md](evidence/func_8005508C.md) |
 
 ## Primary evidence: `call_graph_cluster` (9)
-
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
 | `0x800372C0` | `func_800372C0` | `cpu_helper_800372C0` | call_graph_cluster=cpu_helper_800372C0 | [md](evidence/func_800372C0.md) |
@@ -281,17 +225,24 @@ entries (`game_event_shutdown_*` and `game_event_wait_any_*`).
 | `0x80085F98` | `func_80085F98` | `obj_helper_80085F98` | call_graph_cluster=obj_helper_80085F98 | [md](evidence/func_80085F98.md) |
 | `0x80087F64` | `func_80087F64` | `obj_helper_80087F64` | call_graph_cluster=obj_helper_80087F64 | [md](evidence/func_80087F64.md) |
 
-## Primary evidence: `psyq_idiom_legacy` (2)
-
-| address | current | proposed | evidence_summary | evidence_file |
-|---|---|---|---|---|
-| `0x80016C80` | `func_80016C80` | `psyq_memcpy_legacy_80016C80` | psyq_idiom_legacy=psyq_memcpy_legacy_80016C80; string_adjacent=eff_init_func_80016C80 | [md](evidence/func_80016C80.md) |
-| `0x800550E8` | `func_800550E8` | `cpu_get_move_pattern_table_number_helper_800550E8` | psyq_idiom_legacy=psyq_memcpy_legacy_800550E8; sole_caller_path=cpu_get_move_pattern_table_number_helper_800550E8 | [md](evidence/func_800550E8.md) |
-
 ## Primary evidence: `gte_op` (2)
-
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
 | `0x8002A458` | `func_8002A458` | `calc_loc_mat_fw_helper_8002A458` | gte_op=gte_helper_8002A458; sole_caller_path=calc_loc_mat_fw_helper_8002A458 | [md](evidence/func_8002A458.md) |
 | `0x800523E0` | `func_800523E0` | `hirahira_w_ctrl_helper_800523E0` | gte_op=gte_helper_800523E0; sole_caller_path=hirahira_w_ctrl_helper_800523E0 | [md](evidence/func_800523E0.md) |
 
+## Primary evidence: `psyq_idiom_legacy` (2)
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80016C80` | `func_80016C80` | `psyq_memcpy_legacy_80016C80` | psyq_idiom_legacy=psyq_memcpy_legacy_80016C80; string_adjacent=eff_init_func_80016C80 | [md](evidence/func_80016C80.md) |
+| `0x800550E8` | `func_800550E8` | `cpu_get_move_pattern_table_number_helper_800550E8` | psyq_idiom_legacy=psyq_memcpy_legacy_800550E8; sole_caller_path=cpu_get_move_pattern_table_number_helper_800550E8 | [md](evidence/func_800550E8.md) |
+
+## Primary evidence: `camera_InitRotation(&g_cam_bone_data2);g_cam_interp` (1)
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80047570` | `func_80047570` | `camera_bone2_init_default_80047570` | camera_InitRotation(&g_cam_bone_data2);g_cam_interp=4 | [md](evidence/func_80047570.md) |
+
+## Primary evidence: `full_disp_init` (1)
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80016918` | `func_80016918` | `display_init_default_80016918` | full_disp_init=SetMode+SetDebugLevel+SetDispMask+gte_SetScreenOffset+disp_CalcFov+gpu_InitDrawEnv*2+gpu_InitDispEnv*2 | [md](evidence/func_80016918.md) |
