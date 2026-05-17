@@ -2067,6 +2067,15 @@ irq_event_slot_enable                                   = 0x80078B3C;  /* func_8
 irq_event_slot_disable                                  = 0x80078B70;  /* func_80078B70(slot): AND-NOT slot's mask from bitmask */
 irq_event_slot_clear                                    = 0x80078BA8;  /* func_80078BA8(slot): zero u16 at slot offset */
 
+/* === Fade dispatch surrounding state + gnd target sibling (2026-05-17) -- 4 highs === */
+/* From text1b.c around line 16080-16103: the fade-dispatch table */
+/* call site needs args populated via D_800A35A8 / D_800A35C4 + */
+/* per-frame counters. */
+g_gnd_target_id_1                                       = 0x800A33EA;  /* second gnd target id (sibling to g_gnd_target_id_array[0]; -1 = no target) */
+g_fade_dispatch_sp10_0                                  = 0x800A35A8;  /* first arg passed to g_fade_dispatch_table handlers via sp10[0] */
+g_fade_dispatch_state_ptr                               = 0x800A35C4;  /* struct ptr with 4 s32 fields; [2] = counter A, [3] = counter B (both incremented per frame) */
+g_fade_dispatch_arg1_cache                              = 0x800A354C;  /* cached arg1 (masked with 0xFFFF when g_replay_motion_shared_state_c == 2) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
