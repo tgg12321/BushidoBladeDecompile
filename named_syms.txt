@@ -1879,6 +1879,16 @@ g_char_pose_id_p1                                       = 0x800A30FC;  /* curren
 g_memcard_section_col                                   = 0x800A335C;  /* column iterator 0..0x4C (= 76 sections); col*8+0x10 = byte offset */
 g_memcard_section_state                                 = 0x800A3358;  /* paired state byte (0 / 0x20 / count); also shadow-tex blend mode */
 
+/* === Menu-control player select + char-struct field 0x12 (2026-05-17) -- 3 highs === */
+/* From code6cac_c2.c around line 200-232: a menu function reads */
+/* D_800A3878 as a pointer to a state struct, then tests bits at +3 */
+/* (0x10/0x20/0x80/0x1/0x2) to decide which char-struct fields to */
+/* override.  D_80101EDA / D_80102326 are the same field at offset */
+/* +0x12 in P1/P2 entries of g_practice_menu_table (stride 0x44C). */
+g_menuctl_player_select_struct_ptr                      = 0x800A3878;  /* state struct ptr; bits at +3 control which player's char-struct fields the menu modifies */
+g_char_struct_p1_field12                                = 0x80101EDA;  /* per-char field at +0x12 of g_practice_menu_table entry 0 (P1) */
+g_char_struct_p2_field12                                = 0x80102326;  /* same field at +0x12 of entry 1 (P2); = g_char_struct_p1_field12 + 0x44C */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
