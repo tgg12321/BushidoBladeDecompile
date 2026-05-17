@@ -1126,6 +1126,13 @@ g_char_vec3_b_delta_y                                   = 0x8010210C;  /* +0x244
 g_char_vec3_b_delta_z                                   = 0x80102110;  /* +0x248 -- vec3 B delta Z */
 g_char_vec3_b_w_or_alpha                                = 0x80102114;  /* +0x24C -- separately-accessed 7th word, likely W or alpha */
 
+/* World-position vec3 at +0xD8 -- delta'd between players for 2D distance via g_isqrt_lut */
+g_char_world_pos_x                                      = 0x80101FA0;  /* +0xD8 -- world position X (record 0) */
+g_char_world_pos_y                                      = 0x80101FA4;  /* +0xDC -- world position Y */
+g_char_world_pos_z                                      = 0x80101FA8;  /* +0xE0 -- world position Z (paired with X for 2D distance) */
+/* Replay/stored position vec3 at +0xF4 -- mirrored from world_pos with -0x384 Y bias */
+g_char_stored_pos_y                                     = 0x80101FC0;  /* +0xF8 -- stored Y = world_pos_y - 0x384 (time bonus offset) */
+
 /* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
 /* Clusters driven by already-named consumer functions; semantic name */
 /* derived from consumer role.  See docs/naming/RODATA_RECORD_SCHEMA.md */

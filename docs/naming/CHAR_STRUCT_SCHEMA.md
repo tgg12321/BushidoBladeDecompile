@@ -81,30 +81,44 @@ These names are kept as-is because (a) they're already in code, and
 (b) the record-0 interpretation makes sense for the single-player flow
 where record 0 is always the active player.
 
-### 2. Inter-player delta computations
+### 2. World-position vec3 at +0xD8 (with stored copy at +0xF4) -- DECODED
 
-The pair `+0xD8` and `+0xE0` are used in computations like:
-
-```c
-temp_a3 = D_80101FA0 - D_801023EC;  // record[0] +0xD8 - record[1] +0xD8
-temp_t1 = D_80101FA8 - D_801023F4;  // record[0] +0xE0 - record[1] +0xE0
-```
-
-These are inter-character position deltas (X-distance and Z-distance
-between players).  Used by CPU AI for range estimation.
-
-### 3. Position arg pair (+0xF4 / +0xFC)
-
-The pair at `+0xF4` and `+0xFC` is consistently passed together:
+Found via code6cac_b.c:765-771:
 
 ```c
-func_8003E6A0(D_80101FBC, D_80101FC4);   // record[0] +0xF4 and +0xFC
-func_8003E6A0(D_80102408, D_80102410);   // record[1] +0xF4 and +0xFC
+temp_a3 = D_80101FA0 - D_801023EC;             // r[0]+0xD8 - r[1]+0xD8
+temp_t1 = D_80101FA8 - D_801023F4;             // r[0]+0xE0 - r[1]+0xE0
+temp_a0 = (temp_a3 * temp_a3) + (temp_t1 * temp_t1);   // squared distance
+var_t0 = ((u32) (*((&D_8008D118) + temp_a0))) >> 3;    // -> g_isqrt_lut!
 ```
 
-The function (`func_8003E6A0`, called by `replay_camera_get_attack_number`)
-takes these as a (x, z) coordinate pair.  Confirms the +0xF4/+0xFC
-fields are world-space position components.
+And vec3 layout confirmed via code6cac.c:1407-1413 which reads all
+three components together and stores a biased copy:
+
+```c
+v1 = D_80101FA4;             // +0xDC -- middle (Y)
+a0_val = D_80101FA8;         // +0xE0
+D_80101FBC = a1;             // +0xF4 -- stored copy of X
+D_80101FC0 = v1 - 0x384;     // +0xF8 -- stored Y with -0x384 bias
+D_80101FC4 = a0_val;         // +0xFC -- stored Z
+```
+
+**Decoded fields:**
+
+| Offset | Field | Role |
+|---|---|---|
+| +0xD8 | `world_pos.x` (`g_char_world_pos_x` @ 0x80101FA0) | World-space X |
+| +0xDC | `world_pos.y` (`g_char_world_pos_y` @ 0x80101FA4) | World-space Y |
+| +0xE0 | `world_pos.z` (`g_char_world_pos_z` @ 0x80101FA8) | World-space Z |
+| +0xF4 | `stored_pos.x` (`g_replay_camera_target_a` @ 0x80101FBC) | Stored X (mirror) |
+| +0xF8 | `stored_pos.y` (`g_char_stored_pos_y` @ 0x80101FC0) | Stored Y with -0x384 bias |
+| +0xFC | `stored_pos.z` (paired with stored.x) | Stored Z |
+
+The world_pos triple drives the 2D distance computation that gates
+CPU AI range checks (via `g_isqrt_lut`).  The stored_pos triple is
+a snapshot used by replay-camera / time-bonus calculations
+(the -0x384 = -900 frame Y bias matches the `g_round_frame_counter`
+chunking unit -- 30-second segments).
 
 ### 4. Two-arm flag pattern (`X || sibling`)
 
