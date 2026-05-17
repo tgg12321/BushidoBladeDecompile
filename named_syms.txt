@@ -1152,6 +1152,18 @@ g_sleep_menu_cursor_state_table                         = 0x800A3D40;  /* 24-byt
 g_type_descriptor_table_8008EA00                        = 0x8008EA00;  /* 16-byte stride per `type`; consumed by func_800325E0 */
 g_status_flag_record_table_80099D88                     = 0x80099D88;  /* 12-byte stride; u16 record indexed by `idx`; bit-tested with 0xBF00 mask */
 
+/* === GPU packet buffer + shadow tables (2026-05-17) === */
+g_gpu_packet_buffer_64x96                               = 0x80103684;  /* 64 entries x 96 bytes; OT-link/packet queue; indexed by D_8009BF78 */
+g_gpu_packet_buffer_data_8010368C                       = 0x8010368C;  /* +8 from g_gpu_packet_buffer_64x96; per-entry data start */
+g_gpu_packet_write_idx                                  = 0x8009BF78;  /* increments by 1 with & 0x3F mask (64 entries) */
+g_gpu_packet_read_idx                                   = 0x8009BF7C;  /* paired with write_idx; equality test for buffer empty */
+g_gpu_packet_pending_target                             = 0x8009BF70;  /* set to arg3 of submit function */
+/* Shadow record arrays (text1a) */
+g_shadow_record_a_table_240                             = 0x800A9830;  /* 240-byte per-shadow records; PutShadowRmd; indexed by a2 */
+g_shadow_record_b_table_240                             = 0x800A9920;  /* sibling 240-byte records; PutShadowRmd; indexed by v0 */
+/* SE slot table */
+g_se_slot_table_16                                      = 0x800F68E0;  /* 16-byte per-slot SE table; indexed by value*0x10 in code6cac_c_mid */
+
 /* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
 /* Clusters driven by already-named consumer functions; semantic name */
 /* derived from consumer role.  See docs/naming/RODATA_RECORD_SCHEMA.md */
