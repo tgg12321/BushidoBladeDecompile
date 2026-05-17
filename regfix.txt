@@ -3114,15 +3114,6 @@ saTan0KiWareMoveA: reorder 67,68,69,70,71,72,73,75,63,64,65,76,66,74 @ 63-76
 # Original 94,95 -> post-everything 97,98 (+3 from GTE, no shift from sqrt/end)
 saTan0KiWareMoveA: reorder 98,97 @ 97-98
 
-# saTan0KiWareMoveB: dist register a1->a0 (6 positions)
-saTan0KiWareMoveB: subst "\$5" "$4" @ 100
-saTan0KiWareMoveB: subst "\$5" "$4" @ 101
-saTan0KiWareMoveB: subst "\$5" "$4" @ 105
-saTan0KiWareMoveB: subst "\$5" "$4" @ 109
-saTan0KiWareMoveB: subst "\$5" "$4" @ 111
-saTan0KiWareMoveB: subst "\$5" "$4" @ 121
-# saTan0KiWareMoveB: scheduling reorder (li/subu delayed, sh moved to delay slot)
-saTan0KiWareMoveB: reorder 103,95,97,98,93,94,99,100,101,102,96 @ 93-103
 
 # func_8002304C (tanren_CameraControl) — 16-rule compound regfix
 # LICM unhoist: subst delay-slot fills to nop (s7 materialized in prologue instead)
