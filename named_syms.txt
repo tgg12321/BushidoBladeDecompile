@@ -1651,6 +1651,13 @@ g_motion_ex_state_id7_pos                               = 0x800F0CF4;
 g_motion_ex_state_id7_extra                             = 0x800F0CF8;
 g_motion_ex_state_id7_data_ptr                          = 0x800F0CFC;
 
+/* === Motion-ex flag table entries (2026-05-17) -- 3 highs === */
+/* The flag table base at 0x800F10E0 is g_motion_ex_flag_table_4. */
+/* Individual entries (init-done flags per motion ID, 4 entries total): */
+g_motion_ex_flag_id1                                    = 0x800F10E4;
+g_motion_ex_flag_id2                                    = 0x800F10E8;
+g_motion_ex_flag_id3                                    = 0x800F10EC;
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
