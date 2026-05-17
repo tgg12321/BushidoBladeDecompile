@@ -2,17 +2,21 @@
 
 **Medium confidence**: weak Kengo match (size-diff > 1 but same name), single named caller (`sole_caller_path` proposal: `<caller>_helper_<addr>`), or call-graph subsystem cluster. These need callsite/body inspection before applying.
 
-Total Medium: **110**
+Total Medium: **117**
 
-## Primary evidence: `manual_review` (7)
+## Primary evidence: `manual_review` (14)
 
 Hand-review rows for functions previously tagged `confidence=none` by
 the automated analyzer. Each row links to a prose evidence file that
 walks through the C body, the caller-side pattern, the (almost always
 weak) Kengo cross-reference, and the reasoning. The 2026-05-17
-caller-side audit pass refined several slugs (3 here) and promoted
-one row (`player_rob_Init`) up to the high-confidence table after
-three independent medium-rank evidence rows agreed.
+caller-side audit pass refined several slugs and promoted one row
+(`player_rob_Init`) up to the high-confidence table after three
+independent medium-rank evidence rows agreed. Batch 2 (2026-05-17)
+added 7 more medium entries plus 2 high (now in the high-confidence
+table).
+
+### Batch 1 (2026-05-12 + 2026-05-17 reinforcement)
 
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
@@ -24,12 +28,25 @@ three independent medium-rank evidence rows agreed.
 | `0x80077820` | `func_80077820` | `disp_load_config_from_buf_80077820` | manual_review=both callers pass fixed buffer addr 0x80118800; disp_SetFramebufferMode(1,0,0,0) is unconditional (not mode-parametrised); func_80068F70(src, &D_8009BD24) is the actual copy (slug refined 2026-05-17 -- original "init_for_mode" was wrong) | [md](evidence/func_80077820.md) |
 | `0x80080258` | `func_80080258` | `tslTm2_command_with_retry_80080258` | manual_review=3-retry wrapper around tslTm2LoadImage (general op dispatcher, not TIM-only -- modes {2, 9, 0xE} seen at call sites; mode 9 passes arg1=0); g_cd_callback_a save/restore (slug refined 2026-05-17) | [md](evidence/func_80080258.md) |
 
-Note: `func_80021974` from the same batch is genuinely low-confidence
-(`rank=low` in CSV) and is not listed above. There is no
-`proposals_low_confidence.md` file yet; reviewers can find the
-low-confidence entries directly in `proposals.csv` filtered by
-`confidence=low`. `func_80040510` was promoted from this section to
-the high-confidence table after the caller-side audit.
+### Batch 2 (2026-05-17)
+
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80022408` | `func_80022408` | `stage_find_nearest_corner_80022408` | manual_review=reads stage_GetDataPtr() + D_800A36A4*48 byte offset, iterates 4 records (6 s16 each = segment endpoints), returns idx of nearest by 2D distance squared | [md](evidence/func_80022408.md) |
+| `0x80039320` | `func_80039320` | `timer_event_table_tick_80039320` | manual_review=two sequential 16-byte-stride table scans: loop 1 releases slots matching D_800A36F8 in D_80101BF0; loop 2 ticks counters in D_800F68E0 and expires past threshold | [md](evidence/func_80039320.md) |
+| `0x80044098` | `func_80044098` | `tpage_slot_release_80044098` | manual_review=inverse of prim_buffer_open_slot_80044010 (clears in-use bit, un-relocates payload); 3rd function of the slot-pool lifecycle (open/relocate/release) | [md](evidence/func_80044098.md) |
+| `0x80054884` | `func_80054884` | `info_draw_at_yslot_80054884` | manual_review=8-arg wrapper around func_80054604; resolves Y coord as InfoPosYTbl1[a0] + a1 - 0x131 then forwards remaining 7 args | [md](evidence/func_80054884.md) |
+| `0x80077940` | `func_80077940` | `disp_pack_gpu_command_word_80077940` | manual_review=packs 4 disjoint bit-fields (10+10+1+1 bits) from sparse 26-bit arg0 into compact 22-bit D_800A35E8; matches PSX GPU coord-pack command shape | [md](evidence/func_80077940.md) |
+| `0x80077984` | `func_80077984` | `disp_apply_config_with_state_80077984` | manual_review=sibling of disp_load_config_from_buf_80077820 (same disp_SetFramebufferMode tail); uses func_8006E534(a0, D_800A35E0, g_disp_config, D_800A35E8) | [md](evidence/func_80077984.md) |
+| `0x80080390` | `func_80080390` | `tslTm2_command_with_retry_no_arg3_80080390` | manual_review=2-arg twin of tslTm2_command_with_retry_80080258; hardcodes a2=0 and uses different terminal tslTm2LoadImage mode | [md](evidence/func_80080390.md) |
+
+Note: `func_80021974` (batch 1) and `func_80054434` (batch 2) are
+genuinely low-confidence (`rank=low` in CSV) and are not listed
+above. There is no `proposals_low_confidence.md` file yet; reviewers
+can find the low-confidence entries directly in `proposals.csv`
+filtered by `confidence=low`. `func_80040510` was promoted from
+batch 1 to the high-confidence table; batch 2 added two more high
+entries (`game_event_shutdown_*` and `game_event_wait_any_*`).
 
 ## Primary evidence: `sole_caller_path` (74)
 

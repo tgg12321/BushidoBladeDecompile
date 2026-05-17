@@ -6,9 +6,9 @@
 
 **Workflow**: copy the proposed name into `named_syms.txt`, run `make setup && make`, verify SHA1 unchanged, commit.
 
-Total High: **50**
+Total High: **52**
 
-## Primary evidence: `manual_review` (2)
+## Primary evidence: `manual_review` (4)
 
 Hand-review rows for functions previously tagged `confidence=none` by
 the automated analyzer. Each row links to a prose evidence file that
@@ -18,6 +18,8 @@ discursive than the auto-generated evidence files.
 
 | address | current | proposed | evidence_summary | evidence_file |
 |---|---|---|---|---|
+| `0x80037774` | `func_80037774` | `game_event_shutdown_80037774` | manual_review=EnterCriticalSection + bios_CloseEvent x 8 + ExitCriticalSection + post-shutdown hook; canonical event-pool shutdown pattern | [md](evidence/func_80037774.md) |
+| `0x80037964` | `func_80037964` | `game_event_wait_any_80037964` | manual_review=spin-poll 4 bios_TestEvent and return 1..4 index of first signaled; canonical wait-for-any pattern | [md](evidence/func_80037964.md) |
 | `0x80040510` | `func_80040510` | `player_rob_Init` | manual_review=stores in g_player_ptrs[idx]; chains AllocRobRmd + 4 rob_* helpers; single caller at fight-start with (slot, model_id, heap_base=0x80190800); promoted from medium 2026-05-17 after 3-of-3 medium-evidence agreement | [md](evidence/func_80040510.md) |
 | `0x80079154` | `func_80079154` | `bb2_rand` | manual_review=BSD libc LCG (0x41C64E6D * x + 0x3039, >> 16 & 0x7FFF); 29 callers across 6 files all use return as a random number | [md](evidence/func_80079154.md) |
 

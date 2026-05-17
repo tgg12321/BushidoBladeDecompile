@@ -100,7 +100,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80021D10,func_80021D10,,none,,
 0x80021DB0,func_80021DB0,,none,,
 0x80022224,func_80022224,,none,,
-0x80022408,func_80022408,,none,,
+0x80022408,func_80022408,stage_find_nearest_corner_80022408,medium,"manual_review=reads stage_GetDataPtr() + D_800A36A4*48 byte offset, iterates 4 records (6 s16 each = segment endpoints), returns idx of nearest by 2D distance squared",docs/naming/evidence/func_80022408.md
 0x800224E0,func_800224E0,,none,,
 0x80022580,func_80022580,,none,,
 0x80022F34,func_80022F34,,none,,
@@ -202,11 +202,11 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x800372F4,func_800372F4,,none,,
 0x80037348,func_80037348,,none,,
 0x80037540,func_80037540,,none,,
-0x80037774,func_80037774,,none,,
+0x80037774,func_80037774,game_event_shutdown_80037774,high,manual_review=EnterCriticalSection + bios_CloseEvent x 8 + ExitCriticalSection + post-shutdown hook; canonical event-pool shutdown pattern,docs/naming/evidence/func_80037774.md
 0x80037804,func_80037804,,none,,
 0x800378A8,func_800378A8,,none,,
 0x8003791C,func_8003791C,,none,,
-0x80037964,func_80037964,,none,,
+0x80037964,func_80037964,game_event_wait_any_80037964,high,manual_review=spin-poll 4 bios_TestEvent and return 1..4 index of first signaled; canonical wait-for-any pattern; tested events are subset of func_80037774's closed pool,docs/naming/evidence/func_80037964.md
 0x800379D8,func_800379D8,,none,,
 0x80037A20,func_80037A20,memcard_func_80037A20,low,string_adjacent=memcard_func_80037A20,docs/naming/evidence/func_80037A20.md
 0x80037AA4,func_80037AA4,pad_FuncAnalog_helper_80037AA4,medium,sole_caller_path=pad_FuncAnalog_helper_80037AA4,docs/naming/evidence/func_80037AA4.md
@@ -226,7 +226,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80038988,func_80038988,,none,,
 0x800392B8,func_800392B8,,none,,
 0x800392C8,func_800392C8,,none,,
-0x80039320,func_80039320,,none,,
+0x80039320,func_80039320,timer_event_table_tick_80039320,medium,manual_review=two sequential 16-byte-stride table scans: loop 1 releases slots matching D_800A36F8 in D_80101BF0 (32 entries); loop 2 ticks counters in D_800F68E0 and expires past threshold,docs/naming/evidence/func_80039320.md
 0x800395B4,func_800395B4,,none,,
 0x80039680,func_80039680,,none,,
 0x800397A0,func_800397A0,psyq_memcpy_legacy_800397A0,low,psyq_idiom_legacy=psyq_memcpy_legacy_800397A0,docs/naming/evidence/func_800397A0.md
@@ -356,7 +356,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80043F80,func_80043F80,,none,,
 0x80043FCC,func_80043FCC,,none,,
 0x80044010,func_80044010,prim_buffer_open_slot_80044010,medium,"manual_review=marks header *a0 |= 0x8000, stores ptr+count in D_80103608/D_80103658 slot a1; paired with func_80044100",docs/naming/evidence/func_80044010.md
-0x80044098,func_80044098,,none,,
+0x80044098,func_80044098,tpage_slot_release_80044098,medium,"manual_review=inverse of prim_buffer_open_slot_80044010 (clears in-use bit, un-relocates payload by subtracting header ptr); 3rd function of the slot-pool lifecycle (open/relocate/release)",docs/naming/evidence/func_80044098.md
 0x80044100,func_80044100,prim_buffer_relocate_slot_80044100,medium,manual_review=advances D_80103608[a0] by a1 bytes and patches each entry by +a1 (offset-list relocation); paired with func_80044010,docs/naming/evidence/func_80044100.md
 0x80044170,func_80044170,,none,,
 0x80044498,func_80044498,,none,,
@@ -561,10 +561,10 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80053E9C,func_80053E9C,,none,,
 0x80054410,func_80054410,efc_ougi_Init_80054410,medium,kengo_pattern=efc_ougi_Init_80054410,docs/naming/evidence/func_80054410.md
 0x8005441C,func_8005441C,,none,,
-0x80054434,func_80054434,,none,,
+0x80054434,func_80054434,get_state_33F8_80054434,low,manual_review=pure getter `return D_800A33F8;`; name TBD until D_800A33F8 is named,docs/naming/evidence/func_80054434.md
 0x80054440,func_80054440,gte_nct_wrapper_80054440,low,gte_op=gte_nct_wrapper_80054440,docs/naming/evidence/func_80054440.md
 0x80054604,func_80054604,,none,string_adjacent_info=?,docs/naming/evidence/func_80054604.md
-0x80054884,func_80054884,,none,,
+0x80054884,func_80054884,info_draw_at_yslot_80054884,medium,manual_review=8-arg wrapper around func_80054604; resolves Y coord as InfoPosYTbl1[a0] + a1 - 0x131 then forwards remaining 7 args to draw helper,docs/naming/evidence/func_80054884.md
 0x8005490C,func_8005490C,,none,,
 0x80054F68,func_80054F68,,none,,
 0x80054FDC,func_80054FDC,,none,,
@@ -800,8 +800,8 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80077860,func_80077860,,none,,
 0x80077894,func_80077894,,none,,
 0x80077904,func_80077904,,none,,
-0x80077940,func_80077940,,none,,
-0x80077984,func_80077984,,none,,
+0x80077940,func_80077940,disp_pack_gpu_command_word_80077940,medium,manual_review=packs 4 disjoint bit-fields (10+10+1+1 bits) from sparse 26-bit arg0 into compact 22-bit D_800A35E8; matches PSX GPU coord-pack command shape,docs/naming/evidence/func_80077940.md
+0x80077984,func_80077984,disp_apply_config_with_state_80077984,medium,"manual_review=sibling of disp_load_config_from_buf_80077820 (same disp_SetFramebufferMode tail), uses func_8006E534(a0, D_800A35E0, g_disp_config, D_800A35E8) to apply already-loaded config + per-frame state",docs/naming/evidence/func_80077984.md
 0x800779C8,func_800779C8,,none,,
 0x80077A28,func_80077A28,replay_camera_rob_back_loose2_helper_80077A28,medium,sole_caller_path=replay_camera_rob_back_loose2_helper_80077A28,docs/naming/evidence/func_80077A28.md
 0x80077A80,func_80077A80,replay_camera_rob_back_loose2_helper_80077A80,medium,sole_caller_path=replay_camera_rob_back_loose2_helper_80077A80,docs/naming/evidence/func_80077A80.md
@@ -1031,7 +1031,7 @@ address,current_name,proposed_name,confidence,evidence_summary,evidence_detail_f
 0x80080228,func_80080228,,none,,
 0x80080240,func_80080240,,none,,
 0x80080258,func_80080258,tslTm2_command_with_retry_80080258,medium,"manual_review=3-retry wrapper around tslTm2LoadImage (general op dispatcher, not TIM-only -- modes {2, 9, 0xE} seen at call sites; mode 9 passes arg1=0); g_cd_callback_a save/restore",docs/naming/evidence/func_80080258.md
-0x80080390,func_80080390,,none,,
+0x80080390,func_80080390,tslTm2_command_with_retry_no_arg3_80080390,medium,manual_review=2-arg twin of tslTm2_command_with_retry_80080258; hardcodes a2=0 and uses different terminal tslTm2LoadImage mode (last-arg=1 vs 0),docs/naming/evidence/func_80080390.md
 0x80080600,func_80080600,,none,,
 0x80080620,func_80080620,,none,,
 0x800806A4,func_800806A4,,none,,
