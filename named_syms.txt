@@ -1526,6 +1526,18 @@ g_char_lesson_idx_table                                 = 0x8008D55C;  /* per-ch
 g_attacker_pos_ptr                                      = 0x800A36B4;  /* attacker struct pointer; +0x20 = pos.x, +0x24 = pos.y (read for dx/dy in coli check) */
 g_practice_state_word                                   = 0x800A3824;  /* practice mode state bitfield (& 1 tested) */
 g_practice_byte_table                                   = 0x801077B0;  /* u8 array indexed in practice flow */
+
+/* === text1a.c text/title render cluster (2026-05-17) -- 7 highs === */
+/* From text1a.c around lines 55, 1093, 1201, 1235 etc.  Stage lighting */
+/* dispatch (paired with already-named g_stage_lighting_ptr_array_6) */
+/* plus a record-pointer system and color conversion. */
+g_text1a_record_ptr                                     = 0x800A3378;  /* current record pointer (240-byte stride array at &D_800A9830 or D_800A9920) */
+g_text1a_record_idx                                     = 0x800A3234;  /* current record index (matched against arg `a2`) */
+g_stage_lighting_idx_table                              = 0x80094E08;  /* u8 lookup; values index into g_stage_lighting_ptr_array_6 */
+g_text1a_buffer_a                                       = 0x800F6340;  /* data buffer passed to func_8004A1FC */
+g_text1a_texture_data                                   = 0x800A9A24;  /* TIM/texture data buffer passed to gpu_LoadImage */
+g_text1a_color_green                                    = 0x800A323A;  /* 12-bit fixed-point green channel ((a1 >> 8) & 0xFF) << 12 / 255 */
+g_text1a_color_blue                                     = 0x800A323C;  /* 12-bit fixed-point blue channel (a1 & 0xFF) << 12 / 255 */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
