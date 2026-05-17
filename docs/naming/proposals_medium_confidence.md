@@ -2,9 +2,9 @@
 
 **Medium confidence**: weak Kengo match (size-diff > 1 but same name), single named caller (`sole_caller_path` proposal: `<caller>_helper_<addr>`), or call-graph subsystem cluster. These need callsite/body inspection before applying.
 
-Total Medium: **117**
+Total Medium: **124**
 
-## Primary evidence: `manual_review` (14)
+## Primary evidence: `manual_review` (21)
 
 Hand-review rows for functions previously tagged `confidence=none` by
 the automated analyzer. Each row links to a prose evidence file that
@@ -39,6 +39,18 @@ table).
 | `0x80077940` | `func_80077940` | `disp_pack_gpu_command_word_80077940` | manual_review=packs 4 disjoint bit-fields (10+10+1+1 bits) from sparse 26-bit arg0 into compact 22-bit D_800A35E8; matches PSX GPU coord-pack command shape | [md](evidence/func_80077940.md) |
 | `0x80077984` | `func_80077984` | `disp_apply_config_with_state_80077984` | manual_review=sibling of disp_load_config_from_buf_80077820 (same disp_SetFramebufferMode tail); uses func_8006E534(a0, D_800A35E0, g_disp_config, D_800A35E8) | [md](evidence/func_80077984.md) |
 | `0x80080390` | `func_80080390` | `tslTm2_command_with_retry_no_arg3_80080390` | manual_review=2-arg twin of tslTm2_command_with_retry_80080258; hardcodes a2=0 and uses different terminal tslTm2LoadImage mode | [md](evidence/func_80080390.md) |
+
+### Batch 3 (2026-05-17)
+
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80034200` | `func_80034200` | `pack_player_input_bitstream_80034200` | manual_review=packs N x 2 byte values from D_800F65F8 into 2-bit slots of a single u32 stored at D_800A3784; sets g_disp_enable = DISP_LOADING during the compute | [md](evidence/func_80034200.md) |
+| `0x80041430` | `func_80041430` | `player_rob_relocate_80041430` | manual_review=advances g_player_ptrs[a0] by a1 bytes and patches embedded sub-pointers at +0x2C, +0x8B4, +0x10D4, +0x112C (0x68 stride chain), +0x1A34 (20 entries); analog of prim_buffer_relocate_slot_80044100 for player records | [md](evidence/func_80041430.md) |
+| `0x80044504` | `func_80044504` | `frame_context_init_scratchpad_80044504` | manual_review=writes 5 scratchpad words at 0x1F80000C..0x1F80001C as inputs for a per-frame compute kernel; calls camera_InitMatrix + game_SetPause(1); chains func_8004A4E0 (likely the hot loop) | [md](evidence/func_80044504.md) |
+| `0x80044670` | `func_80044670` | `seq_state_set_with_stage_offset_80044670` | manual_review=writes a 14-byte state record (D_800A9CF8..D_800A9D04) including stage_GetId result; returns a2 + per_stage_offset * 0x68 | [md](evidence/func_80044670.md) |
+| `0x80045878` | `func_80045878` | `audio_seq_load_or_get_80045878` | manual_review=load-if-absent / get-if-present for audio sequence records; chains saSeMain_80045600 + saTan5TakeGetPos_* + func_80045AA4 callback; manages paired slots a0 and a0+3 | [md](evidence/func_80045878.md) |
+| `0x80069898` | `func_80069898` | `draw_shadow_3tile_stack_80069898` | manual_review=emits 3 consecutive PSX tile primitives stacked vertically with progressively dimmer RGB and increasing alpha modes; canonical 3-tile soft-shadow pattern | [md](evidence/func_80069898.md) |
+| `0x80073060` | `func_80073060` | `hud_layout_emit_tiles_80073060` | manual_review=emits a fixed HUD layout via func_80072F30 / func_80072FCC: 17-tile horizontal row + 3 large widgets + 5-tile countdown meter | [md](evidence/func_80073060.md) |
 
 Note: `func_80021974` (batch 1) and `func_80054434` (batch 2) are
 genuinely low-confidence (`rank=low` in CSV) and are not listed
