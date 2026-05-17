@@ -1895,6 +1895,22 @@ g_stage_helper_result_cache                             = 0x800A3818;  /* result
 g_menuctl_pending_flag                                  = 0x800A3894;  /* flag (set to 0 / tested != 0 in menuctl flow) */
 g_char_data_base_idx                                    = 0x800A3368;  /* base index subtracted from v1 to compute g_char_data array offset (v1 - D) * 0x68 */
 
+/* === Sound streaming buffer manager (2026-05-17) -- 9 highs === */
+/* From text1a_c.c func_800451D0 (init) + saTan5TakeGetPos_80045230 */
+/* (offset getter) + func_80045294 (per-slot helper).  A 282-KB */
+/* streaming buffer at g_snd_stream_buffer (0x800A9D10) with write */
+/* cursor + watermark tracking, plus a 10-slot control table with */
+/* per-slot data field + callback fn ptr. */
+g_snd_stream_slot_table                                 = 0x800EED10;  /* 10 entries x 0x10 bytes; +0 = state s16, +0xC = callback fn ptr */
+g_snd_stream_slot_callbacks                             = 0x800EED1C;  /* callback function pointer at offset +0xC of each slot */
+g_snd_stream_buffer                                     = 0x800A9D10;  /* ~282 KB streaming audio buffer base */
+g_snd_stream_write_pos                                  = 0x800A33A0;  /* current write position in buffer (init to &g_snd_stream_buffer) */
+g_snd_stream_buffer_size                                = 0x800A33A4;  /* buffer size = 0x45000 (282624 bytes) */
+g_snd_stream_pos_watermark                              = 0x800A33A8;  /* max offset reached (high-water mark); overflow triggers InitFadePanel */
+g_snd_stream_count                                      = 0x800A33AC;  /* sequence counter / used-slot count */
+g_snd_stream_header_state                               = 0x800A9CFE;  /* header state at -0x12 from buffer base; values 0x11/2/0xA */
+g_snd_stream_header_ptr                                 = 0x800A9D04;  /* header pointer at -0xC from buffer base */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
