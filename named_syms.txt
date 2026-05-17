@@ -1147,6 +1147,11 @@ g_satan1_slot_state_field_at_10                         = 0x800F4E2A;  /* +0x10 
 g_satan1_slot_state_field_at_12                         = 0x800F4E2C;  /* +0x12 -- init to 0 */
 g_satan1_slot_state_field_at_14                         = 0x800F4E2E;  /* +0x14 -- init to 0xFF */
 
+/* === More indexed struct tables discovered (2026-05-17) === */
+g_sleep_menu_cursor_state_table                         = 0x800A3D40;  /* 24-byte stride per slot; 3 s32 + 6 s16 layout; consumed by DispSleepMenuTex */
+g_type_descriptor_table_8008EA00                        = 0x8008EA00;  /* 16-byte stride per `type`; consumed by func_800325E0 */
+g_status_flag_record_table_80099D88                     = 0x80099D88;  /* 12-byte stride; u16 record indexed by `idx`; bit-tested with 0xBF00 mask */
+
 /* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
 /* Clusters driven by already-named consumer functions; semantic name */
 /* derived from consumer role.  See docs/naming/RODATA_RECORD_SCHEMA.md */
