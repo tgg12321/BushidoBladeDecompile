@@ -70,6 +70,64 @@ case "$CMD" in
         echo "=== BB2 Decomp Session Startup ==="
         echo
 
+        # Worktree auto-link: if this is a git worktree and the main repo has
+        # gitignored binary deps (gcc-2.7.2, cc1psx.exe, decomp-permuter, .venv)
+        # that we don't, symlink-copy them in. Without this, the first build in
+        # a fresh worktree fails with "tools/gcc-2.7.2/build/cc1: not found"
+        # and the agent has to rediscover the symlink workflow every time.
+        #
+        # Parsing .git directly instead of `git rev-parse --git-common-dir`
+        # because the .git pointer file is written with Windows paths (e.g.
+        # `gitdir: C:/Users/.../`) which `git rev-parse` chokes on under WSL
+        # (see memory/feedback_parallel_harness_gotchas.md).
+        if [ -f ".git" ]; then
+            GITDIR_LINE=$(head -1 .git | sed 's|^gitdir: *||')
+            # Convert Windows-style C:/... to WSL /mnt/c/... when running under WSL.
+            if [ -d /mnt/c ] && [ "${GITDIR_LINE#?:/}" != "$GITDIR_LINE" ]; then
+                DRIVE=$(echo "$GITDIR_LINE" | cut -c1 | tr 'A-Z' 'a-z')
+                GITDIR_ABS="/mnt/$DRIVE${GITDIR_LINE#?:}"
+            else
+                GITDIR_ABS="$GITDIR_LINE"
+            fi
+            # GITDIR_ABS is .../.git/worktrees/<name>; main repo is two dirs up.
+            if [ -d "$GITDIR_ABS" ]; then
+                MAIN_REPO=$(dirname "$(dirname "$(dirname "$GITDIR_ABS")")")
+                LINKED=""
+                # Trees: check for a specific marker file inside (not the
+                # parent dir) so partial cp -as failures self-heal — if the
+                # marker is missing, blow away the tree and re-link.
+                # Format: "<dep>:<marker_relative_to_dep>"
+                TREE_DEPS="tools/gcc-2.7.2:build/cc1 tools/decomp-permuter:permuter.py .venv:bin/python3 disc:SLUS_006.63"
+                # Single files: just check the file itself.
+                FILE_DEPS="tools/cc1psx.exe"
+                if [ -d "$MAIN_REPO" ] && [ "$MAIN_REPO" != "$(pwd)" ]; then
+                    for entry in $TREE_DEPS; do
+                        dep="${entry%%:*}"
+                        marker="${entry#*:}"
+                        # Need re-link if marker missing AND main has it.
+                        if [ ! -e "$dep/$marker" ] && [ -e "$MAIN_REPO/$dep/$marker" ]; then
+                            rm -rf "$dep" 2>/dev/null
+                            mkdir -p "$(dirname "$dep")"
+                            if cp -as "$MAIN_REPO/$dep" "$dep" 2>/dev/null && [ -e "$dep/$marker" ]; then
+                                LINKED="$LINKED $dep"
+                            fi
+                        fi
+                    done
+                    for dep in $FILE_DEPS; do
+                        if [ ! -e "$dep" ] && [ -e "$MAIN_REPO/$dep" ]; then
+                            if cp "$MAIN_REPO/$dep" "$dep" 2>/dev/null; then
+                                LINKED="$LINKED $dep"
+                            fi
+                        fi
+                    done
+                    if [ -n "$LINKED" ]; then
+                        echo "Worktree: auto-linked from main repo:$LINKED"
+                        echo
+                    fi
+                fi
+            fi
+        fi
+
         # Build status (silent unless mismatch)
         if [ -f "build/bb2.exe" ] && [ -f "bb2.sha1" ]; then
             if sha1sum -c bb2.sha1 >/dev/null 2>&1; then
