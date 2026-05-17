@@ -1975,6 +1975,14 @@ g_voice_slot_24_flags                                   = 0x800F65E0;  /* 24-byt
 g_voice_slot_24_arr_a                                   = 0x80102A78;  /* s16 array, 0x10-byte stride per entry, 24 entries */
 g_voice_slot_24_arr_b                                   = 0x80102A7A;  /* s16 array paired with _a (offset +2) */
 
+/* === sys_VSync state cluster (2026-05-17) -- 3 highs === */
+/* From ings2.c sys_VSync (line 41).  Hardware vblank counter access + */
+/* delta calculation between calls.  Companions to */
+/* g_ings2_vsync_block_ptr (0x800A1510). */
+g_vsync_counter_ptr                                     = 0x800A1514;  /* pointer to hardware vblank counter register */
+g_vsync_counter_snapshot                                = 0x800A1518;  /* snapshot of *g_vsync_counter_ptr from prev call (for delta calc) */
+g_vsync_dma_region_snapshot                             = 0x800A151C;  /* snapshot of g_sys_dma_region at end of last sys_VSync */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
