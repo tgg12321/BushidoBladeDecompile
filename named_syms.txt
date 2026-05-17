@@ -1889,6 +1889,12 @@ g_menuctl_player_select_struct_ptr                      = 0x800A3878;  /* state 
 g_char_struct_p1_field12                                = 0x80101EDA;  /* per-char field at +0x12 of g_practice_menu_table entry 0 (P1) */
 g_char_struct_p2_field12                                = 0x80102326;  /* same field at +0x12 of entry 1 (P2); = g_char_struct_p1_field12 + 0x44C */
 
+/* === code6cac_c2.c misc state names (2026-05-17) -- 4 highs === */
+g_menuctl_current_char_idx                              = 0x800A382D;  /* current char-struct index (0/1/2); used as `D_*0x44C` to compute g_practice_menu_table offset */
+g_stage_helper_result_cache                             = 0x800A3818;  /* result cache passed to stage_GetTriple (func_80021D10) */
+g_menuctl_pending_flag                                  = 0x800A3894;  /* flag (set to 0 / tested != 0 in menuctl flow) */
+g_char_data_base_idx                                    = 0x800A3368;  /* base index subtracted from v1 to compute g_char_data array offset (v1 - D) * 0x68 */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
