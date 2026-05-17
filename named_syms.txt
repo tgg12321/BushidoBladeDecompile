@@ -2127,6 +2127,11 @@ g_satan1_gauge_state_d                                  = 0x800A3458;
 g_satan1_gauge_state_e                                  = 0x800A345C;
 g_satan1_gauge_state_f                                  = 0x800A345E;
 
+/* === Effect RNG state + text render cursors (2026-05-17) -- 3 highs === */
+g_effect_rng_state                                      = 0x800A3418;  /* persistent state XOR'd with func_80079154 (LFSR rng) to generate random positions/offsets for particle effects */
+g_text_render_cursor_a                                  = 0x800A32B4;  /* u16 cursor used by func_80060768; reset by func_80060758 */
+g_text_render_cursor_b                                  = 0x800A32B6;  /* u16 paired cursor */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
