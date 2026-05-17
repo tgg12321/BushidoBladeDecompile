@@ -378,5 +378,16 @@ scene_teardown_80035DC8                           = 0x80035DC8;
 /* See docs/formats/NDATA.md "Reader (func_80044E74)". */
 ndata_disc_read_scheduler_80036E34                = 0x80036E34;
 
+/* === Batch 6 high-confidence renames (2026-05-17, asm-only pool) === */
+/* Three pure-getter accessors of already-named globals + one literal */
+/* empty stub. All are deterministic by inspection -- see evidence files. */
+/* */
+/* SHA1-invariance: symbol-only additions cannot affect the byte output */
+/* (PS-X EXE strips ELF symbols via `objcopy -O binary`); verified before */
+/* commit by the rebuild script. */
+get_snd_bgm_id_80046780      = 0x80046780;  /* 3-insn gp-rel getter for g_snd_bgm_id */
+get_stage_id_80046798        = 0x80046798;  /* 4-insn lh-based signed getter for g_stage_id */
+get_sys_video_mode_80083688  = 0x80083688;  /* 4-insn lw-based getter for g_sys_video_mode */
+empty_stub_80046954          = 0x80046954;  /* literal `jr ra; nop` -- 2 insns total */
 
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
