@@ -45,12 +45,35 @@ If the function is on the cheat queue and NOT on the strong-signal hand-coded li
 
 ---
 
+## §0.1. SOTN-GRADE EVIDENCE GATES (read before §1; affects what you commit)
+
+User directive 2026-05-17: **"Everything should be to the SOTN standard unless there is a very compelling evidence-driven reason to break convention. If it can be C, it should be C."**
+
+`audit_asm_cheats.py --check-new` (Rule 1a of the commit hook) enforces these programmatic gates. If your commit hits any of them, the commit blocks. **Plan your work to satisfy them up-front; don't try to commit and discover them after the fact.**
+
+| Gate | Triggered by | What you must provide |
+|---|---|---|
+| **G1 same-commit self-auth** | function newly added to `inline_asm_canonical.txt` AND newly has inline asm in same commit | Split into 2 commits: (1) canonical entry + tag + attempt log, then (2) AFTER the first lands, the inline asm + Pure-C attempts log |
+| **G2 evidence tag** | any new entry in `inline_asm_canonical.txt` | A valid tag in the `# justification` comment: `gcc-cannot-emit:<reason>`, `custom-abi:<descriptor>`, `hand-coded-signal:STRONG/Sn+Sm`, `cluster-sibling:<func>,jaccard=N.NN`, or `bios-trampoline` |
+| **G3 cheat delta** | new inline `__asm__(glabel)`, new lost-codegen insert, new c-body multi-insn, etc. | Either retire the cheat (preferred) or provide evidence tag + attempt log |
+| **G4 aliasing-barrier doc** | new `__asm__ volatile("move %0, %1" ...)` instance | `INLINE_MOVE_ALIASING:` comment within 8 lines above, listing ≥2 `- technique=NAME: <specific failure>` bullets |
+| **G5 regfix accretion** | new regfix rule for a function with ZERO rules at HEAD | Pure-C attempts log (≥3) showing the C-side fix was tried and failed |
+| **G6 attempt log** | any of G2-G5 | `Pure-C attempts:` block in commit message with ≥3 entries: `[N] technique=<name> score=<N> outcome=<observable evidence>`. Vague outcomes (`didn't work`, `no improvement`) are rejected. |
+
+The LLM auditor (Rule 1b) runs after the programmatic gate and judges EVIDENCE QUALITY: it checks that outcomes reference observable state (dump-text register names, permuter score plateaus, regalloc-dump lines, specific GCC option behavior), that listed techniques are plausible for the diff, and that the escalation order makes sense. Generic plausible-sounding evidence is REJECTED.
+
+**Translation for daily work:** if you find yourself reaching for `__asm__ volatile("move %0, %1")` or considering an authorization, you owe the commit message a structured account of what you tried, with specific observable outcomes. The format is enforced by the gate; the quality is enforced by the auditor.
+
+See `feedback_evidence_driven_authorization.md` for the canonical reference on tag grammar, attempt-log format, and the aliasing-barrier comment template.
+
+---
+
 ## §1. PRE-FLIGHT
 
-Run this first:
+Run this first (use your worktree path if you're in one — the SessionStart hook may have briefed the main repo, not your worktree):
 
 ```
-wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash tools/dc.sh start'
+wsl bash -c 'cd <your-worktree-or-repo-path> && bash tools/dc.sh start'
 ```
 
 Branch on the briefing:
@@ -59,8 +82,15 @@ Branch on the briefing:
 |---|---|
 | `Build: OK` + `Active: NONE` | Proceed to §2 |
 | `Build: OK` + `Active: <func>` | Skip §2 — resume `<func>` from current state (it was a prior cheat cleanup); go to §3 |
+| `Build: not built yet` | **Normal in a fresh worktree.** Proceed to §2. Do NOT run `dc.sh build` to "check" — your first real build happens in §4/§5 and will surface anything wrong. |
 | `Build: MISMATCH` | STOP. Report repo state. Hook can't help; baseline issue requires user investigation. |
 | `Queue: <N> days old` (N > 7) | Run `dc.sh refresh-queue` before §2 |
+
+**The ONLY build-status line that stops you is the literal `Build: MISMATCH`** — which means the briefing actually ran a build and got SHA1 inequality. A linker error you discover by *manually* running `dc.sh build` during pre-flight is NOT in this category — that's a partial / pre-existing build infrastructure issue you should not be chasing here. Pre-flight is for reading the briefing, not auditing the repo.
+
+**DO NOT run `dc.sh build`, `dc.sh verify --all`, or any "let me just confirm the baseline" command during pre-flight.** The queue's existence IS the baseline confirmation — every entry in the cheat queue was produced from a SHA1-matching build at refresh time. The first real build in this skill happens in §4 (after you have an active function and know what symptoms to expect). If it fails there for reasons unrelated to your cheat, THAT is when you investigate or surface — not pre-emptively.
+
+**Fresh-worktree note.** If you just entered a new worktree (no `build/` dir, no `.venv/`), the briefing will say `Build: not built yet`. This is fine. The shared venv lives at the main repo path and is invoked through `tools/dc.sh` which handles activation. You don't need to set up anything; just pull the cheat.
 
 **If active marker is set to a non-cheat function** (e.g., from a running decomp-next session): STOP. Don't override their work. Report and ask whether to wait or pick a different cheat orphan in a different file. Two simultaneous active markers in the same worktree are not supported.
 
@@ -121,7 +151,7 @@ grep -n "^<func>:" asmfix.txt
 
 ## §4. BASELINE BEFORE TOUCHING ANYTHING
 
-**Take a snapshot of "current matching state" before iterating.** This is the reference point — every change must either preserve match or break it in a controlled way that you understand.
+**This is where the first full build happens** (if pre-flight said `Build: not built yet`). Take a snapshot of "current matching state" before iterating — every change must either preserve match or break it in a controlled way you understand.
 
 ```
 # Confirm current build matches
@@ -130,6 +160,13 @@ bash tools/dc.sh verify <func>          # expect: MATCH (since it's a cheat orph
 # Optional: save the matched asm bytes for sibling comparison
 mipsel-linux-gnu-objdump -d build/bb2.elf | awk '/<<func>>:/,/^$/' > /tmp/<func>.matched.s
 ```
+
+**Interpreting the baseline build outcome:**
+
+- **`bb2 matches!` + per-func verify MATCH** → expected. Proceed.
+- **Per-func verify NO MATCH but `bb2 matches!`** → impossible (would mean SHA1 collision); re-run.
+- **Linker errors referencing src symbols (e.g. `undefined reference to debug_printf` from `.data` section)** → pre-existing build infrastructure issue, NOT caused by anything you've done. Surface to user *briefly* with the exact error and stop. Do not try to fix the link errors as part of this skill — that's outside cheat-cleanup scope and likely needs a different worktree / repo state.
+- **SHA1 mismatch on bb2 (build succeeds but bytes differ)** → another agent's WIP is in the tree, or a regfix rule is stale. Run `dc.sh verify --all 2>&1 | grep -v MATCH | head -20` to see which functions diverge. If it's a *different* function from your cheat target, you've inherited unfinished work — surface and stop. If it's *your* cheat target, the cheat rule itself may have rotted (rare); inspect the rule and proceed to §5.
 
 **Identify what GCC currently emits.** Run the build pipeline through maspsx for the function and dump-text it:
 
@@ -175,13 +212,21 @@ Expected: build fails with N-byte size diff, where N matches the cheat's contrib
 
 ### 5.1 inline_move_aliasing trick (the #1 fix for lost_codegen)
 
-For `addu RD, RS, $zero` (a redundant register copy that GCC's optimizer ate), use the single-instruction inline asm pattern documented in `feedback_inline_move_aliasing.md`:
+For `addu RD, RS, $zero` (a redundant register copy that GCC's optimizer ate), use the single-instruction inline asm pattern documented in `feedback_inline_move_aliasing.md`. **G4 (per §0.1) requires an attached `INLINE_MOVE_ALIASING:` comment with ≥2 documented failed-alternative bullets.** Required form:
 
 ```c
+/* INLINE_MOVE_ALIASING: pure-C alternatives failed.
+ *   - technique=plain_copy: GCC's CSE collapsed `dst = src;` per regalloc dump
+ *   - technique=volatile_copy: `volatile T dst = src;` introduced sw+lw, wrong shape
+ *   - technique=pin_to_reg: `register T x asm("$RD")` pin ignored per dump-text
+ * Per feedback_inline_move_aliasing.md, single-insn escape valve.
+ */
 register T dst asm("$RD");
 register T src asm("$RS");
 __asm__ volatile("move %0, %1" : "=r"(dst) : "r"(src));
 ```
+
+The bullets are NOT optional and must reference observable state — vague bullets fail the LLM auditor (Rule 1b). At commit time, the same techniques and outcomes must also appear in the commit message's `Pure-C attempts:` block (G6).
 
 This emits exactly one `addu RD, RS, $zero` instruction.
 
@@ -253,17 +298,44 @@ If `verify --all` fails on a sibling function, you've caused label-renumber drif
 
 ### 6.1 Commit
 
+**Commit-message template (required structure):**
+
 ```
-git add <files-you-touched>
-git commit -m "cheat-cleanup: <func> — <one-line summary>
+cheat-cleanup: <func> — <one-line summary>
 
 Removed cheat: <which rule(s) you removed, with regfix.txt line range>
 Coercion: <which §5 technique you used>
+
+Pure-C attempts:
+  [1] technique=<name> score=<N> outcome=<observable evidence>
+  [2] technique=<name> score=<N> outcome=<observable evidence>
+  [3] technique=<name> score=<N> outcome=<observable evidence>
+
 Build: bb2 matches! (verified --all)
-"
 ```
 
-The active_func_guard hook will verify `dc.sh verify <func>` returns MATCH before allowing the commit and auto-clears `.bb2_active_func`.
+The `Pure-C attempts:` block is **mandatory** for any commit that:
+- adds inline asm (any form, including `move %0, %1` barriers)
+- adds an entry to `inline_asm_canonical.txt`
+- adds a new regfix rule for a function with no rules at HEAD
+(see §0.1 G6)
+
+**Outcomes must reference observable state.** Specific examples:
+- `dump-text shows pin to $v1 ignored; allocator chose $a0 instead`
+- `permuter plateau at score=14 after 600s, no structural variant found`
+- `decl reorder: same score, scheduling pattern unchanged per /tmp/dump`
+- `CSE collapsed s32 v_copy = v; per regalloc dump line 487`
+
+**Outcomes that will be REJECTED by the LLM auditor:**
+- `didn't work`
+- `no improvement`
+- `tried everything`
+- `GCC didn't cooperate`
+- `same score` (without context)
+
+If your cheat retirement is purely "remove stale regfix rules" with no new inline asm, no new aliasing barrier, and no canonical entry, the attempt-log block is NOT required (the gates don't fire). A simple `cheat-cleanup: <func> — strip N stale regfix rules` commit message is fine.
+
+The active_func_guard hook will (1) run audit_asm_cheats.py --check-new with the commit message, then (2) run the LLM auditor, then (3) verify `dc.sh verify <func>` returns MATCH. All three must pass.
 
 ### 6.2 Push
 

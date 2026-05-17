@@ -227,81 +227,17 @@ EOF
 # `git commit -F`, heredocs, etc.). We deliberately don't try to parse
 # arguments -- if the command says "git commit" anywhere, we gate it.
 if echo "$COMMAND" | grep -qE '(^|[^a-zA-Z])git commit($|[^a-zA-Z])'; then
-    # Rule 1a: asm-cheat scan. Block if the staged state introduces a
-    # large splice in regfix.txt or an inline `__asm__("glabel ...")`
-    # function body in src/*.c that wasn't already in HEAD. These
-    # patterns make the binary match without the C source actually
-    # producing the emitted bytes — they're functionally equivalent to
-    # `replace_with_asmfile` bridges but invisible to the existing
-    # bridge guard. Cheap (~1s); runs before the expensive clean
-    # rebuild so the agent sees the failure fast.
-    cheat_out=$(wsl bash -c "cd '$WSL_ROOT' && python3 tools/audit_asm_cheats.py --check-new 2>&1")
-    cheat_exit=$?
-    if [ "$cheat_exit" -ne 0 ]; then
-        echo "$cheat_out" >&2
-        cat >&2 <<EOF
-
-BLOCKED: see ASM-CHEAT GUARD message above.
-
-This guard exists because `splice` (in regfix.txt) and inline
-\`__asm__("glabel ...")\` function bodies (in src/*.c) are functionally
-equivalent to the \`replace_with_asmfile\` bridge — the C source
-emits no useful bytes, the binary content comes from asm injected
-through regfix or written verbatim in inline asm. The existing
-bridge guard only checks asmfix.txt, so these patterns slipped
-through historically.
-
-To proceed:
-  - If the original function was hand-coded asm (3+ strong signals
-    per memory/feedback_hand_coded_asm_recognition.md), add it to
-    inline_asm_canonical.txt with a justification comment, then
-    re-attempt the commit.
-  - Otherwise (~99% of functions are canonically C), do a real C
-    decomp instead of wrapping the asm.
-
-To audit existing state:
-  wsl bash -c "cd '$WSL_ROOT' && python3 tools/audit_asm_cheats.py --all"
-EOF
-        exit 2
-    fi
-
-    # Rule 1b: adversarial LLM auditor. A fresh `claude -p --bare` session
-    # running Opus 4.7 with no tools, no parent CLAUDE.md, no auto-memory.
-    # Reads the staged diff and emits a JSON verdict on whether the diff
-    # cheats — i.e., introduces bytes via something other than honest C
-    # compilation (inline __asm__, register-asm pins forcing allocation,
-    # whole-block regfix substs, asmfix bridges, etc.).
-    #
-    # The programmatic audit above catches mechanical patterns (size
-    # thresholds, wildcard substs, glabel-body inline asm). This layer
-    # catches the semantic cases: clever workarounds the regex doesn't
-    # know about, "give up" wrappers where a tiny C body wraps a large
-    # __asm__ block doing the real work, register-asm pins used as
-    # codegen-forcing cheats rather than real ABI constraints.
-    #
-    # Runs BEFORE verify_active_matches so we don't spend ~3 minutes on a
-    # clean rebuild for a commit the auditor will reject anyway.
-    #
-    # The auditor pre-filters internally: diffs that touch no asm-relevant
-    # file and add no asm-flavored tokens skip the LLM call entirely
-    # (no $ cost on routine commits).
-    #
-    # Per project policy: no override mechanism. The auditor's verdict is
-    # final for this commit attempt; the agent must address the violations
-    # and re-attempt. Fail-closed on any auditor failure (network, quota,
-    # parse error) — better to inconvenience the user than leak cheats.
-    SCRIPT_DIR_FOR_AUDIT="$(cd "$(dirname "$0")" && pwd)"
-    if [ -x "$SCRIPT_DIR_FOR_AUDIT/llm_audit.sh" ]; then
-        # Extract the -m / --message argument from the git commit command
-        # so the auditor sees the real commit message (not the stale
-        # .git/COMMIT_EDITMSG). Uses shlex for proper quote handling.
-        COMMIT_MSG_FROM_CMD=$(python3 -c "
+    # Extract -m / --message from the git commit command. Both Rule 1a
+    # (programmatic) and Rule 1b (LLM auditor) need the actual message
+    # to validate the Pure-C attempts: block and judge agent intent.
+    # Falls back to empty if no -m (e.g., interactive `git commit` opens
+    # editor — programmatic checker treats empty as "no attempt log").
+    COMMIT_MSG_FROM_CMD=$(python3 -c "
 import shlex, sys
 try:
     args = shlex.split(sys.argv[1])
 except Exception:
     sys.exit(0)
-# Find git commit and walk its arguments looking for -m / --message / -F
 in_commit = False
 for i, a in enumerate(args):
     if a == 'git':
@@ -316,6 +252,89 @@ for i, a in enumerate(args):
             print(a[len('--message='):])
             break
 " "$COMMAND" 2>/dev/null)
+    COMMIT_MSG_FILE=$(mktemp -t bb2-commitmsg.XXXXXX)
+    printf '%s' "$COMMIT_MSG_FROM_CMD" > "$COMMIT_MSG_FILE"
+    trap "rm -f '$COMMIT_MSG_FILE'" EXIT
+
+    # Rule 1a: asm-cheat scan + evidence-driven authorization gates.
+    # Catches:
+    #   - new regfix injection (large splice / subst_multi / wildcards / etc.)
+    #   - new inline __asm__("glabel ...") function bodies
+    #   - new lost-codegen single-insn inserts (regfix.txt + C source)
+    #   - same-commit self-authorization (function newly added to
+    #     inline_asm_canonical.txt AND newly has inline asm in same commit)
+    #   - new canonical-asm entry without valid evidence tag (per the
+    #     evidence-tag grammar — gcc-cannot-emit:, custom-abi:,
+    #     hand-coded-signal:, cluster-sibling:, bios-trampoline)
+    #   - new `__asm__ volatile("move %0, %1" ...)` aliasing barrier
+    #     without an attached INLINE_MOVE_ALIASING: comment listing ≥2
+    #     failed pure-C alternatives
+    #   - new regfix rule for a function with NO rules at HEAD (must be
+    #     justified per SOTN-grade policy)
+    #   - any of the above without a Pure-C attempts: block in the
+    #     commit message (≥3 attempts with technique/score/outcome)
+    # Cheap (~1s); runs before the expensive clean rebuild so the agent
+    # sees the failure fast.
+    cheat_out=$(wsl bash -c "cd '$WSL_ROOT' && python3 tools/audit_asm_cheats.py --check-new --commit-msg-file '$COMMIT_MSG_FILE' 2>&1")
+    cheat_exit=$?
+    if [ "$cheat_exit" -ne 0 ]; then
+        echo "$cheat_out" >&2
+        cat >&2 <<EOF
+
+BLOCKED: see ASM-CHEAT GUARD message above.
+
+This guard enforces the project's SOTN-grade policy (user directive
+2026-05-17): the default standard is pure C; inline asm / canonical
+authorization / regfix are deviations requiring compelling, evidence-
+driven justification.
+
+To proceed:
+  - Read memory/feedback_evidence_driven_authorization.md for the
+    evidence standard, tag grammar, attempt-log format, and aliasing-
+    barrier documentation rules.
+  - If the violation is a missing evidence tag, attempt log, or aliasing-
+    barrier comment, add the documentation and re-commit.
+  - If the violation is same-commit self-authorization, split into two
+    commits: (1) add the canonical entry with valid evidence tag, then
+    (2) AFTER the first lands, add the inline asm.
+  - If the violation flags a real cheat (~99% of cases), write a real
+    pure-C decomp instead of wrapping the asm. THE HARD RULE applies:
+    switch *technique*, not target.
+
+To audit existing state:
+  wsl bash -c "cd '$WSL_ROOT' && python3 tools/audit_asm_cheats.py --all"
+EOF
+        exit 2
+    fi
+
+    # Rule 1b: adversarial LLM auditor. A fresh `claude -p --bare` session
+    # running Opus 4.7 with no tools, no parent CLAUDE.md, no auto-memory.
+    # Reads the staged diff and emits a JSON verdict on whether the diff
+    # cheats — i.e., introduces bytes via something other than honest C
+    # compilation (inline __asm__, register-asm pins forcing allocation,
+    # whole-block regfix substs, asmfix bridges, etc.).
+    #
+    # The programmatic audit above catches mechanical patterns and the
+    # evidence-tag / attempt-log format gates. This layer catches the
+    # SEMANTIC cases: clever workarounds the regex doesn't know about,
+    # "give up" wrappers, register pins claiming ABI when really forcing
+    # codegen, and — critically — the QUALITY of evidence (e.g., is the
+    # claimed outcome in the attempt log specific and plausible, or vague
+    # boilerplate?).
+    #
+    # Runs BEFORE verify_active_matches so we don't spend ~3 minutes on a
+    # clean rebuild for a commit the auditor will reject anyway.
+    #
+    # The auditor pre-filters internally: diffs that touch no asm-relevant
+    # file and add no asm-flavored tokens skip the LLM call entirely
+    # (no $ cost on routine commits).
+    #
+    # Per project policy: no override mechanism. The auditor's verdict is
+    # final for this commit attempt; the agent must address the violations
+    # and re-attempt. Fail-closed on any auditor failure (network, quota,
+    # parse error) — better to inconvenience the user than leak cheats.
+    SCRIPT_DIR_FOR_AUDIT="$(cd "$(dirname "$0")" && pwd)"
+    if [ -x "$SCRIPT_DIR_FOR_AUDIT/llm_audit.sh" ]; then
         BB2_AUDIT_ROOT="$PROJECT_ROOT" \
         BB2_AUDIT_COMMIT_MSG="$COMMIT_MSG_FROM_CMD" \
             bash "$SCRIPT_DIR_FOR_AUDIT/llm_audit.sh"

@@ -40,6 +40,15 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Force UTF-8 on Windows so the report's arrows / box characters reach the
+# terminal intact (default cp1252 dies on U+2192 etc., the same bug that
+# bit llm_audit.sh — see commit 5f609c1).
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except AttributeError:
+    pass
+
 # Thresholds: tuned to distinguish "small structural transform"
 # (legitimate splice usage) from "full-body asm replacement".
 LARGE_SPLICE_LINES = 30           # single splice rule with >= this many replacement lines
@@ -105,6 +114,363 @@ def load_authorized(path="inline_asm_canonical.txt"):
         if name:
             auth.add(name)
     return auth
+
+
+def load_authorized_at_ref(ref="HEAD", path="inline_asm_canonical.txt"):
+    """Load the canonical-asm authorization set from a specific git ref.
+    Returns empty set if the file doesn't exist at that ref.
+
+    Critical for closing the same-commit self-authorization loophole:
+    `--check-new` must judge both cur and head scans against the HEAD
+    auth state, otherwise an agent can add `func_X` to the canonical
+    list and add inline asm for func_X in the SAME commit — the cur
+    scan would silently skip the function (it's in auth) and the diff
+    would show no new cheats."""
+    try:
+        out = subprocess.run(
+            ["git", "show", f"{ref}:{path}"],
+            capture_output=True, text=True, check=True,
+            encoding="utf-8", errors="replace",
+        ).stdout
+    except subprocess.CalledProcessError:
+        return set()
+    auth = set()
+    for line in out.split("\n"):
+        name = line.split("#")[0].strip()
+        if name:
+            auth.add(name)
+    return auth
+
+
+def parse_canonical_entries_with_comments(content):
+    """Return list of (name, comment) tuples for non-comment, non-blank lines
+    in the canonical-asm file. `comment` is the trailing `# ...` text (may
+    be empty string if absent)."""
+    out = []
+    for line in content.split("\n"):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if "#" in line:
+            name = line.split("#", 1)[0].strip()
+            comment = line.split("#", 1)[1].strip()
+        else:
+            name = stripped
+            comment = ""
+        if name:
+            out.append((name, comment))
+    return out
+
+
+# === Evidence-tag grammar for canonical-asm authorization ===
+#
+# Per user policy: SOTN-grade standard by default — pure-C is the target;
+# inline asm and canonical-asm authorization are exceptions requiring
+# COMPELLING EVIDENCE that the original code was hand-coded asm, not
+# just that *we* found pure-C hard.
+#
+# Each new entry in inline_asm_canonical.txt must carry one of these
+# tags in its `# justification` comment. The auditor verifies the tag is
+# present and (where possible) re-runs the relevant scanner to confirm
+# the agent's claimed signal matches reality.
+#
+# Tag forms:
+#   gcc-cannot-emit:<reason>       e.g., gcc-cannot-emit:overflow_op,
+#                                  gcc-cannot-emit:cop0, gcc-cannot-emit:break,
+#                                  gcc-cannot-emit:sp_manipulation
+#   custom-abi:<descriptor>        e.g., custom-abi:s0-in-no-save,
+#                                  custom-abi:caller-builds-frame
+#   hand-coded-signal:<tier>/<sigs>  e.g.,
+#                                  hand-coded-signal:STRONG/S1+S2+S3+S4+S5,
+#                                  hand-coded-signal:POSSIBLE/S6
+#                                  Tier must match scan_hand_coded.py output;
+#                                  the auditor re-runs the scanner to verify.
+#   cluster-sibling:<func>,jaccard=N.NN
+#                                  e.g.,
+#                                  cluster-sibling:func_8007F87C,jaccard=1.00
+#                                  Named sibling must itself be canonical;
+#                                  jaccard must be ≥ 0.7.
+#   bios-trampoline                3-insn PSX BIOS A/B/C-vector pattern
+#                                  (addiu vector; jr; addiu func-id in slot).
+#                                  Verified via existing BIOS_TRAMPOLINE regex.
+#
+# Multiple tags may co-occur on one entry (e.g., STRONG signal + cluster
+# corroboration). At least one must be valid.
+TAG_PATTERNS = (
+    ("gcc-cannot-emit",
+     re.compile(r"\bgcc-cannot-emit:([a-z][a-z0-9_]*)\b")),
+    ("custom-abi",
+     re.compile(r"\bcustom-abi:([a-z][a-z0-9_\-]*)\b")),
+    ("hand-coded-signal",
+     re.compile(r"\bhand-coded-signal:(STRONG|POSSIBLE)/((?:S\d+\+?)+)\b")),
+    ("cluster-sibling",
+     re.compile(r"\bcluster-sibling:(\w+),jaccard=(\d+\.\d+)\b")),
+    ("bios-trampoline", re.compile(r"\bbios-trampoline\b")),
+)
+
+
+def parse_evidence_tags(comment):
+    """Return list of (tag_kind, raw_match, groups_tuple) for each evidence
+    tag found in `comment`. Empty list = no valid tags."""
+    out = []
+    for kind, pat in TAG_PATTERNS:
+        for m in pat.finditer(comment):
+            out.append((kind, m.group(0), m.groups()))
+    return out
+
+
+def validate_canonical_evidence_tag(name, comment, current_auth, run_scanner=True):
+    """Return (ok, reason) for a single canonical-asm entry's justification.
+
+    Validates the comment carries at least one valid evidence tag from the
+    documented grammar. Where the tag is auto-verifiable (hand-coded-signal,
+    cluster-sibling), re-runs the relevant scanner / cross-checks against
+    current_auth.
+
+    `run_scanner=False` skips the (slow) scan_hand_coded.py invocation,
+    useful for `--all` reports where we only want format validation."""
+    tags = parse_evidence_tags(comment)
+    if not tags:
+        return (False,
+                "no evidence tag — need one of: gcc-cannot-emit:<reason>, "
+                "custom-abi:<desc>, hand-coded-signal:<tier>/<sigs>, "
+                "cluster-sibling:<func>,jaccard=N.NN, or bios-trampoline. "
+                "See feedback_evidence_driven_authorization.md for format.")
+
+    # Each tag form has its own verifiability constraint.
+    for kind, raw, groups in tags:
+        if kind == "hand-coded-signal" and run_scanner:
+            claimed_tier, claimed_sigs = groups
+            ok, msg = _verify_hand_coded_signal(name, claimed_tier, claimed_sigs)
+            if not ok:
+                return (False, f"hand-coded-signal tag failed verification: {msg}")
+        elif kind == "cluster-sibling":
+            sib, jaccard = groups
+            if sib not in current_auth:
+                return (False,
+                        f"cluster-sibling:{sib} — named sibling is NOT in "
+                        f"inline_asm_canonical.txt; cluster authorization "
+                        f"requires the parent be already canonical.")
+            try:
+                if float(jaccard) < 0.7:
+                    return (False,
+                            f"cluster-sibling jaccard={jaccard} below 0.7 "
+                            f"threshold — too dissimilar to inherit authorization.")
+            except ValueError:
+                return (False, f"cluster-sibling jaccard must be a number, got: {jaccard}")
+        elif kind == "bios-trampoline":
+            ok, msg = _verify_bios_trampoline(name)
+            if not ok:
+                return (False, f"bios-trampoline tag failed verification: {msg}")
+    return (True, None)
+
+
+def _verify_hand_coded_signal(name, claimed_tier, claimed_sigs):
+    """Re-run scan_hand_coded.py --single <name> and compare the claimed
+    tier+signals against what the scanner reports. Returns (ok, msg)."""
+    try:
+        proc = subprocess.run(
+            ["python3", "tools/scan_hand_coded.py", "--single", name],
+            capture_output=True, text=True, timeout=30,
+            encoding="utf-8", errors="replace",
+            env={**__import__("os").environ, "PYTHONIOENCODING": "utf-8"},
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+        return (False, f"scanner unavailable: {e}")
+    text = proc.stdout
+    m = re.search(r"tier=(\w+)\s+score=(\d+)/", text)
+    if not m:
+        return (False, f"scanner output unparseable for {name}: {text[:200]}")
+    scanner_tier = m.group(1)
+    if scanner_tier == "LOW":
+        return (False,
+                f"scanner says tier=LOW for {name} but you claimed "
+                f"hand-coded-signal:{claimed_tier} — evidence does not match.")
+    # STRONG claim must match STRONG scanner output. POSSIBLE may have STRONG
+    # too (downgrade-tolerant), but STRONG cannot be claimed when scanner
+    # says only POSSIBLE — that's evidence inflation.
+    tier_rank = {"STRONG": 3, "POSSIBLE": 2, "TIGHT_C": 1, "LOW": 0}
+    if tier_rank.get(claimed_tier, -1) > tier_rank.get(scanner_tier, -1):
+        return (False,
+                f"claimed tier {claimed_tier} > scanner tier {scanner_tier} "
+                f"for {name} — evidence inflation, REJECT.")
+    return (True, None)
+
+
+def _verify_bios_trampoline(name):
+    """Verify the function's asm/funcs/<name>.s starts with the 3-insn
+    PSX BIOS trampoline pattern."""
+    asm_path = Path(f"asm/funcs/{name}.s")
+    if not asm_path.exists():
+        return (False, f"asm/funcs/{name}.s not found")
+    content = asm_path.read_text(encoding="utf-8", errors="replace")
+    if not _trampoline_at_start(content):
+        return (False, "asm does not start with the 3-insn BIOS A/B/C-vector trampoline pattern")
+    return (True, None)
+
+
+# === Pure-C attempt log (in commit message) ===
+#
+# Any commit that adds inline asm, a canonical entry, an aliasing barrier,
+# or a new regfix rule for a previously-clean function must document the
+# pure-C alternatives the agent tried before reaching for the workaround.
+# Format:
+#
+#   Pure-C attempts:
+#     [1] technique=<name> score=<N> outcome=<observable evidence>
+#     [2] technique=<name> score=<N> outcome=<observable evidence>
+#     [3] technique=<name> score=<N> outcome=<observable evidence>
+#
+# At least 3 attempts. Each line: technique= (a named technique), score=
+# (an integer from compile/permuter), outcome= (text describing observable
+# state — dump-text output, permuter plateau, register-pin ignored, etc.).
+#
+# Vague outcomes ("didn't help", "no improvement", "tried everything") are
+# rejected by the LLM auditor; the programmatic check only enforces format.
+
+ATTEMPT_LOG_HEADER = re.compile(r"^Pure-C attempts:\s*$", re.MULTILINE)
+ATTEMPT_LINE = re.compile(
+    r"^\s*\[(\d+)\]\s+technique=(\S+)\s+score=(-?\d+|N/A)\s+outcome=(.+?)\s*$"
+)
+
+
+def parse_attempt_log(commit_msg):
+    """Return list of (idx, technique, score, outcome) parsed from the
+    `Pure-C attempts:` block in `commit_msg`. Empty list = no block, OR
+    block found but no parseable lines."""
+    if not commit_msg:
+        return []
+    lines = commit_msg.split("\n")
+    in_block = False
+    out = []
+    for line in lines:
+        if ATTEMPT_LOG_HEADER.match(line):
+            in_block = True
+            continue
+        if in_block:
+            m = ATTEMPT_LINE.match(line)
+            if m:
+                out.append((int(m.group(1)), m.group(2), m.group(3), m.group(4).strip()))
+                continue
+            # A blank line or a new block heading ends the attempt-log block.
+            if line.strip() == "" or line.endswith(":"):
+                # Only end on heading-like lines or repeated blanks
+                if not out:
+                    continue
+                if line.strip() == "" and not out:
+                    continue
+                break
+    return out
+
+
+# === Aliasing-barrier governance ===
+#
+# `__asm__ volatile("move %0, %1" : "=r"(x) : "r"(y))` is a documented
+# pattern-breaker (feedback_inline_move_aliasing.md). Each instance must
+# carry an attached comment block in the source justifying its use:
+#
+#   /* INLINE_MOVE_ALIASING: pure-C alternatives failed.
+#    *   - technique=<name>: <observable failure>
+#    *   - technique=<name>: <observable failure>
+#    * Per feedback_inline_move_aliasing.md, single-insn escape valve.
+#    */
+#   __asm__ volatile("move %0, %1" : "=r"(x) : "r"(y));
+#
+# Comment must be within 8 lines above the asm, contain `INLINE_MOVE_ALIASING:`,
+# and list ≥2 bulleted technique=<name>:<outcome> lines.
+
+ALIASING_BARRIER_RE = re.compile(
+    r'__asm__\s*(?:volatile\s*)?\(\s*"move\s+%0\s*,\s*%1"',
+)
+INLINE_MOVE_HEADER = re.compile(r"INLINE_MOVE_ALIASING:")
+INLINE_MOVE_BULLET = re.compile(
+    r"^\s*\*?\s*[-*]\s+technique=\S+\s*:\s*\S+",
+)
+
+
+def _line_to_pos(content, line_1based):
+    """Convert a 1-based line number into a character offset in `content`
+    pointing at the start of that line (or 0 if line_1based < 1)."""
+    if line_1based < 1:
+        return 0
+    pos = 0
+    for _ in range(line_1based - 1):
+        nl = content.find("\n", pos)
+        if nl < 0:
+            return pos
+        pos = nl + 1
+    return pos
+
+
+def scan_aliasing_barriers(content, source_name):
+    """Return list of (file, line_no, has_doc, missing_reason) for every
+    `move %0, %1` aliasing barrier in `content`."""
+    out = []
+    lines = content.split("\n")
+    for m in ALIASING_BARRIER_RE.finditer(content):
+        line_no = content[:m.start()].count("\n") + 1
+        has_doc, reason = _has_inline_move_doc(lines, line_no)
+        out.append((source_name, line_no, has_doc, reason))
+    return out
+
+
+def _has_inline_move_doc(lines, asm_line_1based):
+    """Return (ok, reason). Look back up to 8 lines from `asm_line_1based`
+    for an `INLINE_MOVE_ALIASING:` block with ≥2 technique= bullets."""
+    asm_idx = asm_line_1based - 1
+    start = max(0, asm_idx - 8)
+    window = lines[start:asm_idx]
+    header_idx = None
+    for i, line in enumerate(window):
+        if INLINE_MOVE_HEADER.search(line):
+            header_idx = i
+            break
+    if header_idx is None:
+        return (False, "no INLINE_MOVE_ALIASING: comment within 8 lines above")
+    # Count bullets from header to end of window
+    bullets = 0
+    for line in window[header_idx:]:
+        if INLINE_MOVE_BULLET.match(line):
+            bullets += 1
+    if bullets < 2:
+        return (False,
+                f"INLINE_MOVE_ALIASING: comment has only {bullets} `- technique=NAME:OUTCOME` "
+                f"bullets; need ≥2 documented failed alternatives")
+    return (True, None)
+
+
+# === Regfix-rule churn detection ===
+#
+# Per user policy: regfix is a deviation from SOTN bar. Existing rules are
+# grandfathered; new rules for functions that have NO rules at HEAD require
+# an attempt-log justification. New rules for already-rule-bearing functions
+# also require attempt-log but are scrutinized less aggressively.
+
+REGFIX_RULE_RE = re.compile(r"^(\w+):\s+(swap|subst|subst_multi|splice|delete|insert|insert_after|insert_before|insert_label|reorder|fill_delay|drain_delay|\$\d+\s*<->\s*\$\d+)\b")
+
+
+def parse_regfix_rule_owners(content):
+    """Return {func_name: count} of regfix rules per function."""
+    from collections import defaultdict
+    counts = defaultdict(int)
+    for line in content.split("\n"):
+        m = REGFIX_RULE_RE.match(line)
+        if m:
+            counts[m.group(1)] += 1
+    return dict(counts)
+
+
+def detect_new_regfix_rules(head_regfix, cur_regfix):
+    """Return (newly_cheating_funcs, churning_funcs):
+    - newly_cheating_funcs: functions with rules at cur but NONE at HEAD
+    - churning_funcs: functions whose rule count increased
+    """
+    head_counts = parse_regfix_rule_owners(head_regfix)
+    cur_counts = parse_regfix_rule_owners(cur_regfix)
+    newly_cheating = {f for f in cur_counts if f not in head_counts}
+    churning = {f for f in cur_counts
+                if f in head_counts and cur_counts[f] > head_counts[f]}
+    return newly_cheating, churning
 
 
 def scan_regfix_splices(content):
@@ -899,76 +1265,251 @@ def cmd_func(name):
     return 0
 
 
-def cmd_check_new():
-    """Return 1 if working tree has cheats not present at HEAD."""
-    auth = load_authorized()
+def cmd_check_new(commit_msg=None):
+    """Return 1 if working tree introduces unauthorized cheats since HEAD,
+    OR if newly-added inline asm / canonical entries / regfix rules are
+    missing required evidence (tag grammar, attempt log, aliasing-barrier
+    documentation).
+
+    Gates, in order:
+      G1. Same-commit self-authorization detection (HEAD auth in both scans)
+      G2. New canonical-asm entry without valid evidence tag
+      G3. Standard cheat-pattern delta (existing behavior, now self-auth-safe)
+      G4. New aliasing barrier without INLINE_MOVE_ALIASING: comment
+      G5. New regfix rules for previously-clean functions
+      G6. Any of G1-G5 → require Pure-C attempts: log in commit message
+    """
+    head_auth = load_authorized_at_ref("HEAD")
+    cur_auth = load_authorized()  # working tree
+
+    violations = []  # list of (gate, message)
+
+    # === G2: validate evidence tags on NEW canonical entries ===
+    new_auth_names = cur_auth - head_auth
+    new_auth_with_comments = []
+    if new_auth_names:
+        canonical_content = Path("inline_asm_canonical.txt").read_text(
+            encoding="utf-8", errors="replace")
+        for name, comment in parse_canonical_entries_with_comments(canonical_content):
+            if name in new_auth_names:
+                new_auth_with_comments.append((name, comment))
+                ok, reason = validate_canonical_evidence_tag(
+                    name, comment, cur_auth)
+                if not ok:
+                    violations.append(("canonical_evidence_tag",
+                        f"new canonical-asm entry `{name}` -- {reason}"))
+
+    # === G1+G3: cheat scans using HEAD auth so newly-authorized funcs
+    # do NOT immunize themselves. A function added to canonical THIS
+    # commit + new inline asm THIS commit → cur scan flags it as
+    # unauthorized → set diff shows it as new → BLOCKED. This is the
+    # mechanical replacement for the user-authorization-phrase requirement.
     (cur_splice, cur_inline, cur_bios, cur_c_body, cur_inserts,
-     cur_asm_inj) = get_current_cheats(auth)
+     cur_asm_inj) = get_current_cheats(head_auth)
     (head_splice, head_inline, head_c_body, head_inserts,
-     head_asm_inj) = get_head_cheats(auth)
+     head_asm_inj) = get_head_cheats(head_auth)
 
     new_splices = cur_splice - head_splice
     new_inline = cur_inline - head_inline
     new_c_body = cur_c_body - head_c_body
-    # New insert cheats: any function whose lost-codegen insert count went up,
-    # OR any function that gained lost-codegen inserts.
     new_inserts = {}
     for fn, n in cur_inserts.items():
         head_n = head_inserts.get(fn, 0)
         if n > head_n:
             new_inserts[fn] = (head_n, n)
-    # New inline-asm lost-codegen INJECTIONS in src/*.c (same cheat moved
-    # from regfix to C source — the §7 "anti-pattern under a different name").
     new_asm_inj = {}
     for fn, n in cur_asm_inj.items():
         head_n = head_asm_inj.get(fn, 0)
         if n > head_n:
             new_asm_inj[fn] = (head_n, n)
 
-    if (not new_splices and not new_inline and not new_c_body
-            and not new_inserts and not new_asm_inj):
+    # Surface same-commit self-auth explicitly (it's the most common
+    # exploit pattern and the error message should name it).
+    self_auths = (new_inline | new_c_body | set(new_asm_inj.keys())
+                  | set(new_inserts.keys())) & new_auth_names
+    for fn in sorted(self_auths):
+        violations.append(("same_commit_self_auth",
+            f"function `{fn}` newly added to inline_asm_canonical.txt AND "
+            f"newly has inline asm / regfix injection in src/ -- this is "
+            f"same-commit self-authorization. Split into two commits: "
+            f"(1) add the canonical entry with valid evidence tag, "
+            f"(2) AFTER the first commit lands, add the inline asm."))
+
+    # Other new cheats (not self-auth — those are reported above)
+    for fn in sorted(new_splices):
+        violations.append(("regfix_injection",
+            f"new regfix injection for `{fn}` (large splice / subst_multi / "
+            f"cumulative ≥ {CUMULATIVE_RULE_LINES} lines / wildcard substs)"))
+    for fn in sorted(new_inline - new_auth_names):
+        violations.append(("inline_asm_glabel",
+            f"new inline `__asm__(\".section .text\\n... glabel {fn} ...\")` "
+            f"body in src/*.c; if hand-coded original, add to "
+            f"inline_asm_canonical.txt with evidence tag (see G2)"))
+    for fn in sorted(new_c_body - new_auth_names):
+        violations.append(("c_body_multi_insn",
+            f"new multi-insn `__asm__` block in C body of `{fn}` containing "
+            f"non-§6.1-whitelisted instructions"))
+    for fn in sorted(set(new_inserts.keys()) - new_auth_names):
+        head_n, cur_n = new_inserts[fn]
+        violations.append(("lost_codegen_insert",
+            f"new lost-codegen single-insn regfix insert for `{fn}` "
+            f"(HEAD={head_n}, now={cur_n}, +{cur_n - head_n})"))
+    for fn in sorted(set(new_asm_inj.keys()) - new_auth_names):
+        head_n, cur_n = new_asm_inj[fn]
+        violations.append(("inline_asm_injection",
+            f"new inline-asm lost-codegen INJECTION in C body of `{fn}` "
+            f"(HEAD={head_n}, now={cur_n}, +{cur_n - head_n}); hardcoded "
+            f"`$N` register, no `%N` placeholders"))
+
+    # === G4: new aliasing barriers must have INLINE_MOVE_ALIASING comments ===
+    # Count barriers per (file, host-function) pair to be resilient against
+    # line-number shifts from edits elsewhere in the file. A pair is "new"
+    # only when cur count > head count.
+    def barriers_by_func(content, source_name):
+        from collections import defaultdict
+        out = defaultdict(int)
+        for src_name, line_no, _has_doc, _reason in scan_aliasing_barriers(
+                content, source_name):
+            fname = _enclosing_func_name(content, _line_to_pos(content, line_no))
+            out[(source_name, fname)] += 1
+        return out
+
+    head_barriers_by_func = {}
+    try:
+        head_src_paths = subprocess.run(
+            ["git", "ls-tree", "-r", "--name-only", "HEAD", "src/"],
+            capture_output=True, text=True, check=True,
+            encoding="utf-8", errors="replace").stdout.split("\n")
+        for path in head_src_paths:
+            if not path.endswith(".c"):
+                continue
+            try:
+                head_content = subprocess.run(
+                    ["git", "show", f"HEAD:{path}"],
+                    capture_output=True, text=True, check=True,
+                    encoding="utf-8", errors="replace").stdout
+            except subprocess.CalledProcessError:
+                continue
+            basename = path.split("/")[-1]
+            for key, n in barriers_by_func(head_content, basename).items():
+                head_barriers_by_func[key] = head_barriers_by_func.get(key, 0) + n
+    except subprocess.CalledProcessError:
+        pass
+
+    new_barriers_missing_doc = []
+    for src_path in sorted(Path("src").glob("*.c")):
+        content = src_path.read_text(encoding="utf-8", errors="replace")
+        cur_per_func = barriers_by_func(content, src_path.name)
+        # Iterate scan results in order so missing-doc reports identify
+        # the actual file:line that lacks documentation.
+        cur_barriers = list(scan_aliasing_barriers(content, src_path.name))
+        per_func_remaining = dict(cur_per_func)  # mutable copy
+        for src_name, line_no, has_doc, reason in cur_barriers:
+            fname = _enclosing_func_name(content, _line_to_pos(content, line_no))
+            key = (src_name, fname)
+            head_n = head_barriers_by_func.get(key, 0)
+            # Charge this barrier against head_n first (grandfathered),
+            # then any excess against the "new" budget.
+            if head_n > 0:
+                head_barriers_by_func[key] = head_n - 1
+                continue
+            # This barrier is new (no head budget left)
+            if not has_doc:
+                new_barriers_missing_doc.append((src_name, line_no, reason))
+
+    for src_name, line_no, reason in new_barriers_missing_doc:
+        violations.append(("aliasing_barrier_missing_doc",
+            f"new `__asm__ volatile(\"move %0, %1\" ...)` aliasing barrier "
+            f"at {src_name}:{line_no} -- {reason}. Add an "
+            f"INLINE_MOVE_ALIASING: comment block above with ≥2 "
+            f"`- technique=NAME: outcome` bullets documenting the pure-C "
+            f"alternatives that failed."))
+
+    # === G5: new regfix rules ===
+    head_regfix = ""
+    cur_regfix = ""
+    for fname in ("regfix.txt", "regfix_stage2.txt"):
+        p = Path(fname)
+        if p.exists():
+            cur_regfix += p.read_text(encoding="utf-8", errors="ignore") + "\n"
+        try:
+            head_regfix += subprocess.run(
+                ["git", "show", f"HEAD:{fname}"],
+                capture_output=True, text=True, check=True,
+                encoding="utf-8", errors="replace").stdout + "\n"
+        except subprocess.CalledProcessError:
+            pass
+
+    newly_cheating_via_regfix, churning_regfix = detect_new_regfix_rules(
+        head_regfix, cur_regfix)
+    # Don't double-report: if function is already flagged in self-auth or
+    # standard cheat sets, skip.
+    already_flagged = (self_auths | new_splices | set(new_inserts.keys())
+                       | set(new_asm_inj.keys()))
+    for fn in sorted(newly_cheating_via_regfix - already_flagged):
+        violations.append(("regfix_new_clean_func",
+            f"new regfix rule for `{fn}` which had ZERO rules at HEAD. "
+            f"Per SOTN-grade policy, regfix is a deviation requiring "
+            f"compelling pure-C-exhausted evidence. Add a Pure-C attempts: "
+            f"block to the commit message documenting ≥3 attempted techniques."))
+
+    # === G6: any of the above triggers require attempt-log in commit msg ===
+    needs_attempt_log = (
+        bool(new_auth_with_comments)
+        or bool(new_inline) or bool(new_c_body)
+        or bool(new_inserts) or bool(new_asm_inj)
+        or bool(new_barriers_missing_doc)
+        or bool(new_barriers_missing_doc)  # noqa — emphasis
+        or bool(newly_cheating_via_regfix)
+    )
+    if needs_attempt_log:
+        attempts = parse_attempt_log(commit_msg or "")
+        if len(attempts) < 3:
+            violations.append(("attempt_log_missing",
+                f"commit introduces inline asm / canonical entry / new regfix / "
+                f"aliasing barrier; commit message must contain a `Pure-C attempts:` "
+                f"block with ≥3 entries (found {len(attempts)}). Format: \n"
+                f"    Pure-C attempts:\n"
+                f"      [1] technique=<name> score=<N> outcome=<observable evidence>\n"
+                f"      [2] technique=<name> score=<N> outcome=<observable evidence>\n"
+                f"      [3] technique=<name> score=<N> outcome=<observable evidence>\n"
+                f"Outcomes must reference observable state (dump-text output, "
+                f"permuter score plateau, register-pin ignored per RA dump, etc.) "
+                f"-- vague outcomes will fail the adversarial LLM auditor."))
+        else:
+            # Quick programmatic check: outcomes must not be vague.
+            VAGUE_PATS = (
+                r"^(didn'?t (work|help)|no(t)? improv(e|ement|ed)|"
+                r"tried (everything|all)|failed|same|nothing)\.?\s*$"
+            )
+            vague_re = re.compile(VAGUE_PATS, re.IGNORECASE)
+            for idx, technique, score, outcome in attempts:
+                if vague_re.match(outcome):
+                    violations.append(("attempt_log_vague_outcome",
+                        f"Pure-C attempts: entry [{idx}] technique={technique} "
+                        f"has vague outcome '{outcome}'. Replace with specific "
+                        f"observable state (e.g., 'dump-text shows pin ignored, "
+                        f"v0 used instead' or 'permuter plateau at score=14 "
+                        f"after 600s, no structural variant')."))
+
+    # === Emit verdict ===
+    if not violations:
         return 0
 
-    print("ASM-CHEAT GUARD: new unauthorized asm-cheat patterns since HEAD:", file=sys.stderr)
-    for func in sorted(new_splices):
-        print(f"  Regfix injection for {func} (large splice / large subst_multi / "
-              f"cumulative >= {CUMULATIVE_RULE_LINES} lines) in regfix.txt", file=sys.stderr)
-    for fname in sorted(new_inline):
-        print(f"  Inline __asm__ glabel body for {fname} in src/*.c", file=sys.stderr)
-    for fname in sorted(new_c_body):
-        print(f"  Multi-insn __asm__ block inside C body of {fname} "
-              f"(non-§6.1-whitelisted insns smuggled via \\n-concatenation)", file=sys.stderr)
-    for fn, (head_n, cur_n) in sorted(new_inserts.items()):
-        delta = cur_n - head_n
-        print(f"  Lost-codegen insert(s) for {fn}: HEAD had {head_n}, now {cur_n} "
-              f"(+{delta}). Single-instruction `insert_after \"addu $sN,$0,$zero\"` rules "
-              f"inject what GCC's optimizer ate — those bytes don't come from C", file=sys.stderr)
-    for fn, (head_n, cur_n) in sorted(new_asm_inj.items()):
-        delta = cur_n - head_n
-        print(f"  Inline-asm lost-codegen INJECTION for {fn}: HEAD had {head_n}, "
-              f"now {cur_n} (+{delta}). Single-instruction `__asm__` block with "
-              f"hardcoded `$N` registers (no `%N` placeholders) emitting `addu RD,RS,$zero` "
-              f"-style move — the same lost-codegen cheat migrated from regfix.txt into "
-              f"the C source. Bytes still don't come from compilation; GCC has no view "
-              f"into the operation. Use proper operand constraints (`%0`/`%1` with `=r`/`r` "
-              f"binding to `register T x asm(\"$N\")` variables) so GCC tracks it, or "
-              f"restructure the C to defeat the optimizer.", file=sys.stderr)
+    print("ASM-CHEAT GUARD: new unauthorized patterns since HEAD:", file=sys.stderr)
     print(file=sys.stderr)
-    print("These patterns make the binary match without the C source", file=sys.stderr)
-    print("actually corresponding to the emitted bytes (the bytes come from", file=sys.stderr)
-    print("asm injected via splice/subst_multi/insert chains, file-scope __asm__,", file=sys.stderr)
-    print("multi-instruction asm blocks smuggling work, or single-instruction", file=sys.stderr)
-    print("lost-codegen inserts).", file=sys.stderr)
+    for kind, msg in violations:
+        print(f"  [{kind}]", file=sys.stderr)
+        for line in msg.split("\n"):
+            print(f"    {line}", file=sys.stderr)
+        print(file=sys.stderr)
+    print("Per SOTN-grade policy (user directive 2026-05-17): the default", file=sys.stderr)
+    print("standard is pure C. Inline asm / canonical authorization / regfix", file=sys.stderr)
+    print("are deviations requiring compelling, evidence-driven justification.", file=sys.stderr)
     print(file=sys.stderr)
-    print("If the original was hand-coded asm (see memory/", file=sys.stderr)
-    print("feedback_hand_coded_asm_recognition.md), add the function name", file=sys.stderr)
-    print("to inline_asm_canonical.txt with a justification comment, then", file=sys.stderr)
-    print("re-commit.", file=sys.stderr)
-    print(file=sys.stderr)
-    print("If it's canonically C (~99% of the codebase), write a real C", file=sys.stderr)
-    print("decomp instead of wrapping the asm. For lost-codegen inserts,", file=sys.stderr)
-    print("try register pinning (`register T x asm(\"$N\")`) or a different C", file=sys.stderr)
-    print("structure that GCC won't constant-fold.", file=sys.stderr)
+    print("Read memory/feedback_evidence_driven_authorization.md for the", file=sys.stderr)
+    print("evidence standard, tag grammar, attempt-log format, and aliasing-", file=sys.stderr)
+    print("barrier documentation rules.", file=sys.stderr)
     return 1
 
 
@@ -1031,13 +1572,24 @@ def main():
                    help="compare current state vs HEAD; non-zero exit if new cheats added")
     g.add_argument("--list-funcs", action="store_true",
                    help="print unauthorized function names, one per line")
+    ap.add_argument("--commit-msg-file",
+                    help="path to a file containing the commit message (used by "
+                         "--check-new to validate the Pure-C attempts: block)")
     args = ap.parse_args()
     if args.summary:
         return cmd_summary()
     if args.list_funcs:
         return cmd_list_funcs()
     if args.check_new:
-        return cmd_check_new()
+        commit_msg = None
+        if args.commit_msg_file:
+            try:
+                commit_msg = Path(args.commit_msg_file).read_text(
+                    encoding="utf-8", errors="replace")
+            except Exception as e:
+                print(f"[audit] WARNING: could not read commit-msg-file "
+                      f"{args.commit_msg_file}: {e}", file=sys.stderr)
+        return cmd_check_new(commit_msg=commit_msg)
     if args.func:
         return cmd_func(args.func)
     return cmd_all()
