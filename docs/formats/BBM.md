@@ -184,9 +184,21 @@ K123.BBM section 5 start:
 ```
 
 Not interpreted further by this document — the encoding requires reverse
-engineering the Marionation runtime functions in `src/code6cac_c_mid.c`
-(`motion_LoadPreCalcData_80037F08`, `motion_SetMotion`, `motion_make_table`,
-`motion_shift_check_m_hit_stop`, etc.).
+engineering the Marionation runtime functions. **Caveat:** the relevant
+runtime is *not* the obviously-named functions in `src/code6cac_c_mid.c`:
+
+* `motion_LoadPreCalcData_80037F08` is a 3-line wrapper around
+  `func_80079A30` + `bios_FormatDevice_B` — it doesn't touch BBM bytes.
+* `motion_SetMotion` is a game-state machine that selects motion IDs
+  based on input + character state — it never parses bytes either.
+* `motion_make_table` (in `src/ings2.c:162`) builds the global motion
+  index table.
+
+The actual section-5 decoder is likely a separate per-frame interpreter
+called from the main game loop after the BBM has been loaded into RAM;
+finding it requires either dynamic tracing or hunting for the function
+that reads from `D_800A38xx` motion-pointer storage with a per-joint
+stride that matches the K123.BBM section-5 byte pattern shown above.
 
 ## WIN.DAT
 

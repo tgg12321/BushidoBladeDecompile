@@ -142,8 +142,36 @@ Six records consistently across every STAGE\*.BIN. Likely correspond to:
 * 1 environmental hazard / dynamic prop set
 * 1 "title overlay" / pre-fight transition set
 
-Confirmation would require live debugging or finishing the stage-loader
-decompile — listed here as a hypothesis only.
+What we *can* say with confidence (from the sub-TOC + VAB analysis):
+* **Record 0** is structurally distinct from the other five (sub-TOC count
+  `0x10` vs `0x0C`, full-size VAB vs reduced-size VAB). The other five
+  share a template — they all have the same sub-TOC width and carry a
+  reduced VAB containing only a handful of programs/tones.
+* The full-size VAB in record 0 (`v7, fsize=0x2B1B0`) is the **same**
+  schema used by SEL/SEL1/SEL2/MOD.BIN in `disc/TIM2D/` (see §3) —
+  presumably a shared "stage SFX" sound bank that every arena loads, with
+  records 1..5 layering on character-specific footstep / impact variants.
+
+Confirmation of the record-to-purpose mapping would still require live
+debugging or finishing the stage-loader decompile — listed here as a
+strong hypothesis backed by the structural evidence above.
+
+### Naming caveat — `marionation_camera_*` / `special_camera_*` are not loaders
+
+The auto-generated function names in `src/code6cac_b2.c` that look like
+stage-loader entry points are misnomers from an early symbol pass:
+
+* `marionation_camera_Init_80036064` is actually a **CD streaming
+  callback** — it loads 0x200 sectors at a time via `func_80080620` and
+  manages `cdrom_BcdToFrames` / `cdrom_SetCallbackB`.
+* `special_camera_check_pos_outside_ground_80036E34` is the
+  **NDATA-archive disc-read scheduler** — see `docs/formats/NDATA.md`
+  "Reader (`func_80044E74`)" for the actual NDATA disc-I/O path.
+
+Neither of these functions parses the `STAGE\*.BIN` payload — they are
+generic CD-load routines that happen to be invoked while a stage is
+loading. The real per-record consumers are in the various
+`code6cac_*.c` files and have not yet been mapped.
 
 ---
 
