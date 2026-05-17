@@ -832,4 +832,9 @@ g_packet_data_dma_addr          = 0x800F1AF4;  /* volatile DMA-list address for 
 g_camera_settle_countdown       = 0x80101E80;  /* marionation_camera_Init settle counter (-2 sentinel) */
 g_pad_press_tick_counter        = 0x800A3924;  /* tick counter in pad-press code */
 
+/* === Data-symbol auto-classifier pass (2026-05-17) -- final scratchpad ptr === */
+/* See docs/naming/REMAINING_DATA_CATALOG.md for mechanical classification of */
+/* the remaining 1032 unnamed D_* globals (refs mostly <= 5). */
+g_scratchpad_ptr_a8             = 0x800A3480;  /* -> 0x1F8000A8, sibling of A4/AC/B8 scratchpad cache */
+
 /* === BIOS A0/B0/C0 jumptable wrappers (apply_bios_names 2026-05-16) === */
