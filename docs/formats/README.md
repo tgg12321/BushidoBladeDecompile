@@ -7,7 +7,7 @@ the Bushido Blade 2 (SLUS-00663) disc.
 
 | Format     | Spec                  | Inspector tool             | Status                | Files on disc            |
 |------------|-----------------------|----------------------------|-----------------------|--------------------------|
-| **NDATA**  | [NDATA.md](NDATA.md)  | `tools/inspect_ndata.py`   | Fully reversed        | `disc/NDATA/NDATA.{DAT,INF}` |
+| **NDATA**  | [NDATA.md](NDATA.md)  | `tools/inspect_ndata.py`, `tools/extract_ndata_names.py` | Fully reversed; file-ID -> name map in `ndata_filemap.csv` | `disc/NDATA/NDATA.{DAT,INF}` |
 | **BBM**    | [BBM.md](BBM.md)      | `tools/inspect_bbm.py`     | Partially reversed (containers, not section-5 keyframe encoding) | `disc/MOTION/*.BBM` |
 | **WIN.DAT**| [BBM.md#WIN.DAT](BBM.md#windat) | `tools/inspect_windat.py` | Structure reversed (27×0x3800 records, i16 fixed-point); per-frame schema TBD | `disc/MOTION/WIN.DAT` |
 | **TIM**    | [TIM.md](TIM.md)      | `tools/inspect_tim.py`     | Standard PSX format — fully implemented (PNG export) | `disc/TIM2D/*.TIM`, `disc/STR/TITLE.TIM` |
