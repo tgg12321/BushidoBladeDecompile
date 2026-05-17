@@ -6,9 +6,9 @@
 
 **Workflow**: copy the proposed name into `named_syms.txt`, run `make setup && make`, verify SHA1 unchanged, commit.
 
-Total High: **58**
+Total High: **68**
 
-## Primary evidence: `manual_review` (10)
+## Primary evidence: `manual_review` (20)
 
 Hand-review rows for functions previously tagged `confidence=none` by
 the automated analyzer. Each row links to a prose evidence file that
@@ -24,6 +24,21 @@ discursive than the auto-generated evidence files.
 | `0x80040510` | `func_80040510` | `player_rob_Init` | manual_review=stores in g_player_ptrs[idx]; chains AllocRobRmd + 4 rob_* helpers; single caller at fight-start with (slot, model_id, heap_base=0x80190800); promoted from medium 2026-05-17 after 3-of-3 medium-evidence agreement | [md](evidence/func_80040510.md) |
 | `0x80079154` | `func_80079154` | `bb2_rand` | manual_review=BSD libc LCG (0x41C64E6D * x + 0x3039, >> 16 & 0x7FFF); 29 callers across 6 files all use return as a random number | [md](evidence/func_80079154.md) |
 | `0x80080620` | `func_80080620` | `cd_dma_idle_80080620` | manual_review=1-line inversion of cdrom_DmaToRam() == 0; returns 1 when no CD-DMA-to-RAM transfer is active | [md](evidence/func_80080620.md) |
+
+### Batch 5 additions (2026-05-17, 10 entries -- mostly the motion_SetExMotion family)
+
+| address | current | proposed | evidence_summary | evidence_file |
+|---|---|---|---|---|
+| `0x80035480` | `func_80035480` | `scene_teardown_variant_80035480` | manual_review=sibling of scene_teardown_80035DC8; player_Destroy(0,1) + disp_load_config_from_buf + sets mode 9 (vs sibling's 0x1B) | [md](evidence/func_80035480.md) |
+| `0x80041584` | `func_80041584` | `player_find_empty_slot_80041584` | manual_review=iterates 3 player slots in g_player_ptrs and returns index of first NULL slot (or -1 if all 3 used) | [md](evidence/func_80041584.md) |
+| `0x80048744` | `func_80048744` | `set_color_mode_80048744` | manual_review=2-line setter for named g_color_mode to 0 or 1 based on input truthiness | [md](evidence/func_80048744.md) |
+| `0x80065344` | `func_80065344` | `motion_ex_play_id1_80065344` | manual_review=family member: motion_SetExMotion(1) + per-id play-counter D_800F0BAA (10-play cap via step 0x1C6 / threshold 0x11C8) | [md](evidence/func_80065344.md) |
+| `0x80065394` | `func_80065394` | `motion_ex_play_id2_80065394` | manual_review=family member: motion_SetExMotion(2) + counter D_800F0BAC, 10-play cap | [md](evidence/func_80065394.md) |
+| `0x80065434` | `func_80065434` | `motion_ex_play_id4_80065434` | manual_review=family member: motion_SetExMotion(4) + counter D_800F0BB0, ~10-play cap (step 0x19 / threshold 0xC9) | [md](evidence/func_80065434.md) |
+| `0x80065540` | `func_80065540` | `motion_ex_play_id6_80065540` | manual_review=family member: motion_SetExMotion(6) + counter D_800F0BB4, 5-play cap (step 0x32 / threshold 0x100) | [md](evidence/func_80065540.md) |
+| `0x80065590` | `func_80065590` | `motion_ex_play_id7_80065590` | manual_review=family member: motion_SetExMotion(7) + counter D_800F0BB6, 5-play cap | [md](evidence/func_80065590.md) |
+| `0x80065630` | `func_80065630` | `motion_ex_play_idB_80065630` | manual_review=family member: motion_SetExMotion(0xB) + counter D_800F0BBE, 5-play cap | [md](evidence/func_80065630.md) |
+| `0x80065760` | `func_80065760` | `motion_ex_play_id10_80065760` | manual_review=family member: motion_SetExMotion(0x10) + counter D_800F0BC8, 10-play cap | [md](evidence/func_80065760.md) |
 
 ### Batch 4 additions (2026-05-17)
 
