@@ -1843,6 +1843,12 @@ g_global_frame_counter                                  = 0x800A37C0;  /* global
 g_intro_demo_duration                                   = 0x80106A5C;  /* intro/demo duration cap (= 0x6978 = 27000 frames) */
 g_intro_select_packed_state                             = 0x800A3788;  /* packed state value combined with menu `select` in func_8005C8A8 call */
 
+/* === Cross-cutting unnamed state used in 3+ named functions (2026-05-17) -- 4 highs === */
+g_seq_active_flag                                       = 0x800A3244;  /* seq subsystem state: 1=active, 0=stopped; set by seq_Start, cleared by seq_Reset, read by seq_GetState */
+g_char_class_idx_p1                                     = 0x80101ED2;  /* per-character class idx (P1 entry of g_practice_menu_table, offset +0xA); indexes into &D_8008D9EC for char-class lookup */
+g_vsync_target_frames                                   = 0x800A36F1;  /* vsync target frame count (default 2 = 30 FPS); main loop uses `(D-1)<<8 + 0x80` for vsync window deadline */
+g_stage_id_arg                                          = 0x800A3228;  /* stage ID set by single_game_SetStageId; read by gnd_open + camera_SetMatrix_8003E164 */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
