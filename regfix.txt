@@ -3554,16 +3554,6 @@ AddTbpOfst_80047EE8: subst "lw\s+\$17,28" "lw	$17,60" @ 47
 AddTbpOfst_80047EE8: subst "lw\s+\$16,24" "lw	$16,56" @ 48
 AddTbpOfst_80047EE8: subst "addu\s+\$sp,\$sp,40" "addu	$sp,$sp,72" @ 49
 
-# func_800483DC: prologue reorder + s0/a1 swap. Mine puts arg0+offset directly
-# in $16, then later sets $20=arg0 fresh; target sets $16=arg0 first, uses $a1
-# as temp for arg0+offset, then $20=$16. Reorder mine's prologue then insert.
-func_800483DC: subst "addu\s+\$16,\$4,\$5" "addu	$5,$5,$16" @ 4
-func_800483DC: subst "lw\s+\$2,0\(\$16\)" "lw	$2,0($5)" @ 10
-func_800483DC: subst "addu\s+\$20,\$4,\$zero" "addu	$20,$16,$zero" @ 11
-func_800483DC: subst "addu\s+\$16,\$4,\$2" "addu	$16,$16,$2" @ 12
-func_800483DC: insert_after "addu	$16,$4,$zero" @ 3
-func_800483DC: reorder 3,4,1,2,5 @ 1-5
-
 # InitHiraRmd_800480C0: 6-arg call-loop with sx_arg2/3/4/5 + arg0_saved (7 callee-saves).
 # Same prologue restructure recipe as 800483DC/47FBC + frame +32 + stack offset
 # substs, with 2 stack-arg lws shifting position.
