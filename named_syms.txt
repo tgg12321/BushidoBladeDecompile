@@ -1428,6 +1428,21 @@ g_gpu_motion_save_a                                     = 0x8009BF80;  /* motion
 g_gpu_motion_save_b                                     = 0x8009BF88;  /* parallel motion_make_table save for outer caller */
 g_gpu_loop_flag                                         = 0x8009BE7C;  /* set to 1 during successful packet submit */
 g_gpu_status_alt_reg                                    = 0x8009BF60;  /* parallel GPU status reg; cleared and written 0x11000002 (GPU primitive header) */
+
+/* === Effect/physics object cluster (2026-05-17) -- 4 highs === */
+/* From text1b.c func_80053304 (line 11052) + func_8005344C (11082): */
+/* D_800A33F4 is the active effect-state pointer; the struct it points */
+/* to has a 96-byte layout with: */
+/*   +0x8/+0xC/+0x10 = vx/vy/vz (current position) */
+/*   +0x18/+0x1C/+0x20 = bx/by/bz (target/base position) */
+/*   +0x5C = handler function pointer */
+/* The flow: compute |b-v| via func_80052754, if <= 0x9C3F (40000) */
+/* reflect v to opposite side of b and set handler = func_80053754; */
+/* otherwise set handler = func_80053E9C. */
+g_effect_active_ptr                                     = 0x800A33F4;  /* pointer to currently-active effect/physics state struct */
+g_effect_struct_a                                       = 0x800EF9F8;  /* effect state struct base (assigned to g_effect_active_ptr in func_80053304) */
+g_effect_struct_a_vfield                                = 0x800EFA00;  /* effect_struct_a + 8 (first vector field, vx) */
+g_effect_struct_b                                       = 0x800EFC38;  /* second effect state struct (parallel to g_effect_struct_a) */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
