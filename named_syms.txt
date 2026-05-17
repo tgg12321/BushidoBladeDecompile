@@ -1465,6 +1465,21 @@ g_fade_value                                            = 0x800A3570;  /* s16 fa
 g_fade_dispatch_idx                                     = 0x800A3580;  /* index into g_fade_dispatch_table (= D_8009BC1C) for current fade handler */
 g_fade_next_dispatch_idx                                = 0x800A3584;  /* deferred next dispatch idx (loaded into g_fade_dispatch_idx when ramp completes) */
 g_fade_dispatch_table                                   = 0x8009BC1C;  /* fade-state dispatch table -- (&D_8009BC1C)[g_fade_dispatch_idx](sp10) */
+
+/* === text1b render-state cluster (2026-05-17) -- 7 highs === */
+/* From text1b.c func_800617C8 (line 13643) etc.  Complements existing */
+/* g_text1b_render_state (0x800F116C base), g_text1b_glyph_cursor */
+/* (0x800F1180), g_text1b_render_arg_cache (0x800F1178). */
+/* Multiple "slot families" (a/b/c) each have a 2-byte busy-flag array */
+/* checked before submit; primitive header words 0/1/2 are filled */
+/* from arg0[0..2]. */
+g_text1b_prim_header_0                                  = 0x800F1140;  /* first word of GPU primitive header (filled from arg0[0]) */
+g_text1b_prim_header_1                                  = 0x800F1144;  /* second word (arg0[1]) */
+g_text1b_prim_header_2                                  = 0x800F1148;  /* third word (arg0[2]) */
+g_text1b_slot_a_flags                                   = 0x800F1160;  /* u8[2] busy/active flags for slot family A (gpu cmd 0x210010/11) */
+g_text1b_slot_b_flags                                   = 0x800F1152;  /* u8[2] busy/active flags for slot family B (gpu cmd 0x210002/03) */
+g_text1b_slot_c_flags                                   = 0x800F1164;  /* u8[2] busy/active flags for slot family C */
+g_text1b_render_arg1_cache                              = 0x800F117C;  /* cached caller-arg1 (parallel to g_text1b_render_arg_cache at +0x10) */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
