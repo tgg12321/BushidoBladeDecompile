@@ -1515,6 +1515,17 @@ g_char_class_table                                      = 0x8008E5A8;  /* per-ch
 g_round_total_score                                     = 0x800A387C;  /* round score; tested < 0x2711 (10001) limit */
 g_practice_dispatch_active                              = 0x800A38BA;  /* practice mode is dispatching (tested != 0 alongside g_practice_mode_dispatch_idx == 1) */
 g_gnd_init_arg_saved                                    = 0x800A36F6;  /* saved arg from gnd init (`if D_800A36F6 != arg0` re-init check) */
+
+/* === code6cac_b.c char-class lookup tables (2026-05-17) -- 5 highs === */
+/* From code6cac_b.c func_80033DF4 (line 3601, 3645) and surrounding: */
+/* two parallel lookup tables in .data drive the per-character lesson */
+/* and class-offset mapping.  Plus a "pos pointer" used in fighting */
+/* distance calc and a packed state word. */
+g_char_class_id_table                                   = 0x8008D538;  /* per-character class ID lookup; (&D)[char_id] -> class */
+g_char_lesson_idx_table                                 = 0x8008D55C;  /* per-character lesson index table; (&D)[idx] -> lesson byte */
+g_attacker_pos_ptr                                      = 0x800A36B4;  /* attacker struct pointer; +0x20 = pos.x, +0x24 = pos.y (read for dx/dy in coli check) */
+g_practice_state_word                                   = 0x800A3824;  /* practice mode state bitfield (& 1 tested) */
+g_practice_byte_table                                   = 0x801077B0;  /* u8 array indexed in practice flow */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
