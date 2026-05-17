@@ -231,3 +231,85 @@ This is a coarse who-owns-what map within main RAM .bss. Detail in
 | `0x800F_6740..` | `g_file_data_buf` — file-I/O buffer |
 | `0x800F_7438..` | `g_disp_fb_base` — double drawenv+OT |
 | `0x80101_xxx..0x80107_xxx` | Late-allocated tables, motion data, character-anim runtime |
+
+## Subsystem state-cluster map (2026-05-17)
+
+Detailed per-subsystem clusters discovered/decoded this session.
+Each links to the subsystem doc for full per-field tables.
+
+### IRQ subsystem — `0x800A_2614..2668`
+
+| Cluster | Address range | Purpose |
+|---------|---------------|---------|
+| Vsync IRQ state | `0x800A2614..2638` | 8 callback slots, tick counter, control reg ptr |
+| CD-ROM IRQ state | `0x800A2640..2668` | 8 callback slots, control reg ptr, init flag |
+
+See [file_io.md](file_io.md) for full table + `irq_vsync_handler` /
+`irq_cdrom_handler` decode.
+
+### CD-ROM streaming — `0x800A_14D4..14FC`
+
+12-field per-stream state cluster maintained by `func_800826CC`
+(`= saEft00Add`).  Holds streaming args, mode flags, vsync deltas,
+saved BIOS callbacks across operation boundaries.  See
+[file_io.md](file_io.md).
+
+### Memcard events — `0x800A_37DC..3850`
+
+8 BIOS event handles opened by `pad_press_control` (MISNAMED, actually
+`memcard_event_init_800375EC`):
+
+- 4 memcard slot-1 events (class `0xF4000001`): IOE/ERROR/NEW/TIMEOUT
+- 4 root-counter 0 events (class `0xF0000011`): same 4 event types
+
+See [file_io.md](file_io.md) for the full handle list.
+
+### SPU init constants — `0x800A_2CEC..2D44`
+
+5 init constants used during SPU channel setup, plus the voice-volume
+table at `g_spu_voice_vol_table` (`0x800A28A4`, 24 entries × u16, default
+0xC000).  See [sound.md](sound.md).
+
+### GPU packet queue — `0x80103_680..`
+
+64-slot circular queue of GPU draw packets, 0x60 bytes per slot.  Head/
+tail indices at `g_gpu_packet_write_idx` (0x8009BF78) /
+`g_gpu_packet_read_idx` (0x8009BF7C).  See [gpu_pipeline.md](gpu_pipeline.md).
+
+### Pad-recording (replay) — `0x800A_36C0..36D4`
+
+3 dual-buffered slots for per-frame packed-pad records + hashes,
+used by the replay-sync flow at `func_8003A728`:
+
+| Slot | Packed addr | Hash addr |
+|------|------------|-----------|
+| Current | `D_800A3698` (`g_memcard_file_write_buf`, MISNAMED) | `g_pad_rec_current_hash` (`0x800A369C`) |
+| Validated | `g_pad_rec_validated_packed` (`0x800A36C0`) | `g_pad_rec_validated_hash` (`0x800A36C4`) |
+| Previous | `g_pad_rec_prev_packed` (`0x800A36D0`) | `g_pad_rec_prev_hash` (`0x800A36D4`) |
+
+Plus mode control at `g_pad_rec_playback_mode` (`0x800A38A0`) and
+`g_pad_rec_skip_flag` (`0x800A3916`).
+
+### Ground / arena init — `0x800F_6608..6644`
+
+14-field per-round arena state set up by `gnd_init_8001B294`.  Includes
+midpoint X/Y/Z (camera anchor), 4 gauge slots, facing angle, round
+timer max.  See [combat.md](combat.md).
+
+### Motion-ex per-id state — `0x800F_0BA8..0CFC` + `0x800F_10D0..1134`
+
+8-slot state-block table (12 bytes/slot at 0x800F0CA0-CFC), 24-entry
+flag table (at 0x800F10D0), 2-byte stride counter table (at
+0x800F0BA8).  See [motion.md](motion.md).
+
+### Menu-control — `0x800A_34F8..3514`
+
+Packed cursor/slot state + mode-state pointer + pad-result buffer +
+frame counter.  See [menus.md](menus.md).
+
+### g_module_func_tbl mode dispatch — `0x8008D_090..0xxx`
+
+34-entry function-pointer table at `0x8008D090`, statically defined in
+`main.c:3055` inline asm.  Each entry is a "mode handler" function.
+100% decoded as of 2026-05-17 — see [main_loop.md](main_loop.md) for
+the full per-mode table.
