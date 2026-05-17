@@ -1743,6 +1743,29 @@ g_motion_state_flag_table                               = 0x800F10D0;  /* 24-ent
 /* Signature (RECT*, s16 x, s16 y) matches PSX libgpu's MoveImage. */
 gpu_MoveImage                                           = 0x8007B6C8;  /* PSX libgpu MoveImage(RECT *rect, int x, int y) -- VRAM rect-copy primitive */
 
+/* === g_module_func_tbl mode handler decode (2026-05-17) -- 15 highs === */
+/* The 34-entry mode-dispatch table at 0x8008D090 holds per-state update */
+/* functions indexed by g_practice_mode_dispatch_idx (D_800A3834). */
+/* Decoded by reading each handler's first 5-10 lines to infer role. */
+/* */
+/* Already named (existing): mode 2/8/13/16/19/26/27/30. */
+/* Modes 0/7/18 are asm-only (not yet in src). */
+mode_handler_01_GameFrameUpdate                         = 0x8001E878;  /* main per-frame fight: camera, characters, collision, motion, stage tick */
+mode_handler_04_GameSetup                               = 0x800397D4;  /* full game setup: gpu_EnableDisplay + gnd_open + player count + DMA list */
+mode_handler_10_GameTeardown                            = 0x8003BE10;  /* gpu_EnableDisplay + gpu_InitDisplay + player_Destroy(0/1) */
+mode_handler_11_PadInputCheck                           = 0x8003BEA8;  /* checks g_pad_input_combined & 0x40 (action button), returns state */
+mode_handler_12_RoundCleanup                            = 0x8001EA04;  /* gnd_init_80041688(0/1) + game_Cleanup; round-end state */
+mode_handler_15_TeardownVariant                         = 0x8003BFC4;  /* gpu_EnableDisplay + player_Destroy (similar to mode_10) */
+mode_handler_17_GameContinueFrame                       = 0x8001EFA0;  /* increments g_practice_loop_frame, camera_GetBoneData, func_8001BCF0 */
+mode_handler_22_VsModeInit                              = 0x8003B870;  /* player_SetCharId(0/1) + obj_InitChars + gpu_InitDisplay + disp_SetFramebufferMode(1) */
+mode_handler_23_FrameDelay3                             = 0x8003B8E4;  /* increments g_practice_loop_frame, returns until counter >= 3 */
+mode_handler_24_DispatchToMode25                        = 0x8003C958;  /* gpu_InitDisplay + reset state + sets g_practice_mode_dispatch_idx = 0x19 */
+mode_handler_25_PostBattleSetup                         = 0x8003C9A4;  /* reads g_gnd_midpoint_x via &D_800F6608, game_SetControllerPorts(0) */
+mode_handler_28_PostBattleMisc                          = 0x8003CE18;  /* func_8001DA2C + func_800372C0 calls */
+mode_handler_31_TimerLoop                               = 0x8003C8B4;  /* increments frame counter, calls func_80060768; exits on pad input or counter >= 0xF1 (241) */
+mode_handler_32_RebootDispatch                          = 0x8003CCCC;  /* gpu_InitDisplay + game_Cleanup + sets dispatch_idx = 0x21 + gpu_DisableDisplay */
+mode_handler_33_RebootBegin                             = 0x8003CD10;  /* mirrors mode_25 setup; final teardown state */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
