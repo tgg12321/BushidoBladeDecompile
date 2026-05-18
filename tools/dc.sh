@@ -62,6 +62,16 @@ CMD="$1"
 shift || { echo "Usage: bash tools/dc.sh <command> [args...]"; exit 1; }
 
 case "$CMD" in
+    lessons)
+        # Query the git commit corpus for project knowledge.
+        # See tools/commit_lessons.py --help for full options.
+        # Examples:
+        #   dc.sh lessons func_8004A348              # all commits mentioning the function
+        #   dc.sh lessons "delay slot fill"          # keyword search across subjects + bodies
+        #   dc.sh lessons --type cheat-cleanup -n 30 # last 30 cheat-cleanup commits
+        shift
+        python3 tools/commit_lessons.py "$@"
+        ;;
     start)
         # Session startup briefing. Surfaces current state (build, active
         # marker, queue freshness, top-of-queue) and reminds the agent of
