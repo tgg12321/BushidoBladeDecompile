@@ -21,14 +21,10 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Documentation files (kept at root for visibility)
+# Note: dated handoff/audit docs moved to docs/handoffs/ and docs/naming/
+# as part of the 2026-05-18 root-cleanup pass.
 ALLOWED_DOCS = {
     "README.md", "CLAUDE.md", "AGENTS.md", "CONTRIBUTING.md", "BUILD.md", "CLAIMS.md",
-    # Historical handoffs / audits (referenced from docs/HISTORY.md and docs/README.md)
-    "CODEX_HANDOFF_2026-04-27.md",
-    "AUDIT_EXISTING_C_2026-05-12.md",
-    "KENGO_RENAME_QUEUE_2026-05-12.md",
-    "NAMING_TRIAGE_2026-05-12.md",
-    "SUBSYSTEM_MAP_2026-05-12.md",
 }
 
 # Build/project configuration files
@@ -56,7 +52,6 @@ ALLOWED_BUILD_TXT = {
 ALLOWED_CSV = {
     "kengo_matches.csv",
     "kengo_name_decisions.csv",
-    "triage_results.csv",  # referenced by tools/smart_match.py (legacy codepath)
 }
 
 # Disc image files (source artifact; kept for re-extraction)
@@ -65,10 +60,8 @@ ALLOWED_DISC = {
     "Bushido Blade 2 (USA).cue",
 }
 
-# User-local artifacts (gitignored but kept at root by user preference)
-ALLOWED_USER_LOCAL = {
-    "deepseek-tools.Modelfile",  # Ollama local-model config
-}
+# User-local artifacts (gitignored but kept at root by user preference). Empty.
+ALLOWED_USER_LOCAL = set()
 
 # Runtime state files (gitignored, generated)
 ALLOWED_STATE_RE = re.compile(r"^\.bb2_.*$|^bb2\.d$|^Makefile\.bak$")

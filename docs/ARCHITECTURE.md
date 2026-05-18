@@ -298,7 +298,7 @@ The original game was built from many `.c` files in a specific order. Splat does
 
 There are 21 `src/*.c` files today, covering ~46,900 lines of C. The file boundaries roughly match those of the original (inferred from rodata gaps and call clustering), but in some cases a single original `.c` was split into several here (`code6cac.c` + `code6cac_b.c` + `code6cac_b2.c` + `code6cac_c.c` + ... + `code6cac_c2.c`) because intervening rodata or jump tables required carving out separate compilation units.
 
-The full map of "what lives in each `.c` file" is in [`SUBSYSTEM_MAP_2026-05-12.md`](../SUBSYSTEM_MAP_2026-05-12.md).
+The full map of "what lives in each `.c` file" is in [`SUBSYSTEM_MAP_2026-05-12.md`](handoffs/2026-05-12-subsystem-map.md).
 
 ## Key globals and address-space conventions
 
@@ -329,6 +329,6 @@ The end state is: every function in `src/*.c` is real C, regfix.txt is mostly sm
 | The matching playbook (techniques, recipes, gotchas) | [`MATCHING.md`](MATCHING.md) |
 | Every `dc.sh` subcommand, every standalone tool | [`TOOLS.md`](TOOLS.md) |
 | Terminology (PsyQ, MIPS, decomp, BB2-specific) | [`GLOSSARY.md`](GLOSSARY.md) |
-| Per-file source content map | [`../SUBSYSTEM_MAP_2026-05-12.md`](../SUBSYSTEM_MAP_2026-05-12.md) |
+| Per-file source content map | [`handoffs/2026-05-12-subsystem-map.md`](handoffs/2026-05-12-subsystem-map.md) |
 | Build / setup walkthrough | [`../BUILD.md`](../BUILD.md) |
 | Internal Claude Code agent instructions (useful context for humans too) | [`../CLAUDE.md`](../CLAUDE.md) |

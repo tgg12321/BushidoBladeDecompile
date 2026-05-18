@@ -55,7 +55,7 @@ Source-file size distribution (in lines):
 | `code6cac_c0.c` | 108 | `0x80037D14`–`0x80037F08` |
 | `text1a_b.c` | 32 | `0x800466C0`–`0x80046780` |
 
-For finer detail on what lives inside each file, see [`SUBSYSTEM_MAP_2026-05-12.md`](../SUBSYSTEM_MAP_2026-05-12.md).
+For finer detail on what lives inside each file, see [`SUBSYSTEM_MAP_2026-05-12.md`](handoffs/2026-05-12-subsystem-map.md).
 
 ### Work queue (from `WORK_QUEUE.md`)
 

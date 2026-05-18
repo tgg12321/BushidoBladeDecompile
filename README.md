@@ -97,7 +97,7 @@ If the final line is `OK: bb2 matches!`, you have a byte-identical rebuild.
 |-- BUILD.md / CONTRIBUTING.md # Setup and contribution guides
 ```
 
-Per-file C source content map: [`SUBSYSTEM_MAP_2026-05-12.md`](SUBSYSTEM_MAP_2026-05-12.md).
+Per-file C source content map: [`docs/handoffs/2026-05-12-subsystem-map.md`](docs/handoffs/2026-05-12-subsystem-map.md).
 
 ## Documentation
 
@@ -109,7 +109,7 @@ Per-file C source content map: [`SUBSYSTEM_MAP_2026-05-12.md`](SUBSYSTEM_MAP_202
 | [`docs/TOOLS.md`](docs/TOOLS.md) | Tool catalog: every `dc.sh` subcommand, every standalone Python tool, grouped by purpose |
 | [`docs/MATCHING.md`](docs/MATCHING.md) | Matching techniques distilled from the playbook (penalty routing, C-side tricks, regfix patterns, recipes) |
 | [`docs/GLOSSARY.md`](docs/GLOSSARY.md) | Terminology: PsyQ, MIPS, decomp, BB2-specific terms |
-| [`SUBSYSTEM_MAP_2026-05-12.md`](SUBSYSTEM_MAP_2026-05-12.md) | What lives in each `src/*.c` file and at what address |
+| [`docs/handoffs/2026-05-12-subsystem-map.md`](docs/handoffs/2026-05-12-subsystem-map.md) | What lives in each `src/*.c` file and at what address |
 | [`CLAUDE.md`](CLAUDE.md) | Operating instructions for the Claude Code agent that does most of the decomp work |
 
 ## Credits and acknowledgements

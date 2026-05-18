@@ -261,9 +261,9 @@ If you're going to spend more than a few hours in the project, these are the key
 | [`docs/TOOLS.md`](docs/TOOLS.md) | Catalog of every `dc.sh` subcommand and every standalone tool |
 | [`docs/MATCHING.md`](docs/MATCHING.md) | The matching playbook (techniques, recipes, gotchas) |
 | [`docs/GLOSSARY.md`](docs/GLOSSARY.md) | Terminology: PsyQ, MIPS, decomp, BB2-specific |
-| [`SUBSYSTEM_MAP_2026-05-12.md`](SUBSYSTEM_MAP_2026-05-12.md) | What lives in each `src/*.c` file and at what address |
+| [`docs/handoffs/2026-05-12-subsystem-map.md`](docs/handoffs/2026-05-12-subsystem-map.md) | What lives in each `src/*.c` file and at what address |
 | [`CLAUDE.md`](CLAUDE.md) | Instructions for the Claude Code agent that does most of the decomp work. Useful context for human contributors too — it describes the workflow the maintainers use day-to-day. |
-| [`CODEX_HANDOFF_2026-04-27.md`](CODEX_HANDOFF_2026-04-27.md), [`CODEX_HANDOFF_2026-04-17.md`](CODEX_HANDOFF_2026-04-17.md) | Historical session handoffs documenting strategy shifts and stabilization decisions. |
+| [`docs/handoffs/2026-04-27-codex.md`](docs/handoffs/2026-04-27-codex.md), [`CODEX_HANDOFF_2026-04-17.md`](CODEX_HANDOFF_2026-04-17.md) | Historical session handoffs documenting strategy shifts and stabilization decisions. |
 | `Kengo/` | Sister-engine reference: debug symbols extracted from *Kengo* (PS2, same Marionation engine), used as a naming source. |
 
 ## Code of conduct

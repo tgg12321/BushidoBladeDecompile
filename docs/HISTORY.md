@@ -39,7 +39,7 @@ The project reaches a major milestone: **every `INCLUDE_ASM` stub cleared**. All
 | Date | Milestone |
 |---|---|
 | 2026-04-20–26 | Steady sweep through remaining stubs. ~470 functions converted to inline-asm or asmfix bridges. Late-stage strategy from the handoff: replace each `INCLUDE_ASM` with the smallest safe C definition + `name: replace_with_asmfile` in asmfix.txt. |
-| 2026-04-27 | **ZERO-STUB SWEEP COMPLETE.** All 1,410 functions have C source entries; `wsl make clean-check` passes; build SHA1 matches. Documented in [`CODEX_HANDOFF_2026-04-27.md`](../CODEX_HANDOFF_2026-04-27.md). 68-commit day. |
+| 2026-04-27 | **ZERO-STUB SWEEP COMPLETE.** All 1,410 functions have C source entries; `wsl make clean-check` passes; build SHA1 matches. Documented in [`CODEX_HANDOFF_2026-04-27.md`](handoffs/2026-04-27-codex.md). 68-commit day. |
 | 2026-04-27 | Stabilizer functions identified: `single_game_VoiceContorol`, `camera_set_zoom`, plus pinned helpers (`saTan4GaugeInit`, `saTan0GaugeDraw`, etc.) — fragile due to label coupling in regfix_stage2 / asmfix. |
 | 2026-04-27 | **Goal shift.** Reaching zero-stub clarified that "stub clearing" wasn't the right metric. The new goal is **pure C**: eliminate the ~376 inline-asm + asmfix functions that produce the right bytes but aren't really decompiled. |
 
@@ -67,7 +67,7 @@ The project notices that 209 functions are bridged via `replace_with_asmfile` af
 | 2026-05-11 | **Stop-event hook (`tools/hooks/grind_check.sh`)** added. Rejects wrap-up language ("next session can continue", "diminishing returns", "I've made substantial progress") while a function is unmatched and active. The Claude Code agent doing the matching cannot voluntarily stop until the function is matched + committed. |
 | 2026-05-12 | **Active-marker hook (`tools/hooks/active_func_guard.sh`)** added/refined. Enforces THE HARD RULE: `git commit` blocked unless `dc.sh verify <active>` returns MATCH; `git checkout`/`restore`/`reset` blocked on src/ files; `dc.sh next*` blocked while a function is in progress. `dc.sh release` is the only escape hatch (user-driven, typed confirmation). |
 | 2026-05-12 | **Subagent orchestration archived.** Prior parallel-worker / orchestrator tooling moved to `archive/`. Solo end-to-end becomes the canonical working mode. |
-| 2026-05-12 | **Subsystem map + naming triage** captured ([`SUBSYSTEM_MAP_2026-05-12.md`](../SUBSYSTEM_MAP_2026-05-12.md), [`AUDIT_EXISTING_C_2026-05-12.md`](../AUDIT_EXISTING_C_2026-05-12.md), [`NAMING_TRIAGE_2026-05-12.md`](../NAMING_TRIAGE_2026-05-12.md), [`KENGO_RENAME_QUEUE_2026-05-12.md`](../KENGO_RENAME_QUEUE_2026-05-12.md)). Address ranges and content map for every `src/*.c` file. 17 score-4 Kengo names triaged into keep / demote / rename decisions. |
+| 2026-05-12 | **Subsystem map + naming triage** captured ([`SUBSYSTEM_MAP_2026-05-12.md`](handoffs/2026-05-12-subsystem-map.md), [`AUDIT_EXISTING_C_2026-05-12.md`](handoffs/2026-05-12-audit.md), [`NAMING_TRIAGE_2026-05-12.md`](naming/2026-05-12-triage.md), [`KENGO_RENAME_QUEUE_2026-05-12.md`](naming/2026-05-12-rename-queue.md)). Address ranges and content map for every `src/*.c` file. 17 score-4 Kengo names triaged into keep / demote / rename decisions. |
 | 2026-05-12 | **Quick reference consolidation.** ~11 historical memory files merged into `feedback_quick_reference.md` (the symptom-indexed playbook). |
 
 ## Phase 6 — Bridge retirement + canonical inline-asm formalization (2026-05-13 to present)
@@ -99,9 +99,9 @@ The current phase: retiring bridges one at a time, formalizing the small canonic
 | Document | Purpose |
 |---|---|
 | CODEX_HANDOFF_2026-04-17.md (no longer present) | First Codex session handoff. Documents the shift from m2c/permuter-heavy workflow to the codex_lab + regfix/asmfix discipline. Introduced asmfix and the lab pattern. Never tracked in git; deleted during 2026-05-18 repo cleanup. |
-| [`CODEX_HANDOFF_2026-04-27.md`](../CODEX_HANDOFF_2026-04-27.md) | Zero-stub sweep complete. Documents the late-stage zero-stub strategy (smallest-safe-C + asmfix bridge) and the stabilizers (`single_game_VoiceContorol`, `camera_set_zoom`, pinned helpers). |
-| [`AUDIT_EXISTING_C_2026-05-12.md`](../AUDIT_EXISTING_C_2026-05-12.md) | Audit of the finished C surface as of 2026-05-12. Bridge-signature cleanup, naming-suspect list, subsystem map provenance. |
-| [`NAMING_TRIAGE_2026-05-12.md`](../NAMING_TRIAGE_2026-05-12.md) | Per-symbol triage of 17 score-4 Kengo-derived names. Keep / demote / rename decisions with evidence. |
-| [`SUBSYSTEM_MAP_2026-05-12.md`](../SUBSYSTEM_MAP_2026-05-12.md) | Object-level map: what lives in each `src/*.c` and at what address range. Plus a line/address landmark map for `text1b.c`. |
-| [`KENGO_RENAME_QUEUE_2026-05-12.md`](../KENGO_RENAME_QUEUE_2026-05-12.md) | Reviewed action queue for Kengo-derived renames, machine-readable in `kengo_name_decisions.csv`. |
+| [`CODEX_HANDOFF_2026-04-27.md`](handoffs/2026-04-27-codex.md) | Zero-stub sweep complete. Documents the late-stage zero-stub strategy (smallest-safe-C + asmfix bridge) and the stabilizers (`single_game_VoiceContorol`, `camera_set_zoom`, pinned helpers). |
+| [`AUDIT_EXISTING_C_2026-05-12.md`](handoffs/2026-05-12-audit.md) | Audit of the finished C surface as of 2026-05-12. Bridge-signature cleanup, naming-suspect list, subsystem map provenance. |
+| [`NAMING_TRIAGE_2026-05-12.md`](naming/2026-05-12-triage.md) | Per-symbol triage of 17 score-4 Kengo-derived names. Keep / demote / rename decisions with evidence. |
+| [`SUBSYSTEM_MAP_2026-05-12.md`](handoffs/2026-05-12-subsystem-map.md) | Object-level map: what lives in each `src/*.c` and at what address range. Plus a line/address landmark map for `text1b.c`. |
+| [`KENGO_RENAME_QUEUE_2026-05-12.md`](naming/2026-05-12-rename-queue.md) | Reviewed action queue for Kengo-derived renames, machine-readable in `kengo_name_decisions.csv`. |
 | [`CLAIMS.md`](../CLAIMS.md) | Active session claims and stabilizer-fragility tracking (kept up-to-date when significant cross-session coordination is needed). |
