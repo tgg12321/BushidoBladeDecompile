@@ -28,9 +28,9 @@ g_str_intr_id = 0x80016328;
 data_as_code_lb_table_800164AC = 0x800164AC;
 syscall_wrapper_break_800164F8 = 0x800164F8;  /* MISNAMED: not a syscall wrapper; loop of ~0x270F 'break 1' instrs (debug/breakpoint stub) */
 psyq_memset_8003043C = 0x8003043C;  /* MISNAMED: not a memset; loops 12x writing -1 (s16) to D_80106A7A and 0xFF (u8) to D_80106A82 at stride 0x64 */
-psyq_memset_80038148 = 0x80038148;
-psyq_memset_8005509C = 0x8005509C;
-replay_camera_check_stage_80060758 = 0x80060758;
+psyq_memset_80038148 = 0x80038148;  /* MISNAMED: clears g_disp_state_buf (D_800F33D8, 512 bytes) — specific buffer clear, not generic memset; see also pad_clear_buffer_80038148 sibling */
+psyq_memset_8005509C = 0x8005509C;  /* MISNAMED: clears 16 bytes at offset 0x414 of g_practice_menu_table per-record (indexed by a0, stride 0x44C) — not generic memset */
+replay_camera_check_stage_80060758 = 0x80060758;  /* MISNAMED: 2-halfword clear of g_text_render_cursor_a/b — Kengo name-unique size collision, not a stage check */
 syscall_wrapper_break_80083698 = 0x80083698;
 g_sin_table = 0x800973FC;
 g_gpu_debug_func = 0x8009BE70;
@@ -3424,3 +3424,16 @@ g_char_p3_byte_fd_801027FD                         = 0x801027FD;  /* 6 refs; +2 
 g_char_p3_byte_fe_801027FE                         = 0x801027FE;  /* 6 refs; +1 stride */
 g_pair_state_a_80102800                            = 0x80102800;  /* 6 refs; +4 pair with 0x80102804 */
 g_pair_state_b_80102804                            = 0x80102804;  /* 6 refs; +4 companion */
+
+/* === MISNOMERS pass 9 replacement aliases (2026-05-18 high-conf audit) === */
+/* Re-audited the 8 entries in proposals_high_confidence.md. 6 of 8 already   */
+/* applied to named_syms.txt (4 with body-derived names better than the       */
+/* proposer's suggestion: disp_SetFramebufferMode_80016768, bb2_memset_*,     */
+/* bios_FileReadRaw_*, plus pad_clear_buffer_* coexisting with the psyq_memset*/
+/* alias at 0x80038148). Remaining 3 still had only the misnomer alias.       */
+/* Demoted above; body-derived replacements added here.                       */
+/* See docs/naming/MISNOMERS.md "Pass 9" for the per-entry verdict.           */
+
+clear_disp_state_buf_80038148                = 0x80038148;  /* sole caller pad_FuncAnalog; 512-byte zero of g_disp_state_buf (also dual-role memcard payload — pass 4) */
+practice_menu_clear_field414_8005509C        = 0x8005509C;  /* clears 16 bytes at offset 0x414 of g_practice_menu_table[a0]; callers DispSamnailWindow + single_game_SetStatusUpData */
+text_render_cursor_reset_80060758            = 0x80060758;  /* zeros g_text_render_cursor_a/b u16 pair; sole caller SetCurrentCursor */
