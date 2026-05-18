@@ -121,6 +121,10 @@ Required local deps (gitignored):
 - `permuter/` directories are gitignored (per-function permuter workspaces).
 - `auto_matches/` and `codex_lab/` are gitignored (workspace artifacts).
 
+## Commit conventions
+
+See [`docs/COMMIT_CONVENTIONS.md`](docs/COMMIT_CONVENTIONS.md) for the subject-prefix catalog and body structure used across this project. The tooling (`tools/dc.sh lessons`, `tools/hooks/llm_audit.sh`) parses commit subjects/bodies for structured information, so consistency improves searchability and audit reliability.
+
 ## Asset/format reverse engineering
 
 Per-format inspectors live in `tools/`:

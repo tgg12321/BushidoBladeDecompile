@@ -92,6 +92,10 @@ Maintenance tools:
 - `python3 tools/memory_audit.py` — non-destructive audit of memory/ + .claude/rules/
 - `python3 tools/audit_asm_cheats.py --all` — cheat detection
 
+## Commit conventions
+
+See [`docs/COMMIT_CONVENTIONS.md`](docs/COMMIT_CONVENTIONS.md). Subject-prefix catalog + body structure for `cheat-cleanup` / `Match` / `auth` / `naming` / etc. Most relevant: the `Pure-C attempts:` block is what `tools/hooks/llm_audit.sh` (adversarial cheat-auditor) checks for on canonical-asm / minimize-asm-when-blocked work.
+
 ## Getting help
 
 - Claude Code CLI help: `/help`
