@@ -412,9 +412,12 @@ Three clusters from the placeholder-refinement pass interact with the main loop:
   `0x800EFB14`.  Not main-loop ticked — relocated when the sound buffer
   moves via `func_80054FDC(delta)` (text1b.c:11363).  Owned by the
   sound subsystem.
-- [§22 IRQ handler entry alabels in DispStuff.s](recent_naming_findings.md#22-irq-handler-entry-alabels-in-dispstuffs-d_80083edc--d_80083f1c)
-  — `g_irq_handler_entry_no_pri/with_pri` at `0x80083EDC` / `0x80083F1C`,
-  passed as 2nd arg to `irq_EnableInterrupts()` in main.c:177/180.
+- [§22 IRQ-callback trampolines](recent_naming_findings.md#22-irq-callback-trampolines-d_80083edc--d_80083f1c)
+  — `g_irq_handler_entry_no_pri` (0x80083EDC) fires the pending primary
+  callback (if armed) + always-secondary; `g_irq_handler_entry_with_pri`
+  (0x80083F1C) implements a one-shot deferred-fire using
+  `g_alarm_pending_priority_flag` (0x800A26E0). Both are dispatch
+  trampolines for the alarm cluster at `D_800A26D0..0x800A26E0`.
 
 These are all canonical (BIOS syscall) or pure-data forms — not gameplay
 logic.
