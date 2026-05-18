@@ -1553,24 +1553,24 @@ g_shadow_tex_state_b                                    = 0x800A321C;  /* shadow
 /* generally accurate for BB2 functions where the function body matches. */
 /* These were noted in src/ comments but never promoted into */
 /* named_syms.txt. */
-single_game_setModeRequest                              = 0x8001924C;  /* in code6cac.c */
-md_game_rob_data_init                                   = 0x8001F860;
-single_game_CheckStatusUpDataTotalOver                  = 0x8002006C;
-single_game_SetAbilityData                              = 0x800206B0;
-camera_set_zoom                                         = 0x80023C30;
-special_camera_Init                                     = 0x8002D320;
+single_game_setModeRequest                              = 0x800187F4;  /* in code6cac.c */
+md_game_rob_data_init                                   = 0x8001F2E4;
+single_game_CheckStatusUpDataTotalOver                  = 0x8001FBE8;
+single_game_SetAbilityData                              = 0x800204C0;
+camera_set_zoom                                         = 0x800238C4;
+special_camera_Init                                     = 0x8002CD58;
 saTan2LinePrimInit                                      = 0x8002EA24;
-coli_check_circle_hit_line                              = 0x8002FF20;
-special_camera_Exec                                     = 0x80036D88;
-md_game_check_change_sub_mode                           = 0x80054F68;
-cpu_side_move_dir_2                                     = 0x8003C2C0;
-damage_DebugDisp                                        = 0x80038148;
-pad_ClearAppliBuffer                                    = 0x8003A6FC;
-motion_make_table                                       = 0x80082D34;
-coli_HitPauseKatana_2                                   = 0x80089D10;
-cpu_side_move_dir_3                                     = 0x8008C184;
-saEft00Add                                              = 0x800826CC;
-efc_rob_set_type_flash                                  = 0x80044B30;
+coli_check_circle_hit_line                              = 0x8002FDB0;
+special_camera_Exec                                     = 0x80036940;
+md_game_check_change_sub_mode                           = 0x8003BCB4;
+cpu_side_move_dir_2                                     = 0x8003C040;
+damage_DebugDisp                                        = 0x8003800C;
+pad_ClearAppliBuffer                                    = 0x8003A5A0;
+motion_make_table                                       = 0x80082C3C;
+coli_HitPauseKatana_2                                   = 0x80089A48;
+cpu_side_move_dir_3                                     = 0x8008BF04;
+saEft00Add                                              = 0x8008241C;
+efc_rob_set_type_flash                                  = 0x80044800;
 /* Skipped: replay_camera_get_attack_number at 0x8003E6A0 -- name */
 /* collides with same-named real impl that BB2's wrapper at this addr */
 /* calls (already named separately as replay_camera_get_attack_number_2arg). */
@@ -2471,24 +2471,24 @@ g_gpu_prim_template_d                                   = 0x80054600;  /* templa
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
 /* as a starting point for future analysis. */
-myRobGeneiMove                                          = 0x8001B690;
-mario_test_Exec                                         = 0x8001E404;
-calc_loc_mat_fw                                         = 0x8002BC68;
-PutRobShadow                                            = 0x8002C61C;
-saTan0KiWareMoveB                                       = 0x8002DE20;
-motion_SetMotion                                        = 0x800392B8;
-saSeInit_2                                              = 0x800395B4;
-saTan5TakeAnim2_2                                       = 0x800841E0;
-saTan4GaugeInit                                         = 0x80084A7C;
-SetBloodSpot                                            = 0x800856B0;
-AllocBukiRmd                                            = 0x80089F3C;
-saTan2Main                                              = 0x8008AE24;
-saTan1MainJump                                          = 0x8008BB24;
-SetPacketData                                           = 0x8008C464;
-rob_life_ctrl                                           = 0x80040A78;
-mot_data_set                                            = 0x8004283C;
-hirahira_w_ctrl_2                                       = 0x8004A348;
-hirahira_w_frie                                         = 0x800520B8;
+myRobGeneiMove                                          = 0x8001B478;
+mario_test_Exec                                         = 0x8001DCB0;
+calc_loc_mat_fw                                         = 0x8002AB08;
+PutRobShadow                                            = 0x8002C22C;
+saTan0KiWareMoveB                                       = 0x8002DAD0;
+motion_SetMotion                                        = 0x80038C70;
+saSeInit_2                                              = 0x800393C8;
+saTan5TakeAnim2_2                                       = 0x80083C34;
+saTan4GaugeInit                                         = 0x80084974;
+SetBloodSpot                                            = 0x80085544;
+AllocBukiRmd                                            = 0x80085A40;
+saTan2Main                                              = 0x800880E8;
+saTan1MainJump                                          = 0x8008B488;
+SetPacketData                                           = 0x8008C1E8;
+rob_life_ctrl                                           = 0x800408F8;
+mot_data_set                                            = 0x80042684;
+hirahira_w_ctrl_2                                       = 0x80042C80;
+hirahira_w_frie                                         = 0x8004428C;
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
