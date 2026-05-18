@@ -379,41 +379,83 @@ This cluster ties into the saTan family sound system; the relocator
 allows the sound buffer to be moved (e.g., during BGM loading) without
 invalidating all the cached subblock pointers.
 
-## 13. sound.c voice-init constants (D_800EF070-0xC4)
+## 13/14. SPU voice0E setup cluster (D_800EF070..0x800EF59C)
 
-The init block at sound.c:780-798 sets up voice ID 0xE with these
-constants:
+Tracing the writers of the voice-init constants (sound.c:780-826 +
+asm-only func_800477E8 alt-init path + func_80047A90 synth-table
+generator + func_80047BE0 scratchpad-DMA loop) revealed a complete
+SPU voice setup cluster, spanning ~0x52C bytes from base.
 
-| Symbol | Address | Value | Role |
-|---|---|---|---|
-| `g_voice_init_vol_offset` | 0x800EF0BC | -0x2EE0 (-12000) | starting volume base |
-| `g_voice_init_pitch_offset` | 0x800EF0C4 | -0xFA0 (-4000) | starting pitch base |
-| `g_voice_init_field_C0` | 0x800EF0C0 | 0 | zero-init field |
+### Voice state struct base — `g_snd_voice_init_block` (0x800EF070)
 
-Both magic numbers reappear in the envelope generator (sound.c:920-950):
-`vol = -0x2EE0` per-iteration init, and `val = *rp - 0xFA0` per-word
-subtraction.  Thus they document the **envelope baseline** that pitch &
-volume start from before the per-frame ramp:
+The struct holds setup parameters for SPU voice ID 0xE.  Fields known
+so far (set at sound.c:783-799 and also at func_800477E8.s:110-138):
 
-```
-vol += 0x7D0  (2000 per frame)  starting from -0x2EE0
-pitch = src - 0xFA0             (subtract baseline from raw input)
-```
+| Offset | Symbol | Type | Init value | Role |
+|---|---|---|---|---|
+| +0x00 | `g_snd_voice_init_block` | u8 | 0xE | voice ID |
+| +0x01 | `g_snd_voice_init_byte_1` | u8 | 0 | sub-byte |
+| +0x06 | `g_snd_voice_init_byte_6` | s16 | 0 | s16 field |
+| +0x08 | `g_snd_voice_init_byte_8` | s16 | 0 | s16 field |
+| +0x0A | `g_snd_voice_init_byte_A` | s16 | 4 | priority |
+| +0x0C | `g_snd_voice_init_byte_C` | s32 | 0 | s32 field |
+| +0x10 | `g_snd_voice_init_byte_C_plus_4..8` | s16 × 3 | 0 | 3 × s16 |
+| +0x4C | `g_snd_voice_init_vol_baseline` | s32 | -0x2EE0 | initial volume baseline (-12000) |
+| +0x50 | `g_snd_voice_init_field_at_50` | s32 | 0 | zero-init |
+| +0x54 | `g_snd_voice_init_pitch_baseline` | s32 | -0xFA0 | initial pitch baseline (-4000) |
 
-## 14. Voice envelope/parameter blocks (scratchpad-DMA pair)
+After the field assignments, sound.c:798 calls `func_800417D0(a0p)`
+passing the struct pointer — the registered "init the SPU voice with
+these parameters" call.
+
+### Envelope-source data blocks (scratchpad-DMA targets)
 
 Two 72-byte (0x48) data blocks copied to PS1 scratchpad each frame for
 fast SPU access:
 
 | Symbol | Address | Scratchpad target | Iteration |
 |---|---|---|---|
-| `g_voice_envelope_block_a` | 0x800EF0D8 | 0x1F800020 + 0x1F800110 | even (i & 1 == 0) |
-| `g_voice_envelope_block_b` | 0x800EF168 | 0x1F800068 + 0x1F800134 | odd  (i & 1 != 0) |
+| `g_snd_voice_envelope_block_a` | 0x800EF0D8 | 0x1F800020 + 0x1F800110 | even (i & 1 == 0) |
+| `g_snd_voice_envelope_block_b` | 0x800EF168 | 0x1F800068 + 0x1F800134 | odd  (i & 1 != 0) |
 
-The 0x90-byte gap (0x800EF0D8 -> 0x800EF168) implies each block is
-~72 bytes long (8 active + padding, copied to two scratchpad regions
-0x48 bytes apart at +0x20/+0x68 main + +0x110/+0x134 control).  The
-scratchpad copy is per-iteration of the inner SPU update loop.
+Copied by `func_80047BE0` (asm-only) via a per-frame loop.  Source data
+comes from synth tables below.
+
+### Synth-table generation — `g_snd_wave_phase_table` + `g_snd_wave_output_table`
+
+Initialized by sound.c:801-816 (filling) and then `func_80047A90`
+processes them every call:
+
+| Symbol | Address | Size | Role |
+|---|---|---|---|
+| `g_snd_wave_phase_table`  | 0x800EF558 | 17 × s32 (68 bytes) | Phase indices, stepped by 0x12 per call, used as `&0xFFF` index into `Judge` (sin table at 0x800973FC) |
+| `g_snd_wave_output_table` | 0x800EF59C | 9 channels × 17 s32 (612 bytes, stride 0x44) | Wave samples computed via `(Judge[phase & 0xFFF] * 0x271) >> 10` |
+
+`func_80047A90`:
+1. For each of 17 phase indices, look up `Judge[phase & 0xFFF]` and
+   compute `(sample * 0x271) >> 10` → write to channel 0 of
+   `g_snd_wave_output_table`.  Step each phase by 0x12.
+2. For channels 1-8, compute volume envelope from channel-0 baseline:
+   `delta = (channel_n_sample - channel_n-1_sample); curve_step =
+   (0x7D0 - delta) / 10` (or `>> 4` if negative).
+3. **Special**: the LAST channel's curve gets written to
+   `g_snd_fade_curve` (already named) — so the fade envelope IS the
+   8th-channel ramp from the synth wavetable.
+
+This connects the synthesis tables to the fade-curve subsystem
+documented in sound.md.
+
+### Implications
+
+- The voice0E setup is a complete SPU "instrument" definition that
+  the engine uses for one specific audio class (likely UI sounds or a
+  global SFX bus, since it's a single voice initialized once at boot).
+- The "envelope blocks A/B" double-buffer pattern is for **double-
+  buffered scratchpad DMA** — while the SPU consumes one block, the
+  CPU updates the other.
+- `g_snd_fade_curve` is not a hand-tuned table — it's the 8th
+  generated channel of the wave-synth output, so changes to
+  voice0E parameters propagate to the fade behavior.
 
 ## 15. code6cac_c2 frame-event triggers + position offset (D_8008EB04..0x1C)
 

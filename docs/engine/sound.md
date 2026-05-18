@@ -354,10 +354,9 @@ SPU/voice update path more directly:
   set by `func_80054604` (snd_LoadSelection path) and `func_8005490C`
   (header-offset unpack), relocated together by `func_80054FDC(delta)`
   when the buffer moves.  Connects the sound-loader to the saTan family.
-- [§13 sound.c voice-init constants](recent_naming_findings.md#13-soundc-voice-init-constants-d_800ef070-0xc4)
-  — `g_voice_init_vol_offset = -0x2EE0` and `g_voice_init_pitch_offset = -0xFA0`
-  (sound.c:780-798); same magic numbers reappear in the envelope generator
-  (sound.c:920-950) as baseline values.
-- [§14 Voice envelope/parameter blocks](recent_naming_findings.md#14-voice-envelopeparameter-blocks-scratchpad-dma-pair)
-  — `g_voice_envelope_block_a/b` at `0x800EF0D8` / `0x800EF168`, copied to
-  PS1 scratchpad each frame (0x1F800020 / 0x1F800068) for fast SPU access.
+- [§13/14 SPU voice0E setup cluster](recent_naming_findings.md#1314-spu-voice0e-setup-cluster-d_800ef0700x800ef59c)
+  — Full SPU voice0E definition: `g_snd_voice_init_block` struct at
+  0x800EF070 with vol/pitch baselines at +0x4C/+0x54; double-buffered
+  envelope blocks `g_snd_voice_envelope_block_a/b` for scratchpad-DMA;
+  `g_snd_wave_phase_table` + `g_snd_wave_output_table` for the synth
+  generator that ALSO computes `g_snd_fade_curve` as its 8th channel.
