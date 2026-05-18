@@ -3474,3 +3474,38 @@ pad_state_dispatch_wrapper_80078F74 = 0x80078F74;
 pad_press_control_init_8007A370 = 0x8007A370;
 pad_press_control_start_8007A3C8 = 0x8007A3C8;
 cpu_copy_display_buffer_and_sync_8007BC08 = 0x8007BC08;
+
+/* === Cluster naming pass 2 aliases (2026-05-18) === */
+/* Semantic aliases for previously-unnamed func_* in 5 more subsystem */
+/* clusters (motion_, satan_, replay_camera_, efc_, camera_). Names */
+/* derived from body inspection + dominant-caller-prefix context. */
+replay_camera_state_transition_800355E8 = 0x800355E8;
+replay_camera_wait_for_playback_8003ACB8 = 0x8003ACB8;
+satan_camera_setup_matrix_8003E120 = 0x8003E120;
+replay_camera_check_bounds_and_set_flag_8003F388 = 0x8003F388;
+efc_effect_dispatch_child_recursive_800417D0 = 0x800417D0;
+efc_video_decode_setup_800433E4 = 0x800433E4;
+efc_particle_set_type_dispatch_80044F50 = 0x80044F50;
+efc_particle_queue_entry_800455AC = 0x800455AC;
+efc_palette_convert_rgb555_8004876C = 0x8004876C;
+satan_fire_disp_wrapper_80048A7C = 0x80048A7C;
+satan_line_draw_recursive_8004C1F4 = 0x8004C1F4;
+camera_compute_fixed_point_matrices_80052D00 = 0x80052D00;
+camera_set_zoom_interpolated_8005E098 = 0x8005E098;
+camera_set_zoom_wrapper_8005E51C = 0x8005E51C;
+camera_matrix_compute_loop_8005F1C8 = 0x8005F1C8;
+efc_ptr_array_offset_apply_8006920C = 0x8006920C;
+motion_draw_tilemap_8006BEC4 = 0x8006BEC4;
+camera_init_matrix_table_8006E49C = 0x8006E49C;
+satan_sprite_batch_render_8007352C = 0x8007352C;
+replay_camera_decode_player_bits_80077940 = 0x80077940;
+replay_camera_init_framebuffer_80077A28 = 0x80077A28;
+replay_camera_apply_transform_and_flip_80077A80 = 0x80077A80;
+camera_ptr_array_apply_offset_80077D10 = 0x80077D10;
+motion_matrix_multiply_light_8007E8AC = 0x8007E8AC;
+motion_matrix_multiply_signed_8007EA0C = 0x8007EA0C;
+motion_exception_handler_init_80082D34 = 0x80082D34;
+motion_setjmp_longjmp_frames_80083220 = 0x80083220;
+satan_voice_init_80084A7C = 0x80084A7C;
+satan_state_toggle_wrapper_8008AF84 = 0x8008AF84;
+satan_angle_interpolation_8008BB24 = 0x8008BB24;
