@@ -863,3 +863,74 @@ correctness.
    `g_file_disc_size` which was the pass-3 misnomer at 0x80106A50).
    Different audit shape; not in scope for this MISNOMERS pass.
 
+
+## Pass 9: high-confidence proposal re-audit (2026-05-18)
+
+Re-audited the 8 entries in `proposals_high_confidence.md` (the
+`high`-tier rows of `proposals.csv`). Goal: catch any remaining
+applications of the unreliable `psyq_idiom` / `kengo_pattern` /
+`syscall_wrapper` proposer categories before they accumulate.
+
+Method: read each function body in `asm/funcs/<func>.s` (none are
+yet in `src/*.c`) and compare to the proposer's category claim.
+
+### Verdict summary
+
+| Addr | Proposed | Current `named_syms.txt` alias | Body-validated verdict |
+|---|---|---|---|
+| `0x80016768` | `psyq_memset_*` | `disp_SetFramebufferMode_80016768` | proposer wrong, current alias correct (4-byte tuple writer at 2 slots stride 0x4090; writes to `g_disp_fb_base` + `g_disp_fb_flag`) |
+| `0x80038148` | `psyq_memset_*` | `psyq_memset_*` + `pad_clear_buffer_*` | **MISNOMER** demoted (psyq_memset). Specific 512-byte clear of `g_disp_state_buf`, not generic memset. Replacement `clear_disp_state_buf_80038148` added; existing `pad_clear_buffer_*` sibling kept |
+| `0x8005509C` | `psyq_memset_*` | `psyq_memset_8005509C` only | **MISNOMER** demoted. Clears 16 bytes at offset 0x414 of `g_practice_menu_table[a0]` (stride 0x44C). Replacement `practice_menu_clear_field414_8005509C` added |
+| `0x8007DEE4` | `psyq_memset_*` | `bb2_memset_8007DEE4` | proposer right (real `memset(dst, val, count)`); current alias correct |
+| `0x80083698` | `syscall_wrapper_break_*` | `syscall_wrapper_break_80083698` | proposer right (`break 0, 259` trampoline with arg-reshuffle) |
+| `0x8008393C` | `syscall_wrapper_break_*` | `bios_FileReadRaw_8008393C` | proposer correct in shape (raw break trap), current alias more specific (`break 0, 261` = BIOS file-read raw) |
+| `0x800164AC` | `data_as_code_lb_table_*` | `data_as_code_lb_table_800164AC` | proposer right (18 of 19 insns are `lb $t0, ...($zero)` data-as-code) |
+| `0x80060758` | `replay_camera_check_stage_*` | `replay_camera_check_stage_80060758` only | **MISNOMER** demoted. 2-halfword clear of `g_text_render_cursor_a/b`; not a stage check. Kengo `name-unique` size collision (n_claimants=7, callee_overlap=0.00). Replacement `text_render_cursor_reset_80060758` added |
+
+### Score
+
+- 8 audited, 3 misnomer aliases demoted, 3 replacement aliases added
+- 4 proposer-correct entries (50%): `psyq_memset_8007DEE4`,
+  `syscall_wrapper_break_80083698`, `bios_FileReadRaw_8008393C`
+  (proposer correct in category, sharper name landed),
+  `data_as_code_lb_table_800164AC`
+- 4 proposer-wrong entries (50%): all 4 `psyq_memset_*` non-real-memset
+  proposals + the 1 `kengo_pattern` proposal
+
+### Pattern reinforcement
+
+The `psyq_idiom=psyq_memset` heuristic (proposer rule:
+*"N insns, store loop no load"*) is hit-rate **25%** within high-tier
+psyq_memset proposals (1 of 4 reviewed here is a real memset). The
+other 3 are specific buffer-clear functions or argument-store loops
+that match the shape but not the semantics. Consistent with the
+pass-5/6 finding that `psyq_memset` / `syscall_wrapper` proposer
+categories require body-validation before application.
+
+The `kengo_pattern` (kengo `name-unique` with diff ≤ 1 insn) is
+1 of 1 wrong in this batch, consistent with [[kengo-name-unreliable]]
+when `n_claimants ≥ 2` (this had n_claimants=7).
+
+The `syscall_wrapper` and `data_as_code` categories were both right
+(2 of 2 each), matching the project's existing reliability assessment.
+
+### Combined audit tally (passes 5-9)
+
+| Pass | Scope | Audited | Misnomers | Rate |
+|---|---|---:|---:|---:|
+| 5 | 5 mass-rename families (3+ addrs) | 21 | 20 | 95% |
+| 6 | All other 2+ address families | 50 | 21 | 42% |
+| 7 | `cpu_*` + `motion_*` exhaustive | 34 | 0 | 0% |
+| 8 | `pad_/mario_/replay_camera_/efc_/gnd_/bios_` | 45 | 0 | 0% |
+| 9 | High-tier proposal re-audit | 8 | 4 | 50% |
+| **Total** | | **158** | **45** | **28%** |
+
+### Implication for `proposals.csv` (next regeneration)
+
+`proposals.csv` is now stale relative to `named_syms.txt` — all 8
+high-tier addresses have applied aliases. The next run of
+`tools/propose_function_names.py` will see them as `current_name =
+<applied alias>` rather than `current_name = func_XXX` and should
+drop them from the high-tier review. Until then, the proposer's
+high-tier list does not represent open work.
+
