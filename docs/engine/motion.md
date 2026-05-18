@@ -355,3 +355,15 @@ reused across both subsystems.
 | `motion_shift_set_mode1` | `0x8003879C` | Mode 1, sub-id 1 |
 | `motion_shift_set_mode2` | `0x800387C0` | Mode 2, sub-id 1 |
 | `motion_shift_set_mode3` | `0x800387E8` | Mode 3, sub-id 9 |
+
+## Cross-references (recent_naming_findings.md addendum 2026-05-17)
+
+One cluster from the placeholder-refinement pass extends the motion-state
+data model:
+
+- [§20 Motion-ex stride-12 XYZ triplet array](recent_naming_findings.md#20-motion-ex-stride-12-xyz-triplet-array-d_800f0e38)
+  — `g_text1b_xyz_arr_E38_x/y/z` at `0x800F0E38`, three "columns" of a
+  stride-12 array indexed by the same `word_off`. Parallels the existing
+  `g_motion_ex_state_block_table_12` (`0x800F0CA0`) layout but at a
+  separate anchor — likely a second motion-ex entity class with its own
+  state ring.

@@ -299,3 +299,16 @@ indexed by `g_snd_ch_status[idx]`:
 | `snd_ClearAllSeBuffer` | `0x8002906C` | Walks `snd_GetSeId()` list, zeroes +2 of each 0x10-byte entry. |
 | `spu_TransferDirect_capped` | `0x8008AD64` | `spu_TransferDirect(a0, min(a1, 0x7EFF0))` + clear busy if !init. |
 | `spu_TransferData_capped` | `0x8008ADC4` | Same with `spu_TransferData`. |
+
+## Cross-references (recent_naming_findings.md addendum 2026-05-17)
+
+Two clusters from the placeholder-refinement pass document the SPU/voice
+update path more directly:
+
+- [§13 sound.c voice-init constants](recent_naming_findings.md#13-soundc-voice-init-constants-d_800ef070-0xc4)
+  — `g_voice_init_vol_offset = -0x2EE0` and `g_voice_init_pitch_offset = -0xFA0`
+  (sound.c:780-798); same magic numbers reappear in the envelope generator
+  (sound.c:920-950) as baseline values.
+- [§14 Voice envelope/parameter blocks](recent_naming_findings.md#14-voice-envelopeparameter-blocks-scratchpad-dma-pair)
+  — `g_voice_envelope_block_a/b` at `0x800EF0D8` / `0x800EF168`, copied to
+  PS1 scratchpad each frame (0x1F800020 / 0x1F800068) for fast SPU access.

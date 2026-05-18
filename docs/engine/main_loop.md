@@ -358,7 +358,8 @@ The mode-1 (gameplay) handler is part of `gnd_disp_loop_ctrl`, defined at
 - Uses its own internal s0/s1 register pinning to set up two GPU packet
   buffers.
 - Walks the ground/scene draw pipeline using `s2` as a pointer to
-  `D_800F33D8` (a global draw-state struct).
+  `g_disp_state_buf` (`0x800F33D8`, a 512-byte draw-state struct; see
+  [recent_naming_findings.md §17](recent_naming_findings.md#17-display-state-buffer--cursor-d_800f33d8--d_800a36ec)).
 
 This function works closely with the OT in `g_dma_buf_base` (D_800A374C) (the live OT pointer)
 and `g_cpu_move_pattern_cursor` (D_800A38B4) (the live primitive heap pointer).
@@ -396,6 +397,20 @@ asm:
 - `func_800164F8` — the panic-spin (`ings.c:117`).
 - `func_800164AC` — the boot data dispatch table (`ings.c:91`, also asm
   because it's pure data, 19 function-pointer words).
+
+## Cross-references (recent_naming_findings.md addendum 2026-05-17)
+
+Three clusters from the placeholder-refinement pass interact with the main loop:
+
+- [§11 Main packet-dispatch function-pointer table](recent_naming_findings.md#11-main-packet-dispatch-function-pointer-table-5-slots)
+  — `g_main_dispatch_fn0..4` at `0x800F3340`, invoked from main.c packet
+  handlers (callers at main.c:372, 380, 391, 397, 410, 427, 433, 437, 441, 450).
+- [§12 text1b accumulator cluster](recent_naming_findings.md#12-text1b-accumulator-cluster-6-s32-accumulators)
+  — `g_text1b_accum_0..5` at `0x800EFB14`, ticked together each frame by
+  `func_80054FDC` (text1b.c:11363).
+- [§22 IRQ handler entry alabels in DispStuff.s](recent_naming_findings.md#22-irq-handler-entry-alabels-in-dispstuffs-d_80083edc--d_80083f1c)
+  — `g_irq_handler_entry_no_pri/with_pri` at `0x80083EDC` / `0x80083F1C`,
+  passed as 2nd arg to `irq_EnableInterrupts()` in main.c:177/180.
 
 These are all canonical (BIOS syscall) or pure-data forms — not gameplay
 logic.
