@@ -1045,54 +1045,52 @@ void saEft00Add_sub(void) {
     }
     func_80080390(9, 0);
 }
-/* kengo:HIGH  |  sa_eft/saEft00Add  |  169i  |  -3 near-exact */
+/* func_800826CC: cdrom effect startup helper -- pure-C cheat retirement.
+ * - Volatile aliases on D_800A14DC/D4/E0/F4/F8/1500 force per-call $a0
+ *   re-materialization and prevent GCC from packing `move $a0,$zero` into
+ *   cdrom_SetCallbackA/B delay slots (target has nop in both).
+ * - Volatile s32 *saved_ptr forces lui+addiu materialization of &D_800A14D0.
+ * - switch statement (rather than nested if-else) lets GCC's RA select target's
+ *   register allocation (mode in $v1, const 0x20 in $v0) organically. */
 s32 func_800826CC(s32 arg0, s32 arg1, s32 arg2) {
     extern volatile s32 D_800A14DC_v asm("D_800A14DC");
+    extern volatile s32 D_800A14D4_v asm("D_800A14D4");
+    extern volatile s32 D_800A14E0_v asm("D_800A14E0");
+    extern volatile s32 D_800A14F4_v asm("D_800A14F4");
+    extern volatile s32 D_800A14F8_v asm("D_800A14F8");
     extern volatile s32 D_800A1500_v asm("D_800A1500");
-    register s32 temp_v0 asm("v0");
-    register s32 temp_v1 asm("v1");
-    register s32 saved_a0 asm("a3");
-    s32 *saved_arg0;
-    s32 enabled;
+    s32 mode;
+    s32 result_code;
+    volatile s32 *saved_ptr;
 
     D_800A14DC_v = arg2;
-    temp_v0 = D_800A14DC_v;
-    saved_a0 = arg0;
-    temp_v1 = temp_v0 & 0x30;
-    if (temp_v1) {
-        temp_v0 = 0x20;
-        if (temp_v1 != temp_v0) {
-            temp_v0 = 0x246;
-        } else {
-            temp_v0 = 0x249;
-        }
-    } else {
-        temp_v0 = 0x200;
+    mode = D_800A14DC_v & 0x30;
+    switch (mode) {
+        case 0:
+            result_code = 0x200;
+            break;
+        case 0x20:
+            result_code = 0x249;
+            break;
+        default:
+            result_code = 0x246;
+            break;
     }
-    D_800A14E0 = temp_v0;
-    temp_v0 = D_800A14DC_v;
-    arg0 = 0;
-    D_800A14DC_v = temp_v0 | 0x20;
-    saved_arg0 = &D_800A14D0;
-    D_800A14D4 = arg1;
-    *saved_arg0 = saved_a0;
-    temp_v0 = cdrom_SetCallbackA(arg0);
-    D_800A14F4 = temp_v0;
-    temp_v0 = cdrom_SetCallbackB(arg0);
-    D_800A14F8 = temp_v0;
-    enabled = D_800A1500_v & 1;
-    if (enabled) {
-        temp_v0 = func_80080660_ret(arg0);
-        D_800A14FC = temp_v0;
+    D_800A14E0_v = result_code;
+    D_800A14DC_v = D_800A14DC_v | 0x20;
+    saved_ptr = &D_800A14D0;
+    D_800A14D4_v = arg1;
+    *saved_ptr = arg0;
+    D_800A14F4_v = cdrom_SetCallbackA(0);
+    D_800A14F8_v = cdrom_SetCallbackB(0);
+    if (D_800A1500_v & 1) {
+        D_800A14FC = func_80080660_ret(0);
     }
-    temp_v0 = sys_VSync(-1);
-    D_800A14EC = temp_v0;
-    temp_v0 = cdrom_GetMode();
-    if (temp_v0 & 0xE0) {
+    D_800A14EC = sys_VSync(-1);
+    if (cdrom_GetMode() & 0xE0) {
         tslPolyF4Init(9, 0, 0);
     }
-    temp_v0 = saEft00Add_ret(arg0);
-    return temp_v0 > 0;
+    return saEft00Add_ret(0) > 0;
 }
 
 s32 func_800827D0(s32 a0, s32 a1) {

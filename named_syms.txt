@@ -2127,6 +2127,346 @@ g_satan1_gauge_state_d                                  = 0x800A3458;
 g_satan1_gauge_state_e                                  = 0x800A345C;
 g_satan1_gauge_state_f                                  = 0x800A345E;
 
+/* === Effect RNG state + text render cursors (2026-05-17) -- 3 highs === */
+g_effect_rng_state                                      = 0x800A3418;  /* persistent state XOR'd with func_80079154 (LFSR rng) to generate random positions/offsets for particle effects */
+g_text_render_cursor_a                                  = 0x800A32B4;  /* u16 cursor used by func_80060768; reset by func_80060758 */
+g_text_render_cursor_b                                  = 0x800A32B6;  /* u16 paired cursor */
+
+/* === Panel sibling-activation lookup (2026-05-17) -- 2 highs === */
+/* From text1b.c func_800493E4: when a panel/slot is activated, also */
+/* activate its sibling pair from these tables.  Indexed by arg0 * 2 */
+/* (so each arg0 entry is 2 bytes: sibling_a, sibling_b; 0xFF = none). */
+g_panel_sibling_lookup_a                                = 0x80099CC8;  /* first byte of each 2-byte sibling pair (paired with _b at offset +1) */
+g_panel_sibling_lookup_b                                = 0x80099CC9;  /* second byte = &D_80099CC8 + 1 */
+
+/* === Effect cached values (2026-05-17) -- 2 highs === */
+/* From text1b.c around line 11145, 11163.  Companions to */
+/* g_effect_active_ptr (0x800A33F4). */
+g_effect_cached_id                                      = 0x800A33F8;  /* u16 cached from effect struct (+4 offset); returned by func_80054434 getter */
+g_effect_accumulator                                    = 0x800A33F0;  /* s32 set by func_80054410 / incremented by func_8005441C */
+
+/* === Replay target A/B struct bases (2026-05-17) -- 4 highs === */
+/* From text1b.c func_80049E4C: 2 parallel replay-target structs */
+/* initialized together.  D_80101DF0 is "target A" (type 0x64); */
+/* D_800FF638 is "target B" (type 0x65).  After init, pointers are */
+/* stored to existing g_replay_camera_target_ptr_b (D_800A370C) and */
+/* g_replay_camera_state etc.  D_80101E3C/40/44 (named separately as */
+/* g_replay_attack_pos_x/y g_replay_pos_z) are fields at +0x4C/50/54 */
+/* of target A. */
+g_replay_target_a_base                                  = 0x80101DF0;  /* target A struct base (type 0x64 at +0; size ~0x60) */
+g_replay_target_a_init_val                              = 0x80101DF8;  /* target A field at +8 (init = 5) */
+g_replay_target_b_base                                  = 0x800FF638;  /* target B struct base (type 0x65 at +0) */
+g_replay_target_b_init_val                              = 0x800FF640;  /* target B field at +8 (init = 2) */
+
+/* === code6cac_c_mid SE slot + pad-rec + other state (2026-05-17) -- 7 highs === */
+g_se_slot_table_180x16                                  = 0x800F68E0;  /* 180-entry x 0x10-byte SE slot table (saSeInit_2 iterates with stride 0x10 for 0xB4=180) */
+g_se_slot_next_idx                                      = 0x800A379C;  /* SE slot next-free index (reset 0; used in saSeInit_2 dispatch) */
+g_se_slot_cached_state                                  = 0x800A3714;  /* s16 cached slot state value (paired with _next_idx; reset together) */
+g_pad_rec_record_flag                                   = 0x800A3730;  /* bit-30 packing flag for pad-recording word (see g_pad_rec_validated_packed) */
+g_pad_rec_param_a                                       = 0x800A3870;  /* 2-bit field packed into bits 28-29 of pad-rec word */
+g_input_pause_pending_flag                              = 0x800A3318;  /* != 0 gates pause-menu entry; tested after D_800A3204 input flag (set in func_80038988) */
+g_result_screen_state_c                                  = 0x800A3350;  /* companion to g_result_screen_active_flag (0x800A3354); reset to 0 in same flow */
+
+/* === Practice-lesson arg dispatch state (2026-05-17) -- 6 highs === */
+/* From code6cac_c_ab.c func_8003B3A4 / func_8003B484: 2 alternate */
+/* arg-passing formats for lesson dispatch.  D_800A3712 selects format */
+/* (0 = primary, 1 = alternate). */
+g_practice_lesson_arg_format                            = 0x800A3712;  /* 0 = primary arg-format, 1 = alternate */
+g_lesson_override_flag                                   = 0x800A37A0;  /* when 1, forces a1 to 0 (overrides D_8008D9EC[class] lookup) */
+g_practice_lesson_byte_6                                = 0x80102783;  /* +6 in practice lesson range; arg0[1] passthrough */
+g_lesson_extra_arg_b                                    = 0x800A37B4;  /* arg0[2] passthrough */
+g_lesson_extra_arg_c                                    = 0x800A37B5;
+g_lesson_extra_arg_d                                    = 0x800A37B6;
+
+/* === code6cac.c misc state (2026-05-17) -- 5 highs === */
+g_char_pose_id_p2                                       = 0x800A30FD;  /* P2 char pose ID (paired with g_char_pose_id_p1 at +1; re-init check) */
+g_cam_bone_data_cached                                  = 0x800A3778;  /* cached camera_GetBoneData() return; reread once per frame */
+g_char_struct_p1_field_6A                               = 0x80101F32;  /* per-char field +0x6A (u16; mode == 0x11 check) */
+g_char_struct_p1_field_FC                               = 0x80101FC4;  /* per-char field +0xFC; set to a0_val + passed to func_8003E6A0 */
+g_practice_lesson_init_done                             = 0x8010278C;  /* init flag (set to 1 by func_80019534; == 0 means needs init) */
+
+/* === Attack-angle offset table + char field paired (2026-05-17) -- 2 highs === */
+g_attack_angle_offset_table                             = 0x8008EB40;  /* s16 2D table; rows 3-wide indexed by attack-dir, cols by sub-dir; values added to char angle (BAM) for attack direction offset */
+g_char_struct_p2_field_6A                               = 0x8010237E;  /* per-char field +0x6A for P2 (= P1's g_char_struct_p1_field_6A + 0x44C); same 0x11 mode check */
+
+/* === Sprite rect tables + buffer banks (2026-05-17) -- 5 highs === */
+/* From text1a.c around line 55-77: sprite/texture loading.  D_80094AF4 */
+/* is a 6-s32-per-row rect/UV table.  D_800A9830 / D_800A9920 are 240- */
+/* byte-stride sprite-data banks. */
+g_sprite_rect_table                                     = 0x80094AF4;  /* 6 s32 per row (rect+uv); indexed by sprite ID * 6 */
+g_sprite_data_bank_a                                    = 0x800A9830;  /* 240-byte stride sprite data bank A */
+g_sprite_data_bank_b                                    = 0x800A9920;  /* 240-byte stride sprite data bank B (paired) */
+g_sprite_class_mask_table                               = 0x80094B48;  /* mask lookup indexed by class (`mask &= D[class]`) */
+g_sprite_anim_table                                     = 0x80094D40;  /* per-anim mask table indexed by a1 */
+
+/* === Attack scale factors + lookup tables (2026-05-17) -- 7 highs === */
+/* From text1a.c around lines 317, 347, 353-354: fixed-point scale */
+/* factors and dispatch tables for attack/animation. */
+g_char_field12_lookup_table                             = 0x80094C68;  /* u16 table; values stored into per-char struct +0x12 (g_char_struct_p?_field12) */
+g_attack_scale_x                                        = 0x80094B96;  /* s16 fixed-point (12.4) scale factor for X */
+g_attack_scale_y                                        = 0x80094B98;  /* s16 fixed-point scale factor for Y */
+g_attack_scale_z                                        = 0x80094B9A;  /* s16 fixed-point scale factor for Z */
+g_attack_state_ptr                                      = 0x800A3388;  /* passed to func_80041EB0 (anim hit handler) */
+g_cam_saved_a0_data                                     = 0x800A9B28;  /* stored from *a0; reused as camera data pointer base later */
+g_anim_event_arg4_cached                                = 0x800A9A20;  /* = arg0[4] cached; compared against (s16*)fp_ptr[4] for change detection */
+
+/* === text1b packed args + last-frame cache (2026-05-17) -- 3 highs === */
+g_text1b_packed_arg                                     = 0x800A35E8;  /* bit-packed arg derived from input: bits0-9 + (bits12-21 >> 2) + (bit24 >> 4) + (bit26 >> 5) */
+g_text1b_cached_byte                                    = 0x800A35E0;  /* u8 cached from D_8009BD59[i] for use across function calls */
+g_text1b_last_frame_id                                  = 0x800A324C;  /* cached previous frame ID; when changed, resets var_s1 */
+
+/* === GPU LoadImage packet buffer + status-up cache (2026-05-17) -- 3 highs === */
+g_gpu_loadimage_packet_buf                              = 0x800A4340;  /* 19-entry x 0x30 = 912-byte packet buffer for func_8003D9A0 initLoadImage loop */
+g_status_up_cached_idx                                  = 0x800905F8;  /* 0xFFFF sentinel or current idx cache for status-up records (paired with existing StatusUpBuf) */
+g_gpu_shadow_prim_base                                  = 0x800A3D30;  /* base pointer to shadow primitive data (used by func_8003D330) */
+
+/* === CD-ROM stream reader state (2026-05-17) -- 4 highs === */
+/* From code6cac_b2.c around line 388-408: CD-ROM streaming callback */
+/* reads sectors into a buffer, checking BCD position for sync. */
+g_cdread_sectors_remaining                              = 0x80101E80;  /* sectors left to read; decremented per chunk; 0 = done, -1 = error, -2 = position mismatch */
+g_cdread_dest_buffer                                    = 0x80101E84;  /* destination buffer ptr; advances by 0x800 (2048 = sector size) per read */
+g_cdread_expected_bcd_frame                             = 0x80101EA0;  /* next-expected CD position in BCD; mismatch with cdrom_BcdToFrames triggers error */
+g_event_class_lookup_table                              = 0x8008EC38;  /* lookup table indexed by `arg0 * 2`; likely PSX BIOS event class IDs */
+
+/* === Mottest (motion test mode) sequencer (2026-05-17) -- 5 highs === */
+/* From code6cac_b.c mottest_disp (line 3622): walks through test slots */
+/* until counter reaches max, then dispatches anim ID. */
+g_mottest_current_idx                                   = 0x800A3783;  /* current test index; incremented per call; reaches g_mottest_test_count = done */
+g_mottest_secondary_idx                                 = 0x800A37BC;  /* secondary counter (= 0 init); used as index into g_mottest_slot_value_table */
+g_mottest_test_count                                    = 0x800A391F;  /* max test count; when current_idx == this, dispatch unlock anim */
+g_mottest_substate                                      = 0x800A376B;  /* reset to 0 alongside indices */
+g_mottest_slot_value_table                              = 0x8008E748;  /* s8 table indexed by g_mottest_secondary_idx */
+
+/* === Motion func dispatch + lookup tables (2026-05-17) -- 3 highs === */
+g_motion_func_dispatch_offset                           = 0x8009BA60;  /* per-idx offset combined with g_motion_state_flag_table to select function pointer in chractar_use_pset_combo_id_table */
+g_byte_lookup_table_256                                 = 0x8009AD18;  /* 256-byte table indexed by `i & 0xFF`; used in text1b.c per-byte processing */
+g_player_byte_flags_table                               = 0x8009BC7C;  /* per-player byte flags indexed by D_800A3561; bit & 2 test */
+
+/* === 3D sound data buffer cluster (2026-05-17) -- 6 highs === */
+g_sound_3d_data_buffer                                  = 0x80102C00;  /* base of 3D-sound data buffer; cursor advances per primitive */
+g_sound_3d_cursor                                       = 0x800A3820;  /* current cursor into g_sound_3d_data_buffer */
+g_sound_3d_dma_snapshot                                 = 0x800A3808;  /* snapshot of g_dma_buf_base at start of 3D sound batch */
+g_sound_3d_pos_x_src                                    = 0x80101E1C;  /* source X for g_snd_3d_pos_x copy */
+g_sound_3d_pos_y_src                                    = 0x80101E20;  /* source Y for g_snd_3d_pos_y copy */
+g_sound_3d_pos_z_src                                    = 0x80101E24;  /* source Z; gets +0x6590 offset when copied to g_snd_3d_pos_z */
+
+/* === Memcard operation state (2026-05-17) -- 3 highs === */
+/* From code6cac_c_mid.c around line 489-509: memcard file open/read/write */
+/* operations.  D_800F33D8 (draw-state struct) is reused as the 0x200-byte */
+/* memcard save data buffer in this context. */
+g_memcard_filename_buf                                  = 0x800A31F0;  /* filename buffer passed to func_80037B00 (file-open) and func_80037C34 (file-read with len 0x200) */
+g_memcard_op_active_flag                                = 0x800A320C;  /* = 1 set during memcard op, = 0 reset */
+g_memcard_op_substate                                   = 0x800A382C;  /* = 0/= 1; secondary state flag */
+
+/* === Pad-rec bit counters + companion cluster (2026-05-17) -- 3 highs === */
+/* Companions to existing g_pad_rec_validated_packed / g_pad_rec_skip_flag */
+/* etc.  These accumulate bit counts from pad-input via func_8003A6FC. */
+g_pad_rec_bit_count_a                                   = 0x800A3908;  /* accumulated count of set bits in current pad input (incremented in func_8003A728) */
+g_pad_rec_bit_count_b                                   = 0x800A38FC;  /* accumulated count of set bits in g_pad_rec_validated_packed's lo word */
+g_pad_rec_misc_counter                                  = 0x800A38D0;  /* paired counter reset alongside _a/_b in func_8003B130 / func_80037804 */
+
+/* === Scene init flags + arg saves (2026-05-17) -- 4 highs === */
+g_scene_already_init_flag                               = 0x800A31D8;  /* 0 = first init, != 0 = re-init (triggers obj_InitAll cleanup); always set to 1 after */
+g_scene_another_init_flag                               = 0x800A31E4;  /* paired init flag (= 0 / = 1 set) */
+g_scene_arg_saved                                       = 0x800A3854;  /* arg saved by scene setter; reset to 0 then assigned arg0 */
+g_scene_alt_arg_saved                                   = 0x800A3840;  /* paired arg save (reset to 0 in same flow) */
+
+/* === Memcard async operation state machine (2026-05-17) -- 4 highs === */
+/* From code6cac_c0.c func_80037D14: 5-state machine driving memcard */
+/* bios_A0_0xAB / 0xAC operations with event polling and completion. */
+g_memcard_op_state                                      = 0x800A31EC;  /* state 0-4 (0 = start AB, 1 = poll AB, 2 = start AC, 3 = poll AC, 4 = done/err) */
+g_memcard_op_input_flag                                 = 0x800A31E8;  /* input flag routing state 1 result (0 -> state 2, != 0 -> state 4) */
+g_memcard_op_result_code                                = 0x800A37F4;  /* result code (-1/-3 = errors, 1-4 = poll result codes) */
+g_memcard_op_completion_code                            = 0x800A3890;  /* copy of g_memcard_op_result_code at end (caller reads this) */
+
+/* === sys_GameInit reset cluster (2026-05-17) -- 6 highs === */
+/* From ings.c sys_GameInit around line 427-436: state cells reset */
+/* during the game-data init phase. */
+g_init_screen_rect                                      = 0x800A30D4;  /* 16-byte Rect used as draw target (read as *Rect at line 317) */
+g_sys_init_byte_a                                       = 0x800A3744;  /* one of 3 init bytes reset in sys_GameInit */
+g_sys_init_byte_b                                       = 0x800A3745;
+g_sys_init_byte_c                                       = 0x800A3746;
+g_sys_init_flag                                         = 0x800A36F9;  /* init flag reset in sys_GameInit */
+g_sys_init_substate                                     = 0x800A3690;  /* paired init substate */
+
+/* === SPU transfer single-slot state (2026-05-17) -- 5 highs === */
+/* From main.c around line 2871-2924: a single-slot SPU transfer */
+/* queue with callback, busy flag, saved args, and status snapshot. */
+g_spu_xfer_callback                                     = 0x800F1AE8;  /* SPU transfer callback fn pointer */
+g_spu_xfer_busy_flag                                    = 0x800F1AEC;  /* != 0 = busy (caller returns -1); set to 1 when starting */
+g_spu_xfer_arg0_saved                                   = 0x800F1AF0;  /* arg0 saved for callback */
+g_spu_xfer_arg1_saved                                   = 0x800F1AF4;  /* arg1 saved */
+g_spu_xfer_status_snapshot                              = 0x800F1AF8;  /* SPU reg+4 bit 0x80 snapshot taken at transfer start */
+
+/* === Motion frame offset table + GTE vector template (2026-05-17) -- 6 highs === */
+g_motion_frame_offset_table                             = 0x800963EE;  /* s16 table at 4-byte stride; values * 2048 (<<11) = byte offset in motion data */
+g_motion_table_arg1_saved                               = 0x800A9CF8;  /* a1 saved by motion table fn */
+g_motion_table_arg0_saved                               = 0x800A9D00;  /* a0 saved; used as base of 12-byte stride array */
+g_motion_table_flag                                     = 0x800F6650;  /* motion table init flag (1 = init done, 0 = needs init) */
+g_snd_stream_slot_field_8                               = 0x800EED18;  /* offset +8 of each g_snd_stream_slot_table entry (sum accumulator / data ptr) */
+g_gte_vector_template                                   = 0x800FF610;  /* 28-byte struct used as vector template for func_8007E4DC */
+
+/* === Effect vertex buffer (2026-05-17) -- 1 high === */
+g_eff_vertex_buffer                                     = 0x800F1198;  /* 3-s32-per-vertex buffer; src a0 loop copies xyz triples (stride 12); terminator = bit 0 of first s32 set */
+
+/* === Scratchpad pointer cache extension (2026-05-17) -- 13 highs === */
+/* Per func_80060E38 (text1b.c:13328): caches PSX scratchpad RAM */
+/* (0x1F8000xx) pointers as ordinary main-RAM globals for fast access. */
+/* Naming convention: g_scratchpad_ptr_<hex offset> (per existing */
+/* g_scratchpad_ptr_18/20/30/etc. in recent_naming_findings.md). */
+g_scratchpad_ptr_50                                     = 0x800A3488;  /* -> 0x1F800050 */
+g_scratchpad_ptr_b0                                     = 0x800A348C;  /* -> 0x1F8000B0 */
+g_scratchpad_ptr_58                                     = 0x800A3490;  /* -> 0x1F800058 */
+g_scratchpad_ptr_5c                                     = 0x800A3494;  /* -> 0x1F80005C */
+g_scratchpad_ptr_60                                     = 0x800A3498;  /* -> 0x1F800060 */
+g_scratchpad_ptr_62                                     = 0x800A349C;  /* -> 0x1F800062 */
+g_scratchpad_ptr_64                                     = 0x800A34A0;  /* -> 0x1F800064 */
+g_scratchpad_ptr_66                                     = 0x800A34A4;  /* -> 0x1F800066 */
+g_scratchpad_ptr_68                                     = 0x800A34A8;  /* -> 0x1F800068 */
+g_scratchpad_ptr_6a                                     = 0x800A34AC;  /* -> 0x1F80006A */
+g_scratchpad_ptr_6c                                     = 0x800A34B0;  /* -> 0x1F80006C */
+g_scratchpad_ptr_70                                     = 0x800A34B4;  /* -> 0x1F800070 */
+g_scratchpad_ptr_74                                     = 0x800A34B8;  /* -> 0x1F800074 */
+g_scratchpad_ptr_80                                     = 0x800A34BC;  /* -> 0x1F800080 */
+g_scratchpad_ptr_82                                     = 0x800A34C0;  /* -> 0x1F800082 */
+g_scratchpad_ptr_84                                     = 0x800A34C4;  /* -> 0x1F800084 */
+g_scratchpad_ptr_88                                     = 0x800A34C8;  /* -> 0x1F800088 */
+g_scratchpad_ptr_8c                                     = 0x800A34CC;  /* -> 0x1F80008C */
+g_scratchpad_ptr_90                                     = 0x800A34D0;  /* -> 0x1F800090 */
+g_scratchpad_ptr_98                                     = 0x800A34D4;  /* -> 0x1F800098 */
+g_scratchpad_ptr_9a                                     = 0x800A34D8;  /* -> 0x1F80009A */
+g_scratchpad_ptr_9c                                     = 0x800A34DC;  /* -> 0x1F80009C */
+g_scratchpad_ptr_9e                                     = 0x800A34E0;  /* -> 0x1F80009E */
+g_scratchpad_ptr_a0                                     = 0x800A34E4;  /* -> 0x1F8000A0 */
+
+/* === Char struct +0x4A field + pointer tables (2026-05-17) -- 4 highs === */
+g_char_struct_p1_field_4A                               = 0x80101F12;  /* per-char field +0x4A (s16); used as index into g_char_v0_pointer_table */
+g_char_v0_pointer_table                                 = 0x800A3860;  /* 4-byte-per-entry pointer table indexed by char's +0x4A field */
+g_practice_halfword_table                               = 0x80102760;  /* u16 table base; D + idx*2 = idx'th halfword */
+g_input_idle_flag                                       = 0x800A3804;  /* bool (v < 1); paired with D_800A3817 != check for state change detect */
+
+/* === Replay camera init + buki pre-hit args (2026-05-17) -- 3 highs === */
+g_replay_camera_init_flag                               = 0x800A3400;  /* reset to 0 in replay_camera_Init setup */
+g_buki_pre_hit_arg                                      = 0x800A3404;  /* = 0x1010 default; passed to coli_CheckBukiPreHit_80088088 */
+g_buki_pre_hit_arg_alt                                  = 0x800A340C;  /* paired with _arg (init to same value, later set to _arg) */
+
+/* === Ground fog state pair (2026-05-17) -- 4 highs === */
+/* From text1b.c gnd_get_fog (line 13286): selects fog value per */
+/* framebuffer parity. */
+g_gnd_fog_value_a                                       = 0x800A3420;  /* fog value for buffer A (arg0 == 0) */
+g_gnd_fog_value_b                                       = 0x800A3424;  /* fog value for buffer B (arg0 != 0) */
+g_gnd_fog_active                                        = 0x800A37D4;  /* currently selected fog value (also used as multi-purpose scratch by other systems -- see main_loop.md) */
+g_gnd_fog_prev                                          = 0x800A3720;  /* snapshot of previously-active fog value */
+
+/* === Per-player slot active flag array (2026-05-17) -- 1 high === */
+g_per_player_slot_flags_20                              = 0x8009BCE4;  /* 20 u8 entries (10 per player x 2 players); bit 0 = active, bits 2/3 = preserved; updated from arg2 bitmask in mode 6 (saTan2InfoInit_8006C1FC) */
+
+/* === BIOS callback caches + kernel interrupt $ra slots (2026-05-17) -- 3 highs === */
+/* From text1b_b.c func_80078FF0 / func_80079028 (BIOS A(0xA0) + B(0xB0) */
+/* kernel-init trampolines). */
+g_bios_callback_v0_1952                                 = 0x800A362C;  /* cached fn ptr from BIOS call result + 0x7A0 (1952) offset; called via jalr */
+g_kernel_intr_ra_save_a                                 = 0x800A3618;  /* return-address save slot for kernel interrupt handler A */
+g_kernel_intr_ra_save_b                                 = 0x800A3628;  /* paired ra-save slot for handler B */
+
+/* === Motion-ex counter id15 + text1b glyph data (2026-05-17) -- 3 highs === */
+g_motion_ex_counter_id15                                = 0x800F0BC6;  /* +0x1E from g_motion_ex_counter_table_base; 2-byte stride; incremented per frame */
+g_text1b_glyph_data_b1                                  = 0x800F115B;  /* glyph buffer data; D_800F1180 set to point at this (cursor target) */
+g_text1b_glyph_data_b2                                  = 0x800F115C;  /* paired with _b1; accessed via &D + 0/+1 */
+
+/* === Effect particle generator state (2026-05-17) -- 2 highs === */
+/* From text1b.c around line 12605: particle generation function with */
+/* a signed budget counter that gets decremented (rounded down by 4) */
+/* per call.  Uses g_effect_rng_state for random offsets. */
+g_eff_particle_remaining                                = 0x800A326C;  /* signed remaining count for particle generation; rounded down to multiple of 4 per call */
+g_eff_particle_template_table                           = 0x8009B2E0;  /* particle effect templates (0x3C-byte stride per entry, arg1 indexes it) */
+
+/* === Char struct +0xE field + lookup tables (2026-05-17) -- 4 highs === */
+g_char_struct_p1_field_E                                = 0x80101ED6;  /* per-char field at +0xE; sibling to g_char_class_idx_p1 (+0xA); s16 access via (D + s0) where s0 = 0 or 0x44C */
+g_char_lookup_table_b                                   = 0x8008E5CC;  /* sibling to g_char_class_id_table (D_8008D538); per-char data lookup */
+g_char_lookup_table_c                                   = 0x8008E6A4;  /* another per-char data table */
+g_char_id_saved_d                                       = 0x800A36C8;  /* companion to g_char_id_saved_a/b; preserved during char_id context-save */
+
+/* === Misc state cells in code6cac_c_mid.c (2026-05-17) -- 5 highs === */
+g_result_timer_complete_flag                            = 0x800A333C;  /* = 0 reset, != 0 = result timer complete; tested before timer countdown */
+g_memcard_op_alt_handle                                 = 0x800A31F8;  /* alt memcard op handle (from func_80037D14 result) */
+g_input_pause_pending_clear                             = 0x800A3204;  /* != 0 = clear pause-menu state on next frame */
+g_input_retry_counter_a                                 = 0x800A331C;  /* paired retry counter; ++ per failed input */
+g_input_retry_counter_b                                 = 0x800A3320;  /* paired counter (sibling) */
+
+/* === P2 paired char-struct fields (2026-05-17) -- 2 highs === */
+g_replay_camera_target_b                                = 0x80102408;  /* P2 counterpart to g_replay_camera_target_a (= P1 + 0x44C); per-char field +0xF4 of entry 1 */
+g_char_struct_p2_field_FC                               = 0x80102410;  /* P2 counterpart to g_char_struct_p1_field_FC (= P1 + 0x44C); +0xFC of entry 1 */
+
+/* === Unlock-anim tables + misc state (2026-05-17) -- 4 highs === */
+g_unlock_anim_p_pair_table                              = 0x8008EA70;  /* paired bytes table; indexed by g_practice_unlock_anim_id * 2; each pair = (motion_id, sub_value) for unlock animation */
+g_unlock_anim_char_table                                = 0x8009016C;  /* char ID lookup indexed by unlock_anim_id; passed to func_80054884 */
+g_misc_counter_380C                                     = 0x800A380C;  /* simple incrementing counter (++D pattern) */
+g_misc_init_flag_390F                                   = 0x800A390F;  /* reset to 0 in screen init flow */
+
+/* === Packed-nibble color values + components (2026-05-17) -- 6 highs === */
+/* From code6cac.c func_8001945C / func_80019488 / func_800194C0: */
+/* RGB-like triple stored as 3 separate bytes (low nibble of each) */
+/* combined into a 12-bit packed value (R | G<<4 | B<<8). */
+g_default_color_r                                       = 0x80106A70;  /* default nibble for component R (init = 0x11) */
+g_default_color_g                                       = 0x80106A71;  /* init = 0x44 */
+g_default_color_b                                       = 0x80106A72;  /* init = 0x88 */
+g_current_color_r                                       = 0x800A3912;  /* unpacked component R (arg0 & 0xF) */
+g_current_color_g                                       = 0x800A3913;  /* (arg0 >> 4) & 0xF */
+g_current_color_b                                       = 0x800A3914;  /* (arg0 >> 8) & 0xF */
+
+/* === P1 char-struct field block-copy cluster (2026-05-17) -- 4 highs === */
+/* From code6cac.c around line 1410-1420: 16-byte block copy + 12-byte */
+/* block copy of per-character struct fields. */
+g_char_struct_p1_field_B8                               = 0x80101F80;  /* per-char field +0xB8 (saved arg a) */
+g_char_struct_p1_field_BC                               = 0x80101F84;  /* per-char field +0xBC (saved arg b) */
+g_char_struct_p1_block_dst                              = 0x80101F90;  /* per-char field +0xC8; 16-byte Blk16 copy dst (from +0xB8 src) */
+g_char_struct_p1_block_dst_b                            = 0x801020C0;  /* per-char field +0x1F8; 12-byte Blk12 copy dst (from +0xE8 src) */
+
+/* === Sound voice-init block byte fields + callback ptr (2026-05-17) -- 6 highs === */
+/* Fields within g_snd_voice_init_block (0x800EF070), accessed by */
+/* offsets +1, +6, +8, +A, +C.  Plus a generic snd callback fn ptr. */
+g_snd_voice_init_byte_1                                 = 0x800EF071;  /* +1 of g_snd_voice_init_block */
+g_snd_voice_init_byte_6                                 = 0x800EF076;  /* +6 */
+g_snd_voice_init_byte_8                                 = 0x800EF078;  /* +8 */
+g_snd_voice_init_byte_A                                 = 0x800EF07A;  /* +A (init = 4) */
+g_snd_voice_init_byte_C                                 = 0x800EF07C;  /* +C */
+g_snd_callback_func_ptr                                 = 0x800F66B0;  /* callback function pointer (void(*)(u8*, s32*)) for sound subsystem */
+
+/* === Sound stream stage + camera sector data (2026-05-17) -- 5 highs === */
+g_scratchpad_cached_data_ptr                            = 0x80095328;  /* pointer stashed into scratchpad 0x1F80001C for fast access */
+g_snd_stream_stage                                      = 0x800A9CFC;  /* stage value used during audio streaming (= v0 saved, returned as 'stage') */
+g_snd_stream_header_field_8                             = 0x800A9D08;  /* offset -0x8 from g_snd_stream_buffer; struct field accessed at base+0 and base-0x10 */
+g_camera_sector_data_table                              = 0x800963EC;  /* camera per-entry data table; each entry has .start_sector field used by special_camera_check_pos_outside_ground */
+g_snd_stream_slot_field_4                               = 0x800EED14;  /* offset +4 of g_snd_stream_slot_table entries (per-slot data) */
+
+/* === SPU DMA control registers + transfer state (2026-05-17) -- 5 highs === */
+/* From main.c spu_TransferData family around line 1545-1557.  These */
+/* are SPU DMA register pointers + cached addr/length values. */
+g_spu_dma_madr_low                                      = 0x800A2D30;  /* SPU DMA source address (low word; args[-1]) */
+g_spu_dma_madr_high                                     = 0x800A2D34;  /* SPU DMA upper part / block count = (args[0] >> 6) + (args[0] & 0x3F != 0) */
+g_spu_dma_madr_reg_ptr                                  = 0x800A2CE0;  /* pointer to SPU DMA MADR register */
+g_spu_dma_bcr_reg_ptr                                   = 0x800A2CE4;  /* pointer to SPU DMA BCR register (block count) */
+g_spu_dma_chcr_reg_ptr                                  = 0x800A2CE8;  /* pointer to SPU DMA CHCR register (channel control) */
+
+/* === Weapon frame data base + Y-offset (2026-05-17) -- 2 highs === */
+g_weapon_frame_data_base                                = 0x80101BC8;  /* base ptr to weapon frame data; addressed as (row*16 + col)*32 + base (= 32-byte cell stride) */
+g_weapon_frame_y_offset                                 = 0x800F66F8;  /* Y-offset added to *(u16*)(base + 0x12); reset to 0 by spu_ResetCounter (likely misnamed; actually wave/frame offset reset) */
+
+/* === Attack scale factor extensions + effect slot field+2 (2026-05-17) -- 5 highs === */
+g_attack_scale_w                                        = 0x80094B9C;  /* attack scale factor (extends _x/_y/_z series at +6) */
+g_attack_scale_v                                        = 0x80094B9E;  /* attack scale factor (+8) */
+g_effect_slot_a_field_2                                 = 0x800F6462;  /* effect slot A field at +2 (= val & 0xFFF; 12-bit value) */
+g_effect_slot_b_field_2                                 = 0x800F6342;  /* effect slot B field +2; +0x120 stride from slot A */
+g_effect_slot_c_field_2                                 = 0x800F62E2;  /* effect slot C field +2 */
+
+/* === GPU primitive templates for poly assembly (2026-05-17) -- 3 highs === */
+/* From text1a.c around line 815-818: pre-initialized template values */
+/* OR'd with per-call args to construct PSX GPU primitives.  Words */
+/* 1-3 of the 4-word primitive (word 0 uses existing myRobGeneiOpen). */
+g_gpu_prim_template_b                                   = 0x800545F8;  /* template word 1 (16-bit args slot) */
+g_gpu_prim_template_c                                   = 0x800545FC;  /* template word 2 (8-bit args slot) */
+g_gpu_prim_template_d                                   = 0x80054600;  /* template word 3 (16-bit args slot) */
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
