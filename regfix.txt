@@ -4630,7 +4630,7 @@ func_80069AE4: reorder 94,92,93 @ 92-94
 # label moves with reordered first insn
 func_80069AE4: insert_label ".L_LOOP_TOP:" @ 93
 # retarget loop branch to new label after reorder
-func_80069AE4: subst "\.L825" ".L_LOOP_TOP" @ 104
+func_80069AE4: subst "\.L\d+" ".L_LOOP_TOP" @ 104
 
 # func_800481E8: call-loop family with conditional v0v++.
 # v3x body uses single inline_move_aliasing barrier (1 barrier) to produce
