@@ -22,6 +22,8 @@ A `SessionStart` hook auto-runs it. The briefing prints build status, active fun
 
 Work is solo end-to-end on a single function. No sub-agents, no worktrees, no orchestrator delegation — one focused session per function, technique-switch when stuck. See [[hard-rule]].
 
+**Before starting any asmfix-retirement work,** grep `docs/asmfix_attempt_notes.md` for the function name. Prior agents may have recorded the best diff achieved, what was tried, where the plateau is, and what to try next. Build on prior measurement; don't restart from zero. If you make progress, update the entry.
+
 ## Memory system (where the rules actually live)
 
 Three layers, each loaded by a different mechanism:

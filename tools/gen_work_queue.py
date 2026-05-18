@@ -56,33 +56,6 @@ OUT = ROOT / "WORK_QUEUE.md"
 SRC_DIR = ROOT / "src"
 ASMFIX = ROOT / "asmfix.txt"
 ASM_FUNCS = ROOT / "asm" / "funcs"
-# Functions explicitly deferred from the asmfix retirement queue when a
-# session encountered a hard structural blocker (e.g. needs_rodata_split
-# where the jtbl lives in another CU's rodata, or compounding regfix
-# debt that can't be resolved without CU restructuring). One func per
-# line; `# comment` starts a comment, inline `# reason` documents why.
-ASMFIX_DEFER = ROOT / "tools" / "asmfix_defer.txt"
-
-
-def load_asmfix_defer() -> dict[str, str]:
-    """Read the asmfix defer list. Returns {func_name: reason}.
-
-    Empty dict if file missing. Lines starting with `#` are skipped.
-    Format per non-comment line: `<funcname>` or `<funcname>  # <reason>`.
-    """
-    if not ASMFIX_DEFER.exists():
-        return {}
-    out: dict[str, str] = {}
-    for raw in ASMFIX_DEFER.read_text(encoding="utf-8").splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        if "#" in line:
-            name, _, reason = line.partition("#")
-            out[name.strip()] = reason.strip()
-        else:
-            out[line] = ""
-    return out
 
 IN_SCOPE = {
     "easy_attempt",
@@ -828,10 +801,7 @@ def main() -> int:
         rec = r.get("recommendation", "")
         return rec.startswith("permanently_blocked:") or rec.startswith("bios_or_syscall:")
 
-    defer_set = load_asmfix_defer()
-    asmfix_rows_all = [r for r in rows if r.get("kind") == "asmfix" and not _is_permanent_asmfix(r)]
-    asmfix_deferred_rows = [r for r in asmfix_rows_all if r["func"] in defer_set]
-    asmfix_rows = [r for r in asmfix_rows_all if r["func"] not in defer_set]
+    asmfix_rows = [r for r in rows if r.get("kind") == "asmfix" and not _is_permanent_asmfix(r)]
     asmfix_permanent_rows = [r for r in rows if r.get("kind") == "asmfix" and _is_permanent_asmfix(r)]
     pure_c_rows = [r for r in rows if r.get("kind") != "asmfix"]
     # Permanent-bridged entries are surfaced under the existing out-of-scope
@@ -884,13 +854,6 @@ def main() -> int:
 
     asmfix_entries = [row_entry(r) for r in asmfix_rows]
     sort_entries(asmfix_entries)
-
-    asmfix_deferred_entries = []
-    for r in asmfix_deferred_rows:
-        e = row_entry(r)
-        e["defer_reason"] = defer_set.get(r["func"], "")
-        asmfix_deferred_entries.append(e)
-    sort_entries(asmfix_deferred_entries)
 
     # Cheat cleanup queue: ALL audit-flagged cheats, sorted by retirement
     # difficulty. Computed AFTER the active/asmfix/deferred queues so we
@@ -947,11 +910,6 @@ def main() -> int:
         f"| Asmfix Retirement Queue | {len(asmfix_entries)} | "
         "`bash tools/dc.sh next-asmfix` |"
     )
-    if asmfix_deferred_entries:
-        lines.append(
-            f"| Asmfix Deferred (blocker) | {len(asmfix_deferred_entries)} | "
-            "see bottom; edit `tools/asmfix_defer.txt` |"
-        )
     lines.append(
         f"| Cheat Cleanup Queue | {len(cheat_orphan_entries)} | "
         "`bash tools/dc.sh next-cheat-cleanup` |"
@@ -1083,32 +1041,6 @@ def main() -> int:
     lines.append("Format: `<#>  <func>  <size insns>  <rec>  <src>  [tags]`")
     lines.append("")
     append_numbered_queue(lines, asmfix_entries, group_by_tier=True)
-
-    if asmfix_deferred_entries:
-        lines.append("---")
-        lines.append("")
-        lines.append("## Asmfix Deferred (hard structural blockers)")
-        lines.append("")
-        lines.append(
-            "Functions removed from the active asmfix retirement queue "
-            "via `tools/asmfix_defer.txt` because a hard structural "
-            "blocker was hit (rodata in another CU, compounding regfix "
-            "debt, etc.). Bridge remains active; bytes still come from "
-            "`asm/funcs/<func>.s`. Edit `tools/asmfix_defer.txt` to "
-            "re-add to the active queue when the blocker is resolved."
-        )
-        lines.append("")
-        lines.append(f"**Total deferred: {len(asmfix_deferred_entries)} functions.**")
-        lines.append("")
-        lines.append("```")
-        for i, e in enumerate(asmfix_deferred_entries, 1):
-            tags = f"  [{e['tags']}]" if e['tags'] else ""
-            reason = f"  -- {e['defer_reason']}" if e.get("defer_reason") else ""
-            lines.append(
-                f"  {i:>3}  {e['func']:<32} {e['size']:>5}  "
-                f"{e['rec']:<28} {e['src']:<24}{tags}{reason}"
-            )
-        lines.append("```")
 
     if cheat_orphan_entries:
         lines.append("---")
