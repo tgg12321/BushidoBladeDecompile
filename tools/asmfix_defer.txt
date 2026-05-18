@@ -1,0 +1,18 @@
+# Asmfix retirement defer list.
+# Functions listed here are removed from the active asmfix retirement queue
+# until the listed blocker is resolved. The asmfix bridge remains active;
+# bytes still come from asm/funcs/<func>.s.
+#
+# Format:
+#   <funcname>            # <reason>
+#
+# Example:
+#   func_8006B578         # needs_rodata_split: jtbl_80015988 lives in another CU's rodata
+
+func_8006B578         # needs_rodata_split: jtbl_80015988 lives in asm/data/101C.rodata_text1a_b_pre.s (different CU); C-emitted switch in text1b.c rodata would land at wrong address. Requires CU restructuring per cu-split-asmfix-drift rule. Deferred 2026-05-18.
+saTan2KabutoWareMove  # 4 prior sessions (per satan2-kabuto-pin.md) plateaued at 20 regions / 4 insns short. Main gap: 17-insn miss at target_idx 126-144 — cc1 emits both if-else branches inline vs target's join-label sharing. Deferred to prioritize easier items; revisit. 2026-05-18.
+DispPracticeMenuTex_A # 67 diffs at HEAD after retire. C body is plausible-looking interpolation code. Diff is largely $v0/$v1 register-rename cascade in use_high branch (idx 112-134, 23 insns) + scheduling drift of `sh D_800A3310` (target idx 54 vs mine idx 60). Source reorders tried (move D=0 before/after new_var, split new_var into two halves, move dst[0x18]) — all neutral or worse. Probably needs register pin for use_high path or specific subst rules. Deferred; revisit when tackling reg-rename specialists. 2026-05-18.
+func_80048FFC         # 185 diffs after retire. Frame size mismatch (mine 0x90 vs target 0xA0, +16 bytes / 4 words). Adding s32 buf[4] dead var bumped to 0x98 but cascade diffs went UP. Function has 16+ stack locals, complex loop with initLoadImage calls + bit-packing. Needs major restructure. Deferred. 2026-05-18.
+md_game_check_mode    # 231 diffs after m2c body paste. m2c output for this function has incorrect pointer arithmetic (var_s1 + 2 etc.) for the function's actual layout — produces 2 extra insns and completely different codegen. Needs hand-written body from asm analysis, not m2c-paste. Deferred. 2026-05-18.
+PutRobShadow          # Existing C body produces 248 diffs because GCC hoists scratchpad LUI loads into separate registers (mine) vs target's lui+sw per write idiom. Converting to inline-asm `__asm__ volatile("sw $0, 0x1F800XXX")` triggers sibling label-drift cascade (func_8002EA24's regfix .L348 reference broke). Retiring this function requires either updating sibling regfix to drift-immune form OR ensuring new C body emits same label count. Deferred. 2026-05-18.
+func_8006BB68         # 65-90 diffs after retire. Frame size mismatch (mine 0x60, target 0x68 — 8 bytes off) + complex 3-call packet+motion+texpage pattern with delay-slot stores. Body needs careful packet layout (sp+0x18..0x40 is packet1 with byte at 0x40, sp+0x48..0x4F is packet2). Workable but slow. Deferred. 2026-05-18.
