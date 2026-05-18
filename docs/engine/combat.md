@@ -370,12 +370,15 @@ per-character move-enable bitmap.  `func_80033DF4` queries it as
 
 ## Cross-references (recent_naming_findings.md addendum 2026-05-17)
 
-The practice-mode scripted-event handler in code6cac_c2.c uses a small
-event-trigger cluster identified in the placeholder-refinement pass:
+The post-fight WIN-animation sound trigger script lives in
+code6cac_c2.c:870-899.  Drives the "katinuki" (win) sequence that
+plays SFX cues at exact frame counts and transitions back to the
+title menu:
 
-- [§15 code6cac_c2 frame-event triggers + position offset](recent_naming_findings.md#15-code6cac_c2-frame-event-triggers--position-offset-d_8008eb04-0x1c)
-  — `g_c2_event_frame_a..e` at `0x8008EB04..0x8008EB0C` (5 frame-count
-  constants tested against `g_practice_loop_frame` at 0x800A37B8) +
-  `g_c2_pos_xyz_offset_x/y/z` at `0x8008EB10..0x8008EB18` (3 s32 XYZ
-  vertex offsets added to `vp[0/1/2]`). Likely per-stage debug/practice
-  camera-shake or guided-move trigger points.
+- [§15 Win-animation sound trigger cluster](recent_naming_findings.md#15-win-animation-sound-trigger-cluster-d_8008eac0-0x8008eb28)
+  — `g_winanim_per_stage_intro_frame[34]` (per-stage intro SFX frame
+  targets, mostly 130f or disabled), single triggers at frames
+  155/159/160/198 for callouts/special/fanfare, particle effect
+  spawned at +0/-800/+0 offset (upward) from `D_800A3818`.  Total
+  win-animation playback ≈ 200 frames (3.3s).  Per-character SFX
+  banks are 40-entry (0x28) blocks indexed by `40*p + base_id`.
