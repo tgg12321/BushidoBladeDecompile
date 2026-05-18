@@ -349,6 +349,11 @@ SPU/voice update path more directly:
   — `g_seq_event_handler_{90_NoteOn, B0_CtrlChange, C0_PgmChange,
   E0_PitchBend, FF_Meta}` at `0x800F3340..0x800F3350` (the dispatch
   table for the `saTan0Main` MIDI-style interpreter above).
+- [§12 Sound data buffer pointer cluster](recent_naming_findings.md#12-sound-data-buffer-pointer-cluster-6-pointers--relocator)
+  — `g_snd_data_buf_base` + 5 subblock pointers at `0x800EFB14`,
+  set by `func_80054604` (snd_LoadSelection path) and `func_8005490C`
+  (header-offset unpack), relocated together by `func_80054FDC(delta)`
+  when the buffer moves.  Connects the sound-loader to the saTan family.
 - [§13 sound.c voice-init constants](recent_naming_findings.md#13-soundc-voice-init-constants-d_800ef070-0xc4)
   — `g_voice_init_vol_offset = -0x2EE0` and `g_voice_init_pitch_offset = -0xFA0`
   (sound.c:780-798); same magic numbers reappear in the envelope generator

@@ -407,9 +407,11 @@ Three clusters from the placeholder-refinement pass interact with the main loop:
   E0_PitchBend, FF_Meta}` at `0x800F3340..0x800F3350`, invoked from
   `saTan0Main` (main.c:334-454) — per-character MIDI-style command-stream
   event dispatcher.  See [sound.md](sound.md) for the sequencer context.
-- [§12 text1b accumulator cluster](recent_naming_findings.md#12-text1b-accumulator-cluster-6-s32-accumulators)
-  — `g_text1b_accum_0..5` at `0x800EFB14`, ticked together each frame by
-  `func_80054FDC` (text1b.c:11363).
+- [§12 Sound data buffer pointer cluster](recent_naming_findings.md#12-sound-data-buffer-pointer-cluster-6-pointers--relocator)
+  — `g_snd_data_buf_base` + `g_snd_data_subblock_0_ptr..4_ptr` at
+  `0x800EFB14`.  Not main-loop ticked — relocated when the sound buffer
+  moves via `func_80054FDC(delta)` (text1b.c:11363).  Owned by the
+  sound subsystem.
 - [§22 IRQ handler entry alabels in DispStuff.s](recent_naming_findings.md#22-irq-handler-entry-alabels-in-dispstuffs-d_80083edc--d_80083f1c)
   — `g_irq_handler_entry_no_pri/with_pri` at `0x80083EDC` / `0x80083F1C`,
   passed as 2nd arg to `irq_EnableInterrupts()` in main.c:177/180.
