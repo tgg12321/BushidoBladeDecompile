@@ -287,19 +287,28 @@ void efc_buki_draw_zanzou(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
 }
 extern s32 func_800484A0(s32, s32, s32);
 
-/* INLINE_MOVE_ALIASING: pure-C alternatives failed.
- *   - technique=plain_decl_first: `new_var = arg0;` as first line → GCC's
+/* INLINE_MOVE_ALIASING: pure-C alternatives failed across 9 attempts in
+ * 7 distinct categories (full log: .bb2_attempts/func_800483DC.jsonl).
+ *   - C_structure plain_decl_first: `new_var = arg0;` as first line → GCC's
  *     scheduler emits `move s2, a0` at insn idx 2 (early), not idx 12 in
  *     the lw's load-delay slot where target needs it.
- *   - technique=late_decl: `new_var = arg0;` after the lw assignment →
- *     GCC eliminates the move entirely (mine is 48 insns vs target 49),
- *     treating new_var as a dead copy of arg0.
- *   - technique=permuter_1463_iter: 16-thread permute run, 1463 attempts,
- *     plateaued at score 30 (3 structural + ~9 rename) with no match.
- *     Permuter's mutation operators (decl reorder, intermediate vars,
- *     expression restructure) can't shift GCC's allocator off the
- *     s2/s3/s4 cycle vs target's s0/s4/s3/s2.
- * Per inline-move-aliasing.md, single-insn escape valve.
+ *   - C_structure late_decl: `new_var = arg0;` after the lw assignment →
+ *     GCC eliminates the move entirely (mine is 48 insns vs target 49).
+ *   - C_structure cached_intermediate: explicit `cached` aliasing var
+ *     before reassignment — same 48/49 outcome (GCC sees through alias).
+ *   - C_types ptr_signature: changed to `s32 *base` with explicit `*list`
+ *     save var — same 12 diffs, allocator still picks s2 for list.
+ *   - C_hints volatile: marking v0_tmp + lookup pointer volatile → WORSE
+ *     (52 vs 49, 7 structural + 8 rename), adds memory roundtrips.
+ *   - permuter_seed default: 1463 iter / 16 thread / 60s flat → score 30.
+ *   - permuter_long: 3687 iter / 600s max / 180s flat → same score 30.
+ *     3x more iterations didn't reduce — mutation space confirmed exhausted.
+ *   - manual_steer empty_barrier: `__asm__("" ::: "memory")` between lw and
+ *     new_var assignment → same as variant D (move folded away).
+ *   - sibling_match func_800481E8 pattern: asm-pin cached=arg0 upfront
+ *     then plain C chain → WORSE (25 diffs).
+ * Per inline-move-aliasing.md, single-insn escape valve. Gate PASS
+ * (≥4 categories, ≥6 attempts, ≥30 min — actual: 7/9/43).
  */
 void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 {
