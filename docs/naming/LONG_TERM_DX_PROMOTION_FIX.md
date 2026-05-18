@@ -80,6 +80,59 @@ splat to a version that supports the current spimdisasm.
 
 Without working splat, **all subsequent steps are blocked**.
 
+> **2026-05-18 attempted-and-reverted finding (read before retrying):**
+> Step 1 is NOT a pip-install fix. Attempt log:
+>
+> 1. `pip install --upgrade "spimdisasm<2.0.0,>=1.29.0"` — bumped
+>    spim 1.9.2 → 1.40.3. Cleared the `FunctionRodataEntry` import
+>    error. ✓
+> 2. `make setup` then failed on stricter `symbol_addrs.txt` parsing:
+>    splat 0.29.0 treats any `// key:value` tokens after the `;` as
+>    inline attributes. Patched 17 lines (replaced `:` with ` -` in
+>    descriptive `//` comments — line 9 timestamp / line 13 printf
+>    format / etc.). ✓
+> 3. `make setup` then succeeded but produced an **incompatible
+>    regen**:
+>    - `asm/6CAC.s`: +91,959 / -1,885 lines (50× expansion). Splat
+>      0.29.0 dumps ALL 1,410 functions as asm, including the
+>      1,200+ that have C implementations in `src/`. The project's
+>      `splat.yaml` was tuned to the older splat behavior of
+>      emitting asm only for unmatched functions.
+>    - `bb2.ld`: 112 → 11 lines (drastic simplification; most
+>      explicit per-object section orderings dropped).
+>    - `asm/data/7D920.data.s`: +4536 / -2552 lines (major
+>      restructure).
+>    - `undefined_syms_auto.txt`: -793 / +51 (auto-detected symbols
+>      mostly gone).
+> 4. `make` then failed SHA1 (`+16 bytes`). The +16 is the surface
+>    symptom; the real issue is hundreds of duplicate function
+>    symbols (defined in both `asm/6CAC.s` and `src/*.c`).
+> 5. All five files reverted via `git checkout`; spim downgraded
+>    back to 1.9.2. Baseline `make` passes SHA1 again.
+>
+> **Revised effort estimate:** ~1-2 days, not 1-2 hours. Step 1
+> requires:
+>
+> - Rewriting `splat.yaml` to match splat 0.29.0's behavior (output
+>   asm ONLY for true-asm functions, exclude those covered by
+>   `src/*.c` via `INCLUDE_ASM`)
+> - Verifying every `INCLUDE_ASM` directive in `src/` still resolves
+>   correctly
+> - Re-aligning the new `bb2.ld` against the project's intricate
+>   per-object section layout (the old 112-line ld has explicit
+>   per-`.rodata` orderings that the 11-line splat 0.29.0 output
+>   doesn't replicate)
+> - Re-anchoring every `regfix.txt` / `asmfix.txt` rule that
+>   references `asm/6CAC.s` line offsets — those offsets will all
+>   shift after the regen
+> - Coordinating with parallel decomp WIP (regen would invalidate
+>   any in-flight regfix rules)
+>
+> The spim upgrade alone is a single command and reversible. The
+> *project migration* implied by splat 0.29.0's stricter output
+> is the real Step 1 — and it's a multi-day coordinated effort,
+> not a quick fix.
+
 ### Step 2: Promote names to symbol_addrs.txt
 
 Splat consumes `symbol_addrs.txt` (252 entries) as its primary symbol
@@ -145,7 +198,7 @@ them around as aliases.  Cleanup can be deferred.
 
 | Step | Effort | Blocker? |
 |---|---|---|
-| 1. Fix splat install | 1-2 hours | YES — blocks everything |
+| 1. Fix splat install + project migration | **1-2 days** (2026-05-18 attempt; see expanded section above) | YES — blocks everything |
 | 2. Symbol-addrs migration script | 1-2 hours | Needs step 1 |
 | 3. Splat regen + diff inspection | 30 min | Needs step 1 |
 | 4. SHA1 verification | 5 min | Needs step 3 |
