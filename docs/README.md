@@ -28,7 +28,7 @@ This directory holds the contributor-facing documentation for the *Bushido Blade
 | [`../KENGO_RENAME_QUEUE_2026-05-12.md`](../KENGO_RENAME_QUEUE_2026-05-12.md) | Reviewed action queue for Kengo-derived renames. |
 | [`../CLAIMS.md`](../CLAIMS.md) | Cross-session coordination: active claims, stabilizer fragility notes. |
 | [`../CODEX_HANDOFF_2026-04-27.md`](../CODEX_HANDOFF_2026-04-27.md) | Historical handoff: the zero-stub sweep completion (all 1,410 functions resolved). |
-| [`../CODEX_HANDOFF_2026-04-17.md`](../CODEX_HANDOFF_2026-04-17.md) | Historical handoff: introduction of asmfix and the codex_lab discipline. |
+| CODEX_HANDOFF_2026-04-17.md (no longer present) | Historical handoff: introduction of asmfix and the codex_lab discipline. Never tracked in git; deleted during 2026-05-18 repo cleanup. |
 
 ## Reading order for a new contributor
 
