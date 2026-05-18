@@ -3548,3 +3548,45 @@ obj_SetReverbValue_80085EE4 = 0x80085EE4;
 obj_ResetReverbMode_80085F98 = 0x80085F98;
 action_apply_hit_flags_8008AAD4 = 0x8008AAD4;
 action_read_spu_voice_8008BDE8 = 0x8008BDE8;
+
+/* === Medium-tier sole_caller_path helpers (2026-05-18) === */
+/* sole_caller_path proposals: function X is called ONLY by Y, so */
+/* its name is Y_helper_<addr>. Names are alias-only; accurate */
+/* re. caller context but don't describe what the function does. */
+/* Future passes should refine these to semantic names (cluster-style). */
+kgm_clamp_patch_init_helper_8001945C = 0x8001945C;
+calc_loc_mat_fw_helper_8002CA8C = 0x8002CA8C;
+DispSamnailWindow_helper_800343F0 = 0x800343F0;
+DispSamnailWindow_helper_8003B20C = 0x8003B20C;
+suDispMentalBar_helper_8003B2C8 = 0x8003B2C8;
+suDispMentalBar_helper_8003B3A4 = 0x8003B3A4;
+suDispMentalBar_helper_8003B4DC = 0x8003B4DC;
+tslLineG5Init_helper_8003DBE4 = 0x8003DBE4;
+tslPrintScreen_helper_8003FA24 = 0x8003FA24;
+tslPrintScreen_helper_8003FECC = 0x8003FECC;
+AllocRobRmd_helper_80041988 = 0x80041988;
+AllocRobRmd_helper_80043398 = 0x80043398;
+efc_rob_set_type_particle_helper_80049C24 = 0x80049C24;
+DispHira_helper_800620B8 = 0x800620B8;
+debug_printf_helper_80079244 = 0x80079244;
+saEft00Add_helper_800800CC = 0x800800CC;
+DispStuff_helper_800841E0 = 0x800841E0;
+DispStuff_helper_80084500 = 0x80084500;
+DispStuff_helper_800856B0 = 0x800856B0;
+AllocBukiRmd_helper_80086CF8 = 0x80086CF8;
+AllocBukiRmd_helper_800872A4 = 0x800872A4;
+
+/* === Medium-tier OTHER -- body-derived names for Kengo misnomers === */
+/* (2026-05-18) These 9 addresses had wrong Kengo proposals (3x */
+/* replay_camera_check_stage_*, 3x myRobGeneiClose_*, 3x efc_ougi_Init_*) */
+/* per per-body audit -- all trivial getters/setters/stubs, no relation */
+/* to the proposed Kengo names. Body-derived descriptive names below. */
+write_zero_to_D_80101E64_80037250                  = 0x80037250;  /* 1-insn wrapper: writes 0 to D_80101E64 (s16) */
+set_flag_D_800A3730_8003A41C                       = 0x8003A41C;  /* 1-insn wrapper: writes 1 to D_800A3730 (s32) */
+load_D_800905F8_8003E2C8                           = 0x8003E2C8;  /* 1-insn getter: returns D_800905F8 */
+const_return_0x25_80044E64                         = 0x80044E64;  /* stub: returns literal 0x25 (37) */
+const_return_0x26_80044E6C                         = 0x80044E6C;  /* stub: returns literal 0x26 (38) */
+empty_stub_800457D4                                = 0x800457D4;  /* stub: jr $ra; nop (empty body) */
+load_D_800A33A4_800457DC                           = 0x800457DC;  /* 1-insn getter: returns D_800A33A4 */
+load_D_800A33A0_800457FC                           = 0x800457FC;  /* 1-insn getter: returns D_800A33A0 */
+const_return_0x45000_80045808                      = 0x80045808;  /* 1-insn: returns constant 0x45000 (lui+ori) */
