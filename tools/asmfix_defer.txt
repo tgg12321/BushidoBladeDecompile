@@ -18,3 +18,17 @@ PutRobShadow          # Existing C body produces 248 diffs because GCC hoists sc
 func_8006BB68         # 65-90 diffs after retire. Frame size mismatch (mine 0x60, target 0x68 — 8 bytes off) + complex 3-call packet+motion+texpage pattern with delay-slot stores. Body needs careful packet layout (sp+0x18..0x40 is packet1 with byte at 0x40, sp+0x48..0x4F is packet2). Workable but slow. Deferred. 2026-05-18.
 func_80069F80         # Similar packet+motion+texpage pattern to 8006BB68. Not attempted in detail; deferred pre-emptively given similar structure suggests similar diff profile. 2026-05-18.
 coli_HitPauseKatana_2 # 143 diffs after retire. Function had 69-line existing C with register pins (mode→t1, mask→t0, t2→t2). Same length (178=178), 13 STRUCTURAL + 21 REG-RENAME + 1 BRANCH plateau. Pinning base→a0 helped (closed 6 substs). Pinning new_var→a2 broke everything (cascade collapse). Plateau dominated by new_var allocated to $11 vs target's $6, requires deeper restructure. Deferred. 2026-05-18.
+func_8005C6D0         # Stub returning 0 (only 2 insns vs target's 134). Needs full body decomp from asm (loops over D_800EFB78[] entries, calls coli_calc_motion2 + others). Substantial work. Deferred. 2026-05-18.
+
+# Pre-emptive defers — stub functions with full-decomp pending,
+# similar packet/loop/call patterns to already-attempted deferrals.
+# All have stub bodies (0-1 meaningful lines) and asmfix bridge active.
+func_8006DD94         # 117 insns, text1b.c, stub. Same packet-construction pattern as 8006BB68. Pre-emptive defer 2026-05-18.
+func_8006D3DC         # 126 insns, text1b.c, stub. Same family. Pre-emptive defer 2026-05-18.
+func_80057ACC         # 127 insns, text1b.c, 1-line. Looked at asm — outer/inner loop scan-and-track function with mult calls. Pre-emptive defer 2026-05-18.
+func_8006A1A0         # 139 insns, text1b.c, 1-line. Sibling motion-display family. Pre-emptive defer 2026-05-18.
+func_8005C074         # 141 insns, text1b.c, 1-line. Bit-table iteration with loops. Pre-emptive defer 2026-05-18.
+func_80063BD0         # 144 insns, text1b.c, 1-line. Same family. Pre-emptive defer 2026-05-18.
+func_8007CBB0         # 151 insns, display.c, 1-line. Pre-emptive defer 2026-05-18.
+func_80054604         # 160 insns, text1b.c, 1-line. Pre-emptive defer 2026-05-18.
+SetPacketData         # 159 insns, main.c, substantial existing C body with register pins. Retire produces same-length match (159=159) with 10 STRUCTURAL + 15 REG-RENAME + 1 BRANCH-OFFSET. Volatile cast on D_800F1AF4 reads helped (closed 3-insn shortage from 4→0). Remaining: register rotation $s0/$s2/$s3 (mine uses $s2,$s3,$s0 where target uses $s0,$s2,$s3). Removing `goto main_work;` to make main_work fall-through regressed STRUCTURAL 10→41. Deferred. Source improvements kept on a side branch as test. 2026-05-18.
