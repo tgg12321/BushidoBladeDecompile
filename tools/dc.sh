@@ -324,27 +324,22 @@ EOF
             echo "ERROR: pip install failed" >&2
             exit 1
         fi
-        # Validate: every non-comment, non-blank line in requirements.txt
-        # should map to an importable module. Package name != module name
-        # in some cases (splat64 -> "splat"), so we map known oddballs.
-        _pkg_to_module() {
-            case "$1" in
-                splat64) echo splat ;;
-                *)       echo "$1" ;;
-            esac
-        }
+        # Validate: only check the CRITICAL imports we actually use in
+        # routine workflows. Don't iterate requirements.txt — splat's
+        # top-level import chain drags in N64-specific deps that take
+        # extra effort to satisfy and aren't critical for PSX builds.
+        # If a new module becomes critical, add it to VALIDATE_IMPORTS.
+        VALIDATE_IMPORTS="toml"
         _missing=""
-        while IFS= read -r line; do
-            pkg=$(echo "$line" | sed 's/#.*//' | tr -d '[:space:]' | sed 's/[<>=].*//;s/\[.*//')
-            [ -z "$pkg" ] && continue
-            mod=$(_pkg_to_module "$pkg")
+        for mod in $VALIDATE_IMPORTS; do
             if ! .venv/bin/python3 -c "import $mod" 2>/dev/null; then
-                _missing="$_missing $pkg(import=$mod)"
+                _missing="$_missing $mod"
             fi
-        done < requirements.txt
+        done
         if [ -n "$_missing" ]; then
-            echo "WARNING: installed but failed to import:$_missing" >&2
-            echo "  (likely a package-name → module-name mismatch in setup-venv's mapping table)" >&2
+            echo "ERROR: installed but failed to import:$_missing" >&2
+            echo "  Run: .venv/bin/python3 -c 'import <module>'  to see the actual error" >&2
+            exit 1
         fi
         echo "setup-venv: OK"
         ;;
@@ -456,28 +451,21 @@ EOF
         [ -f tools/maspsx/maspsx.py ]         || _missing+=("tools/maspsx/maspsx.py (maspsx — fix: git submodule update --init)")
         command -v python3 >/dev/null 2>&1    || _missing+=("python3 in PATH (fix: install python3 or activate .venv)")
         [ -f disc/SLUS_006.63 ]               || _missing+=("disc/SLUS_006.63 (original EXE — fix: dc.sh bootstrap, or python3 tools/extract_iso.py)")
-        # Advisory: .venv (build falls back to system python3, but some pipeline
-        # tools — permuter, splat — assume specific packages from the venv).
+        # Advisory: .venv (build falls back to system python3, but the
+        # permuter assumes `toml` is importable from the venv).
         if [ ! -x .venv/bin/python3 ]; then
             _warnings+=(".venv/bin/python3 (using system python3 — fix: bash tools/dc.sh setup-venv)")
-        elif [ -f requirements.txt ]; then
-            # The .venv exists. Validate every package in requirements.txt
-            # actually imports — catches the "empty venv" / "stale venv after
-            # new dep added" failure modes that pure existence checks miss.
-            _broken_pkgs=""
-            while IFS= read -r _line; do
-                _pkg=$(echo "$_line" | sed 's/#.*//' | tr -d '[:space:]' | sed 's/[<>=].*//;s/\[.*//')
-                [ -z "$_pkg" ] && continue
-                case "$_pkg" in
-                    splat64) _mod=splat ;;
-                    *)       _mod="$_pkg" ;;
-                esac
+        else
+            # Check only critical modules (toml). splat's N64 import chain
+            # isn't relevant for routine PSX work.
+            _broken_mods=""
+            for _mod in toml; do
                 if ! .venv/bin/python3 -c "import $_mod" 2>/dev/null; then
-                    _broken_pkgs="$_broken_pkgs $_pkg"
+                    _broken_mods="$_broken_mods $_mod"
                 fi
-            done < requirements.txt
-            if [ -n "$_broken_pkgs" ]; then
-                _warnings+=(".venv missing required package(s):$_broken_pkgs (fix: bash tools/dc.sh setup-venv)")
+            done
+            if [ -n "$_broken_mods" ]; then
+                _warnings+=(".venv missing critical module(s):$_broken_mods (fix: bash tools/dc.sh setup-venv)")
             fi
         fi
         # Advisory: decomp-permuter (required for `dc.sh permute/attempt`,

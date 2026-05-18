@@ -8,14 +8,24 @@
 # so fresh worktrees never have to deal with venv setup manually.
 
 # Splat: binary splitter (regenerates asm/ + linker script from splat.yaml).
-#   Used by: `python -m splat split splat.yaml`
+#   Used by: `python -m splat split splat.yaml` — invoked by `make setup`
+#   only, not by routine build. Splat unconditionally imports its N64
+#   segment handlers at top level, dragging in undeclared deps below.
 splat64
 
 # spimdisasm: MIPS disassembler used by splat for .text disassembly.
-#   Pulled in transitively by splat64 but pin it explicitly for clarity.
+#   Transitively pulled by splat64; pinned for clarity.
 spimdisasm
 
+# n64img / pygfxd / crunch64: not used by BB2 (we're PSX, not N64), but
+#   splat64's `segtypes/n64/__init__.py` imports them unconditionally at
+#   package init. Without them, `python -m splat split` fails with
+#   ModuleNotFoundError before reaching any PSX-relevant code.
+n64img
+pygfxd
+crunch64
+
 # toml: TOML parser used by decomp-permuter's settings/weights loader.
-#   Without this, `python tools/decomp-permuter/permuter.py` dies on
-#   `ModuleNotFoundError: No module named 'toml'` 30s into a permute run.
+#   THE critical dep — without this, `dc.sh permute` and `dc.sh attempt`
+#   die 30s into the run on `ModuleNotFoundError: No module named 'toml'`.
 toml

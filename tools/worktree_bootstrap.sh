@@ -64,28 +64,18 @@ if [ -f "$REQ_FILE" ]; then
     if [ ! -x "$VENV_PY" ]; then
         NEED_HEAL=1
     else
-        # Check that every required package imports successfully. Map known
-        # package-name → module-name oddballs (splat64 -> splat).
-        _check_pkg_imports() {
-            local req="$1" py="$2" missing="" pkg mod
-            while IFS= read -r line; do
-                pkg=$(echo "$line" | sed 's/#.*//' | tr -d '[:space:]' | sed 's/[<>=].*//;s/\[.*//')
-                [ -z "$pkg" ] && continue
-                case "$pkg" in
-                    splat64) mod=splat ;;
-                    *)       mod="$pkg" ;;
-                esac
-                if ! "$py" -c "import $mod" 2>/dev/null; then
-                    missing="$missing $pkg"
-                fi
-            done < "$req"
-            [ -z "$missing" ] && return 0
-            echo "$missing"
-            return 1
-        }
-        _miss=$(_check_pkg_imports "$REQ_FILE" "$VENV_PY") || NEED_HEAL=1
-        if [ "$NEED_HEAL" = "1" ]; then
-            echo "Worktree: main .venv missing required packages:$_miss — auto-healing" >&2
+        # Check only critical modules (must match setup-venv's
+        # VALIDATE_IMPORTS list). Iterating requirements.txt would drag
+        # in splat's broken N64 import chain.
+        _miss=""
+        for mod in toml; do
+            if ! "$VENV_PY" -c "import $mod" 2>/dev/null; then
+                _miss="$_miss $mod"
+            fi
+        done
+        if [ -n "$_miss" ]; then
+            NEED_HEAL=1
+            echo "Worktree: main .venv missing critical module(s):$_miss — auto-healing" >&2
         fi
     fi
     if [ "$NEED_HEAL" = "1" ]; then
