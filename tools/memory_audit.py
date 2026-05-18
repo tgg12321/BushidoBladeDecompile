@@ -22,6 +22,7 @@ from typing import Any
 MEMORY_DIR = Path.home() / ".claude" / "projects" / "C--Users-Trenton-Desktop-Bushido-Blade-2-Decompile" / "memory"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_PATH = REPO_ROOT / "tmp" / "memory_audit.md"
+PATH_RULES_DIR = REPO_ROOT / ".claude" / "rules"
 
 LINK_RE = re.compile(r"\[\[([a-zA-Z0-9_\-]+)\]\]")
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
@@ -121,6 +122,17 @@ def main() -> int:
     files: list[dict[str, Any]] = []
     all_names: set[str] = set()
     fm_name_to_filename: dict[str, str] = {}
+
+    # Also know about path-scoped rules in .claude/rules/ for link validation
+    # (their stems and frontmatter names are valid [[link]] targets)
+    if PATH_RULES_DIR.exists():
+        for path in sorted(PATH_RULES_DIR.glob("*.md")):
+            all_names.add(path.stem)
+            text = path.read_text(encoding="utf-8", errors="replace")
+            fm, _ = parse_frontmatter(text)
+            fm_name = (fm.get("name") or path.stem).strip()
+            if fm_name:
+                fm_name_to_filename[fm_name] = path.stem
 
     for path in sorted(MEMORY_DIR.rglob("*.md")):
         text = path.read_text(encoding="utf-8", errors="replace")

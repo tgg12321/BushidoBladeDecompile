@@ -44,6 +44,12 @@ def _find_memory_dir() -> Path:
 MEMORY_DIR = _find_memory_dir()
 INDEX_PATH = MEMORY_DIR / "MEMORY.md"
 
+# Path-scoped rules live in the repo at .claude/rules/. They auto-load
+# when Claude reads matching files (per `paths:` frontmatter), so they
+# do NOT appear in MEMORY.md. But [[link]] cross-references from memory/
+# may target them, so the indexer must know about them for link validation.
+REPO_PATH_RULES_DIR = (Path(__file__).resolve().parent.parent / ".claude" / "rules")
+
 # Auto-load limits per Claude Code docs.
 MAX_LINES = 200
 MAX_BYTES = 24_576   # docs say 25,600 (25KB), leave 1KB headroom
@@ -145,7 +151,26 @@ def main() -> int:
             "size": path.stat().st_size,
         })
 
-    # Phase 2: validate all [[links]] resolve
+    # Also collect path-scoped rules from .claude/rules/ — these are auto-loaded
+    # by path trigger, not via MEMORY.md, but cross-references must resolve.
+    path_scoped_stems: list[tuple[str, list[str]]] = []
+    if REPO_PATH_RULES_DIR.exists():
+        for path in sorted(REPO_PATH_RULES_DIR.glob("*.md")):
+            stem = path.stem
+            all_stems.add(stem)
+            text = path.read_text(encoding="utf-8", errors="replace")
+            fm, _ = parse_frontmatter(text)
+            fm_name = (fm.get("name") or stem).strip()
+            fm_name_to_stem[fm_name] = stem
+            # Parse paths: from frontmatter (simple list of strings)
+            paths_field = fm.get("paths", "[]")
+            paths_list: list[str] = []
+            if isinstance(paths_field, str):
+                inner = paths_field.strip().lstrip("[").rstrip("]")
+                paths_list = [p.strip().strip('"').strip("'") for p in inner.split(",") if p.strip()]
+            path_scoped_stems.append((stem, paths_list))
+
+    # Phase 2: validate all [[links]] resolve (across memory/ + .claude/rules/)
     broken: list[tuple[str, str]] = []
     for path in sorted(MEMORY_DIR.rglob("*.md")):
         if path.name == "MEMORY.md":
@@ -155,6 +180,14 @@ def main() -> int:
             target = m.group(1)
             if target not in all_stems and target not in fm_name_to_stem:
                 broken.append((str(path.relative_to(MEMORY_DIR)), target))
+    # Also validate links within path-scoped rule files
+    if REPO_PATH_RULES_DIR.exists():
+        for path in sorted(REPO_PATH_RULES_DIR.glob("*.md")):
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for m in LINK_RE.finditer(text):
+                target = m.group(1)
+                if target not in all_stems and target not in fm_name_to_stem:
+                    broken.append((f".claude/rules/{path.name}", target))
 
     if errors:
         print("Frontmatter errors:", file=sys.stderr)
@@ -202,6 +235,18 @@ def main() -> int:
         for entry in sorted(entries_by_dir[d], key=lambda x: x["stem"]):
             summary = first_sentence(entry["description"], max_chars=130)
             out_lines.append(f"- [{entry['stem']}]({entry['rel_path']}) — {summary}")
+        out_lines.append("")
+
+    # Path-scoped rules — these don't appear in browse navigation because
+    # they auto-load when Claude reads matching files. Listed here as a
+    # short summary so the existence + trigger map is discoverable.
+    if path_scoped_stems:
+        out_lines.append("## .claude/rules/ — path-scoped rules (auto-load on matching file reads)")
+        out_lines.append("_These don't enter context every session; they load only when Claude reads a file matching their `paths:` glob._")
+        out_lines.append("")
+        for stem, paths in sorted(path_scoped_stems):
+            paths_str = ", ".join(f"`{p}`" for p in paths) if paths else "(no paths)"
+            out_lines.append(f"- **{stem}** — {paths_str}")
         out_lines.append("")
 
     content = "\n".join(out_lines).rstrip() + "\n"
