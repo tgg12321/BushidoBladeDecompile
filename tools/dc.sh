@@ -45,6 +45,8 @@
 #   bash tools/dc.sh auto-repair                    — build + detect cascade-drift + auto-run repair tools (used by build-active)
 #   bash tools/dc.sh preflight-cascade <func>       — read-only impact report: how many sibling rules at risk of label drift
 #   bash tools/dc.sh suggest <func>                  — lean rollup: state + top techniques + don't-tries + next step (auto pre/post)
+#   bash tools/dc.sh bootstrap                       — link gitignored deps from main repo (run after EnterWorktree mid-session)
+#   bash tools/dc.sh verify-toolchain                — fast existence-check on cc1, maspsx, .venv, disc (~10ms; diagnoses link-failure mysteries)
 #
 set -eo pipefail
 
@@ -80,61 +82,16 @@ case "$CMD" in
         echo "=== BB2 Decomp Session Startup ==="
         echo
 
-        # Worktree auto-link: if this is a git worktree and the main repo has
-        # gitignored binary deps (gcc-2.7.2, cc1psx.exe, decomp-permuter, .venv)
-        # that we don't, symlink-copy them in. Without this, the first build in
-        # a fresh worktree fails with "tools/gcc-2.7.2/build/cc1: not found"
-        # and the agent has to rediscover the symlink workflow every time.
-        #
-        # Parsing .git directly instead of `git rev-parse --git-common-dir`
-        # because the .git pointer file is written with Windows paths (e.g.
-        # `gitdir: C:/Users/.../`) which `git rev-parse` chokes on under WSL
-        # (see memory/feedback_parallel_harness_gotchas.md).
-        if [ -f ".git" ]; then
-            GITDIR_LINE=$(head -1 .git | sed 's|^gitdir: *||')
-            # Convert Windows-style C:/... to WSL /mnt/c/... when running under WSL.
-            if [ -d /mnt/c ] && [ "${GITDIR_LINE#?:/}" != "$GITDIR_LINE" ]; then
-                DRIVE=$(echo "$GITDIR_LINE" | cut -c1 | tr 'A-Z' 'a-z')
-                GITDIR_ABS="/mnt/$DRIVE${GITDIR_LINE#?:}"
-            else
-                GITDIR_ABS="$GITDIR_LINE"
-            fi
-            # GITDIR_ABS is .../.git/worktrees/<name>; main repo is two dirs up.
-            if [ -d "$GITDIR_ABS" ]; then
-                MAIN_REPO=$(dirname "$(dirname "$(dirname "$GITDIR_ABS")")")
-                LINKED=""
-                # Trees: check for a specific marker file inside (not the
-                # parent dir) so partial cp -as failures self-heal — if the
-                # marker is missing, blow away the tree and re-link.
-                # Format: "<dep>:<marker_relative_to_dep>"
-                TREE_DEPS="tools/gcc-2.7.2:build/cc1 tools/decomp-permuter:permuter.py .venv:bin/python3 disc:SLUS_006.63"
-                # Single files: just check the file itself.
-                FILE_DEPS="tools/cc1psx.exe"
-                if [ -d "$MAIN_REPO" ] && [ "$MAIN_REPO" != "$(pwd)" ]; then
-                    for entry in $TREE_DEPS; do
-                        dep="${entry%%:*}"
-                        marker="${entry#*:}"
-                        # Need re-link if marker missing AND main has it.
-                        if [ ! -e "$dep/$marker" ] && [ -e "$MAIN_REPO/$dep/$marker" ]; then
-                            rm -rf "$dep" 2>/dev/null
-                            mkdir -p "$(dirname "$dep")"
-                            if cp -as "$MAIN_REPO/$dep" "$dep" 2>/dev/null && [ -e "$dep/$marker" ]; then
-                                LINKED="$LINKED $dep"
-                            fi
-                        fi
-                    done
-                    for dep in $FILE_DEPS; do
-                        if [ ! -e "$dep" ] && [ -e "$MAIN_REPO/$dep" ]; then
-                            if cp "$MAIN_REPO/$dep" "$dep" 2>/dev/null; then
-                                LINKED="$LINKED $dep"
-                            fi
-                        fi
-                    done
-                    if [ -n "$LINKED" ]; then
-                        echo "Worktree: auto-linked from main repo:$LINKED"
-                        echo
-                    fi
-                fi
+        # Worktree auto-link: bootstrap symlinks gitignored binary deps
+        # (cc1, .venv, etc.) from the main repo into this worktree.
+        # Extracted to tools/worktree_bootstrap.sh so it can also be invoked
+        # explicitly (`dc.sh bootstrap`) or by wsl.sh when an agent creates
+        # a worktree mid-session (no SessionStart re-fire).
+        if [ -f tools/worktree_bootstrap.sh ]; then
+            _bootstrap_msg=$(bash tools/worktree_bootstrap.sh 2>&1) || true
+            if [ -n "$_bootstrap_msg" ]; then
+                echo "$_bootstrap_msg"
+                echo
             fi
         fi
 
@@ -300,6 +257,8 @@ case "$CMD" in
   dc.sh verify <func>             Binary diff one function
   dc.sh fix-label-drift           Auto-fix .L<N> drift after match
   dc.sh refresh-queue             Regen WORK_QUEUE.md (post-match)
+  dc.sh bootstrap                 Link gitignored deps from main repo (worktree first-run)
+  dc.sh verify-toolchain          Fast existence-check on cc1, maspsx, .venv, disc
   dc.sh release                   ESCAPE HATCH (user-only, typed confirm)
 
 --- Where to read ---
@@ -313,6 +272,67 @@ case "$CMD" in
     feedback_regfix_reference.md    regfix.txt syntax + every gotcha
 
 EOF
+        ;;
+
+    bootstrap)
+        # Explicit worktree bootstrap — symlinks gitignored binary deps
+        # (gcc-2.7.2, decomp-permuter, .venv, disc, cc1psx.exe) from the
+        # main repo into this worktree. Idempotent; safe to run multiple
+        # times. No-op in the main repo.
+        #
+        # Use this after creating a worktree mid-session (the SessionStart
+        # hook only fires once per session, so a worktree created via
+        # EnterWorktree won't get auto-bootstrapped until something runs
+        # `dc.sh start` again).
+        if [ ! -f tools/worktree_bootstrap.sh ]; then
+            echo "ERROR: tools/worktree_bootstrap.sh missing — checkout is incomplete" >&2
+            exit 1
+        fi
+        bash tools/worktree_bootstrap.sh
+        ;;
+
+    verify-toolchain)
+        # Fast existence-check on the critical build deps. Used to diagnose
+        # "why does my build fail with weird link errors" in ~10ms instead
+        # of waiting 90s for a full build to produce a confusing error.
+        # Hard requirements: cc1 binary, maspsx, python3 in PATH, original EXE.
+        # Soft requirements (warning only): .venv (system python3 also works).
+        _missing=()
+        _warnings=()
+        [ -x tools/gcc-2.7.2/build/cc1 ]      || _missing+=("tools/gcc-2.7.2/build/cc1 (cc1 compiler — fix: dc.sh bootstrap, or rebuild via tools/setup_wsl.sh)")
+        [ -f tools/maspsx/maspsx.py ]         || _missing+=("tools/maspsx/maspsx.py (maspsx — fix: git submodule update --init)")
+        command -v python3 >/dev/null 2>&1    || _missing+=("python3 in PATH (fix: install python3 or activate .venv)")
+        [ -f disc/SLUS_006.63 ]               || _missing+=("disc/SLUS_006.63 (original EXE — fix: dc.sh bootstrap, or python3 tools/extract_iso.py)")
+        # Advisory: .venv (build falls back to system python3, but some pipeline
+        # tools assume specific package versions from the venv).
+        [ -x .venv/bin/python3 ]              || _warnings+=(".venv/bin/python3 (using system python3 instead — fix: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt)")
+        # cc1psx.exe is calibration-only; not blocking for build.
+        if [ "${#_missing[@]}" -eq 0 ]; then
+            if [ "${#_warnings[@]}" -eq 0 ]; then
+                echo "Toolchain: OK (cc1, maspsx, python3, disc present; .venv present)"
+            else
+                echo "Toolchain: OK with ${#_warnings[@]} advisory:"
+                for w in "${_warnings[@]}"; do
+                    echo "  $w"
+                done
+            fi
+            exit 0
+        fi
+        echo "Toolchain: MISSING ${#_missing[@]} required dep(s):" >&2
+        for m in "${_missing[@]}"; do
+            echo "  $m" >&2
+        done
+        if [ "${#_warnings[@]}" -gt 0 ]; then
+            echo "" >&2
+            echo "Plus ${#_warnings[@]} advisory:" >&2
+            for w in "${_warnings[@]}"; do
+                echo "  $w" >&2
+            done
+        fi
+        echo "" >&2
+        echo "Fix: bash tools/dc.sh bootstrap   (links from main repo if it has them)" >&2
+        echo "Or:  bash tools/setup_wsl.sh      (full reinstall — slow)" >&2
+        exit 1
         ;;
 
     compile)

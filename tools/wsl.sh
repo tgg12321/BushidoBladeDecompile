@@ -1,28 +1,33 @@
 #!/bin/bash
 # tools/wsl.sh
 #
-# Run a command in WSL with the working directory set to the BB2 project root.
-# Cuts the `wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && <cmd>'`
-# boilerplate down to `bash tools/wsl.sh '<cmd>'`.
+# Run a command in WSL with cwd set to the current worktree root.
+# Cuts `wsl bash -c 'cd <path> && <cmd>'` boilerplate down to
+# `bash tools/wsl.sh '<cmd>'`. Auto-detects the worktree root via
+# `git rev-parse --show-toplevel`, so this works from the main repo
+# OR any git worktree without manual configuration.
+#
+# Also auto-bootstraps the worktree (symlinks gitignored deps from
+# main repo) the first time it's invoked in a freshly-created worktree
+# that's missing the cc1 binary. Silent when no work needed.
 #
 # Usage:
 #   bash tools/wsl.sh 'make 2>&1 | tail -5'
 #   bash tools/wsl.sh 'source .venv/bin/activate && python3 -m splat split splat.yaml'
 #   bash tools/wsl.sh 'bash tools/dc.sh verify --all'
 #
-# The command is passed verbatim to WSL bash -c, after `cd`-ing into the project
-# directory. Quote your command with single quotes to prevent Git Bash from
-# expanding `$N` (register names), `$()`, etc. before WSL sees them.
+# The command is passed verbatim to WSL bash -c, after `cd`-ing into the
+# project directory. Quote your command with single quotes to prevent Git
+# Bash from expanding $N (register names), $(), etc. before WSL sees them.
 
 set -u
-
-PROJECT_DIR='/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile'
 
 if [ "$#" -eq 0 ]; then
     cat >&2 <<EOF
 usage: bash tools/wsl.sh '<command>'
 
-Runs <command> inside WSL with cwd = $PROJECT_DIR.
+Runs <command> inside WSL with cwd set to the current worktree root.
+Auto-bootstraps the worktree if gitignored deps (cc1, .venv, etc.) are missing.
 
 Examples:
   bash tools/wsl.sh 'make 2>&1 | tail -5'
@@ -32,6 +37,46 @@ EOF
     exit 2
 fi
 
-# Pass the joined args as a single shell command to WSL.
-# Escape the project dir for proper quoting inside the inner shell.
-wsl bash -c "cd \"$PROJECT_DIR\" && $*"
+# Detect project root via git. Works from Git Bash (returns C:/foo paths)
+# and from inside WSL (returns /mnt/c/foo paths). We need a WSL-form path
+# for the `cd` inside the wsl call.
+PROJECT_DIR=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ -z "$PROJECT_DIR" ]; then
+    echo "wsl.sh: not in a git repository (couldn't auto-detect project root)" >&2
+    exit 1
+fi
+
+# Normalize: Git Bash returns C:/Users/... ; convert to WSL /mnt/c/...
+case "$PROJECT_DIR" in
+    [A-Za-z]:[/\\]*)
+        DRIVE=$(echo "$PROJECT_DIR" | cut -c1 | tr '[:upper:]' '[:lower:]')
+        REST="${PROJECT_DIR#?:}"
+        REST="${REST//\\//}"
+        WSL_DIR="/mnt/$DRIVE$REST"
+        ;;
+    /[a-zA-Z]/*)
+        # Already WSL-bash-style /c/... — prepend /mnt
+        WSL_DIR="/mnt$PROJECT_DIR"
+        ;;
+    *)
+        # Already a Linux/WSL path or unknown form — pass through.
+        WSL_DIR="$PROJECT_DIR"
+        ;;
+esac
+
+# Auto-bootstrap: if cc1 isn't present in this worktree and the bootstrap
+# script exists, run it before the user's command. The bootstrap is a no-op
+# in the main repo (its .git is a directory, not a file) and idempotent
+# elsewhere, so even an unnecessary call is cheap.
+#
+# `set -e` makes a bootstrap failure abort with the actionable error visible;
+# we'd rather bail early than have the user's command fail with a confusing
+# "cc1: not found" 90 seconds later.
+wsl bash -c "
+set -e
+cd \"$WSL_DIR\"
+if [ ! -e tools/gcc-2.7.2/build/cc1 ] && [ -f tools/worktree_bootstrap.sh ]; then
+    bash tools/worktree_bootstrap.sh >&2
+fi
+$*
+"
