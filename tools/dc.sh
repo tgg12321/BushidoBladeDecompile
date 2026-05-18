@@ -48,6 +48,8 @@
 #   bash tools/dc.sh bootstrap                       — link gitignored deps from main repo (run after EnterWorktree mid-session)
 #   bash tools/dc.sh verify-toolchain                — fast existence-check on cc1, maspsx, .venv, disc (~10ms; diagnoses link-failure mysteries)
 #   bash tools/dc.sh new-worktree <name>             — create .claude/worktrees/<name> from local main HEAD, bootstrapped, ready to use
+#   bash tools/dc.sh log-attempt <func> <cat> <variant> <min> '<outcome>'  — log a decomp attempt
+#   bash tools/dc.sh check-attempts <func>           — validate attempts log vs escape-valve gate
 #
 set -eo pipefail
 
@@ -258,6 +260,8 @@ case "$CMD" in
   dc.sh verify <func>             Binary diff one function
   dc.sh fix-label-drift           Auto-fix .L<N> drift after match
   dc.sh refresh-queue             Regen WORK_QUEUE.md (post-match)
+  dc.sh log-attempt <func> <cat> <variant> <min> '<outcome>'  Log a decomp attempt to .bb2_attempts/
+  dc.sh check-attempts <func>     Validate attempts log against escape-valve gate
   dc.sh new-worktree <name>       Create + bootstrap a worktree off local main HEAD (one command)
   dc.sh bootstrap                 Link gitignored deps from main repo (worktree first-run)
   dc.sh verify-toolchain          Fast existence-check on cc1, maspsx, .venv, disc
@@ -342,6 +346,25 @@ EOF
             exit 1
         fi
         echo "setup-venv: OK"
+        ;;
+
+    log-attempt)
+        # Append an attempt entry to .bb2_attempts/<func>.jsonl. The
+        # escape-valve commit hook (tools/hooks/escape_valve_guard.sh)
+        # gates INLINE_MOVE_ALIASING / asmfix bridge / canonical-asm
+        # commits on the log showing ≥4 distinct categories, ≥6
+        # attempts, ≥30 minutes of effort.
+        #
+        # Usage: dc.sh log-attempt <func> <category> <variant> <min> '<outcome>'
+        # See tools/check_attempts.py for the category list.
+        python3 tools/log_attempt.py "$@"
+        ;;
+
+    check-attempts)
+        # Validate <func>'s attempt log against the escape-valve gate.
+        # Exits 0 (pass) or 1 (fail). Prints which categories are still
+        # needed when failing.
+        python3 tools/check_attempts.py "$@"
         ;;
 
     new-worktree)
