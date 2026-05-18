@@ -36,15 +36,18 @@ if [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; then
     exit 0
 fi
 
-# Resolve project root the same way active_func_guard.sh does.
-PROJECT_ROOT=""
-if ROOT_FROM_CWD=$(git rev-parse --show-toplevel 2>/dev/null) && [ -d "$ROOT_FROM_CWD" ]; then
-    PROJECT_ROOT="$ROOT_FROM_CWD"
-elif [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -d "$CLAUDE_PROJECT_DIR" ]; then
-    PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
-else
-    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-    PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# Resolve project root STRICTLY from cwd's git toplevel. Do NOT fall
+# back to CLAUDE_PROJECT_DIR or the script's own location — those would
+# cause the hook to check main's marker when the session is actually
+# elsewhere (or in another project entirely), which produced false-
+# positive blocks for agents doing unrelated work.
+#
+# Each worktree has its own .bb2_active_func; we check the marker for
+# the worktree the session is currently in. If cwd is outside any git
+# repo, exit silently.
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ -z "$PROJECT_ROOT" ] || [ ! -d "$PROJECT_ROOT" ]; then
+    exit 0
 fi
 
 case "$PROJECT_ROOT" in
@@ -58,7 +61,7 @@ esac
 
 ACTIVE_FILE="$PROJECT_ROOT/.bb2_active_func"
 
-# Fast path: no active marker, allow stop.
+# Fast path: no active marker in THIS worktree, allow stop.
 if [ ! -s "$ACTIVE_FILE" ]; then
     exit 0
 fi
@@ -80,17 +83,29 @@ case "$VERIFY" in
     *": MATCH "*) exit 0 ;;
 esac
 
-# Function is unmatched. Now check the assistant's last message for
-# stop-language. Only block if we see it; if the agent's last turn ended
-# silently or just asked a clarifying question, that's a different problem.
+# Function is unmatched. Two-step check before considering a block:
 #
-# Extract the last assistant text from the transcript JSONL. Each line is
-# one JSON event. Assistant text events have type="assistant" and a content
-# array containing text blocks.
-LAST_TEXT=$(python3 - "$TRANSCRIPT" <<'PY' 2>/dev/null || true
-import json, sys
+#   (1) Is the agent ACTUALLY doing decomp work in this session? An active
+#       marker alone isn't enough — markers can be set by side effects
+#       (`next-cheat-cleanup --preview`) or carried over from previous
+#       agents in the same worktree. We count recent decomp-related tool
+#       calls: Edit/Write of src/*.c / regfix.txt / asmfix.txt, or Bash
+#       running dc.sh attempt/verify/diff/permute/build*/recipes/etc.
+#       If zero in the last 30 tool calls, this agent isn't decomping;
+#       don't block their stop. Otherwise, fall through to (2).
+#
+#   (2) Did the agent write stop-language in their recent text? Only if
+#       both checks pass do we block — the previous "marker set →
+#       always block" rule produced false positives for tooling/docs/
+#       naming agents who happened to inherit a marker.
+#
+# Both extractions run in one python pass for efficiency.
+OUTPUT=$(python3 - "$TRANSCRIPT" <<'PY' 2>/dev/null || true
+import json, re, sys
+
 path = sys.argv[1]
-chunks = []
+text_chunks = []
+tool_uses = []
 try:
     with open(path, 'r', encoding='utf-8') as f:
         for line in f:
@@ -106,14 +121,71 @@ try:
             msg = ev.get('message') or {}
             content = msg.get('content') or []
             for block in content:
-                if isinstance(block, dict) and block.get('type') == 'text':
-                    chunks.append(block.get('text', ''))
+                if not isinstance(block, dict):
+                    continue
+                btype = block.get('type')
+                if btype == 'text':
+                    text_chunks.append(block.get('text', ''))
+                elif btype == 'tool_use':
+                    tool_uses.append(block)
 except Exception:
     pass
-# Only inspect the last ~3 assistant text blocks (the recent turn).
-print('\n'.join(chunks[-3:]).lower())
+
+# Decomp-activity classifier on the last 30 tool calls.
+DECOMP_PATH_SUFFIX = ('regfix.txt', 'asmfix.txt', 'regfix_stage2.txt')
+DECOMP_BASH_SUBSTRS = (
+    'dc.sh attempt', 'dc.sh verify', 'dc.sh diff',
+    'dc.sh permute', 'dc.sh smart', 'dc.sh recipes',
+    'dc.sh apply-recipe', 'dc.sh gen-regfix', 'dc.sh add-regfix',
+    'dc.sh build-active', 'dc.sh inline-', 'dc.sh score',
+    'dc.sh frame-shift', 'dc.sh fix-', 'dc.sh asmfix-slice',
+    'dc.sh analysis', 'dc.sh dump-text', 'dc.sh classify',
+    'dc.sh validate-regfix', 'dc.sh suggest', 'dc.sh next',
+)
+# Standalone `make` invocation (not `make -n` of unrelated stuff —
+# accept the rare false positive).
+MAKE_RE = re.compile(r'(^|[;&|`(\s])make(\s|$)')
+
+decomp_count = 0
+for tu in tool_uses[-30:]:
+    name = tu.get('name', '')
+    inp = tu.get('input') or {}
+    if name in ('Edit', 'Write', 'MultiEdit', 'NotebookEdit'):
+        fp = inp.get('file_path', '')
+        fp_norm = fp.replace('\\', '/').lower()
+        if '/src/' in fp_norm and fp_norm.endswith('.c'):
+            decomp_count += 1
+        elif fp_norm.endswith(DECOMP_PATH_SUFFIX):
+            decomp_count += 1
+    elif name == 'Bash':
+        cmd = inp.get('command', '')
+        if any(s in cmd for s in DECOMP_BASH_SUBSTRS):
+            decomp_count += 1
+        elif MAKE_RE.search(cmd):
+            decomp_count += 1
+
+# Emit count on first line, then the last-3 text chunks (lowercased)
+# joined with \n. The marker '__DECOMP_COUNT__N' is unambiguous since
+# real text wouldn't start with it.
+print(f"__DECOMP_COUNT__{decomp_count}")
+print('\n'.join(text_chunks[-3:]).lower())
 PY
 )
+
+if [ -z "$OUTPUT" ]; then
+    # Couldn't parse transcript — don't block on uncertainty.
+    exit 0
+fi
+
+DECOMP_COUNT=$(echo "$OUTPUT" | head -1 | sed 's/^__DECOMP_COUNT__//')
+LAST_TEXT=$(echo "$OUTPUT" | tail -n +2)
+
+# Step 1: if the agent hasn't done any decomp-related work in the last
+# 30 tool calls, they're not actually decomping. Marker is incidental
+# (preview side effect, inherited from prior agent, etc.). Allow stop.
+if [ -z "$DECOMP_COUNT" ] || [ "$DECOMP_COUNT" = "0" ]; then
+    exit 0
+fi
 
 if [ -z "$LAST_TEXT" ]; then
     # No recent assistant text to scan — don't block on silence.
