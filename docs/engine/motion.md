@@ -361,9 +361,11 @@ reused across both subsystems.
 One cluster from the placeholder-refinement pass extends the motion-state
 data model:
 
-- [§20 Motion-ex stride-12 XYZ triplet array](recent_naming_findings.md#20-motion-ex-stride-12-xyz-triplet-array-d_800f0e38)
-  — `g_text1b_xyz_arr_E38_x/y/z` at `0x800F0E38`, three "columns" of a
-  stride-12 array indexed by the same `word_off`. Parallels the existing
-  `g_motion_ex_state_block_table_12` (`0x800F0CA0`) layout but at a
-  separate anchor — likely a second motion-ex entity class with its own
-  state ring.
+- [§20 Motion-ex pool B (12-slot effect-spawn pool)](recent_naming_findings.md#20-motion-ex-pool-b-12-slot-effect-spawn-pool-d_800f0e380x800f0bec)
+  — `g_motion_ex_pool_b_xyz_x/y/z` at `0x800F0E38` (12 slots × 12 bytes
+  column-major XYZ) + `g_motion_ex_pool_b_flag` at `0x800F0BEC` (12 ×
+  s16). Allocated by `func_80062FEC` (text1b.c:14112) via the
+  `g_particle_slot_bitmap_plus_4` busy bitmap. Pool A (32 slots at
+  `0x800F0D78` with random spread, used by text1b.c:14236) and Pool B
+  (12 slots, no spread, precision effects) are two parallel substrates
+  for the motion-ex spawned-effect subsystem.

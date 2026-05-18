@@ -649,29 +649,43 @@ The bias constants (+0x37/+0x2A) suggest the table only stores
 deltas from a min-size baseline.  arg0 & 0x7FFF gives 32768 max
 entries (probably far fewer used in practice).
 
-## 20. Motion-ex stride-12 XYZ triplet array (D_800F0E38)
+## 20. Motion-ex pool B (12-slot effect-spawn pool, D_800F0E38..0x800F0BEC)
 
-Three separate base addresses (0x800F0E38, 0xE3C, 0xE40) used as
-columns of a single stride-12 XYZ array.  text1b.c:14067-14070:
+Allocated by `func_80062FEC` (text1b.c:14112) via the
+`g_particle_slot_bitmap_plus_4` busy bitmap (0x800A3448, 12 bits used).
+On allocation, writes XYZ from `src = (s32*)D_800A347C` into the slot,
+no random perturbation (cf. pool A below, which does add spread).
 
-```c
-*(s32 *)((u8 *)(&g_text1b_xyz_arr_E38_x) + word_off) = src[0];
-*(s32 *)((u8 *)(&g_text1b_xyz_arr_E38_y) + word_off) = src[1];
-*(s32 *)((u8 *)(&g_text1b_xyz_arr_E38_z) + word_off) = src[2];
-```
+| Symbol | Address | Stride/size | Role |
+|---|---|---|---|
+| `g_motion_ex_pool_b_xyz_x` | 0x800F0E38 | s32, stride 12 | XYZ X column (12 slots × 4 bytes) |
+| `g_motion_ex_pool_b_xyz_y` | 0x800F0E3C | s32, stride 12 | Y column |
+| `g_motion_ex_pool_b_xyz_z` | 0x800F0E40 | s32, stride 12 | Z column |
+| `g_motion_ex_pool_b_flag`  | 0x800F0BEC | s16 × 12 | per-slot flag (cleared on allocate) |
+| `g_particle_slot_bitmap_plus_4` | 0x800A3448 | u32 bitfield | busy bitmap (bits 0-11) |
 
-`word_off` is a multiple of 12 (one element of the array = 12 bytes =
-XYZ triplet).  Three "columns" indexed by the same offset.
+### Pool A vs Pool B (two parallel effect-spawn pools)
 
-| Symbol | Address | Role |
-|---|---|---|
-| `g_text1b_xyz_arr_E38_x` | 0x800F0E38 | X column |
-| `g_text1b_xyz_arr_E38_y` | 0x800F0E3C | Y column |
-| `g_text1b_xyz_arr_E38_z` | 0x800F0E40 | Z column |
+| Bitmap | Slots | Data cluster | Allocator | Spread |
+|---|---|---|---|---|
+| `g_particle_slot_bitmap` (0x800A3444) | 32 | D_800F0D78 / 0x0D7C / `videoDec`(0x0D80) | text1b.c:14236 | Random ±0x7F per axis (via `func_80079154()`) |
+| `g_particle_slot_bitmap_plus_4` (0x800A3448) | 12 | D_800F0E38 / 0xE3C / 0xE40 | text1b.c:14112 (`func_80062FEC`) | **None** — direct copy |
 
-Identical layout to `g_motion_ex_state_block_table_12` (0x800F0CA0)
-but at a different anchor -- likely a parallel state array for a
-separate motion-ex entity class.
+Pool A uses random per-axis offset for particles that spread (sparks,
+debris, splatter).  Pool B uses unmodified position — likely for
+**precision effects** like sword-impact glints, damage numbers, or
+focus markers that need to spawn at exact world positions.
+
+### Related motion-ex tables in the same address range
+
+- `g_motion_ex_state_block_table_12` (0x800F0CA0, 8 entries × 12 bytes)
+  — primary per-motion-id state (pos/extra/data_ptr)
+- `g_motion_ex_extra_at_0/4/8` (0x800F0FB8..C0) — extra XYZ data
+- `g_motion_ex_state_aux_at_0/2/4` (0x800F10A0..A4) — u16 aux state
+
+This is the motion-ex subsystem's **effect-spawn substrate**: per-entity
+state tables (block_table_12), extra/aux fields (extra_*, state_aux_*),
+and two slot pools for transient spawned effects.
 
 ## 21. text1b draw-primitive data cluster (0x8009B340..0x8009B850)
 
