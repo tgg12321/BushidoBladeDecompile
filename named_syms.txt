@@ -2964,7 +2964,7 @@ g_char_curr_keyframe_idx_p3                             = 0x801027E4;  /* P3 of 
 /* === Tier 3 batch: high-ref (>=5) unnamed addresses (2026-05-17) === */
 /* 53 addresses, pattern-based naming for motion-ex */
 /* state/flag/counter extensions + generic g_high_ref_<addr> fallback */
-g_high_ref_8009BD38                                     = 0x8009BD38;  /* 5 refs */
+g_text1b_state_4bit_BD38                                     = 0x8009BD38;  /* 5 refs */
 g_trig_sin_cos_table_packed                                     = 0x8009C928;  /* 36 refs */
 g_main_flags_bitmask_reg                                     = 0x800A289C;  /* 5 refs */
 g_text1b_pad_state_arr                                     = 0x800A35D0;  /* 5 refs */
@@ -3218,7 +3218,7 @@ g_func40510_lookup_D578                                = 0x8008D578;
 g_tbl20_field0_D59C                                     = 0x8008D59C;
 g_tbl20_field2_D59E                                     = 0x8008D59E;
 g_byte_indirection_tbl_DA08                                     = 0x8008DA08;
-g_code6cac_addr_8008DB1C                                     = 0x8008DB1C;
+g_c6c_data_ptr_DB1C                                     = 0x8008DB1C;
 g_per_player_tbl_14bytes_E194                                   = 0x8008E194;
 g_char_class_init_tbl_5bytes                                   = 0x8008E338;
 g_s16_lookup_u8idx_E75C                                   = 0x8008E75C;
@@ -3237,13 +3237,13 @@ g_c2_pos_xyz_offset_z                                  = 0x8008EB18;
 g_per_frame_data_tbl_eb1c                                     = 0x8008EB1C;
 g_lookup_14entries_8008EB80_plus_14                          = 0x8008EB8E;
 g_angle_raw_u16_lookup_EBA0                                   = 0x8008EBA0;
-g_code6cac_b_addr_8008EC24                                   = 0x8008EC24;
+g_c6cb_data_ptr_EC24                                   = 0x8008EC24;
 g_char_id_saved_d_init_tbl_EC30                                   = 0x8008EC30;
 g_offset_lookup_F12C                                  = 0x8008F12C;
 g_paired_byte_lookup_F19C_lo                               = 0x8008F19C;
 g_paired_byte_lookup_F19C_hi                               = 0x8008F19D;
 g_lookup_pair_tbl_8008F1A8                               = 0x8008F1A8;
-g_code6cac_c_mid_addr_8008F1C0                               = 0x8008F1C0;
+g_c_mid_init_template_F1C0                               = 0x8008F1C0;
 g_s32_arr_F204                               = 0x8008F204;
 g_unlock_anim_char_table_plus_12                             = 0x80090178;
 g_status_up_cached_idx_plus_8_plus_4                         = 0x80090604;
