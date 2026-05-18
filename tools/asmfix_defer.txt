@@ -68,3 +68,13 @@ func_80053754         # Retire-measure: mine=2 target=466  STRUCTURAL=464  REG-R
 mario_test_Exec         # Retire-measure: mine=2 target=469  STRUCTURAL=467  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
 func_80043454         # Retire-measure: mine=2 target=479  STRUCTURAL=477  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
 cpu_check_run_attack  # 317 insns, code6cac.c. SUBSTANTIAL existing body (4 register pins + scratchpad + GTE + bisection algorithm). Retire shows mine=314 vs target=317 (3 short), 63 STRUCTURAL + 50 REG-RENAME + 10 BRANCH-OFFSET. Already 86% matched. Tried `register s32 *data asm("t8")` + `register s32 *base asm("t3")` -> REG-RENAME dropped 50->41. Promising — could match with 1-2h of pin tuning + structural source nudges. Deferred but flag as good candidate for next session. 2026-05-18.
+single_game_SetStatusUpData         # Retire-measure: mine=2 target=516  STRUCTURAL=514  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8005D814         # Retire-measure: mine=2 target=545  STRUCTURAL=544  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+camera_set_target_zoom         # Retire-measure: mine=2 target=588  STRUCTURAL=586  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8006E534         # Retire-measure: mine=2 target=222  STRUCTURAL=220  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80077374         # Retire-measure: mine=2 target=236  STRUCTURAL=234  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+special_camera_Exec         # Retire-measure: mine=2 target=274  STRUCTURAL=272  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8001C8DC         # Retire-measure: mine=2 target=291  STRUCTURAL=289  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80080828         # Retire-measure: mine=2 target=354  STRUCTURAL=353  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80035828         # Retire-measure: mine=2 target=360  STRUCTURAL=358  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+saTan3GaugeMain_80073200         # Retire-measure: mine=2 target=203  STRUCTURAL=201  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
