@@ -284,3 +284,243 @@ symbols (this addendum) are folded into the canonical map in
 `named_syms.txt`; the per-symbol prose evidence lives in
 [../naming/data_evidence/](../naming/data_evidence/) and
 [../naming/evidence/](../naming/evidence/).
+
+# Placeholder-refinement pass addendum (2026-05-17, batch 17-30)
+
+This addendum captures cluster discoveries from the placeholder-refinement
+sprint that converted ~170 `g_high_ref_*` / `g_*_addr_*` placeholders into
+semantic names.  Patterns surfaced from re-reading the C bodies that
+already referenced these addresses; each cluster is named by what the C
+code does with it (array stride, indexed call pattern, init constants,
+struct field offsets).
+
+## 11. Main packet-dispatch function-pointer table (5 slots)
+
+A 5-entry function-pointer table at `0x800F3340..0x800F3350` invoked
+from main.c packet-handler paths.  All slots have the same 4-arg
+signature `fn(a0, a1, X, ptr)`; the `X` argument varies (`prev`, `next`,
+`cmd`, `b & 0xFF`).
+
+| Symbol | Address | Caller |
+|---|---|---|
+| `g_main_dispatch_fn0` | 0x800F3340 | main.c:372, 427 |
+| `g_main_dispatch_fn1` | 0x800F3344 | main.c:391, 437 |
+| `g_main_dispatch_fn2` | 0x800F3348 | main.c:397, 441 |
+| `g_main_dispatch_fn3` | 0x800F334C | main.c:410, 450 |
+| `g_main_dispatch_fn4` | 0x800F3350 | main.c:380, 433 |
+
+The targets are likely per-cmd-type handlers (e.g., one per packet-type
+or per submessage class).  Further role analysis requires tracing which
+handler ID gets stored at each slot during init.
+
+## 12. text1b accumulator cluster (6 s32 accumulators)
+
+A bank of six `s32` accumulators at `0x800EFB14..0x800EFB28`, updated by
+`func_80054FDC(a0)` in text1b.c:11363-11378.  All six receive `+= a0`;
+the first two are unconditional, the latter four gated by their own
+non-zero check (allowing per-slot enable/disable).
+
+| Symbol | Address | Update gate |
+|---|---|---|
+| `g_text1b_accum_0` | 0x800EFB14 | unconditional (via `*p` indirection) |
+| `g_text1b_accum_1` | 0x800EFB18 | unconditional |
+| `g_text1b_accum_2` | 0x800EFB1C | only if non-zero |
+| `g_text1b_accum_3` | 0x800EFB20 | only if non-zero |
+| `g_text1b_accum_4` | 0x800EFB24 | only if non-zero |
+| `g_text1b_accum_5` | 0x800EFB28 | only if non-zero |
+
+`func_8005507C` returns `&g_text1b_accum_base_ptr_FB0C` (0x800EFB0C),
+which is 8 bytes earlier than accum_0.  Layout suggests accum_0..5
+follow a header block at 0x800EFB0C-0x800EFB13.  Role: likely
+time-since-event timers or per-effect duration counters that one global
+tick function increments together each frame.
+
+## 13. sound.c voice-init constants (D_800EF070-0xC4)
+
+The init block at sound.c:780-798 sets up voice ID 0xE with these
+constants:
+
+| Symbol | Address | Value | Role |
+|---|---|---|---|
+| `g_voice_init_vol_offset` | 0x800EF0BC | -0x2EE0 (-12000) | starting volume base |
+| `g_voice_init_pitch_offset` | 0x800EF0C4 | -0xFA0 (-4000) | starting pitch base |
+| `g_voice_init_field_C0` | 0x800EF0C0 | 0 | zero-init field |
+
+Both magic numbers reappear in the envelope generator (sound.c:920-950):
+`vol = -0x2EE0` per-iteration init, and `val = *rp - 0xFA0` per-word
+subtraction.  Thus they document the **envelope baseline** that pitch &
+volume start from before the per-frame ramp:
+
+```
+vol += 0x7D0  (2000 per frame)  starting from -0x2EE0
+pitch = src - 0xFA0             (subtract baseline from raw input)
+```
+
+## 14. Voice envelope/parameter blocks (scratchpad-DMA pair)
+
+Two 72-byte (0x48) data blocks copied to PS1 scratchpad each frame for
+fast SPU access:
+
+| Symbol | Address | Scratchpad target | Iteration |
+|---|---|---|---|
+| `g_voice_envelope_block_a` | 0x800EF0D8 | 0x1F800020 + 0x1F800110 | even (i & 1 == 0) |
+| `g_voice_envelope_block_b` | 0x800EF168 | 0x1F800068 + 0x1F800134 | odd  (i & 1 != 0) |
+
+The 0x90-byte gap (0x800EF0D8 -> 0x800EF168) implies each block is
+~72 bytes long (8 active + padding, copied to two scratchpad regions
+0x48 bytes apart at +0x20/+0x68 main + +0x110/+0x134 control).  The
+scratchpad copy is per-iteration of the inner SPU update loop.
+
+## 15. code6cac_c2 frame-event triggers + position offset (D_8008EB04..0x1C)
+
+A small event/parameter cluster in code6cac_c2.c:873-897, all consumed
+by the per-frame state machine driven by `g_match_round_frame_counter`
+(0x800A37B8):
+
+| Symbol | Address | Role |
+|---|---|---|
+| `g_c2_event_frame_a` | 0x8008EB04 | trigger event: `if (g_match_round_frame == D_...)` |
+| `g_c2_event_frame_b` | 0x8008EB06 | same pattern, next slot |
+| `g_c2_event_frame_c` | 0x8008EB08 | ... |
+| `g_c2_event_frame_d` | 0x8008EB0A | ... |
+| `g_c2_event_frame_e` | 0x8008EB0C | ... |
+| `g_c2_pos_xyz_offset_x` | 0x8008EB10 | `vp[0] += D_...` (vertex X offset) |
+| `g_c2_pos_xyz_offset_y` | 0x8008EB14 | `vp[1] += D_...` (vertex Y offset) |
+| `g_c2_pos_xyz_offset_z` | 0x8008EB18 | `vp[2] += D_...` (vertex Z offset) |
+| `g_per_frame_data_tbl_eb1c` | 0x8008EB1C | s16 stride table indexed by D_800A384C * 2 |
+
+The 5 event-frame triggers fire single sub-handlers; the XYZ offset
+triplet is added to a vertex position (likely a per-stage camera or
+debug-cam shift).
+
+## 16. 4096-entry packed sin/cos lookup (D_8009C928)
+
+A trig lookup table used inside `display.c:2570-2599` GTE inline asm.
+Each entry is 4 bytes packing `(sin << 16) | cos` so a single 32-bit
+load delivers both components.  Indexing: `idx = (t7 << 2) & 0xFFC`
+where `t7` is masked with `0xFFF` (= 4096 entries x 4-byte stride).
+
+| Symbol | Address | Geometry |
+|---|---|---|
+| `g_trig_sin_cos_table_packed` | 0x8009C928 | 4096 x 4 bytes |
+
+Distinct from `Judge` (0x800973FC, the canonical 4096-entry x 2-byte
+sin-only PSX trig table). `g_trig_sin_cos_table_packed` is used in
+texture/lighting paths needing both sin and cos for a single angle
+without two loads.
+
+## 17. Display-state buffer + cursor (D_800F33D8 + D_800A36EC)
+
+A 0x200-byte (512) buffer that both fits the memcard save-slot frame
+and serves as a display-state struct:
+
+| Symbol | Address | Role |
+|---|---|---|
+| `g_disp_state_buf` | 0x800F33D8 | 512-byte buffer, zeroed by `func_80038148` |
+| `g_disp_state_buf_cursor` | 0x800A36EC | `= &g_disp_state_buf` ptr cursor (indexed x 56) |
+
+Usage cluster (code6cac_c_mid.c:322-524):
+1. `func_80038170(&g_disp_state_buf)` -- populate display state
+2. `camera_SetMatrix(&g_disp_state_buf + 0x100)` -- matrix at byte 256
+3. `func_80037C34(0, 0, D_800A31F0, &g_disp_state_buf, 1, 0x200, ...)` -- memcard write 0x200 bytes
+4. `func_80037B90(0, 0, D_800A31F0, &g_disp_state_buf, 0x200)` -- memcard read 0x200 bytes
+
+The cursor at +0x36EC indexes through 56-byte records inside the
+buffer (likely per-entry display-state records during enumeration).
+
+## 18. Camera view-state struct (D_800FF558, +0x14..+0x1C is position)
+
+Camera state struct at `0x800FF558`, identified by the position-delta
+threshold check in text1b.c:2359-2435:
+
+```
+v0 = &g_camera_view_state
+t0 = lw 44($s2)    // player_pos_x
+t1 = lw 48($s2)    // player_pos_y
+t2 = lw 52($s2)    // player_pos_z
+t3 = lw 20(v0)     // camera_pos_x  (offset +0x14)
+t4 = lw 24(v0)     // camera_pos_y  (offset +0x18)
+t5 = lw 28(v0)     // camera_pos_z  (offset +0x1C)
+// compute abs(player - camera) per component, OR together,
+// then threshold-compare against 18944 (0x4A00) and 42240 (0xA500)
+```
+
+After the position check the struct is passed to a matrix helper
+`func_80052930(&g_camera_view_state, $s2+24, $s1+72)` twice -- likely
+building a model-view matrix from camera+player into the player struct.
+
+Use named base + offset (e.g., `g_camera_view_state_plus_14`) to refer
+to the XYZ position fields; the existing C body still uses the
+raw `lw 20(v0)` form via inline asm.
+
+## 19. Sprite size packed lookup (D_8009B850)
+
+A per-sprite size-record lookup at text1b.c:12907-12908:
+
+```c
+s.width  = (((u16)(*((&D_8009B850) + (arg0 & 0x7FFF)))) >> 7) + 0x37;
+s.height = (             *((&D_8009B850) + (arg0 & 0x7FFF))) & 0x7F  + 0x2A;
+```
+
+| Symbol | Address | Encoding |
+|---|---|---|
+| `g_text1b_sprite_size_packed_lookup` | 0x8009B850 | per-entry: low 7 bits = (height - 0x2A); top 9 bits = (width - 0x37) |
+
+The bias constants (+0x37/+0x2A) suggest the table only stores
+deltas from a min-size baseline.  arg0 & 0x7FFF gives 32768 max
+entries (probably far fewer used in practice).
+
+## 20. Motion-ex stride-12 XYZ triplet array (D_800F0E38)
+
+Three separate base addresses (0x800F0E38, 0xE3C, 0xE40) used as
+columns of a single stride-12 XYZ array.  text1b.c:14067-14070:
+
+```c
+*(s32 *)((u8 *)(&g_text1b_xyz_arr_E38_x) + word_off) = src[0];
+*(s32 *)((u8 *)(&g_text1b_xyz_arr_E38_y) + word_off) = src[1];
+*(s32 *)((u8 *)(&g_text1b_xyz_arr_E38_z) + word_off) = src[2];
+```
+
+`word_off` is a multiple of 12 (one element of the array = 12 bytes =
+XYZ triplet).  Three "columns" indexed by the same offset.
+
+| Symbol | Address | Role |
+|---|---|---|
+| `g_text1b_xyz_arr_E38_x` | 0x800F0E38 | X column |
+| `g_text1b_xyz_arr_E38_y` | 0x800F0E3C | Y column |
+| `g_text1b_xyz_arr_E38_z` | 0x800F0E40 | Z column |
+
+Identical layout to `g_motion_ex_state_block_table_12` (0x800F0CA0)
+but at a different anchor -- likely a parallel state array for a
+separate motion-ex entity class.
+
+## 21. text1b draw-primitive data cluster (0x8009B340..0x8009B850)
+
+A large bank of GPU draw-primitive data tables at 0x8009B340 onward,
+referenced as `s.p0` (geometry/vertex pointer), `s.p1` (texture or
+primitive params), `s.p_geom`, `s.p_static` fields of a draw-submission
+struct.  19+ tables identified, each named with its role prefix and
+address suffix:
+
+- `g_text1b_draw_p0_*` -- geometry buffer base
+- `g_text1b_draw_p1_*` -- primitive params / texture base
+- `g_text1b_geom_*` -- bigger geometry tables
+- `g_text1b_static_*` -- static draw-list data
+
+Strided variants encode their stride in the name
+(`g_text1b_draw_p0_b610_stride12` = 0xC bytes per record, indexed by
+arg0).  Use `git log` or `git grep` on the address suffix to find the
+specific caller.
+
+## 22. IRQ handler entry alabels in DispStuff.s (D_80083EDC + D_80083F1C)
+
+Two `alabel`s inside DispStuff.s (an asm-only function) used as
+2nd-argument callbacks for `irq_EnableInterrupts()` (main.c:177/180):
+
+| Symbol | Address | Call site condition |
+|---|---|---|
+| `g_irq_handler_entry_no_pri` | 0x80083EDC | `de == 0` branch (no pending priority dispatch) |
+| `g_irq_handler_entry_with_pri` | 0x80083F1C | `de != 0` branch (priority dispatch active) |
+
+Both are part of the IRQ-enable-after-critical-section idiom in the
+event-system initialization paths.
