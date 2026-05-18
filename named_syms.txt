@@ -3594,3 +3594,36 @@ const_return_0x45000_80045808                      = 0x80045808;  /* 1-insn: ret
 /* === Medium-tier HELPER cleanup (2 entries missed earlier) === */
 calc_loc_mat_fw_helper_8002A458                    = 0x8002A458;  /* stub: return 0 (pass-3 UNCLEAR; only caller is calc_loc_mat_fw) */
 hirahira_w_ctrl_helper_800523E0                    = 0x800523E0;  /* extern-only asm (pass-3 UNCLEAR; only caller is hirahira_w_ctrl) */
+
+/* === Data symbol naming pass 1 (high-ref unnamed) (2026-05-18) === */
+/* 26 truly-unnamed D_* with 10+ refs (per fresh survey replacing the */
+/* stale REMAINING_DATA_CATALOG.md). Names derived from access patterns */
+/* + adjacency to existing named symbols. Address-suffixed per pass-5 */
+/* convention. NOTE: src/*.c usages stay as D_<addr>; promoting them */
+/* triggers the GCC cascade (LONG_TERM_DX_PROMOTION_FIX.md). */
+g_scratchpad_ptr_c_1F80000C                                  = 0x1F80000C;  /* 14 refs; scratchpad RAM offset 0xC (0x1F800000 + 0xC); IRQ-save region */
+g_ot_used_max_plus_8_800A30F0                                = 0x800A30F0;  /* 19 refs; +8 from g_ot_used_max (0x800A30E8) */
+g_game_pad_index_800A3144                                    = 0x800A3144;  /* 11 refs; gp-relative; game state region; pad/player index */
+g_motion_id_current_800A3174                                 = 0x800A3174;  /* 31 refs; gp-relative s16 read in motion-dispatch loop */
+g_game_flag_c_800A3176                                       = 0x800A3176;  /* 11 refs; gp-relative s16; game-state flags region */
+g_motion_init_flag_800A3207                                  = 0x800A3207;  /* 20 refs; u8 init-once flag (set to 1 on first motion_SetMotion) */
+g_motion_table_entry_800A35C8                                = 0x800A35C8;  /* 13 refs; in motion subsystem region (offset 0x1F8 into cluster) */
+g_char_id_saved_d_plus_2_800A36CA                            = 0x800A36CA;  /* 15 refs; +2 into g_char_id_saved_d (character ID save context) */
+g_pad_rec_prev_hash_plus_4_800A36D8                          = 0x800A36D8;  /* 19 refs; +4 from g_pad_rec_prev_hash (0x800A36D4) */
+g_cpu_side_move_dir_4_arg1_800A3760                          = 0x800A3760;  /* 71 refs; passed as arg1 to cpu_side_move_dir_4_wrapper_800801E8 (pass-5-renamed from Vu0SetLightColMatrix misnomer) */
+g_frame_state_counter_800A377B                               = 0x800A377B;  /* 11 refs; s16 in frame-state cluster; frame-sync counter */
+g_round_timer_reload_800A37E8                                = 0x800A37E8;  /* 35 refs; s16 paired with g_round_timer; reload value */
+g_round_timer_plus_2_800A37EA                                = 0x800A37EA;  /* 11 refs; paired secondary timer near g_game_timer (0x800A3790) */
+g_round_timer_plus_4_800A37EC                                = 0x800A37EC;  /* 11 refs; +4 from timer base */
+g_file_state_field_800A381C                                  = 0x800A381C;  /* 16 refs; in file-subsystem state region (agent's plus_8 claim was wrong; using neutral name) */
+g_file_heap_state_flag_800A38B0                              = 0x800A38B0;  /* 40 refs; u8 init/busy flag in file subsystem (lbu/sb access) */
+g_stdout_column_counter_plus_8_800F1858                      = 0x800F1858;  /* 12 refs; +8 from g_stdout_column_counter (0x800F1850) */
+g_per_char_motion_buffer_table_prefix_800F1B14               = 0x800F1B14;  /* 20 refs; 4-byte prefix to g_per_char_motion_buffer_table_1392 at 0x800F1B18 */
+g_text1b_gte_rgb_lookup_prefix_800F2B68                      = 0x800F2B68;  /* 20 refs; 8 bytes before g_text1b_gte_rgb_lookup_1024 at 0x800F2B70 */
+g_cdread_dest_buffer_plus_4_80101E88                         = 0x80101E88;  /* 16 refs; +4 from g_cdread_dest_buffer (0x80101E84) */
+g_cdread_state_counter_80101E8C                              = 0x80101E8C;  /* 16 refs; incremented from 0; CD-read sequence counter */
+g_cdread_state_9A_80101E9A                                   = 0x80101E9A;  /* 12 refs; s16 halfword cleared in CD-read sequence */
+g_cdread_state_9C_80101E9C                                   = 0x80101E9C;  /* 12 refs; s16 halfword paired pattern with 0x80101E9A; CD-read flag */
+g_cdread_expected_bcd_frame_plus_4_80101EA4                  = 0x80101EA4;  /* 16 refs; +4 from g_cdread_expected_bcd_frame (0x80101EA0) */
+g_char_struct_p1_field_286_8010214E                          = 0x8010214E;  /* 24 refs; per-character struct offset +0x286 at record 0 base */
+g_char_struct_p1_field_6D2_8010259A                          = 0x8010259A;  /* 24 refs; per-character struct offset +0x6D2 */
