@@ -1935,6 +1935,198 @@ g_result_screen_countdown                               = 0x800A334C;  /* 0x5A (
 g_result_screen_active_flag                             = 0x800A3354;  /* != 0 = display active; reset to 0 on exit */
 g_result_screen_active_marker                           = 0x800A36F8;  /* byte value compared against array entries at D_80101BF0 to find/clear matching slots */
 
+/* === Overlay-load char-context save/restore (2026-05-17) -- 4 highs === */
+/* From code6cac_c_ab.c around line 420-454: a save/restore pattern */
+/* preserves char-id context across file_LoadOverlay calls.  0xFF is */
+/* the "invalid/no-char" sentinel. */
+g_overlay_load_counter                                  = 0x800A37D8;  /* monotonic counter incremented per overlay-load operation */
+g_file_overlay_arg_saved                                = 0x800A3844;  /* saved arg0 passed to file_LoadOverlay then re-used by func_8003AE5C */
+g_char_id_saved_a                                       = 0x800A3836;  /* saved char ID (0xFF = invalid); part of context-preserve set */
+g_char_id_saved_b                                       = 0x800A3915;  /* paired char ID save (0xFF default) */
+
+/* === CD-ROM playback control cluster (2026-05-17) -- 4 highs === */
+/* From code6cac_b2.c around line 430-465: a 4-field BCD-tracked CD */
+/* playback state.  D_80101E6C is the current BCD frame position; */
+/* `cdrom_FramesToBcd(cdrom_BcdToFrames(D) + arg2, D)` advances it. */
+g_cd_playback_arg                                       = 0x80101E60;  /* stored arg0 (playback start address?) */
+g_cd_playback_flag_a                                    = 0x80101E64;  /* 0/1 state flag */
+g_cd_playback_flag_b                                    = 0x80101E68;  /* 0/1 state flag (paired) */
+g_cd_playback_bcd_pos                                   = 0x80101E6C;  /* BCD-encoded current CD frame position */
+
+/* === Memcard file-list state (2026-05-17) -- 3 highs === */
+g_memcard_file_list                                     = 0x80102810;  /* base of memcard file-list array (filled by bios_firstfile_B; stride 0x28 per file entry) */
+g_memcard_file_count                                    = 0x800A38C8;  /* number of files found in memcard scan */
+g_memcard_file_handle_current                           = 0x800A3794;  /* current open file handle from bios_FileOpen_B (saved across read/write) */
+
+/* === GPU primitive packet header (2026-05-17) -- 4 highs === */
+/* Used as a 12-byte (3-word) staging area for GPU primitives. */
+/* gpu_MoveImage (0x8007B6C8) populates these 3 fields then submits */
+/* via g_gpu_dev_table[2].  Likely also used by other prim wrappers. */
+g_gpu_prim_packet_header_0                              = 0x8009BF24;  /* first word: rect base (=arg0[0]) */
+g_gpu_prim_packet_header_1                              = 0x8009BF28;  /* second word: packed args ((arg2<<16)|arg1) */
+g_gpu_prim_packet_header_2                              = 0x8009BF2C;  /* third word: rect extent (=arg0[1]) */
+g_gpu_unknown_reg_ptr                                   = 0x8009BF5C;  /* pointer to a GPU control register (written via *p = arg1) */
+
+/* === Voice-slot 24-entry allocator state (2026-05-17) -- 3 highs === */
+/* From main.c around line 870: a 24-entry slot allocator with 3 parallel */
+/* arrays.  Each slot has a flag byte (bits 0/1 set when active) plus */
+/* two s16 fields stored at 0x10-byte stride. */
+g_voice_slot_24_flags                                   = 0x800F65E0;  /* 24-byte flag array (one per voice slot); OR'd with 3 to mark active */
+g_voice_slot_24_arr_a                                   = 0x80102A78;  /* s16 array, 0x10-byte stride per entry, 24 entries */
+g_voice_slot_24_arr_b                                   = 0x80102A7A;  /* s16 array paired with _a (offset +2) */
+
+/* === sys_VSync state cluster (2026-05-17) -- 3 highs === */
+/* From ings2.c sys_VSync (line 41).  Hardware vblank counter access + */
+/* delta calculation between calls.  Companions to */
+/* g_ings2_vsync_block_ptr (0x800A1510). */
+g_vsync_counter_ptr                                     = 0x800A1514;  /* pointer to hardware vblank counter register */
+g_vsync_counter_snapshot                                = 0x800A1518;  /* snapshot of *g_vsync_counter_ptr from prev call (for delta calc) */
+g_vsync_dma_region_snapshot                             = 0x800A151C;  /* snapshot of g_sys_dma_region at end of last sys_VSync */
+
+/* === Menuctl state cluster extension (2026-05-17) -- 8 highs === */
+/* From text1b.c func_80068F70 (menu-mode init): additional state cells */
+/* alongside the previously-named menuctl cluster (D_800A34F8/4FC/50C/3514). */
+g_menuctl_scratch_ctx                                   = 0x800A3500;  /* transient context global -- multiply-overwritten arg-passing channel */
+g_menuctl_pad_result_1                                   = 0x800A350E;  /* pad-decode result entry 1 (s16) -- 2nd of g_menuctl_pad_result_buf 4-tuple */
+g_menuctl_pad_result_2                                   = 0x800A3510;  /* pad-decode result entry 2 */
+g_menuctl_pad_result_3                                   = 0x800A3512;  /* pad-decode result entry 3 */
+g_menuctl_init_state                                     = 0x800A3518;  /* state cell reset to 0 in func_80068F70; passed by ref to func_8006E390 */
+g_menuctl_arg0_saved                                     = 0x800A351C;  /* saved arg0 of menu-init function (= original screen base before transform) */
+g_menuctl_call_counter                                   = 0x800A3528;  /* per-frame call counter (incremented inside menu-mode update) */
+g_menuctl_effect_handle                                  = 0x800A372C;  /* effect/rob-close handle stored after efc_rob_Close call in init */
+
+/* === Effect slot pools (2026-05-17) -- 4 highs === */
+/* From text1b.c func_8005B43C and get_point_value: 3 parallel slot */
+/* pools cleared together on system shutdown / reset.  Paired with */
+/* already-named g_effect_struct_b (D_800EFC38). */
+g_effect_pool_a_16                                      = 0x800EFB38;  /* 16-entry s32 array; cleared in sync with g_effect_struct_b */
+g_effect_pool_b_24                                      = 0x800EFB78;  /* 24-entry x 8-byte struct array; +0..3 = s32 (cleared to 0), +4..5 = u8 (set to 0x7F) */
+g_effect_pool_b_24_field_4                              = 0x800EFB7C;  /* u8 field at offset +4 of each 8-byte entry of g_effect_pool_b_24 (init = 0x7F) */
+g_effect_init_flag                                      = 0x800A3408;  /* flag reset to 0 at end of pool-init flow */
+
+/* === text1b post-render + menu state (2026-05-17) -- 2 highs === */
+g_text1b_post_render_countdown                          = 0x800A32BC;  /* set to 0xA (10) when text1b render-state +0x0 bit 0x200000 is set; decremented per frame; tested >= 2 and == 1 in main loop */
+g_menu_screen_result_pending                            = 0x800A35E4;  /* cleared (= 0) when menu screens transition or func_80069250 returns 1; tracks "pending result" state */
+
+/* === Intro/title fade timer + setter-getter pair (2026-05-17) -- 2 highs === */
+g_intro_fade_phase                                      = 0x800A3608;  /* intro/title fade phase counter; >= 0xAAA enables, >= 0xB04 starts 15-frame fade-out (color = 0x80 - (D - 0xB04)*128/15) */
+g_intro_get_set_value                                   = 0x8009BD80;  /* simple cached value set by func_80078BE0(a0), read by func_80078BF0() */
+
+/* === 2nd menu screen state cluster at 0x800A35F0-3600 (2026-05-17) -- 5 highs === */
+/* Parallel to the menuctl cluster (at 0x800A34F8-3528) but for a */
+/* second menu screen handler.  text1b_b.c func_8007855C uses this. */
+g_menu_screen_b_active                                  = 0x800A35F0;  /* state value (init 0; > 0 = active) */
+g_menu_screen_b_state_arg                               = 0x800A35F4;  /* arg passed to func_8006E49C (mode-state allocator) */
+g_menu_screen_b_state_ptr                               = 0x800A35F8;  /* pointer to allocated state struct */
+g_menu_screen_b_frame_counter                           = 0x800A35FC;  /* per-frame counter (incremented in handler) */
+g_menu_screen_b_init_flag                               = 0x800A3600;  /* init flag (reset to 0) */
+
+/* === Intro/title screen state extension (2026-05-17) -- 4 highs === */
+/* From text1b_b.c around line 1078: a 3rd "screen" init follows the */
+/* same pattern as menuctl + screen_b -- stores arg pointer, allocates */
+/* mode-state via func_8006E49C, resets counters.  Companion to */
+/* existing g_intro_fade_phase (0x800A3608). */
+g_intro_dbuf_parity                                     = 0x800A3304;  /* incremented & ANDed with 1 to select alternating buffer in func_80078634 */
+g_intro_state_arg                                       = 0x800A360C;  /* arg passed to func_8006E49C (mode-state allocator) */
+g_intro_sprite_data_ptr                                 = 0x800A3610;  /* sprite/vertex data array base; [0xF] and [5+] accessed */
+g_intro_extra_state                                     = 0x800A3614;  /* extra state cell (reset to 0 in init) */
+
+/* === Char-class / ctype table + toupper/tolower (2026-05-17) -- 3 highs === */
+/* From text1b_b.c func_800798CC and func_800798FC: classic libc-style */
+/* char-class lookup + case conversion. */
+g_char_class_table                                      = 0x8009BD8D;  /* 256-byte char-class lookup; bit 1 = is_upper, bit 2 = is_lower */
+bb2_toupper                                             = 0x800798CC;  /* if (class_table[c] & 2) c -= 0x20  (lower -> upper) */
+bb2_tolower                                             = 0x800798FC;  /* if (class_table[c] & 1) c += 0x20  (upper -> lower) */
+
+/* === bb2 libc helpers + stdout state (2026-05-17) -- 3 highs === */
+bb2_memchr                                              = 0x8007992C;  /* memchr(buf, ch, len): linear search; returns buf-1 on found, 0 on not found / null buf / nonpositive len */
+bb2_putchar_stdout                                      = 0x8007997C;  /* fputc to stdout (fd 1): expands TAB (9) to spaces, converts LF (0xA) to CRLF, tracks column; submits via bios_FileWrite_B(1, &c, 1) */
+g_stdout_column_counter                                 = 0x800F1850;  /* stdout column counter; reset to 0 on newline, incremented on printable chars (class table bit 0x97) */
+
+/* === Menu screen state backup/restore (2026-05-17) -- 6 highs === */
+/* From text1b_b.c around line 860/894: 3-byte save/restore pair driven */
+/* by g_menu_screen_result_pending state transitions.  When state=3, */
+/* live -> backup; when state transitions back via state=4/5 result==1, */
+/* backup -> live. */
+g_menu_screen_backup_byte_a                             = 0x8009BD3B;  /* saved copy of g_menu_screen_live_byte_a */
+g_menu_screen_backup_byte_b                             = 0x8009BD3C;  /* saved copy of g_menu_screen_live_byte_b */
+g_menu_screen_backup_byte_c                             = 0x8009BD3D;  /* saved copy of g_menu_screen_live_byte_c */
+g_menu_screen_live_byte_a                               = 0x8009BD41;  /* live menu screen state byte */
+g_menu_screen_live_byte_b                               = 0x8009BD42;
+g_menu_screen_live_byte_c                               = 0x8009BD43;
+
+/* === IRQ event slot management (2026-05-17) -- 8 highs === */
+/* From text1b_b.c func_80078A68 / B04 / B3C / B70 / BA8: manages 3 */
+/* IRQ event slots with per-slot u16 control word + global bitmask. */
+g_irq_event_struct_ptr                                  = 0x8009BD68;  /* IRQ event state struct ptr; base[1] = per-slot enable bitmask */
+g_irq_event_slots_3x16                                  = 0x8009BD6C;  /* 3-entry table x 16-byte stride; per-slot config (u16 at +4 = mode) */
+g_irq_event_masks_3                                     = 0x8009BD70;  /* 3-entry per-slot bit-mask values (used to set/clear bits in g_irq_event_struct_ptr->bitmask) */
+irq_event_slot_configure                                = 0x80078A68;  /* func_80078A68(slot, arg1, arg2): writes config to slot */
+irq_event_slot_read                                     = 0x80078B04;  /* func_80078B04(slot): reads u16 from slot */
+irq_event_slot_enable                                   = 0x80078B3C;  /* func_80078B3C(slot): OR slot's mask into bitmask */
+irq_event_slot_disable                                  = 0x80078B70;  /* func_80078B70(slot): AND-NOT slot's mask from bitmask */
+irq_event_slot_clear                                    = 0x80078BA8;  /* func_80078BA8(slot): zero u16 at slot offset */
+
+/* === Fade dispatch surrounding state + gnd target sibling (2026-05-17) -- 4 highs === */
+/* From text1b.c around line 16080-16103: the fade-dispatch table */
+/* call site needs args populated via D_800A35A8 / D_800A35C4 + */
+/* per-frame counters. */
+g_gnd_target_id_1                                       = 0x800A33EA;  /* second gnd target id (sibling to g_gnd_target_id_array[0]; -1 = no target) */
+g_fade_dispatch_sp10_0                                  = 0x800A35A8;  /* first arg passed to g_fade_dispatch_table handlers via sp10[0] */
+g_fade_dispatch_state_ptr                               = 0x800A35C4;  /* struct ptr with 4 s32 fields; [2] = counter A, [3] = counter B (both incremented per frame) */
+g_fade_dispatch_arg1_cache                              = 0x800A354C;  /* cached arg1 (masked with 0xFFFF when g_replay_motion_shared_state_c == 2) */
+
+/* === text1b slot D flags (2026-05-17) -- 1 high === */
+/* From text1b.c around line 13446: same pattern as g_text1b_slot_a/c_flags */
+/* -- u8[2] busy-flag pair for 4th slot family (gpu cmd 0x210009/0A). */
+g_text1b_slot_d_flags                                   = 0x800F1159;  /* u8[2] busy-flag pair for slot family D (sibling to slot_a/b/c) */
+
+/* === Tournament round char-id tables (2026-05-17) -- 2 highs === */
+/* From code6cac_b.c around line 3920: 2 parallel u8 tables indexed */
+/* by g_match_round_index (D_800A3874) * 2 + variant; each round/variant */
+/* combination yields a character ID written to g_practice_lesson_char_id */
+/* (D_8010277C + variant).  Used in AI-vs-AI or tournament mode setup. */
+g_round_p1_char_id_table                                = 0x801027A0;  /* per-round P1 character pick table (u8, stride 2 per round) */
+g_round_p2_char_id_table                                = 0x801027D8;  /* per-round P2 character pick table (parallel to _p1) */
+
+/* === Misc state from code6cac_b.c (2026-05-17) -- 3 highs === */
+g_text1b_render_call_result                             = 0x800A3910;  /* return value of func_8006133C(arg2) text1b render call */
+g_voice_state_flag                                      = 0x800A389A;  /* boolean tested with g_voice_play_state == 2 (multi-condition voice gate) */
+g_practice_round_active_flag                            = 0x800A38A8;  /* set to 1, tested != 0; gates practice-round logic */
+
+/* === Weapon (buki) RMD command buffer (2026-05-17) -- 4 highs === */
+/* From main.c func_80085E4C/EE4: command buffer passed to */
+/* AllocBukiRmd_80089F3C ("buki" = weapon).  Different cmd IDs (1, 6) */
+/* are dispatched with different arg layouts. */
+g_buki_cmd_buf_id                                       = 0x800F5750;  /* command ID (1 = pos input, 6 = analog xy) */
+g_buki_cmd_buf_arg                                      = 0x800F5754;  /* s32 arg (varies by cmd) */
+g_buki_cmd_buf_x                                        = 0x800F5758;  /* s16 X (scaled from pad -127..127 to -32767..32767) */
+g_buki_cmd_buf_y                                        = 0x800F575A;  /* s16 Y */
+
+/* === Weapon frame selection state (2026-05-17) -- 6 highs === */
+/* From main.c around line 954-984: weapon-frame selection logic. */
+/* (D_801027F7, D_801027FC) form a (row, col) coordinate for the */
+/* weapon-frame grid; D_8010280A selects the weapon entry; D_80102808 */
+/* selects the player.  Lookup data lives at D_800FF6A0 (16-byte stride). */
+g_weapon_frame_idx                                      = 0x8010280A;  /* current weapon-frame index */
+g_weapon_frame_cursor                                   = 0x8010280C;  /* derived cursor (= idx * 8) */
+g_weapon_frame_packed_pos                               = 0x8010280E;  /* packed (col + row << 4) */
+g_weapon_frame_row                                      = 0x801027F7;  /* row coord 0..15 */
+g_weapon_frame_col                                      = 0x801027FC;  /* col coord 0..15 */
+g_weapon_frame_player_flag                              = 0x80102808;  /* player select (& 1 for parity-indexed lookup) */
+
+/* === saTan1 gauge init + secondary motion flags (2026-05-17) -- 7 highs === */
+/* From text1b.c saTan1GaugeInit (line 13215): clears 28 entries each */
+/* of g_motion_state_flag_table and g_motion_state_secondary_flags, */
+/* plus 6 gauge state cells. */
+g_motion_state_secondary_flags                          = 0x800F1150;  /* 28-byte array paired with g_motion_state_flag_table (each motion-flag entry has a corresponding byte) */
+g_satan1_gauge_state_a                                  = 0x800A344C;
+g_satan1_gauge_state_b                                  = 0x800A3450;
+g_satan1_gauge_state_c                                  = 0x800A3454;
+g_satan1_gauge_state_d                                  = 0x800A3458;
+g_satan1_gauge_state_e                                  = 0x800A345C;
+g_satan1_gauge_state_f                                  = 0x800A345E;
+
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */

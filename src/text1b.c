@@ -76,6 +76,21 @@ void AddTbpOfst_80047EE8(s32 arg0, s32 arg1)
 }
 void InitHiraRmd_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 {
+    /* The 32-byte dead-vars padding (frame=80, vars=32) emerges from a
+     * declared local array that the released optimization pass eliminated
+     * all references to. GCC 2.7.2 reserves the stack frame for declared
+     * locals regardless of subsequent dead-code-elimination, producing
+     * the byte-identical layout the released binary exhibits.
+     *
+     * Sibling cluster (AddTbpOfst_80047EE8, InitHiraRmd_80047FBC,
+     * InitHiraRmd_800480C0, func_800481E8) shares this 32-byte
+     * dead-vars pattern across 4 functions in src/amami/am_rmd.c
+     * (per Kengo PS2 source-file naming evidence). The original
+     * source had a shared local-buffer idiom across these drawing
+     * routines, presumably for staging packet data or matrix copies.
+     * See feedback_dead_vars_local_array_idiom.md for the full evidence
+     * trail. */
+    s32 buf[8];
     u32 *p;
     s32 count;
     s32 new_var;
@@ -116,6 +131,7 @@ void InitHiraRmd_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
                           v_plus_arg3);
         } while ((count--) != 0);
     }
+    (void)buf;
 }
 void InitHiraRmd_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
 {

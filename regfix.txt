@@ -3552,16 +3552,16 @@ InitHiraRmd_800480C0: subst "addu\s+\$sp,\$sp,56" "addu	$sp,$sp,88" @ 70
 # out of the branch delay slot.
 # Epilogue stack offsets
 
-# InitHiraRmd_80047FBC: extension of 800483DC recipe, frame -80 vs -48 + extra
+# RESEARCH_DEAD_VARS: # InitHiraRmd_80047FBC: extension of 800483DC recipe, frame -80 vs -48 + extra
 # "addu $20,$16,$zero" early prologue copy. Same call-loop family.
-InitHiraRmd_80047FBC: subst "subu\s+\$sp,\$sp,48" "subu	$sp,$sp,80" @ 0
-InitHiraRmd_80047FBC: subst "sw\s+\$16,24" "sw	$16,56" @ 3
+# RESEARCH_DEAD_VARS: # RESEARCH_DEAD_VARS_FRAME: InitHiraRmd_80047FBC: subst "subu\s+\$sp,\$sp,48" "subu	$sp,$sp,80" @ 0
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "sw\s+\$16,24" "sw	$16,56" @ 3
 InitHiraRmd_80047FBC: subst "addu\s+\$16,\$4,\$5" "addu	$16,$16,$5" @ 4
-InitHiraRmd_80047FBC: subst "sw\s+\$31,44" "sw	$31,76" @ 5
-InitHiraRmd_80047FBC: subst "sw\s+\$20,40" "sw	$20,72" @ 6
-InitHiraRmd_80047FBC: subst "sw\s+\$19,36" "sw	$19,68" @ 7
-InitHiraRmd_80047FBC: subst "sw\s+\$18,32" "sw	$18,64" @ 8
-InitHiraRmd_80047FBC: subst "sw\s+\$17,28" "sw	$17,60" @ 9
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "sw\s+\$31,44" "sw	$31,76" @ 5
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "sw\s+\$20,40" "sw	$20,72" @ 6
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "sw\s+\$19,36" "sw	$19,68" @ 7
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "sw\s+\$18,32" "sw	$18,64" @ 8
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "sw\s+\$17,28" "sw	$17,60" @ 9
 InitHiraRmd_80047FBC: subst "addu\s+\$16,\$4,\$2" "addu	$16,$20,$2" @ 14
 InitHiraRmd_80047FBC: delete @ 11
 InitHiraRmd_80047FBC: insert_after "addu	$16,$4,$zero" @ 3
@@ -3569,13 +3569,13 @@ InitHiraRmd_80047FBC: insert_after "addu	$20,$16,$zero" @ 6
 InitHiraRmd_80047FBC: insert_after "nop" @ 10
 InitHiraRmd_80047FBC: reorder 3,4,7,8,1,2,5,6 @ 1-8
 # Epilogue (substs run on original indices, before delete shifts)
-InitHiraRmd_80047FBC: subst "lw\s+\$31,44" "lw	$31,76" @ 54
-InitHiraRmd_80047FBC: subst "lw\s+\$20,40" "lw	$20,72" @ 55
-InitHiraRmd_80047FBC: subst "lw\s+\$19,36" "lw	$19,68" @ 56
-InitHiraRmd_80047FBC: subst "lw\s+\$18,32" "lw	$18,64" @ 57
-InitHiraRmd_80047FBC: subst "lw\s+\$17,28" "lw	$17,60" @ 58
-InitHiraRmd_80047FBC: subst "lw\s+\$16,24" "lw	$16,56" @ 59
-InitHiraRmd_80047FBC: subst "addu\s+\$sp,\$sp,48" "addu	$sp,$sp,80" @ 60
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "lw\s+\$31,44" "lw	$31,76" @ 54
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "lw\s+\$20,40" "lw	$20,72" @ 55
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "lw\s+\$19,36" "lw	$19,68" @ 56
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "lw\s+\$18,32" "lw	$18,64" @ 57
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "lw\s+\$17,28" "lw	$17,60" @ 58
+# RESEARCH_DEAD_VARS: InitHiraRmd_80047FBC: subst "lw\s+\$16,24" "lw	$16,56" @ 59
+# RESEARCH_DEAD_VARS_FRAME: InitHiraRmd_80047FBC: subst "addu\s+\$sp,\$sp,48" "addu	$sp,$sp,80" @ 60
 
 func_8007CA00: $2 <-> $3 @ 30-36
 func_8007CA00: subst "sra\s+\$2,\$2,1" "sra	$2,$3,1" @ 38
