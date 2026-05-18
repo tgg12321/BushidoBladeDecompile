@@ -57,14 +57,25 @@ FILE_DEPS="tools/cc1psx.exe"
 
 LINKED=""
 FAILED=""
+EMPTY_IN_MAIN=""
 
 for entry in $TREE_DEPS; do
     dep="${entry%%:*}"
     marker="${entry#*:}"
     # Skip if marker already present locally.
     [ -e "$dep/$marker" ] && continue
-    # Skip if main repo doesn't have it either (nothing we can do).
-    [ -e "$MAIN_REPO/$dep/$marker" ] || continue
+    # If main repo doesn't have the marker either, we can't help. But
+    # distinguish two sub-cases for visibility:
+    #   - Main is missing the dep entirely → silent skip (might be optional)
+    #   - Main HAS the directory but it's empty/broken (marker missing) →
+    #     loud warning; this is the "another agent will hit this in 90s"
+    #     failure mode that the silent skip used to mask.
+    if [ ! -e "$MAIN_REPO/$dep/$marker" ]; then
+        if [ -d "$MAIN_REPO/$dep" ]; then
+            EMPTY_IN_MAIN="$EMPTY_IN_MAIN $dep"
+        fi
+        continue
+    fi
     rm -rf "$dep" 2>/dev/null
     mkdir -p "$(dirname "$dep")"
     if cp -as "$MAIN_REPO/$dep" "$dep" 2>/dev/null && [ -e "$dep/$marker" ]; then
@@ -86,6 +97,30 @@ done
 
 if [ -n "$LINKED" ]; then
     echo "Worktree: auto-linked from main repo:$LINKED"
+fi
+
+if [ -n "$EMPTY_IN_MAIN" ]; then
+    echo "Worktree: main repo has empty dir(s) (clone missing):$EMPTY_IN_MAIN" >&2
+    echo "  Will silently skip linking until main is fixed. To install:" >&2
+    for dep in $EMPTY_IN_MAIN; do
+        case "$dep" in
+            tools/decomp-permuter)
+                echo "    cd \"$MAIN_REPO\" && rmdir tools/decomp-permuter && git clone https://github.com/simonlindholm/decomp-permuter.git tools/decomp-permuter" >&2
+                ;;
+            tools/gcc-2.7.2)
+                echo "    cd \"$MAIN_REPO\" && bash tools/setup_wsl.sh" >&2
+                ;;
+            .venv)
+                echo "    cd \"$MAIN_REPO\" && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt" >&2
+                ;;
+            disc)
+                echo "    cd \"$MAIN_REPO\" && python3 tools/extract_iso.py <path-to-bb2.cue>" >&2
+                ;;
+            *)
+                echo "    (unknown — check $MAIN_REPO/$dep)" >&2
+                ;;
+        esac
+    done
 fi
 
 if [ -n "$FAILED" ]; then

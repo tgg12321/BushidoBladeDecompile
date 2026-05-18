@@ -403,6 +403,10 @@ EOF
         # Advisory: .venv (build falls back to system python3, but some pipeline
         # tools assume specific package versions from the venv).
         [ -x .venv/bin/python3 ]              || _warnings+=(".venv/bin/python3 (using system python3 instead — fix: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt)")
+        # Advisory: decomp-permuter (required for `dc.sh permute/attempt`,
+        # not for plain build/verify). Common silent-fail mode: directory
+        # exists but is empty (clone got wiped). Check the actual marker.
+        [ -f tools/decomp-permuter/permuter.py ] || _warnings+=("tools/decomp-permuter/permuter.py (permuter not installed — fix: rmdir tools/decomp-permuter && git clone https://github.com/simonlindholm/decomp-permuter.git tools/decomp-permuter)")
         # cc1psx.exe is calibration-only; not blocking for build.
         if [ "${#_missing[@]}" -eq 0 ]; then
             if [ "${#_warnings[@]}" -eq 0 ]; then
