@@ -557,30 +557,80 @@ Usage cluster (code6cac_c_mid.c:322-524):
 The cursor at +0x36EC indexes through 56-byte records inside the
 buffer (likely per-entry display-state records during enumeration).
 
-## 18. Camera view-state struct (D_800FF558, +0x14..+0x1C is position)
+## 18. Camera view-state — PsyQ MATRIX struct (D_800FF558, 32 bytes)
 
-Camera state struct at `0x800FF558`, identified by the position-delta
-threshold check in text1b.c:2359-2435:
+Camera/view state at `0x800FF558` is a standard PsyQ **`MATRIX`** struct
+(per `include/gte.h`):
 
+```c
+typedef struct MATRIX {
+    s16 m[3][3];   // +0x00..+0x11 (18 bytes) — 3x3 rotation matrix
+    u16 pad;       // +0x12        (2 bytes)  — padding to align t[]
+    s32 t[3];      // +0x14..+0x1F (12 bytes) — translation TRX/TRY/TRZ
+} MATRIX;          // total: 32 bytes
+```
+
+Layout of `g_camera_view_state`:
+
+| Offset | Field | Type | Role |
+|---|---|---|---|
+| +0x00..+0x11 | `m[3][3]` | 9 × s16 | 3×3 rotation matrix (R11/R12/R13/R21/R22/R23/R31/R32/R33) |
+| +0x12..+0x13 | `pad` | u16 | alignment padding (unused) |
+| +0x14..+0x17 | `t[0]` (TRX) | s32 | camera X position |
+| +0x18..+0x1B | `t[1]` (TRY) | s32 | camera Y position |
+| +0x1C..+0x1F | `t[2]` (TRZ) | s32 | camera Z position |
+
+(Bytes +0x20..+0x27 between this struct and `g_voice_packet_base_0` at
+0x800FF580 appear to be 8 bytes of unused padding or a small unknown
+extension.)
+
+### Builder — `func_80048BA4` (asm-only, asmfix-bridged)
+
+Called from `code6cac.c:1773` as `func_80048BA4(D_800F5344, a1, flags)`
+where `D_800F5344 = g_code6cac_state_F5344` holds 0x800 (the standard PSX
+half-FOV scale).  Writes:
+- 9 halfwords at +0x00..+0x10 (the full 3×3 rotation matrix)
+- s32 at +0x18 (TRY) and +0x1C (TRZ)
+
+TRX (+0x14) is set elsewhere — likely in a sibling helper or before this
+function is called.
+
+### Consumer — `func_80052930` (text1b.c:10798)
+
+The GTE matrix×vector transformation routine:
+- Loads `mat[0..4]` (5 s32 = 9 halfwords) into GTE control registers
+  $0..$4 (R11/R12, R13/R21, R22/R23, R31/R32, R33+pad)
+- Zeros GTE control $5/$6/$7 (TRX/TRY/TRZ) — so translation is ignored
+- Loads `vec[0..4]` into GTE data $0, $1 (vertex XYZ)
+- Executes `cop2 0x4A480012` — MVMVA: Multiply Vector by Matrix and Add
+  zeroed translation Vector
+- Reads result from $9/$10/$11 (IR1/IR2/IR3) → writes `out[0..2]`
+
+So `func_80052930` applies ONLY the rotation portion of the matrix to a
+vector — it's a pure rotation, not a full transformation.  Callers pass
+`&g_camera_view_state` as the matrix, a vertex from another struct as
+the vector, and write the rotated result back into the per-actor data.
+
+### Used by
+
+Inline-asm callers in text1b.c (1896, 1920, 2364, 2474, 2499, 5495,
+11270) and asm-only `calc_loc_mat_fw_8004A940`.  This is the camera's
+**view rotation** applied to per-actor vertex coordinates — distinct
+from `g_cam_matrix` (`0x800EEDB0`, the world/projection matrix).
+
+### Position-delta threshold check (text1b.c:2359-2435)
+
+A guard pattern in text1b's draw path:
 ```
 v0 = &g_camera_view_state
-t0 = lw 44($s2)    // player_pos_x
-t1 = lw 48($s2)    // player_pos_y
-t2 = lw 52($s2)    // player_pos_z
-t3 = lw 20(v0)     // camera_pos_x  (offset +0x14)
-t4 = lw 24(v0)     // camera_pos_y  (offset +0x18)
-t5 = lw 28(v0)     // camera_pos_z  (offset +0x1C)
-// compute abs(player - camera) per component, OR together,
-// then threshold-compare against 18944 (0x4A00) and 42240 (0xA500)
+t3..t5 = read TRX/TRY/TRZ (camera pos)
+delta = abs(player_pos - camera_pos) per component, OR'd
+if delta < 18944 (0x4A00):       LOD level A
+else if delta < 42240 (0xA500):  LOD level B
+else:                             LOD level C
 ```
-
-After the position check the struct is passed to a matrix helper
-`func_80052930(&g_camera_view_state, $s2+24, $s1+72)` twice -- likely
-building a model-view matrix from camera+player into the player struct.
-
-Use named base + offset (e.g., `g_camera_view_state_plus_14`) to refer
-to the XYZ position fields; the existing C body still uses the
-raw `lw 20(v0)` form via inline asm.
+The thresholds 0x4A00 / 0xA500 are LOD-cutoff distances measured in
+world units.
 
 ## 19. Sprite size packed lookup (D_8009B850)
 
