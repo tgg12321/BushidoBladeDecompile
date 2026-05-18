@@ -21,7 +21,27 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-MEMORY_DIR = Path.home() / ".claude" / "projects" / "C--Users-Trenton-Desktop-Bushido-Blade-2-Decompile" / "memory"
+def _find_memory_dir() -> Path:
+    """Find the memory dir whether running from Windows or WSL.
+
+    On Windows Git Bash, ~ is C:/Users/Trenton. On WSL, ~ is /home/trenton
+    — but the actual memory dir lives on the Windows side at /mnt/c/Users/...
+    Tries known candidates in priority order.
+    """
+    candidates = [
+        Path.home() / ".claude" / "projects" / "C--Users-Trenton-Desktop-Bushido-Blade-2-Decompile" / "memory",
+        Path("/mnt/c/Users/Trenton/.claude/projects/C--Users-Trenton-Desktop-Bushido-Blade-2-Decompile/memory"),
+        Path("/c/Users/Trenton/.claude/projects/C--Users-Trenton-Desktop-Bushido-Blade-2-Decompile/memory"),
+        Path("C:/Users/Trenton/.claude/projects/C--Users-Trenton-Desktop-Bushido-Blade-2-Decompile/memory"),
+    ]
+    for c in candidates:
+        if c.exists():
+            return c
+    # Fall back to first candidate so the error message is clear
+    return candidates[0]
+
+
+MEMORY_DIR = _find_memory_dir()
 INDEX_PATH = MEMORY_DIR / "MEMORY.md"
 
 # Auto-load limits per Claude Code docs.

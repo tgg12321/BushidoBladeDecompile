@@ -128,6 +128,18 @@ case "$CMD" in
             fi
         fi
 
+        # Regenerate MEMORY.md from current memory/*/*.md frontmatter so
+        # the auto-loaded index stays current. Silent on success; loud on
+        # broken-link / size-limit failures (those would truncate session
+        # context if left unaddressed).
+        if [ -f tools/regen_memory_index.py ]; then
+            if ! _msg=$(python3 tools/regen_memory_index.py 2>&1); then
+                echo "Memory:   INDEX REGEN FAILED"
+                echo "$_msg" | sed 's/^/          /'
+                echo
+            fi
+        fi
+
         # Build status (silent unless mismatch)
         if [ -f "build/bb2.exe" ] && [ -f "bb2.sha1" ]; then
             if sha1sum -c bb2.sha1 >/dev/null 2>&1; then
