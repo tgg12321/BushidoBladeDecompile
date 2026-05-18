@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file is the project-invariant briefing loaded on every Claude Code session. All workflow rules, tools reference, recipes, and technique playbooks live in `memory/` — see `memory/MEMORY.md` for the indexed catalog. Skills (`/decomp-next`, `/decomp-cheat-cleanup`, `/cheat-audit`) live in `.claude/skills/`.
 
 ## START HERE — first action of every session
 
@@ -8,25 +8,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash tools/dc.sh start'
 ```
 
-This prints current state (build status, active function marker, queue freshness, top of queue) and the rules summary. A SessionStart hook auto-runs it; if you don't see the briefing in your session context, run it manually as your first command.
+A SessionStart hook auto-runs it. The briefing prints build status, active function marker, queue freshness, top-of-queue, cheat counts, and the rules summary. **Decide what to do next based on the briefing:**
 
-**Decide what to do next based on the user's directive AND the briefing:**
+1. **`Active: <funcname>`** → resume that function. The hook is enforcing — `dc.sh next*` and `git commit` are blocked until you match. Don't revert WIP src/ files (also blocked); edit forward. Use `dc.sh diff <funcname>` and `dc.sh verify <funcname>` to see where you are.
+2. **`Active: NONE`** → `bash tools/dc.sh next --with-context` (pulls top of queue + sets marker + runs agent-brief).
+3. **`Build: MISMATCH`** → STOP. Don't pull more work. Investigate (`dc.sh verify --clean`, recent commits) before any function work.
 
-1. **`Active: <funcname>`** → resume that function. Hook is enforcing — all `dc.sh next*` queue pulls and `git commit` are blocked until you match. Don't revert src/ files (also blocked); edit forward instead. Use `dc.sh diff <funcname>` and `dc.sh verify <funcname>` to see where you are.
-2. **`Active: NONE`** → `bash tools/dc.sh next --with-context` (pulls top, sets marker, runs agent-brief).
-
-Work is solo end-to-end on a single function. No sub-agents, no worktrees, no orchestrator delegation — one focused session per function, technique-switch when stuck.
-
-**Build: MISMATCH** at session start → STOP. Don't pull more work. Investigate (`dc.sh verify --all`, recent commits) before any function work. The hook can't help here because there's no active marker — it's a repo state problem.
+Work is solo end-to-end on a single function. No sub-agents, no worktrees, no orchestrator delegation — one focused session per function, technique-switch when stuck. See `memory/rules/hard-rule.md`.
 
 ## Project Overview
 
-This is a matching decompilation project for **Bushido Blade 2** (SLUS-00663), a PlayStation 1 fighting game published by SquareSoft (1998, North America). The goal is to produce C source code that compiles to a byte-identical copy of the original executable.
+Matching decompilation of **Bushido Blade 2** (SLUS-00663) — PS1 fighting game published by SquareSoft (1998, NA). The goal: C source that compiles to a byte-identical copy of the original executable.
 
-**Target platform:** PlayStation 1 (MIPS R3000A CPU, 2 MB RAM, PsyQ SDK)
-**Developer:** Lightweight (40% Square subsidiary)
-**Engine:** "Marionation" (Lightweight's proprietary engine, later reused for Kengo on PS2)
-**Build date:** Fri Aug 7 22:26:32 1998
+- **Platform:** PlayStation 1 (MIPS R3000A, 2 MB RAM, PsyQ SDK)
+- **Developer:** Lightweight (40% Square subsidiary)
+- **Engine:** "Marionation" (Lightweight's proprietary engine, later reused for Kengo on PS2)
+- **Build date:** Fri Aug 7 22:26:32 1998
 
 ## Toolchain (confirmed from binary analysis)
 
@@ -34,10 +31,9 @@ This is a matching decompilation project for **Bushido Blade 2** (SLUS-00663), a
 - **Compiler:** GCC 2.7.2 (SN Systems fork / cc1psx)
 - **Assembler:** ASPSX ~2.34
 - **Section order:** `.rodata → .text → .data → .bss` (PsyQ standard)
-- Identified via CVS `$Id:` tags in linked PsyQ libraries:
-  - `sys.c v1.129 1996/12/25` (libgpu), `bios.c v1.86 1997/03/28` (libcd), `intr.c v1.76 1997/02/12` (libapi)
+- Identified via CVS `$Id:` tags in linked PsyQ libraries: `sys.c v1.129 1996/12/25` (libgpu), `bios.c v1.86 1997/03/28` (libcd), `intr.c v1.76 1997/02/12` (libapi)
 
-## Executable Details
+## Executable details
 
 - **Main EXE:** `disc/SLUS_006.63` (606,208 bytes)
   - SHA1: `62efab4f73f992798c43e8c730aa43baa10bb4fa`
@@ -50,16 +46,11 @@ This is a matching decompilation project for **Bushido Blade 2** (SLUS-00663), a
   - Loads at `0x801D8800`, entry `0x801DA084` — no overlap with main EXE
 - **PsyQ libraries linked:** libgpu, libcd, libapi, libspu, MDEC decode (overlay)
 
-## Splat Configuration
+## Splat configuration
 
-The binary is split using [splat](https://github.com/ethteck/splat) v0.39.0 via `splat.yaml`.
+The binary is split using [splat](https://github.com/ethteck/splat) v0.39.0 via `splat.yaml`. Re-run via `python -m splat split splat.yaml` (regenerates asm/, linker script, symbol files).
 
-```bash
-# Re-run the split (regenerates asm/, linker script, symbol files)
-python -m splat split splat.yaml
-```
-
-### Current split layout
+Current split layout:
 - `asm/data/800.rodata.s` — .rodata section (strings, jump tables, constants)
 - `asm/6CAC.s` — .text section (1,410 functions, all assembly)
 - `asm/data/7D920.data.s` — .data section (initialized globals)
@@ -68,7 +59,7 @@ python -m splat split splat.yaml
 - `undefined_funcs_auto.txt` — auto-detected external function addresses
 - `symbol_addrs.txt` — manually identified symbol names (add known names here)
 
-## Disc Structure
+## Disc structure
 
 Extracted to `disc/` via `tools/extract_iso.py` from the MODE2/2352 BIN/CUE image.
 
@@ -82,23 +73,23 @@ Extracted to `disc/` via `tools/extract_iso.py` from the MODE2/2352 BIN/CUE imag
 | `XA_0/`, `XA_1/` | XA-ADPCM streamed audio (music, voice, endings) |
 | `STR/` | FMV opening (OPENING.STR), title screen (TITLE.TIM), movie overlay (MOVOVL.EXE) |
 
-## Build Commands
+Per-format documentation in `docs/formats/` (NDATA, BBM, TIM, STAGE_BIN, BNK, SE, XA, STR, MOVOVL).
+
+## Build commands
 
 All build commands run inside WSL (Ubuntu 24.04):
 
 ```bash
-# Enter project directory in WSL
 cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile"
 source .venv/bin/activate
-
 make setup    # re-run splat (regenerate asm, linker script)
 make          # build and verify SHA1 match
 make clean    # remove build artifacts
 ```
 
-Or from Git Bash: `wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && source .venv/bin/activate && make'`
+From Git Bash: `wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && source .venv/bin/activate && make'`
 
-### Build pipeline (per C file)
+Build pipeline per C file:
 ```
 mipsel-linux-gnu-cpp | cc1 (GCC 2.7.2) | maspsx (--aspsx-version=2.34) | mipsel-linux-gnu-as → .o
 ```
@@ -106,336 +97,78 @@ All objects linked with `mipsel-linux-gnu-ld`, stripped to binary via `objcopy`,
 
 ## Tools
 
-- `tools/extract_iso.py` — extracts PS1 disc filesystem from BIN/CUE into `disc/`
-- `tools/make_psexe.py` — constructs PS-X EXE from raw binary + original header
-- `tools/setup_wsl.sh` — automated WSL toolchain installer
-- `tools/maspsx/` — ASPSX compatibility layer (cloned from mkst/maspsx)
-- `tools/gcc-2.7.2/` — PsyQ-era GCC cross-compiler (built from decompals/mips-gcc-2.7.2)
-- `tools/decomp-permuter/` — [decomp-permuter](https://github.com/simonlindholm/decomp-permuter) for auto-matching C code
-- `tools/permuter_compile.sh` — BB2 compilation script for the permuter
-- `tools/permuter_setup.sh` — helper to set up a permuter run for a given function
+`tools/dc.sh` is the workflow driver — see `memory/reference/tools.md` for the full catalog. Quick hits:
 
-## Using decomp-permuter
+| Tool | Purpose |
+|------|---------|
+| `dc.sh start` | Session briefing — run first |
+| `dc.sh next [--with-context]` | Pull next function from `WORK_QUEUE.md` (sets active marker) |
+| `dc.sh classify <func>` | Pre-dive: blockers, aliasing_heavy tag |
+| `dc.sh attempt <func>` | Full mechanical pipeline (smart → permute → gen_regfix) |
+| `dc.sh build-active <func>` | Incremental rebuild + bridge-aware verify-c |
+| `dc.sh verify <func>` / `verify --all --force` | Per-function / full SHA1 check |
+| `dc.sh diff-align <func>` | Sequence-aligned diff (cascade-immune) |
+| `dc.sh refresh-queue` | Regen `WORK_QUEUE.md` post-match |
+| `dc.sh release` | ESCAPE HATCH (user-only, typed confirm) |
 
-The permuter automatically tries thousands of C code permutations to find byte-matching output. It is useful when your decompilation is structurally correct but GCC's register allocation or instruction ordering differs.
+Per-format inspectors: `tools/inspect_ndata.py`, `tools/inspect_bbm.py`, `tools/inspect_tim.py`, etc. (See `docs/formats/`.)
 
-### Quick Start (in WSL)
+Reverse engineering: `tools/extract_iso.py`, `tools/make_psexe.py`, `tools/setup_wsl.sh`, `tools/maspsx/`, `tools/gcc-2.7.2/`, `tools/decomp-permuter/`.
 
-```bash
-cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile"
-source .venv/bin/activate
+Permuter quick-start: `bash tools/permuter_setup.sh <func> <src/file.c>` → edit `permuter/<func>/base.c` → `python3 tools/decomp-permuter/permuter.py permuter/<func> -j4 --stop-on-zero`.
 
-# 1. Set up a permuter directory for a function
-bash tools/permuter_setup.sh func_80048A7C src/text1b.c
+## Workflow — where the rules actually live
 
-# 2. Edit permuter/func_80048A7C/base.c with your decompilation attempt
+Don't restate rules here; they're in `memory/rules/`. The high-leverage ones for new agents:
 
-# 3. Run the permuter (use -j4 for 4 threads, --stop-on-zero to halt on match)
-python3 tools/decomp-permuter/permuter.py permuter/func_80048A7C -j4 --stop-on-zero
+- `memory/rules/hard-rule.md` — once selected, work end-to-end to pure C
+- `memory/rules/queue-selection.md` — pull from `WORK_QUEUE.md` top, no hunting; hook enforces
+- `memory/rules/escalation-ladder.md` — when stuck, switch technique not target
+- `memory/rules/communication.md` — DO NOT ASK for direction mid-work
+- `memory/rules/pre-dive-analysis.md` — context-gathering before writing C
+- `memory/rules/integration-discipline.md` — after-match verify protocol
+- `memory/rules/no-voluntary-stops.md` — only `permanently_blocked:*` ends a function
+- `memory/rules/minimize-regfix.md` — every new regfix rule is debt
+- `memory/rules/minimize-asm-when-blocked.md` — only escape valve when pure-C provably can't byte-match
+- `memory/rules/canonical-asm-retirement.md` — STRONG-signal-only gate for `inline_asm_canonical.txt`
+- `memory/rules/bridge-is-not-decomp.md` — `replace_with_asmfile` requires explicit user authorization
 
-# 4. Debug mode (shows side-by-side diff and score breakdown)
-python3 tools/decomp-permuter/permuter.py permuter/func_80048A7C --debug
-```
+Skills (`.claude/skills/`):
+- `/decomp-next` — pulls next from queue + drives full matching workflow
+- `/decomp-cheat-cleanup` — retires existing cheat orphans
+- `/cheat-audit` — adversarial LLM auditor on a specific commit/function/file
 
-### Directory Structure
+Workflow mechanics (`memory/workflow/`):
+- `file-editing-wsl.md` — build files (`src/*.c`, `*.txt` in pipeline) MUST be edited via WSL to avoid CRLF
+- `pipeline-cache-busting.md` — `rm -f build/src/<file>.o && make` when config changes
+- `crlf-via-edit-write.md` — Windows-side Edit/Write silently converts LF→CRLF on `.txt` files
+- `active-marker-quirks.md` — when the auto-clear doesn't fire
+- `auto-drift-repair.md` — automatic label-drift handling during build-active
+- `parent-cd-after-subagent.md`, `parallel-harness-gotchas.md`, `parallel-worktrees.md` — sub-agent coordination
 
-Each permuter run lives in `permuter/<func_name>/` with:
-- `base.c` — your decompilation attempt (edit this)
-- `target.s` / `target.o` — the original assembly to match against
-- `compile.sh` — compilation script (auto-copied from tools/)
-- `settings.toml` — permuter settings
+Recipes (`memory/recipes/`): GTE 3x3, scratchpad GTE, shared-end-label, retirement-recipes, cheat-cleanup-techniques, satan2-kabuto-pin, voice-control-playbook (the [[minimize-asm-when-blocked]] case study), exec-game-plateau (cheat orphan that resists pure-C).
 
-### Manual Permutation Macros
+Deep reference (`memory/reference/`): matching-playbook (40 KB master doc), quick-reference (symptom-indexed), regfix-reference, register-asm-pins, inline-move-aliasing, dead-vars-local-array, cc1psx-calibration, scoring-systems, tool-catalog, etc.
 
-Add these to `base.c` to guide the search:
-- `PERM_GENERAL(a, b, ...)` — try each alternative
-- `PERM_RANDOMIZE(code)` — allow random mutations within a block
-- `PERM_LINESWAP(lines)` — try all orderings of lines
-- `PERM_VAR(name, value)` / `PERM_VAR(name)` — define/use meta-variables
+Audit/authorization (`memory/audit/`): pattern-observations, lost-codegen-insert-cheat, inline-asm-injection, bridge-signature.
 
-### Notes
-- The `PERMUTER` preprocessor define is set during compilation, which makes `INCLUDE_ASM` expand to nothing (see `include/include_asm.h`)
-- `permuter/` directories are gitignored
-- Override compiler flags: `CC_FLAGS="-O2 -G8 ..." permuter/func_XXX/compile.sh ...`
+Naming (`memory/naming/`): bulk-promotion, kengo-name-unreliable, raw-dx-unsafe, placeholder-refinement, kengo-cross-reference.
 
-## Workflow
+Current project state (`memory/project/`): status-and-attack, inline-asm-offenders, build-and-internals, satan0main-midi-dispatch.
 
-### THE HARD RULE — finish every function you start
+Archived sessions (`memory/history/`): browse for traceability; not auto-loaded.
 
-**Once a function is selected, you work it end-to-end until matching in 100% pure C (score=0, builds, SHA1 OK). No exceptions for difficulty.** This is the user's durable directive and overrides every other heuristic.
-
-**FORBIDDEN:** tabling, skipping, declaring "too hard", hunting for easier targets after starting, leaving inline `__asm__()` as the answer, leaving `replace_with_asmfile` as a final state, switching to a different function because you're stuck (stuck = switch *technique*, not target).
-
-**Bridging (`replace_with_asmfile`) is NOT a default response to difficulty.** Across rounds 5–11 the project accumulated 209 bridged functions while real decomp progress stayed at zero — exactly the trap THE HARD RULE forbids. Bridging requires explicit per-function user authorization. If your escalation ladder is exhausted and you're tempted to bridge, stop and ask the user — do not pre-emptively write the asmfix rule, do not invoke the asmfile pattern from `feedback_replace_with_asmfile_pattern.md` on your own judgment. The retirement queue (`dc.sh next-asmfix`) goes the *opposite* direction — bridge → C. Don't bridge a function you're retiring. See `feedback_bridge_is_not_decomp.md`.
-
-**The only valid permanent out-of-scope categories** (auto-detected by `dc.sh classify`):
-- `permanently_blocked:<reason>` — toolchain physically can't emit non-div-guard `break`, COP0 ops, `add`/`sub`/`addi` overflow ops, `$sp`/context restore, or data-as-code fragments
-- `bios_or_syscall:*` — canonical BIOS/kernel trampolines or raw syscall/break wrappers
-- `not_code_symbol` / `not_found` — labels that are data/empty symbols or missing from `asm/funcs`
-
-**Structural roadblocks are not permanent asm:** `needs_delay_slot_ra`, `needs_function_split`, `needs_rodata_split`, `needs_lwl_fix`, and `gte_function` are work categories. Some are in the normal queue; `needs_function_split` is deferred until function boundaries are split.
-
-`psyq_stdlib_*` is also not a permanent blocker; it means the function matches a known library idiom and should use the library/C replacement path rather than ordinary one-function matching.
-
-Anything else, you finish. "Hard" / "high score plateau" / "needs novel tooling" are NOT stopping points — they are signals to switch technique or build tooling. See `feedback_workflow_rules.md` THE HARD RULE for full text.
-
-### Selecting the next function — pull from `WORK_QUEUE.md` (HOOK-ENFORCED)
-
-The canonical, ordered work queue lives at `WORK_QUEUE.md` (project root). Pull from the top:
-
-```
-bash tools/dc.sh next       # print top 1 AND set active function in .bb2_active_func
-bash tools/dc.sh next 5     # preview top 5 (does not set active marker)
-bash tools/dc.sh next-structural  # pull structural split queue
-bash tools/dc.sh next-asmfix      # pull asmfix retirement queue
-```
-
-`WORK_QUEUE.md` has three pullable queues: the default active decomp queue, a structural split queue for `needs_function_split`, and an asmfix retirement queue for `replace_with_asmfile` cleanup. It also live-scans already-committed C bodies for suspect non-canonical inline asm and tags those functions as `inline_asm_debt`; these are active queue work until the asm is removed or narrowed to accepted GTE/BIOS/data-only usage. It still filters the true permanent/accepted-asm categories (`permanently_blocked`, `bios_or_syscall`, `not_code_symbol`, `not_found`) out of ordinary decomp work. Anything in a pullable queue is work to finish under that queue's workflow.
-
-**THE HOOK** (`tools/hooks/active_func_guard.sh`, configured in `.claude/settings.local.json`) reads `.bb2_active_func` and BLOCKS the following while a function is active:
-- `git commit` — unless `dc.sh verify <active>` reports MATCH (then it auto-clears the marker and allows the commit)
-- `git checkout` / `git restore` / `git reset --` on `src/*.c`, `regfix.txt`, `asmfix.txt`, `undefined_syms_auto.txt`, `named_syms.txt`, `sdata*.txt`, `expand_lb_funcs.txt`
-- `dc.sh next` / `next-structural` / `next-asmfix` — refuses to hand out another function while one is active
-
-You literally cannot skip a started function or commit a partial state — the harness blocks the tool calls. This is the enforcement of THE HARD RULE.
-
-**Lifecycle:**
-- `dc.sh next` / `next-structural` / `next-asmfix` → writes function name to `.bb2_active_func`
-- Function matches → `git commit` succeeds → hook auto-clears `.bb2_active_func`
-- `dc.sh refresh-queue` → also clears (belt-and-suspenders)
-- `dc.sh release` → ONLY escape hatch; requires typing the function name to confirm. **User-driven, NEVER agent-driven.** If you think a function should be abandoned, ask the user; do not run `release` yourself.
-
-After matching: commit, then `bash tools/dc.sh refresh-queue` to regenerate (matched function falls off the queue).
-
-**FORBIDDEN:**
-- Searching `src/*.c` or `asm/funcs/*.s` for "easier" candidates
-- Reading multiple function asms before picking one
-- Re-classifying a function the queue already presents (the queue has already been classified)
-- Skipping queue entries because they look hard / large / unclear — the queue is in (loose) complexity order; what's at the top is what's next, and queue order is not your decision
-- **Manually deleting/editing `.bb2_active_func`** to bypass the hook — directly contradicts the rule the hook enforces. The only valid clear paths are: a successful `git commit` (auto-clear), `dc.sh refresh-queue` (post-match), or user-driven `dc.sh release`.
-- **Reverting WIP src/* files** to "start fresh" on the same function — the hook blocks this for a reason. If the function got into a confusing state, edit forward (write the corrected body via WSL python3) instead of `git checkout`.
-
-If the user says "do the next 5", "work through 10", or anything similar, pull from `dc.sh next` in order unless they explicitly ask for structural split or asmfix retirement work. If the user names a specific function, work that one. Either way, no hunting.
-
-### Per function (attempt-first)
-
-The **attempt-first** flow runs all the cheap mechanical steps before the model intervenes. The deterministic pipeline does what it can; you handle the rest.
-
-1. **`dc.sh classify <func>`** — instant pre-dive. Read the recommendation. If it returns one of the permanent out-of-scope categories above, the function is gated out (not your concern this session). For structural categories such as `needs_delay_slot_ra`, `needs_rodata_split`, `needs_lwl_fix`, or `gte_function`, finish the function using the matching workflow/tooling. **Watch for `aliasing_heavy` in `blocker_tags`** — flagged for ptr-chasing patterns where instruction count under-predicts difficulty (queue already pushes them later); use `dc.sh diff` early on these to spot the asymmetric reload patterns.
-2. **`dc.sh attempt <func>`** — runs setup → smart_match → permute_capped → gen_regfix automatically. Reports MATCHED / NEAR_MISS / HARD / SKIPPED.
-   - **MATCHED** — `auto_matches/<func>.c` has the matched C. Use `dc.sh inline-replace <func> auto_matches/<func>.c`.
-   - **NEAR_MISS** (score ≤ 200) — review `/tmp/<func>.regfix.suggestions`, run `dc.sh recipes <func>`, apply rules with `dc.sh add-regfix`.
-   - **HARD** — pipeline didn't auto-close it. NOT a stopping point. Deepen manually via toolbox: alternative C structures → register asm → long permuter run → compound regfix → named recipes → new pipeline pass if needed. Use `dc.sh diff <func>` for build-context diff (target.s vs build pipeline output).
-   - **SKIPPED** — only fires for permanent/accepted-asm categories, not-code labels, or recognized library shortcuts.
-3. **Manual deepening** — when NEAR_MISS or HARD, work through the escalation ladder until matched. **Read the penalty-list → technique routing table** in `feedback_matching_playbook.md` to pick the right tool for the symptom. Build new tooling if the existing toolbox can't reach pure C — that's expected.
-
-### Post-integration: regfix-suggest before manual rules (token-saving)
-
-After `dc.sh inline-replace <func> ...` and a first build that links but mismatches:
-
-0. **`dc.sh diff-align <func>` FIRST.** Sequence-aligned (difflib) with relocation masking. Index-aligned `dc.sh diff` cascades when mine and target differ in length — every line after a 1-instruction shortfall is marked as different (140+ "diffs" that are really 1 structural change + 139 cascade). `diff-align` collapses cascade and surfaces real STRUCTURAL diffs only, plus suggested recipes (delay-slot fill, label-shift, hoist-removal). Compute `byte_diff/4` — if mine is 4 bytes short, you have ONE missing instruction, NOT 145. This single heuristic prevents the most common time-sink in regfix work. Reading `dc.sh diff` cascade output before this is wasteful — don't.
-1. **`dc.sh regfix-suggest <func>`** — auto-generates regfix rules from the build-vs-target diff. Emits `delete`/`insert_after`/`subst` rules with correct maspsx indices, plus hints for things it shouldn't auto-rewrite (gp-rel pseudos → `sdata_exclude.txt`, `.L<N>` label mismatches). Read the hints first; apply them; re-run regfix-suggest.
-2. **Apply hints first**, then `dc.sh regfix-suggest <func> --apply` for the auto rules, then build + verify.
-3. **Don't write regfix rules from scratch** — the indices are easy to get wrong. Maspsx `lw $X, sym` is one instruction, not two; `addiu $5,$zero,1` not `$0`; deletes/inserts shift indices in different phases. `regfix-suggest` knows the conventions.
-4. **`dc.sh add-regfix`** when you DO need to write a rule by hand. It pre-validates against `dump_text_indices` before any build round-trip. If it complains, fix the rule — don't `--no-prevalidate`.
-5. **`dc.sh caller-audit <func>`** is auto-run by `inline-replace`. If it blocks the integration, **add unused params to your decl** to match the max-observed arity. Skipping this causes cascade-regressions in unrelated sibling functions (GCC dead-codes extra-arg computations in callers, changing their bytes).
-6. **`dc.sh verify --all`** short-circuits on SHA1 match (~0.2s). If `bb2 matches!`, every function matches; don't second-guess it.
-
-**If a sibling function suddenly shows a 1-byte build error after your match:** that's `.L<N>` label drift. Run `bash tools/dc.sh fix-label-drift` (drives off the linker error, only fixes rules where the build genuinely failed).
-
-### Escalation when stuck
-
-Stuck means switch *technique*, not target. The ladder (in order):
-
-1. C-level structural variants (the permuter explores these)
-2. Register asm pinning — callee-saves only (leaf temp regs are dangerous; see playbook)
-3. Long permuter runs (30 min, 1 hour, overnight)
-4. regfix at the assembly stream — 30-rule recipes happen
-5. Compound regfix layering across multiple blocker classes
-6. Named recipes (LICM unhoist, call-loop, early-exit alias, varargs, nested-bool, CU-split)
-7. New transformation pass — extend `prologue_fix.py`, add a pipeline stage, write a new regfix op
-8. Capture novel patterns as new named recipes via `dc.sh capture-recipe`
-
-### Per-attempt discipline
-
-- **Score regression → immediate revert.** Never build on a worse score.
-- **Same score twice on C variants → switch from C to permuter/regfix.** GCC flattens different C structures; repeating doesn't help.
-- **Hypothesis before every attempt.** If you can't articulate one, escalate to the next ladder rung — don't flail.
-- **You don't decide when the session ends.** A session ends when (a) the platform auto-compacts your context, or (b) the user interrupts. That's it. If your context is still healthy and the user hasn't told you to stop, you have not earned the right to wrap up. "I've made substantial progress" / "next session can continue" / "diminishing returns" / "this needs N more rules" are NOT session-end events — they are signs you stopped doing the work. The Stop-event hook (`tools/hooks/grind_check.sh`) detects wrap-up language and rejects the stop, forcing you to keep going.
-- **If you ARE auto-compacted before match,** the partial state stays in the working tree (the hook blocks `git commit` anyway) and the next session inherits the active marker. The quit-counter (`.bb2_quit_log.json`, surfaced by `dc.sh start`) tracks how many times this has happened per function. Don't be the agent that adds to that count.
-
-### DO NOT ASK FOR DIRECTION
-
-The user has explicitly directed: keep working until the function is matched. Asking for status updates, direction, or approval mid-work is forbidden. The user is not on standby to redirect when you're stuck — they expect "matched" when they next look.
-
-**FORBIDDEN mid-work prose:**
-- "Score is plateauing — should I keep going or move on?" — keep going. You don't move on.
-- "I've tried X, Y, Z. How would you like me to proceed?" — switch to the next escalation rung.
-- "Want me to build a new pipeline pass?" — yes, just build it. Commit it.
-- "Want me to run the permuter overnight?" — yes, just run it.
-- "I'm stuck. Should I switch to a different function?" — no, never. Switch *technique*, not target.
-- Status reports / progress dumps mid-work.
-- **Wrap-up summaries while the function is unmatched.** Phrases like "next session can continue", "preserved in the working tree", "I've made substantial progress", "diminishing returns", "given the volume", "let me leave it here", "[N]+ more rules needed", "good place to stop", "let me wrap up", "for now", "this iteration", "I've exhausted [angles]" are all trip-wires for the Stop-event hook (`tools/hooks/grind_check.sh`). Once you start narrating progress instead of doing the work, you've quit. Don't.
-
-**The only times you stop and wait for the user:**
-1. Function is matched + committed; either batch is done or it was a one-off ("do this function").
-2. Classifier returned a permanent out-of-scope category — function is gated out by the rule.
-3. Genuinely catastrophic situation: WSL broken, build fundamentally corrupted, repo in an unexpected state requiring real decision. NOT "regfix is hard" or "I've made N attempts."
-
-If tempted to check in because you're stuck: switch technique, not direction. Build the tool. Run the long permuter. Write the 60 regfix rules. Asking permission for in-scope decomp work is itself a violation.
-
-See `feedback_workflow_rules.md` Communication section for the full rule.
-
-### Matching Toolbox (proven techniques — try in this order)
-
-When an attempt scores > 0, classify the diff before flailing:
-
-1. **Structural alternatives (C-level)** — goto vs if/else vs switch, intermediate variables for subtraction order, declaration position for load timing. Use the permuter to explore.
-2. **Register asm hints** — `register T x asm("regname")` constrains GCC's allocator. Useful for forcing specific s-reg/v-reg placements. WARNING: leaf temp regs cause scheduling side effects (see `feedback_matching_playbook.md`).
-3. **Inline `__asm__`** — for GTE ops, BIOS calls, scratchpad access, and forcing specific instruction sequences. See `feedback_matching_playbook.md` for GCC 2.7.2 constraint pitfalls (no `+r`, `=r`/`0` pseudo-split).
-4. **regfix.py (assembly stream rewrite)** — `subst`, `swap`, `delete`, `insert`, `insert_after`, `insert_label`, `reorder`, `fill_delay`, `drain_delay`. Operates between maspsx and `as`. **LAST RESORT, not second-to-last.** Use only for register-allocation diffs and small scheduling fixes after the full C-level ladder (1-3 + named recipes + permuter) is genuinely exhausted. Default disposition: ZERO new rules per match. See `feedback_minimize_regfix.md` for the criteria — every rule is debt against the SOTN-grade target. Full syntax in `feedback_regfix_reference.md`.
-5. **Named recipes** — LICM unhoist (`tools/recipes/licm_unhoist.json`, ~7 rules), call-loop family (text1b.c regfix recipe), early-exit alias breaker (8 rules, auto-detected by `gen-regfix`), varargs prologue, nested-bool memcard family, CU split for jtbl interposition. All documented in `feedback_matching_playbook.md` "Named recipes" section.
-
-**No tabling.** Iterate until score=0 + SHA1 OK in the same session — score plateau means switch *technique*, not stop. New tools/passes/recipes are acceptable. See `feedback_workflow_rules.md`.
-
-**Minimize regfix — every rule is debt.** The project carries 3,704 regfix rules across 240 functions; the community standard (SOTN, Vagrant, ESA, CTR, MGS) accepts zero. Before adding ANY new regfix rule (even a single `swap`), burn through the pure-C ladder: `register T x asm("$N")` pins → single-insn `__asm__` with `%N` placeholders → declaration reorder → intermediate vars → `dc.sh smart` → permuter (10+ min) → named recipes. The cheat-audit hooks block `splice` / `insert "addu $sN,$0,$zero"` / wildcard substs at commit, but they do NOT cap grey-zone `swap` / `subst` / `delete` / `reorder` accretion — that discipline is on you. See `feedback_minimize_regfix.md` for the full ladder and the three-question check before writing a rule.
-
-**Memory entries to consult before each function:**
-- `feedback_matching_playbook.md` — full matching guide (toolbox order, every C-side technique, named recipes, things that don't work)
-- `feedback_minimize_regfix.md` — when regfix is the wrong answer (almost always), what to try first
-- `feedback_regfix_reference.md` — regfix.txt syntax + every gotcha + verification procedure
-- `feedback_workflow_rules.md` — workflow + WSL discipline + integration rules
-
-## WSL Execution Rules (MANDATORY)
-
-All decomp operations go through `tools/dc.sh` — never construct raw WSL pipelines for compile/score/build.
-
-```bash
-wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash tools/dc.sh <command> [args]'
-```
-
-### Workflow-driver commands (try in this order)
-
-| Command | Purpose |
-|---------|---------|
-| `dc.sh next [N]` | Pull the next ordinary active-decomp queue item. With no `N`, claims top 1 and writes `.bb2_active_func`; with `N`, previews without claiming. |
-| `dc.sh next-structural [N]` | Pull/preview the structural split queue (`needs_function_split`). |
-| `dc.sh next-asmfix [N]` | Pull/preview the asmfix retirement queue (`replace_with_asmfile` cleanup). |
-| `dc.sh classify <func>` | Pre-dive report: size, blockers, BIOS/syscall/PsyQ tags, Kengo hint. Returns a `recommendation` (easy_attempt / standard / needs_delay_slot_ra / needs_function_split / needs_rodata_split / bios_or_syscall / psyq_stdlib_<n> / gte_function / needs_lwl_fix / not_code_symbol / **permanently_blocked:&lt;reason&gt;**). The `permanently_blocked` tag is auto-detected from asm patterns (non-div-guard `break`, COP0, `add`/`sub`/`addi`, `$sp`/context restore, data-as-code) plus the manual list in `known_blocked.txt`. |
-| `dc.sh attempt <func>` | Full mechanical pipeline: classify → setup → smart_match → permute_capped → gen_regfix. Reports MATCHED / NEAR_MISS / HARD / SKIPPED with elapsed time. **Run this first**; only intervene manually for NEAR_MISS. |
-| `dc.sh smart <func>` | smart_match.py: 16 automated transformation strategies (declaration reorder, cast variations, do-while barriers, register hints, etc). Pure-C exploration before permuter. |
-| `dc.sh permute <func> [--max-time N] [--max-flat-seconds K]` | permute_capped.py: bounded permuter run with flat-score early termination. |
-| `dc.sh recipes [<func>]` | List named regfix recipes / suggest recipes for `<func>`. `dc.sh apply-recipe <recipe> <func>` prints the concrete add-regfix commands. |
-| `dc.sh agent-brief <func>` | All-in-one context dump for a session: classify + asm + base.c + gen_regfix + recipe suggestions + Kengo + neighbor functions. **First thing to run on a function.** |
-| `dc.sh near-miss <func> [--apply]` | near_miss_attempt: auto-detects byte_arith_fix / drain_delay / plain_reg_substs patterns and applies them with try-and-revert. Default is dry-run; pass `--apply` to actually edit. |
-| `dc.sh capture-recipe [<commit>]` | After committing a match, classifies the patterns used and reports if it matches an existing recipe or is novel. Use `--write` to save a draft JSON. |
-| `dc.sh add-regfix <func> <op> ...` | Append a validated regfix rule (replaces ad-hoc tmp/add_regfix*.py). **Pre-validates** against live `dump_text_indices` before append (catches `$0`-vs-`$zero` patterns and out-of-bounds idx without a build round-trip). **Auto-rolls back** on live-build validation failure. `--no-prevalidate` to skip the cheap check, `--no-validate` to skip both. Ops: swap, subst, delete, insert, insert_after, reorder, fill_delay, drain_delay. |
-| `dc.sh regfix-suggest <func> [--apply]` | **Run this BEFORE writing any regfix rule by hand.** Diffs target.s vs the live post-regfix build pipeline and emits `delete`/`insert_after`/`subst` rules that close the gap. Catches gp-rel pseudo expansions (emits `sdata_exclude.txt` hints) and label drift (emits hints, not auto-rewrites). Conservative on reorders — emits insert+delete pairs to avoid the label-attachment trap. `--apply` appends the rules to regfix.txt. `--max-rules N` caps output (default 40 — anything more usually means structural mismatch, reach for permuter instead). |
-| `dc.sh caller-audit <func>` | Scan src/*.c for callers and report max args passed. Auto-runs as part of `dc.sh inline-replace` and BLOCKS the integration if the C signature is too narrow (catches the cascade-regression case where GCC dead-codes extra-arg computations in callers). |
-| `dc.sh retire <func>` | Start retirement of a bridged (`replace_with_asmfile`) function: comments out the asmfix rule with `# RETIRE: `, sets the active marker, prints C-body location. Refuses if not bridged or if build is mismatched. `dc.sh release <func>` restores the bridge if you need to abandon. See `feedback_bridge_is_not_decomp.md`. |
-| `dc.sh audit-bridges` | Caller-signature audit on all 209 bridged functions — writes `tmp/bridge_signature_audit.json` with canonical signatures inferred from extern decls + caller usage. See `feedback_bridge_signature_audit.md`. |
-
-### Inline-asm-aware setup (399 functions still inline)
-
-| Command | Purpose |
-|---------|---------|
-| `dc.sh inline-locate <func>` | Find the inline `__asm__()` block for `<func>` in src/ |
-| `dc.sh inline-verify <func>` | Verify inline asm matches `asm/funcs/<func>.s` |
-| `dc.sh inline-setup <func>` | Stage `permuter/<func>/` for an inline-asm function (m2c base.c + target.s) |
-| `dc.sh inline-replace <func> <c>` | After matching, swap the inline block for matched C |
-
-### GTE helpers (Phase 4 -- 86 functions)
-
-| Command | Purpose |
-|---------|---------|
-| `dc.sh gte <func>` | gte_classifier.py: which `gte_*()` macros from `include/gte.h` would the function need? |
-| `dc.sh gte-migrate <func> [--stdout\|--setup]` | gte_migrate.py: convert inline-asm GTE function into a C scaffold using `gte_*()` macros + proper-constrained `__asm__` for the remaining mtc2/mfc2 ops. Writes `permuter/<func>/base.c`. |
-
-### Lower-level building blocks
-
-| Command | Purpose |
-|---------|---------|
-| `dc.sh compile <func_dir>` | Compile base.c + objdump disassembly |
-| `dc.sh score <func_dir>` | Permuter score only (one line) |
-| `dc.sh debug <func_dir>` | Permuter penalty list + score (default; the routing decision is in the penalty profile alone). Pass `--full` for the ~200KB side-by-side asm dump. |
-| `dc.sh build` | Incremental make, tail output |
-| `dc.sh replace <src> <func> <c_file>` | Replace INCLUDE_ASM with C code (LF-safe) |
-| `dc.sh setup <func> <src>` | Set up permuter directory (INCLUDE_ASM stub form) |
-| `dc.sh analysis <func>` | Run asm_analysis.py |
-
-### File Editing
-
-- **Build files** (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, `*.txt`): **ALWAYS write through WSL** (python3 -c, dc.sh replace, or heredoc). Never use Windows Edit/Write — CRLF silently breaks the GNU toolchain.
-- **Non-build files** (memory, CLAUDE.md, tools/*.py, tools/*.sh): Native Edit/Write is fine.
-
-### Execution Discipline
-
-1. **Never use `run_in_background`** for compile/score/build commands — they take <15 seconds.
-2. **Always use `2>&1`** on WSL commands to capture stderr.
-3. **Ignore systemd warnings** — `"Failed to start systemd user session"` is cosmetic, the command still runs. Do not retry.
-4. **For multi-function loops**, use python3 instead of bash for-loops (variable expansion through `wsl bash -c` is unreliable).
-
-## Function Matching Process (MANDATORY)
-
-### Starting a Function
-
-1. **Try without register asm hints first.** GCC 2.7.2's natural allocation usually matches for ≤4 callee-saved regs. Hints often cause extra copies and inflate the frame.
-2. **Check function definitions/prototypes in the source file BEFORE writing permuter base.c.** The permuter must see the same declarations the build sees. Wrong prototypes cause different register allocation and codegen. Check: is the function defined later in the same file? What argument types does it use? Are there forward declarations?
-3. **Full diff analysis after first structurally-correct attempt.** Once frame size and save count match, do a complete side-by-side (`dc.sh debug`). List EVERY difference. Categorize as: register, scheduling, structural, or missing/extra. Plan fixes for all before next attempt.
-4. **One variable per attempt.** Change exactly one thing, verify no regression.
-5. **When permuter score ≠ 0 but structure is correct, check `make` output immediately.** The permuter compiles standalone base.c; the build compiles the full source with real prototypes. If they differ, fix the permuter to match, or go directly to build + regfix.
-6. **If 2 C-level attempts at a codegen quirk fail, escalate to pipeline fix.** Don't keep trying source-level tricks for assembler-level problems. Use regfix (swap, reorder, insert) instead.
-7. **For regfix indices, always dump maspsx intermediate output first.** Count TEXT instructions (pseudo-insns like `la`/`lb sym` = 1 each), NOT binary instructions (where they expand to 2). Wrong indices silently corrupt the output.
-
-### Key GCC 2.7.2 Techniques
-
-- **`>> N` vs `/ 2^N`**: Check target for bgez/addiu rounding pattern. Absent → shift. Present → division.
-- **Split expressions for load scheduling**: `s32 sum = expr; load = ...; result = sum >> N;` positions a load in the pipeline stall.
-- **Intermediate variables control subtraction order**: `s32 val = A - B; result = val - C;` prevents GCC from commuting to `A - C - B`.
-- **Variable declaration position = load timing**: Declare early → loads early. Declare after heavy computation → loads late.
-
-### Permuter vs Regfix Decision
-
-- **Permuter is for structural alternatives** — different loop styles, expression forms, variable orderings. It explores C-level variations.
-- **Regfix is for register assignment** — when the C structure is correct but GCC assigns wrong registers.
-- **Trivial loops with no structural alternatives → try `register T x asm("$N")` pins FIRST, then regfix only if pins fail.** A simple `do { *p=0; n--; p++; } while(n>=0)` has only one C representation, but a pin on the loop counter or pointer often coerces the right allocation without any regfix at all. The permuter won't help here; pins might.
-- **Read the penalty list before reaching for a tool.** `dc.sh debug` shows: Insertions, Deletions, Reorderings, Register Differences, Stack Differences, Branch Differences. If `Ins/Del/Reorder = 0` and only `Register Differences` is nonzero, **don't run the permuter** — there's nothing structural to find. Try register pins first; only fall back to regfix `swap` if `dc.sh dump-text` confirms GCC ignored the pin (see `feedback_register_asm_pin_reliability.md`). See `feedback_minimize_regfix.md` — pin-then-regfix, not regfix-by-default.
-- **Don't run `gen-regfix` on a clean register-cycle case.** When the diff has 0 ins/del/reorder and just register renames (e.g., a 6-cycle of temp regs), gen-regfix flags every instruction as "structural" because all registers are different — produces 200+ lines of unactionable noise. gen-regfix is for swap/fill/reorder patterns it can detect; pure register cycles are best handled by writing the swap rules by hand from the asm.
-- **Permuter cadence: short first, long if needed.** Default first manual permuter run = 90-120s, not 600s. Most cheap structural variants (`int new_var = 1`, decl reorder, `do { } while(0)` barrier) are found in the first minute. Escalate to 5-10 min only if the first pass plateaus well above target AND the diff still shows structural ins/del. Long overnight runs are reserved for genuinely stuck cases with 3+ ins/del that no recipe matches.
-- **When pipeline config changes (regfix.txt, sdata_funcs.txt) aren't reflected in build output**, the issue is stale object files: `rm -f build/src/<file>.o && make`. Don't debug the config file.
-
-### Source Integration (after match)
-
-- **Never use `dc.sh replace` for final integration.** It copies the standalone permuter base.c (with duplicate typedefs, externs, forward declarations) into the source file. This requires a cleanup cycle.
-- **Write the function body directly** via WSL python3, reusing existing `#include "common.h"` and the file's extern block. Add any missing externs to the file's extern section first.
-- **One check for permuter results.** `grep "score = 0"` or read the final line. Don't issue 3 separate calls.
-- **Run `make validate` AND `dc.sh verify --all` IMMEDIATELY** after `dc.sh verify <func>` says the function matches — not later, not pre-commit, not "if I remember." These checks catch label drift in OTHER functions caused by your new function shifting GCC's file-wide `.L<N>` numbering. If a sibling regfix subst with a literal `.L347` now points at a different label, fix the broken rule (typically: change pattern to `\.L\d+` regex with the current replacement label) before you even consider the work done. Treating these as "later cleanup" leads to discovering the regression after committing, which is wasteful.
-- **Sibling-file extern audit.** Before declaring `extern <type> <sym>` in your file, grep other .c files for the same symbol — a sibling file may already have a more accurate signed/unsigned declaration. Mismatched extern types flip lh/lhu and lb/lbu silently. (See `feedback_matching_playbook.md` "type widening for signed loads".)
-
-### Anti-patterns
-
-- Don't use register asm as a first resort — it's a last resort
-- Don't change two things between attempts
-- Don't spiral on scheduling without checking structural correctness first
-- Don't run the permuter on trivial loops where there's only one possible C structure
-- Don't use `dc.sh replace` for final integration — write the function body directly
-
-## Error Response Protocol (MANDATORY)
-
-When a tool call, command, or process fails, **do not just retry with a fix and continue.** Instead:
-
-1. **Diagnose the root cause.** Why did it fail? Was it a one-off environment issue or a systemic problem?
-2. **Fix it permanently.** If the fix is a script change, make the change. If it's a workflow pattern, update CLAUDE.md or the relevant tool.
-3. **Commit the fix.** If you changed a script or tool, commit it so future sessions benefit.
-4. **Update rules if needed.** If the error reveals a bad pattern (e.g., using Edit on build files, using run_in_background for compiles), add a rule to CLAUDE.md preventing it from happening again.
-
-The goal: **every error should only happen once.** If you find yourself working around the same issue twice, that's a failure to enforce. The second occurrence means you should have fixed it the first time.
-
-## Key Conventions for PS1 Decomp
+## Key conventions for PS1 decomp
 
 - All addresses are MIPS virtual addresses in KSEG0 (`0x80000000`+)
-- `0x1F800000`–`0x1F8003FF` = scratchpad RAM (fast 1KB SRAM)
+- `0x1F800000`–`0x1F8003FF` = scratchpad RAM (fast 1 KB SRAM)
 - The PsyQ SDK provides BIOS calls, GPU, SPU, CD, controller, and memory card APIs
 - PS1 uses little-endian MIPS I instruction set
 - Struct padding and alignment must match the PsyQ compiler's behavior
 - When adding known symbol names, add them to `symbol_addrs.txt` and re-run splat
+
+## Getting help
+
+- User-facing CLI help: `/help` (Claude Code)
+- Feedback / bugs: https://github.com/anthropics/claude-code/issues
+- For project-level questions in a new session: read `memory/user/role.md` + `memory/MEMORY.md`, then ask

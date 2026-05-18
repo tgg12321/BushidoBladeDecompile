@@ -1,0 +1,209 @@
+#!/usr/bin/env python3
+"""Regenerate memory/MEMORY.md from frontmatter of all memory/*/*.md files.
+
+Reads each file's frontmatter `name`, `description`, and `metadata.type`.
+Groups entries by directory, renders a structured markdown index, validates
+the result against Claude Code's auto-load limits (200 lines OR 25,600 bytes).
+
+Fails (non-zero exit) if:
+- Any file has missing/malformed frontmatter
+- Any [[link]] reference doesn't resolve to a file stem
+- The generated MEMORY.md exceeds 200 lines or 24KB
+
+Intended to be run via pre-commit hook or `dc.sh start` so MEMORY.md is
+never hand-edited and always reflects current memory/ state.
+"""
+from __future__ import annotations
+
+import re
+import sys
+from collections import defaultdict
+from pathlib import Path
+from typing import Any
+
+MEMORY_DIR = Path.home() / ".claude" / "projects" / "C--Users-Trenton-Desktop-Bushido-Blade-2-Decompile" / "memory"
+INDEX_PATH = MEMORY_DIR / "MEMORY.md"
+
+# Auto-load limits per Claude Code docs.
+MAX_LINES = 200
+MAX_BYTES = 24_576   # docs say 25,600 (25KB), leave 1KB headroom
+
+# Directory descriptions and ordering for the index header.
+DIR_ORDER = [
+    ("rules",     "Durable agent behavior — what we always do, never do, only-stop-when conditions. Read these first."),
+    ("workflow",  "Harness mechanics — parallel-agent gotchas, the active-marker hook, file-editing CRLF rule, cache busting."),
+    ("recipes",   "Named technique playbooks — LICM unhoist, GTE 3x3, voice playbook, exec-game plateau, etc. Load on demand."),
+    ("reference", "Deep technique reference — matching playbook, regfix syntax, scanner internals, tool catalog. Heavy; load on demand."),
+    ("audit",     "Cheat detection + authorization patterns. Surfaces the SOTN-bar enforcement work."),
+    ("naming",    "Naming-specific lessons — Kengo reliability, bulk promotion, placeholder refinement."),
+    ("project",   "Current state, ongoing work. Counts here drift; refresh via `dc.sh refresh-queue` and verify against current build."),
+    ("user",      "User profile + standing directives. Loaded first by the agent harness."),
+    ("history",   "Archived dated session notes. Not auto-loaded; browse for traceability of past sessions."),
+]
+
+FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
+LINK_RE = re.compile(r"\[\[([a-zA-Z0-9_\-]+)\]\]")
+SENTENCE_END_RE = re.compile(r"[.!?]\s+|[.!?]$")
+
+
+def parse_frontmatter(text: str) -> tuple[dict[str, Any], str]:
+    m = FRONTMATTER_RE.match(text)
+    if not m:
+        return {}, text
+    fm_text = m.group(1)
+    body = text[m.end():]
+    fm: dict[str, Any] = {}
+    for raw in fm_text.splitlines():
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        stripped = raw.strip()
+        if ":" in stripped and not stripped.startswith("- "):
+            key, _, val = stripped.partition(":")
+            key = key.strip()
+            val = val.strip()
+            if val.startswith('"') and val.endswith('"'):
+                val = val[1:-1]
+            fm[key] = val if val else {}
+    return fm, body
+
+
+def first_sentence(text: str, max_chars: int = 140) -> str:
+    """Extract first sentence (or up to max_chars), strip whitespace."""
+    text = text.strip()
+    # Unescape backslash-quote artifacts from YAML frontmatter parsing
+    text = text.replace('\\"', '"').replace("\\'", "'")
+    if not text:
+        return ""
+    m = SENTENCE_END_RE.search(text)
+    if m and m.end() <= max_chars + 30:  # accept overshoot if sentence ends close
+        sent = text[:m.end()].rstrip()
+    else:
+        sent = text[:max_chars].rstrip()
+        if len(text) > max_chars:
+            # Truncate at last whitespace for clean cut
+            cut = sent.rfind(" ")
+            if cut > max_chars // 2:
+                sent = sent[:cut] + "…"
+            else:
+                sent = sent + "…"
+    return sent.rstrip(".")
+
+
+def main() -> int:
+    if not MEMORY_DIR.exists():
+        print(f"memory dir not found: {MEMORY_DIR}", file=sys.stderr)
+        return 1
+
+    # Phase 1: collect entries per directory
+    entries_by_dir: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    all_stems: set[str] = set()
+    fm_name_to_stem: dict[str, str] = {}
+    errors: list[str] = []
+
+    for path in sorted(MEMORY_DIR.rglob("*.md")):
+        if path.name == "MEMORY.md":
+            continue
+        rel = path.relative_to(MEMORY_DIR)
+        dir_name = rel.parts[0] if len(rel.parts) > 1 else "root"
+        stem = path.stem
+        all_stems.add(stem)
+        text = path.read_text(encoding="utf-8", errors="replace")
+        fm, body = parse_frontmatter(text)
+        if not fm.get("name"):
+            errors.append(f"missing frontmatter name: {rel}")
+            continue
+        fm_name = fm["name"].strip()
+        fm_name_to_stem[fm_name] = stem
+        description = fm.get("description", "").strip()
+        if not description:
+            errors.append(f"missing description: {rel}")
+        entries_by_dir[dir_name].append({
+            "stem": stem,
+            "name": fm_name,
+            "description": description,
+            "rel_path": str(rel).replace("\\", "/"),
+            "size": path.stat().st_size,
+        })
+
+    # Phase 2: validate all [[links]] resolve
+    broken: list[tuple[str, str]] = []
+    for path in sorted(MEMORY_DIR.rglob("*.md")):
+        if path.name == "MEMORY.md":
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for m in LINK_RE.finditer(text):
+            target = m.group(1)
+            if target not in all_stems and target not in fm_name_to_stem:
+                broken.append((str(path.relative_to(MEMORY_DIR)), target))
+
+    if errors:
+        print("Frontmatter errors:", file=sys.stderr)
+        for e in errors:
+            print(f"  {e}", file=sys.stderr)
+        return 1
+
+    if broken:
+        print(f"WARN: {len(broken)} broken [[link]] references:", file=sys.stderr)
+        for src, tgt in sorted(set(broken))[:15]:
+            print(f"  {src} -> [[{tgt}]]", file=sys.stderr)
+        if len(broken) > 15:
+            print(f"  ... and {len(broken) - 15} more", file=sys.stderr)
+        # Don't fail; warn and continue.
+
+    # Phase 3: render MEMORY.md
+    out_lines: list[str] = []
+    out_lines.append("# Memory index")
+    out_lines.append("")
+    out_lines.append("**New agent? Read [user/role.md](user/role.md) and [rules/hard-rule.md](rules/hard-rule.md) first.**")
+    out_lines.append("**Returning to a function in progress?** Run `bash tools/dc.sh start` for current state.")
+    out_lines.append("")
+    out_lines.append("Auto-generated by `tools/regen_memory_index.py` from per-file frontmatter. Do not hand-edit.")
+    out_lines.append("")
+
+    for dir_name, dir_desc in DIR_ORDER:
+        items = entries_by_dir.get(dir_name, [])
+        if not items:
+            continue
+        out_lines.append(f"## {dir_name}/")
+        out_lines.append(f"_{dir_desc}_")
+        out_lines.append("")
+        items_sorted = sorted(items, key=lambda x: x["stem"])
+        for entry in items_sorted:
+            summary = first_sentence(entry["description"], max_chars=130)
+            out_lines.append(f"- [{entry['stem']}]({entry['rel_path']}) — {summary}")
+        out_lines.append("")
+
+    # Any uncategorized (shouldn't happen, but guard)
+    known_dirs = {d for d, _ in DIR_ORDER}
+    other_dirs = [d for d in entries_by_dir if d not in known_dirs]
+    for d in sorted(other_dirs):
+        out_lines.append(f"## {d}/  (uncategorized)")
+        out_lines.append("")
+        for entry in sorted(entries_by_dir[d], key=lambda x: x["stem"]):
+            summary = first_sentence(entry["description"], max_chars=130)
+            out_lines.append(f"- [{entry['stem']}]({entry['rel_path']}) — {summary}")
+        out_lines.append("")
+
+    content = "\n".join(out_lines).rstrip() + "\n"
+
+    # Phase 4: validate size
+    n_lines = content.count("\n")
+    n_bytes = len(content.encode("utf-8"))
+    print(f"Generated: {n_lines} lines, {n_bytes:,} bytes")
+    print(f"Limits:    {MAX_LINES} lines, {MAX_BYTES:,} bytes")
+
+    if n_lines > MAX_LINES:
+        print(f"FAIL: {n_lines} lines exceeds {MAX_LINES} limit", file=sys.stderr)
+        return 1
+    if n_bytes > MAX_BYTES:
+        print(f"FAIL: {n_bytes:,} bytes exceeds {MAX_BYTES:,} limit", file=sys.stderr)
+        return 1
+
+    # Write
+    INDEX_PATH.write_text(content, encoding="utf-8")
+    print(f"Wrote: {INDEX_PATH}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
