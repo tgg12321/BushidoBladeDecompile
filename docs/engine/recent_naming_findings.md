@@ -457,27 +457,70 @@ documented in sound.md.
   generated channel of the wave-synth output, so changes to
   voice0E parameters propagate to the fade behavior.
 
-## 15. code6cac_c2 frame-event triggers + position offset (D_8008EB04..0x1C)
+## 15. Win-animation sound trigger cluster (D_8008EAC0..0x8008EB28)
 
-A small event/parameter cluster in code6cac_c2.c:873-897, all consumed
-by the per-frame state machine driven by `g_practice_loop_frame`
-(0x800A37B8) — i.e., this is **practice-mode scripted event handling**:
+Per-frame scripted event handler in code6cac_c2.c:870-899.  Drives the
+WIN/LOSE animation sequence after a fight ends — `katinuki_game_setData_…`
+("katinuki" = Japanese "katte iku" = "win out") commits the result and
+transitions back to the title menu.  Frame counter is `g_practice_loop_frame`
+(D_800A37B8); winner character index is `D_800A3748` (called `p` in the
+C body).
 
-| Symbol | Address | Role |
+All frame constants are absolute frame counts within the win-animation
+playback (post-fight); compared against `g_practice_loop_frame == D_x`
+to fire a single SFX or particle effect at that exact frame.
+
+### Per-stage intro frame (D_8008EAC0)
+
+`g_winanim_per_stage_intro_frame[34]` — one frame target per stage,
+fires SFX `40*p + 0x2D` (the per-character "intro" SFX class).
+
+| Stage range | Value | Meaning |
 |---|---|---|
-| `g_c2_event_frame_a` | 0x8008EB04 | trigger event: `if (g_practice_loop_frame == D_...)` |
-| `g_c2_event_frame_b` | 0x8008EB06 | same pattern, next slot |
-| `g_c2_event_frame_c` | 0x8008EB08 | ... |
-| `g_c2_event_frame_d` | 0x8008EB0A | ... |
-| `g_c2_event_frame_e` | 0x8008EB0C | ... |
-| `g_c2_pos_xyz_offset_x` | 0x8008EB10 | `vp[0] += D_...` (vertex X offset) |
-| `g_c2_pos_xyz_offset_y` | 0x8008EB14 | `vp[1] += D_...` (vertex Y offset) |
-| `g_c2_pos_xyz_offset_z` | 0x8008EB18 | `vp[2] += D_...` (vertex Z offset) |
-| `g_per_frame_data_tbl_eb1c` | 0x8008EB1C | s16 stride table indexed by D_800A384C * 2 |
+| Most stages | 0x82 (130f) | Intro fires at ~2.17s |
+| Stage 6 | 0x87 (135f) | Slight delay |
+| Stages 7, 10 | 0xE6 (230f) | Long delay (3.83s) — likely cinematic stages |
+| Several stages | 0xFFFF | Disabled (no intro SFX for this stage) |
 
-The 5 event-frame triggers fire single sub-handlers; the XYZ offset
-triplet is added to a vertex position (likely a per-stage camera or
-debug-cam shift).
+### Per-character single-event frame triggers
+
+| Symbol | Address | Frame | What it does |
+|---|---|---|---|
+| `g_winanim_callout_a_frame` | 0x8008EB04 | 0x9B (155f) | SFX `40*p + 0x31` — per-character callout A |
+| `g_winanim_callout_b_frame` | 0x8008EB06 | 0x9F (159f) | SFX `40*p + 0x36` — per-character callout B |
+| `g_winanim_special_frame`   | 0x8008EB08 | 0xA0 (160f) | SFX 0x53 (if p==0) or 0x2B (otherwise) — player-0 special |
+| `g_winanim_fanfare_frame`   | 0x8008EB0A | 0xC6 (198f) | SFX 0x71 — closing fanfare |
+| `g_winanim_particle_frame`  | 0x8008EB0C | 0x9F (159f) | Spawns particle at offset (see below) |
+
+### Particle XYZ offset (added to D_800A3818 base)
+
+When `g_winanim_particle_frame` fires, computes `vp = D_800A3818;
+vp += (offset_x, offset_y, offset_z); func_800618B4(vp, &D_800A312C)`
+to spawn the win-celebration particle effect:
+
+| Symbol | Address | Value |
+|---|---|---|
+| `g_winanim_particle_offset_x` | 0x8008EB10 | 0 |
+| `g_winanim_particle_offset_y` | 0x8008EB14 | -0x320 (-800) — upward (Y is downward in PSX/BB2 coord system, so −Y = up) |
+| `g_winanim_particle_offset_z` | 0x8008EB18 | 0 |
+
+### Sub-event tables (D_8008EB1C / D_8008EB28)
+
+- `g_winanim_event_subtable_eb1c` (12 bytes) — indexed by
+  `D_800A384C * 2` to fetch per-sub-event timing or type
+- D_8008EB28 (16 bytes, unnamed) — frame-index sequence pattern
+  `00 01 02 03 04 05 06 07 08 09 08 09 2E 2F 2E 2F` — looks like
+  an animation-frame playback order with a stationary loop at the end
+
+### Implications
+
+- Total win-animation length is ~200 frames (~3.3 seconds at 60fps)
+- Per-character SFX banks are 40-entry (0x28) blocks starting at
+  SFX 0x2D, 0x55, 0x7D, … — character N's callouts live at
+  `0x2D + 40*N` through `0x2D + 40*(N+1) − 1`.
+- Stages 7/10 have longer intro delay (230f vs 130f) suggesting
+  cinematic camera intros that take longer to settle before the
+  winner's callout is appropriate.
 
 ## 16. 4096-entry packed sin/cos lookup (D_8009C928)
 
