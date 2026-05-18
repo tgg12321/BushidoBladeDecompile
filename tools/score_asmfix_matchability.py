@@ -324,6 +324,23 @@ def score(s: Signals, rec: str, tags: str) -> tuple[int, list[str]]:
     return pts, why
 
 
+def compute_score(func: str, size: int, rec: str, src: str, tags: str) -> tuple[int, Signals, list[str]]:
+    """Public entry point — compute (score, signals, why_lines) for one function.
+
+    Called from gen_work_queue.py for asmfix-queue ordering. The score is
+    the matchability score: higher = more likely to decompile cleanly.
+    """
+    sigs = scan_asm(func)
+    sigs.size = size
+    sigs.src_file = src
+    body_info = find_function_body(SRC_DIR / src, func) if src else None
+    if body_info:
+        sigs.body_lines, body_text = body_info
+        scan_body(sigs, body_text)
+    pts, why = score(sigs, rec, tags)
+    return pts, sigs, why
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=20, help="Top N to show (default 20)")

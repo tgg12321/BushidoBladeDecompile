@@ -78,164 +78,169 @@ Use `bash tools/dc.sh next-asmfix` to claim one of these. Entries classified as 
 
 Format: `<#>  <func>  <size insns>  <rec>  <src>  [tags]`
 
-### Tier 2 -- Moderate
+### Tier 1 -- Best candidates (score >= 50)
 
 ```
-   1  func_8006B578                      200  needs_rodata_split              text1b.c                  [jlabel_switch]
-   2  saTan2KabutoWareMove               215  standard                        code6cac_b.c
-   3  DispPracticeMenuTex_A              231  standard                        code6cac.c
-   4  func_80048FFC                      232  standard                        sound.c
-   5  md_game_check_mode                 234  standard                        code6cac_c2.c
-   6  replay_camera_get_attack_number    242  standard                        code6cac_c2.c
-   7  saTan2Main                         247  standard                        main.c
-   8  PutRobShadow                       252  standard                        code6cac_b.c
-   9  func_8005FC9C                      267  standard                        code6cac_c2.c
-  10  action_CheckHitZangeki             271  standard                        main.c
-  11  func_8005E098                      289  standard                        text1b.c
-  12  func_8005763C                      292  standard                        text1b.c
-  13  func_8007BC08                      298  standard                        display.c
-  14  efc_rob_set_type_particle          302  standard                        text1a_c.c
-  15  func_800872A4                      307  standard                        main.c
-  16  func_80086CF8                      311  standard                        main.c
-  17  func_80089F3C                      318  standard                        main.c
-  18  func_80087770                      335  standard                        main.c
-  19  func_80073728                      340  standard                        text1b.c
-  20  func_80053E9C                      349  standard                        text1b.c
-  21  func_8006D808                      355  standard                        text1b.c
-  22  func_8006BB68                      112  standard                        text1b.c                  [aliasing_heavy]
-  23  func_8006DD94                      117  standard                        text1b.c                  [aliasing_heavy]
-  24  func_8005C6D0                      118  standard                        code6cac_b2.c             [aliasing_heavy]
-  25  func_8006D3DC                      126  standard                        text1b.c                  [aliasing_heavy]
-  26  func_80057ACC                      127  standard                        text1b.c                  [aliasing_heavy]
-  27  tslGlobalMemFree_8005C2A8          134  standard                        text1a.c                  [aliasing_heavy]
-  28  func_80069F80                      136  standard                        text1b.c                  [aliasing_heavy]
-  29  func_8006A1A0                      139  standard                        text1b.c                  [aliasing_heavy]
-  30  func_8005C074                      141  standard                        text1b.c                  [aliasing_heavy]
-  31  func_80063BD0                      144  standard                        text1b.c                  [aliasing_heavy]
-  32  func_8007CBB0                      151  standard                        display.c                 [aliasing_heavy]
-  33  SetPacketData                      159  standard                        main.c                    [aliasing_heavy]
-  34  func_80054604                      160  standard                        text1b.c                  [aliasing_heavy]
-  35  func_8007D048                      161  standard                        display.c                 [aliasing_heavy]
-  36  func_80076D74                      161  standard                        text1b.c                  [aliasing_heavy]
-  37  saTan1GaugeMain                    166  standard                        text1b.c                  [aliasing_heavy]
-  38  func_8005BA8C                      169  standard                        code6cac.c                [aliasing_heavy]
-  39  func_8006BEC4                      169  standard                        code6cac_c.c              [aliasing_heavy]
-  40  coli_HitPauseKatana_2              178  standard                        main.c                    [aliasing_heavy]
-  41  func_8007D6D8                      187  standard                        display.c                 [aliasing_heavy]
-  42  func_8006CCC8                      189  standard                        text1b.c                  [aliasing_heavy]
-  43  saTan3GaugeMain_8006A564           199  standard                        text1b.c                  [aliasing_heavy]
-  44  func_800841E0                      200  standard                        main.c                    [aliasing_heavy]
+   1  coli_HitPauseKatana_2              178  standard                        main.c                    [aliasing_heavy]  score=+60
+   2  func_80063BD0                      144  standard                        text1b.c                  [aliasing_heavy]  score=+50
 ```
 
-### Tier 3 -- Hard
+### Tier 2 -- Moderate (score 0..49)
 
 ```
-  45  func_8001BE20                      393  needs_delay_slot_ra             code6cac.c                [aspsx_swra_delay]
-  46  saTan0KiWareMoveB                  212  gte_function                    code6cac_b.c              [gte_ops]
-  47  func_8002F2D0                      296  gte_function                    code6cac_b.c              [gte_ops]
-  48  func_80067200                      306  gte_function                    text1b.c                  [gte_ops]
-  49  cpu_check_run_attack               317  gte_function                    code6cac.c                [gte_ops]
-  50  func_8002F770                      324  gte_function                    code6cac.c                [gte_ops]
-  51  md_game_rob_data_init              351  gte_function                    code6cac.c                [gte_ops]
-  52  special_camera_Init                370  gte_function                    code6cac_b.c              [gte_ops]
-  53  func_80053754                      466  standard                        text1b.c
-  54  mario_test_Exec                    469  standard                        code6cac.c
-  55  func_80043454                      479  standard                        text1a_c.c
-  56  single_game_SetStatusUpData        516  standard                        code6cac.c
-  57  func_8005D814                      545  standard                        code6cac.c
-  58  camera_set_target_zoom             588  standard                        code6cac.c
-  59  func_8006E534                      222  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch]
-  60  func_80077374                      236  needs_rodata_split              text1b.c                  [jlabel_switch]
-  61  special_camera_Exec                274  needs_rodata_split              code6cac_b2.c             [jlabel_switch]
-  62  func_8001C8DC                      291  needs_rodata_split              code6cac.c                [jlabel_switch]
-  63  func_80080828                      354  needs_rodata_split              system.c                  [jlabel_switch]
-  64  func_80035828                      360  needs_rodata_split              code6cac_b2.c             [jlabel_switch]
-  65  saTan3GaugeMain_80073200           203  standard                        text1b.c                  [aliasing_heavy]
-  66  func_80017A44                      208  standard                        ings.c                    [aliasing_heavy]
-  67  func_80074488                      212  standard                        text1b.c                  [aliasing_heavy]
-  68  func_8006CFBC                      218  standard                        text1b.c                  [aliasing_heavy]
-  69  DispPracticeMenuTex_B              231  standard                        code6cac.c                [aliasing_heavy]
-  70  DispPracticeMenuTex_C              231  standard                        code6cac_b.c              [aliasing_heavy]
-  71  func_80084500                      235  standard                        main.c                    [aliasing_heavy]
-  72  func_80048BA4                      237  standard                        code6cac.c                [aliasing_heavy]
-  73  func_80075F80                      251  standard                        text1b.c                  [aliasing_heavy]
-  74  func_8003FA24                      263  standard                        config.c                  [aliasing_heavy]
-  75  tslTm2LoadImage                    263  standard                        system.c                  [aliasing_heavy]
-  76  func_8006F100                      266  standard                        text1b.c                  [aliasing_heavy]
-  77  func_80071C4C                      270  standard                        text1b.c                  [aliasing_heavy]
-  78  func_8006F528                      277  standard                        text1b.c                  [aliasing_heavy]
-  79  func_8006B120                      278  standard                        text1b.c                  [aliasing_heavy]
-  80  func_80074E08                      281  standard                        text1b.c                  [aliasing_heavy]
-  81  func_80021DB0                      285  standard                        code6cac.c                [aliasing_heavy]
-  82  func_800571C0                      287  standard                        text1b.c                  [aliasing_heavy]
-  83  single_game_CheckStatusUpDataTotalOver   289  standard                        code6cac.c                [aliasing_heavy]
-  84  func_800768DC                      294  standard                        text1b.c                  [aliasing_heavy]
-  85  func_800693CC                      307  standard                        text1b.c                  [aliasing_heavy]
-  86  func_80031B24                      327  standard                        code6cac_b.c              [aliasing_heavy]
-  87  func_8007636C                      348  standard                        text1b.c                  [aliasing_heavy]
-  88  func_80073C78                      362  standard                        text1b.c                  [aliasing_heavy]
-  89  func_800759D0                      364  standard                        text1b.c                  [aliasing_heavy]
-  90  func_80052D00                      385  standard                        text1b.c                  [aliasing_heavy]
-  91  saTan3MainJump                     489  gte_function                    code6cac_b.c              [gte_ops]
-  92  func_8002DE20                      548  gte_function                    code6cac_b.c              [gte_ops]
-  93  single_game_setModeRequest         662  gte_function                    code6cac.c                [gte_ops]
-  94  md_game_end                        249  needs_function_split            ings2.c                   [multi_jr_ra]
-  95  AllocBukiRmd                       259  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay]
-  96  tslTm2LoadImage_2                  263  needs_function_split            ings2.c                   [multi_jr_ra,aspsx_swra_delay]
-  97  func_8005C8A8                      753  standard                        code6cac.c
+   3  SetPacketData                      159  standard                        main.c                    [aliasing_heavy]  score=+29
+   4  DispPracticeMenuTex_A              231  standard                        code6cac.c                score=+25
+   5  func_8005C074                      141  standard                        text1b.c                  [aliasing_heavy]  score=+20
+   6  func_8007D6D8                      187  standard                        display.c                 [aliasing_heavy]  score=+14
+   7  func_8007CBB0                      151  standard                        display.c                 [aliasing_heavy]  score=+10
+   8  func_8005C6D0                      118  standard                        code6cac_b2.c             [aliasing_heavy]  score=+5
+   9  func_800872A4                      307  standard                        main.c                    score=+5
+  10  func_80057ACC                      127  standard                        text1b.c                  [aliasing_heavy]  score=+0
+  11  func_80069F80                      136  standard                        text1b.c                  [aliasing_heavy]  score=+0
+  12  func_80076D74                      161  standard                        text1b.c                  [aliasing_heavy]  score=+0
 ```
 
-### Tier 4 -- Slog
+### Tier 3 -- Hard (score -50..-1)
 
 ```
-  98  func_800678A8                      283  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
-  99  DispHira                           299  gte_function                    code6cac_c2.c             [gte_ops,aliasing_heavy]
- 100  func_800207C8                      325  gte_function                    code6cac.c                [gte_ops,aliasing_heavy]
- 101  func_80079244                      418  needs_rodata_split              text1b_b.c                [jlabel_switch]
- 102  func_80034708                      544  needs_rodata_split              code6cac_b.c              [jlabel_switch]
- 103  calc_teasi_loc_fw                  574  needs_rodata_split              code6cac_b.c              [jlabel_switch]
- 104  func_8005490C                      407  standard                        text1b.c                  [aliasing_heavy]
- 105  func_8006F97C                      515  standard                        text1b.c                  [aliasing_heavy]
- 106  func_8003993C                      526  standard                        code6cac_c_mid.c          [aliasing_heavy]
- 107  func_8006A880                      552  standard                        text1b.c                  [aliasing_heavy]
- 108  func_8005F1C8                      564  standard                        text1b.c                  [aliasing_heavy]
- 109  saTan4GaugeMain                    622  standard                        text1b.c                  [aliasing_heavy]
- 110  func_800720FC                      690  standard                        text1b.c                  [aliasing_heavy]
- 111  replay_camera_attack               698  standard                        text1b.c                  [aliasing_heavy]
- 112  func_800747D8                      208  needs_rodata_split              text1b.c                  [jlabel_switch,aliasing_heavy]
- 113  func_8006ECF4                      209  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]
- 114  func_80021424                      297  needs_rodata_split              code6cac.c                [jlabel_switch,aliasing_heavy]
- 115  func_80026DA4                      342  needs_rodata_split              code6cac_b.c              [jlabel_switch,aliasing_heavy]
- 116  func_8006295C                      420  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 117  func_8002A458                      428  gte_function                    code6cac_b.c              [gte_ops,aliasing_heavy]
- 118  func_80063E10                      443  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 119  func_800646E8                      490  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 120  func_800620B8                      501  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 121  func_8001A820                      582  gte_function                    code6cac.c                [gte_ops,aliasing_heavy]
- 122  func_80063084                      667  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 123  DispUpdateStatusMessage            206  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay,aliasing_heavy]
- 124  DispStuff                          209  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay,aliasing_heavy]
- 125  func_8008AF9C                      281  needs_function_split            ings2.c                   [jlabel_switch,multi_jr_ra,aliasing_heavy]
- 126  func_80082D34                      299  needs_function_split            ings2.c                   [multi_jr_ra,aliasing_heavy]
- 127  func_80057E84                      447  needs_lwl_fix                   text1b.c                  [lwl_swl,aliasing_heavy]
- 128  func_80022580                      621  needs_lwl_fix                   code6cac.c                [lwl_swl,aliasing_heavy]
- 129  func_80030D7C                      709  standard                        code6cac.c                [aliasing_heavy]
- 130  func_800198D0                      749  standard                        code6cac.c                [aliasing_heavy]
- 131  func_8005E54C                      799  standard                        code6cac_c2.c             [aliasing_heavy]
- 132  motion_ShiftControl                810  standard                        text1b.c                  [aliasing_heavy]
- 133  func_80029454                     1025  standard                        code6cac_b.c              [aliasing_heavy]
- 134  calc_loc_mat_fw                   1112  standard                        code6cac_b.c              [aliasing_heavy]
- 135  func_80032C50                      467  needs_rodata_split              code6cac_b.c              [jlabel_switch,aspsx_swra_delay,aliasing_heavy]
- 136  func_80077D94                      468  needs_rodata_split              text1b_b.c                [lwl_swl,jlabel_switch,aliasing_heavy]
- 137  special_camera_set_win_cam         512  needs_rodata_split              code6cac_b2.c             [lwl_swl,jlabel_switch,aliasing_heavy]
- 138  func_80079A30                      535  needs_rodata_split              code6cac_c.c              [jlabel_switch,aliasing_heavy]
- 139  func_80067D14                     1053  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]
- 140  saTan1MainJump                     423  needs_function_split            main.c                    [jlabel_switch,multi_jr_ra,aliasing_heavy]
- 141  calc_loc_mat_fw_80055B60          1110  needs_lwl_fix                   text1b.c                  [lwl_swl,aliasing_heavy]
- 142  func_80023F08                     2983  needs_lwl_fix                   code6cac.c                [lwl_swl,aliasing_heavy]
- 143  func_8008C464                      763  needs_function_split            code6cac_c_ab.c           [multi_jr_ra,aliasing_heavy]
- 144  motion_SetExMotion                1456  needs_rodata_split              text1b.c                  [jlabel_switch,gte_ops,aliasing_heavy]
- 145  func_80058580                     2991  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]
+  13  func_8006D3DC                      126  standard                        text1b.c                  [aliasing_heavy]  score=-5
+  14  func_8006A1A0                      139  standard                        text1b.c                  [aliasing_heavy]  score=-5
+  15  func_8007D048                      161  standard                        display.c                 [aliasing_heavy]  score=-7
+  16  md_game_check_mode                 234  standard                        code6cac_c2.c             score=-9
+  17  func_8006BB68                      112  standard                        text1b.c                  [aliasing_heavy]  score=-10
+  18  func_8006DD94                      117  standard                        text1b.c                  [aliasing_heavy]  score=-10
+  19  tslGlobalMemFree_8005C2A8          134  standard                        text1a.c                  [aliasing_heavy]  score=-10
+  20  func_80086CF8                      311  standard                        main.c                    score=-15
+  21  func_8005763C                      292  standard                        text1b.c                  score=-21
+  22  func_800841E0                      200  standard                        main.c                    [aliasing_heavy]  score=-23
+  23  func_8007BC08                      298  standard                        display.c                 score=-26
+  24  saTan2KabutoWareMove               215  standard                        code6cac_b.c              score=-27
+  25  func_800768DC                      294  standard                        text1b.c                  [aliasing_heavy]  score=-29
+  26  func_8006BEC4                      169  standard                        code6cac_c.c              [aliasing_heavy]  score=-30
+  27  func_80048FFC                      232  standard                        sound.c                   score=-30
+  28  func_80087770                      335  standard                        main.c                    score=-30
+  29  func_80053754                      466  standard                        text1b.c                  score=-37
+  30  func_80048BA4                      237  standard                        code6cac.c                [aliasing_heavy]  score=-40
+  31  func_80071C4C                      270  standard                        text1b.c                  [aliasing_heavy]  score=-41
+  32  action_CheckHitZangeki             271  standard                        main.c                    score=-41
+  33  func_80053E9C                      349  standard                        text1b.c                  score=-41
+  34  func_80075F80                      251  standard                        text1b.c                  [aliasing_heavy]  score=-44
+  35  func_8006CCC8                      189  standard                        text1b.c                  [aliasing_heavy]  score=-47
+  36  func_80052D00                      385  standard                        text1b.c                  [aliasing_heavy]  score=-47
+  37  func_80084500                      235  standard                        main.c                    [aliasing_heavy]  score=-48
+  38  saTan1GaugeMain                    166  standard                        text1b.c                  [aliasing_heavy]  score=-50
+  39  saTan3GaugeMain_8006A564           199  standard                        text1b.c                  [aliasing_heavy]  score=-50
+```
+
+### Tier 4 -- Slog (score < -50)
+
+```
+  40  func_80074488                      212  standard                        text1b.c                  [aliasing_heavy]  score=-52
+  41  replay_camera_get_attack_number    242  standard                        code6cac_c2.c             score=-52
+  42  saTan2Main                         247  standard                        main.c                    score=-56
+  43  func_8003FA24                      263  standard                        config.c                  [aliasing_heavy]  score=-56
+  44  func_8005BA8C                      169  standard                        code6cac.c                [aliasing_heavy]  score=-60
+  45  PutRobShadow                       252  standard                        code6cac_b.c              score=-60
+  46  func_80021DB0                      285  standard                        code6cac.c                [aliasing_heavy]  score=-64
+  47  func_8006CFBC                      218  standard                        text1b.c                  [aliasing_heavy]  score=-65
+  48  func_80073728                      340  standard                        text1b.c                  score=-67
+  49  func_8006F100                      266  standard                        text1b.c                  [aliasing_heavy]  score=-68
+  50  func_8005E098                      289  standard                        text1b.c                  score=-68
+  51  single_game_CheckStatusUpDataTotalOver   289  standard                        code6cac.c                [aliasing_heavy]  score=-69
+  52  tslTm2LoadImage                    263  standard                        system.c                  [aliasing_heavy]  score=-72
+  53  func_80017A44                      208  standard                        ings.c                    [aliasing_heavy]  score=-74
+  54  func_80089F3C                      318  standard                        main.c                    score=-76
+  55  func_800571C0                      287  standard                        text1b.c                  [aliasing_heavy]  score=-78
+  56  func_8005FC9C                      267  standard                        code6cac_c2.c             score=-80
+  57  func_800678A8                      283  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]  score=-80
+  58  saTan3GaugeMain_80073200           203  standard                        text1b.c                  [aliasing_heavy]  score=-85
+  59  cpu_check_run_attack               317  gte_function                    code6cac.c                [gte_ops]  score=-86
+  60  DispPracticeMenuTex_B              231  standard                        code6cac.c                [aliasing_heavy]  score=-89
+  61  func_80054604                      160  standard                        text1b.c                  [aliasing_heavy]  score=-90
+  62  DispPracticeMenuTex_C              231  standard                        code6cac_b.c              [aliasing_heavy]  score=-90
+  63  func_8006B120                      278  standard                        text1b.c                  [aliasing_heavy]  score=-90
+  64  func_800693CC                      307  standard                        text1b.c                  [aliasing_heavy]  score=-93
+  65  func_8006F528                      277  standard                        text1b.c                  [aliasing_heavy]  score=-95
+  66  single_game_SetStatusUpData        516  standard                        code6cac.c                score=-95
+  67  func_800198D0                      749  standard                        code6cac.c                [aliasing_heavy]  score=-100
+  68  func_80074E08                      281  standard                        text1b.c                  [aliasing_heavy]  score=-105
+  69  func_8006D808                      355  standard                        text1b.c                  score=-112
+  70  func_8007636C                      348  standard                        text1b.c                  [aliasing_heavy]  score=-114
+  71  func_80073C78                      362  standard                        text1b.c                  [aliasing_heavy]  score=-122
+  72  func_800759D0                      364  standard                        text1b.c                  [aliasing_heavy]  score=-129
+  73  func_8001BE20                      393  needs_delay_slot_ra             code6cac.c                [aspsx_swra_delay]  score=-132
+  74  efc_rob_set_type_particle          302  standard                        text1a_c.c                score=-135
+  75  func_8005D814                      545  standard                        code6cac.c                score=-135
+  76  func_80031B24                      327  standard                        code6cac_b.c              [aliasing_heavy]  score=-149
+  77  saTan0KiWareMoveB                  212  gte_function                    code6cac_b.c              [gte_ops]  score=-150
+  78  md_game_rob_data_init              351  gte_function                    code6cac.c                [gte_ops]  score=-156
+  79  camera_set_target_zoom             588  standard                        code6cac.c                score=-169
+  80  md_game_end                        249  needs_function_split            ings2.c                   [multi_jr_ra]  score=-170
+  81  func_8006295C                      420  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]  score=-179
+  82  DispHira                           299  gte_function                    code6cac_c2.c             [gte_ops,aliasing_heavy]  score=-181
+  83  func_8005F1C8                      564  standard                        text1b.c                  [aliasing_heavy]  score=-181
+  84  replay_camera_attack               698  standard                        text1b.c                  [aliasing_heavy]  score=-187
+  85  func_800646E8                      490  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]  score=-188
+  86  special_camera_Init                370  gte_function                    code6cac_b.c              [gte_ops]  score=-190
+  87  DispUpdateStatusMessage            206  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay,aliasing_heavy]  score=-199
+  88  func_8005490C                      407  standard                        text1b.c                  [aliasing_heavy]  score=-200
+  89  func_8002DE20                      548  gte_function                    code6cac_b.c              [gte_ops]  score=-200
+  90  func_800620B8                      501  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]  score=-208
+  91  AllocBukiRmd                       259  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay]  score=-213
+  92  DispStuff                          209  needs_function_split            main.c                    [multi_jr_ra,aspsx_swra_delay,aliasing_heavy]  score=-214
+  93  func_8006F97C                      515  standard                        text1b.c                  [aliasing_heavy]  score=-217
+  94  func_80067200                      306  gte_function                    text1b.c                  [gte_ops]  score=-221
+  95  func_8008AF9C                      281  needs_function_split            ings2.c                   [jlabel_switch,multi_jr_ra,aliasing_heavy]  score=-222
+  96  func_800207C8                      325  gte_function                    code6cac.c                [gte_ops,aliasing_heavy]  score=-225
+  97  func_80063E10                      443  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]  score=-225
+  98  func_8006B578                      200  needs_rodata_split              text1b.c                  [jlabel_switch]  score=-226
+  99  func_80043454                      479  standard                        text1a_c.c                score=-226
+ 100  saTan4GaugeMain                    622  standard                        text1b.c                  [aliasing_heavy]  score=-226
+ 101  func_80030D7C                      709  standard                        code6cac.c                [aliasing_heavy]  score=-231
+ 102  func_8005C8A8                      753  standard                        code6cac.c                score=-233
+ 103  func_80063084                      667  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]  score=-237
+ 104  func_80082D34                      299  needs_function_split            ings2.c                   [multi_jr_ra,aliasing_heavy]  score=-244
+ 105  saTan3MainJump                     489  gte_function                    code6cac_b.c              [gte_ops]  score=-248
+ 106  func_80021424                      297  needs_rodata_split              code6cac.c                [jlabel_switch,aliasing_heavy]  score=-249
+ 107  tslTm2LoadImage_2                  263  needs_function_split            ings2.c                   [multi_jr_ra,aspsx_swra_delay]  score=-256
+ 108  func_800747D8                      208  needs_rodata_split              text1b.c                  [jlabel_switch,aliasing_heavy]  score=-261
+ 109  motion_ShiftControl                810  standard                        text1b.c                  [aliasing_heavy]  score=-263
+ 110  func_8005E54C                      799  standard                        code6cac_c2.c             [aliasing_heavy]  score=-265
+ 111  func_80080828                      354  needs_rodata_split              system.c                  [jlabel_switch]  score=-266
+ 112  func_8002F2D0                      296  gte_function                    code6cac_b.c              [gte_ops]  score=-268
+ 113  func_80032C50                      467  needs_rodata_split              code6cac_b.c              [jlabel_switch,aspsx_swra_delay,aliasing_heavy]  score=-274
+ 114  func_800720FC                      690  standard                        text1b.c                  [aliasing_heavy]  score=-278
+ 115  func_80026DA4                      342  needs_rodata_split              code6cac_b.c              [jlabel_switch,aliasing_heavy]  score=-291
+ 116  saTan1MainJump                     423  needs_function_split            main.c                    [jlabel_switch,multi_jr_ra,aliasing_heavy]  score=-291
+ 117  func_8003993C                      526  standard                        code6cac_c_mid.c          [aliasing_heavy]  score=-303
+ 118  func_8002A458                      428  gte_function                    code6cac_b.c              [gte_ops,aliasing_heavy]  score=-307
+ 119  func_80057E84                      447  needs_lwl_fix                   text1b.c                  [lwl_swl,aliasing_heavy]  score=-307
+ 120  func_8001C8DC                      291  needs_rodata_split              code6cac.c                [jlabel_switch]  score=-311
+ 121  func_8006A880                      552  standard                        text1b.c                  [aliasing_heavy]  score=-315
+ 122  special_camera_Exec                274  needs_rodata_split              code6cac_b2.c             [jlabel_switch]  score=-316
+ 123  func_8002F770                      324  gte_function                    code6cac.c                [gte_ops]  score=-318
+ 124  func_8001A820                      582  gte_function                    code6cac.c                [gte_ops,aliasing_heavy]  score=-340
+ 125  func_80022580                      621  needs_lwl_fix                   code6cac.c                [lwl_swl,aliasing_heavy]  score=-341
+ 126  func_80077374                      236  needs_rodata_split              text1b.c                  [jlabel_switch]  score=-345
+ 127  mario_test_Exec                    469  standard                        code6cac.c                score=-347
+ 128  func_8008C464                      763  needs_function_split            code6cac_c_ab.c           [multi_jr_ra,aliasing_heavy]  score=-349
+ 129  func_80067D14                     1053  gte_function                    text1b.c                  [gte_ops,aliasing_heavy]  score=-359
+ 130  func_8006E534                      222  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch]  score=-370
+ 131  single_game_setModeRequest         662  gte_function                    code6cac.c                [gte_ops]  score=-370
+ 132  func_80079244                      418  needs_rodata_split              text1b_b.c                [jlabel_switch]  score=-372
+ 133  func_8006ECF4                      209  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]  score=-376
+ 134  func_80029454                     1025  standard                        code6cac_b.c              [aliasing_heavy]  score=-382
+ 135  calc_loc_mat_fw                   1112  standard                        code6cac_b.c              [aliasing_heavy]  score=-389
+ 136  func_80079A30                      535  needs_rodata_split              code6cac_c.c              [jlabel_switch,aliasing_heavy]  score=-391
+ 137  func_80034708                      544  needs_rodata_split              code6cac_b.c              [jlabel_switch]  score=-408
+ 138  func_80035828                      360  needs_rodata_split              code6cac_b2.c             [jlabel_switch]  score=-471
+ 139  calc_loc_mat_fw_80055B60          1110  needs_lwl_fix                   text1b.c                  [lwl_swl,aliasing_heavy]  score=-479
+ 140  special_camera_set_win_cam         512  needs_rodata_split              code6cac_b2.c             [lwl_swl,jlabel_switch,aliasing_heavy]  score=-510
+ 141  func_80077D94                      468  needs_rodata_split              text1b_b.c                [lwl_swl,jlabel_switch,aliasing_heavy]  score=-520
+ 142  calc_teasi_loc_fw                  574  needs_rodata_split              code6cac_b.c              [jlabel_switch]  score=-537
+ 143  motion_SetExMotion                1456  needs_rodata_split              text1b.c                  [jlabel_switch,gte_ops,aliasing_heavy]  score=-567
+ 144  func_80058580                     2991  needs_rodata_split              text1b.c                  [lwl_swl,jlabel_switch,aliasing_heavy]  score=-1031
+ 145  func_80023F08                     2983  needs_lwl_fix                   code6cac.c                [lwl_swl,aliasing_heavy]  score=-2763
 ```
 
 ---

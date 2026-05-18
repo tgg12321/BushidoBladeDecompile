@@ -50,6 +50,10 @@ from collections import defaultdict
 from pathlib import Path
 import sys
 
+# Pull in the asmfix matchability scorer (used to rank asmfix-queue entries).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from score_asmfix_matchability import compute_score as compute_matchability_score
+
 ROOT = Path(__file__).resolve().parent.parent
 CSV_PATH = ROOT / "tmp" / "batch_attempt.csv"
 OUT = ROOT / "WORK_QUEUE.md"
@@ -683,6 +687,33 @@ def sort_entries(entries: list[dict]) -> None:
     )
 
 
+def asmfix_tier_for(matchability_score: int) -> tuple[int, str]:
+    """Tier bucket for asmfix-queue entries, based on matchability score.
+
+    Higher score = more likely to match cleanly. Tier numbers ascending = lower priority.
+    """
+    if matchability_score >= 50:
+        return (1, "Tier 1 -- Best candidates (score >= 50)")
+    if matchability_score >= 0:
+        return (2, "Tier 2 -- Moderate (score 0..49)")
+    if matchability_score >= -50:
+        return (3, "Tier 3 -- Hard (score -50..-1)")
+    return (4, "Tier 4 -- Slog (score < -50)")
+
+
+def sort_asmfix_entries(entries: list[dict]) -> None:
+    """Sort asmfix-queue entries by matchability tier then score desc."""
+    entries.sort(
+        key=lambda x: (
+            x.get("matchability_tier", (4, ""))[0],
+            -x.get("matchability_score", -999),  # higher score = earlier
+            x["size"],
+            x["src"],
+            x["func"],
+        )
+    )
+
+
 def append_numbered_queue(
     lines: list[str], entries: list[dict], group_by_tier: bool = False
 ) -> None:
@@ -707,7 +738,12 @@ def append_numbered_queue(
     cur_label: str | None = None
     pos = 0
     for entry in entries:
-        _, label = tier_for(entry["rec"], entry["size"], entry["tags"])
+        # Asmfix entries carry a precomputed matchability tier; other entries use
+        # the legacy effort-score-based tier_for().
+        if "matchability_tier" in entry:
+            _, label = entry["matchability_tier"]
+        else:
+            _, label = tier_for(entry["rec"], entry["size"], entry["tags"])
         if label != cur_label:
             if cur_label is not None:
                 lines.append("```")
@@ -718,11 +754,14 @@ def append_numbered_queue(
             cur_label = label
         pos += 1
         tags = f"  [{entry['tags']}]" if entry["tags"] else ""
+        score_col = ""
+        if "matchability_score" in entry:
+            score_col = f"  score={entry['matchability_score']:+d}"
         lines.append(
             f"{pos:>4}  {entry['func']:<32s}  "
             f"{entry['size']:>4d}  "
             f"{entry['rec']:<30s}  "
-            f"{entry['src']:<24s}{tags}"
+            f"{entry['src']:<24s}{tags}{score_col}"
         )
     if cur_label is not None:
         lines.append("```")
@@ -853,7 +892,17 @@ def main() -> int:
     sort_entries(deferred_entries)
 
     asmfix_entries = [row_entry(r) for r in asmfix_rows]
-    sort_entries(asmfix_entries)
+    # Compute matchability score for each asmfix entry (asm + C body scan).
+    for e in asmfix_entries:
+        try:
+            mscore, _sigs, _why = compute_matchability_score(
+                e["func"], int(e["size"] or 0), e["rec"] or "", e["src"] or "", e["tags"] or ""
+            )
+        except Exception:
+            mscore = -999
+        e["matchability_score"] = mscore
+        e["matchability_tier"] = asmfix_tier_for(mscore)
+    sort_asmfix_entries(asmfix_entries)
 
     # Cheat cleanup queue: ALL audit-flagged cheats, sorted by retirement
     # difficulty. Computed AFTER the active/asmfix/deferred queues so we
