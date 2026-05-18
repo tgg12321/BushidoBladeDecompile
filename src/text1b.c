@@ -287,20 +287,30 @@ void efc_buki_draw_zanzou(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
 }
 extern s32 func_800484A0(s32, s32, s32);
 
+/* INLINE_MOVE_ALIASING: pure-C alternatives failed.
+ *   - technique=plain_decl_first: `new_var = arg0;` as first line → GCC's
+ *     scheduler emits `move s2, a0` at insn idx 2 (early), not idx 12 in
+ *     the lw's load-delay slot where target needs it.
+ *   - technique=late_decl: `new_var = arg0;` after the lw assignment →
+ *     GCC eliminates the move entirely (mine is 48 insns vs target 49),
+ *     treating new_var as a dead copy of arg0.
+ *   - technique=permuter_1463_iter: 16-thread permute run, 1463 attempts,
+ *     plateaued at score 30 (3 structural + ~9 rename) with no match.
+ *     Permuter's mutation operators (decl reorder, intermediate vars,
+ *     expression restructure) can't shift GCC's allocator off the
+ *     s2/s3/s4 cycle vs target's s0/s4/s3/s2.
+ * Per inline-move-aliasing.md, single-insn escape valve.
+ */
 void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 {
-    register s32 cached asm("$16");
+    register s32 cached asm("$16") = arg0;
+    register s32 new_var asm("$20");
     s32 *p;
     s32 count;
-    s32 new_var;
     s32 v0_tmp;
-    cached = arg0;
     arg1 = (((s32)(arg1 << 16)) >> 14) + cached;
     v0_tmp = *(s32 *)arg1;
-    /* The fake "r"(v0_tmp) input constraint creates a data dep on the lw,
-       so GCC schedules the redundant `new_var = cached` move AFTER the load
-       (target wants it at the position the lw would otherwise stall). */
-    __asm__ volatile("move %0, %1" : "=r"(new_var) : "r"(cached), "r"(v0_tmp));
+    __asm__ volatile("move %0, %1" : "=r"(new_var) : "r"(cached));
     cached = cached + v0_tmp;
     p = (s32 *)cached;
     count = *(p++);

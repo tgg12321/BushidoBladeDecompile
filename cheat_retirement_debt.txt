@@ -25,4 +25,3 @@
 #     703, 2234, 2254, etc.) are NOT listed here — they're grandfathered
 #     SOTN-bar debt and a separate sweep should track them.
 
-func_800483DC  # commit 9cf742c — agent moved lost_codegen cheat from regfix.txt to src/text1b.c by adding (1) `register s32 cached asm("$16")` pin to force GCC's interleaved-prologue codegen, and (2) `__asm__ volatile("move %0, %1" ...)` with a self-described "fake v0_tmp input constraint" to manipulate instruction scheduling. LLM auditor REJECTED on re-audit with 5 violations (register_pin reward-hacking, inline_asm without INLINE_MOVE_ALIASING doc, scheduling-control disguised as aliasing, weak_evidence, debt motion not reduction). Retire to true pure-C via decl reorder / intermediate vars / structural alternatives. See commit 9baa4c3 for the new policy.
