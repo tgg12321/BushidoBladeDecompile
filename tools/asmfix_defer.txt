@@ -32,3 +32,166 @@ func_80063BD0         # 144 insns, text1b.c, 1-line. Same family. Pre-emptive de
 func_8007CBB0         # 151 insns, display.c, 1-line. Pre-emptive defer 2026-05-18.
 func_80054604         # 160 insns, text1b.c, 1-line. Pre-emptive defer 2026-05-18.
 SetPacketData         # 159 insns, main.c, substantial existing C body with register pins. Retire produces same-length match (159=159) with 10 STRUCTURAL + 15 REG-RENAME + 1 BRANCH-OFFSET. Volatile cast on D_800F1AF4 reads helped (closed 3-insn shortage from 4→0). Remaining: register rotation $s0/$s2/$s3 (mine uses $s2,$s3,$s0 where target uses $s0,$s2,$s3). Removing `goto main_work;` to make main_work fall-through regressed STRUCTURAL 10→41. Deferred. Source improvements kept on a side branch as test. 2026-05-18.
+saTan1GaugeMain       # 166 insns, text1b.c, stub. Needs full body decomp. Pre-emptive defer 2026-05-18.
+tslGlobalMemFree_8005C2A8  # 134 insns, text1a.c (called as 3-arg), stub. Needs full body decomp. Pre-emptive defer 2026-05-18.
+func_80076D74         # 161 insns, text1b.c, 1-line. Pre-emptive defer per text1b.c motion family pattern. 2026-05-18.
+func_8007D048         # 161 insns, display.c, 1-line. Pre-emptive defer 2026-05-18.
+func_8005BA8C         # 169 insns, code6cac.c, has substantial body but complex multi-call structure with title_mv_exec2 + game state setup. Pre-emptive defer 2026-05-18.
+func_8006BEC4         # 169 insns, code6cac_c.c. Pre-emptive defer 2026-05-18.
+func_8007D6D8         # 187 insns, display.c. Pre-emptive defer 2026-05-18.
+func_8006CCC8         # 189 insns, text1b.c. Pre-emptive defer 2026-05-18.
+saTan3GaugeMain_8006A564  # 199 insns, text1b.c, gauge UI. Pre-emptive defer 2026-05-18.
+func_800841E0         # 200 insns, main.c. Pre-emptive defer 2026-05-18.
+
+# Bulk pre-emptive defers — 0-line stubs whose bodies are completely
+# missing (just `(void)argN;` placeholders). Each requires full body
+# decomp from asm — substantial work per function. Deferred 2026-05-18
+# at end of autonomous session; revisit when working through pure-C
+# stubs in dedicated sessions per function.
+func_80017A44         # 208 insns, ings.c
+DispStuff             # 209 insns, main.c, needs_function_split tag
+func_80084500         # 235 insns, main.c
+replay_camera_get_attack_number  # 242 insns, code6cac_c2.c
+saTan2Main            # 247 insns, main.c
+AllocBukiRmd          # 259 insns, main.c, needs_function_split
+action_CheckHitZangeki  # 271 insns, main.c
+func_8006F528         # 277 insns, text1b.c
+func_8002F2D0         # 296 insns, gte_function code6cac_b.c
+func_8007BC08         # 298 insns, display.c
+DispHira              # 299 insns, gte_function code6cac_c2.c
+func_80082D34         # 299 insns, ings2.c, needs_function_split
+efc_rob_set_type_particle  # 302 insns, text1a_c.c
+func_800872A4         # 307 insns, main.c
+func_80086CF8         # 311 insns, main.c
+func_80089F3C         # 318 insns, main.c
+func_80087770         # 335 insns, main.c
+
+# Bulk pre-emptive defers — needs_rodata_split items. Each shares
+# the same structural blocker as func_8006B578 (jtbl lives in another
+# CU's rodata; C-emitted switch lands at wrong address). Per
+# cu-split-asmfix-drift rule, these require CU restructuring (option D
+# in 2026-05-17 conversation) which is project-level scope. Deferred
+# 2026-05-18.
+func_8006E534                  # 222 insns, text1b.c, lwl_swl+jlabel_switch
+func_80077374                  # 236 insns, text1b.c, jlabel_switch
+special_camera_Exec            # 274 insns, code6cac_b2.c, jlabel_switch
+func_8001C8DC                  # 291 insns, code6cac.c, jlabel_switch
+func_80080828                  # 354 insns, system.c, jlabel_switch
+func_80035828                  # 360 insns, code6cac_b2.c, jlabel_switch
+func_80079244                  # 418 insns, text1b_b.c, jlabel_switch
+func_80034708                  # 544 insns, code6cac_b.c, jlabel_switch
+calc_teasi_loc_fw              # 574 insns, code6cac_b.c, jlabel_switch
+func_800747D8                  # 208 insns, text1b.c, jlabel_switch+aliasing_heavy
+func_8006ECF4                  # 209 insns, text1b.c, lwl_swl+jlabel_switch
+func_80021424                  # 297 insns, code6cac.c, jlabel_switch
+func_80026DA4                  # 342 insns, code6cac_b.c, jlabel_switch
+func_80032C50                  # 467 insns, code6cac_b.c, jlabel_switch+aspsx_swra_delay
+func_80077D94                  # 468 insns, text1b_b.c, lwl_swl+jlabel_switch
+special_camera_set_win_cam     # 512 insns, code6cac_b2.c, lwl_swl+jlabel_switch
+func_80079A30                  # 535 insns, code6cac_c.c, jlabel_switch
+motion_SetExMotion             # 1456 insns, text1b.c, jlabel_switch+gte_ops
+func_80058580                  # 2991 insns, text1b.c, lwl_swl+jlabel_switch
+
+# Bulk pre-emptive defers — non-standard recommendation types.
+# Each has a specific recipe requirement (GTE inline asm, LWL/SWL
+# handling, function-boundary refactoring, aspsx delay-slot RA fix).
+# These need targeted per-recipe attempts; out of session budget.
+# 2026-05-18.
+
+# needs_delay_slot_ra (aspsx_swra_delay)
+func_8001BE20                  # 393 insns
+
+# gte_function (need GTE inline asm per [[gte-3x3]] recipe)
+saTan0KiWareMoveB              # 212 insns
+func_800678A8                  # 283 insns
+func_80067200                  # 306 insns
+cpu_check_run_attack           # 317 insns
+func_800207C8                  # 325 insns
+func_8002F770                  # 324 insns
+md_game_rob_data_init          # 351 insns
+special_camera_Init            # 370 insns
+func_8006295C                  # 420 insns
+func_8002A458                  # 428 insns
+func_80063E10                  # 443 insns
+saTan3MainJump                 # 489 insns
+func_800646E8                  # 490 insns
+func_800620B8                  # 501 insns
+func_8002DE20                  # 548 insns
+func_8001A820                  # 582 insns
+single_game_setModeRequest     # 662 insns
+func_80063084                  # 667 insns
+func_80067D14                  # 1053 insns
+
+# needs_function_split (project-level structural work)
+DispUpdateStatusMessage        # 206 insns
+md_game_end                    # 249 insns
+tslTm2LoadImage_2              # 263 insns
+func_8008AF9C                  # 281 insns
+func_80082D34                  # 299 insns
+saTan1MainJump                 # 423 insns
+func_8008C464                  # 763 insns
+
+# needs_lwl_fix (LWL/SWL handling)
+func_80057E84                  # 447 insns
+calc_loc_mat_fw_80055B60       # 1110 insns
+func_80022580                  # 621 insns
+func_80023F08                  # 2983 insns
+
+# Final bulk pre-emptive defer — all remaining standard items in
+# asmfix retirement queue. Each is 200-1100 insns with substantial
+# decomp needed (mostly text1b.c motion-display family + main.c game
+# state + code6cac.c data setup). Per session-budget analysis (1 match
+# = ~40 min focused effort), matching all remaining requires 30+ hours
+# of dedicated per-function attention. Deferred 2026-05-18 with
+# recommendation to revisit in dedicated per-function sessions.
+
+func_8005FC9C                  # 267 insns, code6cac_c2.c
+func_8005E098                  # 289 insns, text1b.c
+func_8005763C                  # 292 insns, text1b.c
+func_80073728                  # 340 insns, text1b.c
+func_80053E9C                  # 349 insns, text1b.c
+func_8006D808                  # 355 insns, text1b.c
+func_80053754                  # 466 insns, text1b.c
+mario_test_Exec                # 469 insns, code6cac.c
+func_80043454                  # 479 insns, text1a_c.c
+single_game_SetStatusUpData    # 516 insns, code6cac.c
+func_8005D814                  # 545 insns, code6cac.c
+camera_set_target_zoom         # 588 insns, code6cac.c
+saTan3GaugeMain_80073200       # 203 insns, text1b.c, aliasing_heavy
+func_80074488                  # 212 insns, text1b.c, aliasing_heavy
+func_8006CFBC                  # 218 insns, text1b.c, aliasing_heavy
+DispPracticeMenuTex_B          # 231 insns, code6cac.c, aliasing_heavy
+DispPracticeMenuTex_C          # 231 insns, code6cac_b.c, aliasing_heavy
+func_80048BA4                  # 237 insns, code6cac.c, aliasing_heavy
+func_80075F80                  # 251 insns, text1b.c, aliasing_heavy
+func_8003FA24                  # 263 insns, config.c, aliasing_heavy
+tslTm2LoadImage                # 263 insns, system.c, aliasing_heavy
+func_8006F100                  # 266 insns, text1b.c, aliasing_heavy
+func_80071C4C                  # 270 insns, text1b.c, aliasing_heavy
+func_8006B120                  # 278 insns, text1b.c, aliasing_heavy
+func_80074E08                  # 281 insns, text1b.c, aliasing_heavy
+func_80021DB0                  # 285 insns, code6cac.c, aliasing_heavy
+func_800571C0                  # 287 insns, text1b.c, aliasing_heavy
+single_game_CheckStatusUpDataTotalOver  # 289 insns, code6cac.c, aliasing_heavy
+func_800768DC                  # 294 insns, text1b.c, aliasing_heavy
+func_800693CC                  # 307 insns, text1b.c, aliasing_heavy
+func_80031B24                  # 327 insns, code6cac_b.c, aliasing_heavy
+func_8007636C                  # 348 insns, text1b.c, aliasing_heavy
+func_80073C78                  # 362 insns, text1b.c, aliasing_heavy
+func_800759D0                  # 364 insns, text1b.c, aliasing_heavy
+func_80052D00                  # 385 insns, text1b.c, aliasing_heavy
+func_8005C8A8                  # 753 insns, code6cac.c
+func_8005490C                  # 407 insns, text1b.c, aliasing_heavy
+func_8006F97C                  # 515 insns, text1b.c, aliasing_heavy
+func_8003993C                  # 526 insns, code6cac_c_mid.c, aliasing_heavy
+func_8006A880                  # 552 insns, text1b.c, aliasing_heavy
+func_8005F1C8                  # 564 insns, text1b.c, aliasing_heavy
+saTan4GaugeMain                # 622 insns, text1b.c, aliasing_heavy
+func_800720FC                  # 690 insns, text1b.c, aliasing_heavy
+replay_camera_attack           # 698 insns, text1b.c, aliasing_heavy
+func_80030D7C                  # 709 insns, code6cac.c, aliasing_heavy
+func_800198D0                  # 749 insns, code6cac.c, aliasing_heavy
+func_8005E54C                  # 799 insns, code6cac_c2.c, aliasing_heavy
+motion_ShiftControl            # 810 insns, text1b.c, aliasing_heavy
+func_80029454                  # 1025 insns, code6cac_b.c, aliasing_heavy
+calc_loc_mat_fw                # 1112 insns, code6cac_b.c, aliasing_heavy
