@@ -27,7 +27,7 @@ g_str_bios_id = 0x80016274;
 g_str_intr_id = 0x80016328;
 data_as_code_lb_table_800164AC = 0x800164AC;
 syscall_wrapper_break_800164F8 = 0x800164F8;  /* MISNAMED: not a syscall wrapper; loop of ~0x270F 'break 1' instrs (debug/breakpoint stub) */
-psyq_memset_8003043C = 0x8003043C;
+psyq_memset_8003043C = 0x8003043C;  /* MISNAMED: not a memset; loops 12x writing -1 (s16) to D_80106A7A and 0xFF (u8) to D_80106A82 at stride 0x64 */
 psyq_memset_80038148 = 0x80038148;
 psyq_memset_8005509C = 0x8005509C;
 replay_camera_check_stage_80060758 = 0x80060758;
@@ -3426,3 +3426,125 @@ gauge_data_ptr_get_80077D00 = 0x80077D00;
 md_mode_set_800400B0 = 0x800400B0;
 efc_buki_draw_setup_80047FBC = 0x80047FBC;
 efc_buki_draw_setup_6arg_800480C0 = 0x800480C0;
+
+/* === Cluster naming pass 1 aliases (2026-05-18) === */
+/* Semantic aliases for previously-unnamed func_* entries in 3 large */
+/* subsystem clusters (cpu_, mario_, pad_). Names derived from body */
+/* inspection + dominant-caller-prefix context. The src/ usages still */
+/* reference func_<addr>; these aliases enable semantic grep. */
+cpu_init_replay_mode_80016A8C = 0x80016A8C;
+cpu_exec_match_round_stage_select_80016E60 = 0x80016E60;
+cpu_init_game_objects_8001DA2C = 0x8001DA2C;
+cpu_init_stage_and_camera_setup_8001E404 = 0x8001E404;
+cpu_update_frame_timing_stats_8002006C = 0x8002006C;
+mario_test_init_characters_80021210 = 0x80021210;
+mario_test_move_to_inventory_800218C8 = 0x800218C8;
+mario_test_get_guard_power_80021974 = 0x80021974;
+mario_test_get_charm_bonus_800219E4 = 0x800219E4;
+cpu_find_closest_hotspot_80022408 = 0x80022408;
+mario_test_initialize_match_80022580 = 0x80022580;
+mario_test_apply_status_updates_80022F34 = 0x80022F34;
+cpu_calc_move_pattern_trajectory_80023F08 = 0x80023F08;
+cpu_exec_main_game_loop_frame_8002C61C = 0x8002C61C;
+record_array_sentinel_init_8003043C = 0x8003043C;
+cpu_ai_pick_move_for_situation_80030D7C = 0x80030D7C;
+mario_test_clear_movement_buffer_80032040 = 0x80032040;
+cpu_check_special_move_input_80032C50 = 0x80032C50;
+mario_test_clear_state_flags_80033510 = 0x80033510;
+cpu_frame_init_and_loop_wrapper_800372C0 = 0x800372C0;
+pad_analog_volume_calc_80037AA4 = 0x80037AA4;
+pad_analog_button_test_80037B00 = 0x80037B00;
+pad_file_read_init_80037B90 = 0x80037B90;
+pad_file_write_wrapper_80037C34 = 0x80037C34;
+pad_clear_buffer_80038148 = 0x80038148;
+pad_controller_init_80038170 = 0x80038170;
+mario_test_init_dialog_memory_800392C8 = 0x800392C8;
+cpu_clear_move_buffers_80039320 = 0x80039320;
+cpu_advance_move_counter_800397A0 = 0x800397A0;
+mario_test_satan_sword_trigger_8003FFE0 = 0x8003FFE0;
+mario_test_set_fade_trigger_800493E4 = 0x800493E4;
+mario_test_record_fade_value_800494D4 = 0x800494D4;
+cpu_apply_move_input_scaling_80054884 = 0x80054884;
+cpu_attenuate_character_damage_800550E8 = 0x800550E8;
+cpu_render_stage_geometry_8005C8A8 = 0x8005C8A8;
+cpu_load_replay_images_and_init_8005FBC8 = 0x8005FBC8;
+cpu_set_or_clear_move_flag_800789D8 = 0x800789D8;
+pad_interrupt_dequeue_80078E20 = 0x80078E20;
+pad_state_dispatch_wrapper_80078F74 = 0x80078F74;
+pad_press_control_init_8007A370 = 0x8007A370;
+pad_press_control_start_8007A3C8 = 0x8007A3C8;
+cpu_copy_display_buffer_and_sync_8007BC08 = 0x8007BC08;
+
+/* === Cluster naming pass 2 aliases (2026-05-18) === */
+/* Semantic aliases for previously-unnamed func_* in 5 more subsystem */
+/* clusters (motion_, satan_, replay_camera_, efc_, camera_). Names */
+/* derived from body inspection + dominant-caller-prefix context. */
+replay_camera_state_transition_800355E8 = 0x800355E8;
+replay_camera_wait_for_playback_8003ACB8 = 0x8003ACB8;
+satan_camera_setup_matrix_8003E120 = 0x8003E120;
+replay_camera_check_bounds_and_set_flag_8003F388 = 0x8003F388;
+efc_effect_dispatch_child_recursive_800417D0 = 0x800417D0;
+efc_video_decode_setup_800433E4 = 0x800433E4;
+efc_particle_set_type_dispatch_80044F50 = 0x80044F50;
+efc_particle_queue_entry_800455AC = 0x800455AC;
+efc_palette_convert_rgb555_8004876C = 0x8004876C;
+satan_fire_disp_wrapper_80048A7C = 0x80048A7C;
+satan_line_draw_recursive_8004C1F4 = 0x8004C1F4;
+camera_compute_fixed_point_matrices_80052D00 = 0x80052D00;
+camera_set_zoom_interpolated_8005E098 = 0x8005E098;
+camera_set_zoom_wrapper_8005E51C = 0x8005E51C;
+camera_matrix_compute_loop_8005F1C8 = 0x8005F1C8;
+efc_ptr_array_offset_apply_8006920C = 0x8006920C;
+motion_draw_tilemap_8006BEC4 = 0x8006BEC4;
+camera_init_matrix_table_8006E49C = 0x8006E49C;
+satan_sprite_batch_render_8007352C = 0x8007352C;
+replay_camera_decode_player_bits_80077940 = 0x80077940;
+replay_camera_init_framebuffer_80077A28 = 0x80077A28;
+replay_camera_apply_transform_and_flip_80077A80 = 0x80077A80;
+camera_ptr_array_apply_offset_80077D10 = 0x80077D10;
+motion_matrix_multiply_light_8007E8AC = 0x8007E8AC;
+motion_matrix_multiply_signed_8007EA0C = 0x8007EA0C;
+motion_exception_handler_init_80082D34 = 0x80082D34;
+motion_setjmp_longjmp_frames_80083220 = 0x80083220;
+satan_voice_init_80084A7C = 0x80084A7C;
+satan_state_toggle_wrapper_8008AF84 = 0x8008AF84;
+satan_angle_interpolation_8008BB24 = 0x8008BB24;
+
+/* === Cluster naming pass 3 aliases (2026-05-18) === */
+/* Semantic aliases for previously-unnamed func_* in 14 smaller subsystem */
+/* clusters: obj_/calc_/disppracticemenutex_/single_game_/se_ (pass 3A) + */
+/* special_camera_/game_/gnd_/action_/md_game_/player_/hirahira_ (pass 3B). */
+/* 2 UNCLEAR stubs deferred (calc_*_stub at 0x8002A458, 0x8002CA8C). */
+disppracticemenutex_DivideAngle_8001A4F0 = 0x8001A4F0;
+single_game_UpdateVoiceMask_8001B138 = 0x8001B138;
+calc_AngleDelta_8001F860 = 0x8001F860;
+single_game_FindStatusUpData_8001FAE4 = 0x8001FAE4;
+single_game_CheckGameState_8001FB34 = 0x8001FB34;
+disppracticemenutex_InitReplay_80020DDC = 0x80020DDC;
+calc_DistanceCategory_800272FC = 0x800272FC;
+calc_NormVector_800274BC = 0x800274BC;
+md_game_rob_anim_offset_8002F770 = 0x8002F770;
+disppracticemenutex_StoreCoords_80033550 = 0x80033550;
+game_check_reload_pending_80036D88 = 0x80036D88;
+obj_GetValue_80036F28 = 0x80036F28;
+special_camera_load_cdrom_wait_800372F4 = 0x800372F4;
+single_game_HashAndStoreData_8003A728 = 0x8003A728;
+game_exec_display_sync_8003AA78 = 0x8003AA78;
+game_exec_display_dma_loop_8003AAB0 = 0x8003AAB0;
+player_sprite_free_8004016C = 0x8004016C;
+disppracticemenutex_SetTextureParam_80044B30 = 0x80044B30;
+hirahira_flap_wing_calc_80044DE4 = 0x80044DE4;
+player_allocate_sprite_80045A50 = 0x80045A50;
+md_game_frame_setup_80054F68 = 0x80054F68;
+se_CalcPitchShift_8005BA8C = 0x8005BA8C;
+se_LoadStreamData_8005BD30 = 0x8005BD30;
+se_ResetChannels_8005BDF0 = 0x8005BDF0;
+gnd_draw_texpage_2poly_8005D46C = 0x8005D46C;
+gnd_render_affine_texpage_8005E54C = 0x8005E54C;
+gnd_draw_single_texpage_80060414 = 0x80060414;
+special_camera_clear_cdrom_irq_80080148 = 0x80080148;
+obj_SetControlData_80085E4C = 0x80085E4C;
+obj_SetReverbValue_80085EE4 = 0x80085EE4;
+obj_ResetReverbMode_80085F98 = 0x80085F98;
+action_apply_hit_flags_8008AAD4 = 0x8008AAD4;
+action_read_spu_voice_8008BDE8 = 0x8008BDE8;
