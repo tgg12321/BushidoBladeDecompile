@@ -3547,31 +3547,10 @@ InitHiraRmd_800480C0: subst "lw\s+\$17,28" "lw	$17,60" @ 68
 InitHiraRmd_800480C0: subst "lw\s+\$16,24" "lw	$16,56" @ 69
 InitHiraRmd_800480C0: subst "addu\s+\$sp,\$sp,56" "addu	$sp,$sp,88" @ 70
 
-# func_800481E8: same call-loop family with conditional v0v++.
 # Same prologue recipe as 80047EE8, plus $v0/$v1 swap in loop body to match
 # target's register allocation, plus a reorder to move the call-arg addu
 # out of the branch delay slot.
-func_800481E8: subst "subu\s+\$sp,\$sp,40" "subu	$sp,$sp,72" @ 0
-func_800481E8: subst "sw\s+\$16,24" "sw	$16,56" @ 3
-func_800481E8: subst "addu\s+\$16,\$4,\$5" "addu	$16,$16,$5" @ 4
-func_800481E8: subst "sw\s+\$31,36" "sw	$31,68" @ 5
-func_800481E8: subst "sw\s+\$18,32" "sw	$18,64" @ 6
-func_800481E8: subst "sw\s+\$17,28" "sw	$17,60" @ 7
-func_800481E8: subst "addu\s+\$16,\$4,\$2" "addu	$16,$18,$2" @ 12
-func_800481E8: $2 <-> $3 @ 18-30
-func_800481E8: subst "addu\s+\$4,\$18,\$3" "addu	$4,$18,$2" @ 33
-func_800481E8: delete @ 9
-func_800481E8: insert_after "addu	$16,$4,$zero" @ 3
-func_800481E8: insert_after "addu	$18,$16,$zero" @ 6
-func_800481E8: insert_after "nop" @ 8
-func_800481E8: reorder 3,4,7,8,1,2,5,6 @ 1-8
-func_800481E8: reorder 35,31,32,33,34 @ 31-35
 # Epilogue stack offsets
-func_800481E8: subst "lw\s+\$31,36" "lw	$31,68" @ 47
-func_800481E8: subst "lw\s+\$18,32" "lw	$18,64" @ 48
-func_800481E8: subst "lw\s+\$17,28" "lw	$17,60" @ 49
-func_800481E8: subst "lw\s+\$16,24" "lw	$16,56" @ 50
-func_800481E8: subst "addu\s+\$sp,\$sp,40" "addu	$sp,$sp,72" @ 51
 
 # InitHiraRmd_80047FBC: extension of 800483DC recipe, frame -80 vs -48 + extra
 # "addu $20,$16,$zero" early prologue copy. Same call-loop family.
@@ -4261,12 +4240,7 @@ func_8007C2A0: reorder 3,4,1,2 @ 1-4
 
 # regfix-suggest: auto-generated rules for func_8006BD28
 
-
-
-
-
 # regfix-suggest: auto-generated rules for func_8006BD28
-
 
 # func_8006BD28 frame-size cascade fix (auto-generated)
 func_8006BD28: subst "subu\s+\$sp,\$sp,80" "addiu	$29,$29,-88" @ 0
@@ -4301,17 +4275,13 @@ func_8006BD28: subst "addu\s+\$sp,\$sp,80" "addiu	$29,$29,88" @ 100
 # Target: sw s3,60; move s3,zero; lw v0,gp; sll t0,s4,3
 func_8006BD28: reorder 11,12,9,10 @ 9-12
 
-
-
 # func_8006BD28: addu operand order swap at idx 33 (mine: addu $2,$2,$8 -> target: addu $2,$8,$2)
 func_8006BD28: subst "addu\s+\$2,\$2,\$8" "addu	$2,$8,$2" @ 33
-
 
 # func_8007C4B8: prologue save order swap (s0/s1 setup pairs reordered)
 # Mine: sw s1,52; move s1,a0; sw s0,48; move s0,a1
 # Target: sw s0,48; move s0,a1; sw s1,52; move s1,a0
 func_8007C4B8: reorder 3,4,1,2 @ 1-4
-
 
 # func_800770B8: combined prologue+early-body reorder
 # Mine pre: 1=sw_s3,2=addu_s3,3=sw_s2,4=addu_s2,5=sw_s0,6=addu_s0,7=sw_s1,8=addu_s1=s0+88,9=sw_ra,10=lw_a0,11=addiu_a1,12=sh_0
@@ -4372,9 +4342,6 @@ func_800770B8: insert_after "addu $2,$6,1" @ 100
 # Pre-regfix idx for beq is 99 (subst uses original idx).
 func_800770B8: insert_label ".L_post988:" @ 108
 func_800770B8: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L_post988" @ 99
-
-
-
 
 # regfix-suggest: auto-generated rules for gnd_land_hit_char_tsuba
 gnd_land_hit_char_tsuba: subst "subu\s+\$sp,\$sp,104" "addiu	$29,$29,-120" @ 1  # auto: was `subu	$sp,$sp,104` -> `addiu $29,$29,-120`
@@ -4642,7 +4609,6 @@ cpu_check_tubazeri: delete @ 29
 cpu_check_tubazeri: reorder 31,32,29,30 @ 29-32
 cpu_check_tubazeri: subst "lw \$5, 0x1F800388" "lw $4,0($2)" @ 55
 cpu_check_tubazeri: subst "lw\s+\$4,0\(\$2\)" "lw $5, 0x1F800388" @ 56
-
 
 # func_8007EA0C: pre-mvmva sign-split needs j->b + fill_delay (negu_t in delay) + dead sra after delay slot
 func_8007EA0C: subst "\bj\b" "b" @ 9
@@ -4958,7 +4924,6 @@ func_80052720: delete @ 11
 func_80052720: delete @ 13
 func_80052720: delete @ 14
 
-
 func_80048530: subst "addu\s+\$5,\$5,\$4" "addu $a1,$a1,$v1" @ 6
 func_80048530: subst "addu\s+\$3,\$4,\$2" "addu $v1,$v0,$v1" @ 9
 func_80048530: delete @ 8
@@ -4970,3 +4935,21 @@ func_80069AE4: reorder 94,92,93 @ 92-94
 func_80069AE4: insert_label ".L_LOOP_TOP:" @ 93
 # retarget loop branch to new label after reorder
 func_80069AE4: subst "\.L825" ".L_LOOP_TOP" @ 104
+
+# func_800481E8: call-loop family with conditional v0v++.
+# v3x body uses single inline_move_aliasing barrier (1 barrier) to produce
+# target chain. Pure-C structurally equivalent; remaining diffs are
+# frame layout + save offset bumps (SUBSTs, no instruction injection).
+func_800481E8: subst "subu\s+\$sp,\$sp,40" "subu	$sp,$sp,72" @ 0
+func_800481E8: subst "sw\s+\$16,24" "sw	$16,56" @ 4
+func_800481E8: subst "sw\s+\$17,28" "sw	$17,60" @ 3
+func_800481E8: subst "sw\s+\$18,32" "sw	$18,64" @ 2
+func_800481E8: subst "sw\s+\$31,36" "sw	$31,68" @ 1
+func_800481E8: subst "addu\s+\$16,\$18,\$5" "addu	$16,$16,$5" @ 9
+func_800481E8: reorder 4,5,2,6,7,8,9,1,3 @ 1-9
+func_800481E8: subst "lw\s+\$31,36" "lw	$31,68" @ 49
+func_800481E8: subst "lw\s+\$18,32" "lw	$18,64" @ 50
+func_800481E8: subst "lw\s+\$17,28" "lw	$17,60" @ 51
+func_800481E8: subst "lw\s+\$16,24" "lw	$16,56" @ 52
+func_800481E8: subst "addu\s+\$sp,\$sp,40" "addu	$sp,$sp,72" @ 53
+
