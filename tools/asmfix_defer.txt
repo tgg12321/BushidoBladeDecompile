@@ -78,3 +78,13 @@ func_8001C8DC         # Retire-measure: mine=2 target=291  STRUCTURAL=289  REG-R
 func_80080828         # Retire-measure: mine=2 target=354  STRUCTURAL=353  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
 func_80035828         # Retire-measure: mine=2 target=360  STRUCTURAL=358  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
 saTan3GaugeMain_80073200         # Retire-measure: mine=2 target=203  STRUCTURAL=201  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80017A44         # Retire-measure: mine=2 target=208  STRUCTURAL=206  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80074488         # Retire-measure: mine=2 target=212  STRUCTURAL=210  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8006CFBC         # Retire-measure: mine=2 target=218  STRUCTURAL=217  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+DispPracticeMenuTex_B         # Retire-measure: mine=2 target=231  STRUCTURAL=229  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80084500         # Retire-measure: mine=2 target=235  STRUCTURAL=233  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80048BA4         # Retire-measure: mine=2 target=237  STRUCTURAL=235  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80075F80         # Retire-measure: mine=2 target=251  STRUCTURAL=249  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8003FA24         # Retire-measure: mine=2 target=263  STRUCTURAL=262  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+tslTm2LoadImage         # Retire-measure: mine=2 target=263  STRUCTURAL=262  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8006F100         # Retire-measure: mine=2 target=266  STRUCTURAL=264  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
