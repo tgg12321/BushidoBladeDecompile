@@ -5,14 +5,19 @@
 - Asm file: `asm/funcs/func_8007BAB4.s`
 - Callers: none observed
 - Callees (1): ['func_8007C4B8']
-- Proposed name: ``
-- Confidence: **none**
+- Proposed name: `gpu_local_8007BAB4`
+- Confidence: **low**
 
 ## Evidence
 
+### address_neighborhood  (rank=low)
+
+- proposed: `gpu_local_8007BAB4`
+- detail: neighbors within +-0x200: ['gpu_SendPacket', 'gpu_DrawOTag', 'gpu_GetDrawEnv'] prefix-dominant=gpu (3/3)
+
 ### string_adjacent_info  (rank=info)
 
-- detail: refs strings: ["0x80015FDC='DrawOTagEnv(%08x,&08x)...\\n'"]
+- detail: refs strings: ['g_str_drawotagenv_80015FDC_fmt', "0x80015FDC='DrawOTagEnv(%08x,&08x)...\\n'"]
 
 ## First 20 instructions
 

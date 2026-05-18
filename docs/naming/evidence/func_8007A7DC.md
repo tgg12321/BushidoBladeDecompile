@@ -11,7 +11,7 @@
 
 ### string_adjacent_info  (rank=info)
 
-- detail: refs strings: ["0x80015D58='tpage: (%d,%d,%d,%d)\\n'"]
+- detail: refs strings: ['g_str_tpage_80015D58_fmt', "0x80015D58='tpage: (%d,%d,%d,%d)\\n'"]
 
 ## First 20 instructions
 

@@ -2,18 +2,18 @@
 
 For each unnamed function, look at its named callers and find the dominant subsystem prefix (e.g., callers all start with `cpu_*` -> the function is likely a `cpu` helper).
 
-Total unnamed: 1152
-In a cluster: 147
-No cluster signal: 1005
+Total unnamed: 1114
+In a cluster: 136
+No cluster signal: 978
 
 ## Cluster sizes
 
 | subsystem | unnamed functions | rep names |
 |---|---:|---|
-| `cpu_*` | 22 | func_800164F8, func_80016A8C, func_80016E60, func_8001DA2C, func_8001E404... |
-| `pad_*` | 18 | func_80037AA4, func_80037B00, func_80037B90, func_80037C34, func_80038148... |
+| `cpu_*` | 21 | func_800164F8, func_80016A8C, func_80016E60, func_8001DA2C, func_8001E404... |
 | `mario_*` | 16 | func_80021210, func_800218C8, func_80021904, func_80021974, func_800219E4... |
-| `motion_*` | 11 | func_80038734, func_8003879C, func_800387C0, func_800387E8, func_8006BEC4... |
+| `pad_*` | 11 | func_80037AA4, func_80037B00, func_80037B90, func_80037C34, func_80038148... |
+| `motion_*` | 9 | func_80038734, func_8003879C, func_800387C0, func_800387E8, func_8006BEC4... |
 | `satan_*` | 8 | func_8003E120, func_80048A7C, func_8004C1F4, func_8007352C, func_80078A68... |
 | `replay_camera_*` | 8 | func_800355E8, func_80037110, func_8003ACB8, func_8003F388, func_80077940... |
 | `efc_*` | 7 | func_800417D0, func_800433E4, func_80044F50, func_800455AC, func_8004876C... |
@@ -35,7 +35,7 @@ No cluster signal: 1005
 
 ## Per-subsystem detail
 
-### `cpu` (22 unnamed)
+### `cpu` (21 unnamed)
 
 - `func_800164F8` called by ['cpu_set_move_command_and_dir_for_no_action_2', 'func_80016C3C', 'func_80044FA0']
 - `func_80016A8C` called by ['cpu_set_move_command_and_dir_for_no_action_2']
@@ -56,30 +56,8 @@ No cluster signal: 1005
 - `func_800550E8` called by ['cpu_get_move_pattern_table_number']
 - `func_8005C8A8` called by ['cpu_get_move_pattern_table_number', 'func_80016E60', 'func_8003C9A4']
 - `func_8005FBC8` called by ['cpu_side_move_dir_2']
-- `func_80078968` called by ['cpu_set_move_command_and_dir_for_no_action_2']
 - `func_800789D8` called by ['cpu_set_move_command_and_dir_for_no_action_2']
 - `func_8007BC08` called by ['cpu_set_move_command_and_dir_for_no_action_2', 'func_80016A8C', 'func_80016E60', 'func_8006E10C', 'func_8006E2A8']
-
-### `pad` (18 unnamed)
-
-- `func_80037AA4` called by ['pad_FuncAnalog']
-- `func_80037B00` called by ['pad_FuncAnalog']
-- `func_80037B90` called by ['pad_FuncAnalog']
-- `func_80037C34` called by ['pad_FuncAnalog']
-- `func_80038148` called by ['pad_FuncAnalog']
-- `func_80038170` called by ['pad_FuncAnalog']
-- `func_80078958` called by ['pad_press_control']
-- `func_80078978` called by ['func_8003A174', 'func_800886C4', 'pad_press_control']
-- `func_80078998` called by ['func_80037804', 'func_800378A8', 'func_8003791C', 'func_80037964', 'func_800379D8']
-- `func_800789A8` called by ['func_8003A360', 'func_800886C4', 'pad_press_control']
-- `func_80078A18` called by ['func_80016514', 'func_800165F8', 'func_80037C34', 'func_80038658', 'func_8003A264']
-- `func_80078A58` called by ['func_80016A18', 'func_80078C00', 'func_80078C9C', 'func_80078D38', 'func_8007A370']
-- `func_80078E20` called by ['pad_Init']
-- `func_80078F20` called by ['pad_Init']
-- `func_80078F74` called by ['pad_Init']
-- `func_8007A370` called by ['pad_press_control']
-- `func_8007A3C8` called by ['pad_press_control']
-- `func_8008C464` called by ['func_8003A174', 'func_8003A264', 'func_8003A2DC', 'func_8003A308', 'func_8003A39C']
 
 ### `mario` (16 unnamed)
 
@@ -100,7 +78,21 @@ No cluster signal: 1005
 - `func_800494D4` called by ['func_8003AFFC', 'func_8003B10C', 'mario_test_Exec']
 - `func_80049584` called by ['func_8003AFFC', 'func_8003B10C', 'mario_test_Exec']
 
-### `motion` (11 unnamed)
+### `pad` (11 unnamed)
+
+- `func_80037AA4` called by ['pad_FuncAnalog']
+- `func_80037B00` called by ['pad_FuncAnalog']
+- `func_80037B90` called by ['pad_FuncAnalog']
+- `func_80037C34` called by ['pad_FuncAnalog']
+- `func_80038148` called by ['pad_FuncAnalog']
+- `func_80038170` called by ['pad_FuncAnalog']
+- `func_80078E20` called by ['pad_Init']
+- `func_80078F74` called by ['pad_Init']
+- `func_8007A370` called by ['pad_press_control']
+- `func_8007A3C8` called by ['pad_press_control']
+- `func_8008C464` called by ['func_8003A174', 'func_8003A264', 'func_8003A2DC', 'func_8003A308', 'func_8003A39C']
+
+### `motion` (9 unnamed)
 
 - `func_80038734` called by ['func_8003880C', 'func_80038988', 'motion_SetMotion']
 - `func_8003879C` called by ['motion_SetMotion']
@@ -110,8 +102,6 @@ No cluster signal: 1005
 - `func_8007E8AC` called by ['func_80063084', 'func_80073C78', 'motion_SetExMotion']
 - `func_8007EA0C` called by ['func_800620B8', 'func_800646E8', 'motion_SetExMotion']
 - `func_80082D34` called by ['motion_make_table']
-- `func_800831D8` called by ['motion_make_table']
-- `func_80083210` called by ['func_80082D34', 'motion_make_table']
 - `func_80083220` called by ['motion_make_table']
 
 ### `satan` (8 unnamed)

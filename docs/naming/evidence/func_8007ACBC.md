@@ -11,7 +11,7 @@
 
 ### string_adjacent_info  (rank=info)
 
-- detail: refs strings: ["0x80015D58='tpage: (%d,%d,%d,%d)\\n'", "0x80015D80='clip (%3d,%3d)-(%d,%d)\\n'", "0x80015D98='ofs  (%3d,%3d)\\n'", "0x80015DA8='tw   (%d,%d)-(%d,%d)\\n'", "0x80015DC0='dtd   %d\\n'"]
+- detail: refs strings: ['g_str_tpage_80015D58_fmt', 'g_str_clip_80015D80_fmt', 'g_str_ofs_80015D98_fmt', 'g_str_tw_80015DA8_fmt', 'g_str_dtd_80015DC0_fmt']
 
 ## First 20 instructions
 

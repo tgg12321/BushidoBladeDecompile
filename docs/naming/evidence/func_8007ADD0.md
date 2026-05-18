@@ -11,7 +11,7 @@
 
 ### string_adjacent_info  (rank=info)
 
-- detail: refs strings: ["0x80015DD8='disp   (%3d,%3d)-(%d,%d)\\n'", "0x80015DF4='screen (%3d,%3d)-(%d,%d)\\n'", "0x80015E10='isinter %d\\n'", "0x80015E1C='isrgb24 %d\\n'"]
+- detail: refs strings: ['g_str_disp_80015DD8_fmt', 'g_str_screen_80015DF4_fmt', 'g_str_isinter_80015E10_fmt', 'g_str_isrgb24_80015E1C_fmt', "0x80015DD8='disp   (%3d,%3d)-(%d,%d)\\n'"]
 
 ## First 20 instructions
 
