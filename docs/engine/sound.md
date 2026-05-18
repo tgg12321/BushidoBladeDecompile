@@ -327,11 +327,18 @@ This is the LOW-LEVEL event dispatcher.  The `seq_*` family
 is the HIGH-LEVEL cue-sequencer that drives multiple BGM/SE segments
 through saTan0Main.
 
-The 5 slot values are populated at init time; the assignment site is
-still asm-only (likely in a `saTan*Init*` routine).  Pattern suggests
-the slots are global handlers shared across all characters, with per-
-character state being the seek cursor + last-status-byte cache stored
-in the per-channel state struct.
+**Mystery: the 5 dispatch slots are NEVER WRITTEN by BB2 code.**  A
+byte-level scan of both main and overlay binaries found zero stores to
+these addresses (no sw with matching offset, no literal value, no
+indirect construction).  Yet saTan0Main calls them unconditionally in
+their case-branch.  The most plausible interpretation is that the
+`if (b & 0x80)` + switch arms that reach the dispatch slots are
+*effectively dead code* in shipped BB2 — the runtime data stream
+never has a byte with the high bit set, so the call sites are never
+reached.  This suggests the dispatch table was implemented for a
+debug/future build but never populated in the shipped ROM.  See
+`docs/engine/recent_naming_findings.md` §11 for the binary-scan
+evidence.
 
 ## Cross-references (recent_naming_findings.md addendum 2026-05-17)
 
