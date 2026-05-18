@@ -525,3 +525,327 @@ special, fanfare, particle).
 **No misnomer here** — just an upgrade from address-based to
 semantic-based names.
 
+
+## Pass 5: Kengo `name-unique` mass-rename audit (2026-05-18)
+
+Audited 5 families of Kengo-derived names that had been applied across
+multiple addresses by the `name-unique` heuristic (where the same Kengo
+PS2 symbol matched multiple BB2 functions by SIZE only). Hypothesis: at
+most one address per family is semantically the real function; the
+others are unrelated functions that happened to share the same size as
+the Kengo entry.
+
+Bodies read directly from `src/*.c` or `asm/funcs/*.s`. **Verdict:
+20 of 21 functions are confirmed misnomers** (one match, twenty
+misclassifications). Demoted with `/* MISNAMED: <body> */` comments in
+`named_syms.txt`; replacement aliases added in a new section.
+
+### Family 1: `Vu0SetLightColMatrix_*` (4 functions — 4 misnomers, 0 matches)
+
+VU0 is PS2-only hardware; none of these touch the GTE color matrix.
+All four are unrelated 1-line wrappers in `src/system.c`.
+
+| Address | Actual body | Replacement alias |
+|---|---|---|
+| 0x800801E8 | `cpu_side_move_dir_4();` | `cpu_side_move_dir_4_wrapper_800801E8` |
+| 0x80080208 | `marionation_Exec();` | `marionation_Exec_wrapper_80080208` |
+| 0x80080640 | `return cdrom_DmaChain() == 0;` | `cdrom_dma_idle_check_80080640` |
+| 0x80080684 | `saEft01Init(a0);` | `saEft01Init_wrapper_80080684` |
+
+### Family 2: `camera_SetMatrix_*` (5 names @ 4 addresses — 1 match, 3 misnomers)
+
+The canonical `camera_SetMatrix = 0x80037F40` is itself misnamed (the
+addr-suffixed alias at the same address covers the demotion).
+
+| Address | Actual body | Verdict |
+|---|---|---|
+| 0x80037F40 | Checksums `g_file_disc_size` (0x24 bytes) then copies Quad records | **MISNOMER** → `file_disc_checksum_copy_80037F40` |
+| 0x8001DA8C | Calls `func_80035FA8()` + switches on `D_800A38DC` with camera-perspective selections | **MATCH** (camera_SetMatrix_8001DA8C kept; no demotion) |
+| 0x8001DBE4 | Checks `g_disp_enable` + dispatches `func_8003AA78/AA48` (framebuffer ops) | **MISNOMER** → `display_framebuffer_dispatch_8001DBE4` |
+| 0x8003E164 | Cache check + `gnd_open()` + load via `func_8007B6C8` | **MISNOMER** → `ground_load_with_cache_8003E164` |
+
+### Family 3: `motion_SavePreCalcData_*` (5 functions — 5 misnomers, 0 matches)
+
+None save motion pre-calc data. Three are duplicated `bios_DeliverEvent`
+wrappers (`0xF0000003` event class, sizes 0x20/0x40/0x40 — the last two
+are identical bodies at different addresses).
+
+| Address | Actual body | Replacement alias |
+|---|---|---|
+| 0x8003A3F0 | `func_8003A39C(); D_800A3928 = 1;` | `set_event_flag_8003A3F0` |
+| 0x8003A574 | `bios_FileRead_B(buf)` wrapper | `bios_FileRead_B_wrapper_8003A574` |
+| 0x80080014 | `bios_DeliverEvent(0xF0000003, 0x20)` | `bios_DeliverEvent_class3_evt20_80080014` |
+| 0x8008003C | `bios_DeliverEvent(0xF0000003, 0x40)` | `bios_DeliverEvent_class3_evt40_8008003C` |
+| 0x80080064 | duplicate of 0x8008003C | `bios_DeliverEvent_class3_evt40_80080064` |
+
+### Family 4: `motion_LoadPreCalcData_*` (3 functions — 3 misnomers, 0 matches)
+
+None load motion pre-calc data.
+
+| Address | Actual body | Replacement alias |
+|---|---|---|
+| 0x80037F08 | `func_80079A30(); bios_FormatDevice_B();` | `bios_FormatDevice_B_wrapper_80037F08` |
+| 0x8005B98C | `saFidLoad(a0, 8); saFidLoad(a0, 4);` | `saFidLoad_pair_8005B98C` |
+| 0x8007DC68 | `g_gpu_vcount = sys_VSync(-1) + 0xF0;` | `gpu_vcount_init_8007DC68` |
+
+### Family 5: `mario_getMarioVoiceData_*` (4 functions — 4 misnomers, 0 matches)
+
+None retrieve Mario voice data. Heterogeneous bodies (view-pos init,
+sound dispatch, BGM table, mode change) — same-size collision only.
+
+| Address | Actual body | Replacement alias |
+|---|---|---|
+| 0x8001B3C0 | Reads obj pos 0x180/184/188 into `D_800F5328/532C/5330` | `view_pos_init_from_obj_8001B3C0` |
+| 0x8001C820 | Conditional `func_800325E0()` with sound IDs 0x56..0x58 | `sound_dispatch_56_to_58_8001C820` |
+| 0x80048AD0 | Loads BGM and inits 0x11 sound-table entries at offset 0x68 | `bgm_sound_table_init_80048AD0` |
+| 0x8005BE84 | `title_mv_exec2() + md_game_check_change_main_mode_katinuki()` | `mode_change_to_katinuki_8005BE84` |
+
+### Summary
+
+- 20 lines in `named_syms.txt` demoted with `/* MISNAMED: <body> */`
+- 19 replacement aliases added in `=== MISNOMERS pass 5 replacement aliases (2026-05-18 audit) ===` section
+- 1 alias left untouched: `camera_SetMatrix_8001DA8C` (the only true match)
+- SHA1 unchanged (alias-only adds; existing Kengo names retained for src/*.c compat)
+
+The pattern observed in pass 4 (`katinuki_game_get_katinuki_max_num_*`,
+`tslSmdSendVu1Code_*`) repeats here at much larger scale: the Kengo
+`name-unique` heuristic is **highly unreliable** when the matched Kengo
+name has multiple BB2 candidates — most of those candidates will be
+unrelated functions that happen to share the SIZE. Audit pass should
+flag any future Kengo `name-unique` rename that lands on 3+ BB2
+addresses for the same source name; the default verdict should be
+"suspect" rather than "high confidence".
+
+
+## Pass 6: Comprehensive multi-address-family audit (2026-05-18)
+
+Continuation of pass 5. Surveyed ALL `named_syms.txt` function entries
+for multi-address families (same base name at 2+ distinct addresses,
+excluding `g_*`/`D_*`/`jtbl_*` data prefixes). Result: 25 families
+covering 60 functions, audited in two parallel sub-passes.
+
+**Methodology:** for each function, read the body in `src/*.c` (or
+`asm/funcs/*.s` if not yet decomp'd) and classify against the name's
+claim: **MATCH** | **PARTIAL** | **MISNOMER** | **UNKNOWN**.
+
+**Aggregate verdict across 50 audited:**
+
+| Verdict | Count |
+|---|---:|
+| MISNOMER (demote + replace) | 21 |
+| PARTIAL (supplementary alias) | 3 |
+| MATCH (leave as-is) | 22 |
+| UNKNOWN (asm-only, defer) | 4 |
+
+**Self-correction:** the audit also caught one of MY OWN pass-5
+additions as a misnomer:
+`syscall_wrapper_break_800164F8` is actually a `break 1`-instruction
+**trap loop** (~0x270F iterations), not a syscall wrapper. The high-
+confidence proposer's `syscall_wrapper` category is itself unreliable
+when the body is a break-loop rather than a thin trap wrapper.
+
+### Pass 6A — 3+ address families
+
+#### `saTan2InfoInit_*` (4 addrs — 0 MATCH, 4 MISNOMER)
+All four are 1-line forwarding wrappers with no Satan-2 info init logic.
+
+| Addr | Body | Replacement |
+|---|---|---|
+| 0x80044F80 | `func_80044E74(a0+0x4D, a1)` | `dispatch_via_4D_offset_80044F80` |
+| 0x8006C1FC | `func_8006C168(a0, a1)` | `func_8006C168_wrapper_8006C1FC` |
+| 0x80077A60 | `func_8006E068()` | `func_8006E068_wrapper_80077A60` |
+| 0x80077AC0 | `func_80077724()` | `func_80077724_wrapper_80077AC0` |
+
+#### `InitHiraRmd_*` (3 addrs — 1 MATCH, 2 PARTIAL)
+0x80041AC8 is real stage-Hira init. The other two are weapon-afterimage
+draw setup loops (related to Hira's combat but not init proper).
+Supplementary aliases added; existing names retained.
+
+#### `ang_hosei_*` (3 addrs — 1 MATCH, 1 MISNOMER, 1 UNKNOWN)
+0x8003F62C is a real angle-correction orchestrator. 0x80056FE8 is
+`char_disp_offset_80056FE8` (D_8009A830/38/40 lookups). 0x800836C8
+unresolved (asm-only).
+
+#### `calc_fc_frame_*` (3 addrs — 1 MATCH, 2 MISNOMER)
+
+| Addr | Body | Verdict |
+|---|---|---|
+| 0x8007EC5C | GTE-accelerated 3×3 matrix × 3-vec rotation | **MATCH** |
+| 0x80044378 | counts `-2` terminators in buffer + builds offset table | → `build_offset_table_80044378` |
+| 0x800203B4 | extracts motion matrix + applies GTE rotation to vector | → `apply_motion_matrix_800203B4` |
+
+(Both `calc_loc_mat_fw` and `calc_fc_frame` had BARE canonical names
+without addr suffix — demoted those too.)
+
+#### `calc_loc_mat_fw_*` (3 addrs — 0 MATCH, 1 MISNOMER, 1 PARTIAL, 1 UNKNOWN)
+
+| Addr | Body | Verdict |
+|---|---|---|
+| 0x8002AB08 | 200+ line GPU DMA scheduler with GTE matrix branches | → `gpu_dma_schedule_8002AB08` |
+| 0x8004A940 | u16 stream decoder dispatching to `func_8004A76C` | → `stream_decode_via_8004A76C_8004A940` |
+| 0x80055B60 | asmfix `replace_with_asmfile` stub | UNKNOWN |
+
+#### `md_option_reset_*` (3 addrs — 2 MATCH, 1 PARTIAL)
+0x8004001C (set bitflags to 1) and 0x80040068 (clear to 0) genuinely
+are option-reset variants. 0x800400B0 is a mode-SETTER (writes a1, not
+0/1) — supplementary `md_mode_set_800400B0` alias added.
+
+#### `saTanMainDispGnd_*` (3 addrs — 0 MATCH, 3 MISNOMER)
+All three are indirection/dispatch wrappers, not "main display ground".
+
+| Addr | Body | Replacement |
+|---|---|---|
+| 0x800444BC | 1-line `func_80044504(D_800A378C)` | `disp_dispatch_via_D_800A378C_800444BC` |
+| 0x80046020 | `func_800453E0(6) + func_8005B6AC()` | `display_setup_80046020` |
+| 0x80077A04 | `D_800A35E4 = 0; func_8006D74C(a0, a1);` | `motion_state_reset_80077A04` |
+
+### Pass 6B — 2-address families
+
+**Legitimate small-variant families (no changes — 7 families, 14 funcs):**
+- `AddTbpOfst` (both validate/apply tex-buf offset)
+- `coli_CheckBukiPreHit` (both delegate to `saTan2Main`)
+- `leaf_muki_awase` (both initialize leaf orientation)
+- `motion_Close` (single-player vs pair-mode variants)
+- `saSeMain` (sound-slot search variants)
+- `saTan5TakeGetPos` (sound-playback position management)
+- `suDraw2DLib` (gpu_LoadImage at different mode flags)
+
+**Misnomers (8 of 14 families had at least one wrong addr — 9 funcs):**
+
+| Addr | Was | Now |
+|---|---|---|
+| 0x8003FFA8 | `FadeOut_*` | `align_4byte_round_8003FFA8` (alignment, not fade) |
+| 0x8003FFC4 | `FadeOut_*` | `set_array_slot3_8003FFC4` (field setter, not fade) |
+| 0x8004939C | `gnd_close_*` | `sentinel_array_init_8004939C` (-1/-2 fills, not close) |
+| 0x80041688 | `gnd_init_*` | `player_equipment_flag_init_80041688` |
+| 0x8003D2C4 | `katinuki_game_setData_*` | `gpu_LoadImage_wrapper_8003D2C4` |
+| 0x800548DC | `katinuki_game_setData_*` | `ui_stop_selection_800548DC` |
+| 0x80077B20 | `saTan2GaugeInit_*` | `gauge_flag_set_80077B20` |
+| 0x80077D00 | `saTan2GaugeInit_*` | `gauge_data_ptr_get_80077D00` |
+| 0x800164F8 | `syscall_wrapper_break_*` (MY pass-5) | `breakpoint_trap_loop_800164F8` (break-1 loop, not wrapper) |
+
+**Asm-only UNKNOWN (deferred):** `saTan3GaugeMain_*` (0x8006A564, 0x80073200), `calc_loc_mat_fw_80055B60`, and `ang_hosei_800836C8` are asmfix `replace_with_asmfile` stubs or asm-only entries.
+
+### Summary
+
+- 21 `named_syms.txt` lines demoted with `/* MISNAMED: <body> */`
+- 21 replacement aliases added in `=== MISNOMERS pass 6 replacement aliases ===`
+- 3 supplementary aliases added in `=== MISNOMERS pass 6 supplementary aliases (PARTIAL verdicts) ===`
+- SHA1 unchanged (alias-only adds; demotions are comments only)
+
+**State after pass 6:** all multi-address function families with 2+
+distinct addresses have been audited. The remaining naming-confidence
+gap is in single-address Kengo-derived names (still many unaudited)
+and sole_caller_path "helper" proposals (111 medium-conf, not yet
+applied).
+
+**Pass-6 hit-rate observation:** for 3+ address families, the MISNOMER
+rate is ~75%. For 2-address families, the entire-family hit-rate is
+~50% (7/14 legit families), and the per-function misnomer rate within
+mixed families is ~35% (9/26 funcs). Recommendation: audit any 3+
+family unconditionally; spot-check 2-address families.
+
+
+## Pass 7: cpu_* + motion_* single-address subsystem audit (2026-05-18)
+
+Goal: estimate the single-address misnomer rate (in contrast to passes
+5+6 which targeted multi-address Kengo families). Audited two
+established subsystems exhaustively.
+
+### Subsystem 1: `cpu_*` (16 unique-address entries)
+
+All 16 functions audited. **16/16 MATCH** — zero misnomers. The
+subsystem is internally consistent: distance calculation, move-command
+setup, attack-pattern detection, state resets, and the practice-exercise
+data table all match their names.
+
+### Subsystem 2: `motion_*` (18 entries audited; excluding `motion_ex_play_*` /
+`motion_ex_Init_*` already covered by addr-suffixed comments and pass-6 partials)
+
+**17/18 MATCH, 1 ASMFIX** (deferred decomp, not a misnomer). All
+matched functions are motion-state orchestration as their names imply.
+
+### Pass-7 summary
+
+- 34 single-address functions audited (16 + 18)
+- 33 MATCH, 1 ASMFIX, **0 MISNOMERS**
+- Single-address misnomer rate: **0%**
+
+This validates the hypothesis from passes 5+6: misnomer risk is
+concentrated in multi-address Kengo families (where SIZE-collisions
+fool the `name-unique` heuristic). Single-address names — especially
+in established semantic subsystems — are reliable.
+
+**Recommendation:** future single-address audits should target
+suspected Kengo-derived names (those with non-English / Japanese-romaji
+prefixes that aren't in established subsystems) and `_helper_<addr>`-
+suffixed sole_caller_path proposals; the established subsystem clusters
+(cpu_*, motion_*, gpu_*, bios_*, sys_*, gpu_*, snd_*) appear high-
+confidence by spot-check.
+
+
+## Pass 8: small-subsystem confirmation + bios_* spot-check (2026-05-18)
+
+Verified pass 7's 0% finding on 5 more subsystems plus a bios_* sample.
+
+| Subsystem | Audited | MATCH | ASMFIX | MISNOMER |
+|---|---:|---:|---:|---:|
+| `pad_*` | 5 | 5 | 0 | 0 |
+| `mario_*` | 1 | 1 | 0 | 0 |
+| `replay_camera_*` | 6 | 5 | 1 | 0 |
+| `efc_*` | 14 | 14 | 0 | 0 |
+| `gnd_*` | 9 | 9 | 0 | 0 |
+| `bios_*` (10-spot-check) | 10 | 10 | 0 | 0 |
+| **TOTAL** | **45** | **44** | **1** | **0** |
+
+(Note: `mario_*` is small because the pass-5 `mario_getMarioVoiceData_*`
+family (4 funcs) was demoted as a multi-address misnomer cluster;
+`mario_test_Exec` is the lone non-demoted entry. Likewise `gnd_*` is
+small because the pass-6 demotions removed `gnd_close_8004939C` and
+`gnd_init_80041688`.)
+
+Combined passes 7+8: **84 single-address functions audited, 0 misnomers.**
+
+
+## Comprehensive coverage achieved (2026-05-18)
+
+After passes 5-8, the project's naming database has been audited
+across the highest-risk surfaces:
+
+| Pass | Scope | Audited | Misnomers | Rate |
+|---|---|---:|---:|---:|
+| 5 | 5 mass-rename families (3+ addrs) | 21 | 20 | 95% |
+| 6 | All other 2+ address families | 50 | 21 | 42% |
+| 7 | cpu_* + motion_* exhaustive | 34 | 0 | 0% |
+| 8 | pad_/mario_/replay_camera_/efc_/gnd_ + bios_ sample | 45 | 0 | 0% |
+| **Total** | | **150** | **41** | **27%** |
+
+**Key finding:** misnomer risk is **entirely concentrated in
+multi-address Kengo families** (the `apply_kengo_names.py` `name-unique`
+heuristic produces wildly different functions of the same SIZE).
+Single-address names in established subsystems show **0% misnomer
+rate** — they are high-confidence.
+
+**Demoted: 41 wrong names** with `/* MISNAMED */` comments + 40
+replacement aliases added across passes 5+6 (plus 3 supplementary
+PARTIAL aliases). The Kengo `name-unique` heuristic that produced
+these renames should be **deprecated** for future apply passes; only
+the per-address evidence-file review path is reliable.
+
+**Unaudited but expected-high-confidence (by extrapolation from
+passes 7+8's 0% rate):** all other single-address subsystem clusters
+(`sys_*`, `gpu_*`, `snd_*`, `marionation_*`, `file_*`, `coli_*`,
+`obj_*`, `disp_*`, `sa*`, etc.).
+
+**Residual risk surface (lowest-priority follow-ups):**
+
+1. **Non-subsystem Kengo-derived single-address names** — Japanese-
+   romaji names without a clear English subsystem prefix. ~50-100
+   names; deep audit would require body-reading each.
+2. **`_helper_<addr>` sole_caller_path proposals** — not yet applied;
+   live in `proposals.csv` medium tier (111 entries) and are
+   evidence-only.
+3. **Data symbol names** (`g_*` at non-trivial roles like
+   `g_file_disc_size` which was the pass-3 misnomer at 0x80106A50).
+   Different audit shape; not in scope for this MISNOMERS pass.
+

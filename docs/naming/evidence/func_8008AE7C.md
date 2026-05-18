@@ -4,15 +4,15 @@
 - Size: 13 instructions
 - Asm file: `asm/funcs/func_8008AE7C.s`
 - Callers (1): ['func_800884C4']
-- Proposed name: `psyq_memset_legacy_8008AE7C`
+- Proposed name: `spu_local_8008AE7C`
 - Confidence: **low**
 
 ## Evidence
 
-### psyq_idiom_legacy  (rank=low)
+### address_neighborhood  (rank=low)
 
-- proposed: `psyq_memset_legacy_8008AE7C`
-- detail: known_psyq_stdlib.txt: 13 insns, store-loop with no load; live detector rejected (likely in-place transform, not a memcpy/memset)
+- proposed: `spu_local_8008AE7C`
+- detail: neighbors within +-0x200: ['coli_calc_motion2', 'spu_TransferDirect_capped', 'spu_TransferData_capped', 'ReturnVSMode'] prefix-dominant=spu (2/4)
 
 ## First 20 instructions
 

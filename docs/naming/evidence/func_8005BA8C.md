@@ -15,6 +15,15 @@
 - proposed: `se_data_set_helper_8005BA8C`
 - detail: sole caller is se_data_set
 
+### address_neighborhood  (rank=low)
+
+- proposed: `obj_local_8005BA8C`
+- detail: neighbors within +-0x200: ['obj_InitTask', 'obj_InitTaskCamera', 'obj_ExecTask'] prefix-dominant=obj (3/3)
+
+### string_adjacent_info  (rank=info)
+
+- detail: refs strings: ['g_effect_struct_b', 'g_effect_struct_b_off_C', 'g_effect_struct_b_off_18']
+
 ## First 20 instructions
 
 ```

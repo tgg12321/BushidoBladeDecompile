@@ -15,6 +15,10 @@
 - proposed: `se_data_set_helper_8005BDF0`
 - detail: sole caller is se_data_set
 
+### string_adjacent_info  (rank=info)
+
+- detail: refs strings: ['g_effect_struct_b']
+
 ## First 20 instructions
 
 ```

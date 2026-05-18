@@ -14,6 +14,11 @@
 - proposed: `action_CheckHitZangeki_helper_8008AAD4`
 - detail: sole caller is action_CheckHitZangeki
 
+### address_neighborhood  (rank=low)
+
+- proposed: `coli_local_8008AAD4`
+- detail: neighbors within +-0x200: ['coli_HitPauseKatana_3', 'md_game_check_change_main_mode_katinuki', 'CheckFadeEnd', 'coli_calc_motion2'] prefix-dominant=coli (2/4)
+
 ## First 20 instructions
 
 ```
