@@ -48,6 +48,60 @@ MAIN_REPO=$(dirname "$(dirname "$(dirname "$GITDIR_ABS")")")
 # Defensive: refuse to act if we somehow ARE the main repo.
 [ "$MAIN_REPO" = "$(pwd)" ] && exit 0
 
+# --- Auto-heal main's .venv if broken ------------------------------------
+# Before linking, check that main's .venv exists AND has all packages from
+# requirements.txt. If not, invoke `dc.sh setup-venv` IN MAIN to create/
+# repair it. This eliminates the "agent hits ModuleNotFoundError 30s into
+# a permuter run" failure mode that recurred across multiple sessions.
+#
+# Idempotent — when main's venv is healthy, this is one cheap python
+# import-check per requirements package. When broken, the heal step is
+# a one-time ~30s pip install (cached afterward).
+REQ_FILE="$MAIN_REPO/requirements.txt"
+if [ -f "$REQ_FILE" ]; then
+    VENV_PY="$MAIN_REPO/.venv/bin/python3"
+    NEED_HEAL=0
+    if [ ! -x "$VENV_PY" ]; then
+        NEED_HEAL=1
+    else
+        # Check that every required package imports successfully. Map known
+        # package-name → module-name oddballs (splat64 -> splat).
+        _check_pkg_imports() {
+            local req="$1" py="$2" missing="" pkg mod
+            while IFS= read -r line; do
+                pkg=$(echo "$line" | sed 's/#.*//' | tr -d '[:space:]' | sed 's/[<>=].*//;s/\[.*//')
+                [ -z "$pkg" ] && continue
+                case "$pkg" in
+                    splat64) mod=splat ;;
+                    *)       mod="$pkg" ;;
+                esac
+                if ! "$py" -c "import $mod" 2>/dev/null; then
+                    missing="$missing $pkg"
+                fi
+            done < "$req"
+            [ -z "$missing" ] && return 0
+            echo "$missing"
+            return 1
+        }
+        _miss=$(_check_pkg_imports "$REQ_FILE" "$VENV_PY") || NEED_HEAL=1
+        if [ "$NEED_HEAL" = "1" ]; then
+            echo "Worktree: main .venv missing required packages:$_miss — auto-healing" >&2
+        fi
+    fi
+    if [ "$NEED_HEAL" = "1" ]; then
+        if (cd "$MAIN_REPO" && bash tools/dc.sh setup-venv) >&2; then
+            # Force re-link of THIS worktree's .venv below: any prior
+            # cp -as tree predates the new packages and is now stale.
+            rm -rf .venv 2>/dev/null
+        else
+            echo "Worktree: main .venv auto-heal FAILED — see error above" >&2
+            echo "  manual fix: cd $MAIN_REPO && bash tools/dc.sh setup-venv" >&2
+            # Don't bail — the other deps might still link OK and a
+            # partial worktree is better than zero.
+        fi
+    fi
+fi
+
 # Trees: check for a specific marker file inside (not just the parent dir)
 # so partial cp -as failures self-heal — if the marker is missing, blow
 # away the tree and re-link. Format: "<dep>:<marker_relative_to_dep>"

@@ -1,0 +1,21 @@
+# Python dependencies for the BB2 decomp project.
+#
+# Install via: bash tools/dc.sh setup-venv
+# (creates .venv in main repo and installs everything; idempotent).
+#
+# tools/worktree_bootstrap.sh auto-runs setup-venv when it detects
+# main's .venv is missing or doesn't have one of these packages —
+# so fresh worktrees never have to deal with venv setup manually.
+
+# Splat: binary splitter (regenerates asm/ + linker script from splat.yaml).
+#   Used by: `python -m splat split splat.yaml`
+splat64
+
+# spimdisasm: MIPS disassembler used by splat for .text disassembly.
+#   Pulled in transitively by splat64 but pin it explicitly for clarity.
+spimdisasm
+
+# toml: TOML parser used by decomp-permuter's settings/weights loader.
+#   Without this, `python tools/decomp-permuter/permuter.py` dies on
+#   `ModuleNotFoundError: No module named 'toml'` 30s into a permute run.
+toml

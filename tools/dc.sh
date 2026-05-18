@@ -293,6 +293,62 @@ EOF
         bash tools/worktree_bootstrap.sh
         ;;
 
+    setup-venv)
+        # Create/repair the local .venv with the packages listed in
+        # requirements.txt. Idempotent — safe to re-run when requirements
+        # change or when something looks broken. Run from the worktree
+        # whose .venv you want to (re)build (typically main).
+        #
+        # worktree_bootstrap.sh auto-invokes this on main when it detects
+        # main's .venv is missing or doesn't have the required packages,
+        # so fresh worktrees inherit a working venv without manual setup.
+        if [ ! -f requirements.txt ]; then
+            echo "ERROR: requirements.txt missing in $(pwd)" >&2
+            echo "  setup-venv reads its package list from requirements.txt at the repo root." >&2
+            exit 1
+        fi
+        if [ ! -x .venv/bin/python3 ]; then
+            echo "setup-venv: creating .venv ..."
+            if ! python3 -m venv .venv; then
+                echo "ERROR: python3 -m venv failed — install python3-venv?" >&2
+                exit 1
+            fi
+        else
+            echo "setup-venv: .venv exists, updating ..."
+        fi
+        # ensurepip in case the venv was created without pip (the Debian/Ubuntu
+        # default; `python3 -m venv` skips pip unless --upgrade-deps).
+        .venv/bin/python3 -m ensurepip --upgrade >/dev/null 2>&1 || true
+        echo "setup-venv: installing requirements ..."
+        if ! .venv/bin/python3 -m pip install --upgrade --quiet --disable-pip-version-check -r requirements.txt 2>&1; then
+            echo "ERROR: pip install failed" >&2
+            exit 1
+        fi
+        # Validate: every non-comment, non-blank line in requirements.txt
+        # should map to an importable module. Package name != module name
+        # in some cases (splat64 -> "splat"), so we map known oddballs.
+        _pkg_to_module() {
+            case "$1" in
+                splat64) echo splat ;;
+                *)       echo "$1" ;;
+            esac
+        }
+        _missing=""
+        while IFS= read -r line; do
+            pkg=$(echo "$line" | sed 's/#.*//' | tr -d '[:space:]' | sed 's/[<>=].*//;s/\[.*//')
+            [ -z "$pkg" ] && continue
+            mod=$(_pkg_to_module "$pkg")
+            if ! .venv/bin/python3 -c "import $mod" 2>/dev/null; then
+                _missing="$_missing $pkg(import=$mod)"
+            fi
+        done < requirements.txt
+        if [ -n "$_missing" ]; then
+            echo "WARNING: installed but failed to import:$_missing" >&2
+            echo "  (likely a package-name → module-name mismatch in setup-venv's mapping table)" >&2
+        fi
+        echo "setup-venv: OK"
+        ;;
+
     new-worktree)
         # One-command worktree setup: creates .claude/worktrees/<name> on
         # a fresh branch off local main HEAD (not origin/main, which is
@@ -401,8 +457,29 @@ EOF
         command -v python3 >/dev/null 2>&1    || _missing+=("python3 in PATH (fix: install python3 or activate .venv)")
         [ -f disc/SLUS_006.63 ]               || _missing+=("disc/SLUS_006.63 (original EXE — fix: dc.sh bootstrap, or python3 tools/extract_iso.py)")
         # Advisory: .venv (build falls back to system python3, but some pipeline
-        # tools assume specific package versions from the venv).
-        [ -x .venv/bin/python3 ]              || _warnings+=(".venv/bin/python3 (using system python3 instead — fix: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt)")
+        # tools — permuter, splat — assume specific packages from the venv).
+        if [ ! -x .venv/bin/python3 ]; then
+            _warnings+=(".venv/bin/python3 (using system python3 — fix: bash tools/dc.sh setup-venv)")
+        elif [ -f requirements.txt ]; then
+            # The .venv exists. Validate every package in requirements.txt
+            # actually imports — catches the "empty venv" / "stale venv after
+            # new dep added" failure modes that pure existence checks miss.
+            _broken_pkgs=""
+            while IFS= read -r _line; do
+                _pkg=$(echo "$_line" | sed 's/#.*//' | tr -d '[:space:]' | sed 's/[<>=].*//;s/\[.*//')
+                [ -z "$_pkg" ] && continue
+                case "$_pkg" in
+                    splat64) _mod=splat ;;
+                    *)       _mod="$_pkg" ;;
+                esac
+                if ! .venv/bin/python3 -c "import $_mod" 2>/dev/null; then
+                    _broken_pkgs="$_broken_pkgs $_pkg"
+                fi
+            done < requirements.txt
+            if [ -n "$_broken_pkgs" ]; then
+                _warnings+=(".venv missing required package(s):$_broken_pkgs (fix: bash tools/dc.sh setup-venv)")
+            fi
+        fi
         # Advisory: decomp-permuter (required for `dc.sh permute/attempt`,
         # not for plain build/verify). Common silent-fail mode: directory
         # exists but is empty (clone got wiped). Check the actual marker.
