@@ -510,14 +510,17 @@ SCHEMA_JSON=$(cat "$SCHEMA_FILE")
 #   - `--json-schema` — structured output guarantee.
 #   - `--output-format json` — wraps the result in an envelope we can
 #     parse for cost + result extraction.
-#   - `--max-budget-usd 0.50` — hard per-call safety cap.
+#   - `--max-budget-usd 1.00` — hard per-call safety cap.
 #   - `--no-session-persistence` — auditor session not saved to disk.
 #   - `--dangerously-skip-permissions` — non-interactive prerequisite;
 #     safe because --tools "" means no tools can be invoked anyway.
 #
-# Timeout: Opus typically replies in 30-60s for prompts of this size.
-# Default 180s; override via BB2_AUDIT_TIMEOUT.
-AUDIT_TIMEOUT_SEC="${BB2_AUDIT_TIMEOUT:-180}"
+# Timeout: Opus typically replies in 30-60s for prompts of this size,
+# but complex diffs (10+ rules, long Pure-C attempt logs) have been observed
+# to take 400+ seconds. Default 900s (15 min) so the auditor can finish
+# instead of timing out and letting agents through.
+# Override via BB2_AUDIT_TIMEOUT (e.g., for known-quick diffs in CI).
+AUDIT_TIMEOUT_SEC="${BB2_AUDIT_TIMEOUT:-900}"
 
 # Capture exit status reliably: `if ! cmd; then $?` doesn't give cmd's
 # exit because the `!` mutates $?. Run the command and capture $? on the
@@ -530,7 +533,7 @@ AUDIT_TIMEOUT_SEC="${BB2_AUDIT_TIMEOUT:-180}"
         --system-prompt-file "$SYSTEM_PROMPT_FILE" \
         --output-format json \
         --json-schema "$SCHEMA_JSON" \
-        --max-budget-usd 0.50 \
+        --max-budget-usd 1.00 \
         --no-session-persistence \
         --dangerously-skip-permissions \
         < "$USER_PROMPT_FILE" \
