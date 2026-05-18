@@ -321,10 +321,27 @@ signature `void (s16, s16, u8, u8 *)` — the trailing arg is the
 *remaining-stream cursor* for handlers that need to consume additional
 bytes (e.g., variable-length Meta events).
 
-The 5 slot values themselves are populated at init time (likely BSS-zero
-then assigned at boot or per-character setup).  Search for where each
-slot's target function is set — likely in a still-asm-only init routine
-under `saTan*Init*` family.
+**Init site — verified NOT EXIST.** A byte-level scan of the main EXE
++ MOVOVL.EXE overlay found ZERO instructions that write to any of these
+5 slot addresses:
+- 0 sw/sh/sb with offset 0x3340..0x3350 (any base register)
+- 0 `ori`/`addi`/`addiu` with immediate 0x3340..0x3350
+- 0 literal 32-bit value of 0x800F3340/4/8/C/50 anywhere in the binary
+- 0 references in any asm/data, asm/funcs, or src C/H/.s file
+
+The 5 LOADS in saTan0Main (one per slot) are the ONLY references in the
+codebase.  Since the EXE header declares `bss_size = 0`, the loader does
+not pre-zero these addresses — they hold whatever was in PSX RAM at boot.
+
+This means either: (a) the `D_800F33xx(...)` call arms in saTan0Main are
+effectively unreachable in practice (the `if (b & 0x80)` branch + switch
+arms are never hit because the stream byte's high bit is never set), or
+(b) some PSX BIOS / kernel mechanism populates the slots at boot
+(unlikely — BIOS does not know about game-specific dispatch tables).
+Most likely interpretation: **the dispatch table was implemented for a
+debug build / future SDK feature, but never populated in the shipped
+ROM**.  See [project_satan0main_midi_dispatch.md] (memory) for
+investigation details.
 
 ## 12. text1b accumulator cluster (6 s32 accumulators)
 
