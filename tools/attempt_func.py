@@ -44,9 +44,47 @@ ROOT = Path(__file__).resolve().parent.parent
 TOOLS = ROOT / "tools"
 
 
+def default_threads() -> int:
+    """Auto-scale permuter parallelism. See permute_capped.default_threads."""
+    env = os.environ.get("PERMUTER_THREADS", "").strip()
+    if env.isdigit() and int(env) > 0:
+        return int(env)
+    try:
+        n = os.cpu_count() or 4
+    except Exception:
+        n = 4
+    return max(1, min(n - 4, 16))
+
+
 def run(cmd: list[str], timeout: int | None = None) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, capture_output=True, text=True,
                           cwd=str(ROOT), timeout=timeout)
+
+
+def diff_shape(func: str) -> dict | None:
+    """Get current {structural, rename, branch_offset, total} for `func` from
+    the LAST BUILD. Returns None on any error (no build, function not in
+    .o yet, malformed JSON, etc.) so callers can fall through safely.
+
+    Note: reflects build/src/<file>.o, which is whatever was last linked.
+    If src/ has been edited without rebuilding, the count is stale. The
+    `attempt` pipeline doesn't modify src/ (smart_match works on
+    permuter/<func>/base.c), so the count is meaningful as long as the
+    initial build was current.
+    """
+    try:
+        cp = subprocess.run(
+            ["python3", str(TOOLS / "binary_diff.py"), "count", func],
+            capture_output=True, text=True, cwd=str(ROOT), timeout=15,
+        )
+        if cp.returncode != 0:
+            return None
+        data = json.loads(cp.stdout)
+        if not isinstance(data, dict):
+            return None
+        return data
+    except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError):
+        return None
 
 
 def classify_step(func: str) -> dict:
@@ -211,8 +249,9 @@ def main():
                     help="permute_capped --max-time (default: 120)")
     ap.add_argument("--max-flat", type=int, default=45,
                     help="permute_capped --max-flat-seconds (default: 45)")
-    ap.add_argument("--threads", type=int, default=4,
-                    help="permuter parallelism (default: 4)")
+    ap.add_argument("--threads", type=int, default=default_threads(),
+                    help=f"permuter parallelism (default: {default_threads()} = "
+                         f"min(nproc-4, 16); override via PERMUTER_THREADS env)")
     ap.add_argument("--smart-time", type=int, default=180,
                     help="smart_match cap in seconds (default: 180)")
     ap.add_argument("--no-permute", action="store_true",
@@ -271,7 +310,7 @@ def main():
             print(f"  -> matched C saved to {match_path.relative_to(ROOT)}")
         return 0
 
-    # Step 4 -- permute_capped
+    # Step 4 -- permute_capped (unless shape-only diffs make it pointless)
     if args.no_permute:
         # Read last score from smart_match output
         elapsed = int(time.monotonic() - started)
@@ -279,7 +318,25 @@ def main():
               f"reason=no_permute_flag elapsed={elapsed}s")
         return 1
 
-    pres = permute_step(func, args.time, args.max_flat, args.threads)
+    # OPTIMIZATION: permuter mutates C source shape; it cannot fix pure
+    # register-rename or branch-offset diffs (those need regfix subst rules,
+    # not new C). If the current diff is total>0 but structural==0, skip the
+    # permute step entirely and route directly to gen_regfix. Saves the
+    # 90-second flat-kill cycle on functions where permute provably can't
+    # help. Falls through to permute on any uncertainty (no build, parse
+    # error, etc.).
+    shape = diff_shape(func)
+    pres: dict
+    if shape is not None and shape.get("total", 0) > 0 and shape.get("structural", 0) == 0:
+        rn = shape.get("rename", 0)
+        bo = shape.get("branch_offset", 0)
+        print(f"attempt: {func} note=skipping_permute reason=structural=0 "
+              f"rename={rn} branch_offset={bo} (routing to gen_regfix)",
+              file=sys.stderr)
+        pres = {"matched": False, "best": shape.get("total", 0),
+                "attempts": 0, "reason": "skipped_no_structural"}
+    else:
+        pres = permute_step(func, args.time, args.max_flat, args.threads)
     if pres["matched"]:
         elapsed = int(time.monotonic() - started)
         print(f"attempt: {func} result=MATCHED score=0 stage=permute "

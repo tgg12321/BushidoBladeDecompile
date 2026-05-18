@@ -44,6 +44,26 @@ ROOT = Path(__file__).resolve().parent.parent
 SCORE_RE = re.compile(r"(?:best\s+score|score)\s*[:=]?\s*(-?\d+)", re.IGNORECASE)
 
 
+def default_threads() -> int:
+    """Auto-scale permuter parallelism.
+
+    Default: min(nproc - 4, 16) with a floor of 1. The -4 reserves cores
+    for the build/verify steps and the harness itself; the 16 cap reflects
+    diminishing returns past ~16 workers (per-worker memory + IPC contention).
+    Override via the PERMUTER_THREADS env var (any positive integer).
+
+    On a 32-core box this yields 16 (vs. the old hardcoded 4 = 12.5% util).
+    """
+    env = os.environ.get("PERMUTER_THREADS", "").strip()
+    if env.isdigit() and int(env) > 0:
+        return int(env)
+    try:
+        n = os.cpu_count() or 4
+    except Exception:
+        n = 4
+    return max(1, min(n - 4, 16))
+
+
 def find_permuter_dir(arg: str) -> Path | None:
     """Resolve <func> or <permuter/func> to a permuter directory."""
     p = Path(arg)
@@ -62,8 +82,9 @@ def main():
                     help="Hard time cap in seconds (default: 600)")
     ap.add_argument("--max-flat-seconds", type=int, default=90,
                     help="Kill if no new best within this many seconds (default: 90)")
-    ap.add_argument("--threads", "-j", type=int, default=4,
-                    help="Permuter parallelism (default: 4)")
+    ap.add_argument("--threads", "-j", type=int, default=default_threads(),
+                    help=f"Permuter parallelism (default: {default_threads()} = "
+                         f"min(nproc-4, 16); override via PERMUTER_THREADS env)")
     ap.add_argument("--stop-on-zero", action="store_true", default=True,
                     help="Stop as soon as a score-0 match is found (default on)")
     ap.add_argument("--show-output", action="store_true",
