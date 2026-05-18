@@ -26,7 +26,7 @@ g_str_sio = 0x800164A8;
 g_str_bios_id = 0x80016274;
 g_str_intr_id = 0x80016328;
 data_as_code_lb_table_800164AC = 0x800164AC;
-syscall_wrapper_break_800164F8 = 0x800164F8;
+syscall_wrapper_break_800164F8 = 0x800164F8;  /* MISNAMED: not a syscall wrapper; loop of ~0x270F 'break 1' instrs (debug/breakpoint stub) */
 psyq_memset_8003043C = 0x8003043C;
 psyq_memset_80038148 = 0x80038148;
 psyq_memset_8005509C = 0x8005509C;
@@ -2480,7 +2480,7 @@ g_gpu_prim_template_d                                   = 0x80054600;  /* templa
 /* as a starting point for future analysis. */
 myRobGeneiMove                                          = 0x8001B478;
 mario_test_Exec                                         = 0x8001DCB0;
-calc_loc_mat_fw                                         = 0x8002AB08;
+calc_loc_mat_fw                                         = 0x8002AB08;  /* MISNAMED: actually a GPU DMA scheduler (see gpu_dma_schedule_8002AB08 in pass-6 replacement section) */
 PutRobShadow                                            = 0x8002C22C;
 saTan0KiWareMoveB                                       = 0x8002DAD0;
 motion_SetMotion                                        = 0x80038C70;
@@ -2533,8 +2533,8 @@ DispSleepMenuTex                                        = 0x8003D52C;
 DispStuff                                               = 0x80083E9C;
 DispUpdateStatusMessage                                 = 0x800889D4;
 EndADRSound                                             = 0x80020D38;
-FadeOut_8003FFA8                                        = 0x8003FFA8;
-FadeOut_8003FFC4                                        = 0x8003FFC4;
+FadeOut_8003FFA8                                        = 0x8003FFA8;  /* MISNAMED: not fade; 4-byte alignment via modulo-and-round */
+FadeOut_8003FFC4                                        = 0x8003FFC4;  /* MISNAMED: not fade; sets v1[3] = 1 in passed 9-index array */
 GetAllocPacketSize                                      = 0x8005B644;
 InitFadePanel                                           = 0x80052C10;
 InitHiraRmd_80041AC8                                    = 0x80041AC8;
@@ -2552,10 +2552,10 @@ Vu0SetLightColMatrix_80080684                           = 0x80080684;  /* MISNAM
 action_CheckHitZangeki                                  = 0x800863DC;
 ang_hosei                                               = 0x800836C8;
 ang_hosei_8003F62C                                      = 0x8003F62C;
-ang_hosei_80056FE8                                      = 0x80056FE8;
+ang_hosei_80056FE8                                      = 0x80056FE8;  /* MISNAMED: not angle correction; character display-offset lookup via D_8009A830/38/40 */
 bb2_memcpy                                              = 0x80079120;
-calc_fc_frame                                           = 0x80044378;
-calc_fc_frame_800203B4                                  = 0x800203B4;
+calc_fc_frame                                           = 0x80044378;  /* MISNAMED: actually builds an offset table; counts -2 terminators (see build_offset_table_80044378 in pass-6 replacement section) */
+calc_fc_frame_800203B4                                  = 0x800203B4;  /* MISNAMED: not frame calc; extracts motion matrix and applies GTE rotation to a vector */
 calc_loc_mat_fw_80055B60                                = 0x80055B60;
 calc_teasi_loc_fw                                       = 0x80027AD8;
 camera_SetMatrix_8001DA8C                               = 0x8001DA8C;
@@ -2592,11 +2592,11 @@ game_FrameInit                                          = 0x80036EC0;
 game_FrameLoop                                          = 0x80036F40;
 get_point_value                                         = 0x8005B50C;
 gnd_close_8001DB9C                                      = 0x8001DB9C;
-gnd_close_8004939C                                      = 0x8004939C;
+gnd_close_8004939C                                      = 0x8004939C;  /* MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells */
 gnd_disp_loop_ctrl                                      = 0x800174F4;
 gnd_get_fog                                             = 0x80060E04;
 gnd_init_8001B294                                       = 0x8001B294;
-gnd_init_80041688                                       = 0x80041688;
+gnd_init_80041688                                       = 0x80041688;  /* MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+) */
 gnd_land_hit_char_tsuba                                 = 0x8005D554;
 gnd_load_tex                                            = 0x80041398;
 gnd_open                                                = 0x8003E22C;
@@ -2609,8 +2609,8 @@ gpu_SetDispMask                                         = 0x8007B2A0;
 gpu_StoreImage                                          = 0x8007B664;
 hirahira_w_ctrl                                         = 0x80041188;
 katinuki_game_getMyWeaponId                             = 0x80027334;
-katinuki_game_setData_8003D2C4                          = 0x8003D2C4;
-katinuki_game_setData_800548DC                          = 0x800548DC;
+katinuki_game_setData_8003D2C4                          = 0x8003D2C4;  /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&D_800A3220, &D_80090178) */
+katinuki_game_setData_800548DC                          = 0x800548DC;  /* MISNAMED: not katinuki data; gpu_DrawSync(0)+func_8004659C(-1)+snd_StopSelection() */
 leaf_muki_awase_800421A4                                = 0x800421A4;
 leaf_muki_awase_800444E0                                = 0x800444E0;
 mario_getMarioVoiceData_8001B3C0                        = 0x8001B3C0;  /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */
@@ -2674,12 +2674,12 @@ saTan0KiWareMoveA                                       = 0x8002D780;
 saTan0Main                                              = 0x80084CC0;
 saTan1GaugeInit                                         = 0x80060C60;
 saTan1GaugeMain                                         = 0x800753D8;
-saTan2GaugeInit_80077B20                                = 0x80077B20;
-saTan2GaugeInit_80077D00                                = 0x80077D00;
-saTan2InfoInit_80044F80                                 = 0x80044F80;
-saTan2InfoInit_8006C1FC                                 = 0x8006C1FC;
-saTan2InfoInit_80077A60                                 = 0x80077A60;
-saTan2InfoInit_80077AC0                                 = 0x80077AC0;
+saTan2GaugeInit_80077B20                                = 0x80077B20;  /* MISNAMED: not gauge init; 1-line D_800A35E4 = 1 */
+saTan2GaugeInit_80077D00                                = 0x80077D00;  /* MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr) */
+saTan2InfoInit_80044F80                                 = 0x80044F80;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_80044E74(a0+0x4D, a1) */
+saTan2InfoInit_8006C1FC                                 = 0x8006C1FC;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006C168(a0, a1) */
+saTan2InfoInit_80077A60                                 = 0x80077A60;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006E068() */
+saTan2InfoInit_80077AC0                                 = 0x80077AC0;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_80077724() */
 saTan2KabutoWareMove                                    = 0x800283D0;
 saTan3GaugeMain_8006A564                                = 0x8006A564;
 saTan3GaugeMain_80073200                                = 0x80073200;
@@ -2691,9 +2691,9 @@ saTan5TakeAnim2                                         = 0x8002D518;
 saTan5TakeGetCnt                                        = 0x800404D8;
 saTan5TakeGetPos_80045230                               = 0x80045230;
 saTan5TakeGetPos_80045694                               = 0x80045694;
-saTanMainDispGnd_800444BC                               = 0x800444BC;
-saTanMainDispGnd_80046020                               = 0x80046020;
-saTanMainDispGnd_80077A04                               = 0x80077A04;
+saTanMainDispGnd_800444BC                               = 0x800444BC;  /* MISNAMED: not ground display; 1-line wrapper of func_80044504(D_800A378C) */
+saTanMainDispGnd_80046020                               = 0x80046020;  /* MISNAMED: not ground display; func_800453E0(6) then func_8005B6AC() */
+saTanMainDispGnd_80077A04                               = 0x80077A04;  /* MISNAMED: not ground display; D_800A35E4=0 then func_8006D74C(a0, a1) */
 save_vc_ctrl                                            = 0x800414FC;
 se_data_set                                             = 0x8001D790;
 seq_GetState                                            = 0x80045194;
@@ -2718,7 +2718,7 @@ tslTmlGetHeda                                           = 0x80080660;
 /* asm/funcs/<name>.s files with semantic names not yet in named_syms.txt. */
 coli_hit_body_weapon                                    = 0x80030580;
 CalcHiraNormal                                          = 0x8003EB84;
-calc_loc_mat_fw_8004A940                                = 0x8004A940;
+calc_loc_mat_fw_8004A940                                = 0x8004A940;  /* MISNAMED: not local matrix calc; u16 stream decoder dispatching to func_8004A76C */
 saTan2LineDraw                                          = 0x8004BCC0;
 myRobGeneiOpen                                          = 0x800545F4;
 bios_Exec                                               = 0x80078948;
@@ -3390,3 +3390,39 @@ cpu_side_move_dir_4_wrapper_800801E8 = 0x800801E8;
 marionation_Exec_wrapper_80080208 = 0x80080208;
 cdrom_dma_idle_check_80080640 = 0x80080640;
 saEft01Init_wrapper_80080684 = 0x80080684;
+
+/* === MISNOMERS pass 6 replacement aliases (2026-05-18 audit) === */
+/* Continued Kengo mass-rename audit (24 of 50 audited funcs were misnomers). */
+/* See docs/naming/MISNOMERS.md pass 6. The Kengo aliases above stay for */
+/* src/*.c compat; readers should use these replacement names instead. */
+/* NOTE: syscall_wrapper_break_800164F8 was added by me in pass 5 and is */
+/* ALSO a misnomer (caught by the audit) -- demoted here. The proposer's */
+/* 'syscall_wrapper' category is itself unreliable for break-loops. */
+breakpoint_trap_loop_800164F8 = 0x800164F8;
+apply_motion_matrix_800203B4 = 0x800203B4;
+gpu_dma_schedule_8002AB08 = 0x8002AB08;
+gpu_LoadImage_wrapper_8003D2C4 = 0x8003D2C4;
+align_4byte_round_8003FFA8 = 0x8003FFA8;
+set_array_slot3_8003FFC4 = 0x8003FFC4;
+player_equipment_flag_init_80041688 = 0x80041688;
+build_offset_table_80044378 = 0x80044378;
+disp_dispatch_via_D_800A378C_800444BC = 0x800444BC;
+dispatch_via_4D_offset_80044F80 = 0x80044F80;
+display_setup_80046020 = 0x80046020;
+sentinel_array_init_8004939C = 0x8004939C;
+stream_decode_via_8004A76C_8004A940 = 0x8004A940;
+ui_stop_selection_800548DC = 0x800548DC;
+char_disp_offset_80056FE8 = 0x80056FE8;
+func_8006C168_wrapper_8006C1FC = 0x8006C1FC;
+motion_state_reset_80077A04 = 0x80077A04;
+func_8006E068_wrapper_80077A60 = 0x80077A60;
+func_80077724_wrapper_80077AC0 = 0x80077AC0;
+gauge_flag_set_80077B20 = 0x80077B20;
+gauge_data_ptr_get_80077D00 = 0x80077D00;
+
+/* === MISNOMERS pass 6 supplementary aliases (PARTIAL verdicts) === */
+/* For functions where the existing name partially fits; supplementary */
+/* name added for clarity. Both names remain valid. */
+md_mode_set_800400B0 = 0x800400B0;
+efc_buki_draw_setup_80047FBC = 0x80047FBC;
+efc_buki_draw_setup_6arg_800480C0 = 0x800480C0;

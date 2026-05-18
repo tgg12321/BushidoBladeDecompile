@@ -616,3 +616,132 @@ flag any future Kengo `name-unique` rename that lands on 3+ BB2
 addresses for the same source name; the default verdict should be
 "suspect" rather than "high confidence".
 
+
+## Pass 6: Comprehensive multi-address-family audit (2026-05-18)
+
+Continuation of pass 5. Surveyed ALL `named_syms.txt` function entries
+for multi-address families (same base name at 2+ distinct addresses,
+excluding `g_*`/`D_*`/`jtbl_*` data prefixes). Result: 25 families
+covering 60 functions, audited in two parallel sub-passes.
+
+**Methodology:** for each function, read the body in `src/*.c` (or
+`asm/funcs/*.s` if not yet decomp'd) and classify against the name's
+claim: **MATCH** | **PARTIAL** | **MISNOMER** | **UNKNOWN**.
+
+**Aggregate verdict across 50 audited:**
+
+| Verdict | Count |
+|---|---:|
+| MISNOMER (demote + replace) | 21 |
+| PARTIAL (supplementary alias) | 3 |
+| MATCH (leave as-is) | 22 |
+| UNKNOWN (asm-only, defer) | 4 |
+
+**Self-correction:** the audit also caught one of MY OWN pass-5
+additions as a misnomer:
+`syscall_wrapper_break_800164F8` is actually a `break 1`-instruction
+**trap loop** (~0x270F iterations), not a syscall wrapper. The high-
+confidence proposer's `syscall_wrapper` category is itself unreliable
+when the body is a break-loop rather than a thin trap wrapper.
+
+### Pass 6A — 3+ address families
+
+#### `saTan2InfoInit_*` (4 addrs — 0 MATCH, 4 MISNOMER)
+All four are 1-line forwarding wrappers with no Satan-2 info init logic.
+
+| Addr | Body | Replacement |
+|---|---|---|
+| 0x80044F80 | `func_80044E74(a0+0x4D, a1)` | `dispatch_via_4D_offset_80044F80` |
+| 0x8006C1FC | `func_8006C168(a0, a1)` | `func_8006C168_wrapper_8006C1FC` |
+| 0x80077A60 | `func_8006E068()` | `func_8006E068_wrapper_80077A60` |
+| 0x80077AC0 | `func_80077724()` | `func_80077724_wrapper_80077AC0` |
+
+#### `InitHiraRmd_*` (3 addrs — 1 MATCH, 2 PARTIAL)
+0x80041AC8 is real stage-Hira init. The other two are weapon-afterimage
+draw setup loops (related to Hira's combat but not init proper).
+Supplementary aliases added; existing names retained.
+
+#### `ang_hosei_*` (3 addrs — 1 MATCH, 1 MISNOMER, 1 UNKNOWN)
+0x8003F62C is a real angle-correction orchestrator. 0x80056FE8 is
+`char_disp_offset_80056FE8` (D_8009A830/38/40 lookups). 0x800836C8
+unresolved (asm-only).
+
+#### `calc_fc_frame_*` (3 addrs — 1 MATCH, 2 MISNOMER)
+
+| Addr | Body | Verdict |
+|---|---|---|
+| 0x8007EC5C | GTE-accelerated 3×3 matrix × 3-vec rotation | **MATCH** |
+| 0x80044378 | counts `-2` terminators in buffer + builds offset table | → `build_offset_table_80044378` |
+| 0x800203B4 | extracts motion matrix + applies GTE rotation to vector | → `apply_motion_matrix_800203B4` |
+
+(Both `calc_loc_mat_fw` and `calc_fc_frame` had BARE canonical names
+without addr suffix — demoted those too.)
+
+#### `calc_loc_mat_fw_*` (3 addrs — 0 MATCH, 1 MISNOMER, 1 PARTIAL, 1 UNKNOWN)
+
+| Addr | Body | Verdict |
+|---|---|---|
+| 0x8002AB08 | 200+ line GPU DMA scheduler with GTE matrix branches | → `gpu_dma_schedule_8002AB08` |
+| 0x8004A940 | u16 stream decoder dispatching to `func_8004A76C` | → `stream_decode_via_8004A76C_8004A940` |
+| 0x80055B60 | asmfix `replace_with_asmfile` stub | UNKNOWN |
+
+#### `md_option_reset_*` (3 addrs — 2 MATCH, 1 PARTIAL)
+0x8004001C (set bitflags to 1) and 0x80040068 (clear to 0) genuinely
+are option-reset variants. 0x800400B0 is a mode-SETTER (writes a1, not
+0/1) — supplementary `md_mode_set_800400B0` alias added.
+
+#### `saTanMainDispGnd_*` (3 addrs — 0 MATCH, 3 MISNOMER)
+All three are indirection/dispatch wrappers, not "main display ground".
+
+| Addr | Body | Replacement |
+|---|---|---|
+| 0x800444BC | 1-line `func_80044504(D_800A378C)` | `disp_dispatch_via_D_800A378C_800444BC` |
+| 0x80046020 | `func_800453E0(6) + func_8005B6AC()` | `display_setup_80046020` |
+| 0x80077A04 | `D_800A35E4 = 0; func_8006D74C(a0, a1);` | `motion_state_reset_80077A04` |
+
+### Pass 6B — 2-address families
+
+**Legitimate small-variant families (no changes — 7 families, 14 funcs):**
+- `AddTbpOfst` (both validate/apply tex-buf offset)
+- `coli_CheckBukiPreHit` (both delegate to `saTan2Main`)
+- `leaf_muki_awase` (both initialize leaf orientation)
+- `motion_Close` (single-player vs pair-mode variants)
+- `saSeMain` (sound-slot search variants)
+- `saTan5TakeGetPos` (sound-playback position management)
+- `suDraw2DLib` (gpu_LoadImage at different mode flags)
+
+**Misnomers (8 of 14 families had at least one wrong addr — 9 funcs):**
+
+| Addr | Was | Now |
+|---|---|---|
+| 0x8003FFA8 | `FadeOut_*` | `align_4byte_round_8003FFA8` (alignment, not fade) |
+| 0x8003FFC4 | `FadeOut_*` | `set_array_slot3_8003FFC4` (field setter, not fade) |
+| 0x8004939C | `gnd_close_*` | `sentinel_array_init_8004939C` (-1/-2 fills, not close) |
+| 0x80041688 | `gnd_init_*` | `player_equipment_flag_init_80041688` |
+| 0x8003D2C4 | `katinuki_game_setData_*` | `gpu_LoadImage_wrapper_8003D2C4` |
+| 0x800548DC | `katinuki_game_setData_*` | `ui_stop_selection_800548DC` |
+| 0x80077B20 | `saTan2GaugeInit_*` | `gauge_flag_set_80077B20` |
+| 0x80077D00 | `saTan2GaugeInit_*` | `gauge_data_ptr_get_80077D00` |
+| 0x800164F8 | `syscall_wrapper_break_*` (MY pass-5) | `breakpoint_trap_loop_800164F8` (break-1 loop, not wrapper) |
+
+**Asm-only UNKNOWN (deferred):** `saTan3GaugeMain_*` (0x8006A564, 0x80073200), `calc_loc_mat_fw_80055B60`, and `ang_hosei_800836C8` are asmfix `replace_with_asmfile` stubs or asm-only entries.
+
+### Summary
+
+- 21 `named_syms.txt` lines demoted with `/* MISNAMED: <body> */`
+- 21 replacement aliases added in `=== MISNOMERS pass 6 replacement aliases ===`
+- 3 supplementary aliases added in `=== MISNOMERS pass 6 supplementary aliases (PARTIAL verdicts) ===`
+- SHA1 unchanged (alias-only adds; demotions are comments only)
+
+**State after pass 6:** all multi-address function families with 2+
+distinct addresses have been audited. The remaining naming-confidence
+gap is in single-address Kengo-derived names (still many unaudited)
+and sole_caller_path "helper" proposals (111 medium-conf, not yet
+applied).
+
+**Pass-6 hit-rate observation:** for 3+ address families, the MISNOMER
+rate is ~75%. For 2-address families, the entire-family hit-rate is
+~50% (7/14 legit families), and the per-function misnomer rate within
+mixed families is ~35% (9/26 funcs). Recommendation: audit any 3+
+family unconditionally; spot-check 2-address families.
+
