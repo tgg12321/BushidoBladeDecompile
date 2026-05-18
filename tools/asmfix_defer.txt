@@ -32,3 +32,11 @@ func_8006A1A0         # 139 insns, text1b.c. Stub→2 vs target's 139. Structura
 saTan0KiWareMoveB     # 212 insns, code6cac_b.c. Stub→2 vs target's 212. GTE function with 25 GTE ops (ctc2/mvmva/lwc2/swc2/mtc2). Pre-GTE has pointer subtraction (s1 vs s0 for x,y,z deltas), LUT lookup (D_8008D118), and 3 extern calls (single_game_getEnemyCharId, func_8007FA1C, func_8007F87C). Then 2x mvmva matrix-vector with $a8+0x88 setup. Per [[gte-3x3]] recipe but the function has substantial non-GTE complexity. Full body decomp would be 1-2h with plateau likely. Deferred. 2026-05-18.
 func_8005C074         # 141 insns, text1b.c. Stub→2 vs target's 141. Bit-table iterator: scans D_800EFB38 entries with srav-based bit-testing, finds best entry via threshold, then second loop iterates D_800EFC38 entries with multi-jal chain. Complex bit logic. Needs full body decomp from asm. Deferred. 2026-05-18.
 func_80063BD0         # 144 insns, text1b.c. Stub→2 vs target's 144. Needs full body decomp. Deferred. 2026-05-18.
+func_8007CBB0         # Retire-measure: mine=2 target=151  STRUCTURAL=149  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80054604         # Retire-measure: mine=2 target=160  STRUCTURAL=158  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80076D74         # Retire-measure: mine=2 target=161  STRUCTURAL=159  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8007D048         # Retire-measure: mine=2 target=161  STRUCTURAL=159  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8005BA8C         # Retire-measure: mine=2 target=169  STRUCTURAL=168  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8006BEC4         # Retire-measure: mine=2 target=169  STRUCTURAL=167  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8007D6D8         # Retire-measure: mine=2 target=187  STRUCTURAL=185  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8006CCC8         # Retire-measure: mine=2 target=189  STRUCTURAL=187  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
