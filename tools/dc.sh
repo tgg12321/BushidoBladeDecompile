@@ -69,7 +69,7 @@ case "$CMD" in
         #   dc.sh lessons func_8004A348              # all commits mentioning the function
         #   dc.sh lessons "delay slot fill"          # keyword search across subjects + bodies
         #   dc.sh lessons --type cheat-cleanup -n 30 # last 30 cheat-cleanup commits
-        shift
+        # ($@ is already post-CMD per the shift at line 62)
         python3 tools/commit_lessons.py "$@"
         ;;
     start)
