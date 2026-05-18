@@ -294,24 +294,37 @@ already referenced these addresses; each cluster is named by what the C
 code does with it (array stride, indexed call pattern, init constants,
 struct field offsets).
 
-## 11. Main packet-dispatch function-pointer table (5 slots)
+## 11. Sequence-event handler table (MIDI-style dispatch, 5 slots)
 
-A 5-entry function-pointer table at `0x800F3340..0x800F3350` invoked
-from main.c packet-handler paths.  All slots have the same 4-arg
-signature `fn(a0, a1, X, ptr)`; the `X` argument varies (`prev`, `next`,
-`cmd`, `b & 0xFF`).
+A 5-entry function-pointer table at `0x800F3340..0x800F3350` invoked from
+`saTan0Main` (main.c:334-454) — the **per-character sequence-stream event
+interpreter** that parses a MIDI-encoded command stream and dispatches
+each status byte to its handler:
 
-| Symbol | Address | Caller |
-|---|---|---|
-| `g_main_dispatch_fn0` | 0x800F3340 | main.c:372, 427 |
-| `g_main_dispatch_fn1` | 0x800F3344 | main.c:391, 437 |
-| `g_main_dispatch_fn2` | 0x800F3348 | main.c:397, 441 |
-| `g_main_dispatch_fn3` | 0x800F334C | main.c:410, 450 |
-| `g_main_dispatch_fn4` | 0x800F3350 | main.c:380, 433 |
+| Symbol | Address | Status | Handler role |
+|---|---|---|---|
+| `g_seq_event_handler_90_NoteOn`    | 0x800F3340 | 0x90 | Note On — reads {prev=note, next=velocity}; also triggers `spu_ReadMotionFrame()` |
+| `g_seq_event_handler_B0_CtrlChange`| 0x800F3350 | 0xB0 | Control Change — reads `next=controller_byte` |
+| `g_seq_event_handler_C0_PgmChange` | 0x800F3344 | 0xC0 | Program Change — reads `next=program_byte` |
+| `g_seq_event_handler_E0_PitchBend` | 0x800F3348 | 0xE0 | Pitch Bend |
+| `g_seq_event_handler_FF_Meta`      | 0x800F334C | 0xFF | Meta Event (except 0x2F end-of-track, which goes to `func_80084A7C`) |
 
-The targets are likely per-cmd-type handlers (e.g., one per packet-type
-or per submessage class).  Further role analysis requires tracing which
-handler ID gets stored at each slot during init.
+`saTan0Main(a0=char_id, a1=channel)` reads the next byte from the stream
+at `((void**)&D_80106F28)[a0] + (a1 * 0xB0)` (per-character × per-channel
+state struct, 0xB0 bytes/channel).  It implements MIDI "running status"
+(if the next byte's high bit is clear, re-use the last status byte stored
+at `state[0x16]`).
+
+Note `g_seq_event_handler_90_NoteOn` has signature `void (s16, s16, u8, u8)`
+— the trailing arg is the *velocity byte*.  The other 4 handlers have
+signature `void (s16, s16, u8, u8 *)` — the trailing arg is the
+*remaining-stream cursor* for handlers that need to consume additional
+bytes (e.g., variable-length Meta events).
+
+The 5 slot values themselves are populated at init time (likely BSS-zero
+then assigned at boot or per-character setup).  Search for where each
+slot's target function is set — likely in a still-asm-only init routine
+under `saTan*Init*` family.
 
 ## 12. text1b accumulator cluster (6 s32 accumulators)
 
