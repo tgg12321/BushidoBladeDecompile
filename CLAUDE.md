@@ -85,6 +85,7 @@ Full catalog in `memory/reference/tools.md`. Most-used:
 | `dc.sh verify <func>` / `verify --all --force` | Per-function / full SHA1 check |
 | `dc.sh diff-align <func>` | Sequence-aligned diff (cascade-immune) |
 | `dc.sh refresh-queue` | Regen `WORK_QUEUE.md` post-match |
+| `dc.sh lessons <query>` | Query commit corpus for prior attempts / techniques / audits (see `memory/reference/commit-lessons.md`) |
 | `dc.sh release` | ESCAPE HATCH (user-only, typed confirm) |
 
 Maintenance tools:
