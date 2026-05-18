@@ -99,7 +99,7 @@ extern void irq_SetAlarm(s32);
 extern s32 irq_EnableInterrupts(s32, s32);
 extern void func_80078BA8(s32);
 extern void func_80078A68(s32, s32, s32);
-extern s32 D_800A26D4;
+extern s32 g_alarm_secondary_cb_ptr;
 extern s32 D_800A26D8;
 extern u8 D_800A26DC;
 extern u8 D_800A26DD;
@@ -163,7 +163,7 @@ void saTan5TakeAnim2_2(s32 arg0) {
 
     if (D_800A26DC != 0) {
         EnterCriticalSection();
-        irq_SetAlarm(D_800A26D4);
+        irq_SetAlarm(g_alarm_secondary_cb_ptr);
     } else {
         s32 de;
         s32 a1_val;
@@ -179,7 +179,7 @@ void saTan5TakeAnim2_2(s32 arg0) {
         } else {
             a1_val = (s32)&D_80083F1C;
             if (D_800A26DD == 0) {
-                a1_val = D_800A26D4;
+                a1_val = g_alarm_secondary_cb_ptr;
             }
         }
         irq_EnableInterrupts(de, a1_val);
