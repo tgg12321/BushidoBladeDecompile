@@ -374,12 +374,12 @@ scratchpad copy is per-iteration of the inner SPU update loop.
 ## 15. code6cac_c2 frame-event triggers + position offset (D_8008EB04..0x1C)
 
 A small event/parameter cluster in code6cac_c2.c:873-897, all consumed
-by the per-frame state machine driven by `g_match_round_frame_counter`
-(0x800A37B8):
+by the per-frame state machine driven by `g_practice_loop_frame`
+(0x800A37B8) — i.e., this is **practice-mode scripted event handling**:
 
 | Symbol | Address | Role |
 |---|---|---|
-| `g_c2_event_frame_a` | 0x8008EB04 | trigger event: `if (g_match_round_frame == D_...)` |
+| `g_c2_event_frame_a` | 0x8008EB04 | trigger event: `if (g_practice_loop_frame == D_...)` |
 | `g_c2_event_frame_b` | 0x8008EB06 | same pattern, next slot |
 | `g_c2_event_frame_c` | 0x8008EB08 | ... |
 | `g_c2_event_frame_d` | 0x8008EB0A | ... |

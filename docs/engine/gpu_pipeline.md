@@ -290,3 +290,28 @@ The engine supports multiple video modes (height/width combinations):
 
 The `s0->width = D_8009BEF4[idx]` / `s0->height = D_8009BF08[idx]` pattern
 in `gpu.c:608-610` confirms the tables are paired and idx is the mode code.
+
+## Cross-references (recent_naming_findings.md addendum 2026-05-17)
+
+Five clusters from the placeholder-refinement pass document render-path
+data more directly:
+
+- [§16 4096-entry packed sin/cos lookup](recent_naming_findings.md#16-4096-entry-packed-sincos-lookup-d_8009c928)
+  — `g_trig_sin_cos_table_packed` at `0x8009C928`, packed `(sin << 16) | cos`
+  for one-load trig in `display.c:2570-2599` GTE inline asm. Distinct from
+  the canonical `Judge` table (`0x800973FC`, sin-only).
+- [§17 Display-state buffer + cursor](recent_naming_findings.md#17-display-state-buffer--cursor-d_800f33d8--d_800a36ec)
+  — `g_disp_state_buf` (`0x800F33D8`, 512 bytes) + `g_disp_state_buf_cursor`
+  (`0x800A36EC`, +0x100 = matrix region). Doubles as the memcard save/load
+  payload (see `code6cac_c_mid.c:507/524`).
+- [§18 Camera view-state struct](recent_naming_findings.md#18-camera-view-state-struct-d_800ff558-0x140x1c-is-position)
+  — `g_camera_view_state` at `0x800FF558`. Distinct from `g_cam_matrix`
+  (`0x800EEDB0`); position fields at +0x14/+0x18/+0x1C, distance-threshold
+  check against player pos (text1b.c:2359-2435).
+- [§19 Sprite size packed lookup](recent_naming_findings.md#19-sprite-size-packed-lookup-d_8009b850)
+  — `g_text1b_sprite_size_packed_lookup` at `0x8009B850`. Per-entry encoding:
+  low 7 bits = (height − 0x2A), top 9 bits = (width − 0x37).
+- [§21 text1b draw-primitive data cluster](recent_naming_findings.md#21-text1b-draw-primitive-data-cluster-0x8009b3400x8009b850)
+  — 19+ tables at `0x8009B340..0x8009B850` used as `s.p0` / `s.p1` /
+  `s.p_geom` / `s.p_static` fields of a draw-submission struct, named with
+  role prefixes (`g_text1b_draw_p0_*`, `_p1_*`, `_geom_*`, `_static_*`).

@@ -367,3 +367,15 @@ per-character move-enable bitmap.  `func_80033DF4` queries it as
 `&D_80106A50` and tests bits like `0x20`, `0x10000`, `0x1000000`,
 `0x4000000` to decide which characters can use which moves.  See
 [../naming/MISNOMERS.md](../naming/MISNOMERS.md).
+
+## Cross-references (recent_naming_findings.md addendum 2026-05-17)
+
+The practice-mode scripted-event handler in code6cac_c2.c uses a small
+event-trigger cluster identified in the placeholder-refinement pass:
+
+- [§15 code6cac_c2 frame-event triggers + position offset](recent_naming_findings.md#15-code6cac_c2-frame-event-triggers--position-offset-d_8008eb04-0x1c)
+  — `g_c2_event_frame_a..e` at `0x8008EB04..0x8008EB0C` (5 frame-count
+  constants tested against `g_practice_loop_frame` at 0x800A37B8) +
+  `g_c2_pos_xyz_offset_x/y/z` at `0x8008EB10..0x8008EB18` (3 s32 XYZ
+  vertex offsets added to `vp[0/1/2]`). Likely per-stage debug/practice
+  camera-shake or guided-move trigger points.
