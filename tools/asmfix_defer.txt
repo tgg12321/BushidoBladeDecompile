@@ -48,3 +48,12 @@ func_8005E098         # Retire-measure: mine=2 target=289  STRUCTURAL=288  REG-R
 func_8005763C         # Retire-measure: mine=2 target=292  STRUCTURAL=290  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
 func_8007BC08         # Retire-measure: mine=2 target=298  STRUCTURAL=296  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
 efc_rob_set_type_particle         # Retire-measure: mine=2 target=302  STRUCTURAL=300  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_800872A4         # Retire-measure: mine=2 target=307  STRUCTURAL=305  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80086CF8         # Retire-measure: mine=2 target=311  STRUCTURAL=309  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80089F3C         # Retire-measure: mine=2 target=318  STRUCTURAL=316  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80087770         # Retire-measure: mine=2 target=335  STRUCTURAL=333  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80073728         # Retire-measure: mine=2 target=340  STRUCTURAL=339  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80053E9C         # Retire-measure: mine=2 target=349  STRUCTURAL=347  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8006D808         # Retire-measure: mine=2 target=355  STRUCTURAL=353  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+saTan3GaugeMain_8006A564         # Retire-measure: mine=2 target=199  STRUCTURAL=197  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_800841E0         # Retire-measure: mine=2 target=200  STRUCTURAL=198  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
