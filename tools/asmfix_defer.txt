@@ -40,3 +40,11 @@ func_8005BA8C         # Retire-measure: mine=2 target=169  STRUCTURAL=168  REG-R
 func_8006BEC4         # Retire-measure: mine=2 target=169  STRUCTURAL=167  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
 func_8007D6D8         # Retire-measure: mine=2 target=187  STRUCTURAL=185  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
 func_8006CCC8         # Retire-measure: mine=2 target=189  STRUCTURAL=187  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+replay_camera_get_attack_number         # Retire-measure: mine=2 target=242  STRUCTURAL=240  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+saTan2Main         # Retire-measure: mine=2 target=247  STRUCTURAL=245  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8005FC9C         # Retire-measure: mine=2 target=267  STRUCTURAL=266  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+action_CheckHitZangeki         # Retire-measure: mine=2 target=271  STRUCTURAL=269  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8005E098         # Retire-measure: mine=2 target=289  STRUCTURAL=288  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8005763C         # Retire-measure: mine=2 target=292  STRUCTURAL=290  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8007BC08         # Retire-measure: mine=2 target=298  STRUCTURAL=296  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+efc_rob_set_type_particle         # Retire-measure: mine=2 target=302  STRUCTURAL=300  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
