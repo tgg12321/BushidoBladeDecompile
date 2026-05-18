@@ -3590,3 +3590,7 @@ empty_stub_800457D4                                = 0x800457D4;  /* stub: jr $r
 load_D_800A33A4_800457DC                           = 0x800457DC;  /* 1-insn getter: returns D_800A33A4 */
 load_D_800A33A0_800457FC                           = 0x800457FC;  /* 1-insn getter: returns D_800A33A0 */
 const_return_0x45000_80045808                      = 0x80045808;  /* 1-insn: returns constant 0x45000 (lui+ori) */
+
+/* === Medium-tier HELPER cleanup (2 entries missed earlier) === */
+calc_loc_mat_fw_helper_8002A458                    = 0x8002A458;  /* stub: return 0 (pass-3 UNCLEAR; only caller is calc_loc_mat_fw) */
+hirahira_w_ctrl_helper_800523E0                    = 0x800523E0;  /* extern-only asm (pass-3 UNCLEAR; only caller is hirahira_w_ctrl) */
