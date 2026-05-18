@@ -121,6 +121,22 @@ Required local deps (gitignored):
 - `permuter/` directories are gitignored (per-function permuter workspaces).
 - `auto_matches/` and `codex_lab/` are gitignored (workspace artifacts).
 
+## Root-directory cleanliness
+
+**Don't create new files at the repo root unless they're project-essential.** Specifically:
+
+| Where to write | What goes there |
+|---|---|
+| `tmp/` (gitignored) | One-off scripts, audits, scratch outputs, exploratory CSVs, log captures |
+| `logs/` (gitignored, create on demand) | Long-lived logs if genuinely needed (we don't currently have any) |
+| `docs/` | Permanent documentation |
+| `tools/` | Reusable tools (committed) |
+| root | Only the build files, configs, and tracked docs — see `tools/check_root_cleanliness.py` for the allowlist |
+
+Tooling that enforces this:
+- **`tools/hooks/root_write_guard.py`** (Claude Code PreToolUse) — blocks `*.log`, `*.csv`, `gccdump.*`, `*.bak`, `*.orig`, `triage_*`, `_tmp_*`, etc. at root. Suggests `tmp/<name>` as the replacement.
+- **`tools/check_root_cleanliness.py`** — manual or briefing-time audit; reports unknown / suspicious root files. Integrated into `dc.sh start` (silent if clean, flags drift otherwise).
+
 ## Commit conventions
 
 See [`docs/COMMIT_CONVENTIONS.md`](docs/COMMIT_CONVENTIONS.md) for the subject-prefix catalog and body structure used across this project. The tooling (`tools/dc.sh lessons`, `tools/hooks/llm_audit.sh`) parses commit subjects/bodies for structured information, so consistency improves searchability and audit reliability.

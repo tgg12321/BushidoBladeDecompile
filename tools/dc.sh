@@ -150,6 +150,17 @@ case "$CMD" in
             fi
         fi
 
+        # Root cleanliness check — surface suspicious / unknown root files.
+        # Silent if clean; one-line summary + offenders if not.
+        if [ -f tools/check_root_cleanliness.py ]; then
+            _root_msg=$(python3 tools/check_root_cleanliness.py 2>&1)
+            if [ $? -ne 0 ]; then
+                # Compact: show only the summary line + offenders, not the full advice
+                echo "$_root_msg" | grep -E "^Root scan:|^SUSPICIOUS|^UNKNOWN|^  [a-zA-Z0-9_.\(]" | sed 's/^/Root:     /' | head -10
+                echo
+            fi
+        fi
+
         # Build status (silent unless mismatch)
         if [ -f "build/bb2.exe" ] && [ -f "bb2.sha1" ]; then
             if sha1sum -c bb2.sha1 >/dev/null 2>&1; then
