@@ -525,3 +525,94 @@ special, fanfare, particle).
 **No misnomer here** — just an upgrade from address-based to
 semantic-based names.
 
+
+## Pass 5: Kengo `name-unique` mass-rename audit (2026-05-18)
+
+Audited 5 families of Kengo-derived names that had been applied across
+multiple addresses by the `name-unique` heuristic (where the same Kengo
+PS2 symbol matched multiple BB2 functions by SIZE only). Hypothesis: at
+most one address per family is semantically the real function; the
+others are unrelated functions that happened to share the same size as
+the Kengo entry.
+
+Bodies read directly from `src/*.c` or `asm/funcs/*.s`. **Verdict:
+20 of 21 functions are confirmed misnomers** (one match, twenty
+misclassifications). Demoted with `/* MISNAMED: <body> */` comments in
+`named_syms.txt`; replacement aliases added in a new section.
+
+### Family 1: `Vu0SetLightColMatrix_*` (4 functions — 4 misnomers, 0 matches)
+
+VU0 is PS2-only hardware; none of these touch the GTE color matrix.
+All four are unrelated 1-line wrappers in `src/system.c`.
+
+| Address | Actual body | Replacement alias |
+|---|---|---|
+| 0x800801E8 | `cpu_side_move_dir_4();` | `cpu_side_move_dir_4_wrapper_800801E8` |
+| 0x80080208 | `marionation_Exec();` | `marionation_Exec_wrapper_80080208` |
+| 0x80080640 | `return cdrom_DmaChain() == 0;` | `cdrom_dma_idle_check_80080640` |
+| 0x80080684 | `saEft01Init(a0);` | `saEft01Init_wrapper_80080684` |
+
+### Family 2: `camera_SetMatrix_*` (5 names @ 4 addresses — 1 match, 3 misnomers)
+
+The canonical `camera_SetMatrix = 0x80037F40` is itself misnamed (the
+addr-suffixed alias at the same address covers the demotion).
+
+| Address | Actual body | Verdict |
+|---|---|---|
+| 0x80037F40 | Checksums `g_file_disc_size` (0x24 bytes) then copies Quad records | **MISNOMER** → `file_disc_checksum_copy_80037F40` |
+| 0x8001DA8C | Calls `func_80035FA8()` + switches on `D_800A38DC` with camera-perspective selections | **MATCH** (camera_SetMatrix_8001DA8C kept; no demotion) |
+| 0x8001DBE4 | Checks `g_disp_enable` + dispatches `func_8003AA78/AA48` (framebuffer ops) | **MISNOMER** → `display_framebuffer_dispatch_8001DBE4` |
+| 0x8003E164 | Cache check + `gnd_open()` + load via `func_8007B6C8` | **MISNOMER** → `ground_load_with_cache_8003E164` |
+
+### Family 3: `motion_SavePreCalcData_*` (5 functions — 5 misnomers, 0 matches)
+
+None save motion pre-calc data. Three are duplicated `bios_DeliverEvent`
+wrappers (`0xF0000003` event class, sizes 0x20/0x40/0x40 — the last two
+are identical bodies at different addresses).
+
+| Address | Actual body | Replacement alias |
+|---|---|---|
+| 0x8003A3F0 | `func_8003A39C(); D_800A3928 = 1;` | `set_event_flag_8003A3F0` |
+| 0x8003A574 | `bios_FileRead_B(buf)` wrapper | `bios_FileRead_B_wrapper_8003A574` |
+| 0x80080014 | `bios_DeliverEvent(0xF0000003, 0x20)` | `bios_DeliverEvent_class3_evt20_80080014` |
+| 0x8008003C | `bios_DeliverEvent(0xF0000003, 0x40)` | `bios_DeliverEvent_class3_evt40_8008003C` |
+| 0x80080064 | duplicate of 0x8008003C | `bios_DeliverEvent_class3_evt40_80080064` |
+
+### Family 4: `motion_LoadPreCalcData_*` (3 functions — 3 misnomers, 0 matches)
+
+None load motion pre-calc data.
+
+| Address | Actual body | Replacement alias |
+|---|---|---|
+| 0x80037F08 | `func_80079A30(); bios_FormatDevice_B();` | `bios_FormatDevice_B_wrapper_80037F08` |
+| 0x8005B98C | `saFidLoad(a0, 8); saFidLoad(a0, 4);` | `saFidLoad_pair_8005B98C` |
+| 0x8007DC68 | `g_gpu_vcount = sys_VSync(-1) + 0xF0;` | `gpu_vcount_init_8007DC68` |
+
+### Family 5: `mario_getMarioVoiceData_*` (4 functions — 4 misnomers, 0 matches)
+
+None retrieve Mario voice data. Heterogeneous bodies (view-pos init,
+sound dispatch, BGM table, mode change) — same-size collision only.
+
+| Address | Actual body | Replacement alias |
+|---|---|---|
+| 0x8001B3C0 | Reads obj pos 0x180/184/188 into `D_800F5328/532C/5330` | `view_pos_init_from_obj_8001B3C0` |
+| 0x8001C820 | Conditional `func_800325E0()` with sound IDs 0x56..0x58 | `sound_dispatch_56_to_58_8001C820` |
+| 0x80048AD0 | Loads BGM and inits 0x11 sound-table entries at offset 0x68 | `bgm_sound_table_init_80048AD0` |
+| 0x8005BE84 | `title_mv_exec2() + md_game_check_change_main_mode_katinuki()` | `mode_change_to_katinuki_8005BE84` |
+
+### Summary
+
+- 20 lines in `named_syms.txt` demoted with `/* MISNAMED: <body> */`
+- 19 replacement aliases added in `=== MISNOMERS pass 5 replacement aliases (2026-05-18 audit) ===` section
+- 1 alias left untouched: `camera_SetMatrix_8001DA8C` (the only true match)
+- SHA1 unchanged (alias-only adds; existing Kengo names retained for src/*.c compat)
+
+The pattern observed in pass 4 (`katinuki_game_get_katinuki_max_num_*`,
+`tslSmdSendVu1Code_*`) repeats here at much larger scale: the Kengo
+`name-unique` heuristic is **highly unreliable** when the matched Kengo
+name has multiple BB2 candidates — most of those candidates will be
+unrelated functions that happen to share the SIZE. Audit pass should
+flag any future Kengo `name-unique` rename that lands on 3+ BB2
+addresses for the same source name; the default verdict should be
+"suspect" rather than "high confidence".
+
