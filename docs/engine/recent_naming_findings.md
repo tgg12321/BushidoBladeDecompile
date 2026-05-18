@@ -343,27 +343,41 @@ debug build / future SDK feature, but never populated in the shipped
 ROM**.  See [project_satan0main_midi_dispatch.md] (memory) for
 investigation details.
 
-## 12. text1b accumulator cluster (6 s32 accumulators)
+## 12. Sound data buffer pointer cluster (6 pointers + relocator)
 
-A bank of six `s32` accumulators at `0x800EFB14..0x800EFB28`, updated by
-`func_80054FDC(a0)` in text1b.c:11363-11378.  All six receive `+= a0`;
-the first two are unconditional, the latter four gated by their own
-non-zero check (allowing per-slot enable/disable).
+A cluster of 6 pointers at `0x800EFB14..0x800EFB28`, all relocated
+together by `func_80054FDC(a0)` (text1b.c:11363-11378) when the
+underlying sound-data buffer is moved.  The function adds `a0`
+(the relocation delta) to every pointer; the trailing 4 are gated
+by non-zero check (NULL ptrs are not relocated).
 
-| Symbol | Address | Update gate |
+| Symbol | Address | Role |
 |---|---|---|
-| `g_text1b_accum_0` | 0x800EFB14 | unconditional (via `*p` indirection) |
-| `g_text1b_accum_1` | 0x800EFB18 | unconditional |
-| `g_text1b_accum_2` | 0x800EFB1C | only if non-zero |
-| `g_text1b_accum_3` | 0x800EFB20 | only if non-zero |
-| `g_text1b_accum_4` | 0x800EFB24 | only if non-zero |
-| `g_text1b_accum_5` | 0x800EFB28 | only if non-zero |
+| `g_snd_data_buf_base`       | 0x800EFB14 | Buffer base / header struct ptr (set by `func_80054604`) |
+| `g_snd_data_subblock_0_ptr` | 0x800EFB18 | base + *(base+0x0C) — first subblock |
+| `g_snd_data_subblock_1_ptr` | 0x800EFB1C | base + *(base+0x10) — second subblock (NULL if absent) |
+| `g_snd_data_subblock_2_ptr` | 0x800EFB20 | base + *(base+0x14) — third subblock (NULL if absent) |
+| `g_snd_data_subblock_3_ptr` | 0x800EFB24 | fourth subblock (NULL if absent) |
+| `g_snd_data_subblock_4_ptr` | 0x800EFB28 | fifth subblock (NULL if absent) |
 
-`func_8005507C` returns `&g_text1b_accum_base_ptr_FB0C` (0x800EFB0C),
-which is 8 bytes earlier than accum_0.  Layout suggests accum_0..5
-follow a header block at 0x800EFB0C-0x800EFB13.  Role: likely
-time-since-event timers or per-effect duration counters that one global
-tick function increments together each frame.
+**Trace evidence (writers other than the relocator):**
+- `func_80054604` (asm-only) sets `g_snd_data_buf_base` from either
+  `func_80044FA0(...)` arg or `snd_LoadSelection(...)` return value.
+  Path: `if (s2 != 0) { func_80044FA0(s0, s2); D_800EFB14 = s2; }
+  else { func_80045080(s0); snd_StopBgm(); snd_LoadSelection(s0);
+  D_800EFB14 = ret; }`.  So `g_snd_data_buf_base` always holds a
+  pointer to a freshly loaded sound-data buffer or its returned size.
+- `func_8005490C` (asm-only) reads `g_snd_data_buf_base`, then
+  populates `g_snd_data_subblock_0_ptr` / `_1_ptr` / `_2_ptr` from
+  header offsets at `*(base + 0xC/0x10/0x14)` added to the base.
+
+`func_8005507C` returns `&g_snd_data_header_FB0C` (0x800EFB0C), which
+is 8 bytes earlier than `g_snd_data_buf_base` — it's the start of a
+small header struct that includes the buffer base pointer.
+
+This cluster ties into the saTan family sound system; the relocator
+allows the sound buffer to be moved (e.g., during BGM loading) without
+invalidating all the cached subblock pointers.
 
 ## 13. sound.c voice-init constants (D_800EF070-0xC4)
 
