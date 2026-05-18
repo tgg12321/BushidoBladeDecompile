@@ -3594,3 +3594,73 @@ const_return_0x45000_80045808                      = 0x80045808;  /* 1-insn: ret
 /* === Medium-tier HELPER cleanup (2 entries missed earlier) === */
 calc_loc_mat_fw_helper_8002A458                    = 0x8002A458;  /* stub: return 0 (pass-3 UNCLEAR; only caller is calc_loc_mat_fw) */
 hirahira_w_ctrl_helper_800523E0                    = 0x800523E0;  /* extern-only asm (pass-3 UNCLEAR; only caller is hirahira_w_ctrl) */
+
+/* === Data symbol naming pass 1 (high-ref unnamed) (2026-05-18) === */
+/* 26 truly-unnamed D_* with 10+ refs (per fresh survey replacing the */
+/* stale REMAINING_DATA_CATALOG.md). Names derived from access patterns */
+/* + adjacency to existing named symbols. Address-suffixed per pass-5 */
+/* convention. NOTE: src/*.c usages stay as D_<addr>; promoting them */
+/* triggers the GCC cascade (LONG_TERM_DX_PROMOTION_FIX.md). */
+g_scratchpad_ptr_c_1F80000C                                  = 0x1F80000C;  /* 14 refs; scratchpad RAM offset 0xC (0x1F800000 + 0xC); IRQ-save region */
+g_ot_used_max_plus_8_800A30F0                                = 0x800A30F0;  /* 19 refs; +8 from g_ot_used_max (0x800A30E8) */
+g_game_pad_index_800A3144                                    = 0x800A3144;  /* 11 refs; gp-relative; game state region; pad/player index */
+g_motion_id_current_800A3174                                 = 0x800A3174;  /* 31 refs; gp-relative s16 read in motion-dispatch loop */
+g_game_flag_c_800A3176                                       = 0x800A3176;  /* 11 refs; gp-relative s16; game-state flags region */
+g_motion_init_flag_800A3207                                  = 0x800A3207;  /* 20 refs; u8 init-once flag (set to 1 on first motion_SetMotion) */
+g_motion_table_entry_800A35C8                                = 0x800A35C8;  /* 13 refs; in motion subsystem region (offset 0x1F8 into cluster) */
+g_char_id_saved_d_plus_2_800A36CA                            = 0x800A36CA;  /* 15 refs; +2 into g_char_id_saved_d (character ID save context) */
+g_pad_rec_prev_hash_plus_4_800A36D8                          = 0x800A36D8;  /* 19 refs; +4 from g_pad_rec_prev_hash (0x800A36D4) */
+g_cpu_side_move_dir_4_arg1_800A3760                          = 0x800A3760;  /* 71 refs; passed as arg1 to cpu_side_move_dir_4_wrapper_800801E8 (pass-5-renamed from Vu0SetLightColMatrix misnomer) */
+g_frame_state_counter_800A377B                               = 0x800A377B;  /* 11 refs; s16 in frame-state cluster; frame-sync counter */
+g_round_timer_reload_800A37E8                                = 0x800A37E8;  /* 35 refs; s16 paired with g_round_timer; reload value */
+g_round_timer_plus_2_800A37EA                                = 0x800A37EA;  /* 11 refs; paired secondary timer near g_game_timer (0x800A3790) */
+g_round_timer_plus_4_800A37EC                                = 0x800A37EC;  /* 11 refs; +4 from timer base */
+g_file_state_field_800A381C                                  = 0x800A381C;  /* 16 refs; in file-subsystem state region (agent's plus_8 claim was wrong; using neutral name) */
+g_file_heap_state_flag_800A38B0                              = 0x800A38B0;  /* 40 refs; u8 init/busy flag in file subsystem (lbu/sb access) */
+g_stdout_column_counter_plus_8_800F1858                      = 0x800F1858;  /* 12 refs; +8 from g_stdout_column_counter (0x800F1850) */
+g_per_char_motion_buffer_table_prefix_800F1B14               = 0x800F1B14;  /* 20 refs; 4-byte prefix to g_per_char_motion_buffer_table_1392 at 0x800F1B18 */
+g_text1b_gte_rgb_lookup_prefix_800F2B68                      = 0x800F2B68;  /* 20 refs; 8 bytes before g_text1b_gte_rgb_lookup_1024 at 0x800F2B70 */
+g_cdread_dest_buffer_plus_4_80101E88                         = 0x80101E88;  /* 16 refs; +4 from g_cdread_dest_buffer (0x80101E84) */
+g_cdread_state_counter_80101E8C                              = 0x80101E8C;  /* 16 refs; incremented from 0; CD-read sequence counter */
+g_cdread_state_9A_80101E9A                                   = 0x80101E9A;  /* 12 refs; s16 halfword cleared in CD-read sequence */
+g_cdread_state_9C_80101E9C                                   = 0x80101E9C;  /* 12 refs; s16 halfword paired pattern with 0x80101E9A; CD-read flag */
+g_cdread_expected_bcd_frame_plus_4_80101EA4                  = 0x80101EA4;  /* 16 refs; +4 from g_cdread_expected_bcd_frame (0x80101EA0) */
+g_char_struct_p1_field_286_8010214E                          = 0x8010214E;  /* 24 refs; per-character struct offset +0x286 at record 0 base */
+g_char_struct_p1_field_6D2_8010259A                          = 0x8010259A;  /* 24 refs; per-character struct offset +0x6D2 */
+
+/* === Data symbol naming pass 2 (6-9 ref unnamed) (2026-05-18) === */
+/* 30 cluster-evidenced D_* aliases. Selective filter: skipped 21 weak */
+/* candidates where agent only had address-as-name placeholders. */
+/* Clusters: GPU color table (5), scratchpad (5), CHAR_STRUCT_p3 (7), */
+/* game state field (3), battle flag pair (2), GPU disp env (4), */
+/* byte pair (2), misc pair (2). */
+g_scratchpad_ptr_18_1F800018                       = 0x1F800018;  /* 8 refs; scratchpad RAM offset 0x18 */
+g_scratchpad_ptr_24_1F800024                       = 0x1F800024;  /* 6 refs; scratchpad RAM offset 0x24 */
+g_scratchpad_ptr_28_1F800028                       = 0x1F800028;  /* 6 refs; scratchpad RAM offset 0x28 */
+g_scratchpad_ptr_58_1F800058                       = 0x1F800058;  /* 6 refs; scratchpad RAM offset 0x58 */
+g_scratchpad_ptr_60_1F800060                       = 0x1F800060;  /* 6 refs; scratchpad RAM offset 0x60 */
+g_gpu_disp_env_field_e2_8009BEE2                   = 0x8009BEE2;  /* 7 refs; first of 4-field 4-byte-stride cluster */
+g_gpu_disp_env_field_e6_8009BEE6                   = 0x8009BEE6;  /* 7 refs; +4 stride */
+g_gpu_disp_env_field_ea_8009BEEA                   = 0x8009BEEA;  /* 7 refs; +4 stride */
+g_gpu_disp_env_field_ee_8009BEEE                   = 0x8009BEEE;  /* 7 refs; +4 final */
+g_game_state_field_0_800A3258                      = 0x800A3258;  /* 7 refs; first of 3-field 4-byte-stride cluster */
+g_game_state_field_4_800A325C                      = 0x800A325C;  /* 7 refs; +4 stride */
+g_game_state_field_8_800A3260                      = 0x800A3260;  /* 7 refs; +4 final field */
+g_game_battle_flag_a_800A367A                      = 0x800A367A;  /* 7 refs; byte pair companion at +2 */
+g_game_battle_flag_b_800A367C                      = 0x800A367C;  /* 7 refs; +2 from _a */
+g_game_state_byte_pair_a_800A3764                  = 0x800A3764;  /* 7 refs; byte pair companion at +1 */
+g_game_state_byte_pair_b_800A3765                  = 0x800A3765;  /* 7 refs; +1 from _a */
+g_gpu_color_table_field_0_800F185C                 = 0x800F185C;  /* 8 refs; first of 5-field 4-byte-stride cluster */
+g_gpu_color_table_field_4_800F1860                 = 0x800F1860;  /* 8 refs; +4 stride */
+g_gpu_color_table_field_8_800F1864                 = 0x800F1864;  /* 8 refs; +4 stride */
+g_gpu_color_table_field_12_800F1868                = 0x800F1868;  /* 8 refs; +4 stride */
+g_gpu_color_table_field_16_800F186C                = 0x800F186C;  /* 8 refs; +4 final field of 5-field cluster */
+g_char_p3_byte_f2_801027F2                         = 0x801027F2;  /* 6 refs; per-char-struct byte field at +0xF2 */
+g_char_p3_byte_f4_801027F4                         = 0x801027F4;  /* 6 refs; +2 stride */
+g_char_p3_byte_f5_801027F5                         = 0x801027F5;  /* 6 refs; +1 stride */
+g_char_p3_byte_fa_801027FA                         = 0x801027FA;  /* 6 refs; +5 from _f5 */
+g_char_p3_byte_fb_801027FB                         = 0x801027FB;  /* 6 refs; +1 stride */
+g_char_p3_byte_fd_801027FD                         = 0x801027FD;  /* 6 refs; +2 stride */
+g_char_p3_byte_fe_801027FE                         = 0x801027FE;  /* 6 refs; +1 stride */
+g_pair_state_a_80102800                            = 0x80102800;  /* 6 refs; +4 pair with 0x80102804 */
+g_pair_state_b_80102804                            = 0x80102804;  /* 6 refs; +4 companion */
