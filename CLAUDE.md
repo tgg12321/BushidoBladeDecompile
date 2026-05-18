@@ -87,6 +87,7 @@ Full catalog in `memory/reference/tools.md`. Most-used:
 | `dc.sh refresh-queue` | Regen `WORK_QUEUE.md` post-match |
 | `dc.sh lessons <query>` | Query commit corpus for prior attempts / techniques / audits (see `memory/reference/commit-lessons.md`) |
 | `dc.sh release` | ESCAPE HATCH (user-only, typed confirm) |
+| `bash tools/wsl.sh '<cmd>'` | Run `<cmd>` in WSL with cwd set to project root — replaces `wsl bash -c 'cd /mnt/c/.../"BB2" && ...'` boilerplate |
 
 Maintenance tools:
 - `python3 tools/regen_memory_index.py` — regen MEMORY.md from frontmatter (also auto-runs at session start)
