@@ -522,21 +522,73 @@ to spawn the win-celebration particle effect:
   cinematic camera intros that take longer to settle before the
   winner's callout is appropriate.
 
-## 16. 4096-entry packed sin/cos lookup (D_8009C928)
+## 16. Walk-direction packed cos/sin table (D_8009C928, 16384 bytes)
 
-A trig lookup table used inside `display.c:2570-2599` GTE inline asm.
-Each entry is 4 bytes packing `(sin << 16) | cos` so a single 32-bit
-load delivers both components.  Indexing: `idx = (t7 << 2) & 0xFFC`
-where `t7` is masked with `0xFFF` (= 4096 entries x 4-byte stride).
+A 4096-entry packed trig LUT used by `motutil_GetWalkDir`
+(display.c:2565, hand-coded asm in the original PSY-Q source) to
+build a 3×3 Euler rotation matrix from XYZ angle components.
+
+### Bit layout per entry (verified from .data values)
+
+| Bits | Field | Notes |
+|---|---|---|
+| 31..16 | `cos(angle)` (s16, unity = 0x1000) | high halfword, sign-extended via `sra $t0, $t9, 16` |
+| 15..0  | `sin(angle)` (s16, unity = 0x1000) | low halfword, sign-extended via `sll/sra 16` |
+
+Entry 0 at idx 0 (angle = 0°): `0x10000000` → cos=0x1000 (unity), sin=0. ✓
+Entry 1 at idx 1 (angle = 360°/4096 ≈ 0.088°): `0x10000006` → cos≈unity, sin=6. ✓
 
 | Symbol | Address | Geometry |
 |---|---|---|
-| `g_trig_sin_cos_table_packed` | 0x8009C928 | 4096 x 4 bytes |
+| `g_trig_sin_cos_table_packed` | 0x8009C928 | 4096 × 4 bytes = 16384 bytes; range 0x8009C928..0x800A0928 |
 
-Distinct from `Judge` (0x800973FC, the canonical 4096-entry x 2-byte
-sin-only PSX trig table). `g_trig_sin_cos_table_packed` is used in
-texture/lighting paths needing both sin and cos for a single angle
-without two loads.
+### Indexing convention (motutil_GetWalkDir)
+
+```
+angle = lh 0(a0)              // s16 input
+if (angle < 0) {
+    angle = -angle;
+    idx = angle & 0xFFF        // 12-bit angle (4096 ticks/rev)
+    entry = D_8009C928[idx]
+    sin_out = -(entry & 0xFFFF)  // negate sin for negative angle
+    cos_out =  (entry >> 16)     // cos unchanged (cos(-x) = cos(x))
+} else {
+    idx = angle & 0xFFF
+    entry = D_8009C928[idx]
+    sin_out = (s16)(entry & 0xFFFF)
+    cos_out = entry >> 16
+}
+```
+
+The negative-angle branch uses sin(-x) = -sin(x), cos(-x) = cos(x)
+identities — saving 2048 table entries vs storing both signs.
+
+### Use case
+
+`motutil_GetWalkDir(s16 *euler_xyz, u8 *mat3x3_out)`:
+1. Loads X angle from `a0+0`, builds first row's (cos_x, sin_x)
+2. Loads Y angle from `a0+2`, builds second row's (cos_y, sin_y)
+3. Loads Z angle from `a0+4`, builds third row's (cos_z, sin_z)
+4. Computes 9 matrix entries via `multu` of pairwise (cos/sin)
+   products, writes halfwords to `mat3x3_out` at +4, +10, +16, etc.
+5. Result is a Tait-Bryan ZYX rotation matrix for character walk
+   direction or animation orientation.
+
+Callers in text1b.c:
+- text1b.c:13882 — `motutil_GetWalkDir(sp18, sp30)` (stack-local)
+- text1b.c:13936 — same pattern
+- text1b.c:14007 — `motutil_GetWalkDir(dest, s0)`
+
+### Distinct from `Judge`
+
+`Judge` (0x800973FC) is the canonical sin-only PSX trig table
+(4096 × s16 = 8192 bytes), used for fade curves and SPU envelope
+generation (see §13/14).
+
+`g_trig_sin_cos_table_packed` (0x8009C928) is the **paired** form —
+both sin and cos in one 32-bit load — used specifically by walk-
+direction matrix builders where you need both trig components
+simultaneously and don't want the 2 loads + 90° offset arithmetic.
 
 ## 17. Display-state buffer + cursor (D_800F33D8 + D_800A36EC)
 
@@ -632,22 +684,70 @@ else:                             LOD level C
 The thresholds 0x4A00 / 0xA500 are LOD-cutoff distances measured in
 world units.
 
-## 19. Sprite size packed lookup (D_8009B850)
+## 19. HUD sprite size packed lookup (D_8009B850)
 
-A per-sprite size-record lookup at text1b.c:12907-12908:
+Per-sprite dimension table consumed by `func_80060414(s16 arg0,
+s32 arg1, s32 arg2)` (text1b.c:12963), the HUD-sprite draw helper.
+
+### Encoding
 
 ```c
-s.width  = (((u16)(*((&D_8009B850) + (arg0 & 0x7FFF)))) >> 7) + 0x37;
-s.height = (             *((&D_8009B850) + (arg0 & 0x7FFF))) & 0x7F  + 0x2A;
+u16 entry = *((&D_8009B850) + (arg0 & 0x7FFF));
+s.width  = (entry >> 7) + 0x37;          // 9-bit high field -> width 55..566
+s.height = (entry & 0x7F) + 0x2A;        // 7-bit low field  -> height 42..169
 ```
 
 | Symbol | Address | Encoding |
 |---|---|---|
-| `g_text1b_sprite_size_packed_lookup` | 0x8009B850 | per-entry: low 7 bits = (height - 0x2A); top 9 bits = (width - 0x37) |
+| `g_text1b_sprite_size_packed_lookup` | 0x8009B850 | u16 per entry; high 9 bits = (width - 0x37), low 7 bits = (height - 0x2A) |
 
-The bias constants (+0x37/+0x2A) suggest the table only stores
-deltas from a min-size baseline.  arg0 & 0x7FFF gives 32768 max
-entries (probably far fewer used in practice).
+Bias constants `+0x37` (width) and `+0x2A` (height) save bits by
+storing only the delta from minimum dimensions.
+
+### arg0 bit semantics
+
+| Bits | Meaning |
+|---|---|
+| bit 15 (0x8000) | "Highlight/match" flag - selects alt geometry `D_8009B7AC` |
+| bits 14..0 (0x7FFF) | Sprite size table index |
+
+When the highlight bit is clear, geometry is `D_8009B7B8` if
+`g_disp_config < 0xC`, else `D_8009B7C4` -- i.e., PAL/NTSC or
+video-mode-aware geometry selection.
+
+### Caller chain (HUD render)
+
+`ings.c:759` (inside the per-frame draw path):
+```c
+s1_var = D_800A37A8[a0_val];          // per-character size index
+if ((new_val & 0xFF) == a1_val) {
+    s1_var |= 0x8000;                  // mark as "current/active"
+}
+func_80060414(s1_var, s2_var, ot_slot);
+```
+
+So this is a per-character HUD element (likely portrait or status
+icon).  The 0x8000 flag highlights the "current/active" character
+slot using a distinct geometry, while inactive slots use the
+video-mode-appropriate dimmer geometry.
+
+### Output struct `S414` (text1b.c:12950)
+
+```c
+typedef struct {
+    s32 *p_geom;       // selected by highlight + disp_config
+    s32 *p_static;     // always &D_800A328C
+    s32 arg1_field;    // base draw-primitive pointer
+    s32 pad0C, zero10;
+    s32 arg2_field;    // OT slot
+    s32 width, height; // from D_8009B850 lookup
+    s32 pad20, pad24;
+    s8  byte28;
+} S414;
+```
+
+After fill, `func_8007352C(&s)` submits the primitive, then
+`saMotionSet(s.p_geom)` + `ot_Link` add it to the ordering table.
 
 ## 20. Motion-ex pool B (12-slot effect-spawn pool, D_800F0E38..0x800F0BEC)
 
@@ -687,33 +787,99 @@ This is the motion-ex subsystem's **effect-spawn substrate**: per-entity
 state tables (block_table_12), extra/aux fields (extra_*, state_aux_*),
 and two slot pools for transient spawned effects.
 
-## 21. text1b draw-primitive data cluster (0x8009B340..0x8009B850)
+## 21. text1b 2D-draw helper geometry banks (0x8009B340..0x8009B850)
 
-A large bank of GPU draw-primitive data tables at 0x8009B340 onward,
-referenced as `s.p0` (geometry/vertex pointer), `s.p1` (texture or
-primitive params), `s.p_geom`, `s.p_static` fields of a draw-submission
-struct.  19+ tables identified, each named with its role prefix and
-address suffix:
+Bank of 20+ GPU draw-primitive geometry tables at `0x8009B340..0x8009B850`,
+each consumed by a specific text1b 2D-sprite draw helper.  Helpers all
+share the same `S414`-style draw-submission struct (see §19 for the layout)
+with fields `s.p0` (geometry vertices), `s.p1` (texture/params), `s.p_geom`
+(per-mode geometry), `s.p_static` (static draw-list data).
 
-- `g_text1b_draw_p0_*` -- geometry buffer base
-- `g_text1b_draw_p1_*` -- primitive params / texture base
-- `g_text1b_geom_*` -- bigger geometry tables
-- `g_text1b_static_*` -- static draw-list data
+Each helper is a self-contained 2D-sprite renderer for a distinct UI/HUD
+element.  Cross-reference of tables to consumers:
 
-Strided variants encode their stride in the name
-(`g_text1b_draw_p0_b610_stride12` = 0xC bytes per record, indexed by
-arg0).  Use `git log` or `git grep` on the address suffix to find the
-specific caller.
+| Helper function | text1b.c lines | Tables used | Likely role |
+|---|---|---|---|
+| `func_8005D46C` | 12625-12640 | `g_text1b_draw_template_b2c8` (stride), `..._p1_b340`, `..._p1_b358` | Small 2-variant sprite (B2C8 base + alt at +0xC) |
+| `gnd_land_hit_char_tsuba` | 12690-12715 | D_8009B2E0 (u8 base), `..._draw_data_b388`, `..._draw_p1_b390` | Sword-clash hit visualization (named function) |
+| `func_8005FA98` | 12777-12797 | `..._draw_p0_b610_stride12`, `..._b63C_stride12`, `..._p1_b660`, `..._b670`, `..._b678`, `..._b634` | 4-variant sprite (4 p1 alts × 2 geometries) |
+| `func_800600C8` | 12871-12906 | `..._draw_primitive_b6f0`, `..._p0_b6FC`, `..._p1_b708_stride8`, `..._p1_b758` | **Digit/counter** draw (stride-8 indexed by `s.d0[i]` — score or timer digits) |
+| `func_80060414` | 12963-12988 | D_8009B7AC, `..._geom_b7B8`, `..._geom_b7C4`, `..._sprite_size_packed_lookup` | **HUD per-character sprite** (see §19) |
+| `func_80060544` | 13044-13085 | `..._geom_b770_offset`, D_8009B7A0, `..._static_b7D0/b7D8/b800/b820/b840`, D_8009B3B0 | **Multi-mode menu draw** (5 static variants for 5 menu modes) |
+| `func_80060768` | 13133 | D_8009B0C0 | Passes geometry to `func_8006D808` (sub-helper) |
 
-## 22. IRQ handler entry alabels in DispStuff.s (D_80083EDC + D_80083F1C)
+### Naming conventions
 
-Two `alabel`s inside DispStuff.s (an asm-only function) used as
-2nd-argument callbacks for `irq_EnableInterrupts()` (main.c:177/180):
-
-| Symbol | Address | Call site condition |
+| Prefix | Field bound | Role |
 |---|---|---|
-| `g_irq_handler_entry_no_pri` | 0x80083EDC | `de == 0` branch (no pending priority dispatch) |
-| `g_irq_handler_entry_with_pri` | 0x80083F1C | `de != 0` branch (priority dispatch active) |
+| `g_text1b_draw_p0_*` | `s.p0` | Geometry/vertex array base (often stride-12 indexed) |
+| `g_text1b_draw_p1_*` | `s.p1` | Primitive params / texture pointer |
+| `g_text1b_draw_data_*`, `..._template_*`, `..._primitive_*` | mixed | Catch-all for tables used in less standard slots |
+| `g_text1b_geom_*` | `s.p_geom` | Per-display-mode geometry (PAL/NTSC variants) |
+| `g_text1b_static_*` | `s.p_static` | Static draw-list data attached to OT |
 
-Both are part of the IRQ-enable-after-critical-section idiom in the
-event-system initialization paths.
+Strided variants encode stride in name:
+- `_stride8` (e.g. `b708_stride8`): 8 bytes per record (digit cells)
+- `_stride12` (e.g. `b610_stride12`, `b63C_stride12`): 12 bytes per record (XYZ triplets or 4-corner UV)
+- `_offset` (e.g. `b770_offset`): indexed by raw byte offset added to base
+
+### Cluster summary
+
+The whole 0x8009B340..0x8009B850 block is the **text1b 2D-UI render
+substrate** — geometry/texture/static-data pools for 6+ distinct UI
+helpers (sword-clash effect, digits, HUD portraits, menu screens, etc.).
+Use `git grep g_text1b_draw_…_<suffix>` to find the specific consumer
+when a unfamiliar table appears in new decomp work.
+
+## 22. IRQ-callback trampolines (D_80083EDC + D_80083F1C)
+
+Two `alabel`s inside DispStuff.s used as `irq_EnableInterrupts(de, ptr)`
+callbacks from main.c:177/180.  Read line-by-line, they're alarm-
+callback dispatch trampolines that consume the alarm-cluster state at
+`D_800A26D0..D_800A26E0`.
+
+### `g_irq_handler_entry_no_pri` (D_80083EDC) — "fire pending + secondary"
+
+```
+v0 = g_alarm_callback_ptr             // D_800A26D8
+if (v0 != 0) jalr v0                  // call pending primary cb if set
+v0 = g_alarm_secondary_cb_ptr         // D_800A26D4 (renamed from _plus_4)
+jalr v0                                // ALWAYS call secondary
+return
+```
+
+Used when the `de` arg is 0 (no priority pending) — fires both the
+pending alarm callback (if armed) and the always-running secondary.
+
+### `g_irq_handler_entry_with_pri` (D_80083F1C) — "one-shot deferred"
+
+```
+v0 = g_alarm_pending_priority_flag    // D_800A26E0 (newly named)
+if (v0 != 0) {                         // already armed → fire now
+    cb = g_alarm_secondary_cb_ptr
+    g_alarm_pending_priority_flag = 0  // disarm
+    jalr cb
+} else {
+    g_alarm_pending_priority_flag = 1  // arm for next entry, skip call
+}
+return
+```
+
+Used when `de != 0` (priority pending) — implements a **one-shot
+deferred-fire** scheme using `D_800A26E0` as a single-bit edge-trigger:
+first entry arms; second entry fires.  This is the classic "wait for
+two ticks before invoking" pattern for IRQ-deferred work.
+
+### Alarm callback cluster (D_800A26D0..D_800A26E0)
+
+After this trace, the cluster names are:
+
+| Symbol | Address | Role |
+|---|---|---|
+| `g_alarm_armed_flag` | 0x800A26D0 | armed boolean |
+| `g_alarm_secondary_cb_ptr` | 0x800A26D4 | always-call secondary callback ptr (renamed from `_plus_4`) |
+| `g_alarm_callback_ptr` | 0x800A26D8 | primary callback ptr (call if non-null) |
+| `g_alarm_callback_pending` | 0x800A26DC | boolean: pending |
+| `g_alarm_callback_pending_plus_1` | 0x800A26DD | (sibling) |
+| `g_alarm_active_sentinel` | 0x800A26DE | active sentinel |
+| `g_alarm_pending_priority_flag` | 0x800A26E0 | one-shot deferred-fire flag (added by §22 trace) |

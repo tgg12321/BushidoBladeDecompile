@@ -296,10 +296,13 @@ in `gpu.c:608-610` confirms the tables are paired and idx is the mode code.
 Five clusters from the placeholder-refinement pass document render-path
 data more directly:
 
-- [§16 4096-entry packed sin/cos lookup](recent_naming_findings.md#16-4096-entry-packed-sincos-lookup-d_8009c928)
-  — `g_trig_sin_cos_table_packed` at `0x8009C928`, packed `(sin << 16) | cos`
-  for one-load trig in `display.c:2570-2599` GTE inline asm. Distinct from
-  the canonical `Judge` table (`0x800973FC`, sin-only).
+- [§16 Walk-direction packed cos/sin table](recent_naming_findings.md#16-walk-direction-packed-cossin-table-d_8009c928-16384-bytes)
+  — `g_trig_sin_cos_table_packed` at `0x8009C928` (4096 × 4 bytes,
+  packed `(cos << 16) | sin` — verified from .data values; entry 0 =
+  `0x10000000`). Indexed by `angle & 0xFFF`; uses sin(-x)=-sin(x) to
+  halve table size. Used by `motutil_GetWalkDir` (display.c:2565,
+  hand-coded asm) to build Tait-Bryan ZYX rotation matrices for walk
+  direction. Distinct from `Judge` (`0x800973FC`, sin-only fade/envelope).
 - [§17 Display-state buffer + cursor](recent_naming_findings.md#17-display-state-buffer--cursor-d_800f33d8--d_800a36ec)
   — `g_disp_state_buf` (`0x800F33D8`, 512 bytes) + `g_disp_state_buf_cursor`
   (`0x800A36EC`, +0x100 = matrix region). Doubles as the memcard save/load
@@ -312,10 +315,18 @@ data more directly:
   rotation, translation zeroed) and text1b inline-asm vertex paths.
   Also drives LOD selection via the position-delta threshold at
   text1b.c:2359 (thresholds 0x4A00 / 0xA500 = LOD-cutoff distances).
-- [§19 Sprite size packed lookup](recent_naming_findings.md#19-sprite-size-packed-lookup-d_8009b850)
-  — `g_text1b_sprite_size_packed_lookup` at `0x8009B850`. Per-entry encoding:
-  low 7 bits = (height − 0x2A), top 9 bits = (width − 0x37).
-- [§21 text1b draw-primitive data cluster](recent_naming_findings.md#21-text1b-draw-primitive-data-cluster-0x8009b3400x8009b850)
-  — 19+ tables at `0x8009B340..0x8009B850` used as `s.p0` / `s.p1` /
-  `s.p_geom` / `s.p_static` fields of a draw-submission struct, named with
-  role prefixes (`g_text1b_draw_p0_*`, `_p1_*`, `_geom_*`, `_static_*`).
+- [§19 HUD sprite size packed lookup](recent_naming_findings.md#19-hud-sprite-size-packed-lookup-d_8009b850)
+  — `g_text1b_sprite_size_packed_lookup` at `0x8009B850`. u16-per-entry
+  packed dimensions; consumed by `func_80060414` (text1b.c:12963), the
+  HUD per-character sprite renderer called from `ings.c:759`. arg0
+  bit 15 = highlight/active-slot flag (selects `D_8009B7AC` geometry),
+  bits 14..0 = size table index. Width 55..566, height 42..169 ranges.
+- [§21 text1b 2D-draw helper geometry banks](recent_naming_findings.md#21-text1b-2d-draw-helper-geometry-banks-0x8009b3400x8009b850)
+  — 20+ tables at `0x8009B340..0x8009B850`, each owned by a specific
+  text1b 2D-UI draw helper. Cross-reference table in §21 maps each
+  geometry/static/p0/p1 table to its consumer function
+  (`func_8005D46C`, `gnd_land_hit_char_tsuba`, `func_8005FA98`,
+  `func_800600C8` digit-draw, `func_80060414` HUD-portrait,
+  `func_80060544` menu-draw). Naming prefixes: `_draw_p0_*` (geometry),
+  `_draw_p1_*` (params/texture), `_geom_*` (mode-specific geometry),
+  `_static_*` (static draw-list data).
