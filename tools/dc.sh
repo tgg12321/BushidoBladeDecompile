@@ -47,6 +47,7 @@
 #   bash tools/dc.sh suggest <func>                  — lean rollup: state + top techniques + don't-tries + next step (auto pre/post)
 #   bash tools/dc.sh bootstrap                       — link gitignored deps from main repo (run after EnterWorktree mid-session)
 #   bash tools/dc.sh verify-toolchain                — fast existence-check on cc1, maspsx, .venv, disc (~10ms; diagnoses link-failure mysteries)
+#   bash tools/dc.sh new-worktree <name>             — create .claude/worktrees/<name> from local main HEAD, bootstrapped, ready to use
 #
 set -eo pipefail
 
@@ -257,6 +258,7 @@ case "$CMD" in
   dc.sh verify <func>             Binary diff one function
   dc.sh fix-label-drift           Auto-fix .L<N> drift after match
   dc.sh refresh-queue             Regen WORK_QUEUE.md (post-match)
+  dc.sh new-worktree <name>       Create + bootstrap a worktree off local main HEAD (one command)
   dc.sh bootstrap                 Link gitignored deps from main repo (worktree first-run)
   dc.sh verify-toolchain          Fast existence-check on cc1, maspsx, .venv, disc
   dc.sh release                   ESCAPE HATCH (user-only, typed confirm)
@@ -289,6 +291,101 @@ EOF
             exit 1
         fi
         bash tools/worktree_bootstrap.sh
+        ;;
+
+    new-worktree)
+        # One-command worktree setup: creates .claude/worktrees/<name> on
+        # a fresh branch off local main HEAD (not origin/main, which is
+        # often behind), runs the bootstrap, prints next-step hints.
+        #
+        # Replaces the multi-step EnterWorktree → reset --hard to local
+        # main → bootstrap dance. Use this whenever you're about to start
+        # work that should not happen on main (i.e., almost always —
+        # see tools/hooks/main_branch_guard.sh).
+        NAME="${1:-}"
+        if [ -z "$NAME" ]; then
+            echo "Usage: bash tools/dc.sh new-worktree <name>" >&2
+            echo "" >&2
+            echo "  Creates .claude/worktrees/<name> on branch worktree-<name>" >&2
+            echo "  from local main HEAD (not origin), bootstrapped with deps." >&2
+            echo "" >&2
+            echo "  Example: bash tools/dc.sh new-worktree cheat-cleanup-side" >&2
+            exit 1
+        fi
+        # Validate: no slashes, no shell metacharacters.
+        case "$NAME" in
+            *[!a-zA-Z0-9._-]*|''|.|..)
+                echo "ERROR: name must be alphanumeric (._- allowed), got '$NAME'" >&2
+                exit 1
+                ;;
+        esac
+        # Find the main worktree. Can't use `git worktree list` from a
+        # sub-worktree under WSL — the .git pointer file is written with
+        # Windows paths by Git Bash's `git worktree add`, which WSL git
+        # interprets relative to cwd (same trap that worktree_bootstrap.sh
+        # works around). Parse .git directly instead.
+        if [ -d .git ]; then
+            MAIN_WT="$(pwd)"
+        elif [ -f .git ]; then
+            GITDIR_LINE=$(head -1 .git | sed 's|^gitdir: *||')
+            if [ -d /mnt/c ] && [ "${GITDIR_LINE#?:/}" != "$GITDIR_LINE" ]; then
+                DRIVE=$(echo "$GITDIR_LINE" | cut -c1 | tr 'A-Z' 'a-z')
+                GITDIR_ABS="/mnt/$DRIVE${GITDIR_LINE#?:}"
+            else
+                GITDIR_ABS="$GITDIR_LINE"
+            fi
+            MAIN_WT=$(dirname "$(dirname "$(dirname "$GITDIR_ABS")")")
+        else
+            echo "ERROR: not a git repository (no .git here)" >&2
+            exit 1
+        fi
+        if [ ! -d "$MAIN_WT" ]; then
+            echo "ERROR: resolved main worktree doesn't exist: $MAIN_WT" >&2
+            exit 1
+        fi
+        WT_REL=".claude/worktrees/$NAME"
+        WT_PATH="$MAIN_WT/$WT_REL"
+        BRANCH="worktree-$NAME"
+        if [ -e "$WT_PATH" ]; then
+            echo "ERROR: $WT_REL already exists at $WT_PATH" >&2
+            exit 1
+        fi
+        if git -C "$MAIN_WT" show-ref --quiet "refs/heads/$BRANCH"; then
+            echo "ERROR: branch $BRANCH already exists" >&2
+            echo "  Delete with: git -C \"$MAIN_WT\" branch -D $BRANCH" >&2
+            exit 1
+        fi
+        # Resolve local main HEAD (not origin/main — they often diverge).
+        MAIN_HEAD=$(git -C "$MAIN_WT" rev-parse main 2>/dev/null)
+        if [ -z "$MAIN_HEAD" ]; then
+            echo "ERROR: couldn't resolve local main HEAD" >&2
+            exit 1
+        fi
+        echo "Creating worktree:"
+        echo "  Path:   $WT_PATH"
+        echo "  Branch: $BRANCH"
+        echo "  Base:   main @ ${MAIN_HEAD:0:8}"
+        echo
+        if ! git -C "$MAIN_WT" worktree add -b "$BRANCH" "$WT_REL" "$MAIN_HEAD"; then
+            echo "ERROR: git worktree add failed" >&2
+            exit 1
+        fi
+        # Bootstrap deps in the new worktree.
+        echo
+        echo "Bootstrapping deps..."
+        if [ -f "$WT_PATH/tools/worktree_bootstrap.sh" ]; then
+            (cd "$WT_PATH" && bash tools/worktree_bootstrap.sh) || {
+                echo "WARNING: bootstrap reported errors — worktree created but deps may be incomplete" >&2
+            }
+        else
+            echo "WARNING: worktree_bootstrap.sh missing in checkout — run setup manually" >&2
+        fi
+        echo
+        echo "Ready. To switch into it from Claude Code:"
+        echo "  EnterWorktree path=\"$WT_PATH\""
+        echo
+        echo "From a shell:"
+        echo "  cd \"$WT_PATH\""
         ;;
 
     verify-toolchain)

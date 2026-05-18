@@ -63,12 +63,24 @@ Domain-specific rules that load ONLY when Claude reads a file matching the rule'
 - `/decomp-cheat-cleanup` — retire existing cheat orphans (functions matching ONLY via regfix/asmfix cheats)
 - `/cheat-audit` — adversarial LLM auditor on a specific commit, function, file, or working tree
 
+## Workflow policy: main is publish-only
+
+All work happens in `.claude/worktrees/<name>` sub-worktrees, not in the main checkout. Main is reserved for landing merged work and syncing with origin. The `tools/hooks/main_branch_guard.sh` hook enforces this:
+
+- Blocked in main: any file edit (Edit/Write/MultiEdit), `git commit`, `git rebase`, `git reset --hard/--merge/--keep`, `git checkout <ref> -- <file>`, `git restore`.
+- Allowed in main: `git merge`, `git pull`, `git fetch`, `git push`, all read-only ops.
+
+Create a worktree in one command: `bash tools/dc.sh new-worktree <name>` — branches from local main HEAD (not `origin/main`, which often lags), runs the bootstrap, ready to use.
+
+In-progress markers (`.bb2_active_func`, etc.) are worktree-local — main's working tree should always have them clear.
+
 ## Hooks
 
 Wired in `.claude/settings.local.json`:
 
 - **`SessionStart`** → `tools/hooks/session_start_brief.sh` (runs `dc.sh start`)
 - **PreToolUse on Bash** → `tools/hooks/active_func_guard.sh` (blocks `git commit`/`git checkout`/`dc.sh next*` while a function is active and unmatched)
+- **PreToolUse on Bash + Edit|Write|MultiEdit** → `tools/hooks/main_branch_guard.sh` (blocks edits/commits in the main worktree per the policy above; self-skips in sub-worktrees)
 - **PreToolUse on Edit|Write|MultiEdit** → `tools/hooks/regfix_scope_guard.sh` (blocks regfix-rule overscope)
 - **`Stop`** / **`SubagentStop`** → `tools/hooks/grind_check.sh` (blocks wrap-up language while a function is unmatched)
 - **Commit-time** → `tools/hooks/llm_audit.sh` (adversarial cheat-detection auditor; can be invoked ad-hoc via `/cheat-audit`)
@@ -89,7 +101,10 @@ Full catalog in `memory/reference/tools.md`. Most-used:
 | `dc.sh refresh-queue` | Regen `WORK_QUEUE.md` post-match |
 | `dc.sh lessons <query>` | Query commit corpus for prior attempts / techniques / audits (see `memory/reference/commit-lessons.md`) |
 | `dc.sh release` | ESCAPE HATCH (user-only, typed confirm) |
-| `bash tools/wsl.sh '<cmd>'` | Run `<cmd>` in WSL with cwd set to project root — replaces `wsl bash -c 'cd /mnt/c/.../"BB2" && ...'` boilerplate |
+| `dc.sh new-worktree <name>` | Create + bootstrap a worktree off local main HEAD (one command) |
+| `dc.sh bootstrap` | Link gitignored deps from main repo (worktree first-run) |
+| `dc.sh verify-toolchain` | ~10ms existence-check on cc1, maspsx, python3, disc |
+| `bash tools/wsl.sh '<cmd>'` | Run `<cmd>` in WSL with cwd auto-detected via `git rev-parse --show-toplevel`; auto-bootstraps a fresh worktree if cc1 missing |
 
 Maintenance tools:
 - `python3 tools/regen_memory_index.py` — regen MEMORY.md from frontmatter (also auto-runs at session start)
