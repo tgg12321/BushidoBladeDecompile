@@ -300,11 +300,48 @@ indexed by `g_snd_ch_status[idx]`:
 | `spu_TransferDirect_capped` | `0x8008AD64` | `spu_TransferDirect(a0, min(a1, 0x7EFF0))` + clear busy if !init. |
 | `spu_TransferData_capped` | `0x8008ADC4` | Same with `spu_TransferData`. |
 
+## MIDI-style sequence event dispatcher — `saTan0Main`
+
+`saTan0Main(s16 char_id, s16 channel)` (`main.c:334-454`) is BB2's
+**per-character sequence-stream interpreter**.  It reads a stream of
+command bytes from a per-character × per-channel state struct
+(`((void**)&g_per_char_state_F28[char_id]) + channel*0xB0`, where
+`g_per_char_state_F28` = `D_80106F28`) and dispatches each event to a
+slot in the 5-entry function-pointer table at `0x800F3340..0x800F3350`.
+
+The encoding follows MIDI conventions:
+
+| Status | Slot | Handler |
+|---|---|---|
+| 0x90 (Note On) | `g_seq_event_handler_90_NoteOn` | Reads note+velocity; also triggers `spu_ReadMotionFrame()` |
+| 0xB0 (Control Change) | `g_seq_event_handler_B0_CtrlChange` | Reads controller byte |
+| 0xC0 (Program Change) | `g_seq_event_handler_C0_PgmChange` | Reads program byte |
+| 0xE0 (Pitch Bend) | `g_seq_event_handler_E0_PitchBend` | Reads pitch byte |
+| 0xFF (Meta) | `g_seq_event_handler_FF_Meta` | Reads meta type; sub-type 0x2F (end-of-track) goes to `func_80084A7C` instead |
+
+The function implements MIDI-style "running status" — if a byte's high
+bit is clear, it re-uses the last status byte stored at `state[0x16]`.
+
+This is the LOW-LEVEL event dispatcher.  The `seq_*` family
+(`seq_Start`, `seq_Reset`, etc., see [Sequence scheduler](#sequence-scheduler--seq_-text1a_cc))
+is the HIGH-LEVEL cue-sequencer that drives multiple BGM/SE segments
+through saTan0Main.
+
+The 5 slot values are populated at init time; the assignment site is
+still asm-only (likely in a `saTan*Init*` routine).  Pattern suggests
+the slots are global handlers shared across all characters, with per-
+character state being the seek cursor + last-status-byte cache stored
+in the per-channel state struct.
+
 ## Cross-references (recent_naming_findings.md addendum 2026-05-17)
 
-Two clusters from the placeholder-refinement pass document the SPU/voice
-update path more directly:
+Three clusters from the placeholder-refinement pass document the
+SPU/voice update path more directly:
 
+- [§11 Sequence-event handler table (MIDI-style dispatch)](recent_naming_findings.md#11-sequence-event-handler-table-midi-style-dispatch-5-slots)
+  — `g_seq_event_handler_{90_NoteOn, B0_CtrlChange, C0_PgmChange,
+  E0_PitchBend, FF_Meta}` at `0x800F3340..0x800F3350` (the dispatch
+  table for the `saTan0Main` MIDI-style interpreter above).
 - [§13 sound.c voice-init constants](recent_naming_findings.md#13-soundc-voice-init-constants-d_800ef070-0xc4)
   — `g_voice_init_vol_offset = -0x2EE0` and `g_voice_init_pitch_offset = -0xFA0`
   (sound.c:780-798); same magic numbers reappear in the envelope generator

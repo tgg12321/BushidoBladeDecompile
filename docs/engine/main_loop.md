@@ -402,9 +402,11 @@ asm:
 
 Three clusters from the placeholder-refinement pass interact with the main loop:
 
-- [§11 Main packet-dispatch function-pointer table](recent_naming_findings.md#11-main-packet-dispatch-function-pointer-table-5-slots)
-  — `g_main_dispatch_fn0..4` at `0x800F3340`, invoked from main.c packet
-  handlers (callers at main.c:372, 380, 391, 397, 410, 427, 433, 437, 441, 450).
+- [§11 Sequence-event handler table (MIDI-style dispatch)](recent_naming_findings.md#11-sequence-event-handler-table-midi-style-dispatch-5-slots)
+  — `g_seq_event_handler_{90_NoteOn, B0_CtrlChange, C0_PgmChange,
+  E0_PitchBend, FF_Meta}` at `0x800F3340..0x800F3350`, invoked from
+  `saTan0Main` (main.c:334-454) — per-character MIDI-style command-stream
+  event dispatcher.  See [sound.md](sound.md) for the sequencer context.
 - [§12 text1b accumulator cluster](recent_naming_findings.md#12-text1b-accumulator-cluster-6-s32-accumulators)
   — `g_text1b_accum_0..5` at `0x800EFB14`, ticked together each frame by
   `func_80054FDC` (text1b.c:11363).
