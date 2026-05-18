@@ -434,19 +434,44 @@ The wrong moves at this point (each previously defaulted to by some agent, each 
 - Bridge whole function via `replace_with_asmfile` (100% asm — see [[feedback_bridge_is_not_decomp]])
 - Authorize as canonical-asm without STRONG-signal evidence (see [[feedback_canonical_asm_retirement]])
 - Give up and leave the function in cheat state
+- **Reach for §5.8 because you're stuck or out of time** — that's not what §5.8 is for; see entry gate below
 
-The right move (the **voice playbook**, codified after commit 819f3d1 — see [[feedback_minimize_asm_when_blocked]]):
+#### Entry gate (tightened 2026-05-17 after voice cherry-pick d33ea6b)
 
-1. **Confirm with cc1psx calibration** that the gap is structural, not a missing C insight on your part. Steps: get cc1psx running (`~/.dosemu/dosemurc` with `$_cpu_vm = "emulated"`), compile your isolated source through it, compare the asm with target. If cc1psx ALSO diverges, the gap is real. If cc1psx matches, your C source structure is wrong — keep iterating §5.
-2. **Identify each remaining diff specifically.** Use `dc.sh diff-align` to see the structural diffs. Categorize each: codegen-control (LICM, scheduling) vs register-naming vs instruction-order.
-3. **Address codegen-control diffs with §6.1 single-instruction barriers.** Each barrier must be one instruction (`addiu`, `srl`, `addu`, etc.) and serve a narrow purpose. Document WHY each one exists (what natural-C alternative was tried).
-4. **Address remaining diffs with specific (non-wildcard) regfix rules.** `reorder` for scheduling, `subst` with EXACT patterns for register naming. NEVER `subst ".*"` — that's the cheat. Each rule closes ONE specific diff.
-5. **Budget: ≤10 total interventions** (barriers + specific rules combined). Voice landed at 8 (3 barriers + 5 rules). 11+ means the C structure is wrong — go back to §5.
-6. **Each intervention must be defended in the commit message.** Future agents and the audit need to see specific justification per intervention, not copy-paste hand-wave.
+Self-authorization for §5.8 is permitted ONLY when ALL of these hold. The bar is "I have proven the gap is structural to our toolchain", not "I have run out of ideas":
 
-This path is **between** full pure-C (the §0 ideal) and bridge (the §0 "ask user" escape hatch). It's the SOTN-equivalent compromise for genuinely-toolchain-hard functions — the C source is the authoritative implementation, barriers and rules are narrow adjustments.
+1. **cc1psx calibration log committed alongside the change.** Write `tmp/cc1psx_calibration_<func>.md` containing: (a) at least three flag combinations attempted (`-O2`, `-O2 -fno-schedule-insns`, `-O2 -fno-rerun-cse-after-loop`, `-O1`, and/or `-O2 -fno-schedule-insns-after-reload`), (b) observed diff count vs target for each combo, (c) explicit conclusion of the form "cc1psx ALSO diverges by N diffs at indices [X, Y, Z]" (or "matches" — if it matches, the gap is your C, not the toolchain; keep §5). Setup steps: `~/.dosemu/dosemurc` with `$_cpu_vm = "emulated"`.
+2. **`Pure-C attempts:` block in commit message has ≥10 enumerated entries**, each formatted `[N] technique=<name> score=<diff_count> outcome=<one-sentence observation tied to dump-text indices or diff-align region>`. Voice's 7 in-commit entries plus its prior-session documented work is the floor; below ~10 distinct techniques means §5 hasn't been pushed hard enough.
+3. **Each remaining diff named and categorized.** Don't write "register renaming throughout" — write "idx 41-43: lbu/sll on $v0 vs target $v1; idx 26-27: addiu-before-lhu vs target's lhu-before-addiu". Generic descriptions are evidence you don't know what you're closing.
+4. **Hard budget cap: ≤5 §6.1 single-instruction barriers AND ≤5 specific non-wildcard regfix rules.** Voice landed at 3 barriers + 5 rules + 7 pins = 15 raw items but 8 if pins are counted as part of the structural-C body and barriers/rules counted as interventions. Use the conservative read: barriers + non-pin regfix rules ≤ 10. **Eleven or more interventions means the C structure is wrong — go back to §5.** This is a ceiling, not a target.
+5. **Cluster check.** If a k-mer-similar sibling of this function is already matched in pure C with zero §6.1 barriers, §5.8 is forbidden — the sibling's match is direct evidence a pure-C structure exists for this family. Document the cluster check result either way ("no siblings" / "sibling X matches pure C, but uses Y structure I tried in attempt [N]").
 
-**Not for routine difficulty.** If you reach for this on a function where §5 hasn't been pushed hard, you're shortcutting. Re-read m2c output, look for cluster-sibling C patterns, run a long permuter, then revisit.
+#### What is NOT evidence for §5.8
+
+Same shape as the canonical-asm anti-pattern list — these things feel like evidence but aren't:
+
+- "I tried N C variants and they all plateaued at X diffs." Evidence you haven't found the right structure, not evidence one doesn't exist. Keep pushing — or surface variants to user.
+- "The wildcard subst cheat covers 32 instructions." Evidence the *current* C body is wrong, not evidence pure C is impossible.
+- "GCC's LICM hoists this constant / scheduler picks different ordering / RA picks wrong registers." All source-influenceable behaviors. Try `volatile`, decl reorder, computed-vs-constant init, intermediate variables, register pins (which are §5, NOT §5.8 — they don't count toward §5.8's budget).
+- "Permuter ran for 1 hour and the floor is X." Permuter plateau without cc1psx confirmation is signal to switch *technique within §5*, not §5.8 evidence.
+- "This would take many more iterations." Scheduling concern, not evidence about the toolchain.
+- "Token budget is getting low / I'm context-starved." Same — not evidence the source was anything other than C.
+
+#### When in doubt, surface to user
+
+If you're not confident pure-C is provably impossible — even if you're confident it's hard — escalate with the cc1psx log + Pure-C attempts log + the specific remaining diffs. User decides between (a) authorize §5.8 compromise, (b) keep iterating §5, (c) park and revisit. Self-authorizing on partial evidence is forbidden, same standing rule as canonical-asm.
+
+#### Retirement form (if the gate genuinely passes)
+
+1. **cc1psx calibration log written** to `tmp/cc1psx_calibration_<func>.md` and staged alongside source changes.
+2. **Identify each remaining diff specifically.** `dc.sh diff-align` + categorize: codegen-control (LICM, scheduling) vs register-naming vs instruction-order.
+3. **Address codegen-control diffs with §6.1 single-instruction barriers.** Each ONE instruction (`addiu`, `srl`, `addu`, …), narrowly justified. Document the natural-C alternative tried in the per-barrier defense paragraph.
+4. **Address remaining diffs with specific (non-wildcard) regfix rules.** `reorder` for scheduling, `subst "exact-pattern" "exact-replacement" @ idx` for register naming. NEVER `subst ".*"` — that's the cheat you're retiring. Each rule closes ONE specific diff.
+5. **Commit message MUST include:** (a) reference to the cc1psx log path, (b) the `Pure-C attempts:` ≥10-entry block, (c) per-barrier defense paragraph, (d) per-rule one-line justification, (e) the diff-floor receipt ("after best pure-C: N diffs at indices [list]; this commit closes them via M barriers + K rules; total = M+K ≤ 10").
+
+This path is **between** full pure-C (the §0 ideal) and bridge (the §0 "ask user" escape hatch). The C source is the authoritative implementation; barriers and rules are narrow adjustments to coerce the precise codegen the cc1+maspsx pipeline cannot natively produce.
+
+**Reference example:** `single_game_VoiceContorol` (commit d33ea6b, 2026-05-17) — 3 single-instruction `__asm__ volatile` barriers (LICM defeat, srl forcing, i=0 emission) + 5 specific non-wildcard regfix rules (2 reorders + 3 lbu/sll register substs). Pure-C floor verified at 10 diffs via cc1psx calibration. Voice is the *only* function that has cleared this gate so far; treat it as the calibration point, not a routine pattern.
 
 Full pattern + worked example: see [[feedback_minimize_asm_when_blocked]].
 

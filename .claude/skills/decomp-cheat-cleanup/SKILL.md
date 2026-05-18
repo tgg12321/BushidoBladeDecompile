@@ -288,20 +288,43 @@ If the existing toolbox can't close the gap, write a new regfix op, new transfor
 
 **When §5.1–§5.6 are exhausted AND the §0 STRONG-signal gate is NOT met** (the function is NOT canonical asm — the HAND_CODED scan is LOW/POSSIBLE/TIGHT_C, no S1/S2/S6), don't default to §5.7 or to leaving the cheat in place.
 
-Instead, apply the **minimize-asm-when-blocked principle** — see [[feedback_minimize_asm_when_blocked]] for the full pattern. Briefly:
+Instead, apply the **minimize-asm-when-blocked principle** — see [[feedback_minimize_asm_when_blocked]] for the full pattern, and **§5.8 of `decomp-next/SKILL.md` for the binding entry gate** (tightened 2026-05-17 after voice cherry-pick d33ea6b). Briefly:
 
-1. **Calibrate with cc1psx** (the original PsyQ compiler, calibration-only). Get it running per `~/.dosemu/dosemurc` config. If cc1psx ALSO can't match target's bytes for your isolated source, the gap is structural to our toolchain — proceed. If cc1psx CAN match, your source is wrong — keep iterating §5.
-2. **Identify each remaining diff specifically** via `dc.sh diff-align`. Categorize: codegen-control (LICM, scheduling) vs register-naming vs ordering.
-3. **§6.1 single-instruction `__asm__ volatile` barriers** for codegen-control diffs (LICM defeat, scheduling barrier, position-specific instruction emission). Each ONE instruction, narrowly justified, documented in commit message.
-4. **Specific non-wildcard regfix rules** for what §6.1 can't reach (`reorder` for scheduling, `subst` with EXACT pattern+replacement for register naming). NEVER wildcards — that's the cheat you're trying to remove.
-5. **Budget ≤10 total interventions** (barriers + specific rules). Voice landed at 8 (commit 819f3d1).
-6. **Each intervention defended in commit message.**
+#### Entry gate (mirrors decomp-next §5.8)
 
-This is the SOTN-equivalent compromise for genuinely-toolchain-hard functions: 95%+ pure C + narrow targeted asm/rules. It's between full pure-C (the §0 ideal) and bridging (the user-authorized escape hatch).
+Self-authorization permitted ONLY when ALL hold:
+
+1. **cc1psx calibration log** at `tmp/cc1psx_calibration_<func>.md` — ≥3 flag combos attempted, observed diff counts per combo, explicit "cc1psx ALSO diverges at indices [...]" conclusion. If cc1psx matches, the gap is your C — back to §5.
+2. **`Pure-C attempts:` ≥10 enumerated entries** in commit message (`[N] technique=… score=… outcome=…`).
+3. **Each remaining diff named** (specific indices + register pairs), not generic "register renaming".
+4. **Budget cap: ≤5 §6.1 barriers + ≤5 specific non-wildcard regfix rules.** Eleven+ interventions ⇒ wrong C structure, back to §5.
+5. **Cluster check** — if a k-mer sibling is already pure-C matched without §6.1 barriers, §5.8 is forbidden for this function.
+
+#### What is NOT evidence
+
+- "I tried N C variants and they plateaued" → keep pushing
+- "32 wildcard substs cover this function" → current C is wrong, not pure-C-impossible
+- "GCC LICM / scheduler / RA diverges" → source-influenceable; try `volatile`, decl reorder, pins (pins are §5, not §5.8)
+- "Permuter ran for 1 hour" → switch §5 technique
+- "Token budget low / many more iterations needed" → scheduling, not evidence
+
+When in doubt: surface to user with cc1psx log + Pure-C attempts + specific diffs. Self-authorizing on partial evidence is forbidden.
+
+#### Retirement procedure
+
+1. cc1psx calibration confirms structural gap.
+2. `dc.sh diff-align` → categorize each diff.
+3. §6.1 single-instruction `__asm__ volatile` barriers for codegen-control diffs (each ONE instruction, narrowly justified).
+4. Specific non-wildcard regfix rules for what §6.1 can't reach (`reorder`, `subst "exact" "exact" @ idx`). NEVER wildcards — that's the cheat you're retiring.
+5. Commit message: cc1psx log path + Pure-C attempts block + per-intervention defense + diff-floor receipt.
 
 If you cross the 10-intervention budget, STOP — the C structure is wrong, not "needs more rules." Go back to §5.
 
+This is the SOTN-equivalent compromise for genuinely-toolchain-hard functions: 95%+ pure C + narrow targeted asm/rules. It's between full pure-C (the §0 ideal) and bridging (the user-authorized escape hatch).
+
 After applying minimize-asm successfully: §6 (verify + commit) as normal. The audit passes (no wildcards, no inline-asm-canonical), the bytes match, and the cheat is genuinely retired.
+
+**Reference example:** single_game_VoiceContorol (commit d33ea6b). Currently the *only* function that has cleared this gate.
 
 ### 5.7 Canonical-asm retirement (after §0 authorization gate is met)
 
