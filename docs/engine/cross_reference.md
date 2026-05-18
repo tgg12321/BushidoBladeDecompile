@@ -256,12 +256,96 @@ If you've seen a global in the source and want to know what it does:
 | `_McXxx` | Memory card |
 | `_GetBattleSwichData`, `_CardCheckPulled`, `_SelectSection` | Misc helpers |
 
+## Cluster additions from placeholder-refinement traces (2026-05-17)
+
+The following clusters were promoted from placeholders to semantic
+names during the placeholder-refinement sprint (see
+[recent_naming_findings.md](recent_naming_findings.md) §11-22 for
+full traces).  Indexed here by address range for reverse lookup:
+
+### `0x8009_xxxx` range — text1b 2D-UI render substrate
+- `g_text1b_draw_template_b2c8`, `..._p1_b340/b358/b388/b390/b610/b634/b660/b670/b678/b708/b758`,
+  `..._p0_b610_stride12/b63C_stride12/b6FC`, `..._draw_primitive_b6f0/b388/_data_b388`,
+  `..._geom_b770_offset/b7B8/b7C4`, `..._static_b7D0/b7D8/b800/b820/b840`
+  (0x8009B2C8..0x8009B850) — per-helper 2D-draw geometry banks (§21)
+- `g_text1b_sprite_size_packed_lookup` (0x8009B850) — HUD sprite size LUT (§19)
+- `g_trig_sin_cos_table_packed` (0x8009C928, 16384 bytes) — walk-direction
+  cos/sin LUT consumed by `motutil_GetWalkDir` (§16)
+
+### `0x800A_36xx` range — alarm / IRQ-callback cluster
+- `g_alarm_armed_flag` (0x800A26D0), `g_alarm_secondary_cb_ptr`
+  (0x800A26D4, was `_plus_4`), `g_alarm_callback_ptr` (0x800A26D8),
+  `g_alarm_callback_pending` (0x800A26DC), `g_alarm_active_sentinel`
+  (0x800A26DE), `g_alarm_pending_priority_flag` (0x800A26E0, NEW) — §22
+- `g_text1b_ot_prim_cursor` (0x800A36E0), `g_disp_state_buf_cursor`
+  (0x800A36EC) — display ptr cursors
+- `g_main_flags_bitmask_reg` (0x800A289C) — main flags reg
+- `g_text1b_pad_state_arr` (0x800A35D0) — text1b pad state s16 array
+
+### `0x800E_F0xx` range — SPU voice0E setup cluster (§13/14)
+- `g_snd_voice_init_block` (0x800EF070, ~0x68 bytes) — SPU voice ID 0xE struct
+- `g_snd_voice_init_vol_baseline` (0x800EF0BC, = -0x2EE0)
+- `g_snd_voice_init_pitch_baseline` (0x800EF0C4, = -0xFA0)
+- `g_snd_voice_envelope_block_a/b` (0x800EF0D8, 0x800EF168) — scratchpad-DMA src
+- `g_snd_wave_phase_table` (0x800EF558, 17 × s32)
+- `g_snd_wave_output_table` (0x800EF59C, 9 × 17 s32)
+
+### `0x800E_FBxx` range — sound-data pointer cluster (§12)
+- `g_snd_data_buf_base` (0x800EFB14) — sound buffer base + header
+- `g_snd_data_subblock_{0..4}_ptr` (0x800EFB18..0x800EFB28) — 5 cached
+  subblock pointers; relocated by `func_80054FDC(delta)` when buffer moves
+- `g_snd_data_header_FB0C` (0x800EFB0C) — header preceding the base
+
+### `0x800F_0xxx` range — motion-ex effect-spawn substrate (§20)
+- `g_motion_ex_pool_b_xyz_{x,y,z}` (0x800F0E38/0xE3C/0xE40, 12 slots × 12 bytes)
+- `g_motion_ex_pool_b_flag` (0x800F0BEC, 12 × s16)
+- `g_particle_slot_bitmap_plus_4` (0x800A3448) — pool B busy bitmap
+- (Pool A is `g_particle_slot_bitmap` at 0x800A3444 / data at D_800F0D78..)
+
+### `0x800F_33xx` range — saTan0Main MIDI dispatch (§11)
+- `g_seq_event_handler_90_NoteOn` (0x800F3340)
+- `g_seq_event_handler_C0_PgmChange` (0x800F3344)
+- `g_seq_event_handler_E0_PitchBend` (0x800F3348)
+- `g_seq_event_handler_FF_Meta` (0x800F334C)
+- `g_seq_event_handler_B0_CtrlChange` (0x800F3350)
+- **NEVER WRITTEN** in shipped EXE (verified via byte-level binary
+  scan); dispatch arms in saTan0Main are effectively dead code
+- `g_disp_state_buf` (0x800F33D8, 512 bytes) — display-state struct
+  doubling as memcard save/load payload (§17)
+- `g_main_dispatch_fn0..4` aliases retained pointing at the same addresses
+
+### `0x800F_FF5x` range — camera view-state MATRIX (§18)
+- `g_camera_view_state` (0x800FF558, 32 bytes) — PsyQ `MATRIX` struct:
+  9 × s16 rotation matrix at +0x00..+0x11, u16 pad at +0x12, s32 t[3]
+  (TRX/TRY/TRZ = camera XYZ pos) at +0x14..+0x1F
+- Built by `func_80048BA4` (asm-only), consumed by `func_80052930`
+  (text1b.c:10798, GTE MVMVA wrapper)
+
+### `0x8008_EAxx` range — win-animation sound trigger script (§15)
+- `g_winanim_per_stage_intro_frame[34]` (0x8008EAC0) — per-stage SFX
+  frame targets (130/135/230 frames; 0xFFFF = disabled)
+- `g_winanim_callout_a_frame` (0x8008EB04, 155f)
+- `g_winanim_callout_b_frame` (0x8008EB06, 159f)
+- `g_winanim_special_frame` (0x8008EB08, 160f)
+- `g_winanim_fanfare_frame` (0x8008EB0A, 198f)
+- `g_winanim_particle_frame` (0x8008EB0C, 159f)
+- `g_winanim_particle_offset_{x,y,z}` (0x8008EB10..18) = (0, -800, 0)
+- `g_winanim_event_subtable_eb1c` (0x8008EB1C, 12 bytes)
+
+### `0x8008_3Exx` range — DispStuff IRQ-callback alabels (§22)
+- `g_irq_handler_entry_no_pri` (0x80083EDC) — alabel inside DispStuff,
+  "fire pending primary + always-call secondary"
+- `g_irq_handler_entry_with_pri` (0x80083F1C) — alabel, one-shot
+  deferred-fire using `g_alarm_pending_priority_flag`
+
 ## See also
 
 - [README.md](README.md) — entry point with the high-level architecture
   diagram
 - [memory_layout.md](memory_layout.md) — PS1 memory regions and gp window
 - [psyq_usage.md](psyq_usage.md) — PsyQ library identification
+- [recent_naming_findings.md](recent_naming_findings.md) — full cluster
+  traces (§1-22) with code/asm evidence and consumer chains
 - `named_syms.txt` and `symbol_addrs.txt` (project root) — primary symbol
   vocabulary
 - `SUBSYSTEM_MAP_2026-05-12.md` (project root) — object-level address map
