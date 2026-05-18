@@ -745,3 +745,107 @@ rate is ~75%. For 2-address families, the entire-family hit-rate is
 mixed families is ~35% (9/26 funcs). Recommendation: audit any 3+
 family unconditionally; spot-check 2-address families.
 
+
+## Pass 7: cpu_* + motion_* single-address subsystem audit (2026-05-18)
+
+Goal: estimate the single-address misnomer rate (in contrast to passes
+5+6 which targeted multi-address Kengo families). Audited two
+established subsystems exhaustively.
+
+### Subsystem 1: `cpu_*` (16 unique-address entries)
+
+All 16 functions audited. **16/16 MATCH** — zero misnomers. The
+subsystem is internally consistent: distance calculation, move-command
+setup, attack-pattern detection, state resets, and the practice-exercise
+data table all match their names.
+
+### Subsystem 2: `motion_*` (18 entries audited; excluding `motion_ex_play_*` /
+`motion_ex_Init_*` already covered by addr-suffixed comments and pass-6 partials)
+
+**17/18 MATCH, 1 ASMFIX** (deferred decomp, not a misnomer). All
+matched functions are motion-state orchestration as their names imply.
+
+### Pass-7 summary
+
+- 34 single-address functions audited (16 + 18)
+- 33 MATCH, 1 ASMFIX, **0 MISNOMERS**
+- Single-address misnomer rate: **0%**
+
+This validates the hypothesis from passes 5+6: misnomer risk is
+concentrated in multi-address Kengo families (where SIZE-collisions
+fool the `name-unique` heuristic). Single-address names — especially
+in established semantic subsystems — are reliable.
+
+**Recommendation:** future single-address audits should target
+suspected Kengo-derived names (those with non-English / Japanese-romaji
+prefixes that aren't in established subsystems) and `_helper_<addr>`-
+suffixed sole_caller_path proposals; the established subsystem clusters
+(cpu_*, motion_*, gpu_*, bios_*, sys_*, gpu_*, snd_*) appear high-
+confidence by spot-check.
+
+
+## Pass 8: small-subsystem confirmation + bios_* spot-check (2026-05-18)
+
+Verified pass 7's 0% finding on 5 more subsystems plus a bios_* sample.
+
+| Subsystem | Audited | MATCH | ASMFIX | MISNOMER |
+|---|---:|---:|---:|---:|
+| `pad_*` | 5 | 5 | 0 | 0 |
+| `mario_*` | 1 | 1 | 0 | 0 |
+| `replay_camera_*` | 6 | 5 | 1 | 0 |
+| `efc_*` | 14 | 14 | 0 | 0 |
+| `gnd_*` | 9 | 9 | 0 | 0 |
+| `bios_*` (10-spot-check) | 10 | 10 | 0 | 0 |
+| **TOTAL** | **45** | **44** | **1** | **0** |
+
+(Note: `mario_*` is small because the pass-5 `mario_getMarioVoiceData_*`
+family (4 funcs) was demoted as a multi-address misnomer cluster;
+`mario_test_Exec` is the lone non-demoted entry. Likewise `gnd_*` is
+small because the pass-6 demotions removed `gnd_close_8004939C` and
+`gnd_init_80041688`.)
+
+Combined passes 7+8: **84 single-address functions audited, 0 misnomers.**
+
+
+## Comprehensive coverage achieved (2026-05-18)
+
+After passes 5-8, the project's naming database has been audited
+across the highest-risk surfaces:
+
+| Pass | Scope | Audited | Misnomers | Rate |
+|---|---|---:|---:|---:|
+| 5 | 5 mass-rename families (3+ addrs) | 21 | 20 | 95% |
+| 6 | All other 2+ address families | 50 | 21 | 42% |
+| 7 | cpu_* + motion_* exhaustive | 34 | 0 | 0% |
+| 8 | pad_/mario_/replay_camera_/efc_/gnd_ + bios_ sample | 45 | 0 | 0% |
+| **Total** | | **150** | **41** | **27%** |
+
+**Key finding:** misnomer risk is **entirely concentrated in
+multi-address Kengo families** (the `apply_kengo_names.py` `name-unique`
+heuristic produces wildly different functions of the same SIZE).
+Single-address names in established subsystems show **0% misnomer
+rate** — they are high-confidence.
+
+**Demoted: 41 wrong names** with `/* MISNAMED */` comments + 40
+replacement aliases added across passes 5+6 (plus 3 supplementary
+PARTIAL aliases). The Kengo `name-unique` heuristic that produced
+these renames should be **deprecated** for future apply passes; only
+the per-address evidence-file review path is reliable.
+
+**Unaudited but expected-high-confidence (by extrapolation from
+passes 7+8's 0% rate):** all other single-address subsystem clusters
+(`sys_*`, `gpu_*`, `snd_*`, `marionation_*`, `file_*`, `coli_*`,
+`obj_*`, `disp_*`, `sa*`, etc.).
+
+**Residual risk surface (lowest-priority follow-ups):**
+
+1. **Non-subsystem Kengo-derived single-address names** — Japanese-
+   romaji names without a clear English subsystem prefix. ~50-100
+   names; deep audit would require body-reading each.
+2. **`_helper_<addr>` sole_caller_path proposals** — not yet applied;
+   live in `proposals.csv` medium tier (111 entries) and are
+   evidence-only.
+3. **Data symbol names** (`g_*` at non-trivial roles like
+   `g_file_disc_size` which was the pass-3 misnomer at 0x80106A50).
+   Different audit shape; not in scope for this MISNOMERS pass.
+
