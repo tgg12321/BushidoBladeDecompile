@@ -57,3 +57,14 @@ func_80053E9C         # Retire-measure: mine=2 target=349  STRUCTURAL=347  REG-R
 func_8006D808         # Retire-measure: mine=2 target=355  STRUCTURAL=353  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
 saTan3GaugeMain_8006A564         # Retire-measure: mine=2 target=199  STRUCTURAL=197  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
 func_800841E0         # Retire-measure: mine=2 target=200  STRUCTURAL=198  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8001BE20         # Retire-measure: mine=2 target=393  STRUCTURAL=391  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_8002F2D0         # Retire-measure: mine=2 target=296  STRUCTURAL=294  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80067200         # Retire-measure: mine=2 target=306  STRUCTURAL=305  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+cpu_check_run_attack         # Retire-measure: mine=314 target=317  STRUCTURAL=63  REG-RENAME=50  BRANCH-OFFSET=10. Defer 2026-05-18.
+func_8002F770         # Retire-measure: mine=2 target=324  STRUCTURAL=323  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+md_game_rob_data_init         # Retire-measure: mine=2 target=351  STRUCTURAL=349  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+special_camera_Init         # Retire-measure: mine=2 target=370  STRUCTURAL=369  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80053754         # Retire-measure: mine=2 target=466  STRUCTURAL=464  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+mario_test_Exec         # Retire-measure: mine=2 target=469  STRUCTURAL=467  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+func_80043454         # Retire-measure: mine=2 target=479  STRUCTURAL=477  REG-RENAME=0  BRANCH-OFFSET=0. Defer 2026-05-18.
+cpu_check_run_attack  # 317 insns, code6cac.c. SUBSTANTIAL existing body (4 register pins + scratchpad + GTE + bisection algorithm). Retire shows mine=314 vs target=317 (3 short), 63 STRUCTURAL + 50 REG-RENAME + 10 BRANCH-OFFSET. Already 86% matched. Tried `register s32 *data asm("t8")` + `register s32 *base asm("t3")` -> REG-RENAME dropped 50->41. Promising — could match with 1-2h of pin tuning + structural source nudges. Deferred but flag as good candidate for next session. 2026-05-18.
