@@ -837,6 +837,20 @@ passes 7+8's 0% rate):** all other single-address subsystem clusters
 (`sys_*`, `gpu_*`, `snd_*`, `marionation_*`, `file_*`, `coli_*`,
 `obj_*`, `disp_*`, `sa*`, etc.).
 
+**Late addition (cluster-naming pass 1, 2026-05-18):** while applying
+cluster-naming proposals, found that `psyq_memset_8003043C` (my own
+pass-5 high-conf application) is ALSO a misnomer — body is a
+12-iteration structured init loop writing -1 (s16) and 0xFF (u8) to
+two arrays at stride 0x64, not a memset. Demoted with MISNAMED comment;
+replacement alias `record_array_sentinel_init_8003043C` added. This
+is the SECOND time my pass-5 high-conf application was caught as a
+misnomer (after `syscall_wrapper_break_800164F8` in pass 6B), further
+reinforcing that the proposer's high-confidence categories
+(`psyq_memset`, `syscall_wrapper`) are not reliable — they need
+body-level validation. Recommend: future pass-7-style audits should
+sweep all `psyq_memset_*` and `syscall_wrapper_*` entries for body
+correctness.
+
 **Residual risk surface (lowest-priority follow-ups):**
 
 1. **Non-subsystem Kengo-derived single-address names** — Japanese-

@@ -27,7 +27,7 @@ g_str_bios_id = 0x80016274;
 g_str_intr_id = 0x80016328;
 data_as_code_lb_table_800164AC = 0x800164AC;
 syscall_wrapper_break_800164F8 = 0x800164F8;  /* MISNAMED: not a syscall wrapper; loop of ~0x270F 'break 1' instrs (debug/breakpoint stub) */
-psyq_memset_8003043C = 0x8003043C;
+psyq_memset_8003043C = 0x8003043C;  /* MISNAMED: not a memset; loops 12x writing -1 (s16) to D_80106A7A and 0xFF (u8) to D_80106A82 at stride 0x64 */
 psyq_memset_80038148 = 0x80038148;
 psyq_memset_8005509C = 0x8005509C;
 replay_camera_check_stage_80060758 = 0x80060758;
@@ -3426,3 +3426,51 @@ gauge_data_ptr_get_80077D00 = 0x80077D00;
 md_mode_set_800400B0 = 0x800400B0;
 efc_buki_draw_setup_80047FBC = 0x80047FBC;
 efc_buki_draw_setup_6arg_800480C0 = 0x800480C0;
+
+/* === Cluster naming pass 1 aliases (2026-05-18) === */
+/* Semantic aliases for previously-unnamed func_* entries in 3 large */
+/* subsystem clusters (cpu_, mario_, pad_). Names derived from body */
+/* inspection + dominant-caller-prefix context. The src/ usages still */
+/* reference func_<addr>; these aliases enable semantic grep. */
+cpu_init_replay_mode_80016A8C = 0x80016A8C;
+cpu_exec_match_round_stage_select_80016E60 = 0x80016E60;
+cpu_init_game_objects_8001DA2C = 0x8001DA2C;
+cpu_init_stage_and_camera_setup_8001E404 = 0x8001E404;
+cpu_update_frame_timing_stats_8002006C = 0x8002006C;
+mario_test_init_characters_80021210 = 0x80021210;
+mario_test_move_to_inventory_800218C8 = 0x800218C8;
+mario_test_get_guard_power_80021974 = 0x80021974;
+mario_test_get_charm_bonus_800219E4 = 0x800219E4;
+cpu_find_closest_hotspot_80022408 = 0x80022408;
+mario_test_initialize_match_80022580 = 0x80022580;
+mario_test_apply_status_updates_80022F34 = 0x80022F34;
+cpu_calc_move_pattern_trajectory_80023F08 = 0x80023F08;
+cpu_exec_main_game_loop_frame_8002C61C = 0x8002C61C;
+record_array_sentinel_init_8003043C = 0x8003043C;
+cpu_ai_pick_move_for_situation_80030D7C = 0x80030D7C;
+mario_test_clear_movement_buffer_80032040 = 0x80032040;
+cpu_check_special_move_input_80032C50 = 0x80032C50;
+mario_test_clear_state_flags_80033510 = 0x80033510;
+cpu_frame_init_and_loop_wrapper_800372C0 = 0x800372C0;
+pad_analog_volume_calc_80037AA4 = 0x80037AA4;
+pad_analog_button_test_80037B00 = 0x80037B00;
+pad_file_read_init_80037B90 = 0x80037B90;
+pad_file_write_wrapper_80037C34 = 0x80037C34;
+pad_clear_buffer_80038148 = 0x80038148;
+pad_controller_init_80038170 = 0x80038170;
+mario_test_init_dialog_memory_800392C8 = 0x800392C8;
+cpu_clear_move_buffers_80039320 = 0x80039320;
+cpu_advance_move_counter_800397A0 = 0x800397A0;
+mario_test_satan_sword_trigger_8003FFE0 = 0x8003FFE0;
+mario_test_set_fade_trigger_800493E4 = 0x800493E4;
+mario_test_record_fade_value_800494D4 = 0x800494D4;
+cpu_apply_move_input_scaling_80054884 = 0x80054884;
+cpu_attenuate_character_damage_800550E8 = 0x800550E8;
+cpu_render_stage_geometry_8005C8A8 = 0x8005C8A8;
+cpu_load_replay_images_and_init_8005FBC8 = 0x8005FBC8;
+cpu_set_or_clear_move_flag_800789D8 = 0x800789D8;
+pad_interrupt_dequeue_80078E20 = 0x80078E20;
+pad_state_dispatch_wrapper_80078F74 = 0x80078F74;
+pad_press_control_init_8007A370 = 0x8007A370;
+pad_press_control_start_8007A3C8 = 0x8007A3C8;
+cpu_copy_display_buffer_and_sync_8007BC08 = 0x8007BC08;
