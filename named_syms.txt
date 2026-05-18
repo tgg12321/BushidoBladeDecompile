@@ -3509,3 +3509,42 @@ motion_setjmp_longjmp_frames_80083220 = 0x80083220;
 satan_voice_init_80084A7C = 0x80084A7C;
 satan_state_toggle_wrapper_8008AF84 = 0x8008AF84;
 satan_angle_interpolation_8008BB24 = 0x8008BB24;
+
+/* === Cluster naming pass 3 aliases (2026-05-18) === */
+/* Semantic aliases for previously-unnamed func_* in 14 smaller subsystem */
+/* clusters: obj_/calc_/disppracticemenutex_/single_game_/se_ (pass 3A) + */
+/* special_camera_/game_/gnd_/action_/md_game_/player_/hirahira_ (pass 3B). */
+/* 2 UNCLEAR stubs deferred (calc_*_stub at 0x8002A458, 0x8002CA8C). */
+disppracticemenutex_DivideAngle_8001A4F0 = 0x8001A4F0;
+single_game_UpdateVoiceMask_8001B138 = 0x8001B138;
+calc_AngleDelta_8001F860 = 0x8001F860;
+single_game_FindStatusUpData_8001FAE4 = 0x8001FAE4;
+single_game_CheckGameState_8001FB34 = 0x8001FB34;
+disppracticemenutex_InitReplay_80020DDC = 0x80020DDC;
+calc_DistanceCategory_800272FC = 0x800272FC;
+calc_NormVector_800274BC = 0x800274BC;
+md_game_rob_anim_offset_8002F770 = 0x8002F770;
+disppracticemenutex_StoreCoords_80033550 = 0x80033550;
+game_check_reload_pending_80036D88 = 0x80036D88;
+obj_GetValue_80036F28 = 0x80036F28;
+special_camera_load_cdrom_wait_800372F4 = 0x800372F4;
+single_game_HashAndStoreData_8003A728 = 0x8003A728;
+game_exec_display_sync_8003AA78 = 0x8003AA78;
+game_exec_display_dma_loop_8003AAB0 = 0x8003AAB0;
+player_sprite_free_8004016C = 0x8004016C;
+disppracticemenutex_SetTextureParam_80044B30 = 0x80044B30;
+hirahira_flap_wing_calc_80044DE4 = 0x80044DE4;
+player_allocate_sprite_80045A50 = 0x80045A50;
+md_game_frame_setup_80054F68 = 0x80054F68;
+se_CalcPitchShift_8005BA8C = 0x8005BA8C;
+se_LoadStreamData_8005BD30 = 0x8005BD30;
+se_ResetChannels_8005BDF0 = 0x8005BDF0;
+gnd_draw_texpage_2poly_8005D46C = 0x8005D46C;
+gnd_render_affine_texpage_8005E54C = 0x8005E54C;
+gnd_draw_single_texpage_80060414 = 0x80060414;
+special_camera_clear_cdrom_irq_80080148 = 0x80080148;
+obj_SetControlData_80085E4C = 0x80085E4C;
+obj_SetReverbValue_80085EE4 = 0x80085EE4;
+obj_ResetReverbMode_80085F98 = 0x80085F98;
+action_apply_hit_flags_8008AAD4 = 0x8008AAD4;
+action_read_spu_voice_8008BDE8 = 0x8008BDE8;
