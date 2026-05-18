@@ -304,10 +304,14 @@ data more directly:
   — `g_disp_state_buf` (`0x800F33D8`, 512 bytes) + `g_disp_state_buf_cursor`
   (`0x800A36EC`, +0x100 = matrix region). Doubles as the memcard save/load
   payload (see `code6cac_c_mid.c:507/524`).
-- [§18 Camera view-state struct](recent_naming_findings.md#18-camera-view-state-struct-d_800ff558-0x140x1c-is-position)
-  — `g_camera_view_state` at `0x800FF558`. Distinct from `g_cam_matrix`
-  (`0x800EEDB0`); position fields at +0x14/+0x18/+0x1C, distance-threshold
-  check against player pos (text1b.c:2359-2435).
+- [§18 Camera view-state — PsyQ MATRIX struct](recent_naming_findings.md#18-camera-view-state--psyq-matrix-struct-d_800ff558-32-bytes)
+  — `g_camera_view_state` at `0x800FF558` is a 32-byte PsyQ `MATRIX`
+  (3×3 rotation in `m[3][3]` + s32 translation `t[3]`). Distinct from
+  `g_cam_matrix` (`0x800EEDB0`, world/projection matrix). Built by
+  `func_80048BA4`, consumed by `func_80052930` (GTE MVMVA — pure
+  rotation, translation zeroed) and text1b inline-asm vertex paths.
+  Also drives LOD selection via the position-delta threshold at
+  text1b.c:2359 (thresholds 0x4A00 / 0xA500 = LOD-cutoff distances).
 - [§19 Sprite size packed lookup](recent_naming_findings.md#19-sprite-size-packed-lookup-d_8009b850)
   — `g_text1b_sprite_size_packed_lookup` at `0x8009B850`. Per-entry encoding:
   low 7 bits = (height − 0x2A), top 9 bits = (width − 0x37).
