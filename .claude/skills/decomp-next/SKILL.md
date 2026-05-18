@@ -425,6 +425,31 @@ The ladder (in order — each rung is a TECHNIQUE switch, never a TARGET switch)
 
 After each rung: rebuild + re-verify. If MATCHED → §6. Otherwise next rung.
 
+### 5.8 MINIMIZE-ASM fallback (when §5.1-§5.7 are genuinely exhausted)
+
+**This is the path when pure C provably cannot reach byte-match.** It is NOT a default response to difficulty; it's the structured answer to "I've burned every rung above AND cc1psx calibration confirms cc1 in our toolchain can't emit target's bytes for any equivalent C structure."
+
+The wrong moves at this point (each previously defaulted to by some agent, each pushed back by user):
+
+- Bridge whole function via `replace_with_asmfile` (100% asm — see [[feedback_bridge_is_not_decomp]])
+- Authorize as canonical-asm without STRONG-signal evidence (see [[feedback_canonical_asm_retirement]])
+- Give up and leave the function in cheat state
+
+The right move (the **voice playbook**, codified after commit 819f3d1 — see [[feedback_minimize_asm_when_blocked]]):
+
+1. **Confirm with cc1psx calibration** that the gap is structural, not a missing C insight on your part. Steps: get cc1psx running (`~/.dosemu/dosemurc` with `$_cpu_vm = "emulated"`), compile your isolated source through it, compare the asm with target. If cc1psx ALSO diverges, the gap is real. If cc1psx matches, your C source structure is wrong — keep iterating §5.
+2. **Identify each remaining diff specifically.** Use `dc.sh diff-align` to see the structural diffs. Categorize each: codegen-control (LICM, scheduling) vs register-naming vs instruction-order.
+3. **Address codegen-control diffs with §6.1 single-instruction barriers.** Each barrier must be one instruction (`addiu`, `srl`, `addu`, etc.) and serve a narrow purpose. Document WHY each one exists (what natural-C alternative was tried).
+4. **Address remaining diffs with specific (non-wildcard) regfix rules.** `reorder` for scheduling, `subst` with EXACT patterns for register naming. NEVER `subst ".*"` — that's the cheat. Each rule closes ONE specific diff.
+5. **Budget: ≤10 total interventions** (barriers + specific rules combined). Voice landed at 8 (3 barriers + 5 rules). 11+ means the C structure is wrong — go back to §5.
+6. **Each intervention must be defended in the commit message.** Future agents and the audit need to see specific justification per intervention, not copy-paste hand-wave.
+
+This path is **between** full pure-C (the §0 ideal) and bridge (the §0 "ask user" escape hatch). It's the SOTN-equivalent compromise for genuinely-toolchain-hard functions — the C source is the authoritative implementation, barriers and rules are narrow adjustments.
+
+**Not for routine difficulty.** If you reach for this on a function where §5 hasn't been pushed hard, you're shortcutting. Re-read m2c output, look for cluster-sibling C patterns, run a long permuter, then revisit.
+
+Full pattern + worked example: see [[feedback_minimize_asm_when_blocked]].
+
 ### 5.x Writing C bodies through WSL (gotcha)
 
 CLAUDE.md mandates all build-file edits go through WSL (CRLF rule). The naive pattern fails for any source containing `$N` literals (register names, asm strings, `$0`, `$1`, …) because **nested heredocs in `wsl bash -c '... <<EOF ... EOF'` re-evaluate `$N` as shell positional args**: `$0` becomes `/bin/bash`, `$1`–`$9` become empty strings, `$10` → `0`, etc. The corruption is silent until cc1/as errors out with `invalid operands 'ctc2 ,'`.

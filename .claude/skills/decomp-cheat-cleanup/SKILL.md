@@ -284,6 +284,25 @@ Randomized C-structural search. Right tool when you can SEE the diff (via `dump-
 
 If the existing toolbox can't close the gap, write a new regfix op, new transformation pass, or new memory recipe. This is expected — the toolbox grew from prior matches.
 
+### 5.6.5 Minimize-asm compromise (preferred before §5.7)
+
+**When §5.1–§5.6 are exhausted AND the §0 STRONG-signal gate is NOT met** (the function is NOT canonical asm — the HAND_CODED scan is LOW/POSSIBLE/TIGHT_C, no S1/S2/S6), don't default to §5.7 or to leaving the cheat in place.
+
+Instead, apply the **minimize-asm-when-blocked principle** — see [[feedback_minimize_asm_when_blocked]] for the full pattern. Briefly:
+
+1. **Calibrate with cc1psx** (the original PsyQ compiler, calibration-only). Get it running per `~/.dosemu/dosemurc` config. If cc1psx ALSO can't match target's bytes for your isolated source, the gap is structural to our toolchain — proceed. If cc1psx CAN match, your source is wrong — keep iterating §5.
+2. **Identify each remaining diff specifically** via `dc.sh diff-align`. Categorize: codegen-control (LICM, scheduling) vs register-naming vs ordering.
+3. **§6.1 single-instruction `__asm__ volatile` barriers** for codegen-control diffs (LICM defeat, scheduling barrier, position-specific instruction emission). Each ONE instruction, narrowly justified, documented in commit message.
+4. **Specific non-wildcard regfix rules** for what §6.1 can't reach (`reorder` for scheduling, `subst` with EXACT pattern+replacement for register naming). NEVER wildcards — that's the cheat you're trying to remove.
+5. **Budget ≤10 total interventions** (barriers + specific rules). Voice landed at 8 (commit 819f3d1).
+6. **Each intervention defended in commit message.**
+
+This is the SOTN-equivalent compromise for genuinely-toolchain-hard functions: 95%+ pure C + narrow targeted asm/rules. It's between full pure-C (the §0 ideal) and bridging (the user-authorized escape hatch).
+
+If you cross the 10-intervention budget, STOP — the C structure is wrong, not "needs more rules." Go back to §5.
+
+After applying minimize-asm successfully: §6 (verify + commit) as normal. The audit passes (no wildcards, no inline-asm-canonical), the bytes match, and the cheat is genuinely retired.
+
 ### 5.7 Canonical-asm retirement (after §0 authorization gate is met)
 
 If — and only if — you've cleared the §0 STRONG-signal gate, this is the retirement form. Apply ONLY when the original source was demonstrably hand-coded asm (not just "we can't decomp it").
