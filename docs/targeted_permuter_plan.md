@@ -1,6 +1,6 @@
 # Targeted permuter plan
 
-**Status:** Planning. Not yet implemented.
+**Status:** Phase 0-4 IMPLEMENTED. Producing real backlog retirements.
 **Goal:** Extend `decomp-permuter` with BB2-specific mutation passes that
 explore SOTN-accepted pure-C techniques the upstream tool doesn't try, so
 we can drive a meaningful subset of the 228 regfix-burdened functions to
@@ -282,6 +282,63 @@ better, ideally substantially better with some matches." The
 combined Phase 2 v2 + Phase 4 prebake stays the production
 configuration; v2's name filter prevents the wrong-pin regression
 without losing the wins on aligned functions.
+
+## Phase 5: backlog retirement runs
+
+After Phase 4 v2 stabilized, applied the targeted permuter to the
+backlog of pure-C functions with regfix rules. Goal: drop regfix rules
+where the permuter finds pure-C alternatives.
+
+### Backlog tooling
+
+- **`tools/bb2_extract_func_body.py`** — pull a function body out of
+  `src/*.c` and wrap with standard preamble (typedefs, externs, data
+  refs)
+- **`tools/bb2_setup_backlog.sh`** — orchestrate: find asm/funcs/$func
+  (alias if needed), `dc.sh setup`, extract body, test-compile,
+  optionally prebake
+- **`tools/bb2_permuter_backlog.py`** — apply permuter (prebake + heavy
+  mode + 300s) to one or more backlog functions
+- **`tools/measure_scores.sh`** — quick base-score and 25s-search check
+  to triage candidates before committing 300s budget
+
+### Backlog retirement results (in progress)
+
+| Function | Regfix rule | Base | Result | Status |
+|---|---|---:|---:|---|
+| **InitFadePanel** | `$2 <-> $25 @ 0-2` | 20 | 0 | ✓ MATCHED (986 iter, 300s) |
+| **func_80062FEC** | `$5 <-> $6` | 70 | 0 | ✓ MATCHED |
+| **func_80047BE0** | `$17 <-> $18 @ 13-93` | 120 | 0 | ✓ MATCHED |
+| cdrom_FramesToBcd | `$10 <-> $11` | 10 | 10 | saturated (mfhi RA unfixable) |
+| rob_life_ctrl | 2 rules | 70 | 60 | improved, not 0 |
+| func_80021280 | `$5 <-> $6` | 320 | 235 | improved, not 0 |
+| InitHiraRmd_80041AC8 | 2 reorder rules | 180 | (running) | TBD |
+
+The three matches retired **3 regfix rules** outright. The permuter's
+SOTN-accepted mutations that landed:
+
+- **Pin a temp pointer to a specific register** (InitFadePanel):
+  `register volatile s32 *p asm("$25");`
+- **Shift decomposition + dead-op insertion** (func_80062FEC):
+  `(idx + i) << 2` → `((idx + i) << 1) << 1` and
+  `do { idx++; idx--; } while (0)` body
+- **Multiple intermediate var introductions** (func_80047BE0):
+  `s32 *new_var = &D_800EF59C[0]; src = new_var;` and similar
+  patterns
+
+### Cases the permuter can't solve
+
+cdrom_FramesToBcd is instructive: base score 10 (2 reg diffs on
+`mfhi t2/t3` and `sra a0,t2/t3,0x2`). The diff is on an intermediate
+register chosen by GCC's RA, not on a named C variable. No C-level
+register pin can target that intermediate (the only way would be
+inline-asm injection, which is banned per
+[[inline-asm-injection]]).
+
+This bounds what the targeted permuter can do: cases where the regfix
+patches around a GCC RA decision on a *named* C variable are solvable;
+cases where it patches around an RA decision on a *synthetic*
+intermediate are not.
 
 ## Phase 2 v2 status: positional pairing + heavy aliasing (REAL IMPROVEMENT)
 

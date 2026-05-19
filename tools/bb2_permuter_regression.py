@@ -653,6 +653,19 @@ def _prebake_base_c(base_c_text: str, func_name: str, pin_chain: List[str]) -> s
     name_hints_reg = re.compile(
         r"^(?:var_|temp_)?(?:t[0-9]|s[0-7]|v[01]|a[0-3])(?:_|$)"
     )
+    # Pre-scan the function body for already-pinned registers so we don't
+    # double-pin and create register-allocator conflicts. We look at
+    # `register T x asm("$N")` and `asm("REG")` in C-source declarations.
+    body_text = "\n".join(lines[brace_open:])
+    already_pinned = set()
+    for m_pin in re.finditer(r'asm\s*\(\s*"\$?(\w+)"\s*\)', body_text):
+        already_pinned.add(_to_numeric_reg("$" + m_pin.group(1).lstrip("$")))
+
+    # Build the list of pin_chain regs to apply, skipping any that are
+    # already pinned to a variable in the body (they don't need to be
+    # forced; they're already there).
+    available_pins = [_to_numeric_reg(p) for p in pin_chain if _to_numeric_reg(p) not in already_pinned]
+
     depth = 0
     annotated = 0
     out = list(lines)
@@ -665,7 +678,7 @@ def _prebake_base_c(base_c_text: str, func_name: str, pin_chain: List[str]) -> s
                 depth -= 1
         if depth < 1:
             break
-        if annotated >= len(pin_chain):
+        if annotated >= len(available_pins):
             break
         m = decl_re.match(line)
         if not m:
@@ -679,8 +692,7 @@ def _prebake_base_c(base_c_text: str, func_name: str, pin_chain: List[str]) -> s
         # its analysis.
         if name_hints_reg.match(varname):
             continue
-        pin = pin_chain[annotated]
-        pin_numeric = _to_numeric_reg(pin)
+        pin_numeric = available_pins[annotated]
         typespec_clean = typespec.strip()
         new_line = (
             f'{indent}register {typespec_clean} {varname} asm("{pin_numeric}"){init};'
@@ -696,19 +708,31 @@ def cmd_prebake(args):
     permuter/<func>_baseline/base.c. Annotates the first N in-scope
     Decls (N = chain length) with `register asm("$N")` per the chain.
 
-    Assumes `setup-baseline <func>` already ran. Saves original base.c
-    as base.c.preprebake for reversibility.
+    By default, assumes `setup-baseline <func>` already ran. Use
+    `--base-path` and `--target-path` to prebake against a backlog
+    function's permuter dir directly (no regression suite required).
+    Saves original base.c as base.c.preprebake for reversibility.
     """
     root = Path(args.project_root).resolve()
-    entry = get_entry(args.func)
-    if entry is None:
-        sys.exit(f"{args.func} not in regression suite")
 
-    baseline_dir = root / "permuter" / f"{args.func}_baseline"
-    base_c = baseline_dir / "base.c"
-    target_s = baseline_dir / "target.s"
-    if not base_c.exists() or not target_s.exists():
-        sys.exit(f"Run `setup-baseline {args.func}` first")
+    # Backlog mode: explicit base/target paths bypass the regression suite
+    if getattr(args, "base_path", None) and getattr(args, "target_path", None):
+        base_c = Path(args.base_path)
+        target_s = Path(args.target_path)
+        if not base_c.exists():
+            sys.exit(f"base.c not found at {base_c}")
+        if not target_s.exists():
+            sys.exit(f"target.s not found at {target_s}")
+    else:
+        entry = get_entry(args.func)
+        if entry is None:
+            sys.exit(f"{args.func} not in regression suite (and no --base-path/--target-path)")
+
+        baseline_dir = root / "permuter" / f"{args.func}_baseline"
+        base_c = baseline_dir / "base.c"
+        target_s = baseline_dir / "target.s"
+        if not base_c.exists() or not target_s.exists():
+            sys.exit(f"Run `setup-baseline {args.func}` first")
 
     chain = _extract_arg_pin_chain(read_text_lf(target_s))
     if not chain:
@@ -717,7 +741,7 @@ def cmd_prebake(args):
 
     print(f"{args.func}: detected pin chain {' -> '.join(chain)}")
     orig = read_text_lf(base_c)
-    write_text_lf(baseline_dir / "base.c.preprebake", orig)
+    write_text_lf(base_c.parent / "base.c.preprebake", orig)
     new_c = _prebake_base_c(orig, args.func, chain)
     write_text_lf(base_c, new_c)
 
@@ -943,6 +967,8 @@ def main():
 
     p_pre = sub.add_parser("prebake", help="Phase 4: pre-bake target arg-pin chain into permuter base.c")
     p_pre.add_argument("func")
+    p_pre.add_argument("--base-path", help="Override base.c path (backlog mode: bypasses regression suite)")
+    p_pre.add_argument("--target-path", help="Override target.s path (backlog mode: bypasses regression suite)")
     p_pre.set_defaults(handler=cmd_prebake)
 
     p_rep = sub.add_parser("report", help="Aggregate regression suite results")
