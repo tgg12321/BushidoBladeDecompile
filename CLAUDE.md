@@ -118,10 +118,35 @@ Full catalog in `memory/reference/tools.md`. Most-used:
 | `dc.sh verify-toolchain` | ~10ms existence-check on cc1, maspsx, python3, disc |
 | `bash tools/wsl.sh '<cmd>'` | Run `<cmd>` in WSL with cwd auto-detected via `git rev-parse --show-toplevel`; auto-bootstraps a fresh worktree if cc1 missing |
 
+### Targeted permuter (use when stuck matching a function)
+
+The targeted permuter wraps decomp-permuter with BB2-specific mutation
+passes (target-aware register pins, scheduler perturb via `do { } while (0)`,
+strength-reduce-defeat, type-qualifier mutations, inline-move aliasing).
+Works for ANY function, not just regfix retirement — drop-in replacement
+for `dc.sh permute` when you want more mutation diversity.
+
+| Tool | Purpose |
+|---|---|
+| `python3 tools/bb2_permuter.py permuter/<func> --stop-on-zero --best-only -j 6` | Run BB2-tuned permuter (5 passes + heavy mode) |
+| `python3 tools/bb2_diag_diff.py <func>` | When plateau hits: asm-level diff with HINT annotations + uniform-swap detection |
+| `python3 tools/bb2_apply_match.py <func> src/<file>.c` | Apply permuter score=0 match back to src/; auto-fix-label-drift; SHA1 verify + auto-rollback on mismatch |
+| `python3 tools/bb2_retire.py <func> [--commit]` | One-shot for retiring regfix rules end-to-end (setup → measure → permute → apply → verify) |
+| `bash tools/bb2_smoketest.sh` | ~5min env check + regression test (3 known matches) |
+
+When stuck, read [`docs/IMMUTABLE_PLATEAUS.md`](docs/IMMUTABLE_PLATEAUS.md)
+for the 5 diff patterns the current toolchain can't crack (mfhi
+intermediate, addressing-mode diff, non-adjacent reorder pair, etc.) so
+you don't waste cycles. Read [`docs/PERMUTER_PIPELINE.md`](docs/PERMUTER_PIPELINE.md)
+for why `min_score=0` doesn't always mean "applies to full build" (the
+permuter compiles one function in isolation; full build has file-scope
+labels that cascade).
+
 Maintenance tools:
 - `python3 tools/regen_memory_index.py` — regen MEMORY.md from frontmatter (also auto-runs at session start)
 - `python3 tools/memory_audit.py` — non-destructive audit of memory/ + .claude/rules/
 - `python3 tools/audit_asm_cheats.py --all` — cheat detection
+- `python3 tools/bb2_dead_rule_audit.py --limit N` — find regfix rules the build doesn't actually need (resumeable)
 
 ## Commit conventions
 

@@ -850,19 +850,24 @@ void func_800494D4(s32 arg0, s32 arg1) {
     }
     (&D_800A33E8)[new_var] = (s16)val;
 }
-s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2) {
-    register s32 var_a3 asm("$7") = 0;
-    register s32 var_v1 asm("$3") = 0;
-    s32 var_a0 = arg0;
-    if (arg1 > 0) {
-        do {
-            var_v1 += var_a0;
-            var_a3 += 1;
-            var_a0 -= 1;
-        } while (var_a3 < arg1);
+s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2)
+{
+  register s32 var_a3 asm("$7") = 0;
+  register s32 var_v1 asm("$3") = 0;
+  volatile unsigned int pad;
+  s32 var_a0 = arg0;
+  if (arg1 > 0)
+  {
+    do
+    {
+      var_v1 += var_a0;
+      var_a3 += 1;
+      var_a0 -= 1;
     }
-    (void)var_a3;
-    return var_v1 + (arg2 - arg1);
+    while (var_a3 < arg1);
+  }
+  (void) var_a3;
+  return var_v1 + (arg2 - arg1);
 }
 extern s16 D_80099C50[];
 extern s16 D_800EF980[];
@@ -11052,7 +11057,9 @@ void func_80052BE4(u8 *a0) {
     __asm__ volatile ("" ::: "memory");
 }
 void InitFadePanel(void) {
-    *(volatile s32 *)0x1F800400 = 0;
+    register volatile s32 *p asm("$25");
+    p = (volatile s32 *)0x1F800400;
+    *p = 0;
 }
 PAD_NOPS_1; /* padding after InitFadePanel */
 s32 func_80052C28(s32 arg0, s32 arg1) {
@@ -11471,15 +11478,20 @@ extern s32 D_80101E1C;
 s32* func_8005508C(void) {
     return &D_80101E1C;
 }
-void func_8005509C(s32 arg0) {
-    s32 i;
-    u8 *p = (u8 *)&D_80101EC8 + arg0 * 0x44C;
-    i = 0;
-    do {
-        *(p + 0x415) = 0;
-        *(p + 0x414) = 0;
-        p += 2;
-    } while (++i < 8);
+void func_8005509C(s32 arg0)
+{
+  s32 i;
+  u8 *p = ((u8 *) (&D_80101EC8)) + (arg0 * 0x44C);
+  u8 *new_var;
+  i = 0;
+  do
+  {
+    *(p + 0x415) = 0;
+    *(new_var + 0x414) = 0;
+    p += 2;
+    new_var = p;
+  }
+  while ((++i) < 8);
 }
 void func_800550E8(s32 arg0) {
     s32 i;
@@ -12465,31 +12477,39 @@ extern s32 func_80085EE4(s16);
 extern s32 func_80085E4C(s16, s16);
 extern s32 func_80085FB8();
 extern s32 md_game_check_change_main_mode_katinuki(s16);
-s32 mario_getMarioVoiceData_8005BE84(s32 arg0) {
-    register s32 arg_save asm("$16") = arg0;
-    s32 result;
-    s16 *p;
-    title_mv_exec2(0);
-    {
-        register s32 base asm("$3");
-        base = (s32)&D_8009AD1C;
-        p = (s16 *)(base + (arg_save * 4));
-    }
-    if (*p >= 0) {
-        s16 temp_a0;
-        arg_save = arg_save << 1;
-        func_80085F98();
-        func_80085EE4(0);
-        func_80085E4C(0, 0);
-        result = func_80085EE4(*p);
-        md_game_check_change_main_mode_katinuki(*p);
-        temp_a0 = arg_save + 1;
-        func_80085E4C(temp_a0, temp_a0);
-        func_80085FB8();
-    } else {
-        result = -1;
-    }
-    return (s16)result;
+s32 mario_getMarioVoiceData_8005BE84(s32 arg0)
+{
+  register s32 arg_save asm("$16") = arg0;
+  s16 new_var;
+  s32 result;
+  s16 *p;
+  unsigned char new_var2;
+  title_mv_exec2(0);
+  new_var2 = 2;
+  {
+    register s32 base asm("$3");
+    base = (s32) (&D_8009AD1C);
+    p = (s16 *) (base + (new_var2 * (new_var2 * arg_save)));
+  }
+  if ((*p) >= 0)
+  {
+    s16 temp_a0;
+    arg_save = arg_save << 1;
+    func_80085F98();
+    func_80085EE4(0);
+    func_80085E4C(0, 0);
+    result = func_80085EE4(*p);
+    md_game_check_change_main_mode_katinuki(*p);
+    temp_a0 = arg_save + 1;
+    func_80085E4C(temp_a0, temp_a0);
+    func_80085FB8();
+  }
+  else
+  {
+    result = -1;
+  }
+  new_var = (s16) result;
+  return new_var;
 }
 void func_800858D0(s32);
 void func_80085F98(void);
@@ -13321,49 +13341,64 @@ void saTan1GaugeInit(void) {
 extern s32 D_800A3420;
 extern s32 D_800A3424;
 
-s32 func_80060CB8(s32 arg0, s32 arg1) {
-    typedef struct {
-        s16 sp10;
-        s16 sp12;
-        s16 sp14;
-        s16 sp16;
-    } SLocal;
-    SLocal s;
-    s32 v;
-    s32 ret;
-
-    game_FrameLoop();
-    v = D_8009BD38 & 0xF;
-    if (v == 0) {
-        replay_camera_Init(func_80036EA8(2, 0x3C), arg0);
-    } else if (v == 3) {
-        replay_camera_Init(func_80036EA8(2, 0x2F), arg0);
-    } else if (v == 2) {
-        replay_camera_Init(func_80036EA8(2, 0x30), arg0);
-    } else if (v == 5) {
-        replay_camera_Init(func_80036EA8(2, 0x31), arg0);
-    } else {
-        replay_camera_Init(func_80036EA8(2, 0), arg0);
-    }
-    game_FrameLoop();
-    s.sp10 = 0x380;
-    s.sp12 = 0;
-    s.sp14 = 0x80;
-    s.sp16 = 0x1DC;
-    gpu_DrawSync(0);
-    gpu_LoadImage(&s.sp10, arg0);
-    gpu_DrawSync(0);
-    s.sp14 = 0x70;
-    s.sp12 = 0x1DC;
-    s.sp16 = 0x24;
-    gpu_LoadImage(&s.sp10, arg0 + 0x1DC00);
-    gpu_DrawSync(0);
-    saTan1GaugeInit();
-    func_80079184(func_80079154());
-    ret = arg1 + 0x4650;
-    D_800A3420 = arg1;
-    D_800A3424 = ret;
-    return ret + 0x4650;
+s32 func_80060CB8(s32 arg0, s32 arg1)
+{
+  unsigned int new_var;
+  typedef struct 
+  {
+    s16 sp10;
+    s16 sp12;
+    s16 sp14;
+    s16 sp16;
+  } SLocal;
+  SLocal s;
+  s32 v;
+  s32 ret;
+  new_var = arg0;
+  game_FrameLoop();
+  v = D_8009BD38 & 0xF;
+  if (v == 0)
+  {
+    replay_camera_Init(func_80036EA8(2, 0x3C), arg0);
+  }
+  else
+    if (v == 3)
+  {
+    replay_camera_Init(func_80036EA8(2, 0x2F), new_var);
+  }
+  else
+    if (v == 2)
+  {
+    replay_camera_Init(func_80036EA8(2, 0x30), new_var);
+  }
+  else
+    if (v == 5)
+  {
+    replay_camera_Init(func_80036EA8(2, 0x31), new_var);
+  }
+  else
+  {
+    replay_camera_Init(func_80036EA8(2, 0), new_var);
+  }
+  game_FrameLoop();
+  s.sp10 = 0x380;
+  s.sp12 = 0;
+  s.sp14 = 0x80;
+  s.sp16 = 0x1DC;
+  gpu_DrawSync(0);
+  gpu_LoadImage(&s.sp10, new_var);
+  gpu_DrawSync(0);
+  s.sp14 = 0x70;
+  s.sp12 = 0x1DC;
+  s.sp16 = 0x24;
+  gpu_LoadImage(&s.sp10, new_var + 0x1DC00);
+  gpu_DrawSync(0);
+  saTan1GaugeInit();
+  func_80079184(func_80079154());
+  ret = arg1 + 0x4650;
+  D_800A3420 = arg1;
+  D_800A3424 = ret;
+  return ret + 0x4650;
 }
 extern s32 D_800A3420;
 extern s32 D_800A3424;
@@ -14149,10 +14184,10 @@ s32 func_80062FEC(void) {
     idx = i * 2;
 found:
     src = (s32 *) D_800A347C;
-    word_off = (idx + i) << 2;
+    word_off = ((idx + i) << 1) << 1;
     *((s32 *) (((u8 *) (&D_800F0E38)) + word_off)) = src[0];
     *((s32 *) (((u8 *) (&D_800F0E3C)) + word_off)) = src[1];
-    do { } while (0);
+    do { idx++; idx--; } while (0);
     *((s32 *) (((u8 *) (&D_800F0E40)) + word_off)) = src[2];
     *((s16 *) (((u8 *) (new_var = &D_800F0BEC)) + idx)) = 0;
     return 1;
@@ -17471,8 +17506,7 @@ s32 func_80077894(void) {
     register s32 bits asm("$2");
     if (result < 0) goto fail;
     mask = -0x10;
-    p = (s32 *)&D_8009BD38;
-    ret = 1;
+    do { p = (s32 *)&D_8009BD38; ret = 1; } while (0);
     cur = *p;
     D_800A35E4 = 0;
     cur = cur & mask;

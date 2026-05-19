@@ -458,7 +458,7 @@ rob_life_ctrl: reorder 6,2,3,4,5,7 @ 2-7
 rob_life_ctrl: subst "addu\t\$5,\$7,4" "addiu	$5,$5,104" @ 88
 
 # func_80047BE0: swap s1 (dst32) and s2 (p) in function body only
-func_80047BE0: $17 <-> $18 @ 13-93
+# RETIRED (targeted-permuter): func_80047BE0: $17 <-> $18 @ 13-93
 
 # func_80019310: prologue swap + insert nop only.
 # Loop-body register allocation comes out naturally via inline_move_aliasing
@@ -768,8 +768,8 @@ func_8002BEA0: reorder 44,45,43 @ 43-45
 func_8001A67C: reorder 44,46,47,45,48,49 @ 44-49
 
 # func_80086014: add missing -0x8 stack frame (prologue+epilogue addiu sp,sp)
-func_80086014: insert "addiu $29,$29,-8" @ 0
-func_80086014: insert "addiu $29,$29,8" @ 17
+# RETIRED (targeted-permuter): func_80086014: insert "addiu $29,$29,-8" @ 0
+# RETIRED (targeted-permuter): func_80086014: insert "addiu $29,$29,8" @ 17
 # Tail uses s1+v0; target uses fresh v0(=s1) base + v1 scratch
 
 # func_80045878: re-emit s3 = a0+3 at end of else block (target has duplicate)
@@ -3026,7 +3026,7 @@ func_8002304C: insert_after "lui $23,0x1F80" @ 17
 
 # REORDER rules (Phase 4: post-delete + post-insert indices)
 # InitFadePanel: scratchpad write -- target uses $t9 ($25), GCC picked $v0 ($2)
-InitFadePanel: $2 <-> $25 @ 0-2
+# RETIRED (targeted-permuter): InitFadePanel: $2 <-> $25 @ 0-2
 # func_800550E8: byte-array indexing into D_80101EC8 -- target keeps 0x415 offset on lbu/sb; GCC pre-folds it. Reverse via 3 substs.
 func_800550E8: subst "la\s+\$3,D_80101EC8\+1045" "la	$3,D_80101EC8" @ 8
 func_800550E8: subst "lbu\s+\$2,0\(\$3\)" "lbu	$2,1045($3)" @ 10
@@ -3068,12 +3068,12 @@ func_80078BA8: subst "\$2" "$3" @ 6
 func_80078BA8: subst "\$2" "$3" @ 7
 func_80078BA8: subst "\$5" "$2" @ 10
 func_80078BA8: subst "addu\s+\$2,\$5,\$zero" "nop" @ 12
-func_8004954C: drain_delay @ 9
-func_8004954C: insert "addiu $sp,$sp,-0x8" @ 0
-func_8004954C: insert_after "addiu $sp,$sp,0x8" @ 10
-func_8005509C: subst "la\s+\$3,D_80101EC8\+1044" "la	$3,D_80101EC8" @ 8
-func_8005509C: subst "sb\s+\$0,1\(\$3\)" "sb	$0,1045($3)" @ 10
-func_8005509C: subst "sb\s+\$0,0\(\$3\)" "sb	$0,1044($3)" @ 11
+# RETIRED (targeted-permuter): func_8004954C: drain_delay @ 9
+# RETIRED (targeted-permuter): func_8004954C: insert "addiu $sp,$sp,-0x8" @ 0
+# RETIRED (targeted-permuter): func_8004954C: insert_after "addiu $sp,$sp,0x8" @ 10
+# RETIRED (targeted-permuter): func_8005509C: subst "la\s+\$3,D_80101EC8\+1044" "la	$3,D_80101EC8" @ 8
+# RETIRED (targeted-permuter): func_8005509C: subst "sb\s+\$0,1\(\$3\)" "sb	$0,1045($3)" @ 10
+# RETIRED (targeted-permuter): func_8005509C: subst "sb\s+\$0,0\(\$3\)" "sb	$0,1044($3)" @ 11
 func_8004881C: $2 <-> $3 @ 0-5
 func_8004881C: subst "subu\s+\$3" "subu\t$4" @ 5
 func_8004881C: subst "\$5" "$2" @ 6
@@ -3090,7 +3090,7 @@ func_8006517C: subst "\$4" "$2" @ 14
 func_800651F0: reorder 16,12,13,14,15 @ 12-16
 func_800651F0: subst "\$4" "$2" @ 13
 func_800651F0: subst "\$4" "$2" @ 14
-func_80077894: reorder 10,9 @ 9-10
+# RETIRED (targeted-permuter): func_80077894: reorder 10,9 @ 9-10
 func_80078EC0: subst "subu\s+\$sp,\$sp,8" "nop" @ 1
 func_80078EC0: delete @ 13
 func_80078EC0: subst "\$4" "$2" @ 2
@@ -3123,9 +3123,9 @@ func_8007B564: subst "or\s+\$7,\$7,\$16" "lui	$2,(-2147483648 >> 16) & 0xFFFF" @
 func_8007B564: subst "lui\s+\$2,\(-2147483648 >> 16\) & 0xFFFF" "or	$16,$16,$2" @ 19
 func_8007B564: subst "or\s+\$7,\$7,\$2" "or	$17,$17,$16" @ 20
 func_8007B564: subst "or\s+\$7,\$7,\$18" "or	$7,$17,$18" @ 28
-func_80062FEC: $5 <-> $6
+# RETIRED (targeted-permuter): func_80062FEC: $5 <-> $6
 func_80078A68: reorder 12,11 @ 11-12
-mario_getMarioVoiceData_8005BE84: reorder 15,14,13 @ 13-15
+# RETIRED (targeted-permuter): mario_getMarioVoiceData_8005BE84: reorder 15,14,13 @ 13-15
 func_8004876C: $3 <-> $7 @ 9-13
 func_8004876C: $3 <-> $4 @ 16-31
 func_8004876C: $2 <-> $3 @ 28-31
@@ -3330,7 +3330,7 @@ func_8007B6C8: reorder 26,29,21,22,23,24,30,25,28,32,33,27,31,34,35,36 @ 21-36
 
 # func_800618B4: swap v0/v1 in tail (arg0[2] in v1, FF0000 in v0)
 func_800618B4: $2 <-> $3 @ 42-46
-func_80060CB8: reorder 3,4,1,2 @ 1-4
+# RETIRED (targeted-permuter): func_80060CB8: reorder 3,4,1,2 @ 1-4
 func_8006288C: $5 <-> $8
 func_8006288C: $5 <-> $10
 func_8006288C: $5 <-> $7
@@ -3452,8 +3452,8 @@ func_8007EDBC: insert "lw $8,16($4)" @ 35
 # iter 4: j-delay-slot fill (sw into delay slot)
 func_8007EDBC: fill_delay @ 74 <- 73
 func_800645B0: reorder 3,1,2 @ 1-3
-func_8007D9C4: subst "nop" "addu $5,$0,$zero" @ 31
-func_8007D9C4: subst "addu\s+\$5,\$0,\$zero" "nop" @ 38
+# RETIRED (targeted-permuter): func_8007D9C4: subst "nop" "addu $5,$0,$zero" @ 31
+# RETIRED (targeted-permuter): func_8007D9C4: subst "addu\s+\$5,\$0,\$zero" "nop" @ 38
 # func_8007526C: switch constant un-hoisting via inline addiu $2,$0,N (LICM unhoist)
 func_8007526C: delete @ 5
 func_8007526C: delete @ 4
