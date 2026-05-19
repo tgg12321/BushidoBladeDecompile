@@ -304,9 +304,9 @@ where the permuter finds pure-C alternatives.
 
 ### Backlog retirement results
 
-**4 regfix rules retired** via the targeted permuter. Tested ~30
-candidates; ~4 match, ~10 improved-but-not-matched, ~16 saturated at
-base score.
+**7 regfix rules retired** via the targeted permuter across 6 functions.
+Tested ~35 candidates; ~6 match, ~10 improved-but-not-matched, ~19
+saturated at base score.
 
 | Function | Regfix rule | Base | Result | Status |
 |---|---|---:|---:|---|
@@ -314,6 +314,8 @@ base score.
 | **func_80062FEC** | `$5 <-> $6` | 70 | 0 | ✓ MATCHED |
 | **func_80047BE0** | `$17 <-> $18 @ 13-93` | 120 | 0 | ✓ MATCHED |
 | **func_80077894** | `reorder 10,9 @ 9-10` | 60 | 0 | ✓ MATCHED |
+| **mario_getMarioVoiceData_8005BE84** | `reorder 15,14,13 @ 13-15` | 120 | 0 | ✓ MATCHED |
+| **func_80086014** | 2x `insert addiu $29,$29,...` | 200 | 0 | ✓ MATCHED (81 iter, 2 rules) |
 | cdrom_FramesToBcd | `$10 <-> $11` | 10 | 10 | saturated (mfhi RA unfixable) |
 | rob_life_ctrl | 2 rules | 70 | 60 | improved, not 0 |
 | func_80021280 | `$5 <-> $6` | 320 | 235 | improved, not 0 |
@@ -327,7 +329,7 @@ base score.
 | func_800274BC | insert + delete | 60 | 60 | no improvement |
 | func_800692C0 | reorder | 60 | 60 | saturated |
 
-The four matches retired **4 regfix rules** outright. The permuter's
+The six matches retired **7 regfix rules** outright. The permuter's
 SOTN-accepted mutations that landed:
 
 - **Pin a temp pointer to a specific register** (InitFadePanel):
@@ -337,6 +339,12 @@ SOTN-accepted mutations that landed:
   `do { idx++; idx--; } while (0)` body
 - **`do { } while (0)` block coalescing of consecutive statements**
   (func_80077894): wraps 2 statements into 1 schedule unit
+- **Multiplication chain for strength-reduction defeat** (mario...):
+  `(arg_save * 4)` → `(new_var2 * (new_var2 * arg_save))` with
+  `new_var2 = 2` -- forces `sll 1, sll 1` instead of `sll 2`
+- **`volatile` type-qualifier on a pinned register variable**
+  (func_80086014): `register s32 ra0` → `register volatile unsigned int ra0`
+  makes GCC emit the 8-byte stack frame adjustment naturally
 - **Multiple intermediate var introductions** (func_80047BE0):
   `s32 *new_var = &D_800EF59C[0]; src = new_var;` and similar
   patterns
