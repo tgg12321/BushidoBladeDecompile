@@ -1,0 +1,17 @@
+func,src_file,target_insns,decompals_score,cc1psx_score,category
+func_800483DC,src/text1b.c,49,len_mismatch (48 vs 49),len_mismatch (48 vs 49),C_SOURCE_ISSUE
+func_8008BC60,src/main.c,74,len_mismatch (72 vs 74),len_mismatch (72 vs 74),C_SOURCE_ISSUE
+ang_near_dif,src/config.c,71,len_mismatch (73 vs 71),diff:31/71,C_SOURCE_ISSUE
+func_80016E60,src/ings.c,211,len_mismatch (206 vs 211),len_mismatch (203 vs 211),C_SOURCE_ISSUE
+func_80033DF4,src/code6cac_b.c,124,compile_failed,compile_failed,C_SOURCE_ISSUE
+func_8003D39C,src/code6cac_c2.c,55,diff:48/55,len_mismatch (54 vs 55),C_SOURCE_ISSUE
+single_game_VoiceContorol,src/code6cac.c,141,len_mismatch (144 vs 141),len_mismatch (145 vs 141),C_SOURCE_ISSUE
+func_80083A48,src/ings2.c,58,len_mismatch (57 vs 58),len_mismatch (57 vs 58),C_SOURCE_ISSUE
+func_8004C388,src/text1b.c,30,len_mismatch (22 vs 30),len_mismatch (22 vs 30),C_SOURCE_ISSUE
+func_80047A90,src/sound.c,84,compile_failed,compile_failed,C_SOURCE_ISSUE
+func_80034200,src/code6cac_b.c,40,compile_failed,compile_failed,C_SOURCE_ISSUE
+func_80037B00,src/code6cac_c.c,36,diff:18/36,len_mismatch (35 vs 36),C_SOURCE_ISSUE
+func_8007352C,src/text1b.c,127,compile_failed,compile_failed,C_SOURCE_ISSUE
+func_8003FE40,src/config.c,35,MATCH,MATCH,BOTH_MATCH
+func_80089EB0,src/main.c,35,compile_failed,compile_failed,C_SOURCE_ISSUE
+func_80070C70,src/text1b.c,194,compile_failed,compile_failed,C_SOURCE_ISSUE
