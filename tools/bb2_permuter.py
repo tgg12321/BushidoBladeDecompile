@@ -46,11 +46,18 @@ BB2_PIN_REGS: List[str] = (
 )
 
 
-def _build_aliasing_pass():
-    """Construct the auto-aliasing randomization pass and register it.
+def _build_passes():
+    """Construct the BB2 randomization passes and return them.
 
-    Returns the pass function, which the caller can append to
-    decomp-permuter's RANDOMIZATION_PASSES list.
+    Two passes are built:
+      perm_bb2_add_pin       — annotate an existing local Decl with a
+                                register asm() pin (no statement-count
+                                change; smallest possible mutation)
+      perm_bb2_insert_aliasing — insert a new register-pinned local + an
+                                inline-move asm and redirect one downstream
+                                read (statement-count + 2; bigger mutation)
+
+    Returns a list of (pass_fn, default_weight) tuples.
     """
     from perm_pycparser import c_ast as ca  # type: ignore
     from src import ast_util  # type: ignore
@@ -213,51 +220,135 @@ def _build_aliasing_pass():
         ast_util.insert_statement(tob, toi, asm_node)
         ast_util.insert_statement(tob, toi, pin_decl)
 
-    return perm_bb2_insert_aliasing
+    def perm_bb2_add_pin(
+        fn: "ca.FuncDef",
+        ast: "ca.FileAST",
+        indices: "Indices",
+        region: "Region",
+        random: "random_module.Random",
+    ) -> None:
+        """BB2: Annotate an existing local Decl with a register-asm pin (no
+        new statements -- only the asmlabel attribute on the existing decl
+        changes). The mutation is statement-count-preserving and minimal:
+        the search space is (n_decls * n_pin_regs), typically <= 200 per
+        function. Useful for exploring 'what if THIS local was pinned to
+        $tN' without growing the function."""
+        # Collect candidate decls: scalar / pointer types, no existing pin
+        candidates: List["ca.Decl"] = []
+
+        class _Collect(ca.NodeVisitor):
+            def visit_Decl(self, node: "ca.Decl") -> None:  # noqa: N802
+                if not node.name:
+                    return self.generic_visit(node)
+                t = node.type
+                if isinstance(t, ca.ArrayDecl):
+                    return self.generic_visit(node)
+                if isinstance(t, ca.TypeDecl) and isinstance(
+                    getattr(t, "type", None), (ca.Struct, ca.Union)
+                ):
+                    return self.generic_visit(node)
+                # Skip if already pinned (don't overwrite existing pins)
+                if node.asmlabel is not None:
+                    return self.generic_visit(node)
+                # Skip if not a "register" storage already (we add register)
+                # Actually we add storage too -- but only if the existing
+                # decl has no incompatible storage class.
+                if node.storage and any(
+                    s in ("extern", "static") for s in node.storage
+                ):
+                    return self.generic_visit(node)
+                candidates.append(node)
+                self.generic_visit(node)
+
+        _Collect().visit(fn)
+        ensure(candidates)
+
+        target = random.choice(candidates)
+        pin_reg = random.choice(BB2_PIN_REGS)
+        target.asmlabel = ca.Constant(
+            type="string", value=f'"{pin_reg}"'
+        )
+        if "register" not in target.storage:
+            target.storage = ["register"] + list(target.storage)
+
+    # Default weights tuned for "lightest most useful, heavier as escape":
+    #   perm_bb2_add_pin: 10.0 — small mutation, statement-count-preserving,
+    #     comparable to upstream perm_temp_for_expr=100 / perm_ins_block=10
+    #   perm_bb2_insert_aliasing: 0.5 — heavier, slower per iter, less likely
+    #     to land usefully. Disabled by default; set BB2_PERMUTER_HEAVY=1 to
+    #     enable, or BB2_PERMUTER_WEIGHT to scale both up together.
+    enable_heavy = os.environ.get("BB2_PERMUTER_HEAVY", "0") == "1"
+    return [
+        (perm_bb2_add_pin, 10.0),
+        (perm_bb2_insert_aliasing, 0.5 if enable_heavy else 0.0),
+    ]
 
 
-def _patch_randomizer(pass_weight: float = 1.0) -> None:
-    """Append our pass to decomp-permuter's RANDOMIZATION_PASSES at runtime."""
+def _build_aliasing_pass():
+    """Backwards-compatible alias for the single-pass return shape used in
+    the original Phase 1 MVP. Returns just the heavier pass for callers
+    that don't want both."""
+    passes = _build_passes()
+    # Return the insert_aliasing pass (matches the old single-return shape)
+    for fn, _w in passes:
+        if fn.__name__ == "perm_bb2_insert_aliasing":
+            return fn
+    return passes[0][0]
+
+
+def _patch_randomizer(pass_weight_scale: float = 1.0) -> None:
+    """Append our passes to decomp-permuter's RANDOMIZATION_PASSES list and
+    inject their default weights into the loaded TOML.
+
+    pass_weight_scale: multiplier applied to each pass's default weight (set
+    to 0 to register but disable; set to 1.0 for defaults; set to >1 to bias
+    the search toward bb2 passes).
+    """
     from src import randomizer  # type: ignore
 
-    bb2_pass = _build_aliasing_pass()
+    bb2_passes = _build_passes()
 
-    # decomp-permuter checks that every pass has a docstring; we set it on
-    # the inner function via _build_aliasing_pass already.
-    if not bb2_pass.__doc__:
-        raise RuntimeError("Internal: pass missing docstring")
+    # Validate each pass before registering
+    for pass_fn, _w in bb2_passes:
+        if not pass_fn.__doc__:
+            raise RuntimeError(f"Internal: {pass_fn.__name__} missing docstring")
 
-    randomizer.RANDOMIZATION_PASSES.append(bb2_pass)
+    pass_weight_map = {
+        pass_fn.__name__: weight * pass_weight_scale
+        for pass_fn, weight in bb2_passes
+    }
 
-    # We need to also patch the weights table loader. The simplest way is to
-    # monkey-patch the file load step or inject our weight into the dict the
-    # Randomizer constructor receives. The permuter loads weights from a
-    # toml file (default_weights.toml); we'll patch the load to inject ours.
+    for pass_fn, _w in bb2_passes:
+        randomizer.RANDOMIZATION_PASSES.append(pass_fn)
+
+    # Monkey-patch toml.load so the weights TOML loaded by upstream contains
+    # entries for our passes (the Randomizer.__init__ check otherwise fails).
     import toml  # type: ignore
 
     orig_load = toml.load
 
     def patched_load(*args, **kwargs):
         data = orig_load(*args, **kwargs)
-        # The weights TOML has a `[base]` section that get_default_weights
-        # uses as the base layer (merged with compiler-specific weights).
-        # Inject our pass weight there so the Randomizer constructor finds it.
         if isinstance(data, dict) and "base" in data and isinstance(data["base"], dict):
-            data["base"][bb2_pass.__name__] = pass_weight
+            for name, weight in pass_weight_map.items():
+                data["base"][name] = weight
         return data
 
     toml.load = patched_load
+    return pass_weight_map
 
 
 def main() -> int:
     """Patch the randomizer, then delegate to decomp-permuter's main()."""
-    # Optional environment knob to tune our pass weight
-    pass_weight = float(os.environ.get("BB2_PERMUTER_WEIGHT", "1.0"))
-    _patch_randomizer(pass_weight=pass_weight)
+    # Optional environment knob to scale our pass weights
+    pass_weight_scale = float(os.environ.get("BB2_PERMUTER_WEIGHT", "1.0"))
+    weights = _patch_randomizer(pass_weight_scale=pass_weight_scale)
     print(
-        f"[bb2_permuter] auto-aliasing pass registered "
-        f"(weight={pass_weight}, pin_set={len(BB2_PIN_REGS)} regs)"
+        f"[bb2_permuter] {len(weights)} bb2 pass(es) registered "
+        f"(weight_scale={pass_weight_scale}, pin_set={len(BB2_PIN_REGS)} regs)"
     )
+    for name, w in weights.items():
+        print(f"  {name}: weight={w}")
 
     from src.main import main as perm_main  # type: ignore
     return perm_main()

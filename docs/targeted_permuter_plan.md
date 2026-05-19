@@ -222,7 +222,69 @@ extern signatures don't match what the stripped C calls (specifically
 `func_8007F87C` arity); fix in Phase 1 prep by injecting actual src/
 externs into base.c instead of m2c's inferences.
 
-## Phase 1 status: FRAMEWORK COMPLETE, PASS UNDERPERFORMING
+## Phase 1 status: STABLE — framework neutral, pass design needs more work
+
+After v3 (dual-pass design + diagnostic round):
+
+### Diagnosis: the "rate regression" was environment variance, not a wrapper bug
+
+Re-ran controls under current conditions:
+- Upstream alone:     1040 iters / 180s → best 425
+- bb2 weight=0:        842 iters / 180s → best 425
+- bb2 add_pin only:   1138 iters / 180s → best 425
+- bb2 both passes:    1170 iters / 180s → best 425
+
+The earlier "upstream gets 225 in 180s" (Phase 0 baseline) was from a
+less-contended environment (4516 iters in the same 180s budget — ~4×
+more iterations than today). System load / filesystem contention is
+the dominant variable, not pass design. **The wrapper is neutral**
+relative to bare upstream: same iter rate within noise, same score
+floor.
+
+### Current pass design (v3)
+
+Two passes registered in `tools/bb2_permuter.py`:
+
+1. **`perm_bb2_add_pin`** (default weight 10.0):
+   - Annotate an existing local Decl with `register ... asm("$N")`
+   - Statement-count preserving; minimal mutation
+   - Search space: n_decls × 20 pin regs (typically <= 200)
+   - This is the lightweight default
+
+2. **`perm_bb2_insert_aliasing`** (default weight 0.0, opt-in via
+   `BB2_PERMUTER_HEAVY=1`):
+   - Insert `register T pin asm("$N"); __asm__ volatile("move %0, %1" :
+     "=r"(pin) : "r"(src));`
+   - Redirect one downstream read of src to pin
+   - Statement-count +2 (matches what stripped functions are missing)
+   - Disabled by default because per-iter cost is higher; opt-in for
+     functions where add_pin plateaus
+
+### What's still needed for the targeted permuter to add real value
+
+Pass design has to find improvements upstream can't. Today neither pass
+beats upstream. Ideas for Phase 2:
+
+- **Type-aware variable selection** in `perm_bb2_add_pin`: instead of
+  random Decl + random reg, look at target.s to see which registers
+  hold which values, and bias the pin choice toward registers the
+  target actually uses for that variable.
+- **Insertion-point heuristic** in `perm_bb2_insert_aliasing`: instead
+  of random points, prefer insertion immediately after a Decl whose
+  value is read more than once.
+- **Combine with PERM_GENERAL macros** in base.c at suspected
+  aliasing locations, biasing the search.
+
+### Stop condition met for Phase 1
+
+The framework is committed and stable. The current passes are neutral
+relative to upstream. Further investment requires smarter pass design
+(Phase 2) or a different architecture (e.g., pre-computed aliasing
+candidate library + base.c rewriting before permuter). Neither is
+blocking — main is clean, regression suite works, wrapper proven
+extensible.
+
+## Phase 0 status: COMPLETE (commit c40abcb)
 
 `tools/bb2_permuter.py` (Phase 1 MVP) successfully wraps decomp-permuter
 and injects the `perm_bb2_insert_aliasing` pass at runtime. Mechanically
