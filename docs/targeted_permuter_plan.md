@@ -488,11 +488,13 @@ intermediate are not.
    (10× faster)**. Heavier weight (3.0) than type_qualifier because
    reorder rules are the largest plateau category.
 
-4. 📋 **Strength-reduce-defeat mutation pass** — `mario_getMarioVoiceData`
-   matched via `(x * 4) → (2 * (2 * x))`. This is a specific SOTN trick
-   not in the random mutation set. A pass that tries known arithmetic
-   decompositions (chained shifts, multiplication chains, bit-mask
-   equivalents) would target this systematically.
+4. ✅ **Strength-reduce-defeat mutation pass** — `perm_bb2_strength_reduce`
+   walks the AST for BinaryOps with power-of-2 constant operands and
+   rewrites via: `x * 4` → `x << 2` or `2 * (2 * x)`, `x / N` → `x >> log2(N)`,
+   `x % N` → `x & (N-1)`, etc. Weighted 2.5. Replicates the mario
+   match pattern systematically. Verified: regression-tested matches
+   still find score=0. Did NOT unlock new matches on tested plateaus
+   (the remaining diffs in those cases aren't arithmetic-shape issues).
 
 5. ✅ **Diagnostic asm-diff mode** — `tools/bb2_diag_diff.py <func>`
    shows objdump-level diffs between built.o (from base.c or best
@@ -528,6 +530,86 @@ intermediate are not.
     twice during this session when applying matches via shell sed. The
     `bb2_apply_match.py` route avoids this. Documented here so future
     agents know to ALWAYS use the apply tool, never heredoc-piped sed.
+
+## Phase 6: round 2 of improvements (m2c-name prebake + strength-reduce + auto-diag)
+
+After the Tier-1 batch (typedef closure + scheduler-perturb + asm-diff)
+landed one new match (func_80060CB8), a second batch of improvements
+was implemented and tested:
+
+### Implementations (commit `1c3bbd1`)
+
+1. **m2c-name-aware prebake** (bb2_permuter_regression.py) — previously
+   skipped m2c-named vars (`var_t4`, `temp_v0`) entirely; now USES the
+   m2c name as a register HINT when the implied register is in the
+   target's pin chain. Generic-named vars still use positional pairing.
+
+2. **`perm_bb2_strength_reduce` mutation pass** (bb2_permuter.py) —
+   AST visitor for power-of-2 arithmetic, rewrites:
+     - `x * 4` → `x << 2` or `2 * (2 * x)`
+     - `x / N` → `x >> log2(N)` for power-of-2 N
+     - `x % N` → `x & (N-1)` for power-of-2 N
+     - `x << k` → `x * (1 << k)` (and reverse for `>>`)
+
+3. **Auto-diag on plateau** (bb2_retire.py) — when permuter plateau hits,
+   auto-runs `bb2_diag_diff.py` on the best output dir, then prints a
+   common-plateau-cause checklist for the agent.
+
+### Regression test
+
+Re-ran 3 known matches with the new pass set (5 passes total):
+
+| Function | Prior iters-to-match | New iters-to-match |
+|---|---:|---:|
+| InitFadePanel | ~986 | 4694 |
+| func_80077894 | 743 | 1096 |
+| mario_getMarioVoiceData | 6188 | 7240 |
+
+All still match within budget. The new passes dilute per-iteration
+productivity (~50% slower) but don't break matching. Net cost is
+acceptable since the speed difference is well under the time budget.
+
+### New test set
+
+Re-ran 4 previously-plateaued candidates to see if the new passes
+break through:
+
+| Function | Prior plateau | New plateau |
+|---|---:|---:|
+| func_80078A68 (reorder 12,11) | 10 | 10 |
+| myRobGeneiDraw2 (subst + reorder) | 20 | 20 |
+| rob_life_ctrl (2 reorder rules) | 60 | 60 |
+| func_80021280 ($5 <-> $6) | 235 | 200 |
+
+**0 new matches.** Auto-diag reveals why:
+- `func_80078A68`: addressing-mode diff (`sh a1,8(v1)` vs
+  `sh a1,16(zero)`) — base register choice; not arithmetic-shape, not
+  reorder, not register-pin-fixable from C
+- `myRobGeneiDraw2`: 2-instruction swap where the instructions come
+  from non-adjacent C statements (`lw v1,4(s0)` ↔ `lw v0,36(s0)`) —
+  scheduler-perturb only wraps ADJACENT statements, so this case
+  remains stuck
+- `rob_life_ctrl`: 1 unfixed reordering at the same offset as before
+- `func_80021280`: 5-point improvement (235→200) suggests the new
+  passes ARE doing something, just not enough to fully match
+
+### Verdict on round 2
+
+The 3 improvements are **capability not match production** on the cases
+tested. Possible reasons:
+1. The remaining plateau cases have structural issues my passes don't
+   target (addressing modes, non-adjacent reorder pairs)
+2. The base score range I targeted may have already been mined by the
+   prior pass set; further improvements will need to target ABOVE-300
+   base candidates, which need bigger structural mutations
+3. The mutation set is increasingly cluttered; each new pass dilutes
+   add_pin's effectiveness
+
+### Total session retirements (unchanged from Phase 5+)
+
+**8 functions, 10 regfix rules retired** (audit results in commit
+`51aa943` plan section). Round 2 added no new matches but the auto-diag
+tooling makes future plateau diagnosis much easier.
 
 ## Phase 2 v2 status: positional pairing + heavy aliasing (REAL IMPROVEMENT)
 
