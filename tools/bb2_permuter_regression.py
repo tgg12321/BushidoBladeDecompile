@@ -39,6 +39,25 @@ import subprocess
 import sys
 from pathlib import Path
 
+
+# -- CRLF-safe file I/O -------------------------------------------------------
+# Per project AGENTS.md + memory/workflow/crlf-via-edit-write.md: build files
+# in src/, regfix.txt, etc. MUST stay LF. Python's default text-mode I/O on
+# Windows silently converts LF -> CRLF on write, breaking the toolchain
+# (maspsx + cc1 + the SHA1 cascade). All file I/O in this tool uses binary
+# mode so the round-trip is byte-perfect.
+
+def read_text_lf(path: Path) -> str:
+    """Read a file as text, preserving its original line endings."""
+    return path.read_bytes().decode("utf-8", errors="ignore")
+
+
+def write_text_lf(path: Path, content: str) -> None:
+    """Write text without any Windows CRLF translation. Caller is responsible
+    for ensuring `content` has the desired line endings (typically '\\n').
+    """
+    path.write_bytes(content.encode("utf-8"))
+
 # -- Regression suite ---------------------------------------------------------
 
 SUITE = [
@@ -286,7 +305,7 @@ def _read_body(root: Path, entry: dict) -> tuple[list[str], int, int]:
     src_path = root / entry["file"]
     if not src_path.exists():
         raise FileNotFoundError(f"{src_path} not found")
-    src = src_path.read_text(encoding="utf-8", errors="ignore")
+    src = read_text_lf(src_path)
     rng = find_function_body(src, entry["func"])
     if rng is None:
         raise RuntimeError(f"Could not locate {entry['func']} in {src_path}")
@@ -337,8 +356,8 @@ def cmd_strip(args):
     out_dir = root / "regression" / args.func
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    (out_dir / "expected.c").write_text(expected_body, encoding="utf-8")
-    (out_dir / "stripped.c").write_text(stripped_body, encoding="utf-8")
+    write_text_lf(out_dir / "expected.c", expected_body)
+    write_text_lf(out_dir / "stripped.c", stripped_body)
 
     metadata = {
         "func": args.func,
@@ -362,7 +381,7 @@ def cmd_strip(args):
             for b in blocks
         ],
     }
-    (out_dir / "metadata.json").write_text(json.dumps(metadata, indent=2))
+    write_text_lf(out_dir / "metadata.json", json.dumps(metadata, indent=2))
 
     print(f"{args.func}: {len(blocks)} aliasing block(s) found, {len(blocks)} stripped")
     print(f"  expected.c  : {len(expected_body)} bytes  ({end - start + 1} lines)")
@@ -397,15 +416,19 @@ def cmd_diff(args):
 def _splice_function(src_path: Path, func: str, new_body: str) -> str:
     """Splice new_body into src_path replacing func's body. Returns the
     original src content so the caller can restore.
+
+    Uses binary I/O via read_text_lf/write_text_lf to preserve LF line
+    endings (Windows text-mode Python would convert LF -> CRLF on write
+    and break the build pipeline).
     """
-    src = src_path.read_text(encoding="utf-8", errors="ignore")
+    src = read_text_lf(src_path)
     rng = find_function_body(src, func)
     if rng is None:
         raise RuntimeError(f"Could not locate {func} in {src_path}")
     start, end = rng
     lines = src.split("\n")
     spliced = lines[:start] + new_body.split("\n") + lines[end + 1:]
-    src_path.write_text("\n".join(spliced), encoding="utf-8")
+    write_text_lf(src_path, "\n".join(spliced))
     return src
 
 
@@ -423,12 +446,12 @@ def cmd_load_bearing(args):
 
     entry = get_entry(args.func)
     src_path = root / entry["file"]
-    stripped = (out_dir / "stripped.c").read_text(encoding="utf-8")
+    stripped = read_text_lf(out_dir / "stripped.c")
 
     print(f"[1/3] Saving original {src_path}...")
-    original = src_path.read_text(encoding="utf-8", errors="ignore")
+    original = read_text_lf(src_path)
     backup = out_dir / "src_backup.c"
-    backup.write_text(original, encoding="utf-8")
+    write_text_lf(backup, original)
 
     try:
         print(f"[2/3] Splicing stripped body into {src_path}...")
@@ -459,17 +482,17 @@ def cmd_load_bearing(args):
         if result.stderr:
             print("STDERR:", result.stderr, file=sys.stderr)
 
-        # Check if SHA1 broke
+        # Check if SHA1 broke. Order matters: "matches!" is the only
+        # success signal; everything else is a failure (which is what we
+        # WANT for the load-bearing test — we want the stripped version
+        # to NOT match the original SHA1).
         out = result.stdout
-        if "MISMATCH" in out or "MIS-match" in out or "mismatch" in out.lower():
+        if "OK: bb2 matches!" in out or "bb2 matches!" in out:
+            verdict = "LOAD_BEARING_FAIL"
+            note = "stripped version STILL MATCHES — aliasing was not load-bearing (regfix or other coverage masks?)"
+        else:
             verdict = "LOAD_BEARING_OK"
             note = "stripped version breaks the match — aliasing is genuinely load-bearing"
-        elif "matches!" in out:
-            verdict = "LOAD_BEARING_FAIL"
-            note = "stripped version STILL MATCHES — aliasing was not load-bearing (regfix masks?)"
-        else:
-            verdict = "UNKNOWN"
-            note = f"build output didn't contain expected MATCH/MISMATCH; check log"
 
         # Save result
         result_data = {
@@ -478,16 +501,178 @@ def cmd_load_bearing(args):
             "note": note,
             "build_output_tail": out.split("\n")[-15:],
         }
-        (out_dir / "load_bearing_result.json").write_text(
-            json.dumps(result_data, indent=2)
-        )
+        write_text_lf(out_dir / "load_bearing_result.json",
+                      json.dumps(result_data, indent=2))
         print(f"\n  Verdict: {verdict}")
         print(f"  Note:    {note}")
     finally:
         print(f"[restore] Restoring original {src_path}...")
-        src_path.write_text(original, encoding="utf-8")
-        # Also delete the backup since src is restored
-        backup.unlink(missing_ok=True)
+        write_text_lf(src_path, original)
+        # Sanity check: confirm what we wrote back is byte-identical to the
+        # original we read. If not, something went wrong with the round-trip
+        # and we want a loud error (NOT a silent CRLF corruption of src/).
+        restored = read_text_lf(src_path)
+        if restored != original:
+            print(
+                f"ERROR: src restore is not byte-identical to original "
+                f"({len(restored)} bytes restored vs {len(original)} bytes original). "
+                f"Backup retained at {backup}.",
+                file=sys.stderr,
+            )
+        else:
+            backup.unlink(missing_ok=True)
+
+
+def cmd_load_bearing_all(args):
+    """Run load-bearing check on every suite function. Each test takes
+    ~30-60s for a clean partial rebuild + SHA1 verify.
+    """
+    failed = []
+    for entry in SUITE:
+        print(f"\n{'=' * 70}")
+        print(f"=== {entry['func']} ({entry['tier']})")
+        print(f"{'=' * 70}")
+        args.func = entry["func"]
+        try:
+            cmd_load_bearing(args)
+        except Exception as e:
+            print(f"ERROR: {e}")
+            failed.append((entry["func"], str(e)))
+    if failed:
+        print(f"\n{len(failed)} failures:")
+        for f, e in failed:
+            print(f"  {f}: {e}")
+
+
+def cmd_setup_baseline(args):
+    """Prepare permuter/<func>_baseline/ with stripped C as base.c.
+
+    Workflow:
+      1. Run `dc.sh inline-setup <func>` (which builds target.s, target.o
+         from asm/funcs/<func>.s and generates a stub base.c via m2c).
+      2. Replace the body of the m2c-generated base.c with our stripped body
+         (preserves the standalone wrapping: typedefs, externs, struct decls).
+      3. Result: permuter/<func>_baseline/ is ready for decomp-permuter.
+
+    The user then runs upstream decomp-permuter manually with their preferred
+    budget:
+        python3 tools/decomp-permuter/permuter.py permuter/<func>_baseline \\
+            --stop-on-zero --best-only -j 6
+    """
+    root = Path(args.project_root).resolve()
+    entry = get_entry(args.func)
+    if entry is None:
+        sys.exit(f"{args.func} not in regression suite")
+
+    out_dir = root / "regression" / args.func
+    if not (out_dir / "stripped.c").exists():
+        sys.exit(f"Run `strip {args.func}` first")
+    stripped_body = read_text_lf(out_dir / "stripped.c")
+
+    # 1. Use dc.sh inline-setup to stage the permuter dir
+    print(f"[1/3] Running dc.sh inline-setup {args.func}...")
+    wsl_root = str(root).replace("C:", "/mnt/c").replace("\\", "/")
+    setup_cmd = f'cd "{wsl_root}" && bash tools/dc.sh inline-setup {args.func} 2>&1'
+    result = subprocess.run(
+        ["wsl", "bash", "-c", setup_cmd],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    print(result.stdout.splitlines()[-3:] if result.stdout else "")
+
+    permuter_dir = root / "permuter" / args.func
+    if not (permuter_dir / "base.c").exists():
+        sys.exit(f"inline-setup failed; permuter/{args.func}/base.c missing")
+
+    # 2. Rename the dir to *_baseline to keep it separate from any active
+    #    decomp work on this function.
+    baseline_dir = root / "permuter" / f"{args.func}_baseline"
+    if baseline_dir.exists():
+        shutil.rmtree(baseline_dir)
+    shutil.copytree(permuter_dir, baseline_dir)
+    print(f"[2/3] Copied to permuter/{args.func}_baseline/")
+
+    # 3. Substitute the m2c-generated function body with our stripped body.
+    base_c_path = baseline_dir / "base.c"
+    base_c = read_text_lf(base_c_path)
+    # Find the function in base.c and replace its body.
+    rng = find_function_body(base_c, args.func)
+    if rng is None:
+        sys.exit(f"Could not locate {args.func} in {base_c_path}")
+    start, end = rng
+    base_lines = base_c.split("\n")
+    spliced = base_lines[:start] + stripped_body.split("\n") + base_lines[end + 1:]
+    write_text_lf(base_c_path, "\n".join(spliced))
+    print(f"[3/3] Replaced {args.func} body in base.c with stripped version")
+    print()
+    print(f"Baseline dir ready: {baseline_dir}")
+    print(f"Run permuter manually:")
+    print(f"  python3 tools/decomp-permuter/permuter.py permuter/{args.func}_baseline \\")
+    print(f"      --stop-on-zero --best-only -j 6")
+
+
+def cmd_baseline_record(args):
+    """Run upstream decomp-permuter on permuter/<func>_baseline/ for a
+    bounded time and capture the best score reached. Records to
+    regression/<func>/baseline_result.json.
+
+    Time budget: passed via --time-seconds (default 180s = 3 min).
+    """
+    root = Path(args.project_root).resolve()
+    entry = get_entry(args.func)
+    if entry is None:
+        sys.exit(f"{args.func} not in regression suite")
+
+    baseline_dir = root / "permuter" / f"{args.func}_baseline"
+    if not (baseline_dir / "base.c").exists():
+        sys.exit(f"Run `setup-baseline {args.func}` first")
+
+    out_dir = root / "regression" / args.func
+    log_path = out_dir / "baseline_run.log"
+
+    print(f"[1/2] Running upstream permuter on {baseline_dir} for {args.time_seconds}s...")
+    wsl_root = str(root).replace("C:", "/mnt/c").replace("\\", "/")
+    cmd = (
+        f'cd "{wsl_root}" && source .venv/bin/activate && '
+        f'timeout {args.time_seconds} python3 tools/decomp-permuter/permuter.py '
+        f'permuter/{args.func}_baseline --stop-on-zero --best-only -j 6 2>&1'
+    )
+    result = subprocess.run(
+        ["wsl", "bash", "-c", cmd],
+        capture_output=True,
+        text=True,
+        timeout=args.time_seconds + 60,
+    )
+    log = result.stdout + "\n--STDERR--\n" + result.stderr
+    write_text_lf(log_path, log)
+
+    # Parse best score from log
+    scores = re.findall(r"score = (\d+)", log)
+    best = min(int(s) for s in scores) if scores else None
+    iters = len(re.findall(r"iteration \d+", log))
+    base_score = None
+    base_m = re.search(r"base score = (\d+)", log)
+    if base_m:
+        base_score = int(base_m.group(1))
+
+    record = {
+        "func": args.func,
+        "time_seconds": args.time_seconds,
+        "iterations": iters,
+        "base_score": base_score,
+        "best_score": best,
+        "improvement": (base_score - best) if (base_score and best is not None) else None,
+        "log_tail": log.split("\n")[-10:],
+    }
+    write_text_lf(out_dir / "baseline_result.json", json.dumps(record, indent=2))
+    print(f"[2/2] Recorded: iterations={iters}, base_score={base_score}, best_score={best}")
+    if best == 0:
+        print(f"  ⚠ MATCH found by upstream permuter — this function is NOT a valid regression target")
+    elif base_score == best:
+        print(f"  ✓ Upstream permuter plateaued — this is a real regression target for Phase 1 to beat")
+    else:
+        print(f"  ~ Upstream improved {base_score} -> {best} but not to 0 — still a regression target")
 
 
 def cmd_report(args):
@@ -502,19 +687,20 @@ def cmd_report(args):
         baseline_path = out_dir / "baseline_result.json"
 
         if meta_path.exists():
-            meta = json.loads(meta_path.read_text())
+            meta = json.loads(read_text_lf(meta_path))
             strip_status = f"{meta['found_blocks']}/{meta['expected_blocks']}"
         else:
+            meta = None
             strip_status = "not run"
 
         if lb_path.exists():
-            lb = json.loads(lb_path.read_text())
+            lb = json.loads(read_text_lf(lb_path))
             lb_status = lb["verdict"]
         else:
             lb_status = "not run"
 
         if baseline_path.exists():
-            bl = json.loads(baseline_path.read_text())
+            bl = json.loads(read_text_lf(baseline_path))
             bl_status = f"score={bl.get('best_score', '?')}"
         else:
             bl_status = "not run"
@@ -550,6 +736,18 @@ def main():
     p_lb = sub.add_parser("load-bearing", help="Splice stripped into src/, rebuild, verify break, restore")
     p_lb.add_argument("func")
     p_lb.set_defaults(handler=cmd_load_bearing)
+
+    p_lb_all = sub.add_parser("load-bearing-all", help="Run load-bearing across every suite function")
+    p_lb_all.set_defaults(handler=cmd_load_bearing_all)
+
+    p_setup = sub.add_parser("setup-baseline", help="Prep permuter/<func>_baseline/ with stripped base.c")
+    p_setup.add_argument("func")
+    p_setup.set_defaults(handler=cmd_setup_baseline)
+
+    p_brec = sub.add_parser("baseline-record", help="Run upstream permuter on baseline dir, record best score")
+    p_brec.add_argument("func")
+    p_brec.add_argument("--time-seconds", type=int, default=180, help="Permuter time budget (default 180)")
+    p_brec.set_defaults(handler=cmd_baseline_record)
 
     p_rep = sub.add_parser("report", help="Aggregate regression suite results")
     p_rep.set_defaults(handler=cmd_report)
