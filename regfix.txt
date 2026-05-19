@@ -768,8 +768,8 @@ func_8002BEA0: reorder 44,45,43 @ 43-45
 func_8001A67C: reorder 44,46,47,45,48,49 @ 44-49
 
 # func_80086014: add missing -0x8 stack frame (prologue+epilogue addiu sp,sp)
-func_80086014: insert "addiu $29,$29,-8" @ 0
-func_80086014: insert "addiu $29,$29,8" @ 17
+# RETIRED (targeted-permuter): func_80086014: insert "addiu $29,$29,-8" @ 0
+# RETIRED (targeted-permuter): func_80086014: insert "addiu $29,$29,8" @ 17
 # Tail uses s1+v0; target uses fresh v0(=s1) base + v1 scratch
 
 # func_80045878: re-emit s3 = a0+3 at end of else block (target has duplicate)
