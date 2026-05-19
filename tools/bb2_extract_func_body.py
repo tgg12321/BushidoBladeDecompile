@@ -211,7 +211,11 @@ def gather_data_refs(src_text: str, fn_body: str) -> list[str]:
         # Must be at column 0 (top-level) or under 8 spaces leading
         if len(line) - len(stripped) > 4:
             continue
-        m = re.match(r"\s*(?:extern\s+)?(\w[\w\s\*]+?)\s+(\w+)\s*(?:\[[^\]]*\])?\s*[;=]", line)
+        # Capture: `extern volatile s32 *D_800A1510;` -> type=`volatile s32 *`, name=`D_800A1510`
+        m = re.match(
+            r"\s*(?:extern\s+)?((?:\w+\s+)+\*?\s*)(\w+)\s*(?:\[[^\]]*\])?\s*[;=]",
+            line,
+        )
         if m:
             src_decls[m.group(2)] = m.group(0).rstrip(";").strip()
 

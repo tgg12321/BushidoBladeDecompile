@@ -302,19 +302,32 @@ where the permuter finds pure-C alternatives.
 - **`tools/measure_scores.sh`** — quick base-score and 25s-search check
   to triage candidates before committing 300s budget
 
-### Backlog retirement results (in progress)
+### Backlog retirement results
+
+**4 regfix rules retired** via the targeted permuter. Tested ~30
+candidates; ~4 match, ~10 improved-but-not-matched, ~16 saturated at
+base score.
 
 | Function | Regfix rule | Base | Result | Status |
 |---|---|---:|---:|---|
 | **InitFadePanel** | `$2 <-> $25 @ 0-2` | 20 | 0 | ✓ MATCHED (986 iter, 300s) |
 | **func_80062FEC** | `$5 <-> $6` | 70 | 0 | ✓ MATCHED |
 | **func_80047BE0** | `$17 <-> $18 @ 13-93` | 120 | 0 | ✓ MATCHED |
+| **func_80077894** | `reorder 10,9 @ 9-10` | 60 | 0 | ✓ MATCHED |
 | cdrom_FramesToBcd | `$10 <-> $11` | 10 | 10 | saturated (mfhi RA unfixable) |
 | rob_life_ctrl | 2 rules | 70 | 60 | improved, not 0 |
 | func_80021280 | `$5 <-> $6` | 320 | 235 | improved, not 0 |
-| InitHiraRmd_80041AC8 | 2 reorder rules | 180 | (running) | TBD |
+| InitHiraRmd_80041AC8 | 2 reorder rules | 180 | 120 | improved, not 0 |
+| func_8004A09C | reorder 65-69 | 450 | 60 | big improvement, plateau |
+| func_8003D39C | 2 reorder rules | 180 | 60 | improved |
+| func_80078A68 | reorder 12,11 | 60 | 10 | improved, plateau |
+| func_800477E8 | 2 rules | 115 | 90 | improved, plateau |
+| myRobGeneiDraw2 | subst + reorder | 220 | 20 | improved, plateau |
+| func_8004A09C | reorder 65-69 | 450 | 60 | big improvement, plateau |
+| func_800274BC | insert + delete | 60 | 60 | no improvement |
+| func_800692C0 | reorder | 60 | 60 | saturated |
 
-The three matches retired **3 regfix rules** outright. The permuter's
+The four matches retired **4 regfix rules** outright. The permuter's
 SOTN-accepted mutations that landed:
 
 - **Pin a temp pointer to a specific register** (InitFadePanel):
@@ -322,6 +335,8 @@ SOTN-accepted mutations that landed:
 - **Shift decomposition + dead-op insertion** (func_80062FEC):
   `(idx + i) << 2` → `((idx + i) << 1) << 1` and
   `do { idx++; idx--; } while (0)` body
+- **`do { } while (0)` block coalescing of consecutive statements**
+  (func_80077894): wraps 2 statements into 1 schedule unit
 - **Multiple intermediate var introductions** (func_80047BE0):
   `s32 *new_var = &D_800EF59C[0]; src = new_var;` and similar
   patterns
@@ -335,10 +350,41 @@ register pin can target that intermediate (the only way would be
 inline-asm injection, which is banned per
 [[inline-asm-injection]]).
 
+Many `reorder` rules with span=1 or span=2 plateau at score 60 (= 1
+reordering) without finding the C transform that nudges GCC's
+scheduler in the right direction. This is a known limit of the
+decomp-permuter mutation set (and of GCC 2.7.2's deterministic
+scheduler) — once it picks an order, only direct manipulation of the
+input C structure can change it. For these functions the regfix
+remains the right tool, just as SOTN does (their regfix-equivalent
+table has dozens of similar single-reorder rules).
+
 This bounds what the targeted permuter can do: cases where the regfix
 patches around a GCC RA decision on a *named* C variable are solvable;
 cases where it patches around an RA decision on a *synthetic*
 intermediate are not.
+
+### Practical takeaways for future agents
+
+1. **Triage candidates by base score before committing 300s**:
+   `bash tools/measure_scores.sh <func>...` does a 25s pass per func.
+   Base ≤ 100 has ~30% match rate. Base > 200 rarely matches.
+
+2. **`do { ... } while (0)` block coalescing** is the SOTN-style
+   transform that handles many reorder rules. The permuter has this in
+   its `perm_ins_block` pass, but its random search occasionally needs
+   directing — consider weighting it higher for known reorder candidates.
+
+3. **Register pinning via `register T x asm("$N")`** works for many
+   single-swap cases. The targeted permuter's `perm_bb2_add_pin` tries
+   this with target-frequency-weighted register selection (Phase 2 v2).
+
+4. **GCC RA on synthetic intermediates** (`mfhi`, division intermediates)
+   is unfixable from C. Don't waste cycles on these — keep the regfix.
+
+5. **The pure-C bar is "minimize regfix where possible"**, not "zero
+   regfix" (matches SOTN community standard). A regfix that documents
+   the GCC RA quirk is acceptable when no pure-C alternative exists.
 
 ## Phase 2 v2 status: positional pairing + heavy aliasing (REAL IMPROVEMENT)
 
