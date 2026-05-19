@@ -174,12 +174,17 @@ def gather_externs(src_text: str, fn_body: str) -> list[str]:
 
     externs: list[str] = []
     for c in sorted(calls):
+        if c == _CURRENT_FUNC:  # skip self
+            continue
         if c in src_externs:
             externs.append(src_externs[c])
         elif c not in src_defs:
             # Don't know its signature, just emit a generic one
             externs.append(f"extern int {c}();")
     return externs
+
+
+_CURRENT_FUNC = ""
 
 
 def gather_data_refs(src_text: str, fn_body: str) -> list[str]:
@@ -191,10 +196,21 @@ def gather_data_refs(src_text: str, fn_body: str) -> list[str]:
     syms = set(re.findall(r"\b([DgG]_[A-Za-z_0-9]+|[a-z][a-z_0-9]*)\b", fn_body))
     # filter to ones starting with D_ or known g_/G_ prefixes
     data_syms = {s for s in syms if s.startswith(("D_", "g_", "G_"))}
-    # Try to find their declarations in src
+    # Try to find their declarations in src. We only want lines that look
+    # like top-level extern/decls -- skip lines that start with keywords
+    # like "return", "if", "while", "for", "do", "goto", or whitespace
+    # followed by a brace (function body).
     src_lines = src_text.split("\n")
     src_decls = {}
+    CTRL_KEYWORDS = ("return", "if", "while", "for", "do", "goto", "switch",
+                     "case", "break", "continue", "typedef", "static")
     for line in src_lines:
+        stripped = line.lstrip()
+        if any(stripped.startswith(kw + " ") or stripped.startswith(kw + "(") for kw in CTRL_KEYWORDS):
+            continue
+        # Must be at column 0 (top-level) or under 8 spaces leading
+        if len(line) - len(stripped) > 4:
+            continue
         m = re.match(r"\s*(?:extern\s+)?(\w[\w\s\*]+?)\s+(\w+)\s*(?:\[[^\]]*\])?\s*[;=]", line)
         if m:
             src_decls[m.group(2)] = m.group(0).rstrip(";").strip()
@@ -228,8 +244,29 @@ def main():
     fn = extract_function(src, args.func)
     if fn is None:
         sys.exit(f"function {args.func} not found in {src_path}")
+    global _CURRENT_FUNC
+    _CURRENT_FUNC = args.func
+
+    # Pull typedefs from src that come BEFORE the function definition. Any
+    # struct/enum/typedef that the function might use should be in this
+    # range. We greedy-match anything that looks like `typedef struct { ... } NAME;`
+    # Skip names already in STANDARD_PREAMBLE.
+    PREAMBLE_NAMES = {"Vec2s16", "Vec3s16", "Vec3s32", "Vec3", "VECTOR",
+                      "SVECTOR", "CVECTOR", "DVECTOR", "MATRIX"}
+    typedefs = []
+    src_before_fn = src.split(fn)[0] if fn in src else src
+    for m in re.finditer(
+        r"typedef\s+(?:struct|union|enum)\s*(?:\w+)?\s*\{[^}]*\}\s*(\w+)\s*;",
+        src_before_fn,
+        re.DOTALL,
+    ):
+        if m.group(1) in PREAMBLE_NAMES:
+            continue
+        typedefs.append(m.group(0))
 
     parts = [STANDARD_PREAMBLE]
+    if typedefs:
+        parts.append("\n".join(typedefs))
     if not args.no_externs:
         externs = gather_externs(src, fn)
         data_refs = gather_data_refs(src, fn)
