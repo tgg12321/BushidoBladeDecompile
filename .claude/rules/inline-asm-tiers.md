@@ -71,22 +71,39 @@ the current gap.
 
 # Route to SOTN bar
 
-Two paths to reduce tier-3 count (run in parallel):
+**Measured 2026-05-18 (commit `32b2da9`):** on a 16-function sample of
+the tier-3 corpus, **0 functions are COMPILER_FIXABLE.** Even Sony's
+actual `cc1psx` fails identically to decompals on the pure-C
+reconstructions. The compiler-patch route does not work; see
+[[compiler-patch-low-roi]] for the data + methodology and
+`docs/diagnostics/cc1psx_tier3_diagnostic_16funcs.csv` for the raw
+results.
 
-1. **Per-function pure-C re-attempt.** For each tier-3 function, log
-   attempts in `.bb2_attempts/<func>.jsonl` (gated by
-   `.claude/rules/attempts-log-gate.md`). Each successful retirement
-   demotes a function from tier 3 to tier 4.
+The only path with measured non-zero ROI for tier-3 retirement:
 
-2. **Compiler calibration.** The deeper fix: patch `tools/gcc-2.7.2/`
-   to match `cc1psx`'s allocator/scheduler behaviors that cause the
-   divergence. This is the work `decompals/mips-gcc-2.7.2` is doing
-   upstream. One calibration patch can demote many tier-3 functions
-   simultaneously.
+**Per-function pure-C re-attempt.** For each tier-3 function, log
+attempts in `.bb2_attempts/<func>.jsonl` (gated by
+[[attempts-log-gate]]). Each successful retirement demotes a function
+from tier 3 to tier 4. The gate enforces breadth (≥4 distinct
+technique categories, ≥6 attempts, ≥30 minutes) before allowing escape-
+valve commits, so functions actually exhaust pure-C territory before
+being declared "needs hints."
+
+Secondary path: **reclassify tier-3 functions whose inline asm is
+load-bearing.** The diagnostic surfaced 5 functions where stripping the
+inline asm broke the C body — strong evidence the asm wasn't a workaround
+hint, it was authentic computation. Those belong in tier 2 (authentic
+inline asm in a C function) or tier 1 (canonical asm function body),
+not tier 3. An audit pass could shrink the tier-3 count without changing
+any source code.
 
 # Related
 
 - [[inline-move-aliasing]] — the most common tier-3 pattern
 - [[register-asm-pins]] — pin reliability + when they're tier 3
 - [[attempts-log-gate]] — gate enforcement for new tier-3 commits
+- [[compiler-patch-low-roi]] — 0/16 measured ROI for the compiler-
+  patch route (so it's not on the table)
+- [[cc1psx-calibration-only]] — prior project decision to not switch
+  the build to cc1psx
 - [[community-standard]] — what SOTN/Vagrant/etc accept
