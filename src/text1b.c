@@ -13331,49 +13331,64 @@ void saTan1GaugeInit(void) {
 extern s32 D_800A3420;
 extern s32 D_800A3424;
 
-s32 func_80060CB8(s32 arg0, s32 arg1) {
-    typedef struct {
-        s16 sp10;
-        s16 sp12;
-        s16 sp14;
-        s16 sp16;
-    } SLocal;
-    SLocal s;
-    s32 v;
-    s32 ret;
-
-    game_FrameLoop();
-    v = D_8009BD38 & 0xF;
-    if (v == 0) {
-        replay_camera_Init(func_80036EA8(2, 0x3C), arg0);
-    } else if (v == 3) {
-        replay_camera_Init(func_80036EA8(2, 0x2F), arg0);
-    } else if (v == 2) {
-        replay_camera_Init(func_80036EA8(2, 0x30), arg0);
-    } else if (v == 5) {
-        replay_camera_Init(func_80036EA8(2, 0x31), arg0);
-    } else {
-        replay_camera_Init(func_80036EA8(2, 0), arg0);
-    }
-    game_FrameLoop();
-    s.sp10 = 0x380;
-    s.sp12 = 0;
-    s.sp14 = 0x80;
-    s.sp16 = 0x1DC;
-    gpu_DrawSync(0);
-    gpu_LoadImage(&s.sp10, arg0);
-    gpu_DrawSync(0);
-    s.sp14 = 0x70;
-    s.sp12 = 0x1DC;
-    s.sp16 = 0x24;
-    gpu_LoadImage(&s.sp10, arg0 + 0x1DC00);
-    gpu_DrawSync(0);
-    saTan1GaugeInit();
-    func_80079184(func_80079154());
-    ret = arg1 + 0x4650;
-    D_800A3420 = arg1;
-    D_800A3424 = ret;
-    return ret + 0x4650;
+s32 func_80060CB8(s32 arg0, s32 arg1)
+{
+  unsigned int new_var;
+  typedef struct 
+  {
+    s16 sp10;
+    s16 sp12;
+    s16 sp14;
+    s16 sp16;
+  } SLocal;
+  SLocal s;
+  s32 v;
+  s32 ret;
+  new_var = arg0;
+  game_FrameLoop();
+  v = D_8009BD38 & 0xF;
+  if (v == 0)
+  {
+    replay_camera_Init(func_80036EA8(2, 0x3C), arg0);
+  }
+  else
+    if (v == 3)
+  {
+    replay_camera_Init(func_80036EA8(2, 0x2F), new_var);
+  }
+  else
+    if (v == 2)
+  {
+    replay_camera_Init(func_80036EA8(2, 0x30), new_var);
+  }
+  else
+    if (v == 5)
+  {
+    replay_camera_Init(func_80036EA8(2, 0x31), new_var);
+  }
+  else
+  {
+    replay_camera_Init(func_80036EA8(2, 0), new_var);
+  }
+  game_FrameLoop();
+  s.sp10 = 0x380;
+  s.sp12 = 0;
+  s.sp14 = 0x80;
+  s.sp16 = 0x1DC;
+  gpu_DrawSync(0);
+  gpu_LoadImage(&s.sp10, new_var);
+  gpu_DrawSync(0);
+  s.sp14 = 0x70;
+  s.sp12 = 0x1DC;
+  s.sp16 = 0x24;
+  gpu_LoadImage(&s.sp10, new_var + 0x1DC00);
+  gpu_DrawSync(0);
+  saTan1GaugeInit();
+  func_80079184(func_80079154());
+  ret = arg1 + 0x4650;
+  D_800A3420 = arg1;
+  D_800A3424 = ret;
+  return ret + 0x4650;
 }
 extern s32 D_800A3420;
 extern s32 D_800A3424;
