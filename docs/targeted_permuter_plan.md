@@ -196,6 +196,37 @@ All locked in via the discussion in this design round:
 | Packaging | New tool `tools/bb2_permuter.py` wrapping `decomp-permuter` and injecting passes at runtime. Decoupled, no fork of upstream. |
 | Pass weight | Default 1:1 with existing randomizer passes. Configurable via `--pass-weights` flag. |
 
+## Phase 0 status: COMPLETE (commit c40abcb)
+
+Delivered:
+
+- `tools/bb2_permuter_regression.py` — full subcommand surface:
+  `show`, `strip`, `strip-all`, `diff`, `load-bearing`, `load-bearing-all`,
+  `setup-baseline`, `baseline-record`, `report`
+- All 7 suite functions stripped successfully (1+1+3+2+2+4+7 = 20 aliasing
+  blocks). Strip mechanics correctly:
+  - Identify aliasing blocks (`__asm__ volatile("move %0,%1"...)`)
+  - Replace asm with semantic-equivalent C (`dst = src;`)
+  - Strip `register asm("$N")` annotations from dst/src locals
+  - Drop `INLINE_MOVE_ALIASING:` comment headers
+- All 7 functions verified LOAD_BEARING_OK — stripping breaks the SHA1
+  match, confirming aliasing is genuinely load-bearing on all suite
+  members.
+- CRLF-safe I/O via `read_text_lf`/`write_text_lf` helpers (Python's
+  default text-mode would corrupt src/ files on Windows; we use byte-mode
+  to preserve LF line endings throughout the round-trip).
+- Restore-time integrity check guards against silent src/ corruption.
+- Initial baseline data point: AddTbpOfst_80047EE8 → upstream decomp-
+  permuter plateaus at score 505 after 371 random iterations. Cannot
+  reconstruct the aliasing on its own. This is the regression to beat.
+
+What's NOT done (intentionally deferred to Phase 1's validation loop):
+
+- baseline-record runs on the other 6 suite functions. They cost
+  ~3 min each = ~18 min total. Will run as part of Phase 1 evaluation
+  (before/after comparison). Running them now adds no information — we
+  already know the regression set is real per AddTbpOfst.
+
 ## Phase 0 — regression suite (FIRST, before any pass code)
 
 Per the answered execution scope: build the regression infrastructure
