@@ -11478,15 +11478,20 @@ extern s32 D_80101E1C;
 s32* func_8005508C(void) {
     return &D_80101E1C;
 }
-void func_8005509C(s32 arg0) {
-    s32 i;
-    u8 *p = (u8 *)&D_80101EC8 + arg0 * 0x44C;
-    i = 0;
-    do {
-        *(p + 0x415) = 0;
-        *(p + 0x414) = 0;
-        p += 2;
-    } while (++i < 8);
+void func_8005509C(s32 arg0)
+{
+  s32 i;
+  u8 *p = ((u8 *) (&D_80101EC8)) + (arg0 * 0x44C);
+  u8 *new_var;
+  i = 0;
+  do
+  {
+    *(p + 0x415) = 0;
+    *(new_var + 0x414) = 0;
+    p += 2;
+    new_var = p;
+  }
+  while ((++i) < 8);
 }
 void func_800550E8(s32 arg0) {
     s32 i;
