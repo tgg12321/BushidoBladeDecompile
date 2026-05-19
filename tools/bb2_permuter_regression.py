@@ -645,14 +645,21 @@ def _prebake_base_c(base_c_text: str, func_name: str, pin_chain: List[str]) -> s
         r"(?:s8|s16|s32|u8|u16|u32|int|char|short|long|void)\s*\*?\s*\*?\s*)"
         r"(\w+)(\s*=\s*[^;]+)?;"
     )
-    # m2c names variables by their register: var_t4, temp_v0, etc. Pre-baking
-    # such a variable to a DIFFERENT register fights m2c's analysis and
-    # usually regresses. Skip names that look like register hints.
-    # We only annotate variables whose names look descriptive (cached, saved,
-    # ptr, count, i, x, y, len, etc.) -- not the m2c "var_$reg" pattern.
+    # m2c names variables by the register it INFERRED them to live in:
+    # var_t4, temp_v0, etc. We parse the register out of the name.
     name_hints_reg = re.compile(
-        r"^(?:var_|temp_)?(?:t[0-9]|s[0-7]|v[01]|a[0-3])(?:_|$)"
+        r"^(?:var_|temp_)?(t[0-9]|s[0-7]|v[01]|a[0-3])(?:_|$)"
     )
+
+    def m2c_hinted_reg(varname: str) -> str | None:
+        """If the var is m2c-named like var_t4 / temp_v0 / s2, return its
+        implied register as a numeric pin like "$12". Otherwise None.
+        """
+        m = name_hints_reg.match(varname)
+        if not m:
+            return None
+        return _to_numeric_reg("$" + m.group(1))
+
     # Pre-scan the function body for already-pinned registers so we don't
     # double-pin and create register-allocator conflicts. We look at
     # `register T x asm("$N")` and `asm("REG")` in C-source declarations.
@@ -697,7 +704,7 @@ def _prebake_base_c(base_c_text: str, func_name: str, pin_chain: List[str]) -> s
         if struct_brace_depths:
             # Inside a struct/union/enum -- skip annotating its members
             continue
-        if annotated >= len(available_pins):
+        if not available_pins:
             break
         m = decl_re.match(line)
         if not m:
@@ -706,12 +713,23 @@ def _prebake_base_c(base_c_text: str, func_name: str, pin_chain: List[str]) -> s
         # Skip if already has a `register` storage or `asm(` pin
         if "register" in typespec or "asm" in line:
             continue
-        # Skip m2c-named "var_$reg" / "temp_$reg" / bare "tN/sN/vN/aN" --
-        # m2c already chose a register for these; overriding usually fights
-        # its analysis.
-        if name_hints_reg.match(varname):
-            continue
-        pin_numeric = available_pins[annotated]
+        hinted = m2c_hinted_reg(varname)
+        if hinted is not None:
+            # m2c-named var like var_t4 / temp_v0. Use the hint IF the
+            # hinted register is one the target's pin chain wants. If
+            # the hint doesn't match an available pin, skip the var
+            # entirely (don't try to force a different register onto
+            # something m2c specifically named as living elsewhere --
+            # that fights m2c's analysis and regresses).
+            if hinted in available_pins:
+                pin_numeric = hinted
+                available_pins.remove(hinted)
+            else:
+                continue
+        else:
+            # Generic-named var (cached, saved, ptr, count, etc.). Take
+            # next available pin in positional order.
+            pin_numeric = available_pins.pop(0)
         typespec_clean = typespec.strip()
         new_line = (
             f'{indent}register {typespec_clean} {varname} asm("{pin_numeric}"){init};'

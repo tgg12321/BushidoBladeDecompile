@@ -119,6 +119,22 @@ def run_permuter(func: str, time_s: int) -> tuple[int | None, int]:
     return min_score, max_iter
 
 
+def run_diag_diff(func: str) -> None:
+    """Invoke bb2_diag_diff.py on the best output-* dir, print to our
+    stdout. Used when the permuter plateaus (min_score > 0) so agents
+    see what's still wrong instead of just a number.
+    """
+    root = Path.cwd().resolve()
+    wsl_root = str(root).replace("C:", "/mnt/c").replace("\\", "/")
+    cmd = (
+        f'cd "{wsl_root}" && source .venv/bin/activate && '
+        f'python3 tools/bb2_diag_diff.py {func} 2>&1'
+    )
+    r = subprocess.run(["wsl", "bash", "-c", cmd],
+                       capture_output=True, text=True, timeout=60)
+    print(r.stdout or r.stderr)
+
+
 def apply_match(func: str, src: Path) -> bool:
     """Apply via bb2_apply_match.py --verify (which auto-rebuilds + checks SHA1)."""
     root = Path.cwd().resolve()
@@ -198,6 +214,21 @@ def main():
         min_score, max_iter = run_permuter(args.func, time_budget)
         print(f"[result] min_score={min_score} iters={max_iter}")
         if min_score != 0:
+            # Auto-diag: show the agent what's left in the diff
+            print()
+            print(f"[diag] no match (plateau at {min_score}). Running asm-level diff "
+                  f"on best output dir to show what remains:")
+            run_diag_diff(args.func)
+            print()
+            print(f"[diag] hint: structure-of-remaining-diff above suggests the "
+                  f"plateau cause. Common patterns:")
+            print(f"   - uniform $regA <-> $regB swaps -> pin a variable to one of them")
+            print(f"   - addressing-mode diffs (e.g., 'sh ra,8(rb)' vs 'sh ra,K(zero)') "
+                  f"-> try alternate expression for the memory access")
+            print(f"   - 1-2 instruction reorder -> try `do {{ ... }} while (0)` "
+                  f"around adjacent statements")
+            print(f"   - mfhi/division intermediate -> typically unfixable from C; "
+                  f"keep the regfix rule")
             sys.exit(0)  # no match, that's fine; not an error
 
     # Match found

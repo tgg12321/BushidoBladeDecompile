@@ -656,6 +656,123 @@ def _build_passes():
             ca.Pragma("_permuter sameline end"),
         ]
 
+    def perm_bb2_strength_reduce(
+        fn: "ca.FuncDef",
+        ast: "ca.FileAST",
+        indices: "Indices",
+        region: "Region",
+        random: "random_module.Random",
+    ) -> None:
+        """BB2: SOTN strength-reduce-defeat mutations. Find arithmetic
+        with a power-of-2 constant operand and rewrite into an
+        equivalent form, e.g.:
+
+            x * 4   <->  x << 2  <->  2 * (2 * x)
+            x / 4   <->  x >> 2
+            x % 4   <->  x & 3   (for unsigned / non-negative)
+
+        Targets the mario_getMarioVoiceData_8005BE84 match pattern --
+        `(arg_save * 4)` -> `(2 * (2 * arg_save))` shifted GCC's
+        strength-reduction enough to match. That mutation was found by
+        random luck in perm_general; this pass tries it directly.
+
+        We pick ONE candidate BinaryOp per iteration and apply ONE
+        rewrite (randomly chosen from the productive set).
+        """
+        candidates: List["ca.BinaryOp"] = []
+
+        class _Collect(ca.NodeVisitor):
+            def visit_BinaryOp(self, node: "ca.BinaryOp") -> None:  # noqa: N802
+                if node.op not in ("*", "/", "%", "<<", ">>"):
+                    return self.generic_visit(node)
+                # Need at least one constant operand
+                for operand in (node.left, node.right):
+                    if isinstance(operand, ca.Constant) and operand.type == "int":
+                        try:
+                            val = int(operand.value, 0)  # handles 0x / 0o / decimal
+                        except (ValueError, TypeError):
+                            continue
+                        # Power of 2 with small log
+                        if val > 0 and (val & (val - 1)) == 0 and val <= 65536:
+                            candidates.append(node)
+                            break
+                self.generic_visit(node)
+
+        _Collect().visit(fn)
+        ensure(candidates)
+        target = random.choice(candidates)
+
+        # Determine which operand is the constant and which is the var
+        if isinstance(target.left, ca.Constant):
+            const_op = target.left
+            var_op = target.right
+        else:
+            const_op = target.right
+            var_op = target.left
+        try:
+            const_val = int(const_op.value, 0)
+        except (ValueError, TypeError):
+            raise RandomizationFailure()
+        log2 = const_val.bit_length() - 1  # since power of 2
+
+        # Pick a mutation that's valid for this op
+        choices: list[str] = []
+        if target.op == "*":
+            # x * 4 -> x << 2  OR  x * 4 -> 2 * (2 * x)
+            if log2 >= 1:
+                choices.append("mul_to_shift")
+            if log2 == 2:
+                choices.append("mul_to_chain2")  # x*4 -> 2*(2*x)
+            if log2 == 3:
+                choices.append("mul_to_chain3")  # x*8 -> 2*(2*(2*x))
+        elif target.op == "/":
+            if log2 >= 1:
+                choices.append("div_to_shift")
+        elif target.op == "%":
+            if log2 >= 1:
+                choices.append("mod_to_mask")
+        elif target.op == "<<":
+            # x << 2 -> x * 4
+            choices.append("shift_to_mul")
+        elif target.op == ">>":
+            # x >> 2 -> x / 4 (only safe for unsigned, but we try anyway --
+            # the build will fail if signedness matters and the auditor
+            # will reject; net effect is the mutation just doesn't help)
+            choices.append("shift_to_div")
+        if not choices:
+            raise RandomizationFailure()
+        mutation = random.choice(choices)
+
+        def _make_const(v: int) -> "ca.Constant":
+            return ca.Constant(type="int", value=str(v))
+
+        if mutation == "mul_to_shift":
+            new_node = ca.BinaryOp("<<", var_op, _make_const(log2))
+        elif mutation == "mul_to_chain2":
+            # x * 4 -> 2 * (2 * x)
+            inner = ca.BinaryOp("*", _make_const(2), var_op)
+            new_node = ca.BinaryOp("*", _make_const(2), inner)
+        elif mutation == "mul_to_chain3":
+            # x * 8 -> 2 * (2 * (2 * x))
+            inner = ca.BinaryOp("*", _make_const(2), var_op)
+            inner2 = ca.BinaryOp("*", _make_const(2), inner)
+            new_node = ca.BinaryOp("*", _make_const(2), inner2)
+        elif mutation == "div_to_shift":
+            new_node = ca.BinaryOp(">>", var_op, _make_const(log2))
+        elif mutation == "mod_to_mask":
+            new_node = ca.BinaryOp("&", var_op, _make_const(const_val - 1))
+        elif mutation == "shift_to_mul":
+            new_node = ca.BinaryOp("*", var_op, _make_const(1 << const_val))
+        elif mutation == "shift_to_div":
+            new_node = ca.BinaryOp("/", var_op, _make_const(1 << const_val))
+        else:
+            raise RandomizationFailure()
+
+        # In-place mutate the target node so the AST keeps its parent links
+        target.op = new_node.op
+        target.left = new_node.left
+        target.right = new_node.right
+
     # Default weights tuned for "lightest most useful, heavier as escape":
     #   perm_bb2_add_pin: 10.0 — small mutation, statement-count-preserving,
     #     comparable to upstream perm_temp_for_expr=100 / perm_ins_block=10
@@ -672,6 +789,7 @@ def _build_passes():
     return [
         (perm_bb2_add_pin, 10.0),
         (perm_bb2_scheduler_perturb, 3.0),
+        (perm_bb2_strength_reduce, 2.5),
         (perm_bb2_type_qualifier, 2.0),
         (perm_bb2_insert_aliasing, 0.5 if enable_heavy else 0.0),
     ]
