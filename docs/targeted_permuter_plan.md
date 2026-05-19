@@ -222,6 +222,54 @@ extern signatures don't match what the stripped C calls (specifically
 `func_8007F87C` arity); fix in Phase 1 prep by injecting actual src/
 externs into base.c instead of m2c's inferences.
 
+## Phase 1 status: FRAMEWORK COMPLETE, PASS UNDERPERFORMING
+
+`tools/bb2_permuter.py` (Phase 1 MVP) successfully wraps decomp-permuter
+and injects the `perm_bb2_insert_aliasing` pass at runtime. Mechanically
+the integration is sound:
+
+- Monkey-patches `randomizer.RANDOMIZATION_PASSES.append(...)` before
+  `src.main.main()` runs
+- Injects pass weight into the `[base]` section of the weights TOML via
+  `toml.load` monkey-patch (the load happens lazily on first iteration)
+- Pass generates SOTN-accepted AST:
+  `register T pin asm("$N"); __asm__ volatile("move %0, %1" : "=r"(pin) : "r"(src))`
+  and redirects one downstream read of `src` to `pin` so GCC can't DCE
+  the pinned local.
+
+**Empirical result on AddTbpOfst_80047EE8 (regression target):**
+
+| Run | Iters / 180s | Best score |
+|---|---:|---:|
+| Upstream baseline | 4516 | **225** |
+| bb2_permuter weight=1.0 | 1872 | 505 (no improvement) |
+| bb2_permuter weight=0.1 | ~220 | 505 (no improvement) |
+
+The pass currently HURTS the search rather than helping. Two issues
+identified:
+
+1. **Iteration rate drops sharply** (4516 → 1872 → 220). Even at low
+   weight, the bb2 wrapper produces fewer iterations than upstream
+   alone. Cause not fully diagnosed — may be parallelism interaction
+   with the monkey-patch.
+2. **Insertion is too random** to land usefully. Adding 2 statements
+   (decl + asm) at a random point with random source-var + random
+   pin-reg + random downstream-read replacement has a vanishingly small
+   chance of producing target-matching codegen.
+
+Phase 1 needs a more principled design before it adds value:
+
+- Profile the iteration-rate regression — is it our pass, our patch,
+  or upstream worker overhead?
+- Constrain the insertion: use scope/type analysis to pick pin-reg /
+  source-var combinations that have a realistic chance of helping.
+- Consider a less-aggressive mutation: instead of inserting NEW
+  statements, ANNOTATE an existing declaration with a register pin
+  asmlabel (no statement-count change, smaller search space).
+
+Suspending Phase 1 here. Framework is committed and tested; the actual
+pass implementation needs more thought before continuing.
+
 ## Phase 0 status: COMPLETE (commit c40abcb)
 
 Delivered:
