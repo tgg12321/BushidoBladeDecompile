@@ -458,7 +458,7 @@ rob_life_ctrl: reorder 6,2,3,4,5,7 @ 2-7
 rob_life_ctrl: subst "addu\t\$5,\$7,4" "addiu	$5,$5,104" @ 88
 
 # func_80047BE0: swap s1 (dst32) and s2 (p) in function body only
-func_80047BE0: $17 <-> $18 @ 13-93
+# RETIRED (targeted-permuter): func_80047BE0: $17 <-> $18 @ 13-93
 
 # func_80019310: prologue swap + insert nop only.
 # Loop-body register allocation comes out naturally via inline_move_aliasing
