@@ -485,6 +485,31 @@ EOF
             echo "ERROR: git worktree add failed" >&2
             exit 1
         fi
+        # Re-register with a Windows-native path. WSL git records the worktree
+        # path as /mnt/X/... which Windows-side tools (EnterWorktree, native
+        # `git worktree list` from Git Bash) can't navigate — EnterWorktree
+        # tries to lstat C:\mnt\c\... and fails with ENOENT. git.exe (Git for
+        # Windows) is reachable from WSL via the inherited Windows PATH and
+        # accepts Windows-native paths, so we use it for a one-shot repair.
+        # No-op on real Linux hosts (git.exe absent) and on Git Bash (this
+        # code already ran post-WSL-bounce, but the guards keep it safe).
+        WT_PATH_WIN="$WT_PATH"
+        if [ -d /mnt/c ] && command -v git.exe >/dev/null 2>&1; then
+            _to_win() {
+                case "$1" in
+                    /mnt/[a-zA-Z]/*)
+                        _drv=$(printf '%s' "$1" | cut -c6 | tr 'a-z' 'A-Z')
+                        printf '%s:%s\n' "$_drv" "${1#/mnt/?}"
+                        ;;
+                    *)
+                        printf '%s\n' "$1"
+                        ;;
+                esac
+            }
+            WT_PATH_WIN=$(_to_win "$WT_PATH")
+            _mw_win=$(_to_win "$MAIN_WT")
+            git.exe -C "$_mw_win" worktree repair "$WT_PATH_WIN" >/dev/null 2>&1 || true
+        fi
         # Bootstrap deps in the new worktree.
         echo
         echo "Bootstrapping deps..."
@@ -497,10 +522,15 @@ EOF
         fi
         echo
         echo "Ready. To switch into it from Claude Code:"
-        echo "  EnterWorktree path=\"$WT_PATH\""
+        echo "  EnterWorktree path=\"$WT_PATH_WIN\""
         echo
         echo "From a shell:"
-        echo "  cd \"$WT_PATH\""
+        if [ "$WT_PATH_WIN" != "$WT_PATH" ]; then
+            echo "  WSL:      cd \"$WT_PATH\""
+            echo "  Git Bash: cd \"/${WT_PATH#/mnt/}\""
+        else
+            echo "  cd \"$WT_PATH\""
+        fi
         ;;
 
     verify-toolchain)
