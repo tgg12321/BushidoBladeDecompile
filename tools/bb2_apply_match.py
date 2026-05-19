@@ -46,28 +46,71 @@ def _is_wsl() -> bool:
         return False
 
 
-def run_make_and_check_sha1(wsl_root: str, src_path: Path) -> tuple[bool, str]:
-    """Rebuild touched .c, run make, return (matches, last_lines).
-    Uses wsl + .venv since the toolchain is Linux-only. Auto-detects
-    whether we're already inside WSL (skips the `wsl` wrapper).
+def _wsl_or_native(cmd: str) -> list[str]:
+    """Build a subprocess argv that runs `cmd` via wsl bash from Windows,
+    or native bash if already inside WSL.
     """
+    if _is_wsl():
+        return ["bash", "-c", cmd]
+    return ["wsl", "bash", "-c", cmd]
+
+
+def _run_make(wsl_root: str, src_path: Path) -> tuple[bool, str, bool]:
+    """Run make once. Returns (matches_sha1, output_tail, label_drift_detected)."""
     obj_name = src_path.stem + ".o"
     cmd = (
         f'cd "{wsl_root}" && source .venv/bin/activate && '
-        f'rm -f build/src/{obj_name} && make 2>&1 | tail -8'
+        f'rm -f build/src/{obj_name} && make 2>&1 | tail -20'
     )
-    if _is_wsl():
-        # Already in WSL -- bash directly, no wsl wrapper
-        run_args = ["bash", "-c", cmd]
-    else:
-        run_args = ["wsl", "bash", "-c", cmd]
-    r = subprocess.run(
-        run_args,
-        capture_output=True, text=True, timeout=300,
-    )
+    r = subprocess.run(_wsl_or_native(cmd),
+                       capture_output=True, text=True, timeout=300)
     out = (r.stdout or "") + (r.stderr or "")
     matches = "bb2 matches!" in out
-    return matches, out
+    # Label-drift signature: ld reports "undefined reference to `.L<N>`"
+    label_drift = "undefined reference to `.L" in out
+    return matches, out, label_drift
+
+
+def _run_fix_label_drift(wsl_root: str) -> tuple[bool, str]:
+    """Invoke dc.sh fix-label-drift --apply. Returns (ran_cleanly, output)."""
+    cmd = (
+        f'cd "{wsl_root}" && source .venv/bin/activate && '
+        f'bash tools/dc.sh fix-label-drift --apply 2>&1 | tail -15'
+    )
+    r = subprocess.run(_wsl_or_native(cmd),
+                       capture_output=True, text=True, timeout=120)
+    out = (r.stdout or "") + (r.stderr or "")
+    return r.returncode == 0, out
+
+
+def run_make_and_check_sha1(wsl_root: str, src_path: Path) -> tuple[bool, str]:
+    """Rebuild touched .c, run make, return (matches, last_lines).
+
+    Two-pass cascade-recovery: if the first make fails with label-drift
+    (undefined .L<N> reference, common when applying a match to a
+    label-rich file like text1b.c or main.c), auto-invoke
+    `dc.sh fix-label-drift --apply` and re-run make. Roll back only if
+    STILL mismatched after the drift fix.
+    """
+    matches, out, drift = _run_make(wsl_root, src_path)
+    if matches:
+        return True, out
+
+    if drift:
+        # Try the auto-repair before giving up
+        _, drift_log = _run_fix_label_drift(wsl_root)
+        # Re-run make
+        matches2, out2, _ = _run_make(wsl_root, src_path)
+        combined = (
+            out
+            + "\n\n[apply] label-drift detected; auto-ran fix-label-drift:\n"
+            + drift_log
+            + "\n[apply] re-running make:\n"
+            + out2
+        )
+        return matches2, combined
+
+    return False, out
 
 
 def record_registry_entry(func: str, src_file: str, regfix_retired: int,

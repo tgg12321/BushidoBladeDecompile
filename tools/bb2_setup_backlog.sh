@@ -21,10 +21,12 @@ prepare_one() {
 
     # Find asm file containing this function
     local ASMFILE
-    ASMFILE=$(grep -ln "^glabel ${FUNC}$" asm/funcs/*.s 2>/dev/null | head -1)
+    # Tolerate CRLF in asm files (some have \r\n endings against project
+    # convention). Use \b or end-of-line-or-cr regex.
+    ASMFILE=$(grep -ln "^glabel ${FUNC}[[:space:]]*\$" asm/funcs/*.s 2>/dev/null | head -1)
     if [ -z "$ASMFILE" ]; then
         # Try the 6CAC.s monolith -- many functions live there
-        if grep -q "^glabel ${FUNC}$" asm/6CAC.s 2>/dev/null; then
+        if grep -q "^glabel ${FUNC}[[:space:]]*$" asm/6CAC.s 2>/dev/null; then
             echo "  EXTRACT ${FUNC}: from asm/6CAC.s monolith"
             # Extract glabel...endlabel block. 6CAC.s uses jlabel/glabel
             # internally; we just grab from glabel <fn> to the next

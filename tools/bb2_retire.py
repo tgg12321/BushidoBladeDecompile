@@ -179,8 +179,10 @@ def main():
     p.add_argument("func")
     p.add_argument("--src", help="Override auto-detected src file")
     p.add_argument("--time", type=int, default=300, help="Permuter time budget (s)")
-    p.add_argument("--max-base", type=int, default=300,
-                   help="Abort if base score exceeds this (avoid burning cycles)")
+    p.add_argument("--max-base", type=int, default=200,
+                   help="Abort if base score exceeds this. Default 200 per "
+                        "Phase 7 broader test (base>200 essentially never matches "
+                        "in 300s budget). Use --max-base 0 to disable.")
     p.add_argument("--commit", action="store_true",
                    help="Auto-commit on successful retirement")
     args = p.parse_args()
@@ -202,8 +204,10 @@ def main():
     if base is None:
         sys.exit("Base score measurement failed (likely compile error)")
     print(f"[base] score = {base}")
-    if base > args.max_base:
-        sys.exit(f"Base score {base} > max {args.max_base}; aborting")
+    if args.max_base > 0 and base > args.max_base:
+        sys.exit(f"Base score {base} > max-base threshold {args.max_base}; "
+                 f"aborting. Override with --max-base 0 (disable) or "
+                 f"--max-base {base + 100}.")
     if base == 0:
         print(f"[match] base already 0 -- function builds without regfix; "
               f"check whether regfix is dead code")
