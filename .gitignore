@@ -107,6 +107,11 @@ codex_lab/
 # Active function marker (used by .claude/hooks/active_func_guard.sh)
 .bb2_active_func
 
+# Audit log + ephemeral grind-check overrides
+.bb2_audit_log.json
+.bb2_stop_hook_off
+.bb2_stop_hook_suppress_once
+
 # Per-function build-active iteration log (mutates per build)
 .bb2_iter_log/
 

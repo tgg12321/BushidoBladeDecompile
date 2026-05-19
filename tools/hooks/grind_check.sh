@@ -61,6 +61,22 @@ esac
 
 ACTIVE_FILE="$PROJECT_ROOT/.bb2_active_func"
 
+# Operator override (permanent for the session): if .bb2_stop_hook_off exists,
+# the hook never fires. Use when the user has redirected the agent to a
+# non-decomp task (e.g., naming work in a sibling worktree) where the
+# active-function marker is irrelevant. Remove the file to re-enable.
+if [ -f "$PROJECT_ROOT/.bb2_stop_hook_off" ]; then
+    exit 0
+fi
+
+# Operator override (one-shot): if .bb2_stop_hook_suppress_once exists,
+# consume it and allow this single stop. Useful for: "I'm wrapping up a
+# parallel task before returning to the active function."
+if [ -f "$PROJECT_ROOT/.bb2_stop_hook_suppress_once" ]; then
+    rm -f "$PROJECT_ROOT/.bb2_stop_hook_suppress_once"
+    exit 0
+fi
+
 # Fast path: no active marker in THIS worktree, allow stop.
 if [ ! -s "$ACTIVE_FILE" ]; then
     exit 0
