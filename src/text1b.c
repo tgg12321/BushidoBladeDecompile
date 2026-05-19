@@ -12467,31 +12467,39 @@ extern s32 func_80085EE4(s16);
 extern s32 func_80085E4C(s16, s16);
 extern s32 func_80085FB8();
 extern s32 md_game_check_change_main_mode_katinuki(s16);
-s32 mario_getMarioVoiceData_8005BE84(s32 arg0) {
-    register s32 arg_save asm("$16") = arg0;
-    s32 result;
-    s16 *p;
-    title_mv_exec2(0);
-    {
-        register s32 base asm("$3");
-        base = (s32)&D_8009AD1C;
-        p = (s16 *)(base + (arg_save * 4));
-    }
-    if (*p >= 0) {
-        s16 temp_a0;
-        arg_save = arg_save << 1;
-        func_80085F98();
-        func_80085EE4(0);
-        func_80085E4C(0, 0);
-        result = func_80085EE4(*p);
-        md_game_check_change_main_mode_katinuki(*p);
-        temp_a0 = arg_save + 1;
-        func_80085E4C(temp_a0, temp_a0);
-        func_80085FB8();
-    } else {
-        result = -1;
-    }
-    return (s16)result;
+s32 mario_getMarioVoiceData_8005BE84(s32 arg0)
+{
+  register s32 arg_save asm("$16") = arg0;
+  s16 new_var;
+  s32 result;
+  s16 *p;
+  unsigned char new_var2;
+  title_mv_exec2(0);
+  new_var2 = 2;
+  {
+    register s32 base asm("$3");
+    base = (s32) (&D_8009AD1C);
+    p = (s16 *) (base + (new_var2 * (new_var2 * arg_save)));
+  }
+  if ((*p) >= 0)
+  {
+    s16 temp_a0;
+    arg_save = arg_save << 1;
+    func_80085F98();
+    func_80085EE4(0);
+    func_80085E4C(0, 0);
+    result = func_80085EE4(*p);
+    md_game_check_change_main_mode_katinuki(*p);
+    temp_a0 = arg_save + 1;
+    func_80085E4C(temp_a0, temp_a0);
+    func_80085FB8();
+  }
+  else
+  {
+    result = -1;
+  }
+  new_var = (s16) result;
+  return new_var;
 }
 void func_800858D0(s32);
 void func_80085F98(void);
