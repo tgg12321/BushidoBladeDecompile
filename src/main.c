@@ -1989,11 +1989,12 @@ void spu_WaitReady(s32 a0, s32 a1) {
 
 s32 coli_HitPauseKatana_2(s32 arg0, u32 arg1, s32 arg2, s32 arg3)
 {
-  u32 t2;
   register s32 mode asm("t1") = arg0;
-  register volatile u16 *base asm("a0");
+  volatile u16 *base;
+  register u32 t2 asm("t2");
   s32 new_var;
-  s32 new_var3 = arg3;
+  s32 new_var3;
+  s32 new_var2 = arg3;
   register u32 mask asm("t0") = arg1;
   if (D_800A2CD4 & 1)
   {
@@ -2003,6 +2004,7 @@ s32 coli_HitPauseKatana_2(s32 arg0, u32 arg1, s32 arg2, s32 arg3)
   {
     base = (volatile u16 *) D_800A2CDC;
   }
+  new_var3 = new_var2;
   t2 = (((u32) (base[new_var3] & 0xFF)) << 16) | base[arg2];
   switch (mode)
   {

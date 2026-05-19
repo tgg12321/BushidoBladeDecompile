@@ -1704,36 +1704,6 @@ saTan0GaugeDraw: reorder 25,26,27,28,29,32,30,31 @ 25-32
 # Reorder: case 1 - move sh after addu,sra
 # Reorder: case 0 - move sh after sll,addu
 # Reorder: case 0 tail - swap j and nor
-# 2026-05-18: GCC's RA cost-model assigns t2 to $a2 and new_var to $t2, opposite of cc1psx;
-# pin attempts (see register-asm-pins.md) fail. Swap regs in range [21,178] to match target.
-coli_HitPauseKatana_2: $6 <-> $10 @ 21-178
-
-# Delete the unneeded `move $v1, $a3` at function entry (GCC saves arg3 to $v1 for
-# new_var3 chain; target uses $a3 directly). Repair $3 reads at idx 9 and 11 to use $a3.
-coli_HitPauseKatana_2: subst "sll\t\$2,\$3,1" "sll\t$2,$7,1" @ 9
-coli_HitPauseKatana_2: subst "sll\t\$2,\$3,1" "sll\t$2,$7,1" @ 11
-coli_HitPauseKatana_2: delete @ 1
-
-# Case 1 tail: target keeps mask in $t0, uses $v0 for intermediate.
-# GCC clobbers $t0; reroute via $v0 to preserve mask.
-coli_HitPauseKatana_2: subst "and\t\$8,\$8,\$2" "and\t$2,$8,$2" @ 73
-coli_HitPauseKatana_2: subst "or\t\$10,\$10,\$8" "or\t$10,$10,$2" @ 75
-
-# Case 0 tail: same pattern + nor uses $v0 too.
-coli_HitPauseKatana_2: subst "and\t\$8,\$8,\$2" "and\t$2,$8,$2" @ 120
-coli_HitPauseKatana_2: subst "\$8" "$2" @ 121
-coli_HitPauseKatana_2: subst "\$8" "$2" @ 121
-coli_HitPauseKatana_2: subst "and\t\$10,\$10,\$8" "and\t$10,$10,$2" @ 123
-
-# Scheduling: target's compiler moves the "constant 1" materialization (addiu $t3)
-# AFTER the lhu/andi/sll chain. GCC emits it earlier. Reorder post-delete indices.
-coli_HitPauseKatana_2: reorder 16,17,18,15 @ 15-18
-
-# Scheduling: target moves the sh AFTER the new_var-0xC6 addiu+sra. GCC emits sh earlier.
-coli_HitPauseKatana_2: reorder 50,51,49 @ 49-51
-
-# Scheduling: case 0 same pattern as block 2.
-coli_HitPauseKatana_2: reorder 86,87,85 @ 85-87
 
 # cpu_side_move_dir_4: register + scheduling fix for debug_printf block
 cpu_side_move_dir_4: subst "lbu\t\$3,0\(\$18\)" "lbu\t$4,0($18)" @ 39
