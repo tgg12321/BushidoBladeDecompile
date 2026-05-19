@@ -17473,8 +17473,7 @@ s32 func_80077894(void) {
     register s32 bits asm("$2");
     if (result < 0) goto fail;
     mask = -0x10;
-    p = (s32 *)&D_8009BD38;
-    ret = 1;
+    do { p = (s32 *)&D_8009BD38; ret = 1; } while (0);
     cur = *p;
     D_800A35E4 = 0;
     cur = cur & mask;
