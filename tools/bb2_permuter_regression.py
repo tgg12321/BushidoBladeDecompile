@@ -544,6 +544,183 @@ def cmd_load_bearing_all(args):
             print(f"  {f}: {e}")
 
 
+# Mapping from symbolic to numeric register names. GCC 2.7.2 cc1 requires
+# numeric form ($16) in the C asm-label string; the SN form ($s0) is rejected
+# as "invalid register name".
+_REG_NAME_TO_NUM = {
+    "$v0": "$2", "$v1": "$3",
+    "$a0": "$4", "$a1": "$5", "$a2": "$6", "$a3": "$7",
+    "$t0": "$8", "$t1": "$9", "$t2": "$10", "$t3": "$11",
+    "$t4": "$12", "$t5": "$13", "$t6": "$14", "$t7": "$15",
+    "$s0": "$16", "$s1": "$17", "$s2": "$18", "$s3": "$19",
+    "$s4": "$20", "$s5": "$21", "$s6": "$22", "$s7": "$23",
+    "$t8": "$24", "$t9": "$25",
+}
+
+
+def _to_numeric_reg(pin: str) -> str:
+    return _REG_NAME_TO_NUM.get(pin, pin)
+
+
+def _extract_arg_pin_chain(target_s_text: str) -> List[str]:
+    """Parse a target.s into the chain of arg-pin destination registers
+    (same algorithm as bb2_permuter's _load_target_register_weights, kept
+    in sync). Returns [(pin_reg, ...)] in order, e.g. ['$s0', '$s2'].
+    """
+    addu_zero_re = re.compile(
+        r"\baddu\s+\$(\w+)\s*,\s*\$(\w+)\s*,\s*\$(0|zero)\b"
+    )
+    insn_re = re.compile(r"^\s*(?:/\*.*?\*/\s*)?[a-z]")
+    bb2_set = (
+        {f"$t{i}" for i in range(10)}
+        | {"$v0", "$v1"}
+        | {f"$s{i}" for i in range(8)}
+    )
+    arg_regs = {"a0", "a1", "a2", "a3"}
+    PROLOGUE_INSN_LIMIT = 25
+    chain: List[str] = []
+    pinned_names: set = set()
+    insn_count = 0
+    for line in target_s_text.split("\n"):
+        if not insn_re.search(line):
+            continue
+        insn_count += 1
+        if insn_count > PROLOGUE_INSN_LIMIT:
+            break
+        m = addu_zero_re.search(line)
+        if not m:
+            continue
+        dst, src = m.group(1), m.group(2)
+        if src not in arg_regs and src not in pinned_names:
+            continue
+        pin = f"${dst}"
+        if pin not in bb2_set or dst in pinned_names:
+            continue
+        chain.append(pin)
+        pinned_names.add(dst)
+        if len(chain) >= 8:
+            break
+    return chain
+
+
+def _prebake_base_c(base_c_text: str, func_name: str, pin_chain: List[str]) -> str:
+    """Phase 4 pre-bake: given a base.c and a detected pin chain, annotate
+    the first N in-scope locals of `func_name` with `register asm("$N")`.
+
+    This is a textual transform (we don't fully parse the C). It looks for
+    declarations in the function body matching the pattern
+        ^<indent>\\s*<type>\\s+<varname>\\s*(?:=|;)
+    and adds `register` storage + `asm("$N")` postfix when the type is a
+    plain scalar / pointer.
+    """
+    if not pin_chain:
+        return base_c_text
+
+    lines = base_c_text.split("\n")
+    # Find the function body. Walk to the function definition signature,
+    # then to the opening brace, then track depth.
+    fn_start = None
+    brace_open = None
+    for i, line in enumerate(lines):
+        if re.search(rf"\b{re.escape(func_name)}\s*\(", line) and "{" not in line:
+            fn_start = i
+            for j in range(i, min(i + 5, len(lines))):
+                if "{" in lines[j]:
+                    brace_open = j
+                    break
+            if brace_open is not None:
+                break
+        elif re.search(rf"\b{re.escape(func_name)}\s*\(.*\{{", line):
+            fn_start = i
+            brace_open = i
+            break
+    if brace_open is None:
+        return base_c_text
+
+    # Walk forward through the function body finding Decls. Allow any
+    # depth: nested-block locals are equally annotatable. Stop when we
+    # leave the function (depth < 1).
+    decl_re = re.compile(
+        r"^(\s+)((?:const\s+|volatile\s+|unsigned\s+|signed\s+|register\s+)*"
+        r"(?:s8|s16|s32|u8|u16|u32|int|char|short|long|void)\s*\*?\s*\*?\s*)"
+        r"(\w+)(\s*=\s*[^;]+)?;"
+    )
+    depth = 0
+    annotated = 0
+    out = list(lines)
+    for j in range(brace_open, len(out)):
+        line = out[j]
+        for ch in re.sub(r"//.*$|/\*.*?\*/|\".*?\"|'.*?'", "", line):
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+        if depth < 1:
+            break
+        if annotated >= len(pin_chain):
+            break
+        m = decl_re.match(line)
+        if not m:
+            continue
+        indent, typespec, varname, init = m.group(1), m.group(2), m.group(3), m.group(4) or ""
+        # Skip if already has a `register` storage or `asm(` pin
+        if "register" in typespec or "asm" in line:
+            continue
+        pin = pin_chain[annotated]
+        pin_numeric = _to_numeric_reg(pin)
+        typespec_clean = typespec.strip()
+        new_line = (
+            f'{indent}register {typespec_clean} {varname} asm("{pin_numeric}"){init};'
+        )
+        out[j] = new_line
+        annotated += 1
+
+    return "\n".join(out)
+
+
+def cmd_prebake(args):
+    """Phase 4: pre-bake the detected target.s arg-pin chain into the
+    permuter/<func>_baseline/base.c. Annotates the first N in-scope
+    Decls (N = chain length) with `register asm("$N")` per the chain.
+
+    Assumes `setup-baseline <func>` already ran. Saves original base.c
+    as base.c.preprebake for reversibility.
+    """
+    root = Path(args.project_root).resolve()
+    entry = get_entry(args.func)
+    if entry is None:
+        sys.exit(f"{args.func} not in regression suite")
+
+    baseline_dir = root / "permuter" / f"{args.func}_baseline"
+    base_c = baseline_dir / "base.c"
+    target_s = baseline_dir / "target.s"
+    if not base_c.exists() or not target_s.exists():
+        sys.exit(f"Run `setup-baseline {args.func}` first")
+
+    chain = _extract_arg_pin_chain(read_text_lf(target_s))
+    if not chain:
+        print(f"{args.func}: no arg-pin chain detected; nothing to prebake")
+        return
+
+    print(f"{args.func}: detected pin chain {' -> '.join(chain)}")
+    orig = read_text_lf(base_c)
+    write_text_lf(baseline_dir / "base.c.preprebake", orig)
+    new_c = _prebake_base_c(orig, args.func, chain)
+    write_text_lf(base_c, new_c)
+
+    # Show the changes
+    annotated = 0
+    for old_line, new_line in zip(orig.split("\n"), new_c.split("\n")):
+        if old_line != new_line:
+            print(f"  - {old_line.strip()}")
+            print(f"  + {new_line.strip()}")
+            annotated += 1
+    if annotated == 0:
+        print(f"  (no Decls matched the annotation pattern; base.c unchanged)")
+    else:
+        print(f"  Pre-baked {annotated} Decl(s) with register asm() pins")
+
+
 def cmd_setup_baseline(args):
     """Prepare permuter/<func>_baseline/ with stripped C as base.c.
 
@@ -750,6 +927,10 @@ def main():
     p_brec.add_argument("func")
     p_brec.add_argument("--time-seconds", type=int, default=180, help="Permuter time budget (default 180)")
     p_brec.set_defaults(handler=cmd_baseline_record)
+
+    p_pre = sub.add_parser("prebake", help="Phase 4: pre-bake target arg-pin chain into permuter base.c")
+    p_pre.add_argument("func")
+    p_pre.set_defaults(handler=cmd_prebake)
 
     p_rep = sub.add_parser("report", help="Aggregate regression suite results")
     p_rep.set_defaults(handler=cmd_report)

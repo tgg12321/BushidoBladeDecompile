@@ -222,6 +222,56 @@ extern signatures don't match what the stripped C calls (specifically
 `func_8007F87C` arity); fix in Phase 1 prep by injecting actual src/
 externs into base.c instead of m2c's inferences.
 
+## Phase 4 status: prebake → FIRST FULL MATCH on AddTbpOfst
+
+Phase 4 adds pre-baking: read target.s pin chain via Phase 3's detector,
+inject `register T x asm("$N")` annotations into permuter base.c BEFORE
+the permuter runs. The pre-baked base starts at a much lower score and
+the search converges to match.
+
+`bb2_permuter_regression.py prebake <func>`:
+- Detects arg-pin chain via shared `_extract_arg_pin_chain` (same logic
+  as bb2_permuter)
+- Reads permuter/<func>_baseline/base.c
+- Walks the function body, finds the first N decls matching a scalar/
+  pointer type pattern (n = chain length)
+- Annotates them with `register T x asm("$NUM")` where NUM is the
+  numeric register name ($16 for $s0, etc — GCC 2.7.2 cc1 requires
+  numeric form; symbolic names rejected as "invalid register name")
+
+### AddTbpOfst result
+
+| Stage | Score |
+|---|---:|
+| Stripped baseline | 505 |
+| Prebake applied   | **365** (-140 instantly) |
+| Phase 4 + bb2 passes (180s, -j 6) | **0** ✓ MATCH at iter 1209 |
+
+This is the first complete match found by any phase. The detected pin
+chain ($s0, $s2) for cached/saved was correct, and with those pins
+pre-applied GCC produces target-matching bytes naturally (no `__asm__`
+move needed — plain `saved = cached;` is sufficient).
+
+### Suite results (180s, -j 6, with prebake where applicable)
+
+| Function | Prebaked pins | Phase 4 best | Phase 2 v2 best | Δ vs Phase 2 v2 |
+|---|---|---:|---:|---:|
+| AddTbpOfst_80047EE8 | $s0,$s2 | **0** ✓ | 305 (600s) | -305 |
+| func_80019310 | $t0 (might mismatch) | 410 | 355 | +55 |
+| calc_fc_frame_800203B4 | $s0,$s1 | 480 | 490 | -10 |
+| func_8002D320 | (no chain) | 765 | 650 | +115 |
+| func_8002EA24 | $t0 (depth fix) | 940 | 1135 | -195 |
+| saSeInit | $s1 | 495 | 495 | 0 |
+
+Mixed: full match on AddTbpOfst, partial helps on calc_fc_frame and
+func_8002EA24, regressions on func_80019310 and func_8002D320.
+
+The regressions surface a limitation: my prebake assumes the n-th Decl
+in m2c-generated base.c corresponds to the n-th pin in target. m2c
+names variables based on the registers it INFERRED for them, so for
+some functions the variable names hint at one register while target's
+prologue pinned them to another. AddTbpOfst happened to align.
+
 ## Phase 2 v2 status: positional pairing + heavy aliasing (REAL IMPROVEMENT)
 
 Phase 2 v2 adds positional-pairing logic to `perm_bb2_add_pin`. Selection

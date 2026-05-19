@@ -46,6 +46,24 @@ BB2_PIN_REGS: List[str] = (
 )
 
 
+# GCC 2.7.2's cc1 wants numeric register names in `asm("$N")` constraints
+# ($16 not $s0). Symbolic names are accepted by SN cc1 but our cc1 rejects
+# them as "invalid register name". Map symbolic -> numeric before emitting.
+_REG_NAME_TO_NUM = {
+    "$v0": "$2", "$v1": "$3",
+    "$a0": "$4", "$a1": "$5", "$a2": "$6", "$a3": "$7",
+    "$t0": "$8", "$t1": "$9", "$t2": "$10", "$t3": "$11",
+    "$t4": "$12", "$t5": "$13", "$t6": "$14", "$t7": "$15",
+    "$s0": "$16", "$s1": "$17", "$s2": "$18", "$s3": "$19",
+    "$s4": "$20", "$s5": "$21", "$s6": "$22", "$s7": "$23",
+    "$t8": "$24", "$t9": "$25",
+}
+
+
+def _to_numeric_reg(pin: str) -> str:
+    return _REG_NAME_TO_NUM.get(pin, pin)
+
+
 # Phase 2 v1: target-aware register weighting. At wrapper init we read
 # the permuter dir's target.s and count register frequencies. The pin
 # pass uses these as weights for `random.choices` so the search biases
@@ -56,10 +74,17 @@ BB2_PIN_REGS: List[str] = (
 # typically 5 entries vs 20). Used by the pin pass when picking a
 # "preferred" register without dilution by long-tail noise.
 #
-# Both are populated by `_load_target_register_weights(permuter_dir)` at
+# Phase 3: argument-pin destinations -- registers that are written via
+# `addu $rD, $aN, $zero` patterns in target.s. These are very-high-signal
+# pin initializations from function parameters; the n-th such instruction
+# in target's instruction order maps to the n-th register-pinned local
+# in source order. Empty list if target has no arg-pin moves.
+#
+# All populated by `_load_target_register_weights(permuter_dir)` at
 # main() entry.
 _TARGET_REG_WEIGHTS: List = []
 _TARGET_TOP_REGS: List[str] = []
+_TARGET_ARG_PIN_DSTS: List[str] = []
 
 
 def _weighted_choice(weights: List, random_obj) -> str:
@@ -78,17 +103,19 @@ def _weighted_choice(weights: List, random_obj) -> str:
 
 
 def _load_target_register_weights(permuter_dir: Path):
-    """Parse permuter_dir/target.s for register-usage frequencies, filter
-    to BB2_PIN_REGS. Returns (weighted_list, top_regs) where:
+    """Parse permuter_dir/target.s and return three artifacts:
+
       weighted_list: [(reg, weight), ...] for random.choices over the full
-        pin set (smoothing factor +1)
+        pin set (smoothing factor +1) -- Phase 2 v1
       top_regs: [reg, ...] -- the top-N registers by frequency (N=5),
-        filtered to BB2_PIN_REGS, ordered most-used first. Used by the
-        Phase 2 v2 positional-pairing logic.
+        filtered to BB2_PIN_REGS, ordered most-used first -- Phase 2 v2
+      arg_pin_dsts: [reg, ...] -- destinations of `addu $rD, $aN, $0`
+        instructions in target.s (parameter-to-register pin inits), in
+        instruction order, filtered to BB2_PIN_REGS -- Phase 3
     """
     target_s = permuter_dir / "target.s"
     if not target_s.exists():
-        return [(r, 1.0) for r in BB2_PIN_REGS], []
+        return [(r, 1.0) for r in BB2_PIN_REGS], [], []
 
     import re
     from collections import Counter
@@ -102,7 +129,7 @@ def _load_target_register_weights(permuter_dir: Path):
         name = pin.lstrip("$")
         weights.append((pin, float(counter.get(name, 0)) + 1.0))
 
-    # Top-N: take the most-used regs that are also in BB2_PIN_REGS
+    # Top-N by frequency
     bb2_set = set(BB2_PIN_REGS)
     top_regs = []
     for name, _count in counter.most_common():
@@ -112,7 +139,55 @@ def _load_target_register_weights(permuter_dir: Path):
         if len(top_regs) >= 5:
             break
 
-    return weights, top_regs
+    # Phase 3: parse the chain of register-pin initializations from
+    # target.s. We collect `addu $rD, $rS, $zero` instructions whose source
+    # is either an argument register ($aN) OR a previously-discovered pin
+    # destination -- this captures both direct arg pins
+    # (`register T x asm("$s0") = arg0` -> `addu $s0, $a0, $0`) and
+    # aliasing-chain pins (`register T y asm("$s2") = x` -> `addu $s2,
+    # $s0, $0`) in declaration order.
+    #
+    # Bounded to the prologue: we only scan the first PROLOGUE_INSN_LIMIT
+    # instruction-bearing lines, since pin inits are always in the prologue
+    # (a `addu $rD, $a0, $0` deep in the function body is a re-pinning, not
+    # an aliasing pin -- the func_8002D320 case in the regression suite).
+    addu_zero_re = re.compile(
+        r"\baddu\s+\$(\w+)\s*,\s*\$(\w+)\s*,\s*\$(0|zero)\b"
+    )
+    # Any MIPS-style instruction line begins with optional comment then
+    # indent then mnemonic. We use a permissive "is this an instruction
+    # line" detector to count prologue instructions.
+    insn_re = re.compile(r"^\s*(?:/\*.*?\*/\s*)?[a-z]")
+    arg_regs = {"a0", "a1", "a2", "a3"}
+    arg_pin_dsts: List[str] = []
+    pinned_names = set()
+
+    PROLOGUE_INSN_LIMIT = 25
+    insn_count = 0
+    for line in text.split("\n"):
+        if not insn_re.search(line):
+            continue
+        insn_count += 1
+        if insn_count > PROLOGUE_INSN_LIMIT:
+            break
+        m = addu_zero_re.search(line)
+        if not m:
+            continue
+        dst_name = m.group(1)
+        src_name = m.group(2)
+        if src_name not in arg_regs and src_name not in pinned_names:
+            continue
+        pin = f"${dst_name}"
+        if pin not in bb2_set:
+            continue
+        if dst_name in pinned_names:
+            continue
+        arg_pin_dsts.append(pin)
+        pinned_names.add(dst_name)
+        if len(arg_pin_dsts) >= 8:
+            break
+
+    return weights, top_regs, arg_pin_dsts
 
 
 def _build_passes():
@@ -227,7 +302,9 @@ def _build_passes():
             type=pin_type,
             init=None,
             bitsize=None,
-            asmlabel=ca.Constant(type="string", value=f'"{pin_reg}"'),
+            asmlabel=ca.Constant(
+                type="string", value=f'"{_to_numeric_reg(pin_reg)}"'
+            ),
         )
 
         # 2. The asm move
@@ -341,27 +418,43 @@ def _build_passes():
         _Collect().visit(fn)
         ensure(candidates)
 
-        # Choose selection strategy
+        # Choose selection strategy. Probability budget (when full target
+        # info is available):
+        #   50% — Phase 3 arg-pin mapping: n-th Decl ↔ n-th arg-pin-dst.
+        #         High signal when target has clear arg→reg pin inits.
+        #   20% — Phase 2 v2 positional pairing using top-frequency regs.
+        #         Fallback when arg-pin signal is short or absent.
+        #   20% — Phase 2 v1 target-weighted random.
+        #   10% — Phase 1 uniform random (escape valve).
         r = random.random()
-        if r < 0.60 and _TARGET_TOP_REGS and candidates:
-            # Strategy 1: positional pairing
-            # Pick a position index up to min(n_decls, n_top_regs); the n-th
-            # Decl gets paired with the n-th top reg.
+        target = None
+        pin_reg = None
+
+        if r < 0.50 and _TARGET_ARG_PIN_DSTS and candidates:
+            # Strategy: arg-pin mapping. The n-th in-scope Decl is paired
+            # with the n-th destination from target's arg-pin moves.
+            max_pair = min(len(candidates), len(_TARGET_ARG_PIN_DSTS))
+            idx = random.randrange(max_pair)
+            target = candidates[idx]
+            pin_reg = _TARGET_ARG_PIN_DSTS[idx]
+        elif r < 0.70 and _TARGET_TOP_REGS and candidates:
+            # Strategy: top-frequency positional pairing
             max_pair = min(len(candidates), len(_TARGET_TOP_REGS))
             idx = random.randrange(max_pair)
             target = candidates[idx]
             pin_reg = _TARGET_TOP_REGS[idx]
         elif r < 0.90 and _TARGET_REG_WEIGHTS:
-            # Strategy 2: target-weighted random
+            # Strategy: target-weighted random reg, random Decl
             target = random.choice(candidates)
             pin_reg = _weighted_choice(_TARGET_REG_WEIGHTS, random)
         else:
-            # Strategy 3: uniform random
+            # Strategy: uniform random (Phase 1 baseline)
             target = random.choice(candidates)
             pin_reg = random.choice(BB2_PIN_REGS)
 
+        pin_numeric = _to_numeric_reg(pin_reg)
         target.asmlabel = ca.Constant(
-            type="string", value=f'"{pin_reg}"'
+            type="string", value=f'"{pin_numeric}"'
         )
         if "register" not in target.storage:
             target.storage = ["register"] + list(target.storage)
@@ -445,22 +538,27 @@ def main() -> int:
     for name, w in weights.items():
         print(f"  {name}: weight={w}")
 
-    # Phase 2: target-aware register selection. Look for the permuter dir
-    # in argv (first non-flag arg) and load target.s register frequencies.
-    global _TARGET_REG_WEIGHTS, _TARGET_TOP_REGS
+    # Phase 2-3: target-aware register selection. Look for the permuter
+    # dir in argv (first non-flag arg) and load target.s register info.
+    global _TARGET_REG_WEIGHTS, _TARGET_TOP_REGS, _TARGET_ARG_PIN_DSTS
     permuter_dir = None
     for arg in sys.argv[1:]:
         if not arg.startswith("-") and Path(arg).is_dir():
             permuter_dir = Path(arg)
             break
     if permuter_dir is not None:
-        _TARGET_REG_WEIGHTS, _TARGET_TOP_REGS = _load_target_register_weights(
-            permuter_dir
-        )
+        (
+            _TARGET_REG_WEIGHTS,
+            _TARGET_TOP_REGS,
+            _TARGET_ARG_PIN_DSTS,
+        ) = _load_target_register_weights(permuter_dir)
         if _TARGET_TOP_REGS:
             top_str = ", ".join(_TARGET_TOP_REGS)
             print(f"[bb2_permuter] target.s top-{len(_TARGET_TOP_REGS)} regs: {top_str}")
-        else:
+        if _TARGET_ARG_PIN_DSTS:
+            pin_str = " -> ".join(_TARGET_ARG_PIN_DSTS)
+            print(f"[bb2_permuter] target.s arg-pin dsts (in order): {pin_str}")
+        elif not _TARGET_TOP_REGS:
             print(f"[bb2_permuter] target.s not found or uninformative; uniform reg weights")
 
     from src.main import main as perm_main  # type: ignore
