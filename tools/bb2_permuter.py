@@ -46,6 +46,60 @@ BB2_PIN_REGS: List[str] = (
 )
 
 
+# Phase 2: target-aware register weighting. At wrapper init we read the
+# permuter dir's target.s and count register frequencies. The pin pass
+# uses these as weights for `random.choices` so the search biases toward
+# registers target actually uses (typically ~5 distinct registers per
+# function out of 20 candidates).
+#
+# `_TARGET_REG_WEIGHTS` is a list of (pin_reg, weight) tuples, populated
+# by `_load_target_register_weights(permuter_dir)` at main() entry.
+_TARGET_REG_WEIGHTS: List = []
+
+
+def _weighted_choice(weights: List, random_obj) -> str:
+    """Pick a register from weights=[(reg, weight), ...] using the given
+    Random instance. Mirrors random.choices behavior but works with a list
+    of (item, weight) tuples and uses the random_obj for determinism with
+    permuter seeds."""
+    total = sum(w for _, w in weights)
+    r = random_obj.random() * total
+    cum = 0.0
+    for reg, w in weights:
+        cum += w
+        if r < cum:
+            return reg
+    return weights[-1][0]
+
+
+def _load_target_register_weights(permuter_dir: Path) -> List:
+    """Parse permuter_dir/target.s for register-usage frequencies, filter
+    to BB2_PIN_REGS, and return a [(reg, weight)] list suitable for
+    random.choices. Every pin reg gets at least weight 1 so unobserved
+    registers can still occasionally be tried.
+    """
+    target_s = permuter_dir / "target.s"
+    if not target_s.exists():
+        # Fallback: uniform weighting
+        return [(r, 1.0) for r in BB2_PIN_REGS]
+
+    import re
+    from collections import Counter
+
+    text = target_s.read_text(encoding="utf-8", errors="ignore")
+    # Match $tN / $sN / $vN / $aN register names
+    found = re.findall(r"\$(t[0-9]|s[0-7]|v[01]|a[0-3])\b", text)
+    counter = Counter(found)
+
+    weights: List = []
+    for pin in BB2_PIN_REGS:
+        # pin looks like "$t0"; strip $
+        name = pin.lstrip("$")
+        # Smooth: weight = count_in_target + 1 (so unobserved still has p>0)
+        weights.append((pin, float(counter.get(name, 0)) + 1.0))
+    return weights
+
+
 def _build_passes():
     """Construct the BB2 randomization passes and return them.
 
@@ -115,10 +169,15 @@ def _build_passes():
         _Collect().visit(fn)
         ensure(candidate_decls)
 
-        # Choose source var + pin register
+        # Choose source var + pin register. Pin reg uses the target-aware
+        # weighted distribution if available (Phase 2), falling back to
+        # uniform over BB2_PIN_REGS.
         src_decl = random.choice(candidate_decls)
         src_var = src_decl.name
-        pin_reg = random.choice(BB2_PIN_REGS)
+        if _TARGET_REG_WEIGHTS:
+            pin_reg = _weighted_choice(_TARGET_REG_WEIGHTS, random)
+        else:
+            pin_reg = random.choice(BB2_PIN_REGS)
         pin_name = f"_bb2_pin_{random.randint(1, 10**6):06d}"
 
         # Pick the insertion point AFTER we've identified candidate src vars
@@ -264,7 +323,10 @@ def _build_passes():
         ensure(candidates)
 
         target = random.choice(candidates)
-        pin_reg = random.choice(BB2_PIN_REGS)
+        if _TARGET_REG_WEIGHTS:
+            pin_reg = _weighted_choice(_TARGET_REG_WEIGHTS, random)
+        else:
+            pin_reg = random.choice(BB2_PIN_REGS)
         target.asmlabel = ca.Constant(
             type="string", value=f'"{pin_reg}"'
         )
@@ -349,6 +411,24 @@ def main() -> int:
     )
     for name, w in weights.items():
         print(f"  {name}: weight={w}")
+
+    # Phase 2: target-aware register weighting. Look for the permuter dir
+    # in argv (first non-flag arg) and load target.s register frequencies.
+    global _TARGET_REG_WEIGHTS
+    permuter_dir = None
+    for arg in sys.argv[1:]:
+        if not arg.startswith("-") and Path(arg).is_dir():
+            permuter_dir = Path(arg)
+            break
+    if permuter_dir is not None:
+        _TARGET_REG_WEIGHTS = _load_target_register_weights(permuter_dir)
+        # Show the top-5 register weights so the user can sanity-check
+        top = sorted(_TARGET_REG_WEIGHTS, key=lambda x: -x[1])[:5]
+        if top and top[0][1] > 1.0:
+            top_str = ", ".join(f"{r}={int(w-1)}" for r, w in top)
+            print(f"[bb2_permuter] target.s reg weights (top 5): {top_str}")
+        else:
+            print(f"[bb2_permuter] target.s not found or uninformative; uniform reg weights")
 
     from src.main import main as perm_main  # type: ignore
     return perm_main()

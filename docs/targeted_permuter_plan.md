@@ -222,6 +222,54 @@ extern signatures don't match what the stripped C calls (specifically
 `func_8007F87C` arity); fix in Phase 1 prep by injecting actual src/
 externs into base.c instead of m2c's inferences.
 
+## Phase 2 v1 status: target-aware register weighting (modest improvement)
+
+Phase 2 adds target.s analysis to bias the pin pass's register choices.
+At `main()` entry, `_load_target_register_weights(permuter_dir)` parses
+`target.s` for `$tN/$sN/$vN/$aN` usage frequencies and builds a
+`(reg, weight)` list. The pin pass uses `_weighted_choice` with smoothing
+(every reg gets at least weight 1) so unobserved registers can still
+occasionally be tried.
+
+For AddTbpOfst_80047EE8 the weights surface the actual register choices:
+`$s0=26, $v0=14, $s1=9, $s2=5` — and target's aliasing pinned to
+`cached asm("$16") /* $s0 */` and `saved asm("$18") /* $s2 */`. So the
+weights agree with the true target.
+
+Empirical comparison (same `AddTbpOfst_80047EE8_baseline`, same system,
+600s budget):
+
+| Variant | Iters | Best | Δ vs upstream |
+|---|---:|---:|---:|
+| Upstream alone (current env) | ~3000 | 425 | — |
+| Phase 1 v3 (untargeted) | ~3000 | 425 | 0 |
+| Phase 2 v1 (target-aware) 180s | 1069 | 425 | 0 |
+| Phase 2 v1 (target-aware) 600s | 915 | **410** | **-15** |
+
+Phase 2 v1 produces a 15-point improvement in 10 minutes that doesn't
+appear with shorter budgets. The signal is real but small (~3 register
+renames worth at the permuter's weighting). Further gains will require
+**variable→register mapping** (read target.s for which specific values
+land in which specific registers), not just frequency.
+
+### Next phase ideas if we keep pushing
+
+- **Phase 2 v2 — var-to-reg inference.** Match locals in the C body to
+  the registers they should occupy in target. Walk target.s along with
+  the AST and infer "var X corresponds to register $sN by position /
+  first-write / liveness analysis." Pin the specific Decl rather than
+  a random Decl with a weighted reg.
+- **Phase 2 v3 — PERM_GENERAL pre-bake.** Generate base.c variants with
+  the top-K target-derived aliasing structures already inserted; let
+  the permuter combinatorially explore picks.
+- **LLM-guided suggestions.** Read target.s + stripped C, ask Opus
+  for likely aliasing structures, generate candidate base.c files,
+  run permuter on each.
+
+These are uncertain investments — the 15-point Phase 2 v1 result is
+real but not transformative. Recommend pausing here for evaluation
+before going deeper.
+
 ## Phase 1 status: STABLE — framework neutral, pass design needs more work
 
 After v3 (dual-pass design + diagnostic round):
