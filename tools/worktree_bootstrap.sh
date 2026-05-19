@@ -27,19 +27,34 @@
 
 set -u
 
+# Test "is this path present" with symlink tolerance. Bare `-e` follows
+# symlinks and returns false for dangling ones — under Git Bash,
+# .venv/bin/python3 → /usr/bin/python3 is dangling because Git Bash can't
+# resolve Linux paths, so `-e` falsely reports "missing." That used to
+# trigger the heal block which then `rm -rf`'d the worktree's .venv and
+# left it stranded.
+present() { [ -e "$1" ] || [ -L "$1" ]; }
+
 # Only meaningful inside a git worktree — main repo has .git as a directory.
 [ -f ".git" ] || exit 0
 
 # Parse the gitdir line: `gitdir: <path>`
 GITDIR_LINE=$(head -1 .git | sed 's|^gitdir: *||')
 
-# Convert Windows-style C:/... to WSL /mnt/c/... when running under WSL.
-# (The .git pointer file is written with Windows paths by `git worktree add`
-# from Git Bash, which `git rev-parse --git-common-dir` can't resolve under
-# WSL — see memory/workflow/parallel-harness-gotchas.md.)
-if [ -d /mnt/c ] && [ "${GITDIR_LINE#?:/}" != "$GITDIR_LINE" ]; then
+# Convert Windows-style C:/... to the shell's expected absolute form.
+# The .git pointer file is written by `git worktree add` (from Git Bash)
+# in Windows style. WSL expects /mnt/c/... and Git Bash expects /c/...;
+# cp -as and other tools fail on raw Windows paths in their non-native
+# shell. See memory/workflow/parallel-harness-gotchas.md.
+if [ "${GITDIR_LINE#?:/}" != "$GITDIR_LINE" ]; then
     DRIVE=$(echo "$GITDIR_LINE" | cut -c1 | tr 'A-Z' 'a-z')
-    GITDIR_ABS="/mnt/$DRIVE${GITDIR_LINE#?:}"
+    if [ -d /mnt/c ]; then
+        GITDIR_ABS="/mnt/$DRIVE${GITDIR_LINE#?:}"      # WSL
+    elif [ -d /c ]; then
+        GITDIR_ABS="/$DRIVE${GITDIR_LINE#?:}"          # Git Bash (MSYS)
+    else
+        GITDIR_ABS="$GITDIR_LINE"                      # unknown — try as-is
+    fi
 else
     GITDIR_ABS="$GITDIR_LINE"
 fi
@@ -65,12 +80,10 @@ REQ_FILE="$MAIN_REPO/requirements.txt"
 if [ -f "$REQ_FILE" ]; then
     VENV_PY="$MAIN_REPO/.venv/bin/python3"
     NEED_HEAL=0
-    if [ ! -x "$VENV_PY" ]; then
-        NEED_HEAL=1
-    else
-        # Check only critical modules (must match setup-venv's
-        # VALIDATE_IMPORTS list). Iterating requirements.txt would drag
-        # in splat's broken N64 import chain.
+    if [ -x "$VENV_PY" ]; then
+        # Can execute python3 — check critical imports (must match
+        # setup-venv's VALIDATE_IMPORTS list). Iterating requirements.txt
+        # would drag in splat's broken N64 import chain.
         _miss=""
         for mod in toml; do
             if ! "$VENV_PY" -c "import $mod" 2>/dev/null; then
@@ -81,7 +94,12 @@ if [ -f "$REQ_FILE" ]; then
             NEED_HEAL=1
             echo "Worktree: main .venv missing critical module(s):$_miss — auto-healing" >&2
         fi
+    elif ! present "$VENV_PY"; then
+        # Not executable AND not a symlink/file at all — genuinely missing.
+        NEED_HEAL=1
     fi
+    # else: present as symlink but not executable from this shell (Git
+    # Bash + WSL-target symlink) — trust it; WSL will resolve correctly.
     if [ "$NEED_HEAL" = "1" ]; then
         if (cd "$MAIN_REPO" && bash tools/dc.sh setup-venv) >&2; then
             # Force re-link of THIS worktree's .venv below: any prior
@@ -99,7 +117,7 @@ fi
 # Trees: check for a specific marker file inside (not just the parent dir)
 # so partial cp -as failures self-heal — if the marker is missing, blow
 # away the tree and re-link. Format: "<dep>:<marker_relative_to_dep>"
-TREE_DEPS="tools/gcc-2.7.2:build/cc1 tools/decomp-permuter:permuter.py .venv:bin/python3 disc:SLUS_006.63"
+TREE_DEPS="tools/gcc-2.7.2:build/cc1 tools/decomp-permuter:permuter.py tools/m2c:m2c.py .venv:bin/python3 disc:SLUS_006.63"
 # Single files: just check the file itself.
 # (Previously linked tools/cc1psx.exe — deprecated 2026-05-18 per
 # memory/rules/cc1psx-calibration-only.md after the 0/16 +
@@ -115,15 +133,17 @@ EMPTY_IN_MAIN=""
 for entry in $TREE_DEPS; do
     dep="${entry%%:*}"
     marker="${entry#*:}"
-    # Skip if marker already present locally.
-    [ -e "$dep/$marker" ] && continue
+    # Skip if marker already present locally (uses `present` for symlink
+    # tolerance — e.g. .venv/bin/python3 is a symlink to /usr/bin/python3
+    # that Git Bash can't follow but is still a valid link under WSL).
+    present "$dep/$marker" && continue
     # If main repo doesn't have the marker either, we can't help. But
     # distinguish two sub-cases for visibility:
     #   - Main is missing the dep entirely → silent skip (might be optional)
     #   - Main HAS the directory but it's empty/broken (marker missing) →
     #     loud warning; this is the "another agent will hit this in 90s"
     #     failure mode that the silent skip used to mask.
-    if [ ! -e "$MAIN_REPO/$dep/$marker" ]; then
+    if ! present "$MAIN_REPO/$dep/$marker"; then
         if [ -d "$MAIN_REPO/$dep" ]; then
             EMPTY_IN_MAIN="$EMPTY_IN_MAIN $dep"
         fi
@@ -131,7 +151,11 @@ for entry in $TREE_DEPS; do
     fi
     rm -rf "$dep" 2>/dev/null
     mkdir -p "$(dirname "$dep")"
-    if cp -as "$MAIN_REPO/$dep" "$dep" 2>/dev/null && [ -e "$dep/$marker" ]; then
+    # Ignore cp -as exit code — under Git Bash it fails on relative
+    # symlinks like .venv/lib64 → lib/, but the marker file (and
+    # everything else) DOES get linked. Trust the marker, not the exit.
+    cp -as "$MAIN_REPO/$dep" "$dep" 2>/dev/null
+    if present "$dep/$marker"; then
         LINKED="$LINKED $dep"
     else
         FAILED="$FAILED $dep"
@@ -155,7 +179,7 @@ done
 # on the next dc.sh start. .gitignore carves out .claude/skills and
 # .claude/rules but NOT settings.local.json, so without this hooks don't
 # fire in fresh worktrees. See header comment for the failure mode.
-CONFIG_SYNC=".claude/settings.local.json"
+CONFIG_SYNC=".claude/settings.local.json .bb2_regfix_warning_baseline.txt"
 
 for cfg in $CONFIG_SYNC; do
     [ -e "$MAIN_REPO/$cfg" ] || continue
