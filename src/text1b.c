@@ -850,19 +850,24 @@ void func_800494D4(s32 arg0, s32 arg1) {
     }
     (&D_800A33E8)[new_var] = (s16)val;
 }
-s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2) {
-    register s32 var_a3 asm("$7") = 0;
-    register s32 var_v1 asm("$3") = 0;
-    s32 var_a0 = arg0;
-    if (arg1 > 0) {
-        do {
-            var_v1 += var_a0;
-            var_a3 += 1;
-            var_a0 -= 1;
-        } while (var_a3 < arg1);
+s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2)
+{
+  register s32 var_a3 asm("$7") = 0;
+  register s32 var_v1 asm("$3") = 0;
+  volatile unsigned int pad;
+  s32 var_a0 = arg0;
+  if (arg1 > 0)
+  {
+    do
+    {
+      var_v1 += var_a0;
+      var_a3 += 1;
+      var_a0 -= 1;
     }
-    (void)var_a3;
-    return var_v1 + (arg2 - arg1);
+    while (var_a3 < arg1);
+  }
+  (void) var_a3;
+  return var_v1 + (arg2 - arg1);
 }
 extern s16 D_80099C50[];
 extern s16 D_800EF980[];
