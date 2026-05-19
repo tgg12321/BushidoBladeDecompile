@@ -611,6 +611,102 @@ tested. Possible reasons:
 `51aa943` plan section). Round 2 added no new matches but the auto-diag
 tooling makes future plateau diagnosis much easier.
 
+## Phase 7: broader test set + final recommendations
+
+After round 2 produced 0 new matches on the narrow plateau retries, ran
+a broader test on 12 untested candidates across diverse rule types (swap,
+reorder, subst, delete, drain_delay, fill_delay). Result of that test
+surfaced THE biggest gap in the current toolchain.
+
+### Broader test results
+
+7/12 set up cleanly; 5/12 failed setup. Of the 7 that ran:
+- 2 had base ≤ 60 (tractable): `func_80089E30` (40→15 plateau), `func_80078B70` (60 plateau)
+- 2 had unexpected wins in the permuter: `func_8006517C` (base 425→ MATCH in 25s), `func_80065484` (base=0)
+- 3 had base > 500 (too high to bother)
+
+### THE GAP: permuter "match=0" does NOT mean "applies to full build"
+
+Both surprise wins FAILED to apply:
+
+* **func_8006517C**: permuter showed match=0 (single function compiled in
+  isolation). Applying the matched `source.c` into `src/text1b.c` shifted
+  the file-scope label `.L1077 -> .L1081`, which broke `func_80074B18`.
+  `dc.sh fix-label-drift` repaired the label reference, but the build
+  STILL mismatched on cascade effects to YET ANOTHER function.
+
+* **func_80065484**: permuter showed base=0 (the function builds to
+  target.o byte-for-byte without regfix). Removing the regfix rules
+  broke the full build. The permuter's `compile.sh` pipeline does NOT
+  exactly replicate the main build pipeline.
+
+Two-of-two failure rate on apply for the new candidates discovered
+this way. The `match_registry.json` celebrates these matches but the
+build can't actually use them.
+
+### Highest-value recommendations for future agents
+
+Based on the broader test, NOT on chasing the same plateau retries:
+
+1. **Close permuter↔full-build trust gap** (HIGH/med):
+   - `bb2_apply_match.py --verify` should auto-invoke `dc.sh fix-label-drift`
+     on the first SHA1 mismatch before rolling back
+   - Document explicitly that permuter compiles ONE function in isolation;
+     main build compiles the FULL FILE. Labels renumber, cascade matters.
+   - A `--full-build-verify` mode that splices the candidate into src/ and
+     runs the actual `make` should be the canonical "did we match?" check,
+     NOT the permuter's score.
+
+2. **Base-score-aware triage as default** (HIGH/easy): `bb2_retire.py`'s
+   `--max-base 300` flag should be the default, not an opt-in. Future agents
+   triaging 50 candidates can skip the hopeless ones in 25s each (1 worker
+   for measurement) instead of burning 5 min × 6 workers per candidate.
+
+3. **Setup pipeline coverage** (HIGH/med): 5/12 setup failures in this
+   test. Remaining failure modes:
+   - asm not in `asm/funcs/` or `asm/6CAC.s` (static helpers inlined into
+     other files' asm)
+   - extractor parse errors on certain C function signatures
+   - typedef closure misses some chains despite the improvement
+   Switch the extractor from regex-based brace tracking to pycparser for
+   robustness, or add more fallback strategies.
+
+4. **Diff-targeted mutation pass** (MED/med): The current passes are RANDOM.
+   When a plateau hits, `bb2_diag_diff.py` shows EXACTLY what's left. A
+   pass that READS the latest diff state and tries the specific register
+   substitution / wrap point implied by it would convert near-misses
+   (e.g., `func_80089E30` plateau 15 = 1 reg diff) to matches.
+
+5. **Dead-rule audit tool** (MED/easy): Some regfix rules look dead in
+   permuter context but aren't in the main build. A `bb2_dead_rule_audit.py`
+   that comments out each rule one-at-a-time and runs full `make` would
+   find the TRULY-dead rules. Could retire many via pure rule deletion.
+
+6. **Don't add more random-mutation passes** (anti-recommendation): The 5
+   BB2 passes already dilute add_pin (~50% iters-to-match increase per
+   regression). Future improvements should be DIRECTED (reading diff state),
+   not RANDOM (more mutation types).
+
+7. **Document IMMUTABLE_PLATEAUS** (LOW/easy): Cases the current tooling
+   CAN'T solve, so agents don't waste time:
+   - `mfhi`/division synthetic intermediate registers (no C handle)
+   - Specific addressing-mode diffs (`sh ra,K(rb)` with target-specific
+     base register)
+   - Score-60 reorder cases where C statements aren't adjacent
+
+### Practical guidance
+
+For agents looking to retire regfix rules going forward:
+- Use `bb2_retire.py --max-base 200`; skip everything above
+- After a match, expect ~30-50% chance the apply will fail to land due
+  to cascade effects in `src/text1b.c` or `src/main.c` (both have many
+  functions, label-rich files)
+- For multi-function .c files, prefer functions in their OWN small .c
+  file when possible (less cascade risk)
+- When auto-diag shows a 1-2-instruction diff, DON'T expect the random
+  passes to find it; the search space is too sparse. Manual analysis
+  or a future diff-targeted pass is the right move.
+
 ## Phase 2 v2 status: positional pairing + heavy aliasing (REAL IMPROVEMENT)
 
 Phase 2 v2 adds positional-pairing logic to `perm_bb2_add_pin`. Selection
