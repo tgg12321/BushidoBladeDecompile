@@ -13,10 +13,19 @@ disc/
 # Compiler toolchain (large binary, downloaded separately)
 tools/gcc-2.7.2/
 
-# Original PsyQ cc1 binary (used by tools/cc1psx_wrapper.sh as a sanity-check
-# oracle: same C source, byte-identical output to our rebuilt cc1, so we can
-# distinguish "C-source mismatch" from "compiler divergence" cheaply).
-# Extract from the publicly-archived PSYQ SDK on Internet Archive:
+# Original PsyQ cc1 binary. DEPRECATED 2026-05-18 — removed from the
+# agent toolset after empirical findings showed the compiler-choice
+# axis doesn't move tier-3 retirement (see
+# memory/rules/cc1psx-calibration-only.md and
+# memory/rules/compiler-patch-low-roi.md for the 0/16 + 8/8
+# measurements).
+#
+# Don't put it back unless you're explicitly re-running the audit
+# on new functions. Bootstrap no longer symlinks it; verify-toolchain
+# doesn't check for it; agents should not reach for it as a path
+# forward when stuck.
+#
+# Retrieval (audit only):
 #   curl -L https://archive.org/download/psyq-sdk/PSYQ_SDK.zip -o /tmp/sdk.zip
 #   python3 -c "import zipfile;zipfile.ZipFile('/tmp/sdk.zip').extract('psyq/psyq/CC1PSX.EXE','/tmp')"
 #   cp /tmp/psyq/psyq/CC1PSX.EXE tools/cc1psx.exe

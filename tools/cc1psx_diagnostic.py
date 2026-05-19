@@ -1,7 +1,22 @@
 #!/usr/bin/env python3
-"""cc1psx diagnostic: for a list of tier-3 functions, compile each from a
-pure-C permuter base.c with BOTH decompals/mips-gcc-2.7.2 AND Sony's
-cc1psx (via dosemu2 wrapper), score both against target bytes.
+"""cc1psx diagnostic — AUDIT TOOL, NOT REGULAR WORKFLOW.
+
+DEPRECATED 2026-05-18: don't reach for this tool when a function
+plateaus in pure C. The original audit (commits 32b2da9, 7f03bfc)
+found 0/16 functions COMPILER_FIXABLE and 8/8 byte-identical between
+KMC and PSX gcc-2.7.2 forks. See memory/rules/compiler-patch-low-roi.md
+and memory/rules/cc1psx-calibration-only.md. The compiler-choice axis
+is exhausted; further per-function probing burns time without yielding
+new information.
+
+This tool is kept for reproducibility — if the population assumption
+needs re-checking (e.g., a NEW C-source technique emerges that you
+want to validate against cc1psx), retrieve cc1psx.exe per the
+.gitignore instructions and re-run.
+
+For a list of tier-3 functions, compile each from a pure-C permuter
+base.c with BOTH decompals/mips-gcc-2.7.2 AND Sony's cc1psx (via
+dosemu2 wrapper), score both against target bytes.
 
 Answers the question: "is the tier-3 cost primarily compiler-divergence
 (cc1psx matches but decompals doesn't) or pure C source weakness (neither

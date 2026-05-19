@@ -97,7 +97,12 @@ fi
 # away the tree and re-link. Format: "<dep>:<marker_relative_to_dep>"
 TREE_DEPS="tools/gcc-2.7.2:build/cc1 tools/decomp-permuter:permuter.py .venv:bin/python3 disc:SLUS_006.63"
 # Single files: just check the file itself.
-FILE_DEPS="tools/cc1psx.exe"
+# (Previously linked tools/cc1psx.exe — deprecated 2026-05-18 per
+# memory/rules/cc1psx-calibration-only.md after the 0/16 +
+# 8/8-byte-identical empirical findings showed the compiler-choice
+# axis doesn't move tier-3 retirement. If audit needs it back, see
+# the rule for the install command.)
+FILE_DEPS=""
 
 LINKED=""
 FAILED=""

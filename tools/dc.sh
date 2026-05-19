@@ -291,7 +291,7 @@ EOF
 
     bootstrap)
         # Explicit worktree bootstrap — symlinks gitignored binary deps
-        # (gcc-2.7.2, decomp-permuter, .venv, disc, cc1psx.exe) from the
+        # (gcc-2.7.2, decomp-permuter, .venv, disc) from the
         # main repo into this worktree. Idempotent; safe to run multiple
         # times. No-op in the main repo.
         #
@@ -512,7 +512,10 @@ EOF
         # not for plain build/verify). Common silent-fail mode: directory
         # exists but is empty (clone got wiped). Check the actual marker.
         [ -f tools/decomp-permuter/permuter.py ] || _warnings+=("tools/decomp-permuter/permuter.py (permuter not installed — fix: rmdir tools/decomp-permuter && git clone https://github.com/simonlindholm/decomp-permuter.git tools/decomp-permuter)")
-        # cc1psx.exe is calibration-only; not blocking for build.
+        # cc1psx.exe is deprecated for everyday work (2026-05-18). See
+        # memory/rules/cc1psx-calibration-only.md — empirical findings
+        # showed compiler choice doesn't move tier-3 retirement. Not
+        # checked here.
         if [ "${#_missing[@]}" -eq 0 ]; then
             if [ "${#_warnings[@]}" -eq 0 ]; then
                 echo "Toolchain: OK (cc1, maspsx, python3, disc present; .venv present)"
