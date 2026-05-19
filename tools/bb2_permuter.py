@@ -459,15 +459,152 @@ def _build_passes():
         if "register" not in target.storage:
             target.storage = ["register"] + list(target.storage)
 
+    def perm_bb2_type_qualifier(
+        fn: "ca.FuncDef",
+        ast: "ca.FileAST",
+        indices: "Indices",
+        region: "Region",
+        random: "random_module.Random",
+    ) -> None:
+        """BB2: Toggle a type qualifier on an existing Decl. SOTN-accepted
+        mutation that produced 2 matches in BB2 backlog runs:
+        func_80086014 via `register volatile unsigned int`, and
+        func_8007D9C4 via `extern volatile int *`.
+
+        Operates on:
+          * Local Decls that already have a `register asm(...)` pin
+            (volatile-upgrade pattern -- func_80086014's match)
+          * File-scope `extern T *X` decls (extern-type-mutation pattern --
+            func_8007D9C4's match)
+
+        Mutations:
+          * toggle_volatile (the productive mutation in both observed matches)
+          * change_signedness (less productive but cheap)
+
+        Kept narrowly scoped so it doesn't dilute the search budget on
+        functions where add_pin is the productive pass.
+        """
+        # Two-category candidate selection:
+        # (A) function-local Decls that ALREADY have a register pin
+        # (B) file-scope extern Decls
+        cat_a: List["ca.Decl"] = []
+        cat_b: List["ca.Decl"] = []
+
+        class _CollectLocals(ca.NodeVisitor):
+            def visit_Decl(self, node: "ca.Decl") -> None:  # noqa: N802
+                if not node.name:
+                    return self.generic_visit(node)
+                t = node.type
+                if isinstance(t, ca.TypeDecl) and isinstance(
+                    getattr(t, "type", None), (ca.Struct, ca.Union, ca.Enum)
+                ):
+                    return self.generic_visit(node)
+                if isinstance(t, ca.FuncDecl):
+                    return self.generic_visit(node)
+                # Only pinned locals (asmlabel present)
+                if node.asmlabel is not None:
+                    cat_a.append(node)
+                self.generic_visit(node)
+
+        class _CollectExterns(ca.NodeVisitor):
+            def visit_Decl(self, node: "ca.Decl") -> None:  # noqa: N802
+                if not node.name:
+                    return self.generic_visit(node)
+                t = node.type
+                if isinstance(t, ca.FuncDecl):
+                    return self.generic_visit(node)
+                if isinstance(t, ca.TypeDecl) and isinstance(
+                    getattr(t, "type", None), (ca.Struct, ca.Union, ca.Enum)
+                ):
+                    return self.generic_visit(node)
+                if node.storage and "extern" in node.storage:
+                    cat_b.append(node)
+                self.generic_visit(node)
+
+        _CollectLocals().visit(fn)
+        _CollectExterns().visit(ast)
+        ensure(cat_a or cat_b)
+
+        # 50/50 between the two categories (when both populated). If only
+        # one is populated, use that.
+        if cat_a and cat_b:
+            pool = cat_a if random.random() < 0.5 else cat_b
+        else:
+            pool = cat_a or cat_b
+        target = random.choice(pool)
+
+        # Most productive mutation is volatile-toggle; signedness is
+        # rarer but occasionally useful for `signed int` vs `int` cases.
+        mutation = "toggle_volatile" if random.random() < 0.75 else "change_signedness"
+
+        # Use TypeDecl.quals for qualifiers
+        type_decl = target.type
+        # Walk through PtrDecl/ArrayDecl wrappers to find the TypeDecl
+        inner = type_decl
+        while isinstance(inner, (ca.PtrDecl, ca.ArrayDecl)):
+            inner = inner.type
+        if not isinstance(inner, ca.TypeDecl):
+            raise RandomizationFailure()
+
+        if mutation == "toggle_volatile":
+            # PtrDecl carries its own quals; if the type is `T *`, prefer
+            # toggling on the PtrDecl (so we get `T * volatile` or
+            # `volatile T *`-style).
+            host = type_decl if isinstance(type_decl, ca.PtrDecl) else inner
+            quals = list(host.quals or [])
+            if "volatile" in quals:
+                quals.remove("volatile")
+            else:
+                quals.append("volatile")
+            host.quals = quals
+            # Also force the Decl-level quals to align (pycparser sometimes
+            # tracks them separately)
+            decl_quals = list(target.quals or [])
+            if "volatile" in decl_quals and mutation == "toggle_volatile":
+                decl_quals.remove("volatile") if "volatile" not in quals else None
+            if "volatile" in quals and "volatile" not in decl_quals:
+                decl_quals.append("volatile")
+            target.quals = decl_quals
+        elif mutation == "toggle_register":
+            storage = list(target.storage or [])
+            if "register" in storage:
+                storage.remove("register")
+            else:
+                storage.append("register")
+            target.storage = storage
+        elif mutation == "change_signedness":
+            # Find a plain IdentifierType and try to toggle its signedness.
+            id_type = getattr(inner, "type", None)
+            if not isinstance(id_type, ca.IdentifierType):
+                raise RandomizationFailure()
+            names = list(id_type.names)
+            if "signed" in names:
+                names = [n if n != "signed" else "unsigned" for n in names]
+            elif "unsigned" in names:
+                names = [n for n in names if n != "unsigned"]
+                if not any(n in names for n in ("int", "char", "short", "long")):
+                    names.append("int")
+            else:
+                # Add `unsigned` to a plain `int`-ish base
+                if any(n in names for n in ("int", "char", "short", "long")):
+                    names = ["unsigned"] + names
+                else:
+                    raise RandomizationFailure()
+            id_type.names = names
+
     # Default weights tuned for "lightest most useful, heavier as escape":
     #   perm_bb2_add_pin: 10.0 — small mutation, statement-count-preserving,
     #     comparable to upstream perm_temp_for_expr=100 / perm_ins_block=10
+    #   perm_bb2_type_qualifier: 2.0 — narrow scope (pinned locals + externs);
+    #     produces matches directly when a Decl's type was the obstacle.
+    #     Tuned low to avoid diluting add_pin's search budget.
     #   perm_bb2_insert_aliasing: 0.5 — heavier, slower per iter, less likely
     #     to land usefully. Disabled by default; set BB2_PERMUTER_HEAVY=1 to
     #     enable, or BB2_PERMUTER_WEIGHT to scale both up together.
     enable_heavy = os.environ.get("BB2_PERMUTER_HEAVY", "0") == "1"
     return [
         (perm_bb2_add_pin, 10.0),
+        (perm_bb2_type_qualifier, 2.0),
         (perm_bb2_insert_aliasing, 0.5 if enable_heavy else 0.0),
     ]
 

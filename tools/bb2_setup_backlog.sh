@@ -23,13 +23,34 @@ prepare_one() {
     local ASMFILE
     ASMFILE=$(grep -ln "^glabel ${FUNC}$" asm/funcs/*.s 2>/dev/null | head -1)
     if [ -z "$ASMFILE" ]; then
-        # Maybe inside 6CAC.s monolith -- this is a harder case, skip
-        echo "  SKIP ${FUNC}: no per-func asm found (would need extraction from 6CAC.s)"
-        return 1
+        # Try the 6CAC.s monolith -- many functions live there
+        if grep -q "^glabel ${FUNC}$" asm/6CAC.s 2>/dev/null; then
+            echo "  EXTRACT ${FUNC}: from asm/6CAC.s monolith"
+            # Extract glabel...endlabel block. 6CAC.s uses jlabel/glabel
+            # internally; we just grab from glabel <fn> to the next
+            # glabel/endlabel boundary.
+            awk -v fn="^glabel ${FUNC}\$" -v end="^endlabel ${FUNC}\$" -v nextfn="^glabel " '
+                $0 ~ fn { in_fn=1 }
+                in_fn { print }
+                in_fn && $0 ~ end { exit }
+                in_fn && $0 ~ nextfn && !/^glabel '"${FUNC}"'$/ { exit }
+            ' asm/6CAC.s > "asm/funcs/${FUNC}.s.tmp"
+            # Trim the trailing next-glabel line if it got captured (when no endlabel)
+            if [ "$(tail -1 "asm/funcs/${FUNC}.s.tmp")" != "endlabel ${FUNC}" ]; then
+                # Add endlabel for cleanliness; permuter_setup.sh tolerates this
+                head -n -1 "asm/funcs/${FUNC}.s.tmp" > "asm/funcs/${FUNC}.s"
+            else
+                mv "asm/funcs/${FUNC}.s.tmp" "asm/funcs/${FUNC}.s"
+            fi
+            rm -f "asm/funcs/${FUNC}.s.tmp"
+        else
+            echo "  SKIP ${FUNC}: no asm found in asm/funcs/ or asm/6CAC.s"
+            return 1
+        fi
     fi
 
     # If the asm file isn't named after this function, alias it
-    if [ "$(basename "$ASMFILE" .s)" != "$FUNC" ]; then
+    if [ -n "$ASMFILE" ] && [ "$(basename "$ASMFILE" .s)" != "$FUNC" ]; then
         # Check if file contains ONLY this function -- if so, just copy.
         # If it has multiple, we need to extract the body.
         local FUNCS_IN_FILE
@@ -53,14 +74,24 @@ prepare_one() {
     }
 
     # 2. Extract real C body into base.c
-    python3 tools/bb2_extract_func_body.py "$FUNC" "$SRC" --out "permuter/${FUNC}/base.c" > /dev/null 2>&1 || {
-        echo "  SKIP ${FUNC}: extract failed"
+    local EXTRACT_ERR
+    EXTRACT_ERR=$(python3 tools/bb2_extract_func_body.py "$FUNC" "$SRC" --out "permuter/${FUNC}/base.c" 2>&1)
+    if [ $? -ne 0 ]; then
+        echo "  SKIP ${FUNC}: extract failed: ${EXTRACT_ERR}"
         return 1
-    }
+    fi
 
     # 3. Test compile (sanity)
-    if ! "permuter/${FUNC}/compile.sh" "permuter/${FUNC}/base.c" -o /tmp/bb2_setup_test.o > /dev/null 2>&1; then
-        echo "  SKIP ${FUNC}: base.c doesn't compile -- needs manual externs/typedefs"
+    local COMPILE_ERR
+    COMPILE_ERR=$("permuter/${FUNC}/compile.sh" "permuter/${FUNC}/base.c" -o /tmp/bb2_setup_test.o 2>&1)
+    if [ $? -ne 0 ]; then
+        # Surface the first error message so agents know what's missing.
+        # Filter out the maspsx 'no input from stdin' noise (cascade from
+        # the actual compile error upstream).
+        local FIRST_ERR
+        FIRST_ERR=$(echo "$COMPILE_ERR" | grep -E "error|undeclared|undefined|parse error" | head -1)
+        echo "  SKIP ${FUNC}: compile failed: ${FIRST_ERR:-(see compile.sh output)}"
+        echo "         hint: missing extern/typedef in permuter/${FUNC}/base.c; add manually"
         return 1
     fi
 

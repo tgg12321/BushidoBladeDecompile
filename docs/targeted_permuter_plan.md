@@ -1,10 +1,77 @@
 # Targeted permuter plan
 
-**Status:** Phase 0-4 IMPLEMENTED. Producing real backlog retirements.
+**Status:** Phase 0-5 IMPLEMENTED. 9 regfix rules retired across 7 functions.
 **Goal:** Extend `decomp-permuter` with BB2-specific mutation passes that
 explore SOTN-accepted pure-C techniques the upstream tool doesn't try, so
 we can drive a meaningful subset of the 228 regfix-burdened functions to
 zero rules.
+
+---
+
+## QUICK START FOR FUTURE AGENTS
+
+You want to retire a regfix rule. The simplest path:
+
+```bash
+# Single-function retirement (does everything: setup, measure, run, apply,
+# verify SHA1, optionally commit). Safe to interrupt.
+python3 tools/bb2_retire.py <func> --commit
+
+# Or, if you don't want auto-commit:
+python3 tools/bb2_retire.py <func>
+# ... then inspect git diff, git add, git commit manually
+```
+
+If `bb2_retire.py` reports `base score > 300`, the function is unlikely to
+match — keep its regfix.
+
+To find candidate functions:
+
+```bash
+# All single-rule regfix functions, ordered by ascending rule count
+python3 -c "
+import re
+from collections import Counter
+from pathlib import Path
+c = Counter()
+for line in Path('regfix.txt').open(encoding='utf-8', errors='ignore'):
+    if line.startswith('#'): continue
+    m = re.match(r'^([a-zA-Z_]\w+):', line)
+    if m: c[m.group(1)] += 1
+for f, n in sorted(c.items(), key=lambda x: x[1]):
+    if 1 <= n <= 3: print(f, n)
+"
+```
+
+### When `bb2_retire.py` fails
+
+| Failure | Meaning | Fix |
+|---|---|---|
+| `Setup failed` | base.c doesn't compile / extract failed | Read `permuter/<func>/base.c`; add missing extern or typedef manually; retry |
+| `Base score > max` | Too far from match | Function unlikely to retire; skip |
+| `min_score != 0` | Permuter plateaued | Function may still be retirable with longer time; try `--time 600` |
+| `Apply failed` | Match found but SHA1 mismatched after applying | Auto-rolled back; bug in the matched source.c -- inspect `permuter/<func>/output-0-1/source.c` |
+
+### Tool inventory
+
+| Tool | Purpose |
+|---|---|
+| `tools/bb2_retire.py` | **One-shot retirement** (the recommended entry point) |
+| `tools/bb2_permuter.py` | Main permuter wrapper (add_pin, type_qualifier, insert_aliasing passes) |
+| `tools/bb2_permuter_regression.py` | Regression suite + Phase 4 `prebake` subcommand |
+| `tools/bb2_setup_backlog.sh` | Stage one or more permuter/<func>/ dirs |
+| `tools/bb2_extract_func_body.py` | Extract C function body + minimal preamble from src/ |
+| `tools/bb2_apply_match.py` | Apply score=0 match back to src/, verify SHA1, rollback on mismatch |
+| `tools/bb2_run_batch.sh` | Serial batch runner |
+| `tools/measure_scores.sh` | 25s base-score triage |
+
+### Registry
+
+Successful retirements append to `backlog_results/match_registry.json`
+(written by `bb2_apply_match.py --verify`). Future agents can query this
+for "what mutation worked for what regfix shape" hints.
+
+---
 
 ## Why this, why now
 
@@ -397,6 +464,68 @@ intermediate are not.
 5. **The pure-C bar is "minimize regfix where possible"**, not "zero
    regfix" (matches SOTN community standard). A regfix that documents
    the GCC RA quirk is acceptable when no pure-C alternative exists.
+
+## Known improvement opportunities (not yet implemented)
+
+These are areas where the tool could be made more reliable / catch more
+matches. Listed in approximate priority order.
+
+1. **Recursive typedef collection** — `bb2_extract_func_body.py` currently
+   pulls typedefs that match `typedef struct/union/enum {...} NAME;`. It
+   misses chained typedefs (`typedef A B;` where A is itself a struct) and
+   types from `include/*.h`. Many setup failures (~40% of candidates) are
+   due to missing types. Adding a recursive type-closure pass would
+   unlock ~10 more candidates.
+
+2. **`bb2_setup_backlog.sh` for non-monolithic asm in 6CAC.s** — Now
+   partially handled (extracts via glabel/endlabel). But functions that
+   are private/static helpers without their own glabel boundary (like
+   `saEft00Add_sub`) remain unhandled.
+
+3. **Scheduler-perturb mutation pass** — Many `reorder` regfix rules
+   plateau at score 60 (= 1 unresolved reordering). The permuter's
+   existing reorder mutations don't target the SOTN technique of
+   wrapping consecutive statements in `do { } while (0)` (which worked
+   for func_80077894). A focused pass that tries this transform on
+   candidate statement pairs would catch ~5 more plateau-60 cases.
+
+4. **Strength-reduce-defeat mutation pass** — `mario_getMarioVoiceData`
+   matched via `(x * 4) → (2 * (2 * x))`. This is a specific SOTN trick
+   not in the random mutation set. A pass that tries known arithmetic
+   decompositions (chained shifts, multiplication chains, bit-mask
+   equivalents) would target this systematically.
+
+5. **Diagnostic asm-diff mode** — When a permuter run plateaus, output
+   the actual objdump-level diff between built.o and target.o so agents
+   can see WHAT instructions differ and reason about which C-level
+   changes would help. Currently agents have to set this up manually.
+
+6. **Match registry queries** — `backlog_results/match_registry.json`
+   accumulates over time. A `tools/bb2_registry.py query <regfix_pattern>`
+   would surface "for regfix rule shape X, what mutations have
+   historically worked" and let agents try those first instead of
+   randomizing from scratch.
+
+7. **Warm-start from prior matches** — A function similar in shape to
+   a previously-matched one might converge faster if seeded with the
+   prior mutation. Currently each function searches independently.
+
+8. **Cross-file regression catch in `bb2_apply_match.py --verify`** —
+   `--verify` currently runs `make` and checks SHA1, which catches
+   regressions, but it doesn't run `dc.sh refresh-queue` or audit
+   neighboring functions in the same .c file. A regfix retirement
+   could affect siblings if their codegen shared the rule by accident.
+
+9. **CRLF defensive assertions** — Several agents have hit Windows
+   CRLF corruption when editing build files. `write_lf()` in
+   `bb2_apply_match.py` now asserts no `\r\n` in content. Same
+   defense should be added to `bb2_extract_func_body.py` and
+   `bb2_permuter_regression.py`.
+
+10. **Heredoc `$N` escape pitfall** — Bash heredocs ate `$25` → `5`
+    twice during this session when applying matches via shell sed. The
+    `bb2_apply_match.py` route avoids this. Documented here so future
+    agents know to ALWAYS use the apply tool, never heredoc-piped sed.
 
 ## Phase 2 v2 status: positional pairing + heavy aliasing (REAL IMPROVEMENT)
 

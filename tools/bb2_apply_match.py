@@ -15,8 +15,12 @@ SHA1 still matches before committing.
 from __future__ import annotations
 
 import argparse
+import json
 import re
+import shutil
+import subprocess
 import sys
+import time
 from pathlib import Path
 
 
@@ -25,7 +29,57 @@ def read_lf(path: Path) -> str:
 
 
 def write_lf(path: Path, content: str) -> None:
+    # Hard-assert no CRLF leaked in. Windows Python text-mode silently
+    # converts \n -> \r\n on write; binary-mode + explicit UTF-8 prevents
+    # that, but defense in depth here.
+    if "\r\n" in content:
+        raise SystemExit("REFUSING to write CRLF -- LF only for build files")
     path.write_bytes(content.encode("utf-8"))
+
+
+def run_make_and_check_sha1(wsl_root: str, src_path: Path) -> tuple[bool, str]:
+    """Rebuild touched .c, run make, return (matches, last_lines).
+    Uses wsl + .venv since the toolchain is Linux-only.
+    """
+    obj_name = src_path.stem + ".o"
+    cmd = (
+        f'cd "{wsl_root}" && source .venv/bin/activate && '
+        f'rm -f build/src/{obj_name} && make 2>&1 | tail -8'
+    )
+    r = subprocess.run(
+        ["wsl", "bash", "-c", cmd],
+        capture_output=True, text=True, timeout=300,
+    )
+    out = (r.stdout or "") + (r.stderr or "")
+    matches = "bb2 matches!" in out
+    return matches, out
+
+
+def record_registry_entry(func: str, src_file: str, regfix_retired: int,
+                          mutation_summary: str, permuter_dir: Path) -> None:
+    """Append a JSON entry to backlog_results/match_registry.json.
+    Tracks what mutations work for what rule shapes -- future agents
+    can query this for "try this first" hints.
+    """
+    registry_path = Path("backlog_results/match_registry.json")
+    registry_path.parent.mkdir(parents=True, exist_ok=True)
+    entries = []
+    if registry_path.exists():
+        try:
+            entries = json.loads(registry_path.read_text(encoding="utf-8"))
+        except Exception:
+            entries = []
+    entries.append({
+        "func": func,
+        "src_file": src_file,
+        "regfix_rules_retired": regfix_retired,
+        "mutation_summary": mutation_summary,
+        "permuter_dir": str(permuter_dir),
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+    })
+    registry_path.write_bytes(
+        json.dumps(entries, indent=2).encode("utf-8")
+    )
 
 
 def extract_func_from_source_c(text: str, func_name: str) -> str | None:
@@ -99,10 +153,17 @@ def main():
                    help="Comment out the function's regfix rules in regfix.txt")
     p.add_argument("--permuter-dir", default=None,
                    help="Override permuter dir (default: permuter/<func>)")
+    p.add_argument("--verify", action="store_true", default=True,
+                   help="Run make and check SHA1; rollback on mismatch (default: on)")
+    p.add_argument("--no-verify", dest="verify", action="store_false",
+                   help="Skip the build verify step (caller will do it)")
+    p.add_argument("--no-registry", action="store_true",
+                   help="Skip writing to backlog_results/match_registry.json")
     args = p.parse_args()
 
     pdir = Path(args.permuter_dir) if args.permuter_dir else Path(f"permuter/{args.func}")
     src_path = Path(args.src_file)
+    regfix_path = Path("regfix.txt")
     if not src_path.exists():
         sys.exit(f"src file not found: {src_path}")
 
@@ -118,26 +179,29 @@ def main():
     if matched_body is None:
         sys.exit(f"Could not extract {args.func} from {match_dir}/source.c")
 
-    src_text = read_lf(src_path)
-    current_body = extract_func_from_source_c(src_text, args.func)
+    src_text_before = read_lf(src_path)
+    current_body = extract_func_from_source_c(src_text_before, args.func)
     if current_body is None:
         sys.exit(f"Could not find {args.func} in {src_path}")
 
+    # Snapshot for rollback
+    rf_before = read_lf(regfix_path) if regfix_path.exists() else ""
+
+    changed_src = False
     if current_body == matched_body:
         print("src body already matches; nothing to apply.")
     else:
         print(f"  Replacing {len(current_body.split(chr(10)))}-line body "
               f"with {len(matched_body.split(chr(10)))}-line matched version")
-        src_text = src_text.replace(current_body, matched_body, 1)
-        write_lf(src_path, src_text)
+        src_text_after = src_text_before.replace(current_body, matched_body, 1)
+        write_lf(src_path, src_text_after)
         print(f"  Updated {src_path}")
+        changed_src = True
 
+    retired = 0
     if args.retire_regfix:
-        regfix_path = Path("regfix.txt")
-        rf = read_lf(regfix_path)
-        retired = 0
         new_lines = []
-        for line in rf.split("\n"):
+        for line in rf_before.split("\n"):
             stripped = line.lstrip()
             if stripped.startswith(f"{args.func}:") and not stripped.startswith("#"):
                 new_lines.append(f"# RETIRED (targeted-permuter): {line}")
@@ -150,13 +214,47 @@ def main():
         else:
             print(f"  No active regfix rules found for {args.func}")
 
-    print()
-    print("Next steps:")
-    print(f"  1. Inspect diff: git diff {src_path}")
-    if args.retire_regfix:
-        print(f"  2. Inspect regfix: git diff regfix.txt")
-    print(f"  3. rm -f build/src/$(basename {src_path} .c).o && make")
-    print(f"  4. If 'bb2 matches!': git add ... && git commit")
+    if args.verify and (changed_src or retired > 0):
+        root = Path.cwd().resolve()
+        wsl_root = str(root).replace("C:", "/mnt/c").replace("\\", "/")
+        print(f"  Verifying build...")
+        matches_sha, tail = run_make_and_check_sha1(wsl_root, src_path)
+        if not matches_sha:
+            # Rollback
+            print(f"  BUILD MISMATCH -- rolling back changes")
+            print(f"  Build tail:\n{tail.strip()}")
+            if changed_src:
+                write_lf(src_path, src_text_before)
+            if retired > 0:
+                write_lf(regfix_path, rf_before)
+            sys.exit(1)
+        print(f"  SHA1 verified")
+
+    # Record in registry (only if we actually changed something AND verified)
+    if not args.no_registry and (changed_src or retired > 0) and args.verify:
+        # Get a short mutation summary from the diff
+        diff_text = ""
+        diff_path = match_dir / "diff.txt"
+        if diff_path.exists():
+            diff_text = read_lf(diff_path)
+        # Pick out first few added/removed lines as a hint
+        plus_lines = [l[1:].strip() for l in diff_text.split("\n")
+                      if l.startswith("+") and not l.startswith("+++") and l[1:].strip()]
+        minus_lines = [l[1:].strip() for l in diff_text.split("\n")
+                       if l.startswith("-") and not l.startswith("---") and l[1:].strip()]
+        mutation_summary = "; ".join(plus_lines[:3]) if plus_lines else "no diff"
+        record_registry_entry(args.func, str(src_path), retired,
+                              mutation_summary, pdir)
+        print(f"  Registry entry recorded")
+
+    if not args.verify:
+        print()
+        print("Manual verify steps:")
+        print(f"  1. Inspect diff: git diff {src_path}")
+        if args.retire_regfix:
+            print(f"  2. Inspect regfix: git diff regfix.txt")
+        print(f"  3. rm -f build/src/$(basename {src_path} .c).o && make")
+        print(f"  4. If 'bb2 matches!': git add ... && git commit")
 
 
 if __name__ == "__main__":
