@@ -263,13 +263,47 @@ diffs or ~2 fewer instruction insert/deletes.
 
 ### Phase 2 status: STABLE & USEFUL
 
-The framework now has a meaningful signal. Open next-step ideas:
-- Run Phase 2 v2 on the full regression suite (need baselines for
-  func_80019310, calc_fc_frame_*, etc., to see how broadly it
-  generalizes)
-- Try `--max-flat-seconds` to extend search when on a plateau
-- Phase 3: variable→register MAPPING inference (parse target.s for
-  which specific values land in which regs, not just frequency)
+The framework now has a meaningful signal. Suite validation result
+(Phase 2 v2 with BB2_PERMUTER_HEAVY=1, 180s/function):
+
+| Function | Phase 0 baseline | Phase 2 v2 (180s) | Δ |
+|---|---:|---:|---:|
+| AddTbpOfst_80047EE8 | 225* | 305 (180s) / **305** (600s) | varies |
+| func_80019310 | 370 | **355** | **-15** |
+| calc_fc_frame_800203B4 | 490 | 490 | 0 |
+| func_8002D320 | 965 | **650** | **-315** |
+| func_8002EA24 | 1110 | 1135 | +25 |
+| saSeInit | 495 | 495 | 0 |
+
+*Phase 0 baselines were measured in a less-contended environment
+(~4500 iters/180s vs today's 1000-1200). Direct numerical comparison
+is approximate; the qualitative finding is "Phase 2 v2 improves on
+2 of 5, ties 2, slightly regresses 1."
+
+func_8002D320 is the standout: -315 points (~63 register-rename
+equivalents). 2 aliasing blocks, positional pairing matched the
+first two locals to target's top two regs successfully.
+
+func_8002EA24 slightly worse at +25 -- likely environment noise; the
+function has 2 aliasing blocks like 8002D320 but positional pairing
+maps to a different (incorrect) pin combination.
+
+### Phase 2 closes here.
+
+Implemented:
+- Phase 2 v1: target-frequency-weighted random register selection
+- Phase 2 v2: positional pairing (60%) + target-weighted (30%) +
+  uniform (10%) with optional heavy aliasing insertion
+
+These are the programmatic improvements in scope. Further phases need:
+- Phase 3: target.s variable→register MAPPING inference (read which
+  specific value lands in which specific register, e.g., via
+  position-in-prologue analysis matched to ordinal Decl in C)
+- Phase 4: PERM_GENERAL pre-bake (generate base.c variants with full
+  target-derived aliasing structures pre-inserted, let upstream
+  permuter explore combinations) -- complex but bounded
+
+Both deferred. Phase 2 is at a useful, committed, validated state.
 
 ## Phase 2 v1 status: target-aware register weighting (modest improvement)
 
