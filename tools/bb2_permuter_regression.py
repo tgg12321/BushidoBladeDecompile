@@ -645,6 +645,14 @@ def _prebake_base_c(base_c_text: str, func_name: str, pin_chain: List[str]) -> s
         r"(?:s8|s16|s32|u8|u16|u32|int|char|short|long|void)\s*\*?\s*\*?\s*)"
         r"(\w+)(\s*=\s*[^;]+)?;"
     )
+    # m2c names variables by their register: var_t4, temp_v0, etc. Pre-baking
+    # such a variable to a DIFFERENT register fights m2c's analysis and
+    # usually regresses. Skip names that look like register hints.
+    # We only annotate variables whose names look descriptive (cached, saved,
+    # ptr, count, i, x, y, len, etc.) -- not the m2c "var_$reg" pattern.
+    name_hints_reg = re.compile(
+        r"^(?:var_|temp_)?(?:t[0-9]|s[0-7]|v[01]|a[0-3])(?:_|$)"
+    )
     depth = 0
     annotated = 0
     out = list(lines)
@@ -665,6 +673,11 @@ def _prebake_base_c(base_c_text: str, func_name: str, pin_chain: List[str]) -> s
         indent, typespec, varname, init = m.group(1), m.group(2), m.group(3), m.group(4) or ""
         # Skip if already has a `register` storage or `asm(` pin
         if "register" in typespec or "asm" in line:
+            continue
+        # Skip m2c-named "var_$reg" / "temp_$reg" / bare "tN/sN/vN/aN" --
+        # m2c already chose a register for these; overriding usually fights
+        # its analysis.
+        if name_hints_reg.match(varname):
             continue
         pin = pin_chain[annotated]
         pin_numeric = _to_numeric_reg(pin)
