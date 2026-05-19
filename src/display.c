@@ -947,7 +947,7 @@ extern u8 D_80103680[];
 extern s32 g_str_gpu_timeout;
 extern s32 D_80016044;
 extern u32 *g_gpu_dma_madr;
-extern s32 *D_8009BF64;
+extern volatile int *D_8009BF64;
 extern s32 D_8009BF68[];
 extern s32 D_8009BF6C;
 extern s32 D_8009BF70;
