@@ -46,15 +46,20 @@ BB2_PIN_REGS: List[str] = (
 )
 
 
-# Phase 2: target-aware register weighting. At wrapper init we read the
-# permuter dir's target.s and count register frequencies. The pin pass
-# uses these as weights for `random.choices` so the search biases toward
-# registers target actually uses (typically ~5 distinct registers per
-# function out of 20 candidates).
+# Phase 2 v1: target-aware register weighting. At wrapper init we read
+# the permuter dir's target.s and count register frequencies. The pin
+# pass uses these as weights for `random.choices` so the search biases
+# toward registers target actually uses (typically ~5 distinct registers
+# per function out of 20 candidates).
 #
-# `_TARGET_REG_WEIGHTS` is a list of (pin_reg, weight) tuples, populated
-# by `_load_target_register_weights(permuter_dir)` at main() entry.
+# Phase 2 v2: target-derived top-N register list (smaller fixed set,
+# typically 5 entries vs 20). Used by the pin pass when picking a
+# "preferred" register without dilution by long-tail noise.
+#
+# Both are populated by `_load_target_register_weights(permuter_dir)` at
+# main() entry.
 _TARGET_REG_WEIGHTS: List = []
+_TARGET_TOP_REGS: List[str] = []
 
 
 def _weighted_choice(weights: List, random_obj) -> str:
@@ -72,32 +77,42 @@ def _weighted_choice(weights: List, random_obj) -> str:
     return weights[-1][0]
 
 
-def _load_target_register_weights(permuter_dir: Path) -> List:
+def _load_target_register_weights(permuter_dir: Path):
     """Parse permuter_dir/target.s for register-usage frequencies, filter
-    to BB2_PIN_REGS, and return a [(reg, weight)] list suitable for
-    random.choices. Every pin reg gets at least weight 1 so unobserved
-    registers can still occasionally be tried.
+    to BB2_PIN_REGS. Returns (weighted_list, top_regs) where:
+      weighted_list: [(reg, weight), ...] for random.choices over the full
+        pin set (smoothing factor +1)
+      top_regs: [reg, ...] -- the top-N registers by frequency (N=5),
+        filtered to BB2_PIN_REGS, ordered most-used first. Used by the
+        Phase 2 v2 positional-pairing logic.
     """
     target_s = permuter_dir / "target.s"
     if not target_s.exists():
-        # Fallback: uniform weighting
-        return [(r, 1.0) for r in BB2_PIN_REGS]
+        return [(r, 1.0) for r in BB2_PIN_REGS], []
 
     import re
     from collections import Counter
 
     text = target_s.read_text(encoding="utf-8", errors="ignore")
-    # Match $tN / $sN / $vN / $aN register names
     found = re.findall(r"\$(t[0-9]|s[0-7]|v[01]|a[0-3])\b", text)
     counter = Counter(found)
 
     weights: List = []
     for pin in BB2_PIN_REGS:
-        # pin looks like "$t0"; strip $
         name = pin.lstrip("$")
-        # Smooth: weight = count_in_target + 1 (so unobserved still has p>0)
         weights.append((pin, float(counter.get(name, 0)) + 1.0))
-    return weights
+
+    # Top-N: take the most-used regs that are also in BB2_PIN_REGS
+    bb2_set = set(BB2_PIN_REGS)
+    top_regs = []
+    for name, _count in counter.most_common():
+        pin = f"${name}"
+        if pin in bb2_set:
+            top_regs.append(pin)
+        if len(top_regs) >= 5:
+            break
+
+    return weights, top_regs
 
 
 def _build_passes():
@@ -288,11 +303,19 @@ def _build_passes():
     ) -> None:
         """BB2: Annotate an existing local Decl with a register-asm pin (no
         new statements -- only the asmlabel attribute on the existing decl
-        changes). The mutation is statement-count-preserving and minimal:
-        the search space is (n_decls * n_pin_regs), typically <= 200 per
-        function. Useful for exploring 'what if THIS local was pinned to
-        $tN' without growing the function."""
-        # Collect candidate decls: scalar / pointer types, no existing pin
+        changes).
+
+        Selection strategy (Phase 2 v2):
+        1. With 60% probability, use POSITIONAL PAIRING: pair the n-th local
+           Decl with the n-th most-used target register. This is the most
+           "guess-the-original-source" mode -- if target's developer pinned
+           their first local to their preferred-first register, we land it.
+        2. With 30% probability, use target-frequency-weighted random reg
+           on a random Decl (Phase 2 v1 behavior, broader exploration).
+        3. With 10% probability, fully random (covers edge cases the target
+           weighting under-explores).
+        """
+        # Collect candidate decls in declaration order
         candidates: List["ca.Decl"] = []
 
         class _Collect(ca.NodeVisitor):
@@ -306,12 +329,8 @@ def _build_passes():
                     getattr(t, "type", None), (ca.Struct, ca.Union)
                 ):
                     return self.generic_visit(node)
-                # Skip if already pinned (don't overwrite existing pins)
                 if node.asmlabel is not None:
                     return self.generic_visit(node)
-                # Skip if not a "register" storage already (we add register)
-                # Actually we add storage too -- but only if the existing
-                # decl has no incompatible storage class.
                 if node.storage and any(
                     s in ("extern", "static") for s in node.storage
                 ):
@@ -322,11 +341,25 @@ def _build_passes():
         _Collect().visit(fn)
         ensure(candidates)
 
-        target = random.choice(candidates)
-        if _TARGET_REG_WEIGHTS:
+        # Choose selection strategy
+        r = random.random()
+        if r < 0.60 and _TARGET_TOP_REGS and candidates:
+            # Strategy 1: positional pairing
+            # Pick a position index up to min(n_decls, n_top_regs); the n-th
+            # Decl gets paired with the n-th top reg.
+            max_pair = min(len(candidates), len(_TARGET_TOP_REGS))
+            idx = random.randrange(max_pair)
+            target = candidates[idx]
+            pin_reg = _TARGET_TOP_REGS[idx]
+        elif r < 0.90 and _TARGET_REG_WEIGHTS:
+            # Strategy 2: target-weighted random
+            target = random.choice(candidates)
             pin_reg = _weighted_choice(_TARGET_REG_WEIGHTS, random)
         else:
+            # Strategy 3: uniform random
+            target = random.choice(candidates)
             pin_reg = random.choice(BB2_PIN_REGS)
+
         target.asmlabel = ca.Constant(
             type="string", value=f'"{pin_reg}"'
         )
@@ -412,21 +445,21 @@ def main() -> int:
     for name, w in weights.items():
         print(f"  {name}: weight={w}")
 
-    # Phase 2: target-aware register weighting. Look for the permuter dir
+    # Phase 2: target-aware register selection. Look for the permuter dir
     # in argv (first non-flag arg) and load target.s register frequencies.
-    global _TARGET_REG_WEIGHTS
+    global _TARGET_REG_WEIGHTS, _TARGET_TOP_REGS
     permuter_dir = None
     for arg in sys.argv[1:]:
         if not arg.startswith("-") and Path(arg).is_dir():
             permuter_dir = Path(arg)
             break
     if permuter_dir is not None:
-        _TARGET_REG_WEIGHTS = _load_target_register_weights(permuter_dir)
-        # Show the top-5 register weights so the user can sanity-check
-        top = sorted(_TARGET_REG_WEIGHTS, key=lambda x: -x[1])[:5]
-        if top and top[0][1] > 1.0:
-            top_str = ", ".join(f"{r}={int(w-1)}" for r, w in top)
-            print(f"[bb2_permuter] target.s reg weights (top 5): {top_str}")
+        _TARGET_REG_WEIGHTS, _TARGET_TOP_REGS = _load_target_register_weights(
+            permuter_dir
+        )
+        if _TARGET_TOP_REGS:
+            top_str = ", ".join(_TARGET_TOP_REGS)
+            print(f"[bb2_permuter] target.s top-{len(_TARGET_TOP_REGS)} regs: {top_str}")
         else:
             print(f"[bb2_permuter] target.s not found or uninformative; uniform reg weights")
 

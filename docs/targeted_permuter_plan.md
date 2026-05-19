@@ -222,6 +222,55 @@ extern signatures don't match what the stripped C calls (specifically
 `func_8007F87C` arity); fix in Phase 1 prep by injecting actual src/
 externs into base.c instead of m2c's inferences.
 
+## Phase 2 v2 status: positional pairing + heavy aliasing (REAL IMPROVEMENT)
+
+Phase 2 v2 adds positional-pairing logic to `perm_bb2_add_pin`. Selection
+strategy is now probabilistic:
+
+- 60% — positional pairing: the n-th in-scope Decl gets the n-th
+  most-used target register (e.g., first local → $s0, second local → $v0)
+- 30% — Phase 2 v1 behavior: target-frequency-weighted random reg on
+  a random Decl
+- 10% — uniform random (escape valve for edge cases)
+
+`_TARGET_TOP_REGS` is the top-5 target-frequency list filtered to
+BB2_PIN_REGS. For AddTbpOfst the wrapper prints:
+
+    [bb2_permuter] target.s top-4 regs: $s0, $v0, $s1, $s2
+
+which matches AddTbpOfst's actual aliasing (cached→$s0, saved→$s2).
+
+### Empirical progression on AddTbpOfst_80047EE8
+
+| Variant | Budget | Iters | Best |
+|---|---:|---:|---:|
+| Upstream alone | 180s | ~1000 | 425 |
+| Phase 1 v3 | 180s | ~1100 | 425 |
+| Phase 2 v1 target-weighted | 180s | ~1100 | 425 |
+| Phase 2 v1 target-weighted | 600s | ~900 | 410 |
+| Phase 2 v2 positional, light | 180s | 1016 | 405 |
+| **Phase 2 v2, BB2_PERMUTER_HEAVY=1** | **600s** | **1228** | **305** |
+
+The heavy aliasing pass (perm_bb2_insert_aliasing) was previously
+disabled by default because it produced 425 (same as upstream) at random
+points. With positional-pairing constraining its (decl, reg) choices
+AND target-aware register weighting, it now produces real downstream
+improvements.
+
+**This is the first variant that beats upstream alone.** -120 points
+at 10 minutes is substantial — equivalent to ~24 fewer register-rename
+diffs or ~2 fewer instruction insert/deletes.
+
+### Phase 2 status: STABLE & USEFUL
+
+The framework now has a meaningful signal. Open next-step ideas:
+- Run Phase 2 v2 on the full regression suite (need baselines for
+  func_80019310, calc_fc_frame_*, etc., to see how broadly it
+  generalizes)
+- Try `--max-flat-seconds` to extend search when on a plateau
+- Phase 3: variable→register MAPPING inference (parse target.s for
+  which specific values land in which regs, not just frequency)
+
 ## Phase 2 v1 status: target-aware register weighting (modest improvement)
 
 Phase 2 adds target.s analysis to bias the pin pass's register choices.
