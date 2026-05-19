@@ -465,64 +465,65 @@ intermediate are not.
    regfix" (matches SOTN community standard). A regfix that documents
    the GCC RA quirk is acceptable when no pure-C alternative exists.
 
-## Known improvement opportunities (not yet implemented)
+## Known improvement opportunities
 
-These are areas where the tool could be made more reliable / catch more
-matches. Listed in approximate priority order.
+✅ = done, 📋 = roadmap (not yet implemented).
 
-1. **Recursive typedef collection** — `bb2_extract_func_body.py` currently
-   pulls typedefs that match `typedef struct/union/enum {...} NAME;`. It
-   misses chained typedefs (`typedef A B;` where A is itself a struct) and
-   types from `include/*.h`. Many setup failures (~40% of candidates) are
-   due to missing types. Adding a recursive type-closure pass would
-   unlock ~10 more candidates.
+1. ✅ **Recursive typedef closure** — `bb2_extract_func_body.py` now
+   walks current src, sibling src files, and `include/*.h` to build a
+   global typedef registry, then includes only the closure reachable
+   from the function body (topologically sorted). Unlocked
+   `gnd_get_fog`, `replay_camera_Init`, and others that previously
+   failed with "doesn't compile".
 
 2. **`bb2_setup_backlog.sh` for non-monolithic asm in 6CAC.s** — Now
    partially handled (extracts via glabel/endlabel). But functions that
    are private/static helpers without their own glabel boundary (like
    `saEft00Add_sub`) remain unhandled.
 
-3. **Scheduler-perturb mutation pass** — Many `reorder` regfix rules
-   plateau at score 60 (= 1 unresolved reordering). The permuter's
-   existing reorder mutations don't target the SOTN technique of
-   wrapping consecutive statements in `do { } while (0)` (which worked
-   for func_80077894). A focused pass that tries this transform on
-   candidate statement pairs would catch ~5 more plateau-60 cases.
+3. ✅ **Scheduler-perturb mutation pass** — `perm_bb2_scheduler_perturb`
+   does focused 2-3 statement adjacent `do { } while (0)` wraps.
+   Replays `func_80077894`'s match in **743 iters vs prior ~8000 iters
+   (10× faster)**. Heavier weight (3.0) than type_qualifier because
+   reorder rules are the largest plateau category.
 
-4. **Strength-reduce-defeat mutation pass** — `mario_getMarioVoiceData`
+4. 📋 **Strength-reduce-defeat mutation pass** — `mario_getMarioVoiceData`
    matched via `(x * 4) → (2 * (2 * x))`. This is a specific SOTN trick
    not in the random mutation set. A pass that tries known arithmetic
    decompositions (chained shifts, multiplication chains, bit-mask
    equivalents) would target this systematically.
 
-5. **Diagnostic asm-diff mode** — When a permuter run plateaus, output
-   the actual objdump-level diff between built.o and target.o so agents
-   can see WHAT instructions differ and reason about which C-level
-   changes would help. Currently agents have to set this up manually.
+5. ✅ **Diagnostic asm-diff mode** — `tools/bb2_diag_diff.py <func>`
+   shows objdump-level diffs between built.o (from base.c or best
+   output dir) and target.o, with `HINT:` annotations identifying
+   register changes and a `REGISTER DIFFERENCE TALLY` that detects
+   uniform 2-way swap patterns. Run after a plateau to see exactly
+   what the permuter couldn't fix. Verified on cdrom_FramesToBcd:
+   correctly identifies the 2-instruction mfhi/sra register diff.
 
-6. **Match registry queries** — `backlog_results/match_registry.json`
+6. 📋 **Match registry queries** — `backlog_results/match_registry.json`
    accumulates over time. A `tools/bb2_registry.py query <regfix_pattern>`
    would surface "for regfix rule shape X, what mutations have
    historically worked" and let agents try those first instead of
    randomizing from scratch.
 
-7. **Warm-start from prior matches** — A function similar in shape to
+7. 📋 **Warm-start from prior matches** — A function similar in shape to
    a previously-matched one might converge faster if seeded with the
    prior mutation. Currently each function searches independently.
 
-8. **Cross-file regression catch in `bb2_apply_match.py --verify`** —
+8. 📋 **Cross-file regression catch in `bb2_apply_match.py --verify`** —
    `--verify` currently runs `make` and checks SHA1, which catches
    regressions, but it doesn't run `dc.sh refresh-queue` or audit
    neighboring functions in the same .c file. A regfix retirement
    could affect siblings if their codegen shared the rule by accident.
 
-9. **CRLF defensive assertions** — Several agents have hit Windows
+9. 📋 **CRLF defensive assertions** — Several agents have hit Windows
    CRLF corruption when editing build files. `write_lf()` in
    `bb2_apply_match.py` now asserts no `\r\n` in content. Same
    defense should be added to `bb2_extract_func_body.py` and
    `bb2_permuter_regression.py`.
 
-10. **Heredoc `$N` escape pitfall** — Bash heredocs ate `$25` → `5`
+10. 📋 **Heredoc `$N` escape pitfall** — Bash heredocs ate `$25` → `5`
     twice during this session when applying matches via shell sed. The
     `bb2_apply_match.py` route avoids this. Documented here so future
     agents know to ALWAYS use the apply tool, never heredoc-piped sed.

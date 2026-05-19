@@ -231,6 +231,134 @@ def gather_data_refs(src_text: str, fn_body: str) -> list[str]:
     return decls
 
 
+def _scan_typedefs_in_file(file_path: Path) -> dict[str, str]:
+    """Parse a .c or .h file, return {typedef_name -> full_decl_text}.
+
+    Supports three shapes:
+      typedef struct { ... } NAME;
+      typedef enum { ... } NAME;
+      typedef OLD_NAME NAME;   (e.g., typedef u32 size_t;)
+
+    Self-referencing structs (typedef struct NAME { ... } NAME;) get
+    BOTH the inner tag and the typedef name registered.
+    """
+    try:
+        text = file_path.read_bytes().decode("utf-8", errors="ignore")
+    except Exception:
+        return {}
+    typedefs: dict[str, str] = {}
+    # struct/union/enum form (multi-line)
+    for m in re.finditer(
+        r"typedef\s+(struct|union|enum)\s*(\w+)?\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*(\w+)\s*;",
+        text,
+        re.DOTALL,
+    ):
+        name = m.group(3)
+        typedefs[name] = m.group(0)
+        # Also register the tag name if present
+        if m.group(2):
+            typedefs[m.group(2)] = m.group(0)
+    # Simple alias form: typedef T NAME;
+    for m in re.finditer(
+        r"typedef\s+([^{};]+?)\s+(\w+)\s*;",
+        text,
+    ):
+        # Skip those that overlap with struct/union/enum forms (already
+        # captured above)
+        if any(kw in m.group(1) for kw in ("struct", "union", "enum")):
+            continue
+        name = m.group(2)
+        if name not in typedefs:
+            typedefs[name] = m.group(0)
+    return typedefs
+
+
+_TYPE_TOKEN_RE = re.compile(r"\b([A-Z]\w*)\b")  # PascalCase identifiers
+_CAMEL_TYPE_RE = re.compile(r"\b([a-z][a-z]*[A-Z]\w*)\b")  # camelCase too
+
+
+def _referenced_types(text: str) -> set[str]:
+    """Pull all identifiers that LOOK like type names (PascalCase or
+    suffix-_t)."""
+    names: set[str] = set()
+    names.update(_TYPE_TOKEN_RE.findall(text))
+    # snake_case _t suffix
+    for m in re.finditer(r"\b(\w+_t)\b", text):
+        names.add(m.group(1))
+    return names
+
+
+def _collect_typedef_closure(fn_body: str, src_path: Path,
+                             preamble_names: set[str]) -> list[str]:
+    """Walk src + sibling src files + include/ headers, gather all
+    typedefs, then return ONLY the closure of types reachable from
+    fn_body (topologically sorted so dependencies come first).
+    """
+    # 1) Build a global typedef registry
+    registry: dict[str, str] = {}
+    scan_roots = []
+    src_dir = src_path.parent
+    if src_dir.name == "src":
+        scan_roots.append(src_path)  # current file first (most likely source of needed types)
+        # Then sibling src files
+        for f in sorted(src_dir.glob("*.c")):
+            if f != src_path:
+                scan_roots.append(f)
+    else:
+        scan_roots.append(src_path)
+    # include/*.h
+    project_root = src_dir.parent if src_dir.name == "src" else src_dir
+    include_dir = project_root / "include"
+    if include_dir.is_dir():
+        for h in sorted(include_dir.rglob("*.h")):
+            scan_roots.append(h)
+    for sr in scan_roots:
+        for name, decl in _scan_typedefs_in_file(sr).items():
+            if name in preamble_names:
+                continue
+            registry.setdefault(name, decl)  # first-seen wins (src file priority)
+
+    # 2) Closure: start with names referenced by fn_body, recurse
+    queue = _referenced_types(fn_body) - preamble_names
+    needed: list[str] = []
+    seen: set[str] = set()
+    while queue:
+        n = queue.pop()
+        if n in seen or n not in registry:
+            continue
+        seen.add(n)
+        needed.append(n)
+        # Recurse: typedef body may reference other types
+        body = registry[n]
+        for ref in _referenced_types(body):
+            if ref not in seen and ref in registry and ref not in preamble_names:
+                queue.add(ref)
+
+    # 3) Topological sort: a type that REFERENCES another must come after
+    # it. Build dependency edges and Kahn's algorithm.
+    deps: dict[str, set[str]] = {n: set() for n in needed}
+    for n in needed:
+        body = registry[n]
+        for ref in _referenced_types(body):
+            if ref != n and ref in deps:
+                deps[n].add(ref)
+    sorted_out: list[str] = []
+    while deps:
+        # Nodes with no remaining deps
+        free = [n for n, ds in deps.items() if not ds]
+        if not free:
+            # cycle -- just emit remaining in arbitrary order
+            sorted_out.extend(deps.keys())
+            break
+        for n in sorted(free):  # stable order
+            sorted_out.append(n)
+            del deps[n]
+        for n, ds in deps.items():
+            ds -= set(sorted_out)
+
+    return [registry[n] for n in sorted_out]
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("func")
@@ -251,22 +379,13 @@ def main():
     global _CURRENT_FUNC
     _CURRENT_FUNC = args.func
 
-    # Pull typedefs from src that come BEFORE the function definition. Any
-    # struct/enum/typedef that the function might use should be in this
-    # range. We greedy-match anything that looks like `typedef struct { ... } NAME;`
+    # Recursive typedef closure: collect all typedefs from current src,
+    # sibling src files, AND include/*.h. Then pull only the ones whose
+    # name is referenced (directly or transitively) by the function body.
     # Skip names already in STANDARD_PREAMBLE.
     PREAMBLE_NAMES = {"Vec2s16", "Vec3s16", "Vec3s32", "Vec3", "VECTOR",
                       "SVECTOR", "CVECTOR", "DVECTOR", "MATRIX"}
-    typedefs = []
-    src_before_fn = src.split(fn)[0] if fn in src else src
-    for m in re.finditer(
-        r"typedef\s+(?:struct|union|enum)\s*(?:\w+)?\s*\{[^}]*\}\s*(\w+)\s*;",
-        src_before_fn,
-        re.DOTALL,
-    ):
-        if m.group(1) in PREAMBLE_NAMES:
-            continue
-        typedefs.append(m.group(0))
+    typedefs = _collect_typedef_closure(fn, src_path, PREAMBLE_NAMES)
 
     parts = [STANDARD_PREAMBLE]
     if typedefs:

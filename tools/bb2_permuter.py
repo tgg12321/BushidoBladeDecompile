@@ -592,9 +592,76 @@ def _build_passes():
                     raise RandomizationFailure()
             id_type.names = names
 
+    def perm_bb2_scheduler_perturb(
+        fn: "ca.FuncDef",
+        ast: "ca.FileAST",
+        indices: "Indices",
+        region: "Region",
+        random: "random_module.Random",
+    ) -> None:
+        """BB2: Wrap a SHORT range of adjacent statements in
+        `do { ... } while (0)`. Targets the score-60 plateau cases
+        where the regfix rule is a single-pair reorder; coalescing
+        two adjacent statements into one schedule unit often lets
+        GCC produce the target's instruction order.
+
+        Differs from upstream perm_ins_block in two ways:
+          1. Range size is bounded to 2-3 statements (the productive
+             size for plateau-60 cases; longer ranges rarely match
+             and just dilute the search).
+          2. Always uses do-while (the productive form observed in
+             func_80077894's match -- if(1) wrapping doesn't have the
+             same scheduler effect because GCC's optimizer can elide
+             the conditional check).
+        """
+        from src import ast_util  # type: ignore
+
+        # Collect all block-containing statements
+        blocks: List["Block"] = []
+
+        def rec(block):
+            blocks.append(block)
+            for stmt in ast_util.get_block_stmts(block, False):
+                ast_util.for_nested_blocks(stmt, rec)
+
+        rec(fn.body)
+        ensure(blocks)
+        block = random.choice(blocks)
+        stmts = ast_util.get_block_stmts(block, True)
+        # Skip leading Decls (can't wrap them in do-while safely)
+        decl_count = 0
+        for s in stmts:
+            if isinstance(s, (ca.Decl, ca.Pragma)):
+                decl_count += 1
+            else:
+                break
+        # Need at least 2 non-decl statements to pick a 2-stmt range
+        if len(stmts) - decl_count < 2:
+            raise RandomizationFailure()
+        # Pick a starting index from non-decl region; pick range size 2 or 3
+        max_start = len(stmts) - 2
+        lo = random.randrange(decl_count, max_start + 1)
+        range_size = 2 if random.random() < 0.7 else 3
+        hi = min(lo + range_size, len(stmts))
+        if hi - lo < 2:
+            raise RandomizationFailure()
+        # Wrap [lo, hi) in do { ... } while (0)
+        if not all(region.contains_node(n) for n in stmts[lo:hi]):
+            raise RandomizationFailure()
+        new_block = ca.Compound(block_items=stmts[lo:hi])
+        cond = ca.Constant(type="int", value="0")
+        stmts[lo:hi] = [
+            ca.Pragma("_permuter sameline start"),
+            ca.DoWhile(cond=cond, stmt=new_block),
+            ca.Pragma("_permuter sameline end"),
+        ]
+
     # Default weights tuned for "lightest most useful, heavier as escape":
     #   perm_bb2_add_pin: 10.0 — small mutation, statement-count-preserving,
     #     comparable to upstream perm_temp_for_expr=100 / perm_ins_block=10
+    #   perm_bb2_scheduler_perturb: 3.0 — focused 2-3 stmt do-while wrap;
+    #     produced func_80077894's match. Heavier than type_qualifier
+    #     because it targets the largest plateau-cause category.
     #   perm_bb2_type_qualifier: 2.0 — narrow scope (pinned locals + externs);
     #     produces matches directly when a Decl's type was the obstacle.
     #     Tuned low to avoid diluting add_pin's search budget.
@@ -604,6 +671,7 @@ def _build_passes():
     enable_heavy = os.environ.get("BB2_PERMUTER_HEAVY", "0") == "1"
     return [
         (perm_bb2_add_pin, 10.0),
+        (perm_bb2_scheduler_perturb, 3.0),
         (perm_bb2_type_qualifier, 2.0),
         (perm_bb2_insert_aliasing, 0.5 if enable_heavy else 0.0),
     ]
