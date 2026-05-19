@@ -1,14 +1,18 @@
 #!/bin/bash
 # tools/worktree_bootstrap.sh
 #
-# Idempotently ensures the current git worktree has the gitignored binary
-# deps (gcc-2.7.2 cc1, decomp-permuter, .venv, disc, cc1psx.exe) wired up
-# from the main repo via cp -as symlink-trees. No-op when run in the
-# main worktree or when deps are already present.
+# Idempotently ensures the current git worktree has the gitignored deps
+# (gcc-2.7.2 cc1, decomp-permuter, .venv, disc — symlink-trees via cp -as)
+# AND the .claude/settings.local.json hook/permission config (copied,
+# auto-refreshed when main is newer) wired up from the main repo. No-op
+# when run in the main worktree or when deps are already present.
 #
-# Without this, the first build in a fresh worktree fails with
-# "tools/gcc-2.7.2/build/cc1: not found" and the agent has to rediscover
-# the symlink workflow every time.
+# Without the binary deps: the first build in a fresh worktree fails with
+# "tools/gcc-2.7.2/build/cc1: not found".
+# Without settings.local.json: all PreToolUse / Stop / SessionStart hooks
+# silently fail to fire (HARD RULE enforcement, regfix scope guard, grind
+# check, etc.) and the permission allowlist is empty, so every bash
+# command prompts the user. Both make a fresh worktree unusable.
 #
 # Called automatically by:
 #   - tools/dc.sh start         (SessionStart hook entry point)
@@ -141,6 +145,27 @@ for dep in $FILE_DEPS; do
         LINKED="$LINKED $dep"
     else
         FAILED="$FAILED $dep"
+    fi
+done
+
+# Config files: copy + auto-refresh when main is newer. We'd prefer
+# symlinks, but Git Bash without Developer Mode can't create them and WSL
+# symlinks aren't readable by Claude Code's Node.js fs on Windows. Copy
+# with mtime-tracking is the pragmatic middle: edits in main propagate
+# on the next dc.sh start. .gitignore carves out .claude/skills and
+# .claude/rules but NOT settings.local.json, so without this hooks don't
+# fire in fresh worktrees. See header comment for the failure mode.
+CONFIG_SYNC=".claude/settings.local.json"
+
+for cfg in $CONFIG_SYNC; do
+    [ -e "$MAIN_REPO/$cfg" ] || continue
+    if [ ! -e "$cfg" ] || [ "$MAIN_REPO/$cfg" -nt "$cfg" ]; then
+        mkdir -p "$(dirname "$cfg")"
+        if cp "$MAIN_REPO/$cfg" "$cfg" 2>/dev/null; then
+            LINKED="$LINKED $cfg"
+        else
+            FAILED="$FAILED $cfg"
+        fi
     fi
 done
 
