@@ -371,8 +371,8 @@ where the permuter finds pure-C alternatives.
 
 ### Backlog retirement results
 
-**9 regfix rules retired** via the targeted permuter across 7 functions.
-Tested ~36 candidates; ~7 match, ~10 improved-but-not-matched, ~19
+**10 regfix rules retired** via the targeted permuter across 8 functions.
+Tested ~38 candidates; 8 match, ~10 improved-but-not-matched, ~20
 saturated at base score.
 
 | Function | Regfix rule | Base | Result | Status |
@@ -384,6 +384,7 @@ saturated at base score.
 | **mario_getMarioVoiceData_8005BE84** | `reorder 15,14,13 @ 13-15` | 120 | 0 | ✓ MATCHED |
 | **func_80086014** | 2x `insert addiu $29,$29,...` | 200 | 0 | ✓ MATCHED (81 iter, 2 rules) |
 | **func_8007D9C4** | 2x subst (nop↔addu) | 120 | 0 | ✓ MATCHED (2 rules) |
+| **func_80060CB8** | `reorder 3,4,1,2 @ 1-4` | 30 | 0 | ✓ MATCHED (via typedef-closure unlock) |
 | cdrom_FramesToBcd | `$10 <-> $11` | 10 | 10 | saturated (mfhi RA unfixable) |
 | rob_life_ctrl | 2 rules | 70 | 60 | improved, not 0 |
 | func_80021280 | `$5 <-> $6` | 320 | 235 | improved, not 0 |
