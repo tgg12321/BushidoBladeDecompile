@@ -37,17 +37,32 @@ def write_lf(path: Path, content: str) -> None:
     path.write_bytes(content.encode("utf-8"))
 
 
+def _is_wsl() -> bool:
+    """Detect whether we're already running inside WSL (vs Windows host)."""
+    try:
+        with open("/proc/version") as f:
+            return "microsoft" in f.read().lower() or "wsl" in f.read().lower()
+    except Exception:
+        return False
+
+
 def run_make_and_check_sha1(wsl_root: str, src_path: Path) -> tuple[bool, str]:
     """Rebuild touched .c, run make, return (matches, last_lines).
-    Uses wsl + .venv since the toolchain is Linux-only.
+    Uses wsl + .venv since the toolchain is Linux-only. Auto-detects
+    whether we're already inside WSL (skips the `wsl` wrapper).
     """
     obj_name = src_path.stem + ".o"
     cmd = (
         f'cd "{wsl_root}" && source .venv/bin/activate && '
         f'rm -f build/src/{obj_name} && make 2>&1 | tail -8'
     )
+    if _is_wsl():
+        # Already in WSL -- bash directly, no wsl wrapper
+        run_args = ["bash", "-c", cmd]
+    else:
+        run_args = ["wsl", "bash", "-c", cmd]
     r = subprocess.run(
-        ["wsl", "bash", "-c", cmd],
+        run_args,
         capture_output=True, text=True, timeout=300,
     )
     out = (r.stdout or "") + (r.stderr or "")

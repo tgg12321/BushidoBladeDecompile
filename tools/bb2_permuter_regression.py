@@ -669,15 +669,34 @@ def _prebake_base_c(base_c_text: str, func_name: str, pin_chain: List[str]) -> s
     depth = 0
     annotated = 0
     out = list(lines)
+    # Track when we're inside a struct/union/enum/typedef body. The
+    # block-depth tracker treats those braces as code blocks; we need a
+    # separate flag to skip annotating their members. Cross-cutting the
+    # raw-text scan: when we see `typedef struct` or `struct/union/enum {`
+    # set the flag; clear when matching close-brace fires.
+    struct_brace_depths: list[int] = []  # stack of depths where struct opens
     for j in range(brace_open, len(out)):
         line = out[j]
-        for ch in re.sub(r"//.*$|/\*.*?\*/|\".*?\"|'.*?'", "", line):
+        # Strip comments/strings for clean depth tracking
+        clean = re.sub(r"//.*$|/\*.*?\*/|\".*?\"|'.*?'", "", line)
+        # Check if this line OPENS a struct/union/enum body
+        struct_open = re.search(r"\b(?:typedef\s+)?(struct|union|enum)\s*\w*\s*\{", clean)
+        for ch in clean:
             if ch == "{":
                 depth += 1
+                if struct_open and depth - 1 not in struct_brace_depths:
+                    # Mark the depth-just-entered as a struct body
+                    struct_brace_depths.append(depth)
+                    struct_open = None  # consume the marker
             elif ch == "}":
+                if struct_brace_depths and struct_brace_depths[-1] == depth:
+                    struct_brace_depths.pop()
                 depth -= 1
         if depth < 1:
             break
+        if struct_brace_depths:
+            # Inside a struct/union/enum -- skip annotating its members
+            continue
         if annotated >= len(available_pins):
             break
         m = decl_re.match(line)
