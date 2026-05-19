@@ -16,12 +16,15 @@ Investigation on `coli_HitPauseKatana_2` (committed and reverted across
    the BB2-relevant techniques: register-pin combinations, inline-move
    aliasing block insertion, or intermediate-variable injection at
    structurally-meaningful points.
-2. `cc1psx` (the actual original compiler) also fails to reach target
-   bytes from our pure-C body — proving for *that one function*
-   the source is unrecoverable. But that's the worst case; cheaper
-   regfix functions in the queue have target sources that ARE
-   structurally reachable from our C, just not from any C the random
-   permuter happens to produce.
+2. The original PsyQ compiler also fails to reach target bytes from
+   our pure-C body — proving for *that one function* the source is
+   unrecoverable. But that's the worst case; cheaper regfix functions
+   in the queue have target sources that ARE structurally reachable
+   from our C, just not from any C the random permuter happens to
+   produce. (Note: cc1psx was historically used as a calibration oracle
+   during this investigation; the project has since deprecated cc1psx
+   to avoid agent confusion. The targeted permuter scores against
+   mips-gcc-2.7.2 only.)
 3. The community standard (SOTN/Vagrant/ESA/CTR) explicitly accepts
    the patterns we'd add as mutation passes (see
    `memory/rules/community-standard.md`):
@@ -140,7 +143,7 @@ Before integrating any phase into the project's `dc.sh` pipeline:
    targeted permuter for 10 minutes each. Score the rule-count
    reduction.
 3. **Negative test:** Run the targeted permuter on `coli_HitPauseKatana_2`.
-   We expect plateau at score 150 (the cc1psx-confirmed lower bound). If
+   We expect plateau at score 150 (historically confirmed lower bound). If
    the targeted permuter beats that, something's wrong in the scoring;
    if it doesn't, the tool is correctly identifying the unrecoverable
    case.
@@ -172,7 +175,8 @@ no plateau-probe improvements, ship Phase 1 alone and move on.
 
 ## Out-of-scope
 
-- Patching GCC to match cc1psx — separately investigated, ruled out
+- Patching GCC to match the original PsyQ compiler — separately
+  investigated, ruled out (also cc1psx is deprecated per project policy)
 - Building a "source archaeology" tool to infer target's original C —
   research problem, not engineering
 - Replacing decomp-permuter's core scoring — extension only
@@ -189,7 +193,7 @@ All locked in via the discussion in this design round:
 | Pin set scope | `$t0-$t9` + `$v0-$v1` + `$s0-$s7` (20 regs). All non-parameter caller- and callee-saved. Frame-size shift handled by GCC's standard prologue emission. SOTN-compliant. |
 | Output behavior | Save candidates to `permuter/<func>/output-*/` only (current upstream behavior). No auto-integration, no auto-audit. Agent reviews + integrates manually. |
 | Time budget | Adaptive — same shape as `dc.sh permute-adaptive`. Easy functions get ~90s, harder ones up to 30 min. |
-| Scoring target | mips-gcc only (current build pipeline). Don't dual-score against cc1psx — too slow and ROI is unclear. |
+| Scoring target | mips-gcc only (current build pipeline). cc1psx is deprecated per project policy and not used. |
 | Regression suite | Hand-pick 5-7 known-aliasing functions for fast dev cycle, then auto-detect from `INLINE_MOVE_ALIASING:` comment headers for full pre-merge run. |
 | Audit integration | Phase 1: no auto-audit. Existing `/cheat-audit` skill remains the audit path; agent invokes after reviewing permuter candidate. |
 | Phase 4 commitment | Plan it (kept in design), build Phase 1-3 first, reassess from results. |
