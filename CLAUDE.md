@@ -9,10 +9,22 @@ This file is the Claude-specific layer: session entry point, memory-system point
 ## START HERE — first action of every session
 
 ```
-wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && bash tools/dc.sh start'
+bash tools/dc.sh start
 ```
 
+Works from anywhere — main checkout or any worktree, Git Bash or WSL. If you're in Git Bash the script self-re-execs under WSL at the same cwd. If you're in a worktree, it also symlink-copies the gitignored deps (`.venv`, `tools/gcc-2.7.2`, `tools/decomp-permuter`, `disc`, `tools/cc1psx.exe`) from the main checkout before printing the briefing — idempotent, runs every start.
+
 A `SessionStart` hook auto-runs it. The briefing prints build status, active function marker, queue freshness, top-of-queue, cheat counts, drift surface, and a rules summary. It also regenerates `memory/MEMORY.md` from current frontmatter so the auto-loaded index stays fresh.
+
+### After `EnterWorktree` mid-session
+
+The `SessionStart` hook only fires once per Claude session — entering a worktree mid-session doesn't re-trigger it. To bootstrap a freshly created worktree, just run the same first-action command:
+
+```
+bash tools/dc.sh start
+```
+
+That single call handles dep symlinking + briefing. If you want explicit setup-only (no briefing, just a `READY` / `FAIL` status line — useful for scripted setup or sanity-checking), run `bash tools/dc.sh bootstrap` instead.
 
 **Decide what to do next based on the briefing:**
 
@@ -20,7 +32,7 @@ A `SessionStart` hook auto-runs it. The briefing prints build status, active fun
 2. **`Active: NONE`** → `bash tools/dc.sh next --with-context` (pulls top of queue + sets marker + runs agent-brief).
 3. **`Build: MISMATCH`** → STOP. Don't pull more work. Investigate (`dc.sh verify --clean`, recent commits) before any function work.
 
-Work is solo end-to-end on a single function. No sub-agents, no worktrees, no orchestrator delegation — one focused session per function, technique-switch when stuck. See [[hard-rule]].
+Work is solo end-to-end on a single function. No sub-agents, no orchestrator delegation — one focused session per function, technique-switch when stuck. A worktree is fine; the forbidden pattern is splitting one function's work across multiple parallel agents, not the worktree mechanism itself. See [[hard-rule]] and [[parallel-worktrees]].
 
 **Before starting any asmfix-retirement work,** grep `docs/asmfix_attempt_notes.md` for the function name. Prior agents may have recorded the best diff achieved, what was tried, where the plateau is, and what to try next. Build on prior measurement; don't restart from zero. If you make progress, update the entry.
 

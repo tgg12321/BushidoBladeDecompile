@@ -51,6 +51,30 @@
 #   bash tools/dc.sh log-attempt <func> <cat> <variant> <min> '<outcome>'  — log a decomp attempt
 #   bash tools/dc.sh check-attempts <func>           — validate attempts log vs escape-valve gate
 #
+# Cross-environment behavior:
+#   When invoked from Git Bash / MSYS / Cygwin (Windows native shell), this
+#   script re-execs itself under `wsl bash` at the same working directory.
+#   That way the canonical one-call (`bash tools/dc.sh start`) works from
+#   anywhere — main checkout, any worktree, Git Bash or WSL — without the
+#   agent needing to know which shell or where on disk. WSL Linux is detected
+#   by uname -s == Linux and the bounce is skipped.
+case "$(uname -s 2>/dev/null)" in
+    MINGW*|MSYS*|CYGWIN*)
+        # Convert Git Bash POSIX path (/c/foo) → WSL mount path (/mnt/c/foo).
+        WT_PWD_RAW="$(pwd)"
+        case "$WT_PWD_RAW" in
+            /[a-zA-Z]/*) WSL_PWD="/mnt$WT_PWD_RAW" ;;
+            *)           WSL_PWD="$WT_PWD_RAW" ;;
+        esac
+        # Re-quote all args via printf %q so spaces / $vars in arguments survive.
+        ARGS_Q=""
+        for a in "$@"; do
+            ARGS_Q="$ARGS_Q $(printf %q "$a")"
+        done
+        exec wsl bash -c "cd \"$WSL_PWD\" && bash tools/dc.sh$ARGS_Q"
+        ;;
+esac
+
 set -eo pipefail
 
 # Find project root

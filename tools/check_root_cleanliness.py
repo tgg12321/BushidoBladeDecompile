@@ -67,8 +67,13 @@ ALLOWED_USER_LOCAL = set()
 # Runtime state files (gitignored, generated)
 ALLOWED_STATE_RE = re.compile(r"^\.bb2_.*$|^bb2\.d$|^Makefile\.bak$")
 
-# Allow-all dotfiles (e.g., .git, .venv, .vscode, .claude — these are dirs anyway)
-# Plus the project's own .bb2_* state files (handled by STATE_RE)
+# Dotfiles at root. Most are directories (.venv, .vscode, .claude) and
+# don't reach this code path. But .git is a FILE pointer inside a git
+# worktree (gitdir: <path>), so is_file() catches it. Treating any
+# leading-dot entry as allowed avoids flagging worktree state, editor
+# scratch (.vimrc.local, .envrc), etc. — without expanding the named
+# allowlist for every possible dotfile.
+ALLOWED_DOTFILE_RE = re.compile(r"^\..+")
 
 ALLOWED_FILES = (ALLOWED_DOCS | ALLOWED_BUILD | ALLOWED_BUILD_TXT |
                  ALLOWED_CSV | ALLOWED_DISC | ALLOWED_USER_LOCAL)
@@ -93,6 +98,8 @@ def classify(filename: str) -> tuple[str, str]:
         return ("allowed", "")
     if ALLOWED_STATE_RE.match(filename):
         return ("state", "runtime state")
+    if ALLOWED_DOTFILE_RE.match(filename):
+        return ("allowed", "dotfile")
     for pat, reason in SUSPICIOUS_PATTERNS:
         if pat.match(filename):
             return ("suspicious", reason)
