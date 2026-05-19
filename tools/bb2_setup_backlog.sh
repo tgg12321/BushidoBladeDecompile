@@ -51,21 +51,26 @@ prepare_one() {
         fi
     fi
 
-    # If the asm file isn't named after this function, alias it
+    # If the asm file isn't named after this function, alias it.
+    # Always normalize CRLF -> LF when writing (some asm files have CRLF
+    # from earlier processing; the downstream sed in permuter_setup.sh
+    # mangles `glabel X\r` into `X\r:` which breaks assembly).
     if [ -n "$ASMFILE" ] && [ "$(basename "$ASMFILE" .s)" != "$FUNC" ]; then
-        # Check if file contains ONLY this function -- if so, just copy.
-        # If it has multiple, we need to extract the body.
         local FUNCS_IN_FILE
         FUNCS_IN_FILE=$(grep -c "^glabel " "$ASMFILE")
         if [ "$FUNCS_IN_FILE" = "1" ]; then
-            cp "$ASMFILE" "asm/funcs/${FUNC}.s"
+            tr -d '\r' < "$ASMFILE" > "asm/funcs/${FUNC}.s"
         else
-            # Extract this function from the multi-function file
-            awk -v fn="^glabel ${FUNC}$" -v end="^endlabel ${FUNC}$" '
+            awk -v fn="^glabel ${FUNC}[[:space:]]*$" -v end="^endlabel ${FUNC}[[:space:]]*$" '
                 $0 ~ fn { in_fn=1 }
                 in_fn { print }
                 $0 ~ end { exit }
-            ' "$ASMFILE" > "asm/funcs/${FUNC}.s"
+            ' "$ASMFILE" | tr -d '\r' > "asm/funcs/${FUNC}.s"
+        fi
+    elif [ -n "$ASMFILE" ]; then
+        # Same-name asm file. Normalize CRLF in place if needed.
+        if grep -q $'\r' "$ASMFILE"; then
+            tr -d '\r' < "$ASMFILE" > "${ASMFILE}.tmp" && mv "${ASMFILE}.tmp" "$ASMFILE"
         fi
     fi
 
