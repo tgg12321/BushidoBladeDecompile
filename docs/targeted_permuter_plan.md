@@ -180,13 +180,69 @@ no plateau-probe improvements, ship Phase 1 alone and move on.
   unrecoverable-source case and a new tool won't help it. Re-bridged and
   left in queue for future agents.
 
-## Open questions to discuss before starting
+## Answered design questions (2026-05-18)
 
-1. Pass weight / search budget: how often should random search pick each
-   new pass vs the existing passes? Default 1:1 with existing, but tunable.
-2. Should `$a0-$a3` be in the pin set? They conflict with parameter passing
-   in ways the random search may not understand. Initial pass: yes, let
-   it try. If it produces broken C on parameter functions, restrict.
-3. Where to ship: as a fork of `tools/decomp-permuter` checked into our
-   tree, or as patches we maintain externally? Initial: in-tree, lower
-   friction. Upstream if it works.
+All locked in via the discussion in this design round:
+
+| Question | Decision |
+|---|---|
+| Pin set scope | `$t0-$t9` + `$v0-$v1` + `$s0-$s7` (20 regs). All non-parameter caller- and callee-saved. Frame-size shift handled by GCC's standard prologue emission. SOTN-compliant. |
+| Output behavior | Save candidates to `permuter/<func>/output-*/` only (current upstream behavior). No auto-integration, no auto-audit. Agent reviews + integrates manually. |
+| Time budget | Adaptive — same shape as `dc.sh permute-adaptive`. Easy functions get ~90s, harder ones up to 30 min. |
+| Scoring target | mips-gcc only (current build pipeline). Don't dual-score against cc1psx — too slow and ROI is unclear. |
+| Regression suite | Hand-pick 5-7 known-aliasing functions for fast dev cycle, then auto-detect from `INLINE_MOVE_ALIASING:` comment headers for full pre-merge run. |
+| Audit integration | Phase 1: no auto-audit. Existing `/cheat-audit` skill remains the audit path; agent invokes after reviewing permuter candidate. |
+| Phase 4 commitment | Plan it (kept in design), build Phase 1-3 first, reassess from results. |
+| Packaging | New tool `tools/bb2_permuter.py` wrapping `decomp-permuter` and injecting passes at runtime. Decoupled, no fork of upstream. |
+| Pass weight | Default 1:1 with existing randomizer passes. Configurable via `--pass-weights` flag. |
+
+## Phase 0 — regression suite (FIRST, before any pass code)
+
+Per the answered execution scope: build the regression infrastructure
+before any randomizer code. De-risks "tool can't reconstruct anything"
+by proving validation works first.
+
+### Hand-picked core set (5 functions)
+
+Pulled from existing `src/` files that have manual `INLINE_MOVE_ALIASING:`
+documented aliasing blocks, picked for diversity of:
+- File (text1b.c vs code6cac.c vs code6cac_b.c)
+- Block count (single block vs multi-block)
+- Memory documentation depth (which of these have explicit retrospective notes)
+
+| Function | File | Aliasing blocks | Notes |
+|---|---|---|---|
+| `AddTbpOfst_80047EE8` | text1b.c | 1 | Smallest single-block case. Good first probe. |
+| `func_80019310` | code6cac.c | 1 | Single block, different file. Cross-file generality test. |
+| `calc_fc_frame_800203B4` | code6cac.c | 3 | Multi-aliasing case. Per `memory/reference/inline-move-aliasing.md`, this is the canonical "closed the last 21→0 diff jump via aliasing" reference match (commit `a502eb4`). |
+| `func_8002D320` | code6cac_b.c | 2 | Documented in `memory/reference/regfix-subst-multi-splice.md`. Has the subst_multi pattern combined with aliasing. |
+| `func_8002EA24` | code6cac_b.c | 2 | Documented in `memory/reference/register-asm-pins.md` — the canonical pin-fail-then-aliasing-fix case. |
+
+### Stretch set (advanced, for pre-merge run)
+
+| Function | File | Aliasing blocks | Notes |
+|---|---|---|---|
+| `saSeInit` | code6cac_b.c | 4 | Heavy multi-aliasing. Stress test. |
+| `DispSchoolBG` | code6cac_b.c | 6 | Heaviest aliasing in the codebase. If the tool handles this, it handles everything. |
+
+### Phase 0 deliverables
+
+1. `tools/bb2_permuter_regression.py` — script that:
+   - Takes a function name as input
+   - Locates its aliasing blocks in src/
+   - Strips them (saves stripped C as `regression/<func>/stripped.c`)
+   - Saves the matching original C as `regression/<func>/expected.c`
+   - Verifies stripped.c doesn't match (sanity check)
+   - Runs decomp-permuter on stripped.c
+   - Reports whether the permuter reconstructed something equivalent
+
+2. `regression/` directory (gitignored except for golden inputs) with
+   subdir per regression function.
+
+3. Validation that decomp-permuter's CURRENT random search reconstructs
+   ZERO of these (or some baseline). If it reconstructs some already,
+   we re-pick.
+
+Once Phase 0 demonstrates that the validation infrastructure works
+AND that current decomp-permuter doesn't already solve these (so we
+know there's room for our extension), proceed to Phase 1.
