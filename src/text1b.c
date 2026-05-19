@@ -11052,7 +11052,9 @@ void func_80052BE4(u8 *a0) {
     __asm__ volatile ("" ::: "memory");
 }
 void InitFadePanel(void) {
-    *(volatile s32 *)0x1F800400 = 0;
+    register volatile s32 *p asm("$25");
+    p = (volatile s32 *)0x1F800400;
+    *p = 0;
 }
 PAD_NOPS_1; /* padding after InitFadePanel */
 s32 func_80052C28(s32 arg0, s32 arg1) {

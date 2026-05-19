@@ -3026,7 +3026,7 @@ func_8002304C: insert_after "lui $23,0x1F80" @ 17
 
 # REORDER rules (Phase 4: post-delete + post-insert indices)
 # InitFadePanel: scratchpad write -- target uses $t9 ($25), GCC picked $v0 ($2)
-InitFadePanel: $2 <-> $25 @ 0-2
+# RETIRED (targeted-permuter): InitFadePanel: $2 <-> $25 @ 0-2
 # func_800550E8: byte-array indexing into D_80101EC8 -- target keeps 0x415 offset on lbu/sb; GCC pre-folds it. Reverse via 3 substs.
 func_800550E8: subst "la\s+\$3,D_80101EC8\+1045" "la	$3,D_80101EC8" @ 8
 func_800550E8: subst "lbu\s+\$2,0\(\$3\)" "lbu	$2,1045($3)" @ 10
