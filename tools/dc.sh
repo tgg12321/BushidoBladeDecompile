@@ -191,6 +191,14 @@ case "$CMD" in
             python3 tools/audit_asm_cheats.py --summary 2>/dev/null || true
         fi
 
+        # SOTN-bar gap: tier-3 inline asm (toolchain workarounds — register
+        # pins, INLINE_MOVE_ALIASING blocks, scheduling barriers). These
+        # are the deviation-from-SOTN-standard count. Tier-2 (authentic
+        # GTE/BIOS/hardware) is fine and not part of the gap.
+        if [ -f "tools/classify_inline_asm.py" ]; then
+            python3 tools/classify_inline_asm.py --summary 2>/dev/null || true
+        fi
+
         # Cascade-drift surface (literal-`.LN` rules across asmfix+regfix).
         # Auto-repair handles drift on rebuild, but tracking the surface
         # count over time is a useful trend metric — if it keeps growing,
@@ -262,6 +270,7 @@ case "$CMD" in
   dc.sh refresh-queue             Regen WORK_QUEUE.md (post-match)
   dc.sh log-attempt <func> <cat> <variant> <min> '<outcome>'  Log a decomp attempt to .bb2_attempts/
   dc.sh check-attempts <func>     Validate attempts log against escape-valve gate
+  dc.sh classify-inline-asm       Tier-2 (authentic) vs tier-3 (workaround) inline-asm metrics
   dc.sh new-worktree <name>       Create + bootstrap a worktree off local main HEAD (one command)
   dc.sh bootstrap                 Link gitignored deps from main repo (worktree first-run)
   dc.sh verify-toolchain          Fast existence-check on cc1, maspsx, .venv, disc
@@ -346,6 +355,14 @@ EOF
             exit 1
         fi
         echo "setup-venv: OK"
+        ;;
+
+    classify-inline-asm)
+        # Classify every __asm__ block + register-asm pin in src/*.c as
+        # tier-2 (authentic GTE/BIOS/hardware) or tier-3 (toolchain
+        # workaround for our gcc-vs-cc1psx allocator/scheduler divergence).
+        # Tier-3 count is the gap-to-SOTN-bar metric.
+        python3 tools/classify_inline_asm.py "$@"
         ;;
 
     log-attempt)
