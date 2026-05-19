@@ -304,8 +304,8 @@ where the permuter finds pure-C alternatives.
 
 ### Backlog retirement results
 
-**7 regfix rules retired** via the targeted permuter across 6 functions.
-Tested ~35 candidates; ~6 match, ~10 improved-but-not-matched, ~19
+**9 regfix rules retired** via the targeted permuter across 7 functions.
+Tested ~36 candidates; ~7 match, ~10 improved-but-not-matched, ~19
 saturated at base score.
 
 | Function | Regfix rule | Base | Result | Status |
@@ -316,6 +316,7 @@ saturated at base score.
 | **func_80077894** | `reorder 10,9 @ 9-10` | 60 | 0 | ✓ MATCHED |
 | **mario_getMarioVoiceData_8005BE84** | `reorder 15,14,13 @ 13-15` | 120 | 0 | ✓ MATCHED |
 | **func_80086014** | 2x `insert addiu $29,$29,...` | 200 | 0 | ✓ MATCHED (81 iter, 2 rules) |
+| **func_8007D9C4** | 2x subst (nop↔addu) | 120 | 0 | ✓ MATCHED (2 rules) |
 | cdrom_FramesToBcd | `$10 <-> $11` | 10 | 10 | saturated (mfhi RA unfixable) |
 | rob_life_ctrl | 2 rules | 70 | 60 | improved, not 0 |
 | func_80021280 | `$5 <-> $6` | 320 | 235 | improved, not 0 |
@@ -329,7 +330,7 @@ saturated at base score.
 | func_800274BC | insert + delete | 60 | 60 | no improvement |
 | func_800692C0 | reorder | 60 | 60 | saturated |
 
-The six matches retired **7 regfix rules** outright. The permuter's
+The seven matches retired **9 regfix rules** outright. The permuter's
 SOTN-accepted mutations that landed:
 
 - **Pin a temp pointer to a specific register** (InitFadePanel):
@@ -345,6 +346,9 @@ SOTN-accepted mutations that landed:
 - **`volatile` type-qualifier on a pinned register variable**
   (func_80086014): `register s32 ra0` → `register volatile unsigned int ra0`
   makes GCC emit the 8-byte stack frame adjustment naturally
+- **`volatile` type-qualifier on a function-local extern** (func_8007D9C4):
+  `extern s32 *D_X` → `extern volatile int *D_X` (local re-declaration)
+  changes the load semantics enough to remove a nop<->addu swap
 - **Multiple intermediate var introductions** (func_80047BE0):
   `s32 *new_var = &D_800EF59C[0]; src = new_var;` and similar
   patterns
