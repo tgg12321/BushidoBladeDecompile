@@ -668,11 +668,13 @@ def cmd_baseline_record(args):
     write_text_lf(out_dir / "baseline_result.json", json.dumps(record, indent=2))
     print(f"[2/2] Recorded: iterations={iters}, base_score={base_score}, best_score={best}")
     if best == 0:
-        print(f"  ⚠ MATCH found by upstream permuter — this function is NOT a valid regression target")
+        print(f"  ! MATCH found by upstream permuter -- this function is NOT a valid regression target")
     elif base_score == best:
-        print(f"  ✓ Upstream permuter plateaued — this is a real regression target for Phase 1 to beat")
+        print(f"  + Upstream permuter plateaued -- this is a real regression target for Phase 1 to beat")
+    elif base_score is None or best is None:
+        print(f"  ? could not parse score from log (base.c compile error?); check baseline_run.log")
     else:
-        print(f"  ~ Upstream improved {base_score} -> {best} but not to 0 — still a regression target")
+        print(f"  ~ Upstream improved {base_score} -> {best} but not to 0 -- still a regression target")
 
 
 def cmd_report(args):

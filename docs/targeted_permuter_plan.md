@@ -200,6 +200,28 @@ All locked in via the discussion in this design round:
 | Packaging | New tool `tools/bb2_permuter.py` wrapping `decomp-permuter` and injecting passes at runtime. Decoupled, no fork of upstream. |
 | Pass weight | Default 1:1 with existing randomizer passes. Configurable via `--pass-weights` flag. |
 
+## Phase 0 baseline results (commit pending)
+
+Upstream `decomp-permuter` with `-j 6`, 180-second budget per function:
+
+| Function | Blocks | Iters | Base score | Best score | Improvement | Status |
+|---|---:|---:|---:|---:|---:|---|
+| AddTbpOfst_80047EE8 | 1 | 4516 | 505 | 225 | -280 | regression target |
+| func_80019310 | 1 | 4549 | 480 | 370 | -110 | regression target |
+| calc_fc_frame_800203B4 | 3 | 4491 | 940 | 490 | -450 | regression target |
+| func_8002D320 | 2 | 4501 | 1465 | 965 | -500 | regression target |
+| func_8002EA24 | 2 | 4580 | 1670 | 1110 | -560 | regression target |
+| saSeInit (stretch) | 4 | 4462 | 590 | 495 | -95 | regression target |
+| DispSchoolBG (stretch) | 7 | — | — | — | — | base.c arity mismatch — Phase 1 prep TODO |
+
+**Key finding:** upstream random permuter improves scores by 20-50% on most
+functions but never reaches 0 in 4500 iterations. Phase 1's auto-aliasing
+pass should close the remaining gap on the core 5 (and ideally saSeInit).
+DispSchoolBG fails to compile in the baseline run because m2c's inferred
+extern signatures don't match what the stripped C calls (specifically
+`func_8007F87C` arity); fix in Phase 1 prep by injecting actual src/
+externs into base.c instead of m2c's inferences.
+
 ## Phase 0 status: COMPLETE (commit c40abcb)
 
 Delivered:
