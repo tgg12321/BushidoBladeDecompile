@@ -77,13 +77,16 @@ m2c_triage/
 # Temporary/experimental scripts (not source)
 tmp/
 
-# Claude Code session files (transient state). Skills and path-scoped
-# rules are CARVED OUT: workflow rules in .claude/skills/ and
-# auto-loaded path-scoped rules in .claude/rules/ are project-essential
-# and should travel with the repo.
+# Claude Code session files (transient state). Skills, path-scoped
+# rules, and the project-shared settings file are CARVED OUT:
+# workflow rules in .claude/skills/, auto-loaded path-scoped rules in
+# .claude/rules/, and team-shared hook wiring in .claude/settings.json
+# are project-essential and should travel with the repo. User-local
+# overrides go in .claude/settings.local.json (still ignored).
 .claude/*
 !.claude/skills/
 !.claude/rules/
+!.claude/settings.json
 .crush/
 
 # Local model config

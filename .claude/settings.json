@@ -1,0 +1,16 @@
+{
+  "_comment": "Project-shared Claude Code settings. Committed to git. Hooks here are merged with user-local hooks in .claude/settings.local.json. See tools/hooks/*.sh for the scripts referenced below.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/tools/hooks/commit_audit_guard.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}
