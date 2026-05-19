@@ -14151,10 +14151,10 @@ s32 func_80062FEC(void) {
     idx = i * 2;
 found:
     src = (s32 *) D_800A347C;
-    word_off = (idx + i) << 2;
+    word_off = ((idx + i) << 1) << 1;
     *((s32 *) (((u8 *) (&D_800F0E38)) + word_off)) = src[0];
     *((s32 *) (((u8 *) (&D_800F0E3C)) + word_off)) = src[1];
-    do { } while (0);
+    do { idx++; idx--; } while (0);
     *((s32 *) (((u8 *) (&D_800F0E40)) + word_off)) = src[2];
     *((s16 *) (((u8 *) (new_var = &D_800F0BEC)) + idx)) = 0;
     return 1;
