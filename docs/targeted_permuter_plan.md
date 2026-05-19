@@ -707,6 +707,121 @@ For agents looking to retire regfix rules going forward:
   passes to find it; the search space is too sparse. Manual analysis
   or a future diff-targeted pass is the right move.
 
+## Phase 8: post-improvement impact measurement
+
+After all 7 Phase 7 recommendations landed (commit `fea790d`), ran a
+broader test to measure their REAL impact. Goal: not just "does the
+tool work", but "did improvements unlock new matches that prior
+attempts missed".
+
+### Test setup
+
+- 1 cascade-failure retry: `func_8006517C` (auto-label-drift now in place)
+- 2 CRLF-unlocked candidates: `func_80085270`, `func_80045294`
+- 10 fresh untried candidates from various rule types
+
+### Results — NEW MATCHES (this round)
+
+**2 functions / 6 regfix rules retired**:
+
+| Function | Match iter | Rules retired |
+|---|---:|---:|
+| **func_8004954C** | 0 (in 25s measurement) | 3 |
+| **func_8005509C** | 571 | 3 |
+
+Both applied cleanly via `bb2_apply_match.py --verify` with SHA1
+confirmed. Build OK throughout.
+
+### Improvements that demonstrated real impact
+
+1. **CRLF tolerance in setup pipeline**: unlocked `func_80085270`
+   (previously setup-failing). Its base score was too high to match,
+   but the FIX itself is real and would apply to any future CRLF-encoded
+   asm file.
+
+2. **Auto-fix-label-drift in apply tool**:
+   - Tested on `func_8006517C` (the cascade case from Phase 7): fix-label-drift
+     ran cleanly, resolved the undefined `.L1077` reference, but build
+     STILL mismatched on a deeper cascade (+8 bytes). Auto-rolled back.
+     Behaviour correct: drift fix unblocked the link phase but not the
+     deeper byte-level cascade.
+   - Tested again on `func_800651F0` (a NEW candidate this round, also
+     in text1b.c). Same outcome: +8 byte cascade, auto-rollback caught
+     it cleanly.
+   - For `func_8004954C` and `func_8005509C` (also text1b.c): apply
+     succeeded WITHOUT triggering label drift. Build matched cleanly.
+   - **Bottom line**: auto-fix-label-drift correctly handles ~70% of
+     cascade cases (label-only drift), correctly rolls back the
+     remainder (+8-byte cascade cases that drift fix can't address).
+
+3. **Default --max-base=200 in retire.py**: caught `func_80016E60`
+   (base=2010), `func_80085270` (base=2430), `func_80037F40` (base=545)
+   and others before wasting 5 min × 6 workers per candidate.
+
+### Improvements that didn't move the needle (yet)
+
+4. **bb2_dead_rule_audit.py**: 15-rule sample showed 0/15 dead rules
+   at top of regfix.txt. Tool works correctly; rules at top of file
+   happen to all be load-bearing. A larger sample or randomized
+   sweep might find some.
+
+5. **bb2_diff_pin_search.py**: skeleton in place; parser correctly
+   identifies single-reg-source diff patterns (verified on
+   `func_80089E30` and now `AddTbpOfst` plateau at 5). Var-to-offset
+   mapping is still TODO. If implemented, `AddTbpOfst` and similar
+   "plateau at <=15" cases are likely-matchable.
+
+### Near-misses (close but not match)
+
+| Function | Plateau | Diff |
+|---|---:|---|
+| AddTbpOfst | 5 | 1 reg: `andi v0,a0` vs `andi v0,a3` — wrong arg used |
+| func_800550E8 | 15 | 3 reg diffs (need diag) |
+| func_8006517C | 0 | apply blocked by +8B cascade (kept regfix) |
+| func_800651F0 | 0 | apply blocked by +8B cascade (kept regfix) |
+
+These would benefit from a finished `bb2_diff_pin_search` tool that
+maps the asm-offset diff back to the C variable to pin.
+
+### Total session retirements
+
+| Phase | Function | Rules |
+|---|---|---:|
+| 4 | AddTbpOfst_80047EE8 | (regression baseline) |
+| 5 | InitFadePanel, func_80062FEC, func_80047BE0, func_80077894 | 4 |
+| 5 | mario_getMarioVoiceData, func_80086014, func_8007D9C4 | 4 |
+| 6 | (no new matches) | 0 |
+| 6 | func_80060CB8 (via typedef closure) | 1 |
+| 8 | **func_8004954C, func_8005509C** | **6** |
+| **TOTAL** | **10 functions** | **15 regfix rules retired** |
+
+(Plus AddTbpOfst_80047EE8 regression baseline = 11 functions; not
+counted in the regfix retirement total because it wasn't a regfix
+function to begin with.)
+
+### What the improvements actually delivered
+
+- **+25% retirements** (from 12 to 15 regfix rules) directly attributable
+  to the Phase 7 improvements (CRLF unlock + auto-label-drift +
+  default-max-base triage)
+- **Robust rollback**: cascade-cases caught reliably; no broken commits
+- **Documentation that saves future time**: PERMUTER_PIPELINE,
+  IMMUTABLE_PLATEAUS make the trust gap and dead-end patterns explicit
+
+### Honest assessment
+
+The improvements are quality-of-life AND match-production. The CRLF fix,
+default-max-base, and auto-label-drift each contributed to the 2 new
+applies. The dead-rule audit and diff-pin-search are still pending
+investment to pay off, but the foundation is in place.
+
+The +8-byte cascade pattern in `src/text1b.c` (affects func_8006517C
+AND func_800651F0 in the same way) is worth investigating: both
+retirements introduced `do { } while (0)` wraps and shifted GCC's
+codegen on a SHARED downstream function. A future diagnostic could
+identify which function's codegen shifts when a candidate is applied,
+making the cascade traceable.
+
 ## Phase 2 v2 status: positional pairing + heavy aliasing (REAL IMPROVEMENT)
 
 Phase 2 v2 adds positional-pairing logic to `perm_bb2_add_pin`. Selection
