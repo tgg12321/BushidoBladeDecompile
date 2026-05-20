@@ -678,6 +678,24 @@ class MaspsxProcessor:
     ) -> List[str]:
         res: List[str] = []
 
+        # is_label() only recognizes $L-prefix locals, but this GCC fork emits
+        # .L-prefix. So a load whose pointer is consumed by an indirect call
+        # across a single .L merge label -- `lw $rN; .L<n>:; jalr $rN` (maspsx
+        # renders jalr as `jal $31,$rN`) -- is not seen as a load-delay hazard
+        # and loses its nop. Handle ONLY this jalr-consumer case; broadening
+        # label-skip cascades through index-anchored regfix rules elsewhere.
+        if re.match(r"\.L\d+:$", next_instruction):
+            after_label = self.get_next_instruction(
+                skip=1, ignore_nop=True, ignore_set=True
+            )
+            if re.match(rf"^jal\t\$31,{re.escape(r_dest)}$", after_label):
+                res.append(next_instruction)   # keep the merge label in place
+                self.skip_instructions = 1      # don't re-emit it downstream
+                res.append(
+                    f"nop # DEBUG: load-delay across .L-label before jalr {r_dest}"
+                )
+                return res
+
         if line_loads_from_reg(next_instruction, r_dest):
             nop_required = False
 

@@ -4654,6 +4654,4 @@ single_game_VoiceContorol: reorder 27,26 @ 26-27
 single_game_VoiceContorol: subst "lbu\s+\$3,2\(\$7\)" "lbu\t$2,2($7)" @ 41
 single_game_VoiceContorol: subst "lbu\s+\$2,3\(\$7\)" "lbu\t$3,3($7)" @ 42
 single_game_VoiceContorol: subst "sll\s+\$3,\$3,8" "sll\t$2,$2,8" @ 43
-saTan0Main: insert_after "nop" @ 166
 saTan0Main: subst "addu\s+\$6,\$18,\$zero" "andi\t$6,$18,0x00ff" @ 147
-saTan0Main: subst "j\s+\.L82" ".word\t0x080213DC" @ 89
