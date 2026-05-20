@@ -3646,3 +3646,112 @@ allocbukirmd_helper_80089D10                       = 0x80089D10;  /* first-pass 
 obj_helper_80089F3C                                = 0x80089F3C;  /* first-pass subsystem tag (obj); <-obj_SetControlData_80085E4C;<-obj_SetReverbValue_80085EE4 */
 spu_helper_8008AF9C                                = 0x8008AF9C;  /* first-pass subsystem tag (spu); <-spu_SetVolume_80083B50 */
 bios_helper_8008C464                               = 0x8008C464;  /* first-pass subsystem tag (bios); ->bios_SysEnqIntRP;->bios_SysDeqIntRP;->bios_DeliverEvent */
+mode_helper_8001979C                               = 0x8001979C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_29_StageLeafUpdate'] ->[] */
+mode_helper_800198D0                               = 0x800198D0;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->[] */
+md_game_helper_8001A538                            = 0x8001A538;  /* first-pass tag(clean-anchor); md_game: <-['md_game_restart_init'] ->[] */
+mode_helper_800207C8                               = 0x800207C8;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->['single_game_getEnemyCharId'] */
+stub_80030D48                                      = 0x80030D48;  /* structural role; n=2 */
+mk_helper_800325E0                                 = 0x800325E0;  /* first-pass tag(clean-anchor); mk: <-['mk_leaf_newpos'] ->[] */
+mode_helper_80035438                               = 0x80035438;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_09_NoOp'] ->['single_game_SetWazaData'] */
+mode_helper_80036EA8                               = 0x80036EA8;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_18_UnlockAnimDispatch', 'mode_handler_06_GameTeardownVariant'] ->[] */
+mode_helper_800371E8                               = 0x800371E8;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_09_NoOp'] ->[] */
+set_global_80037234                                = 0x80037234;  /* structural role; n=7 */
+mode_helper_800388A8                               = 0x800388A8;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_09_NoOp'] ->[] */
+stub_800392B8                                      = 0x800392B8;  /* structural role; n=4 */
+mode_helper_8003984C                               = 0x8003984C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->[] */
+bios_helper_8003A174                               = 0x8003A174;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_OpenEvent'] */
+set_global_8003A42C                                = 0x8003A42C;  /* structural role; n=9 */
+irq_helper_8003A450                                = 0x8003A450;  /* first-pass tag(clean-anchor); irq: <-[] ->['bios_FileWrite_B'] */
+mode_helper_8003AE5C                               = 0x8003AE5C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_23_FrameDelay3'] ->['EndADRSound'] */
+set_field0x0_8003D774                              = 0x8003D774;  /* structural role; n=16 */
+copy_8003E2AC                                      = 0x8003E2AC;  /* structural role; n=7 */
+stub_8003F1C8                                      = 0x8003F1C8;  /* structural role; n=3 */
+stub_8003F1D4                                      = 0x8003F1D4;  /* structural role; n=4 */
+set_global_8003F1E4                                = 0x8003F1E4;  /* structural role; n=13 */
+stub_8003F268                                      = 0x8003F268;  /* structural role; n=3 */
+set_global_8003F52C                                = 0x8003F52C;  /* structural role; n=8 */
+get_global_8003F54C                                = 0x8003F54C;  /* structural role; n=7 */
+set_global_8003F5A8                                = 0x8003F5A8;  /* structural role; n=9 */
+copy_8004019C                                      = 0x8004019C;  /* structural role; n=12 */
+copy_800404A0                                      = 0x800404A0;  /* structural role; n=14 */
+rob_helper_80040A78                                = 0x80040A78;  /* first-pass tag(clean-anchor); rob: <-['rob_life_ctrl'] ->[] */
+mode_helper_80040D48                               = 0x80040D48;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->[] */
+get_global_8004153C                                = 0x8004153C;  /* structural role; n=6 */
+get_field0x8_80041554                              = 0x80041554;  /* structural role; n=12 */
+get_field0x2_80041650                              = 0x80041650;  /* structural role; n=14 */
+set_global_800420E8                                = 0x800420E8;  /* structural role; n=13 */
+set_global_8004283C                                = 0x8004283C;  /* structural role; n=10 */
+copy_80042ED8                                      = 0x80042ED8;  /* structural role; n=14 */
+stub_80043244                                      = 0x80043244;  /* structural role; n=13 */
+get_val_80043278                                   = 0x80043278;  /* structural role; n=10 */
+get_global_800457E8                                = 0x800457E8;  /* structural role; n=5 */
+player_helper_80045878                             = 0x80045878;  /* first-pass tag(clean-anchor); player: <-['player_rob_Init'] ->[] */
+mode_helper_8004659C                               = 0x8004659C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_06_GameTeardownVariant'] ->['md_game_check_mode'] */
+copy_80047ED0                                      = 0x80047ED0;  /* structural role; n=6 */
+stub_80049710                                      = 0x80049710;  /* structural role; n=2 */
+mode_helper_80049A2C                               = 0x80049A2C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->['InitFadePanel'] */
+stub_8004A938                                      = 0x8004A938;  /* structural role; n=2 */
+stub_8004E564                                      = 0x8004E564;  /* structural role; n=2 */
+stub_8004E56C                                      = 0x8004E56C;  /* structural role; n=2 */
+stub_80052720                                      = 0x80052720;  /* structural role; n=13 */
+decbs0_helper_80052754                             = 0x80052754;  /* first-pass tag(clean-anchor); decbs0: <-['decBs0'] ->[] */
+robtest_helper_80052930                            = 0x80052930;  /* first-pass tag(clean-anchor); robtest: <-['robtest_disp2'] ->[] */
+get_field0x0_80052B44                              = 0x80052B44;  /* structural role; n=14 */
+stub_80052C28                                      = 0x80052C28;  /* structural role; n=9 */
+myrobgeneidraw2_helper_8005344C                    = 0x8005344C;  /* first-pass tag(clean-anchor); myrobgeneidraw2: <-['myRobGeneiDraw2'] ->[] */
+copy_8005441C                                      = 0x8005441C;  /* structural role; n=6 */
+stub_80054434                                      = 0x80054434;  /* structural role; n=3 */
+set_field0x3B4_80055B44                            = 0x80055B44;  /* structural role; n=7 */
+gpu_helper_80060CB8                                = 0x80060CB8;  /* first-pass tag(clean-anchor); gpu: <-[] ->['saTan1GaugeInit'] */
+eff_helper_80060E38                                = 0x80060E38;  /* first-pass tag(clean-anchor); eff: <-['eff_FrameUpdate'] ->[] */
+mode_helper_800618B4                               = 0x800618B4;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_29_StageLeafUpdate'] ->[] */
+gpu_helper_80068F70                                = 0x80068F70;  /* first-pass tag(clean-anchor); gpu: <-[] ->['efc_rob_Close'] */
+copy_8006E440                                      = 0x8006E440;  /* structural role; n=16 */
+gpu_helper_8006E534                                = 0x8006E534;  /* first-pass tag(clean-anchor); gpu: <-[] ->['efc_buki_ZanzouClose'] */
+get_global_8006E8AC                                = 0x8006E8AC;  /* structural role; n=8 */
+gpu_helper_8006E8CC                                = 0x8006E8CC;  /* first-pass tag(clean-anchor); gpu: <-[] ->['gpu_LoadImage'] */
+get_global_80071C20                                = 0x80071C20;  /* structural role; n=11 */
+get_global_80077D74                                = 0x80077D74;  /* structural role; n=8 */
+get_global_80078634                                = 0x80078634;  /* structural role; n=8 */
+mode_helper_800788B0                               = 0x800788B0;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_11_PadInputCheck'] ->[] */
+set_global_80078BE0                                = 0x80078BE0;  /* structural role; n=4 */
+get_global_80078BF0                                = 0x80078BF0;  /* structural role; n=4 */
+bios_helper_80078C00                               = 0x80078C00;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_OutdatedPadInitAndStart'] */
+bios_helper_80078C9C                               = 0x80078C9C;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_InitPad'] */
+bios_helper_80078D38                               = 0x80078D38;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_StartPad'] */
+bios_helper_80078DA0                               = 0x80078DA0;  /* first-pass tag(clean-anchor); bios: <-[] ->['EnterCriticalSection'] */
+get_field0x4_80078EC0                              = 0x80078EC0;  /* structural role; n=16 */
+get_global_80078F60                                = 0x80078F60;  /* structural role; n=5 */
+copy_80078FF0                                      = 0x80078FF0;  /* structural role; n=14 */
+stub_800790A4                                      = 0x800790A4;  /* structural role; n=1 */
+dispsleepmenutex_helper_800791D8                   = 0x800791D8;  /* first-pass tag(clean-anchor); dispsleepmenutex: <-['DispSleepMenuTex'] ->[] */
+dispsleepmenutex_helper_80079A30                   = 0x80079A30;  /* first-pass tag(clean-anchor); dispsleepmenutex: <-['_CardCheckPulled2', 'DispSleepMenuTex'] ->['bb2_memchr'] */
+bios_helper_8007A318                               = 0x8007A318;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios__new_card'] */
+get_field0x0_8007CAB0                              = 0x8007CAB0;  /* structural role; n=6 */
+copy_8007D2CC                                      = 0x8007D2CC;  /* structural role; n=10 */
+get_global_8007D2F4                                = 0x8007D2F4;  /* structural role; n=5 */
+tanren_helper_8007E4DC                             = 0x8007E4DC;  /* first-pass tag(clean-anchor); tanren: <-['tanren_get_bamboo_anim_info'] ->[] */
+replay_camera_helper_8007E74C                      = 0x8007E74C;  /* first-pass tag(clean-anchor); replay_camera: <-['replay_camera_rob_back_win_near'] ->[] */
+tanren_helper_8007ED6C                             = 0x8007ED6C;  /* first-pass tag(clean-anchor); tanren: <-['tanren_get_bamboo_anim_info'] ->[] */
+copy_8007F00C                                      = 0x8007F00C;  /* structural role; n=10 */
+copy_8007F034                                      = 0x8007F034;  /* structural role; n=10 */
+copy_8007F05C                                      = 0x8007F05C;  /* structural role; n=15 */
+copy_8007F098                                      = 0x8007F098;  /* structural role; n=9 */
+copy_8007F0BC                                      = 0x8007F0BC;  /* structural role; n=10 */
+copy_8007F0E4                                      = 0x8007F0E4;  /* structural role; n=10 */
+stub_8007F10C                                      = 0x8007F10C;  /* structural role; n=8 */
+stub_8007F12C                                      = 0x8007F12C;  /* structural role; n=9 */
+stub_8007F200                                      = 0x8007F200;  /* structural role; n=6 */
+copy_8007F21C                                      = 0x8007F21C;  /* structural role; n=11 */
+copy_8007F2AC                                      = 0x8007F2AC;  /* structural role; n=10 */
+get_global_8008009C                                = 0x8008009C;  /* structural role; n=4 */
+get_global_800800AC                                = 0x800800AC;  /* structural role; n=8 */
+copy_80080228                                      = 0x80080228;  /* structural role; n=6 */
+copy_80080240                                      = 0x80080240;  /* structural role; n=6 */
+tsltm2loadimage_helper_80080828                    = 0x80080828;  /* first-pass tag(clean-anchor); tsltm2loadimage: <-['cpu_side_move_dir_4', 'tslTm2LoadImage'] ->['tslTm2LoadImage_2'] */
+tsltm2loadimage_helper_800819C4                    = 0x800819C4;  /* first-pass tag(clean-anchor); tsltm2loadimage: <-[] ->['cpu_side_move_dir_4'] */
+set_global_800863CC                                = 0x800863CC;  /* structural role; n=4 */
+copy_80089214                                      = 0x80089214;  /* structural role; n=11 */
+copy_80089240                                      = 0x80089240;  /* structural role; n=11 */
+bios_helper_800892F8                               = 0x800892F8;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_DisableEvent'] */
+set_global_8008AE7C                                = 0x8008AE7C;  /* structural role; n=13 */

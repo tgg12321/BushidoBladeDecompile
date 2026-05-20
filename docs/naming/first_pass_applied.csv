@@ -193,3 +193,112 @@ address,decision,name,subsystem,evidence
 0x80089F3C,applied,obj_helper_80089F3C,obj,<-obj_SetControlData_80085E4C;<-obj_SetReverbValue_80085EE4
 0x8008AF9C,applied,spu_helper_8008AF9C,spu,<-spu_SetVolume_80083B50
 0x8008C464,applied,bios_helper_8008C464,bios,->bios_SysEnqIntRP;->bios_SysDeqIntRP;->bios_DeliverEvent
+0x8001979C,applied,mode_helper_8001979C,subsystem,mode: <-['mode_handler_29_StageLeafUpdate'] ->[]
+0x800198D0,applied,mode_helper_800198D0,subsystem,mode: <-['mode_handler_05_NoOp'] ->[]
+0x8001A538,applied,md_game_helper_8001A538,subsystem,md_game: <-['md_game_restart_init'] ->[]
+0x800207C8,applied,mode_helper_800207C8,subsystem,mode: <-['mode_handler_05_NoOp'] ->['single_game_getEnemyCharId']
+0x80030D48,applied,stub_80030D48,structural,n=2
+0x800325E0,applied,mk_helper_800325E0,subsystem,mk: <-['mk_leaf_newpos'] ->[]
+0x80035438,applied,mode_helper_80035438,subsystem,mode: <-['mode_handler_09_NoOp'] ->['single_game_SetWazaData']
+0x80036EA8,applied,mode_helper_80036EA8,subsystem,"mode: <-['mode_handler_18_UnlockAnimDispatch', 'mode_handler_06_GameTeardownVariant'] ->[]"
+0x800371E8,applied,mode_helper_800371E8,subsystem,mode: <-['mode_handler_09_NoOp'] ->[]
+0x80037234,applied,set_global_80037234,structural,n=7
+0x800388A8,applied,mode_helper_800388A8,subsystem,mode: <-['mode_handler_09_NoOp'] ->[]
+0x800392B8,applied,stub_800392B8,structural,n=4
+0x8003984C,applied,mode_helper_8003984C,subsystem,mode: <-['mode_handler_05_NoOp'] ->[]
+0x8003A174,applied,bios_helper_8003A174,subsystem,bios: <-[] ->['bios_OpenEvent']
+0x8003A42C,applied,set_global_8003A42C,structural,n=9
+0x8003A450,applied,irq_helper_8003A450,subsystem,irq: <-[] ->['bios_FileWrite_B']
+0x8003AE5C,applied,mode_helper_8003AE5C,subsystem,mode: <-['mode_handler_23_FrameDelay3'] ->['EndADRSound']
+0x8003D774,applied,set_field0x0_8003D774,structural,n=16
+0x8003E2AC,applied,copy_8003E2AC,structural,n=7
+0x8003F1C8,applied,stub_8003F1C8,structural,n=3
+0x8003F1D4,applied,stub_8003F1D4,structural,n=4
+0x8003F1E4,applied,set_global_8003F1E4,structural,n=13
+0x8003F268,applied,stub_8003F268,structural,n=3
+0x8003F52C,applied,set_global_8003F52C,structural,n=8
+0x8003F54C,applied,get_global_8003F54C,structural,n=7
+0x8003F5A8,applied,set_global_8003F5A8,structural,n=9
+0x8004019C,applied,copy_8004019C,structural,n=12
+0x800404A0,applied,copy_800404A0,structural,n=14
+0x80040A78,applied,rob_helper_80040A78,subsystem,rob: <-['rob_life_ctrl'] ->[]
+0x80040D48,applied,mode_helper_80040D48,subsystem,mode: <-['mode_handler_05_NoOp'] ->[]
+0x8004153C,applied,get_global_8004153C,structural,n=6
+0x80041554,applied,get_field0x8_80041554,structural,n=12
+0x80041650,applied,get_field0x2_80041650,structural,n=14
+0x800420E8,applied,set_global_800420E8,structural,n=13
+0x8004283C,applied,set_global_8004283C,structural,n=10
+0x80042ED8,applied,copy_80042ED8,structural,n=14
+0x80043244,applied,stub_80043244,structural,n=13
+0x80043278,applied,get_val_80043278,structural,n=10
+0x800457E8,applied,get_global_800457E8,structural,n=5
+0x80045878,applied,player_helper_80045878,subsystem,player: <-['player_rob_Init'] ->[]
+0x8004659C,applied,mode_helper_8004659C,subsystem,mode: <-['mode_handler_06_GameTeardownVariant'] ->['md_game_check_mode']
+0x80047ED0,applied,copy_80047ED0,structural,n=6
+0x80049710,applied,stub_80049710,structural,n=2
+0x80049A2C,applied,mode_helper_80049A2C,subsystem,mode: <-['mode_handler_05_NoOp'] ->['InitFadePanel']
+0x8004A938,applied,stub_8004A938,structural,n=2
+0x8004E564,applied,stub_8004E564,structural,n=2
+0x8004E56C,applied,stub_8004E56C,structural,n=2
+0x80052720,applied,stub_80052720,structural,n=13
+0x80052754,applied,decbs0_helper_80052754,subsystem,decbs0: <-['decBs0'] ->[]
+0x80052930,applied,robtest_helper_80052930,subsystem,robtest: <-['robtest_disp2'] ->[]
+0x80052B44,applied,get_field0x0_80052B44,structural,n=14
+0x80052C28,applied,stub_80052C28,structural,n=9
+0x8005344C,applied,myrobgeneidraw2_helper_8005344C,subsystem,myrobgeneidraw2: <-['myRobGeneiDraw2'] ->[]
+0x8005441C,applied,copy_8005441C,structural,n=6
+0x80054434,applied,stub_80054434,structural,n=3
+0x80055B44,applied,set_field0x3B4_80055B44,structural,n=7
+0x80060CB8,applied,gpu_helper_80060CB8,subsystem,gpu: <-[] ->['saTan1GaugeInit']
+0x80060E38,applied,eff_helper_80060E38,subsystem,eff: <-['eff_FrameUpdate'] ->[]
+0x800618B4,applied,mode_helper_800618B4,subsystem,mode: <-['mode_handler_29_StageLeafUpdate'] ->[]
+0x80068F70,applied,gpu_helper_80068F70,subsystem,gpu: <-[] ->['efc_rob_Close']
+0x8006E440,applied,copy_8006E440,structural,n=16
+0x8006E534,applied,gpu_helper_8006E534,subsystem,gpu: <-[] ->['efc_buki_ZanzouClose']
+0x8006E8AC,applied,get_global_8006E8AC,structural,n=8
+0x8006E8CC,applied,gpu_helper_8006E8CC,subsystem,gpu: <-[] ->['gpu_LoadImage']
+0x80071C20,applied,get_global_80071C20,structural,n=11
+0x80077D74,applied,get_global_80077D74,structural,n=8
+0x80078634,applied,get_global_80078634,structural,n=8
+0x800788B0,applied,mode_helper_800788B0,subsystem,mode: <-['mode_handler_11_PadInputCheck'] ->[]
+0x80078BE0,applied,set_global_80078BE0,structural,n=4
+0x80078BF0,applied,get_global_80078BF0,structural,n=4
+0x80078C00,applied,bios_helper_80078C00,subsystem,bios: <-[] ->['bios_OutdatedPadInitAndStart']
+0x80078C9C,applied,bios_helper_80078C9C,subsystem,bios: <-[] ->['bios_InitPad']
+0x80078D38,applied,bios_helper_80078D38,subsystem,bios: <-[] ->['bios_StartPad']
+0x80078DA0,applied,bios_helper_80078DA0,subsystem,bios: <-[] ->['EnterCriticalSection']
+0x80078EC0,applied,get_field0x4_80078EC0,structural,n=16
+0x80078F60,applied,get_global_80078F60,structural,n=5
+0x80078FF0,applied,copy_80078FF0,structural,n=14
+0x800790A4,applied,stub_800790A4,structural,n=1
+0x800791D8,applied,dispsleepmenutex_helper_800791D8,subsystem,dispsleepmenutex: <-['DispSleepMenuTex'] ->[]
+0x80079A30,applied,dispsleepmenutex_helper_80079A30,subsystem,"dispsleepmenutex: <-['_CardCheckPulled2', 'DispSleepMenuTex'] ->['bb2_memchr']"
+0x8007A318,applied,bios_helper_8007A318,subsystem,bios: <-[] ->['bios__new_card']
+0x8007CAB0,applied,get_field0x0_8007CAB0,structural,n=6
+0x8007D2CC,applied,copy_8007D2CC,structural,n=10
+0x8007D2F4,applied,get_global_8007D2F4,structural,n=5
+0x8007E4DC,applied,tanren_helper_8007E4DC,subsystem,tanren: <-['tanren_get_bamboo_anim_info'] ->[]
+0x8007E74C,applied,replay_camera_helper_8007E74C,subsystem,replay_camera: <-['replay_camera_rob_back_win_near'] ->[]
+0x8007ED6C,applied,tanren_helper_8007ED6C,subsystem,tanren: <-['tanren_get_bamboo_anim_info'] ->[]
+0x8007F00C,applied,copy_8007F00C,structural,n=10
+0x8007F034,applied,copy_8007F034,structural,n=10
+0x8007F05C,applied,copy_8007F05C,structural,n=15
+0x8007F098,applied,copy_8007F098,structural,n=9
+0x8007F0BC,applied,copy_8007F0BC,structural,n=10
+0x8007F0E4,applied,copy_8007F0E4,structural,n=10
+0x8007F10C,applied,stub_8007F10C,structural,n=8
+0x8007F12C,applied,stub_8007F12C,structural,n=9
+0x8007F200,applied,stub_8007F200,structural,n=6
+0x8007F21C,applied,copy_8007F21C,structural,n=11
+0x8007F2AC,applied,copy_8007F2AC,structural,n=10
+0x8008009C,applied,get_global_8008009C,structural,n=4
+0x800800AC,applied,get_global_800800AC,structural,n=8
+0x80080228,applied,copy_80080228,structural,n=6
+0x80080240,applied,copy_80080240,structural,n=6
+0x80080828,applied,tsltm2loadimage_helper_80080828,subsystem,"tsltm2loadimage: <-['cpu_side_move_dir_4', 'tslTm2LoadImage'] ->['tslTm2LoadImage_2']"
+0x800819C4,applied,tsltm2loadimage_helper_800819C4,subsystem,tsltm2loadimage: <-[] ->['cpu_side_move_dir_4']
+0x800863CC,applied,set_global_800863CC,structural,n=4
+0x80089214,applied,copy_80089214,structural,n=11
+0x80089240,applied,copy_80089240,structural,n=11
+0x800892F8,applied,bios_helper_800892F8,subsystem,bios: <-[] ->['bios_DisableEvent']
+0x8008AE7C,applied,set_global_8008AE7C,structural,n=13
