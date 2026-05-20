@@ -3825,3 +3825,19 @@ gte_mvmva_8007EB4C                                 = 0x8007EB4C;  /* GTE: mvmva 
 gte_outerprod_8007F150                             = 0x8007F150;  /* GTE: op outer/cross product */
 gte_outerprod_8007F1A8                             = 0x8007F1A8;  /* GTE: op outer/cross product */
 gte_rtpt_8007F24C                                  = 0x8007F24C;  /* GTE: rtpt perspective transform of 3 verts */
+motion_CheckSituation_wrapper_80047530                 = 0x80047530;  /* thin pass-through wrapper for motion_CheckSituation */
+saEft03Start_wrapper_80047550                          = 0x80047550;  /* thin pass-through wrapper for saEft03Start */
+md_menu_logo_init_8003B484                             = 0x8003B484;  /* sets flag D_800A3712 + 3 config bytes from arg, calls func_8003AF40(1)+md_menu_logo_exec; logo-mode init */
+saTan2_gauge_set_disp_param_80069A8C                   = 0x80069A8C;  /* sets arg disp-param bytes 4/5/6 (8/8/8 or 0x31) from saTan2 gauge active-flag */
+saTan2_gauge_set_disp_param_80069A30                   = 0x80069A30;  /* sibling of 80069A8C: sets disp-param bytes 4/5/6 (0x22 or 0x4C/0x6C) from gauge flag */
+rob_genei_draw_check_80027A58                          = 0x80027A58;  /* gated player-afterimage draw: timing check (fields 0x86/0x88/0x8A) then game_GetPlayerData + myRobGeneiDraw, resets trigger */
+find_id_in_table_80087DA0                              = 0x80087DA0;  /* linear search of stride-54 table D_800F4E28 for halfword==arg; records found index to D_8010280A */
+memcard_access_section_list_8003D478                   = 0x8003D478;  /* iterates directive byte-list, calls _McAccessSection per non-skip entry (stride-8 data); 0x20/0x0A control codes */
+coli_calc_motion_slots_8003D7B4                        = 0x8003D7B4;  /* indexes D_800A3D40 (stride 0x18) by arg; 6-slot loop calling coli_calc_motion, accumulates bits into field 0xC */
+battle_switch_reinit_800342A0                          = 0x800342A0;  /* on battle-switch-data change (D_800A3874!=D_800A389B): reset state flags, reload config tables, gpu_InitDisplay */
+check_dodge_kawashi_80030BA8                           = 0x80030BA8;  /* scan 12-entry table D_80106A7A (stride0x64) for in-range valid object near fighter; trigger motion_shift_check_e_kawashi dodge + event dispatch */
+special_camera_check_pos_outside_ground_wrap_800451A0  = 0x800451A0;  /* thin wrapper: calls special_camera_check_pos_outside_ground_80036E34 */
+title_mv_exec2_wrapper_8005B58C                        = 0x8005B58C;  /* thin pass-through wrapper for title_mv_exec2 */
+saTan4GaugeInit_wrapper_80084948                       = 0x80084948;  /* thin pass-through wrapper for saTan4GaugeInit */
+irq_AcknowledgeVblank_wrapper_800892D4                 = 0x800892D4;  /* thin pass-through wrapper for irq_AcknowledgeVblank */
+coli_HitPauseKatana_2_wrapper_80089A24                 = 0x80089A24;  /* thin pass-through wrapper for coli_HitPauseKatana_2 */
