@@ -3441,3 +3441,10 @@ gte_nct_wrapper_80054440                     = 0x80054440;  /* GTE Normal-Color-
 gpu_draw_color_prim_8007B4D0                 = 0x8007B4D0;  /* GPU draw helper: gpu_DebugCheckRect(str) + pack RGB + draw via ctx fn-ptr D_8009BE6C[8] */
 gpu_draw_color_prim_stp_8007B564             = 0x8007B564;  /* as gpu_draw_color_prim_8007B4D0 but sets color bit31 (STP/semi-transparent) */
 gpu_copy_draw_packet_8007B9B0                = 0x8007B9B0;  /* GPU: copies 0x50-byte primitive packet (forces white 0xFFFFFF), submits via ctx D_8009BE6C[8] */
+graph_add_edge_80017848                        = 0x80017848;  /* graph edge insertion: nodes at $s2[0xC] stride64 (flag 0x18, adj-counts 0x1C/0x20, adj-lists 0x24/0x2C), edges at $s2[0x */
+calc_fighter_separation_vec_8002BC68           = 0x8002BC68;  /* inter-fighter distance (sqrt LUT D_8008D118) between pts D_80101FA0/A8 & D_801023EC/F4 (0x44C apart=fighter stride); wri */
+math_sqrt_800526A0                             = 0x800526A0;  /* fixed-pt sqrt via GTE leading-zero-count: mtc2 $a0->r30(LZCS), mfc2 r31(LZCR) to normalize, index LUT D_80015620, halve  */
+calc_line_seg_intersect_8005763C               = 0x8005763C;  /* 2D line-seg intersection: all coords sra>>3 (1/8 fixed-pt), dx/dy deltas of 2 segs, mult/div cross-products w/ div0(brea */
+coli_find_nearest_edge_hit_80057ACC            = 0x80057ACC;  /* loops polygons($s6: count+vert-array, 8B entries)->edges; intersects each edge vs actor move-seg via func_8005763C; trac */
+matrix_scale_3x3_rows_8007E8DC                 = 0x8007E8DC;  /* scales rows of a GTE 3x3 matrix (5-word/9-halfword packed layout m00,m01|m02,m10|m11,m12|m20,m21|m22) in place: row0*$a1 */
+matrix_scale_3x3_cols_8007EDBC                 = 0x8007EDBC;  /* column-scale counterpart of matrix_scale_3x3_rows: col0*$a1[0], col1*$a1[4], col2*$a1[8] of the packed 3x3 matrix, 4.12  */

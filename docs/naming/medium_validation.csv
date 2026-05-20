@@ -1,5 +1,5 @@
 address,decision,final_name,confidence,reason
-0x80054440,applied,gte_nct_wrapper_80054440,high(subsystem-validated),sole-caller/cluster re-confirmed in current call graph
+h(subsystem-validated),applied,,high,(reason normalized)
 0x8007A370,rejected_misnomer,,-,proposed pad_press_control_helper but actual sole caller is memcard_event_init_800375EC; anchor wrong
 0x8007A3C8,rejected_misnomer,,-,proposed pad_press_control_helper but actual sole caller is memcard_event_init_800375EC; anchor wrong
 0x8007B4D0,applied,gpu_draw_color_prim_8007B4D0,high,GPU subsystem confirmed by body (gpu_DebugCheckRect call / GPU context D_8009BE6C draw fn-ptr / packet copy)
@@ -110,3 +110,10 @@ address,decision,final_name,confidence,reason
 0x8003DBE4,already_named,tslLineG5Init_helper_8003DBE4,-,proposals.csv stale; named_syms already has tslLineG5Init_helper_8003DBE4 (proposed was tslLineG5Init_helper_8003DBE4)
 0x8003FA24,already_named,tslPrintScreen_helper_8003FA24,-,proposals.csv stale; named_syms already has tslPrintScreen_helper_8003FA24 (proposed was tslPrintScreen_helper_8003FA24)
 0x8003FECC,already_named,tslPrintScreen_helper_8003FECC,-,proposals.csv stale; named_syms already has tslPrintScreen_helper_8003FECC (proposed was tslPrintScreen_helper_8003FECC)
+0x80017848,applied,graph_add_edge_80017848,medium,manual RE (body-verified) residual island
+0x8002BC68,applied,calc_fighter_separation_vec_8002BC68,medium,manual RE (body-verified) residual island
+0x800526A0,applied,math_sqrt_800526A0,high,manual RE (body-verified) residual island
+0x8005763C,applied,calc_line_seg_intersect_8005763C,high,manual RE (body-verified) residual island
+0x80057ACC,applied,coli_find_nearest_edge_hit_80057ACC,medium,manual RE (body-verified) residual island
+0x8007E8DC,applied,matrix_scale_3x3_rows_8007E8DC,medium,manual RE (body-verified) residual island
+0x8007EDBC,applied,matrix_scale_3x3_cols_8007EDBC,medium,manual RE (body-verified) residual island
