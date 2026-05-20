@@ -1037,6 +1037,22 @@ PYEOF
         python3 tools/regfix_suggest.py "$FUNC_NAME" "$@" 2>&1
         ;;
 
+    sig-reconcile)
+        # Detect cross-jump call-merge: compare jalr/jal counts build vs target,
+        # list called symbols. See .claude/rules/cross-jump-call-merge.md
+        FUNC_NAME="$1"; shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh sig-reconcile <func>"; exit 1; }
+        python3 tools/sig_reconcile.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
+    sig-search)
+        # Resolve fn-ptr arg counts to match the target jalr count (grounded in
+        # target asm; never blind diff-minimising). --apply writes base.c.
+        FUNC_NAME="$1"; shift || true
+        [ -z "$FUNC_NAME" ] && { echo "Usage: dc.sh sig-search <func> [--apply]"; exit 1; }
+        python3 tools/sig_search.py "$FUNC_NAME" "$@" 2>&1
+        ;;
+
     frame-shift)
         # Auto-generate the frame-cascade regfix rules when GCC's frame size
         # differs from target by N bytes. Emits prologue/epilogue substs +
