@@ -5,10 +5,10 @@ h(subsystem-validated),applied,,high,(reason normalized)
 0x8007B4D0,applied,gpu_draw_color_prim_8007B4D0,high,GPU subsystem confirmed by body (gpu_DebugCheckRect call / GPU context D_8009BE6C draw fn-ptr / packet copy)
 0x8007B564,applied,gpu_draw_color_prim_stp_8007B564,high,GPU subsystem confirmed by body (gpu_DebugCheckRect call / GPU context D_8009BE6C draw fn-ptr / packet copy)
 0x8007B9B0,applied,gpu_copy_draw_packet_8007B9B0,high,GPU subsystem confirmed by body (gpu_DebugCheckRect call / GPU context D_8009BE6C draw fn-ptr / packet copy)
-0x80045814,rejected_misnomer,,-,Kengo 'replay_camera_check_stage' but body is 2-insn getter: return &D_800A9D10
-0x8005507C,rejected_misnomer,,-,Kengo 'replay_camera_check_stage' but body is 2-insn getter: return &D_800EFB0C
-0x8005508C,rejected_misnomer,,-,Kengo 'replay_camera_check_stage' but body is 2-insn getter: return &D_80101E1C
-0x80054410,rejected_misnomer,,-,Kengo 'efc_ougi_Init' but body is 2-insn setter: D_800A33F0 = arg
+0x80045814,applied,get_ptr_D_800A9D10_80045814,high,accurate getter/setter name; clears the Kengo size-collision misnomer
+0x8005507C,applied,get_ptr_D_800EFB0C_8005507C,high,accurate getter/setter name; clears the Kengo size-collision misnomer
+0x8005508C,applied,get_ptr_D_80101E1C_8005508C,high,accurate getter/setter name; clears the Kengo size-collision misnomer
+0x80054410,applied,set_D_800A33F0_80054410,high,accurate getter/setter name; clears the Kengo size-collision misnomer
 0x8007B114,already_named,gpu_SetDebugLevel_8007B114,-,proposals.csv stale; named_syms already has gpu_SetDebugLevel_8007B114 (proposed was gpu_local_8007B114)
 0x8007B244,already_named,gpu_DrawSyncCallback,-,proposals.csv stale; named_syms already has gpu_DrawSyncCallback (proposed was gpu_local_8007B244)
 0x8007BC08,already_named,cpu_copy_display_buffer_and_sync_8007BC08,-,proposals.csv stale; named_syms already has cpu_copy_display_buffer_and_sync_8007BC08 (proposed was gpu_local_8007BC08)

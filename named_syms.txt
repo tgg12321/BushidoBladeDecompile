@@ -3448,3 +3448,7 @@ calc_line_seg_intersect_8005763C               = 0x8005763C;  /* 2D line-seg int
 coli_find_nearest_edge_hit_80057ACC            = 0x80057ACC;  /* loops polygons($s6: count+vert-array, 8B entries)->edges; intersects each edge vs actor move-seg via func_8005763C; trac */
 matrix_scale_3x3_rows_8007E8DC                 = 0x8007E8DC;  /* scales rows of a GTE 3x3 matrix (5-word/9-halfword packed layout m00,m01|m02,m10|m11,m12|m20,m21|m22) in place: row0*$a1 */
 matrix_scale_3x3_cols_8007EDBC                 = 0x8007EDBC;  /* column-scale counterpart of matrix_scale_3x3_rows: col0*$a1[0], col1*$a1[4], col2*$a1[8] of the packed 3x3 matrix, 4.12  */
+get_ptr_D_800A9D10_80045814                    = 0x80045814;  /* returns &D_800A9D10 (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
+get_ptr_D_800EFB0C_8005507C                    = 0x8005507C;  /* returns &D_800EFB0C (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
+get_ptr_D_80101E1C_8005508C                    = 0x8005508C;  /* returns &D_80101E1C (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
+set_D_800A33F0_80054410                        = 0x80054410;  /* D_800A33F0 = arg (2-insn setter); was Kengo-misnomer 'efc_ougi_Init' */
