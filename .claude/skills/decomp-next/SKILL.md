@@ -605,24 +605,42 @@ Report one line:
 
 ## §9. RESILIENCE — DO NOT QUIT
 
-### 9.1 BANNED LANGUAGE
+### 9.1 STOPPING IS JUDGED SEMANTICALLY (you cannot paraphrase your way out)
 
-The Stop-event hook (`tools/hooks/grind_check.sh`) blocks these phrases when the active marker is set and the build is mismatch. They're shorthand for quitting and you must not use them:
+The Stop-event hook (`tools/hooks/grind_check.sh`) no longer matches a fixed
+list of "quit phrases" — that was trivially evaded by rewording, and publishing
+the list here actively trained the evasion. Instead, when you end your turn with
+an active function still unmatched, a separate **resilience judge** (a fresh
+Sonnet session defined in `.claude/agents/resilience-judge.md`) reads your final
+message plus the build/iter-log state and rules BLOCK or ALLOW on *meaning*.
 
-- "next session", "future session", "let the next session", "pick up from here"
-- "wrap up", "wrapping up", "to wrap", "final summary", "progress summary"
-- "diminishing returns", "good place to stop", "let me leave it here", "let me wrap"
-- "for now", "for this session", "this iteration", "is enough for one session"
-- "I've made [substantial/significant] progress"
-- "given the volume", "[N]+ more rules", "many hours", "[N]+ hours", "[N] iterations"
-- "I've exhausted [angles]", "exhausted .* angle", "session ends? before", "ending this session"
-- "ground hard", "honestly at this point", "one more push", "one more attempt", "final attempt"
-- "tractable bound", "exceeds the tool", "cannot be coerced", "structural .* cannot be"
-- "regalloc cannot", "register allocation cannot"
-- "[N]+ attempts.{0,40}none", "reached -[N]", "still requires ~?[N]"
-- "no improvement after", "reached the limit", "path [a-z] exhausted"
+It blocks a stop no matter how it is worded — whether you call it a "toolchain
+limitation," a "plateau," "exec_game-class," a "decision point that's yours to
+make," "here are the options," "should I keep going?", or you name an untried
+avenue and then ask about it instead of doing it, or you write a polished
+progress-summary as an ending. Rewording does not help; the judge reads intent,
+not keywords. (This whole mechanism exists because keyword matching let exactly
+that behavior slip through.)
 
-If you notice yourself reaching for any of these: that's the cue to switch technique (§5 next rung), not to wrap.
+It ALLOWS a stop only when: the function MATCHES, the user explicitly told you
+to stop / pause / redirect, or the machine is physically broken (catastrophic
+external state). "Difficulty" is never one of them.
+
+Two rules the judge enforces that are worth internalizing:
+
+- **Rigor before narrative.** Any claim that the function "can't be matched in
+  pure C / is a toolchain or compiler limit" is rejected unless a cc1psx
+  calibration log exists (`tmp/cc1psx_calibration_<func>.md`). The original PsyQ
+  compiler (`tools/cc1psx.exe`) is available — if you want to assert a compiler
+  divergence, run it and show it also misses, first. Until then the claim has no
+  standing and you keep working.
+- **Name-an-avenue → try-it.** If you can name a next thing to try, you may not
+  end your turn to ask about it. Take the action.
+
+If you feel the urge to stop, that urge is the cue to switch technique (§5 next
+rung) — not to find better words for quitting. The judge is your backstop, not
+your adversary: it catches the rationalized-give-up failure mode that even
+capable agents fall into.
 
 ### 9.2 BANNED ACTIONS
 
