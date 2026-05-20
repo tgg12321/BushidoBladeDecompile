@@ -86,6 +86,7 @@ tmp/
 .claude/*
 !.claude/skills/
 !.claude/rules/
+!.claude/agents/
 !.claude/settings.json
 .crush/
 
@@ -143,3 +144,4 @@ asm/data/800.rodata.s
 /Decompile*
 /Cïº*
 /CODEX_HANDOFF_*.md
+.bb2_resilience_log.json

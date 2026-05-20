@@ -1,129 +1,97 @@
 #!/bin/bash
 # Stop-event hook. Fires when the agent finishes its turn.
 #
-# Purpose: catch voluntary-stop attempts. Per the user's directive, the agent
-# may NOT decide to end work on an active function. Stopping is allowed only
-# when:
-#   - dc.sh verify <active> reports MATCH
-#   - the classifier returned permanently_blocked:* (already gated out by
-#     dc.sh next), or
-#   - the user explicitly told the agent to stop in this session.
+# Purpose: catch voluntary-stop attempts on an active, unmatched function.
+# Per the user's standing directive, the agent may NOT decide to end work on
+# an active function. Stopping is allowed only when the function MATCHES, the
+# user explicitly authorized stopping, or the machine is physically broken.
 #
-# This hook reads the transcript, extracts the assistant's last turn, and
-# checks for stop-language patterns ("next session", "wrap up", "preserved
-# state", etc.). If detected AND .bb2_active_func is set AND the build is
-# MISMATCH, it returns decision=block with a reason that forces the agent
-# to keep working.
+# ARCHITECTURE (rewritten 2026-05-19): this hook does the cheap, deterministic
+# gating, then delegates the actual stop/continue judgment to a SEMANTIC LLM
+# JUDGE (tools/hooks/resilience_judge.sh, default Sonnet). The previous version
+# grepped the agent's text for a fixed list of "quit phrases" — but a capable
+# agent paraphrases around any literal blocklist (and publishing the list, as
+# the skill did, actively trained the evasion). The judge rules on MEANING:
+# is this a disguised give-up ("toolchain limitation", "your call", "here are
+# the options", naming-an-untried-avenue-then-stopping) or a legitimate stop?
 #
-# Hook protocol: read JSON on stdin with {session_id, transcript_path,
-# stop_hook_active}. If stop_hook_active=true, exit 0 (we're already in a
-# hook-response loop; don't re-trigger). Otherwise emit JSON on stdout with
-# {decision: "block", reason: "..."} to keep the agent going.
-
-set -e
+# Gate order (cheap -> expensive; bail early to avoid LLM cost):
+#   1. stop_hook_active   -> exit (don't recurse)
+#   2. transcript present -> else exit
+#   3. project root + active marker resolved -> else exit
+#   4. operator override files -> exit
+#   5. active marker non-empty -> else allow stop
+#   6. dc.sh verify MATCH -> allow stop (function done)
+#   7. recent decomp activity (last 30 tool calls) -> else allow stop
+#      (agent isn't decomping; marker is incidental)
+#   8. SEMANTIC JUDGE -> BLOCK or ALLOW
+#
+# Hook protocol: read JSON on stdin {session_id, transcript_path,
+# stop_hook_active}. Emit {decision:"block", reason:"..."} on stdout to keep
+# the agent going; emit nothing + exit 0 to allow the stop.
+#
+# We deliberately do NOT `set -e`: gating fails OPEN (if we can't determine
+# there's active unmatched work, allowing the stop is the only sane default),
+# but once active-unmatched-decomp is established, the JUDGE fails CLOSED
+# (errors -> BLOCK), so an agent can't escape by breaking the judge.
 
 INPUT=$(cat)
 
-# If we're already inside a stop-hook-triggered response, do nothing.
-# Otherwise we'd loop forever.
 HOOK_ACTIVE=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print('true' if d.get('stop_hook_active') else 'false')" 2>/dev/null || echo "false")
-if [ "$HOOK_ACTIVE" = "true" ]; then
-    exit 0
-fi
+[ "$HOOK_ACTIVE" = "true" ] && exit 0
 
 TRANSCRIPT=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('transcript_path',''))" 2>/dev/null || echo "")
-if [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; then
-    exit 0
-fi
+{ [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; } && exit 0
 
-# Resolve project root STRICTLY from cwd's git toplevel. Do NOT fall
-# back to CLAUDE_PROJECT_DIR or the script's own location — those would
-# cause the hook to check main's marker when the session is actually
-# elsewhere (or in another project entirely), which produced false-
-# positive blocks for agents doing unrelated work.
-#
-# Each worktree has its own .bb2_active_func; we check the marker for
-# the worktree the session is currently in. If cwd is outside any git
-# repo, exit silently.
+# Project root STRICTLY from cwd's git toplevel (per-worktree marker).
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
-if [ -z "$PROJECT_ROOT" ] || [ ! -d "$PROJECT_ROOT" ]; then
-    exit 0
-fi
-
+{ [ -z "$PROJECT_ROOT" ] || [ ! -d "$PROJECT_ROOT" ]; } && exit 0
 case "$PROJECT_ROOT" in
     [A-Za-z]:[/\\]*)
         DRIVE=$(echo "$PROJECT_ROOT" | cut -c1 | tr '[:upper:]' '[:lower:]')
-        REST="${PROJECT_ROOT#?:}"
-        REST="${REST//\\//}"
+        REST="${PROJECT_ROOT#?:}"; REST="${REST//\\//}"
         PROJECT_ROOT="/$DRIVE$REST"
         ;;
 esac
 
 ACTIVE_FILE="$PROJECT_ROOT/.bb2_active_func"
 
-# Operator override (permanent for the session): if .bb2_stop_hook_off exists,
-# the hook never fires. Use when the user has redirected the agent to a
-# non-decomp task (e.g., naming work in a sibling worktree) where the
-# active-function marker is irrelevant. Remove the file to re-enable.
-if [ -f "$PROJECT_ROOT/.bb2_stop_hook_off" ]; then
-    exit 0
-fi
-
-# Operator override (one-shot): if .bb2_stop_hook_suppress_once exists,
-# consume it and allow this single stop. Useful for: "I'm wrapping up a
-# parallel task before returning to the active function."
+# Operator overrides.
+[ -f "$PROJECT_ROOT/.bb2_stop_hook_off" ] && exit 0
 if [ -f "$PROJECT_ROOT/.bb2_stop_hook_suppress_once" ]; then
     rm -f "$PROJECT_ROOT/.bb2_stop_hook_suppress_once"
     exit 0
 fi
 
-# Fast path: no active marker in THIS worktree, allow stop.
-if [ ! -s "$ACTIVE_FILE" ]; then
-    exit 0
-fi
-
+# No active marker -> allow stop.
+[ ! -s "$ACTIVE_FILE" ] && exit 0
 ACTIVE=$(tr -d '[:space:]' < "$ACTIVE_FILE")
-if [ -z "$ACTIVE" ]; then
-    exit 0
-fi
+[ -z "$ACTIVE" ] && exit 0
 
-# Check whether the function actually matches. If MATCH, the marker is stale
-# (would have been cleared by the next git commit anyway) — allow stop.
+# Allow stop if the function actually matches (marker is stale/about-to-clear).
 case "$PROJECT_ROOT" in
     /[a-zA-Z]/*) WSL_ROOT="/mnt$PROJECT_ROOT" ;;
     *)           WSL_ROOT="$PROJECT_ROOT" ;;
 esac
+if command -v wsl >/dev/null 2>&1; then
+    VERIFY=$(wsl bash -c "cd '$WSL_ROOT' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null | head -1)
+    case "$VERIFY" in
+        *": MATCH "*) exit 0 ;;
+    esac
+else
+    VERIFY="(verify unavailable — wsl not on PATH)"
+fi
 
-VERIFY=$(wsl bash -c "cd '$WSL_ROOT' && bash tools/dc.sh verify $ACTIVE 2>&1" 2>/dev/null | head -1)
-case "$VERIFY" in
-    *": MATCH "*) exit 0 ;;
-esac
-
-# Function is unmatched. Two-step check before considering a block:
-#
-#   (1) Is the agent ACTUALLY doing decomp work in this session? An active
-#       marker alone isn't enough — markers can be set by side effects
-#       (`next-cheat-cleanup --preview`) or carried over from previous
-#       agents in the same worktree. We count recent decomp-related tool
-#       calls: Edit/Write of src/*.c / regfix.txt / asmfix.txt, or Bash
-#       running dc.sh attempt/verify/diff/permute/build*/recipes/etc.
-#       If zero in the last 30 tool calls, this agent isn't decomping;
-#       don't block their stop. Otherwise, fall through to (2).
-#
-#   (2) Did the agent write stop-language in their recent text? Only if
-#       both checks pass do we block — the previous "marker set →
-#       always block" rule produced false positives for tooling/docs/
-#       naming agents who happened to inherit a marker.
-#
-# Both extractions run in one python pass for efficiency.
-OUTPUT=$(python3 - "$TRANSCRIPT" <<'PY' 2>/dev/null || true
+# Extract: (a) recent decomp-activity count (last 30 tool calls), and
+# (b) the recent conversation (last messages, both roles) to a context file
+# for the judge. One python pass.
+CTX_FILE=$(mktemp -t bb2grind.XXXXXX 2>/dev/null || echo "$PROJECT_ROOT/.bb2_grind_ctx.tmp")
+DECOMP_COUNT=$(python3 - "$TRANSCRIPT" "$CTX_FILE" <<'PY' 2>/dev/null || echo 0
 import json, re, sys
-
-path = sys.argv[1]
-text_chunks = []
-tool_uses = []
+path, ctx_out = sys.argv[1], sys.argv[2]
+events = []
 try:
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(path, encoding='utf-8') as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -132,222 +100,134 @@ try:
                 ev = json.loads(line)
             except Exception:
                 continue
-            if ev.get('type') != 'assistant':
-                continue
-            msg = ev.get('message') or {}
-            content = msg.get('content') or []
-            for block in content:
-                if not isinstance(block, dict):
-                    continue
-                btype = block.get('type')
-                if btype == 'text':
-                    text_chunks.append(block.get('text', ''))
-                elif btype == 'tool_use':
-                    tool_uses.append(block)
+            if ev.get('type') in ('user', 'assistant'):
+                events.append(ev)
 except Exception:
     pass
 
-# Decomp-activity classifier on the last 30 tool calls.
-DECOMP_PATH_SUFFIX = ('regfix.txt', 'asmfix.txt', 'regfix_stage2.txt')
-DECOMP_BASH_SUBSTRS = (
-    'dc.sh attempt', 'dc.sh verify', 'dc.sh diff',
-    'dc.sh permute', 'dc.sh smart', 'dc.sh recipes',
-    'dc.sh apply-recipe', 'dc.sh gen-regfix', 'dc.sh add-regfix',
-    'dc.sh build-active', 'dc.sh inline-', 'dc.sh score',
-    'dc.sh frame-shift', 'dc.sh fix-', 'dc.sh asmfix-slice',
-    'dc.sh analysis', 'dc.sh dump-text', 'dc.sh classify',
-    'dc.sh validate-regfix', 'dc.sh suggest', 'dc.sh next',
-)
-# Standalone `make` invocation (not `make -n` of unrelated stuff —
-# accept the rare false positive).
+DECOMP_BASH = ('dc.sh attempt','dc.sh verify','dc.sh diff','dc.sh permute','dc.sh smart',
+    'dc.sh recipes','dc.sh apply-recipe','dc.sh gen-regfix','dc.sh add-regfix','dc.sh build-active',
+    'dc.sh inline-','dc.sh score','dc.sh fix-','dc.sh asmfix-slice','dc.sh dump-text','dc.sh classify',
+    'dc.sh suggest','dc.sh next','bb2_permuter','cc1psx','m2c','kengo_ref')
 MAKE_RE = re.compile(r'(^|[;&|`(\s])make(\s|$)')
+SUFFIX = ('regfix.txt','asmfix.txt','regfix_stage2.txt')
 
-decomp_count = 0
+tool_uses, convo = [], []
+for ev in events:
+    role = ev.get('type')
+    msg = ev.get('message') or {}
+    content = msg.get('content')
+    texts = []
+    if isinstance(content, str):
+        texts.append(content)
+    elif isinstance(content, list):
+        for b in content:
+            if not isinstance(b, dict):
+                continue
+            if b.get('type') == 'text':
+                texts.append(b.get('text', ''))
+            elif b.get('type') == 'tool_use':
+                tool_uses.append(b)
+    txt = '\n'.join(t for t in texts if t).strip()
+    if txt:
+        convo.append((role, txt))
+
+decomp = 0
 for tu in tool_uses[-30:]:
-    name = tu.get('name', '')
-    inp = tu.get('input') or {}
-    if name in ('Edit', 'Write', 'MultiEdit', 'NotebookEdit'):
-        fp = inp.get('file_path', '')
-        fp_norm = fp.replace('\\', '/').lower()
-        if '/src/' in fp_norm and fp_norm.endswith('.c'):
-            decomp_count += 1
-        elif fp_norm.endswith(DECOMP_PATH_SUFFIX):
-            decomp_count += 1
+    name = tu.get('name', ''); inp = tu.get('input') or {}
+    if name in ('Edit','Write','MultiEdit','NotebookEdit'):
+        fp = (inp.get('file_path','') or '').replace('\\','/').lower()
+        if ('/src/' in fp and fp.endswith('.c')) or fp.endswith(SUFFIX):
+            decomp += 1
     elif name == 'Bash':
-        cmd = inp.get('command', '')
-        if any(s in cmd for s in DECOMP_BASH_SUBSTRS):
-            decomp_count += 1
-        elif MAKE_RE.search(cmd):
-            decomp_count += 1
+        cmd = inp.get('command','')
+        if any(s in cmd for s in DECOMP_BASH) or MAKE_RE.search(cmd):
+            decomp += 1
 
-# Emit count on first line, then the last-3 text chunks (lowercased)
-# joined with \n. The marker '__DECOMP_COUNT__N' is unambiguous since
-# real text wouldn't start with it.
-print(f"__DECOMP_COUNT__{decomp_count}")
-print('\n'.join(text_chunks[-3:]).lower())
+try:
+    with open(ctx_out, 'w', encoding='utf-8') as f:
+        for role, txt in convo[-8:]:
+            if len(txt) > 4000:
+                txt = txt[:2000] + "\n...[truncated]...\n" + txt[-2000:]
+            f.write(f"\n----- {role.upper()} -----\n{txt}\n")
+except Exception:
+    pass
+
+print(decomp)
 PY
 )
 
-if [ -z "$OUTPUT" ]; then
-    # Couldn't parse transcript — don't block on uncertainty.
-    exit 0
-fi
-
-DECOMP_COUNT=$(echo "$OUTPUT" | head -1 | sed 's/^__DECOMP_COUNT__//')
-LAST_TEXT=$(echo "$OUTPUT" | tail -n +2)
-
-# Step 1: if the agent hasn't done any decomp-related work in the last
-# 30 tool calls, they're not actually decomping. Marker is incidental
-# (preview side effect, inherited from prior agent, etc.). Allow stop.
+# Agent isn't actively decomping -> marker incidental -> allow stop.
 if [ -z "$DECOMP_COUNT" ] || [ "$DECOMP_COUNT" = "0" ]; then
+    rm -f "$CTX_FILE" 2>/dev/null
     exit 0
 fi
 
-if [ -z "$LAST_TEXT" ]; then
-    # No recent assistant text to scan — don't block on silence.
-    exit 0
-fi
-
-# Stop-language patterns. These are phrases that agents say when they're
-# wrapping up voluntarily. Add to this list as new patterns are observed.
-PATTERNS=(
-    "next session"
-    "future session"
-    "partial state"
-    "best partial"
-    "preserved state"
-    "preserve.* state"
-    "preserved in (the )?working tree"
-    "leaving (this|the|it) (in )?(the )?working"
-    "wrap.up"
-    "wrap up"
-    "wrapping up"
-    "diminishing returns"
-    "good place to stop"
-    "good stopping point"
-    "natural pause"
-    "let me leave"
-    "let me commit"
-    "leave (it|this) (here|for|in)"
-    "i'?ve (made )?(substantial|significant|good|major) progress"
-    "i'?ve done (a lot|enough|significant)"
-    "progress summary"
-    "final summary"
-    "session-end summary"
-    "stop here"
-    "calling (it|this) (a session|done|for now)"
-    "tap out"
-    "for now"
-    "for this session"
-    "this iteration"
-    "let the next session"
-    "the next session can"
-    "next session can"
-    "pick up from here"
-    "pick up where i left"
-    "continued in the next"
-    "given the volume"
-    "given the (depth|complexity)"
-    "more.{0,30}work needed"
-    "more.{0,30}rules.{0,30}needed"
-    "more (regfix|substs|surgery)"
-    "[0-9]+\+? more rules"
-    "is enough for one session"
-    "this is enough"
-    "i'?ve exhausted"
-    "exhausted .* angle"
-    "session ends? before"
-    "ending this session"
-    "out of (time|energy|reasonable)"
-    "i'?ve (been )?at this for"
-    "many hours"
-    "1\.5 hours"
-    "[0-9]+\+? hours"
-    "[0-9]+ iterations"
-    "diminishing"
-    # Rationalization patterns observed in func_80070C70 STUCK returns:
-    "tractable bound"
-    "exceeds the tool"
-    "cannot be coerced"
-    "structural .{0,30}cannot be"
-    "regalloc cannot"
-    "register allocation cannot"
-    "[0-9]+ attempts.{0,40}none"
-    "reached -[0-9]+"
-    "still requires ~?[0-9]+"
-    "unreachable via"
-    "path [a-z] exhausted"
-    "[0-9]+ different .{0,20}variants"
-    "tried [0-9]+ "
-    "consumed.{0,20}attempts"
-    "no improvement after"
-    "reached the limit"
-    "given.{0,40}directive"
-    "ground hard"
-    "grinded hard"
-    "i'?m going to be honest"
-    "honestly,? at this point"
-    "let me make.{0,30}final"
-    "one more (push|attempt|try)"
-    "one final"
-    "final attempt"
-    "to wrap"
-    # Fabricated stop-condition patterns. There is NO context budget; the
-    # platform auto-compacts and explicitly continues work across context
-    # windows. An agent invoking "context" as a reason to stop/report is
-    # rationalizing a quit (observed: func_8007CE0C session, 2026-05-14 —
-    # the agent repeatedly claimed a "context budget" until the user
-    # caught it). See feedback_voluntary_stop_forbidden.md.
-    "context budget"
-    "low on context"
-    "running (low|out) (on|of) context"
-    "out of context"
-    "limited context"
-    "context (is )?(getting |running )?(low|limited|short|tight)"
-    "conserve (my |the )?context"
-    "context (window )?(is )?(nearly |almost )?(full|exhausted|spent)"
-    "save (my |the )?context"
-    "context (is )?running"
+# Gather judge context: iter-log trajectory + cc1psx calibration log presence.
+TRAJ="(no iter-log)"
+ITER_LOG="$PROJECT_ROOT/.bb2_iter_log/$ACTIVE.jsonl"
+if [ -f "$ITER_LOG" ]; then
+    TRAJ=$(python3 - "$ITER_LOG" <<'PY' 2>/dev/null || echo "(iter-log parse failed)"
+import json, sys
+rows = []
+for line in open(sys.argv[1], encoding='utf-8'):
+    line = line.strip()
+    if not line: continue
+    try: rows.append(json.loads(line))
+    except Exception: pass
+n = len(rows)
+diffs = [r.get('diffs', r.get('structural', '?')) for r in rows[-12:]]
+print(f"{n} build round(s) recorded; recent diff counts: {diffs}")
+PY
 )
+fi
 
-# Build a single grep -E pattern from the array (joined with |).
-JOINED=$(IFS='|'; echo "${PATTERNS[*]}")
+CC1PSX_LOG="no"
+[ -f "$PROJECT_ROOT/tmp/cc1psx_calibration_$ACTIVE.md" ] && CC1PSX_LOG="yes"
+[ -f "$PROJECT_ROOT/.bb2_calibration/$ACTIVE.md" ] && CC1PSX_LOG="yes"
 
-# grep -E -- exit 0 if any pattern matched. The text was already lowercased.
-if echo "$LAST_TEXT" | grep -qE "$JOINED"; then
-    # Block — emit JSON on stdout per Claude Code Stop-hook protocol.
-    REASON="STOP-HOOK BLOCKED: you wrote quit-language while $ACTIVE is unmatched and active.
+# Consult the semantic judge.
+JUDGE_OUT=$(BB2_JUDGE_ACTIVE="$ACTIVE" \
+    BB2_JUDGE_CONTEXT_FILE="$CTX_FILE" \
+    BB2_JUDGE_TRAJECTORY="$TRAJ" \
+    BB2_JUDGE_CC1PSX_LOG="$CC1PSX_LOG" \
+    BB2_JUDGE_ROOT="$PROJECT_ROOT" \
+    bash "$PROJECT_ROOT/tools/hooks/resilience_judge.sh" 2>/dev/null)
+rm -f "$CTX_FILE" 2>/dev/null
+
+DECISION=$(echo "$JUDGE_OUT" | head -1)
+JUDGE_BODY=$(echo "$JUDGE_OUT" | tail -n +2)
+
+case "$DECISION" in
+    DECISION=ALLOW)
+        exit 0
+        ;;
+    DECISION=ESCALATE)
+        # Genuine terminus per the judge (rare). Allow the stop so the worker
+        # can surface its structured report to the owner. The judge already
+        # logged the ESCALATE verdict to .bb2_resilience_log.json.
+        exit 0
+        ;;
+    *)
+        # DECISION=BLOCK or anything unexpected -> fail closed to BLOCK.
+        REASON="STOP BLOCKED by the resilience judge: $ACTIVE is active and UNMATCHED.
 
 Build: dc.sh verify $ACTIVE -> $VERIFY
 
-Per the user's directive (2026-05-08): a 'genuine blocker' is *literally
-impossible to decompile to C*. Time, difficulty, regfix volume, and
-'diminishing returns' are NOT blockers. The HARD RULE in
-feedback_workflow_rules.md still applies.
+$JUDGE_BODY
 
-The only valid reasons to stop work on an active function are:
-  (a) dc.sh verify <active> reports MATCH
-  (b) classifier returns permanently_blocked:* (already gated out by the queue)
-  (c) the user explicitly told you to stop in THIS session
-  (d) WSL/repo physically broken (catastrophic), or
-  (e) the platform auto-compacts your context (you don't decide that).
+The only legitimate ways to end work on an active function are: it MATCHES,
+the user explicitly told you to stop, or the machine is physically broken.
+'Difficulty', 'plateau', 'toolchain limit', and offering the user options are
+NOT among them. Switch technique, not target. Tool calls only — take the next
+action above; do not summarize and wait.
 
-You don't get to declare 'session end' yourself. 'Multi-session OK' in
-CLAUDE.md is a fallback for context-exhaustion, not permission to quit.
-
-Continue working: switch *technique*, not target. Tool calls only — no
-more progress summaries. Use dc.sh diff/diff-align/regfix-suggest, write
-the next regfix rule, build, verify. Repeat until verify reports MATCH."
-
-    REASON="$REASON" python3 -c "
+(If the user genuinely authorized this stop and the judge misread it, the
+operator can drop a one-shot override: touch .bb2_stop_hook_suppress_once)"
+        REASON="$REASON" python3 -c "
 import json, os
-print(json.dumps({
-    'decision': 'block',
-    'reason': os.environ['REASON'],
-}))
-"
-    exit 0
-fi
-
-# No stop-language detected — allow the stop.
-exit 0
+print(json.dumps({'decision':'block','reason':os.environ['REASON']}))
+" 2>/dev/null
+        exit 0
+        ;;
+esac
