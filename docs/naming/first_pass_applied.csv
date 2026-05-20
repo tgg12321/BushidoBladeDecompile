@@ -302,3 +302,73 @@ address,decision,name,subsystem,evidence
 0x80089240,applied,copy_80089240,structural,n=11
 0x800892F8,applied,bios_helper_800892F8,subsystem,bios: <-[] ->['bios_DisableEvent']
 0x8008AE7C,applied,set_global_8008AE7C,structural,n=13
+0x80019310,applied,gte_mvmva_80019310,gte_op,mvmva matrix*vector(+translation)
+0x8002D320,applied,gte_mvmva_8002D320,gte_op,mvmva matrix*vector(+translation)
+0x8002DE20,applied,gte_mvmva_8002DE20,gte_op,mvmva matrix*vector(+translation)
+0x8002F2D0,applied,gte_mvmva_8002F2D0,gte_op,mvmva matrix*vector(+translation)
+0x8002FF20,applied,gte_mvmva_8002FF20,gte_op,mvmva matrix*vector(+translation)
+0x800300B4,applied,gte_mvmva_800300B4,gte_op,mvmva matrix*vector(+translation)
+0x80031890,applied,gte_mvmva_80031890,gte_op,mvmva matrix*vector(+translation)
+0x8004A348,applied,gte_gpf_8004A348,gte_op,gpf scalar interpolation
+0x8004A76C,applied,gte_rtpt_batch_8004A76C,gte_op,rtpt loop: batch triangle perspective projection -> screen XY(swc2 12-14)+Z(mfc2 17-19)
+0x8004A808,applied,gte_rtpt_8004A808,gte_op,rtpt perspective transform of 3 verts
+0x8004BB68,applied,gte_rtpt_8004BB68,gte_op,rtpt perspective transform of 3 verts
+0x8004C404,applied,gte_rtpt_8004C404,gte_op,rtpt perspective transform of 3 verts
+0x8004C994,applied,gte_nclip_8004C994,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004CB8C,applied,gte_nclip_8004CB8C,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004CDB0,applied,gte_nclip_8004CDB0,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004CFE0,applied,gte_nclip_8004CFE0,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004D244,applied,gte_nclip_8004D244,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004D424,applied,gte_nclip_8004D424,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004D634,applied,gte_nclip_8004D634,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004D838,applied,gte_nclip_8004D838,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004DA74,applied,gte_rtpt_8004DA74,gte_op,rtpt perspective transform of 3 verts
+0x8004DDB4,applied,gte_mvmva_8004DDB4,gte_op,mvmva matrix*vector(+translation)
+0x8004E574,applied,gte_gpl_8004E574,gte_op,gpl interpolation+base
+0x8004E7E4,applied,gte_gpl_8004E7E4,gte_op,gpl interpolation+base
+0x8004EAC8,applied,gte_nclip_8004EAC8,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004ECC8,applied,gte_nclip_8004ECC8,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004EF10,applied,gte_nclip_8004EF10,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004F0FC,applied,gte_nclip_8004F0FC,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004F314,applied,gte_nclip_8004F314,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004F53C,applied,gte_nclip_8004F53C,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004F798,applied,gte_nclip_8004F798,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004F970,applied,gte_nclip_8004F970,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004FB74,applied,gte_nclip_8004FB74,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004FD40,applied,gte_nclip_8004FD40,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004FF40,applied,gte_nclip_8004FF40,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050120,applied,gte_nclip_80050120,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050334,applied,gte_nclip_80050334,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050538,applied,gte_nclip_80050538,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050774,applied,gte_nclip_80050774,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050908,applied,gte_nclip_80050908,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050AB8,applied,gte_nclip_80050AB8,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050C68,applied,gte_nclip_80050C68,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050E60,applied,gte_nclip_80050E60,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051010,applied,gte_nclip_80051010,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051208,applied,gte_nclip_80051208,gte_op,nclip backface/cross-z; poly cull-draw family
+0x800513B0,applied,gte_nclip_800513B0,gte_op,nclip backface/cross-z; poly cull-draw family
+0x800515AC,applied,gte_nclip_800515AC,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051754,applied,gte_nclip_80051754,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051944,applied,gte_nclip_80051944,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051B04,applied,gte_nclip_80051B04,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051D08,applied,gte_nclip_80051D08,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051ED4,applied,gte_nclip_80051ED4,gte_op,nclip backface/cross-z; poly cull-draw family
+0x800525D8,applied,gte_sqr_800525D8,gte_op,sqr square/magnitude
+0x80052788,applied,gte_gpf_80052788,gte_op,gpf scalar interpolation
+0x800527FC,applied,gte_gpf_800527FC,gte_op,gpf scalar interpolation
+0x80052A88,applied,gte_mtx_apply_vec_80052A88,gte_op,"mvmva: transform vector by matrix+translation (ctc2 0-7 matrix, out IR1-3)"
+0x80052B7C,applied,gte_mvmva_80052B7C,gte_op,mvmva matrix*vector(+translation)
+0x80052C4C,applied,gte_mvmva_80052C4C,gte_op,mvmva matrix*vector(+translation)
+0x80063E10,applied,gte_mvmva_80063E10,gte_op,mvmva matrix*vector(+translation)
+0x8007E1AC,applied,gte_gpf_8007E1AC,gte_op,gpf scalar interpolation
+0x8007E1FC,applied,gte_gpf_8007E1FC,gte_op,gpf scalar interpolation
+0x8007E24C,applied,gte_gpf_8007E24C,gte_op,gpf scalar interpolation
+0x8007E2D4,applied,gte_gpf_8007E2D4,gte_op,gpf scalar interpolation
+0x8007E35C,applied,gte_gpf_8007E35C,gte_op,gpf scalar interpolation
+0x8007E3BC,applied,gte_gpf_8007E3BC,gte_op,gpf scalar interpolation
+0x8007E5EC,applied,gte_mvmva_8007E5EC,gte_op,mvmva matrix*vector(+translation)
+0x8007EB4C,applied,gte_mvmva_8007EB4C,gte_op,mvmva matrix*vector(+translation)
+0x8007F150,applied,gte_outerprod_8007F150,gte_op,op outer/cross product
+0x8007F1A8,applied,gte_outerprod_8007F1A8,gte_op,op outer/cross product
+0x8007F24C,applied,gte_rtpt_8007F24C,gte_op,rtpt perspective transform of 3 verts
