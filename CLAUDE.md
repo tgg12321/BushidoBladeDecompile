@@ -12,7 +12,7 @@ This file is the Claude-specific layer: session entry point, memory-system point
 bash tools/dc.sh start
 ```
 
-Works from anywhere — main checkout or any worktree, Git Bash or WSL. If you're in Git Bash the script self-re-execs under WSL at the same cwd. If you're in a worktree, it also symlink-copies the gitignored deps (`.venv`, `tools/gcc-2.7.2`, `tools/decomp-permuter`, `disc`, `tools/cc1psx.exe`) from the main checkout before printing the briefing — idempotent, runs every start.
+Works from anywhere — main checkout or any worktree, Git Bash or WSL. If you're in Git Bash the script self-re-execs under WSL at the same cwd. If you're in a worktree, it also symlink-copies the gitignored deps (`.venv`, `tools/gcc-2.7.2`, `tools/decomp-permuter`, `tools/m2c`, `disc`) from the main checkout before printing the briefing — idempotent, runs every start. (`tools/cc1psx.exe` is intentionally NOT linked — deprecated 2026-05-18; the compiler is never the variable, see `memory/rules/cc1psx-calibration-only.md`.)
 
 A `SessionStart` hook auto-runs it. The briefing prints build status, active function marker, queue freshness, top-of-queue, cheat counts, drift surface, and a rules summary. It also regenerates `memory/MEMORY.md` from current frontmatter so the auto-loaded index stays fresh.
 

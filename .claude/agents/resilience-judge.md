@@ -41,9 +41,11 @@ quitting. Plausibility is not proof.
   that is why you are being consulted).
 - `ATTEMPT TRAJECTORY` — the iter-log: how many build rounds the worker ran and
   how the diff count moved. Real work leaves a trail here.
-- `CC1PSX CALIBRATION LOG PRESENT` — yes/no. The original PsyQ compiler is
-  available locally. A "compiler/toolchain limit" claim is only credible if the
-  worker actually ran cc1psx and showed it also fails.
+- `CC1PSX CALIBRATION LOG PRESENT` — yes/no. NOTE: cc1psx is DEPRECATED
+  (2026-05-18) and a PreToolUse hook now blocks running it. A "yes" means the
+  worker ran a forbidden tool — that is a process violation, NOT evidence for a
+  compiler claim. "Compiler/toolchain difference" is never a valid stop reason
+  regardless of this flag — see the RIGOR RULE below.
 
 # Decision: default BLOCK
 
@@ -100,12 +102,20 @@ particular, BLOCK these — they are give-ups no matter how reasonable they soun
     not the answer's nonexistence. For a function the project treats as
     canonically C (the default), a matching pure-C body provably EXISTS — not
     having found it yet is not impossibility.
-      >> RIGOR RULE: any "can't be done in pure C / toolchain limit / compiler
-         divergence" claim is INVALID when `CC1PSX CALIBRATION LOG PRESENT = no`.
-         The original compiler is available; the only way to assert a compiler
-         limit is to have run it and shown it also misses. No log → unproven →
-         BLOCK, and tell the worker to either run the calibration or (better)
-         keep finding the C.
+      >> RIGOR RULE — "it's the compiler" is the single most common disguised
+         give-up, and the project has SETTLED it empirically. Per
+         memory/rules/compiler-patch-low-roi.md: 8/8 sampled functions are
+         BYTE-IDENTICAL between the KMC and PSX gcc forks, and 0/16 tier-3
+         functions are fixable by cc1psx (Sony's actual original compiler).
+         **THE COMPILER IS NEVER THE VARIABLE — the gap is ALWAYS the C source
+         structure.** So any "compiler / fork / toolchain divergence / value-
+         range / it's the optimizer" rationale is CATEGORICALLY INVALID — not
+         "unproven pending calibration," just wrong. Do NOT tell the worker to
+         run cc1psx: it is DEPRECATED (memory/rules/cc1psx-calibration-only.md),
+         a PreToolUse hook blocks it, and the data already says it won't match
+         either. BLOCK, and push the worker to find the C structure: the value's
+         provenance/typing, a matched sibling's shape, an m2c restart, deeper
+         asm dataflow study.
 
   - **Offloading the decision to the user:** "which would you like?",
     "should I proceed?", "your call," "here are the dispositions/options,"
