@@ -1,0 +1,116 @@
+address,proposed_name,confidence,evidence,technique
+0x8001A67C,satan_helper_8001A67C,info,shares data with satan_* fns,data_coaccess
+0x800213A0,mario_helper_800213A0,info,shares data with mario_* fns,data_coaccess
+0x8002BEA0,mode_helper_8002BEA0,info,shares data with mode_* fns,data_coaccess
+0x80030524,psyq_helper_80030524,info,shares data with psyq_* fns,data_coaccess
+0x80030D04,psyq_helper_80030D04,info,shares data with psyq_* fns,data_coaccess
+0x80030D48,stub_or_const_80030D48,info,structural: stub_or_const,structural
+0x80034200,mode_helper_80034200,info,shares data with mode_* fns,data_coaccess
+0x80037234,store_only_80037234,info,structural: store_only,structural
+0x800392B8,stub_or_const_800392B8,info,structural: stub_or_const,structural
+0x8003A2DC,bios_helper_8003A2DC,low,propagation hop2 -> bios,propagation
+0x8003A308,bios_helper_8003A308,low,propagation hop2 -> bios,propagation
+0x8003A42C,store_only_8003A42C,info,structural: store_only,structural
+0x8003D478,dispsleepmenutex_helper_8003D478,info,shares data with dispsleepmenutex_* fns,data_coaccess
+0x8003D774,set_field0x0_8003D774,info,structural: set_field0x0,structural
+0x8003E2AC,tsllineg5init_helper_8003E2AC,info,shares data with tsllineg5init_* fns,data_coaccess
+0x8003F1C8,disphira_helper_8003F1C8,info,shares data with disphira_* fns,data_coaccess
+0x8003F1D4,stub_or_const_8003F1D4,info,structural: stub_or_const,structural
+0x8003F1E4,store_only_8003F1E4,info,structural: store_only,structural
+0x8003F268,disphira_helper_8003F268,info,shares data with disphira_* fns,data_coaccess
+0x8003F52C,store_only_8003F52C,info,structural: store_only,structural
+0x8003F54C,load_only_8003F54C,info,structural: load_only,structural
+0x8003F5A8,efc_helper_8003F5A8,info,shares data with efc_* fns,data_coaccess
+0x8003F5CC,efc_helper_8003F5CC,info,shares data with efc_* fns,data_coaccess
+0x8004019C,copy_or_accessor_8004019C,info,structural: copy_or_accessor,structural
+0x8004046C,efc_helper_8004046C,info,propagation hop3 -> efc,propagation
+0x800404A0,copy_or_accessor_800404A0,info,structural: copy_or_accessor,structural
+0x800420E8,store_only_800420E8,info,structural: store_only,structural
+0x8004283C,store_only_8004283C,info,structural: store_only,structural
+0x80042ED8,copy_or_accessor_80042ED8,info,structural: copy_or_accessor,structural
+0x80043278,load_only_80043278,info,structural: load_only,structural
+0x80044098,prim_helper_80044098,info,shares data with prim_* fns,data_coaccess
+0x800457E8,satan_helper_800457E8,info,shares data with satan_* fns,data_coaccess
+0x80047ED0,copy_or_accessor_80047ED0,info,structural: copy_or_accessor,structural
+0x80048BA4,cpu_helper_80048BA4,low,propagation hop2 -> cpu,propagation
+0x80049710,stub_or_const_80049710,info,structural: stub_or_const,structural
+0x8004A938,stub_or_const_8004A938,info,structural: stub_or_const,structural
+0x8004E564,stub_or_const_8004E564,info,structural: stub_or_const,structural
+0x8004E56C,stub_or_const_8004E56C,info,structural: stub_or_const,structural
+0x80053754,camera_helper_80053754,info,propagation hop3 -> camera,propagation
+0x80053E9C,camera_helper_80053E9C,info,propagation hop3 -> camera,propagation
+0x80055B44,set_field0x3B4_80055B44,info,structural: set_field0x3B4,structural
+0x80057E84,single_game_helper_80057E84,low,propagation hop2 -> single_game,propagation
+0x8006288C,motion_helper_8006288C,info,shares data with motion_* fns,data_coaccess
+0x8006295C,motion_helper_8006295C,info,propagation hop3 -> motion,propagation
+0x80062FEC,motion_helper_80062FEC,info,shares data with motion_* fns,data_coaccess
+0x80063AF0,anim_helper_80063AF0,info,shares data with anim_* fns,data_coaccess
+0x80063B34,anim_helper_80063B34,info,shares data with anim_* fns,data_coaccess
+0x80063B78,motutil_helper_80063B78,info,propagation hop3 -> motutil,propagation
+0x80063BA4,motutil_helper_80063BA4,info,propagation hop3 -> motutil,propagation
+0x80063BD0,motion_helper_80063BD0,info,shares data with motion_* fns,data_coaccess
+0x8006517C,motion_helper_8006517C,info,shares data with motion_* fns,data_coaccess
+0x800651F0,motion_helper_800651F0,info,shares data with motion_* fns,data_coaccess
+0x800652AC,motion_helper_800652AC,info,shares data with motion_* fns,data_coaccess
+0x80068D88,efc_helper_80068D88,low,propagation hop2 -> efc,propagation
+0x80069250,satan_helper_80069250,info,shares data with satan_* fns,data_coaccess
+0x800692C0,mode_helper_800692C0,info,propagation hop3 -> mode,propagation
+0x800693CC,satan_helper_800693CC,info,propagation hop3 -> satan,propagation
+0x80069898,satan_helper_80069898,low,propagation hop2 -> satan,propagation
+0x8006B578,mode_helper_8006B578,low,propagation hop2 -> mode,propagation
+0x8006B898,sync_helper_8006B898,low,propagation hop2 -> sync,propagation
+0x8006B92C,mode_helper_8006B92C,low,propagation hop2 -> mode,propagation
+0x8006CCC8,mode_helper_8006CCC8,low,propagation hop2 -> mode,propagation
+0x8006D5D4,mode_helper_8006D5D4,low,propagation hop2 -> mode,propagation
+0x8006DF68,mode_helper_8006DF68,low,propagation hop2 -> mode,propagation
+0x8006E440,copy_or_accessor_8006E440,info,structural: copy_or_accessor,structural
+0x8006E8AC,load_only_8006E8AC,info,structural: load_only,structural
+0x8006EACC,replay_camera_helper_8006EACC,info,shares data with replay_camera_* fns,data_coaccess
+0x8006EC0C,mode_helper_8006EC0C,low,propagation hop2 -> mode,propagation
+0x8006F038,satan_helper_8006F038,info,shares data with satan_* fns,data_coaccess
+0x8006F528,gnd_helper_8006F528,low,propagation hop2 -> gnd,propagation
+0x80071C20,load_only_80071C20,info,structural: load_only,structural
+0x80071C4C,mode_helper_80071C4C,low,propagation hop2 -> mode,propagation
+0x80072084,satan_helper_80072084,low,propagation hop2 -> satan,propagation
+0x800720AC,satan_helper_800720AC,low,propagation hop2 -> satan,propagation
+0x800720D4,satan_helper_800720D4,low,propagation hop2 -> satan,propagation
+0x80072BC4,satan_helper_80072BC4,info,shares data with satan_* fns,data_coaccess
+0x80072CD4,satan_helper_80072CD4,info,shares data with satan_* fns,data_coaccess
+0x800747D8,mode_helper_800747D8,low,propagation hop2 -> mode,propagation
+0x80074B18,satan_helper_80074B18,info,shares data with satan_* fns,data_coaccess
+0x80075670,mode_helper_80075670,low,propagation hop2 -> mode,propagation
+0x80075F80,mode_helper_80075F80,low,propagation hop2 -> mode,propagation
+0x800768DC,mode_helper_800768DC,low,propagation hop2 -> mode,propagation
+0x80076D74,satan_helper_80076D74,info,shares data with satan_* fns,data_coaccess
+0x80077D74,camera_helper_80077D74,info,shares data with camera_* fns,data_coaccess
+0x80078634,disp_helper_80078634,info,shares data with disp_* fns,data_coaccess
+0x8007C2A0,gpu_helper_8007C2A0,info,shares data with gpu_* fns,data_coaccess
+0x8007CAB0,gpu_helper_8007CAB0,info,shares data with gpu_* fns,data_coaccess
+0x8007CBB0,gpu_helper_8007CBB0,info,shares data with gpu_* fns,data_coaccess
+0x8007D2CC,gpu_helper_8007D2CC,info,shares data with gpu_* fns,data_coaccess
+0x8007D2F4,load_only_8007D2F4,info,structural: load_only,structural
+0x8007D3D4,gpu_helper_8007D3D4,low,propagation hop2 -> gpu,propagation
+0x8007DE08,gpu_helper_8007DE08,info,shares data with gpu_* fns,data_coaccess
+0x8007F200,stub_or_const_8007F200,info,structural: stub_or_const,structural
+0x8007F5EC,motutil_helper_8007F5EC,info,shares data with motutil_* fns,data_coaccess
+0x8008009C,load_only_8008009C,info,structural: load_only,structural
+0x800800AC,tsltm2loadimage_helper_800800AC,info,shares data with tsltm2loadimage_* fns,data_coaccess
+0x80080228,copy_or_accessor_80080228,info,structural: copy_or_accessor,structural
+0x80080240,copy_or_accessor_80080240,info,structural: copy_or_accessor,structural
+0x80081718,tsltm2loadimage_helper_80081718,info,shares data with tsltm2loadimage_* fns,data_coaccess
+0x800817A0,tsltm2loadimage_helper_800817A0,info,shares data with tsltm2loadimage_* fns,data_coaccess
+0x80081880,tsltm2loadimage_helper_80081880,info,shares data with tsltm2loadimage_* fns,data_coaccess
+0x80081E1C,tsltm2loadimage_helper_80081E1C,low,propagation hop2 -> tsltm2loadimage,propagation
+0x800848AC,motutil_helper_800848AC,low,propagation hop2 -> motutil,propagation
+0x80085210,dispstuff_helper_80085210,info,shares data with dispstuff_* fns,data_coaccess
+0x80086014,action_helper_80086014,info,shares data with action_* fns,data_coaccess
+0x800863CC,store_only_800863CC,info,structural: store_only,structural
+0x8008908C,satan_helper_8008908C,info,shares data with satan_* fns,data_coaccess
+0x80089214,copy_or_accessor_80089214,info,structural: copy_or_accessor,structural
+0x80089240,copy_or_accessor_80089240,info,structural: copy_or_accessor,structural
+0x800892D4,bios_helper_800892D4,low,propagation hop2 -> bios,propagation
+0x80089384,coli_helper_80089384,info,shares data with coli_* fns,data_coaccess
+0x8008A434,satan_helper_8008A434,info,shares data with satan_* fns,data_coaccess
+0x8008BD88,satan_helper_8008BD88,info,shares data with satan_* fns,data_coaccess
+0x8008BEA4,cpu_helper_8008BEA4,info,shares data with cpu_* fns,data_coaccess
+0x8008C184,setpacketdata_helper_8008C184,info,shares data with setpacketdata_* fns,data_coaccess

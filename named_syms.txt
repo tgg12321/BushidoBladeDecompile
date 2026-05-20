@@ -3437,3 +3437,7 @@ g_pair_state_b_80102804                            = 0x80102804;  /* 6 refs; +4 
 clear_disp_state_buf_80038148                = 0x80038148;  /* sole caller pad_FuncAnalog; 512-byte zero of g_disp_state_buf (also dual-role memcard payload — pass 4) */
 practice_menu_clear_field414_8005509C        = 0x8005509C;  /* clears 16 bytes at offset 0x414 of g_practice_menu_table[a0]; callers DispSamnailWindow + single_game_SetStatusUpData */
 text_render_cursor_reset_80060758            = 0x80060758;  /* zeros g_text_render_cursor_a/b u16 pair; sole caller SetCurrentCursor */
+gte_nct_wrapper_80054440                     = 0x80054440;  /* GTE Normal-Color-Triple lighting loop: nct op, light matrix via ctc2 $8-12, streams vertex normals -> RGB FIFO; sole caller + nct evidence */
+gpu_draw_color_prim_8007B4D0                 = 0x8007B4D0;  /* GPU draw helper: gpu_DebugCheckRect(str) + pack RGB + draw via ctx fn-ptr D_8009BE6C[8] */
+gpu_draw_color_prim_stp_8007B564             = 0x8007B564;  /* as gpu_draw_color_prim_8007B4D0 but sets color bit31 (STP/semi-transparent) */
+gpu_copy_draw_packet_8007B9B0                = 0x8007B9B0;  /* GPU: copies 0x50-byte primitive packet (forces white 0xFFFFFF), submits via ctx D_8009BE6C[8] */
