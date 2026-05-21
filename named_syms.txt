@@ -3437,3 +3437,443 @@ g_pair_state_b_80102804                            = 0x80102804;  /* 6 refs; +4 
 clear_disp_state_buf_80038148                = 0x80038148;  /* sole caller pad_FuncAnalog; 512-byte zero of g_disp_state_buf (also dual-role memcard payload — pass 4) */
 practice_menu_clear_field414_8005509C        = 0x8005509C;  /* clears 16 bytes at offset 0x414 of g_practice_menu_table[a0]; callers DispSamnailWindow + single_game_SetStatusUpData */
 text_render_cursor_reset_80060758            = 0x80060758;  /* zeros g_text_render_cursor_a/b u16 pair; sole caller SetCurrentCursor */
+gte_nct_wrapper_80054440                     = 0x80054440;  /* GTE Normal-Color-Triple lighting loop: nct op, light matrix via ctc2 $8-12, streams vertex normals -> RGB FIFO; sole caller + nct evidence */
+gpu_draw_color_prim_8007B4D0                 = 0x8007B4D0;  /* GPU draw helper: gpu_DebugCheckRect(str) + pack RGB + draw via ctx fn-ptr D_8009BE6C[8] */
+gpu_draw_color_prim_stp_8007B564             = 0x8007B564;  /* as gpu_draw_color_prim_8007B4D0 but sets color bit31 (STP/semi-transparent) */
+gpu_copy_draw_packet_8007B9B0                = 0x8007B9B0;  /* GPU: copies 0x50-byte primitive packet (forces white 0xFFFFFF), submits via ctx D_8009BE6C[8] */
+graph_add_edge_80017848                        = 0x80017848;  /* graph edge insertion: nodes at $s2[0xC] stride64 (flag 0x18, adj-counts 0x1C/0x20, adj-lists 0x24/0x2C), edges at $s2[0x */
+calc_fighter_separation_vec_8002BC68           = 0x8002BC68;  /* inter-fighter distance (sqrt LUT D_8008D118) between pts D_80101FA0/A8 & D_801023EC/F4 (0x44C apart=fighter stride); wri */
+math_sqrt_800526A0                             = 0x800526A0;  /* fixed-pt sqrt via GTE leading-zero-count: mtc2 $a0->r30(LZCS), mfc2 r31(LZCR) to normalize, index LUT D_80015620, halve  */
+calc_line_seg_intersect_8005763C               = 0x8005763C;  /* 2D line-seg intersection: all coords sra>>3 (1/8 fixed-pt), dx/dy deltas of 2 segs, mult/div cross-products w/ div0(brea */
+coli_find_nearest_edge_hit_80057ACC            = 0x80057ACC;  /* loops polygons($s6: count+vert-array, 8B entries)->edges; intersects each edge vs actor move-seg via func_8005763C; trac */
+matrix_scale_3x3_rows_8007E8DC                 = 0x8007E8DC;  /* scales rows of a GTE 3x3 matrix (5-word/9-halfword packed layout m00,m01|m02,m10|m11,m12|m20,m21|m22) in place: row0*$a1 */
+matrix_scale_3x3_cols_8007EDBC                 = 0x8007EDBC;  /* column-scale counterpart of matrix_scale_3x3_rows: col0*$a1[0], col1*$a1[4], col2*$a1[8] of the packed 3x3 matrix, 4.12  */
+get_ptr_D_800A9D10_80045814                    = 0x80045814;  /* returns &D_800A9D10 (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
+get_ptr_D_800EFB0C_8005507C                    = 0x8005507C;  /* returns &D_800EFB0C (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
+get_ptr_D_80101E1C_8005508C                    = 0x8005508C;  /* returns &D_80101E1C (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
+set_D_800A33F0_80054410                        = 0x80054410;  /* D_800A33F0 = arg (2-insn setter); was Kengo-misnomer 'efc_ougi_Init' */
+efc_helper_80017A44                                = 0x80017A44;  /* first-pass subsystem tag (efc); <-efc_rob_ougi_control */
+ang_helper_8001924C                                = 0x8001924C;  /* first-pass subsystem tag (ang); <-ang_hosei_8003F62C */
+replay_camera_helper_800194C0                      = 0x800194C0;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
+replay_camera_helper_800194F4                      = 0x800194F4;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
+sys_helper_80019534                                = 0x80019534;  /* first-pass subsystem tag (sys); <-sys_GameInit_80016D78 */
+mode_helper_8001A820                               = 0x8001A820;  /* first-pass subsystem tag (mode); <-mode_handler_01_GameFrameUpdate */
+cpu_helper_8001B690                                = 0x8001B690;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+mode_helper_8001B6F4                               = 0x8001B6F4;  /* first-pass subsystem tag (mode); <-mode_handler_04_GameSetup */
+mode_helper_8001BAE4                               = 0x8001BAE4;  /* first-pass subsystem tag (mode); <-mode_handler_05_NoOp */
+mode_helper_8001BBD8                               = 0x8001BBD8;  /* first-pass subsystem tag (mode); <-mode_handler_05_NoOp */
+mode_helper_8001BE20                               = 0x8001BE20;  /* first-pass subsystem tag (mode); <-mode_handler_01_GameFrameUpdate */
+sys_helper_8001C444                                = 0x8001C444;  /* first-pass subsystem tag (sys); <-sys_GameInit_80016D78 */
+mario_helper_8001C4C0                              = 0x8001C4C0;  /* first-pass subsystem tag (mario); ->mario_test_move_to_inventory_800218C8;->mario_test_get_guard_power_80021974 */
+mario_helper_8001C51C                              = 0x8001C51C;  /* first-pass subsystem tag (mario); ->mario_test_move_to_inventory_800218C8;->mario_test_init_dialog_memory_800392C8;->mario_test_get_guard_power_80021974 */
+mode_helper_8001C8DC                               = 0x8001C8DC;  /* first-pass subsystem tag (mode); <-mode_handler_01_GameFrameUpdate */
+mode_helper_8001E800                               = 0x8001E800;  /* first-pass subsystem tag (mode); <-mode_handler_01_GameFrameUpdate */
+mode_helper_8001F1C4                               = 0x8001F1C4;  /* first-pass subsystem tag (mode); <-mode_handler_05_NoOp */
+cpu_helper_8001F888                                = 0x8001F888;  /* first-pass subsystem tag (cpu); <-cpu_update_frame_timing_stats_8002006C */
+cpu_helper_8001F938                                = 0x8001F938;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+cpu_helper_800200DC                                = 0x800200DC;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+mario_helper_800206B0                              = 0x800206B0;  /* first-pass subsystem tag (mario); <-mario_test_initialize_match_80022580 */
+sys_helper_80020D70                                = 0x80020D70;  /* first-pass subsystem tag (sys); <-sys_GameInit_80016D78 */
+cpu_helper_80021424                                = 0x80021424;  /* first-pass subsystem tag (cpu); <-cpu_side_move_dir;<-cpu_calc_move_pattern_trajectory_80023F08 */
+hirahira_helper_80021A3C                           = 0x80021A3C;  /* first-pass subsystem tag (hirahira); <-hirahira_w_frie2 */
+cpu_helper_80021A98                                = 0x80021A98;  /* first-pass subsystem tag (cpu); <-cpu_side_move_dir;<-cpu_calc_move_pattern_trajectory_80023F08 */
+mario_helper_80021DB0                              = 0x80021DB0;  /* first-pass subsystem tag (mario); <-mario_test_initialize_match_80022580 */
+mario_helper_800224E0                              = 0x800224E0;  /* first-pass subsystem tag (mario); <-mario_test_initialize_match_80022580 */
+cpu_helper_8002304C                                = 0x8002304C;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+cpu_helper_80023648                                = 0x80023648;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+cpu_helper_80023C30                                = 0x80023C30;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+cpu_helper_80023CB4                                = 0x80023CB4;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+cpu_helper_80023D08                                = 0x80023D08;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+cpu_helper_80023D28                                = 0x80023D28;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+cpu_helper_80023DB8                                = 0x80023DB8;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+cpu_helper_80023E40                                = 0x80023E40;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+cpu_helper_80026DA4                                = 0x80026DA4;  /* first-pass subsystem tag (cpu); <-cpu_exec_main_game_loop_frame_8002C61C */
+cpu_helper_8002798C                                = 0x8002798C;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+cpu_helper_80029454                                = 0x80029454;  /* first-pass subsystem tag (cpu); <-cpu_exec_main_game_loop_frame_8002C61C */
+calc_helper_8002C0DC                               = 0x8002C0DC;  /* first-pass subsystem tag (calc); ->calc_loc_mat_fw;->calc_AngleDelta_8001F860;->calc_fighter_separation_vec_8002BC68 */
+calc_helper_8002EECC                               = 0x8002EECC;  /* first-pass subsystem tag (calc); <-calc_fc_frame_800203B4 */
+cpu_helper_80030208                                = 0x80030208;  /* first-pass subsystem tag (cpu); <-cpu_ai_pick_move_for_situation_80030D7C */
+mario_helper_8003047C                              = 0x8003047C;  /* first-pass subsystem tag (mario); <-mario_test_initialize_match_80022580 */
+cpu_helper_80030D50                                = 0x80030D50;  /* first-pass subsystem tag (cpu); <-cpu_ai_pick_move_for_situation_80030D7C */
+cpu_helper_80032064                                = 0x80032064;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+dispsamnailwindow_helper_80033DF4                  = 0x80033DF4;  /* first-pass subsystem tag (dispsamnailwindow); <-DispSamnailWindow */
+mode_helper_80033FE4                               = 0x80033FE4;  /* first-pass subsystem tag (mode); <-mode_handler_31_TimerLoop */
+mode_helper_80034F88                               = 0x80034F88;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
+mode_helper_8003504C                               = 0x8003504C;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
+replay_camera_helper_80035E88                      = 0x80035E88;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
+replay_camera_helper_80035EDC                      = 0x80035EDC;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
+mode_helper_80035F78                               = 0x80035F78;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
+mode_helper_80035FA8                               = 0x80035FA8;  /* first-pass subsystem tag (mode); <-mode_handler_18_UnlockAnimDispatch;<-mode_handler_09_NoOp;<-mode_handler_06_GameTeardownVariant */
+sys_helper_80035FE0                                = 0x80035FE0;  /* first-pass subsystem tag (sys); <-sys_Init_80016A18 */
+mode_helper_80037540                               = 0x80037540;  /* first-pass subsystem tag (mode); <-mode_handler_15_TeardownVariant */
+motion_helper_800395B4                             = 0x800395B4;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+cpu_helper_80039680                                = 0x80039680;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+bios_helper_8003A264                               = 0x8003A264;  /* first-pass subsystem tag (bios); ->bios_CloseEvent;->bios_FileClose_B */
+single_game_helper_8003A6FC                        = 0x8003A6FC;  /* first-pass subsystem tag (single_game); <-single_game_HashAndStoreData_8003A728 */
+game_helper_8003AA48                               = 0x8003AA48;  /* first-pass subsystem tag (game); <-game_FrameLoop;<-game_exec_display_dma_loop_8003AAB0;<-game_exec_display_sync_8003AA78 */
+replay_camera_helper_8003AB44                      = 0x8003AB44;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
+mode_helper_8003AF40                               = 0x8003AF40;  /* first-pass subsystem tag (mode); <-mode_handler_18_UnlockAnimDispatch;<-mode_handler_29_StageLeafUpdate;<-mode_handler_07_SubModeTransition */
+mode_helper_8003B328                               = 0x8003B328;  /* first-pass subsystem tag (mode); <-mode_handler_29_StageLeafUpdate;<-mode_handler_05_NoOp */
+mode_helper_8003B534                               = 0x8003B534;  /* first-pass subsystem tag (mode); <-mode_handler_29_StageLeafUpdate;<-mode_handler_05_NoOp */
+sudispmentalbar_helper_8003B56C                    = 0x8003B56C;  /* first-pass subsystem tag (sudispmentalbar); <-suDispMentalBar */
+game_helper_8003D91C                               = 0x8003D91C;  /* first-pass subsystem tag (game); <-game_Init_80046B44 */
+tsllineg5init_helper_8003DDF8                      = 0x8003DDF8;  /* first-pass subsystem tag (tsllineg5init); <-tslLineG5Init_helper_8003DBE4 */
+gpu_helper_8003DE14                                = 0x8003DE14;  /* first-pass subsystem tag (gpu); ->gpu_StoreImage;->gpu_LoadImage;->gpu_DrawSync */
+game_helper_8003E0E0                               = 0x8003E0E0;  /* first-pass subsystem tag (game); <-game_StageCleanup_80046EDC */
+mode_helper_8003E6A0                               = 0x8003E6A0;  /* first-pass subsystem tag (mode); <-mode_handler_01_GameFrameUpdate */
+cpu_helper_8003F3D4                                = 0x8003F3D4;  /* first-pass subsystem tag (cpu); <-cpu_init_stage_and_camera_setup_8001E404 */
+game_helper_8003F7F4                               = 0x8003F7F4;  /* first-pass subsystem tag (game); <-game_Init_80046B44 */
+tslprintscreen_helper_8003FE40                     = 0x8003FE40;  /* first-pass subsystem tag (tslprintscreen); <-tslPrintScreen_helper_8003FA24 */
+player_helper_800400F8                             = 0x800400F8;  /* first-pass subsystem tag (player); <-player_sprite_free_8004016C */
+replay_camera_helper_800418D0                      = 0x800418D0;  /* first-pass subsystem tag (replay_camera); <-replay_camera_rob_back_win_near */
+eff_helper_80041E10                                = 0x80041E10;  /* first-pass subsystem tag (eff); <-eff_FrameUpdate */
+replay_camera_helper_800420D0                      = 0x800420D0;  /* first-pass subsystem tag (replay_camera); <-replay_camera_rob_back_win_near */
+game_helper_8004211C                               = 0x8004211C;  /* first-pass subsystem tag (game); <-game_StageInit_80046DA8 */
+game_helper_800421C8                               = 0x800421C8;  /* first-pass subsystem tag (game); <-game_StageCleanup_80046EDC */
+game_helper_80042E90                               = 0x80042E90;  /* first-pass subsystem tag (game); <-game_Init_80046B44 */
+calc_helper_800430E4                               = 0x800430E4;  /* first-pass subsystem tag (calc); <-calc_loc_mat_fw_8004A940 */
+game_helper_8004473C                               = 0x8004473C;  /* first-pass subsystem tag (game); <-game_EffInit2_800474F0;<-game_EffInit_8004746C;<-game_EffStart_8004777C */
+channel_helper_800453E0                            = 0x800453E0;  /* first-pass subsystem tag (channel); <-channel_helper_A_80046A60;<-channel_helper_8_80046914 */
+player_helper_800456F0                             = 0x800456F0;  /* first-pass subsystem tag (player); <-player_allocate_sprite_80045A50 */
+snd_helper_8004574C                                = 0x8004574C;  /* first-pass subsystem tag (snd); <-snd_LoadBgm_800467B8 */
+audio_helper_800457A0                              = 0x800457A0;  /* first-pass subsystem tag (audio); <-audio_chain_fade_load_80046048 */
+snd_helper_8004668C                                = 0x8004668C;  /* first-pass subsystem tag (snd); <-snd_StopAll_80046AA0 */
+calc_helper_80047BE0                               = 0x80047BE0;  /* first-pass subsystem tag (calc); <-calc_loc_mat_fw_8004A940 */
+gnd_helper_800486FC                                = 0x800486FC;  /* first-pass subsystem tag (gnd); <-gnd_init_80041688;<-gnd_land_hit_char_die_main */
+gnd_helper_8004881C                                = 0x8004881C;  /* first-pass subsystem tag (gnd); <-gnd_land_hit_char_die_main;<-gnd_init_80041688 */
+game_helper_80048F58                               = 0x80048F58;  /* first-pass subsystem tag (game); <-game_AnimStart_80047738;<-game_AnimInit_800474AC */
+game_helper_80048FFC                               = 0x80048FFC;  /* first-pass subsystem tag (game); <-game_AnimCleanup_800474D0;<-game_AnimStop_8004775C */
+efc_helper_8004954C                                = 0x8004954C;  /* first-pass subsystem tag (efc); <-efc_rob_type_dispatch_80049584 */
+snd_helper_80049E1C                                = 0x80049E1C;  /* first-pass subsystem tag (snd); <-snd_StopAll_80046AA0 */
+game_helper_80049E4C                               = 0x80049E4C;  /* first-pass subsystem tag (game); <-game_Init_80046B44 */
+game_helper_80049F4C                               = 0x80049F4C;  /* first-pass subsystem tag (game); <-game_Init_80046B44 */
+satan_helper_8004C388                              = 0x8004C388;  /* first-pass subsystem tag (satan); <-satan_line_draw_recursive_8004C1F4 */
+camera_helper_80053694                             = 0x80053694;  /* first-pass subsystem tag (camera); <-camera_compute_fixed_point_matrices_80052D00 */
+snd_helper_80054FDC                                = 0x80054FDC;  /* first-pass subsystem tag (snd); <-snd_SelectionCallback_80046A80 */
+calc_helper_80055948                               = 0x80055948;  /* first-pass subsystem tag (calc); <-calc_loc_mat_fw_80055B60 */
+calc_helper_80056CB8                               = 0x80056CB8;  /* first-pass subsystem tag (calc); <-calc_loc_mat_fw_80055B60 */
+calc_helper_80058580                               = 0x80058580;  /* first-pass subsystem tag (calc); <-calc_loc_mat_fw_80055B60 */
+obj_helper_8005B43C                                = 0x8005B43C;  /* first-pass subsystem tag (obj); ->obj_SetReverbValue_80085EE4;->obj_SetControlData_80085E4C;->obj_ResetReverbMode_80085F98 */
+spu_helper_8005BF78                                = 0x8005BF78;  /* first-pass subsystem tag (spu); ->spu_TransferDirect_capped;->spu_TransferData_capped */
+tslglobalmemfree_helper_8005C074                   = 0x8005C074;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
+tslglobalmemfree_helper_8005C5A8                   = 0x8005C5A8;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
+file_helper_8005C614                               = 0x8005C614;  /* first-pass subsystem tag (file); <-file_LoadSoundData_80016CF8 */
+mode_helper_8005C650                               = 0x8005C650;  /* first-pass subsystem tag (mode); <-mode_handler_29_StageLeafUpdate;<-mode_handler_03_NoOp;<-mode_handler_25_PostBattleSetup */
+mode_helper_800600C8                               = 0x800600C8;  /* first-pass subsystem tag (mode); <-mode_handler_33_RebootBegin */
+gpu_helper_800602AC                                = 0x800602AC;  /* first-pass subsystem tag (gpu); ->gpu_LoadImage;->gpu_DrawSync */
+mode_helper_80060544                               = 0x80060544;  /* first-pass subsystem tag (mode); <-mode_handler_23_FrameDelay3 */
+anim_helper_80060A68                               = 0x80060A68;  /* first-pass subsystem tag (anim); <-anim_emit_210009_with_setup_80061250;<-anim_emit_29000B_80061454;<-anim_emit_21000CD_80061658 */
+eff_helper_80060B70                                = 0x80060B70;  /* first-pass subsystem tag (eff); <-eff_FrameUpdate */
+motion_helper_800611A4                             = 0x800611A4;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+motion_helper_8006133C                             = 0x8006133C;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+motion_helper_800613C8                             = 0x800613C8;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+motion_helper_800614E0                             = 0x800614E0;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+motion_helper_8006156C                             = 0x8006156C;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+motion_helper_80061710                             = 0x80061710;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+motion_helper_800617C8                             = 0x800617C8;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+motion_helper_800619A4                             = 0x800619A4;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+motion_helper_800619F0                             = 0x800619F0;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+cpu_helper_80061A3C                                = 0x80061A3C;  /* first-pass subsystem tag (cpu); <-cpu_check_special_move_input_80032C50 */
+motion_helper_80061ACC                             = 0x80061ACC;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+motion_helper_80061C00                             = 0x80061C00;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+motion_helper_80061D74                             = 0x80061D74;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+motion_helper_80061EC0                             = 0x80061EC0;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
+disphira_helper_80061FAC                           = 0x80061FAC;  /* first-pass subsystem tag (disphira); <-DispHira_helper_800620B8 */
+se_helper_80062020                                 = 0x80062020;  /* first-pass subsystem tag (se); <-se_CalcPitchShift_8005BA8C */
+efc_helper_800676C8                                = 0x800676C8;  /* first-pass subsystem tag (efc); ->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14 */
+efc_helper_80067704                                = 0x80067704;  /* first-pass subsystem tag (efc); ->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14 */
+efc_helper_80067740                                = 0x80067740;  /* first-pass subsystem tag (efc); ->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14 */
+efc_helper_8006777C                                = 0x8006777C;  /* first-pass subsystem tag (efc); ->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14 */
+efc_helper_800677B8                                = 0x800677B8;  /* first-pass subsystem tag (efc); ->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14 */
+efc_helper_800677F4                                = 0x800677F4;  /* first-pass subsystem tag (efc); ->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14 */
+efc_helper_80067830                                = 0x80067830;  /* first-pass subsystem tag (efc); ->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14 */
+efc_helper_8006786C                                = 0x8006786C;  /* first-pass subsystem tag (efc); ->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14 */
+mode_helper_80068ECC                               = 0x80068ECC;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
+satan_helper_8006A880                              = 0x8006A880;  /* first-pass subsystem tag (satan); ->saTan3GaugeMain_8006A564;->satan_sprite_batch_render_8007352C */
+motion_helper_8006BD28                             = 0x8006BD28;  /* first-pass subsystem tag (motion); <-motion_draw_tilemap_8006BEC4 */
+satan_helper_8006C168                              = 0x8006C168;  /* first-pass subsystem tag (satan); <-saTan2InfoInit_8006C1FC */
+satan_helper_8006D74C                              = 0x8006D74C;  /* first-pass subsystem tag (satan); <-saTanMainDispGnd_80077A04 */
+replay_camera_helper_8006D7FC                      = 0x8006D7FC;  /* first-pass subsystem tag (replay_camera); <-replay_camera_init_framebuffer_80077A28 */
+hud_helper_8006D808                                = 0x8006D808;  /* first-pass subsystem tag (hud); <-hud_emit_warning_tiles_80060768 */
+satan_helper_8006E068                              = 0x8006E068;  /* first-pass subsystem tag (satan); <-saTan2InfoInit_80077A60 */
+gpu_helper_8006E10C                                = 0x8006E10C;  /* first-pass subsystem tag (gpu); ->gpu_LoadImage;->gpu_DrawSync;->gpu_SetDispMask */
+gpu_helper_8006E2A8                                = 0x8006E2A8;  /* first-pass subsystem tag (gpu); ->gpu_DrawSync;->gpu_SetDispMask;->gpu_draw_color_prim_8007B4D0 */
+gpu_helper_8006ECF4                                = 0x8006ECF4;  /* first-pass subsystem tag (gpu); ->gpu_LoadImage;->gpu_DrawSync */
+satan_helper_8006F97C                              = 0x8006F97C;  /* first-pass subsystem tag (satan); ->saTan3GaugeMain_80073200;->satan_sprite_batch_render_8007352C */
+satan_helper_80070C70                              = 0x80070C70;  /* first-pass subsystem tag (satan); ->saTan3GaugeMain_80073200;->satan_sprite_batch_render_8007352C */
+satan_helper_800720FC                              = 0x800720FC;  /* first-pass subsystem tag (satan); ->saTan3GaugeMain_80073200;->satan_sprite_batch_render_8007352C */
+hud_helper_80072F30                                = 0x80072F30;  /* first-pass subsystem tag (hud); <-hud_layout_emit_tiles_80073060 */
+hud_helper_80072FCC                                = 0x80072FCC;  /* first-pass subsystem tag (hud); <-hud_layout_emit_tiles_80073060 */
+gnd_helper_80073728                                = 0x80073728;  /* first-pass subsystem tag (gnd); <-gnd_draw_texpage_2poly_8005D46C;<-gnd_render_affine_texpage_8005E54C;<-gnd_land_hit_char_tsuba */
+setup_helper_80077098                              = 0x80077098;  /* first-pass subsystem tag (setup); <-setup_double_buffer_swap_80077724 */
+replay_camera_helper_800770B8                      = 0x800770B8;  /* first-pass subsystem tag (replay_camera); <-replay_camera_apply_transform_and_flip_80077A80 */
+setup_helper_80077374                              = 0x80077374;  /* first-pass subsystem tag (setup); <-setup_double_buffer_swap_80077724 */
+mode_helper_80077894                               = 0x80077894;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
+mode_helper_80077904                               = 0x80077904;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
+mode_helper_800779C8                               = 0x800779C8;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
+replay_camera_helper_80077AE0                      = 0x80077AE0;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
+replay_camera_helper_80077B00                      = 0x80077B00;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
+mode_helper_80077B30                               = 0x80077B30;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
+gpu_helper_80077D94                                = 0x80077D94;  /* first-pass subsystem tag (gpu); ->gpu_LoadImage;->gpu_DrawSync */
+mode_helper_8007855C                               = 0x8007855C;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
+disp_helper_80078628                               = 0x80078628;  /* first-pass subsystem tag (disp); <-disp_init_video_overlay_80078824 */
+gpu_helper_8007C4B8                                = 0x8007C4B8;  /* first-pass subsystem tag (gpu); <-gpu_copy_draw_packet_8007B9B0;<-gpu_DrawOTagEnv */
+inittexpage_helper_8007C748                        = 0x8007C748;  /* first-pass subsystem tag (inittexpage); <-initTexPage_8007C248 */
+initdrawarea_helper_8007C7A0                       = 0x8007C7A0;  /* first-pass subsystem tag (initdrawarea); <-initDrawArea_8007C154 */
+initdrawarea_helper_8007C86C                       = 0x8007C86C;  /* first-pass subsystem tag (initdrawarea); <-initDrawArea_8007C154 */
+initdrawoffset_helper_8007C938                     = 0x8007C938;  /* first-pass subsystem tag (initdrawoffset); <-initDrawOffset_8007C1D8 */
+cpu_helper_8007CA00                                = 0x8007CA00;  /* first-pass subsystem tag (cpu); <-cpu_copy_display_buffer_and_sync_8007BC08 */
+gpu_helper_8007CAC8                                = 0x8007CAC8;  /* first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
+gpu_helper_8007CE0C                                = 0x8007CE0C;  /* first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
+gpu_helper_8007D048                                = 0x8007D048;  /* first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
+gpu_helper_8007D3F8                                = 0x8007D3F8;  /* first-pass subsystem tag (gpu); ->gpu_vcount_init_8007DC68;->gpu_DrawTimeoutCheck */
+gpu_helper_8007D9C4                                = 0x8007D9C4;  /* first-pass subsystem tag (gpu); <-gpu_SetMode_8007AE7C */
+gpu_helper_8007DB20                                = 0x8007DB20;  /* first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
+math_helper_8007E43C                               = 0x8007E43C;  /* first-pass subsystem tag (math); <-math_Distance3D_80017748;<-math_Distance3D_16_800177C8 */
+md_game_helper_8007FBBC                            = 0x8007FBBC;  /* first-pass subsystem tag (md_game); <-md_game_rob_anim_offset_8002F770 */
+special_camera_helper_800826CC                     = 0x800826CC;  /* first-pass subsystem tag (special_camera); <-special_camera_load_cdrom_wait_800372F4 */
+tslglobalmemfree_helper_800859F0                   = 0x800859F0;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
+mario_helper_80085FB8                              = 0x80085FB8;  /* first-pass subsystem tag (mario); <-mario_getMarioVoiceData_8005BE84 */
+dispstuff_helper_80087770                          = 0x80087770;  /* first-pass subsystem tag (dispstuff); <-DispStuff_helper_800841E0;<-DispStuff_helper_80084500 */
+dispstuff_helper_80087CAC                          = 0x80087CAC;  /* first-pass subsystem tag (dispstuff); <-DispStuff_helper_800841E0;<-DispStuff_helper_80084500 */
+tslglobalmemfree_helper_80088584                   = 0x80088584;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
+spu_helper_800885CC                                = 0x800885CC;  /* first-pass subsystem tag (spu); <-spu_Init_800885AC;->spu_FlushVoiceChannels */
+bios_helper_800886C4                               = 0x800886C4;  /* first-pass subsystem tag (bios); ->bios_OpenEvent;->bios_EnableEvent */
+spu_helper_80088F9C                                = 0x80088F9C;  /* first-pass subsystem tag (spu); <-spu_TransferData_capped */
+spu_helper_80089024                                = 0x80089024;  /* first-pass subsystem tag (spu); <-spu_TransferDirect_capped */
+snd_helper_800899A8                                = 0x800899A8;  /* first-pass subsystem tag (snd); <-snd_ChannelDmaFlush */
+allocbukirmd_helper_80089D10                       = 0x80089D10;  /* first-pass subsystem tag (allocbukirmd); <-AllocBukiRmd_helper_80086CF8 */
+obj_helper_80089F3C                                = 0x80089F3C;  /* first-pass subsystem tag (obj); <-obj_SetControlData_80085E4C;<-obj_SetReverbValue_80085EE4 */
+spu_helper_8008AF9C                                = 0x8008AF9C;  /* first-pass subsystem tag (spu); <-spu_SetVolume_80083B50 */
+bios_helper_8008C464                               = 0x8008C464;  /* first-pass subsystem tag (bios); ->bios_SysEnqIntRP;->bios_SysDeqIntRP;->bios_DeliverEvent */
+mode_helper_8001979C                               = 0x8001979C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_29_StageLeafUpdate'] ->[] */
+mode_helper_800198D0                               = 0x800198D0;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->[] */
+md_game_helper_8001A538                            = 0x8001A538;  /* first-pass tag(clean-anchor); md_game: <-['md_game_restart_init'] ->[] */
+mode_helper_800207C8                               = 0x800207C8;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->['single_game_getEnemyCharId'] */
+stub_80030D48                                      = 0x80030D48;  /* structural role; n=2 */
+mk_helper_800325E0                                 = 0x800325E0;  /* first-pass tag(clean-anchor); mk: <-['mk_leaf_newpos'] ->[] */
+mode_helper_80035438                               = 0x80035438;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_09_NoOp'] ->['single_game_SetWazaData'] */
+mode_helper_80036EA8                               = 0x80036EA8;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_18_UnlockAnimDispatch', 'mode_handler_06_GameTeardownVariant'] ->[] */
+mode_helper_800371E8                               = 0x800371E8;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_09_NoOp'] ->[] */
+set_global_80037234                                = 0x80037234;  /* structural role; n=7 */
+mode_helper_800388A8                               = 0x800388A8;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_09_NoOp'] ->[] */
+stub_800392B8                                      = 0x800392B8;  /* structural role; n=4 */
+mode_helper_8003984C                               = 0x8003984C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->[] */
+bios_helper_8003A174                               = 0x8003A174;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_OpenEvent'] */
+set_global_8003A42C                                = 0x8003A42C;  /* structural role; n=9 */
+irq_helper_8003A450                                = 0x8003A450;  /* first-pass tag(clean-anchor); irq: <-[] ->['bios_FileWrite_B'] */
+mode_helper_8003AE5C                               = 0x8003AE5C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_23_FrameDelay3'] ->['EndADRSound'] */
+set_field0x0_8003D774                              = 0x8003D774;  /* structural role; n=16 */
+copy_8003E2AC                                      = 0x8003E2AC;  /* structural role; n=7 */
+stub_8003F1C8                                      = 0x8003F1C8;  /* structural role; n=3 */
+stub_8003F1D4                                      = 0x8003F1D4;  /* structural role; n=4 */
+set_global_8003F1E4                                = 0x8003F1E4;  /* structural role; n=13 */
+stub_8003F268                                      = 0x8003F268;  /* structural role; n=3 */
+set_global_8003F52C                                = 0x8003F52C;  /* structural role; n=8 */
+get_global_8003F54C                                = 0x8003F54C;  /* structural role; n=7 */
+set_global_8003F5A8                                = 0x8003F5A8;  /* structural role; n=9 */
+copy_8004019C                                      = 0x8004019C;  /* structural role; n=12 */
+copy_800404A0                                      = 0x800404A0;  /* structural role; n=14 */
+rob_helper_80040A78                                = 0x80040A78;  /* first-pass tag(clean-anchor); rob: <-['rob_life_ctrl'] ->[] */
+mode_helper_80040D48                               = 0x80040D48;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->[] */
+get_global_8004153C                                = 0x8004153C;  /* structural role; n=6 */
+get_field0x8_80041554                              = 0x80041554;  /* structural role; n=12 */
+get_field0x2_80041650                              = 0x80041650;  /* structural role; n=14 */
+set_global_800420E8                                = 0x800420E8;  /* structural role; n=13 */
+set_global_8004283C                                = 0x8004283C;  /* structural role; n=10 */
+copy_80042ED8                                      = 0x80042ED8;  /* structural role; n=14 */
+stub_80043244                                      = 0x80043244;  /* structural role; n=13 */
+get_val_80043278                                   = 0x80043278;  /* structural role; n=10 */
+get_global_800457E8                                = 0x800457E8;  /* structural role; n=5 */
+player_helper_80045878                             = 0x80045878;  /* first-pass tag(clean-anchor); player: <-['player_rob_Init'] ->[] */
+mode_helper_8004659C                               = 0x8004659C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_06_GameTeardownVariant'] ->['md_game_check_mode'] */
+copy_80047ED0                                      = 0x80047ED0;  /* structural role; n=6 */
+stub_80049710                                      = 0x80049710;  /* structural role; n=2 */
+mode_helper_80049A2C                               = 0x80049A2C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->['InitFadePanel'] */
+stub_8004A938                                      = 0x8004A938;  /* structural role; n=2 */
+stub_8004E564                                      = 0x8004E564;  /* structural role; n=2 */
+stub_8004E56C                                      = 0x8004E56C;  /* structural role; n=2 */
+stub_80052720                                      = 0x80052720;  /* structural role; n=13 */
+decbs0_helper_80052754                             = 0x80052754;  /* first-pass tag(clean-anchor); decbs0: <-['decBs0'] ->[] */
+robtest_helper_80052930                            = 0x80052930;  /* first-pass tag(clean-anchor); robtest: <-['robtest_disp2'] ->[] */
+get_field0x0_80052B44                              = 0x80052B44;  /* structural role; n=14 */
+stub_80052C28                                      = 0x80052C28;  /* structural role; n=9 */
+myrobgeneidraw2_helper_8005344C                    = 0x8005344C;  /* first-pass tag(clean-anchor); myrobgeneidraw2: <-['myRobGeneiDraw2'] ->[] */
+copy_8005441C                                      = 0x8005441C;  /* structural role; n=6 */
+stub_80054434                                      = 0x80054434;  /* structural role; n=3 */
+set_field0x3B4_80055B44                            = 0x80055B44;  /* structural role; n=7 */
+gpu_helper_80060CB8                                = 0x80060CB8;  /* first-pass tag(clean-anchor); gpu: <-[] ->['saTan1GaugeInit'] */
+eff_helper_80060E38                                = 0x80060E38;  /* first-pass tag(clean-anchor); eff: <-['eff_FrameUpdate'] ->[] */
+mode_helper_800618B4                               = 0x800618B4;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_29_StageLeafUpdate'] ->[] */
+gpu_helper_80068F70                                = 0x80068F70;  /* first-pass tag(clean-anchor); gpu: <-[] ->['efc_rob_Close'] */
+copy_8006E440                                      = 0x8006E440;  /* structural role; n=16 */
+gpu_helper_8006E534                                = 0x8006E534;  /* first-pass tag(clean-anchor); gpu: <-[] ->['efc_buki_ZanzouClose'] */
+get_global_8006E8AC                                = 0x8006E8AC;  /* structural role; n=8 */
+gpu_helper_8006E8CC                                = 0x8006E8CC;  /* first-pass tag(clean-anchor); gpu: <-[] ->['gpu_LoadImage'] */
+get_global_80071C20                                = 0x80071C20;  /* structural role; n=11 */
+get_global_80077D74                                = 0x80077D74;  /* structural role; n=8 */
+get_global_80078634                                = 0x80078634;  /* structural role; n=8 */
+mode_helper_800788B0                               = 0x800788B0;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_11_PadInputCheck'] ->[] */
+set_global_80078BE0                                = 0x80078BE0;  /* structural role; n=4 */
+get_global_80078BF0                                = 0x80078BF0;  /* structural role; n=4 */
+bios_helper_80078C00                               = 0x80078C00;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_OutdatedPadInitAndStart'] */
+bios_helper_80078C9C                               = 0x80078C9C;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_InitPad'] */
+bios_helper_80078D38                               = 0x80078D38;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_StartPad'] */
+bios_helper_80078DA0                               = 0x80078DA0;  /* first-pass tag(clean-anchor); bios: <-[] ->['EnterCriticalSection'] */
+get_field0x4_80078EC0                              = 0x80078EC0;  /* structural role; n=16 */
+get_global_80078F60                                = 0x80078F60;  /* structural role; n=5 */
+copy_80078FF0                                      = 0x80078FF0;  /* structural role; n=14 */
+stub_800790A4                                      = 0x800790A4;  /* structural role; n=1 */
+dispsleepmenutex_helper_800791D8                   = 0x800791D8;  /* first-pass tag(clean-anchor); dispsleepmenutex: <-['DispSleepMenuTex'] ->[] */
+dispsleepmenutex_helper_80079A30                   = 0x80079A30;  /* first-pass tag(clean-anchor); dispsleepmenutex: <-['_CardCheckPulled2', 'DispSleepMenuTex'] ->['bb2_memchr'] */
+bios_helper_8007A318                               = 0x8007A318;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios__new_card'] */
+get_field0x0_8007CAB0                              = 0x8007CAB0;  /* structural role; n=6 */
+copy_8007D2CC                                      = 0x8007D2CC;  /* structural role; n=10 */
+get_global_8007D2F4                                = 0x8007D2F4;  /* structural role; n=5 */
+tanren_helper_8007E4DC                             = 0x8007E4DC;  /* first-pass tag(clean-anchor); tanren: <-['tanren_get_bamboo_anim_info'] ->[] */
+replay_camera_helper_8007E74C                      = 0x8007E74C;  /* first-pass tag(clean-anchor); replay_camera: <-['replay_camera_rob_back_win_near'] ->[] */
+tanren_helper_8007ED6C                             = 0x8007ED6C;  /* first-pass tag(clean-anchor); tanren: <-['tanren_get_bamboo_anim_info'] ->[] */
+copy_8007F00C                                      = 0x8007F00C;  /* structural role; n=10 */
+copy_8007F034                                      = 0x8007F034;  /* structural role; n=10 */
+copy_8007F05C                                      = 0x8007F05C;  /* structural role; n=15 */
+copy_8007F098                                      = 0x8007F098;  /* structural role; n=9 */
+copy_8007F0BC                                      = 0x8007F0BC;  /* structural role; n=10 */
+copy_8007F0E4                                      = 0x8007F0E4;  /* structural role; n=10 */
+stub_8007F10C                                      = 0x8007F10C;  /* structural role; n=8 */
+stub_8007F12C                                      = 0x8007F12C;  /* structural role; n=9 */
+stub_8007F200                                      = 0x8007F200;  /* structural role; n=6 */
+copy_8007F21C                                      = 0x8007F21C;  /* structural role; n=11 */
+copy_8007F2AC                                      = 0x8007F2AC;  /* structural role; n=10 */
+get_global_8008009C                                = 0x8008009C;  /* structural role; n=4 */
+get_global_800800AC                                = 0x800800AC;  /* structural role; n=8 */
+copy_80080228                                      = 0x80080228;  /* structural role; n=6 */
+copy_80080240                                      = 0x80080240;  /* structural role; n=6 */
+tsltm2loadimage_helper_80080828                    = 0x80080828;  /* first-pass tag(clean-anchor); tsltm2loadimage: <-['cpu_side_move_dir_4', 'tslTm2LoadImage'] ->['tslTm2LoadImage_2'] */
+tsltm2loadimage_helper_800819C4                    = 0x800819C4;  /* first-pass tag(clean-anchor); tsltm2loadimage: <-[] ->['cpu_side_move_dir_4'] */
+set_global_800863CC                                = 0x800863CC;  /* structural role; n=4 */
+copy_80089214                                      = 0x80089214;  /* structural role; n=11 */
+copy_80089240                                      = 0x80089240;  /* structural role; n=11 */
+bios_helper_800892F8                               = 0x800892F8;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_DisableEvent'] */
+set_global_8008AE7C                                = 0x8008AE7C;  /* structural role; n=13 */
+gte_mvmva_80019310                                 = 0x80019310;  /* GTE: mvmva matrix*vector(+translation) */
+gte_mvmva_8002D320                                 = 0x8002D320;  /* GTE: mvmva matrix*vector(+translation) */
+gte_mvmva_8002DE20                                 = 0x8002DE20;  /* GTE: mvmva matrix*vector(+translation) */
+gte_mvmva_8002F2D0                                 = 0x8002F2D0;  /* GTE: mvmva matrix*vector(+translation) */
+gte_mvmva_8002FF20                                 = 0x8002FF20;  /* GTE: mvmva matrix*vector(+translation) */
+gte_mvmva_800300B4                                 = 0x800300B4;  /* GTE: mvmva matrix*vector(+translation) */
+gte_mvmva_80031890                                 = 0x80031890;  /* GTE: mvmva matrix*vector(+translation) */
+gte_gpf_8004A348                                   = 0x8004A348;  /* GTE: gpf scalar interpolation */
+gte_rtpt_batch_8004A76C                            = 0x8004A76C;  /* GTE: rtpt loop: batch triangle perspective projection -> screen XY(swc2 12-14)+Z(mfc2 17-19) */
+gte_rtpt_8004A808                                  = 0x8004A808;  /* GTE: rtpt perspective transform of 3 verts */
+gte_rtpt_8004BB68                                  = 0x8004BB68;  /* GTE: rtpt perspective transform of 3 verts */
+gte_rtpt_8004C404                                  = 0x8004C404;  /* GTE: rtpt perspective transform of 3 verts */
+gte_nclip_8004C994                                 = 0x8004C994;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004CB8C                                 = 0x8004CB8C;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004CDB0                                 = 0x8004CDB0;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004CFE0                                 = 0x8004CFE0;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004D244                                 = 0x8004D244;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004D424                                 = 0x8004D424;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004D634                                 = 0x8004D634;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004D838                                 = 0x8004D838;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_rtpt_8004DA74                                  = 0x8004DA74;  /* GTE: rtpt perspective transform of 3 verts */
+gte_mvmva_8004DDB4                                 = 0x8004DDB4;  /* GTE: mvmva matrix*vector(+translation) */
+gte_gpl_8004E574                                   = 0x8004E574;  /* GTE: gpl interpolation+base */
+gte_gpl_8004E7E4                                   = 0x8004E7E4;  /* GTE: gpl interpolation+base */
+gte_nclip_8004EAC8                                 = 0x8004EAC8;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004ECC8                                 = 0x8004ECC8;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004EF10                                 = 0x8004EF10;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004F0FC                                 = 0x8004F0FC;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004F314                                 = 0x8004F314;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004F53C                                 = 0x8004F53C;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004F798                                 = 0x8004F798;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004F970                                 = 0x8004F970;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004FB74                                 = 0x8004FB74;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004FD40                                 = 0x8004FD40;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_8004FF40                                 = 0x8004FF40;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80050120                                 = 0x80050120;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80050334                                 = 0x80050334;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80050538                                 = 0x80050538;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80050774                                 = 0x80050774;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80050908                                 = 0x80050908;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80050AB8                                 = 0x80050AB8;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80050C68                                 = 0x80050C68;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80050E60                                 = 0x80050E60;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80051010                                 = 0x80051010;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80051208                                 = 0x80051208;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_800513B0                                 = 0x800513B0;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_800515AC                                 = 0x800515AC;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80051754                                 = 0x80051754;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80051944                                 = 0x80051944;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80051B04                                 = 0x80051B04;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80051D08                                 = 0x80051D08;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_nclip_80051ED4                                 = 0x80051ED4;  /* GTE: nclip backface/cross-z; poly cull-draw family */
+gte_sqr_800525D8                                   = 0x800525D8;  /* GTE: sqr square/magnitude */
+gte_gpf_80052788                                   = 0x80052788;  /* GTE: gpf scalar interpolation */
+gte_gpf_800527FC                                   = 0x800527FC;  /* GTE: gpf scalar interpolation */
+gte_mtx_apply_vec_80052A88                         = 0x80052A88;  /* GTE: mvmva: transform vector by matrix+translation (ctc2 0-7 matrix, out IR1-3) */
+gte_mvmva_80052B7C                                 = 0x80052B7C;  /* GTE: mvmva matrix*vector(+translation) */
+gte_mvmva_80052C4C                                 = 0x80052C4C;  /* GTE: mvmva matrix*vector(+translation) */
+gte_mvmva_80063E10                                 = 0x80063E10;  /* GTE: mvmva matrix*vector(+translation) */
+gte_gpf_8007E1AC                                   = 0x8007E1AC;  /* GTE: gpf scalar interpolation */
+gte_gpf_8007E1FC                                   = 0x8007E1FC;  /* GTE: gpf scalar interpolation */
+gte_gpf_8007E24C                                   = 0x8007E24C;  /* GTE: gpf scalar interpolation */
+gte_gpf_8007E2D4                                   = 0x8007E2D4;  /* GTE: gpf scalar interpolation */
+gte_gpf_8007E35C                                   = 0x8007E35C;  /* GTE: gpf scalar interpolation */
+gte_gpf_8007E3BC                                   = 0x8007E3BC;  /* GTE: gpf scalar interpolation */
+gte_mvmva_8007E5EC                                 = 0x8007E5EC;  /* GTE: mvmva matrix*vector(+translation) */
+gte_mvmva_8007EB4C                                 = 0x8007EB4C;  /* GTE: mvmva matrix*vector(+translation) */
+gte_outerprod_8007F150                             = 0x8007F150;  /* GTE: op outer/cross product */
+gte_outerprod_8007F1A8                             = 0x8007F1A8;  /* GTE: op outer/cross product */
+gte_rtpt_8007F24C                                  = 0x8007F24C;  /* GTE: rtpt perspective transform of 3 verts */
+motion_CheckSituation_wrapper_80047530                 = 0x80047530;  /* thin pass-through wrapper for motion_CheckSituation */
+saEft03Start_wrapper_80047550                          = 0x80047550;  /* thin pass-through wrapper for saEft03Start */
+md_menu_logo_init_8003B484                             = 0x8003B484;  /* sets flag D_800A3712 + 3 config bytes from arg, calls func_8003AF40(1)+md_menu_logo_exec; logo-mode init */
+saTan2_gauge_set_disp_param_80069A8C                   = 0x80069A8C;  /* sets arg disp-param bytes 4/5/6 (8/8/8 or 0x31) from saTan2 gauge active-flag */
+saTan2_gauge_set_disp_param_80069A30                   = 0x80069A30;  /* sibling of 80069A8C: sets disp-param bytes 4/5/6 (0x22 or 0x4C/0x6C) from gauge flag */
+rob_genei_draw_check_80027A58                          = 0x80027A58;  /* gated player-afterimage draw: timing check (fields 0x86/0x88/0x8A) then game_GetPlayerData + myRobGeneiDraw, resets trigger */
+find_id_in_table_80087DA0                              = 0x80087DA0;  /* linear search of stride-54 table D_800F4E28 for halfword==arg; records found index to D_8010280A */
+memcard_access_section_list_8003D478                   = 0x8003D478;  /* iterates directive byte-list, calls _McAccessSection per non-skip entry (stride-8 data); 0x20/0x0A control codes */
+coli_calc_motion_slots_8003D7B4                        = 0x8003D7B4;  /* indexes D_800A3D40 (stride 0x18) by arg; 6-slot loop calling coli_calc_motion, accumulates bits into field 0xC */
+battle_switch_reinit_800342A0                          = 0x800342A0;  /* on battle-switch-data change (D_800A3874!=D_800A389B): reset state flags, reload config tables, gpu_InitDisplay */
+check_dodge_kawashi_80030BA8                           = 0x80030BA8;  /* scan 12-entry table D_80106A7A (stride0x64) for in-range valid object near fighter; trigger motion_shift_check_e_kawashi dodge + event dispatch */
+special_camera_check_pos_outside_ground_wrap_800451A0  = 0x800451A0;  /* thin wrapper: calls special_camera_check_pos_outside_ground_80036E34 */
+title_mv_exec2_wrapper_8005B58C                        = 0x8005B58C;  /* thin pass-through wrapper for title_mv_exec2 */
+saTan4GaugeInit_wrapper_80084948                       = 0x80084948;  /* thin pass-through wrapper for saTan4GaugeInit */
+irq_AcknowledgeVblank_wrapper_800892D4                 = 0x800892D4;  /* thin pass-through wrapper for irq_AcknowledgeVblank */
+coli_HitPauseKatana_2_wrapper_80089A24                 = 0x80089A24;  /* thin pass-through wrapper for coli_HitPauseKatana_2 */
+efc_spawn_80066EC0                                     = 0x80066EC0;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_80066EF4                                     = 0x80066EF4;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_80066F28                                     = 0x80066F28;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_80066F5C                                     = 0x80066F5C;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_80066F90                                     = 0x80066F90;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_80066FC4                                     = 0x80066FC4;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_80066FF8                                     = 0x80066FF8;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_8006702C                                     = 0x8006702C;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_80067060                                     = 0x80067060;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_80067094                                     = 0x80067094;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_800670C8                                     = 0x800670C8;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_800670FC                                     = 0x800670FC;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_80067130                                     = 0x80067130;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_80067164                                     = 0x80067164;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_80067198                                     = 0x80067198;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+efc_spawn_800671CC                                     = 0x800671CC;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
+buki_collision_alloc_8005C6D0                          = 0x8005C6D0;  /* iterates 0x18-entry object list D_800EFB78; coli_calc_motion2 per slot, builds params (7-bit fields), AllocBukiRmd for weapon hits */
+get_D_800F6650_80042864                                = 0x80042864;  /* getter: returns D_800F6650 (no calls/branches) */
+set_D_80101E64_if_valid_800371AC                       = 0x800371AC;  /* calls func_80037110; if result!=0 stores it to D_80101E64 and returns 1, else returns 0 */
+events_enable_8003A360                                 = 0x8003A360;  /* bios_EnableEvent on D_800A3810 + D_800A3738, sets enabled-flag D_800A320C=1, clears D_800A3730 */
+gte_load_rot_matrix_80052B00                           = 0x80052B00;  /* loads 3x3 rotation matrix + translation from arg into GTE control regs 0-7 (ctc2) */
+gte_set_projection_params_8007E094                     = 0x8007E094;  /* loads GTE projection control regs 24-30 (OFX/OFY/H/DQA/DQB/ZSF3/ZSF4) */
+gte_set_proj_distance_8007EFFC                         = 0x8007EFFC;  /* loads GTE control reg 26 (H = projection plane distance) */
+calc_rotated_enemy_pos_80042FA0                        = 0x80042FA0;  /* computes a position rotated by an angle (math_Cos/Sin) relative to the enemy char (single_game_getEnemyCharId); outputs 3-vector */
+init_move_to_target_80053304                           = 0x80053304;  /* stores current+target pos to ctx D_800EF9F8/D_800A33F4, computes distance (func_80052754), selects handler fn-ptr by dist threshold (0x9C3F), interpolates */
+gpu_build_gradient_quad_80072CD4                       = 0x80072CD4;  /* initPolyG4 + mode-dependent gradient colors + gpu_SetSemiTransp + ot_Link */
+gpu_build_quad_80072BC4                                = 0x80072BC4;  /* initPolyG4 + ot_Link (build+link a Gouraud quad; sibling of gpu_build_gradient_quad) */
+draw_anim_sprite_8006A3CC                              = 0x8006A3CC;  /* render sub-obj: satan_sprite_batch_render + saMotionSet + initTexPage + ot_Link */
+draw_anim_sprite_scaled_8006A494                       = 0x8006A494;  /* as draw_anim_sprite but sets scale fields 0x20/0x24=0x100; func_80073728 + saMotionSet + initTexPage + ot_Link */
+gpu_draw_fullscreen_overlay_8006F038                   = 0x8006F038;  /* initTile full-screen 0x280x0xF0, color D_800A3550, gpu_SetSemiTransp, ot_Link (+texpage); fade/flash overlay */
+draw_anim_sprite_pos_80074D2C                          = 0x80074D2C;  /* anim-sprite render at computed offset, OT-depth select; satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link */
+gpu_draw_layered_box_80069898                          = 0x80069898;  /* 3x initTile (y-offset layers, fading colors 0x80/0x40) + gpu_SetSemiTransp + ot_Link; shadowed box/panel */
+draw_bg_and_sprites_80069E18                           = 0x80069E18;  /* full-screen overlay tile + saMotionSet sprite + initTexPage + 3x satan_sprite_batch_render; composite screen render */
+replay_setup_display_8006E950                          = 0x8006E950;  /* game_FrameLoop + replay_camera_Init + 2x gpu_LoadImage (VRAM regions); replay-mode display init */
+gpu_decode_load_image_800484A0                         = 0x800484A0;  /* checks image header tag 0x10+flag, decodes via func_800486FC/8004876C into 0x400 buffer, gpu_LoadImage to VRAM */
+draw_anim_sprites_seq_8006BB68                         = 0x8006BB68;  /* animated-sprite render (satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link) looped with frame-phase select (D_800A34F8>>13&7) */

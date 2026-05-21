@@ -1,0 +1,374 @@
+address,decision,name,subsystem,evidence
+0x80017A44,applied,efc_helper_80017A44,efc,<-efc_rob_ougi_control
+0x8001924C,applied,ang_helper_8001924C,ang,<-ang_hosei_8003F62C
+0x800194C0,applied,replay_camera_helper_800194C0,replay_camera,<-replay_camera_wait_for_playback_8003ACB8
+0x800194F4,applied,replay_camera_helper_800194F4,replay_camera,<-replay_camera_wait_for_playback_8003ACB8
+0x80019534,applied,sys_helper_80019534,sys,<-sys_GameInit_80016D78
+0x8001A820,applied,mode_helper_8001A820,mode,<-mode_handler_01_GameFrameUpdate
+0x8001B690,applied,cpu_helper_8001B690,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x8001B6F4,applied,mode_helper_8001B6F4,mode,<-mode_handler_04_GameSetup
+0x8001BAE4,applied,mode_helper_8001BAE4,mode,<-mode_handler_05_NoOp
+0x8001BBD8,applied,mode_helper_8001BBD8,mode,<-mode_handler_05_NoOp
+0x8001BE20,applied,mode_helper_8001BE20,mode,<-mode_handler_01_GameFrameUpdate
+0x8001C444,applied,sys_helper_8001C444,sys,<-sys_GameInit_80016D78
+0x8001C4C0,applied,mario_helper_8001C4C0,mario,->mario_test_move_to_inventory_800218C8;->mario_test_get_guard_power_80021974
+0x8001C51C,applied,mario_helper_8001C51C,mario,->mario_test_move_to_inventory_800218C8;->mario_test_init_dialog_memory_800392C8;->mario_test_get_guard_power_80021974
+0x8001C8DC,applied,mode_helper_8001C8DC,mode,<-mode_handler_01_GameFrameUpdate
+0x8001E800,applied,mode_helper_8001E800,mode,<-mode_handler_01_GameFrameUpdate
+0x8001F1C4,applied,mode_helper_8001F1C4,mode,<-mode_handler_05_NoOp
+0x8001F888,applied,cpu_helper_8001F888,cpu,<-cpu_update_frame_timing_stats_8002006C
+0x8001F938,applied,cpu_helper_8001F938,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x800200DC,applied,cpu_helper_800200DC,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x800206B0,applied,mario_helper_800206B0,mario,<-mario_test_initialize_match_80022580
+0x80020D70,applied,sys_helper_80020D70,sys,<-sys_GameInit_80016D78
+0x80021424,applied,cpu_helper_80021424,cpu,<-cpu_side_move_dir;<-cpu_calc_move_pattern_trajectory_80023F08
+0x80021A3C,applied,hirahira_helper_80021A3C,hirahira,<-hirahira_w_frie2
+0x80021A98,applied,cpu_helper_80021A98,cpu,<-cpu_side_move_dir;<-cpu_calc_move_pattern_trajectory_80023F08
+0x80021DB0,applied,mario_helper_80021DB0,mario,<-mario_test_initialize_match_80022580
+0x800224E0,applied,mario_helper_800224E0,mario,<-mario_test_initialize_match_80022580
+0x8002304C,applied,cpu_helper_8002304C,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x80023648,applied,cpu_helper_80023648,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x80023C30,applied,cpu_helper_80023C30,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x80023CB4,applied,cpu_helper_80023CB4,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x80023D08,applied,cpu_helper_80023D08,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x80023D28,applied,cpu_helper_80023D28,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x80023DB8,applied,cpu_helper_80023DB8,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x80023E40,applied,cpu_helper_80023E40,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x80026DA4,applied,cpu_helper_80026DA4,cpu,<-cpu_exec_main_game_loop_frame_8002C61C
+0x8002798C,applied,cpu_helper_8002798C,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x80029454,applied,cpu_helper_80029454,cpu,<-cpu_exec_main_game_loop_frame_8002C61C
+0x8002C0DC,applied,calc_helper_8002C0DC,calc,->calc_loc_mat_fw;->calc_AngleDelta_8001F860;->calc_fighter_separation_vec_8002BC68
+0x8002EECC,applied,calc_helper_8002EECC,calc,<-calc_fc_frame_800203B4
+0x80030208,applied,cpu_helper_80030208,cpu,<-cpu_ai_pick_move_for_situation_80030D7C
+0x8003047C,applied,mario_helper_8003047C,mario,<-mario_test_initialize_match_80022580
+0x80030D50,applied,cpu_helper_80030D50,cpu,<-cpu_ai_pick_move_for_situation_80030D7C
+0x80032064,applied,cpu_helper_80032064,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x80033DF4,applied,dispsamnailwindow_helper_80033DF4,dispsamnailwindow,<-DispSamnailWindow
+0x80033FE4,applied,mode_helper_80033FE4,mode,<-mode_handler_31_TimerLoop
+0x80034F88,applied,mode_helper_80034F88,mode,<-mode_handler_09_NoOp
+0x8003504C,applied,mode_helper_8003504C,mode,<-mode_handler_09_NoOp
+0x80035E88,applied,replay_camera_helper_80035E88,replay_camera,<-replay_camera_wait_for_playback_8003ACB8
+0x80035EDC,applied,replay_camera_helper_80035EDC,replay_camera,<-replay_camera_wait_for_playback_8003ACB8
+0x80035F78,applied,mode_helper_80035F78,mode,<-mode_handler_09_NoOp
+0x80035FA8,applied,mode_helper_80035FA8,mode,<-mode_handler_18_UnlockAnimDispatch;<-mode_handler_09_NoOp;<-mode_handler_06_GameTeardownVariant
+0x80035FE0,applied,sys_helper_80035FE0,sys,<-sys_Init_80016A18
+0x80037540,applied,mode_helper_80037540,mode,<-mode_handler_15_TeardownVariant
+0x800395B4,applied,motion_helper_800395B4,motion,<-motion_dispatch_event_handler_80032854
+0x80039680,applied,cpu_helper_80039680,cpu,<-cpu_calc_move_pattern_trajectory_80023F08
+0x8003A264,applied,bios_helper_8003A264,bios,->bios_CloseEvent;->bios_FileClose_B
+0x8003A6FC,applied,single_game_helper_8003A6FC,single_game,<-single_game_HashAndStoreData_8003A728
+0x8003AA48,applied,game_helper_8003AA48,game,<-game_FrameLoop;<-game_exec_display_dma_loop_8003AAB0;<-game_exec_display_sync_8003AA78
+0x8003AB44,applied,replay_camera_helper_8003AB44,replay_camera,<-replay_camera_wait_for_playback_8003ACB8
+0x8003AF40,applied,mode_helper_8003AF40,mode,<-mode_handler_18_UnlockAnimDispatch;<-mode_handler_29_StageLeafUpdate;<-mode_handler_07_SubModeTransition
+0x8003B328,applied,mode_helper_8003B328,mode,<-mode_handler_29_StageLeafUpdate;<-mode_handler_05_NoOp
+0x8003B534,applied,mode_helper_8003B534,mode,<-mode_handler_29_StageLeafUpdate;<-mode_handler_05_NoOp
+0x8003B56C,applied,sudispmentalbar_helper_8003B56C,sudispmentalbar,<-suDispMentalBar
+0x8003D91C,applied,game_helper_8003D91C,game,<-game_Init_80046B44
+0x8003DDF8,applied,tsllineg5init_helper_8003DDF8,tsllineg5init,<-tslLineG5Init_helper_8003DBE4
+0x8003DE14,applied,gpu_helper_8003DE14,gpu,->gpu_StoreImage;->gpu_LoadImage;->gpu_DrawSync
+0x8003E0E0,applied,game_helper_8003E0E0,game,<-game_StageCleanup_80046EDC
+0x8003E6A0,applied,mode_helper_8003E6A0,mode,<-mode_handler_01_GameFrameUpdate
+0x8003F3D4,applied,cpu_helper_8003F3D4,cpu,<-cpu_init_stage_and_camera_setup_8001E404
+0x8003F7F4,applied,game_helper_8003F7F4,game,<-game_Init_80046B44
+0x8003FE40,applied,tslprintscreen_helper_8003FE40,tslprintscreen,<-tslPrintScreen_helper_8003FA24
+0x800400F8,applied,player_helper_800400F8,player,<-player_sprite_free_8004016C
+0x800418D0,applied,replay_camera_helper_800418D0,replay_camera,<-replay_camera_rob_back_win_near
+0x80041E10,applied,eff_helper_80041E10,eff,<-eff_FrameUpdate
+0x800420D0,applied,replay_camera_helper_800420D0,replay_camera,<-replay_camera_rob_back_win_near
+0x8004211C,applied,game_helper_8004211C,game,<-game_StageInit_80046DA8
+0x800421C8,applied,game_helper_800421C8,game,<-game_StageCleanup_80046EDC
+0x80042E90,applied,game_helper_80042E90,game,<-game_Init_80046B44
+0x800430E4,applied,calc_helper_800430E4,calc,<-calc_loc_mat_fw_8004A940
+0x8004473C,applied,game_helper_8004473C,game,<-game_EffInit2_800474F0;<-game_EffInit_8004746C;<-game_EffStart_8004777C
+0x800453E0,applied,channel_helper_800453E0,channel,<-channel_helper_A_80046A60;<-channel_helper_8_80046914
+0x800456F0,applied,player_helper_800456F0,player,<-player_allocate_sprite_80045A50
+0x8004574C,applied,snd_helper_8004574C,snd,<-snd_LoadBgm_800467B8
+0x800457A0,applied,audio_helper_800457A0,audio,<-audio_chain_fade_load_80046048
+0x8004668C,applied,snd_helper_8004668C,snd,<-snd_StopAll_80046AA0
+0x80047BE0,applied,calc_helper_80047BE0,calc,<-calc_loc_mat_fw_8004A940
+0x800486FC,applied,gnd_helper_800486FC,gnd,<-gnd_init_80041688;<-gnd_land_hit_char_die_main
+0x8004881C,applied,gnd_helper_8004881C,gnd,<-gnd_land_hit_char_die_main;<-gnd_init_80041688
+0x80048F58,applied,game_helper_80048F58,game,<-game_AnimStart_80047738;<-game_AnimInit_800474AC
+0x80048FFC,applied,game_helper_80048FFC,game,<-game_AnimCleanup_800474D0;<-game_AnimStop_8004775C
+0x8004954C,applied,efc_helper_8004954C,efc,<-efc_rob_type_dispatch_80049584
+0x80049E1C,applied,snd_helper_80049E1C,snd,<-snd_StopAll_80046AA0
+0x80049E4C,applied,game_helper_80049E4C,game,<-game_Init_80046B44
+0x80049F4C,applied,game_helper_80049F4C,game,<-game_Init_80046B44
+0x8004C388,applied,satan_helper_8004C388,satan,<-satan_line_draw_recursive_8004C1F4
+0x80053694,applied,camera_helper_80053694,camera,<-camera_compute_fixed_point_matrices_80052D00
+0x80054FDC,applied,snd_helper_80054FDC,snd,<-snd_SelectionCallback_80046A80
+0x80055948,applied,calc_helper_80055948,calc,<-calc_loc_mat_fw_80055B60
+0x80056CB8,applied,calc_helper_80056CB8,calc,<-calc_loc_mat_fw_80055B60
+0x80058580,applied,calc_helper_80058580,calc,<-calc_loc_mat_fw_80055B60
+0x8005B43C,applied,obj_helper_8005B43C,obj,->obj_SetReverbValue_80085EE4;->obj_SetControlData_80085E4C;->obj_ResetReverbMode_80085F98
+0x8005BF78,applied,spu_helper_8005BF78,spu,->spu_TransferDirect_capped;->spu_TransferData_capped
+0x8005C074,applied,tslglobalmemfree_helper_8005C074,tslglobalmemfree,<-tslGlobalMemFree_8005C2A8
+0x8005C5A8,applied,tslglobalmemfree_helper_8005C5A8,tslglobalmemfree,<-tslGlobalMemFree_8005C2A8
+0x8005C614,applied,file_helper_8005C614,file,<-file_LoadSoundData_80016CF8
+0x8005C650,applied,mode_helper_8005C650,mode,<-mode_handler_29_StageLeafUpdate;<-mode_handler_03_NoOp;<-mode_handler_25_PostBattleSetup
+0x800600C8,applied,mode_helper_800600C8,mode,<-mode_handler_33_RebootBegin
+0x800602AC,applied,gpu_helper_800602AC,gpu,->gpu_LoadImage;->gpu_DrawSync
+0x80060544,applied,mode_helper_80060544,mode,<-mode_handler_23_FrameDelay3
+0x80060A68,applied,anim_helper_80060A68,anim,<-anim_emit_210009_with_setup_80061250;<-anim_emit_29000B_80061454;<-anim_emit_21000CD_80061658
+0x80060B70,applied,eff_helper_80060B70,eff,<-eff_FrameUpdate
+0x800611A4,applied,motion_helper_800611A4,motion,<-motion_dispatch_event_handler_80032854
+0x8006133C,applied,motion_helper_8006133C,motion,<-motion_dispatch_event_handler_80032854
+0x800613C8,applied,motion_helper_800613C8,motion,<-motion_dispatch_event_handler_80032854
+0x800614E0,applied,motion_helper_800614E0,motion,<-motion_dispatch_event_handler_80032854
+0x8006156C,applied,motion_helper_8006156C,motion,<-motion_dispatch_event_handler_80032854
+0x80061710,applied,motion_helper_80061710,motion,<-motion_dispatch_event_handler_80032854
+0x800617C8,applied,motion_helper_800617C8,motion,<-motion_dispatch_event_handler_80032854
+0x800619A4,applied,motion_helper_800619A4,motion,<-motion_dispatch_event_handler_80032854
+0x800619F0,applied,motion_helper_800619F0,motion,<-motion_dispatch_event_handler_80032854
+0x80061A3C,applied,cpu_helper_80061A3C,cpu,<-cpu_check_special_move_input_80032C50
+0x80061ACC,applied,motion_helper_80061ACC,motion,<-motion_dispatch_event_handler_80032854
+0x80061C00,applied,motion_helper_80061C00,motion,<-motion_dispatch_event_handler_80032854
+0x80061D74,applied,motion_helper_80061D74,motion,<-motion_dispatch_event_handler_80032854
+0x80061EC0,applied,motion_helper_80061EC0,motion,<-motion_dispatch_event_handler_80032854
+0x80061FAC,applied,disphira_helper_80061FAC,disphira,<-DispHira_helper_800620B8
+0x80062020,applied,se_helper_80062020,se,<-se_CalcPitchShift_8005BA8C
+0x800676C8,applied,efc_helper_800676C8,efc,->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14
+0x80067704,applied,efc_helper_80067704,efc,->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14
+0x80067740,applied,efc_helper_80067740,efc,->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14
+0x8006777C,applied,efc_helper_8006777C,efc,->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14
+0x800677B8,applied,efc_helper_800677B8,efc,->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14
+0x800677F4,applied,efc_helper_800677F4,efc,->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14
+0x80067830,applied,efc_helper_80067830,efc,->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14
+0x8006786C,applied,efc_helper_8006786C,efc,->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14
+0x80068ECC,applied,mode_helper_80068ECC,mode,<-mode_handler_09_NoOp
+0x8006A880,applied,satan_helper_8006A880,satan,->saTan3GaugeMain_8006A564;->satan_sprite_batch_render_8007352C
+0x8006BD28,applied,motion_helper_8006BD28,motion,<-motion_draw_tilemap_8006BEC4
+0x8006C168,applied,satan_helper_8006C168,satan,<-saTan2InfoInit_8006C1FC
+0x8006D74C,applied,satan_helper_8006D74C,satan,<-saTanMainDispGnd_80077A04
+0x8006D7FC,applied,replay_camera_helper_8006D7FC,replay_camera,<-replay_camera_init_framebuffer_80077A28
+0x8006D808,applied,hud_helper_8006D808,hud,<-hud_emit_warning_tiles_80060768
+0x8006E068,applied,satan_helper_8006E068,satan,<-saTan2InfoInit_80077A60
+0x8006E10C,applied,gpu_helper_8006E10C,gpu,->gpu_LoadImage;->gpu_DrawSync;->gpu_SetDispMask
+0x8006E2A8,applied,gpu_helper_8006E2A8,gpu,->gpu_DrawSync;->gpu_SetDispMask;->gpu_draw_color_prim_8007B4D0
+0x8006ECF4,applied,gpu_helper_8006ECF4,gpu,->gpu_LoadImage;->gpu_DrawSync
+0x8006F97C,applied,satan_helper_8006F97C,satan,->saTan3GaugeMain_80073200;->satan_sprite_batch_render_8007352C
+0x80070C70,applied,satan_helper_80070C70,satan,->saTan3GaugeMain_80073200;->satan_sprite_batch_render_8007352C
+0x800720FC,applied,satan_helper_800720FC,satan,->saTan3GaugeMain_80073200;->satan_sprite_batch_render_8007352C
+0x80072F30,applied,hud_helper_80072F30,hud,<-hud_layout_emit_tiles_80073060
+0x80072FCC,applied,hud_helper_80072FCC,hud,<-hud_layout_emit_tiles_80073060
+0x80073728,applied,gnd_helper_80073728,gnd,<-gnd_draw_texpage_2poly_8005D46C;<-gnd_render_affine_texpage_8005E54C;<-gnd_land_hit_char_tsuba
+0x80077098,applied,setup_helper_80077098,setup,<-setup_double_buffer_swap_80077724
+0x800770B8,applied,replay_camera_helper_800770B8,replay_camera,<-replay_camera_apply_transform_and_flip_80077A80
+0x80077374,applied,setup_helper_80077374,setup,<-setup_double_buffer_swap_80077724
+0x80077894,applied,mode_helper_80077894,mode,<-mode_handler_09_NoOp
+0x80077904,applied,mode_helper_80077904,mode,<-mode_handler_09_NoOp
+0x800779C8,applied,mode_helper_800779C8,mode,<-mode_handler_09_NoOp
+0x80077AE0,applied,replay_camera_helper_80077AE0,replay_camera,<-replay_camera_wait_for_playback_8003ACB8
+0x80077B00,applied,replay_camera_helper_80077B00,replay_camera,<-replay_camera_wait_for_playback_8003ACB8
+0x80077B30,applied,mode_helper_80077B30,mode,<-mode_handler_09_NoOp
+0x80077D94,applied,gpu_helper_80077D94,gpu,->gpu_LoadImage;->gpu_DrawSync
+0x8007855C,applied,mode_helper_8007855C,mode,<-mode_handler_09_NoOp
+0x80078628,applied,disp_helper_80078628,disp,<-disp_init_video_overlay_80078824
+0x8007C4B8,applied,gpu_helper_8007C4B8,gpu,<-gpu_copy_draw_packet_8007B9B0;<-gpu_DrawOTagEnv
+0x8007C748,applied,inittexpage_helper_8007C748,inittexpage,<-initTexPage_8007C248
+0x8007C7A0,applied,initdrawarea_helper_8007C7A0,initdrawarea,<-initDrawArea_8007C154
+0x8007C86C,applied,initdrawarea_helper_8007C86C,initdrawarea,<-initDrawArea_8007C154
+0x8007C938,applied,initdrawoffset_helper_8007C938,initdrawoffset,<-initDrawOffset_8007C1D8
+0x8007CA00,applied,cpu_helper_8007CA00,cpu,<-cpu_copy_display_buffer_and_sync_8007BC08
+0x8007CAC8,applied,gpu_helper_8007CAC8,gpu,->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68
+0x8007CE0C,applied,gpu_helper_8007CE0C,gpu,->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68
+0x8007D048,applied,gpu_helper_8007D048,gpu,->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68
+0x8007D3F8,applied,gpu_helper_8007D3F8,gpu,->gpu_vcount_init_8007DC68;->gpu_DrawTimeoutCheck
+0x8007D9C4,applied,gpu_helper_8007D9C4,gpu,<-gpu_SetMode_8007AE7C
+0x8007DB20,applied,gpu_helper_8007DB20,gpu,->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68
+0x8007E43C,applied,math_helper_8007E43C,math,<-math_Distance3D_80017748;<-math_Distance3D_16_800177C8
+0x8007FBBC,applied,md_game_helper_8007FBBC,md_game,<-md_game_rob_anim_offset_8002F770
+0x800826CC,applied,special_camera_helper_800826CC,special_camera,<-special_camera_load_cdrom_wait_800372F4
+0x800859F0,applied,tslglobalmemfree_helper_800859F0,tslglobalmemfree,<-tslGlobalMemFree_8005C2A8
+0x80085FB8,applied,mario_helper_80085FB8,mario,<-mario_getMarioVoiceData_8005BE84
+0x80087770,applied,dispstuff_helper_80087770,dispstuff,<-DispStuff_helper_800841E0;<-DispStuff_helper_80084500
+0x80087CAC,applied,dispstuff_helper_80087CAC,dispstuff,<-DispStuff_helper_800841E0;<-DispStuff_helper_80084500
+0x80088584,applied,tslglobalmemfree_helper_80088584,tslglobalmemfree,<-tslGlobalMemFree_8005C2A8
+0x800885CC,applied,spu_helper_800885CC,spu,<-spu_Init_800885AC;->spu_FlushVoiceChannels
+0x800886C4,applied,bios_helper_800886C4,bios,->bios_OpenEvent;->bios_EnableEvent
+0x80088F9C,applied,spu_helper_80088F9C,spu,<-spu_TransferData_capped
+0x80089024,applied,spu_helper_80089024,spu,<-spu_TransferDirect_capped
+0x800899A8,applied,snd_helper_800899A8,snd,<-snd_ChannelDmaFlush
+0x80089D10,applied,allocbukirmd_helper_80089D10,allocbukirmd,<-AllocBukiRmd_helper_80086CF8
+0x80089F3C,applied,obj_helper_80089F3C,obj,<-obj_SetControlData_80085E4C;<-obj_SetReverbValue_80085EE4
+0x8008AF9C,applied,spu_helper_8008AF9C,spu,<-spu_SetVolume_80083B50
+0x8008C464,applied,bios_helper_8008C464,bios,->bios_SysEnqIntRP;->bios_SysDeqIntRP;->bios_DeliverEvent
+0x8001979C,applied,mode_helper_8001979C,subsystem,mode: <-['mode_handler_29_StageLeafUpdate'] ->[]
+0x800198D0,applied,mode_helper_800198D0,subsystem,mode: <-['mode_handler_05_NoOp'] ->[]
+0x8001A538,applied,md_game_helper_8001A538,subsystem,md_game: <-['md_game_restart_init'] ->[]
+0x800207C8,applied,mode_helper_800207C8,subsystem,mode: <-['mode_handler_05_NoOp'] ->['single_game_getEnemyCharId']
+0x80030D48,applied,stub_80030D48,structural,n=2
+0x800325E0,applied,mk_helper_800325E0,subsystem,mk: <-['mk_leaf_newpos'] ->[]
+0x80035438,applied,mode_helper_80035438,subsystem,mode: <-['mode_handler_09_NoOp'] ->['single_game_SetWazaData']
+0x80036EA8,applied,mode_helper_80036EA8,subsystem,"mode: <-['mode_handler_18_UnlockAnimDispatch', 'mode_handler_06_GameTeardownVariant'] ->[]"
+0x800371E8,applied,mode_helper_800371E8,subsystem,mode: <-['mode_handler_09_NoOp'] ->[]
+0x80037234,applied,set_global_80037234,structural,n=7
+0x800388A8,applied,mode_helper_800388A8,subsystem,mode: <-['mode_handler_09_NoOp'] ->[]
+0x800392B8,applied,stub_800392B8,structural,n=4
+0x8003984C,applied,mode_helper_8003984C,subsystem,mode: <-['mode_handler_05_NoOp'] ->[]
+0x8003A174,applied,bios_helper_8003A174,subsystem,bios: <-[] ->['bios_OpenEvent']
+0x8003A42C,applied,set_global_8003A42C,structural,n=9
+0x8003A450,applied,irq_helper_8003A450,subsystem,irq: <-[] ->['bios_FileWrite_B']
+0x8003AE5C,applied,mode_helper_8003AE5C,subsystem,mode: <-['mode_handler_23_FrameDelay3'] ->['EndADRSound']
+0x8003D774,applied,set_field0x0_8003D774,structural,n=16
+0x8003E2AC,applied,copy_8003E2AC,structural,n=7
+0x8003F1C8,applied,stub_8003F1C8,structural,n=3
+0x8003F1D4,applied,stub_8003F1D4,structural,n=4
+0x8003F1E4,applied,set_global_8003F1E4,structural,n=13
+0x8003F268,applied,stub_8003F268,structural,n=3
+0x8003F52C,applied,set_global_8003F52C,structural,n=8
+0x8003F54C,applied,get_global_8003F54C,structural,n=7
+0x8003F5A8,applied,set_global_8003F5A8,structural,n=9
+0x8004019C,applied,copy_8004019C,structural,n=12
+0x800404A0,applied,copy_800404A0,structural,n=14
+0x80040A78,applied,rob_helper_80040A78,subsystem,rob: <-['rob_life_ctrl'] ->[]
+0x80040D48,applied,mode_helper_80040D48,subsystem,mode: <-['mode_handler_05_NoOp'] ->[]
+0x8004153C,applied,get_global_8004153C,structural,n=6
+0x80041554,applied,get_field0x8_80041554,structural,n=12
+0x80041650,applied,get_field0x2_80041650,structural,n=14
+0x800420E8,applied,set_global_800420E8,structural,n=13
+0x8004283C,applied,set_global_8004283C,structural,n=10
+0x80042ED8,applied,copy_80042ED8,structural,n=14
+0x80043244,applied,stub_80043244,structural,n=13
+0x80043278,applied,get_val_80043278,structural,n=10
+0x800457E8,applied,get_global_800457E8,structural,n=5
+0x80045878,applied,player_helper_80045878,subsystem,player: <-['player_rob_Init'] ->[]
+0x8004659C,applied,mode_helper_8004659C,subsystem,mode: <-['mode_handler_06_GameTeardownVariant'] ->['md_game_check_mode']
+0x80047ED0,applied,copy_80047ED0,structural,n=6
+0x80049710,applied,stub_80049710,structural,n=2
+0x80049A2C,applied,mode_helper_80049A2C,subsystem,mode: <-['mode_handler_05_NoOp'] ->['InitFadePanel']
+0x8004A938,applied,stub_8004A938,structural,n=2
+0x8004E564,applied,stub_8004E564,structural,n=2
+0x8004E56C,applied,stub_8004E56C,structural,n=2
+0x80052720,applied,stub_80052720,structural,n=13
+0x80052754,applied,decbs0_helper_80052754,subsystem,decbs0: <-['decBs0'] ->[]
+0x80052930,applied,robtest_helper_80052930,subsystem,robtest: <-['robtest_disp2'] ->[]
+0x80052B44,applied,get_field0x0_80052B44,structural,n=14
+0x80052C28,applied,stub_80052C28,structural,n=9
+0x8005344C,applied,myrobgeneidraw2_helper_8005344C,subsystem,myrobgeneidraw2: <-['myRobGeneiDraw2'] ->[]
+0x8005441C,applied,copy_8005441C,structural,n=6
+0x80054434,applied,stub_80054434,structural,n=3
+0x80055B44,applied,set_field0x3B4_80055B44,structural,n=7
+0x80060CB8,applied,gpu_helper_80060CB8,subsystem,gpu: <-[] ->['saTan1GaugeInit']
+0x80060E38,applied,eff_helper_80060E38,subsystem,eff: <-['eff_FrameUpdate'] ->[]
+0x800618B4,applied,mode_helper_800618B4,subsystem,mode: <-['mode_handler_29_StageLeafUpdate'] ->[]
+0x80068F70,applied,gpu_helper_80068F70,subsystem,gpu: <-[] ->['efc_rob_Close']
+0x8006E440,applied,copy_8006E440,structural,n=16
+0x8006E534,applied,gpu_helper_8006E534,subsystem,gpu: <-[] ->['efc_buki_ZanzouClose']
+0x8006E8AC,applied,get_global_8006E8AC,structural,n=8
+0x8006E8CC,applied,gpu_helper_8006E8CC,subsystem,gpu: <-[] ->['gpu_LoadImage']
+0x80071C20,applied,get_global_80071C20,structural,n=11
+0x80077D74,applied,get_global_80077D74,structural,n=8
+0x80078634,applied,get_global_80078634,structural,n=8
+0x800788B0,applied,mode_helper_800788B0,subsystem,mode: <-['mode_handler_11_PadInputCheck'] ->[]
+0x80078BE0,applied,set_global_80078BE0,structural,n=4
+0x80078BF0,applied,get_global_80078BF0,structural,n=4
+0x80078C00,applied,bios_helper_80078C00,subsystem,bios: <-[] ->['bios_OutdatedPadInitAndStart']
+0x80078C9C,applied,bios_helper_80078C9C,subsystem,bios: <-[] ->['bios_InitPad']
+0x80078D38,applied,bios_helper_80078D38,subsystem,bios: <-[] ->['bios_StartPad']
+0x80078DA0,applied,bios_helper_80078DA0,subsystem,bios: <-[] ->['EnterCriticalSection']
+0x80078EC0,applied,get_field0x4_80078EC0,structural,n=16
+0x80078F60,applied,get_global_80078F60,structural,n=5
+0x80078FF0,applied,copy_80078FF0,structural,n=14
+0x800790A4,applied,stub_800790A4,structural,n=1
+0x800791D8,applied,dispsleepmenutex_helper_800791D8,subsystem,dispsleepmenutex: <-['DispSleepMenuTex'] ->[]
+0x80079A30,applied,dispsleepmenutex_helper_80079A30,subsystem,"dispsleepmenutex: <-['_CardCheckPulled2', 'DispSleepMenuTex'] ->['bb2_memchr']"
+0x8007A318,applied,bios_helper_8007A318,subsystem,bios: <-[] ->['bios__new_card']
+0x8007CAB0,applied,get_field0x0_8007CAB0,structural,n=6
+0x8007D2CC,applied,copy_8007D2CC,structural,n=10
+0x8007D2F4,applied,get_global_8007D2F4,structural,n=5
+0x8007E4DC,applied,tanren_helper_8007E4DC,subsystem,tanren: <-['tanren_get_bamboo_anim_info'] ->[]
+0x8007E74C,applied,replay_camera_helper_8007E74C,subsystem,replay_camera: <-['replay_camera_rob_back_win_near'] ->[]
+0x8007ED6C,applied,tanren_helper_8007ED6C,subsystem,tanren: <-['tanren_get_bamboo_anim_info'] ->[]
+0x8007F00C,applied,copy_8007F00C,structural,n=10
+0x8007F034,applied,copy_8007F034,structural,n=10
+0x8007F05C,applied,copy_8007F05C,structural,n=15
+0x8007F098,applied,copy_8007F098,structural,n=9
+0x8007F0BC,applied,copy_8007F0BC,structural,n=10
+0x8007F0E4,applied,copy_8007F0E4,structural,n=10
+0x8007F10C,applied,stub_8007F10C,structural,n=8
+0x8007F12C,applied,stub_8007F12C,structural,n=9
+0x8007F200,applied,stub_8007F200,structural,n=6
+0x8007F21C,applied,copy_8007F21C,structural,n=11
+0x8007F2AC,applied,copy_8007F2AC,structural,n=10
+0x8008009C,applied,get_global_8008009C,structural,n=4
+0x800800AC,applied,get_global_800800AC,structural,n=8
+0x80080228,applied,copy_80080228,structural,n=6
+0x80080240,applied,copy_80080240,structural,n=6
+0x80080828,applied,tsltm2loadimage_helper_80080828,subsystem,"tsltm2loadimage: <-['cpu_side_move_dir_4', 'tslTm2LoadImage'] ->['tslTm2LoadImage_2']"
+0x800819C4,applied,tsltm2loadimage_helper_800819C4,subsystem,tsltm2loadimage: <-[] ->['cpu_side_move_dir_4']
+0x800863CC,applied,set_global_800863CC,structural,n=4
+0x80089214,applied,copy_80089214,structural,n=11
+0x80089240,applied,copy_80089240,structural,n=11
+0x800892F8,applied,bios_helper_800892F8,subsystem,bios: <-[] ->['bios_DisableEvent']
+0x8008AE7C,applied,set_global_8008AE7C,structural,n=13
+0x80019310,applied,gte_mvmva_80019310,gte_op,mvmva matrix*vector(+translation)
+0x8002D320,applied,gte_mvmva_8002D320,gte_op,mvmva matrix*vector(+translation)
+0x8002DE20,applied,gte_mvmva_8002DE20,gte_op,mvmva matrix*vector(+translation)
+0x8002F2D0,applied,gte_mvmva_8002F2D0,gte_op,mvmva matrix*vector(+translation)
+0x8002FF20,applied,gte_mvmva_8002FF20,gte_op,mvmva matrix*vector(+translation)
+0x800300B4,applied,gte_mvmva_800300B4,gte_op,mvmva matrix*vector(+translation)
+0x80031890,applied,gte_mvmva_80031890,gte_op,mvmva matrix*vector(+translation)
+0x8004A348,applied,gte_gpf_8004A348,gte_op,gpf scalar interpolation
+0x8004A76C,applied,gte_rtpt_batch_8004A76C,gte_op,rtpt loop: batch triangle perspective projection -> screen XY(swc2 12-14)+Z(mfc2 17-19)
+0x8004A808,applied,gte_rtpt_8004A808,gte_op,rtpt perspective transform of 3 verts
+0x8004BB68,applied,gte_rtpt_8004BB68,gte_op,rtpt perspective transform of 3 verts
+0x8004C404,applied,gte_rtpt_8004C404,gte_op,rtpt perspective transform of 3 verts
+0x8004C994,applied,gte_nclip_8004C994,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004CB8C,applied,gte_nclip_8004CB8C,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004CDB0,applied,gte_nclip_8004CDB0,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004CFE0,applied,gte_nclip_8004CFE0,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004D244,applied,gte_nclip_8004D244,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004D424,applied,gte_nclip_8004D424,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004D634,applied,gte_nclip_8004D634,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004D838,applied,gte_nclip_8004D838,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004DA74,applied,gte_rtpt_8004DA74,gte_op,rtpt perspective transform of 3 verts
+0x8004DDB4,applied,gte_mvmva_8004DDB4,gte_op,mvmva matrix*vector(+translation)
+0x8004E574,applied,gte_gpl_8004E574,gte_op,gpl interpolation+base
+0x8004E7E4,applied,gte_gpl_8004E7E4,gte_op,gpl interpolation+base
+0x8004EAC8,applied,gte_nclip_8004EAC8,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004ECC8,applied,gte_nclip_8004ECC8,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004EF10,applied,gte_nclip_8004EF10,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004F0FC,applied,gte_nclip_8004F0FC,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004F314,applied,gte_nclip_8004F314,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004F53C,applied,gte_nclip_8004F53C,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004F798,applied,gte_nclip_8004F798,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004F970,applied,gte_nclip_8004F970,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004FB74,applied,gte_nclip_8004FB74,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004FD40,applied,gte_nclip_8004FD40,gte_op,nclip backface/cross-z; poly cull-draw family
+0x8004FF40,applied,gte_nclip_8004FF40,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050120,applied,gte_nclip_80050120,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050334,applied,gte_nclip_80050334,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050538,applied,gte_nclip_80050538,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050774,applied,gte_nclip_80050774,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050908,applied,gte_nclip_80050908,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050AB8,applied,gte_nclip_80050AB8,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050C68,applied,gte_nclip_80050C68,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80050E60,applied,gte_nclip_80050E60,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051010,applied,gte_nclip_80051010,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051208,applied,gte_nclip_80051208,gte_op,nclip backface/cross-z; poly cull-draw family
+0x800513B0,applied,gte_nclip_800513B0,gte_op,nclip backface/cross-z; poly cull-draw family
+0x800515AC,applied,gte_nclip_800515AC,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051754,applied,gte_nclip_80051754,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051944,applied,gte_nclip_80051944,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051B04,applied,gte_nclip_80051B04,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051D08,applied,gte_nclip_80051D08,gte_op,nclip backface/cross-z; poly cull-draw family
+0x80051ED4,applied,gte_nclip_80051ED4,gte_op,nclip backface/cross-z; poly cull-draw family
+0x800525D8,applied,gte_sqr_800525D8,gte_op,sqr square/magnitude
+0x80052788,applied,gte_gpf_80052788,gte_op,gpf scalar interpolation
+0x800527FC,applied,gte_gpf_800527FC,gte_op,gpf scalar interpolation
+0x80052A88,applied,gte_mtx_apply_vec_80052A88,gte_op,"mvmva: transform vector by matrix+translation (ctc2 0-7 matrix, out IR1-3)"
+0x80052B7C,applied,gte_mvmva_80052B7C,gte_op,mvmva matrix*vector(+translation)
+0x80052C4C,applied,gte_mvmva_80052C4C,gte_op,mvmva matrix*vector(+translation)
+0x80063E10,applied,gte_mvmva_80063E10,gte_op,mvmva matrix*vector(+translation)
+0x8007E1AC,applied,gte_gpf_8007E1AC,gte_op,gpf scalar interpolation
+0x8007E1FC,applied,gte_gpf_8007E1FC,gte_op,gpf scalar interpolation
+0x8007E24C,applied,gte_gpf_8007E24C,gte_op,gpf scalar interpolation
+0x8007E2D4,applied,gte_gpf_8007E2D4,gte_op,gpf scalar interpolation
+0x8007E35C,applied,gte_gpf_8007E35C,gte_op,gpf scalar interpolation
+0x8007E3BC,applied,gte_gpf_8007E3BC,gte_op,gpf scalar interpolation
+0x8007E5EC,applied,gte_mvmva_8007E5EC,gte_op,mvmva matrix*vector(+translation)
+0x8007EB4C,applied,gte_mvmva_8007EB4C,gte_op,mvmva matrix*vector(+translation)
+0x8007F150,applied,gte_outerprod_8007F150,gte_op,op outer/cross product
+0x8007F1A8,applied,gte_outerprod_8007F1A8,gte_op,op outer/cross product
+0x8007F24C,applied,gte_rtpt_8007F24C,gte_op,rtpt perspective transform of 3 verts
