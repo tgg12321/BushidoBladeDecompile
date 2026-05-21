@@ -65,8 +65,10 @@ ALLOWED_DISC = {
     "ReBushidoBlade2.cue",
 }
 
-# User-local artifacts (gitignored but kept at root by user preference). Empty.
-ALLOWED_USER_LOCAL = set()
+# User-local artifacts (gitignored but kept at root by user preference).
+ALLOWED_USER_LOCAL = {
+    "Play ReBushidoBlade2.lnk",  # DuckStation launcher for the patched build
+}
 
 # Runtime state files (gitignored, generated)
 ALLOWED_STATE_RE = re.compile(r"^\.bb2_.*$|^bb2\.d$|^Makefile\.bak$")

@@ -145,3 +145,6 @@ asm/data/800.rodata.s
 /Cïº*
 /CODEX_HANDOFF_*.md
 .bb2_resilience_log.json
+
+# User-local emulator launcher shortcuts (machine-specific abs paths)
+*.lnk
