@@ -266,3 +266,37 @@ These are buffers carved out within the second half of record 2 only
    state.  Could be broken into named sub-structs.
 4. **+0x308 / +0x318 record-2 buffers** -- inspect record 2's
    consumer functions to identify what's being logged/buffered.
+
+
+## Pointer-access-derived fields (added 2026-05-20)
+
+The original schema was built from direct `D_<base+off>` references only.
+But the struct is mostly accessed via a **pointer argument** (`lw $v0,
+0xNN($a0)`), which never appears as a `D_` symbol. Recovered these by
+**fingerprinting**: any register that accesses >=2 known fields
+(`0x6A`,`0xF4`,`0xD8`,`0xE0`,`0x96`,`0x134`...) within a function is a
+char-struct pointer, so its *other* offset accesses are also fields.
+
+**Result: 63 functions confirmed to take a char-struct pointer** (39 of
+them still `func_XXXX` -- they are per-character processors and prime
+naming targets; list in `tmp/charptr.json`).
+
+New fields (structural facts are high-confidence from access shape; the
+role column is *inferred* and should be confirmed before relying on it):
+
+| Offset | Width | Access pattern | Inferred role |
+|--:|:-:|---|---|
+| +0x00C | s16 | read-heavy; `xori 0x1F`, cmp `0x1D` | direction/angle index (32-entry table; 0x1F mask) |
+| +0x060 | s32 | read-only, sign-tested (`bgez`), paired with +0x064 | signed value/bound pair (read-only) |
+| +0x0A8 / +0x0AC / +0x0B0 | s32 x3 | rw; scaled via `mult`; also byte-read in some fns | **vec3** (coordinate/scale vector) |
+| +0x0B8..+0x0C4 | s32 x4 | set/read together as a block | 4-word state block (vector or saved-input quad) |
+| +0x0CC / +0x0D0 / +0x0D4 | s32 x3 | set together; +0xD0 feeds a `mult` | **vec3** (mutable coordinate) |
+| +0x0DA / +0x0DE / +0x0E2 / +0x0E6 | s16 x4 | write-only `sh $zero` (init) | halfword array, cleared at init |
+| +0x0E8 | s32 | read then `addiu -0x384` | frame/Y-segment field (-0x384 = 30s round-segment bias, cf. +0xF8) |
+| +0x104 / +0x108 / +0x10C | s32 x3 | cleared at init, read together | **vec3 accumulator** (reset on init; near stored_pos +0xF4) |
+| +0x1CA | s16 | differenced across the two records (`r0.1CA - r1.1CA`) in `coli_hit_body_weap` | per-character body coordinate (collision distance, like the +0xD8/+0xE0 inter-player deltas) |
+
+The +0xA8..+0xD4 span is the struct's **physics/transform region** (several
+vec3s) leading into the documented world_pos vec3 at +0xD8. The +0x104..
++0x10C accumulator and the +0xDA..+0xE6 cleared array sit between the
+stored_pos snapshot (+0xF4) and the action-state region.

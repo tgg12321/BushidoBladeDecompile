@@ -3877,3 +3877,58 @@ draw_bg_and_sprites_80069E18                           = 0x80069E18;  /* full-sc
 replay_setup_display_8006E950                          = 0x8006E950;  /* game_FrameLoop + replay_camera_Init + 2x gpu_LoadImage (VRAM regions); replay-mode display init */
 gpu_decode_load_image_800484A0                         = 0x800484A0;  /* checks image header tag 0x10+flag, decodes via func_800486FC/8004876C into 0x400 buffer, gpu_LoadImage to VRAM */
 draw_anim_sprites_seq_8006BB68                         = 0x8006BB68;  /* animated-sprite render (satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link) looped with frame-phase select (D_800A34F8>>13&7) */
+calc_fighter_separation_stored_8002BEA0                = 0x8002BEA0;  /* inter-fighter distance from STORED pos (+0xF4/+0xFC of both records) via sqrt LUT D_8008D118; sibling of calc_fighter_separation_vec (which uses world_pos +0xD8) */
+move_to_target_step_80053754                           = 0x80053754;  /* per-frame handler for the move-to-target state machine (set as ctx[0x5C] by init_move_to_target when within distance threshold); processes ~28 char/ctx fields */
+move_to_target_step_80053E9C                           = 0x80053E9C;  /* per-frame handler for the move-to-target state machine (set as ctx[0x5C] by init_move_to_target when beyond distance threshold) */
+coli_check_collision_80057E84                          = 0x80057E84;  /* collision routine: reads char pos (+0xF4/+0xFC) + hit-record (+0x360/+0x368), calls segment-intersection func_8005763C; sibling of coli_find_nearest_edge_hit */
+draw_anim_obj_80078654                             = 0x80078654;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8006DD94                             = 0x8006DD94;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8006D3DC                             = 0x8006D3DC;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_80069F80                             = 0x80069F80;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8006A1A0                             = 0x8006A1A0;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_80074220                             = 0x80074220;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_80069AE4                             = 0x80069AE4;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_80074488                             = 0x80074488;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8006CFBC                             = 0x8006CFBC;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8005FC9C                             = 0x8005FC9C;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8006B120                             = 0x8006B120;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_80074E08                             = 0x80074E08;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8007636C                             = 0x8007636C;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_800759D0                             = 0x800759D0;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8005D814                             = 0x8005D814;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+gpu_render_80073C78                                = 0x80073C78;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=362 */
+gpu_render_80074B18                                = 0x80074B18;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=133 */
+gpu_render_80076D74                                = 0x80076D74;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=161 */
+gpu_render_8006F528                                = 0x8006F528;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=277 */
+gpu_render_8006295C                                = 0x8006295C;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=420 */
+gpu_render_800646E8                                = 0x800646E8;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=490 */
+efc_buki_zanzou_drawlist_800481E8 = 0x800481E8;  /* draw-loop over buki-zanzou record list, on-screen cull x<0x280, calls efc_buki_draw_zanzou per entry */
+motutil_GetWalkDir_all_800644FC = 0x800644FC;  /* bitmask(D_800A3454[idx]) loop over count, calls motutil_GetWalkDir for each active entry (stride 0x20) */
+mtx_rotate_8007F87C = 0x8007F87C;  /* in-place rotate matrix rows@+6/+C by angle a0 via sincos LUT D_8009C928 (pairs [6,C],[8,E],[A,10]) */
+motion_ExMotionDrive0_800652F4 = 0x800652F4;  /* calls motion_SetExMotion(0), advances accum D_800F0BA8 += 0x1FF, gated return (<0x1001) */
+motion_ExMotionDrive3_800653E4 = 0x800653E4;  /* calls motion_SetExMotion(3), advances accum D_800F0BAE += 0x19, gated return (<0xC9) */
+motion_ExMotionDriveA_800655E0 = 0x800655E0;  /* calls motion_SetExMotion(0xA), advances accum D_800F0BBC += 0x32, gated return (<0x100) */
+motion_ExMotionDriveDF_800656EC = 0x800656EC;  /* calls motion_SetExMotion(0xD)+(0xF), advances accums D_800F0BC2/BC6, gated return (<0xB) */
+motion_ExMotionDrive11_800657B0 = 0x800657B0;  /* calls motion_SetExMotion(0x11), advances accum D_800F0BCA += 0x1C6, gated return (<0x11C8) */
+gpu_SetTexAttr_800485EC = 0x800485EC;  /* parses src prim header (type 0x10), fills dst descriptor with uv + clut(gpu_CalcClut) + tpage(gpu_CalcTPage) */
+dev_AddDevice_8008BE04 = 0x8008BE04;  /* EnterCS + bios_AddDevice_B(DCB @ D_800A307C) + ExitCS = register one device driver */
+bios_InstallHandler_8007FEDC = 0x8007FEDC;  /* EnterCS + BIOS B-call, copies handler code stub (D_8007FF44, reads COP0 $13 CAUSE) into BIOS table, FlushCache */
+bios_SetupJumpTbl_80078F88 = 0x80078F88;  /* EnterCS + BIOS B-call, sets jtbl_800A3620/24 from kernel tbl +0x884/0x894, zeros 0xB entries at +0x594 */
+bios_PatchTable_80079028 = 0x80079028;  /* EnterCS + BIOS B-call, copies 4-word handler stub (func_800790A4) into BIOS table +0x3D8/+0x4DC */
+bios_ClearTable_800790C0 = 0x800790C0;  /* EnterCS + BIOS B-call, zeros 9 entries at BIOS table +0x62C */
+bios_PatchTable_8007A458 = 0x8007A458;  /* EnterCS + BIOS B-call, copies handler stub (D_8007A4C0) into BIOS table +0x6C */
+cdrom_InitCallbacks_8007FF7C = 0x8007FF7C;  /* waits cdrom_CheckReady (4 retries), then cdrom_SetCallbackA/B + sys_SetVsyncMode + sys_SetTimer; ret 1 ok / 0 fail */
+gpu_PutDrawEnv_8007CBB0 = 0x8007CBB0;  /* clamps clip rect, builds GPU env packet (0xE1 drawmode/0xE3-E5 area+offset/0xE6) at D_800F1858, gpu_StartDmaList */
+calc_dirvec_from_angles_8004A1FC = 0x8004A1FC;  /* for 3 entries: build vec3s @+0x18 from angle pair via math_Cos/Sin scaled by mag [base+0x5C] */
+math_Sqrt_8007E11C = 0x8007E11C;  /* fixed-point sqrt: GTE LZCS/LZCR leading-zero normalize + sqrt LUT D_8009C7A8, denorm by half-shift; ret 0 if input 0 */
+calc_dir_from_points_8001A67C = 0x8001A67C;  /* dx/dz between pts A/B, distance via sqrt (LUT D_8008D118 + GTE LZC), normalize, per-comp angle via func_8001A62C -> [out+0]/[out+4] */
+stage_SetCollisionAtPos_8003F420 = 0x8003F420;  /* world (x,z)+0x7D00 /1000 -> grid cell, stage_SetCollision x4 on the 2x2 cell block around the position */
+gpu_LoadImageBatch_8003D9A0 = 0x8003D9A0;  /* loop N entries (stride 0x30) calling initLoadImage with auto VRAM cursor (x+=[+4], y wraps at 0x200), saves rect to +0x18..+0x2C */
+saTan4GaugeDraw_8006D338 = 0x8006D338;  /* frame ctr++, get sprite buf, anim-obj setup (func_80069AE4), saTan4GaugeMain, draw_anim_obj (func_8006CFBC), composite draw func_8006CCC8 */
+vc_RelocLoadedBlock_80041430 = 0x80041430;  /* relocate loaded block internal ptrs by base (a1): add base to stored offsets; register sub-ctrls via save_vc_ctrl x3 (0x15,0x14,0x14); func_80040A78 */
+game_StageSetup_80054604 = 0x80054604;  /* stage/match init: bgm (snd_StopBgm/snd_LoadSelection), fill ctrl D_800EFAE8 (player pos s5-fp/stage data), FadeOut, game_SetPlayerCount, disp_CalcFov, tslDmaDrawListDelAll; mirrors game_StageCleanup */
+exec_loc_mat_list_8004A4E0 = 0x8004A4E0;  /* walks display-list D_80102C00 (set by func_80044504), per-node opcode dispatch (jtbl_8001541C), GTE color reg ctc2 setup + calc_loc_mat_fw */
+DispSleepMenuTexAll_8001A484 = 0x8001A484;  /* loops 22x calling DispSleepMenuTex(D_800100A4, coords from tables s0/s1 stride 6) -- batch draw sleep/standby menu textures */
+md_game_ExecMode_800460E4 = 0x800460E4;  /* md_game mode dispatcher: dual jumptable (jtbl_800152B4/80015334) on mode id (s5-3), sets D_80099478, per-mode init+update+draw(func_800481E8)+md_game_check_mode+saSeMain+gpu_DrawSync */
+md_game_FlushDeferred_800464C4 = 0x800464C4;  /* if deferred flag D_8009947A set: get slot-7 obj, mode-switch on D_80099478, md_game_check_mode(7)+saSeMain, clear flag */
+game_StageMain_8005490C = 0x8005490C;  /* per-frame stage handler on ctrl struct D_800EFAE8 (built by game_StageSetup); phase machine on [+0] (-1 ret/0 init), first-frame relocates D_800EFB14 data + stage_InitCollision/camera_InitBoneData/FadeOut */
