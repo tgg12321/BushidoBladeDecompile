@@ -3925,3 +3925,10 @@ calc_dir_from_points_8001A67C = 0x8001A67C;  /* dx/dz between pts A/B, distance 
 stage_SetCollisionAtPos_8003F420 = 0x8003F420;  /* world (x,z)+0x7D00 /1000 -> grid cell, stage_SetCollision x4 on the 2x2 cell block around the position */
 gpu_LoadImageBatch_8003D9A0 = 0x8003D9A0;  /* loop N entries (stride 0x30) calling initLoadImage with auto VRAM cursor (x+=[+4], y wraps at 0x200), saves rect to +0x18..+0x2C */
 saTan4GaugeDraw_8006D338 = 0x8006D338;  /* frame ctr++, get sprite buf, anim-obj setup (func_80069AE4), saTan4GaugeMain, draw_anim_obj (func_8006CFBC), composite draw func_8006CCC8 */
+vc_RelocLoadedBlock_80041430 = 0x80041430;  /* relocate loaded block internal ptrs by base (a1): add base to stored offsets; register sub-ctrls via save_vc_ctrl x3 (0x15,0x14,0x14); func_80040A78 */
+game_StageSetup_80054604 = 0x80054604;  /* stage/match init: bgm (snd_StopBgm/snd_LoadSelection), fill ctrl D_800EFAE8 (player pos s5-fp/stage data), FadeOut, game_SetPlayerCount, disp_CalcFov, tslDmaDrawListDelAll; mirrors game_StageCleanup */
+exec_loc_mat_list_8004A4E0 = 0x8004A4E0;  /* walks display-list D_80102C00 (set by func_80044504), per-node opcode dispatch (jtbl_8001541C), GTE color reg ctc2 setup + calc_loc_mat_fw */
+DispSleepMenuTexAll_8001A484 = 0x8001A484;  /* loops 22x calling DispSleepMenuTex(D_800100A4, coords from tables s0/s1 stride 6) -- batch draw sleep/standby menu textures */
+md_game_ExecMode_800460E4 = 0x800460E4;  /* md_game mode dispatcher: dual jumptable (jtbl_800152B4/80015334) on mode id (s5-3), sets D_80099478, per-mode init+update+draw(func_800481E8)+md_game_check_mode+saSeMain+gpu_DrawSync */
+md_game_FlushDeferred_800464C4 = 0x800464C4;  /* if deferred flag D_8009947A set: get slot-7 obj, mode-switch on D_80099478, md_game_check_mode(7)+saSeMain, clear flag */
+game_StageMain_8005490C = 0x8005490C;  /* per-frame stage handler on ctrl struct D_800EFAE8 (built by game_StageSetup); phase machine on [+0] (-1 ret/0 init), first-frame relocates D_800EFB14 data + stage_InitCollision/camera_InitBoneData/FadeOut */
