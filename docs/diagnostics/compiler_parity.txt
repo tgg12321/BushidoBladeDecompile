@@ -1,0 +1,15 @@
+0 genuine compiler-fixable / 18 cc1psx-WORSE of 282 funcs / 8 files (as of 2026-05-21) — cc1psx is never the variable; sometimes worse.
+
+decompals-gcc-2.7.2 reproduces the ORIGINAL GAME byte-for-byte (build SHA1: OK).
+PsyQ cc1psx, identical pipeline (last refresh):
+  identical codegen:                                       181/282
+  cc1psx WORSE (cc1psx != game, decompals ==):   18  e.g. replay_camera_rob_back_loose2, marionation_camera_Init_80036064, marionation_camera_GetMaxFrame, func_80037540
+  both differ raw (needs C-work/regfix; cc1psx no better):  83
+  COMPILER-FIXABLE (cc1psx matches where decompals can't):  0
+  (the decompals lwl/lwr endianness quirk is normalized out — the build fixes
+   it deterministically; without that, cc1psx falsely looks 'fixable'.)
+
+=> cc1psx CANNOT match what decompals can't, and is sometimes WORSE. A stuck
+   function is a C-SOURCE problem — do NOT reach for cc1psx (hook-blocked).
+  Coverage: 8 raw-compilable files; 14 skipped (need full pipeline).
+  Refresh: bash tools/dc.sh prove-compilers

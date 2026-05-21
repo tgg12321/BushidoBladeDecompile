@@ -2,12 +2,13 @@
 """PreToolUse hook on Bash: BLOCK execution of cc1psx / dosemu / the cc1psx
 diagnostic harness.
 
-cc1psx (Sony's original PsyQ compiler) is DEPRECATED for this project
-(2026-05-18). The "maybe it's a compiler difference" hypothesis was settled
-empirically: 8/8 sampled functions are byte-identical between the KMC- and
-PSX-tailored gcc-2.7.2 forks, and 0/16 tier-3 functions are fixable by cc1psx.
-The compiler is never the variable — the gap is always the C source. See
-memory/rules/cc1psx-calibration-only.md and memory/rules/compiler-patch-low-roi.md.
+cc1psx (Sony's original PsyQ compiler) is not a debugging tool here. The
+"maybe it's a compiler difference" hypothesis is settled and re-proven every
+session (docs/diagnostics/compiler_parity.txt, surfaced in `dc.sh start`):
+decompals-gcc-2.7.2 reproduces the original game byte-for-byte; cc1psx is never
+closer to the original (0 genuine compiler-fixable) and is sometimes worse
+(e.g. ang_near_dif). The compiler is never the variable — the gap is always the
+C source. See memory/rules/cc1psx-calibration-only.md, compiler-patch-low-roi.md.
 
 This stops an agent the moment it reaches for cc1psx — a common disguised
 give-up ("let me check whether this is a compiler divergence"). Reading/grepping
@@ -77,19 +78,26 @@ def main() -> int:
     sys.stderr.write(
         f"""BLOCKED by cc1psx_guard.py: this command runs `{hit}` (cc1psx / dosemu).
 
-cc1psx is DEPRECATED for this project and must not be run.
+Reaching for cc1psx is a disguised give-up. The compiler-choice question is
+SETTLED and the project proves it empirically every session — see the
+"Compiler parity" line in `dc.sh start`, full detail in
+docs/diagnostics/compiler_parity.txt:
 
-WHY: "maybe it's a compiler difference" is a settled question. Measured
-2026-05-18:
-  - 8/8 sampled functions are BYTE-IDENTICAL between the KMC- and PSX-tailored
-    gcc-2.7.2 forks.
-  - 0/16 tier-3 functions are fixable by cc1psx (Sony's original compiler).
-THE COMPILER IS NEVER THE VARIABLE. When a function won't match in pure C, the
-gap is ALWAYS the C source structure (typing, dataflow, scheduling, register
-allocation, cross-jump merging) — not the compiler / optimizer / fork.
+  - decompals-gcc-2.7.2 reproduces the ORIGINAL GAME byte-for-byte (build SHA1 OK).
+  - cc1psx is NEVER closer to the original than decompals (0 genuine
+    compiler-fixable), and is SOMETIMES WORSE — e.g. `ang_near_dif`: cc1psx
+    schedules the block differently and does NOT match the original; decompals does.
+  - The one function where cc1psx looked "better" (`func_80016A8C`) is just the
+    decompals big-endian `lwl/lwr` offset quirk, which the build already corrects
+    deterministically (fix_lwl / asmfix offset-swaps) — NOT a real cc1psx win.
 
-See:  memory/rules/cc1psx-calibration-only.md
-      memory/rules/compiler-patch-low-roi.md
+So switching compilers can NEVER turn a non-match into a match (and would BREAK
+functions decompals matches). A function that won't match is a C-SOURCE problem
+(typing, dataflow, scheduling, register allocation, cross-jump merging) — never
+the compiler / optimizer / fork.
+
+See:  docs/diagnostics/compiler_parity.txt  (refresh: bash tools/dc.sh prove-compilers)
+      memory/rules/cc1psx-calibration-only.md, compiler-patch-low-roi.md
       .claude/rules/compiler-flags-canonical.md
 
 WHAT TO DO INSTEAD: switch technique within pure C — reread the target's

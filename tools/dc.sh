@@ -46,6 +46,7 @@
 #   bash tools/dc.sh preflight-cascade <func>       — read-only impact report: how many sibling rules at risk of label drift
 #   bash tools/dc.sh suggest <func>                  — lean rollup: state + top techniques + don't-tries + next step (auto pre/post)
 #   bash tools/dc.sh bootstrap                       — link gitignored deps from main repo (run after EnterWorktree mid-session)
+#   bash tools/dc.sh prove-compilers                 — refresh the compiler-parity proof (cc1psx vs decompals vs game); writes docs/diagnostics/compiler_parity.txt, shown in `dc.sh start`
 #   bash tools/dc.sh verify-toolchain                — fast existence-check on cc1, maspsx, .venv, disc (~10ms; diagnoses link-failure mysteries)
 #   bash tools/dc.sh new-worktree <name>             — create .claude/worktrees/<name> from local main HEAD, bootstrapped, ready to use
 #   bash tools/dc.sh log-attempt <func> <cat> <variant> <min> '<outcome>'  — log a decomp attempt
@@ -154,6 +155,15 @@ case "$CMD" in
             fi
         else
             echo "Build:    not built yet — run 'bash tools/dc.sh build' to verify clean state"
+        fi
+
+        # Compiler-parity proof (cached, refresh via `dc.sh prove-compilers`).
+        # Surfaced EVERY session so agents stop blaming a stuck match on a
+        # "cc1psx vs our compiler" difference: decompals reproduces the game
+        # byte-for-byte; cc1psx is never closer (0 compiler-fixable) and is
+        # sometimes worse. The cc1psx_guard hook blocks running cc1psx directly.
+        if [ -f docs/diagnostics/compiler_parity.txt ]; then
+            echo "Compiler: $(head -1 docs/diagnostics/compiler_parity.txt)"
         fi
 
         # Active marker state
@@ -328,6 +338,20 @@ EOF
             exit 1
         fi
         bash tools/worktree_bootstrap.sh
+        ;;
+
+    prove-compilers)
+        # Refresh the compiler-parity PROOF: compile each src/*.c with BOTH
+        # decompals-gcc-2.7.2 and PsyQ cc1psx (identical pipeline), compare each
+        # to the ORIGINAL GAME, and write docs/diagnostics/compiler_parity.txt
+        # (its headline shows in `dc.sh start` every session). This is the
+        # empirical proof that the compiler is NEVER the variable: cc1psx is never
+        # closer to the original than decompals (0 genuine compiler-fixable) and is
+        # sometimes WORSE. ~3-4 min (cc1psx via dosemu2). Needs tools/cc1psx.exe
+        # (gitignored; bootstrap links it from main); files needing the full
+        # regfix/asmfix pipeline are skipped + reported. cc1psx_guard still blocks
+        # running cc1psx per-function — this aggregate proof is its only sanctioned use.
+        python3 tools/compiler_parity.py --all
         ;;
 
     setup-venv)

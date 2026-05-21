@@ -119,12 +119,14 @@ fi
 # away the tree and re-link. Format: "<dep>:<marker_relative_to_dep>"
 TREE_DEPS="tools/gcc-2.7.2:build/cc1 tools/decomp-permuter:permuter.py tools/m2c:m2c.py .venv:bin/python3 disc:SLUS_006.63"
 # Single files: just check the file itself.
-# (Previously linked tools/cc1psx.exe — deprecated 2026-05-18 per
-# memory/rules/cc1psx-calibration-only.md after the 0/16 +
-# 8/8-byte-identical empirical findings showed the compiler-choice
-# axis doesn't move tier-3 retirement. If audit needs it back, see
-# the rule for the install command.)
-FILE_DEPS=""
+# tools/cc1psx.exe is RE-LINKED (2026-05-21) so worktree builds can run the
+# build-time compiler-parity proof (tools/compiler_parity.py): every build
+# proves decompals-gcc-2.7.2 == PsyQ cc1psx byte-for-byte, making "maybe it's a
+# compiler difference" empirically false on every build. It is gitignored
+# (proprietary) and the proof graceful-skips where absent. This does NOT revive
+# cc1psx as a per-function debugging tool — cc1psx_guard.py still blocks direct
+# invocation; the ONLY sanctioned use is the aggregate parity proof run via make.
+FILE_DEPS="tools/cc1psx.exe"
 
 LINKED=""
 FAILED=""
