@@ -3365,85 +3365,13 @@ func_800485EC: reorder 54,52,53 @ 52-54
 func_800485EC: subst "sw\s+\$2,24" "sw	$3,24" @ 56
 func_800485EC: subst "sh\s+\$3,6" "sh	$2,6" @ 58
 
-# func_8007EDBC: structural reorder via subst+delete+insert+fill_delay
-# func_8007EDBC: 4x4 packed-pair fixed-point multiply
-func_8007EDBC: subst "mult\s+\$9,\$11" "multu $9,$11" @ 4
-func_8007EDBC: subst "mult\s+\$10,\$12" "multu $10,$12" @ 8
-func_8007EDBC: subst "mult\s+\$9,\$13" "multu $9,$13" @ 21
-func_8007EDBC: subst "mult\s+\$10,\$11" "multu $10,$11" @ 25
-func_8007EDBC: subst "mult\s+\$9,\$12" "multu $9,$12" @ 37
-func_8007EDBC: subst "mult\s+\$10,\$13" "multu $10,$13" @ 41
-func_8007EDBC: subst "mult\s+\$9,\$11" "multu $9,$11" @ 53
-func_8007EDBC: subst "mult\s+\$10,\$12" "multu $10,$12" @ 57
-func_8007EDBC: subst "mult\s+\$9,\$13" "multu $9,$13" @ 69
-func_8007EDBC: subst "sll\s+\$9,\$8,16" "sll $9,$9,16" @ 2
-func_8007EDBC: subst "sll\s+\$9,\$8,16" "sll $9,$9,16" @ 19
-func_8007EDBC: subst "sll\s+\$9,\$8,16" "sll $9,$9,16" @ 35
-func_8007EDBC: subst "sll\s+\$9,\$8,16" "sll $9,$9,16" @ 51
-func_8007EDBC: subst "sll\s+\$8,\$8,16" "sll $9,$9,16" @ 67
-func_8007EDBC: subst "sra\s+\$9,\$8,16" "sra $9,$9,16" @ 68
 # deletes
-func_8007EDBC: delete @ 5
-func_8007EDBC: delete @ 8
-func_8007EDBC: delete @ 10
-func_8007EDBC: delete @ 11
-func_8007EDBC: delete @ 17
-func_8007EDBC: delete @ 18
-func_8007EDBC: delete @ 22
-func_8007EDBC: delete @ 24
-func_8007EDBC: delete @ 25
-func_8007EDBC: delete @ 26
-func_8007EDBC: delete @ 27
-func_8007EDBC: delete @ 33
-func_8007EDBC: delete @ 34
-func_8007EDBC: delete @ 38
-func_8007EDBC: delete @ 40
-func_8007EDBC: delete @ 41
-func_8007EDBC: delete @ 42
-func_8007EDBC: delete @ 43
-func_8007EDBC: delete @ 49
-func_8007EDBC: delete @ 50
-func_8007EDBC: delete @ 54
-func_8007EDBC: delete @ 56
-func_8007EDBC: delete @ 57
-func_8007EDBC: delete @ 58
-func_8007EDBC: delete @ 59
-func_8007EDBC: delete @ 65
-func_8007EDBC: delete @ 66
-func_8007EDBC: delete @ 70
 # andi inserts (one per iter)
-func_8007EDBC: insert "andi $9,$8,0xFFFF" @ 2
-func_8007EDBC: insert "andi $9,$8,0xFFFF" @ 13
-func_8007EDBC: insert "andi $9,$8,0xFFFF" @ 22
-func_8007EDBC: insert "andi $9,$8,0xFFFF" @ 31
-func_8007EDBC: insert "andi $9,$8,0xFFFF" @ 40
 # iter 0 main inserts before mflo $10 (post-delete idx 8)
-func_8007EDBC: insert "multu $10,$12" @ 8
-func_8007EDBC: insert "andi $9,$9,0xFFFF" @ 8
-func_8007EDBC: insert "sra $9,$9,12" @ 8
-func_8007EDBC: insert "mflo $9" @ 8
-func_8007EDBC: insert "addu $2,$4,$0" @ 8
-func_8007EDBC: insert "lw $8,4($4)" @ 8
 # iter 1 main inserts (post-delete idx 17)
-func_8007EDBC: insert "multu $10,$11" @ 17
-func_8007EDBC: insert "andi $9,$9,0xFFFF" @ 17
-func_8007EDBC: insert "sra $9,$9,12" @ 17
-func_8007EDBC: insert "mflo $9" @ 17
-func_8007EDBC: insert "lw $8,8($4)" @ 17
 # iter 2 main inserts (post-delete idx 26)
-func_8007EDBC: insert "multu $10,$13" @ 26
-func_8007EDBC: insert "andi $9,$9,0xFFFF" @ 26
-func_8007EDBC: insert "sra $9,$9,12" @ 26
-func_8007EDBC: insert "mflo $9" @ 26
-func_8007EDBC: insert "lw $8,12($4)" @ 26
 # iter 3 main inserts (post-delete idx 35)
-func_8007EDBC: insert "multu $10,$12" @ 35
-func_8007EDBC: insert "andi $9,$9,0xFFFF" @ 35
-func_8007EDBC: insert "sra $9,$9,12" @ 35
-func_8007EDBC: insert "mflo $9" @ 35
-func_8007EDBC: insert "lw $8,16($4)" @ 35
 # iter 4: j-delay-slot fill (sw into delay slot)
-func_8007EDBC: fill_delay @ 74 <- 73
 func_800645B0: reorder 3,1,2 @ 1-3
 # RETIRED (targeted-permuter): func_8007D9C4: subst "nop" "addu $5,$0,$zero" @ 31
 # RETIRED (targeted-permuter): func_8007D9C4: subst "addu\s+\$5,\$0,\$zero" "nop" @ 38

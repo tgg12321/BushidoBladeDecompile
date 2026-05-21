@@ -234,3 +234,4 @@ func_8008393C  # break_instruction; also signals: bios_trampoline; no known_bloc
 # --- sp_manipulation: $sp swap / context save / restore (no C escape hatch) (1 funcs) ---
 func_80083220  # sp_manipulation; see known_blocked.txt; auto-added 2026-05-17
 
+func_8007EDBC  # cluster-sibling:func_8007E8DC,jaccard=0.58 ; gcc-cannot-emit:redundant-andi-before-sll-sign-extend (combine.c:1458 elides single-use mask; cc1psx byte-identical, ~38 C forms). Hand-coded packed fixed-point multiply, 8007Exxx display.c hand-asm cluster. User-authorized 2026-05-21.

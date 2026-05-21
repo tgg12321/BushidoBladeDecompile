@@ -2192,56 +2192,103 @@ s32 *func_8007ED6C(s32 *a0, s32 *a1, s32 *a2) {
     return v0;
 }
 
-s32 *func_8007EDBC(volatile s32 *arg0, s32 *arg1)
-{
-  register s32 m0 asm("t3") = arg1[0];
-  register s32 m1 asm("t4") = arg1[1];
-  register s32 m2 asm("t5") = arg1[2];
-  register s32 w asm("t0");
-  register s32 t1 asm("t1");
-  register s32 t2 asm("t2");
-  s32 *ret;
-  w = arg0[0];
-  t1 = (s32) ((s16) (w & 0xFFFF));
-  t2 = w >> 16;
-  t1 = t1 * m0;
-  t2 = t2 * m1;
-  ret = (s32 *) arg0;
-  t1 = (t1 >> 12) & 0xFFFF;
-  t2 = (t2 >> 12) << 16;
-  arg0[0] = t1 | t2;
-  w = arg0[1];
-  t1 = (s32) ((s16) (w & 0xFFFF));
-  t2 = w >> 16;
-  t1 = t1 * m2;
-  t2 = t2 * m0;
-  t1 = (t1 >> 12) & 0xFFFF;
-  t2 = (t2 >> 12) << 16;
-  arg0[1] = t1 | t2;
-  w = arg0[2];
-  t1 = (s32) ((s16) (w & 0xFFFF));
-  t2 = w >> 16;
-  t1 = t1 * m1;
-  t2 = t2 * m2;
-  t1 = (t1 >> 12) & 0xFFFF;
-  t2 = (t2 >> 12) << 16;
-  arg0[2] = t1 | t2;
-  w = arg0[3];
-  t1 = (s32) ((s16) (w & 0xFFFF));
-  t2 = w >> 16;
-  t1 = t1 * m0;
-  t2 = t2 * m1;
-  t1 = (t1 >> 12) & 0xFFFF;
-  t2 = (t2 >> 12) << 16;
-  arg0[3] = t1 | t2;
-  w = arg0[4];
-  t1 = (s32) ((s16) (w & 0xFFFF));
-  t1 = t1 * m2;
-  arg0++;
-  arg0--;
-  arg0[4] = t1 >> 12;
-  return ret;
-}
+/* func_8007EDBC: hand-coded asm in the original PSY-Q source (display.c packed
+ * fixed-point multiply -- 3x3-matrix column scale: 9 packed s16 values each
+ * x coef[k%3] from arg1, >>12 Q12, repacked in place).
+ * Hand-coded, NOT compiled C:
+ *  - Leading `andi $t1,$t0,0xFFFF` before `sll 16; sra 16` is a REDUNDANT mask
+ *    (the sll discards exactly the masked bits). GCC combine (combine.c:1458
+ *    added_sets_2) elides a single-use redundant mask and keeps the 2nd-use
+ *    insn for a multi-use one, so no pure-C form emits this andi without a
+ *    stray instruction the target lacks (verified ~38 C forms).
+ *  - cc1psx (Sony GCC 2.7.2.SN.1) is byte-identical to our fork here (both
+ *    elide it) -- so the original was not compiled from C.
+ *  - Cluster: sibling func_8007E8DC (jaccard=0.58) is inline asm; the 8007Exxx
+ *    /8007Fxxx display.c region is documented hand-coded asm.
+ * User-authorized 2026-05-21 (cc1psx-proof + combine.c + cluster).
+ */
+__asm__(
+    ".section .text\n"
+    ".set\tnoreorder\n"
+    ".set\tnoat\n"
+    "glabel func_8007EDBC\n"
+    "    lw         $t0, 0($a0)\n"
+    "    lw         $t3, 0($a1)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t3\n"
+    "    lw         $t4, 4($a1)\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t5, 8($a1)\n"
+    "    lw         $t0, 4($a0)\n"
+    "    addu       $v0, $a0, $zero\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t4\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 0($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t5\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 8($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t3\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 4($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t4\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 12($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t5\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 8($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t3\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 16($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t4\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 12($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t5\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    jr         $ra\n"
+    "     sw        $t1, 16($a0)\n"
+    "endlabel func_8007EDBC\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+);
 PAD_NOPS_3; /* 3 NOPs after func_8007EDBC */
 void gte_SetRotMatrix(s32 *a0) {
     register s32 t0 asm("t0") = a0[0];
