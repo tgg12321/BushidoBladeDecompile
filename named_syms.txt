@@ -3902,3 +3902,26 @@ gpu_render_80076D74                                = 0x80076D74;  /* builds + OT
 gpu_render_8006F528                                = 0x8006F528;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=277 */
 gpu_render_8006295C                                = 0x8006295C;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=420 */
 gpu_render_800646E8                                = 0x800646E8;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=490 */
+efc_buki_zanzou_drawlist_800481E8 = 0x800481E8;  /* draw-loop over buki-zanzou record list, on-screen cull x<0x280, calls efc_buki_draw_zanzou per entry */
+motutil_GetWalkDir_all_800644FC = 0x800644FC;  /* bitmask(D_800A3454[idx]) loop over count, calls motutil_GetWalkDir for each active entry (stride 0x20) */
+mtx_rotate_8007F87C = 0x8007F87C;  /* in-place rotate matrix rows@+6/+C by angle a0 via sincos LUT D_8009C928 (pairs [6,C],[8,E],[A,10]) */
+motion_ExMotionDrive0_800652F4 = 0x800652F4;  /* calls motion_SetExMotion(0), advances accum D_800F0BA8 += 0x1FF, gated return (<0x1001) */
+motion_ExMotionDrive3_800653E4 = 0x800653E4;  /* calls motion_SetExMotion(3), advances accum D_800F0BAE += 0x19, gated return (<0xC9) */
+motion_ExMotionDriveA_800655E0 = 0x800655E0;  /* calls motion_SetExMotion(0xA), advances accum D_800F0BBC += 0x32, gated return (<0x100) */
+motion_ExMotionDriveDF_800656EC = 0x800656EC;  /* calls motion_SetExMotion(0xD)+(0xF), advances accums D_800F0BC2/BC6, gated return (<0xB) */
+motion_ExMotionDrive11_800657B0 = 0x800657B0;  /* calls motion_SetExMotion(0x11), advances accum D_800F0BCA += 0x1C6, gated return (<0x11C8) */
+gpu_SetTexAttr_800485EC = 0x800485EC;  /* parses src prim header (type 0x10), fills dst descriptor with uv + clut(gpu_CalcClut) + tpage(gpu_CalcTPage) */
+dev_AddDevice_8008BE04 = 0x8008BE04;  /* EnterCS + bios_AddDevice_B(DCB @ D_800A307C) + ExitCS = register one device driver */
+bios_InstallHandler_8007FEDC = 0x8007FEDC;  /* EnterCS + BIOS B-call, copies handler code stub (D_8007FF44, reads COP0 $13 CAUSE) into BIOS table, FlushCache */
+bios_SetupJumpTbl_80078F88 = 0x80078F88;  /* EnterCS + BIOS B-call, sets jtbl_800A3620/24 from kernel tbl +0x884/0x894, zeros 0xB entries at +0x594 */
+bios_PatchTable_80079028 = 0x80079028;  /* EnterCS + BIOS B-call, copies 4-word handler stub (func_800790A4) into BIOS table +0x3D8/+0x4DC */
+bios_ClearTable_800790C0 = 0x800790C0;  /* EnterCS + BIOS B-call, zeros 9 entries at BIOS table +0x62C */
+bios_PatchTable_8007A458 = 0x8007A458;  /* EnterCS + BIOS B-call, copies handler stub (D_8007A4C0) into BIOS table +0x6C */
+cdrom_InitCallbacks_8007FF7C = 0x8007FF7C;  /* waits cdrom_CheckReady (4 retries), then cdrom_SetCallbackA/B + sys_SetVsyncMode + sys_SetTimer; ret 1 ok / 0 fail */
+gpu_PutDrawEnv_8007CBB0 = 0x8007CBB0;  /* clamps clip rect, builds GPU env packet (0xE1 drawmode/0xE3-E5 area+offset/0xE6) at D_800F1858, gpu_StartDmaList */
+calc_dirvec_from_angles_8004A1FC = 0x8004A1FC;  /* for 3 entries: build vec3s @+0x18 from angle pair via math_Cos/Sin scaled by mag [base+0x5C] */
+math_Sqrt_8007E11C = 0x8007E11C;  /* fixed-point sqrt: GTE LZCS/LZCR leading-zero normalize + sqrt LUT D_8009C7A8, denorm by half-shift; ret 0 if input 0 */
+calc_dir_from_points_8001A67C = 0x8001A67C;  /* dx/dz between pts A/B, distance via sqrt (LUT D_8008D118 + GTE LZC), normalize, per-comp angle via func_8001A62C -> [out+0]/[out+4] */
+stage_SetCollisionAtPos_8003F420 = 0x8003F420;  /* world (x,z)+0x7D00 /1000 -> grid cell, stage_SetCollision x4 on the 2x2 cell block around the position */
+gpu_LoadImageBatch_8003D9A0 = 0x8003D9A0;  /* loop N entries (stride 0x30) calling initLoadImage with auto VRAM cursor (x+=[+4], y wraps at 0x200), saves rect to +0x18..+0x2C */
+saTan4GaugeDraw_8006D338 = 0x8006D338;  /* frame ctr++, get sprite buf, anim-obj setup (func_80069AE4), saTan4GaugeMain, draw_anim_obj (func_8006CFBC), composite draw func_8006CCC8 */
