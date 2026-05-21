@@ -3881,3 +3881,24 @@ calc_fighter_separation_stored_8002BEA0                = 0x8002BEA0;  /* inter-f
 move_to_target_step_80053754                           = 0x80053754;  /* per-frame handler for the move-to-target state machine (set as ctx[0x5C] by init_move_to_target when within distance threshold); processes ~28 char/ctx fields */
 move_to_target_step_80053E9C                           = 0x80053E9C;  /* per-frame handler for the move-to-target state machine (set as ctx[0x5C] by init_move_to_target when beyond distance threshold) */
 coli_check_collision_80057E84                          = 0x80057E84;  /* collision routine: reads char pos (+0xF4/+0xFC) + hit-record (+0x360/+0x368), calls segment-intersection func_8005763C; sibling of coli_find_nearest_edge_hit */
+draw_anim_obj_80078654                             = 0x80078654;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8006DD94                             = 0x8006DD94;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8006D3DC                             = 0x8006D3DC;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_80069F80                             = 0x80069F80;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8006A1A0                             = 0x8006A1A0;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_80074220                             = 0x80074220;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_80069AE4                             = 0x80069AE4;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_80074488                             = 0x80074488;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8006CFBC                             = 0x8006CFBC;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8005FC9C                             = 0x8005FC9C;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8006B120                             = 0x8006B120;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_80074E08                             = 0x80074E08;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8007636C                             = 0x8007636C;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_800759D0                             = 0x800759D0;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+draw_anim_obj_8005D814                             = 0x8005D814;  /* renders an animated object: saMotionSet + OT-link (initTexPage/ot_Link); verified render signature */
+gpu_render_80073C78                                = 0x80073C78;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=362 */
+gpu_render_80074B18                                = 0x80074B18;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=133 */
+gpu_render_80076D74                                = 0x80076D74;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=161 */
+gpu_render_8006F528                                = 0x8006F528;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=277 */
+gpu_render_8006295C                                = 0x8006295C;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=420 */
+gpu_render_800646E8                                = 0x800646E8;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=490 */
