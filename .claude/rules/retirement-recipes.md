@@ -6,6 +6,12 @@ metadata:
   type: recipe
 ---
 
+> **TIER-4 note ([[tier4-sota-standard]], 2026-05-21):** convert each bridge to
+> **pure C**. In-file `__asm__()` is allowed ONLY for a construct with no C form
+> (GTE / BIOS / whole-function hand-asm), evidence-gated via
+> [[canonical-asm-retirement]]. Do **not** introduce new regfix / pins / inline-move
+> to "finish" a retirement — those are hard-blocked by `audit_asm_cheats.py --check-new`.
+
 These recipes apply to *retirement* work — `dc.sh next-asmfix` items that need to convert `replace_with_asmfile` bridges into pure C (or, for genuinely hand-written assembly, in-file `__asm__()` per project policy). Read this file BEFORE pulling the first asmfix item of any session.
 
 ## 1. `.word`-encoded asm does NOT honor `"=r"` register-asm bindings; mnemonics do

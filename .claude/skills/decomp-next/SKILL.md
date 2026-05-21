@@ -13,9 +13,19 @@ Read this entire skill before doing anything. The rules below are the contract.
 
 ## §0. THE CONTRACT (re-read whenever tempted to deviate)
 
+> **TIER-4 ONLY (governing rule [[tier4-sota-standard]]).** The finished match is
+> **100% pure C: 0 regfix rules, 0 asmfix rules, 0 `register asm` pins, 0 tier-3
+> inline `__asm__`.** The *only* non-pure-C finish is **canonical asm** for a
+> construct with no C form (GTE cop2 / BIOS / syscall / whole hand-asm body),
+> authorized via §2.5.c. The old "minimize-asm fallback" (§5.8) and "close it with a
+> few specific regfix rules / pins" paths are **RETIRED** — see
+> [[minimize-asm-when-blocked]]. Pins, regfix, and inline-move are diagnostic probes
+> you **strip before committing**, never an end state. A function that only matches
+> with one of those is **unmatched WIP** — keep switching technique.
+
 **You stop only when ONE of these is true:**
 
-1. `dc.sh verify-c <func>` reports MATCH **and** the function body in `src/` contains zero non-blessed inline asm **and** the commit landed (hook auto-cleared `.bb2_active_func`).
+1. `dc.sh verify-c <func>` reports MATCH **and** the function body in `src/` is **pure C** — `grep -c "^<func>:" regfix.txt regfix_stage2.txt asmfix.txt` = 0, no `register … asm("$` pin in the body, and zero non-blessed inline asm (only GTE/BIOS/canonical per §2.5.c) — **and** the commit landed (hook auto-cleared `.bb2_active_func`).
 2. `dc.sh start` reports `Build: MISMATCH` **before you've done any work** — this is a pre-existing repo problem, not a function problem; report and stop.
 3. Catastrophic external state — WSL is down, disc image missing, splat refuses to run. Genuine impossibility, not difficulty.
 
@@ -417,15 +427,32 @@ The ladder (in order — each rung is a TECHNIQUE switch, never a TARGET switch)
 
    **`regfix-suggest` j+nop ↔ b+useful_insn paired hint** — when mine has `[X, j .L<N>, nop]` and target has `[b .L<N>, X-equivalent in delay]`, the suggester now emits a paired `fill_delay @ <j_idx> <- <X_idx>` + `subst "j\\s+\\.L<N>" "b\t.L<N>" @ <j_idx>` hint. This is hint-only (not auto-applied) because the rules don't compose with the difflib delete/insert output — apply by hand via `tmp/inject_*.py` script. Recurring pattern in GTE wrappers (see `feedback_strength_reduce_defeat.md`).
 
-5. **Compound regfix layering** — 10+ rules across multiple blocker classes for one function is normal. The `dc.sh asmfix-slice` tool can lift a small region into `asmfix.txt` if the surrounding C is correct but a sub-region is structurally unrepresentable (e.g., scratchpad pointer math GCC won't emit).
+5. **Diagnostic regfix layering (NOT an end state).** You may temporarily layer regfix / `asmfix-slice` rules to *isolate* which sub-regions diverge — but per §0 they must be **stripped before commit**; 10+ rules left in place is debt, not a match. If a sub-region seems "structurally unrepresentable," that almost always means the C structure is wrong (re-read m2c, compare pin-free siblings), not that asm is required.
 
 6. **Named recipes by reference** — LICM unhoist, call-loop family, early-exit alias breaker, varargs prologue, nested-bool memcard, CU split for jtbl interposition. All documented in `feedback_matching_playbook.md`.
 
-7. **New transformation pass** — extend `prologue_fix.py`, add a pipeline stage, write a new regfix op, capture a new named recipe via `dc.sh capture-recipe`. Expected — this is how the project grows.
+7. **New PURE-C transformation pass** — extend `prologue_fix.py`, add a faithful maspsx/pipeline stage, or capture a new named recipe via `dc.sh capture-recipe`. Building pure-C tooling is how the project grows. **Writing a new regfix rule is NOT a rung** — regfix is debt to remove (§0).
 
 After each rung: rebuild + re-verify. If MATCHED → §6. Otherwise next rung.
 
-### 5.8 MINIMIZE-ASM fallback (when §5.1-§5.7 are genuinely exhausted)
+### 5.8 MINIMIZE-ASM fallback — RETIRED 2026-05-21
+
+> **VOID — do not use this path, or any gate / budget / retirement-form described
+> in the rest of this subsection.** Per §0 and [[tier4-sota-standard]], there is no
+> "minimize-asm" middle ground. The finished match is **pure C** (0 regfix, 0
+> asmfix, 0 register pins, 0 tier-3 inline asm) or **canonical asm** (§2.5.c, for a
+> construct with no C form). The old "cc1psx calibration + ≤10 §6.1 barriers +
+> specific non-wildcard regfix" recipe is dead — `cc1psx` was removed 2026-05-20,
+> and "close it with a few regfix rules / pins" is exactly the debt this standard
+> eliminates ([[minimize-asm-when-blocked]] is the retired rule).
+>
+> **If §5.1–§5.7 are exhausted and pure C still won't come:** switch *technique*
+> and keep going (§9), or — only for a physically un-compilable construct — take it
+> through §2.5.c canonical-asm authorization. **Never** commit a regfix/pin/tier-3
+> result. The `single_game_VoiceContorol` worked-example below is an *incomplete*
+> match under this standard, not a pattern to emulate.
+>
+> _The remainder of this subsection is retained for history only — ignore it._
 
 **This is the path when pure C provably cannot reach byte-match.** It is NOT a default response to difficulty; it's the structured answer to "I've burned every rung above AND cc1psx calibration confirms cc1 in our toolchain can't emit target's bytes for any equivalent C structure."
 

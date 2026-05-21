@@ -1,10 +1,21 @@
 ---
 name: attempts-log-gate
 paths: ["src/*.c", "asmfix.txt", "inline_asm_canonical.txt"]
-description: "Escape-valve commits (INLINE_MOVE_ALIASING / asmfix bridge / inline_asm_canonical) are gated on .bb2_attempts/<func>.jsonl showing ≥4 distinct technique categories, ≥6 attempts, ≥30 cumulative minutes."
+description: "Gates a canonical-asm authorization (inline_asm_canonical entry) on .bb2_attempts/<func>.jsonl showing >=4 technique categories, >=6 attempts, >=30 min of pure-C effort. NOTE (2026-05-21): INLINE_MOVE_ALIASING + new regfix/pins are now HARD-BLOCKED by audit_asm_cheats, not gated — this log is evidence for the canonical exception, not a key that unlocks tier-3."
 metadata:
   type: rules
 ---
+
+> **Scope narrowed 2026-05-21 ([[tier4-sota-standard]]).** `INLINE_MOVE_ALIASING`,
+> new regfix rules, and new `register asm` pins are **no longer escape valves** —
+> they are **hard-blocked** by `audit_asm_cheats.py --check-new` (cannot be
+> committed at all, with or without an attempt log). This gate's remaining job is
+> to require genuine breadth-of-pure-C-effort **before a canonical-asm
+> authorization** (`inline_asm_canonical.txt` entry) — it is *evidence for the
+> canonical exception*, not a key that unlocks tier-3 debt. A new
+> `replace_with_asmfile` bridge also still requires explicit user authorization
+> ([[bridge-is-not-decomp]]). The technique categories below remain useful as a
+> record of what pure-C avenues were tried.
 
 # Why this exists
 

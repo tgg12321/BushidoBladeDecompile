@@ -1,13 +1,22 @@
 ---
 name: register-asm-pins
 paths: ["src/*.c"]
-description: "GCC 2.7.2 `register T x asm(\\"reg\\")` local pins are HINTS, not hard bindings. They hold when they agree with the RA's natural choice and are silently ignored when they fight a strong RA preference (e.g. reusing the longest-dead register). Reliable enforcement = pin + use as an `__asm__` input/output operand. When a pin is ignored, stop fighting it in C — regfix the register name."
+description: "GCC 2.7.2 `register asm` pins are HINTS, not hard bindings. DIAGNOSTIC-ONLY: a pin/regfix is never a committed match -- strip it and find the C structure that makes GCC pick the register (see tier4-sota-standard)."
 metadata:
   type: reference
 ---
 
 
 # Register-asm pin reliability — GCC 2.7.2
+
+> **Pins are DIAGNOSTIC-ONLY, never a committed match ([[tier4-sota-standard]]).**
+> A `register T x asm("$N")` pin left in the committed source is tier-3 debt, same
+> kind as a regfix rule. Use a pin to *learn* which register the target wants; the
+> finished match must make GCC choose that register through **C structure**, with
+> the pin removed. The mechanics below (what holds vs. what's ignored) are for that
+> diagnosis. **An ignored pin is NOT a cue to regfix the register or to inject an
+> `__asm__` move** (both forbidden) — it's a cue that you haven't found the C
+> structure yet.
 
 `register T x asm("regname") = expr;` is a **hint**, not a hard binding. GCC 2.7.2's
 register allocator tries to honor it but will silently override it when its own
@@ -49,23 +58,28 @@ Two pins on the same register with overlapping liveness (`tbl asm("a0")` while
 
 ## How to apply
 
-1. **Use the pin, but verify it took.** After a build, `dc.sh dump-text <func>` — if the
-   pinned var isn't in `regname`, the pin was ignored.
-2. **Don't escalate by adding more pins or restructuring C to "convince" GCC.** That was
-   the time-sink in func_8002EA24. Once a pin is ignored, it will keep being ignored.
-3. **Regfix the register name instead.** A failed pin is just a uniform register rename
-   in the asm stream — `subst` rules. func_8002EA24 used 3 substs (`subu $4→$9` for the
-   negu, `slt … $4→$9` ×2) and that was the whole fix. Cheap and deterministic.
-4. **For values that MUST land in a specific reg, route them through an `__asm__`
-   operand** — that binding is enforced. See [[inline-move-aliasing]] for the
-   `__asm__ volatile("addu %0,%1,$zero" : "=r"(pinned) : "r"(src))` idiom, which both
-   forces the redundant move AND enforces the destination register.
+1. **Use the pin to DIAGNOSE, and verify whether it took.** After a build,
+   `dc.sh dump-text <func>` — if the pinned var isn't in `regname`, the pin was ignored.
+   Either way, the pin tells you which register target wants; that's its only job.
+2. **An ignored pin means your C structure is wrong — not that you should force it.**
+   Adding more pins, regfix, or an `__asm__` move to "convince" GCC is forbidden
+   ([[tier4-sota-standard]]). Once a pin is ignored, it will keep being ignored.
+3. **Find the C structure that makes GCC choose `regname` naturally** — declaration
+   order, intermediate vars, the liveness pattern that agrees with target's allocator.
+   A k-mer sibling that matched pin-free is the template. This is the actual work. See
+   [[register-alloc-pure-c]] for the concrete levers (block-local var split, narrow int
+   type, loop precompute, REG_ALLOC_ORDER diagnosis).
+4. **Strip every pin before committing.** A `register asm` pin in the committed result
+   is unmatched WIP. Do **not** "regfix the register name instead" and do **not** route
+   the value through an `__asm__("move ...")` operand — both are tier-3 debt
+   ([[inline-move-aliasing]], now diagnostic-only). If the register genuinely cannot be
+   reached in C, the function is either still-WIP (keep going) or, only for a physically
+   un-compilable construct, canonical-asm ([[canonical-asm-retirement]]).
 
 ## Related
 
-- [[register-alloc-pure-c]] — **retire the pin in PURE C** (block-local var
-  split, narrow int type, REG_ALLOC_ORDER diagnosis) instead of regfixing the
-  register name. Try this BEFORE accepting a pin or a regfix rename — it cleared
-  all 5 pins on saTan0Main and the last on InitHiraRmd_80047FBC.
+- [[register-alloc-pure-c]] — retire the pin in PURE C (block-local var split, narrow
+  int type, REG_ALLOC_ORDER diagnosis) instead of regfixing the register name; cleared all
+  5 pins on saTan0Main and the last on InitHiraRmd_80047FBC.
 - [[inline-move-aliasing]] — asm-operand enforcement of register bindings
 - [[quick-reference]] Part 4 (register-asm hints — where the line is)

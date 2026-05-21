@@ -15,17 +15,17 @@ metadata:
 > have replicated the lost_codegen regfix cheat in C source — see
 > [[inline-asm-injection]]. The audit will block it.
 
-> **NEW (2026-05-17): this is an ESCAPE VALVE, not a default.** Per user
-> directive: "Everything should be to the SOTN standard unless there is a
-> very compelling evidence-driven reason to break convention. If it can be
-> C, it should be C." The aliasing barrier is a deviation from the SOTN
-> bar — community projects (SOTN, Vagrant, ESA, CTR, MGS) accept zero
-> inline asm of any form in non-canonical functions. BB2's auditor allows
-> this pattern ONLY when accompanied by an `INLINE_MOVE_ALIASING:` comment
-> documenting ≥2 specific failed pure-C alternatives, AND only when the
-> commit message carries a `Pure-C attempts:` block (≥3 entries) showing
-> the structural-C work was actually done. See
-> [[evidence-driven-authorization]] for the gate details.
+> **RETIRED AS AN END STATE (2026-05-21).** Per [[tier4-sota-standard]], an
+> `inline_move_aliasing` block is **tier-3 debt — never a committed match.** The
+> old "escape valve with an `INLINE_MOVE_ALIASING:` comment + `Pure-C attempts:`
+> block" allowance is **gone.** You may still use this idiom **diagnostically** —
+> to observe which base/destination registers and ordering the target wants — but
+> the committed result must reproduce that through **C structure**, with the
+> `__asm__("move ...")` and the `register asm` pins **removed.** Everything below
+> explains the pattern target emits and *why* GCC folds it: treat it as a map of
+> the gap you must close in pure C, not a snippet to ship. (GTE wrappers keep
+> their `ctc2`/`mtc2`/`lwc2` ops — tier-2 canonical — but the register *setup*
+> around them must be pure C.)
 
 # Required form (auditor-enforced)
 
@@ -108,11 +108,16 @@ lw    $t6, 4($t4)
 
 Exactly target's three-step pattern.
 
-# Skill compliance (§6.1)
+# NOT a compliant end state (was §6.1)
 
-This is allowed under "single-instruction asm for codegen control" — the asm emits exactly one MIPS instruction (`move`, which expands to `addu`), and its sole purpose is steering register allocation, not implementing function logic. Same allow-list category as `lui` for constant materialization or `nop` for slot filling.
-
-Use sparingly. If you find yourself reaching for this on every other line, the function probably wants a different C structure entirely (re-read m2c's base.c — see §3.0).
+This idiom used to be filed under "single-instruction asm for codegen control."
+**It no longer counts as a finished match** ([[tier4-sota-standard]],
+[[inline-asm-allowed]]). The `move`/`addu` it emits is a register-allocation
+workaround — GCC *can* produce that copy from C, so the job is to find the C
+structure that makes GCC emit it, not to inject the instruction. Use the idiom
+only to *diagnose* the target's register flow, then remove it before committing.
+If you reach for it on every other line, the function wants a different C
+structure entirely (re-read m2c's base.c).
 
 # Companion technique: pin the load destinations
 

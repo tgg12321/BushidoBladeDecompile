@@ -1,11 +1,18 @@
 ---
 name: cheat-cleanup-techniques
 paths: ["regfix.txt", "asmfix.txt", "regfix_stage2.txt"]
-description: "Three proven techniques for retiring orphan-cheat queue items (functions matching-via-cheat). Each technique closes a different cheat class; pick by audit category. Most lost_codegen cheats fall to one of these; harder ones need structural C rework."
+description: "Techniques for retiring orphan-cheat queue items to PURE C (functions matching-via-cheat). Pick by audit category. Per tier4-sota-standard the goal is removal to pure C, never swapping a cheat for smaller rules/pins."
 metadata:
   type: recipe
 ---
 
+
+> **TIER-4 note ([[tier4-sota-standard]], 2026-05-21):** a cheat is retired only by
+> reaching **pure C** (0 regfix, 0 asmfix, 0 pins, 0 tier-3 inline-asm) — or, for a
+> construct with no C form, canonical asm. Swapping a cheat for a "smaller" one
+> (fewer/specific regfix, a pin, an inline-move) is NOT a retirement and is
+> hard-blocked by `audit_asm_cheats.py --check-new`. The techniques below close
+> cheats toward pure C; do not use them to author replacement rules.
 
 Four techniques retired the ENTIRE 28-function cheat cleanup queue cleanly in the 2026-05-16 session.
 

@@ -1266,18 +1266,23 @@ def cmd_func(name):
 
 
 def cmd_check_new(commit_msg=None):
-    """Return 1 if working tree introduces unauthorized cheats since HEAD,
-    OR if newly-added inline asm / canonical entries / regfix rules are
-    missing required evidence (tag grammar, attempt log, aliasing-barrier
-    documentation).
+    """Return 1 if the working tree introduces new cheats since HEAD.
+
+    TIER-4 policy (2026-05-21, [[tier4-sota-standard]]): the only acceptable end
+    states are pure C and canonical asm (whole-function hand-asm / GTE / BIOS,
+    evidence-gated). Any NET-NEW regfix rule, register-asm pin, or tier-3 inline
+    asm (move-aliasing / barrier) is BLOCKED outright -- these are diagnostic-only,
+    never committed. The old "document it / log 3 attempts and it's allowed"
+    escape valves for G4/G5 are removed.
 
     Gates, in order:
-      G1. Same-commit self-authorization detection (HEAD auth in both scans)
-      G2. New canonical-asm entry without valid evidence tag
-      G3. Standard cheat-pattern delta (existing behavior, now self-auth-safe)
-      G4. New aliasing barrier without INLINE_MOVE_ALIASING: comment
-      G5. New regfix rules for previously-clean functions
-      G6. Any of G1-G5 → require Pure-C attempts: log in commit message
+      G1.  Same-commit self-authorization detection (HEAD auth in both scans)
+      G2.  New canonical-asm entry without valid evidence tag
+      G3.  Standard cheat-pattern delta (splice/wildcard/lost-codegen/injection)
+      G4.  New inline-move aliasing barrier (BLOCKED -- no doc escape valve)
+      G5.  New regfix on a clean function OR churn on a rule-bearing one (BLOCKED)
+      G5b. New register-asm pin (BLOCKED) -- except whole-function canonical bodies
+      G6.  Canonical authorization (G2) still requires a Pure-C attempts: log
     """
     head_auth = load_authorized_at_ref("HEAD")
     cur_auth = load_authorized()  # working tree
@@ -1396,34 +1401,34 @@ def cmd_check_new(commit_msg=None):
     except subprocess.CalledProcessError:
         pass
 
-    new_barriers_missing_doc = []
+    # TIER-4 policy (2026-05-21): inline-move aliasing is tier-3 register
+    # coercion — diagnostic-only, NEVER an allowed end state. Block EVERY new
+    # barrier regardless of documentation (the old INLINE_MOVE_ALIASING: doc
+    # escape valve is retired). Existing barriers are grandfathered via head_n.
+    new_barriers = []
     for src_path in sorted(Path("src").glob("*.c")):
         content = src_path.read_text(encoding="utf-8", errors="replace")
-        cur_per_func = barriers_by_func(content, src_path.name)
-        # Iterate scan results in order so missing-doc reports identify
-        # the actual file:line that lacks documentation.
+        # Iterate scan results in order so reports identify the actual file:line.
         cur_barriers = list(scan_aliasing_barriers(content, src_path.name))
-        per_func_remaining = dict(cur_per_func)  # mutable copy
         for src_name, line_no, has_doc, reason in cur_barriers:
             fname = _enclosing_func_name(content, _line_to_pos(content, line_no))
             key = (src_name, fname)
             head_n = head_barriers_by_func.get(key, 0)
             # Charge this barrier against head_n first (grandfathered),
-            # then any excess against the "new" budget.
+            # then any excess is a NEW barrier.
             if head_n > 0:
                 head_barriers_by_func[key] = head_n - 1
                 continue
-            # This barrier is new (no head budget left)
-            if not has_doc:
-                new_barriers_missing_doc.append((src_name, line_no, reason))
+            new_barriers.append((src_name, line_no, fname))
 
-    for src_name, line_no, reason in new_barriers_missing_doc:
-        violations.append(("aliasing_barrier_missing_doc",
-            f"new `__asm__ volatile(\"move %0, %1\" ...)` aliasing barrier "
-            f"at {src_name}:{line_no} -- {reason}. Add an "
-            f"INLINE_MOVE_ALIASING: comment block above with ≥2 "
-            f"`- technique=NAME: outcome` bullets documenting the pure-C "
-            f"alternatives that failed."))
+    for src_name, line_no, fname in new_barriers:
+        violations.append(("new_inline_move_aliasing",
+            f"new `__asm__ volatile(\"move %0, %1\" ...)` inline-move aliasing in "
+            f"`{fname}` at {src_name}:{line_no}. Per TIER-4 policy this tier-3 "
+            f"register coercion is NOT an allowed end state (no INLINE_MOVE_ALIASING: "
+            f"doc escape valve any more) -- it is diagnostic-only and must be stripped "
+            f"before commit. Find the C structure that makes GCC emit the move, or use "
+            f"canonical-asm authorization only for a physically un-compilable construct."))
 
     # === G5: new regfix rules ===
     head_regfix = ""
@@ -1449,18 +1454,74 @@ def cmd_check_new(commit_msg=None):
     for fn in sorted(newly_cheating_via_regfix - already_flagged):
         violations.append(("regfix_new_clean_func",
             f"new regfix rule for `{fn}` which had ZERO rules at HEAD. "
-            f"Per SOTN-grade policy, regfix is a deviation requiring "
-            f"compelling pure-C-exhausted evidence. Add a Pure-C attempts: "
-            f"block to the commit message documenting ≥3 attempted techniques."))
+            f"Per TIER-4 policy (2026-05-21) regfix is NEVER an end state -- this is "
+            f"BLOCKED, not satisfiable by an attempt log. regfix is diagnostic-only; "
+            f"strip it and find the C structure, or use canonical-asm authorization "
+            f"only for a physically un-compilable construct."))
+    for fn in sorted(churning_regfix - already_flagged - newly_cheating_via_regfix):
+        violations.append(("regfix_churn",
+            f"net-new regfix rule(s) added to `{fn}` (already had rules at HEAD). "
+            f"Per TIER-4 policy, adding regfix is BLOCKED -- every rule is debt to "
+            f"remove, not extend. Drive `{fn}` toward ZERO rules."))
+
+    # === TIER-4: new register-asm pins are BLOCKED (2026-05-21) ===
+    # `register T x asm("$N")` pins are tier-3 debt, never an end state. They are
+    # diagnostic-only; the committed match must reach the register via C structure.
+    # Whole-function canonical-asm bodies (in inline_asm_canonical.txt) are exempt.
+    PIN_RE = re.compile(r'\bregister\b[^=;]*\basm\s*\(\s*"\$')
+
+    def pins_by_func(text, source_name):
+        from collections import defaultdict
+        out = defaultdict(int)
+        for ln_no, line in enumerate(text.split("\n"), 1):
+            if PIN_RE.search(line):
+                fn = _enclosing_func_name(text, _line_to_pos(text, ln_no))
+                out[(source_name, fn)] += 1
+        return dict(out)
+
+    new_pins = []
+    try:
+        _pin_head_paths = head_src_paths  # reuse the fetch from G4 if available
+    except NameError:
+        _pin_head_paths = None
+    if _pin_head_paths is not None:  # fail-open: skip pin gate if HEAD unavailable
+        head_pins_by_func = {}
+        for path in _pin_head_paths:
+            if not path.endswith(".c"):
+                continue
+            try:
+                head_content = subprocess.run(
+                    ["git", "show", f"HEAD:{path}"],
+                    capture_output=True, text=True, check=True,
+                    encoding="utf-8", errors="replace").stdout
+            except subprocess.CalledProcessError:
+                continue
+            for key, n in pins_by_func(head_content, path.split("/")[-1]).items():
+                head_pins_by_func[key] = head_pins_by_func.get(key, 0) + n
+        for src_path in sorted(Path("src").glob("*.c")):
+            content = src_path.read_text(encoding="utf-8", errors="replace")
+            for key, n in pins_by_func(content, src_path.name).items():
+                sname, fname = key
+                if fname in cur_auth:   # canonical-asm bodies are exempt
+                    continue
+                head_n = head_pins_by_func.get(key, 0)
+                if n > head_n:
+                    new_pins.append((sname, fname, head_n, n))
+    for sname, fname, head_n, n in sorted(new_pins):
+        violations.append(("new_register_pin",
+            f"new `register T x asm(\"$N\")` pin in `{fname}` ({sname}: HEAD={head_n}, "
+            f"now={n}). Per TIER-4 policy pins are diagnostic-only, never a committed "
+            f"end state -- strip the pin and find the C structure that makes GCC choose "
+            f"the register naturally."))
 
     # === G6: any of the above triggers require attempt-log in commit msg ===
     needs_attempt_log = (
         bool(new_auth_with_comments)
         or bool(new_inline) or bool(new_c_body)
         or bool(new_inserts) or bool(new_asm_inj)
-        or bool(new_barriers_missing_doc)
-        or bool(new_barriers_missing_doc)  # noqa — emphasis
-        or bool(newly_cheating_via_regfix)
+        or bool(new_barriers)
+        or bool(newly_cheating_via_regfix) or bool(churning_regfix)
+        or bool(new_pins)
     )
     if needs_attempt_log:
         attempts = parse_attempt_log(commit_msg or "")
@@ -1503,13 +1564,12 @@ def cmd_check_new(commit_msg=None):
         for line in msg.split("\n"):
             print(f"    {line}", file=sys.stderr)
         print(file=sys.stderr)
-    print("Per SOTN-grade policy (user directive 2026-05-17): the default", file=sys.stderr)
-    print("standard is pure C. Inline asm / canonical authorization / regfix", file=sys.stderr)
-    print("are deviations requiring compelling, evidence-driven justification.", file=sys.stderr)
-    print(file=sys.stderr)
-    print("Read memory/feedback_evidence_driven_authorization.md for the", file=sys.stderr)
-    print("evidence standard, tag grammar, attempt-log format, and aliasing-", file=sys.stderr)
-    print("barrier documentation rules.", file=sys.stderr)
+    print("Per TIER-4 policy (tier4-sota-standard, 2026-05-21): the ONLY end", file=sys.stderr)
+    print("states are pure C (0 regfix, 0 asmfix, 0 pins, 0 tier-3 inline asm)", file=sys.stderr)
+    print("and canonical asm (GTE/BIOS/whole-function hand-asm, evidence-gated).", file=sys.stderr)
+    print("New regfix / pins / inline-move are BLOCKED outright -- they are", file=sys.stderr)
+    print("diagnostic-only, never a committed match. Strip them and find the C", file=sys.stderr)
+    print("structure, or use canonical-asm authorization for an un-compilable op.", file=sys.stderr)
     return 1
 
 

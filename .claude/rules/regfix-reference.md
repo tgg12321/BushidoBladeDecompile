@@ -8,7 +8,14 @@ metadata:
 
 # regfix.txt reference
 
-`regfix.py` is a per-function asm post-pass between maspsx and `as`. Use it for register-allocation diffs and small structural fixes after C-level options are exhausted.
+> **TIER-4 note ([[tier4-sota-standard]], 2026-05-21):** regfix/asmfix are debt
+> being driven to ZERO — **no new rules.** `audit_asm_cheats.py --check-new`
+> hard-blocks net-new regfix rules, register pins, and tier-3 inline-asm at commit
+> time. This reference is for **reading and RETIRING** existing rules (and
+> understanding the build pipeline), not authoring new ones. End state: pure C, or
+> canonical asm for a construct with no C form.
+
+`regfix.py` is a per-function asm post-pass between maspsx and `as`. Historically used for register-allocation diffs after C-level options were exhausted; under the Tier-4 standard a remaining diff means the C structure isn't found yet (or, rarely, the op is canonical asm) — not that a rule should be added.
 
 ## Use these tools before writing rules by hand
 

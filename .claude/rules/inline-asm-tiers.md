@@ -8,6 +8,14 @@ metadata:
 
 # Inline-asm tier system
 
+> **Policy ([[tier4-sota-standard]], 2026-05-21):** only tiers **1, 2, and 4** are
+> acceptable *finished* states. **Tier 3 is never committable.** A function whose
+> only path to byte-match is a register pin, an inline-move, a scheduling barrier,
+> or a regfix rule is **unmatched WIP** — not "done with a hint." There is **no
+> attempts-log escape valve** to commit a tier-3 result (the old `.bb2_attempts`
+> "declare it needs hints" path is superseded — see [[attempts-log-gate]]). Tier 3
+> is the *work*, not the answer.
+
 When BB2's inline-asm policy is honest, every `__asm__` block in
 `src/*.c` falls into one of four tiers:
 
@@ -81,13 +89,15 @@ results.
 
 The only path with measured non-zero ROI for tier-3 retirement:
 
-**Per-function pure-C re-attempt.** For each tier-3 function, log
-attempts in `.bb2_attempts/<func>.jsonl` (gated by
-[[attempts-log-gate]]). Each successful retirement demotes a function
-from tier 3 to tier 4. The gate enforces breadth (≥4 distinct
-technique categories, ≥6 attempts, ≥30 minutes) before allowing escape-
-valve commits, so functions actually exhaust pure-C territory before
-being declared "needs hints."
+**Per-function pure-C re-attempt.** For each tier-3 function, drive it to
+tier 4 (pure C). A successful retirement demotes the function from tier 3
+to tier 4 and removes its pins/regfix/inline-asm. There is **no "declare
+it needs hints and commit" outcome** — a function that won't reach pure C
+stays unmatched WIP; you keep switching technique ([[escalation-ladder]]).
+The only non-tier-4 finish is canonical asm (tier 1/2) for a construct
+proven physically un-compilable — never tier 3. (Attempt logging in
+`.bb2_attempts/` is still useful as a record of what was tried, but it no
+longer unlocks a tier-3 commit — see [[attempts-log-gate]].)
 
 Secondary path: **reclassify tier-3 functions whose inline asm is
 load-bearing.** The diagnostic surfaced 5 functions where stripping the

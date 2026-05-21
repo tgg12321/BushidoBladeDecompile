@@ -9,6 +9,11 @@ metadata:
 
 # regfix subst_multi and splice — K-to-N instruction transformations
 
+> **TIER-4 note ([[tier4-sota-standard]], 2026-05-21):** these ops are debt — **do
+> not author new `subst_multi`/`splice`/regfix rules.** `audit_asm_cheats.py
+> --check-new` hard-blocks net-new regfix at commit. This doc is for reading and
+> RETIRING existing rules; the end state is pure C (or canonical asm).
+
 ## When to reach for these
 
 Both ops solve cases where `subst` (1-to-1) and `insert_after` chains can't cleanly express a multi-line transformation. Common signatures:

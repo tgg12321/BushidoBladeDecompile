@@ -1,6 +1,6 @@
 ---
 name: decomp-cheat-cleanup
-description: End-to-end retirement of one cheat-cleanup queue item. Invoke whenever the user asks to "work the cheat queue", "do the next cheat cleanup", "retire a cheat", "next cheat-cleanup item", "work an orphan cheat", or similar BB2 cheat-retirement phrasings. ONE FUNCTION PER INVOCATION — for multi-function batches, re-invoke after each successful commit. Pulls from `dc.sh next-cheat-cleanup` (the Cheat Cleanup Queue — functions currently SHA1-matching ONLY because of a regfix/asmfix/inline-asm cheat). Starting state is matching-via-cheat; success state is matching-via-pure-C with the cheat rules removed. Different from `decomp-next` (which starts from UNMATCHED): here you remove the cheat first, watch SHA1 break by exactly N bytes (= the cheat's contribution), then coerce the C source to emit equivalent codegen via the documented techniques (inline_move_aliasing, declaration reorder, intermediate vars, register asm pins, scheduling tricks). Inherits §0 contract from decomp-next — no premature stopping, switch technique not target, build new tooling when stuck.
+description: End-to-end retirement of one cheat-cleanup queue item. Invoke whenever the user asks to "work the cheat queue", "do the next cheat cleanup", "retire a cheat", "next cheat-cleanup item", "work an orphan cheat", or similar BB2 cheat-retirement phrasings. ONE FUNCTION PER INVOCATION — for multi-function batches, re-invoke after each successful commit. Pulls from `dc.sh next-cheat-cleanup` (the Cheat Cleanup Queue — functions currently SHA1-matching ONLY because of a regfix/asmfix/inline-asm cheat). Starting state is matching-via-cheat; success state is matching-via-pure-C with the cheat rules removed. Different from `decomp-next` (which starts from UNMATCHED): here you remove the cheat first, watch SHA1 break by exactly N bytes (= the cheat's contribution), then coerce the C source to emit equivalent codegen via pure-C techniques (declaration reorder, intermediate vars, scheduling tricks, sibling-structure port). Register pins and inline_move_aliasing are diagnostic-only — strip them before commit; the finished form is pure C (or canonical asm for a construct with no C form). Inherits §0 contract from decomp-next — no premature stopping, switch technique not target, build new pure-C tooling when stuck.
 ---
 
 # /decomp-cheat-cleanup — single-invocation cheat retirement
@@ -13,9 +13,17 @@ Read this entire skill before doing anything. The rules below are the contract.
 
 ## §0. THE CONTRACT (re-read whenever tempted to deviate)
 
+> **TIER-4 ONLY (governing rule [[tier4-sota-standard]]).** Retiring a cheat means
+> reaching **100% pure C: 0 regfix, 0 asmfix, 0 `register asm` pins, 0 tier-3
+> inline `__asm__`.** You may NOT swap one cheat for a "smaller" one — removing a
+> wildcard regfix and adding 5 "specific" regfix rules, a pin, or an inline-move is
+> **not a retirement.** The only non-pure-C finish is **canonical asm** for a
+> construct with no C form (§0.1 G2/G3). Pins/regfix/inline-move are diagnostic
+> probes you strip before committing. The §5.6.5 "minimize-asm compromise" is RETIRED.
+
 **You stop only when ONE of these is true:**
 
-1. The cheat rule(s) have been removed AND `dc.sh verify <func>` reports MATCH AND the commit landed (hook auto-cleared `.bb2_active_func`).
+1. The cheat rule(s) are removed, `dc.sh verify <func>` reports MATCH, the C body is **pure C** (`grep -c "^<func>:" regfix.txt regfix_stage2.txt asmfix.txt` = 0, no `register … asm("$` pin, no non-blessed inline asm), **and** the commit landed (hook auto-cleared `.bb2_active_func`). (Canonical-asm authorization per §0.1 G2/G3 is the only alternative finish.)
 2. `dc.sh start` reports `Build: MISMATCH` **before you've done any work** — pre-existing repo problem; report and stop.
 3. Catastrophic external state (WSL down, disc missing, splat refuses). Genuine impossibility, not difficulty.
 
@@ -64,13 +72,13 @@ User directive 2026-05-17: **"Everything should be to the SOTN standard unless t
 | **G1 same-commit self-auth** | function newly added to `inline_asm_canonical.txt` AND newly has inline asm in same commit | Split into 2 commits: (1) canonical entry + tag + attempt log, then (2) AFTER the first lands, the inline asm + Pure-C attempts log |
 | **G2 evidence tag** | any new entry in `inline_asm_canonical.txt` | A valid tag in the `# justification` comment: `gcc-cannot-emit:<reason>`, `custom-abi:<descriptor>`, `hand-coded-signal:STRONG/Sn+Sm`, `cluster-sibling:<func>,jaccard=N.NN`, or `bios-trampoline` |
 | **G3 cheat delta** | new inline `__asm__(glabel)`, new lost-codegen insert, new c-body multi-insn, etc. | Either retire the cheat (preferred) or provide evidence tag + attempt log |
-| **G4 aliasing-barrier doc** | new `__asm__ volatile("move %0, %1" ...)` instance | `INLINE_MOVE_ALIASING:` comment within 8 lines above, listing ≥2 `- technique=NAME: <specific failure>` bullets |
-| **G5 regfix accretion** | new regfix rule for a function with ZERO rules at HEAD | Pure-C attempts log (≥3) showing the C-side fix was tried and failed |
+| **G4 inline-move (BLOCKED)** | new `__asm__ volatile("move %0, %1" ...)` instance | **Blocked — tier-3, never an end state.** Remove it and find the C structure; the idiom is diagnostic-only, stripped before commit ([[inline-move-aliasing]]). |
+| **G5 new regfix / pin (BLOCKED)** | any net-new regfix/asmfix rule, or a new `register T x asm("$N")` pin | **Blocked — never an end state (§0).** The only non-pure-C finish is canonical asm (G2/G3). |
 | **G6 attempt log** | any of G2-G5 | `Pure-C attempts:` block in commit message with ≥3 entries: `[N] technique=<name> score=<N> outcome=<observable evidence>`. Vague outcomes (`didn't work`, `no improvement`) are rejected. |
 
 The LLM auditor (Rule 1b) runs after the programmatic gate and judges EVIDENCE QUALITY: it checks that outcomes reference observable state (dump-text register names, permuter score plateaus, regalloc-dump lines, specific GCC option behavior), that listed techniques are plausible for the diff, and that the escalation order makes sense. Generic plausible-sounding evidence is REJECTED.
 
-**Translation for daily work:** if you find yourself reaching for `__asm__ volatile("move %0, %1")` or considering an authorization, you owe the commit message a structured account of what you tried, with specific observable outcomes. The format is enforced by the gate; the quality is enforced by the auditor.
+**Translation for daily work:** if you find yourself reaching for `__asm__ volatile("move %0, %1")`, a `register asm` pin, or a new regfix rule as the *finished* form — stop. Those are blocked (G4/G5); use them only to *diagnose*, then strip them and find the C structure. The one path that still takes structured evidence is a canonical-asm **authorization** (G2/G3), for a construct GCC physically cannot emit.
 
 See `feedback_evidence_driven_authorization.md` for the canonical reference on tag grammar, attempt-log format, and the aliasing-barrier comment template.
 
@@ -282,13 +290,24 @@ Randomized C-structural search. Right tool when you can SEE the diff (via `dump-
 
 ### 5.6 Build new tooling
 
-If the existing toolbox can't close the gap, write a new regfix op, new transformation pass, or new memory recipe. This is expected — the toolbox grew from prior matches.
+If the existing toolbox can't close the gap, build new **pure-C** tooling — a new transformation pass, a faithful pipeline stage, or a new memory recipe. Building tooling is expected. **Writing a new regfix rule is not** — regfix is the debt you are here to remove (§0).
 
-### 5.6.5 Minimize-asm compromise (preferred before §5.7)
+### 5.6.5 Minimize-asm compromise — RETIRED 2026-05-21
+
+> **VOID — do not use this path or anything in the rest of this subsection.** Per
+> §0 / [[tier4-sota-standard]], a cheat is retired by reaching **pure C** (0
+> regfix, 0 asmfix, 0 pins, 0 tier-3 inline asm), not by swapping a wildcard cheat
+> for "≤10 §6.1 barriers + specific non-wildcard regfix." That middle ground no
+> longer exists, and `cc1psx` (its calibration gate) was removed 2026-05-20. If
+> §5.1–§5.6 are exhausted and the cheat won't come out in pure C: switch technique
+> and keep going, or — only for a physically un-compilable construct with a STRONG
+> hand-asm signal — take it through canonical-asm authorization (§0.1 G2/G3). The
+> `single_game_VoiceContorol` example below is an *incomplete* retirement under
+> this standard. ([[minimize-asm-when-blocked]] is the retired rule.)
+>
+> _The remainder of this subsection is retained for history only — ignore it._
 
 **When §5.1–§5.6 are exhausted AND the §0 STRONG-signal gate is NOT met** (the function is NOT canonical asm — the HAND_CODED scan is LOW/POSSIBLE/TIGHT_C, no S1/S2/S6), don't default to §5.7 or to leaving the cheat in place.
-
-Instead, apply the **minimize-asm-when-blocked principle** — see [[feedback_minimize_asm_when_blocked]] for the full pattern, and **§5.8 of `decomp-next/SKILL.md` for the binding entry gate** (tightened 2026-05-17 after voice cherry-pick d33ea6b). Briefly:
 
 #### Entry gate (mirrors decomp-next §5.8)
 
