@@ -3858,3 +3858,9 @@ efc_spawn_80067164                                     = 0x80067164;  /* effect-
 efc_spawn_80067198                                     = 0x80067198;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
 efc_spawn_800671CC                                     = 0x800671CC;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
 buki_collision_alloc_8005C6D0                          = 0x8005C6D0;  /* iterates 0x18-entry object list D_800EFB78; coli_calc_motion2 per slot, builds params (7-bit fields), AllocBukiRmd for weapon hits */
+get_D_800F6650_80042864                                = 0x80042864;  /* getter: returns D_800F6650 (no calls/branches) */
+set_D_80101E64_if_valid_800371AC                       = 0x800371AC;  /* calls func_80037110; if result!=0 stores it to D_80101E64 and returns 1, else returns 0 */
+events_enable_8003A360                                 = 0x8003A360;  /* bios_EnableEvent on D_800A3810 + D_800A3738, sets enabled-flag D_800A320C=1, clears D_800A3730 */
+gte_load_rot_matrix_80052B00                           = 0x80052B00;  /* loads 3x3 rotation matrix + translation from arg into GTE control regs 0-7 (ctc2) */
+gte_set_projection_params_8007E094                     = 0x8007E094;  /* loads GTE projection control regs 24-30 (OFX/OFY/H/DQA/DQB/ZSF3/ZSF4) */
+gte_set_proj_distance_8007EFFC                         = 0x8007EFFC;  /* loads GTE control reg 26 (H = projection plane distance) */
