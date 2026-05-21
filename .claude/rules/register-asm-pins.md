@@ -63,5 +63,9 @@ Two pins on the same register with overlapping liveness (`tbl asm("a0")` while
 
 ## Related
 
+- [[register-alloc-pure-c]] — **retire the pin in PURE C** (block-local var
+  split, narrow int type, REG_ALLOC_ORDER diagnosis) instead of regfixing the
+  register name. Try this BEFORE accepting a pin or a regfix rename — it cleared
+  all 5 pins on saTan0Main and the last on InitHiraRmd_80047FBC.
 - [[inline-move-aliasing]] — asm-operand enforcement of register bindings
 - [[quick-reference]] Part 4 (register-asm hints — where the line is)

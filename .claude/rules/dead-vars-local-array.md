@@ -100,36 +100,61 @@ regfix lied "actually use 80". Now, C source says "use 80-byte frame (via declar
 `s32 buf[8]`)" and regfix doesn't need frame coercion. The lying-via-regfix surface is
 eliminated.
 
-# What still needs to be solved
+# The prologue interleaving — SOLVED in 100% pure C (2026-05-20, commit 10becc3)
 
-The prologue-interleaving pattern is the deepest remaining divergence:
+The prologue-interleaving pattern was long believed to be an unsolvable
+copy-prop/RA wall:
 - TARGET: `addu $s0,$a0,$0 ; sw $s4,0x48($sp) ; addu $s4,$s0,$0 ; sll $a1 ; sra $a1 ; addu $s0,$s0,$a1`
 - GCC:    `sw $s4 ; addu $s4,$a0,$0 ; sll $a1 ; sra $a1 ; sw $s0 ; addu $s0,$s4,$a1`
 
-The semantic content is identical:
-1. arg0 gets latched into a callee-save reg
-2. arg1 gets shift-extended to a byte-offset
-3. The callee-save reg gets the byte-offset added
+The earlier conclusion (below) was WRONG — it gave up after testing only a
+few manual structural variants + a pin (which over-saved). **`InitHiraRmd_80047FBC`
+now matches byte-for-byte in 100% pure C: no regfix, no register pins, no
+inline asm.** The lever was found via decomp-permuter whole-function search,
+then reduced to two independent structural moves:
 
-But the ORDER and REGISTER CHOICE differ:
-- Target uses $s0 first, then copies to $s4 (s0 then gets reused for the pointer)
-- GCC uses $s4 first directly (no intermediate $s0)
+**Lever 1 — fix the prologue staging (`$s0=arg0; $s4=$s0; $s0+=a1`).** Write
+the pointer-walk form `p = arg0; base = p; p += scaled;` (NOT `base = arg0`
+independently). Then **precompute the call's first argument into a loop-local**
+(`new_var = (s32)base + ((word>>2)<<2);` mid-loop, before the call). This is a
+LOOP-body change, but the register allocator is whole-function: the extra
+loop-local shifts allocation so GCC stages `arg0` through `$s0` first (instead
+of folding `base==p==arg0` into `$s4=$a0` directly). The KEY INSIGHT the old
+analysis missed: **a loop-body restructure changes the PROLOGUE codegen,
+because RA is global.** Manual prologue-only edits can't reach it; the permuter
+can.
 
-I tested 3 C-level structural alternatives (split pointer, two intermediates, pointer offset)
-— GCC always CSE-killed the duplicate var and produced the same output. Tested with explicit
-`register asm("$s4")` pin — that over-saved (8 callee-saves vs target's 6, frame=88 vs 80).
+**Lever 2 — fix the second pointer (`$s0 = $s4 + v0`).** After lever 1, GCC
+keeps `arg0` live in `$a0` and emits `$s0=$a0+v0` for the second pointer
+(1 reg off). A dead **`arg0 = 0;`** statement right after `base = p` fixes it:
+it is DCE'd to ZERO emitted instructions (arg0 is unused afterward), but it
+breaks GCC's `$a0==arg0` value association, so the later `base` reference binds
+to `$s4` instead of the still-live param register `$a0`. This is a legitimate
+pure-C codegen lever (a dead store the optimizer removes), NOT an asm trick.
 
-This is fundamentally a GCC 2.7.2 register-allocation behavior that varies between
-the kmc-tailored fork (mips-gcc-2.7.2) and PsyQ's cc1psx (cc1psx.exe). Both produce
-frame=80 vars=32 from `s32 buf[8]` + natural body, but they differ on prologue
-register-choice timing. cc1psx with my source produces regs=5 (no $s4 separate save) —
-not even matching target's regs=6.
+Both levers together → `bb2 matches!`, full SHA1, 0 regfix / 0 pins / 0 asm.
+See the commit-message `Pure-C attempts:` block and the in-source comment on
+`InitHiraRmd_80047FBC` for the full derivation.
 
-The target binary was almost certainly compiled with a slightly DIFFERENT C source that
-naturally forced $s0 first then $s4 copy. Without access to the original C source, the
-deepest pure-C-only match is "frame correct via `s32 buf[8]`" + the 5 existing regfix
-rules for the prologue interleaving (2 lost_codegen `insert_after`, 1 delete, 1 nop insert,
-1 reorder, 2 substs).
+## Apply to the 3 sibling functions
+
+`AddTbpOfst_80047EE8` and `func_800481E8` still use INLINE_MOVE_ALIASING
+(tier-3 inline asm); `InitHiraRmd_800480C0` uses register pins. All share this
+prologue family. The two-lever pure-C technique above should retire their
+hints too — start from the pointer-walk form, add the loop-local precompute,
+and add a dead `arg0 = 0;` (or equivalent dead reassignment of whichever param
+GCC keeps live in its incoming register). Verify each with the permuter from a
+pin-free base if the manual form plateaus 1 reg short.
+
+## Superseded conclusion (kept for context — was WRONG)
+
+The original analysis tested only "3 C-level structural alternatives (split
+pointer, two intermediates, pointer offset)" plus a `register asm("$s4")` pin
+(which over-saved: 8 callee-saves, frame=88). It concluded "fundamentally a
+GCC 2.7.2 register-allocation behavior ... the deepest pure-C-only match is
+frame-correct + 5 regfix rules." That was a failure to search widely enough,
+not a real wall. cc1psx-vs-fork timing differences are irrelevant — the fork
+(our canonical compiler) emits the exact target bytes from the right C.
 
 # Recommended path forward
 

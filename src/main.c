@@ -334,16 +334,33 @@ extern s32 spu_ReadMotionFrame(s32, s16);
 
 s32 saTan0Main(s16 a0, s16 a1)
 {
+  /* 100% pure C: no regfix rules, no register pins, no inline asm. Two
+   * non-obvious choices reproduce target's exact codegen:
+   *
+   * 1. `b` is the narrow `char` type (not u32). The 8-bit type changes GCC's
+   *    value-width tracking so it emits the byte-mask (andi $a2,$s2,0xFF) the
+   *    target has when b feeds the u8-typed handler args — a wide `u32 b` (a
+   *    byte from lbu, provably <=255) elided that mask as redundant, which had
+   *    needed an andi regfix rule. The narrow type also gives GCC target's
+   *    natural callee-save allocation for b/next/ret/cmd, retiring 4 pins.
+   *
+   * 2. The 2nd switch's 0x90 case reads the sequence pointer into a *block-
+   *    local* `cp` instead of the shared `cmd_ptr`. Sharing one variable made
+   *    GCC's global allocator place `cmd_ptr` in $a2 (reusing the handler arg
+   *    register, since the temp dies just before arg setup); splitting that one
+   *    use shrinks cmd_ptr's live range / conflicts so the allocator gives it
+   *    $v1 (its default-order preference) across the 1st-switch cases — exactly
+   *    target. Retires the last pin. */
   u8 *state;
-  register s32 cmd asm("a2");
-  register u8 *cmd_ptr asm("v1");
+  s32 cmd;
+  u8 *cmd_ptr;
   u8 *ptr;
   u32 data;
-  register u32 b asm("s2");
+  char b;
   u8 prev;
   u8 databyte;
-  register u8 next asm("s4");
-  register s32 ret asm("s5");
+  u8 next;
+  s32 ret;
   state = (u8 *) (((s32) ((void **) (&D_80106F28))[a0]) + (a1 * 0xB0));
   ptr = *((u8 **) state);
   *((u8 **) state) = ptr + 1;
@@ -423,12 +440,14 @@ s32 saTan0Main(s16 a0, s16 a1)
     switch (prev)
     {
       case 0x90:
-        cmd_ptr = *((u8 **) state);
-        *((u8 **) state) = cmd_ptr + 1;
-        next = cmd_ptr[0];
+      {
+        u8 *cp = *((u8 **) state);
+        *((u8 **) state) = cp + 1;
+        next = cp[0];
         *((s32 *) (state + 0x90)) = spu_ReadMotionFrame(a0, a1);
         D_800F3340(a0, a1, b, next);
         goto end;
+      }
 
       case 0xB0:
         D_800F3350(a0, a1, b);
