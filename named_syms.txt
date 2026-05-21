@@ -3864,3 +3864,13 @@ events_enable_8003A360                                 = 0x8003A360;  /* bios_En
 gte_load_rot_matrix_80052B00                           = 0x80052B00;  /* loads 3x3 rotation matrix + translation from arg into GTE control regs 0-7 (ctc2) */
 gte_set_projection_params_8007E094                     = 0x8007E094;  /* loads GTE projection control regs 24-30 (OFX/OFY/H/DQA/DQB/ZSF3/ZSF4) */
 gte_set_proj_distance_8007EFFC                         = 0x8007EFFC;  /* loads GTE control reg 26 (H = projection plane distance) */
+calc_rotated_enemy_pos_80042FA0                        = 0x80042FA0;  /* computes a position rotated by an angle (math_Cos/Sin) relative to the enemy char (single_game_getEnemyCharId); outputs 3-vector */
+init_move_to_target_80053304                           = 0x80053304;  /* stores current+target pos to ctx D_800EF9F8/D_800A33F4, computes distance (func_80052754), selects handler fn-ptr by dist threshold (0x9C3F), interpolates */
+gpu_build_gradient_quad_80072CD4                       = 0x80072CD4;  /* initPolyG4 + mode-dependent gradient colors + gpu_SetSemiTransp + ot_Link */
+gpu_build_quad_80072BC4                                = 0x80072BC4;  /* initPolyG4 + ot_Link (build+link a Gouraud quad; sibling of gpu_build_gradient_quad) */
+draw_anim_sprite_8006A3CC                              = 0x8006A3CC;  /* render sub-obj: satan_sprite_batch_render + saMotionSet + initTexPage + ot_Link */
+draw_anim_sprite_scaled_8006A494                       = 0x8006A494;  /* as draw_anim_sprite but sets scale fields 0x20/0x24=0x100; func_80073728 + saMotionSet + initTexPage + ot_Link */
+gpu_draw_fullscreen_overlay_8006F038                   = 0x8006F038;  /* initTile full-screen 0x280x0xF0, color D_800A3550, gpu_SetSemiTransp, ot_Link (+texpage); fade/flash overlay */
+draw_anim_sprite_pos_80074D2C                          = 0x80074D2C;  /* anim-sprite render at computed offset, OT-depth select; satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link */
+gpu_draw_layered_box_80069898                          = 0x80069898;  /* 3x initTile (y-offset layers, fading colors 0x80/0x40) + gpu_SetSemiTransp + ot_Link; shadowed box/panel */
+draw_bg_and_sprites_80069E18                           = 0x80069E18;  /* full-screen overlay tile + saMotionSet sprite + initTexPage + 3x satan_sprite_batch_render; composite screen render */
