@@ -3877,3 +3877,7 @@ draw_bg_and_sprites_80069E18                           = 0x80069E18;  /* full-sc
 replay_setup_display_8006E950                          = 0x8006E950;  /* game_FrameLoop + replay_camera_Init + 2x gpu_LoadImage (VRAM regions); replay-mode display init */
 gpu_decode_load_image_800484A0                         = 0x800484A0;  /* checks image header tag 0x10+flag, decodes via func_800486FC/8004876C into 0x400 buffer, gpu_LoadImage to VRAM */
 draw_anim_sprites_seq_8006BB68                         = 0x8006BB68;  /* animated-sprite render (satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link) looped with frame-phase select (D_800A34F8>>13&7) */
+calc_fighter_separation_stored_8002BEA0                = 0x8002BEA0;  /* inter-fighter distance from STORED pos (+0xF4/+0xFC of both records) via sqrt LUT D_8008D118; sibling of calc_fighter_separation_vec (which uses world_pos +0xD8) */
+move_to_target_step_80053754                           = 0x80053754;  /* per-frame handler for the move-to-target state machine (set as ctx[0x5C] by init_move_to_target when within distance threshold); processes ~28 char/ctx fields */
+move_to_target_step_80053E9C                           = 0x80053E9C;  /* per-frame handler for the move-to-target state machine (set as ctx[0x5C] by init_move_to_target when beyond distance threshold) */
+coli_check_collision_80057E84                          = 0x80057E84;  /* collision routine: reads char pos (+0xF4/+0xFC) + hit-record (+0x360/+0x368), calls segment-intersection func_8005763C; sibling of coli_find_nearest_edge_hit */
