@@ -26,7 +26,7 @@ Usage:
   python3 tools/patch_exe_into_bin.py \\
       --image "Bushido Blade 2 (USA).bin" \\
       --exe   build/bb2.exe \\
-      --out   tmp/bb2_patched.bin
+      --out   ReBushidoBlade2.bin
   python3 tools/patch_exe_into_bin.py --exe disc/SLUS_006.63 --verify
 
 Writes <out> plus a sibling <out>.cue. Exit status is non-zero on any
@@ -238,9 +238,16 @@ def sha1_of(path):
     return h.hexdigest()
 
 
+# Patched-disc output name. A recognizable name so it's never confused with
+# the original retail image sitting alongside it at the repo root.
+DEFAULT_OUT = "ReBushidoBlade2.bin"
+
+
 def _default_image():
+    """First *.bin in cwd that isn't our own patched output."""
+    skip = os.path.basename(DEFAULT_OUT).lower()
     for name in sorted(os.listdir(".")):
-        if name.lower().endswith(".bin"):
+        if name.lower().endswith(".bin") and name.lower() != skip:
             return name
     return None
 
@@ -252,8 +259,8 @@ def main():
                     help="original .bin (default: first *.bin in cwd)")
     ap.add_argument("--exe", default="build/bb2.exe",
                     help="new executable to inject (default: build/bb2.exe)")
-    ap.add_argument("--out", default="tmp/bb2_patched.bin",
-                    help="output .bin path (default: tmp/bb2_patched.bin)")
+    ap.add_argument("--out", default=DEFAULT_OUT,
+                    help=f"output .bin path (default: {DEFAULT_OUT})")
     ap.add_argument("--file", default="SLUS_006.63",
                     help="on-disc filename to replace (default: SLUS_006.63)")
     ap.add_argument("--verify", action="store_true",

@@ -59,6 +59,10 @@ ALLOWED_CSV = {
 ALLOWED_DISC = {
     "Bushido Blade 2 (USA).bin",
     "Bushido Blade 2 (USA).cue",
+    # Patched playable build produced by tools/patch_exe_into_bin.py
+    # (gitignored via *.bin/*.cue; kept at root next to the source disc).
+    "ReBushidoBlade2.bin",
+    "ReBushidoBlade2.cue",
 }
 
 # User-local artifacts (gitignored but kept at root by user preference). Empty.
