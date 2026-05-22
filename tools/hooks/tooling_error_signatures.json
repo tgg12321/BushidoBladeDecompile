@@ -1,0 +1,145 @@
+{
+  "_comment": "Signature library for tools/hooks/tooling_error_guard.py (PostToolUse). Each signature recognizes a KNOWN, permanently-fixable tooling/shell/environment failure. tier 'block' writes an incident marker (.bb2_tooling_incident.json) + blocks the turn until resolved; tier 'warn' only prints a stderr hint. MATCHING: a signature fires if ANY of its 'substrings' (matched literally, case-insensitive) OR 'regexes' (Python re, case-insensitive) appear in the tool output. ADDING A SIGNATURE HERE IS ITSELF A VALID PERMANENT FIX -- when a new failure mode is discovered, encode it so the next agent gets instant, specific guidance. Keep signatures HIGH-PRECISION (they fire on every Bash/PowerShell result); a false positive that blocks legitimate work is worse than a miss. See docs/tooling_incidents.md for the running ledger.",
+  "version": 1,
+
+  "build_file": {
+    "_comment": "Files that MUST use LF line endings (the GNU toolchain and bash break on CRLF). Used by the post-write CRLF check on Edit/Write/MultiEdit. A path is build-critical if its lowercased suffix is in 'suffixes', its basename is in 'names', or its basename matches a glob in 'name_globs'. Mirrors AGENTS.md 'File-edit conventions'.",
+    "suffixes": [".c", ".h", ".s", ".ld", ".mk", ".py", ".sh"],
+    "names": [
+      "Makefile",
+      "regfix.txt",
+      "asmfix.txt",
+      "regfix_stage2.txt",
+      "named_syms.txt",
+      "expand_lb_funcs.txt",
+      "inline_asm_canonical.txt",
+      "symbol_addrs.txt",
+      "undefined_syms_auto.txt",
+      "undefined_funcs_auto.txt"
+    ],
+    "name_globs": ["sdata*.txt"]
+  },
+
+  "signatures": [
+    {
+      "id": "crlf-shell-token",
+      "class": "crlf",
+      "tier": "block",
+      "tools": ["Bash", "PowerShell"],
+      "substrings": ["$'\\r'", "'\\r': command not found", ": bad interpreter"],
+      "regexes": [],
+      "summary": "A shell script/command was parsed with Windows CRLF line endings -- bash choked on a trailing carriage return (\\r).",
+      "root_cause": "A .sh / .py / build file was saved with CRLF (\\r\\n) instead of LF. Usually a Windows-side editor or the Edit/Write tool introduced it silently. See memory rules crlf-via-edit-write and file-editing-wsl.",
+      "permanent_fix": [
+        "Normalize the offending file to LF -- in WSL/Bash:  sed -i 's/\\r$//' <file>   (or  perl -pi -e 's/\\r//g' <file> ).",
+        "Prevent recurrence: confirm the file's pattern is covered by .gitattributes 'eol=lf', and edit build files via WSL/Bash (heredoc) rather than the Windows Edit/Write tool.",
+        "If a NEW path pattern was involved, add it to .gitattributes AND to build_file in this signatures file so the live CRLF check catches it next time."
+      ],
+      "suggested_guard": ".gitattributes eol=lf entry covering the path + the post-write CRLF check in tooling_error_guard.py"
+    },
+
+    {
+      "id": "crlf-build-file",
+      "class": "crlf",
+      "tier": "block",
+      "tools": ["Edit", "Write", "MultiEdit"],
+      "match": "special:build_file_crlf",
+      "substrings": [],
+      "regexes": [],
+      "summary": "An Edit/Write/MultiEdit just wrote CRLF line endings into a build-critical file (LF is required).",
+      "root_cause": "The Windows Edit/Write tool converts LF->CRLF silently when writing some files (memory: crlf-via-edit-write). The GNU toolchain / bash then break on the carriage returns.",
+      "permanent_fix": [
+        "Normalize the file you just wrote back to LF -- in WSL/Bash:  sed -i 's/\\r$//' <file> .",
+        "Re-make the affected target to confirm the build still matches (CRLF in a pipeline .txt or src/*.c silently corrupts codegen).",
+        "Prevent recurrence: ensure .gitattributes has an 'eol=lf' entry for this path; for the LF-critical pipeline .txt files, prefer editing via WSL rather than Edit/Write."
+      ],
+      "suggested_guard": ".gitattributes eol=lf entry + (optionally) a normalize-on-write helper"
+    },
+
+    {
+      "id": "wsl-unavailable",
+      "class": "wsl",
+      "tier": "block",
+      "tools": ["Bash", "PowerShell"],
+      "substrings": [
+        "WslRegisterDistribution failed",
+        "no installed distributions",
+        "There is no distribution with the supplied name",
+        "Windows Subsystem for Linux has no installed distributions",
+        "wsl: Failed to translate"
+      ],
+      "regexes": ["\\bwsl\\b.{0,40}is not recognized"],
+      "summary": "WSL is unavailable, not on PATH, or has no running distribution -- the Linux toolchain can't be reached.",
+      "root_cause": "WSL isn't installed/started, the default distro is wrong/stopped, or 'wsl' isn't on PATH for this shell.",
+      "permanent_fix": [
+        "Confirm the distro: in PowerShell  wsl -l -v ; start it / set default with  wsl --set-default <distro> .",
+        "Make the project's WSL entrypoint robust: tools/wsl.sh and tools/dc.sh should detect a missing/stopped distro and emit ONE actionable line (not a raw failure). Add that detection if absent.",
+        "Document the one-time setup step in AGENTS.md (build commands) so a fresh machine never hits this blind."
+      ],
+      "suggested_guard": "A preflight check in tools/wsl.sh that verifies 'wsl -l -q' lists a running distro before invoking, with a clear fix message"
+    },
+
+    {
+      "id": "worktree-dep-missing",
+      "class": "worktree-symlink",
+      "tier": "block",
+      "tools": ["Bash", "PowerShell"],
+      "substrings": [
+        "Toolchain: MISSING",
+        "cc1: not found",
+        "cc1: No such file",
+        "worktree_bootstrap.sh missing",
+        "No module named 'm2c'",
+        "No module named 'splat'",
+        "checkout is incomplete"
+      ],
+      "regexes": [
+        "mipsel-linux-gnu-\\w+: (command )?not found",
+        "\\.venv/bin/(activate|python3?): no such file",
+        "SLUS_006\\.63.{0,40}no such file",
+        "maspsx(\\.py)?: no such file"
+      ],
+      "summary": "A gitignored build dependency (cc1 / maspsx / .venv / disc / permuter) is missing or its worktree symlink is broken.",
+      "root_cause": "This worktree's deps were never linked, the bootstrap didn't run, or a symlink into the main checkout went stale. Worktrees do NOT carry their own copies of these gitignored deps -- they are symlinked from the main checkout by the bootstrap.",
+      "permanent_fix": [
+        "Re-link the deps:  bash tools/dc.sh bootstrap   (idempotent; links .venv, gcc-2.7.2, decomp-permuter, m2c, disc from the main checkout).",
+        "Confirm:  bash tools/dc.sh verify-toolchain   (should print 'Toolchain: OK').",
+        "Prevent recurrence: if bootstrap did NOT relink it, fix tools/worktree_bootstrap.sh so it detects a STALE/DANGLING symlink (not just a missing one) and re-creates it. A symlink that exists but points nowhere is the usual silent trap."
+      ],
+      "suggested_guard": "Make tools/worktree_bootstrap.sh re-link dangling symlinks, and have tools/wsl.sh auto-bootstrap when a required dep is missing (it already does this for cc1 -- extend to the others)"
+    },
+
+    {
+      "id": "broken-symlink-loop",
+      "class": "worktree-symlink",
+      "tier": "block",
+      "tools": ["Bash", "PowerShell"],
+      "substrings": ["Too many levels of symbolic links"],
+      "regexes": [],
+      "summary": "A symlink is circular or points through a broken chain -- almost always a worktree dep-link gone wrong.",
+      "root_cause": "A bootstrap symlink was created pointing at itself or at another symlink that points back (e.g. re-bootstrapping a worktree whose target moved).",
+      "permanent_fix": [
+        "Remove the bad link and re-link:  in the worktree,  rm <link> && bash tools/dc.sh bootstrap .",
+        "Prevent recurrence: tools/worktree_bootstrap.sh must use an absolute target to the MAIN checkout and refuse to link a path onto itself. Add that guard if missing."
+      ],
+      "suggested_guard": "A self-link / absolute-target assertion in tools/worktree_bootstrap.sh"
+    },
+
+    {
+      "id": "core-tool-not-found",
+      "class": "environment",
+      "tier": "block",
+      "tools": ["Bash", "PowerShell"],
+      "substrings": [],
+      "regexes": ["\\b(make|python3|maspsx)\\b: (command )?not found"],
+      "summary": "A core build tool (make / python3 / maspsx) is not on PATH for this shell.",
+      "root_cause": "Wrong shell (Git Bash vs WSL), the .venv isn't activated, or the tool genuinely isn't installed in this environment.",
+      "permanent_fix": [
+        "Route build/pipeline commands through WSL where the toolchain lives:  bash tools/wsl.sh '<cmd>'  (auto-detects cwd).",
+        "If python3 is missing only in .venv context, activate it (source .venv/bin/activate) or run  bash tools/dc.sh setup-venv .",
+        "Prevent recurrence: if a command was run in the wrong shell, fix the caller (script/alias) to invoke via tools/wsl.sh, not raw 'make'/'python3'."
+      ],
+      "suggested_guard": "Callers that need the Linux toolchain should go through tools/wsl.sh; add a PATH check at the top of any new build script"
+    }
+  ]
+}

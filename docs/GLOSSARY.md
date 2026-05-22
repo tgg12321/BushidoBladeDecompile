@@ -84,7 +84,7 @@ Terminology used throughout the BB2 decompilation. Organized by domain.
 | **Sibling regression** | Specifically: a label-drift cascade regression where matching one function breaks others in the same `.c` file. |
 | **maspsx** | A wrapper around GNU `as` ([mkst/maspsx](https://github.com/mkst/maspsx)) that emulates ASPSX 2.34 behavior. Vendored in `tools/maspsx/`. |
 | **work queue** | The canonical ordered list of remaining functions to decompile. Lives at [`WORK_QUEUE.md`](../WORK_QUEUE.md). Three sub-queues: active decomp, structural split, asmfix retirement. |
-| **active marker** | The single in-progress function name, stored in `.bb2_active_func`. Set by `dc.sh next`, cleared by a successful matching commit. The hook (`tools/hooks/active_func_guard.sh`) gates `git commit`, `git checkout`, and queue pulls based on its state. |
+| **active marker** | The single in-progress function name, stored in `.bb2_active_func`. Set by `dc.sh next`, cleared by `dc.sh refresh-queue` / `release`. Read by the `grind_check` Stop hook to keep you on the function until it matches. (The `active_func_guard` PreToolUse blocker that gated `git commit`/`git checkout`/queue pulls was **deprecated 2026-05-22**.) |
 | **Kengo reference** | *Kengo: Master of Bushido* (PS2, 2000) was built by the same studio (Lightweight) on the same Marionation engine. Its debug symbols (~2,500 named functions extracted via `ccc`/`stdump`) live in `Kengo/` and are used as a naming source for BB2 functions via `tools/kengo_match.py`. |
 
 ## BB2-specific game terminology

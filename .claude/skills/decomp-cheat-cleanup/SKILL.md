@@ -427,7 +427,7 @@ The `Pure-C attempts:` block is **mandatory** for any commit that:
 
 If your cheat retirement is purely "remove stale regfix rules" with no new inline asm, no new aliasing barrier, and no canonical entry, the attempt-log block is NOT required (the gates don't fire). A simple `cheat-cleanup: <func> — strip N stale regfix rules` commit message is fine.
 
-The active_func_guard hook will (1) run audit_asm_cheats.py --check-new with the commit message, then (2) run the LLM auditor, then (3) verify `dc.sh verify <func>` returns MATCH. All three must pass.
+The `commit_audit_guard` hook will (1) run `audit_asm_cheats.py --check-new` with the commit message, then (2) run the LLM auditor. Both must pass. (The active-function match-verify-on-commit gate was deprecated 2026-05-22 along with `active_func_guard`; confirm your match with `dc.sh verify <func>` yourself before committing.)
 
 ### 6.2 Push
 

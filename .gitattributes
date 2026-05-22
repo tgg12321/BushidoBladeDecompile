@@ -1,0 +1,27 @@
+# LF enforcement for build-CRITICAL files. The GNU toolchain (cc1, maspsx,
+# GNU as/ld) and bash break on CRLF (\r). See AGENTS.md "File-edit conventions".
+#
+# SCOPED deliberately: only patterns confirmed to be LF already, so adding this
+# file does NOT renormalize existing CRLF/vendored files (e.g. tools/maspsx/**
+# DOS .S files, some generated asm/*.s). The LIVE net for new CRLF is the
+# post-write check in tools/hooks/tooling_error_guard.py. To extend coverage to
+# another path, add it here ONLY after confirming `git status` stays clean.
+# See docs/TOOLING_ERROR_GUARD.md.
+
+# C source / headers (decompiled code)
+*.c                  text eol=lf
+*.h                  text eol=lf
+
+# Build driver
+Makefile             text eol=lf
+*.ld                 text eol=lf
+
+# LF-critical pipeline config (per AGENTS.md)
+regfix.txt           text eol=lf
+asmfix.txt           text eol=lf
+regfix_stage2.txt    text eol=lf
+named_syms.txt       text eol=lf
+expand_lb_funcs.txt  text eol=lf
+symbol_addrs.txt     text eol=lf
+inline_asm_canonical.txt text eol=lf
+sdata*.txt           text eol=lf

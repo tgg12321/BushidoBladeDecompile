@@ -112,7 +112,61 @@ if [ -n "$TARGET_PATH" ] && [ -d "$TARGET_PATH" ]; then
     fi
 fi
 
-# ---- Run audit on staged diff in the target worktree ----
+# ---- Rule 1a: programmatic asm-cheat gate ----
+# Relocated 2026-05-22 from the deprecated active_func_guard.sh. Catches NEW
+# mechanical cheats since HEAD: large regfix splices, file-scope
+# __asm__("glabel ...") bodies, lost-codegen single-insn inserts, same-commit
+# self-authorization, and missing evidence tags / Pure-C attempts: block /
+# aliasing-barrier comments. Cheap (~1s); runs BEFORE the expensive LLM auditor
+# (which assumes this formal gate already ran). audit_asm_cheats.py is
+# pure-stdlib Python, so it runs directly in the hook env (no WSL/venv).
+if [ -f "$AUDIT_DIR/tools/audit_asm_cheats.py" ]; then
+    # Extract -m/--message so the gate can validate the "Pure-C attempts:" block.
+    COMMIT_MSG_FROM_CMD=$(python3 -c "
+import shlex, sys
+try:
+    args = shlex.split(sys.argv[1])
+except Exception:
+    sys.exit(0)
+in_commit = False
+for i, a in enumerate(args):
+    if a == 'git':
+        if i + 1 < len(args) and args[i+1] == 'commit':
+            in_commit = True
+        continue
+    if in_commit:
+        if a in ('-m', '--message') and i + 1 < len(args):
+            print(args[i+1]); break
+        if a.startswith('--message='):
+            print(a[len('--message='):]); break
+" "$COMMAND" 2>/dev/null || true)
+    CHEAT_MSG_FILE=$(mktemp -t bb2-commitmsg.XXXXXX)
+    printf '%s' "$COMMIT_MSG_FROM_CMD" > "$CHEAT_MSG_FILE"
+    if cheat_out=$(cd "$AUDIT_DIR" && python3 tools/audit_asm_cheats.py --check-new --commit-msg-file "$CHEAT_MSG_FILE" 2>&1); then
+        rm -f "$CHEAT_MSG_FILE"
+    else
+        rm -f "$CHEAT_MSG_FILE"
+        echo "$cheat_out" >&2
+        cat >&2 <<'EOF'
+
+BLOCKED: see ASM-CHEAT GUARD message above.
+
+This enforces the project's SOTN-grade policy: the default standard is pure C;
+inline asm / canonical authorization / regfix are deviations requiring
+compelling, evidence-driven justification. (Programmatic gate relocated from
+active_func_guard.sh, deprecated 2026-05-22.)
+
+To proceed: write a real pure-C decomp instead of wrapping asm, OR add the
+required evidence tag / "Pure-C attempts:" block / INLINE_MOVE_ALIASING: comment.
+See memory rules evidence-driven-authorization and lost-codegen-insert-cheat.
+
+Bypass (use sparingly):  git commit --no-verify ...   |   BB2_AUDIT_SKIP=1 git commit ...
+EOF
+        exit 2
+    fi
+fi
+
+# ---- Rule 1b: LLM auditor on the staged diff in the target worktree ----
 if [ ! -f "$AUDIT_DIR/tools/audit_cli.sh" ]; then
     # No auditor available here; allow (don't block on missing tooling)
     exit 0

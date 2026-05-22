@@ -297,7 +297,7 @@ The Kengo PS2 game uses the same Marionation engine and has ~2,500 debug-named f
 |---|---|
 | `tools/func_tooling.py` | Shared helpers: stage compilation, asm extraction, symbol lookup, map lookup, object comparison, WSL fallback. |
 | `tools/active_func_scope.py` | Helpers for the active-marker hook. |
-| `tools/hooks/active_func_guard.sh` | Git/tool hook that enforces the active-function lifecycle (blocks `git commit`, `git checkout`, queue pulls when a function is in progress). Configured via `.claude/settings.local.json`. |
+| `tools/hooks/active_func_guard.sh` | **Deprecated 2026-05-22** (unwired). Formerly blocked `git commit`/`git checkout`/queue pulls while a function was active+unmatched. Staying on-task is now the `grind_check` Stop hook's job; commit cheat-auditing moved to `commit_audit_guard.sh`. Script kept for reference / easy re-enable. |
 | `tools/hooks/grind_check.sh` | Stop-event hook that rejects wrap-up language while a function is unmatched. |
 | `tools/recipes/*.json` | Named recipe definitions (LICM unhoist, call-loop family, GTE 3x3 wrapper, etc). |
 

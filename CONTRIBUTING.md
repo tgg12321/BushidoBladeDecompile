@@ -40,19 +40,16 @@ bash tools/dc.sh next-asmfix 5
 
 ## The active-marker hook
 
-When you pull a function with `bash tools/dc.sh next`, the script writes the function name to `.bb2_active_func` and a Git hook (`tools/hooks/active_func_guard.sh`, wired in `.claude/settings.local.json` for Claude Code sessions) starts enforcing:
+When you pull a function with `bash tools/dc.sh next`, the script writes the function name to `.bb2_active_func`. The `grind_check.sh` **Stop** hook then keeps you on that function: it refuses to let a Claude Code turn end while the active function is still unmatched (unless you `dc.sh release` it).
 
-- `git commit` is **refused** unless `bash tools/dc.sh verify <active>` reports `MATCH`.
-- `git checkout`, `git restore`, and `git reset --` on `src/*.c`, `regfix.txt`, `asmfix.txt`, `undefined_syms_auto.txt`, `named_syms.txt`, `sdata*.txt`, and `expand_lb_funcs.txt` are **refused**. This prevents accidentally undoing in-progress work.
-- `dc.sh next`, `dc.sh next-structural`, and `dc.sh next-asmfix` are **refused** until the marker is cleared.
+> **Deprecation (2026-05-22):** the older `tools/hooks/active_func_guard.sh` **PreToolUse** hook — which *refused* `git commit` until match, blocked `git checkout`/`restore`/`reset` of in-progress build files, and blocked `dc.sh next*` while active — has been **deprecated** (unwired). It blocked natural progress: trying new approaches and restoring old attempts when work went awry. You are now free to commit, revert, and experiment mid-work; staying on-task is enforced only at turn-end by `grind_check`. Commit-time **cheat auditing** (programmatic `audit_asm_cheats.py --check-new` + the adversarial LLM auditor) is unaffected — it lives in `tools/hooks/commit_audit_guard.sh`.
 
-The marker is cleared automatically when a successful `git commit` matches the active function. Other ways to clear it:
+Clear the marker via:
 
 | Path | When to use it |
 |---|---|
-| Successful matching commit (auto) | The normal path. |
-| `bash tools/dc.sh refresh-queue` | After a batch of matches. Belt-and-suspenders. |
-| `bash tools/dc.sh release` | Explicit user-driven abandonment. Requires typing the function name to confirm. **The only escape hatch.** Don't use this casually — it exists for emergencies. |
+| `bash tools/dc.sh refresh-queue` | The normal path after a match — regenerates the queue and clears the marker. (The old auto-clear on a matching commit was part of the now-deprecated `active_func_guard` hook.) |
+| `bash tools/dc.sh release` | Explicit user-driven abandonment. Requires typing the function name to confirm. Don't use this casually. |
 
 You can preview the top of the queue (`dc.sh next 5`) while a function is active; only the top-1-pull form (`dc.sh next` with no count) sets the marker.
 

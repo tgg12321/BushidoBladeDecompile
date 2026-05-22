@@ -136,7 +136,7 @@ This bit us between commits **54a5e54 → c71ff0a** (Sep 2026). The 54a5e54 comm
 
 **Fix:**
 - `dc.sh verify --clean` — `rm -rf build && make && verify --all`. Run this BEFORE committing any function that involved register-asm pinning, `register asm("$N")`, or non-trivial regfix rules. ~2-3 min, much cheaper than discovering the regression 10 commits later.
-- The active-func commit hook (`active_func_guard.sh`) does a clean rebuild on every match commit, so this trap can't slip through during normal solo work — but run `verify --clean` yourself if you're about to commit a series of related matches in quick succession.
+- ~~The active-func commit hook did a clean rebuild on every match commit~~ — that gate (`active_func_guard.sh`) was **deprecated 2026-05-22**, so this trap is no longer caught automatically. **Run `dc.sh verify --clean` yourself before committing** any match that involved register-asm pins or non-trivial regfix rules.
 
 **Heuristic for when `--clean` is worth the time:** any function whose match involved >2 register-asm pins, >3 regfix rules, or a `move`/`addu`-via-asm placement trick. The riskier the codegen-influencing edit, the more likely your dirty-cache verify is wrong.
 
@@ -160,7 +160,7 @@ This bit us at **commit 836d9a1 for func_8007B3A8** (May 2026). The retire workf
 **Fix (shipped):**
 - `dc.sh verify-c <func>` — bridge-aware verify. Refuses if the function has an active `replace_with_asmfile` line in asmfix.txt; otherwise runs the normal verify. **Use this during retirement work** instead of plain `verify`.
 - `dc.sh verify <func>` — now warns (doesn't block) when the target has an active bridge. The warning points at `verify-c`.
-- The commit hook (`active_func_guard.sh`) — now also refuses commits when the active function has a live bridge entry, regardless of SHA1 status.
+- ~~The commit hook refused commits when the active function had a live bridge entry~~ — that check was part of `active_func_guard.sh`, **deprecated 2026-05-22**. Use `dc.sh verify-c <func>` (bridge-aware) yourself before committing retirement work.
 - `refresh-queue` (both modes) — **no longer auto-purges `# RETIRE: ` lines.** They're kept as permanent historical markers. The old auto-purge couldn't distinguish "SHA1 matches because C body is correct" from "SHA1 matches because bridge is still producing the bytes," and would silently restore the bridge to active by removing the `# RETIRE: ` comment.
 - `dc.sh purge-retirements [--dry-run]` — explicit, safe manual cleanup. For each `# RETIRE: <func>: ...` line, it runs `verify-c <func>` and only purges if that reports MATCH. The `verify-c` check guarantees no active bridge for the function exists, so a MATCH proves the C body's bytes are correct.
 

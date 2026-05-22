@@ -183,10 +183,10 @@ case "$CMD" in
                 echo "Active:   $ACTIVE  (in progress — finish before pulling another)"
             fi
             echo
-            echo "  Resume work on $ACTIVE. The hook is enforcing — you cannot:"
-            echo "  - 'dc.sh next*' queue pulls (refused while active)"
-            echo "  - 'git commit' (refused unless verify shows MATCH)"
-            echo "  - 'git checkout/restore' on src/ files"
+            echo "  Resume work on $ACTIVE. The grind_check Stop hook keeps you on it —"
+            echo "  you can't end the turn until it MATCHES (or you run 'dc.sh release')."
+            echo "  You ARE free to commit, git checkout/revert, and try different"
+            echo "  approaches mid-work (the active_func_guard blocker was deprecated)."
             echo
             echo "  Diagnostic:"
             if [ "$IS_RETIREMENT" = "1" ]; then
@@ -218,9 +218,9 @@ case "$CMD" in
         # come from regfix splice or file-scope `__asm__("glabel ...")`
         # instead of from real C compilation — functionally equivalent
         # to a `replace_with_asmfile` bridge but historically invisible
-        # to the bridge guard. The active_func_guard hook blocks NEW
-        # cheats; this line surfaces the EXISTING ones that should be
-        # revisited.
+        # to the bridge guard. The commit-time cheat audit (commit_audit_guard
+        # / audit_asm_cheats) blocks NEW cheats; this line surfaces the EXISTING
+        # ones that should be revisited.
         if [ -f "tools/audit_asm_cheats.py" ]; then
             python3 tools/audit_asm_cheats.py --summary 2>/dev/null || true
         fi
@@ -1480,6 +1480,17 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         fi
         ;;
 
+    fix-tooling-incident)
+        # Resolve (clear) a tooling incident raised by the tooling-error guard
+        # (tools/hooks/tooling_error_guard.py). The ONLY clean way to clear
+        # .bb2_tooling_incident.json so the Stop hook lets the turn end.
+        # Enforces "fix permanently, don't paper over" — see the
+        # debugging-discipline rule + docs/tooling_incidents.md.
+        #   --fixed --guard <path> --root-cause "..." --verify "..."
+        #   --false-positive "<why>"   |   --defer "<why>"
+        python3 tools/resolve_tooling_incident.py "$@"
+        ;;
+
     retire)
         # Start retirement of a bridged (replace_with_asmfile) function:
         # comment out the asmfix rule, set active marker, point at C body.
@@ -1530,9 +1541,9 @@ print(f'  restored {restored} bridge rule(s) (un-commented `# RETIRE: ...`)')
         # Incremental rebuild for one function: nuke the .o for the
         # containing .c file + link products, run make (~30s vs ~2 min
         # for full clean), then run bridge-aware verify-c. Use during
-        # the edit-iterate loop. The full clean-rebuild gate at commit
-        # time (active_func_guard hook) still protects against cache
-        # lag — this is just for tight iteration.
+        # the edit-iterate loop. build-active is incremental and can lag
+        # behind a full build, so always confirm a match with a full
+        # `make` / `dc.sh verify` before committing.
         # Also appends to .bb2_iter_log/<func>.jsonl and surfaces the
         # trajectory + plateau advice (see iter_log.py for the rule).
         python3 tools/build_active.py "$@" 2>&1

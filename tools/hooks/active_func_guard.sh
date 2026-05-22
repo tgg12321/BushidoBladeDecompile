@@ -1,4 +1,19 @@
 #!/bin/bash
+# ============================================================================
+# DEPRECATED 2026-05-22 — NO LONGER WIRED into .claude/settings.local.json.
+#
+# This guard blocked git commit / git checkout / dc.sh next* (and reverting
+# WIP src files) while a function was active+unmatched. It was deprecated
+# because it blocked NATURAL decomp progress: trying new approaches and
+# restoring old attempts when work went awry. On-task enforcement is now
+# handled solely by the grind_check.sh Stop hook (semantic quit-detection),
+# which keeps the agent on the active function WITHOUT blocking mid-work
+# commits/checkouts. The .bb2_active_func marker + dc.sh next/release workflow
+# remain in use (grind_check reads the marker).
+#
+# Kept unwired for reference / easy re-enable: re-add to the PreToolUse "Bash"
+# matcher in .claude/settings.local.json to reactivate.
+# ============================================================================
 # PreToolUse hook for Bash. Enforces THE HARD RULE: once a function is
 # selected (via `dc.sh next`, `next-structural`, or `next-asmfix`), the
 # agent must finish it before:

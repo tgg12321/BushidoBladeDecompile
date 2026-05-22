@@ -1,5 +1,5 @@
 {
-  "_comment": "Project-shared Claude Code settings. Committed to git. Hooks here are merged with user-local hooks in .claude/settings.local.json. See tools/hooks/*.sh for the scripts referenced below.",
+  "_comment": "Project-shared Claude Code settings. Committed to git. Hooks here are MERGED with user-local hooks in .claude/settings.local.json (both run). See tools/hooks/*.{sh,py} for the scripts. PostToolUse + Stop/SubagentStop wire the tooling-error forced-fix system: tooling_error_guard.py detects KNOWN tooling/shell failures (CRLF, WSL, broken worktree symlinks, missing deps) and raises an incident; tooling_incident_stop_guard.sh refuses to end the turn until it is resolved via 'dc.sh fix-tooling-incident'. See docs/tooling_incidents.md and the debugging-discipline memory rule.",
   "hooks": {
     "PreToolUse": [
       {
@@ -12,6 +12,37 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/cc1psx_guard.py\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|PowerShell|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/tooling_error_guard.py\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/tools/hooks/tooling_incident_stop_guard.sh\""
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/tools/hooks/tooling_incident_stop_guard.sh\""
           }
         ]
       }
