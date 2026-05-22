@@ -77,7 +77,6 @@ DispStuff,src/main.c,asmfix,CLASSIFY,,,,,,needs_function_split,209,"multi_jr_ra,
 AllocBukiRmd,src/main.c,asmfix,CLASSIFY,,,,,,needs_function_split,259,"multi_jr_ra,aspsx_swra_delay"
 saTan2Main,src/main.c,asmfix,CLASSIFY,,,,,,standard,247,
 func_8008C464,src/code6cac_c_ab.c,asmfix,CLASSIFY,,,,,,needs_function_split,763,"multi_jr_ra,aliasing_heavy"
-coli_HitPauseKatana_2,src/main.c,asmfix,CLASSIFY,,,,,,standard,178,aliasing_heavy
 SetPacketData,src/main.c,asmfix,CLASSIFY,,,,,,standard,159,aliasing_heavy
 saTan3GaugeMain_80073200,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,203,aliasing_heavy
 func_80074488,src/text1b.c,asmfix,CLASSIFY,,,,,,standard,212,aliasing_heavy

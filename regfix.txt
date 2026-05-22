@@ -632,7 +632,7 @@ func_8008AAD4: insert "sh\t$6,D_800F7424\nsh\t$7,D_800F7424+2\nlw\t$2,D_800A28A0
 
 # B-cont. After insert, original idx 73-79 remain. Fix register references:
 #   $3 -> $2 (load went into $2 not $3), $4 -> $3 (cache in $v1 not $a0), $6 -> $4 (notmask in $a0).
-func_8008AAD4: subst "and	\$3,\$3,\$5" "and	$2,$2,$5" @ 73
+func_8008AAD4: subst "sw	\$2,D_800A289C" "and	$2,$2,$5" @ 73
 func_8008AAD4: subst "beq	\$3,\$0," "beq	$2,$0," @ 74
 func_8008AAD4: subst "lhu	\$2,0\(\$4\)" "lhu	$2,0($3)" @ 76
 func_8008AAD4: subst "and	\$2,\$2,\$6" "and	$2,$2,$4" @ 78
@@ -1687,23 +1687,6 @@ saTan0GaugeDraw: reorder 25,26,27,28,29,32,30,31 @ 25-32
 # - LERP 0x18 (203-205): final addu/sra/subu reg fixups
 # Re-insert lw $4,24($16) and nop after sra (post-delete idx 203)
 # File order=processing order; insert "nop" first, then "lw" -> final layout: sra, lw, nop, subu
-
-# === coli_HitPauseKatana_2 regfix rules ===
-# Base pointer: $3 -> $4
-# Arg3: $4 -> $7 in preamble shifts
-# Intermediate: $10 -> $3 in preamble
-# Constant 1: $6 -> $11
-# Arg2: $11 -> $6 (across all cases)
-# Constant 1 in sllv: $6 -> $11
-# Case 1 tail: mask temp $8 -> $2
-# Case 0 tail: $8 -> $2, jump target, nor $8 -> $2
-# Case 8 tail: $10 -> $2 for mask materialization
-# Delete arg3 copy
-# Insert case 0 combine into delay slot (post-delete idx)
-# Reorder: preamble - move addiu after sll block (post-insert indices)
-# Reorder: case 1 - move sh after addu,sra
-# Reorder: case 0 - move sh after sll,addu
-# Reorder: case 0 tail - swap j and nor
 
 # cpu_side_move_dir_4: register + scheduling fix for debug_printf block
 cpu_side_move_dir_4: subst "lbu\t\$3,0\(\$18\)" "lbu\t$4,0($18)" @ 39
