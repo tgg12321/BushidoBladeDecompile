@@ -50,6 +50,22 @@ that are tractable to detect from target.s alone:
       func_8004A808 / func_8004BB68 / func_8004C1F4 / func_80050774
       polygon-dispatch cluster that S1-S6 miss.
 
+  S8. Redundant low-bits mask before a discarding left-shift.
+        andi $D, $Y, M        # M = 2^m - 1 (m contiguous low bits)
+        sll  $D, $D, S        # S >= 32 - m, so the shift discards exactly
+                              # the bits the mask cleared -> mask redundant
+      The andi result is single-use (the sll overwrites $D). GCC's combine
+      pass always eliminates a single-use redundant mask before a left
+      shift (subreg-of-AND simplification), so GCC never emits it; a
+      hand-coder writes the explicit mask. Verified 2026-05-21 on
+      func_8007EDBC: our decompals fork AND the original cc1psx (Sony GCC
+      2.7.2.SN.1) both elide it, so a target that KEEPS it was hand-written.
+      Like S6/S7, GCC-impossible — even one occurrence is decisive.
+      Originated 2026-05-21 from func_8007EDBC (display.c packed
+      fixed-point multiply, `andi $t1,$t0,0xFFFF; sll $t1,$t1,16`); ~38
+      pure-C forms + cc1psx + combine.c:1458 analysis confirmed no C source
+      reproduces it. Future agents: STRONG here = stop trying pure C.
+
 Output modes:
   --single <func>  : JSON for one function (consumed by memory_check.py)
   --all            : human-readable sorted list of candidates
@@ -120,27 +136,30 @@ class FuncSignals:
     s6_detail: str
     s7_no_save_callee_use: bool
     s7_detail: str
-    score: int      # total signals hit (0-7)
+    s8_redundant_mask_shift: bool
+    s8_detail: str
+    score: int      # total signals hit (0-8)
     tier: str       # STRONG / POSSIBLE / TIGHT_C / LOW
     tier_reason: str
     opcode_sig: str  # hash key for cluster detection
 
 
-def classify_tier(s1: bool, s2: bool, s6: bool, s7: bool, score: int) -> tuple[str, str]:
+def classify_tier(s1: bool, s2: bool, s6: bool, s7: bool, s8: bool, score: int) -> tuple[str, str]:
     """Tier the function by which signals fire.
 
     S1 (uniform multu pacing), S2 (empty-body branch), S6 (BIOS
-    jumptable with delay-slot register setup), and S7 (callee-saved
-    register read with no corresponding save) are the "GCC-impossible"
-    signals — patterns the compiler has no way to emit. S3/S4/S5 are
-    tightness/cluster signals — also common in tight pure-C functions
-    (e.g. the calc_fc_frame_8007EC5C GTE family).
+    jumptable with delay-slot register setup), S7 (callee-saved
+    register read with no corresponding save), and S8 (redundant
+    low-bits mask before a discarding left-shift) are the
+    "GCC-impossible" signals — patterns the compiler has no way to emit.
+    S3/S4/S5 are tightness/cluster signals — also common in tight pure-C
+    functions (e.g. the calc_fc_frame_8007EC5C GTE family).
 
     A 3+ score WITHOUT any GCC-impossible signal is most likely a
-    tight-C cluster, not hand-coded asm. Conversely, S6 or S7 alone is
-    decisive (both patterns are too specific to occur by accident); S1
+    tight-C cluster, not hand-coded asm. Conversely, S6/S7/S8 alone is
+    decisive (each pattern is too specific to occur by accident); S1
     or S2 alone is enough to warrant investigation."""
-    impossible_hits = [name for name, hit in (("S1", s1), ("S2", s2), ("S6", s6), ("S7", s7)) if hit]
+    impossible_hits = [name for name, hit in (("S1", s1), ("S2", s2), ("S6", s6), ("S7", s7), ("S8", s8)) if hit]
     if s6:
         # S6 is the most specific GCC-impossible pattern: a single match
         # is essentially proof of hand-coded asm. Skip the tightness gate.
@@ -150,6 +169,12 @@ def classify_tier(s1: bool, s2: bool, s6: bool, s7: bool, score: int) -> tuple[s
         # $sN without forcing GCC to emit the prologue save. Even one
         # unsaved callee-save use proves custom ABI.
         return "STRONG", f"S7 (callee-saved register used without save) — GCC-impossible, decisive"
+    if s8:
+        # S8 is decisive: GCC's combine always elides a single-use
+        # redundant mask before a discarding left shift (verified against
+        # cc1psx on func_8007EDBC). A target that keeps the mask was
+        # hand-written. Even one occurrence is proof.
+        return "STRONG", f"S8 (redundant mask before discarding left-shift) — GCC-impossible, decisive"
     if s1 and s2 and score >= 4:
         return "STRONG", "S1+S2 (both GCC-impossible) plus tightness — almost certainly hand-coded"
     if impossible_hits and score >= 3:
@@ -433,6 +458,68 @@ def signal_no_save_callee_use(insns: list[Insn]) -> tuple[bool, str]:
     return False, "all callee-save uses have $sp save (or no callee-saves used)"
 
 
+MASK_SHIFT_RE = re.compile(r"^\$(\w+),\s*\$(\w+),\s*(\S+)")
+
+
+def signal_redundant_mask_shift(insns: list[Insn]) -> tuple[bool, str]:
+    """S8: redundant low-bits mask before a discarding left-shift.
+
+    Pattern: `andi $D, $Y, M` immediately followed by `sll $D, $D, S`,
+    where M = 2^m - 1 (the m contiguous low bits) and S >= 32 - m.
+
+    The `sll` shifts $D left by S, discarding everything at bit position
+    (32 - S) and above. Since S >= 32 - m, the only bits of $Y that
+    survive the shift are bits 0..(m-1) — exactly the bits the mask keeps.
+    So the mask's clearing of bits m..31 is mathematically redundant, and
+    the andi result is single-use (the very next insn, the sll,
+    overwrites $D).
+
+    GCC's combine pass eliminates a single-use redundant mask before a
+    left shift (it simplifies `(subreg:HI (and X 0xFFFF))` -> `(subreg:HI
+    X)`, and the analogous `(ashift (and X M) S)` -> `(ashift X S)`), so
+    GCC NEVER emits the andi here. A hand-coder writes the explicit mask.
+    Verified 2026-05-21 on func_8007EDBC: BOTH our decompals fork and the
+    original cc1psx (Sony GCC 2.7.2.SN.1) elide it — so a target that
+    KEEPS it was hand-written, not compiled from C. GCC-impossible:
+    even one occurrence is decisive.
+
+    NOTE: only the same-register form `sll $D,$D,S` is matched, which
+    guarantees the andi result is single-use (consumed + overwritten by
+    the sll). A different-dest `sll $X,$D,S` could leave $D live for a
+    second use (legitimate multi-use C), so it is intentionally NOT
+    flagged."""
+    matches: list[str] = []
+    for i in range(len(insns) - 1):
+        a, b = insns[i], insns[i + 1]
+        if a.mnemonic != "andi" or b.mnemonic != "sll":
+            continue
+        ma = MASK_SHIFT_RE.match(a.operands)
+        mb = MASK_SHIFT_RE.match(b.operands)
+        if not ma or not mb:
+            continue
+        a_dst, _a_src, a_imm = ma.group(1), ma.group(2), ma.group(3)
+        b_dst, b_src, b_sh = mb.group(1), mb.group(2), mb.group(3)
+        # sll must read AND write the andi's destination (single-use).
+        if b_dst != a_dst or b_src != a_dst:
+            continue
+        mask = _parse_imm(a_imm)
+        shift = _parse_imm(b_sh)
+        if mask is None or shift is None or mask <= 0:
+            continue
+        # mask must be a contiguous run of low bits: 2^m - 1.
+        if mask & (mask + 1):
+            continue
+        m_bits = mask.bit_length()
+        if shift >= 32 - m_bits:
+            matches.append(
+                f"andi ${a_dst},{a_imm} ; sll ${a_dst},{shift} @ insn {i} "
+                f"(mask {mask:#x} = low {m_bits} bits, redundant before <<{shift})"
+            )
+    if matches:
+        return True, "; ".join(matches[:2]) + (" ..." if len(matches) > 2 else "")
+    return False, "no redundant mask-before-shift"
+
+
 def compute_opcode_sig(insns: list[Insn]) -> str:
     """Build a loose opcode-only signature for cluster detection.
     Strips registers, immediates, and operands entirely — keeps the
@@ -528,9 +615,10 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
             s5d = "no high-similarity siblings (jaccard < 0.5)"
         s6, s6d = signal_bios_jumptable(insns)
         s7, s7d = signal_no_save_callee_use(insns)
+        s8, s8d = signal_redundant_mask_shift(insns)
 
-        score = sum([s1, s2, s3, s4, s5, s6, s7])
-        tier, tier_reason = classify_tier(s1, s2, s6, s7, score)
+        score = sum([s1, s2, s3, s4, s5, s6, s7, s8])
+        tier, tier_reason = classify_tier(s1, s2, s6, s7, s8, score)
         out.append(FuncSignals(
             func=name,
             src_file=str(p.relative_to(ROOT)),
@@ -543,6 +631,7 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
             s5_cluster=s5, s5_detail=s5d,
             s6_bios_jumptable=s6, s6_detail=s6d,
             s7_no_save_callee_use=s7, s7_detail=s7d,
+            s8_redundant_mask_shift=s8, s8_detail=s8d,
             score=score,
             tier=tier,
             tier_reason=tier_reason,
@@ -573,9 +662,10 @@ def fmt_signals_human(s: FuncSignals) -> str:
         ("S5 cluster       ", s.s5_cluster, s.s5_detail),
         ("S6 BIOS jumptable ", s.s6_bios_jumptable, s.s6_detail),
         ("S7 unsaved $sN use", s.s7_no_save_callee_use, s.s7_detail),
+        ("S8 redundant mask", s.s8_redundant_mask_shift, s.s8_detail),
     ]
     lines = [
-        f"  HAND_CODED: tier={s.tier}  score={s.score}/7  ({s.func}, {s.insn_count} insns)",
+        f"  HAND_CODED: tier={s.tier}  score={s.score}/8  ({s.func}, {s.insn_count} insns)",
         f"    Reason: {s.tier_reason}",
     ]
     for label, hit, detail in rows:
@@ -643,6 +733,7 @@ def main() -> int:
                 "5" if s.s5_cluster else ".",
                 "6" if s.s6_bios_jumptable else ".",
                 "7" if s.s7_no_save_callee_use else ".",
+                "8" if s.s8_redundant_mask_shift else ".",
             ])
             note_bits = []
             if s.s5_cluster:
@@ -651,8 +742,10 @@ def main() -> int:
                 note_bits.append(f"bios: {s.s6_detail.split(': ', 1)[-1]}")
             if s.s7_no_save_callee_use:
                 note_bits.append(f"unsaved: {s.s7_detail.split(': ', 1)[-1]}")
+            if s.s8_redundant_mask_shift:
+                note_bits.append(f"mask: {s.s8_detail.split(' @ ', 1)[0]}")
             extra_note = ("  " + "  ".join(note_bits)) if note_bits else ""
-            print(f"   {s.score}/7    {s.insn_count:5}  {s.multu_count:6}  {s.func:40}  [{sig_letters}]{extra_note}")
+            print(f"   {s.score}/8    {s.insn_count:5}  {s.multu_count:6}  {s.func:40}  [{sig_letters}]{extra_note}")
         print()
 
     print(f"# scan_hand_coded: {len(sigs)} functions scanned in asm/funcs/")
@@ -662,10 +755,11 @@ def main() -> int:
         "STRONG candidates — almost certainly hand-coded asm",
         strong,
         "S1 (uniform multu pacing), S2 (empty-body branch), S6 (BIOS "
-        "jumptable with delay-slot register setup), and/or S7 (unsaved "
-        "callee-save use) fire — all effectively impossible in GCC "
-        "output. Treat as canonically-asm absent strong counter-evidence; "
-        "if not in inline_asm_canonical.txt, investigate per skill §2.5.b.",
+        "jumptable with delay-slot register setup), S7 (unsaved "
+        "callee-save use), and/or S8 (redundant mask before a discarding "
+        "left-shift) fire — all effectively impossible in GCC output. "
+        "Treat as canonically-asm absent strong counter-evidence; if not "
+        "in inline_asm_canonical.txt, investigate per skill §2.5.b.",
     )
     print_block(
         "POSSIBLE candidates — investigate",
