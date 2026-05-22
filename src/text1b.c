@@ -15036,7 +15036,7 @@ extern s32 D_800A3524;
 extern s32 D_800A34FC;
 extern s32 D_800A372C;
 extern s32 D_800A3518;
-extern u32 D_800A34F8;
+extern s32 D_800A34F8;
 extern s16 D_800A3528;
 extern s16 D_800A3512;
 extern s16 D_800A3510;
@@ -15055,8 +15055,6 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
     s32 temp_s0;
     s32 v0_efc;
     s32 *v0_e49c;
-    register s32 lo asm("$4");
-    s32 *p_34fc;
 
     D_800A3500 = arg0;
     D_800A351C = arg0;
@@ -15073,45 +15071,73 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
     D_800A34FC = (s32)v0_e49c;
     D_800A3500 = (s32)v0_e49c + 0x34;
     {
-        u32 outer_cache;
-        D_800A34F8 &= ~0xF;
-        outer_cache = (u32)D_8009BC04;
-        if (!(outer_cache & 1)) {
-            register u32 cache asm("$6") = outer_cache;
+        s32 init_mask = -0x10;
+        s32 outer_cache;
+        s32 flags = D_800A34F8;
+        outer_cache = D_8009BC04;
+
+        flags &= init_mask;
+        D_800A34F8 = flags;
+        if ((u32)outer_cache & 1) goto after_loop;
+        {
+            const u32 mask;
+            s32 cache;
+            do {
+                mask = (u32)-0x10;
+                cache = D_8009BC04;
+            } while (0);
 loop_label:
-            lo = D_800A34F8 & 0xF;
-            if (lo >= 7) {
-                D_800A34F8 &= ~0xF;
-            } else {
-                D_800A34F8 = (D_800A34F8 & ~0xF) | ((lo + 1) & 0xF);
-                if (!((cache >> (D_800A34F8 & 0xF)) & 1)) goto loop_label;
+            flags = D_800A34F8;
+            {
+                s32 next;
+                s32 lo = flags;
+                lo &= 0xF;
+                if (lo >= 7) {
+                    D_800A34F8 = flags & mask;
+                } else {
+                    next = lo + 1;
+                    flags = (flags & mask) | (next & 0xF);
+                    D_800A34F8 = flags;
+                    flags &= 0xF;
+                    flags = (u32)cache >> flags;
+                    flags &= 1;
+                    if (!flags) goto loop_label;
+                }
             }
         }
+after_loop:
+        {
+            s32 p_34fc;
+            s32 value;
+
+            value = 5;
+            do {
+            } while (0);
+            p_34fc = D_800A34FC;
+            D_800A3524 = (s32)arg1;
+            do {
+            } while (0);
+            D_800A3518 = 0;
+            D_800A3528 = 0;
+            *(s16 *)(p_34fc + 0x2A) = value;
+            *(s16 *)(p_34fc + 0x28) = value;
+            flags = D_800A34F8 & ~0x1C00;
+            D_800A3512 = 0;
+            D_800A3510 = 0;
+            D_800A350E = 0;
+            D_800A350C = 0;
+            flags |= 0x1000;
+            D_800A34F8 = flags;
+            *(s16 *)(p_34fc + 0x12) = 0;
+            *(s16 *)(p_34fc + 0x10) = 0;
+            *(s16 *)(p_34fc + 0xE) = 0;
+            *(s16 *)(p_34fc + 0xC) = 0;
+            __builtin_memcpy(buf, D_800A32C0, 8);
+            gpu_DrawSync(0);
+            func_8007B6C8(buf, 0x3C0, 0x1FE);
+            gpu_DrawSync(0);
+        }
     }
-    D_800A3524 = (s32)arg1;
-    D_800A3518 = 0;
-    D_800A3528 = 0;
-    p_34fc = (s32 *)D_800A34FC;
-    ((s16 *)p_34fc)[0x2A/2] = 5;
-    ((s16 *)p_34fc)[0x28/2] = 5;
-    __asm__ volatile("" ::: "memory");
-    {
-        s32 t34f8 = D_800A34F8;
-        D_800A3512 = 0;
-        D_800A3510 = 0;
-        D_800A350E = 0;
-        D_800A350C = 0;
-        D_800A34F8 = (t34f8 & ~0x1C00) | 0x1000;
-    }
-    __asm__ volatile("" ::: "memory");
-    ((s16 *)p_34fc)[0x12/2] = 0;
-    ((s16 *)p_34fc)[0x10/2] = 0;
-    ((s16 *)p_34fc)[0xE/2] = 0;
-    ((s16 *)p_34fc)[0xC/2] = 0;
-    __builtin_memcpy(buf, D_800A32C0, 8);
-    gpu_DrawSync(0);
-    func_8007B6C8(buf, 0x3C0, 0x1FE);
-    gpu_DrawSync(0);
     *(s8 *)((u8 *)D_800A34FC + 0x30) = (s8)(((s32 *)D_800A3524)[8] & 1);
     return 1;
 }
