@@ -30,7 +30,7 @@ Modes:
                    exit 0. Used by `dc.sh start` for session briefing.
   --func NAME    : check one function; exit 1 if unauthorized cheat found
   --check-new    : compare current state vs HEAD; exit 1 if new cheats added.
-                   (Used by the active_func_guard hook before commit.)
+                   (Used by the commit_audit_guard hook before commit — Rule 1a.)
   --list-funcs   : print one unauthorized function name per line, exit 0.
                    Used by queue generators to surface cheat-fix work.
 """

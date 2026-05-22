@@ -2,7 +2,7 @@
 
 Subject-line prefixes and body structure used across this project. **These are conventions, not enforced rules** — but the project's tooling (especially `dc.sh lessons` / `tools/commit_lessons.py` and `tools/hooks/llm_audit.sh`) parses commit subjects and bodies for structured information, so consistency improves searchability and audit reliability.
 
-For the enforcement layer, see `tools/hooks/llm_audit.sh` (adversarial cheat-audit on commits) and `tools/hooks/active_func_guard.sh` (active-function commit blocker).
+For the enforcement layer, see `tools/hooks/commit_audit_guard.sh` (commit-time cheat audit: programmatic `audit_asm_cheats.py --check-new` + the adversarial LLM auditor `tools/hooks/llm_audit.sh`). _(The `active_func_guard.sh` active-function commit blocker was deprecated 2026-05-22.)_
 
 ## Subject line format
 

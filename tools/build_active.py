@@ -3,9 +3,10 @@
 relink, and run bridge-aware verify. Cheap iteration during retirement
 work — typically ~30 seconds vs ~2 minutes for a full clean rebuild.
 
-Safety: the full clean-rebuild gate at commit time (active_func_guard
-hook) still catches regressions. This tool is for the development loop
-between edit and commit, not for confirming a final match.
+Safety: the commit-time match-verify gate was deprecated 2026-05-22 (with
+active_func_guard), so this tool does NOT confirm a final match — run a full
+`make` / `dc.sh verify` before committing. This is for the development loop
+between edits, not for confirming a final match.
 
 Usage:
     python3 tools/build_active.py <func> [--no-verify] [--quiet]

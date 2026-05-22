@@ -108,7 +108,7 @@ auto_matches/
 # Codex experimentation workspace (per-session scratch)
 codex_lab/
 
-# Active function marker (used by .claude/hooks/active_func_guard.sh)
+# Active function marker (set by dc.sh next; read by the grind_check Stop hook)
 .bb2_active_func
 
 # Audit log + ephemeral grind-check overrides

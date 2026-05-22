@@ -28,7 +28,7 @@ That single call handles dep symlinking + briefing. If you want explicit setup-o
 
 **Decide what to do next based on the briefing:**
 
-1. **`Active: <funcname>`** → resume that function. The hook is enforcing — `dc.sh next*` and `git commit` are blocked until you match. Don't revert WIP src/ files (also blocked); edit forward. Use `dc.sh diff <funcname>` and `dc.sh verify <funcname>` to see where you are.
+1. **`Active: <funcname>`** → resume that function. The `grind_check` Stop hook keeps you on it — you can't end the turn until it matches (or you run `dc.sh release`). You're free to commit, `git checkout`/revert WIP, and try different approaches mid-work — the old `active_func_guard` blocker was **deprecated 2026-05-22**. Use `dc.sh diff <funcname>` and `dc.sh verify <funcname>` to see where you are.
 2. **`Active: NONE`** → `bash tools/dc.sh next --with-context` (pulls top of queue + sets marker + runs agent-brief).
 3. **`Build: MISMATCH`** → STOP. Don't pull more work. Investigate (`dc.sh verify --clean`, recent commits) before any function work.
 
@@ -91,11 +91,17 @@ In-progress markers (`.bb2_active_func`, etc.) are worktree-local — main's wor
 Wired in `.claude/settings.local.json`:
 
 - **`SessionStart`** → `tools/hooks/session_start_brief.sh` (runs `dc.sh start`)
-- **PreToolUse on Bash** → `tools/hooks/active_func_guard.sh` (blocks `git commit`/`git checkout`/`dc.sh next*` while a function is active and unmatched)
+- **PreToolUse on Bash** → `tools/hooks/bash_guard.py` (soft hints only — wrong-tool, WSL boilerplate, sequential-bash batching; never blocks)
+- ~~`tools/hooks/active_func_guard.sh`~~ — **deprecated 2026-05-22** (blocked `git commit`/`git checkout`/`dc.sh next*` while active+unmatched; it blocked trying new approaches and restoring old attempts). Staying on-task is now solely the `grind_check` Stop hook's job. Script kept, unwired.
 - **PreToolUse on Bash + Edit|Write|MultiEdit** → `tools/hooks/main_branch_guard.sh` (blocks edits/commits in the main worktree per the policy above; self-skips in sub-worktrees)
 - **PreToolUse on Edit|Write|MultiEdit** → `tools/hooks/regfix_scope_guard.sh` (blocks regfix-rule overscope)
 - **`Stop`** / **`SubagentStop`** → `tools/hooks/grind_check.sh` (blocks wrap-up language while a function is unmatched)
 - **Commit-time** → `tools/hooks/llm_audit.sh` (adversarial cheat-detection auditor; can be invoked ad-hoc via `/cheat-audit`)
+
+Wired in committed `.claude/settings.json` (version-controlled; merges with the local hooks above) — the **tooling-error forced-fix system** (see [`docs/TOOLING_ERROR_GUARD.md`](docs/TOOLING_ERROR_GUARD.md)):
+
+- **PostToolUse on Bash\|PowerShell\|Edit\|Write\|MultiEdit** → `tools/hooks/tooling_error_guard.py` (detects KNOWN tooling failures — CRLF, WSL-unavailable, broken worktree symlink, missing linked dep — and raises an incident marker so the failure gets fixed *permanently*, not papered over)
+- **`Stop`** / **`SubagentStop`** → `tools/hooks/tooling_incident_stop_guard.sh` (refuses to end the turn while a tooling incident is unresolved; clear it via `dc.sh fix-tooling-incident` after implementing a permanent fix). Enforces the `debugging-discipline` rule.
 
 ## Tool quick reference
 
@@ -113,6 +119,7 @@ Full catalog in `memory/reference/tools.md`. Most-used:
 | `dc.sh refresh-queue` | Regen `WORK_QUEUE.md` post-match |
 | `dc.sh lessons <query>` | Query commit corpus for prior attempts / techniques / audits (see `memory/reference/commit-lessons.md`) |
 | `dc.sh release` | ESCAPE HATCH (user-only, typed confirm) |
+| `dc.sh fix-tooling-incident` | Resolve a tooling incident (CRLF/WSL/symlink) raised by the tooling-error guard — `--fixed --guard <path> --root-cause "..."` / `--false-positive "..."` / `--defer "..."` |
 | `dc.sh new-worktree <name>` | Create + bootstrap a worktree off local main HEAD (one command) |
 | `dc.sh bootstrap` | Link gitignored deps from main repo (worktree first-run) |
 | `dc.sh verify-toolchain` | ~10ms existence-check on cc1, maspsx, python3, disc |
