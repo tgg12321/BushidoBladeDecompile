@@ -13,6 +13,8 @@ Output: per-instruction diff with decoded MIPS, mapped to TEXT indices.
 Exit code: 0 if match, 1 if diffs found.
 """
 
+import glob
+import os
 import re
 import struct
 import subprocess
@@ -59,6 +61,69 @@ REG_NAMES = {
 
 def reg(n):
     return REG_NAMES.get(n, f'${n}')
+
+
+def stale_input(root, func_name=None):
+    """Return the path of a build input newer than build/bb2.exe, or None.
+
+    `dc.sh verify` / this tool compare the LINKED build/bb2.exe against the
+    original. If the binary is older than its source/config inputs it does NOT
+    reflect the current source, and the MATCH/MISMATCH verdict is a LIE (you can
+    apply a candidate, forget to rebuild, and get a stale MATCH -- the §5
+    func_8007C7A0 "204 and 196 both MATCH" footgun). This makes verify honest:
+    callers warn loudly when the binary is stale. Returns the newest offending
+    input so the message is actionable.
+    """
+    exe = root / 'build' / 'bb2.exe'
+    if not exe.exists():
+        return None
+    try:
+        exe_m = exe.stat().st_mtime
+    except OSError:
+        return None
+    inputs = []
+    inputs += glob.glob(str(root / 'src' / '*.c'))
+    inputs += glob.glob(str(root / 'src' / '*.h'))
+    inputs += glob.glob(str(root / 'include' / '**' / '*.h'), recursive=True)
+    for name in ('regfix.txt', 'regfix_stage2.txt', 'asmfix.txt', 'sdata_syms.txt',
+                 'sdata_funcs.txt', 'sdata_exclude.txt', 'expand_lb_funcs.txt',
+                 'multu_funcs.txt', 'expand_dest_funcs.txt', 'Makefile', 'bb2.ld',
+                 'named_syms.txt', 'undefined_syms_auto.txt',
+                 'undefined_funcs_auto.txt', 'symbol_addrs.txt'):
+        inputs.append(str(root / name))
+    for tool in ('regfix.py', 'asmfix.py', 'prologue_fix.py', 'fix_lwl.py',
+                 'multu_pad.py', 'make_psexe.py', 'maspsx/maspsx.py',
+                 'maspsx/maspsx/__init__.py'):
+        inputs.append(str(root / 'tools' / tool))
+    if func_name:  # bridged funcs build from asm/funcs/<func>.s (asmfix replace_with_asmfile)
+        inputs.append(str(root / 'asm' / 'funcs' / f'{func_name}.s'))
+    newest, newest_m = None, exe_m + 1.0  # 1s tolerance for fs mtime granularity
+    for p in inputs:
+        try:
+            m = os.path.getmtime(p)
+        except OSError:
+            continue
+        if m > newest_m:
+            newest, newest_m = p, m
+    return newest
+
+
+def warn_if_stale(root, func_name=None):
+    """Print a prominent staleness warning to stderr. Returns True if stale."""
+    s = stale_input(root, func_name)
+    if not s:
+        return False
+    try:
+        rel = os.path.relpath(s, root)
+    except ValueError:
+        rel = s
+    print("=" * 72, file=sys.stderr)
+    print("WARNING: build/bb2.exe is STALE -- older than %s" % rel, file=sys.stderr)
+    print("  The verdict below is computed from the LAST-BUILT binary, NOT your", file=sys.stderr)
+    print("  current source. It may be WRONG (false MATCH or false MISMATCH).", file=sys.stderr)
+    print("  Run `make` (or `bash tools/dc.sh build`) first for a reliable result.", file=sys.stderr)
+    print("=" * 72, file=sys.stderr)
+    return True
 
 
 def decode_mips(word, addr=0):
@@ -405,6 +470,7 @@ def main():
         sys.exit(1)
 
     if sys.argv[1] == '--all':
+        warn_if_stale(root)
         # SHA1 short-circuit: if the build matches the original byte-for-byte,
         # every function trivially matches. Skip the per-function loop (2+ min,
         # ~1KB output) since it has nothing to find. Pass --force to bypass
@@ -451,6 +517,7 @@ def main():
             print(f"All {len(funcs)} C functions match")
     else:
         func_name = sys.argv[1]
+        warn_if_stale(root, func_name)
         diffs = verify_function(root, func_name)
         if diffs is None:
             sys.exit(2)
