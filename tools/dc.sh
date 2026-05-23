@@ -225,6 +225,48 @@ case "$CMD" in
             python3 tools/audit_asm_cheats.py --summary 2>/dev/null || true
         fi
 
+        # Cheat-cleanup queue DRIFT check. The `## Cheat Cleanup Queue` section
+        # of WORK_QUEUE.md is a baked snapshot (written by gen_work_queue.py at
+        # the last refresh-queue); the audit above recomputes LIVE. They drift
+        # when a refresh-queue runs in a worktree branched BEFORE a sibling's
+        # cheat retirement landed, then merges to main carrying a now-stale
+        # entry (the func_8007EDBC case, 2026-05-22 — retired to canonical asm
+        # but left in the queue, so `next-cheat-cleanup` showed 16 vs the audit's
+        # 15). Compare the live cheat set against the baked section and warn.
+        if [ -f "tools/gen_work_queue.py" ] && [ -f "WORK_QUEUE.md" ]; then
+            if LIVE_CHEATS=$(python3 tools/gen_work_queue.py --list-cheat-funcs 2>/dev/null); then
+                DRIFT_REPORT=$(awk -v live="$LIVE_CHEATS" '
+                    BEGIN {
+                        n = split(live, arr, /\n/)
+                        for (i = 1; i <= n; i++) if (arr[i] != "") liveset[arr[i]] = 1
+                    }
+                    $0 == "## Cheat Cleanup Queue (top = next-cheat-cleanup)" { in_q=1; next }
+                    in_q && /^## / { in_q=0 }
+                    in_q && /^```$/ { in_block = !in_block; next }
+                    in_q && in_block && /^[[:space:]]*[0-9]+[[:space:]]/ {
+                        queued[$2]=1
+                        if (!($2 in liveset)) stale[$2]=1
+                    }
+                    END {
+                        for (f in liveset) if (!(f in queued)) missing[f]=1
+                        ns=0; for (s in stale) ns++
+                        nm=0; for (m in missing) nm++
+                        if (ns>0 || nm>0) {
+                            for (s in stale)   print "STALE " s
+                            for (m in missing) print "MISSING " m
+                        }
+                    }
+                ' WORK_QUEUE.md)
+                if [ -n "$DRIFT_REPORT" ]; then
+                    echo "          WARNING: cheat-cleanup queue DRIFT vs live audit — run 'dc.sh refresh-queue' to reconcile:"
+                    echo "$DRIFT_REPORT" | awk '
+                        $1=="STALE"   { print "            stale   (in queue, no longer a cheat — retired/authorized): " $2 }
+                        $1=="MISSING" { print "            missing (live cheat absent from queue): " $2 }
+                    '
+                fi
+            fi
+        fi
+
         # SOTN-bar gap: tier-3 inline asm (toolchain workarounds — register
         # pins, INLINE_MOVE_ALIASING blocks, scheduling barriers). These
         # are the deviation-from-SOTN-standard count. Tier-2 (authentic
@@ -1368,11 +1410,28 @@ PYEOF
         # bracketed tag column contains the filter string.
         # When FILE_FILTER is set (next-for-file), only count rows whose
         # src column matches any of the comma-separated substrings.
-        TOP=$(awk -v n="$N" -v section="$SECTION" -v tag="$TAG_FILTER" -v files="$FILE_FILTER" '
+        # next-cheat-cleanup is AUDIT-AWARE: the baked `## Cheat Cleanup Queue`
+        # section can list entries that are no longer cheats (retired/authorized
+        # since the last refresh-queue — see the DRIFT note in `dc.sh start`).
+        # Cross-check each row against the live cheat set so a pull never claims
+        # a non-cheat. Other queues leave AUDIT_AWARE=0 (no behavior change).
+        AUDIT_AWARE=0
+        LIVE_CHEATS=""
+        if [ "$CMD" = "next-cheat-cleanup" ] && [ -f "tools/gen_work_queue.py" ]; then
+            if LIVE_CHEATS=$(python3 tools/gen_work_queue.py --list-cheat-funcs 2>/dev/null); then
+                AUDIT_AWARE=1
+            fi
+        fi
+
+        TOP=$(awk -v n="$N" -v section="$SECTION" -v tag="$TAG_FILTER" -v files="$FILE_FILTER" -v live="$LIVE_CHEATS" -v audit_aware="$AUDIT_AWARE" '
             BEGIN {
                 if (files != "") {
                     nf = split(files, file_list, ",")
                 } else { nf = 0 }
+                if (audit_aware == "1") {
+                    nl = split(live, larr, /\n/)
+                    for (i = 1; i <= nl; i++) if (larr[i] != "") liveset[larr[i]] = 1
+                }
             }
             $0 == section { in_queue=1; next }
             in_queue && /^## / { in_queue=0 }
@@ -1388,9 +1447,19 @@ PYEOF
                     }
                     if (!matched) next
                 }
+                if (audit_aware == "1" && !($2 in liveset)) {
+                    stale_list = stale_list (nstale ? " " : "") $2
+                    nstale++
+                    next
+                }
                 print
                 count++
                 if (count >= n) exit
+            }
+            END {
+                if (nstale > 0) {
+                    printf("(skipped %d stale cheat-cleanup %s no longer flagged by the live audit: %s -- run: dc.sh refresh-queue to reconcile WORK_QUEUE.md)\n", nstale, (nstale==1 ? "entry" : "entries"), stale_list) > "/dev/stderr"
+                }
             }
         ' WORK_QUEUE.md)
         if [ -z "$TOP" ]; then

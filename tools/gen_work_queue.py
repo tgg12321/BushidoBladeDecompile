@@ -1231,4 +1231,17 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    if "--list-cheat-funcs" in sys.argv[1:]:
+        # Print the LIVE cheat-cleanup func set (one name per line) WITHOUT
+        # regenerating WORK_QUEUE.md. This is the single source of truth that
+        # the `dc.sh start` drift check and the audit-aware `next-cheat-cleanup`
+        # both consult to reconcile the baked WORK_QUEUE.md snapshot against the
+        # live audit. Catches the worktree-merge staleness mode: a refresh-queue
+        # run in a tree branched BEFORE a sibling's cheat retirement landed
+        # carries a now-stale cheat entry onto main (func_8007EDBC, 2026-05-22 —
+        # retired to canonical asm yet left in the queue). Independent of
+        # tmp/batch_attempt.csv, so it works even when the CSV is stale/missing.
+        for _e in scan_orphan_cheats(None):
+            print(_e["func"])
+        sys.exit(0)
     sys.exit(main())
