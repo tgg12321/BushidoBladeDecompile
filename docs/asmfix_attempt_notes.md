@@ -108,15 +108,13 @@ match it, delete the entry (and commit the match).
 
 ---
 
-### coli_HitPauseKatana_2 (178 insns, main.c)
+### coli_HitPauseKatana_2 (178 insns, main.c) — SOLVED 2026-05-22 (b233af8)
 
-**Best state:** Same length (178=178), 13 STRUCTURAL + 21 REG-RENAME + 1 BRANCH-OFFSET = 35 total diffs.
+**Status:** 100% pure C, 0 diffs, 0 pins, 0 regfix, 0 asm. Tier 4. The `replace_with_asmfile` bridge is retired.
 
-**Existing body:** 69-line existing C with register pins (mode→t1, mask→t0, t2→t2).
+**Winning technique — "split-initial-read":** the single post-branch read through a shared `base` pointer was forcing the wrong register allocation. Duplicating the read into BOTH arms of the `D_800A2CD4 & 1` flag branch — direct `D_800F7298[...]` indexing in the set arm, `base[...]` only in the else arm — stops GCC hoisting the arg2/arg3 halfword offsets across the switch. `mode`/`mask`/`base`/accum then land in `t1`/`t0`/`a0`/`t2` naturally with NO pins. `D_800A2CD4` and `D_800A28A0` marked `volatile` to match the target's repeated loads. Reusable form: `.claude/rules/split-read-defeats-hoist.md`.
 
-**Tried:** Pinning `base→a0` helped (closed 6 substs). Pinning `new_var→a2` broke everything (cascade collapse).
-
-**Next steps:** Plateau dominated by `new_var` allocated to $11 vs target's $6. Try a different pin strategy, or restructure to use `arg2` directly without the new_var intermediate (need to also avoid the size shortening that came from removing new_var earlier).
+**Why the prior plateau was false:** the 32→12-diff grind (60+ variants, directed search, 13k+ permuter iters) plateaued on pure register-rename diffs with a documented "4-cluster coupling" and concluded a CU split might be needed. That floor was a STRUCTURAL artifact, not an allocation limit — a control-flow restructure dissolved it. **A register-rename plateau is a signal to restructure the C, not to add more pins/levers.**
 
 ---
 
