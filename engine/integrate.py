@@ -20,13 +20,14 @@ from . import sandbox
 CONFIGS = [cheats.REGFIX, cheats.REGFIX2, cheats.ASMFIX]
 
 
-def _backup(paths: list[str]) -> dict[str, str]:
-    return {p: Path(p).read_text() for p in paths if Path(p).exists()}
+def _backup(paths: list[str]) -> dict[str, bytes]:
+    # byte-exact (no text-mode line-ending munging)
+    return {p: Path(p).read_bytes() for p in paths if Path(p).exists()}
 
 
-def _restore(backup: dict[str, str]) -> None:
-    for p, txt in backup.items():
-        Path(p).write_text(txt)
+def _restore(backup: dict[str, bytes]) -> None:
+    for p, data in backup.items():
+        Path(p).write_bytes(data)
 
 
 def _rebuild_file_and_sha1(stem: str) -> str:
@@ -43,21 +44,31 @@ def retire_function(func: str) -> dict:
     """
     stem = sandbox.func_file(func)
     backup = _backup(CONFIGS)
-    dropped = {}
-    for c in CONFIGS:
-        txt, d = cheats._filter_text(func, "all", c)
-        if d:
-            Path(c).write_text(txt)
-        dropped[Path(c).name] = d
-    total = sum(dropped.values())
-    if total == 0:
-        return {"func": func, "file": stem, "ok": False,
-                "reason": "no rules keyed by this function", "dropped": dropped}
-
-    sha1 = _rebuild_file_and_sha1(stem)
-    ok = sha1 == cfg.ORACLE_SHA1
-    if not ok:
+    try:
+        dropped = {}
+        for c in CONFIGS:
+            txt, d = cheats._filter_text(func, "all", c)
+            if d:
+                Path(c).write_bytes(txt.encode())  # byte-exact, no newline munging
+            dropped[Path(c).name] = d
+        total = sum(dropped.values())
+        if total == 0:
+            return {"func": func, "file": stem, "ok": False,
+                    "reason": "no rules keyed by this function", "dropped": dropped}
+        sha1 = _rebuild_file_and_sha1(stem)
+        ok = sha1 == cfg.ORACLE_SHA1
+        if not ok:
+            _restore(backup)
+            _rebuild_file_and_sha1(stem)  # restore build/ to canonical
+        return {"func": func, "file": stem, "ok": ok,
+                "dropped": dropped, "total_dropped": total, "sha1": sha1}
+    except Exception:
+        # Crash-safety: ANY failure mid-retire must restore configs + build/
+        # so a partial edit never leaks (the bug that silently dropped 24
+        # asmfix rules during validation).
         _restore(backup)
-        _rebuild_file_and_sha1(stem)  # restore build/ to canonical
-    return {"func": func, "file": stem, "ok": ok,
-            "dropped": dropped, "total_dropped": total, "sha1": sha1}
+        try:
+            _rebuild_file_and_sha1(stem)
+        except Exception:
+            pass
+        raise
