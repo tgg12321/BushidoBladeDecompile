@@ -20,6 +20,7 @@ import sys
 from . import buildconfig as cfg
 from . import fixtures as F
 from . import oracle as O
+from . import canonical as CANON
 from . import diagnose as DIAG
 from . import integrate as INT
 from . import orchestrator as ORCH
@@ -60,6 +61,9 @@ def main() -> int:
     dgp = sub.add_parser("diagnose", help="classify gap(s) vs immutable-plateau patterns (triage before permuting)")
     dgp.add_argument("funcs", nargs="+")
     dgp.add_argument("--detail", action="store_true", help="show the per-instruction diff")
+    cnp = sub.add_parser("canonical", help="C-vs-asm classification for a function (canonical-asm gate)")
+    cnp.add_argument("func")
+    sub.add_parser("canonical-scan", help="classify every function as C / ASM-WHOLE / ASM-PARTIAL")
 
     a = ap.parse_args()
 
@@ -163,6 +167,25 @@ def main() -> int:
                     for x in b:
                         print(f"        BLD {x}")
         print("\ntriage:", ", ".join(f"{v}={c}" for v, c in verdicts.most_common()))
+        return 0
+
+    if a.cmd == "canonical":
+        print(json.dumps(CANON.classify(a.func), indent=2))
+        return 0
+
+    if a.cmd == "canonical-scan":
+        from collections import Counter
+        res = CANON.scan_all()
+        c = Counter(r["verdict"] for r in res)
+        print(f"canonical-asm classification of {len(res)} functions:")
+        for v, n in c.most_common():
+            print(f"  {v:<12} {n}")
+        asm = [r for r in res if r["verdict"] in ("ASM-WHOLE", "ASM-PARTIAL")]
+        partial = [r for r in asm if r["verdict"] == "ASM-PARTIAL"]
+        print(f"\n{len(asm)} functions have canonical-asm regions -> auto-routed (no pure-C waste)")
+        print(f"  {len(partial)} PARTIAL (pure C + inline-asm region), {len(asm) - len(partial)} WHOLE")
+        for r in sorted(asm, key=lambda r: -r["asm_insns"])[:8]:
+            print(f"    {r['verdict']:<12} {r['func']:<26} {r['asm_insns']}/{r['total']} asm  ({'; '.join(r['reasons'])})")
         return 0
 
     if a.cmd == "retire-redundant":
