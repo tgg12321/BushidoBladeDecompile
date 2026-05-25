@@ -60,8 +60,14 @@ def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
     if stem in cfg.EXPAND_LH_FILES:
         maspsx_flags += " --expand-lh"
 
+    # src_override: a modified copy of the .c (e.g. tier-3 inline-asm stripped)
+    # for the cheat-invisible sandbox. -Isrc is added so the override's includes
+    # resolve as if it were in src/ (cpp normally searches the source file's dir).
+    src_override = (cheat_overrides or {}).get("src_override")
+    src_file = src_override or f"src/{stem}.c"
+    cpp_extra = " -Isrc" if src_override else ""
     stages = [
-        f"{cfg.CPP} {cfg.CPP_FLAGS} {cfg.CPP_DEFS} src/{stem}.c",
+        f"{cfg.CPP} {cfg.CPP_FLAGS}{cpp_extra} {cfg.CPP_DEFS} {src_file}",
         f"{cfg.CC1} {cc_flags}",
         cfg.PROLOGUE_FIX,
         f"{cfg.MASPSX} {maspsx_flags}",
@@ -71,7 +77,7 @@ def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
     if stem in cfg.RODATA_ALIGN2_FILES:
         stages.append(r'sed "s/\.align\t3/.align\t2/"')
     regfix1, regfix2, asmfix = cfg.REGFIX, cfg.REGFIX_STAGE2, cfg.ASMFIX
-    if cheat_overrides:
+    if cheat_overrides and cheat_overrides.get("regfix_path"):
         regfix1 = f"REGFIX_CONFIG={cheat_overrides['regfix_path']} python3 tools/regfix.py"
         regfix2 = f"REGFIX_CONFIG={cheat_overrides['regfix2_path']} python3 tools/regfix.py"
         asmfix = f"ASMFIX_CONFIG={cheat_overrides['asmfix_path']} python3 tools/asmfix.py"

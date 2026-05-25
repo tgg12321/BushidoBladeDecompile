@@ -166,7 +166,8 @@ def classify_full(func: str) -> dict:
         return quick  # definitive opcode or no-target — distance irrelevant
     from . import sandbox  # local import: keeps the opcode path build-free
     try:
-        distance = sandbox.sandbox_score(func, disable="all")["score"]
+        # true pure-C distance: regfix/asmfix off AND tier-3 inline-asm stripped
+        distance = sandbox.sandbox_score(func, disable="all", strip_tier3=True)["score"]
     except (KeyError, FileNotFoundError, RuntimeError) as e:
         quick["reason"] += f" (distance unavailable: {e})"
         return quick
