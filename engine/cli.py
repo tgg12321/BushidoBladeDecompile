@@ -47,10 +47,11 @@ def main() -> int:
     sbp = sub.add_parser("sandbox", help="cheat-invisible score for a function")
     sbp.add_argument("func")
     sbp.add_argument("--disable", choices=["all", "lost-codegen", "none"], default="lost-codegen")
-    scp = sub.add_parser("scan-redundant", help="find functions whose rules are redundant (distance 0)")
+    scp = sub.add_parser("scan-redundant", help="find functions whose rules are redundant (exact byte-identity)")
     g = scp.add_mutually_exclusive_group(required=True)
     g.add_argument("--file", help="scan one src file stem")
     g.add_argument("--all", action="store_true", help="scan every file with rules")
+    scp.add_argument("--no-rebuild", action="store_true", help="reuse existing stripped .o (fast re-eval)")
     rtp = sub.add_parser("retire", help="retire a function's rules (delete + full-build SHA1 verify)")
     rtp.add_argument("func")
     rrp = sub.add_parser("retire-redundant", help="scan a file + auto-retire its distance-0 functions")
@@ -117,18 +118,22 @@ def main() -> int:
         return 0
 
     if a.cmd == "scan-redundant":
-        res = ORCH.scan_all() if a.all else {a.file: ORCH.scan_file(a.file)}
+        rebuild = not a.no_rebuild
+        res = (ORCH.scan_all(rebuild=rebuild) if a.all
+               else {a.file: ORCH.scan_file(a.file, rebuild=rebuild)})
         redundant = []
         for stem in sorted(res):
             per = res[stem]
-            n0 = sum(1 for d in per.values() if d == 0)
-            print(f"{stem}: {len(per)} keyed funcs, {n0} redundant (distance 0)")
-            for f, d in sorted(per.items(), key=lambda kv: (kv[1] is None, kv[1] or 0)):
-                mark = "  <- REDUNDANT" if d == 0 else ""
-                print(f"    {str(d):>4}  {f}{mark}")
-                if d == 0:
+            nr = sum(1 for v in per.values() if v["redundant"])
+            print(f"{stem}: {len(per)} keyed funcs, {nr} redundant")
+            for f, v in sorted(per.items(), key=lambda kv: (not kv[1]["redundant"], kv[1]["difficulty"])):
+                mark = "  <- REDUNDANT" if v["redundant"] else ""
+                print(f"    {v['difficulty']:>4}  {f}{mark}")
+                if v["redundant"]:
                     redundant.append(f)
         print(f"\nredundant total: {len(redundant)}")
+        if redundant:
+            print("redundant:", " ".join(redundant))
         return 0
 
     if a.cmd == "retire":
@@ -138,7 +143,7 @@ def main() -> int:
 
     if a.cmd == "retire-redundant":
         res = ORCH.scan_file(a.file)
-        redundant = [f for f, d in res.items() if d == 0]
+        redundant = [f for f, v in res.items() if v["redundant"]]
         print(f"{a.file}: {len(redundant)} redundant candidate(s): {redundant}")
         for f in redundant:
             r = INT.retire_function(f)

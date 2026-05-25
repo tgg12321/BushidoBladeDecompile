@@ -96,6 +96,32 @@ def _levenshtein(a: list[str], b: list[str]) -> int:
     return prev[n]
 
 
+def func_byte_signature(o_path: str, func: str) -> str:
+    """Exact concatenated instruction bytes (the objdump hex column) for a
+    function in a .o. Two pre-link .o's share identical relocations, so this is
+    an EXACT redundancy oracle: a rule that only retargets a local branch (which
+    the masked instruction score ignores) still changes these bytes."""
+    tbl = _o_func_table(o_path)
+    if func not in tbl:
+        raise KeyError(f"{func} not found in {o_path}")
+    off, size = tbl[func]
+    out = P.sh(f"{cfg.OBJDUMP} -d --start-address={off} "
+               f"--stop-address={off + size} {o_path}", capture_output=True, text=True).stdout
+    sig = []
+    for line in out.splitlines():
+        parts = line.split("\t")
+        if len(parts) >= 3 and parts[0].strip().endswith(":"):
+            sig.append(parts[1].replace(" ", ""))
+    return "".join(sig)
+
+
+def is_redundant(stripped_o: str, reference_o: str, func: str) -> bool:
+    """True iff `func`'s exact bytes are unchanged when its rules are removed —
+    the only sound test for 'this function's rules are dead'. Immune to the
+    masked-target false-zero that the instruction score has."""
+    return func_byte_signature(stripped_o, func) == func_byte_signature(reference_o, func)
+
+
 def score_func(cheat_disabled_o: str, reference_o: str, func: str) -> dict:
     """Edit-distance between the cheat-disabled function and the canonical
     (cheat-on) function. reference_o is build/src/<file>.o (byte-correct).

@@ -16,52 +16,59 @@ a later layer.
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 from . import cheats
-from . import fixtures as fx
-from . import integrate
 from . import pipeline as P
 from . import score
 
 
-def _keyed_by_file(idx: dict[str, str]) -> dict[str, list[str]]:
-    byfile: dict[str, list[str]] = {}
-    for func in cheats.all_keyed_functions():
-        stem = idx.get(func)
-        if stem:
-            byfile.setdefault(stem, []).append(func)
-    return byfile
+def scan_file(stem: str, workdir: str = "tmp/scan", rebuild: bool = True) -> dict:
+    """{func: {redundant, difficulty}} for the keyed functions DEFINED IN this
+    file's object (using its own symbol table — no ambiguous name->file index).
 
-
-def scan_file(stem: str, idx: dict | None = None, workdir: str = "tmp/scan") -> dict:
-    """{func: distance} for every keyed function in `stem` from one stripped build."""
-    idx = idx if idx is not None else fx._file_index()
-    funcs = sorted(f for f in cheats.all_keyed_functions() if idx.get(f) == stem)
+    From one all-rules-stripped build: `redundant` is EXACT byte-identity (the
+    sound dead-rule test); `difficulty` is the masked instruction distance for
+    ranking non-redundant functions (forced >=1 so a masked false-zero never
+    masquerades as redundant).
+    """
+    ref_o = f"build/src/{stem}.o"
+    if not Path(ref_o).exists():
+        return {}
+    defined = set(score._o_func_table(ref_o).keys())
+    funcs = sorted(defined & cheats.all_keyed_functions())
     if not funcs:
         return {}
-    ov = cheats.empty_overrides(f"{workdir}/{stem}/cfg")
     stripped_o = f"{workdir}/{stem}/{stem}.o"
-    P.build_c_object(stem, stripped_o, cheat_overrides=ov)
-    ref_o = f"build/src/{stem}.o"
+    if rebuild or not Path(stripped_o).exists():
+        ov = cheats.empty_overrides(f"{workdir}/{stem}/cfg")
+        P.build_c_object(stem, stripped_o, cheat_overrides=ov)
     out = {}
     for func in funcs:
         try:
-            out[func] = score.score_func(stripped_o, ref_o, func)["score"]
+            redundant = score.is_redundant(stripped_o, ref_o, func)
+            difficulty = 0 if redundant else max(
+                1, score.score_func(stripped_o, ref_o, func)["score"])
         except KeyError:
-            out[func] = None  # keyed symbol that isn't a function in this .o
+            continue
+        out[func] = {"redundant": redundant, "difficulty": difficulty}
     return out
 
 
-def scan_all() -> dict:
-    idx = fx._file_index()
-    byfile = _keyed_by_file(idx)
-    return {stem: scan_file(stem, idx=idx) for stem in sorted(byfile)}
+def scan_all(rebuild: bool = True) -> dict:
+    res = {}
+    for stem in P.c_stems():
+        per = scan_file(stem, rebuild=rebuild)
+        if per:
+            res[stem] = per
+    return res
 
 
 def redundant_in(scan_result: dict) -> list[str]:
-    """Functions whose rules are redundant (distance 0), flattened + sorted."""
+    """Functions whose rules are exact-byte redundant, flattened + sorted."""
     out = []
     for per_func in scan_result.values():
-        out += [f for f, d in per_func.items() if d == 0]
+        out += [f for f, v in per_func.items() if v["redundant"]]
     return sorted(out)
 
 
