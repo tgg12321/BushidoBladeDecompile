@@ -20,6 +20,8 @@ import sys
 from . import buildconfig as cfg
 from . import fixtures as F
 from . import oracle as O
+from . import integrate as INT
+from . import orchestrator as ORCH
 from . import pipeline as P
 from . import sandbox as SB
 
@@ -44,7 +46,15 @@ def main() -> int:
     sub.add_parser("fixtures-verify", help="check golden fixtures against the build")
     sbp = sub.add_parser("sandbox", help="cheat-invisible score for a function")
     sbp.add_argument("func")
-    sbp.add_argument("--disable", choices=["all", "lost-codegen"], default="lost-codegen")
+    sbp.add_argument("--disable", choices=["all", "lost-codegen", "none"], default="lost-codegen")
+    scp = sub.add_parser("scan-redundant", help="find functions whose rules are redundant (distance 0)")
+    g = scp.add_mutually_exclusive_group(required=True)
+    g.add_argument("--file", help="scan one src file stem")
+    g.add_argument("--all", action="store_true", help="scan every file with rules")
+    rtp = sub.add_parser("retire", help="retire a function's rules (delete + full-build SHA1 verify)")
+    rtp.add_argument("func")
+    rrp = sub.add_parser("retire-redundant", help="scan a file + auto-retire its distance-0 functions")
+    rrp.add_argument("--file", required=True)
 
     a = ap.parse_args()
 
@@ -104,6 +114,35 @@ def main() -> int:
     if a.cmd == "sandbox":
         r = SB.sandbox_score(a.func, disable=a.disable)
         print(json.dumps(r, indent=2))
+        return 0
+
+    if a.cmd == "scan-redundant":
+        res = ORCH.scan_all() if a.all else {a.file: ORCH.scan_file(a.file)}
+        redundant = []
+        for stem in sorted(res):
+            per = res[stem]
+            n0 = sum(1 for d in per.values() if d == 0)
+            print(f"{stem}: {len(per)} keyed funcs, {n0} redundant (distance 0)")
+            for f, d in sorted(per.items(), key=lambda kv: (kv[1] is None, kv[1] or 0)):
+                mark = "  <- REDUNDANT" if d == 0 else ""
+                print(f"    {str(d):>4}  {f}{mark}")
+                if d == 0:
+                    redundant.append(f)
+        print(f"\nredundant total: {len(redundant)}")
+        return 0
+
+    if a.cmd == "retire":
+        r = INT.retire_function(a.func)
+        print(json.dumps(r, indent=2))
+        return 0 if r["ok"] else 1
+
+    if a.cmd == "retire-redundant":
+        res = ORCH.scan_file(a.file)
+        redundant = [f for f, d in res.items() if d == 0]
+        print(f"{a.file}: {len(redundant)} redundant candidate(s): {redundant}")
+        for f in redundant:
+            r = INT.retire_function(f)
+            print(f"  {'OK  ' if r['ok'] else 'FAIL'} {f}  dropped={r.get('total_dropped')}")
         return 0
 
     return 2

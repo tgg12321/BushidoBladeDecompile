@@ -62,6 +62,35 @@ def _filter_text(func: str, disable: str, cfg: str) -> tuple[str, int]:
     return "".join(out), dropped
 
 
+def all_keyed_functions() -> set[str]:
+    """Every symbol that keys at least one rule across the three configs."""
+    keyre = re.compile(r"^([A-Za-z_]\w*)\s*:")
+    funcs: set[str] = set()
+    for c in (REGFIX, REGFIX2, ASMFIX):
+        if Path(c).exists():
+            for ln in Path(c).read_text().splitlines():
+                m = keyre.match(ln)
+                if m:
+                    funcs.add(m.group(1))
+    return funcs
+
+
+def empty_overrides(sandbox_dir: str) -> dict:
+    """Override dict pointing every config at an EMPTY file. Building a file
+    this way disables ALL rules at once; since rules are function-scoped, each
+    function's bytes then equal what it would be with only its own rules removed
+    — so one build scores every function in the file for redundancy."""
+    sd = Path(sandbox_dir)
+    sd.mkdir(parents=True, exist_ok=True)
+    ov = {"func": "<all>", "disable": "file-all"}
+    for label, src in (("regfix_path", REGFIX), ("regfix2_path", REGFIX2),
+                       ("asmfix_path", ASMFIX)):
+        p = sd / Path(src).name
+        p.write_text("")
+        ov[label] = str(p)
+    return ov
+
+
 def make_overrides(func: str, disable: str, sandbox_dir: str) -> dict:
     """Write filtered copies of all three configs into sandbox_dir and return
     the cheat_overrides dict the pipeline consumes. `dropped_*` reports how many
