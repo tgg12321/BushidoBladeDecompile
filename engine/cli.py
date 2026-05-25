@@ -21,6 +21,7 @@ from . import buildconfig as cfg
 from . import fixtures as F
 from . import oracle as O
 from . import pipeline as P
+from . import sandbox as SB
 
 
 def main() -> int:
@@ -41,6 +42,9 @@ def main() -> int:
     fap = sub.add_parser("fixtures-add", help="record golden fixtures by function name")
     fap.add_argument("names", nargs="+")
     sub.add_parser("fixtures-verify", help="check golden fixtures against the build")
+    sbp = sub.add_parser("sandbox", help="cheat-invisible score for a function")
+    sbp.add_argument("func")
+    sbp.add_argument("--disable", choices=["all", "lost-codegen"], default="lost-codegen")
 
     a = ap.parse_args()
 
@@ -96,6 +100,11 @@ def main() -> int:
         ok = all(s == "OK" for _, s in res)
         print(f"fixtures: {sum(1 for _, s in res if s == 'OK')}/{len(res)} OK")
         return 0 if ok else 1
+
+    if a.cmd == "sandbox":
+        r = SB.sandbox_score(a.func, disable=a.disable)
+        print(json.dumps(r, indent=2))
+        return 0
 
     return 2
 

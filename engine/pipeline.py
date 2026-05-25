@@ -46,11 +46,10 @@ def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
     scoring sandbox measures the honest, cheat-free codegen distance. Not yet
     implemented — Phase 0 only needs the faithful, cheats-on pipeline.
     """
-    if cheat_overrides:
-        raise NotImplementedError(
-            "cheat_overrides is a Phase 1 feature (cheat-invisible scoring sandbox)"
-        )
-
+    # cheat_overrides: dict from cheats.make_overrides with filtered-config paths
+    # (regfix/regfix2/asmfix with a function's cheat rules dropped). None -> the
+    # faithful, cheats-on pipeline. The sandbox compiles against these to measure
+    # honest, cheat-free codegen distance.
     cc_flags = cfg.CC_FLAGS_GP if stem in cfg.GP_FILES else cfg.CC_FLAGS
     if stem in cfg.NO_SR_FILES:
         cc_flags += " -fno-strength-reduce"
@@ -71,11 +70,16 @@ def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
         stages.append(cfg.FIX_LWL)
     if stem in cfg.RODATA_ALIGN2_FILES:
         stages.append(r'sed "s/\.align\t3/.align\t2/"')
+    regfix1, regfix2, asmfix = cfg.REGFIX, cfg.REGFIX_STAGE2, cfg.ASMFIX
+    if cheat_overrides:
+        regfix1 = f"REGFIX_CONFIG={cheat_overrides['regfix_path']} python3 tools/regfix.py"
+        regfix2 = f"REGFIX_CONFIG={cheat_overrides['regfix2_path']} python3 tools/regfix.py"
+        asmfix = f"ASMFIX_CONFIG={cheat_overrides['asmfix_path']} python3 tools/asmfix.py"
     stages += [
         cfg.MULTU_PAD,
-        cfg.REGFIX,
-        cfg.REGFIX_STAGE2,
-        cfg.ASMFIX,
+        regfix1,
+        regfix2,
+        asmfix,
         f"{cfg.AS} {cfg.AS_FLAGS} -o {out_o}",
     ]
     # NO pipefail, deliberately. The Makefile checks only the final stage's

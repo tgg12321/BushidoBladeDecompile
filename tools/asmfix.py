@@ -3,13 +3,17 @@
 
 from __future__ import annotations
 
+import os
 import re
 import sys
 from pathlib import Path
 
 
-CONFIG_PATH = Path(__file__).resolve().parent.parent / "asmfix.txt"
-REPO_ROOT = CONFIG_PATH.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent
+# ASMFIX_CONFIG env override mirrors regfix.py's REGFIX_CONFIG, so the engine's
+# cheat-invisible sandbox can point asmfix at a filtered config without mutating
+# the canonical asmfix.txt. Unset -> the canonical file (identical behavior).
+CONFIG_PATH = Path(os.environ.get("ASMFIX_CONFIG", REPO_ROOT / "asmfix.txt"))
 
 
 def unescape_config_text(text: str) -> str:
