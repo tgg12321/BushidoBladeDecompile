@@ -26,6 +26,13 @@ from . import buildconfig as cfg
 
 ASM_DIR = "asm/funcs"
 
+# Distance tiers for STRUCTURAL (non-opcode) hand-asm detection. The masked
+# cheat-invisible distance = how far GCC's natural pure-C output sits from the
+# target. Genuinely-C functions sit close (regfix does minor reg-alloc fix-ups);
+# hand-asm sits far (GCC would never emit that shape). Calibration knobs.
+SUSPECT_DISTANCE = 50       # > this, gate=C: structural-asm SUSPECT (bounded attempt then PARK)
+NEAR_CERTAIN_DISTANCE = 500  # > this: GCC-implausible, near-certain hand-asm (auto-escalate)
+
 # Unambiguous cop2/GTE mnemonics. 'break' is EXCLUDED (GCC emits it for div-by-zero
 # / overflow traps — not an asm signal).
 _GTE = re.compile(
@@ -112,21 +119,58 @@ def _regions(indices: list[int]) -> list[tuple[int, int]]:
     return spans
 
 
-def classify(func: str) -> dict:
+def classify(func: str, distance: int | None = None) -> dict:
+    """C-vs-asm verdict. Definitive opcode signals win outright. If there's no
+    opcode signal, the optional `distance` (masked cheat-invisible pure-C
+    distance) applies the STRUCTURAL tier: GCC-implausible distance => hand-asm
+    suspect, so an agent never grinds it blindly. distance=None skips the tier
+    (fast opcode-only)."""
     res = definitive_insns(func)
     if res is None:
         return {"func": func, "verdict": "NO-TARGET", "reason": f"no {_func_path(func)}"}
     hits, total = res
-    if not hits:
-        return {"func": func, "verdict": "C", "asm_insns": 0, "total": total,
-                "reason": "no definitive asm signal — pure-C target"}
-    spans = _regions([i for i, _, _ in hits])
-    frac = len(hits) / total if total else 0
-    verdict = "ASM-WHOLE" if frac >= 0.8 else "ASM-PARTIAL"
-    reasons = sorted({r for _, _, r in hits})
-    return {"func": func, "verdict": verdict, "asm_insns": len(hits), "total": total,
-            "regions": spans, "reasons": reasons,
-            "reason": f"{len(hits)}/{total} insns canonical-asm ({'; '.join(reasons)})"}
+    if hits:
+        spans = _regions([i for i, _, _ in hits])
+        frac = len(hits) / total if total else 0
+        verdict = "ASM-WHOLE" if frac >= 0.8 else "ASM-PARTIAL"
+        reasons = sorted({r for _, _, r in hits})
+        return {"func": func, "verdict": verdict, "asm_insns": len(hits), "total": total,
+                "regions": spans, "reasons": reasons,
+                "reason": f"{len(hits)}/{total} insns canonical-asm ({'; '.join(reasons)})"}
+    # no definitive opcode signal -> apply the structural distance tier
+    out = {"func": func, "verdict": "C", "asm_insns": 0, "total": total}
+    if distance is None:
+        out["reason"] = "no definitive asm signal (structural distance not checked)"
+        return out
+    out["distance"] = distance
+    if distance > NEAR_CERTAIN_DISTANCE:
+        out["verdict"] = "ASM-STRUCTURAL"
+        out["reason"] = (f"no GTE signal, but pure-C distance {distance} > "
+                         f"{NEAR_CERTAIN_DISTANCE} — GCC-implausible, near-certain "
+                         f"hand-asm (auto-escalate, no pure-C grind)")
+    elif distance > SUSPECT_DISTANCE:
+        out["verdict"] = "ASM-SUSPECT"
+        out["reason"] = (f"pure-C distance {distance} > {SUSPECT_DISTANCE} — "
+                         f"structural-asm suspect (bounded attempt, then PARK)")
+    else:
+        out["reason"] = f"pure-C distance {distance} <= {SUSPECT_DISTANCE} — pure-C target"
+    return out
+
+
+def classify_full(func: str) -> dict:
+    """Complete verdict: opcode classification PLUS the structural distance tier.
+    Computes the masked cheat-invisible distance (one cheat-disabled build of the
+    function's file) when there's no definitive opcode signal."""
+    quick = classify(func, distance=None)
+    if quick["verdict"] != "C":
+        return quick  # definitive opcode or no-target — distance irrelevant
+    from . import sandbox  # local import: keeps the opcode path build-free
+    try:
+        distance = sandbox.sandbox_score(func, disable="all")["score"]
+    except (KeyError, FileNotFoundError, RuntimeError) as e:
+        quick["reason"] += f" (distance unavailable: {e})"
+        return quick
+    return classify(func, distance=distance)
 
 
 def scan_all() -> list[dict]:

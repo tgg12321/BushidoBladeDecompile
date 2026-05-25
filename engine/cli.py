@@ -63,6 +63,7 @@ def main() -> int:
     dgp.add_argument("--detail", action="store_true", help="show the per-instruction diff")
     cnp = sub.add_parser("canonical", help="C-vs-asm classification for a function (canonical-asm gate)")
     cnp.add_argument("func")
+    cnp.add_argument("--fast", action="store_true", help="opcode-only; skip the structural distance check (no build)")
     sub.add_parser("canonical-scan", help="classify every function as C / ASM-WHOLE / ASM-PARTIAL")
 
     a = ap.parse_args()
@@ -170,7 +171,8 @@ def main() -> int:
         return 0
 
     if a.cmd == "canonical":
-        print(json.dumps(CANON.classify(a.func), indent=2))
+        r = CANON.classify(a.func) if a.fast else CANON.classify_full(a.func)
+        print(json.dumps(r, indent=2))
         return 0
 
     if a.cmd == "canonical-scan":
