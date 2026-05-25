@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "original_exe": {
+    "path": "disc/SLUS_006.63",
+    "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+    "size": 606208
+  },
+  "expected_build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+  "git_commit": "1dd07f58b146a9256757ab9bf1bb6e3b89bc299e",
+  "toolchain": {
+    "cc1_sha1": "045c9543d39ab8109583b92137c7adde084f7a25",
+    "maspsx_rev": null,
+    "as_version": "GNU assembler (GNU Binutils for Ubuntu) 2.42",
+    "python": "Python 3.12.3"
+  },
+  "corpus": {
+    "src/code6cac.c": "ddc3fe11ad6ff8c36067d6601688e7c03d9e3cc3",
+    "src/code6cac_b.c": "c801b2145d77ab21d735a6494d94a44ef95fc607",
+    "src/code6cac_b2.c": "ce9275baa6616a86d938aafa99790f5c53b3721c",
+    "src/code6cac_c.c": "f8394a0a31fa67207329fd5da07e3ededf437181",
+    "src/code6cac_c0.c": "57206cfe0513559873a9d13811e7cf8b931ae5d1",
+    "src/code6cac_c2.c": "52ed4b980690391e10bbc8f5938e373dd6d250b9",
+    "src/code6cac_c_ab.c": "0b03fe07247f796e06b332be4df2d2b64b521d8a",
+    "src/code6cac_c_mid.c": "b45d9064aa5551d8bc6bf78cfa834a6cb8a0475e",
+    "src/config.c": "59aa8a51ec2fd5f883168a33e8a7512bf5be8580",
+    "src/display.c": "842c7b3a85ff0bac04ea4164f50d27587dc6c31a",
+    "src/gpu.c": "e678516cee2c173bf465b22fb5fb9ace8de9ca18",
+    "src/ings.c": "c30820bdaaec9e22d6a58b930b4441e24ec899e2",
+    "src/ings2.c": "9bfee0681ab5d79f829d19566ebfa44f81b648c5",
+    "src/main.c": "44c6da4c40cb8b36dd02e2df0e949c82cc200e4c",
+    "src/sound.c": "6943b9861e59f62cb631cfd5f648431941b76f65",
+    "src/system.c": "e1feec1773629d3db6ff10fd364617327931f836",
+    "src/text1a.c": "8f53bfdfec631736fdbece97357b5d53218d2d1f",
+    "src/text1a_b.c": "1ab83c81c84ed2c6634c5ca12421b5f9403ffef1",
+    "src/text1a_c.c": "a1888e85284b03a9dc5ae0a4442a644879973ba5",
+    "src/text1a_c2.c": "43ead8433c3084fb5c6cf535c1e64f84f079e3d6",
+    "src/text1b.c": "79f641ae6a075bb015784f14d094d34c3ac617f8",
+    "src/text1b_b.c": "c7f48c4aab2c79b1b9a196f0650d468424c30001"
+  },
+  "config_files": {
+    "regfix.txt": "08ed7ac1df53cd719fa2518f1b21f31d08b48bbb",
+    "regfix_stage2.txt": "5bc919141cef18c147b966fbb2e2a428a79acb5a",
+    "asmfix.txt": "4173b3bc59986e2675d191ddefa4486f253ca3db",
+    "sdata_syms.txt": "3bd6b4252f32590acb8580e71ec107c9a5544499",
+    "sdata_funcs.txt": "69276243763154bd746dd0d8dc1d8b62f7676bbf",
+    "sdata_exclude.txt": "baf9e8e3e99f803e6ed0685788351eeb6471d531",
+    "expand_lb_funcs.txt": "3e4c205282278d136b49d910beffca5402a6fad3",
+    "multu_funcs.txt": "a09dc8f80462b174cdfa69ed378e4da13921f936",
+    "multu_pad_funcs.txt": "15ddd08271e77fd60a5679658cb0bc23461db21e",
+    "expand_dest_funcs.txt": "2f2435bc0e2f7fbcc72a8c4b0f29b360940d7221",
+    "named_syms.txt": "64d32160ca6f3de604221eb69f6add68ae5d8ecb",
+    "undefined_funcs_auto.txt": "faba42cf9a3ff26d97d608dadebac645aa24a4dc",
+    "undefined_syms_auto.txt": "614fd65ff7ba1919676c5eb81f9cfd41f930a8d3",
+    "bb2.ld": "5e85be90cae18785af3b5a769ba57c640fd6d17e",
+    "tools/prologue_config.json": "b50b794485ac8629b595ccfe4344e9442f31d63e"
+  },
+  "golden_fixtures": [
+    {
+      "name": "ang_near_dif",
+      "file": "src/config.c",
+      "vram": "0x8003F6D8",
+      "size": 284,
+      "text_sha1": "56330915ee46335ba8fcedc25b3e0e6b5806c71b"
+    },
+    {
+      "name": "game_GetMode",
+      "file": "src/config.c",
+      "vram": "0x8003F1C8",
+      "size": 12,
+      "text_sha1": "8fd380de7634f1fc52f617b899e4f7b952531fb6"
+    },
+    {
+      "name": "game_GetPlayerCount",
+      "file": "src/config.c",
+      "vram": "0x8003F268",
+      "size": 12,
+      "text_sha1": "22debe3af7d4c7b3ed04c11abc5c06f9df1f05d6"
+    },
+    {
+      "name": "stage_GetCollision",
+      "file": "src/config.c",
+      "vram": "0x8003F54C",
+      "size": 28,
+      "text_sha1": "72298aee04fa7cd810d7b7ce1053047933e8f79d"
+    },
+    {
+      "name": "stage_SetLightPosDir",
+      "file": "src/config.c",
+      "vram": "0x8003F5A8",
+      "size": 36,
+      "text_sha1": "887565d4e0119cf7718e6140f3300d2b42c21256"
+    }
+  ]
+}
