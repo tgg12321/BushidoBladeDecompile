@@ -20,6 +20,7 @@ import sys
 from . import buildconfig as cfg
 from . import fixtures as F
 from . import oracle as O
+from . import diagnose as DIAG
 from . import integrate as INT
 from . import orchestrator as ORCH
 from . import pipeline as P
@@ -56,6 +57,9 @@ def main() -> int:
     rtp.add_argument("func")
     rrp = sub.add_parser("retire-redundant", help="scan a file + auto-retire its distance-0 functions")
     rrp.add_argument("--file", required=True)
+    dgp = sub.add_parser("diagnose", help="classify gap(s) vs immutable-plateau patterns (triage before permuting)")
+    dgp.add_argument("funcs", nargs="+")
+    dgp.add_argument("--detail", action="store_true", help="show the per-instruction diff")
 
     a = ap.parse_args()
 
@@ -140,6 +144,26 @@ def main() -> int:
         r = INT.retire_function(a.func)
         print(json.dumps(r, indent=2))
         return 0 if r["ok"] else 1
+
+    if a.cmd == "diagnose":
+        from collections import Counter
+        verdicts = Counter()
+        for f in a.funcs:
+            try:
+                d = DIAG.diagnose(f)
+            except (KeyError, FileNotFoundError) as e:
+                print(f"  SKIP {f}: {e}")
+                continue
+            verdicts[d["verdict"]] += 1
+            print(f"  {d['verdict']:<13} {f:<30} (d{d['ndiff']}) {d['reason']}")
+            if a.detail:
+                for tag, t, b in d["pairs"]:
+                    for x in t:
+                        print(f"        TGT {x}")
+                    for x in b:
+                        print(f"        BLD {x}")
+        print("\ntriage:", ", ".join(f"{v}={c}" for v, c in verdicts.most_common()))
+        return 0
 
     if a.cmd == "retire-redundant":
         res = ORCH.scan_file(a.file)

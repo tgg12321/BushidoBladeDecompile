@@ -54,7 +54,10 @@ def _section_size(o_path: str, section: str) -> int:
     return 0
 
 
-def normalized_insns(o_path: str, func: str) -> list[str]:
+def normalized_insns(o_path: str, func: str, mask: bool = True) -> list[str]:
+    """Normalized instruction strings for a function. mask=True masks
+    control-flow targets (cascade-immune, for scoring); mask=False keeps full
+    operands (for diff diagnosis)."""
     tbl = _o_func_table(o_path)
     if func not in tbl:
         raise KeyError(f"{func} not found in {o_path}")
@@ -70,7 +73,7 @@ def normalized_insns(o_path: str, func: str) -> list[str]:
         mn, ops = m.group(1), m.group(2).strip()
         ops = re.split(r"\s+<", ops)[0]      # drop "<sym+0x..>" annotation
         ops = ops.split("#")[0].strip()       # drop trailing comment
-        if _BRANCH.match(mn):
+        if mask and _BRANCH.match(mn):
             parts = ops.split(",")
             if parts:
                 parts[-1] = "@"               # mask control-flow target
