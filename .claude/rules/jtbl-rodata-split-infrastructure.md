@@ -27,8 +27,9 @@ rule-sets exist project-wide.
 
 ## Why they can't be retired to zero-asmfix (the structural proof)
 
-The jump table (`jtbl_800108CC`) lives at a rodata address (`0x800108CC`) in the
-**first** rodata block — `asm/data/800.rodata_pre.o(.rodata)` is `bb2.ld:25`.
+The jump table (`jtbl_800108CC`, `dlabel` in `asm/data/101C.rodata.s`) lives at
+rodata address `0x800108CC` in an **asm/data** rodata block — `101C.rodata_pre*.o(.rodata)`
+at `bb2.ld:29-31` (and `800.rodata_pre.o` at `bb2.ld:25` is earlier still).
 The function's own file (e.g. `code6cac_b2.c`) links its `.rodata` **far later**
 in the same output section (`bb2.ld:50`, after code6cac, the text1a* family,
 main, …). Rodata link order is listed explicitly in `bb2.ld` and is independent
@@ -80,8 +81,9 @@ of the target function; rely on the structural analysis above, not the sandbox.
 ## Confirmed case — replay_camera_rob_back_loose2 (code6cac_b2.c, 2026-05-26)
 
 Queue top, verdict C, distance 0, 24 asmfix rules (15 renames -> jtbl_800108CC +
-case labels, 8 jlabel conversions, 1 delete_between). jtbl at 0x800108CC =
-`800.rodata_pre.o` (bb2.ld:25); code6cac_b2.o(.rodata) = bb2.ld:50. Sandbox
+case labels, 8 jlabel conversions, 1 delete_between). jtbl_800108CC at 0x800108CC
+is a dlabel in `asm/data/101C.rodata.s` -> `101C.rodata_pre*.o` (bb2.ld:29-31);
+code6cac_b2.o(.rodata) = bb2.ld:50. Sandbox
 errored `KeyError: replay_camera_rob_back_loose2 not found` (sibling
 `func_8003D39C` reorder rule crashed regfix after tier-3 strip). Parked.
 
