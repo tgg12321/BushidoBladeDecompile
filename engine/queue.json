@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007F10C",
-      "file": "display",
-      "distance": 1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8007F12C",
       "file": "display",
       "distance": 1,
@@ -3853,6 +3845,15 @@
       "park_reason": "Canonical jump-table infrastructure, not a register/codegen cheat. The 24 asmfix rules (15 renames of GCC .L labels to external jtbl_800108CC + 8 jlabel conversions + 1 delete_between stripping GCC's emitted table) are structurally required: the switch's jump table jtbl_800108CC sits in the FIRST rodata block (asm/data 800.rodata_pre.o, bb2.ld:25, addr 0x800108CC), while code6cac_b2.o's own .rodata links far later (bb2.ld:50). A GCC in-object jump table can only land in code6cac_b2's late rodata, never at 0x108CC, so referencing the external jtbl symbol + deleting GCC's table is mandatory. Zero-asmfix Tier-4 would need relocating the jtbl into code6cac_b2.c AND reordering the whole global rodata layout (project-wide, needs user sign-off). This is the project standard for the 26 jtbl-rename functions whose tables splat carved into asm/data rodata. Separately, sandbox cannot score this file: file-wide tier-3 stripping shifts maspsx indices and crashes a sibling fn's index-based regfix reorder rule (KeyError in tools/regfix.py)."
     },
     {
+      "func": "func_8007F10C",
+      "file": "display",
+      "distance": 1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Canonical-asm (hand-written GTE wrapper), no pure-C form -> needs user canonical-asm sign-off. Body is mtc2 a0/a1/a2 -> nop -> avsz3 -> mfc2 v0; avsz3 (GTE avg-of-3-Z) + mtc2/mfc2 GTE reg moves have no C analog. target asm (asm/funcs/func_8007F10C.s) annotates every insn 'handwritten instruction' w/ glabel/endlabel. Engine misrouted to active w/ distance 1: the only stripped diff is the GTE load-delay nop; the register  pin is NOT load-bearing (cheat-stripped sandbox emits no spurious move, GCC returns in v0 naturally). Clean finished form = tier-1 file-scope __asm__(glabel) canonical-asm block, identical treatment to authorized siblings func_8007F87C/func_8007F5EC/motutil_GetWalkDir in inline_asm_canonical.txt (user-authorized 2026-05-13). Sibling func_8007F12C (avsz4) is the identical case -> authorize as a cluster."
+    },
+    {
       "func": "func_8001BAE4",
       "file": "code6cac",
       "distance": 1,
@@ -3873,15 +3874,15 @@
   ],
   "counts": {
     "total": 483,
-    "active": 454,
+    "active": 453,
     "by_status": {
-      "active": 454,
+      "active": 453,
       "authorize": 26,
-      "parked": 1,
+      "parked": 2,
       "done": 2
     },
     "by_verdict": {
-      "ASM-PARTIAL": 86,
+      "ASM-PARTIAL": 85,
       "C": 248,
       "ASM-SUSPECT": 120,
       "ASM-STRUCTURAL": 26
