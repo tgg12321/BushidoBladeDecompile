@@ -39,6 +39,39 @@ def is_lost_codegen(line: str) -> bool:
     return bool(_LCG_RE.match(line))
 
 
+# Jump-table rodata-split infrastructure: a `switch` whose jump table splat
+# carved into a separate asm/data rodata block (so it can't live in the C file's
+# own .rodata without a global rodata reorder). The asmfix rules wire the
+# function's table reference to the external `jtbl_<addr>` symbol and delete the
+# duplicate table GCC emits. These are canonical infrastructure, NOT register/
+# codegen cheats — see .claude/rules/jtbl-rodata-split-infrastructure.md.
+_JTBL_RULE_TYPES = {"rename", "replace_first", "delete_between"}
+_RULETYPE_RE = re.compile(r"^\S+\s*:\s*(\w+)")
+
+
+def is_jtbl_infra(func: str, regfix: str = REGFIX, regfix2: str = REGFIX2,
+                  asmfix: str = ASMFIX) -> bool:
+    """True iff `func`'s rules are EXCLUSIVELY jump-table-infrastructure asmfix
+    rules — every rule is rename/replace_first/delete_between, at least one
+    references a `jtbl_` symbol, and there are ZERO regfix/regfix_stage2 rules
+    (any regfix rule means a real register/codegen cheat is present). Such a
+    function cannot reach zero-rules Tier-4 without a project-wide rodata reorder,
+    so the queue routes it to `authorize` instead of handing it to a worker."""
+    if func_rule_lines(func, regfix) or func_rule_lines(func, regfix2):
+        return False
+    asm = func_rule_lines(func, asmfix)
+    if not asm:
+        return False
+    saw_jtbl = False
+    for _i, ln in asm:
+        m = _RULETYPE_RE.match(ln)
+        if not m or m.group(1) not in _JTBL_RULE_TYPES:
+            return False
+        if "jtbl_" in ln:
+            saw_jtbl = True
+    return saw_jtbl
+
+
 def func_rule_lines(func: str, cfg: str = REGFIX) -> list[tuple[int, str]]:
     """(0-based line index, line) for every rule keyed by `func` in `cfg`."""
     kr = _key_re(func)

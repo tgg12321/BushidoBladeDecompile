@@ -46,7 +46,21 @@ def sandbox_score(func: str, disable: str = "lost-codegen",
     reference_o = f"build/src/{stem}.o"
     if not Path(reference_o).exists():
         raise FileNotFoundError(f"{reference_o} missing — run `engine build` first")
-    res = score.score_func(disabled_o, reference_o, func)
+    try:
+        res = score.score_func(disabled_o, reference_o, func)
+        res["scorable"] = True
+    except KeyError as e:
+        # The function is ABSENT from the cheat-disabled object: the whole-file
+        # build got truncated — typically a SIBLING function's index-based regfix
+        # `reorder` rule crashed the pipeline after tier-3 stripping shifted maspsx
+        # indices (see .claude/rules/jtbl-rodata-split-infrastructure.md). Return a
+        # clean unscorable result instead of a traceback so callers (CLI, canonical,
+        # the headless worker) can fall back to structural analysis.
+        res = {"score": None, "scorable": False, "target_insns": None,
+               "build_insns": None,
+               "error": (f"score unavailable: {e}. Cheat-disabled build of {stem}.c "
+                         f"is missing {func} (pipeline likely truncated by a sibling "
+                         f"index-based reorder rule after tier-3 strip).")}
     res.update(func=func, file=stem, disable=disable, strip_tier3=strip_tier3,
                rules_dropped=ov["dropped"], tier3_stripped=tier3_stripped,
                disabled_o=disabled_o)

@@ -17,6 +17,8 @@ Routing (mirrors canonical._verdict's structural tiers):
   ASM-PARTIAL  opcode: canonical region + C        -> active, work the C part
   ASM-STRUCTURAL distance > NEAR_CERTAIN (500)     -> authorize (user canonical-asm sign-off)
   ASM-WHOLE    opcode: >=80% canonical             -> authorize
+  JTBL-INFRA   rules are all jump-table rodata-split infra (cheats.is_jtbl_infra)
+                                                   -> authorize (needs a global rodata reorder)
 
 Statuses: active (work it, top first) | authorize (needs user sign-off, not
 pure-C) | parked (blocked; skipped by `next`) | done (verified Tier-4). done /
@@ -41,7 +43,7 @@ from . import sandbox
 from . import score
 
 QUEUE_PATH = "engine/queue.json"
-_AUTHORIZE = {"ASM-WHOLE", "ASM-STRUCTURAL"}
+_AUTHORIZE = {"ASM-WHOLE", "ASM-STRUCTURAL", "JTBL-INFRA"}
 _STATUS_RANK = {"active": 0, "authorize": 1, "parked": 2, "done": 3}
 
 
@@ -116,8 +118,13 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             if func in prev:  # sticky done/parked
                 items.append({**prev[func], "file": stem, "distance": dist, "rules": rules})
                 continue
-            verdict = _route(verdicts.get(func, "C"), dist)
-            status = "authorize" if verdict in _AUTHORIZE else "active"
+            if cheats.is_jtbl_infra(func):
+                # canonical jump-table rodata-split infra — needs a global rodata
+                # reorder (user-authorized), not per-function pure-C work.
+                verdict, status = "JTBL-INFRA", "authorize"
+            else:
+                verdict = _route(verdicts.get(func, "C"), dist)
+                status = "authorize" if verdict in _AUTHORIZE else "active"
             items.append({"func": func, "file": stem, "distance": dist,
                           "verdict": verdict, "rules": rules, "status": status})
     items.sort(key=_sort_key)

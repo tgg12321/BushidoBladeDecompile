@@ -217,6 +217,28 @@ def test_cheats() -> None:
         _, drop_after = cheats._filter_text("funcA", "all", p)
         eq("filter: a freshly-injected funcA cheat is ALSO stripped", drop_after, 3)
 
+    # is_jtbl_infra: jump-table rodata-split infra (asmfix-only) vs real cheats
+    with tempfile.TemporaryDirectory() as td:
+        rf = Path(td) / "regfix.txt"
+        af = Path(td) / "asmfix.txt"
+        rf.write_text('funcR: subst "$2" "$3" @ 5\n')        # a real register cheat
+        af.write_text(
+            'funcJ: rename ".L28" "jtbl_800108CC"\n'          # jtbl infra (asmfix only)
+            'funcJ: replace_first "^.L80035644:$" "jlabel .L80035644"\n'
+            'funcJ: delete_between "^\\.section\\s+\\.rodata" "^\\.text$"\n'
+            'funcN: rename ".L10" ".L20"\n'                   # rename but NOT a jtbl symbol
+            'funcR: rename ".L5" "jtbl_80001234"\n'           # has jtbl asmfix BUT also a regfix
+        )
+        rfp, afp = str(rf), str(af)
+        check("jtbl-infra: asmfix-only jtbl rules -> True",
+              cheats.is_jtbl_infra("funcJ", regfix=rfp, regfix2=rfp, asmfix=afp) is True)
+        check("jtbl-infra: rename without a jtbl_ symbol -> False",
+              cheats.is_jtbl_infra("funcN", regfix=rfp, regfix2="/nonexistent", asmfix=afp) is False)
+        check("jtbl-infra: any regfix rule disqualifies -> False",
+              cheats.is_jtbl_infra("funcR", regfix=rfp, regfix2="/nonexistent", asmfix=afp) is False)
+        check("jtbl-infra: no rules -> False",
+              cheats.is_jtbl_infra("funcZ", regfix="/nonexistent", regfix2="/nonexistent", asmfix=afp) is False)
+
 
 # --------------------------------------------------------------------------
 # metrics — the capture layer's non-negotiable: silent + swallow-on-failure

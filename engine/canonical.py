@@ -179,11 +179,14 @@ def classify_full(func: str) -> dict:
     from . import sandbox  # local import: keeps the opcode path build-free
     try:
         # true pure-C distance: regfix/asmfix off AND tier-3 inline-asm stripped
-        distance = sandbox.sandbox_score(func, disable="all", strip_tier3=True)["score"]
+        r = sandbox.sandbox_score(func, disable="all", strip_tier3=True)
     except (KeyError, FileNotFoundError, RuntimeError) as e:
         quick["reason"] += f" (distance unavailable: {e})"
         return quick
-    return classify(func, distance=distance)
+    if r.get("score") is None:  # sandbox returned a clean unscorable result
+        quick["reason"] += f" (distance unavailable: {r.get('error', 'unscorable')})"
+        return quick
+    return classify(func, distance=r["score"])
 
 
 def scan_all() -> list[dict]:
