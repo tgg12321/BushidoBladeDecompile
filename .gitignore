@@ -148,3 +148,9 @@ asm/data/800.rodata.s
 
 # User-local emulator launcher shortcuts (machine-specific abs paths)
 *.lnk
+
+# Generated metrics dashboard (regenerable from Postgres via report_html.py).
+# The append-only sources of truth (metrics/events.jsonl, metrics/experiments.jsonl)
+# ARE committed; only the rendered HTML is ignored.
+metrics/report.html
+metrics/*.html

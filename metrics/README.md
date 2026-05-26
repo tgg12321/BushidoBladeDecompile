@@ -34,11 +34,14 @@ gating a run on metrics being recordable is worth that one upfront check.
 
 | File | Role |
 |---|---|
-| `metrics/events.jsonl` | committed, append-only event log (the source of truth) |
+| `metrics/events.jsonl` | committed, append-only event log (source of truth) |
+| `metrics/experiments.jsonl` | committed, append-only experiment records (authoritative cost/tokens) |
 | `engine/metrics.py` | the silent recorder the engine hot path calls |
 | `tools/metrics/schema.sql` | Postgres DDL (idempotent) |
-| `tools/metrics/sync.py` | offline loader: events.jsonl + transcripts → Postgres |
-| `tools/metrics/report.py` | canned queries (`--list` for sections) |
+| `tools/metrics/sync.py` | offline loader: events.jsonl + experiments.jsonl + transcripts → Postgres |
+| `tools/metrics/experiment.py` | controlled re-derivation experiment harness (model × effort, hard caps) |
+| `tools/metrics/report.py` | canned text queries (`--list` for sections) |
+| `tools/metrics/report_html.py` | self-contained HTML dashboard (no JS/CDN; `--theme`/`--days`/`--sections`) |
 | `tools/metrics/preflight.py` | PG-reachability gate (silent on success) |
 
 ## Usage
@@ -47,14 +50,28 @@ gating a run on metrics being recordable is worth that one upfront check.
 # start-of-run gate (Windows side; silent if healthy)
 python tools/metrics/preflight.py --status
 
-# refresh the database from the log + transcripts
+# refresh the database from the logs + transcripts
 python tools/metrics/sync.py
 
-# query
-python tools/metrics/report.py                 # all sections
-python tools/metrics/report.py cost_per_match   # one section
+# run a controlled experiment (re-derive a matched pure-C function under caps)
+python tools/metrics/experiment.py --func game_SetPlayerCount \
+    --model opus --effort high --budget-usd 8 --minutes 20
+#   --assume-clean  skip the baseline rebuild   --no-verify  skip the full-SHA1 gate
+
+# the dashboard (the thing you actually look at)
+python tools/metrics/report_html.py --open      # -> metrics/report.html
+python tools/metrics/report_html.py --days 7 --theme light --title "Last week"
+
+# ad-hoc text queries
+python tools/metrics/report.py                  # all sections
 python tools/metrics/report.py --sql "SELECT ..."
 ```
+
+`experiment.py` is the end-to-end harness: preflight → snapshot/blank (LF-safe) →
+launch a headless `claude` agent (hard `--max-budget-usd` + wall-clock timeout) →
+sandbox gate → full-SHA1 gate → ALWAYS restore source → record authoritative
+cost/tokens to experiments.jsonl → sync. Its own engine calls run with
+`BB2_METRICS_DISABLE=1`, so only the agent's commands reach the event log.
 
 `sync.py` is fully idempotent — run it as often as you like; it rebuilds the
 derived tables from the durable sources each time.

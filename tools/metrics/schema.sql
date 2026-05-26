@@ -127,6 +127,42 @@ CREATE TABLE IF NOT EXISTS attempt_logs (
 );
 
 -- ---------------------------------------------------------------------------
+-- experiments — authoritative per-run record written by tools/metrics/experiment.py
+-- (source-ingest table, NOT truncated by sync). Cost/tokens come straight from
+-- the headless CLI result JSON (total_cost_usd), so they are exact, not the
+-- inflated transcript-sum estimate used for organic agent_runs.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS experiments (
+    experiment_id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ts              TIMESTAMPTZ,
+    func            TEXT,
+    file            TEXT,
+    model           TEXT,
+    effort          TEXT,
+    session_id      TEXT,                 -- the agent's session (authoritative attribution)
+    budget_usd      NUMERIC,
+    minutes         INTEGER,
+    matched         BOOLEAN,
+    start_score     INTEGER,
+    final_score     INTEGER,
+    full_sha1_match BOOLEAN,               -- honest end-to-end gate (NULL if not verified)
+    total_cost_usd  NUMERIC,               -- AUTHORITATIVE (CLI result JSON)
+    input_tokens    BIGINT,
+    output_tokens   BIGINT,
+    cache_read_tokens     BIGINT,
+    cache_creation_tokens BIGINT,
+    num_turns       INTEGER,
+    duration_s      NUMERIC,               -- CLI-reported active duration
+    wall_s          NUMERIC,               -- harness-measured wall clock
+    terminal_reason TEXT,                  -- completed | timeout-killed | budget | error
+    git_commit      TEXT,
+    notes           TEXT,
+    run_key         TEXT UNIQUE            -- dedup for idempotent re-ingest
+);
+CREATE INDEX IF NOT EXISTS idx_exp_model  ON experiments (model, effort);
+CREATE INDEX IF NOT EXISTS idx_exp_func   ON experiments (func);
+
+-- ---------------------------------------------------------------------------
 -- sync_meta — bookkeeping for the offline sync
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS sync_meta (

@@ -23,3 +23,7 @@ documented. See `CLAUDE.md` (Hooks) and the `debugging-discipline` memory rule.
 - **Permanent guard:** `tools/hooks/tooling_error_guard.py` (uncommitted change)
 - **Verified by:** added ^\S+:\d+[:-] display marker + 2 regression tests; test suite 38/38 pass
 - **Occurrences this incident:** 1
+
+## 2026-05-26 02:16:59 -- DEFERRED (crlf/crlf-build-file)  [known-unfixed]
+- **Triggering command:** `Edit C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\src\config.c`
+- **Why unfixable now:** CRLF written by the Windows Edit tool into src/config.c. Already normalized to LF via sed (0 CR bytes confirmed) and verified to compile cleanly (sandbox game_SetPlayerCount --disable all => score 0, build_insns 20). The permanent guard already exists and fired correctly here: .gitattributes line 12 (*.c text eol=lf) + the tooling_error_guard.py hook. The residual root cause is the harness Edit tool converting LF->CRLF on in-place writes, which is outside this repo. No new repo-level guard can improve on what already caught this, and the active task constraints forbid editing files other than the target function, so no .gitattributes/hook change is made this turn.

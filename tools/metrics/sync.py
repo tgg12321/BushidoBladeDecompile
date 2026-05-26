@@ -42,6 +42,7 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_EVENTS = ROOT / "metrics" / "events.jsonl"
+DEFAULT_EXPERIMENTS = ROOT / "metrics" / "experiments.jsonl"
 DEFAULT_DSN = "host=127.0.0.1 port=5432 user=postgres dbname=bb2_metrics"
 
 # Claude Code mangles the project cwd into its transcript dir name by replacing
@@ -135,6 +136,56 @@ def ingest_events(conn, events_path):
             n_new += cur.rowcount
     conn.commit()
     print(f"  engine_events: {n_seen} in log, {n_new} new")
+
+
+# ---------------------------------------------------------------------------
+# experiments ingest (authoritative per-run records from experiment.py)
+# ---------------------------------------------------------------------------
+_EXP_COLS = ("ts", "func", "file", "model", "effort", "session_id", "budget_usd",
+             "minutes", "matched", "start_score", "final_score", "full_sha1_match",
+             "total_cost_usd", "input_tokens", "output_tokens", "cache_read_tokens",
+             "cache_creation_tokens", "num_turns", "duration_s", "wall_s",
+             "terminal_reason", "git_commit", "notes")
+
+
+def ingest_experiments(conn, path):
+    if not path.exists():
+        print(f"  experiments: none ({path.name} absent)")
+        return
+    n_seen = n_new = 0
+    with conn.cursor() as cur, path.open(encoding="utf-8") as fh:
+        for raw in fh:
+            raw = raw.strip()
+            if not raw:
+                continue
+            n_seen += 1
+            run_key = hashlib.sha1(raw.encode("utf-8")).hexdigest()
+            try:
+                e = json.loads(raw)
+            except Exception:
+                continue
+            vals = [_ts(e["ts"]) if "ts" in e else None]
+            vals += [e.get(c) for c in _EXP_COLS[1:]]
+            cur.execute(f"""
+                INSERT INTO experiments ({','.join(_EXP_COLS)}, run_key)
+                VALUES ({','.join(['%s'] * len(_EXP_COLS))}, %s)
+                ON CONFLICT (run_key) DO NOTHING
+            """, (*vals, run_key))
+            n_new += cur.rowcount
+    conn.commit()
+    print(f"  experiments: {n_seen} in log, {n_new} new")
+
+
+def correct_run_costs(conn):
+    """Override agent_runs.est_cost_usd with the authoritative experiment cost
+    where a run is a measured experiment (run_id == experiment session_id)."""
+    with conn.cursor() as cur:
+        cur.execute("""
+            UPDATE agent_runs r SET est_cost_usd = e.total_cost_usd
+            FROM experiments e
+            WHERE e.session_id = r.run_id AND e.total_cost_usd IS NOT NULL
+        """)
+    conn.commit()
 
 
 # ---------------------------------------------------------------------------
@@ -460,6 +511,7 @@ def main():
     ap = argparse.ArgumentParser(description="sync decomp metrics into Postgres")
     ap.add_argument("--dsn", default=DEFAULT_DSN)
     ap.add_argument("--events", default=str(DEFAULT_EVENTS))
+    ap.add_argument("--experiments", default=str(DEFAULT_EXPERIMENTS))
     ap.add_argument("--transcripts", default=str(DEFAULT_TRANSCRIPTS))
     a = ap.parse_args()
 
@@ -476,8 +528,10 @@ def main():
                         "agent_runs, techniques RESTART IDENTITY CASCADE")
         conn.commit()
         ingest_events(conn, Path(a.events))
+        ingest_experiments(conn, Path(a.experiments))
         runs = parse_all_transcripts(Path(a.transcripts))
         upsert_runs(conn, runs)
+        correct_run_costs(conn)
         build_attempts(conn, runs)
         sync_techniques(conn)
         with conn.cursor() as cur:
