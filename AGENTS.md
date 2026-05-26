@@ -94,6 +94,22 @@ From Git Bash on Windows host:
 wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && source .venv/bin/activate && make'
 ```
 
+### PowerShell-first scripting (avoid the shell-nesting footgun)
+
+Invoking WSL through a Windows-side agent nests multiple shells (Git Bash → wsl → bash, or
+PowerShell → wsl → bash); every `$`, quote, and backslash is parsed at each layer, which silently
+breaks inline `awk`/`sed`, shell-function definitions, heredocs, and hand-escaped quotes. Standards:
+
+- **Run engine commands through `tools/eng.ps1`** (PowerShell): `& tools/eng.ps1 queue next`. Zero
+  quoting; it builds the `wsl bash -c '…'` string internally.
+- **Anything beyond one simple command** (awk/sed, multi-statement pipelines, heredocs) → **write a
+  `.py`/`.sh`/`.ps1` file and run that file**, not an inline `-c` string. A Python script is more
+  robust and readable than inline `awk`.
+- **Multi-line commit messages → `git commit -F <file>`**, not a `<<EOF` heredoc.
+
+Claude Code enforces this via `tools/hooks/shell_footgun_guard.py` (a PreToolUse block); other
+agents should follow it by convention.
+
 ### Build pipeline (per C file)
 
 ```

@@ -15,10 +15,27 @@ By construction, cheating can't help and asm functions aren't pure-C-grinded.
 
 Read [memory/project/greenfield-engine-v2.md](memory) for the full design + current state.
 
-### Run everything in WSL, from the repo root
+### Run engine commands via the PowerShell wrapper (`tools/eng.ps1`)
+The engine runs under WSL (Linux toolchain), but **do not hand-author
+`wsl bash -c 'cd … && source .venv && python3 -m engine.cli …'`** — through the harness that
+nests three shells (Git Bash → wsl → bash) and the quoting silently eats awk/sed/heredocs. Use
+the **PowerShell tool + `tools/eng.ps1`** (zero quoting; also stamps `CLAUDE_SESSION_ID` so the
+run is attributed in metrics):
 ```
-wsl bash -c 'cd "<root>" && source .venv/bin/activate && python3 -m engine.cli <cmd>'
+& tools/eng.ps1 <cmd>     # e.g. queue next | canonical func_X | sandbox func_X --disable all | verify-oracle --rebuild
 ```
+`tools/hooks/shell_footgun_guard.py` (PreToolUse) BLOCKS the hand-rolled `python3 -m engine.cli`
+form and the footguns below.
+
+### PowerShell-first scripting (enforced by `shell_footgun_guard.py`)
+- **Engine/build commands → PowerShell tool + `tools/eng.ps1`.** No `cd`, no `source`, no quoting.
+- **Anything beyond ONE simple command** (awk/sed, multi-statement pipelines, shell functions,
+  heredocs) → **write a `.py`/`.sh`/`.ps1` file to `tmp/` and run that file.** Inline complex shell
+  through `wsl bash -c '…'` is the #1 time-waster here; a Python script is more robust *and* readable
+  (e.g. `tmp/norm_diff.py` — a disassembly normalizer — worked first try where inline `awk` failed thrice).
+- **Multi-line commit messages → `git commit -F tmp/msg.txt`** (Write the file, then commit). Never the
+  `<<'EOF'` heredoc or the `'"'"'` quote-escape dance.
+- Plain one-command WSL calls (git / grep / make) are fine via the Bash tool, or `bash tools/wsl.sh '<cmd>'`.
 
 ### CLI
 | Command | Purpose |

@@ -24,6 +24,15 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/cc1psx_guard.py\""
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/shell_footgun_guard.py\""
+          }
+        ]
       }
     ],
     "PostToolUse": [
