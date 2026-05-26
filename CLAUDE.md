@@ -90,6 +90,28 @@ trace). `python3 tools/headless_audit.py --all` is a one-line-per-run dashboard 
 runner folds these signals straight into each `headless_runs.jsonl` record, so the run log is
 self-auditing — you only open the transcript via this tool if a number looks off.
 
+### Orchestrator post-run protocol (autonomous operation)
+When driving workers (interactively or headless), the **orchestrator** (the main agent) runs this
+after **each** worker finishes — it is what lets the loop run unattended for long stretches:
+
+1. **Review packet** — `python3 tools/headless_review.py --latest` (or `--func`/`--session`).
+   One compact view: outcome (TIER4-DONE / PARKED / STUCK / ORACLE-BREAK / ERROR), the audit signals
+   (tooling errors, footgun blocks, retried commands, engine-loop trace), the worker's commit
+   (`--stat`), the park reason, and a **mechanical park-confirmation** + an `ACCEPT`/`ESCALATE`
+   recommendation. Exit code: `0`=ACCEPT, `10`=ESCALATE.
+2. **Confirm findings** — on PARK/STUCK, don't trust the worker's rationale. `headless_review`
+   auto-confirms *known* park categories (e.g. jtbl-infra: verifies the rules really are
+   jump-table asmfix, references `jtbl_*`, zero regfix). A novel/unconfirmable park ⇒ ESCALATE.
+3. **Apply tooling/workflow fixes** — if the audit shows recurring friction an agent shouldn't have
+   to fight (a too-tight guard, a crashing tool, a function class that should be auto-routed), fix
+   it and commit so future workers don't hit it. (This pass produced the 500-char guard bump, the
+   sandbox no-crash fix, and the jtbl→`authorize` auto-route.)
+4. **Continue or escalate** — per the **escalation boundary (maximal autonomy)**: keep going
+   autonomously for clean completions and auto-confirmed parks; **STOP and surface to the user only
+   for**: an oracle break, a worker error, a stuck/no-progress run, a park you can't mechanically
+   confirm, an architecture/policy decision (e.g. the global rodata reorder behind jtbl-infra), or
+   the budget cap. Everything else is logged (`headless_runs.jsonl`) for later review, not blocked on.
+
 ## The queue IS the worklist (`engine queue`)
 All outstanding work lives in ONE ordered list — `engine/queue.json` — covering every function
 still carrying a cheat (a regfix/asmfix rule OR a load-bearing tier-3 pin/inline-asm). It is

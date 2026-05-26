@@ -20,10 +20,16 @@ func: replace_first "^\.L80035644:$" "jlabel .L80035644"   # mark jtbl targets
 func: delete_between "^\.section\s+\.rodata" "^\.text$"     # strip GCC's emitted table
 ```
 
-These are **not** register/codegen cheats. They are the project's standard
-mechanism for a `switch` whose jump table splat carved into the **`asm/data`
-rodata split** rather than letting the C file own it. ~26 such jtbl-rename
-rule-sets exist project-wide.
+These are **not** register/codegen cheats. They are the mechanism for a `switch`
+whose jump table splat carved into the **`asm/data` rodata split** rather than
+letting the C file own it.
+
+**Scope (measured 2026-05-26):** exactly **ONE** function currently uses this —
+`replay_camera_rob_back_loose2`. Across all 165 asmfix-keyed functions, only it
+carries `delete_between`-rodata / `jlabel` / `jtbl_` rules. (An earlier draft of
+this doc estimated "~26 project-wide"; that was wrong — verify with
+`tmp/jtbl_diag2.py` or `grep -c jtbl_ asmfix.txt`.) The mechanism is general and
+could recur, so the classifier below handles the *pattern*, not a population of 26.
 
 ## Why they can't be retired to zero-asmfix (the structural proof)
 
@@ -55,17 +61,20 @@ address — displacing every other file's rodata. Project-wide architectural
 change; needs user sign-off. Do **not** attempt it inside a single-function
 Tier-4 pass.
 
-## Action
+## Action — now automatic
 
-`queue park <func> --reason "jtbl in asm/data rodata split; rodata link order
-(bb2.ld) makes a GCC in-object table land at the wrong address; pure-C needs a
-global rodata reorder — see [[jtbl-rodata-split-infrastructure]]"`. Then stop.
+**IMPLEMENTED (2026-05-26):** `cheats.is_jtbl_infra(func)` recognizes this pattern
+(asmfix-only `rename`/`replace_first`/`delete_between`, references a `jtbl_`
+symbol, zero regfix), and `queue generate` routes such functions to the
+`authorize` bucket (verdict `JTBL-INFRA`) instead of `active` — so they no longer
+get handed to a worker. `headless_review.py` auto-confirms a park in this category.
+You don't need to manually `queue park` a new one; a `queue regen` routes it.
 
-The engine's `disable all` counts these `rename`/`delete_between` rules as
-cheats (no infrastructure exemption in `engine/cheats.py`), so they keep
-surfacing in the queue. A systematic fix would be to teach the queue/cheat
-classifier to treat jtbl-rename + delete_between asmfix rules as canonical
-(like canonical-asm), so the ~26 affected functions stop blocking pure-C work.
+The remaining pure-C path (relocate the table out of `asm/data/*.rodata.s` into the
+C file **and** reorder the global rodata layout so the C file's `.rodata` lands at
+the table's address) is a project-wide architecture change needing user sign-off.
+Since it currently affects **one** function, it is **low urgency** — not a systemic
+blocker.
 
 ## Bonus gotcha: the sandbox can't even score these files
 
