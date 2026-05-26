@@ -4188,7 +4188,6 @@ func_8003D39C: reorder 1,2,0 @ 0-2
 func_8003D39C: reorder 6,14,7,8,9,10,11,13,12 @ 6-14
 
 # func_8006EC0C: u16-typed D_800A3578 emits lhu; target uses lbu for entry byte read
-func_8006EC0C: subst "lhu\s+\$3,%gp_rel\(D_800A3578\)" "lbu	$3,%gp_rel(D_800A3578)" @ 1
 
 func_8007B3A8: $4 <-> $5 @ 14-37
 func_8007B3A8: subst "lh\s+\$3,D_8009BE78" "lh	$5,4($16)" @ 13

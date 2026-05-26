@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8006EC0C",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "gnd_get_fog",
       "file": "text1b",
       "distance": 1,
@@ -3860,19 +3852,28 @@
       "rules": 1,
       "status": "done",
       "completed_at": "2026-05-26T16:35:08"
+    },
+    {
+      "func": "func_8006EC0C",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "done",
+      "completed_at": "2026-05-26T17:24:45"
     }
   ],
   "counts": {
     "total": 481,
-    "active": 443,
+    "active": 442,
     "by_status": {
-      "active": 443,
+      "active": 442,
       "authorize": 30,
       "parked": 2,
-      "done": 6
+      "done": 7
     },
     "by_verdict": {
-      "C": 243,
+      "C": 242,
       "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 120,
       "ASM-WHOLE": 4,

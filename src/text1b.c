@@ -16267,7 +16267,7 @@ extern s16 D_800A3570;
 extern u16 D_800A3578;
 extern s16 D_800A3584;
 void func_8006EC0C(void) {
-    s32 state = D_800A3578;  /* lhu gp-rel; regfix converts to lbu at idx 1 */
+    s32 state = *(u8 *)&D_800A3578;  /* entry dispatch reads low byte only -> lbu */
 
     if (state == 2) goto fade_out;
     if (state < 3) {
