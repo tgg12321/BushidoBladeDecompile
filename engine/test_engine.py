@@ -65,8 +65,9 @@ def test_canonical() -> None:
         "80018500 <foo>:",                                     # header — ignored
         "",                                                    # blank — ignored
     ]
-    hits, total = canonical._detect(lines)
+    hits, total, structural = canonical._detect(lines)
     eq("detect: total instruction count", total, 5)
+    eq("detect: structural (nop/jr) count", structural, 0)
     reasons = {mn for _, mn, _ in hits}
     eq("detect: 4 definitive-asm hits", len(hits), 4)
     check("detect: c2 GTE-command detected (the regression)", "c2" in reasons)
@@ -80,6 +81,14 @@ def test_canonical() -> None:
        canonical._verdict("f", [(0, "c2", "x")], 1)["verdict"], "ASM-WHOLE")
     eq("verdict: sparse asm -> ASM-PARTIAL",
        canonical._verdict("f", [(0, "c2", "x")], 5)["verdict"], "ASM-PARTIAL")
+    # GTE leaf wrapper: 5 GTE ops + 2 nop + 1 jr = 8 total, 3 structural. frac
+    # 5/8=0.625 < 0.8, but every NON-structural insn is canonical -> ASM-WHOLE.
+    eq("verdict: pure GTE leaf (struct-excluded) -> ASM-WHOLE",
+       canonical._verdict("f", [(i, "c2", "x") for i in range(5)], 8, structural=3)["verdict"],
+       "ASM-WHOLE")
+    eq("verdict: GTE + 1 real C insn stays ASM-PARTIAL",
+       canonical._verdict("f", [(i, "c2", "x") for i in range(4)], 7, structural=2)["verdict"],
+       "ASM-PARTIAL")
     # _verdict: distance tiers (no opcode signal)
     eq("verdict: d0 -> C",
        canonical._verdict("f", [], 8, distance=0)["verdict"], "C")

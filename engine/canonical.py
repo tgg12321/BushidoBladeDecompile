@@ -76,15 +76,23 @@ def _func_table() -> dict:
     return _table_cache
 
 
-def _detect(dlines) -> tuple[list, int]:
-    """Scan objdump -d instruction lines -> (hits, total_insns). hits is a list
-    of (idx, mnemonic, reason) for definitive-asm instructions."""
-    hits, idx = [], 0
+_STRUCTURAL = {"nop", "jr"}  # pure padding/return — not "C work" (excluded from
+                             # the ASM-WHOLE denominator so a tiny GTE leaf wrapper
+                             # isn't dragged below the threshold by its nops + jr).
+
+
+def _detect(dlines) -> tuple[list, int, int]:
+    """Scan objdump -d instruction lines -> (hits, total_insns, structural). hits
+    is a list of (idx, mnemonic, reason) for definitive-asm instructions;
+    structural counts nop/jr (return + delay-slot padding)."""
+    hits, idx, structural = [], 0, 0
     for line in dlines:
         m = _DLINE.match(line)
         if not m:
             continue  # symbol header / blank
         mn, ops = m.group(1), m.group(2)
+        if mn in _STRUCTURAL:
+            structural += 1
         reason = None
         if mn == ".word":
             reason = "raw .word (undisassembled)"
@@ -97,7 +105,7 @@ def _detect(dlines) -> tuple[list, int]:
         if reason:
             hits.append((idx, mn, reason))
         idx += 1
-    return hits, idx
+    return hits, idx, structural
 
 
 def definitive_insns(func: str):
@@ -128,14 +136,20 @@ def _regions(indices: list[int]) -> list[tuple[int, int]]:
     return spans
 
 
-def _verdict(func: str, hits: list, total: int, distance: int | None = None) -> dict:
-    """Build the verdict dict from a detected (hits, total). Definitive opcode
-    signals win outright; otherwise the optional pure-C `distance` applies the
-    structural tier."""
+def _verdict(func: str, hits: list, total: int, structural: int = 0,
+             distance: int | None = None) -> dict:
+    """Build the verdict dict from a detected (hits, total[, structural]).
+    Definitive opcode signals win outright; otherwise the optional pure-C
+    `distance` applies the structural tier."""
     if hits:
         spans = _regions([i for i, _, _ in hits])
         frac = len(hits) / total if total else 0
-        verdict = "ASM-WHOLE" if frac >= 0.8 else "ASM-PARTIAL"
+        nonstruct = total - structural
+        # ASM-WHOLE if the function is dense in canonical ops (>=0.8) OR every
+        # NON-structural instruction is canonical — a pure GTE/asm leaf wrapper
+        # (mtc2/avsz3/mfc2 + nop/jr) whose only non-canonical insns are padding.
+        whole = frac >= 0.8 or (nonstruct > 0 and len(hits) == nonstruct)
+        verdict = "ASM-WHOLE" if whole else "ASM-PARTIAL"
         reasons = sorted({r for _, _, r in hits})
         return {"func": func, "verdict": verdict, "asm_insns": len(hits), "total": total,
                 "regions": spans, "reasons": reasons,
@@ -166,7 +180,7 @@ def classify(func: str, distance: int | None = None) -> dict:
     if res is None:
         return {"func": func, "verdict": "NO-TARGET",
                 "reason": f"{func} not in build/bb2.elf symbol table (rebuild?)"}
-    return _verdict(func, res[0], res[1], distance=distance)
+    return _verdict(func, res[0], res[1], distance=distance, structural=res[2])
 
 
 def classify_full(func: str) -> dict:

@@ -103,7 +103,7 @@ try {
     Write-Host "[headless] baseline: verify-oracle --rebuild ..."
     $base = Invoke-Eng verify-oracle --rebuild
     if (-not $base.build_matches) {
-        Write-Error "[headless] tree does not build to the oracle SHA1 at start; aborting."
+        Write-Host "[headless] tree does not build to the oracle SHA1 at start; aborting." -ForegroundColor Red
         exit 1
     }
     Write-Host "[headless] baseline OK (SHA1 == oracle)."
@@ -193,7 +193,9 @@ try {
         }
 
         if (-not $oracleOk) {
-            Write-Error "[headless] ORACLE BROKEN after $func -- the agent committed a non-matching build. STOPPING for manual review."
+            # non-throwing (Write-Error throws under ErrorActionPreference=Stop,
+            # which would clobber the exit code) so the exit code stays meaningful.
+            Write-Host "[headless] ORACLE BROKEN after $func -- the agent committed a non-matching build. STOPPING for manual review." -ForegroundColor Red
             exit 2
         }
 
@@ -202,7 +204,7 @@ try {
         Write-Host "[headless] --- orchestrator review ---"
         wsl bash -c "cd '$wsldir' && python3 tools/headless_review.py --session '$sid'"
         if ($LASTEXITCODE -eq 10) {
-            Write-Error "[headless] orchestrator review -> ESCALATE on $func. STOPPING for user review."
+            Write-Host "[headless] orchestrator review -> ESCALATE on $func. STOPPING for user review." -ForegroundColor Red
             exit 10
         }
     }
