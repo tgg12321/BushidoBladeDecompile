@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8008ACD0",
-      "file": "main",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "spu_DmaTransfer",
       "file": "main",
       "distance": 1,
@@ -3854,19 +3846,28 @@
       "rules": 0,
       "status": "done",
       "completed_at": "2026-05-26T15:20:05"
+    },
+    {
+      "func": "func_8008ACD0",
+      "file": "main",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "done",
+      "completed_at": "2026-05-26T15:39:51"
     }
   ],
   "counts": {
     "total": 481,
-    "active": 448,
+    "active": 447,
     "by_status": {
-      "active": 448,
+      "active": 447,
       "authorize": 30,
       "parked": 1,
-      "done": 2
+      "done": 3
     },
     "by_verdict": {
-      "C": 248,
+      "C": 247,
       "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 120,
       "ASM-WHOLE": 4,

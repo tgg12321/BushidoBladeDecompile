@@ -2375,37 +2375,26 @@ case0:
     D_800A2874 = D_800A2874 & ~mask;
 }
 s32 func_8008ACD0(s32 arg0) {
-    register s32 bit_found asm("a1");
-    register s32 i asm("v1");
-    register s32 one asm("a2");
-    register s32 mask asm("v0");
-    register s32 base asm("a0");
+    s32 bit_found;
+    s32 i;
+    s32 one;
+    s32 mask;
+    s32 base;
     s32 flags;
 
     bit_found = -1;
     i = 0;
     one = 1;
-    __asm__ volatile("sllv %0, %1, %2" : "=r"(mask) : "r"(one), "r"(i));
-
-loop:
-    if (arg0 & mask) {
-        goto found;
-    }
-    i++;
-    if (i < 0x18) {
+    for (; i < 0x18; i++) {
         mask = one << i;
-        goto loop;
+        if (arg0 & mask) {
+            bit_found = i;
+            break;
+        }
     }
 
-check:
-    mask = -1;
-    if (bit_found != mask) goto work;
-    return mask;
-
-found:
-    bit_found = i;
-    goto check;
-
+    if (bit_found != -1) goto work;
+    return -1;
 work:
     base = bit_found << 4;
     mask = g_spu_base_addr;
