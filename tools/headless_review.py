@@ -89,13 +89,27 @@ def confirm_park(func: str, item: dict | None) -> tuple[str, str]:
 def classify_outcome(rec: dict, item: dict | None) -> str:
     if not rec.get("oracle_ok", True):
         return "ORACLE-BREAK"
+    if rec.get("advanced"):
+        # committed progress + oracle intact == success, even if the session
+        # later errored or hit the budget cutoff (is_error). The oracle is the
+        # ground truth: a byte-identical build means the committed work is right.
+        return "TIER4-DONE"
     if rec.get("is_error"):
         return "ERROR"
-    if rec.get("advanced"):
-        return "TIER4-DONE"
     if (item or {}).get("status") == "parked" or rec.get("progressed"):
         return "PARKED"
     return "STUCK"
+
+
+def uncommitted_leftover() -> list[str]:
+    """Worker work left UNCOMMITTED (e.g. a budget cutoff mid-function). Excludes
+    metrics/* (append-only logs the runner's own post-check writes). Non-empty =>
+    the tree is dirty and the loop must NOT continue onto it."""
+    out = []
+    for ln in _git("status", "--porcelain").splitlines():
+        if ln.strip() and "metrics/" not in ln:
+            out.append(ln.strip())
+    return out
 
 
 def review(rec: dict) -> dict:
@@ -125,8 +139,14 @@ def review(rec: dict) -> dict:
     if outcome == "PARKED":
         park_verdict, park_detail = confirm_park(func, item)
 
+    leftover = uncommitted_leftover()
+
     # apply the maximal-autonomy escalation boundary
-    if outcome in ("ORACLE-BREAK", "ERROR", "STUCK"):
+    if leftover:
+        # a dirty tree (uncommitted worker work, e.g. budget cutoff mid-function)
+        # must be resolved before the loop continues — never run onto it.
+        decision, why = "ESCALATE", f"uncommitted leftover ({len(leftover)} path(s)) — orchestrator must commit/revert before continuing"
+    elif outcome in ("ORACLE-BREAK", "ERROR", "STUCK"):
         decision, why = "ESCALATE", f"outcome={outcome}"
     elif outcome == "PARKED" and park_verdict != "AUTO-CONFIRMED":
         decision, why = "ESCALATE", "park not mechanically confirmable (novel)"
@@ -138,7 +158,7 @@ def review(rec: dict) -> dict:
 
     return {
         "func": func, "file": rec.get("file"), "outcome": outcome,
-        "decision": decision, "why": why,
+        "decision": decision, "why": why, "uncommitted_leftover": leftover,
         "oracle_ok": rec.get("oracle_ok"), "model": rec.get("model"),
         "cost_usd": rec.get("cost_usd"), "num_turns": rec.get("num_turns"),
         "park_confirmation": park_verdict, "park_detail": park_detail,
@@ -160,6 +180,8 @@ def print_human(r: dict) -> None:
               f"dup_cmds={a.get('duplicate_cmd_count')}  engine_loop={a.get('eng_subcmds')}")
         if a.get("error_breakdown"):
             print(f"    error breakdown: {a['error_breakdown']}")
+    if r.get("uncommitted_leftover"):
+        print(f"  UNCOMMITTED LEFTOVER ({len(r['uncommitted_leftover'])}): {r['uncommitted_leftover'][:6]}")
     if r.get("park_confirmation"):
         print(f"  PARK: [{r['park_confirmation']}] {r['park_detail']}")
     if r.get("commits"):

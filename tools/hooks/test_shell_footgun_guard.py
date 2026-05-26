@@ -28,6 +28,7 @@ BLOCK = [
     "wsl bash -c 'cat <<EOF\nhi\nEOF'",                       # heredoc in wsl
     "wsl bash -c 'norm() { echo hi; }; norm'",                # funcdef in wsl
     'wsl bash -c \'awk "{print \\$3}" f.txt\'',               # awk touching $
+    "wsl bash -c 'python3 x.py; echo \"rc=$?\"'",             # unreliable $? capture in wsl
 ]
 
 

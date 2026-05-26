@@ -61,6 +61,14 @@ def reasons_for(cmd: str) -> list[str]:
         )
 
     if WSL_NEST_RE.search(cmd):
+        if "$?" in cmd:
+            out.append(
+                "`$?` inside `wsl bash -c '...'` is UNRELIABLE — the exit code is "
+                "clobbered across the nested shells (you read the outer shell's "
+                "status, not the inner command's; it silently shows 0). Capture exit "
+                "codes via the PowerShell tool's `$LASTEXITCODE` after the `wsl`/`& "
+                "tools/eng.ps1` call instead."
+            )
         if HEREDOC_RE.search(cmd):
             out.append(
                 "Heredoc (<<) inside `wsl bash -c '...'`. Heredocs through nested shells "
