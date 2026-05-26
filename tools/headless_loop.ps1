@@ -58,6 +58,8 @@ function Invoke-Eng {
     return $raw | ConvertFrom-Json
 }
 
+function Git-Head { (wsl bash -c "cd '$wsldir' && git rev-parse HEAD 2>/dev/null" | Out-String).Trim() }
+
 function Get-AuditDigest($sid) {
     # Transcript-derived efficiency signals (turns, tooling errors, footgun
     # blocks, retried commands) so the run record is self-auditing. Best-effort.
@@ -135,9 +137,11 @@ try {
             break
         }
 
+        $headBefore = Git-Head
         $env:CLAUDE_SESSION_ID = $sid            # so engine/metrics.py attributes the run
         $raw = ($null | & claude @claudeArgs | Out-String)   # $null stdin -> skip the 3s "no stdin" wait
         Remove-Item Env:\CLAUDE_SESSION_ID -ErrorAction SilentlyContinue
+        $headAfter = Git-Head
 
         $res = $null
         try { $res = $raw | ConvertFrom-Json } catch { }
@@ -173,6 +177,8 @@ try {
             progressed     = $progressed
             done_before    = $doneBefore
             done_after     = $doneAfter
+            head_before    = $headBefore
+            head_after     = $headAfter
             # self-auditing efficiency signals (from tools/headless_audit.py)
             tooling_errors = $audit.error_results
             footgun_blocks = $audit.footgun_blocks
@@ -190,13 +196,14 @@ try {
             Write-Error "[headless] ORACLE BROKEN after $func -- the agent committed a non-matching build. STOPPING for manual review."
             exit 2
         }
-        if ($isErr) {
-            Write-Error "[headless] claude reported an error on $func. STOPPING."
-            exit 3
-        }
-        if (-not $progressed) {
-            Write-Warning "[headless] no progress on $func (not done, not parked). STOPPING to avoid spinning."
-            exit 4
+
+        # Orchestrator post-run review: confirm findings + apply the escalation
+        # boundary. Exit 0 = ACCEPT (continue), 10 = ESCALATE (stop for the user).
+        Write-Host "[headless] --- orchestrator review ---"
+        wsl bash -c "cd '$wsldir' && python3 tools/headless_review.py --session '$sid'"
+        if ($LASTEXITCODE -eq 10) {
+            Write-Error "[headless] orchestrator review -> ESCALATE on $func. STOPPING for user review."
+            exit 10
         }
     }
     Write-Host "[headless] loop finished."
