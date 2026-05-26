@@ -6,7 +6,7 @@
 # detected this turn by tools/hooks/tooling_error_guard.py (PostToolUse), an
 # incident marker (.bb2_tooling_incident.json) was written. The agent may NOT
 # end the turn by papering over a tooling error -- it must root-cause and fix
-# it PERMANENTLY, then clear the marker via `dc.sh fix-tooling-incident`.
+# it PERMANENTLY, then clear the marker via `resolve_tooling_incident.py`.
 #
 # Hook protocol: read JSON on stdin {stop_hook_active, ...}. Emit
 # {"decision":"block","reason":"..."} on stdout to keep the agent going; emit
@@ -76,12 +76,12 @@ Fix it permanently:
   Suggested guard: {latest.get('suggested_guard')}
 
 Then clear the marker (this is the ONLY clean way to end the turn):
-  bash tools/dc.sh fix-tooling-incident --fixed \\
+  python3 tools/resolve_tooling_incident.py --fixed \\
        --guard <path/you/created/or/changed> \\
        --root-cause "<one line>" --verify "<how you confirmed it>"
 
-Misfire?              bash tools/dc.sh fix-tooling-incident --false-positive "<why>"
-Truly unfixable now?  bash tools/dc.sh fix-tooling-incident --defer "<why>"
+Misfire?              python3 tools/resolve_tooling_incident.py --false-positive "<why>"
+Truly unfixable now?  python3 tools/resolve_tooling_incident.py --defer "<why>"
 
 Operator overrides: touch .bb2_tooling_incident_suppress_once (allow this one stop)
                     touch .bb2_tooling_guard_off               (disable the guard)
@@ -97,7 +97,7 @@ if [ "$RC" -eq 4 ]; then
 fi
 if [ -z "$REASON" ]; then
     REASON="STOP BLOCKED -- an unresolved tooling incident marker exists (.bb2_tooling_incident.json).
-Fix the root cause permanently, then run: bash tools/dc.sh fix-tooling-incident --fixed --guard <path> --root-cause \"...\" --verify \"...\"
+Fix the root cause permanently, then run: python3 tools/resolve_tooling_incident.py --fixed --guard <path> --root-cause \"...\" --verify \"...\"
 (Override: touch .bb2_tooling_incident_suppress_once)"
 fi
 

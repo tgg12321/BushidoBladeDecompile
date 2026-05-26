@@ -73,7 +73,7 @@
       "root_cause": "WSL isn't installed/started, the default distro is wrong/stopped, or 'wsl' isn't on PATH for this shell.",
       "permanent_fix": [
         "Confirm the distro: in PowerShell  wsl -l -v ; start it / set default with  wsl --set-default <distro> .",
-        "Make the project's WSL entrypoint robust: tools/wsl.sh and tools/dc.sh should detect a missing/stopped distro and emit ONE actionable line (not a raw failure). Add that detection if absent.",
+        "Make the project's WSL entrypoint robust: tools/wsl.sh should detect a missing/stopped distro and emit ONE actionable line (not a raw failure). Add that detection if absent.",
         "Document the one-time setup step in AGENTS.md (build commands) so a fresh machine never hits this blind."
       ],
       "suggested_guard": "A preflight check in tools/wsl.sh that verifies 'wsl -l -q' lists a running distro before invoking, with a clear fix message"
@@ -99,14 +99,14 @@
         "SLUS_006\\.63.{0,40}no such file",
         "maspsx(\\.py)?: no such file"
       ],
-      "summary": "A gitignored build dependency (cc1 / maspsx / .venv / disc / permuter) is missing or its worktree symlink is broken.",
-      "root_cause": "This worktree's deps were never linked, the bootstrap didn't run, or a symlink into the main checkout went stale. Worktrees do NOT carry their own copies of these gitignored deps -- they are symlinked from the main checkout by the bootstrap.",
+      "summary": "A gitignored build dependency (cc1 / maspsx / .venv / disc / permuter) is missing.",
+      "root_cause": "A gitignored build dependency was never installed, or the .venv isn't activated. Worktrees are no longer used, so there are no dep symlinks to go stale -- the deps live as real paths under the repo root.",
       "permanent_fix": [
-        "Re-link the deps:  bash tools/dc.sh bootstrap   (idempotent; links .venv, gcc-2.7.2, decomp-permuter, m2c, disc from the main checkout).",
-        "Confirm:  bash tools/dc.sh verify-toolchain   (should print 'Toolchain: OK').",
-        "Prevent recurrence: if bootstrap did NOT relink it, fix tools/worktree_bootstrap.sh so it detects a STALE/DANGLING symlink (not just a missing one) and re-creates it. A symlink that exists but points nowhere is the usual silent trap."
+        "Re-install the gitignored deps:  bash tools/setup_wsl.sh   (builds gcc-2.7.2, links the mipsel toolchain, sets up the splat/m2c venv).",
+        "Confirm the build still works:  python3 -m engine.cli verify-oracle .",
+        "Prevent recurrence: ensure .venv, tools/gcc-2.7.2, tools/decomp-permuter, tools/m2c, and disc/ all exist as real paths under the repo root."
       ],
-      "suggested_guard": "Make tools/worktree_bootstrap.sh re-link dangling symlinks, and have tools/wsl.sh auto-bootstrap when a required dep is missing (it already does this for cc1 -- extend to the others)"
+      "suggested_guard": "Have tools/wsl.sh detect a missing required dep up front and emit one actionable line pointing at tools/setup_wsl.sh."
     },
 
     {
@@ -119,10 +119,10 @@
       "summary": "A symlink is circular or points through a broken chain -- almost always a worktree dep-link gone wrong.",
       "root_cause": "A bootstrap symlink was created pointing at itself or at another symlink that points back (e.g. re-bootstrapping a worktree whose target moved).",
       "permanent_fix": [
-        "Remove the bad link and re-link:  in the worktree,  rm <link> && bash tools/dc.sh bootstrap .",
-        "Prevent recurrence: tools/worktree_bootstrap.sh must use an absolute target to the MAIN checkout and refuse to link a path onto itself. Add that guard if missing."
+        "Remove the bad symlink and re-create the dep as a real path (re-run  bash tools/setup_wsl.sh  if needed).",
+        "Prevent recurrence: keep gitignored deps as real paths under the repo root rather than symlinks (worktrees, which needed symlinks, are no longer used)."
       ],
-      "suggested_guard": "A self-link / absolute-target assertion in tools/worktree_bootstrap.sh"
+      "suggested_guard": "A check in tools/wsl.sh that a required dep resolves to a real path (not a dangling symlink)."
     },
 
     {
@@ -136,7 +136,7 @@
       "root_cause": "Wrong shell (Git Bash vs WSL), the .venv isn't activated, or the tool genuinely isn't installed in this environment.",
       "permanent_fix": [
         "Route build/pipeline commands through WSL where the toolchain lives:  bash tools/wsl.sh '<cmd>'  (auto-detects cwd).",
-        "If python3 is missing only in .venv context, activate it (source .venv/bin/activate) or run  bash tools/dc.sh setup-venv .",
+        "If python3 is missing only in .venv context, activate it (source .venv/bin/activate) or re-create the venv via  bash tools/setup_wsl.sh .",
         "Prevent recurrence: if a command was run in the wrong shell, fix the caller (script/alias) to invoke via tools/wsl.sh, not raw 'make'/'python3'."
       ],
       "suggested_guard": "Callers that need the Linux toolchain should go through tools/wsl.sh; add a PATH check at the top of any new build script"

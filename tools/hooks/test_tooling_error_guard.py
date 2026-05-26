@@ -111,6 +111,15 @@ def main() -> int:
                 '— checkout is incomplete" >&2')
     expect_none("grep of signatures JSON array element", "Bash",
                 '        "worktree_bootstrap.sh missing",')
+    # grep -rn prefixes "path:lineno:" before the content, defeating the
+    # leading-digit / leading-quote markers. (Regression: 2026-05-26 grep -rn
+    # of tools/hooks/ surfaced the signature string in its own test+JSON.)
+    expect_none("grep -rn of test source (path:line: prefix)", "Bash",
+                'tools/hooks/test_tooling_error_guard.py:113:                \''
+                '        "worktree_bootstrap.sh missing",\')')
+    expect_none("grep -rn of signatures JSON (path:line: prefix)", "Bash",
+                'tools/hooks/tooling_error_signatures.json:91:        '
+                '"worktree_bootstrap.sh missing",')
     expect_none("cat of signatures JSON summary key", "Bash",
                 '      "summary": "A gitignored build dependency (cc1 / maspsx) is missing.",')
     expect_none("python source printing a tool-error string", "Bash",

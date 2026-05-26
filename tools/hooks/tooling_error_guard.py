@@ -12,7 +12,7 @@ just wrote CRLF into a build-critical file, this hook:
      it, and fix it PERMANENTLY (not paper over it and move on).
 
 The companion Stop hook (tooling_incident_stop_guard.sh) then refuses to let
-the turn end until the incident is resolved via `dc.sh fix-tooling-incident`.
+the turn end until the incident is resolved via `resolve_tooling_incident.py`.
 
 Signatures live in tooling_error_signatures.json (next to this file) so the
 catalog is extensible without touching code -- adding a signature is itself a
@@ -58,6 +58,7 @@ MAX_INCIDENTS_KEPT = 10           # bound the marker's occurrence history
 # this kills self-inspection false positives without masking actual failures.
 _DISPLAY_MARKERS = [
     re.compile(r"^\s*\d+[:\-]"),                       # grep -n / context prefix: "379:" / "382-"
+    re.compile(r"^\S+:\d+[:\-]"),                      # grep -rn prefix: "tools/x.py:113:" / "x.py:113-"
     re.compile(r"\b(echo|printf)\b"),                  # shell echo/printf statement (source)
     re.compile(r">&\d"),                               # shell stderr/stdout redirect (source)
     re.compile(r"\bprint\(|\bsys\.std(err|out)\b"),    # python source line
@@ -262,12 +263,12 @@ block it). Once you have implemented a permanent fix -- a new/changed hook,
 a .gitattributes entry, a tool fix, or a new signature in
 tools/hooks/tooling_error_signatures.json -- record it and clear the marker:
 
-  bash tools/dc.sh fix-tooling-incident --fixed \\
+  python3 tools/resolve_tooling_incident.py --fixed \\
        --guard <path/you/created/or/changed> \\
        --root-cause "<one line>" --verify "<how you confirmed it>"
 
 If this was a genuine misfire, clear it (and help tighten the signature):
-  bash tools/dc.sh fix-tooling-incident --false-positive "<why this was not a real failure>"
+  python3 tools/resolve_tooling_incident.py --false-positive "<why this was not a real failure>"
 """
 
 

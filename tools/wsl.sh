@@ -64,19 +64,11 @@ case "$PROJECT_DIR" in
         ;;
 esac
 
-# Auto-bootstrap: if cc1 isn't present in this worktree and the bootstrap
-# script exists, run it before the user's command. The bootstrap is a no-op
-# in the main repo (its .git is a directory, not a file) and idempotent
-# elsewhere, so even an unnecessary call is cheap.
-#
-# `set -e` makes a bootstrap failure abort with the actionable error visible;
-# we'd rather bail early than have the user's command fail with a confusing
-# "cc1: not found" 90 seconds later.
+# Worktree auto-bootstrap removed 2026-05-26: worktrees are no longer part of
+# the workflow (decomp runs directly on main, where the gitignored deps are
+# real files, not symlinks). worktree_bootstrap.sh was retired to archive/.
 wsl bash -c "
 set -e
 cd \"$WSL_DIR\"
-if [ ! -e tools/gcc-2.7.2/build/cc1 ] && [ -f tools/worktree_bootstrap.sh ]; then
-    bash tools/worktree_bootstrap.sh >&2
-fi
 $*
 "

@@ -4,7 +4,7 @@ diagnostic harness.
 
 cc1psx (Sony's original PsyQ compiler) is not a debugging tool here. The
 "maybe it's a compiler difference" hypothesis is settled and re-proven every
-session (docs/diagnostics/compiler_parity.txt, surfaced in `dc.sh start`):
+session (docs/diagnostics/compiler_parity.txt):
 decompals-gcc-2.7.2 reproduces the original game byte-for-byte; cc1psx is never
 closer to the original (0 genuine compiler-fixable) and is sometimes worse
 (e.g. ang_near_dif). The compiler is never the variable — the gap is always the
@@ -79,9 +79,8 @@ def main() -> int:
         f"""BLOCKED by cc1psx_guard.py: this command runs `{hit}` (cc1psx / dosemu).
 
 Reaching for cc1psx is a disguised give-up. The compiler-choice question is
-SETTLED and the project proves it empirically every session — see the
-"Compiler parity" line in `dc.sh start`, full detail in
-docs/diagnostics/compiler_parity.txt:
+SETTLED and the project proves it empirically — see the compiler-parity
+record in docs/diagnostics/compiler_parity.txt:
 
   - decompals-gcc-2.7.2 reproduces the ORIGINAL GAME byte-for-byte (build SHA1 OK).
   - cc1psx is NEVER closer to the original than decompals (0 genuine
@@ -96,7 +95,7 @@ functions decompals matches). A function that won't match is a C-SOURCE problem
 (typing, dataflow, scheduling, register allocation, cross-jump merging) — never
 the compiler / optimizer / fork.
 
-See:  docs/diagnostics/compiler_parity.txt  (refresh: bash tools/dc.sh prove-compilers)
+See:  docs/diagnostics/compiler_parity.txt
       memory/rules/cc1psx-calibration-only.md, compiler-patch-low-roi.md
       .claude/rules/compiler-flags-canonical.md
 

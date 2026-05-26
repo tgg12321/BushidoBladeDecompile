@@ -125,7 +125,7 @@ def latest(marker: dict) -> dict:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(prog="dc.sh fix-tooling-incident",
+    ap = argparse.ArgumentParser(prog="resolve_tooling_incident.py",
                                  description="Resolve a tooling incident.")
     mode = ap.add_mutually_exclusive_group(required=True)
     mode.add_argument("--fixed", action="store_true",

@@ -16,3 +16,10 @@ documented. See `CLAUDE.md` (Hooks) and the `debugging-discipline` memory rule.
 - **Permanent guard:** `tools/hooks/tooling_error_guard.py` (uncommitted change)
 - **Verified by:** added _real_output() line-filter dropping displayed-source lines (grep -n prefixes, echo/printf/redirects, python print/stderr, JSON elements/keys); 36/36 guard tests pass incl 5 new self-inspection regressions
 - **Occurrences this incident:** 1
+
+## 2026-05-26 00:30:08 — RESOLVED (worktree-symlink/worktree-dep-missing)
+- **Triggering command:** `cd "C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile" && echo "=== which hook file references dc.sh / worktree_bootstrap / diagnose_batch / cc1psx_* (live invocation vs signature-DB string)? ===" && grep -rn -E 'dc\.sh|worktree_bootstrap|diagnose_batch|cc1psx_diagnostic|cc1psx_wrapper' tools/hooks/ | head -40`
+- **Root cause:** recursive-grep path:line: prefix defeated the displayed-source filter; markers only handled plain grep -n leading-digit form
+- **Permanent guard:** `tools/hooks/tooling_error_guard.py` (uncommitted change)
+- **Verified by:** added ^\S+:\d+[:-] display marker + 2 regression tests; test suite 38/38 pass
+- **Occurrences this incident:** 1
