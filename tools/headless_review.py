@@ -123,13 +123,20 @@ def review(rec: dict) -> dict:
     tp = pdir / f"{sid}.jsonl" if (pdir and (pdir / f"{sid}.jsonl").exists()) else None
     audit = ha.digest_transcript(tp) if tp else {}
 
-    # the worker's commit(s): prefer the exact head_before..head_after range the
-    # runner recorded; fall back to --grep <func> for older records.
+    # the worker's commit(s): use the exact head_before..head_after range the
+    # runner recorded. If the heads are equal the worker committed NOTHING this
+    # run -- show that, do NOT grep (grep surfaces unrelated OLD commits that
+    # merely mention the func, which is misleading). Only fall back to grep for
+    # legacy records that predate head tracking.
     hb, hbafter = rec.get("head_before"), rec.get("head_after")
-    if hb and hbafter and hb != hbafter:
-        log = _git("log", f"{hb}..{hbafter}", "--format=%h %s")
-        commits = [c for c in log.splitlines() if c.strip()]
-        stat = _git("diff", "--stat", hb, hbafter)
+    if hb and hbafter:
+        if hb != hbafter:
+            log = _git("log", f"{hb}..{hbafter}", "--format=%h %s")
+            commits = [c for c in log.splitlines() if c.strip()]
+            stat = _git("diff", "--stat", hb, hbafter)
+        else:
+            commits = []          # worker made no commit this run
+            stat = "(no commit this run)"
     else:
         log = _git("log", "--grep", func, "-n", "2", "--format=%h %s")
         commits = [c for c in log.splitlines() if c.strip()]
