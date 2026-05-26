@@ -15,7 +15,7 @@ By construction, cheating can't help and asm functions aren't pure-C-grinded.
 
 Read [memory/project/greenfield-engine-v2.md](memory) for the full design + current state.
 
-### Run everything in WSL, from the repo (or worktree) root
+### Run everything in WSL, from the repo root
 ```
 wsl bash -c 'cd "<root>" && source .venv/bin/activate && python3 -m engine.cli <cmd>'
 ```
@@ -45,8 +45,9 @@ wsl bash -c 'cd "<root>" && source .venv/bin/activate && python3 -m engine.cli <
    grind it in pure C. Genuine no-C-form constructs get authorized inline asm; never recreate target
    bytes via hardcoded-`$N` `__asm__` injection.
 
-## Workflow policy: main is publish-only
-All work happens in `.claude/worktrees/<name>`. Main is for landing merged work + syncing origin.
+## Workflow: a single focused agent, on main
+Decomp work runs **directly on `main`** — one focused agent, end-to-end. No worktrees, no
+subagents, no orchestrator/worker split: the engine is a toolkit the agent drives itself.
 **Build files (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, pipeline `*.txt`) MUST use LF line
 endings** — edit via WSL or an LF-enforcing editor (the Write tool produces LF on this machine).
 
@@ -58,9 +59,9 @@ original EXE, `asm/`, `src/`, `include/`, `disc/`, and the `*.txt` configs. The 
 until `engine build` fully supersedes it; the oracle (`engine verify-oracle`) guards every change.
 
 ## Guards (hooks)
-Active: root-write, CRLF/tooling-error, main-branch (publish-only). Legacy decomp-loop hooks
-(`grind_check`, `resilience_judge`, `escape_valve`, …) are dormant under the engine workflow
-(they key off old markers the engine never sets) and are slated for removal.
+Active: root-write cleanliness, CRLF/tooling-error (WSL env-failure) detection, the cc1psx-footgun
+block, and memory/CLAUDE.md hygiene. The legacy decomp-loop hooks (`grind_check`, `resilience_judge`,
+`escape_valve`, …) and the main-branch publish-only guard have been removed.
 
 ## Commit conventions
 See [docs/COMMIT_CONVENTIONS.md](docs/COMMIT_CONVENTIONS.md). Engine work uses the `engine:` prefix.
