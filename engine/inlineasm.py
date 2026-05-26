@@ -46,6 +46,41 @@ def _match_paren(text: str, open_idx: int) -> int:
     return -1
 
 
+def _match_brace(text: str, open_idx: int) -> int:
+    """Index just past the '}' matching the '{' at open_idx. Skips braces inside
+    string/char literals and // or /* */ comments. -1 if unbalanced."""
+    depth, i, n = 0, open_idx, len(text)
+    while i < n:
+        c = text[i]
+        if c in '"\'':
+            q, i = c, i + 1
+            while i < n:
+                if text[i] == "\\":
+                    i += 2
+                    continue
+                if text[i] == q:
+                    break
+                i += 1
+            i += 1
+            continue
+        if c == "/" and i + 1 < n and text[i + 1] == "/":
+            nl = text.find("\n", i)
+            i = n if nl == -1 else nl
+            continue
+        if c == "/" and i + 1 < n and text[i + 1] == "*":
+            ce = text.find("*/", i + 2)
+            i = n if ce == -1 else ce + 2
+            continue
+        if c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                return i + 1
+        i += 1
+    return -1
+
+
 def _block_tier(asm_body: str) -> str:
     """tier of an __asm__(...) body, mirroring classify_inline_asm.scan_file."""
     first_colon = asm_body.find(":")
@@ -103,3 +138,38 @@ def write_stripped(stem: str, out_path: str) -> int:
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     Path(out_path).write_text(stripped)
     return n
+
+
+def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
+    """(start, end) char span of func's definition+body in text, or None if not
+    locatable. Heuristic: a definition is `<name>(` on a line that starts at
+    column 0 (splat-generated src/*.c put every definition at column 0; calls
+    and nested references are indented). Returns None rather than guess, so
+    callers degrade to "no signal" instead of a wrong one."""
+    for m in re.finditer(r"(?m)^[A-Za-z_][\w \t\*]*\b" + re.escape(func) + r"\s*\(", text):
+        brace = text.find("{", m.end())
+        if brace == -1:
+            continue
+        end = _match_brace(text, brace)
+        if end != -1:
+            return (m.start(), end)
+    return None
+
+
+def func_tier3_count(text: str, func: str) -> int:
+    """Number of tier-3 strip-spans (asm blocks + register pins) inside func's
+    body. -1 if the body can't be located (degrade to no-signal)."""
+    span = _func_body_span(text, func)
+    if span is None:
+        return -1
+    lo, hi = span
+    return sum(1 for s, _e in _strip_spans(text) if lo <= s < hi)
+
+
+def file_func_tier3_count(stem: str, func: str) -> int:
+    """func_tier3_count against src/<stem>.c on disk. -1 on any read/locate miss."""
+    try:
+        text = Path(f"src/{stem}.c").read_text()
+    except OSError:
+        return -1
+    return func_tier3_count(text, func)

@@ -14,6 +14,7 @@ from pathlib import Path
 
 from . import buildconfig as cfg
 from . import cheats
+from . import inlineasm
 from . import pipeline as P
 from . import sandbox
 
@@ -57,11 +58,25 @@ def retire_function(func: str) -> dict:
                     "reason": "no rules keyed by this function", "dropped": dropped}
         sha1 = _rebuild_file_and_sha1(stem)
         ok = sha1 == cfg.ORACLE_SHA1
+        result = {"func": func, "file": stem, "ok": ok,
+                  "dropped": dropped, "total_dropped": total, "sha1": sha1}
         if not ok:
             _restore(backup)
             _rebuild_file_and_sha1(stem)  # restore build/ to canonical
-        return {"func": func, "file": stem, "ok": ok,
-                "dropped": dropped, "total_dropped": total, "sha1": sha1}
+            # Common cause: the dropped rules were compensating for a tier-3
+            # barrier still in the C source (retire strips rules, not source
+            # __asm__). If so, the honest fix is to strip the asm too. See
+            # .claude/rules/sandbox-zero-retire-fails.md.
+            n = inlineasm.file_func_tier3_count(stem, func)
+            if n > 0:
+                result["hint"] = (
+                    f"{func}'s source still has {n} tier-3 inline-asm block(s)/pin(s). "
+                    "retire drops regfix/asmfix rules but NOT source __asm__; if those "
+                    "rules were compensating for a tier-3 barrier, strip the asm from "
+                    f"src/{stem}.c and retry. If `sandbox {func} --disable all` scores 0, "
+                    "that's exactly this case (see .claude/rules/sandbox-zero-retire-fails.md)."
+                )
+        return result
     except Exception:
         # Crash-safety: ANY failure mid-retire must restore configs + build/
         # so a partial edit never leaks (the bug that silently dropped 24

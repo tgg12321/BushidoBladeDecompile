@@ -155,6 +155,30 @@ def test_inlineasm() -> None:
     check("strip: pinned variable declaration kept", "register int v" in outp)
     check("strip: pin counted", np >= 1)
 
+    # _match_brace: string/comment-aware
+    eq("_match_brace: simple", inlineasm._match_brace("{a{b}c}", 0), 7)
+    eq("_match_brace: brace in string ignored",
+       inlineasm._match_brace('{ x = "}"; }', 0), 12)
+    eq("_match_brace: brace in // comment ignored",
+       inlineasm._match_brace("{ // }\n}", 0), 8)
+
+    # func_tier3_count: tier-3 counted only inside the named function's body
+    fsrc = (
+        "s32 target(u8 *a){\n"
+        '    __asm__ volatile("addu $8,$3,$0");\n'   # tier-3, inside target
+        "    return 0;\n"
+        "}\n"
+        "void other(void){\n"
+        '    __asm__ volatile("addu $9,$4,$0");\n'   # tier-3, but a different func
+        "}\n"
+    )
+    eq("func_tier3_count: counts only target's tier-3", inlineasm.func_tier3_count(fsrc, "target"), 1)
+    eq("func_tier3_count: counts only other's tier-3", inlineasm.func_tier3_count(fsrc, "other"), 1)
+    eq("func_tier3_count: unknown func -> -1", inlineasm.func_tier3_count(fsrc, "nope"), -1)
+    # a pure-C function reports 0 (locatable, no tier-3)
+    psrc = "s32 pure(void){\n    return 1;\n}\n"
+    eq("func_tier3_count: pure-C func -> 0", inlineasm.func_tier3_count(psrc, "pure"), 0)
+
 
 # --------------------------------------------------------------------------
 # cheats — regfix masking (other half of cheat-invisibility)
