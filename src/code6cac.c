@@ -2922,8 +2922,6 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         s16 *row;
         s32 a1_val;
 
-        __asm__ volatile("" : "=r"(tbl) : "0"(tbl));
-
         px = *(s32 *)(arg0 + 0xB8);
         row = tbl + a0_idx * 3;
         a1_val = row[a1_idx];

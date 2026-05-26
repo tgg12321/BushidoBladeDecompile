@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800233AC",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
       "func": "replay_camera_rob_back_loose2",
       "file": "code6cac_b2",
       "distance": 0,
@@ -3874,17 +3866,27 @@
       "verdict": "ASM-STRUCTURAL",
       "rules": 1,
       "status": "authorize"
+    },
+    {
+      "func": "func_800233AC",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 4,
+      "status": "done",
+      "completed_at": "2026-05-26T12:56:16"
     }
   ],
   "counts": {
     "total": 484,
-    "active": 458,
+    "active": 457,
     "by_status": {
-      "active": 458,
-      "authorize": 26
+      "active": 457,
+      "authorize": 26,
+      "done": 1
     },
     "by_verdict": {
-      "C": 252,
+      "C": 251,
       "ASM-PARTIAL": 86,
       "ASM-SUSPECT": 120,
       "ASM-STRUCTURAL": 26
