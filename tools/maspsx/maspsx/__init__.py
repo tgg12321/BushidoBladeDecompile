@@ -401,6 +401,7 @@ class MaspsxProcessor:
         expand_lh_func_list=None,
         multu_func_list=None,
         expand_dest_func_list=None,
+        label_nop_func_list=None,
         sdata_sym_list=None,
         sdata_func_list=None,
         sdata_exclude_map=None,
@@ -418,6 +419,12 @@ class MaspsxProcessor:
         self.expand_lh_func_set = set(expand_lh_func_list) if expand_lh_func_list else set()
         self.multu_func_set = set(multu_func_list) if multu_func_list else set()
         self.expand_dest_func_set = set(expand_dest_func_list) if expand_dest_func_list else set()
+        # Functions that opt in to the .L-label load-delay nop for the LOAD-CONSUMER
+        # case (load -> .L-label -> load-from-same-reg). Per-function-scoped because
+        # broadening this globally shifts maspsx indices and breaks other functions'
+        # index-anchored regfix/asmfix rules (the saTan4FireDisp cascade). The jalr-
+        # consumer case below is always-on (it doesn't cascade).
+        self.label_nop_func_set = set(label_nop_func_list) if label_nop_func_list else set()
 
         self.nop_at_expansion = nop_at_expansion
         self.nop_mflo_mfhi = nop_mflo_mfhi
@@ -693,6 +700,19 @@ class MaspsxProcessor:
                 self.skip_instructions = 1      # don't re-emit it downstream
                 res.append(
                     f"nop # DEBUG: load-delay across .L-label before jalr {r_dest}"
+                )
+                return res
+            # LOAD-CONSUMER variant: `lw $rN; .L<n>:; lw $rM,0($rN)` -- the loaded
+            # base reg is consumed by another load across the .L merge label. Same
+            # blind spot, but PER-FUNCTION-SCOPED (self.label_nop_func_set): emitting
+            # this nop shifts downstream maspsx indices, so enabling it globally
+            # breaks other functions' index-anchored rules (see __init__ note).
+            if (self.current_func in self.label_nop_func_set
+                    and line_loads_from_reg(after_label, r_dest)):
+                res.append(next_instruction)   # keep the merge label in place
+                self.skip_instructions = 1      # don't re-emit it downstream
+                res.append(
+                    f"nop # DEBUG: load-delay across .L-label before load-consumer {r_dest}"
                 )
                 return res
 

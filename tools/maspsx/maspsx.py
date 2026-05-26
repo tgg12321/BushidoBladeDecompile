@@ -28,6 +28,11 @@ def main() -> None:
                         help="Path to file listing functions where `lw $rdest, sym($rsrc)` "
                              "should expand using $rdest (target's PsyQ-cc1 form) instead of "
                              "$at-via-noat (decompals/mips-gcc-2.7.2 default).")
+    parser.add_argument("--label-nop-funcs", type=str, default=None,
+                        help="Path to file listing functions that opt in to the .L-label "
+                             "load-delay nop for the LOAD-CONSUMER case (load -> .L-label -> "
+                             "load-from-same-reg). Per-function-scoped: enabling it globally "
+                             "shifts maspsx indices and breaks other functions' index-anchored rules.")
     parser.add_argument("--macro-inc", action="store_true")
     parser.add_argument("--dont-expand-li", action="store_true")
     parser.add_argument("--force-stdin", action="store_true")
@@ -184,6 +189,11 @@ def main() -> None:
         with open(args.expand_dest_funcs, "r", encoding="utf") as f:
             expand_dest_func_list = [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
+    label_nop_func_list = []
+    if args.label_nop_funcs:
+        with open(args.label_nop_funcs, "r", encoding="utf") as f:
+            label_nop_func_list = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
     maspsx_processor = MaspsxProcessor(
         in_lines,
         sdata_limit=sdata_limit,
@@ -204,6 +214,7 @@ def main() -> None:
         expand_lh_func_list=expand_lh_func_list,
         multu_func_list=multu_func_list,
         expand_dest_func_list=expand_dest_func_list,
+        label_nop_func_list=label_nop_func_list,
         sdata_sym_list=sdata_sym_list,
         sdata_func_list=sdata_func_list,
         sdata_exclude_map=sdata_exclude_map,

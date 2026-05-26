@@ -1,0 +1,16 @@
+# Functions that opt in to the maspsx .L-label load-delay nop, LOAD-CONSUMER case.
+#
+# maspsx's is_label() only recognizes $L-prefix locals, but this GCC fork emits
+# .L-prefix, so a load whose base register is consumed by another load ACROSS a
+# single .L merge label (`lw $rN; .L<n>:; lw $rM,0($rN)`) isn't seen as a
+# load-delay hazard and loses its nop. The target HAS that nop. Listing a function
+# here makes maspsx emit it for that function.
+#
+# Scoped PER FUNCTION on purpose: enabling it globally shifts maspsx output indices
+# and breaks OTHER functions' index-anchored regfix/asmfix rules (the saTan4FireDisp
+# `.L279 already defined` cascade documented in maspsx-is-label-dot-prefix). The
+# jalr-consumer variant is always-on in maspsx because it doesn't cascade.
+#
+# Format: one function name per line; blank lines and #-comments ignored.
+
+spu_DmaTransfer

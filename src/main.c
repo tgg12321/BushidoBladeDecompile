@@ -1994,7 +1994,6 @@ void spu_DmaTransfer(s32 a0) {
         s32 *ptr = g_spu_voice_key_c;
         do {
             s32 val;
-            __asm__("nop");
             val = *ptr;
             if (val & stopbit) {
                 break;

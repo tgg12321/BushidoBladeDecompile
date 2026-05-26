@@ -3821,15 +3821,6 @@
       "park_reason": "Canonical jump-table infrastructure, not a register/codegen cheat. The 24 asmfix rules (15 renames of GCC .L labels to external jtbl_800108CC + 8 jlabel conversions + 1 delete_between stripping GCC's emitted table) are structurally required: the switch's jump table jtbl_800108CC sits in the FIRST rodata block (asm/data 800.rodata_pre.o, bb2.ld:25, addr 0x800108CC), while code6cac_b2.o's own .rodata links far later (bb2.ld:50). A GCC in-object jump table can only land in code6cac_b2's late rodata, never at 0x108CC, so referencing the external jtbl symbol + deleting GCC's table is mandatory. Zero-asmfix Tier-4 would need relocating the jtbl into code6cac_b2.c AND reordering the whole global rodata layout (project-wide, needs user sign-off). This is the project standard for the 26 jtbl-rename functions whose tables splat carved into asm/data rodata. Separately, sandbox cannot score this file: file-wide tier-3 stripping shifts maspsx indices and crashes a sibling fn's index-based regfix reorder rule (KeyError in tools/regfix.py)."
     },
     {
-      "func": "spu_DmaTransfer",
-      "file": "main",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Sole tier-3 debt is one __asm__(nop) compensating for the maspsx .L-label load-delay blind spot, LOAD-CONSUMER variant: target has 'lw a1,0(a1); .L<loop-top>:; lw v1,0(a1)' (pointer load, then deref consuming a1 as base across the loop-top label). sandbox --disable all = 0 and the narrow maspsx gate that emits the nop (extending the existing jalr-consumer gate in _handle_nop_before_next_instruction to line_loads_from_reg consumers) makes it 100% pure C -- BUT verify-oracle --rebuild FAILS: the same gate inserts a nop in saTan4FireDisp (text1a.c) that shifts its index-anchored asmfix delete_between (#nop.*'.L279:'), giving 'symbol .L279 already defined'. This is exactly the cascade memory maspsx-is-label-dot-prefix documents as 'not worth the corpus-wide churn'. Clean retirement needs user sign-off: either re-derive saTan4FireDisp's rule cluster, or a per-function-scoped maspsx gate. Both source + maspsx reverted; oracle re-verified green (SHA1 62efab4f)."
-    },
-    {
       "func": "func_8007F10C",
       "file": "display",
       "distance": 1,
@@ -3856,6 +3847,16 @@
       "rules": 0,
       "status": "done",
       "completed_at": "2026-05-26T15:39:51"
+    },
+    {
+      "func": "spu_DmaTransfer",
+      "file": "main",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "done",
+      "park_reason": "Sole tier-3 debt is one __asm__(nop) compensating for the maspsx .L-label load-delay blind spot, LOAD-CONSUMER variant: target has 'lw a1,0(a1); .L<loop-top>:; lw v1,0(a1)' (pointer load, then deref consuming a1 as base across the loop-top label). sandbox --disable all = 0 and the narrow maspsx gate that emits the nop (extending the existing jalr-consumer gate in _handle_nop_before_next_instruction to line_loads_from_reg consumers) makes it 100% pure C -- BUT verify-oracle --rebuild FAILS: the same gate inserts a nop in saTan4FireDisp (text1a.c) that shifts its index-anchored asmfix delete_between (#nop.*'.L279:'), giving 'symbol .L279 already defined'. This is exactly the cascade memory maspsx-is-label-dot-prefix documents as 'not worth the corpus-wide churn'. Clean retirement needs user sign-off: either re-derive saTan4FireDisp's rule cluster, or a per-function-scoped maspsx gate. Both source + maspsx reverted; oracle re-verified green (SHA1 62efab4f).",
+      "completed_at": "2026-05-26T16:19:54"
     }
   ],
   "counts": {
@@ -3864,8 +3865,8 @@
     "by_status": {
       "active": 446,
       "authorize": 30,
-      "parked": 2,
-      "done": 3
+      "parked": 1,
+      "done": 4
     },
     "by_verdict": {
       "C": 246,
