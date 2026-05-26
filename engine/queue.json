@@ -1,0 +1,3893 @@
+{
+  "generated_at": "2026-05-26T12:38:31",
+  "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+  "build_failures": [],
+  "items": [
+    {
+      "func": "func_800233AC",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "replay_camera_rob_back_loose2",
+      "file": "code6cac_b2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 24,
+      "status": "active"
+    },
+    {
+      "func": "func_8001BAE4",
+      "file": "code6cac",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8001EFA0",
+      "file": "code6cac",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F10C",
+      "file": "display",
+      "distance": 1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F12C",
+      "file": "display",
+      "distance": 1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8008ACD0",
+      "file": "main",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "spu_DmaTransfer",
+      "file": "main",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "cdrom_DmaToRam",
+      "file": "system",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "efc_buki_draw_zanzou",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005BD30",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_8006EC0C",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "gnd_get_fog",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8001E404",
+      "file": "code6cac",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80030208",
+      "file": "code6cac_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "cpu_side_move_dir_2",
+      "file": "code6cac_c2",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_8003A450",
+      "file": "code6cac_c_mid",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "tslPolyF4Init",
+      "file": "system",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "gnd_init_80041688",
+      "file": "text1a",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80045294",
+      "file": "text1a_c",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "rob_life_ctrl_2",
+      "file": "text1a_c",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_8004A09C",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005B7C4",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_80061C00",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80065484",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80069AE4",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80078A68",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80078B3C",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80078B70",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007992C",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8001A67C",
+      "file": "code6cac",
+      "distance": 3,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "myRobGeneiDraw2",
+      "file": "code6cac_b",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "gte_GetScreenXY",
+      "file": "display",
+      "distance": 3,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "gte_SetTransVector",
+      "file": "display",
+      "distance": 3,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "AddTbpOfst",
+      "file": "main",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "saTan1SyuryoDraw",
+      "file": "main",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80041430",
+      "file": "text1a",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "rob_life_ctrl",
+      "file": "text1a",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "InitFadePanel",
+      "file": "text1b",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800550E8",
+      "file": "text1b",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80033550",
+      "file": "code6cac_b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "tslLineG5Init",
+      "file": "code6cac_c2",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_8007C2A0",
+      "file": "display",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007C4B8",
+      "file": "display",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "initLoadImage",
+      "file": "gpu",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "saEft00Add_sub",
+      "file": "system",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_800618B4",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800274BC",
+      "file": "code6cac_b",
+      "distance": 5,
+      "verdict": "ASM-PARTIAL",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_800372F4",
+      "file": "code6cac_b2",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_8003B20C",
+      "file": "code6cac_c_ab",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007C938",
+      "file": "display",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F098",
+      "file": "display",
+      "distance": 5,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F21C",
+      "file": "display",
+      "distance": 5,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "gte_SetColorMatrix",
+      "file": "display",
+      "distance": 5,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "gte_SetRotMatrix",
+      "file": "display",
+      "distance": 5,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "initDrawMode",
+      "file": "gpu",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80085270",
+      "file": "main",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "AddTbpOfst_80047EE8",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800484A0",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80052CD4",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80053694",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80060B70",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_80017FA0",
+      "file": "code6cac",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "func_8001EEB4",
+      "file": "code6cac",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_8003AB44",
+      "file": "code6cac_c_ab",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F034",
+      "file": "display",
+      "distance": 6,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F2AC",
+      "file": "display",
+      "distance": 6,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "InitHiraRmd_80041AC8",
+      "file": "text1a",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "hirahira_w_frie",
+      "file": "text1a_c",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_800483DC",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8004954C",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80052754",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800600C8",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "func_80077894",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "saFidLoad",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 7,
+      "status": "active"
+    },
+    {
+      "func": "func_80022224",
+      "file": "code6cac",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80037F40",
+      "file": "code6cac_c_mid",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "stage_InitCollision",
+      "file": "config",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_8007B4D0",
+      "file": "display",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_8007B844",
+      "file": "display",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E8AC",
+      "file": "display",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F00C",
+      "file": "display",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F0BC",
+      "file": "display",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F0E4",
+      "file": "display",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "ot_Insert",
+      "file": "gpu",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "ot_Link",
+      "file": "gpu",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "sys_VSync",
+      "file": "ings2",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_800470B0",
+      "file": "sound",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80040A78",
+      "file": "text1a",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80048530",
+      "file": "text1b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80052720",
+      "file": "text1b",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80052BE4",
+      "file": "text1b",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80074220",
+      "file": "text1b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "debug_printf",
+      "file": "text1b_b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 7,
+      "status": "active"
+    },
+    {
+      "func": "func_80078B04",
+      "file": "text1b_b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80078F60",
+      "file": "text1b_b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "func_80078F74",
+      "file": "text1b_b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "cpu_get_dist",
+      "file": "code6cac_b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_80016A8C",
+      "file": "ings",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 8,
+      "status": "active"
+    },
+    {
+      "func": "func_80017D84",
+      "file": "ings",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "bios_FileRead",
+      "file": "ings2",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80087D10",
+      "file": "main",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80087D58",
+      "file": "main",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80041988",
+      "file": "text1a",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_80049C24",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 10,
+      "status": "active"
+    },
+    {
+      "func": "func_80052C28",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80069E18",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "cpu_check_tubazeri_2",
+      "file": "code6cac_b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "func_8002BEA0",
+      "file": "code6cac_b",
+      "distance": 9,
+      "verdict": "ASM-PARTIAL",
+      "rules": 7,
+      "status": "active"
+    },
+    {
+      "func": "func_80036FD4",
+      "file": "code6cac_b2",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 8,
+      "status": "active"
+    },
+    {
+      "func": "func_8003AFFC",
+      "file": "code6cac_c_ab",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "damage_DebugDisp",
+      "file": "code6cac_c_mid",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 8,
+      "status": "active"
+    },
+    {
+      "func": "func_8007C748",
+      "file": "display",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 13,
+      "status": "active"
+    },
+    {
+      "func": "func_8007DC9C",
+      "file": "display",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_800455AC",
+      "file": "text1a_c",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "videoDecCreate",
+      "file": "text1a_c",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_8004881C",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80053304",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80057CC8",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 7,
+      "status": "active"
+    },
+    {
+      "func": "func_800611A4",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061250",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8006156C",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061658",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061710",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800617C8",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061ACC",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061EC0",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800692C0",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8003B10C",
+      "file": "code6cac_c_ab",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 12,
+      "status": "active"
+    },
+    {
+      "func": "motion_SetMotion",
+      "file": "code6cac_c_mid",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F150",
+      "file": "display",
+      "distance": 10,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F1A8",
+      "file": "display",
+      "distance": 10,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80045878",
+      "file": "text1a_c",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 10,
+      "status": "active"
+    },
+    {
+      "func": "func_80078BA8",
+      "file": "text1b_b",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "func_8001F938",
+      "file": "code6cac",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 13,
+      "status": "active"
+    },
+    {
+      "func": "func_80022F34",
+      "file": "code6cac",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 11,
+      "status": "active"
+    },
+    {
+      "func": "func_80037AA4",
+      "file": "code6cac_c",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E35C",
+      "file": "display",
+      "distance": 11,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F05C",
+      "file": "display",
+      "distance": 11,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "ang_hosei_80056FE8",
+      "file": "text1b",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80049718",
+      "file": "text1b",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_80078EC0",
+      "file": "text1b_b",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "special_camera_get_rot_dir",
+      "file": "code6cac_b2",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80038170",
+      "file": "code6cac_c_mid",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "AllocRobRmd",
+      "file": "text1a",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_80055948",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8006133C",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800613C8",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061454",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800614E0",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80062020",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80072CD4",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "func_80037A20",
+      "file": "code6cac_c",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80037B00",
+      "file": "code6cac_c",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007CA00",
+      "file": "display",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 13,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E1AC",
+      "file": "display",
+      "distance": 13,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E1FC",
+      "file": "display",
+      "distance": 13,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "D_80083418",
+      "file": "ings2",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 12,
+      "status": "active"
+    },
+    {
+      "func": "func_80044098",
+      "file": "text1a_c",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "mot_data_set",
+      "file": "text1a_c",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80052B44",
+      "file": "text1b",
+      "distance": 13,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006517C",
+      "file": "text1b",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_800651F0",
+      "file": "text1b",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_8006E10C",
+      "file": "text1b",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800200DC",
+      "file": "code6cac",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 14,
+      "status": "active"
+    },
+    {
+      "func": "myRobGeneiMove",
+      "file": "code6cac",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 15,
+      "status": "active"
+    },
+    {
+      "func": "func_8002BC68",
+      "file": "code6cac_b",
+      "distance": 14,
+      "verdict": "ASM-PARTIAL",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "func_8003D330",
+      "file": "code6cac_c2",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "spu_WriteReg",
+      "file": "main",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800453E0",
+      "file": "text1a_c",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 7,
+      "status": "active"
+    },
+    {
+      "func": "func_800481E8",
+      "file": "text1b",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 12,
+      "status": "active"
+    },
+    {
+      "func": "func_8007B3A8",
+      "file": "display",
+      "distance": 15,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_8007B564",
+      "file": "display",
+      "distance": 15,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E3BC",
+      "file": "display",
+      "distance": 15,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800871D4",
+      "file": "main",
+      "distance": 15,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "saEft03Start2",
+      "file": "main",
+      "distance": 15,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "saEft00Add",
+      "file": "system",
+      "distance": 15,
+      "verdict": "C",
+      "rules": 13,
+      "status": "active"
+    },
+    {
+      "func": "func_8006B92C",
+      "file": "text1b",
+      "distance": 15,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80034200",
+      "file": "code6cac_b",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007ED6C",
+      "file": "display",
+      "distance": 16,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F24C",
+      "file": "display",
+      "distance": 16,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "calc_fc_frame",
+      "file": "text1a_c",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 11,
+      "status": "active"
+    },
+    {
+      "func": "func_80033D38",
+      "file": "code6cac_b",
+      "distance": 17,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "mk_g2l",
+      "file": "code6cac_b",
+      "distance": 17,
+      "verdict": "C",
+      "rules": 10,
+      "status": "active"
+    },
+    {
+      "func": "func_8003553C",
+      "file": "code6cac_b2",
+      "distance": 17,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007A28C",
+      "file": "gpu",
+      "distance": 17,
+      "verdict": "C",
+      "rules": 17,
+      "status": "active"
+    },
+    {
+      "func": "func_800477E8",
+      "file": "sound",
+      "distance": 17,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_80040CB8",
+      "file": "text1a",
+      "distance": 17,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "replay_camera_rob_back_loose3",
+      "file": "text1a_c",
+      "distance": 17,
+      "verdict": "C",
+      "rules": 8,
+      "status": "active"
+    },
+    {
+      "func": "func_8004876C",
+      "file": "text1b",
+      "distance": 17,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "cpu_set_move_command_and_dir_for_no_action",
+      "file": "code6cac_b",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 11,
+      "status": "active"
+    },
+    {
+      "func": "func_8002EA24",
+      "file": "code6cac_b",
+      "distance": 18,
+      "verdict": "ASM-PARTIAL",
+      "rules": 10,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E24C",
+      "file": "display",
+      "distance": 18,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E2D4",
+      "file": "display",
+      "distance": 18,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80080258",
+      "file": "system",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "saEft01Init",
+      "file": "system",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 15,
+      "status": "active"
+    },
+    {
+      "func": "func_80044CCC",
+      "file": "text1a_c",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "func_80049584",
+      "file": "text1b",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80052B00",
+      "file": "text1b",
+      "distance": 18,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80060544",
+      "file": "text1b",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 11,
+      "status": "active"
+    },
+    {
+      "func": "func_80060E38",
+      "file": "text1b",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 18,
+      "status": "active"
+    },
+    {
+      "func": "func_80068D88",
+      "file": "text1b",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80021280",
+      "file": "code6cac",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "cpu_side_move_dir",
+      "file": "code6cac_b",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 19,
+      "status": "active"
+    },
+    {
+      "func": "func_80083A48",
+      "file": "ings2",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "saTan5TakeAnim2_2",
+      "file": "main",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "mario_getMarioVoiceData_80048AD0",
+      "file": "text1b",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80021A98",
+      "file": "code6cac",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 19,
+      "status": "active"
+    },
+    {
+      "func": "suDispMentalBar",
+      "file": "code6cac_c_ab",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 10,
+      "status": "active"
+    },
+    {
+      "func": "func_8007C7A0",
+      "file": "display",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 21,
+      "status": "active"
+    },
+    {
+      "func": "func_8007C86C",
+      "file": "display",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 21,
+      "status": "active"
+    },
+    {
+      "func": "cpu_set_move_command_and_dir_for_no_action_2",
+      "file": "ings",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 25,
+      "status": "active"
+    },
+    {
+      "func": "D_8008359C",
+      "file": "ings2",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 20,
+      "status": "active"
+    },
+    {
+      "func": "func_80086014",
+      "file": "main",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80047A90",
+      "file": "sound",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "cpu_side_move_dir_4",
+      "file": "system",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80080390",
+      "file": "system",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "PutShadowRmd",
+      "file": "text1a",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80052B7C",
+      "file": "text1b",
+      "distance": 20,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80075670",
+      "file": "text1b",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "game_2d_CheckLifeGaugeNoDisp",
+      "file": "text1b",
+      "distance": 20,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "coli_check_circle_hit_line",
+      "file": "code6cac_b",
+      "distance": 21,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "replay_camera_Init",
+      "file": "code6cac_b2",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8003B9D0",
+      "file": "code6cac_c2",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "pad_ClearAppliBuffer",
+      "file": "code6cac_c_mid",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 21,
+      "status": "active"
+    },
+    {
+      "func": "func_8007B6C8",
+      "file": "display",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 19,
+      "status": "active"
+    },
+    {
+      "func": "motion_Close",
+      "file": "ings2",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "_SelectSection",
+      "file": "text1a_c",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 10,
+      "status": "active"
+    },
+    {
+      "func": "func_800645B0",
+      "file": "text1b",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8002C0DC",
+      "file": "code6cac_b",
+      "distance": 23,
+      "verdict": "C",
+      "rules": 13,
+      "status": "active"
+    },
+    {
+      "func": "func_80033DF4",
+      "file": "code6cac_b",
+      "distance": 23,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F2DC",
+      "file": "display",
+      "distance": 23,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "motion_Open",
+      "file": "ings2",
+      "distance": 23,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "func_80089E30",
+      "file": "main",
+      "distance": 23,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80089EB0",
+      "file": "main",
+      "distance": 23,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80052788",
+      "file": "text1b",
+      "distance": 23,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8006288C",
+      "file": "text1b",
+      "distance": 23,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "func_80078654",
+      "file": "text1b_b",
+      "distance": 23,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "func_8001979C",
+      "file": "code6cac",
+      "distance": 24,
+      "verdict": "C",
+      "rules": 22,
+      "status": "active"
+    },
+    {
+      "func": "func_8003504C",
+      "file": "code6cac_b",
+      "distance": 24,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "func_8007C97C",
+      "file": "display",
+      "distance": 24,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "func_80084A7C",
+      "file": "main",
+      "distance": 24,
+      "verdict": "C",
+      "rules": 11,
+      "status": "active"
+    },
+    {
+      "func": "func_80073060",
+      "file": "text1b",
+      "distance": 24,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "gnd_disp_loop_ctrl",
+      "file": "ings",
+      "distance": 25,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "hirahira_w_ctrl",
+      "file": "text1a",
+      "distance": 25,
+      "verdict": "C",
+      "rules": 18,
+      "status": "active"
+    },
+    {
+      "func": "efc_rob_set_type_flash",
+      "file": "text1a_c",
+      "distance": 25,
+      "verdict": "C",
+      "rules": 14,
+      "status": "active"
+    },
+    {
+      "func": "func_80052A88",
+      "file": "text1b",
+      "distance": 25,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80086130",
+      "file": "main",
+      "distance": 26,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "Pad_Prs",
+      "file": "code6cac_b",
+      "distance": 27,
+      "verdict": "ASM-PARTIAL",
+      "rules": 12,
+      "status": "active"
+    },
+    {
+      "func": "cpu_get_dist_2",
+      "file": "code6cac_b",
+      "distance": 27,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80038658",
+      "file": "code6cac_c_mid",
+      "distance": 27,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "title_mv_exec2",
+      "file": "main",
+      "distance": 27,
+      "verdict": "C",
+      "rules": 18,
+      "status": "active"
+    },
+    {
+      "func": "func_8002304C",
+      "file": "code6cac",
+      "distance": 28,
+      "verdict": "C",
+      "rules": 16,
+      "status": "active"
+    },
+    {
+      "func": "cpu_check_tubazeri",
+      "file": "code6cac_b",
+      "distance": 28,
+      "verdict": "ASM-PARTIAL",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_80034F88",
+      "file": "code6cac_b",
+      "distance": 28,
+      "verdict": "C",
+      "rules": 30,
+      "status": "active"
+    },
+    {
+      "func": "saTan4GaugeInit",
+      "file": "main",
+      "distance": 28,
+      "verdict": "C",
+      "rules": 15,
+      "status": "active"
+    },
+    {
+      "func": "func_800485EC",
+      "file": "text1b",
+      "distance": 28,
+      "verdict": "C",
+      "rules": 25,
+      "status": "active"
+    },
+    {
+      "func": "ang_near_dif",
+      "file": "config",
+      "distance": 29,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8004C388",
+      "file": "text1b",
+      "distance": 29,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80023648",
+      "file": "code6cac",
+      "distance": 30,
+      "verdict": "C",
+      "rules": 30,
+      "status": "active"
+    },
+    {
+      "func": "SetPacketData",
+      "file": "main",
+      "distance": 30,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "DispPracticeMenuTex_A",
+      "file": "code6cac",
+      "distance": 32,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8002D320",
+      "file": "code6cac_b",
+      "distance": 32,
+      "verdict": "ASM-PARTIAL",
+      "rules": 13,
+      "status": "active"
+    },
+    {
+      "func": "func_8003D888",
+      "file": "code6cac_c2",
+      "distance": 32,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "rob_calc_2d_position",
+      "file": "text1a",
+      "distance": 32,
+      "verdict": "C",
+      "rules": 15,
+      "status": "active"
+    },
+    {
+      "func": "func_800770B8",
+      "file": "text1b",
+      "distance": 32,
+      "verdict": "C",
+      "rules": 25,
+      "status": "active"
+    },
+    {
+      "func": "calc_fc_frame_800203B4",
+      "file": "code6cac",
+      "distance": 33,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "saTan5TakeAnim2",
+      "file": "code6cac_b",
+      "distance": 33,
+      "verdict": "ASM-PARTIAL",
+      "rules": 34,
+      "status": "active"
+    },
+    {
+      "func": "SetCurrentCursor",
+      "file": "code6cac_c2",
+      "distance": 33,
+      "verdict": "C",
+      "rules": 8,
+      "status": "active"
+    },
+    {
+      "func": "func_8003A728",
+      "file": "code6cac_c_mid",
+      "distance": 33,
+      "verdict": "C",
+      "rules": 11,
+      "status": "active"
+    },
+    {
+      "func": "func_8002FF20",
+      "file": "code6cac_b",
+      "distance": 34,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80016E60",
+      "file": "ings",
+      "distance": 34,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80040D48",
+      "file": "text1a",
+      "distance": 34,
+      "verdict": "C",
+      "rules": 34,
+      "status": "active"
+    },
+    {
+      "func": "func_80031890",
+      "file": "code6cac_b",
+      "distance": 35,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8003DBE4",
+      "file": "code6cac_c2",
+      "distance": 35,
+      "verdict": "C",
+      "rules": 36,
+      "status": "active"
+    },
+    {
+      "func": "func_80043BD0",
+      "file": "text1a_c",
+      "distance": 35,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80043D34",
+      "file": "text1a_c",
+      "distance": 35,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80060A68",
+      "file": "text1b",
+      "distance": 35,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "coli_hit_body_weapon",
+      "file": "code6cac_b",
+      "distance": 36,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800300B4",
+      "file": "code6cac_b",
+      "distance": 36,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "saSeInit",
+      "file": "code6cac_b",
+      "distance": 36,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8004473C",
+      "file": "text1a_c",
+      "distance": 36,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "InitHiraRmd_800480C0",
+      "file": "text1b",
+      "distance": 36,
+      "verdict": "C",
+      "rules": 33,
+      "status": "active"
+    },
+    {
+      "func": "func_800325E0",
+      "file": "code6cac_b",
+      "distance": 37,
+      "verdict": "ASM-PARTIAL",
+      "rules": 16,
+      "status": "active"
+    },
+    {
+      "func": "func_8008BB24",
+      "file": "main",
+      "distance": 37,
+      "verdict": "C",
+      "rules": 37,
+      "status": "active"
+    },
+    {
+      "func": "tslGlobalMemFree_800861BC",
+      "file": "main",
+      "distance": 37,
+      "verdict": "C",
+      "rules": 30,
+      "status": "active"
+    },
+    {
+      "func": "func_80043C7C",
+      "file": "text1a_c",
+      "distance": 37,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80043DE0",
+      "file": "text1a_c",
+      "distance": 37,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "DispSleepMenuTex",
+      "file": "code6cac_c2",
+      "distance": 38,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8003D39C",
+      "file": "code6cac_c2",
+      "distance": 39,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_8007D3F8",
+      "file": "display",
+      "distance": 39,
+      "verdict": "C",
+      "rules": 36,
+      "status": "active"
+    },
+    {
+      "func": "func_800644FC",
+      "file": "text1b",
+      "distance": 39,
+      "verdict": "C",
+      "rules": 12,
+      "status": "active"
+    },
+    {
+      "func": "func_80086BFC",
+      "file": "main",
+      "distance": 40,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "cpu_side_move_dir_3",
+      "file": "main",
+      "distance": 41,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "saTan4FireDisp",
+      "file": "text1a",
+      "distance": 41,
+      "verdict": "C",
+      "rules": 35,
+      "status": "active"
+    },
+    {
+      "func": "func_800460E4",
+      "file": "text1a_c2",
+      "distance": 41,
+      "verdict": "C",
+      "rules": 16,
+      "status": "active"
+    },
+    {
+      "func": "single_game_VoiceContorol",
+      "file": "code6cac",
+      "distance": 42,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80019310",
+      "file": "code6cac",
+      "distance": 44,
+      "verdict": "ASM-PARTIAL",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_8002C61C",
+      "file": "code6cac_b",
+      "distance": 44,
+      "verdict": "C",
+      "rules": 42,
+      "status": "active"
+    },
+    {
+      "func": "saTan2KabutoWareMove",
+      "file": "code6cac_b",
+      "distance": 45,
+      "verdict": "C",
+      "rules": 15,
+      "status": "active"
+    },
+    {
+      "func": "camera_set_zoom",
+      "file": "code6cac",
+      "distance": 48,
+      "verdict": "C",
+      "rules": 47,
+      "status": "active"
+    },
+    {
+      "func": "func_8007CE0C",
+      "file": "display",
+      "distance": 48,
+      "verdict": "C",
+      "rules": 23,
+      "status": "active"
+    },
+    {
+      "func": "func_8007526C",
+      "file": "text1b",
+      "distance": 48,
+      "verdict": "C",
+      "rules": 14,
+      "status": "active"
+    },
+    {
+      "func": "single_game_SetWazaData",
+      "file": "code6cac_b",
+      "distance": 49,
+      "verdict": "C",
+      "rules": 22,
+      "status": "active"
+    },
+    {
+      "func": "ang_hosei",
+      "file": "ings2",
+      "distance": 50,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "single_game_SetAbilityData",
+      "file": "code6cac",
+      "distance": 51,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80052930",
+      "file": "text1b",
+      "distance": 51,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8008AAD4",
+      "file": "main",
+      "distance": 52,
+      "verdict": "ASM-SUSPECT",
+      "rules": 42,
+      "status": "active"
+    },
+    {
+      "func": "cdrom_FramesToBcd",
+      "file": "system",
+      "distance": 52,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800430E4",
+      "file": "text1a_c",
+      "distance": 52,
+      "verdict": "ASM-SUSPECT",
+      "rules": 25,
+      "status": "active"
+    },
+    {
+      "func": "func_8007352C",
+      "file": "text1b",
+      "distance": 54,
+      "verdict": "ASM-SUSPECT",
+      "rules": 11,
+      "status": "active"
+    },
+    {
+      "func": "saTan0KiWareMoveA",
+      "file": "code6cac_b",
+      "distance": 56,
+      "verdict": "ASM-PARTIAL",
+      "rules": 66,
+      "status": "active"
+    },
+    {
+      "func": "func_80088740",
+      "file": "main",
+      "distance": 56,
+      "verdict": "ASM-SUSPECT",
+      "rules": 17,
+      "status": "active"
+    },
+    {
+      "func": "marionation_Exec",
+      "file": "system",
+      "distance": 56,
+      "verdict": "ASM-SUSPECT",
+      "rules": 44,
+      "status": "active"
+    },
+    {
+      "func": "pad_main_control",
+      "file": "code6cac_b",
+      "distance": 57,
+      "verdict": "ASM-SUSPECT",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "saSeInit_2",
+      "file": "code6cac_c_mid",
+      "distance": 57,
+      "verdict": "ASM-SUSPECT",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "saTan0GaugeDraw",
+      "file": "main",
+      "distance": 57,
+      "verdict": "ASM-SUSPECT",
+      "rules": 48,
+      "status": "active"
+    },
+    {
+      "func": "coli_HitPauseKatana",
+      "file": "main",
+      "distance": 58,
+      "verdict": "ASM-SUSPECT",
+      "rules": 65,
+      "status": "active"
+    },
+    {
+      "func": "decBs0",
+      "file": "text1a",
+      "distance": 58,
+      "verdict": "ASM-SUSPECT",
+      "rules": 39,
+      "status": "active"
+    },
+    {
+      "func": "hirahira_w_ctrl_2",
+      "file": "text1a_c",
+      "distance": 58,
+      "verdict": "ASM-SUSPECT",
+      "rules": 63,
+      "status": "active"
+    },
+    {
+      "func": "func_8006BD28",
+      "file": "text1b",
+      "distance": 59,
+      "verdict": "ASM-SUSPECT",
+      "rules": 37,
+      "status": "active"
+    },
+    {
+      "func": "saTan4FireDisp_80048864",
+      "file": "text1b",
+      "distance": 60,
+      "verdict": "ASM-SUSPECT",
+      "rules": 36,
+      "status": "active"
+    },
+    {
+      "func": "tslPrintScreen",
+      "file": "config",
+      "distance": 61,
+      "verdict": "ASM-SUSPECT",
+      "rules": 28,
+      "status": "active"
+    },
+    {
+      "func": "calc_fc_frame_8007EC5C",
+      "file": "display",
+      "distance": 62,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E4DC",
+      "file": "display",
+      "distance": 62,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007EB4C",
+      "file": "display",
+      "distance": 62,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8008BC60",
+      "file": "main",
+      "distance": 64,
+      "verdict": "ASM-SUSPECT",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "mk_leaf_newpos",
+      "file": "code6cac_b",
+      "distance": 65,
+      "verdict": "ASM-SUSPECT",
+      "rules": 44,
+      "status": "active"
+    },
+    {
+      "func": "func_800856B0",
+      "file": "main",
+      "distance": 65,
+      "verdict": "ASM-SUSPECT",
+      "rules": 65,
+      "status": "active"
+    },
+    {
+      "func": "gnd_land_hit_char_tsuba",
+      "file": "text1b",
+      "distance": 65,
+      "verdict": "ASM-SUSPECT",
+      "rules": 88,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E8DC",
+      "file": "display",
+      "distance": 72,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007EA0C",
+      "file": "display",
+      "distance": 75,
+      "verdict": "ASM-PARTIAL",
+      "rules": 13,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E74C",
+      "file": "display",
+      "distance": 85,
+      "verdict": "ASM-PARTIAL",
+      "rules": 13,
+      "status": "active"
+    },
+    {
+      "func": "func_80017848",
+      "file": "ings",
+      "distance": 85,
+      "verdict": "ASM-SUSPECT",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_80074B18",
+      "file": "text1b",
+      "distance": 87,
+      "verdict": "ASM-SUSPECT",
+      "rules": 41,
+      "status": "active"
+    },
+    {
+      "func": "DispSchoolBG",
+      "file": "code6cac_b",
+      "distance": 97,
+      "verdict": "ASM-PARTIAL",
+      "rules": 45,
+      "status": "active"
+    },
+    {
+      "func": "marionation_camera_Exec",
+      "file": "code6cac",
+      "distance": 98,
+      "verdict": "ASM-PARTIAL",
+      "rules": 75,
+      "status": "active"
+    },
+    {
+      "func": "CalcHiraNormal",
+      "file": "code6cac_c2",
+      "distance": 98,
+      "verdict": "ASM-SUSPECT",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_8006BB68",
+      "file": "text1b",
+      "distance": 110,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006DD94",
+      "file": "text1b",
+      "distance": 115,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005C6D0",
+      "file": "text1b",
+      "distance": 117,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80070C70",
+      "file": "text1b",
+      "distance": 118,
+      "verdict": "ASM-SUSPECT",
+      "rules": 32,
+      "status": "active"
+    },
+    {
+      "func": "func_8003DE14",
+      "file": "code6cac_c2",
+      "distance": 119,
+      "verdict": "ASM-SUSPECT",
+      "rules": 36,
+      "status": "active"
+    },
+    {
+      "func": "exec_game",
+      "file": "main",
+      "distance": 121,
+      "verdict": "ASM-SUSPECT",
+      "rules": 104,
+      "status": "active"
+    },
+    {
+      "func": "func_8006D3DC",
+      "file": "text1b",
+      "distance": 124,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80057ACC",
+      "file": "text1b",
+      "distance": 125,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "tslGlobalMemFree_8005C2A8",
+      "file": "text1b",
+      "distance": 133,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80069F80",
+      "file": "text1b",
+      "distance": 134,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006A1A0",
+      "file": "text1b",
+      "distance": 137,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005C074",
+      "file": "text1b",
+      "distance": 139,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80063BD0",
+      "file": "text1b",
+      "distance": 143,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007CBB0",
+      "file": "display",
+      "distance": 149,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80054604",
+      "file": "text1b",
+      "distance": 158,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007D048",
+      "file": "display",
+      "distance": 159,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80076D74",
+      "file": "text1b",
+      "distance": 159,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80048FFC",
+      "file": "text1b",
+      "distance": 164,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "saTan1GaugeMain",
+      "file": "text1b",
+      "distance": 164,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006BEC4",
+      "file": "text1b",
+      "distance": 167,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "cpu_check_run_attack",
+      "file": "code6cac",
+      "distance": 168,
+      "verdict": "ASM-PARTIAL",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_8005BA8C",
+      "file": "text1b",
+      "distance": 168,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8002CA8C",
+      "file": "code6cac_b",
+      "distance": 177,
+      "verdict": "ASM-SUSPECT",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_8007D6D8",
+      "file": "display",
+      "distance": 185,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006CCC8",
+      "file": "text1b",
+      "distance": 187,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80056CB8",
+      "file": "text1b",
+      "distance": 188,
+      "verdict": "ASM-SUSPECT",
+      "rules": 15,
+      "status": "active"
+    },
+    {
+      "func": "saTan3GaugeMain_8006A564",
+      "file": "text1b",
+      "distance": 197,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800841E0",
+      "file": "main",
+      "distance": 198,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006B578",
+      "file": "text1b",
+      "distance": 198,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "saTan3GaugeMain_80073200",
+      "file": "text1b",
+      "distance": 201,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "saTan0KiWareMoveB",
+      "file": "code6cac_b",
+      "distance": 203,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "DispUpdateStatusMessage",
+      "file": "main",
+      "distance": 204,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80017A44",
+      "file": "ings",
+      "distance": 206,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800747D8",
+      "file": "text1b",
+      "distance": 206,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "DispStuff",
+      "file": "main",
+      "distance": 207,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006ECF4",
+      "file": "text1b",
+      "distance": 207,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80074488",
+      "file": "text1b",
+      "distance": 210,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006CFBC",
+      "file": "text1b",
+      "distance": 217,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006E534",
+      "file": "text1b",
+      "distance": 220,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "DispPracticeMenuTex_B",
+      "file": "code6cac",
+      "distance": 229,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "DispPracticeMenuTex_C",
+      "file": "code6cac_b",
+      "distance": 230,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "md_game_check_mode",
+      "file": "code6cac_c2",
+      "distance": 232,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80084500",
+      "file": "main",
+      "distance": 233,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80077374",
+      "file": "text1b",
+      "distance": 234,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80048BA4",
+      "file": "text1b",
+      "distance": 235,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "PutRobShadow",
+      "file": "code6cac_b",
+      "distance": 236,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "replay_camera_get_attack_number",
+      "file": "code6cac_c2",
+      "distance": 238,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "saTan2Main",
+      "file": "main",
+      "distance": 245,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "md_game_end",
+      "file": "main",
+      "distance": 247,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80075F80",
+      "file": "text1b",
+      "distance": 249,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "AllocBukiRmd",
+      "file": "main",
+      "distance": 257,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "tslTm2LoadImage_2",
+      "file": "system",
+      "distance": 261,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8003FA24",
+      "file": "config",
+      "distance": 262,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "tslTm2LoadImage",
+      "file": "system",
+      "distance": 262,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006F100",
+      "file": "text1b",
+      "distance": 264,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005FC9C",
+      "file": "text1b",
+      "distance": 266,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8002F2D0",
+      "file": "code6cac_b",
+      "distance": 268,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80071C4C",
+      "file": "text1b",
+      "distance": 268,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "action_CheckHitZangeki",
+      "file": "main",
+      "distance": 269,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "special_camera_Exec",
+      "file": "code6cac_b2",
+      "distance": 272,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005763C",
+      "file": "text1b",
+      "distance": 274,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006F528",
+      "file": "text1b",
+      "distance": 275,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006B120",
+      "file": "text1b",
+      "distance": 276,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8008AF9C",
+      "file": "main",
+      "distance": 279,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80074E08",
+      "file": "text1b",
+      "distance": 279,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800678A8",
+      "file": "text1b",
+      "distance": 282,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80021DB0",
+      "file": "code6cac",
+      "distance": 283,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800571C0",
+      "file": "text1b",
+      "distance": 285,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "single_game_CheckStatusUpDataTotalOver",
+      "file": "code6cac",
+      "distance": 287,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005E098",
+      "file": "text1b",
+      "distance": 288,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8001C8DC",
+      "file": "code6cac",
+      "distance": 289,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800768DC",
+      "file": "text1b",
+      "distance": 292,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80021424",
+      "file": "code6cac",
+      "distance": 295,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "DispHira",
+      "file": "code6cac_c2",
+      "distance": 295,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80082D34",
+      "file": "ings2",
+      "distance": 295,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007BC08",
+      "file": "display",
+      "distance": 296,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8002F770",
+      "file": "code6cac_b",
+      "distance": 297,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80067200",
+      "file": "text1b",
+      "distance": 297,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800872A4",
+      "file": "main",
+      "distance": 299,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "efc_rob_set_type_particle",
+      "file": "text1a_c",
+      "distance": 300,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80086CF8",
+      "file": "main",
+      "distance": 303,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800693CC",
+      "file": "text1b",
+      "distance": 306,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800207C8",
+      "file": "code6cac",
+      "distance": 315,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80089F3C",
+      "file": "main",
+      "distance": 316,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80087770",
+      "file": "main",
+      "distance": 321,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80031B24",
+      "file": "code6cac_b",
+      "distance": 325,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80073728",
+      "file": "text1b",
+      "distance": 339,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80026DA4",
+      "file": "code6cac_b",
+      "distance": 340,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "md_game_rob_data_init",
+      "file": "code6cac",
+      "distance": 345,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80053E9C",
+      "file": "text1b",
+      "distance": 345,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007636C",
+      "file": "text1b",
+      "distance": 346,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "special_camera_Init",
+      "file": "code6cac_b",
+      "distance": 351,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80080828",
+      "file": "system",
+      "distance": 352,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006D808",
+      "file": "text1b",
+      "distance": 353,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80035828",
+      "file": "code6cac_b2",
+      "distance": 358,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80073C78",
+      "file": "text1b",
+      "distance": 360,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800759D0",
+      "file": "text1b",
+      "distance": 362,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80052D00",
+      "file": "text1b",
+      "distance": 384,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8001BE20",
+      "file": "code6cac",
+      "distance": 391,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005490C",
+      "file": "text1b",
+      "distance": 398,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8002A458",
+      "file": "code6cac_b",
+      "distance": 415,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80079244",
+      "file": "text1b_b",
+      "distance": 416,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006295C",
+      "file": "text1b",
+      "distance": 418,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "saTan1MainJump",
+      "file": "main",
+      "distance": 421,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80063E10",
+      "file": "text1b",
+      "distance": 430,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80057E84",
+      "file": "text1b",
+      "distance": 445,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "saTan3MainJump",
+      "file": "code6cac_b",
+      "distance": 463,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80053754",
+      "file": "text1b",
+      "distance": 464,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80032C50",
+      "file": "code6cac_b",
+      "distance": 465,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80077D94",
+      "file": "text1b_b",
+      "distance": 466,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "mario_test_Exec",
+      "file": "code6cac",
+      "distance": 467,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80043454",
+      "file": "text1a_c",
+      "distance": 477,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800646E8",
+      "file": "text1b",
+      "distance": 488,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800620B8",
+      "file": "text1b",
+      "distance": 499,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8002DE20",
+      "file": "code6cac_b",
+      "distance": 505,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8001A820",
+      "file": "code6cac",
+      "distance": 574,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "single_game_setModeRequest",
+      "file": "code6cac",
+      "distance": 642,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80063084",
+      "file": "text1b",
+      "distance": 659,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80067D14",
+      "file": "text1b",
+      "distance": 1046,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "motion_SetExMotion",
+      "file": "text1b",
+      "distance": 1453,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "special_camera_set_win_cam",
+      "file": "code6cac_b2",
+      "distance": 510,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8006F97C",
+      "file": "text1b",
+      "distance": 513,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "single_game_SetStatusUpData",
+      "file": "text1b",
+      "distance": 514,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8003993C",
+      "file": "code6cac_c_mid",
+      "distance": 524,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80079A30",
+      "file": "text1b_b",
+      "distance": 533,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80034708",
+      "file": "code6cac_b",
+      "distance": 542,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8005D814",
+      "file": "text1b",
+      "distance": 544,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8006A880",
+      "file": "text1b",
+      "distance": 550,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8005F1C8",
+      "file": "text1b",
+      "distance": 562,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "calc_teasi_loc_fw",
+      "file": "code6cac_b",
+      "distance": 572,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "camera_set_target_zoom",
+      "file": "code6cac",
+      "distance": 586,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80022580",
+      "file": "code6cac",
+      "distance": 619,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "saTan4GaugeMain",
+      "file": "text1b",
+      "distance": 620,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_800720FC",
+      "file": "text1b",
+      "distance": 688,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "replay_camera_attack",
+      "file": "text1b",
+      "distance": 696,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80030D7C",
+      "file": "code6cac_b",
+      "distance": 707,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_800198D0",
+      "file": "code6cac",
+      "distance": 747,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8005C8A8",
+      "file": "text1b",
+      "distance": 752,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8008C464",
+      "file": "main",
+      "distance": 761,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8005E54C",
+      "file": "text1b",
+      "distance": 798,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "motion_ShiftControl",
+      "file": "text1b",
+      "distance": 808,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80029454",
+      "file": "code6cac_b",
+      "distance": 1024,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "calc_loc_mat_fw_80055B60",
+      "file": "text1b",
+      "distance": 1108,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "calc_loc_mat_fw",
+      "file": "code6cac_b",
+      "distance": 1110,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80023F08",
+      "file": "code6cac",
+      "distance": 2981,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80058580",
+      "file": "text1b",
+      "distance": 2989,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    }
+  ],
+  "counts": {
+    "total": 484,
+    "active": 458,
+    "by_status": {
+      "active": 458,
+      "authorize": 26
+    },
+    "by_verdict": {
+      "C": 252,
+      "ASM-PARTIAL": 86,
+      "ASM-SUSPECT": 120,
+      "ASM-STRUCTURAL": 26
+    }
+  }
+}

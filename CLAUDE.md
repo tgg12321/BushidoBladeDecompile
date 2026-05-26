@@ -23,12 +23,13 @@ wsl bash -c 'cd "<root>" && source .venv/bin/activate && python3 -m engine.cli <
 ### CLI
 | Command | Purpose |
 |---|---|
+| `queue next` / `done <func>` / `status` | **the worklist** — take the top item, mark it Tier-4-done, see progress |
 | `verify-oracle [--rebuild]` | confirm the tree still builds byte-identical (the oracle) |
 | `build` | full clean-driver build → SHA1 check |
 | `canonical <func>` | C-vs-asm gate: ASM-region / ASM-structural / C. **Run BEFORE any pure-C work.** |
-| `sandbox <func> --disable all` | cheat-invisible score = the honest pure-C distance |
+| `sandbox <func> --disable all` | cheat-invisible score = the honest pure-C distance (tier-3 stripped) |
 | `diagnose <funcs...>` | classify a gap: matchable / control-flow / canonical / plateau |
-| `scan-redundant --all` | rules the build doesn't need + a difficulty-ranked worklist |
+| `scan-redundant --all` | low-level: per-file redundant-rule scan (`queue` is the consolidated worklist) |
 | `retire <func>` | delete a function's rules + full-build SHA1 verify (auto-rollback on mismatch) |
 | `fixtures-verify` | tool-health: golden fixtures still byte-match |
 | `test` | engine regression suite (distance / gate / cheat-stripping) — keep green when you touch engine code |
@@ -52,11 +53,31 @@ subagents, no orchestrator/worker split: the engine is a toolkit the agent drive
 **Build files (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, pipeline `*.txt`) MUST use LF line
 endings** — edit via WSL or an LF-enforcing editor (the Write tool produces LF on this machine).
 
+## The queue IS the worklist (`engine queue`)
+All outstanding work lives in ONE ordered list — `engine/queue.json` — covering every function
+still carrying a cheat (a regfix/asmfix rule OR a load-bearing tier-3 pin/inline-asm). It is
+**pre-ordered easiest-first** by honest pure-C distance, so there is **no triage and no
+cherry-picking**: you work the **top active item** to Tier-4, mark it `done`, and take the next.
+Everything gets decompiled eventually, so don't skip "hard" items or hunt for "easy" ones — just
+work the top. The SessionStart hook surfaces the top each session; `queue status` shows progress.
+
+| `queue` action | Purpose |
+|---|---|
+| `queue next` | print the top active item (func, file, verdict, distance, rule count) |
+| `queue done <func>` | mark complete — re-checks ZERO rules + build SHA1 == oracle (refuses otherwise) |
+| `queue park <func> --reason "…"` | block an item (e.g. needs user canonical-asm auth); `next` skips it |
+| `queue status` | counts by status/verdict + the current top |
+| `queue regen` | rebuild the queue (preserves done/parked); run after big changes |
+
+Items routed `ASM-STRUCTURAL` / `ASM-WHOLE` sit in an `authorize` bucket (not `active`) — they need
+user canonical-asm sign-off, so they never block pure-C work.
+
 ## The loop (per function)
 The agent *is* the gap-closer — the engine measures, routes, and gates; you write the C.
 
-0. **Pick** a target — `scan-redundant --all` prints a difficulty-ranked worklist, or work a
-   function the user named.
+0. **Take the top of the queue** — `queue next` (also surfaced by the SessionStart hook). Work THAT
+   function to completion before taking another; don't cherry-pick. (Override only if the user names
+   a specific function.)
 1. **`verify-oracle --rebuild`** once at session start. This makes `build/` the clean canonical
    reference the sandbox scores against. (Skip if `build/` is already clean.)
 2. **`canonical <func>`** — route. ASM-region / ASM-STRUCTURAL ⇒ stop the pure-C effort
@@ -67,7 +88,13 @@ The agent *is* the gap-closer — the engine measures, routes, and gates; you wr
    gradient. `diagnose <func>` explains a stuck gap (matchable / control-flow / canonical / plateau).
 5. **Score 0 ⇒ finish.** `retire <func>` deletes the function's now-unneeded regfix/asmfix rules,
    rebuilds, and SHA1-gates (auto-rollback on mismatch). A pure-C function with no rules to remove
-   just needs `verify-oracle --rebuild` to confirm the byte+link match.
+   just needs `verify-oracle --rebuild` to confirm the byte+link match. **Note (masked-0 caveat):**
+   the sandbox distance is masked (register names normalised out), so a `0` can hide a real register
+   diff — `retire`/`verify-oracle` (full SHA1) is the only proof. If `retire` rolls back, the gap is
+   genuine reg-alloc work; keep editing.
+   Then `queue done <func>` records completion (it re-verifies ZERO rules + SHA1 == oracle). If the
+   item is genuinely not pure-C-closable (canonical-asm needing user auth, or a documented plateau),
+   `queue park <func> --reason "…"` instead so the queue advances.
 6. **Register findings.** Before committing, ask: did this match reveal a *reusable* codegen
    pattern or a non-obvious gotcha that the next agent would benefit from? If yes, record it where
    future agents will actually see it:

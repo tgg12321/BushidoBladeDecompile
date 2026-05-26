@@ -26,6 +26,7 @@ from . import integrate as INT
 from . import metrics as MET
 from . import orchestrator as ORCH
 from . import pipeline as P
+from . import queue as Q
 from . import sandbox as SB
 
 
@@ -89,6 +90,11 @@ def main() -> int:
     sub.add_parser("canonical-scan", help="classify every function as C / ASM-WHOLE / ASM-PARTIAL")
     sub.add_parser("test", help="run the engine regression suite (fast pure-logic + build-read tiers)")
 
+    qp = sub.add_parser("queue", help="consolidated Tier-4 work queue — work the TOP item to done")
+    qp.add_argument("action", choices=["next", "done", "park", "status", "regen"])
+    qp.add_argument("func", nargs="?", help="function name (required for done/park)")
+    qp.add_argument("--reason", default="", help="reason (for park)")
+
     a = ap.parse_args()
 
     if a.cmd == "oracle-lock":
@@ -150,6 +156,35 @@ def main() -> int:
         r = SB.sandbox_score(a.func, disable=a.disable, strip_tier3=not a.keep_tier3)
         print(json.dumps(r, indent=2))
         MET.record_event("sandbox", a.func, r, extra={"disable": a.disable})
+        return 0
+
+    if a.cmd == "queue":
+        if a.action == "regen":
+            q = Q.generate()
+            print(f"queue regenerated -> {Q.QUEUE_PATH}")
+            print(json.dumps(q["counts"], indent=2))
+            if q["build_failures"]:
+                print("build_failures:", json.dumps(q["build_failures"]))
+            return 0
+        if a.action == "status":
+            print(json.dumps(Q.status(), indent=2))
+            return 0
+        if a.action == "next":
+            it = Q.next_item()
+            if not it:
+                print("queue: no active items (run `queue regen`, or all work is done/parked).")
+                return 0
+            print(json.dumps(it, indent=2))
+            return 0
+        if a.action in ("done", "park"):
+            if not a.func:
+                print(f"queue {a.action}: requires a function name")
+                return 2
+            r = (Q.mark_done(a.func) if a.action == "done"
+                 else Q.mark_parked(a.func, a.reason))
+            print(json.dumps(r, indent=2))
+            MET.record_event(f"queue-{a.action}", a.func, r, exit_code=0 if r.get("ok") else 1)
+            return 0 if r.get("ok") else 1
         return 0
 
     if a.cmd == "scan-redundant":
