@@ -43,6 +43,7 @@ except ImportError:
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_EVENTS = ROOT / "metrics" / "events.jsonl"
 DEFAULT_EXPERIMENTS = ROOT / "metrics" / "experiments.jsonl"
+SINCE_FILE = ROOT / "metrics" / "since.txt"   # fresh-slate cutoff (ISO ts); optional
 DEFAULT_DSN = "host=127.0.0.1 port=5432 user=postgres dbname=bb2_metrics"
 
 # Claude Code mangles the project cwd into its transcript dir name by replacing
@@ -69,6 +70,15 @@ def _ts(s):
         return datetime.fromisoformat(str(s).replace("Z", "+00:00"))
     except Exception:
         return None
+
+
+def _read_since(override=None):
+    """Fresh-slate cutoff: ingest only transcripts/events at-or-after this time.
+    From --since, else metrics/since.txt, else None (ingest everything)."""
+    raw = override
+    if raw is None and SINCE_FILE.exists():
+        raw = SINCE_FILE.read_text(encoding="utf-8").strip()
+    return _ts(raw) if raw else None
 
 
 def _price_tier(model):
@@ -102,7 +112,7 @@ def ensure_schema(conn):
 # ---------------------------------------------------------------------------
 # engine_events ingest
 # ---------------------------------------------------------------------------
-def ingest_events(conn, events_path):
+def ingest_events(conn, events_path, since=None):
     if not events_path.exists():
         print(f"  events log not found: {events_path} (0 events)")
         return
@@ -117,6 +127,8 @@ def ingest_events(conn, events_path):
             try:
                 e = json.loads(raw)
             except Exception:
+                continue
+            if since and (_ts(e.get("ts")) is None or _ts(e.get("ts")) < since):
                 continue
             cur.execute("""
                 INSERT INTO engine_events
@@ -148,7 +160,7 @@ _EXP_COLS = ("ts", "func", "file", "model", "effort", "session_id", "budget_usd"
              "terminal_reason", "git_commit", "notes")
 
 
-def ingest_experiments(conn, path):
+def ingest_experiments(conn, path, since=None):
     if not path.exists():
         print(f"  experiments: none ({path.name} absent)")
         return
@@ -163,6 +175,8 @@ def ingest_experiments(conn, path):
             try:
                 e = json.loads(raw)
             except Exception:
+                continue
+            if since and (_ts(e.get("ts")) is None or _ts(e.get("ts")) < since):
                 continue
             vals = [_ts(e["ts"]) if "ts" in e else None]
             vals += [e.get(c) for c in _EXP_COLS[1:]]
@@ -428,7 +442,7 @@ def _git(args):
         return ""
 
 
-def sync_techniques(conn):
+def sync_techniques(conn, since=None):
     # walk commit history with changed files; cheap enough for this repo
     log = _git(["log", "--no-merges", "--name-status",
                 "--format=__C__%x09%H%x09%cI%x09%s"])
@@ -463,6 +477,8 @@ def sync_techniques(conn):
 
         n_slug = n_hash = 0
         for c in commits:
+            if since and (c["ts"] is None or c["ts"] < since):
+                continue
             rule_touched = False
             for status, fpath in c["files"]:
                 m = re.search(r"(?:\.claude/rules|memory/.*?)/([a-z0-9-]+)\.md$", fpath)
@@ -513,6 +529,8 @@ def main():
     ap.add_argument("--events", default=str(DEFAULT_EVENTS))
     ap.add_argument("--experiments", default=str(DEFAULT_EXPERIMENTS))
     ap.add_argument("--transcripts", default=str(DEFAULT_TRANSCRIPTS))
+    ap.add_argument("--since", default=None,
+                    help="ISO cutoff; overrides metrics/since.txt (fresh-slate gate)")
     a = ap.parse_args()
 
     print(f"sync -> {a.dsn}")
@@ -527,13 +545,18 @@ def main():
             cur.execute("TRUNCATE attempt_logs, attempt_techniques, attempts, "
                         "agent_runs, techniques RESTART IDENTITY CASCADE")
         conn.commit()
-        ingest_events(conn, Path(a.events))
-        ingest_experiments(conn, Path(a.experiments))
+        since = _read_since(a.since)
+        if since:
+            print(f"  fresh-slate cutoff: ingesting only data >= {since.isoformat()}")
+        ingest_events(conn, Path(a.events), since)
+        ingest_experiments(conn, Path(a.experiments), since)
         runs = parse_all_transcripts(Path(a.transcripts))
+        if since:
+            runs = [r for r in runs if r.get("ended_at") and r["ended_at"] >= since]
         upsert_runs(conn, runs)
         correct_run_costs(conn)
         build_attempts(conn, runs)
-        sync_techniques(conn)
+        sync_techniques(conn, since)
         with conn.cursor() as cur:
             cur.execute("INSERT INTO sync_meta (key, value, ts) VALUES "
                         "('last_sync', %s, now()) ON CONFLICT (key) DO UPDATE "
