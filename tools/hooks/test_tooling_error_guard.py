@@ -103,6 +103,23 @@ def main() -> int:
     expect_none("permuter score output", "Bash",
                 "[permuter] iteration 4000, best score = 0 (found match!)")
 
+    # --- NEGATIVE: self-inspection (displayed source/config) must NOT match ---
+    # grep/cat/head of a script or the signatures JSON that *contains* a failure
+    # string is not a tooling failure. (Regression: 2026-05-25 grep of dc.sh.)
+    expect_none("grep -n of dc.sh source (echo + >&2 + line-no)", "Bash",
+                '379:            echo "ERROR: tools/worktree_bootstrap.sh missing '
+                '— checkout is incomplete" >&2')
+    expect_none("grep of signatures JSON array element", "Bash",
+                '        "worktree_bootstrap.sh missing",')
+    expect_none("cat of signatures JSON summary key", "Bash",
+                '      "summary": "A gitignored build dependency (cc1 / maspsx) is missing.",')
+    expect_none("python source printing a tool-error string", "Bash",
+                '    print("cc1: not found", file=sys.stderr)')
+    # ...but the SAME failure as real (bare) output still blocks:
+    expect_block("real bootstrap-missing failure (bare stderr)", "Bash",
+                 "ERROR: tools/worktree_bootstrap.sh missing — checkout is incomplete",
+                 "worktree-symlink")
+
     # --- build-file detection ---
     check("src/foo.c is build-critical", g.is_build_critical("src/foo.c", SIGS))
     check("regfix.txt is build-critical", g.is_build_critical("regfix.txt", SIGS))

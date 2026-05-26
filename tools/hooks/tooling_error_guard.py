@@ -49,6 +49,34 @@ OFF_SWITCH = ".bb2_tooling_guard_off"
 MAX_SCAN_BYTES = 4 * 1024 * 1024  # cap output / file scan for performance
 MAX_INCIDENTS_KEPT = 10           # bound the marker's occurrence history
 
+# A signature substring/regex living in this project's own source (dc.sh's
+# `echo "ERROR: ... worktree_bootstrap.sh missing"`, the signatures JSON, docs)
+# appears verbatim whenever an agent greps/cats/reads that file -- which is NOT
+# a tooling failure. These markers identify a line as DISPLAYED SOURCE/CONFIG
+# rather than live command output; such lines are dropped before matching. Real
+# failure text (e.g. a bare `cc1: not found` on stderr) carries none of them, so
+# this kills self-inspection false positives without masking actual failures.
+_DISPLAY_MARKERS = [
+    re.compile(r"^\s*\d+[:\-]"),                       # grep -n / context prefix: "379:" / "382-"
+    re.compile(r"\b(echo|printf)\b"),                  # shell echo/printf statement (source)
+    re.compile(r">&\d"),                               # shell stderr/stdout redirect (source)
+    re.compile(r"\bprint\(|\bsys\.std(err|out)\b"),    # python source line
+    re.compile(r'^\s*"[^"]*",?\s*$'),                  # lone quoted string: JSON array element
+    re.compile(r'"(summary|substrings|regexes|root_cause|permanent_fix|suggested_guard)"'),
+]
+
+
+def _is_display_line(line: str) -> bool:
+    """True if a line is displayed source/config (a grep/cat/head of a script or
+    the signatures JSON that *contains* a failure string) rather than live
+    command output."""
+    return any(rx.search(line) for rx in _DISPLAY_MARKERS)
+
+
+def _real_output(text: str) -> str:
+    """Drop displayed-source lines, keeping only plausible live command output."""
+    return "\n".join(ln for ln in text.splitlines() if not _is_display_line(ln))
+
 
 # --------------------------------------------------------------------------
 # Pure, importable classification logic (exercised by the test suite).
@@ -72,6 +100,7 @@ def classify_text(tool_name: str, text: str, signatures: dict) -> dict | None:
     if not text:
         return None
     scan = text[-MAX_SCAN_BYTES:] if len(text) > MAX_SCAN_BYTES else text
+    scan = _real_output(scan)  # ignore displayed-source lines (self-inspection)
     low = scan.lower()
 
     block_hit = None
@@ -282,7 +311,7 @@ def main() -> int:
         sig = classify_text(tool_name, output, signatures)
         if sig is not None:
             # capture a short snippet around the first match for the directive
-            snippet = _first_match_snippet(sig, output)
+            snippet = _first_match_snippet(sig, _real_output(output))
 
     if sig is None:
         return 0
