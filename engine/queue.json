@@ -3803,7 +3803,7 @@
       "verdict": "C",
       "rules": 3,
       "status": "parked",
-      "park_reason": "Pure-C distance 1. Single gap: GCC fill_eager_delay_slots DUPLICATES the post-loop 'andi v1,s1,0xFF' (count==2 mask) into the beqz (count!=0 guard) delay slot (+1 insn); target uses simple fall-through fill with i=0. A pure-C 'for (i=0; (i&0xFF)<count; i++)' loop reproduces the EXACT target structure (verified from cc1 -da output: i=0 in beqz delay slot, single post-loop andi, matching regalloc s0/s1/s2/s3). BUT that form changes func_8005BD30's GCC auto-label count, which renumbers .L labels file-wide and breaks SIBLING asmfix delete_between rules (func_8006BD28 .L8006BDD4, func_80070C70 .L80070D7C no longer match) -> retire breaks the oracle. Needs file-wide label stabilization (architecture/escalate), not closable in a single-function pass. (do-while-inside-if is the only sibling-safe form and forces the eager-fill the 3 regfix rules undo.)"
+      "park_reason": "Pure-C distance 1; a verified pure-C for-loop form retires all 3 regfix rules. Blocked by NEIGHBORING CHEATS, not by itself: its pure-C form renumbers .L labels file-wide, breaking func_8006BD28 + func_80070C70 asmfix delete_between/insert_before rules -- and those siblings are asm-INJECTION bridges (paste target asm verbatim via asmfix, not pure C). SOTN fix = RETIRE those sibling bridges to pure C (eliminating their label-anchored cheats); then this lands with nothing to break. Do NOT stabilize the sibling cheat anchors -- that hardens cheats, against Tier-4."
     },
     {
       "func": "func_8007F10C",
