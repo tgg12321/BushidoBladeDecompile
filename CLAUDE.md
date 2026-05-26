@@ -51,6 +51,31 @@ subagents, no orchestrator/worker split: the engine is a toolkit the agent drive
 **Build files (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, pipeline `*.txt`) MUST use LF line
 endings** — edit via WSL or an LF-enforcing editor (the Write tool produces LF on this machine).
 
+## The loop (per function)
+The agent *is* the gap-closer — the engine measures, routes, and gates; you write the C.
+
+0. **Pick** a target — `scan-redundant --all` prints a difficulty-ranked worklist, or work a
+   function the user named.
+1. **`verify-oracle --rebuild`** once at session start. This makes `build/` the clean canonical
+   reference the sandbox scores against. (Skip if `build/` is already clean.)
+2. **`canonical <func>`** — route. ASM-region / ASM-STRUCTURAL ⇒ stop the pure-C effort
+   (authorized inline asm only; never grind it or inject `$N` asm). `C` ⇒ continue.
+3. **`sandbox <func> --disable all`** — the honest cheat-free pure-C distance (`0` = already
+   matchable in pure C; just write/keep that C).
+4. **Edit `src/<file>.c`** toward the target in pure C, then re-run step 3 — the score is your
+   gradient. `diagnose <func>` explains a stuck gap (matchable / control-flow / canonical / plateau).
+5. **Score 0 ⇒ finish.** `retire <func>` deletes the function's now-unneeded regfix/asmfix rules,
+   rebuilds, and SHA1-gates (auto-rollback on mismatch). A pure-C function with no rules to remove
+   just needs `verify-oracle --rebuild` to confirm the byte+link match.
+6. **Commit** (`cheat-cleanup:` / `Match` / `engine:` prefix per docs/COMMIT_CONVENTIONS.md).
+
+**Reference gotcha:** the sandbox scores your edited, cheat-stripped `.o` against
+`build/src/<file>.o`, which must stay the *pristine* canonical build (= the target bytes). During
+the edit loop use only `sandbox` — it builds into `tmp/` and never touches `build/`. Do **not** run
+`build` / `verify-oracle --rebuild` while src has uncommitted edits: that rebuilds `build/` from
+your half-finished source, and the sandbox then scores against garbage. If it happens, re-establish
+a clean reference (revert or finish the edit, then rebuild). The final SHA1 gate is always honest.
+
 ## Substrate — do NOT break
 The engine reuses proven stage tools as substrate; treat these as load-bearing:
 cc1, maspsx, `regfix.py`/`asmfix.py` (pipeline stages), `prologue_fix`, `multu_pad`, `fix_lwl`,

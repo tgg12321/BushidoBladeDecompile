@@ -1,13 +1,20 @@
 """Canonical-asm INTAKE gate — deterministic C-vs-asm classification BEFORE any
 pure-C effort, so agents never (a) grind an impossible pure-C match or (b) reach
-for asm injection to brute-force bytes. The decision is the orchestrator's, not
-the agent's.
+for asm injection to brute-force bytes. The decision is the gate's, not the
+agent's.
 
-Definitive signals in the splat target disasm (asm/funcs/<func>.s):
-  * cop2/GTE ops (mtc2/mfc2/ctc2/cfc2/cop2/lwc2/swc2 + GTE commands) — no C analog
-  * splat's own `/* handwritten instruction */` annotation
+The target disasm comes from `objdump -d build/bb2.elf` (resolved via the ELF
+symbol table / disasm headers). This is name-independent and exact-per-function
+— it does NOT depend on asm/funcs/<name>.s, which is fragile: asm files aren't
+1:1 with functions (e.g. motion_Close @0x80083804 lives inside motion_Open.s)
+and their names lag behind renamed symbols.
+
+Definitive signals in that disasm:
+  * cop2/GTE ops — no C analog. objdump renders the GTE transfers as mnemonics
+    (mtc2/mfc2/ctc2/cfc2/lwc2/swc2) and the GTE command words as the generic
+    coprocessor mnemonic `c2  0x......` (e.g. 4aa00428 -> `c2 0xa00428`).
   * syscall (BIOS trampoline)
-  * .word (raw undisassembled instruction)
+  * raw .word (undisassembled instruction / data-in-text)
 
 A function/region with these is AUTO-ROUTED to canonical-asm (no pure-C attempt).
 Region-granular, so a partially-asm function gets pure C for the C parts and
@@ -20,11 +27,8 @@ from __future__ import annotations
 
 import re
 import subprocess
-from pathlib import Path
 
 from . import buildconfig as cfg
-
-ASM_DIR = "asm/funcs"
 
 # Distance tiers for STRUCTURAL (non-opcode) hand-asm detection. The masked
 # cheat-invisible distance = how far GCC's natural pure-C output sits from the
@@ -33,75 +37,80 @@ ASM_DIR = "asm/funcs"
 SUSPECT_DISTANCE = 50       # > this, gate=C: structural-asm SUSPECT (bounded attempt then PARK)
 NEAR_CERTAIN_DISTANCE = 500  # > this: GCC-implausible, near-certain hand-asm (auto-escalate)
 
-# Unambiguous cop2/GTE mnemonics. 'break' is EXCLUDED (GCC emits it for div-by-zero
-# / overflow traps — not an asm signal).
+# Unambiguous cop2/GTE mnemonics objdump knows by name. 'break' is EXCLUDED
+# (GCC emits it for div-by-zero / overflow traps — not an asm signal).
 _GTE = re.compile(
     r"^(mtc2|mfc2|ctc2|cfc2|cop2|lwc2|swc2|"
     r"rtps|rtpt|nclip|avsz3|avsz4|mvmva|gpf|gpl|sqr|dcpl|dpcs|dpct|intpl|"
     r"ncs|nct|ncds|ncdt|cdp|nccs|ncct|ncc|op|cc)$"
 )
-_HANDWRITTEN = "/* handwritten instruction */"
-# splat instruction line:  /* off vram bytes */  <mnem> <operands> [/* note */]
-_LINE = re.compile(r"^\s*/\*[^*]*\*/\s+(\S+)(.*)$")
+
+# ELF symbol-table line:  <vram> <flags...> F <section> <size> <name>
+_TSYM = re.compile(r"^([0-9a-fA-F]+)\s+\S.*\sF\s+\S+\s+([0-9a-fA-F]+)\s+(\S+)\s*$")
+# objdump -d instruction line:  "   8002ec84:\t<hex>\t<mnem> <operands>"
+_DLINE = re.compile(r"^\s*[0-9a-f]+:\s+[0-9a-f]+\s+(\S+)(.*)$")
+
+_table_cache: dict | None = None
 
 
-_VRAM_RE = re.compile(r"^([0-9a-fA-F]+)\s+\S.*\sF\s+\S+\s+[0-9a-fA-F]+\s+(\S+)\s*$")
-_vram_cache: dict | None = None
-
-
-def _vram_of(func: str) -> int | None:
-    """src symbol -> vram, from build/bb2.elf (cached). Lets us resolve the
-    address-named asm file (func_<VRAM>.s) for functions whose src name was
-    renamed away from splat's original symbol."""
-    global _vram_cache
-    if _vram_cache is None:
-        _vram_cache = {}
+def _func_table() -> dict:
+    """name -> (vram, size) from build/bb2.elf F-symbols (cached). A 0-size
+    symbol (objdump occasionally emits one) gets a gap-fallback to the next
+    function start so its range is still bounded."""
+    global _table_cache
+    if _table_cache is None:
         out = subprocess.run(["bash", "-c", f"{cfg.OBJDUMP} -t build/bb2.elf"],
                              capture_output=True, text=True).stdout
+        syms = {}
         for line in out.splitlines():
-            m = _VRAM_RE.match(line)
+            m = _TSYM.match(line)
             if m:
-                _vram_cache[m.group(2)] = int(m.group(1), 16)
-    return _vram_cache.get(func)
+                syms[m.group(3)] = (int(m.group(1), 16), int(m.group(2), 16))
+        starts = sorted({v for v, _ in syms.values()})
+        nxt = {starts[i]: starts[i + 1] for i in range(len(starts) - 1)}
+        _table_cache = {}
+        for name, (vram, size) in syms.items():
+            if size == 0:
+                size = nxt.get(vram, vram + 4) - vram
+            _table_cache[name] = (vram, size)
+    return _table_cache
 
 
-def _func_path(func: str) -> str:
-    p = f"{ASM_DIR}/{func}.s"
-    if Path(p).exists():
-        return p
-    vram = _vram_of(func)
-    if vram is not None:
-        alt = f"{ASM_DIR}/func_{vram:08X}.s"
-        if Path(alt).exists():
-            return alt
-    return p  # original; classify() reports NO-TARGET if absent
-
-
-def definitive_insns(func: str):
-    """Returns (hits, total_insns) where hits is a list of
-    (idx, mnemonic, reason) for definitive-asm instructions. None if no target."""
-    p = Path(_func_path(func))
-    if not p.exists():
-        return None
+def _detect(dlines) -> tuple[list, int]:
+    """Scan objdump -d instruction lines -> (hits, total_insns). hits is a list
+    of (idx, mnemonic, reason) for definitive-asm instructions."""
     hits, idx = [], 0
-    for line in p.read_text().splitlines():
-        m = _LINE.match(line)
+    for line in dlines:
+        m = _DLINE.match(line)
         if not m:
-            continue  # label / directive / blank
-        mn = m.group(1)
+            continue  # symbol header / blank
+        mn, ops = m.group(1), m.group(2)
         reason = None
         if mn == ".word":
-            reason = "raw .word"
+            reason = "raw .word (undisassembled)"
         elif mn == "syscall":
             reason = "syscall (BIOS trampoline)"
-        elif _GTE.match(mn):
+        # GTE transfers decode as mtc2/.../swc2; GTE *command* words decode as
+        # the generic coprocessor mnemonic "c2  0x......" (e.g. 4aa00428 = c2).
+        elif _GTE.match(mn) or mn in ("c2", "cop2"):
             reason = f"GTE/cop2 op ({mn})"
-        elif _HANDWRITTEN in line:
-            reason = "splat handwritten annotation"
         if reason:
             hits.append((idx, mn, reason))
         idx += 1
     return hits, idx
+
+
+def definitive_insns(func: str):
+    """(hits, total_insns) for one function from a range disasm. None if the
+    function isn't in build/bb2.elf (rebuild first)."""
+    tbl = _func_table()
+    if func not in tbl:
+        return None
+    vram, size = tbl[func]
+    cmd = (f"{cfg.OBJDUMP} -d --start-address=0x{vram:08x} "
+           f"--stop-address=0x{vram + size:08x} build/bb2.elf")
+    out = subprocess.run(["bash", "-c", cmd], capture_output=True, text=True).stdout
+    return _detect(out.splitlines())
 
 
 def _regions(indices: list[int]) -> list[tuple[int, int]]:
@@ -119,16 +128,10 @@ def _regions(indices: list[int]) -> list[tuple[int, int]]:
     return spans
 
 
-def classify(func: str, distance: int | None = None) -> dict:
-    """C-vs-asm verdict. Definitive opcode signals win outright. If there's no
-    opcode signal, the optional `distance` (masked cheat-invisible pure-C
-    distance) applies the STRUCTURAL tier: GCC-implausible distance => hand-asm
-    suspect, so an agent never grinds it blindly. distance=None skips the tier
-    (fast opcode-only)."""
-    res = definitive_insns(func)
-    if res is None:
-        return {"func": func, "verdict": "NO-TARGET", "reason": f"no {_func_path(func)}"}
-    hits, total = res
+def _verdict(func: str, hits: list, total: int, distance: int | None = None) -> dict:
+    """Build the verdict dict from a detected (hits, total). Definitive opcode
+    signals win outright; otherwise the optional pure-C `distance` applies the
+    structural tier."""
     if hits:
         spans = _regions([i for i, _, _ in hits])
         frac = len(hits) / total if total else 0
@@ -137,7 +140,6 @@ def classify(func: str, distance: int | None = None) -> dict:
         return {"func": func, "verdict": verdict, "asm_insns": len(hits), "total": total,
                 "regions": spans, "reasons": reasons,
                 "reason": f"{len(hits)}/{total} insns canonical-asm ({'; '.join(reasons)})"}
-    # no definitive opcode signal -> apply the structural distance tier
     out = {"func": func, "verdict": "C", "asm_insns": 0, "total": total}
     if distance is None:
         out["reason"] = "no definitive asm signal (structural distance not checked)"
@@ -155,6 +157,16 @@ def classify(func: str, distance: int | None = None) -> dict:
     else:
         out["reason"] = f"pure-C distance {distance} <= {SUSPECT_DISTANCE} — pure-C target"
     return out
+
+
+def classify(func: str, distance: int | None = None) -> dict:
+    """C-vs-asm verdict for one function. distance=None skips the structural
+    tier (fast opcode-only)."""
+    res = definitive_insns(func)
+    if res is None:
+        return {"func": func, "verdict": "NO-TARGET",
+                "reason": f"{func} not in build/bb2.elf symbol table (rebuild?)"}
+    return _verdict(func, res[0], res[1], distance=distance)
 
 
 def classify_full(func: str) -> dict:
@@ -175,5 +187,22 @@ def classify_full(func: str) -> dict:
 
 
 def scan_all() -> list[dict]:
-    funcs = sorted(p.stem for p in Path(ASM_DIR).glob("*.s"))
-    return [classify(f) for f in funcs]
+    """Opcode-only classification of every real function, from ONE full disasm of
+    build/bb2.elf. Bounds each function by its symbol-table size (NOT the next
+    objdump header) so internal `.L` labels can't fragment a function."""
+    import bisect
+    tbl = _func_table()
+    out = subprocess.run(["bash", "-c", f"{cfg.OBJDUMP} -d build/bb2.elf"],
+                         capture_output=True, text=True).stdout
+    insns = []  # (addr, line) for every disassembled instruction
+    for line in out.splitlines():
+        if _DLINE.match(line):
+            insns.append((int(line.split(":", 1)[0], 16), line))
+    insns.sort()
+    addrs = [a for a, _ in insns]
+    results = []
+    for name, (vram, size) in tbl.items():
+        lo = bisect.bisect_left(addrs, vram)
+        hi = bisect.bisect_left(addrs, vram + size)
+        results.append(_verdict(name, *_detect(line for _, line in insns[lo:hi])))
+    return sorted(results, key=lambda r: r["func"])
