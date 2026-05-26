@@ -68,6 +68,9 @@ def main() -> int:
     sbp = sub.add_parser("sandbox", help="cheat-invisible score for a function")
     sbp.add_argument("func")
     sbp.add_argument("--disable", choices=["all", "lost-codegen", "none"], default="lost-codegen")
+    sbp.add_argument("--keep-tier3", action="store_true",
+                     help="do NOT strip tier-3 pins/inline-asm (default: stripped, "
+                          "so the score is the honest pure-C Tier-4 distance)")
     scp = sub.add_parser("scan-redundant", help="find functions whose rules are redundant (exact byte-identity)")
     g = scp.add_mutually_exclusive_group(required=True)
     g.add_argument("--file", help="scan one src file stem")
@@ -144,7 +147,7 @@ def main() -> int:
         return 0 if ok else 1
 
     if a.cmd == "sandbox":
-        r = SB.sandbox_score(a.func, disable=a.disable)
+        r = SB.sandbox_score(a.func, disable=a.disable, strip_tier3=not a.keep_tier3)
         print(json.dumps(r, indent=2))
         MET.record_event("sandbox", a.func, r, extra={"disable": a.disable})
         return 0

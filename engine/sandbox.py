@@ -51,3 +51,23 @@ def sandbox_score(func: str, disable: str = "lost-codegen",
                rules_dropped=ov["dropped"], tier3_stripped=tier3_stripped,
                disabled_o=disabled_o)
     return res
+
+
+def build_stripped_object(stem: str, out_o: str, cfgdir: str,
+                          strip_tier3: bool = True) -> dict:
+    """Build <stem>.o once with EVERY regfix/asmfix rule removed (empty configs)
+    and, when strip_tier3, all tier-3 pins/inline-asm stripped too. Because both
+    regfix rules and tier-3 asm are function-local, one whole-file build gives
+    each function the bytes it would have with only its own crutches removed — so
+    a single object scores every function in the file. This is the shared honest-
+    distance recipe used by scan-redundant (difficulty) and diagnose; with
+    strip_tier3 it is the true pure-C Tier-4 distance, without it the regfix-only
+    distance `retire` verifies (source pins stay). Returns the overrides dict."""
+    ov = cheats.empty_overrides(cfgdir)
+    if strip_tier3:
+        from . import inlineasm
+        src_ovr = str(Path(cfgdir).parent / "src" / f"{stem}.c")
+        inlineasm.write_stripped(stem, src_ovr)
+        ov["src_override"] = src_ovr
+    pipeline.build_c_object(stem, out_o, cheat_overrides=ov)
+    return ov

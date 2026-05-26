@@ -39,16 +39,22 @@ def scan_file(stem: str, workdir: str = "tmp/scan", rebuild: bool = True) -> dic
     funcs = sorted(defined & cheats.all_keyed_functions())
     if not funcs:
         return {}
-    stripped_o = f"{workdir}/{stem}/{stem}.o"
-    if rebuild or not Path(stripped_o).exists():
-        ov = cheats.empty_overrides(f"{workdir}/{stem}/cfg")
-        P.build_c_object(stem, stripped_o, cheat_overrides=ov)
+    from . import sandbox
+    cfgdir = f"{workdir}/{stem}/cfg"
+    # regfix/asmfix off, tier-3 KEPT — predicts `retire` (which keeps source pins).
+    redundant_o = f"{workdir}/{stem}/{stem}.o"
+    # regfix/asmfix off AND tier-3 pins/inline-asm stripped — the honest pure-C
+    # Tier-4 distance (matches `canonical`); this is what difficulty ranks on.
+    tier4_o = f"{workdir}/{stem}/{stem}.tier4.o"
+    if rebuild or not Path(redundant_o).exists():
+        sandbox.build_stripped_object(stem, redundant_o, cfgdir, strip_tier3=False)
+    if rebuild or not Path(tier4_o).exists():
+        sandbox.build_stripped_object(stem, tier4_o, cfgdir, strip_tier3=True)
     out = {}
     for func in funcs:
         try:
-            redundant = score.is_redundant(stripped_o, ref_o, func)
-            difficulty = 0 if redundant else max(
-                1, score.score_func(stripped_o, ref_o, func)["score"])
+            redundant = score.is_redundant(redundant_o, ref_o, func)
+            difficulty = score.score_func(tier4_o, ref_o, func)["score"]
         except KeyError:
             continue
         out[func] = {"redundant": redundant, "difficulty": difficulty}
