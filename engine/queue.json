@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-26T15:09:41",
+  "generated_at": "2026-05-26T17:48:12",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -3799,80 +3799,16 @@
       "rules": 0,
       "status": "done",
       "completed_at": "2026-05-26T15:20:05"
-    },
-    {
-      "func": "func_8008ACD0",
-      "file": "main",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "done",
-      "completed_at": "2026-05-26T15:39:51"
-    },
-    {
-      "func": "spu_DmaTransfer",
-      "file": "main",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "done",
-      "park_reason": "Sole tier-3 debt is one __asm__(nop) compensating for the maspsx .L-label load-delay blind spot, LOAD-CONSUMER variant: target has 'lw a1,0(a1); .L<loop-top>:; lw v1,0(a1)' (pointer load, then deref consuming a1 as base across the loop-top label). sandbox --disable all = 0 and the narrow maspsx gate that emits the nop (extending the existing jalr-consumer gate in _handle_nop_before_next_instruction to line_loads_from_reg consumers) makes it 100% pure C -- BUT verify-oracle --rebuild FAILS: the same gate inserts a nop in saTan4FireDisp (text1a.c) that shifts its index-anchored asmfix delete_between (#nop.*'.L279:'), giving 'symbol .L279 already defined'. This is exactly the cascade memory maspsx-is-label-dot-prefix documents as 'not worth the corpus-wide churn'. Clean retirement needs user sign-off: either re-derive saTan4FireDisp's rule cluster, or a per-function-scoped maspsx gate. Both source + maspsx reverted; oracle re-verified green (SHA1 62efab4f).",
-      "completed_at": "2026-05-26T16:19:54"
-    },
-    {
-      "func": "cdrom_DmaToRam",
-      "file": "system",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "done",
-      "completed_at": "2026-05-26T16:24:05"
-    },
-    {
-      "func": "efc_buki_draw_zanzou",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "done",
-      "completed_at": "2026-05-26T16:35:08"
-    },
-    {
-      "func": "func_8006EC0C",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "done",
-      "completed_at": "2026-05-26T17:24:45"
-    },
-    {
-      "func": "gnd_get_fog",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "done",
-      "completed_at": "2026-05-26T17:28:43"
-    },
-    {
-      "func": "func_8001E404",
-      "file": "code6cac",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "done",
-      "completed_at": "2026-05-26T17:34:52"
     }
   ],
   "counts": {
-    "total": 481,
+    "total": 474,
     "active": 440,
     "by_status": {
       "active": 440,
       "authorize": 30,
       "parked": 2,
-      "done": 9
+      "done": 2
     },
     "by_verdict": {
       "C": 240,

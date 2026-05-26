@@ -22,6 +22,23 @@ from pathlib import Path
 REGFIX = "regfix.txt"
 REGFIX2 = "regfix_stage2.txt"
 ASMFIX = "asmfix.txt"
+INLINE_ASM_CANONICAL = "inline_asm_canonical.txt"
+
+
+def canonical_asm_funcs(path: str = INLINE_ASM_CANONICAL) -> set[str]:
+    """Functions authorized as canonical-asm (inline_asm_canonical.txt). Their
+    inline asm IS the accepted finished form, so the Tier-4 done-gate exempts
+    THEM (and only them) from the 'zero tier-3 inline asm' bar. Name is the first
+    whitespace-delimited token; blank/`#` lines ignored."""
+    p = Path(path)
+    if not p.exists():
+        return set()
+    out: set[str] = set()
+    for ln in p.read_text().splitlines():
+        ln = ln.strip()
+        if ln and not ln.startswith("#"):
+            out.add(ln.split()[0])
+    return out
 
 # A lost-codegen insert: insert/insert_after whose body is an `addu` that writes
 # a register sourced from $zero/$0 — the instruction GCC's optimizer dropped

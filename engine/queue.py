@@ -37,6 +37,7 @@ from pathlib import Path
 from . import buildconfig as cfg
 from . import canonical
 from . import cheats
+from . import inlineasm
 from . import oracle as O
 from . import pipeline as P
 from . import sandbox
@@ -95,6 +96,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             if it.get("status") in ("done", "parked"):
                 prev[it["func"]] = it
     verdicts = {r["func"]: r["verdict"] for r in canonical.scan_all()}
+    canon_funcs = cheats.canonical_asm_funcs()
     items, failures = [], []
     for stem in sorted(P.c_stems()):
         ref_o = f"build/src/{stem}.o"
@@ -116,8 +118,20 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             if rules == 0 and dist == 0:
                 continue  # already Tier-4 (no cheat, byte-clean) -> not outstanding
             if func in prev:  # sticky done/parked
-                items.append({**prev[func], "file": stem, "distance": dist, "rules": rules})
-                continue
+                pv = prev[func]
+                if pv.get("status") == "done":
+                    # RE-VALIDATE a sticky 'done': it must still be Tier-4 — zero
+                    # rules AND no tier-3 inline asm unless canonical-asm. If a
+                    # cheated match slipped through an older gate, drop 'done' and
+                    # let it fall through to normal routing (re-opened as active).
+                    t3 = inlineasm.file_func_tier3_count(stem, func)
+                    if rules == 0 and (t3 <= 0 or func in canon_funcs):
+                        items.append({**pv, "file": stem, "distance": dist, "rules": rules})
+                        continue
+                    # else: not actually Tier-4 -> fall through, re-open it
+                else:  # parked -> sticky regardless
+                    items.append({**pv, "file": stem, "distance": dist, "rules": rules})
+                    continue
             if cheats.is_jtbl_infra(func):
                 # canonical jump-table rodata-split infra — needs a global rodata
                 # reorder (user-authorized), not per-function pure-C work.
@@ -143,20 +157,33 @@ def next_item() -> dict | None:
 
 
 def mark_done(func: str) -> dict:
-    """Tier-4 gate: the function must carry ZERO regfix/asmfix rules AND the
-    current build/ must still equal the oracle (run `retire`/`verify-oracle`
-    first — they leave build/ current). Refuses otherwise."""
+    """Tier-4 gate: a function is DONE only if (1) ZERO regfix/asmfix rules, (2)
+    NO tier-3 inline asm in source UNLESS it is authorized canonical-asm
+    (inline_asm_canonical.txt), and (3) the current build/ still equals the
+    oracle. (2) is what stops a cheated 'match' (register pins / `move $N,$N`
+    injection / scheduling barriers) from being recorded as Tier-4 — SHA1 alone
+    can't catch it, since tier-3 asm produces the right bytes."""
+    q = load()
+    item = next((it for it in q.get("items", []) if it["func"] == func), None)
+    if item is None:
+        return {"ok": False, "func": func, "reason": "not in queue"}
     rules = _rule_count(func)
     if rules > 0:
         return {"ok": False, "func": func,
                 "reason": f"{rules} regfix/asmfix rule(s) still keyed to {func} — not Tier-4"}
+    if func not in cheats.canonical_asm_funcs():
+        t3 = inlineasm.file_func_tier3_count(item["file"], func)
+        if t3 > 0:
+            return {"ok": False, "func": func,
+                    "reason": (f"{t3} tier-3 inline-asm block(s) in src/{item['file']}.c — NOT "
+                               f"Tier-4 pure C. Strip them (pure C), or, only if {func} is genuinely "
+                               f"hand-written/canonical asm, authorize it in inline_asm_canonical.txt "
+                               f"with evidence. (register pins, hardcoded-$N asm, scheduling "
+                               f"barriers are tier-3 cheats, not a match.)")}
     v = O.verify(rebuild=False)
     if not v.get("build_matches"):
         return {"ok": False, "func": func,
                 "reason": "current build/ SHA1 != oracle — run `verify-oracle`/`retire` first"}
-    q = load()
-    if not any(it["func"] == func for it in q.get("items", [])):
-        return {"ok": False, "func": func, "reason": "not in queue"}
     for it in q["items"]:
         if it["func"] == func:
             it["status"] = "done"

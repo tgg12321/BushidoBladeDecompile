@@ -248,6 +248,15 @@ def test_cheats() -> None:
         check("jtbl-infra: no rules -> False",
               cheats.is_jtbl_infra("funcZ", regfix="/nonexistent", regfix2="/nonexistent", asmfix=afp) is False)
 
+    # canonical_asm_funcs: the Tier-4 done-gate's tier-3 exemption set
+    with tempfile.TemporaryDirectory() as td:
+        caf = Path(td) / "canon.txt"
+        caf.write_text("# header comment\nfunc_AAA  # GTE wrapper\nfunc_BBB\n\nfunc_CCC\n")
+        eq("canonical_asm_funcs: first-token names, # ignored",
+           cheats.canonical_asm_funcs(str(caf)), {"func_AAA", "func_BBB", "func_CCC"})
+        check("canonical_asm_funcs: missing file -> empty set",
+              cheats.canonical_asm_funcs("/nonexistent") == set())
+
 
 # --------------------------------------------------------------------------
 # metrics — the capture layer's non-negotiable: silent + swallow-on-failure

@@ -54,7 +54,12 @@ form and the footguns below.
 ### The non-negotiables (enforced by construction, not by nagging)
 1. **Tier-4 standard** — 100% pure C; zero regfix/asmfix/register-pins. The only allowed asm is
    *canonical* (GTE/cop2 ops, BIOS/syscall trampolines, or a construct with no C form), and
-   `canonical` decides what qualifies — not the agent.
+   `canonical` decides what qualifies — not the agent. **Enforced, not honor-system:** `queue done`
+   and `regen` refuse to record a function as done if it carries any regfix/asmfix rule OR any
+   tier-3 inline asm (register pins, hardcoded-`$N` asm, scheduling barriers) unless it's authorized
+   canonical-asm in `inline_asm_canonical.txt`. SHA1 alone can't catch a tier-3 "match" (the asm
+   emits the right bytes), so the gate audits the source. `tools/check_tier4_integrity.py` is the
+   standing audit; the orchestrator's `headless_review` flags any cheated committed match.
 2. **The oracle is the only truth** — "done" = full build+link SHA1 ==
    `62efab4f73f992798c43e8c730aa43baa10bb4fa`. Intermediate exit codes and isolated scores are hints.
 3. **Cheating can't help** — the sandbox scores with regfix/asmfix disabled and tier-3 inline-asm
@@ -132,7 +137,7 @@ work the top. The SessionStart hook surfaces the top each session; `queue status
 | `queue` action | Purpose |
 |---|---|
 | `queue next` | print the top active item (func, file, verdict, distance, rule count) |
-| `queue done <func>` | mark complete — re-checks ZERO rules + build SHA1 == oracle (refuses otherwise) |
+| `queue done <func>` | mark complete — re-checks ZERO rules + ZERO non-canonical tier-3 inline asm + build SHA1 == oracle (refuses otherwise). `regen` re-validates sticky `done` entries the same way and re-opens any cheated one. `python3 tools/check_tier4_integrity.py` audits the whole done set. |
 | `queue park <func> --reason "…"` | block an item (e.g. needs user canonical-asm auth); `next` skips it |
 | `queue status` | counts by status/verdict + the current top |
 | `queue regen` | rebuild the queue (preserves done/parked); run after big changes |

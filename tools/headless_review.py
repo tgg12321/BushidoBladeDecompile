@@ -36,7 +36,7 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "tools"))
 sys.path.insert(0, str(REPO))
 import headless_audit as ha           # noqa: E402
-from engine import cheats             # noqa: E402
+from engine import cheats, inlineasm  # noqa: E402
 
 RUNLOG = REPO / "metrics" / "headless_runs.jsonl"
 QUEUE = REPO / "engine" / "queue.json"
@@ -148,11 +148,25 @@ def review(rec: dict) -> dict:
 
     leftover = uncommitted_leftover()
 
+    # Tier-4 integrity: a COMMITTED match must not carry tier-3 inline asm
+    # (register pins / hardcoded-$N asm / scheduling barriers) unless the function
+    # is authorized canonical-asm. SHA1 can't catch this (tier-3 emits right bytes),
+    # so audit the committed source directly.
+    match_tier3 = 0
+    if rec.get("advanced") and rec.get("file") and func not in cheats.canonical_asm_funcs():
+        try:
+            match_tier3 = max(0, inlineasm.file_func_tier3_count(rec["file"], func))
+        except Exception:
+            match_tier3 = 0
+
     # apply the maximal-autonomy escalation boundary
     if leftover:
         # a dirty tree (uncommitted worker work, e.g. budget cutoff mid-function)
         # must be resolved before the loop continues — never run onto it.
         decision, why = "ESCALATE", f"uncommitted leftover ({len(leftover)} path(s)) — orchestrator must commit/revert before continuing"
+    elif match_tier3 > 0:
+        decision, why = "ESCALATE", (f"CHEATED MATCH: {func} committed with {match_tier3} tier-3 "
+                                     f"inline-asm block(s), non-canonical — NOT Tier-4 pure C")
     elif outcome in ("ORACLE-BREAK", "ERROR", "STUCK"):
         decision, why = "ESCALATE", f"outcome={outcome}"
     elif outcome == "PARKED" and park_verdict != "AUTO-CONFIRMED":
@@ -166,6 +180,7 @@ def review(rec: dict) -> dict:
     return {
         "func": func, "file": rec.get("file"), "outcome": outcome,
         "decision": decision, "why": why, "uncommitted_leftover": leftover,
+        "match_tier3": match_tier3,
         "oracle_ok": rec.get("oracle_ok"), "model": rec.get("model"),
         "cost_usd": rec.get("cost_usd"), "num_turns": rec.get("num_turns"),
         "park_confirmation": park_verdict, "park_detail": park_detail,
@@ -189,6 +204,8 @@ def print_human(r: dict) -> None:
             print(f"    error breakdown: {a['error_breakdown']}")
     if r.get("uncommitted_leftover"):
         print(f"  UNCOMMITTED LEFTOVER ({len(r['uncommitted_leftover'])}): {r['uncommitted_leftover'][:6]}")
+    if r.get("match_tier3"):
+        print(f"  ** CHEATED MATCH: {r['match_tier3']} tier-3 inline-asm block(s) in committed source (non-canonical)")
     if r.get("park_confirmation"):
         print(f"  PARK: [{r['park_confirmation']}] {r['park_detail']}")
     if r.get("commits"):
