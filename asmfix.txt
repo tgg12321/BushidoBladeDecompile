@@ -189,8 +189,6 @@ saEft00Add: insert_before "^jal\tfunc_80080390$" ".LsaEft00Add_copy_skip:"
 saEft00Add: replace_first "^bne\t\\$2,\\$0,\\.L199$" "bne\t$2,$0,.LsaEft00Add_copy_skip"
 saEft00Add: insert_before "^lw\t\\$2,D_800A14D4$" ".LsaEft00Add_draw_skip:"
 saEft00Add: replace_first "^beq\t\\$2,\\$0,\\.L207$" "beq\t$2,$0,.LsaEft00Add_draw_skip"
-func_800826CC: insert_before "^jal\tsys_VSync$" ".Lfunc_800826CC_skip_wait:"
-func_800826CC: replace_first "^beq\t\\$2,\\$0,\\.L[0-9]+$" "beq\t$2,$0,.Lfunc_800826CC_skip_wait"
 
 # func_8008AF9C/func_80089F3C replacements also shift SetPacketData's early
 # exit/main-work labels; retarget the branch and restore the loaded-value test.
