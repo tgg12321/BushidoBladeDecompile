@@ -82,6 +82,14 @@ preview and `-PermissionMode acceptEdits` to supervise. Metrics attribution: the
 per-run `CLAUDE_SESSION_ID` (so `engine/metrics.py` stamps events.jsonl); `tools/eng.ps1` does the
 same for interactive sessions.
 
+**Audit a run without reading the transcript** — `tools/headless_audit.py` digests a session's huge
+`~/.claude/projects/<munged>/<sid>.jsonl` into a few lines of signal (turns, tokens, est cost,
+tool-call mix, tooling errors, `shell_footgun_guard` blocks, retried/duplicate commands, engine-loop
+trace). `python3 tools/headless_audit.py --all` is a one-line-per-run dashboard (REVIEW vs OK);
+`--session <uuid>` / `--latest` drills into one; `--flags` shows only concerning runs. The headless
+runner folds these signals straight into each `headless_runs.jsonl` record, so the run log is
+self-auditing — you only open the transcript via this tool if a number looks off.
+
 ## The queue IS the worklist (`engine queue`)
 All outstanding work lives in ONE ordered list — `engine/queue.json` — covering every function
 still carrying a cheat (a regfix/asmfix rule OR a load-bearing tier-3 pin/inline-asm). It is

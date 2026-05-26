@@ -46,6 +46,9 @@ $ErrorActionPreference = 'Stop'
 $root   = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $engPs1 = Join-Path $PSScriptRoot 'eng.ps1'
 $runlog = Join-Path $root 'metrics/headless_runs.jsonl'
+$wsldir = if ($root -match '^([A-Za-z]):[\\/](.*)$') {
+    "/mnt/$($Matches[1].ToLower())/$($Matches[2] -replace '\\','/')"
+} else { $root -replace '\\','/' }
 
 function Invoke-Eng {
     # Run an engine subcommand via eng.ps1, return parsed JSON (stdout only).
@@ -53,6 +56,16 @@ function Invoke-Eng {
     $raw = & $engPs1 @EngArgs | Out-String
     if (-not $raw.Trim()) { return $null }
     return $raw | ConvertFrom-Json
+}
+
+function Get-AuditDigest($sid) {
+    # Transcript-derived efficiency signals (turns, tooling errors, footgun
+    # blocks, retried commands) so the run record is self-auditing. Best-effort.
+    try {
+        $raw = wsl bash -c "cd '$wsldir' && python3 tools/headless_audit.py --session '$sid' --json" | Out-String
+        if ($raw.Trim()) { return $raw | ConvertFrom-Json }
+    } catch { }
+    return $null
 }
 
 $PROMPT = @'
@@ -123,7 +136,7 @@ try {
         }
 
         $env:CLAUDE_SESSION_ID = $sid            # so engine/metrics.py attributes the run
-        $raw = (claude @claudeArgs | Out-String)
+        $raw = ($null | & claude @claudeArgs | Out-String)   # $null stdin -> skip the 3s "no stdin" wait
         Remove-Item Env:\CLAUDE_SESSION_ID -ErrorAction SilentlyContinue
 
         $res = $null
@@ -140,6 +153,8 @@ try {
         # parked counts as progress too (the func leaves 'active')
         $stillTop = (Invoke-Eng queue next).func -eq $func
         $progressed = $advanced -or (-not $stillTop)
+
+        $audit = Get-AuditDigest $sid    # transcript-derived efficiency signals
 
         Write-RunRecord ([ordered]@{
             ts             = (Get-Date).ToUniversalTime().ToString('o')
@@ -158,9 +173,18 @@ try {
             progressed     = $progressed
             done_before    = $doneBefore
             done_after     = $doneAfter
+            # self-auditing efficiency signals (from tools/headless_audit.py)
+            tooling_errors = $audit.error_results
+            footgun_blocks = $audit.footgun_blocks
+            duplicate_cmds = $audit.duplicate_cmd_count
+            audit_turns    = $audit.turns
+            eng_subcmds    = $audit.eng_subcmds
         })
 
         Write-Host "[headless] $func -> oracle_ok=$oracleOk advanced=$advanced progressed=$progressed cost=`$$($res.total_cost_usd)"
+        if ($audit) {
+            Write-Host "[headless] efficiency: turns=$($audit.turns) tooling_errors=$($audit.error_results) footgun_blocks=$($audit.footgun_blocks) duplicate_cmds=$($audit.duplicate_cmd_count)"
+        }
 
         if (-not $oracleOk) {
             Write-Error "[headless] ORACLE BROKEN after $func -- the agent committed a non-matching build. STOPPING for manual review."
