@@ -1,14 +1,14 @@
 ---
 name: lost-codegen-insert-cheat
 paths: ["regfix.txt", "src/*.c"]
-description: "`insert_after \\"addu $sN, $0, $zero\\" @ idx` and similar single-instruction insert/insert_after/insert_before rules in regfix.txt are asm injection — they restore instructions GCC's constant-prop / dead-store-eliminator ate. The audit_asm_cheats hook now blocks new ones at commit time. Fix the C structure instead (usually via [[shared-end-label]])."
+description: "`insert_after \\"addu $sN, $0, $zero\\" @ idx` rules are asm injection (restore what GCC's const-prop/dead-store ate). Score-inert under the engine sandbox; fix the C via [[shared-end-label]]."
 metadata:
   type: audit
 ---
 
 
 ## Why: detected as cheat
-**Rule:** any new `insert`/`insert_after`/`insert_before` regfix rule whose body matches `addu $rN, $0, $zero`, `addu $rN, $rM, $zero`, or `addu $rN, $zero, $rM` is blocked by the commit hook (`audit_asm_cheats.py --check-new`).
+**Rule:** any new `insert`/`insert_after`/`insert_before` regfix rule whose body matches `addu $rN, $0, $zero`, `addu $rN, $rM, $zero`, or `addu $rN, $zero, $rM` is a cheat. Under the engine it is **score-inert** — the cheat-invisible sandbox strips it, so it can't lower the `disable=all` distance and writing it gains nothing. `audit_asm_cheats.py --check-new` flags it as a manual detector (run before committing; NOT a wired commit hook).
 
 **How to apply:** if you see one of these rules as the only way to close a 1-2-instruction shortfall, the C source is wrong, not the regfix mechanism. Restructure the C.
 
@@ -59,13 +59,13 @@ These inject MIPS instructions that didn't come from C compilation ...
 ```
 
 ```
-$ git commit -m "..."
+$ python3 tools/audit_asm_cheats.py --check-new
 ASM-CHEAT GUARD: new unauthorized asm-cheat patterns since HEAD:
   Lost-codegen insert(s) for func_XXX: HEAD had 0, now 2 (+2). ...
 ```
 
 ## Existing pre-cleanup population
 
-29 functions had lost-codegen inserts at the time the audit was added (commit `cc46451`, 2026-05-16) — 39 total instructions. These are grandfathered: `--check-new` only blocks NEW additions. They're tracked for eventual cleanup via the shared-end-label recipe or other structure changes.
+29 functions had lost-codegen inserts at the time the audit was added (commit `cc46451`, 2026-05-16) — 39 total instructions. These are grandfathered: `--check-new` only flags NEW additions. They're tracked for eventual cleanup via the shared-end-label recipe or other structure changes.
 
 `audit_asm_cheats.py --all` lists them with their regfix line numbers.

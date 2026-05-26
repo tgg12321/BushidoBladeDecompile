@@ -1,7 +1,7 @@
 ---
 name: inline-asm-injection
 paths: ["src/*.c"]
-description: "`__asm__ volatile(\\"addu $X, $Y, $0\\")` with hardcoded $N registers and no %N placeholders is the lost_codegen regfix cheat migrated to C source. Same bytes, no GCC tracking. The audit now flags it (asm_injection cheat type). Both 2026-05-16 sessions of /decomp-cheat-cleanup hit this trap; documented here so future runs don't repeat."
+description: "`__asm__ volatile(\\"addu $X, $Y, $0\\")` with hardcoded $N and no %N is the lost-codegen regfix cheat moved into C — same bytes, no GCC tracking. Score-inert under the sandbox; the audit flags it."
 metadata:
   type: audit
 ---
@@ -55,8 +55,10 @@ __asm__ volatile("move %0, %1" : "=r"(dst) : "r"(src));
 ```
 
 If the template has hardcoded `$N` and no `%N`, **GCC does not understand
-the operation**. That is the injection signature. The `audit_asm_cheats.py`
-hook now blocks this at commit time:
+the operation**. That is the injection signature. Under the engine it is score-inert — the
+cheat-invisible sandbox strips it before scoring, so it can't move the score.
+`audit_asm_cheats.py --check-new` flags it as a manual detector (not a wired
+commit gate):
 
 ```
 ASM-CHEAT GUARD: new unauthorized asm-cheat patterns since HEAD:
