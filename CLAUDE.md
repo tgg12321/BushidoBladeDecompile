@@ -96,6 +96,11 @@ runner folds these signals straight into each `headless_runs.jsonl` record, so t
 self-auditing — you only open the transcript via this tool if a number looks off.
 
 ### Orchestrator post-run protocol (autonomous operation)
+> Invoke the **`/decomp-orchestrate`** skill to bootstrap an orchestrator session — it bundles this
+> whole playbook (the Tier-4 standard + enforcement, PowerShell-first tooling, the per-function loop,
+> headless worker driving + review, the escalation boundary, auto-handle categories, footguns, and
+> the rule/memory pointers) in one place.
+
 When driving workers (interactively or headless), the **orchestrator** (the main agent) runs this
 after **each** worker finishes — it is what lets the loop run unattended for long stretches:
 
