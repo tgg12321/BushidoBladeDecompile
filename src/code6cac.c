@@ -1652,10 +1652,9 @@ void func_8001E404(void) {
         if (v3 == 1) {
             if (D_80101F5E != 0 || D_801023AA != 0) {
                 D_800A36FA = 2;
-                v3 = D_800A36FA;
             }
         }
-        if (v3 == 2) goto s2_default;
+        if (D_800A36FA == 2) goto s2_default;
         if ((u16)D_80101F32 == 0x11 || (u16)D_8010237E == 0x11) {
             s2 = (s32 *)&D_800F6608;
             D_800A36FA = 1;

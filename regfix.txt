@@ -858,7 +858,6 @@ myRobGeneiMove: subst "\$5" "$16" @ 101
 myRobGeneiMove: subst "\$5" "$16" @ 119
 
 # func_8001E404: GCC forward-props D_800A36FA=2 store to li, target reloads from memory
-func_8001E404: subst "addiu\s+\$3,\$zero,2" "lbu\t$3,D_800A36FA" @ 20
 
 # func_80021A98: v0/v1 swap in lhu result + D_80102764 load (TEXT 24-29)
 func_80021A98: subst "\$2,4" "$3,4" @ 24
