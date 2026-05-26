@@ -15,10 +15,14 @@ Self-contained runner (no pytest, matching tools/hooks/test_tooling_error_guard.
 """
 from __future__ import annotations
 
+import contextlib
+import io
+import json
+import os
 import tempfile
 from pathlib import Path
 
-from engine import canonical, score, inlineasm, cheats
+from engine import canonical, score, inlineasm, cheats, metrics
 
 _passed = _failed = _skipped = 0
 
@@ -191,6 +195,70 @@ def test_cheats() -> None:
 
 
 # --------------------------------------------------------------------------
+# metrics — the capture layer's non-negotiable: silent + swallow-on-failure
+# --------------------------------------------------------------------------
+
+@contextlib.contextmanager
+def _env(**kv):
+    """Temporarily set/clear env vars, restoring prior state on exit."""
+    old = {k: os.environ.get(k) for k in kv}
+    try:
+        for k, v in kv.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+        yield
+    finally:
+        for k, v in old.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+def test_metrics() -> None:
+    # 1. normal append: one parseable line, normalized fields lifted out
+    with tempfile.TemporaryDirectory() as td:
+        logp = Path(td) / "events.jsonl"
+        with _env(BB2_METRICS_LOG=str(logp), BB2_METRICS_DISABLE=None):
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+                metrics.record_event("sandbox", "func_X",
+                                     {"score": 3, "file": "code6cac"},
+                                     extra={"disable": "all"})
+            eq("metrics: hot path prints nothing", buf.getvalue(), "")
+            lines = logp.read_text().splitlines()
+            eq("metrics: one event appended", len(lines), 1)
+            rec = json.loads(lines[0])
+            eq("metrics: command recorded", rec["command"], "sandbox")
+            eq("metrics: func recorded", rec["func"], "func_X")
+            eq("metrics: score normalized to top level", rec["score"], 3)
+            eq("metrics: file normalized to top level", rec["file"], "code6cac")
+            eq("metrics: full result preserved in payload", rec["payload"]["score"], 3)
+
+    # 2. THE non-negotiable: a forced write failure is swallowed AND silent.
+    #    A file where a directory is needed makes parent.mkdir()/open() fail.
+    with tempfile.TemporaryDirectory() as td:
+        blocker = Path(td) / "blocker"
+        blocker.write_text("x")
+        logp = blocker / "events.jsonl"
+        with _env(BB2_METRICS_LOG=str(logp), BB2_METRICS_DISABLE=None):
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+                ret = metrics.record_event("retire", "func_Y", {"ok": True})
+            eq("metrics: failure swallowed (returns None, no raise)", ret, None)
+            eq("metrics: failure prints nothing", buf.getvalue(), "")
+
+    # 3. BB2_METRICS_DISABLE is a hard no-op (writes nothing)
+    with tempfile.TemporaryDirectory() as td:
+        logp = Path(td) / "events.jsonl"
+        with _env(BB2_METRICS_LOG=str(logp), BB2_METRICS_DISABLE="1"):
+            metrics.record_event("sandbox", "func_Z", {"score": 0})
+            check("metrics: DISABLE writes nothing", not logp.exists())
+
+
+# --------------------------------------------------------------------------
 # BUILD-READ tier — canonical verdicts against the real linked ELF
 # --------------------------------------------------------------------------
 
@@ -228,6 +296,7 @@ def main() -> int:
     test_score()
     test_inlineasm()
     test_cheats()
+    test_metrics()
     test_canonical_build()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")
     return 1 if _failed else 0

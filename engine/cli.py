@@ -23,6 +23,7 @@ from . import oracle as O
 from . import canonical as CANON
 from . import diagnose as DIAG
 from . import integrate as INT
+from . import metrics as MET
 from . import orchestrator as ORCH
 from . import pipeline as P
 from . import sandbox as SB
@@ -83,6 +84,7 @@ def main() -> int:
     if a.cmd == "verify-oracle":
         r = O.verify(rebuild=a.rebuild)
         print(json.dumps(r, indent=2))
+        MET.record_event("verify-oracle", None, r, exit_code=0 if r.get("ok") else 1)
         return 0 if r.get("ok") else 1
 
     if a.cmd == "build":
@@ -90,6 +92,7 @@ def main() -> int:
         got = P.sha1(exe)
         ok = got == cfg.ORACLE_SHA1
         print(f"built {exe}\n  sha1 {got}\n  want {cfg.ORACLE_SHA1}\n  {'MATCH' if ok else 'MISMATCH'}")
+        MET.record_event("build", None, {"sha1": got, "ok": ok}, exit_code=0 if ok else 1)
         return 0 if ok else 1
 
     if a.cmd == "build-c":
@@ -125,6 +128,7 @@ def main() -> int:
     if a.cmd == "sandbox":
         r = SB.sandbox_score(a.func, disable=a.disable)
         print(json.dumps(r, indent=2))
+        MET.record_event("sandbox", a.func, r, extra={"disable": a.disable})
         return 0
 
     if a.cmd == "scan-redundant":
@@ -149,6 +153,7 @@ def main() -> int:
     if a.cmd == "retire":
         r = INT.retire_function(a.func)
         print(json.dumps(r, indent=2))
+        MET.record_event("retire", a.func, r, exit_code=0 if r["ok"] else 1)
         return 0 if r["ok"] else 1
 
     if a.cmd == "diagnose":
@@ -161,6 +166,7 @@ def main() -> int:
                 print(f"  SKIP {f}: {e}")
                 continue
             verdicts[d["verdict"]] += 1
+            MET.record_event("diagnose", f, d)
             print(f"  {d['verdict']:<13} {f:<30} (d{d['ndiff']}) {d['reason']}")
             if a.detail:
                 for tag, t, b in d["pairs"]:
@@ -174,6 +180,7 @@ def main() -> int:
     if a.cmd == "canonical":
         r = CANON.classify(a.func) if a.fast else CANON.classify_full(a.func)
         print(json.dumps(r, indent=2))
+        MET.record_event("canonical", a.func, r, extra={"fast": a.fast})
         return 0
 
     if a.cmd == "canonical-scan":
