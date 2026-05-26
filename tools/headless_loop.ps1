@@ -88,10 +88,18 @@ Steps for the single top function:
   7. Register a finding if reusable (.claude/rules/ or memory/), then commit with
      git commit -F tmp/msg.txt (write the message file first; never a heredoc).
 
-HARD RULES: finish EXACTLY ONE function then stop. Do NOT push. Do NOT take a
-second function. If it cannot reach pure-C Tier-4 (canonical-asm needing user
-auth, or a genuine documented plateau), `& tools/eng.ps1 queue park <func>
---reason "..."` instead of forcing it, then stop.
+HARD RULES (ignoring these wastes the run — a mid-work budget cutoff leaves an
+uncommitted tree that forces an escalation):
+  - Work ONLY the single top function. The instant it is finished — `git commit`
+    after retire + queue done, OR `queue park` — STOP and end your turn.
+  - Do NOT run `queue next` again, and do NOT start, edit, or even look at a
+    second function. ONE function per session, no exceptions.
+  - ALWAYS `git commit` your finished function before anything else. NEVER end
+    your turn with uncommitted edits in the tree.
+  - Do NOT push.
+If it cannot reach pure-C Tier-4 (canonical-asm needing user auth, or a genuine
+documented plateau), `& tools/eng.ps1 queue park <func> --reason "..."` instead
+of forcing it, commit the park, then stop.
 '@
 
 function Write-RunRecord($rec) {
