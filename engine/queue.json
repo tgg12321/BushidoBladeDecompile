@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "cdrom_DmaToRam",
-      "file": "system",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "efc_buki_draw_zanzou",
       "file": "text1b",
       "distance": 1,
@@ -3857,19 +3849,28 @@
       "status": "done",
       "park_reason": "Sole tier-3 debt is one __asm__(nop) compensating for the maspsx .L-label load-delay blind spot, LOAD-CONSUMER variant: target has 'lw a1,0(a1); .L<loop-top>:; lw v1,0(a1)' (pointer load, then deref consuming a1 as base across the loop-top label). sandbox --disable all = 0 and the narrow maspsx gate that emits the nop (extending the existing jalr-consumer gate in _handle_nop_before_next_instruction to line_loads_from_reg consumers) makes it 100% pure C -- BUT verify-oracle --rebuild FAILS: the same gate inserts a nop in saTan4FireDisp (text1a.c) that shifts its index-anchored asmfix delete_between (#nop.*'.L279:'), giving 'symbol .L279 already defined'. This is exactly the cascade memory maspsx-is-label-dot-prefix documents as 'not worth the corpus-wide churn'. Clean retirement needs user sign-off: either re-derive saTan4FireDisp's rule cluster, or a per-function-scoped maspsx gate. Both source + maspsx reverted; oracle re-verified green (SHA1 62efab4f).",
       "completed_at": "2026-05-26T16:19:54"
+    },
+    {
+      "func": "cdrom_DmaToRam",
+      "file": "system",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "done",
+      "completed_at": "2026-05-26T16:24:05"
     }
   ],
   "counts": {
     "total": 481,
-    "active": 446,
+    "active": 445,
     "by_status": {
-      "active": 446,
+      "active": 445,
       "authorize": 30,
       "parked": 1,
-      "done": 4
+      "done": 5
     },
     "by_verdict": {
-      "C": 246,
+      "C": 245,
       "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 120,
       "ASM-WHOLE": 4,

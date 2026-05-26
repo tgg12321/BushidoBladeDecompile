@@ -873,7 +873,6 @@ s32 cdrom_DmaToRam(s32 a0, s32 a1) {
     *g_cd_dma_size = a1 | 0x10000;
     v1 = g_cd_index_reg;
     do {
-        __asm__ volatile("nop");
         v0 = *v1 & CD_STAT_DATA_REQ;
     } while (v0 == 0);
     *g_cd_dma_ctrl = DMA_CD_TO_RAM;

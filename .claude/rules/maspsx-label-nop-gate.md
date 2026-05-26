@@ -38,7 +38,11 @@ load-consumer case. To retire the function to Tier-4:
 
 maspsx then emits the load-delay nop for that function (it tracks `self.current_func`
 from `.ent`), so the C needs no inline asm. Confirmed: `spu_DmaTransfer` (main.c,
-commit 25f8f56).
+commit 25f8f56); `cdrom_DmaToRam` (system.c, 2026-05-26) — `lw $v1,%lo(g_cd_index_reg)`
+→ `.L80081DA4:` → `lbu $v0,0($v1)` (the CD `DATA_REQ` poll loop). distance 1 (the lone
+stripped nop), 0 rules; allowlist + delete the `__asm__("nop")` → SHA1 == oracle. Note
+the function's *other* loop (`.L80081DF0`) has its base produced by `addu`, not a load,
+so the gate correctly leaves it untouched.
 
 ## Why per-function (do NOT broaden it globally)
 

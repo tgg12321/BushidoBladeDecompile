@@ -14,3 +14,4 @@
 # Format: one function name per line; blank lines and #-comments ignored.
 
 spu_DmaTransfer
+cdrom_DmaToRam
