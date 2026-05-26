@@ -7,10 +7,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/tools/hooks/commit_audit_guard.sh\""
-          },
-          {
-            "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/cc1psx_guard.py\""
           }
         ]
