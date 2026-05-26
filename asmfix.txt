@@ -99,8 +99,6 @@ cpu_set_move_command_and_dir_for_no_action: replace_first "^j\t\\.L[0-9]+(?=\nno
 
 # func_8001EFA0: keep the ==6 case and shared default target stable after
 # upstream helper-swaps renumber nearby local labels.
-func_8001EFA0: replace_first "^bne\t\\$3,\\$2,\\.L354$" "beq\t$3,$2,.L350"
-func_8001EFA0: replace_first "^j\t\\.L350$" "j\t.L354"
 
 # Stub replacement helper path: keep a real C symbol in the source tree while
 # swapping the emitted function block back to the exact split asm file.

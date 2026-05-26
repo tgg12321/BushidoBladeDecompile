@@ -812,8 +812,6 @@ func_8001F938: delete @ 80
 func_8001F938: insert_label ".LfuncF938_join:" @ 80
 
 # func_8001EFA0: ==6 branch sense swap (bne->beq, swap j targets)
-func_8001EFA0: subst "bne\s+\$3,\$2,\.L355" "beq\t$3,$2,.L351" @ 96
-func_8001EFA0: subst "j\s+\.L351" "j\t.L355" @ 98
 
 # tslPrintScreen: first-stage cleanup
 # Early sentinel/token register cleanup.

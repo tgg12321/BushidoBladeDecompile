@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8001EFA0",
-      "file": "code6cac",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
       "func": "func_8007F10C",
       "file": "display",
       "distance": 1,
@@ -3868,20 +3860,29 @@
       "rules": 1,
       "status": "done",
       "completed_at": "2026-05-26T14:29:43"
+    },
+    {
+      "func": "func_8001EFA0",
+      "file": "code6cac",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 4,
+      "status": "done",
+      "completed_at": "2026-05-26T14:47:18"
     }
   ],
   "counts": {
     "total": 483,
-    "active": 455,
+    "active": 454,
     "by_status": {
-      "active": 455,
+      "active": 454,
       "authorize": 26,
       "parked": 1,
-      "done": 1
+      "done": 2
     },
     "by_verdict": {
-      "C": 249,
       "ASM-PARTIAL": 86,
+      "C": 248,
       "ASM-SUSPECT": 120,
       "ASM-STRUCTURAL": 26
     }

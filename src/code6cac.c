@@ -1944,35 +1944,27 @@ void func_8001EFA0(void) {
     }
 
     if (D_800A37B8 >= 0x69 || (D_80102794 & 0x400040)) {
-        if (D_800A38DC == 4) {
+        switch (D_800A38DC) {
+        case 4:
             var_v0 = 0xC;
-            goto set_val;
-        }
-        if (D_800A38DC < 5) {
-            if (D_800A38DC == 1) goto handle_1;
-            goto default_case;
-        }
-        if (D_800A38DC == 6) {
+            break;
+        case 1:
+            if (D_800A3748 == 0) {
+                func_8001DA2C();
+                D_800A3768 = 2;
+                mottest_disp();
+                return;
+            }
             var_v0 = 0xC;
-            goto set_val;
-        }
-        goto default_case;
-
-    handle_1:
-        if (D_800A3748 == 0) {
+            break;
+        case 6:
+            var_v0 = 0xC;
+            break;
+        default:
             func_8001DA2C();
-            D_800A3768 = 2;
-            mottest_disp();
-            return;
+            var_v0 = 2;
+            break;
         }
-        var_v0 = 0xC;
-        goto set_val;
-
-    default_case:
-        func_8001DA2C();
-        var_v0 = 2;
-
-    set_val:
         D_800A3834 = var_v0;
     }
 }
