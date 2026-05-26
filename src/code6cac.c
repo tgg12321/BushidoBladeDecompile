@@ -1275,7 +1275,7 @@ void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
     if (arg2 < 0) {
         var_v1 = arg2 + 3;
     }
-    var_v0 = ((s16*)&Judge)[((var_v1 >> 1) & 0x1FFE) >> 1] * 3;
+    var_v0 = *(s16 *)((u8 *)&Judge + ((var_v1 >> 1) & 0x1FFE)) * 3;
     if (var_v0 < 0) {
         var_v0 += 3;
     }
