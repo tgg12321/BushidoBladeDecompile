@@ -65,6 +65,7 @@ def main() -> int:
     cnp.add_argument("func")
     cnp.add_argument("--fast", action="store_true", help="opcode-only; skip the structural distance check (no build)")
     sub.add_parser("canonical-scan", help="classify every function as C / ASM-WHOLE / ASM-PARTIAL")
+    sub.add_parser("test", help="run the engine regression suite (fast pure-logic + build-read tiers)")
 
     a = ap.parse_args()
 
@@ -198,6 +199,10 @@ def main() -> int:
             r = INT.retire_function(f)
             print(f"  {'OK  ' if r['ok'] else 'FAIL'} {f}  dropped={r.get('total_dropped')}")
         return 0
+
+    if a.cmd == "test":
+        from . import test_engine
+        return test_engine.main()
 
     return 2
 

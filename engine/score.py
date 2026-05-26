@@ -7,7 +7,7 @@ flow targets (branch/jump destinations) are masked so the score is
 cascade-immune: removing an instruction shifts later addresses but not the
 normalized instruction form.
 
-score = instruction edit-distance (SequenceMatcher); 0 == instruction-identical.
+score = instruction edit-distance (Levenshtein DP); 0 == instruction-identical.
 This GUIDES the loop. verify-integrated (full-build SHA1) is the real match gate
 — a masked-target false-zero is impossible to commit because integration checks
 actual bytes.

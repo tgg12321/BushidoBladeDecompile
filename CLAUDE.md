@@ -31,6 +31,7 @@ wsl bash -c 'cd "<root>" && source .venv/bin/activate && python3 -m engine.cli <
 | `scan-redundant --all` | rules the build doesn't need + a difficulty-ranked worklist |
 | `retire <func>` | delete a function's rules + full-build SHA1 verify (auto-rollback on mismatch) |
 | `fixtures-verify` | tool-health: golden fixtures still byte-match |
+| `test` | engine regression suite (distance / gate / cheat-stripping) — keep green when you touch engine code |
 
 ### The non-negotiables (enforced by construction, not by nagging)
 1. **Tier-4 standard** — 100% pure C; zero regfix/asmfix/register-pins. The only allowed asm is
@@ -82,6 +83,10 @@ cc1, maspsx, `regfix.py`/`asmfix.py` (pipeline stages), `prologue_fix`, `multu_p
 `as`/`ld`/`objcopy`, `make_psexe`, splat, `classify_inline_asm.py`, decomp-permuter — plus the
 original EXE, `asm/`, `src/`, `include/`, `disc/`, and the `*.txt` configs. The Makefile remains
 until `engine build` fully supersedes it; the oracle (`engine verify-oracle`) guards every change.
+The engine's own logic (distance metric, canonical gate, cheat-stripping) is guarded by `engine
+test` — a regression suite that must stay green whenever you change `engine/` code. Its
+cheat-invisibility tests are the mechanical proof that cheats are score-inert, so there is **no
+commit-time cheat audit** (`audit_asm_cheats.py` remains only as a manual detector).
 
 ## Guards (hooks)
 Active: root-write cleanliness, CRLF/tooling-error (WSL env-failure) detection, the cc1psx-footgun
