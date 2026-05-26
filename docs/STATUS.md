@@ -1,6 +1,11 @@
 # Project Status
 
-Live status numbers and a brief snapshot of the state of the matching decompilation. The numbers in this file are pulled by hand from the working tree at a point in time — for the always-current canonical work list, see [`WORK_QUEUE.md`](../WORK_QUEUE.md).
+> **Historical snapshot.** This file is a hand-pulled, dated point-in-time snapshot and predates
+> the engine workflow (it references `WORK_QUEUE.md` and the `.bb2_active_func` marker, both
+> retired). For current state run `python3 -m engine.cli scan-redundant --all` (worklist) and
+> `verify-oracle` (build health); the workflow itself lives in [`../CLAUDE.md`](../CLAUDE.md).
+
+Hand-pulled snapshot of the state of the matching decompilation at a point in time.
 
 To regenerate the headline counts at any time, run the snippet at the bottom of this document.
 

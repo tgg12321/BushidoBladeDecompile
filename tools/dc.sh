@@ -2,6 +2,12 @@
 # dc.sh — Decomp helper for Claude Code sessions
 # Eliminates fragile WSL one-liners. All commands run from project root.
 #
+# LEGACY NOTE: the decomp WORKFLOW is now the engine (engine/, `python3 -m engine.cli`),
+# run on `main` by a single focused agent — see CLAUDE.md. dc.sh survives only as a
+# supplementary DIAGNOSTIC toolkit (dump-text, diff-summary, classify-inline-asm,
+# scan-hand-coded, sig-*) that some path-scoped rules still cite. Its worktree verbs
+# (new-worktree, bootstrap) are DEPRECATED: no worktrees, no sub-agents, no orchestration.
+#
 # Usage (from WSL):
 #   bash tools/dc.sh compile <func_dir>          — compile + objdump
 #   bash tools/dc.sh score <func_dir>             — permuter score only
