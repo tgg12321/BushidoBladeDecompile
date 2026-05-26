@@ -253,7 +253,8 @@ void func_800481E8(s32 arg0, s32 arg1)
         } while ((count--) != 0);
     }
 }
-void efc_buki_draw_zanzou(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
+void efc_buki_draw_zanzou(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
+    u16 arg4_lo = *(u16 *)&arg4;
     s16 rect[4];
     s16 buf[512];
     u8 *p_alt;
@@ -280,7 +281,7 @@ void efc_buki_draw_zanzou(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
     if (flags == 0) return;
     p_alt += 4;
     rect[0] = arg3;
-    rect[1] = arg4;
+    rect[1] = arg4_lo;
     dim2 = *(u32 *)p_alt;
     p_alt += 4;
     rect[3] = dim2 >> 16;

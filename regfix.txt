@@ -3314,7 +3314,6 @@ func_80060B70: delete @ 31
 func_80060B70: reorder 30,29 @ 29-30
 # Move li t6,1 to early position (target #3)
 func_800692C0: reorder 6,3,4,5 @ 3-6
-efc_buki_draw_zanzou: subst "lhu\t\$18,1090\(\$sp\)" "lhu\t$18,1088($sp)" @ 10
 func_800485EC: subst "\$8" "$3" @ 10
 func_800485EC: subst "lw\s+\$4," "lhu	$4," @ 11
 func_800485EC: subst "lw\s+\$6," "lhu	$5," @ 12
