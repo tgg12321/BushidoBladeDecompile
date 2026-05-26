@@ -32,7 +32,8 @@ MEMORY_DIRS = {
     "history": "history",
 }
 
-MAX_DESC_LEN = 220  # description max chars (keeps MEMORY.md compact)
+MAX_DESC_LEN = 500  # description max chars. MEMORY.md stays compact regardless:
+                    # regen_memory_index.py shows only the first sentence (<=130 chars).
 
 
 def parse_frontmatter(text: str) -> tuple[dict, str] | tuple[None, str]:
