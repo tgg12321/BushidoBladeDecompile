@@ -2425,7 +2425,7 @@ s32 *func_8007F0E4(s32 *a0, s32 *a1) {
     return a1;
 }
 s32 func_8007F10C(s32 a0, s32 a1, s32 a2) {
-    register s32 v0 asm("v0");
+    s32 v0;
     __asm__ volatile (".word 0x48848800" :: "r"(a0));  /* mtc2 $a0, $17 */
     __asm__ volatile (".word 0x48859000" :: "r"(a1));  /* mtc2 $a1, $18 */
     __asm__ volatile (".word 0x48869800" :: "r"(a2));  /* mtc2 $a2, $19 */
@@ -2446,7 +2446,7 @@ __asm__(
     "    .set at\n"
 );
 s32 func_8007F12C(s32 a0, s32 a1, s32 a2, s32 a3) {
-    register s32 v0 asm("v0");
+    s32 v0;
     __asm__ volatile (".word 0x48848000" :: "r"(a0));  /* mtc2 $a0, $16 */
     __asm__ volatile (".word 0x48858800" :: "r"(a1));  /* mtc2 $a1, $17 */
     __asm__ volatile (".word 0x48869000" :: "r"(a2));  /* mtc2 $a2, $18 */

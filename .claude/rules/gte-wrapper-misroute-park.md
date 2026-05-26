@@ -44,24 +44,36 @@ So distance-1 is NOT "almost pure C." There is **no pure-C form at all**: `avsz3
 `avsz4` (GTE Z-average), `mtc2`/`mfc2` (GTE register moves) have no C analog. The
 engine just can't represent "needs a canonical nop" as anything but a 1-insn gap.
 
-## Action — PARK (canonical-asm needing user sign-off)
+## Status (2026-05-26): the misroute is FIXED + the action is now AUTO-authorize
 
-Do **not** grind it in pure C, and do **not** `queue done` it (that would pass —
-zero rules + SHA1 already matches — but leave the tier-3 pin in place, violating
-Tier-4). The honest finished form is a **tier-1 file-scope `__asm__(glabel ...)`
-canonical-asm block** added to `inline_asm_canonical.txt`, which folds the GTE ops
-+ the load-delay nop into one canonical block (no pin, no stray-nop tier-3). That
-is a canonical-asm retirement -> **needs user authorization**, exactly like the
-sibling cluster `func_8007F87C` / `func_8007F5EC` / `motutil_GetWalkDir` (user-
-authorized 2026-05-13, see `inline_asm_canonical.txt`).
+Two changes landed so this class no longer wastes a worker run:
 
-```
-& tools/eng.ps1 queue park <func> --reason "Canonical-asm (hand-written GTE wrapper), no pure-C form; ... needs user sign-off"
-```
+1. **Gate fix** — `canonical._verdict` now excludes structural `nop`/`jr` from the
+   ASM-WHOLE denominator, so a pure GTE leaf classifies **ASM-WHOLE → `authorize`**
+   (not ASM-PARTIAL → active). It is never handed to a worker.
+2. **Auto-authorize policy** (user, 2026-05-26) — GTE leaf wrappers are pure cop2
+   ops with **no C form** (zero ambiguity), so the orchestrator **authorizes them
+   itself**, no escalation. (Contrast tier-1 *hand-coded* asm, which still needs a
+   user judgment call.)
 
-These come in clusters (avsz3/avsz4 twins, sin/cos kernels) — authorize them
-together. Confirmed: `func_8007F10C` (avsz3) parked 2026-05-26; sibling
-`func_8007F12C` (avsz4) is the identical case, next in queue.
+## Action — auto-authorize + convert to clean tier-2
+
+The finished form is **pin-removed tier-2 GTE inline asm**, NOT a glabel block:
+
+1. **Remove the `register s32 v0 asm("v0")` pin** → plain `s32 v0;`. The pin is
+   the only tier-3 debt; GCC returns the `mfc2` result in `$v0` naturally (the
+   stripped sandbox already showed no spurious move). The `.word` cop2 ops stay
+   (tier-2 canonical); the load-delay `nop` stays (canonical GTE timing).
+2. **`verify-oracle --rebuild`** → SHA1 must still == oracle (it does; pin was
+   non-load-bearing).
+3. **Add the function to `inline_asm_canonical.txt`** (the canonical-asm registry)
+   with a one-line GTE justification.
+4. **`& tools/eng.ps1 queue done <func>`** (0 rules + SHA1 match → done).
+
+Confirmed: `func_8007F10C` (avsz3) + `func_8007F12C` (avsz4) auto-authorized this
+way 2026-05-26 — pins removed, SHA1 == oracle, both in `inline_asm_canonical.txt`,
+both `queue done`. (NB: a tier-1 file-scope glabel block is an alternative finished
+form, but pin-removal → tier-2 is lower-risk — no maspsx `.set` handling needed.)
 
 ## Related
 - [[jtbl-rodata-split-infrastructure]] — the other "misrouted to `active`, really

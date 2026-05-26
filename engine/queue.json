@@ -1,16 +1,8 @@
 {
-  "generated_at": "2026-05-26T14:16:15",
+  "generated_at": "2026-05-26T15:09:41",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
-    {
-      "func": "func_8007F12C",
-      "file": "display",
-      "distance": 1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
     {
       "func": "func_8008ACD0",
       "file": "main",
@@ -220,14 +212,6 @@
       "status": "active"
     },
     {
-      "func": "gte_GetScreenXY",
-      "file": "display",
-      "distance": 3,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "gte_SetTransVector",
       "file": "display",
       "distance": 3,
@@ -372,14 +356,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007F098",
-      "file": "display",
-      "distance": 5,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8007F21C",
       "file": "display",
       "distance": 5,
@@ -481,14 +457,6 @@
       "distance": 6,
       "verdict": "C",
       "rules": 5,
-      "status": "active"
-    },
-    {
-      "func": "func_8007F034",
-      "file": "display",
-      "distance": 6,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
       "status": "active"
     },
     {
@@ -605,14 +573,6 @@
     },
     {
       "func": "func_8007E8AC",
-      "file": "display",
-      "distance": 7,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007F00C",
       "file": "display",
       "distance": 7,
       "verdict": "ASM-PARTIAL",
@@ -3628,6 +3588,38 @@
       "status": "active"
     },
     {
+      "func": "gte_GetScreenXY",
+      "file": "display",
+      "distance": 3,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8007F098",
+      "file": "display",
+      "distance": 5,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8007F034",
+      "file": "display",
+      "distance": 6,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8007F00C",
+      "file": "display",
+      "distance": 7,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2",
       "distance": 510,
@@ -3850,41 +3842,34 @@
       "distance": 1,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
-      "status": "parked",
-      "park_reason": "Canonical-asm (hand-written GTE wrapper), no pure-C form -> needs user canonical-asm sign-off. Body is mtc2 a0/a1/a2 -> nop -> avsz3 -> mfc2 v0; avsz3 (GTE avg-of-3-Z) + mtc2/mfc2 GTE reg moves have no C analog. target asm (asm/funcs/func_8007F10C.s) annotates every insn 'handwritten instruction' w/ glabel/endlabel. Engine misrouted to active w/ distance 1: the only stripped diff is the GTE load-delay nop; the register  pin is NOT load-bearing (cheat-stripped sandbox emits no spurious move, GCC returns in v0 naturally). Clean finished form = tier-1 file-scope __asm__(glabel) canonical-asm block, identical treatment to authorized siblings func_8007F87C/func_8007F5EC/motutil_GetWalkDir in inline_asm_canonical.txt (user-authorized 2026-05-13). Sibling func_8007F12C (avsz4) is the identical case -> authorize as a cluster."
+      "status": "done",
+      "park_reason": "Canonical-asm (hand-written GTE wrapper), no pure-C form -> needs user canonical-asm sign-off. Body is mtc2 a0/a1/a2 -> nop -> avsz3 -> mfc2 v0; avsz3 (GTE avg-of-3-Z) + mtc2/mfc2 GTE reg moves have no C analog. target asm (asm/funcs/func_8007F10C.s) annotates every insn 'handwritten instruction' w/ glabel/endlabel. Engine misrouted to active w/ distance 1: the only stripped diff is the GTE load-delay nop; the register  pin is NOT load-bearing (cheat-stripped sandbox emits no spurious move, GCC returns in v0 naturally). Clean finished form = tier-1 file-scope __asm__(glabel) canonical-asm block, identical treatment to authorized siblings func_8007F87C/func_8007F5EC/motutil_GetWalkDir in inline_asm_canonical.txt (user-authorized 2026-05-13). Sibling func_8007F12C (avsz4) is the identical case -> authorize as a cluster.",
+      "completed_at": "2026-05-26T15:20:04"
     },
     {
-      "func": "func_8001BAE4",
-      "file": "code6cac",
+      "func": "func_8007F12C",
+      "file": "display",
       "distance": 1,
-      "verdict": "C",
-      "rules": 1,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
       "status": "done",
-      "completed_at": "2026-05-26T14:29:43"
-    },
-    {
-      "func": "func_8001EFA0",
-      "file": "code6cac",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 4,
-      "status": "done",
-      "completed_at": "2026-05-26T14:47:18"
+      "completed_at": "2026-05-26T15:20:05"
     }
   ],
   "counts": {
-    "total": 483,
-    "active": 453,
+    "total": 481,
+    "active": 448,
     "by_status": {
-      "active": 453,
-      "authorize": 26,
-      "parked": 2,
+      "active": 448,
+      "authorize": 30,
+      "parked": 1,
       "done": 2
     },
     "by_verdict": {
-      "ASM-PARTIAL": 85,
       "C": 248,
+      "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 120,
+      "ASM-WHOLE": 4,
       "ASM-STRUCTURAL": 26
     }
   }

@@ -112,6 +112,15 @@ after **each** worker finishes — it is what lets the loop run unattended for l
    confirm, an architecture/policy decision (e.g. the global rodata reorder behind jtbl-infra), or
    the budget cap. Everything else is logged (`headless_runs.jsonl`) for later review, not blocked on.
 
+**Orchestrator auto-authorize categories (NOT escalate triggers):**
+- **Tier-2 GTE leaf wrappers** (pure cop2 ops — `mtc2`/`avsz3`/`avsz4`/`mfc2` etc., no C form): the
+  orchestrator authorizes them itself (user policy, 2026-05-26) — remove the tier-3 `register asm`
+  pin (GCC returns in `$v0` naturally), `verify-oracle --rebuild`, add to `inline_asm_canonical.txt`,
+  `queue done`. See [[gte-wrapper-misroute-park]]. *Contrast tier-1 hand-coded asm (custom ABI /
+  trapping ops / hand scheduling) — that still needs a user judgment call → escalate.*
+- **jtbl-infra** (rodata-split jump tables): auto-confirmed park (`cheats.is_jtbl_infra`); the
+  *global rodata reorder* to truly pure-C them is the architecture decision that escalates.
+
 ## The queue IS the worklist (`engine queue`)
 All outstanding work lives in ONE ordered list — `engine/queue.json` — covering every function
 still carrying a cheat (a regfix/asmfix rule OR a load-bearing tier-3 pin/inline-asm). It is
