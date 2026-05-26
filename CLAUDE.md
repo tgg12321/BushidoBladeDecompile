@@ -70,6 +70,18 @@ subagents, no orchestrator/worker split: the engine is a toolkit the agent drive
 **Build files (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, pipeline `*.txt`) MUST use LF line
 endings** — edit via WSL or an LF-enforcing editor (the Write tool produces LF on this machine).
 
+### Optional: headless driver (`tools/headless_loop.ps1`)
+The same single-agent loop can run **unattended**: `pwsh tools/headless_loop.ps1` invokes `claude -p`
+once per queue item to take the top function to Tier-4 (still one focused agent per function — it
+just launches the sessions for you). Guardrails: `verify-oracle --rebuild` baseline + authoritative
+post-check each iteration (stops on any oracle break), progress check (stops if the function neither
+completes nor parks), a `--max-budget-usd` cap, `-MaxIterations 1` default, and it **never pushes**.
+Each run is logged to `metrics/headless_runs.jsonl` (func, model, session, cost, tokens, turns,
+oracle_ok). Full autonomy needs `-PermissionMode bypassPermissions` (the default); use `-DryRun` to
+preview and `-PermissionMode acceptEdits` to supervise. Metrics attribution: the runner sets a
+per-run `CLAUDE_SESSION_ID` (so `engine/metrics.py` stamps events.jsonl); `tools/eng.ps1` does the
+same for interactive sessions.
+
 ## The queue IS the worklist (`engine queue`)
 All outstanding work lives in ONE ordered list — `engine/queue.json` — covering every function
 still carrying a cheat (a regfix/asmfix rule OR a load-bearing tier-3 pin/inline-asm). It is
