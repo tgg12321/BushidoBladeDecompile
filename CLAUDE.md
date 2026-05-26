@@ -90,8 +90,19 @@ commit-time cheat audit** (`audit_asm_cheats.py` remains only as a manual detect
 
 ## Guards (hooks)
 Active: root-write cleanliness, CRLF/tooling-error (WSL env-failure) detection, the cc1psx-footgun
-block, and memory/CLAUDE.md hygiene. The legacy decomp-loop hooks (`grind_check`, `resilience_judge`,
+block, memory/CLAUDE.md hygiene, and a SessionStart metrics-preflight (notifies if the metrics
+Postgres is down; never blocks). The legacy decomp-loop hooks (`grind_check`, `resilience_judge`,
 `escape_valve`, …) and the main-branch publish-only guard have been removed.
+
+## Metrics (`metrics/` + `tools/metrics/`)
+Decomp runs are measured automatically: function worked, agent/model, time, tokens, outcome,
+technique links. **Capture is silent and best-effort** — `engine/cli.py` calls
+`engine/metrics.py` after each result; it only appends to `metrics/events.jsonl` (committed source
+of truth) and can never raise, print, or perturb a command's output. The Postgres analytics layer
+(`bb2_metrics`) is offline: run `python tools/metrics/sync.py` then `report.py` on the **Windows
+side** to query. Postgres down = query-staleness, never data loss. Full design + heuristics:
+`metrics/README.md` and the [[metrics-system]] memory. Don't add metrics writes to the hot path
+that aren't guarded by the silence/swallow contract (pinned by `engine test`).
 
 ## Commit conventions
 See [docs/COMMIT_CONVENTIONS.md](docs/COMMIT_CONVENTIONS.md). Engine work uses the `engine:` prefix.
