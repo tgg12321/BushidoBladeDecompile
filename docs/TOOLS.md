@@ -71,9 +71,7 @@ Tools that try to find a match (or close part of one) automatically.
 | `dc.sh permute <func> [--max-time N] [--max-flat N]` | `permute_capped.py`: bounded permuter run with flat-score early termination. |
 | `dc.sh permute-adaptive <func> [--dry-run]` | Permuter with budget scaled to penalty count: 0 ins/del → skip, 1-2 → 90s, 3-5 → 5min, 6-10 → 15min, >10 → 30min. |
 | `dc.sh near-miss <func> [--apply]` | Auto-detect `byte_arith_fix` / `drain_delay` / `plain_reg_substs` patterns and apply them with try-and-revert. |
-| `dc.sh recipes [<func>]` | List recipes (no arg) / suggest recipes for `<func>`. |
-| `dc.sh apply-recipe <recipe> <func>` | Print concrete `add-regfix` commands for a named recipe. |
-| `dc.sh capture-recipe [<commit>]` | After committing a match, classify the patterns used and report whether it matches an existing recipe or is novel. `--write` saves a draft JSON. |
+| `dc.sh recipes` / `apply-recipe` / `capture-recipe` | **Removed 2026-05-26.** The named-recipe library + tooling were archived to `archive/dcsh_workflow_2026-05-26/recipes/`; the engine doesn't consume recipes. Recognize patterns from `docs/MATCHING.md` / `.claude/rules/` and write the C / regfix yourself; register new findings into `.claude/rules/` (the "Register findings" loop step). |
 
 ### regfix tooling
 
@@ -145,7 +143,7 @@ For working with the asmfix `replace_with_asmfile` bridge mechanism.
 
 ## Standalone Python tools
 
-These tools either run independently of the `dc.sh` flow, are invoked indirectly by `dc.sh`, or serve as one-off utilities. Most are in `tools/`; some live in `tools/recipes/` or `tools/hooks/`.
+These tools either run independently of the `dc.sh` flow, are invoked indirectly by `dc.sh`, or serve as one-off utilities. Most are in `tools/`; some live in `tools/hooks/`.
 
 ### Build pipeline (called by Makefile)
 
@@ -189,8 +187,8 @@ These tools either run independently of the `dc.sh` flow, are invoked indirectly
 | `tools/regfix_suggest.py` | Newer regfix-rule generator. Knows maspsx idx conventions; emits gp-rel and label-drift hints. |
 | `tools/near_miss_attempt.py` | Auto-detect common patterns (byte_arith_fix, drain_delay, plain_reg_substs); apply with try-and-revert. |
 | `tools/score_match.py` | Compute raw objdump-style differing-instruction-words count. |
-| `tools/recipes.py` | Named-recipe matcher (list / suggest / apply). Recipes live in `tools/recipes/*.json`. |
-| `tools/capture_recipe.py` | Classify patterns used in a commit; offer to save as a draft recipe JSON. |
+| `tools/recipes.py` | **Archived 2026-05-26** → `archive/dcsh_workflow_2026-05-26/`. Was the named-recipe matcher (list / suggest / apply). The engine does not consume recipes; technique knowledge lives in `docs/MATCHING.md` + `.claude/rules/`. |
+| `tools/capture_recipe.py` | **Archived 2026-05-26** → `archive/dcsh_workflow_2026-05-26/`. Was the recipe registrar (classify a commit's diff → confirm/draft a recipe JSON). Replaced by the "Register findings" step writing to `.claude/rules/`. |
 | `tools/decomp-permuter/` | Vendored copy of [`decomp-permuter`](https://github.com/simonlindholm/decomp-permuter) for randomized C variation search. |
 | `tools/permuter_compile.sh` / `permuter_setup.sh` | Wrappers for the permuter to use BB2's pipeline. |
 
@@ -299,7 +297,7 @@ The Kengo PS2 game uses the same Marionation engine and has ~2,500 debug-named f
 | `tools/active_func_scope.py` | Helpers for the active-marker hook. |
 | `tools/hooks/active_func_guard.sh` | **Deprecated 2026-05-22** (unwired). Formerly blocked `git commit`/`git checkout`/queue pulls while a function was active+unmatched. Staying on-task is now the `grind_check` Stop hook's job; commit cheat-auditing moved to `commit_audit_guard.sh`. Script kept for reference / easy re-enable. |
 | `tools/hooks/grind_check.sh` | Stop-event hook that rejects wrap-up language while a function is unmatched. |
-| `tools/recipes/*.json` | Named recipe definitions (LICM unhoist, call-loop family, GTE 3x3 wrapper, etc). |
+| `tools/recipes/*.json` | **Archived 2026-05-26** → `archive/dcsh_workflow_2026-05-26/recipes/`. Were the named recipe definitions (LICM unhoist, call-loop family, GTE 3x3 wrapper, etc). See that dir's README; technique knowledge lives in `docs/MATCHING.md` + `.claude/rules/`. |
 
 ### Tests
 

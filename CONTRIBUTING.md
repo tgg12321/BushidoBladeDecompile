@@ -85,7 +85,7 @@ This claims the top of the queue, sets `.bb2_active_func`, and runs `tools/agent
 - The original assembly (`asm/funcs/<func>.s`)
 - The current C location and any existing source body
 - Classifier output (size, blockers, GTE usage, BIOS hints)
-- Recipe suggestions (matching patterns from `tools/recipes/`)
+- Recipe suggestions (the recipe library was archived 2026-05-26; technique knowledge now lives in `docs/MATCHING.md` and `.claude/rules/`)
 - Kengo PS2 sister-function (when a credible match exists)
 - Adjacent functions in the same file
 
@@ -161,9 +161,10 @@ A function isn't matching after your first attempt. The right next step depends 
 3. **Long permuter runs.** `bash tools/dc.sh permute <func> --max-time 1800` runs the permuter for 30 minutes. Overnight runs (3600s+) are acceptable.
 4. **regfix at the assembly stream.** `regfix.txt` rewrites maspsx output before the assembler sees it. Use `bash tools/dc.sh regfix-suggest <func>` to auto-emit rules from the diff. Manual rules: `bash tools/dc.sh add-regfix <op> <func> <args>` (pre-validates against `dump_text_indices`).
 5. **Compound regfix layering** — 10+ rules across multiple blocker classes (register cycle + scheduling + frame mismatch). Not unusual.
-6. **Named recipes** — common patterns (LICM unhoist, call-loop family, early-exit alias breaker, GTE 3x3 wrapper) live in `tools/recipes/` and are detected automatically by `bash tools/dc.sh recipes <func>`. Apply with `bash tools/dc.sh apply-recipe <recipe> <func>`.
+6. **Named recipes** — common patterns (LICM unhoist, call-loop family, early-exit alias breaker, GTE 3x3 wrapper) are documented in [`docs/MATCHING.md`](docs/MATCHING.md) and as path-scoped technique docs in `.claude/rules/`. (The machine-readable recipe library + its auto-suggest/apply tooling were archived 2026-05-26; recognize the symptom from the docs and write the C / regfix yourself.)
 7. **New transformation pass** — extend `prologue_fix.py`, add a pipeline stage, write a new regfix op. The project's pipeline is open-ended; building new tooling when stuck is expected.
-8. **Capture novel patterns** with `bash tools/dc.sh capture-recipe HEAD` after a successful match. This classifies the techniques used and offers to write a draft recipe JSON.
+
+**After a match — register what you learned.** If the match revealed a reusable codegen pattern or a non-obvious gotcha, record it *before committing* (this is the "Register findings" step in [`CLAUDE.md`](CLAUDE.md)): a reusable pattern → a new/updated path-scoped doc in `.claude/rules/<slug>.md` (auto-loads on matching source reads, and the metrics layer fingerprints it as a technique `slug`); a function-specific fact → a `memory/` entry. There is no longer a recipe-capture tool — this human-written record is the durable one.
 
 The full playbook with penalty-profile → technique tables, C-side optimization defeats, regfix syntax reference, and named recipe documentation is in [`docs/MATCHING.md`](docs/MATCHING.md).
 

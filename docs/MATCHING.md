@@ -353,9 +353,18 @@ Diffs target.s vs the live build pipeline and emits ready-to-apply rules. Knows 
 
 If `regfix-suggest` wants to emit more than ~40 rules, you have a structural mismatch — reach for the permuter or a C-level restructure, not more regfix rules.
 
-## Named recipes
+## Named recipes (reference knowledge)
 
-Common patterns have been captured as named recipes in `tools/recipes/`. Apply with `bash tools/dc.sh recipes <func>` (suggests matching recipes) and `bash tools/dc.sh apply-recipe <recipe> <func>` (prints concrete `add-regfix` commands).
+These are the common patterns the project hit repeatedly, kept here as reference.
+
+> **Note (2026-05-26):** the machine-readable recipe library (`tools/recipes/*.json`) and its
+> `capture_recipe.py`/`recipes.py` tooling were archived to
+> `archive/dcsh_workflow_2026-05-26/recipes/` when the `dc.sh` workflow was retired — the
+> engine does not consume recipes, and most encoded a regfix `rule_skeleton`, which is
+> cheat-invisible substrate under the engine (stripped before scoring). The `dc.sh recipes` /
+> `apply-recipe` commands no longer exist. What survives is the *knowledge* below, plus the
+> live path-scoped technique docs in [`../.claude/rules/`](../.claude/rules). Read the patterns
+> below to recognize a symptom; apply them by writing the C / regfix yourself.
 
 ### LICM unhoist
 
@@ -363,7 +372,7 @@ Common patterns have been captured as named recipes in `tools/recipes/`. Apply w
 
 **Recipe:** ~7 regfix rules — delete preheader `lui`/`ori`, insert inline `lui` before the `lw`, `insert_after` the `ori` as the `lw` delay-slot fill, cascade-rename the freed register via swap.
 
-JSON: `tools/recipes/licm_unhoist.json`.
+Archived JSON: `archive/dcsh_workflow_2026-05-26/recipes/licm_unhoist.json`.
 
 **C-level techniques DO NOT work for LICM** — volatile, memory barriers, structural variants, full t-reg clobbering all confirmed failures. Go straight to regfix.
 

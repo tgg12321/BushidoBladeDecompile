@@ -29,6 +29,24 @@ from . import pipeline as P
 from . import sandbox as SB
 
 
+def _print_finish_nudge(func: str) -> None:
+    """Reminder printed after a successful retire: register reusable findings
+    where future agents will see them. The old `capture-recipe` tool + the
+    `tools/recipes/` library were archived 2026-05-26; `.claude/rules/` is the
+    live technique registry (auto-loads by `paths:` glob; the metrics layer
+    fingerprints each as a technique slug). See CLAUDE.md "The loop" step 6."""
+    print(
+        f"\n─ {func} verified (SHA1 == oracle). Before you commit — REGISTER FINDINGS ─\n"
+        "  Did this match teach a reusable codegen pattern or a non-obvious gotcha?\n"
+        "    • reusable pattern   → add/update .claude/rules/<slug>.md (give it a `paths:`\n"
+        "                           glob so it auto-loads on matching source reads; metrics\n"
+        "                           fingerprints it as a technique slug)\n"
+        "    • function-specific  → add a memory/ entry\n"
+        "    • routine / no-op    → skip (don't manufacture a finding)\n"
+        "  This human-written record is the durable one — there is no recipe-capture tool.\n"
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(prog="engine")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -154,6 +172,8 @@ def main() -> int:
         r = INT.retire_function(a.func)
         print(json.dumps(r, indent=2))
         MET.record_event("retire", a.func, r, exit_code=0 if r["ok"] else 1)
+        if r["ok"]:
+            _print_finish_nudge(a.func)
         return 0 if r["ok"] else 1
 
     if a.cmd == "diagnose":

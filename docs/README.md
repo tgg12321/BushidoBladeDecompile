@@ -10,6 +10,13 @@ This directory holds the contributor-facing documentation for the *Bushido Blade
 > loop, `WORK_QUEUE.md`, the `.bb2_active_func` active-marker, worktrees, sub-agents — is
 > **historical**. `WORK_QUEUE.md` was retired; the current worklist is
 > `python3 -m engine.cli scan-redundant --all`, and the per-function loop lives in CLAUDE.md.
+> The **named-recipe library** (`tools/recipes/*.json` + `capture_recipe.py`/`recipes.py`)
+> was archived 2026-05-26 to `archive/dcsh_workflow_2026-05-26/recipes/` — the engine doesn't
+> consume recipes. Reusable techniques now live as path-scoped docs in
+> [`../.claude/rules/`](../.claude/rules) (auto-load on matching source reads; fingerprinted by
+> the metrics layer); agents register new findings there at match-finish (the "Register
+> findings" loop step in CLAUDE.md). The technique *knowledge* still reads as reference in
+> MATCHING.md.
 
 ## In this directory
 
