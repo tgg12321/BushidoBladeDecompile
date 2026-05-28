@@ -353,9 +353,6 @@ title_mv_exec2: insert "sllv $2,$2,$5\n.set	noreorder" @ 36
 title_mv_exec2: insert "addiu $2,$zero,1" @ 36
 title_mv_exec2: reorder 3,4,5,1,2 @ 1-5
 title_mv_exec2: reorder 17,19,18,16 @ 16-19
-# func_80030208: la is now generated naturally after coli_hit_body_weapon C body added
-# Reorder prologue: move addiu $19,$20,10 (idx 10) to right after sw $19,36($29) (idx 5)
-func_80030208: reorder 5,10,6,7,8,9 @ 5-10
 
 # coli_hit_body_weapon: addiu $v1,$a3,10 hoisted too early; move from idx 4 to idx 6
 # Target order: move t1, lui hi, addiu lo, move a0, addiu t0=-1, addiu a2=0xff, addiu v1

@@ -1221,24 +1221,6 @@
     "jal\tgame_GetPlayerData",
     "sltiu\t$a0, $a0, 0x1"
   ],
-  "func_80030208": [
-    "addiu\t$sp, $sp, -0x38",
-    "sw\t$s4, 0x28($sp)",
-    "lui\t$s4, %hi(D_80106A78)",
-    "addiu\t$s4, $s4, %lo(D_80106A78)",
-    "sw\t$s5, 0x2C($sp)",
-    "addu\t$s5, $zero, $zero",
-    "sw\t$s3, 0x24($sp)",
-    "addiu\t$s3, $s4, 0xA",
-    "sw\t$ra, 0x30($sp)",
-    "sw\t$s2, 0x20($sp)",
-    "sw\t$s1, 0x1C($sp)",
-    "sw\t$s0, 0x18($sp)",
-    "lh\t$v1, -0x8($s3)",
-    "addiu\t$v0, $zero, -0x1",
-    "beq\t$v1, $v0, .L800302F0",
-    "addu\t$a0, $v1, $zero"
-  ],
   "cpu_get_dist": [
     "addiu\t$sp, $sp, -0x20",
     "sw\t$s0, 0x18($sp)",

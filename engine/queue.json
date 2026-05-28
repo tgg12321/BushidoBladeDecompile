@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80030208",
-      "file": "code6cac_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "cpu_side_move_dir_2",
       "file": "code6cac_c2",
       "distance": 2,
@@ -3799,19 +3791,28 @@
       "rules": 0,
       "status": "done",
       "completed_at": "2026-05-26T15:20:05"
+    },
+    {
+      "func": "func_80030208",
+      "file": "code6cac_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "done",
+      "completed_at": "2026-05-28T15:32:56"
     }
   ],
   "counts": {
     "total": 474,
-    "active": 440,
+    "active": 439,
     "by_status": {
-      "active": 440,
+      "active": 439,
       "authorize": 30,
       "parked": 2,
-      "done": 2
+      "done": 3
     },
     "by_verdict": {
-      "C": 240,
+      "C": 239,
       "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 120,
       "ASM-WHOLE": 4,
