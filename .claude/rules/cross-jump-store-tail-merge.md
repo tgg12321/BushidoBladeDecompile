@@ -169,6 +169,47 @@ fall-through WITHOUT the deferred-store layout) that none of the explored C stru
 or a `cross_jump`-level lever to keep 3 identical store-tails unmerged at a single end — neither
 found. Resume here; do not re-run permuters (exhausted) or re-call it a fork wall.
 
+### Final-round la-macro instrumentation: cause pinpointed (2026-05-29)
+
+Hypothesis tested: "the `la` macro `lui $a0,%hi; addiu $a0,$a0,%lo` emits an `addiu` that
+READS $a0, polluting the forward set-before-used walk's `needed` before the `lui`'s SET is
+recognised — explains `a0_live=16` despite `head_sets_a0=16`." **Instrumented disproof: the
+cause is the CALL_INSN's arg USE, not the la macro.**
+
+At the RTL level reorg sees, the la is ONE insn `(set (reg a0) (symbol_ref "D_800162EC"))` —
+DBG_LA confirms `ref_a0=0 set_a0=16` (pure SET, no a0-read). The trace at site1 (target uid=59):
+```
+uid=59 (set a0,symbol)  THIS_insn(ref_a0=0  set_a0=16) → res_a0: 16→0  ✓ cleared
+uid=61 (CALL tslTm2LoadImage_2) THIS_insn(ref_a0=16 set_a0=16) → ACCUM needed_a0 := 16
+uid=66 (set a0, const 1)   scratch = set_a0 & ~needed_a0 = 16 & ~16 = 0 → res unchanged
+```
+The poisoning insn is **uid 61, the CALL** — its `CALL_INSN_FUNCTION_USAGE` `(use (reg a0))`
+(the standard arg-passing list) adds a0 to accumulated `needed`. From that point, every later
+`set a0, const` candidate has `scratch = set & ~needed = empty` and cannot be recognised as
+set-before-used. Site2 (target uid=231) shows the identical pattern — uid 233 CALL
+`tslTmlGetHeda` is the poisoner.
+
+### Why no pure-C escape exists for the actual cause
+The `(use (reg a0))` is **intrinsic to any function call** (the ABI requires a0 to hold the
+first arg AT the call). No C-level reformulation removes it:
+- **Single-insn-load lever** (the brief's option 1 — put `&D_800162EC` in a sdata global loaded
+  via `lw $a0,%gp_rel(...)($gp)`): would replace `(set a0,symbol)` with `(set a0,(mem ...))` —
+  still ONE RTL insn, still SET-only. The CALL right after still has `(use (reg a0))`.
+  Adding such a global would also alter the .data layout (SHA1-breaking) and `D_800162EC`
+  is not in `sdata_syms.txt`.
+- **Invert the bnez sense / pick which path is fall-through** (options 2 + 3): tested in
+  `tmp/inv1.c`, `tmp/inv2.c`, `tmp/inv3.c`, `tmp/flip1.c` against the distance-6 base and the
+  cand_F inline-return mode. GCC's RTL is invariant under the C-level inversions
+  (jump-threading collapses them to the SAME bnez). Result: site1 fills iff mode-path
+  inline-return is used (with the same v0/v1 collateral as before); the inversion is
+  byte-for-byte equivalent to its un-inverted form. No new lever.
+- **Deferred store-block (the only `a0_live=0` structural lever found)**: costs the −6 inline-
+  store insns; combined-base distance 19–21 (above).
+
+The fall-through head is ALWAYS an arg-setup-then-call sequence for the call the eager fill is
+meant to feed. The CALL's `(use a0)` is what poisons `needed`; nothing C-level removes it. The
+coupled fixpoint stands.
+
 ## Related
 
 - [[cross-jump-call-merge]] — the CALL-suffix analogue (arg count is the lever there).
