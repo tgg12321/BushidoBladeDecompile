@@ -100,6 +100,75 @@ The mix (tail1 `goto end1`, tail2 inline `return`, tail3 `goto end3`, success
 shared `lw` re-read = the target's exact branch-store region. Honest distance 15 -> 6.
 (The residual 6 was a separate reorg.c delay-slot eager-fill, not this merge.)
 
+## The residual-6 is a COUPLED FIXPOINT, not two independent fills (saEft00Add, 2026-05-29)
+
+The residual 6 (after the store-merge is defeated) is NOT closable by pure C with the
+current toolchain. It is a coupled `reorg.c` ⨯ `jump2 cross_jump` fixpoint. Pinned in
+full below so a future resume doesn't re-derive it.
+
+### What the target has that we can't reproduce together (3 facts, all simultaneously)
+1. **Three eager delay-slot fills** reorg performs and our build declines:
+   - site1: `addiu $a0,1` in the `bnez` delay slot before `func_80080390(1,0)` (mode path)
+   - site2: `addiu $a0,6` in the `beqz` delay slot before `func_80080390(6,0)` (success path)
+   - tail2: `addiu $v0,-1` in the arg0-error `bnez` delay slot
+2. **A single shared end `.L80082610`** (re-reads `$v0,D_800A14E4`) reached by all 3
+   error `j .L80082610` + the success fall-through. Build object addr 0x1f4.
+3. **Three byte-identical inline error stores** `[li $v0,-1; lui $at; sw $v0,%lo(D_800A14E4); j .L1f4]`
+   that did NOT cross-jump-merge (verified: target has 4 distinct `R_MIPS_LO16 D_800A14E4`
+   store relocs at 0x2434/0x248c/0x24e4/0x2570).
+
+### Why we can't reproduce all three (the coupling)
+- **`reorg` declines each eager fill** because `mark_target_live_regs` reports `$a0` (or
+  `$v0`) LIVE at the branch's opposite-thread head. Mechanism (instrumented cc1, `DBG_FILL`/
+  `DBG_FWD`/`DBG_JF`): the fall-through head DEFINES the reg first (`head_sets_a0=16`, so it
+  is genuinely set-before-use), but the forward set-before-used walk in
+  `mark_target_live_regs` RE-LIVES it via the downstream `func_80080390`+`sys_VSync`
+  arg-uses, and for site2 never reaches a followable jump (`jump_insn=-1`) so the
+  jump-following intersection that would clear it never runs. Result `a0_live=16` ⇒ fill rejected.
+- **Site1 fills only with the mode-path inline `return`** (jump-following reaches a sibling
+  error tail's `j .L80082610` laid after it ⇒ `a0_live=0`) — but that inline return makes the
+  mode error store land in `$v1` + emits an extra `li $v0,-1` (collateral). masked distance 6→8.
+- **Site2 fills only with a deferred `D_800A14E4=-1; return` store-block laid PHYSICALLY
+  AFTER the success path** (gives the forward-walk a return-bearing block to hit ⇒ `a0_live=0`).
+  But deferring a store REMOVES that path's inline `[v0=-1; sw E4; j; nop]` (which the target
+  keeps inline) ⇒ −6 insns. The combined both-fill base (mode inline-return + any one error
+  store deferred after success) reaches `a0_live=0` at BOTH sites (verified `DBG_FILL`:
+  site1 + site2 both `a0_live=0`) but measures **sandbox distance 19–21** (build 127 vs target
+  133): the fills compound the cost, they do NOT cancel.
+- **The single shared end with 3 unmerged identical stores is unreachable**: GCC 2.7.2 `jump2`
+  `find_cross_jump` (jump.c ~2371) merges the 3 identical `[sw D_800A14E4; j .L1f4]` suffixes
+  (4-insn common suffix ≫ `minimum`=2) into one shared store block. The m2c single-return form
+  (cand_E) yields 3 LO16 relocs not 4 (one error store merged) under the **canonical cc1** AND
+  under **PsyQ cc1psx** — and no `-O`/`-f` flag tested (`-fno-thread-jumps`,
+  `-fno-cse-follow-jumps`, `-fno-rerun-cse-after-loop`, `-fno-delayed-branch`, `-fno-reorder-blocks`,
+  `-O1`) changes it. The distance-6 mix avoids the merge only by SPLITTING the end into
+  `.L1ec` (re-read) + `.L1f4` (epilogue), which itself diverges 1-2 insns from the target's
+  single-end and (critically) makes the success path "last" ⇒ site2's forward-walk re-lives `$a0`.
+
+### Evidence ledger (so a resume need not redo it)
+- Hand structures: ~25 exit-form / CFG variants; floor = the distance-6 mix (masked 6).
+- Permuter: 4 seedings — distance-6 base, site1-fill base (cand_F), both-fill bases
+  (cand_I/cand_K), + a `PERM_GENERAL`-directed exit-form base — ~120k+ iters total; best
+  saved scores 385 / 405 / 985 / 995 / 465 respectively; NONE approached the fills (385 was
+  injected-volatile/reorder noise, not structural). Single-base AND multi-base
+  (cross-pollinate) both plateaued.
+- Target-replication: target = 4 distinct E4 stores + single end + 3 eager fills; our build
+  from every single-end C = ≤3 distinct E4 stores (merge) and 0–1 eager fills.
+- cc1psx parity: cc1psx produces the IDENTICAL decline (site1-eager-only on the mix, store-merge
+  on the single-end) ⇒ NOT a decompals-vs-PsyQ fork divergence.
+- Combined-base result (the last untested avenue, 2026-05-29): both fills achievable together
+  (a0_live=0 at both sites) but distance 19–21 — the deferred-store layout cost (−6 insns)
+  exceeds the +2 fills. Coupling compounds, does not cancel.
+
+### Status
+NOT pure-C-matchable with the current engine/toolchain understanding. Best clean state is the
+distance-6 mix (committed via the saEft00Add cheat carrying the two `subst nop addiu`/`.L+4`
+regfix + the asmfix copy/draw-skip — these RECREATE the eager fills + the single-end the
+compiler won't produce). A genuine close needs a `reorg`-level lever (make `$a0` dead at the
+fall-through WITHOUT the deferred-store layout) that none of the explored C structures provide,
+or a `cross_jump`-level lever to keep 3 identical store-tails unmerged at a single end — neither
+found. Resume here; do not re-run permuters (exhausted) or re-call it a fork wall.
+
 ## Related
 
 - [[cross-jump-call-merge]] — the CALL-suffix analogue (arg count is the lever there).
