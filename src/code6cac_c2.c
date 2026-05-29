@@ -1311,6 +1311,7 @@ void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
     s32 step;
     s32 *colors;
     s32 i;
+    s32 buf[2]; /* dead local: reserves the target's 8 extra frame bytes (see rule dead-vars-local-array) */
 
     colors = arg2;
 
@@ -1323,11 +1324,14 @@ void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
     if (D_800F6656 & 1) {
         step = D_80090600;
     } else {
-        s32 v0 = 0x55F0;
+        s32 base_val;
         if (game_GetPlayerCount() == 0) {
-            v0 = 0x6590;
+            base_val = 0x6590;
+        } else {
+            base_val = 0x55F0;
+            step = base_val - arg0; /* redundant: steers base_val into v0 (matches target reg-alloc) */
         }
-        step = v0 - arg0;
+        step = base_val - arg0;
     }
 
     if (step < 0) {
@@ -1345,18 +1349,20 @@ void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
 
     if (limit > 0) {
         u32 rgb_mask = 0xFFFFFF;
-        u32 alpha_mask = 0xFF000000;
 
         do {
             s32 idx = func_80052C28((u32)arg0 >> 2, 2);
             if (idx < 0x1000) {
-                s32 *pal = (s32 *)(D_800A378C + (u32)idx * 4);
-                *colors = (*colors & alpha_mask) | (*pal & rgb_mask);
-                *pal = (*pal & alpha_mask) | ((u32)colors & rgb_mask);
-                if (i + 1 >= limit) {
+                s32 *pal = (s32 *)((u32)idx * 4 + D_800A378C);
+                s32 tmp;
+                *colors = (*colors & 0xFF000000) | (*pal & rgb_mask);
+                tmp = (*pal & 0xFF000000) | ((u32)colors & rgb_mask);
+                *pal = tmp;
+                colors = (s32 *)((u8 *)colors + 0x30);
+                tmp = limit - 1; /* reuse tmp (multi-set) so limit-1 isn't a loop.c movable -> recomputed inline, not hoisted (see rule defeat-licm-hoist-var-reuse) */
+                if (i == tmp) {
                     D_800905F8 = idx;
                 }
-                colors = (s32 *)((u8 *)colors + 0x30);
             }
             arg0 += step;
             i++;

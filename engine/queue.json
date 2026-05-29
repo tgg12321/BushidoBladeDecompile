@@ -2036,14 +2036,6 @@
       "status": "active"
     },
     {
-      "func": "func_8003DBE4",
-      "file": "code6cac_c2",
-      "distance": 35,
-      "verdict": "C",
-      "rules": 36,
-      "status": "active"
-    },
-    {
       "func": "func_80043BD0",
       "file": "text1a_c",
       "distance": 35,
@@ -3801,19 +3793,28 @@
       "rules": 1,
       "status": "done",
       "completed_at": "2026-05-28T15:32:56"
+    },
+    {
+      "func": "func_8003DBE4",
+      "file": "code6cac_c2",
+      "distance": 35,
+      "verdict": "C",
+      "rules": 36,
+      "status": "done",
+      "completed_at": "2026-05-28T19:43:40"
     }
   ],
   "counts": {
     "total": 474,
-    "active": 438,
+    "active": 437,
     "by_status": {
-      "active": 438,
+      "active": 437,
       "authorize": 30,
       "parked": 3,
-      "done": 3
+      "done": 4
     },
     "by_verdict": {
-      "C": 238,
+      "C": 237,
       "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 120,
       "ASM-WHOLE": 4,
