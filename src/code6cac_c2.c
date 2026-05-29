@@ -450,11 +450,14 @@ void cpu_side_move_dir_2(void) {
             kgm_init_hitrect(0);
         }
     }
-    if (D_800A38A4 == 9) {
-        a0 = 8;
-    } else {
+    /* goto-thread (not a plain if/else): makes cc1 emit the target's dbr
+       delay-slot-threaded call to func_8005FBC8 */
+    if (D_800A38A4 != 9) {
         a0 = D_800A38A4;
+        goto csmd2_call;
     }
+    a0 = 8;
+csmd2_call:
     func_8005FBC8(a0, (s32)0x80118800);
     {
         u8 val = D_800A38A4;

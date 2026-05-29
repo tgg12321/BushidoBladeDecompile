@@ -3758,15 +3758,6 @@
       "park_reason": "Pure-C distance 1; a verified pure-C for-loop form retires all 3 regfix rules. Blocked by NEIGHBORING CHEATS, not by itself: its pure-C form renumbers .L labels file-wide, breaking func_8006BD28 + func_80070C70 asmfix delete_between/insert_before rules -- and those siblings are asm-INJECTION bridges (paste target asm verbatim via asmfix, not pure C). SOTN fix = RETIRE those sibling bridges to pure C (eliminating their label-anchored cheats); then this lands with nothing to break. Do NOT stabilize the sibling cheat anchors -- that hardens cheats, against Tier-4."
     },
     {
-      "func": "cpu_side_move_dir_2",
-      "file": "code6cac_c2",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 2,
-      "status": "parked",
-      "park_reason": "Pure-C form exists and byte-matches in isolation (sandbox=0; real-pipeline rules-dropped objdump=0 diffs full-register), but blocked by global cc1 label-numbering collision with sibling func_8003DBE4. The pure-C restructure (if D!=9 a0=D goto call; a0=8; call: func) makes cc1 emit the target dbr delay-slot-threaded call, but allocates 2 extra global .L labels (max L73 to L75). func_8003DBE4 (later in file) has a regfix subst hardcoded to absolute label number 280; the +2 shift breaks it (retire SHA1 aa40fdb3, sole diff func_8003DBE4 idx31 bnez target). Finishing needs editing/de-cheating the sibling rule = policy decision on a second function. See rule global-label-drift-sibling-cheat for full detail. ESCALATE to user."
-    },
-    {
       "func": "func_8007F10C",
       "file": "display",
       "distance": 1,
@@ -3795,6 +3786,16 @@
       "completed_at": "2026-05-28T15:32:56"
     },
     {
+      "func": "cpu_side_move_dir_2",
+      "file": "code6cac_c2",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 2,
+      "status": "done",
+      "park_reason": "Pure-C form exists and byte-matches in isolation (sandbox=0; real-pipeline rules-dropped objdump=0 diffs full-register), but blocked by global cc1 label-numbering collision with sibling func_8003DBE4. The pure-C restructure (if D!=9 a0=D goto call; a0=8; call: func) makes cc1 emit the target dbr delay-slot-threaded call, but allocates 2 extra global .L labels (max L73 to L75). func_8003DBE4 (later in file) has a regfix subst hardcoded to absolute label number 280; the +2 shift breaks it (retire SHA1 aa40fdb3, sole diff func_8003DBE4 idx31 bnez target). Finishing needs editing/de-cheating the sibling rule = policy decision on a second function. See rule global-label-drift-sibling-cheat for full detail. ESCALATE to user.",
+      "completed_at": "2026-05-28T19:48:12"
+    },
+    {
       "func": "func_8003DBE4",
       "file": "code6cac_c2",
       "distance": 35,
@@ -3810,8 +3811,8 @@
     "by_status": {
       "active": 437,
       "authorize": 30,
-      "parked": 3,
-      "done": 4
+      "parked": 2,
+      "done": 5
     },
     "by_verdict": {
       "C": 237,

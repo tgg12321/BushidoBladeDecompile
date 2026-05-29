@@ -1413,13 +1413,6 @@ func_800856B0: insert "la\t$2,D_80106F28" @ 107
 # --- Reorders (post-insert/delete indices) ---
 # Prologue: la before sra
 func_800856B0: reorder 2,1 @ 1-2
-
-# --- cpu_side_move_dir_2: insert j+lui in else branch + label before jal ---
-# Target wants j .L_b with lui $5,0x8011 in its delay slot in the else branch,
-# then duplicate lui $5,0x8011 at .L46 (BEQ target), then jal at .L_b.
-# Process insert_afters sorted desc; @ 53 first, then @ 52.
-cpu_side_move_dir_2: insert_after ".L_csmd2_b:" @ 53
-cpu_side_move_dir_2: insert_after "j\t.L_csmd2_b\n\tlui\t$5,0x8011" @ 52
 # --- cpu_side_move_dir: 25 reg diffs across 3 groups + 1 reload insert + 1 lost-nop insert ---
 # Group A: if-branch division output cascade (target keeps sum in $v1, mfhi to $t1)
 cpu_side_move_dir: subst "addu\t\$2,\$6,\$3" "addu\t$3,$6,$3" @ 69
