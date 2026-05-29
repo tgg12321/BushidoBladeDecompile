@@ -83,6 +83,30 @@ after) has `subst "\.L\d+" ".L280-4" @ 29`; the +2 shift broke it (retire SHA1
 `aa40fdb3...`, sole diff func_8003DBE4 idx31 `bnez v0` +0x88→+0x48). Parked
 pending user policy decision on the sibling's brittle absolute-label rule.
 
+## Confirmed case — tslPolyF4Init (system.c, 2026-05-28) — a NEGATIVE delta
+
+Queue top, verdict C, distance 2, 4 regfix rules papering the done dispatch (idx
+50 `li v0,-1`→`move v0,zero`; idx 56 `beq s0,v0`→`bnez v0`). Target reuses the
+loop's `-1` sentinel (left in `v0` by `count != -1`) as the "exhausted" flag at
+the merge and the 3rd-call success sets `v0=0` in the beqz delay slot — i.e. a
+`bnez v0` flag test, not a `count == -1` re-test. Pure-C fix: thread a **separate**
+`s32 result` (NOT the call-result var, or GCC threads the success edge straight to
+the call and collapses the merge → distance 6): success `result = 0; goto done;`,
+exhaust `result = -1;`, dispatch `if (result != 0) return 0;`. `sandbox --disable
+all` 2→0; full-register objdump of the function vs canonical = **0/81 diffs**.
+
+BUT the matching C consumes **one FEWER** global `.L` label than HEAD (cc1 max
+`.L` 232 vs 233; 94 defs both — the function's 5th-emitted label drops 61→57, net
+−1 by the next function). Every later system.c sibling shifts −1, breaking three
+hardcoded-absolute-`.L` cheats: `marionation_Exec` (`subst ".L128" ".L999" @111/@129`
++ asmfix `beq …,.L128`), `saEft00Add` (`subst ".L199" ".L199+4" @25`, `".L207"
+".L207+4" @92` + asmfix `bne/.L199`, `beq/.L207`), and `cpu_side_move_dir_4`'s
+labels. Full-build SHA1 `a68874772…` (oracle `62efab…`); sole diffs =
+`marionation_Exec` idx133/154 and `saEft00Add` idx26/102 branch targets off by
+0x10. Parked pending policy decision on the three siblings (bump their hardcoded
+`.L` by −1 + SHA1-verify, or de-cheat them). Note this is the **negative** drift
+direction (cf. cpu_side_move_dir_2's +2); same landmine, opposite sign.
+
 ## Related
 - [[maspsx-noreorder-stripping]] — the other source-change-shifts-a-later-branch
   case; same "fix the label reference, verify by SHA1" discipline, different root
