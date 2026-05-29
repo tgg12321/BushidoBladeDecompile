@@ -22,6 +22,23 @@ on — **is reproducible by our fork from the right C source.** A non-match is a
 structure), never the compiler/fork/optimizer. The matching C *exists*; your job
 is to find it, not to certify it impossible.
 
+**Don't believe it? Run BOTH compilers and SEE (cc1psx is available).** The
+original PsyQ compiler `cc1psx` is installed (`tools/cc1psx_wrapper.sh`, a drop-in
+cc1 via dosemu2) precisely so you can settle this empirically instead of asserting
+divergence. Preprocess the function, compile it with each, diff the asm:
+```bash
+# foo.i = preprocessed C (cpp ... src/<file>.c > foo.i, or reuse a sandbox .i)
+tools/gcc-2.7.2/build/cc1 <cc1-flags> foo.i -o /tmp/ours.s          # our fork
+tools/cc1psx_wrapper.sh   <cc1-flags> < foo.i > /tmp/psx.s          # PsyQ original
+diff /tmp/ours.s /tmp/psx.s
+```
+You will find cc1psx does **not** beat our fork (it matches, or is worse — the
+recorded sweep: 0/282 functions where cc1psx wins, 18 where it's worse). So
+switching compilers can never turn your non-match into a match. Confirm it for
+your function, then get back to finding the C. (No guard blocks this any more —
+running cc1psx is allowed; it's a self-disproof tool, not a path forward when
+stuck.)
+
 **Why:** in the func_8003DBE4 session (2026-05-28) the orchestrator twice
 declared a hard floor "proven impossible / fork wall" at honest distance 5 — once
 from manual analysis, once after a 60k-iteration permuter run plateaued. Both

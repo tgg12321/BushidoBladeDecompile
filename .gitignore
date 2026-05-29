@@ -13,19 +13,19 @@ disc/
 # Compiler toolchain (large binary, downloaded separately)
 tools/gcc-2.7.2/
 
-# Original PsyQ cc1 binary. DEPRECATED 2026-05-18 — removed from the
-# agent toolset after empirical findings showed the compiler-choice
-# axis doesn't move tier-3 retirement (see
-# memory/rules/cc1psx-calibration-only.md and
-# memory/rules/compiler-patch-low-roi.md for the 0/16 + 8/8
-# measurements).
+# Original PsyQ cc1 binary (proprietary — gitignored, never committed).
+# RESTORED 2026-05-29 as a self-disproof tool: an agent that suspects a
+# "compiler divergence" can run BOTH compilers and SEE that cc1psx does not
+# beat decompals (it matches, or is worse — see docs/diagnostics/
+# compiler_parity.txt and memory/rules/compiler-patch-low-roi.md). The
+# compiler is NOT the variable; a non-match is a C-source problem. Running
+# cc1psx is no longer blocked (the cc1psx_guard hook was removed).
 #
-# Don't put it back unless you're explicitly re-running the audit
-# on new functions. Bootstrap no longer symlinks it; verify-toolchain
-# doesn't check for it; agents should not reach for it as a path
-# forward when stuck.
+# Run it (drop-in cc1, reads preprocessed C on stdin, writes asm on stdout):
+#   tools/cc1psx_wrapper.sh <cc1-flags> < foo.i    # via dosemu2
+# Compare:  diff <(cc1 ... foo.i) <(tools/cc1psx_wrapper.sh ... < foo.i)
 #
-# Retrieval (audit only):
+# If the binary is missing, retrieve it:
 #   curl -L https://archive.org/download/psyq-sdk/PSYQ_SDK.zip -o /tmp/sdk.zip
 #   python3 -c "import zipfile;zipfile.ZipFile('/tmp/sdk.zip').extract('psyq/psyq/CC1PSX.EXE','/tmp')"
 #   cp /tmp/psyq/psyq/CC1PSX.EXE tools/cc1psx.exe
