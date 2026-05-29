@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003A450",
-      "file": "code6cac_c_mid",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "tslPolyF4Init",
       "file": "system",
       "distance": 2,
@@ -3796,6 +3788,15 @@
       "completed_at": "2026-05-28T19:48:12"
     },
     {
+      "func": "func_8003A450",
+      "file": "code6cac_c_mid",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "done",
+      "completed_at": "2026-05-28T20:02:50"
+    },
+    {
       "func": "func_8003DBE4",
       "file": "code6cac_c2",
       "distance": 35,
@@ -3807,15 +3808,15 @@
   ],
   "counts": {
     "total": 474,
-    "active": 437,
+    "active": 436,
     "by_status": {
-      "active": 437,
+      "active": 436,
       "authorize": 30,
       "parked": 2,
-      "done": 5
+      "done": 6
     },
     "by_verdict": {
-      "C": 237,
+      "C": 236,
       "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 120,
       "ASM-WHOLE": 4,

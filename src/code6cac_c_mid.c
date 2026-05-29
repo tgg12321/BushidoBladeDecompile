@@ -1581,31 +1581,27 @@ s32 func_8003A450(void) {
         s1 = 0;
     }
 
-poll_loop:
-    if (func_8008C464(3, 1, 0) != 0) {
-        goto got_vsync;
-    }
-    if (func_80078B04(0xF2000001) - s1 < 0x7801) {
-        goto poll_loop;
-    }
-    return 0;
+    while (1) {
+        while (1) {
+            if (func_8008C464(3, 1, 0) != 0) {
+                break;
+            }
+            if (func_80078B04(0xF2000001) - s1 >= 0x7801) {
+                return 0;
+            }
+        }
 
-got_vsync:
-    __asm__ volatile("" ::: "memory");  /* prevent GCC from hoisting s0=0 into earlier delay slot - cheat-cleanup 2026-05-16 */
-    s0 = 0;
+        s0 = 0;
+        do {
+            if (func_8008C464(3, 1, 0) == 0) {
+                break;
+            }
+            s0++;
+        } while (s0 < 1000);
 
-retry_loop:
-    if (func_8008C464(3, 1, 0) == 0) {
-        goto check_retry;
-    }
-    s0++;
-    if (s0 < 1000) {
-        goto retry_loop;
-    }
-
-check_retry:
-    if (s0 < 1000) {
-        goto poll_loop;
+        if (s0 >= 1000) {
+            break;
+        }
     }
 
     func_8008C464(1, 1, 1);
