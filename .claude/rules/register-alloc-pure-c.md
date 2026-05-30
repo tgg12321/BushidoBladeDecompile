@@ -366,16 +366,125 @@ the function in a worse state than baseline. The source change is reverted and
 the technique documented above (fully reproducible in ~30 seconds from a clean
 sandbox). The instrumented `tmp/gccdbg/cc1` is preserved for resume.
 
-### Resume avenue (session 5's named, un-completed lever)
-**Instrument sched.c the same way `global.c:575` was instrumented.** Add a
-`getenv("BB2_SCHED_DEBUG")` hook around `rank_for_schedule` (line 2385) that
-dumps the ready queue's `INSN_PRIORITY` values, classes (data/anti/independent),
-and `last_scheduled_insn` for each call to the comparator. Rebuild `tmp/gccdbg/
-cc1` from that, re-run on the score-6 sandbox source, and find the C-source
-chain depth that promotes the `lw $a1, D_800F19C0` insn ahead of the table
-arithmetic chain. The lever — by symmetry with the allocation one — should be
-something that survives combine but extends D_800F19C0's downstream chain to
-match the table arithmetic's depth.
+### Session-6 (2026-05-29) — instrumented sched.c probe EXECUTED.
+
+Added `getenv("BB2_SCHED_DEBUG")` hooks to `tools/gcc-2.7.2/sched.c` at TWO
+points: (1) right after the initial `SCHED_SORT` in `schedule_block` — dumps
+the full ready queue with each insn's UID, kind (INSN/CALL/JUMP),
+`INSN_PRIORITY`, `INSN_REF_COUNT`; (2) at the schedule-pick point (just before
+`ready += 1; n_ready -= 1;`) — dumps for each clock tick which insn was
+picked, the ready queue's full state with priority + LUID, and
+`last_scheduled_insn`. Rebuilt `tmp/gccdbg/cc1` (sched.o + relink) with the new
+hook live; canonical `tools/gcc-2.7.2/build/cc1` mtime/SHA1 untouched
+(`045c9543d3…` May 18, 4263208 bytes vs the dbg cc1's `9f6c43d9b1…` May 29).
+
+Ran `BB2_SCHED_DEBUG=1 tmp/gccdbg/cc1 ...` on the score-6 sandbox source (chain
++ idx_local levers from session 5 applied). The cpu_side_move_dir_4 do_timeout
+block is block 3 of the function's sched run (RTL `block=3 n_insns=22`). The
+instrumented dump exposed the priority gap directly.
+
+**sched2's INSN_PRIORITY table for the do_timeout block:**
+
+| insn | kind | pri | refcnt | RTL                          |
+|------|------|-----|--------|------------------------------|
+| 120  | INSN | **1** | 3 | `lw $5, D_800F19C0`          |
+| 125  | INSN | **2** | 2 | `lbu $2, D_800A11D5`         |
+| 129  | INSN | 3   | 2 | `sll $2, $2, 2`              |
+| 139  | INSN | 4   | 1 | `lw $6, D_800A11DC($2)`      |
+| 144  | CALL | 4   | 1 | `jal debug_printf`           |
+
+The downstream RTL chain rooted at insn 120 (D_800F19C0 load):
+```
+120 (lw $5) → 121 (set a1, $5) → 144 (call) — depth 2
+```
+The chain rooted at insn 125 (D_800A11D5 load):
+```
+125 (lbu $2) → 129 (sll $2,$2,2) → 139 (lw a2, D_800A11DC) → 144 (call) — depth 4
+```
+
+`INSN_PRIORITY` ≈ chain depth. D_800A11D5's chain is 2 deeper than
+D_800F19C0's, so it gets priority 2 vs 1. `rank_for_schedule` picks the higher-
+priority insn FIRST (and the picked insn prepends to the chain LIFO, so the
+highest-priority pick emits LAST). Net: D_800F19C0 emits AFTER D_800A11D5 in
+the asm — matching cc1's raw output (`lbu $2, D_800A11D5` at line 61, `lw $5,
+D_800F19C0` at line 62).
+
+### The required lever: extend D_800F19C0's downstream depth from 2 → ≥4
+
+For `lw $a1, D_800F19C0` to be picked AHEAD of `lbu D_800A11D5` (i.e., emit
+EARLIER in the asm, matching target), its downstream chain must be longer than
+D_800A11D5's (depth 4). To go from 2 → ≥4 requires inserting 2+ RTL insns that
+consume `D_800F19C0`'s loaded value, survive combine, and feed into the call's
+args/return.
+
+### Every lever tested at the score-6 base — all negative
+
+| Lever | Score | Δ insns | Verdict |
+|---|---|---|---|
+| `arg4 = tbl_125c[...] \| ((s32)D_800F19C0 & 0)` (folded chain) | 16 | 0 | FAIL — folded before sched1; no INSN_PRIORITY effect |
+| Move `D_800F19C0 = …` init EARLIER (before the table-chain compute) | 18 | 0 | FAIL — STORE position doesn't affect the LOAD's priority; scheduling regression elsewhere |
+| `arg1_v = (void*)((s32)D_800F19C0 + ((s32)tbl_125c - (s32)D_800A125C))` (mirror lever 1 for D_800F19C0) | 20 | +4 | FAIL — chain materialises; combine doesn't fold the inter-symbol delta here (tbl_125c is a callee-save pseudo, not a symbol_ref at combine time) |
+| `dummy_chain = (s32)arg1_v; arg4 = … ^ (dummy_chain & 0);` | 16 | 0 | FAIL — CSE eats it after combine |
+| `D_800F19C0 = (void*)((s32)tbl_125c + ((s32)&D_80016240 - (s32)D_800A125C));` (chain the STORE init) | 16 | 0 | NO-OP — the LOAD's chain is what affects priority, not the store's |
+| `extern void *volatile D_800F19C0;` (volatile on the global) | 16 | 0 | NO-OP — volatile forces the LOAD but doesn't extend its downstream |
+
+### Why lever 1's symmetry doesn't apply here
+
+Lever 1 worked because `tbl_125c`'s pseudo (born from a symbol_ref load) was the
+RTL pseudo whose REFERENCES we needed to bump for global.c. The delta-arithmetic
+chain `idx_1494 = (u8*)tbl_125c + delta` added a USE of tbl_125c at combine
+time (before global.c's count), then combine folded the address back to
+symbol_ref — zero emitted bytes.
+
+For D_800F19C0, the loaded value is consumed ONCE (as the call's arg1). There
+is no "natural" RTL use site to chain through that survives combine. Every
+attempt to chain D_800F19C0's value into arg4/arg5 computation either:
+- CSE-eats the chain (`x & 0`, `x ^ 0`, `x - x` all fold).
+- Materialises the chain as real instructions (regression).
+
+The combine pass's symbolic-address folding (which makes lever 1 free) does
+NOT apply to **loaded values** — those are pseudos with live ranges, not
+symbol_refs.
+
+### Status (session 6)
+Mechanism FULLY characterised at the RTL-instruction level via instrumented
+sched.c — INSN_PRIORITY 1 vs 2 from chain depth 2 vs 4. The C-source levers
+that flip it WITHOUT emitting instructions don't exist in the explored search
+space (every tested chain extension either folds or materialises). Sandbox-
+distance floor remains **6** with chain + idx_local applied (per session 5).
+The chain + idx_local source change is reverted to keep oracle green (the
+chain shifts maspsx indices, breaking the existing 5 regfix rules — full match
+needed for retire to drop them). The instrumented dbg cc1 + sched.c hooks are
+preserved in `tmp/gccdbg/` (gitignored) for the next session's resume.
+
+### Resume avenues (session 6's named, un-completed levers)
+
+The instrumented dump explained the gap but the C-source levers within the
+single-function scope can't bridge it. The remaining avenues require larger
+moves:
+
+1. **Project-wide rodata reorder.** Place `D_800F19C0` IMMEDIATELY ADJACENT
+   to `D_800A11DC[]` in rodata so a constant-folded expression
+   `(s32)D_800F19C0 + delta_to_D_800A11DC` could share an addressing chain.
+   The address delta becomes a link-time constant, so combine could fold the
+   intermediate through. (This is a global-rodata-reorder policy decision,
+   per `cross-jump-store-tail-merge.md`'s saEft00Add precedent.)
+2. **`debug_printf` varargs declaration test.** Currently declared as
+   `void debug_printf(void *, void *, s32, s32, s32);` (fixed). A varargs
+   declaration `void debug_printf(void *, ...);` may change the call's
+   `CALL_INSN_FUNCTION_USAGE` and thus the LIVE_RANGE tracking that feeds
+   `compute_insn_priority`. Test against the score-6 base.
+3. **Instrument `compute_insn_priority` itself** (`sched.c:2310` area).
+   Add a `BB2_PRI_DEBUG` hook that dumps the recursive priority computation
+   per insn — for insn 120, show the chain GCC traverses (120 → 121 → 144
+   should be depth 2, but maybe the visit order or memoization eliminates a
+   visit). Compare with what the target's chain looked like.
+4. **Cross-check with `cc1psx` rebuilt with the same hooks.** If cc1psx
+   emits target's order from any of the levers above (without the lever
+   materialising), the gap is a PsyQ-vs-decompals fork divergence and the
+   "compile with cc1psx for THIS function only" policy is the lever (one of
+   the few cases where it could be justified — but currently project policy
+   forbids it, see `cc1psx-calibration-only.md`).
 
 ## Confirmed limit — marionation_Exec (system.c, 2026-05-29)
 
