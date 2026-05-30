@@ -504,71 +504,99 @@ Every C-source lever that would manufacture such a dep either folds to a no-op
 there is no GCC RTL pass that synthesizes a fake dependency between unrelated
 leaf loads.
 
-**Avenue #4 — cc1psx cross-check at lever-applied source: DEFINITIVE.**
+**Avenue #4 — cc1psx cross-check at lever-applied source.** Compiled
+`tmp/csmd4_min_lever.c` (137-line minimal `.i` with chain + idx_local applied)
+through cc1psx → prologue_fix → maspsx → as. Recipe in
+`tmp/build_csmd4_psx_minimal.sh` (the full system.c does NOT cc1psx-compile —
+its file-scope `__asm__("glabel …")` blocks use multi-line C-string
+concatenation cc1psx rejects; the minimal `.i` is required).
 
-Compiled `tmp/csmd4_min_lever.c` (137-line minimal `.i` with chain + idx_local
-applied) through BOTH compilers. Asm body comparison in the debug_printf block:
+**Session-7 mis-reported this avenue.** The original write-up compared the
+region around `lw D_800F19C0` (lines 49-52 of the asm), saw cc1psx interleave
+D_800F19C0 early, and concluded "cc1psx + lever source + maspsx + as produce
+target bytes for this function" — WITHOUT measuring the full function diff.
+**Session-7b corrects it.**
 
-```
-                                     dbg cc1 (decompals)    cc1psx (PsyQ)
-position 49 (post tslTm2LoadImage_2): lbu $3,0($17)         lbu $3,0($17)
-position 50:                          lbu $2,1($17)         lbu $2,1($17)
-position 51:                          sll $3,$3,2           lw $5,D_800F19C0  ★
-position 52:                          addu $3,$3,$19        sll $3,$3,2
-...
-later:                                lw $5,D_800F19C0      (already done at 51)
-later:                                lbu $2,D_800A11D5     lbu $2,D_800A11D5
-```
+### Session-7b (2026-05-30) — actual byte-comparison: cc1psx ≠ target either
 
-**cc1psx interleaves `lw D_800F19C0` early (matching TARGET's schedule);
-decompals defers it.** Same C, same flags, different compiler scheduling.
+Byte-compared cc1psx's `cpu_side_move_dir_4` (160 insns) vs target
+`build/src/system.o`'s `cpu_side_move_dir_4` (160 insns). Filtered `jal`
+reloc-name noise (both objects emit `jal 0x0` + R_MIPS_26 to external symbols;
+objdump's literal symbol name differs between standalone-min vs full-build but
+the bytes are the same).
 
-This is the rare case ([[difficult-is-not-impossible]] notes only 0/282 functions
-had cc1psx winning in the project sweep) where cc1psx beats decompals. The gap
-is NOT a C-source structure problem — both forks (with chain + idx_local
-applied) produce equivalent RTL down to sched1 (verified via PRIODBG: same
-insn UIDs, same dep edges, same priorities at our compiler). The fork
-divergence is in `rank_for_schedule`'s tie-handling between equal-or-near-equal
-INSN_PRIORITY insns where the stable-sort behavior differs.
+**Result: 23 real diffs, 160/160 same insn count, 137/160 masked-asm match.**
 
-### Status (session 7) — fork divergence + policy decision named
+Diff categories (measurement, not inference):
+1. **idx_1494 register: cc1psx puts it in `$s1`, target wants `$s2`.**
+   Same diff our dbg cc1 has at this lever-applied source. cc1psx and
+   decompals produce IDENTICAL idx_1494 allocation here.
+2. **debug_printf-block scheduling: cc1psx's order differs from target**
+   (idx 53-65 region). The "early `lw $a1, D_800F19C0`" the prior write-up
+   pointed to is real, BUT cc1psx's surrounding insn order is NOT target's
+   either — there's an additional shuffle the region-level inference missed.
 
-cpu_side_move_dir_4's pure-C floor (chain + idx_local) is sandbox-distance 16
-(re-measured fresh; session 5's claimed 6 was either context-dependent or a
-read error). The remaining 16-insn diff is the `lw D_800F19C0` scheduling
-cascade, proven by instrumented `priority()` to require a synthetic RTL
-dependency that no C-source construct can produce without emitting bytes, and
-proven by the cc1psx cross-check to be a genuine PsyQ-vs-decompals fork
-divergence (cc1psx produces target's schedule from the SAME lever-applied C;
-decompals does not).
+cc1psx is NOT closer to target than decompals on this function. Both compilers
+hit the SAME register-allocation gap (idx_1494 → wrong $s reg), AND cc1psx
+introduces its own scheduling divergence on top of the lever's allocation
+shift. The previously-claimed "PsyQ-vs-decompals fork divergence" was not real.
 
-Per project policy ([[cc1psx-calibration-only]]), cc1psx is forbidden in the
-canonical build — it remains a diagnostic tool only. The chain + idx_local
-source change is reverted at session end (keeps oracle green; rule update fully
-documents the recipe). Instrumented `tmp/gccdbg/cc1` preserved with all three
-hooks (ALLOCDBG + SCHEDDBG + PRIODBG) for resume.
+This is consistent with the project's compiler_parity record (0/282 cc1psx
+wins) — re-affirmed by direct measurement here, not undercut.
 
-### Genuine resume avenues (out of single-function scope)
+### Status (session 7b — corrected)
 
-1. **Per-function cc1psx opt-in policy decision** (USER POLICY ONLY). The
-   precedent exists — `tools/cc1psx_wrapper.sh` is a drop-in cc1 replacement,
-   the Makefile already has a `CC1_PSX_FILES` hook design (per the wrapper's
-   header comment), and the cross-check proves cc1psx + the lever source +
-   maspsx + as produce target bytes for this function. The reason this is
-   currently forbidden is documented as project policy, not as proof — see
-   `cc1psx-calibration-only.md`. If the project chose to enable cc1psx for
-   THIS function only (gated to `CC1_PSX_FILES=cpu_side_move_dir_4`), the
-   match would land. Same expected for marionation_Exec (same file, same
-   coupling mechanism).
-2. **Project-wide rodata reorder** placing D_800F19C0 adjacent to D_800A11DC[]
-   so the lever-extending delta-arithmetic is a link-time constant — same
-   policy decision class as the saEft00Add precedent.
+cpu_side_move_dir_4's pure-C floor with the chain + idx_local levers applied is
+sandbox-distance 16 (decompals/dbg cc1). cc1psx at the same source produces 23
+diffs vs target — neither compiler matches.
 
-**Not viable** (empirically disproven this session):
+The work continues on the C-source axis. The PRIODBG dump's specific finding —
+insn 107 (D_800F19C0 load) has ONLY one predecessor (CALL via REG_DEP_ANTI),
+no natural C use-site can extend its downstream chain without emitting bytes —
+remains accurate FOR THAT INSN. But the bigger remaining gap is the same
+idx_1494/saved $s1↔$s2 allocation issue, which afflicts BOTH compilers and
+**is not a sched.c issue at all** — it's a global.c allocation tie the chain
+lever inadvertently created (idx_1494's livelen dropped from 154 to 77 when
+its def moved later via the chain, bumping its priority above saved's).
+
+### ALLOCDBG re-run on chain-applied source (recap from session 5)
+
+- idx_1494 (pseudo 77): refs 7, livelen 77, pri 1818 → $s1
+- saved (pseudo 80): refs 2, livelen 21, pri 952 → $s2
+- tbl_125c (pseudo 79): refs 5, livelen 152, pri 657 → $s3 ✓ (target)
+
+To flip $s1/$s2 between idx_1494 and saved: saved needs pri > 1818, OR
+idx_1494's pri must drop below 952. With idx_1494's 7 refs, dropping pri below
+952 requires livelen > 73 (already 77, marginal) AND a few-insn livelen
+extension would do it — **testable as a session-8 lever**, not tried yet
+(session 5's claim that idx_local achieved this flip didn't re-measure;
+session 7's re-measurement shows it doesn't).
+
+### Genuine resume avenues
+
+1. **Extend idx_1494's livelen marginally** (session 8 — TESTABLE pure-C
+   move). The ALLOCDBG numbers show the saved↔idx_1494 priority ratio is
+   closer than the original arg0↔tbl_125c gap; a few-insn livelen extension
+   on idx_1494 may flip its priority below saved's. Untried.
+2. **Re-examine the chain lever formulation.** With idx_1494's livelen
+   dropping to 77, lever 1's "free bytes" may be fighting itself. A different
+   chain expression (e.g. `idx_1494 = (u8*)((s32)tbl_125c + delta)` vs the
+   current `(u8*)((u8*)tbl_125c + delta)`, or via `&tbl_125c[0]` indexing)
+   might keep idx_1494's livelen at 154 while still bumping tbl_125c's refs.
+   Untried.
+3. **Project-wide rodata reorder** (out of single-function scope, policy
+   decision).
+
+**Not viable** (empirically disproven):
 - Pure-C varargs declaration change (avenue #2 — score unchanged).
 - Adding C-source dependencies to extend insn 107's RTL chain (avenue #3 dump
   proves no natural use-site exists; every synthetic chain either folds or
   materialises).
+- **Per-function cc1psx opt-in** (avenue #4 corrected): the byte comparison
+  measures 23 diffs vs target. cc1psx is NOT the lever; the gap is C-source
+  + allocation. The session-7 "per-function cc1psx opt-in would land it"
+  characterization was based on region inference, not measurement, and is
+  falsified.
 
 ## Confirmed limit — marionation_Exec (system.c, 2026-05-29)
 
