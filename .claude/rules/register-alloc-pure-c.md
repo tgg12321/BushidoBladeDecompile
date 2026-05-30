@@ -116,6 +116,138 @@ use binds to a callee-save instead of the still-live param register.
    version scored 200 in isolation, while a non-matching variant scored 85) —
    always confirm a candidate in the full build, not just the permuter score.
 
+## Confirmed limit — cpu_side_move_dir_4 (system.c, 2026-05-29)
+
+`cpu_side_move_dir_4` plateaus at sandbox-distance **20** (4 regfix substs $3→$4 + a
+15-element reorder rule) and **none of the pure-C levers above + permuter + cc1psx
+cross-check closes it**. Pinned in full so a future resume doesn't re-derive it.
+
+### Two COUPLED mechanisms (instrumented)
+
+1. **GCC 2.7.2 global allocno-priority tiebreaker** (`global.c:624`,
+   `allocno_compare`). arg0 (pseudo 72, `2 refs / 78 insn live`) and tbl_125c
+   (pseudo 77, `3 refs / 152 insn live`) have priorities
+   `pri = floor_log2(n_refs) * n_refs / live_length * 10000`:
+   - arg0: `1 * 2 / 78 * 10000 = 256`
+   - tbl_125c: `1 * 3 / 152 * 10000 = 197`
+
+   arg0 wins on priority alone; even at a true tie the tiebreaker
+   (`*v1 - *v2` = allocno number ascending = pseudo creation order) gives the
+   param-save pseudo (created at RTL function entry) the win. **Result:** arg0
+   gets `$s3`, tbl_125c gets `$s5` — target uses them flipped (tbl_125c in `$s3`,
+   arg0 in `$s5`). The `register s32 *tbl_125c asm("s3")` pin is silently
+   IGNORED by GCC because arg0 wins the same slot.
+
+2. **GCC 2.7.2 list-scheduler priority for the `lw D_800F19C0` insn**
+   (`sched.c:2385`, `rank_for_schedule`). At the `tslTm2LoadImage_2` call boundary,
+   the ready queue contains `lw $a1, D_800F19C0` (insn 115, downstream depth ~1 —
+   only feeds the call) and the table-arithmetic chain (`lbu → sll → addu → lw`,
+   depth ~5). Both have only `REG_DEP_ANTI 86` (the call) — independent
+   semantically. The scheduler picks INSN_PRIORITY-highest first; the longer
+   table chain wins ⇒ `lw D_800F19C0` defers until just before the call. Target's
+   asm has it interleaved EARLY (between the two `lbu`s) — different scheduler
+   decision from the same RTL.
+
+### Volatile-read lever PROOF (mechanism 1)
+
+`*(volatile s32 *)tbl_125c;` before the debug_printf call bumps tbl_125c's
+ref count 3 → 4 ⇒ `floor_log2(4)=2`, `pri = 2 * 4 / 152 * 10000 = 526` (beats
+arg0's 256). Result: **tbl_125c lands in `$s3`** matching target; sandbox score
+drops 20 → 16. **But** the volatile read emits an extra `lw $v0,0($s3)`
+instruction (tier-3, non-matching). Proves the allocation IS C-reachable —
+the lever just costs 1 insn that no non-side-effect-bearing C construct
+emulates (`(void)tbl_125c`, `s32 *t = tbl_125c`, `(s32)tbl_125c & 0`,
+sentinel pointer comparison — all DCE'd or CSE'd before priority calculation).
+
+### cc1psx cross-check finding (per [[cc1psx-calibration-only]])
+
+Built `tmp/csmd4_min.c` (137-line minimal standalone, hand-extern decls — DODGES
+DOS 640K, see `saeft_psx_debug.sh` recipe). Ran BOTH compilers on the same C:
+
+| | cc1psx (PsyQ) | decompals (ours) | TARGET asm |
+|---|---|---|---|
+| arg0 reg | `$s3` | `$s3` | `$s5` |
+| arg1 reg | `$s4` | `$s4` | `$s6` |
+| tbl_125c | `$s5` | `$s5` | `$s3` |
+| `lw D_800F19C0` schedule | EARLY (interleaved) | LATE (after table arith) | EARLY (matches cc1psx) |
+| arg5 stack-store delay slot fill | inline | filled into jal | nop |
+
+**Both compilers produce the SAME register allocation from my C** — target's
+allocation is unreachable by compiler choice alone. cc1psx matches target's
+SCHEDULING (mechanism 2) but not target's ALLOCATION (mechanism 1). So this is
+NOT a decompals-vs-PsyQ fork wall — it is a C-source structure that produces
+target's `$s3 ↔ $s5` swap that I have not found.
+
+### Partial lever found (mechanism 2 — works standalone, regresses in full)
+
+```c
+{
+  s32 arg4, arg5, arg3;
+  void *arg1;
+  arg1 = D_800F19C0;
+  arg3 = D_800A11DC[D_800A11D5];
+  arg4 = tbl_125c[idx_1494[0]];
+  arg5 = tbl_125c[idx_1494[1]];
+  debug_printf(&D_800161C8, arg1, arg3, arg4, arg5);
+}
+```
+
+In **standalone** (minimal .c), preloading BOTH arg1 + arg3 as locals extends
+their downstream chains enough that decompals schedules `lw $5,D_800F19C0`
+EARLY (matching target). In the **full sandbox**: score regresses 20 → 27
+because arg3 preload also hoists the `D_800A11D5` byte read (target has it
+LATE, idx 57-58) AND arg5's stack store gets pushed into `jal debug_printf`
+delay slot (target has nop there). Function ends up 159 insns vs target's 160.
+
+Preloading arg1 ALONE gets folded by CSE in the full context (back to score 20).
+The arg3 preload was load-bearing for extending arg1's chain depth but
+over-corrects the rest of the block.
+
+### Permuter result (5000+ iters, clean offset-0 target)
+
+`permuter/csmd4/` preserved. Base score 705 (= 21 reg-diff × 5 + 3 ins × 100 +
+3 del × 100). Tested 4 base forms (arg4-only-inline, both-locals, both-bytes-
+captured, +preload-globals); arg4-only-inline lowest at 705. Plateau over
+5000+ iters; 5 tied-best mutations all type-mutation noise (`volatile unsigned
+long`, etc.) that don't reduce the 3+3 ins/del structural cost. Permuter
+exhausted at clean-target.
+
+### Resume here
+
+The matching C exists ([[difficult-is-not-impossible]]) — both decompals AND
+cc1psx reproduce target byte-for-byte on functions WHERE they have the right C.
+Target's `$s3 ↔ $s5` swap is a C-source idiom not yet identified. Next reachable
+avenues (NOT exhausted by this session):
+
+1. **arg1-preload + chain-extender that doesn't hoist D_800A11D5.** The
+   standalone arg1+arg3 form proves chain extension is the right direction.
+   Find a way to make `arg1` survive CSE (keep it in a pseudo with downstream
+   depth > the table chain) WITHOUT also forcing arg3 / D_800A11D5 to hoist.
+   Candidates: volatile cast on arg1 alone (`*(void* volatile*)&D_800F19C0`),
+   a dead local that depends on arg1 (`s32 _aux = (s32)arg1 & 0xFFFF0000;`),
+   or pinning arg1 to a callee-save via a real later use (e.g. a sentinel
+   loop-carried value).
+2. **Probe target's `$s3 ↔ $s5` allocation via a global-rodata reorder.** marionation_Exec
+   (the near-twin in the same file) carries a 5-rule rotation regfix encoding
+   THE SAME PATTERN. Both functions may share a structural feature (e.g. a
+   global ordering or a missing 3rd index var like `idx_1496`) that flips the
+   allocno priority. Try adding `idx_1496 = idx_1494 + 2;` to cpu_side_move_dir_4
+   even if unused — it raised marionation's `idx_1494` ref count.
+
+DO NOT (per session 3 conclusion): re-run permuters (5000 iters of clean-target
+exhausted); re-run cc1psx cross-check (compiler choice confirmed not to help);
+add tier-3 `volatile` or asm cheats; declare it impossible — both mechanisms
+are individually known-defeatable in pure C (volatile lever for #1 proves
+allocation reachable; standalone arg1+arg3 proves scheduling reachable). The
+gap is the COUPLING — a C structure that defeats #1 and #2 simultaneously
+without the regressions one introduces for the other.
+
+### Status
+NOT pure-C-matchable in this session. Floor = sandbox-distance 20 (5 rules:
+4 reg substs $3→$4 + 1 reorder). State preserved in `permuter/csmd4/` and
+`tmp/csmd4_min.c`. Sibling `marionation_Exec` carries equivalent rotation
+regfix — likely shares the resume mechanism.
+
 ## Related
 - [[register-asm-pins]] — pin reliability; this rule is the pure-C alternative
   to its "regfix the register name" fallback. **Read both when fighting a pin.**
@@ -123,3 +255,6 @@ use binds to a callee-save instead of the still-live param register.
   levers here first.
 - [[dead-vars-local-array]] — Levers C and D worked end-to-end there.
 - [[minimize-regfix]] — every pin and rule is debt; these levers retire both.
+- [[difficult-is-not-impossible]] — the matching C exists; coupling, not impossibility.
+- [[cc1psx-calibration-only]] — the cross-check this section ran against (cc1psx
+  matches target's scheduling, not target's allocation — confirms C-structure gap).
