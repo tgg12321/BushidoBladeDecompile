@@ -572,31 +572,128 @@ extension would do it — **testable as a session-8 lever**, not tried yet
 (session 5's claim that idx_local achieved this flip didn't re-measure;
 session 7's re-measurement shows it doesn't).
 
-### Genuine resume avenues
+### Session-8 (2026-05-30) — executed session-7b's named avenues; found a new lever.
 
-1. **Extend idx_1494's livelen marginally** (session 8 — TESTABLE pure-C
-   move). The ALLOCDBG numbers show the saved↔idx_1494 priority ratio is
-   closer than the original arg0↔tbl_125c gap; a few-insn livelen extension
-   on idx_1494 may flip its priority below saved's. Untried.
-2. **Re-examine the chain lever formulation.** With idx_1494's livelen
-   dropping to 77, lever 1's "free bytes" may be fighting itself. A different
-   chain expression (e.g. `idx_1494 = (u8*)((s32)tbl_125c + delta)` vs the
-   current `(u8*)((u8*)tbl_125c + delta)`, or via `&tbl_125c[0]` indexing)
-   might keep idx_1494's livelen at 154 while still bumping tbl_125c's refs.
-   Untried.
+**Avenue 1 — extend idx_1494's livelen past 77.** Tested two forms:
+(a) `return temp + ((s32)idx_1494 & 0)` → folds to plain `return temp`, ALLOCDBG-
+verified pseudo 77 unchanged (refs=7, livelen=77, pri=1818). DCE'd before flow.c.
+(b) `*idx_1494 = (u8)temp;` before `return temp` (a real late store) → ALLOCDBG
+shows pseudo 77 refs=8, livelen=89, **pri=2696** (BUMPED, wrong direction —
+refs grew faster than livelen). The real-store version was tried only because
+the fold version proved unmeasurable; with refs up, priority rose so the
+saved↔idx_1494 tie didn't flip. Sandbox 16→17 with +1 insn.
+
+Lever-A from this rule (block-local `u8 *local_idx = idx_1494;`) — CSE'd back to
+pseudo 77 unchanged. No livelen extension that keeps refs constant survived.
+
+**Avenue 2 — different chain expression that keeps idx_1494's livelen at 154.**
+Tested the key insight: lever-1's chain `idx_1494 = (u8*)tbl_125c + delta_to_1494`
+replaces idx_1494's def site, which drops its livelen from 154 to 77 (the
+source of the saved↔idx_1494 tie). Three new formulations:
+- (a) `idx_1495 = (u8*)tbl_125c + delta_to_1495` (chain via idx_1495 instead):
+  ALLOCDBG verifies idx_1494 KEEPS livelen 154, ALL 5 reg slots match target —
+  but emits +1 insn (D_800A1495 address materializes as `lui+addiu` because it
+  isn't referenced elsewhere as a symbol that combine could fold). **Sandbox
+  20→9 with +1 insn (build 161 vs target 160).** Not retire-able as-is.
+- (b) `D_800F19C0 = (void*)((u8*)tbl_125c + delta_to_D_80016240)` (chain the
+  STORE init of D_800F19C0 via tbl_125c): **THIS IS THE NEW BEST LEVER.**
+  ALLOCDBG verifies:
+    saved (pseudo 80): pri 952 → **$s1** ✓
+    idx_1494 (pseudo 77): refs 7, livelen 154, pri 909 → **$s2** ✓ (NATURAL!)
+    tbl_125c (pseudo 79): refs 5, livelen 152, pri 657 → **$s3** ✓
+    arg0 (pseudo 72): pri 256 → $s4 (target $s5)
+    arg1 (pseudo 73): pri 246 → $s5 (target $s6)
+    idx_1495 (pseudo 78): pri 135 → $s6 (target $s4)
+  5/6 reg slots correct; only idx_1495 wrong (rotated with arg0/arg1).
+  D_800A125C and D_80016240 are sequential symbol_refs both reachable from
+  combine's fold table, so the chain emits **ZERO extra instructions**.
+  **Sandbox 20→15, build 160 (matches target count).**
+- (c) Dual chain (a)+(b) combined: sandbox 17 with +1 insn (chains compound).
+- (d) Original lever-1 + chain (b): sandbox 16 (lever-1 still drops idx_1494
+  into $s1, undoing the win).
+
+### New session-8 lever recipe (score 20 → 15, build matches target count)
+
+```c
+extern void *D_800F19C0;
+...
+s32 cpu_side_move_dir_4(s32 a0, u8 *a1) {
+    /* ... unchanged decls ... */
+    D_800F19B8 = sys_VSync(-1) + 0x3C0;
+    tbl_125c = D_800A125C;
+    idx_1494 = &D_800A1494;                 /* NATURAL form, keeps livelen 154 */
+    idx_1495 = idx_1494 + 1;
+    D_800F19BC = 0;
+    /* THE LEVER: bump tbl_125c's refs via the STORE-init chain; combine folds */
+    D_800F19C0 = (void *)((u8 *)tbl_125c + ((s32)&D_80016240 - (s32)D_800A125C));
+    /* ... rest unchanged ... */
+}
+```
+
+The delta `(s32)&D_80016240 - (s32)D_800A125C` is a link-time constant.
+Combine folds the entire expression back to the symbolic store
+`D_800F19C0 = &D_80016240` (zero emitted bytes) but the RTL passes BEFORE
+flow.c see tbl_125c referenced one more time — bumping its refs 3→5 (with
+loop-depth weighting) and its priority 197→657 in global.c's allocno sort.
+
+### Remaining 15 diffs (the un-closed residual)
+
+All flow from one cause: idx_1495 in $s6 instead of $s4 (cascades to arg0/arg1
+rotation and a +4-byte branch offset chain). To flip idx_1495's priority above
+arg0's (256), idx_1495 needs pri > 256. Current refs=2, livelen=148, pri=135.
+With refs=4 (added via 2 loop-depth-weighted uses): pri = 2*4/148*10000 = 540
+WINS. But:
+- `(void)idx_1495` near function end — DCE'd, no effect.
+- `*idx_1495 = (u8)((s32)idx_1495 & 0)` — emits a real store (+1 insn, sandbox
+  21).
+
+The same structural problem session-7b identified for D_800F19C0's INSN_PRIORITY
+applies here too: combine folds chains that don't emit bytes (no priority
+effect), and chains that DO emit bytes don't pay off (priority gain < +1 insn
+cost).
+
+### Status (session 8)
+
+**Sandbox-distance floor pushed from 16 to 15** with the new D_800F19C0-store-
+via-tbl_125c chain (avenue-2 variant (b)). Build matches target count exactly
+(160 insns). 5 of 6 callee-save regs match target's allocation through pure C
+with zero emitted byte overhead. The remaining 15 diffs are the idx_1495/$s4
+miss + the +4-byte branch-offset cascade.
+
+Source change reverted (the chain shifts maspsx indices, breaking the existing
+5 regfix rules); rule update fully documents the recipe for the next session.
+
+### Genuine resume avenues (session 8 untried)
+
+1. **Bump idx_1495's priority above arg0's (256)** WITHOUT emitting bytes.
+   The fold-trick that works for tbl_125c (constant-folded delta arithmetic
+   through `tbl_125c + delta_to_OTHER_SYM`) needs an equivalent for idx_1495.
+   Candidates not yet tried:
+   - Chain idx_1495 via D_800F19A8 (which the polling-loop callback already
+     references): `idx_1495 = (u8*)((u8*)&D_800F19A8 + delta_to_D_800A1495)`.
+     D_800F19A8 is a referenced symbol — combine may fold.
+   - Chain via a static const offset using the existing tbl_125c bumping
+     pattern: `idx_1495 = (u8*)tbl_125c + delta` (D_800A1495 not referenced
+     elsewhere as symbol_ref, but maybe combine still folds the +1 fold).
+   - A trivial USE of idx_1495 that survives combine but DCEs in jump2 (a
+     conditional assignment to a stack-only var that's later dead).
+2. **Different fold-target than D_80016240.** D_80016240 is the address stored;
+   if another address (e.g. D_800F19A0, D_800F19A8) also resolves via combine,
+   try them. Each different fold-target may shift secondary scheduling.
 3. **Project-wide rodata reorder** (out of single-function scope, policy
    decision).
 
 **Not viable** (empirically disproven):
-- Pure-C varargs declaration change (avenue #2 — score unchanged).
-- Adding C-source dependencies to extend insn 107's RTL chain (avenue #3 dump
-  proves no natural use-site exists; every synthetic chain either folds or
-  materialises).
-- **Per-function cc1psx opt-in** (avenue #4 corrected): the byte comparison
-  measures 23 diffs vs target. cc1psx is NOT the lever; the gap is C-source
-  + allocation. The session-7 "per-function cc1psx opt-in would land it"
-  characterization was based on region inference, not measurement, and is
-  falsified.
+- Pure-C varargs declaration change (avenue #2 of session 7 — score unchanged).
+- Adding C-source dependencies to extend insn 107's RTL chain (session 7's
+  avenue #3 PRIODBG dump proves no natural use-site exists; every synthetic
+  chain either folds or materialises).
+- **Per-function cc1psx opt-in** (session 7b corrected): the byte comparison
+  measures 23 diffs vs target. cc1psx is NOT the lever.
+- Session 7b's "extend idx_1494 livelen" lever (avenue 1) — DCE'd or refs grow
+  faster than livelen; both folded-and-real variants fail to flip $s1↔$s2.
+- Session 7b's "different chain formulation" via D_800A1495 alone (avenue 2a):
+  produces all 5 reg matches BUT +1 insn (sandbox 9, build 161).
 
 ## Confirmed limit — marionation_Exec (system.c, 2026-05-29)
 
