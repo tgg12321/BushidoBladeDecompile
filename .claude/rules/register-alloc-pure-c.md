@@ -248,6 +248,98 @@ NOT pure-C-matchable in this session. Floor = sandbox-distance 20 (5 rules:
 `tmp/csmd4_min.c`. Sibling `marionation_Exec` carries equivalent rotation
 regfix — likely shares the resume mechanism.
 
+## Confirmed limit — marionation_Exec (system.c, 2026-05-29)
+
+`marionation_Exec` plateaus at sandbox-distance **56** with 44 rules (5 register-
+rotation rotations on $s1–s4 + $s5–s7, 7 prologue rename substs, 7 epilogue rename
+substs, 9 debug_printf scheduling substs, 1 15-element reorder, several
+`.L128→.L999` label-dup tricks for delay-slot fills) and none of the pure-C levers
+above + the chain-extender hypothesis from cpu_side_move_dir_4 closes it. Pinned in
+full so the next attempt doesn't re-derive it.
+
+### Same mechanism as cpu_side_move_dir_4, larger surface
+
+cc1's NATURAL output (instrumented via `tmp/me_pre.sh`, pre-prologue_fix raw):
+```
+move $21, $4      ; arg0 → $s5 (low callee-save)
+move $17, $5      ; arg1 → $s1 (lowest callee-save)
+…then la $22, D_800A125C    ; tbl_125c → $s6
+   la $19, D_800A1494       ; idx_1494 → $s3
+   addu $23, $19, 1         ; idx_1495 → $s7
+   addu $20, $19, 2         ; idx_1496 → $s4
+```
+Target wants: arg0→$s7, arg1→$s4, tbl→$s5, idx_1494→$s2, idx_1495→$s6, idx_1496→$s3.
+
+The args win LOW callee-saves because **args are the first pseudos created at RTL
+function entry** (pseudo creation order = allocno number ascending; in true priority
+ties the lower allocno wins — `global.c:624`). arg0 and arg1 have very long live
+ranges (live entire function, from entry to the `if (a0 != 0)` check at exit), but
+*also* have the lowest allocno number, so they outrank tbl_125c / idx_149X on the
+tiebreaker. Same mechanism as cpu_side_move_dir_4's `arg0 vs tbl_125c` tie.
+
+### Chain-extender hypothesis (from the brief): already present, does not close it
+
+The brief proposed: "adding a third loop-local pseudo with similar ref-count profile
+(e.g. `s32 *idx_1496 = idx_1494 + 2;` even if unused) can raise the tbl/idx pseudo's
+priority above arg pseudos." **`idx_1496` is ALREADY in `marionation_Exec`'s body**
+(`src/system.c:503,515`) — both as a declaration AND as the base for the `*idx_1496`
+/ `*(idx_1496 - 1)` reads in the check block. The allocation rotation persists
+regardless. Adding a third extender doesn't flip the priority because args still
+beat all idx vars on allocno number alone (long live range = denominator helps but
+not enough vs creation-order tiebreaker).
+
+### Volatile-bump lever REGRESSES here (cf. cpu_side_move_dir_4)
+
+For cpu_side_move_dir_4, `*(volatile s32 *)tbl_125c;` before the debug_printf bumped
+tbl_125c's refs 3→4 and dropped sandbox 20→16 (but cost 1 extra emitted `lw`). For
+**marionation_Exec the same lever INCREASES sandbox 56→79**. The volatile read
+emits its own `lw` *and* perturbs the surrounding scheduling in this longer function
+(many more pseudos in flight at the debug_printf site than in the cpu_side_move_dir_4
+isolated probe), producing extra mis-scheduled instructions that exceed the score
+"saved" by any allocation shift. Confirms the volatile lever is *site-specific* —
+proved C-reachable in cpu_side_move_dir_4's tighter context but not transferable.
+
+### Why this is more entrenched than cpu_side_move_dir_4
+
+| | cpu_side_move_dir_4 | marionation_Exec |
+|---|---|---|
+| score gap | 20 (4 substs + 1 reorder) | 56 (44 rules) |
+| reg-rotation cycles | 1 (arg0↔tbl_125c) | 2 (3-cycle + 4-cycle) |
+| coupled mechanisms | 2 (allocation + scheduling) | 3+ (alloc + sched + delay-slot label-dup) |
+| chain-extender available | new (would be a fresh idx_1496) | ALREADY PRESENT, doesn't flip |
+| volatile-bump result | works (cost 1 insn) | regresses (cost > saved) |
+| target-replication | proven C-reachable per-mechanism | not yet shown reachable |
+
+### Status
+NOT pure-C-matchable in this session, by the same coupling that defeated
+cpu_side_move_dir_4 — at larger scale and with the chain-extender lever **already
+in place** (so the brief's proposed unlock is empirically tested + closed). The
+44-rule cluster encodes two coupled register-rotation cycles + a scheduling reorder
++ delay-slot label-dup tricks; any single C-source restructure moves one piece and
+regresses others. Resume avenues identical to cpu_side_move_dir_4's two listed
+("arg1-preload + chain-extender that doesn't hoist", "global rodata reorder") plus
+one new one specific to marionation_Exec:
+
+3. **Arg-storage form** — the target captures `arg0 → $s7` and `arg1 → $s4` as
+   explicit `addu $sN, $aN, $zero` paired *interleaved with the prologue stores* at
+   idx 2 and 4. This pairing pattern is what `prologue_fix.py` rewrites cc1's
+   natural output INTO. cc1's natural arg-save instead occurs at `move $21, $4`
+   right after the first `sw $21`. **`tools/prologue_config.json:2735-2750` lists
+   marionation_Exec with the target's interleaved arg-save sequence — but the
+   args land in $s5/$s1 (cc1's choice), and prologue_fix only RENAMES indices to
+   match target's offsets, not the allocation.** Investigate: if the C source can
+   be restructured so cc1 NATURALLY allocates arg0→$s7 and arg1→$s4 (e.g. via a
+   long-lived earlier use of $s5 that displaces arg0), the 7 prologue rename
+   substs + the rotation rules might fall out together. The body's actual uses of
+   args are minimal (arg0 only at exit, arg1 only at the byte-copy `dst = a1`),
+   so changing arg liveness from "live whole function" to "transferred to a
+   different callee-save mid-function" could shift the allocno priority enough.
+
+DO NOT (per this session's testing): rerun the volatile-bump lever (regressed);
+add tier-3 `__asm__` register pins (the existing `register asm("$6")` on `check`
+is score-inert per sandbox); declare it impossible (matching C exists per
+[[difficult-is-not-impossible]], just not within the explored levers).
+
 ## Related
 - [[register-asm-pins]] — pin reliability; this rule is the pure-C alternative
   to its "regfix the register name" fallback. **Read both when fighting a pin.**

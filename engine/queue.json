@@ -2324,14 +2324,6 @@
       "status": "active"
     },
     {
-      "func": "marionation_Exec",
-      "file": "system",
-      "distance": 56,
-      "verdict": "ASM-SUSPECT",
-      "rules": 44,
-      "status": "active"
-    },
-    {
       "func": "pad_main_control",
       "file": "code6cac_b",
       "distance": 57,
@@ -3751,6 +3743,15 @@
       "park_reason": "Pure-C form READY and byte-identical standalone (sandbox --disable all = 0; full-register objdump vs canonical = 0/81 diffs), but blocked by global .L-label drift into 3 siblings. Fix: thread a separate flag var (s32 result) instead of re-testing count==-1 at the done block: on the 3rd-call success set result=0 and goto done; on loop exhaust set result=-1 (reuses the loop's -1 sentinel left in v0); done dispatch is if(result!=0)return 0. Must use a SEPARATE var from the success branch condition or GCC threads the success edge straight to the call (collapsing the bnez merge -> distance 6). The matching C consumes ONE FEWER global .L label than HEAD (cc1: max .L 232 vs 233, 94 defs both), shifting every later system.c sibling -1. Breaks hardcoded-absolute-.L cheats: marionation_Exec (subst .L128->.L999 @111/@129 + asmfix beq .L128), saEft00Add (subst .L199+4 @25, .L207+4 @92 + asmfix bne/.L199, beq/.L207); cpu_side_move_dir_4 labels also shift. Observed: full-build SHA1 a688747729dc... (canonical 62efab...), sole diffs = marionation_Exec idx133/154 and saEft00Add idx26/102 branch targets off by 0x10. Resolution is a POLICY decision touching 3 sibling functions (bump their hardcoded .L by -1 and SHA1-verify, OR de-cheat the siblings to pure C). Per .claude/rules/global-label-drift-sibling-cheat.md."
     },
     {
+      "func": "marionation_Exec",
+      "file": "system",
+      "distance": 56,
+      "verdict": "ASM-SUSPECT",
+      "rules": 44,
+      "status": "parked",
+      "park_reason": "register-alloc coupling \u2014 arg pseudos win allocno tiebreaker for low callee-saves (creation order), forcing rotation. chain-extender already present, volatile-bump regresses (cost > saved). same mechanism as cpu_side_move_dir_4 at larger surface; full pinning in register-alloc-pure-c.md."
+    },
+    {
       "func": "func_8007F10C",
       "file": "display",
       "distance": 1,
@@ -3809,17 +3810,17 @@
   ],
   "counts": {
     "total": 474,
-    "active": 435,
+    "active": 434,
     "by_status": {
-      "active": 435,
+      "active": 434,
       "authorize": 30,
-      "parked": 3,
+      "parked": 4,
       "done": 6
     },
     "by_verdict": {
       "C": 235,
       "ASM-PARTIAL": 80,
-      "ASM-SUSPECT": 120,
+      "ASM-SUSPECT": 119,
       "ASM-WHOLE": 4,
       "ASM-STRUCTURAL": 26
     }
