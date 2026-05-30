@@ -210,6 +210,150 @@ The fall-through head is ALWAYS an arg-setup-then-call sequence for the call the
 meant to feed. The CALL's `(use a0)` is what poisons `needed`; nothing C-level removes it. The
 coupled fixpoint stands.
 
+### Session-12 (2026-05-30) — BB2_REORG_DEBUG instrumented reorg.c walk; finer-grained mechanism + partial site1 lever found
+
+Built the BB2_REORG_DEBUG hooks (DBG_OPP, DBG_FILL, DBG_LA, DBG_BRK, DBG_WLK, DBG_MTLR,
+DBG_BBLAS) into `tmp/gccdbg/reorg.c` covering the `mark_target_live_regs` walk's full state
+at the per-insn level + the `fill_slots_from_thread`'s opposite_thread head live check. Per
+session-11's tooling guarantee, canonical `tools/gcc-2.7.2/build/cc1` SHA1
+`045c9543d39ab8109583b92137c7adde084f7a25` (May 18 00:23) — **UNTOUCHED**; instrumented
+`tmp/gccdbg/cc1` rebuilt to expose tgt=59 (site1), tgt=231 (legacy site2 uid), tgt=237 (site2
+in cand_inline_ret) traces.
+
+**Refined the mechanism three layers deeper than session-11's `(use a0)` finding:**
+
+1. **JF-LOOP recursive seed**: For site1's `j .L14` (`goto end1`), the walk reaches the
+   simple-jump and FOLLOWS via `mark_target_live_regs(next_active_insn(jump_target))`. That
+   recursive call returns `new_resources` SEEDED with the jump-target block's
+   `basic_block_live_at_start` — which, by flow.c's worklist back-prop from successors that
+   eventually reach calls using a0, has a0=16. The JF-LOOP `IOR`s scratch into new_resources,
+   then `AND`s into res. Net: res.a0 = 16 EVEN THOUGH the direct forward walk would have set
+   it to 0 (via the LA's set-before-used). The recursive call is the actual poisoner — not the
+   in-block CALL_INSN that session-11 identified.
+
+2. **USE-INSN-wrapper pollution**: Between the in-block insns visited by the walk, GCC inserts
+   `(insn (use <inner-insn>))` USE markers (residue of earlier reorg/sched moves via
+   `update_block`). When the walk hits such a USE with an `'i'`-class inner expression, line
+   2747 of reorg.c calls `mark_set_resources(inner, res, 0, 1)` — DIRECTLY ADDING set bits to
+   `res`. The forward walk is therefore NOT monotonically decreasing (as the algorithm intends);
+   USE-INSN wrappers RE-LIVEN previously-cleared regs. Site1's trace shows a0 going from 0
+   (after uid 334) to 16 (entering uid 336) via an interposed USE insn at uid 335 (only visible
+   in DBG_WLK; filtered from DBG_LA because USE has its own `continue` path before the LA
+   print). This is the REAL reason a conditional `break` inserted between the merge and the
+   downstream calls doesn't help — pollution happens BEFORE the break.
+
+3. **Conditional-break breaks the walk for site2 but not for site1**: A conditional
+   `if (arg0 < 0) D_800A14E4 = -1;` placed between the success-path post-call code and
+   `sys_VSync(-1)` (cand_site2_brk) emits a `bgez s1, .L; li v0,-1; lui at; sw v0,(at)` (4
+   insns). The bgez is a non-simple JUMP_INSN → walk BREAKS at it. For site2 (where the
+   opposite_thread head is the la for `&D_80082320`), the walk breaks BEFORE hitting any USE
+   wrapper that adds a0; result: site2 EAGER-FILLS (`li a0,6` in beqz delay slot). For site1
+   (where the opposite_thread head is the la for `&D_800162EC`), the walk visits MORE
+   intermediate insns including a USE wrapper that re-livens a0 BEFORE the bgez break. The
+   conditional doesn't help site1.
+
+### The partial lever: inline-return at end1 unlocks site1
+
+`cand_inline_ret.c`: replace `goto end1; ... end1: return D_800A14E4;` (the mode-error tail)
+with a direct `return D_800A14E4;`. This REMOVES the `j .L<end1>` simple jump from site1's
+opposite_thread walk. The walk now reaches the function's `jr ra` (RETURN) instead — which is
+"will follow" but `JUMP_LABEL(jr_ra) = NULL` so `next_active_insn(NULL) = NULL` →
+`mark_target_live_regs(NULL) = end_of_function_needs` (a0 NOT in it for MIPS). JF-LOOP's
+new_resources stays clean for a0. **Site1 eager-fills**. Measured: 127 insns, site1 EAGER
+(`li a0,1` in bnez delay slot), site2 still nop.
+
+Trade-off (the reason it's PARTIAL): inline-return at end1 means the mode error tail does NOT
+share the `[lw v0, D_800A14E4; epilogue]` re-read with target's `.L80082610` shared end. The
+target uses `goto end + shared end re-read` which:
+- Allows v0 reuse (target stages `addiu v0,$0,-1` right after sw $v0 (D_800A14EC), reusing v0
+  for the next sw — matching its EXACT bytes);
+- Inline-return forces GCC to pick $v1 for one of the two adjacent -1 stores (because v0 is
+  busy with the sys_VSync return), then `li v0,-1` in the j's delay slot for the return value.
+- Net: distance-cleanup of 2 insns SAVED on the tail BUT +1 reg-mismatched store (v1 not v0)
+  cascading into branch-offset shifts.
+
+### Combined lever (cand_site2_brk): both eager fills, 131 insns, 75 normalized diffs
+
+`cand_site2_brk.c` = inline-return at end1 + dummy conditional in success path. Result: 131
+insns, BOTH site1 AND site2 eager-filled. Vs target's 133: short by 2 insns (the missing
+shared-end re-read). Normalized diff (via `tmp/saeft_diff_target.py`): 75/133 (most are
+1-insn cascade offsets from the inline-return form + the v0/v1 register diff).
+
+The dummy `if (arg0 < 0) D_800A14E4 = -1;` is a SEMANTIC CHANGE (when arg0 < 0, returns -1
+instead of D_800A14D0). NOT a candidate for actual commit — only a proof that the conditional
+break MECHANISM works for site2.
+
+### Why neither path closes the residual
+
+| Form | Insns | Site1 eager | Site2 eager | v0/v1 match | Diffs |
+|---|---|---|---|---|---|
+| distance-6 mix (goto+inline+goto+goto) | 131 | NO | NO | YES | 6 |
+| target asm | 133 | YES | YES | YES | 0 |
+| cand_inline_ret (inline ret at end1) | 127 | YES | NO | NO (v1 collision) | many |
+| cand_site2_brk (+ semantic if) | 131 | YES | YES | NO (v1 collision) | 75 (cascade) |
+| cand_jalr (function-pointer indirect call) | 136 | NO | NO | n/a | many |
+| cand_call_postdom (do-while-0 boundary) | 131 | NO | NO | YES | 6 (same as baseline) |
+| cand_mix_both_brk (goto+brk for both) | 135 | NO (USE pollution) | YES | n/a | many |
+
+The **3-way trilemma**:
+1. Want unmerged tails for site1's `[sw D_800A14E4; j shared_end]` (so target's 4-store
+   pattern emerges) → need goto + shared end + a way to defeat cross-jump (= the MIX).
+2. Want site1 eager-fill → need NO `j .L<x>` in opposite_thread that triggers JF-LOOP with
+   a polluting block-live-in (= inline-return for end1, or some structural lever that makes
+   the jump-target block's `current_live_regs.a0 = 0`).
+3. Want v0 reuse for the -1 stores at the mode-error tail → need goto+shared-end form so
+   GCC reuses v0 across the `sw v0,D_800A14EC; addiu v0,-1; sw v0,D_800A14E4` sequence
+   (inline-return form forces v1 because the inline jr ra's return-value carry conflicts).
+
+Goals 1 + 3 align (goto+shared-end+mix); goal 2 contradicts them in our pipeline.
+
+### What no C construct breaks
+
+To reach the matching state, EITHER:
+- (a) The JF-LOOP's recursive `mark_target_live_regs(next_active_insn(.L<end>))` must return
+  with a0=0. That requires `basic_block_live_at_start[bb_of(.L<end>+next_active)].a0 = 0`.
+  Flow.c computes this from successors' live-out minus block's defs. If ANY successor has a0
+  live and the block doesn't kill a0, a0 propagates. The shared end `.L80082610` block is
+  `lw v0, D_800A14E4` (kills v0, doesn't touch a0) → successor `.L<epilogue>` (`lw ra; lw s1;
+  lw s0; addiu sp; jr ra`) doesn't use a0 → a0 should NOT propagate. But flow.c is conservative
+  about register-clobber sets at function-exit boundaries; its actual computed value depends on
+  GCC's flow.c implementation details that no C-level change can override.
+- (b) The USE-INSN wrappers from reorg/sched's earlier passes (`update_block`) must not
+  insert a0-touching USE markers in opposite_thread's walk path. These are inserted whenever a
+  sched move crosses a block boundary or affects a register's last-use. C-level structure
+  affects sched's choices indirectly (via instruction count / dependency depth) but no C
+  expression directly suppresses USE-INSN insertion.
+
+Both (a) and (b) are **compiler-internal data-flow decisions made AFTER C source consumption**.
+The C-source space's degrees of freedom (which the prior sessions + this session explored
+across ~120k permuter iterations + 6 hand-crafted structural variants) does not span the
+direction needed to flip them.
+
+### Genuine resume avenues from this session
+
+1. **GCC-level: patch reorg.c to recompute `new_resources` from a CLEAN walk** (not seeded by
+   `basic_block_live_at_start`). User policy decision: compiler patches at this depth alter
+   target match for OTHER functions and require a project-wide regression sweep.
+2. **Move sys_VSync(-1) earlier**: place `D_800A14E8 = sys_VSync(-1);` BEFORE site2's
+   `if(D_800A1500 & 1)` block. Removes the post-site2 a0 use; site2's walk no longer
+   accumulates needed_a0 from a downstream call. Untested in this session because semantically
+   it reorders a syscall (potential VSync-timing implication for the game's runtime behavior).
+   Worth empirical test in a future session.
+3. **Combined approach**: cand_inline_ret structure + sys_VSync-moved-earlier in success path.
+   Likely outcome: both sites eager-fill via different mechanisms (site1 = inline-return
+   avoidance of JF-LOOP; site2 = no downstream a0 use → walk's needed_a0 stays clean). Net
+   insns: ~127 (cand_inline_ret) + whatever the move costs. Worth a controlled test.
+
+### Status (session 12)
+PARTIAL pure-C lever proven (`cand_inline_ret` unlocks site1). Site2 closeable via either
+SEMANTIC-changing conditional (cand_site2_brk, not viable) or call-reordering (untested).
+Full match still blocked by the 3-way coupling (unmerged tails ⨯ JF-LOOP-safe ⨯ v0-reuse).
+
+Canonical cc1 untouched (SHA1 `045c9543d3...` May 18 00:23). Instrumented `tmp/gccdbg/cc1`
+preserved with BB2_REORG_DEBUG hooks (DBG_OPP/FILL/LA/BRK/WLK/MTLR/BBLAS) for resume. All
+candidate `.c` files preserved in `tmp/cand_*.c`. Test harness: `tmp/saeft_test.sh` + diff
+tool `tmp/saeft_diff_target.py`.
+
 ## Related
 
 - [[cross-jump-call-merge]] — the CALL-suffix analogue (arg count is the lever there).
