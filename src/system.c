@@ -232,6 +232,7 @@ done:
 s32 tslPolyF4Init(s32 a0, s32 a1, s32 a2) {
     s32 count;
     unsigned long long new_var2;
+    s32 result;
     s32 idx;
     s32 saved;
     int new_var;
@@ -261,6 +262,7 @@ loop:
     }
     g_cd_callback_a = saved;
     if (tslTm2LoadImage(a0 & 0xFF, a1, a2, 0) == 0) {
+        result = 0;
         goto done;
     }
 next:
@@ -269,8 +271,16 @@ next:
         goto loop;
     }
     g_cd_callback_a = saved;
+    result = -1;
+    /* dead label retains cc1's global .L counter alignment with prior committed
+     * source — without it, this function consumes one FEWER .L number than the
+     * HEAD-cheated form, drifting every later system.c sibling's labels -1 and
+     * breaking marionation_Exec / saEft00Add hardcoded-.L cheats.
+     * See .claude/rules/global-label-drift-sibling-cheat.md (tslPolyF4Init case). */
+    goto done_label_pad;
+done_label_pad:
 done:
-    if (count == (-1)) {
+    if (result != 0) {
         return 0;
     }
     {

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-26T17:48:12",
+  "generated_at": "2026-05-29T20:11:27",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -3734,15 +3734,6 @@
       "park_reason": "Pure-C distance 1; a verified pure-C for-loop form retires all 3 regfix rules. Blocked by NEIGHBORING CHEATS, not by itself: its pure-C form renumbers .L labels file-wide, breaking func_8006BD28 + func_80070C70 asmfix delete_between/insert_before rules -- and those siblings are asm-INJECTION bridges (paste target asm verbatim via asmfix, not pure C). SOTN fix = RETIRE those sibling bridges to pure C (eliminating their label-anchored cheats); then this lands with nothing to break. Do NOT stabilize the sibling cheat anchors -- that hardens cheats, against Tier-4."
     },
     {
-      "func": "tslPolyF4Init",
-      "file": "system",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 4,
-      "status": "parked",
-      "park_reason": "Pure-C form READY and byte-identical standalone (sandbox --disable all = 0; full-register objdump vs canonical = 0/81 diffs), but blocked by global .L-label drift into 3 siblings. Fix: thread a separate flag var (s32 result) instead of re-testing count==-1 at the done block: on the 3rd-call success set result=0 and goto done; on loop exhaust set result=-1 (reuses the loop's -1 sentinel left in v0); done dispatch is if(result!=0)return 0. Must use a SEPARATE var from the success branch condition or GCC threads the success edge straight to the call (collapsing the bnez merge -> distance 6). The matching C consumes ONE FEWER global .L label than HEAD (cc1: max .L 232 vs 233, 94 defs both), shifting every later system.c sibling -1. Breaks hardcoded-absolute-.L cheats: marionation_Exec (subst .L128->.L999 @111/@129 + asmfix beq .L128), saEft00Add (subst .L199+4 @25, .L207+4 @92 + asmfix bne/.L199, beq/.L207); cpu_side_move_dir_4 labels also shift. Observed: full-build SHA1 a688747729dc... (canonical 62efab...), sole diffs = marionation_Exec idx133/154 and saEft00Add idx26/102 branch targets off by 0x10. Resolution is a POLICY decision touching 3 sibling functions (bump their hardcoded .L by -1 and SHA1-verify, OR de-cheat the siblings to pure C). Per .claude/rules/global-label-drift-sibling-cheat.md."
-    },
-    {
       "func": "marionation_Exec",
       "file": "system",
       "distance": 56,
@@ -3769,53 +3760,16 @@
       "rules": 0,
       "status": "done",
       "completed_at": "2026-05-26T15:20:05"
-    },
-    {
-      "func": "func_80030208",
-      "file": "code6cac_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "done",
-      "completed_at": "2026-05-28T15:32:56"
-    },
-    {
-      "func": "cpu_side_move_dir_2",
-      "file": "code6cac_c2",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 2,
-      "status": "done",
-      "park_reason": "Pure-C form exists and byte-matches in isolation (sandbox=0; real-pipeline rules-dropped objdump=0 diffs full-register), but blocked by global cc1 label-numbering collision with sibling func_8003DBE4. The pure-C restructure (if D!=9 a0=D goto call; a0=8; call: func) makes cc1 emit the target dbr delay-slot-threaded call, but allocates 2 extra global .L labels (max L73 to L75). func_8003DBE4 (later in file) has a regfix subst hardcoded to absolute label number 280; the +2 shift breaks it (retire SHA1 aa40fdb3, sole diff func_8003DBE4 idx31 bnez target). Finishing needs editing/de-cheating the sibling rule = policy decision on a second function. See rule global-label-drift-sibling-cheat for full detail. ESCALATE to user.",
-      "completed_at": "2026-05-28T19:48:12"
-    },
-    {
-      "func": "func_8003A450",
-      "file": "code6cac_c_mid",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "done",
-      "completed_at": "2026-05-28T20:02:50"
-    },
-    {
-      "func": "func_8003DBE4",
-      "file": "code6cac_c2",
-      "distance": 35,
-      "verdict": "C",
-      "rules": 36,
-      "status": "done",
-      "completed_at": "2026-05-28T19:43:40"
     }
   ],
   "counts": {
-    "total": 474,
+    "total": 469,
     "active": 434,
     "by_status": {
       "active": 434,
       "authorize": 30,
-      "parked": 4,
-      "done": 6
+      "parked": 3,
+      "done": 2
     },
     "by_verdict": {
       "C": 235,

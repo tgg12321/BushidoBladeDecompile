@@ -83,7 +83,7 @@ after) has `subst "\.L\d+" ".L280-4" @ 29`; the +2 shift broke it (retire SHA1
 `aa40fdb3...`, sole diff func_8003DBE4 idx31 `bnez v0` +0x88→+0x48). Parked
 pending user policy decision on the sibling's brittle absolute-label rule.
 
-## Confirmed case — tslPolyF4Init (system.c, 2026-05-28) — a NEGATIVE delta
+## Confirmed case — tslPolyF4Init (system.c, 2026-05-28 parked → 2026-05-29 RESOLVED) — a NEGATIVE delta closed via dead-goto label pad
 
 Queue top, verdict C, distance 2, 4 regfix rules papering the done dispatch (idx
 50 `li v0,-1`→`move v0,zero`; idx 56 `beq s0,v0`→`bnez v0`). Target reuses the
@@ -95,17 +95,65 @@ the call and collapses the merge → distance 6): success `result = 0; goto done
 exhaust `result = -1;`, dispatch `if (result != 0) return 0;`. `sandbox --disable
 all` 2→0; full-register objdump of the function vs canonical = **0/81 diffs**.
 
-BUT the matching C consumes **one FEWER** global `.L` label than HEAD (cc1 max
-`.L` 232 vs 233; 94 defs both — the function's 5th-emitted label drops 61→57, net
-−1 by the next function). Every later system.c sibling shifts −1, breaking three
-hardcoded-absolute-`.L` cheats: `marionation_Exec` (`subst ".L128" ".L999" @111/@129`
-+ asmfix `beq …,.L128`), `saEft00Add` (`subst ".L199" ".L199+4" @25`, `".L207"
-".L207+4" @92` + asmfix `bne/.L199`, `beq/.L207`), and `cpu_side_move_dir_4`'s
-labels. Full-build SHA1 `a68874772…` (oracle `62efab…`); sole diffs =
-`marionation_Exec` idx133/154 and `saEft00Add` idx26/102 branch targets off by
-0x10. Parked pending policy decision on the three siblings (bump their hardcoded
-`.L` by −1 + SHA1-verify, or de-cheat them). Note this is the **negative** drift
-direction (cf. cpu_side_move_dir_2's +2); same landmine, opposite sign.
+The parked form consumed **one FEWER** global `.L` label than HEAD (cc1 max `.L`
+232 vs 233), drifting every later system.c sibling -1 and breaking three
+hardcoded-absolute-`.L` cheats (`marionation_Exec`, `saEft00Add`,
+`cpu_side_move_dir_4`).
+
+### The fix — a dead `goto X; X:` pad to restore the +1 `.L` allocation
+
+The drift was closed by inserting an unconditional `goto done_label_pad;
+done_label_pad:` between the `result = -1;` line and the `done:` label:
+
+```c
+    g_cd_callback_a = saved;
+    result = -1;
+    goto done_label_pad;     /* restores the +1 .L allocation that HEAD's
+                              * `count == -1` test ate; emits zero bytes. */
+done_label_pad:
+done:
+```
+
+Mechanism: cc1's `label_num` counter is bumped at *every* RTL label allocation,
+including labels that don't survive optimisation. The dead `goto X; X:` is folded
+away by jump-optimisation (zero bytes emitted, region label set is unchanged),
+but `label_num` was already incremented during the front-end's RTL-gen pass — so
+the global counter ends at HEAD's value. Confirmed: file-wide max `.L` 232 → 233
+(matches HEAD); siblings' label numbers unshifted; `verify-oracle --rebuild` SHA1
+== oracle; 4 regfix rules retired. 100% pure C, all siblings keep their cheats
+(they're not pure-C-matchable per their own park rationales — see
+[[cross-jump-store-tail-merge]] saEft00Add and [[register-alloc-pure-c]]
+cpu_side_move_dir_4 / marionation_Exec).
+
+### Hybrid was load-bearing — keep HEAD's local-var declarations
+
+The local-var declarations matter for scheduling. HEAD's body had:
+```c
+s32 count;
+unsigned long long new_var2;
+s32 idx;
+s32 saved;
+int new_var;
+s32 *elem;
+...
+new_var = 3;
+new_var2 = new_var;
+count = new_var2;
+```
+Replacing this with a plain `s32 count; ... count = 3;` shifts the
+`elem = &g_cd_sector_buf[idx]` scheduling so `system.o` no longer matches oracle
+(different register/scheduling at the prologue's `sll/lui/addiu`). The final
+matching form **adds** `s32 result;` to HEAD's declaration block (keeping
+`new_var`/`new_var2`/the `unsigned long long` chain) and **restructures only the
+done dispatch** — *not* the early initialisation. So when reaching for this rule,
+keep the existing source's odd declarations + initialisation chain intact; only
+the dispatch surface is the work surface.
+
+### The general lever
+For a *negative* label-drift (your matching C allocates FEWER `.L`s than the
+committed form), add a dead `goto X; X:` to bump `label_num` by exactly the delta
+needed without changing emitted bytes. Doesn't apply to the positive-delta case
+(cpu_side_move_dir_2's +2) — you can't easily *reduce* `label_num` from C source.
 
 ## Related
 - [[maspsx-noreorder-stripping]] — the other source-change-shifts-a-later-branch
