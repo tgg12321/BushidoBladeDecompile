@@ -12,6 +12,13 @@
 *.c                  text eol=lf
 *.h                  text eol=lf
 
+# Permuter workspace .c files (gitignored, but if ever added or staged the
+# eol=lf attribute will apply). Native Edit tool can introduce CRLF on these
+# (incident 2026-05-30); for editing prefer Write tool or WSL sed/perl.
+permuter/**/*.c      text eol=lf
+permuter/**/*.h      text eol=lf
+permuter/**/base.c.orig text eol=lf
+
 # Build driver
 Makefile             text eol=lf
 *.ld                 text eol=lf
