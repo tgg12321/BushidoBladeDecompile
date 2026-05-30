@@ -663,25 +663,73 @@ miss + the +4-byte branch-offset cascade.
 Source change reverted (the chain shifts maspsx indices, breaking the existing
 5 regfix rules); rule update fully documents the recipe for the next session.
 
-### Genuine resume avenues (session 8 untried)
+### Session-9 (2026-05-30) — avenues A/B/C/D EXECUTED. Floor remains 15.
 
-1. **Bump idx_1495's priority above arg0's (256)** WITHOUT emitting bytes.
-   The fold-trick that works for tbl_125c (constant-folded delta arithmetic
-   through `tbl_125c + delta_to_OTHER_SYM`) needs an equivalent for idx_1495.
-   Candidates not yet tried:
-   - Chain idx_1495 via D_800F19A8 (which the polling-loop callback already
-     references): `idx_1495 = (u8*)((u8*)&D_800F19A8 + delta_to_D_800A1495)`.
-     D_800F19A8 is a referenced symbol — combine may fold.
-   - Chain via a static const offset using the existing tbl_125c bumping
-     pattern: `idx_1495 = (u8*)tbl_125c + delta` (D_800A1495 not referenced
-     elsewhere as symbol_ref, but maybe combine still folds the +1 fold).
-   - A trivial USE of idx_1495 that survives combine but DCEs in jump2 (a
-     conditional assignment to a stack-only var that's later dead).
-2. **Different fold-target than D_80016240.** D_80016240 is the address stored;
-   if another address (e.g. D_800F19A0, D_800F19A8) also resolves via combine,
-   try them. Each different fold-target may shift secondary scheduling.
-3. **Project-wide rodata reorder** (out of single-function scope, policy
-   decision).
+Per directive, executed all four named avenues from session 8 with ALLOCDBG
+verification.
+
+**Avenue A — chain idx_1495 via D_800F19A8** (`idx_1495 = (u8*)&D_800F19A8 +
+(delta_to_D_800A1495)`). ALLOCDBG: ALL 6 callee-save slots match target's
+allocation exactly (saved $s1, idx_1494 $s2, tbl_125c $s3, idx_1495 $s4, arg0
+$s5, arg1 $s6). BUT sandbox **27, build 161** — the chain pulls an extra
+spilled pseudo (ord=4 pseudo=90 hardreg=-1) growing the stack frame from 56 to
+64 bytes AND emits +1 insn. Net regression despite the perfect allocation.
+
+**Avenue B — chain idx_1495 via tbl_125c + delta_to_D_800A1495**. Sandbox
+**17, build 161**. ALLOCDBG: saved/idx_1495/arg0/arg1 match target, BUT
+tbl_125c and idx_1494 swapped ($s2 ↔ $s3). The chain bumped tbl_125c refs to
+7 (pri 921) and idx_1494 stayed at 6 (pri 779), so tbl_125c wins $s2. Plus +1
+insn for D_800A1495 address mat.
+
+**Avenue C — trivial DCE'd-in-jump2 use**. Tried `if (idx_1495 ==
+(u8*)0xFFFFFFFF) goto _dead_; _dead_:` — DCE'd before flow.c, ALLOCDBG
+confirms idx_1495 still refs=2 unchanged. Tried `if (idx_1495 < idx_1494)
+return -1;` (provably false but combine doesn't see it) — emits a real
+comparison +3 insns, sandbox 26.
+
+**Avenue D — different fold-targets**. Tried chaining the store through
+`idx_1494` instead of `tbl_125c`: sandbox 28 (bumps idx_1494 refs to 9,
+shifting allocation in the wrong direction). Other fold-target variants would
+change semantics of the store.
+
+### Bonus finding from variant exploration
+
+Routing arg4/arg5 through idx_1495 (instead of idx_1494) DOES bump idx_1495's
+refs — the cleanest such form is `arg5 = tbl_125c[*idx_1495];` which gets
+idx_1495 to refs=3 (pri 202 — still below arg0's 256). The fully-routed form
+`arg4 = tbl_125c[idx_1495[-1]]; arg5 = tbl_125c[idx_1495[0]];` gets idx_1495
+to refs=4 (pri 540, beats arg0!) BUT tbl_125c and idx_1494 swap ($s2/$s3),
+sandbox 17. The tradeoff is real: idx_1494 and idx_1495 compete for ref-count;
+bumping one drops the other.
+
+### The fundamental coupling (session-9 conclusion)
+
+Three pseudos (idx_1494, tbl_125c, idx_1495) need specific allocations:
+- idx_1494 → $s2 (target): needs pri > saved's 952 → refs ≥ 6 at livelen 154
+- tbl_125c → $s3 (target): needs pri > arg0's 256, achieved with refs 5+ at
+  livelen 152 (currently 657 via the chain lever)
+- idx_1495 → $s4 (target): needs pri > arg0's 256 → refs ≥ 4 at livelen 148
+
+ALL THREE simultaneously requires refs totaling 15+ across idx_1494 + idx_1495
+(at +5 total weighted refs over baseline). The natural C provides 7+2=9 refs.
+Every C-source restructure that adds a ref to one drops a ref from the other
+(they're computed from the SAME indexing operations). Adding refs that
+preserve both via separate use sites costs ≥ +1 emitted instruction.
+
+The remaining 15 diffs at the score-15 base are fundamentally tied to this
+3-way priority gap that no single C-source structure rebalances within the
+combine-foldable lever class.
+
+### Genuine resume avenues (session 9 untried)
+
+1. **Permuter from the score-15 base** — directed at the idx_1495 priority
+   slot. Untried in any session since session 7b's PRIODBG conclusion shifted
+   the focus to specific dep edges. The combine-foldable chain levers have
+   broadened the lever-class; permuter may find a combination not derivable
+   by hand.
+2. **Project-wide rodata reorder** placing D_800A1495 adjacent to a
+   sometimes-referenced symbol so D_800A1495 itself becomes combine-foldable
+   without +1 insn cost (same policy class as saEft00Add precedent).
 
 **Not viable** (empirically disproven):
 - Pure-C varargs declaration change (avenue #2 of session 7 — score unchanged).
@@ -694,6 +742,14 @@ Source change reverted (the chain shifts maspsx indices, breaking the existing
   faster than livelen; both folded-and-real variants fail to flip $s1↔$s2.
 - Session 7b's "different chain formulation" via D_800A1495 alone (avenue 2a):
   produces all 5 reg matches BUT +1 insn (sandbox 9, build 161).
+- Session 9's avenue A (chain idx_1495 via D_800F19A8): ALL 6 regs match BUT
+  +1 insn AND extra frame spill (sandbox 27, build 161, frame 56→64).
+- Session 9's avenue B (chain idx_1495 via tbl_125c + D_800A1495 delta): +1
+  insn AND tbl_125c/idx_1494 swap (sandbox 17, build 161).
+- Session 9's avenue C (DCE'd-in-jump2 use): comparisons either DCE'd before
+  flow.c (no ref bump) or emit real bytes (+3 insn cost).
+- Session 9's avenue D (chain through idx_1494 instead of tbl_125c): sandbox
+  28, idx_1494 priority shifts wrong direction.
 
 ## Confirmed limit — marionation_Exec (system.c, 2026-05-29)
 
