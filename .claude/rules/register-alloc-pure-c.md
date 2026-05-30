@@ -270,19 +270,112 @@ fixing one regresses the other (the standalone arg1+arg3 preload proof from
 session 3 stands; the variants tested in session 4 either CSE-collapse arg1 or
 hoist D_800A11D5 — neither helps in the full-function context).
 
-### Status (session 4)
-NOT pure-C-matchable in the explored search space. Floor = sandbox-distance 20
-(5 rules: 4 reg substs $3→$4 + 1 reorder). Cannot derive a further untried lever
-from `tools/gcc-2.7.2/global.c` (priority formula known, dispositions read,
-volatile lever is the only allocation-flipper), the `.greg` dump (priority list
-end is empirically observed), siblings (saEft01Init, marionation_Exec, the
-matched tslPolyF4Init — none share a unique structural feature that maps onto
-this function's shape and flips allocation), or the permuter (5000+ iters
-exhausted in session 3). State preserved in `permuter/csmd4/` and
-`tmp/csmd4_min.c`. Genuine close needs a project-level lever: e.g. global rodata
-reorder to displace `D_800A125C` so its `la` becomes part of a different RTL
-pattern; OR cc1 instrumentation (BB2_ALLOC_DEBUG already in `global.c:575` but
-the deployed cc1 binary predates it — rebuilding it is project-scope work).
+### Status (session 4) — superseded by session 5
+
+Session 4 stopped at floor 20 with the conclusion "cc1 instrumentation is
+project-scope". **That was wrong.** Session 5 built a SEPARATE instrumented cc1
+(`tmp/gccdbg/cc1`, canonical untouched, verified by SHA1) in 0 minutes (it
+already existed from the saEft00Add session — `cross-jump-store-tail-merge.md`'s
+`tmp/gccdbg`) and the instrumented dump produced the LEVER directly.
+
+### Session-5 (2026-05-29) — instrumented cc1 unlocks the LEVER. Score 20 → 6.
+
+Ran `tmp/gccdbg/cc1` (a separate build of GCC 2.7.2 with the `BB2_ALLOC_DEBUG`
+env-var hook from `global.c:575` active — canonical `tools/gcc-2.7.2/build/cc1`
+untouched). Got cpu_side_move_dir_4's full allocno table at priority-calc:
+
+```
+ord | pseudo | hardreg     | nrefs | livelen | pri  | identity
+ 10 |   77   | 18 ($s2)    |   7   |   154   | 909  | idx_1494
+ 11 |   72   | 19 ($s3)    |   2   |    78   | 256  | arg0   (target wants $s5)
+ 12 |   73   | 20 ($s4)    |   2   |    81   | 246  | arg1   (target wants $s6)
+ 13 |   79   | 21 ($s5)    |   3   |   152   | 197  | tbl_125c (target wants $s3)
+ 14 |   78   | 22 ($s6)    |   2   |   148   | 135  | idx_1495 (target wants $s4)
+```
+
+**The lever the dump exposed:** route `idx_1494` THROUGH `tbl_125c` via constant
+pointer arithmetic. `idx_1494 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 -
+(s32)D_800A125C));` is algebraically equivalent to `idx_1494 = &D_800A1494;`
+(the delta is a link-time constant), so **GCC's combine pass folds it back to
+the symbolic form (zero extra emitted bytes)** — but the RTL passes BEFORE
+flow.c see tbl_125c referenced one more time, bumping its `reg_n_refs` from 3
+to 4:
+
+  pri = floor_log2(4)*4/152*10000 = **526** (beats arg0's 256).
+
+ALLOCDBG with the chain confirms the new priority order:
+```
+ ord 9: pseudo 77 (idx_1494) → reg 17 ($s1), pri 1818  (was reg 18)
+ ord 11: pseudo 79 (tbl_125c) → reg 19 ($s3), pri 657  ← matches target!
+ ord 13: pseudo 72 (arg0) → reg 21 ($s5), pri 256  ← matches target!
+ ord 14: pseudo 73 (arg1) → reg 22 ($s6), pri 246  ← matches target!
+```
+
+`tbl_125c → $s3`, `arg0 → $s5`, `arg1 → $s6`, `idx_1495 → $s4` — **three of
+four register diffs flipped to target's allocation, zero extra emitted bytes**.
+Sandbox score 20 → **16**.
+
+**Second lever from the same probe:** the residual `idx_1494 → $s1` (target
+$s2) came from idx_1494's livelen dropping from 154 to 77 (its definition
+moved later in the chain), bumping its priority above `saved` (pseudo 80 at
+$s2). Splitting the `temp = (*idx_1494) & new_var` read into a block-local copy
+(`u8 *idx_local = idx_1494; temp = (*idx_local) & new_var;`) shifts the RTL's
+last-use of idx_1494 in a way that flips it back to $s2 (Lever A from this
+rule — block-local var split — empirically applies). Sandbox score **16 → 6**.
+
+**Floor reached this session: sandbox-distance 6** (from baseline 20, 70%
+reduction). The combined source change:
+
+```c
+extern u8 D_800A1494;
+s32 cpu_side_move_dir_4(s32 a0, u8 *a1) {
+    /* ... unchanged decls ... */
+    register u8 *idx_1495 asm("s4");
+    register s32 *tbl_125c asm("s3");
+    /* ... */
+    D_800F19B8 = sys_VSync(-1) + 0x3C0;
+    tbl_125c = D_800A125C;
+    /* THE LEVER — bumps tbl_125c refs 3→4, flips priority, zero bytes emitted */
+    idx_1494 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C));
+    idx_1495 = idx_1494 + 1;
+    /* ... rest unchanged ... */
+
+    /* THE SECOND LEVER — block-local read flips idx_1494 from $s1 to $s2 */
+    {
+        u8 *idx_local = idx_1494;
+        temp = (*idx_local) & new_var;
+    }
+    /* ... */
+}
+```
+
+The remaining 6 diffs are the second coupled mechanism (`sched.c:2385`
+list-scheduler priority keeping `lw $a1, D_800F19C0` deferred until just before
+the call instead of interleaved with the table arithmetic) plus its cascade of
+`+4`-byte branch offsets. **Every named lever for the *scheduling* gap in this
+session — arg1 preload as local, arg1 preload with volatile cast, arg1
+mid-block insertion, arg1+arg3 dual preload — was tested at this base and
+scored 6/14/6/14**; the scheduling gap remains genuinely structural.
+
+### Why this session reverts the source change (genuine partial-progress, not park)
+
+The source change reaches score 6 but **breaks the existing 5 regfix rules** —
+they were calibrated to maspsx indices in the BASELINE asm, and the chain
+shifts indices. Committing in this state would: (a) break the oracle, (b) leave
+the function in a worse state than baseline. The source change is reverted and
+the technique documented above (fully reproducible in ~30 seconds from a clean
+sandbox). The instrumented `tmp/gccdbg/cc1` is preserved for resume.
+
+### Resume avenue (session 5's named, un-completed lever)
+**Instrument sched.c the same way `global.c:575` was instrumented.** Add a
+`getenv("BB2_SCHED_DEBUG")` hook around `rank_for_schedule` (line 2385) that
+dumps the ready queue's `INSN_PRIORITY` values, classes (data/anti/independent),
+and `last_scheduled_insn` for each call to the comparator. Rebuild `tmp/gccdbg/
+cc1` from that, re-run on the score-6 sandbox source, and find the C-source
+chain depth that promotes the `lw $a1, D_800F19C0` insn ahead of the table
+arithmetic chain. The lever — by symmetry with the allocation one — should be
+something that survives combine but extends D_800F19C0's downstream chain to
+match the table arithmetic's depth.
 
 ## Confirmed limit — marionation_Exec (system.c, 2026-05-29)
 
