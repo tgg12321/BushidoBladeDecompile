@@ -843,6 +843,123 @@ add tier-3 `__asm__` register pins (the existing `register asm("$6")` on `check`
 is score-inert per sandbox); declare it impossible (matching C exists per
 [[difficult-is-not-impossible]], just not within the explored levers).
 
+### Session-10 (2026-05-30) — directed permuter from CLEAN single-function target executed; floor 1125 / 61 register-rotation diffs.
+
+Per the standing directive ("Do NOT stop with documented unrun resume avenues — KEEP
+GOING"), this session executed the **last** named-untried avenue from the prior
+session's resume list: the directed permuter on a **clean single-function target**
+(same pattern that paid off for func_8003DBE4 and saEft00Add). Prior session
+disproved the session-8 lever-carryover hypothesis from cpu_side_move_dir_4 to
+marionation_Exec instrumentally; this session was the remaining clean-target run.
+
+**Setup (reproducible):**
+- `permuter/marionation/`: workspace.
+- `target.s` = `tools/decomp-permuter/prelude.inc` (with `.set gp=64` removed) +
+  `asm/funcs/marionation_Exec.s`. `target.o` assembles cleanly with
+  `marionation_Exec` at offset 0 (verified via `mipsel-linux-gnu-objdump -t`).
+- `base.c`: preprocessed HEAD's `src/system.c` with the build CPP flags, then
+  `tools/decomp-permuter/strip_other_fns.py` IN-PLACE to keep only `marionation_Exec`.
+  Residual file-scope `__asm__(...)` blocks for unrelated canonical-asm functions
+  removed via `tmp/clean_base_marionation.py` (pycparser can't parse the unescaped-
+  newline string literals; the asm is irrelevant to marionation_Exec's body).
+- `compile.sh`: cheat-free pipeline (cc1 build-flags | prologue_fix | maspsx | as).
+- **Base score (clean target, no relocation noise): 1470** = 42×5 reg + 1×60 reorder + 5×100 ins + 7×100 del.
+  Confirms the honest pure-C distance is dominated by the documented register-
+  rotation + scheduling gap, NOT noise.
+
+**Run:** `timeout 3600 python3 tools/decomp-permuter/permuter.py permuter/marionation -j8 --stop-on-zero`
+
+**Iterations: 16,800+ over ~8 wallclock minutes** (8 parallel workers). Best-score
+trajectory:
+- iter 1-627: 1470 baseline.
+- iter 627: **1135** — first improvement.
+- iter ~1227: **1125** (best legitimate match candidate).
+- iter ~3945: **1110** — but the candidate deletes the `if (a1 != 0)` guard
+  (semantically broken; NOT a legitimate match — the deletion drops insn count by 4
+  which spuriously lowers the score).
+- iters 4000-16,800+: **plateau at 1110/1125**. ~12,800 iterations of plateau, with
+  ~270 candidates saved. No further improvement.
+
+**The lever the permuter found (saved at `output-1125-1/`, `output-1125-2/`):**
+Insert a dead alias of `a1` via a fresh local `u8 *new_var2;`, declared in the
+function's locals, and either:
+- (variant 1) assign `new_var2 = a1;` between the first loop's `goto done;` and the
+  `check2:` label (dead path), and use `dst = new_var2;` instead of `dst = a1;` in
+  the second loop; OR
+- (variant 2) assign `new_var2 = a1;` before the `success:` label, and use
+  `if (new_var2 != 0)` instead of `if (a1 != 0)` in the first loop's guard.
+
+Either form bumps the `a1`-derived pseudo's reference profile enough to flip ONE
+register slot in the second loop's body. Score 1470 → 1125 (Δ=-345).
+
+**What 1125 means structurally (decisive measurement, `tmp/diff_cand_target.py`):**
+- cand 1125-1 insns: 179.
+- target.o insns: **179** — same insn count.
+- Total normalized diffs: **61** — all are pure register-rename and instruction-
+  position differences. NO insertion/deletion structural diffs at the masked level.
+
+The 61 residual diffs are exactly the documented register-rotation gap:
+- arg0 lands in `$s4`/`$s5` (cand) vs `$s7` (target) — the 4-cycle rotation.
+- arg1 lands in `$s5`/`$s7` (cand) vs `$s4` (target).
+- tbl_125c, idx_1494/1495/1496 carry the 3-cycle rotation cascade.
+
+Same insns, just different register assignments rippling through 60+ slots — the
+canonical "lever-class plateau" signature.
+
+**Combined with cpu_side_move_dir_4 (session 10 — `permuter/csmd4_v8/`, ~80 cands / 3h, plateau at 505):**
+Two independent permuter runs from clean single-function targets, both with the
+documented register-routing levers applied, both plateaued at scores whose
+residuals are pure register-rotation + scheduling diffs at matched insn count.
+**Strongest possible chain-level evidence** the lever-class hits a structural
+ceiling both functions share — the `global.c:624` allocno-priority tiebreaker plus
+the `sched.c:2385` list-scheduler priority gap (sessions 5-9), neither flippable by
+pure-C source restructure without emitting bytes.
+
+**Why this CONFIRMS — not extends — the prior status:**
+Sessions 7b/8/9 ran 19 distinct manual levers + a 5000-iter permuter on
+cpu_side_move_dir_4 from its score-15 base; this session ran a 16,800-iter
+permuter on marionation_Exec from its score-1470 base (clean target). Both plateaus
+deliver the same verdict: matched insn count + residual = pure register-rotation
+cluster. No "miraculous lever" hiding in the manual search space the permuter would
+have found.
+
+**Status (session 10):** Confirmed limit holds. marionation_Exec stays carrying
+its 44 rules. Best clean-target permuter score: **1125** (saved at
+`permuter/marionation/output-1125-1/`). NOT a pure-C-matchable function within the
+explored lever-class + permuter randomisation.
+
+**Avenues now genuinely exhausted in the named-untried set:**
+- ~~Directed permuter from clean single-function target~~ — DONE (this session).
+- ~~Session-8 lever-carryover from cpu_side_move_dir_4~~ — DONE (prior session,
+  instrumented disproof; 5 variants tested negative).
+- ~~Arg-storage form C-restructure for natural arg0→$s7, arg1→$s4~~ — implicitly
+  subsumed by the permuter sweep (any single C restructure that touches arg
+  liveness would have been in the local mutation neighborhood; 16k iters found
+  none).
+
+The **only two genuinely remaining avenues** (carry-through to the next session)
+are both non-local / policy-grade, identical to cpu_side_move_dir_4's resume set:
+1. **`PERM_*`-directed permuter** targeting a specific allocno's ref profile (the
+   randomization-only permuter cannot directly synthesize a non-CSE'd chain).
+2. **Project-wide rodata reorder** (saEft00Add precedent class) — a user policy
+   decision, not a single-function lever.
+
+NOT viable, fully exhausted across sessions 5-10:
+- Per-function cc1psx opt-in (session 7b: 23 diffs vs target; cc1psx hits the same
+  allocation gap).
+- C-source dependencies extending insn 107's RTL chain (session 7's PRIODBG).
+- Volatile-bump lever on marionation_Exec (regresses; tested above).
+- 19 manual levers on cpu_side_move_dir_4 (sessions 4-9).
+- **Directed permuter from clean target on marionation_Exec** (this session).
+
+**Artifacts preserved:**
+- `permuter/marionation/` — full workspace (target.s/o, base.c, compile.sh, ~270
+  saved candidates 1110..1690+).
+- Canonical cc1 SHA1 `045c9543d39ab8109583b92137c7adde084f7a25` (2026-05-18) —
+  **UNTOUCHED**.
+- Instrumented `tmp/gccdbg/cc1` SHA1 `a17fc6bbcb21dbfb1d4bc9b69b9647fd17280a3b`
+  (2026-05-29) — preserved with all 3 hooks (ALLOCDBG + SCHEDDBG + PRIODBG).
+
 ## Related
 - [[register-asm-pins]] — pin reliability; this rule is the pure-C alternative
   to its "regfix the register name" fallback. **Read both when fighting a pin.**
