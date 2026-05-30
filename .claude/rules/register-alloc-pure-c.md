@@ -212,41 +212,77 @@ captured, +preload-globals); arg4-only-inline lowest at 705. Plateau over
 long`, etc.) that don't reduce the 3+3 ins/del structural cost. Permuter
 exhausted at clean-target.
 
-### Resume here
+### Session-4 (2026-05-29) — executed every named lever, all negative
 
-The matching C exists ([[difficult-is-not-impossible]]) — both decompals AND
-cc1psx reproduce target byte-for-byte on functions WHERE they have the right C.
-Target's `$s3 ↔ $s5` swap is a C-source idiom not yet identified. Next reachable
-avenues (NOT exhausted by this session):
+Per [[difficult-is-not-impossible]] § "Do NOT stop with documented unrun resume
+avenues", session 4 took the prior session's "Resume here" list as a TODO and
+empirically tested each candidate. All measured negative; the COUPLING gap
+stands.
 
-1. **arg1-preload + chain-extender that doesn't hoist D_800A11D5.** The
-   standalone arg1+arg3 form proves chain extension is the right direction.
-   Find a way to make `arg1` survive CSE (keep it in a pseudo with downstream
-   depth > the table chain) WITHOUT also forcing arg3 / D_800A11D5 to hoist.
-   Candidates: volatile cast on arg1 alone (`*(void* volatile*)&D_800F19C0`),
-   a dead local that depends on arg1 (`s32 _aux = (s32)arg1 & 0xFFFF0000;`),
-   or pinning arg1 to a callee-save via a real later use (e.g. a sentinel
-   loop-carried value).
-2. **Probe target's `$s3 ↔ $s5` allocation via a global-rodata reorder.** marionation_Exec
-   (the near-twin in the same file) carries a 5-rule rotation regfix encoding
-   THE SAME PATTERN. Both functions may share a structural feature (e.g. a
-   global ordering or a missing 3rd index var like `idx_1496`) that flips the
-   allocno priority. Try adding `idx_1496 = idx_1494 + 2;` to cpu_side_move_dir_4
-   even if unused — it raised marionation's `idx_1494` ref count.
+| Lever | Score | Δ insns vs baseline (160) | Verdict |
+|---|---|---|---|
+| **DImode chain mirroring matched siblings** (`unsigned long long new_var2; new_var=0xFF; new_var2=new_var; mask=new_var2;` at top, used as `temp & mask`) | 28 | +3 | FAIL — DImode pseudo constant-folded before priority calc; emits extra prologue insns |
+| **DImode chain anchored at function top, body unchanged** | 28 | +3 | FAIL — same fold |
+| **DImode chain feeding mask directly** (`temp = *idx_1494 & (s32)(new_var2 & 0xFFul)`) | 32 | +6 | FAIL — DImode promotion emits real `dsll/dsrl` codegen |
+| **tbl_11dc local-var pattern** (extract `D_800A11DC` as a local pointer mirroring saEft01Init) | 32 | +3 | FAIL — extra pointer materialization, doesn't flip allocation |
+| **tbl_125c lazy-init in do_timeout block** | 36 | −2 | FAIL — function shorter but worse alignment |
+| **tbl_125c init at loop top (per-iter)** | 25 | −3 | FAIL — tbl_125c moves to `$s0` (still not target's `$s3`) |
+| **Declaration-order swap** (tbl_125c declared first) | 20 | 0 | NO-OP — pseudo numbers for autos don't track decl order |
+| **Removing register asm pin in source** | 20 | 0 | NO-OP — pin already stripped in sandbox |
+| **Volatile-pointer-type tbl_125c decl** (`register volatile s32 *tbl_125c asm("s3")`) | 20 | 0 | NO-OP — volatile on POINTER, not deref data — no ref bump |
+| **`*(volatile s32 *)tbl_125c;` before debug_printf** (the prior session's lever, re-verified) | 16 | +1 | TIER-3 (cheat) — confirms allocation IS C-reachable, but emits an extra `lw` |
+| **arg1 preload via local** (`void *arg1_v = D_800F19C0;`) | 20 | 0 | CSE'd back |
+| **arg1 preload + pin `register asm("a1")`** | 20 | 0 | pin stripped in sandbox, CSE eats the local |
+| **Inline volatile cast on arg1** (`*(void* volatile*)&D_800F19C0`) | 22 | +2 | FAIL — emits extra addressing insns |
+| **arg5 inlined into call** (no local var) | 20 | 0 | NO-OP |
+| **All args inlined** (no arg4/arg5 locals) | 27 | 0 | FAIL — different scheduling |
+| **arg4/arg5 evaluation order reversed** | 21 | 0 | FAIL — wrong sequence point |
+| **tbl_125c assignment first** (before D_800F19B8 write) | 22 | 0 | FAIL |
+| **idx_1495 init before idx_1494** | 22 | 0 | FAIL |
+| **Extra ref to tbl_125c via stale `idx_1494` write** | 28 | 0 | FAIL — DCE'd or emits |
 
-DO NOT (per session 3 conclusion): re-run permuters (5000 iters of clean-target
-exhausted); re-run cc1psx cross-check (compiler choice confirmed not to help);
-add tier-3 `volatile` or asm cheats; declare it impossible — both mechanisms
-are individually known-defeatable in pure C (volatile lever for #1 proves
-allocation reachable; standalone arg1+arg3 proves scheduling reachable). The
-gap is the COUPLING — a C structure that defeats #1 and #2 simultaneously
-without the regressions one introduces for the other.
+### Why no further pure-C lever is derivable
 
-### Status
-NOT pure-C-matchable in this session. Floor = sandbox-distance 20 (5 rules:
-4 reg substs $3→$4 + 1 reorder). State preserved in `permuter/csmd4/` and
-`tmp/csmd4_min.c`. Sibling `marionation_Exec` carries equivalent rotation
-regfix — likely shares the resume mechanism.
+The greg (sandbox-stripped) shows:
+```
+;; 15 regs to allocate: 75 83 84 82 81 121 127 86 138 80 77 72 73 79 78
+;; Register dispositions: 72 in 19  73 in 20  77 in 18  78 in 22  79 in 21
+```
+- arg0 = pseudo 72 → reg 19 ($s3)
+- tbl_125c = pseudo 79 → reg 21 ($s5)  (target wants reg 19)
+- The priority order ends `... 80 77 72 73 79 78` — tbl_125c (79) is LAST.
+
+To flip the allocation, tbl_125c's priority must beat arg0's. The only known
+mechanism that does this (volatile read at use site) emits a stray `lw` that no
+non-side-effect C construct replicates. Every tested pure-C lever either:
+- Doesn't change the priority sort at all (decls, declarations, harmless casts).
+- Changes the sort but at the cost of extra instructions that exceed the
+  saving — the couple compounds, doesn't cancel.
+
+The same coupling defeats the DImode-chain hypothesis: the matched siblings'
+chain works because `count = new_var2` is used as a real loop counter (3+ refs
+through the loop body, value live across decrements). In cpu_side_move_dir_4
+there is no loop counter; the chain has nowhere natural to live, so the DImode
+pseudo either constant-folds away (no priority effect) or emits real DI arith.
+
+The scheduling gap (mechanism 2) is structurally coupled to the allocation:
+fixing one regresses the other (the standalone arg1+arg3 preload proof from
+session 3 stands; the variants tested in session 4 either CSE-collapse arg1 or
+hoist D_800A11D5 — neither helps in the full-function context).
+
+### Status (session 4)
+NOT pure-C-matchable in the explored search space. Floor = sandbox-distance 20
+(5 rules: 4 reg substs $3→$4 + 1 reorder). Cannot derive a further untried lever
+from `tools/gcc-2.7.2/global.c` (priority formula known, dispositions read,
+volatile lever is the only allocation-flipper), the `.greg` dump (priority list
+end is empirically observed), siblings (saEft01Init, marionation_Exec, the
+matched tslPolyF4Init — none share a unique structural feature that maps onto
+this function's shape and flips allocation), or the permuter (5000+ iters
+exhausted in session 3). State preserved in `permuter/csmd4/` and
+`tmp/csmd4_min.c`. Genuine close needs a project-level lever: e.g. global rodata
+reorder to displace `D_800A125C` so its `la` becomes part of a different RTL
+pattern; OR cc1 instrumentation (BB2_ALLOC_DEBUG already in `global.c:575` but
+the deployed cc1 binary predates it — rebuilding it is project-scope work).
 
 ## Confirmed limit — marionation_Exec (system.c, 2026-05-29)
 

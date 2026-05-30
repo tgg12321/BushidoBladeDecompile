@@ -113,6 +113,40 @@ the user to supply the missing technical insight; do ask them to make a judgment
 call only you two together can make. When you'd be tempted to ask "how do I…",
 instead write down what you've ruled out and try the next un-tried derivation.
 
+## Do NOT stop with documented unrun resume avenues — KEEP GOING
+
+User directive 2026-05-29: *"I don't want them to ever stop if they have a clear
+path to resume. I'd rather them just keep going."* "Evidence-backed exhaustion +
+park with documented next-attempt hypotheses" is **NOT an acceptable endpoint** —
+it just means continuing. The "Resume here" section in a rule update / park reason
+is a TO-DO list, not a finish line.
+
+**What this forbids:** stopping a worker / committing a `park: <func>` evidence-
+ledger commit while the rule update names one or more concrete, un-attempted resume
+levers (e.g. "try arg1-preload + non-arg3 chain-extender", "restructure arg liveness
+for natural high-callee-save allocation", "try a global-rodata reorder"). Those
+listed avenues must be EXECUTED in the same loop, not handed to a future agent.
+
+**How to apply:**
+- Before writing any park/exhaustion commit, take every "Resume here" / "Next reachable
+  avenue" / "Could be reachable via X" candidate IN THE RULE UPDATE YOU ARE ABOUT TO
+  WRITE and execute it: build the C variant, sandbox it, read the assembled bytes,
+  iterate. The commit only happens after each named lever has either landed the match
+  or been ruled out with its own measured negative.
+- A genuine exhaustion endpoint has the form "I tried levers A, B, C; here's the
+  exact measurement showing each didn't close it; I cannot derive any further
+  un-tried lever from the compiler source / RTL dumps / matched siblings / permuter
+  evidence I have." NOT "here's the mechanism, here are 2 levers we could try, parking."
+- If iteration genuinely hits a token / time wall mid-grind on a SPECIFIC named
+  lever, that's fine — surface the partial state and continue (or be resumed) from
+  that lever's exact half-finished probe, not from a stale rule pointer.
+
+**Why:** parking-with-resume-avenue silently shifts ALL the remaining work to a
+future agent who then has to rebuild context from the rule, re-derive the levers
+the prior worker already named, and either re-do the same partial probes or pick
+a different starting point — losing the prior session's momentum. The cumulative
+cost per function multiplies. Keep going to a real endpoint.
+
 ## Related
 - [[register-alloc-pure-c]] — the lever playbook this rule mandates you actually run
 - [[compiler-flags-canonical]] — flags/compiler are settled; the lever is C structure
