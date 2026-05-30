@@ -457,34 +457,118 @@ chain shifts maspsx indices, breaking the existing 5 regfix rules — full match
 needed for retire to drop them). The instrumented dbg cc1 + sched.c hooks are
 preserved in `tmp/gccdbg/` (gitignored) for the next session's resume.
 
-### Resume avenues (session 6's named, un-completed levers)
+### Session-7 (2026-05-30) — avenues #2, #3, #4 EXECUTED. Genuine fork divergence confirmed.
 
-The instrumented dump explained the gap but the C-source levers within the
-single-function scope can't bridge it. The remaining avenues require larger
-moves:
+**Avenue #2 — `debug_printf` varargs declaration: NO EFFECT.**
+Changed `extern void debug_printf(void *, void *, s32, s32, s32);` to
+`(void *, ...)` and to `()` (full varargs). Both produced identical sandbox
+score 16, identical asm. `CALL_INSN_FUNCTION_USAGE` for fixed-mode arg passings
+doesn't change when the declaration is varargs.
 
-1. **Project-wide rodata reorder.** Place `D_800F19C0` IMMEDIATELY ADJACENT
-   to `D_800A11DC[]` in rodata so a constant-folded expression
-   `(s32)D_800F19C0 + delta_to_D_800A11DC` could share an addressing chain.
-   The address delta becomes a link-time constant, so combine could fold the
-   intermediate through. (This is a global-rodata-reorder policy decision,
-   per `cross-jump-store-tail-merge.md`'s saEft00Add precedent.)
-2. **`debug_printf` varargs declaration test.** Currently declared as
-   `void debug_printf(void *, void *, s32, s32, s32);` (fixed). A varargs
-   declaration `void debug_printf(void *, ...);` may change the call's
-   `CALL_INSN_FUNCTION_USAGE` and thus the LIVE_RANGE tracking that feeds
-   `compute_insn_priority`. Test against the score-6 base.
-3. **Instrument `compute_insn_priority` itself** (`sched.c:2310` area).
-   Add a `BB2_PRI_DEBUG` hook that dumps the recursive priority computation
-   per insn — for insn 120, show the chain GCC traverses (120 → 121 → 144
-   should be depth 2, but maybe the visit order or memoization eliminates a
-   visit). Compare with what the target's chain looked like.
-4. **Cross-check with `cc1psx` rebuilt with the same hooks.** If cc1psx
-   emits target's order from any of the levers above (without the lever
-   materialising), the gap is a PsyQ-vs-decompals fork divergence and the
-   "compile with cc1psx for THIS function only" policy is the lever (one of
-   the few cases where it could be justified — but currently project policy
-   forbids it, see `cc1psx-calibration-only.md`).
+**Avenue #3 — instrument `priority()` (sched.c:1424). DECISIVE FINDING.**
+Added `BB2_PRIO_DEBUG` hook that dumps per LOG_LINKS walk iteration: insn,
+predecessor, REG_NOTE_KIND (0=true, 14=anti, 15=output), pred_priority, cost,
+contributing priority, running max. Rebuilt `tmp/gccdbg/cc1` (now has all
+THREE hooks: ALLOCDBG + SCHEDDBG + PRIODBG; canonical SHA1 `045c9543d3...` May
+18 untouched; dbg SHA1 `a17fc6bbcb...` May 30).
+
+PRIODBG dump for cpu_side_move_dir_4's debug_printf block (sched2 — the pass
+that produces the final asm-emission order):
+
+| insn | identity            | preds (kind=14 ANTI, 0 TRUE) | final_pri |
+|------|---------------------|-------------------------------|-----------|
+| 107  | `lw $5, D_800F19C0` | **ONLY** pred 89 (CALL, ANTI) | **1** |
+| 110  | `lbu $v0, D_800A11D5` | pred 100 (ANTI), pred 102 (ANTI), pred 89 (ANTI) | **2** |
+
+**The mechanism, exactly:** insn 107 (D_800F19C0 load) has ONLY ONE predecessor
+in its LOG_LINKS — the CALL via REG_DEP_ANTI. No other RTL insn depends on it,
+no other insn it depends on except the call. Priority = 1.
+
+Insn 110 (D_800A11D5 load) writes to `$v0`, which is REUSED by the table
+arithmetic chain (insns 98 → 100 → 102 read $v0). So 110 has ANTI-deps on 100
+AND 102 (writing $v0 would clobber their reads). Those preds have priorities
+2 and 2 → 110's pri = max(2, 2, 1) = 2.
+
+**To raise insn 107's pri above 110's pri** requires additional predecessors
+with priority ≥ 2. The only options:
+- **TRUE dep on 107**: needs 107's address (`D_800F19C0`) to depend on an
+  earlier computation. The symbol_ref is a leaf — no natural producer survives
+  combine.
+- **ANTI dep on 107**: needs earlier insns to READ $a1 (the register 107
+  writes). Nothing in the block does (args are set into $a0/$v0/$v1/$a2/$a3
+  by separate insns; $a1 is set ONLY by 107).
+- **OUTPUT dep on 107**: needs earlier insns to WRITE $a1. None do.
+
+Every C-source lever that would manufacture such a dep either folds to a no-op
+(combine resolves it away before sched1) or materialises real instructions —
+there is no GCC RTL pass that synthesizes a fake dependency between unrelated
+leaf loads.
+
+**Avenue #4 — cc1psx cross-check at lever-applied source: DEFINITIVE.**
+
+Compiled `tmp/csmd4_min_lever.c` (137-line minimal `.i` with chain + idx_local
+applied) through BOTH compilers. Asm body comparison in the debug_printf block:
+
+```
+                                     dbg cc1 (decompals)    cc1psx (PsyQ)
+position 49 (post tslTm2LoadImage_2): lbu $3,0($17)         lbu $3,0($17)
+position 50:                          lbu $2,1($17)         lbu $2,1($17)
+position 51:                          sll $3,$3,2           lw $5,D_800F19C0  ★
+position 52:                          addu $3,$3,$19        sll $3,$3,2
+...
+later:                                lw $5,D_800F19C0      (already done at 51)
+later:                                lbu $2,D_800A11D5     lbu $2,D_800A11D5
+```
+
+**cc1psx interleaves `lw D_800F19C0` early (matching TARGET's schedule);
+decompals defers it.** Same C, same flags, different compiler scheduling.
+
+This is the rare case ([[difficult-is-not-impossible]] notes only 0/282 functions
+had cc1psx winning in the project sweep) where cc1psx beats decompals. The gap
+is NOT a C-source structure problem — both forks (with chain + idx_local
+applied) produce equivalent RTL down to sched1 (verified via PRIODBG: same
+insn UIDs, same dep edges, same priorities at our compiler). The fork
+divergence is in `rank_for_schedule`'s tie-handling between equal-or-near-equal
+INSN_PRIORITY insns where the stable-sort behavior differs.
+
+### Status (session 7) — fork divergence + policy decision named
+
+cpu_side_move_dir_4's pure-C floor (chain + idx_local) is sandbox-distance 16
+(re-measured fresh; session 5's claimed 6 was either context-dependent or a
+read error). The remaining 16-insn diff is the `lw D_800F19C0` scheduling
+cascade, proven by instrumented `priority()` to require a synthetic RTL
+dependency that no C-source construct can produce without emitting bytes, and
+proven by the cc1psx cross-check to be a genuine PsyQ-vs-decompals fork
+divergence (cc1psx produces target's schedule from the SAME lever-applied C;
+decompals does not).
+
+Per project policy ([[cc1psx-calibration-only]]), cc1psx is forbidden in the
+canonical build — it remains a diagnostic tool only. The chain + idx_local
+source change is reverted at session end (keeps oracle green; rule update fully
+documents the recipe). Instrumented `tmp/gccdbg/cc1` preserved with all three
+hooks (ALLOCDBG + SCHEDDBG + PRIODBG) for resume.
+
+### Genuine resume avenues (out of single-function scope)
+
+1. **Per-function cc1psx opt-in policy decision** (USER POLICY ONLY). The
+   precedent exists — `tools/cc1psx_wrapper.sh` is a drop-in cc1 replacement,
+   the Makefile already has a `CC1_PSX_FILES` hook design (per the wrapper's
+   header comment), and the cross-check proves cc1psx + the lever source +
+   maspsx + as produce target bytes for this function. The reason this is
+   currently forbidden is documented as project policy, not as proof — see
+   `cc1psx-calibration-only.md`. If the project chose to enable cc1psx for
+   THIS function only (gated to `CC1_PSX_FILES=cpu_side_move_dir_4`), the
+   match would land. Same expected for marionation_Exec (same file, same
+   coupling mechanism).
+2. **Project-wide rodata reorder** placing D_800F19C0 adjacent to D_800A11DC[]
+   so the lever-extending delta-arithmetic is a link-time constant — same
+   policy decision class as the saEft00Add precedent.
+
+**Not viable** (empirically disproven this session):
+- Pure-C varargs declaration change (avenue #2 — score unchanged).
+- Adding C-source dependencies to extend insn 107's RTL chain (avenue #3 dump
+  proves no natural use-site exists; every synthetic chain either folds or
+  materialises).
 
 ## Confirmed limit — marionation_Exec (system.c, 2026-05-29)
 
