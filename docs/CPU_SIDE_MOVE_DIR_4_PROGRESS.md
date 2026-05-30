@@ -123,6 +123,27 @@ lever is NOT committed because the chain shifts maspsx indices →
 the chain lever, the residual 7 must close to 0 first (then `retire`
 drops all 5 rules).
 
+## Bonus: the chain lever transfers to marionation_Exec (sandbox 56 → 45)
+
+The same chain pattern applied to marionation_Exec's idx_1494 + idx_1495:
+
+```c
+idx_1494 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C));
+idx_1495 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1);
+idx_1496 = idx_1494 + 2;
+```
+
+Brings sandbox from 56 → **45** with build_insns matching target (179). The
+chain DOES emit +3 instructions for marionation_Exec (because combine
+doesn't fully fold to a single `lui+addiu` — it stays as a runtime
+`lui+addiu+subu+addu+addiu` sequence), but the allocation gains net to
+sandbox -11 anyway. Adding the idx_1496 chain ON TOP regresses (+1 insn,
+same score). Adding D_800F19C0 chain also regresses (51 vs 48 best).
+
+`marionation_Exec` is a wholly UNTOUCHED function in the previous agent's
+chain-lever work — they tested the OLD chain-via-tbl_125c form and saw
+regression; the `&D_800A1494+1` form is qualitatively different.
+
 ## Related
 - `.claude/rules/register-alloc-pure-c.md` — the previous agent's
   session-1-through-10 analysis. This session's findings extend that.
