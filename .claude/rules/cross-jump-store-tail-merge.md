@@ -354,6 +354,136 @@ preserved with BB2_REORG_DEBUG hooks (DBG_OPP/FILL/LA/BRK/WLK/MTLR/BBLAS) for re
 candidate `.c` files preserved in `tmp/cand_*.c`. Test harness: `tmp/saeft_test.sh` + diff
 tool `tmp/saeft_diff_target.py`.
 
+### Session-13 (2026-05-30) — NEW FORM: V2b + inline_ret_mode. Honest distance 15 → 8.
+
+Per [[difficult-is-not-impossible]] § "Do NOT stop with documented unrun resume avenues",
+session 13 executed session-12's named untried avenue (move sys_VSync(-1) earlier in
+success path) AND a sweep of inline-return variants. Result: the documented sys_VSync
+move REGRESSES (session-12's hypothesis was wrong — the post-site2 a0 use is from
+func_80080390, not sys_VSync). But a NEW lever was found.
+
+**The lever: dual inline-return + drop tier-3 `__asm__("")` barrier.** Two forms tested
+this session, combined score-8 vs the committed honest-distance-15 baseline:
+
+```c
+/* V2b: inline-return at tail2 (arg0 != 0 path) drops the __asm__("") barrier */
+if (arg0 != 0) {
+    ...
+    if (func_80080258(2, temp_s0, 0) != 0) goto common_path;
+    D_800A14E4 = -1;
+    return D_800A14E4;   /* was: D_800A14E4 = -1; __asm__(""); goto end; */
+}
+/* V2b + inline_ret_mode: also inline-return at mode-path end1 */
+if (cdrom_GetMode() & 0x10) {
+    ...
+    func_80080390(1, 0);
+    D_800A14EC = sys_VSync(-1);
+    D_800A14E4 = -1;
+    return D_800A14E4;   /* was: *(volatile s32*)&D_800A14E4 = -1; goto end; */
+}
+```
+
+This form is NOT in session-12's enumeration (cand_inline_ret = inline-ret end1 ONLY,
+cand_site2_brk = goto-all-tails + semantic break). V2b + inline_ret_mode = inline-ret at
+BOTH mode-path AND tail2, goto at tail3, fall-through at success. Result:
+- build_insns 131 (vs target 133, 2 short)
+- masked Levenshtein **distance 8** (vs distance-6-mix's ~15 stripped)
+- site1 EAGER-FILLS ✓ (mode-path inline-ret removes the JF-LOOP poisoner)
+- site2 still NOT filling (no JF-LOOP path on success — same as session-12)
+- v0/v1 collision in mode-path tail (mine: `li v1,-1; sw v1; j; li v0` ≠ target's
+  `li v0; sw v0; j; nop`)
+- Drops 1 of 3 tier-3 cheats (`__asm__("")` gone; volatiles on D_800A1500 and D_800A14E4 remain)
+
+### Variants tested this session (all measured negative for further improvement)
+
+| Variant from V2b + inline_ret_mode base | Score | Notes |
+|---|---|---|
+| baseline (HEAD, all cheats present) | 15 | reference |
+| V2b alone (inline-ret tail2 only) | 10 | drops one cheat |
+| V2b + inline_ret_mode | **8** | session-13's new best |
+| V2b + inline_ret_tail3 (all 3 error tails inline) | 15 | tail3 inline regresses |
+| V2b + all 3 inline-rets | 13 | tail3 inline regresses |
+| V2b + vsync moved before D_800A1500 check | 19 | session-12's hypothesis: regresses |
+| V2b + vsync moved after cdrom_SetCallbackB | 23 | regresses harder |
+| V2b + vsync moved before func_80080390(6,0) | 18 | regresses |
+| V2b + inline_ret_mode + 14E4=-1 first | 10 | swap stores: -2 worse |
+| V2b + inline_ret_mode + 14E4=-1 BEFORE 390 | 12 | even earlier: -4 worse |
+| V2b + inline_ret_mode + `return (D_800A14E4 = -1)` | 8 | chained assign: no change |
+| V2b + inline_ret_mode + `return -1;` explicit | 8 | identical to D_800A14E4 |
+
+### Site2-break variants (all FAIL — empty conditionals DCE'd, real ones cost more than save)
+
+Session-12's cand_site2_brk used `if (arg0 < 0) D_800A14E4 = -1;` (semantic) to break
+the walk. Session-13 tested 12 non-semantic break forms; all measured score 8-13:
+
+| Break form (between site2 and func_80080390(6,0)) | Score from V2b+ret_mode base |
+|---|---|
+| `if (arg0 < 0) {}` | 8 (empty — DCE'd) |
+| `if (arg0 < 0) ;` | 8 (DCE'd) |
+| `if (arg0 < 0) arg0 = arg0;` | 8 (self-assign DCE'd) |
+| `if (arg0 < 0) (void)0;` | 8 (DCE'd) |
+| `if (arg0 < 0) goto L; L: ;` | 8 (DCE'd) |
+| `if (arg0 < 0) cdrom_SetCallbackB(0);` | 12 (call adds bytes) |
+| `if (arg0 > 0) cdrom_SetCallbackB(0);` | 12 |
+| `if (arg0 == -1) cdrom_SetCallbackB(0);` | 13 |
+| `if (arg0 < 0) D_800A14E4 = -1;` (cand_site2_brk) | 12 (session-12's lever) |
+| `if (*(volatile s32 *)&D_800A1500 < 0) {}` | 10 (volatile load adds bytes) |
+| `goto L; L: ;` (simple unconditional) | 8 (no break — simple jump) |
+| `if (D_800A14D0 < 0) D_800A14D8 = D_800A14D8;` | 8 (self-assign DCE'd) |
+
+**GCC 2.7.2 DCEs every empty-body `if`.** Bodies that survive cost more than the
+eager-fill gains. The fundamental cost ceiling stands: any non-semantic break that
+GCC can't optimize away costs ≥ 4 insns; eager fills gain ≤ 2 insns.
+
+### Why session-12's vsync-move hypothesis was wrong
+
+Session-12 wrote:
+> Move sys_VSync(-1) earlier: place D_800A14E8 = sys_VSync(-1); BEFORE site2's
+> if(D_800A1500 & 1) block. Removes the post-site2 a0 use; site2's walk no longer
+> accumulates needed_a0 from a downstream call.
+
+Empirically: the post-site2 a0 USE is `func_80080390(6, 0)` (which needs $a0=6 for
+its first arg), NOT `sys_VSync(-1)` (which needs $a0=-1 for its arg). Moving
+sys_VSync earlier does NOT remove the func_80080390 a0 use. Test results: all
+vsync-move forms regress (score 18-29).
+
+### Permuter from V2b base (`permuter/saeft_v2b/`)
+
+Set up + ran ~1264 iters. Best legitimate score 555 (permuter weighting). Candidate
+`output-555-1` is essentially V2b + inline_ret_mode + `D_800A14E4=-1` before
+`D_800A14EC = sys_VSync(-1)` in mode path (a swap of two stores). When tested via
+sandbox (against the full system.o context), that form scores **10**, not better
+than V2b + inline_ret_mode's 8. Permuter's score function and sandbox masked
+Levenshtein measure different things; permuter's "improvement" of 555 vs 615
+baseline doesn't translate to honest sandbox progress.
+
+### What the session-13 V2b finding implies for commit strategy
+
+The V2b + inline_ret_mode form is a real ~50% honest-distance reduction (15 → 8) AND
+drops 1 of 3 tier-3 cheats. But:
+- The 13 existing regfix/asmfix rules are calibrated for the committed form's
+  maspsx indices; V2b shifts them.
+- Committing V2b requires REWRITING the rules for the new structure.
+- Result would NOT be Tier-4 (still has 2 tier-3 volatiles + rules); just fewer cheats.
+
+The user policy is "Tier 4 SOTN standard moving forward". A partial cheat reduction
+that doesn't reach Tier-4 doesn't satisfy that policy, so V2b is best documented as
+WIP-progress, not committed.
+
+### Status (session 13)
+
+Honest pure-C floor LOWERED 15 → 8 via V2b + inline_ret_mode. Still NOT Tier-4 (2
+missing eager fills + v0/v1 cascade remain — same structural ceiling session-12
+documented but at a different masked-distance floor).
+
+Resume artifacts:
+- `permuter/saeft_v2b/base.c` — V2b + inline_ret_mode base, ~1264 iters, best 555
+- `tmp/saeft_variants.py`, `tmp/saeft_variants2.py`, `tmp/saeft_variants3.py`,
+  `tmp/saeft_brk_variants.py`, `tmp/saeft_mode_first_minus1.py`,
+  `tmp/saeft_mode_reorder.py` — variant sweepers
+- `tmp/diff_saeft_aligned.py`, `tmp/diff_saeft.py` — side-by-side diff tools
+- `tmp/dump_saeft.sh` — objdump dump helper
+
 ## Related
 
 - [[cross-jump-call-merge]] — the CALL-suffix analogue (arg count is the lever there).
