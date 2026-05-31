@@ -524,8 +524,23 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
 
     # Macro `__asm__` definitions to comment out (full line).
     macro_spans: list[tuple[int, int, str]] = []
+    macro_usage_spans: list[tuple[int, int]] = []
     for s, e, name in find_macro_asm_defs(text):
         macro_spans.append((s, e, name))
+        # Strip macro USAGES too: an undefined macro name appearing as
+        # `NAME;` becomes a tentative global (`.comm NAME,4,4`) which crashes
+        # maspsx and silently truncates the whole-file object. Match the
+        # macro name as a standalone statement/expression and neutralize it.
+        # Pattern: `NAME` followed by optional `(args)` and a `;` (with
+        # surrounding whitespace).
+        usage_re = re.compile(
+            r"\b" + re.escape(name) + r"\b(?:\s*\([^)]*\))?\s*;"
+        )
+        for um in usage_re.finditer(text):
+            # Skip the definition itself
+            if s <= um.start() < e:
+                continue
+            macro_usage_spans.append((um.start(), um.end()))
 
     # Unused local arrays + dead-param assignments inside function bodies.
     # We iterate definitions to get their spans, then enumerate per-func.
@@ -561,6 +576,9 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
     for s, e, name in macro_spans:
         original = text[s:e]
         all_edits.append((s, e, f"/* STRIPPED CHEAT MACRO: {original.strip()} */"))
+    for s, e in macro_usage_spans:
+        # Replace usage with whitespace so positions stay easy to reason about.
+        all_edits.append((s, e, " " * (e - s)))
     for s, e in body_extra_spans:
         # Replace with whitespace so positions stay easy to reason about.
         original = text[s:e]
