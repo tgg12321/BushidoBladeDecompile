@@ -90,6 +90,29 @@ _PLAIN_VOLATILE_RE = re.compile(
     r"\s*;)"
 )
 
+# Pattern 4: NON-volatile alias rename. Same kind of cheat as the volatile
+# alias-rename pattern, but without `volatile`: an extern declaration provides
+# a SEPARATE C identifier (often `_TYPESUFFIX` style) for an existing global,
+# typically with a DIFFERENT type — used to coerce the access width (e.g. force
+# `lhu` over `lw` by aliasing an `s32` as `u16`). The alias-rename via asm()
+# is the smoking gun; there is no legitimate single-TU reason to provide a
+# second C handle for the same memory under a different name.
+_NONVOL_ALIAS_RENAME_RE = re.compile(
+    r"(?P<decl>\bextern\s+(?!volatile\b)(?:const\s+)?"
+    r"(?:\w+\s+)+\**\s*(?P<name>\w+)"
+    r"\s*(?:\[[^\]]*\])?"
+    r"\s*asm\s*\(\s*\"(?P<sym>\w+)\"\s*\)\s*;)"
+)
+
+# Pattern 5: macro `#define NAME ... __asm__(...)`. The C preprocessor expands
+# uses to `__asm__(...)` AT EVERY USE SITE, but the existing tier-3 detector
+# (engine/inlineasm.py:_strip_spans) explicitly SKIPS `#define` lines to avoid
+# breaking macro uses. So a macro-hidden inline asm injection slips past
+# detection — yet at every USE site, the expanded asm runs in the build.
+_MACRO_ASM_DEF_RE = re.compile(
+    r"(?m)^[ \t]*#[ \t]*define[ \t]+(?P<name>\w+)(?:\([^)]*\))?[^\n]*__asm__"
+)
+
 
 def _is_legit_name(name: str) -> bool:
     return bool(_LEGIT_NAME_RE.match(name))
@@ -170,6 +193,50 @@ def find_global_volatile_casts(text: str) -> list[tuple[int, int, str]]:
     return out
 
 
+def find_nonvolatile_alias_renames(text: str) -> list[tuple[int, int, int]]:
+    """All `extern T NAME asm("SYM");` declarations (NO `volatile`) where
+    NAME != SYM. The cheat anchor is the position of `asm` in the decl — we
+    return (start, end, asm_start) so the strip can remove the `asm("SYM")`
+    annotation (turning the alias into a separate scoped declaration with the
+    SAME C-level name — link error is acceptable since the sandbox sees the
+    function compile-failing in this case)."""
+    out = []
+    for m in _NONVOL_ALIAS_RENAME_RE.finditer(text):
+        name, sym = m.group("name"), m.group("sym")
+        if name == sym:
+            continue
+        # Skip function-name aliases (decl has `()` between type and asm — but
+        # _NONVOL_ALIAS_RENAME_RE doesn't capture those because the regex
+        # requires the identifier+optional-array to come BEFORE asm(...). We
+        # double-check by ensuring there's no `(` between the matched NAME
+        # and the asm keyword.
+        between = text[m.start("name") + len(name):text.find("asm", m.start("name"))]
+        if "(" in between:
+            continue
+        # Find asm keyword position within the match
+        asm_idx = text.find("asm", m.start())
+        if asm_idx < 0:
+            continue
+        out.append((m.start(), m.end(), asm_idx))
+    return out
+
+
+def find_macro_asm_defs(text: str) -> list[tuple[int, int, str]]:
+    """All `#define NAME ... __asm__(...)` macro definitions. Returns
+    (def_start, def_end_eol, macro_name). The strip removes the macro
+    definition; uses of the macro will fail compilation, surfacing the cheat
+    instead of hiding it."""
+    out = []
+    for m in _MACRO_ASM_DEF_RE.finditer(text):
+        name = m.group("name")
+        # Find end of line
+        eol = text.find("\n", m.start())
+        if eol == -1:
+            eol = len(text)
+        out.append((m.start(), eol, name))
+    return out
+
+
 def find_plain_volatile_externs(text: str) -> list[tuple[int, int, str]]:
     """All `extern volatile T NAME;` declarations where:
       - The declaration is SCALAR (no `*` between type and NAME),
@@ -190,15 +257,26 @@ def find_plain_volatile_externs(text: str) -> list[tuple[int, int, str]]:
 
 
 def find_all_cheats(text: str) -> list[tuple[int, int, str]]:
-    """All three categories combined, sorted by start position. Each tuple is
-    (cheat_span_start, cheat_span_end_or_anchor, volatile_keyword_position).
+    """All five categories combined, sorted by start position. Each tuple is
+    (cheat_span_start, cheat_span_end_or_anchor, strip_anchor_position).
 
-    Note: spans may OVERLAP in pathological text; the strip path tolerates this
-    by removing the volatile keyword by exact position (idempotent)."""
+    For volatile cheats the strip_anchor is the `volatile` keyword position
+    (which the stripper removes). For non-volatile alias renames it is the
+    `asm` keyword position. For macro `__asm__` definitions it is the `#`
+    column-0 position.
+
+    Spans may OVERLAP in pathological text; the strip path tolerates this by
+    keyword-position dedup."""
     out = []
     out.extend(find_alias_renames(text))
     out.extend(find_global_volatile_casts(text))
     out.extend(find_plain_volatile_externs(text))
+    # Non-volatile category (asm-anchored, not volatile-anchored)
+    for s, e, asm_pos in find_nonvolatile_alias_renames(text):
+        out.append((s, e, asm_pos))
+    # Macro asm definitions (line-anchored)
+    for s, e, _name in find_macro_asm_defs(text):
+        out.append((s, e, s))
     out.sort()
     return out
 
@@ -207,32 +285,100 @@ _VOLATILE_KW_RE = re.compile(r"\bvolatile\b")
 
 
 def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
-    """Return (modified text, count) with the `volatile` qualifier removed from
-    every detected cheat declaration/cast. The strip removes ONLY the qualifier
-    word (and one trailing space) — the rest of the declaration/cast survives
-    untouched so the file still parses.
+    """Return (modified text, count) with every detected coercion cheat
+    NEUTRALIZED — volatile/non-volatile aliases, inline volatile casts, plain
+    volatile externs, and `#define`-hidden `__asm__` blocks. The neutralization
+    is pattern-specific:
 
-    The strip is byte-position-driven: we collect the volatile-keyword positions
-    from all detectors, deduplicate, and rewrite the file by deleting each
-    keyword (+ the following whitespace run, up to 1 char) in reverse order.
-    Order matters because earlier positions shift later positions when text is
-    edited; reverse-order edits preserve every position."""
-    cheats_ = find_all_cheats(text)
-    # Deduplicate volatile-keyword positions (same keyword can be referenced
-    # from multiple detectors if patterns overlap).
-    vol_positions = sorted({c[2] for c in cheats_}, reverse=True)
-    n_stripped = 0
-    for pos in vol_positions:
-        # Sanity: the position should start with the `volatile` token.
-        m = _VOLATILE_KW_RE.match(text, pos)
-        if not m:
+      - volatile qualifier on alias / cast / plain extern → keyword removed
+        (declaration / expression survives without the volatile semantics)
+      - non-volatile `asm("SYM")` alias annotation → `asm("SYM")` removed
+        (the C identifier becomes an unresolved extern, surfacing the cheat
+        via link error rather than silently compiling)
+      - macro `__asm__(...)` definition → the entire `#define` line is
+        commented out so the macro becomes undefined; uses fail compilation
+
+    The strip is byte-position-driven; edits are applied in REVERSE order to
+    keep positions valid."""
+    # Volatile keyword removals (positions for casts / volatile aliases /
+    # plain volatile externs).
+    vol_positions: set[int] = set()
+    for s, e, vp in find_alias_renames(text):
+        vol_positions.add(vp)
+    for s, e, vp in find_global_volatile_casts(text):
+        vol_positions.add(vp)
+    for s, e, vp in find_plain_volatile_externs(text):
+        vol_positions.add(vp)
+
+    # Non-volatile asm() alias annotations to remove (span: from `asm` to `)`).
+    nv_alias_spans: list[tuple[int, int]] = []
+    for s, e, asm_pos in find_nonvolatile_alias_renames(text):
+        # Find the closing `)` of asm("...")
+        paren_open = text.find("(", asm_pos)
+        if paren_open < 0:
             continue
-        # Remove the keyword + 1 trailing space (if any) so the rest stays clean.
-        end = m.end()
-        if end < len(text) and text[end] in " \t":
-            end += 1
-        text = text[:pos] + text[end:]
-        n_stripped += 1
+        depth = 1
+        i = paren_open + 1
+        in_str = False
+        while i < len(text) and depth > 0:
+            c = text[i]
+            if in_str:
+                if c == "\\":
+                    i += 2
+                    continue
+                if c == "\"":
+                    in_str = False
+            elif c == "\"":
+                in_str = True
+            elif c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+            i += 1
+        if depth != 0:
+            continue
+        # Trim trailing whitespace BEFORE asm (so we remove ` asm("...")` cleanly)
+        strip_start = asm_pos
+        while strip_start > 0 and text[strip_start - 1] in " \t":
+            strip_start -= 1
+        nv_alias_spans.append((strip_start, i))
+
+    # Macro `__asm__` definitions to comment out (full line).
+    macro_spans: list[tuple[int, int, str]] = []
+    for s, e, name in find_macro_asm_defs(text):
+        macro_spans.append((s, e, name))
+
+    # Apply edits in reverse order.
+    all_edits = []
+    for pos in vol_positions:
+        m = _VOLATILE_KW_RE.match(text, pos)
+        if m:
+            end = m.end()
+            if end < len(text) and text[end] in " \t":
+                end += 1
+            all_edits.append((pos, end, ""))
+    for s, e in nv_alias_spans:
+        all_edits.append((s, e, ""))
+    for s, e, name in macro_spans:
+        # Comment out the macro definition with a /*...*/ wrapper so any
+        # subsequent uses fail compilation cleanly (undefined identifier).
+        original = text[s:e]
+        all_edits.append((s, e, f"/* STRIPPED CHEAT MACRO: {original.strip()} */"))
+
+    # De-overlap: sort by start descending and skip edits whose span overlaps
+    # an already-scheduled later edit.
+    all_edits.sort(reverse=True)
+    applied = []
+    used_starts = []
+    for s, e, repl in all_edits:
+        if any(not (e <= us[0] or s >= us[1]) for us in used_starts):
+            continue  # overlaps an already-scheduled edit; skip
+        used_starts.append((s, e))
+        applied.append((s, e, repl))
+
+    n_stripped = len(applied)
+    for s, e, repl in applied:
+        text = text[:s] + repl + text[e:]
     return text, n_stripped
 
 
@@ -349,6 +495,16 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
         m = _PLAIN_VOLATILE_RE.search(text, s, e)
         if m and m.group("name") in used:
             counted_vol_positions.add(vp)
+    # Non-volatile alias renames (in-body or file-scope-with-body-use).
+    for s, e, asm_pos in find_nonvolatile_alias_renames(text):
+        in_body = lo <= s < hi
+        m = _NONVOL_ALIAS_RENAME_RE.search(text, s, e)
+        if m and (in_body or m.group("name") in used):
+            counted_vol_positions.add(asm_pos)
+    # Macro `__asm__` definitions whose macro name is referenced in body.
+    for s, e, name in find_macro_asm_defs(text):
+        if name in used:
+            counted_vol_positions.add(s)
     return len(counted_vol_positions)
 
 
@@ -389,9 +545,7 @@ def audit_project(src_dir: str = "src") -> dict:
 
         for s, e, vp in cheats_:
             line = line_of(s)
-            # Categorize by which detector caught it
-            # (re-test the spans)
-            slice_ = text[s:min(e + 4, len(text))]
+            # Categorize by which detector caught it (re-test the spans).
             kind = "unknown"
             for m in _ALIAS_RENAME_RE.finditer(text, s, e + 1):
                 if m.start() == s:
@@ -406,6 +560,16 @@ def audit_project(src_dir: str = "src") -> dict:
                 for m in _PLAIN_VOLATILE_RE.finditer(text, s, e + 1):
                     if m.start() == s:
                         kind = "plain_extern"
+                        break
+            if kind == "unknown":
+                for m in _NONVOL_ALIAS_RENAME_RE.finditer(text, s, e + 1):
+                    if m.start() == s:
+                        kind = "nonvol_alias_rename"
+                        break
+            if kind == "unknown":
+                for m in _MACRO_ASM_DEF_RE.finditer(text, s, e + 1):
+                    if m.start() == s:
+                        kind = "macro_asm"
                         break
             # Extract name + decl snippet
             name = ""
