@@ -3027,10 +3027,6 @@ func_8007C97C: insert "j	.LE97C" @ 2
 func_8007C97C: insert_label ".LE97C:" @ 29
 func_8007C97C: insert_label ".LC97C:" @ 3
 func_8007992C: reorder 16,14,15,17 @ 14-17
-func_8007B4D0: subst "andi\s+\$7,\$16,0x00ff" "andi	$16,$16,0x00ff" @ 14
-func_8007B4D0: subst "sll\s+\$7,\$7,16" "sll	$16,$16,16" @ 15
-func_8007B4D0: subst "or\s+\$7,\$7,\$17" "or	$16,$16,$17" @ 18
-func_8007B4D0: subst "or\s+\$7,\$7,\$18" "or	$7,$16,$18" @ 26
 func_8007B564: subst "andi\s+\$7,\$17,0x00ff" "andi	$17,$17,0x00ff" @ 14
 func_8007B564: subst "sll\s+\$7,\$7,16" "sll	$17,$17,16" @ 15
 func_8007B564: subst "or\s+\$7,\$7,\$16" "lui	$2,(-2147483648 >> 16) & 0xFFFF" @ 18
