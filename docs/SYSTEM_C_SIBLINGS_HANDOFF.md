@@ -4,7 +4,7 @@ Status of three parked functions in `src/system.c`, after multi-session deep inv
 Read this BEFORE re-attempting any of them.
 
 ## TL;DR
-- **tslPolyF4Init** — MATCHED (Tier-4, commit `acc208b`). Reference for the rest.
+- **tslPolyF4Init** — MATCHED (COMPLETED-C, commit `acc208b`). Reference for the rest.
 - **saEft00Add, cpu_side_move_dir_4, marionation_Exec** — parked at technique-class
   exhaustion (every reachable pure-C avenue empirically tested with instrumented evidence).
   Remaining avenues are policy-class only.
@@ -82,7 +82,7 @@ any function whose only remaining gap is allocno-priority-driven register rotati
   no reference PS1 decomp project does this; fallback for unmatchable is INCLUDE_ASM.
 
 ## What remains (genuine choices, not unrun avenues)
-1. **Canonical-asm (tier-1) authorization** per `canonical-asm-retirement.md` for one
+1. **Canonical-body asm authorization** per `canonical-asm-retirement.md` for one
    or more of the three. SOTN-equivalent fallback (their `INCLUDE_ASM`). User policy.
 2. **Wait for toolchain improvements** — these functions may yield to a future
    `reorg`-permissiveness fix or a different allocator. The evidence ledger is

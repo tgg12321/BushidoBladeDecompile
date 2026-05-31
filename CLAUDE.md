@@ -40,31 +40,51 @@ form and the footguns below.
 ### CLI
 | Command | Purpose |
 |---|---|
-| `queue next` / `done <func>` / `status` | **the worklist** — take the top item, mark it Tier-4-done, see progress |
+| `queue next` / `done <func>` / `status` | **the worklist** — take the top item, mark it COMPLETED, see progress |
 | `verify-oracle [--rebuild]` | confirm the tree still builds byte-identical (the oracle) |
 | `build` | full clean-driver build → SHA1 check |
 | `canonical <func>` | C-vs-asm gate: ASM-region / ASM-structural / C. **Run BEFORE any pure-C work.** |
-| `sandbox <func> --disable all` | cheat-invisible score = the honest pure-C distance (tier-3 stripped) |
+| `sandbox <func> --disable all` | cheat-invisible score = the honest pure-C distance (cheat-asm stripped) |
 | `diagnose <funcs...>` | classify a gap: matchable / control-flow / canonical / plateau |
 | `scan-redundant --all` | low-level: per-file redundant-rule scan (`queue` is the consolidated worklist) |
 | `retire <func>` | delete a function's rules + full-build SHA1 verify (auto-rollback on mismatch) |
 | `fixtures-verify` | tool-health: golden fixtures still byte-match |
 | `test` | engine regression suite (distance / gate / cheat-stripping) — keep green when you touch engine code |
 
+### The three function categories
+Every function in the codebase is in exactly ONE state. There are no gradations,
+no "almost done," no "done with a hint." Cheats — regfix/asmfix rules, register
+pins, cheat-asm `__asm__` blocks, scheduling barriers — are NEVER an end state.
+
+  - **INCOMPLETE** — in `engine/queue.json`. Carries a cheat (regfix/asmfix
+    rule, cheat-asm pin/__asm__, OR non-zero honest pure-C distance). Stays
+    in the queue until it reaches a COMPLETED state.
+  - **COMPLETED-C** — zero rules, zero cheat-asm in source, byte-matches.
+    Not in the queue. Not listed in `inline_asm_canonical.txt`. The SOTN
+    community bar; the default goal for every function.
+  - **COMPLETED-INLINE-ASM-CANONICAL** — zero rules, canonical inline asm
+    (GTE/cop2 ops, BIOS/syscall trampolines) or whole-body `__asm__("glabel
+    ...")` that is its accepted finished form. Listed in
+    `inline_asm_canonical.txt`. Reserved for functions whose ORIGINAL CODE
+    was hand-written assembly — the `canonical` gate decides what qualifies,
+    not the agent.
+
 ### The non-negotiables (enforced by construction, not by nagging)
-1. **Tier-4 standard** — 100% pure C; zero regfix/asmfix/register-pins. The only allowed asm is
-   *canonical* (GTE/cop2 ops, BIOS/syscall trampolines, or a construct with no C form), and
-   `canonical` decides what qualifies — not the agent. **Enforced, not honor-system:** `queue done`
-   and `regen` refuse to record a function as done if it carries any regfix/asmfix rule OR any
-   tier-3 inline asm (register pins, hardcoded-`$N` asm, scheduling barriers) unless it's authorized
-   canonical-asm in `inline_asm_canonical.txt`. SHA1 alone can't catch a tier-3 "match" (the asm
-   emits the right bytes), so the gate audits the source. `tools/check_tier4_integrity.py` is the
-   standing audit; the orchestrator's `headless_review` flags any cheated committed match.
+1. **The completion standard** — only the two COMPLETED states above may be
+   committed as done. **Enforced, not honor-system:** `queue done` and `regen`
+   refuse to record a function as done if it carries any regfix/asmfix rule OR
+   any cheat-asm (register pins, hardcoded-`$N` asm, scheduling barriers)
+   unless it's authorized canonical-asm in `inline_asm_canonical.txt`. SHA1
+   alone can't catch a cheat-asm "match" (the asm emits the right bytes), so
+   the gate audits the source. `tools/check_completion_integrity.py` is the
+   standing audit; the orchestrator's `headless_review` flags any cheated
+   committed match.
 2. **The oracle is the only truth** — "done" = full build+link SHA1 ==
    `62efab4f73f992798c43e8c730aa43baa10bb4fa`. Intermediate exit codes and isolated scores are hints.
-3. **Cheating can't help** — the sandbox scores with regfix/asmfix disabled and tier-3 inline-asm
-   stripped, so adding a regfix rule / pin / `__asm__` injection does not move the score. The
-   integrated gate catches anything snuck in. Don't reach for cheats; they're inert here.
+3. **Cheating can't help** — the sandbox scores with regfix/asmfix disabled and
+   cheat-asm stripped, so adding a regfix rule / pin / `__asm__` injection does
+   not move the score. The integrated gate catches anything snuck in. Don't
+   reach for cheats; they're inert here.
 4. **Canonical-asm is the gate's call** — if `canonical` says ASM-region or ASM-STRUCTURAL, do NOT
    grind it in pure C. Genuine no-C-form constructs get authorized inline asm; never recreate target
    bytes via hardcoded-`$N` `__asm__` injection.
@@ -77,7 +97,7 @@ endings** — edit via WSL or an LF-enforcing editor (the Write tool produces LF
 
 ### Optional: headless driver (`tools/headless_loop.ps1`)
 The same single-agent loop can run **unattended**: `pwsh tools/headless_loop.ps1` invokes `claude -p`
-once per queue item to take the top function to Tier-4 (still one focused agent per function — it
+once per queue item to take the top function to COMPLETED (still one focused agent per function — it
 just launches the sessions for you). Guardrails: `verify-oracle --rebuild` baseline + authoritative
 post-check each iteration (stops on any oracle break), progress check (stops if the function neither
 completes nor parks), a `--max-budget-usd` cap, `-MaxIterations 1` default, and it **never pushes**.
@@ -97,15 +117,15 @@ self-auditing — you only open the transcript via this tool if a number looks o
 
 ### Orchestrator post-run protocol (autonomous operation)
 > Invoke the **`/decomp-orchestrate`** skill to bootstrap an orchestrator session — it bundles this
-> whole playbook (the Tier-4 standard + enforcement, PowerShell-first tooling, the per-function loop,
-> headless worker driving + review, the escalation boundary, auto-handle categories, footguns, and
-> the rule/memory pointers) in one place.
+> whole playbook (the completion standard + enforcement, PowerShell-first tooling, the per-function
+> loop, headless worker driving + review, the escalation boundary, auto-handle categories, footguns,
+> and the rule/memory pointers) in one place.
 
 When driving workers (interactively or headless), the **orchestrator** (the main agent) runs this
 after **each** worker finishes — it is what lets the loop run unattended for long stretches:
 
 1. **Review packet** — `python3 tools/headless_review.py --latest` (or `--func`/`--session`).
-   One compact view: outcome (TIER4-DONE / PARKED / STUCK / ORACLE-BREAK / ERROR), the audit signals
+   One compact view: outcome (COMPLETED / PARKED / STUCK / ORACLE-BREAK / ERROR), the audit signals
    (tooling errors, footgun blocks, retried commands, engine-loop trace), the worker's commit
    (`--stat`), the park reason, and a **mechanical park-confirmation** + an `ACCEPT`/`ESCALATE`
    recommendation. Exit code: `0`=ACCEPT, `10`=ESCALATE.
@@ -123,26 +143,29 @@ after **each** worker finishes — it is what lets the loop run unattended for l
    the budget cap. Everything else is logged (`headless_runs.jsonl`) for later review, not blocked on.
 
 **Orchestrator auto-authorize categories (NOT escalate triggers):**
-- **Tier-2 GTE leaf wrappers** (pure cop2 ops — `mtc2`/`avsz3`/`avsz4`/`mfc2` etc., no C form): the
-  orchestrator authorizes them itself (user policy, 2026-05-26) — remove the tier-3 `register asm`
-  pin (GCC returns in `$v0` naturally), `verify-oracle --rebuild`, add to `inline_asm_canonical.txt`,
-  `queue done`. See [[gte-wrapper-misroute-park]]. *Contrast tier-1 hand-coded asm (custom ABI /
-  trapping ops / hand scheduling) — that still needs a user judgment call → escalate.*
+- **GTE leaf wrappers** (pure cop2 ops — `mtc2`/`avsz3`/`avsz4`/`mfc2` etc., no C form): the
+  orchestrator authorizes them itself (user policy, 2026-05-26) — remove the cheat-asm
+  `register asm` pin (GCC returns in `$v0` naturally), `verify-oracle --rebuild`, add to
+  `inline_asm_canonical.txt`, `queue done`. See [[gte-wrapper-misroute-park]]. *Contrast
+  whole-body hand-coded asm (custom ABI / trapping ops / hand scheduling) — that still needs a
+  user judgment call → escalate.*
 - **jtbl-infra** (rodata-split jump tables): auto-confirmed park (`cheats.is_jtbl_infra`); the
   *global rodata reorder* to truly pure-C them is the architecture decision that escalates.
 
 ## The queue IS the worklist (`engine queue`)
 All outstanding work lives in ONE ordered list — `engine/queue.json` — covering every function
-still carrying a cheat (a regfix/asmfix rule OR a load-bearing tier-3 pin/inline-asm). It is
-**pre-ordered easiest-first** by honest pure-C distance, so there is **no triage and no
-cherry-picking**: you work the **top active item** to Tier-4, mark it `done`, and take the next.
-Everything gets decompiled eventually, so don't skip "hard" items or hunt for "easy" ones — just
-work the top. The SessionStart hook surfaces the top each session; `queue status` shows progress.
+still carrying a cheat (a regfix/asmfix rule OR a load-bearing cheat-asm pin/inline-asm). Every
+queue item is INCOMPLETE by definition; the moment a function reaches a COMPLETED state it drops
+off the queue. The queue is **pre-ordered easiest-first** by honest pure-C distance, so there is
+**no triage and no cherry-picking**: you work the **top active item** to COMPLETED, mark it `done`,
+and take the next. Everything gets decompiled eventually, so don't skip "hard" items or hunt for
+"easy" ones — just work the top. The SessionStart hook surfaces the top each session;
+`queue status` shows progress.
 
 | `queue` action | Purpose |
 |---|---|
 | `queue next` | print the top active item (func, file, verdict, distance, rule count) |
-| `queue done <func>` | mark complete — re-checks ZERO rules + ZERO non-canonical tier-3 inline asm + build SHA1 == oracle (refuses otherwise). `regen` re-validates sticky `done` entries the same way and re-opens any cheated one. `python3 tools/check_tier4_integrity.py` audits the whole done set. |
+| `queue done <func>` | mark complete — re-checks ZERO rules + ZERO non-canonical cheat-asm + build SHA1 == oracle (refuses otherwise). On success the function is REMOVED from the queue (queue presence = INCOMPLETE). `python3 tools/check_completion_integrity.py` audits that every completed function still satisfies the invariants. |
 | `queue park <func> --reason "…"` | block an item (e.g. needs user canonical-asm auth); `next` skips it |
 | `queue status` | counts by status/verdict + the current top |
 | `queue regen` | rebuild the queue (preserves done/parked); run after big changes |

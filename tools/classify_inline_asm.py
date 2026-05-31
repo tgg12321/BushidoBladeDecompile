@@ -1,39 +1,41 @@
 #!/usr/bin/env python3
-"""Classify each `__asm__` block in src/*.c into tier 2 vs tier 3.
+"""Classify each `__asm__` block in src/*.c as CANONICAL or CHEAT.
 
-Tier system (canonical statement of where BB2 stands relative to the
-SOTN community bar — see .claude/rules/inline-asm-tiers.md):
+Inline-asm policy (canonical statement of where BB2 stands relative to the
+SOTN community bar — see .claude/rules/inline-asm-policy.md):
 
-  1 = full canonical-asm function body. The original was hand-written
-      asm OR was emitted via file-scope `__asm__("glabel ...")`. Listed
-      in inline_asm_canonical.txt. NOT classified here.
-  2 = inline `__asm__` in a C function body using opcodes that ONLY exist
-      in asm form. Authentic — original developers wrote these.
+  CANONICAL-BODY = full canonical-asm function body. The original was
+      hand-written asm OR was emitted via file-scope `__asm__("glabel ...")`.
+      Listed in inline_asm_canonical.txt. NOT classified here.
+  CANONICAL      = inline `__asm__` in a C function body using opcodes that
+      ONLY exist in asm form. Authentic — original developers wrote these.
         - GTE coprocessor ops: ctc2/cfc2/mtc2/mfc2/lwc2/swc2
         - GTE math ops: .word 0x4XXXXXXX (cop2 instruction encoding)
         - BIOS vectors: jumps to 0xA0/0xB0/0xC0
         - Cache/DMA hardware register pokes (specific addresses)
-  3 = inline `__asm__` in a C function body using general-purpose GPR
-      opcodes (move/addu/nop/lui/etc.) to steer GCC's allocator or
-      scheduler. Workarounds we added; NOT in original source.
-  4 = pure C, no inline asm needed. Not counted here.
+  CHEAT          = inline `__asm__` in a C function body using general-purpose
+      GPR opcodes (move/addu/nop/lui/etc.) to steer GCC's allocator or
+      scheduler. Workarounds we added; NOT in original source. Forbidden in
+      committed source — a function carrying any of these is INCOMPLETE.
+  (pure C)       = no inline asm needed. Not counted here.
 
-SOTN-bar functions are tier 1, 2, or 4. Tier 3 is the BB2-specific gap.
-The "gap to SOTN bar" metric is the count of tier-3 functions.
+COMPLETED functions use only CANONICAL-BODY, CANONICAL, or pure C.
+CHEAT is the BB2-specific gap; the count of CHEAT functions is what remains
+to retire.
 
 Heuristic limitations (documented):
   - Multi-line `__asm__()` blocks (with one string per line) need the
     parser to track parentheses across lines; we handle this by joining
     physical lines inside an open `__asm__(` until the matching `)`.
-  - File-scope `__asm__("...glabel...")` blocks are excluded (tier 1).
-  - `sw`/`lw` to scratchpad addresses (0x1F8003xx) are tier 2 (hardware
-    pokes); to general addresses they default to tier 3.
+  - File-scope `__asm__("...glabel...")` blocks are excluded (CANONICAL-BODY).
+  - `sw`/`lw` to scratchpad addresses (0x1F8003xx) are CANONICAL (hardware
+    pokes); to general addresses they default to CHEAT.
 
 Output formats:
   default — per-function table + summary
   --summary — just the summary counts
   --json — structured JSON for tooling consumption
-  --func F — classify ONE function (for `dc.sh classify-inline-asm <func>`)
+  --func F — classify ONE function (show its asm blocks)
 """
 from __future__ import annotations
 
@@ -46,8 +48,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SRC_DIR = ROOT / "src"
 
-# --- Tier 2: authentic asm (no C equivalent exists) ---
-TIER2_OPS = frozenset({
+# --- CANONICAL: authentic asm (no C equivalent exists) ---
+CANONICAL_ASM_OPS = frozenset({
     # GTE register transfers
     "ctc2", "cfc2", "mtc2", "mfc2",
     # GTE memory load/store
@@ -56,22 +58,22 @@ TIER2_OPS = frozenset({
     "ctc0", "mfc0", "mtc0",  # MIPS coprocessor 0 — kernel-mode
 })
 
-# Tier 2: GTE op encodings via .word — top byte 0x48-0x4F is cop2 op range.
-TIER2_DOTWORD_RE = re.compile(r'\.word\s*0x4[89A-Fa-f]', re.IGNORECASE)
+# CANONICAL: GTE op encodings via .word — top byte 0x48-0x4F is cop2 op range.
+CANONICAL_DOTWORD_RE = re.compile(r'\.word\s*0x4[89A-Fa-f]', re.IGNORECASE)
 
-# Tier 2: BIOS vector jumps. A0/B0/C0 are the PSX BIOS dispatch vectors.
-TIER2_BIOS_RE = re.compile(
+# CANONICAL: BIOS vector jumps. A0/B0/C0 are the PSX BIOS dispatch vectors.
+CANONICAL_BIOS_RE = re.compile(
     r'\b(?:j|jal)\s+0x[abc]0\b|\bjr\s+\$t1\b',
     re.IGNORECASE,
 )
 
-# Tier 2: scratchpad / hardware register addresses.
+# CANONICAL: scratchpad / hardware register addresses.
 # Scratchpad: 0x1F800000–0x1F8003FF (1 KB).
 # I/O ports: 0x1F801000–0x1F803FFF (GPU/SPU/DMA/etc.).
-TIER2_HW_ADDR_RE = re.compile(r'0x1f80[0123]\b|0x1f8003', re.IGNORECASE)
+CANONICAL_HW_ADDR_RE = re.compile(r'0x1f80[0123]\b|0x1f8003', re.IGNORECASE)
 
-# --- Tier 3: general-purpose GPR ops used as workarounds ---
-TIER3_OPS = frozenset({
+# --- CHEAT: general-purpose GPR ops used as workarounds ---
+CHEAT_ASM_OPS = frozenset({
     # Arithmetic / logical
     "move", "addu", "addiu", "subu", "negu", "neg",
     "add", "sub", "addi",
@@ -81,7 +83,7 @@ TIER3_OPS = frozenset({
     "sll", "sra", "srl", "sllv", "srlv", "srav",
     # Compare
     "slt", "slti", "sltu", "sltiu",
-    # Memory (general — overridden to tier 2 when address is hardware)
+    # Memory (general — overridden to CANONICAL when address is hardware)
     "sw", "lw", "sh", "lh", "sb", "lb", "lhu", "lbu", "lwl", "lwr", "swl", "swr",
     # Multiply/divide
     "mult", "multu", "div", "divu", "mflo", "mfhi", "mtlo", "mthi",
@@ -94,8 +96,8 @@ TIER3_OPS = frozenset({
 })
 
 # Empty asm template (typically `__asm__ volatile("" ::: "memory")` —
-# scheduling barrier). Count as tier 3 since it's purely codegen control.
-EMPTY_ASM_IS_TIER3 = True
+# scheduling barrier). Count as CHEAT since it's purely codegen control.
+EMPTY_ASM_IS_CHEAT = True
 
 # --- AST-light parser ---
 # We don't fully parse C. Instead we use line-by-line state tracking.
@@ -126,36 +128,36 @@ GLABEL_HINT_RE = re.compile(r'\bglabel\b|\bendlabel\b')
 ASM_KEYWORD_RE = re.compile(r'\b(__asm__|__asm)\s*(?:volatile|__volatile__)?\s*\(')
 
 # Register-asm pin declarations: `register T x asm("$N");` or
-# `register T x asm("$N") = expr;`. These are also tier-3 workarounds
+# `register T x asm("$N") = expr;`. These are also CHEAT workarounds
 # (allocation hints we added) but a different KIND than `__asm__` blocks.
 REGISTER_PIN_RE = re.compile(r'\bregister\s+[^=;]*\basm\s*\(\s*"[^"]+"\s*\)')
 
 
 def classify_template(template: str) -> str:
-    """Classify a single asm template string. Returns 'tier2' or 'tier3'."""
+    """Classify a single asm template string. Returns 'canonical' or 'cheat'."""
     text = template.strip()
     if not text:
-        return "tier3" if EMPTY_ASM_IS_TIER3 else "tier2"
-    # Check tier-2 regex signals first (.word cop2, BIOS vectors, HW addr).
-    if TIER2_DOTWORD_RE.search(text):
-        return "tier2"
-    if TIER2_BIOS_RE.search(text):
-        return "tier2"
-    if TIER2_HW_ADDR_RE.search(text):
-        return "tier2"
+        return "cheat" if EMPTY_ASM_IS_CHEAT else "canonical"
+    # Check canonical regex signals first (.word cop2, BIOS vectors, HW addr).
+    if CANONICAL_DOTWORD_RE.search(text):
+        return "canonical"
+    if CANONICAL_BIOS_RE.search(text):
+        return "canonical"
+    if CANONICAL_HW_ADDR_RE.search(text):
+        return "canonical"
     # Opcode-based check: get the first whitespace-separated token.
     # Skip `.set noreorder` etc. directives.
     first = text.lstrip().split(None, 1)[0].lower()
     if first.startswith("."):
-        # Directive like .set, .word (handled above). Default tier 3.
-        return "tier3"
-    if first in TIER2_OPS:
-        return "tier2"
-    if first in TIER3_OPS:
-        return "tier3"
-    # Unknown opcode — default to tier 3 (workaround / unclassified is
+        # Directive like .set, .word (handled above). Default cheat.
+        return "cheat"
+    if first in CANONICAL_ASM_OPS:
+        return "canonical"
+    if first in CHEAT_ASM_OPS:
+        return "cheat"
+    # Unknown opcode — default to cheat (workaround / unclassified is
     # safer than letting unknowns pass as authentic).
-    return "tier3"
+    return "cheat"
 
 
 def extract_strings(parens_body: str) -> list[str]:
@@ -178,7 +180,7 @@ def split_template(template: str) -> list[str]:
 
 def scan_file(path: Path) -> list[dict]:
     """Scan one .c file. Returns list of records, one per __asm__ block.
-    Each record: {file, line, func, tier, template, opcode_first, is_glabel}.
+    Each record: {file, line, func, category, template, opcode_first, is_glabel}.
     """
     try:
         text = path.read_text(encoding="utf-8", errors="ignore")
@@ -228,14 +230,14 @@ def scan_file(path: Path) -> list[dict]:
                         func_stack.append((current_func, depth))
                         just_pushed = True
 
-        # Detect register-asm pins on this line (tier-3 workaround,
+        # Detect register-asm pins on this line (CHEAT workaround,
         # different KIND from __asm__ blocks).
         for pm in REGISTER_PIN_RE.finditer(line):
             records.append({
                 "file": str(path.relative_to(ROOT)),
                 "line": i + 1,
                 "func": current_func,
-                "tier": "tier3",
+                "category": "cheat",
                 "kind": "register_pin",
                 "templates": [pm.group(0)],
                 "first_op": "register-asm pin",
@@ -299,34 +301,34 @@ def scan_file(path: Path) -> list[dict]:
             first_colon = asm_body.find(":")
             template_body = asm_body if first_colon == -1 else asm_body[:first_colon]
             template_strs = extract_strings(template_body)
-            # Detect glabel/endlabel — tier 1 (canonical body), skip.
+            # Detect glabel/endlabel — CANONICAL-BODY (whole-function asm), skip.
             is_glabel = any(GLABEL_HINT_RE.search(s) for s in template_strs)
 
             if not is_glabel:
-                # Classify each instruction in the templates. If any tier-2
-                # opcode is present, the block is tier 2. Otherwise tier 3.
-                block_tier = "tier3"  # default for empty / unknown
+                # Classify each instruction in the templates. If any canonical
+                # opcode is present, the block is canonical. Otherwise cheat.
+                block_category = "cheat"  # default for empty / unknown
                 if not template_strs:
-                    block_tier = "tier3" if EMPTY_ASM_IS_TIER3 else "tier2"
+                    block_category = "cheat" if EMPTY_ASM_IS_CHEAT else "canonical"
                 else:
                     instrs = []
                     for t in template_strs:
                         instrs.extend(split_template(t))
                     if not instrs:
-                        block_tier = "tier3" if EMPTY_ASM_IS_TIER3 else "tier2"
+                        block_category = "cheat" if EMPTY_ASM_IS_CHEAT else "canonical"
                     else:
-                        per_instr_tiers = [classify_template(ins) for ins in instrs]
-                        if "tier2" in per_instr_tiers:
-                            block_tier = "tier2"
+                        per_instr_categories = [classify_template(ins) for ins in instrs]
+                        if "canonical" in per_instr_categories:
+                            block_category = "canonical"
                         else:
-                            block_tier = "tier3"
+                            block_category = "cheat"
                     first_op = instrs[0].split(None, 1)[0].lower() if instrs else ""
 
                 records.append({
                     "file": str(path.relative_to(ROOT)),
                     "line": i + 1,
                     "func": current_func,
-                    "tier": block_tier,
+                    "category": block_category,
                     "kind": "asm_block",
                     "templates": template_strs,
                     "first_op": instrs[0] if instrs else "",
@@ -366,51 +368,51 @@ def scan_file(path: Path) -> list[dict]:
 def summarize(records: list[dict]) -> dict:
     """Compute per-function and per-project rollup."""
     per_func: dict[str | None, dict[str, int]] = {}
-    tier2_total = 0
-    tier3_total = 0
-    tier3_pins_total = 0
-    tier3_blocks_total = 0
+    canonical_total = 0
+    cheat_total = 0
+    cheat_pins_total = 0
+    cheat_blocks_total = 0
     for r in records:
         # Key file-scope records per-file so distinct files don't merge.
         func = r["func"] or f"<file-scope:{r['file']}>"
         bucket = per_func.setdefault(func, {
-            "tier2": 0, "tier3": 0, "tier3_pins": 0, "tier3_blocks": 0,
+            "canonical": 0, "cheat": 0, "cheat_pins": 0, "cheat_blocks": 0,
             "file": r["file"],
         })
-        bucket[r["tier"]] += 1
-        if r["tier"] == "tier2":
-            tier2_total += 1
-        elif r["tier"] == "tier3":
-            tier3_total += 1
+        bucket[r["category"]] += 1
+        if r["category"] == "canonical":
+            canonical_total += 1
+        elif r["category"] == "cheat":
+            cheat_total += 1
             if r.get("kind") == "register_pin":
-                tier3_pins_total += 1
-                bucket["tier3_pins"] += 1
+                cheat_pins_total += 1
+                bucket["cheat_pins"] += 1
             else:
-                tier3_blocks_total += 1
-                bucket["tier3_blocks"] += 1
-    # Per-function tier label.
-    func_tiers: dict[str, list[dict]] = {"tier2": [], "tier3": [], "mixed": []}
+                cheat_blocks_total += 1
+                bucket["cheat_blocks"] += 1
+    # Per-function category label.
+    func_categories: dict[str, list[dict]] = {"canonical": [], "cheat": [], "mixed": []}
     for func, b in per_func.items():
-        if b["tier3"] > 0 and b["tier2"] > 0:
-            func_tiers["mixed"].append({"func": func, **b})
-        elif b["tier3"] > 0:
-            func_tiers["tier3"].append({"func": func, **b})
+        if b["cheat"] > 0 and b["canonical"] > 0:
+            func_categories["mixed"].append({"func": func, **b})
+        elif b["cheat"] > 0:
+            func_categories["cheat"].append({"func": func, **b})
         else:
-            func_tiers["tier2"].append({"func": func, **b})
+            func_categories["canonical"].append({"func": func, **b})
     return {
         "totals": {
-            "tier2_instances": tier2_total,
-            "tier3_instances": tier3_total,
-            "tier3_register_pins": tier3_pins_total,
-            "tier3_asm_blocks": tier3_blocks_total,
-            "tier2_funcs_only": len(func_tiers["tier2"]),
-            "tier3_funcs_only": len(func_tiers["tier3"]),
-            "mixed_funcs": len(func_tiers["mixed"]),
-            "gap_to_sotn_funcs": len(func_tiers["tier3"]) + len(func_tiers["mixed"]),
-            "gap_to_sotn_instances": tier3_total,
+            "canonical_instances": canonical_total,
+            "cheat_instances": cheat_total,
+            "cheat_register_pins": cheat_pins_total,
+            "cheat_asm_blocks": cheat_blocks_total,
+            "canonical_funcs_only": len(func_categories["canonical"]),
+            "cheat_funcs_only": len(func_categories["cheat"]),
+            "mixed_funcs": len(func_categories["mixed"]),
+            "gap_to_sotn_funcs": len(func_categories["cheat"]) + len(func_categories["mixed"]),
+            "gap_to_sotn_instances": cheat_total,
         },
         "per_func": per_func,
-        "func_tiers": func_tiers,
+        "func_categories": func_categories,
     }
 
 
@@ -422,38 +424,38 @@ def render_human(summary: dict, *, color: bool = False, show_funcs: bool = True)
     RESET = "\033[0m" if color else ""
     t = summary["totals"]
     out = []
-    out.append("=== inline-asm tier classification ===")
-    out.append(f"  {GREEN}tier-2 (authentic GTE/BIOS/HW){RESET}: "
-               f"{t['tier2_instances']} instances across "
-               f"{t['tier2_funcs_only']} pure-tier-2 funcs")
-    out.append(f"  {RED}tier-3 (toolchain workaround){RESET}:    "
-               f"{t['tier3_instances']} instances "
-               f"({t['tier3_asm_blocks']} __asm__ blocks + "
-               f"{t['tier3_register_pins']} register-asm pins) "
-               f"across {t['tier3_funcs_only']} pure-tier-3 funcs")
-    out.append(f"  {YELLOW}mixed (both tiers in one func){RESET}:    "
+    out.append("=== inline-asm classification ===")
+    out.append(f"  {GREEN}canonical (authentic GTE/BIOS/HW){RESET}: "
+               f"{t['canonical_instances']} instances across "
+               f"{t['canonical_funcs_only']} pure-canonical funcs")
+    out.append(f"  {RED}cheat (toolchain workaround){RESET}:    "
+               f"{t['cheat_instances']} instances "
+               f"({t['cheat_asm_blocks']} __asm__ blocks + "
+               f"{t['cheat_register_pins']} register-asm pins) "
+               f"across {t['cheat_funcs_only']} pure-cheat funcs")
+    out.append(f"  {YELLOW}mixed (both categories in one func){RESET}:    "
                f"{t['mixed_funcs']} funcs")
     out.append("")
     out.append(f"  {RED}GAP TO SOTN BAR{RESET}:")
-    out.append(f"    {t['gap_to_sotn_funcs']} functions use tier-3 inline asm")
-    out.append(f"    {t['gap_to_sotn_instances']} total tier-3 instances to retire")
+    out.append(f"    {t['gap_to_sotn_funcs']} functions use cheat inline asm")
+    out.append(f"    {t['gap_to_sotn_instances']} total cheat instances to retire")
     out.append("")
-    out.append(f"  {DIM}(SOTN-bar funcs use only tier-1 [canonical body], tier-2 "
-               f"[authentic asm], or tier-4 [pure C].){RESET}")
+    out.append(f"  {DIM}(COMPLETED funcs use only canonical-body asm, canonical inline "
+               f"asm, or pure C — never cheat asm.){RESET}")
     if show_funcs:
         out.append("")
-        out.append("--- tier-3 functions (sorted by instance count) ---")
-        t3 = sorted(summary["func_tiers"]["tier3"], key=lambda b: -b["tier3"])
-        for b in t3[:30]:
-            out.append(f"  {b['tier3']:3d}  {b['func']:<40s}  ({b['file']})")
-        if len(t3) > 30:
-            out.append(f"  ... and {len(t3) - 30} more")
-        if summary["func_tiers"]["mixed"]:
+        out.append("--- cheat-asm functions (sorted by instance count) ---")
+        cheats = sorted(summary["func_categories"]["cheat"], key=lambda b: -b["cheat"])
+        for b in cheats[:30]:
+            out.append(f"  {b['cheat']:3d}  {b['func']:<40s}  ({b['file']})")
+        if len(cheats) > 30:
+            out.append(f"  ... and {len(cheats) - 30} more")
+        if summary["func_categories"]["mixed"]:
             out.append("")
-            out.append("--- mixed-tier functions (have both tier-2 + tier-3) ---")
-            mx = sorted(summary["func_tiers"]["mixed"], key=lambda b: -b["tier3"])
+            out.append("--- mixed functions (have both canonical + cheat) ---")
+            mx = sorted(summary["func_categories"]["mixed"], key=lambda b: -b["cheat"])
             for b in mx[:20]:
-                out.append(f"  t2={b['tier2']:3d} t3={b['tier3']:3d}  "
+                out.append(f"  canon={b['canonical']:3d} cheat={b['cheat']:3d}  "
                            f"{b['func']:<40s}  ({b['file']})")
             if len(mx) > 20:
                 out.append(f"  ... and {len(mx) - 20} more")
@@ -491,7 +493,7 @@ def main() -> int:
             print(f"No __asm__ blocks found in function '{args.func}' across {len(files)} file(s).")
             return 0
         for r in records:
-            print(f"{r['file']}:{r['line']}  [{r['tier']}]  {r['first_op'][:60]}")
+            print(f"{r['file']}:{r['line']}  [{r['category']}]  {r['first_op'][:60]}")
         return 0
 
     summary = summarize(records)
@@ -500,8 +502,8 @@ def main() -> int:
         return 0
     if args.summary:
         t = summary["totals"]
-        print(f"Inline asm: {t['tier2_instances']} tier-2 (authentic), "
-              f"{t['tier3_instances']} tier-3 (workaround) "
+        print(f"Inline asm: {t['canonical_instances']} canonical (authentic), "
+              f"{t['cheat_instances']} cheat (workaround) "
               f"across {t['gap_to_sotn_funcs']} funcs. "
               f"SOTN gap: {t['gap_to_sotn_funcs']} funcs / "
               f"{t['gap_to_sotn_instances']} instances.")

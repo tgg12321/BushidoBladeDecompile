@@ -2,8 +2,9 @@
 <#
 .SYNOPSIS
   Headless driver for the BB2 decomp engine loop: runs `claude -p` once per
-  queue item to take the TOP function to Tier-4, with oracle + progress
-  guardrails and per-run metrics attribution.
+  queue item to take the TOP function to COMPLETED (pure C, or canonical asm
+  if genuinely hand-coded), with oracle + progress guardrails and per-run
+  metrics attribution.
 
 .DESCRIPTION
   Each iteration:
@@ -72,17 +73,18 @@ function Get-AuditDigest($sid) {
 
 $PROMPT = @'
 You are running the Bushido Blade 2 decomp engine loop HEADLESS. Work the TOP
-queue item to Tier-4 (100% pure C, zero regfix/asmfix/pins) following the loop
-in CLAUDE.md, then STOP. Run every engine command through the PowerShell wrapper:
-`& tools/eng.ps1 <subcommand>` (queue next | canonical <f> | sandbox <f> --disable all
-| retire <f> | queue done <f> | queue park <f> --reason "...").
+queue item to COMPLETED-C (100% pure C, zero regfix/asmfix/pins/cheat-asm)
+following the loop in CLAUDE.md, then STOP. Run every engine command through the
+PowerShell wrapper: `& tools/eng.ps1 <subcommand>` (queue next | canonical <f> |
+sandbox <f> --disable all | retire <f> | queue done <f> |
+queue park <f> --reason "...").
 
 Steps for the single top function:
   1. & tools/eng.ps1 queue next            (identify the function + file)
   2. & tools/eng.ps1 canonical <func>      (C -> continue; ASM-* -> park it, do not grind)
   3. & tools/eng.ps1 sandbox <func> --disable all   (honest pure-C distance)
   4. Edit src/<file>.c toward 0 in pure C (re-run step 3 as your gradient). If
-     retire fails with a tier-3 hint, strip the source __asm__ barrier it names.
+     retire fails with a cheat-asm hint, strip the source __asm__ barrier it names.
   5. & tools/eng.ps1 retire <func>         (drops rules + full SHA1 gate)
   6. & tools/eng.ps1 queue done <func>
   7. Register a finding if reusable (.claude/rules/ or memory/), then commit with
@@ -97,9 +99,12 @@ uncommitted tree that forces an escalation):
   - ALWAYS `git commit` your finished function before anything else. NEVER end
     your turn with uncommitted edits in the tree.
   - Do NOT push.
-If it cannot reach pure-C Tier-4 (canonical-asm needing user auth, or a genuine
-documented plateau), `& tools/eng.ps1 queue park <func> --reason "..."` instead
-of forcing it, commit the park, then stop.
+If it cannot reach pure-C COMPLETED-C (canonical-asm needing user auth, or a
+genuine documented plateau), `& tools/eng.ps1 queue park <func> --reason "..."`
+instead of forcing it, commit the park, then stop. NEVER commit a cheat (regfix,
+asmfix, cheat-asm, register pin, scheduling barrier) to "finish" the function —
+those make the bytes match but the function is NOT completed; the COMPLETED
+gate rejects them.
 '@
 
 function Write-RunRecord($rec) {

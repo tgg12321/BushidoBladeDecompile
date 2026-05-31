@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-31T13:24:48",
+  "generated_at": "2026-05-31T14:49:25",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -4503,7 +4503,7 @@
       "verdict": "C",
       "rules": 24,
       "status": "parked",
-      "park_reason": "Canonical jump-table infrastructure, not a register/codegen cheat. The 24 asmfix rules (15 renames of GCC .L labels to external jtbl_800108CC + 8 jlabel conversions + 1 delete_between stripping GCC's emitted table) are structurally required: the switch's jump table jtbl_800108CC sits in the FIRST rodata block (asm/data 800.rodata_pre.o, bb2.ld:25, addr 0x800108CC), while code6cac_b2.o's own .rodata links far later (bb2.ld:50). A GCC in-object jump table can only land in code6cac_b2's late rodata, never at 0x108CC, so referencing the external jtbl symbol + deleting GCC's table is mandatory. Zero-asmfix Tier-4 would need relocating the jtbl into code6cac_b2.c AND reordering the whole global rodata layout (project-wide, needs user sign-off). This is the project standard for the 26 jtbl-rename functions whose tables splat carved into asm/data rodata. Separately, sandbox cannot score this file: file-wide tier-3 stripping shifts maspsx indices and crashes a sibling fn's index-based regfix reorder rule (KeyError in tools/regfix.py)."
+      "park_reason": "Canonical jump-table infrastructure, not a register/codegen cheat. The 24 asmfix rules (15 renames of GCC .L labels to external jtbl_800108CC + 8 jlabel conversions + 1 delete_between stripping GCC's emitted table) are structurally required: the switch's jump table jtbl_800108CC sits in the FIRST rodata block (asm/data 800.rodata_pre.o, bb2.ld:25, addr 0x800108CC), while code6cac_b2.o's own .rodata links far later (bb2.ld:50). A GCC in-object jump table can only land in code6cac_b2's late rodata, never at 0x108CC, so referencing the external jtbl symbol + deleting GCC's table is mandatory. Zero-asmfix COMPLETED-C would need relocating the jtbl into code6cac_b2.c AND reordering the whole global rodata layout (project-wide, needs user sign-off). This is the project standard for the 26 jtbl-rename functions whose tables splat carved into asm/data rodata. Separately, sandbox cannot score this file: file-wide cheat-asm stripping shifts maspsx indices and crashes a sibling fn's index-based regfix reorder rule (KeyError in tools/regfix.py)."
     },
     {
       "func": "marionation_Exec",

@@ -110,7 +110,7 @@ match it, delete the entry (and commit the match).
 
 ### coli_HitPauseKatana_2 (178 insns, main.c) — SOLVED 2026-05-22 (b233af8)
 
-**Status:** 100% pure C, 0 diffs, 0 pins, 0 regfix, 0 asm. Tier 4. The `replace_with_asmfile` bridge is retired.
+**Status:** 100% pure C, 0 diffs, 0 pins, 0 regfix, 0 asm. COMPLETED-C. The `replace_with_asmfile` bridge is retired.
 
 **Winning technique — "split-initial-read":** the single post-branch read through a shared `base` pointer was forcing the wrong register allocation. Duplicating the read into BOTH arms of the `D_800A2CD4 & 1` flag branch — direct `D_800F7298[...]` indexing in the set arm, `base[...]` only in the else arm — stops GCC hoisting the arg2/arg3 halfword offsets across the switch. `mode`/`mask`/`base`/accum then land in `t1`/`t0`/`a0`/`t2` naturally with NO pins. `D_800A2CD4` and `D_800A28A0` marked `volatile` to match the target's repeated loads. Reusable form: `.claude/rules/split-read-defeats-hoist.md`.
 

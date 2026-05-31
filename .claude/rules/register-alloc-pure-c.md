@@ -11,10 +11,10 @@ metadata:
 When a function matches ONLY via `register T x asm("$N")` pins (or you are
 tempted to add one), the pin is almost always papering over a **global
 register-allocation tie that pure-C source structure can move.** Do NOT accept
-the pin (tier-3 debt) or fall back to a regfix register-rename until you have
+the pin (cheat-asm) or fall back to a regfix register-rename until you have
 run the diagnosis and tried the levers below. This retired ALL 5 pins on
 `saTan0Main` (main.c MIDI dispatcher, commit 6dba050) and the last pin on
-`InitHiraRmd_80047FBC` (commit 10becc3) — both to 100% pure C (tier-4). Several
+`InitHiraRmd_80047FBC` (commit 10becc3) — both to 100% pure C (COMPLETED-C). Several
 prior agents had given up on saTan0Main and left a pin.
 
 ## Step 0 — diagnose: is YOUR build or the target the anomaly?
@@ -102,7 +102,7 @@ a loop-local can move a prologue copy GCC otherwise copy-prop-folds away.
 > where the parameter isn't used afterward) are codegen-coercion cheats —
 > the same kind as a regfix register-rename, just spelled in C. SOTN's bar
 > rejects them. The engine's `volatile_cheats.find_dead_param_assigns`
-> detector flags every such statement; `mark_done` refuses Tier-4 for
+> detector flags every such statement; `mark_done` refuses completion for
 > affected functions.
 
 ### Why this changed
@@ -123,7 +123,7 @@ trick" was the error:
    compiler's analysis without that side-effect appearing in the emitted
    code. By the same logic, a register-asm pin "DCE's to zero emitted
    instructions" (the pin itself doesn't emit) and yet IS forbidden as
-   tier-3 debt.
+   cheat-asm.
 
 3. **SOTN doesn't use this.** SOTN matches functions either via natural C
    that produces the right RA, or via `INCLUDE_ASM` if RA can't be
@@ -146,7 +146,7 @@ When natural C doesn't reach the target register allocation:
 
 `InitHiraRmd_80047FBC` (commit `10becc3`) used this lever to fix the
 second pointer's `$s4` vs `$a0` allocation. With Lever D forbidden, that
-function's Tier-4 status needs re-evaluation. Queue regen will re-route it.
+function's COMPLETED-C status needs re-evaluation. Queue regen will re-route it.
 The dead-vars-local-array cluster has the same dependency — see
 [[dead-vars-local-array]] for the cluster's re-evaluation note.
 
@@ -201,7 +201,7 @@ cross-check closes it**. Pinned in full so a future resume doesn't re-derive it.
 ref count 3 → 4 ⇒ `floor_log2(4)=2`, `pri = 2 * 4 / 152 * 10000 = 526` (beats
 arg0's 256). Result: **tbl_125c lands in `$s3`** matching target; sandbox score
 drops 20 → 16. **But** the volatile read emits an extra `lw $v0,0($s3)`
-instruction (tier-3, non-matching). Proves the allocation IS C-reachable —
+instruction (cheat-asm, non-matching). Proves the allocation IS C-reachable —
 the lever just costs 1 insn that no non-side-effect-bearing C construct
 emulates (`(void)tbl_125c`, `s32 *t = tbl_125c`, `(s32)tbl_125c & 0`,
 sentinel pointer comparison — all DCE'd or CSE'd before priority calculation).
@@ -277,7 +277,7 @@ stands.
 | **Declaration-order swap** (tbl_125c declared first) | 20 | 0 | NO-OP — pseudo numbers for autos don't track decl order |
 | **Removing register asm pin in source** | 20 | 0 | NO-OP — pin already stripped in sandbox |
 | **Volatile-pointer-type tbl_125c decl** (`register volatile s32 *tbl_125c asm("s3")`) | 20 | 0 | NO-OP — volatile on POINTER, not deref data — no ref bump |
-| **`*(volatile s32 *)tbl_125c;` before debug_printf** (the prior session's lever, re-verified) | 16 | +1 | TIER-3 (cheat) — confirms allocation IS C-reachable, but emits an extra `lw` |
+| **`*(volatile s32 *)tbl_125c;` before debug_printf** (the prior session's lever, re-verified) | 16 | +1 | CHEAT-ASM — confirms allocation IS C-reachable, but emits an extra `lw` |
 | **arg1 preload via local** (`void *arg1_v = D_800F19C0;`) | 20 | 0 | CSE'd back |
 | **arg1 preload + pin `register asm("a1")`** | 20 | 0 | pin stripped in sandbox, CSE eats the local |
 | **Inline volatile cast on arg1** (`*(void* volatile*)&D_800F19C0`) | 22 | +2 | FAIL — emits extra addressing insns |
@@ -886,7 +886,7 @@ one new one specific to marionation_Exec:
    different callee-save mid-function" could shift the allocno priority enough.
 
 DO NOT (per this session's testing): rerun the volatile-bump lever (regressed);
-add tier-3 `__asm__` register pins (the existing `register asm("$6")` on `check`
+add cheat-asm `__asm__` register pins (the existing `register asm("$6")` on `check`
 is score-inert per sandbox); declare it impossible (matching C exists per
 [[difficult-is-not-impossible]], just not within the explored levers).
 
@@ -1010,7 +1010,7 @@ NOT viable, fully exhausted across sessions 5-10:
 ## Related
 - [[register-asm-pins]] — pin reliability; this rule is the pure-C alternative
   to its "regfix the register name" fallback. **Read both when fighting a pin.**
-- [[inline-move-aliasing]] — the asm escape valve (tier-3); prefer the pure-C
+- [[inline-move-aliasing]] — the asm escape valve (cheat-asm); prefer the pure-C
   levers here first.
 - [[dead-vars-local-array]] — Levers C and D worked end-to-end there.
 - [[minimize-regfix]] — every pin and rule is debt; these levers retire both.

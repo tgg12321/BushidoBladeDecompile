@@ -5,15 +5,15 @@ decisions. Each file is the raw output of a diagnostic tool run at a
 specific date, kept for reproducibility and as data for future agents
 who might re-question the same hypothesis.
 
-## `cc1psx_tier3_diagnostic_16funcs.csv` (2026-05-18)
+## `cc1psx_cheatasm_diagnostic_16funcs.csv` (2026-05-18)
 
 **Question:** Would patching `decompals/mips-gcc-2.7.2` to match Sony's
 proprietary `cc1psx` (the original compiler that built the BB2 binary)
-retire many of the 240 tier-3 functions, or are tier-3 functions mostly
+retire many of the 240 cheat-asm functions, or are cheat-asm functions mostly
 held back by C-source-reconstruction issues that no compiler change would
 fix?
 
-**Method:** For 16 representative tier-3 functions sampled across all
+**Method:** For 16 representative cheat-asm functions sampled across all
 source files, run `tools/cc1psx_diagnostic.py`:
 
 1. Auto-extract pure-C from `src/<file>.c` via
@@ -29,7 +29,7 @@ source files, run `tools/cc1psx_diagnostic.py`:
    offset (from the splat-produced asm/funcs/<func>.s comments).
 4. Categorize:
    - **BOTH_MATCH**: pure C already matches under both compilers
-     (function is misclassified tier-3)
+     (function is misclassified cheat-asm)
    - **COMPILER_FIXABLE**: cc1psx matches, decompals doesn't (patching
      decompals would help)
    - **C_SOURCE_ISSUE**: neither compiler matches (C reconstruction
@@ -47,7 +47,7 @@ source files, run `tools/cc1psx_diagnostic.py`:
 | DECOMPALS_ONLY | 0 | 0% |
 
 **Interpretation:** Compiler-patching would not retire any of the 16
-sampled tier-3 functions. The gap is C-source reconstruction, not
+sampled cheat-asm functions. The gap is C-source reconstruction, not
 compiler divergence. Even with Sony's actual original compiler, the
 pure-C reconstructions fail.
 
@@ -70,7 +70,7 @@ route should review this data first.
   manually.
 - The 1 BOTH_MATCH case (`func_8003FE40`) is a misclassification by
   `tools/classify_inline_asm.py` — the register-asm pin it counts as
-  tier-3 isn't load-bearing for matching. Trivial cleanup.
+  cheat-asm isn't load-bearing for matching. Trivial cleanup.
 
 **Reproducibility:**
 
@@ -92,8 +92,8 @@ bash tools/diagnose_batch.sh <more funcs>
 - `memory/rules/compiler-patch-low-roi.md` — rule derived from this data
 - `memory/rules/cc1psx-calibration-only.md` — prior project-level
   decision not to switch the build to cc1psx
-- `.claude/rules/inline-asm-tiers.md` — what tier-3 means + how it's
+- `.claude/rules/inline-asm-policy.md` — what cheat-asm means + how it's
   surfaced as the SOTN-bar gap metric
 - `.claude/rules/attempts-log-gate.md` — the only enforcement
   mechanism for the only path with measured non-zero ROI for
-  tier-3 retirement: per-function pure-C retry
+  cheat-asm retirement: per-function pure-C retry

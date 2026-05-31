@@ -1,7 +1,7 @@
 ---
 name: sandbox-zero-retire-fails
 paths: ["src/*.c", "regfix.txt"]
-description: "Engine gotcha: sandbox --disable all == 0 but retire FAILS the SHA1. Cause = a tier-3 barrier still in the C source that the regfix rules compensated for. Strip the barrier AND the rules."
+description: "Engine gotcha: sandbox --disable all == 0 but retire FAILS the SHA1. Cause = a cheat-asm barrier still in the C source that the regfix rules compensated for. Strip the barrier AND the rules."
 metadata:
   type: reference
 ---
@@ -20,8 +20,8 @@ grind. It is mechanical, and this is why.
 ## Why the two disagree
 
 `sandbox --disable all` does **two** things: disables regfix/asmfix rules **and
-strips tier-3 inline asm** (`strip_tier3: true` in its output — note the
-`tier3_stripped` count). `retire` does only **one**: it deletes the function's
+strips cheat-asm** (`strip_cheat_asm: true` in its output — note the
+`cheat_asm_stripped` count). `retire` does only **one**: it deletes the function's
 regfix/asmfix rules. It does **not** touch source-level `__asm__`.
 
 So the three builds are:
@@ -32,19 +32,19 @@ So the three builds are:
 | `sandbox --disable all` | **stripped** | disabled | = target ✓ → score 0 |
 | `retire` (rules only) | **present** | removed | **≠ target** ✗ |
 
-When a tier-3 barrier is present *without* the rules that were compensating for
+When a cheat-asm barrier is present *without* the rules that were compensating for
 it, codegen diverges. The sandbox hid this because it stripped the barrier too.
 The score-0 is real — it just describes the *fully* cheat-free build, which
 includes removing the source asm that `retire` leaves behind.
 
 ## The fix
 
-The function carries **two coupled cheats**: a source-level tier-3 `__asm__`
+The function carries **two coupled cheats**: a source-level cheat-asm `__asm__`
 barrier AND regfix rules that paper over the register shuffle the barrier
 causes. Remove **both**:
 
-1. Delete the tier-3 `__asm__` line from `src/<file>.c` (it is debt, not a
-   match — [[inline-asm-tiers]]).
+1. Delete the cheat-asm `__asm__` line from `src/<file>.c` (it is debt, not a
+   match — [[inline-asm-policy]]).
 2. `retire <func>` to drop the now-unneeded regfix rules and SHA1-gate.
 
 `sandbox --disable all == 0` is the proof the pure-C (no-barrier, no-rules) form
@@ -75,7 +75,7 @@ adjacent regs) across the next few instructions — and someone then added
 `subst "$3,..." "$2,..."`-style regfix rules to swap them back. Other shapes:
 `__asm__ volatile("" ::: "memory")` scheduling barriers, and the
 [[inline-move-aliasing]] `move %0,%1` idiom (now diagnostic-only). All are
-tier-3; none belong in a committed match.
+cheat-asm; none belong in a committed match.
 
 ## Confirmed case — func_800233AC (code6cac.c, 2026-05-26)
 
@@ -89,7 +89,7 @@ rules) → SHA1 == oracle, 100% pure C. The 4 rules existed *only* to undo the
 barrier's register shuffle.
 
 ## Related
-- [[inline-asm-tiers]] — tier-3 barriers are debt, never a committed match
+- [[inline-asm-policy]] — cheat-asm barriers are debt, never a committed match
 - [[inline-move-aliasing]] — the move-barrier variant (diagnostic-only)
 - [[register-alloc-pure-c]] — when the gap is *genuine* reg-alloc (no barrier to
   strip), these are the pure-C levers

@@ -60,9 +60,9 @@ def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
     if stem in cfg.EXPAND_LH_FILES:
         maspsx_flags += " --expand-lh"
 
-    # src_override: a modified copy of the .c (e.g. tier-3 inline-asm stripped)
-    # for the cheat-invisible sandbox. -Isrc is added so the override's includes
-    # resolve as if it were in src/ (cpp normally searches the source file's dir).
+    # src_override: a modified copy of the .c (e.g. cheat-asm stripped) for the
+    # cheat-invisible sandbox. -Isrc is added so the override's includes resolve
+    # as if it were in src/ (cpp normally searches the source file's dir).
     src_override = (cheat_overrides or {}).get("src_override")
     src_file = src_override or f"src/{stem}.c"
     cpp_extra = " -Isrc" if src_override else ""

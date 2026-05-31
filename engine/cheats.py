@@ -8,8 +8,8 @@ the (frozen, filtered) config the sandbox compiles against — the agent only
 edits C.
 
 `disable` modes:
-  "all"          drop every rule keyed by the function — the Tier-4 zero-rules
-                 target (honest pure-C distance).
+  "all"          drop every rule keyed by the function — the COMPLETED-C
+                 zero-rules target (honest pure-C distance).
   "lost-codegen" drop only the lost-codegen insert rules (insert/insert_after of
                  `addu $X,_,$zero|$0`) — the specific unauthorized asm-injection
                  the cheat-cleanup queue targets, leaving other rules in place.
@@ -26,10 +26,10 @@ INLINE_ASM_CANONICAL = "inline_asm_canonical.txt"
 
 
 def canonical_asm_funcs(path: str = INLINE_ASM_CANONICAL) -> set[str]:
-    """Functions authorized as canonical-asm (inline_asm_canonical.txt). Their
-    inline asm IS the accepted finished form, so the Tier-4 done-gate exempts
-    THEM (and only them) from the 'zero tier-3 inline asm' bar. Name is the first
-    whitespace-delimited token; blank/`#` lines ignored."""
+    """Functions authorized as COMPLETED-INLINE-ASM-CANONICAL
+    (inline_asm_canonical.txt). Their inline asm IS the accepted finished form,
+    so the COMPLETED gate exempts THEM (and only them) from the 'zero cheat-asm'
+    bar. Name is the first whitespace-delimited token; blank/`#` lines ignored."""
     p = Path(path)
     if not p.exists():
         return set()
@@ -72,8 +72,9 @@ def is_jtbl_infra(func: str, regfix: str = REGFIX, regfix2: str = REGFIX2,
     rules — every rule is rename/replace_first/delete_between, at least one
     references a `jtbl_` symbol, and there are ZERO regfix/regfix_stage2 rules
     (any regfix rule means a real register/codegen cheat is present). Such a
-    function cannot reach zero-rules Tier-4 without a project-wide rodata reorder,
-    so the queue routes it to `authorize` instead of handing it to a worker."""
+    function cannot reach zero-rules COMPLETED-C without a project-wide rodata
+    reorder, so the queue routes it to `authorize` instead of handing it to a
+    worker."""
     if func_rule_lines(func, regfix) or func_rule_lines(func, regfix2):
         return False
     asm = func_rule_lines(func, asmfix)

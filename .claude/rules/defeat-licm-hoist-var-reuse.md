@@ -31,8 +31,8 @@ invariant and cheap.
 invariant) but **spills it to the stack** (an extra `lw` each iteration) — wrong,
 the target keeps the base in a register. **Also FORBIDDEN as of 2026-05-31**:
 declaring a game-state global as `volatile` (or casting via `*(volatile T *)`) to
-coerce GCC's hoist analysis is a tier-3 cheat per [[inline-asm-tiers]] (expanded
-catalog). An `__asm__` barrier (`"=r"(x):"0"(x)`) also works but is **tier-3**
+coerce GCC's hoist analysis is a cheat per [[inline-asm-policy]] (expanded
+catalog). An `__asm__` barrier (`"=r"(x):"0"(x)`) also works but is **cheat-asm**
 (never committable); it's what the sibling `func_8003DE14` settled for — that
 function's status now needs re-evaluation under the expanded catalog.
 
@@ -87,4 +87,4 @@ target's exact register reuse and the loop.c movable rules.
 - [[split-read-defeats-hoist]] — the *trapping*-invariant hoist case (memory address);
   defeated by branch-duplication. This rule is the *non-trapping* case (register
   arithmetic), defeated by multi-set var reuse.
-- [[inline-asm-tiers]] — why the `__asm__` barrier alternative is tier-3, not a match
+- [[inline-asm-policy]] — why the `__asm__` barrier alternative is cheat-asm, not a match

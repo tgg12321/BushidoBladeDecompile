@@ -11,7 +11,7 @@ boundary:
     - it made no progress (neither completed nor parked = stuck), or
     - it PARKED for a reason the orchestrator can't mechanically confirm (novel).
   ACCEPT (proceed autonomously, log it) otherwise:
-    - a clean Tier-4 completion (oracle still matches), or
+    - a clean COMPLETED-C/CANONICAL completion (oracle still matches), or
     - a park the orchestrator CAN confirm (e.g. jtbl-infra: rules verified as
       canonical jump-table infrastructure).
 
@@ -93,7 +93,7 @@ def classify_outcome(rec: dict, item: dict | None) -> str:
         # committed progress + oracle intact == success, even if the session
         # later errored or hit the budget cutoff (is_error). The oracle is the
         # ground truth: a byte-identical build means the committed work is right.
-        return "TIER4-DONE"
+        return "COMPLETED"
     if rec.get("is_error"):
         return "ERROR"
     if (item or {}).get("status") == "parked" or rec.get("progressed"):
@@ -148,25 +148,25 @@ def review(rec: dict) -> dict:
 
     leftover = uncommitted_leftover()
 
-    # Tier-4 integrity: a COMMITTED match must not carry tier-3 inline asm
+    # Completion integrity: a COMMITTED match must not carry cheat-asm
     # (register pins / hardcoded-$N asm / scheduling barriers) unless the function
-    # is authorized canonical-asm. SHA1 can't catch this (tier-3 emits right bytes),
-    # so audit the committed source directly.
-    match_tier3 = 0
+    # is authorized COMPLETED-INLINE-ASM-CANONICAL. SHA1 can't catch this (cheat
+    # asm emits right bytes), so audit the committed source directly.
+    match_cheat_asm = 0
     if rec.get("advanced") and rec.get("file") and func not in cheats.canonical_asm_funcs():
         try:
-            match_tier3 = max(0, inlineasm.file_func_tier3_count(rec["file"], func))
+            match_cheat_asm = max(0, inlineasm.file_func_cheat_asm_count(rec["file"], func))
         except Exception:
-            match_tier3 = 0
+            match_cheat_asm = 0
 
     # apply the maximal-autonomy escalation boundary
     if leftover:
         # a dirty tree (uncommitted worker work, e.g. budget cutoff mid-function)
         # must be resolved before the loop continues — never run onto it.
         decision, why = "ESCALATE", f"uncommitted leftover ({len(leftover)} path(s)) — orchestrator must commit/revert before continuing"
-    elif match_tier3 > 0:
-        decision, why = "ESCALATE", (f"CHEATED MATCH: {func} committed with {match_tier3} tier-3 "
-                                     f"inline-asm block(s), non-canonical — NOT Tier-4 pure C")
+    elif match_cheat_asm > 0:
+        decision, why = "ESCALATE", (f"CHEATED MATCH: {func} committed with {match_cheat_asm} "
+                                     f"cheat-asm block(s), non-canonical — NOT COMPLETED-C pure C")
     elif outcome in ("ORACLE-BREAK", "ERROR", "STUCK"):
         decision, why = "ESCALATE", f"outcome={outcome}"
     elif outcome == "PARKED" and park_verdict != "AUTO-CONFIRMED":
@@ -180,7 +180,7 @@ def review(rec: dict) -> dict:
     return {
         "func": func, "file": rec.get("file"), "outcome": outcome,
         "decision": decision, "why": why, "uncommitted_leftover": leftover,
-        "match_tier3": match_tier3,
+        "match_cheat_asm": match_cheat_asm,
         "oracle_ok": rec.get("oracle_ok"), "model": rec.get("model"),
         "cost_usd": rec.get("cost_usd"), "num_turns": rec.get("num_turns"),
         "park_confirmation": park_verdict, "park_detail": park_detail,
@@ -204,8 +204,8 @@ def print_human(r: dict) -> None:
             print(f"    error breakdown: {a['error_breakdown']}")
     if r.get("uncommitted_leftover"):
         print(f"  UNCOMMITTED LEFTOVER ({len(r['uncommitted_leftover'])}): {r['uncommitted_leftover'][:6]}")
-    if r.get("match_tier3"):
-        print(f"  ** CHEATED MATCH: {r['match_tier3']} tier-3 inline-asm block(s) in committed source (non-canonical)")
+    if r.get("match_cheat_asm"):
+        print(f"  ** CHEATED MATCH: {r['match_cheat_asm']} cheat-asm block(s) in committed source (non-canonical)")
     if r.get("park_confirmation"):
         print(f"  PARK: [{r['park_confirmation']}] {r['park_detail']}")
     if r.get("commits"):

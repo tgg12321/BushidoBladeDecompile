@@ -1,7 +1,7 @@
 ---
 name: register-asm-pins
 paths: ["src/*.c"]
-description: "GCC 2.7.2 `register asm` pins are HINTS, not hard bindings. DIAGNOSTIC-ONLY: a pin/regfix is never a committed match -- strip it and find the C structure that makes GCC pick the register (see tier4-sota-standard)."
+description: "GCC 2.7.2 `register asm` pins are HINTS, not hard bindings. DIAGNOSTIC-ONLY: a pin/regfix is never a committed match -- strip it and find the C structure that makes GCC pick the register (see completion-standard)."
 metadata:
   type: reference
 ---
@@ -9,8 +9,8 @@ metadata:
 
 # Register-asm pin reliability — GCC 2.7.2
 
-> **Pins are DIAGNOSTIC-ONLY, never a committed match ([[tier4-sota-standard]]).**
-> A `register T x asm("$N")` pin left in the committed source is tier-3 debt, same
+> **Pins are DIAGNOSTIC-ONLY, never a committed match ([[completion-standard]]).**
+> A `register T x asm("$N")` pin left in the committed source is cheat-asm, same
 > kind as a regfix rule. Use a pin to *learn* which register the target wants; the
 > finished match must make GCC choose that register through **C structure**, with
 > the pin removed. The mechanics below (what holds vs. what's ignored) are for that
@@ -63,7 +63,7 @@ Two pins on the same register with overlapping liveness (`tbl asm("a0")` while
    Either way, the pin tells you which register target wants; that's its only job.
 2. **An ignored pin means your C structure is wrong — not that you should force it.**
    Adding more pins, regfix, or an `__asm__` move to "convince" GCC is forbidden
-   ([[tier4-sota-standard]]). Once a pin is ignored, it will keep being ignored.
+   ([[completion-standard]]). Once a pin is ignored, it will keep being ignored.
 3. **Find the C structure that makes GCC choose `regname` naturally** — declaration
    order, intermediate vars, the liveness pattern that agrees with target's allocator.
    A k-mer sibling that matched pin-free is the template. This is the actual work. See
@@ -71,7 +71,7 @@ Two pins on the same register with overlapping liveness (`tbl asm("a0")` while
    type, loop precompute, REG_ALLOC_ORDER diagnosis).
 4. **Strip every pin before committing.** A `register asm` pin in the committed result
    is unmatched WIP. Do **not** "regfix the register name instead" and do **not** route
-   the value through an `__asm__("move ...")` operand — both are tier-3 debt
+   the value through an `__asm__("move ...")` operand — both are cheat-asm
    ([[inline-move-aliasing]], now diagnostic-only). If the register genuinely cannot be
    reached in C, the function is either still-WIP (keep going) or, only for a physically
    un-compilable construct, canonical-asm ([[canonical-asm-retirement]]).

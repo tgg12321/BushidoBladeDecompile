@@ -26,7 +26,7 @@ func_XXX: replace_first "^j\t\\.L350$"             "j\t.L354"
 `sandbox --disable all` distance is tiny (1). objdump shows the only real diff is
 one case's polarity: target `beq $v1,$v0,<set_block>` (positive, with the value
 `li` in the delay slot, fall-through `j <default>`), your build `bne $v1,$v0,<default>`.
-Every other diff is just a whole-function address shift from tier-3 stripping.
+Every other diff is just a whole-function address shift from cheat-asm stripping.
 
 ## Cause
 

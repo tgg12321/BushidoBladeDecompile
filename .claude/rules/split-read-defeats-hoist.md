@@ -54,15 +54,15 @@ Three coupled effects, all from this one structural change:
    **❌ FORBIDDEN as of 2026-05-31.** Marking plain game-state globals
    `extern volatile T G;` or via `*(volatile T *)&G` casts is a codegen-coercion
    cheat — same kind as a regfix subst rule, just spelled in C. The engine's
-   `volatile_cheats` detector flags every such usage and refuses Tier-4. If
+   `volatile_cheats` detector flags every such usage and refuses completion. If
    restructuring the C around the branch (#1 + #2) doesn't yield the target's
    register allocation without the volatile coercion, the function is genuinely
    not pure-C-matchable and should be canonical-asm authorized or parked.
 
-Pins, synthetic switch assignments, and `__asm__` barriers were always tier-3
-debt. With the volatile lever (#3) now also forbidden, the remaining legit moves
+Pins, synthetic switch assignments, and `__asm__` barriers were always cheat-asm.
+With the volatile lever (#3) now also forbidden, the remaining legit moves
 are: (1) duplicate-the-read structural rewrite, and (2) direct-symbol indexing
-in the symbol-known arm. If those don't close it, the function is not Tier-4.
+in the symbol-known arm. If those don't close it, the function is not COMPLETED-C.
 
 ## The meta-lesson -- a register-rename plateau is a STRUCTURAL signal
 

@@ -1,8 +1,8 @@
 """Diff diagnosis — classify a function's cheat-disabled gap against the known
 immutable-plateau patterns (docs/IMMUTABLE_PLATEAUS.md), so the controller
 permutes only the genuinely-matchable subset instead of burning cycles on gaps
-the toolchain provably can't close. No model; scores the tier-3-stripped pure-C
-.o (reusing scan's, or building it on demand) vs the canonical .o.
+the toolchain provably can't close. No model; scores the cheat-asm-stripped
+pure-C .o (reusing scan's, or building it on demand) vs the canonical .o.
 
 Verdicts:
   MATCHABLE      gap has no immutable signature — worth the permuter rung.
@@ -72,14 +72,15 @@ def classify(pairs) -> tuple[str, str]:
 
 def diagnose(func: str, workdir: str = "tmp/scan") -> dict:
     stem = sandbox.func_file(func)
-    # tier-3-stripped object == the honest pure-C Tier-4 gap (regfix/asmfix off AND
-    # pins/inline-asm stripped), so the verdict triages the real pure-C work — not
-    # the residual gap that the tier-3 crutches leave behind. Build if absent.
-    stripped_o = f"{workdir}/{stem}/{stem}.tier4.o"
+    # cheat-asm-stripped object == the honest pure-C COMPLETED-C gap (regfix/asmfix
+    # off AND pins/inline-asm stripped), so the verdict triages the real pure-C
+    # work — not the residual gap that the cheat-asm crutches leave behind. Build
+    # if absent.
+    stripped_o = f"{workdir}/{stem}/{stem}.purec.o"
     ref_o = f"build/src/{stem}.o"
     if not Path(stripped_o).exists():
         sandbox.build_stripped_object(stem, stripped_o, f"{workdir}/{stem}/cfg",
-                                      strip_tier3=True)
+                                      strip_cheat_asm=True)
     pairs, nt, nb = diff_pairs(stripped_o, ref_o, func)
     verdict, reason = classify(pairs)
     return {"func": func, "file": stem, "verdict": verdict, "reason": reason,

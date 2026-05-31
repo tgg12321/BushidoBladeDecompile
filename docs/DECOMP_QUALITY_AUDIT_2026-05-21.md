@@ -87,14 +87,14 @@ Real C bodies that match only with build-time assistance, no inline asm:
 |---|---:|
 | whole-function asm body (`__asm__("glabel …")`) | 121 |
 | in-function `__asm__` blocks | 120 |
-| &nbsp;&nbsp;• tier-2 only (authentic GTE/BIOS/HW ops) | 10 |
-| &nbsp;&nbsp;• mixed tier-2 + tier-3 | 55 |
-| &nbsp;&nbsp;• tier-3 only (GPR scheduler/allocator workaround) | 55 |
+| &nbsp;&nbsp;• canonical inline asm only (authentic GTE/BIOS/HW ops) | 10 |
+| &nbsp;&nbsp;• mixed canonical + cheat-asm | 55 |
+| &nbsp;&nbsp;• cheat-asm only (GPR scheduler/allocator workaround) | 55 |
 | authorized in `inline_asm_canonical.txt` | 121 |
 
 The project's own `classify_inline_asm.py` reports the **"SOTN gap"** —
-non-canonical workaround debt — as **241 funcs / 1,411 tier-3 instances**
-(a different metric: tier-3 `__asm__` blocks + register pins, excluding
+non-canonical workaround debt — as **241 funcs / 1,411 cheat-asm instances**
+(a different metric: cheat-asm `__asm__` blocks + register pins, excluding
 canonical bodies; it coincidentally shares the 241 value).
 
 ### 4. Bridged — **142 functions**
@@ -135,7 +135,7 @@ bridged > inline-asm > assisted > pure.
 python3 tools/decomp_quality_audit.py            # full partition
 python3 tools/decomp_quality_audit.py --summary  # one-line headline
 python3 tools/decomp_quality_audit.py --json     # machine-readable
-python3 tools/classify_inline_asm.py             # inline-asm tier detail
+python3 tools/classify_inline_asm.py             # inline-asm category detail
 ```
 
 `tools/decomp_quality_audit.py` reads the compiled `build/src/*.o` symbol

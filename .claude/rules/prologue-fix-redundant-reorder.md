@@ -77,7 +77,7 @@ $s3,$s4,0xA` paired — the target order. prologue_fix (config entry present) mo
 rule; SHA1 == oracle. Pure C, zero source edits.
 
 ## Related
-- [[sandbox-zero-retire-fails]] — the inverse coupling (a *source* tier-3 barrier
+- [[sandbox-zero-retire-fails]] — the inverse coupling (a *source* cheat-asm barrier
   the rules undo); here the coupling is between a *config-stage* and regfix
 - [[register-alloc-pure-c]] — when the prologue diff is a genuine reg-alloc/
   scheduling gap with no prologue_fix entry to blame

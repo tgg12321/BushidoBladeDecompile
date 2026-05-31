@@ -30,10 +30,11 @@ import subprocess
 
 from . import buildconfig as cfg
 
-# Distance tiers for STRUCTURAL (non-opcode) hand-asm detection. The masked
-# cheat-invisible distance = how far GCC's natural pure-C output sits from the
-# target. Genuinely-C functions sit close (regfix does minor reg-alloc fix-ups);
-# hand-asm sits far (GCC would never emit that shape). Calibration knobs.
+# Distance thresholds for STRUCTURAL (non-opcode) hand-asm detection. The
+# masked cheat-invisible distance = how far GCC's natural pure-C output sits
+# from the target. Genuinely-C functions sit close (regfix does minor reg-alloc
+# fix-ups); hand-asm sits far (GCC would never emit that shape). Calibration
+# knobs.
 SUSPECT_DISTANCE = 50       # > this, gate=C: structural-asm SUSPECT (bounded attempt then PARK)
 NEAR_CERTAIN_DISTANCE = 500  # > this: GCC-implausible, near-certain hand-asm (auto-escalate)
 
@@ -192,8 +193,8 @@ def classify_full(func: str) -> dict:
         return quick  # definitive opcode or no-target — distance irrelevant
     from . import sandbox  # local import: keeps the opcode path build-free
     try:
-        # true pure-C distance: regfix/asmfix off AND tier-3 inline-asm stripped
-        r = sandbox.sandbox_score(func, disable="all", strip_tier3=True)
+        # true pure-C distance: regfix/asmfix off AND cheat-asm stripped
+        r = sandbox.sandbox_score(func, disable="all", strip_cheat_asm=True)
     except (KeyError, FileNotFoundError, RuntimeError) as e:
         quick["reason"] += f" (distance unavailable: {e})"
         return quick

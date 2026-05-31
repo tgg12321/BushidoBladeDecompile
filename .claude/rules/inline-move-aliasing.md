@@ -15,8 +15,8 @@ metadata:
 > have replicated the lost_codegen regfix cheat in C source — see
 > [[inline-asm-injection]]. The audit will block it.
 
-> **RETIRED AS AN END STATE (2026-05-21).** Per [[tier4-sota-standard]], an
-> `inline_move_aliasing` block is **tier-3 debt — never a committed match.** The
+> **RETIRED AS AN END STATE (2026-05-21).** Per [[completion-standard]], an
+> `inline_move_aliasing` block is **cheat-asm — never a committed match.** The
 > old "escape valve with an `INLINE_MOVE_ALIASING:` comment + `Pure-C attempts:`
 > block" allowance is **gone.** You may still use this idiom **diagnostically** —
 > to observe which base/destination registers and ordering the target wants — but
@@ -24,7 +24,7 @@ metadata:
 > `__asm__("move ...")` and the `register asm` pins **removed.** Everything below
 > explains the pattern target emits and *why* GCC folds it: treat it as a map of
 > the gap you must close in pure C, not a snippet to ship. (GTE wrappers keep
-> their `ctc2`/`mtc2`/`lwc2` ops — tier-2 canonical — but the register *setup*
+> their `ctc2`/`mtc2`/`lwc2` ops — canonical inline asm — but the register *setup*
 > around them must be pure C.)
 
 # Required form (auditor-enforced)
@@ -111,7 +111,7 @@ Exactly target's three-step pattern.
 # NOT a compliant end state (was §6.1)
 
 This idiom used to be filed under "single-instruction asm for codegen control."
-**It no longer counts as a finished match** ([[tier4-sota-standard]],
+**It no longer counts as a finished match** ([[completion-standard]],
 [[inline-asm-allowed]]). The `move`/`addu` it emits is a register-allocation
 workaround — GCC *can* produce that copy from C, so the job is to find the C
 structure that makes GCC emit it, not to inject the instruction. Use the idiom

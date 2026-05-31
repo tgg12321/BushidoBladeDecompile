@@ -69,9 +69,9 @@ def main() -> int:
     sbp = sub.add_parser("sandbox", help="cheat-invisible score for a function")
     sbp.add_argument("func")
     sbp.add_argument("--disable", choices=["all", "lost-codegen", "none"], default="lost-codegen")
-    sbp.add_argument("--keep-tier3", action="store_true",
-                     help="do NOT strip tier-3 pins/inline-asm (default: stripped, "
-                          "so the score is the honest pure-C Tier-4 distance)")
+    sbp.add_argument("--keep-cheat-asm", action="store_true",
+                     help="do NOT strip cheat-asm pins/inline-asm (default: stripped, "
+                          "so the score is the honest pure-C COMPLETED-C distance)")
     scp = sub.add_parser("scan-redundant", help="find functions whose rules are redundant (exact byte-identity)")
     g = scp.add_mutually_exclusive_group(required=True)
     g.add_argument("--file", help="scan one src file stem")
@@ -90,7 +90,7 @@ def main() -> int:
     sub.add_parser("canonical-scan", help="classify every function as C / ASM-WHOLE / ASM-PARTIAL")
     sub.add_parser("test", help="run the engine regression suite (fast pure-logic + build-read tiers)")
 
-    qp = sub.add_parser("queue", help="consolidated Tier-4 work queue — work the TOP item to done")
+    qp = sub.add_parser("queue", help="consolidated INCOMPLETE-work queue — work the TOP item to done")
     qp.add_argument("action", choices=["next", "done", "park", "status", "regen"])
     qp.add_argument("func", nargs="?", help="function name (required for done/park)")
     qp.add_argument("--reason", default="", help="reason (for park)")
@@ -153,7 +153,8 @@ def main() -> int:
         return 0 if ok else 1
 
     if a.cmd == "sandbox":
-        r = SB.sandbox_score(a.func, disable=a.disable, strip_tier3=not a.keep_tier3)
+        r = SB.sandbox_score(a.func, disable=a.disable,
+                             strip_cheat_asm=not a.keep_cheat_asm)
         print(json.dumps(r, indent=2))
         MET.record_event("sandbox", a.func, r, extra={"disable": a.disable})
         return 0

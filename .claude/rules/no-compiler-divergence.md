@@ -65,7 +65,7 @@ in `[[register-alloc-pure-c]]` / `[[cross-jump-store-tail-merge]]` /
 function genuinely won't close, the only valid escalations are:
 
 1. **Canonical-asm authorization** ([[canonical-asm-retirement]]) — user
-   sign-off for tier-1 hand-coded asm for a construct with no C form. NOT
+   sign-off for canonical-body hand-coded asm for a construct with no C form. NOT
    for "GCC won't produce this." For genuinely no-C-form constructs only.
 2. **Project-wide architecture decisions** — e.g. rodata reorder
    ([[jtbl-rodata-split-infrastructure]]), per-file flag list extension

@@ -56,7 +56,7 @@ MAX_BYTES = 24_576   # docs say 25,600 (25KB), leave 1KB headroom
 
 # Directory descriptions and ordering for the index header.
 DIR_ORDER = [
-    ("rules",     "Durable standards + principles — Tier-4 bar, anti-cheat, canonical-asm, programmatic-first."),
+    ("rules",     "Durable standards + principles — COMPLETED-C bar, anti-cheat, canonical-asm, programmatic-first."),
     ("workflow",  "Harness/environment mechanics — WSL build invocation, LF line endings."),
     ("recipes",   "Named technique playbooks. Load on demand."),
     ("reference", "Durable technical reference — matching playbook, toolchain facts (cc1/maspsx/m2c), scoring. Load on demand."),

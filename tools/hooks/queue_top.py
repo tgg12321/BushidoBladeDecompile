@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""SessionStart hook — surface the TOP of the consolidated Tier-4 work queue.
+"""SessionStart hook — surface the TOP of the consolidated INCOMPLETE-work queue.
 
 Every session opens knowing exactly what to work, with zero triage / no hunting:
-the agent works the top active item to Tier-4, then takes the next. Reads the
-committed engine/queue.json directly (NO toolchain / NO build — fast and always
-safe). Never blocks the session; any error is swallowed (stdlib only, mirrors
-metrics_preflight.py's non-interference contract).
+the agent works the top active item to COMPLETED-C (or, only if the function is
+genuinely hand-coded asm, COMPLETED-INLINE-ASM-CANONICAL), then takes the next.
+Reads the committed engine/queue.json directly (NO toolchain / NO build — fast
+and always safe). Never blocks the session; any error is swallowed (stdlib only,
+mirrors metrics_preflight.py's non-interference contract).
 """
 import json
 import os
@@ -39,7 +40,7 @@ def main() -> int:
             f"{top.get('rules', 0)} regfix/asmfix rule(s) | {active} active remaining.\n"
             f"        Loop: canonical {top['func']} -> sandbox {top['func']} --disable all "
             f"(edit src toward 0) -> retire/verify-oracle -> queue done {top['func']} -> "
-            f"commit. Finish THIS to Tier-4 before taking another. "
+            f"commit. Finish THIS to COMPLETED-C before taking another. "
             f"(`engine queue next` for the full record.)")
     except Exception:
         pass

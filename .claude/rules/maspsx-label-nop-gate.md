@@ -10,7 +10,7 @@ metadata:
 
 ## Symptom
 
-A function carries a single tier-3 `__asm__("nop")` (no rules, sandbox
+A function carries a single cheat-asm `__asm__("nop")` (no rules, sandbox
 `--disable all` == 0). The nop sits inside a loop right before a load:
 
 ```c
@@ -43,7 +43,7 @@ rather than deleting a source line. The tell is identical: `canonical` → C, pu
 ## This is now a PURE-C path (not a park)
 
 As of 2026-05-26, maspsx has a **per-function-scoped** gate for exactly this
-load-consumer case. To retire the function to Tier-4:
+load-consumer case. To retire the function to COMPLETED-C:
 
 1. Add the function name to **`maspsx_label_nop_funcs.txt`** (one per line).
 2. Remove the compensator: delete the source `__asm__("nop");` **or**, if it was a
@@ -82,7 +82,7 @@ function is still safe **as long as the sibling isn't also listed** — verify w
 `verify-oracle --rebuild` (the oracle catches any cascade).
 
 ## Related
-- [[inline-asm-tiers]] — the bare `__asm__("nop")` was tier-3 debt
+- [[inline-asm-policy]] — the bare `__asm__("nop")` was cheat-asm
 - [[sandbox-zero-retire-fails]] — sandbox 0 + a lone source nop is the tell
 - [[loop-rotation-two-shift]] — a different loop-codegen retirement in the same
   file family (main.c bit-search loops)

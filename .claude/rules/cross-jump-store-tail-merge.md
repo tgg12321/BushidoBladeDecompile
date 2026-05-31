@@ -56,7 +56,7 @@ the tails *not* mergeable.
 You CANNOT defeat it by:
 - inserting a dead pure-C statement after the store (DCE'd before jump2 -> no effect);
 - a `*(volatile*)` store (stays separate but emits wrong `la`-form addressing -> a
-  different diff; this is the tier-3 cheat the de-cheat is removing);
+  different diff; this is the cheat-asm the de-cheat is removing);
 - distinct goto labels that all forward to `return G` (GCC coalesces e1/e2 back into
   one block -> re-merges the pair).
 
@@ -92,7 +92,7 @@ Three error paths each `D_800A14E4 = -1` then return the re-read global; success
 `D_800A14E4 = D_800A14D0`. Original committed source used `goto end` for all three +
 a `*(volatile*)` store on tail 1 + an `__asm__("")` barrier on tail 2 (the barrier is
 an opaque insn that survives to jump2 and breaks the suffix) + regfix to fix the
-volatile addressing — all tier-3 debt. Pure-C distance with those stripped: 15, of
+volatile addressing — all cheat-asm. Pure-C distance with those stripped: 15, of
 which the whole gap was the 3-way store-tail merge.
 
 The mix (tail1 `goto end1`, tail2 inline `return`, tail3 `goto end3`, success
@@ -362,7 +362,7 @@ success path) AND a sweep of inline-return variants. Result: the documented sys_
 move REGRESSES (session-12's hypothesis was wrong — the post-site2 a0 use is from
 func_80080390, not sys_VSync). But a NEW lever was found.
 
-**The lever: dual inline-return + drop tier-3 `__asm__("")` barrier.** Two forms tested
+**The lever: dual inline-return + drop cheat-asm `__asm__("")` barrier.** Two forms tested
 this session, combined score-8 vs the committed honest-distance-15 baseline:
 
 ```c
@@ -392,7 +392,7 @@ BOTH mode-path AND tail2, goto at tail3, fall-through at success. Result:
 - site2 still NOT filling (no JF-LOOP path on success — same as session-12)
 - v0/v1 collision in mode-path tail (mine: `li v1,-1; sw v1; j; li v0` ≠ target's
   `li v0; sw v0; j; nop`)
-- Drops 1 of 3 tier-3 cheats (`__asm__("")` gone; volatiles on D_800A1500 and D_800A14E4 remain)
+- Drops 1 of 3 cheats (`__asm__("")` gone; volatiles on D_800A1500 and D_800A14E4 remain)
 
 ### Variants tested this session (all measured negative for further improvement)
 
@@ -460,19 +460,19 @@ baseline doesn't translate to honest sandbox progress.
 ### What the session-13 V2b finding implies for commit strategy
 
 The V2b + inline_ret_mode form is a real ~50% honest-distance reduction (15 → 8) AND
-drops 1 of 3 tier-3 cheats. But:
+drops 1 of 3 cheats. But:
 - The 13 existing regfix/asmfix rules are calibrated for the committed form's
   maspsx indices; V2b shifts them.
 - Committing V2b requires REWRITING the rules for the new structure.
-- Result would NOT be Tier-4 (still has 2 tier-3 volatiles + rules); just fewer cheats.
+- Result would NOT be COMPLETED-C (still has 2 cheat-asm volatiles + rules); just fewer cheats.
 
-The user policy is "Tier 4 SOTN standard moving forward". A partial cheat reduction
-that doesn't reach Tier-4 doesn't satisfy that policy, so V2b is best documented as
+The user policy is "COMPLETED-C SOTN standard moving forward". A partial cheat reduction
+that doesn't reach COMPLETED-C doesn't satisfy that policy, so V2b is best documented as
 WIP-progress, not committed.
 
 ### Status (session 13)
 
-Honest pure-C floor LOWERED 15 → 8 via V2b + inline_ret_mode. Still NOT Tier-4 (2
+Honest pure-C floor LOWERED 15 → 8 via V2b + inline_ret_mode. Still NOT COMPLETED-C (2
 missing eager fills + v0/v1 cascade remain — same structural ceiling session-12
 documented but at a different masked-distance floor).
 

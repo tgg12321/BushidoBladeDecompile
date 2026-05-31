@@ -11,7 +11,7 @@ metadata:
 ## The pattern
 
 A queue item routes `C`, shows `pure-C distance 0`, and carries a cluster of
-**asmfix.txt** rules (no regfix, no tier-3 pins) shaped like:
+**asmfix.txt** rules (no regfix, no cheat-asm pins) shaped like:
 
 ```
 func: rename ".L28" "jtbl_800108CC"          # GCC auto-label -> external jtbl symbol
@@ -59,7 +59,7 @@ Relocate the jtbl out of `asm/data/*.rodata.s` into the C file **and** reorder
 the whole global rodata layout so the C file's `.rodata` lands at the jtbl's
 address — displacing every other file's rodata. Project-wide architectural
 change; needs user sign-off. Do **not** attempt it inside a single-function
-Tier-4 pass.
+completion pass.
 
 ## Action — now automatic
 
@@ -78,8 +78,8 @@ blocker.
 
 ## Bonus gotcha: the sandbox can't even score these files
 
-`sandbox <func> --disable all` does a **whole-file** build with tier-3 inline
-asm stripped. Stripping shifts maspsx instruction indices, which breaks any
+`sandbox <func> --disable all` does a **whole-file** build with cheat-asm
+stripped. Stripping shifts maspsx instruction indices, which breaks any
 **sibling** function in the same file whose regfix uses an **index-based
 `reorder`** rule — `tools/regfix.py` raises `KeyError` on the now-missing index.
 With no pipefail in the pipeline, the crash truncates the stream, `as` "succeeds"
@@ -94,9 +94,9 @@ case labels, 8 jlabel conversions, 1 delete_between). jtbl_800108CC at 0x800108C
 is a dlabel in `asm/data/101C.rodata.s` -> `101C.rodata_pre*.o` (bb2.ld:29-31);
 code6cac_b2.o(.rodata) = bb2.ld:50. Sandbox
 errored `KeyError: replay_camera_rob_back_loose2 not found` (sibling
-`func_8003D39C` reorder rule crashed regfix after tier-3 strip). Parked.
+`func_8003D39C` reorder rule crashed regfix after cheat-asm strip). Parked.
 
 ## Related
-- [[inline-asm-tiers]] — tier-1/2 canonical asm; this is the rodata analogue
+- [[inline-asm-policy]] — canonical inline / canonical-body asm; this is the rodata analogue
 - [[canonical-asm-retirement]] — when asm/infra is the legitimate end state
 - [[lost-codegen-insert-cheat]] — the asmfix rules that ARE cheats (contrast)

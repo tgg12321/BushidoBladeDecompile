@@ -1,10 +1,10 @@
 """Detector + stripper for `volatile` codegen-coercion cheats.
 
-These patterns produce the same kind of byte coercion as a tier-3 `__asm__`
+These patterns produce the same kind of byte coercion as a cheat-asm `__asm__`
 barrier or a `register T x asm("$N")` pin — they force GCC's scheduler/CSE/
 register-allocator to emit a specific shape that the natural source wouldn't —
-yet escape the existing `engine/inlineasm.py` tier-3 detector (which only walks
-`__asm__(...)` blocks and `register T x asm("Y")` pins).
+yet escape the existing `engine/inlineasm.py` cheat-asm detector (which only
+walks `__asm__(...)` blocks and `register T x asm("Y")` pins).
 
 THREE coercion patterns this module catches:
 
@@ -105,7 +105,7 @@ _NONVOL_ALIAS_RENAME_RE = re.compile(
 )
 
 # Pattern 5: macro `#define NAME ... __asm__(...)`. The C preprocessor expands
-# uses to `__asm__(...)` AT EVERY USE SITE, but the existing tier-3 detector
+# uses to `__asm__(...)` AT EVERY USE SITE, but the existing cheat-asm detector
 # (engine/inlineasm.py:_strip_spans) explicitly SKIPS `#define` lines to avoid
 # breaking macro uses. So a macro-hidden inline asm injection slips past
 # detection — yet at every USE site, the expanded asm runs in the build.

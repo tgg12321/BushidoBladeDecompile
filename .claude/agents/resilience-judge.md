@@ -105,7 +105,7 @@ particular, BLOCK these — they are give-ups no matter how reasonable they soun
       >> RIGOR RULE — "it's the compiler" is the single most common disguised
          give-up, and the project has SETTLED it empirically. Per
          memory/rules/compiler-patch-low-roi.md: 8/8 sampled functions are
-         BYTE-IDENTICAL between the KMC and PSX gcc forks, and 0/16 tier-3
+         BYTE-IDENTICAL between the KMC and PSX gcc forks, and 0/16 cheat-asm
          functions are fixable by cc1psx (Sony's actual original compiler).
          **THE COMPILER IS NEVER THE VARIABLE — the gap is ALWAYS the C source
          structure.** So any "compiler / fork / toolchain divergence / value-

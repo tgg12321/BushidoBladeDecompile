@@ -117,13 +117,13 @@ The +1 form is the structural minimum within this lever class.
 ## Committed state (UPDATED 2026-05-30)
 
 **Commit `4a9d705`**: pin removal applied. The chain lever is now
-committed to src/system.c — the 2 tier-3 `register asm` pins on
+committed to src/system.c — the 2 cheat-asm `register asm` pins on
 idx_1495 ($s4) and tbl_125c ($s3) are GONE. The source is pure C; the
 chain lever produces the same maspsx output AT THE SAME INDICES as the
 old pin-cheated form, so the existing 5 regfix rules still apply
 cleanly. `verify-oracle --rebuild` SHA1 == oracle ✓.
 
-The function is NOT FULL Tier-4 yet — the 5 regfix rules (4 substs +
+The function is NOT FULL COMPLETED-C yet — the 5 regfix rules (4 substs +
 1 reorder, papering over the byte-chain register cascade $v1→$a0)
 remain. To retire those rules, the sandbox-7 residual must close to 0;
 the residual is the byte-chain pseudo getting $v1 instead of target's
@@ -131,7 +131,7 @@ $a0, which is GCC's `local-alloc.c` `qty_compare` priority/tiebreak
 decision and the C-source space (sweep + permuter 93k iters) has not
 yet reached.
 
-But this commit IS real Tier-4 progress: 2 tier-3 cheats permanently
+But this commit IS real COMPLETED-C progress: 2 cheat-asm pins permanently
 gone, oracle preserved.
 
 ## Bonus: the chain lever transfers to marionation_Exec (sandbox 56 → 45)

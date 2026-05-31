@@ -10,7 +10,7 @@ metadata:
 
 ## Symptom
 
-A function carries one tier-3 `__asm__ volatile("" ::: "memory")` barrier and
+A function carries one cheat-asm `__asm__ volatile("" ::: "memory")` barrier and
 **zero** regfix/asmfix rules. `canonical` routes `C`; `sandbox --disable all`
 (which strips the barrier) reads a small non-zero distance (e.g. 2). An
 index-aligned objdump of `build/` (barrier present) vs the stripped sandbox
@@ -37,8 +37,8 @@ The lever: `mostly_true_jump`'s loop-exit heuristic keys off
 poll loop has no loop note, so reorg never sees the branch as a loop exit,
 mispredicts it taken, and steals the target op into the slot. A prior agent papered
 over this with the `__asm__ volatile("" ::: "memory")` barrier (an un-stealable
-first insn at the target) instead of fixing the loop form. The barrier is tier-3
-debt ([[inline-asm-tiers]]); the sandbox strips it, so it can't move the score —
+first insn at the target) instead of fixing the loop form. The barrier is cheat-asm
+([[inline-asm-policy]]); the sandbox strips it, so it can't move the score —
 `queue done` refuses it.
 
 ## Fix — express the polling as genuine nested `while`/`do` loops
@@ -101,7 +101,7 @@ s0) 0))` stolen into its delay slot. Goto-formed poll loop → no `NOTE_INSN_LOO
 - [[sandbox-zero-retire-fails]] — sibling "barrier + rules, sandbox 0, retire fails";
   there the barrier causes a register shuffle the *rules* undo. Here there are no
   rules — the barrier only blocks a delay-slot steal, fixed by loop *form*.
-- [[inline-asm-tiers]] — the `__asm__ volatile("" ::: "memory")` barrier is tier-3 debt.
+- [[inline-asm-policy]] — the `__asm__ volatile("" ::: "memory")` barrier is cheat-asm.
 - [[store-before-jal]] — another "C statement structure drives delay-slot scheduling".
 - [[switch-vs-ifchain-branch-sense]] — another "restore the real C control structure
   (switch / loop) and GCC's codegen falls out" case.

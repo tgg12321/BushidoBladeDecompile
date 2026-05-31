@@ -59,7 +59,7 @@ source produced — it is a latent landmine for ANY edit to ANY earlier function
 ## Resolution — a POLICY decision (escalate in headless)
 
 Two ways forward, both touching a **second function**, so they are out of scope
-for a single-function Tier-4 pass and should be surfaced to the user:
+for a single-function completion pass and should be surfaced to the user:
 
 - **Mechanical drift repair:** bump the sibling's hardcoded label by the delta
   (`.L280-4` → `.L(280+N)-4`). Verify by full SHA1 (the oracle is the only proof

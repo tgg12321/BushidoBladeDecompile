@@ -1,7 +1,7 @@
 ---
 name: dead-vars-local-array
 paths: ["src/text1b.c", "src/*.c"]
-description: "FORBIDDEN as of 2026-05-31. Declaring unused local arrays (`s32 buf[N];`) to force GCC to reserve frame bytes is a codegen-coercion cheat. SOTN rejects it. The engine flags every unused fixed-size local with names like `pad`, `_pad`, `buf`, `w`, `tail` and refuses Tier-4."
+description: "FORBIDDEN as of 2026-05-31. Declaring unused local arrays (`s32 buf[N];`) to force GCC to reserve frame bytes is a codegen-coercion cheat. SOTN rejects it. The engine flags every unused fixed-size local with names like `pad`, `_pad`, `buf`, `w`, `tail` and refuses completion."
 metadata:
   type: reference
   status: forbidden
@@ -13,10 +13,10 @@ metadata:
 
 **This technique is FORBIDDEN as of 2026-05-31** (commit `1cd5c64`+ wires the
 detector). A function carrying any unused fixed-size local array is no longer
-eligible for Tier-4 status. The engine's
+eligible for COMPLETED-C status. The engine's
 `engine/volatile_cheats.find_unused_local_arrays` detector flags every such
-declaration; `engine/inlineasm.func_tier3_count` includes the count;
-`engine/queue.mark_done` refuses to record Tier-4.
+declaration; `engine/inlineasm.func_cheat_asm_count` includes the count;
+`engine/queue.mark_done` refuses to record completion.
 
 The detector excludes struct-member declarations and arrays that ARE
 referenced later in the body. Only genuinely-unused fixed-size locals are flagged.
@@ -55,14 +55,14 @@ locals regardless of use. The flaw in that argument:
 
 If a function's frame size can't be matched in pure C with locals that have
 **clear semantic meaning** (you can name what they hold from reading the
-function's asm and callers), the function is not Tier-4-matchable in pure C:
+function's asm and callers), the function is not COMPLETED-C-matchable in pure C:
 
 1. **`queue park`** the function with a clear rationale.
 2. **Request canonical-asm authorization** via `inline_asm_canonical.txt`
    if the function is genuinely hand-written or has no recoverable C
    structure.
 3. **Do NOT** add a `s32 pad[N];` workaround. Do NOT add `s32 buf[N];`.
-   The detector will refuse Tier-4.
+   The detector will refuse completion.
 
 Functions that legitimately use stack locals are unaffected — their arrays
 are referenced in the body and the detector skips them.
@@ -78,7 +78,7 @@ are referenced in the body and the detector skips them.
   `text1a_c.c`, `code6cac_*.c`
 
 These functions will be re-routed to `active` by `queue regen` and need a
-genuine Tier-4 close (or canonical-asm authorization).
+genuine COMPLETED-C close (or canonical-asm authorization).
 
 ## InitHiraRmd_80047FBC — the case the original rule was written for
 
@@ -86,7 +86,7 @@ The function genuinely matched in pure C **without** the `s32 buf[8];` trick
 once the other levers (pointer-walk prologue staging + dead `arg0 = 0;` —
 itself now also forbidden, see [[register-alloc-pure-c]] Lever D update +
 loop-local precompute) were applied. With Lever D also forbidden, this
-cluster's Tier-4 status needs re-evaluation; queue regen will re-route it.
+cluster's COMPLETED-C status needs re-evaluation; queue regen will re-route it.
 
 ## Related
 
@@ -94,10 +94,10 @@ cluster's Tier-4 status needs re-evaluation; queue regen will re-route it.
   also now forbidden.
 - [[split-read-defeats-hoist]] — companion "mark globals volatile" is also
   now forbidden.
-- [[inline-asm-tiers]] — the tier framework that volatile/frame coercion
-  cheats now fall under (tier-3 debt, never Tier-4).
+- [[inline-asm-policy]] — the policy framework that volatile/frame coercion
+  cheats now fall under (cheat-asm, never COMPLETED-C).
 - [[canonical-asm-retirement]] — the LEGITIMATE escape for functions that
-  genuinely cannot reach pure-C Tier-4.
+  genuinely cannot reach pure-C COMPLETED-C.
 
 ---
 
@@ -114,6 +114,6 @@ were "functionally equivalent to banned `unused_slack[8]`". This rule's
 original claim refuted that — `s32 buf[8];` naturally produces frame=80/
 vars=32 in GCC 2.7.2 without `(void)` cast or volatile decoration.
 
-That observation is FACTUALLY TRUE. The reframing as "legitimate Tier-4"
+That observation is FACTUALLY TRUE. The reframing as "legitimate COMPLETED-C"
 was the error. GCC reserving the frame for declared locals is a compiler
 property, not a license to declare phantom locals as a matching technique.

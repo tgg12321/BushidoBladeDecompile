@@ -136,7 +136,7 @@ for the same memory under a different name. Same intent as the `__asm__`
 injection above — coerce GCC's view of the access — different spelling.
 
 The engine's `volatile_cheats` detector catches both variants and
-`mark_done` refuses Tier-4 for affected functions. See [[inline-asm-tiers]]
+`mark_done` refuses completion for affected functions. See [[inline-asm-policy]]
 expanded catalog for the full set of coercion patterns the detector covers.
 
 ## Related memories

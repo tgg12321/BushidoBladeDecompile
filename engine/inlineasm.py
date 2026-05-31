@@ -1,15 +1,15 @@
-"""Tier-3 inline-asm stripping for the cheat-invisible sandbox + tier-3 campaign.
+"""Cheat-asm stripping for the cheat-invisible sandbox + cheat-asm campaign.
 
-Tier-3 (workaround) __asm__ blocks and register-asm pins are injection cheats:
-the sandbox strips them so the score reflects pure-C codegen — injecting asm
-can't move the score. Tier-2 (GTE/cop2/.word-cop2/BIOS/HW) is canonical and is
-KEPT. A mixed block (any tier-2 instruction) is kept whole (canonical GTE
-sequences include their feeder loads).
+Cheat-asm (workaround) `__asm__` blocks and register-asm pins are injection
+cheats: the sandbox strips them so the score reflects pure-C codegen — injecting
+asm can't move the score. Canonical inline asm (GTE/cop2/.word-cop2/BIOS/HW) is
+authentic and is KEPT. A mixed block (any canonical instruction) is kept whole
+(canonical GTE sequences include their feeder loads).
 
-Tier classification reuses tools/classify_inline_asm (single source of truth for
-the tier-2/tier-3 line). Stripping a function's tier-3 asm doesn't change OTHER
-functions' .text bytes (only file-scope label numbers shift), so a file-wide
-strip + masked scoring triages every tier-3 function in one build.
+Category classification reuses tools/classify_inline_asm (single source of truth
+for the canonical-vs-cheat line). Stripping a function's cheat asm doesn't change
+OTHER functions' .text bytes (only file-scope label numbers shift), so a
+file-wide strip + masked scoring triages every cheat-asm function in one build.
 """
 from __future__ import annotations
 
@@ -81,24 +81,27 @@ def _match_brace(text: str, open_idx: int) -> int:
     return -1
 
 
-def _block_tier(asm_body: str) -> str:
-    """tier of an __asm__(...) body, mirroring classify_inline_asm.scan_file."""
+def _block_category(asm_body: str) -> str:
+    """Category of an __asm__(...) body, mirroring classify_inline_asm.scan_file.
+    Returns "canonical_body" (whole-function asm, never strip), "canonical"
+    (authentic GTE/BIOS/HW, keep in source), or "cheat" (forbidden, strip for
+    sandbox / refuse at COMPLETED gate)."""
     first_colon = asm_body.find(":")
     tmpl_body = asm_body if first_colon == -1 else asm_body[:first_colon]
     tmpl_strs = cia.extract_strings(tmpl_body)
     if any(cia.GLABEL_HINT_RE.search(s) for s in tmpl_strs):
-        return "tier1"  # canonical-body glabel block — never strip
+        return "canonical_body"  # whole-function canonical body — never strip
     instrs = []
     for t in tmpl_strs:
         instrs.extend(cia.split_template(t))
     if not instrs:
-        return "tier3" if cia.EMPTY_ASM_IS_TIER3 else "tier2"
-    return "tier2" if any(cia.classify_template(x) == "tier2" for x in instrs) else "tier3"
+        return "cheat" if cia.EMPTY_ASM_IS_CHEAT else "canonical"
+    return "canonical" if any(cia.classify_template(x) == "canonical" for x in instrs) else "cheat"
 
 
 def _strip_spans(text: str) -> list[tuple[int, int]]:
-    """Char spans to delete: tier-3 __asm__ statements + the asm("$N") qualifier
-    of register pins (the variable declaration itself is kept)."""
+    """Char spans to delete: cheat-asm __asm__ statements + the asm("$N")
+    qualifier of register pins (the variable declaration itself is kept)."""
     spans = []
     for m in cia.ASM_KEYWORD_RE.finditer(text):
         line_start = text.rfind("\n", 0, m.start()) + 1
@@ -108,7 +111,7 @@ def _strip_spans(text: str) -> list[tuple[int, int]]:
         close = _match_paren(text, paren_open)
         if close < 0:
             continue
-        if _block_tier(text[paren_open + 1:close - 1]) != "tier3":
+        if _block_category(text[paren_open + 1:close - 1]) != "cheat":
             continue
         end = close
         while end < len(text) and text[end] in " \t":
@@ -123,31 +126,31 @@ def _strip_spans(text: str) -> list[tuple[int, int]]:
     return spans
 
 
-def strip_tier3_file(text: str) -> tuple[str, int]:
-    """Return (modified text, count) with all tier-3 asm blocks + pins removed,
+def strip_cheat_asm_file(text: str) -> tuple[str, int]:
+    """Return (modified text, count) with all cheat-asm blocks + pins removed,
     AND every volatile-coercion cheat (alias renames, `*(volatile T *)&D_x`
     casts, scalar `extern volatile T D_x;` decls — see engine.volatile_cheats)
     stripped of its `volatile` qualifier. Count is the sum of both kinds.
 
     Both removals serve the same purpose: the sandbox sees the function the
-    way `queue done` requires for Tier-4 (pure C, no codegen-coercion knobs),
-    so the score reflects the honest pure-C distance.
+    way `queue done` requires for COMPLETED-C (pure C, no codegen-coercion
+    knobs), so the score reflects the honest pure-C distance.
     """
     spans = sorted(_strip_spans(text), reverse=True)
-    n_t3 = len(spans)
+    n_cheat_asm = len(spans)
     for s, e in spans:
         text = text[:s] + text[e:]
     # Second pass: strip volatile-coercion cheats (qualifier removal only).
     from . import volatile_cheats  # local import to avoid cycle
     text, n_vol = volatile_cheats.strip_volatile_cheats_file(text)
-    return text, n_t3 + n_vol
+    return text, n_cheat_asm + n_vol
 
 
 def write_stripped(stem: str, out_path: str) -> int:
-    """Write src/<stem>.c with tier-3 asm + volatile coercion cheats stripped to
-    out_path. Returns count (tier-3 asm/pins + volatile-qualifier removals)."""
+    """Write src/<stem>.c with cheat-asm + volatile coercion cheats stripped to
+    out_path. Returns count (cheat-asm/pins + volatile-qualifier removals)."""
     text = Path(f"src/{stem}.c").read_text()
-    stripped, n = strip_tier3_file(text)
+    stripped, n = strip_cheat_asm_file(text)
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     Path(out_path).write_text(stripped)
     return n
@@ -199,24 +202,25 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
     return None
 
 
-def func_tier3_count(text: str, func: str) -> int:
-    """Number of tier-3 strip-spans (asm blocks + register pins) PLUS volatile-
-    coercion cheats (alias renames + `*(volatile T *)&D_x` casts + scalar
-    `extern volatile T D_x;` decls — see engine.volatile_cheats) inside func's
-    body. -1 if the body can't be located.
+def func_cheat_asm_count(text: str, func: str) -> int:
+    """Number of cheat-asm strip-spans (asm blocks + register pins) PLUS
+    volatile-coercion cheats (alias renames + `*(volatile T *)&D_x` casts +
+    scalar `extern volatile T D_x;` decls — see engine.volatile_cheats) inside
+    func's body. -1 if the body can't be located.
 
-    `queue done` (engine/queue.py) refuses to mark Tier-4 if this count > 0 for
-    a non-canonical-asm function, so adding volatile cheats here is what makes
-    them a hard-stop in the same way `register T x asm("$N")` pins already are.
+    `queue done` (engine/queue.py) refuses to mark COMPLETED-C if this count > 0
+    for a non-canonical-asm function, so adding volatile cheats here is what
+    makes them a hard-stop in the same way `register T x asm("$N")` pins
+    already are.
     """
     span = _func_body_span(text, func)
     if span is None:
         return -1
     lo, hi = span
-    t3 = sum(1 for s, _e in _strip_spans(text) if lo <= s < hi)
+    cheat_asm = sum(1 for s, _e in _strip_spans(text) if lo <= s < hi)
     from . import volatile_cheats  # local import to avoid cycle
     vol = volatile_cheats.func_volatile_cheat_count(text, func)
-    return t3 + (vol if vol > 0 else 0)
+    return cheat_asm + (vol if vol > 0 else 0)
 
 
 _FILE_TEXT_CACHE: dict[str, tuple[float, str]] = {}
@@ -240,12 +244,12 @@ def _read_src_cached(stem: str) -> str | None:
     return text
 
 
-def file_func_tier3_count(stem: str, func: str) -> int:
-    """func_tier3_count against src/<stem>.c on disk. -1 on any read/locate miss.
-    Caches the file text by mtime — queue regen calls this once per function,
-    and re-reading + re-parsing the whole file every time is the dominant cost
-    for files with many functions (text1b.c, code6cac.c, etc.)."""
+def file_func_cheat_asm_count(stem: str, func: str) -> int:
+    """func_cheat_asm_count against src/<stem>.c on disk. -1 on any read/locate
+    miss. Caches the file text by mtime — queue regen calls this once per
+    function, and re-reading + re-parsing the whole file every time is the
+    dominant cost for files with many functions (text1b.c, code6cac.c, etc.)."""
     text = _read_src_cached(stem)
     if text is None:
         return -1
-    return func_tier3_count(text, func)
+    return func_cheat_asm_count(text, func)

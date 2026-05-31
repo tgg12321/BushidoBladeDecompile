@@ -2,10 +2,10 @@
 
 Run:  python3 -m engine.test_engine     (or: python3 -m engine.cli test)
 
-Two tiers:
+Two layers:
   * FAST (pure logic, no build) — always runs. Covers the distance metric, the
     canonical C-vs-asm detection (incl. the c2 GTE-command + region regressions),
-    tier-3 asm stripping, and the regfix masking. The last two together PROVE the
+    cheat-asm stripping, and the regfix masking. The last two together PROVE the
     cheat-invisibility guarantee: any cheat an agent adds (a keyed regfix rule OR
     an injected __asm__) is stripped before scoring, so it can't move the score.
   * BUILD-READ — runs only when build/bb2.elf is present (else skipped). Pins the
@@ -130,7 +130,7 @@ def test_score() -> None:
 
 
 # --------------------------------------------------------------------------
-# inlineasm — tier-3 stripping (half of cheat-invisibility)
+# inlineasm — cheat-asm stripping (half of cheat-invisibility)
 # --------------------------------------------------------------------------
 
 def test_inlineasm() -> None:
@@ -139,27 +139,27 @@ def test_inlineasm() -> None:
     eq("_match_paren: string-aware (ignores ) in a literal)",
        inlineasm._match_paren('f("a)b")c', 1), 8)
 
-    # tier-3 GPR injection is stripped; surrounding C is kept
+    # cheat-asm GPR injection is stripped; surrounding C is kept
     src3 = 'void f(void){ int x; __asm__ volatile("addu $8,$3,$0"); x = 1; }'
-    out3, n3 = inlineasm.strip_tier3_file(src3)
-    check("strip: tier-3 GPR __asm__ removed", "addu $8,$3,$0" not in out3)
-    check("strip: tier-3 count == 1", n3 == 1)
+    out3, n3 = inlineasm.strip_cheat_asm_file(src3)
+    check("strip: cheat-asm GPR __asm__ removed", "addu $8,$3,$0" not in out3)
+    check("strip: cheat-asm count == 1", n3 == 1)
     check("strip: surrounding C kept", "x = 1;" in out3)
 
-    # tier-2 GTE op is canonical -> KEPT
+    # canonical GTE op (authentic, no C form) -> KEPT
     src2 = 'void g(void){ __asm__ volatile("mtc2 $2,$0"); }'
-    out2, n2 = inlineasm.strip_tier3_file(src2)
-    check("strip: tier-2 GTE __asm__ kept", "mtc2 $2,$0" in out2)
-    eq("strip: tier-2 strip count == 0", n2, 0)
+    out2, n2 = inlineasm.strip_cheat_asm_file(src2)
+    check("strip: canonical GTE __asm__ kept", "mtc2 $2,$0" in out2)
+    eq("strip: canonical strip count == 0", n2, 0)
 
     # a #define body must NOT be stripped (would break every use site)
     srcm = '#define BARRIER __asm__ volatile("addu $8,$3,$0")\nvoid h(void){ BARRIER; }'
-    outm, _ = inlineasm.strip_tier3_file(srcm)
+    outm, _ = inlineasm.strip_cheat_asm_file(srcm)
     check("strip: macro definition left intact", "#define BARRIER __asm__" in outm)
 
     # register-pin qualifier neutralized, variable kept
     srcp = 'void k(void){ register int v asm("$16"); v = 0; }'
-    outp, np = inlineasm.strip_tier3_file(srcp)
+    outp, np = inlineasm.strip_cheat_asm_file(srcp)
     check("strip: pin asm(\"$16\") qualifier removed", 'asm("$16")' not in outp)
     check("strip: pinned variable declaration kept", "register int v" in outp)
     check("strip: pin counted", np >= 1)
@@ -171,22 +171,22 @@ def test_inlineasm() -> None:
     eq("_match_brace: brace in // comment ignored",
        inlineasm._match_brace("{ // }\n}", 0), 8)
 
-    # func_tier3_count: tier-3 counted only inside the named function's body
+    # func_cheat_asm_count: cheats counted only inside the named function's body
     fsrc = (
         "s32 target(u8 *a){\n"
-        '    __asm__ volatile("addu $8,$3,$0");\n'   # tier-3, inside target
+        '    __asm__ volatile("addu $8,$3,$0");\n'   # cheat-asm, inside target
         "    return 0;\n"
         "}\n"
         "void other(void){\n"
-        '    __asm__ volatile("addu $9,$4,$0");\n'   # tier-3, but a different func
+        '    __asm__ volatile("addu $9,$4,$0");\n'   # cheat-asm, but a different func
         "}\n"
     )
-    eq("func_tier3_count: counts only target's tier-3", inlineasm.func_tier3_count(fsrc, "target"), 1)
-    eq("func_tier3_count: counts only other's tier-3", inlineasm.func_tier3_count(fsrc, "other"), 1)
-    eq("func_tier3_count: unknown func -> -1", inlineasm.func_tier3_count(fsrc, "nope"), -1)
-    # a pure-C function reports 0 (locatable, no tier-3)
+    eq("func_cheat_asm_count: counts only target's cheats", inlineasm.func_cheat_asm_count(fsrc, "target"), 1)
+    eq("func_cheat_asm_count: counts only other's cheats", inlineasm.func_cheat_asm_count(fsrc, "other"), 1)
+    eq("func_cheat_asm_count: unknown func -> -1", inlineasm.func_cheat_asm_count(fsrc, "nope"), -1)
+    # a pure-C function reports 0 (locatable, no cheat asm)
     psrc = "s32 pure(void){\n    return 1;\n}\n"
-    eq("func_tier3_count: pure-C func -> 0", inlineasm.func_tier3_count(psrc, "pure"), 0)
+    eq("func_cheat_asm_count: pure-C func -> 0", inlineasm.func_cheat_asm_count(psrc, "pure"), 0)
 
 
 # --------------------------------------------------------------------------
@@ -248,7 +248,7 @@ def test_cheats() -> None:
         check("jtbl-infra: no rules -> False",
               cheats.is_jtbl_infra("funcZ", regfix="/nonexistent", regfix2="/nonexistent", asmfix=afp) is False)
 
-    # canonical_asm_funcs: the Tier-4 done-gate's tier-3 exemption set
+    # canonical_asm_funcs: the COMPLETED gate's cheat-asm exemption set
     with tempfile.TemporaryDirectory() as td:
         caf = Path(td) / "canon.txt"
         caf.write_text("# header comment\nfunc_AAA  # GTE wrapper\nfunc_BBB\n\nfunc_CCC\n")

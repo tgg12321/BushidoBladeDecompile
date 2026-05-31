@@ -1268,12 +1268,12 @@ def cmd_func(name):
 def cmd_check_new(commit_msg=None):
     """Return 1 if the working tree introduces new cheats since HEAD.
 
-    TIER-4 policy (2026-05-21, [[tier4-sota-standard]]): the only acceptable end
-    states are pure C and canonical asm (whole-function hand-asm / GTE / BIOS,
-    evidence-gated). Any NET-NEW regfix rule, register-asm pin, or tier-3 inline
-    asm (move-aliasing / barrier) is BLOCKED outright -- these are diagnostic-only,
-    never committed. The old "document it / log 3 attempts and it's allowed"
-    escape valves for G4/G5 are removed.
+    Completion policy (2026-05-21, [[completion-standard]]): the only acceptable
+    end states are COMPLETED-C (pure C) and COMPLETED-INLINE-ASM-CANONICAL
+    (whole-function hand-asm / GTE / BIOS, evidence-gated). Any NET-NEW regfix
+    rule, register-asm pin, or cheat-asm (move-aliasing / barrier) is BLOCKED
+    outright -- these are diagnostic-only, never committed. The old "document
+    it / log 3 attempts and it's allowed" escape valves for G4/G5 are removed.
 
     Gates, in order:
       G1.  Same-commit self-authorization detection (HEAD auth in both scans)
@@ -1401,7 +1401,7 @@ def cmd_check_new(commit_msg=None):
     except subprocess.CalledProcessError:
         pass
 
-    # TIER-4 policy (2026-05-21): inline-move aliasing is tier-3 register
+    # Completion policy (2026-05-21): inline-move aliasing is cheat-asm register
     # coercion — diagnostic-only, NEVER an allowed end state. Block EVERY new
     # barrier regardless of documentation (the old INLINE_MOVE_ALIASING: doc
     # escape valve is retired). Existing barriers are grandfathered via head_n.
@@ -1424,7 +1424,7 @@ def cmd_check_new(commit_msg=None):
     for src_name, line_no, fname in new_barriers:
         violations.append(("new_inline_move_aliasing",
             f"new `__asm__ volatile(\"move %0, %1\" ...)` inline-move aliasing in "
-            f"`{fname}` at {src_name}:{line_no}. Per TIER-4 policy this tier-3 "
+            f"`{fname}` at {src_name}:{line_no}. Per completion policy this cheat-asm "
             f"register coercion is NOT an allowed end state (no INLINE_MOVE_ALIASING: "
             f"doc escape valve any more) -- it is diagnostic-only and must be stripped "
             f"before commit. Find the C structure that makes GCC emit the move, or use "
@@ -1454,20 +1454,21 @@ def cmd_check_new(commit_msg=None):
     for fn in sorted(newly_cheating_via_regfix - already_flagged):
         violations.append(("regfix_new_clean_func",
             f"new regfix rule for `{fn}` which had ZERO rules at HEAD. "
-            f"Per TIER-4 policy (2026-05-21) regfix is NEVER an end state -- this is "
-            f"BLOCKED, not satisfiable by an attempt log. regfix is diagnostic-only; "
+            f"Per completion policy (2026-05-21) regfix is NEVER an end state -- this "
+            f"is BLOCKED, not satisfiable by an attempt log. regfix is diagnostic-only; "
             f"strip it and find the C structure, or use canonical-asm authorization "
             f"only for a physically un-compilable construct."))
     for fn in sorted(churning_regfix - already_flagged - newly_cheating_via_regfix):
         violations.append(("regfix_churn",
             f"net-new regfix rule(s) added to `{fn}` (already had rules at HEAD). "
-            f"Per TIER-4 policy, adding regfix is BLOCKED -- every rule is debt to "
+            f"Per completion policy, adding regfix is BLOCKED -- every rule is debt to "
             f"remove, not extend. Drive `{fn}` toward ZERO rules."))
 
-    # === TIER-4: new register-asm pins are BLOCKED (2026-05-21) ===
-    # `register T x asm("$N")` pins are tier-3 debt, never an end state. They are
-    # diagnostic-only; the committed match must reach the register via C structure.
-    # Whole-function canonical-asm bodies (in inline_asm_canonical.txt) are exempt.
+    # === Completion gate: new register-asm pins are BLOCKED (2026-05-21) ===
+    # `register T x asm("$N")` pins are cheat-asm debt, never an end state. They
+    # are diagnostic-only; the committed match must reach the register via C
+    # structure. Whole-function canonical-asm bodies (in inline_asm_canonical.txt)
+    # are exempt.
     PIN_RE = re.compile(r'\bregister\b[^=;]*\basm\s*\(\s*"\$')
 
     def pins_by_func(text, source_name):
@@ -1510,7 +1511,7 @@ def cmd_check_new(commit_msg=None):
     for sname, fname, head_n, n in sorted(new_pins):
         violations.append(("new_register_pin",
             f"new `register T x asm(\"$N\")` pin in `{fname}` ({sname}: HEAD={head_n}, "
-            f"now={n}). Per TIER-4 policy pins are diagnostic-only, never a committed "
+            f"now={n}). Per completion policy pins are diagnostic-only, never a committed "
             f"end state -- strip the pin and find the C structure that makes GCC choose "
             f"the register naturally."))
 
@@ -1564,12 +1565,12 @@ def cmd_check_new(commit_msg=None):
         for line in msg.split("\n"):
             print(f"    {line}", file=sys.stderr)
         print(file=sys.stderr)
-    print("Per TIER-4 policy (tier4-sota-standard, 2026-05-21): the ONLY end", file=sys.stderr)
-    print("states are pure C (0 regfix, 0 asmfix, 0 pins, 0 tier-3 inline asm)", file=sys.stderr)
-    print("and canonical asm (GTE/BIOS/whole-function hand-asm, evidence-gated).", file=sys.stderr)
-    print("New regfix / pins / inline-move are BLOCKED outright -- they are", file=sys.stderr)
-    print("diagnostic-only, never a committed match. Strip them and find the C", file=sys.stderr)
-    print("structure, or use canonical-asm authorization for an un-compilable op.", file=sys.stderr)
+    print("Per completion policy (completion-standard, 2026-05-21): the ONLY end", file=sys.stderr)
+    print("states are COMPLETED-C (0 regfix, 0 asmfix, 0 pins, 0 cheat-asm)", file=sys.stderr)
+    print("and COMPLETED-INLINE-ASM-CANONICAL (GTE/BIOS/whole-function hand-asm,", file=sys.stderr)
+    print("evidence-gated). New regfix / pins / inline-move are BLOCKED outright --", file=sys.stderr)
+    print("they are diagnostic-only, never a committed match. Strip them and find the", file=sys.stderr)
+    print("C structure, or use canonical-asm authorization for an un-compilable op.", file=sys.stderr)
     return 1
 
 

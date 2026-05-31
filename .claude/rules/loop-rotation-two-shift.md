@@ -10,7 +10,7 @@ metadata:
 
 ## Symptom
 
-A bit-search / shift-loop function carries tier-3 debt: register pins
+A bit-search / shift-loop function carries cheat-asm: register pins
 (`register s32 mask asm("v0")` …) **plus** an inline `__asm__("sllv %0,%1,%2" …)`
 that computes the *initial* mask before the loop. The target asm has the
 shift **twice** — once before the loop (initial value) and once in the loop's
@@ -89,7 +89,7 @@ post-loop check) without an explicit label.
 
 ## Confirmed case — func_8008ACD0 (main.c, 2026-05-26)
 
-Queue top, verdict C, distance 1, 0 regfix/asmfix rules but tier-3 pins
+Queue top, verdict C, distance 1, 0 regfix/asmfix rules but cheat-asm pins
 (`a1/v1/a2/v0/a0`) + inline `sllv`. Rewrote as the natural `for` loop above +
 opaque `one` + original goto post-loop → `sandbox --disable all` 1→…→0;
 `verify-oracle --rebuild` SHA1 == oracle. 100% pure C, all 5 pins + the inline
@@ -99,7 +99,7 @@ and correct loop registers but wrong branch senses (GCC laid out structured
 + `mask` var reuse closed the rest.
 
 ## Related
-- [[inline-asm-tiers]] — the inline `sllv` was tier-3 debt, never a match
+- [[inline-asm-policy]] — the inline `sllv` was cheat-asm, never a match
 - [[register-alloc-pure-c]] — global RA; var live-range / reuse is the lever
 - [[switch-vs-ifchain-branch-sense]] — branch sense follows C structure (sibling)
 - [[store-before-jal]] — statement order → instruction scheduling
