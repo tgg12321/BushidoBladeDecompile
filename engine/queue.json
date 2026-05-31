@@ -4470,16 +4470,6 @@
       "status": "authorize"
     },
     {
-      "func": "calc_fc_frame_8007EC5C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "Hand-coded GTE-3x3 matrix transform; target asm annotates every cop2 op 'handwritten instruction'; intricately interleaved (cycle N+1 mtc2 setup happens during cycle N's mvmva, cycle N mfc2 readout happens between cycle N+1 mtc2 setups) with hardcoded swc2 source register \\ in the final store. The 2026-05-12 successful match used the gte-3x3.md recipe (register-asm pins t0-t8/v0, single-instruction lui mask materialization in , __asm__ memory barriers, __asm__ nop for load-delay). The 2026-05-31 expanded cheat catalog reclassified all of those as forbidden. Gate routes ASM-PARTIAL (23/67 canonical-asm insns) so neither auto-authorize bucket applies (not a pure GTE leaf wrapper per gte-wrapper-misroute-park.md; not jtbl-infra). Sandbox cannot score (display.c cheat-asm strip truncates pipeline via sibling reorder rule). ESCALATE policy: either (A) authorize as ASM-WHOLE canonical-body asm (hand-coded GTE wrapper - target's 'handwritten instruction' annotation supports this), (B) grandfather the gte-3x3.md recipe cheats as load-bearing for the hand-coded GTE wrapper cluster, or (C) pure-C rework. Cannot mechanically confirm under existing auto-confirm categories."
-    },
-    {
       "func": "replay_camera_rob_back_loose2",
       "file": "code6cac_b2",
       "distance": 0,
@@ -4499,12 +4489,12 @@
     }
   ],
   "counts": {
-    "total": 529,
+    "total": 528,
     "active": 509,
     "by_status": {
       "active": 509,
       "authorize": 17,
-      "parked": 3
+      "parked": 2
     },
     "by_verdict": {
       "C": 374,

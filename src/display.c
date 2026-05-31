@@ -2065,97 +2065,93 @@ s32 *func_8007EB4C(s32 *out, s32 *vec) {
     return v0;
 }
 PAD_NOPS_1; /* 1 NOP after func_8007EB4C */
-s32 *calc_fc_frame_8007EC5C(s32 *mat, s32 *vec) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-    register s32 t6 asm("$14");
-    register s32 t7 asm("$15");
-    register s32 t8 asm("$24");
-    register s32 *v0 asm("v0");
-    /* Load matrix coefficients */
-    t0 = mat[0];
-    t1 = mat[1];
-    t2 = mat[2];
-    t3 = mat[3];
-    t4 = mat[4];
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    /* Cycle 1: rotate (x1,y1,z1) */
-    {
-        register s32 mask asm("$1");
-        t0 = ((u16 *)vec)[0];
-        t1 = vec[1];
-        t2 = vec[3];
-        __asm__ volatile ("lui %0, 0xFFFF" : "=r"(mask));
-        t1 = t1 & mask;
-        t0 = t0 | t1;
-    }
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");  /* mvmva 1,0,0,3,0 */
-    /* Cycle 2: rotate (x2,y2,z2), interleaved with cycle 1 mfc2 */
-    t0 = ((u16 *)vec)[1];
-    t1 = vec[2];
-    t2 = (s32)((s16 *)vec)[7];
-    t1 = t1 << 16;
-    t0 = t0 | t1;
-    __asm__ volatile ("mfc2 %0, $9"  : "=r"(t3));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t4));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t5));
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");
-    /* Cycle 3: rotate (x3,y3,z3), interleaved with cycle 2 mfc2 */
-    {
-        register s32 mask asm("$1");
-        t0 = ((u16 *)vec)[2];
-        t1 = vec[2];
-        t2 = vec[4];
-        __asm__ volatile ("lui %0, 0xFFFF" : "=r"(mask));
-        t1 = t1 & mask;
-        t0 = t0 | t1;
-    }
-    __asm__ volatile ("mfc2 %0, $9"  : "=r"(t6));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t7));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t8));
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");
-    /* Output: pack and store rotated components */
-    t3 = t3 & 0xFFFF;
-    t6 = t6 << 16;
-    t6 = t6 | t3;
-    vec[0] = t6;
-    __asm__ volatile ("" ::: "memory");
-    t5 = t5 & 0xFFFF;
-    t8 = t8 << 16;
-    t8 = t8 | t5;
-    vec[3] = t8;
-    __asm__ volatile ("mfc2 %0, $9"  : "=r"(t0));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t1));
-    t0 = t0 & 0xFFFF;
-    t4 = t4 << 16;
-    t0 = t0 | t4;
-    vec[1] = t0;
-    __asm__ volatile ("" ::: "memory");
-    t7 = t7 & 0xFFFF;
-    t1 = t1 << 16;
-    t1 = t1 | t7;
-    vec[2] = t1;
-    __asm__ volatile ("swc2 $11, 16(%0)" :: "r"(vec));
-    __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(vec));
-    return v0;
-}
+/* calc_fc_frame_8007EC5C: hand-coded GTE 3x3-mvmva matrix transform.
+ * Authorized 2026-05-31 as COMPLETED-INLINE-ASM-CANONICAL -- see
+ * inline_asm_canonical.txt for justification. Disassembler annotates
+ * every cop2 op as a handwritten instruction; final swc2 $11 uses a
+ * hardcoded source reg; mvmva/mfc2/mtc2/nop pipeline is hand-scheduled
+ * (cycle N+1 setup interleaves with cycle N latency); per-cycle lui $at
+ * re-materialization is a hand-coded choice. No pure-C form reaches
+ * these bytes under the 2026-05-31 cheat catalog. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel calc_fc_frame_8007EC5C\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    lhu    $t0, 0($a1)\n"
+    "    lw     $t1, 4($a1)\n"
+    "    lw     $t2, 12($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 2($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lh     $t2, 14($a1)\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t3, $9\n"
+    "    mfc2   $t4, $10\n"
+    "    mfc2   $t5, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 4($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lw     $t2, 16($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t6, $9\n"
+    "    mfc2   $t7, $10\n"
+    "    mfc2   $t8, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    andi   $t3, $t3, 0xFFFF\n"
+    "    sll    $t6, $t6, 16\n"
+    "    or     $t6, $t6, $t3\n"
+    "    sw     $t6, 0($a1)\n"
+    "    andi   $t5, $t5, 0xFFFF\n"
+    "    sll    $t8, $t8, 16\n"
+    "    or     $t8, $t8, $t5\n"
+    "    sw     $t8, 12($a1)\n"
+    "    mfc2   $t0, $9\n"
+    "    mfc2   $t1, $10\n"
+    "    andi   $t0, $t0, 0xFFFF\n"
+    "    sll    $t4, $t4, 16\n"
+    "    or     $t0, $t0, $t4\n"
+    "    sw     $t0, 4($a1)\n"
+    "    andi   $t7, $t7, 0xFFFF\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t1, $t1, $t7\n"
+    "    sw     $t1, 8($a1)\n"
+    "    swc2   $11, 16($a1)\n"
+    "    addu   $v0, $a1, $zero\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel calc_fc_frame_8007EC5C\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* 1 NOP after calc_fc_frame_8007EC5C */
 s32 *func_8007ED6C(s32 *a0, s32 *a1, s32 *a2) {
     register s32 t0 asm("$8");

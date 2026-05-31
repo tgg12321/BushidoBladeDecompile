@@ -1,42 +1,17 @@
 ---
 name: strength-reduce-defeat
 paths: ["src/*.c"]
-description: "When `if (t<0) -((-t)<<N); else t<<N` collapses to a single `sll` because GCC's optimizer sees both branches as mathematically equivalent. The fix is to wrap the negate operations in single-instruction `negu` inline asm so the branches stay opaque to GCC's branch-folding pass. Plus the source-order trick that lands the negate in the b's delay slot naturally."
+description: "ARCHIVED FORBIDDEN — `__asm__ volatile (\"negu %0, %1\" : \"=r\"(t3) : \"r\"(t3))` to defeat GCC's mathematical simplification of `-((-t)<<N) ≡ t<<N` is general-purpose-opcode inline asm. The inline-asm-policy table explicitly lists `negu` as a forbidden cheat opcode. Score-inert under the cheat-invisible sandbox."
 metadata:
-  type: reference
+  type: archived
+  status: forbidden
 ---
 
-## Symptom
+# ARCHIVED — strength-reduce-defeat is forbidden
 
-Target has the explicit sign-preserving multiply pattern:
-
-```
-bgez $t3, .L_pos
- nop                  (delay)
-negu $t3, $t3        (abs)
-sll  $t3, $t3, 3
-b    .L_done
- negu $t3, $t3       (delay slot — back to negative)
-.L_pos:
-sll  $t3, $t3, 3
-.L_done:
-```
-
-The natural-C decompilation is:
-
-```c
-if (t3 < 0) {
-    t3 = -((-t3) << 3);
-} else {
-    t3 = t3 << 3;
-}
-```
-
-But GCC emits a single `sll t3, t3, 3` for both branches, because it sees the negative branch's `-((-t)<<N) ≡ t<<N` mathematically (signed shift IS sign-preserving for arithmetic, modulo overflow at bit 31). The `if-else` is folded away.
-
-## Recipe
-
-Wrap the two negate operations in single-instruction `negu` inline asm. The volatile asm is opaque to GCC's optimizer, so it can't see that the negative branch is mathematically equivalent.
+This file used to teach a recipe for reproducing target's
+sign-preserving `bgez+negu+sll+b+negu` strength-reduction-defeat
+pattern via:
 
 ```c
 if (t3 < 0) {
@@ -48,50 +23,54 @@ if (t3 < 0) {
 }
 ```
 
-(Don't use `+r` constraint — GCC 2.7.2 doesn't support it. Use `=r/r` with the same variable for input and output, then assign back.)
+The `negu` opcode IS explicitly named in the [[inline-asm-policy]]
+forbidden category:
 
-This emits the canonical pattern after one more pass to land the second `negu` in the `b`'s delay slot — see "Source order trick" below.
+> **cheat** — Inline `__asm__` or `register T x asm("$N")` pin used to
+> steer GCC's allocator or scheduler. General-purpose opcodes
+> (`move`, `addu`, `nop`, `lui`, `negu`, etc.) that have C equivalents
+> but we wrote them in asm to force matching.
 
-## Source order trick: land the trailing negate in the delay slot
+Wrapping a unary negate in `__asm__` purely to make it opaque to GCC's
+combine/simplify passes is steering codegen via inline asm — the
+canonical cheat shape.
 
-Target's pattern has the second negu IN the b's delay slot. To get this with natural-C source, place the second negate operation LAST in source order so `as` (with `.set reorder`) auto-fills the delay slot from the immediately preceding instruction.
+## What this means for the affected functions
 
-When the negate is part of a multi-step sequence (negate → operate → negate), put the FINAL negate as the absolute last operation before the implicit branch-to-join. Example from the pre-mvmva sign-split in `func_8007EA0C`:
+Functions that used this recipe — `func_8007EA0C` per the original
+reference, and any display.c sibling with the pre-mvmva sign-split
+pattern — carry **cheat-asm debt**. The cluster overlap with
+[[gte-3x3]] (also archived) is not a coincidence: both recipes were
+the same project's mid-2026-05 push to match the display.c GTE wrapper
+family via inline-asm techniques that the 2026-05-31 catalog
+expansion forbids in retrospect.
 
-```c
-/* WRONG order — negu_t3 emits before andi_t0, missing the delay-slot fill: */
-if (t0 < 0) {
-    s32 a = -t0;
-    t3 = -(a >> 15);     /* compiles: sra+negu(t3) */
-    t0 = -(a & 0x7FFF);  /* compiles: andi+negu(t0) */
-}
-/* RIGHT order — andi emits before negate, so the trailing negu_t0
- * lands in the b's delay slot: */
-if (t0 < 0) {
-    s32 a = -t0;
-    t3 = a >> 15;        /* sra */
-    a = a & 0x7FFF;      /* andi */
-    t3 = -t3;            /* negu(t3) */
-    t0 = -a;             /* negu(t0) — lands in delay slot */
-}
-```
+The honest paths forward for these functions:
 
-The principle: **when the implicit branch-to-join needs a useful instruction in its delay slot, place that instruction LAST in source order**.
+- **Pure C structure.** GCC folds `-((-t) << N)` to `t << N` because
+  it sees the equivalence. The lever is finding C in which the two
+  expressions do **not** look equivalent to GCC's combine pass — e.g.
+  by routing one of them through a function call boundary, a
+  loop-induction variable, or a value-dependency edge combine can't
+  see across. Has not been searched exhaustively for this cluster.
+- **Canonical-asm authorization.** If the target shows strong
+  hand-coded signatures (per [[hand-coded-asm-recognition]] /
+  [[packed-multiply-cluster]]'s S8 signal / disassembler "handwritten
+  instruction" annotations), retire as `COMPLETED-INLINE-ASM-CANONICAL`
+  via `inline_asm_canonical.txt`. The display.c GTE wrapper cluster
+  is the canonical example of this routing.
 
-## When you still need regfix to finish
+## Historical content
 
-Even with the C tricks above, you'll typically need:
+The original recipe text is preserved in git history:
+`git show HEAD~1:.claude/rules/strength-reduce-defeat.md`
 
-1. **subst `j .L<N>` → `b .L<N>`** — GCC may emit J-format jumps where target uses BEQ-format `b`. They differ in opcode (J=0x02 vs BEQ=0x04). Subst rule: `subst "j\\s+\\.L<N>" "b\t.L<N>" @ <maspsx_idx>`.
-
-2. **`fill_delay @ j_idx <- source_idx`** — to move a useful instruction into the j's delay slot when GCC emitted `[insn, j, nop]` instead of `[j, insn-in-delay]`.
-
-3. **`insert_after "sra $tN, $tN, 15" @ <delay_slot_idx>`** — to add the dead-sra GCC's branch-likely scheduler emits between the b's delay slot and the next label. See `recipes/dead-branch-scheduling.md`.
-
-## Reference matches
-
-- `func_8007EA0C` (commit `76230dd`, 2026-05-12): 13 regfix rules total — 6 j→b substs + 4 fill_delay + 3 insert_after for the dead sra. Pre-mvmva sign-split AND post-mvmva sll-by-8 both use the negu-asm pattern.
-
-## When this applies
-
-Any function where GCC strength-reduces a sign-preserving signed shift, multiply by power of 2, or division. Symptom: target has `bgez+negu+<op>+b+negu` pattern, mine has just `<op>`. The optimizer is folding because both branches produce mathematically equivalent results.
+## Related
+- [[inline-asm-policy]] — current expanded cheat catalog
+- [[hand-coded-asm-recognition]] — the gate to classify a cluster
+  function as canonical-asm vs pure-C-reachable
+- [[canonical-asm-retirement]] — the legitimate end state
+- [[packed-multiply-cluster]] — sibling display.c cluster, scan
+  -hand-coded S8 routes it to canonical-asm
+- [[difficult-is-not-impossible]] — anti-quit discipline for the
+  pure-C path

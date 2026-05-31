@@ -248,3 +248,24 @@ func_8007EDBC  # cluster-sibling:func_8007E8DC,jaccard=0.58 ; gcc-cannot-emit:re
 # gte-wrapper-misroute-park.md.
 func_8007F10C  # GTE avsz3 wrapper (display.c): mtc2 $a0/$a1/$a2 -> nop -> avsz3 -> mfc2 $v0. Pin removed, canonical inline asm. Auto-authorized 2026-05-26.
 func_8007F12C  # GTE avsz4 wrapper (display.c): mtc2 $a0..$a3 -> nop -> avsz4 -> mfc2 $v0. Pin removed, canonical inline asm. Auto-authorized 2026-05-26.
+
+# === Hand-coded GTE 3x3-mvmva matrix transform cluster (display.c, user-authorized 2026-05-31) ===
+# Whole-body hand-coded asm: 3-cycle mvmva matrix transform pipeline. Disassembler
+# annotates EVERY cop2 op `/* handwritten instruction */`. Strong canonical
+# signals:
+#   - Hardcoded source register in final `swc2 $11, 16($a1)` (compiler chooses
+#     registers; only hand-coded asm literally references $11)
+#   - Hand-scheduled GTE pipeline: cycle N+1's mtc2 setup interleaves with cycle
+#     N's mvmva latency window; cycle N's mfc2 readout sandwiched between
+#   - Per-cycle `lui $at, 0xFFFF` re-materialization (cycles 1 + 3, NOT hoisted
+#     in cycle 2 which uses `sll $t1, $t1, 16` instead — a hand-coded scheduling
+#     choice, not GCC's CSE)
+#   - `addu $v0, $a1, $zero` placed at the very end, just before `jr $ra` (the
+#     canonical hand-coded "return value pinned to end" pattern)
+# The 2026-05-12 "first-attempt match" via the now-archived gte-3x3.md recipe
+# (register-asm pins + single-instruction lui barriers + scheduling barriers +
+# move %0,%1 return pin) only matched because the recipe encoded exactly what
+# hand-coded asm looks like. With the 2026-05-31 catalog expansion forbidding
+# all those elements, no pure-C path exists. Retired as file-scope `__asm__("glabel
+# ... endlabel")` block, target bytes verbatim. See archived .claude/rules/gte-3x3.md.
+calc_fc_frame_8007EC5C  # Hand-coded GTE 3x3-mvmva matrix transform (display.c). 67 insns, 23 cop2 ops labeled handwritten by disassembler, hardcoded `swc2 $11` source reg, hand-scheduled pipeline. User-authorized 2026-05-31.
