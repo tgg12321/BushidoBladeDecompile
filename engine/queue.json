@@ -1,8 +1,2400 @@
 {
-  "generated_at": "2026-05-31T01:31:01",
+  "generated_at": "2026-05-31T13:24:48",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
+    {
+      "func": "calc_fc_frame_8007EC5C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007B3A8",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007B4D0",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007B564",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007B6C8",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 19,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007B844",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007BC08",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007C2A0",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007C4B8",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007C748",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 13,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007C7A0",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 21,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007C86C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 21,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007C938",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007C97C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007CA00",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 13,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007CBB0",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007CE0C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 23,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007D048",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007D3F8",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 36,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007D6D8",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007D9C4",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007DB20",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007DC9C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007E1AC",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007E1FC",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007E24C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007E2D4",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007E35C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007E3BC",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007E4DC",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007E74C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 13,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007E8AC",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007E8DC",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007EA0C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 13,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007EB4C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007ED6C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007F05C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007F0BC",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007F0E4",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007F150",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007F1A8",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007F21C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007F24C",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007F2AC",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007F2DC",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "gte_SetColorMatrix",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "gte_SetRotMatrix",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "gte_SetTransVector",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "AddTbpOfst_80047EE8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "InitFadePanel",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "InitHiraRmd_80047FBC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "InitHiraRmd_800480C0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 33,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "ang_hosei_80056FE8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "calc_loc_mat_fw_80055B60",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800481E8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 12,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800483DC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800484A0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80048530",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800485EC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 25,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8004876C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8004881C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80048BA4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80048FFC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800494D4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8004954C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80049584",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80049718",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80049C24",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 10,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8004A09C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8004C388",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052720",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 3,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052754",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052788",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052930",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052A88",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052B00",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052B44",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052B7C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052BE4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052C28",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052CD4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80052D00",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80053304",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80053694",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80053754",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80053E9C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80054604",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005490C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800550E8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80055948",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80056CB8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 15,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800571C0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005763C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80057ACC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80057CC8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 7,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80057E84",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80058580",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005B43C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005B7C4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005BA8C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005BD30",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005C074",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005C6D0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005C8A8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005D814",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005E098",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005E54C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005F1C8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8005FC9C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800600C8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80060544",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 11,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80060A68",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80060B70",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80060E38",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 18,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80061064",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800611A4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80061250",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006133C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800613C8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80061454",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800614E0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006156C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80061658",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80061710",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800617C8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800618B4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800619A4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800619F0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80061A3C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80061ACC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80061C00",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80061D74",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80061EC0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80062020",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800620B8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006288C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006295C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80062FEC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80063084",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80063AF0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80063B34",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80063BD0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80063E10",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800644FC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 12,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800645B0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800646E8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80064E90",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80064ED8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80064F20",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80064F68",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80064FB4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80065000",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006505C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800650A4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800650EC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80065134",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006517C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800651F0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80065264",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800652AC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800652F4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80065344",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80065394",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80065484",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80065540",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80065590",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800655E0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80065630",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80065760",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800657B0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80067200",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800678A8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80067D14",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80068D88",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80068ECC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800692C0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800693CC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80069AE4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80069E18",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80069F80",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006A1A0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006A880",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006B120",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006B578",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006B92C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006BB68",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006BD28",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 37,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006BEC4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006CCC8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006CFBC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006D3DC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006D808",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006DD94",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006E10C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006E534",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006ECF4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006F038",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006F100",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006F528",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8006F97C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80070C70",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 32,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80071C4C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800720FC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80072BC4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80072CD4",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80073060",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007352C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 11,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80073728",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80073C78",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80074220",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80074488",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800747D8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80074B18",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 41,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80074E08",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007526C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 14,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80075670",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800759D0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80075F80",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007636C",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800768DC",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80076D74",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_800770B8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 25,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80077374",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80077894",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "game_2d_CheckLifeGaugeNoDisp",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "gnd_get_fog",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "gnd_land_hit_char_tsuba",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 88,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "mario_getMarioVoiceData_80048AD0",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "mario_getMarioVoiceData_8005BE84",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "motion_SetExMotion",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "motion_ShiftControl",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "replay_camera_attack",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "saFidLoad",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 7,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "saTan1GaugeMain",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "saTan3GaugeMain_8006A564",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "saTan3GaugeMain_80073200",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "saTan4FireDisp_80048864",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 36,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "saTan4GaugeMain",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "single_game_SetStatusUpData",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "tslGlobalMemFree_8005C2A8",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "debug_printf",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 7,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80077B30",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80077D94",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80078654",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80078A68",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80078B04",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80078B3C",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80078B70",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80078BA8",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80078E58",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80078EC0",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80078F60",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80078F74",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80079244",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007992C",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_80079A30",
+      "file": "text1b_b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "cpu_check_same_dir_timer",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8002872C",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80032064",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8003D9A0",
+      "file": "code6cac_c2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "pad_FuncAnalog",
+      "file": "code6cac_c_mid",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8003FE40",
+      "file": "config",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "kgm_clamp_patch_init",
+      "file": "ings",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800832A0",
+      "file": "ings2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "spu_InitEx",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "gnd_load_tex",
+      "file": "text1a",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "saSeMain_80045600",
+      "file": "text1a_c",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
     {
       "func": "D_800832F8",
       "file": "ings2",
@@ -36,86 +2428,6 @@
       "status": "active"
     },
     {
-      "func": "func_8004A09C",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8005B7C4",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
-      "func": "func_80061C00",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80065484",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
-      "func": "func_80069AE4",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
-      "func": "gnd_get_fog",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80078A68",
-      "file": "text1b_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80078B3C",
-      "file": "text1b_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80078B70",
-      "file": "text1b_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8007992C",
-      "file": "text1b_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8001A67C",
       "file": "code6cac",
       "distance": 3,
@@ -129,14 +2441,6 @@
       "distance": 3,
       "verdict": "C",
       "rules": 2,
-      "status": "active"
-    },
-    {
-      "func": "gte_SetTransVector",
-      "file": "display",
-      "distance": 3,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
       "status": "active"
     },
     {
@@ -180,22 +2484,6 @@
       "status": "active"
     },
     {
-      "func": "InitFadePanel",
-      "file": "text1b",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800550E8",
-      "file": "text1b",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
       "func": "func_80033550",
       "file": "code6cac_b",
       "distance": 4,
@@ -212,22 +2500,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007C2A0",
-      "file": "display",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8007C4B8",
-      "file": "display",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "initLoadImage",
       "file": "gpu",
       "distance": 4,
@@ -241,22 +2513,6 @@
       "distance": 4,
       "verdict": "C",
       "rules": 2,
-      "status": "active"
-    },
-    {
-      "func": "func_800618B4",
-      "file": "text1b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006F038",
-      "file": "text1b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
       "status": "active"
     },
     {
@@ -284,38 +2540,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007C938",
-      "file": "display",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007F21C",
-      "file": "display",
-      "distance": 5,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "gte_SetColorMatrix",
-      "file": "display",
-      "distance": 5,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "gte_SetRotMatrix",
-      "file": "display",
-      "distance": 5,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "initDrawMode",
       "file": "gpu",
       "distance": 5,
@@ -329,46 +2553,6 @@
       "distance": 5,
       "verdict": "C",
       "rules": 2,
-      "status": "active"
-    },
-    {
-      "func": "AddTbpOfst_80047EE8",
-      "file": "text1b",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800484A0",
-      "file": "text1b",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
-      "func": "func_80052CD4",
-      "file": "text1b",
-      "distance": 5,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80053694",
-      "file": "text1b",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
-      "func": "func_80060B70",
-      "file": "text1b",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 4,
       "status": "active"
     },
     {
@@ -396,14 +2580,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007F2AC",
-      "file": "display",
-      "distance": 6,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "InitHiraRmd_80041AC8",
       "file": "text1a",
       "distance": 6,
@@ -417,54 +2593,6 @@
       "distance": 6,
       "verdict": "C",
       "rules": 4,
-      "status": "active"
-    },
-    {
-      "func": "func_800483DC",
-      "file": "text1b",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8004954C",
-      "file": "text1b",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80052754",
-      "file": "text1b",
-      "distance": 6,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800600C8",
-      "file": "text1b",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active"
-    },
-    {
-      "func": "func_80077894",
-      "file": "text1b",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "saFidLoad",
-      "file": "text1b",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 7,
       "status": "active"
     },
     {
@@ -492,54 +2620,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007B4D0",
-      "file": "display",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
-      "func": "func_8007B844",
-      "file": "display",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active"
-    },
-    {
-      "func": "func_8007D9C4",
-      "file": "display",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007E8AC",
-      "file": "display",
-      "distance": 7,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007F0BC",
-      "file": "display",
-      "distance": 7,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8007F0E4",
-      "file": "display",
-      "distance": 7,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "ot_Insert",
       "file": "gpu",
       "distance": 7,
@@ -564,14 +2644,6 @@
       "status": "active"
     },
     {
-      "func": "func_800470B0",
-      "file": "sound",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "cpu_side_move_dir_4",
       "file": "system",
       "distance": 7,
@@ -588,67 +2660,11 @@
       "status": "active"
     },
     {
-      "func": "func_80048530",
-      "file": "text1b",
-      "distance": 7,
+      "func": "func_8001A538",
+      "file": "code6cac",
+      "distance": 8,
       "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
-      "func": "func_80052720",
-      "file": "text1b",
-      "distance": 7,
-      "verdict": "ASM-PARTIAL",
-      "rules": 3,
-      "status": "active"
-    },
-    {
-      "func": "func_80052BE4",
-      "file": "text1b",
-      "distance": 7,
-      "verdict": "ASM-PARTIAL",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80074220",
-      "file": "text1b",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
-      "func": "debug_printf",
-      "file": "text1b_b",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 7,
-      "status": "active"
-    },
-    {
-      "func": "func_80078B04",
-      "file": "text1b_b",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
-      "func": "func_80078F60",
-      "file": "text1b_b",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active"
-    },
-    {
-      "func": "func_80078F74",
-      "file": "text1b_b",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 9,
       "status": "active"
     },
     {
@@ -708,102 +2724,6 @@
       "status": "active"
     },
     {
-      "func": "func_80049C24",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 10,
-      "status": "active"
-    },
-    {
-      "func": "func_80052C28",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80064E90",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80064ED8",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80064F20",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8006505C",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800650A4",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800650EC",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80065134",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80065264",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800652AC",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80069E18",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "cpu_check_tubazeri_2",
       "file": "code6cac_b",
       "distance": 9,
@@ -844,14 +2764,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007C748",
-      "file": "display",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 13,
-      "status": "active"
-    },
-    {
       "func": "func_800455AC",
       "file": "text1a_c",
       "distance": 9,
@@ -865,94 +2777,6 @@
       "distance": 9,
       "verdict": "C",
       "rules": 5,
-      "status": "active"
-    },
-    {
-      "func": "func_8004881C",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
-      "func": "func_80053304",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
-      "func": "func_80057CC8",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 7,
-      "status": "active"
-    },
-    {
-      "func": "func_800611A4",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8006156C",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80061658",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80061710",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800617C8",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80061ACC",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80061EC0",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800692C0",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 1,
       "status": "active"
     },
     {
@@ -972,43 +2796,11 @@
       "status": "active"
     },
     {
-      "func": "func_8007F150",
-      "file": "display",
-      "distance": 10,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007F1A8",
-      "file": "display",
-      "distance": 10,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80045878",
       "file": "text1a_c",
       "distance": 10,
       "verdict": "C",
       "rules": 10,
-      "status": "active"
-    },
-    {
-      "func": "func_80065000",
-      "file": "text1b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80078BA8",
-      "file": "text1b_b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 9,
       "status": "active"
     },
     {
@@ -1028,51 +2820,11 @@
       "status": "active"
     },
     {
-      "func": "func_80037AA4",
-      "file": "code6cac_c",
-      "distance": 11,
+      "func": "func_8001924C",
+      "file": "code6cac",
+      "distance": 12,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007E35C",
-      "file": "display",
-      "distance": 11,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007F05C",
-      "file": "display",
-      "distance": 11,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "ang_hosei_80056FE8",
-      "file": "text1b",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80049718",
-      "file": "text1b",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
-      "func": "func_80078EC0",
-      "file": "text1b_b",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 5,
       "status": "active"
     },
     {
@@ -1100,98 +2852,10 @@
       "status": "active"
     },
     {
-      "func": "func_80055948",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8006133C",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800613C8",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80061454",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800614E0",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80062020",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80072CD4",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active"
-    },
-    {
       "func": "func_80037A20",
       "file": "code6cac_c",
       "distance": 13,
       "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80037B00",
-      "file": "code6cac_c",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007CA00",
-      "file": "display",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 13,
-      "status": "active"
-    },
-    {
-      "func": "func_8007E1AC",
-      "file": "display",
-      "distance": 13,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007E1FC",
-      "file": "display",
-      "distance": 13,
-      "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
     },
@@ -1214,38 +2878,6 @@
     {
       "func": "mot_data_set",
       "file": "text1a_c",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80052B44",
-      "file": "text1b",
-      "distance": 13,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006517C",
-      "file": "text1b",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
-      "func": "func_800651F0",
-      "file": "text1b",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
-      "func": "func_8006E10C",
-      "file": "text1b",
       "distance": 13,
       "verdict": "C",
       "rules": 0,
@@ -1276,6 +2908,14 @@
       "status": "active"
     },
     {
+      "func": "func_80037AA4",
+      "file": "code6cac_c",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_8003D330",
       "file": "code6cac_c2",
       "distance": 14,
@@ -1284,11 +2924,11 @@
       "status": "active"
     },
     {
-      "func": "func_8007DC9C",
-      "file": "display",
+      "func": "file_LoadSectors",
+      "file": "ings",
       "distance": 14,
       "verdict": "C",
-      "rules": 4,
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1308,34 +2948,10 @@
       "status": "active"
     },
     {
-      "func": "func_800481E8",
-      "file": "text1b",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 12,
-      "status": "active"
-    },
-    {
-      "func": "func_8007B3A8",
-      "file": "display",
+      "func": "func_80037B00",
+      "file": "code6cac_c",
       "distance": 15,
       "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
-      "func": "func_8007B564",
-      "file": "display",
-      "distance": 15,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active"
-    },
-    {
-      "func": "func_8007E3BC",
-      "file": "display",
-      "distance": 15,
-      "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
     },
@@ -1356,34 +2972,10 @@
       "status": "active"
     },
     {
-      "func": "func_8006B92C",
-      "file": "text1b",
-      "distance": 15,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80034200",
       "file": "code6cac_b",
       "distance": 16,
       "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007ED6C",
-      "file": "display",
-      "distance": 16,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007F24C",
-      "file": "display",
-      "distance": 16,
-      "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
     },
@@ -1452,14 +3044,6 @@
       "status": "active"
     },
     {
-      "func": "func_8004876C",
-      "file": "text1b",
-      "distance": 17,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
       "func": "cpu_set_move_command_and_dir_for_no_action",
       "file": "code6cac_b",
       "distance": 18,
@@ -1481,22 +3065,6 @@
       "distance": 18,
       "verdict": "C",
       "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8007E24C",
-      "file": "display",
-      "distance": 18,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007E2D4",
-      "file": "display",
-      "distance": 18,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
       "status": "active"
     },
     {
@@ -1532,46 +3100,6 @@
       "status": "active"
     },
     {
-      "func": "func_80049584",
-      "file": "text1b",
-      "distance": 18,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80052B00",
-      "file": "text1b",
-      "distance": 18,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80060544",
-      "file": "text1b",
-      "distance": 18,
-      "verdict": "C",
-      "rules": 11,
-      "status": "active"
-    },
-    {
-      "func": "func_80060E38",
-      "file": "text1b",
-      "distance": 18,
-      "verdict": "C",
-      "rules": 18,
-      "status": "active"
-    },
-    {
-      "func": "func_80068D88",
-      "file": "text1b",
-      "distance": 18,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80021280",
       "file": "code6cac",
       "distance": 19,
@@ -1604,14 +3132,6 @@
       "status": "active"
     },
     {
-      "func": "mario_getMarioVoiceData_80048AD0",
-      "file": "text1b",
-      "distance": 19,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80021A98",
       "file": "code6cac",
       "distance": 20,
@@ -1625,22 +3145,6 @@
       "distance": 20,
       "verdict": "C",
       "rules": 10,
-      "status": "active"
-    },
-    {
-      "func": "func_8007C7A0",
-      "file": "display",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 21,
-      "status": "active"
-    },
-    {
-      "func": "func_8007C86C",
-      "file": "display",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 21,
       "status": "active"
     },
     {
@@ -1692,27 +3196,11 @@
       "status": "active"
     },
     {
-      "func": "func_80052B7C",
-      "file": "text1b",
-      "distance": 20,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80075670",
-      "file": "text1b",
-      "distance": 20,
+      "func": "func_8001E6E4",
+      "file": "code6cac",
+      "distance": 21,
       "verdict": "C",
-      "rules": 9,
-      "status": "active"
-    },
-    {
-      "func": "game_2d_CheckLifeGaugeNoDisp",
-      "file": "text1b",
-      "distance": 20,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1732,19 +3220,19 @@
       "status": "active"
     },
     {
+      "func": "func_8003DBE4",
+      "file": "code6cac_c2",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "pad_ClearAppliBuffer",
       "file": "code6cac_c_mid",
       "distance": 21,
       "verdict": "C",
       "rules": 21,
-      "status": "active"
-    },
-    {
-      "func": "func_8007B6C8",
-      "file": "display",
-      "distance": 21,
-      "verdict": "C",
-      "rules": 19,
       "status": "active"
     },
     {
@@ -1764,11 +3252,19 @@
       "status": "active"
     },
     {
-      "func": "func_800645B0",
-      "file": "text1b",
-      "distance": 21,
+      "func": "func_800470B0",
+      "file": "sound",
+      "distance": 22,
       "verdict": "C",
-      "rules": 1,
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8001E404",
+      "file": "code6cac",
+      "distance": 23,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1785,14 +3281,6 @@
       "distance": 23,
       "verdict": "C",
       "rules": 3,
-      "status": "active"
-    },
-    {
-      "func": "func_8007F2DC",
-      "file": "display",
-      "distance": 23,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
       "status": "active"
     },
     {
@@ -1828,30 +3316,6 @@
       "status": "active"
     },
     {
-      "func": "func_80052788",
-      "file": "text1b",
-      "distance": 23,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8006288C",
-      "file": "text1b",
-      "distance": 23,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active"
-    },
-    {
-      "func": "func_80078654",
-      "file": "text1b_b",
-      "distance": 23,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active"
-    },
-    {
       "func": "func_8001979C",
       "file": "code6cac",
       "distance": 24,
@@ -1868,27 +3332,11 @@
       "status": "active"
     },
     {
-      "func": "func_8007C97C",
-      "file": "display",
-      "distance": 24,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active"
-    },
-    {
       "func": "func_80084A7C",
       "file": "main",
       "distance": 24,
       "verdict": "C",
       "rules": 11,
-      "status": "active"
-    },
-    {
-      "func": "func_80073060",
-      "file": "text1b",
-      "distance": 24,
-      "verdict": "C",
-      "rules": 9,
       "status": "active"
     },
     {
@@ -1905,22 +3353,6 @@
       "distance": 25,
       "verdict": "C",
       "rules": 18,
-      "status": "active"
-    },
-    {
-      "func": "efc_rob_set_type_flash",
-      "file": "text1a_c",
-      "distance": 25,
-      "verdict": "C",
-      "rules": 14,
-      "status": "active"
-    },
-    {
-      "func": "func_80052A88",
-      "file": "text1b",
-      "distance": 25,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
       "status": "active"
     },
     {
@@ -1988,6 +3420,14 @@
       "status": "active"
     },
     {
+      "func": "func_8003CF84",
+      "file": "code6cac_c2",
+      "distance": 28,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "saTan4GaugeInit",
       "file": "main",
       "distance": 28,
@@ -1996,32 +3436,8 @@
       "status": "active"
     },
     {
-      "func": "func_800485EC",
-      "file": "text1b",
-      "distance": 28,
-      "verdict": "C",
-      "rules": 25,
-      "status": "active"
-    },
-    {
-      "func": "func_80061250",
-      "file": "text1b",
-      "distance": 28,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "ang_near_dif",
       "file": "config",
-      "distance": 29,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8004C388",
-      "file": "text1b",
       "distance": 29,
       "verdict": "C",
       "rules": 0,
@@ -2076,14 +3492,6 @@
       "status": "active"
     },
     {
-      "func": "func_800770B8",
-      "file": "text1b",
-      "distance": 32,
-      "verdict": "C",
-      "rules": 25,
-      "status": "active"
-    },
-    {
       "func": "calc_fc_frame_800203B4",
       "file": "code6cac",
       "distance": 33,
@@ -2105,14 +3513,6 @@
       "distance": 33,
       "verdict": "C",
       "rules": 8,
-      "status": "active"
-    },
-    {
-      "func": "func_8003A728",
-      "file": "code6cac_c_mid",
-      "distance": 33,
-      "verdict": "C",
-      "rules": 11,
       "status": "active"
     },
     {
@@ -2164,22 +3564,6 @@
       "status": "active"
     },
     {
-      "func": "func_80060A68",
-      "file": "text1b",
-      "distance": 35,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
-      "func": "coli_hit_body_weapon",
-      "file": "code6cac_b",
-      "distance": 36,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_800300B4",
       "file": "code6cac_b",
       "distance": 36,
@@ -2193,22 +3577,6 @@
       "distance": 36,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8004473C",
-      "file": "text1a_c",
-      "distance": 36,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "InitHiraRmd_800480C0",
-      "file": "text1b",
-      "distance": 36,
-      "verdict": "C",
-      "rules": 33,
       "status": "active"
     },
     {
@@ -2252,11 +3620,27 @@
       "status": "active"
     },
     {
+      "func": "coli_hit_body_weapon",
+      "file": "code6cac_b",
+      "distance": 38,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "DispSleepMenuTex",
       "file": "code6cac_c2",
       "distance": 38,
       "verdict": "C",
       "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8003A728",
+      "file": "code6cac_c_mid",
+      "distance": 38,
+      "verdict": "C",
+      "rules": 11,
       "status": "active"
     },
     {
@@ -2268,16 +3652,24 @@
       "status": "active"
     },
     {
-      "func": "func_800644FC",
-      "file": "text1b",
-      "distance": 39,
+      "func": "func_80086BFC",
+      "file": "main",
+      "distance": 40,
       "verdict": "C",
-      "rules": 12,
+      "rules": 0,
       "status": "active"
     },
     {
-      "func": "func_80086BFC",
-      "file": "main",
+      "func": "efc_rob_set_type_flash",
+      "file": "text1a_c",
+      "distance": 40,
+      "verdict": "C",
+      "rules": 14,
+      "status": "active"
+    },
+    {
+      "func": "func_8004473C",
+      "file": "text1a_c",
       "distance": 40,
       "verdict": "C",
       "rules": 0,
@@ -2313,14 +3705,6 @@
       "distance": 42,
       "verdict": "C",
       "rules": 5,
-      "status": "active"
-    },
-    {
-      "func": "func_8007D3F8",
-      "file": "display",
-      "distance": 43,
-      "verdict": "C",
-      "rules": 36,
       "status": "active"
     },
     {
@@ -2364,22 +3748,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007CE0C",
-      "file": "display",
-      "distance": 48,
-      "verdict": "C",
-      "rules": 23,
-      "status": "active"
-    },
-    {
-      "func": "func_8007526C",
-      "file": "text1b",
-      "distance": 48,
-      "verdict": "C",
-      "rules": 14,
-      "status": "active"
-    },
-    {
       "func": "single_game_SetWazaData",
       "file": "code6cac_b",
       "distance": 49,
@@ -2404,14 +3772,6 @@
       "status": "active"
     },
     {
-      "func": "func_80052930",
-      "file": "text1b",
-      "distance": 51,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "cdrom_FramesToBcd",
       "file": "system",
       "distance": 52,
@@ -2425,14 +3785,6 @@
       "distance": 52,
       "verdict": "ASM-SUSPECT",
       "rules": 25,
-      "status": "active"
-    },
-    {
-      "func": "func_8007352C",
-      "file": "text1b",
-      "distance": 54,
-      "verdict": "ASM-SUSPECT",
-      "rules": 11,
       "status": "active"
     },
     {
@@ -2500,51 +3852,11 @@
       "status": "active"
     },
     {
-      "func": "func_8006BD28",
-      "file": "text1b",
-      "distance": 59,
-      "verdict": "ASM-SUSPECT",
-      "rules": 37,
-      "status": "active"
-    },
-    {
-      "func": "saTan4FireDisp_80048864",
-      "file": "text1b",
-      "distance": 60,
-      "verdict": "ASM-SUSPECT",
-      "rules": 36,
-      "status": "active"
-    },
-    {
       "func": "tslPrintScreen",
       "file": "config",
       "distance": 61,
       "verdict": "ASM-SUSPECT",
       "rules": 28,
-      "status": "active"
-    },
-    {
-      "func": "calc_fc_frame_8007EC5C",
-      "file": "display",
-      "distance": 62,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007E4DC",
-      "file": "display",
-      "distance": 62,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007EB4C",
-      "file": "display",
-      "distance": 62,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
       "status": "active"
     },
     {
@@ -2572,14 +3884,6 @@
       "status": "active"
     },
     {
-      "func": "gnd_land_hit_char_tsuba",
-      "file": "text1b",
-      "distance": 65,
-      "verdict": "ASM-SUSPECT",
-      "rules": 88,
-      "status": "active"
-    },
-    {
       "func": "func_8008AAD4",
       "file": "main",
       "distance": 69,
@@ -2588,43 +3892,11 @@
       "status": "active"
     },
     {
-      "func": "func_8007E8DC",
-      "file": "display",
-      "distance": 72,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8007EA0C",
-      "file": "display",
-      "distance": 75,
-      "verdict": "ASM-PARTIAL",
-      "rules": 13,
-      "status": "active"
-    },
-    {
-      "func": "func_8007E74C",
-      "file": "display",
-      "distance": 85,
-      "verdict": "ASM-PARTIAL",
-      "rules": 13,
-      "status": "active"
-    },
-    {
       "func": "func_80017848",
       "file": "ings",
       "distance": 85,
       "verdict": "ASM-SUSPECT",
       "rules": 2,
-      "status": "active"
-    },
-    {
-      "func": "func_80074B18",
-      "file": "text1b",
-      "distance": 87,
-      "verdict": "ASM-SUSPECT",
-      "rules": 41,
       "status": "active"
     },
     {
@@ -2652,38 +3924,6 @@
       "status": "active"
     },
     {
-      "func": "func_8006BB68",
-      "file": "text1b",
-      "distance": 110,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006DD94",
-      "file": "text1b",
-      "distance": 115,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8005C6D0",
-      "file": "text1b",
-      "distance": 117,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80070C70",
-      "file": "text1b",
-      "distance": 118,
-      "verdict": "ASM-SUSPECT",
-      "rules": 32,
-      "status": "active"
-    },
-    {
       "func": "func_8003DE14",
       "file": "code6cac_c2",
       "distance": 119,
@@ -2700,131 +3940,11 @@
       "status": "active"
     },
     {
-      "func": "func_8006D3DC",
-      "file": "text1b",
-      "distance": 124,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80057ACC",
-      "file": "text1b",
-      "distance": 125,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "tslGlobalMemFree_8005C2A8",
-      "file": "text1b",
-      "distance": 133,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80069F80",
-      "file": "text1b",
-      "distance": 134,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006A1A0",
-      "file": "text1b",
-      "distance": 137,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8005C074",
-      "file": "text1b",
-      "distance": 139,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80063BD0",
-      "file": "text1b",
-      "distance": 143,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8007CBB0",
-      "file": "display",
-      "distance": 149,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80054604",
-      "file": "text1b",
-      "distance": 158,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8007D048",
-      "file": "display",
-      "distance": 159,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80076D74",
-      "file": "text1b",
-      "distance": 159,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80048FFC",
-      "file": "text1b",
-      "distance": 164,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "saTan1GaugeMain",
-      "file": "text1b",
-      "distance": 164,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006BEC4",
-      "file": "text1b",
-      "distance": 167,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "cpu_check_run_attack",
       "file": "code6cac",
       "distance": 168,
       "verdict": "ASM-PARTIAL",
       "rules": 3,
-      "status": "active"
-    },
-    {
-      "func": "func_8005BA8C",
-      "file": "text1b",
-      "distance": 168,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
       "status": "active"
     },
     {
@@ -2836,57 +3956,9 @@
       "status": "active"
     },
     {
-      "func": "func_8007D6D8",
-      "file": "display",
-      "distance": 185,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006CCC8",
-      "file": "text1b",
-      "distance": 187,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80056CB8",
-      "file": "text1b",
-      "distance": 188,
-      "verdict": "ASM-SUSPECT",
-      "rules": 15,
-      "status": "active"
-    },
-    {
-      "func": "saTan3GaugeMain_8006A564",
-      "file": "text1b",
-      "distance": 197,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_800841E0",
       "file": "main",
       "distance": 198,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006B578",
-      "file": "text1b",
-      "distance": 198,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "saTan3GaugeMain_80073200",
-      "file": "text1b",
-      "distance": 201,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -2916,49 +3988,9 @@
       "status": "active"
     },
     {
-      "func": "func_800747D8",
-      "file": "text1b",
-      "distance": 206,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "DispStuff",
       "file": "main",
       "distance": 207,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006ECF4",
-      "file": "text1b",
-      "distance": 207,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80074488",
-      "file": "text1b",
-      "distance": 210,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006CFBC",
-      "file": "text1b",
-      "distance": 217,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006E534",
-      "file": "text1b",
-      "distance": 220,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -2996,22 +4028,6 @@
       "status": "active"
     },
     {
-      "func": "func_80077374",
-      "file": "text1b",
-      "distance": 234,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80048BA4",
-      "file": "text1b",
-      "distance": 235,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "PutRobShadow",
       "file": "code6cac_b",
       "distance": 236,
@@ -3039,14 +4055,6 @@
       "func": "md_game_end",
       "file": "main",
       "distance": 247,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80075F80",
-      "file": "text1b",
-      "distance": 249,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -3084,34 +4092,10 @@
       "status": "active"
     },
     {
-      "func": "func_8006F100",
-      "file": "text1b",
-      "distance": 264,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8005FC9C",
-      "file": "text1b",
-      "distance": 266,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8002F2D0",
       "file": "code6cac_b",
       "distance": 268,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80071C4C",
-      "file": "text1b",
-      "distance": 268,
-      "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
     },
@@ -3132,30 +4116,6 @@
       "status": "active"
     },
     {
-      "func": "func_8005763C",
-      "file": "text1b",
-      "distance": 274,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006F528",
-      "file": "text1b",
-      "distance": 275,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006B120",
-      "file": "text1b",
-      "distance": 276,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8008AF9C",
       "file": "main",
       "distance": 279,
@@ -3164,33 +4124,9 @@
       "status": "active"
     },
     {
-      "func": "func_80074E08",
-      "file": "text1b",
-      "distance": 279,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_800678A8",
-      "file": "text1b",
-      "distance": 282,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80021DB0",
       "file": "code6cac",
       "distance": 283,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_800571C0",
-      "file": "text1b",
-      "distance": 285,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -3204,25 +4140,9 @@
       "status": "active"
     },
     {
-      "func": "func_8005E098",
-      "file": "text1b",
-      "distance": 288,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8001C8DC",
       "file": "code6cac",
       "distance": 289,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_800768DC",
-      "file": "text1b",
-      "distance": 292,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -3252,24 +4172,8 @@
       "status": "active"
     },
     {
-      "func": "func_8007BC08",
-      "file": "display",
-      "distance": 296,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8002F770",
       "file": "code6cac_b",
-      "distance": 297,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80067200",
-      "file": "text1b",
       "distance": 297,
       "verdict": "ASM-PARTIAL",
       "rules": 1,
@@ -3295,14 +4199,6 @@
       "func": "func_80086CF8",
       "file": "main",
       "distance": 303,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_800693CC",
-      "file": "text1b",
-      "distance": 306,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -3340,14 +4236,6 @@
       "status": "active"
     },
     {
-      "func": "func_80073728",
-      "file": "text1b",
-      "distance": 339,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80026DA4",
       "file": "code6cac_b",
       "distance": 340,
@@ -3360,22 +4248,6 @@
       "file": "code6cac",
       "distance": 345,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80053E9C",
-      "file": "text1b",
-      "distance": 345,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8007636C",
-      "file": "text1b",
-      "distance": 346,
-      "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
     },
@@ -3396,41 +4268,9 @@
       "status": "active"
     },
     {
-      "func": "func_8006D808",
-      "file": "text1b",
-      "distance": 353,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80035828",
       "file": "code6cac_b2",
       "distance": 358,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80073C78",
-      "file": "text1b",
-      "distance": 360,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_800759D0",
-      "file": "text1b",
-      "distance": 362,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80052D00",
-      "file": "text1b",
-      "distance": 384,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -3444,33 +4284,9 @@
       "status": "active"
     },
     {
-      "func": "func_8005490C",
-      "file": "text1b",
-      "distance": 398,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8002A458",
       "file": "code6cac_b",
       "distance": 415,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80079244",
-      "file": "text1b_b",
-      "distance": 416,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006295C",
-      "file": "text1b",
-      "distance": 418,
       "verdict": "ASM-PARTIAL",
       "rules": 1,
       "status": "active"
@@ -3484,22 +4300,6 @@
       "status": "active"
     },
     {
-      "func": "func_80063E10",
-      "file": "text1b",
-      "distance": 430,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80057E84",
-      "file": "text1b",
-      "distance": 445,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "saTan3MainJump",
       "file": "code6cac_b",
       "distance": 463,
@@ -3508,25 +4308,9 @@
       "status": "active"
     },
     {
-      "func": "func_80053754",
-      "file": "text1b",
-      "distance": 464,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80032C50",
       "file": "code6cac_b",
       "distance": 465,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80077D94",
-      "file": "text1b_b",
-      "distance": 466,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -3544,22 +4328,6 @@
       "file": "text1a_c",
       "distance": 477,
       "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_800646E8",
-      "file": "text1b",
-      "distance": 488,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_800620B8",
-      "file": "text1b",
-      "distance": 499,
-      "verdict": "ASM-PARTIAL",
       "rules": 1,
       "status": "active"
     },
@@ -3588,81 +4356,54 @@
       "status": "active"
     },
     {
-      "func": "func_80063084",
-      "file": "text1b",
-      "distance": 659,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80067D14",
-      "file": "text1b",
-      "distance": 1046,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "motion_SetExMotion",
-      "file": "text1b",
-      "distance": 1453,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "gte_GetScreenXY",
+      "func": "func_8007F00C",
       "file": "display",
-      "distance": 3,
+      "distance": -1,
       "verdict": "ASM-WHOLE",
       "rules": 0,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8007F098",
-      "file": "display",
-      "distance": 5,
-      "verdict": "ASM-WHOLE",
-      "rules": 0,
-      "status": "authorize"
+      "status": "authorize",
+      "scorable": false
     },
     {
       "func": "func_8007F034",
       "file": "display",
-      "distance": 6,
+      "distance": -1,
       "verdict": "ASM-WHOLE",
       "rules": 0,
-      "status": "authorize"
+      "status": "authorize",
+      "scorable": false
     },
     {
-      "func": "func_8007F00C",
+      "func": "func_8007F098",
       "file": "display",
-      "distance": 7,
+      "distance": -1,
       "verdict": "ASM-WHOLE",
       "rules": 0,
-      "status": "authorize"
+      "status": "authorize",
+      "scorable": false
+    },
+    {
+      "func": "func_8007F200",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize",
+      "scorable": false
+    },
+    {
+      "func": "gte_GetScreenXY",
+      "file": "display",
+      "distance": -1,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize",
+      "scorable": false
     },
     {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2",
       "distance": 510,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8006F97C",
-      "file": "text1b",
-      "distance": 513,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "single_game_SetStatusUpData",
-      "file": "text1b",
-      "distance": 514,
       "verdict": "ASM-STRUCTURAL",
       "rules": 1,
       "status": "authorize"
@@ -3676,41 +4417,9 @@
       "status": "authorize"
     },
     {
-      "func": "func_80079A30",
-      "file": "text1b_b",
-      "distance": 533,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
       "func": "func_80034708",
       "file": "code6cac_b",
       "distance": 542,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8005D814",
-      "file": "text1b",
-      "distance": 544,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8006A880",
-      "file": "text1b",
-      "distance": 550,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8005F1C8",
-      "file": "text1b",
-      "distance": 562,
       "verdict": "ASM-STRUCTURAL",
       "rules": 1,
       "status": "authorize"
@@ -3740,30 +4449,6 @@
       "status": "authorize"
     },
     {
-      "func": "saTan4GaugeMain",
-      "file": "text1b",
-      "distance": 620,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_800720FC",
-      "file": "text1b",
-      "distance": 688,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "replay_camera_attack",
-      "file": "text1b",
-      "distance": 696,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
       "func": "func_80030D7C",
       "file": "code6cac_b",
       "distance": 707,
@@ -3780,14 +4465,6 @@
       "status": "authorize"
     },
     {
-      "func": "func_8005C8A8",
-      "file": "text1b",
-      "distance": 752,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
       "func": "func_8008C464",
       "file": "main",
       "distance": 761,
@@ -3796,33 +4473,9 @@
       "status": "authorize"
     },
     {
-      "func": "func_8005E54C",
-      "file": "text1b",
-      "distance": 798,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "motion_ShiftControl",
-      "file": "text1b",
-      "distance": 808,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
       "func": "func_80029454",
       "file": "code6cac_b",
       "distance": 1024,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "calc_loc_mat_fw_80055B60",
-      "file": "text1b",
-      "distance": 1108,
       "verdict": "ASM-STRUCTURAL",
       "rules": 1,
       "status": "authorize"
@@ -3844,14 +4497,6 @@
       "status": "authorize"
     },
     {
-      "func": "func_80058580",
-      "file": "text1b",
-      "distance": 2989,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
       "func": "replay_camera_rob_back_loose2",
       "file": "code6cac_b2",
       "distance": 0,
@@ -3861,15 +4506,6 @@
       "park_reason": "Canonical jump-table infrastructure, not a register/codegen cheat. The 24 asmfix rules (15 renames of GCC .L labels to external jtbl_800108CC + 8 jlabel conversions + 1 delete_between stripping GCC's emitted table) are structurally required: the switch's jump table jtbl_800108CC sits in the FIRST rodata block (asm/data 800.rodata_pre.o, bb2.ld:25, addr 0x800108CC), while code6cac_b2.o's own .rodata links far later (bb2.ld:50). A GCC in-object jump table can only land in code6cac_b2's late rodata, never at 0x108CC, so referencing the external jtbl symbol + deleting GCC's table is mandatory. Zero-asmfix Tier-4 would need relocating the jtbl into code6cac_b2.c AND reordering the whole global rodata layout (project-wide, needs user sign-off). This is the project standard for the 26 jtbl-rename functions whose tables splat carved into asm/data rodata. Separately, sandbox cannot score this file: file-wide tier-3 stripping shifts maspsx indices and crashes a sibling fn's index-based regfix reorder rule (KeyError in tools/regfix.py)."
     },
     {
-      "func": "func_8005BD30",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "Pure-C distance 1; a verified pure-C for-loop form retires all 3 regfix rules. Blocked by NEIGHBORING CHEATS, not by itself: its pure-C form renumbers .L labels file-wide, breaking func_8006BD28 + func_80070C70 asmfix delete_between/insert_before rules -- and those siblings are asm-INJECTION bridges (paste target asm verbatim via asmfix, not pure C). SOTN fix = RETIRE those sibling bridges to pure C (eliminating their label-anchored cheats); then this lands with nothing to break. Do NOT stabilize the sibling cheat anchors -- that hardens cheats, against Tier-4."
-    },
-    {
       "func": "marionation_Exec",
       "file": "system",
       "distance": 56,
@@ -3877,42 +4513,22 @@
       "rules": 44,
       "status": "parked",
       "park_reason": "register-alloc coupling \u2014 arg pseudos win allocno tiebreaker for low callee-saves (creation order), forcing rotation. chain-extender already present, volatile-bump regresses (cost > saved). same mechanism as cpu_side_move_dir_4 at larger surface; full pinning in register-alloc-pure-c.md."
-    },
-    {
-      "func": "func_8007F10C",
-      "file": "display",
-      "distance": 1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "done",
-      "park_reason": "Canonical-asm (hand-written GTE wrapper), no pure-C form -> needs user canonical-asm sign-off. Body is mtc2 a0/a1/a2 -> nop -> avsz3 -> mfc2 v0; avsz3 (GTE avg-of-3-Z) + mtc2/mfc2 GTE reg moves have no C analog. target asm (asm/funcs/func_8007F10C.s) annotates every insn 'handwritten instruction' w/ glabel/endlabel. Engine misrouted to active w/ distance 1: the only stripped diff is the GTE load-delay nop; the register  pin is NOT load-bearing (cheat-stripped sandbox emits no spurious move, GCC returns in v0 naturally). Clean finished form = tier-1 file-scope __asm__(glabel) canonical-asm block, identical treatment to authorized siblings func_8007F87C/func_8007F5EC/motutil_GetWalkDir in inline_asm_canonical.txt (user-authorized 2026-05-13). Sibling func_8007F12C (avsz4) is the identical case -> authorize as a cluster.",
-      "completed_at": "2026-05-26T15:20:04"
-    },
-    {
-      "func": "func_8007F12C",
-      "file": "display",
-      "distance": 1,
-      "verdict": "ASM-WHOLE",
-      "rules": 0,
-      "status": "done",
-      "completed_at": "2026-05-26T15:20:05"
     }
   ],
   "counts": {
-    "total": 486,
-    "active": 451,
+    "total": 531,
+    "active": 512,
     "by_status": {
-      "active": 451,
-      "authorize": 30,
-      "parked": 3,
-      "done": 2
+      "active": 512,
+      "authorize": 17,
+      "parked": 2
     },
     "by_verdict": {
-      "C": 252,
       "ASM-PARTIAL": 80,
-      "ASM-SUSPECT": 119,
-      "ASM-WHOLE": 4,
-      "ASM-STRUCTURAL": 26
+      "C": 376,
+      "ASM-SUSPECT": 56,
+      "ASM-WHOLE": 5,
+      "ASM-STRUCTURAL": 12
     }
   }
 }

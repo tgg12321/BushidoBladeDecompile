@@ -219,10 +219,33 @@ def func_tier3_count(text: str, func: str) -> int:
     return t3 + (vol if vol > 0 else 0)
 
 
-def file_func_tier3_count(stem: str, func: str) -> int:
-    """func_tier3_count against src/<stem>.c on disk. -1 on any read/locate miss."""
+_FILE_TEXT_CACHE: dict[str, tuple[float, str]] = {}
+
+
+def _read_src_cached(stem: str) -> str | None:
+    """Read src/<stem>.c and cache by (path, mtime). Invalidates on edit."""
+    p = Path(f"src/{stem}.c")
     try:
-        text = Path(f"src/{stem}.c").read_text()
+        mt = p.stat().st_mtime
     except OSError:
+        return None
+    cached = _FILE_TEXT_CACHE.get(stem)
+    if cached and cached[0] == mt:
+        return cached[1]
+    try:
+        text = p.read_text()
+    except OSError:
+        return None
+    _FILE_TEXT_CACHE[stem] = (mt, text)
+    return text
+
+
+def file_func_tier3_count(stem: str, func: str) -> int:
+    """func_tier3_count against src/<stem>.c on disk. -1 on any read/locate miss.
+    Caches the file text by mtime — queue regen calls this once per function,
+    and re-reading + re-parsing the whole file every time is the dominant cost
+    for files with many functions (text1b.c, code6cac.c, etc.)."""
+    text = _read_src_cached(stem)
+    if text is None:
         return -1
     return func_tier3_count(text, func)
