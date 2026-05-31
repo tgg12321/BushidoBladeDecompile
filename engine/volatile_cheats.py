@@ -113,6 +113,165 @@ _MACRO_ASM_DEF_RE = re.compile(
     r"(?m)^[ \t]*#[ \t]*define[ \t]+(?P<name>\w+)(?:\([^)]*\))?[^\n]*__asm__"
 )
 
+# Pattern 6: UNUSED LOCAL ARRAYS for frame-size coercion. The cheat declares a
+# fixed-size array local that is never referenced in the function body, ONLY
+# to make GCC reserve those bytes in the stack frame (matching a target frame
+# size that natural C wouldn't produce). The names usually announce intent
+# (`pad`, `_pad`, `pad2`, `pre_pad`, `_spill`, `buf`, `w`, `tail`, `sp_area`,
+# `sp_buf`, `sp_dummy`). Detection requires:
+#   - `T NAME[N];` at statement boundary (NOT inside a typedef/struct)
+#   - 2 <= N <= 64 (single-element arrays are rare scratch; >64 is genuine)
+#   - NO reference to NAME elsewhere in the body
+# False positives mostly come from struct-member declarations (handled by the
+# pre-context check) and from arrays passed by address to functions later
+# (caught by the body-reference check).
+_LOCAL_ARRAY_DECL_RE = re.compile(
+    r"(?P<lead>[;{}\n][ \t]*)"
+    r"(?:(?:volatile|register|static|const|signed|unsigned)\s+)*"
+    r"(?P<type>(?:s32|u32|s16|u16|s8|u8|int|long|short|char))"
+    r"[ \t]+(?P<name>\w+)\s*\[(?P<n>\d+)\]\s*;"
+)
+
+
+def _is_inside_struct(prev: str, lead_is_open_brace: bool) -> bool:
+    """Walk `prev` (text before a candidate decl), tracking `{` depth and
+    whether each `{` was preceded by `struct`/`union`. If `lead_is_open_brace`,
+    also consider the match's leading `{` (which is a NEW open) — checking
+    whether it is preceded by `struct`/`union` in `prev`.
+    """
+    in_struct = []
+    i, n = 0, len(prev)
+    while i < n:
+        c = prev[i]
+        if c == "{":
+            j = i - 1
+            while j >= 0 and prev[j] in " \t\n\r":
+                j -= 1
+            tok_end = j + 1
+            while j >= 0 and (prev[j].isalnum() or prev[j] == "_"):
+                j -= 1
+            tok = prev[j + 1:tok_end]
+            in_struct.append(tok in ("struct", "union"))
+        elif c == "}":
+            if in_struct:
+                in_struct.pop()
+        i += 1
+    if lead_is_open_brace:
+        # The match starts with `{`; check if THIS `{` is preceded by struct/union.
+        j = n - 1
+        while j >= 0 and prev[j] in " \t\n\r":
+            j -= 1
+        tok_end = j + 1
+        while j >= 0 and (prev[j].isalnum() or prev[j] == "_"):
+            j -= 1
+        tok = prev[j + 1:tok_end]
+        if tok in ("struct", "union"):
+            return True
+    return bool(in_struct) and in_struct[-1]
+
+
+def find_unused_local_arrays(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int, str]]:
+    """Find array declarations inside the function body that are never
+    referenced afterward. Returns (start, end, name) for each.
+
+    Struct-member declarations are excluded by walking the body up to the
+    candidate and tracking which `{` are preceded by `struct`/`union`. The
+    match's leading character (a `{` opening the struct, or a `;` ending the
+    previous member) is also considered.
+    """
+    out = []
+    body = text[body_lo:body_hi]
+    for m in _LOCAL_ARRAY_DECL_RE.finditer(body):
+        name = m.group("name")
+        n = int(m.group("n"))
+        if not (2 <= n <= 64):
+            continue
+        decl_start = body_lo + m.start("type")
+        decl_end = body_lo + m.end()
+        # Determine if match's lead is `{` (struct body open) or `;`/`}` (after
+        # a sibling statement).
+        lead_char = body[m.start()] if m.start() < len(body) else ""
+        prev = body[:m.start()]
+        if _is_inside_struct(prev, lead_char == "{"):
+            continue
+        # Reference check: name must not appear in body outside this decl
+        rest_before = body[:m.start("name")]
+        rest_after = body[m.end():]
+        full_search = rest_before + rest_after
+        if re.search(rf"\b{re.escape(name)}\b", full_search):
+            continue
+        out.append((decl_start, decl_end, name))
+    return out
+
+
+def find_dead_param_assigns(text: str, body_lo: int, body_hi: int,
+                            params: list[str]) -> list[tuple[int, int, str]]:
+    """Find `param = 0;` or `param = param;` statements where `param` is a
+    function parameter AND is never referenced after the statement in the
+    function body. This is `register-alloc-pure-c.md` Lever D — a dead store
+    that GCC DCE's but uses to break the param-reg value association.
+
+    Distinguished from legitimate local-variable initialization (where the
+    LHS is NOT a function parameter — local-init is normal C) by requiring
+    the LHS to be in the function's parameter name list."""
+    if not params:
+        return []
+    out = []
+    body = text[body_lo:body_hi]
+    param_pat = "|".join(re.escape(p) for p in params)
+    rx = re.compile(rf"(?m)^[ \t]*(?P<name>{param_pat})\s*=\s*(?:0|\1)\s*;\s*$")
+    for m in rx.finditer(body):
+        name = m.group("name")
+        rest_after = body[m.end():]
+        if re.search(rf"\b{re.escape(name)}\b", rest_after):
+            continue  # used later → not dead
+        out.append((body_lo + m.start(), body_lo + m.end(), name))
+    return out
+
+
+def _extract_func_params(text: str, span: tuple[int, int]) -> list[str]:
+    """Extract C identifier list from the parameter list of the function
+    whose definition starts at span[0]. Returns [] if extraction fails."""
+    start = span[0]
+    # The first `(` after `start` opens the param list (assuming a real def).
+    open_paren = text.find("(", start)
+    if open_paren < 0 or open_paren > span[1]:
+        return []
+    # Walk to matching `)`.
+    depth, i, n = 1, open_paren + 1, len(text)
+    while i < n and depth > 0:
+        c = text[i]
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                break
+        i += 1
+    if depth != 0:
+        return []
+    raw = text[open_paren + 1:i]
+    if not raw.strip() or raw.strip() == "void":
+        return []
+    out = []
+    for arg in raw.split(","):
+        arg = arg.strip()
+        # Last identifier in the arg is the param name (skip type words).
+        toks = re.findall(r"[A-Za-z_]\w*", arg)
+        if toks:
+            # Filter known type words; last remaining token is the name.
+            type_words = {"s8", "u8", "s16", "u16", "s32", "u32", "s64", "u64",
+                          "int", "long", "short", "char", "void", "float",
+                          "double", "signed", "unsigned", "const", "volatile",
+                          "register", "extern", "static"}
+            name_tok = None
+            for t in toks:
+                if t not in type_words:
+                    name_tok = t  # last non-type-word is the name
+            if name_tok and re.match(r"^[A-Za-z_]\w*$", name_tok):
+                out.append(name_tok)
+    return out
+
 
 def _is_legit_name(name: str) -> bool:
     return bool(_LEGIT_NAME_RE.match(name))
@@ -257,13 +416,14 @@ def find_plain_volatile_externs(text: str) -> list[tuple[int, int, str]]:
 
 
 def find_all_cheats(text: str) -> list[tuple[int, int, str]]:
-    """All five categories combined, sorted by start position. Each tuple is
+    """All categories combined, sorted by start position. Each tuple is
     (cheat_span_start, cheat_span_end_or_anchor, strip_anchor_position).
 
     For volatile cheats the strip_anchor is the `volatile` keyword position
     (which the stripper removes). For non-volatile alias renames it is the
     `asm` keyword position. For macro `__asm__` definitions it is the `#`
-    column-0 position.
+    column-0 position. For unused-locals + dead-param-assigns it is the
+    statement start (the whole statement is stripped).
 
     Spans may OVERLAP in pathological text; the strip path tolerates this by
     keyword-position dedup."""
@@ -277,6 +437,25 @@ def find_all_cheats(text: str) -> list[tuple[int, int, str]]:
     # Macro asm definitions (line-anchored)
     for s, e, _name in find_macro_asm_defs(text):
         out.append((s, e, s))
+    # Per-function unused-locals + dead-param-assigns. We need each func's body
+    # span and parameter list, so we iterate over function definitions.
+    for func_def_match in re.finditer(
+        r"(?m)^[A-Za-z_][\w \t\*]*\b([A-Za-z_]\w*)\s*\(",
+        text,
+    ):
+        fname = func_def_match.group(1)
+        span = _func_body_span(text, fname)
+        if span is None:
+            continue
+        body_lo, body_hi = span
+        # Skip if this match isn't actually the def we located (multi-def file safety)
+        if func_def_match.start() != body_lo:
+            continue
+        params = _extract_func_params(text, span)
+        for s, e, _name in find_unused_local_arrays(text, body_lo, body_hi):
+            out.append((s, e, s))
+        for s, e, _name in find_dead_param_assigns(text, body_lo, body_hi, params):
+            out.append((s, e, s))
     out.sort()
     return out
 
@@ -348,6 +527,26 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
     for s, e, name in find_macro_asm_defs(text):
         macro_spans.append((s, e, name))
 
+    # Unused local arrays + dead-param assignments inside function bodies.
+    # We iterate definitions to get their spans, then enumerate per-func.
+    body_extra_spans: list[tuple[int, int]] = []
+    for func_def_match in re.finditer(
+        r"(?m)^[A-Za-z_][\w \t\*]*\b([A-Za-z_]\w*)\s*\(",
+        text,
+    ):
+        fname = func_def_match.group(1)
+        span = _func_body_span(text, fname)
+        if span is None:
+            continue
+        if func_def_match.start() != span[0]:
+            continue
+        body_lo, body_hi = span
+        params = _extract_func_params(text, span)
+        for s, e, _ in find_unused_local_arrays(text, body_lo, body_hi):
+            body_extra_spans.append((s, e))
+        for s, e, _ in find_dead_param_assigns(text, body_lo, body_hi, params):
+            body_extra_spans.append((s, e))
+
     # Apply edits in reverse order.
     all_edits = []
     for pos in vol_positions:
@@ -360,10 +559,12 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
     for s, e in nv_alias_spans:
         all_edits.append((s, e, ""))
     for s, e, name in macro_spans:
-        # Comment out the macro definition with a /*...*/ wrapper so any
-        # subsequent uses fail compilation cleanly (undefined identifier).
         original = text[s:e]
         all_edits.append((s, e, f"/* STRIPPED CHEAT MACRO: {original.strip()} */"))
+    for s, e in body_extra_spans:
+        # Replace with whitespace so positions stay easy to reason about.
+        original = text[s:e]
+        all_edits.append((s, e, " " * len(original)))
 
     # De-overlap: sort by start descending and skip edits whose span overlaps
     # an already-scheduled later edit.
@@ -505,6 +706,12 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     for s, e, name in find_macro_asm_defs(text):
         if name in used:
             counted_vol_positions.add(s)
+    # Unused local arrays + dead-param-assigns inside this function body.
+    params = _extract_func_params(text, span)
+    for s, e, _name in find_unused_local_arrays(text, lo, hi):
+        counted_vol_positions.add(s)
+    for s, e, _name in find_dead_param_assigns(text, lo, hi, params):
+        counted_vol_positions.add(s)
     return len(counted_vol_positions)
 
 

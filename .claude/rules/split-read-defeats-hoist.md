@@ -49,11 +49,20 @@ Three coupled effects, all from this one structural change:
 2. **Direct symbol indexing** (`GLOBAL_A[i]`, not `base[i]`) in the symbol-known arm
    makes GCC materialize the case base-pointer as `lui $aN, %hi(GLOBAL_A)` naturally,
    so `base` lands in target's register, which in turn forces the remaining regs.
-3. Mark flags re-read across branches/cases `volatile` so GCC re-loads them each time
-   (matching target's repeated loads) instead of caching the value in a register.
+3. ~~Mark flags re-read across branches/cases `volatile` so GCC re-loads them each time
+   (matching target's repeated loads) instead of caching the value in a register.~~
+   **❌ FORBIDDEN as of 2026-05-31.** Marking plain game-state globals
+   `extern volatile T G;` or via `*(volatile T *)&G` casts is a codegen-coercion
+   cheat — same kind as a regfix subst rule, just spelled in C. The engine's
+   `volatile_cheats` detector flags every such usage and refuses Tier-4. If
+   restructuring the C around the branch (#1 + #2) doesn't yield the target's
+   register allocation without the volatile coercion, the function is genuinely
+   not pure-C-matchable and should be canonical-asm authorized or parked.
 
-Every pin, synthetic switch assignment, and `__asm__` barrier the plateaued version
-needed becomes UNNECESSARY. The finished form is plain C.
+Pins, synthetic switch assignments, and `__asm__` barriers were always tier-3
+debt. With the volatile lever (#3) now also forbidden, the remaining legit moves
+are: (1) duplicate-the-read structural rewrite, and (2) direct-symbol indexing
+in the symbol-known arm. If those don't close it, the function is not Tier-4.
 
 ## The meta-lesson -- a register-rename plateau is a STRUCTURAL signal
 
@@ -81,9 +90,15 @@ remaining diffs were pure register-renames.
 The fix was the structural rethink above (commit technique = `split-initial-read`):
 duplicate the `((base[arg3] & 0xFF) << 16) | base[arg2]` read into the two
 `D_800A2CD4 & 1` arms -- direct `D_800F7298[...]` in the set arm, `base[...]` (pointing
-at `D_800A2CDC`) in the other -- and mark `D_800A2CD4` / `D_800A28A0` volatile. Result:
-**0 diffs, 0 pins, 0 regfix, 0 asm.** The 12-diff "floor" evaporated; it was structural
-all along. Full analysis: `docs/asmfix_attempt_notes.md` (coli_HitPauseKatana_2 entry).
+at `D_800A2CDC`) in the other -- and **❌ FORBIDDEN PORTION** mark `D_800A2CD4` /
+`D_800A28A0` volatile. Result at the time: 0 diffs, 0 pins, 0 regfix, 0 asm.
+
+**Re-evaluation needed (2026-05-31):** with `extern volatile T D_x;` and
+`*(volatile T *)&D_x` casts on game-state globals now forbidden,
+`coli_HitPauseKatana_2`'s match is NO LONGER VALID under the new bar. The
+function needs re-derivation: either find a structural lever that doesn't
+require volatile globals, OR canonical-asm authorize. Queue regen will
+re-route it to active.
 
 ## Related
 

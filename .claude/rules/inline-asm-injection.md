@@ -116,6 +116,29 @@ into a C-source `__asm__`. Per this memory:
    coercion ladder for THIS function, the pins don't stick, here is what I
    tried" is fine and not a §6.1 dodge.
 
+## Sibling cheat family — alias-rename injection (added 2026-05-31)
+
+The 2026-05-31 audit identified an analogue at the DECLARATION level —
+providing a SECOND C handle for an existing global under a `_v` / `_u16` /
+similar synonym via `asm("OrigSym")`:
+
+```c
+/* CHEAT — volatile alias rename; defeats CSE on uses of name_v */
+extern volatile s32 D_800A14E4_v asm("D_800A14E4");
+
+/* CHEAT — non-volatile alias rename with a different type, forces a
+   width-coerced load (e.g. `lhu` on an `s32`-typed global) */
+extern u16 _D_36C0_u16 asm("D_800A36C0");
+```
+
+There is no legitimate single-TU reason to provide a second C identifier
+for the same memory under a different name. Same intent as the `__asm__`
+injection above — coerce GCC's view of the access — different spelling.
+
+The engine's `volatile_cheats` detector catches both variants and
+`mark_done` refuses Tier-4 for affected functions. See [[inline-asm-tiers]]
+expanded catalog for the full set of coercion patterns the detector covers.
+
 ## Related memories
 
 - [[lost-codegen-insert-cheat]] — the regfix form of this cheat

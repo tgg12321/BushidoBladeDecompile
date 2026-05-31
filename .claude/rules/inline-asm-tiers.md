@@ -8,13 +8,43 @@ metadata:
 
 # Inline-asm tier system
 
-> **Policy ([[tier4-sota-standard]], 2026-05-21):** only tiers **1, 2, and 4** are
-> acceptable *finished* states. **Tier 3 is never committable.** A function whose
-> only path to byte-match is a register pin, an inline-move, a scheduling barrier,
-> or a regfix rule is **unmatched WIP** — not "done with a hint." There is **no
-> attempts-log escape valve** to commit a tier-3 result (the old `.bb2_attempts`
-> "declare it needs hints" path is superseded — see [[attempts-log-gate]]). Tier 3
-> is the *work*, not the answer.
+> **Policy ([[tier4-sota-standard]], 2026-05-21; expanded 2026-05-31):** only
+> tiers **1, 2, and 4** are acceptable *finished* states. **Tier 3 is never
+> committable.** A function whose only path to byte-match is a register pin,
+> inline-move, scheduling barrier, regfix rule, OR any of the codegen-coercion
+> cheats in the **expanded tier-3 catalog** below is **unmatched WIP** — not
+> "done with a hint." There is **no attempts-log escape valve** to commit a
+> tier-3 result. Tier 3 is the *work*, not the answer.
+>
+> **EXPANDED TIER-3 CATALOG (2026-05-31).** The engine's `volatile_cheats`
+> detector now also flags these patterns as tier-3 debt — previously slipped
+> through detection as "documented techniques":
+>
+> - **Alias renames** — `extern (volatile)? T name asm("Y")` with name != Y
+>   (separate C handle for an existing global, used to defeat CSE / force
+>   re-materialization). See [[inline-asm-injection]] § alias renames.
+> - **Inline volatile casts on game-state globals** —
+>   `*(volatile T *)&D_xxxxxxxx` (forces non-volatile globals to act
+>   volatile for scheduling/CSE coercion). Game RAM globals were never
+>   volatile in the original source.
+> - **Plain `extern volatile T D_xxxxxxxx;`** — same coercion at declaration
+>   level (was documented in [[split-read-defeats-hoist]] as a technique
+>   until 2026-05-31 — now forbidden).
+> - **Unused fixed-size local arrays** — `s32 buf[N];` declared with no use,
+>   to force GCC to reserve frame bytes. See [[dead-vars-local-array]] for
+>   the deprecated rationalization.
+> - **Dead self-assignments of function parameters** — `arg0 = 0;` where
+>   `arg0` is a parameter never referenced afterward, used to break GCC's
+>   value-association for register allocation. See [[register-alloc-pure-c]]
+>   Lever D for the deprecated rationalization.
+> - **Macro-hidden `__asm__`** — `#define X ... __asm__(...) ...` macros
+>   (e.g., `PAD_NOPS_*` in `code6cac_*.c`) that expand to inline asm at
+>   every use site. The existing detector skipped `#define` lines; the new
+>   detector catches them.
+>
+> Functions affected by any of these now route to `active` after `queue regen`
+> and must reach genuine pure-C Tier-4 OR canonical-asm authorization. The
+> "documented technique" justification is no longer accepted.
 
 When BB2's inline-asm policy is honest, every `__asm__` block in
 `src/*.c` falls into one of four tiers:

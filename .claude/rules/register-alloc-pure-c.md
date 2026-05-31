@@ -95,13 +95,60 @@ a loop-local can move a prologue copy GCC otherwise copy-prop-folds away.
 **Reference:** `InitHiraRmd_80047FBC` prologue staging — see
 [[dead-vars-local-array]].
 
-## Lever D — dead self-assignment to break a value association
+## Lever D — dead self-assignment ❌ FORBIDDEN as of 2026-05-31
 
-A dead `param = 0;` (DCE'd to ZERO emitted instructions, since the param is
-unused afterward) can break GCC's `paramreg == value` association so a later
-use binds to a callee-save instead of the still-live param register.
-**Reference:** `InitHiraRmd_80047FBC` second pointer (`$s4` vs `$a0`) — see
-[[dead-vars-local-array]].
+> **This lever is no longer allowed.** Per user policy (2026-05-31), dead
+> self-assignments of function parameters (`arg0 = 0;` / `param = param;`
+> where the parameter isn't used afterward) are codegen-coercion cheats —
+> the same kind as a regfix register-rename, just spelled in C. SOTN's bar
+> rejects them. The engine's `volatile_cheats.find_dead_param_assigns`
+> detector flags every such statement; `mark_done` refuses Tier-4 for
+> affected functions.
+
+### Why this changed
+
+The earlier framing — "a dead `param = 0;` DCE'd to zero emitted
+instructions can break GCC's `paramreg == value` association" — described
+the mechanism honestly. The reframing as "legitimate pure C, not an asm
+trick" was the error:
+
+1. **It IS engineering for matching.** Writing `arg0 = 0;` followed by
+   50 lines that never reference `arg0` is not what the original source
+   looked like — a real programmer wouldn't write that. It's a reverse-
+   engineered coercion to force a specific register allocation.
+
+2. **The DCE explanation is post-hoc rationalization.** Yes, GCC DCE's
+   the store. Yes, the dead store changes RA decisions. But that's the
+   DEFINITION of a codegen-control trick — using a side-effect on the
+   compiler's analysis without that side-effect appearing in the emitted
+   code. By the same logic, a register-asm pin "DCE's to zero emitted
+   instructions" (the pin itself doesn't emit) and yet IS forbidden as
+   tier-3 debt.
+
+3. **SOTN doesn't use this.** SOTN matches functions either via natural C
+   that produces the right RA, or via `INCLUDE_ASM` if RA can't be
+   convinced. There's no documented "dead param store to break value
+   association" pattern in the community standard.
+
+### What to do instead
+
+When natural C doesn't reach the target register allocation:
+
+1. Try Lever A (block-local var split), Lever B (narrow integer type), and
+   Lever C (whole-function reallocation via loop-local) — these are
+   legitimate codegen levers, NOT coercion: they restructure the source's
+   liveness/conflict graph without injecting dead stores.
+2. If none of those reach target RA, the function is genuinely not
+   pure-C-matchable. `queue park` it for canonical-asm review; do NOT
+   add a dead `arg0 = 0;`.
+
+### Currently affected — re-evaluation needed
+
+`InitHiraRmd_80047FBC` (commit `10becc3`) used this lever to fix the
+second pointer's `$s4` vs `$a0` allocation. With Lever D forbidden, that
+function's Tier-4 status needs re-evaluation. Queue regen will re-route it.
+The dead-vars-local-array cluster has the same dependency — see
+[[dead-vars-local-array]] for the cluster's re-evaluation note.
 
 ## Order of attack
 

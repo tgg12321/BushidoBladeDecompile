@@ -110,12 +110,27 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             failures.append({"file": stem, "error": str(e)[:200]})
             continue
         for func in score._o_func_table(ref_o):
+            rules = _rule_count(func)
             try:
                 dist = score.score_func(tier4_o, ref_o, func)["score"]
+                scorable = True
             except KeyError:
-                continue
-            rules = _rule_count(func)
-            if rules == 0 and dist == 0:
+                # The stripped build is missing this function — typically because
+                # a SIBLING function's index-anchored regfix-reorder rule crashed
+                # the pipeline after tier-3/volatile strip shifted maspsx indices
+                # (see [[jtbl-rodata-split-infrastructure]]). Do NOT silently
+                # drop — if the function carries cheats (rules > 0 OR detected
+                # tier-3/volatile cheats), it is STILL outstanding and must
+                # stay in the queue, even though we can't measure honest
+                # distance here. Distance is recorded as -1 to indicate
+                # unscored.
+                t3_unscored = inlineasm.file_func_tier3_count(stem, func)
+                if rules == 0 and (t3_unscored <= 0 or func in canon_funcs):
+                    continue  # nothing to track
+                dist = -1
+                scorable = False
+            t3 = inlineasm.file_func_tier3_count(stem, func)
+            if rules == 0 and dist == 0 and (t3 <= 0 or func in canon_funcs):
                 continue  # already Tier-4 (no cheat, byte-clean) -> not outstanding
             if func in prev:  # sticky done/parked
                 pv = prev[func]
@@ -139,8 +154,11 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             else:
                 verdict = _route(verdicts.get(func, "C"), dist)
                 status = "authorize" if verdict in _AUTHORIZE else "active"
-            items.append({"func": func, "file": stem, "distance": dist,
-                          "verdict": verdict, "rules": rules, "status": status})
+            entry = {"func": func, "file": stem, "distance": dist,
+                     "verdict": verdict, "rules": rules, "status": status}
+            if not scorable:
+                entry["scorable"] = False
+            items.append(entry)
     items.sort(key=_sort_key)
     q = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
          "oracle_sha1": cfg.ORACLE_SHA1, "build_failures": failures, "items": items}

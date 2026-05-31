@@ -28,10 +28,13 @@ computation inside an `if` or reordering prevents the hoist** — the value is s
 invariant and cheap.
 
 `volatile`-qualifying the base *does* defeat the hoist (the value becomes non-
-invariant) but **spills it to the stack** (an extra `lw` each iteration) — wrong, the
-target keeps the base in a register. An `__asm__` barrier (`"=r"(x):"0"(x)`) also
-works but is **tier-3** (never committable — [[inline-asm-tiers]]); it's what the
-sibling `func_8003DE14` settled for.
+invariant) but **spills it to the stack** (an extra `lw` each iteration) — wrong,
+the target keeps the base in a register. **Also FORBIDDEN as of 2026-05-31**:
+declaring a game-state global as `volatile` (or casting via `*(volatile T *)`) to
+coerce GCC's hoist analysis is a tier-3 cheat per [[inline-asm-tiers]] (expanded
+catalog). An `__asm__` barrier (`"=r"(x):"0"(x)`) also works but is **tier-3**
+(never committable); it's what the sibling `func_8003DE14` settled for — that
+function's status now needs re-evaluation under the expanded catalog.
 
 ## The pure-C fix — make the invariant's pseudo MULTI-SET
 
