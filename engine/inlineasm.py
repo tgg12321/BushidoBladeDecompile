@@ -124,15 +124,28 @@ def _strip_spans(text: str) -> list[tuple[int, int]]:
 
 
 def strip_tier3_file(text: str) -> tuple[str, int]:
-    """Return (modified text, count) with all tier-3 asm blocks + pins removed."""
+    """Return (modified text, count) with all tier-3 asm blocks + pins removed,
+    AND every volatile-coercion cheat (alias renames, `*(volatile T *)&D_x`
+    casts, scalar `extern volatile T D_x;` decls — see engine.volatile_cheats)
+    stripped of its `volatile` qualifier. Count is the sum of both kinds.
+
+    Both removals serve the same purpose: the sandbox sees the function the
+    way `queue done` requires for Tier-4 (pure C, no codegen-coercion knobs),
+    so the score reflects the honest pure-C distance.
+    """
     spans = sorted(_strip_spans(text), reverse=True)
+    n_t3 = len(spans)
     for s, e in spans:
         text = text[:s] + text[e:]
-    return text, len(spans)
+    # Second pass: strip volatile-coercion cheats (qualifier removal only).
+    from . import volatile_cheats  # local import to avoid cycle
+    text, n_vol = volatile_cheats.strip_volatile_cheats_file(text)
+    return text, n_t3 + n_vol
 
 
 def write_stripped(stem: str, out_path: str) -> int:
-    """Write src/<stem>.c with tier-3 asm stripped to out_path. Returns count."""
+    """Write src/<stem>.c with tier-3 asm + volatile coercion cheats stripped to
+    out_path. Returns count (tier-3 asm/pins + volatile-qualifier removals)."""
     text = Path(f"src/{stem}.c").read_text()
     stripped, n = strip_tier3_file(text)
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
@@ -141,29 +154,69 @@ def write_stripped(stem: str, out_path: str) -> int:
 
 
 def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
-    """(start, end) char span of func's definition+body in text, or None if not
-    locatable. Heuristic: a definition is `<name>(` on a line that starts at
-    column 0 (splat-generated src/*.c put every definition at column 0; calls
-    and nested references are indented). Returns None rather than guess, so
-    callers degrade to "no signal" instead of a wrong one."""
-    for m in re.finditer(r"(?m)^[A-Za-z_][\w \t\*]*\b" + re.escape(func) + r"\s*\(", text):
-        brace = text.find("{", m.end())
-        if brace == -1:
+    """Locate `func`'s DEFINITION body (not its declaration). Splat-generated
+    src/*.c put each definition at column 0; calls and nested references are
+    indented. We must SKIP extern declarations (`extern T func(args);`) which
+    match the same column-0 pattern — these are recognised by the FIRST non-
+    whitespace after the closing `)` being `;` rather than `{`. Returns None
+    rather than guess, so callers degrade to no-signal.
+
+    Earlier versions used `text.find('{', m.end())` which silently picked up
+    the NEXT function's opening brace when `func` had an extern declaration
+    at the top of the file, attributing far-away unrelated cheats to it.
+    """
+    pattern = re.compile(r"(?m)^[A-Za-z_][\w \t\*]*\b" + re.escape(func) + r"\s*\(")
+    n = len(text)
+    for m in pattern.finditer(text):
+        # Walk to the matching `)` of the opening `(`.
+        i, depth, in_str = m.end(), 1, False
+        while i < n and depth > 0:
+            c = text[i]
+            if in_str:
+                if c == "\\":
+                    i += 2
+                    continue
+                if c == "\"":
+                    in_str = False
+            elif c == "\"":
+                in_str = True
+            elif c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+            i += 1
+        if depth != 0:
             continue
-        end = _match_brace(text, brace)
+        # Skip whitespace after `)`; expect `{` (definition) or `;` (decl).
+        j = i
+        while j < n and text[j] in " \t\n\r":
+            j += 1
+        if j >= n or text[j] != "{":
+            continue  # declaration or other; skip this candidate
+        end = _match_brace(text, j)
         if end != -1:
             return (m.start(), end)
     return None
 
 
 def func_tier3_count(text: str, func: str) -> int:
-    """Number of tier-3 strip-spans (asm blocks + register pins) inside func's
-    body. -1 if the body can't be located (degrade to no-signal)."""
+    """Number of tier-3 strip-spans (asm blocks + register pins) PLUS volatile-
+    coercion cheats (alias renames + `*(volatile T *)&D_x` casts + scalar
+    `extern volatile T D_x;` decls — see engine.volatile_cheats) inside func's
+    body. -1 if the body can't be located.
+
+    `queue done` (engine/queue.py) refuses to mark Tier-4 if this count > 0 for
+    a non-canonical-asm function, so adding volatile cheats here is what makes
+    them a hard-stop in the same way `register T x asm("$N")` pins already are.
+    """
     span = _func_body_span(text, func)
     if span is None:
         return -1
     lo, hi = span
-    return sum(1 for s, _e in _strip_spans(text) if lo <= s < hi)
+    t3 = sum(1 for s, _e in _strip_spans(text) if lo <= s < hi)
+    from . import volatile_cheats  # local import to avoid cycle
+    vol = volatile_cheats.func_volatile_cheat_count(text, func)
+    return t3 + (vol if vol > 0 else 0)
 
 
 def file_func_tier3_count(stem: str, func: str) -> int:
