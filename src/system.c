@@ -393,14 +393,15 @@ extern u8 D_800A11D5;
 extern s32 D_800A11DC[];
 extern s32 D_800A125C[];
 extern u8 D_800A1494;
+extern u8 D_800A1495;
 s32 cpu_side_move_dir_4(s32 a0, u8 *a1)
 {
   int new_var;
   s32 v0;
   s32 cnt;
   u8 *idx_1494;
-  register u8 *idx_1495 asm("s4");
-  register s32 *tbl_125c asm("s3");
+  u8 *idx_1495;
+  s32 *tbl_125c;
   u8 saved;
   s32 status;
   u8 *src;
@@ -411,7 +412,7 @@ s32 cpu_side_move_dir_4(s32 a0, u8 *a1)
   D_800F19B8 = sys_VSync(-1) + 0x3C0;
   tbl_125c = D_800A125C;
   idx_1494 = &D_800A1494;
-  idx_1495 = idx_1494 + 1;
+  idx_1495 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1);
   D_800F19BC = 0;
   D_800F19C0 = &D_80016240;
   loop:
