@@ -492,27 +492,29 @@ void func_8007C4B8(s32 *out, Rect *r)
 }
 s32 func_8007C748(s32 arg0, s32 arg1, s32 arg2) {
     s32 var_v1;
+    s32 var_v0;
 
     if ((u32) (D_8009BE74 - 1) < 2U) {
         var_v1 = 0xE1000000;
         if (arg1 != 0) {
             var_v1 = 0xE1000800;
         }
-        arg2 = arg2 & 0x27FF;
         if (arg0 != 0) {
-            arg2 |= 0x1000;
+            var_v0 = (arg2 & 0x27FF) | 0x1000;
+        } else {
+            var_v0 = arg2 & 0x27FF;
         }
     } else {
         var_v1 = 0xE1000000;
         if (arg1 != 0) {
             var_v1 = 0xE1000200;
         }
-        arg2 = arg2 & 0x9FF;
+        var_v0 = arg2 & 0x9FF;
         if (arg0 != 0) {
-            arg2 |= 0x400;
+            var_v0 |= 0x400;
         }
     }
-    return var_v1 | arg2;
+    return var_v1 | var_v0;
 }
 s32 func_8007C7A0(s16 arg0, s16 arg1)
 {
