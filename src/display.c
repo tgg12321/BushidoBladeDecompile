@@ -119,19 +119,16 @@ void func_8007B4D0(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
     fn = (void (*)())p[2];
     fn(p[3], arg0, 8, ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
 }
-void func_8007B564(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    register s32 a asm("$19") = arg0;
-    register s32 b asm("$18") = arg1;
-    register s32 c asm("$16") = arg2;
-    register s32 d asm("$17") = arg3;
+void func_8007B564(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
     s32 *p;
     void (*fn)();
-    s32 packed;
-    func_8007B3A8(&g_str_clearimage, a);
-    packed = ((d & 0xFF) << 16) | ((c & 0xFF) << 8) | 0x80000000;
+    u32 hi, lo;
+    func_8007B3A8(&g_str_clearimage, arg0);
+    hi = (u32)arg3 << 16;
+    lo = ((u32)arg2 << 8) | 0x80000000;
     p = (s32 *)g_gpu_dev_table;
     fn = (void (*)())p[2];
-    fn(p[3], a, 8, packed | (b & 0xFF));
+    fn(p[3], arg0, 8, (hi | lo) | (u32)arg1);
 }
 extern u32 g_str_loadimage;
 

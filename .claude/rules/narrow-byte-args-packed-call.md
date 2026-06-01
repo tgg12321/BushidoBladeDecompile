@@ -116,6 +116,57 @@ back to the broader [[register-alloc-pure-c]] playbook.
 The sibling `func_8007B564` (same display.c cluster, identical shape +
 `| 0x80000000` set bit) is a candidate for the same lever.
 
+## Confirmed sibling — func_8007B564 (display.c, 2026-05-31)
+
+Same display.c cluster as `func_8007B4D0` but with the GPU "set" bit
+`| 0x80000000` ORed into the packed byte. 6 regfix rules (vs B4D0's 4)
++ 4 register-asm pins ($s3/$s2/$s1/$s0). The `u8` type change alone
+landed the lever's PROLOGUE alloc but residual 4 diffs remained: the
+`andi/sll` chain for arg3 needed to schedule BEFORE arg2's `andi/sll +
+lui + or const` chain (in target, arg3's `sll 16` comes first; in mine
+arg2's `sll 8` came first).
+
+**Why the const-OR case needs an extra step.** The 0x80000000 OR
+extends arg2's RTL chain by +1 hop (`s0 |= v0` adds an insn between
+arg2's shifts and the final OR). That makes arg2's INSN_PRIORITY
+(longest chain to fn exit) STRICTLY HIGHER than arg3's, so sched.c
+picks arg2's andi/sll first regardless of LUID. The plain-byte-pack
+case (no const, like B4D0) has equal chain lengths so the LUID
+tie-break decides — and natural source order puts arg3 first in the
+OR, so arg3 wins the tie.
+
+**The fix — separate `hi = arg3<<16;` and `lo = (arg2<<8)|const;`
+statements with `hi` FIRST.** This makes arg3's andi/sll get LOWER
+LUIDs at expand AND keeps arg2's chain at its full length. With
+priorities tied (after factoring in extension), LUID tie-break gives
+arg3 the early schedule:
+
+```c
+void func_8007B564(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
+    s32 *p;
+    void (*fn)();
+    u32 hi, lo;
+    func_8007B3A8(&g_str_clearimage, arg0);
+    hi = (u32)arg3 << 16;                     /* expanded first -> low LUID */
+    lo = ((u32)arg2 << 8) | 0x80000000;       /* arg2's chain stays at +1 hop */
+    p = (s32 *)g_gpu_dev_table;
+    fn = (void (*)())p[2];
+    fn(p[3], arg0, 8, (hi | lo) | (u32)arg1);
+}
+```
+
+Sandbox 15 → 0; `retire` dropped all 6 regfix rules; SHA1 == oracle;
+100% pure C. The pin cluster + rule cluster + masks all retired by one
+type-change + statement-split.
+
+**The trap to avoid here.** Naively writing the OR as a single inline
+expression (no `hi`/`lo` locals) bottoms out at distance 6 (regs swap:
+arg2 → s1, arg3 → s0 — opposite of target). The two-local form is
+load-bearing for the priority/LUID balance. Putting both into ONE
+local first (e.g. `lo = ... | const; packed = ((arg3<<16) | lo);`)
+gets to distance 4 (regs match but scheduling wrong). Splitting into
+`hi` + `lo` with `hi` first hits 0.
+
 ## Related
 - [[register-alloc-pure-c]] — the parent playbook; this is Lever B (narrow
   integer type) applied to the byte-packed-arg-call pattern specifically.
