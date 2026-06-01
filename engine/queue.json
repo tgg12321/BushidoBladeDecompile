@@ -4381,7 +4381,7 @@
       "rules": 21,
       "status": "parked",
       "scorable": false,
-      "park_reason": "register-rotation cluster (21 regfix subst + 1 manufactured insert at idx 15 = lost-codegen-insert move a3,v0); pure-C levers tested (A block-local split, B s32 type, structural restructuring of clamp/dispatch, dispatch-test type changes, var_a1 init reordering) all neutral or regressive. Best honest score 18 (50 vs 51 insns; loses the manufactured save). Same wall pattern as cpu_side_move_dir_4 / marionation_Exec confirmed limits in [[register-alloc-pure-c]] \u2014 register-rotation cluster cc1's allocator doesn't naturally produce; needs directed permuter sweep from clean target (per [[difficult-is-not-impossible]] \u00a7 resume avenues). Sibling func_8007C86C has identical structure + same cheat shape. Not a jtbl-infra or GTE-wrapper auto-confirm; novel pure-C-resistant cluster needing user judgment on permuter budget vs parking until next iteration."
+      "park_reason": "arg1-preload lever found this session pushes honest floor 20 -> 18 (lower than prior session 19-22). See memory/project/func-8007c7a0-arg1-preload-lever.md for evidence. Structural ceiling: missing 'move a3,v0' park-merge insn that GCC won't emit without simultaneously-live pseudos. Next: examine matched sibling func_8007C748 + try declaration-order swap a la param-local-alias-prologue-pair-flip."
     },
     {
       "func": "func_8007C86C",
