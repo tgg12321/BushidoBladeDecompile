@@ -4391,7 +4391,7 @@
       "rules": 21,
       "status": "parked",
       "scorable": false,
-      "park_reason": "RA-coupling plateau (same cluster as sibling func_8007C7A0): 21 rules including 19 pure register-rename substs (target uses // where cc1 picks // via natural ascending preference) + 1 frame-size subst (cc1: 24-byte frame; target: 16-byte) + 1 lost-codegen delete+insert manufacturing 'addu ,,' at idx 15. Honest pure-C distance 20, structural 51/51 insns match. Tried 5+ C restructurings (s32 args + s16 casts, arg0_orig preserve, reduced locals, var split, ternary-style chain) \u2014 all regressed or flat. Pattern matches cpu_side_move_dir_4 / marionation_Exec RA-coupling family (sessions 5-10 evidence in register-alloc-pure-c.md). Sibling func_8007C7A0 has IDENTICAL 21-rule cluster \u2014 not a one-off. Needs canonical-asm authorization decision or directed permuter."
+      "park_reason": "RA-coupling plateau (same cluster as sibling func_8007C7A0): 21 rules incl 19 register-rename substs + 1 frame-size + 1 lost-codegen insert. This session: clean v8 form (var_a1=arg1 unconditional + strip int new_var/new_var2/dead 'if(!D_8009BE7A){}' padding) drops sandbox floor 20->17 (1 below C7A0's 18 floor). Same structural ceiling: missing target 'move a3,v0' park-merge insn at idx 16 that GCC coalesces away. NOT committable (no rule retire). Evidence: memory/project/func-8007c86c-clean-form-floor.md."
     },
     {
       "func": "func_8007C938",
