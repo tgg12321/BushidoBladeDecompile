@@ -144,11 +144,105 @@ then insert_afters (shifts indices), then insert_labels (no index
 shift), then reorders (on post-insert indices).
 Instruction indices count actual instructions (not directives, labels,
 or comments) from the function entry point, 0-based.
+
+  # Function-local label slot references — `{lbl#N}` (added 2026-06-01):
+
+  Any rule's replacement text (splice / subst / subst_multi / insert /
+  insert_after) can use `{lbl#N}` placeholders to reference the Nth `.L<digit>+`
+  label cc1 emits within the function's body, in document order (1-indexed).
+  At rule apply time, `{lbl#N}` is substituted with the actual label name
+  (e.g. `.L152` for slot #1 in func_8007CE0C).
+
+  Use this instead of hardcoded `.L<N>` references — GCC's auto-labels are
+  TU-wide and shift whenever ANY function in the same .c file edits its
+  source structure. Hardcoded references silently break (see the
+  func_8007CE0C / func_8007BC08 cascade, 2026-05-31, recovered by d3576c3).
+  `{lbl#N}` rules survive TU drift as long as the TARGET function's own
+  body isn't restructured — which is the same source the rule is anchored
+  against, so they evolve together.
+
+  Example (func_8007CE0C):
+    func_X: splice 11..23 "lh\\t$5,4($17)" ... "bltz\\t$5,{lbl#1}" ... "j\\t{lbl#2}" ...
+
+  Probe a function's label sequence with `bash tmp/probe_func_labels.sh
+  <func_name> [src/<file>.c]` (1-indexed output). Migrate by replacing each
+  literal `.L<N>` with `{lbl#K}` where K is the label's slot index in cc1's
+  current emission order. `verify-oracle --rebuild` proves the substitution
+  is byte-for-byte correct.
+
+  Out-of-range slot refs (e.g. `{lbl#13}` when the function has only 7
+  labels) emit a warning and an `.L_UNRESOLVED_lbl_<N>` marker that fails at
+  assembly time — preferring build-fail to silent-wrong-codegen.
 """
 import os
 import re
 import sys
 from pathlib import Path
+
+
+# ---------------------------------------------------------------------------
+# Function-local label slot references — {lbl#N} substitution
+# ---------------------------------------------------------------------------
+#
+# Rule replacement strings (splice / subst / subst_multi / insert / insert_after)
+# can use `{lbl#N}` placeholders to reference the Nth `.L<digit>+` label CC1
+# emits within the function's body, in document order (1-indexed). At rule
+# apply time, the placeholder is substituted with the actual label name.
+#
+# Why this exists: GCC's `.L<N>` labels are TU-wide and shift whenever any
+# function in the same .c file edits its source structure. Splice rules with
+# hardcoded `.L152`-style references silently break — see the
+# func_8007CE0C / func_8007BC08 cascade (2026-05-31, recovered by d3576c3).
+# Rules using `{lbl#N}` survive .L drift as long as the function's OWN body
+# isn't restructured (which is the same source the splice rule is anchored
+# in, so they evolve together).
+#
+# Function-local indexing means: cc1 emits e.g. .L152, .L154, .L156, .L158,
+# .L159, .L160, .L162, .L177, .L167, .L171, .L170, .L173, .L174 within
+# func_8007CE0C's body — `{lbl#1}` is .L152, `{lbl#7}` is .L162, `{lbl#13}`
+# is .L174. Adding/removing labels in OTHER functions doesn't affect the
+# slot-to-label mapping for this function.
+
+_LABEL_DEF_RE = re.compile(r'^\s*(\.L\d+):\s*$')
+_LBL_SLOT_REF_RE = re.compile(r'\{lbl#(\d+)\}')
+
+
+def _extract_local_label_defs(lines):
+    """Return list of `.L<N>` labels DEFINED in this function's `lines`
+    (list of (text, idx) tuples), in document order. Both indented and
+    unindented label defs are caught."""
+    labels = []
+    for text, _idx in lines:
+        m = _LABEL_DEF_RE.match(text.rstrip('\r\n'))
+        if m:
+            labels.append(m.group(1))
+    return labels
+
+
+def _substitute_label_slots(text, labels, fname=None, context=None):
+    """Replace `{lbl#N}` placeholders in `text` with `labels[N-1]`. Returns
+    `text` unchanged if no placeholders present. Out-of-range slot references
+    emit a warning + an unresolved-marker (`.L_UNRESOLVED_lbl_<N>`) that the
+    assembler will fail on — silent-wrong-codegen is worse than build-fail."""
+    if '{lbl#' not in text:
+        return text
+
+    def repl(m):
+        n = int(m.group(1))
+        if 1 <= n <= len(labels):
+            return labels[n - 1]
+        prefix = f"regfix: WARNING: {fname}" if fname else "regfix: WARNING"
+        if context:
+            prefix += f" ({context})"
+        sample = labels[:5] + ['...'] if len(labels) > 5 else labels
+        print(
+            f"{prefix}: {{lbl#{n}}} references label slot #{n}, "
+            f"but function defines only {len(labels)} labels (first few: "
+            f"{sample}). Emitting unresolved-marker; assembler will fail.",
+            file=sys.stderr,
+        )
+        return f".L_UNRESOLVED_lbl_{n}"
+    return _LBL_SLOT_REF_RE.sub(repl, text)
 
 
 def load_config(config_path):
@@ -427,11 +521,50 @@ def process_function(lines, func_config):
 
     lines is a list of (original_line_text, insn_idx_or_None) tuples.
     """
-    swap_list = func_config.get('swaps', [])
-    subst_list = func_config.get('substs', [])
-    insert_list = func_config.get('inserts', [])
-    reorder_list = func_config.get('reorders', [])
     fname = func_config.get('__name__')
+
+    # Function-local label sequence — extracted ONCE from cc1's emitted output
+    # (lines as received). Used for {lbl#N} substitution across all rule types
+    # that carry replacement text. See module-level comment on
+    # _extract_local_label_defs for rationale. The substitution makes splice /
+    # subst / insert / insert_after rules robust to TU-wide .L renumbering;
+    # they survive drift as long as THIS function's body isn't restructured
+    # (which is the same source the rules anchor against, so they evolve
+    # together).
+    local_labels = _extract_local_label_defs(lines)
+
+    # Pre-substitute {lbl#N} in all rule-replacement text. Substitution is a
+    # no-op for replacements that don't contain `{lbl#`, so the cost is
+    # negligible for the common case. Done up front so downstream phases
+    # see only resolved text and don't need to know about slot references.
+    def _sub_text(txt, ctx):
+        return _substitute_label_slots(txt, local_labels, fname=fname, context=ctx)
+
+    raw_substs = func_config.get('substs', [])
+    subst_list = [(i, p, _sub_text(r, f"subst @ {i}")) for i, p, r in raw_substs]
+
+    raw_subst_multis = func_config.get('subst_multis', [])
+    subst_multi_list_resolved = [
+        (i, p, [_sub_text(r, f"subst_multi @ {i}") for r in repls])
+        for i, p, repls in raw_subst_multis
+    ]
+
+    raw_inserts = func_config.get('inserts', [])
+    insert_list = [(i, _sub_text(t, f"insert @ {i}")) for i, t in raw_inserts]
+
+    raw_insert_afters = func_config.get('insert_afters', [])
+    insert_after_list_resolved = [
+        (i, _sub_text(t, f"insert_after @ {i}")) for i, t in raw_insert_afters
+    ]
+
+    raw_splices = func_config.get('splices', [])
+    splice_list_resolved = [
+        (start, end, [_sub_text(r, f"splice {start}..{end}") for r in repls])
+        for start, end, repls in raw_splices
+    ]
+
+    swap_list = func_config.get('swaps', [])
+    reorder_list = func_config.get('reorders', [])
     _dump_lines(lines, "Phase 0: initial (post-maspsx)", fname)
 
     # Phase 1: Apply register swaps (on original indices)
@@ -501,7 +634,7 @@ def process_function(lines, func_config):
     # Indentation is preserved from the original line. The replacement
     # strings themselves can include leading whitespace; whitespace is
     # left alone (use \t in the rule for explicit indents).
-    subst_multi_list = func_config.get('subst_multis', [])
+    subst_multi_list = subst_multi_list_resolved
     if subst_multi_list:
         sm_status = {
             (sm_idx, pat): {'visited': False, 'matched': False}
@@ -575,7 +708,7 @@ def process_function(lines, func_config):
     # The first replacement line takes the start idx. Subsequent
     # replacement lines get idx=None (synthesized). All other lines in
     # (start, end] are removed entirely (no idx left behind).
-    splice_list = func_config.get('splices', [])
+    splice_list = splice_list_resolved
     if splice_list:
         for sp_start, sp_end, replacements in splice_list:
             # Collect the positions of instruction lines in [start, end]
@@ -599,7 +732,8 @@ def process_function(lines, func_config):
             indent = m_indent.group(1) if m_indent else '\t'
             trailing_newline = '\n' if first_text.endswith('\n') else '\n'
 
-            # Build replacement tuples.
+            # Build replacement tuples. {lbl#N} refs are already substituted
+            # in `replacements` (pre-resolved at process_function entry).
             n_repls = len(replacements)
             replacement_tuples = []
             for i, repl in enumerate(replacements):
@@ -762,7 +896,7 @@ def process_function(lines, func_config):
     _dump_lines(lines, "Phase 3: after inserts", fname)
 
     # Phase 3.5: Apply insert_after (sorted by index descending to preserve positions)
-    insert_after_list = func_config.get('insert_afters', [])
+    insert_after_list = insert_after_list_resolved
     if insert_after_list:
         for insert_idx, asm_text in sorted(insert_after_list, key=lambda x: x[0], reverse=True):
             # Find the position in lines where insn_idx == insert_idx

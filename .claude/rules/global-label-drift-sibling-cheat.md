@@ -56,10 +56,37 @@ source produced — it is a latent landmine for ANY edit to ANY earlier function
    A higher **max** label number = the global shift = the delta the sibling drifted.
 4. Grep the sibling's rules for a hardcoded `\.L\d+` literal — that's the victim.
 
-## Resolution — a POLICY decision (escalate in headless)
+## Resolution — three ways forward
 
-Two ways forward, both touching a **second function**, so they are out of scope
-for a single-function completion pass and should be surfaced to the user:
+**Preferred (since 2026-06-01): `{lbl#N}` function-local label slots.**
+Migrate the sibling's hardcoded-`.L<N>` rule to use the function-local label
+slot mechanism in `tools/regfix.py` (commit `[this commit when landed]`).
+Replace the literal label reference (e.g. `"j\t.L32"`) with `{lbl#N}` where N
+is the 1-indexed position of the target label in cc1's emission order for
+THAT function. The substitution happens at regfix-apply time using cc1's
+current output, so the rule survives any TU-wide `.L` renumbering — what
+matters is the function-local label sequence, which is stable as long as
+THAT function's source isn't restructured (which is the same source the rule
+is anchored against).
+
+Supported in: `splice` (replacement strings), `subst` (replacement string),
+`subst_multi` (each replacement), `insert` (asm text), `insert_after` (asm
+text). The `insert_label` directive is for synthesizing NEW stable labels
+(different mechanism — when you want to anchor a hand-written branch target
+that cc1 wouldn't emit anyway). `{lbl#N}` is for referencing labels cc1
+already emits within the function.
+
+To migrate a rule:
+1. Probe cc1's current label sequence for the function:
+   `bash tmp/probe_func_labels.sh <func_name> [src/<file>.c]`
+   (Returns labels in document order, 1-indexed.)
+2. Identify which slot # each hardcoded label maps to.
+3. Rewrite the rule, e.g. `"j\t.L152"` → `"j\t{lbl#1}"`.
+4. `verify-oracle --rebuild` — the bytes don't change (same labels resolved),
+   confirming the migration is byte-for-byte correct.
+5. The rule is now drift-robust.
+
+**Fallback alternatives (only when {lbl#N} doesn't apply):**
 
 - **Mechanical drift repair:** bump the sibling's hardcoded label by the delta
   (`.L280-4` → `.L(280+N)-4`). Verify by full SHA1 (the oracle is the only proof
