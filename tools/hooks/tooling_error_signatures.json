@@ -89,8 +89,6 @@
         "cc1: not found",
         "cc1: No such file",
         "worktree_bootstrap.sh missing",
-        "No module named 'm2c'",
-        "No module named 'splat'",
         "checkout is incomplete"
       ],
       "regexes": [
