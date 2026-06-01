@@ -39,3 +39,8 @@ documented. See `CLAUDE.md` (Hooks) and the `debugging-discipline` memory rule.
 - **Triggering command:** `which mipsel-linux-gnu-objdump 2>&1 ; mipsel-linux-gnu-objdump --version 2>&1 | head -2`
 - **Why not a real failure:** Ran mipsel-linux-gnu-objdump from Windows Git Bash (no WSL prefix); the toolchain only exists inside WSL and the build itself is healthy (display.o just built at 20:32). The actual command needed wsl prefix — the guard fired on an exploratory command, not a build failure.
 - **Action:** tighten signature `worktree-dep-missing` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
+
+## 2026-05-31 23:58:51 — FALSE POSITIVE (worktree-symlink/worktree-dep-missing)
+- **Triggering command:** `wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && source .venv/bin/activate 2>/dev/null && python3 -m m2c.main --target mipsel-gcc --function func_8007CBB0 asm/funcs/func_8007CBB0.s 2>&1 | head -150'`
+- **Why not a real failure:** m2c is an optional analysis aid for reverse-engineering asm into draft C, not a build dep. The engine pipeline (cc1+maspsx+as+ld) is fully working — verify-oracle --rebuild just confirmed SHA1 == oracle. m2c-not-installed should not block decomp work; the agent can read asm directly. The signature 'worktree-dep-missing' overmatches: ModuleNotFoundError on a non-build python module is not the same class as a missing toolchain binary.
+- **Action:** tighten signature `worktree-dep-missing` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
