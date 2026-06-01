@@ -4,33 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007B6C8",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 19,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007B844",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007BC08",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": -1,
@@ -4461,6 +4434,36 @@
       "status": "authorize"
     },
     {
+      "func": "func_8007B6C8",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 19,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "cross_jump-merge floor: GPU command wrapper with 2-way early-return -1 guards. Honest pure-C distance plateaus at 21 (target 49 insns, sandbox 47) across 7 structural variants: HEAD form, single-return goto-end, mixed inline-return+goto, do-while-0 wrapper, short-circuit &&, inlined dispatch (no fn/p locals), reordered packing. GCC jump2 cross_jump folds the two return -1 paths into a single epilogue tail; target keeps them split as beqz->end(li v0,-1 delay) + bnez->body(sll s1,16 delay) + j end(li v0,-1 delay). Sibling siblings gpu_LoadImage/gpu_StoreImage (no early-return guards) match in pure C; gpu_LoadImage/gpu_StoreImage prove the dispatch shape is matchable. The 19-rule cluster (incl 16-element reorder@21-36 + cascading register-rename substs /////) recreates targets scheduling/allocation cascading from the unmerged early-return shape - same structural family as documented saEft00Add (cross-jump-store-tail-merge). Needs user policy: either project-wide rodata reorder, canonical-asm authorization for the dispatch wrapper variant, or PERM_-directed permuter time budget"
+    },
+    {
+      "func": "func_8007B844",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 6,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "Register-rotation plateau (7 honest pure-C diffs, all reg-rename + 1 reorder in the final-block: target uses mask in , table in , return staged early in ; mine uses mask in , table in , store via ). 32 structural variants tested (return-stage alias, p/fn extract, comma operator, operand-flip, temp val, mask local, two-step assign, compound assign, volatile cast, array index, inverse mask, decomposed shifts, n-arg in tail, addr subtract, etc.) \u2014 all plateau at distance 7 with identical register-rotation diff structure. Sibling gpu_ClearOTag at the same file uses the same C pattern  and compiles to MINE pattern (mask in v1, table in v0), proving the GCC-natural codegen for this expression is mine. Target compiled from a different C structure I have not found in 32 variants. Same character as documented [[register-alloc-pure-c]] cpu_side_move_dir_4 plateau but smaller (7 vs 15). Remaining avenues: directed permuter from clean single-fn target (untried, requires 30+ min setup + run); instrumented cc1 alloc dump."
+    },
+    {
+      "func": "func_8007BC08",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "ASM-SUSPECT/structural \u2014 298-insn gpu_PutDispEnv-style display environment setup (cached-diff + GP1 packet sends via g_gpu_dev_table[0x10]). Asmfix rule replace_with_asmfile bridges. Partial pure-C reconstruction from m2c brings sandbox 296 -> 132 (286/298 insns). Remaining 132-distance gap: 6 missing lhu+sll/sra cast-pattern pairs (GCC combine folds (s32)(s16)u16var to lh; needs structural lever to defeat fold), plus scheduling/register-allocation cascade through the 4-comparison + video-mode + GP1 packet build region. Multi-session pure-C work; needs same depth as defeat-licm-hoist-var-reuse class fixes. Oracle SHA1 green throughout (asmfix continues to provide target bytes)."
+    },
+    {
       "func": "replay_camera_rob_back_loose2",
       "file": "code6cac_b2",
       "distance": 0,
@@ -4481,14 +4484,14 @@
   ],
   "counts": {
     "total": 527,
-    "active": 508,
+    "active": 505,
     "by_status": {
-      "active": 508,
+      "active": 505,
       "authorize": 17,
-      "parked": 2
+      "parked": 5
     },
     "by_verdict": {
-      "C": 373,
+      "C": 370,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 56,
       "ASM-WHOLE": 5,
