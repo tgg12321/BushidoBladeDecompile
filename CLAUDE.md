@@ -230,8 +230,11 @@ commit-time cheat audit** (`audit_asm_cheats.py` remains only as a manual detect
 
 ## Guards (hooks)
 Active: root-write cleanliness, CRLF/tooling-error (WSL env-failure) detection, the cc1psx-footgun
-block, memory/CLAUDE.md hygiene, and a SessionStart metrics-preflight (notifies if the metrics
-Postgres is down; never blocks). The legacy decomp-loop hooks (`grind_check`, `resilience_judge`,
+block, memory/CLAUDE.md hygiene, a SessionStart metrics-preflight (notifies if the metrics
+Postgres is down; never blocks), and a `commit-msg` **park_src_guard** (blocks `park:` commits
+that modify build-pipeline files — install via `cp tools/hooks/park_src_guard.py
+.git/hooks/commit-msg`; override with `[skip-park-src-guard]` in the commit body when a `park:`
+legitimately fixes a sibling). The legacy decomp-loop hooks (`grind_check`, `resilience_judge`,
 `escape_valve`, …) and the main-branch publish-only guard have been removed.
 
 ## Metrics (`metrics/` + `tools/metrics/`)
