@@ -95,15 +95,27 @@ a loop-local can move a prologue copy GCC otherwise copy-prop-folds away.
 **Reference:** `InitHiraRmd_80047FBC` prologue staging — see
 [[dead-vars-local-array]].
 
-## Lever D — dead self-assignment ❌ FORBIDDEN as of 2026-05-31
+## Lever D — dead stores (all forms) ❌ FORBIDDEN as of 2026-05-31 / expanded 2026-06-01
 
-> **This lever is no longer allowed.** Per user policy (2026-05-31), dead
-> self-assignments of function parameters (`arg0 = 0;` / `param = param;`
-> where the parameter isn't used afterward) are codegen-coercion cheats —
-> the same kind as a regfix register-rename, just spelled in C. SOTN's bar
-> rejects them. The engine's `volatile_cheats.find_dead_param_assigns`
-> detector flags every such statement; `mark_done` refuses completion for
-> affected functions.
+> **All forms of this lever are no longer allowed.** Per user policy
+> ("cheats by any spelling are forbidden, full stop" — [[no-new-park-categories]]),
+> dead stores written to influence RA / scheduling / DCE-flow analysis
+> are codegen-coercion cheats regardless of WHO the LHS is or HOW the
+> store is wrapped. SOTN's bar rejects them.
+>
+> Detectors:
+> - **2026-05-31** (commit `44ef3df`): `find_dead_param_assigns` —
+>   `arg0 = 0;` / `param = param;` where `param` is a function parameter
+>   and is never referenced after the statement.
+> - **2026-06-01** (this commit): `find_dead_conditional_stores` —
+>   `if (cond) { ...; v = x; } ...; v = x;` style dead conditional stores
+>   to local variables, where the inner store is dead because the outer
+>   overwrites it before any use. Caught the `func_8007B844` directed-
+>   permuter find verbatim.
+>
+> `mark_done` refuses completion for any function with either pattern.
+> The catalog is open: future variants identified by the same intent
+> (DCE'd store written to influence pre-DCE analysis) will be added.
 
 ### Why this changed
 

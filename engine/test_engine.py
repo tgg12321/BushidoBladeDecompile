@@ -258,6 +258,141 @@ def test_cheats() -> None:
               cheats.canonical_asm_funcs("/nonexistent") == set())
 
 
+def test_dead_conditional_stores() -> None:
+    """find_dead_conditional_stores — closes the dead-conditional-store
+    loophole identified during the func_8007B844 directed-permuter session
+    (2026-06-01). Sibling to find_addr_coerced_locals + the literal Lever D
+    detector. User policy: cheats by any spelling are forbidden, full stop —
+    permuter finds matching cheat-pattern families must be rejected, not
+    surfaced for sanctioning."""
+
+    # Positive case — agent's exact pattern
+    text = """\
+s32 f(u8 *ot, int debug) {
+    u32 *p;
+    if (debug) {
+        do_thing();
+        p = ot;
+    }
+    other_code();
+    p = ot;
+    *p = 5;
+    return 0;
+}
+"""
+    body_lo = text.index("{")
+    body_hi = text.rindex("}") + 1
+    hits = volatile_cheats.find_dead_conditional_stores(text, body_lo, body_hi)
+    eq("dead-cond-store: catches `if {...; p = ot;} ...; p = ot;`", len(hits), 1)
+    if hits:
+        eq("dead-cond-store: identifies the variable name", hits[0][2], "p")
+
+    # Negative — outer comes BEFORE inner (legitimate init + re-init)
+    text2 = """\
+void g(void) {
+    int i;
+    i = 0;
+    while (cond) {
+        if (special) {
+            i = 0;
+        }
+        do_work();
+    }
+}
+"""
+    body_lo = text2.index("{")
+    body_hi = text2.rindex("}") + 1
+    hits = volatile_cheats.find_dead_conditional_stores(text2, body_lo, body_hi)
+    eq("dead-cond-store: outer-before-inner (init + reset) NOT flagged",
+       len(hits), 0)
+
+    # Negative — block has early exit (goto), so inner is alive along exit path
+    text3 = """\
+void h(int x, int *p, int *ot) {
+    if (x) {
+        p = ot;
+        goto done;
+    }
+    p = ot;
+    *p = 1;
+done:
+    return;
+}
+"""
+    body_lo = text3.index("{")
+    body_hi = text3.rindex("}") + 1
+    hits = volatile_cheats.find_dead_conditional_stores(text3, body_lo, body_hi)
+    eq("dead-cond-store: goto-bearing block NOT flagged (inner alive via exit)",
+       len(hits), 0)
+
+    # Negative — block has return
+    text4 = """\
+int i(int x, int *p, int *ot) {
+    if (x) {
+        p = ot;
+        return 1;
+    }
+    p = ot;
+    return 0;
+}
+"""
+    body_lo = text4.index("{")
+    body_hi = text4.rindex("}") + 1
+    hits = volatile_cheats.find_dead_conditional_stores(text4, body_lo, body_hi)
+    eq("dead-cond-store: return-bearing block NOT flagged", len(hits), 0)
+
+    # Negative — var used in gap between inner and outer
+    text5 = """\
+void j(int x, int *p, int *ot) {
+    if (x) {
+        p = ot;
+    }
+    use_ptr(p);
+    p = ot;
+}
+"""
+    body_lo = text5.index("{")
+    body_hi = text5.rindex("}") + 1
+    hits = volatile_cheats.find_dead_conditional_stores(text5, body_lo, body_hi)
+    eq("dead-cond-store: var used in gap NOT flagged (inner read before outer)",
+       len(hits), 0)
+
+    # Negative — break in loop block
+    text6 = """\
+void k(int *p, int *ot) {
+    while (1) {
+        if (cond) {
+            p = ot;
+            break;
+        }
+    }
+    p = ot;
+}
+"""
+    body_lo = text6.index("{")
+    body_hi = text6.rindex("}") + 1
+    hits = volatile_cheats.find_dead_conditional_stores(text6, body_lo, body_hi)
+    eq("dead-cond-store: break-bearing block NOT flagged", len(hits), 0)
+
+    # Strip integration
+    text7 = """\
+void l(int debug, int *p, int *ot) {
+    if (debug) {
+        p = ot;
+    }
+    p = ot;
+}
+"""
+    stripped, _ = volatile_cheats.strip_volatile_cheats_file(text7)
+    check("dead-cond-store: strip removes the inner store",
+          stripped.count("p = ot;") < text7.count("p = ot;"))
+
+    # Count integration
+    cnt = volatile_cheats.func_volatile_cheat_count(text7, "l")
+    check("dead-cond-store: func_volatile_cheat_count includes the cheat",
+          cnt >= 1)
+
+
 def test_addr_coerced_locals() -> None:
     """find_addr_coerced_locals — closes the (void)&local frame-coercion
     loophole identified during the func_8007CE0C de-cheat investigation
@@ -439,6 +574,7 @@ def main() -> int:
     test_inlineasm()
     test_cheats()
     test_addr_coerced_locals()
+    test_dead_conditional_stores()
     test_metrics()
     test_canonical_build()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")

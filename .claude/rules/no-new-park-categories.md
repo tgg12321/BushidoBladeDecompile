@@ -77,6 +77,90 @@ project-accepted auto-park / canonical-infrastructure categories:
   See [[jtbl-rodata-split-infrastructure]] for the canonical case +
   the evidence checklist.
 
+## Cheats by any spelling — the standing posture (user policy 2026-06-01)
+
+> *"If it's a cheat, it will not be accepted. Full stop. Ideally I'd
+> like agents to not even waste time attempting these kinds of
+> approaches in the first place even out of curiosity."*
+
+The detectors that have been wired into `engine/volatile_cheats.py`
+catch the LITERAL forms of forbidden patterns: `s32 buf[N];` unused
+arrays, `(void)&local;` address-coerced scalars, `arg0 = 0;` dead
+self-assignments of parameters, `if (cond) { v = x; } ...; v = x;`
+dead conditional stores, register-asm pins, hardcoded-`$N` `__asm__`,
+volatile coercion casts, alias renames, macro-hidden `__asm__`,
+lost-codegen `insert_after` regfix, manufactured dead-branch
+scheduling insertions, `negu/move/addu/lui/nop` general-purpose
+opcode inline asm.
+
+**The detectors are a backstop, not the standard.** The standard is
+THE INTENT, not the syntactic form. If you find yourself drafting any
+code construct whose ONLY purpose is to change GCC's analysis (without
+that purpose appearing in the emitted output), you are drafting a
+cheat — regardless of whether the existing detector recognises the
+specific syntax. The catalog is a partial enumeration of an open class.
+
+Concrete signals that a code construct is a cheat-by-spelling:
+
+- **No semantic purpose.** A human programmer reading the function
+  would NOT write the construct because the function's stated behaviour
+  doesn't require it. Naming patterns like `pad`, `buf`, `pre_pad`,
+  `dummy`, `spill`, `slack`, `_unused`, `_tmp` announce coercion intent.
+- **Dead in the emitted output.** GCC's DCE removes it from the
+  generated code, but its EXISTENCE in source changed the codegen
+  decisions upstream of DCE.
+- **The construct is "necessary" only because the permuter found that
+  removing it raises the sandbox score.** That's evidence of cheating,
+  not evidence of correctness.
+- **You can describe what it does without referencing GCC's allocator,
+  scheduler, or DCE.** If your justification is "this defeats CSE",
+  "this changes the allocno priority", "this makes the SLL emit before
+  the OR" — and the construct itself has no observable behaviour —
+  you're describing a coercion, not a piece of program logic.
+
+## Auto-search tools (permuter, etc.) — output is PROPOSALS, not winners
+
+The permuter, directed-PERM macros, brute-force structural sweepers,
+and any other auto-search tool mutate C source looking for byte
+matches. **These tools cannot judge whether a closing form is a
+cheat.** They report `sandbox == 0` and `SHA1 == oracle` for any form
+that produces target bytes — including forms that match the cheat
+catalog above.
+
+**Worker discipline.** When an auto-search tool returns a "closing
+form", you MUST vet it against the cheat catalog BEFORE proposing it
+to the user. The vetting is your job; do not surface forms that you
+can identify as cheats yourself in the hope that the user will sanction
+them. Surfacing a cheat-form proposal wastes the user's review
+budget and erodes the policy.
+
+Vetting checklist:
+1. Does the form contain any construct from the catalog above
+   (directly or by analogy)?
+2. Does the form contain any code with no semantic purpose (dead
+   stores, unused declarations, address-coercions, padding, named-for-
+   role variables)?
+3. Would a human programmer naturally write this code from a
+   specification of the function's behaviour?
+4. Does the closing form's justification reference GCC internals
+   instead of program logic?
+
+If ANY answer suggests the form is a cheat, reject it yourself.
+Document the find in a memory note as "permuter found cheat-form X,
+rejected per policy" — that's useful evidence about the closing-form
+space. Then keep searching for a legitimate lever.
+
+**Confirmed example (2026-06-01, `func_8007B844`).** Directed permuter
+~36k iters returned `u32 *p; if (debug) {...; p = ot;} ...; p = ot;` as
+a sandbox-0 closing form retiring 6 rules. The inner `p = ot;` is a
+dead conditional store — same intent as the forbidden `arg0 = 0;`
+Lever D, just spelled with a local and wrapped in `if`. User policy:
+forbidden by any spelling. Detector
+(`engine/volatile_cheats.find_dead_conditional_stores`) added to
+catch the variant; the agent's correct move was to RECOGNIZE the find
+as a cheat AND NOT surface it. (The agent did surface it; this entry
+exists so future agents see the correct posture.)
+
 ## What the SOTN standard accepts
 
 [[community-standard]] is the bar: pure C, or canonical-body asm for code

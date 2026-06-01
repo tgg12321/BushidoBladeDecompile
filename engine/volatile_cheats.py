@@ -245,6 +245,178 @@ def find_addr_coerced_locals(text: str, body_lo: int, body_hi: int) -> list[tupl
     return out
 
 
+# Dead-conditional-store: an assignment `<var> = <rhs>;` inside a control-flow
+# block (if/else/switch/loop/do) where the IDENTICAL `<var> = <rhs>;` also
+# appears at the enclosing function-body scope after the block. The inner
+# store is dead — overwritten unconditionally by the outer store. Same family
+# as Lever D (dead self-assignment of parameters) and the (void)&local
+# frame-coercion: a code construct with no semantic purpose, written purely
+# to influence GCC's register-allocation analysis via the flow graph.
+#
+# Identified by func_8007B844's directed-permuter session (2026-06-01) — the
+# permuter found `u32 *p; if (debug) {...; p = ot;} ...; p = ot;` as a sandbox-0
+# closing form. The user's standing policy "cheats by any spelling are
+# forbidden, full stop" closes this loophole alongside the existing
+# unused-local-array / dead-param-assign / (void)&local detectors.
+#
+# Detection approach: lexical statement-level scan with brace-depth tracking.
+# Find all statements of form `<var> = <simple-rhs>;` (LHS = single
+# identifier, RHS = single token or simple expr). Group by (var, rhs).
+# If any signature has occurrences at BOTH depth 1 (function-body scope)
+# AND depth > 1 (inside a sub-block), flag the inner ones. False positives
+# are rare for this pattern in our codebase — legitimate code that genuinely
+# assigns the same value twice typically has different RHS forms or uses
+# the value between the assignments.
+_DEAD_COND_STORE_ASSIGN_RE = re.compile(
+    # Match a statement-level `<var> = <simple-rhs>;`
+    #   var: single identifier (no struct member / array access on LHS)
+    #   rhs: single identifier OR simple typed-constant; NOT a function call,
+    #        binary op, or anything with nested () / [] / + / etc.
+    r"^[ \t]*(?P<var>\w+)\s*=\s*(?P<rhs>[\w&\*]+)\s*;[ \t]*(?://[^\n]*)?$",
+    re.MULTILINE,
+)
+
+
+def find_dead_conditional_stores(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int, str, str]]:
+    """Find `<var> = <rhs>;` statements inside a sub-block where the same
+    `<var> = <rhs>;` appears unconditionally at the enclosing scope after
+    the block. The inner store is dead and exists only to influence RA via
+    flow analysis — a cheat in the same family as forbidden Lever D
+    (register-alloc-pure-c.md) and `(void)&local` (this file). Returns
+    list of (start, end, var, rhs).
+
+    Detection is lexical (brace-depth tracking), not full CFG analysis;
+    handles the agent-discovered shape:
+      `if (cond) { ...; var = expr; } ...; var = expr;`
+    and switch/loop variants by structural symmetry."""
+    body = text[body_lo:body_hi]
+
+    # Compute brace depth at every byte offset in the body.
+    # Function body itself opens at depth 0 → 1; sub-blocks bump to >= 2.
+    depths = [0] * len(body)
+    d = 0
+    in_str = False
+    in_chr = False
+    in_line_comment = False
+    in_block_comment = False
+    i = 0
+    while i < len(body):
+        c = body[i]
+        c2 = body[i:i + 2]
+        depths[i] = d
+        if in_line_comment:
+            if c == "\n":
+                in_line_comment = False
+            i += 1
+            continue
+        if in_block_comment:
+            if c2 == "*/":
+                in_block_comment = False
+                i += 2
+                continue
+            i += 1
+            continue
+        if in_str:
+            if c == "\\" and i + 1 < len(body):
+                i += 2
+                continue
+            if c == '"':
+                in_str = False
+            i += 1
+            continue
+        if in_chr:
+            if c == "\\" and i + 1 < len(body):
+                i += 2
+                continue
+            if c == "'":
+                in_chr = False
+            i += 1
+            continue
+        if c2 == "//":
+            in_line_comment = True
+            i += 2
+            continue
+        if c2 == "/*":
+            in_block_comment = True
+            i += 2
+            continue
+        if c == '"':
+            in_str = True
+        elif c == "'":
+            in_chr = True
+        elif c == "{":
+            d += 1
+        elif c == "}":
+            d -= 1
+        i += 1
+
+    # Find all simple assignment statements + record their depth at the
+    # var character's offset.
+    # Map (var, rhs) → list of (start_offset, end_offset, depth_at_var)
+    by_sig: dict[tuple[str, str], list[tuple[int, int, int]]] = {}
+    for m in _DEAD_COND_STORE_ASSIGN_RE.finditer(body):
+        var_off = m.start("var")
+        depth_here = depths[var_off] if var_off < len(depths) else 0
+        if depth_here < 1:
+            continue
+        key = (m.group("var"), m.group("rhs").strip())
+        by_sig.setdefault(key, []).append((m.start(), m.end(), depth_here))
+
+    # Flag inner candidates that satisfy the FULL dead-store signature:
+    #   1. The inner is at depth > 1 (inside a sub-block)
+    #   2. A SUBSEQUENT outer occurrence at depth 1 exists (offset > inner.end)
+    #   3. The inner's enclosing block does NOT early-exit (no goto / return /
+    #      break / continue between inner.end and the block's closing brace).
+    #      If it does, the outer is never reached after the inner runs — so
+    #      the inner store is alive (used along that exit path).
+    #   4. No reference to <var> between inner.end and outer.start (in the
+    #      textual gap at function-body scope).
+    #
+    # The order + early-exit constraints distinguish the cheat pattern
+    # (`if (cond) { v=x; } ...; v=x;` — inner dead, outer always reached)
+    # from common legitimate patterns:
+    #   - "init at function entry, re-init in branches" (outer BEFORE inner)
+    #   - "set then goto handler" (inner is alive because goto bypasses outer)
+    exit_keyword_re = re.compile(r"\b(goto|return|break|continue)\b")
+    out: list[tuple[int, int, str, str]] = []
+    for (var, rhs), occs in by_sig.items():
+        occs_sorted = sorted(occs)
+        var_ref_re = re.compile(rf"\b{re.escape(var)}\b")
+        for i, (s, e, d) in enumerate(occs_sorted):
+            if d <= 1:
+                continue  # only inner-depth candidates
+            # Find the FIRST outer occurrence (depth 1) at offset > e.
+            outer = None
+            for j in range(i + 1, len(occs_sorted)):
+                s2, e2, d2 = occs_sorted[j]
+                if d2 == 1 and s2 > e:
+                    outer = (s2, e2)
+                    break
+            if outer is None:
+                continue
+            # Find inner's enclosing-block close by walking depths forward
+            # until we drop below `d`.
+            block_close = len(body)
+            for k in range(e, len(depths)):
+                if depths[k] < d:
+                    block_close = k
+                    break
+            # Early-exit check: any goto/return/break/continue between
+            # inner.end and block_close means the inner is alive along that
+            # exit path (outer is not reached).
+            tail = body[e:block_close]
+            if exit_keyword_re.search(tail):
+                continue
+            # Use-check: any reference to <var> between inner.end and
+            # outer.start means inner is read before outer overwrites.
+            gap = body[e:outer[0]]
+            if var_ref_re.search(gap):
+                continue
+            out.append((body_lo + s, body_lo + e, var, rhs))
+    out.sort()
+    return out
+
+
 def find_dead_param_assigns(text: str, body_lo: int, body_hi: int,
                             params: list[str]) -> list[tuple[int, int, str]]:
     """Find `param = 0;` or `param = param;` statements where `param` is a
@@ -497,6 +669,8 @@ def find_all_cheats(text: str) -> list[tuple[int, int, str]]:
             out.append((s, e, s))
         for s, e, _name in find_addr_coerced_locals(text, body_lo, body_hi):
             out.append((s, e, s))
+        for s, e, _var, _rhs in find_dead_conditional_stores(text, body_lo, body_hi):
+            out.append((s, e, s))
         for s, e, _name in find_dead_param_assigns(text, body_lo, body_hi, params):
             out.append((s, e, s))
     out.sort()
@@ -603,6 +777,8 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
         for s, e, _ in find_unused_local_arrays(text, body_lo, body_hi):
             body_extra_spans.append((s, e))
         for s, e, _ in find_addr_coerced_locals(text, body_lo, body_hi):
+            body_extra_spans.append((s, e))
+        for s, e, _, _ in find_dead_conditional_stores(text, body_lo, body_hi):
             body_extra_spans.append((s, e))
         for s, e, _ in find_dead_param_assigns(text, body_lo, body_hi, params):
             body_extra_spans.append((s, e))
@@ -774,6 +950,8 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     for s, e, _name in find_unused_local_arrays(text, lo, hi):
         counted_vol_positions.add(s)
     for s, e, _name in find_addr_coerced_locals(text, lo, hi):
+        counted_vol_positions.add(s)
+    for s, e, _var, _rhs in find_dead_conditional_stores(text, lo, hi):
         counted_vol_positions.add(s)
     for s, e, _name in find_dead_param_assigns(text, lo, hi, params):
         counted_vol_positions.add(s)
