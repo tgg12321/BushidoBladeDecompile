@@ -204,6 +204,47 @@ def find_unused_local_arrays(text: str, body_lo: int, body_hi: int) -> list[tupl
     return out
 
 
+# `(void)&local;` — the address-coercion frame-coercion variant. See
+# `dead-vars-local-array.md` for the array form; this is the scalar form
+# that defeats GCC's DCE by taking the address. There is no legitimate
+# pure-C reason to write `(void)&local;` — even taking the address
+# legitimately is `&local` (no void cast). The discarded-address-of is
+# pure DCE-defeat, used to reserve frame bytes the function doesn't
+# semantically need.
+#
+# Identified via the func_8007CE0C agent investigation (2026-06-01): the
+# agent reached sandbox 22 (down from 38) by adding
+# `s32 stk_a,b,c,d; (void)&stk_a; ...` to inflate the frame to target's
+# 80-byte size. Same intent as the array form, different syntax. Closed
+# as a loophole because the function still wasn't pure-C-matchable
+# (residual 22 was unrelated codegen) and the policy is no new
+# cheat-tolerant patterns.
+_ADDR_COERCION_RE = re.compile(
+    r"(?m)^[ \t]*\(\s*void\s*\)\s*&\s*(?P<name>\w+)\s*;[ \t]*$"
+)
+
+
+def find_addr_coerced_locals(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int, str]]:
+    """Find `(void)&<name>;` statements inside the function body. There is no
+    legitimate pure-C reason to discard an address-of, so any such statement
+    is a frame-coercion cheat (see dead-vars-local-array.md, expanded
+    catalog 2026-06-01).
+
+    Conservative: catches the `(void)&name;` pattern unconditionally. We
+    verified (2026-06-01) that the BB2 src/*.c has ZERO existing instances,
+    so there is no false-positive risk on the current codebase. Future
+    edits that introduce the pattern intentionally must justify each one
+    (or the gate refuses completion).
+    """
+    out = []
+    body = text[body_lo:body_hi]
+    for m in _ADDR_COERCION_RE.finditer(body):
+        start = body_lo + m.start()
+        end = body_lo + m.end()
+        out.append((start, end, m.group("name")))
+    return out
+
+
 def find_dead_param_assigns(text: str, body_lo: int, body_hi: int,
                             params: list[str]) -> list[tuple[int, int, str]]:
     """Find `param = 0;` or `param = param;` statements where `param` is a
@@ -454,6 +495,8 @@ def find_all_cheats(text: str) -> list[tuple[int, int, str]]:
         params = _extract_func_params(text, span)
         for s, e, _name in find_unused_local_arrays(text, body_lo, body_hi):
             out.append((s, e, s))
+        for s, e, _name in find_addr_coerced_locals(text, body_lo, body_hi):
+            out.append((s, e, s))
         for s, e, _name in find_dead_param_assigns(text, body_lo, body_hi, params):
             out.append((s, e, s))
     out.sort()
@@ -558,6 +601,8 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
         body_lo, body_hi = span
         params = _extract_func_params(text, span)
         for s, e, _ in find_unused_local_arrays(text, body_lo, body_hi):
+            body_extra_spans.append((s, e))
+        for s, e, _ in find_addr_coerced_locals(text, body_lo, body_hi):
             body_extra_spans.append((s, e))
         for s, e, _ in find_dead_param_assigns(text, body_lo, body_hi, params):
             body_extra_spans.append((s, e))
@@ -727,6 +772,8 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     # Unused local arrays + dead-param-assigns inside this function body.
     params = _extract_func_params(text, span)
     for s, e, _name in find_unused_local_arrays(text, lo, hi):
+        counted_vol_positions.add(s)
+    for s, e, _name in find_addr_coerced_locals(text, lo, hi):
         counted_vol_positions.add(s)
     for s, e, _name in find_dead_param_assigns(text, lo, hi, params):
         counted_vol_positions.add(s)

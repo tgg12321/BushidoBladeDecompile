@@ -22,7 +22,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from engine import canonical, score, inlineasm, cheats, metrics
+from engine import canonical, score, inlineasm, cheats, metrics, volatile_cheats
 
 _passed = _failed = _skipped = 0
 
@@ -258,6 +258,84 @@ def test_cheats() -> None:
               cheats.canonical_asm_funcs("/nonexistent") == set())
 
 
+def test_addr_coerced_locals() -> None:
+    """find_addr_coerced_locals — closes the (void)&local frame-coercion
+    loophole identified during the func_8007CE0C de-cheat investigation
+    (2026-06-01). Sibling to find_unused_local_arrays."""
+
+    # Positive case — the exact agent-proposed pattern
+    text = """\
+void f(int arg0) {
+    s32 stk_a, stk_b, stk_c, stk_d;
+    (void)&stk_a;
+    return;
+}
+"""
+    body_lo = text.index("{")
+    body_hi = text.rindex("}") + 1
+    hits = volatile_cheats.find_addr_coerced_locals(text, body_lo, body_hi)
+    eq("addr-coerced: catches `(void)&stk_a;`", len(hits), 1)
+    if hits:
+        eq("addr-coerced: identifies the variable name", hits[0][2], "stk_a")
+
+    # Multi-coercion case
+    text2 = """\
+void g(void) {
+    s32 a, b, c, d;
+    (void)&a;
+    (void)&b;
+    (void)&c;
+    (void)&d;
+}
+"""
+    body_lo = text2.index("{")
+    body_hi = text2.rindex("}") + 1
+    hits = volatile_cheats.find_addr_coerced_locals(text2, body_lo, body_hi)
+    eq("addr-coerced: catches all 4 separate coercions", len(hits), 4)
+
+    # Negative — `&local` passed to a callee is real usage, NOT coercion
+    text3 = """\
+void h(void) {
+    s32 ptr;
+    callee(&ptr);
+    use_ptr_value();
+}
+"""
+    body_lo = text3.index("{")
+    body_hi = text3.rindex("}") + 1
+    hits = volatile_cheats.find_addr_coerced_locals(text3, body_lo, body_hi)
+    eq("addr-coerced: `callee(&ptr)` is NOT flagged (real use)", len(hits), 0)
+
+    # Negative — plain unused variable WITHOUT (void)& is just DCE'd, no frame impact
+    text4 = """\
+void i(void) {
+    s32 unused;
+    s32 used = 5;
+    return used;
+}
+"""
+    body_lo = text4.index("{")
+    body_hi = text4.rindex("}") + 1
+    hits = volatile_cheats.find_addr_coerced_locals(text4, body_lo, body_hi)
+    eq("addr-coerced: declared-but-unused local without coercion is NOT flagged", len(hits), 0)
+
+    # Wired-into-strip check — strip removes the coercion line
+    text5 = """\
+void j(void) {
+    s32 stk_a;
+    (void)&stk_a;
+    return;
+}
+"""
+    stripped, _ = volatile_cheats.strip_volatile_cheats_file(text5)
+    check("addr-coerced: strip removes the `(void)&stk_a;` line",
+          "(void)&stk_a;" not in stripped)
+
+    # Wired-into-count check — counts the cheat
+    cnt = volatile_cheats.func_volatile_cheat_count(text5, "j")
+    eq("addr-coerced: func_volatile_cheat_count includes the coercion", cnt, 1)
+
+
 # --------------------------------------------------------------------------
 # metrics — the capture layer's non-negotiable: silent + swallow-on-failure
 # --------------------------------------------------------------------------
@@ -360,6 +438,7 @@ def main() -> int:
     test_score()
     test_inlineasm()
     test_cheats()
+    test_addr_coerced_locals()
     test_metrics()
     test_canonical_build()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")

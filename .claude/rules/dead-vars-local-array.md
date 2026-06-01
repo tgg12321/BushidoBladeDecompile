@@ -1,25 +1,43 @@
 ---
 name: dead-vars-local-array
 paths: ["src/text1b.c", "src/*.c"]
-description: "FORBIDDEN as of 2026-05-31. Declaring unused local arrays (`s32 buf[N];`) to force GCC to reserve frame bytes is a codegen-coercion cheat. SOTN rejects it. The engine flags every unused fixed-size local with names like `pad`, `_pad`, `buf`, `w`, `tail` and refuses completion."
+description: "FORBIDDEN as of 2026-05-31 (expanded 2026-06-01). Frame coercion via unused local arrays (`s32 buf[N];`) OR scalar address-of coercion (`s32 pad; (void)&pad;`) is a cheat. SOTN rejects both. The engine's volatile_cheats detector flags every such pattern and refuses completion."
 metadata:
   type: reference
   status: forbidden
 ---
 
-# FORBIDDEN — Frame coercion via unused local arrays is a cheat
+# FORBIDDEN — Frame coercion is a cheat (array AND scalar variants)
 
 ## Status
 
 **This technique is FORBIDDEN as of 2026-05-31** (commit `1cd5c64`+ wires the
-detector). A function carrying any unused fixed-size local array is no longer
-eligible for COMPLETED-C status. The engine's
-`engine/volatile_cheats.find_unused_local_arrays` detector flags every such
-declaration; `engine/inlineasm.func_cheat_asm_count` includes the count;
-`engine/queue.mark_done` refuses to record completion.
+array detector) **with the scalar variant added 2026-06-01** after the
+`func_8007CE0C` de-cheat investigation found that
+`s32 pad; (void)&pad;` reproduced the same frame-coercion effect under a
+syntactic spelling the array detector didn't catch. A function carrying any
+of the following is no longer eligible for COMPLETED-C status:
 
-The detector excludes struct-member declarations and arrays that ARE
-referenced later in the body. Only genuinely-unused fixed-size locals are flagged.
+- **Array form:** `T name[N];` (2 ≤ N ≤ 64) declared inside a function body
+  and never referenced afterward. Detector:
+  `engine/volatile_cheats.find_unused_local_arrays`.
+- **Scalar address-coercion form:** `(void)&<name>;` as a body statement.
+  There is no legitimate pure-C reason to write a discarded address-of —
+  even taking the address legitimately is `&local` (no `(void)` cast); the
+  cast-to-void exists purely to suppress unused-expression warnings around
+  the DCE defeat. Detector:
+  `engine/volatile_cheats.find_addr_coerced_locals`. Catches the agent's
+  proposed `s32 stk_a,b,c,d; (void)&stk_a; ...` shape verbatim. Verified
+  zero false positives on the current src/*.c (no legitimate uses of the
+  pattern exist).
+
+Both feed into `engine/inlineasm.func_cheat_asm_count`; `engine/queue.mark_done`
+refuses to record completion for affected functions. Regression test:
+`engine/test_engine.py::test_addr_coerced_locals` (6 cases, all green).
+
+The array detector excludes struct-member declarations and arrays that ARE
+referenced later in the body. The scalar detector triggers unconditionally
+on any `(void)&local;` statement at function-body scope.
 
 ## Why this changed
 
