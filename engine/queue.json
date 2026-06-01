@@ -4424,16 +4424,6 @@
       "park_reason": "register-allocation gap: 2 cheat-asm pins (var_v0->, var_v1->) carry the match. Honest pure-C distance 5 (4 with new_var2 const chained-OR sibling-shape improvement). Target allocates var_v0 (arg0 & MASK) to ; GCC naturally chooses  (reusing dead arg0 reg). Sibling siblings (func_8007C7A0/8007C86C) reach  because their var_v0_2 lives across a bounds-check pre-stage in a callee-save before the andi; func_8007C938 has no such pre-stage. Tried: sibling-style new_var2 = var_v0_2 chain (regresses to 7), pre-init var_v0 = arg0 (no effect, DCE), factored mask outside if (+1 insn, score 10), in-place |= form (regresses to 5), inline literal (regresses to 5), s16/u16 arg types (no effect, ABI promotion), OR operand swap (commutative, no effect), gtype local (no effect, folded), intermediate new_var local (no effect, DCE). The 2 pins are documented register-asm-pins per .claude/rules/register-asm-pins.md; pure-C levers from .claude/rules/register-alloc-pure-c.md (Levers A/B/C; D forbidden) do not have a target here because there is no shared variable to split (Lever A), narrow type has no effect (Lever B), no loop (Lever C)."
     },
     {
-      "func": "func_8007C97C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 9,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "global-label-drift-sibling-cheat + 4-reg-cluster coupling. Honest pure-C distance reduced 24->19 by removing 5 cheat-asm pins (////) and switching r/g to u32 (so r>>=3 emits srl matching target). Remaining gap: target keeps arg0 in  throughout body and uses /// as the scratch sequence with lui , 0xE200 placed LATE (after final lh , 6(a0)). Mine: GCC global-alloc puts arg0 in  because local-alloc gave  to r (first lbu dest), creating a hard 4-pseudo cluster cascade matching [[register-alloc-pure-c]] / [[split-read-defeats-hoist]] pure-RA-rename plateau signature. Tested: if-goto-null/if-non-zero/if-else/early-return forms, s32 vs u32 vs s32-coerced typing, consolidated single-line exprs, block-local var scope, decl reordering, dead-store/preload var (e2=0xE2000000 pulled the lui INTO the bne delay slot, regressing). All variations stayed >= 19. Critical coupling: any structural edit here shifts cc1's .L count and breaks sibling func_8007CE0C's hardcoded-.L<N> asmfix rules (link error on .L152/.L154/.L156/.L158 \u2014 confirmed via verify-oracle --rebuild after edit). Per [[global-label-drift-sibling-cheat]] this is a TWO-FUNCTION coupling: needs user policy decision to either (a) de-cheat func_8007CE0C's .L<N>-hardcoded rules first, or (b) bump sibling rules to new label numbers, or (c) find a pure-C lever that closes the cluster WITHOUT shifting cc1's label count. The 4-pseudo register-rotation matches the cpu_side_move_dir_4/marionation_Exec coupling pattern; the matching C exists but the explored lever space (if-form, type, order, scope) does not contain it."
-    },
-    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": -1,
@@ -4483,12 +4473,12 @@
     }
   ],
   "counts": {
-    "total": 526,
+    "total": 525,
     "active": 495,
     "by_status": {
       "active": 495,
       "authorize": 17,
-      "parked": 14
+      "parked": 13
     },
     "by_verdict": {
       "C": 360,
