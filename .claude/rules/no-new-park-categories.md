@@ -62,6 +62,20 @@ project-accepted auto-park / canonical-infrastructure categories:
   + user sign-off, but it is NOT a new infrastructure category.
 - **Anything labeled "X infrastructure"** as a justification to retire N
   similar functions en masse with their cheats intact.
+- **Speculative system-wide rodata reorders to force a SHA1 match.**
+  Globally reordering `bb2.ld` rodata placement without evidence that
+  the original source had that layout is a structural cheat — same
+  category as regfix offset paperwork (it changes the bytes' attribution
+  to make the build work, not because we discovered the original was
+  that way). SOTN does NOT do this. Evidence-based source-file
+  re-attribution (re-splitting splat-output .c files because evidence
+  shows the original had different TU boundaries, with `bb2.ld` updated
+  to reflect the discovered layout) IS legitimate and is the SOTN
+  workflow — but it requires evidence (function ↔ data adjacency,
+  single-owner cross-references, byte-pattern signatures, comparable
+  resolved siblings), not the bare desire to retire a parked function.
+  See [[jtbl-rodata-split-infrastructure]] for the canonical case +
+  the evidence checklist.
 
 ## What the SOTN standard accepts
 
