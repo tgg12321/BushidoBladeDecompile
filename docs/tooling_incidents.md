@@ -34,3 +34,8 @@ documented. See `CLAUDE.md` (Hooks) and the `debugging-discipline` memory rule.
 - **Permanent guard:** `.gitattributes` (uncommitted change)
 - **Verified by:** sed -i 's/\r$//' permuter/csmd4_v8/base.c, then grep -cP '\r$' = 0; .gitattributes now explicitly maps permuter/**/*.c eol=lf so any future git add/staging normalises; the tooling_error_guard post-write check remains the live net
 - **Occurrences this incident:** 1
+
+## 2026-05-31 20:34:31 — FALSE POSITIVE (worktree-symlink/worktree-dep-missing)
+- **Triggering command:** `which mipsel-linux-gnu-objdump 2>&1 ; mipsel-linux-gnu-objdump --version 2>&1 | head -2`
+- **Why not a real failure:** Ran mipsel-linux-gnu-objdump from Windows Git Bash (no WSL prefix); the toolchain only exists inside WSL and the build itself is healthy (display.o just built at 20:32). The actual command needed wsl prefix — the guard fired on an exploratory command, not a build failure.
+- **Action:** tighten signature `worktree-dep-missing` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
