@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007C2A0",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
       "func": "func_8007C4B8",
       "file": "display",
       "distance": -1,
@@ -4464,6 +4455,16 @@
       "park_reason": "ASM-SUSPECT/structural \u2014 298-insn gpu_PutDispEnv-style display environment setup (cached-diff + GP1 packet sends via g_gpu_dev_table[0x10]). Asmfix rule replace_with_asmfile bridges. Partial pure-C reconstruction from m2c brings sandbox 296 -> 132 (286/298 insns). Remaining 132-distance gap: 6 missing lhu+sll/sra cast-pattern pairs (GCC combine folds (s32)(s16)u16var to lh; needs structural lever to defeat fold), plus scheduling/register-allocation cascade through the 4-comparison + video-mode + GP1 packet build region. Multi-session pure-C work; needs same depth as defeat-licm-hoist-var-reuse class fixes. Oracle SHA1 green throughout (asmfix continues to provide target bytes)."
     },
     {
+      "func": "func_8007C2A0",
+      "file": "display",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "Pure-C floor at sandbox-distance 4. Single 4-insn prologue reorder rule (regfix.txt:3753) flips save+def pairing from cc1's natural [sw s1; move s1,a0; sw s0; move s0,a1] to target's [sw s0; move s0,a1; sw s1; move s1,a0]. Mechanism: cc1's mips.c save_restore_insns iterates GP_REG_LAST->FIRST (3000a) and expand_function_start creates pseudos in DECL_ARGUMENTS order (out=72->s1, r=73->s0). Save-order is structurally fixed by mips machdep + ABI param order. Tried 9 distinct C source levers: early r-temps (3 forms), local alias, K&R-style decl, K&R-with-reversed-decl-order, var_a3=7 init, 3rd-callee-save force, all-temp-stores-at-end - all either CSE'd back or regressed. Sibling func_8007C4B8 has identical issue (twin function, same rule shape). Per [[no-compiler-divergence]] mips.c is frozen; per ABI param swap would break the asm callers. Either accept prologue_config.json as infrastructure (policy decision) or authorize ASM-region for the prologue-only debt."
+    },
+    {
       "func": "replay_camera_rob_back_loose2",
       "file": "code6cac_b2",
       "distance": 0,
@@ -4484,14 +4485,14 @@
   ],
   "counts": {
     "total": 527,
-    "active": 505,
+    "active": 504,
     "by_status": {
-      "active": 505,
+      "active": 504,
       "authorize": 17,
-      "parked": 5
+      "parked": 6
     },
     "by_verdict": {
-      "C": 370,
+      "C": 369,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 56,
       "ASM-WHOLE": 5,
