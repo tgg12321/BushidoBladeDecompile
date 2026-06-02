@@ -4381,7 +4381,7 @@
       "rules": 21,
       "status": "parked",
       "scorable": false,
-      "park_reason": "arg1-preload lever found this session pushes honest floor 20 -> 18 (lower than prior session 19-22). See memory/project/func-8007c7a0-arg1-preload-lever.md for evidence. Structural ceiling: missing 'move a3,v0' park-merge insn that GCC won't emit without simultaneously-live pseudos. Next: examine matched sibling func_8007C748 + try declaration-order swap a la param-local-alias-prologue-pair-flip."
+      "park_reason": "Second 2026-06-01 session pushed honest floor 18 -> 16 via C97C-style named-intermediate r_e3 + drop new_var/new_var2 coercion vars (novel beyond prior session's v8 arg1-preload). See memory/project/func-8007c7a0-named-intermediate-lever.md. Structural ceiling: missing 'move a3,v0' park-merge insn (var_v0_2 in  vs target ) persists. Untried: ALLOCDBG-instrumented session, .greg dump for 16-score form, permuter from 16-score base, sibling func_8007C748 .greg comparison."
     },
     {
       "func": "func_8007C86C",
