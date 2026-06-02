@@ -258,6 +258,143 @@ def test_cheats() -> None:
               cheats.canonical_asm_funcs("/nonexistent") == set())
 
 
+def test_lowercase_asm_cheats() -> None:
+    """find_lowercase_asm_cheats — closes the bare `asm(...)` loophole that
+    bypassed ASM_KEYWORD_RE (which excludes bare `asm` for register-pin
+    safety). 5 COMPLETED-C functions affected per the 2026-06-02 thorough
+    audit."""
+    text = """\
+void f(void) {
+    asm volatile("" ::: "memory");
+    do_thing();
+}
+"""
+    hits = volatile_cheats.find_lowercase_asm_cheats(text, text.index("{"),
+                                                     text.rindex("}") + 1)
+    eq("lowercase-asm: catches `asm volatile(...)`", len(hits), 1)
+
+    text2 = """\
+void g(void) {
+    asm("" : "=r"(x) : "0"(x));
+}
+"""
+    hits = volatile_cheats.find_lowercase_asm_cheats(text2, text2.index("{"),
+                                                     text2.rindex("}") + 1)
+    eq("lowercase-asm: catches `asm(...)` (no volatile)", len(hits), 1)
+
+    # Register-pin pattern should NOT match (different shape — `asm` is
+    # part of a declaration starting with `register`)
+    text3 = """\
+void h(int x) {
+    register int t asm("$8") = x;
+    do_thing(t);
+}
+"""
+    hits = volatile_cheats.find_lowercase_asm_cheats(text3, text3.index("{"),
+                                                     text3.rindex("}") + 1)
+    eq("lowercase-asm: register pin NOT flagged", len(hits), 0)
+
+
+def test_volatile_unused_locals() -> None:
+    """find_volatile_unused_locals — closes the `volatile T pad;` scalar
+    frame-coercion loophole. 4 COMPLETED-C functions affected per the
+    2026-06-02 thorough audit."""
+    text = """\
+void f(void) {
+    volatile s32 pad;
+    do_real_work();
+}
+"""
+    hits = volatile_cheats.find_volatile_unused_locals(text, text.index("{"),
+                                                       text.rindex("}") + 1)
+    eq("volatile-unused: catches `volatile s32 pad;`", len(hits), 1)
+
+    # Calibration loop usage NOT flagged (i is referenced)
+    text2 = """\
+void g(void) {
+    volatile s32 i;
+    for (i = 0; i < 100; i++) {
+        delay();
+    }
+}
+"""
+    hits = volatile_cheats.find_volatile_unused_locals(text2, text2.index("{"),
+                                                       text2.rindex("}") + 1)
+    eq("volatile-unused: calibration counter NOT flagged", len(hits), 0)
+
+    # Pointer-to-volatile NOT matched by regex
+    text3 = """\
+void h(void) {
+    volatile s32 *ptr;
+    ptr = (volatile s32 *)0x1F800000;
+}
+"""
+    hits = volatile_cheats.find_volatile_unused_locals(text3, text3.index("{"),
+                                                       text3.rindex("}") + 1)
+    eq("volatile-unused: pointer-to-volatile NOT flagged", len(hits), 0)
+
+
+def test_always_true_if_scaffolds() -> None:
+    """find_always_true_if_scaffolds — closes `if (1) { ... }` wrapping.
+    3 COMPLETED-C functions affected per 2026-06-02 thorough audit."""
+    text = """\
+void f(void) {
+    if (1) {
+        real_work();
+        more_work();
+    }
+}
+"""
+    hits = volatile_cheats.find_always_true_if_scaffolds(text, text.index("{"),
+                                                          text.rindex("}") + 1)
+    eq("if(1): catches `if (1) { body }`", len(hits), 1)
+
+    # Genuine non-trivial condition NOT flagged
+    text2 = """\
+void g(int x) {
+    if (x) { real_work(); }
+}
+"""
+    hits = volatile_cheats.find_always_true_if_scaffolds(text2, text2.index("{"),
+                                                          text2.rindex("}") + 1)
+    eq("if(1): genuine condition NOT flagged", len(hits), 0)
+
+
+def test_empty_do_while_zero() -> None:
+    """find_empty_do_while_zero — closes empty `do { } while (0);`. 5+1
+    COMPLETED-C functions affected per 2026-06-02 thorough audit."""
+    text = """\
+void f(void) {
+    real_work();
+    do { } while (0);
+    more_work();
+}
+"""
+    hits = volatile_cheats.find_empty_do_while_zero(text, text.index("{"),
+                                                     text.rindex("}") + 1)
+    eq("empty-do-while-0: catches empty body", len(hits), 1)
+
+    # Non-empty body NOT flagged
+    text2 = """\
+void g(void) {
+    do { real_work(); } while (0);
+}
+"""
+    hits = volatile_cheats.find_empty_do_while_zero(text2, text2.index("{"),
+                                                     text2.rindex("}") + 1)
+    eq("empty-do-while-0: non-empty body NOT flagged", len(hits), 0)
+
+    # Non-zero while NOT flagged
+    text3 = """\
+void h(int x) {
+    do { } while (x);
+}
+"""
+    hits = volatile_cheats.find_empty_do_while_zero(text3, text3.index("{"),
+                                                     text3.rindex("}") + 1)
+    eq("empty-do-while-0: while(non-zero) NOT flagged", len(hits), 0)
+
+
 def test_empty_if_dead_reads() -> None:
     """find_empty_if_dead_reads — closes the empty-body `if (cond) { }`
     dead-read loophole identified by the 2026-06-02 cheat-by-spelling
@@ -714,6 +851,10 @@ def main() -> int:
     test_inlineasm()
     test_cheats()
     test_addr_coerced_locals()
+    test_lowercase_asm_cheats()
+    test_volatile_unused_locals()
+    test_always_true_if_scaffolds()
+    test_empty_do_while_zero()
     test_empty_if_dead_reads()
     test_void_discard_unused_locals()
     test_dead_conditional_stores()

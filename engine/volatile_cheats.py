@@ -245,6 +245,134 @@ def find_addr_coerced_locals(text: str, body_lo: int, body_hi: int) -> list[tupl
     return out
 
 
+# Lowercase `asm(...)` cheat blocks at STATEMENT scope. The legacy detector
+# regex (tools/classify_inline_asm.py:ASM_KEYWORD_RE) excludes bare `asm` to
+# avoid false-positives on the register-pin pattern `register T x asm("$N")`.
+# Result: lowercase `asm volatile("" ::: "memory")` and similar statement-
+# scope cheat-asm blocks bypassed the entire cheat-asm gate. The 2026-06-02
+# thorough audit found 5 COMPLETED-C functions affected.
+#
+# This detector catches STATEMENT-SCOPE lowercase-asm (line-starts with
+# `asm`), which distinguishes it from register-pin declarations (which
+# start with `register`).
+_LOWERCASE_ASM_RE = re.compile(
+    r"(?m)^[ \t]*(?:asm)\s*(?:volatile|__volatile__)?\s*\("
+)
+
+
+def find_lowercase_asm_cheats(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int]]:
+    """Find statement-scope `asm(...)` / `asm volatile(...)` blocks inside
+    the function body. These are inline-asm cheats that bypass the
+    ASM_KEYWORD_RE detector (which excludes bare `asm` for register-pin
+    safety). Returns list of (start, end) covering the asm-block including
+    its trailing semicolon."""
+    body = text[body_lo:body_hi]
+    out: list[tuple[int, int]] = []
+    for m in _LOWERCASE_ASM_RE.finditer(body):
+        depth = 1
+        i = m.end()
+        while i < len(body) and depth > 0:
+            c = body[i]
+            if c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+            i += 1
+        if depth != 0:
+            continue
+        while i < len(body) and body[i] in " \t":
+            i += 1
+        if i < len(body) and body[i] == ";":
+            i += 1
+        out.append((body_lo + m.start(), body_lo + i))
+    return out
+
+
+# Volatile-typed scalar unused locals. Mirror of find_unused_local_arrays
+# and find_void_discard_unused_locals for the scalar-volatile case:
+#   volatile s32 pad;        // never referenced — frame coercion
+#   volatile s32 sp_pad;     // name announces intent
+# Excluded (legitimate):
+#   volatile s32 *ptr;       // pointer-to-volatile (hardware access)
+#   volatile s32 i; for (i = 0; ...) { ... }   // calibration loop counter
+#   volatile s32 tmp; tmp = *hw_reg;   // hardware fence read
+# Detection requires NO references to the name elsewhere in the body
+# (declaration-only). Calibration loops and fence reads have additional
+# references and pass the carve-out.
+_VOLATILE_LOCAL_DECL_RE = re.compile(
+    r"(?m)^[ \t]*volatile\s+"
+    r"(?P<type>(?:s8|s16|s32|s64|u8|u16|u32|u64|int|char|short|long|float|double|signed|unsigned)"
+    r"(?:\s+(?:int|long|short|char))*)"
+    r"\s+(?P<name>\w+)\s*"
+    r"(?:=\s*[^;]+)?"
+    r"\s*;[ \t]*$"
+)
+
+
+def find_volatile_unused_locals(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int, str]]:
+    """Find `volatile <scalar-type> <name>;` declarations whose name has no
+    other references in the body. Pointer-to-volatile (`volatile T *name;`)
+    is excluded by the regex. Calibration loops and hardware fence reads
+    pass via the reference-count carve-out."""
+    body = text[body_lo:body_hi]
+    out: list[tuple[int, int, str]] = []
+    for m in _VOLATILE_LOCAL_DECL_RE.finditer(body):
+        name = m.group("name")
+        decl_name_span = (m.start("name"), m.end("name"))
+        ref_re = re.compile(rf"\b{re.escape(name)}\b")
+        other_refs = [
+            r for r in ref_re.finditer(body)
+            if not (decl_name_span[0] <= r.start() < decl_name_span[1])
+        ]
+        if len(other_refs) == 0:
+            out.append((body_lo + m.start(), body_lo + m.end(), name))
+    return out
+
+
+# `if (1) { ... }` always-true scaffold wrapping. The body has real content;
+# the wrapping construct exists to influence basic-block layout / scheduling.
+# Identified by the 2026-06-02 thorough audit (3 COMPLETED-C affected).
+_IF_ONE_RE = re.compile(r"\bif\s*\(\s*1\s*\)\s*\{")
+
+
+def find_always_true_if_scaffolds(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int]]:
+    """Find `if (1) { ... }` statements in the function body."""
+    body = text[body_lo:body_hi]
+    out: list[tuple[int, int]] = []
+    for m in _IF_ONE_RE.finditer(body):
+        depth = 1
+        i = m.end()
+        while i < len(body) and depth > 0:
+            c = body[i]
+            if c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+            i += 1
+        if depth != 0:
+            continue
+        out.append((body_lo + m.start(), body_lo + i))
+    return out
+
+
+# Empty `do { } while (0);` — symmetric to find_empty_if_dead_reads. Same
+# intent: syntactic construct GCC's DCE removes but whose existence steers
+# analysis upstream of DCE. Identified by the 2026-06-02 thorough audit
+# (5+1 COMPLETED-C affected). Body must be empty (whitespace + comments).
+_EMPTY_DO_WHILE_ZERO_RE = re.compile(
+    r"\bdo\s*\{\s*(?:(?://[^\n]*|/\*[\s\S]*?\*/)\s*)*\}\s*while\s*\(\s*0\s*\)\s*;"
+)
+
+
+def find_empty_do_while_zero(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int]]:
+    """Find empty `do { } while (0);` statements in the function body."""
+    body = text[body_lo:body_hi]
+    out: list[tuple[int, int]] = []
+    for m in _EMPTY_DO_WHILE_ZERO_RE.finditer(body):
+        out.append((body_lo + m.start(), body_lo + m.end()))
+    return out
+
+
 # Empty-body `if (cond) { }` — dead read of cond used purely for codegen
 # coercion (forces GCC to load cond at a specific point without doing
 # anything with it, influencing scheduling / register allocation).
@@ -821,6 +949,14 @@ def find_all_cheats(text: str) -> list[tuple[int, int, str]]:
             out.append((s, e, s))
         for s, e, _name in find_void_discard_unused_locals(text, body_lo, body_hi, params):
             out.append((s, e, s))
+        for s, e, _name in find_volatile_unused_locals(text, body_lo, body_hi):
+            out.append((s, e, s))
+        for s, e in find_lowercase_asm_cheats(text, body_lo, body_hi):
+            out.append((s, e, s))
+        for s, e in find_always_true_if_scaffolds(text, body_lo, body_hi):
+            out.append((s, e, s))
+        for s, e in find_empty_do_while_zero(text, body_lo, body_hi):
+            out.append((s, e, s))
         for s, e, _cond in find_empty_if_dead_reads(text, body_lo, body_hi):
             out.append((s, e, s))
         for s, e, _var, _rhs in find_dead_conditional_stores(text, body_lo, body_hi):
@@ -933,6 +1069,14 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
         for s, e, _ in find_addr_coerced_locals(text, body_lo, body_hi):
             body_extra_spans.append((s, e))
         for s, e, _ in find_void_discard_unused_locals(text, body_lo, body_hi, params):
+            body_extra_spans.append((s, e))
+        for s, e, _ in find_volatile_unused_locals(text, body_lo, body_hi):
+            body_extra_spans.append((s, e))
+        for s, e in find_lowercase_asm_cheats(text, body_lo, body_hi):
+            body_extra_spans.append((s, e))
+        for s, e in find_always_true_if_scaffolds(text, body_lo, body_hi):
+            body_extra_spans.append((s, e))
+        for s, e in find_empty_do_while_zero(text, body_lo, body_hi):
             body_extra_spans.append((s, e))
         for s, e, _ in find_empty_if_dead_reads(text, body_lo, body_hi):
             body_extra_spans.append((s, e))
@@ -1110,6 +1254,14 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     for s, e, _name in find_addr_coerced_locals(text, lo, hi):
         counted_vol_positions.add(s)
     for s, e, _name in find_void_discard_unused_locals(text, lo, hi, params):
+        counted_vol_positions.add(s)
+    for s, e, _name in find_volatile_unused_locals(text, lo, hi):
+        counted_vol_positions.add(s)
+    for s, e in find_lowercase_asm_cheats(text, lo, hi):
+        counted_vol_positions.add(s)
+    for s, e in find_always_true_if_scaffolds(text, lo, hi):
+        counted_vol_positions.add(s)
+    for s, e in find_empty_do_while_zero(text, lo, hi):
         counted_vol_positions.add(s)
     for s, e, _cond in find_empty_if_dead_reads(text, lo, hi):
         counted_vol_positions.add(s)
