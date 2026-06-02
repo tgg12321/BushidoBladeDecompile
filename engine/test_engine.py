@@ -258,6 +258,146 @@ def test_cheats() -> None:
               cheats.canonical_asm_funcs("/nonexistent") == set())
 
 
+def test_empty_if_dead_reads() -> None:
+    """find_empty_if_dead_reads — closes the empty-body `if (cond) { }`
+    dead-read loophole identified by the 2026-06-02 cheat-by-spelling
+    audit (3 COMPLETED-C functions affected). Same family as
+    dead-conditional-store / Lever D — a code construct with no
+    semantic purpose, written purely to influence GCC's analysis."""
+
+    # Positive — the exact audit pattern (`if (D_GLOBAL) {}`)
+    text = """\
+void f(void) {
+    do_thing();
+    if (D_800A3580) {}
+    other_thing();
+}
+"""
+    body_lo = text.index("{")
+    body_hi = text.rindex("}") + 1
+    hits = volatile_cheats.find_empty_if_dead_reads(text, body_lo, body_hi)
+    eq("empty-if: catches `if (D_800A3580) {}`", len(hits), 1)
+
+    # Positive — multiple instances
+    text2 = """\
+void g(void) {
+    if (a) {}
+    if (b) {}
+    if (c) {}
+}
+"""
+    hits = volatile_cheats.find_empty_if_dead_reads(text2, text2.index("{"),
+                                                    text2.rindex("}") + 1)
+    eq("empty-if: catches 3 separate empty-ifs", len(hits), 3)
+
+    # Negative — if/else (legitimate sense-flip)
+    text3 = """\
+void h(int x) {
+    if (cond) { } else { do_thing(); }
+}
+"""
+    hits = volatile_cheats.find_empty_if_dead_reads(text3, text3.index("{"),
+                                                    text3.rindex("}") + 1)
+    eq("empty-if: if/else with empty if-body NOT flagged", len(hits), 0)
+
+    # Negative — non-empty body
+    text4 = """\
+void i(void) {
+    if (cond) { do_thing(); }
+}
+"""
+    hits = volatile_cheats.find_empty_if_dead_reads(text4, text4.index("{"),
+                                                    text4.rindex("}") + 1)
+    eq("empty-if: non-empty body NOT flagged", len(hits), 0)
+
+    # Strip integration
+    text5 = """\
+void j(void) {
+    use_a();
+    if (D_xxx) {}
+    use_b();
+}
+"""
+    stripped, _ = volatile_cheats.strip_volatile_cheats_file(text5)
+    check("empty-if: strip removes the empty-if",
+          "if (D_xxx) {}" not in stripped)
+
+    # Count integration
+    cnt = volatile_cheats.func_volatile_cheat_count(text5, "j")
+    check("empty-if: func_volatile_cheat_count includes the cheat", cnt >= 1)
+
+
+def test_void_discard_unused_locals() -> None:
+    """find_void_discard_unused_locals — closes the `(void) name;` discard
+    loophole (without `&`) identified by the 2026-06-02 audit. Same intent
+    as `(void) &name;` frame-coercion. Parameters with the standard
+    warning-suppression pattern are NOT flagged (legitimate)."""
+
+    # Positive — local with discard
+    text = """\
+void f(void) {
+    s32 dummy[2];
+    (void) dummy;
+    do_real_work();
+}
+"""
+    body_lo = text.index("{")
+    body_hi = text.rindex("}") + 1
+    hits = volatile_cheats.find_void_discard_unused_locals(text, body_lo, body_hi, [])
+    eq("void-discard: catches `(void) dummy;` array local",
+       len(hits), 1)
+
+    # Positive — scalar local
+    text2 = """\
+void g(void) {
+    char new_var4;
+    (void) new_var4;
+    real_work();
+}
+"""
+    hits = volatile_cheats.find_void_discard_unused_locals(
+        text2, text2.index("{"), text2.rindex("}") + 1, [])
+    eq("void-discard: catches `(void) new_var4;` scalar local",
+       len(hits), 1)
+
+    # Negative — parameter (legitimate warning suppression)
+    text3 = """\
+void h(int unused_param) {
+    (void) unused_param;
+    real_work();
+}
+"""
+    params = ["unused_param"]
+    hits = volatile_cheats.find_void_discard_unused_locals(
+        text3, text3.index("{"), text3.rindex("}") + 1, params)
+    eq("void-discard: `(void) param;` warning-suppression NOT flagged",
+       len(hits), 0)
+
+    # Negative — local with real use elsewhere
+    text4 = """\
+void i(void) {
+    int x;
+    x = 5;
+    (void) x;
+    return;
+}
+"""
+    hits = volatile_cheats.find_void_discard_unused_locals(
+        text4, text4.index("{"), text4.rindex("}") + 1, [])
+    eq("void-discard: local with real use NOT flagged", len(hits), 0)
+
+    # Strip integration
+    text5 = """\
+void j(void) {
+    s32 _pad;
+    (void) _pad;
+}
+"""
+    stripped, _ = volatile_cheats.strip_volatile_cheats_file(text5)
+    check("void-discard: strip removes the discard line",
+          "(void) _pad;" not in stripped)
+
+
 def test_dead_conditional_stores() -> None:
     """find_dead_conditional_stores — closes the dead-conditional-store
     loophole identified during the func_8007B844 directed-permuter session
@@ -574,6 +714,8 @@ def main() -> int:
     test_inlineasm()
     test_cheats()
     test_addr_coerced_locals()
+    test_empty_if_dead_reads()
+    test_void_discard_unused_locals()
     test_dead_conditional_stores()
     test_metrics()
     test_canonical_build()

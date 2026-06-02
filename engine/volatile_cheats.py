@@ -245,6 +245,156 @@ def find_addr_coerced_locals(text: str, body_lo: int, body_hi: int) -> list[tupl
     return out
 
 
+# Empty-body `if (cond) { }` — dead read of cond used purely for codegen
+# coercion (forces GCC to load cond at a specific point without doing
+# anything with it, influencing scheduling / register allocation).
+#
+# Identified by the 2026-06-02 cheat-by-spelling audit on 3 affected
+# COMPLETED-C functions (func_80072E10 with 4× `if (D_800A3580) {}`,
+# func_8003D7B4 with `if (!val) {}`, func_80049A2C with `if (a1_val) {}`).
+# Same intent as the dead-conditional-store / Lever D / dead-vars-local-
+# array family: a code construct with no semantic purpose, written
+# purely to influence GCC's pre-DCE analysis.
+#
+# Detection: brace-matched scan for `if (...) { ... }` where the body
+# contains only whitespace + comments AND there is no `else` clause
+# following the close brace. (If/else with empty if-body IS legitimate
+# sense-flipped logic; only empty-if-without-else is the cheat.)
+
+
+def find_empty_if_dead_reads(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int, str]]:
+    """Find `if (cond) { }` statements with empty bodies and NO else clause
+    inside the function body. Returns list of (start, end, cond_text)."""
+    body = text[body_lo:body_hi]
+    out: list[tuple[int, int, str]] = []
+    for if_m in re.finditer(r"\bif\s*\(", body):
+        # Balance parens to find the condition's close.
+        depth = 1
+        i = if_m.end()
+        while i < len(body) and depth > 0:
+            c = body[i]
+            if c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+            i += 1
+        if depth != 0:
+            continue
+        cond_text = body[if_m.end():i - 1].strip()
+
+        # Skip whitespace + comments to find the `{`.
+        j = i
+        while j < len(body):
+            if body[j] in " \t\n\r":
+                j += 1
+            elif body[j:j + 2] == "//":
+                while j < len(body) and body[j] != "\n":
+                    j += 1
+            elif body[j:j + 2] == "/*":
+                k = body.find("*/", j + 2)
+                if k < 0:
+                    j = len(body)
+                else:
+                    j = k + 2
+            else:
+                break
+        if j >= len(body) or body[j] != "{":
+            continue
+        open_brace = j
+
+        # Balance braces to find the close.
+        depth = 1
+        k = j + 1
+        while k < len(body) and depth > 0:
+            c = body[k]
+            if c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+            k += 1
+        if depth != 0:
+            continue
+        close_brace = k - 1
+
+        # Body must be empty (only whitespace + comments).
+        inner = body[open_brace + 1:close_brace]
+        stripped = re.sub(r"//[^\n]*|/\*[\s\S]*?\*/|\s", "", inner)
+        if stripped:
+            continue
+
+        # Must NOT be followed by `else` (which would be legitimate
+        # sense-flipped logic, not a dead-read cheat).
+        after = body[k:k + 20].lstrip()
+        if re.match(r"\belse\b", after):
+            continue
+
+        out.append((body_lo + if_m.start(), body_lo + k, cond_text))
+    return out
+
+
+# `(void) <name>;` — discard cast on a bare identifier (no `&`). For locals,
+# this is the scalar variant of the `(void) &<name>;` frame-coercion cheat:
+# the declaration reserves a frame slot, the discard cast defeats DCE, the
+# variable has no semantic purpose.
+#
+# For PARAMETERS, the standard C convention `(void) param;` suppresses
+# unused-parameter warnings — that's legitimate, NOT flagged.
+#
+# Identified by the 2026-06-02 cheat-by-spelling audit; complements the
+# existing `find_addr_coerced_locals` (which requires `&`) to close the
+# scalar-discard loophole.
+_VOID_DISCARD_NO_ADDR_RE = re.compile(
+    r"(?m)^[ \t]*\(\s*void\s*\)\s*(?P<name>\w+)\s*;[ \t]*$"
+)
+
+
+def find_void_discard_unused_locals(text: str, body_lo: int, body_hi: int,
+                                    params: list[str]) -> list[tuple[int, int, str]]:
+    """Find `(void) <name>;` discard-cast statements where <name> is a local
+    declared in the function body with no semantic use (only the declaration
+    + discards). Parameters are explicitly NOT flagged (warning suppression
+    is legitimate). Returns list of (start, end, name)."""
+    body = text[body_lo:body_hi]
+    discards = [(m.start(), m.end(), m.group("name"))
+                for m in _VOID_DISCARD_NO_ADDR_RE.finditer(body)]
+    if not discards:
+        return []
+
+    out: list[tuple[int, int, str]] = []
+    for ds, de, name in discards:
+        if name in params:
+            continue  # Legitimate parameter-warning suppression
+        # Confirm <name> is declared as a local in the body (presence of a
+        # declaration statement like `T name;`, `T name[N];`, `T *name;`).
+        # If absent, the name probably refers to a global / file-scope
+        # symbol — skip (different family of cheat if any).
+        decl_re = re.compile(
+            r"(?m)^[ \t]*"
+            r"(?:(?:s8|s16|s32|s64|u8|u16|u32|u64|int|char|short|long|float|"
+            r"double|register|static|const|volatile|signed|unsigned|void|"
+            r"struct|union|enum)\b\s+|)+"
+            r"\**\s*"
+            rf"\b{re.escape(name)}\b"
+            r"(?:\s*\[\s*\d*\s*\])?\s*"
+            r"(?:=[^;]+)?\s*;"
+        )
+        if not decl_re.search(body):
+            continue
+        # Count references to <name> that are NOT inside a `(void) name;`
+        # discard for this same name.
+        ref_re = re.compile(rf"\b{re.escape(name)}\b")
+        same_name_discards = [(s, e) for s, e, n in discards if n == name]
+        other_refs = [
+            r for r in ref_re.finditer(body)
+            if not any(s <= r.start() < e for s, e in same_name_discards)
+        ]
+        # At most 1 reference outside discards = the declaration. The
+        # variable serves no semantic purpose.
+        if len(other_refs) <= 1:
+            out.append((body_lo + ds, body_lo + de, name))
+    return out
+
+
 # Dead-conditional-store: an assignment `<var> = <rhs>;` inside a control-flow
 # block (if/else/switch/loop/do) where the IDENTICAL `<var> = <rhs>;` also
 # appears at the enclosing function-body scope after the block. The inner
@@ -669,6 +819,10 @@ def find_all_cheats(text: str) -> list[tuple[int, int, str]]:
             out.append((s, e, s))
         for s, e, _name in find_addr_coerced_locals(text, body_lo, body_hi):
             out.append((s, e, s))
+        for s, e, _name in find_void_discard_unused_locals(text, body_lo, body_hi, params):
+            out.append((s, e, s))
+        for s, e, _cond in find_empty_if_dead_reads(text, body_lo, body_hi):
+            out.append((s, e, s))
         for s, e, _var, _rhs in find_dead_conditional_stores(text, body_lo, body_hi):
             out.append((s, e, s))
         for s, e, _name in find_dead_param_assigns(text, body_lo, body_hi, params):
@@ -777,6 +931,10 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
         for s, e, _ in find_unused_local_arrays(text, body_lo, body_hi):
             body_extra_spans.append((s, e))
         for s, e, _ in find_addr_coerced_locals(text, body_lo, body_hi):
+            body_extra_spans.append((s, e))
+        for s, e, _ in find_void_discard_unused_locals(text, body_lo, body_hi, params):
+            body_extra_spans.append((s, e))
+        for s, e, _ in find_empty_if_dead_reads(text, body_lo, body_hi):
             body_extra_spans.append((s, e))
         for s, e, _, _ in find_dead_conditional_stores(text, body_lo, body_hi):
             body_extra_spans.append((s, e))
@@ -950,6 +1108,10 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     for s, e, _name in find_unused_local_arrays(text, lo, hi):
         counted_vol_positions.add(s)
     for s, e, _name in find_addr_coerced_locals(text, lo, hi):
+        counted_vol_positions.add(s)
+    for s, e, _name in find_void_discard_unused_locals(text, lo, hi, params):
+        counted_vol_positions.add(s)
+    for s, e, _cond in find_empty_if_dead_reads(text, lo, hi):
         counted_vol_positions.add(s)
     for s, e, _var, _rhs in find_dead_conditional_stores(text, lo, hi):
         counted_vol_positions.add(s)
