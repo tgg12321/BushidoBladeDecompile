@@ -42,6 +42,32 @@ def main() -> int:
             f"(edit src toward 0) -> retire/verify-oracle -> queue done {top['func']} -> "
             f"commit. Finish THIS to COMPLETED-C before taking another. "
             f"(`engine queue next` for the full record.)")
+        # Surface a WIP checkpoint if one exists for the top function. The WIP
+        # registry (memory/wip/<func>/) carries the prior session's best
+        # candidate body + measured floor + next-step hypotheses, so a fresh
+        # agent can resume in one read instead of re-deriving levers from the
+        # memory notes / git log. See memory/wip/README.md.
+        try:
+            wip_meta = Path(root) / "memory" / "wip" / top["func"] / "meta.json"
+            if wip_meta.is_file():
+                w = json.loads(wip_meta.read_text())
+                sc = w.get("scores", {}) or {}
+                sessions = w.get("sessions", []) or []
+                rev = (w.get("reviewer", {}) or {}).get("verdict")
+                cand = sc.get("candidate_floor")
+                head = sc.get("head_floor")
+                latest = sessions[-1].get("lever") if sessions else None
+                rev_str = f"reviewer={rev}" if rev else "reviewer=not-invoked"
+                lever_str = f" — last lever: {latest}" if latest else ""
+                print(
+                    f"[queue] WIP CHECKPOINT — candidate floor {cand} "
+                    f"(HEAD floor {head}), {len(sessions)} session(s), "
+                    f"{rev_str}{lever_str}.\n"
+                    f"        Resume: read memory/wip/{top['func']}/meta.json + "
+                    f"notes.md; apply candidate.c to src/{top.get('file','')}.c "
+                    f"to start from the score-{cand} floor.")
+        except Exception:
+            pass
     except Exception:
         pass
     return 0

@@ -1,0 +1,68 @@
+{
+  "function": "func_8007C7A0",
+  "file": "display",
+  "scores": {
+    "head_floor": 16,
+    "candidate_floor": 12,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 50,
+    "target_insns": 51
+  },
+  "sessions": [
+    {
+      "date": "2026-05-22",
+      "lever": "23 manual attempts + 52k+ permuter iters at HEAD shape",
+      "floor_was": 20,
+      "floor_now": 19
+    },
+    {
+      "date": "2026-06-01",
+      "lever": "unconditional var_a1 = arg1 preload (session B)",
+      "floor_was": 19,
+      "floor_now": 18
+    },
+    {
+      "date": "2026-06-01",
+      "lever": "r_e3 named intermediate + drop coercion vars + m2c-shape inline (session C)",
+      "floor_was": 18,
+      "floor_now": 16
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "SOTN duplicate-read precompute (Y wide-mask) — session D, post-policy update",
+      "lever_rule": "split-read-defeats-hoist",
+      "floor_was": 16,
+      "floor_now": 12
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": null,
+    "evidence": "Not yet invoked on the score-12 form. Manual self-audit by session D's worker against the 6-test checklist: PASS — all four lever stages have semantic purpose (var_a1 preload is a real local that holds the Y argument; r_e3 is the GPU command word naming the constant; var_v1 precompute is the SOTN-allowed duplicate-read pattern resolved 2026-06-02; the overwrite in the narrow-mode branch is real semantic logic, not a coercion). Cheat-reviewer should still be invoked for an independent verdict before any Match: commit."
+  },
+  "remaining_gap": {
+    "summary": "$a2-vs-$a3 X-preserve register tiebreaker cascade. The missing park insn at .L8007C7E0 plus the X-preserve register choice ($a2 mine vs $a3 target) cascade through ~10 register-rotation diffs. cc1's default ascending allocation order picks $a2 for the X preserve when both $a2 and $a3 are free; target picks $a3. Every legitimate (non-cheat) C lever tested leaves the tiebreaker unchanged.",
+    "rule_count_at_head": 21,
+    "rules_required_for_full_match": "The 21 regfix substs in regfix.txt:3050-3071 are calibrated for HEAD's emission shape. The candidate's score-12 shape produces SHA1 838d440d... (mismatch). To commit the candidate as a Match the rules would need to be re-written for the new shape — net lateral movement, no rule reduction. So commit is gated on lowering the score further (toward 0)."
+  },
+  "next_hypotheses": [
+    "tools/decomp-permuter from the score-12 base — directed at the X-preserve register slot. CRITICAL: invoke cheat-reviewer on output per review-discipline-before-commit; reject literal renames, dead conditional stores, etc.",
+    "ALLOCDBG-instrumented dump on the score-12 form (tmp/gccdbg/cc1) to identify why cc1 picks $a2 over $a3 — a livelen/refs imbalance may point at a legitimate structural change.",
+    "Sibling func_8007C748 (3-arg variant, matched pure-C) .greg cross-reference — find the natural C structure that placed its var_v0_2-analog in the target reg.",
+    "Re-read target's m2c reconstruction more carefully for the X-clamp shape — a control-flow variant may not require literal renames."
+  ],
+  "rejected_forms": [
+    {
+      "form": "s16 raw_arg0 = arg0; ... raw_arg0 = var_v0_2; ... use raw_arg0 in mask expressions",
+      "score": 10,
+      "build_insns": 51,
+      "reason": "FORBIDDEN per .claude/rules/param-local-alias-prologue-pair-flip.md + .claude/rules/no-new-park-categories.md. raw_arg0 is a literal rename of arg0 (identical type, identical lvalue, zero semantic information added). The mid-function reassignment raw_arg0 = var_v0_2 is a literal-rename-followed-by-reuse chain solely to coerce GCC's allocator into picking $a3. The justification references GCC internals (allocno priority biasing $a3 vs $a2 tiebreaker) — the canonical cheat-by-spelling signal. Cheat-reviewer would FAIL."
+    }
+  ],
+  "memory_notes": [
+    "memory/project/func-8007c7a0-sotn-duplicate-read-lever.md",
+    "memory/project/func-8007c7a0-named-intermediate-lever.md",
+    "memory/project/func-8007c7a0-arg1-preload-lever.md"
+  ],
+  "sibling_impact": "func_8007C86C has IDENTICAL 21-rule pattern (constant differs: 0xE4 vs 0xE3). The same SOTN duplicate-read lever applies and reaches the same floor 12. See memory/wip/func_8007C86C/."
+}

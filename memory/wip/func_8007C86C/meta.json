@@ -1,0 +1,72 @@
+{
+  "function": "func_8007C86C",
+  "file": "display",
+  "scores": {
+    "head_floor": 20,
+    "candidate_floor": 12,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 50,
+    "target_insns": 51
+  },
+  "sessions": [
+    {
+      "date": "2026-05-22",
+      "lever": "session 1 — HEAD form (committed score 20) with int new_var/2 padding + if (!D_8009BE7A){} empty-if scaffold",
+      "floor_was": 22,
+      "floor_now": 20
+    },
+    {
+      "date": "2026-06-01",
+      "lever": "session 2 — clean v8 form (unconditional var_a1 = arg1 preload + strip padding)",
+      "floor_was": 20,
+      "floor_now": 17
+    },
+    {
+      "date": "2026-06-01",
+      "lever": "session 3 — clean single-target permuter ~5400 iters; all closing forms were UB-conditional-init cheats; honest floor stayed 17",
+      "floor_was": 17,
+      "floor_now": 17
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "session 4 — SOTN duplicate-read precompute (Y wide-mask) + r_e4 named const + drop dead-code padding, ported from C7A0 session D",
+      "lever_rule": "split-read-defeats-hoist",
+      "floor_was": 17,
+      "floor_now": 12
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": null,
+    "evidence": "Not yet invoked on the score-12 form. Worker self-audit: PASS (same 4 lever stages as C7A0, each with semantic purpose — the SOTN duplicate-read is the resolved-ALLOWED technique). Independent cheat-reviewer verdict still owed before any Match: commit."
+  },
+  "remaining_gap": {
+    "summary": "Identical to func_8007C7A0: $a2-vs-$a3 X-preserve register tiebreaker cascade. Missing park insn at idx 16 + X-preserve register choice ($a2 mine vs $a3 target) cascade through ~12 register-rotation diffs. The only difference vs C7A0 is the constant (0xE4000000 vs 0xE3000000).",
+    "rule_count_at_head": 21,
+    "rules_required_for_full_match": "21 substs in regfix.txt:3073-3094 calibrated for HEAD form. Candidate's score-12 shape produces SHA1 947ff79e... (mismatch). Same lateral-movement reason as C7A0 — rules would need re-writing for the new shape with no net rule reduction; commit gated on lowering the score further (toward 0)."
+  },
+  "next_hypotheses": [
+    "tools/decomp-permuter from the score-12 base (NOT the score-17 base session 3 used). Directed at the X-preserve register slot. CRITICAL: invoke cheat-reviewer on output.",
+    "ALLOCDBG-instrumented dump on the score-12 form to identify cc1's $a2-vs-$a3 tiebreaker mechanism.",
+    "Sibling func_8007C748 (3-arg variant, matched pure-C) .greg cross-reference.",
+    "Joint lever-search with C7A0 — the two functions share the structural ceiling exactly; a lever found for one will apply to the other."
+  ],
+  "rejected_forms": [
+    {
+      "form": "(not tested directly here; same s16 raw_arg0 = arg0 literal-rename chain documented for C7A0)",
+      "score": 10,
+      "reason": "Same FORBIDDEN form as memory/wip/func_8007C7A0/meta.json rejected_forms[0] — not re-tested this session because the verdict is the same."
+    },
+    {
+      "form": "UB conditional-init patterns from session 3's permuter (~5400 iters)",
+      "score": null,
+      "reason": "Every closing form the directed permuter found used UB-conditional-init (a local read before any path writes it). Forbidden cheat-by-spelling per .claude/rules/no-new-park-categories.md. See memory/project/func-8007c86c-permuter-ub-cheat-findings.md."
+    }
+  ],
+  "memory_notes": [
+    "memory/project/func-8007c86c-sotn-duplicate-read-lever.md",
+    "memory/project/func-8007c86c-clean-form-floor.md",
+    "memory/project/func-8007c86c-permuter-ub-cheat-findings.md"
+  ],
+  "sibling_impact": "func_8007C7A0 is the constant-differs sibling (0xE3 vs 0xE4). Both at floor 12 under the same lever stack. See memory/wip/func_8007C7A0/."
+}

@@ -175,6 +175,17 @@ def main() -> int:
             if not it:
                 print("queue: no active items (run `queue regen`, or all work is done/parked).")
                 return 0
+            # Attach WIP checkpoint summary if one exists for this function.
+            # WIP entries (memory/wip/<func>/) preserve prior sessions' best
+            # candidate bodies and measured floors so an agent can resume
+            # mid-grind without re-deriving levers. See memory/wip/README.md.
+            try:
+                from . import wip as W  # noqa: WPS433 (local import: silent on failure)
+                ws = W.summary(it["func"])
+                if ws is not None:
+                    it = {**it, "wip": ws}
+            except Exception:
+                pass
             print(json.dumps(it, indent=2))
             return 0
         if a.action in ("done", "park"):

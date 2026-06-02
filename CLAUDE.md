@@ -173,12 +173,50 @@ and take the next. Everything gets decompiled eventually, so don't skip "hard" i
 Items routed `ASM-STRUCTURAL` / `ASM-WHOLE` sit in an `authorize` bucket (not `active`) — they need
 user canonical-asm sign-off, so they never block pure-C work.
 
+## WIP checkpoints (`memory/wip/<func>/`)
+Most outstanding INCOMPLETE functions need MULTIPLE sessions to close — a partial-progress lever
+gets the score from 20 → 12 but doesn't retire the rules, the next agent comes in cold and
+re-derives what the prior session already knew, momentum is lost. **WIP entries are the fix.**
+
+A WIP entry checkpoints the prior session's best candidate body + measured floor + technique +
+remaining-gap analysis + next-step hypotheses + cheat-reviewer verdict — all session-survivable,
+all tracked in git, all OUTSIDE the build pipeline (so `verify-oracle` is unaffected). A fresh
+agent resumes from `meta.json` in one read, applies `candidate.c` to `src/`, and confirms the
+documented floor with `sandbox` before iterating.
+
+| File | Purpose |
+|---|---|
+| `memory/wip/<func>/candidate.c` | The candidate C body. Copy-pasteable into `src/<file>.c`. NOT compiled — `memory/` is outside cpp/cc1/maspsx. |
+| `memory/wip/<func>/meta.json` | Machine-readable: scores (HEAD floor + candidate floor), sessions[] ledger, reviewer verdict, remaining_gap, next_hypotheses, rejected_forms. Schema in `memory/wip/README.md`. |
+| `memory/wip/<func>/notes.md` | Human-readable: TL;DR, resume instructions, pointers to deeper `memory/project/` notes. |
+| `memory/wip/<func>/rejected/<slug>.c` | OPTIONAL: forms that hit lower floors but failed cheat-reviewer. Preserved as "don't re-derive this" warnings. |
+
+**When to author a WIP entry.** Whenever a session ends with the function still INCOMPLETE but
+some measured progress (a lower floor than HEAD's). The `wip:` commit prefix scopes it; the
+`park_src_guard` hook doesn't fire (`memory/` is outside its scope). When the function eventually
+reaches COMPLETED-C, **delete `memory/wip/<func>/`** — the entry's purpose is served; lessons
+that generalize move into `.claude/rules/`.
+
+**Cheat discipline.** The cheat-reviewer must be invoked on the candidate before saving. A FAIL
+verdict means save the form under `rejected/` instead, with the violated rule named. WIP entries
+are NOT a back-door for un-vetted cheats — the reviewer verdict is recorded in `meta.json` for
+every checkpoint.
+
+**Hook integration.** The SessionStart hook (`tools/hooks/queue_top.py`) checks for a WIP entry
+on the top active function and prints a one-line banner: candidate floor, sessions count, latest
+lever, reviewer status. `engine queue next`'s JSON output includes a `wip` block when present.
+See `memory/wip/README.md` for the full contract.
+
 ## The loop (per function)
 The agent *is* the gap-closer — the engine measures, routes, and gates; you write the C.
 
 0. **Take the top of the queue** — `queue next` (also surfaced by the SessionStart hook). Work THAT
    function to completion before taking another; don't cherry-pick. (Override only if the user names
-   a specific function.)
+   a specific function.) **If the top function has a WIP checkpoint** (banner in the SessionStart
+   hook + `wip` block in `queue next`'s output), READ `memory/wip/<func>/meta.json` + `notes.md`
+   FIRST — apply `candidate.c` to `src/<file>.c`, confirm the documented floor with `sandbox`,
+   and continue from there instead of starting from HEAD. The `rejected_forms` field lists
+   constructs the prior agent ruled out; don't re-derive them.
 1. **`verify-oracle --rebuild`** once at session start. This makes `build/` the clean canonical
    reference the sandbox scores against. (Skip if `build/` is already clean.)
 2. **`canonical <func>`** — route. ASM-region / ASM-STRUCTURAL ⇒ stop the pure-C effort
@@ -193,9 +231,17 @@ The agent *is* the gap-closer — the engine measures, routes, and gates; you wr
    the sandbox distance is masked (register names normalised out), so a `0` can hide a real register
    diff — `retire`/`verify-oracle` (full SHA1) is the only proof. If `retire` rolls back, the gap is
    genuine reg-alloc work; keep editing.
-   Then `queue done <func>` records completion (it re-verifies ZERO rules + SHA1 == oracle). If the
-   item is genuinely not pure-C-closable (canonical-asm needing user auth, or a documented plateau),
-   `queue park <func> --reason "…"` instead so the queue advances.
+   Then `queue done <func>` records completion (it re-verifies ZERO rules + SHA1 == oracle), AND
+   delete `memory/wip/<func>/` if one existed (the checkpoint's purpose is served on close-out). If
+   the item is genuinely not pure-C-closable (canonical-asm needing user auth, or a documented
+   plateau), `queue park <func> --reason "…"` instead so the queue advances.
+5b. **Score lowered but not 0 ⇒ checkpoint.** If you measurably lowered the floor below HEAD's but
+   couldn't close, do NOT modify `src/` (oracle stays green). Save the progress as a WIP entry under
+   `memory/wip/<func>/`: candidate.c + meta.json (append to `sessions[]`, update
+   `scores.candidate_floor`, record any rejected forms) + notes.md. **Invoke `cheat-reviewer` on the
+   candidate FIRST** — record the verdict in `meta.json.reviewer`. Commit under `wip: <func>`.
+   Next session resumes from your checkpoint instead of from HEAD. The next agent reads `meta.json`,
+   applies `candidate.c`, confirms the documented floor, iterates from there.
 6. **Register findings.** Before committing, ask: did this match reveal a *reusable* codegen
    pattern or a non-obvious gotcha that the next agent would benefit from? If yes, record it where
    future agents will actually see it:

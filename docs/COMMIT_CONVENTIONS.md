@@ -38,6 +38,8 @@ These prefixes are the ones `dc.sh lessons --type <prefix>` matches on. Keep the
 | `cheat-cleanup: <name>` | Retiring a cheat (lost_codegen, wildcard subst, splice, etc.). Body documents what was retired and how. |
 | `cleanup: <name>` | Stripping stale regfix rules from already-bridged functions (lighter than full cheat retirement). |
 | `auth: <func>` / `inline_asm_canonical: <func>` | Canonical-asm authorization (function declared as hand-coded asm with documented evidence). Body MUST include evidence tags per [evidence-driven-authorization rule](../memory/rules/evidence-driven-authorization.md). |
+| `wip: <func>` | Save / update a checkpoint in `memory/wip/<func>/` — candidate C body + measured floor + technique + remaining gap. NOT a Match; the build is unchanged. Body should describe the lever and the new floor. See [memory/wip/README.md](../memory/wip/README.md). |
+| `park: <func>` | Function not yet COMPLETED-C; advance the queue with evidence. Touches `engine/queue.json` + `memory/project/` or `memory/wip/`; the build is unchanged. The `park_src_guard` hook BLOCKS `park:` commits that modify build-pipeline files (override: `[skip-park-src-guard]` + justification). |
 | `text1b.c: <action>`, `code6cac.c: <action>`, etc. | File-level work (often function matches that benefit from the file context being in the subject). |
 
 ### Project infrastructure
