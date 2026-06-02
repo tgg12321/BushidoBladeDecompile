@@ -1,2159 +1,8 @@
 {
-  "generated_at": "2026-05-31T14:49:25",
+  "generated_at": "2026-06-02T04:57:10",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
-    {
-      "func": "func_8007D048",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007D3F8",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 36,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007D6D8",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007D9C4",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007DB20",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007DC9C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007E1AC",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007E1FC",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007E24C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007E2D4",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007E35C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007E3BC",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007E4DC",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007E74C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 13,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007E8AC",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007E8DC",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007EA0C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 13,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007EB4C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007ED6C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007F05C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007F0BC",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007F0E4",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007F150",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007F1A8",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007F21C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007F24C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007F2AC",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007F2DC",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "gte_SetColorMatrix",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "gte_SetRotMatrix",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "gte_SetTransVector",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "AddTbpOfst_80047EE8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "InitFadePanel",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "InitHiraRmd_80047FBC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "InitHiraRmd_800480C0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 33,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "ang_hosei_80056FE8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "calc_loc_mat_fw_80055B60",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800481E8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 12,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800483DC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800484A0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80048530",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800485EC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 25,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8004876C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8004881C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80048BA4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80048FFC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800494D4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8004954C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80049584",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80049718",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80049C24",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 10,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8004A09C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8004C388",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052720",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 3,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052754",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052788",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052930",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052A88",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052B00",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052B44",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052B7C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052BE4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052C28",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052CD4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80052D00",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80053304",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80053694",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80053754",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80053E9C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80054604",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005490C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800550E8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80055948",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80056CB8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 15,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800571C0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005763C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80057ACC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80057CC8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 7,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80057E84",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80058580",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005B43C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005B7C4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005BA8C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005BD30",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005C074",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005C6D0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005C8A8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005D814",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005E098",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005E54C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005F1C8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8005FC9C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800600C8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80060544",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 11,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80060A68",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80060B70",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80060E38",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 18,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80061064",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800611A4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80061250",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006133C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800613C8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80061454",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800614E0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006156C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80061658",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80061710",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800617C8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800618B4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800619A4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800619F0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80061A3C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80061ACC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80061C00",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80061D74",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80061EC0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80062020",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800620B8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006288C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006295C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80062FEC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80063084",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80063AF0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80063B34",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80063BD0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80063E10",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800644FC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 12,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800645B0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800646E8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80064E90",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80064ED8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80064F20",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80064F68",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80064FB4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80065000",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006505C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800650A4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800650EC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80065134",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006517C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800651F0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80065264",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800652AC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800652F4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80065344",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80065394",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80065484",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80065540",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80065590",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800655E0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80065630",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80065760",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800657B0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80067200",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800678A8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80067D14",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80068D88",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80068ECC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800692C0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800693CC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80069AE4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80069E18",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80069F80",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006A1A0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006A880",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006B120",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006B578",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006B92C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006BB68",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006BD28",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 37,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006BEC4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006CCC8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006CFBC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006D3DC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006D808",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006DD94",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006E10C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006E534",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006ECF4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006F038",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006F100",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006F528",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8006F97C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80070C70",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 32,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80071C4C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800720FC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80072BC4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80072CD4",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80073060",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007352C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 11,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80073728",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80073C78",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80074220",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80074488",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800747D8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80074B18",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 41,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80074E08",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007526C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 14,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80075670",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800759D0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80075F80",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007636C",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800768DC",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80076D74",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_800770B8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 25,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80077374",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80077894",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "game_2d_CheckLifeGaugeNoDisp",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "gnd_get_fog",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "gnd_land_hit_char_tsuba",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 88,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "mario_getMarioVoiceData_80048AD0",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "mario_getMarioVoiceData_8005BE84",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "motion_SetExMotion",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "motion_ShiftControl",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "replay_camera_attack",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "saFidLoad",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 7,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "saTan1GaugeMain",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "saTan3GaugeMain_8006A564",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "saTan3GaugeMain_80073200",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "saTan4FireDisp_80048864",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 36,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "saTan4GaugeMain",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "single_game_SetStatusUpData",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "tslGlobalMemFree_8005C2A8",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "debug_printf",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 7,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80077B30",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80077D94",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80078654",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80078A68",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80078B04",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80078B3C",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80078B70",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80078BA8",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80078E58",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80078EC0",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80078F60",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80078F74",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80079244",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_8007992C",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
-    {
-      "func": "func_80079A30",
-      "file": "text1b_b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "scorable": false
-    },
     {
       "func": "cpu_check_same_dir_timer",
       "file": "code6cac_b",
@@ -2203,6 +52,14 @@
       "status": "active"
     },
     {
+      "func": "func_8007DB20",
+      "file": "display",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "kgm_clamp_patch_init",
       "file": "ings",
       "distance": 0,
@@ -2243,11 +100,291 @@
       "status": "active"
     },
     {
+      "func": "func_800494D4",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80049A2C",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8005B43C",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061064",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800619A4",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800619F0",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061A3C",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061D74",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80062FEC",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80063AF0",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80063B34",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80064F68",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80064FB4",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800652F4",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80065344",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80065394",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80065540",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80065590",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800655E0",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80065630",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80065760",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800657B0",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80068ECC",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80072BC4",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "mario_getMarioVoiceData_8005BE84",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80077B30",
+      "file": "text1b_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "bios_GPU_cw",
+      "file": "display",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007FEDC",
+      "file": "display",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "InitHiraRmd_80047FBC",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8004DDB4",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8005BD30",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_800789D8",
+      "file": "text1b_b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800790C0",
+      "file": "text1b_b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8003D7B4",
+      "file": "code6cac_c2",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "D_800832F8",
       "file": "ings2",
       "distance": 2,
       "verdict": "C",
       "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "tslPolyF4Init",
+      "file": "system",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 4,
       "status": "active"
     },
     {
@@ -2275,6 +412,94 @@
       "status": "active"
     },
     {
+      "func": "func_8004A09C",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005B7C4",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_80061C00",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80065484",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80069AE4",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "gnd_get_fog",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80078A68",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80078B3C",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80078B70",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80078E58",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007992C",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_8001A67C",
       "file": "code6cac",
       "distance": 3,
@@ -2283,11 +508,27 @@
       "status": "active"
     },
     {
+      "func": "func_80023DB8",
+      "file": "code6cac",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "myRobGeneiDraw2",
       "file": "code6cac_b",
       "distance": 3,
       "verdict": "C",
       "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "gte_SetTransVector",
+      "file": "display",
+      "distance": 3,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -2331,6 +572,22 @@
       "status": "active"
     },
     {
+      "func": "InitFadePanel",
+      "file": "text1b",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800550E8",
+      "file": "text1b",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
       "func": "func_80033550",
       "file": "code6cac_b",
       "distance": 4,
@@ -2363,6 +620,22 @@
       "status": "active"
     },
     {
+      "func": "func_800618B4",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006F038",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_800274BC",
       "file": "code6cac_b",
       "distance": 5,
@@ -2387,6 +660,30 @@
       "status": "active"
     },
     {
+      "func": "func_8007F21C",
+      "file": "display",
+      "distance": 5,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "gte_SetColorMatrix",
+      "file": "display",
+      "distance": 5,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "gte_SetRotMatrix",
+      "file": "display",
+      "distance": 5,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "initDrawMode",
       "file": "gpu",
       "distance": 5,
@@ -2400,6 +697,46 @@
       "distance": 5,
       "verdict": "C",
       "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "AddTbpOfst_80047EE8",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800484A0",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80052CD4",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80053694",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80060B70",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 4,
       "status": "active"
     },
     {
@@ -2427,6 +764,14 @@
       "status": "active"
     },
     {
+      "func": "func_8007F2AC",
+      "file": "display",
+      "distance": 6,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "InitHiraRmd_80041AC8",
       "file": "text1a",
       "distance": 6,
@@ -2440,6 +785,46 @@
       "distance": 6,
       "verdict": "C",
       "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_800483DC",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8004954C",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80052754",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80077894",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "saFidLoad",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 7,
       "status": "active"
     },
     {
@@ -2464,6 +849,38 @@
       "distance": 7,
       "verdict": "C",
       "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_8007D9C4",
+      "file": "display",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E8AC",
+      "file": "display",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F0BC",
+      "file": "display",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F0E4",
+      "file": "display",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
       "status": "active"
     },
     {
@@ -2499,7 +916,79 @@
       "status": "active"
     },
     {
+      "func": "func_80048530",
+      "file": "text1b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80052720",
+      "file": "text1b",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80052BE4",
+      "file": "text1b",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80074220",
+      "file": "text1b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "debug_printf",
+      "file": "text1b_b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 7,
+      "status": "active"
+    },
+    {
+      "func": "func_80078B04",
+      "file": "text1b_b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80078F60",
+      "file": "text1b_b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "func_80078F74",
+      "file": "text1b_b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
       "func": "func_8001A538",
+      "file": "code6cac",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800224E0",
       "file": "code6cac",
       "distance": 8,
       "verdict": "C",
@@ -2563,6 +1052,102 @@
       "status": "active"
     },
     {
+      "func": "func_80049C24",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 10,
+      "status": "active"
+    },
+    {
+      "func": "func_80052C28",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80064E90",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80064ED8",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80064F20",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8006505C",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800650A4",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800650EC",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80065134",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80065264",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800652AC",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80069E18",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "cpu_check_tubazeri_2",
       "file": "code6cac_b",
       "distance": 9,
@@ -2619,6 +1204,94 @@
       "status": "active"
     },
     {
+      "func": "func_8004881C",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_80053304",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80057CC8",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 7,
+      "status": "active"
+    },
+    {
+      "func": "func_800611A4",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8006156C",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061658",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061710",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800617C8",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061ACC",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061EC0",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800692C0",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_8003B10C",
       "file": "code6cac_c_ab",
       "distance": 10,
@@ -2635,11 +1308,43 @@
       "status": "active"
     },
     {
+      "func": "func_8007F150",
+      "file": "display",
+      "distance": 10,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F1A8",
+      "file": "display",
+      "distance": 10,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80045878",
       "file": "text1a_c",
       "distance": 10,
       "verdict": "C",
       "rules": 10,
+      "status": "active"
+    },
+    {
+      "func": "func_80065000",
+      "file": "text1b",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80078BA8",
+      "file": "text1b_b",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 9,
       "status": "active"
     },
     {
@@ -2656,6 +1361,46 @@
       "distance": 11,
       "verdict": "C",
       "rules": 11,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E35C",
+      "file": "display",
+      "distance": 11,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F05C",
+      "file": "display",
+      "distance": 11,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "ang_hosei_80056FE8",
+      "file": "text1b",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80049718",
+      "file": "text1b",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_80078EC0",
+      "file": "text1b_b",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 5,
       "status": "active"
     },
     {
@@ -2691,10 +1436,82 @@
       "status": "active"
     },
     {
+      "func": "func_80055948",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8006133C",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800613C8",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061454",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800614E0",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80062020",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80072CD4",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
       "func": "func_80037A20",
       "file": "code6cac_c",
       "distance": 13,
       "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E1AC",
+      "file": "display",
+      "distance": 13,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E1FC",
+      "file": "display",
+      "distance": 13,
+      "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
     },
@@ -2717,6 +1534,46 @@
     {
       "func": "mot_data_set",
       "file": "text1a_c",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80052B44",
+      "file": "text1b",
+      "distance": 13,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800600C8",
+      "file": "text1b",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "func_8006517C",
+      "file": "text1b",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_800651F0",
+      "file": "text1b",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_8006E10C",
+      "file": "text1b",
       "distance": 13,
       "verdict": "C",
       "rules": 0,
@@ -2763,6 +1620,14 @@
       "status": "active"
     },
     {
+      "func": "func_8007DC9C",
+      "file": "display",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
       "func": "file_LoadSectors",
       "file": "ings",
       "distance": 14,
@@ -2787,10 +1652,34 @@
       "status": "active"
     },
     {
+      "func": "func_800481E8",
+      "file": "text1b",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 12,
+      "status": "active"
+    },
+    {
       "func": "func_80037B00",
       "file": "code6cac_c",
       "distance": 15,
       "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007B3A8",
+      "file": "display",
+      "distance": 15,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E3BC",
+      "file": "display",
+      "distance": 15,
+      "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
     },
@@ -2811,10 +1700,34 @@
       "status": "active"
     },
     {
+      "func": "func_8006B92C",
+      "file": "text1b",
+      "distance": 15,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80034200",
       "file": "code6cac_b",
       "distance": 16,
       "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007ED6C",
+      "file": "display",
+      "distance": 16,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F24C",
+      "file": "display",
+      "distance": 16,
+      "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
     },
@@ -2907,6 +1820,22 @@
       "status": "active"
     },
     {
+      "func": "func_8007E24C",
+      "file": "display",
+      "distance": 18,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E2D4",
+      "file": "display",
+      "distance": 18,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80080258",
       "file": "system",
       "distance": 18,
@@ -2939,6 +1868,38 @@
       "status": "active"
     },
     {
+      "func": "func_80052B00",
+      "file": "text1b",
+      "distance": 18,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80060544",
+      "file": "text1b",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 11,
+      "status": "active"
+    },
+    {
+      "func": "func_80060E38",
+      "file": "text1b",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 18,
+      "status": "active"
+    },
+    {
+      "func": "func_80068D88",
+      "file": "text1b",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80021280",
       "file": "code6cac",
       "distance": 19,
@@ -2965,6 +1926,22 @@
     {
       "func": "saTan5TakeAnim2_2",
       "file": "main",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8004876C",
+      "file": "text1b",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "mario_getMarioVoiceData_80048AD0",
+      "file": "text1b",
       "distance": 19,
       "verdict": "C",
       "rules": 0,
@@ -3035,6 +2012,30 @@
       "status": "active"
     },
     {
+      "func": "func_80052B7C",
+      "file": "text1b",
+      "distance": 20,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80075670",
+      "file": "text1b",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "game_2d_CheckLifeGaugeNoDisp",
+      "file": "text1b",
+      "distance": 20,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_8001E6E4",
       "file": "code6cac",
       "distance": 21,
@@ -3091,6 +2092,14 @@
       "status": "active"
     },
     {
+      "func": "func_800645B0",
+      "file": "text1b",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_800470B0",
       "file": "sound",
       "distance": 22,
@@ -3123,6 +2132,14 @@
       "status": "active"
     },
     {
+      "func": "func_8007F2DC",
+      "file": "display",
+      "distance": 23,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "motion_Open",
       "file": "ings2",
       "distance": 23,
@@ -3152,6 +2169,30 @@
       "distance": 23,
       "verdict": "C",
       "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80052788",
+      "file": "text1b",
+      "distance": 23,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8006288C",
+      "file": "text1b",
+      "distance": 23,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active"
+    },
+    {
+      "func": "func_80078654",
+      "file": "text1b_b",
+      "distance": 23,
+      "verdict": "C",
+      "rules": 6,
       "status": "active"
     },
     {
@@ -3195,8 +2236,24 @@
       "status": "active"
     },
     {
+      "func": "func_80052A88",
+      "file": "text1b",
+      "distance": 25,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_80086130",
       "file": "main",
+      "distance": 26,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80049584",
+      "file": "text1b",
       "distance": 26,
       "verdict": "C",
       "rules": 0,
@@ -3275,8 +2332,32 @@
       "status": "active"
     },
     {
+      "func": "func_800485EC",
+      "file": "text1b",
+      "distance": 28,
+      "verdict": "C",
+      "rules": 25,
+      "status": "active"
+    },
+    {
+      "func": "func_80061250",
+      "file": "text1b",
+      "distance": 28,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "ang_near_dif",
       "file": "config",
+      "distance": 29,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8004C388",
+      "file": "text1b",
       "distance": 29,
       "verdict": "C",
       "rules": 0,
@@ -3328,6 +2409,14 @@
       "distance": 32,
       "verdict": "C",
       "rules": 15,
+      "status": "active"
+    },
+    {
+      "func": "func_800770B8",
+      "file": "text1b",
+      "distance": 32,
+      "verdict": "C",
+      "rules": 25,
       "status": "active"
     },
     {
@@ -3403,6 +2492,14 @@
       "status": "active"
     },
     {
+      "func": "func_80060A68",
+      "file": "text1b",
+      "distance": 35,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
       "func": "func_800300B4",
       "file": "code6cac_b",
       "distance": 36,
@@ -3416,6 +2513,14 @@
       "distance": 36,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "InitHiraRmd_800480C0",
+      "file": "text1b",
+      "distance": 36,
+      "verdict": "C",
+      "rules": 33,
       "status": "active"
     },
     {
@@ -3491,6 +2596,14 @@
       "status": "active"
     },
     {
+      "func": "func_800644FC",
+      "file": "text1b",
+      "distance": 39,
+      "verdict": "C",
+      "rules": 12,
+      "status": "active"
+    },
+    {
       "func": "func_80086BFC",
       "file": "main",
       "distance": 40,
@@ -3547,6 +2660,14 @@
       "status": "active"
     },
     {
+      "func": "func_8007D3F8",
+      "file": "display",
+      "distance": 43,
+      "verdict": "C",
+      "rules": 36,
+      "status": "active"
+    },
+    {
       "func": "coli_HitPauseKatana_2",
       "file": "main",
       "distance": 43,
@@ -3571,6 +2692,14 @@
       "status": "active"
     },
     {
+      "func": "func_80072E10",
+      "file": "text1b",
+      "distance": 44,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "saTan2KabutoWareMove",
       "file": "code6cac_b",
       "distance": 45,
@@ -3584,6 +2713,14 @@
       "distance": 48,
       "verdict": "C",
       "rules": 47,
+      "status": "active"
+    },
+    {
+      "func": "func_8007526C",
+      "file": "text1b",
+      "distance": 48,
+      "verdict": "C",
+      "rules": 14,
       "status": "active"
     },
     {
@@ -3603,8 +2740,24 @@
       "status": "active"
     },
     {
+      "func": "func_80073060",
+      "file": "text1b",
+      "distance": 50,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
       "func": "single_game_SetAbilityData",
       "file": "code6cac",
+      "distance": 51,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80052930",
+      "file": "text1b",
       "distance": 51,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
@@ -3624,6 +2777,14 @@
       "distance": 52,
       "verdict": "ASM-SUSPECT",
       "rules": 25,
+      "status": "active"
+    },
+    {
+      "func": "func_8007352C",
+      "file": "text1b",
+      "distance": 54,
+      "verdict": "ASM-SUSPECT",
+      "rules": 11,
       "status": "active"
     },
     {
@@ -3691,11 +2852,43 @@
       "status": "active"
     },
     {
+      "func": "func_8006BD28",
+      "file": "text1b",
+      "distance": 59,
+      "verdict": "ASM-SUSPECT",
+      "rules": 37,
+      "status": "active"
+    },
+    {
+      "func": "saTan4FireDisp_80048864",
+      "file": "text1b",
+      "distance": 60,
+      "verdict": "ASM-SUSPECT",
+      "rules": 36,
+      "status": "active"
+    },
+    {
       "func": "tslPrintScreen",
       "file": "config",
       "distance": 61,
       "verdict": "ASM-SUSPECT",
       "rules": 28,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E4DC",
+      "file": "display",
+      "distance": 62,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007EB4C",
+      "file": "display",
+      "distance": 62,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -3723,6 +2916,14 @@
       "status": "active"
     },
     {
+      "func": "gnd_land_hit_char_tsuba",
+      "file": "text1b",
+      "distance": 65,
+      "verdict": "ASM-SUSPECT",
+      "rules": 88,
+      "status": "active"
+    },
+    {
       "func": "func_8008AAD4",
       "file": "main",
       "distance": 69,
@@ -3731,11 +2932,43 @@
       "status": "active"
     },
     {
+      "func": "func_8007E8DC",
+      "file": "display",
+      "distance": 72,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007EA0C",
+      "file": "display",
+      "distance": 75,
+      "verdict": "ASM-PARTIAL",
+      "rules": 13,
+      "status": "active"
+    },
+    {
+      "func": "func_8007E74C",
+      "file": "display",
+      "distance": 85,
+      "verdict": "ASM-PARTIAL",
+      "rules": 13,
+      "status": "active"
+    },
+    {
       "func": "func_80017848",
       "file": "ings",
       "distance": 85,
       "verdict": "ASM-SUSPECT",
       "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_80074B18",
+      "file": "text1b",
+      "distance": 87,
+      "verdict": "ASM-SUSPECT",
+      "rules": 41,
       "status": "active"
     },
     {
@@ -3763,6 +2996,38 @@
       "status": "active"
     },
     {
+      "func": "func_8006BB68",
+      "file": "text1b",
+      "distance": 110,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006DD94",
+      "file": "text1b",
+      "distance": 115,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005C6D0",
+      "file": "text1b",
+      "distance": 117,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80070C70",
+      "file": "text1b",
+      "distance": 118,
+      "verdict": "ASM-SUSPECT",
+      "rules": 32,
+      "status": "active"
+    },
+    {
       "func": "func_8003DE14",
       "file": "code6cac_c2",
       "distance": 119,
@@ -3779,11 +3044,123 @@
       "status": "active"
     },
     {
+      "func": "func_8006D3DC",
+      "file": "text1b",
+      "distance": 124,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80057ACC",
+      "file": "text1b",
+      "distance": 125,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "tslGlobalMemFree_8005C2A8",
+      "file": "text1b",
+      "distance": 133,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80069F80",
+      "file": "text1b",
+      "distance": 134,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006A1A0",
+      "file": "text1b",
+      "distance": 137,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005C074",
+      "file": "text1b",
+      "distance": 139,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80063BD0",
+      "file": "text1b",
+      "distance": 143,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80054604",
+      "file": "text1b",
+      "distance": 158,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007D048",
+      "file": "display",
+      "distance": 159,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80076D74",
+      "file": "text1b",
+      "distance": 159,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80048FFC",
+      "file": "text1b",
+      "distance": 164,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "saTan1GaugeMain",
+      "file": "text1b",
+      "distance": 164,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006BEC4",
+      "file": "text1b",
+      "distance": 167,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "cpu_check_run_attack",
       "file": "code6cac",
       "distance": 168,
       "verdict": "ASM-PARTIAL",
       "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_8005BA8C",
+      "file": "text1b",
+      "distance": 168,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
       "status": "active"
     },
     {
@@ -3795,9 +3172,57 @@
       "status": "active"
     },
     {
+      "func": "func_8007D6D8",
+      "file": "display",
+      "distance": 185,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006CCC8",
+      "file": "text1b",
+      "distance": 187,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80056CB8",
+      "file": "text1b",
+      "distance": 188,
+      "verdict": "ASM-SUSPECT",
+      "rules": 15,
+      "status": "active"
+    },
+    {
+      "func": "saTan3GaugeMain_8006A564",
+      "file": "text1b",
+      "distance": 197,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_800841E0",
       "file": "main",
       "distance": 198,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006B578",
+      "file": "text1b",
+      "distance": 198,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "saTan3GaugeMain_80073200",
+      "file": "text1b",
+      "distance": 201,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -3827,9 +3252,49 @@
       "status": "active"
     },
     {
+      "func": "func_800747D8",
+      "file": "text1b",
+      "distance": 206,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "DispStuff",
       "file": "main",
       "distance": 207,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006ECF4",
+      "file": "text1b",
+      "distance": 207,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80074488",
+      "file": "text1b",
+      "distance": 210,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006CFBC",
+      "file": "text1b",
+      "distance": 217,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006E534",
+      "file": "text1b",
+      "distance": 220,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -3867,6 +3332,22 @@
       "status": "active"
     },
     {
+      "func": "func_80077374",
+      "file": "text1b",
+      "distance": 234,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80048BA4",
+      "file": "text1b",
+      "distance": 235,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "PutRobShadow",
       "file": "code6cac_b",
       "distance": 236,
@@ -3894,6 +3375,14 @@
       "func": "md_game_end",
       "file": "main",
       "distance": 247,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80075F80",
+      "file": "text1b",
+      "distance": 249,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -3931,10 +3420,34 @@
       "status": "active"
     },
     {
+      "func": "func_8006F100",
+      "file": "text1b",
+      "distance": 264,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8005FC9C",
+      "file": "text1b",
+      "distance": 266,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_8002F2D0",
       "file": "code6cac_b",
       "distance": 268,
       "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80071C4C",
+      "file": "text1b",
+      "distance": 268,
+      "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
     },
@@ -3955,6 +3468,30 @@
       "status": "active"
     },
     {
+      "func": "func_8005763C",
+      "file": "text1b",
+      "distance": 274,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006F528",
+      "file": "text1b",
+      "distance": 275,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006B120",
+      "file": "text1b",
+      "distance": 276,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_8008AF9C",
       "file": "main",
       "distance": 279,
@@ -3963,9 +3500,33 @@
       "status": "active"
     },
     {
+      "func": "func_80074E08",
+      "file": "text1b",
+      "distance": 279,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800678A8",
+      "file": "text1b",
+      "distance": 282,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_80021DB0",
       "file": "code6cac",
       "distance": 283,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800571C0",
+      "file": "text1b",
+      "distance": 285,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -3979,9 +3540,25 @@
       "status": "active"
     },
     {
+      "func": "func_8005E098",
+      "file": "text1b",
+      "distance": 288,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_8001C8DC",
       "file": "code6cac",
       "distance": 289,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800768DC",
+      "file": "text1b",
+      "distance": 292,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -4019,6 +3596,14 @@
       "status": "active"
     },
     {
+      "func": "func_80067200",
+      "file": "text1b",
+      "distance": 297,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_800872A4",
       "file": "main",
       "distance": 299,
@@ -4038,6 +3623,14 @@
       "func": "func_80086CF8",
       "file": "main",
       "distance": 303,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800693CC",
+      "file": "text1b",
+      "distance": 306,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -4075,6 +3668,14 @@
       "status": "active"
     },
     {
+      "func": "func_80073728",
+      "file": "text1b",
+      "distance": 339,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_80026DA4",
       "file": "code6cac_b",
       "distance": 340,
@@ -4087,6 +3688,22 @@
       "file": "code6cac",
       "distance": 345,
       "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80053E9C",
+      "file": "text1b",
+      "distance": 345,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007636C",
+      "file": "text1b",
+      "distance": 346,
+      "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
     },
@@ -4107,9 +3724,41 @@
       "status": "active"
     },
     {
+      "func": "func_8006D808",
+      "file": "text1b",
+      "distance": 353,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_80035828",
       "file": "code6cac_b2",
       "distance": 358,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80073C78",
+      "file": "text1b",
+      "distance": 360,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800759D0",
+      "file": "text1b",
+      "distance": 362,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80052D00",
+      "file": "text1b",
+      "distance": 384,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -4123,9 +3772,33 @@
       "status": "active"
     },
     {
+      "func": "func_8005490C",
+      "file": "text1b",
+      "distance": 398,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_8002A458",
       "file": "code6cac_b",
       "distance": 415,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80079244",
+      "file": "text1b_b",
+      "distance": 416,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8006295C",
+      "file": "text1b",
+      "distance": 418,
       "verdict": "ASM-PARTIAL",
       "rules": 1,
       "status": "active"
@@ -4139,6 +3812,22 @@
       "status": "active"
     },
     {
+      "func": "func_80063E10",
+      "file": "text1b",
+      "distance": 430,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80057E84",
+      "file": "text1b",
+      "distance": 445,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "saTan3MainJump",
       "file": "code6cac_b",
       "distance": 463,
@@ -4147,9 +3836,25 @@
       "status": "active"
     },
     {
+      "func": "func_80053754",
+      "file": "text1b",
+      "distance": 464,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_80032C50",
       "file": "code6cac_b",
       "distance": 465,
+      "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80077D94",
+      "file": "text1b_b",
+      "distance": 466,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -4167,6 +3872,22 @@
       "file": "text1a_c",
       "distance": 477,
       "verdict": "ASM-SUSPECT",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800646E8",
+      "file": "text1b",
+      "distance": 488,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800620B8",
+      "file": "text1b",
+      "distance": 499,
+      "verdict": "ASM-PARTIAL",
       "rules": 1,
       "status": "active"
     },
@@ -4195,54 +3916,105 @@
       "status": "active"
     },
     {
-      "func": "func_8007F00C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-WHOLE",
-      "rules": 0,
-      "status": "authorize",
-      "scorable": false
+      "func": "func_80063084",
+      "file": "text1b",
+      "distance": 659,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
     },
     {
-      "func": "func_8007F034",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-WHOLE",
-      "rules": 0,
-      "status": "authorize",
-      "scorable": false
+      "func": "func_80067D14",
+      "file": "text1b",
+      "distance": 1046,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
     },
     {
-      "func": "func_8007F098",
-      "file": "display",
-      "distance": -1,
-      "verdict": "ASM-WHOLE",
-      "rules": 0,
-      "status": "authorize",
-      "scorable": false
+      "func": "motion_SetExMotion",
+      "file": "text1b",
+      "distance": 1453,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
     },
     {
       "func": "func_8007F200",
       "file": "display",
-      "distance": -1,
+      "distance": 0,
       "verdict": "ASM-WHOLE",
       "rules": 0,
-      "status": "authorize",
-      "scorable": false
+      "status": "authorize"
+    },
+    {
+      "func": "func_8007F10C",
+      "file": "display",
+      "distance": 1,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8007F12C",
+      "file": "display",
+      "distance": 1,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize"
     },
     {
       "func": "gte_GetScreenXY",
       "file": "display",
-      "distance": -1,
+      "distance": 3,
       "verdict": "ASM-WHOLE",
       "rules": 0,
-      "status": "authorize",
-      "scorable": false
+      "status": "authorize"
+    },
+    {
+      "func": "func_8007F098",
+      "file": "display",
+      "distance": 5,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8007F034",
+      "file": "display",
+      "distance": 6,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8007F00C",
+      "file": "display",
+      "distance": 7,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize"
     },
     {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2",
       "distance": 510,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8006F97C",
+      "file": "text1b",
+      "distance": 513,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "single_game_SetStatusUpData",
+      "file": "text1b",
+      "distance": 514,
       "verdict": "ASM-STRUCTURAL",
       "rules": 1,
       "status": "authorize"
@@ -4256,9 +4028,41 @@
       "status": "authorize"
     },
     {
+      "func": "func_80079A30",
+      "file": "text1b_b",
+      "distance": 533,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
       "func": "func_80034708",
       "file": "code6cac_b",
       "distance": 542,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8005D814",
+      "file": "text1b",
+      "distance": 544,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8006A880",
+      "file": "text1b",
+      "distance": 550,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8005F1C8",
+      "file": "text1b",
+      "distance": 562,
       "verdict": "ASM-STRUCTURAL",
       "rules": 1,
       "status": "authorize"
@@ -4288,6 +4092,30 @@
       "status": "authorize"
     },
     {
+      "func": "saTan4GaugeMain",
+      "file": "text1b",
+      "distance": 620,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_800720FC",
+      "file": "text1b",
+      "distance": 688,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "replay_camera_attack",
+      "file": "text1b",
+      "distance": 696,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
       "func": "func_80030D7C",
       "file": "code6cac_b",
       "distance": 707,
@@ -4304,6 +4132,14 @@
       "status": "authorize"
     },
     {
+      "func": "func_8005C8A8",
+      "file": "text1b",
+      "distance": 752,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
       "func": "func_8008C464",
       "file": "main",
       "distance": 761,
@@ -4312,9 +4148,33 @@
       "status": "authorize"
     },
     {
+      "func": "func_8005E54C",
+      "file": "text1b",
+      "distance": 798,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "motion_ShiftControl",
+      "file": "text1b",
+      "distance": 808,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
       "func": "func_80029454",
       "file": "code6cac_b",
       "distance": 1024,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "calc_loc_mat_fw_80055B60",
+      "file": "text1b",
+      "distance": 1108,
       "verdict": "ASM-STRUCTURAL",
       "rules": 1,
       "status": "authorize"
@@ -4336,114 +4196,12 @@
       "status": "authorize"
     },
     {
-      "func": "func_8007B6C8",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 19,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "New evidence (2026-06-01): m2c-shape adoption [var_v0 accumulator + nested if (rect[2]!=0) { if (rect[3]==0) return -1; ...body...; return call(); } + outer return -1;] reduces honest cheat-free distance 21 -> 7 (build_insns 49=49). Defeats cross-jump merge by mixing exit forms (TWO inline return -1 + one tail return-via-call) so jump2 cannot merge the early-return suffixes. Verified: bnez->body / j end / li v0,-1 split form emerges; sll v0,s1,16 fills bnez delay slot via reorg. The residual 7 diffs are PURE register-allocation choices the cc1 local_alloc makes: target lw a0,0(s0) for arg0[0] vs sandbox lw v0,0(s0); cascades to sw a0,0(a1) vs sw v0,0(a1). lreg dump (tmp/b6c8.i.lreg) shows pseudo 94 (arg0[0] temp) is a local allocno that local_alloc picks  for because  is freed by the BF28 store scheduled EARLY. Target keeps packed live in  across the load via LATE BF28 store scheduling (delays sw v0,(BF28) past arg0[0] load). Mechanism: GCC 2.7.2 sched2 priority for the BF28 store depends on its downstream dep chain depth (0 hops in cc1's natural form) - to delay it past arg0[0] requires either (a) extending the BF28 store's anti-dep chain so it cannot fire early, or (b) preventing local_alloc from picking  for pseudo 94. Adding any function-scope local (s32 packed; s32 a0_val; etc) breaks the early-return split (regresses to 21) due to frame-shift impact on jump2. NEXT untried levers: (1) declare bf24 as a callee-save register-class hinted pseudo to lengthen its live range so it cannot share with arg0[0]; (2) write arg0[0] read as a chained store-then-load through bf24+offset alias so the load-store dependency chain explicitly extends BF28's store priority; (3) probe BB2_SCHED_DEBUG/BB2_PRIO_DEBUG instrumented cc1 dump of THIS function (tmp/gccdbg/cc1 SHA1 a17fc6bbcb... May 30) to see exact INSN_PRIORITY of BF28 store vs arg0[0] load in the new structure; (4) restructure the call to take arg0[0] as a register-promoted arg (e.g. pass through a wrapper) that forces a0 allocation upstream of the body. The 19-rule cluster remains entirely register-renames after m2c-shape adoption; if any of these levers brings cc1 to pick  for arg0[0] naturally, all 19 rules collapse together."
-    },
-    {
-      "func": "func_8007B844",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 6,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "Session 2 (2026-06-01) re-park: confirmed floor 6 via Lever B (named-intermediate u32 mask). 26+ new structural levers tested this session (goto-end+ret_val staging variants, named intermediate addr/mask ordering swaps, type casts void*/u8*/u32-hex-shifts, dispatcher fn-ptr forms) \u2014 none cleanly below 6. NEW CHEAT-FORM identified: function-pointer return-type lie u32 *(*disp)(...) + (void)result; capture (sandbox 0, retire SHA1==oracle) \u2014 rejected per [[no-new-park-categories]] cheat-form vetting checklist (semantic type mismatch with no programmer purpose, lies to GCC about a void-returning fn call to manipulate \\ liveness/scheduling \u2014 same intent as forbidden Lever D). Documented as forbidden in memory/project/func-8007b844-conditional-dead-store.md session-2 log. Concrete next hypothesis: only remaining un-tried lever class is a *real* semantically-meaningful operation after the AND that consumes \\ \u2014 but target only has one store, so no such operation exists. Recommendation for next session: surface for user policy on canonical-asm authorization (scan_hand_coded still LOW 0/8, but two evidence-driven C-exhaustion sessions may warrant policy discussion)."
-    },
-    {
-      "func": "func_8007BC08",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
+      "func": "func_80058580",
+      "file": "text1b",
+      "distance": 2989,
+      "verdict": "ASM-STRUCTURAL",
       "rules": 1,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "ASM-SUSPECT/structural \u2014 298-insn gpu_PutDispEnv-style display environment setup (cached-diff + GP1 packet sends via g_gpu_dev_table[0x10]). Asmfix rule replace_with_asmfile bridges. Partial pure-C reconstruction from m2c brings sandbox 296 -> 132 (286/298 insns). Remaining 132-distance gap: 6 missing lhu+sll/sra cast-pattern pairs (GCC combine folds (s32)(s16)u16var to lh; needs structural lever to defeat fold), plus scheduling/register-allocation cascade through the 4-comparison + video-mode + GP1 packet build region. Multi-session pure-C work; needs same depth as defeat-licm-hoist-var-reuse class fixes. Oracle SHA1 green throughout (asmfix continues to provide target bytes)."
-    },
-    {
-      "func": "func_8007C2A0",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "Pure-C floor at sandbox-distance 4. Single 4-insn prologue reorder rule (regfix.txt:3753) flips save+def pairing from cc1's natural [sw s1; move s1,a0; sw s0; move s0,a1] to target's [sw s0; move s0,a1; sw s1; move s1,a0]. Mechanism: cc1's mips.c save_restore_insns iterates GP_REG_LAST->FIRST (3000a) and expand_function_start creates pseudos in DECL_ARGUMENTS order (out=72->s1, r=73->s0). Save-order is structurally fixed by mips machdep + ABI param order. Tried 9 distinct C source levers: early r-temps (3 forms), local alias, K&R-style decl, K&R-with-reversed-decl-order, var_a3=7 init, 3rd-callee-save force, all-temp-stores-at-end - all either CSE'd back or regressed. Sibling func_8007C4B8 has identical issue (twin function, same rule shape). Per [[no-compiler-divergence]] mips.c is frozen; per ABI param swap would break the asm callers. Either accept prologue_config.json as infrastructure (policy decision) or authorize ASM-region for the prologue-only debt."
-    },
-    {
-      "func": "func_8007C4B8",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "prologue save-order structural \u2014 twin of just-parked func_8007C2A0 (2b3ccfe). Single 4-insn regfix reorder 3,4,1,2 @ 1-4 swaps cc1's natural [sw s1,52; move s1,a0; sw s0,48; move s0,a1] to target's [sw s0,48; move s0,a1; sw s1,52; move s1,a0]. Same identical mips.c save_restore_insns iteration-order wall, same identical C signature (s32 *out, Rect *r), same identical body shape. Honest sandbox=4 verified fixed across the 9 levers tested on the sibling + 1 additional probe (s16 rx,ry locals + tmp_v0 call-result temp) this session: same 4-distance floor. Path to COMPLETED-C identical to sibling: requires either function-scope canonical-asm wrapping of the prologue 4-insn block, treating regfix reorder as canonical infrastructure (like prologue_config.json's AddTbpOfst_80047EE8 family), or a novel C lever spanning the mips.c scheduling space the explored levers don't cover."
-    },
-    {
-      "func": "func_8007C7A0",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 21,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "Second 2026-06-01 session pushed honest floor 18 -> 16 via C97C-style named-intermediate r_e3 + drop new_var/new_var2 coercion vars (novel beyond prior session's v8 arg1-preload). See memory/project/func-8007c7a0-named-intermediate-lever.md. Structural ceiling: missing 'move a3,v0' park-merge insn (var_v0_2 in  vs target ) persists. Untried: ALLOCDBG-instrumented session, .greg dump for 16-score form, permuter from 16-score base, sibling func_8007C748 .greg comparison."
-    },
-    {
-      "func": "func_8007C86C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 21,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "Retry-3 2026-06-01: clean single-target permuter (6 min wallclock, ~5400 iters) finds ONLY UB-conditional-init / dead-self-assign closing forms (scores 135/140/145/185/205/210). ALL rejected per [[no-new-park-categories]] auto-search-output vetting. HEAD form itself relies on the same UB conditional-init of var_a1 (committed cheat-spelling). 12 legitimate-C variants tested this session, all stuck at floor 17 (matching session 2). Structural ceiling unchanged: missing target 'move a3,v0' park-merge insn. Resume: PERM_GENERAL directed permuter, cross-ref C97C's allocno table, engine-level UB-conditional-init detector. Memory: memory/project/func-8007c86c-permuter-ub-cheat-findings.md"
-    },
-    {
-      "func": "func_8007C97C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 9,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "global-label-drift-sibling-cheat + 4-reg-cluster coupling. Honest pure-C distance reduced 24->19 by removing 5 cheat-asm pins (////) and switching r/g to u32 (so r>>=3 emits srl matching target). Remaining gap: target keeps arg0 in  throughout body and uses /// as the scratch sequence with lui , 0xE200 placed LATE (after final lh , 6(a0)). Mine: GCC global-alloc puts arg0 in  because local-alloc gave  to r (first lbu dest), creating a hard 4-pseudo cluster cascade matching [[register-alloc-pure-c]] / [[split-read-defeats-hoist]] pure-RA-rename plateau signature. Tested: if-goto-null/if-non-zero/if-else/early-return forms, s32 vs u32 vs s32-coerced typing, consolidated single-line exprs, block-local var scope, decl reordering, dead-store/preload var (e2=0xE2000000 pulled the lui INTO the bne delay slot, regressing). All variations stayed >= 19. Critical coupling: any structural edit here shifts cc1's .L count and breaks sibling func_8007CE0C's hardcoded-.L<N> asmfix rules (link error on .L152/.L154/.L156/.L158 \u2014 confirmed via verify-oracle --rebuild after edit). Per [[global-label-drift-sibling-cheat]] this is a TWO-FUNCTION coupling: needs user policy decision to either (a) de-cheat func_8007CE0C's .L<N>-hardcoded rules first, or (b) bump sibling rules to new label numbers, or (c) find a pure-C lever that closes the cluster WITHOUT shifting cc1's label count. The 4-pseudo register-rotation matches the cpu_side_move_dir_4/marionation_Exec coupling pattern; the matching C exists but the explored lever space (if-form, type, order, scope) does not contain it."
-    },
-    {
-      "func": "func_8007CA00",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 13,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "cross-jump merge DIRECTION wall: GCC merges case 1 and case 2 tails into a shared .L139 mini-block instead of target's case 2 -> case 1 backjump structure. Honest pure-C floor LOWERED 11 -> 10 (2026-06-01) via three combined levers documented in memory/project/func-8007ca00-m2c-shape-floor.md: (1) m2c-shape body adoption (single switch with shared block_5 label, default-at-end so it merges with shared tail); (2) var_a0 split (case 1 BE77!=0 pre-loads arg0[0] into var_a0 before goto block_5; case 2 BE77!=0 does the same); (3) 2-statement subtract { s32 tmp = 0x400 - var_v1; tmp -= var_a0; return tmp; } block-local form (vs single expression \u2014 controls subu order and keeps tmp in $v0). All pure-C, no cheats. Residual 10 diffs are reorg.c delay-slot-fill decisions (case 1 beqz delay should be li v0,1024 per target; case 2 BE77!=0 j delay should be li v0,1024 not sra v1,v1,1) and case 2 BE77==0 register chain ( vs ). Resume avenues (untried this session): directed permuter from new sandbox-10 base in permuter/ca00/; instrumented tmp/gccdbg/cc1 with BB2_FILL_DEBUG to find why reorg declines the li v0,1024 copy into beqz delay; rule UPDATE (the 13 existing rules are calibrated for the OLD body and can't retire on the new shape \u2014 need new rules for case 1 beqz delay fill + case 2 j delay fill + case 2 BE77==0 v0/v1 swap). NOT a documented auto-park category."
-    },
-    {
-      "func": "func_8007CBB0",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "PURE-C-DRAFT-PROGRESS: sandbox 76 \u2192 52 honest distance, build_insns 151 == target 151 EXACTLY. Structural decomp complete: 2-arg sig (arg2/arg3 unused), goto-form clamps mirroring sibling func_8007CE0C, &D_800F187C captured into local p187C to share the symbol-ref (saves 1 lui;sw pair AND makes cc1 use  matching target; also auto-grows frame to 0x40), *(u16*)arg0 & 0x3F for flag check (lhu matching target). Levers verified: arg0 in , arg1 in , 0xE3/E5 in /, both clamps in 6+9-insn shape. Residual 52 is list-scheduler INSN_PRIORITY in big-packet store sub-block (idx 50-89) and small-packet (117-137) \u2014 same coupling family as cpu_side_move_dir_4 / marionation_Exec. Draft preserved tmp/cbb0_score52_draft.c. Resume avenues (UNTRIED this session, untriable from old 149-cheat-strip-corrupted base): (1) directed permuter from clean offset-0 target at score-52 base, (2) BB2_SCHED_DEBUG + BB2_PRIO_DEBUG on score-52 source, (3) reorder big-packet path to delay 0x03FFFFFF materialization. NOT viable per policy: pad arrays, register pins, volatile coercion, dead stores, scheduling-barrier __asm__. See memory/project/func-8007cbb0-pure-c-draft.md."
-    },
-    {
-      "func": "func_8007CE0C",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 23,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "Semantic frame investigation (memory/project/func-8007ce0c-semantic-investigation.md, 2026-06-01): 32-byte vars region (0x10-0x2F) in target frame=80 is entirely UNREFERENCED in func body \u2014 confirmed by reading every -relative access in asm/funcs/func_8007CE0C.s. cc1 emits frame=64 from any tested pure-C source; only forbidden patterns (s32 buf[N], (void)&local \u2014 both detected by engine/volatile_cheats) reproduce target frame size. NOT canonical-asm: scan_hand_coded tier=LOW score=1/8 (only S4); diagnose's CANONICAL-ASM verdict is false positive (mflo heuristic over-fires). Pure-C floor 41 reachable via compare-flip + drop cheat-asm pin (vs HEAD 48), but no rule retirement so not committed. Per [[no-new-park-categories]] no frame-size-infrastructure carve-out; per [[dead-vars-local-array]] no padding workaround. 23 rules remain (now drift-robust via {lbl#N} per db690e7, so this function is no longer a sibling-coupling blocker). REVISIT WHEN: new C lever discovered (e.g. via instrumented cc1 alloc/sched dumps in the BB2_*_DEBUG family), OR hand-coded-signal reassessment reveals evidence the scan_hand_coded heuristic missed."
+      "status": "authorize"
     },
     {
       "func": "replay_camera_rob_back_loose2",
@@ -4455,6 +4213,36 @@
       "park_reason": "Canonical jump-table infrastructure, not a register/codegen cheat. The 24 asmfix rules (15 renames of GCC .L labels to external jtbl_800108CC + 8 jlabel conversions + 1 delete_between stripping GCC's emitted table) are structurally required: the switch's jump table jtbl_800108CC sits in the FIRST rodata block (asm/data 800.rodata_pre.o, bb2.ld:25, addr 0x800108CC), while code6cac_b2.o's own .rodata links far later (bb2.ld:50). A GCC in-object jump table can only land in code6cac_b2's late rodata, never at 0x108CC, so referencing the external jtbl symbol + deleting GCC's table is mandatory. Zero-asmfix COMPLETED-C would need relocating the jtbl into code6cac_b2.c AND reordering the whole global rodata layout (project-wide, needs user sign-off). This is the project standard for the 26 jtbl-rename functions whose tables splat carved into asm/data rodata. Separately, sandbox cannot score this file: file-wide cheat-asm stripping shifts maspsx indices and crashes a sibling fn's index-based regfix reorder rule (KeyError in tools/regfix.py)."
     },
     {
+      "func": "func_8007C2A0",
+      "file": "display",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "Pure-C floor at sandbox-distance 4. Single 4-insn prologue reorder rule (regfix.txt:3753) flips save+def pairing from cc1's natural [sw s1; move s1,a0; sw s0; move s0,a1] to target's [sw s0; move s0,a1; sw s1; move s1,a0]. Mechanism: cc1's mips.c save_restore_insns iterates GP_REG_LAST->FIRST (3000a) and expand_function_start creates pseudos in DECL_ARGUMENTS order (out=72->s1, r=73->s0). Save-order is structurally fixed by mips machdep + ABI param order. Tried 9 distinct C source levers: early r-temps (3 forms), local alias, K&R-style decl, K&R-with-reversed-decl-order, var_a3=7 init, 3rd-callee-save force, all-temp-stores-at-end - all either CSE'd back or regressed. Sibling func_8007C4B8 has identical issue (twin function, same rule shape). Per [[no-compiler-divergence]] mips.c is frozen; per ABI param swap would break the asm callers. Either accept prologue_config.json as infrastructure (policy decision) or authorize ASM-region for the prologue-only debt."
+    },
+    {
+      "func": "func_8007C4B8",
+      "file": "display",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "prologue save-order structural \u2014 twin of just-parked func_8007C2A0 (2b3ccfe). Single 4-insn regfix reorder 3,4,1,2 @ 1-4 swaps cc1's natural [sw s1,52; move s1,a0; sw s0,48; move s0,a1] to target's [sw s0,48; move s0,a1; sw s1,52; move s1,a0]. Same identical mips.c save_restore_insns iteration-order wall, same identical C signature (s32 *out, Rect *r), same identical body shape. Honest sandbox=4 verified fixed across the 9 levers tested on the sibling + 1 additional probe (s16 rx,ry locals + tmp_v0 call-result temp) this session: same 4-distance floor. Path to COMPLETED-C identical to sibling: requires either function-scope canonical-asm wrapping of the prologue 4-insn block, treating regfix reorder as canonical infrastructure (like prologue_config.json's AddTbpOfst_80047EE8 family), or a novel C lever spanning the mips.c scheduling space the explored levers don't cover."
+    },
+    {
+      "func": "func_8007B844",
+      "file": "display",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 6,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "Session 2 (2026-06-01) re-park: confirmed floor 6 via Lever B (named-intermediate u32 mask). 26+ new structural levers tested this session (goto-end+ret_val staging variants, named intermediate addr/mask ordering swaps, type casts void*/u8*/u32-hex-shifts, dispatcher fn-ptr forms) \u2014 none cleanly below 6. NEW CHEAT-FORM identified: function-pointer return-type lie u32 *(*disp)(...) + (void)result; capture (sandbox 0, retire SHA1==oracle) \u2014 rejected per [[no-new-park-categories]] cheat-form vetting checklist (semantic type mismatch with no programmer purpose, lies to GCC about a void-returning fn call to manipulate \\ liveness/scheduling \u2014 same intent as forbidden Lever D). Documented as forbidden in memory/project/func-8007b844-conditional-dead-store.md session-2 log. Concrete next hypothesis: only remaining un-tried lever class is a *real* semantically-meaningful operation after the AND that consumes \\ \u2014 but target only has one store, so no such operation exists. Recommendation for next session: surface for user policy on canonical-asm authorization (scan_hand_coded still LOW 0/8, but two evidence-driven C-exhaustion sessions may warrant policy discussion)."
+    },
+    {
       "func": "cpu_side_move_dir_4",
       "file": "system",
       "distance": 7,
@@ -4464,6 +4252,66 @@
       "park_reason": "Session-11 (2026-06-01): Tested 9 new structural variants from current-src baseline + permuter 2275 iters. All measured same or worse than baseline 11-aligned-diffs (sandbox 7 masked-Levenshtein). Permuter findings are all cheat-form (& 0xFFu / & 0xFFFFu masks, u16 type narrowing, variable repurposing via i/status aliases) \u2014 rejected per no-new-park-categories.md cheat-by-any-spelling policy. The byte chain register-allocation tie ( vs  for the arg4 chain temp) remains the gap \u2014 local-alloc qty_compare priority that no explored C-source structure flips without emitting bytes. C97C-class lever (m2c-shape + named intermediates) does NOT apply here (gap is not OR-association/sll-scheduling). Only un-tried avenue: PERM_*-directed permuter macros targeting the specific allocno slot \u2014 random-mode permuter exhausted. New rules loaded this session (goto-end-prologue-delay-slot, param-local-alias-prologue-pair-flip) do NOT apply \u2014 function has no early-exit + 4-insn-entry pattern and target uses natural ascending arg-save order (=a0, =a1 matches cc1 default). State unchanged: 5 regfix rules + chain lever + sandbox 7 distance. See [[register-alloc-pure-c]] for full session 5-10 evidence."
     },
     {
+      "func": "func_8007CA00",
+      "file": "display",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 13,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "cross-jump merge DIRECTION wall: GCC merges case 1 and case 2 tails into a shared .L139 mini-block instead of target's case 2 -> case 1 backjump structure. Honest pure-C floor LOWERED 11 -> 10 (2026-06-01) via three combined levers documented in memory/project/func-8007ca00-m2c-shape-floor.md: (1) m2c-shape body adoption (single switch with shared block_5 label, default-at-end so it merges with shared tail); (2) var_a0 split (case 1 BE77!=0 pre-loads arg0[0] into var_a0 before goto block_5; case 2 BE77!=0 does the same); (3) 2-statement subtract { s32 tmp = 0x400 - var_v1; tmp -= var_a0; return tmp; } block-local form (vs single expression \u2014 controls subu order and keeps tmp in $v0). All pure-C, no cheats. Residual 10 diffs are reorg.c delay-slot-fill decisions (case 1 beqz delay should be li v0,1024 per target; case 2 BE77!=0 j delay should be li v0,1024 not sra v1,v1,1) and case 2 BE77==0 register chain ( vs ). Resume avenues (untried this session): directed permuter from new sandbox-10 base in permuter/ca00/; instrumented tmp/gccdbg/cc1 with BB2_FILL_DEBUG to find why reorg declines the li v0,1024 copy into beqz delay; rule UPDATE (the 13 existing rules are calibrated for the OLD body and can't retire on the new shape \u2014 need new rules for case 1 beqz delay fill + case 2 j delay fill + case 2 BE77==0 v0/v1 swap). NOT a documented auto-park category."
+    },
+    {
+      "func": "func_8007C7A0",
+      "file": "display",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 21,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "Second 2026-06-01 session pushed honest floor 18 -> 16 via C97C-style named-intermediate r_e3 + drop new_var/new_var2 coercion vars (novel beyond prior session's v8 arg1-preload). See memory/project/func-8007c7a0-named-intermediate-lever.md. Structural ceiling: missing 'move a3,v0' park-merge insn (var_v0_2 in  vs target ) persists. Untried: ALLOCDBG-instrumented session, .greg dump for 16-score form, permuter from 16-score base, sibling func_8007C748 .greg comparison."
+    },
+    {
+      "func": "func_8007C86C",
+      "file": "display",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 21,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "Retry-3 2026-06-01: clean single-target permuter (6 min wallclock, ~5400 iters) finds ONLY UB-conditional-init / dead-self-assign closing forms (scores 135/140/145/185/205/210). ALL rejected per [[no-new-park-categories]] auto-search-output vetting. HEAD form itself relies on the same UB conditional-init of var_a1 (committed cheat-spelling). 12 legitimate-C variants tested this session, all stuck at floor 17 (matching session 2). Structural ceiling unchanged: missing target 'move a3,v0' park-merge insn. Resume: PERM_GENERAL directed permuter, cross-ref C97C's allocno table, engine-level UB-conditional-init detector. Memory: memory/project/func-8007c86c-permuter-ub-cheat-findings.md"
+    },
+    {
+      "func": "func_8007B6C8",
+      "file": "display",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 19,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "New evidence (2026-06-01): m2c-shape adoption [var_v0 accumulator + nested if (rect[2]!=0) { if (rect[3]==0) return -1; ...body...; return call(); } + outer return -1;] reduces honest cheat-free distance 21 -> 7 (build_insns 49=49). Defeats cross-jump merge by mixing exit forms (TWO inline return -1 + one tail return-via-call) so jump2 cannot merge the early-return suffixes. Verified: bnez->body / j end / li v0,-1 split form emerges; sll v0,s1,16 fills bnez delay slot via reorg. The residual 7 diffs are PURE register-allocation choices the cc1 local_alloc makes: target lw a0,0(s0) for arg0[0] vs sandbox lw v0,0(s0); cascades to sw a0,0(a1) vs sw v0,0(a1). lreg dump (tmp/b6c8.i.lreg) shows pseudo 94 (arg0[0] temp) is a local allocno that local_alloc picks  for because  is freed by the BF28 store scheduled EARLY. Target keeps packed live in  across the load via LATE BF28 store scheduling (delays sw v0,(BF28) past arg0[0] load). Mechanism: GCC 2.7.2 sched2 priority for the BF28 store depends on its downstream dep chain depth (0 hops in cc1's natural form) - to delay it past arg0[0] requires either (a) extending the BF28 store's anti-dep chain so it cannot fire early, or (b) preventing local_alloc from picking  for pseudo 94. Adding any function-scope local (s32 packed; s32 a0_val; etc) breaks the early-return split (regresses to 21) due to frame-shift impact on jump2. NEXT untried levers: (1) declare bf24 as a callee-save register-class hinted pseudo to lengthen its live range so it cannot share with arg0[0]; (2) write arg0[0] read as a chained store-then-load through bf24+offset alias so the load-store dependency chain explicitly extends BF28's store priority; (3) probe BB2_SCHED_DEBUG/BB2_PRIO_DEBUG instrumented cc1 dump of THIS function (tmp/gccdbg/cc1 SHA1 a17fc6bbcb... May 30) to see exact INSN_PRIORITY of BF28 store vs arg0[0] load in the new structure; (4) restructure the call to take arg0[0] as a register-promoted arg (e.g. pass through a wrapper) that forces a0 allocation upstream of the body. The 19-rule cluster remains entirely register-renames after m2c-shape adoption; if any of these levers brings cc1 to pick  for arg0[0] naturally, all 19 rules collapse together."
+    },
+    {
+      "func": "func_8007C97C",
+      "file": "display",
+      "distance": 24,
+      "verdict": "C",
+      "rules": 9,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "global-label-drift-sibling-cheat + 4-reg-cluster coupling. Honest pure-C distance reduced 24->19 by removing 5 cheat-asm pins (////) and switching r/g to u32 (so r>>=3 emits srl matching target). Remaining gap: target keeps arg0 in  throughout body and uses /// as the scratch sequence with lui , 0xE200 placed LATE (after final lh , 6(a0)). Mine: GCC global-alloc puts arg0 in  because local-alloc gave  to r (first lbu dest), creating a hard 4-pseudo cluster cascade matching [[register-alloc-pure-c]] / [[split-read-defeats-hoist]] pure-RA-rename plateau signature. Tested: if-goto-null/if-non-zero/if-else/early-return forms, s32 vs u32 vs s32-coerced typing, consolidated single-line exprs, block-local var scope, decl reordering, dead-store/preload var (e2=0xE2000000 pulled the lui INTO the bne delay slot, regressing). All variations stayed >= 19. Critical coupling: any structural edit here shifts cc1's .L count and breaks sibling func_8007CE0C's hardcoded-.L<N> asmfix rules (link error on .L152/.L154/.L156/.L158 \u2014 confirmed via verify-oracle --rebuild after edit). Per [[global-label-drift-sibling-cheat]] this is a TWO-FUNCTION coupling: needs user policy decision to either (a) de-cheat func_8007CE0C's .L<N>-hardcoded rules first, or (b) bump sibling rules to new label numbers, or (c) find a pure-C lever that closes the cluster WITHOUT shifting cc1's label count. The 4-pseudo register-rotation matches the cpu_side_move_dir_4/marionation_Exec coupling pattern; the matching C exists but the explored lever space (if-form, type, order, scope) does not contain it."
+    },
+    {
+      "func": "func_8007CE0C",
+      "file": "display",
+      "distance": 48,
+      "verdict": "C",
+      "rules": 23,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "Semantic frame investigation (memory/project/func-8007ce0c-semantic-investigation.md, 2026-06-01): 32-byte vars region (0x10-0x2F) in target frame=80 is entirely UNREFERENCED in func body \u2014 confirmed by reading every -relative access in asm/funcs/func_8007CE0C.s. cc1 emits frame=64 from any tested pure-C source; only forbidden patterns (s32 buf[N], (void)&local \u2014 both detected by engine/volatile_cheats) reproduce target frame size. NOT canonical-asm: scan_hand_coded tier=LOW score=1/8 (only S4); diagnose's CANONICAL-ASM verdict is false positive (mflo heuristic over-fires). Pure-C floor 41 reachable via compare-flip + drop cheat-asm pin (vs HEAD 48), but no rule retirement so not committed. Per [[no-new-park-categories]] no frame-size-infrastructure carve-out; per [[dead-vars-local-array]] no padding workaround. 23 rules remain (now drift-robust via {lbl#N} per db690e7, so this function is no longer a sibling-coupling blocker). REVISIT WHEN: new C lever discovered (e.g. via instrumented cc1 alloc/sched dumps in the BB2_*_DEBUG family), OR hand-coded-signal reassessment reveals evidence the scan_hand_coded heuristic missed."
+    },
+    {
       "func": "marionation_Exec",
       "file": "system",
       "distance": 56,
@@ -4471,22 +4319,42 @@
       "rules": 44,
       "status": "parked",
       "park_reason": "register-alloc coupling \u2014 arg pseudos win allocno tiebreaker for low callee-saves (creation order), forcing rotation. chain-extender already present, volatile-bump regresses (cost > saved). same mechanism as cpu_side_move_dir_4 at larger surface; full pinning in register-alloc-pure-c.md."
+    },
+    {
+      "func": "func_8007CBB0",
+      "file": "display",
+      "distance": 149,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "PURE-C-DRAFT-PROGRESS: sandbox 76 \u2192 52 honest distance, build_insns 151 == target 151 EXACTLY. Structural decomp complete: 2-arg sig (arg2/arg3 unused), goto-form clamps mirroring sibling func_8007CE0C, &D_800F187C captured into local p187C to share the symbol-ref (saves 1 lui;sw pair AND makes cc1 use  matching target; also auto-grows frame to 0x40), *(u16*)arg0 & 0x3F for flag check (lhu matching target). Levers verified: arg0 in , arg1 in , 0xE3/E5 in /, both clamps in 6+9-insn shape. Residual 52 is list-scheduler INSN_PRIORITY in big-packet store sub-block (idx 50-89) and small-packet (117-137) \u2014 same coupling family as cpu_side_move_dir_4 / marionation_Exec. Draft preserved tmp/cbb0_score52_draft.c. Resume avenues (UNTRIED this session, untriable from old 149-cheat-strip-corrupted base): (1) directed permuter from clean offset-0 target at score-52 base, (2) BB2_SCHED_DEBUG + BB2_PRIO_DEBUG on score-52 source, (3) reorder big-packet path to delay 0x03FFFFFF materialization. NOT viable per policy: pad arrays, register pins, volatile coercion, dead stores, scheduling-barrier __asm__. See memory/project/func-8007cbb0-pure-c-draft.md."
+    },
+    {
+      "func": "func_8007BC08",
+      "file": "display",
+      "distance": 296,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "ASM-SUSPECT/structural \u2014 298-insn gpu_PutDispEnv-style display environment setup (cached-diff + GP1 packet sends via g_gpu_dev_table[0x10]). Asmfix rule replace_with_asmfile bridges. Partial pure-C reconstruction from m2c brings sandbox 296 -> 132 (286/298 insns). Remaining 132-distance gap: 6 missing lhu+sll/sra cast-pattern pairs (GCC combine folds (s32)(s16)u16var to lh; needs structural lever to defeat fold), plus scheduling/register-allocation cascade through the 4-comparison + video-mode + GP1 packet build region. Multi-session pure-C work; needs same depth as defeat-licm-hoist-var-reuse class fixes. Oracle SHA1 green throughout (asmfix continues to provide target bytes)."
     }
   ],
   "counts": {
-    "total": 525,
-    "active": 494,
+    "total": 539,
+    "active": 492,
     "by_status": {
-      "active": 494,
-      "authorize": 17,
+      "active": 492,
+      "authorize": 33,
       "parked": 14
     },
     "by_verdict": {
-      "C": 359,
-      "ASM-PARTIAL": 79,
-      "ASM-SUSPECT": 56,
-      "ASM-WHOLE": 5,
-      "ASM-STRUCTURAL": 12
+      "C": 295,
+      "ASM-PARTIAL": 80,
+      "ASM-SUSPECT": 117,
+      "ASM-WHOLE": 7,
+      "ASM-STRUCTURAL": 26
     }
   }
 }
