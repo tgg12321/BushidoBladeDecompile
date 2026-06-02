@@ -1,0 +1,56 @@
+{
+  "function": "func_8007C97C",
+  "file": "display",
+  "scores": {
+    "head_floor": 24,
+    "candidate_floor": null,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "note": "candidate_floor not yet measured — apply candidate.c to src/display.c then run sandbox to record. Expected to be > 0 (the score-0 form was the FAIL form with sp[4] coercion). The legitimate base may score similar to HEAD's 24 or lower; record the measurement when known."
+  },
+  "sessions": [
+    {
+      "date": "2026-06-01",
+      "lever": "inverted-null-check (`if (arg0 != NULL) { body; return X; } return 0;`) + m2c-shape body + r_e2 named intermediate + temp_v0 var-reuse — derived to replace the forbidden goto-end-prologue-delay-slot accumulator from a prior session",
+      "lever_rule": "no-new-park-categories (SOTN-allowed named intermediate + variable-reuse, post 161c6c3)",
+      "floor_was": 24,
+      "floor_now": null,
+      "note": "Score-0 measurement on 2026-06-01 was on the FAIL form (with sp[4] coercion). The legitimate base — same form WITHOUT sp[4] — was not measured before the revert. Next session: apply candidate.c, measure, record."
+    }
+  ],
+  "reviewer": {
+    "verdict": "FAIL_on_prior_form_PASS_likely_on_candidate",
+    "date": "2026-06-02",
+    "evidence": "Independent cheat-reviewer agent FAILED commit 0e845d2 (the sp[4] write-only frame coercion) on Tests 1 (no semantic purpose), 2 (human-programmer test), and 6 (naming announces intent). The candidate.c form (this WIP) REMOVES the sp[4] writes — the inverted-null-check + m2c body + r_e2 + var-reuse parts are SOTN-allowed and would not draw the same FAIL. Verdict needs re-running on the candidate as a fresh review before any Match: commit."
+  },
+  "remaining_gap": {
+    "summary": "Unknown — needs first-pass measurement on the legitimate-base candidate. The prior FAIL form happened to reach SHA1 == oracle via the sp[4] coercion controlling the frame size; the legitimate base will likely diverge on frame layout (since sp[4] was reserving frame bytes). The next session's task is to determine what gap remains and find a SOTN-clean lever that closes it without re-introducing forbidden frame-coercion constructs.",
+    "rule_count_at_head": 9,
+    "rules_required_for_full_match": "Same 9 regfix substs as HEAD (regfix.txt — they were dropped by retire in 0e845d2, but restored by the revert). New shape may need different rules; un-knowable without measurement."
+  },
+  "next_hypotheses": [
+    "Apply candidate.c to src/display.c, measure sandbox --disable all, record candidate_floor in meta.json.",
+    "If candidate_floor is below HEAD's 24, identify what's still gapping. Common levers: frame-layout-natural (without coercion), narrow integer types (s16/u16/u8 typing of temp_v* might shift codegen), declaration-order reshuffling, m2c-style sub-expressions extracted into named intermediates.",
+    "ALLOCDBG-instrumented dump on the candidate to identify if a register-allocation tiebreaker is what's blocking.",
+    "Directed permuter from the candidate base with cheat-reviewer gating on output. The score-0 sp[4] form was a cheat-disguised-as-match; permuter output MUST be vetted before any commit.",
+    "Write-only-array detector (engine/volatile_cheats.py) is a separate work item filed in the revert commit message — closing that gap mechanically prevents future re-derivation of the rejected form."
+  ],
+  "rejected_forms": [
+    {
+      "form": "s32 sp[4]; sp[0..3] = temp_*; (write-only frame coercion)",
+      "score": 0,
+      "build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "reviewer_verdict": "FAIL",
+      "reason": "FORBIDDEN: write-only-array variant of the dead-vars-local-array family. Detected by independent cheat-reviewer on Tests 1, 2, 6 — zero semantic purpose, no human programmer would write this, 'sp' announces coercion intent. Same family as `s32 buf[N];` (caught by find_unused_local_arrays) but with stores to suppress 'unused-variable' diagnostics. The mechanical detector missed it because 'sp' IS referenced (just being written). Form preserved at rejected/sp4_frame_coercion.c with the reviewer's evidence inline."
+    }
+  ],
+  "memory_notes": [
+    "memory/project/func-8007c97c-inverted-null-check-lever.md (NOTE: this note was DELETED in revert 45a7bb0 because it framed the sp[4] form as the resolution; the inverted-null-check insight survives in this WIP)",
+    ".claude/rules/goto-end-prologue-delay-slot.md (ARCHIVED FORBIDDEN; this WIP's candidate is the SOTN-clean replacement that the archived rule was trying to encode)",
+    ".claude/rules/dead-vars-local-array.md (the catalog rule the rejected form violates)"
+  ],
+  "git_history": {
+    "match_commit_reverted": "0e845d2 (Match func_8007C97C — retire 9 rules via inverted-null-check + m2c-shape body)",
+    "revert_commit": "45a7bb0",
+    "reason": "cheat-reviewer FAIL on the sp[4] write-only frame coercion. The inverted-null-check + m2c body + r_e2 + var-reuse parts are SOTN-allowed and preserved in this WIP."
+  }
+}

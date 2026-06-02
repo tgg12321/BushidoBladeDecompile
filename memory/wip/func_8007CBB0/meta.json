@@ -1,0 +1,71 @@
+{
+  "function": "func_8007CBB0",
+  "file": "display",
+  "scores": {
+    "head_floor": 149,
+    "candidate_floor": 52,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 151,
+    "target_insns": 151,
+    "head_floor_note": "HEAD distance is 149 because the function is held by an asmfix `replace_with_asmfile` bridge with a stub C body; when the bridge is stripped + the cheat-asm injection (371 lines) is stripped, the stub builds to build_insns=2. The 149 measurement is a sandbox-strip artifact, NOT a reflection of how close pure-C could be. The candidate's 52 is the FIRST honest pure-C measurement and is below the prior session's reported 76 floor."
+  },
+  "sessions": [
+    {
+      "date": "2026-06-01",
+      "lever": "session 2: semantic reconstruction — GPU GP0 DMA chain packet builder. 2-arg signature (arg2/arg3 unused), goto-form clamps mirroring sibling func_8007CE0C, big-packet vs small-packet branch based on `(*(u16*)arg0 & 0x3F) || ((u16)arg0->w & 0x3F)`. Levers: m2c-shape 2-arg sig, extern s32 *D_8009BF48 forward decl, address-of D_800F187C captured into local p187C (saves lui/sw pair), *(u16*)arg0 & 0x3F (matches target's lhu instead of lw), goto-based clamps (nested-if scored 87, goto form 67 then 52).",
+      "floor_was": 149,
+      "floor_now": 52
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "session 3 (this session): 9 additional SOTN-allowed structural variants (variable reuse, named intermediates, operand-order swap, store reordering, signature change) — all confirm sandbox 52 floor with 0 rules retired. Cumulative ~24 negative levers across two sessions.",
+      "floor_was": 52,
+      "floor_now": 52,
+      "note": "No further floor reduction; the residual 52 is list-scheduler INSN_PRIORITY decisions in the GPU packet store sequence."
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": null,
+    "evidence": "Not yet invoked on the candidate. The candidate is structural pure-C with no obvious cheat constructs (no register pins, no register-asm, no volatile coercion on globals, no unused locals — the (void)arg2/arg3 is the K&R-style ABI honoring of unused params, see SOTN community standard). Invoke cheat-reviewer before any Match: commit. Manual self-audit notes the candidate's `(void)arg2; (void)arg3;` declarations have semantic purpose (silence unused-param warnings on a function whose ABI takes 4 args but logic uses 2 — the calling convention is what matters for the prologue size, and this preserves it cleanly)."
+  },
+  "remaining_gap": {
+    "summary": "List-scheduler INSN_PRIORITY decisions in the GPU packet store sequence. Target interleaves the 0x03FFFFFF constant materialization (lui $a3 0x3FFFFFF + ori $a3 0xFFFF split by ~20 insns) with the BF48 load chain; mine emits them adjacent. Same class as cpu_side_move_dir_4 / marionation_Exec sched.c walls. NO frame coercion, NO register allocation diffs — pure scheduling.",
+    "rule_count_at_head": 1,
+    "rules_required_for_full_match": "HEAD's single rule is `func_8007CBB0: replace_with_asmfile \"asm/funcs/func_8007CBB0.s\"` — an asmfile bridge over a stub body. The candidate's score-52 form is structurally and semantically correct; to commit, the bridge rule would be retired (drop the bridge → replace stub with candidate body) only if score reaches 0. The structural shape is the right base for the close; the residual is scheduling-only."
+  },
+  "next_hypotheses": [
+    "Directed permuter from a CLEAN single-function target with the candidate as base. Per [[difficult-is-not-impossible]] section on clean targets — a whole-file target.o makes the function sit at non-zero offset, drowning the real signal. Build `asm/funcs/func_8007CBB0.s` standalone + the candidate as base.c, run with --stop-on-zero. CRITICAL: invoke cheat-reviewer on any closing form found.",
+    "BB2_SCHED_DEBUG / BB2_PRIO_DEBUG instrumented cc1 dump on the candidate. Identify which pseudo's INSN_PRIORITY needs nudging for the 0x03FFFFFF materialization to defer like target's. Same instrumented cc1 from cpu_side_move_dir_4 sessions (tmp/gccdbg/cc1) applies.",
+    "C-source restructure that changes INSN_PRIORITY of the BF48 load OR the 0x03FFFFFF materialization without adding emitted bytes. Combine-foldable chain extender style (see register-alloc-pure-c session 8 — but that exact technique was forbidden 2026-06-02 for cheat-by-spelling; a different non-cheat restructure is needed)."
+  ],
+  "rejected_forms": [
+    {
+      "form": "Adding `s32 _pad[N]` to force frame size",
+      "score": null,
+      "reason": "Forbidden per .claude/rules/dead-vars-local-array.md. Frame already matches target at 0x40 = 64 with the natural (void)arg2/arg3 declarations; no coercion needed."
+    },
+    {
+      "form": "`__asm__ volatile(\"\" ::: \"memory\")` between GPU stores",
+      "score": null,
+      "reason": "Forbidden per .claude/rules/inline-asm-policy.md (scheduling barrier cheat). Would defeat the list-scheduler reordering but is cheat-asm."
+    },
+    {
+      "form": "Marking GPU buffer globals (D_800F1858 etc.) `volatile`",
+      "score": null,
+      "reason": "Forbidden per .claude/rules/split-read-defeats-hoist.md (2026-05-31 update). Game-state globals were not volatile in the original source; coercion to break list-scheduler order is cheat-by-spelling."
+    }
+  ],
+  "memory_notes": [
+    "memory/project/func-8007cbb0-pure-c-draft.md"
+  ],
+  "structural_evidence": {
+    "build_insns_match": "151 candidate == 151 target — EXACT match. Structural decomp is end-to-end correct.",
+    "frame_size_match": "0x40 = 64 — matches target.",
+    "register_match": "arg0 in $t0, arg1 in $t1, $s0 holds 0xE3000000, $s1 holds 0xE5000000 — all match target.",
+    "big_packet_stores": "13 stores in order F1858/F1868/F185C/F1860/F1864/F1870/F186C/F1874/F187C/F1878/F1880/F1884/F1888 — matches target.",
+    "small_packet_stores": "6 stores in order F1858/F185C/F1864/F1860/F1868/F186C — matches target.",
+    "clamp_shape": "Both clamps emit `lh; nop; addu v1,v0,zero; addiu v0,v0,-1; slt; bnez` (matches target shape, including the 'save BE78 into $v1' trick).",
+    "residual": "52 masked diffs = pure list-scheduler INSN_PRIORITY decisions in the constant-materialization/load chain interleaving."
+  }
+}
