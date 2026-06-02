@@ -4391,7 +4391,7 @@
       "rules": 21,
       "status": "parked",
       "scorable": false,
-      "park_reason": "RA-coupling plateau (same cluster as sibling func_8007C7A0): 21 rules incl 19 register-rename substs + 1 frame-size + 1 lost-codegen insert. This session: clean v8 form (var_a1=arg1 unconditional + strip int new_var/new_var2/dead 'if(!D_8009BE7A){}' padding) drops sandbox floor 20->17 (1 below C7A0's 18 floor). Same structural ceiling: missing target 'move a3,v0' park-merge insn at idx 16 that GCC coalesces away. NOT committable (no rule retire). Evidence: memory/project/func-8007c86c-clean-form-floor.md."
+      "park_reason": "Retry-3 2026-06-01: clean single-target permuter (6 min wallclock, ~5400 iters) finds ONLY UB-conditional-init / dead-self-assign closing forms (scores 135/140/145/185/205/210). ALL rejected per [[no-new-park-categories]] auto-search-output vetting. HEAD form itself relies on the same UB conditional-init of var_a1 (committed cheat-spelling). 12 legitimate-C variants tested this session, all stuck at floor 17 (matching session 2). Structural ceiling unchanged: missing target 'move a3,v0' park-merge insn. Resume: PERM_GENERAL directed permuter, cross-ref C97C's allocno table, engine-level UB-conditional-init detector. Memory: memory/project/func-8007c86c-permuter-ub-cheat-findings.md"
     },
     {
       "func": "func_8007CA00",
