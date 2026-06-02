@@ -208,6 +208,102 @@ class candidate at `permuter/func_8007B844/output-40-1/source.c` is the
 proof point — clean C reaches sandbox 0 + SHA1 == oracle, but the C
 itself is borderline.
 
+## Session 3 (2026-06-02) — re-park under SOTN-aligned policy
+
+Today's policy updates (commit 161c6c3) opened six previously-borderline
+techniques as ALLOWED based on SOTN master-branch evidence:
+- defeat-licm var-reuse
+- opaque arithmetic (`s32 one = 1;` and `(R()&3)+1-1;`)
+- sub-word param read casts (`*(u16*)&local`)
+- mixed exit forms (goto endK mixed with inline return)
+- duplicate-read into branch arms
+- named-intermediate declaration-order
+
+Re-attempted this function applying each allowed lever. Honest floor
+remains 6 (Lever B baseline). 17 new structural variants tested:
+
+| variant | score | notes |
+|---|---|---|
+| v1: named mask + named addr | 7 | folded (addr inline) |
+| v3: u32 *p = ot pointer | 7 | folded (CSE) |
+| v4: goto end + mixed-exit on Lever B | 6 | same |
+| v5: opaque `*(ot+zero)` | 6 | zero folded |
+| v6: duplicate-read into 2 branch arms | 22 | regress (CJM cost) |
+| v7: u32 *ret_val = ot; decl early | 6 | same |
+| v8: reuse single p for dev_table + ret | 6 | dead store DCE'd |
+| v9: opaque 0xFFFFFF+1-1 | 6 | constant folded |
+| v10: block-scoped result + mask decl order | 6 | same |
+| v11: opaque addr (u32)&end + (u32)zero | 7 | regress |
+| v12: hi\|lo mask split | 7 | folded |
+| v13: opaque +1-1 on mask | 6 | folded |
+| v14: store inside dispatch block | 20 | regress |
+| v15: mask declared at top | 19 | regress (spilled) |
+| v16: reuse n param for mask (var-reuse) | 17 | regress ($s1 cascade) |
+| v17: reuse v for dev_table + mask | 10 | regress BUT move v0,s0 NOW BEFORE store; lever IS real |
+| v18: keep vp scope + reuse v | 6 | DCE'd dead store, back to Lever B |
+
+Permuter from Lever B base (`permuter/func_8007B844/base.c` updated
+to mask-reuse form): ~12,845 iters at base score 135, zero candidates
+beat 135. Lever space is fully exhausted by randomization from this
+base.
+
+### v17 is the lever's ghost — close but mis-allocated
+
+`u32 v; v = (u32)g_gpu_dev_table; ((vp_t)((u32*)v)[11])(ot,n); v = 0xFFFFFF; v = addr & v; *ot = v; return ot;`
+emitted asm shows `move $v0, $s0` (return staging) at idx 27, BEFORE
+the store at idx 28. That's the target's structural order. But mask
+landed in $v1 (target $a0), addr in $v0 (target $v1), store via $s0
+(target via $v0). The lever shifted ONE cycle in the right direction;
+two more cycles short. Adding more reuse hops to extend the chain
+either DCE's the dead stores (back to Lever B) or emits real
+instructions (regression).
+
+### Mechanism re-confirmed at the cc1 level
+
+Target requires `move $v0, $s0` scheduled at idx 23 BEFORE the
+mask/addr chain (idx 24-26). cc1's sched.c gives the return-staging
+insn priority 1 (chain depth to `jr ra` is 1). The mask/addr chain
+has priority 4 (lui→addiu→and→sw). For sched.c to pick return-staging
+first, its priority must be ≥4 — which requires the store to USE the
+return-value pseudo (so return-staging is a producer for the store,
+extending its chain depth).
+
+In pure C, this means `*p = ...; return p;` where `p` is a SEPARATE
+pseudo from `ot`. Every form tested either:
+- copy-propagates `p` to `ot` (Lever B and all v3/v7/v8/v18 variants);
+- emits real extra instructions for the separation (v6, v14, v15);
+- relies on a dead store / conditional store / fn-ptr lie to defeat
+  copy-prop (FORBIDDEN — same cheat family as Lever D dead-param-
+  assign, archived 2026-05-31).
+
+### Verdict (session 3)
+
+Honest pure-C floor for func_8007B844: **6** (legitimate, via
+named-intermediate `u32 mask` Lever B). The SOTN-allowed lever set
+opened by today's policy update does NOT contain a construct that
+closes the score-6 → 0 gap. All previously-rejected closing forms
+(conditional dead-store, function-pointer return-type lie) remain
+FORBIDDEN per the expanded cheat catalog.
+
+Function stays INCOMPLETE; no new park category requested per
+[[no-new-park-categories]]. Honest floor 6 stable across 3 evidence-
+driven C-exhaustion sessions (50+ structural variants + ~50k
+permuter iters total).
+
+Resume avenues for a future session (BOTH require user policy
+decisions — no further worker grinding will close it):
+1. **Canonical-asm authorization** (per [[hand-coded-asm-recognition]]):
+   scan_hand_coded LOW (0/8 signals) — formally doesn't qualify under
+   the gate. Three consecutive sessions of evidence-driven C-exhaustion
+   may warrant a policy-level discussion.
+2. **Engine-level lever discovery**: an additional SOTN-aligned
+   technique not yet identified by the 2026-06-02 borderline-research
+   pass. Would need fresh community-master research.
+
+Permuter artifacts preserved at `permuter/func_8007B844/` (base now
+reflects Lever B form). Session-3 variant ledger preserved at
+`tmp/b844/v*.c` (gitignored).
+
 ## Session 2 (2026-06-01) — re-park with NEW evidence
 
 Honest floor confirmed still 6 (Lever B). ~26 additional structural
