@@ -110,77 +110,69 @@ after) has `subst "\.L\d+" ".L280-4" @ 29`; the +2 shift broke it (retire SHA1
 `aa40fdb3...`, sole diff func_8003DBE4 idx31 `bnez v0` +0x88→+0x48). Parked
 pending user policy decision on the sibling's brittle absolute-label rule.
 
-## Confirmed case — tslPolyF4Init (system.c, 2026-05-28 parked → 2026-05-29 RESOLVED) — a NEGATIVE delta closed via dead-goto label pad
+## FORBIDDEN — dead-goto label-pad + DImode chain (user policy 2026-06-02)
 
-Queue top, verdict C, distance 2, 4 regfix rules papering the done dispatch (idx
-50 `li v0,-1`→`move v0,zero`; idx 56 `beq s0,v0`→`bnez v0`). Target reuses the
-loop's `-1` sentinel (left in `v0` by `count != -1`) as the "exhausted" flag at
-the merge and the 3rd-call success sets `v0=0` in the beqz delay slot — i.e. a
-`bnez v0` flag test, not a `count == -1` re-test. Pure-C fix: thread a **separate**
-`s32 result` (NOT the call-result var, or GCC threads the success edge straight to
-the call and collapses the merge → distance 6): success `result = 0; goto done;`,
-exhaust `result = -1;`, dispatch `if (result != 0) return 0;`. `sandbox --disable
-all` 2→0; full-register objdump of the function vs canonical = **0/81 diffs**.
+> **Both the dead `goto X; X:` label-pad AND the `unsigned long long new_var2;
+> new_var2 = new_var; count = new_var2;` DImode chain are FORBIDDEN as of
+> 2026-06-02** ([[no-new-park-categories]] "cheats by any spelling" applied
+> to the techniques themselves). Each has zero semantic purpose — they exist
+> ONLY to influence cc1's compilation. Same intent as the
+> [[lost-codegen-insert-cheat]] / [[inline-asm-injection]] / Lever D
+> (dead-param-assign) / dead-conditional-store / empty-if dead-read family,
+> just spelled with C goto + label / DImode-typed locals.
 
-The parked form consumed **one FEWER** global `.L` label than HEAD (cc1 max `.L`
-232 vs 233), drifting every later system.c sibling -1 and breaking three
-hardcoded-absolute-`.L` cheats (`marionation_Exec`, `saEft00Add`,
-`cpu_side_move_dir_4`).
+### Why they're cheats
 
-### The fix — a dead `goto X; X:` pad to restore the +1 `.L` allocation
+The dead-goto pad's mechanism is explicit: bump cc1's `label_num` counter by 1
+without changing emitted bytes. The construct is dead by design — jump-
+optimization folds it away, leaving zero bytes in the output. Its sole effect
+is to make the global counter end at the value the matching rule needs. **A
+human programmer would not write `goto X; X:;` with nothing in between.** It
+is reverse-engineered coercion against the rule's brittle global-label
+references, not source-faithful C.
 
-The drift was closed by inserting an unconditional `goto done_label_pad;
-done_label_pad:` between the `result = -1;` line and the `done:` label:
+The DImode chain (`unsigned long long temp; temp = u32_var; count = temp;`)
+similarly has no semantic purpose. The `u32 → u64 → s32` round-trip discards
+nothing and changes nothing observable; its only effect is to shift cc1's
+RTL pseudo numbering enough to change the prologue's scheduling decisions.
+Same shape as the volatile-coercion / register-asm-pin / dead-store family.
 
-```c
-    g_cd_callback_a = saved;
-    result = -1;
-    goto done_label_pad;     /* restores the +1 .L allocation that HEAD's
-                              * `count == -1` test ate; emits zero bytes. */
-done_label_pad:
-done:
-```
+### What replaces them (the legitimate alternatives are unchanged)
 
-Mechanism: cc1's `label_num` counter is bumped at *every* RTL label allocation,
-including labels that don't survive optimisation. The dead `goto X; X:` is folded
-away by jump-optimisation (zero bytes emitted, region label set is unchanged),
-but `label_num` was already incremented during the front-end's RTL-gen pass — so
-the global counter ends at HEAD's value. Confirmed: file-wide max `.L` 232 → 233
-(matches HEAD); siblings' label numbers unshifted; `verify-oracle --rebuild` SHA1
-== oracle; 4 regfix rules retired. 100% pure C, all siblings keep their cheats
-(they're not pure-C-matchable per their own park rationales — see
-[[cross-jump-store-tail-merge]] saEft00Add and [[register-alloc-pure-c]]
-cpu_side_move_dir_4 / marionation_Exec).
+The diagnostic + the policy-resolution sections above (drift detection,
+sibling `{lbl#N}` migration per `tools/regfix.py`, sibling de-cheat) remain
+valid. The `{lbl#N}` engine mechanism (commit `db690e7`) is the SOTN-clean
+way to handle the underlying coupling: it makes the sibling's splice rules
+robust to TU-wide `.L` renumbering. With `{lbl#N}` in place, the negative-
+delta problem **does not exist** — the sibling rule auto-adapts to whatever
+label numbers cc1 currently emits for the target function.
 
-### Hybrid was load-bearing — keep HEAD's local-var declarations
+So for any function previously "fixed" via dead-goto label-pad or DImode
+chain:
+- Migrate the affected sibling's splice rules to `{lbl#N}` (if not already).
+- Remove the dead-goto pad / DImode chain from the function.
+- Re-derive the function's pure-C body without those constructs.
+- If a clean lever exists → committable. If not → re-park; the cheat is no
+  longer load-bearing because `{lbl#N}` made it unnecessary.
 
-The local-var declarations matter for scheduling. HEAD's body had:
-```c
-s32 count;
-unsigned long long new_var2;
-s32 idx;
-s32 saved;
-int new_var;
-s32 *elem;
-...
-new_var = 3;
-new_var2 = new_var;
-count = new_var2;
-```
-Replacing this with a plain `s32 count; ... count = 3;` shifts the
-`elem = &g_cd_sector_buf[idx]` scheduling so `system.o` no longer matches oracle
-(different register/scheduling at the prologue's `sll/lui/addiu`). The final
-matching form **adds** `s32 result;` to HEAD's declaration block (keeping
-`new_var`/`new_var2`/the `unsigned long long` chain) and **restructures only the
-done dispatch** — *not* the early initialisation. So when reaching for this rule,
-keep the existing source's odd declarations + initialisation chain intact; only
-the dispatch surface is the work surface.
+### Affected COMPLETED-C function (needs re-derivation)
 
-### The general lever
-For a *negative* label-drift (your matching C allocates FEWER `.L`s than the
-committed form), add a dead `goto X; X:` to bump `label_num` by exactly the delta
-needed without changing emitted bytes. Doesn't apply to the positive-delta case
-(cpu_side_move_dir_2's +2) — you can't easily *reduce* `label_num` from C source.
+**`tslPolyF4Init` (system.c)** — committed with both constructs as
+COMPLETED-C; per the thorough cheat audit
+([[thorough-cheat-audit-2026-06-02]]) the commit is a cheat-by-spelling
+match. Re-derivation pending Phase 2.
+
+### Historical content (preserved for the lesson)
+
+The pre-2026-06-02 version of this section documented the dead-goto pad as
+"the general lever for negative label-drift" and the DImode chain as
+"load-bearing for scheduling." Both framings were the rationalization-as-
+technique error that the 2026-06-01 cheats-by-any-spelling policy
+specifically forbids ("does the form contain code with no semantic
+purpose? would a human programmer naturally write this code?"). The full
+prior content is preserved in git history at `HEAD~1:.claude/rules/
+global-label-drift-sibling-cheat.md` for context — read it only to see
+the shape of forbidden coercion, never as a recipe to apply.
 
 ## Related
 - [[maspsx-noreorder-stripping]] — the other source-change-shifts-a-later-branch
