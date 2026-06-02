@@ -380,14 +380,6 @@
       "status": "active"
     },
     {
-      "func": "tslPolyF4Init",
-      "file": "system",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
       "func": "gnd_init_80041688",
       "file": "text1a",
       "distance": 2,
@@ -4205,6 +4197,15 @@
       "park_reason": "Canonical jump-table infrastructure, not a register/codegen cheat. The 24 asmfix rules (15 renames of GCC .L labels to external jtbl_800108CC + 8 jlabel conversions + 1 delete_between stripping GCC's emitted table) are structurally required: the switch's jump table jtbl_800108CC sits in the FIRST rodata block (asm/data 800.rodata_pre.o, bb2.ld:25, addr 0x800108CC), while code6cac_b2.o's own .rodata links far later (bb2.ld:50). A GCC in-object jump table can only land in code6cac_b2's late rodata, never at 0x108CC, so referencing the external jtbl symbol + deleting GCC's table is mandatory. Zero-asmfix COMPLETED-C would need relocating the jtbl into code6cac_b2.c AND reordering the whole global rodata layout (project-wide, needs user sign-off). This is the project standard for the 26 jtbl-rename functions whose tables splat carved into asm/data rodata. Separately, sandbox cannot score this file: file-wide cheat-asm stripping shifts maspsx indices and crashes a sibling fn's index-based regfix reorder rule (KeyError in tools/regfix.py)."
     },
     {
+      "func": "tslPolyF4Init",
+      "file": "system",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 4,
+      "status": "parked",
+      "park_reason": "Re-derivation 2026-06-02: pure-C without forbidden DImode chain bottoms at sandbox distance 9 (build_insns 81 matches target, but 9 register-rotation+scheduling diffs persist). HEAD's source uses 'unsigned long long new_var2; new_var2 = new_var; count = new_var2;' DImode chain which is FORBIDDEN per the 2026-06-02 policy (same family as combine-foldable chain-extender in register-alloc-pure-c.md, classified cheat-by-spelling \u2014 zero semantic purpose, exists solely to bump count's RTL refs and shift cc1's allocno priority). The 4 regfix substs at @50/@56 (\u0007ddiu->addu, zero,-1->0,zero, \beq->bne, s0,v0->v0,zero) themselves manufacture the FORBIDDEN goto-end+ret_val accumulator pattern (per goto-end-prologue-delay-slot.md archive): the cheat-free source's natural 'if (count == -1) return 0' is semantically equivalent to target's accumulator-based 'v0=0; goto check; v0=-1; check: if (v0!=0) return 0' but produces different bytes (li v0,-1 in the beqz delay slot + beq s0,v0 post-loop). Tried levers (all measured negative from baseline 9): decl order swaps (idx/saved/elem/count permutations: 9-18), init-line ordering (count first vs last: 9), for-loop form (24, build_insns 85), inline success path (28), removing prologue_config entry (11), register-asm pins on idx/saved as diagnostic (still 9 \u2014 pins ignored, confirming strong RA preference). The target allocation needs idx@s3+arg0@s4 but cc1 naturally produces saved@s3+idx@s4+arg0@s5 \u2014 flipping requires either (a) a cheat-class lever to bump idx's RTL ref count without emitting bytes, (b) the FORBIDDEN DImode chain, or (c) source-level changes that all measured worse. Sibling func_80080258 and func_80080390 in same file have the IDENTICAL DImode chain + register-asm pin \u2014 they're also committed cheats under the new policy and need their own re-derivation. Resume avenues: (1) directed permuter from clean target (similar to cpu_side_move_dir_4 session 10) \u2014 high effort, low expected yield given the prior allocation-tie evidence on cpu_side_move_dir_4/marionation_Exec; (2) project-wide rodata layout change if the function's data adjacency suggests TU re-attribution (per jtbl-rodata-split-infrastructure evidence checklist); (3) instrumented cc1 (tmp/gccdbg with ALLOCDBG) probe to identify the SPECIFIC priority-flip C lever needed \u2014 same approach as cpu_side_move_dir_4 sessions 5-9 with the chain-extender finding (legitimate-form unclear). For now, function stays INCOMPLETE with the 4 regfix rules + DImode chain that build to oracle-matching SHA1; user/orchestrator policy call on whether/when to clean up the sibling cluster (func_80080258, func_80080390, tslPolyF4Init) together via canonical-asm authorization or further pure-C derivation."
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4325,14 +4326,14 @@
   ],
   "counts": {
     "total": 537,
-    "active": 491,
+    "active": 490,
     "by_status": {
-      "active": 491,
+      "active": 490,
       "authorize": 33,
-      "parked": 13
+      "parked": 14
     },
     "by_verdict": {
-      "C": 294,
+      "C": 293,
       "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 117,
       "ASM-WHOLE": 7,
