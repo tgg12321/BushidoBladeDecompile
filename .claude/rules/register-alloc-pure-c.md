@@ -337,7 +337,34 @@ project-scope". **That was wrong.** Session 5 built a SEPARATE instrumented cc1
 already existed from the saEft00Add session — `cross-jump-store-tail-merge.md`'s
 `tmp/gccdbg`) and the instrumented dump produced the LEVER directly.
 
-### Session-5 (2026-05-29) — instrumented cc1 unlocks the LEVER. Score 20 → 6.
+### Session-5 (2026-05-29) — combine-foldable chain-extender lever ❌ FORBIDDEN as of 2026-06-02
+
+> **The combine-foldable chain-extender sub-technique below is FORBIDDEN as
+> of 2026-06-02** ([[techniques-audit-2026-06-02]]) — same family as Lever D
+> (dead-param-assign, forbidden 2026-05-31), dead-conditional-store (forbidden
+> 2026-06-01), dead-goto label-pad (forbidden 2026-06-02), and the
+> goto-end-prologue-delay-slot + param-local-alias rules (forbidden 2026-06-02).
+>
+> The construct `idx_1494 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 -
+> (s32)D_800A125C));` discards nothing observable and changes nothing in
+> emitted output — its only effect is to bump `tbl_125c`'s `reg_n_refs` so
+> the allocno priority calculation in `global.c` flips. Per
+> [[no-new-park-categories]] "cheats by any spelling": zero semantic purpose,
+> no human programmer would naturally write this, justification cites pure
+> GCC internals (`reg_n_refs`, combine fold, RTL pseudo numbering).
+>
+> The chain-extender form was tested in session 5 and REVERTED before commit
+> (the chain shifts maspsx indices, breaking the existing 5 regfix rules).
+> So no current COMPLETED-C function carries this cheat. This FORBIDDEN
+> marker is preventive: future agents reading this rule must NOT reach for
+> the chain-extender form even though session 5's measurements are recorded
+> below as historical evidence.
+>
+> The instrumented-cc1 diagnostic itself (`BB2_ALLOC_DEBUG` etc., reading the
+> allocno priority table) is legitimate; only the chain-extender as a fix
+> is forbidden. Use the instrumented dumps to find LEGITIMATE pure-C levers
+> (block-local var split, narrow integer type, real loop-local precompute —
+> Levers A, B, C above).
 
 Ran `tmp/gccdbg/cc1` (a separate build of GCC 2.7.2 with the `BB2_ALLOC_DEBUG`
 env-var hook from `global.c:575` active — canonical `tools/gcc-2.7.2/build/cc1`
