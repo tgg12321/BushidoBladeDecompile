@@ -616,56 +616,50 @@ s32 func_8007C938(s32 arg0, s32 arg1) {
     new_var2 = 0xE5000000;
     return var_v1 | (var_v0 | new_var2);
 }
-/* SLUS-00663: pack a 4-channel BGRA-style color from a u8 RGB pair plus two
- * signed s16 "intensity" fields at +4 and +6 into a 32-bit GPU command word
- * tagged with 0xE2 (GPU "set drawing offset"-flavored prefix). The 4 sp[]
- * stores are the pre-shift channel values the original code captures into
- * its 16-byte scratch frame.
- *
- * Matching shape notes (committed 2026-06-01, retiring 9 regfix rules):
- *   - Single chained return-OR: GCC emits the 4 ORs in target's order when
- *     the const-OR `(temp_a1<<10)|E2000000` is given its OWN local (r_e2),
- *     forcing the |const to land in $a1 BEFORE g (in $v0) accumulates.
- *   - `temp_v0 = temp_v0 << 0xF;` as a separate statement (not folded into
- *     the return expr) — this places `sll $v0,$v0,15` adjacent to the
- *     prior `sw $v0, 4(sp)`, matching target's idx-18 position. Folding it
- *     into the OR expression delays the sll until after the b2 load.
- *   - Reusing `temp_v0` for the shift (vs a new local) keeps the same
- *     pseudo, so GCC doesn't allocate a fresh callee-save for the shifted
- *     value.
- *   - The `goto end` form (vs `if (arg0==NULL) return 0;`) gets GCC to emit
- *     the early-exit as `bnez $a0, body; addiu sp,-0x10; j .L_end; addu
- *     $v0, $zero, $zero` (prologue in delay slot of bnez, v0=0 in delay of
- *     j). A direct early return collapses this to a 2-insn beqz+prologue
- *     form that needs regfix paperwork.
- */
 s32 func_8007C97C(u8 *arg0) {
     s32 sp[4];
-    u32 temp_a1;
-    s32 temp_a2;
-    u32 temp_v0;
-    s32 temp_v1;
-    s32 ret_val;
+    register u8 *p asm("$4") = arg0;
+    register s32 r asm("$5");
+    register s32 b1 asm("$6");
+    register s32 g asm("$2");
+    register s32 b2 asm("$3");
+    if (p == 0) {
+        g = 0;
+        return g;
+    }
+    r = p[0];
+    r >>= 3;
+    sp[0] = r;
 
-    if (arg0 == NULL) {
-        ret_val = 0;
-        goto end;
-    }
-    temp_a1 = (u8) arg0[0] >> 3;
-    sp[0] = temp_a1;
-    temp_a2 = (s32) (-*(s16 *)(arg0 + 4) & 0xFF) >> 3;
-    sp[2] = temp_a2;
-    temp_v0 = (u8) arg0[2] >> 3;
-    sp[1] = temp_v0;
-    temp_v0 = temp_v0 << 0xF;
-    temp_v1 = (s32) (-*(s16 *)(arg0 + 6) & 0xFF) >> 3;
-    sp[3] = temp_v1;
+    b1 = *(s16 *)(p + 4);
+    b1 = -b1;
+    b1 &= 0xFF;
+    b1 >>= 3;
+    sp[2] = b1;
+
+    g = p[2];
+    r <<= 10;
+    g >>= 3;
+    sp[1] = g;
+    g <<= 15;
+
+    b2 = *(s16 *)(p + 6);
     {
-        u32 r_e2 = (temp_a1 << 0xA) | 0xE2000000;
-        ret_val = temp_v0 | r_e2 | (temp_v1 << 5) | temp_a2;
+        register s32 e2 asm("$4") = 0xE2000000;
+        r |= e2;
     }
-end:
-    return ret_val;
+    g |= r;
+
+    b2 = -b2;
+    b2 &= 0xFF;
+    b2 >>= 3;
+    {
+        register s32 b2sh asm("$4") = b2 << 5;
+        g |= b2sh;
+    }
+    g |= b1;
+    sp[3] = b2;
+    return g;
 }
 extern u8 D_8009BE74;
 extern u8 D_8009BE77;
