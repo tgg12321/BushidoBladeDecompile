@@ -1,0 +1,69 @@
+{
+  "function": "func_8007B844",
+  "file": "display",
+  "scores": {
+    "head_floor": 7,
+    "candidate_floor": 6,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "note": "Floor 6 stable across 3 evidence-driven C-exhaustion sessions (50+ structural variants + ~50k permuter iters total)."
+  },
+  "sessions": [
+    {
+      "date": "2026-05-31",
+      "lever": "session 1: 32 structural variants tested, plateau confirmed at 7 honest pure-C diffs in final-block register rotation",
+      "floor_was": null,
+      "floor_now": 7
+    },
+    {
+      "date": "2026-06-01",
+      "lever": "session 2: named-intermediate `u32 mask;` (Lever B from register-alloc-pure-c) lowers floor 7 -> 6; closes addr-register diff",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 7,
+      "floor_now": 6
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "session 3: 17 NEW structural variants under SOTN-aligned policy (post 161c6c3) — defeat-licm var-reuse, opaque arithmetic, sub-word param read casts, mixed exit forms, duplicate-read into branch arms, named-intermediate declaration-order — ALL measured negative from the score-6 base. Permuter ~12,845 iters from Lever B base (score 135), zero improvements.",
+      "floor_was": 6,
+      "floor_now": 6,
+      "note": "Mechanism instrumented (BB2_SCHED_DEBUG): target requires return-staging at idx 23 BEFORE mask/addr chain (idx 24-26). cc1 sched.c assigns return-staging priority 1; mask/addr chain priority 4. Target requires return-staging priority >=4. No pure-C SOTN-allowed construct extends the return-staging pseudo's chain depth without emitting bytes."
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": null,
+    "evidence": "Not yet invoked on the score-6 form. Worker self-audit: PASS (named-intermediate mask is the canonical Lever B from register-alloc-pure-c.md; no pins, no register-asm, no volatile coercion, no unused locals). The two rejected closing forms (preserved at rejected/) were independently identified as cheats and ruled out before saving. Invoke cheat-reviewer for an independent verdict before any Match: commit, even though no progress beyond floor 6 has been achieved."
+  },
+  "remaining_gap": {
+    "summary": "6 register-rotation + scheduling diffs in the final-block mask/addr chain. cc1 picks $v0 for the mask (target $a0); return-staging emits AFTER the store (target BEFORE). Mechanism: sched.c return-staging INSN_PRIORITY = 1 vs mask/addr chain priority = 4. To flip the order, the return-staging pseudo's chain depth must extend to >=4. No pure-C SOTN-allowed construct found that extends it without emitting bytes (every tested `u32 *p = ot; *p = ...; return p;` form folds to ot via copy-prop).",
+    "rule_count_at_head": 6,
+    "rules_required_for_full_match": "6 regfix rules calibrated for HEAD's emission. The candidate's score-6 shape produces a different emission that doesn't byte-match; the rules would need rewriting for the new shape with no net rule reduction. Same lateral-movement reason as C7A0 / C86C."
+  },
+  "next_hypotheses": [
+    "Fresh SOTN borderline-research pass — direct master-branch evidence search for patterns that affect sched.c return-staging priority. Categories: thin vtable-dispatch wrappers, OT-link builders, debug-conditional-call patterns. The 2026-06-02 borderline research found 6 NEW SOTN-allowed techniques; another pass may surface more.",
+    "BB2_SCHED_DEBUG instrumented cc1 dump on the candidate's RTL — identify the return-staging pseudo's REG_DEP_TRUE predecessors. The closing lever must extend that chain WITHOUT emitting bytes (combine-foldable) AND without falling into the no-new-park-categories family.",
+    "Sibling cross-reference — find another thin GPU vtable-dispatch wrapper (gpu_LinkList-style) that matches pure-C, diff its .greg dump against this one's. The natural C structure that makes return-staging high enough may already exist in a sibling.",
+    "Combined m2c re-read of target — m2c's faithful reconstruction may suggest a control-flow shape (e.g. early-return path that the worker hasn't tested) that affects scheduling at the RTL level."
+  ],
+  "rejected_forms": [
+    {
+      "form": "conditional dead-store: `if (debug >= 2) { ...; new_var = ot; } ...; new_var = ot; *new_var = mask; return new_var;`",
+      "score": 0,
+      "build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "reason": "FORBIDDEN per .claude/rules/no-new-park-categories.md + commit 44ef3df (find_dead_conditional_stores detector). Same family as Lever D (dead-param-assign, forbidden 2026-05-31). The inner conditional store is DCE'd; its only effect is to influence RTL pseudo numbering for sched.c priority. Permuter-found across ~36k iters; vetted by the worker per cheats-by-any-spelling and NOT surfaced as a candidate."
+    },
+    {
+      "form": "function-pointer return-type lie: declare the vtable entry's return type to coerce $v0 liveness through the call",
+      "score": null,
+      "reason": "Cheat-by-spelling — falsely declaring a function pointer's return type to manipulate GCC's value-flow analysis. The actual called function does not return that type; the declaration is a lie that exists solely for codegen control. Same family as inline-asm-policy expanded catalog. Not committed; tested only to rule out."
+    }
+  ],
+  "memory_notes": [
+    "memory/project/func-8007b844-conditional-dead-store.md (the full session 2 ledger; documents both the score-6 lever and the rejected score-0 cheat)"
+  ],
+  "instrumented_evidence": {
+    "tool": "BB2_SCHED_DEBUG (tmp/gccdbg/cc1 with sched.c hooks)",
+    "finding": "return-staging insn INSN_PRIORITY = 1 (REG_DEP_TRUE -> jr ra only, chain depth 1). mask/addr chain INSN_PRIORITY = 4 (lui->addiu->and->sw, chain depth 4). rank_for_schedule picks higher priority first; mask/addr emits before return-staging.",
+    "closing_lever_requirement": "Extend return-staging chain depth to >=4 via C-source dependencies that combine-fold to zero emitted bytes. No SOTN-allowed pattern in the current catalog accomplishes this; all tested forms either fold (no priority change) or materialize (cost exceeds benefit)."
+  },
+  "user_policy_note": "Worker session 3 suggested 'canonical-asm authorization OR a fresh SOTN borderline-research pass' as next-step options. The canonical-asm option is NOT evidence-backed — B844's target asm has ZERO hand-coded signals (S1=0 'handwritten' annotations; S2=none hardcoded register signatures; S6=standard ABI; S8=no redundant-mask-before-shift). Every instruction has a direct C analog; no GTE/BIOS/scratchpad. Per .claude/rules/hand-coded-asm-recognition.md and .claude/rules/no-compiler-divergence.md, the structural ceiling is a sched.c INSN_PRIORITY wall same class as cpu_side_move_dir_4 / marionation_Exec — not hand-coded asm. Keep parked + WIP'd; continue legitimate lever search."
+}
