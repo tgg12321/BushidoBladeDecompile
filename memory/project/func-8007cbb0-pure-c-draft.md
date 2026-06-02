@@ -179,6 +179,54 @@ volatile coercion, no dead stores, no padding arrays. The struct typing
 accesses, and `*(u16 *)arg0` for the flag check is a legitimate halfword
 read (not coercion).
 
+## Session-2 evidence (2026-06-02 — SOTN-allowed lever sweep)
+
+Per [[difficult-is-not-impossible]] § "Do NOT stop with documented unrun
+resume avenues — KEEP GOING", this session re-installed the prior
+session's score-52 draft and swept SOTN-allowed structural variants
+(per the 2026-06-02 borderline-resolution policy update: variable
+reuse, named-intermediate declaration-order tricks). Floor unchanged at 52.
+
+Specifically the structural pattern in the diff is:
+- **Register-allocation flip on the chain-hdr block**: target puts
+  `0xFFFFFF` mask in `$a1` (used twice — chain-hdr & arg1) and
+  `0xE4FFFFFF` in `$a0` (used once — D_800F1860 store). Mine puts
+  them in the opposite registers. The dataflow is the same; cc1's
+  default ascending-register preference favors the more-used value
+  in the LOWER reg, which is what mine does — target diverges.
+- **0x03FFFFFF split lui/ori scheduling**: target emits the `lui a3,0x3ff`
+  early (idx 55) and `ori a3,a3,0xffff` very late (idx 109) — across
+  ~50 insns of the BF48 OT-link load chain. Mine emits them adjacent.
+- **BF48 deref scheduling in small-packet**: target reads `*D_8009BF48`
+  BEFORE word0 (idx 167); mine reads word0 first (idx 167). Same
+  long-chain-first INSN_PRIORITY mechanism as the big-packet block.
+
+### Levers tested this session (all 52 floor or regressed)
+
+| # | Lever | Score | Notes |
+|---|---|---|---|
+| 1 | `u32 mask24 = 0xFFFFFF;` shared local for both AND uses | 56 | Regressed — GCC kept the named local "alive" causing extra moves |
+| 2 | Two named intermediates (`lo24_mask`, `e4_const`) | 52 | No change — folded away |
+| 3 | `D_800F1860 = 0xE4FFFFFF;` stored FIRST in source order | 65 | Regressed — perturbed all subsequent stores |
+| 4 | `(0xFFFFFF & (u32)p187C)` operand swap (LHS-first RTL) | 52 | No change (AND is commutative; same RTL) |
+| 5 | `s32 ot_word = *D_8009BF48;` extracted local in small-packet | 52 | No change — CSE'd back to direct deref |
+| 6 | `u32 arg1_link = (arg1 & 0xFFFFFF) | 0x02000000;` extracted early | 56 | Regressed — extra register used |
+| 7 | `D_800F1870` store moved before `D_800F1858` chain-hdr | 53 | Slight regression |
+| 8 | `u32 bit10_e1` named intermediate for `(arg1>>31)<<10 | 0xE1000000` | 52 | No change — folded |
+| 9 | 2-arg signature (no arg2/arg3 voids) | 52 | No change — function ABI unchanged |
+
+### Remaining genuinely-untried avenues
+
+The session-1 note's "Resume avenue 1: Directed permuter from clean offset-0 target with the score-52 base" remains the ONLY genuinely-untried lever:
+- Build `permuter/cbb0/` with `target.s` from `tools/decomp-permuter/prelude.inc` (drop `.set gp=64`) + `asm/funcs/func_8007CBB0.s`; `base.c` = preprocessed display.c with the score-52 body stripped to single-function. Run with `--stop-on-zero` and `PERM_GENERAL` directed macros targeting scheduling permutations.
+- Per [[register-alloc-pure-c]]'s cpu_side_move_dir_4 + marionation_Exec sessions, a 5000-16,800-iter permuter run from a clean offset-0 target on a register-alloc/scheduling-coupled function plateaus on the inherent INSN_PRIORITY structural ceiling. **For func_8007CBB0** the same outcome is the expected result — but it has not been empirically run, so it cannot be ruled out as the lever that would close 52→0.
+
+Note: BB2_SCHED_DEBUG + BB2_PRIO_DEBUG instrumented cc1 dump (Resume Avenue 2) was already exhaustively explored in [[register-alloc-pure-c]] § sessions 5-7 for cpu_side_move_dir_4 — same family, same outcome. The mechanism is well-understood; the C-source space's degrees of freedom don't span the direction needed.
+
+### Conclusion
+
+func_8007CBB0 remains INCOMPLETE at honest pure-C distance 52 with all SOTN-allowed structural levers exhausted to date. The ONE remaining un-run avenue (directed permuter from clean offset-0 target) is the legitimate next step per the playbook; until then the function stays parked under the asmfix `replace_with_asmfile` rule. NOT a candidate for new park category — it's standard "INCOMPLETE — search continues" per [[no-new-park-categories]].
+
 ## Related
 
 - [[register-alloc-pure-c]] — the parent playbook for RA / scheduling walls
@@ -189,3 +237,4 @@ read (not coercion).
 - `func-8007ce0c-semantic-investigation.md` — sibling that uses the same
   clamp pattern (still cheating with regfix splices)
 - `tmp/cbb0_score52_draft.c` — the full draft preserved for resume
+- `tmp/cbb0_diff.py` — index-aligned objdump diff tool used this session
