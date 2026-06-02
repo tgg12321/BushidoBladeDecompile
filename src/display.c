@@ -616,27 +616,48 @@ s32 func_8007C938(s32 arg0, s32 arg1) {
 }
 s32 func_8007C97C(u8 *arg0) {
     s32 sp[4];
-    u32 temp_a1;
-    s32 temp_a2;
-    u32 temp_v0;
-    s32 temp_v1;
-
-    if (arg0 != NULL) {
-        temp_a1 = (u8) arg0[0] >> 3;
-        sp[0] = temp_a1;
-        temp_a2 = (s32) (-*(s16 *)(arg0 + 4) & 0xFF) >> 3;
-        sp[2] = temp_a2;
-        temp_v0 = (u8) arg0[2] >> 3;
-        sp[1] = temp_v0;
-        temp_v0 = temp_v0 << 0xF;
-        temp_v1 = (s32) (-*(s16 *)(arg0 + 6) & 0xFF) >> 3;
-        sp[3] = temp_v1;
-        {
-            u32 r_e2 = (temp_a1 << 0xA) | 0xE2000000;
-            return temp_v0 | r_e2 | (temp_v1 << 5) | temp_a2;
-        }
+    register u8 *p asm("$4") = arg0;
+    register s32 r asm("$5");
+    register s32 b1 asm("$6");
+    register s32 g asm("$2");
+    register s32 b2 asm("$3");
+    if (p == 0) {
+        g = 0;
+        return g;
     }
-    return 0;
+    r = p[0];
+    r >>= 3;
+    sp[0] = r;
+
+    b1 = *(s16 *)(p + 4);
+    b1 = -b1;
+    b1 &= 0xFF;
+    b1 >>= 3;
+    sp[2] = b1;
+
+    g = p[2];
+    r <<= 10;
+    g >>= 3;
+    sp[1] = g;
+    g <<= 15;
+
+    b2 = *(s16 *)(p + 6);
+    {
+        register s32 e2 asm("$4") = 0xE2000000;
+        r |= e2;
+    }
+    g |= r;
+
+    b2 = -b2;
+    b2 &= 0xFF;
+    b2 >>= 3;
+    {
+        register s32 b2sh asm("$4") = b2 << 5;
+        g |= b2sh;
+    }
+    g |= b1;
+    sp[3] = b2;
+    return g;
 }
 extern u8 D_8009BE74;
 extern u8 D_8009BE77;

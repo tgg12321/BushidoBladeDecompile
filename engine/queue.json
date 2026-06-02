@@ -4213,7 +4213,7 @@
       "rules": 1,
       "status": "parked",
       "scorable": false,
-      "park_reason": "Prologue pair-emission-order: cc1's save_restore_insns walks GP_REG_LAST->FIRST hardcoded, emitting sw s1 (LUID lower) before sw s0; scheduler tie-breaks on LUID asc, producing pair order (sw s1, move s1)(sw s0, move s0). Target wants the inverse: (sw s0, move s0)(sw s1, move s1). Tested SOTN-aligned levers (named intermediates rect_x/rect_y, ret_val capture of first call result, m2c-style structure) - all either no-op (CSE'd back to baseline 4) or regression (45). The param-local-alias technique (FORBIDDEN 2026-06-02) was the only known closing form. Cannot patch mips.c per no-compiler-divergence. Body is normal C (not hand-coded asm), so canonical-asm authorization doesn't apply. Twin func_8007C4B8 carries the identical regfix rule. Honest distance stays at 4 (the 4 swapped prologue insns); rules=1 (reorder 3,4,1,2 @ 1-4). Awaiting user policy decision on this prologue-emission-order category."
+      "park_reason": "Pure-C floor at sandbox-distance 4. Single 4-insn prologue reorder rule (regfix.txt:3753) flips save+def pairing from cc1's natural [sw s1; move s1,a0; sw s0; move s0,a1] to target's [sw s0; move s0,a1; sw s1; move s1,a0]. Mechanism: cc1's mips.c save_restore_insns iterates GP_REG_LAST->FIRST (3000a) and expand_function_start creates pseudos in DECL_ARGUMENTS order (out=72->s1, r=73->s0). Save-order is structurally fixed by mips machdep + ABI param order. Tried 9 distinct C source levers: early r-temps (3 forms), local alias, K&R-style decl, K&R-with-reversed-decl-order, var_a3=7 init, 3rd-callee-save force, all-temp-stores-at-end - all either CSE'd back or regressed. Sibling func_8007C4B8 has identical issue (twin function, same rule shape). Per [[no-compiler-divergence]] mips.c is frozen; per ABI param swap would break the asm callers. Either accept prologue_config.json as infrastructure (policy decision) or authorize ASM-region for the prologue-only debt."
     },
     {
       "func": "func_8007C4B8",
@@ -4285,6 +4285,16 @@
       "park_reason": "New evidence (2026-06-01): m2c-shape adoption [var_v0 accumulator + nested if (rect[2]!=0) { if (rect[3]==0) return -1; ...body...; return call(); } + outer return -1;] reduces honest cheat-free distance 21 -> 7 (build_insns 49=49). Defeats cross-jump merge by mixing exit forms (TWO inline return -1 + one tail return-via-call) so jump2 cannot merge the early-return suffixes. Verified: bnez->body / j end / li v0,-1 split form emerges; sll v0,s1,16 fills bnez delay slot via reorg. The residual 7 diffs are PURE register-allocation choices the cc1 local_alloc makes: target lw a0,0(s0) for arg0[0] vs sandbox lw v0,0(s0); cascades to sw a0,0(a1) vs sw v0,0(a1). lreg dump (tmp/b6c8.i.lreg) shows pseudo 94 (arg0[0] temp) is a local allocno that local_alloc picks  for because  is freed by the BF28 store scheduled EARLY. Target keeps packed live in  across the load via LATE BF28 store scheduling (delays sw v0,(BF28) past arg0[0] load). Mechanism: GCC 2.7.2 sched2 priority for the BF28 store depends on its downstream dep chain depth (0 hops in cc1's natural form) - to delay it past arg0[0] requires either (a) extending the BF28 store's anti-dep chain so it cannot fire early, or (b) preventing local_alloc from picking  for pseudo 94. Adding any function-scope local (s32 packed; s32 a0_val; etc) breaks the early-return split (regresses to 21) due to frame-shift impact on jump2. NEXT untried levers: (1) declare bf24 as a callee-save register-class hinted pseudo to lengthen its live range so it cannot share with arg0[0]; (2) write arg0[0] read as a chained store-then-load through bf24+offset alias so the load-store dependency chain explicitly extends BF28's store priority; (3) probe BB2_SCHED_DEBUG/BB2_PRIO_DEBUG instrumented cc1 dump of THIS function (tmp/gccdbg/cc1 SHA1 a17fc6bbcb... May 30) to see exact INSN_PRIORITY of BF28 store vs arg0[0] load in the new structure; (4) restructure the call to take arg0[0] as a register-promoted arg (e.g. pass through a wrapper) that forces a0 allocation upstream of the body. The 19-rule cluster remains entirely register-renames after m2c-shape adoption; if any of these levers brings cc1 to pick  for arg0[0] naturally, all 19 rules collapse together."
     },
     {
+      "func": "func_8007C97C",
+      "file": "display",
+      "distance": 24,
+      "verdict": "C",
+      "rules": 9,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "global-label-drift-sibling-cheat + 4-reg-cluster coupling. Honest pure-C distance reduced 24->19 by removing 5 cheat-asm pins (////) and switching r/g to u32 (so r>>=3 emits srl matching target). Remaining gap: target keeps arg0 in  throughout body and uses /// as the scratch sequence with lui , 0xE200 placed LATE (after final lh , 6(a0)). Mine: GCC global-alloc puts arg0 in  because local-alloc gave  to r (first lbu dest), creating a hard 4-pseudo cluster cascade matching [[register-alloc-pure-c]] / [[split-read-defeats-hoist]] pure-RA-rename plateau signature. Tested: if-goto-null/if-non-zero/if-else/early-return forms, s32 vs u32 vs s32-coerced typing, consolidated single-line exprs, block-local var scope, decl reordering, dead-store/preload var (e2=0xE2000000 pulled the lui INTO the bne delay slot, regressing). All variations stayed >= 19. Critical coupling: any structural edit here shifts cc1's .L count and breaks sibling func_8007CE0C's hardcoded-.L<N> asmfix rules (link error on .L152/.L154/.L156/.L158 \u2014 confirmed via verify-oracle --rebuild after edit). Per [[global-label-drift-sibling-cheat]] this is a TWO-FUNCTION coupling: needs user policy decision to either (a) de-cheat func_8007CE0C's .L<N>-hardcoded rules first, or (b) bump sibling rules to new label numbers, or (c) find a pure-C lever that closes the cluster WITHOUT shifting cc1's label count. The 4-pseudo register-rotation matches the cpu_side_move_dir_4/marionation_Exec coupling pattern; the matching C exists but the explored lever space (if-form, type, order, scope) does not contain it."
+    },
+    {
       "func": "func_8007CE0C",
       "file": "display",
       "distance": 48,
@@ -4325,8 +4335,8 @@
     }
   ],
   "counts": {
-    "total": 537,
-    "active": 490,
+    "total": 538,
+    "active": 491,
     "by_status": {
       "active": 490,
       "authorize": 33,
