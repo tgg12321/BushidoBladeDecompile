@@ -84,26 +84,27 @@ void func_8007B3A8(u8 *str, s16 *rect) {
     goto end;
 level_1:
     w = rect[2];
-    if (w > D_8009BE78) goto bad;
+    if (D_8009BE78 < w) goto bad;
     x = rect[0];
-    if (w + x > D_8009BE78) goto bad;
+    if (D_8009BE78 < w + x) goto bad;
     y = rect[1];
-    if (y > D_8009BE7A) goto bad;
+    if (D_8009BE7A < y) goto bad;
     h = rect[3];
-    if (y + h > D_8009BE7A) goto bad;
+    if (D_8009BE7A < y + h) goto bad;
     if (w <= 0) goto bad;
     if (x < 0) goto bad;
     if (y < 0) goto bad;
     if (h > 0) goto end;
 bad:
     g_gpu_debug_func(&D_80015F2C, str);
-    g_gpu_debug_func(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
-    goto label_pad;
-label_pad:
-    goto end;
+    goto common;
 level_2:
     g_gpu_debug_func(&D_80015F4C, str);
-    g_gpu_debug_func(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
+common:
+    {
+        register void (*fn)() asm("$3") = g_gpu_debug_func;
+        fn(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
+    }
 end:
     ;
 }
