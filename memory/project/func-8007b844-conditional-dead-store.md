@@ -207,3 +207,153 @@ Permuter artifacts preserved at `permuter/func_8007B844/`. The cheat-
 class candidate at `permuter/func_8007B844/output-40-1/source.c` is the
 proof point — clean C reaches sandbox 0 + SHA1 == oracle, but the C
 itself is borderline.
+
+## Session 2 (2026-06-01) — re-park with NEW evidence
+
+Honest floor confirmed still 6 (Lever B). ~26 additional structural
+levers tested this session, none cleanly closing below 6. Detailed log:
+
+### Round 1-2 (baseline + ret_val staging variants, 9 forms)
+| Variant | Score | Notes |
+|---|---|---|
+| `goto end; end: return ret_val;` (per goto-end-prologue-delay-slot rule) | 7 | ret_val folds to ot, no progress |
+| `ret_val = ot; mask = ...; *ret_val = mask;` | 6 | identical residual to Lever B |
+| `u32 *ret_val = ot;` decl-init form | 7 | folds |
+| comma-return `return (*ot = ..., ot);` | 7 | no effect |
+| swap arg order `func(s32 n, u32 *ot)` | 12 | ABI changes (cheat, also breaks callers) |
+| param-local-alias-reverse `_n=n; _ot=ot;` | 15 | regression |
+| `if (g_gpu_debug_level >= 2) ? : (void)0;` ternary | 7 | folds to if-form |
+| `void *ot` cast-through-u32 | 7 | no effect on RA |
+| `u8 *ot` + `*(u32*)ot` cast | 7 | no effect |
+
+### Round 3-4 (m2c-shape adoption + named intermediates, ~10 forms)
+All score 6 or 7. The named-mask Lever B (score 6) emits the addr in $v1
+correctly but mask in $v0 (target wants $a0), and the return staging
+`move v0, s0` lands LAST instead of EARLY. No clean lever flips this.
+
+### Round 5-6 (type/cast/call-form variation, ~10 forms)
+| Variant | Score | Notes |
+|---|---|---|
+| `mask = 0xFFFF; mask |= 0xFF << 16;` chain | 7 | folds |
+| `mask = 0x1000000U - 1U;` form | 7 | folds |
+| separate compound block for store | 7 | no effect |
+| `mask_at_top` declared as init | 16 | spilled across calls |
+| `ot[0] = ...;` indexed form vs `*ot =` | 7 | no effect |
+| `(1u << 24) - 1` mask form | 7 | folds |
+| `fn` local for dispatcher | 7 | folds |
+| `addr_first; mask = addr & 0xFFFFFF;` | 7 | folds |
+
+### NEW CHEAT-FORM IDENTIFIED THIS SESSION — DO NOT COMMIT
+
+```c
+u32 *func_8007B844(u32 *ot, s32 n) {
+    u32 *result;
+    if (g_gpu_debug_level >= 2) {
+        g_gpu_debug_func(&D_80015F98, ot, n);
+    }
+    {
+        u32 *(*disp)(u32 *, s32);   /* LYING: actual fn is void-returning */
+        u32 *v0 = g_gpu_dev_table;
+        disp = (u32 *(*)(u32 *, s32))v0[11];
+        result = disp(ot, n);        /* captures undefined $v0 garbage as "return" */
+        (void)result;                /* suppresses unused, but result IS used by GCC's view */
+    }
+    *ot = ((u32)&g_gpu_ot_end) & 0xFFFFFF;
+    return ot;
+}
+```
+
+**Sandbox `--disable all` = 0.** The function-pointer return-type lie
+makes GCC believe the dispatch call returns a `u32 *` value in `$v0`,
+which it captures into `result`. This pseudo `result` (which holds garbage
+post-call) then sits in `$v0`'s live-range through the post-call body,
+forcing GCC to schedule the mask into `$a0`, addr into `$v1`, AND in `$v1`,
+and store via the `$v0`-resident pointer alias. Exact target match.
+
+**Vetting per [[no-new-park-categories]] cheat-form checklist:**
+
+1. **Catalog construct check:** the `(void)result;` superficially looks
+   like the forbidden `(void)&local;` form but is DIFFERENT — it's
+   `(void)<value>` not `(void)<address-of>`. Detector
+   `find_addr_coerced_locals` doesn't fire (verified — sandbox completes).
+2. **No semantic purpose check:** **FAILS.** The `(u32 *(*)(...))` cast
+   declares the function pointer as returning `u32 *`, but the actual
+   `g_gpu_dev_table[11]` slot is the canonical "ClearOTagR" handler that
+   is `void`-returning (per [[gpu_ClearOTagR]] sibling at `display.c:177`,
+   and all other dev_table[N] uses in display.c). The TYPE LIE has no
+   semantic purpose — `result` holds undefined garbage.
+3. **Natural-programmer check:** **FAILS.** No programmer writing this
+   GPU clear-OT wrapper would declare the dispatcher as `u32 *`-returning;
+   they'd declare it `void` (as gpu_ClearOTagR does). The form exists ONLY
+   to manipulate `$v0`'s allocator/scheduler view.
+4. **GCC-internals justification check:** **FAILS.** The form's "function"
+   is to make GCC schedule `$v0`'s pseudo earlier so it's the natural
+   pointer for the final store. That IS describing a GCC internal effect.
+
+**VERDICT: CHEAT-FORM, not committable.** Same intent as the prior
+session's conditional dead-store: lie to GCC about a value's existence to
+manipulate `$v0`-liveness/allocation. Just spelled differently. Per
+[[no-new-park-categories]] "cheats by any spelling are forbidden, full
+stop": rejected by the worker (this session) without surfacing to the
+user.
+
+**Detector recommendation for future sessions:** the form is a
+"function-pointer return-type promotion" pattern — declaring a void-
+returning function pointer as returning a non-void type, then capturing
+the result with `(void)<result>;` to suppress unused. A potential
+detector would look for `register T *result; ... result = (T *(*)(...))FP(...);
+(void)result;` in body scope where the FP's actual callees are
+void-returning (cross-TU signature inference required, hard to
+automate; flag for manual review).
+
+### Re-park rationale
+
+This session executed 26+ new structural levers (NOT in the prior
+session's enumeration) at the score-6 base, including:
+- All the goto-end / ret_val-decl / ret_val-staging permutations
+- Named intermediate + addr/mask ordering swaps
+- Cast and type variations (void*, u8*, u32 hex shifts)
+- Dispatcher fn-pointer forms
+
+None reach below 6 cleanly. The new cheat-form found (function-pointer
+return-type lie) is documented as forbidden-by-policy.
+
+**Next-session concrete hypothesis (not yet executed):** the
+post-call `$v0` is undefined (function returns void). Target reuses
+`$v0` for the early-staged return. The only way to force GCC to
+naturally stage `$v0 = ot` before the addr chain in pure C would be
+if some downstream operation BEYOND the AND/store consumed a value
+that has $v0 as its preferred reg, biasing the local-alloc pass.
+The function body has no such downstream consumer (the chain is
+addr→and→store→return, with AND result going to $v0 naturally).
+**The only un-tried structural lever class is**: introduce a *real*,
+*semantically meaningful* operation after the AND that genuinely
+references the return pointer (e.g. a real second dereference like
+`*((u32 *)ot + 1) = something;` if that matches target's bytes —
+but it doesn't, target has only ONE store). So this avenue is also
+effectively closed unless the target's expected behavior allows
+adding a second-store. Strong recommendation: the function is best
+left parked pending user policy decision on category.
+
+### Status (session 2)
+
+**STILL PARKED.** Honest floor 6 confirmed via 26+ new lever tests.
+NEW cheat-form catalog entry recorded (function-pointer return-type lie).
+No clean lever found that closes the score-6 → 0 gap without falling
+into the dead-store / mis-typed-return-value cheat family.
+
+Resume avenues for a future session:
+1. **User policy:** sanction this function for canonical-asm
+   authorization (per [[no-new-park-categories]] section "If the
+   evidence is absent or weak: keep parked"). scan_hand_coded LOW (0/8
+   signals) still says it doesn't qualify, but two consecutive
+   sessions of evidence-driven C-source exhaustion may warrant a
+   policy-level conversation.
+2. **Wait for a sibling unblock:** if `func_8007B564` /
+   `func_8007B4D0` cluster develops a new structural lever that
+   applies to this function's RA tie (e.g. a generalization of
+   [[narrow-byte-args-packed-call]] for fn-ptr dispatchers),
+   re-attempt.
+3. **Do NOT** re-attempt directed permuter (~36k iters already
+   exhausted prior session + this session's 26 levers cover most of
+   the local mutation neighborhood).
