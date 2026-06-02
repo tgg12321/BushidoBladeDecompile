@@ -4269,7 +4269,7 @@
       "rules": 21,
       "status": "parked",
       "scorable": false,
-      "park_reason": "Second 2026-06-01 session pushed honest floor 18 -> 16 via C97C-style named-intermediate r_e3 + drop new_var/new_var2 coercion vars (novel beyond prior session's v8 arg1-preload). See memory/project/func-8007c7a0-named-intermediate-lever.md. Structural ceiling: missing 'move a3,v0' park-merge insn (var_v0_2 in  vs target ) persists. Untried: ALLOCDBG-instrumented session, .greg dump for 16-score form, permuter from 16-score base, sibling func_8007C748 .greg comparison."
+      "park_reason": "Session D 2026-06-02: SOTN-allowed duplicate-read lever lowers honest floor 16 to 12; structural ceiling = -vs- X-preserve tiebreaker; raw_arg0 chain reaches 10 but forbidden as literal-rename cheat"
     },
     {
       "func": "func_8007C86C",
