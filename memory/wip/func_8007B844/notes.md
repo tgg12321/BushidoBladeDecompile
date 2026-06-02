@@ -3,8 +3,23 @@
 ## TL;DR
 
 - **Floor 6** (HEAD floor 7). Lever: named-intermediate `u32 mask;` (Lever B
-  from `register-alloc-pure-c.md`). Stable across 3 sessions, 50+ structural
-  variants, ~50k permuter iters.
+  from `register-alloc-pure-c.md`). Stable across 4 sessions, 55+ structural
+  variants, ~50k permuter iters. Workflow round 1 (2026-06-02) added a
+  decisive **sibling-evidence finding**: gpu_ClearOTag (matched, display.c:177)
+  has the IDENTICAL final-statement C tail and emits return-staging-AFTER-store,
+  which is exactly the score-6 shape — so the score-6 emission shape is a
+  legitimate matching output for THE SAME C tail in a sibling. Discriminator
+  is preceding-body shape, not the tail.
+
+## Session 2026-06-02 (workflow round 1)
+
+5-variant pure-C sweep at the score-6 candidate base + sibling cross-reference.
+All 5 confirmed the floor: single-stmt fuse 7, hoist-mask-init 19, ret-variable 6
+(copy-prop fold), comma-operator 6 (RTL-gen fold), val-split 7. The sibling
+gpu_ClearOTag finding is the new actionable lead — see new top-of-list
+next_hypothesis: sibling-mimicry (degenerate-loop wrapping) AND a target.s tail
+diff between B844 and gpu_ClearOTag to first confirm whether the masked-12
+hides a 0-distance match (run retire/verify-oracle to settle).
 - **Closing forms found are FORBIDDEN cheats** — preserved at `rejected/`:
   - `rejected/conditional_dead_store.c` — score 0 + SHA1 == oracle, but
     Lever D family (find_dead_conditional_stores detector catches it).

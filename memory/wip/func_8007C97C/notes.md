@@ -76,3 +76,14 @@
   caught the cheat (independent reviewer invocation, post-fact)
 - Revert commit `45a7bb0` — the full reviewer evidence + the
   next-detector-gap filing
+
+## Session 2026-06-02 (workflow round 1)
+
+Structural re-analysis of target asm confirmed the 4 dead `sw` stores + 0x10
+frame allocation. Considered two alternative coercion shapes (read+write array,
+struct-member variant) — both fail human-programmer test and naming-intent test
+and were rejected without measurement per default-to-NO_PROGRESS. Worker could
+not measure the existing candidate in the isolated worktree. Suggested next
+step: escalate for canonical-asm authorization. CAUTION: same caveat applies
+as B844's user_policy_note — canonical-asm needs explicit S1/S2/S6/S8 signals,
+not evidence-by-absence-of-pure-C-path; user adjudication required.

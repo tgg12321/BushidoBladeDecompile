@@ -44,3 +44,15 @@ mechanism explanation) is at:
 3. `& tools/eng.ps1 sandbox func_8007C86C --disable all` → confirm score 12.
 4. Pick a next_hypothesis. Consider iterating with C7A0 together since they
    share the structural ceiling.
+
+## Session 2026-06-02 (workflow round 1)
+
+7 fresh structural variants from the score-12 base + var_a1=arg1 preload
+position-shift + OR-chain associativity reorderings. All confirm the score-12
+floor (perturbations either match or regress). Direct disassembly diff vs
+target re-confirms the structural-ceiling claim: idx 0 `move a2,a0` (mine) vs
+`move a3,a0` (target), cascading through ~12 register-rotation diffs including
+the missing idx-16 park-merge. cc1 ascending-allocator picks $a2; only UB or
+literal-rename forms flip to $a3 in the explored space. New top next_hypothesis:
+joint BB2_ALLOC_DEBUG dump on C86C + sibling C748 (3-arg matched) to compare
+the pseudo's livelen/refs profile.

@@ -15,6 +15,13 @@
       "floor_was": 24,
       "floor_now": null,
       "note": "Score-0 measurement on 2026-06-01 was on the FAIL form (with sp[4] coercion). The legitimate base — same form WITHOUT sp[4] — was not measured before the revert. Next session: apply candidate.c, measure, record."
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "workflow round 1: structural re-analysis of target asm; considered and rejected read+write array and struct-member variants",
+      "floor_was": 24,
+      "floor_now": 24,
+      "note": "Target genuinely emits 4 sw stores plus a 0x10 frame allocation; stores are dead. Considered an array variant referenced via reads in return and struct-member variant. Both fail human-programmer test and naming-intent test. Per default-to-NO_PROGRESS rule, rejected. Could not measure candidate in isolated worktree. Worker suggested escalating for canonical-asm authorization analogous to gte-wrapper-misroute-park (the 4 dead frame writes are not pure-C-reproducible without a coercion construct)."
     }
   ],
   "reviewer": {
@@ -28,6 +35,7 @@
     "rules_required_for_full_match": "Same 9 regfix substs as HEAD (regfix.txt — they were dropped by retire in 0e845d2, but restored by the revert). New shape may need different rules; un-knowable without measurement."
   },
   "next_hypotheses": [
+    "Escalate for canonical-asm authorization analogous to gte-wrapper-misroute-park. The 4 dead frame writes are not pure-C-reproducible without a coercion construct. NOTE: per .claude/rules/hand-coded-asm-recognition.md strict gate, the canonical-asm option needs explicit signal-evidence (S1/S2/S6/S8) — the worker did NOT confirm hand-coded signals; this is a request for user adjudication, not an auto-authorize category. Compare against the B844 standard (B844's worker raised the same canonical-asm option in session 3 and the WIP user_policy_note documented why it failed the evidence threshold).",
     "Apply candidate.c to src/display.c, measure sandbox --disable all, record candidate_floor in meta.json.",
     "If candidate_floor is below HEAD's 24, identify what's still gapping. Common levers: frame-layout-natural (without coercion), narrow integer types (s16/u16/u8 typing of temp_v* might shift codegen), declaration-order reshuffling, m2c-style sub-expressions extracted into named intermediates.",
     "ALLOCDBG-instrumented dump on the candidate to identify if a register-allocation tiebreaker is what's blocking.",
@@ -41,6 +49,16 @@
       "build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
       "reviewer_verdict": "FAIL",
       "reason": "FORBIDDEN: write-only-array variant of the dead-vars-local-array family. Detected by independent cheat-reviewer on Tests 1, 2, 6 — zero semantic purpose, no human programmer would write this, 'sp' announces coercion intent. Same family as `s32 buf[N];` (caught by find_unused_local_arrays) but with stores to suppress 'unused-variable' diagnostics. The mechanical detector missed it because 'sp' IS referenced (just being written). Form preserved at rejected/sp4_frame_coercion.c with the reviewer's evidence inline."
+    },
+    {
+      "form": "Array variant referenced via reads in return (read+write array — alternative shape to the rejected sp[4] write-only)",
+      "score": null,
+      "reason": "Considered as a structural alternative to the previously-rejected sp[4] write-only coercion. Fails human-programmer test and naming-intent test — no pure-C author would emit 4 dead frame stores through an array that's read-once for return value just to bend the prologue. Same family as dead-vars-local-array, just spelled with a read-tap. NOT MEASURED — rejected on review-discipline-before-commit / default-to-NO_PROGRESS grounds. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "Struct-member variant (4 dead stores via local struct members)",
+      "score": null,
+      "reason": "Considered as an alternative shape. Same default-to-NO_PROGRESS rejection: fails human-programmer test and naming-intent test. Local struct declared, members written, read once for return — same coercion-spelled-differently family as the rejected sp[4]. NOT MEASURED. (Workflow round 1, 2026-06-02.)"
     }
   ],
   "memory_notes": [

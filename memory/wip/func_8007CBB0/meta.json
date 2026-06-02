@@ -22,6 +22,13 @@
       "floor_was": 52,
       "floor_now": 52,
       "note": "No further floor reduction; the residual 52 is list-scheduler INSN_PRIORITY decisions in the GPU packet store sequence."
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "workflow round 1 (session 4): confirmed sandbox-52 baseline via direct disable=all build and tested 6 additional structural variants from the score-52 base. All confirm the 52 floor.",
+      "floor_was": 52,
+      "floor_now": 52,
+      "note": "Candidate.c body is structurally end-to-end correct (151/151 insns, $t0/$t1/$s0/$s1 register match, frame 0x40 match, packet-path store address sequences match target). Residual 52 is pure list-scheduler INSN_PRIORITY in the GPU packet store sequence: target splits 0x03FFFFFF constant materialization across ~36 instructions (lui $a3 at idx 49, ori $a3 at idx 85) and interleaves BF48 OT-link load chain with mode-constant stores; my build emits them adjacent. Six new SOTN-allowed C-source restructures (store-order swap, byte-pointer flag check, typed constant, struct field signedness, parenthesization, cast variants) all confirmed the 52 floor. Cumulative ~30 negative levers across 4 sessions. Lever class matches cpu_side_move_dir_4 sched.c walls."
     }
   ],
   "reviewer": {
@@ -35,6 +42,7 @@
     "rules_required_for_full_match": "HEAD's single rule is `func_8007CBB0: replace_with_asmfile \"asm/funcs/func_8007CBB0.s\"` — an asmfile bridge over a stub body. The candidate's score-52 form is structurally and semantically correct; to commit, the bridge rule would be retired (drop the bridge → replace stub with candidate body) only if score reaches 0. The structural shape is the right base for the close; the residual is scheduling-only."
   },
   "next_hypotheses": [
+    "Set up permuter/cbb0/ with a CLEAN single-function offset-0 target and base.c = preprocessed display.c with candidate body stripped to single-function. Run with --stop-on-zero and PERM_GENERAL directed macros targeting scheduling permutations. Vet any saved candidate below 52 via the cheat-reviewer agent against cheats-by-any-spelling policy.",
     "Directed permuter from a CLEAN single-function target with the candidate as base. Per [[difficult-is-not-impossible]] section on clean targets — a whole-file target.o makes the function sit at non-zero offset, drowning the real signal. Build `asm/funcs/func_8007CBB0.s` standalone + the candidate as base.c, run with --stop-on-zero. CRITICAL: invoke cheat-reviewer on any closing form found.",
     "BB2_SCHED_DEBUG / BB2_PRIO_DEBUG instrumented cc1 dump on the candidate. Identify which pseudo's INSN_PRIORITY needs nudging for the 0x03FFFFFF materialization to defer like target's. Same instrumented cc1 from cpu_side_move_dir_4 sessions (tmp/gccdbg/cc1) applies.",
     "C-source restructure that changes INSN_PRIORITY of the BF48 load OR the 0x03FFFFFF materialization without adding emitted bytes. Combine-foldable chain extender style (see register-alloc-pure-c session 8 — but that exact technique was forbidden 2026-06-02 for cheat-by-spelling; a different non-cheat restructure is needed)."
@@ -54,6 +62,36 @@
       "form": "Marking GPU buffer globals (D_800F1858 etc.) `volatile`",
       "score": null,
       "reason": "Forbidden per .claude/rules/split-read-defeats-hoist.md (2026-05-31 update). Game-state globals were not volatile in the original source; coercion to break list-scheduler order is cheat-by-spelling."
+    },
+    {
+      "form": "Swap source order of D_800F1870 and D_800F186C stores",
+      "score": 63,
+      "reason": "Regressed 52 -> 63. Store source order must follow target's address order. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "`*((u16*)arg0 + 2) & 0x3F` instead of `(u16)arg0->w & 0x3F`",
+      "score": 52,
+      "reason": "No floor reduction (still 52). Same combine RTL output. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "`(u32)0x03FFFFFFu` typed constant on `*p187C` store",
+      "score": 52,
+      "reason": "No floor reduction (still 52). GCC normalizes integer literal types before scheduling. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "`s32 word0` in struct instead of `u32`",
+      "score": 52,
+      "reason": "No floor reduction (still 52). Signedness doesn't affect codegen for this load. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "`arg0->word0` without explicit `(s32)` cast",
+      "score": 52,
+      "reason": "No floor reduction (still 52). The cast is a no-op at the lw level. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "Left-associative OR without inner parens for D_800F186C expression",
+      "score": 52,
+      "reason": "No floor reduction (still 52). Combine treats both parenthesization forms as identical RTL. (Workflow round 1, 2026-06-02.)"
     }
   ],
   "memory_notes": [

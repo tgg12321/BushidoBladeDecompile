@@ -33,6 +33,13 @@
       "lever_rule": "split-read-defeats-hoist",
       "floor_was": 17,
       "floor_now": 12
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "workflow round 1: 7 fresh structural variants on top of the score-12 candidate baseline (inverted-goto-merge X-clamp, X mask precompute mirror of Y SOTN duplicate-read, s16 xlim explicit block-local, var_v0_2 = arg0 initial-then-overwrite, s16 ylim block-local, u16 var_v0_2 narrowing, OR-chain associativity reorderings) + move of var_a1=arg1 preload to after the X clamp",
+      "floor_was": 12,
+      "floor_now": 12,
+      "note": "Confirmed documented score-12 baseline reproduces. Disassembly diff vs target confirms WIP's structural-ceiling claim exactly: idx 0 `move a2,a0` (mine) vs `move a3,a0` (target) — X-preserve register, cc1 ascending-allocator picks the lower-numbered $a2 — then cascades through ~12 register-rotation diffs including the missing target idx 16 `move a3,v0` park-merge. No tested structural perturbation flips this without invoking forbidden constructs (literal renames, UB-conditional-init, dead-conditional store). Corroborates session 3's ~5400-iter permuter finding that only UB-conditional-init forms close further. Honest pure-C floor = 12."
     }
   ],
   "reviewer": {
@@ -46,6 +53,7 @@
     "rules_required_for_full_match": "21 substs in regfix.txt:3073-3094 calibrated for HEAD form. Candidate's score-12 shape produces SHA1 947ff79e... (mismatch). Same lateral-movement reason as C7A0 — rules would need re-writing for the new shape with no net rule reduction; commit gated on lowering the score further (toward 0)."
   },
   "next_hypotheses": [
+    "Joint instrumented `BB2_ALLOC_DEBUG` cc1 dump of func_8007C86C at the score-12 form + sibling func_8007C748 (3-arg, matched pure-C) — same as the cpu_side_move_dir_4 session 5 lever discovery method. The dump exposes the priority gap between the pseudo getting $a2 (mine) vs the equivalent in C748 that achieves a natural higher-callee-save landing. If C748's allocation table shows a specific livelen/refs profile that flips the tiebreaker, search for a combine-foldable pure-C lever that mimics it in C86C without emitting bytes (analogous to C5MD4's tbl_125c+delta chain). Also worth checking: ALLOCDBG with the Y wide-mask precompute already applied (i.e. the score-12 form), since prior sessions only ran it on the score-17 clean v8 base.",
     "tools/decomp-permuter from the score-12 base (NOT the score-17 base session 3 used). Directed at the X-preserve register slot. CRITICAL: invoke cheat-reviewer on output.",
     "ALLOCDBG-instrumented dump on the score-12 form to identify cc1's $a2-vs-$a3 tiebreaker mechanism.",
     "Sibling func_8007C748 (3-arg variant, matched pure-C) .greg cross-reference.",
@@ -61,6 +69,36 @@
       "form": "UB conditional-init patterns from session 3's permuter (~5400 iters)",
       "score": null,
       "reason": "Every closing form the directed permuter found used UB-conditional-init (a local read before any path writes it). Forbidden cheat-by-spelling per .claude/rules/no-new-park-categories.md. See memory/project/func-8007c86c-permuter-ub-cheat-findings.md."
+    },
+    {
+      "form": "Initial var_v0_2 = arg0 before the if/else clamp (early-init + conditional overwrite)",
+      "score": 20,
+      "reason": "Regression AND is borderline cheat-by-spelling — the initial store is dead on two of three paths (arg0<0 overwrites with 0, arg0>limit-1 overwrites with limit-1) and only used on the fall-through path. Same shape family as the UB-conditional-init permuter rejected in session 3. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "Inverted goto-merge for X clamp (`if arg0<0 {v=0; goto post_x;} if limit<arg0 {v=limit; goto post_x;} v=arg0; post_x:`)",
+      "score": 16,
+      "reason": "Regression. Explicit goto-merge doesn't induce cc1 to emit a real park-merge insn; the merge label gets coalesced by jump-thread/CSE and the cascade gets WORSE (16 vs 12). (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "X-mask precompute (`var_v0 = var_v0_2 & 0xFFF;` before dispatch, narrow-mode overwrites)",
+      "score": 14,
+      "reason": "Mirror of the Y wide-mask SOTN duplicate-read lever doesn't translate to X. The X-precompute happens between Y-precompute and the mode-dispatch and disturbs the bnez delay slot scheduling — narrow-arm needs the overwrite, wide-arm uses the precompute, but the combined emission is 2 insns worse than the bare candidate. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "s16 xlim block-local in arg0 clamp (`s16 xlim = D_8009BE78 - 1; if (xlim < arg0) ...`)",
+      "score": 20,
+      "reason": "Same regression family as session 2's documented xlim test (which scored 25 from clean v8 base). Block-local adds an extra sign-extension insn for xlim that target doesn't have. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "s16 ylim block-local in arg1 clamp",
+      "score": 21,
+      "reason": "Same regression family — extra sign-extension insn. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "OR-chain reordering `return var_v0 | 0xE4000000 | var_v1`",
+      "score": 13,
+      "reason": "Slight regression (12 -> 13). cc1's combine canonicalises associativity differently from this source layout; the `(var_v1 | (var_v0 | 0xE4000000))` form (= r_e4 named-intermediate form) is the minimum. (Workflow round 1, 2026-06-02.)"
     }
   ],
   "memory_notes": [

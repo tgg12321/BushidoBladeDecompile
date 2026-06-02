@@ -33,6 +33,13 @@
       "lever_rule": "split-read-defeats-hoist",
       "floor_was": 16,
       "floor_now": 12
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "workflow round 1: 9-variant exploration of non-cheat structural levers from score-12 base; UB-form proof that target's $a3 allocation IS C-reachable via a forbidden pattern",
+      "floor_was": 12,
+      "floor_now": 12,
+      "note": "Baseline confirmed: score=12, build_insns=50, target_insns=51. Explored 9 distinct legitimate levers — all measured negative. Notable new evidence: the C86C-sibling UB-form pattern (`var_a1 = arg1` ONLY in the negative-arg0 else branch, leaving var_a1 read uninitialized on positive arg0 path) DOES emit target's `move a3, a0` X-preserve allocation in the assembly — proving the $a3 allocation IS structurally reachable. However, that form scores 18 (worse than 12 on masked Levenshtein, even with build_insns matching target's 51) AND is a literal-rename-style coercion per [[param-local-alias-prologue-pair-flip]] — forbidden as cheat-by-spelling, same category as the previously-rejected raw_arg0 chain. So even though the $a3 register match exists in the explored search space, every path to it requires a UB or coercion pattern excluded by the completion standard."
     }
   ],
   "reviewer": {
@@ -46,6 +53,7 @@
     "rules_required_for_full_match": "The 21 regfix substs in regfix.txt:3050-3071 are calibrated for HEAD's emission shape. The candidate's score-12 shape produces SHA1 838d440d... (mismatch). To commit the candidate as a Match the rules would need to be re-written for the new shape — net lateral movement, no rule reduction. So commit is gated on lowering the score further (toward 0)."
   },
   "next_hypotheses": [
+    "Run tools/decomp-permuter from the score-12 base with PERM_GENERAL directed mutation targeting the X-preserve register slot specifically (`output-N-best` candidates should be vetted against the cheat catalog before acceptance). Permuter's randomization may find a structural variant the manual 9-lever sweep missed (e.g. a control-flow split that extends raw-arg0's live range without being a literal rename). CRITICAL: any closing form must be re-reviewed against [[param-local-alias-prologue-pair-flip]] and [[inline-asm-policy]] expanded catalog — reject forms with UB on var_a1, dead conditional stores, or unused-but-assigned locals.",
     "tools/decomp-permuter from the score-12 base — directed at the X-preserve register slot. CRITICAL: invoke cheat-reviewer on output per review-discipline-before-commit; reject literal renames, dead conditional stores, etc.",
     "ALLOCDBG-instrumented dump on the score-12 form (tmp/gccdbg/cc1) to identify why cc1 picks $a2 over $a3 — a livelen/refs imbalance may point at a legitimate structural change.",
     "Sibling func_8007C748 (3-arg variant, matched pure-C) .greg cross-reference — find the natural C structure that placed its var_v0_2-analog in the target reg.",
@@ -57,6 +65,56 @@
       "score": 10,
       "build_insns": 51,
       "reason": "FORBIDDEN per .claude/rules/param-local-alias-prologue-pair-flip.md + .claude/rules/no-new-park-categories.md. raw_arg0 is a literal rename of arg0 (identical type, identical lvalue, zero semantic information added). The mid-function reassignment raw_arg0 = var_v0_2 is a literal-rename-followed-by-reuse chain solely to coerce GCC's allocator into picking $a3. The justification references GCC internals (allocno priority biasing $a3 vs $a2 tiebreaker) — the canonical cheat-by-spelling signal. Cheat-reviewer would FAIL."
+    },
+    {
+      "form": "s16 var_v0_2; s16 var_a1; ... if (arg0 >= 0) { ... } else { var_v0_2 = 0; var_a1 = arg1; } if (var_a1 >= 0) ... [C86C/HEAD-style UB: var_a1 read uninitialized on positive-arg0 path]",
+      "score": 18,
+      "reason": "Score WORSE than candidate's 12 despite build_insns=51 (matches target). DOES produce target's `move a3, a0` X-preserve allocation (proves $a3 is C-reachable) but the masked-diff cascade is larger. Additionally FORBIDDEN per [[param-local-alias-prologue-pair-flip]]: var_a1 = arg1 placed ONLY in the negative-arg0 else branch is a coercion to delay arg1's pseudo creation specifically to bend cc1's allocation tiebreaker (same intent as the rejected raw_arg0 chain). Reading var_a1 uninitialized on the positive path is UB the original C author would not have written; it's an m2c artifact pattern. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "var_v0_2 = arg0; if (arg0 < 0) var_v0_2 = 0; else if ((D_8009BE78-1) < arg0) var_v0_2 = D_8009BE78-1; [early var_v0_2=arg0 preload]",
+      "score": 20,
+      "reason": "Regression. The initial unconditional var_v0_2 = arg0 + chained conditional adjustments breaks the bltz-then-merge shape; cc1 collapses the logic differently. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "Y-clamp first (swap clamp order)",
+      "score": 24,
+      "reason": "Severe regression. Target unambiguously processes X first; reordering changes the entire codegen shape. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "s32 var_v0_2 (widen type from s16 to s32)",
+      "score": 17,
+      "reason": "Regression. build_insns drops to 48 (3 short) — the sign-promotion sll/sra is elided, breaking insn alignment with target. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "var_v0_2 = ((D_8009BE78 - 1) < arg0) ? (D_8009BE78 - 1) : arg0; [ternary X clamp]",
+      "score": 20,
+      "reason": "Regression. cc1 lowers ternary to different control flow. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "s16 xlim = D_8009BE78 - 1; if (xlim < arg0) var_v0_2 = xlim; else var_v0_2 = arg0; [named-intermediate]",
+      "score": 20,
+      "reason": "Regression. build_insns 52 (extra insn). Named local for limit adds materialization. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "if (arg0 < 0) { var_v0_2 = 0; goto y_clamp; } if ((D_8009BE78-1) < arg0) ... y_clamp: ... [goto-style X clamp]",
+      "score": 16,
+      "reason": "Regression. cc1 doesn't emit target's nested-if-with-fall-through shape via goto. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "var_v1 = var_a1 & 0xFFF; var_v0 = var_v0_2 & 0xFFF; [also precompute X wide-mask alongside Y]",
+      "score": 14,
+      "reason": "Regression. The X precompute interferes with the dispatch's natural emission; the Y precompute alone (session D lever) is the local optimum. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "if ((u32)(D_8009BE74 - 1) < 2U) { wide-mode } else { narrow-mode } [dispatch branch sense inverted]",
+      "score": 17,
+      "reason": "Regression. Branch sense matters for delay-slot fill; target's `bnez` polarity dictates the specific dispatch shape. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "if (arg0 >= D_8009BE78) var_v0_2 = D_8009BE78 - 1; else var_v0_2 = arg0; [flipped compare avoids limit-1 subtraction in compare]",
+      "score": 14,
+      "reason": "Regression. build_insns 49 (1 short). The limit-1 elision changes the slt operand pairing, breaking the target's specific compare emission. (Workflow round 1, 2026-06-02.)"
     }
   ],
   "memory_notes": [

@@ -91,3 +91,14 @@ agent must invoke cheat-reviewer on any closing form found.
   catalog applies here)
 - `.claude/rules/no-new-park-categories.md` — the standing policy
   governing what permuter output is acceptable
+
+## Session 2026-06-02 (workflow round 1, session 4)
+
+Confirmed sandbox-52 baseline via direct disable=all build; tested 6 additional
+SOTN-allowed structural variants — all confirm the 52 floor. Cumulative ~30
+negative levers across 4 sessions now. The residual 52 remains pure
+list-scheduler INSN_PRIORITY in the GPU packet store sequence — target splits
+the 0x03FFFFFF lui/ori materialization across ~36 instructions; mine emits them
+adjacent. Same class as cpu_side_move_dir_4 sched.c walls. Top next_hypothesis:
+directed permuter from a CLEAN single-function offset-0 target with cheat-reviewer
+gating on saved candidates.

@@ -27,6 +27,14 @@
       "floor_was": 6,
       "floor_now": 6,
       "note": "Mechanism instrumented (BB2_SCHED_DEBUG): target requires return-staging at idx 23 BEFORE mask/addr chain (idx 24-26). cc1 sched.c assigns return-staging priority 1; mask/addr chain priority 4. Target requires return-staging priority >=4. No pure-C SOTN-allowed construct extends the return-staging pseudo's chain depth without emitting bytes."
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "workflow round 1: 5-variant pure-C sweep at the score-6 candidate base + sibling-asm cross-reference (gpu_ClearOTag, display.c:177)",
+      "floor_was": 6,
+      "floor_now": 6,
+      "note": "All 5 fresh structural variants confirmed the score-6 floor: single-stmt mask fuse regresses 6->7, hoist-mask-init-before-call regresses 6->19, explicit ret-variable + comma-operator return are copy-prop-folded to identical RTL (still 6), val-split renames regresses 6->7. NEW EVIDENCE: sibling gpu_ClearOTag (display.c:177, byte-matched, not on queue) has the IDENTICAL final-statement C tail and emits return-staging AFTER the store — exactly our score-6 emission order. Proves score-6 IS a legitimate matching emission shape for THE SAME C tail in a sibling; the discriminating factor is the function's preceding-body shape (single vtable call here vs gpu_ClearOTag's loop), not the tail's C structure."
+    }
   ],
   "reviewer": {
     "verdict": null,
@@ -39,12 +47,43 @@
     "rules_required_for_full_match": "6 regfix rules calibrated for HEAD's emission. The candidate's score-6 shape produces a different emission that doesn't byte-match; the rules would need rewriting for the new shape with no net rule reduction. Same lateral-movement reason as C7A0 / C86C."
   },
   "next_hypotheses": [
+    "Sibling-mimicry hypothesis (unexplored in prior 3 sessions): rewrite the vtable-call block as a degenerate loop mirroring gpu_ClearOTag's preceding-body structure (e.g., `do { ((void(*)(u32*,s32))v0[11])(ot, n); break; } while (1);`) to see if loop.c's NOTE_INSN_LOOP_BEG/_END changes sched.c's INSN_PRIORITY for the tail return-staging pseudo. Before testing, FIRST diff gpu_ClearOTag's and 8007B844's target.s tail bytes to confirm gpu_ClearOTag's target really emits the same order we produce (if both targets agree on order, then 8007B844's target may actually match our score-6 emission and the masked-Levenshtein 6 hides a 0-distance match — run retire/verify-oracle to settle). If targets disagree, the loop-form sibling-mimicry test is the actionable next step.",
     "Fresh SOTN borderline-research pass — direct master-branch evidence search for patterns that affect sched.c return-staging priority. Categories: thin vtable-dispatch wrappers, OT-link builders, debug-conditional-call patterns. The 2026-06-02 borderline research found 6 NEW SOTN-allowed techniques; another pass may surface more.",
     "BB2_SCHED_DEBUG instrumented cc1 dump on the candidate's RTL — identify the return-staging pseudo's REG_DEP_TRUE predecessors. The closing lever must extend that chain WITHOUT emitting bytes (combine-foldable) AND without falling into the no-new-park-categories family.",
     "Sibling cross-reference — find another thin GPU vtable-dispatch wrapper (gpu_LinkList-style) that matches pure-C, diff its .greg dump against this one's. The natural C structure that makes return-staging high enough may already exist in a sibling.",
     "Combined m2c re-read of target — m2c's faithful reconstruction may suggest a control-flow shape (e.g. early-return path that the worker hasn't tested) that affects scheduling at the RTL level."
   ],
   "rejected_forms": [
+    {
+      "form": "Single-statement mask: mask = ((u32)&g_gpu_ot_end) & 0xFFFFFF; *ot = mask;",
+      "score": 7,
+      "reason": "Merging the two `mask =` statements regresses sandbox 6 -> 7. The named-intermediate split (Lever B) is load-bearing; fusion loses the addr-register $v1 alignment that closes the addr-register diff. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "Hoist mask init before call: `u32 mask = 0xFFFFFF;` at function entry, live across the vtable call.",
+      "score": 19,
+      "reason": "Massive regression sandbox 6 -> 19. cc1 keeps mask in a callee-save reg across the call, inflating prologue/epilogue cost. The 0xFFFFFF materialization must happen AFTER the call. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "Explicit return-value variable: `u32 *ret = ot; ...; *ret = mask; return ret;`",
+      "score": 6,
+      "reason": "Copy-prop folds ret back to ot; RTL is identical to the baseline. Sandbox 6, no progress and no detectable codegen change. Same outcome as documented in candidate.c's commentary. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "Comma-operator return: `return *ot = mask, ot;` (collapse store + return into one expression)",
+      "score": 6,
+      "reason": "Comma operator gets flattened during RTL-gen; produces identical RTL to the baseline statement form. Sandbox 6, no semantic difference for cc1's optimizer. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "Split mask and stored value: `u32 mask, val; mask = 0xFFFFFF; val = ((u32)&g_gpu_ot_end) & mask; *ot = val;`",
+      "score": 7,
+      "reason": "Introducing a second-name val regresses 6 -> 7. The single-name mask reuse across the AND and the store is what holds the addr-register in $v1 matching target; renaming the stored value breaks that. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "Sibling-asm cross-reference: gpu_ClearOTag (display.c:177, ALREADY matched) has the SAME tail C and emits return-staging-AFTER-store, mirroring our score-6 form.",
+      "score": null,
+      "reason": "Decisive sibling EVIDENCE (not a rejected form per se, recorded here for the next session): gpu_ClearOTag emits `lui/addiu D_8009BF30; and; sw $v0,0($s0); addu $v0,$s0,$zero` — exactly the score-6 shape we produce for B844, and gpu_ClearOTag is byte-matched. The same C tail compiles to a matching shape there. The discriminating factor is the function's preceding-body shape (single vtable call vs gpu_ClearOTag's loop), not the tail's C structure. Drives the new sibling-mimicry next_hypothesis. (Workflow round 1, 2026-06-02.)"
+    },
     {
       "form": "conditional dead-store: `if (debug >= 2) { ...; new_var = ot; } ...; new_var = ot; *new_var = mask; return new_var;`",
       "score": 0,
