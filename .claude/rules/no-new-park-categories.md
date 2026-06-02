@@ -161,6 +161,45 @@ catch the variant; the agent's correct move was to RECOGNIZE the find
 as a cheat AND NOT surface it. (The agent did surface it; this entry
 exists so future agents see the correct posture.)
 
+## SOTN-accepted techniques (resolved 2026-06-02 borderline-rule research)
+
+The following techniques were classified BORDERLINE by the 2026-06-02
+techniques audit and subsequently resolved as **ALLOWED** based on direct
+SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
+
+- **Variable reuse for codegen control** ([[defeat-licm-hoist-var-reuse]]):
+  reusing one C variable for two unrelated values to influence
+  loop-invariant detection or RA. SOTN ships `idxSub = idxSub;` and
+  `randy = basePoint.x; baseX = randy;` with "FAKE but makes register
+  allocation work" comments.
+- **Opaque arithmetic variables** ([[loop-rotation-two-shift]]):
+  `s32 one = 1;` to prevent compiler bit-test transforms. SOTN's
+  official wiki endorses `(Random() & 3) + 1 - 1;` as the canonical
+  shape.
+- **Sub-word param reads** ([[narrow-stack-param-subword-offset]]):
+  `*(u16 *)&local` cast to read a specific half-word. Standard C usage
+  in SOTN.
+- **Mixed exit forms** ([[cross-jump-store-tail-merge]]): deliberately
+  mix `goto endK` with inline `return` to defeat `find_cross_jump`. SOTN
+  ships this verbatim in `SsVabOpenHeadWithMode`
+  (`src/main/psxsdk/libsnd/vs_vh.c`).
+- **Duplicate-read into branch arms** ([[split-read-defeats-hoist]] #1+#2):
+  pin offset computations inside their branch via duplication. SOTN
+  ships `color_fake = *palette;` repeated rebinds (`src/dra/42398.c`).
+- **Named-intermediate declaration order** ([[narrow-byte-args-packed-call]]
+  hi/lo sub-trick): declare a sub-expression as a separately-named
+  local to bias LUID. SOTN's `randy` chain in `src/weapon/w_037.c` is
+  the same mechanism.
+
+The `cheat-reviewer` agent treats these patterns as ALLOWED — the
+"family check" (test #5 of its 6-test checklist) no longer flags them.
+
+This resolution affects only these six specific techniques. Other
+forbidden families ([[dead-vars-local-array]], dead-conditional-store,
+dead-param-assign, lost-codegen-insert, register-asm pins, etc.)
+remain forbidden. The "cheats by any spelling" operating principle
+continues for those.
+
 ## What the SOTN standard accepts
 
 [[community-standard]] is the bar: pure C, or canonical-body asm for code

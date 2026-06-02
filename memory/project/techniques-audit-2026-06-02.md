@@ -440,3 +440,59 @@ end;` shape that happens to fall out of natural C without the explicit
 - [[difficult-is-not-impossible]] — the anti-quit policy that the
   forbidden levers were originally introduced to satisfy; removing them
   pushes more functions back to "unfinished work," NOT "impossible"
+
+---
+
+## RESOLUTION (2026-06-02, post-SOTN research)
+
+User directive 2026-06-02 in response to [[sotn-borderline-research-2026-06-02]]:
+
+> "Allow or forbid these based on SOTN's standards."
+
+Research found ALL 6 borderline techniques are ACCEPTED in SOTN with direct
+master-branch evidence + an official wiki page endorsing the mechanism class.
+Per the user's directive, all 6 are **ALLOWED**.
+
+### Reclassification
+
+| # | Rule | Old | NEW |
+|---|---|---|---|
+| 4 | `defeat-licm-hoist-var-reuse.md` | BORDERLINE | **LEGITIMATE** (SOTN E2, E4) |
+| 5 | `loop-rotation-two-shift.md` | BORDERLINE | **LEGITIMATE** (SOTN E1 + wiki) |
+| 6 | `narrow-stack-param-subword-offset.md` | BORDERLINE | **LEGITIMATE** (cast mechanism is normal C) |
+| 7 | `cross-jump-store-tail-merge.md` | BORDERLINE | **LEGITIMATE** (SOTN E9 ships the lever shape) |
+| 8 | `split-read-defeats-hoist.md` items #1+#2 | BORDERLINE | **LEGITIMATE** (SOTN E3, E4) |
+| 9 | `narrow-byte-args-packed-call.md` hi/lo sub-trick | BORDERLINE | **LEGITIMATE** (same class as SOTN E4) |
+
+### What this means
+
+- The rule files themselves remain unchanged (they document the techniques
+  as available levers).
+- The COMPLETED-C functions that used these techniques (`func_8007B564`,
+  `func_8008ACD0` + 5 siblings, `efc_buki_draw_zanzou`, `saEft00Add` if
+  it were unparked) do NOT need re-derivation.
+- The `cheat-reviewer` agent's checklist treats these patterns as
+  ALLOWED — the "family check" no longer flags them.
+- BB2's policy floor for these 6 specific patterns is now SOTN-equal.
+
+### What this does NOT change
+
+The FORBIDDEN classifications stand. The 4 reverted Match commits
+(C2A0+C4B8 via param-local-alias, C97C via goto-end, B3A8 + tslPolyF4Init
+via dead-goto label-pad) used techniques the user explicitly forbade —
+the reverts are not reopened by this resolution. The "cheats by any
+spelling" operating principle continues for the FORBIDDEN families.
+
+### Note on broader SOTN alignment
+
+The research also surfaced that SOTN accepts patterns BB2 currently
+forbids in the expanded catalog (`volatile T pad;`, `x = x;`,
+empty-if dead-reads, `// FAKE`-tagged permuter shipments). This
+resolution addresses ONLY the 6 explicitly-borderline rules. The
+broader question of "should BB2 fully align with SOTN" is separate
+and the user has not directed me to act on it. The current detectors
+(empty-if, void-discard, dead-conditional-store) remain ACTIVE; the
+remaining detector gaps from the thorough cheat audit (lowercase-asm,
+volatile-typed unused, if(1), empty do-while(0)) will still be closed
+per the user's "close the remaining detector gaps" directive.
+
