@@ -92,11 +92,35 @@ def load_signatures(path: Path = SIGNATURES_PATH) -> dict:
         return {}
 
 
-def classify_text(tool_name: str, text: str, signatures: dict) -> dict | None:
+def _all_paths_exist(paths: list, repo_root: Path | None = None) -> bool:
+    """True iff every path in ``paths`` exists on disk (resolved relative to
+    ``repo_root`` if given, else cwd). Empty list -> True. Any error -> False
+    (fail closed: when in doubt, don't suppress the signature)."""
+    if not paths:
+        return True
+    base = repo_root if repo_root is not None else Path.cwd()
+    try:
+        for p in paths:
+            target = (base / p) if not Path(p).is_absolute() else Path(p)
+            if not target.exists():
+                return False
+        return True
+    except Exception:
+        return False
+
+
+def classify_text(tool_name: str, text: str, signatures: dict,
+                  repo_root: Path | None = None) -> dict | None:
     """Return the matching signature dict for command OUTPUT, or None.
 
-    Block-tier matches take priority over warn-tier. Pure function: no I/O,
-    no side effects -- safe to call from tests.
+    Block-tier matches take priority over warn-tier. Pure function (modulo an
+    optional disk existence check via ``suppress_if_paths_exist``).
+
+    A signature can carry ``"suppress_if_paths_exist": [<path>, ...]`` to
+    suppress itself when every listed path EXISTS on disk -- the genuine
+    failure the signature describes is then impossible, so a textual match is
+    a path/script bug rather than a missing dependency. ``repo_root`` is the
+    base for resolving relative paths (cwd is used when not given).
     """
     if not text:
         return None
@@ -126,6 +150,9 @@ def classify_text(tool_name: str, text: str, signatures: dict) -> dict | None:
                     continue
         if not matched:
             continue
+        suppress_paths = sig.get("suppress_if_paths_exist") or []
+        if suppress_paths and _all_paths_exist(suppress_paths, repo_root):
+            continue  # the dep IS present -- this is a path/script bug, not the failure mode
         if sig.get("tier") == "block":
             return sig  # first block-tier match wins
         if warn_hit is None:
@@ -309,7 +336,7 @@ def main() -> int:
     elif tool_name in ("Bash", "PowerShell"):
         command = tool_input.get("command", "")
         output = extract_output(payload)
-        sig = classify_text(tool_name, output, signatures)
+        sig = classify_text(tool_name, output, signatures, repo_root=root)
         if sig is not None:
             # capture a short snippet around the first match for the directive
             snippet = _first_match_snippet(sig, _real_output(output))

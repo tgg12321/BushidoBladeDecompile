@@ -20,6 +20,12 @@ import tooling_error_guard as g  # noqa: E402
 
 SIGS = g.load_signatures()
 
+# Resolve all classify_text() calls against an empty tmp dir so the
+# ``suppress_if_paths_exist`` disk check sees NONE of the canonical deps
+# present (the test cwd IS the repo, where the deps live in real life --
+# we want to verify the substring/regex side fires unconditionally here).
+_FAKE_ROOT = Path(tempfile.mkdtemp(prefix="bb2-tooling-test-"))
+
 _passed = 0
 _failed = 0
 
@@ -34,7 +40,7 @@ def check(desc: str, cond: bool) -> None:
 
 
 def expect_block(desc: str, tool: str, text: str, klass: str | None = None) -> None:
-    sig = g.classify_text(tool, text, SIGS)
+    sig = g.classify_text(tool, text, SIGS, repo_root=_FAKE_ROOT)
     ok = sig is not None and sig.get("tier") == "block"
     if ok and klass is not None:
         ok = sig.get("class") == klass
@@ -44,7 +50,7 @@ def expect_block(desc: str, tool: str, text: str, klass: str | None = None) -> N
 
 
 def expect_none(desc: str, tool: str, text: str) -> None:
-    sig = g.classify_text(tool, text, SIGS)
+    sig = g.classify_text(tool, text, SIGS, repo_root=_FAKE_ROOT)
     check(f"{desc} -> expected NO match; got {sig.get('id') if sig else None}", sig is None)
 
 

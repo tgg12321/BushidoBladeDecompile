@@ -97,6 +97,11 @@
         "SLUS_006\\.63.{0,40}no such file",
         "maspsx(\\.py)?: no such file"
       ],
+      "suppress_if_paths_exist": [
+        "tools/gcc-2.7.2/build/cc1",
+        ".venv/bin/activate",
+        "tools/maspsx/maspsx.py"
+      ],
       "summary": "A gitignored build dependency (cc1 / maspsx / .venv / disc / permuter) is missing.",
       "root_cause": "A gitignored build dependency was never installed, or the .venv isn't activated. Worktrees are no longer used, so there are no dep symlinks to go stale -- the deps live as real paths under the repo root.",
       "permanent_fix": [
@@ -104,7 +109,7 @@
         "Confirm the build still works:  python3 -m engine.cli verify-oracle .",
         "Prevent recurrence: ensure .venv, tools/gcc-2.7.2, tools/decomp-permuter, tools/m2c, and disc/ all exist as real paths under the repo root."
       ],
-      "suggested_guard": "Have tools/wsl.sh detect a missing required dep up front and emit one actionable line pointing at tools/setup_wsl.sh."
+      "suggested_guard": "Have tools/wsl.sh detect a missing required dep up front and emit one actionable line pointing at tools/setup_wsl.sh. The signature also carries suppress_if_paths_exist with the canonical core-tool paths so a path-bug error in a buggy script (e.g. relative path after cd) does not misfire when the deps are actually installed (added 2026-06-01 after the rtldump_b6c8_v2.sh false positive)."
     },
 
     {
