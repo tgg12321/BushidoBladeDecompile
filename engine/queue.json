@@ -4279,7 +4279,7 @@
       "rules": 21,
       "status": "parked",
       "scorable": false,
-      "park_reason": "Retry-3 2026-06-01: clean single-target permuter (6 min wallclock, ~5400 iters) finds ONLY UB-conditional-init / dead-self-assign closing forms (scores 135/140/145/185/205/210). ALL rejected per [[no-new-park-categories]] auto-search-output vetting. HEAD form itself relies on the same UB conditional-init of var_a1 (committed cheat-spelling). 12 legitimate-C variants tested this session, all stuck at floor 17 (matching session 2). Structural ceiling unchanged: missing target 'move a3,v0' park-merge insn. Resume: PERM_GENERAL directed permuter, cross-ref C97C's allocno table, engine-level UB-conditional-init detector. Memory: memory/project/func-8007c86c-permuter-ub-cheat-findings.md"
+      "park_reason": "Honest pure-C floor 20 to 12 via SOTN duplicate-read lever (session 4 / 2026-06-02 post-161c6c3). Same structural ceiling as sibling C7A0 (missing target-idx-16 move a3,v0 park-merge; -vs- X-preserve register cascade). 21 rules in regfix.txt:3073-3094 do not accommodate the score-12 form. See memory/project/func-8007c86c-sotn-duplicate-read-lever.md."
     },
     {
       "func": "func_8007B6C8",
