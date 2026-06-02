@@ -604,19 +604,21 @@ s32 func_8007C86C(s16 arg0, s16 arg1)
 }
 extern u8 g_gpu_type;
 s32 func_8007C938(s32 arg0, s32 arg1) {
-    register s32 var_v0 asm("$2");
-    register s32 var_v1 asm("$3");
+    s32 var_v0;
+    s32 var_v1;
+    int new_var2;
     var_v1 = arg1 & 0xFFF;
+    new_var2 = arg0;
     if ((u32) (g_gpu_type - 1) >= 2U) {
         var_v1 = arg1 & 0x7FF;
         var_v1 = var_v1 << 0xB;
-        var_v0 = arg0 & 0x7FF;
+        var_v0 = new_var2 & 0x7FF;
     } else {
         var_v1 = var_v1 << 0xC;
-        var_v0 = arg0 & 0xFFF;
+        var_v0 = new_var2 & 0xFFF;
     }
-    var_v0 = var_v0 | 0xE5000000;
-    return var_v1 | var_v0;
+    new_var2 = 0xE5000000;
+    return var_v1 | (var_v0 | new_var2);
 }
 /* SLUS-00663: pack a 4-channel BGRA-style color from a u8 RGB pair plus two
  * signed s16 "intensity" fields at +4 and +6 into a 32-bit GPU command word

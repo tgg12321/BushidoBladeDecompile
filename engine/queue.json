@@ -4394,16 +4394,6 @@
       "park_reason": "RA-coupling plateau (same cluster as sibling func_8007C7A0): 21 rules incl 19 register-rename substs + 1 frame-size + 1 lost-codegen insert. This session: clean v8 form (var_a1=arg1 unconditional + strip int new_var/new_var2/dead 'if(!D_8009BE7A){}' padding) drops sandbox floor 20->17 (1 below C7A0's 18 floor). Same structural ceiling: missing target 'move a3,v0' park-merge insn at idx 16 that GCC coalesces away. NOT committable (no rule retire). Evidence: memory/project/func-8007c86c-clean-form-floor.md."
     },
     {
-      "func": "func_8007C938",
-      "file": "display",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "register-allocation gap: 2 cheat-asm pins (var_v0->, var_v1->) carry the match. Honest pure-C distance 5 (4 with new_var2 const chained-OR sibling-shape improvement). Target allocates var_v0 (arg0 & MASK) to ; GCC naturally chooses  (reusing dead arg0 reg). Sibling siblings (func_8007C7A0/8007C86C) reach  because their var_v0_2 lives across a bounds-check pre-stage in a callee-save before the andi; func_8007C938 has no such pre-stage. Tried: sibling-style new_var2 = var_v0_2 chain (regresses to 7), pre-init var_v0 = arg0 (no effect, DCE), factored mask outside if (+1 insn, score 10), in-place |= form (regresses to 5), inline literal (regresses to 5), s16/u16 arg types (no effect, ABI promotion), OR operand swap (commutative, no effect), gtype local (no effect, folded), intermediate new_var local (no effect, DCE). The 2 pins are documented register-asm-pins per .claude/rules/register-asm-pins.md; pure-C levers from .claude/rules/register-alloc-pure-c.md (Levers A/B/C; D forbidden) do not have a target here because there is no shared variable to split (Lever A), narrow type has no effect (Lever B), no loop (Lever C)."
-    },
-    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": -1,
@@ -4453,12 +4443,12 @@
     }
   ],
   "counts": {
-    "total": 523,
+    "total": 522,
     "active": 495,
     "by_status": {
       "active": 495,
       "authorize": 17,
-      "parked": 11
+      "parked": 10
     },
     "by_verdict": {
       "C": 360,
