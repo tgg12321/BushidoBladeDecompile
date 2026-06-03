@@ -48,6 +48,14 @@
       "floor_now": 12,
       "round": 2,
       "note": "ALLOCDBG MECHANISM EVIDENCE: at score-12 form, cc1 emits 11 pseudos. The X-preserve pseudo is #72 (nrefs=2 livelen=11 pri=1818, ord=10 LAST) and gets $a2 (reg 6). Target wants it in $a3 (reg 7). KEY FINDING: variant v6 (`s32 lim_x = D_8009BE78` block-local) IS THE FIRST KNOWN LEVER that flips the X-preserve to $a3 — ALLOCDBG confirms a new pseudo 91 (nrefs=3 livelen=7 pri=4285) gets $a2 at ord=6, and pseudo 76 (X-preserve role, ord=8) flips to $a3. v6 also produces target's missing idx-16 `move a3,v0` park-merge. BUT v6 scores 18 (REGRESSION) because lim_x's lifetime forces an extra early `move $3,$4` preserve and shifts pseudo 77 from $a2 to $a1, netting +6 cascade diffs. Three additional ALLOCDBG takeaways: (1) C748 has only 5 pseudos, args take $a0/$a1/$a2 naturally — fundamentally different shape; (2) C938 has only 4 pseudos and uses `new_var2 = arg0` as SOTN-allowed named-intermediate (works because no X-clamp clobbers $a0); (3) X-preserve in C86C is structurally necessary (target's idx-12-14 reuses $a0 for `lim_x-1` then re-reads preserve in branch delay slot at idx 14 `addu v0, a3, $zero`). Mechanism for flipping the X-preserve to $a3 NOW CHARACTERIZED: introduce pseudo with priority > pseudo-72 but lifetime/refs that DON'T also bias pseudo 76/77's allocation. v6 is the existence proof. The score-12 candidate remains the practical floor under explored named-intermediate / decl-order / operand-flip lever class. v17 (v6 + no widemask precompute) scored 23 = worst regression."
+    },
+    {
+      "date": "2026-06-03",
+      "lever": "workflow round 3: 12 micro-variant sweep on lim_x form per round-2 v6 hypothesis (i/ii/iii/iv/v/vi categories + structural variants v18-v29)",
+      "floor_was": 12,
+      "floor_now": 12,
+      "round": 3,
+      "note": "All 12 variants either fold back to candidate's score-12 form (combine-foldable shapes — v23 s16 lim_x at 12) or match v6's score-18 form (cost-equivalent shapes with the same lifetime-induced cascade — v19, v20, v21, v22, v26, v28 all at 18) or regress further (v18 at 14, v24 at 21, v25 at 22, v27 at 20, v29 at 22). CONCLUSION: every variant that introduces a separate pseudo for lim_x (s32-width, livelen > 0) emits the v6 cost (+6 cascade). Every variant that folds back to no-separate-pseudo (s16 lim_x, lim_x referenced once before combine) matches candidate's score 12. There is no middle ground in the explored shape space. This is the same v0 + +1insn-trap that defeats cpu_side_move_dir_4 / marionation_Exec siblings — documented 'lever-class structural ceiling' per register-alloc-pure-c sessions 7-10. ENVIRONMENT NOTE: `--keep-cheat-asm` flag is the workaround for the sandbox truncation error blocking round-2 C97C/CBB0 workers — the `cheat_asm_stripped: 383` blocks throughout display.c break sibling reorder rules; keeping cheat-asm (since the function under test has none in the body) preserves indices and yields the masked-distance score normally."
     }
   ],
   "reviewer": {
@@ -61,6 +69,7 @@
     "rules_required_for_full_match": "21 substs in regfix.txt:3073-3094 calibrated for HEAD form. Candidate's score-12 shape produces SHA1 947ff79e... (mismatch). Same lateral-movement reason as C7A0 — rules would need re-writing for the new shape with no net rule reduction; commit gated on lowering the score further (toward 0)."
   },
   "next_hypotheses": [
+    "Workflow round 3 (2026-06-03) outcomes — PRIORITY 1: Lever D-style chain-extender is FORBIDDEN per 2026-06-02 rule on cpu_side_move_dir_4's combine-foldable chain-extender; if the chain-extender is still forbidden in updated rules, this avenue is closed. PRIORITY 2: try BB2_PRIO_DEBUG instrumented cc1 on candidate vs v6 (tmp/gccdbg/cc1 referenced in register-alloc-pure-c.md session 7) — would reveal which dependency edges create v6's extra `move $3, $4` preserve at idx 0, the target for elimination. PRIORITY 3: try a `register asm(\"$a3\") = arg0` PIN on the candidate baseline (diagnostic only, never commit) to confirm whether even pinning the X-preserve to $a3 induces the cascade — if the pin holds at score 18 it confirms the cascade is structural; if it lands lower it indicates GCC has a path to the target alloc we haven't found via C structure. PRIORITY 4: escalate to user as a likely candidate for canonical-asm authorization OR for the global rodata reorder route shared with the cpu_side_move_dir_4 / marionation_Exec cluster.",
     "Workflow round 2 (2026-06-02) v6 finding (`s32 lim_x = D_8009BE78` block-local) is the FIRST KNOWN LEVER that flips C86C's X-preserve pseudo to target's $a3 — but it costs +6 score points due to (a) early `move $3,$4` and (b) pseudo 77 cascade to $a1. Next session target: ELIMINATE those costs via (1) PERMUTER FROM v6 BASE — directed PERM_GENERAL on prologue region from the score-18 lim_x form, ~30k iters, vet output against cheat catalog (no UB-conditional-init, no dead-conditional-store, no param-aliases); OR (2) MICRO-VARIANT SWEEP ON LIM_X SHAPE — try (i) lim_x declared outer-scope but only read in if-branch, (ii) lim_x = `s16` (vs s32 — test if sign-extension penalty can be bypassed), (iii) lim_x = `(s32)D_8009BE78` explicit cast, (iv) lim_x = `D_8009BE78 - 1` directly, (v) lim_x read once for comparison only with `var_v0_2 = D_8009BE78 - 1` (replacing lim_x - 1 in the assignment). The mechanism dump shows pseudo 91 emerges in v6; the question is whether a different lim_x shape produces an EQUIVALENT pseudo 91 without the early preserve emit. ALSO: run BB2_PRIO_DEBUG on candidate vs v6 to verify which dependency edges create v6's extra preserve insn — points at the exact RTL-level chain to break in C source. JOINT WITH C7A0: iterate v6 finding on C7A0 too (constant 0xE3 vs 0xE4 is the only difference — should produce SAME ALLOCDBG flip).",
     "Joint instrumented `BB2_ALLOC_DEBUG` cc1 dump of func_8007C86C at the score-12 form + sibling func_8007C748 (3-arg, matched pure-C) — same as the cpu_side_move_dir_4 session 5 lever discovery method. The dump exposes the priority gap between the pseudo getting $a2 (mine) vs the equivalent in C748 that achieves a natural higher-callee-save landing. If C748's allocation table shows a specific livelen/refs profile that flips the tiebreaker, search for a combine-foldable pure-C lever that mimics it in C86C without emitting bytes (analogous to C5MD4's tbl_125c+delta chain). Also worth checking: ALLOCDBG with the Y wide-mask precompute already applied (i.e. the score-12 form), since prior sessions only ran it on the score-17 clean v8 base.",
     "tools/decomp-permuter from the score-12 base (NOT the score-17 base session 3 used). Directed at the X-preserve register slot. CRITICAL: invoke cheat-reviewer on output.",
@@ -193,6 +202,66 @@
       "form": "v17 (round 2): v6 (lim_x) + no widemask precompute",
       "score": 23,
       "reason": "WORST REGRESSION. Two simultaneous lever interventions cancel/compound badly. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v18 (round 3): lim_x compare-only + var_v0_2 = D_8009BE78 - 1 (re-read global) in assignment",
+      "score": 14,
+      "reason": "REGRESSION 12 -> 14 with build_insns dropping to 49. Combine eliminates one of the duplicate reads but the resulting allocation is worse than candidate (lim_x's pseudo gets a brief lifetime, X-preserve picks wrong reg). (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "v19 (round 3): s32 lim_x = (s32)D_8009BE78 (explicit cast variant of v6)",
+      "score": 18,
+      "reason": "Flat 18 — same as v6. Explicit (s32) cast doesn't change combine behavior on the lim_x load. (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "v20 (round 3): s32 lim_x = D_8009BE78 - 1 used twice (pre-subtract)",
+      "score": 18,
+      "reason": "Flat 18 — same as v6 family. Pre-subtracting the -1 into lim_x doesn't change priority calculation; cc1 emits the same allocation as v6. (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "v21 (round 3): s32 lim_x at function scope (outer decl), assigned inside if-branch only",
+      "score": 18,
+      "reason": "Flat 18 — same as v6. cc1's pseudo creation order is RTL-emission order, not decl scope; outer decl with conditional assignment behaves identically to inner-scope decl. (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "v22 (round 3): v6 + var_a1 = arg1 deferred to inside both branches of the X-clamp",
+      "score": 18,
+      "reason": "Flat 18 — same as v6. Deferring var_a1's preload position doesn't shift arg1's pseudo lifetime in a way that helps. (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "v23 (round 3): s16 lim_x = D_8009BE78 (narrow type variant of v6)",
+      "score": 12,
+      "reason": "Flat 12 — folds back to candidate's score. s16 forces sign-extension that combine eliminates, collapsing lim_x to inline form. (Workflow round 3, 2026-06-03, confirms rejected_forms v5 entry from round 2.)"
+    },
+    {
+      "form": "v24 (round 3): s32 lim_x AND s32 lim_y symmetric in both clamps",
+      "score": 21,
+      "reason": "REGRESSION 18 -> 21. lim_y mirrors v6's effect on Y-clamp slot and compounds the cascade. Matches rejected_forms v7 from round 2. (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "v25 (round 3): s32 lim_x at function scope, UNCONDITIONALLY loaded at top (vs v21 conditional assignment)",
+      "score": 22,
+      "reason": "REGRESSION 18 -> 22. Unconditional load of D_8009BE78 outside the arg0>=0 branch forces lim_x's lifetime to extend across the entire function, severely disturbing allocation of arg1/var_a1 and the Y-clamp slot. (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "v26 (round 3): s32 lim_x = D_8009BE78 - 1, compared as `lim_x < arg0`, used as var_v0_2 = lim_x (no -1 needed since pre-subtracted)",
+      "score": 18,
+      "reason": "Flat 18 — same as v6 family. Equivalent to v20 but with single-use lim_x; folds to v6's allocation pattern. (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "v27 (round 3): flip branch direction — primary case `arg0 < lim_x` -> var_v0_2 = arg0, else lim_x - 1",
+      "score": 20,
+      "reason": "REGRESSION 18 -> 20, build_insns drops to 48. The flipped comparison induces combine to drop a sign-compare, but the resulting branch layout doesn't match target. (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "v28 (round 3): s32 lim_x AND s32 lim_x_m1 = lim_x - 1 as separate locals (forced split)",
+      "score": 18,
+      "reason": "Flat 18 — same as v6. The two-local form just emits the same combine-folded code as v6 (lim_x_m1 folds into use sites). (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "v29 (round 3): inverted if structure — `if (arg0 < 0) { var_v0_2 = 0; } else { lim_x ... }`",
+      "score": 22,
+      "reason": "REGRESSION 18 -> 22. Inverting the outer if doesn't change the resulting decision-tree codegen (cc1 applies branch-sense canonicalization), but the source-order change disturbs scheduling. (Workflow round 3, 2026-06-03.)"
     }
   ],
   "memory_notes": [

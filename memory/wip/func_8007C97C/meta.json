@@ -22,6 +22,14 @@
       "floor_was": 24,
       "floor_now": 24,
       "note": "Target genuinely emits 4 sw stores plus a 0x10 frame allocation; stores are dead. Considered an array variant referenced via reads in return and struct-member variant. Both fail human-programmer test and naming-intent test. Per default-to-NO_PROGRESS rule, rejected. Could not measure candidate in isolated worktree. Worker suggested escalating for canonical-asm authorization analogous to gte-wrapper-misroute-park (the 4 dead frame writes are not pure-C-reproducible without a coercion construct)."
+    },
+    {
+      "date": "2026-06-03",
+      "lever": "workflow round 2 (round 3 in workflow ledger): applied WIP candidate.c and tested natural-C form; neither measurable due to sandbox pipeline truncation",
+      "floor_was": 24,
+      "floor_now": 24,
+      "round": 3,
+      "note": "Candidate body is structurally the inverted-null-check + m2c body + r_e2 + var-reuse form (preserved from sessions 1-2). The natural-C form (no sp[4] coercion) was tested but the sandbox returned non-scorable: same display.c-wide cheat-asm-strip pipeline truncation that affected C7A0 and CBB0 round-3 workers. The worker recommended surfacing as a policy escalation; per the standing policy in notes.md TOP-OF-FILE, canonical-asm authorization is REJECTED for this function (target has zero S1/S2/S6/S8 signals — see rejected_forms[0]). No floor change; no new rejected forms; standing policy preserved."
     }
   ],
   "reviewer": {
@@ -35,7 +43,8 @@
     "rules_required_for_full_match": "Same 9 regfix substs as HEAD (regfix.txt \u00e2\u20ac\u201d they were dropped by retire in 0e845d2, but restored by the revert). New shape may need different rules; un-knowable without measurement."
   },
   "next_hypotheses": [
-    "FIRST: measure the candidate. Apply candidate.c (the inverted-null-check + m2c body without sp[4]) to src/display.c, run `& tools/eng.ps1 sandbox func_8007C97C --disable all`. Record candidate_floor in meta.json. The score-null state is the round-1 worker's measurement failure (worktree toolchain not built); a worker with a built toolchain measures it in seconds.",
+    "Workflow round 3 (2026-06-03) blocker — sandbox `func_8007C97C --disable all` is non-scorable on display.c due to the display.c-wide cheat-asm-strip pipeline truncation. The C86C round-3 worker's workaround `--keep-cheat-asm` flag is the unblocker IF func_8007C97C itself has no cheat-asm in its body (likely true — verify). Once the baseline is measurable, the FIRST step remains as below.",
+    "FIRST: measure the candidate. Apply candidate.c (the inverted-null-check + m2c body without sp[4]) to src/display.c, run `& tools/eng.ps1 sandbox func_8007C97C --disable all` (try with `--keep-cheat-asm` if base fails). Record candidate_floor in meta.json. The score-null state is the round-1 worker's measurement failure (worktree toolchain not built); a worker with a built toolchain measures it in seconds.",
     "Apply candidate.c, then directed permuter from the measured base with PER-CANDIDATE cheat-reviewer gating. The rejected form (sp[4] write-only array) demonstrated the engine's mechanical detector gap; any permuter output MUST be vetted against the catalog AND independently reviewed before commit.",
     "ALLOCDBG-instrumented dump on the candidate to identify what's blocking the natural frame layout. The legitimate base may have a register-allocation tiebreaker the inverted-null-check structure exposes.",
     "Narrow integer typing exploration \u2014 s16/u16/u8 on temp_a1/a2/v0/v1 may shift cc1's codegen to match target's frame without coercion. Tested in isolation; record the floor for each.",

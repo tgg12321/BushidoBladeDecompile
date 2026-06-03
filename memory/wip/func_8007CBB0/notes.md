@@ -102,3 +102,40 @@ the 0x03FFFFFF lui/ori materialization across ~36 instructions; mine emits them
 adjacent. Same class as cpu_side_move_dir_4 sched.c walls. Top next_hypothesis:
 directed permuter from a CLEAN single-function offset-0 target with cheat-reviewer
 gating on saved candidates.
+
+## Session 2026-06-03 (workflow round 3)
+
+**Floor unchanged at 52, but NEW META-BLOCKER SURFACED.** Round-3 worker attempted
+candidate deployment (commented out asmfix bridge + applied candidate body to
+display.c). Build link failed:
+
+```
+undefined reference to `.L152'
+undefined reference to `.L158'
+undefined reference to `.L174'
+```
+
+in sibling func_8007CE0C. The candidate body's 80-line replacement shifts cc1's
+global `.L` counter, orphaning CE0C's 3 splice rules (regfix.txt:4208, 4210, 4212)
+that reference absolute global labels (.L152/.L154/.L156/.L158/.L159/.L160/.L174).
+
+**This is a meta-blocker on the queue item, not just a score gap.** A future
+worker cannot deploy ANY pure-C candidate for CBB0 — even a score-0 one — without
+first migrating CE0C's splice rules to the new `{lbl#N}` function-local label slot
+mechanism (per global-label-drift-sibling-cheat.md as updated 2026-06-02).
+
+Sandbox CBB0 was also unscorable in this session — same display.c-wide
+cheat-asm-strip pipeline truncation that blocked C7A0 and C97C workers in
+parallel sessions. The C86C round-3 worker's `--keep-cheat-asm` flag is the
+likely unblocker for the measurement step (CBB0 candidate has no cheat-asm in
+its own body once the bridge is removed).
+
+**Forbidden lever clarification:** The chain-extender lever that worked for
+cpu_side_move_dir_4 (a natural fit for CBB0's negative-label-drift scenario)
+is FORBIDDEN per global-label-drift-sibling-cheat.md as of 2026-06-02 — both
+dead-goto label-pad and DImode chain are codified in the FORBIDDEN section.
+
+New PRIORITIZED next_hypothesis: round 4 should ATTEMPT the {lbl#N} migration
+of CE0C's 3 splice rules FIRST as a precondition, THEN deploy candidate +
+measure with `--keep-cheat-asm`, THEN run directed permuter from a clean
+single-function offset-0 target.

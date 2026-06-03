@@ -97,3 +97,35 @@ New top next_hypothesis: PERM_GENERAL directed (not random) permuter ~30k iters,
 OR ALLOCDBG/PRIODBG instrumented cc1 dump on score-12 form. ~60k+ cumulative
 permuter iters + 25+ structural variants + UB-form proof = approaching the
 escalation boundary for parking with documented evidence ledger.
+
+## Session 2026-06-03 (workflow round 3)
+
+**Floor unchanged at 12 — but NO MEASUREMENT TAKEN.** Worker entered an isolated
+worktree without prior WIP state visibility (memory/wip/func_8007C7A0 wasn't
+propagated). Sandbox `func_8007C7A0 --disable all` returned non-scorable: the
+display.c-wide cheat-asm-strip pipeline truncation issue (same gotcha as round
+2's PAD_NOPS observation, blocking the C97C and CBB0 workers too) removes
+func_8007C7A0 from the build output. Without a measurable baseline no candidate
+edit was attempted.
+
+**Two findings worth recording:**
+
+1. **Sandbox truncation workaround discovered (by parallel C86C worker):**
+   `--keep-cheat-asm` flag preserves indices when the function under test has
+   no cheat-asm in its own body. Should be tried for C7A0/C97C/CBB0 next round.
+
+2. **Existing HEAD src/display.c body carries a UB-conditional-init:** `var_a1`
+   is read at line 547 (`if (var_a1 >= 0)`) but only assigned in the else branch
+   at line 545 (`if (new_var) { ... } else { var_v0_2 = 0; var_a1 = arg1; }`).
+   When new_var is true, var_a1 is uninitialized at the read. This is exactly
+   the cheat-form catalogued in rejected_forms[1] of this WIP — must be replaced
+   with a shared-end-label structure before any honest pure-C lever evaluation.
+
+**Joint with C86C round-3 result:** the round-3 12-variant sweep on C86C lim_x
+shape proved no middle ground exists — every variant that introduces a
+separate s32 pseudo for lim_x costs +6 cascade; every variant that folds back
+to no-separate-pseudo matches score 12. The same constraint applies here
+verbatim via the sibling-constant relationship (0xE3 vs 0xE4 differs only).
+The escalation boundary is approached: ~60k+ cumulative permuter iters + 25+
+structural variants + UB-form proof + C86C 12-variant sweep result confirm
+the structural ceiling.

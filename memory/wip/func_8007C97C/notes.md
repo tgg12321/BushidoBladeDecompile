@@ -100,3 +100,19 @@ not measure the existing candidate in the isolated worktree. Suggested next
 step: escalate for canonical-asm authorization. CAUTION: same caveat applies
 as B844's user_policy_note — canonical-asm needs explicit S1/S2/S6/S8 signals,
 not evidence-by-absence-of-pure-C-path; user adjudication required.
+
+## Session 2026-06-03 (workflow round 3)
+
+**Floor unchanged at 24 — NO MEASUREMENT POSSIBLE.** Applied WIP candidate.c
+and tested a natural-C form; sandbox returned non-scorable due to display.c-wide
+cheat-asm-strip pipeline truncation (the same blocker that affected C7A0 and
+CBB0 workers in parallel sessions). Worker recommended surfacing as a policy
+escalation toward canonical-asm — REJECTED per the **standing policy at the
+top of this file** (no fresh S1/S2/S6/S8 audit evidence; absence-of-pure-C-path
+is not itself the canonical-asm threshold per `.claude/rules/hand-coded-asm-recognition.md`).
+
+**Unblocker for round 4:** the C86C round-3 worker discovered `--keep-cheat-asm`
+restores indices for display.c functions whose own body has no cheat-asm; this
+should be tried for C97C next round to get a measurable baseline. Once
+baseline measurable, the next-step menu reverts to `meta.json` next_hypotheses:
+apply candidate body, measure, re-run cheat-reviewer.

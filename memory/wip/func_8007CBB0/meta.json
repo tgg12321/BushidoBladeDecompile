@@ -29,6 +29,14 @@
       "floor_was": 52,
       "floor_now": 52,
       "note": "Candidate.c body is structurally end-to-end correct (151/151 insns, $t0/$t1/$s0/$s1 register match, frame 0x40 match, packet-path store address sequences match target). Residual 52 is pure list-scheduler INSN_PRIORITY in the GPU packet store sequence: target splits 0x03FFFFFF constant materialization across ~36 instructions (lui $a3 at idx 49, ori $a3 at idx 85) and interleaves BF48 OT-link load chain with mode-constant stores; my build emits them adjacent. Six new SOTN-allowed C-source restructures (store-order swap, byte-pointer flag check, typed constant, struct field signedness, parenthesization, cast variants) all confirmed the 52 floor. Cumulative ~30 negative levers across 4 sessions. Lever class matches cpu_side_move_dir_4 sched.c walls."
+    },
+    {
+      "date": "2026-06-03",
+      "lever": "workflow round 3: deployment probe — applied candidate body to display.c + commented out asmfix bridge to enable measurement, attempted full build",
+      "floor_was": 52,
+      "floor_now": 52,
+      "round": 3,
+      "note": "NEW META-BLOCKER FINDING: deploying any pure-C candidate for func_8007CBB0 to a score-0 SHA1-matching state would BREAK sibling func_8007CE0C's 3 splice rules (regfix.txt:4208, 4210, 4212) unless those rules are first migrated to the new `{lbl#N}` function-local label slot mechanism (per global-label-drift-sibling-cheat.md as updated 2026-06-02). Build link fails with 'undefined reference to .L152/.L158/.L174' because the candidate body's 80-line replacement shifts cc1's global .L counter, orphaning CE0C's absolute-label splice references. This is a META-BLOCKER on the queue item, not just a score gap. Sandbox CBB0 itself was unscorable in this session (same display.c-wide cheat-asm-strip pipeline truncation as C7A0/C97C); the floor-52 measurement remains from prior session-2/session-3/round-1. The chain-extender lever that worked for cpu_side_move_dir_4 is now FORBIDDEN (codified in global-label-drift-sibling-cheat.md FORBIDDEN section 2026-06-02), so the natural negative-label-drift counter-lever is closed. No measurable progress; rejected_forms updated with the deployment-blocker evidence."
     }
   ],
   "reviewer": {
@@ -42,6 +50,7 @@
     "rules_required_for_full_match": "HEAD's single rule is `func_8007CBB0: replace_with_asmfile \"asm/funcs/func_8007CBB0.s\"` — an asmfile bridge over a stub body. The candidate's score-52 form is structurally and semantically correct; to commit, the bridge rule would be retired (drop the bridge → replace stub with candidate body) only if score reaches 0. The structural shape is the right base for the close; the residual is scheduling-only."
   },
   "next_hypotheses": [
+    "Workflow round 3 (2026-06-03) PRIORITIZED next-step menu — round 4 should ATTEMPT the {lbl#N} migration of func_8007CE0C's 3 splice rules (regfix.txt:4208, 4210, 4212) FIRST as a precondition. Recipe: (1) probe cc1's current label sequence for func_8007CE0C via `bash tmp/probe_func_labels.sh func_8007CE0C src/display.c`; (2) identify slot # for each of .L152/.L154/.L156/.L158/.L159/.L160/.L174; (3) rewrite each splice rule replacing literal labels with `{lbl#N}` placeholders; (4) verify-oracle --rebuild — bytes don't change, confirms migration is correct; (5) NOW the candidate body for CBB0 can be deployed and measured without breaking CE0C. ALSO: the sandbox-noscoring gotcha for display.c (sibling index-based reorder rule breaking on cheat-asm strip) is a separate meta-blocker; the C86C round-3 worker's `--keep-cheat-asm` workaround should work for CBB0 too (this function's HEAD body is the stub-with-bridge form; the candidate has no cheat-asm). If both infrastructure migrations land, THEN execute the original directed-permuter hypothesis from a CLEAN single-function offset-0 target. CRITICAL: any saved permuter candidate below 52 must be vetted against the cheat-by-any-spelling catalog AND submitted to the cheat-reviewer agent — the dead-goto label-pad and DImode chain levers are exactly the cpu_side_move_dir_4-style chain extenders FORBIDDEN 2026-06-02.",
     "Set up permuter/cbb0/ with a CLEAN single-function offset-0 target and base.c = preprocessed display.c with candidate body stripped to single-function. Run with --stop-on-zero and PERM_GENERAL directed macros targeting scheduling permutations. Vet any saved candidate below 52 via the cheat-reviewer agent against cheats-by-any-spelling policy.",
     "Directed permuter from a CLEAN single-function target with the candidate as base. Per [[difficult-is-not-impossible]] section on clean targets — a whole-file target.o makes the function sit at non-zero offset, drowning the real signal. Build `asm/funcs/func_8007CBB0.s` standalone + the candidate as base.c, run with --stop-on-zero. CRITICAL: invoke cheat-reviewer on any closing form found.",
     "BB2_SCHED_DEBUG / BB2_PRIO_DEBUG instrumented cc1 dump on the candidate. Identify which pseudo's INSN_PRIORITY needs nudging for the 0x03FFFFFF materialization to defer like target's. Same instrumented cc1 from cpu_side_move_dir_4 sessions (tmp/gccdbg/cc1) applies.",
@@ -92,6 +101,16 @@
       "form": "Left-associative OR without inner parens for D_800F186C expression",
       "score": 52,
       "reason": "No floor reduction (still 52). Combine treats both parenthesization forms as identical RTL. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "Drop asmfix bridge + apply candidate body and rebuild (round 3 deployment probe)",
+      "score": null,
+      "reason": "DEPLOYMENT-BLOCKED. Link fails with 'undefined reference to .L152/.L158/.L174' in sibling func_8007CE0C. The candidate body changes cc1's global .L label allocation count for display.c, breaking func_8007CE0C's 3 splice rules (regfix.txt:4208, 4210, 4212) which reference absolute global labels. This is a NEW round-3 finding: the structural problem is not just the 52 list-scheduler floor — it is also a deployment-time meta-blocker that requires sibling-rule {lbl#N} migration first. (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "Sandbox with --disable all (round 3 measurement attempt)",
+      "score": null,
+      "reason": "NON-SCORABLE. Returns 'func_8007CBB0 not found in tmp/sandbox/func_8007CBB0/display.o. Cheat-disabled build of display.c is missing func_8007CBB0 (pipeline likely truncated by a sibling index-based reorder rule after cheat-asm strip).' The strip across all of display.c shifts maspsx indices and breaks a sibling reorder rule, truncating the build before CBB0 is emitted. Same class as the jtbl-rodata-split-infrastructure 'Bonus gotcha' (sandbox can't score these files). C86C round-3 worker's `--keep-cheat-asm` flag is the workaround for next round. (Workflow round 3, 2026-06-03.)"
     }
   ],
   "memory_notes": [

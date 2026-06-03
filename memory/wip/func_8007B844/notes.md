@@ -62,6 +62,47 @@ loop-rebinding pattern. Risk-vetted carefully against no-new-park-categories
 (an `ot = ot` rebinding is borderline). Alternative: BB2_SCHED_DEBUG dump on
 gpu_ClearOTag's tail vs B844's tail to compare predecessor lists at .greg/.sched
 dump level — if the lists differ, the structural cause is identifiable.
+
+## Session 2026-06-03 (workflow round 3)
+
+**Floor unchanged at 6.** Re-verified score-6 baseline (Lever B named-intermediate
+u32 mask). Investigated per round-3 orchestrator hint whether the vtable
+v0[11](ot,n) call's actual semantic could be leveraged to legitimately rebind
+`ot` post-call.
+
+**C semantic finding:** C semantics forbid a callee from rebinding a pass-by-value
+pointer arg; the call can only modify what ot POINTS to, not ot itself. So GCC
+always keeps `ot` in callee-save $s0 across the call. This closes the
+post-call-rebinding avenue without UB.
+
+**Three new structural variants tested at the score-6 base — all measured negative:**
+
+1. `u32 *ret; ret = ot; *ret = mask; return ret;` declaration-first variant —
+   copy-prop folds ret to ot, score 6 (same lowering as prior `u32 *ret = ot;` form)
+2. `mask = (u32)ot; return (u32 *)mask;` SOTN variable-reuse — score 7 regression
+   (no loop-invariant hoist mechanism exists in this function; technique doesn't apply)
+3. `volatile u32 mask;` local volatile — rejected at design time per
+   cheats-by-any-spelling intent test (no semantic purpose for a volatile local
+   holding a constant 0xFFFFFF mask)
+
+**Decisive byte-comparison gpu_ClearOTag vs func_8007B844** (both byte-matched
+sibs): same C tail produces different asm — gpu_ClearOTag emits store-then-move
+(5e0/5e4), func_8007B844 target emits move-then-store via return-staged base
+(66c/670-67c). For cc1 to schedule move-then-store, store base pseudo must
+depend on return-staged $v0 pseudo. No pure-C SOTN-allowed construct creates
+this dependency without (a) extra bytes or (b) copy-prop fold to ot.
+
+**Cumulative evidence across 5 distinct grinding contexts** (3 sessions + 2
+workflow rounds + round-3): ~70+ structural variants and ~50k+ permuter iters,
+ZERO progress beyond floor 6. **ESCALATION CANDIDATE** — empirically exhausted
+under explored lever class; structural ceiling identified mechanistically.
+
+Standing user_policy_note preserved: canonical-asm authorization NOT
+evidence-backed for this function (S1=S2=S6=S8=0). B844 joins the "documented
+structural ceiling at sched.c priority wall" cluster as cpu_side_move_dir_4,
+marionation_Exec, saEft00Add. Round 4 recommended next steps: directed-PERM
+permuter (`PERM_*` macros) from score-6 base targeting return-staging
+REG_DEP_TRUE list — untried in any prior round.
 - **Closing forms found are FORBIDDEN cheats** — preserved at `rejected/`:
   - `rejected/conditional_dead_store.c` — score 0 + SHA1 == oracle, but
     Lever D family (find_dead_conditional_stores detector catches it).
