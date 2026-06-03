@@ -22,6 +22,7 @@ contract.
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 WIP_ROOT = Path("memory/wip")
@@ -84,6 +85,30 @@ def summary(func: str) -> dict | None:
             "candidate_path": str(_wip_dir(func) / "candidate.c"),
             "meta_path": str(_wip_dir(func) / "meta.json"),
         }
+    except Exception:
+        return None
+
+
+def head_sha(short: bool = True) -> str | None:
+    """Current git HEAD SHA (7-char short by default). For pinning WIP
+    `sessions[]` entries to the repo state at measurement time, so future
+    agents can detect drift and re-measure if cited files have changed.
+
+    Per `.claude/rules/verify-claims-against-main.md`: every WIP session
+    entry that cites file/line numbers SHOULD include `git_head_at_measurement`.
+
+    Returns None on any error (no git, detached HEAD failure, etc.) — never
+    raises into the WIP hot path."""
+    try:
+        cmd = ["git", "rev-parse"]
+        if short:
+            cmd.append("--short")
+        cmd.append("HEAD")
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+        if result.returncode != 0:
+            return None
+        sha = result.stdout.strip()
+        return sha or None
     except Exception:
         return None
 

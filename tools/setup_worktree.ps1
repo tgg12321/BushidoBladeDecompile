@@ -7,6 +7,21 @@
 # `engine verify-oracle` / cheat-asm strip / permuter runs all error out at
 # step one.
 #
+# ⚠ CRITICAL CLEANUP HAZARD ⚠
+# This script creates DIRECTORY JUNCTIONS from the worktree to main's
+# gitignored directories. `git worktree remove --force` on a worktree with
+# junctions WILL FOLLOW THE JUNCTIONS and recursively delete the target
+# (main's .venv / build / toolchain). This happened on 2026-06-03 and wiped
+# main's .venv entirely.
+#
+# TO REMOVE A WORKTREE SAFELY:
+#   pwsh tools/safe_remove_worktree.ps1 <worktree-path> -Force
+#
+# That script enumerates junctions, detaches them with `cmd /c rmdir` (which
+# removes a junction without following it), then calls `git worktree remove`.
+# DO NOT use `git worktree remove --force` directly on worktrees bootstrapped
+# by this script.
+#
 # This script uses Windows DIRECTORY JUNCTIONS (no admin / dev-mode needed,
 # unlike symbolic links) to link the heavy paths from the main repository into
 # the worktree. Junctions work for directories; for the single tracked file
@@ -63,6 +78,58 @@ if (-not $mainRepo -or $mainRepo -eq $worktreeRoot) {
 if (-not (Test-Path "$mainRepo\.git")) {
     Write-Output "setup_worktree.ps1: main repo $mainRepo has no .git. Bailing."
     exit 1
+}
+
+# HEAD parity enforcement. The workflow framework's `isolation: 'worktree'`
+# sometimes creates worktrees at a snapshot HEAD that lags main — round-3
+# workers reported regfix.txt was "~24 hours stale" and made decisions
+# based on absolute .L labels that no longer exist in main. The fix is
+# strict: if the worktree HEAD differs from main, sync it (or bail).
+#
+# Mode is controlled by $env:WORKTREE_STALE_POLICY:
+#   "sync" (default): hard-reset worktree to main HEAD before running.
+#         Worker's uncommitted changes are LOST — the worktree is
+#         contractually a scratch space, not a long-lived branch.
+#   "fail": refuse to bootstrap and exit non-zero. Forces workflow harness
+#         to re-create the worktree at current HEAD.
+#   "warn": log the divergence and proceed (for debugging only).
+$mainHead = (git -C "$mainRepo" rev-parse HEAD 2>$null)
+$wtHead = (git -C "$worktreeRoot" rev-parse HEAD 2>$null)
+
+if ($mainHead -and $wtHead -and $mainHead -ne $wtHead) {
+    $policy = if ($env:WORKTREE_STALE_POLICY) { $env:WORKTREE_STALE_POLICY } else { "sync" }
+    Write-Output "setup_worktree.ps1: HEAD parity check FAILED"
+    Write-Output "  worktree HEAD: $wtHead"
+    Write-Output "  main HEAD:     $mainHead"
+    Write-Output "  policy:        $policy"
+
+    # Show a summary of what changed between worktree HEAD and main HEAD —
+    # critical context. Workers may otherwise base decisions on file state
+    # that no longer represents project truth.
+    Write-Output "  diff summary (worktree..main):"
+    $diffStat = (git -C "$worktreeRoot" log --oneline "$wtHead..$mainHead" 2>$null | Select-Object -First 8)
+    foreach ($line in $diffStat) { Write-Output "    $line" }
+
+    if ($policy -eq "fail") {
+        Write-Output "setup_worktree.ps1: BAILING — stale-policy=fail. Workflow harness must recreate worktree at $mainHead"
+        exit 1
+    } elseif ($policy -eq "warn") {
+        Write-Output "setup_worktree.ps1: WARN — proceeding with stale state. DO NOT trust file-line claims without verifying against main."
+    } else {
+        # Default: sync the worktree to main HEAD. Hard reset wipes any
+        # uncommitted worker changes (intentional — worktrees are scratch).
+        Write-Output "setup_worktree.ps1: syncing worktree to main HEAD $mainHead (hard reset)"
+        git -C "$worktreeRoot" reset --hard "$mainHead" 2>&1 | Select-Object -Last 2 | ForEach-Object { Write-Output "    $_" }
+        # Verify the sync took.
+        $wtHead2 = (git -C "$worktreeRoot" rev-parse HEAD 2>$null)
+        if ($wtHead2 -ne $mainHead) {
+            Write-Output "setup_worktree.ps1: WARNING reset did not take — worktree HEAD still $wtHead2. Worker should bail."
+            exit 1
+        }
+        Write-Output "setup_worktree.ps1: HEAD parity restored ($mainHead)"
+    }
+} elseif ($mainHead -and $wtHead) {
+    Write-Output "setup_worktree.ps1: HEAD parity OK ($mainHead)"
 }
 
 Write-Output "setup_worktree.ps1: bootstrapping $worktreeRoot from main $mainRepo"
