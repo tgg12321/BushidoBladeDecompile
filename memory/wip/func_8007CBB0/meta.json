@@ -3,22 +3,23 @@
   "file": "display",
   "scores": {
     "head_floor": 149,
-    "candidate_floor": 52,
+    "candidate_floor": 55,
     "metric": "sandbox --disable all (masked Levenshtein)",
     "build_insns": 151,
     "target_insns": 151,
-    "head_floor_note": "HEAD distance is 149 because the function is held by an asmfix `replace_with_asmfile` bridge with a stub C body; when the bridge is stripped + the cheat-asm injection (371 lines) is stripped, the stub builds to build_insns=2. The 149 measurement is a sandbox-strip artifact, NOT a reflection of how close pure-C could be. The candidate's 52 is the FIRST honest pure-C measurement and is below the prior session's reported 76 floor."
+    "head_floor_note": "HEAD distance is 149 because the function is held by an asmfix `replace_with_asmfile` bridge with a stub C body; when the bridge is stripped + the cheat-asm injection (371 lines) is stripped, the stub builds to build_insns=2. The 149 measurement is a sandbox-strip artifact, NOT a reflection of how close pure-C could be. The candidate's 52 is the FIRST honest pure-C measurement and is below the prior session's reported 76 floor.",
+    "note": "Orchestrator 2026-06-03 verified deployment: candidate body builds cleanly with bridge disabled (refuting round-3 worker meta-blocker claim). Real sandbox score is 55 / build_insns 129, NOT the WIP-documented 52 / 151. Candidate or environment drifted since session 2 (2026-06-01). The bigger finding: CBB0 deployment is NOT blocked by CE0C splice rules; {lbl#N} mechanism in current main makes sibling drift a non-issue."
   },
   "sessions": [
     {
       "date": "2026-06-01",
-      "lever": "session 2: semantic reconstruction — GPU GP0 DMA chain packet builder. 2-arg signature (arg2/arg3 unused), goto-form clamps mirroring sibling func_8007CE0C, big-packet vs small-packet branch based on `(*(u16*)arg0 & 0x3F) || ((u16)arg0->w & 0x3F)`. Levers: m2c-shape 2-arg sig, extern s32 *D_8009BF48 forward decl, address-of D_800F187C captured into local p187C (saves lui/sw pair), *(u16*)arg0 & 0x3F (matches target's lhu instead of lw), goto-based clamps (nested-if scored 87, goto form 67 then 52).",
+      "lever": "session 2: semantic reconstruction \u2014 GPU GP0 DMA chain packet builder. 2-arg signature (arg2/arg3 unused), goto-form clamps mirroring sibling func_8007CE0C, big-packet vs small-packet branch based on `(*(u16*)arg0 & 0x3F) || ((u16)arg0->w & 0x3F)`. Levers: m2c-shape 2-arg sig, extern s32 *D_8009BF48 forward decl, address-of D_800F187C captured into local p187C (saves lui/sw pair), *(u16*)arg0 & 0x3F (matches target's lhu instead of lw), goto-based clamps (nested-if scored 87, goto form 67 then 52).",
       "floor_was": 149,
       "floor_now": 52
     },
     {
       "date": "2026-06-02",
-      "lever": "session 3 (this session): 9 additional SOTN-allowed structural variants (variable reuse, named intermediates, operand-order swap, store reordering, signature change) — all confirm sandbox 52 floor with 0 rules retired. Cumulative ~24 negative levers across two sessions.",
+      "lever": "session 3 (this session): 9 additional SOTN-allowed structural variants (variable reuse, named intermediates, operand-order swap, store reordering, signature change) \u2014 all confirm sandbox 52 floor with 0 rules retired. Cumulative ~24 negative levers across two sessions.",
       "floor_was": 52,
       "floor_now": 52,
       "note": "No further floor reduction; the residual 52 is list-scheduler INSN_PRIORITY decisions in the GPU packet store sequence."
@@ -32,29 +33,38 @@
     },
     {
       "date": "2026-06-03",
-      "lever": "workflow round 3: deployment probe — applied candidate body to display.c + commented out asmfix bridge to enable measurement, attempted full build",
+      "lever": "workflow round 3: deployment probe \u2014 applied candidate body to display.c + commented out asmfix bridge to enable measurement, attempted full build",
       "floor_was": 52,
       "floor_now": 52,
       "round": 3,
       "note": "NEW META-BLOCKER FINDING: deploying any pure-C candidate for func_8007CBB0 to a score-0 SHA1-matching state would BREAK sibling func_8007CE0C's 3 splice rules (regfix.txt:4208, 4210, 4212) unless those rules are first migrated to the new `{lbl#N}` function-local label slot mechanism (per global-label-drift-sibling-cheat.md as updated 2026-06-02). Build link fails with 'undefined reference to .L152/.L158/.L174' because the candidate body's 80-line replacement shifts cc1's global .L counter, orphaning CE0C's absolute-label splice references. This is a META-BLOCKER on the queue item, not just a score gap. Sandbox CBB0 itself was unscorable in this session (same display.c-wide cheat-asm-strip pipeline truncation as C7A0/C97C); the floor-52 measurement remains from prior session-2/session-3/round-1. The chain-extender lever that worked for cpu_side_move_dir_4 is now FORBIDDEN (codified in global-label-drift-sibling-cheat.md FORBIDDEN section 2026-06-02), so the natural negative-label-drift counter-lever is closed. No measurable progress; rejected_forms updated with the deployment-blocker evidence."
+    },
+    {
+      "date": "2026-06-03",
+      "lever": "orchestrator deployment verification (post round-3): candidate body applied to src/display.c with asmfix bridge disabled; full build SUCCEEDED (no CE0C splice-rule breakage), refuting round-3 worker claim",
+      "floor_was": 52,
+      "floor_now": 55,
+      "round": "verify",
+      "note": "EMPIRICAL REFUTATION of round-3 worker meta-blocker claim. The worker said deploying CBB0 candidate breaks CE0C splice rules at regfix.txt:4208/4210/4212 referencing .L152/.L154/.L158/.L174. Orchestrator audit: CE0C splice rules in current main already use {lbl#N} function-local slots (regfix.txt:4184/4186/4188/4189); the cited absolute-label form does not exist in main. Worker was reading a stale worktree regfix.txt. Verification recipe: (1) revert src/display.c stub + asmfix bridge to clean state; (2)  to set build/ to oracle bytes (SHA1 62efab4f...); (3) apply candidate.c body to src/display.c LEAVING bridge active in asmfix.txt; (4)  returns score 55, build_insns 129, target 151, scorable=true. Sandbox builds candidate WITHOUT the bridge (rules_dropped=1), compares against build/ which has the bridge-injected oracle bytes. NEW DISCREPANCY FOUND: prior WIP claimed score 52 / build_insns 151 (exact match). Current measurement is score 55 / build_insns 129 (22 insns short). Candidate or environment has drifted. Worth a focused investigation in round 4 \u2014 the structural reconstruction is still valid but the residual is now different than the WIP documents. Source reverted; verify-oracle --rebuild SHA1 == oracle (62efab4f...) confirmed."
     }
   ],
   "reviewer": {
     "verdict": null,
     "date": null,
-    "evidence": "Not yet invoked on the candidate. The candidate is structural pure-C with no obvious cheat constructs (no register pins, no register-asm, no volatile coercion on globals, no unused locals — the (void)arg2/arg3 is the K&R-style ABI honoring of unused params, see SOTN community standard). Invoke cheat-reviewer before any Match: commit. Manual self-audit notes the candidate's `(void)arg2; (void)arg3;` declarations have semantic purpose (silence unused-param warnings on a function whose ABI takes 4 args but logic uses 2 — the calling convention is what matters for the prologue size, and this preserves it cleanly)."
+    "evidence": "Not yet invoked on the candidate. The candidate is structural pure-C with no obvious cheat constructs (no register pins, no register-asm, no volatile coercion on globals, no unused locals \u2014 the (void)arg2/arg3 is the K&R-style ABI honoring of unused params, see SOTN community standard). Invoke cheat-reviewer before any Match: commit. Manual self-audit notes the candidate's `(void)arg2; (void)arg3;` declarations have semantic purpose (silence unused-param warnings on a function whose ABI takes 4 args but logic uses 2 \u2014 the calling convention is what matters for the prologue size, and this preserves it cleanly)."
   },
   "remaining_gap": {
-    "summary": "List-scheduler INSN_PRIORITY decisions in the GPU packet store sequence. Target interleaves the 0x03FFFFFF constant materialization (lui $a3 0x3FFFFFF + ori $a3 0xFFFF split by ~20 insns) with the BF48 load chain; mine emits them adjacent. Same class as cpu_side_move_dir_4 / marionation_Exec sched.c walls. NO frame coercion, NO register allocation diffs — pure scheduling.",
+    "summary": "List-scheduler INSN_PRIORITY decisions in the GPU packet store sequence. Target interleaves the 0x03FFFFFF constant materialization (lui $a3 0x3FFFFFF + ori $a3 0xFFFF split by ~20 insns) with the BF48 load chain; mine emits them adjacent. Same class as cpu_side_move_dir_4 / marionation_Exec sched.c walls. NO frame coercion, NO register allocation diffs \u2014 pure scheduling.",
     "rule_count_at_head": 1,
-    "rules_required_for_full_match": "HEAD's single rule is `func_8007CBB0: replace_with_asmfile \"asm/funcs/func_8007CBB0.s\"` — an asmfile bridge over a stub body. The candidate's score-52 form is structurally and semantically correct; to commit, the bridge rule would be retired (drop the bridge → replace stub with candidate body) only if score reaches 0. The structural shape is the right base for the close; the residual is scheduling-only."
+    "rules_required_for_full_match": "HEAD's single rule is `func_8007CBB0: replace_with_asmfile \"asm/funcs/func_8007CBB0.s\"` \u2014 an asmfile bridge over a stub body. The candidate's score-52 form is structurally and semantically correct; to commit, the bridge rule would be retired (drop the bridge \u2192 replace stub with candidate body) only if score reaches 0. The structural shape is the right base for the close; the residual is scheduling-only."
   },
   "next_hypotheses": [
-    "Workflow round 3 (2026-06-03) PRIORITIZED next-step menu — round 4 should ATTEMPT the {lbl#N} migration of func_8007CE0C's 3 splice rules (regfix.txt:4208, 4210, 4212) FIRST as a precondition. Recipe: (1) probe cc1's current label sequence for func_8007CE0C via `bash tmp/probe_func_labels.sh func_8007CE0C src/display.c`; (2) identify slot # for each of .L152/.L154/.L156/.L158/.L159/.L160/.L174; (3) rewrite each splice rule replacing literal labels with `{lbl#N}` placeholders; (4) verify-oracle --rebuild — bytes don't change, confirms migration is correct; (5) NOW the candidate body for CBB0 can be deployed and measured without breaking CE0C. ALSO: the sandbox-noscoring gotcha for display.c (sibling index-based reorder rule breaking on cheat-asm strip) is a separate meta-blocker; the C86C round-3 worker's `--keep-cheat-asm` workaround should work for CBB0 too (this function's HEAD body is the stub-with-bridge form; the candidate has no cheat-asm). If both infrastructure migrations land, THEN execute the original directed-permuter hypothesis from a CLEAN single-function offset-0 target. CRITICAL: any saved permuter candidate below 52 must be vetted against the cheat-by-any-spelling catalog AND submitted to the cheat-reviewer agent — the dead-goto label-pad and DImode chain levers are exactly the cpu_side_move_dir_4-style chain extenders FORBIDDEN 2026-06-02.",
+    "Investigate the 52 vs 55 / 151 vs 129 discrepancy. Either the candidate body needs updating (something drifted) or the prior session measurement was anomalous. Either way, RE-MEASURE first; do not trust the WIP-documented 52 floor without re-verification.",
+    "Workflow round 3 (2026-06-03) PRIORITIZED next-step menu \u2014 round 4 should ATTEMPT the {lbl#N} migration of func_8007CE0C's 3 splice rules (regfix.txt:4208, 4210, 4212) FIRST as a precondition. Recipe: (1) probe cc1's current label sequence for func_8007CE0C via `bash tmp/probe_func_labels.sh func_8007CE0C src/display.c`; (2) identify slot # for each of .L152/.L154/.L156/.L158/.L159/.L160/.L174; (3) rewrite each splice rule replacing literal labels with `{lbl#N}` placeholders; (4) verify-oracle --rebuild \u2014 bytes don't change, confirms migration is correct; (5) NOW the candidate body for CBB0 can be deployed and measured without breaking CE0C. ALSO: the sandbox-noscoring gotcha for display.c (sibling index-based reorder rule breaking on cheat-asm strip) is a separate meta-blocker; the C86C round-3 worker's `--keep-cheat-asm` workaround should work for CBB0 too (this function's HEAD body is the stub-with-bridge form; the candidate has no cheat-asm). If both infrastructure migrations land, THEN execute the original directed-permuter hypothesis from a CLEAN single-function offset-0 target. CRITICAL: any saved permuter candidate below 52 must be vetted against the cheat-by-any-spelling catalog AND submitted to the cheat-reviewer agent \u2014 the dead-goto label-pad and DImode chain levers are exactly the cpu_side_move_dir_4-style chain extenders FORBIDDEN 2026-06-02.",
     "Set up permuter/cbb0/ with a CLEAN single-function offset-0 target and base.c = preprocessed display.c with candidate body stripped to single-function. Run with --stop-on-zero and PERM_GENERAL directed macros targeting scheduling permutations. Vet any saved candidate below 52 via the cheat-reviewer agent against cheats-by-any-spelling policy.",
-    "Directed permuter from a CLEAN single-function target with the candidate as base. Per [[difficult-is-not-impossible]] section on clean targets — a whole-file target.o makes the function sit at non-zero offset, drowning the real signal. Build `asm/funcs/func_8007CBB0.s` standalone + the candidate as base.c, run with --stop-on-zero. CRITICAL: invoke cheat-reviewer on any closing form found.",
+    "Directed permuter from a CLEAN single-function target with the candidate as base. Per [[difficult-is-not-impossible]] section on clean targets \u2014 a whole-file target.o makes the function sit at non-zero offset, drowning the real signal. Build `asm/funcs/func_8007CBB0.s` standalone + the candidate as base.c, run with --stop-on-zero. CRITICAL: invoke cheat-reviewer on any closing form found.",
     "BB2_SCHED_DEBUG / BB2_PRIO_DEBUG instrumented cc1 dump on the candidate. Identify which pseudo's INSN_PRIORITY needs nudging for the 0x03FFFFFF materialization to defer like target's. Same instrumented cc1 from cpu_side_move_dir_4 sessions (tmp/gccdbg/cc1) applies.",
-    "C-source restructure that changes INSN_PRIORITY of the BF48 load OR the 0x03FFFFFF materialization without adding emitted bytes. Combine-foldable chain extender style (see register-alloc-pure-c session 8 — but that exact technique was forbidden 2026-06-02 for cheat-by-spelling; a different non-cheat restructure is needed)."
+    "C-source restructure that changes INSN_PRIORITY of the BF48 load OR the 0x03FFFFFF materialization without adding emitted bytes. Combine-foldable chain extender style (see register-alloc-pure-c session 8 \u2014 but that exact technique was forbidden 2026-06-02 for cheat-by-spelling; a different non-cheat restructure is needed)."
   ],
   "rejected_forms": [
     {
@@ -105,7 +115,7 @@
     {
       "form": "Drop asmfix bridge + apply candidate body and rebuild (round 3 deployment probe)",
       "score": null,
-      "reason": "DEPLOYMENT-BLOCKED. Link fails with 'undefined reference to .L152/.L158/.L174' in sibling func_8007CE0C. The candidate body changes cc1's global .L label allocation count for display.c, breaking func_8007CE0C's 3 splice rules (regfix.txt:4208, 4210, 4212) which reference absolute global labels. This is a NEW round-3 finding: the structural problem is not just the 52 list-scheduler floor — it is also a deployment-time meta-blocker that requires sibling-rule {lbl#N} migration first. (Workflow round 3, 2026-06-03.)"
+      "reason": "DEPLOYMENT-BLOCKED. Link fails with 'undefined reference to .L152/.L158/.L174' in sibling func_8007CE0C. The candidate body changes cc1's global .L label allocation count for display.c, breaking func_8007CE0C's 3 splice rules (regfix.txt:4208, 4210, 4212) which reference absolute global labels. This is a NEW round-3 finding: the structural problem is not just the 52 list-scheduler floor \u2014 it is also a deployment-time meta-blocker that requires sibling-rule {lbl#N} migration first. (Workflow round 3, 2026-06-03.)"
     },
     {
       "form": "Sandbox with --disable all (round 3 measurement attempt)",
@@ -117,11 +127,11 @@
     "memory/project/func-8007cbb0-pure-c-draft.md"
   ],
   "structural_evidence": {
-    "build_insns_match": "151 candidate == 151 target — EXACT match. Structural decomp is end-to-end correct.",
-    "frame_size_match": "0x40 = 64 — matches target.",
-    "register_match": "arg0 in $t0, arg1 in $t1, $s0 holds 0xE3000000, $s1 holds 0xE5000000 — all match target.",
-    "big_packet_stores": "13 stores in order F1858/F1868/F185C/F1860/F1864/F1870/F186C/F1874/F187C/F1878/F1880/F1884/F1888 — matches target.",
-    "small_packet_stores": "6 stores in order F1858/F185C/F1864/F1860/F1868/F186C — matches target.",
+    "build_insns_match": "151 candidate == 151 target \u2014 EXACT match. Structural decomp is end-to-end correct.",
+    "frame_size_match": "0x40 = 64 \u2014 matches target.",
+    "register_match": "arg0 in $t0, arg1 in $t1, $s0 holds 0xE3000000, $s1 holds 0xE5000000 \u2014 all match target.",
+    "big_packet_stores": "13 stores in order F1858/F1868/F185C/F1860/F1864/F1870/F186C/F1874/F187C/F1878/F1880/F1884/F1888 \u2014 matches target.",
+    "small_packet_stores": "6 stores in order F1858/F185C/F1864/F1860/F1868/F186C \u2014 matches target.",
     "clamp_shape": "Both clamps emit `lh; nop; addu v1,v0,zero; addiu v0,v0,-1; slt; bnez` (matches target shape, including the 'save BE78 into $v1' trick).",
     "residual": "52 masked diffs = pure list-scheduler INSN_PRIORITY decisions in the constant-materialization/load chain interleaving."
   }

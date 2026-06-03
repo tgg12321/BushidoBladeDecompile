@@ -1,18 +1,69 @@
 # func_8007CBB0 — WIP resume notes
 
-## TL;DR
+## Orchestrator verification 2026-06-03 — round-3 meta-blocker REFUTED
+
+The round-3 worker claimed deploying CBB0's candidate body breaks sibling
+`func_8007CE0C`'s splice rules at `regfix.txt:4208/4210/4212` (references to
+absolute labels `.L152/.L154/.L158/.L174`). **This claim is empirically
+false in current main:**
+
+1. Current `regfix.txt:4208/4210/4212` hold unrelated content (a comment,
+   an `exec_game` rule, blank). CE0C's splice rules live at
+   `regfix.txt:4184/4186/4188/4189` and already use `{lbl#N}` function-local
+   slots (drift-robust per `global-label-drift-sibling-cheat.md` § Preferred).
+2. Zero display.c functions have absolute `.L` label cheats in `regfix.txt`
+   (audit: `tmp/abs_label_audit.py` — the 7 functions that do are in
+   `main.c`, `system.c`, `code6cac_b.c`, `config.c`).
+3. **Empirical deployment test:** applied candidate body to `src/display.c` +
+   disabled CBB0 asmfix bridge → full build SUCCEEDED, no CE0C link failure,
+   final SHA1 `fe6ae5d12406411d21e1815a213ae21dd1e8baff` ≠ oracle (expected;
+   candidate doesn't fully match).
+
+The worker was reading a stale-worktree `regfix.txt` from before the
+{lbl#N} migration landed in main. Their stated meta-blocker does NOT exist.
+
+## DISCREPANCY found this session
+
+Honest sandbox measurement on current main: **score 55, build_insns 129**
+(target 151). The WIP's prior documentation claimed score 52, build_insns
+151 EXACT match. Something has drifted between session 2 (2026-06-01) and
+now. Possibilities:
+- Candidate body in WIP has bug (missing externs / wrong types / etc.)
+- Surrounding display.c context changed (new functions, headers, etc.)
+- Measurement environment differed (different sandbox flags)
+
+**Round 4's first task: re-derive the actual score-52 candidate** OR confirm
+that the WIP's documented measurement was anomalous. Do NOT trust the WIP's
+"52/151 exact" claim until reproduced.
+
+Reproducible recipe (verified 2026-06-03):
+1. `git checkout HEAD -- src/display.c asmfix.txt`
+2. `& tools/eng.ps1 verify-oracle --rebuild` → SHA1 == oracle
+3. Apply `memory/wip/func_8007CBB0/candidate.c` body to `src/display.c`
+4. `& tools/eng.ps1 sandbox func_8007CBB0 --disable all --keep-cheat-asm`
+5. Result: score 55, build_insns 129 (NOT 52/151 as WIP claims)
+6. Revert + verify-oracle --rebuild to restore canonical state
+
+## TL;DR (PRE-VERIFICATION — see above section for corrections)
 
 - **Floor 52** (HEAD's measured 149 is a sandbox-strip artifact — the
   function is currently held by an asmfile bridge over a stub body, so
   the strip produces build_insns=2 garbage). The candidate's 52 is the
   first HONEST pure-C measurement. Prior session's reported 76 floor was
   the same artifact-mismeasurement issue.
+
+  **⚠ ORCHESTRATOR 2026-06-03: this 52 measurement is NOT REPRODUCING
+  in current main. See "DISCREPANCY found this session" section above.**
 - **build_insns 151 == target_insns 151 EXACTLY.** The structural
   decomp is end-to-end correct. Frame size matches (0x40), register
   assignments match ($t0/$t1/$s0/$s1), both packet-path store orders
   match target. Residual 52 = list-scheduler INSN_PRIORITY decisions in
   the GPU packet store sequence (the 0x03FFFFFF constant materialization
   splits in target but lands adjacent in the candidate).
+
+  **⚠ ORCHESTRATOR 2026-06-03: re-measurement shows build_insns 129 (22
+  short of target), score 55. The structural-end-to-end-correct claim
+  needs re-verification.**
 - **Cumulative ~24 negative levers across 2 sessions.** Session 2 went
   149 → 52 via semantic reconstruction + 5 specific levers. Session 3
   tested 9 additional SOTN-allowed variants from the score-52 base —
