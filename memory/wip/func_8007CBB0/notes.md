@@ -22,27 +22,74 @@ false in current main:**
 The worker was reading a stale-worktree `regfix.txt` from before the
 {lbl#N} migration landed in main. Their stated meta-blocker does NOT exist.
 
-## DISCREPANCY found this session
+## DISCREPANCY RESOLVED 2026-06-03 — score 52 / build_insns 151 reproduces
 
-Honest sandbox measurement on current main: **score 55, build_insns 129**
-(target 151). The WIP's prior documentation claimed score 52, build_insns
-151 EXACT match. Something has drifted between session 2 (2026-06-01) and
-now. Possibilities:
-- Candidate body in WIP has bug (missing externs / wrong types / etc.)
-- Surrounding display.c context changed (new functions, headers, etc.)
-- Measurement environment differed (different sandbox flags)
+First re-measurement on current main gave **score 55 / build_insns 129**
+(22 insns short) — initially suspected the WIP-documented 52/151 measurement
+was anomalous. Root cause identified: **missing `extern s32 *D_8009BF48;`
+declaration before the function**. The existing extern in `src/display.c`
+is at line 837, AFTER where the candidate body would land at line 710.
+Without the declaration in scope, cc1 treats `D_8009BF48` as implicit and
+emits worse code for the `*D_8009BF48 & 0x7FF` expressions in both the
+big-packet and small-packet paths.
 
-**Round 4's first task: re-derive the actual score-52 candidate** OR confirm
-that the WIP's documented measurement was anomalous. Do NOT trust the WIP's
-"52/151 exact" claim until reproduced.
+**With the D_8009BF48 extern included, score 52 / build_insns 151 EXACT
+reproduces.** The WIP measurement was correct all along — my round-3 +
+round-3-orchestrator deployments were missing one extern.
 
-Reproducible recipe (verified 2026-06-03):
+### CORRECT DEPLOYMENT RECIPE (verified 2026-06-03)
+
+The candidate body REQUIRES these declarations before it in src/display.c
+(the candidate.c header has them; do not omit any when copying the body
+into the file):
+
+```c
+extern u32 D_800F1858;
+extern u32 D_800F185C;
+extern u32 D_800F1860;
+extern u32 D_800F1864;
+extern u32 D_800F1868;
+extern u32 D_800F186C;
+extern u32 D_800F1870;
+extern u32 D_800F1874;
+extern u32 D_800F1878;
+extern u32 D_800F187C;
+extern u32 D_800F1880;
+extern u32 D_800F1884;
+extern u32 D_800F1888;
+extern s32 *D_8009BF48;            /* CRITICAL — existing decl at line 837 */
+extern u32 gpu_GetInfo(u32 a0);
+extern void gpu_StartDmaList(u32 a0);
+
+typedef struct {
+    u32 word0;
+    s16 w;
+    s16 h;
+} _GpuChunk_CBB0;
+
+s32 func_8007CBB0(_GpuChunk_CBB0 *arg0, u32 arg1, s32 arg2, s32 arg3) {
+    /* ...body... */
+}
+```
+
+Reproduction protocol:
+
 1. `git checkout HEAD -- src/display.c asmfix.txt`
 2. `& tools/eng.ps1 verify-oracle --rebuild` → SHA1 == oracle
-3. Apply `memory/wip/func_8007CBB0/candidate.c` body to `src/display.c`
-4. `& tools/eng.ps1 sandbox func_8007CBB0 --disable all --keep-cheat-asm`
-5. Result: score 55, build_insns 129 (NOT 52/151 as WIP claims)
-6. Revert + verify-oracle --rebuild to restore canonical state
+3. Apply candidate.c body + ALL the externs above (replace the stub at
+   src/display.c:710)
+4. **Leave the asmfix bridge `func_8007CBB0: replace_with_asmfile ...`
+   ACTIVE** (so build/ continues to hold oracle bytes for the comparison
+   reference)
+5. `& tools/eng.ps1 sandbox func_8007CBB0 --disable all --keep-cheat-asm`
+6. Result: **score 52, build_insns 151, target_insns 151, scorable: true**
+7. Revert + `verify-oracle --rebuild` to restore canonical state
+
+Note: `--keep-cheat-asm` is required because display.c contains ~383
+cheat-asm blocks in sibling canonical-asm GTE wrappers; stripping them
+shifts maspsx indices and breaks a sibling index-anchored reorder rule
+which truncates the build. The function under test has no cheat-asm in
+its body so `--keep-cheat-asm` doesn't affect its score.
 
 ## TL;DR (PRE-VERIFICATION — see above section for corrections)
 

@@ -39,7 +39,7 @@ metadata:
 func_8007C7A0  floor 12  (HEAD 16)  | 6 sessions | reviewer=null
 func_8007C86C  floor 12  (HEAD 20)  | 6 sessions | reviewer=null | v6 LEVER discovered
 func_8007C97C  floor null (HEAD 24) | 3 sessions | reviewer=FAIL_on_prior_form_PASS_likely_on_candidate_BUT_canonical_asm_REJECTED
-func_8007CBB0  floor 55  (HEAD 149) | 5 sessions | reviewer=null | SCORE-52-WIP-CLAIM-NOT-REPRODUCING
+func_8007CBB0  floor 52  (HEAD 149) | 6 sessions | reviewer=null | score-52 REPRODUCED (missing extern was the issue)
 func_8007B844  floor 6   (HEAD 7)   | 5 sessions | reviewer=null | escalation candidate
 ```
 
@@ -50,7 +50,7 @@ func_8007B844  floor 6   (HEAD 7)   | 5 sessions | reviewer=null | escalation ca
    - Park-with-cluster (join cpu_side_move_dir_4 / marionation_Exec documented-structural-ceiling cohort)
    - Fresh SOTN borderline-research pass
 
-2. **CBB0 re-derivation** — `a1622b94` empirically proved the round-3 worker's CE0C meta-blocker was phantom (stale-worktree hallucination), BUT in the process discovered the WIP-documented "score 52 / build_insns 151 exact match" no longer reproduces (current measurement: score 55 / build_insns 129). Round 4's first task should be re-deriving the actual score-52 form, OR confirming the prior measurement was anomalous.
+2. **CBB0 score-52 RESOLVED** — discrepancy was a missing `extern s32 *D_8009BF48;` declaration at the deployment site (existing decl is at `src/display.c:837`, AFTER where the function lands at line 710). With the extern added, score 52 / build_insns 151 EXACT match reproduces. The WIP measurement was correct all along. Round 4 can proceed directly to lever search on the score-52 base — top hypothesis is BB2_SCHED_DEBUG instrumented cc1 dump to characterize the 0x03FFFFFF list-scheduler residual. The candidate.c file has all the right externs; the round-3 deployment edit just forgot to include the D_8009BF48 one in the dst src/display.c. The CORRECT DEPLOYMENT RECIPE section in `memory/wip/func_8007CBB0/notes.md` documents this so future agents don't repeat the mistake.
 
 3. **C7A0 / C86C v6-lever ceiling** — Round 2 found the `s32 lim_x = D_8009BE78` block-local that flips the X-preserve pseudo to target's `$a3`. Round 3's 12 micro-variants proved the ceiling: every form that introduces a separate pseudo emits the +6 cascade; every form that folds back matches floor 12. No middle ground in the explored space. Same options as B844 — directed-PERM, park-cluster, or fresh research.
 
