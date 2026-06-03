@@ -295,6 +295,59 @@ void h(int x) {
     eq("lowercase-asm: register pin NOT flagged", len(hits), 0)
 
 
+def test_macro_asm_strip_round_trip() -> None:
+    """find_macro_asm_defs + strip_volatile_cheats_file — the PAD_NOPS
+    macro family pattern that appears in display.c, code6cac*.c. The
+    macro definition declares an `__asm__` body; downstream uses appear
+    as bare `NAME;` statements. Both must be stripped together — leaving
+    use sites with the macro definition removed causes maspsx to treat
+    `NAME;` as a tentative-global (`.comm NAME,4,4`) which crashes the
+    pipeline ('too many values to unpack'). Regression test wired
+    2026-06-03 after a round-2 worker report that surfaced the symptom
+    (turned out to be a stale-worktree env, but the regression test pins
+    the contract: macro definitions and call sites strip together)."""
+    src = '''\
+#define PAD_NOPS_1 __asm__(".section .text\\n    nop\\n")
+#define PAD_NOPS_2 __asm__(".section .text\\n    nop\\n    nop\\n")
+
+void f1(int a) {
+    do_thing(a);
+}
+PAD_NOPS_1; /* 1 NOP after f1 */
+
+void f2(int b) {
+    do_thing(b);
+}
+PAD_NOPS_2; /* 2 NOPs after f2 */
+'''
+    stripped, n_stripped = volatile_cheats.strip_volatile_cheats_file(src)
+
+    # Definitions: replaced with a /* STRIPPED CHEAT MACRO: ... */ comment so
+    # line numbers are preserved (downstream tools may anchor by line).
+    check("macro-strip: PAD_NOPS_1 def replaced with comment",
+          "/* STRIPPED CHEAT MACRO: #define PAD_NOPS_1" in stripped)
+    check("macro-strip: PAD_NOPS_2 def replaced with comment",
+          "/* STRIPPED CHEAT MACRO: #define PAD_NOPS_2" in stripped)
+
+    # Use sites: replaced with whitespace (NOT left as `PAD_NOPS_1;` — that
+    # would leak to maspsx). The contract is that no `PAD_NOPS_<n>;` token
+    # survives the strip, whether followed by a comment or end-of-line.
+    eq("macro-strip: PAD_NOPS_1; use sites stripped",
+       stripped.count("PAD_NOPS_1;"), 0)
+    eq("macro-strip: PAD_NOPS_2; use sites stripped",
+       stripped.count("PAD_NOPS_2;"), 0)
+
+    # Real function bodies and surrounding text untouched.
+    check("macro-strip: f1 body retained", "void f1(int a) {" in stripped)
+    check("macro-strip: f2 body retained", "void f2(int b) {" in stripped)
+    check("macro-strip: do_thing(a) retained", "do_thing(a)" in stripped)
+
+    # Strip count should be >=1 per macro family (2 defs minimum); use-site
+    # replacements may or may not count depending on implementation, but at
+    # least the macro-def strips must be accounted for.
+    check("macro-strip: nonzero strip count reported", n_stripped >= 2)
+
+
 def test_volatile_unused_locals() -> None:
     """find_volatile_unused_locals — closes the `volatile T pad;` scalar
     frame-coercion loophole. 4 COMPLETED-C functions affected per the
@@ -852,6 +905,7 @@ def main() -> int:
     test_cheats()
     test_addr_coerced_locals()
     test_lowercase_asm_cheats()
+    test_macro_asm_strip_round_trip()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
     test_empty_do_while_zero()
