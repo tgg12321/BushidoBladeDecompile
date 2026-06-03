@@ -1,5 +1,18 @@
 # func_8007C97C — WIP resume notes
 
+## Standing policy — canonical-asm authorization IS REJECTED for this function
+
+> 2026-06-02 user policy (codified after round 1 worker re-proposed it):
+> **DO NOT propose canonical-asm authorization for func_8007C97C unless you
+> first surface a fresh measured S1/S2/S6/S8 audit demonstrating STRONG-tier
+> evidence per `.claude/rules/hand-coded-asm-recognition.md`.** Target has
+> ZERO hand-coded signals (S1=0 `/* handwritten instruction */`, S2=none
+> hardcoded register signatures, S6=standard `$a0..$a3` ABI, S8=no
+> packed-multiply tell); no GTE/BIOS/scratchpad/no-C-form constructs.
+> The function is structurally normal C — see `meta.json` rejected_forms[0]
+> for the full evidence. Round-1 worker's proposal was the same misguided
+> framing as B844's session-3 proposal; both rejected on the same evidence.
+
 ## TL;DR
 
 - A `Match:` commit (`0e845d2`, 2026-06-01) was **reverted** (`45a7bb0`,

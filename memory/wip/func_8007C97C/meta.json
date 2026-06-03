@@ -5,16 +5,16 @@
     "head_floor": 24,
     "candidate_floor": null,
     "metric": "sandbox --disable all (masked Levenshtein)",
-    "note": "candidate_floor not yet measured — apply candidate.c to src/display.c then run sandbox to record. Expected to be > 0 (the score-0 form was the FAIL form with sp[4] coercion). The legitimate base may score similar to HEAD's 24 or lower; record the measurement when known."
+    "note": "candidate_floor not yet measured \u00e2\u20ac\u201d apply candidate.c to src/display.c then run sandbox to record. Expected to be > 0 (the score-0 form was the FAIL form with sp[4] coercion). The legitimate base may score similar to HEAD's 24 or lower; record the measurement when known."
   },
   "sessions": [
     {
       "date": "2026-06-01",
-      "lever": "inverted-null-check (`if (arg0 != NULL) { body; return X; } return 0;`) + m2c-shape body + r_e2 named intermediate + temp_v0 var-reuse — derived to replace the forbidden goto-end-prologue-delay-slot accumulator from a prior session",
+      "lever": "inverted-null-check (`if (arg0 != NULL) { body; return X; } return 0;`) + m2c-shape body + r_e2 named intermediate + temp_v0 var-reuse \u00e2\u20ac\u201d derived to replace the forbidden goto-end-prologue-delay-slot accumulator from a prior session",
       "lever_rule": "no-new-park-categories (SOTN-allowed named intermediate + variable-reuse, post 161c6c3)",
       "floor_was": 24,
       "floor_now": null,
-      "note": "Score-0 measurement on 2026-06-01 was on the FAIL form (with sp[4] coercion). The legitimate base — same form WITHOUT sp[4] — was not measured before the revert. Next session: apply candidate.c, measure, record."
+      "note": "Score-0 measurement on 2026-06-01 was on the FAIL form (with sp[4] coercion). The legitimate base \u00e2\u20ac\u201d same form WITHOUT sp[4] \u00e2\u20ac\u201d was not measured before the revert. Next session: apply candidate.c, measure, record."
     },
     {
       "date": "2026-06-02",
@@ -25,40 +25,45 @@
     }
   ],
   "reviewer": {
-    "verdict": "FAIL_on_prior_form_PASS_likely_on_candidate",
+    "verdict": "FAIL_on_prior_form_PASS_likely_on_candidate_BUT_canonical_asm_REJECTED",
     "date": "2026-06-02",
-    "evidence": "Independent cheat-reviewer agent FAILED commit 0e845d2 (the sp[4] write-only frame coercion) on Tests 1 (no semantic purpose), 2 (human-programmer test), and 6 (naming announces intent). The candidate.c form (this WIP) REMOVES the sp[4] writes — the inverted-null-check + m2c body + r_e2 + var-reuse parts are SOTN-allowed and would not draw the same FAIL. Verdict needs re-running on the candidate as a fresh review before any Match: commit."
+    "evidence": "(1) Round-0 sp[4] form FAILED cheat-reviewer (Tests 1, 2, 6). (2) Round-1 worker proposed canonical-asm authorization \u2014 REJECTED per user policy 2026-06-02 (no S1/S2/S6/S8 evidence; structurally normal C; see rejected_forms[0]). (3) Candidate (inverted-null-check + m2c body without sp[4]) needs independent reviewer verdict on first measurement; expected PASS (no constructs from the catalog)."
   },
   "remaining_gap": {
-    "summary": "Unknown — needs first-pass measurement on the legitimate-base candidate. The prior FAIL form happened to reach SHA1 == oracle via the sp[4] coercion controlling the frame size; the legitimate base will likely diverge on frame layout (since sp[4] was reserving frame bytes). The next session's task is to determine what gap remains and find a SOTN-clean lever that closes it without re-introducing forbidden frame-coercion constructs.",
+    "summary": "Unknown \u00e2\u20ac\u201d needs first-pass measurement on the legitimate-base candidate. The prior FAIL form happened to reach SHA1 == oracle via the sp[4] coercion controlling the frame size; the legitimate base will likely diverge on frame layout (since sp[4] was reserving frame bytes). The next session's task is to determine what gap remains and find a SOTN-clean lever that closes it without re-introducing forbidden frame-coercion constructs.",
     "rule_count_at_head": 9,
-    "rules_required_for_full_match": "Same 9 regfix substs as HEAD (regfix.txt — they were dropped by retire in 0e845d2, but restored by the revert). New shape may need different rules; un-knowable without measurement."
+    "rules_required_for_full_match": "Same 9 regfix substs as HEAD (regfix.txt \u00e2\u20ac\u201d they were dropped by retire in 0e845d2, but restored by the revert). New shape may need different rules; un-knowable without measurement."
   },
   "next_hypotheses": [
-    "Escalate for canonical-asm authorization analogous to gte-wrapper-misroute-park. The 4 dead frame writes are not pure-C-reproducible without a coercion construct. NOTE: per .claude/rules/hand-coded-asm-recognition.md strict gate, the canonical-asm option needs explicit signal-evidence (S1/S2/S6/S8) — the worker did NOT confirm hand-coded signals; this is a request for user adjudication, not an auto-authorize category. Compare against the B844 standard (B844's worker raised the same canonical-asm option in session 3 and the WIP user_policy_note documented why it failed the evidence threshold).",
-    "Apply candidate.c to src/display.c, measure sandbox --disable all, record candidate_floor in meta.json.",
-    "If candidate_floor is below HEAD's 24, identify what's still gapping. Common levers: frame-layout-natural (without coercion), narrow integer types (s16/u16/u8 typing of temp_v* might shift codegen), declaration-order reshuffling, m2c-style sub-expressions extracted into named intermediates.",
-    "ALLOCDBG-instrumented dump on the candidate to identify if a register-allocation tiebreaker is what's blocking.",
-    "Directed permuter from the candidate base with cheat-reviewer gating on output. The score-0 sp[4] form was a cheat-disguised-as-match; permuter output MUST be vetted before any commit.",
-    "Write-only-array detector (engine/volatile_cheats.py) is a separate work item filed in the revert commit message — closing that gap mechanically prevents future re-derivation of the rejected form."
+    "FIRST: measure the candidate. Apply candidate.c (the inverted-null-check + m2c body without sp[4]) to src/display.c, run `& tools/eng.ps1 sandbox func_8007C97C --disable all`. Record candidate_floor in meta.json. The score-null state is the round-1 worker's measurement failure (worktree toolchain not built); a worker with a built toolchain measures it in seconds.",
+    "Apply candidate.c, then directed permuter from the measured base with PER-CANDIDATE cheat-reviewer gating. The rejected form (sp[4] write-only array) demonstrated the engine's mechanical detector gap; any permuter output MUST be vetted against the catalog AND independently reviewed before commit.",
+    "ALLOCDBG-instrumented dump on the candidate to identify what's blocking the natural frame layout. The legitimate base may have a register-allocation tiebreaker the inverted-null-check structure exposes.",
+    "Narrow integer typing exploration \u2014 s16/u16/u8 on temp_a1/a2/v0/v1 may shift cc1's codegen to match target's frame without coercion. Tested in isolation; record the floor for each.",
+    "Write-only-array detector closure (engine/volatile_cheats.py) \u2014 separate work item from the revert commit. Mechanically prevents future sp[N] / pad[N] / spill[N] re-derivation under different names."
   ],
   "rejected_forms": [
+    {
+      "form": "Canonical-asm authorization (analogous to gte-wrapper-misroute-park)",
+      "score": null,
+      "reviewer_verdict": "REJECTED-by-user-policy 2026-06-02",
+      "reason": "REJECTED. Round 1 worker (and prior sessions) periodically propose this when the legitimate pure-C lever search plateaus. It is NOT evidence-backed for this function. Per .claude/rules/hand-coded-asm-recognition.md the strict gate requires STRONG-tier signals: S1 (/* handwritten instruction */ annotations in target.s) = 0; S2 (hardcoded source register signatures, SOTN tell) = none; S6 (custom-ABI / non-standard arg passing) = none; S8 (redundant low-bits mask before discarding shift, packed-multiply tell) = no. Target asm has zero no-C-form constructs (no GTE cop2 ops, no BIOS trampolines, no scratchpad pokes, no hand-scheduled GTE latency interleaving). Every instruction has a direct C analog. Per .claude/rules/no-compiler-divergence.md the toolchain is frozen; per .claude/rules/difficult-is-not-impossible.md a stuck function is unfinished work, never proven-impossible. Standing user policy: any future worker proposing canonical-asm for this function MUST first surface a fresh measured S1/S2/S6/S8 audit demonstrating STRONG-tier evidence \u2014 the absence-of-such-evidence is itself the answer, not a 'maybe ask the user' escalation."
+    },
     {
       "form": "s32 sp[4]; sp[0..3] = temp_*; (write-only frame coercion)",
       "score": 0,
       "build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
       "reviewer_verdict": "FAIL",
-      "reason": "FORBIDDEN: write-only-array variant of the dead-vars-local-array family. Detected by independent cheat-reviewer on Tests 1, 2, 6 — zero semantic purpose, no human programmer would write this, 'sp' announces coercion intent. Same family as `s32 buf[N];` (caught by find_unused_local_arrays) but with stores to suppress 'unused-variable' diagnostics. The mechanical detector missed it because 'sp' IS referenced (just being written). Form preserved at rejected/sp4_frame_coercion.c with the reviewer's evidence inline."
+      "reason": "FORBIDDEN: write-only-array variant of the dead-vars-local-array family. Detected by independent cheat-reviewer on Tests 1, 2, 6 \u00e2\u20ac\u201d zero semantic purpose, no human programmer would write this, 'sp' announces coercion intent. Same family as `s32 buf[N];` (caught by find_unused_local_arrays) but with stores to suppress 'unused-variable' diagnostics. The mechanical detector missed it because 'sp' IS referenced (just being written). Form preserved at rejected/sp4_frame_coercion.c with the reviewer's evidence inline."
     },
     {
-      "form": "Array variant referenced via reads in return (read+write array — alternative shape to the rejected sp[4] write-only)",
+      "form": "Array variant referenced via reads in return (read+write array \u00e2\u20ac\u201d alternative shape to the rejected sp[4] write-only)",
       "score": null,
-      "reason": "Considered as a structural alternative to the previously-rejected sp[4] write-only coercion. Fails human-programmer test and naming-intent test — no pure-C author would emit 4 dead frame stores through an array that's read-once for return value just to bend the prologue. Same family as dead-vars-local-array, just spelled with a read-tap. NOT MEASURED — rejected on review-discipline-before-commit / default-to-NO_PROGRESS grounds. (Workflow round 1, 2026-06-02.)"
+      "reason": "Considered as a structural alternative to the previously-rejected sp[4] write-only coercion. Fails human-programmer test and naming-intent test \u00e2\u20ac\u201d no pure-C author would emit 4 dead frame stores through an array that's read-once for return value just to bend the prologue. Same family as dead-vars-local-array, just spelled with a read-tap. NOT MEASURED \u00e2\u20ac\u201d rejected on review-discipline-before-commit / default-to-NO_PROGRESS grounds. (Workflow round 1, 2026-06-02.)"
     },
     {
       "form": "Struct-member variant (4 dead stores via local struct members)",
       "score": null,
-      "reason": "Considered as an alternative shape. Same default-to-NO_PROGRESS rejection: fails human-programmer test and naming-intent test. Local struct declared, members written, read once for return — same coercion-spelled-differently family as the rejected sp[4]. NOT MEASURED. (Workflow round 1, 2026-06-02.)"
+      "reason": "Considered as an alternative shape. Same default-to-NO_PROGRESS rejection: fails human-programmer test and naming-intent test. Local struct declared, members written, read once for return \u00e2\u20ac\u201d same coercion-spelled-differently family as the rejected sp[4]. NOT MEASURED. (Workflow round 1, 2026-06-02.)"
     }
   ],
   "memory_notes": [
@@ -67,7 +72,7 @@
     ".claude/rules/dead-vars-local-array.md (the catalog rule the rejected form violates)"
   ],
   "git_history": {
-    "match_commit_reverted": "0e845d2 (Match func_8007C97C — retire 9 rules via inverted-null-check + m2c-shape body)",
+    "match_commit_reverted": "0e845d2 (Match func_8007C97C \u00e2\u20ac\u201d retire 9 rules via inverted-null-check + m2c-shape body)",
     "revert_commit": "45a7bb0",
     "reason": "cheat-reviewer FAIL on the sp[4] write-only frame coercion. The inverted-null-check + m2c body + r_e2 + var-reuse parts are SOTN-allowed and preserved in this WIP."
   }
