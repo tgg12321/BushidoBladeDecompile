@@ -40,6 +40,14 @@
       "floor_was": 12,
       "floor_now": 12,
       "note": "Baseline confirmed: score=12, build_insns=50, target_insns=51. Explored 9 distinct legitimate levers — all measured negative. Notable new evidence: the C86C-sibling UB-form pattern (`var_a1 = arg1` ONLY in the negative-arg0 else branch, leaving var_a1 read uninitialized on positive arg0 path) DOES emit target's `move a3, a0` X-preserve allocation in the assembly — proving the $a3 allocation IS structurally reachable. However, that form scores 18 (worse than 12 on masked Levenshtein, even with build_insns matching target's 51) AND is a literal-rename-style coercion per [[param-local-alias-prologue-pair-flip]] — forbidden as cheat-by-spelling, same category as the previously-rejected raw_arg0 chain. So even though the $a3 register match exists in the explored search space, every path to it requires a UB or coercion pattern excluded by the completion standard."
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "workflow round 2: directed permuter from score-12 CLEAN single-function offset-0 base (per [[difficult-is-not-impossible]]); ~8254 random-mutation iters in 4 wallclock minutes from base permuter score 185",
+      "floor_was": 12,
+      "floor_now": 12,
+      "round": 2,
+      "note": "PERMUTER FLOOR REMAINS 12 ON HONEST SANDBOX METRIC. 8254 iters from the score-12 clean-target base produced 11 saved candidates at permuter-weighted scores 90/95(x2)/150(x2)/175(x3)/180(x4) — all below the base's permuter score 185 — but EVERY saved candidate failed self-vetting against cheat catalog: (1) score-90 dead-conditional-store + semantic change (zeros Y on arg0<0 path), (2) score-95 synthetic-local for shared-zero routing (one variant measured sandbox=13 WORSE than 12 — permuter weight ≠ sandbox masked Levenshtein, the metric gotcha from [[difficult-is-not-impossible]]), (3) score-150 semantic change (zeros Y on positive-arg0 path), (4) score-175 UB (uninitialized var_v1) + var_v0_2=arg0 clobbers, (5) score-180 named-intermediate-for-boolean + var_v0_2=arg0 clobber. Per [[no-new-park-categories]] § 'Auto-search tools — output is PROPOSALS, not winners' all correctly rejected. Corroborates round-1 UB-form proof: search space contains masked-Levenshtein-closer shapes, but every closer shape needs UB OR semantic change OR coercion-only synthetic local. Engine bug noted: `engine.inlineasm.write_stripped` strips `#define PAD_NOPS_*` macros in display.c, leaving raw `PAD_NOPS_1;` references that maspsx can't parse; worked around with `--keep-cheat-asm` flag (func has no cheat-asm pins so score unchanged)."
     }
   ],
   "reviewer": {
@@ -53,6 +61,7 @@
     "rules_required_for_full_match": "The 21 regfix substs in regfix.txt:3050-3071 are calibrated for HEAD's emission shape. The candidate's score-12 shape produces SHA1 838d440d... (mismatch). To commit the candidate as a Match the rules would need to be re-written for the new shape — net lateral movement, no rule reduction. So commit is gated on lowering the score further (toward 0)."
   },
   "next_hypotheses": [
+    "Workflow round 2 (2026-06-02): the 4-min/8254-iter random-mutation permuter from the score-12 offset-0 clean target is EXHAUSTED at floor 12 — every sub-baseline candidate matched a known cheat family (dead-conditional-store, semantic change, UB, synthetic-local coercion, named-intermediate-for-boolean). Remaining genuinely-untried avenues: (a) PERM_GENERAL DIRECTED permuter (~30k iters / ~15 min budget) with PERM_GENERAL macros around the X-clamp + dispatch branches — vet output strictly, re-measure any sub-baseline scores in actual sandbox (permuter weight ≠ sandbox masked Levenshtein); (b) instrumented cc1 ALLOCDBG/PRIODBG dump on the score-12 form per [[register-alloc-pure-c]] cpu_side_move_dir_4 mechanism — identify pseudo priorities of arg0/var_v0_2/var_a1/var_v1 and find a non-cheat lever (e.g. combine-foldable symbolic-delta) that bumps a pseudo's ref count without emitting bytes; (c) ENGINE FIX: `engine.inlineasm.write_stripped` PAD_NOPS macro-strip regression blocks `sandbox --disable all` on display.c (workaround --keep-cheat-asm; needs fix so future workers don't hit it); (d) park as INCOMPLETE with documented evidence ledger if (a)+(b)+(c) measure negative — ~60k+ permuter iters cumulative + 25+ structural variants + UB-form proof = genuine no-pure-C-lever-known territory pending user judgment per escalation boundary.",
     "Run tools/decomp-permuter from the score-12 base with PERM_GENERAL directed mutation targeting the X-preserve register slot specifically (`output-N-best` candidates should be vetted against the cheat catalog before acceptance). Permuter's randomization may find a structural variant the manual 9-lever sweep missed (e.g. a control-flow split that extends raw-arg0's live range without being a literal rename). CRITICAL: any closing form must be re-reviewed against [[param-local-alias-prologue-pair-flip]] and [[inline-asm-policy]] expanded catalog — reject forms with UB on var_a1, dead conditional stores, or unused-but-assigned locals.",
     "tools/decomp-permuter from the score-12 base — directed at the X-preserve register slot. CRITICAL: invoke cheat-reviewer on output per review-discipline-before-commit; reject literal renames, dead conditional stores, etc.",
     "ALLOCDBG-instrumented dump on the score-12 form (tmp/gccdbg/cc1) to identify why cc1 picks $a2 over $a3 — a livelen/refs imbalance may point at a legitimate structural change.",
@@ -115,6 +124,54 @@
       "form": "if (arg0 >= D_8009BE78) var_v0_2 = D_8009BE78 - 1; else var_v0_2 = arg0; [flipped compare avoids limit-1 subtraction in compare]",
       "score": 14,
       "reason": "Regression. build_insns 49 (1 short). The limit-1 elision changes the slt operand pairing, breaking the target's specific compare emission. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "Permuter score-90 (round 2): add `var_a1 = 0;` in the negative-arg0 else branch (before `var_v0_2 = 0;`).",
+      "score": 90,
+      "score_note": "permuter-weighted score; honest sandbox score unknown but irrelevant given semantic incorrectness",
+      "reason": "FORBIDDEN: SEMANTIC CHANGE — zeros Y when arg0<0 and arg1>0. Target asm at .L8007C7DC only sets var_v0_2=0 and falls through to normal Y sign-extend/clamp. Also dead-conditional-store family (var_a1 set unconditionally above; this is conditional re-zeroing for codegen coercion). Forbidden per [[no-new-park-categories]] / func_8007B844 precedent. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "Permuter score-95-1 (round 2): introduce `int new_var; new_var = 0; var_v0_2 = new_var;` in negative-arg0 else, and `var_a1 = new_var;` in negative-Y else (route shared zero through synthetic local to bias allocation).",
+      "score": 95,
+      "score_note": "permuter-weighted; MEASURED honest sandbox = 13 (WORSE than baseline 12) despite build_insns matching target 51",
+      "reason": "FORBIDDEN: cheat-by-spelling. Permuter-weight gain didn't translate to honest masked-Levenshtein progress (rule [[difficult-is-not-impossible]] § Metric gotchas). `new_var` is synthetic m2c-style auto-name with no semantic purpose; no programmer writes `int new_var; new_var = 0; var_v0_2 = new_var;` instead of `var_v0_2 = 0;`. Naming announces intent ('new_var' is m2c's auto-name for synthesized helpers). Justification reaches into GCC's allocator — classic cheat signal. Cheat-reviewer would FAIL. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "Permuter score-95-2 (round 2): same as 95-1 but reuses existing `s32 var_v0;` to hold 0 instead of fresh `new_var`.",
+      "score": 95,
+      "score_note": "permuter-weighted",
+      "reason": "FORBIDDEN: same coercion family as 95-1. var_v0 reused for zero-holding role unrelated to its later use (var_v0 = var_v0_2 & 0x3FF / 0xFFF). Plain dead-self-assign-of-zero spelled with existing local. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "Permuter score-150 (round 2, x2): place `var_a1 = 0;` INSIDE positive-arg0 X-clamp branches (after var_v0_2 = D_8009BE78 - 1 OR after var_v0_2 = arg0).",
+      "score": 150,
+      "score_note": "permuter-weighted",
+      "reason": "FORBIDDEN: SEMANTIC CHANGE — zeros Y when arg0 is positive. Target processes Y normally on positive-X path. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "Permuter score-175-1 (round 2): replace `var_a1 = 0;` in negative-Y else with `var_a1 = var_v1;`.",
+      "score": 175,
+      "score_note": "permuter-weighted",
+      "reason": "FORBIDDEN: UNDEFINED BEHAVIOR — var_v1 is uninitialized at this point. Forbidden per inline-asm-policy expanded catalog / cheat-by-spelling check. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "Permuter score-175-2 (round 2): `(var_a1 ^ 0)` + `D_8009BE74 + -1` rewrites + `var_v0_2 = arg0;` clobber in wide-mode branch + `var_v0 = var_v0_2; var_v0 = var_v0 & 0xFFF;` split.",
+      "score": 175,
+      "score_note": "permuter-weighted",
+      "reason": "FORBIDDEN: SEMANTIC CHANGE — the var_v0_2 = arg0 clobber undoes the X-clamp (uses unclamped raw arg0 instead of clamp(arg0, 0, D_8009BE78-1)). Cosmetic rewrites carry no value. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "Permuter score-175-3 (round 2): `var_v0_2 = arg0;` clobber in narrow-mode branch.",
+      "score": 175,
+      "score_note": "permuter-weighted",
+      "reason": "FORBIDDEN: same semantic change as 175-2 — uses unclamped arg0. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "Permuter score-180-1 (round 2): `int new_var; s16 new_var2;` synthetic locals — `new_var = (D_8009BE7A - 1) < var_a1; if (new_var)` (named-intermediate boolean) AND `new_var2 = var_v0_2; var_v0 = new_var2 & 0x3FF;` (shared-zero-style routing) AND `var_v0_2 = arg0;` clobber.",
+      "score": 180,
+      "score_note": "permuter-weighted",
+      "reason": "FORBIDDEN: multi-cheat compound. Named-intermediate-for-boolean is coercion-only (materializes comparison as separate insn-pseudo to shift scheduling). Shared-routing through new_var2 has no semantic gain. var_v0_2 = arg0 is semantic change (unclamped). (Workflow round 2, 2026-06-02.)"
     }
   ],
   "memory_notes": [

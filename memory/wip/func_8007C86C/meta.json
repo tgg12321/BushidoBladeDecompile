@@ -40,6 +40,14 @@
       "floor_was": 12,
       "floor_now": 12,
       "note": "Confirmed documented score-12 baseline reproduces. Disassembly diff vs target confirms WIP's structural-ceiling claim exactly: idx 0 `move a2,a0` (mine) vs `move a3,a0` (target) — X-preserve register, cc1 ascending-allocator picks the lower-numbered $a2 — then cascades through ~12 register-rotation diffs including the missing target idx 16 `move a3,v0` park-merge. No tested structural perturbation flips this without invoking forbidden constructs (literal renames, UB-conditional-init, dead-conditional store). Corroborates session 3's ~5400-iter permuter finding that only UB-conditional-init forms close further. Honest pure-C floor = 12."
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "workflow round 2: BB2_ALLOC_DEBUG (tmp/gccdbg/cc1) instrumented cc1 dump on score-12 candidate AND sibling func_8007C748 (matched 3-arg) AND func_8007C938 (matched 2-arg dispatch sibling) + 13 fresh structural variants",
+      "floor_was": 12,
+      "floor_now": 12,
+      "round": 2,
+      "note": "ALLOCDBG MECHANISM EVIDENCE: at score-12 form, cc1 emits 11 pseudos. The X-preserve pseudo is #72 (nrefs=2 livelen=11 pri=1818, ord=10 LAST) and gets $a2 (reg 6). Target wants it in $a3 (reg 7). KEY FINDING: variant v6 (`s32 lim_x = D_8009BE78` block-local) IS THE FIRST KNOWN LEVER that flips the X-preserve to $a3 — ALLOCDBG confirms a new pseudo 91 (nrefs=3 livelen=7 pri=4285) gets $a2 at ord=6, and pseudo 76 (X-preserve role, ord=8) flips to $a3. v6 also produces target's missing idx-16 `move a3,v0` park-merge. BUT v6 scores 18 (REGRESSION) because lim_x's lifetime forces an extra early `move $3,$4` preserve and shifts pseudo 77 from $a2 to $a1, netting +6 cascade diffs. Three additional ALLOCDBG takeaways: (1) C748 has only 5 pseudos, args take $a0/$a1/$a2 naturally — fundamentally different shape; (2) C938 has only 4 pseudos and uses `new_var2 = arg0` as SOTN-allowed named-intermediate (works because no X-clamp clobbers $a0); (3) X-preserve in C86C is structurally necessary (target's idx-12-14 reuses $a0 for `lim_x-1` then re-reads preserve in branch delay slot at idx 14 `addu v0, a3, $zero`). Mechanism for flipping the X-preserve to $a3 NOW CHARACTERIZED: introduce pseudo with priority > pseudo-72 but lifetime/refs that DON'T also bias pseudo 76/77's allocation. v6 is the existence proof. The score-12 candidate remains the practical floor under explored named-intermediate / decl-order / operand-flip lever class. v17 (v6 + no widemask precompute) scored 23 = worst regression."
     }
   ],
   "reviewer": {
@@ -53,6 +61,7 @@
     "rules_required_for_full_match": "21 substs in regfix.txt:3073-3094 calibrated for HEAD form. Candidate's score-12 shape produces SHA1 947ff79e... (mismatch). Same lateral-movement reason as C7A0 — rules would need re-writing for the new shape with no net rule reduction; commit gated on lowering the score further (toward 0)."
   },
   "next_hypotheses": [
+    "Workflow round 2 (2026-06-02) v6 finding (`s32 lim_x = D_8009BE78` block-local) is the FIRST KNOWN LEVER that flips C86C's X-preserve pseudo to target's $a3 — but it costs +6 score points due to (a) early `move $3,$4` and (b) pseudo 77 cascade to $a1. Next session target: ELIMINATE those costs via (1) PERMUTER FROM v6 BASE — directed PERM_GENERAL on prologue region from the score-18 lim_x form, ~30k iters, vet output against cheat catalog (no UB-conditional-init, no dead-conditional-store, no param-aliases); OR (2) MICRO-VARIANT SWEEP ON LIM_X SHAPE — try (i) lim_x declared outer-scope but only read in if-branch, (ii) lim_x = `s16` (vs s32 — test if sign-extension penalty can be bypassed), (iii) lim_x = `(s32)D_8009BE78` explicit cast, (iv) lim_x = `D_8009BE78 - 1` directly, (v) lim_x read once for comparison only with `var_v0_2 = D_8009BE78 - 1` (replacing lim_x - 1 in the assignment). The mechanism dump shows pseudo 91 emerges in v6; the question is whether a different lim_x shape produces an EQUIVALENT pseudo 91 without the early preserve emit. ALSO: run BB2_PRIO_DEBUG on candidate vs v6 to verify which dependency edges create v6's extra preserve insn — points at the exact RTL-level chain to break in C source. JOINT WITH C7A0: iterate v6 finding on C7A0 too (constant 0xE3 vs 0xE4 is the only difference — should produce SAME ALLOCDBG flip).",
     "Joint instrumented `BB2_ALLOC_DEBUG` cc1 dump of func_8007C86C at the score-12 form + sibling func_8007C748 (3-arg, matched pure-C) — same as the cpu_side_move_dir_4 session 5 lever discovery method. The dump exposes the priority gap between the pseudo getting $a2 (mine) vs the equivalent in C748 that achieves a natural higher-callee-save landing. If C748's allocation table shows a specific livelen/refs profile that flips the tiebreaker, search for a combine-foldable pure-C lever that mimics it in C86C without emitting bytes (analogous to C5MD4's tbl_125c+delta chain). Also worth checking: ALLOCDBG with the Y wide-mask precompute already applied (i.e. the score-12 form), since prior sessions only ran it on the score-17 clean v8 base.",
     "tools/decomp-permuter from the score-12 base (NOT the score-17 base session 3 used). Directed at the X-preserve register slot. CRITICAL: invoke cheat-reviewer on output.",
     "ALLOCDBG-instrumented dump on the score-12 form to identify cc1's $a2-vs-$a3 tiebreaker mechanism.",
@@ -99,6 +108,91 @@
       "form": "OR-chain reordering `return var_v0 | 0xE4000000 | var_v1`",
       "score": 13,
       "reason": "Slight regression (12 -> 13). cc1's combine canonicalises associativity differently from this source layout; the `(var_v1 | (var_v0 | 0xE4000000))` form (= r_e4 named-intermediate form) is the minimum. (Workflow round 1, 2026-06-02.)"
+    },
+    {
+      "form": "v1 (round 2): operand-flip on X clamp comparison (`if (arg0 > (D_8009BE78 - 1))` per compare-operand-order-register.md)",
+      "score": 12,
+      "reason": "Flat — score 12 unchanged. The compare-operand-order lever works for sibling-call wrappers where LHS is a local and target's allocation flows from RTL-emission order, but here the operand swap is folded by combine before allocno priority kicks in. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v2 (round 2): operand-flip on BOTH X and Y comparisons",
+      "score": 12,
+      "reason": "Flat — same combine fold as v1. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v3 (round 2): var_a1 = arg1 preload moved to AFTER X-clamp (instead of at function top)",
+      "score": 12,
+      "reason": "Flat — arg1's pseudo lifetime is bounded by its uses regardless of preload timing; cc1's pseudo creation order is RTL-emission order, not declaration order. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v4 (round 2): param mutation — write clamp result to arg0 itself (instead of var_v0_2)",
+      "score": 16,
+      "reason": "REGRESSION — does NOT flip X-preserve register to $a3 (ALLOCDBG confirms pseudo 72 still gets $a2). Borderline cheat-by-spelling (parameter mutation as result-holder) but irrelevant to the lever question. Differs from rejected_forms[2]'s var_v0_2 = arg0 initial-overwrite cheat. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v5 (round 2): s16 lim_x = D_8009BE78 block-local in X-clamp (read full halfword once, use twice as lim_x - 1)",
+      "score": 12,
+      "reason": "Flat — block-local lim_x folded back to inline form by combine because s16 forces sign-extension that combine eliminates. Distinct from prior xlim test (which scored 20 — held the -1 form). (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v6 (round 2): s32 lim_x = D_8009BE78 block-local (full halfword as s32 to avoid sign-extension) — THE FIRST KNOWN LEVER that flips X-preserve pseudo to $a3",
+      "score": 18,
+      "reason": "REGRESSION but WITH MECHANISM EVIDENCE — IS the first known lever that flips X-preserve pseudo to target's $a3 (ALLOCDBG confirms pseudo 76 → reg 7 at ord=8 instead of candidate's pseudo 72 → reg 6 at ord=10). Also produces target's missing idx-16 `move a3, v0` park-merge. COST: lim_x's lifetime introduces extra early `move $3, $4` preserve and shifts pseudo 77 to $a1 (target $a2), netting +6 cascade diffs. THIS IS THE NEXT-SESSION BASELINE FOR DIRECTED PERMUTER. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v7 (round 2): s32 lim_x AND s32 lim_y block-local (both clamps)",
+      "score": 21,
+      "reason": "REGRESSION. lim_y mirrors v6's effect on Y-clamp slot but compounds the cascade. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v8 (round 2): var_v0_2 s32 retype (vs s16) — eliminates one sign-extension",
+      "score": 17,
+      "reason": "REGRESSION. Changes upper-clamp result width which propagates through mask operations differently from target. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v9 (round 2): Y-clamp BEFORE X-clamp (change pseudo creation order)",
+      "score": 24,
+      "reason": "REGRESSION. Early Y-clamp lengthens arg0's lifetime, exacerbating the preserve cascade. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v10 (round 2): declare var_v0_2 LAST (after var_v0, var_v1) — declaration order swap",
+      "score": 12,
+      "reason": "Flat — confirms ALLOCDBG finding that pseudo numbers for autos follow RTL-emission order, not C declaration order. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v11 (round 2): no var_a1 preload — Y-clamp writes directly to arg1 parameter (in-place clamp)",
+      "score": 12,
+      "reason": "Flat — arg1 is read after writes (mask), so this is NOT the forbidden Lever D pattern. Same allocation as candidate. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v12 (round 2): OR-chain swap `return (var_v0 | 0xE4000000) | var_v1`",
+      "score": 13,
+      "reason": "Minor regression. cc1 canonicalises OR associativity differently from this source layout. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v13 (round 2): drop precomputed `var_v1 = var_a1 & 0xFFF` and inline mask+shift in each dispatch arm",
+      "score": 16,
+      "reason": "REGRESSION. Removes the SOTN duplicate-read precompute lever proven necessary (session 4 evidence). (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v14 (round 2): no widemask precompute + var_a1 & 0xFFF inside narrow else only",
+      "score": 18,
+      "reason": "REGRESSION. Same as v13 effectively — drops the duplicate-read benefit. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v15 (round 2): decl swap (var_a1 before var_v0_2)",
+      "score": 12,
+      "reason": "Flat — same as v10, decl order does not affect cc1 pseudo numbering. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v16 (round 2): s32 limit_minus_one = D_8009BE78 - 1 named intermediate (vs v6's lim_x which holds full value)",
+      "score": 18,
+      "reason": "REGRESSION — same effect family as v6 (the -1 form vs the full form behaves identically wrt allocno priority). (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "v17 (round 2): v6 (lim_x) + no widemask precompute",
+      "score": 23,
+      "reason": "WORST REGRESSION. Two simultaneous lever interventions cancel/compound badly. (Workflow round 2, 2026-06-02.)"
     }
   ],
   "memory_notes": [

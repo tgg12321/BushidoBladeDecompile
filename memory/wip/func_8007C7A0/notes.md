@@ -66,3 +66,34 @@ space DOES contain a path to the right register allocation, but every known
 path requires UB or a literal-rename coercion. The score-12 candidate remains
 the legitimate pure-C floor. New top next_hypothesis: directed permuter from
 score-12 base with cheat-reviewer gating on any saved candidate.
+
+## Session 2026-06-02 (workflow round 2)
+
+**Floor unchanged at 12.** Executed the round-1 top hypothesis: directed
+permuter from score-12 CLEAN single-function offset-0 target. ~8254 random-
+mutation iters in 4 wallclock minutes from base permuter score 185. Produced
+11 saved candidates at permuter-weighted scores 90/95(x2)/150(x2)/175(x3)/180(x4)
+— ALL failed self-vetting against the cheat catalog:
+
+- **score-90**: `var_a1=0` in neg-arg0 else = dead-conditional-store + semantic change
+- **score-95** (x2): synthetic `new_var`/reuse-`var_v0` for shared-zero routing; one
+  variant MEASURED sandbox=13 (WORSE than 12) despite build_insns matching target
+- **score-150** (x2): `var_a1=0` inside positive-arg0 X-clamp branches = semantic change
+- **score-175** (x3): uninitialized var_v1 read (UB) + var_v0_2=arg0 clobbers (semantic change)
+- **score-180** (x4): named-intermediate-for-boolean + var_v0_2=arg0 clobbers
+
+KEY EVIDENCE: corroborates round-1 UB-form proof. The search space DOES contain
+masked-Levenshtein-closer shapes, but every closer shape requires UB OR semantic
+change OR coercion-only synthetic local. Permuter weight ≠ sandbox masked
+Levenshtein ([[difficult-is-not-impossible]] § Metric gotchas) — empirically
+confirmed.
+
+**Engine bug surfaced** (filed as separate work item): `engine.inlineasm.write_stripped`
+strips `#define PAD_NOPS_*` macros in display.c, leaving raw `PAD_NOPS_1;` references
+that maspsx can't parse. Worked around with `--keep-cheat-asm` (no effect — func has
+no cheat-asm pins). Blocks `sandbox --disable all` on display.c entirely.
+
+New top next_hypothesis: PERM_GENERAL directed (not random) permuter ~30k iters,
+OR ALLOCDBG/PRIODBG instrumented cc1 dump on score-12 form. ~60k+ cumulative
+permuter iters + 25+ structural variants + UB-form proof = approaching the
+escalation boundary for parking with documented evidence ledger.

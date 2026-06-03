@@ -34,6 +34,14 @@
       "floor_was": 6,
       "floor_now": 6,
       "note": "All 5 fresh structural variants confirmed the score-6 floor: single-stmt mask fuse regresses 6->7, hoist-mask-init-before-call regresses 6->19, explicit ret-variable + comma-operator return are copy-prop-folded to identical RTL (still 6), val-split renames regresses 6->7. NEW EVIDENCE: sibling gpu_ClearOTag (display.c:177, byte-matched, not on queue) has the IDENTICAL final-statement C tail and emits return-staging AFTER the store — exactly our score-6 emission order. Proves score-6 IS a legitimate matching emission shape for THE SAME C tail in a sibling; the discriminating factor is the function's preceding-body shape (single vtable call here vs gpu_ClearOTag's loop), not the tail's C structure."
+    },
+    {
+      "date": "2026-06-02",
+      "lever": "workflow round 2: re-verified score-6 baseline; tested 4 NEW pure-C variants targeting orchestrator hint's mechanistic finding (target uses RETURN-STAGED $v0 as store base via `sw $v1,0($v0)`) + refined predecessor-list confirmation",
+      "floor_was": 6,
+      "floor_now": 6,
+      "round": 2,
+      "note": "All 4 variants confirmed score-6 floor or regressed: ot[0]=mask (6, identical lowering as *ot=mask), out_ptr=ot;*out_ptr=mask;return out_ptr (6, copy-prop fold), u32 addr=(u32)&g_gpu_ot_end; *ot=addr&mask (7, breaks named-intermediate addr-register alignment), p=ot+0;*p=mask;return p (6, combine folds pointer-arithmetic identity). PREDECESSOR-LIST EVIDENCE corroborates session-3 BB2_SCHED_DEBUG: store insn chain depth = 4 (lui→addiu→and→sw), return-staging chain depth = 1 (move v0,s0 → jr ra). Store base allocation: cc1 allocates `ot` ($a0 at entry) to callee-save $s0 because it must survive the v0[11](ot,n) call; store base pseudo is $s0, not $v0. To match target, store insn would need to depend on return-staging output (base = $v0). The only way in C is to make the store base pseudo equal the return value pseudo as a NEW pseudo (not foldable to ot). Every tested form folds via copy-prop. NO CHEAT-BY-SPELLING SURFACED. Sibling-evidence reconfirmed: gpu_ClearOTag has IDENTICAL tail emitting score-6 shape (sw-then-move) — discriminator IS preceding-body structure (vtable call vs loop)."
     }
   ],
   "reviewer": {
@@ -46,6 +54,7 @@
     "rule_count_at_head": 6,
     "rules_required_for_full_match": "6 regfix rules calibrated for HEAD's emission. The candidate's score-6 shape produces a different emission that doesn't byte-match; the rules would need rewriting for the new shape with no net rule reduction. Same lateral-movement reason as C7A0 / C86C."
   },
+    "WORKFLOW ROUND 2 NEXT HYPOTHESES (2026-06-02): PRIORITY-1 — synthesize a degenerate-loop body wrapping the vtable-call so cc1 sees a loop-shape preceding-body matching gpu_ClearOTag's structure. The round-1 sibling-mimicry hypothesis was deprioritized because gpu_ClearOTag's tail matches our score-6 shape (not target's), but that conclusion has a subtle flaw: gpu_ClearOTag's tail emits AFTER a do-while loop that mutates ot via `a0 = next` inside. The loop ITSELF re-binds ot in a way the simple func_8007B844 form doesn't. If the loop-rebinding (not just the loop's existence) is what makes the tail emit a particular shape, then a synthetic degenerate `do { } while (0);` won't help — but an `if (n_unused-- > 0) ot = ot;` style loop-counter-decrement that genuinely USES n (in a way that survives DCE without emitting net bytes) might. NB: this risks the no-new-park-categories family if `ot = ot` is the rebinding mechanism. Worth instrumenting BB2_SCHED_DEBUG on gpu_ClearOTag's tail vs B844's tail to compare predecessor lists at the .greg/.sched dump level. PRIORITY-2 — examine whether ARG-SAVE prologue scheduling affects the post-call $s0/$v0 allocation choice. The prologue saves $s0/$s1 + arg-saves into them BEFORE the if(debug>=2) branch. cc1's allocator sees `ot` (in $s0) as live from prologue through entire function. Perturbing the prologue's arg-save sequence (by changing which arg is referenced first in body) might shift pseudo-creation-order in a way that flips the store-base allocation. Untried; risk: the arg-save reorder via local renames IS the param-local-alias-prologue-pair-flip cheat (forbidden); legitimate only if accomplished by reordering function's reads of ot vs n. PRIORITY-3 — PERM_GENERAL directed permuter from score-6 base with explicit direction 'extend return-staging chain depth without emitting bytes'. Randomization permuter has ~50k iters cumulative; PERM_GENERAL has not been targeted at return-staging pseudo's REG_DEP_TRUE list. Lowest confidence, lowest risk. EXPLICIT NON-AVENUES: function-pointer return-type lie (rejected_forms[1], FORBIDDEN), conditional dead-store family (FORBIDDEN by detector), volatile-on-local-pointer rebinding (open-class cheat by intent test), register-asm pin on `ot` post-call (cheat-asm pin, FORBIDDEN), canonical-asm authorization (NOT evidence-backed; all S1-S8 signals = 0).",
     "ORCHESTRATOR CORRECTION 2026-06-02 (post-round-1): tail-bytes diff EXECUTED between gpu_ClearOTag (8007B814-8007B828) and func_8007B844 (8007B8A8-8007B8C0). The tails do NOT match — gpu_ClearOTag emits store-then-move (mask in $v1, addr-into-$v0, sw $v0 to 0($s0), addu $v0,$s0,$zero); B844 target emits move-then-store with $v0 as store base (mask in $a0, addu $v0,$s0,$zero, addr-into-$v1, sw $v1 to 0($v0)). KEY MECHANISTIC FINDING: B844 target uses the RETURN-STAGED $v0 as the store base address. cc1 needs to be steered such that the OT pointer's POST-CALL allocation lands the store base in $v0 (not $s0) — equivalent to: cc1 must keep $s0 free during the store-base materialisation. The 'sibling-mimicry degenerate-loop' hypothesis was WRONG-DIRECTION (gpu_ClearOTag's loop emits store-then-move, our current score-6 shape). The 'masked-6 hides 0-distance' hypothesis was FALSE (tails are byte-different). New top hypothesis: instrumented BB2_SCHED_DEBUG dump on the score-6 form to identify the predecessors of the store insn vs the return-staging insn — find what makes the store-base materialisation depend on $v0 (return-value reg) rather than $s0 (saved-arg reg). Then derive a non-cheat C structure that triggers that dependency. CAUTION: function-pointer return-type lie variants are FORBIDDEN (rejected_forms[1]).",
     "Sibling-mimicry hypothesis (DEPRIORITIZED — tail diff shows WRONG DIRECTION): rewrite the vtable-call block as a degenerate loop mirroring gpu_ClearOTag's preceding-body structure. The tail-byte diff (above) shows gpu_ClearOTag's tail matches our SCORE-6 form, not B844's target. So mimicking gpu_ClearOTag's body would keep us at score 6, not close to 0. Demoted from top-of-list.",
     "Fresh SOTN borderline-research pass — direct master-branch evidence search for patterns that affect sched.c return-staging priority. Categories: thin vtable-dispatch wrappers, OT-link builders, debug-conditional-call patterns. The 2026-06-02 borderline research found 6 NEW SOTN-allowed techniques; another pass may surface more.",
@@ -94,6 +103,26 @@
       "form": "function-pointer return-type lie: declare the vtable entry's return type to coerce $v0 liveness through the call",
       "score": null,
       "reason": "Cheat-by-spelling — falsely declaring a function pointer's return type to manipulate GCC's value-flow analysis. The actual called function does not return that type; the declaration is a lie that exists solely for codegen control. Same family as inline-asm-policy expanded catalog. Not committed; tested only to rule out."
+    },
+    {
+      "form": "ot[0] = mask; (round 2: array-index store at idx [0] instead of dereference)",
+      "score": 6,
+      "reason": "Semantically and syntactically equivalent to *ot=mask; lowers to identical RTL. Sandbox 6 (no change). Documents an attempted re-spelling of the existing form — fails to differentiate the store insn's base-register allocation. Not a new lever, just a confirmation that surface syntax doesn't reach the underlying RTL choice. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "u32 *out_ptr; ... out_ptr = ot; *out_ptr = mask; return out_ptr; (round 2: post-call pointer rebinding via separately-named local)",
+      "score": 6,
+      "reason": "Copy-prop folds out_ptr back to ot before RTL gen; emitted RTL is identical to baseline. Sandbox 6 (no change). Same family as the prior round's `u32 *ret = ot;` rebinding, but spelled with declaration FIRST and assignment AFTER the call. Confirms that variable name and assignment timing don't defeat copy-prop. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "u32 addr; ... mask = 0xFFFFFF; addr = (u32)&g_gpu_ot_end; *ot = addr & mask; (round 2: split-name mask + addr as separate locals, AND in store expression)",
+      "score": 7,
+      "reason": "Regresses 6 -> 7. The named-intermediate `mask = ((u32)&g_gpu_ot_end) & mask;` form is load-bearing for addr-register $v1 alignment; splitting mask AND addr into two locals with the AND fused into the store expression breaks Lever B's effect. Essentially the val-split form under a different name, confirming the named-intermediate constraint is tight. (Workflow round 2, 2026-06-02.)"
+    },
+    {
+      "form": "u32 *p; ... p = ot + 0; *p = mask; return p; (round 2: pointer-arithmetic identity to attempt defeat of copy-prop)",
+      "score": 6,
+      "reason": "Combine simplifies `ot + 0` to `ot` before flow.c; p is then copy-prop-folded to ot like all other rebinding forms. Sandbox 6 (no change). Confirms that algebraic identities GCC's combine can fold are not viable carriers for surviving rebinding — any new lever in this family must use an expression combine CANNOT fold to ot. (Workflow round 2, 2026-06-02.)"
     }
   ],
   "memory_notes": [

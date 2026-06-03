@@ -56,3 +56,45 @@ the missing idx-16 park-merge. cc1 ascending-allocator picks $a2; only UB or
 literal-rename forms flip to $a3 in the explored space. New top next_hypothesis:
 joint BB2_ALLOC_DEBUG dump on C86C + sibling C748 (3-arg matched) to compare
 the pseudo's livelen/refs profile.
+
+## Session 2026-06-02 (workflow round 2)
+
+**Floor unchanged at 12, but MECHANISM FULLY CHARACTERIZED via BB2_ALLOC_DEBUG.**
+
+Ran instrumented cc1 (tmp/gccdbg/cc1) on the score-12 form + matched siblings
+C748 (3-arg) and C938 (2-arg dispatch). Tested 13 fresh structural variants.
+
+**KEY FINDING — variant v6 (`s32 lim_x = D_8009BE78` block-local) is the FIRST
+KNOWN LEVER that flips the C86C X-preserve pseudo to target's $a3:**
+
+- Score-12 candidate: pseudo #72 (nrefs=2 livelen=11 pri=1818, ord=10 LAST) → $a2
+- v6: new pseudo #91 (nrefs=3 livelen=7 pri=4285) → $a2 at ord=6; pseudo #76
+  (X-preserve role, ord=8) flips to $a3 — **TARGET'S ALLOCATION ACHIEVED**
+- v6 also produces target's missing idx-16 `move a3, v0` park-merge
+
+BUT v6 scores 18 (regression) because lim_x's lifetime forces:
+- (a) extra early `move $3, $4` preserve at idx 0 (lim_x's load forces arg0
+  preservation earlier)
+- (b) pseudo #77 shift from $a2 (target) to $a1
+- Net: +6 cascade diffs
+
+This is the score-12 → $a3-allocation pathway's existence proof. The mechanism
+for flipping X-preserve to $a3 is now characterized: **introduce a pseudo with
+priority > pseudo-72 but lifetime/refs that DON'T also bias pseudo 76/77's
+allocation.**
+
+**Sibling ALLOCDBG corroboration:**
+- C748 has only 5 pseudos; args take $a0/$a1/$a2 naturally — fundamentally
+  different shape
+- C938 has only 4 pseudos and uses `new_var2 = arg0` as SOTN-allowed
+  named-intermediate (works because no X-clamp clobbers $a0)
+- C86C's X-preserve is structurally necessary: target's idx-12-14 reuses $a0
+  for `lim_x - 1` then re-reads preserve in branch delay slot at idx 14
+  `addu v0, a3, $zero`
+
+New top next_hypothesis: PERMUTER FROM v6 BASE (score-18 lim_x form) with
+PERM_GENERAL directed on the prologue region, ~30k iters. Vet output strictly
+against the cheat catalog. Alternatively, micro-variant sweep on lim_x SHAPE
+(outer-scope, s16 retype, explicit cast, lim_x-1 directly, lim_x read-once for
+comparison only). Joint with C7A0: v6 lever should produce the same ALLOCDBG
+flip there (constant 0xE3 vs 0xE4 is the only difference).

@@ -20,6 +20,48 @@ gpu_ClearOTag finding is the new actionable lead — see new top-of-list
 next_hypothesis: sibling-mimicry (degenerate-loop wrapping) AND a target.s tail
 diff between B844 and gpu_ClearOTag to first confirm whether the masked-12
 hides a 0-distance match (run retire/verify-oracle to settle).
+
+## Session 2026-06-02 (workflow round 2)
+
+**Floor unchanged at 6.** Re-verified score-6 baseline; tested 4 NEW pure-C
+variants targeting the orchestrator hint's mechanistic finding (target uses
+RETURN-STAGED $v0 as store base via `sw $v1,0($v0)`):
+
+- `ot[0] = mask;` — score 6, identical RTL lowering as `*ot = mask;`
+- `out_ptr = ot; *out_ptr = mask; return out_ptr;` — score 6, copy-prop fold
+- `u32 addr = (u32)&g_gpu_ot_end; *ot = addr & mask;` — score 7, breaks
+  named-intermediate addr-register alignment
+- `p = ot + 0; *p = mask; return p;` — score 6, combine folds pointer-arithmetic
+  identity
+
+**Predecessor-list evidence refined** (corroborates session-3 BB2_SCHED_DEBUG):
+
+- STORE INSN chain depth = 4 (`lui → addiu → and → sw`)
+- RETURN-STAGING insn chain depth = 1 (`move v0,s0 → jr ra`)
+- Store base allocation: cc1 allocates `ot` ($a0 at entry) to callee-save $s0
+  because it must survive the v0[11](ot,n) call; store base pseudo is $s0,
+  not $v0
+
+To match target, the store insn would need to depend on the return-staging
+output (base = $v0). The only way in C is to make the store base pseudo
+equal the return value pseudo as a NEW pseudo (not foldable to ot). Every
+tested form folds via copy-prop.
+
+**NO CHEAT-BY-SPELLING SURFACED.** The four FORBIDDEN constructs to avoid
+(function-pointer return-type lie, dead-conditional-store, volatile-coercion,
+register-asm pin) were not pursued. The volatile-on-local-pointer probe was
+rejected at design time per the open-class cheats-by-any-spelling intent test.
+
+**Sibling-evidence reconfirmed**: gpu_ClearOTag has IDENTICAL tail C emitting
+the score-6 shape (sw-then-move). The discriminating factor IS preceding-body
+structure (single vtable call vs gpu_ClearOTag's do-while loop) — NOT the tail.
+
+New top next_hypothesis: synthetic degenerate loop wrapping the vtable-call
+where the loop ITSELF re-binds ot (not just exists), matching gpu_ClearOTag's
+loop-rebinding pattern. Risk-vetted carefully against no-new-park-categories
+(an `ot = ot` rebinding is borderline). Alternative: BB2_SCHED_DEBUG dump on
+gpu_ClearOTag's tail vs B844's tail to compare predecessor lists at .greg/.sched
+dump level — if the lists differ, the structural cause is identifiable.
 - **Closing forms found are FORBIDDEN cheats** — preserved at `rejected/`:
   - `rejected/conditional_dead_store.c` — score 0 + SHA1 == oracle, but
     Lever D family (find_dead_conditional_stores detector catches it).
