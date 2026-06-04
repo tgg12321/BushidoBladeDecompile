@@ -46,7 +46,11 @@
         {"form": "RTL pass-by-pass diff (via cc1 -da)", "score": null, "verdict": "DIAGNOSTIC — pinpointed reorg.c relax_delay_slots as the flip pass; jump_insn 130 (ne 0 -> eq 0) + jump_insn 138 (label_ref 146 <-> 168) flipped between sched2 and dbr"},
         {"form": "cc1psx parity check (tools/cc1psx_wrapper.sh on candidate.c)", "score": 1, "verdict": "DIAGNOSTIC — cc1psx produces SAME swap from same C; confirms NOT a fork-divergence per cc1psx-calibration-only policy"},
         {"form": "8-variant inline structural sweep (tmp/sweep_csmdt.py V0..V14)", "score": 1, "byte_diffs": 2, "verdict": "ALL score-1 variants converge on same 2-byte residual; V4/V5/V7 (dir<val test first) regress to 10/60-insns; V10/V11 (subu+bltz form) score 2 with different bytes"},
-        {"form": "permuter from candidate.c base (3-min 4-thread)", "score": 0, "byte_diffs": 0, "verdict": "FOUND a score-0 form — `do { dispatch } while (0);` wrap. Cheat-reviewer FAIL (see rejected_forms below). Form preserved in rejected/."}
+        {"form": "permuter from candidate.c base (3-min 4-thread)", "score": 0, "byte_diffs": 0, "verdict": "FOUND a score-0 form — `do { dispatch } while (0);` wrap. Cheat-reviewer FAIL (see rejected_forms below). Form preserved in rejected/."},
+        {"form": "V15 subtract_local: `s32 diff = (s32)dir - (s32)val; if (diff < 0) goto done;`", "score": 2, "verdict": "regress — emits subu+bltz instead of slt+bnez; combine does NOT fold (lt (minus dir val) 0) back to (lt dir val) at -O2 here. Different bytes from target."},
+        {"form": "V16 subtract_inline_neg: `if ((s32)(dir - val) < 0) goto done;`", "score": 2, "verdict": "regress — same as V15; combine does not collapse"},
+        {"form": "V17 sub_compare_signed: `s32 val = (u8)s0[0]; s32 dir = *(s16*)...; if (dir - val < 0) goto done;`", "score": 6, "verdict": "regress — typed widening causes additional cascade"},
+        {"form": "V18 unsigned_dir_val: `u32 val = (u8)s0[0]; u32 dir = (u16)*(s16*)...; if (dir < val) goto done;`", "score": 6, "verdict": "regress — unsigned comparison emits sltu+bnez (wrong opcode) + load-width changes"}
       ],
       "reviewer": "FAIL on permuter find (do_while_zero_wrapping)"
     }
@@ -55,9 +59,16 @@
   "remaining_gap": "2 byte diffs at masked insns 48 + 50: target emits `bnez v0, done; j next` (conditional to function-exit, fall-through to loop continuation), mine emits `beqz v0, next; j done`. Semantically equivalent, GCC chose opposite branch sense. Root cause FULLY DIAGNOSED (session 5, 2026-06-04): reorg.c's `relax_delay_slots` (gcc-2.7.2/reorg.c:3829-3851) invokes `mostly_true_jump` on the conditional, which returns 1 via the `case NE: return 1` heuristic at line 1407, triggering the swap. The only pre-emptive returns from mostly_true_jump that would give -1 are LABEL_OUTSIDE_LOOP_P (requires loop.c to recognize an enclosing loop), NOTE_INSN_LOOP_BEG, or rare_dest delta — all of which require either a real C loop construct (which triggers LICM hoist regression) or a do-while(0)-style coercion (cheat per cheat-reviewer 2026-06-04). cc1psx parity test confirms this is not a fork issue.",
   "next_hypotheses": [
     "Build instrumented cc1 with BB2_REORG_DEBUG hooks ON reorg.c:3829-3851's swap path and BB2_JUMP_DEBUG on jump.c invert_jump — dump the EXACT C-source-driven RTL state that target's compilation produced (vs ours). Compare against a matched sibling in the same file with similar shape to identify what makes target's reorg take a different path.",
-    "Find C source that produces `subu+bltz` form instead of `slt+bnez` — the LT-against-0 condition returns 0 from mostly_true_jump and avoids the swap. The catch: target has slt+bnez bytes, so this form needs combine to FOLD subu+bltz back to slt+bnez (under combine's reach for `(lt (minus A B) 0)`). Worth testing combine's actual behavior on this RTL pattern (one-shot probe).",
     "Cross-reference matched code6cac_b.c siblings — find one with the `if (cond) goto X; goto Y;` pattern in pure-C that DID match. Inspect what its C source did that target's compilation kept unaltered. m2c-reconstruct the target's specific RTL to see the original C statement order/types.",
-    "Inspect Kengo PS2 source nm_cpu/ files for the function — Kengo has only stubs in our extracted form, but the source MAY be available elsewhere as a cross-reference (the function name is preserved by the rename pass)."
+    "Inspect Kengo PS2 source nm_cpu/ files for the function — Kengo has only stubs in our extracted form, but the source MAY be available elsewhere as a cross-reference (the function name is preserved by the rename pass).",
+    "Park indefinitely as a structural-ceiling case (joining cpu_side_move_dir_4, marionation_Exec, saEft00Add) pending novel SOTN-allowed technique discovery or user policy decision. The empirical evidence base is now substantial: 5 sessions, 19+ structural variants + RTL pass-by-pass diagnostic + cc1psx parity check + permuter run — all converge on the same 3-way constraint that excludes any pure-C lever in the explored space."
+  ],
+  "_disproven_avenues": [
+    "subu+bltz form combined with combine-fold — empirically disproven 2026-06-04. The `(lt (minus A B) 0)` RTL is NOT folded to `(lt A B)` by combine at -O2 in this function. V10/V11/V15/V16 all emit subu+bltz (wrong bytes) — score 2 vs target's slt+bnez.",
+    "Typed-comparison variants (V17/V18) regress further (score 6+) due to widening cascades.",
+    "Real loop construct (do-while / while / for) — LICM hoists `li v0, 0xFF` and `li v0, 1` into callee-save regs ($s2, $s3), adding +4 insns (2 saves + 2 restores) plus stack frame growth from 32 to 40 bytes (score 19, build_insns 67 vs target 63).",
+    "do-while(0) wrapping — non-empty body cheat-by-spelling (cheat-reviewer FAIL 2026-06-04, same intent as the original asm volatile(\"\") barrier with different mechanism).",
+    "Fork divergence (cc1psx parity test 2026-06-04 confirms cc1psx produces the IDENTICAL swap from candidate.c — NOT a fork issue)."
   ],
   "rejected_forms": [
     {
