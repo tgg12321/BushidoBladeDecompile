@@ -3291,12 +3291,14 @@ loop:
         goto next;
     }
 
-    /* FAKE: do { ... } while (0) is the SOTN-precedent matching technique
-       for this pattern. It emits NOTE_INSN_LOOP_BEG which sets
-       LABEL_OUTSIDE_LOOP_P on `done:` -- making reorg.c's mostly_true_jump
-       return -1 instead of 1 for the `bnez done` here, preserving target's
-       branch sense. See memory/project/sotn-do-while-zero-research-2026-06-04.md
-       for the master-branch SOTN evidence (sprintf.c, 5087C.c, c_004.c, etc.). */
+    /* FAKE: do { ... } while (0) -- sanctioned narrow exception per
+       .claude/rules/do-while-zero-exception.md. Emits NOTE_INSN_LOOP_BEG
+       which sets LABEL_OUTSIDE_LOOP_P on `done:`, making reorg.c's
+       mostly_true_jump return -1 instead of 1 for the `bnez done` below,
+       preserving target's branch sense. SOTN master-branch evidence in
+       memory/project/sotn-do-while-zero-research-2026-06-04.md. This is
+       the ONLY no-semantic-purpose wrapper sanctioned in BB2 source --
+       NOT a precedent for other codegen-coercion constructs. */
     do {
         if ((u32)a1val < 0x80) {
             u8 val = s0[0];

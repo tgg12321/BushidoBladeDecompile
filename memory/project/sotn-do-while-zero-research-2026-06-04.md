@@ -7,6 +7,21 @@ metadata:
 
 # SOTN do-while-zero as accepted matching technique
 
+## Status: narrow sanctioned exception (user policy 2026-06-04)
+
+This memo is the EVIDENCE BASE for the
+[[do-while-zero-exception]] rule. Read that rule for the policy itself
+— this memo is the research that grounds it.
+
+The exception is **narrow**: `do { } while (0);` is the ONE
+no-semantic-purpose wrapper construct sanctioned in BB2. It is allowed
+ONLY because SOTN ships it openly with `// FAKE` annotation in master,
+and ONLY when the worker has demonstrated genuine lever-exhaustion for
+the LABEL_OUTSIDE_LOOP_P / reorg.c interaction. It does NOT relax the
+"cheats by any spelling" policy for any other construct. See
+[[do-while-zero-exception]] for the strict prerequisites and
+[[no-new-park-categories]] for the unchanged broader policy.
+
 ## Why this research happened
 
 `cpu_check_same_dir_timer` (BB2, src/code6cac_b.c) hits a GCC-2.7.2 `reorg.c`

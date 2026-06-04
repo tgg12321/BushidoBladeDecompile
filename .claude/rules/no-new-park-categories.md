@@ -191,14 +191,21 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
   local to bias LUID. SOTN's `randy` chain in `src/weapon/w_037.c` is
   the same mechanism.
 - **`do { ... } while (0);` wrap** (empty or non-empty body)
-  ([[sotn-do-while-zero-research-2026-06-04]]): emits NOTE_INSN_LOOP_BEG
-  which sets LABEL_OUTSIDE_LOOP_P on outside-loop labels, suppressing
-  reorg.c's `relax_delay_slots` invert-jump peephole for NE conditions
-  (and other related codegen coercions). SOTN evidence: 18+ instances in
-  master across `sprintf.c`, `5087C.c`, `c_004.c`, `w_045.c`, etc.
-  Several `// FAKE` annotations. Two commits (`511fdcfc4`, `3aa8b65c5`)
-  explicitly accept the construct in code review. Conventionally annotate
-  with `/* FAKE: ... */` or `// FAKE` when used purely for matching.
+  ([[do-while-zero-exception]] / [[sotn-do-while-zero-research-2026-06-04]]):
+  emits NOTE_INSN_LOOP_BEG which sets LABEL_OUTSIDE_LOOP_P on outside-loop
+  labels, suppressing reorg.c's `relax_delay_slots` invert-jump peephole
+  for NE conditions. **Narrowly sanctioned, last-resort only.** Annotate
+  with `/* FAKE: ... */` or `// FAKE`. SOTN evidence: 18+ instances in
+  master across `sprintf.c`, `5087C.c`, `c_004.c`, `w_045.c`, etc., with
+  two PR-merge messages explicitly accepting it. **The dedicated rule
+  [[do-while-zero-exception]] enumerates the strict prerequisites
+  (demonstrated lever-exhaustion, applies only to the LABEL_OUTSIDE_LOOP_P
+  / reorg.c interaction, NOT a precedent for other wrappers).** User policy
+  2026-06-04: this is the ONE no-semantic-purpose wrapper sanctioned in
+  BB2 source. Other syntactic equivalents (`for (i=0;i<1;i++)`,
+  `while(1) { ...; break; }`, `if (1) { }`) are NOT sanctioned by this
+  rule's existence — they have to clear the same SOTN-evidence bar
+  independently.
 
 The `cheat-reviewer` agent treats these patterns as ALLOWED — the
 "family check" (test #5 of its 6-test checklist) no longer flags them.
@@ -206,8 +213,12 @@ The `cheat-reviewer` agent treats these patterns as ALLOWED — the
 This resolution affects only these seven specific techniques. Other
 forbidden families ([[dead-vars-local-array]], dead-conditional-store,
 dead-param-assign, lost-codegen-insert, register-asm pins, scheduling
-barriers, etc.) remain forbidden. The "cheats by any spelling" operating
-principle continues for those.
+barriers, etc.) remain forbidden. **The "cheats by any spelling"
+operating principle is unchanged for everything else.** Each future
+proposed exception must clear its own SOTN-master-branch evidence bar
+(mirroring the 2026-06-02 borderline-research methodology, not blanket
+sanction). Agents must NOT generalize from any single sanctioned
+exception to treat the broader category as relaxed.
 
 ## What the SOTN standard accepts
 

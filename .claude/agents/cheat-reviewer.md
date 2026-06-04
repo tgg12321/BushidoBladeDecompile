@@ -69,15 +69,41 @@ in memory/project/sotn-*-research-*.md with citation:
   pin offset computations inside their branch via duplication.
 - **Named-intermediate declaration order** ([[sotn-borderline-research-2026-06-02]]):
   declare a sub-expression as a separately-named local to bias LUID.
-- **`do { ... } while (0);`** (empty or non-empty body) ([[sotn-do-while-zero-research-2026-06-04]]):
-  emits NOTE_INSN_LOOP_BEG to set LABEL_OUTSIDE_LOOP_P on outside-loop
-  labels, suppressing reorg.c's invert-jump peephole for NE conditions
-  (and other related codegen coercions). SOTN evidence: 18+ instances in
-  master across sprintf.c, 5087C.c, c_004.c, w_045.c, etc., several with
-  explicit `// FAKE` annotations. Two commits (`511fdcfc4`, `3aa8b65c5`)
-  explicitly accept the construct in code review. Conventionally annotate
-  with a `/* FAKE: ... */` or `// FAKE` comment when used purely for
-  matching (consistent with SOTN practice).
+- **`do { ... } while (0);`** (empty or non-empty body) — **NARROW
+  SANCTIONED EXCEPTION**, scoped by [[do-while-zero-exception]] and
+  grounded in [[sotn-do-while-zero-research-2026-06-04]]. Read the rule
+  before applying. **Strict prerequisites** the worker must demonstrate
+  before this construct passes review:
+  1. The worker has tried alternative pure-C levers (real loop forms,
+     structural rewrites, the standard [[register-alloc-pure-c]] playbook,
+     permuter from candidate.c, instrumented cc1 dumps if applicable)
+     and each has been measured-negative. The WIP entry's
+     `rejected_forms`, `_disproven_avenues`, or `sessions[]` ledger must
+     show the lever exhaustion. If this is the FIRST lever the worker
+     reached for, **FAIL**.
+  2. The wrap is being used SPECIFICALLY to defeat the
+     LABEL_OUTSIDE_LOOP_P / reorg.c invert-jump-peephole interaction (or
+     the analogous loop-note interaction with loop.c's other passes).
+     Using it to bend a different GCC pass is OUT OF SCOPE for this
+     exception — that's a fresh borderline construct needing its own
+     SOTN evidence. If the worker can't articulate which GCC-pass
+     interaction the wrap is defeating, **FAIL**.
+  3. The wrap is annotated with `/* FAKE: <one-line reason> */` or
+     `// FAKE` in the source. If unannotated, **FAIL** (push back for
+     the annotation; this is a transparency requirement, not a
+     substantive one).
+
+  Other syntactic equivalents (`for (i=0; i<1; i++) { ... }`,
+  `while (1) { ...; break; }`, `if (1) { ... }`) are NOT covered by this
+  exception. The exception is the SPECIFIC `do { } while (0);` construct
+  SOTN ships, not the broader category of "wrapper constructs that
+  create a loop note." Each such variant needs its own SOTN-master-
+  branch evidence to be sanctioned. **FAIL** any other wrapper form.
+
+  This exception's existence does NOT relax the "cheats by any spelling"
+  policy for any other construct. The next borderline construct you see
+  gets the default FAIL posture per the rest of this prompt. The
+  do-while-zero exception is a narrow carve-out, not a precedent.
 
 # The "is this a cheat" test (apply each, in order)
 
