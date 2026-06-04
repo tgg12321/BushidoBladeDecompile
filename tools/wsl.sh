@@ -67,8 +67,19 @@ esac
 # Worktree auto-bootstrap removed 2026-05-26: worktrees are no longer part of
 # the workflow (decomp runs directly on main, where the gitignored deps are
 # real files, not symlinks). worktree_bootstrap.sh was retired to archive/.
+
+# Auto-repair: if .venv exists but its python3 symlink is missing, restore it.
+# This catches a venv-corruption mode where pyvenv-script shebangs (pip, etc.)
+# fail with `.venv/bin/python3: not found` while explicit `python3 ...` still
+# works via PATH fallback. The repair lives in tools/venv_repair.sh -- a script
+# file rather than an inline multi-line string here, because inline multi-line
+# bash variables through `wsl bash -c` had subtle expansion issues (newlines /
+# variable scope) that silently dropped the repair. See
+# tools/hooks/tooling_error_signatures.json id `venv-python-symlink-missing`
+# (codified 2026-06-04).
 wsl bash -c "
 set -e
 cd \"$WSL_DIR\"
+bash tools/venv_repair.sh || true
 $*
 "

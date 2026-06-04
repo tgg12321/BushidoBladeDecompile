@@ -134,7 +134,10 @@
       "tier": "block",
       "tools": ["Bash", "PowerShell"],
       "substrings": [],
-      "regexes": ["\\b(make|python3|maspsx)\\b: (command )?not found"],
+      "regexes": [
+        "^(?=\\S)[^'\"#`]*?(make|python3|maspsx)(\\.\\d+)?:\\s+(command\\s+)?not\\s+found(\\s|$)"
+      ],
+      "_regex_note": "Tightened 4x (2026-06-04). v1=`\\b(tool)\\b: (command )?not found` false-positive'd against marker-file content, signature-comment cat-output, and any docs containing the phrase. v2=`(^|[\\s:])(tool): command not found` still matched test fixtures like `text='bash: python3: command not found'`. v3=`^[^'\"#`]*(tool): command not found` missed `sh: 1: python3: not found` (no path) and matched indented sample output. v4 (current) uses a single regex with: (a) `^(?=\\S)` lookahead requiring line to start with non-whitespace (excludes indented `(sample output, not a real run)` fixture lines), (b) `[^'\"#`]*?` lazy non-quote-non-hash-non-backtick prefix (excludes lines where the matched tool name appears AFTER a quote/comment/backtick), (c) optional `(command\\s+)?` so both `bash: python3: command not found` (shell-builtin form) and `sh: 1: python3: not found` / `/path/python3: not found` (loader/shebang form) match. Verified by tmp/verify_sig.py against 4 real failures + 7 false-positive shapes.",
       "summary": "A core build tool (make / python3 / maspsx) is not on PATH for this shell.",
       "root_cause": "Wrong shell (Git Bash vs WSL), the .venv isn't activated, or the tool genuinely isn't installed in this environment.",
       "permanent_fix": [
@@ -143,6 +146,28 @@
         "Prevent recurrence: if a command was run in the wrong shell, fix the caller (script/alias) to invoke via tools/wsl.sh, not raw 'make'/'python3'."
       ],
       "suggested_guard": "Callers that need the Linux toolchain should go through tools/wsl.sh; add a PATH check at the top of any new build script"
+    },
+
+    {
+      "id": "venv-python-symlink-missing",
+      "class": "environment",
+      "tier": "block",
+      "tools": ["Bash", "PowerShell"],
+      "substrings": [],
+      "regexes": [
+        "^(?=\\S)[^'\"#`]*?\\.venv/bin/python3?(\\.\\d+)?:\\s+(not found|No such file|cannot open)(\\s|$)",
+        "^(?=\\S)[^'\"#`]*?exec:\\s+/\\S*?\\.venv/bin/python3?:\\s+not found(\\s|$)"
+      ],
+      "_regex_note": "Same FP discipline as core-tool-not-found v4 (2026-06-04): both regexes anchor at line start with `^(?=\\S)` and forbid quote/hash/backtick characters in the prefix. This prevents matches against reproduced/quoted text inside test fixtures, signature comments, and incident markers.",
+      "suppress_if_paths_exist": [".venv/bin/python3"],
+      "summary": "The .venv exists but its python3 symlink is missing -- pip / pyvenv-script shebangs (`#!/.venv/bin/python3`) can't exec.",
+      "root_cause": "A pyvenv-style venv links .venv/bin/python3 -> /usr/bin/python3.X. If that symlink is absent (venv was created from a foreign-PATH context, or the link was cleaned), pip and any other shebanged venv script fails. PATH-fallback to /usr/bin/python3 still works for explicit `python3 ...` calls, masking the breakage until something invokes a venv shebang.",
+      "permanent_fix": [
+        "Restore the symlink:  ln -sf /usr/bin/python3.12 .venv/bin/python3   (also create .venv/bin/python and .venv/bin/python3.12 if missing).",
+        "Verify pip works:    source .venv/bin/activate && pip --version .",
+        "Prevent recurrence: tools/wsl.sh now auto-repairs the symlink at invocation time when .venv/bin/activate exists but .venv/bin/python3 is missing -- so the next invocation through the canonical wrapper self-heals."
+      ],
+      "suggested_guard": "tools/wsl.sh checks for .venv/bin/python3 when .venv/bin/activate exists; if missing, restore via ln -sf /usr/bin/python3.X .venv/bin/python3 (silent, idempotent)."
     }
   ]
 }

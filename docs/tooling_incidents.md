@@ -56,3 +56,28 @@ documented. See `CLAUDE.md` (Hooks) and the `debugging-discipline` memory rule.
 - **Permanent guard:** `tools/setup_worktree.ps1` (committed in eb24afac)
 - **Verified by:** ran setup_worktree.ps1; engine smoke test (verify-oracle) passed
 - **Occurrences this incident:** 1
+
+## 2026-06-04 06:24:40 — RESOLVED (environment/core-tool-not-found)
+- **Triggering command:** `cat .bb2_tooling_incident.json 2>&1 | head -30`
+- **Root cause:** venv-python3-symlink-missing: .venv/bin/python3 absent; pyvenv-script shebangs fail to exec
+- **Permanent guard:** `tools/wsl.sh` (uncommitted change)
+- **Verified by:** Restored .venv/bin/python3 -> /usr/bin/python3.12 symlink; pip --version now works; added auto-repair in tools/wsl.sh + new signature venv-python-symlink-missing in tools/hooks/tooling_error_signatures.json (second guard fire was false positive from comment text matching)
+- **Occurrences this incident:** 3
+
+## 2026-06-04 06:26:15 — FALSE POSITIVE (environment/core-tool-not-found)
+- **Triggering command:** `# Verify json is valid and signatures load
+python3 -c "import json; sigs=json.load(open('tools/hooks/tooling_error_signatures.json')); print('valid; sig count:', len(sigs['signatures']))"
+echo "---"
+# Sanity test: simulate the OLD failure text â€” it should STILL match the new regex
+python3 -c "
+import re
+patterns = [r'(^|[\s:])(make|python3|maspsx): command not found', r'^\S*?(make|python3|maspsx): not found$']
+# Real failures should still match
+real_fail = 'bash: line 1: /path/.venv/bin/python`
+- **Why not a real failure:** Test script output contains the literal phrase 'bash: python3: command not found' as a test fixture string. The regex match is on test-fixture data inside a quoted python string, not a real shell error. Same class as the earlier comment-text false positive — both stem from the regex matching the matched-text format in contexts where the text is being REPRODUCED rather than emitted as a fresh error.
+- **Action:** tighten signature `core-tool-not-found` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
+
+## 2026-06-04 06:29:01 — FALSE POSITIVE (environment/venv-python-symlink-missing)
+- **Triggering command:** `python3 tmp/verify_sig.py`
+- **Why not a real failure:** Same FP class as core-tool-not-found v3: tmp/verify_sig.py's printed test fixtures contain the literal phrase the venv-python-symlink-missing regex matches. The regex needs the same '^(?=\S)[^quote]*?' tightening I just applied to core-tool-not-found.
+- **Action:** tighten signature `venv-python-symlink-missing` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
