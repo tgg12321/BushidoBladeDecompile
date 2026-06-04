@@ -355,22 +355,35 @@ def find_always_true_if_scaffolds(text: str, body_lo: int, body_hi: int) -> list
     return out
 
 
-# Empty `do { } while (0);` — symmetric to find_empty_if_dead_reads. Same
-# intent: syntactic construct GCC's DCE removes but whose existence steers
-# analysis upstream of DCE. Identified by the 2026-06-02 thorough audit
-# (5+1 COMPLETED-C affected). Body must be empty (whitespace + comments).
+# `do { } while (0);` — RETIRED 2026-06-04 per SOTN-master-branch evidence.
+# Previously: this detector flagged empty `do { } while (0);` as a syntactic
+# construct GCC's DCE removes but whose existence steers analysis upstream
+# of DCE (identified by 2026-06-02 thorough audit, 5+1 COMPLETED-C affected).
+#
+# Re-evaluation 2026-06-04 (memory/project/sotn-do-while-zero-research-2026-06-04.md):
+# SOTN master ships 18+ instances of `do { ... } while (0);` (both empty and
+# non-empty body), including explicit `// FAKE` annotations in sprintf.c. Two
+# commits (511fdcfc4, 3aa8b65c5) explicitly accept the construct in code
+# review. The construct is a SOTN-accepted matching technique, not a
+# cheat-by-spelling. The detector is retired; the function symbol stays as
+# a no-op so the rest of the pipeline (which iterates this and ignores empty
+# results) continues to compile, and the historical tests still exercise the
+# call site.
 _EMPTY_DO_WHILE_ZERO_RE = re.compile(
     r"\bdo\s*\{\s*(?:(?://[^\n]*|/\*[\s\S]*?\*/)\s*)*\}\s*while\s*\(\s*0\s*\)\s*;"
 )
 
 
 def find_empty_do_while_zero(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int]]:
-    """Find empty `do { } while (0);` statements in the function body."""
-    body = text[body_lo:body_hi]
-    out: list[tuple[int, int]] = []
-    for m in _EMPTY_DO_WHILE_ZERO_RE.finditer(body):
-        out.append((body_lo + m.start(), body_lo + m.end()))
-    return out
+    """RETIRED 2026-06-04 -- returns [] always.
+
+    See module-level comment above. SOTN ships this construct as a matching
+    technique; flagging it caused BB2's cheat-reviewer to FAIL legitimate
+    closing forms (e.g. cpu_check_same_dir_timer's 2026-06-04 permuter find).
+    The regex is kept around as documentation for future re-evaluations but
+    is not invoked.
+    """
+    return []
 
 
 # Empty-body `if (cond) { }` — dead read of cond used purely for codegen

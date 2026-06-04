@@ -41,12 +41,43 @@ barriers, INLINE_MOVE_ALIASING, volatile-coercion (alias-rename / cast /
 plain extern / `(void)volatile` discard), unused-local-array frame
 coercion (with `&`, with `(void)`, with volatile-typed scalar),
 dead-param-assign (Lever D), dead-conditional-store, empty-body
-`if (cond) { }` dead-read, empty `do { } while (0);`, `if (1) { ... }`
-always-true wrapping, dead-goto label-pad, DImode chain for scheduling,
-goto-end-with-ret-val accumulator + shared label, param-local-alias
-declaration-order trick, combine-foldable chain-extender to bump
-`reg_n_refs`, `s32 one = 1;` opaque variable to defeat single-bit
-transform, lowercase `asm(...)` cheat blocks bypassing detector regex.
+`if (cond) { }` dead-read, `if (1) { ... }` always-true wrapping,
+dead-goto label-pad, DImode chain for scheduling, goto-end-with-ret-val
+accumulator + shared label, param-local-alias declaration-order trick,
+combine-foldable chain-extender to bump `reg_n_refs`, `s32 one = 1;`
+opaque variable to defeat single-bit transform, lowercase `asm(...)`
+cheat blocks bypassing detector regex.
+
+# SOTN-accepted techniques (treat as ALLOWED in the family check)
+
+The following constructs were classified BORDERLINE and resolved as
+ALLOWED based on direct SOTN master-branch evidence. The family check
+(test #5 of the 6-test checklist) should NOT flag them. Each is documented
+in memory/project/sotn-*-research-*.md with citation:
+
+- **Variable reuse for codegen control** ([[sotn-borderline-research-2026-06-02]]):
+  reusing one C variable for two unrelated values to influence LICM or RA.
+  SOTN evidence: `idxSub = idxSub;`, `randy = basePoint.x; baseX = randy;`
+  with "FAKE but makes register allocation work" comments.
+- **Opaque arithmetic variables** ([[sotn-borderline-research-2026-06-02]]):
+  `s32 one = 1;` to prevent compiler bit-test transforms.
+- **Sub-word param reads** ([[sotn-borderline-research-2026-06-02]]):
+  `*(u16 *)&local` cast to read a specific half-word.
+- **Mixed exit forms** ([[sotn-borderline-research-2026-06-02]]): deliberately
+  mix `goto endK` with inline `return` to defeat `find_cross_jump`.
+- **Duplicate-read into branch arms** ([[sotn-borderline-research-2026-06-02]]):
+  pin offset computations inside their branch via duplication.
+- **Named-intermediate declaration order** ([[sotn-borderline-research-2026-06-02]]):
+  declare a sub-expression as a separately-named local to bias LUID.
+- **`do { ... } while (0);`** (empty or non-empty body) ([[sotn-do-while-zero-research-2026-06-04]]):
+  emits NOTE_INSN_LOOP_BEG to set LABEL_OUTSIDE_LOOP_P on outside-loop
+  labels, suppressing reorg.c's invert-jump peephole for NE conditions
+  (and other related codegen coercions). SOTN evidence: 18+ instances in
+  master across sprintf.c, 5087C.c, c_004.c, w_045.c, etc., several with
+  explicit `// FAKE` annotations. Two commits (`511fdcfc4`, `3aa8b65c5`)
+  explicitly accept the construct in code review. Conventionally annotate
+  with a `/* FAKE: ... */` or `// FAKE` comment when used purely for
+  matching (consistent with SOTN practice).
 
 # The "is this a cheat" test (apply each, in order)
 

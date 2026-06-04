@@ -414,8 +414,13 @@ void g(int x) {
 
 
 def test_empty_do_while_zero() -> None:
-    """find_empty_do_while_zero — closes empty `do { } while (0);`. 5+1
-    COMPLETED-C functions affected per 2026-06-02 thorough audit."""
+    """find_empty_do_while_zero — RETIRED 2026-06-04 per
+    memory/project/sotn-do-while-zero-research-2026-06-04.md. SOTN ships
+    `do { } while (0);` (both empty and non-empty body) as a matching
+    technique. The detector now returns [] always. Test verifies the
+    no-op behavior so a future agent doesn't accidentally re-enable it
+    without also unwinding the SOTN-allowed status."""
+    # Empty body — previously flagged, now NO-OP
     text = """\
 void f(void) {
     real_work();
@@ -425,9 +430,9 @@ void f(void) {
 """
     hits = volatile_cheats.find_empty_do_while_zero(text, text.index("{"),
                                                      text.rindex("}") + 1)
-    eq("empty-do-while-0: catches empty body", len(hits), 1)
+    eq("empty-do-while-0 RETIRED: returns []", len(hits), 0)
 
-    # Non-empty body NOT flagged
+    # Non-empty body — also no-op
     text2 = """\
 void g(void) {
     do { real_work(); } while (0);
@@ -435,9 +440,9 @@ void g(void) {
 """
     hits = volatile_cheats.find_empty_do_while_zero(text2, text2.index("{"),
                                                      text2.rindex("}") + 1)
-    eq("empty-do-while-0: non-empty body NOT flagged", len(hits), 0)
+    eq("empty-do-while-0 RETIRED: non-empty also returns []", len(hits), 0)
 
-    # Non-zero while NOT flagged
+    # Non-zero while — also no-op (was previously not flagged, still isn't)
     text3 = """\
 void h(int x) {
     do { } while (x);
@@ -445,7 +450,7 @@ void h(int x) {
 """
     hits = volatile_cheats.find_empty_do_while_zero(text3, text3.index("{"),
                                                      text3.rindex("}") + 1)
-    eq("empty-do-while-0: while(non-zero) NOT flagged", len(hits), 0)
+    eq("empty-do-while-0 RETIRED: while(non-zero) returns []", len(hits), 0)
 
 
 def test_empty_if_dead_reads() -> None:

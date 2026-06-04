@@ -3259,10 +3259,9 @@ void func_80032C50(s32 a0, s32 a1) {
     (void)a0;
     (void)a1;
 }
-void cpu_check_same_dir_timer(s32 *a0) {
+void cpu_check_same_dir_timer(s32 *base) {
     u8 *s0;
-    register s32 a1val asm("a1");
-    s32 *base = a0;
+    s32 a1val;
     s32 *p;
 
     p = *(s32 **)((u8 *)base + 0x58);
@@ -3292,30 +3291,34 @@ loop:
         goto next;
     }
 
-    if ((u32)a1val < 0x80) {
-        u8 val = s0[0];
-        s16 dir = *(s16 *)((u8 *)base + 0x40);
-        s0 += 1;
-        if ((val & 0xFF) == dir) {
-            {
-                register s32 *arg0 asm("a0") = base;
-                asm("" : "=r"(arg0) : "0"(arg0));
-                func_80032C50(arg0, a1val - 1);
+    /* FAKE: do { ... } while (0) is the SOTN-precedent matching technique
+       for this pattern. It emits NOTE_INSN_LOOP_BEG which sets
+       LABEL_OUTSIDE_LOOP_P on `done:` -- making reorg.c's mostly_true_jump
+       return -1 instead of 1 for the `bnez done` here, preserving target's
+       branch sense. See memory/project/sotn-do-while-zero-research-2026-06-04.md
+       for the master-branch SOTN evidence (sprintf.c, 5087C.c, c_004.c, etc.). */
+    do {
+        if ((u32)a1val < 0x80) {
+            u8 val = s0[0];
+            s16 dir = *(s16 *)((u8 *)base + 0x40);
+            s0 += 1;
+            if ((val & 0xFF) == dir) {
+                func_80032C50((s32)base, a1val - 1);
+                goto next;
+            }
+            if (dir < val) {
+                goto done;
             }
             goto next;
         }
-        if (dir < val) {
-            goto done;
-        }
-        asm volatile("");
-        goto next;
-    }
 
-    s0 += 1;
+        s0 += 1;
 
-next:
-    a1val = *s0;
-    s0 += 1;
+    next:
+        a1val = *s0;
+        s0 += 1;
+    } while (0);
+
     if (a1val != 0) goto loop;
 
 done:

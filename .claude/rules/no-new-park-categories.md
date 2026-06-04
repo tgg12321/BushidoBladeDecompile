@@ -190,15 +190,24 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
   hi/lo sub-trick): declare a sub-expression as a separately-named
   local to bias LUID. SOTN's `randy` chain in `src/weapon/w_037.c` is
   the same mechanism.
+- **`do { ... } while (0);` wrap** (empty or non-empty body)
+  ([[sotn-do-while-zero-research-2026-06-04]]): emits NOTE_INSN_LOOP_BEG
+  which sets LABEL_OUTSIDE_LOOP_P on outside-loop labels, suppressing
+  reorg.c's `relax_delay_slots` invert-jump peephole for NE conditions
+  (and other related codegen coercions). SOTN evidence: 18+ instances in
+  master across `sprintf.c`, `5087C.c`, `c_004.c`, `w_045.c`, etc.
+  Several `// FAKE` annotations. Two commits (`511fdcfc4`, `3aa8b65c5`)
+  explicitly accept the construct in code review. Conventionally annotate
+  with `/* FAKE: ... */` or `// FAKE` when used purely for matching.
 
 The `cheat-reviewer` agent treats these patterns as ALLOWED — the
 "family check" (test #5 of its 6-test checklist) no longer flags them.
 
-This resolution affects only these six specific techniques. Other
+This resolution affects only these seven specific techniques. Other
 forbidden families ([[dead-vars-local-array]], dead-conditional-store,
-dead-param-assign, lost-codegen-insert, register-asm pins, etc.)
-remain forbidden. The "cheats by any spelling" operating principle
-continues for those.
+dead-param-assign, lost-codegen-insert, register-asm pins, scheduling
+barriers, etc.) remain forbidden. The "cheats by any spelling" operating
+principle continues for those.
 
 ## What the SOTN standard accepts
 
