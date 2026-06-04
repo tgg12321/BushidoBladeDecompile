@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "cpu_check_same_dir_timer",
-      "file": "code6cac_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8002872C",
       "file": "code6cac_b",
       "distance": 0,
@@ -4188,6 +4180,15 @@
       "status": "authorize"
     },
     {
+      "func": "cpu_check_same_dir_timer",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "HEAD byte-matches via 3 cheat-asm constructs (a1val/a0 register-asm pins + asm volatile branch-sense barrier per original commit 9490fd3a). Cheat-free pure-C floor: 2 byte diffs (single branch-sense flip + jump-target swap, GCC branch-inversion peephole). 8 structural variants tested this session, all converge on the same residual. WIP entry at memory/wip/cpu_check_same_dir_timer/ documents floor + 4 next-attempt hypotheses."
+    },
+    {
       "func": "replay_camera_rob_back_loose2",
       "file": "code6cac_b2",
       "distance": 0,
@@ -4336,14 +4337,14 @@
   ],
   "counts": {
     "total": 538,
-    "active": 491,
+    "active": 489,
     "by_status": {
-      "active": 490,
+      "active": 489,
       "authorize": 33,
-      "parked": 14
+      "parked": 16
     },
     "by_verdict": {
-      "C": 293,
+      "C": 292,
       "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 117,
       "ASM-WHOLE": 7,

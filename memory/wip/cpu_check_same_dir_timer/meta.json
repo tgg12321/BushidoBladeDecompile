@@ -1,0 +1,50 @@
+{
+  "func": "cpu_check_same_dir_timer",
+  "file": "code6cac_b",
+  "verdict": "C",
+  "scores": {
+    "head_floor": 1,
+    "candidate_floor": 1,
+    "head_actual_byte_diff": 0,
+    "candidate_actual_byte_diff": 2
+  },
+  "sessions": [
+    {
+      "date": "2026-06-04",
+      "agent": "orchestrator-direct",
+      "notes": "Cheat-asm removal pass. HEAD has 3 cheat-asm constructs (a1val pin, arg0 pin + barrier, asm volatile barrier — see candidate.c header). HEAD byte-matches via these cheats. Stripping the cheats holds sandbox masked-score at 1, but the residual is a 2-instruction branch-sense flip GCC's branch-inversion peephole imposes. Original commit message (9490fd3a) explicitly identifies the barrier as defeating this peephole.",
+      "levers_tested": [
+        {"form": "drop a1 pin + a0 pin/barrier + asm volatile barrier only", "score": 1, "byte_diffs": 2, "verdict": "baseline cheat-free floor"},
+        {"form": "if/else-if instead of two if-goto", "score": 1, "byte_diffs": 2, "verdict": "no effect on branch sense"},
+        {"form": "operand-flip dir<val → val>dir (compare-operand-order-register lever)", "score": 1, "byte_diffs": 2, "verdict": "no effect — same RTL"},
+        {"form": "goto done → return; (inline return)", "score": 1, "byte_diffs": 2, "verdict": "no effect on branch sense"},
+        {"form": "inverted outer if: test (val != dir) first", "score": 7, "verdict": "regresses — BB layout shuffle"},
+        {"form": "do { } while(a1val != 0) loop instead of goto loop", "score": 19, "build_insns": 67, "verdict": "regresses — emits extra entry-test insns"},
+        {"form": "move done: label before next: in source order", "score": 1, "byte_diffs": 2, "verdict": "no effect — label position doesn't drive BB ordering here"},
+        {"form": "explicit goto loop_end + done: return + next: loop-end", "score": 1, "byte_diffs": 2, "verdict": "no effect"}
+      ]
+    }
+  ],
+  "reviewer": null,
+  "remaining_gap": "2 byte diffs at masked insns 48 + 50: target emits `bnez v0, done; j next` (conditional to function-exit, fall-through to loop continuation), mine emits `beqz v0, next; j done`. Semantically equivalent, GCC chose opposite branch sense. The original commit (9490fd3a) named this 'GCC's branch-inversion peephole' and used `asm volatile(\"\")` to defeat it — cheat-asm per current policy.",
+  "next_hypotheses": [
+    "Run permuter from candidate.c base — random C structural mutations may surface a form that flips GCC's BB layout decision",
+    "Build instrumented cc1 (BB2_REORG_DEBUG / BB2_JUMP_DEBUG) to dump jump.c's invert_jump decision point; identify exact source-driven trigger",
+    "Inspect Kengo (PS2 successor) for any source-form clue on this function — it's renamed from kengo:HIGH nm_cpu/cpu_check_same_dir_timer",
+    "Cross-reference matched sibling: `coli_HitPauseKatana_2` (split-read-defeats-hoist) and other code6cac_b.c functions with similar if-goto-done + fall-through-next patterns — find one matched in pure C and copy its emitted form"
+  ],
+  "rejected_forms": [
+    {
+      "name": "do_while_loop",
+      "slug": "do_while_loop",
+      "reason": "do { ... } while (a1val != 0) emits +4 insns (entry-test prologue); regresses to 67 insns vs 63",
+      "score": 19
+    },
+    {
+      "name": "inverted_outer_if",
+      "slug": "inverted_outer_if",
+      "reason": "Inverting the outer (val != dir) test reshuffles BB layout and adds 5 more diffs",
+      "score": 7
+    }
+  ]
+}
