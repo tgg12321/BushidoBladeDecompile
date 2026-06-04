@@ -657,16 +657,17 @@ block_13:
 }
 /* kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i */
 void func_8002872C(void) {
-    s32 i;
-    s32 offset;
+    s32 i = 0;
+    s32 offset = 0;
     u8 *base;
-    register s32 cmp_a1 asm("a1");
-    register s32 cmp_a2 asm("a2");
-
-    i = 0;
-    offset = 0;
 
     do {
+        s32 cmp_a1;
+        s32 cmp_a2;
+        s32 *ptr;
+        s32 a0_raw;
+        s32 v1;
+
         base = &D_80101EC8 + offset;
 
         cmp_a1 = *(s16 *)(base + 0xC);
@@ -675,50 +676,42 @@ void func_8002872C(void) {
         if (*(s16 *)(base + 0x46) != 0) goto next;
 
         cmp_a2 = *(u16 *)(base + 0x6A);
-        asm("" : "+r"(cmp_a2));
         if (cmp_a2 != 0xB) goto next;
 
         if (*(s16 *)(base + 0x40) != *(u8 *)(base + 0xA7)) goto next;
 
+        ptr = *(s32 **)base;
+        a0_raw = *(u16 *)((u8 *)ptr + 0x6A);
+        v1 = a0_raw & 0xFFFF;
+
+        if (v1 == 0x26) goto match;
+        if (v1 == cmp_a1) goto match;
+        if (v1 == 2) goto match;
+        if (v1 == 0x15) goto match;
+        if ((u32)(a0_raw - 0x24) < 2) goto match;
+        if (v1 == 8) goto match;
+        if ((u32)(a0_raw - 0x22) < 2) goto match;
+        if (v1 == 0) goto match;
+        if (v1 == 0x10) goto match;
+        if (v1 == 0x13) goto match;
+        if ((u32)(a0_raw - 0x30) < 2) goto match;
+        if (v1 == 0x1A) goto match;
+        if (v1 == cmp_a2) goto match;
+        if (v1 == 0x12) goto match;
+        if (v1 == 0x2A) goto match;
+        if (v1 == 0xC) goto match;
+        if (v1 != 0x19) goto next;
+
+    match:
+        if (!(D_800A387C < D_800A3134)) goto next;
+
+        *(s16 *)((u8 *)*(s32 **)base + 0x286) = 0x1C;
+        func_80027A58(*(s32 **)base);
+
         {
-            s32 *ptr = *(s32 **)base;
-            register s32 a0_raw asm("a0");
-            s32 v1;
-
-            a0_raw = *(u16 *)((u8 *)ptr + 0x6A);
-            asm("" : "+r"(a0_raw));
-            v1 = a0_raw & 0xFFFF;
-
-            if (v1 == 0x26) goto match;
-            if (v1 == cmp_a1) goto match;
-            if (v1 == 2) goto match;
-            if (v1 == 0x15) goto match;
-            if ((u32)(a0_raw - 0x24) < 2) goto match;
-            if (v1 == 8) goto match;
-            if ((u32)(a0_raw - 0x22) < 2) goto match;
-            if (v1 == 0) goto match;
-            if (v1 == 0x10) goto match;
-            if (v1 == 0x13) goto match;
-            if ((u32)(a0_raw - 0x30) < 2) goto match;
-            if (v1 == 0x1A) goto match;
-            if (v1 == cmp_a2) goto match;
-            if (v1 == 0x12) goto match;
-            if (v1 == 0x2A) goto match;
-            if (v1 == 0xC) goto match;
-            if (v1 != 0x19) goto next;
-            asm("" : : "r"(a0_raw));
-
-        match:
-            if (!(D_800A387C < D_800A3134)) goto next;
-
-            *(s16 *)((u8 *)*(s32 **)base + 0x286) = 0x1C;
-            func_80027A58(*(s32 **)base);
-
-            {
-                s32 *p2 = *(s32 **)base;
-                if (*(u16 *)((u8 *)p2 + 0x6A) == 0x25) {
-                    *(u16 *)((u8 *)p2 + 0x86) = *(u16 *)((u8 *)p2 + 0x84);
-                }
+            s32 *p2 = *(s32 **)base;
+            if (*(u16 *)((u8 *)p2 + 0x6A) == 0x25) {
+                *(u16 *)((u8 *)p2 + 0x86) = *(u16 *)((u8 *)p2 + 0x84);
             }
         }
 
@@ -2813,9 +2806,7 @@ void func_80032040(void) {
     }
 }
 extern s32 func_80032854(s32, s32, u8 *, s16 *);
-u8 *func_80032064(u8 *a0, s32 a1) {
-    register u8 *src asm("a2");
-    register s32 type asm("a3");
+u8 *func_80032064(u8 *src, s32 type) {
     s32 mul;
     s32 sw_val;
     s32 i;
@@ -2823,8 +2814,6 @@ u8 *func_80032064(u8 *a0, s32 a1) {
     u8 *s0;
     s16 sp_area[2];
 
-    src = a0;
-    type = a1;
     mul = 0x50;
     sw_val = -0xC8;
     i = 0;
