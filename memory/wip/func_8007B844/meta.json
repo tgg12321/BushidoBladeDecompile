@@ -50,6 +50,15 @@
       "floor_now": 6,
       "round": 3,
       "note": "All 3 new variants confirmed the score-6 floor or regressed: (a) `u32 *ret; ret = ot; *ret = mask; return ret;` declaration-FIRST variant — copy-prop folds ret to ot, score 6 (same lowering as prior `u32 *ret = ot;` form, confirms declaration-vs-assignment ORDER doesn't matter); (b) `mask = (u32)ot; return (u32 *)mask;` SOTN variable-reuse — score 7 regression (no loop-invariant hoist mechanism exists in this function, so the technique doesn't apply); (c) `volatile u32 mask;` local volatile — rejected at design time per cheats-by-any-spelling intent test (no semantic purpose). C SEMANTIC FINDING: vtable callee cannot rebind a pass-by-value pointer arg; the call only modifies what ot POINTS to, not ot itself. So GCC always keeps `ot` in callee-save $s0 across the call. Decisive byte-comparison gpu_ClearOTag vs func_8007B844 confirms: same C tail produces different asm — gpu_ClearOTag emits store-then-move (5e0/5e4), func_8007B844 target emits move-then-store via return-staged base (66c/670-67c). For cc1 to schedule move-then-store, store base pseudo must depend on return-staged $v0 pseudo. No pure-C SOTN-allowed construct creates this dependency without (a) extra bytes or (b) copy-prop fold to ot. CUMULATIVE EVIDENCE across 5 grinding contexts (3 sessions + 2 workflow rounds + round-3): ~70+ structural variants and ~50k+ permuter iters, ZERO progress beyond floor 6. ESCALATION CANDIDATE: empirically exhausted under explored lever class; structural ceiling identified mechanistically. Standing user_policy_note preserved — canonical-asm authorization NOT evidence-backed for this function (S1=S2=S6=S8=0)."
+    },
+    {
+      "date": "2026-06-04",
+      "lever": "session 8: re-verified score-6 baseline at HEAD 57c65477 (named-intermediate u32 mask Lever B); tested 1 NEW structural variant — direct vtable cast collapsing the `u32 *v0 = g_gpu_dev_table;` intermediate local into `((void(**)(u32 *,s32))g_gpu_dev_table)[11](ot, n);`",
+      "floor_was": 6,
+      "floor_now": 6,
+      "round": 4,
+      "git_head_at_measurement": "57c65477",
+      "note": "NO_PROGRESS. Sandbox 6 unchanged. The direct-cast variant collapses the dispatch-load intermediate pseudo by writing the vtable indexed call in one expression. Combine folds the cast-then-index-then-deref-then-call chain to the identical RTL the explicit-`v0` intermediate produces — same number of pseudos at the post-call boundary, same callee-save allocation for `ot` ($s0), same return-staging chain depth. CONFIRMS the round-3 mechanistic finding (sched.c INSN_PRIORITY 1 vs 4 wall) is independent of dispatch-load surface syntax; the constraint is the post-call dataflow shape, which the candidate cannot change without introducing copy-prop-foldable rebinding or extra emitted bytes. NEW REJECTED VARIANT recorded under rejected_forms. CUMULATIVE EVIDENCE across 6 grinding contexts (3 sessions + 2 workflow rounds + round-3 + round-4): ~71+ structural variants and ~50k+ permuter iters, ZERO progress beyond floor 6. The PRIORITY-3 round-4 next-hypothesis (directed PERM_GENERAL permuter from score-6 base targeting return-staging REG_DEP_TRUE list) remains the only untried non-cheat lever class — a session token cap was reached before setting it up; recommended for the next session as the single un-attempted resume avenue."
     }
   ],
   "reviewer": {
@@ -148,6 +157,11 @@
       "form": "volatile u32 mask; (round 3: volatile qualifier on the LOCAL mask, not the global)",
       "score": null,
       "reason": "Rejected at design time per cheats-by-any-spelling intent test. A volatile-qualified local variable holding a constant 0xFFFFFF mask has ZERO semantic purpose — there's no concurrent access, no signal handler, no memory-mapped hardware. Same family as the inline `volatile T *` cast cheat catalog entry, just spelled with a local declaration qualifier. NOT MEASURED — vetted out before sandbox. (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "direct vtable cast (round 4): `((void(**)(u32 *,s32))g_gpu_dev_table)[11](ot, n);` — collapses the `u32 *v0 = g_gpu_dev_table; ((void(*)(u32 *,s32))v0[11])(ot, n);` two-statement form into one expression",
+      "score": 6,
+      "reason": "Combine folds the cast-then-index-deref-call chain to identical RTL as the explicit-`v0` intermediate. Same number of pseudos at the post-call boundary, same callee-save allocation for `ot` ($s0), same return-staging chain depth. Sandbox 6, no change. Confirms that dispatch-load surface syntax (intermediate local vs inline cast) does not affect the post-call dataflow shape that drives sched.c's priority decision. (Round 4, 2026-06-04, HEAD 57c65477.)"
     }
   ],
   "memory_notes": [
