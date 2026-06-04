@@ -429,8 +429,8 @@ void func_80038170(u8 *out) {
 }
 
 void pad_FuncAnalog(void) {
-    register s32 var_v1 asm("v1");
-    register s32 var_v0 asm("v0");
+    s32 var_v1;
+    s32 var_v0;
     s32 temp_s0;
     s32 var_s1;
     u16 temp_v0;

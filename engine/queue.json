@@ -4,62 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003D9A0",
-      "file": "code6cac_c2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "pad_FuncAnalog",
-      "file": "code6cac_c_mid",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8003FE40",
-      "file": "config",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007DB20",
-      "file": "display",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "kgm_clamp_patch_init",
-      "file": "ings",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800832A0",
-      "file": "ings2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "spu_InitEx",
-      "file": "main",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "gnd_load_tex",
       "file": "text1a",
       "distance": 0,
@@ -4173,6 +4117,60 @@
       "park_reason": "Canonical jump-table infrastructure, not a register/codegen cheat. The 24 asmfix rules (15 renames of GCC .L labels to external jtbl_800108CC + 8 jlabel conversions + 1 delete_between stripping GCC's emitted table) are structurally required: the switch's jump table jtbl_800108CC sits in the FIRST rodata block (asm/data 800.rodata_pre.o, bb2.ld:25, addr 0x800108CC), while code6cac_b2.o's own .rodata links far later (bb2.ld:50). A GCC in-object jump table can only land in code6cac_b2's late rodata, never at 0x108CC, so referencing the external jtbl symbol + deleting GCC's table is mandatory. Zero-asmfix COMPLETED-C would need relocating the jtbl into code6cac_b2.c AND reordering the whole global rodata layout (project-wide, needs user sign-off). This is the project standard for the 26 jtbl-rename functions whose tables splat carved into asm/data rodata. Separately, sandbox cannot score this file: file-wide cheat-asm stripping shifts maspsx indices and crashes a sibling fn's index-based regfix reorder rule (KeyError in tools/regfix.py)."
     },
     {
+      "func": "func_8003D9A0",
+      "file": "code6cac_c2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Prologue-fix coupled cheat: register asm pin + asm barrier on s1 force EARLY materialization (move s1,a2 at insn 4 in prologue). Without them GCC defers to insn 12 (after early-exit check). prologue_config.json entry can't fix missing-early-mat. Need deeper rework per prologue-fix-redundant-reorder.md to retire both cheats together. Pure-C floor 2 (verified score=2 with pins removed)."
+    },
+    {
+      "func": "func_8003FE40",
+      "file": "config",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Cheat-asm pins forced TWO separate li -1 materializations into  and  (one per nested do-while compare against -1). GCC's natural CSE folds them to ONE shared register. Removing pins drops 1 instruction (build=34 vs target=35). The redundant li was load-bearing for the match. Pure-C lever to force two materializations not yet found; needs deeper analysis."
+    },
+    {
+      "func": "func_8007DB20",
+      "file": "display",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "File-scope cheat: extern volatile s32 D_8009BF7C; at display.c:934 forces D_8009BF7C reloads in this function (lines 981, 990). Body itself is clean pure-C, score 0. Unblocking requires removing the volatile decl (file-wide effect) which would change codegen for all D_8009BF7C-using functions in display.c. Multi-function refactor \u2014 not a quick win."
+    },
+    {
+      "func": "kgm_clamp_patch_init",
+      "file": "ings",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Heavy cheat load: 4 register-asm pins (i/c/tmp/p), 1 asm move-via-output (addu), 3 inline volatile casts on game-state (((volatile u8 *)p)[8]=0; etc.). The volatile coercions force GCC to emit separate byte stores instead of combining adjacent bytes. Not a quick pin-removal \u2014 needs structural rework to produce separate stores from clean C (struct-of-bytes, etc.)."
+    },
+    {
+      "func": "func_800832A0",
+      "file": "ings2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "File-scope cheat: extern volatile s32 D_800A2634; at ings2.c:321. D_800A2634 is incremented by interrupt-callback D_800832F8 and read here \u2014 semantically REQUIRES volatile for interrupt-safety, but project policy classifies volatile-on-game-state as a cheat regardless. Function body is otherwise clean. Resolution needs a project-wide policy carve-out for genuine ISR-shared variables, or file-scope coordinated cleanup."
+    },
+    {
+      "func": "spu_InitEx",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "File-scope cheats: extern volatile s32 D_800A28A0 and D_800A2CD4 elsewhere in main.c. Function body is clean pure-C. Same file-scope-coordinated-cleanup pattern affecting multiple distance-0 queue items in this batch."
+    },
+    {
       "func": "tslPolyF4Init",
       "file": "system",
       "distance": 2,
@@ -4311,15 +4309,15 @@
     }
   ],
   "counts": {
-    "total": 535,
-    "active": 487,
+    "total": 534,
+    "active": 480,
     "by_status": {
-      "active": 487,
+      "active": 480,
       "authorize": 33,
-      "parked": 15
+      "parked": 21
     },
     "by_verdict": {
-      "C": 290,
+      "C": 283,
       "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 117,
       "ASM-WHOLE": 7,
