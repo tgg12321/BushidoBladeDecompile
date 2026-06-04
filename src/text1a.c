@@ -806,8 +806,8 @@ extern s32 D_800545F8;
 extern s32 D_800545FC;
 extern s32 D_80054600;
 void gnd_load_tex(s32 a0) {
-    register s32 **t0 asm("t0") = D_80015820;
-    register s32 t1 asm("t1") = 0;
+    s32 **t0 = D_80015820;
+    s32 t1 = 0;
     s32 mask8 = ~0xFF;
     s32 a1 = (a0 >> 16) & 0xFF;
     s32 mask16 = (s32)0xFFFF0000;

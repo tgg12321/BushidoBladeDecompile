@@ -840,10 +840,7 @@ void func_800493E4(s32 arg0) {
 extern s32 D_800A33EC;
 extern s16 D_800A33E8;
 extern void InitFadePanel(void);
-void func_800494D4(s32 arg0, s32 arg1) {
-    register s32 idx asm("$17") = arg0;
-    s32 new_var;
-    register s32 val asm("$16") = arg1;
+void func_800494D4(s32 idx, s32 val) {
     s32 cond;
     if (D_800A33EC == 0) {
         cond = val < 16;
@@ -853,11 +850,10 @@ void func_800494D4(s32 arg0, s32 arg1) {
     if (!cond) {
         InitFadePanel();
     }
-    new_var = idx;
-    if (((u32)new_var) >= 2U) {
+    if (((u32)idx) >= 2U) {
         InitFadePanel();
     }
-    (&D_800A33E8)[new_var] = (s16)val;
+    (&D_800A33E8)[idx] = (s16)val;
 }
 s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2)
 {
@@ -11889,7 +11885,7 @@ void func_8005B43C(void) {
     memcard_SetSlot(0);
     SetBloodSpot(1);
     {
-        register s32 v asm("$5") = 0x7F;
+        s32 v = 0x7F;
         q = (u8 *)&D_800EFB78;
         j = 0;
         do {
