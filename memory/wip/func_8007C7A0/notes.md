@@ -98,6 +98,41 @@ OR ALLOCDBG/PRIODBG instrumented cc1 dump on score-12 form. ~60k+ cumulative
 permuter iters + 25+ structural variants + UB-form proof = approaching the
 escalation boundary for parking with documented evidence ledger.
 
+## Session 2026-06-04 (workflow round 4)
+
+**Floor unchanged at 12. HEAD drift observed.** Worker entered worktree at
+main f9640bad. Candidate body applied cleanly to src/display.c → confirmed
+floor 12 (build_insns 50, target 51, masked Lev. 12). Three small structural
+variants tested at this base, ALL measured negative:
+
+- **T1 (compare-operand-order flip + bltz-first):** rewrite X-clamp as
+  `if (arg0 < 0) zero; else if (arg0 > D_8009BE78 - 1) limit-1; else arg0;`
+  Score 16, regression. The compare-operand-order-register rule does NOT
+  apply here (comparison is against a constant, not a global+register pair).
+- **T2 (identity precompute):** `var_v0 = var_v0_2;` before dispatch + mask
+  in branches. Score 22, build_insns 52 (+1 insn). Sibling of the round-2
+  rejected synthetic-local family.
+- **T3 (duplicated var_a1 = arg1):** put the preload into BOTH X-clamp
+  branches instead of unconditionally. Score 12, GCC merges them via
+  cross-jump — equivalent to the candidate.
+
+**HEAD DRIFT (notable):** committed src/display.c func_8007C7A0 body NOW
+scores 20 (not the head_floor=16 the meta.json was authored against). The
+current HEAD uses synthetic `int new_var = arg0 >= 0;` + reused `int new_var2`
+locals — these match the round-2 permuter-rejected forms (rejected_forms[12-14]).
+The candidate's score-12 is now -8 below HEAD's 20, not -4. (Worker note: HEAD
+regressions outside this WIP's scope; flagged for orchestrator awareness.)
+
+**Source reverted; oracle confirmed green** (build SHA1 == 62efab4f).
+Structural ceiling per remaining_gap stands. The genuinely-un-tried avenues
+remaining are infrastructure-heavy:
+1. PERM_GENERAL DIRECTED permuter (~30k iters, ~15 min budget) targeting the
+   X-preserve register slot.
+2. BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG instrumented cc1 dump on the score-12
+   form to identify pseudo priorities of arg0/var_v0_2/var_a1/var_v1 (per
+   the cpu_side_move_dir_4 / saEft00Add precedents — both used instrumented
+   dumps to derive their levers).
+
 ## Session 2026-06-03 (workflow round 3)
 
 **Floor unchanged at 12 — but NO MEASUREMENT TAKEN.** Worker entered an isolated

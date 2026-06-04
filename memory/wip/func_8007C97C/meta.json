@@ -3,9 +3,9 @@
   "file": "display",
   "scores": {
     "head_floor": 24,
-    "candidate_floor": null,
+    "candidate_floor": 29,
     "metric": "sandbox --disable all (masked Levenshtein)",
-    "note": "candidate_floor not yet measured \u00e2\u20ac\u201d apply candidate.c to src/display.c then run sandbox to record. Expected to be > 0 (the score-0 form was the FAIL form with sp[4] coercion). The legitimate base may score similar to HEAD's 24 or lower; record the measurement when known."
+    "note": "candidate_floor MEASURED 2026-06-04 (workflow round 4): 29 (build_insns 25 vs target 33). HIGHER than head_floor 24 \u2014 the legitimate candidate body (no sp[4] coercion) cannot reach the inverted-bnez prologue + 0x10-frame + 4 dead sw stores pattern that the 9 regfix rules manufacture at HEAD. The head_floor 24 is artifact of how cheat-stripping interacts with the regfix-rewritten asm (the original committed body had additional pin/intermediate structure giving a different masked-distance baseline). The TRUE honest pure-C floor for this function is 29 \u2014 the candidate body is the closest legitimate pure-C form."
   },
   "sessions": [
     {
@@ -30,6 +30,16 @@
       "floor_now": 24,
       "round": 3,
       "note": "Candidate body is structurally the inverted-null-check + m2c body + r_e2 + var-reuse form (preserved from sessions 1-2). The natural-C form (no sp[4] coercion) was tested but the sandbox returned non-scorable: same display.c-wide cheat-asm-strip pipeline truncation that affected C7A0 and CBB0 round-3 workers. The worker recommended surfacing as a policy escalation; per the standing policy in notes.md TOP-OF-FILE, canonical-asm authorization is REJECTED for this function (target has zero S1/S2/S6/S8 signals — see rejected_forms[0]). No floor change; no new rejected forms; standing policy preserved."
+    },
+    {
+      "date": "2026-06-04",
+      "agent": "workflow-round-4-func_8007C97C",
+      "git_head_at_measurement": "f9640bad",
+      "lever": "workflow round 4: bootstrapped worktree via tools/setup_worktree.ps1 (junctions to main's .venv/build/toolchain), applied WIP candidate.c to src/display.c, sandbox MEASURED FIRST TIME",
+      "floor_was": 24,
+      "floor_now": 29,
+      "round": 4,
+      "note": "FIRST SUCCESSFUL MEASUREMENT of the candidate body — sandbox --disable all reports score=29 (build_insns=25, target_insns=33, rules_dropped=9, scorable=true). The candidate body cannot reach target's 33-insn pattern in pure C because the missing 8 insns are: the 4 dead sw stores into the 0x10 stack frame (sp[0..3] = r/g/b1/b2), the addiu $sp,-0x10 / addiu $sp,0x10 prologue/epilogue, and 2 nops. NO legitimate pure-C source produces 4 dead stack writes — cc1 DCEs any local that isn't read. The rejected sp[4] form was a cheat precisely because it manufactured these dead writes via a write-only frame coercion. Also measured a single-expression natural-C variant (no temps, no var reuse): score 30 (build_insns=26). All variants without explicit dead writes fall in [29,30] range. The 9 regfix rules at HEAD transform cc1's natural output into target's inverted-bnez+frame pattern, which the sandbox masked-Levenshtein scores at 24 because the cheat-stripped baseline still has some structural overlap; the candidate's 29 is the TRUE honest pure-C floor. Per standing policy (notes.md TOP-OF-FILE + rejected_forms[0]): canonical-asm authorization REMAINS REJECTED (no S1/S2/S6/S8 signals). The candidate is preserved as the closest legitimate pure-C form. Floor went UP (24 → 29) on measurement but this is NOT a regress — it's the FIRST accurate measurement of the legitimate candidate; the 24 was an artifact baseline that included the regfix-rewritten asm. Src reverted; oracle green at session end."
     }
   ],
   "reviewer": {

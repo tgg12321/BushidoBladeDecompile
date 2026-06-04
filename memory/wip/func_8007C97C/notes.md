@@ -116,3 +116,39 @@ restores indices for display.c functions whose own body has no cheat-asm; this
 should be tried for C97C next round to get a measurable baseline. Once
 baseline measurable, the next-step menu reverts to `meta.json` next_hypotheses:
 apply candidate body, measure, re-run cheat-reviewer.
+
+## Session 2026-06-04 (workflow round 4) — FIRST SUCCESSFUL MEASUREMENT
+
+**candidate_floor MEASURED for the first time: 29 (was null).**
+
+The actual unblocker was `pwsh tools/setup_worktree.ps1` — it creates
+junctions to main's `.venv`, `build/`, `tools/gcc-2.7.2`, `disc/`. With those
+junctions in place, plain `tools/eng.ps1 sandbox func_8007C97C --disable all`
+runs cleanly without needing the `--keep-cheat-asm` workaround. Round-3's
+pipeline-truncation issue did not reproduce (sandbox returned `scorable=true`,
+`score=29`, `rules_dropped=9`, `cheat_asm_stripped=446`, `build_insns=25`,
+`target_insns=33`).
+
+**Why 29, not 24 (the prior session's documented head_floor):** the 24 was an
+artifact baseline from before the candidate body was clean of the sp[4] coercion;
+it was never the legitimate-candidate's measured floor. The true honest pure-C
+floor of the candidate body — the closest legitimate form, inverted-null-check +
+m2c-shape + r_e2 named intermediate + temp_v0 var-reuse — is **29**.
+
+**Variants measured (all ≥ 29):**
+- candidate.c body (preserved): score **29** ✓ base
+- Natural-C single-expression body: score **30**
+
+**The un-closable gap (8 insns) is the 4 dead `sw` stores + frame allocation:**
+target writes `sp[0..3] = r/g/b1/b2` but never reads them; these dead writes
+came from either hand-coded asm or from C constructs in the forbidden cheat
+catalog (write-only array, dead self-assign, volatile coercion, address-of-void).
+DCE in cc1 removes any local that isn't read — no pure-C source produces 4 dead
+stack writes without being itself a cheat-by-spelling.
+
+**No new lever; no candidate.c modification; src reverted; oracle green.**
+Outcome: NO_PROGRESS. The candidate remains the legitimate base; the function
+remains INCOMPLETE pending either (a) a novel non-cheat C structural lever that
+produces dead stack writes (unlikely — DCE catches the class) or (b)
+reconsideration of the canonical-asm-authorization standing rejection (also
+unlikely — S1/S2/S6/S8 signals remain absent).

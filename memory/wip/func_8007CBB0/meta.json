@@ -54,6 +54,15 @@
       "floor_now": 52,
       "round": "verify-resolved",
       "note": "Round-2 worker correctly measured score 52 / build_insns 151 EXACT in session 2 (2026-06-01). Round-3 + orchestrator deployment attempts forgot to include the extern s32 *D_8009BF48 declaration before func_8007CBB0 (the candidate.c file has it; the deployment edits to src/display.c omitted it because an extern decl already exists at line 837, but that line is AFTER where the function lands at line 710 so it doesn't cover the function body). Re-deployment WITH the extern added: sandbox --disable all --keep-cheat-asm returns score=52, build_insns=151, target_insns=151. The score-52 floor IS reproducible."
+    },
+    {
+      "date": "2026-06-04",
+      "lever": "workflow round 4: tested 3 additional structural levers from the score-52 base; all confirmed the 52 floor as a list-scheduler INSN_PRIORITY wall analogous to cpu_side_move_dir_4 sched.c residual",
+      "floor_was": 52,
+      "floor_now": 52,
+      "round": 4,
+      "git_head_at_measurement": "f9640ba",
+      "note": "Confirmed candidate floor 52 / build_insns 151 == target 151 reproduces with --keep-cheat-asm. Performed index-aligned objdump diff (tmp/diff_cbb0.py): residual is 66 raw insn diffs concentrated in two regions \u2014 big-packet idx 45-91 and small-packet idx 117-139. The DECISIVE diagnostic: target emits `lui $a3,0x3FF` at idx 49 (the 0x03FFFFFF mask LUI) with its paired `ori $a3,$a3,0xFFFF` deferred 36 instructions later to idx 85, right before the `sw $a3,(p187C)` at idx 89. Candidate emits the lui+ori as an adjacent pair at idx 49-50. This is a deliberate list-scheduler split that GCC 2.7.2's combine pass normally keeps as one atomic 2-insn materialization \u2014 the candidate's compile takes the natural path, the target's compile somehow split it. New levers tested this session, ALL CONFIRMED 52 FLOOR: (1) named intermediates `u32 ot_hdr = ...; u32 sign_E1 = ((arg1>>31)<<10) | 0xE1000000;` (no change, combine folds single-use locals); (2) constant rewrite `*p187C = ~0xFC000000` (no change, combine canonicalizes); (3) hoisted BF48 deref `s32 ot_link = *D_8009BF48;` at top of big-packet block (REGRESSED 52->65, pushes the load too early in scheduling). The cpu_side_move_dir_4 sessions 5-10 documented this exact class of sched.c INSN_PRIORITY wall with 10 sessions + 16,800+ permuter iterations all plateauing on register-rename diffs at matched insn count. Per [[no-compiler-divergence]] + [[no-new-park-categories]], the chain-extender lever that worked for cpu_side_move_dir_4 in session 5 is FORBIDDEN (2026-06-02); no analogous pure-C lever remains in the explored space. Honest endpoint: 52 floor is genuinely the structural ceiling for this function's pure-C reconstruction. The remaining named avenue (directed permuter from clean offset-0 target) was NOT executed this session due to budget; given cpu_side_move_dir_4 permuter plateau at 16,800 iters on identical-class residual, the prior-art evidence strongly suggests it would also plateau on register-rename diffs at score-class ~52. src/ reverted; verify-oracle SHA1 == oracle (62efab4f...)."
     }
   ],
   "reviewer": {
@@ -130,6 +139,21 @@
       "form": "Sandbox with --disable all (round 3 measurement attempt)",
       "score": null,
       "reason": "NON-SCORABLE. Returns 'func_8007CBB0 not found in tmp/sandbox/func_8007CBB0/display.o. Cheat-disabled build of display.c is missing func_8007CBB0 (pipeline likely truncated by a sibling index-based reorder rule after cheat-asm strip).' The strip across all of display.c shifts maspsx indices and breaks a sibling reorder rule, truncating the build before CBB0 is emitted. Same class as the jtbl-rodata-split-infrastructure 'Bonus gotcha' (sandbox can't score these files). C86C round-3 worker's `--keep-cheat-asm` flag is the workaround for next round. (Workflow round 3, 2026-06-03.)"
+    },
+    {
+      "form": "Named-intermediates for ot_hdr and sign_E1 in big-packet block",
+      "score": 52,
+      "reason": "No floor reduction (still 52). `u32 ot_hdr = ((u32)p187C & 0xFFFFFF) | 0x08000000; u32 sign_E1 = ((arg1>>31)<<10) | 0xE1000000;` declared at top of big-packet block; D_800F1858 = ot_hdr; D_800F186C = (*D_8009BF48 & 0x7FF) | sign_E1. GCC's combine pass folds single-use named intermediates back to their inline expressions before RTL pseudo numbering — no LUID effect, no scheduling change. (Workflow round 4, 2026-06-04.)"
+    },
+    {
+      "form": "Constant rewrite *p187C = ~0xFC000000 (bitwise NOT of complement)",
+      "score": 52,
+      "reason": "No floor reduction (still 52). Tried to coerce GCC's constant materialization to split lui from ori (target has them 36 insns apart; candidate emits adjacent). Combine canonicalizes the constant before reaching the MIPS expander; emitted bytes identical to writing 0x03FFFFFF directly. (Workflow round 4, 2026-06-04.)"
+    },
+    {
+      "form": "Hoisted BF48 deref via s32 ot_link = *D_8009BF48 at top of big-packet block",
+      "score": 65,
+      "reason": "REGRESSED 52 -> 65. Hypothesis was that hoisting the BF48 load earlier would influence the list-scheduler's INSN_PRIORITY calculation for F186C's store. Instead, the early load pollutes the scheduling space — the dereferenced value sits in a register too long, GCC cascades and emits more spilling / wider register lifetimes. Confirms that the BF48 load's position is structurally bound to its consumer's scheduling; moving it does not flip the constant-materialization split. (Workflow round 4, 2026-06-04.)"
     }
   ],
   "memory_notes": [

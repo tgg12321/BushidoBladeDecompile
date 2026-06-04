@@ -49,3 +49,10 @@ documented. See `CLAUDE.md` (Hooks) and the `debugging-discipline` memory rule.
 - **Triggering command:** `wsl bash -c 'bash /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile"/tmp/rtldump_b6c8_v2.sh' 2>&1 | head -40`
 - **Why not a real failure:** Script bug: tmp/rtldump_b6c8_v2.sh did 'cd tmp' before invoking 'tools/gcc-2.7.2/build/cc1' with a relative path, so cc1 was looked up under tmp/tools/gcc-2.7.2/build/cc1 instead of repo-root tools/gcc-2.7.2/build/cc1. cc1 IS installed correctly (4.2MB at tools/gcc-2.7.2/build/cc1, May 18; verify-oracle was passing earlier this session). The 'No such file or directory' was a path resolution error from the buggy script, not a missing dep. The signature 'worktree-dep-missing' currently fires on any 'tools/gcc-2.7.2/build/cc1: No such file or directory' substring without checking that the file actually doesn't exist on disk - the guard could be tightened to test -f the path before classifying as a missing dep.
 - **Action:** tighten signature `worktree-dep-missing` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
+
+## 2026-06-04 01:35:41 — RESOLVED (worktree-symlink/worktree-dep-missing)
+- **Triggering command:** `cd "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/.claude/worktrees/wf_3eeeb757-57e-3/" && powershell -Command "& tools/eng.ps1 sandbox func_8007C7A0 --disable all" 2>&1 | tail -30`
+- **Root cause:** worktree spawned by workflow orchestrator without running setup_worktree.ps1; missing .venv/gcc/permuter/disc junctions
+- **Permanent guard:** `tools/setup_worktree.ps1` (committed in eb24afac)
+- **Verified by:** ran setup_worktree.ps1; engine smoke test (verify-oracle) passed
+- **Occurrences this incident:** 1

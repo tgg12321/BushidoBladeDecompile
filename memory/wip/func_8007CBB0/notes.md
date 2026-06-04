@@ -237,3 +237,52 @@ New PRIORITIZED next_hypothesis: round 4 should ATTEMPT the {lbl#N} migration
 of CE0C's 3 splice rules FIRST as a precondition, THEN deploy candidate +
 measure with `--keep-cheat-asm`, THEN run directed permuter from a clean
 single-function offset-0 target.
+
+## Session 2026-06-04 (workflow round 4)
+
+The round-3 meta-blocker was already REFUTED by the orchestrator (see top of
+this file). Round-3's claimed `{lbl#N}` migration precondition does NOT exist
+in current main — CE0C's splice rules already use function-local slots.
+Round 4's actual task: lower the 52 floor or document the structural ceiling.
+
+Confirmed candidate floor 52 / build_insns 151 == target 151 reproduces via
+`--keep-cheat-asm`. Performed `tmp/diff_cbb0.py` (index-aligned objdump diff)
+to localize the residual: 66 raw insn diffs concentrated in two regions —
+big-packet idx 45-91 and small-packet idx 117-139. The diagnostic finding:
+
+**Target emits `lui $a3,0x3FF` at idx 49 with its paired `ori $a3,$a3,0xFFFF`
+deferred 36 instructions later to idx 85, right before the
+`sw $a3,(p187C)` at idx 89.** Candidate emits the lui+ori as an adjacent pair
+at idx 49-50. This is a deliberate list-scheduler split that GCC 2.7.2's
+combine pass normally keeps as one atomic 2-insn materialization — the
+candidate's compile takes the natural path, the target's compile somehow
+split it.
+
+Three new structural levers tested this session, all CONFIRMED the 52 floor:
+
+1. **Named intermediates** `u32 ot_hdr = ...; u32 sign_E1 = ...;` declared at
+   top of big-packet block, then used in F1858 and F186C stores. Combine
+   folds single-use locals back to inline expressions before RTL pseudo
+   numbering — no LUID effect, no scheduling change. Score 52.
+2. **Constant rewrite** `*p187C = ~0xFC000000` to coerce a non-canonical
+   constant materialization. Combine canonicalizes; emitted bytes identical
+   to `0x03FFFFFF`. Score 52.
+3. **Hoisted BF48 deref** `s32 ot_link = *D_8009BF48;` at top of big-packet
+   block. Hypothesis was that an early load would influence INSN_PRIORITY for
+   F186C's store. REGRESSED 52 -> 65 — the early load pollutes scheduling.
+
+The residual is the same class as cpu_side_move_dir_4's sched.c
+INSN_PRIORITY wall (see `[[register-alloc-pure-c]]` sessions 5-10). That
+function's documented exhaustion: 10 sessions + 16,800+ permuter iterations
+all plateaued on register-rename diffs at matched insn count. The
+chain-extender lever that worked for cpu_side_move_dir_4 in session 5 is
+FORBIDDEN (`[[global-label-drift-sibling-cheat]]` § FORBIDDEN, 2026-06-02);
+no analogous pure-C lever remains in the explored space.
+
+**Honest endpoint conclusion:** 52 floor is genuinely the structural ceiling
+for this function's pure-C reconstruction. The remaining named avenue
+(directed permuter from clean offset-0 target) was NOT executed this session
+due to budget; given cpu_side_move_dir_4 permuter plateau on identical-class
+residual, prior-art evidence strongly suggests it would also plateau.
+
+Source reverted at session end; verify-oracle SHA1 == oracle (62efab4f...).
