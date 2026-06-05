@@ -211,6 +211,77 @@ no new park category for register-rotation walls):
 3. PERM_GENERAL directed permuter with explicit `// PERM_GENERAL(stmts)`
    macro annotations around the post-call statements.
 
+## Session 2026-06-05 (round 8, instrumented cc1 dump diagnostic)
+
+**Floor unchanged at 6. NO_PROGRESS — diagnostic-only round.**
+
+Three-pass campaign produced ALLOCDBG/SCHEDDBG/PRIODBG trace on the score-6
+candidate via `tmp/gccdbg/cc1` (canonical SHA1 untouched; instrumented .s
+byte-identical to canonical .s — sanity-check OK).
+
+**Per-insn priority table** (block=2, post-CALL tail, 12 insns):
+
+```
+insn=46 CALL  pri=3 refcnt=7   = jalr $v0       (vtable call)
+insn=71 INSN  pri=3 refcnt=1   = li $v0,0xff0000
+insn=72 INSN  pri=3 refcnt=1   = ori $v0,$v0,0xffff
+insn=54 INSN  pri=3 refcnt=1   = la $v1,g_gpu_ot_end
+insn=55 INSN  pri=3 refcnt=2   = and $v0,$v1,$v0
+insn=58 INSN  pri=3 refcnt=2   = sw $v0,0($s0)
+insn=61 INSN  pri=3 refcnt=1   = move $v0,$s0   (return-staging)
+insn=62 JUMP  pri=inf            = jr $ra
+```
+
+LUID order = C-statement order: 71(5), 72(6), 54(7), 55(8), 58(9), 61(10),
+62(11). rank_for_schedule LUID-tiebreak among pri=3 ties picks higher LUID
+first (reverse-emission) → 61 picked at clock=2, emits at position 11.
+Target wants 61 at position 8.
+
+**Insn 61 (return-staging) has ONLY ANTI predecessors** (55, 58, 46) and
+only one TRUE successor (62 = jr ra reads $v0). The TRUE-producer of $s0
+(`ot` pseudo) was defined in the prologue block; LOG_LINKS is intra-block,
+so that producer is invisible to block=2 priority calc.
+
+**Four shift mechanisms — all rejected at design-time pre-vet:**
+
+1. Lower 61's pri below 3 → requires removing ANTI preds, all inherent to
+   function semantics. Impossible without semantic change.
+2. Raise 71/54's pri above 3 → requires extending CALL-rooted TRUE chain.
+   Every form is either combine-foldable chain-extender (FORBIDDEN per
+   `.claude/rules/register-alloc-pure-c.md` §FORBIDDEN as of 2026-06-02)
+   OR emits bytes (regression).
+3. Lower 61's LUID below 71/54 → LUID = C-statement order; `return ot;`
+   MUST come last in C. Impossible.
+4. Add a TRUE successor between 61 and 62 → requires an insn reading $v0
+   that doesn't fold. Either emits bytes (regression) or is identity-fold
+   cheat.
+
+**Lever A/B/C surface assessment (per the campaign brief):**
+
+- Lever A (block-local var split): `ot` is the only candidate; all splits
+  (`u32 *p = ot;` permutations across rounds 1-7) copy-prop-fold. 10
+  `rejected_forms` entries already document the exhaustion.
+- Lever B (narrow type): applied at baseline as `u32 mask`. Cannot narrow
+  further — `g_gpu_ot_end` is `u32`, so `u16 mask` truncates semantically.
+- Lever C (loop-local precompute): function has NO LOOP. Does not apply.
+
+**No candidate measured this round.** Per the brief: "If any test fails
+[the 6-test checklist], drop the candidate. Do NOT code it just to confirm;
+SKIP forms that would fail the reviewer."
+
+**Cumulative** (10 grinding contexts): ~82+ variants, ~50.5k+ permuter
+iters, ZERO progress beyond floor 6. The structural ceiling is now
+demonstrated at the per-insn priority level.
+
+Diagnosis: `tmp/gccdbg_func_8007B844/diagnosis.md` (gitignored).
+
+Next-session un-attempted avenues (from round 7 + 8):
+1. PERM_GENERAL directed permuter with explicit `// PERM_GENERAL(stmts)`
+   macro annotations around post-call statements (narrower search-space
+   than the exhausted ~50.5k-iter randomization permuter).
+2. Sibling cross-reference: gpu_SendPacket (display.c:210, byte-matched,
+   has a post-call store). Diff its block=2 SCHED dump against B844's.
+
 ## How to resume in one read
 
 1. Read `meta.json` — note `instrumented_evidence` (the BB2_SCHED_DEBUG
