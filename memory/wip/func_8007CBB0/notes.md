@@ -335,3 +335,120 @@ established structural ceiling for this function's pure-C reconstruction.
 3. Hand-research SOTN's other libgpu packet builders (beyond `_clr`) for
    structural patterns BB2's CBB0 hasn't tried — e.g. SOTN's `DrawSync`
    wait-loop forms.
+
+## Session 2026-06-05 (workflow round 9) — cc1 INSTRUMENTED-DUMP DIAGNOSTIC
+
+**Floor unchanged at 41.** Ran the BB2_ALLOC_DEBUG + BB2_SCHED_DEBUG +
+BB2_PRIO_DEBUG instrumented cc1 (`tmp/gccdbg/cc1`) on the score-41
+SOTN-indexed-array candidate body via `tmp/gccdbg_func_8007CBB0/run_dumps.sh`.
+1692-line `dumps.log` + 38-diff `normalize_diff.py` output produced
+decisive evidence.
+
+### ALLOCDBG verdict — RA fully resolved
+
+14-pseudo allocno priority table at allocation time. `arg0 → $t0` (pseudo 72,
+nrefs=11, livelen=94, pri=3510). `arg1 → $t1` (pseudo 73, nrefs=5, livelen=81,
+pri=1234). Both match target. Zero callee-save RA diffs across the function.
+The residual is NOT register-allocation.
+
+### SCHEDDBG verdict — flat pri=1 plateau in big-packet block
+
+Block 12 (big-packet, n_insns=50): all early-store insns (139-180) have pri=1
+— a long flat plateau. Scheduler picks by LUID; LUID = source-order. The
+later insns (CALL-fed gpu_GetInfo arg chains) have pri=2-5 and pop first
+(emit last). The flat plateau means the scheduler has no semantic basis to
+distinguish store orders inside the plateau — source order tiebreaks LUID.
+Same INSN_PRIORITY-wall class as cpu_side_move_dir_4 sched.c residual.
+
+### Decisive byte-level diagnostic — actual residual is offset/relocation form
+
+`tmp/gccdbg_func_8007CBB0/normalize_diff.py` produces a normalized
+side-by-side diff. The round-4-documented lui/ori adjacency RESIDUAL was for
+the PRE-round-6 per-symbol base — the current SOTN-indexed-array candidate
+already splits `li $7, 0x03ff0000` (line 117 raw_cc1.s) and `ori $7, $7,
+0xffff` (line 142) by ~25 insns. That's not the diff.
+
+The actual 38 masked diffs in big-packet (idx 51-139) are two patterns:
+1. **`addiu R,R,36` vs `addiu R,R,0`** at idx 51 — candidate uses `&D_800F1858 + 9`,
+   target uses `&D_800F187C` directly.
+2. **`sw R, N(R)` vs `sw R, 0(R)`** for many stores — candidate's
+   indexed-array form `(&D_800F1858)[K]` produces `lui $at, %hi(D_800F1858);
+   sw $val, K*4($at)` with byte-offset in the immediate. Target uses
+   per-symbol relocations `lui $at, %hi(D_800F185C); sw $val,
+   %lo(D_800F185C)($at)` with immediate=0 and the symbol carrying the offset.
+3. **Mid-block scheduling shuffle** (idx 61-83) — cascade from the different
+   `lui+sw` interleave pattern with the BF48 load chain.
+
+Target's emit order (from `structural_evidence`): F1858/F1868/F185C/F1860/
+F1864/F1870/F186C/F1874/F187C/F1878/F1880/F1884/F1888 — non-monotonic.
+Candidate's source order (= literal `(&D_800F1858)[0..12]`): F1858/F185C/
+F1860/F1864/F1868/F186C/F1870/F1874/F187C/F1880/F1884/F1888 — monotonic.
+
+### R9-A lever measurement (the named hypothesis from the diagnosis)
+
+**Form:** per-symbol stores in TARGET's exact emit order + p187C captured for
+the OT-link [9] slot, applied to BOTH packet paths.
+
+**Result:** sandbox 52 / build_insns 151 == target 151 / rules_dropped=1 /
+scorable=true. **REGRESSED 41 → 52 (+11).** The form is +11 points worse in
+masked Levenshtein.
+
+**Mechanism:** per-symbol stores produce target's per-store relocation
+pattern, but force GCC to allocate a unique `lui $at,%hi(<symbol>)` per
+store. That makes a different register-naming distribution than target. The
+score-41 indexed-array form's base-register reuse pattern matches target's
+register cadence better DESPITE the wrong offset-immediates. Masked
+Levenshtein is single-integer with no diff-type decomposition; "fewer
+immediate diffs + more register-name diffs" CAN score worse than the
+inverse.
+
+### Why other R9 candidates were not measured
+
+The diagnosis (`tmp/gccdbg_func_8007CBB0/diagnosis.md`) listed 5 lever
+candidates. After self-vetting against the cheat-reviewer 6-test checklist:
+- R9-B (variable reuse for OT-link): DROPPED — type-mismatched "reuse" is
+  hollow rename, fails tests 1+6.
+- R9-C (hybrid per-symbol head / indexed-array tail): DROPPED — no semantic
+  split point, fails test 1.
+- R9-D (small-packet path per-symbol target-emit-order): same family as R9-A,
+  same expected fate (folded into R9-A's measurement).
+- R9-E (intermediate base ptr + p187C for [9]): overlaps round-6's score-45
+  measurement (intermediate pointer combine-folds, no gain).
+
+### What the dump confirms about the score-41 floor
+
+The dump produces TWO independent confirmations:
+
+1. **ALLOCDBG shows zero RA gap** — there's nothing left to fix at the
+   register-allocation level. Same as cpu_side_move_dir_4's session-6
+   PRIODBG conclusion: "the C-source lever space's degrees of freedom does
+   not span the direction needed."
+2. **SCHEDDBG shows flat pri=1 plateau** — the scheduler has no priority
+   gradient to influence, only the LUID-tiebreak which the C source order
+   sets. Any source-order change is a tradeoff (regress N stores while
+   improving M stores, net no help; the round 6-8 lever sweeps confirmed
+   every variant either regresses or holds).
+
+Plus R9-A's negative measurement closes the named-from-evidence per-symbol
+target-emit-order lever empirically.
+
+### Status (round 9)
+
+**Score-41 floor stands as the structural ceiling.** The instrumented-dump
+campaign produced the most decisive evidence so far: it pinpoints the diff as
+purely structural (offset/relocation form + scheduling) with no RA
+component, and confirms the LUID plateau means the scheduler cannot
+distinguish source-order variants. Cumulative ~44 negative levers + 1
+PASS-vetted positive (round-6 SOTN-indexed-array @ score 41) across 9
+sessions.
+
+Resume artifacts:
+- `tmp/gccdbg_func_8007CBB0/run_dumps.sh` — reproducible dump recipe
+- `tmp/gccdbg_func_8007CBB0/dumps.log` — full ALLOCDBG + SCHEDDBG + PRIODBG
+- `tmp/gccdbg_func_8007CBB0/normalize_diff.py` — byte-level diff tool
+- `tmp/gccdbg_func_8007CBB0/diagnosis.md` — round-9 analysis
+- `tmp/gccdbg_func_8007CBB0/r9a_body.c` — the tested R9-A C body
+
+Source reverted; verify-oracle SHA1 == oracle (62efab4f...). Same class as
+cpu_side_move_dir_4 / saEft00Add / marionation_Exec list-scheduler
+INSN_PRIORITY plateau cluster.
