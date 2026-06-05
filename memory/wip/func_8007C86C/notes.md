@@ -99,6 +99,35 @@ against the cheat catalog. Alternatively, micro-variant sweep on lim_x SHAPE
 comparison only). Joint with C7A0: v6 lever should produce the same ALLOCDBG
 flip there (constant 0xE3 vs 0xE4 is the only difference).
 
+## Session 2026-06-05 (workflow round 11 — cc1 dump diagnostic)
+
+**Floor unchanged at 12.** Full BB2_ALLOC_DEBUG + BB2_SCHED_DEBUG +
+BB2_PRIO_DEBUG dump on the score-12 candidate baseline (first time
+PRIODBG/SCHEDDBG fully captured for C86C — round 2 had only ALLOCDBG).
+
+ALLOCDBG reproduces round 2 exactly: pseudo 72 X-preserve, ord=10
+pri=1818 → reg 6 ($a2); target wants $a3. Pseudo identities mapped via
+`base.c.greg`: 72=X-preserve, 76=var_v0_2, 77=var_a1, 79=var_v1,
+91=var_v1 SOTN-precompute.
+
+**NEW slice — PRIODBG/SCHEDDBG on block 0 (X-clamp prologue):** insn 6
+(X-preserve store) has only 1 predecessor in LOG_LINKS (insn 4 arg0
+incoming via REG_DEP_TRUE), final_pri=1. SCHEDDBG block=0: all 5 insns
+share pri=2130706433 — LUID-tiebreaker decides emission order. **The
+gap is purely allocation-side; no schedule-priority lever applies.**
+
+Three Lever A/B/C candidates derived from the dump, all self-vetted
+FAIL on cheat-reviewer 6-test checklist:
+- var_v1 hoist to function top (extends livelen to overlap pseudo 72) —
+  no semantic purpose, breaks dispatch invariant; FORBIDDEN family.
+- u16 var_v0_2 (signedness narrow) — not a real Lever B per
+  register-alloc-pure-c.md ("lever is narrow WIDTH, not signedness").
+- block-local `s16 var_v0_2_inner` per dispatch arm — matches round-2
+  v10/v15 (flat 12); no new behaviour.
+
+Full diagnosis in `tmp/gccdbg_func_8007C86C/diagnosis.md` (gitignored).
+Oracle preserved (HEAD `6e96eceb` unchanged).
+
 ## Session 2026-06-03 (workflow round 3)
 
 **Floor unchanged at 12.** Executed the round-2 top hypothesis: 12-variant
