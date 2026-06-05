@@ -116,6 +116,53 @@ REG_DEP_TRUE list — untried in any prior round.
   structural ceiling is a `sched.c` INSN_PRIORITY wall, same class as
   cpu_side_move_dir_4 / marionation_Exec.
 
+## Session 2026-06-04 (round 5, SOTN-research-driven)
+
+**Floor unchanged at 6. PARK_CANDIDATE escalation.** Executed the fresh-SOTN-
+research lever set from `tmp/sotn_research_func_8007B844.md`. The research file
+gathered direct evidence from the SOTN master tree and concluded: NO SOTN
+precedent exists for the BB2 target shape (vtable dispatch + post-call
+`*ot = mask & 0xFFFFFF; return ot;`). SOTN's analogs either return immediately
+after the vtable call (DMA path — terminator written by callee) or wrap the
+tail in a real `while (--n)` loop (non-DMA path — loop body provides chain
+depth naturally).
+
+**Tested research-proposed lever 1 (two variants):**
+- `ot[n-1] = mask;` — sandbox 9, build 40 vs target 38 (+2 insns for
+  `(n-1)*4` offset arithmetic; semantically writes wrong offset).
+- `ot[n] = mask;` — sandbox 8, build 40 vs target 38 (+1 insn for `n*4`
+  arithmetic; same semantic mismatch).
+
+Target asm `sw $v1, 0x0($v0)` writes to offset 0; both lever-1 variants
+write to a different slot AND require extra offset insns. They confirm the
+research file's analytical hypothesis (different pseudo gets scheduled) but
+cannot close the gap — the store base still depends on `$ot` (callee-save
+`$s0`), not the return-staged `$v0`.
+
+**Research-proposed lever 2 (degenerate do-while) REJECTED ON POLICY:**
+The literal `do { } while (0);` form is sanctioned by `do-while-zero-exception`
+ONLY for the LABEL_OUTSIDE_LOOP_P / reorg.c invert-jump peephole mechanism.
+The documented mechanism here is `sched.c` INSN_PRIORITY (chain depth). The
+rule explicitly states using do-while-zero to bend other GCC passes is forbidden.
+The non-literal `while (--_n);` form either unrolls (no effect) or emits a
+back-branch (regression). The introduced `_n = 1;` has no semantic purpose
+(would fail the cheat-reviewer's family check).
+
+**Cumulative across 8 sessions:** ~73+ structural variants, ~50k+ permuter
+iters, ZERO progress beyond floor 6. Every documented SOTN-allowed catalog
+technique exhausted; instrumented-cc1-derived levers exhausted; SOTN-master-
+tree-precedented levers exhausted as of this round. Single un-attempted lever:
+directed-PERM_GENERAL permuter — randomization permuter already at 50k iters
+with zero gains, directed search would be over mutations within the exhausted
+space.
+
+**Escalation surfaced in `meta.json.next_hypotheses[0]`** — user policy decision
+needed: (a) accept indefinite park under documented mechanistic ceilings
+[default — joins the cpu_side_move_dir_4 / marionation_Exec / saEft00Add
+cluster]; (b) NEW exception class sanction — agent does NOT recommend; SOTN
+research found no master-tree evidence supporting this; (c) authorize one
+final directed-PERM permuter run before park-acceptance.
+
 ## How to resume in one read
 
 1. Read `meta.json` — note `instrumented_evidence` (the BB2_SCHED_DEBUG
