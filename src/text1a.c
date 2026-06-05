@@ -942,8 +942,7 @@ void gnd_init_80041688(s32 arg0, s32 arg1) {
     u8 *p;
     u8 *q;
     s32 b, r, g, v;
-    volatile s32 sp10[8];
-    extern s32 func_800486FC(void);
+    s32 i0, i1, i2, i3, call_arg;
 
     player = (s32 *)g_player_ptrs[arg0];
     if (player == NULL) return;
@@ -974,19 +973,28 @@ loop2:
     goto loop2;
 after2:
 
-    if (func_800486FC()) {
+    i0 = (i * 0x10001) - (i << 16);
+    i1 = (i0 * 0x10001) - (i0 << 16);
+    i2 = (i1 * 0x10001) - (i1 << 16);
+    i3 = (i2 * 0x10001) - (i2 << 16);
+    call_arg = i3;
+
+    if (func_800486FC(call_arg)) {
         r = *((u8 *)player + 0x18);
         g = *((u8 *)player + 0x19);
         b = *((u8 *)player + 0x1A);
         v = func_8004881C(b, g, r);
         gnd_load_tex((v << 16) | (v << 8) | v);
     } else {
-        r = *((u8 *)player + 0x18);
-        g = *((u8 *)player + 0x19);
         b = *((u8 *)player + 0x1A);
+        if (b) {
+            r = *((u8 *)player + 0x18);
+        } else {
+            r = *((u8 *)player + 0x18);
+        }
+        g = *((u8 *)player + 0x19);
         gnd_load_tex(b | ((r << 16) | (g << 8)));
     }
-    (void)sp10;
 }
 typedef struct { s32 w[4]; } Block16;
 extern s32 g_anim_func_table[];
