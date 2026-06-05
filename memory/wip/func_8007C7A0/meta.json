@@ -2,7 +2,7 @@
   "function": "func_8007C7A0",
   "file": "display",
   "scores": {
-    "head_floor": 16,
+    "head_floor": 20,
     "candidate_floor": 12,
     "metric": "sandbox --disable all (masked Levenshtein)",
     "build_insns": 50,
@@ -74,6 +74,15 @@
       "round": 5,
       "git_head_at_measurement": "19c0c8c3",
       "note": "Single-variant probe from candidate score-12 base. Verified candidate floor 12 reproducible at HEAD 19c0c8c3 (build_insns=50, target 51, 21 rules dropped, 452 cheat-asm-stripped) — the round-4 regression (HEAD body scoring 20 via synthetic new_var/new_var2 named-intermediates) is unchanged. Variant T1-round5: `if (arg0 > 0)` instead of `if (arg0 >= 0)` for the X-sign check. Semantically equivalent — when arg0 == 0, candidate's `arg0 >= 0` takes the true branch with X-clamp (`D-1 < 0` false, `var_v0_2 = arg0 = 0`); my variant `arg0 > 0` takes the else branch with `var_v0_2 = 0`. Identical observable result. Different RTL opcode emission: `bgtz` vs `bgez`. Measured: score 13 (regression +1 vs candidate's 12). The bgtz form lengthens the X-clamp's RTL chain by one branch-test variant the masked-Levenshtein metric counts as an additional diff. Source reverted. Adds one more datapoint to the now-31-distinct-variant rejection corpus for this function (round-1: 9 + round-2 saved permuter outputs: 11 + round-4: 3 + this: 1 = 24 manual + permuter-class derivatives; plus the ~60k+ permuter iters across rounds 1-2). PARK_CANDIDATE recommendation per next_hypotheses[0]."
+    },
+    {
+      "date": "2026-06-04",
+      "lever": "round 7 NO_PROGRESS: un-decremented limit-save (lim_x=D_8009BE78 named local) + var_v0_2=arg0 default-init with bgez-first compare",
+      "floor_was": 12,
+      "floor_now": 12,
+      "round": 7,
+      "git_head_at_measurement": "8b45967d",
+      "note": "Candidate baseline 12 reconfirmed at HEAD 8b45967d (build_insns 50 vs target 51, 21 rules dropped, 452 cheat-asm stripped). Two new manual variants tested, both NEGATIVE: (T1-round7) save un-decremented limits in named locals — `s16 lim_x = D_8009BE78; s16 lim_y = D_8009BE7A;` — and reference `(lim_x - 1) < arg0` / `var_v0_2 = lim_x - 1` etc. Hypothesis: mirror target's `addu $a2, $v0, $zero` raw-limit save (target preserves the un-decremented D_8009BE78 in $a2 to support the `addiu $v0, $a2, -1` delay-slot fill). Score 12 (NO CHANGE) — GCC CSEs lim_x back into the same RTL pseudo as the direct `D_8009BE78` read; the named-local intermediate is allocation-neutral. Distinct from rejected_forms[6] which saved the DECREMENTED limit (`s16 xlim = D_8009BE78 - 1`, score 20). (T2-round7) initialize var_v0_2 = arg0 default at function entry as a structural mirror of target's first-instruction `addu $a3, $a0, $zero` (target preserves raw arg0 into $a3, then $a3 becomes the holder for the clamped var_v0_2 via subsequent overwrite). Structure: `var_v0_2 = arg0; if (arg0 >= 0) { if ((D_8009BE78-1) < arg0) var_v0_2 = D_8009BE78-1; /* else: var_v0_2 stays as arg0 */ } else { var_v0_2 = 0; }` — distinct from rejected_forms[2] which used bltz-first compare sense at score 20; mine is bgez-first matching the empirically-confirmed local-optimum branch opcode from round 5. Score 16 (regression +4 vs candidate). The default-init pattern interacts with the bgez-first nested structure such that GCC's RTL collapses the merge differently than candidate's explicit else-branch; the explicit `var_v0_2 = arg0` else-branch in the candidate's form IS load-bearing for floor 12 (cannot be replaced by a default-init relying on no-op-when-in-range). Source reverted; oracle confirmed green (build SHA1 == 62efab4f). HEAD drift NOTE: meta.json head_floor was 16 when written; current HEAD scores 20 (synthetic new_var/new_var2 named-intermediates per round-4 finding); updated to 20. Rejection corpus now 30 distinct variants across rounds 1, 4, 5, 6, 7 plus ~60k+ permuter iters rounds 1-2. No new rejected_forms appended (T1 was no-op-equivalent; T2 same category as rejected_forms[2] with branch-sense flipped). PARK_CANDIDATE escalation from rounds 5/6 stands; the lim_x/default-init levers were the documented round-5 `next_hypotheses[0]` 'unrejected lever' candidates outside the SOTN-form question (which round 6 closed). Per [[no-new-park-categories]] user policy, function remains INCOMPLETE; per user round-7 directive PARK_CANDIDATE is not terminal — escalation note unchanged: (a) PERM_GENERAL DIRECTED permuter ~30k iters; (b) BB2_ALLOC_DEBUG/PRIODBG instrumented cc1 dump on score-12 form to identify pseudo priorities of arg0/var_v0_2/var_a1; both require multi-session infrastructure not feasible inside one worker run. Sibling func_8007C86C carries identical pattern with same NO_PROGRESS outcome expected."
     },
     {
       "date": "2026-06-04",
