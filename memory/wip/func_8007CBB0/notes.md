@@ -286,3 +286,52 @@ due to budget; given cpu_side_move_dir_4 permuter plateau on identical-class
 residual, prior-art evidence strongly suggests it would also plateau.
 
 Source reverted at session end; verify-oracle SHA1 == oracle (62efab4f...).
+
+## Session 2026-06-04 (workflow round 7) — permuter + 3 manual levers, NO_PROGRESS
+
+PERMUTER AUTHORIZED for this session. Setup at `permuter/cbb0/` (base.c =
+score-41 candidate, target.s = prelude.inc + asm/funcs/func_8007CBB0.s,
+compile.sh = canonical cc1 pipeline). 10-min/-j6/~3700 iters.
+
+Best permuter output (760-1, weighted score 760) renames to `int new_var =
+((arg1 >> 31) << 10) | 0xE1000000; (&D_800F1858)[5] = (*D_8009BF48 & 0x7FF)
+| new_var;` in big-packet path. Sandbox-measured: **41 → 29** (-12 points,
+build_insns 151 still EXACT). The lever ASYMMETRICALLY applies — adding the
+same intermediate to small-packet [2] (same subexpression) REGRESSES 29 → 54.
+
+**Cheat-reviewer FAIL on 3 grounds:**
+
+1. Asymmetric application reveals codegen-control intent, not semantic
+   clarity. The identical subexpression `(((arg1 >> 31) << 10) | 0xE1000000)`
+   appears INLINE in small-packet [2]. A human programmer naming the GP0
+   0xE1 draw-mode command word would apply the name to BOTH uses.
+2. Worker's stated mechanism is "biases the LUID" — pure GCC-internals.
+3. Permuter-derived form, semantic rename (`e1_cmd`) is post-hoc
+   rationalization. Same family as round-4's rejected `sign_E1` (rejected_forms).
+
+Also tested 3 NEW manual levers from the score-41 base, ALL negative:
+
+1. Named intermediates `u32 hdr = ...; u32 bf48_e1 = ...;` for big-packet — REGRESSED 41 → 58.
+2. Precomputed `xy/wh` shared between both packet paths in outer block — REGRESSED 41 → 75 (build_insns 148 short).
+3. Constant rewrite `0x04000000 - 1` for the 0x03FFFFFF terminator — UNCHANGED (combine canonicalizes).
+
+**Net result for round 7: floor unchanged at 41.** Permuter found a real
+sub-baseline form but the form is a cheat per the cheat-reviewer's
+6-test checklist. src/ reverted to HEAD; verify-oracle SHA1 == oracle.
+
+Cumulative ~38 negative levers + 1 PASS-vetted positive (round-6
+SOTN-indexed-array) across 7 sessions. The score-41 floor remains the
+established structural ceiling for this function's pure-C reconstruction.
+
+**Resume avenues for future sessions:**
+
+1. Try directed permuter with `PERM_*` macros (not random) — the random
+   permuter found `new_var` quickly but the lever was a cheat; directed
+   permuter could target specific lever classes that are SOTN-sanctioned.
+2. Try instrumented cc1 dump with BB2_SCHED_DEBUG/BB2_PRIO_DEBUG on the
+   score-41 candidate to identify exactly which RTL edges create the
+   constant-materialization adjacency at idx 49-50 (vs target's split at
+   49-85). The instrumented cc1 is preserved at `tmp/gccdbg/cc1`.
+3. Hand-research SOTN's other libgpu packet builders (beyond `_clr`) for
+   structural patterns BB2's CBB0 hasn't tried — e.g. SOTN's `DrawSync`
+   wait-loop forms.

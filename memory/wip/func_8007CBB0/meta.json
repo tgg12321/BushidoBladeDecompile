@@ -75,6 +75,15 @@
     },
     {
       "date": "2026-06-04",
+      "lever": "workflow round 7 (this session): tested 3 NEW structural levers + a 10-min/3700-iter directed permuter run from the score-41 SOTN-indexed-array base. All 3 manual levers regressed or held; permuter found a sub-41 form (output-760-1, score 29) but cheat-reviewer ruled FAIL.",
+      "floor_was": 41,
+      "floor_now": 41,
+      "round": 7,
+      "git_head_at_measurement": "657d80e9",
+      "note": "NO_PROGRESS by COMPLETED-C standard (cheat-reviewer rejected the sub-baseline form). Re-verified candidate.c reproduces score 41/build_insns 151 == target 151 at HEAD 657d80e9. Three NEW manual levers tested from the score-41 SOTN-indexed-array base (NONE in prior rejected_forms ledgers): (1) Named intermediates `u32 hdr = ...; u32 bf48_e1 = ...;` for the big-packet block at the new SOTN base — REGRESSED 41→58 (round-4 tested this from the score-52 base and got 52, the SOTN-base scheduling is more sensitive to the extra intermediates' RTL pseudo numbering); (2) Precomputed `xy = (s32)arg0->word0; wh = *((s32*)arg0+1);` shared between BOTH packet paths (declared in an outer block scope) — REGRESSED 41→75 with build_insns 148 (the shared precompute pulls the lw insns earlier and CSE-eats them differently from target's per-path read pattern); (3) Constant rewrite `(&D_800F1858)[9] = 0x04000000 - 1;` — UNCHANGED 41 (combine canonicalizes the subtraction to the literal before the constant materializer's split-vs-adjacent decision; same fate as round-5's shift-OR decomposition). Permuter setup: `permuter/cbb0/` (base.c, compile.sh, target.s/target.o assembled from prelude.inc + asm/funcs/func_8007CBB0.s). 10-min wallclock, -j6, ~3700 iters. Best legitimate-looking score 760 (= permuter weighted; not sandbox masked) at output-760-1: introduces `int new_var; ... new_var = ((arg1 >> 31) << 10) | 0xE1000000; (&D_800F1858)[5] = (*D_8009BF48 & 0x7FF) | new_var;` in the big-packet path only. Renamed `new_var` to semantic `e1_cmd` (the GP0 0xE1 draw-mode command word with sign-encoded dithering flag) and sandbox-measured: floor 41 → 29 (-12 points, build_insns 151 still EXACT). Applying `e1_cmd` to the small-packet [2] store (same subexpression) REGRESSED 29→54 — the lever is ASYMMETRIC. Invoked cheat-reviewer per [[review-discipline-before-commit]]; verdict FAIL on 3 grounds: (a) Test 2 (human-programmer): asymmetric application reveals codegen-control intent rather than semantic clarity — a programmer who genuinely named the GP0 command would apply it to BOTH uses; (b) Test 3 (GCC-internals justification): the worker's stated mechanism is 'biases the LUID' which is pure GCC RTL pseudo numbering; (c) Test 4 (permuter-derived): permuter found `new_var`, the worker renamed it post-hoc, the form is auto-search rationalization not semantic derivation. Reviewer cited round-4's prior rejection of `sign_E1` (same expression, score-52 base) as direct precedent — the underlying technique was already in rejected_forms and the indexed-array base only changes the RTL context, not the family. src/ reverted to HEAD (stub + asmfix bridge); verify-oracle SHA1 == oracle (62efab4f...). Cumulative ~38 negative levers + 1 PASS-vetted positive (round-6 SOTN-indexed-array) across 7 sessions."
+    },
+    {
+      "date": "2026-06-04",
       "lever": "workflow round 5 (previous session): tested 2 additional fresh structural levers from the score-52 base targeting the list-scheduler INSN_PRIORITY residual specifically; both confirmed the 52 floor",
       "floor_was": 52,
       "floor_now": 52,
@@ -193,6 +202,26 @@
       "form": "Move `(&D_800F1858)[9] = 0x03FFFFFF;` BEFORE `(&D_800F1858)[0] = …;` (source order swap)",
       "score": 61,
       "reason": "REGRESSED 41 → 61. Hypothesis: target emits the 0x03FFFFFF mask lui ($a3, 0x3FF) at idx 49 — placing the store earlier in source might bias scheduling toward target's emit position. Result: source store order matching target's emit order remains structurally bound at the new score-41 base; moving the constant-materialization store earlier disrupts the indexed-array base register cascade. (Round 6, 2026-06-04.)"
+    },
+    {
+      "form": "Named intermediates `u32 hdr = ...; u32 bf48_e1 = ...;` for big-packet block (from SOTN-indexed-array base)",
+      "score": 58,
+      "reason": "REGRESSED 41 → 58. Round-4 tested similar named-intermediates from the score-52 base and got 52 (no LUID effect). From the score-41 SOTN-indexed-array base, the same family REGRESSES: declaring `hdr` and `bf48_e1` locals at the top of the big-packet block disrupts the indexed-array base register cascade's scheduling. (Round 7, 2026-06-04.)"
+    },
+    {
+      "form": "Precompute `s32 xy = (s32)arg0->word0; s32 wh = *((s32*)arg0+1);` in an outer block, share between both packet paths",
+      "score": 75,
+      "reason": "REGRESSED 41 → 75 with build_insns 148 (3 short of target 151). The shared precompute pulls the arg0 lw insns earlier and CSE-eats them differently from target's per-path read pattern — target re-reads in each branch but mine hoists into the outer scope. Structural mismatch. (Round 7, 2026-06-04.)"
+    },
+    {
+      "form": "Constant rewrite `(&D_800F1858)[9] = 0x04000000 - 1;` (subtraction form for 0x03FFFFFF)",
+      "score": 41,
+      "reason": "No floor reduction. Combine canonicalizes the subtraction `0x04000000 - 1` to the literal 0x03FFFFFF before the constant materializer's split-vs-adjacent decision; same fate as round-5's `((u32)0x3FFu << 16) | 0xFFFFu` shift-OR decomposition. No literal-equivalent source spelling reaches GCC's MIPS constant materializer in a non-canonicalized form. (Round 7, 2026-06-04.)"
+    },
+    {
+      "form": "Named intermediate `s32 e1_cmd = ((arg1 >> 31) << 10) | 0xE1000000;` in big-packet path only (permuter output-760-1, renamed new_var → e1_cmd)",
+      "score": 29,
+      "reason": "REAL FLOOR REDUCTION 41 → 29 (-12 points, build_insns 151 still EXACT), but cheat-reviewer FAILED on 3 grounds. (a) Asymmetric application — same subexpression `(((arg1 >> 31) << 10) | 0xE1000000)` appears INLINE in the small-packet [2] store; adding `e1_cmd` to small-packet REGRESSES 29 → 54, proving the lever is tuned for the big-packet path's specific RTL scheduling rather than for semantic clarity. A programmer naming the GP0 0xE1 command word would apply it to both uses. (b) Worker's stated mechanism is 'biases the LUID' — pure GCC-internals (RTL pseudo numbering). (c) Permuter-derived: form originated in `permuter/cbb0/output-760-1/source.c` as `int new_var`; the rename to semantic `e1_cmd` is post-hoc rationalization. Same family as round-4 `sign_E1` rejection from the score-52 base; SOTN's sanctioned `randy`-chain named-intermediate covers single-use semantically-distinct values applied consistently, NOT asymmetric LUID-tuning. Verdict: FAIL per [[review-discipline-before-commit]]. (Round 7, 2026-06-04.)"
     }
   ],
   "memory_notes": [
