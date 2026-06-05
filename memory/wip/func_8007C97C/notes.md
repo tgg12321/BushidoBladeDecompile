@@ -325,3 +325,117 @@ any, must be a novel pure-C structural lever capable of producing
 4 dead `sw` stack stores that survive cc1's DCE pass without being
 itself a cheat-by-spelling — a search-space that prior sessions'
 mechanism analyses (sessions 4-5) have argued a-priori-rules-out.
+
+## Session 2026-06-05 (round 10) — extended permuter + GCC -da dump; NO_PROGRESS, floor 27
+
+**Outcome: NO_PROGRESS. Floor unchanged at 27.** Two new concrete investigations
+executed; both add to the empirical record without surfacing a new lever.
+
+### Investigation #1 — GCC -da dump on round-7 candidate (`tmp/c97c_dump/`)
+
+Compiled the round-7 u8 candidate with `cc1 -O2 -G0 -funsigned-char -da` to dump
+all RTL passes. Findings from `base.c.greg`:
+
+- **Register dispositions:** the candidate uses ONLY hard regs $v0/$v1/$a0/$a1
+  (regs 2/3/4/5). ZERO callee-save regs used.
+- **Hard regs used: 2 3 4 5** — confirmed.
+- The 24-insn body fits entirely in scratch regs because (a) no function calls,
+  (b) live ranges fit, (c) no locals taken-address. cc1 has no reason to spill
+  to frame.
+
+To match target's 33 insns with the 4 dead `sw $rN, K($sp)` stores + frame
+alloc/dealloc + 2 nops, cc1 would need to be forced into using callee-save regs
+OR spilling to frame. The pure-C constructs that achieve this are all in the
+forbidden cheat catalog:
+- `register T x asm("$sN")` pins (forbidden cheat-asm)
+- `volatile T x` coercion (forbidden)
+- `s32 buf[4]; buf[i] = ...;` write-only array (forbidden)
+- `T *p = &local;` address-of-local (forbidden)
+- function call inside the if (semantic change — not the original)
+
+The candidate's compact codegen is exactly what cc1 *should* produce from
+clean pure C; the target's frame-using codegen is what hand-written asm OR
+a now-forbidden coercion construct produces.
+
+### Investigation #2 — index-aligned objdump diff (sandbox-stripped vs target.s)
+
+The exact 9-insn structural gap:
+| Region | Target (33 insns) | Candidate (24 insns) |
+|---|---|---|
+| NULL handling | bnez/addiu(sp,-0x10)(delay)/j-END/addu(v0,0,0) = 4 | bnez/move(v0,zero)(delay)/jr = 3 |
+| Computation | 21 insns | 19 insns |
+| Frame stores | 4 × sw $rN, K($sp) | 0 |
+| Epilogue | addiu(sp,0x10)/jr/nop | jr/nop |
+
+The NULL-path frame allocation (`addiu $sp,-0x10` in the bnez delay slot, even
+when the function returns 0 immediately) is the structural signature target
+emits. No pure-C source produces a mandatory frame even on a NULL early-return
+path without the frame being USED for some local — and DCE removes any unused
+local.
+
+### Investigation #3 — extended PERM_GENERAL permuter (12000+ iters / 20 min)
+
+Re-baselined permuter base.c to the round-7 u8 candidate (was wider-typed).
+Base score: **3065** weighted. Run: `timeout 1200 permuter.py -j 6 --best-only`.
+
+Best-five sub-baseline finds, ALL cheats:
+
+| Score | Output | Cheat category |
+|---|---|---|
+| 1625 | output-1625-1 | `u8 *new_var2 = &b1;` — scalar-address coercion ([[dead-vars-local-array]] / [[inline-asm-injection]]) |
+| 1790 | output-1790-1 | `volatile int b2` + `if(1){}` wrap noise — volatile coercion |
+| 1800 | output-1800-1 | Chained `& 0xFF & 0xFF & 0xFF...` bit-noise — no-semantic-purpose construct |
+| 1850 | output-1850-1 | `volatile int r` + `if(1)` wrap — volatile coercion |
+| 1915 | output-1915-1+2 | `volatile int new_var` / `volatile unsigned int r` — volatile coercion |
+
+**ZERO sub-baseline LEGITIMATE candidates** in 12000+ iters. The PERM_GENERAL
+random-mutation pass from the u8 base produces the same family of forbidden
+coercion constructs as round 7's 6749-iter run from the wider base — local
+mutation does not synthesize a non-coercion structural lever capable of
+producing target's 4 dead stack writes. The permuter weighted score is NOT
+directly comparable to sandbox masked-distance (1625 weighted does not mean
+< 27 masked distance), but every legitimate-shape mutation tried in 19000+
+combined iters across rounds 7 + 10 has held at or above the round-7 floor.
+
+### Cumulative exhaustion ledger (sessions 1-10)
+
+- 30+ structural variants tested by hand across sessions 0-9 + this session
+- 19000+ permuter iterations across rounds 7 + 10 (PERM_GENERAL random)
+- GCC -da RTL dump on the candidate (this round) — confirms minimal-reg codegen
+- Sibling cross-reference (func_8007C8AC GP0(0xE4) / func_8007C938 GP0(0xE5)
+  both pure-C with zero dead stores; this function is structurally anomalous
+  in its own GP0 cluster)
+- SOTN-precedent research (round 6, definitive negative result)
+- Instrumented mechanism analysis (sessions 4-5: DCE removes any local not
+  read; 4 stack stores require &local / volatile / write-only-array /
+  struct-return — all forbidden or ABI-ruled-out by caller analysis)
+- 25+ variants in rejected_forms across rounds 0-8
+
+Src reverted; oracle green at session end (verify-oracle ok:true, SHA1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa).
+
+### Concrete next-attempt avenues (carry-through)
+
+NOT a policy carve-out request. Per [[no-new-park-categories]] PARK_CANDIDATE
+is NOT terminal for this; the function continues to grind toward COMPLETED-C.
+
+1. **Hand-authored PERM_GENERAL macro embeddings** — the default random
+   alternative-snippets pass produces no-purpose mutations (round 7 + round 10
+   both confirm). Designing PERM_GENERAL(a, b, c) directives that explore
+   semantically-equivalent NON-COERCION structural alternatives per C-statement
+   (e.g. alternative orderings of the 4 channel computations, alternative
+   typedefs of the OR expression, alternative null-check positions) is the
+   actual remaining frontier. Requires hand-authoring directives in base.c
+   that ENFORCE legitimate-only mutations.
+2. **Inspect dis_data_layout** — the original Bushido Blade 2 build's overall
+   data layout MAY have placed `func_8007C97C` in a TU compiled with subtly
+   different flags or in a context where cc1 chose to spill (e.g. local variable
+   pressure from sibling functions in the same TU). Investigating splat re-
+   attribution evidence for `display.c` (whether the GP0-builder cluster
+   actually belongs in its own .c file with different compilation context).
+3. **The function is INCOMPLETE indefinitely** — same status as
+   `cpu_side_move_dir_4` / `marionation_Exec` / `saEft00Add` cluster
+   (documented allocno-priority-tie / cross-jump-merge cluster per
+   [[register-alloc-pure-c]] § confirmed limits). The grind continues on
+   the C-source axis; the user policy precludes compiler patches or
+   canonical-asm authorization.
