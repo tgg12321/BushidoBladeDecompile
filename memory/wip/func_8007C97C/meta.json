@@ -55,6 +55,17 @@
     },
     {
       "date": "2026-06-05",
+      "agent": "wip-resume-session-8-func_8007C97C",
+      "git_head_at_measurement": "baecf383",
+      "lever": "Round 8 — applied tmp/sotn_research_func_8007C97C_v2.md NOVEL levers: block-local OR-pack split (Lever A variants), struct-typed arg0, u32 temps with (u8) casts, separate s16 halfword reads, load reorder, early-return with top-level locals",
+      "floor_was": 27,
+      "floor_now": 27,
+      "round": 8,
+      "outcome": "NO_PROGRESS",
+      "note": "FLOOR UNCHANGED at 27. Applied round-7 candidate (u8-typed r/g/b1/b2, score 27 confirmed) and tested 6 NEW structural variants from v2 research, NONE of which appear in prior sessions' rejected_forms: V8 hi/lo block-local split (`u32 hi = (b1<<0xF)|(r<<0xA); u32 lo = (b2<<5)|g; return hi|0xE2000000u|lo;`) = score 29 (REGRESSED +2, build_insns=24). V9 in-place accumulator (`u32 acc = (r<<0xA)|0xE2000000u; acc |= b1<<0xF; acc |= b2<<5; acc |= g;`) = score 29 (REGRESSED +2, build_insns=25). V10 struct-typed arg0 (`TexWin {u8 mx; u8 ox; u8 _pad2; u8 _pad3; s16 my; s16 oy;}`) = score 27 (SAME — typing change has no allocation effect because parameter is just dereferenced, struct doesn't change loads). V11 u32 temps with explicit (u8) inner casts (`u32 r = (u32)arg0[0]>>3; u32 g = (u32)((u8)((-...)>>3));`) = score 29 (REGRESSED +2). V12 load reorder r→b1→g→b2 (Lever A variant — declare temps then assign in target's temporal order) = score 27 (SAME). V13 separate s16 halfword reads (`s16 mx = *(s16*)(arg0+4); s16 my = *(s16*)(arg0+6); u8 g = (-mx)>>3;`) = score 27 (SAME — extra named locals get folded back). V14 early-return with top-level locals (`u8 r,g,b1,b2; if (arg0==0) return 0; r = ...;`) = score 28 (REGRESSED +1, build_insns=26 — early-return form adds 2 insns vs body-internal if). Conclusion: Every novel structural variant outside the round-7 winning shape either holds at 27 or regresses. The round-7 candidate (u8 temps + body-internal if + single OR-pack expression with explicit u32 casts) IS the floor; nothing else in the explored search space drops below it WITHOUT a coercion. The v2 research's struct-return hypothesis was ruled out by inspecting callers (`initClearImage`/`initTexPage`/`func_8007C2A0` all use the return as `*(u32*)` — the function must return s32/u32, not a struct, so the hidden-stack-pointer hypothesis doesn't apply). Concrete next-attempt avenues genuinely remaining: (a) directed permuter with PERM_INT_TYPE on residual variables (v2 lever #1 — un-run this session due to budget); (b) GCC -da dump to read allocno priorities at the 27-floor candidate's RTL (v2 lever #4, un-run); (c) reorg.c-level investigation: the missing 2 nops are scheduling artifacts of the 4 dead stores; understanding what RTL structure cc1's reorg.c WOULD treat as needing those nops could expose a lever. Src reverted; oracle green at session end (verify-oracle ok:true, SHA1 == oracle). Per [[no-new-park-categories]] PARK_CANDIDATE is NOT terminal for this; the function continues to grind toward COMPLETED-C in future sessions."
+    },
+    {
+      "date": "2026-06-05",
       "agent": "wip-resume-session-7-func_8007C97C",
       "git_head_at_measurement": "76f2a8c4",
       "lever": "Round 7 — narrow integer type (Lever B from .claude/rules/register-alloc-pure-c.md) on color channel temps (r/g/b1/b2 as u8) + 12-min/~6749-iter permuter from round-5 candidate base",
