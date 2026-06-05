@@ -3,7 +3,7 @@
   "file": "display",
   "scores": {
     "head_floor": 149,
-    "candidate_floor": 52,
+    "candidate_floor": 41,
     "metric": "sandbox --disable all (masked Levenshtein)",
     "build_insns": 151,
     "target_insns": 151,
@@ -66,7 +66,16 @@
     },
     {
       "date": "2026-06-04",
-      "lever": "workflow round 5 (this session): tested 2 additional fresh structural levers from the score-52 base targeting the list-scheduler INSN_PRIORITY residual specifically; both confirmed the 52 floor",
+      "lever": "workflow round 6 (this session): applied SOTN-converged indexed-array store form (per fresh SOTN research tmp/sotn_research_func_8007CBB0.md). Lowered floor 52 → 41 via direct `(&D_800F1858)[N]` literal indexed access (replacing per-symbol `D_800F1858 = …; D_800F1868 = …;` form) with source-order = index-order for BOTH big-packet and small-packet paths.",
+      "floor_was": 52,
+      "floor_now": 41,
+      "round": 6,
+      "git_head_at_measurement": "04241da6",
+      "note": "PROGRESS — first floor reduction since round 2 (sessions 3-5 all confirmed 52 as plateau). The SOTN research (2026-06-04) identified the indexed-array store form used in SOTN's `_clr` (src/main/psxsdk/libgpu/sys.c) — the structural twin GP0 packet builder with identical 0xE3-0xE6 magic constants. Intermediate-pointer-variable form (`u32 *base = &D_800F1858; base[N] = …;`) measured 45 — the intermediate var costs cc1 4 points of scheduling. Direct `(&D_800F1858)[N]` literal form (matching SOTN's `D_80037E20[N]` shape exactly) measures 41 and is the committed candidate. Cheat-reviewer PASS — see meta.json.reviewer. Move-base[9]-early (placing the `0x03FFFFFF` store before base[0]) regressed 41 → 65; source store order matching target's emit order remains structurally bound. Cumulative ~35 negative levers + 1 positive (this lever) across 6 sessions. Residual 41 masked diffs at 151/151 matched insn count are still list-scheduler INSN_PRIORITY decisions (the 0x03FFFFFF lui/ori split + BF48 load chain interleave) — same class as cpu_side_move_dir_4 sched.c walls, but now from a more SOTN-faithful base."
+    },
+    {
+      "date": "2026-06-04",
+      "lever": "workflow round 5 (previous session): tested 2 additional fresh structural levers from the score-52 base targeting the list-scheduler INSN_PRIORITY residual specifically; both confirmed the 52 floor",
       "floor_was": 52,
       "floor_now": 52,
       "round": 5,
@@ -75,9 +84,9 @@
     }
   ],
   "reviewer": {
-    "verdict": null,
-    "date": null,
-    "evidence": "Not yet invoked on the candidate. The candidate is structural pure-C with no obvious cheat constructs (no register pins, no register-asm, no volatile coercion on globals, no unused locals \u2014 the (void)arg2/arg3 is the K&R-style ABI honoring of unused params, see SOTN community standard). Invoke cheat-reviewer before any Match: commit. Manual self-audit notes the candidate's `(void)arg2; (void)arg3;` declarations have semantic purpose (silence unused-param warnings on a function whose ABI takes 4 args but logic uses 2 \u2014 the calling convention is what matters for the prologue size, and this preserves it cleanly). [2026-06-03 update] Score-52 candidate body verified reproducible (build_insns 151 == target 151). Reviewer still owes an independent PASS verdict on the candidate.c body before any Match: commit attempt."
+    "verdict": "PASS",
+    "date": "2026-06-04",
+    "evidence": "Round-6 cheat-reviewer invocation PASSED the score-41 SOTN-converged candidate body. All six checklist tests cleared: (1) semantic purpose \u2014 indexed-array form expresses real architectural contiguity of the GP0 packet buffer (GPU DMA chains require contiguous memory); (2) human-programmer test \u2014 SOTN ships this exact form in `_clr` (src/main/psxsdk/libgpu/sys.c) as `D_80037E20[N]`; (3) GCC-internals justification \u2014 the pointer-arithmetic-over-common-base form naturally yields base+offset addressing, not a coercion against an analysis pass; (4) not permuter-derived \u2014 SOTN structural research is the source; (5) family check \u2014 no register pins, no inline asm, no volatile coercion, no dead stores, no padding arrays, no alias renames; (6) naming \u2014 no `pad`/`dummy`/`spill` intent-announcers. The `(void)arg2; (void)arg3;` suppressors are distinct from the forbidden `(void)&local;` frame-coercion (no address-of, no frame effect) and are standard C unused-param idiom. Reviewer verdict: PASS for WIP commit. (For a future Match: commit, re-invoke the reviewer on the final closing form.)"
   },
   "remaining_gap": {
     "summary": "List-scheduler INSN_PRIORITY decisions in the GPU packet store sequence. Target interleaves the 0x03FFFFFF constant materialization (lui $a3 0x3FFFFFF + ori $a3 0xFFFF split by ~20 insns) with the BF48 load chain; mine emits them adjacent. Same class as cpu_side_move_dir_4 / marionation_Exec sched.c walls. NO frame coercion, NO register allocation diffs \u2014 pure scheduling.",
@@ -174,6 +183,16 @@
       "form": "Explicit shift-OR constant decomposition *p187C = ((u32)0x3FFu << 16) | 0xFFFFu;",
       "score": 52,
       "reason": "No floor reduction (still 52). Hypothesis was that writing the constant in shift-OR form would map directly onto GCC's lui+ori RTL expansion, biasing combine to keep them as discrete operations that the list-scheduler could then split. Result: combine's constant canonicalization runs BEFORE the constant-materializer's split-vs-adjacent decision; the shift-OR form folds to the literal 0x03FFFFFF and emits the adjacent lui+ori pair the candidate already has. Confirms that no literal-equivalent source spelling of 0x03FFFFFF reaches GCC's constant materializer in a non-canonicalized form. (Workflow round 5, 2026-06-04.)"
+    },
+    {
+      "form": "Intermediate-pointer-variable form `u32 *base = &D_800F1858; base[N] = …;`",
+      "score": 45,
+      "reason": "Indexed-array form WORKED (45 vs the per-symbol candidate's 52) — establishing the SOTN lever direction is correct — but the intermediate `u32 *base` local variable costs cc1 ~4 points of additional scheduling slack vs the literal `(&D_800F1858)[N]` form. Direct literal access form (no intermediate var) scores 41. (Round 6, 2026-06-04.)"
+    },
+    {
+      "form": "Move `(&D_800F1858)[9] = 0x03FFFFFF;` BEFORE `(&D_800F1858)[0] = …;` (source order swap)",
+      "score": 61,
+      "reason": "REGRESSED 41 → 61. Hypothesis: target emits the 0x03FFFFFF mask lui ($a3, 0x3FF) at idx 49 — placing the store earlier in source might bias scheduling toward target's emit position. Result: source store order matching target's emit order remains structurally bound at the new score-41 base; moving the constant-materialization store earlier disrupts the indexed-array base register cascade. (Round 6, 2026-06-04.)"
     }
   ],
   "memory_notes": [

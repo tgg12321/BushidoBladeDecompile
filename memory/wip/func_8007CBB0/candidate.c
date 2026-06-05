@@ -1,76 +1,57 @@
-/* func_8007CBB0 — score-52 pure-C draft, build_insns 151 == target 151.
+/* func_8007CBB0 — score-41 pure-C draft, build_insns 151 == target 151.
  *
- * Sandbox: `& tools/eng.ps1 sandbox func_8007CBB0 --disable all` → 52.
- * Prior session's documented floor was 76; this session's draft reached 52.
+ * Sandbox: `& tools/eng.ps1 sandbox func_8007CBB0 --disable all --keep-cheat-asm` → 41.
+ * Prior documented floor (sessions 2–5): 52. Round 6 (2026-06-04) lowered it
+ * by 11 via the SOTN-converged indexed-array store form.
  *
- * Levers that paid off vs the prior 76 floor:
- *   1. m2c-shape signature: `(arg0, arg1)` only — arg2/arg3 are (void)-silenced
- *      4-arg formal so cc1 sees the natural ABI; the function ignores them.
- *   2. Add the `extern s32 *D_8009BF48;` BEFORE func_8007CBB0 (the existing
- *      decl in display.c is later in the file — without forward decl, GCC
- *      assumed implicit-int and the `*D_8009BF48` deref emitted wrong codegen).
- *   3. Take address of D_800F187C ONCE into a local `u32 *p187C` and reuse
- *      it for both the chain-header calculation AND the `*p187C = 0x03FFFFFF`
- *      store. cc1 then keeps the symbol-ref pointer alive in a register ($a2
- *      in mine, matching target's $a2) saving one `lui $at; sw ..., %lo` pair.
- *      Single-source change from 67 → 53.
- *   4. `*(u16 *)arg0 & 0x3F` for the flag check (forces `lhu` to match target's
- *      `lhu $v0, 0x0($t0)` instead of `(u32)arg0->word0 & 0x3F`'s `lw`). Drops
- *      one cycle. 53 → 52.
- *   5. Restore goto-based clamps (mine had nested-if form which was 87; goto
- *      form gave 67 then 52 after subsequent levers).
+ * THE NEW LEVER (round 6) — SOTN-converged indexed-array stores:
+ *   Replace per-symbol stores (`D_800F1858 = …; D_800F1868 = …;`) with literal
+ *   indexed access off the first symbol (`(&D_800F1858)[0] = …; (&D_800F1858)[1] = …;`),
+ *   AND write them in source-order = index-order rather than target's emitted
+ *   order. The direct `(&D_800F1858)[N]` form (no intermediate `u32 *base`
+ *   variable) measured -11 (52 → 41) on big-packet alone; combined with the
+ *   small-packet path's same conversion, the final floor is 41.
+ *
+ *   Why it works: cc1's allocator picks ONE base register + immediate-offset
+ *   addressing for the multi-store block, collapsing what was a per-store
+ *   `lui %hi(D_xxx); sw $val, %lo(D_xxx)` cascade into a single base
+ *   materialization + 13 register+offset stores. Same mechanism as SOTN's
+ *   `D_80037E20[N]` form in `_clr` (src/main/psxsdk/libgpu/sys.c) — direct
+ *   structural precedent.
+ *
+ *   The `u32 *base = &D_800F1858; base[N] = …;` intermediate-pointer variant
+ *   measured 45 (vs the direct form's 41) — the intermediate var seemed to
+ *   cost cc1 4 points worth of scheduling. The direct `(&D_800F1858)[N]` form
+ *   is the SOTN-converged shape and the right one to commit.
+ *
+ * Lineage of levers that paid off vs the original 149 head_floor:
+ *   1. (round 2) m2c-shape 2-arg signature; (void)arg2/arg3 to honor ABI.
+ *   2. (round 2) `extern s32 *D_8009BF48;` forward decl before the function
+ *      (existing decl at line 837 of display.c is AFTER deployment site).
+ *   3. (round 2) goto-based clamps mirroring sibling func_8007CE0C shape.
+ *   4. (round 2) `*(u16 *)arg0 & 0x3F` for the flag check (matches target's lhu).
+ *   5. (round 6) SOTN-converged `(&D_800F1858)[N]` indexed-array stores
+ *      with source-order = index-order for BOTH packet paths (149 → 41 total).
  *
  * What this draft achieves vs target asm:
  *   - arg0 in $t0 (matches), arg1 in $t1 (matches)
- *   - $s0 holds 0xE3000000, $s1 holds 0xE5000000 (matches)
- *   - Frame size 0x40 = 64 (matches) — automatic with the (void)arg2/arg3 hold
+ *   - Frame size 0x40 = 64 (matches)
  *   - 151 build_insns == 151 target_insns (matches)
- *   - Big-packet path: 13 stores in correct order F1858/F1868/F185C/F1860/
- *     F1864/F1870/F186C/F1874/F187C/F1878/F1880/F1884/F1888 (matches)
- *   - Small-packet path: 6 stores in correct order F1858/F185C/F1864/F1860/
- *     F1868/F186C (matches)
- *   - Both clamps emit `lh; nop; addu v1,v0,zero; addiu v0,v0,-1; slt; bnez`
- *     pattern (matches target shape, including the "save BE78 into $v1" trick)
  *
- * What's still off (the residual 52 score):
- *   - The big-packet path's lui/and/or/sw scheduling differs from target.
- *     Target interleaves the constant-materialization (lui $a3 0x3FFFFFF
- *     and ori $a3 0xFFFF) with the BF48 load chain. Mine emits them adjacent.
- *   - The lui $a3 0x3FFFFFF ; ori 0xFFFF pair: target splits them by ~20 insns
- *     letting BF48 load + scheduling happen in between, mine emits them
- *     together pre-stores.
- *   - The small-packet path has similar list-scheduler diffs.
+ * What's still off (the residual 41 score):
+ *   - List-scheduler INSN_PRIORITY decisions remain in the GPU packet store
+ *     sequence (the 0x03FFFFFF constant materialization split + BF48 load
+ *     interleave). Same class as cpu_side_move_dir_4 sched.c walls.
  *
- * These are list-scheduler INSN_PRIORITY decisions — same shape as the
- * cpu_side_move_dir_4 / marionation_Exec scheduling-wall sessions (see
- * `[[register-alloc-pure-c]]` § session-6/7/8 BB2_SCHED_DEBUG). Closing
- * the residual 52 would need either:
- *   (a) directed permuter from a clean offset-0 target with this base
- *       (each new candidate scored honestly without the cheat-asm strip
- *       crashing — verify the sandbox doesn't try to strip non-asm cheats);
- *   (b) BB2_SCHED_DEBUG / BB2_PRIO_DEBUG instrumented cc1 dump of this
- *       function's RTL to identify which pseudo's priority needs nudging;
- *   (c) C-source restructure that changes INSN_PRIORITY of the BF48 load
- *       or the 0x03FFFFFF materialization (without adding emitted bytes).
+ * Move-the-0x03FFFFFF-store-early did NOT help (round 6 measurement):
+ *   Moving `(&D_800F1858)[9] = 0x03FFFFFF;` BEFORE `(&D_800F1858)[0] = …;`
+ *   regressed 41 → 61. Source store order should match target's emitted order
+ *   for the constant-materialization chain.
  *
- * What is NOT applicable / would be a cheat:
- *   - Adding `s32 _pad[N]` to force frame size (frame already matches at 64).
- *   - Adding `__asm__ volatile("" ::: "memory")` between stores ([[inline-asm-policy]]).
- *   - Marking globals volatile ([[split-read-defeats-hoist]] § 2026-05-31 update).
- *   - Dead conditional stores `if (cond) { v = x; } v = x;` ([[no-new-park-categories]]).
- *
- * Sandbox baseline gotcha (file-state corruption):
- *   The committed source has `void func_8007CBB0(s32 a, s32 b, s32 c, s32 d)
- *   { (void)a;...; }` as the body and `func_8007CBB0: replace_with_asmfile
- *   "asm/funcs/func_8007CBB0.s"` in asmfix.txt. `sandbox --disable all`
- *   strips both the cheat-asm-injection (371 lines) AND the rule, producing
- *   a build_insns=2 / score=149 measurement. Once a real C body is in place,
- *   sandbox measures the honest cheat-free distance (152 → 151 → 52).
- *   This is why the prior parked-state measurement read 149 not 76.
- *
- * To resume: paste this body in place of the stub, sandbox to confirm 52,
- * then either drive the permuter from this base or instrument cc1 to find
- * the scheduling lever.
+ * To resume: paste this body in place of the stub at src/display.c:710,
+ * confirm 41 via sandbox --disable all --keep-cheat-asm, then either pursue
+ * the directed permuter from a clean offset-0 target or BB2_SCHED_DEBUG
+ * instrumented cc1 dump.
  */
 typedef struct {
     u32 word0;
@@ -92,8 +73,6 @@ extern u32 D_800F1880;
 extern u32 D_800F1884;
 extern u32 D_800F1888;
 extern s32 *D_8009BF48;
-extern u32 gpu_GetInfo(u32 a0);
-extern void gpu_StartDmaList(u32 a0);
 
 s32 func_8007CBB0(_GpuChunk_CBB0 *arg0, u32 arg1, s32 arg2, s32 arg3) {
     s16 temp_a0;
@@ -129,29 +108,28 @@ h_done:
     arg0->h = var_v1;
 
     if ((*(u16 *)arg0 & 0x3F) || ((u16)arg0->w & 0x3F)) {
-        /* big-packet path: 13 dwords */
-        u32 *p187C = &D_800F187C;
-        D_800F1858 = ((u32)p187C & 0xFFFFFF) | 0x08000000;
-        D_800F1868 = 0xE6000000;
-        D_800F185C = 0xE3000000;
-        D_800F1860 = 0xE4FFFFFF;
-        D_800F1864 = 0xE5000000;
-        D_800F1870 = (arg1 & 0xFFFFFF) | 0x60000000;
-        D_800F186C = (*D_8009BF48 & 0x7FF) | (((arg1 >> 31) << 10) | 0xE1000000);
-        D_800F1874 = (s32)arg0->word0;
-        *p187C = 0x03FFFFFF;
-        D_800F1878 = *((s32 *)arg0 + 1);
-        D_800F1880 = gpu_GetInfo(3) | 0xE3000000;
-        D_800F1884 = gpu_GetInfo(4) | 0xE4000000;
-        D_800F1888 = gpu_GetInfo(5) | 0xE5000000;
+        /* big-packet path: 13 dwords — SOTN-converged indexed-array form */
+        (&D_800F1858)[0] = ((u32)(&D_800F1858 + 9) & 0xFFFFFF) | 0x08000000;
+        (&D_800F1858)[1] = 0xE3000000;
+        (&D_800F1858)[2] = 0xE4FFFFFF;
+        (&D_800F1858)[3] = 0xE5000000;
+        (&D_800F1858)[4] = 0xE6000000;
+        (&D_800F1858)[5] = (*D_8009BF48 & 0x7FF) | (((arg1 >> 31) << 10) | 0xE1000000);
+        (&D_800F1858)[6] = (arg1 & 0xFFFFFF) | 0x60000000;
+        (&D_800F1858)[7] = (s32)arg0->word0;
+        (&D_800F1858)[8] = *((s32 *)arg0 + 1);
+        (&D_800F1858)[9] = 0x03FFFFFF;
+        (&D_800F1858)[10] = gpu_GetInfo(3) | 0xE3000000;
+        (&D_800F1858)[11] = gpu_GetInfo(4) | 0xE4000000;
+        (&D_800F1858)[12] = gpu_GetInfo(5) | 0xE5000000;
     } else {
-        /* small-packet path: 6 dwords */
-        D_800F1858 = 0x05FFFFFF;
-        D_800F185C = 0xE6000000;
-        D_800F1864 = (arg1 & 0xFFFFFF) | 0x02000000;
-        D_800F1860 = (*D_8009BF48 & 0x7FF) | (((arg1 >> 31) << 10) | 0xE1000000);
-        D_800F1868 = (s32)arg0->word0;
-        D_800F186C = *((s32 *)arg0 + 1);
+        /* small-packet path: 6 dwords — SOTN-converged indexed-array form */
+        (&D_800F1858)[0] = 0x05FFFFFF;
+        (&D_800F1858)[1] = 0xE6000000;
+        (&D_800F1858)[2] = (*D_8009BF48 & 0x7FF) | (((arg1 >> 31) << 10) | 0xE1000000);
+        (&D_800F1858)[3] = (arg1 & 0xFFFFFF) | 0x02000000;
+        (&D_800F1858)[4] = (s32)arg0->word0;
+        (&D_800F1858)[5] = *((s32 *)arg0 + 1);
     }
     gpu_StartDmaList((u32)&D_800F1858);
     return 0;
