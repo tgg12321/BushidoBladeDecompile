@@ -163,6 +163,54 @@ cluster]; (b) NEW exception class sanction — agent does NOT recommend; SOTN
 research found no master-tree evidence supporting this; (c) authorize one
 final directed-PERM permuter run before park-acceptance.
 
+## Session 2026-06-05 (round 7, v2-research-driven)
+
+**Floor unchanged at 6. NO_PROGRESS.** Executed the v2 research memo
+(`tmp/sotn_research_func_8007B844_v2.md`) which enumerated 5 RTL-derived
+angles cross-referenced against rejected_forms. Only Angle 1 (`&ot` in
+debug helper call) was net-new + self-vet-survivable at design time;
+Angles 2/4 were combine-foldable chain-extender cheats (forbidden per
+.claude/rules/register-alloc-pure-c.md session-5 update); Angle 5 was
+fn-ptr return-type lie (already rejected_forms[1]); Angle 3 was
+research-only (no new lever).
+
+**Two NEW variants measured this round, both negative:**
+
+1. Angle 1: `g_gpu_debug_func(&D_80015F98, &ot, n)` — **regressed 6 → 19**,
+   build_insns 38 → 37 (−1). Mechanism: addressable `ot` gets a stack
+   home, `move v0,s0` return-staging disappears (−1 insn), but the whole
+   schedule cascades and masked diff explodes. Also fails cheats-by-any-
+   spelling intent check (same family as `(void)&local;` from
+   [[dead-vars-local-array]] scalar — passing `&ot` (u32**) to a debug
+   formatter expecting `ot` (u32*) has no human-programmer purpose).
+2. Post-increment + arithmetic rebinding: `u32 *ret = ot; *ret++ = mask;
+   return ret - 1;` — score 6 (combine folds +1/−1 pointer arithmetic
+   identity + copy-prop folds `ret` to `ot`).
+
+**Permuter (~8 min wallclock, j=4, --stop-on-zero from score-6 base via
+existing permuter/func_8007B844/ workspace, Lever B pre-loaded as
+base.c):** ZERO sub-baseline candidates saved. Consistent with the
+cumulative ~50.5k iters across sessions 5-10 finding zero improvements
+on this function.
+
+**Cumulative across 9 grinding contexts** (3 sessions + 2 workflow rounds
++ rounds 3-7): ~82+ structural variants, ~50.5k+ permuter iters, ZERO
+progress beyond floor 6 in any context.
+
+Next-session concrete actions (per [[difficult-is-not-impossible]] —
+matching C exists, keep grinding; per [[no-new-park-categories]] —
+no new park category for register-rotation walls):
+1. BB2_SCHED_DEBUG instrumented dump on the Angle-1 (`&ot`) form —
+   even though the form is a cheat, the SCHED dump may reveal whether
+   the addressable-ot rearrangement crosses a chain a non-cheat
+   construct could exploit (the `move v0,s0` insn disappearing is a
+   structural shift not seen in prior session's RTL dumps).
+2. Sibling cross-reference of gpu_SendPacket (display.c:210,
+   byte-matched, has a post-call store) — diff its .sched dump against
+   B844's to test for any transferable structural pattern.
+3. PERM_GENERAL directed permuter with explicit `// PERM_GENERAL(stmts)`
+   macro annotations around the post-call statements.
+
 ## How to resume in one read
 
 1. Read `meta.json` — note `instrumented_evidence` (the BB2_SCHED_DEBUG
