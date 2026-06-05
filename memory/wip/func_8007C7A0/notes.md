@@ -133,6 +133,53 @@ remaining are infrastructure-heavy:
    the cpu_side_move_dir_4 / saEft00Add precedents — both used instrumented
    dumps to derive their levers).
 
+## Session 2026-06-05 (workflow round 11 — instrumented-cc1 diagnostic)
+
+**Floor unchanged at 12.** Instrumented-cc1 ALLOCDBG/SCHEDDBG/PRIODBG diagnostic
+on the score-12 candidate body (per the campaign brief at
+register-alloc-pure-c.md §6). Ran `tmp/gccdbg/cc1` (May 30 build, all three
+debug hooks live; canonical cc1 SHA1 unchanged) on `permuter/c7a0_wf341/base.c`
+with all three env vars set.
+
+**Pseudo identification (the result the round-5 / round-7 escalations asked for):**
+
+- Pseudo 72 = X-preserve var_v0_2 backup (line 23 `move $6,$4`). Gets $a2
+  (target wants $a3). Allocno priority = 1818 (LOWEST in the 11-pseudo
+  table, ord=10/10). nrefs=2, livelen=11.
+- Pseudo 79 = Y-mask + Y-shift chain ($v1 across lines 81/85/86/95). Allocno
+  priority = 10769 (HIGHEST). Already saturating $v1 — pushing it higher
+  doesn't displace any other pseudo's allocation on the path between $a2
+  and $a3 for pseudo 72.
+- Pseudo 91 = sign-extended arg1 ($a2 at line 56). Allocno priority = 4285.
+  Shares $a2 with pseudo 72 via non-overlapping live ranges.
+
+**To flip pseudo 72 from $a2 to $a3:** some pseudo with priority > 1818 must
+own $a2 across pseudo 72's livelen. EVERY way to manufacture that with pure-C
+source falls into a forbidden cheat family (chain-extender, dead store,
+synthetic local without semantic purpose, semantic change).
+
+**Five candidate Lever A/B/C variants self-vetted against cheat-reviewer 6-test
+checklist BEFORE coding** (per brief — `chain-extender forms inspired by the
+ALLOCDBG output are FORBIDDEN`):
+
+- (A.1) Block-local var_a1 wide-arm-only precompute — SKIP, duplicate of
+  rejected_forms[25] (v2 Lever 2, score 18).
+- (A.2) Block-local var_v0_2 inside wide-arm — FAIL test #1 semantic
+  (X-clamp result used in BOTH arms).
+- (B.1) u8 var_v0_2 / var_a1 — FAIL test #1 semantic (D_8009BE78/D_8009BE7A
+  halfwords exceed 255, truncation).
+- (B.2) u32 var_v0 / var_v1 — SKIP, permuter type-mutation exhausted.
+- (C) loop-local precompute — N/A (no loop).
+- (D) goto-form X-clamp — SKIP, rejected_forms[7] score 16.
+
+No src edits applied; oracle remains green. Diagnosis content at
+`tmp/gccdbg_func_8007C7A0/diagnosis.md` (gitignored; content folded into
+`meta.json` round-11 sessions[] note).
+
+PARK_CANDIDATE escalation reinforced. The dump corroborates the rounds-1-9
+empirical evidence at the mechanism level: pseudo 72's priority is
+quantitatively too low to flip without forbidden chain-extension.
+
 ## Session 2026-06-03 (workflow round 3)
 
 **Floor unchanged at 12 — but NO MEASUREMENT TAKEN.** Worker entered an isolated
