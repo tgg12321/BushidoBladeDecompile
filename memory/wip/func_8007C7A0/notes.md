@@ -133,6 +133,67 @@ remaining are infrastructure-heavy:
    the cpu_side_move_dir_4 / saEft00Add precedents — both used instrumented
    dumps to derive their levers).
 
+## Session 2026-06-05 (workflow round 12 — 3 novel variants + 12-min permuter)
+
+**Floor unchanged at 12.** Per session brief, executed both required gates for
+the PARK_CANDIDATE escalation:
+
+**Three novel structural variants tested (NOT in rejected_forms through round
+11), all measured negative:**
+
+- **V1 (single-expression return)**: drop var_v0/var_v1/r_e3 named locals,
+  inline `((var_a1 & MASK) << SHIFT) | (var_v0_2 & MASK) | 0xE3000000` in each
+  dispatch arm. Score 22 (+10 regression). The OR-chain pseudo's unified
+  livelen across both arms biases allocation wrongly; the SOTN-duplicate-read
+  precompute that round-9 T1 proved load-bearing is also missing.
+- **V2 (unsigned X-limit compare + operand-order flip)**: `(u32)arg0 > (u32)
+  (D_8009BE78 - 1)` inside the `arg0 >= 0` guard. Score 13 (+1 regression).
+  Confirms the [[compare-operand-order-register]] rule's explicit exclusion
+  for constant-RHS cases — sltiu lowering doesn't produce the allocator shift
+  the local-vs-global form does.
+- **V3 (declaration-order reversal)**: declare var_v1/var_v0/var_a1/var_v0_2
+  in opposite order. Score 12 (no change). Confirms pseudo numbers for autos
+  don't track decl order ([[register-alloc-pure-c]] cpu_side_move_dir_4
+  session-4 finding); allocation-neutral.
+
+**Permuter run (random mode, candidate base):** 21,621 iters in 12 min wallclock
+(`-j 4`, 720s timeout). Saved 10 sub-baseline candidates at permuter weights
+75/90/95/120/150/175/175/180/185/185. Self-vetted ALL 10 against cheat-reviewer
+6-test checklist BEFORE proposing:
+
+- **75**: `var_v1 = 0; var_v0_2 = var_v1;` in neg-arg0 else (shared-zero
+  routing — rejected_forms[12-14] family) PLUS `var_a1 = var_v1;` in neg-Y
+  else where var_v1 is UB on positive-arg0 path (rejected_forms[16] UB
+  family). TWO cheat families compounded.
+- **90**: `var_a1 = 0;` in neg-arg0 else — SEMANTIC CHANGE zeroing Y on
+  arg0<0 path (exactly rejected_forms[11]).
+- **120**: `var_a1 = arg1;` placed ONLY in neg-arg0 else branch, leaving
+  var_a1 read uninitialized on positive-arg0 path — exactly rejected_forms[1]
+  C86C-sibling UB-form pattern.
+- **95/150/175/180**: map to round-2 rejected_forms[12-19] families
+  (synthetic-local routing, semantic change, UB, named-intermediate-for-
+  boolean) — same shapes the round-2 ~8254-iter permuter found.
+
+**Cumulative evidence ledger** after round 12:
+- ~80k+ permuter iters across THREE independent runs (round 1 ~52k+ at HEAD
+  shape, round 2 ~8254 from clean offset-0, round 12 ~21,621 from candidate
+  base). Each independently finds the SAME forbidden cheat families and ZERO
+  legitimate sub-baseline shapes.
+- 36 distinct manual structural variants rejected (rounds 1, 4, 5, 6, 7, 9,
+  12), each measured at the sandbox masked-Levenshtein metric.
+- Round-11 ALLOCDBG-quantified mechanism: pseudo 72 pri=1818 is LOWEST in
+  the 11-pseudo allocno-sort table; flipping to $a3 requires chain-extension
+  FORBIDDEN per [[register-alloc-pure-c]] §6 (2026-06-02 marker).
+
+Source reverted post-experiments; oracle confirmed green (build SHA1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa).
+
+PARK_CANDIDATE escalation REINFORCED. Concrete next action documented in
+meta.json `next_hypotheses[0]`: evidence-based source-file TU re-attribution
+analysis for D_8009BE74/D_8009BE78/D_8009BE7A per
+[[jtbl-rodata-split-infrastructure]] + [[no-new-park-categories]] checklist.
+Project-architecture work requiring user judgment, not a single-worker lever.
+
 ## Session 2026-06-05 (workflow round 11 — instrumented-cc1 diagnostic)
 
 **Floor unchanged at 12.** Instrumented-cc1 ALLOCDBG/SCHEDDBG/PRIODBG diagnostic
