@@ -465,13 +465,6 @@ func_80019310: insert "nop" @ 3
 # Prologue: reorder TEXT 1-2 (post-insert indices) to swap lw and move
 func_80019310: reorder 2,1 @ 1-2
 
-# func_80045294: move i++ to fill load delay slot in first loop
-# Delete i++ at 21 and nop at 25 (original maspsx indices)
-func_80045294: delete @ 21
-func_80045294: delete @ 25
-# Insert i++ at post-delete index 24 (between lw and addu sum)
-func_80045294: insert "addu $16,$16,1" @ 24
-
 # func_80041988: reorder init block (lui/addu/lbu before constant inits)
 func_80041988: reorder 19,20,21,16,17,22,23,18 @ 16-23
 # func_80041988: swap v0<->v1 in dispatch (li and beq)

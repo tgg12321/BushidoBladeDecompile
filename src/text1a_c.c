@@ -1574,8 +1574,9 @@ void func_80045294(s32 a0, s32 a1) {
 
     if (i < count) {
         do {
-            sum += *(s32 *)((u8 *)&D_800EED18 + v1);
+            s32 addend = *(s32 *)((u8 *)&D_800EED18 + (i << 4));
             i += 1;
+            sum += addend;
             v1 += 0x10;
         } while (i < count);
     }
