@@ -163,6 +163,116 @@ produces dead stack writes (unlikely — DCE catches the class) or (b)
 reconsideration of the canonical-asm-authorization standing rejection (also
 unlikely — S1/S2/S6/S8 signals remain absent).
 
+## Session 2026-06-05 (round 7) — FLOOR LOWERED 29 → 27 via narrow integer type (Lever B)
+
+**Outcome: WIP_PROGRESS.** First measurable floor reduction in 3 rounds.
+
+The user policy for this round explicitly authorized continued work past
+the SOTN-precedent PARK conclusion. Executed: (1) re-measure round-5 candidate
+floor 29 (confirmed); (2) apply 3 NEW structural variants outside
+rejected_forms; (3) 12-minute permuter run with 6 workers from candidate base.
+
+### The lever — u8 color channel temps + u32-cast OR pack (Lever B)
+
+```c
+s32 func_8007C97C(u8 *arg0) {
+    if (arg0 != 0) {
+        u8 r  = arg0[0] >> 3;
+        u8 g  = (-*(s16*)(arg0 + 4)) >> 3;
+        u8 b1 = arg0[2] >> 3;
+        u8 b2 = (-*(s16*)(arg0 + 6)) >> 3;
+        return ((u32)b1 << 0xF) | ((u32)r << 0xA) | 0xE2000000u | ((u32)b2 << 5) | (u32)g;
+    }
+    return 0;
+}
+```
+
+Measured: **score 27**, build_insns=24, target_insns=33, rules_dropped=9
+(down from 29/25 with the wider-typed candidate). This is Lever B per
+`.claude/rules/register-alloc-pure-c.md` — narrow integer typing is a
+documented legitimate technique. u8 IS the natural type for color channels
+(RGB components are 0-255 by domain). The narrow type changes cc1's
+value-width tracking AND its register allocation, dropping one
+instruction from the build vs the u32-typed form.
+
+### Variants measured this round (all from round-5 candidate base, floor 29)
+
+| Variant | Score | build_insns | Notes |
+|---|---|---|---|
+| Round-5 candidate (u32 r, s32 g) | 29 | 25 | Re-confirmed |
+| V1 halfword-pointer alias (`s16 *hp = (s16*)(arg0+4)`) | 29 | 26 | No improvement |
+| V2 in-place OR accumulator (`ret \|= ...`) | 30 | 25 | Regression |
+| V3 u8 temps + explicit u32 casts | **27** | **24** | **Winner** |
+| V4 V3 simplified (no inner u8 casts on arg0[N]) | 27 | 24 | Same |
+| V5 V3 + named e2 intermediate | 27 | 25 | Slightly different masking |
+
+V3 saved as new `candidate.c`. The other variants ruled out.
+
+### Permuter (12 min wallclock, ~6749 iters, 6 workers, --stop-on-zero)
+
+Started from round-5 candidate base (`base.c` = the wider-typed form,
+score baseline ~3100 in permuter weighted metric). Best legitimate-shape
+weighted score: **1010** (output-1010-1). All best finds are the same
+address-coercion family:
+
+- output-1010-1: `s32 *new_var = &temp_v1; ... (*new_var) << 5`
+- output-1095-1: `u32 *new_var2 = &temp_v0;` (address-coerce + dead writes)
+- output-1205-1+: same family with different `&temp_*` aliases
+
+**ALL REJECTED** per `[[no-new-park-categories]]` cheats-by-any-spelling and
+`[[dead-vars-local-array]]` scalar-address-coercion form (detected by
+`engine/volatile_cheats.find_addr_coerced_locals`). Zero semantic purpose;
+the address-of-local pattern exists only to force the target's dead `sw`
+frame writes via &local materialization.
+
+Saved at `rejected/addr_coerce_temp.c` so the next agent doesn't re-derive
+it. The permuter's `PERM_GENERAL` random mutation pass will keep finding
+this same family — ignore them all.
+
+### What this round established
+
+1. **The 29 floor was NOT terminal.** A documented Lever B (narrow int type)
+   moved it to 27 — Lever B was simply un-applied in prior rounds; the
+   focus had been on structural-shape levers (inverted-null-check, m2c
+   form, var-reuse) and missed the type-narrowing axis.
+2. **The 27 floor IS structural.** The remaining 9-insn gap is still
+   exactly the 4 dead `sw` stores + frame slop that sessions 4-6
+   established cannot be reached via any legitimate pure-C construct.
+   DCE removes any pure-C local that isn't read; the only way to
+   produce a dead stack store is via a coercion construct, all of
+   which are in the forbidden catalog.
+3. **The permuter's `PERM_GENERAL` random mutation is exhausted** for
+   this function. Sub-baseline finds are all in the address-coercion
+   family (forbidden). Future permuter work would need directed
+   `PERM_*` macros (e.g. PERM_INT_TYPE) targeting specific type
+   axes the random pass under-explores.
+
+### Concrete next-attempt avenues (for next session)
+
+Per user policy "PARK_CANDIDATE requires concrete next action":
+
+1. **Directed permuter with `PERM_INT_TYPE` on residual variables.**
+   The u8 lever worked on the 4 color channels; the `r_e2` intermediate
+   and the OR-pack return type may have analogous wins.
+2. **Apply Lever A (block-local var split) to the OR-pack.** The current
+   form computes the entire OR expression in one statement; splitting
+   into block-local sub-pieces may shift cc1's RA in the prologue/return
+   block to closer match target.
+3. **Investigate `arg0` parameter type.** Currently `u8 *`. Target's
+   first load is `lbu 0($a0)` (byte), but later loads are `lh 4/6($a0)`
+   (halfword) — suggesting arg0 may have been declared as a struct
+   pointer with mixed-width fields. A struct typedef matching the
+   actual layout (`struct { u8 r, _, b1, _; s16 g, b2; }`) would
+   produce naturally-typed reads without the manual casts and may
+   shift scheduling.
+4. **GCC `-da` dump of the round-7 candidate** to see exactly which
+   pseudo-registers conflict at the prologue surface — the remaining
+   9-insn gap may have a Lever C (precompute) angle the manual variants
+   missed.
+
+These are concrete, mechanism-grounded next steps — NOT a policy
+escalation request. The function continues to grind toward COMPLETED-C.
+
 ## Session 2026-06-04 (round 6) — SOTN-precedent research, definitive PARK confirmation
 
 **Floor unchanged at 29 (not re-measured this round — sandbox cost not
