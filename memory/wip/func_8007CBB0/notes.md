@@ -452,3 +452,52 @@ Resume artifacts:
 Source reverted; verify-oracle SHA1 == oracle (62efab4f...). Same class as
 cpu_side_move_dir_4 / saEft00Add / marionation_Exec list-scheduler
 INSN_PRIORITY plateau cluster.
+
+## Session 2026-06-05 (workflow round 11) — STRUCT-FIELD hypothesis REFUTED
+
+Tested round-10's next_hypotheses[0] STRUCT-FIELD lever per the documented
+test recipe: define `CbbBigPkt {u32 hdr, e3, e4, e5, e6, e1ot, drmode, w0, w1,
+term, info3, info4, info5;}` and `CbbSmallPkt {u32 marker, e6, e1ot, drmode,
+w0, w1;}` matching the GP0 packet protocol (E1/E3/E4/E5/E6 are real PS1 GPU
+command opcodes), assign field-by-field through `(CbbBigPkt*)&D_800F1858`.
+
+Two variants both REGRESSED 41 → 45:
+
+1. **R11-A intermediate-pointer-var**: `CbbBigPkt *big = (CbbBigPkt*)&D_800F1858;
+   big->hdr = ...;` — score 45 / build_insns 151 EXACT.
+2. **R11-B inline-repeated-cast**: `((CbbBigPkt*)&D_800F1858)->hdr = ...;` — also
+   score 45 / build_insns 151 EXACT. cc1 CSEs the repeated address-of-symbol
+   casts into a single pointer pseudo, making it RTL-identical to R11-A.
+
+**Mechanism**: the struct-field form emits per-symbol relocation pattern
+(`lui $at, %hi(D_800F18XX); sw $val, %lo(D_800F18XX)($at)` per field-set, since
+each field has its own absolute address). Same family as round-9's R9-A
+per-symbol-target-emit-order form which scored 52. Struct-field's named field
+offsets help slightly vs raw per-symbol (45 vs 52, -7) but still WORSE than
+indexed-array (41) by +4 — the indexed-array's base-register reuse pattern
+matches target's register cadence better despite WRONG offset-immediates,
+exactly the round-9 ALLOCDBG/SCHEDDBG diagnosis.
+
+The +4 cost matches round-6's measurement of `u32 *base = &D_800F1858; base[N]`
+intermediate-pointer form (also 45 vs literal indexed-array 41). Confirms the
+indexed-array's base-register-reuse pattern is the structural sweet spot in
+the SOTN-allowed lever space.
+
+**Triple-redundant evidence now confirms the score-41 ceiling**:
+1. Round-9 ALLOCDBG: zero RA gap
+2. Round-9 SCHEDDBG: flat pri=1 plateau (source-order LUID tiebreak)
+3. Round-9 R9-A: per-symbol-target-emit-order = 52
+4. Round-10: permuter sub-baseline space is ALL cheats (`inline_fn`/`new_var`)
+5. Round-11: struct-field form (the last named structurally-novel angle) = 45
+
+Cumulative ~46 negative levers + 1 PASS-vetted positive (round-6 SOTN-indexed-
+array @ score 41) across 11 sessions. src/ reverted; verify-oracle SHA1 ==
+oracle (62efab4f...).
+
+**Remaining genuinely-untried avenue** (next_hypotheses[0]): caller-side
+ABI/signature analysis — if all callers pass arg1 as a sign-bit-only flag
+(0 or 0x80000000), the inline `(arg1 >> 31) << 10` sign-extract could be
+replaced with a direct `(arg1 != 0) << 10` form that compiles to a different
+RTL chain. Requires `grep -rn 'func_8007CBB0' src/` + per-call-site arg1
+analysis. Cheat-reviewer pass-condition: all callers must genuinely use
+arg1 as a flag (0/0x80000000 only); otherwise it's signature-lying.
