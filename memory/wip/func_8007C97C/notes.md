@@ -12,6 +12,16 @@
 > The function is structurally normal C — see `meta.json` rejected_forms[0]
 > for the full evidence. Round-1 worker's proposal was the same misguided
 > framing as B844's session-3 proposal; both rejected on the same evidence.
+>
+> **2026-06-04 SOTN-precedent reinforcement (round 6):** Fresh SOTN-decomp
+> research (`tmp/sotn_research_func_8007C97C.md`) confirms the policy. SOTN
+> has NO documented policy on dead stack writes; SOTN's `INCLUDE_ASM(...)`
+> with auto-`.NON_MATCHING` suffix and `nonmatchings/` paths is the
+> equivalent of BB2 PARK, **not** of COMPLETED-INLINE-ASM-CANONICAL.
+> SOTN has no curated canonical-asm list with positive S1/S2/S6/S8
+> criteria. Under SOTN precedent, C97C would sit as `INCLUDE_ASM` (= PARK)
+> indefinitely — not promoted to a "finished" tier. The standing rejection
+> stands.
 
 ## TL;DR
 
@@ -152,3 +162,56 @@ remains INCOMPLETE pending either (a) a novel non-cheat C structural lever that
 produces dead stack writes (unlikely — DCE catches the class) or (b)
 reconsideration of the canonical-asm-authorization standing rejection (also
 unlikely — S1/S2/S6/S8 signals remain absent).
+
+## Session 2026-06-04 (round 6) — SOTN-precedent research, definitive PARK confirmation
+
+**Floor unchanged at 29 (not re-measured this round — sandbox cost not
+spent; sessions 4 and 5 both measured 29 and round-6's lever is policy,
+not C). Outcome: NO_PROGRESS. Src untouched; oracle green at HEAD 88b90686.**
+
+Round-6 lever was *not* a code lever — it was a fresh SOTN-decomp research
+agent (sources: STYLE.md, README.md, wiki, include/include_asm.h,
+src/st/, src/main_psp/) to determine whether SOTN provides precedent for
+widening the standing canonical-asm-rejection on this function. The
+research report is at `tmp/sotn_research_func_8007C97C.md`. Three findings:
+
+1. **SOTN has no documented policy on dead stack writes.** Searches across
+   SOTN's docs, wiki, and issue tracker for "dead store", "dead stack",
+   "frame coercion", "unused frame", "stack write" returned **zero hits**.
+   The pattern of "compile to dead `sw` stores that the C source did not
+   ask for" is not a SOTN-known problem with a SOTN-known answer.
+
+2. **SOTN's `INCLUDE_ASM` is PARK, not canonical-asm.** From
+   `include/include_asm.h`, every `INCLUDE_ASM(FOLDER, NAME)` block
+   auto-suffixes `NAME.NON_MATCHING` and is conventionally placed under
+   a `nonmatchings/` path. This is SOTN's "TODO, not yet matched" marker.
+   SOTN does **not** require positive S1/S2/S6/S8 signals before leaving
+   a function as `INCLUDE_ASM`. There is **no SOTN equivalent** of BB2's
+   curated `inline_asm_canonical.txt` "originally asm, accepted finished
+   form" tier. The two-tier mapping is:
+   - **BB2 PARK** ≡ SOTN `INCLUDE_ASM(... nonmatchings/...)`
+   - **BB2 COMPLETED-INLINE-ASM-CANONICAL** ≡ no SOTN analog (BB2-specific)
+
+3. **SOTN's matched corpus has no analog for this shape.** Searches of
+   SOTN code for `addiu $sp` in C-source returned one hit — a comment
+   in `tools/make-config.py` about prologue detection. Zero matched
+   SOTN functions emit inline-asm prologue spillage to manufacture
+   dead frame stores. SOTN's matched GP0 builders use clean OR-pack
+   idioms (same as our siblings `func_8007C8AC` / `func_8007C938`).
+
+**Conclusion: SOTN precedent reinforces PARK, refuses canonical-asm.**
+Under SOTN's actual practice, C97C would sit as `INCLUDE_ASM(...)` under
+a `nonmatchings/` path indefinitely — counted as "not yet matched," not
+promoted to a finished tier. Under BB2's stricter policy, that maps to
+PARK (current state), NOT to COMPLETED-INLINE-ASM-CANONICAL.
+
+The standing canonical-asm-rejection (top of this file, codified
+2026-06-02) is therefore correct AND now externally corroborated by
+the SOTN-precedent question that round-5's `next_hypotheses[0]` had
+raised. The policy axis is closed: **no further iteration on
+canonical-asm authorization for this function is expected to produce
+a different answer.** The function remains PARKED. Future work, if
+any, must be a novel pure-C structural lever capable of producing
+4 dead `sw` stack stores that survive cc1's DCE pass without being
+itself a cheat-by-spelling — a search-space that prior sessions'
+mechanism analyses (sessions 4-5) have argued a-priori-rules-out.
