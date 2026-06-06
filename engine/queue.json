@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80061C00",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80065484",
       "file": "text1b",
       "distance": 2,
@@ -4132,6 +4124,15 @@
       "park_reason": "2-rule mflo-dest plateau: GCC RA picks  () for the 5th mflo (t = v*(0x1000-((s*(0x1000-f))>>12))>>12); target picks  () for in-place sra in beqz delay slot. Pseudos 104 (mult result) and 81 (t value) don't conflict per greg dump (line 13 + 21) yet greg allocates 104-> not . Same shape as q's mflo (97/80 -> shared ) but t pair doesn't coalesce. register asm() pin on t was IGNORED (only binds the named pseudo 81 which was already in ; doesn't bind the unnamed mult pseudo 104). Levers tested NEGATIVE: (1) reorder t after bounds check, (2) split t mult and >>12 into 2 statements, (3) local fc = 0x1000-f, (4) swap q/t order, (5) decl order swap (s32 i,f,p,t,q). All produce different bytes than HEAD AND than target. Next session: try volatile-bump on tbl_125c-analog (none here), make t live longer artificially, restructure 0x1000-f computation, or instrumented allocno-priority dump (BB2_ALLOC_DEBUG) to see why 104 doesn't get  despite no conflict."
     },
     {
+      "func": "func_80061C00",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "Blocked by file-scope \u001bxtern volatile s32 D_800A3468; (text1b.c:14408) \u2014 D_800A3468 is referenced by func_80061C00's body so volatile_cheats counts it as cheat_asm=1 even with the body pure C. Removing the regfix reorder rule alone (retire) yields SHA1 8aa8592... != oracle (full SHA1 mismatch from prologue-order divergence), so the rule IS load-bearing for matching; AND the file-wide volatile-extern cluster (~68 such decls, kept for func_80065000 et al.) blocks queue done regardless. De-cheating requires (a) finding pure-C prologue lever to drop the regfix reorder AND (b) project-wide cleanup of file-scope volatile externs across text1b.c \u2014 policy/architecture scope, not single-function."
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4262,14 +4263,14 @@
   ],
   "counts": {
     "total": 524,
-    "active": 438,
+    "active": 437,
     "by_status": {
-      "active": 438,
+      "active": 437,
       "authorize": 33,
-      "parked": 53
+      "parked": 54
     },
     "by_verdict": {
-      "C": 242,
+      "C": 241,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 117,
       "ASM-WHOLE": 7,
