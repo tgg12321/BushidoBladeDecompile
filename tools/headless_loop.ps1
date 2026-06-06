@@ -39,7 +39,6 @@ param(
     [string] $Model          = 'opus',
     [ValidateSet('acceptEdits','bypassPermissions','default','dontAsk')]
     [string] $PermissionMode = 'bypassPermissions',
-    [double] $MaxBudgetUsd   = 5.0,
     [switch] $DryRun
 )
 
@@ -139,8 +138,7 @@ try {
             '--output-format', 'json',
             '--model', $Model,
             '--permission-mode', $PermissionMode,
-            '--session-id', $sid,
-            '--max-budget-usd', $MaxBudgetUsd
+            '--session-id', $sid
         )
 
         if ($DryRun) {
