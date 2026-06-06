@@ -501,3 +501,85 @@ replaced with a direct `(arg1 != 0) << 10` form that compiles to a different
 RTL chain. Requires `grep -rn 'func_8007CBB0' src/` + per-call-site arg1
 analysis. Cheat-reviewer pass-condition: all callers must genuinely use
 arg1 as a flag (0/0x80000000 only); otherwise it's signature-lying.
+
+## Session 2026-06-06 (workflow round 14) — round-13 next_hypothesis EXECUTED + cheat-reviewer caught a borderline lever
+
+This session executed the directed-permuter avenue documented as
+round-13's `next_hypotheses[0]` (PERM_LINESWAP-only from score-41 base)
+plus 6 NEW manual structural variants. The score-41 floor stands as the
+sextuply-confirmed structural ceiling.
+
+### What round 14 actually ran
+
+**(A) Directed permuter campaign.** Prior worker (round 13) had pre-staged
+`permuter/cbb0/base.c` with `PERM_LINESWAP(...)` markers bracketing the
+13-store big-packet block AND the 6-store small-packet block. This session
+launched the permuter `-j6 --best-only` for ~13 min wallclock (~3600+
+iterations). **Result: ZERO sub-baseline outputs saved.** Baseline in
+permuter-weighted terms = 1915; all line-swap mutations produced scores
+6000-11000+ (strictly worse). The PERM_LINESWAP directive space is
+empirically exhausted with zero legitimate lower-floor finds.
+
+**(B) Six new manual structural variants** tested at score-41 baseline or
+the score-23/17 derived bases:
+
+| Lever | Sandbox | Verdict |
+|---|---|---|
+| L1: gpu_GetInfo(N) hoisted into `u32 g3/g4/g5` locals before indexed-array stores | 56 (+15) | REGRESSED |
+| L2: `&D_800F1858 + 9` → `&D_800F187C` direct address | 59 (+18) | REGRESSED |
+| L3 BORDERLINE: 3-operand OR reorder on OT-link slot (cmd|BF48|dither) + symmetric | **17 (-24)** | CHEAT FAIL |
+| L4: Full 2-operand OR swaps on slots [0]/[3]/[6]/[10..12] on top of L3 | 17 (no change) | NO-OP (canonicalized) |
+| L5: Per-symbol target-emit-order + L3 OR-reorder | 61 (+44 from L3) | REGRESSED |
+| L6: Drop `(u16)` cast on `arg0->w & 0x3F` | 23 (no change from L3) | NO-OP |
+| L7: Per-symbol monotonic order + L3 OR-reorder | 47 (+30 from L3) | REGRESSED |
+
+### Decisive cheat-reviewer FAIL on the score-17 lever (L3)
+
+The 3-operand OR reorder `(*D_8009BF48 & 0x7FF) | (((arg1 >> 31) << 10) |
+0xE1000000)` → `0xE1000000 | (*D_8009BF48 & 0x7FF) | ((arg1 >> 31) << 10)`
+DROPS the sandbox score from 41 to 17 (build_insns 151 EXACT) when applied
+symmetrically to BOTH packet paths' OT-link slots ([5] big, [2] small).
+
+Cheat-reviewer verdict: **FAIL** on three tests:
+
+1. **Test 1 (semantic purpose):** OR is associative and commutative; all
+   orderings of the three operands produce identical runtime values. The
+   form has zero semantic content beyond the parens shape.
+2. **Test 3 (GCC-internals justification):** The PSX-SDK convention
+   argument (command-byte-first) justifies putting `0xE1000000` first, but
+   does NOT justify why `((arg1 >> 31) << 10)` must be LAST rather than
+   middle. Empirically, alternate orderings of the same three operands score
+   23 (cmd|dither|BF48) or 36 (dither|BF48|cmd). The LAST-position choice
+   for the dither operand is selected exclusively by score, not convention.
+   The mechanism is RTL OR-tree shape affecting INSN_PRIORITY in the
+   scheduler — pure GCC-internals.
+3. **Test 5 (family check):** Same intent as the forbidden DImode chain
+   (`unsigned long long temp; temp = u32; count = temp;`) and the
+   combine-foldable chain-extender (`idx_1494 = (u8*)tbl_125c + delta`):
+   shifts RTL pseudo structure to change scheduling decisions without
+   changing emitted semantics. Per cheats-by-any-spelling policy
+   ([[no-new-park-categories]]), forbidden.
+
+The rejected form is preserved at `rejected/round14-or-operand-reorder.c`
+so future sessions can recognize it on sight without re-deriving.
+
+### Status (session 14)
+
+**Score-41 floor stands as the sextuply-confirmed structural ceiling.** The
+permuter directive space is empirically exhausted (PERM_RANDOMIZE attractors
+all hit cheats per round 10; PERM_INLINE_CALLS/PERM_VAR_REUSE attractors
+all hit cheats per round 7; PERM_LINESWAP-only finds zero sub-baseline per
+this session). The named-untried manual lever space is empirically exhausted
+(rounds 1-14 cumulative ~52 negative levers + 1 PASS-vetted positive +
+this session's 1 NEW BORDERLINE-FAIL lever).
+
+src/ reverted to HEAD (stub + asmfix bridge); verify-oracle SHA1 == oracle
+(62efab4f73f992798c43e8c730aa43baa10bb4fa) confirmed.
+
+The remaining genuine avenues are all escalation-tier:
+- Project-wide rodata reorder (evidence-based re-attribution required;
+  speculative reorders forbidden per [[jtbl-rodata-split-infrastructure]]).
+- Canonical-asm authorization (target asm shows no hand-coded signals —
+  signal bar likely fails).
+- Document score-41 as permanent INCOMPLETE pending a future toolchain
+  unlock (same status as cpu_side_move_dir_4 / marionation_Exec / saEft00Add).
