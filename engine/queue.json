@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "rob_life_ctrl_2",
-      "file": "text1a_c",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "func_8004A09C",
       "file": "text1b",
       "distance": 2,
@@ -4147,6 +4139,15 @@
       "park_reason": "Pure-C floor distance 2 (1 nop in first loop load-delay slot). 3 regfix rules move addu i++ between lw and addu sum to fill the slot. cc1's MIPS sched.c places addiu i++ at loop top regardless of source form (4 forms tried). See memory/wip/func_80045294/ for the form-sweep negative + resume hypotheses (instrumented-cc1 INSN_PRIORITY probe, pointer-iter form, sibling RTL diff)."
     },
     {
+      "func": "rob_life_ctrl_2",
+      "file": "text1a_c",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 2,
+      "status": "parked",
+      "park_reason": "2-rule mflo-dest plateau: GCC RA picks  () for the 5th mflo (t = v*(0x1000-((s*(0x1000-f))>>12))>>12); target picks  () for in-place sra in beqz delay slot. Pseudos 104 (mult result) and 81 (t value) don't conflict per greg dump (line 13 + 21) yet greg allocates 104-> not . Same shape as q's mflo (97/80 -> shared ) but t pair doesn't coalesce. register asm() pin on t was IGNORED (only binds the named pseudo 81 which was already in ; doesn't bind the unnamed mult pseudo 104). Levers tested NEGATIVE: (1) reorder t after bounds check, (2) split t mult and >>12 into 2 statements, (3) local fc = 0x1000-f, (4) swap q/t order, (5) decl order swap (s32 i,f,p,t,q). All produce different bytes than HEAD AND than target. Next session: try volatile-bump on tbl_125c-analog (none here), make t live longer artificially, restructure 0x1000-f computation, or instrumented allocno-priority dump (BB2_ALLOC_DEBUG) to see why 104 doesn't get  despite no conflict."
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4277,14 +4278,14 @@
   ],
   "counts": {
     "total": 526,
-    "active": 441,
+    "active": 440,
     "by_status": {
-      "active": 441,
+      "active": 440,
       "authorize": 33,
-      "parked": 52
+      "parked": 53
     },
     "by_verdict": {
-      "C": 245,
+      "C": 244,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 117,
       "ASM-WHOLE": 7,
