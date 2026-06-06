@@ -3172,7 +3172,6 @@ saFidLoad: delete @ 46
 saFidLoad: insert "sra	$2,$2,16" @ 47
 saFidLoad: insert_label ".LfuncC4C0_target:" @ 48
 saFidLoad: subst "\.L\d+" ".LfuncC4C0_target" @ 40
-func_8004A09C: reorder 66,67,68,65,69 @ 65-69
 
 # func_800644FC: 6-callee-saved bits dispatcher; LICM unhoist + 2 nop fills
 # (sll $a0,$s0,3 in beq delay slot, addiu $s0,$s0,1 in lw load-delay)

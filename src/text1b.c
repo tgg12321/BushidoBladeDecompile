@@ -1360,8 +1360,8 @@ void func_8004A09C(s32 arg0, u16 *arg1) {
     *(s16 *)(arg0 + 0x0C) = *arg1++;
     *(s16 *)(arg0 + 0x10) = *arg1++;
     *(s16 *)(arg0 + 0x12) = *arg1++;
-    func_8004A1FC();
     *(s16 *)(arg0 + 0x14) = *arg1++;
+    func_8004A1FC();
     *(s8 *)(arg0 + 0x58) = *arg1++;
     *(s8 *)(arg0 + 0x59) = *arg1++;
     *(s8 *)(arg0 + 0x5A) = *arg1;
