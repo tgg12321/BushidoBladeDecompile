@@ -12339,9 +12339,10 @@ extern s32 D_800A3404;
 extern s32 D_800A3408;
 extern s32 D_800A340C;
 
-void func_8005B7C4(s32 arg0) {
+s32 func_8005B7C4(s32 arg0) {
     s32 temp_v0;
     u32 temp_s0;
+    s32 ret;
 
     title_mv_exec2(0);
     debug_printf(&D_800158B4, arg0);
@@ -12353,8 +12354,9 @@ void func_8005B7C4(s32 arg0) {
     D_800A3408 = 0;
     D_800A340C = 0x1010;
     D_800A3404 = 0x1010;
-    tslGlobalMemFree_8005C2A8((GameObj *) arg0, 0, arg0 + temp_s0);
+    ret = tslGlobalMemFree_8005C2A8((GameObj *) arg0, 0, arg0 + temp_s0);
     D_800A340C = D_800A3404;
+    return ret;
 }
 extern s32 D_800EFC58;
 extern s32 D_800EFB58;
