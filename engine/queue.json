@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80045294",
-      "file": "text1a_c",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
       "func": "rob_life_ctrl_2",
       "file": "text1a_c",
       "distance": 2,
@@ -4146,6 +4138,15 @@
       "park_reason": "FALSE-branch lbu schedule diff at 3 independent loads (idx 68/69/70). Registers + OR-tree match; only cc1's load order differs (r/g/b vs target b/r/g). Mechanism: b's INSN_PRIORITY < r/g's (chain depth 1 vs 2), so sched.c picks r/g first. All clean pure-C levers tried (source reorder, inline, bit-descending, named intermediate) either no-op or regress. Remaining levers (OR-operand permute, chain-extender, dead store) forbidden by no-new-park-categories. Standing search avenue: directed permuter targeting idx 68-70."
     },
     {
+      "func": "func_80045294",
+      "file": "text1a_c",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "parked",
+      "park_reason": "Pure-C floor distance 2 (1 nop in first loop load-delay slot). 3 regfix rules move addu i++ between lw and addu sum to fill the slot. cc1's MIPS sched.c places addiu i++ at loop top regardless of source form (4 forms tried). See memory/wip/func_80045294/ for the form-sweep negative + resume hypotheses (instrumented-cc1 INSN_PRIORITY probe, pointer-iter form, sibling RTL diff)."
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4276,14 +4277,14 @@
   ],
   "counts": {
     "total": 526,
-    "active": 442,
+    "active": 441,
     "by_status": {
-      "active": 442,
+      "active": 441,
       "authorize": 33,
-      "parked": 51
+      "parked": 52
     },
     "by_verdict": {
-      "C": 246,
+      "C": 245,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 117,
       "ASM-WHOLE": 7,

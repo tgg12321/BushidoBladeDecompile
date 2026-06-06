@@ -1,0 +1,31 @@
+{
+  "func": "func_80045294",
+  "file": "text1a_c",
+  "scores": {
+    "head_floor": 2,
+    "candidate_floor": 2
+  },
+  "sessions": [
+    {
+      "date": "2026-06-06",
+      "agent": "headless",
+      "summary": "Tried 4 source forms (do-while, while, for, val-split). cc1 stubbornly puts addu $16,$16,1 before lw in loop body. No lever found. Source reverted to HEAD; oracle green.",
+      "delta_floor": 0
+    }
+  ],
+  "rejected_forms": [
+    "do { sum += load; i+=1; v1+=0x10; } while(i<count);  [HEAD]",
+    "do { s32 val = load; i+=1; sum+=val; v1+=0x10; } while(i<count);",
+    "while (i < count) { sum+=load; i+=1; v1+=0x10; }",
+    "for (; i < count; i++, v1+=0x10) { sum += load; }"
+  ],
+  "remaining_gap": "1 nop in first loop load-delay slot (8 bytes -> distance 2). Cheat: 2 deletes + 1 insert relocating addu $16,$16,1 from loop-top to between lw and addu sum.",
+  "next_hypotheses": [
+    "BB2_SCHED_DEBUG instrumented cc1 to read actual INSN_PRIORITY for lw vs addiu in loop",
+    "Pointer-based loop iteration (ptr += 0x10) — may shift RTL insn shape",
+    "Match-sibling RTL diff (func_80044100's *ptr += val; i++; ptr++ loop)"
+  ],
+  "reviewer": {
+    "verdict": "n/a — no candidate body changed; source reverted to HEAD"
+  }
+}
