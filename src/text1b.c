@@ -14620,11 +14620,11 @@ u8 func_80065434(void) {
     return 0;
 }
 extern s32 *D_800A3484;
-s32 func_80065484(void) {
+u8 func_80065484(void) {
     unsigned int temp_v1;
-    s32 ret;
+    u8 v0;
     *D_800A3484 = (s32)*(s16 *)&D_800A3440;
-    ret = motion_SetExMotion(5);
+    v0 = motion_SetExMotion(5);
     temp_v1 = *D_800A3484;
     switch (temp_v1) {
     case 0: {
@@ -14644,7 +14644,7 @@ s32 func_80065484(void) {
     }
     }
     if (*(s16 *)&D_800F0BB2 < 0x2001) {
-        return ret & 0xFF;
+        return v0;
     }
     return 0;
 }

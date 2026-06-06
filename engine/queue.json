@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80065484",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
       "func": "func_80069AE4",
       "file": "text1b",
       "distance": 2,
@@ -4133,6 +4125,15 @@
       "park_reason": "Blocked by file-scope \u001bxtern volatile s32 D_800A3468; (text1b.c:14408) \u2014 D_800A3468 is referenced by func_80061C00's body so volatile_cheats counts it as cheat_asm=1 even with the body pure C. Removing the regfix reorder rule alone (retire) yields SHA1 8aa8592... != oracle (full SHA1 mismatch from prologue-order divergence), so the rule IS load-bearing for matching; AND the file-wide volatile-extern cluster (~68 such decls, kept for func_80065000 et al.) blocks queue done regardless. De-cheating requires (a) finding pure-C prologue lever to drop the regfix reorder AND (b) project-wide cleanup of file-scope volatile externs across text1b.c \u2014 policy/architecture scope, not single-function."
     },
     {
+      "func": "func_80065484",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "parked",
+      "park_reason": "file-wide volatile-extern cluster (D_800F0BB2 / D_800A3440) blocks COMPLETED-C \u2014 same blocker as func_80061C00"
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4263,14 +4264,14 @@
   ],
   "counts": {
     "total": 524,
-    "active": 437,
+    "active": 436,
     "by_status": {
-      "active": 437,
+      "active": 436,
       "authorize": 33,
-      "parked": 54
+      "parked": 55
     },
     "by_verdict": {
-      "C": 241,
+      "C": 240,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 117,
       "ASM-WHOLE": 7,
