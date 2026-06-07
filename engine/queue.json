@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80078E58",
-      "file": "text1b_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8007992C",
       "file": "text1b_b",
       "distance": 2,
@@ -4139,6 +4131,15 @@
       "park_reason": "drain_delay jr-slot fill, mirrors func_80078A68/B3C parked yesterday (882c8c05/e29303d9). Honest pure-C distance 2, one asmfix rule (drain_delay @ 10). Same root cause: cc1 reorg's fill_simple_delay_slots picks the final 'sw v1, 4(a1)' to fill the 'jr ra' delay slot; target keeps a nop there and emits the sw before the jr. The sandbox-stripped objdump confirms identical instructions, only the sw/nop order differs. Levers inherited as exhausted from B3C session (precompute return local: folded; *(base+1) deref form: same codegen; split mask local: regressed to 4) plus this session: compound assignment '&=' form: identical RTL, score 2. Forbidden alternatives per expanded cheat catalog: volatile coercion on D_8009BD68/D_8009BD70, asm barrier, register pin, dead self-assign. Resume avenues (inherited): directed permuter from clean single-function target; read cc1 reorg.c::fill_simple_delay_slots eligibility predicates for a pure-C disqualifier on the single-insn sw."
     },
     {
+      "func": "func_80078E58",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Target frame is 0x10 (16 bytes); only used local is volatile s32 i which yields 8 bytes. Current source has s32 pad[2]; forbidden under dead-vars-local-array (unused arrays are codegen-coercion cheats per cheats-by-any-spelling). Sandbox strip removes pad[2] giving sp=-8, distance 2 (just the prologue/epilogue addiu). No legitimate pure-C lever reserves an extra 8 bytes without forbidden constructs: a 2nd volatile s32 j packs into the same 8-byte slot, actually using j adds insns, address-coerced scalar / void-discard / unused struct member all in same forbidden family. The 26-instruction body byte-matches, only the stack adjustment differs."
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4269,14 +4270,14 @@
   ],
   "counts": {
     "total": 524,
-    "active": 431,
+    "active": 430,
     "by_status": {
-      "active": 431,
+      "active": 430,
       "authorize": 33,
-      "parked": 60
+      "parked": 61
     },
     "by_verdict": {
-      "C": 235,
+      "C": 234,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 117,
       "ASM-WHOLE": 7,
