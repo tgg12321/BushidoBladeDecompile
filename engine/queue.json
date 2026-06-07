@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80044010",
-      "file": "text1a_c",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "InitFadePanel",
       "file": "text1b",
       "distance": 3,
@@ -4116,6 +4108,15 @@
       "park_reason": "cc1 prologue beq slot-fill + loop SR resist pure-C levers (distance 3, 2 rules); see commit message"
     },
     {
+      "func": "func_80044010",
+      "file": "text1a_c",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Frame-coercion cheat: target's 8-byte stack frame exists ONLY to give cc1's scheduler an \u0007ddiu sp,sp,-8 to fill the bnez delay slot at 1b58, balanced by \u0007ddiu sp,sp,8 at the shared epilogue 1b88. The function has no stack-addressable locals, no callees, no spills \u2014 semantically needs no frame. Without \u000bolatile s32 sp_pad; GCC emits two nops where target has addiu/addiu (sandbox 0 -> 3, build_insns 34=34 same count). Same FORBIDDEN family as s32 buf[N]; per [[dead-vars-local-array]] / [[inline-asm-policy]] expanded catalog (volatile-scalar-unused-local detector at engine/volatile_cheats.find_volatile_unused_locals catches it). No pure-C lever exists: no semantic local can be named (would be reverse-engineered padding), Lever A/B/C from [[register-alloc-pure-c]] do not apply to frame-size diffs. Pure-C floor is 3; cannot reach COMPLETED-C without forbidden frame coercion. Resume only via canonical-asm authorization OR a discovered semantic local hidden in the asm."
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4273,14 +4274,14 @@
   ],
   "counts": {
     "total": 524,
-    "active": 428,
+    "active": 427,
     "by_status": {
-      "active": 428,
+      "active": 427,
       "authorize": 33,
-      "parked": 63
+      "parked": 64
     },
     "by_verdict": {
-      "C": 232,
+      "C": 231,
       "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
