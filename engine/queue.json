@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80085270",
-      "file": "main",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "AddTbpOfst_80047EE8",
       "file": "text1b",
       "distance": 5,
@@ -4055,6 +4047,15 @@
       "park_reason": "Heavy cheat load: 4 register-asm pins (i/c/tmp/p), 1 asm move-via-output (addu), 3 inline volatile casts on game-state (((volatile u8 *)p)[8]=0; etc.). The volatile coercions force GCC to emit separate byte stores instead of combining adjacent bytes. Not a quick pin-removal \u2014 needs structural rework to produce separate stores from clean C (struct-of-bytes, etc.)."
     },
     {
+      "func": "func_80085270",
+      "file": "main",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 2,
+      "status": "parked",
+      "park_reason": "Scheduler-only floor: 2 regfix reorder rules cover two pure scheduling permutations cc1's list scheduler picks differently from target. Diff A (idx 1-4) = cc1 emits sll,sra,lui,addiu (sra immediately follows sll despite 1-cycle latency stall); target emits sll,lui,addiu,sra (la fills the latency gap). Diff B (idx 51-59) = cc1 schedules move t0,s0 early and li t1,127 late; target schedules both li t2,64 and li t1,127 before the lws and move t0,s0 after them (post-load latency stall fill). Levers tried 2026-06-07 (all kept honest distance at 5): (a) s32 *table = (s32*)&D_80106F28; named local (moved la BEFORE sll \u2014 wrong direction); (b) s32 a0_shl = (s32)((s32)a0<<16); ... (a0_shl>>14) split sign-extend into named sub-expression (cc1 collapsed back, identical bytes); (c) named s32 v0_tmp/v1_tmp/a0_tmp/a1_tmp/a2_tmp locals to capture lw results before storing them with hp=p inserted between (regressed to 23 \u2014 also rejected as cheat-by-spelling: zero semantic content). No clean pure-C lever found in the explored space \u2014 same family as the parked register-rotation-infrastructure cluster (cpu_side_move_dir_4 / marionation_Exec)."
+    },
+    {
       "func": "func_8007B844",
       "file": "display",
       "distance": 7,
@@ -4174,14 +4175,14 @@
   ],
   "counts": {
     "total": 511,
-    "active": 409,
+    "active": 408,
     "by_status": {
-      "active": 409,
+      "active": 408,
       "authorize": 33,
-      "parked": 69
+      "parked": 70
     },
     "by_verdict": {
-      "C": 217,
+      "C": 216,
       "ASM-PARTIAL": 74,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
