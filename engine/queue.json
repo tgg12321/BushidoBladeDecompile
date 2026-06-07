@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "md_game_check_change_main_mode_katinuki",
-      "file": "main",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "saTan1SyuryoDraw",
       "file": "main",
       "distance": 3,
@@ -4130,6 +4122,15 @@
       "park_reason": "3 RA-tiebreaker diffs persist at honest pure-C distance 3 (idx 1: andi reads \u00073 vs target \u00070 after move a3,a0 save; idx 42/51: sll dest is v1 vs target v0, cascading into addu source). Both are register-tiebreaker ties per [[register-alloc-pure-c]] Step 0 (target uses LOWER reg, our cc1 uses HIGHER, so our build is the anomaly). Source carries an unannotated do { } while (0); between sa1 = sa1 << 4; and D_801027F6 = (u8)a1; that is LOAD-BEARING for the score-3 floor: removing it jumps the masked distance to 9-19 because cc1 reorders the D_800F66B8 / D_800F6660 / D_800F6700 lookups and shuffles their argregs (target prefers a1/a0/a2 order, removal yields a0/a2/a1 form). Session-tested negative levers from the score-3 baseline: (a) split shift dest into fresh s32 sa1s local -> score 7; (b) reorder byte stores before shift -> 3 (same diffs); (c) rewrite entry as single expression \u001bntry = *(s32*)((sa1<<4 + v1) + 8) -> 19; (d) \u000b1 + sa1 + 8 reordered operand sum -> 3 (no change); (e) capture s32 a0_full = a0; to drive andi off a0_full -> 5; (f) inline a0_byte / a1_byte locals before sign-extend -> not tested but unlikely (would force a0 save to a different reg). The do-while-0 currently keeps the floor at 3 via opaque scheduling/RA effect (no branch-invert pattern, so NOT a sanctioned [[do-while-zero-exception]] use case). Resume avenues: (1) permuter from score-3 base directed at the andi src and sll dst RA picks; (2) instrumented cc1 ALLOCDBG dump on the standalone function to identify which pseudo conflicts force the saved-a0 to a3 and shift-result to v1; (3) consider whether the do-while-0 can be retired via a structural change that also closes the 3 RA diffs (it may currently be a cheat-by-spelling per [[no-new-park-categories]] -- its mechanism here is not the LABEL_OUTSIDE_LOOP_P / reorg.c interaction)."
     },
     {
+      "func": "md_game_check_change_main_mode_katinuki",
+      "file": "main",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Needs user policy on legitimate-volatile D_800A2D14 (interrupt-touched). HEAD volatile produces target's double-read shape (matches oracle); sandbox-stripped distance 3 is the second lui/lw/nop of D_800A2D14 inside the if-body. Pure-C cannot force GCC to re-read a non-volatile global between !=0 test and store. DispUpdateStatusMessage has the same shape. See commit body."
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4287,14 +4288,14 @@
   ],
   "counts": {
     "total": 526,
-    "active": 432,
+    "active": 431,
     "by_status": {
-      "active": 432,
+      "active": 431,
       "authorize": 33,
-      "parked": 61
+      "parked": 62
     },
     "by_verdict": {
-      "C": 236,
+      "C": 235,
       "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
