@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "gte_SetRotMatrix",
-      "file": "display",
-      "distance": 5,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "initDrawMode",
       "file": "gpu",
       "distance": 5,
@@ -4180,16 +4172,16 @@
     }
   ],
   "counts": {
-    "total": 512,
-    "active": 411,
+    "total": 511,
+    "active": 410,
     "by_status": {
-      "active": 411,
+      "active": 410,
       "authorize": 33,
       "parked": 68
     },
     "by_verdict": {
-      "ASM-PARTIAL": 75,
       "C": 218,
+      "ASM-PARTIAL": 74,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
       "ASM-STRUCTURAL": 26

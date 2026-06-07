@@ -280,6 +280,7 @@ calc_fc_frame_8007EC5C  # Hand-coded GTE 3x3-mvmva matrix transform (display.c).
 # See gte-wrapper-misroute-park.md.
 gte_SetTransVector  # GTE translation-vector loader (display.c): lw $t0..$t2, 20-28($a0) -> ctc2 $t0..$t2, $5..$7 -> jr $ra. Auto-authorized 2026-06-06.
 gte_SetColorMatrix  # GTE color-matrix loader (display.c): lw $t0..$t4, 0-16($a0) -> ctc2 $t0..$t4, $16..$20 -> jr $ra. Pure cop2 control-reg ops, no C form. Auto-authorized 2026-06-07.
+gte_SetRotMatrix  # GTE rotation-matrix loader (display.c): lw $t0..$t4, 0-16($a0) -> ctc2 $t0..$t4, $0..$4 (RT11RT12/RT13RT21/RT22RT23/RT31RT32/RT33) -> jr $ra. Pure cop2 control-reg ops, no C form. Auto-authorized 2026-06-07.
 
 # === Hand-coded leaf with vestigial frame (text1a.c) ===
 save_vc_ctrl  # Hand-coded leaf (text1a.c): 8-byte stack frame holds zero locals (semantically needs no frame; siblings func_8004153C / func_80041584 use no frame) PLUS an unfilled nop in the jr ra delay slot (siblings get filled delay slots from GCC). Two STRONG hand-coded signals per hand-coded-asm-recognition.md. User-authorized 2026-06-07 (canonical-asm A category).

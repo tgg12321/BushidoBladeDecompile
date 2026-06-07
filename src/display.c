@@ -2277,18 +2277,29 @@ __asm__(
     ".set\tat\n"
 );
 PAD_NOPS_3; /* 3 NOPs after func_8007EDBC */
-void gte_SetRotMatrix(s32 *a0) {
-    register s32 t0 asm("t0") = a0[0];
-    register s32 t1 asm("t1") = a0[1];
-    register s32 t2 asm("t2") = a0[2];
-    register s32 t3 asm("t3") = a0[3];
-    register s32 t4 asm("t4") = a0[4];
-    __asm__ volatile (".word 0x48C80000" :: "r"(t0));  /* ctc2 $t0, $0 */
-    __asm__ volatile (".word 0x48C90800" :: "r"(t1));  /* ctc2 $t1, $1 */
-    __asm__ volatile (".word 0x48CA1000" :: "r"(t2));  /* ctc2 $t2, $2 */
-    __asm__ volatile (".word 0x48CB1800" :: "r"(t3));  /* ctc2 $t3, $3 */
-    __asm__ volatile (".word 0x48CC2000" :: "r"(t4));  /* ctc2 $t4, $4 */
-}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel gte_SetRotMatrix\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
