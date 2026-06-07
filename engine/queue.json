@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007F21C",
-      "file": "display",
-      "distance": 5,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "gte_SetColorMatrix",
       "file": "display",
       "distance": 5,
@@ -4196,15 +4188,15 @@
     }
   ],
   "counts": {
-    "total": 514,
-    "active": 413,
+    "total": 513,
+    "active": 412,
     "by_status": {
-      "active": 413,
+      "active": 412,
       "authorize": 33,
       "parked": 68
     },
     "by_verdict": {
-      "ASM-PARTIAL": 77,
+      "ASM-PARTIAL": 76,
       "C": 218,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
