@@ -686,17 +686,16 @@ u32 func_8007CAB0(void) {
 }
 extern s32 motion_LoadPreCalcData_8007DC68();
 extern s32 func_8007DC9C();
-extern s32 *D_8009BF58;
-extern s32 *D_8009BF5C;
-extern s32 *D_8009BF60;
-extern s32 *D_8009BF64;
+extern volatile s32 *D_8009BF58;
+extern volatile s32 *D_8009BF5C;
+extern volatile s32 *D_8009BF60;
+extern volatile s32 *D_8009BF64;
 s32 func_8007CAC8(s32 arg0, s32 arg1) {
     *D_8009BF64 |= 0x08000000;
     *D_8009BF60 = 0;
     *D_8009BF58 = (arg0 - 4) + (arg1 * 4);
     *D_8009BF5C = arg1;
     *D_8009BF60 = 0x11000002;
-    asm volatile("");
     motion_LoadPreCalcData_8007DC68();
     if (*D_8009BF60 & 0x01000000) {
         do {
