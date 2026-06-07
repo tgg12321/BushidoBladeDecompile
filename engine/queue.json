@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8005B8B8",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8007992C",
       "file": "text1b_b",
       "distance": 2,
@@ -4088,6 +4080,15 @@
       "park_reason": "2-rule mflo-dest plateau: GCC RA picks  () for the 5th mflo (t = v*(0x1000-((s*(0x1000-f))>>12))>>12); target picks  () for in-place sra in beqz delay slot. Pseudos 104 (mult result) and 81 (t value) don't conflict per greg dump (line 13 + 21) yet greg allocates 104-> not . Same shape as q's mflo (97/80 -> shared ) but t pair doesn't coalesce. register asm() pin on t was IGNORED (only binds the named pseudo 81 which was already in ; doesn't bind the unnamed mult pseudo 104). Levers tested NEGATIVE: (1) reorder t after bounds check, (2) split t mult and >>12 into 2 statements, (3) local fc = 0x1000-f, (4) swap q/t order, (5) decl order swap (s32 i,f,p,t,q). All produce different bytes than HEAD AND than target. Next session: try volatile-bump on tbl_125c-analog (none here), make t live longer artificially, restructure 0x1000-f computation, or instrumented allocno-priority dump (BB2_ALLOC_DEBUG) to see why 104 doesn't get  despite no conflict."
     },
     {
+      "func": "func_8005B8B8",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "register-rotation wall \u2014 carries 1 cheat-asm barrier (asm volatile(\"\" : \"=r\"(t0) : \"0\"(t0));). Source removal causes GCC to coalesce t0+t1 into same register (s0) since t0 dies at func_80036F28(t0) before t1 is born. Target wants t0 in s0 (sequential with ret_a) and t1 in s1 (sequential with t0_2). Tested in session 2026-06-06: (a) sibling-style single-variable reuse (s0=t0/ret_a, s1=t1/t0_2) produces structurally identical asm but with 3-way register rotation (arg0\u2192s2 not s3, frame_off\u2192s1 not s2, t1\u2192s3 not s1); (b) adding explicit frame_off local for arg0+ret_a didn't shift allocation. The barrier forces t0 alive past t1's birth, blocking coalesce. No pure-C source structure tested extends t0's natural lifetime past func_80036F28(t0) without semantic invention. No semantic use of t0 exists after that point; combine-folded uses (t0-t0, t0&0, 0x5E+(t0-t0)) all collapse before flow.c. Resume avenues: (1) instrumented cc1 ALLOCDBG to confirm exact priority ordering \u2014 may reveal pseudo number / decl-order lever; (2) directed permuter from clean single-function target with PERM_GENERAL on variable decl order / type. NOT canonical-asm-candidate (thin wrapper, no GTE/BIOS/HW)."
+    },
+    {
       "func": "func_80061C00",
       "file": "text1b",
       "distance": 2,
@@ -4308,14 +4309,14 @@
   ],
   "counts": {
     "total": 529,
-    "active": 438,
+    "active": 437,
     "by_status": {
-      "active": 438,
+      "active": 437,
       "authorize": 33,
-      "parked": 58
+      "parked": 59
     },
     "by_verdict": {
-      "C": 241,
+      "C": 240,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
