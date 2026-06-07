@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "saEft00Add_sub",
-      "file": "system",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "func_800618B4",
       "file": "text1b",
       "distance": 4,
@@ -4072,6 +4064,15 @@
       "park_reason": "honest pure-C distance 4 = pure stack-frame size mismatch (target frame=32, natural-C build frame=24). The committed  is a frame-coercion cheat caught by  (expanded catalog 2026-05-31). Index-aligned objdump of target vs sandbox (cheat stripped) shows ALL body instructions byte-identical; only 4 diffs are prologue/epilogue stack ops (/// vs -24/16/16/24). The natural body uses no callee-save registers and takes no local addresses, so the 8 extra bytes target reserves have no semantic source in the current decomp. No structural lever found that produces frame=32 without an unused-local cheat. Park pending either (a) discovery of the original semantic content that justified the extra 8 bytes (the function name suggests SPU DMA but the body is voice-key bookkeeping \u2014 possibly missing register pokes or a real buffer), or (b) canonical-asm authorization.\n"
     },
     {
+      "func": "saEft00Add_sub",
+      "file": "system",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 2,
+      "status": "parked",
+      "park_reason": "sched.c INSN_PRIORITY gap: cc1 schedules lw ,D_800A14F4 BEFORE sw ,D_800A14E4 because the lw chains to jal cdrom_SetCallbackA (priority 2) and the sw is a leaf (priority 1). Target has source order (sw then lw). 2 regfix substs at idx 11/12 paper over the swap. Sandbox can't score (sibling index-anchored regfix breaks pipeline after cheat-asm strip - same as jtbl-infra symptom). Tested structural rewrites (intermediate locals, comma-expr, statement reorder) all produce the same cc1 sched1/sched2 reorder. Forbidden levers (volatile cast on D_800A14F4, alias rename, register pin, asm barrier) are off the table per [[inline-asm-policy]] expanded catalog. Same shape as func_80082A14 (ings2.c) park. Resume avenues: directed permuter from clean single-function target (uncertain ROI for a 2-insn sched.c-only gap)."
+    },
+    {
       "func": "saSeMain_80045600",
       "file": "text1a_c",
       "distance": 4,
@@ -4209,14 +4210,14 @@
   ],
   "counts": {
     "total": 516,
-    "active": 419,
+    "active": 418,
     "by_status": {
-      "active": 419,
+      "active": 418,
       "authorize": 33,
-      "parked": 64
+      "parked": 65
     },
     "by_verdict": {
-      "C": 223,
+      "C": 222,
       "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
