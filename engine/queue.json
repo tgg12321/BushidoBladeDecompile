@@ -1,21 +1,77 @@
 {
-  "generated_at": "2026-06-02T04:57:10",
+  "generated_at": "2026-06-06T21:47:00",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
+    {
+      "func": "bios_GPU_cw",
+      "file": "display",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007FEDC",
+      "file": "display",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8004DDB4",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800789D8",
+      "file": "text1b_b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800790C0",
+      "file": "text1b_b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007CAC8",
+      "file": "display",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "save_vc_ctrl",
+      "file": "text1a",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8005B8B8",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
     {
       "func": "func_8007992C",
       "file": "text1b_b",
       "distance": 2,
       "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8001A67C",
-      "file": "code6cac",
-      "distance": 3,
-      "verdict": "ASM-PARTIAL",
       "rules": 1,
       "status": "active"
     },
@@ -84,6 +140,14 @@
       "status": "active"
     },
     {
+      "func": "func_80044010",
+      "file": "text1a_c",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "InitFadePanel",
       "file": "text1b",
       "distance": 3,
@@ -118,6 +182,30 @@
     {
       "func": "initLoadImage",
       "file": "gpu",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80082A14",
+      "file": "ings2",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80082C58",
+      "file": "ings2",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "spu_DmaTransfer",
+      "file": "main",
       "distance": 4,
       "verdict": "C",
       "rules": 0,
@@ -252,14 +340,6 @@
       "status": "active"
     },
     {
-      "func": "func_80017FA0",
-      "file": "code6cac",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active"
-    },
-    {
       "func": "func_8001EEB4",
       "file": "code6cac",
       "distance": 6,
@@ -308,14 +388,6 @@
       "status": "active"
     },
     {
-      "func": "func_8004954C",
-      "file": "text1b",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80052754",
       "file": "text1b",
       "distance": 6,
@@ -337,6 +409,14 @@
       "distance": 6,
       "verdict": "C",
       "rules": 7,
+      "status": "active"
+    },
+    {
+      "func": "func_8001A67C",
+      "file": "code6cac",
+      "distance": 7,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
       "status": "active"
     },
     {
@@ -428,14 +508,6 @@
       "status": "active"
     },
     {
-      "func": "func_80048530",
-      "file": "text1b",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
       "func": "func_80052720",
       "file": "text1b",
       "distance": 7,
@@ -524,14 +596,6 @@
       "status": "active"
     },
     {
-      "func": "func_80017D84",
-      "file": "ings",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "bios_FileRead",
       "file": "ings2",
       "distance": 8,
@@ -561,6 +625,14 @@
       "distance": 8,
       "verdict": "C",
       "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "saSeMain_80045510",
+      "file": "text1a_c",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -676,14 +748,6 @@
       "status": "active"
     },
     {
-      "func": "func_80036FD4",
-      "file": "code6cac_b2",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 8,
-      "status": "active"
-    },
-    {
       "func": "func_8003AFFC",
       "file": "code6cac_c_ab",
       "distance": 9,
@@ -721,6 +785,14 @@
       "distance": 9,
       "verdict": "C",
       "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_8004954C",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -836,11 +908,27 @@
       "status": "active"
     },
     {
+      "func": "func_80046BF4",
+      "file": "sound",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80045878",
       "file": "text1a_c",
       "distance": 10,
       "verdict": "C",
       "rules": 10,
+      "status": "active"
+    },
+    {
+      "func": "ang_hosei_80056FE8",
+      "file": "text1b",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -892,11 +980,11 @@
       "status": "active"
     },
     {
-      "func": "ang_hosei_80056FE8",
+      "func": "func_80048530",
       "file": "text1b",
       "distance": 11,
       "verdict": "C",
-      "rules": 0,
+      "rules": 5,
       "status": "active"
     },
     {
@@ -1001,6 +1089,14 @@
       "distance": 12,
       "verdict": "C",
       "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "func_80017FA0",
+      "file": "code6cac",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 6,
       "status": "active"
     },
     {
@@ -1156,14 +1252,6 @@
       "status": "active"
     },
     {
-      "func": "func_800453E0",
-      "file": "text1a_c",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 7,
-      "status": "active"
-    },
-    {
       "func": "func_800481E8",
       "file": "text1b",
       "distance": 14,
@@ -1236,6 +1324,14 @@
       "status": "active"
     },
     {
+      "func": "func_80086014",
+      "file": "main",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "calc_fc_frame",
       "file": "text1a_c",
       "distance": 16,
@@ -1265,6 +1361,14 @@
       "distance": 17,
       "verdict": "C",
       "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80036FD4",
+      "file": "code6cac_b2",
+      "distance": 17,
+      "verdict": "C",
+      "rules": 8,
       "status": "active"
     },
     {
@@ -1412,14 +1516,6 @@
       "status": "active"
     },
     {
-      "func": "cpu_side_move_dir",
-      "file": "code6cac_b",
-      "distance": 19,
-      "verdict": "C",
-      "rules": 19,
-      "status": "active"
-    },
-    {
       "func": "func_80083A48",
       "file": "ings2",
       "distance": 19,
@@ -1481,14 +1577,6 @@
       "distance": 20,
       "verdict": "C",
       "rules": 20,
-      "status": "active"
-    },
-    {
-      "func": "func_80086014",
-      "file": "main",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 0,
       "status": "active"
     },
     {
@@ -1668,6 +1756,14 @@
       "status": "active"
     },
     {
+      "func": "spu_SetMotionActive",
+      "file": "main",
+      "distance": 23,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_800826CC",
       "file": "system",
       "distance": 23,
@@ -1705,6 +1801,14 @@
       "distance": 24,
       "verdict": "C",
       "rules": 22,
+      "status": "active"
+    },
+    {
+      "func": "func_80034F88",
+      "file": "code6cac_b",
+      "distance": 24,
+      "verdict": "C",
+      "rules": 30,
       "status": "active"
     },
     {
@@ -1753,6 +1857,14 @@
       "distance": 26,
       "verdict": "C",
       "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800453E0",
+      "file": "text1a_c",
+      "distance": 26,
+      "verdict": "C",
+      "rules": 7,
       "status": "active"
     },
     {
@@ -1812,16 +1924,16 @@
       "status": "active"
     },
     {
-      "func": "func_80034F88",
-      "file": "code6cac_b",
+      "func": "func_8003CF84",
+      "file": "code6cac_c2",
       "distance": 28,
       "verdict": "C",
-      "rules": 30,
+      "rules": 0,
       "status": "active"
     },
     {
-      "func": "func_8003CF84",
-      "file": "code6cac_c2",
+      "func": "func_80017D84",
+      "file": "ings",
       "distance": 28,
       "verdict": "C",
       "rules": 0,
@@ -1836,25 +1948,9 @@
       "status": "active"
     },
     {
-      "func": "func_800485EC",
-      "file": "text1b",
-      "distance": 28,
-      "verdict": "C",
-      "rules": 25,
-      "status": "active"
-    },
-    {
       "func": "func_80061250",
       "file": "text1b",
       "distance": 28,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "ang_near_dif",
-      "file": "config",
-      "distance": 29,
       "verdict": "C",
       "rules": 0,
       "status": "active"
@@ -1881,6 +1977,14 @@
       "distance": 30,
       "verdict": "C",
       "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_800485EC",
+      "file": "text1b",
+      "distance": 31,
+      "verdict": "C",
+      "rules": 25,
       "status": "active"
     },
     {
@@ -1972,6 +2076,14 @@
       "status": "active"
     },
     {
+      "func": "cpu_side_move_dir",
+      "file": "code6cac_b",
+      "distance": 35,
+      "verdict": "C",
+      "rules": 19,
+      "status": "active"
+    },
+    {
       "func": "func_80031890",
       "file": "code6cac_b",
       "distance": 35,
@@ -2036,14 +2148,6 @@
       "status": "active"
     },
     {
-      "func": "func_8008BB24",
-      "file": "main",
-      "distance": 37,
-      "verdict": "C",
-      "rules": 37,
-      "status": "active"
-    },
-    {
       "func": "tslGlobalMemFree_800861BC",
       "file": "main",
       "distance": 37,
@@ -2097,6 +2201,14 @@
       "distance": 39,
       "verdict": "C",
       "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_8008BB24",
+      "file": "main",
+      "distance": 39,
+      "verdict": "C",
+      "rules": 37,
       "status": "active"
     },
     {
@@ -2292,6 +2404,14 @@
       "status": "active"
     },
     {
+      "func": "ang_near_dif",
+      "file": "config",
+      "distance": 55,
+      "verdict": "ASM-SUSPECT",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "saTan0KiWareMoveA",
       "file": "code6cac_b",
       "distance": 56,
@@ -2356,19 +2476,19 @@
       "status": "active"
     },
     {
+      "func": "func_80047BE0",
+      "file": "sound",
+      "distance": 59,
+      "verdict": "ASM-SUSPECT",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_8006BD28",
       "file": "text1b",
       "distance": 59,
       "verdict": "ASM-SUSPECT",
       "rules": 37,
-      "status": "active"
-    },
-    {
-      "func": "saTan4FireDisp_80048864",
-      "file": "text1b",
-      "distance": 60,
-      "verdict": "ASM-SUSPECT",
-      "rules": 36,
       "status": "active"
     },
     {
@@ -2476,6 +2596,14 @@
       "status": "active"
     },
     {
+      "func": "saTan4FireDisp_80048864",
+      "file": "text1b",
+      "distance": 87,
+      "verdict": "ASM-SUSPECT",
+      "rules": 36,
+      "status": "active"
+    },
+    {
       "func": "DispSchoolBG",
       "file": "code6cac_b",
       "distance": 97,
@@ -2484,19 +2612,19 @@
       "status": "active"
     },
     {
-      "func": "marionation_camera_Exec",
-      "file": "code6cac",
-      "distance": 98,
-      "verdict": "ASM-PARTIAL",
-      "rules": 75,
-      "status": "active"
-    },
-    {
       "func": "CalcHiraNormal",
       "file": "code6cac_c2",
       "distance": 98,
       "verdict": "ASM-SUSPECT",
       "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "marionation_camera_Exec",
+      "file": "code6cac",
+      "distance": 101,
+      "verdict": "ASM-PARTIAL",
+      "rules": 75,
       "status": "active"
     },
     {
@@ -3717,15 +3845,6 @@
       "park_reason": "Canonical jump-table infrastructure, not a register/codegen cheat. The 24 asmfix rules (15 renames of GCC .L labels to external jtbl_800108CC + 8 jlabel conversions + 1 delete_between stripping GCC's emitted table) are structurally required: the switch's jump table jtbl_800108CC sits in the FIRST rodata block (asm/data 800.rodata_pre.o, bb2.ld:25, addr 0x800108CC), while code6cac_b2.o's own .rodata links far later (bb2.ld:50). A GCC in-object jump table can only land in code6cac_b2's late rodata, never at 0x108CC, so referencing the external jtbl symbol + deleting GCC's table is mandatory. Zero-asmfix COMPLETED-C would need relocating the jtbl into code6cac_b2.c AND reordering the whole global rodata layout (project-wide, needs user sign-off). This is the project standard for the 26 jtbl-rename functions whose tables splat carved into asm/data rodata. Separately, sandbox cannot score this file: file-wide cheat-asm stripping shifts maspsx indices and crashes a sibling fn's index-based regfix reorder rule (KeyError in tools/regfix.py)."
     },
     {
-      "func": "func_8003D9A0",
-      "file": "code6cac_c2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Prologue-fix coupled cheat: register asm pin + asm barrier on s1 force EARLY materialization (move s1,a2 at insn 4 in prologue). Without them GCC defers to insn 12 (after early-exit check). prologue_config.json entry can't fix missing-early-mat. Need deeper rework per prologue-fix-redundant-reorder.md to retire both cheats together. Pure-C floor 2 (verified score=2 with pins removed)."
-    },
-    {
       "func": "func_8003FE40",
       "file": "config",
       "distance": 0,
@@ -3742,15 +3861,6 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "File-scope cheat: extern volatile s32 D_8009BF7C; at display.c:934 forces D_8009BF7C reloads in this function (lines 981, 990). Body itself is clean pure-C, score 0. Unblocking requires removing the volatile decl (file-wide effect) which would change codegen for all D_8009BF7C-using functions in display.c. Multi-function refactor \u2014 not a quick win."
-    },
-    {
-      "func": "kgm_clamp_patch_init",
-      "file": "ings",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Heavy cheat load: 4 register-asm pins (i/c/tmp/p), 1 asm move-via-output (addu), 3 inline volatile casts on game-state (((volatile u8 *)p)[8]=0; etc.). The volatile coercions force GCC to emit separate byte stores instead of combining adjacent bytes. Not a quick pin-removal \u2014 needs structural rework to produce separate stores from clean C (struct-of-bytes, etc.)."
     },
     {
       "func": "func_800832A0",
@@ -3771,15 +3881,6 @@
       "park_reason": "File-scope cheats: extern volatile s32 D_800A28A0 and D_800A2CD4 elsewhere in main.c. Function body is clean pure-C. Same file-scope-coordinated-cleanup pattern affecting multiple distance-0 queue items in this batch."
     },
     {
-      "func": "saSeMain_80045600",
-      "file": "text1a_c",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Cheats: volatile s32 sp_pad (frame coercion: target frame=32, removing drops to 24) + register asm pin. Frame coercion via volatile-local is FORBIDDEN per [[dead-vars-local-array]] but the function has no natural reason to allocate a 32-byte frame. The sp_pad was load-bearing for the byte match. Needs structural rework to find a real reason for the larger frame."
-    },
-    {
       "func": "func_80049A2C",
       "file": "text1b",
       "distance": 0,
@@ -3798,61 +3899,7 @@
       "park_reason": "Same file-scope-volatile-extern pattern: function body is clean pure-C but blocked by 2 file-scope cheats in text1b.c. Needs coordinated file-wide volatile-decl cleanup."
     },
     {
-      "func": "func_800619A4",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Same file-scope-volatile-extern pattern: body is clean pure-C, blocked by extern volatile s32 D_800A3468 elsewhere in text1b.c."
-    },
-    {
-      "func": "func_800619F0",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80061A3C",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80061D74",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
       "func": "func_80062FEC",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80063AF0",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80063B34",
       "file": "text1b",
       "distance": 0,
       "verdict": "C",
@@ -3906,6 +3953,15 @@
       "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
     },
     {
+      "func": "func_80065484",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "file-wide volatile-extern cluster (D_800F0BB2 / D_800A3440) blocks COMPLETED-C \u2014 same blocker as func_80061C00"
+    },
+    {
       "func": "func_80065540",
       "file": "text1b",
       "distance": 0,
@@ -3952,15 +4008,6 @@
     },
     {
       "func": "func_800657B0",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80068ECC",
       "file": "text1b",
       "distance": 0,
       "verdict": "C",
@@ -4023,6 +4070,15 @@
       "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/code6cac_c2.c. Speed-parked during batch grind."
     },
     {
+      "func": "func_8003D9A0",
+      "file": "code6cac_c2",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Prologue-fix coupled cheat: register asm pin + asm barrier on s1 force EARLY materialization (move s1,a2 at insn 4 in prologue). Without them GCC defers to insn 12 (after early-exit check). prologue_config.json entry can't fix missing-early-mat. Need deeper rework per prologue-fix-redundant-reorder.md to retire both cheats together. Pure-C floor 2 (verified score=2 with pins removed)."
+    },
+    {
       "func": "D_800832F8",
       "file": "ings2",
       "distance": 2,
@@ -4075,15 +4131,6 @@
       "rules": 1,
       "status": "parked",
       "park_reason": "Blocked by file-scope \u001bxtern volatile s32 D_800A3468; (text1b.c:14408) \u2014 D_800A3468 is referenced by func_80061C00's body so volatile_cheats counts it as cheat_asm=1 even with the body pure C. Removing the regfix reorder rule alone (retire) yields SHA1 8aa8592... != oracle (full SHA1 mismatch from prologue-order divergence), so the rule IS load-bearing for matching; AND the file-wide volatile-extern cluster (~68 such decls, kept for func_80065000 et al.) blocks queue done regardless. De-cheating requires (a) finding pure-C prologue lever to drop the regfix reorder AND (b) project-wide cleanup of file-scope volatile externs across text1b.c \u2014 policy/architecture scope, not single-function."
-    },
-    {
-      "func": "func_80065484",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "file-wide volatile-extern cluster (D_800F0BB2 / D_800A3440) blocks COMPLETED-C \u2014 same blocker as func_80061C00"
     },
     {
       "func": "func_80069AE4",
@@ -4160,6 +4207,24 @@
       "park_reason": "prologue save-order structural \u2014 twin of just-parked func_8007C2A0 (2b3ccfe). Single 4-insn regfix reorder 3,4,1,2 @ 1-4 swaps cc1's natural [sw s1,52; move s1,a0; sw s0,48; move s0,a1] to target's [sw s0,48; move s0,a1; sw s1,52; move s1,a0]. Same identical mips.c save_restore_insns iteration-order wall, same identical C signature (s32 *out, Rect *r), same identical body shape. Honest sandbox=4 verified fixed across the 9 levers tested on the sibling + 1 additional probe (s16 rx,ry locals + tmp_v0 call-result temp) this session: same 4-distance floor. Path to COMPLETED-C identical to sibling: requires either function-scope canonical-asm wrapping of the prologue 4-insn block, treating regfix reorder as canonical infrastructure (like prologue_config.json's AddTbpOfst_80047EE8 family), or a novel C lever spanning the mips.c scheduling space the explored levers don't cover."
     },
     {
+      "func": "saSeMain_80045600",
+      "file": "text1a_c",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Cheats: volatile s32 sp_pad (frame coercion: target frame=32, removing drops to 24) + register asm pin. Frame coercion via volatile-local is FORBIDDEN per [[dead-vars-local-array]] but the function has no natural reason to allocate a 32-byte frame. The sp_pad was load-bearing for the byte match. Needs structural rework to find a real reason for the larger frame."
+    },
+    {
+      "func": "kgm_clamp_patch_init",
+      "file": "ings",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Heavy cheat load: 4 register-asm pins (i/c/tmp/p), 1 asm move-via-output (addu), 3 inline volatile casts on game-state (((volatile u8 *)p)[8]=0; etc.). The volatile coercions force GCC to emit separate byte stores instead of combining adjacent bytes. Not a quick pin-removal \u2014 needs structural rework to produce separate stores from clean C (struct-of-bytes, etc.)."
+    },
+    {
       "func": "func_8007B844",
       "file": "display",
       "distance": 7,
@@ -4187,6 +4252,15 @@
       "status": "parked",
       "scorable": false,
       "park_reason": "cross-jump merge DIRECTION wall: GCC merges case 1 and case 2 tails into a shared .L139 mini-block instead of target's case 2 -> case 1 backjump structure. Honest pure-C floor LOWERED 11 -> 10 (2026-06-01) via three combined levers documented in memory/project/func-8007ca00-m2c-shape-floor.md: (1) m2c-shape body adoption (single switch with shared block_5 label, default-at-end so it merges with shared tail); (2) var_a0 split (case 1 BE77!=0 pre-loads arg0[0] into var_a0 before goto block_5; case 2 BE77!=0 does the same); (3) 2-statement subtract { s32 tmp = 0x400 - var_v1; tmp -= var_a0; return tmp; } block-local form (vs single expression \u2014 controls subu order and keeps tmp in $v0). All pure-C, no cheats. Residual 10 diffs are reorg.c delay-slot-fill decisions (case 1 beqz delay should be li v0,1024 per target; case 2 BE77!=0 j delay should be li v0,1024 not sra v1,v1,1) and case 2 BE77==0 register chain ( vs ). Resume avenues (untried this session): directed permuter from new sandbox-10 base in permuter/ca00/; instrumented tmp/gccdbg/cc1 with BB2_FILL_DEBUG to find why reorg declines the li v0,1024 copy into beqz delay; rule UPDATE (the 13 existing rules are calibrated for the OLD body and can't retire on the new shape \u2014 need new rules for case 1 beqz delay fill + case 2 j delay fill + case 2 BE77==0 v0/v1 swap). NOT a documented auto-park category."
+    },
+    {
+      "func": "func_80068ECC",
+      "file": "text1b",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
     },
     {
       "func": "func_8007C7A0",
@@ -4269,17 +4343,17 @@
     }
   ],
   "counts": {
-    "total": 524,
-    "active": 430,
+    "total": 534,
+    "active": 446,
     "by_status": {
-      "active": 430,
+      "active": 446,
       "authorize": 33,
-      "parked": 61
+      "parked": 55
     },
     "by_verdict": {
-      "C": 234,
-      "ASM-PARTIAL": 79,
-      "ASM-SUSPECT": 117,
+      "C": 247,
+      "ASM-PARTIAL": 80,
+      "ASM-SUSPECT": 119,
       "ASM-WHOLE": 7,
       "ASM-STRUCTURAL": 26
     }

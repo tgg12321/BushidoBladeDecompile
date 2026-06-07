@@ -874,9 +874,6 @@ void func_80044100(s32 a0, s32 a1) {
     D_80103608[a0] = (ptr = ptr + (a1 / 4));
     count--;
     if (count != -1) {
-        if (1) {
-            do { } while (0);
-        }
         do {
             *ptr += a1;
             ptr++;
