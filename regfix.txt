@@ -3015,7 +3015,6 @@ func_8007C97C: subst "srl\s+\$3,\$3,3" "sra	$3,$3,3" @ 24
 func_8007C97C: insert "j	.LE97C" @ 2
 func_8007C97C: insert_label ".LE97C:" @ 29
 func_8007C97C: insert_label ".LC97C:" @ 3
-func_8007992C: reorder 16,14,15,17 @ 14-17
 # RETIRED (targeted-permuter): func_80062FEC: $5 <-> $6
 func_80078A68: reorder 12,11 @ 11-12
 # RETIRED (targeted-permuter): mario_getMarioVoiceData_8005BE84: reorder 15,14,13 @ 13-15

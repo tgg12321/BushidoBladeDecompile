@@ -1911,8 +1911,7 @@ check:
     if (len < 0) return 0;
     ch &= 0xFF;
 loop:
-    if (*buf == ch) goto found;
-    ++buf;
+    if (*buf++ == ch) goto found;
     --len;
     if (len >= 0) goto loop;
     return 0;
