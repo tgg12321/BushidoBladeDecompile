@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "spu_DmaTransfer",
-      "file": "main",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "saEft00Add_sub",
       "file": "system",
       "distance": 4,
@@ -4071,6 +4063,15 @@
       "park_reason": "sched.c-priority prologue ordering gap: target schedules volatile counter init store (sll+sw) BEFORE global g_sys_dma_region read (lui+lw), with load-delay nop; GCC 2.7.2 sched.c picks opposite order because the lui/lw->slt->beqz chain has higher INSN_PRIORITY than the terminal volatile sw. Honest pure-C distance with cheat-asm barrier stripped = 4 (1 missing nop + 4 reordered insns). Forbidden levers tested: (a) extern volatile s32 g_sys_dma_region (declaration-level volatile-coercion per inline-asm-policy catalog; also regressed sys_VSync by 34 byte diffs); (b) alias-rename via D_800A2634 volatile name (same intent, different spelling); (c) do-while-zero wrap between counter init and if-check (mechanically achieves score 0 but per do-while-zero-exception only sanctioned for LABEL_OUTSIDE_LOOP_P / reorg.c, not sched.c priority \u2014 explicitly the slippery-slope the rule forbids). The existing asm volatile memory barrier is cheat-asm. No documented pure-C lever closes a sched.c INSN_PRIORITY gap on a volatile-local-init vs unrelated-global-load ordering without emitting extra instructions or being cheat-by-spelling."
     },
     {
+      "func": "spu_DmaTransfer",
+      "file": "main",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "honest pure-C distance 4 = pure stack-frame size mismatch (target frame=32, natural-C build frame=24). The committed  is a frame-coercion cheat caught by  (expanded catalog 2026-05-31). Index-aligned objdump of target vs sandbox (cheat stripped) shows ALL body instructions byte-identical; only 4 diffs are prologue/epilogue stack ops (/// vs -24/16/16/24). The natural body uses no callee-save registers and takes no local addresses, so the 8 extra bytes target reserves have no semantic source in the current decomp. No structural lever found that produces frame=32 without an unused-local cheat. Park pending either (a) discovery of the original semantic content that justified the extra 8 bytes (the function name suggests SPU DMA but the body is voice-key bookkeeping \u2014 possibly missing register pokes or a real buffer), or (b) canonical-asm authorization.\n"
+    },
+    {
       "func": "saSeMain_80045600",
       "file": "text1a_c",
       "distance": 4,
@@ -4208,14 +4209,14 @@
   ],
   "counts": {
     "total": 516,
-    "active": 420,
+    "active": 419,
     "by_status": {
-      "active": 420,
+      "active": 419,
       "authorize": 33,
-      "parked": 63
+      "parked": 64
     },
     "by_verdict": {
-      "C": 224,
+      "C": 223,
       "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
