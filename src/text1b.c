@@ -16371,25 +16371,27 @@ void func_8006ECF4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-extern volatile u16 D_800A3550;
+extern u16 D_800A3550;
 extern s32 gpu_SetSemiTransp(s32, s32);
 extern s32 initTile(s32);
 void func_8006F038(s32 arg0) {
     s32 temp_s0;
-    s32 v;
+    s32 v1;
+    s32 v2;
+    s32 v3;
 
     temp_s0 = *((s32 *)(((s32)arg0) + 0x14));
     initTile(temp_s0);
-    v = (s8)D_800A3550;
+    v1 = D_800A3550;
     *((s16 *)(((s32)temp_s0) + 8)) = 0;
-    *((s8 *)(((s32)temp_s0) + 4)) = v;
     *((s16 *)(((s32)temp_s0) + 0xA)) = 0;
-    v = (s8)D_800A3550;
-    *((s8 *)(((s32)temp_s0) + 5)) = v;
+    *((s8 *)(((s32)temp_s0) + 4)) = v1;
+    v2 = D_800A3550;
     *((s16 *)(((s32)temp_s0) + 0xC)) = 0x280;
-    v = (s8)D_800A3550;
-    *((s8 *)(((s32)temp_s0) + 6)) = v;
+    *((s8 *)(((s32)temp_s0) + 5)) = v2;
+    v3 = D_800A3550;
     *((s16 *)(((s32)temp_s0) + 0xE)) = 0xF0;
+    *((s8 *)(((s32)temp_s0) + 6)) = v3;
     gpu_SetSemiTransp(temp_s0, 1);
     {
         s32 saved = temp_s0;
