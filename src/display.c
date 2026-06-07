@@ -2301,14 +2301,25 @@ void gte_SetColorMatrix(s32 *a0) {
     __asm__ volatile (".word 0x48CB9800" :: "r"(t3));  /* ctc2 $t3, $19 */
     __asm__ volatile (".word 0x48CCA000" :: "r"(t4));  /* ctc2 $t4, $20 */
 }
-void gte_SetTransVector(s32 *a0) {
-    register s32 t0 asm("t0") = a0[5];
-    register s32 t1 asm("t1") = a0[6];
-    register s32 t2 asm("t2") = a0[7];
-    __asm__ volatile (".word 0x48C82800" :: "r"(t0));  /* ctc2 $t0, $5 */
-    __asm__ volatile (".word 0x48C93000" :: "r"(t1));  /* ctc2 $t1, $6 */
-    __asm__ volatile (".word 0x48CA3800" :: "r"(t2));  /* ctc2 $t2, $7 */
-}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel gte_SetTransVector\n"
+    "    lw     $t0, 20($a0)\n"
+    "    lw     $t1, 24($a0)\n"
+    "    lw     $t2, 28($a0)\n"
+    "    ctc2   $t0, $5\n"
+    "    ctc2   $t1, $6\n"
+    "    ctc2   $t2, $7\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 void gte_GetScreenXY(s32 *a0, s32 *a1, s32 *a2) {
     __asm__ volatile (".word 0xE8910000" :: "r"(a0));  /* swc2 $17, 0($a0) */
     __asm__ volatile (".word 0xE8B20000" :: "r"(a1));  /* swc2 $18, 0($a1) */

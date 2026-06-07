@@ -269,3 +269,12 @@ func_8007F12C  # GTE avsz4 wrapper (display.c): mtc2 $a0..$a3 -> nop -> avsz4 ->
 # all those elements, no pure-C path exists. Retired as file-scope `__asm__("glabel
 # ... endlabel")` block, target bytes verbatim. See archived .claude/rules/gte-3x3.md.
 calc_fc_frame_8007EC5C  # Hand-coded GTE 3x3-mvmva matrix transform (display.c). 67 insns, 23 cop2 ops labeled handwritten by disassembler, hardcoded `swc2 $11` source reg, hand-scheduled pipeline. User-authorized 2026-05-31.
+
+# === GTE leaf vector-load wrappers (display.c, auto-authorized) ===
+# Load 3 s32 fields from a *a0 array into the GTE control registers via `ctc2`.
+# No pure-C form: the hardcoded `ctc2 $tN, $K` encoding requires the loaded
+# values to land in specific GPRs ($t0/$t1/$t2) that natural cc1 register
+# allocation does not pick (sandbox stripping the pins shows GCC picks
+# $v0/$v1/$a0). Retired as file-scope `__asm__("glabel ... jr ra ...")` block.
+# See gte-wrapper-misroute-park.md.
+gte_SetTransVector  # GTE translation-vector loader (display.c): lw $t0..$t2, 20-28($a0) -> ctc2 $t0..$t2, $5..$7 -> jr $ra. Auto-authorized 2026-06-06.

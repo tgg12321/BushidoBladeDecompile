@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "gte_SetTransVector",
-      "file": "display",
-      "distance": 3,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "AddTbpOfst",
       "file": "main",
       "distance": 3,
@@ -4293,16 +4285,16 @@
     }
   ],
   "counts": {
-    "total": 527,
-    "active": 434,
+    "total": 526,
+    "active": 433,
     "by_status": {
-      "active": 434,
+      "active": 433,
       "authorize": 33,
       "parked": 60
     },
     "by_verdict": {
-      "ASM-PARTIAL": 79,
       "C": 237,
+      "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
       "ASM-STRUCTURAL": 26
