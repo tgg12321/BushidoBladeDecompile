@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8004DDB4",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_800789D8",
       "file": "text1b_b",
       "distance": 1,
@@ -4038,6 +4030,15 @@
       "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
     },
     {
+      "func": "func_8004DDB4",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "ASM-PARTIAL: 116/478 insns canonical-asm GTE/cop2 (ctc2/mtc2/mfc2/swc2/mvmva/rtps/rtpt). Whole-body __asm__(glabel) block with hand-scheduled GTE pipeline (mvmva-mfc2-mtc2 latency interleaving, dual rtps/rtpt unrolled loops, hardcoded cop2 register numbers). Hand-coded GTE asm by signature; needs user canonical-asm authorization (inline_asm_canonical.txt) per hand-coded-asm-recognition. Not pure-C-reachable."
+    },
+    {
       "func": "func_8005BD30",
       "file": "text1b",
       "distance": 1,
@@ -4330,15 +4331,15 @@
   ],
   "counts": {
     "total": 532,
-    "active": 443,
+    "active": 442,
     "by_status": {
-      "active": 443,
+      "active": 442,
       "authorize": 33,
-      "parked": 56
+      "parked": 57
     },
     "by_verdict": {
-      "ASM-PARTIAL": 80,
       "C": 245,
+      "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
       "ASM-STRUCTURAL": 26
