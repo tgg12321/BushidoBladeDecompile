@@ -86,3 +86,10 @@ real_fail = 'bash: line 1: /path/.venv/bin/python`
 - **Triggering command:** `cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && source .venv/bin/activate 2>/dev/null; make -n build/src/text1b.o 2>&1 | head -10`
 - **Why not a real failure:** Agent invoked 'make' in Git Bash by mistake; the WSL toolchain is functional and reachable via tools/wsl.sh / tools/eng.ps1. No permanent breakage.
 - **Action:** tighten signature `core-tool-not-found` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
+
+## 2026-06-07 12:37:10 — RESOLVED (crlf/crlf-build-file)
+- **Triggering command:** `Edit C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\regfix.txt`
+- **Root cause:** Edit tool converted LF->CRLF when writing regfix.txt despite .gitattributes eol=lf coverage (Windows Edit/Write tool intermittent behavior; known memory 'crlf-via-edit-write'). asmfix.txt likely became CRLF from the same earlier batch edit.
+- **Permanent guard:** `tools/normalize_lf.py` (uncommitted change)
+- **Verified by:** Normalized regfix.txt and asmfix.txt via tools/normalize_lf.py (new canonical helper, replaces the inline sed footgun the shell_footgun_guard blocks). Confirmed zero CR bytes remain in regfix.txt, asmfix.txt, src/text1b.c, inline_asm_canonical.txt. Updated tooling_error_signatures.json crlf-build-file 'permanent_fix' to point to tools/normalize_lf.py rather than inline sed (which the shell footgun guard blocks).
+- **Occurrences this incident:** 1

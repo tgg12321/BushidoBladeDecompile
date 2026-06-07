@@ -49,11 +49,11 @@
       "summary": "An Edit/Write/MultiEdit just wrote CRLF line endings into a build-critical file (LF is required).",
       "root_cause": "The Windows Edit/Write tool converts LF->CRLF silently when writing some files (memory: crlf-via-edit-write). The GNU toolchain / bash then break on the carriage returns.",
       "permanent_fix": [
-        "Normalize the file you just wrote back to LF -- in WSL/Bash:  sed -i 's/\\r$//' <file> .",
+        "Normalize the file you just wrote back to LF:  python3 tools/normalize_lf.py <file>  (idempotent; preferred over inline sed because tools/hooks/shell_footgun_guard.py blocks inline `sed` through `wsl bash -c '...'`).",
         "Re-make the affected target to confirm the build still matches (CRLF in a pipeline .txt or src/*.c silently corrupts codegen).",
         "Prevent recurrence: ensure .gitattributes has an 'eol=lf' entry for this path; for the LF-critical pipeline .txt files, prefer editing via WSL rather than Edit/Write."
       ],
-      "suggested_guard": ".gitattributes eol=lf entry + (optionally) a normalize-on-write helper"
+      "suggested_guard": "tools/normalize_lf.py (canonical post-write remediation) + .gitattributes eol=lf entry covering the path"
     },
 
     {

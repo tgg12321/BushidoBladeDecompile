@@ -281,3 +281,6 @@ gte_SetTransVector  # GTE translation-vector loader (display.c): lw $t0..$t2, 20
 
 # === Hand-coded leaf with vestigial frame (text1a.c) ===
 save_vc_ctrl  # Hand-coded leaf (text1a.c): 8-byte stack frame holds zero locals (semantically needs no frame; siblings func_8004153C / func_80041584 use no frame) PLUS an unfilled nop in the jr ra delay slot (siblings get filled delay slots from GCC). Two STRONG hand-coded signals per hand-coded-asm-recognition.md. User-authorized 2026-06-07 (canonical-asm A category).
+
+# === Scratchpad poke (text1b.c) ===
+InitFadePanel  # 3-insn scratchpad poke at PS1 RAM 0x1F800400 (text1b.c). Target uses lui+ori to materialize the absolute address into $t9 then sw $zero, 0($t9) -- combine.c always folds compile-time-known absolute offsets into the sw displacement (natural cc1 form is lui;sw 0x400(r)), so this 3-insn lui+ori+sw form is unreachable from any C. Target also picks a non-natural register ($t9) for the pointer. User-authorized 2026-06-07 (canonical-asm A category, scratchpad poke).

@@ -4091,15 +4091,6 @@
       "park_reason": "Frame-coercion cheat: target's 8-byte stack frame exists ONLY to give cc1's scheduler an \u0007ddiu sp,sp,-8 to fill the bnez delay slot at 1b58, balanced by \u0007ddiu sp,sp,8 at the shared epilogue 1b88. The function has no stack-addressable locals, no callees, no spills \u2014 semantically needs no frame. Without \u000bolatile s32 sp_pad; GCC emits two nops where target has addiu/addiu (sandbox 0 -> 3, build_insns 34=34 same count). Same FORBIDDEN family as s32 buf[N]; per [[dead-vars-local-array]] / [[inline-asm-policy]] expanded catalog (volatile-scalar-unused-local detector at engine/volatile_cheats.find_volatile_unused_locals catches it). No pure-C lever exists: no semantic local can be named (would be reverse-engineered padding), Lever A/B/C from [[register-alloc-pure-c]] do not apply to frame-size diffs. Pure-C floor is 3; cannot reach COMPLETED-C without forbidden frame coercion. Resume only via canonical-asm authorization OR a discovered semantic local hidden in the asm."
     },
     {
-      "func": "InitFadePanel",
-      "file": "text1b",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Scratchpad poke (0x1F800400 = PS1 scratchpad RAM) with hand-coded address materialization: target uses lui+ori; sw 0(t9) instead of the natural lui; sw 0x400(r) GCC always produces (combine.c folds the const offset into the sw displacement). Target also picks t9 (non-natural register). Current src uses 'register volatile s32 *p asm(\\)' pin to coerce both \u2014 that pin is cheat-asm per inline-asm-policy. No pure-C lever produces target bytes: const-folding is unavoidable for compile-time-known absolute addresses, and routing through a local (volatile or otherwise) emits MORE insns than target's 3-insn body. Function fits inline-asm-policy's canonical 'scratchpad poke' category but isn't a pure GTE leaf wrapper (it picks custom register + hand-scheduling), so per CLAUDE.md it needs user canonical-asm sign-off rather than orchestrator auto-authorize. Park pending canonical-asm authorization (inline_asm_canonical.txt entry + whole-body __asm__ glabel block with lui+ori+sw)."
-    },
-    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4256,12 +4247,12 @@
     }
   ],
   "counts": {
-    "total": 522,
+    "total": 521,
     "active": 426,
     "by_status": {
       "active": 426,
       "authorize": 33,
-      "parked": 63
+      "parked": 62
     },
     "by_verdict": {
       "C": 230,
