@@ -196,12 +196,12 @@ u16 *func_80082C58(void) {
 
     {
         s32 *s0b = &D_800A15B4;
+        s16 *flag_ptr = (s16 *)((char *)s0b - 60);
 
         *s0b = (s32)s0b + 0xFDC;
         bios_SetCustomExitFromException(s0b - 1);
 
-        asm volatile("" : "=r"(s0b) : "0"(s0b));
-        ((s16 *)s0b)[-0x1E] = 1;
+        *flag_ptr = 1;
         result = func_800832A0();
 
         {
@@ -214,7 +214,6 @@ u16 *func_80082C58(void) {
             a0[1] = result;
             bios_CdRemove_A0(a0);
         }
-        asm volatile("" : "=r"(s0b) : "0"(s0b));
         s0b = (s32 *)((char *)s0b - 0x3C);
         ExitCriticalSection();
         return (u16 *)s0b;

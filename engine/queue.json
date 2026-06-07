@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80082C58",
-      "file": "ings2",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "spu_DmaTransfer",
       "file": "main",
       "distance": 4,
@@ -4215,15 +4207,15 @@
     }
   ],
   "counts": {
-    "total": 517,
-    "active": 421,
+    "total": 516,
+    "active": 420,
     "by_status": {
-      "active": 421,
+      "active": 420,
       "authorize": 33,
       "parked": 63
     },
     "by_verdict": {
-      "C": 225,
+      "C": 224,
       "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
