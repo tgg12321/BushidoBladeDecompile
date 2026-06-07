@@ -1274,12 +1274,15 @@ void tslLineG5Init(s32 arg0, s32 arg1) {
     D_800905F8 = 0xFFFF;
     new_var2 = &D_800906A4 + arg0 * 2;
     if (*new_var2 != 0) {
-        if (game_GetPlayerCount() != 0) {
-            dist = 0x55F0;
-        } else {
-            dist = 0x6590;
+        {
+            s32 base = game_GetPlayerCount();
+            if (base == 0) {
+                base = 0x6590;
+            } else {
+                base = 0x55F0;
+            }
+            dist = base - arg1;
         }
-        dist = dist - arg1;
         new_var = dist < 0x1770;
         if (new_var) {
             offset = 0x1770 - dist;

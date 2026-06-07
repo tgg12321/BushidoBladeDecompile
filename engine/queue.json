@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "tslLineG5Init",
-      "file": "code6cac_c2",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
       "func": "initLoadImage",
       "file": "gpu",
       "distance": 4,
@@ -4230,15 +4222,15 @@
     }
   ],
   "counts": {
-    "total": 519,
-    "active": 424,
+    "total": 518,
+    "active": 423,
     "by_status": {
-      "active": 424,
+      "active": 423,
       "authorize": 33,
       "parked": 62
     },
     "by_verdict": {
-      "C": 228,
+      "C": 227,
       "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
