@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "initLoadImage",
-      "file": "gpu",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80082A14",
       "file": "ings2",
       "distance": 4,
@@ -4222,15 +4214,15 @@
     }
   ],
   "counts": {
-    "total": 518,
-    "active": 423,
+    "total": 517,
+    "active": 422,
     "by_status": {
-      "active": 423,
+      "active": 422,
       "authorize": 33,
       "parked": 62
     },
     "by_verdict": {
-      "C": 227,
+      "C": 226,
       "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,

@@ -523,19 +523,18 @@ void initDrawMode(u8 *a0, s32 a1, s32 a2, u32 a3) {
     *(u32 *)(a0 + 4) = cmd | val;
 }
 void initLoadImage(u32 *a0, s16 *a1, u32 a2, u32 a3) {
-    register u32 *t0 asm("t0") = a0;
-    register s32 size asm("a0") = 5;
+    s32 size = 5;
     if (a1[2] == 0) {
         size = 0;
     } else if (a1[3] == 0) {
         size = 0;
     }
-    t0[1] = OT_TERMINATOR;
-    t0[2] = OT_TAG_BASE;
-    ((u8 *)t0)[3] = size;
-    t0[3] = *(u32 *)a1;
-    t0[4] = (a3 << 16) | (a2 & 0xFFFF);
-    t0[5] = *(u32 *)&a1[2];
+    a0[1] = OT_TERMINATOR;
+    a0[2] = OT_TAG_BASE;
+    ((u8 *)a0)[3] = size;
+    a0[3] = *(u32 *)a1;
+    a0[4] = (a3 << 16) | (a2 & 0xFFFF);
+    a0[5] = *(u32 *)&a1[2];
 }
 void initStoreImage(u32 *a0, s16 *a1) {
     u32 nwords;
