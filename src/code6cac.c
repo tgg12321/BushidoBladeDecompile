@@ -3275,15 +3275,16 @@ void func_80023D28(u8 *arg0) {
     *(s16 *)(arg0 + 0x1DC) = func_8005344C((s32 *)(arg0 + 0xB8), (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s32 *)0x1F8001C0, 0x1F8002B8);
 }
 s32 func_80023DB8(u8 *arg0) {
+    s32 result;
     *(s32 *)0x1F8001E0 = *(s32 *)(arg0 + 0xB8);
     *(s32 *)0x1F8001E4 = *(s32 *)(arg0 + 0xBC) + 5;
     *(s32 *)0x1F8001E8 = *(s32 *)(arg0 + 0xC0);
     if (func_8005344C((s32 *)(arg0 + 0xB8), (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s32 *)0x1F8001C0, 0x1F8002B8) != 0) {
-        if ((arg0 && arg0) && arg0) {
-        }
-        return *(s16 *)0x1F8001C2 < -0x800;
+        result = *(s16 *)0x1F8001C2 < -0x800;
+    } else {
+        result = 0;
     }
-    return 0;
+    return result;
 }
 void func_80023E40(u8 *arg0) {
     s32 *s1 = (s32 *)0x1F8001B0;
