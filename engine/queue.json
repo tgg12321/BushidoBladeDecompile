@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "gnd_get_fog",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80078A68",
       "file": "text1b_b",
       "distance": 2,
@@ -4135,6 +4127,15 @@
       "park_reason": "Sandbox unmeasurable (cheat-asm strip causes sibling func_8006BD28 .L8006BDF4 label collision in asmfix delete_between/insert_before, truncating whole-file build); 3 scheduling-paperwork rules (reorder 94,92,93 + insert_label + subst .L#) encode target hoisting \u0007ddiu a0,sp,24 to the loop top before lw v0,0(s0); addiu s0,s0,4 in the qbase do-while loop (lines 15419-15427, calling func_8007352C(&s.sp18)). Pure-C lever tried: pre-materialize s32 *p = &s.sp18 inside the loop body and route stores + call arg through p \u2014 retire failed (sha1 e207b1e7\u2026). Reverted; oracle green. Next levers to try: (1) instrumented cc1 -da .sched/.greg dump on the loop to see why GCC's scheduler places addiu a0 last in the 3-insn window; (2) restructure loop body to make &s.sp18 a long-live local set BEFORE the loop with q++ moved to bottom; (3) directed permuter from a clean single-function target since random search at masked-loop-scheduling needs the structural seed."
     },
     {
+      "func": "gnd_get_fog",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "extern volatile s32 D_800A37D4 is load-bearing for the target's lw+nop+sw reload pattern between the two stores (sw v0,D_800A37D4 -> lw v0,D_800A37D4 -> nop -> sw v0,D_800A3720); per the 2026-05-31 expanded cheat catalog this volatile-coercion of a game-state global is forbidden. Without volatile, GCC CSE folds the reload away (build SHA1 7a12d86 vs oracle 62efab4) and the 2-instruction gap (lw+nop) opens. No pure-C lever defeats CSE on store-then-immediate-load of the same non-volatile global without resorting to a forbidden barrier (asm clobber, dummy call, volatile cast). Same shape as the func_80065484 (12b47a8) and func_80061C00 (f3fc7a6) parks: function body is pure C with 0 regfix rules, maspsx_label_nop_funcs allowlist already added for the if/else merge-label load-delay nop; the volatile-extern is the sole remaining cheat. Re-routes to COMPLETED-C the moment the file-wide volatile-extern cluster cleanup lands (architectural scope)."
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4265,14 +4266,14 @@
   ],
   "counts": {
     "total": 524,
-    "active": 435,
+    "active": 434,
     "by_status": {
-      "active": 435,
+      "active": 434,
       "authorize": 33,
-      "parked": 56
+      "parked": 57
     },
     "by_verdict": {
-      "C": 239,
+      "C": 238,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 117,
       "ASM-WHOLE": 7,
