@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80078B70",
-      "file": "text1b_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80078E58",
       "file": "text1b_b",
       "distance": 2,
@@ -4138,6 +4130,15 @@
       "park_reason": "Same mechanism as func_80078A68 (parked 2026-06-05 in 882c8c05) \u2014 cc1 reorg's fill_simple_delay_slots picks the sw (sw v1,4(a1)) to fill the jr ra delay slot; target keeps nop and emits the sw before jr (the single regfix is drain_delay @ 9). Pure-C distance 2. Levers tried this session: precompute return into a local (return-value var folded by GCC, score 2); *(base+1) instead of base[1] (same codegen, score 2); split via mask local (regressed to 4). The dbr fill choice is made inside cc1 before maspsx; no known pure-C lever flips it without forbidden coercion (volatile cast on game-state global, __asm__ memory barrier, dead self-assign, register pin) per the expanded cheat catalog. File has 8 drain_delay regfix rules following the same pattern \u2014 this is a recurring cc1 reorg behavior in text1b_b.c. Resume avenues (inherited from func_80078A68 park): directed permuter on a clean single-function target; reorg.c::fill_simple_delay_slots eligibility predicates (look for a C construct that disqualifies the sw via macro-form addressing without volatile)."
     },
     {
+      "func": "func_80078B70",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "drain_delay jr-slot fill, mirrors func_80078A68/B3C parked yesterday (882c8c05/e29303d9). Honest pure-C distance 2, one asmfix rule (drain_delay @ 10). Same root cause: cc1 reorg's fill_simple_delay_slots picks the final 'sw v1, 4(a1)' to fill the 'jr ra' delay slot; target keeps a nop there and emits the sw before the jr. The sandbox-stripped objdump confirms identical instructions, only the sw/nop order differs. Levers inherited as exhausted from B3C session (precompute return local: folded; *(base+1) deref form: same codegen; split mask local: regressed to 4) plus this session: compound assignment '&=' form: identical RTL, score 2. Forbidden alternatives per expanded cheat catalog: volatile coercion on D_8009BD68/D_8009BD70, asm barrier, register pin, dead self-assign. Resume avenues (inherited): directed permuter from clean single-function target; read cc1 reorg.c::fill_simple_delay_slots eligibility predicates for a pure-C disqualifier on the single-insn sw."
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4268,14 +4269,14 @@
   ],
   "counts": {
     "total": 524,
-    "active": 432,
+    "active": 431,
     "by_status": {
-      "active": 432,
+      "active": 431,
       "authorize": 33,
-      "parked": 59
+      "parked": 60
     },
     "by_verdict": {
-      "C": 236,
+      "C": 235,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 117,
       "ASM-WHOLE": 7,
