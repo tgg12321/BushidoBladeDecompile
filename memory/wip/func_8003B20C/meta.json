@@ -1,0 +1,61 @@
+{
+  "function": "func_8003B20C",
+  "file": "code6cac_c_ab",
+  "scores": {
+    "head_floor": 5,
+    "head_floor_note": "Engine's sandbox --disable all on HEAD reports 5 — but this is misleading. Engine's strip removes __asm__ blocks + the `asm(\"v1\")` qualifier from the register pin, but does NOT remove the dead `u8 *new_var; ...(new_var = &D_800900EC)` alias coercion. So the 5 is still measured against C that includes the new_var cheat-by-spelling. HEAD's HONEST pure-C floor (without ANY cheats) is 6 == this candidate.",
+    "candidate_floor": 6,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 47,
+    "target_insns": 47
+  },
+  "sessions": [
+    {
+      "date": "2026-06-07",
+      "lever": "inline D_800A3844 = arr[arg0]; drop pin + dead-local alias",
+      "lever_rule": null,
+      "floor_was": 5,
+      "floor_now": 6,
+      "session_id": null
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": null,
+    "evidence": "not invoked — candidate is honest pure-C, no cheats; not committed (oracle would break)"
+  },
+  "remaining_gap": {
+    "summary": "Pure scheduling — GCC hoists the array load 3 positions earlier than target. Target has D_80102780/D_80102781 stores, then array load, then D_800A3894 stores. Mine has array load first, then D_80102780/D_80102781 stores. All registers match target ($v0=0xFF, $v1=1, $a0=arg0_new); 47/47 insns; just 6 position-swap diffs.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "None — HEAD uses cheat-asm (register-asm pin + dead-local alias `new_var = &D_800900EC`) to anchor scheduling. Both are forbidden by [[inline-asm-policy]] / [[no-new-park-categories]]."
+  },
+  "next_hypotheses": [
+    "Find a pure-C lever that anchors the array load to its source position without cheats. The load has INSN_PRIORITY ≥ stores (load → sw chain depth 2 vs store depth 1), so GCC's scheduler hoists it.",
+    "Try directed permuter from candidate.c base — randomization may find a structural restructure (e.g. compute address into intermediate const pointer that isn't combine-folded).",
+    "Try declaring a const aliasing variable for &D_800900EC at file scope — if it survives combine, may create a serialization barrier.",
+    "Instrument cc1's sched.c (BB2_SCHED_DEBUG hook from tmp/gccdbg) to confirm the load's INSN_PRIORITY beats the stores' — then look for any C structural change that lowers the load's depth or raises the stores' depth."
+  ],
+  "rejected_forms": [
+    {
+      "form": "explicit `arg0 = ((s32*)&D_800900EC)[arg0]` reassignment, source order matches target",
+      "score": 9,
+      "reason": "Creates an extra long-lived pseudo for arg0_new; competes with constant 1 for $v1, pushing constant 1 to $a1 (3 reg-rename diffs on top of the same scheduling hoist)."
+    },
+    {
+      "form": "`func_8003AE5C(arg0)` instead of `func_8003AE5C(D_800A3844)` (use C local instead of memory reload)",
+      "score": 14,
+      "reason": "Makes arg0 live across file_LoadOverlay call; forces callee-save reservation. Target reloads from D_800A3844 to fill the jal delay slot (per [[store-before-jal]] pattern)."
+    },
+    {
+      "form": "`register s32 one asm(\"v1\") = 1` (the HEAD cheat)",
+      "score": 5,
+      "reason": "Cheat-asm — register-asm pin per [[inline-asm-policy]]. Not a committable form."
+    },
+    {
+      "form": "`u8 *new_var; ...(new_var = &D_800900EC)[arg0]` (the HEAD cheat)",
+      "score": "n/a — part of the cheat cluster",
+      "reason": "Dead-local-alias coercion per [[inline-asm-injection]] / [[no-new-park-categories]] cheats-by-spelling. The variable has no semantic purpose; its only effect is to anchor scheduling. Not committable."
+    }
+  ],
+  "memory_notes": []
+}
