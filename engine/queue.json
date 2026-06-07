@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800550E8",
-      "file": "text1b",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
       "func": "func_80033550",
       "file": "code6cac_b",
       "distance": 4,
@@ -4072,6 +4064,15 @@
       "park_reason": "cc1 prologue beq slot-fill + loop SR resist pure-C levers (distance 3, 2 rules); see commit message"
     },
     {
+      "func": "func_800550E8",
+      "file": "text1b",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 3,
+      "status": "parked",
+      "park_reason": "Single-displacement loop access (*(p+0x415) inside do-while where p = &D_80101EC8 + arg0*0x44C). cc1 combine pass folds &D_80101EC8 + 0x415 into the la symbol+addend, encoding the addressing mode as la(symbol+1045)+lbu/sb 0(reg) instead of target's la(symbol)+lbu/sb 1045(reg). 3 regfix substs reciprocally re-encode the same memory access (same bytes at runtime, different operand encoding). Tested 5 pure-C variants 2026-06-07: original baseline 3; sibling's uninit dual-pointer trick (new_var unset, accessed for 2nd displacement) regressed to 9 because we only have ONE displacement (can't justify keeping base separate); split base+offset into 2 statements regressed to 12; for-loop variant equal at 3; step-based 'p[step + 0x415]' index regressed to 10 (extra addu). Sibling func_8005509C matches because it has 2 distinct displacements 0x414+0x415 forcing cc1 to keep base separate. Single-displacement case has no degree of freedom for cc1's combine pass. Hand-coded scan: LOW (0/8) \u2014 not canonical-asm. Compiler-patch forbidden per [[no-compiler-divergence]]. No clear remaining lever."
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4229,14 +4230,14 @@
   ],
   "counts": {
     "total": 519,
-    "active": 426,
+    "active": 425,
     "by_status": {
-      "active": 426,
+      "active": 425,
       "authorize": 33,
-      "parked": 60
+      "parked": 61
     },
     "by_verdict": {
-      "C": 230,
+      "C": 229,
       "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
