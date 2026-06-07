@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "rob_life_ctrl",
-      "file": "text1a",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "func_80044010",
       "file": "text1a_c",
       "distance": 3,
@@ -4115,6 +4107,15 @@
       "park_reason": "Needs user policy on legitimate-volatile D_800A2D14 (interrupt-touched). HEAD volatile produces target's double-read shape (matches oracle); sandbox-stripped distance 3 is the second lui/lw/nop of D_800A2D14 inside the if-body. Pure-C cannot force GCC to re-read a non-volatile global between !=0 test and store. DispUpdateStatusMessage has the same shape. See commit body."
     },
     {
+      "func": "rob_life_ctrl",
+      "file": "text1a",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 2,
+      "status": "parked",
+      "park_reason": "cc1 prologue beq slot-fill + loop SR resist pure-C levers (distance 3, 2 rules); see commit message"
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4272,14 +4273,14 @@
   ],
   "counts": {
     "total": 524,
-    "active": 429,
+    "active": 428,
     "by_status": {
-      "active": 429,
+      "active": 428,
       "authorize": 33,
-      "parked": 62
+      "parked": 63
     },
     "by_verdict": {
-      "C": 233,
+      "C": 232,
       "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
