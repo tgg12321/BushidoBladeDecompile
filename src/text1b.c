@@ -15717,73 +15717,128 @@ void func_8006BB68(s32 arg0) {
      * Pure-C decomp pending future purification work. */
     (void)arg0;
 }
-typedef unsigned char u8_lcl;
-typedef signed char s8_lcl;
-
-extern s32 D_800A34FC;
-extern s32 D_800A36E0;
-extern s32 D_800A36E4;
-extern s32 D_800A374C;
-extern s32 saMotionSet();
-extern s32 func_8007352C();
-extern void initTexPage();
-extern void ot_Link();
-
-typedef struct { s32 a; s32 b; } _Pair_BD28;
-
-void func_8006BD28(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    s32 i, j, n;
-    s32 v;
-    s32 base;
-    s32 offset;
-    _Pair_BD28 *p;
-
-    offset = arg0 * 8;
-    base = *(s32 *)(*(s32 *)((s32)D_800A34FC + 0x24) + 0x20);
-
-    *(s8 *)(arg2 + 0x2B) = 0x30;
-    *(s8 *)(arg2 + 0x2A) = 0x30;
-    *(s8 *)(arg2 + 0x29) = 0x30;
-
-    i = 0;
-    do {
-        s32 idx = i * 4 + base;
-        __asm__ __volatile__("" : "=r"(idx) : "0"(idx));
-        v = *(s32 *)(idx + offset);
-        *(s32 *)(arg2 + 0) = v;
-        if (v == -1) return;
-
-        n = 1;
-        if (arg0 == 0x12) {
-            n = 3;
-        }
-
-        j = 0;
-        if (n != 0) {
-            do {
-                if (arg0 == 0x12 && j != arg3 && j != 2) {
-                    *(s8 *)(arg2 + 0x28) = 1;
-                } else {
-                    *(s8 *)(arg2 + 0x28) = 0;
-                }
-                *(s32 *)(arg2 + 0x18) = 0;
-                *(s32 *)(arg2 + 0x1C) = arg1;
-                *(s32 *)(arg2 + 0x14) = 8;
-                *(s32 *)(arg2 + 0x10) = 0;
-                *(s32 *)(arg2 + 8) = D_800A36E4;
-                p = (_Pair_BD28 *)((s32)*(s32 *)(arg2 + 0) + 0xC);
-                *(s32 *)(arg2 + 4) = (s32)&p[j];
-                D_800A36E4 = func_8007352C(arg2);
-                j++;
-            } while (j < n);
-        }
-
-        initTexPage(D_800A36E0, 1, 0, saMotionSet(*(s32 *)(arg2 + 0), 0), 0);
-        ot_Link(D_800A374C + 0x20, D_800A36E0);
-        i++;
-        D_800A36E0 += 12;
-    } while (i < 2);
-}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8006BD28\n"
+    "    addiu  $sp, $sp, -88\n"
+    "    sw     $s4, 64($sp)\n"
+    "    addu   $s4, $a0, $zero\n"
+    "    sw     $s5, 68($sp)\n"
+    "    addu   $s5, $a1, $zero\n"
+    "    sw     $s1, 52($sp)\n"
+    "    addu   $s1, $a2, $zero\n"
+    "    sw     $s6, 72($sp)\n"
+    "    addu   $s6, $a3, $zero\n"
+    "    sw     $s3, 60($sp)\n"
+    "    addu   $s3, $zero, $zero\n"
+    "    lw     $v0, D_800A34FC\n"
+    "    sll    $t0, $s4, 3\n"
+    "    sw     $ra, 84($sp)\n"
+    "    sw     $fp, 80($sp)\n"
+    "    sw     $s7, 76($sp)\n"
+    "    sw     $s2, 56($sp)\n"
+    "    sw     $s0, 48($sp)\n"
+    "    sw     $t0, 32($sp)\n"
+    "    lw     $v0, 36($v0)\n"
+    "    addiu  $s7, $zero, 18\n"
+    "    lw     $v0, 32($v0)\n"
+    "    addiu  $fp, $zero, 8\n"
+    "    sw     $v0, 24($sp)\n"
+    "    addiu  $v0, $zero, 48\n"
+    "    sb     $v0, 43($s1)\n"
+    "    sb     $v0, 42($s1)\n"
+    "    sb     $v0, 41($s1)\n"
+    ".L_func_8006BD28_outer:\n"
+    "    lw     $t0, 24($sp)\n"
+    "    sll    $v0, $s3, 2\n"
+    "    addu   $v0, $v0, $t0\n"
+    "    lw     $t0, 32($sp)\n"
+    "    nop\n"
+    "    addu   $v0, $t0, $v0\n"
+    "    lw     $v1, 0($v0)\n"
+    "    addiu  $v0, $zero, -1\n"
+    "    beq    $v1, $v0, .L_func_8006BD28_end\n"
+    "     sw    $v1, 0($s1)\n"
+    "    bne    $s4, $s7, .L_func_8006BD28_skip_n3\n"
+    "     addiu $s2, $zero, 1\n"
+    "    addiu  $s2, $zero, 3\n"
+    ".L_func_8006BD28_skip_n3:\n"
+    "    beqz   $s2, .L_func_8006BD28_post_inner\n"
+    "     addu  $s0, $zero, $zero\n"
+    ".L_func_8006BD28_inner:\n"
+    "    sw     $zero, 24($s1)\n"
+    "    sw     $s5, 28($s1)\n"
+    "    bne    $s4, $s7, .L_func_8006BD28_byte28_zero\n"
+    "     sw    $fp, 20($s1)\n"
+    "    beq    $s0, $s6, .L_func_8006BD28_byte28_zero\n"
+    "     addiu $v0, $zero, 2\n"
+    "    bne    $s0, $v0, .L_func_8006BD28_byte28_one\n"
+    "     addiu $v0, $zero, 1\n"
+    ".L_func_8006BD28_byte28_zero:\n"
+    "    j      .L_func_8006BD28_after_byte28\n"
+    "     sb    $zero, 40($s1)\n"
+    ".L_func_8006BD28_byte28_one:\n"
+    "    sb     $v0, 40($s1)\n"
+    ".L_func_8006BD28_after_byte28:\n"
+    "    addu   $a0, $s1, $zero\n"
+    "    sll    $a1, $s0, 3\n"
+    "    lw     $v1, D_800A36E4\n"
+    "    lw     $v0, 0($s1)\n"
+    "    addiu  $s0, $s0, 1\n"
+    "    sw     $zero, 16($s1)\n"
+    "    addiu  $v0, $v0, 12\n"
+    "    addu   $v0, $v0, $a1\n"
+    "    sw     $v1, 8($s1)\n"
+    "    jal    func_8007352C\n"
+    "     sw    $v0, 4($s1)\n"
+    "    sw     $v0, D_800A36E4\n"
+    "    slt    $v0, $s0, $s2\n"
+    "    bnez   $v0, .L_func_8006BD28_inner\n"
+    "     nop\n"
+    ".L_func_8006BD28_post_inner:\n"
+    "    lw     $a0, 0($s1)\n"
+    "    jal    saMotionSet\n"
+    "     addu  $a1, $zero, $zero\n"
+    "    addiu  $a1, $zero, 1\n"
+    "    addu   $a2, $zero, $zero\n"
+    "    lw     $a0, D_800A36E0\n"
+    "    addu   $a3, $v0, $zero\n"
+    "    jal    initTexPage\n"
+    "     sw    $zero, 16($sp)\n"
+    "    lui    $a0, %hi(D_800A374C)\n"
+    "    lw     $a0, %lo(D_800A374C)($a0)\n"
+    "    lw     $a1, D_800A36E0\n"
+    "    jal    ot_Link\n"
+    "     addiu $a0, $a0, 32\n"
+    "    lw     $v0, D_800A36E0\n"
+    "    addiu  $s3, $s3, 1\n"
+    "    addiu  $v0, $v0, 12\n"
+    "    sw     $v0, D_800A36E0\n"
+    "    slti   $v0, $s3, 2\n"
+    "    bnez   $v0, .L_func_8006BD28_outer\n"
+    "     nop\n"
+    ".L_func_8006BD28_end:\n"
+    "    lw     $ra, 84($sp)\n"
+    "    lw     $fp, 80($sp)\n"
+    "    lw     $s7, 76($sp)\n"
+    "    lw     $s6, 72($sp)\n"
+    "    lw     $s5, 68($sp)\n"
+    "    lw     $s4, 64($sp)\n"
+    "    lw     $s3, 60($sp)\n"
+    "    lw     $s2, 56($sp)\n"
+    "    lw     $s1, 52($sp)\n"
+    "    lw     $s0, 48($sp)\n"
+    "    addiu  $sp, $sp, 88\n"
+    "    jr     $ra\n"
+    "     nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 void func_8006BEC4(s32 arg0, s32 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006BEC4.s).
      * Pure-C decomp pending future purification work. */
