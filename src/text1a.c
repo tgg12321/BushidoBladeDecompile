@@ -853,18 +853,13 @@ void func_80041430(s32 a0, s32 a1) {
         } while (1);
     }
     i = 0;
-    {
-        register s32 *v1 asm("v1");
-        v1 = s0;
-        do {
-            s32 val = *(s32 *)((u8 *)v1 + 0x1A34);
-            if (val) {
-                *(s32 *)((u8 *)v1 + 0x1A34) = val + a1;
-            }
-            i++;
-            v1++;
-        } while (i < 0x14);
-    }
+    do {
+        s32 val = *(s32 *)((u8 *)s0 + i * 4 + 0x1A34);
+        if (val) {
+            *(s32 *)((u8 *)s0 + i * 4 + 0x1A34) = val + a1;
+        }
+        i++;
+    } while (i < 0x14);
     func_80040A78((s32)s0);
 }
 void save_vc_ctrl(s32 a0, s16 *a1, s32 a2) {
