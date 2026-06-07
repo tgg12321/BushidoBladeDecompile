@@ -14116,8 +14116,8 @@ void func_800620B8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 }
 s32 func_8006288C(void) {
     extern s32 D_800A3460;
-    extern volatile s32 D_800A347C;
-    extern volatile s32 D_800A3478;
+    extern s32 D_800A347C;
+    extern s32 D_800A3478;
     extern s16 D_800F0C04;
     extern s32 D_800F0FB8;
     extern s32 D_800F0FBC;
@@ -14168,7 +14168,7 @@ void func_8006295C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * Pure-C decomp pending future purification work. */
     (void)arg0; (void)arg1; (void)arg2; (void)arg3;
 }
-extern volatile s32 D_800A347C;
+extern s32 D_800A347C;
 
 s32 func_80062FEC(void) {
     s32 i;
@@ -14405,7 +14405,7 @@ s32 func_80064FB4(void) {
     return 1;
 }
 extern volatile s32 D_800A347C;
-extern volatile s32 D_800A3468;
+extern s32 D_800A3468;
 extern volatile s32 D_800F0CDC;
 extern volatile s32 D_800F0CE0;
 extern volatile s32 D_800F0CE4;
