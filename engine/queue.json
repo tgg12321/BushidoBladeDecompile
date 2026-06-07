@@ -4,6 +4,14 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_800550E8",
+      "file": "text1b",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
       "func": "func_80033550",
       "file": "code6cac_b",
       "distance": 4,
@@ -3668,6 +3676,16 @@
       "status": "authorize"
     },
     {
+      "func": "func_8006BD28",
+      "file": "text1b",
+      "distance": -1,
+      "verdict": "C",
+      "rules": 37,
+      "status": "parked",
+      "scorable": false,
+      "park_reason": "ASM-SUSPECT (canonical verdict: pure-C distance 59 > 50 threshold). Honest cheat-free sandbox=59/103. Carries 37 cheats including a massive asmfix delete_between+insert_before that wholesale-replaces the inner loop with target's exact asm sequence (15+ literal instructions), a prologue reorder, plus 26 frame-cascade substs from an 8-byte frame discrepancy (target frame=88, mine=80). Source also has an __asm__ idx-pin barrier on the outer-loop index. Bounded pure-C attempt is not the right tool: inner-loop instruction order + frame-slot layout + .L label structure all diverge from natural cc1 output. Needs either evidence-based hand-coded-asm signal classification (per packed-multiply-cluster S8 / hand-coded-asm-recognition) and canonical-asm authorization, or a deeper RTL/sched investigation than a single session affords."
+    },
+    {
       "func": "replay_camera_rob_back_loose2",
       "file": "code6cac_b2",
       "distance": 0,
@@ -4091,15 +4109,6 @@
       "park_reason": "Scratchpad poke (0x1F800400 = PS1 scratchpad RAM) with hand-coded address materialization: target uses lui+ori; sw 0(t9) instead of the natural lui; sw 0x400(r) GCC always produces (combine.c folds the const offset into the sw displacement). Target also picks t9 (non-natural register). Current src uses 'register volatile s32 *p asm(\\)' pin to coerce both \u2014 that pin is cheat-asm per inline-asm-policy. No pure-C lever produces target bytes: const-folding is unavoidable for compile-time-known absolute addresses, and routing through a local (volatile or otherwise) emits MORE insns than target's 3-insn body. Function fits inline-asm-policy's canonical 'scratchpad poke' category but isn't a pure GTE leaf wrapper (it picks custom register + hand-scheduling), so per CLAUDE.md it needs user canonical-asm sign-off rather than orchestrator auto-authorize. Park pending canonical-asm authorization (inline_asm_canonical.txt entry + whole-body __asm__ glabel block with lui+ori+sw)."
     },
     {
-      "func": "func_800550E8",
-      "file": "text1b",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "Single-offset GIV strength reduction. cc1 strength-reduces p + 0x415 to a new IV, folding 0x415 into 'la D_80101EC8+1045'. Target keeps 'la D_80101EC8' with 1045-offset on lbu/sb. Sibling func_8005509C matches because TWO offsets (0x414, 0x415) defeat SR by cost analysis; this function has ONE offset where SR always wins. No legitimate pure-C lever found - dummy second-access would be a cheat (no-new-park-categories). 3 regfix substs are the only documented mechanism; compiler flags frozen per no-compiler-divergence."
-    },
-    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4256,15 +4265,15 @@
     }
   ],
   "counts": {
-    "total": 522,
-    "active": 425,
+    "total": 523,
+    "active": 426,
     "by_status": {
-      "active": 425,
+      "active": 426,
       "authorize": 33,
       "parked": 64
     },
     "by_verdict": {
-      "C": 229,
+      "C": 230,
       "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
