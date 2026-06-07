@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80044100",
-      "file": "text1a_c",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "bios_GPU_cw",
       "file": "display",
       "distance": 1,
@@ -4353,15 +4345,15 @@
     }
   ],
   "counts": {
-    "total": 535,
-    "active": 446,
+    "total": 534,
+    "active": 445,
     "by_status": {
-      "active": 446,
+      "active": 445,
       "authorize": 33,
       "parked": 56
     },
     "by_verdict": {
-      "C": 248,
+      "C": 247,
       "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
