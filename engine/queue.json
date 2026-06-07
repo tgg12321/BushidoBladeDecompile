@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "bios_GPU_cw",
-      "file": "display",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8007FEDC",
       "file": "display",
       "distance": 1,
@@ -4345,15 +4337,15 @@
     }
   ],
   "counts": {
-    "total": 534,
-    "active": 445,
+    "total": 533,
+    "active": 444,
     "by_status": {
-      "active": 445,
+      "active": 444,
       "authorize": 33,
       "parked": 56
     },
     "by_verdict": {
-      "C": 247,
+      "C": 246,
       "ASM-PARTIAL": 80,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
