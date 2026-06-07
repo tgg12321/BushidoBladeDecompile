@@ -586,17 +586,12 @@ void func_800372C0(void) {
     game_FrameLoop();
 }
 s32 func_800372F4(s32 arg0) {
-    s32 v;
-    {
-        register s32 temp asm("v0");
-
-        temp = arg0;
-        v = temp + 0x7FF;
-        if (v < 0) {
-            v = temp + 0xFFE;
-        }
+    s32 v = arg0;
+    arg0 += 0x7FF;
+    if (arg0 < 0) {
+        arg0 = v + 0xFFE;
     }
-    func_800826CC(v >> 11);
+    func_800826CC(arg0 >> 11);
     do {
         v = func_800827D0(1, 0);
         if (v > 0) {
