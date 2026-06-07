@@ -284,3 +284,6 @@ save_vc_ctrl  # Hand-coded leaf (text1a.c): 8-byte stack frame holds zero locals
 
 # === Scratchpad poke (text1b.c) ===
 InitFadePanel  # 3-insn scratchpad poke at PS1 RAM 0x1F800400 (text1b.c). Target uses lui+ori to materialize the absolute address into $t9 then sw $zero, 0($t9) -- combine.c always folds compile-time-known absolute offsets into the sw displacement (natural cc1 form is lui;sw 0x400(r)), so this 3-insn lui+ori+sw form is unreachable from any C. Target also picks a non-natural register ($t9) for the pointer. User-authorized 2026-06-07 (canonical-asm A category, scratchpad poke).
+
+# === Hand-coded leaf with vestigial frame (text1a_c.c) ===
+func_80044010  # Hand-coded leaf (text1a_c.c): 8-byte stack frame exists ONLY to give cc1's scheduler an addiu sp,sp,-8 to fill the bnez delay slot at 1b58, balanced by addiu sp,sp,8 at the shared epilogue 1b88. No stack-addressable locals, no callees, no spills -- semantically needs no frame. Same shape as save_vc_ctrl (auth'd this session, canonical-asm A category). Pure-C floor is 3 (build_insns 34=34 but GCC emits two nops where target has the paired addiu/addiu sp adjustments); the only "fix" in pure C is a forbidden volatile sp_pad scalar (volatile-coercion cheat per [[inline-asm-policy]] expanded catalog). User-authorized 2026-06-07 (canonical-asm A category).

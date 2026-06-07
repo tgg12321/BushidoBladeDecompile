@@ -823,30 +823,53 @@ s16 func_80043FCC(s16 a0, s16 a1, s32 a2) {
     mid = (a2 + (((u32)(a0 << 17)) >> 23)) & 0x1FF;
     return (s16)(low | ((a0 & (s16)0x8000) | (mid << 6)));
 }
-void func_80044010(s32 *a0, s16 a1) {
-    s32 new_var;
-    volatile s32 sp_pad;
-    s32 *a2 = a0;
-    s32 v1 = *a0;
-    unsigned short v0;
-    *a0 = (v1 | 0x8000) & 0xFFFF;
-    a0 = a0 + 1;
-    D_80103608[a1] = a0;
-    D_80103658[a1] = v1 & 0x7FFF;
-    v0 = v1;
-    if (!(v1 & 0x8000)) {
-        v1 = v0 & 0xFFFF;
-        new_var = v1;
-        if (new_var > 0) {
-            s32 i = 0;
-            do {
-                *a0 += (s32)a2;
-                i++;
-                a0++;
-            } while (i < new_var);
-        }
-    }
-}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80044010\n"
+    "    addu       $a2, $a0, $zero\n"
+    "    sll        $a1, $a1, 16\n"
+    "    lw         $v1, 0($a0)\n"
+    "    sra        $a1, $a1, 16\n"
+    "    ori        $v0, $v1, 0x8000\n"
+    "    andi       $v0, $v0, 0xFFFF\n"
+    "    sw         $v0, 0($a0)\n"
+    "    addiu      $a0, $a0, 4\n"
+    "    sll        $v0, $a1, 2\n"
+    "    sll        $a1, $a1, 1\n"
+    "    lui        $at, %hi(D_80103608)\n"
+    "    addu       $at, $at, $v0\n"
+    "    sw         $a0, %lo(D_80103608)($at)\n"
+    "    andi       $v0, $v1, 0x7FFF\n"
+    "    lui        $at, %hi(D_80103658)\n"
+    "    addu       $at, $at, $a1\n"
+    "    sh         $v0, %lo(D_80103658)($at)\n"
+    "    addu       $v0, $v1, $zero\n"
+    "    andi       $v1, $v1, 0x8000\n"
+    "    bnez       $v1, .L_func_80044010_end\n"
+    "     addiu     $sp, $sp, -8\n"
+    "    andi       $v1, $v0, 0xFFFF\n"
+    "    blez       $v1, .L_func_80044010_end\n"
+    "     addu      $a1, $zero, $zero\n"
+    "  .L_func_80044010_loop:\n"
+    "    lw         $v0, 0($a0)\n"
+    "    addiu      $a1, $a1, 1\n"
+    "    addu       $v0, $v0, $a2\n"
+    "    sw         $v0, 0($a0)\n"
+    "    slt        $v0, $a1, $v1\n"
+    "    bnez       $v0, .L_func_80044010_loop\n"
+    "     addiu     $a0, $a0, 4\n"
+    "  .L_func_80044010_end:\n"
+    "    addiu      $sp, $sp, 8\n"
+    "    jr         $ra\n"
+    "     nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 void func_80044098(s16 a0) {
     register s32 *v1 asm("v1");
     register s32 a4 asm("a0");
