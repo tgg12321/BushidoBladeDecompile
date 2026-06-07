@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "initDrawMode",
-      "file": "gpu",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80085270",
       "file": "main",
       "distance": 5,
@@ -4045,6 +4037,15 @@
       "park_reason": "scheduling-gap plateau, candidate_floor=6 (see memory/wip/func_8003B20C/). HEAD carries register-asm pin + dead-local alias cheats; removing them gives honest pure-C floor 6 (GCC INSN_PRIORITY hoists array load past D_80102780/D_80102781 stores). Prior session ruled out 4 lever forms; same family as parked cpu_side_move_dir_4/marionation_Exec/saEft00Add scheduling walls. Resume avenues in WIP next_hypotheses."
     },
     {
+      "func": "initDrawMode",
+      "file": "gpu",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Honest pure-C floor 5->1 via val|cmd source order (pin-free), but the remaining 1-byte diff is the final OR's commutative operand order: build emits or v0,v0,v1 (00431025), target has or v0,v1,v0 (00621025). Both encode cmd | val; bytes differ. Reaching target requires cmd | val source order WITH val landing in v0 (cmd in v1), but in cmd|val source GCC combine folds val's andi-dest into the dying a3 (or v0,v0,a3, wrong reg). No pure-C lever found that keeps a3 alive past val's andi without falling into the forbidden cheats-by-any-spelling family (dead self-assign / \u00073 & 0 chain-extender / volatile-coerce). WIP candidate.c + meta.json + notes.md committed at memory/wip/initDrawMode/."
+    },
+    {
       "func": "kgm_clamp_patch_init",
       "file": "ings",
       "distance": 5,
@@ -4173,14 +4174,14 @@
   ],
   "counts": {
     "total": 511,
-    "active": 410,
+    "active": 409,
     "by_status": {
-      "active": 410,
+      "active": 409,
       "authorize": 33,
-      "parked": 68
+      "parked": 69
     },
     "by_verdict": {
-      "C": 218,
+      "C": 217,
       "ASM-PARTIAL": 74,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,

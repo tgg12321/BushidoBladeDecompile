@@ -1,0 +1,33 @@
+{
+  "func": "initDrawMode",
+  "file": "gpu",
+  "verdict": "C",
+  "scores": {
+    "head_floor": 5,
+    "candidate_floor": 1
+  },
+  "sessions": [
+    {
+      "date": "2026-06-07",
+      "lever": "val|cmd OR operand source order (pure-C, no pins)",
+      "head_floor": 5,
+      "candidate_floor": 1,
+      "notes": "Removing register-asm pins (cmd asm v1, val asm v0) and writing `*(u32*)(a0+4) = val | cmd` (val first in OR source) yields val→$v0, cmd→$v1 — target's register allocation. The remaining 1-byte (4-byte instruction) diff is the OR operand order: build emits `or v0,v0,v1` (00431025), target has `or v0,v1,v0` (00621025). Both encode the same commutative OR but to different bytes."
+    }
+  ],
+  "reviewer": "not-invoked",
+  "remaining_gap": "OR operand-order commutativity diff. `cmd | val` source order would emit `or v0,v1,v0` (target's bytes) IF val landed in $v0. But in `cmd | val` source, GCC's combine pass folds val's andi-destination into $a3 (a3 dies after val's andi, so combine reuses it), giving `or v0,v0,a3` — wrong register AND wrong operand order.",
+  "next_hypotheses": [
+    "Find a pure-C lever that keeps a3 alive past val's andi without emitting extra instructions and without falling into the forbidden 'cheats by any spelling' family (no dead self-assign, no `(void)a3`, no `a3 & 0` style coercions, no volatile cast).",
+    "Look for an unrelated downstream use of a3 in the original source that's been lost in decomp (e.g., a debug log call, a sibling store of the raw mode value).",
+    "Read GCC 2.7.2's combine.c try_combine path to see whether ANY pure-C-derivable RTL shape prevents the dest-substitution of val→a3."
+  ],
+  "rejected_forms": [
+    {"slug": "cmd-or-val-direct", "score": 5, "reason": "val folds into a3 in cmd|val source order"},
+    {"slug": "val-first-cmd-or-val", "score": 7, "reason": "reordering val computation before cmd doesn't prevent val→a3 fold"},
+    {"slug": "split-val-init", "score": 5, "reason": "val=a3; val&=X combines back to val=a3&X"},
+    {"slug": "result-tmp-var", "score": 5, "reason": "u32 result=cmd|val; *(a0+4)=result is inlined"},
+    {"slug": "a3-direct-inplace", "score": 6, "reason": "using a3 &= X; a3 |= ... directly puts result in a3"},
+    {"slug": "val-init-on-decl", "score": 7, "reason": "u32 val=a3&X at decl with later ifs adds prologue insns"}
+  ]
+}
