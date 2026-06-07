@@ -81,3 +81,8 @@ real_fail = 'bash: line 1: /path/.venv/bin/python`
 - **Triggering command:** `python3 tmp/verify_sig.py`
 - **Why not a real failure:** Same FP class as core-tool-not-found v3: tmp/verify_sig.py's printed test fixtures contain the literal phrase the venv-python-symlink-missing regex matches. The regex needs the same '^(?=\S)[^quote]*?' tightening I just applied to core-tool-not-found.
 - **Action:** tighten signature `venv-python-symlink-missing` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
+
+## 2026-06-06 18:58:34 — FALSE POSITIVE (environment/core-tool-not-found)
+- **Triggering command:** `cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && source .venv/bin/activate 2>/dev/null; make -n build/src/text1b.o 2>&1 | head -10`
+- **Why not a real failure:** Agent invoked 'make' in Git Bash by mistake; the WSL toolchain is functional and reachable via tools/wsl.sh / tools/eng.ps1. No permanent breakage.
+- **Action:** tighten signature `core-tool-not-found` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
