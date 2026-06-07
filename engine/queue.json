@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "save_vc_ctrl",
-      "file": "text1a",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8005B8B8",
       "file": "text1b",
       "distance": 2,
@@ -4069,6 +4061,15 @@
       "park_reason": "FALSE-branch lbu schedule diff at 3 independent loads (idx 68/69/70). Registers + OR-tree match; only cc1's load order differs (r/g/b vs target b/r/g). Mechanism: b's INSN_PRIORITY < r/g's (chain depth 1 vs 2), so sched.c picks r/g first. All clean pure-C levers tried (source reorder, inline, bit-descending, named intermediate) either no-op or regress. Remaining levers (OR-operand permute, chain-extender, dead store) forbidden by no-new-park-categories. Standing search avenue: directed permuter targeting idx 68-70."
     },
     {
+      "func": "save_vc_ctrl",
+      "file": "text1a",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Pure-C floor 2: target reserves an unused 8-byte stack frame (addiu sp,sp,-8 / addiu sp,sp,8) plus an unfilled nop in jr ra's delay slot. Sibling leaf functions in text1a.c (func_8004153C, func_80041584) have zero frame and GCC-filled jr ra delay slots, so the natural cc1 codegen for this body emits neither. HEAD's \u000bolatile s32 sp; is load-bearing (forces the frame; sandbox cheat-asm-strip removes it which is why honest floor reads 2) but is a cheat-by-spelling per [[dead-vars-local-array]]/[[no-new-park-categories]] \u2014 unused volatile local whose only effect is frame allocation. Two hand-coded signals (vestigial frame + unfilled delay slot) suggest canonical-asm; needs user judgment for authorization or for a non-cheat C lever."
+    },
+    {
       "func": "func_80045294",
       "file": "text1a_c",
       "distance": 2,
@@ -4307,14 +4308,14 @@
   ],
   "counts": {
     "total": 529,
-    "active": 439,
+    "active": 438,
     "by_status": {
-      "active": 439,
+      "active": 438,
       "authorize": 33,
-      "parked": 57
+      "parked": 58
     },
     "by_verdict": {
-      "C": 242,
+      "C": 241,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
