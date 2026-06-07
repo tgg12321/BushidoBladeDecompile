@@ -2289,18 +2289,29 @@ void gte_SetRotMatrix(s32 *a0) {
     __asm__ volatile (".word 0x48CB1800" :: "r"(t3));  /* ctc2 $t3, $3 */
     __asm__ volatile (".word 0x48CC2000" :: "r"(t4));  /* ctc2 $t4, $4 */
 }
-void gte_SetColorMatrix(s32 *a0) {
-    register s32 t0 asm("t0") = a0[0];
-    register s32 t1 asm("t1") = a0[1];
-    register s32 t2 asm("t2") = a0[2];
-    register s32 t3 asm("t3") = a0[3];
-    register s32 t4 asm("t4") = a0[4];
-    __asm__ volatile (".word 0x48C88000" :: "r"(t0));  /* ctc2 $t0, $16 */
-    __asm__ volatile (".word 0x48C98800" :: "r"(t1));  /* ctc2 $t1, $17 */
-    __asm__ volatile (".word 0x48CA9000" :: "r"(t2));  /* ctc2 $t2, $18 */
-    __asm__ volatile (".word 0x48CB9800" :: "r"(t3));  /* ctc2 $t3, $19 */
-    __asm__ volatile (".word 0x48CCA000" :: "r"(t4));  /* ctc2 $t4, $20 */
-}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel gte_SetColorMatrix\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $16\n"
+    "    ctc2   $t1, $17\n"
+    "    ctc2   $t2, $18\n"
+    "    ctc2   $t3, $19\n"
+    "    ctc2   $t4, $20\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
