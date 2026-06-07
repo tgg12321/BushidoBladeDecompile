@@ -1622,7 +1622,8 @@ s32 saTan1SyuryoDraw(s32 mode, s32 val) {
     if (D_800A2D00 != 0) {
         u32 step = D_800A2D08;
         if ((u32)val % step != 0) {
-            val = (val + step) & ~D_800A2D0C;
+            val += step;
+            val &= ~D_800A2D0C;
         }
     }
     aligned = (s32)((u32)val >> D_800A2D04);

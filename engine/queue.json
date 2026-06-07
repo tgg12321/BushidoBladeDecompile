@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "saTan1SyuryoDraw",
-      "file": "main",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
       "func": "func_80041430",
       "file": "text1a",
       "distance": 3,
@@ -4287,15 +4279,15 @@
     }
   ],
   "counts": {
-    "total": 526,
-    "active": 431,
+    "total": 525,
+    "active": 430,
     "by_status": {
-      "active": 431,
+      "active": 430,
       "authorize": 33,
       "parked": 62
     },
     "by_verdict": {
-      "C": 235,
+      "C": 234,
       "ASM-PARTIAL": 78,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
