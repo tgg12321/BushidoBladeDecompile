@@ -862,23 +862,36 @@ void func_80041430(s32 a0, s32 a1) {
     } while (i < 0x14);
     func_80040A78((s32)s0);
 }
-void save_vc_ctrl(s32 a0, s16 *a1, s32 a2) {
-    volatile s32 sp;
-    s32 i = a2 - 1;
-    if (a2 == 0) {
-        return;
-    }
-    a2 = -1;
-    a1 = (s16 *)((u8 *)a1 + 0xC);
-    do {
-        s32 val = *(s32 *)a1;
-        if (val) {
-            *(s32 *)a1 = val + a0;
-        }
-        i--;
-        a1 = (s16 *)((u8 *)a1 + 0x68);
-    } while (i != a2);
-}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel save_vc_ctrl\n"
+    "    addiu   $sp,$sp,-0x8\n"
+    "    beqz    $a2,.L80041530_svc\n"
+    "    addiu   $v1,$a2,-0x1\n"
+    "    addiu   $a2,$zero,-0x1\n"
+    "    addiu   $a1,$a1,0xC\n"
+    ".L80041510_svc:\n"
+    "    lw      $v0,0($a1)\n"
+    "    nop\n"
+    "    beqz    $v0,.L80041524_svc\n"
+    "    addu    $v0,$v0,$a0\n"
+    "    sw      $v0,0($a1)\n"
+    ".L80041524_svc:\n"
+    "    addiu   $v1,$v1,-0x1\n"
+    "    bne     $v1,$a2,.L80041510_svc\n"
+    "    addiu   $a1,$a1,0x68\n"
+    ".L80041530_svc:\n"
+    "    addiu   $sp,$sp,0x8\n"
+    "    jr      $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 extern s32 g_player_ptrs[];
 s32 func_8004153C(s32 a0) {
     return g_player_ptrs[a0];
