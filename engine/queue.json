@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003B20C",
-      "file": "code6cac_c_ab",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8007F21C",
       "file": "display",
       "distance": 5,
@@ -4068,6 +4060,15 @@
       "park_reason": "ASM-PARTIAL: hand-coded GTE LZCS/LZCR pattern (mtc2 t4,gte30 / nop / nop / swc2 gte31,0(t4)) with redundant 'addu t4,a0,zero' and 'addu t4,sp,zero' copies reusing t4 for two unrelated purposes back-to-back, and 2 unfilled delay-slot nops between mtc2 and swc2 -- splat marks /* handwritten instruction */ on the mtc2/swc2 lines. Committed cheats: register t4 pin + 2 source __asm__('nop') barriers + do-while-0 wrap around v0_m = 0x13 - (v1_m>>1) + unused 'new_var = &D_8008D118' expression-assignment + 2 regfix rules (insert 'srl v1,v1,1' @ 33 and delete @ 36) scheduling srl into the srlv delay slot. Function is a GTE-USING WRAPPER (not a leaf), so the orchestrator GTE-leaf auto-authorize policy doesn't cover it -- needs user canonical-asm sign-off per hand-coded-asm-recognition / canonical-asm-retirement. Pure-C body around the GTE block (dist_sq squared-sum, lbu D_8008D118 table lookup, neg/sll/div/sh writeback) is reachable, but the hand-coded GTE block in the middle blocks COMPLETED-C without an authorized __asm__ block."
     },
     {
+      "func": "func_8003B20C",
+      "file": "code6cac_c_ab",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "scheduling-gap plateau, candidate_floor=6 (see memory/wip/func_8003B20C/). HEAD carries register-asm pin + dead-local alias cheats; removing them gives honest pure-C floor 6 (GCC INSN_PRIORITY hoists array load past D_80102780/D_80102781 stores). Prior session ruled out 4 lever forms; same family as parked cpu_side_move_dir_4/marionation_Exec/saEft00Add scheduling walls. Resume avenues in WIP next_hypotheses."
+    },
+    {
       "func": "kgm_clamp_patch_init",
       "file": "ings",
       "distance": 5,
@@ -4196,15 +4197,15 @@
   ],
   "counts": {
     "total": 514,
-    "active": 414,
+    "active": 413,
     "by_status": {
-      "active": 414,
+      "active": 413,
       "authorize": 33,
-      "parked": 67
+      "parked": 68
     },
     "by_verdict": {
-      "C": 219,
       "ASM-PARTIAL": 77,
+      "C": 218,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
       "ASM-STRUCTURAL": 26
