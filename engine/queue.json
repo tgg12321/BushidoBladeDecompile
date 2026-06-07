@@ -3676,16 +3676,6 @@
       "status": "authorize"
     },
     {
-      "func": "func_8006BD28",
-      "file": "text1b",
-      "distance": -1,
-      "verdict": "C",
-      "rules": 37,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "ASM-SUSPECT (canonical verdict: pure-C distance 59 > 50 threshold). Honest cheat-free sandbox=59/103. Carries 37 cheats including a massive asmfix delete_between+insert_before that wholesale-replaces the inner loop with target's exact asm sequence (15+ literal instructions), a prologue reorder, plus 26 frame-cascade substs from an 8-byte frame discrepancy (target frame=88, mine=80). Source also has an __asm__ idx-pin barrier on the outer-loop index. Bounded pure-C attempt is not the right tool: inner-loop instruction order + frame-slot layout + .L label structure all diverge from natural cc1 output. Needs either evidence-based hand-coded-asm signal classification (per packed-multiply-cluster S8 / hand-coded-asm-recognition) and canonical-asm authorization, or a deeper RTL/sched investigation than a single session affords."
-    },
-    {
       "func": "replay_camera_rob_back_loose2",
       "file": "code6cac_b2",
       "distance": 0,
@@ -4265,12 +4255,12 @@
     }
   ],
   "counts": {
-    "total": 523,
+    "total": 522,
     "active": 426,
     "by_status": {
       "active": 426,
       "authorize": 33,
-      "parked": 64
+      "parked": 63
     },
     "by_verdict": {
       "C": 230,

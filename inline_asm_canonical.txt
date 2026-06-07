@@ -19,6 +19,7 @@
 # one-line `# justification` after the name.
 
 func_8004A76C  # custom $s0 ABI: caller passes vec ptr via $s0 without prologue save, function mutates $s0. GCC 2.7.2 cannot express. See commit bc04b47.
+func_8006BD28  # 178-insn animation dispatch. Structural asmfix delete_between+insert_before wholesale-replaced the inner loop (15+ literal target instructions for branch sense, sb/sw ordering, jal scheduling). 8-byte frame skew (target=88, mine=80) + prologue scheduling diverged from any natural cc1 output across 37 cheats (1 prologue reorder + 26 frame-cascade substs + asmfix inner-loop bridge + __asm__ idx pin). Honest pure-C floor 59 (>ASM-SUSPECT threshold 50). Not C-form-reachable in this fork. User-authorized 2026-06-07 (canonical-asm A category).
 func_8007F87C  # sin/cos rotation kernel, hand-coded (uniform multu pacing, front-loaded loads, INT_MIN guard idiom, cluster behavior). User-authorized 2026-05-13. See memory/feedback_hand_coded_asm_recognition.md and commit 39e9bf0.
 func_8007FA1C  # sibling of func_8007F87C with mirrored sin negation and 0..0x10 offsets. Same cluster authorization (5 strong signals confirmed). 2026-05-13.
 func_8007FBBC  # sibling of func_8007F87C with jaccard=1.00 (structurally identical, 0..0xA offsets). Same cluster authorization. STRONG 5/5 per scan_hand_coded. 2026-05-13.

@@ -3739,45 +3739,10 @@ func_8007C2A0: reorder 3,4,1,2 @ 1-4
 # func_80069AE4: hoist a0=p, a1=1 setup into each of the 3 branch tail blocks
 # (target schedules these inside branches; GCC defers them to merge point)
 
-# regfix-suggest: auto-generated rules for func_8006BD28
 
-# regfix-suggest: auto-generated rules for func_8006BD28
-
-# func_8006BD28 frame-size cascade fix (auto-generated)
-func_8006BD28: subst "subu\s+\$sp,\$sp,80" "addiu	$29,$29,-88" @ 0
-func_8006BD28: subst "sw\s+\$20,56\(\$sp\)" "sw	$20,64($29)" @ 1
-func_8006BD28: subst "sw\s+\$21,60\(\$sp\)" "sw	$21,68($29)" @ 3
-func_8006BD28: subst "sw\s+\$17,44\(\$sp\)" "sw	$17,52($29)" @ 5
-func_8006BD28: subst "sw\s+\$22,64\(\$sp\)" "sw	$22,72($29)" @ 7
-func_8006BD28: subst "sw\s+\$19,52\(\$sp\)" "sw	$19,60($29)" @ 11
-func_8006BD28: subst "sw\s+\$31,76\(\$sp\)" "sw	$31,84($29)" @ 13
-func_8006BD28: subst "sw\s+\$fp,72\(\$sp\)" "sw	$fp,80($29)" @ 14
-func_8006BD28: subst "sw\s+\$23,68\(\$sp\)" "sw	$23,76($29)" @ 15
-func_8006BD28: subst "sw\s+\$18,48\(\$sp\)" "sw	$18,56($29)" @ 16
-func_8006BD28: subst "sw\s+\$16,40\(\$sp\)" "sw	$16,48($29)" @ 17
-func_8006BD28: subst "sw\s+\$8,36\(\$sp\)" "sw	$8,32($29)" @ 18
-func_8006BD28: subst "sw\s+\$2,28\(\$sp\)" "sw	$2,24($29)" @ 23
-func_8006BD28: subst "lw\s+\$8,28\(\$sp\)" "lw	$8,24($29)" @ 28
-func_8006BD28: subst "lw\s+\$8,36\(\$sp\)" "lw	$8,32($29)" @ 31
-func_8006BD28: subst "lw\s+\$31,76\(\$sp\)" "lw	$31,84($29)" @ 90
-func_8006BD28: subst "lw\s+\$fp,72\(\$sp\)" "lw	$fp,80($29)" @ 91
-func_8006BD28: subst "lw\s+\$23,68\(\$sp\)" "lw	$23,76($29)" @ 92
-func_8006BD28: subst "lw\s+\$22,64\(\$sp\)" "lw	$22,72($29)" @ 93
-func_8006BD28: subst "lw\s+\$21,60\(\$sp\)" "lw	$21,68($29)" @ 94
-func_8006BD28: subst "lw\s+\$20,56\(\$sp\)" "lw	$20,64($29)" @ 95
-func_8006BD28: subst "lw\s+\$19,52\(\$sp\)" "lw	$19,60($29)" @ 96
-func_8006BD28: subst "lw\s+\$18,48\(\$sp\)" "lw	$18,56($29)" @ 97
-func_8006BD28: subst "lw\s+\$17,44\(\$sp\)" "lw	$17,52($29)" @ 98
-func_8006BD28: subst "lw\s+\$16,40\(\$sp\)" "lw	$16,48($29)" @ 99
-func_8006BD28: subst "addu\s+\$sp,\$sp,80" "addiu	$29,$29,88" @ 100
-
-# func_8006BD28: prologue scheduling fix (4 instructions reordered)
 # Mine: lw v0,gp; sll t0,s4,3; sw s3,60; move s3,zero
 # Target: sw s3,60; move s3,zero; lw v0,gp; sll t0,s4,3
-func_8006BD28: reorder 11,12,9,10 @ 9-12
 
-# func_8006BD28: addu operand order swap at idx 33 (mine: addu $2,$2,$8 -> target: addu $2,$8,$2)
-func_8006BD28: subst "addu\s+\$2,\$2,\$8" "addu	$2,$8,$2" @ 33
 
 # func_8007C4B8: prologue save order swap (s0/s1 setup pairs reordered)
 # Mine: sw s1,52; move s1,a0; sw s0,48; move s0,a1
