@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80069AE4",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
       "func": "gnd_get_fog",
       "file": "text1b",
       "distance": 2,
@@ -4134,6 +4126,15 @@
       "park_reason": "file-wide volatile-extern cluster (D_800F0BB2 / D_800A3440) blocks COMPLETED-C \u2014 same blocker as func_80061C00"
     },
     {
+      "func": "func_80069AE4",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "parked",
+      "park_reason": "Sandbox unmeasurable (cheat-asm strip causes sibling func_8006BD28 .L8006BDF4 label collision in asmfix delete_between/insert_before, truncating whole-file build); 3 scheduling-paperwork rules (reorder 94,92,93 + insert_label + subst .L#) encode target hoisting \u0007ddiu a0,sp,24 to the loop top before lw v0,0(s0); addiu s0,s0,4 in the qbase do-while loop (lines 15419-15427, calling func_8007352C(&s.sp18)). Pure-C lever tried: pre-materialize s32 *p = &s.sp18 inside the loop body and route stores + call arg through p \u2014 retire failed (sha1 e207b1e7\u2026). Reverted; oracle green. Next levers to try: (1) instrumented cc1 -da .sched/.greg dump on the loop to see why GCC's scheduler places addiu a0 last in the 3-insn window; (2) restructure loop body to make &s.sp18 a long-live local set BEFORE the loop with q++ moved to bottom; (3) directed permuter from a clean single-function target since random search at masked-loop-scheduling needs the structural seed."
+    },
+    {
       "func": "func_8007C2A0",
       "file": "display",
       "distance": 4,
@@ -4264,14 +4265,14 @@
   ],
   "counts": {
     "total": 524,
-    "active": 436,
+    "active": 435,
     "by_status": {
-      "active": 436,
+      "active": 435,
       "authorize": 33,
-      "parked": 55
+      "parked": 56
     },
     "by_verdict": {
-      "C": 240,
+      "C": 239,
       "ASM-PARTIAL": 79,
       "ASM-SUSPECT": 117,
       "ASM-WHOLE": 7,
