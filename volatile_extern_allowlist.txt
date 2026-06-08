@@ -1,0 +1,29 @@
+# Symbols sanctioned for `extern volatile T G;` under the
+# legitimate-volatile-interrupt-touched carve-out (user policy 2026-06-08).
+#
+# This file lists `D_xxxxxxxx`-style splat-named globals that have been
+# AUDITED and APPROVED for a plain scalar `extern volatile T G;` declaration
+# under the SOTN-grounded narrow exception documented in
+# .claude/rules/legitimate-volatile-interrupt-touched.md.
+#
+# The detector in engine/volatile_cheats.py reads this file at run-time and
+# skips listed symbols when searching for plain-volatile-extern cheats. Every
+# other volatile coercion (alias renames, *(volatile T *)&G casts,
+# macro-hidden __asm__, dead-locals, etc.) is unchanged by this allowlist.
+#
+# The DEFAULT posture for `extern volatile T D_xxxxxxxx;` is STILL FORBIDDEN.
+# Adding a symbol to this file is an EXCEPTION grant, NOT a relaxation.
+#
+# REQUIRED to add an entry:
+#   1. Cheat-reviewer agent has confirmed BOTH prongs of the criterion:
+#      (a) IRQ writer cited (function + file:line)
+#      (b) Use-site construct named (spin-wait | double-read-across-
+#          sequence-point | IRQ-mutated-loop-bound)
+#   2. Commit message includes the audit block (see the rule).
+#   3. The entry's trailing comment names the function + IRQ writer.
+#
+# Format: one symbol per line; blank lines and `#`-comments ignored.
+# Convention: each entry is followed by a comment line of the form
+#   <SYMBOL>    # <consumer-func> — IRQ writer: <writer>:<file>:<line>
+#
+# Empty for now — the first sanctioned use lands here when audited.

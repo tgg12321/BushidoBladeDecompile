@@ -56,6 +56,53 @@ _LEGIT_NAME_RE = re.compile(r"^g_")
 # prefixed splat name.
 _GLOBAL_NAME_RE = re.compile(r"^D_[0-9A-Fa-f]+")
 
+# Allowlist for the NARROW carve-out (user policy 2026-06-08): `extern volatile
+# T G;` on globals asynchronously mutated by an IRQ/MMIO writer at use-sites
+# that demonstrably require CSE-defeat (spin-wait, double-read-across-
+# sequence-point, IRQ-mutated-loop-bound). Adding a symbol here requires the
+# cheat-reviewer audit + the commit-message audit block per
+# `.claude/rules/legitimate-volatile-interrupt-touched.md`.
+#
+# IMPORTANT: this allowlist applies ONLY to pattern 3 (plain
+# `extern volatile T D_xxxxxxxx;` scalar declarations). Alias renames
+# (pattern 1), inline `*(volatile T *)&G` casts (pattern 2), non-volatile
+# alias renames (pattern 4), and macro-hidden `__asm__` (pattern 5) are NOT
+# bypassed by this allowlist — they stay forbidden across the board.
+_VOLATILE_EXTERN_ALLOWLIST_FILENAME = "volatile_extern_allowlist.txt"
+_volatile_extern_allowlist_cache: tuple[Path, float, frozenset[str]] | None = None
+
+
+def _load_volatile_extern_allowlist() -> frozenset[str]:
+    """Load the per-symbol allowlist for `extern volatile T G;` carve-out.
+    Returns frozenset of D_xxxxxxxx symbol names. Missing file ⇒ empty set
+    (default ban applies). Cached per file mtime so the detector stays cheap
+    on hot paths."""
+    global _volatile_extern_allowlist_cache
+    path = Path(_VOLATILE_EXTERN_ALLOWLIST_FILENAME)
+    try:
+        mtime = path.stat().st_mtime
+    except OSError:
+        _volatile_extern_allowlist_cache = None
+        return frozenset()
+    if (_volatile_extern_allowlist_cache is not None
+            and _volatile_extern_allowlist_cache[0] == path
+            and _volatile_extern_allowlist_cache[1] == mtime):
+        return _volatile_extern_allowlist_cache[2]
+    syms: set[str] = set()
+    try:
+        for raw in path.read_text().splitlines():
+            line = raw.split("#", 1)[0].strip()
+            if not line:
+                continue
+            # First whitespace-delimited token on the line is the symbol
+            tok = line.split()[0]
+            syms.add(tok)
+    except OSError:
+        return frozenset()
+    fs = frozenset(syms)
+    _volatile_extern_allowlist_cache = (path, mtime, fs)
+    return fs
+
 # Pattern 1: alias rename. `extern volatile T name asm("OrigSym");`
 #  - Group "decl" = the full match (for span info)
 #  - Group "name" = the C identifier
@@ -903,8 +950,17 @@ def find_macro_asm_defs(text: str) -> list[tuple[int, int, str]]:
 def find_plain_volatile_externs(text: str) -> list[tuple[int, int, str]]:
     """All `extern volatile T NAME;` declarations where:
       - The declaration is SCALAR (no `*` between type and NAME),
-      - NAME is `D_xxxxxxxx` (splat-named anonymous global, i.e. game RAM).
-    Returns (start, end, vol_keyword_index)."""
+      - NAME is `D_xxxxxxxx` (splat-named anonymous global, i.e. game RAM),
+      - NAME is NOT in `volatile_extern_allowlist.txt` (the IRQ-touched-
+        global carve-out, user policy 2026-06-08 — see
+        `.claude/rules/legitimate-volatile-interrupt-touched.md`).
+    Returns (start, end, vol_keyword_index).
+
+    The allowlist applies ONLY to this pattern (plain scalar extern). Alias
+    renames, inline volatile casts, non-volatile alias renames, and
+    macro-hidden __asm__ are unchanged — they stay forbidden regardless of
+    allowlist membership."""
+    allowlisted = _load_volatile_extern_allowlist()
     out = []
     for m in _PLAIN_VOLATILE_RE.finditer(text):
         name = m.group("name")
@@ -915,6 +971,8 @@ def find_plain_volatile_externs(text: str) -> list[tuple[int, int, str]]:
         # Verify scalar (no pointer star between type and NAME)
         if _decl_has_pointer(text, m.start("vol")):
             continue
+        if name in allowlisted:
+            continue  # narrow IRQ-touched-global carve-out
         out.append((m.start(), m.end(), m.start("vol")))
     return out
 

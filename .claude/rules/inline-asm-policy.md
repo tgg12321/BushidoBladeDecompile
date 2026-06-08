@@ -38,7 +38,12 @@ metadata:
 >   volatile in the original source.
 > - **Plain `extern volatile T D_xxxxxxxx;`** — same coercion at declaration
 >   level (was documented in [[split-read-defeats-hoist]] as a technique
->   until 2026-05-31 — now forbidden).
+>   until 2026-05-31 — now forbidden by default; see
+>   [[legitimate-volatile-interrupt-touched]] for the SOTN-grounded narrow
+>   carve-out applying ONLY to globals asynchronously mutated by an
+>   identifiable IRQ handler at use sites that demonstrably require
+>   CSE-defeat. The default ban is unchanged for every case OUTSIDE the
+>   two-pronged criterion in that rule).
 > - **Unused fixed-size local arrays** — `s32 buf[N];` declared with no use,
 >   to force GCC to reserve frame bytes. See [[dead-vars-local-array]] for
 >   the deprecated rationalization.

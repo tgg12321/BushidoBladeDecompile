@@ -105,6 +105,64 @@ in memory/project/sotn-*-research-*.md with citation:
   gets the default FAIL posture per the rest of this prompt. The
   do-while-zero exception is a narrow carve-out, not a precedent.
 
+- **`extern volatile T G;` on IRQ-touched globals** — **NARROW
+  SANCTIONED CARVE-OUT** (user policy 2026-06-08), scoped by
+  [[legitimate-volatile-interrupt-touched]]. The default ban from
+  [[inline-asm-policy]] expanded catalog (2026-05-31) is UNCHANGED for
+  every case outside the two-pronged criterion below; the carve-out
+  is narrow on purpose. Read the rule before applying. **The reviewer
+  DEFAULTS TO FAIL unless EVERY checklist item passes — the burden
+  of proof is on the worker, not on you.**
+
+  Strict checklist for `extern volatile T D_xxxxxxxx;` to pass the
+  family check:
+
+  1. **IRQ-writer citation is present and verifiable.** The commit
+     message body MUST include a line of the form:
+       `IRQ writer: <function>():<file>:<line> — installed via <SysSetCallback|VSyncCallback|InterruptCallback|EnterCriticalSection|MMIO 0x1F8xxxxx>`
+     The function name must exist at the cited file:line, AND that
+     function must actually write to G (Grep / Read to verify — do
+     NOT trust the assertion). If the citation is missing,
+     hand-wave-y ("by analogy", "I think it's touched by IRQ"),
+     or unverifiable (cited file:line doesn't contain the function,
+     or the function doesn't write G), **FAIL**.
+  2. **Use-site construct is named and matches one of three documented
+     shapes.** The commit message body MUST include a line of the
+     form:
+       `Use-site construct: <spin-wait|double-read-across-sequence-point|IRQ-mutated-loop-bound>`
+     The named construct must be ONE OF those three exact words/phrases
+     (other shapes default-FAIL pending fresh SOTN research). The
+     reviewer must Read the actual src/<file>.c and confirm the
+     named construct shape exists in the function body where G is
+     read. If the field is missing, names something not on the list,
+     or names a shape not present in the actual source, **FAIL**.
+  3. **The symbol is added to `volatile_extern_allowlist.txt` in the
+     same commit.** The reviewer confirms the diff modifies that file
+     and the entry's comment is consistent with the IRQ-writer
+     citation. If absent, **FAIL**.
+  4. **No generalization in the worker's rationale.** Worker
+     justifications like *"this global MIGHT be IRQ-touched"*,
+     *"by analogy to libcd"*, *"to defeat CSE here"*, *"all
+     game-state globals on this hot path should be volatile"* are
+     generalization signals — they indicate the worker has not
+     verified the criterion mechanically. **FAIL** with `next_action`
+     directing the worker to cite an explicit writer or revert.
+  5. **The carve-out applies ONLY to `extern volatile T D_xxxxxxxx;`
+     (scalar) declarations.** It does NOT extend to
+     `*(volatile T *)&G` inline casts, alias-renames
+     (`extern volatile T G_v asm("G");` with name != sym), or
+     macro-hidden `__asm__` blocks. Those stay forbidden under the
+     unchanged broader policy. **FAIL** any non-scalar-extern
+     spelling.
+
+  This exception's existence does NOT relax the broader
+  volatile-coercion family. The detector
+  (`engine/volatile_cheats.py`) still catches the declaration as a
+  syntactic cheat; the allowlist bypass is the ONLY mechanism by which
+  a sanctioned use proceeds. The cheat-reviewer is the gate that
+  authorizes adding a symbol to the allowlist. When torn between PASS
+  and FAIL on this construct, **choose FAIL.**
+
 # The "is this a cheat" test (apply each, in order)
 
 For EVERY construct in the proposed source change, walk this checklist:

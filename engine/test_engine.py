@@ -728,6 +728,89 @@ void l(int debug, int *p, int *ot) {
           cnt >= 1)
 
 
+def test_volatile_extern_allowlist() -> None:
+    """Narrow IRQ-touched-global carve-out (user policy 2026-06-08): the
+    `extern volatile T D_xxxxxxxx;` plain-extern detector honors a
+    per-symbol allowlist in `volatile_extern_allowlist.txt`. Listed
+    symbols bypass the detector; non-listed symbols still trigger.
+
+    The allowlist applies ONLY to pattern 3 (plain scalar extern). Pattern
+    1 (alias renames), pattern 2 (inline `*(volatile T *)&G` casts),
+    pattern 4 (non-volatile alias renames), and pattern 5 (macro `__asm__`)
+    are unchanged — they stay forbidden regardless of allowlist membership."""
+
+    # Snapshot the cache so we can restore it after the test.
+    original_cache = volatile_cheats._volatile_extern_allowlist_cache
+    original_cwd = os.getcwd()
+
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            os.chdir(td)
+            volatile_cheats._volatile_extern_allowlist_cache = None  # force reload
+
+            # 1. No allowlist file -> default ban applies.
+            text = "extern volatile s32 D_80098894;\n"
+            hits = volatile_cheats.find_plain_volatile_externs(text)
+            eq("vol-allowlist: missing file -> default ban (1 hit)",
+               len(hits), 1)
+
+            # 2. Allowlist with the symbol -> bypassed.
+            Path("volatile_extern_allowlist.txt").write_text(
+                "# header comment\n"
+                "D_80098894    # consumer — IRQ writer: StCdInterrupt:libcd/c_009.c:42\n"
+                "\n"
+                "D_8009ABCD\n"
+            )
+            volatile_cheats._volatile_extern_allowlist_cache = None  # force reload
+            hits = volatile_cheats.find_plain_volatile_externs(text)
+            eq("vol-allowlist: listed symbol bypassed (0 hits)", len(hits), 0)
+
+            # 3. Non-listed symbol still triggers.
+            text2 = "extern volatile s32 D_BADBADBA;\n"
+            hits = volatile_cheats.find_plain_volatile_externs(text2)
+            eq("vol-allowlist: non-listed symbol still flagged (1 hit)",
+               len(hits), 1)
+
+            # 4. The allowlist does NOT bypass OTHER families. An alias-rename
+            # (pattern 1) on an allowlisted symbol is still a cheat.
+            text3 = 'extern volatile s32 D_80098894_v asm("D_80098894");\n'
+            hits = volatile_cheats.find_alias_renames(text3)
+            eq("vol-allowlist: alias-rename on listed symbol still flagged",
+               len(hits), 1)
+
+            # 5. Inline volatile cast on an allowlisted symbol is still a cheat
+            # (pattern 2 — different syntactic family).
+            text4 = "void f(void) { *(volatile s32 *)&D_80098894 = 0; }\n"
+            hits = volatile_cheats.find_global_volatile_casts(text4)
+            eq("vol-allowlist: inline cast on listed symbol still flagged",
+               len(hits), 1)
+
+            # 6. Empty / comment-only allowlist file behaves like missing file.
+            Path("volatile_extern_allowlist.txt").write_text(
+                "# just a header\n# no symbols here\n\n"
+            )
+            volatile_cheats._volatile_extern_allowlist_cache = None
+            hits = volatile_cheats.find_plain_volatile_externs(text)
+            eq("vol-allowlist: comment-only file -> default ban",
+               len(hits), 1)
+
+            # 7. Cache invalidation: changing the file mtime + content updates
+            # the result without an explicit cache-reset call.
+            Path("volatile_extern_allowlist.txt").write_text(
+                "D_80098894\n"
+            )
+            # Bump mtime explicitly in case the file-system resolution is coarse.
+            import time as _t
+            future = _t.time() + 2
+            os.utime("volatile_extern_allowlist.txt", (future, future))
+            hits = volatile_cheats.find_plain_volatile_externs(text)
+            eq("vol-allowlist: cache picks up file changes (now bypassed)",
+               len(hits), 0)
+    finally:
+        os.chdir(original_cwd)
+        volatile_cheats._volatile_extern_allowlist_cache = original_cache
+
+
 def test_addr_coerced_locals() -> None:
     """find_addr_coerced_locals — closes the (void)&local frame-coercion
     loophole identified during the func_8007CE0C de-cheat investigation
@@ -909,6 +992,7 @@ def main() -> int:
     test_inlineasm()
     test_cheats()
     test_addr_coerced_locals()
+    test_volatile_extern_allowlist()
     test_lowercase_asm_cheats()
     test_macro_asm_strip_round_trip()
     test_volatile_unused_locals()
