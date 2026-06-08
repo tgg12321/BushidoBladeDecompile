@@ -583,3 +583,42 @@ The remaining genuine avenues are all escalation-tier:
   signal bar likely fails).
 - Document score-41 as permanent INCOMPLETE pending a future toolchain
   unlock (same status as cpu_side_move_dir_4 / marionation_Exec / saEft00Add).
+
+## Session 2026-06-08 (workflow round 15) — 3 NEW variants, NO_PROGRESS
+
+Re-verified candidate.c reproduces score 41 / build_insns 151 == target 151
+at HEAD 003c5e75 via the documented deployment recipe (extern s32 *D_8009BF48
++ all D_800F18xx externs + asmfix bridge ACTIVE + --keep-cheat-asm).
+
+Three NEW manual structural variants tested from the score-41 base, NONE in
+prior rejected_forms ledgers:
+
+| Variant | Sandbox | Verdict |
+|---|---|---|
+| T1: Ternary clamp chain `var_v0 = (x < 0) ? 0 : ((LIM < x) ? LIM : x);` for BOTH clamps | 66 (build 150) | REGRESSED |
+| T2: Boolean-merge dispatch `((arg0->word0 \| arg0->w) & 0x3F)` (single test) | 53 (build 149) | REGRESSED |
+| T4: Const-first 2-operand OR swap on slots [3]/[6]/[10..12] (clean-baseline test of round-14 L4) | 41 | HELD (no-op) |
+
+T1 collapses the goto-form's separate basic blocks into a single conditional
+select (build_insns drops 151 → 150). T2 collapses the per-field-mask + short-
+circuit-OR pattern into a single bitwise-OR + mask + branch (build_insns drops
+151 → 149). T4 confirms that the 2-operand `const | value` vs `value | const`
+swap is canonicalized by combine BEFORE scheduling at the clean baseline (not
+just on top of L3's 3-operand cheat from round 14) — making it a no-op.
+
+Score-41 floor stands as the **septuply-confirmed structural ceiling**:
+1. Round-9 ALLOCDBG: zero RA gap
+2. Round-9 SCHEDDBG: flat pri=1 plateau (source-order LUID tiebreak)
+3. Round-9 R9-A: per-symbol-target-emit-order regresses to 52
+4. Round-10: permuter PERM_INLINE_CALLS/PERM_VAR_REUSE all cheat-bound
+5. Round-11: struct-field form regresses to 45
+6. Round-12: caller-side ABI analysis closes signature avenue
+7. Round-14: PERM_LINESWAP-only ZERO sub-baseline + 6 manual variants all
+   regressed/held/cheat-bound
+
+Plus this session's 3 additional manual variants. Cumulative ~55 negative
+levers + 1 PASS-vetted positive (round-6 SOTN-indexed-array @ score 41)
+across 15 sessions.
+
+src/ reverted to HEAD (stub + asmfix bridge); verify-oracle SHA1 == oracle
+(62efab4f73f992798c43e8c730aa43baa10bb4fa).
