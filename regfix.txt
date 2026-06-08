@@ -3201,10 +3201,6 @@ func_8006288C: $5 <-> $6
 func_8006288C: reorder 4,1,2,3 @ 1-4
 # func_80060B70: schedule 3rd s32 store into jal delay slot,
 # remove 2 redundant nops, reorder lw $6/lw $2 to match target.
-func_80060B70: fill_delay @ 34 <- 32
-func_80060B70: delete @ 29
-func_80060B70: delete @ 31
-func_80060B70: reorder 30,29 @ 29-30
 # Move li t6,1 to early position (target #3)
 func_800692C0: reorder 6,3,4,5 @ 3-6
 func_800485EC: subst "\$8" "$3" @ 10

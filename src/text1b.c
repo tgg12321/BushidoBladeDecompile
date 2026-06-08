@@ -13319,9 +13319,11 @@ void func_80060B70(void) {
     dst_s32 = (s32)D_800A3470;
     *(s32 *)(dst_s32 + 0) = *(s32 *)(*(s32 *)(outer + 8) + 0);
     *(s32 *)(dst_s32 + 4) = *(s32 *)(*(s32 *)(outer + 8) + 4);
-    *(s32 *)(dst_s32 + 8) = *(s32 *)(*(s32 *)(outer + 8) + 8);
-
-    func_80061FAC(dst_u16, dst_s32, D_800A3474);
+    {
+        s32 last_arg = D_800A3474;
+        *(s32 *)(dst_s32 + 8) = *(s32 *)(*(s32 *)(outer + 8) + 8);
+        func_80061FAC(dst_u16, dst_s32, last_arg);
+    }
 
     idx = *(u16 *)D_800A3468;
     result = ((s32 (*)(void)) *(s32 *)((s32)&chractar_use_pset_combo_id_table
