@@ -26,6 +26,15 @@
       "floor_was": 3,
       "floor_now": 3,
       "notes": "NEW MECHANISM FOUND: `s32 a1_s = (s16)a1;` as a separate top-level local (used in `(u32)(a1_s - 0x17) >= 2`) DOES trigger target's andi materialization. Build_insns 58->59 = target exactly. Confirmed via objdump: andi $v1,$a1,0xFFFF appears at idx 18, addiu uses $a1, lhu lands in $a1 (all matching target's register pattern). HOWEVER: (a) the (s16) cast compiles to `lh` (sign-ext load) not target's `lhu` (zero-ext) — load opcode mismatch is 1 byte; (b) the additional local inflates stack frame by 8 bytes (addiu sp,-40 vs target -32; 3 saved-reg offsets shift +8). Net score 9 (was 3), but the BREAKTHROUGH is finding what produces the andi. Next session must keep the (s16)-cast effect while keeping lhu + avoiding the stack inflation. Forms tested negative this session: (s16)a1 inline in expression (no separate local) -> +2 insns sll/sra emission; (u32)a1 cast on comparison -> score 3 unchanged; (s32)a1 - 0x17 precomputed as local -> score 5; re-read pattern *(u16*)(entry+0x6A) -> CSE folded."
+    },
+    {
+      "date": "2026-06-07",
+      "git_head_at_measurement": "23e0ff7c",
+      "lever": "(no new lever) — confirmed reproducibility of floor 3, explored 1 untried form",
+      "lever_rule": "n/a",
+      "floor_was": 3,
+      "floor_now": 3,
+      "notes": "Resumed from candidate.c (floor 3 confirmed: score=3, build_insns=58, target=59). Tried one form from next_hypotheses (ii) — inline *(s16 *)(entry + 0x6A) re-read at the comparison position (instead of the cached u16 a1): produced score 3 but build_insns=61 (+2 over target). This is the same +2 sll/sra emission penalty as the inline (s16)a1 rejected_form (the s16 pointer dereference compiles to sign-extend RTL that emits two extra shifts when not folded into a local). The lhu→lh load conversion still happens at the explicit s16 read. No improvement, no new lever found. Other candidate forms considered but not measured: nested struct/union punning (cheat-by-spelling concern — no semantic purpose), opaque mask variable (already documented as cheats-by-spelling violation in notes.md), DImode chain (forbidden per [[global-label-drift-sibling-cheat]]). Per session-2 analysis the (s16)-cast-on-local mechanism is the ONLY form found that triggers andi emission, and its two coupled regressions (lh load + stack +8) are structural — defeating either requires a C-source path that produces the SImode sign-extension RTL at the COMPARISON site without propagating back to the load (lhu) and without forcing a new spill slot. No such path identified this session."
     }
   ],
   "reviewer": {
@@ -100,6 +109,11 @@
       "form": "s32 a1_s = (s32)(s16)a1 function-scope local (explicit (s32) before (s16))",
       "score": 9,
       "reason": "Identical asm output to s32 a1_s = (s16)a1. (s32)(s16) double-cast and (s16) single-cast produce the same RTL — the inner (s16) is what matters; the outer (s32) is redundant on a value already widening to int via default promotion."
+    },
+    {
+      "form": "inline *(s16 *)(entry + 0x6A) re-read at comparison (kept u16 a1 for first test, re-read s16 in 3rd test slot)",
+      "score": 3,
+      "reason": "build_insns 61 vs target 59. Same +2 sll/sra penalty as inline (s16)a1 cast. The s16 pointer dereference at the comparison position compiles to a sign-extended load that emits two shift insns when not stored to a local first. The hoped-for separation between load (lhu, cached in a1) and sign-extension (at the 3rd test) doesn't help — the load opcode at the inline s16 read site is its own lh, and combine doesn't materialize an andi here either."
     }
   ],
   "next_hypotheses": [

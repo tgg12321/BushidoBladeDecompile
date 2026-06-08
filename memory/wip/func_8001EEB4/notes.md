@@ -67,6 +67,41 @@ inflating the stack. Try block-local declaration; try (s32)(s16)a1
 vs (s16)(s32)a1 ordering; try reading a1 separately via different
 type pointers in two distinct syntactic positions.
 
+## Session-3 (2026-06-07, HEAD 23e0ff7c) — confirmed reproducible; no new lever
+
+Re-applied candidate.c to src/code6cac.c: sandbox `--disable all` reports
+score=3, build_insns=58, target=59 (matches session-1 measurement exactly).
+
+Tested one untried form from session-2's next_hypotheses (ii): inline
+`*(s16 *)(entry + 0x6A)` re-read at the 3rd-test position, keeping `u16 a1`
+for the cached read used in tests 1 and 2. Result: score 3 but
+build_insns 61 (+2 over target). Same +2 sll/sra penalty as the inline
+(s16)a1 rejected_form — the s16 pointer dereference at the comparison
+position emits sign-extension shifts when not folded into a stored local,
+and the load opcode at the inline s16 read is its own `lh` (not the
+desired `lhu`). The hoped-for separation between cached u16 load and
+comparison-site sign-extension doesn't help.
+
+Other candidate forms considered but NOT measured (vetted out as cheats
+or duplicates of rejected forms):
+- nested struct/union punning to read same memory as u16 then s16 —
+  cheats-by-spelling concern, no semantic purpose
+- opaque mask variable `u32 mask = 0xFFFF; (a1 & mask) != 0xA` —
+  already documented as cheats-by-spelling violation (see § Why parked)
+- DImode chain — forbidden per [[global-label-drift-sibling-cheat]]
+- compound (s32)(s16)a1 vs (s16)(s32)a1 cast orderings — equivalent RTL
+
+The 3-diff cluster is structurally coupled: the only known mechanism
+that triggers target's andi emission (a separate top-level
+`s32 a1_s = (s16)a1;` local) also forces (lh load + 8-byte stack
+inflation) which costs more than the 3 diffs it would close.
+
+Floor remains 3. The function stays at this WIP checkpoint awaiting
+a fundamentally different angle (e.g. permuter from the candidate-3
+base with PERM_GENERAL operand directives; instrumented combine.c
+probe per session-2's hypothesis 3; or escalation as a documented
+plateau if no further lever surfaces).
+
 ## What session-1 DID NOT solve
 
 The comparison block at maspsx idx 14-22:
