@@ -254,6 +254,7 @@ gte_GetScreenXY  # GTE screen XY reader (display.c): 3x swc2 $17/$18/$19 to *a0/
 func_8007F00C  # GTE mvmva vector-transform wrapper (display.c): 3x lwc2 $9/$10/$11 from *a0 -> nop -> mvmva 1,2,3,1,1 -> 3x swc2 $9/$10/$11 to *a1 -> jr ra. Pure cop2 ops with hardcoded $9/$10/$11 GTE V0 vector slots. Retired as whole-body __asm__("glabel ...") block. Auto-authorized 2026-06-07.
 func_8007F034  # GTE dpcl (depth-cued color) wrapper (display.c): 3x lwc2 $9-$11 from *a0, lwc2 $6 from *a1, mtc2 $a2 to $8 -> nop -> dpcl -> swc2 $22 to *a3 -> jr ra. Pure cop2 ops with hardcoded $9/$10/$11/$6/$22 GTE register choices. Retired as whole-body __asm__("glabel ...") block. Auto-authorized 2026-06-07.
 func_8007F098  # GTE intpl (interpolation) wrapper (display.c): 3x lwc2 $9/$10/$11 from *a0, mtc2 $a1 to $8 -> nop -> intpl -> swc2 $22 to *a2 -> jr ra. Pure cop2 ops with hardcoded $9/$10/$11/$22/$8 GTE register choices. Retired as whole-body __asm__("glabel ...") block. Auto-authorized 2026-06-07.
+func_80052CD4  # Handwritten GTE mfc2 result-extract wrapper (text1b.c): 2x mfc2 $t0/$t1 from $9/$10 -> sra >> 2 -> sw to *a0/*a1 -> jr ra. Splat annotation: "Handwritten function" + "/* handwritten instruction */" on the mfc2 ops. Pure cop2 ops with hardcoded GTE result regs. Retired as whole-body __asm__("glabel ...") block. User-authorized 2026-06-07 (canonical-asm A category).
 
 # === Hand-coded GTE 3x3-mvmva matrix transform cluster (display.c, user-authorized 2026-05-31) ===
 # Whole-body hand-coded asm: 3-cycle mvmva matrix transform pipeline. Disassembler

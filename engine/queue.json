@@ -3969,15 +3969,6 @@
       "park_reason": "Frame=0x48 requires 32 bytes of locals that no semantic content in the function fills. The committed source uses 's32 unused_slack[8]; (void)unused_slack;' which is the dead-vars-local-array idiom forbidden as of 2026-05-31 (engine/volatile_cheats.find_unused_local_arrays). It also carries 'register asm' pins on s0/s2 and an INLINE_MOVE_ALIASING __asm__('move %0,%1') barrier, both in the expanded cheat catalog. Pure-C body (no cheats, natural pointer-walk loop) reaches sandbox-distance 14: loop body is byte-identical to target; ALL 14 diffs are (a) frame size 0x28 vs 0x48 (32-byte locals gap) and (b) prologue scheduling cascade that follows from the smaller frame. No legitimate pure-C lever produces 32 bytes of unused frame; cluster sibling InitHiraRmd_80047FBC is in the same situation per dead-vars-local-array re-evaluation note. Path forward: project-wide policy decision (re-sanction dead-vars idiom or canonical-asm-authorize the cluster); cannot be closed by single-function pure-C grind."
     },
     {
-      "func": "func_80052CD4",
-      "file": "text1b",
-      "distance": 5,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Whole-body hand-coded asm wrapper for cop2 mfc2 reads. Splat annotates 'Handwritten function' + 'handwritten instruction' on both mfc2 ops. Hand-coded signals: (S7) hardcoded source registers / where natural cc1 picks /; (S6) unfilled  delay slot where natural cc1 schedules the second  into the slot (7 insns natural vs target's 8 with nop). Pure-C attempt with canonical  placeholders verified non-matching (verify-oracle SHA1 49f206... vs 62efab4...). Hybrid (2 cop2 ops + sra/sw C ops + hand scheduling/reg choice) does not fit the orchestrator auto-authorize 'pure cop2 ops, no C form' GTE-leaf category; whole-body canonical-asm needs user judgment per CLAUDE.md escalation boundary. Recipe: whole-body __asm__(glabel func_80052CD4 ...) block + add to inline_asm_canonical.txt (per canonical-asm-authorization-recipe.md)."
-    },
-    {
       "func": "func_80053694",
       "file": "text1b",
       "distance": 5,
@@ -4105,12 +4096,12 @@
     }
   ],
   "counts": {
-    "total": 502,
+    "total": 501,
     "active": 403,
     "by_status": {
       "active": 403,
       "authorize": 26,
-      "parked": 73
+      "parked": 72
     },
     "by_verdict": {
       "C": 212,
