@@ -17,6 +17,16 @@
       "floor_was": 5,
       "floor_now": 6,
       "session_id": null
+    },
+    {
+      "date": "2026-06-08",
+      "git_head_at_measurement": "3688c9ee",
+      "lever": "NO_PROGRESS — 4 NEW structural variants tested, all hold-or-regress at floor 6; permuter (1+ random-mode campaign, 5000+ iter) returns only cheat-class candidates",
+      "lever_rule": null,
+      "floor_was": 6,
+      "floor_now": 6,
+      "session_id": null,
+      "session_notes": "Variants tested this session: (1) source reorder `D_800A3844 = arr[arg0]` placed right after `D_80102781 = 1` (early-position) → HELD at 6; (2) fresh local `s32 v = arr[arg0]; ...; D_800A3844 = v;` → HELD at 6 (GCC folds the local); (3) const local pointer `s32 *arr = (s32 *)&D_800900EC; D_800A3844 = arr[arg0];` → HELD at 6 (GCC folds the pointer); (4) byte-pointer math `u8 *base = &D_800900EC; D_800A3844 = *(s32 *)(base + arg0 * 4);` → REGRESSED to 9 (extra addressing arithmetic). All 4 produce IDENTICAL sandbox asm at score 6 (same 6-position swap of array-load-vs-byte-stores). Permuter randomization in permuter/b20c/ (j=8, base score 385, 5000+ iter, ~25 min wallclock at write time, still running) produced best permuter-weighted score 200 — but the score-200/240/340/345 candidates are ALL cheat-class: do-while-zero misapplied (sched.c hoist defeat, NOT the sanctioned LABEL_OUTSIDE_LOOP_P/reorg.c interaction per [[do-while-zero-exception]]); `unsigned char new_var = arr[arg0]` truncating 32-bit array element to 8 bits (type-coercion cheat changing semantics); `arg0` signature changed to `unsigned short` (caller-breaking signature change); `D_800A3844 ^ 0` no-op XOR (cheat-by-spelling, zero semantic content); `(long long) 0` DImode cast (forbidden chain-extender family per [[global-label-drift-sibling-cheat]] §DImode-chain). All rejected per [[no-new-park-categories]] cheats-by-any-spelling — sandbox-rescore not even performed because the form's intent fails the 6-test checklist by inspection. The structural residual — 6 swap diffs at cluster (target_idx 5-10: bytes-then-load vs candidate_idx 5-10: load-then-bytes) — is GCC's sched.c INSN_PRIORITY hoisting the array-load chain (which extends past file_LoadOverlay through `lw $a0, D_800A3844` reload to `func_8003AE5C($a0)`) above the byte stores (whose chain dies at the call's memory clobber). HEAD's cheat closes it via two coupled mechanisms: `register s32 one asm(\"v1\") = 1` pin extends constant 1's live range across function, and `arg0 = ((s32 *)(new_var = &D_800900EC))[arg0]` puts array load at source-position 3 with a dead `new_var` write that creates an extra RTL pseudo. Both are forbidden ([[inline-asm-policy]] register-asm pin + [[inline-asm-injection]] dead-alias)."
     }
   ],
   "reviewer": {
@@ -25,15 +35,15 @@
     "evidence": "not invoked — candidate is honest pure-C, no cheats; not committed (oracle would break)"
   },
   "remaining_gap": {
-    "summary": "Pure scheduling — GCC hoists the array load 3 positions earlier than target. Target has D_80102780/D_80102781 stores, then array load, then D_800A3894 stores. Mine has array load first, then D_80102780/D_80102781 stores. All registers match target ($v0=0xFF, $v1=1, $a0=arg0_new); 47/47 insns; just 6 position-swap diffs.",
+    "summary": "Pure scheduling — GCC hoists the array load 3 positions earlier than target. Target has D_80102780/D_80102781 stores, then array load, then D_800A3894 stores. Mine has array load first, then D_80102780/D_80102781 stores. All registers match target ($v0=0xFF, $v1=1, $a0=arg0_new); 47/47 insns; just 6 position-swap diffs. Confirmed by index-aligned objdump with relocations: target_idx[4-11] = [lui(D_80102780), sb zero, lui(D_80102781), sb v1, lui(D_800900EC), addu at,at,a0, lw a0, li v0,255] vs candidate_idx[4-11] = [lui(D_800900EC), addu at,at,a0, lw a0, li v0,255, lui(D_80102780), sb zero, lui(D_80102781), sb v1]. Pure swap of the two clusters.",
     "rule_count_at_head": 0,
     "rules_required_for_full_match": "None — HEAD uses cheat-asm (register-asm pin + dead-local alias `new_var = &D_800900EC`) to anchor scheduling. Both are forbidden by [[inline-asm-policy]] / [[no-new-park-categories]]."
   },
   "next_hypotheses": [
-    "Find a pure-C lever that anchors the array load to its source position without cheats. The load has INSN_PRIORITY ≥ stores (load → sw chain depth 2 vs store depth 1), so GCC's scheduler hoists it.",
-    "Try directed permuter from candidate.c base — randomization may find a structural restructure (e.g. compute address into intermediate const pointer that isn't combine-folded).",
-    "Try declaring a const aliasing variable for &D_800900EC at file scope — if it survives combine, may create a serialization barrier.",
-    "Instrument cc1's sched.c (BB2_SCHED_DEBUG hook from tmp/gccdbg) to confirm the load's INSN_PRIORITY beats the stores' — then look for any C structural change that lowers the load's depth or raises the stores' depth."
+    "INSTRUMENTED CC1 DUMP — build BB2_SCHED_DEBUG cc1 (the same dbg cc1 used for cpu_side_move_dir_4's session-6 and the saEft00Add sessions, preserved at tmp/gccdbg/cc1 per [[register-alloc-pure-c]] session-6) and dump the INSN_PRIORITY + LUID + dep-link table for the basic block containing the byte stores + array load. The concrete question: in mine, what is INSN_PRIORITY(lw $a0, 0(at)) vs INSN_PRIORITY(sb $zero, 0(at)/D_80102780)? Whichever wins gets emitted later. If the array-load priority is lower than the byte-store priority in mine, that's a contradiction worth investigating — re-examine the sched.c forward-dep walk. If they tie, the LUID tiebreaker decides — which insn has the higher LUID (later source position)?",
+    "DIRECTED PERM_GENERAL CAMPAIGN — random-mode permuter found only cheat-class candidates. Author a base.c with explicit PERM_GENERAL{stmt-list-A; stmt-list-B; ...} annotations targeting the byte-store/array-load ordering. Hand-author legitimate alternatives: (a) statement-by-statement permutations of the 9 store/load statements (semantically commutative since none share an LHS); (b) different LHS groupings (e.g., `D_800A3844 = arr[arg0]; D_800A37A4 = 0;` in one block vs separate). The random mode's value-shifting space (do-while wrappers, type coercions) is exhausted; directed permutation of the SEMANTICALLY EQUIVALENT statement orderings is the un-explored surface.",
+    "READ THE GCC 2.7.2 SCHED.C SOURCE FOR INSN_PRIORITY — the 2026-05-30 cpu_side_move_dir_4 sessions instrumented sched.c's `rank_for_schedule` and `priority()` and found that in our fork, INSN_PRIORITY is max-of-forward-chain-cost. For func_8003B20C the question is: WHY does GCC schedule the byte stores LATER than the array load in mine? Possibilities: (a) the byte-store sb has higher cost-of-insn weighting; (b) the array load's chain through file_LoadOverlay's memory-clobber is broken by an anti-dep; (c) LUID tiebreaker — mine has D_800A3844 = arr[arg0] at source position 10 (high LUID), byte stores at positions 1-9 (lower LUID) — but target's source likely had the array load at position 3 (low LUID). The LUID of the array load = position in C source order. If raising the array load's LUID to high makes it schedule later, it should ALREADY be scheduling later in mine (highest LUID of all in-block insns). It IS scheduling later in my source order, but not in TARGET's source order. The cheat's mechanism: with the dead `new_var = &D_800900EC` alias creating a separate RTL insn at source-position-3 LUID, the array-load CHAIN starts at a LOW LUID — which in the priority tiebreaker means the chain's nodes look 'less aggressive' and lose to the byte stores. Restoring this without the dead alias requires putting the address-of computation at LOW LUID through a LEGITIMATE construct — possibly a const file-scope `s32 * const D_900EC_arr = (s32 *)&D_800900EC;` if combine doesn't fold the symbol-ref back to its symbol form. Try this lever (not yet attempted in any session).",
+    "SOTN/COMMUNITY CROSS-REFERENCE — search SOTN and other PSX decomp projects for similar `byte-stores-then-array-load-then-call` patterns. The mechanism is generic (sched.c INSN_PRIORITY priorities longer chains later) so other decomps must have encountered it. Look for: SOTN's overlay-load functions in `src/main/`, `src/dra/`, `src/st/*/`. If they used a specific structural lever, transplant it."
   ],
   "rejected_forms": [
     {
@@ -55,7 +65,54 @@
       "form": "`u8 *new_var; ...(new_var = &D_800900EC)[arg0]` (the HEAD cheat)",
       "score": "n/a — part of the cheat cluster",
       "reason": "Dead-local-alias coercion per [[inline-asm-injection]] / [[no-new-park-categories]] cheats-by-spelling. The variable has no semantic purpose; its only effect is to anchor scheduling. Not committable."
+    },
+    {
+      "form": "Source reorder `D_800A3844 = ((s32 *)&D_800900EC)[arg0]` placed right after `D_80102781 = 1` (statement #3 instead of #10), no local",
+      "score": 6,
+      "reason": "Tested 2026-06-08. Source-order change of single statement does NOT move GCC's sched.c emission order — scheduler hoists the array load regardless of source-statement position. Sandbox identical to baseline candidate at floor 6, same 6-position swap pattern."
+    },
+    {
+      "form": "Fresh local `s32 v = ((s32 *)&D_800900EC)[arg0]; ...; D_800A3844 = v;` (split load + store across N intermediate byte stores)",
+      "score": 6,
+      "reason": "Tested 2026-06-08. GCC's combine/CSE folds the temporary `v` away — emitted asm is byte-for-byte identical to the inline `D_800A3844 = arr[arg0]` form. Local has no effect on the array-load schedule."
+    },
+    {
+      "form": "Const local pointer `s32 *arr = (s32 *)&D_800900EC; ...; D_800A3844 = arr[arg0];`",
+      "score": 6,
+      "reason": "Tested 2026-06-08. GCC's combine folds `arr` back to the symbol-ref form. Emitted asm identical to the inline form. Floor unchanged."
+    },
+    {
+      "form": "Byte-pointer math `u8 *base = &D_800900EC; D_800A3844 = *(s32 *)(base + arg0 * 4);`",
+      "score": 9,
+      "reason": "Tested 2026-06-08. REGRESSES the floor — the explicit pointer arithmetic forces GCC to materialize the byte offset before the cast, adding 3 extra instructions in the address computation that don't fold back to the lui+addu+lw target form. Strictly worse than baseline."
+    },
+    {
+      "form": "Statement reorder `D_800A3894 = 0;` placed FIRST (before `D_80102780 = 0`) — permuter random-mode find at weighted score 240",
+      "score": 7,
+      "reason": "Tested 2026-06-08. REGRESSES sandbox masked Levenshtein 6→7 — even though permuter's weighted score (385→240) suggested improvement. The permuter weight reduction is from register-name normalization changes; the masked metric counts position swaps, which the reorder makes WORSE (D_800A3894 store moves to position 0 in asm, displacing other stores). Confirms permuter weighted score is unreliable as a proxy for sandbox masked score on this function."
+    },
+    {
+      "form": "`do { } while (0);` inserted between `D_80102780 = 0` and `D_80102781 = 1` (permuter random-mode find at weighted score 240)",
+      "score": 6,
+      "reason": "Tested 2026-06-08. Sandbox masked Levenshtein unchanged at 6 — permuter's weighted-score improvement (385 → 240) reflects register-name normalization gains, not structural progress. ALSO forbidden as a form: [[do-while-zero-exception]] is scoped narrowly to LABEL_OUTSIDE_LOOP_P / reorg.c invert-jump peephole interactions — NOT sched.c hoist defeat. Applying it here would re-open the slippery slope the rule explicitly closes ('Using it to bend other GCC passes reopens the slippery-slope this rule exists to close')."
+    },
+    {
+      "form": "`unsigned char new_var = ((s32 *)&D_800900EC)[arg0]; D_800A3844 = new_var;` (permuter random-mode find at weighted score 200)",
+      "score": "not measured — semantic-change cheat by inspection",
+      "reason": "Permuter find 2026-06-08. TRUNCATES the 32-bit array element to 8 bits — semantic change. Even if values happen to fit in 8 bits at runtime, the type coercion is a [[no-new-park-categories]] cheat-by-spelling: zero semantic purpose, mechanism is forcing GCC's RA into a different allocation via the narrow-type pseudo. Same family as `_v` alias renames and dead-local coercions. Rejected without testing per [[review-discipline-before-commit]] auto-search vetting checklist."
+    },
+    {
+      "form": "Signature change to `void func_8003B20C(unsigned short arg0)` + `D_800A3844 ^ 0` no-op XOR + `int new_var = 0` aliased to multiple zero stores (permuter random find at score 340)",
+      "score": "not measured — semantic-change cheat",
+      "reason": "Permuter find 2026-06-08. Multi-layer cheat: (a) signature change is caller-breaking (callers pass `s32`, must continue to do so — narrowing the param creates an ABI mismatch); (b) `D_800A3844 ^ 0` is no-op XOR (zero semantic content, used purely to influence sched.c's chain analysis); (c) `int new_var = 0` aliased across stores is the forbidden Lever D dead-parameter-assign sibling (zero-store coercion via shared pseudo). Rejected per [[no-new-park-categories]] cheats-by-spelling."
+    },
+    {
+      "form": "`(long long) 0` DImode cast + `short new_var = arg0` truncation (permuter random find at score 345)",
+      "score": "not measured — DImode-chain cheat",
+      "reason": "Permuter find 2026-06-08. The `(long long) 0` cast is the forbidden DImode chain-extender pattern per [[global-label-drift-sibling-cheat]] § DImode chain ('round-trip through wider type to alter RTL pseudo numbering'). The `short new_var = arg0` truncates the array index (semantic change for arg0 > 0x7FFF). Both forbidden by [[no-new-park-categories]] cheats-by-any-spelling."
     }
   ],
-  "memory_notes": []
+  "memory_notes": [
+    "memory/project/permuter-closability-evaluated.md — see for context on BB2's experience with random-mode permuter on cheat-carrying functions; this session's 5000+ iter random run with all-cheat candidates is consistent with the project-wide finding."
+  ]
 }

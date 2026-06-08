@@ -46,8 +46,9 @@ Both effects are textbook cheats-by-spelling per
 [[no-new-park-categories]] / [[inline-asm-injection]] / [[inline-asm-policy]]:
 no semantic purpose, justified only by GCC-internals.
 
-## Why no pure-C lever closes it (tried this session)
+## Why no pure-C lever closes it (tried sessions 1 + 2)
 
+Session 1 (2026-06-07):
 - **Source order matches target, no cheats:** array load hoists past
   D_80102780/D_80102781 stores.  Score 6.
 - **Explicit `arg0 = arr[arg0]` reassignment:** creates extra pseudo
@@ -59,17 +60,58 @@ no semantic purpose, justified only by GCC-internals.
   cross the file_LoadOverlay call — requires callee-save reservation +
   prologue change.  Score 14.
 
+Session 2 (2026-06-08, NO_PROGRESS — 4 NEW variants + 5000-iter permuter):
+- **Source reorder: array-load statement moved to source-position 3
+  (right after `D_80102781 = 1`):** sandbox HELD at 6, same swap
+  pattern.  GCC's scheduler ignores source-statement position for this
+  reorder.
+- **Fresh local `s32 v = arr[arg0]; ... D_800A3844 = v;`:** GCC's
+  combine/CSE folds the local — emitted asm is byte-for-byte identical
+  to the inline form.  Floor 6, unchanged.
+- **Const local pointer `s32 *arr = (s32 *)&D_800900EC;`:** combine
+  folds the pointer back to the symbol-ref.  Floor 6.
+- **Byte-pointer math `u8 *base = &D_800900EC; *(s32 *)(base +
+  arg0 * 4);`:** REGRESSES to score 9 (explicit byte arithmetic doesn't
+  fold back to lui+addu+lw).  Strictly worse.
+- **Permuter random-mode 5000+ iter (j=8, ~25min):** best weighted
+  score 200 (down from 385 baseline) but all candidates are cheat-class
+  by inspection: do-while-zero misapplied to sched.c (not the
+  LABEL_OUTSIDE_LOOP_P / reorg.c interaction the
+  [[do-while-zero-exception]] is scoped to), `unsigned char` truncation
+  of the array element, `(long long)0` DImode cast chain-extender,
+  `D_800A3844 ^ 0` no-op XOR, signature change to `unsigned short
+  arg0` (caller-breaking).  See meta.json rejected_forms for full
+  enumeration.  Random mode is exhausted — DIRECTED PERM_GENERAL is
+  the un-mined surface.
+
 ## Resume avenues (NOT exhausted)
 
-1. **Directed permuter** from `candidate.c` base — random restructure
-   may surface a non-cheating C form that pins the load.
+1. ~~**Directed permuter** from `candidate.c` base — random restructure
+   may surface a non-cheating C form that pins the load.~~
+   **PARTIALLY DONE 2026-06-08** — random-mode permuter (5000+ iter,
+   ~25 min wallclock, 8 threads) returned best weighted score 200 but
+   all candidates are cheat-class (do-while-zero misapplied to sched.c,
+   u8/short type truncations, no-op XOR, DImode `(long long)0` chain,
+   signature changes). Random mode is exhausted on this function.
+   **DIRECTED PERM_GENERAL is the un-mined surface** — hand-author
+   statement-permutation alternatives in the base.c (the 9 byte-store
+   statements + array-load statement are all SEMANTICALLY commutative
+   since they touch disjoint globals) and let permuter explore the
+   structurally legitimate space.
 2. **Instrument `sched.c`** (BB2_SCHED_DEBUG hook in `tmp/gccdbg/cc1`
    from saEft00Add work — see `[[cross-jump-store-tail-merge]]`) to read
    the exact INSN_PRIORITY of the load vs. the stores and find what
-   would equalize them.
+   would equalize them.  **CONCRETE QUESTION TO ANSWER:** in mine,
+   INSN_PRIORITY(lw $a0 array-load) vs INSN_PRIORITY(sb $zero D_80102780)?
+   If the byte-store wins, the question is why — is it the LUID
+   tiebreaker (source order) or genuinely the chain-cost calculation?
 3. **Const file-scope alias** for `&D_800900EC` (`const s32 *D_900EC_tbl =
    (const s32 *)&D_800900EC;` if it survives combine without being folded
-   to the symbol_ref).
+   to the symbol_ref).  Not yet attempted in any session.
+4. **SOTN/community cross-reference** — search SOTN's overlay-load
+   functions (src/main/, src/dra/, src/st/) for similar
+   `byte-stores-then-array-load-then-call` shapes. Mechanism is generic
+   (GCC sched.c INSN_PRIORITY hoist).
 
 ## Cheat-reviewer status
 
