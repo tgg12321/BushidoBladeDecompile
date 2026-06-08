@@ -360,10 +360,12 @@ void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
     s16 rect[4];
     s16 buf[512];
     u32 dim;
+    s32 flags;
     if (arg0[0] != 0x10) return;
     arg0 += 4;
-    if ((*(s32 *)arg0 & 8) == 0) return;
+    flags = *(s32 *)arg0;
     arg0 += 4;
+    if ((flags & 8) == 0) return;
     arg0 += 8;
     rect[0] = arg1;
     rect[1] = arg2;
@@ -373,8 +375,10 @@ void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
     rect[2] = dim;
     if (func_800486FC() != 0) {
         func_8004876C((s32)arg0, rect[2], (s32)buf);
+        gpu_LoadImage(rect, (s32)buf);
+        return;
     }
-    gpu_LoadImage(rect, (s32)buf);
+    gpu_LoadImage(rect, (s32)arg0);
 }
 extern void func_800485EC(s32, s32, s32, s32, s32, s32);
 s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
