@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80053694",
-      "file": "text1b",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
       "func": "func_80060B70",
       "file": "text1b",
       "distance": 5,
@@ -4050,6 +4042,15 @@
       "park_reason": "Whole-body hand-coded asm wrapper for cop2 mfc2 reads. Splat annotates 'Handwritten function' + 'handwritten instruction' on both mfc2 ops. Hand-coded signals: (S7) hardcoded source registers / where natural cc1 picks /; (S6) unfilled  delay slot where natural cc1 schedules the second  into the slot (7 insns natural vs target's 8 with nop). Pure-C attempt with canonical  placeholders verified non-matching (verify-oracle SHA1 49f206... vs 62efab4...). Hybrid (2 cop2 ops + sra/sw C ops + hand scheduling/reg choice) does not fit the orchestrator auto-authorize 'pure cop2 ops, no C form' GTE-leaf category; whole-body canonical-asm needs user judgment per CLAUDE.md escalation boundary. Recipe: whole-body __asm__(glabel func_80052CD4 ...) block + add to inline_asm_canonical.txt (per canonical-asm-authorization-recipe.md)."
     },
     {
+      "func": "func_80053694",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 5,
+      "status": "parked",
+      "park_reason": "Stable RA tie: \result lands in , target wants . 5 regfix rules paper-over the cluster (result reg-rename + lhu/sh reg-rename + tail move elision). Tried: statement-order swap (no change), early-return (regresses +3 insns), bool-from-comparison (regresses +5), narrow type char result (no change), if/else explicit form (no change), \result=1 at start of if (no change), decl order swap (no change), block-local read of *(s32*)(p+0) (no change). Build_insns == target 48 across all variants; diff is purely the 5 RA decisions at the if-flag pattern. Lever A (block-local split) N/A \u2014 result IS the return value. No callers capture a return that could seed . No sibling matched function in text1b.c with same s32 result = 0; if (cond) {body; result = 1;} return result; shape to mimic. Resume avenues untried: directed permuter from clean single-fn target; instrumented cc1 .greg dump to identify allocno priority gap; lever for if-result-via-call seeding ([[call-return-if-result-reuse-v0]]) but no call exists here."
+    },
+    {
       "func": "func_8007B844",
       "file": "display",
       "distance": 7,
@@ -4169,14 +4170,14 @@
   ],
   "counts": {
     "total": 510,
-    "active": 405,
+    "active": 404,
     "by_status": {
-      "active": 405,
+      "active": 404,
       "authorize": 33,
-      "parked": 72
+      "parked": 73
     },
     "by_verdict": {
-      "C": 214,
+      "C": 213,
       "ASM-PARTIAL": 73,
       "ASM-SUSPECT": 118,
       "ASM-WHOLE": 7,
