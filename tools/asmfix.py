@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """Per-function asm text post-pass for label/symbol/linkage fixes.
 
-Supports `{lbl#N}` function-local label slot references (added 2026-06-08)
-in replacement text of `rename`, `replace_first`, `replace_all`,
-`insert_before`, `insert_after` rules. At rule-apply time, `{lbl#N}` is
-substituted with the Nth `.L<digit>+` label CC1 emitted within the target
-function's body (1-indexed, document order). This mirrors the analogous
-mechanism in tools/regfix.py and makes asmfix rules drift-robust against
-TU-wide `.L<N>` renumbering. Substitution applies only to REPLACEMENT
-text — source-side patterns (the first quoted argument of any rule, plus
-both arguments of `delete_between`) are left alone. `replace_with_asmfile`
-reads its body verbatim from a file and is therefore unaffected.
+Supports `{lbl#N}` function-local label slot references (added 2026-06-08,
+extended to source-side patterns 2026-06-08 Phase 2b) in BOTH replacement
+text AND source-side regex/literal patterns of `rename`, `replace_first`,
+`replace_all`, `insert_before`, `insert_after`, and `delete_between` rules.
+At rule-apply time, `{lbl#N}` is substituted with the Nth `.L<digit>+`
+label CC1 emitted within the target function's body (1-indexed, document
+order). This mirrors the analogous mechanism in tools/regfix.py and makes
+asmfix rules drift-robust against TU-wide `.L<N>` renumbering, both for
+the pattern being matched and the replacement being emitted.
+`replace_with_asmfile` reads its body verbatim from a file and is
+therefore unaffected.
 """
 
 from __future__ import annotations
@@ -158,24 +159,28 @@ def apply_ops(func_name: str, text: str, ops: list[tuple[str, ...]]) -> str:
             # the cascade (this hit when stubs shifted file-wide GCC labels
             # into the 8xx range that overlaps target's `.L8006xxxx`
             # absolute-label prefixes).
-            pattern = re.escape(op[1]) + r"(?!\w)"
+            src = _sub(op[1], "rename src")
+            pattern = re.escape(src) + r"(?!\w)"
             text = re.sub(pattern, _sub(op[2], "rename dst"), text)
             continue
 
         if kind == "replace_first":
-            text, count = re.subn(op[1], _sub(op[2], "replace_first repl"), text, count=1, flags=re.MULTILINE)
+            src_pat = _sub(op[1], "replace_first pat")
+            text, count = re.subn(src_pat, _sub(op[2], "replace_first repl"), text, count=1, flags=re.MULTILINE)
             if count == 0:
-                print(f'asmfix: WARNING: replace_first did not match in {func_name}: {op[1]}', file=sys.stderr)
+                print(f'asmfix: WARNING: replace_first did not match in {func_name}: {src_pat}', file=sys.stderr)
             continue
 
         if kind == "replace_all":
-            text, count = re.subn(op[1], _sub(op[2], "replace_all repl"), text, flags=re.MULTILINE)
+            src_pat = _sub(op[1], "replace_all pat")
+            text, count = re.subn(src_pat, _sub(op[2], "replace_all repl"), text, flags=re.MULTILINE)
             if count == 0:
-                print(f'asmfix: WARNING: replace_all did not match in {func_name}: {op[1]}', file=sys.stderr)
+                print(f'asmfix: WARNING: replace_all did not match in {func_name}: {src_pat}', file=sys.stderr)
             continue
 
         if kind == "insert_before":
-            pattern, insert_text = op[1], _sub(op[2], "insert_before text")
+            pattern = _sub(op[1], "insert_before pat")
+            insert_text = _sub(op[2], "insert_before text")
             m = re.search(pattern, text, flags=re.MULTILINE)
             if not m:
                 print(f'asmfix: WARNING: insert_before did not match in {func_name}: {pattern}', file=sys.stderr)
@@ -184,7 +189,8 @@ def apply_ops(func_name: str, text: str, ops: list[tuple[str, ...]]) -> str:
             continue
 
         if kind == "insert_after":
-            pattern, insert_text = op[1], _sub(op[2], "insert_after text")
+            pattern = _sub(op[1], "insert_after pat")
+            insert_text = _sub(op[2], "insert_after text")
             m = re.search(pattern, text, flags=re.MULTILINE)
             if not m:
                 print(f'asmfix: WARNING: insert_after did not match in {func_name}: {pattern}', file=sys.stderr)
@@ -194,8 +200,11 @@ def apply_ops(func_name: str, text: str, ops: list[tuple[str, ...]]) -> str:
             continue
 
         if kind == "delete_between":
-            # Both patterns are source-side; do NOT substitute {lbl#N} here.
-            start_pat, end_pat = op[1], op[2]
+            # Both patterns are source-side regexes; substitute {lbl#N}
+            # in both so users can anchor a delete to drift-stable label
+            # slots (added 2026-06-08 Phase 2b).
+            start_pat = _sub(op[1], "delete_between start")
+            end_pat = _sub(op[2], "delete_between end")
             start = re.search(start_pat, text, flags=re.MULTILINE)
             if not start:
                 print(f'asmfix: WARNING: delete_between start did not match in {func_name}: {start_pat}', file=sys.stderr)

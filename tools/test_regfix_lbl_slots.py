@@ -197,12 +197,101 @@ def test_process_function_splice_integration():
           "addiu\t$3,$0,5" not in text_out)
 
 
+# ---------------------------------------------------------------------------
+# Phase 2b (2026-06-08): source-side {lbl#N} substitution for subst /
+# subst_multi rules. The source pattern (the regex used to find the maspsx
+# line to rewrite) now also accepts `{lbl#N}` placeholders, resolved against
+# the same per-function label sequence as the replacement.
+# ---------------------------------------------------------------------------
+
+def _make_config(**kwargs):
+    cfg = {
+        '__name__': kwargs.pop('__name__', 'test_func'),
+        'swaps': [],
+        'substs': [],
+        'subst_multis': [],
+        'inserts': [],
+        'insert_afters': [],
+        'insert_labels': [],
+        'splices': [],
+        'deletes': [],
+        'fill_delays': [],
+        'drain_delays': [],
+        'reorders': [],
+    }
+    cfg.update(kwargs)
+    return cfg
+
+
+def test_subst_src_lbl_slot():
+    """A `subst` rule with `{lbl#N}` on the SOURCE side resolves to the
+    function-local label before the regex matches."""
+    lines = [
+        ("\tbeqz\t$2,.L100\n", 0),
+        ("\tnop\n", 1),
+        (".L100:\n", None),
+        ("\tjr\t$ra\n", 2),
+        (".L200:\n", None),
+        ("\tnop\n", 3),
+        (".L300:\n", None),
+    ]
+    # Source pattern uses {lbl#1} (= .L100) — match `beqz ... {lbl#1}` and
+    # rewrite it to `beqz ... {lbl#3}` (= .L300).
+    cfg = _make_config(substs=[(0, r"{lbl#1}", "{lbl#3}")])
+    buf = io.StringIO()
+    with contextlib.redirect_stderr(buf):
+        result = regfix.process_function(lines, cfg)
+    text_out = "".join(t for t, _ in result)
+    check("subst src {lbl#1} -> dst {lbl#3}: beqz target now .L300",
+          "beqz\t$2,.L300" in text_out and "beqz\t$2,.L100" not in text_out)
+
+
+def test_subst_multi_src_lbl_slot():
+    """A `subst_multi` rule with `{lbl#N}` in the SOURCE regex resolves
+    before the match."""
+    lines = [
+        ("\tblez\t$2,.L100\n", 0),
+        ("\tnop\n", 1),
+        (".L100:\n", None),
+        ("\tjr\t$ra\n", 2),
+    ]
+    cfg = _make_config(subst_multis=[(0, r"blez\s+\$2,{lbl#1}", ["slt\t$2,$6,$3", "beq\t$2,$0,{lbl#1}"])])
+    buf = io.StringIO()
+    with contextlib.redirect_stderr(buf):
+        result = regfix.process_function(lines, cfg)
+    text_out = "".join(t for t, _ in result)
+    check("subst_multi src + dst: {lbl#1} resolved on both sides",
+          "slt\t$2,$6,$3" in text_out and "beq\t$2,$0,.L100" in text_out)
+
+
+def test_subst_src_out_of_range_warns():
+    """An out-of-range slot ref on the SOURCE side emits the same warning
+    + unresolved-marker (`.L_UNRESOLVED_lbl_N`) the replacement side does;
+    the resulting regex will not match anything so the subst is silently
+    not-applied (subst already has a 'did-not-match' diagnostic)."""
+    lines = [
+        ("\tnop\n", 0),
+        (".L100:\n", None),
+    ]
+    cfg = _make_config(substs=[(0, r"{lbl#99}", "X")])
+    buf = io.StringIO()
+    with contextlib.redirect_stderr(buf):
+        regfix.process_function(lines, cfg)
+    msg = buf.getvalue()
+    check("subst src out-of-range: warning on stderr for {lbl#99}",
+          "regfix: WARNING" in msg and "{lbl#99}" in msg)
+
+
 def main():
     test_extract()
     test_substitute_basic()
     test_substitute_drift()
     test_substitute_out_of_range()
     test_process_function_splice_integration()
+    # Phase 2b: source-side substitution
+    test_subst_src_lbl_slot()
+    test_subst_multi_src_lbl_slot()
+    test_subst_src_out_of_range_warns()
 
     print(f"\n{_passed} passed, {_failed} failed")
     return 0 if _failed == 0 else 1

@@ -201,18 +201,104 @@ def test_apply_ops_insert_before():
 
 
 def test_apply_ops_delete_between_no_sub():
-    """delete_between's args are BOTH source-side patterns — `{lbl#N}` is NOT
-    substituted there. (If a user wanted to use a literal `{lbl#N}` as a
-    pattern, it would be passed through verbatim — that's the documented
-    contract: substitution only happens in replacement text.)"""
-    # Use plain patterns; verify nothing crashes and the delete works as
-    # before (the substitution wiring should never touch op[1]/op[2]).
+    """delete_between with literal `.L` patterns (no `{lbl#N}`) — verifies the
+    rule still works unchanged when no slot refs are present (regression
+    guard for the source-side substitution added 2026-06-08 Phase 2b)."""
     out = asmfix.apply_ops(
         "myfunc", _FUNC_BLOCK,
         [("delete_between", r"\.L100:", r"\.L200:")],
     )
-    check("delete_between: still operates on source patterns",
+    check("delete_between: still operates on plain source patterns",
           ".L100:" not in out and ".L200:" in out)
+
+
+# ---------------------------------------------------------------------------
+# Phase 2b (2026-06-08): source-side {lbl#N} substitution
+# ---------------------------------------------------------------------------
+
+def test_apply_ops_rename_src_sub():
+    """rename's SOURCE pattern accepts {lbl#N}. Within _FUNC_BLOCK the labels
+    are [.L100, .L200, .L300], so `{lbl#1}` resolves to `.L100`."""
+    out = asmfix.apply_ops(
+        "myfunc", _FUNC_BLOCK,
+        [("rename", "{lbl#1}", "jtbl_800108CC")],
+    )
+    check("rename src: {lbl#1} resolved on source side",
+          ".L100:" not in out and "jtbl_800108CC:" in out)
+
+
+def test_apply_ops_replace_first_both_sides_sub():
+    """replace_first with {lbl#N} on BOTH source pattern and replacement —
+    each side resolves to the function-local label sequence. Python's re
+    treats literal `{...}` (when not a valid quantifier) as text, so
+    `{lbl#3}` in the source pattern is replaced verbatim BEFORE the regex
+    compiles, yielding a regex like `j\\t\\.L300`."""
+    out = asmfix.apply_ops(
+        "myfunc", _FUNC_BLOCK,
+        [("replace_first", r"j\t{lbl#3}", "j\t{lbl#1}")],
+    )
+    # Source resolves to literal `j\t.L300`; replacement to `j\t.L100`.
+    check("replace_first src + dst: both {lbl#N} resolved",
+          "j\t.L100" in out and "j\t.L300" not in out)
+
+
+def test_apply_ops_replace_all_src_sub():
+    """replace_all source-side {lbl#N}: replace every `.L200` ref using
+    `{lbl#2}` on the source side, substituted before regex compile."""
+    out = asmfix.apply_ops(
+        "myfunc", _FUNC_BLOCK,
+        [("replace_all", r"{lbl#2}", ".LMOVED")],
+    )
+    # {lbl#2}=.L200 — source resolves to literal `.L200` (regex matches it).
+    # Note: `.L200` will match anywhere `.L200` appears (the `.` is regex any,
+    # but it also matches the literal dot). Should clear both ref and def.
+    check("replace_all src: {lbl#2} (= .L200) resolved on source side",
+          ".L200" not in out and out.count(".LMOVED") >= 2)
+
+
+def test_apply_ops_delete_between_both_sides_sub():
+    """delete_between with `{lbl#N}` on both pattern sides — each resolves
+    independently."""
+    out = asmfix.apply_ops(
+        "myfunc", _FUNC_BLOCK,
+        [("delete_between", r"{lbl#1}:", r"{lbl#2}:")],
+    )
+    # {lbl#1}=.L100, {lbl#2}=.L200. So delete from `.L100:` to `.L200:`.
+    check("delete_between: both endpoints resolved via {lbl#N}",
+          ".L100:" not in out and ".L200:" in out)
+
+
+def test_apply_ops_insert_before_src_sub():
+    out = asmfix.apply_ops(
+        "myfunc", _FUNC_BLOCK,
+        [("insert_before", r"{lbl#3}:", "\tj\t{lbl#1}")],
+    )
+    # {lbl#3}=.L300, so insert before `.L300:`
+    check("insert_before: src {lbl#3} resolved",
+          ".L300:" in out and "j\t.L100" in out)
+
+
+def test_apply_ops_insert_after_src_sub():
+    out = asmfix.apply_ops(
+        "myfunc", _FUNC_BLOCK,
+        [("insert_after", r"{lbl#1}:", "\tj\t{lbl#2}")],
+    )
+    check("insert_after: src {lbl#1} resolved",
+          ".L100:" in out and "j\t.L200" in out)
+
+
+def test_apply_ops_src_out_of_range_fails_loud():
+    """Out-of-range slot refs on the source side emit the same warning +
+    unresolved-marker as replacement-side refs do."""
+    buf = io.StringIO()
+    with contextlib.redirect_stderr(buf):
+        asmfix.apply_ops(
+            "myfunc", _FUNC_BLOCK,
+            [("replace_first", r"{lbl#99}", "X")],
+        )
+    msg = buf.getvalue()
+    check("out-of-range src: warning on stderr for {lbl#99}",
+          "asmfix: WARNING" in msg and "{lbl#99}" in msg)
 
 
 def test_apply_ops_out_of_range_fails_loud():
@@ -240,6 +326,14 @@ def main():
     test_apply_ops_insert_before()
     test_apply_ops_delete_between_no_sub()
     test_apply_ops_out_of_range_fails_loud()
+    # Phase 2b: source-side substitution
+    test_apply_ops_rename_src_sub()
+    test_apply_ops_replace_first_both_sides_sub()
+    test_apply_ops_replace_all_src_sub()
+    test_apply_ops_delete_between_both_sides_sub()
+    test_apply_ops_insert_before_src_sub()
+    test_apply_ops_insert_after_src_sub()
+    test_apply_ops_src_out_of_range_fails_loud()
 
     print(f"\n{_passed} passed, {_failed} failed")
     return 0 if _failed == 0 else 1

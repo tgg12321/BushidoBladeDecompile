@@ -145,13 +145,16 @@ shift), then reorders (on post-insert indices).
 Instruction indices count actual instructions (not directives, labels,
 or comments) from the function entry point, 0-based.
 
-  # Function-local label slot references — `{lbl#N}` (added 2026-06-01):
+  # Function-local label slot references — `{lbl#N}` (added 2026-06-01,
+  # extended to source-side patterns 2026-06-08 Phase 2b):
 
   Any rule's replacement text (splice / subst / subst_multi / insert /
-  insert_after) can use `{lbl#N}` placeholders to reference the Nth `.L<digit>+`
-  label cc1 emits within the function's body, in document order (1-indexed).
-  At rule apply time, `{lbl#N}` is substituted with the actual label name
-  (e.g. `.L152` for slot #1 in func_8007CE0C).
+  insert_after) AND the source-side regex patterns of `subst` /
+  `subst_multi` can use `{lbl#N}` placeholders to reference the Nth
+  `.L<digit>+` label cc1 emits within the function's body, in document
+  order (1-indexed). At rule apply time, `{lbl#N}` is substituted with
+  the actual label name (e.g. `.L152` for slot #1 in func_8007CE0C).
+  This applies to BOTH the regex being matched and the replacement string.
 
   Use this instead of hardcoded `.L<N>` references — GCC's auto-labels are
   TU-wide and shift whenever ANY function in the same .c file edits its
@@ -184,10 +187,11 @@ from pathlib import Path
 # Function-local label slot references — {lbl#N} substitution
 # ---------------------------------------------------------------------------
 #
-# Rule replacement strings (splice / subst / subst_multi / insert / insert_after)
-# can use `{lbl#N}` placeholders to reference the Nth `.L<digit>+` label CC1
-# emits within the function's body, in document order (1-indexed). At rule
-# apply time, the placeholder is substituted with the actual label name.
+# Rule replacement strings (splice / subst / subst_multi / insert /
+# insert_after) AND source-side regex patterns (subst / subst_multi) can use
+# `{lbl#N}` placeholders to reference the Nth `.L<digit>+` label CC1 emits
+# within the function's body, in document order (1-indexed). At rule apply
+# time, the placeholder is substituted with the actual label name.
 #
 # Why this exists: GCC's `.L<N>` labels are TU-wide and shift whenever any
 # function in the same .c file edits its source structure. Splice rules with
@@ -540,12 +544,23 @@ def process_function(lines, func_config):
     def _sub_text(txt, ctx):
         return _substitute_label_slots(txt, local_labels, fname=fname, context=ctx)
 
+    # Both source patterns (regexes) and replacements may carry `{lbl#N}`.
+    # Substituting the pattern side (added 2026-06-08 Phase 2b) lets a `subst`
+    # / `subst_multi` rule anchor to a drift-stable label slot, e.g.
+    #   func: subst "\.L\d+" "{lbl#3}" @ 17
+    # becomes the equivalent of hardcoded `.L<N>` patterns but survives
+    # TU-wide label renumbering the same way replacement-side substitution
+    # already did.
     raw_substs = func_config.get('substs', [])
-    subst_list = [(i, p, _sub_text(r, f"subst @ {i}")) for i, p, r in raw_substs]
+    subst_list = [
+        (i, _sub_text(p, f"subst pat @ {i}"), _sub_text(r, f"subst @ {i}"))
+        for i, p, r in raw_substs
+    ]
 
     raw_subst_multis = func_config.get('subst_multis', [])
     subst_multi_list_resolved = [
-        (i, p, [_sub_text(r, f"subst_multi @ {i}") for r in repls])
+        (i, _sub_text(p, f"subst_multi pat @ {i}"),
+         [_sub_text(r, f"subst_multi @ {i}") for r in repls])
         for i, p, repls in raw_subst_multis
     ]
 
