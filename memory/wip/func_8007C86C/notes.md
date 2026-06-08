@@ -164,3 +164,29 @@ to identify the dependency edges that create v6's extra `move $3,$4` preserve
 at idx 0; OR diagnostic-only `register asm("$a3") = arg0` PIN on candidate to
 test whether the cascade is structural; OR escalation to user for canonical-
 asm authorization OR global rodata reorder cluster decision.
+
+## Session 2026-06-08 (workflow round 15)
+
+**Floor unchanged at 12.** 6 NEW manual variants (V_A through V_F) untested in
+rejected_forms across rounds 1-14, all NEGATIVE (V_A=22, V_B=24, V_C=18,
+V_D=12 flat, V_E=24, V_F=18). Plus 2nd directly-targeted DIRECTED permuter
+campaign on a DISTINCT macro surface from round 14: var_a1 init + X-clamp
+inner statements + Y-clamp inner statements + mask-shift inner statements
+(NO dispatch+arm-body or return-form alternatives). 20min wallclock, 6-worker,
+~43,890 iters, 5 saved outputs (90/125/165-1/165-2/175) — ALL forbidden cheat-
+by-spelling (semantic-change in var_a1 or var_v0_2, UB-conditional-init reads
+of var_a1/new_var, identity-op `^ 0`, dummy_label dead-goto pad, `if (1)` dead
+wrapper). Same convergent attractor families as round 14 + C7A0 round-13.
+
+**Cluster ceiling now proven against THREE distinct directed-permuter macro
+surfaces** (round 14 dispatch+arm+return; C7A0 round-13 var_a1+X+Y+Y-mask+return;
+round 15 var_a1+X+Y+mask-shift-inner). Total directed-permuter iters across
+C86C+C7A0: ~100k+ on disjoint mutation spaces. Zero legitimate sub-baseline
+candidates ever surfaced.
+
+Rejection corpus is now 42 manual variants + ~100k+ directed-permuter iters.
+Source reverted; oracle preserved (HEAD `49e869c0`). The PARK_CANDIDATE
+escalation reinforced for a 5th consecutive round (5/6/7/10/14/15) — all three
+round 14 next_hypotheses (BB2_PRIO_DEBUG on dispatch region, cross-TU
+allocation probe in full display.c, joint-cluster permuter from C7A0 base)
+remain UNTRIED and concrete.
