@@ -2342,11 +2342,22 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void gte_GetScreenXY(s32 *a0, s32 *a1, s32 *a2) {
-    __asm__ volatile (".word 0xE8910000" :: "r"(a0));  /* swc2 $17, 0($a0) */
-    __asm__ volatile (".word 0xE8B20000" :: "r"(a1));  /* swc2 $18, 0($a1) */
-    __asm__ volatile (".word 0xE8D30000" :: "r"(a2));  /* swc2 $19, 0($a2) */
-}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel gte_GetScreenXY\n"
+    "    swc2   $17, 0($a0)\n"
+    "    swc2   $18, 0($a1)\n"
+    "    swc2   $19, 0($a2)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_3; /* 3 NOPs after gte_GetScreenXY */
 s32 gte_GetH(void) { s32 ret; __asm__ volatile (".word 0x4842D000" : "=r" (ret)); return ret; }
 PAD_NOPS_1; /* 1 NOP after gte_GetH */
