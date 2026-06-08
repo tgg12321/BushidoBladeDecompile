@@ -1,0 +1,42 @@
+{
+  "function": "special_camera_Exec",
+  "file": "code6cac_b2",
+  "scores": {
+    "head_floor": 272,
+    "candidate_floor": 69,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 284,
+    "target_insns": 274
+  },
+  "sessions": [
+    {
+      "date": "2026-06-08",
+      "git_head_at_measurement": "e8df25f5",
+      "lever": "complete pure-C state-machine reconstruction from asm + Kengo:HIGH cross-reference",
+      "lever_rule": null,
+      "floor_was": 272,
+      "floor_now": 69,
+      "session_id": null,
+      "notes": "First session — function was a stub `void special_camera_Exec(void) {}` bridged via asmfix `replace_with_asmfile asm/funcs/special_camera_Exec.s`. Hand-derived the full 14-state switch dispatch from target asm (no working m2c — m2c silently produced empty output for this function even with jtbl provided, possibly because of the misnomer-aliased call symbols `myRobGeneiDraw3` / `_DispCharacterName`). Identified the structural blocker as jtbl-rodata-split-infrastructure on first measurement: cc1 emits a NEW .rodata jtbl in code6cac_b2.o which can't land at 0x80010978."
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": null,
+    "evidence": "Not invoked — candidate is not commit-eligible (blocked on jtbl-infra)."
+  },
+  "remaining_gap": {
+    "summary": "STRUCTURAL: jtbl-rodata-split-infrastructure. The `switch (D_80101E62)` GCC emits its own jump table into `code6cac_b2.o(.rodata)`, but target's `jtbl_80010978` lives at 0x80010978 in `asm/data/101C.rodata_pre.s` (linked at bb2.ld:29-31, far earlier than code6cac_b2.o(.rodata) at bb2.ld:50). Removing the asmfix `replace_with_asmfile` bridge causes 14 link-time `undefined reference to .L80036D74`-style errors — the external jtbl_80010978 still references asm labels that no longer exist (they were defined inside the asmfile). The candidate body is structurally correct (sandbox 272→69, 25% gap = mostly bounds-check codegen difference: my switch emits `slti<16; sltiu<14; addiu-2; sll/sra; sltiu<12` skipping 0xE/0xF cases, vs target's `slti<16; sltiu<14; sll<<2; jtbl[]` with 0xE/0xF mapped to fall-through end via duplicate jtbl entries). The residual 69 cannot be closed in pure C while the jtbl lives in the external rodata segment — and removing the asmfix bridge to satisfy the candidate breaks the link.",
+    "rule_count_at_head": 1,
+    "rules_required_for_full_match": "Same shape as `replay_camera_rob_back_loose2`'s 24-rule jtbl-infra cluster: 14 `rename {lbl#N}` to map cc1-emitted labels to external `jtbl_80010978` + `.L80036xxx` case labels, ~8 `replace_first` `jlabel` conversions, 1 `delete_between .rodata .text` to strip cc1's emitted table. This is INFRA, not register paperwork — but per `[[no-new-regfix-rules]]` policy (2026-06-08) and `[[jtbl-rodata-split-infrastructure]]`'s explicit statement that the resolution is `evidence-based source-file re-attribution requiring user policy sign-off + multi-function impact analysis — out of scope for a single-function completion pass`, even the jtbl-infra rule cluster is not a sanctioned outcome here. The brief explicitly authorized this WIP path."
+  },
+  "next_hypotheses": [
+    "User policy decision: evidence-based source-file re-attribution. The 4 sibling functions (`func_80034708`, `func_80035828`, `special_camera_set_win_cam`, `special_camera_Exec`) all park on the same `asm/data/101C.rodata_pre.s` multi-owner rodata block. Re-splitting splat groupings + reordering `bb2.ld` so their jtbls move into their respective .c files' rodata (which would then need to be placed earlier in the linker script) is the SOTN-clean path. See `tmp/4-sibling-audit-2026-06-08.md` and `[[jtbl-rodata-split-infrastructure]] § EVIDENCE-BASED ATTRIBUTION ONLY`. This is a multi-file architecture change requiring user sign-off — not a single-function lever.",
+    "Alternative: authorize the function and its 3 siblings as canonical-asm via `inline_asm_canonical.txt`. The 4-sibling audit explicitly REJECTED this path (no S1..S8 hand-coded signals fire on any of the 4; size alone is not sufficient evidence under `[[hand-coded-asm-recognition]]`).",
+    "Bound the residual 69-distance gap from the structural blocker: even if the jtbl-infra is resolved, my switch's bounds-check codegen differs from target's (extra `addiu-2; sll/sra; sltiu<12` chain). May need to restructure the bound checks — e.g. `if ((u32)D_80101E62 < 0x10 && D_80101E62 >= 2 && D_80101E62 <= 0xD)` or a different case ordering — to match target's `slti<16; sltiu<14; sll<<2; jtbl[]` exactly. Worth measuring AFTER jtbl-infra is resolved (otherwise the link failure masks the codegen gap)."
+  ],
+  "rejected_forms": [],
+  "memory_notes": [
+    "tmp/4-sibling-audit-2026-06-08.md"
+  ]
+}
