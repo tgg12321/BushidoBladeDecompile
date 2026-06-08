@@ -251,6 +251,7 @@ func_8007F12C  # GTE avsz4 wrapper (display.c): mtc2 $a0..$a3 -> nop -> avsz4 ->
 func_8007F21C  # GTE rtps perspective-transform wrapper (display.c): lwc2 $0/$1 from *a0 -> nop -> rtps -> swc2 $14/$8 to *a1/*a2 -> cfc2 $v1 (flag) -> mfc2 $v0 (z) -> *a3 = flag; return z >> 2. Pure cop2 ops with mechanical store/return packaging, no C form. Pins removed, canonical inline asm. Auto-authorized 2026-06-07.
 func_8007F200  # GTE sqrt wrapper (display.c): mtc2 $a0,$30 -> 2x nop -> mfc2 $v0,$31 -> return. Pure cop2 op 0x0F (sqrt) with no C analog. Pin removed (GCC returns mfc2 result in $v0 naturally), canonical inline asm. Auto-authorized 2026-06-07.
 gte_GetScreenXY  # GTE screen XY reader (display.c): 3x swc2 $17/$18/$19 to *a0/*a1/*a2 -> jr ra. Pure cop2 reg-to-mem stores of GTE result regs SX/SY/SZ, no C form (hardcoded $17/$18/$19 source regs are the GTE result registers — compiler can't reach them via C). Retired as whole-body __asm__("glabel ...") block. Auto-authorized 2026-06-07.
+func_8007F00C  # GTE mvmva vector-transform wrapper (display.c): 3x lwc2 $9/$10/$11 from *a0 -> nop -> mvmva 1,2,3,1,1 -> 3x swc2 $9/$10/$11 to *a1 -> jr ra. Pure cop2 ops with hardcoded $9/$10/$11 GTE V0 vector slots. Retired as whole-body __asm__("glabel ...") block. Auto-authorized 2026-06-07.
 
 # === Hand-coded GTE 3x3-mvmva matrix transform cluster (display.c, user-authorized 2026-05-31) ===
 # Whole-body hand-coded asm: 3-cycle mvmva matrix transform pipeline. Disassembler

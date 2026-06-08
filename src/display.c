@@ -2388,16 +2388,27 @@ void tslDmaDrawListDelAll(s32 a0) {
     __asm__ volatile (".word 0x48C4D000" :: "r"(a0));  /* ctc2 $a0, $26 */
 }
 PAD_NOPS_1; /* 1 NOP after tslDmaDrawListDelAll */
-void func_8007F00C(s32 *a0, s32 *a1) {
-    __asm__ volatile (".word 0xC8890000" :: "r"(a0));  /* lwc2 $9, 0($a0) */
-    __asm__ volatile (".word 0xC88A0004" :: "r"(a0));  /* lwc2 $10, 4($a0) */
-    __asm__ volatile (".word 0xC88B0008" :: "r"(a0));  /* lwc2 $11, 8($a0) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A4DA412");              /* mvmva 1,2,3,1,1 */
-    __asm__ volatile (".word 0xE8A90000" :: "r"(a1));  /* swc2 $9, 0($a1) */
-    __asm__ volatile (".word 0xE8AA0004" :: "r"(a1));  /* swc2 $10, 4($a1) */
-    __asm__ volatile (".word 0xE8AB0008" :: "r"(a1));  /* swc2 $11, 8($a1) */
-}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007F00C\n"
+    "    lwc2   $9,  0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    nop\n"
+    "    .word  0x4A4DA412\n"          /* mvmva 1,2,3,1,1 */
+    "    swc2   $9,  0($a1)\n"
+    "    swc2   $10, 4($a1)\n"
+    "    swc2   $11, 8($a1)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 void func_8007F034(s32 *a0, s32 *a1, s32 a2, u32 *a3) {
     __asm__ volatile (".word 0xC8890000" :: "r"(a0));  /* lwc2 $9, 0($a0) */
     __asm__ volatile (".word 0xC88A0004" :: "r"(a0));  /* lwc2 $10, 4($a0) */

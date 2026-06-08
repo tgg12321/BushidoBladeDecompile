@@ -3244,14 +3244,6 @@
       "status": "authorize"
     },
     {
-      "func": "func_8007F00C",
-      "file": "display",
-      "distance": 7,
-      "verdict": "ASM-WHOLE",
-      "rules": 0,
-      "status": "authorize"
-    },
-    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2",
       "distance": 510,
@@ -4129,18 +4121,18 @@
     }
   ],
   "counts": {
-    "total": 505,
+    "total": 504,
     "active": 403,
     "by_status": {
       "active": 403,
-      "authorize": 29,
+      "authorize": 28,
       "parked": 73
     },
     "by_verdict": {
       "C": 212,
       "ASM-PARTIAL": 73,
       "ASM-SUSPECT": 118,
-      "ASM-WHOLE": 3,
+      "ASM-WHOLE": 2,
       "ASM-STRUCTURAL": 26
     }
   }
