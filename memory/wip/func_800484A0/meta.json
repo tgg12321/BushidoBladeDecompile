@@ -1,0 +1,59 @@
+{
+  "function": "func_800484A0",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 5,
+    "candidate_floor": 4,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 36,
+    "target_insns": 36
+  },
+  "sessions": [
+    {
+      "date": "2026-06-07",
+      "lever": "arg0 reassigned to (u8*)buf inside the decompress-if; gpu_LoadImage(rect,(s32)arg0)",
+      "lever_rule": null,
+      "floor_was": 5,
+      "floor_now": 4
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-07",
+    "evidence": "Worker self-vetted against the 6-test cheats-by-spelling checklist. Passes: (1) semantic purpose (the assignment is required for the false-decompress branch to upload arg0, not buf, matching target asm); (2) human-programmer test (a real programmer reusing a parameter pointer once the original use ends is idiomatic, though less common than a separate `src` local); (3) GCC-internals (justified by target asm, not by RTL); (4) not permuter-derived (read target asm); (5) not in any forbidden family; (6) naming neutral. The cheat-reviewer agent has NOT been invoked yet — recommend invocation before any commit-to-COMPLETED-C is attempted."
+  },
+  "remaining_gap": {
+    "summary": "Two structurally-independent diffs remain at distance 4: (a) GCC combines `arg0 += 4; arg0 += 8;` into a single `addiu s0,s0,12` in the beqz's delay slot — target keeps the +4 in the delay slot AND emits a separate `addiu s0,s0,8` (so target has 2 insns where GCC builds 1). (b) GCC stages the `arg0 = (u8*)buf` reassignment through $v0 (`addiu v0,sp,24; move s0,v0`, 2 insns) where target writes directly `addiu s0,sp,0x18` (1 insn). The two issues cancel out in build_insns count (36 == 36) but leave 4 unaligned positions in the masked score.",
+    "rule_count_at_head": 5,
+    "rules_required_for_full_match": "All 5 existing regfix rules retire ALL 4 candidate diffs (the rules manufacture the +4/+8 split AND the buf-into-s0 via $16 reuse). Candidate alone retires NONE of them; the rules need their indices recalibrated for the candidate's slightly-shifted maspsx output before a partial retire could be attempted, and even then the +12-vs-split + addiu+move-vs-addiu gaps remain."
+  },
+  "next_hypotheses": [
+    "Diagnose the +12 fold: dump cc1 raw output (use BB2_REG_DEBUG or just -da) on the candidate, confirm combine.c is merging the two `(set s0 (plus s0 4))(set s0 (plus s0 8))` insns. The basic-block-boundary lever (combine doesn't merge across branches/labels) is the only known pure-C way to defeat — investigate whether the original source structure had a label or control-flow split between (b) and (c).",
+    "Diagnose the addiu+move pair: dump `-da` on the candidate to find why GCC chose to compute `(u8*)buf` into $v0 first and then move to $s0 instead of computing directly into $s0. May be a parameter-pseudo reload artifact; if so, expressing the buf address through a non-parameter local that lives ONLY in the if-branch (e.g., `u8 *dst = ...`) might let RA assign $s0 directly. (Tried with `s16 *p_buf = buf;` declared at top — went to $s1 with +1 callee-save, score 12 → worse. The local must NOT outlive arg0's last use OR must share arg0's pseudo.)",
+    "Permuter from candidate base: score 4 with build_insns matched is exactly the lever-class plateau the permuter is good at — set up permuter/func_800484A0/ with the candidate, target clean from asm/funcs/func_800484A0.s + prelude.inc, `--stop-on-zero`. Likely 0-cost mutations on declaration order / cast forms can flip RA.",
+    "Sibling cross-ref: the function at line 252-296 (anonymous, but uses gpu_LoadImage with the same upload-via-buf-or-direct branching) and at line 16110 / 12872 etc. all use the gpu_LoadImage pattern. Compare their decomp structure to see which already-matched form uses the `src = (decompress ? buf : data)` pattern in pure C — that's the SOTN-clean target structure."
+  ],
+  "rejected_forms": [
+    {
+      "form": "Introduce `s16 *p_buf = buf;` at the top, use p_buf in both branches",
+      "score": 12,
+      "reason": "Creates a new live local that outlives arg0; GCC allocates it to $s1, adding sw $s1 to prologue + lw $s1 to epilogue (+2 insns) and the buf-pointer access shape doesn't match target. Worse than HEAD."
+    },
+    {
+      "form": "Assign `arg0 = (u8*)buf` in BOTH branches (if-true and else)",
+      "score": 7,
+      "reason": "Emits the assignment twice (once per branch), build_insns 39 (vs target 36). Net negative."
+    },
+    {
+      "form": "Reorder to `arg0 += 4; rect[0]=arg1; rect[1]=arg2; arg0 += 8;` (interleave stores)",
+      "score": 4,
+      "reason": "No effect — combine still merges the two `addiu` insns; the intervening sh stores don't reference arg0 so combine sees no use-conflict. Reverted to keep the candidate cleaner."
+    },
+    {
+      "form": "`if(...) goto skip; ... skip:` instead of `if(...) {...}`",
+      "score": 4,
+      "reason": "Bytewise identical to the if-form (cc1's jump-threading collapses them at the RTL level). Reverted."
+    }
+  ],
+  "memory_notes": []
+}
