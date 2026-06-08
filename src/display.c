@@ -2409,16 +2409,27 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void func_8007F034(s32 *a0, s32 *a1, s32 a2, u32 *a3) {
-    __asm__ volatile (".word 0xC8890000" :: "r"(a0));  /* lwc2 $9, 0($a0) */
-    __asm__ volatile (".word 0xC88A0004" :: "r"(a0));  /* lwc2 $10, 4($a0) */
-    __asm__ volatile (".word 0xC88B0008" :: "r"(a0));  /* lwc2 $11, 8($a0) */
-    __asm__ volatile (".word 0xC8A60000" :: "r"(a1));  /* lwc2 $6, 0($a1) */
-    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A680029");              /* dpcl */
-    __asm__ volatile (".word 0xE8F60000" :: "r"(a3));  /* swc2 $22, 0($a3) */
-}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007F034\n"
+    "    lwc2   $9,  0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    lwc2   $6,  0($a1)\n"
+    "    mtc2   $a2, $8\n"
+    "    nop\n"
+    "    .word  0x4A680029\n"          /* dpcl */
+    "    swc2   $22, 0($a3)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 void func_8007F05C(s32 *a0, s32 *a1, s32 *a2, s32 a3, s32 *o0, s32 *o1, s32 *o2) {
     __asm__ volatile (".word 0xC8940000" :: "r"(a0));  /* lwc2 $20, 0($a0) */
     __asm__ volatile (".word 0xC8B50000" :: "r"(a1));  /* lwc2 $21, 0($a1) */
