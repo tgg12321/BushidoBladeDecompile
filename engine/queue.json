@@ -3236,14 +3236,6 @@
       "status": "authorize"
     },
     {
-      "func": "func_8007F10C",
-      "file": "display",
-      "distance": 1,
-      "verdict": "ASM-WHOLE",
-      "rules": 0,
-      "status": "authorize"
-    },
-    {
       "func": "func_8007F12C",
       "file": "display",
       "distance": 1,
@@ -4161,18 +4153,18 @@
     }
   ],
   "counts": {
-    "total": 509,
+    "total": 508,
     "active": 403,
     "by_status": {
       "active": 403,
-      "authorize": 33,
+      "authorize": 32,
       "parked": 73
     },
     "by_verdict": {
       "C": 212,
       "ASM-PARTIAL": 73,
       "ASM-SUSPECT": 118,
-      "ASM-WHOLE": 7,
+      "ASM-WHOLE": 6,
       "ASM-STRUCTURAL": 26
     }
   }
