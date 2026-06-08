@@ -2521,7 +2521,7 @@ void func_8007F1A8(s32 *a0, s16 *a1, s32 *a2) {
     __asm__ volatile (".word 0x48CF2000");             /* ctc2 $t7, $4 */
 }
 s32 func_8007F200(s32 a0) {
-    register s32 v0 asm("v0");
+    s32 v0;
     __asm__ volatile (".word 0x4884F000" :: "r"(a0));  /* mtc2 $a0, $30 */
     __asm__ volatile ("nop");
     __asm__ volatile ("nop");
