@@ -11,6 +11,13 @@
       "agent": "headless",
       "summary": "Tried 4 source forms (do-while, while, for, val-split). cc1 stubbornly puts addu $16,$16,1 before lw in loop body. No lever found. Source reverted to HEAD; oracle green.",
       "delta_floor": 0
+    },
+    {
+      "date": "2026-06-08",
+      "agent": "interactive",
+      "git_head_at_measurement": "eed1484e",
+      "summary": "BLOCKED on sandbox tooling: `sandbox func_80045294 --disable all` fails to build text1a_c.c at HEAD. Sandbox cheat-asm stripping removes `register T x asm($N)` pins from text1a_c.c lines 94,100,222,297,607-610,628 etc., exposing latent conflicting extern decls that were tolerated by the full build (`extern s32 D_80095328;` at L521 vs `extern s16 D_80095328;` at L1078; same for D_800A9D04 at L1137/1173/1383; func_80042874 at L425/1080 with different signatures; func_800455AC L1733/1860; too-few-args call to func_8004574C at L1823). cc1 emits malformed asm (`{standard input}:3293: Error: operand 2 must be an immediate expression `lh $sp,$sp,88'`) which `as` rejects. Cannot reproduce the prior session's documented candidate_floor=2 measurement and cannot measure any new candidate against the gradient. Per prompt's no_progress contract ('tested at least 3 NEW structural variants' requires measurement), the four listed next_hypotheses (extra lw consumer, pointer iteration `ptr += 0x10`, BB2_SCHED_DEBUG instrumented cc1, sibling RTL diff) are NOT executable in this session without first repairing either (a) the latent extern decl conflicts in text1a_c.c at file scope or (b) the sandbox tooling to tolerate them as the full build does. Source untouched; oracle green (verify-oracle build_matches:true, sha1=62efab4f...). Referenced research files `tmp/sotn_research_func_80045294*.md` cited in this session's prompt do not exist on disk.",
+      "delta_floor": 0
     }
   ],
   "rejected_forms": [
@@ -21,6 +28,7 @@
   ],
   "remaining_gap": "1 nop in first loop load-delay slot (8 bytes -> distance 2). Cheat: 2 deletes + 1 insert relocating addu $16,$16,1 from loop-top to between lw and addu sum.",
   "next_hypotheses": [
+    "BLOCKER: repair text1a_c.c extern decl conflicts (D_80095328 s32/s16; D_800A9D04 s32/s8*/s32; func_80042874 (void)/(s32*,s32*); func_800455AC; func_8004574C arity) so sandbox builds the stripped form. Once sandbox is measurable again, the prior four hypotheses are unblocked.",
     "BB2_SCHED_DEBUG instrumented cc1 to read actual INSN_PRIORITY for lw vs addiu in loop",
     "Pointer-based loop iteration (ptr += 0x10) — may shift RTL insn shape",
     "Match-sibling RTL diff (func_80044100's *ptr += val; i++; ptr++ loop)"
