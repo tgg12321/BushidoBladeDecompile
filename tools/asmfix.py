@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
-"""Per-function asm text post-pass for label/symbol/linkage fixes."""
+"""Per-function asm text post-pass for label/symbol/linkage fixes.
+
+Supports `{lbl#N}` function-local label slot references (added 2026-06-08)
+in replacement text of `rename`, `replace_first`, `replace_all`,
+`insert_before`, `insert_after` rules. At rule-apply time, `{lbl#N}` is
+substituted with the Nth `.L<digit>+` label CC1 emitted within the target
+function's body (1-indexed, document order). This mirrors the analogous
+mechanism in tools/regfix.py and makes asmfix rules drift-robust against
+TU-wide `.L<N>` renumbering. Substitution applies only to REPLACEMENT
+text — source-side patterns (the first quoted argument of any rule, plus
+both arguments of `delete_between`) are left alone. `replace_with_asmfile`
+reads its body verbatim from a file and is therefore unaffected.
+"""
 
 from __future__ import annotations
 
@@ -14,6 +26,52 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # cheat-invisible sandbox can point asmfix at a filtered config without mutating
 # the canonical asmfix.txt. Unset -> the canonical file (identical behavior).
 CONFIG_PATH = Path(os.environ.get("ASMFIX_CONFIG", REPO_ROOT / "asmfix.txt"))
+
+
+# ---------------------------------------------------------------------------
+# Function-local label slot references — {lbl#N} substitution
+# ---------------------------------------------------------------------------
+# Same shape as tools/regfix.py — see that module's header for rationale.
+# Within a function block (funcname: ... .end\tfuncname), gather every
+# `.L<digit>+` label DEFINITION in document order; substitute `{lbl#N}` in
+# replacement strings with `labels[N-1]`. Out-of-range references emit a
+# warning + an `.L_UNRESOLVED_lbl_<N>` marker that fails at assembly time
+# (preferring build-fail to silent-wrong-codegen).
+_LABEL_DEF_RE = re.compile(r'^\s*(\.L\d+):\s*$', re.MULTILINE)
+_LBL_SLOT_REF_RE = re.compile(r'\{lbl#(\d+)\}')
+
+
+def _extract_local_label_defs(text: str) -> list[str]:
+    """Return list of `.L<N>` labels DEFINED in this function-block text, in
+    document order (1-indexed when used as slot refs)."""
+    return [m.group(1) for m in _LABEL_DEF_RE.finditer(text)]
+
+
+def _substitute_label_slots(text: str, labels: list[str], fname: str | None = None,
+                            context: str | None = None) -> str:
+    """Replace `{lbl#N}` placeholders in `text` with `labels[N-1]`. Returns
+    `text` unchanged if no placeholders present. Out-of-range slot references
+    emit a warning + an unresolved-marker (`.L_UNRESOLVED_lbl_<N>`) that the
+    assembler will fail on — silent-wrong-codegen is worse than build-fail."""
+    if '{lbl#' not in text:
+        return text
+
+    def repl(m: re.Match[str]) -> str:
+        n = int(m.group(1))
+        if 1 <= n <= len(labels):
+            return labels[n - 1]
+        prefix = f"asmfix: WARNING: {fname}" if fname else "asmfix: WARNING"
+        if context:
+            prefix += f" ({context})"
+        sample = labels[:5] + ['...'] if len(labels) > 5 else labels
+        print(
+            f"{prefix}: {{lbl#{n}}} references label slot #{n}, "
+            f"but function defines only {len(labels)} labels (first few: "
+            f"{sample}). Emitting unresolved-marker; assembler will fail.",
+            file=sys.stderr,
+        )
+        return f".L_UNRESOLVED_lbl_{n}"
+    return _LBL_SLOT_REF_RE.sub(repl, text)
 
 
 def unescape_config_text(text: str) -> str:
@@ -71,6 +129,18 @@ def parse_config(path: Path) -> dict[str, list[tuple[str, ...]]]:
 
 
 def apply_ops(func_name: str, text: str, ops: list[tuple[str, ...]]) -> str:
+    # Function-local label sequence — gathered ONCE from the cc1+regfix output
+    # block passed in (lines from `funcname:` through `.end\tfuncname`). Used
+    # for `{lbl#N}` substitution in replacement text of all rule kinds that
+    # carry replacement strings. The labels visible here are exactly the same
+    # `.L<digit>+` definitions cc1 emitted within this function's body, which
+    # is the property that makes the slot reference drift-robust. See module
+    # header + tools/regfix.py for full rationale.
+    local_labels = _extract_local_label_defs(text)
+
+    def _sub(s: str, ctx: str) -> str:
+        return _substitute_label_slots(s, local_labels, fname=func_name, context=ctx)
+
     for op in ops:
         kind = op[0]
         if kind == "replace_with_asmfile":
@@ -89,23 +159,23 @@ def apply_ops(func_name: str, text: str, ops: list[tuple[str, ...]]) -> str:
             # into the 8xx range that overlaps target's `.L8006xxxx`
             # absolute-label prefixes).
             pattern = re.escape(op[1]) + r"(?!\w)"
-            text = re.sub(pattern, op[2], text)
+            text = re.sub(pattern, _sub(op[2], "rename dst"), text)
             continue
 
         if kind == "replace_first":
-            text, count = re.subn(op[1], op[2], text, count=1, flags=re.MULTILINE)
+            text, count = re.subn(op[1], _sub(op[2], "replace_first repl"), text, count=1, flags=re.MULTILINE)
             if count == 0:
                 print(f'asmfix: WARNING: replace_first did not match in {func_name}: {op[1]}', file=sys.stderr)
             continue
 
         if kind == "replace_all":
-            text, count = re.subn(op[1], op[2], text, flags=re.MULTILINE)
+            text, count = re.subn(op[1], _sub(op[2], "replace_all repl"), text, flags=re.MULTILINE)
             if count == 0:
                 print(f'asmfix: WARNING: replace_all did not match in {func_name}: {op[1]}', file=sys.stderr)
             continue
 
         if kind == "insert_before":
-            pattern, insert_text = op[1], op[2]
+            pattern, insert_text = op[1], _sub(op[2], "insert_before text")
             m = re.search(pattern, text, flags=re.MULTILINE)
             if not m:
                 print(f'asmfix: WARNING: insert_before did not match in {func_name}: {pattern}', file=sys.stderr)
@@ -114,7 +184,7 @@ def apply_ops(func_name: str, text: str, ops: list[tuple[str, ...]]) -> str:
             continue
 
         if kind == "insert_after":
-            pattern, insert_text = op[1], op[2]
+            pattern, insert_text = op[1], _sub(op[2], "insert_after text")
             m = re.search(pattern, text, flags=re.MULTILINE)
             if not m:
                 print(f'asmfix: WARNING: insert_after did not match in {func_name}: {pattern}', file=sys.stderr)
@@ -124,6 +194,7 @@ def apply_ops(func_name: str, text: str, ops: list[tuple[str, ...]]) -> str:
             continue
 
         if kind == "delete_between":
+            # Both patterns are source-side; do NOT substitute {lbl#N} here.
             start_pat, end_pat = op[1], op[2]
             start = re.search(start_pat, text, flags=re.MULTILINE)
             if not start:
