@@ -1,15 +1,26 @@
 /* memory/wip/initDrawMode/candidate.c
  *
  * Drop-in replacement for src/gpu.c::initDrawMode.
- * Honest pure-C floor: sandbox --disable all = 1 (HEAD floor with pins = 5).
- * The remaining diff is the OR operand-order at the function's last insn:
- *   build:  or v0, v0, v1   (00431025)  — val|cmd source order, val rs / cmd rt
- *   target: or v0, v1, v0   (00621025)  — cmd|val source order, cmd rs / val rt
- * Both forms are semantically identical (OR is commutative) but encode to
- * different bytes. Reaching target's bytes requires `cmd | val` source order
- * with val landing in $v0 and cmd in $v1; in cmd|val form GCC's combine pass
- * folds val into $a3 (a3 dies after val's andi), giving the wrong allocation.
- * See rejected/ for the cmd|val attempts.
+ *
+ * Honest pure-C floor: sandbox --disable all = 5 (same as HEAD's pin-stripped
+ * floor). This is the NATURAL form (no cheat-asm pins, natural `cmd | val`
+ * source order — command-first / bit-position descending). It does NOT match
+ * target — GCC's combine pass folds `val = a3 & 0x9FF` into $a3 because a3
+ * dies after the andi, producing `or v0, v0, a3` (wrong reg, wrong operand
+ * order) instead of target's `or v0, v1, v0`.
+ *
+ * Session 1's `val | cmd` form scored sandbox=1 but was REJECTED by the
+ * cheat-reviewer (session 2, 2026-06-08) as an enumeration-derived
+ * operand-reorder cheat per `.claude/rules/or-tree-shape-shift.md`. The
+ * rejected body is preserved under `rejected/val-or-cmd-operand-reorder.c`
+ * with the FAIL evidence.
+ *
+ * Remaining gap (genuine pure-C wall): keep $a3 alive past `val = a3 & 0x9FF`
+ * so combine cannot reuse $a3 for val's destination, WITHOUT (a) operand-
+ * order enumeration, (b) the forbidden cheat-by-spelling family (no dead
+ * stores, no volatile coercion, no pins, no `__asm__` barriers, no dead
+ * locals/arrays, no chain-extenders, no DImode round-trips). Next-session
+ * hypotheses are in meta.json.
  */
 void initDrawMode(u8 *a0, s32 a1, s32 a2, u32 a3) {
     u32 cmd;
@@ -23,5 +34,5 @@ void initDrawMode(u8 *a0, s32 a1, s32 a2, u32 a3) {
     if (a1) {
         val |= GPU_DRAW_MODE_TEXOFF;
     }
-    *(u32 *)(a0 + 4) = val | cmd;
+    *(u32 *)(a0 + 4) = cmd | val;
 }

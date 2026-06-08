@@ -4,30 +4,45 @@
   "verdict": "C",
   "scores": {
     "head_floor": 5,
-    "candidate_floor": 1
+    "candidate_floor": 5
   },
   "sessions": [
     {
       "date": "2026-06-07",
+      "git_head_at_measurement": "unknown",
       "lever": "val|cmd OR operand source order (pure-C, no pins)",
       "head_floor": 5,
       "candidate_floor": 1,
-      "notes": "Removing register-asm pins (cmd asm v1, val asm v0) and writing `*(u32*)(a0+4) = val | cmd` (val first in OR source) yields val→$v0, cmd→$v1 — target's register allocation. The remaining 1-byte (4-byte instruction) diff is the OR operand order: build emits `or v0,v0,v1` (00431025), target has `or v0,v1,v0` (00621025). Both encode the same commutative OR but to different bytes."
+      "notes": "Removing register-asm pins (cmd asm v1, val asm v0) and writing `*(u32*)(a0+4) = val | cmd` (val first in OR source) yields val->$v0, cmd->$v1 — target's register allocation. The remaining 1-byte (4-byte instruction) diff is the OR operand order: build emits `or v0,v0,v1` (00431025), target has `or v0,v1,v0` (00621025). Both encode the same commutative OR but to different bytes."
+    },
+    {
+      "date": "2026-06-08",
+      "git_head_at_measurement": "2a49a905",
+      "lever": "cheat-reviewer audit of session-1 candidate + 4 NEW structural variants",
+      "head_floor": 5,
+      "candidate_floor": 5,
+      "notes": "Cheat-reviewer FAIL on session-1's val|cmd form: enumeration-derived operand reorder per or-tree-shape-shift.md (test 4 failure) with cc1-combine-pass-only justification (test 3 failure) — bit-position-ascending coincidence does NOT rehabilitate an enumeration-derived choice. The honest pure-C floor is 5 (the natural cmd|val form). Tested 4 new variants from the 5-floor base: (1) u16 a3 narrow type (Lever B) -> 5 same (no progress); (2) `val |= cmd; *p = val;` compound -> 6 (regress: val gets 2 uses, alloc changes); (3) `cmd |= val; *p = cmd;` compound -> 5 same; (4) hoist val=a3&MASK before sb -> 6 with +1 insn (regress). None of the legitimate structural levers keep $a3 alive past val's andi without emitting bytes."
     }
   ],
-  "reviewer": "not-invoked",
-  "remaining_gap": "OR operand-order commutativity diff. `cmd | val` source order would emit `or v0,v1,v0` (target's bytes) IF val landed in $v0. But in `cmd | val` source, GCC's combine pass folds val's andi-destination into $a3 (a3 dies after val's andi, so combine reuses it), giving `or v0,v0,a3` — wrong register AND wrong operand order.",
+  "reviewer": "FAIL (session 2, 2026-06-08): session-1 val|cmd candidate is operand-reorder cheat per or-tree-shape-shift.md. Tests failed: 3 (GCC-internals justification only), 4 (enumeration-derived), 5 (family check). See rejected/val-or-cmd-operand-reorder.c. Candidate floor reset 1 -> 5 (the honest, natural-ordering form).",
+  "remaining_gap": "Combine pass folds val's andi destination into $a3 because a3 dies after `val = a3 & 0x9FF` (its only post-andi reference would be in dead code). Target's bytes have val's andi destination = $v0 (NOT folded into $a3) AND source order `cmd | val`, giving `or v0,v1,v0`. To reach target's bytes without operand-order enumeration, $a3 must stay live past val's andi via SOME LEGITIMATE construct that does not fall into any forbidden family.",
   "next_hypotheses": [
-    "Find a pure-C lever that keeps a3 alive past val's andi without emitting extra instructions and without falling into the forbidden 'cheats by any spelling' family (no dead self-assign, no `(void)a3`, no `a3 & 0` style coercions, no volatile cast).",
-    "Look for an unrelated downstream use of a3 in the original source that's been lost in decomp (e.g., a debug log call, a sibling store of the raw mode value).",
-    "Read GCC 2.7.2's combine.c try_combine path to see whether ANY pure-C-derivable RTL shape prevents the dest-substitution of val→a3."
+    "Investigate whether a3 has an unrecovered downstream use in the ORIGINAL source — e.g., a debug call, a sibling store of the raw mode value to a debug global, or a function-pointer dispatch that takes a3. Cross-reference initDrawMode callers (grep for 8007AB8C / initDrawMode in src/) to see if any caller treats a3 as having a wider semantic role than just the mode-mask source.",
+    "Read GCC 2.7.2's combine.c try_combine + substitute_into_anchor paths to see whether ANY pure-C RTL shape prevents the dest-substitution of val's andi into a3 — specifically, whether multiple uses of val's pseudo can stop combine from substituting, and whether any natural C construct creates such a multi-use shape without emitting bytes.",
+    "Look at sibling gpu.c functions (initPolyF3, initLoadImage, etc.) for naming/structure patterns that might suggest initDrawMode's original C had a different parameter naming or structural shape. The libgpu reference (SetDrawMode/DR_MODE) takes (DR_MODE*, dfe, dtd, tpage) — maybe an unrecovered parameter or struct field gives a3 a legitimate downstream reference.",
+    "If no legitimate lever exists: park the function permanently as 'commutative-OR operand-order wall' and surface to user as a policy question. The 1-byte diff genuinely requires an operand-order choice that cannot be independently justified on program-logic grounds; this is a new wall category (not 'new park category for cheats' — a wall acknowledgment for genuinely unreachable bytes)."
   ],
   "rejected_forms": [
-    {"slug": "cmd-or-val-direct", "score": 5, "reason": "val folds into a3 in cmd|val source order"},
-    {"slug": "val-first-cmd-or-val", "score": 7, "reason": "reordering val computation before cmd doesn't prevent val→a3 fold"},
+    {"slug": "cmd-or-val-direct", "score": 5, "reason": "val folds into a3 in cmd|val source order (the natural form; THIS is now the candidate floor)"},
+    {"slug": "val-or-cmd-operand-reorder", "score": 1, "reason": "REVIEWER FAIL — enumeration-derived operand reorder per or-tree-shape-shift.md; saved under rejected/. Was session-1's claimed candidate."},
+    {"slug": "val-first-cmd-or-val", "score": 7, "reason": "reordering val computation before cmd doesn't prevent val->a3 fold"},
     {"slug": "split-val-init", "score": 5, "reason": "val=a3; val&=X combines back to val=a3&X"},
     {"slug": "result-tmp-var", "score": 5, "reason": "u32 result=cmd|val; *(a0+4)=result is inlined"},
     {"slug": "a3-direct-inplace", "score": 6, "reason": "using a3 &= X; a3 |= ... directly puts result in a3"},
-    {"slug": "val-init-on-decl", "score": 7, "reason": "u32 val=a3&X at decl with later ifs adds prologue insns"}
+    {"slug": "val-init-on-decl", "score": 7, "reason": "u32 val=a3&X at decl with later ifs adds prologue insns"},
+    {"slug": "u16-a3-param", "score": 5, "reason": "Session 2: narrowing a3 to u16 doesn't change the combine fold (andi 0x9FF still drops to $a3)"},
+    {"slug": "val-or-eq-cmd-compound", "score": 6, "reason": "Session 2: `val |= cmd; *p = val;` regresses — val gets a second use, allocation changes"},
+    {"slug": "cmd-or-eq-val-compound", "score": 5, "reason": "Session 2: `cmd |= val; *p = cmd;` same as cmd|val direct"},
+    {"slug": "hoist-val-pre-sb", "score": 6, "reason": "Session 2: hoisting val=a3&MASK before a0[3]=1 emits +1 insn (val held across sb)"}
   ]
 }

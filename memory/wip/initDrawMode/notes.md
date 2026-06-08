@@ -2,29 +2,30 @@
 
 ## TL;DR
 
-Honest pure-C floor lowered 5 → 1. Remaining diff is a SINGLE OR-operand-order
-flip at the last instruction (`or v0,v0,v1` vs target `or v0,v1,v0`, both
-encode `cmd | val`). HEAD carries cheat-asm `register asm("v1")` + `register
-asm("v0")` pins on cmd/val — committed cheats per
-[[inline-asm-policy]]. The candidate retires both pins and reaches sandbox 1
-in pure C; the last byte is blocked by a coupling between cc1's combine pass
-(folds val's andi into the dying a3) and the desired `cmd | val` source-order
-arg pattern.
+Honest pure-C floor = 5 (the natural `cmd | val` form, pins removed). The
+session-1 "floor 1" claim has been **REJECTED by cheat-reviewer (session 2,
+2026-06-08)** — the `val | cmd` operand-reorder was enumeration-derived per
+`.claude/rules/or-tree-shape-shift.md` (FAIL tests 3, 4, 5). HEAD still
+carries the cheat-asm `register asm("v1")` + `register asm("v0")` pins on
+cmd/val ([[inline-asm-policy]]). To reach COMPLETED-C the function needs a
+legitimate pure-C lever that keeps $a3 alive past `val = a3 & 0x9FF` so
+combine cannot fold val's andi destination into $a3 — without touching any
+forbidden cheat-by-spelling family.
 
 ## Resume instructions
 
 1. Apply `memory/wip/initDrawMode/candidate.c` to `src/gpu.c::initDrawMode`
-   (replaces the 2-pin HEAD body).
+   (replaces the 2-pin HEAD body with the natural pin-free `cmd | val` form).
 2. `& tools/eng.ps1 sandbox initDrawMode --disable all` should report
-   score 1 (target_insns=11, build_insns=11).
-3. `& tools/eng.ps1 verify-oracle --rebuild` will FAIL (build sha1
-   `a0e903255c01b8d254c4865550c1ebc13ea9bf6c` vs oracle
-   `62efab4f73f992798c43e8c730aa43baa10bb4fa`).
-4. Diff the function vs target:
-   `wsl mipsel-linux-gnu-objdump -d build/src/gpu.o | grep -A12 '<initDrawMode>'`
-   — the only diff is the last `or` instruction's operand order.
+   score 5 (target_insns=11, build_insns=11). This is the documented
+   pure-C floor — same as HEAD's pin-stripped sandbox.
+3. **Do NOT** flip the operand order to `val | cmd` to chase the lower score
+   — that's the rejected form (see `rejected/val-or-cmd-operand-reorder.c`).
+4. The diff (sandbox-stripped objdump vs `build/src/gpu.o`):
+   - build emits `andi a3, a3, 0x9FF; or v0, v0, a3` (val folded into $a3)
+   - target wants `andi v0, a3, 0x9FF; or v0, v1, v0` (val in $v0, source order cmd|val)
 
-## The wall
+## The wall (refined per session-2 reviewer FAIL)
 
 Target asm (build/src/gpu.o, canonical):
 ```
@@ -35,52 +36,70 @@ beqz    a2, .L1
 ori     v1, v1, 0x200
 .L1:
 beqz    a1, .L2
- andi   v0, a3, 0x9FF   ; val in v0, NEW dest (not a3)
+ andi   v0, a3, 0x9FF   ; val in v0, NEW dest (NOT a3 — the key)
 ori     v0, v0, 0x400
 .L2:
-or      v0, v1, v0      ; cmd | val, dst reuses val's reg (v0)
+or      v0, v1, v0      ; cmd | val source order, val rt slot
 jr      ra
  sw     v0, 4(a0)
 ```
 
-`*(u32*)(a0+4) = cmd | val` source order — but val IS in v0 (not aliased
-to a3). Reaching that allocation in our fork requires keeping a3 alive past
-val's andi. Combine pass otherwise rewrites `val = a3 & 0x9FF` from
-"andi <newpseudo>, a3, 0x9FF" to "andi a3, a3, 0x9FF" (a3 dies, reuses reg).
+The NATURAL `cmd | val` source order (candidate.c) emits:
+```
+andi    a3, a3, 0x9FF   ; val folded into a3 by combine
+ori     a3, a3, 0x400
+or      v0, v0, a3      ; or v0, v0, a3 — 5-byte diff cluster vs target
+```
 
-Mine (val|cmd source) gets val→v0, cmd→v1 correctly but the OR source order
-is wrong: emits `or v0, v0, v1`. Mine (cmd|val source) gets val→a3 due to
-combine fold: emits `or v0, v0, a3`. Neither matches target bytes.
+Combine's RTL substitution sees: `val = a3 & 0x9FF` produces a new pseudo,
+a3 has no further uses after this insn, val's pseudo has one use (the final
+OR). Combine substitutes `(set new_p (and a3 0x9FF))` -> `(set a3 (and a3
+0x9FF))` (allocating new_p to a3's hardreg). The OR then reads val from $a3.
 
-## What didn't work
+The `val | cmd` source order avoids the fold (val lands in $v0) but encodes
+the OR's rs/rt slots as `or v0, v0, v1` instead of target's `or v0, v1, v0`.
+That choice was enumeration-derived and cc1-internals-justified — the
+cheat-reviewer FAILed it per [[or-tree-shape-shift]].
 
-See `meta.json::rejected_forms` for the full list of variants tested
-(reorder, split val, in-place a3, result temp var, decls-first form).
-The common failure: every variant that doesn't add extra instructions
-either folds val→a3 or emits the wrong OR operand order.
+## What didn't work — session 2
+
+See `meta.json::rejected_forms` (the new session-2 entries):
+- `u16 a3` narrow type (Lever B): score 5, no progress
+- `val |= cmd; *p = val;` compound assign: score 6, regress
+- `cmd |= val; *p = cmd;` compound assign: score 5, same
+- hoist `val = a3 & 0x9FF` before `a0[3] = 1`: score 6 (+1 insn), regress
+
+None of these legitimate structural variants keep $a3 alive past val's andi
+without emitting bytes.
 
 ## Next-step hypotheses
 
-See `meta.json::next_hypotheses`. The key technical question: is there
-ANY pure-C construct that prevents combine from folding val's andi dest
-into a3, without falling into the forbidden `(void)a3` / `a3 = 0` /
-volatile-coerce / chain-extender family per [[no-new-park-categories]] /
-[[register-alloc-pure-c]] §6 + Lever D?
+See `meta.json::next_hypotheses`. The key technical question now: is there
+ANY pure-C construct that keeps $a3 alive past val's andi without:
+- enumerating operand orderings ([[or-tree-shape-shift]]);
+- a dead self-assign / dead conditional store of a3 (Lever D forbidden);
+- a `(void)a3` / `(void)&a3` address-coercion ([[dead-vars-local-array]]);
+- a volatile cast on a3 ([[inline-asm-policy]] expanded catalog);
+- a chain-extender that bumps refs but emits bytes
+  ([[register-alloc-pure-c]] §6 forbidden);
+- a `__asm__` barrier ([[inline-asm-policy]]).
 
-Cheat-reviewer was NOT invoked on the candidate body in this session.
-The candidate body itself is plain C (no pins, no asm injection, no
-dead stores) — it's purely "doesn't quite match" rather than "matches
-via a cheat." But the policy gate is the byte match, not the absence of
-cheats — and this body doesn't match.
+If the answer is "no" — i.e., target's bytes genuinely require an operand-
+order choice that cannot be independently justified on program-logic grounds
+— the function may need permanent park as a "commutative-OR operand-order
+wall" surfaced to the user as a policy question (per the reviewer's
+next_action), not as a new cheat-park category.
 
 ## Related rules
 
+- [[or-tree-shape-shift]] — the rule the session-1 candidate violated; SESSION-2 PRIMARY
 - [[register-alloc-pure-c]] — the parent RA-via-C-structure playbook.
-  Step 0 diagnosis confirms our build is the anomaly (target uses the
-  preferred-lower reg for val).
-- [[inline-asm-policy]] — the HEAD pins are cheat-asm and the function
-  cannot be COMPLETED-C with them.
-- [[difficult-is-not-impossible]] — the matching C exists; we just
-  haven't found it.
-- [[no-new-park-categories]] — keep this as parked + WIP; do NOT
-  propose a "commutative-or wall" as a new category.
+- [[inline-asm-policy]] — HEAD pins are cheat-asm; function cannot be COMPLETED-C with them.
+- [[difficult-is-not-impossible]] — but stuck != unfinished work; the matching
+  C may not exist within sanctioned pure-C constructs for this function.
+- [[no-new-park-categories]] — keep parked + WIP; do NOT propose a new
+  "commutative-OR wall" auto-park category. If permanent park is needed,
+  surface as a policy question to the user.
+- [[review-discipline-before-commit]] — invoke cheat-reviewer BEFORE saving
+  any candidate as candidate.c going forward (session-1 skipped this; the
+  FAIL caught the cheat in session 2).
