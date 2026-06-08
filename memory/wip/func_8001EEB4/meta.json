@@ -1,0 +1,79 @@
+{
+  "function": "func_8001EEB4",
+  "file": "code6cac",
+  "scores": {
+    "head_floor": 6,
+    "candidate_floor": 3,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 58,
+    "target_insns": 59
+  },
+  "sessions": [
+    {
+      "date": "2026-06-07",
+      "git_head_at_measurement": "6a0a83d0",
+      "lever": "hoist-call-arg-local for second jal (func_80021A98)",
+      "lever_rule": "hoist-call-arg-local-flips-jal-delay",
+      "floor_was": 6,
+      "floor_now": 3,
+      "notes": "s32 idx2 = D_800A3748; declared first in block before *(entry+0x5E)=1 store, then call. Retires the reorder 36,38,40,39,37,41 regfix rule. Insn count 60->58 matches target's 59 +/-1."
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": null,
+    "evidence": "Not invoked. Lever applied is the documented [[hoist-call-arg-local-flips-jal-delay]] pattern with confirmed sanctioned precedent (func_80060B70 / commit 6a0a83d0). idx2 has semantic content (call's arg0). Recommend reviewer invocation if/when candidate.c is applied to src/ at the score-3 floor."
+  },
+  "remaining_gap": {
+    "summary": "3 diffs in comparison block at maspsx idx 14-22: lhu lands in $v1 (target $a1); missing 'andi $v1, $a1, 0xFFFF' insn at idx 16; addiu in bnez delay slot uses $v1 (target $a1). The 3 are coupled: forcing GCC to materialize the andi would naturally allocate $v1 to the andi result and push lhu into $a1.",
+    "rule_count_at_head": 4,
+    "rules_in_remaining_cluster": [
+      "func_8001EEB4: $3 <-> $5 @ 14-14 (lhu reg swap)",
+      "func_8001EEB4: insert \"andi $3,$5,0xFFFF\" @ 16",
+      "func_8001EEB4: $3 <-> $5 @ 21-21 (addiu in delay slot reg swap)"
+    ],
+    "rules_retired_by_candidate": [
+      "func_8001EEB4: reorder 36,38,40,39,37,41 @ 36-41 (scheduling for second jal)"
+    ]
+  },
+  "rejected_forms": [
+    {
+      "form": "u32 a1 = (u32)*(u16*); u32 a1_masked = a1 & 0xFFFF;",
+      "score": 3,
+      "reason": "Combine folds the redundant mask; no andi emitted. Same score as baseline."
+    },
+    {
+      "form": "s32 a1_raw = *(s16*)..; u16 a1 = (u16)a1_raw;",
+      "score": 3,
+      "reason": "GCC combine collapses lh+cast back to lhu equivalent. No andi materialization."
+    },
+    {
+      "form": "register u32 a1 = (u32)*(u16*);",
+      "score": 3,
+      "reason": "register keyword is a hint GCC ignores. No allocation change."
+    },
+    {
+      "form": "goto-end early-exit instead of && chain",
+      "score": 6,
+      "reason": "GCC compiles && and goto-end forms identically. No codegen change. Note: per [[goto-end-prologue-delay-slot]] using accumulator+shared-end purely for codegen would be a cheat anyway."
+    },
+    {
+      "form": "s8 idx2 = D_800A3748; (not s32) as hoisted second-call arg",
+      "score": 7,
+      "reason": "s8 type triggers lbu+sll24+sra24 expansion (extra 2 insns). Use s32 instead — lb directly without sign-ext shifts."
+    }
+  ],
+  "next_hypotheses": [
+    "Apply the candidate's idx2 hoist + find an additional lever for the andi materialization. Score target: 0 (then retire to drop all 4 rules).",
+    "Find a source pattern that defeats combine's (and (mem:HI) 0xFFFF) -> (mem:HI) fold. Try: read via a struct field with int type that the original code masks at the read site, or a pattern where the lhu result flows through a longer RTL chain combine cannot collapse.",
+    "Read GCC 2.7.2 tools/gcc-2.7.2/combine.c for the specific simplify rule folding the andi here. Use instrumented cc1 (tmp/gccdbg/ with BB2_ALLOC_DEBUG / SCHED_DEBUG / PRIO_DEBUG hooks) to dump combine input/output for the lhu region. Per [[difficult-is-not-impossible]] this is the load-bearing diagnostic.",
+    "Cross-reference sibling functions with the same lhu/andi/beq pattern in target: func_8001A820 (empty body, no source clue), func_8001F938 (INCOMPLETE, score 11, 13 rules), calc_loc_mat_fw_80055B60 (ASM-STRUCTURAL park bucket). None have matched yet — solving one may unlock the others (or document the family's irreducibility).",
+    "Permuter from the candidate-floor-3 base. Set up permuter/func_8001EEB4/ with candidate.c as base, run with --stop-on-zero. Per the project's permuter discipline use clean single-function target.s + prelude.inc (drop .set gp=64)."
+  ],
+  "memory_notes": [
+    ".claude/rules/hoist-call-arg-local-flips-jal-delay.md",
+    ".claude/rules/register-alloc-pure-c.md",
+    ".claude/rules/difficult-is-not-impossible.md",
+    ".claude/rules/no-new-park-categories.md"
+  ]
+}
