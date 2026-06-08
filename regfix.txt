@@ -819,6 +819,9 @@ tslPrintScreen: subst "lh.*" "lh\t$2,0($17)" @ 95
 tslPrintScreen: reorder 97,98,96 @ 96-98
 tslPrintScreen: subst "lh.*" "addiu\t$3,$zero,-2" @ 99
 tslPrintScreen: subst "nop.*" "lh\t$2,0($17)" @ 100
+# .L26 is a CROSS-FUNCTION reference (stage_InitCollision's label in this same
+# .c file). `{lbl#N}` is function-local; cross-function refs are inherently
+# brittle (any TU label-renumber breaks them). Leave as-is — Phase 2b notes.
 tslPrintScreen: subst "bne.*" "bne\t$2,$3,.L26" @ 101
 tslPrintScreen: reorder 102,103,101 @ 101-103
 tslPrintScreen: subst "lh.*" "lh\t$3,0($17)" @ 105
@@ -2266,6 +2269,9 @@ mk_leaf_newpos: $5 <-> $3 @ 81-97
 mk_leaf_newpos: $5 <-> $3 @ 136-142
 # Phase 5: Dispatch restructure — beq uses s5, andi moves to delay slot
 mk_leaf_newpos: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
+# .L631 is a CROSS-FUNCTION reference (label in a different function in
+# code6cac_b.c). `{lbl#N}` is function-local; cross-function refs cannot
+# use it — leave as-is, Phase 2b notes.
 mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L631" @ 83
 mk_leaf_newpos: subst "beq\t\$3,\$2,\.L\d+" "andi\t$6,$2,0x03ff" @ 84
 # Phase 5: adj destination v0->v1
