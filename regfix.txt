@@ -1815,8 +1815,6 @@ saTan5TakeAnim2: subst "\$6," "$5," @ 80
 saTan5TakeAnim2: subst "subu\t\$4" "subu\t$6" @ 84
 saTan5TakeAnim2: subst "\$4" "$6" @ 85
 saTan5TakeAnim2: subst ",\$4," ",$6," @ 86
-# j target: skip result copy, go to stack cleanup
-saTan5TakeAnim2: subst "\.L272" ".L277" @ 87
 # result=0 in j delay slot: a2->v0
 saTan5TakeAnim2: subst "addu\t\$6" "addu\t$2" @ 88
 # beqz delay slot: nop -> move a0,disc(a2)
@@ -2455,8 +2453,6 @@ func_80040D48: subst "\$4" "$6" @ 234
 func_80040D48: subst "\$5" "$4" @ 236
 
 cpu_set_move_command_and_dir_for_no_action: reorder 8,9,1,2,3,4,5,10,11,6,7 @ 1-11
-cpu_set_move_command_and_dir_for_no_action: subst "bne\t\$2,\$0,\.L706" "beq\t$2,$0,.L707" @ 146
-cpu_set_move_command_and_dir_for_no_action: subst "j\t\.L707" "j\t.L706" @ 148
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 147
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 154
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 155
@@ -2866,8 +2862,6 @@ saTan0KiWareMoveA: insert_after "addu\t$12,$2,$zero" @ 133
 saTan0KiWareMoveA: subst "\$17" "$4" @ 139
 
 # === End branch: integrate li/branch optimization (-1 insn) ===
-# idx 185: branch to epilogue instead of .L283
-saTan0KiWareMoveA: subst "\.L293" ".L294" @ 185
 # idx 186: delay slot: move -> li
 saTan0KiWareMoveA: subst "addu\t\$4,\$18,\$zero" "addiu\t$2,$zero,1" @ 186
 # delete j .L284 (idx 191) and .L283: li (idx 193)

@@ -4,8 +4,6 @@
 # instructions.
 
 # tslPrintScreen: label-aware marker-scan tail cleanup after stage 1.
-tslPrintScreen: subst "\.L27-8" ".L27" @ 34
-tslPrintScreen: subst "\.L27-8" ".L27" @ 90
 tslPrintScreen: subst "beq.*" "lh\t$2,0($17)" @ 96
 tslPrintScreen: subst "lh.*" "beq\t$2,$22,.L70+4" @ 98
 tslPrintScreen: subst "bne.*" "lh\t$2,0($17)" @ 101
