@@ -17,6 +17,15 @@
       "floor_was": 6,
       "floor_now": 3,
       "notes": "s32 idx2 = D_800A3748; declared first in block before *(entry+0x5E)=1 store, then call. Retires the reorder 36,38,40,39,37,41 regfix rule. Insn count 60->58 matches target's 59 +/-1."
+    },
+    {
+      "date": "2026-06-07",
+      "git_head_at_measurement": "0d960614",
+      "lever": "(s16)a1-cast-via-separate-local triggers andi materialization",
+      "lever_rule": "NEW — needs cataloging (sign-extend-via-local defeats combine)",
+      "floor_was": 3,
+      "floor_now": 3,
+      "notes": "NEW MECHANISM FOUND: `s32 a1_s = (s16)a1;` as a separate top-level local (used in `(u32)(a1_s - 0x17) >= 2`) DOES trigger target's andi materialization. Build_insns 58->59 = target exactly. Confirmed via objdump: andi $v1,$a1,0xFFFF appears at idx 18, addiu uses $a1, lhu lands in $a1 (all matching target's register pattern). HOWEVER: (a) the (s16) cast compiles to `lh` (sign-ext load) not target's `lhu` (zero-ext) — load opcode mismatch is 1 byte; (b) the additional local inflates stack frame by 8 bytes (addiu sp,-40 vs target -32; 3 saved-reg offsets shift +8). Net score 9 (was 3), but the BREAKTHROUGH is finding what produces the andi. Next session must keep the (s16)-cast effect while keeping lhu + avoiding the stack inflation. Forms tested negative this session: (s16)a1 inline in expression (no separate local) -> +2 insns sll/sra emission; (u32)a1 cast on comparison -> score 3 unchanged; (s32)a1 - 0x17 precomputed as local -> score 5; re-read pattern *(u16*)(entry+0x6A) -> CSE folded."
     }
   ],
   "reviewer": {
@@ -61,14 +70,44 @@
       "form": "s8 idx2 = D_800A3748; (not s32) as hoisted second-call arg",
       "score": 7,
       "reason": "s8 type triggers lbu+sll24+sra24 expansion (extra 2 insns). Use s32 instead — lb directly without sign-ext shifts."
+    },
+    {
+      "form": "s32 a1_diff = (s32)a1 - 0x17; precomputed local",
+      "score": 5,
+      "reason": "Hoists the subtract out of the && chain, regressing the scheduling. Insn count drops to 57 (target 59)."
+    },
+    {
+      "form": "(u32)a1 != 0xA explicit cast in comparison",
+      "score": 3,
+      "reason": "GCC sees u16 -> u32 promotion as no-op (lhu already zero-extends). No codegen change."
+    },
+    {
+      "form": "*(u16 *)(entry + 0x6A) != 0xA re-read in comparison",
+      "score": 3,
+      "reason": "CSE folds back to the cached value in the local. No second lhu emitted."
+    },
+    {
+      "form": "(u32)((s16)a1 - 0x17) >= 2 inline (s16) cast no separate local",
+      "score": 3,
+      "reason": "build_insns 61 vs target 59. The inline (s16) emits sll 16 + sra 16 to sign-extend the u16-loaded value (+2 insns regression). The separate-local form (see sessions[2]) is the lever direction; inline doesn't trigger andi the same way."
+    },
+    {
+      "form": "nested-if with block-scoped s32 a1_s = (s16)a1 inside inner if",
+      "score": 3,
+      "reason": "build_insns 61 vs target 59. Same lhu kept (good — doesn't force the load to lh) but combine processes the sign-extension in the inner block's RTL after the outer if's RTL has already settled, so the andi DOESN'T materialize. Block-scope kills the lever's effect. Function-scope local is REQUIRED for the andi trigger."
+    },
+    {
+      "form": "s32 a1_s = (s32)(s16)a1 function-scope local (explicit (s32) before (s16))",
+      "score": 9,
+      "reason": "Identical asm output to s32 a1_s = (s16)a1. (s32)(s16) double-cast and (s16) single-cast produce the same RTL — the inner (s16) is what matters; the outer (s32) is redundant on a value already widening to int via default promotion."
     }
   ],
   "next_hypotheses": [
-    "Apply the candidate's idx2 hoist + find an additional lever for the andi materialization. Score target: 0 (then retire to drop all 4 rules).",
-    "Find a source pattern that defeats combine's (and (mem:HI) 0xFFFF) -> (mem:HI) fold. Try: read via a struct field with int type that the original code masks at the read site, or a pattern where the lhu result flows through a longer RTL chain combine cannot collapse.",
+    "**PRIMARY (session-2 finding)**: The `s32 a1_s = (s16)a1;` separate top-level local DOES trigger the andi materialization (build_insns 58->59 = target, andi/$a1/$v1 register pattern all match). Two coupled regressions to solve: (a) the (s16) cast forces the LOAD itself to `lh` instead of target's `lhu` (sign-extend at the memory read, not just on the cached value); (b) the local inflates the stack frame by 8 bytes. Resume by finding a form that produces the sign-extension RTL effect (which is what triggers the andi) WITHOUT changing the load opcode AND without forcing a stack spill. Candidates: (i) block-local declaration inside the if-arm to limit live range; (ii) read the value separately as both u16 AND s16 via *(u16*)/*(s16*) at different syntactic positions; (iii) routing through (s32)(s16)a1 vs (s16)(s32)a1 different cast orders.",
+    "Find a source pattern that defeats combine's (and (mem:HI) 0xFFFF) -> (mem:HI) fold WITHOUT triggering the lh-load conversion. Per session-2: the (s16) cast is the only form found so far that disrupts the fold, but it does so by changing the LOAD's mode. A purely RTL-level approach: find a C construct that keeps a SImode pseudo distinct from the HImode load throughout combine.",
     "Read GCC 2.7.2 tools/gcc-2.7.2/combine.c for the specific simplify rule folding the andi here. Use instrumented cc1 (tmp/gccdbg/ with BB2_ALLOC_DEBUG / SCHED_DEBUG / PRIO_DEBUG hooks) to dump combine input/output for the lhu region. Per [[difficult-is-not-impossible]] this is the load-bearing diagnostic.",
     "Cross-reference sibling functions with the same lhu/andi/beq pattern in target: func_8001A820 (empty body, no source clue), func_8001F938 (INCOMPLETE, score 11, 13 rules), calc_loc_mat_fw_80055B60 (ASM-STRUCTURAL park bucket). None have matched yet — solving one may unlock the others (or document the family's irreducibility).",
-    "Permuter from the candidate-floor-3 base. Set up permuter/func_8001EEB4/ with candidate.c as base, run with --stop-on-zero. Per the project's permuter discipline use clean single-function target.s + prelude.inc (drop .set gp=64)."
+    "Permuter from the candidate-floor-3 base. Set up permuter/func_8001EEB4/ with candidate.c as base, run with --stop-on-zero. Per the project's permuter discipline use clean single-function target.s + prelude.inc (drop .set gp=64). With the session-2 finding (the (s16)-cast-local form), seed permuter from that floor-9 base too — permuter may find the structural tweak that fixes the lh and stack regressions."
   ],
   "memory_notes": [
     ".claude/rules/hoist-call-arg-local-flips-jal-delay.md",

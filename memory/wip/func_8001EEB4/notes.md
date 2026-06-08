@@ -31,7 +31,43 @@ Critical detail: use **`s32`** for `idx2`, not `s8`. Despite
 `lbu + sll 0x18 + sra 0x18` expansion (+2 insns regression).
 `s32 idx2 = D_800A3748;` keeps it as a single `lb` instruction.
 
-## What this session DID NOT solve
+## Session-2 (2026-06-07, HEAD 0d960614) — andi materialization lever found
+
+`s32 a1_s = (s16)a1;` declared as a separate top-level local AND referenced in
+the `(u32)(a1_s - 0x17) >= 2` arm of the && chain DOES trigger target's andi
+emission. Confirmed via objdump:
+
+- ✓ `andi $v1, $a1, 0xFFFF` materializes at idx 18 (matching target's
+  exact position and operands)
+- ✓ `addiu $v0, $a1, -23` in bnez delay slot uses `$a1` (matches target;
+  was `$v1` before the lever)
+- ✓ `lhu` lands in `$a1` register (matches target; was `$v1` before)
+- ✓ build_insns 58 -> **59** = target's exact count
+
+Two coupled regressions cost net +6 score (3 -> 9):
+
+- ✗ load at idx 16 is `lh $a1, 106($s1)` (sign-extend) — target has
+  `lhu` (zero-extend). 1 byte opcode diff.
+- ✗ stack frame inflates by 8 bytes (addiu sp,sp,-40 vs target -32;
+  three saved-reg sw offsets shift +8). The extra local needs a spill
+  slot apparently.
+
+Mechanism (hypothesis): the (s16) cast on a u16-loaded value forces GCC
+combine to emit a SImode sign-extension RTL pattern. That RTL pattern
+includes the `andi 0xFFFF` extraction the target wants. But combine
+ALSO folds the sign-extension INTO the load itself (lhu -> lh).
+Decoupling the andi-emission from the load-opcode change is the
+remaining puzzle.
+
+### Resume target (next session)
+
+PRIMARY: find a C form that gets the (s16)-cast-on-local effect (andi
+emission, register pattern) WITHOUT changing lhu -> lh and WITHOUT
+inflating the stack. Try block-local declaration; try (s32)(s16)a1
+vs (s16)(s32)a1 ordering; try reading a1 separately via different
+type pointers in two distinct syntactic positions.
+
+## What session-1 DID NOT solve
 
 The comparison block at maspsx idx 14-22:
 
