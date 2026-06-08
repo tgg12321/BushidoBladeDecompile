@@ -3,9 +3,9 @@
   "file": "text1b",
   "scores": {
     "head_floor": 5,
-    "candidate_floor": 4,
+    "candidate_floor": 2,
     "metric": "sandbox --disable all (masked Levenshtein)",
-    "build_insns": 36,
+    "build_insns": 35,
     "target_insns": 36
   },
   "sessions": [
@@ -14,24 +14,34 @@
       "lever": "arg0 reassigned to (u8*)buf inside the decompress-if; gpu_LoadImage(rect,(s32)arg0)",
       "lever_rule": null,
       "floor_was": 5,
-      "floor_now": 4
+      "floor_now": 4,
+      "git_head_at_measurement": "6de1f315"
+    },
+    {
+      "date": "2026-06-07",
+      "lever": "sibling-pattern two-call form with early return on decompress path; cross-jump merge collapses to one call site",
+      "lever_rule": null,
+      "floor_was": 4,
+      "floor_now": 2,
+      "git_head_at_measurement": "6de1f315",
+      "notes": "Sibling at line 280-296 of src/text1b.c uses the same idiom. Cross-jump merge (jump.c find_cross_jump) collapses the two gpu_LoadImage call sites into one because they share the [j ; jr ra] suffix and ABI gives identical FUNCTION_USAGE. With this form, GCC emits addiu $s0,$sp,24 naturally (vs the prior session's addiu+move pair) AND the $a1 sources merge in the call's delay slot. Net: 2-insn improvement vs session 1, retiring rules @24/@25/@28 (s0=sp+24 and $a1/$a2=s0 manufactures) by structural choice — they would no longer fire at any cheat-free index because the candidate emits target's exact pattern."
     }
   ],
   "reviewer": {
     "verdict": null,
     "date": "2026-06-07",
-    "evidence": "Worker self-vetted against the 6-test cheats-by-spelling checklist. Passes: (1) semantic purpose (the assignment is required for the false-decompress branch to upload arg0, not buf, matching target asm); (2) human-programmer test (a real programmer reusing a parameter pointer once the original use ends is idiomatic, though less common than a separate `src` local); (3) GCC-internals (justified by target asm, not by RTL); (4) not permuter-derived (read target asm); (5) not in any forbidden family; (6) naming neutral. The cheat-reviewer agent has NOT been invoked yet — recommend invocation before any commit-to-COMPLETED-C is attempted."
+    "evidence": "Session 2 lever is the sibling-pattern two-call form already used (and accepted) by the same file's sibling at line 280-296. Sibling matches in pure C without cheats — this is the project-standard 'decompress-or-direct upload' idiom, not a coercion. 6-test checklist: (1) semantic purpose YES — two distinct upload code paths, one with decompress, one direct; (2) human-programmer test YES — sibling proves a real programmer wrote it this way in this same file; (3) GCC-internals NO — the cross-jump merge is a downstream optimization, the C structure stands on its own program logic; (4) not permuter-derived; (5) not in any forbidden family (no dead stores, no DImode, no pins, no volatile coercion, no inline asm); (6) naming neutral (arg0, buf, rect, dim — original names). cheat-reviewer agent NOT invoked yet — recommend invocation before any commit-to-COMPLETED-C is attempted, even though the lever is structurally identical to the sibling's already-matched form."
   },
   "remaining_gap": {
-    "summary": "Two structurally-independent diffs remain at distance 4: (a) GCC combines `arg0 += 4; arg0 += 8;` into a single `addiu s0,s0,12` in the beqz's delay slot — target keeps the +4 in the delay slot AND emits a separate `addiu s0,s0,8` (so target has 2 insns where GCC builds 1). (b) GCC stages the `arg0 = (u8*)buf` reassignment through $v0 (`addiu v0,sp,24; move s0,v0`, 2 insns) where target writes directly `addiu s0,sp,0x18` (1 insn). The two issues cancel out in build_insns count (36 == 36) but leave 4 unaligned positions in the masked score.",
+    "summary": "ONE structurally-independent diff remains at distance 2: GCC's combine pass merges the two `arg0 += 4; arg0 += 8;` statements (post-flag-check) into a single `addiu $s0, $s0, 12`. Target keeps them split: `addiu $s0, $s0, 4` (in beqz delay slot) followed by `addiu $s0, $s0, 8` (separate instruction). build_insns 35 vs target 36 (the missing instruction is the +8). Score 2 reflects the 2-position misalignment caused by the missing instruction.",
     "rule_count_at_head": 5,
-    "rules_required_for_full_match": "All 5 existing regfix rules retire ALL 4 candidate diffs (the rules manufacture the +4/+8 split AND the buf-into-s0 via $16 reuse). Candidate alone retires NONE of them; the rules need their indices recalibrated for the candidate's slightly-shifted maspsx output before a partial retire could be attempted, and even then the +12-vs-split + addiu+move-vs-addiu gaps remain."
+    "rules_required_for_full_match": "Rules @24 (insert addiu $s0,$sp,24), @25 (subst $a1 from sp+24 to $s0), and @28 (subst $a2 from sp+24 to $s0) are obviated by the session-2 candidate — it emits target's exact pattern for those positions. Rules @12 (subst $s0+=12 to $s0+=4) and @13 (insert $s0+=8) would still be needed to manufacture the +4/+8 split that combine merged. To reach COMPLETED-C (zero rules) requires defeating the combine fold via pure-C structure, which has not been achieved in 7 attempted variants (session 1's 4 + session 2's 3). The do-while-0 exception is narrowly scoped to LABEL_OUTSIDE_LOOP_P / reorg.c interaction per do-while-zero-exception.md and is NOT sanctioned for defeating combine."
   },
   "next_hypotheses": [
-    "Diagnose the +12 fold: dump cc1 raw output (use BB2_REG_DEBUG or just -da) on the candidate, confirm combine.c is merging the two `(set s0 (plus s0 4))(set s0 (plus s0 8))` insns. The basic-block-boundary lever (combine doesn't merge across branches/labels) is the only known pure-C way to defeat — investigate whether the original source structure had a label or control-flow split between (b) and (c).",
-    "Diagnose the addiu+move pair: dump `-da` on the candidate to find why GCC chose to compute `(u8*)buf` into $v0 first and then move to $s0 instead of computing directly into $s0. May be a parameter-pseudo reload artifact; if so, expressing the buf address through a non-parameter local that lives ONLY in the if-branch (e.g., `u8 *dst = ...`) might let RA assign $s0 directly. (Tried with `s16 *p_buf = buf;` declared at top — went to $s1 with +1 callee-save, score 12 → worse. The local must NOT outlive arg0's last use OR must share arg0's pseudo.)",
-    "Permuter from candidate base: score 4 with build_insns matched is exactly the lever-class plateau the permuter is good at — set up permuter/func_800484A0/ with the candidate, target clean from asm/funcs/func_800484A0.s + prelude.inc, `--stop-on-zero`. Likely 0-cost mutations on declaration order / cast forms can flip RA.",
-    "Sibling cross-ref: the function at line 252-296 (anonymous, but uses gpu_LoadImage with the same upload-via-buf-or-direct branching) and at line 16110 / 12872 etc. all use the gpu_LoadImage pattern. Compare their decomp structure to see which already-matched form uses the `src = (decompress ? buf : data)` pattern in pure C — that's the SOTN-clean target structure."
+    "Permuter from the session-2 base. Score 2 with build_insns=35 (1 short) is exactly the kind of plateau the permuter excels at — set up permuter/func_800484A0/ with the session-2 candidate, target clean from asm/funcs/func_800484A0.s + tools/decomp-permuter/prelude.inc (drop the gp=64 line). Use --stop-on-zero. Likely 0-cost mutations on declaration order / statement reordering might find a form where combine doesn't merge the two arg0+=N statements.",
+    "Diagnose the +12 fold via cc1 -da on the session-2 candidate. Confirm combine.c is the merging pass and check whether any RTL-stage construct (BB boundary, use-between-defs) can be reached from C-source restructure. Particular avenues: (a) inserting a memory access through arg0 between the two defs that doesn't emit instructions itself (combine can see the RTL use even if DCE removes the C code); (b) splitting the dim computation into two halfword loads with the +8 increment between them.",
+    "Sibling-deep cross-reference at line 252-296 (the matched sibling). Its body uses `arg0 += 4; arg0 += 8;` too AND matches — investigate WHY the sibling's version doesn't trigger the combine fold but ours does. The sibling has more local variables (p_alt, flags, head, dim, dim2) which might give arg0 a different RTL pseudo lifetime profile.",
+    "Try restoring the prior session's `arg0 = (u8*)buf` assignment + the new two-call form combined — i.e., set arg0=buf inside the decompress-if BEFORE the early return, in case the assignment creates an arg0 use that combine sees between the two += statements. This may or may not affect combine since the use is much later, but worth one measurement."
   ],
   "rejected_forms": [
     {
@@ -53,6 +63,21 @@
       "form": "`if(...) goto skip; ... skip:` instead of `if(...) {...}`",
       "score": 4,
       "reason": "Bytewise identical to the if-form (cc1's jump-threading collapses them at the RTL level). Reverted."
+    },
+    {
+      "form": "Single-statement interleave: `arg0+=4; rect[0]=arg1; arg0+=8; rect[1]=arg2;` from the session-2 base",
+      "score": 2,
+      "reason": "Tested 2026-06-07 from the session-2 floor-2 base. Same score — confirms combine merges regardless of intervening non-arg0-touching stores. Reverted."
+    },
+    {
+      "form": "Wrap arg0+=4..arg0+=8..body in `if(...!=0){...}` (move early-return out)",
+      "score": 2,
+      "reason": "Tested 2026-06-07 from session-2 base. cc1 collapses the if-block back to early-return via jump-threading. Same score. Reverted."
+    },
+    {
+      "form": "Pre-compute dim from arg0+8 offset then collapse +4+8 into single += 12: `dim = *(u32*)(arg0+8); arg0 += 8; arg0 += 4;`",
+      "score": 3,
+      "reason": "Tested 2026-06-07. The offset dim load creates 1 extra addressing insn and the arg0+=8;arg0+=4 still combine-merges to +=12. Net regression. Reverted."
     }
   ],
   "memory_notes": []

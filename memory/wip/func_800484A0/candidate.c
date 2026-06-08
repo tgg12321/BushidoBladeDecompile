@@ -2,29 +2,50 @@
  * WIP candidate for func_800484A0 (src/text1b.c).
  * Apply by replacing the HEAD body in src/text1b.c around line 359.
  *
- * Honest pure-C floor: 4 (HEAD: 5). build_insns 36 == target_insns 36.
- * Drops 0 of 5 regfix rules; src restructure cannot yet retire any rule
- * because GCC still emits the +12 combined and the addiu+move pair for
- * the buf reassignment (see meta.json / notes.md for the 4-diff breakdown).
+ * Honest pure-C floor: 2 (HEAD: 5, prior session: 4). build_insns 35 vs target 36.
  *
- * Key semantic discovery (this is the lever):
- *   Target asm shows that in the !decompress path ($v0 == 0 from
- *   func_800486FC), gpu_LoadImage's source ($a1) is the ORIGINAL arg0,
- *   not buf. So the HEAD body's `gpu_LoadImage(rect, (s32)buf)` is
- *   semantically wrong — buf would be uninitialized in that path.
- *   The correct expression is:
- *     - if decompress: write to buf, then upload buf
- *     - else: upload arg0 directly (as the sibling at line 280-296 does)
- *   `arg0 = (u8 *)buf;` inside the if reuses the parameter to express
- *   this "src = buf only after decompress" semantic, matching how
- *   target's $s0 is reassigned at insn 25 (only on the if-true path).
+ * Lever (session 2, 2026-06-07): replace the HEAD's "single converged
+ * gpu_LoadImage with arg0 = buf reassignment" with the SIBLING-PATTERN
+ * form (line 280-296 of the same file): a two-call structure where the
+ * decompress-true path emits its own gpu_LoadImage(rect, (s32)buf) +
+ * return, and the fall-through path emits gpu_LoadImage(rect, (s32)arg0).
+ * GCC's cross-jump pass (jump.c find_cross_jump) merges the two
+ * gpu_LoadImage calls into a single call site because they share the
+ * 2-insn suffix [j ; jr ra] AND the ABI gives them identical
+ * FUNCTION_USAGE. The resulting code uses target's exact pattern:
+ *   - addiu $s0, $sp, 24 directly (one insn) instead of the prior
+ *     candidate's addiu+move pair through $v0.
+ *   - The two $a1 sources cross-jump-merge into a single addu $a1,$s0,$0
+ *     in the call's delay slot.
  *
- * Reviewer status: this construct passes the 6-test cheats-by-spelling
- * checklist (semantic purpose: yes; human-programmer: a real programmer
- * might write this when the parameter's lifetime ends mid-function;
- * GCC-internals: justified by target's actual behavior, not by RTL
- * mechanics; family check: not in any forbidden family; naming: arg0
- * keeps its name). See notes.md for the full vetting.
+ * After this lever:
+ *   build_insns 36 -> 35 (target 36)
+ *   Score 4 -> 2
+ *   Remaining diff: the +12 combine fold (target keeps "arg0 += 4;
+ *   arg0 += 8;" as two separate addiu insns; GCC's combine pass merges
+ *   them into a single addiu $s0,$s0,12 because the intervening sh
+ *   stores don't reference arg0).
+ *
+ * Why this is not a cheat:
+ *   - Two call sites with one early-return is a real semantic structure
+ *     that a human programmer would naturally write — the if-true path
+ *     does the decompression + upload + return, the fall-through path
+ *     does the direct upload.
+ *   - This pattern is ALREADY USED in the sibling function (line 280-296)
+ *     of the same file, which matches in pure C without cheats. It's the
+ *     project-standard "decompress-or-direct upload" idiom.
+ *   - Cross-jump merge collapses the two call sites back to one when ABI
+ *     and suffix align — that's a GCC optimization, not a coercion.
+ *   - No naming pattern ("pad", "spill"), no dead code, no register pins,
+ *     no inline asm, no volatile coercion. Passes the 6-test cheats-by-
+ *     spelling checklist.
+ *
+ * The +12 fold residual is the same combine.c behavior documented in
+ * memory/wip — no pure-C structural change tried so far defeats it
+ * (intervening sh stores don't reference arg0; explicit goto fold-back
+ * via jump-threading; the do-while-0 exception is scoped narrowly to
+ * LABEL_OUTSIDE_LOOP_P / reorg.c interaction per do-while-zero-exception.md
+ * and does NOT extend to defeating combine).
  */
 void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
     s16 rect[4];
@@ -43,7 +64,8 @@ void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
     rect[2] = dim;
     if (func_800486FC() != 0) {
         func_8004876C((s32)arg0, rect[2], (s32)buf);
-        arg0 = (u8 *)buf;
+        gpu_LoadImage(rect, (s32)buf);
+        return;
     }
     gpu_LoadImage(rect, (s32)arg0);
 }
