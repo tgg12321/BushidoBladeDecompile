@@ -54,13 +54,13 @@ func_80033DF4: replace_first "^sb\\s+\\$3,D_8010277D$" "sb $3,%lo(D_8010277D)($1
 # NB: cc1 auto-label was .L279 before save_vc_ctrl was retired to canonical asm (2026-06-07);
 # removing save_vc_ctrl's pure-C body shifted text1a.c's cc1 label counter down by 7.
 saTan4FireDisp: delete_between "#nop.*'\.L272:'" "^bgez"
-saTan4FireDisp: insert_before "^lh\t\$2,0\(\$16\)" ".L272:"
+saTan4FireDisp: insert_before "^lh\t\$2,0\(\$16\)" "{lbl#6}:"
 
 # AllocRobRmd: fix .L61 label position (regfix reorder moved it with rmd[3] load)
 # 1. remove .L61: from its wrong position (after lh $5,20($18))
 AllocRobRmd: replace_first "\.L61:\n" ""
 # 2. insert .L61: before rmd[1] load (the correct first instruction of texture block)
-AllocRobRmd: insert_before "^lw\t\$4,4\(\$17\)" ".L61:"
+AllocRobRmd: insert_before "^lw\t\$4,4\(\$17\)" "{lbl#8}:"
 
 # saTan2KabutoWareMove: keep the regfix-inserted branch pair anchored to the
 # correct local blocks after helper-swaps shift local numeric labels.
