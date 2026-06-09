@@ -1,6 +1,5 @@
 pilot_rank,block_file,kind,readiness,n_symbols,n_jtbls,n_strings,n_data,bytes,n_owners,n_files,files,owners,n_stubs,n_completed,n_active,n_parked,n_authorize,n_orphan
 -20000,101C.rodata_post.s,trivial,deletion-ready,0,0,0,0,0,0,0,,,0,0,0,0,0,0
--9368,101C.rodata_pre_post.s,single-function,matched-with-incomplete,2,0,0,2,216,1,1,code6cac_c_mid,func_80038170,0,0,2,0,0,0
 -7706,101C.rodata_text1a_a.s,single-function,unknown,2,0,2,0,16445,1,1,text1a_c,func_80044FA0,0,1,0,0,0,1
 -4190,800.rodata_pre.s,single-file,matched-with-incomplete,4,0,4,0,97,7,1,ings,"cpu_set_move_command_and_dir_for_no_action_2,file_LoadOverlay,func_80016C3C,func_80016C80,func_80016D78,sys_GameInit,sys_Panic",0,6,1,0,0,0
 -3518,101C.rodata_main_post.s,single-file,partial,10,4,6,0,206,6,1,main,"DispUpdateStatusMessage,func_80088740,func_8008AF9C,func_8008BE04,func_8008BE4C,saTan1MainJump",7,3,2,0,0,0

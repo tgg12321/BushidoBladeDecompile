@@ -28,9 +28,8 @@ SECTIONS
         build/src/code6cac_b.o(.rodata);
         build/asm/data/101C.rodata_pre.o(.rodata);
         build/src/code6cac_c0.o(.rodata);
-        build/asm/data/101C.rodata_pre_post.o(.rodata);
-        build/src/code6cac_c.o(.rodata);
         build/src/code6cac_c_mid.o(.rodata);
+        build/src/code6cac_c.o(.rodata);
         build/src/code6cac_c_ab.o(.rodata);
         build/asm/data/101C.rodata_post.o(.rodata);
         build/src/code6cac_c2.o(.rodata);

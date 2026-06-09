@@ -328,8 +328,28 @@ void func_80038148(void) {
     } while ((u32)i < 0x200);
 }
 extern u8 D_8008F1C0;
-extern u8 D_800109EC;
-extern u8 D_80010A2C;
+/* Rodata moved from asm/data/101C.rodata_pre_post.s (rodata-cleanup project,
+ * docs/rodata-cleanup-project.md, 2026-06-09). func_80038170 (this file) is the
+ * sole owner — uses these as &-addressed byte/word lookups. Declared as u32
+ * arrays since the content is word-aligned. D_80010A2C ends with the literal
+ * save-file id "BASLUS-00663BUSHIDO2" (per the asm/data block's content). */
+const u32 D_800109EC[16] = {
+    0x77DF7FFF, 0x635E6B9F, 0x56FD5B1E, 0x427C4ABD,
+    0x2DFB323C, 0x199B21BB, 0x0D3A115A, 0x8000051A,
+    0, 0, 0, 0, 0, 0, 0, 0,
+};
+const u32 D_80010A2C[38] = {
+    0x00000000, 0x00055110, 0x00000000, 0x003EC5A3,
+    0x38531000, 0x002958EA, 0x7DBA8400, 0x00038DDC,
+    0xB7411000, 0x001CBBDD, 0xCDDB9400, 0x000111AD,
+    0x668EE800, 0x0002008E, 0x6216A900, 0x0017008E,
+    0x6AC63210, 0x001800AE, 0x449A8410, 0x002903DD,
+    0x38500000, 0x006B08EB, 0x06D93000, 0x006B5DE7,
+    0x006CE500, 0x006DCD91, 0x0009C300, 0x007EEA20,
+    0x00001000, 0x008EB200, 0x00000000, 0x00020000,
+    0x4C534142, 0x302D5355, 0x33363630, 0x48535542,
+    0x324F4449, 0x00000000,
+};
 extern u8 D_800A3200;
 extern u8 D_800A3201;
 extern u8 *func_80079194(u8 *, u8 *);

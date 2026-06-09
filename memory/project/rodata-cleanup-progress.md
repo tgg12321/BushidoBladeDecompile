@@ -150,6 +150,80 @@ the 4-byte test above.
   decoration; renaming the C symbol to match would require updating
   named_syms.txt too (out of scope here).
 
+### 2026-06-09 — Second real cluster retirement: 101C.rodata_pre_post.s (en-bloc, 216 bytes)
+
+**Retired**: `101C.rodata_pre_post.s` (216 bytes: D_800109EC checksum table
+[64B] + D_80010A2C save-game struct [152B] ending in "BASLUS-00663BUSHIDO2")
+
+**Method**: en-bloc re-attribution to `code6cac_c_mid.c`.
+
+**Evidence**:
+- Both symbols are referenced ONLY by `func_80038170` in `code6cac_c_mid.c`
+  (lines 400 and 412 in the existing pure-C source).
+- The function is already in queue as `active` (not a stub) — already has
+  real C body, just carries 1 regfix rule + 24 cheat-asm pieces that are
+  unrelated to the rodata data itself.
+- The save-game struct's trailing ASCII "BASLUS-00663BUSHIDO2" matches the
+  game's product code (SLUS-00663) — content is clearly authentic to this
+  TU.
+
+**Mechanical recipe** (variant of `c2_post` recipe — extended to larger
+multi-symbol block):
+1. Replace the `extern u8 D_800109EC; extern u8 D_80010A2C;` lines in
+   `src/code6cac_c_mid.c` with full `const u32[]` definitions transcribed
+   from `asm/data/101C.rodata_pre_post.s`'s `.word` values. Place the
+   definitions where the externs were (mid-file is fine — cc1 emits all
+   global rodata in declaration order at the top of the .rodata section,
+   BEFORE any switch jump tables generated from function bodies).
+2. Delete `asm/data/101C.rodata_pre_post.s`.
+3. Edit `bb2.ld`: remove the
+   `build/asm/data/101C.rodata_pre_post.o(.rodata);` line. NOTE — unlike
+   the c2_post retirement, no segment-move was needed because
+   `code6cac_c_mid.o(.rodata)` was already directly downstream (with
+   zero-byte `code6cac_c.o(.rodata)` between as a no-op). The 216 added
+   bytes naturally fill the gap.
+
+   Wait, that's wrong — there WAS a swap. The current arrangement:
+   ```
+   code6cac_c0 → [asm/data block 216B] → code6cac_c → code6cac_c_mid
+   ```
+   became:
+   ```
+   code6cac_c0 → code6cac_c_mid (now 480+216=696B) → code6cac_c (0B)
+   ```
+   I moved `code6cac_c_mid.o(.rodata)` up to take the asm/data block's
+   slot, AND moved `code6cac_c.o(.rodata)` (0 bytes) to where
+   code6cac_c_mid was. The reorder is what allowed the size change to
+   land correctly: code6cac_c_mid starts at 0x800109EC (was 0x80010AC4),
+   ends at 0x800109EC + 696 = 0x80010CA4 (same as before), so downstream
+   addresses are preserved.
+4. `verify-oracle --rebuild` → SHA1 matches first try.
+
+**Cascade analysis (predicted, confirmed)**:
+- code6cac_c_mid.o(.rodata) before: 480 bytes @ 0x80010AC4
+- code6cac_c_mid.o(.rodata) after: 696 bytes @ 0x800109EC (moved up)
+- The first 216 bytes of the new code6cac_c_mid.o(.rodata) contain
+  D_800109EC + D_80010A2C (cc1 emits top-of-file consts first in
+  declaration order, before any function-body-generated switch jtbls).
+- The remaining 480 bytes are the function bodies' switch jtbls,
+  unchanged content.
+- Downstream segment addresses: ALL unchanged.
+
+**Key insight** for future multi-symbol re-attribution: cc1 2.7.2 emits
+`.rodata` in declaration order — top-of-file `const` declarations precede
+function-body-generated switch jtbls in the output `.o`. This means
+multi-symbol blocks can be re-attributed even when the destination C file
+already has rodata content, by placing the new declarations at the top.
+
+**Notes**:
+- `func_80038170` remains in the active queue (still has 1 regfix rule
+  + 24 cheat-asm). The function's matching work is independent of this
+  retirement and continues as engine-queue work.
+- The 480 bytes of pre-existing `code6cac_c_mid.o(.rodata)` are
+  GCC-generated switch jump tables (anonymous `.L<n>` labels). Their
+  internal relocations adjust automatically when the section is
+  repositioned.
+
 Next pilot candidates (from `memory/project/rodata_clusters.csv`):
 
 1. `101C.rodata_post.s` — 0 owners, trivial-but-4-bytes. **Next, if removable

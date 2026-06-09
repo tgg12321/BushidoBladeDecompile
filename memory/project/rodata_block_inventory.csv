@@ -19,8 +19,6 @@ block_file,symbol,address,type,size_bytes,owner_func,owner_file,owner_status,que
 101C.rodata_pre.s,D_800109BC,0x800109BC,string,12,func_80037B90,code6cac_c,completed,-
 101C.rodata_pre.s,D_800109BC,0x800109BC,string,12,func_80037C34,code6cac_c,completed,-
 101C.rodata_pre.s,D_800109C8,0x800109C8,string,11,motion_LoadPreCalcData_80037F08,code6cac_c_mid,completed,-
-101C.rodata_pre_post.s,D_800109EC,0x800109EC,data,64,func_80038170,code6cac_c_mid,active,active
-101C.rodata_pre_post.s,D_80010A2C,0x80010A2C,data,152,func_80038170,code6cac_c_mid,active,active
 101C.rodata_text1a_a.s,D_80010DEC,0x80010DEC,string,16405,(none),,orphan,-
 101C.rodata_text1a_a.s,D_8001528C,0x8001528C,string,40,func_80044FA0,text1a_c,completed,-
 101C.rodata_text1a_b_pre.s,D_800153F0,0x800153F0,data,44,func_80049F4C,text1b,completed,-
