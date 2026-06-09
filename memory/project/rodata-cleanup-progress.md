@@ -378,6 +378,45 @@ build-critical (CRLF blocked). Added `ignored_dirs` exclusion (tmp/,
 .claude/, build/, permuter/) — files under those dirs are exempt from
 CRLF blocking since the build never reads them.
 
+### 2026-06-09 — Seventh real cluster retirement: 101C.rodata_pre.s (sub-TU, 368 bytes, FIRST MULTI-FILE)
+
+**Retired**: `101C.rodata_pre.s` — 7 jtbls + 3 D_strings spanning 4 owner
+.c files (code6cac_b, code6cac_b2, code6cac_c, code6cac_c_mid). This is
+the first MULTI-FILE cluster retirement.
+
+**Method**: sub-TU split into `src/code6cac_b_rodata.c`, leaving all
+owning functions in their original .c files. Cross-TU symbol resolution
+handles the linkage.
+
+**Multi-file recipe (NEW)**:
+For clusters where symbols' owning functions span multiple .c files, do
+NOT distribute the declarations across all owner files (invasive +
+cascade-prone). Instead, package ALL the block's bytes into ONE sub-TU
+file named after the upstream segment (e.g.
+`code6cac_b_rodata.c` for a block that sits right after `code6cac_b.o`).
+The sub-TU takes the asm/data block's exact link slot. Owning functions
+in their original .c files reference the jtbl/string symbols via normal
+extern linkage; the linker resolves cross-TU.
+
+**Leading-padding trick**: the original asm/data block began with a
+`.word 0x00000000` (4 bytes of leading alignment). To reproduce in C,
+declared a `static const u32 _bb2_<id>_lead = 0;` at the TOP of the
+sub-TU file. cc1 emits it first in .rodata, providing the same 4 leading
+bytes that the asm/data block had. Without this, the new sub-TU's first
+real symbol (jtbl_8001086C) would land at the wrong address.
+
+**Note on jtbl-infra**: this block contains `jtbl_800108CC`, the
+replay_camera_rob_back_loose2 jump table that's the canonical
+[[jtbl-rodata-split-infrastructure]] case (24 asmfix rules bridging
+GCC's emitted jtbl in code6cac_b2.o to the external jtbl_800108CC).
+Those rules continue to function correctly — the external jtbl_800108CC
+symbol now resolves to my code6cac_b_rodata.o definition (same address)
+instead of the asm/data block's. The function itself remains parked
+under jtbl-infra; the rules' retirement is a separate (harder) problem.
+
+**Cascade**: zero. code6cac_b_rodata.o(.rodata) is exactly 368 bytes
+at the slot vacated by 101C.rodata_pre.o.
+
 Next pilot candidates (from `memory/project/rodata_clusters.csv`):
 
 1. `101C.rodata_post.s` — 0 owners, trivial-but-4-bytes. **Next, if removable

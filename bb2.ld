@@ -25,7 +25,7 @@ SECTIONS
         build/src/ings_strings.o(.rodata);
         build/src/code6cac.o(.rodata);
         build/src/code6cac_b.o(.rodata);
-        build/asm/data/101C.rodata_pre.o(.rodata);
+        build/src/code6cac_b_rodata.o(.rodata);
         build/src/code6cac_c0.o(.rodata);
         build/src/code6cac_c_mid.o(.rodata);
         build/src/code6cac_c.o(.rodata);
