@@ -224,6 +224,65 @@ already has rodata content, by placing the new declarations at the top.
   internal relocations adjust automatically when the section is
   repositioned.
 
+### 2026-06-09 — Third real cluster retirement: 800.rodata_pre.s via sub-TU split (104 bytes)
+
+**Retired**: `800.rodata_pre.s` (104 bytes: 5 debug-related strings —
+"OVER FLOW\n", "eff_init:%08x size:%08x\n", "LIMIT:%08x\n",
+"common prim over flow\n", "Fri Aug  7 22:26:32 1998\n").
+
+**Method**: NEW PATTERN — **sub-TU split**. Created
+`src/ings_strings.c` containing ONLY the 5 string definitions, linked
+at the front of rodata.
+
+**Why a new pattern was needed**:
+- The natural owner of these strings is `ings.c` (all 5 are referenced
+  only from ings.c functions).
+- Attempted naive approach (add the strings to ings.c, move
+  `ings.o(.rodata)` to the front of bb2.ld) FAILED — `ings.c` already
+  has ~96 bytes of its own `.rodata`, emitted by two file-scope
+  `__asm__("glabel ...")` blocks (func_800164AC = 19-word pointer
+  table, func_800164F8 = small countdown function). Those bytes have
+  FIXED ADDRESSES at 0x800164AC and 0x800164F8; moving ings.o(.rodata)
+  to the front of rodata would relocate them too, breaking their
+  symbol addresses.
+
+**Sub-TU split recipe** (variant for cases where the natural owner C
+file has other rodata content that's address-fixed elsewhere):
+1. Create a new sub-TU `.c` file (named to reflect its relationship to
+   the natural owner, e.g. `ings_strings.c`).
+2. Put ONLY the to-be-retired declarations in the sub-TU. Bracket-sized
+   to match the asm/data block's exact byte content.
+3. The Makefile auto-discovers `src/*.c`, so the new file builds
+   automatically with no Makefile edit. (Splat doesn't regenerate
+   src/*.c so this is preserved.)
+4. Edit `bb2.ld`:
+   - Replace the `build/asm/data/<block>.o(.rodata);` line with
+     `build/src/<new-tu>.o(.rodata);` at the same position.
+   - Remove the block's `(.data)` and `(.bss)` references too (they
+     were zero-byte stubs, deleting is a no-op).
+5. Delete `asm/data/<block>.s`.
+6. `verify-oracle --rebuild`.
+
+**Evidence (§8.1)**:
+- All 5 strings are referenced exclusively from ings.c functions
+  (g_str_overflow, g_str_eff_init, g_str_limit, g_str_prim_overflow
+  used by debug_printf calls; g_str_build_date is the game's build
+  timestamp referenced via a .data table at D_800A30DC).
+- Naming the sub-TU `ings_strings.c` makes the relationship explicit.
+- The strings have semantic purpose (debug strings, build identifier)
+  and natural source attribution to the ings.c family.
+
+**Cascade**: zero. New `ings_strings.o(.rodata)` is 104 bytes at the
+same address slot that 800.rodata_pre had. All downstream segment
+addresses preserved.
+
+**Note on the original ings.o(.rodata)**: the 96 bytes of
+asm-emitted "function" data in ings.c stays in its current position
+(ings.o(.rodata) is NOT in bb2.ld's rodata list directly; the bytes
+appear in main_TEXT at the right addresses via cc1's section-handling
+of file-scope `__asm__` blocks). Empirically confirmed: oracle holds
+after this retirement.
+
 Next pilot candidates (from `memory/project/rodata_clusters.csv`):
 
 1. `101C.rodata_post.s` — 0 owners, trivial-but-4-bytes. **Next, if removable

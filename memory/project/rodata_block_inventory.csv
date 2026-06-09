@@ -1,11 +1,4 @@
 block_file,symbol,address,type,size_bytes,owner_func,owner_file,owner_status,queue_status
-800.rodata_pre.s,D_80010000,0x80010000,string,11,func_80016C3C,?,completed,-
-800.rodata_pre.s,D_80010000,0x80010000,string,11,sys_Panic,ings,completed,-
-800.rodata_pre.s,D_8001000C,0x8001000C,string,25,file_LoadOverlay,ings,completed,-
-800.rodata_pre.s,D_8001000C,0x8001000C,string,25,func_80016C80,?,completed,-
-800.rodata_pre.s,D_80010028,0x80010028,string,12,func_80016D78,?,completed,-
-800.rodata_pre.s,D_80010028,0x80010028,string,12,sys_GameInit,ings,completed,-
-800.rodata_pre.s,D_80010034,0x80010034,string,49,cpu_set_move_command_and_dir_for_no_action_2,ings,active,active
 800.rodata_post.s,D_800100FC,0x800100FC,string,598,func_80023F08,code6cac,stub,authorize
 800.rodata_post.s,jtbl_80010414,0x80010414,jtbl,24,func_80021424,code6cac,stub,active
 101C.rodata_pre.s,jtbl_8001086C,0x8001086C,jtbl,48,func_80034708,code6cac_b,stub,authorize

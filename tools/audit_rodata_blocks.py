@@ -39,8 +39,8 @@ OUT_CSV = REPO / "memory" / "project" / "rodata_block_inventory.csv"
 #   - 101C.rodata_text1a_DB8.s   (retired 2026-06-09, zero-byte trivial, pilot)
 #   - 101C.rodata_c2_post.s      (retired 2026-06-09, en-bloc re-attribution to config.c)
 #   - 101C.rodata_pre_post.s     (retired 2026-06-09, en-bloc re-attribution to code6cac_c_mid.c)
+#   - 800.rodata_pre.s           (retired 2026-06-09, sub-TU split to new src/ings_strings.c)
 LINKED_BLOCKS = [
-    "800.rodata_pre.s",
     "800.rodata_post.s",
     "101C.rodata_pre.s",
     "101C.rodata_post.s",
