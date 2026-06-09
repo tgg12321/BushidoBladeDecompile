@@ -3508,15 +3508,6 @@
       "status": "authorize"
     },
     {
-      "func": "replay_camera_rob_back_loose2",
-      "file": "code6cac_b2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 24,
-      "status": "parked",
-      "park_reason": "Canonical jump-table infrastructure, not a register/codegen cheat. The 24 asmfix rules (15 renames of GCC .L labels to external jtbl_800108CC + 8 jlabel conversions + 1 delete_between stripping GCC's emitted table) are structurally required: the switch's jump table jtbl_800108CC sits in the FIRST rodata block (asm/data 800.rodata_pre.o, bb2.ld:25, addr 0x800108CC), while code6cac_b2.o's own .rodata links far later (bb2.ld:50). A GCC in-object jump table can only land in code6cac_b2's late rodata, never at 0x108CC, so referencing the external jtbl symbol + deleting GCC's table is mandatory. Zero-asmfix COMPLETED-C would need relocating the jtbl into code6cac_b2.c AND reordering the whole global rodata layout (project-wide, needs user sign-off). This is the project standard for the 26 jtbl-rename functions whose tables splat carved into asm/data rodata. Separately, sandbox cannot score this file: file-wide cheat-asm stripping shifts maspsx indices and crashes a sibling fn's index-based regfix reorder rule (KeyError in tools/regfix.py)."
-    },
-    {
       "func": "func_8003FE40",
       "file": "config",
       "distance": 0,
@@ -4168,12 +4159,12 @@
     }
   ],
   "counts": {
-    "total": 510,
+    "total": 509,
     "active": 410,
     "by_status": {
       "active": 410,
       "authorize": 28,
-      "parked": 72
+      "parked": 71
     },
     "by_verdict": {
       "C": 217,

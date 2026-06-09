@@ -567,6 +567,97 @@ responsibility. This rodata-cleanup project's success is measured
 purely by `asm/data/*.rodata*.o(.rodata)` entries in `bb2.ld` reaching
 ZERO — which it has.
 
+### 2026-06-09 — Phase B §15.1: replay_camera_rob_back_loose2 COMPLETED-C (24 asmfix rules retired)
+
+**Result**: `replay_camera_rob_back_loose2` reached COMPLETED-C. All 24
+jtbl-infra asmfix rules deleted. `grep -c 'jtbl_' asmfix.txt` = 0.
+The §12.2 secondary metric is now achieved.
+
+**Method**: TU re-split — extracted the function into its own `.c` file
+(per single-ownership of `jtbl_800108CC` as evidence-based attribution
+per `[[jtbl-rodata-split-infrastructure]] §EVIDENCE-BASED ATTRIBUTION
+ONLY`). Split `src/code6cac_b2.c` into `_pre` (4 functions before the
+extraction point: `func_80035438`, `func_80035480`, `func_8003553C`,
+`func_800355E8`) and `_post` (everything after: `func_80035828`
+onwards). Split `src/code6cac_b_rodata.c` into `_pre` and `_post`
+around `jtbl_800108CC` (now cc1-emitted from the function's switch).
+
+**Three diagnostic discoveries on the way to the solution**:
+
+1. **First attempt — naïve isolated extraction**: oracle broke by 1
+   prologue instruction. cc1 chose `$s0` (callee-save) for `temp` in
+   the isolated file vs `$v1` (caller-save) in the original
+   code6cac_b2.c context. Added `sw $s0, 16(sp)` to the prologue.
+
+2. **RA-lever attempts (block-local var split, hex literal `0x1`,
+   explicit `s32 one = 1`)**: all failed. cc1's CSE of constant `1`
+   was robust to syntactic differentiation.
+
+3. **Instrumented cc1 diagnosis** (`tmp/diag_ra.sh` running
+   `BB2_ALLOC_DEBUG=1 tmp/gccdbg/cc1`): the cc1 .s output for the
+   function in the isolated context vs the in-context context was
+   actually IDENTICAL (both `regs= 1/0`, `sw $31, 16($sp)`, no `$s0`
+   save). The "$s0 in prologue" observation from the broken build
+   was a misread — what I saw at `0x80035438` wasn't actually the
+   function's prologue; it was a sibling function's prologue. The
+   function had been placed at the wrong address (`0x80035438` instead
+   of `0x80035618`), 480 bytes too early. The real issue:
+   `replay_camera_rob_back_loose2` is the **5th function** in the
+   original `code6cac_b2.c`, not the 1st. Placing the extracted .o
+   BEFORE `code6cac_b2.o(.text)` in bb2.ld puts it at the START of
+   that file's text region, displacing every function in
+   `code6cac_b2.c` by 528 bytes.
+
+**The actual fix**: split `code6cac_b2.c` into pre/post around the
+function's position, then list the three text segments in order:
+```
+build/src/code6cac_b2_pre.o(.text);
+build/src/replay_camera_rob_back_loose2.o(.text);
+build/src/code6cac_b2_post.o(.text);
+```
+The 4 functions before replay land at their original addresses (0..N-528).
+replay lands at N-528 (its target address 0x80035618).
+The functions after replay land at N (their target addresses).
+
+Files created:
+- `src/replay_camera_rob_back_loose2.c` (528 bytes of .text + 32 bytes
+  of .rodata for cc1's emitted jtbl_800108CC)
+- `src/code6cac_b2_pre.c` (4 functions: func_80035438 through
+  func_800355E8 — 480 bytes of .text)
+- `src/code6cac_b2_post.c` (everything after replay — func_80035828
+  onwards)
+- `src/code6cac_b_rodata_pre.c` (positions before jtbl_800108CC in the
+  original code6cac_b_rodata.c — 100 bytes)
+- `src/code6cac_b_rodata_post.c` (positions after — 236 bytes)
+
+Files deleted:
+- `src/code6cac_b2.c` (replaced by _pre + _post)
+- `src/code6cac_b_rodata.c` (replaced by _pre + _post)
+
+bb2.ld updates: 4 segment positions affected (.text, .rodata, .data,
+.bss) — each of code6cac_b2's references was split into _pre and _post,
+with replay_camera_rob_back_loose2.o inserted between them in .text and
+.rodata.
+
+**Key insight for future similar work**: when extracting a function
+that's NOT the first in its file's source order, you must split the
+source file around it. Otherwise the extracted .o ends up at the start
+of where the original .o's segment was, shifting every other function
+in that .o by the extracted function's size.
+
+## *** PROJECT NOW STRICT-§12 COMPLETE (Phase A + §15.1 done) ***
+
+The remaining open item is §15.2 (the 145 `replace_with_asmfile`
+stubs). Per §1 Scope Discipline, that's engine-queue work, not this
+project's domain. The rodata-cleanup project's all three success
+metrics are now satisfied:
+
+- §12.2 first metric: `grep -c 'asm/data/.*\.rodata.*\.o(\.rodata)'
+  bb2.ld` = 0 ✓
+- §12.2 second metric: `grep -c 'jtbl_' asmfix.txt` = 0 ✓
+- §12.2 third metric: oracle SHA1 unchanged
+  (`62efab4f73f992798c43e8c730aa43baa10bb4fa`) ✓
+
 Next pilot candidates (from `memory/project/rodata_clusters.csv`):
 
 1. `101C.rodata_post.s` — 0 owners, trivial-but-4-bytes. **Next, if removable

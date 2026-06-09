@@ -40,7 +40,9 @@ SECTIONS
         build/src/ings_strings.o(.rodata);
         build/src/code6cac.o(.rodata);
         build/src/code6cac_b.o(.rodata);
-        build/src/code6cac_b_rodata.o(.rodata);
+        build/src/code6cac_b_rodata_pre.o(.rodata);
+        build/src/replay_camera_rob_back_loose2.o(.rodata);
+        build/src/code6cac_b_rodata_post.o(.rodata);
         build/src/code6cac_c0.o(.rodata);
         build/src/code6cac_c_mid.o(.rodata);
         build/src/code6cac_c.o(.rodata);
@@ -57,7 +59,8 @@ SECTIONS
         build/src/text1b_b.o(.rodata);
         build/src/text1a_b_post_rodata.o(.rodata);
         build/src/main.o(.rodata);
-        build/src/code6cac_b2.o(.rodata);
+        build/src/code6cac_b2_pre.o(.rodata);
+        build/src/code6cac_b2_post.o(.rodata);
         build/src/sound.o(.rodata);
         build/src/text1b.o(.rodata);
         build/src/gpu.o(.rodata);
@@ -70,7 +73,9 @@ SECTIONS
         build/src/ings.o(.text);
         build/src/code6cac.o(.text);
         build/src/code6cac_b.o(.text);
-        build/src/code6cac_b2.o(.text);
+        build/src/code6cac_b2_pre.o(.text);
+        build/src/replay_camera_rob_back_loose2.o(.text);
+        build/src/code6cac_b2_post.o(.text);
         build/src/code6cac_c.o(.text);
         build/src/code6cac_c0.o(.text);
         build/src/code6cac_c_mid.o(.text);
@@ -94,7 +99,8 @@ SECTIONS
         main_DATA_START = .;
         build/src/code6cac.o(.data);
         build/src/code6cac_b.o(.data);
-        build/src/code6cac_b2.o(.data);
+        build/src/code6cac_b2_pre.o(.data);
+        build/src/code6cac_b2_post.o(.data);
         build/src/code6cac_c.o(.data);
         build/src/code6cac_c0.o(.data);
         build/src/code6cac_c_mid.o(.data);
@@ -119,7 +125,8 @@ SECTIONS
         main_BSS_START = .;
         build/src/code6cac.o(.bss);
         build/src/code6cac_b.o(.bss);
-        build/src/code6cac_b2.o(.bss);
+        build/src/code6cac_b2_pre.o(.bss);
+        build/src/code6cac_b2_post.o(.bss);
         build/src/code6cac_c.o(.bss);
         build/src/code6cac_c0.o(.bss);
         build/src/code6cac_c_mid.o(.bss);
