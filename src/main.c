@@ -3090,3 +3090,37 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
+
+/* Rodata moved from asm/data/101C.rodata_main_post.s (rodata-cleanup project,
+ * docs/rodata-cleanup-project.md, 2026-06-09). All 10 symbols are owned by
+ * main.c functions (4 debug-printf strings + 4 switch jtbls + 2 SIO debug
+ * strings); per the inventory CSV every owner has file=main. Placed at
+ * end-of-file so the existing 24 bytes of main.o(.rodata) (from earlier
+ * inline-asm rodata) stay at the original offsets (0..24 = 0x800163C0..
+ * 0x800163D8) and the new declarations land at the retired block's slot
+ * (0x800163D8..0x800164AC). Jtbl entries use literal addresses because the
+ * referenced `.L<n>` labels live inside the asmfile-bridged stub function
+ * bodies (saTan1MainJump, func_8008AF9C) and aren't visible to C source —
+ * the linker produces identical bytes for either form. */
+const char D_800163D8[16] = "SPU:T/O [%s]\n";
+const char D_800163E8[16] = "wait (reset)";
+const char D_800163F8[20] = "wait (wrdy H -> L)";
+const char D_8001640C[20] = "wait (dmaf clear/W)";
+const u32 jtbl_80016420[8] = {
+    0x8008B030, 0x8008AFF8, 0x8008B000, 0x8008B008,
+    0x8008B010, 0x8008B018, 0x8008B020, 0x8008B028,
+};
+const u32 jtbl_80016440[8] = {
+    0x8008B0F8, 0x8008B0C0, 0x8008B0C8, 0x8008B0D0,
+    0x8008B0D8, 0x8008B0E0, 0x8008B0E8, 0x8008B0F0,
+};
+const u32 jtbl_80016460[8] = {
+    0x8008B5CC, 0x8008B5D4, 0x8008B5DC, 0x8008B5E4,
+    0x8008B5EC, 0x8008B5F4, 0x8008B5FC, 0x00000000,
+};
+const u32 jtbl_80016480[7] = {
+    0x8008B6AC, 0x8008B6B4, 0x8008B6BC, 0x8008B6C4,
+    0x8008B6CC, 0x8008B6D4, 0x8008B6DC,
+};
+const char D_8001649C[12] = "SIO console";
+const char D_800164A8[4] = "sio";

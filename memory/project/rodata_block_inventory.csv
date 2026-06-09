@@ -134,15 +134,3 @@ block_file,symbol,address,type,size_bytes,owner_func,owner_file,owner_status,que
 101C.rodata_text1a_b_post.s,D_80016394,0x80016394,string,26,conv_matrix_rotation,ings2,completed,-
 101C.rodata_text1a_b_post.s,D_800163B0,0x800163B0,string,15,D_80083418,ings2,active,active
 101C.rodata_text1a_b_post.s,D_800163B0,0x800163B0,string,15,conv_matrix_rotation,ings2,completed,-
-101C.rodata_main_post.s,D_800163D8,0x800163D8,string,14,DispUpdateStatusMessage,main,stub,active
-101C.rodata_main_post.s,D_800163D8,0x800163D8,string,14,func_80088740,main,active,active
-101C.rodata_main_post.s,D_800163E8,0x800163E8,string,13,func_80088740,main,active,active
-101C.rodata_main_post.s,D_800163F8,0x800163F8,string,19,DispUpdateStatusMessage,main,stub,active
-101C.rodata_main_post.s,D_8001640C,0x8001640C,string,20,DispUpdateStatusMessage,main,stub,active
-101C.rodata_main_post.s,jtbl_80016420,0x80016420,jtbl,32,func_8008AF9C,main,stub,active
-101C.rodata_main_post.s,jtbl_80016440,0x80016440,jtbl,32,func_8008AF9C,main,stub,active
-101C.rodata_main_post.s,jtbl_80016460,0x80016460,jtbl,32,saTan1MainJump,main,stub,active
-101C.rodata_main_post.s,jtbl_80016480,0x80016480,jtbl,28,saTan1MainJump,main,stub,active
-101C.rodata_main_post.s,D_8001649C,0x8001649C,string,12,func_8008BE04,main,completed,-
-101C.rodata_main_post.s,D_800164A8,0x800164A8,string,4,func_8008BE04,main,completed,-
-101C.rodata_main_post.s,D_800164A8,0x800164A8,string,4,func_8008BE4C,main,completed,-

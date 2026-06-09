@@ -41,13 +41,13 @@ OUT_CSV = REPO / "memory" / "project" / "rodata_block_inventory.csv"
 #   - 101C.rodata_pre_post.s     (retired 2026-06-09, en-bloc re-attribution to code6cac_c_mid.c)
 #   - 800.rodata_pre.s           (retired 2026-06-09, sub-TU split to new src/ings_strings.c)
 #   - 800.rodata_post.s          (retired 2026-06-09, en-bloc to code6cac.c — strings table + jtbl)
+#   - 101C.rodata_main_post.s    (retired 2026-06-09, en-bloc to main.c — 4 strings + 4 jtbls + 2 SIO strings)
 LINKED_BLOCKS = [
     "101C.rodata_pre.s",
     "101C.rodata_post.s",
     "101C.rodata_text1a_a.s",
     "101C.rodata_text1a_b_pre.s",
     "101C.rodata_text1a_b_post.s",
-    "101C.rodata_main_post.s",
 ]
 
 SYMBOL_REF_RE = re.compile(r"\b(jtbl_[0-9A-Fa-f]{8}|D_[0-9A-Fa-f]{8})\b")

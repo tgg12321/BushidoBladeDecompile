@@ -326,6 +326,26 @@ that parsed the asm/data file's 66 `.asciz` directives into the C
 2D-array initializer. Reusable for future similar string-table
 clusters.
 
+### 2026-06-09 — Fifth real cluster retirement: 101C.rodata_main_post.s (en-bloc to main.c, 212 bytes)
+
+**Retired**: `101C.rodata_main_post.s` — 4 debug strings + 4 switch
+jtbls + 2 SIO debug strings, total 212 bytes; all 10 symbols owned
+by main.c functions.
+
+**Method**: en-bloc re-attribution to `main.c`, declarations at
+end-of-file. Used the placement-at-end recipe from the previous
+retirement: existing main.o(.rodata) (24B from an inline-asm
+declaration) stays at offsets 0..24, new declarations land at
+offsets 24..236, matching the original layout.
+
+**Notes**:
+- Multiple owners across stub and active/completed states all in
+  main.c — easiest possible single-file cluster after the prerequisite
+  rodata move.
+- Jtbl entries reference labels inside asm-bridged stubs
+  (saTan1MainJump, func_8008AF9C); used literal hex addresses per the
+  established pattern.
+
 Next pilot candidates (from `memory/project/rodata_clusters.csv`):
 
 1. `101C.rodata_post.s` — 0 owners, trivial-but-4-bytes. **Next, if removable
