@@ -29,8 +29,41 @@ cluster retirement (or attempt) so future agents can resume.
 
 ## Retirement log
 
-(empty — no clusters retired yet)
+### 2026-06-09 — Pilot retirement: zero-byte trivial blocks
 
-## Pilot cluster (Phase 1b)
+**Retired**: `101C.rodata_c_pre.s` + `101C.rodata_text1a_DB8.s`
 
-(not yet selected — Phase 1 cluster classification pending)
+- Both contribute 0 bytes to the linked `.rodata` section (`.space 0` / lone
+  `.align 2` directive). Confirmed via `mipsel-linux-gnu-objdump -h` on the
+  build/asm/data/*.o objects.
+- Zero cascade by construction: no output bytes changed, no downstream
+  addresses shifted.
+- Mechanical recipe: remove the `build/asm/data/<block>.o(.rodata);` line
+  from `bb2.ld`; delete the `asm/data/<block>.s` source file;
+  `verify-oracle --rebuild`.
+- Bytes retired: 0
+- Oracle SHA1 preserved: `62efab4f73f992798c43e8c730aa43baa10bb4fa`
+- Cascade size: 0 downstream symbols affected
+
+This pilot validates the basic mechanical workflow but does NOT exercise the
+cascade-math machinery (since these blocks emit no bytes). The first
+cascade-bearing retirement is still pending — `101C.rodata_post.s` (4
+bytes) is the next test case for it.
+
+## Phase 1b pilot — partially complete
+
+The trivial zero-byte case is done. The cascade-bearing case (any block that
+contributes >0 bytes to the link) is still untested. **Phase 1b is not
+complete** until at least one >0-byte retirement validates the cascade-math
+recipe.
+
+Next pilot candidates (from `memory/project/rodata_clusters.csv`):
+
+1. `101C.rodata_post.s` — 0 owners, trivial-but-4-bytes. **Next, if removable
+   without cascading**: tests the "4 bytes of padding absorbed by the
+   surrounding C-file rodata's natural alignment" hypothesis.
+2. `101C.rodata_pre_post.s` — single-function single-file (216B, owner
+   `func_80038170` active in queue, code6cac_c_mid). First true cluster
+   retirement after the owner is matched.
+3. `101C.rodata_c2_post.s` — single-function single-file (15B, owner
+   `func_8003FA24` stub, config). Smallest stub-bearing cluster.

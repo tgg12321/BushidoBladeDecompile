@@ -29,19 +29,21 @@ REGFIX = REPO / "regfix.txt"
 QUEUE = REPO / "engine" / "queue.json"
 OUT_CSV = REPO / "memory" / "project" / "rodata_block_inventory.csv"
 
-# The 12 asm/data/*.rodata*.s files that appear as link inputs in bb2.ld.
+# Linked asm/data/*.rodata*.s files currently in bb2.ld.
 # The two BIG files (800.rodata.s, 101C.rodata.s) are splat parents that get
 # auto-split into these variants at build time — they are NOT separately linked.
 # Confirmed 2026-06-09 by grepping bb2.ld.
+#
+# Retired blocks (no longer in bb2.ld):
+#   - 101C.rodata_c_pre.s        (retired 2026-06-09, zero-byte trivial, pilot)
+#   - 101C.rodata_text1a_DB8.s   (retired 2026-06-09, zero-byte trivial, pilot)
 LINKED_BLOCKS = [
     "800.rodata_pre.s",
     "800.rodata_post.s",
     "101C.rodata_pre.s",
     "101C.rodata_pre_post.s",
-    "101C.rodata_c_pre.s",
     "101C.rodata_post.s",
     "101C.rodata_c2_post.s",
-    "101C.rodata_text1a_DB8.s",
     "101C.rodata_text1a_a.s",
     "101C.rodata_text1a_b_pre.s",
     "101C.rodata_text1a_b_post.s",
