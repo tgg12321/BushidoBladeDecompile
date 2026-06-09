@@ -45,9 +45,9 @@ OUT_CSV = REPO / "memory" / "project" / "rodata_block_inventory.csv"
 #   - 101C.rodata_text1a_a.s     (retired 2026-06-09, sub-TU split to src/text1a_filepaths.c — 899 file paths + 1 debug string)
 #   - 101C.rodata_pre.s          (retired 2026-06-09, sub-TU split to src/code6cac_b_rodata.c — multi-file: 7 jtbls + 3 strings across 4 owner .c files)
 #   - 101C.rodata_text1a_b_pre.s (retired 2026-06-09, sub-TU split to src/text1a_b_pre_rodata.c — multi-file: 12 jtbls + 5 strings + 6 data across 2 files)
+#   - 101C.rodata_text1a_b_post.s(retired 2026-06-09, sub-TU split to src/text1a_b_post_rodata.c — 5-file cluster, 68 symbols, generator now resolves named symbols + decodes asm escapes properly)
 LINKED_BLOCKS = [
     "101C.rodata_post.s",
-    "101C.rodata_text1a_b_post.s",
 ]
 
 SYMBOL_REF_RE = re.compile(r"\b(jtbl_[0-9A-Fa-f]{8}|D_[0-9A-Fa-f]{8})\b")

@@ -40,7 +40,7 @@ SECTIONS
         build/src/text1a_b.o(.rodata);
         build/src/text1a_b_pre_rodata.o(.rodata);
         build/src/text1b_b.o(.rodata);
-        build/asm/data/101C.rodata_text1a_b_post.o(.rodata);
+        build/src/text1a_b_post_rodata.o(.rodata);
         build/src/main.o(.rodata);
         build/src/code6cac_b2.o(.rodata);
         build/src/sound.o(.rodata);

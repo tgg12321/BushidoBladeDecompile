@@ -448,6 +448,36 @@ and text1b.c. Same sub-TU pattern (src/text1a_b_pre_rodata.c).
 **Cascade**: zero. text1a_b_pre_rodata.o(.rodata) is exactly 1612 bytes
 at the slot vacated by the asm/data block.
 
+### 2026-06-09 — Ninth real cluster retirement: 101C.rodata_text1a_b_post.s (sub-TU, 2412 bytes — largest multi-file)
+
+**Retired**: `101C.rodata_text1a_b_post.s` — 68 symbols (4 jtbls + 64
+strings + raw data) spanning 5 owner .c files (display, ings2, system,
+text1b_b, +). Same sub-TU pattern; the extraction script's two earlier
+bugs were fixed before this retirement so it went through cleanly first
+try.
+
+**Script fixes applied (in `tmp/gen_101C_pre.py`)**:
+
+1. **Named-symbol resolution**: `fmt_word()` now resolves
+   `.word saTan2LineDraw`-style references by:
+   - Recognizing `func_<8HEX>` pattern and extracting the embedded
+     address (`func_8004C994` → `0x8004C994`).
+   - Looking up other named symbols in `undefined_syms_auto.txt`,
+     `named_syms.txt`, `symbol_addrs.txt`.
+   - Falling back to the `.s` comment column's 4-byte little-endian
+     content as `byte_hint` (the most reliable source — splat
+     populates it from the actual binary).
+
+2. **Asm escape decoding**: new `decode_asciz()` parses asm escape
+   sequences (\n, \t, \r, \\, \", \0, \xHH) to a `bytes` object. New
+   `emit_c_byte_literal()` re-encodes bytes as a C string literal
+   using unambiguous escapes. The multi-string dlabel path now
+   concatenates byte buffers instead of trying to re-escape text,
+   eliminating the `\n` → `\\n` bug.
+
+**Cascade**: zero. text1a_b_post_rodata.o(.rodata) is exactly 2412
+bytes at the asm/data slot.
+
 Next pilot candidates (from `memory/project/rodata_clusters.csv`):
 
 1. `101C.rodata_post.s` — 0 owners, trivial-but-4-bytes. **Next, if removable
