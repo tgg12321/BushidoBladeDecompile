@@ -46,9 +46,12 @@ OUT_CSV = REPO / "memory" / "project" / "rodata_block_inventory.csv"
 #   - 101C.rodata_pre.s          (retired 2026-06-09, sub-TU split to src/code6cac_b_rodata.c — multi-file: 7 jtbls + 3 strings across 4 owner .c files)
 #   - 101C.rodata_text1a_b_pre.s (retired 2026-06-09, sub-TU split to src/text1a_b_pre_rodata.c — multi-file: 12 jtbls + 5 strings + 6 data across 2 files)
 #   - 101C.rodata_text1a_b_post.s(retired 2026-06-09, sub-TU split to src/text1a_b_post_rodata.c — 5-file cluster, 68 symbols, generator now resolves named symbols + decodes asm escapes properly)
-LINKED_BLOCKS = [
-    "101C.rodata_post.s",
-]
+#   - 101C.rodata_post.s         (retired 2026-06-09, 4-byte sub-TU at src/code6cac_c_ab_pad.c — minimal __asm__(".word 0") emits the trailing pad byte)
+#
+# *** PROJECT COMPLETE 2026-06-09 *** all 12 blocks retired; bb2.ld no longer
+# references any asm/data/*.rodata*.o segments. The tool continues to read
+# this empty list so the inventory CSV builds cleanly.
+LINKED_BLOCKS: list[str] = []
 
 SYMBOL_REF_RE = re.compile(r"\b(jtbl_[0-9A-Fa-f]{8}|D_[0-9A-Fa-f]{8})\b")
 ALIAS_RE = re.compile(r"^([A-Za-z_]\w*)\s*=\s*0x([0-9A-Fa-f]+)\s*;", re.MULTILINE)

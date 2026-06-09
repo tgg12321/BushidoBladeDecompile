@@ -30,7 +30,7 @@ SECTIONS
         build/src/code6cac_c_mid.o(.rodata);
         build/src/code6cac_c.o(.rodata);
         build/src/code6cac_c_ab.o(.rodata);
-        build/asm/data/101C.rodata_post.o(.rodata);
+        build/src/code6cac_c_ab_pad.o(.rodata);
         build/src/code6cac_c2.o(.rodata);
         build/src/config.o(.rodata);
         build/src/text1a.o(.rodata);

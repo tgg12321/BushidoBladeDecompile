@@ -26,10 +26,8 @@ INVENTORY = REPO / "memory" / "project" / "rodata_block_inventory.csv"
 OUT_CSV = REPO / "memory" / "project" / "rodata_clusters.csv"
 
 # Trivial blocks (no symbols, just padding) that remain in bb2.ld.
-# 101C.rodata_c_pre.s and 101C.rodata_text1a_DB8.s were retired 2026-06-09.
-TRIVIAL_BLOCKS = {
-    "101C.rodata_post.s",
-}
+# All blocks retired 2026-06-09 (project complete).
+TRIVIAL_BLOCKS: set[str] = set()
 
 
 def classify_cluster(rows: list[dict]) -> dict:
