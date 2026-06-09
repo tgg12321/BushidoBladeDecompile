@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-09T14:03:18",
+  "generated_at": "2026-06-09T17:07:54",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -733,7 +733,7 @@
     },
     {
       "func": "special_camera_get_rot_dir",
-      "file": "code6cac_b2",
+      "file": "code6cac_b2_post",
       "distance": 12,
       "verdict": "C",
       "rules": 0,
@@ -1076,19 +1076,19 @@
       "status": "active"
     },
     {
-      "func": "func_8003553C",
-      "file": "code6cac_b2",
-      "distance": 17,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80036FD4",
-      "file": "code6cac_b2",
+      "file": "code6cac_b2_post",
       "distance": 17,
       "verdict": "C",
       "rules": 8,
+      "status": "active"
+    },
+    {
+      "func": "func_8003553C",
+      "file": "code6cac_b2_pre",
+      "distance": 17,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1141,7 +1141,7 @@
     },
     {
       "func": "replay_camera_Init",
-      "file": "code6cac_b2",
+      "file": "code6cac_b2_post",
       "distance": 18,
       "verdict": "C",
       "rules": 1,
@@ -2805,7 +2805,7 @@
     },
     {
       "func": "special_camera_Exec",
-      "file": "code6cac_b2",
+      "file": "code6cac_b2_post",
       "distance": 272,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
@@ -3077,7 +3077,7 @@
     },
     {
       "func": "func_80035828",
-      "file": "code6cac_b2",
+      "file": "code6cac_b2_post",
       "distance": 358,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
@@ -3301,7 +3301,7 @@
     },
     {
       "func": "special_camera_set_win_cam",
-      "file": "code6cac_b2",
+      "file": "code6cac_b2_post",
       "distance": 510,
       "verdict": "ASM-STRUCTURAL",
       "rules": 1,

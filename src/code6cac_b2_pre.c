@@ -1,4 +1,4 @@
-/* First half of src/code6cac_b2.c (split for Phase B §15.1 rodata-cleanup —
+/* First half of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup -
  * code6cac_b2 was split into _pre and _post around replay_camera_rob_back_loose2
  * (extracted to its own .c file), preserving sibling function text addresses). */
 #define INCLUDE_ASM_USE_MACRO_INC 1

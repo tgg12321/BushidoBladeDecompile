@@ -102,7 +102,7 @@ extern u16 D_80101E02;
 extern u16 D_80101E04;
 extern s16 D_80101ED6;
 extern s32 g_file_disc_size;
-/* Continuation of src/code6cac_b2.c (split for Phase B §15.1 rodata-cleanup —
+/* Continuation of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup -
  * replay_camera_rob_back_loose2 extracted to its own .c file, requiring this
  * file to be split around it to preserve text addresses). */
 void func_80035828(void) {}

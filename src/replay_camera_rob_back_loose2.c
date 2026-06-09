@@ -44,7 +44,6 @@ void replay_camera_rob_back_loose2(s32 arg0) {
             D_800A3740 = 6;
         } else {
             func_80077984(0x80118800);
-            asm volatile("");
             D_800A3740 = 3;
             func_800355E8();
         }
