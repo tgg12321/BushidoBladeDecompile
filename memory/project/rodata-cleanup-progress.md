@@ -346,6 +346,38 @@ offsets 24..236, matching the original layout.
   (saTan1MainJump, func_8008AF9C); used literal hex addresses per the
   established pattern.
 
+### 2026-06-09 — Sixth real cluster retirement: 101C.rodata_text1a_a.s (sub-TU, 17568 bytes)
+
+**Retired**: `101C.rodata_text1a_a.s` — D_80010DEC (899-string game asset
+file-path list, 17568 bytes) + D_8001528C ("Marionation over flow"
+debug string, 40 bytes). Largest single retirement so far.
+
+**Method**: sub-TU split to `src/text1a_filepaths.c`. The 899-string
+filename list (D_80010DEC) has no detectable static owner — it's
+accessed via base-pointer arithmetic that static analysis cannot
+resolve — so direct re-attribution to a specific C file would require
+guesswork. The sub-TU isolates the data without speculative attribution.
+
+**Tooling**: `tmp/gen_text1a_a_c.py` parses each `.asciz` line + its
+trailing alignment padding into a concatenated C string literal, emitting
+`const char D_80010DEC[17568] = "..." ...;`. Handles variable-length
+strings (mix of 16-byte and 20-byte padded entries) by tracking exact
+byte offsets from the symbol address. Output went to
+`tmp/text1a_a_gen.c` then was assembled into `src/text1a_filepaths.c`
+with a header comment.
+
+**Recipe note**: byte-content fidelity matters — used `const char
+D_80010DEC[N]` with concatenated string literals containing explicit
+`\0` padding bytes between strings. The bracket-sized `[N]` array
+forces cc1 to emit exactly N bytes (no auto-null appending for
+N-sized initializers). Verified via objdump of `text1a_filepaths.o`.
+
+**Hook fix landed alongside**: `tools/hooks/tooling_error_guard.py`'s
+`is_build_critical()` was promoting `tmp/*.c` scratch files to
+build-critical (CRLF blocked). Added `ignored_dirs` exclusion (tmp/,
+.claude/, build/, permuter/) — files under those dirs are exempt from
+CRLF blocking since the build never reads them.
+
 Next pilot candidates (from `memory/project/rodata_clusters.csv`):
 
 1. `101C.rodata_post.s` — 0 owners, trivial-but-4-bytes. **Next, if removable

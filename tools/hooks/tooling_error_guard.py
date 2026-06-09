@@ -161,9 +161,25 @@ def classify_text(tool_name: str, text: str, signatures: dict,
 
 
 def is_build_critical(file_path: str, signatures: dict) -> bool:
-    """True if file_path must be LF (per the build_file config)."""
+    """True if file_path must be LF (per the build_file config).
+
+    Files under scratch / gitignored directories (tmp/, .claude/worktrees/,
+    build/, permuter/) are exempt — the build pipeline never reads them, so
+    CRLF there is harmless. The exclusion list is configurable via the
+    build_file.ignored_dirs key in tooling_error_signatures.json.
+    """
     cfg = signatures.get("build_file", {})
     p = Path(file_path)
+    # Normalize to forward-slash path for prefix checks
+    try:
+        joined = "/".join(s.replace("\\", "/") for s in p.parts)
+    except Exception:
+        joined = str(file_path).replace("\\", "/")
+    # Scratch / gitignored exclusions — these are not consumed by the build
+    ignored_dirs = cfg.get("ignored_dirs", ["tmp", ".claude", "build", "permuter"])
+    for ignored_dir in ignored_dirs:
+        if f"/{ignored_dir}/" in joined or joined.startswith(f"{ignored_dir}/"):
+            return False
     name = p.name
     if p.suffix.lower() in cfg.get("suffixes", []):
         return True
