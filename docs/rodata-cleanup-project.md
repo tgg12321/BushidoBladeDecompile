@@ -910,11 +910,40 @@ extern declarations, label-counter state, function ordering). The
 isolated new file produces a slightly different allocation despite
 byte-identical function source.
 
-Per `[[register-alloc-pure-c]]`, there ARE pure-C levers to influence
-RA — block-local variable splits, narrow integer types, loop-local
-precomputes. Driving cc1 to pick `$v1` for `temp` would require
-applying one of those levers and verifying byte-match. **Not yet
-attempted** — would be a multi-session decomp task on its own.
+**Drilled deeper (2026-06-09)**: the specific lossage is cc1's CSE of
+the constant `1`. In the function:
+
+  if (temp == 1) { ... }              /* comparison: needs 1 */
+  if (temp == -1) {
+      ...
+      D_800A3740 = 1;                 /* assignment: needs 1 again */
+  }
+
+cc1 in the isolated file context CSEs the two `1`s into a single
+callee-save register (`$s0`), forcing `sw $s0, 16(sp)` in the prologue.
+In the original code6cac_b2.c context, cc1 does NOT CSE — it loads `1`
+into `$v0` for the comparison and separately into `$a1` for the
+assignment (both caller-save, no prologue save).
+
+**Attempted levers** (all reverted):
+- Block-local `temp` (Lever A from `[[register-alloc-pure-c]]`):
+  no change — cc1 still CSEs the two `1`s.
+- Hex form `0x1` for one of the literals: no change — cc1 sees
+  `1 == 0x1`.
+
+**Not yet attempted** (would extend the session):
+- Split `D_800A3740 = 1;` into a separate block-local var so cc1
+  doesn't CSE with the comparison.
+- Add intervening code between the comparison and the assignment that
+  forces register pressure (might prevent CSE coalescing).
+- Move case 6 to a different switch position (changes RTL ordering).
+- Add other functions adjacent to `replay_camera_rob_back_loose2` in
+  the new file to establish cc1's allocator state similarly to the
+  original code6cac_b2.c context.
+
+The path forward requires multi-session decomp work on cc1's RA
+behavior. Per `[[difficult-is-not-impossible]]` the matching C exists;
+finding it is the work.
 
 **Path (b) — canonical-asm authorization**: viable per
 `[[canonical-asm-authorization-recipe]]`. Requires user judgment call +
