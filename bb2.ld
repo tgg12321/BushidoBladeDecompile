@@ -24,7 +24,6 @@ SECTIONS
         main_RODATA_START = .;
         build/src/ings_strings.o(.rodata);
         build/src/code6cac.o(.rodata);
-        build/asm/data/800.rodata_post.o(.rodata);
         build/src/code6cac_b.o(.rodata);
         build/asm/data/101C.rodata_pre.o(.rodata);
         build/src/code6cac_c0.o(.rodata);
@@ -79,7 +78,6 @@ SECTIONS
         main_TEXT_END = .;
         main_TEXT_SIZE = ABSOLUTE(main_TEXT_END - main_TEXT_START);
         main_DATA_START = .;
-        build/asm/data/800.rodata_post.o(.data);
         build/src/code6cac.o(.data);
         build/src/code6cac_b.o(.data);
         build/src/code6cac_b2.o(.data);
@@ -105,7 +103,6 @@ SECTIONS
         main_DATA_END = .;
         main_DATA_SIZE = ABSOLUTE(main_DATA_END - main_DATA_START);
         main_BSS_START = .;
-        build/asm/data/800.rodata_post.o(.bss);
         build/src/code6cac.o(.bss);
         build/src/code6cac_b.o(.bss);
         build/src/code6cac_b2.o(.bss);

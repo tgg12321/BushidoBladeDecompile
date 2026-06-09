@@ -283,6 +283,49 @@ appear in main_TEXT at the right addresses via cc1's section-handling
 of file-scope `__asm__` blocks). Empirically confirmed: oracle holds
 after this retirement.
 
+### 2026-06-09 — Fourth real cluster retirement: 800.rodata_post.s (en-bloc to code6cac.c, 816 bytes)
+
+**Retired**: `800.rodata_post.s` — D_800100FC (66×12 = 792-byte animation
+name table) + jtbl_80010414 (24-byte jump table for func_80021424).
+
+**Method**: en-bloc re-attribution to `code6cac.c`. Declarations placed
+at END-OF-FILE so the existing 148 bytes of code6cac's switch-jtbl
+rodata stay at their original offsets (0..148 = 0x80010068..0x800100FC)
+and the new arrays land at the retired block's slot
+(0x800100FC..0x8001042C).
+
+**Recipe variant** (placement-at-end for clusters that need to land
+AFTER existing rodata in the destination C file):
+1. Add `const` declarations at the END of the destination .c file
+   (after all functions). cc1 emits global rodata in source order, so
+   end-of-file placement puts them at the END of the .o's `.rodata`
+   section.
+2. Use literal hex values for any jtbl entries — the local `.L<n>`
+   labels they originally referenced are inside the asm-bridged stub
+   function bodies and aren't visible to C source. The linker produces
+   identical bytes for either form.
+3. Standard bb2.ld edits: remove the asm/data block's (.rodata),
+   (.data), (.bss) references; delete the .s file.
+4. Verify.
+
+**Evidence (§8.1)**:
+- D_800100FC owner: `func_80023F08` (stub in code6cac.c)
+- jtbl_80010414 owner: `func_80021424` (stub in code6cac.c)
+- Both stubs live in the same .c file = strong single-file cluster.
+- The 66-entry table is animation names (WIN, RUN, JUMP, ATTACK,
+  DAM, etc) + BBM file names — natural for a character/animation
+  module to own.
+
+**Cascade**: zero. code6cac.o(.rodata) grew from 148B (existing) to
+964B (148 existing + 792 D_800100FC + 24 jtbl + 0 alignment pad
+required). New end address matches the old code6cac.o + 800.rodata_post
+combined end. Downstream segments unchanged.
+
+**Tooling addition**: `tmp/extract_800_post.py` — small Python script
+that parsed the asm/data file's 66 `.asciz` directives into the C
+2D-array initializer. Reusable for future similar string-table
+clusters.
+
 Next pilot candidates (from `memory/project/rodata_clusters.csv`):
 
 1. `101C.rodata_post.s` — 0 owners, trivial-but-4-bytes. **Next, if removable

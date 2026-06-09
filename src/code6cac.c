@@ -3310,3 +3310,91 @@ done:;
 }
 void func_80023F08(s32 arg0, s32 arg1) {
 }
+
+/* Rodata moved from asm/data/800.rodata_post.s (rodata-cleanup project,
+ * docs/rodata-cleanup-project.md, 2026-06-09). The 66-string animation/asset
+ * table is referenced by func_80023F08 (stub above); the jump table is
+ * referenced by func_80021424 (stub elsewhere in this file). Both stubs are
+ * `replace_with_asmfile`-bridged; the asm bodies' external symbol references
+ * resolve to these C definitions.
+ *
+ * Placed at end-of-file so the existing 148 bytes of switch-jtbl rodata
+ * (from earlier functions in this TU) land at the original offsets
+ * (0..148 = 0x80010068..0x800100FC) and these new arrays land at the
+ * 800.rodata_post block's original address slot (0x800100FC..0x8001042C).
+ *
+ * Bracket-sized as [66][12] to match the asm/data block's fixed 12-byte
+ * stride per animation name (8-char content + null + alignment pad). The
+ * jtbl uses literal addresses (cc1 produces the same bytes regardless of
+ * whether the addresses are written symbolically vs as constants). */
+const char D_800100FC[66][12] = {
+    "WIN     ",
+    "KARAMI_ED",
+    "RUN_ED  ",
+    "RUN_ST  ",
+    "CHAKUTI ",
+    "APPEAR  ",
+    "KAISHAKU_ST",
+    "HAJIKARE",
+    "SERIEXIT",
+    "SYAGAMI ",
+    "HOM_ED  ",
+    "HOM_AT  ",
+    "HOM_ST  ",
+    "ANOBORI ",
+    "KAMAE_KA",
+    "MOVE    ",
+    "NOBORI_E",
+    "NOBORI_S",
+    "FURI2   ",
+    "FURI1   ",
+    "YURI2   ",
+    "YURI1   ",
+    "GOKAKU  ",
+    "START   ",
+    "ARUN    ",
+    "STEP    ",
+    "WALK    ",
+    "LJUMP   ",
+    "MJUMP   ",
+    "SJUMP   ",
+    "KAMAE   ",
+    "DTH     ",
+    "RUN     ",
+    "SUNA    ",
+    "KARAMI  ",
+    "RELOAD  ",
+    "SERI    ",
+    "HAJI    ",
+    "UKE     ",
+    "SYASTEP ",
+    "SUBWEP  ",
+    "ORI     ",
+    "OKIAGARI",
+    "NOBORI  ",
+    "KZRE    ",
+    "KOROGARI",
+    "KAISYAKU",
+    "END_GAME",
+    "DAM     ",
+    "ATTACK  ",
+    "NORMAL  ",
+    "NULL    ",
+    "Y123.BBM",
+    "N123.BBM",
+    "K123.BBM",
+    "T123.BBM",
+    "S234.BBM",
+    "S125.BBM",
+    "S124.BBM",
+    "S123.BBM",
+    "U235.BBM",
+    "U135.BBM",
+    "U134.BBM",
+    "U125.BBM",
+    "U124.BBM",
+    "U123.BBM",
+};
+const u32 jtbl_80010414[6] = {
+    0x800214D0, 0x80021520, 0x80021578, 0x80021690, 0x80021578, 0x00000000,
+};
