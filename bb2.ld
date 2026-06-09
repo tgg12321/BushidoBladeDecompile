@@ -38,7 +38,7 @@ SECTIONS
         build/src/text1a_filepaths.o(.rodata);
         build/src/text1a_c2.o(.rodata);
         build/src/text1a_b.o(.rodata);
-        build/asm/data/101C.rodata_text1a_b_pre.o(.rodata);
+        build/src/text1a_b_pre_rodata.o(.rodata);
         build/src/text1b_b.o(.rodata);
         build/asm/data/101C.rodata_text1a_b_post.o(.rodata);
         build/src/main.o(.rodata);

@@ -417,6 +417,37 @@ under jtbl-infra; the rules' retirement is a separate (harder) problem.
 **Cascade**: zero. code6cac_b_rodata.o(.rodata) is exactly 368 bytes
 at the slot vacated by 101C.rodata_pre.o.
 
+### 2026-06-09 — Eighth real cluster retirement: 101C.rodata_text1a_b_pre.s (sub-TU, 1612 bytes)
+
+**Retired**: `101C.rodata_text1a_b_pre.s` — 23 symbols spanning text1a.c
+and text1b.c. Same sub-TU pattern (src/text1a_b_pre_rodata.c).
+
+**Two new generator bugs surfaced + fixed during this retirement**:
+
+1. **Named-symbol .word references** (`.word saTan2LineDraw`,
+   `.word func_8004C994`): my `tmp/gen_101C_pre.py` script's
+   `fmt_word()` mishandled non-`.L<HEX>` and non-`0x...` references
+   by wrapping them in `0x` (producing `0xsaTan2LineDraw` etc, invalid
+   C). Manually fixed by replacing each with the literal hex address
+   from the .s comment column (e.g. `saTan2LineDraw` → `0x8004BCC0`
+   per the `C0BC0480` little-endian byte sequence in the comment).
+   Future improvement: have the script resolve named symbols via
+   `undefined_syms_auto.txt` or the `.s` comment column.
+
+2. **Asm `\n` escape mishandling in multi-string dlabels**: the
+   script's `s.replace("\\", "\\\\")` doubled backslashes, turning
+   asm's `\n` (1-byte newline) into C's `\\n` (literal backslash + n,
+   2 bytes). Single-string dlabels were unaffected (the script's
+   `if asciz and not words` single-item branch emitted them directly
+   as C-escaped). For multi-string dlabels, manually replaced the
+   buggy concat with a single-string C declaration relying on cc1's
+   zero-padding for fixed-size arrays (e.g.,
+   `const char D_800158E0[24] = "eff prim over :%d \n";` → 19 chars +
+   5 implicit nulls = 24 bytes).
+
+**Cascade**: zero. text1a_b_pre_rodata.o(.rodata) is exactly 1612 bytes
+at the slot vacated by the asm/data block.
+
 Next pilot candidates (from `memory/project/rodata_clusters.csv`):
 
 1. `101C.rodata_post.s` — 0 owners, trivial-but-4-bytes. **Next, if removable

@@ -44,9 +44,9 @@ OUT_CSV = REPO / "memory" / "project" / "rodata_block_inventory.csv"
 #   - 101C.rodata_main_post.s    (retired 2026-06-09, en-bloc to main.c — 4 strings + 4 jtbls + 2 SIO strings)
 #   - 101C.rodata_text1a_a.s     (retired 2026-06-09, sub-TU split to src/text1a_filepaths.c — 899 file paths + 1 debug string)
 #   - 101C.rodata_pre.s          (retired 2026-06-09, sub-TU split to src/code6cac_b_rodata.c — multi-file: 7 jtbls + 3 strings across 4 owner .c files)
+#   - 101C.rodata_text1a_b_pre.s (retired 2026-06-09, sub-TU split to src/text1a_b_pre_rodata.c — multi-file: 12 jtbls + 5 strings + 6 data across 2 files)
 LINKED_BLOCKS = [
     "101C.rodata_post.s",
-    "101C.rodata_text1a_b_pre.s",
     "101C.rodata_text1a_b_post.s",
 ]
 
