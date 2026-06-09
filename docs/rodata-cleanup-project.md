@@ -1,23 +1,33 @@
-# Rodata Cleanup Project — End-to-End Plan (COMPLETED 2026-06-09)
+# Rodata Cleanup Project — End-to-End Plan
 
-> **STATUS: COMPLETE.** All 12 `asm/data/*.rodata*.o(.rodata)` entries were
-> retired from `bb2.ld` on 2026-06-09 (23 328 bytes total). Oracle SHA1
-> unchanged. **The per-cluster retirement log + recipe descriptions are in
-> `memory/project/rodata-cleanup-progress.md`** — that's the authoritative
-> retrospective for future agents.
+> **STATUS (2026-06-09): Phase A COMPLETE — Phase B IN PROGRESS.**
 >
-> This document is preserved as the original plan for context (what the
-> project's structure was, what the success criterion was, the evidence
-> discipline that gated it). For *how* it was actually executed, see the
-> progress log.
+> **Phase A — block retirement (§12.2 first metric): DONE.** All 12
+> `asm/data/*.rodata*.o(.rodata)` entries retired from `bb2.ld`. Oracle
+> SHA1 unchanged (`62efab4f73f992798c43e8c730aa43baa10bb4fa`).
 >
-> **Critical post-cleanup note**: `bb2.ld` is now HAND-MAINTAINED. Do NOT
+> **Phase B — per-function follow-up (§12.1 + §12.2 remaining metrics): NOT
+> DONE.** The functions whose rodata was relocated are still INCOMPLETE:
+> - 24 jtbl-infra asmfix rules on `replay_camera_rob_back_loose2` still
+>   bridge GCC's emitted jtbl to the external `jtbl_800108CC` (which now
+>   lives in `src/code6cac_b_rodata.c` instead of the asm/data block, but
+>   the bridge mechanism remains the same).
+> - 145 `replace_with_asmfile` stubs unchanged. The sub-TU split pattern
+>   (see §5 Phase 3 expansion below) decoupled rodata cleanup from
+>   per-function decomp — the stubs can now be matched through the normal
+>   engine queue without rodata coordination.
+>
+> The per-cluster retirement log + recipe descriptions are in
+> `memory/project/rodata-cleanup-progress.md` (authoritative retrospective).
+>
+> **Critical post-Phase-A note**: `bb2.ld` is now HAND-MAINTAINED. Do NOT
 > regenerate it via `make setup` / splat — see the warning at the top of
 > `splat.yaml` for recovery procedure if it happens accidentally.
 
-**Document status**: REVISED 2026-06-09 from the AUTHORED 2026-06-08 draft.
-Self-contained reference for any future agent picking up this work.
-Resume-from-anywhere supported.
+**Document status**: REVISED 2026-06-09 after Phase A completion. Originally
+AUTHORED 2026-06-08, REVISED 2026-06-09 (pre-execution refinements), then
+REVISED again post-Phase-A to reflect the sub-TU split pattern that emerged
+during execution + the deferred Phase B work.
 
 **One-line summary**: BB2's splat config carved compiler-generated rodata
 (jump tables, strings, constants) into `asm/data/*.rodata*.s` blocks that link
@@ -316,7 +326,8 @@ catalog cheat from `[[inline-asm-policy]]`. The cheat-reviewer blocks these.
 
 ### Phase 3: Per-cluster en-bloc re-attribution
 
-Once all functions in a cluster are matched-in-pure-C:
+Once all functions in a cluster are matched-in-pure-C **OR** when Phase 2 is
+deliberately skipped via the sub-TU split pattern (see §5 Phase 3b below):
 
 1. **Identify the target placement** for the cluster's combined `.rodata`.
    GCC emits each .c file's rodata in source order at one address. The
@@ -343,6 +354,58 @@ Once all functions in a cluster are matched-in-pure-C:
    Body lists the functions retired, the asm/data block deleted, the
    bb2.ld changes, and the cascade impact (which downstream segments
    were verified unchanged or compensated).
+
+### Phase 3b: Sub-TU split (the pattern that actually worked at scale)
+
+Pattern that emerged during execution and ended up being the dominant
+recipe (6 of the 12 retirements used it). It DECOUPLES rodata cleanup from
+per-function decomp — preserves the project's core goal (block retirement)
+while leaving stub-elimination to the engine queue.
+
+**When to use over Phase 3 en-bloc**:
+- Natural owner C file has fixed-address rodata content that can't move
+  (file-scope `__asm__("glabel ...")` blocks for canonical-asm functions
+  whose addresses are pinned, e.g. ings.c's `func_800164AC`).
+- Symbols span multiple owner .c files whose bb2.ld positions are fixed
+  (multi-file clusters like `101C.rodata_pre.s`, `101C.rodata_text1a_b_*.s`).
+- Symbol has no detectable static owner (orphan strings like the 16KB
+  filename list in `101C.rodata_text1a_a.s`).
+- Symbol has no semantically meaningful C declaration form (the 4-byte
+  zero pad in `101C.rodata_post.s`).
+
+**Recipe**:
+1. Create a new `.c` file in `src/` named to reflect its role — e.g.
+   `src/ings_strings.c`, `src/text1a_filepaths.c`, `src/code6cac_b_rodata.c`,
+   `src/code6cac_c_ab_pad.c`. The Makefile auto-discovers `src/*.c` so no
+   Makefile edit needed.
+2. Populate the file with `const u32[]` / `const char[]` declarations for
+   each symbol from the asm/data block, byte-for-byte matching the original.
+   Use `tools/extract_rodata_to_c.py <asm/data/block.s>` to auto-generate.
+3. For symbols with no meaningful C declaration form (raw alignment pad,
+   linker-inserted zero word), use file-scope `__asm__(".section .rodata\n
+   .word ...\n")` to emit bytes directly through cc1's asm pass-through.
+4. For leading-padding cases (asm/data block began with `.word 0` for
+   alignment): declare `static const u32 _bb2_<id>_lead = 0;` at the TOP
+   of the sub-TU so cc1 emits it first.
+5. Standard bb2.ld edit: replace the
+   `build/asm/data/<block>.o(.rodata);` line with
+   `build/src/<sub_tu>.o(.rodata);` at the same position. Remove the
+   block's `(.data)` and `(.bss)` references if present (zero-byte stubs
+   — deleting is a no-op).
+6. Delete `asm/data/<block>.s`.
+7. `verify-oracle --rebuild`.
+
+**What sub-TU split LEAVES on the table** (deferred to Phase B work):
+- The owning functions remain INCOMPLETE in the queue (still
+  `replace_with_asmfile` stubs, still carrying asmfix rules).
+- `jtbl-infra` bridging rules (e.g. the 24 on
+  `replay_camera_rob_back_loose2`) continue to function correctly — the
+  external symbol they bridge to now lives in the sub-TU instead of the
+  asm/data block, but the bridge mechanism is unchanged.
+
+Per `§1 Scope discipline`: this is fine. The rodata-cleanup project's
+success metric is block retirement, not stub elimination. Stub elimination
+is engine-queue work that the cleanup unblocks but does not perform.
 
 ### Phase 4: Validate + iterate
 
@@ -799,6 +862,74 @@ When you're ready to start:
 
 This is real architectural work. It permanently retires a class of
 project debt. Treat each cluster retirement as a real milestone.
+
+---
+
+## 15. Phase B — per-function follow-up (2026-06-09 onward)
+
+Phase A retired all 12 asm/data rodata blocks via sub-TU split. The
+following work is what `§12` strict reading still wants:
+
+### 15.1 `replay_camera_rob_back_loose2` — jtbl-infra rule retirement (CURRENT)
+
+**State**: function is already pure-C matched (verdict `C`, distance 0)
+but carries 24 asmfix rules that bridge GCC's per-function emitted jtbl
+to `jtbl_800108CC`. With Phase A complete, `jtbl_800108CC` is defined in
+`src/code6cac_b_rodata.c` instead of the asm/data block — but the
+asmfix bridge still applies because GCC still emits its own jtbl when
+compiling the switch.
+
+**Goal**: delete the 24 asmfix rules. The function reaches COMPLETED-C
+(or COMPLETED-INLINE-ASM-CANONICAL if the cluster's structure forces it).
+
+**Two candidate paths** (try in order):
+
+(a) **Restructure the switch to use the external jtbl directly.** Replace
+the C `switch` (which cc1 compiles into a private jtbl) with a
+function-pointer table lookup that explicitly indexes into the existing
+external `jtbl_800108CC` array. cc1 then has no reason to emit its own
+jtbl, and the asmfix `delete_between .rodata .text` rule's target
+disappears (no jtbl to delete) along with the rename rules. Risk: the
+restructured C may have different codegen for the dispatch itself (the
+asmfix `rename` rules also map case-target `.L<n>` labels — those
+labels' addresses depend on cc1's compilation, so the restructure must
+preserve them).
+
+(b) **Canonical-asm authorization.** If (a) doesn't reach byte-match
+within reasonable effort, propose `replay_camera_rob_back_loose2` for
+authorized canonical-inline-asm per
+`[[canonical-asm-authorization-recipe]]`. Requires user judgment call
++ adding to `inline_asm_canonical.txt`.
+
+**Success criterion**:
+- 0 rules for `replay_camera_rob_back_loose2` in `asmfix.txt` AND
+- `queue done replay_camera_rob_back_loose2` succeeds (oracle SHA1 match) AND
+- Function appears in `inline_asm_canonical.txt` if path (b) taken,
+  or in neither queue nor canonical-asm if path (a) taken.
+
+### 15.2 The 145 `replace_with_asmfile` stubs (ENGINE-QUEUE WORK)
+
+**State**: unchanged from project start — 145 stubs in `asmfix.txt`. Some
+were rodata-blocked (their rodata is now in sub-TUs); some weren't.
+
+**Goal**: per `§1 Scope discipline`, this is NOT this project's success
+metric. It's the engine queue's domain. After Phase A + the
+`replay_camera_rob_back_loose2` close-out in §15.1, every stub is now
+unblocked at the rodata level and can be worked through the normal
+queue flow.
+
+**No new tooling required** — `engine queue next` will surface stubs in
+the standard easiest-first order. The cleanup made them tractable; it
+does not perform them.
+
+### 15.3 Final retire condition
+
+The rodata-cleanup project closes out completely (strict §12 reading)
+when:
+- §15.1 lands (24 rules gone, function COMPLETED) AND
+- `grep -c 'jtbl_' asmfix.txt` returns 0
+
+The 145 stubs can keep their own pace afterward as engine-queue work.
 
 ---
 

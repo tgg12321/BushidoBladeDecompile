@@ -156,12 +156,22 @@ after **each** worker finishes — it is what lets the loop run unattended for l
   individual functions (24 on `replay_camera_rob_back_loose2`) are still in place because they
   bridge GCC's per-function emitted jtbls; their per-function retirement is queue work.
 
-## Rodata cleanup project — COMPLETED 2026-06-09
+## Rodata cleanup project — Phase A complete (2026-06-09), Phase B in progress
 
-All 12 `asm/data/*.rodata*.o(.rodata)` segments were retired from `bb2.ld` on 2026-06-09 (23 328
-bytes total). Every rodata symbol that previously lived in an `asm/data` block now lives in a C
-source file (either an existing `.c` for en-bloc cases or a new sub-TU like
-`src/text1a_filepaths.c`, `src/code6cac_b_rodata.c`, etc). Oracle SHA1 unchanged.
+**Phase A (block retirement)**: all 12 `asm/data/*.rodata*.o(.rodata)` segments retired from
+`bb2.ld` on 2026-06-09 (23 328 bytes total). Every rodata symbol that previously lived in an
+`asm/data` block now lives in a C source file (either an existing `.c` for en-bloc cases or
+a new sub-TU like `src/text1a_filepaths.c`, `src/code6cac_b_rodata.c`, etc). Oracle SHA1
+unchanged.
+
+**Phase B (per-function follow-up)**: in progress. See `docs/rodata-cleanup-project.md §15`:
+- `replay_camera_rob_back_loose2`'s 24 jtbl-infra asmfix rules still need to retire (the
+  external `jtbl_800108CC` they bridge to now lives in `src/code6cac_b_rodata.c` instead
+  of the asm/data block, but GCC still emits its own per-function jtbl that needs the
+  asmfix rules to bridge it to the external symbol).
+- The 145 `replace_with_asmfile` stubs are unchanged — these are normal engine-queue work
+  now that the rodata barrier is gone (the cleanup made them tractable but does not
+  perform them).
 
 **Critical future-agent warnings:**
 
@@ -173,10 +183,6 @@ source file (either an existing `.c` for en-bloc cases or a new sub-TU like
 2. **`asm/data/*.rodata*.s` files are all DELETED.** Including the two splat-parent files
    (`asm/data/800.rodata.s`, `asm/data/101C.rodata.s`) which were ~390 KB of dead disk
    space after the variant retirements. Don't re-create them.
-3. **The 145 `replace_with_asmfile` stubs and `replay_camera_rob_back_loose2`'s 24-rule
-   jtbl-infra cluster are STILL in place** — those are per-function engine-queue work,
-   decoupled from the rodata-cleanup goal. The cleanup made them tractable by removing the
-   rodata-attribution barrier, but did not solve them.
 
 **Authoritative references:**
 - `memory/project/rodata-cleanup-progress.md` — per-cluster retirement log + reusable recipes
