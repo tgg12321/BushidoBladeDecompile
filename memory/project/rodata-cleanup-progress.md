@@ -46,16 +46,61 @@ cluster retirement (or attempt) so future agents can resume.
 - Cascade size: 0 downstream symbols affected
 
 This pilot validates the basic mechanical workflow but does NOT exercise the
-cascade-math machinery (since these blocks emit no bytes). The first
-cascade-bearing retirement is still pending — `101C.rodata_post.s` (4
-bytes) is the next test case for it.
+cascade-math machinery (since these blocks emit no bytes).
+
+### 2026-06-09 — Cascade test on `101C.rodata_post.s` (4 bytes) — FAILED, REVERTED
+
+**Outcome**: oracle broke (build_sha1 `f21fe078...` ≠ expected `62efab4f...`).
+Reverted via `git restore`.
+
+**Setup**:
+- Block contents: single `.word 0x00000000` (4 bytes of zero) at address
+  `0x80010D88-0x80010D8C`, between `code6cac_c2.o(.rodata)` (24-byte switch
+  jtbl for the only switch in code6cac_c2.c) and `101C.rodata_c2_post.o`
+  ("Multipul Model" string at `0x80010D8C`).
+- Grep for `0x80010D88` / `D_80010D88` across the entire repo → ONLY found
+  in `asm/data/101C.rodata.s` (the splat parent's definition site). Zero
+  references from any source, .s function, .data table, asmfix rule, or
+  named symbol. The bytes appeared functionally orphan.
+
+**Hypothesis tested**: with no static references, removing the 4 bytes would
+either be a no-op (if SUBALIGN(2) happens to absorb the gap) or break only
+trivial alignment. Empirical test was cheap.
+
+**Empirical result**: removing the block AND deleting the .s file produced a
+non-matching SHA1. The 4 bytes ARE load-bearing despite having no
+detectable symbolic references. The cascade flowed through compiled-in
+`%lo` immediates in downstream functions' TEXT, which encode the exact
+addresses of every rodata symbol downstream of the cut.
+
+**What this proves**:
+1. Even a "no-references" 4-byte block participates in the address layout
+   contract. Removing it without compensation breaks every downstream
+   `lui+%hi/addiu+%lo` pair that references rodata > `0x80010D88`.
+2. Trivial-byte-retirement requires either (a) compensating 4 bytes of
+   rodata added to an adjacent C file with TU-boundary evidence, or
+   (b) Phase 3 cascade-math machinery (`tools/re_attribute_rodata.py`)
+   that updates every downstream relocation in coordination.
+
+**What this rules out**: simple "delete trivial blocks from bb2.ld" as a
+broad strategy. The two retirements from earlier today (`101C.rodata_c_pre.s`,
+`101C.rodata_text1a_DB8.s`) succeeded ONLY because their `.rodata` sections
+contained ZERO bytes (`.space 0`, lone `.align 2` directive after an already
+4-aligned offset). Any non-zero-byte block cascades.
+
+**Implication for the project plan**: §5 Phase 3 step 2 ("compute the
+cascade") and §11.3 (Known unknown — is cascade prediction tractable?) move
+from theoretical to required-before-next-step. No further retirement is
+possible without either:
+- Building the cascade math tooling (`tools/re_attribute_rodata.py` per §7.2)
+- OR finding TU-boundary evidence that a compensating rodata constant
+  belongs in an adjacent C file's source (§8.1 evidence threshold)
 
 ## Phase 1b pilot — partially complete
 
-The trivial zero-byte case is done. The cascade-bearing case (any block that
-contributes >0 bytes to the link) is still untested. **Phase 1b is not
-complete** until at least one >0-byte retirement validates the cascade-math
-recipe.
+The trivial zero-byte case is done (2 blocks retired). The cascade-bearing
+case is **empirically untractable without Phase 3 tooling** — confirmed by
+the 4-byte test above.
 
 Next pilot candidates (from `memory/project/rodata_clusters.csv`):
 
