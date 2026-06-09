@@ -870,7 +870,7 @@ project debt. Treat each cluster retirement as a real milestone.
 Phase A retired all 12 asm/data rodata blocks via sub-TU split. The
 following work is what `§12` strict reading still wants:
 
-### 15.1 `replay_camera_rob_back_loose2` — jtbl-infra rule retirement (CURRENT)
+### 15.1 `replay_camera_rob_back_loose2` — jtbl-infra rule retirement
 
 **State**: function is already pure-C matched (verdict `C`, distance 0)
 but carries 24 asmfix rules that bridge GCC's per-function emitted jtbl
@@ -882,26 +882,59 @@ compiling the switch.
 **Goal**: delete the 24 asmfix rules. The function reaches COMPLETED-C
 (or COMPLETED-INLINE-ASM-CANONICAL if the cluster's structure forces it).
 
-**Two candidate paths** (try in order):
+**Path (a) — TU re-split: attempted 2026-06-09, blocked on register-allocation drift.**
 
-(a) **Restructure the switch to use the external jtbl directly.** Replace
-the C `switch` (which cc1 compiles into a private jtbl) with a
-function-pointer table lookup that explicitly indexes into the existing
-external `jtbl_800108CC` array. cc1 then has no reason to emit its own
-jtbl, and the asmfix `delete_between .rodata .text` rule's target
-disappears (no jtbl to delete) along with the rename rules. Risk: the
-restructured C may have different codegen for the dispatch itself (the
-asmfix `rename` rules also map case-target `.L<n>` labels — those
-labels' addresses depend on cc1's compilation, so the restructure must
-preserve them).
+The SOTN-clean approach per `[[jtbl-rodata-split-infrastructure]]`: extract
+the function into its own `src/replay_camera_rob_back_loose2.c`, split
+`src/code6cac_b_rodata.c` into `_pre` (positions before `jtbl_800108CC`)
+and `_post` (positions after), and place the new file's `.text` BEFORE
+`code6cac_b2.o(.text)` in bb2.ld. Then cc1 naturally emits the switch jtbl
+into the new file's `.o(.rodata)` at exactly the right slot (between
+`_pre.o(.rodata)` and `_post.o(.rodata)`), removing the asmfix rules'
+reason for being.
 
-(b) **Canonical-asm authorization.** If (a) doesn't reach byte-match
-within reasonable effort, propose `replay_camera_rob_back_loose2` for
-authorized canonical-inline-asm per
-`[[canonical-asm-authorization-recipe]]`. Requires user judgment call
-+ adding to `inline_asm_canonical.txt`.
+The mechanical setup works — link succeeds, addresses align as predicted.
+But the resulting SHA1 differs from the oracle because cc1's
+**register allocation chose differently** in the new file's compilation
+context:
+- Original (in code6cac_b2.c): `temp = func_8003ACB8();` allocates
+  to `$v1` (caller-save scratch) — no prologue save needed.
+- Extracted (in replay_camera_rob_back_loose2.c): same code allocates
+  `temp` to `$s0` (callee-save), forcing `sw $s0, 16(sp)` in the
+  prologue. That's one extra instruction before the dispatch, which
+  shifts every case-body address by 4 bytes. The jtbl entries (which
+  encode case-body addresses) then differ from oracle.
 
-**Success criterion**:
+cc1's RA decision is sensitive to the file-level context (surrounding
+extern declarations, label-counter state, function ordering). The
+isolated new file produces a slightly different allocation despite
+byte-identical function source.
+
+Per `[[register-alloc-pure-c]]`, there ARE pure-C levers to influence
+RA — block-local variable splits, narrow integer types, loop-local
+precomputes. Driving cc1 to pick `$v1` for `temp` would require
+applying one of those levers and verifying byte-match. **Not yet
+attempted** — would be a multi-session decomp task on its own.
+
+**Path (b) — canonical-asm authorization**: viable per
+`[[canonical-asm-authorization-recipe]]`. Requires user judgment call +
+adding to `inline_asm_canonical.txt`. Conceptually awkward — the
+function is clearly C in origin (it has a switch dispatch) — but the
+rodata-split constraint makes a clean pure-C close uniquely hard for
+this one function.
+
+**Path (c) — accept the 24 rules as permanent jtbl-infra**: documented
+in the post-Phase-A update to `[[jtbl-rodata-split-infrastructure]]`.
+The asmfix rules continue to function correctly; they're sanctioned
+infrastructure per the project's existing classifier (not cheats). The
+project's §12.2 metric loosens from "0 jtbl-infra rules in asmfix.txt"
+to "0 asm/data rodata blocks in bb2.ld" (which Phase A achieved).
+
+**Status**: parked pending user policy decision on which path to take.
+The path (a) attempt is reverted but the artifacts are documented above
+so a future session can pick up at the RA-lever stage.
+
+**Success criterion** (if path (a) or (b) pursued):
 - 0 rules for `replay_camera_rob_back_loose2` in `asmfix.txt` AND
 - `queue done replay_camera_rob_back_loose2` succeeds (oracle SHA1 match) AND
 - Function appears in `inline_asm_canonical.txt` if path (b) taken,
