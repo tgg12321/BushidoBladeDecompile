@@ -1,3 +1,32 @@
+# ============================================================================
+# DO NOT RUN `make setup` BLINDLY — IT REGENERATES bb2.ld AND WOULD UNDO THE
+# RODATA-CLEANUP WORK (rodata-cleanup project, 2026-06-09, see
+# docs/rodata-cleanup-project.md + memory/project/rodata-cleanup-progress.md).
+#
+# bb2.ld is currently HAND-MAINTAINED — all 12 asm/data rodata blocks have
+# been retired and their bytes re-attributed to C source files (existing .c
+# or new src/*_rodata.c / src/*_pad.c / src/*_strings.c / src/*_filepaths.c
+# sub-TUs). Regenerating bb2.ld via splat would:
+#   1. Re-add `build/asm/data/*.rodata*.o(.rodata)` entries (the asm/data
+#      .s files are gone, so those would be link errors).
+#   2. Conflict with the const declarations now living in src/*.c (multiple
+#      definition errors for D_<addr> and jtbl_<addr> symbols).
+#
+# If you need to regenerate splat output for other reasons (e.g. asm/funcs
+# changed), do it WITHOUT clobbering bb2.ld:
+#   - Back up bb2.ld first.
+#   - Run splat (or run with a temporary ld_script_path so the real bb2.ld
+#     stays put).
+#   - Restore bb2.ld.
+#   - Diff the splat-emitted ld script against the saved one to confirm no
+#     new asm/data rodata segments appeared (if they did, the source has
+#     drifted and the sub-TU files need re-examination).
+#
+# Tools available for inspection:
+#   tools/audit_rodata_blocks.py    — should report 0 linked blocks
+#   tools/cluster_rodata.py         — should emit 0 clusters
+#   tools/re_attribute_rodata.py layout  — should show no asm/data rodata
+# ============================================================================
 name: Bushido Blade 2 (USA) (SLUS-00663)
 sha1: 62efab4f73f992798c43e8c730aa43baa10bb4fa
 options:

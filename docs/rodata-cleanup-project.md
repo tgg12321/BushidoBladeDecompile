@@ -1,4 +1,19 @@
-# Rodata Cleanup Project — End-to-End Plan
+# Rodata Cleanup Project — End-to-End Plan (COMPLETED 2026-06-09)
+
+> **STATUS: COMPLETE.** All 12 `asm/data/*.rodata*.o(.rodata)` entries were
+> retired from `bb2.ld` on 2026-06-09 (23 328 bytes total). Oracle SHA1
+> unchanged. **The per-cluster retirement log + recipe descriptions are in
+> `memory/project/rodata-cleanup-progress.md`** — that's the authoritative
+> retrospective for future agents.
+>
+> This document is preserved as the original plan for context (what the
+> project's structure was, what the success criterion was, the evidence
+> discipline that gated it). For *how* it was actually executed, see the
+> progress log.
+>
+> **Critical post-cleanup note**: `bb2.ld` is now HAND-MAINTAINED. Do NOT
+> regenerate it via `make setup` / splat — see the warning at the top of
+> `splat.yaml` for recovery procedure if it happens accidentally.
 
 **Document status**: REVISED 2026-06-09 from the AUTHORED 2026-06-08 draft.
 Self-contained reference for any future agent picking up this work.

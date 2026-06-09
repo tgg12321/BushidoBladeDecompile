@@ -1,3 +1,18 @@
+/*
+ * HAND-MAINTAINED — DO NOT regenerate via `make setup` / splat.
+ *
+ * The rodata-cleanup project (2026-06-09) re-attributed every
+ * asm/data/*.rodata*.s block's bytes to C source files. Regenerating this
+ * script via splat would re-add `build/asm/data/*.rodata*.o(.rodata)` lines
+ * that no longer have backing .s files (link error) AND would conflict with
+ * the const declarations now living in src/*.c (multiple-definition).
+ *
+ * See the long warning block at the top of splat.yaml for recovery
+ * procedure if splat re-runs accidentally.
+ *
+ * Verification: `grep -c 'asm/data/.*\.rodata.*\.o(\.rodata)' bb2.ld`
+ * should be 0.
+ */
 SECTIONS
 {
     __romPos = 0;

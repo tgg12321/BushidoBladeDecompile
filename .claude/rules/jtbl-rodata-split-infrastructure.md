@@ -8,6 +8,25 @@ metadata:
 
 # Jump-table rename/delete asmfix rules are canonical infrastructure — park, don't grind
 
+> **UPDATE 2026-06-09 — rodata-cleanup project COMPLETED.** All 12
+> `asm/data/*.rodata*.o(.rodata)` blocks (including the one containing
+> `jtbl_800108CC`) have been retired from `bb2.ld` and their bytes
+> re-attributed to C source files. The `jtbl_800108CC` symbol is now
+> defined in `src/code6cac_b_rodata.c` instead of the asm/data block.
+>
+> The 24 asmfix rules on `replay_camera_rob_back_loose2` ARE STILL
+> IN PLACE because they bridge GCC's per-function emitted jtbl (in
+> `code6cac_b2.o`) to the external `jtbl_800108CC` symbol — both
+> halves of that bridge still exist; only the rodata DEFINITION moved.
+> The per-function decomp to remove those rules requires preventing
+> GCC from emitting its own jtbl (a structural restructure of the C
+> source, or canonical-asm authorization). That's still pending and
+> still "park, don't grind" per the original guidance below.
+>
+> What's CHANGED: the "needs a global rodata reorder" caveat below
+> is now historical. The reorder is DONE for the cluster level; only
+> the per-function bridge teardown remains.
+
 ## The pattern
 
 A queue item routes `C`, shows `pure-C distance 0`, and carries a cluster of

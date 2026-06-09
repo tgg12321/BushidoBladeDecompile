@@ -151,6 +151,41 @@ after **each** worker finishes — it is what lets the loop run unattended for l
   user judgment call → escalate.*
 - **jtbl-infra** (rodata-split jump tables): auto-confirmed park (`cheats.is_jtbl_infra`); the
   *global rodata reorder* to truly pure-C them is the architecture decision that escalates.
+  **Note 2026-06-09**: the rodata-split-infrastructure problem at the cluster level is RESOLVED
+  — see "Rodata cleanup project — COMPLETED 2026-06-09" below. The jtbl-infra asmfix RULES on
+  individual functions (24 on `replay_camera_rob_back_loose2`) are still in place because they
+  bridge GCC's per-function emitted jtbls; their per-function retirement is queue work.
+
+## Rodata cleanup project — COMPLETED 2026-06-09
+
+All 12 `asm/data/*.rodata*.o(.rodata)` segments were retired from `bb2.ld` on 2026-06-09 (23 328
+bytes total). Every rodata symbol that previously lived in an `asm/data` block now lives in a C
+source file (either an existing `.c` for en-bloc cases or a new sub-TU like
+`src/text1a_filepaths.c`, `src/code6cac_b_rodata.c`, etc). Oracle SHA1 unchanged.
+
+**Critical future-agent warnings:**
+
+1. **`bb2.ld` is HAND-MAINTAINED.** Do NOT run `make setup` to regenerate it — splat would
+   re-add `build/asm/data/*.rodata*.o(.rodata)` lines that no longer have backing `.s` files
+   (link error) AND would conflict with the const declarations now in `src/*.c` (multiple
+   definitions). The file has a warning comment at its top; `splat.yaml` has a longer recovery
+   procedure if `make setup` runs accidentally.
+2. **`asm/data/*.rodata*.s` files are all DELETED.** Including the two splat-parent files
+   (`asm/data/800.rodata.s`, `asm/data/101C.rodata.s`) which were ~390 KB of dead disk
+   space after the variant retirements. Don't re-create them.
+3. **The 145 `replace_with_asmfile` stubs and `replay_camera_rob_back_loose2`'s 24-rule
+   jtbl-infra cluster are STILL in place** — those are per-function engine-queue work,
+   decoupled from the rodata-cleanup goal. The cleanup made them tractable by removing the
+   rodata-attribution barrier, but did not solve them.
+
+**Authoritative references:**
+- `memory/project/rodata-cleanup-progress.md` — per-cluster retirement log + reusable recipes
+- `docs/rodata-cleanup-project.md` — original plan (preserved for context)
+- `tools/audit_rodata_blocks.py` / `tools/cluster_rodata.py` / `tools/re_attribute_rodata.py`
+  — inventory + cascade-math tools (still functional; output now shows 0 blocks, useful as a
+  regression check that the cleanup remains in place)
+- `tools/extract_rodata_to_c.py` — promoted from `tmp/` post-completion; reusable for future
+  similar projects (e.g. `.data` block re-attribution)
 
 ## The queue IS the worklist (`engine queue`)
 All outstanding work lives in ONE ordered list — `engine/queue.json` — covering every function
