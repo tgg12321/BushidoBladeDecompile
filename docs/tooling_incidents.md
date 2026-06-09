@@ -93,3 +93,8 @@ real_fail = 'bash: line 1: /path/.venv/bin/python`
 - **Permanent guard:** `tools/normalize_lf.py` (uncommitted change)
 - **Verified by:** Normalized regfix.txt and asmfix.txt via tools/normalize_lf.py (new canonical helper, replaces the inline sed footgun the shell_footgun_guard blocks). Confirmed zero CR bytes remain in regfix.txt, asmfix.txt, src/text1b.c, inline_asm_canonical.txt. Updated tooling_error_signatures.json crlf-build-file 'permanent_fix' to point to tools/normalize_lf.py rather than inline sed (which the shell footgun guard blocks).
 - **Occurrences this incident:** 1
+
+## 2026-06-09 13:12:48 — FALSE POSITIVE (crlf/crlf-build-file)
+- **Triggering command:** `Edit C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\text1a_a_gen.c`
+- **Why not a real failure:** tmp/ is gitignored scratch space; the file generated here is only piped into Read for cut-and-paste into src/ — it is not consumed by the build pipeline. CRLF here cannot corrupt build artifacts.
+- **Action:** tighten signature `crlf-build-file` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.

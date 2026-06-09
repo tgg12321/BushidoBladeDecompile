@@ -1,8 +1,64 @@
 {
-  "generated_at": "2026-06-06T21:53:29",
+  "generated_at": "2026-06-09T14:03:18",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
+    {
+      "func": "bios_GPU_cw",
+      "file": "display",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007FEDC",
+      "file": "display",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "InitFadePanel",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8004DDB4",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800789D8",
+      "file": "text1b_b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800790C0",
+      "file": "text1b_b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007F21C",
+      "file": "display",
+      "distance": 5,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
     {
       "func": "func_8001EEB4",
       "file": "code6cac",
@@ -1072,7 +1128,7 @@
       "file": "code6cac_b",
       "distance": 18,
       "verdict": "C",
-      "rules": 11,
+      "rules": 9,
       "status": "active"
     },
     {
@@ -1120,7 +1176,7 @@
       "file": "system",
       "distance": 18,
       "verdict": "C",
-      "rules": 13,
+      "rules": 11,
       "status": "active"
     },
     {
@@ -1704,7 +1760,7 @@
       "file": "code6cac_b",
       "distance": 33,
       "verdict": "ASM-PARTIAL",
-      "rules": 34,
+      "rules": 33,
       "status": "active"
     },
     {
@@ -1984,7 +2040,7 @@
       "file": "code6cac_b",
       "distance": 45,
       "verdict": "C",
-      "rules": 15,
+      "rules": 1,
       "status": "active"
     },
     {
@@ -2080,7 +2136,7 @@
       "file": "code6cac_b",
       "distance": 56,
       "verdict": "ASM-PARTIAL",
-      "rules": 66,
+      "rules": 65,
       "status": "active"
     },
     {
@@ -2152,7 +2208,7 @@
       "file": "config",
       "distance": 61,
       "verdict": "ASM-SUSPECT",
-      "rules": 28,
+      "rules": 26,
       "status": "active"
     },
     {
@@ -2184,7 +2240,7 @@
       "file": "code6cac_b",
       "distance": 65,
       "verdict": "ASM-SUSPECT",
-      "rules": 44,
+      "rules": 43,
       "status": "active"
     },
     {
@@ -2440,7 +2496,7 @@
       "file": "code6cac",
       "distance": 168,
       "verdict": "ASM-PARTIAL",
-      "rules": 3,
+      "rules": 1,
       "status": "active"
     },
     {
@@ -3226,6 +3282,22 @@
       "verdict": "ASM-PARTIAL",
       "rules": 1,
       "status": "active"
+    },
+    {
+      "func": "func_8007F10C",
+      "file": "display",
+      "distance": 1,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8007F12C",
+      "file": "display",
+      "distance": 1,
+      "verdict": "ASM-WHOLE",
+      "rules": 0,
+      "status": "authorize"
     },
     {
       "func": "special_camera_set_win_cam",
@@ -4070,7 +4142,7 @@
       "file": "system",
       "distance": 56,
       "verdict": "ASM-SUSPECT",
-      "rules": 44,
+      "rules": 42,
       "status": "parked",
       "park_reason": "register-alloc coupling \u2014 arg pseudos win allocno tiebreaker for low callee-saves (creation order), forcing rotation. chain-extender already present, volatile-bump regresses (cost > saved). same mechanism as cpu_side_move_dir_4 at larger surface; full pinning in register-alloc-pure-c.md."
     },
@@ -4096,17 +4168,18 @@
     }
   ],
   "counts": {
-    "total": 501,
-    "active": 403,
+    "total": 510,
+    "active": 410,
     "by_status": {
-      "active": 403,
-      "authorize": 26,
+      "active": 410,
+      "authorize": 28,
       "parked": 72
     },
     "by_verdict": {
-      "C": 212,
-      "ASM-PARTIAL": 73,
+      "C": 217,
+      "ASM-PARTIAL": 75,
       "ASM-SUSPECT": 118,
+      "ASM-WHOLE": 2,
       "ASM-STRUCTURAL": 26
     }
   }
