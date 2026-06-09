@@ -2,6 +2,12 @@
 #include "include_asm.h"
 #include "game.h"
 
+/* Rodata owned by config.c per func_8003FA24's reference at asm/funcs/func_8003FA24.s:240-241.
+ * Re-attributed from asm/data/101C.rodata_c2_post.s 2026-06-09 (rodata-cleanup project,
+ * docs/rodata-cleanup-project.md). Named per named_syms.txt alias g_str_multipul_model_80010D8C.
+ * Fixed [16] to match the asm/data block's exact byte content (14 chars + null + 1 pad). */
+const char D_80010D8C[16] = "Multipul Model";
+
 /* Forward declarations */
 extern s32 stage_GetId(void);
 extern void sys_StubEmpty3(s32, s32, s32);

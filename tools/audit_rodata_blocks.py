@@ -37,13 +37,13 @@ OUT_CSV = REPO / "memory" / "project" / "rodata_block_inventory.csv"
 # Retired blocks (no longer in bb2.ld):
 #   - 101C.rodata_c_pre.s        (retired 2026-06-09, zero-byte trivial, pilot)
 #   - 101C.rodata_text1a_DB8.s   (retired 2026-06-09, zero-byte trivial, pilot)
+#   - 101C.rodata_c2_post.s      (retired 2026-06-09, en-bloc re-attribution to config.c)
 LINKED_BLOCKS = [
     "800.rodata_pre.s",
     "800.rodata_post.s",
     "101C.rodata_pre.s",
     "101C.rodata_pre_post.s",
     "101C.rodata_post.s",
-    "101C.rodata_c2_post.s",
     "101C.rodata_text1a_a.s",
     "101C.rodata_text1a_b_pre.s",
     "101C.rodata_text1a_b_post.s",

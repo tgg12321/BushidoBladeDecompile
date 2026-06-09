@@ -102,6 +102,54 @@ The trivial zero-byte case is done (2 blocks retired). The cascade-bearing
 case is **empirically untractable without Phase 3 tooling** — confirmed by
 the 4-byte test above.
 
+### 2026-06-09 — First real cluster retirement: 101C.rodata_c2_post.s (en-bloc re-attribution)
+
+**Retired**: `101C.rodata_c2_post.s` (16 bytes, string "Multipul Model")
+
+**Method**: en-bloc re-attribution to `config.c`.
+
+**Evidence**:
+- The string is referenced only by `func_8003FA24` (asm body in
+  `asm/funcs/func_8003FA24.s:240-241`).
+- `func_8003FA24` is a stub in `config.c`; the function is its only owner
+  of this rodata symbol.
+- `named_syms.txt:859` already pre-named the symbol
+  `g_str_multipul_model_80010D8C` — prior project work had identified
+  config.c as the owning TU.
+
+**Mechanical recipe (validated by this retirement)**:
+1. Add `const char D_80010D8C[16] = "Multipul Model";` to `src/config.c`
+   (named for the symbol it provides; bracket-sized to match the asm/data
+   block's exact byte count including a 1-byte alignment pad).
+2. Delete `asm/data/101C.rodata_c2_post.s` (removes the duplicate definition
+   the .o would have provided).
+3. Edit `bb2.ld`: REMOVE the
+   `build/asm/data/101C.rodata_c2_post.o(.rodata);` line; MOVE the
+   `build/src/config.o(.rodata);` line from its current position (between
+   code6cac_b2 and sound) to immediately after
+   `build/src/code6cac_c2.o(.rodata);` — i.e. into the slot vacated by the
+   retired asm/data block.
+4. `verify-oracle --rebuild` — SHA1 matches first try.
+
+**Cascade analysis (pre-retire prediction matched post-retire reality)**:
+- config.o(.rodata) before: 0 bytes
+- config.o(.rodata) after: 16 bytes (exactly the relocated string)
+- Net change in main_RODATA: 0 bytes
+- Downstream segment addresses: ALL unchanged
+- Oracle SHA1: preserved
+
+**Notes**:
+- `func_8003FA24` remains a `replace_with_asmfile` stub. The asm body's
+  `D_80010D8C` symbol reference now resolves to the C definition in
+  config.o. Future work on `func_8003FA24` itself is engine-queue work,
+  decoupled from this project.
+- The C declaration `const char D_80010D8C[16] = "Multipul Model";` uses
+  the canonical `D_<addr>` name so the asm body's external reference
+  resolves directly. The named-syms.txt alias
+  `g_str_multipul_model_80010D8C` stays as a disassembler-facing
+  decoration; renaming the C symbol to match would require updating
+  named_syms.txt too (out of scope here).
+
 Next pilot candidates (from `memory/project/rodata_clusters.csv`):
 
 1. `101C.rodata_post.s` — 0 owners, trivial-but-4-bytes. **Next, if removable
