@@ -156,22 +156,21 @@ after **each** worker finishes — it is what lets the loop run unattended for l
   individual functions (24 on `replay_camera_rob_back_loose2`) are still in place because they
   bridge GCC's per-function emitted jtbls; their per-function retirement is queue work.
 
-## Rodata cleanup project — Phase A complete (2026-06-09), Phase B in progress
+## Rodata cleanup project — Phase A + Phase B §15.1 complete (2026-06-09)
 
 **Phase A (block retirement)**: all 12 `asm/data/*.rodata*.o(.rodata)` segments retired from
-`bb2.ld` on 2026-06-09 (23 328 bytes total). Every rodata symbol that previously lived in an
-`asm/data` block now lives in a C source file (either an existing `.c` for en-bloc cases or
-a new sub-TU like `src/text1a_filepaths.c`, `src/code6cac_b_rodata.c`, etc). Oracle SHA1
-unchanged.
+`bb2.ld` (23 328 bytes total).
 
-**Phase B (per-function follow-up)**: in progress. See `docs/rodata-cleanup-project.md §15`:
-- `replay_camera_rob_back_loose2`'s 24 jtbl-infra asmfix rules still need to retire (the
-  external `jtbl_800108CC` they bridge to now lives in `src/code6cac_b_rodata.c` instead
-  of the asm/data block, but GCC still emits its own per-function jtbl that needs the
-  asmfix rules to bridge it to the external symbol).
-- The 145 `replace_with_asmfile` stubs are unchanged — these are normal engine-queue work
-  now that the rodata barrier is gone (the cleanup made them tractable but does not
-  perform them).
+**Phase B §15.1 (jtbl-infra rule retirement)**: COMPLETE. `replay_camera_rob_back_loose2`
+reached COMPLETED-C via TU re-split — extracted to `src/replay_camera_rob_back_loose2.c`
+with `src/code6cac_b2.c` split into `_pre`/`_post` around it so the function lands at the
+right text address. All 24 jtbl-infra asmfix rules deleted. `grep -c 'jtbl_' asmfix.txt` = 0.
+
+**Phase B §15.2 (per-function decomp of the 145 `replace_with_asmfile` stubs)**: NOT this
+project's domain per §1 Scope Discipline. These are normal engine-queue work, now unblocked
+at the rodata level.
+
+Oracle SHA1 unchanged throughout (`62efab4f73f992798c43e8c730aa43baa10bb4fa`).
 
 **Critical future-agent warnings:**
 

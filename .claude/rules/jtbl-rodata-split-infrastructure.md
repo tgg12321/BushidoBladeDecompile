@@ -6,26 +6,38 @@ metadata:
   type: reference
 ---
 
-# Jump-table rename/delete asmfix rules are canonical infrastructure — park, don't grind
+# Jump-table rename/delete asmfix rules — historical (resolved 2026-06-09)
 
-> **UPDATE 2026-06-09 — rodata-cleanup project COMPLETED.** All 12
-> `asm/data/*.rodata*.o(.rodata)` blocks (including the one containing
-> `jtbl_800108CC`) have been retired from `bb2.ld` and their bytes
-> re-attributed to C source files. The `jtbl_800108CC` symbol is now
-> defined in `src/code6cac_b_rodata.c` instead of the asm/data block.
+> **UPDATE 2026-06-09 — RESOLVED for the canonical case.**
 >
-> The 24 asmfix rules on `replay_camera_rob_back_loose2` ARE STILL
-> IN PLACE because they bridge GCC's per-function emitted jtbl (in
-> `code6cac_b2.o`) to the external `jtbl_800108CC` symbol — both
-> halves of that bridge still exist; only the rodata DEFINITION moved.
-> The per-function decomp to remove those rules requires preventing
-> GCC from emitting its own jtbl (a structural restructure of the C
-> source, or canonical-asm authorization). That's still pending and
-> still "park, don't grind" per the original guidance below.
+> The cluster-level rodata-split problem was resolved by Phase A of the
+> rodata-cleanup project (all 12 asm/data rodata blocks retired). The
+> per-function jtbl-infra rules on `replay_camera_rob_back_loose2` (the
+> canonical example documented below) were resolved by Phase B §15.1
+> via TU re-split:
 >
-> What's CHANGED: the "needs a global rodata reorder" caveat below
-> is now historical. The reorder is DONE for the cluster level; only
-> the per-function bridge teardown remains.
+> 1. Extracted `replay_camera_rob_back_loose2` to its own .c file
+>    (per single-ownership of `jtbl_800108CC` as evidence-based
+>    attribution).
+> 2. Split `src/code6cac_b2.c` into `_pre`/`_post` around the function
+>    so its `.o(.text)` lands at the original address.
+> 3. Split `src/code6cac_b_rodata.c` into `_pre`/`_post` around
+>    `jtbl_800108CC` — cc1 now emits the jtbl naturally from the
+>    function's switch into its own .o(.rodata), placed at exactly
+>    the right slot in bb2.ld.
+> 4. All 24 asmfix rules deleted. Function reaches COMPLETED-C.
+>
+> The earlier "sanctioned infrastructure" framing was project-internal
+> expedience — SOTN does NOT have a precedent for asmfix-as-infrastructure
+> (they avoid the problem at the splat layer). The honest framing is:
+> asmfix rules that delete cc1's output / rename labels to external
+> symbols are workarounds; the proper fix is source-level TU
+> re-attribution, which is what we did.
+>
+> **`grep -c 'jtbl_' asmfix.txt` is now 0**. The rule below is preserved
+> for historical context — describes the pattern that USED to exist and
+> the proper resolution path (TU re-split per the recipe in
+> `memory/project/rodata-cleanup-progress.md`).
 
 ## The pattern
 
