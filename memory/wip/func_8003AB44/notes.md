@@ -708,3 +708,113 @@ based:
   case 5/6 increment value. The dispatch's call density forces
   callee-save promotion of any cross-dispatch-live value at cost
   greater than any allocation flip could save.
+
+## Session 12 (2026-06-10) addendum
+
+Applied candidate.c, reconfirmed clean floor 6 (build_insns=target_insns=93,
+rules_dropped=5, cheat_asm_stripped=6). Tested ONE novel structural variant
+NOT in sessions 1-11's rejected_forms list; negative.
+
+### FORM #25: case 4 split with literal const + early return
+
+```c
+case 4:
+    gpu_SetDispMask(0);
+    D_800A38AC = 5;      /* literal const, not D_800A38AC++ */
+    return 0;
+case 5:
+case 6:
+    D_800A38AC++;
+    return 0;
+```
+
+Hypothesis: the literal const-store `D_800A38AC = 5` emits a 2-insn
+`addiu $vN, $zero, 5; sb $vN, gprel` sequence, different from case 5/6's
+3-insn `lbu/addiu/sb` RMW. jump2's `find_cross_jump` matches identical
+instruction suffixes — distinct suffixes here should prevent merge,
+decoupling case 4's path from case 5/6's flow.c live-set propagation
+that excludes $v0 from pseudo 94.
+
+Result: sandbox **score 10**, build_insns **97** (+4 over target's 93).
+Cross-jump merge correctly does NOT consolidate them, but the structural
+cost dominates:
+- case 4's tail emits 2 insns (const-store) instead of sharing the 3-insn
+  RMW with case 5/6: net 0 there.
+- case 4 now needs its own `j .L_end; (delay: addu $v0, $zero, $zero)`
+  to terminate vs sharing case 5/6's return path: **+2 insns**.
+- The duplicated return-0 path itself: **+2 insns**.
+
+Net +4 insns, no allocation effect on case 5/6's pseudo 94 (still $v1).
+
+### What this closes
+
+The case 4 / case 5/6 fall-through coupling is the **minimum-insn
+structural form** for this function. Any structural change that decouples
+the two cases OR extends pseudo 94's live range costs MORE insns than
+the case 5/6 register-flip ($v0 vs $v1) could save:
+
+| Form | Score | Δ insns vs target |
+|---|---|---|
+| candidate (canonical fall-through) | 6 | 0 |
+| FORM #16: switch-with-break + s32 ret | 17 | +1 |
+| FORM #22: state-keep-alive | 14 | 0 (+spills) |
+| FORM #24: Lever-C precompute | 18 | +1 |
+| FORM #25: const-split case 4 | 10 | +4 |
+
+The 3 register diffs at case 5/6 (mass cost ~3 masked-Lev units) cannot
+be flipped by any structural means; the structural cost ceiling is
+strict.
+
+### Considered but rejected on policy/scope grounds
+
+- **Redeclare gpu_SetDispMask to return s32** (session 1's untried
+  hypothesis). The declaration lives in `include/code6cac.h` and is
+  shared with 6 sibling .c files (text1b.c, code6cac_b2_post.c, ings.c,
+  display.c, text1b_b.c, this file). Editing the header to flip its
+  return type would affect all 6 — out of scope per the task brief's
+  SCOPE DISCIPLINE: "Edits MUST be confined to your function".
+- **Function-pointer cast at call site**: `((s32(*)(s32))gpu_SetDispMask)(0)`
+  makes cc1 see the call as s32-returning (defining $v0) without
+  touching the header. REJECTED on cheats-by-any-spelling grounds: the
+  cast has zero semantic content (gpu_SetDispMask actually returns void
+  by libgpu's ABI; any "return value" in $v0 after the call is undefined
+  per the C standard). The cast exists solely to bend cc1's flow.c
+  analysis of $v0 liveness post-call. Same family as forbidden volatile
+  casts on game-state globals — coercion via type-system spelling. Per
+  [[no-new-park-categories]] this fails the cheats-by-any-spelling
+  family check; not measured.
+
+### Next-session priorities (session 13 onwards, unchanged from sessions 10-11)
+
+The structural lever space is **fully exhausted across sessions 1-12**
+(25 rejected forms + the canonical candidate). The four documented
+remaining priorities all require diagnostic-tooling work:
+
+1. **BB2_FLOW_DEBUG cc1 instrumentation** (PRIORITY 1) — still the
+   highest-value diagnostic. ~30-50 line patch to flow.c's
+   `update_life_info` + cc1 rebuild + run on isolated `.i` to dump
+   `basic_block_live_at_start[.L8003AC74]`. This is the **only**
+   remaining mechanism that could surface a new C-level lever for
+   the case 5/6 register issue (by showing which predecessor's
+   live-out propagates $v0).
+2. **BB2_REORG_DEBUG targeting case 2's invert-jump site** — partial
+   hooks exist from the saEft00Add cluster; needs targeted
+   `relax_delay_slots` instrumentation on this function's site.
+3. **Sibling LREG/GREG dumps** — un-tried; the `.greg` allocno tables
+   from matched siblings (suDispMentalBar, func_8003AE5C) may reveal
+   priority-tiebreaker patterns the syntactic inspection (session 3)
+   missed.
+4. **Case-2-specific PERM_GENERAL permuter** — un-tried; requires a
+   permuter-base that mutates only case 2's local structure to find
+   a polarity-flip variant without case 5/6 regression.
+
+### Anti-priorities (added session 12)
+
+- DO NOT re-test ANY case 4 / case 5/6 structural decoupling. Five
+  sessions have collectively shown the minimum-insn form IS the shared
+  fall-through; alternatives cost +1-12 insns (FORM #16/24/25 confirmed
+  across sessions 8/11/12).
+- DO NOT touch include/code6cac.h to change gpu_SetDispMask's
+  declaration — out of scope for this function and affects 6 siblings.
+- DO NOT use function-pointer casts to bend GCC's analysis of $v0
+  liveness — cheats-by-any-spelling family rejection.
