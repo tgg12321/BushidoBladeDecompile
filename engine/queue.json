@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007FEDC",
-      "file": "display",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "InitFadePanel",
       "file": "text1b",
       "distance": 1,
@@ -3276,15 +3268,6 @@
       "status": "active"
     },
     {
-      "func": "func_8003FE40",
-      "file": "config",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Cheat-asm pins forced TWO separate li -1 materializations into  and  (one per nested do-while compare against -1). GCC's natural CSE folds them to ONE shared register. Removing pins drops 1 instruction (build=34 vs target=35). The redundant li was load-bearing for the match. Pure-C lever to force two materializations not yet found; needs deeper analysis."
-    },
-    {
       "func": "func_8007DB20",
       "file": "display",
       "distance": 0,
@@ -4161,14 +4144,14 @@
     }
   ],
   "counts": {
-    "total": 506,
-    "active": 409,
+    "total": 504,
+    "active": 408,
     "by_status": {
-      "active": 409,
-      "parked": 97
+      "active": 408,
+      "parked": 96
     },
     "by_verdict": {
-      "C": 216,
+      "C": 215,
       "ASM-PARTIAL": 75,
       "ASM-SUSPECT": 118
     }
