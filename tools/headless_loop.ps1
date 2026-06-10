@@ -94,12 +94,28 @@ uncommitted tree that forces an escalation):
   - Work ONLY the single top function. The instant it is finished — `git commit`
     after retire + queue done, OR `queue park` — STOP and end your turn.
   - Do NOT run `queue next` again, and do NOT start, edit, or even look at a
-    second function. ONE function per session, no exceptions.
+    second function. ONE function per session, no exceptions. If your assigned
+    function turns out to be trivial (already in inline_asm_canonical.txt, or
+    already at distance 0), commit the queue-bookkeeping and STOP — leftover
+    budget is NOT a license to grab a second function. The orchestrator will
+    spawn a fresh agent for the next item.
+  - **SCOPE DISCIPLINE.** Edits MUST be confined to your function (its body in
+    src/<file>.c, its rules in regfix.txt / asmfix.txt, its entry in
+    inline_asm_canonical.txt). Do NOT edit other functions' bodies, even
+    "while you're in the file." Do NOT touch sibling functions whose pins
+    look removable to you. Do NOT touch tools/ or engine/. The next agent
+    will get a clean slate; do not preempt their work.
   - ALWAYS `git commit` your finished function before anything else. NEVER end
-    your turn with uncommitted edits in the tree.
+    your turn with uncommitted edits in the tree. If you discover collateral
+    edits you can't justify keeping (exploratory greps that touched a file,
+    half-finished refactors of a sibling), REVERT them with `git checkout --
+    <path>` before stopping.
   - Do NOT push.
 PERSISTENCE BAR — every function MUST be decompiled eventually, so the bar for
-parking is high. "Hard" is not enough; "I tried a few things" is not enough.
+parking YOUR ASSIGNED FUNCTION is high. "Hard" is not enough; "I tried a few
+things" is not enough. Persistence is WITHIN your function (more levers, more
+analysis, more permuter time), NOT ACROSS functions (grabbing extras when yours
+finishes quickly).
 Read [[difficult-is-not-impossible]] and
 [[canonical-gate-distance-not-evidence]] BEFORE you consider parking. The
 matching C exists ([[no-compiler-divergence]]: the toolchain is frozen, the
