@@ -86,7 +86,7 @@ def confirm_park(func: str, item: dict | None) -> tuple[str, str]:
             f"required. reason: {reason!r}")
 
 
-def classify_outcome(rec: dict, item: dict | None) -> str:
+def classify_outcome(rec: dict, item: dict | None, commits: list[str] | None = None) -> str:
     if not rec.get("oracle_ok", True):
         return "ORACLE-BREAK"
     if rec.get("advanced"):
@@ -96,6 +96,16 @@ def classify_outcome(rec: dict, item: dict | None) -> str:
         return "COMPLETED"
     if rec.get("is_error"):
         return "ERROR"
+    # wip: <func> commit -> legitimate session progress per CLAUDE.md step 5b
+    # ("Score lowered but not 0 ⇒ checkpoint"). The function stays at queue top
+    # (so progressed=False, stillTop=True), but the worker measurably worked
+    # the problem and saved a checkpoint for the next session. NOT stuck.
+    func = rec.get("func", "")
+    for c in commits or []:
+        # commit line format from `git log --format='%h %s'`: "<hash> <subject>"
+        parts = c.split(" ", 1)
+        if len(parts) == 2 and parts[1].startswith(f"wip: {func}"):
+            return "WIP-CHECKPOINT"
     if (item or {}).get("status") == "parked" or rec.get("progressed"):
         return "PARKED"
     return "STUCK"
@@ -115,7 +125,6 @@ def uncommitted_leftover() -> list[str]:
 def review(rec: dict) -> dict:
     func = rec.get("func")
     item = queue_item(func)
-    outcome = classify_outcome(rec, item)
 
     # transcript-derived efficiency signals
     sid = rec.get("session_id", "")
@@ -141,6 +150,10 @@ def review(rec: dict) -> dict:
         log = _git("log", "--grep", func, "-n", "2", "--format=%h %s")
         commits = [c for c in log.splitlines() if c.strip()]
         stat = _git("show", "--stat", "--format=", commits[0].split()[0]) if commits else ""
+
+    # classify AFTER commits are known, so WIP commits are recognised as
+    # legitimate session progress (not misclassified as STUCK).
+    outcome = classify_outcome(rec, item, commits)
 
     park_verdict = park_detail = None
     if outcome == "PARKED":
@@ -172,8 +185,12 @@ def review(rec: dict) -> dict:
     elif outcome == "PARKED" and park_verdict != "AUTO-CONFIRMED":
         decision, why = "ESCALATE", "park not mechanically confirmable (novel)"
     else:
-        decision, why = "ACCEPT", f"outcome={outcome}" + (
-            " (park auto-confirmed)" if outcome == "PARKED" else "")
+        suffix = ""
+        if outcome == "PARKED":
+            suffix = " (park auto-confirmed)"
+        elif outcome == "WIP-CHECKPOINT":
+            suffix = " (wip checkpoint saved; next session resumes from candidate.c)"
+        decision, why = "ACCEPT", f"outcome={outcome}" + suffix
         if audit and (audit.get("error_results") or audit.get("footgun_blocks")):
             why += "; note: tooling friction flagged (review audit)"
 

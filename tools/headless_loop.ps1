@@ -79,6 +79,9 @@ sandbox <f> --disable all | retire <f> | queue done <f> |
 queue park <f> --reason "...").
 
 Steps for the single top function:
+  0. If `queue next` returns a `wip` block, READ memory/wip/<func>/meta.json +
+     notes.md FIRST, apply candidate.c to src/, confirm the documented floor
+     with sandbox, and CONTINUE from there (not from HEAD).
   1. & tools/eng.ps1 queue next            (identify the function + file)
   2. & tools/eng.ps1 canonical <func>      (C -> continue; ASM-* -> park it, do not grind)
   3. & tools/eng.ps1 sandbox <func> --disable all   (honest pure-C distance)
@@ -88,6 +91,26 @@ Steps for the single top function:
   6. & tools/eng.ps1 queue done <func>
   7. Register a finding if reusable (.claude/rules/ or memory/), then commit with
      git commit -F tmp/msg.txt (write the message file first; never a heredoc).
+
+Three valid session END STATES — each commits + STOPs immediately:
+  A. **COMPLETED** — retire + queue done passed, SHA1 == oracle.
+     Commit `Match: <func> ...` (or `auth: <func> ...` for canonical-asm
+     bookkeeping). STOP.
+  B. **PARKED** — you exhausted the lever playbook with measurements (see
+     PERSISTENCE BAR below). Park with a technical reason citing the SPECIFIC
+     RTL mechanism, commit, STOP.
+  C. **WIP CHECKPOINT** — you measurably lowered the floor below HEAD's but
+     did not close. REVERT src/ to HEAD, save memory/wip/<func>/ (candidate.c
+     + meta.json + notes.md per memory/wip/README.md), invoke the
+     cheat-reviewer on the candidate FIRST and record the verdict in
+     meta.json. Commit `wip: <func> ...`, STOP. A `wip:` commit IS the
+     session's terminal output — the runner accepts it as legitimate
+     progress; the next session resumes from your candidate.c.
+
+After ANY of A/B/C lands, you are DONE. Do not look for more work. Leftover
+budget after a terminal commit is NOT a license to grab adjacent functions,
+do drive-by cleanups, or "complete parked" functions you happen to know
+about. Hit `git commit` then immediately end your turn.
 
 HARD RULES (ignoring these wastes the run — a mid-work budget cutoff leaves an
 uncommitted tree that forces an escalation):
