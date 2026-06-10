@@ -17602,25 +17602,23 @@ s32 func_80077860(void) {
     return 0;
 }
 s32 func_80077894(void) {
-    register s32 ret asm("$16") = 0;
-    register s32 result asm("$5") = func_800693CC();
-    register s32 mask asm("$2");
-    register s32 *p asm("$4");
-    register s32 cur asm("$3");
-    register s32 bits asm("$2");
-    if (result < 0) goto fail;
-    mask = -0x10;
-    do { p = (s32 *)&D_8009BD38; ret = 1; } while (0);
-    cur = *p;
-    D_800A35E4 = 0;
-    cur = cur & mask;
-    bits = result & 0xF;
-    cur = cur | bits;
-    *p = cur;
-    goto end;
-fail:
-    if (result == -2) ret = -1;
-end:
+    s32 ret;
+    s32 result;
+
+    ret = 0;
+    result = func_800693CC();
+    if (result >= 0) {
+        s32 *p = &D_8009BD38;
+        s32 cur;
+        ret = 1;
+        cur = *p;
+        D_800A35E4 = 0;
+        cur &= ~0xF;
+        cur |= result & 0xF;
+        *p = cur;
+    } else if (result == -2) {
+        ret = -1;
+    }
     return ret;
 }
 extern s32 D_800A35E0;
