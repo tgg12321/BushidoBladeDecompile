@@ -98,12 +98,53 @@ uncommitted tree that forces an escalation):
   - ALWAYS `git commit` your finished function before anything else. NEVER end
     your turn with uncommitted edits in the tree.
   - Do NOT push.
-If it cannot reach pure-C COMPLETED-C (canonical-asm needing user auth, or a
-genuine documented plateau), `& tools/eng.ps1 queue park <func> --reason "..."`
-instead of forcing it, commit the park, then stop. NEVER commit a cheat (regfix,
-asmfix, cheat-asm, register pin, scheduling barrier) to "finish" the function —
-those make the bytes match but the function is NOT completed; the COMPLETED
-gate rejects them.
+PERSISTENCE BAR — every function MUST be decompiled eventually, so the bar for
+parking is high. "Hard" is not enough; "I tried a few things" is not enough.
+Read [[difficult-is-not-impossible]] and
+[[canonical-gate-distance-not-evidence]] BEFORE you consider parking. The
+matching C exists ([[no-compiler-divergence]]: the toolchain is frozen, the
+ONLY variable is the C). A verdict of ASM-SUSPECT is the gate's GUESS, NOT
+proof — keep grinding pure C.
+
+You may NOT park until you have ALL of:
+  1. **Run the rigorous scanner**: `python3 tools/scan_hand_coded.py --single
+     <func> --json`. If tier is LOW or TIGHT_C, the function is NOT
+     canonical-asm; keep working pure C.
+  2. **Applied the lever playbook**: at minimum block-local var split, narrow
+     integer type, and the file-relevant rules auto-loaded into your context
+     (the path-scoped rules under .claude/rules/). Document each lever
+     attempted + the measured sandbox-distance delta.
+  3. **Read the asm and a matched sibling in the same .c file**. The sibling
+     that DID match shows GCC's behaviour on adjacent-style C — diff its
+     greg/RTL dumps against the unmatched one.
+  4. **Tried directed permuter or instrumented cc1 dumps** (BB2_ALLOC_DEBUG,
+     BB2_SCHED_DEBUG, BB2_PRIO_DEBUG via tmp/gccdbg/cc1) when the gap is
+     register-allocation or scheduling. The dumps tell you WHICH RTL state
+     needs flipping; that's the lever-finding map.
+  5. **Either made measurable floor-lowering progress** (then SAVE A WIP
+     CHECKPOINT under memory/wip/<func>/ per CLAUDE.md "Score lowered but not
+     0 ⇒ checkpoint" instead of parking — the next session resumes from your
+     candidate.c, not from HEAD), OR documented evidence-backed exhaustion of
+     a specific named lever.
+
+A park reason MUST be a per-function technical finding (the SPECIFIC RTL
+mechanism the levers can't flip, with measurements), NOT "high distance" or
+"too many rules" or "looks complex". `distance > 500` is no longer routable
+to ASM-STRUCTURAL on distance alone (2026-06-09 gate fix) — large size IS
+NOT evidence of hand-asm, it's evidence of large pure-C work to do.
+
+If you cannot finish in budget BUT measurably lowered the floor, do NOT
+park. Write a WIP entry (memory/wip/<func>/candidate.c + meta.json + notes.md
+per CLAUDE.md and memory/wip/README.md). Invoke the cheat-reviewer on the
+candidate first; record the verdict in meta.json. Revert src/ to HEAD (oracle
+stays green), commit under `wip: <func>`, stop. The next agent resumes from
+your floor, not from scratch.
+
+NEVER commit a cheat (regfix, asmfix, cheat-asm, register pin, scheduling
+barrier, dead-store coercion, volatile-on-game-state-global, OR-tree
+reorder, do-while-zero outside its narrow LABEL_OUTSIDE_LOOP_P sanctioned
+use, etc.) to "finish" the function — those make the bytes match but the
+function is NOT completed; the COMPLETED gate rejects them.
 '@
 
 function Write-RunRecord($rec) {
