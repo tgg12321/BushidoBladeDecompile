@@ -629,3 +629,82 @@ dispatch's register.
 - DO NOT re-test state-keep-alive levers — the call in case 1 forces
   callee-save spill that regresses far more than the case 5/6 register
   flip could save.
+
+## Session 11 (2026-06-10) addendum
+
+Applied candidate.c, reconfirmed clean floor 6 (build_insns=target_insns=93,
+rules_dropped=5, cheat_asm_stripped=6). Tested two structural variants
+NOT in sessions 1-10's rejected_forms list; both negative.
+
+| FORM | Lever | Score | build_insns | Verdict |
+|------|-------|-------|-------------|---------|
+| #23 | Case 5/6 `D_800A38AC = D_800A38AC + 1;` (assignment vs compound `++`) | 6 | 93 | NO-OP — identical RTL gimplification |
+| #24 | Lever C precompute: `u8 next_dispatch = D_800A38AC + 1;` at fn entry; case 5/6 uses `D_800A38AC = next_dispatch;` | 18 | 94 | REGRESSION — +1 emit + callee-save spill across dispatch's calls |
+
+### Session 11 mechanism findings
+
+**FORM #23 closes the syntactic-increment-variation hypothesis.** cc1 2.7.2
+lowers `PREINCREMENT_EXPR(x)` and `MODIFY_EXPR(x, PLUS_EXPR(x, 1))` to
+identical `(set x (plus x 1))` RTL at gimplification, well before global.c's
+allocation. The C-level distinction is erased and cannot be a lever.
+Useful for future agents: don't re-test `x++` vs `x = x + 1` vs `++x` vs
+`x += 1` — all produce identical RTL for unsigned scalars.
+
+**FORM #24 closes the Lever-C whole-function precompute hypothesis for
+this function's case 5/6 register gap.** This was a legitimate lever per
+[[register-alloc-pure-c]] (Lever C paid off for InitHiraRmd_80047FBC),
+and the +1 computation at entry was hypothesized to give the case 5/6
+increment value a long live range that exists BEFORE .L8003AC74 (the
+jtbl-merge block whose live-in $v0 excludes pseudo 94 per session 4's
+ALLOCDBG). Empirically: the value DOES get a long live range — but the
+dispatch crosses 6 function calls (func_8003A308 in case 1, gpu_SetDispMask
+in case 1, two func_8008C464 calls in cases 2/3/done, func_8003A39C in
+fail, func_8003A360 in case 7) which force the live value to a callee-save
+register (cost: 2 prologue/epilogue saves) AND the +1 computation itself
+adds 1 insn at function entry (cost: +1 emitted insn). Net regression
++12 over the floor-6 baseline.
+
+The Lever-C result is the more useful of the two findings: it
+**definitively rules out the whole "extend the increment value's live
+range to predate .L8003AC74" lever family** for this function. Any C
+construct that makes the case 5/6 increment value live across the
+dispatch will pay the same callee-save spill cost — that cost
+mechanically exceeds the +1 insn the register flip could save. Future
+agents should NOT re-test this lever family in any variant (loop-local,
+named-block-local, parameter-shaped, externalized state machine).
+
+### Next-session priorities (session 12 onwards, unchanged from session 10's list)
+
+Per Session 11's negative results narrowing the lever space further, the
+priority list shifts ZERO entries — session 10's diagnosis stands. The
+remaining genuinely-untried levers are all diagnostic-instrumentation
+based:
+
+1. **BB2_FLOW_DEBUG cc1 instrumentation** (still PRIORITY 1). The case
+   5/6 issue is now triply confirmed (sessions 4, 10, 11) to be rooted at
+   flow.c's basic_block_live_at_start computation at .L8003AC74.
+   BB2_FLOW_DEBUG would directly read this live-set and identify which
+   predecessor's live-out propagates $v0. The instrumented cc1 already
+   exists from prior cluster sessions (`tmp/gccdbg/cc1` with ALLOCDBG +
+   SCHEDDBG + PRIODBG hooks); adding flow.c hooks is a ~30-50 line patch
+   + rebuild. The canonical `tools/gcc-2.7.2/build/cc1` stays UNTOUCHED.
+2. **BB2_REORG_DEBUG targeting case 2's invert-jump site** for the
+   polarity gap (sessions 2-9). Partial DBG_* hooks exist; targeting
+   `mostly_true_jump` / `relax_delay_slots` at the case 2 candidate site
+   has not been done.
+3. **Sibling LREG/GREG dumps** from code6cac_c_ab.c's matched switches.
+   Session 3 ruled them out by SYNTACTIC inspection; actual RTL dumps
+   may surface allocno-priority patterns that transfer.
+4. **PERM_GENERAL permuter scoped to case 2's local mutations.** Session
+   6's permuter mutated the full candidate; a permuter-base restricted
+   to case 2 only may find a structural variant for that polarity gap
+   without regression in case 5/6.
+
+### Anti-priorities (added session 11)
+
+- DO NOT re-test compound-vs-assignment syntactic variations of any
+  increment in this function. All produce identical RTL.
+- DO NOT re-test ANY Lever-C-style whole-function precompute for the
+  case 5/6 increment value. The dispatch's call density forces
+  callee-save promotion of any cross-dispatch-live value at cost
+  greater than any allocation flip could save.
