@@ -12511,7 +12511,7 @@ extern s32 func_80085FB8();
 extern s32 md_game_check_change_main_mode_katinuki(s16);
 s32 mario_getMarioVoiceData_8005BE84(s32 arg0)
 {
-  register s32 arg_save asm("$16") = arg0;
+  s32 arg_save = arg0;
   s16 new_var;
   s32 result;
   s16 *p;
@@ -12519,7 +12519,7 @@ s32 mario_getMarioVoiceData_8005BE84(s32 arg0)
   title_mv_exec2(0);
   new_var2 = 2;
   {
-    register s32 base asm("$3");
+    s32 base;
     base = (s32) (&D_8009AD1C);
     p = (s16 *) (base + (new_var2 * (new_var2 * arg_save)));
   }
@@ -16609,7 +16609,7 @@ extern s32 initPolyG4(GameObj *);
 extern s32 ot_Link(s32, GameObj *);
 extern void *D_800A35C4;
 s32 func_80072BC4(s32 arg0, GameObj *arg1) {
-    register u8 var_v0 asm("$2");
+    u8 var_v0;
     int fc_const;
 
     initPolyG4(arg1);

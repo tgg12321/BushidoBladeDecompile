@@ -391,11 +391,11 @@ s32 func_8003FA24(void *a0) {
     return 0;
 }
 s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2) {
-    register s32 i;
+    s32 i;
     i = 0;
     if (a1 > i) {
-        register s16 t0 = -256;
-        register s16 *v1 = a0;
+        s16 t0 = -256;
+        s16 *v1 = a0;
         for (i = 0; i < a1; i++) {
             *(s16 *)((u8 *)v1 + 6) = t0;
             v1 = (s16 *)((u8 *)v1 + 8);
@@ -403,20 +403,20 @@ s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2) {
     }
 
     {
-        register s32 count;
+        s32 count;
         count = a2[0];
         a2++;
         if (count >= 0) {
-            register s32 neg1 = -1;
+            s32 neg1 = -1;
             do {
-                register int val;
+                int val;
                 val = a2[0];
                 do { count--; } while(0);
                 a2++;
                 if (count != neg1) {
-                    register s32 neg1b = -1;
+                    s32 neg1b = -1;
                     do {
-                        register s32 addr;
+                        s32 addr;
                         i = a2[0];
                         a2++;
                         count--;

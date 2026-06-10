@@ -3228,15 +3228,6 @@
       "status": "active"
     },
     {
-      "func": "func_8003FE40",
-      "file": "config",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "SOTN-standard policy tightened 2026-06-10: plain `register` storage hints are allocator-steering cheats, not completed C. Function currently has no regfix/asmfix/hard register pins and sandbox score 0, but still contains load-bearing plain register hints. Needs a natural no-register C form or a canonical-asm decision before completion."
-    },
-    {
       "func": "func_8007DB20",
       "file": "display",
       "distance": 0,
@@ -3397,33 +3388,6 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80072BC4",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "mario_getMarioVoiceData_8005BE84",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80077B30",
-      "file": "text1b_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b_b.c. Speed-parked during batch grind."
     },
     {
       "func": "InitHiraRmd_80047FBC",
@@ -4104,11 +4068,11 @@
     }
   ],
   "counts": {
-    "total": 499,
+    "total": 495,
     "active": 403,
     "by_status": {
       "active": 403,
-      "parked": 96
+      "parked": 92
     },
     "by_verdict": {
       "C": 212,
