@@ -12474,8 +12474,8 @@ void func_8005BD30(s32 arg0) {
     s32 i;
     title_mv_exec2(0);
     count = (D_800EFC50 == D_800EFC44) ? 2 : 3;
+    i = 0;
     if (count != 0) {
-        i = 0;
         do {
             u8 byte = (&D_8009AD18)[i & 0xFF];
             saFidLoad(arg0, byte);
