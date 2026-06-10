@@ -86,6 +86,62 @@ All 4 added to `rejected_forms` in meta.json. Floor remains 3. Resume avenues
 from session 4 still untried (instrumented combine.c probe, directed permuter,
 sibling back-port).
 
+## Session-8 (2026-06-10, HEAD 7b3fd4f9) — 3 NEW (s32)-cast / function-scope-idx2 / hoist-fields variants, floor stays 3
+
+Re-verified candidate.c floor at fresh HEAD 7b3fd4f9: score=3, build_insns=58,
+target=59 — matches sessions 1+3+4+5+6+7. Tested 3 NEW variants beyond the
+22-form rejected_forms catalog (1 fourth variant short-circuited from V-C's
+regression direction):
+
+1. **V-A — (s32) cast on first compare** — `if ((s32)a1 != 0xA && ...)` —
+   score 3 unchanged. The (s32) cast is treated by combine as no-op widening
+   (identical to rejected `(u32)a1 != 0xA`). Signed vs unsigned widening of
+   an already-zero-extended HImode value canonicalizes to the same SImode
+   pseudo. Distinct syntactic spelling, same RTL.
+
+2. **V-B — function-scope idx2 declaration** — `s32 idx2;` at function-top,
+   `idx2 = D_800A3748;` inside the inner block (separating decl from init) —
+   score 3 unchanged. The [[hoist-call-arg-local-flips-jal-delay]] lever
+   effect survives: ASSIGNMENT position inside the block is what matters for
+   reorg's delay-slot fill decision, not DECLARATION position. Extended live
+   range of idx2 doesn't pull into a1's comparison-block allocation.
+
+3. **V-C — hoist all entry-field reads to function-top** —
+   `s16 cond_b = *(s16*)(entry+0x72); s16 cond_c = *(s16*)(entry+0x96);`
+   declared before the if, replacing the inline `*(s16*)(...)` reads in the
+   && chain — score 10 REGRESSION, build_insns 56 (target 59, -3 short).
+   The hoisted lh loads emit eagerly in the prologue area, removing target's
+   interleaved load+test scheduling. The hoist strategy from
+   [[hoist-flag-load-defeat-add-combine]] (sibling func_800484A0) doesn't
+   apply here: that function had an intervening `arg0 += 4;` pointer advance
+   creating a real RTL use; func_8001EEB4 has no advance, so hoisting just
+   emits loads without breaking any combine fold.
+
+V-D (hoist only one cond field) was planned but short-circuited from V-C's
+regression direction — the && chain's embedded loads are themselves part of
+target's scheduling pattern; removing any of them perturbs the comparison
+block's RTL.
+
+All 3 measured variants added to `rejected_forms` in meta.json (catalog now
+25 forms). 8 sessions of cumulative surface-syntactic enumeration reinforce
+the structural finding: the 3-diff cluster's coupling to the
+(s16)-cast-on-local mechanism is robust to ALL tested rephrasings.
+
+### Resume avenues unchanged from sessions 5-7
+
+- (a) **Instrumented cc1 combine.c probe** — `tools/gcc-2.7.2/combine.c`
+  holds the simplify rule folding `(and:SI (lhu:HI) 0xFFFF) → (lhu:HI)`.
+  Identify a SImode-pseudo shape that escapes the fold without affecting
+  the load opcode. The tmp/gccdbg/cc1 from saEft00Add has reorg.c hooks
+  but needs combine.c DBG hooks added + rebuild.
+- (b) **Directed permuter** — `PERM_GENERAL` / `PERM_INT_TYPE` /
+  `PERM_TYPECAST` from candidate.c with `--stop-on-zero`. 8 sessions of
+  manual search have now exhausted ~25 surface variants; the directed
+  permuter surface (untouched on this function) may surface a SImode-shape
+  construct manual enumeration misses.
+- (c) **Cross-reference matched siblings** — none new at HEAD 7b3fd4f9.
+- (d) **Wait for sibling resolution + back-port** — passive.
+
 ## Session-7 (2026-06-10, HEAD 5e973f53) — 3 NEW dual-pseudo / u32-storage / u32-truthy variants tested, floor stays 3
 
 Re-verified candidate floor at fresh HEAD 5e973f53: score=3, build_insns=58,
