@@ -4,46 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "InitFadePanel",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8004DDB4",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800789D8",
-      "file": "text1b_b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800790C0",
-      "file": "text1b_b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007F21C",
-      "file": "display",
-      "distance": 5,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8001EEB4",
       "file": "code6cac",
       "distance": 6,
@@ -3466,15 +3426,6 @@
       "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
     },
     {
-      "func": "func_8005BD30",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
       "func": "func_8003D7B4",
       "file": "code6cac_c2",
       "distance": 2,
@@ -4144,15 +4095,15 @@
     }
   ],
   "counts": {
-    "total": 504,
-    "active": 408,
+    "total": 498,
+    "active": 403,
     "by_status": {
-      "active": 408,
-      "parked": 96
+      "active": 403,
+      "parked": 95
     },
     "by_verdict": {
-      "C": 215,
-      "ASM-PARTIAL": 75,
+      "C": 212,
+      "ASM-PARTIAL": 73,
       "ASM-SUSPECT": 118
     }
   }

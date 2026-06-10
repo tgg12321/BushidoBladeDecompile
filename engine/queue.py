@@ -135,8 +135,19 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 dist = -1
                 scorable = False
             cheat_count = inlineasm.file_func_cheat_asm_count(stem, func)
-            if rules == 0 and dist == 0 and (cheat_count <= 0 or func in canon_funcs):
-                continue  # already COMPLETED (no cheat, byte-clean) -> not outstanding
+            if rules == 0:
+                # COMPLETED-INLINE-ASM-CANONICAL: function is in inline_asm_canonical.txt
+                # and carries 0 rules. The inline asm IS the accepted finished form,
+                # so masked sandbox distance is meaningless here (the cheat-strip removes
+                # the canonical body, producing a "distance" that just measures the
+                # missing canonical insns). mark_done accepts this directly — regen
+                # must drop them too, or they sit in the queue forever waiting to be
+                # rediscovered (each ~$3 of agent time per false top).
+                if func in canon_funcs:
+                    continue
+                # COMPLETED-C: 0 rules + 0 distance + 0 cheat-asm = pure-C byte-clean.
+                if dist == 0 and cheat_count <= 0:
+                    continue
             if func in prev:  # sticky parked
                 pv = prev[func]
                 # parked -> sticky regardless (until the user un-parks via regen
