@@ -35,8 +35,21 @@ from . import buildconfig as cfg
 # from the target. Genuinely-C functions sit close (regfix does minor reg-alloc
 # fix-ups); hand-asm sits far (GCC would never emit that shape). Calibration
 # knobs.
+#
+# 2026-06-09 calibration update: the prior `distance > 500` → ASM-STRUCTURAL
+# auto-escalation was too aggressive — a 1400-insn pure-C function with
+# accumulated RA/scheduling drift trivially exceeds 500. The 2026-06-09 audit
+# of the 26 ASM-STRUCTURAL items in the authorize bucket found 0/26 had any
+# hand-coded signals (scan_hand_coded LOW for all); they were just LARGE
+# functions auto-misrouted. Fix: ASM-STRUCTURAL now requires the distance
+# threshold AND an independent hand-coded signal (scan_hand_coded tier ≥
+# POSSIBLE). Without that corroboration, large distance demotes to
+# ASM-SUSPECT (bounded pure-C attempt, then PARK) — keep pushing pure C, the
+# size alone isn't evidence the function was hand-written.
+# See `.claude/rules/canonical-gate-distance-not-evidence.md`.
 SUSPECT_DISTANCE = 50       # > this, gate=C: structural-asm SUSPECT (bounded attempt then PARK)
-NEAR_CERTAIN_DISTANCE = 500  # > this: GCC-implausible, near-certain hand-asm (auto-escalate)
+NEAR_CERTAIN_DISTANCE = 500  # > this AND hand-coded tier ≥ POSSIBLE: ASM-STRUCTURAL.
+                             # > this WITHOUT signal: demoted to ASM-SUSPECT.
 
 # Unambiguous cop2/GTE mnemonics objdump knows by name. 'break' is EXCLUDED
 # (GCC emits it for div-by-zero / overflow traps — not an asm signal).
@@ -161,10 +174,23 @@ def _verdict(func: str, hits: list, total: int, structural: int = 0,
         return out
     out["distance"] = distance
     if distance > NEAR_CERTAIN_DISTANCE:
-        out["verdict"] = "ASM-STRUCTURAL"
-        out["reason"] = (f"no GTE signal, but pure-C distance {distance} > "
-                         f"{NEAR_CERTAIN_DISTANCE} — GCC-implausible, near-certain "
-                         f"hand-asm (auto-escalate, no pure-C grind)")
+        # Distance alone is not strong evidence — large pure-C functions
+        # accumulate enough RA/scheduling drift to exceed the threshold without
+        # being hand-written. Require corroboration from scan_hand_coded.
+        tier = _hand_coded_tier(func)
+        if tier in ("STRONG", "POSSIBLE"):
+            out["verdict"] = "ASM-STRUCTURAL"
+            out["hand_coded_tier"] = tier
+            out["reason"] = (f"pure-C distance {distance} > {NEAR_CERTAIN_DISTANCE} "
+                             f"AND scan_hand_coded tier={tier} — corroborated "
+                             f"hand-asm (auto-escalate, no pure-C grind)")
+        else:
+            out["verdict"] = "ASM-SUSPECT"
+            out["hand_coded_tier"] = tier
+            out["reason"] = (f"pure-C distance {distance} > {NEAR_CERTAIN_DISTANCE} but "
+                             f"scan_hand_coded tier={tier} — distance alone is NOT "
+                             f"hand-asm evidence. Keep grinding pure C; size is just "
+                             f"size. See canonical-gate-distance-not-evidence.md.")
     elif distance > SUSPECT_DISTANCE:
         out["verdict"] = "ASM-SUSPECT"
         out["reason"] = (f"pure-C distance {distance} > {SUSPECT_DISTANCE} — "
@@ -172,6 +198,35 @@ def _verdict(func: str, hits: list, total: int, structural: int = 0,
     else:
         out["reason"] = f"pure-C distance {distance} <= {SUSPECT_DISTANCE} — pure-C target"
     return out
+
+
+_hand_coded_cache: dict[str, str] = {}
+
+
+def _hand_coded_tier(func: str) -> str:
+    """Return scan_hand_coded's tier for `func` (STRONG/POSSIBLE/TIGHT_C/LOW),
+    or 'UNAVAILABLE' if the asm file is missing or the scan errors. Cached
+    per-process so the corroboration check is cheap on repeat. Subprocess
+    invocation (tools/scan_hand_coded.py) — the canonical gate isn't hot.
+    """
+    if func in _hand_coded_cache:
+        return _hand_coded_cache[func]
+    import json
+    import os
+    try:
+        env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+        r = subprocess.run(
+            ["python3", "tools/scan_hand_coded.py", "--single", func, "--json"],
+            capture_output=True, text=True, env=env, timeout=30,
+        )
+        if r.returncode != 0 or not r.stdout.strip():
+            tier = "UNAVAILABLE"
+        else:
+            tier = json.loads(r.stdout).get("tier", "UNAVAILABLE")
+    except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError):
+        tier = "UNAVAILABLE"
+    _hand_coded_cache[func] = tier
+    return tier
 
 
 def classify(func: str, distance: int | None = None) -> dict:

@@ -94,8 +94,27 @@ def test_canonical() -> None:
        canonical._verdict("f", [], 8, distance=0)["verdict"], "C")
     eq("verdict: d60 -> ASM-SUSPECT",
        canonical._verdict("f", [], 80, distance=60)["verdict"], "ASM-SUSPECT")
-    eq("verdict: d600 -> ASM-STRUCTURAL",
-       canonical._verdict("f", [], 80, distance=600)["verdict"], "ASM-STRUCTURAL")
+    # 2026-06-09: distance > 500 alone no longer routes to ASM-STRUCTURAL.
+    # The synthetic name "f" has no asm/funcs/f.s, so _hand_coded_tier
+    # returns "UNAVAILABLE" (treated as no signal) -> demote to ASM-SUSPECT.
+    # See canonical-gate-distance-not-evidence.md.
+    eq("verdict: d600 + no hand-coded signal -> ASM-SUSPECT (demoted)",
+       canonical._verdict("f", [], 80, distance=600)["verdict"], "ASM-SUSPECT")
+    # With a corroborating STRONG/POSSIBLE tier, distance > 500 routes to
+    # ASM-STRUCTURAL. Stub _hand_coded_tier to simulate the signal.
+    _saved_tier = canonical._hand_coded_tier
+    try:
+        canonical._hand_coded_tier = lambda f: "STRONG"
+        eq("verdict: d600 + tier=STRONG -> ASM-STRUCTURAL",
+           canonical._verdict("g", [], 80, distance=600)["verdict"], "ASM-STRUCTURAL")
+        canonical._hand_coded_tier = lambda f: "POSSIBLE"
+        eq("verdict: d600 + tier=POSSIBLE -> ASM-STRUCTURAL",
+           canonical._verdict("h", [], 80, distance=600)["verdict"], "ASM-STRUCTURAL")
+        canonical._hand_coded_tier = lambda f: "TIGHT_C"
+        eq("verdict: d600 + tier=TIGHT_C -> ASM-SUSPECT (not enough signal)",
+           canonical._verdict("i", [], 80, distance=600)["verdict"], "ASM-SUSPECT")
+    finally:
+        canonical._hand_coded_tier = _saved_tier
     eq("verdict: distance=None stays C",
        canonical._verdict("f", [], 8, distance=None)["verdict"], "C")
 

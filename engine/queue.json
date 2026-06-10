@@ -3284,230 +3284,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007F10C",
-      "file": "display",
-      "distance": 1,
-      "verdict": "ASM-WHOLE",
-      "rules": 0,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8007F12C",
-      "file": "display",
-      "distance": 1,
-      "verdict": "ASM-WHOLE",
-      "rules": 0,
-      "status": "authorize"
-    },
-    {
-      "func": "special_camera_set_win_cam",
-      "file": "code6cac_b2_post",
-      "distance": 510,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8006F97C",
-      "file": "text1b",
-      "distance": 513,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "single_game_SetStatusUpData",
-      "file": "text1b",
-      "distance": 514,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8003993C",
-      "file": "code6cac_c_mid",
-      "distance": 524,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80079A30",
-      "file": "text1b_b",
-      "distance": 533,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80034708",
-      "file": "code6cac_b",
-      "distance": 542,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8005D814",
-      "file": "text1b",
-      "distance": 544,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8006A880",
-      "file": "text1b",
-      "distance": 550,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8005F1C8",
-      "file": "text1b",
-      "distance": 562,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "calc_teasi_loc_fw",
-      "file": "code6cac_b",
-      "distance": 572,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "camera_set_target_zoom",
-      "file": "code6cac",
-      "distance": 586,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80022580",
-      "file": "code6cac",
-      "distance": 619,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "saTan4GaugeMain",
-      "file": "text1b",
-      "distance": 620,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_800720FC",
-      "file": "text1b",
-      "distance": 688,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "replay_camera_attack",
-      "file": "text1b",
-      "distance": 696,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80030D7C",
-      "file": "code6cac_b",
-      "distance": 707,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_800198D0",
-      "file": "code6cac",
-      "distance": 747,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8005C8A8",
-      "file": "text1b",
-      "distance": 752,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8008C464",
-      "file": "main",
-      "distance": 761,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8005E54C",
-      "file": "text1b",
-      "distance": 798,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "motion_ShiftControl",
-      "file": "text1b",
-      "distance": 808,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80029454",
-      "file": "code6cac_b",
-      "distance": 1024,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "calc_loc_mat_fw_80055B60",
-      "file": "text1b",
-      "distance": 1108,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "calc_loc_mat_fw",
-      "file": "code6cac_b",
-      "distance": 1110,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80023F08",
-      "file": "code6cac",
-      "distance": 2981,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80058580",
-      "file": "text1b",
-      "distance": 2989,
-      "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
       "func": "func_8003FE40",
       "file": "config",
       "distance": 0,
@@ -4156,22 +3932,253 @@
       "status": "parked",
       "scorable": false,
       "park_reason": "ASM-SUSPECT/structural \u2014 298-insn gpu_PutDispEnv-style display environment setup (cached-diff + GP1 packet sends via g_gpu_dev_table[0x10]). Asmfix rule replace_with_asmfile bridges. Partial pure-C reconstruction from m2c brings sandbox 296 -> 132 (286/298 insns). Remaining 132-distance gap: 6 missing lhu+sll/sra cast-pattern pairs (GCC combine folds (s32)(s16)u16var to lh; needs structural lever to defeat fold), plus scheduling/register-allocation cascade through the 4-comparison + video-mode + GP1 packet build region. Multi-session pure-C work; needs same depth as defeat-licm-hoist-var-reuse class fixes. Oracle SHA1 green throughout (asmfix continues to provide target bytes)."
+    },
+    {
+      "func": "special_camera_set_win_cam",
+      "file": "code6cac_b2_post",
+      "distance": 510,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_8006F97C",
+      "file": "text1b",
+      "distance": 513,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "single_game_SetStatusUpData",
+      "file": "text1b",
+      "distance": 514,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_8003993C",
+      "file": "code6cac_c_mid",
+      "distance": 524,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_80079A30",
+      "file": "text1b_b",
+      "distance": 533,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_80034708",
+      "file": "code6cac_b",
+      "distance": 542,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_8005D814",
+      "file": "text1b",
+      "distance": 544,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_8006A880",
+      "file": "text1b",
+      "distance": 550,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_8005F1C8",
+      "file": "text1b",
+      "distance": 562,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "calc_teasi_loc_fw",
+      "file": "code6cac_b",
+      "distance": 572,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "camera_set_target_zoom",
+      "file": "code6cac",
+      "distance": 586,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_80022580",
+      "file": "code6cac",
+      "distance": 619,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "saTan4GaugeMain",
+      "file": "text1b",
+      "distance": 620,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_800720FC",
+      "file": "text1b",
+      "distance": 688,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "replay_camera_attack",
+      "file": "text1b",
+      "distance": 696,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_80030D7C",
+      "file": "code6cac_b",
+      "distance": 707,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_800198D0",
+      "file": "code6cac",
+      "distance": 747,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_8005C8A8",
+      "file": "text1b",
+      "distance": 752,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_8008C464",
+      "file": "main",
+      "distance": 761,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_8005E54C",
+      "file": "text1b",
+      "distance": 798,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "motion_ShiftControl",
+      "file": "text1b",
+      "distance": 808,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_80029454",
+      "file": "code6cac_b",
+      "distance": 1024,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "calc_loc_mat_fw_80055B60",
+      "file": "text1b",
+      "distance": 1108,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "calc_loc_mat_fw",
+      "file": "code6cac_b",
+      "distance": 1110,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_80023F08",
+      "file": "code6cac",
+      "distance": 2981,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
+    },
+    {
+      "func": "func_80058580",
+      "file": "text1b",
+      "distance": 2989,
+      "verdict": "ASM-STRUCTURAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize."
     }
   ],
   "counts": {
-    "total": 509,
+    "total": 507,
     "active": 410,
     "by_status": {
       "active": 410,
-      "authorize": 28,
-      "parked": 71
+      "parked": 97
     },
     "by_verdict": {
       "C": 217,
       "ASM-PARTIAL": 75,
-      "ASM-SUSPECT": 118,
-      "ASM-WHOLE": 2,
-      "ASM-STRUCTURAL": 26
+      "ASM-SUSPECT": 118
     }
   }
 }
