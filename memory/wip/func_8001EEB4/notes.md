@@ -67,6 +67,25 @@ inflating the stack. Try block-local declaration; try (s32)(s16)a1
 vs (s16)(s32)a1 ordering; try reading a1 separately via different
 type pointers in two distinct syntactic positions.
 
+## Session-5 (2026-06-10, HEAD 43b3ae26) — 4 new variants tested, none lowered floor
+
+Re-confirmed candidate floor: score=3, build_insns=58, target=59. Tested 4
+new variants beyond the prior rejected_forms catalog:
+
+1. Pointer alias intermediate (`u16 *p_a1 = ...; u16 a1 = *p_a1;`) — score 3
+   unchanged. Combine folds indirection.
+2. Reordered && chain (subtract check first) — score 9 regression. Build_insns
+   matches target (59) but registers still wrong, no andi.
+3. Explicit u32 widening at load (`u32 a1 = (u32)*(u16 *)...`) — score 3
+   unchanged. Same as session-4 V1/V2.
+4. Dual-read with `(s32)*(s16 *)(entry+0x6A) - 0x17` precomputed — score 15
+   regression. Two loads emitted (lhu + lh) since combine treats different
+   ptr-type reads as distinct CSE classes.
+
+All 4 added to `rejected_forms` in meta.json. Floor remains 3. Resume avenues
+from session 4 still untried (instrumented combine.c probe, directed permuter,
+sibling back-port).
+
 ## Session-3 (2026-06-07, HEAD 23e0ff7c) — confirmed reproducible; no new lever
 
 Re-applied candidate.c to src/code6cac.c: sandbox `--disable all` reports

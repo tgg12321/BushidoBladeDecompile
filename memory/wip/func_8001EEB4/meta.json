@@ -44,6 +44,15 @@
       "floor_was": 3,
       "floor_now": 3,
       "notes": "Verified candidate.c floor (score=3, build_insns=58, target=59 — exact match to sessions 1+3 measurements at fresh HEAD 8b5e3ea8). Confirmed [[verify-claims-against-main]]: the prompt's reference to fresh SOTN research files for this function (tmp/sotn_research_func_8001EEB4.md, _v2.md) is hallucinated — only research files for other functions (8007B844 / 8007C7A0 / 8007C86C / 8007C97C) exist in tmp/. Tested 3 NEW variants on the cached read's storage-class (not in prior rejected_forms): (V1) `int a1 = *(u16*)…` instead of `u16 a1` → score 3 unchanged; (V2) `unsigned int a1 = *(u16*)…` → score 3 unchanged; (V3) explicit `(u32)a1 != 0xA` at the equality compare with `u16 a1` cached → score 3 unchanged (matches the rejected_forms entry for inline `(u32)` cast). The storage-class change for the cached read does NOT shift combine's u16-promote-to-int RTL — once the load is lhu (zero-extended into SImode pseudo), the != 0xA comparison is folded against the SImode pseudo regardless of whether the C-level local is u16/int/unsigned. The 3-diff coupling (target lhu→$a1, andi $v1, addiu sources $a1; ours lhu→$v1, no andi, addiu sources $v1) remains structural per session-2's instrumented finding: only the (s16) sign-extension RTL pseudo creates the separate compare-pseudo target wants, and (s16) propagates back to lhu→lh + spills the local. No new lever surfaced. Genuine resume avenues for future sessions: (a) instrumented cc1 combine.c probe to read GCC 2.7.2's specific simplify rule that folds the andi here vs target's compiler — pin the exact RTL shape that produces andi without lh; (b) PERM_GENERAL / PERM_INT_TYPE directed permuter from candidate.c (random mode exhausted, directed surface untouched on this function); (c) cross-reference sibling matched functions in code6cac.c with identical lhu/andi/beq shape (none currently — func_8001A820 empty, func_8001F938 INCOMPLETE score 11, calc_loc_mat_fw_80055B60 parked); (d) wait for a sibling to be matched first and back-port whatever C-source shape it used."
+    },
+    {
+      "date": "2026-06-10",
+      "git_head_at_measurement": "43b3ae26",
+      "lever": "(no new lever) — verified reproducibility of floor 3; tested 4 NEW untried pointer-alias / chain-order / type-coercion / dual-read variants",
+      "lever_rule": "n/a",
+      "floor_was": 3,
+      "floor_now": 3,
+      "notes": "Re-verified candidate.c floor (score=3, build_insns=58, target=59 at fresh HEAD 43b3ae26 — matches sessions 1+3+4 measurements). Tested 4 NEW variants beyond rejected_forms: (V1) intermediate pointer alias `u16 *p_a1 = (u16 *)(entry + 0x6A); u16 a1 = *p_a1;` — score 3 unchanged (combine folds the pointer indirection back to a direct memory access; alias adds no SImode pseudo). (V2) reordered && chain putting `(u32)((s32)a1 - 0x17) >= 2` FIRST before `a1 != 0xA` — score 9 REGRESSION (build_insns 59 = target, but registers wrong: $v1 still chosen, no andi materialized; the reorder changes scheduling but not the lhu allocation). (V3) `u32 a1 = (u32)*(u16 *)(entry + 0x6A)` explicit u32 widening at the load — score 3 unchanged (same as V1+V2 from prior session, confirms combine treats `(u32)*(u16*)` identically to `u16 a1`). (V4) dual-read separating u16 for comparison and `s32 a1_diff = (s32)*(s16*)(entry+0x6A) - 0x17` for the >= test (two separate loads at same address with different signedness) — score 15 REGRESSION (build_insns 59 matches target, but combine emits 2 loads as predicted: extra `lh` instruction for the s16 read + cascading RA differences; the dual-read costs more than the diffs it would close). The 3-diff cluster (lhu→$a1, andi $v1=$a1&0xFFFF, addiu sources $a1) remains structurally coupled. Confirmed disasm at this HEAD: target build/src/code6cac.o has `6f54: lhu a1,106(s1); 6f58: li v0,10; 6f5c: andi v1,a1,0xFFFF; 6f60: beq v1,v0; ...; 6f74: addiu v0,a1,-23`; sandbox tmp/sandbox/code6cac.o has `6eac: lhu v1,106(s1); 6eb0: li v0,10; 6eb4: beq v1,v0; ...; 6ec8: addiu v0,v1,-23` (3 diffs, no andi). Genuine resume avenues remain (per session-4 notes, all still untried this session due to scope): (a) instrumented cc1 combine.c probe (read tools/gcc-2.7.2/combine.c for the simplify rule folding the andi here — find what RTL shape escapes the fold without affecting the load opcode), (b) PERM_GENERAL / PERM_INT_TYPE directed permuter from candidate.c (random mode exhausted), (c) cross-reference matched siblings if any new ones land with the lhu/andi/beq shape, (d) wait for sibling resolution and back-port."
     }
   ],
   "reviewer": {
@@ -123,6 +132,21 @@
       "form": "inline *(s16 *)(entry + 0x6A) re-read at comparison (kept u16 a1 for first test, re-read s16 in 3rd test slot)",
       "score": 3,
       "reason": "build_insns 61 vs target 59. Same +2 sll/sra penalty as inline (s16)a1 cast. The s16 pointer dereference at the comparison position compiles to a sign-extended load that emits two shift insns when not stored to a local first. The hoped-for separation between load (lhu, cached in a1) and sign-extension (at the 3rd test) doesn't help — the load opcode at the inline s16 read site is its own lh, and combine doesn't materialize an andi here either."
+    },
+    {
+      "form": "intermediate pointer alias `u16 *p_a1 = (u16 *)(entry + 0x6A); u16 a1 = *p_a1;`",
+      "score": 3,
+      "reason": "Combine folds the pointer indirection back to a direct memory access; alias adds no SImode pseudo. No effect on the load/andi pattern."
+    },
+    {
+      "form": "reordered && chain: `(u32)((s32)a1 - 0x17) >= 2` first, then `a1 != 0xA`",
+      "score": 9,
+      "reason": "REGRESSION. build_insns 59 (matches target) but registers still wrong: lhu→$v1 (target $a1), no andi emitted. The reorder changes scheduling but not the lhu allocation; the subtraction-first ordering ties the `addiu v0, v1, -23` adjacent to the lhu but doesn't free the lhu register to $a1."
+    },
+    {
+      "form": "dual-read with `s32 a1_diff = (s32)*(s16 *)(entry + 0x6A) - 0x17;` precomputed",
+      "score": 15,
+      "reason": "REGRESSION. build_insns 59 (matches target). Combine emits TWO loads at the same address (lhu for a1, lh for a1_diff) since they have different signedness types. The extra `lh` instruction plus cascading RA differences cost more than the 3 diffs it would close. Combine treats `*(u16*)X` and `*(s16*)X` as distinct expressions for CSE purposes."
     }
   ],
   "next_hypotheses": [
