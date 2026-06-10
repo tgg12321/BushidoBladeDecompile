@@ -296,42 +296,17 @@ void efc_buki_draw_zanzou(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
 }
 extern s32 func_800484A0(s32, s32, s32);
 
-/* INLINE_MOVE_ALIASING: pure-C alternatives failed across 9 attempts in
- * 7 distinct categories (full log: .bb2_attempts/func_800483DC.jsonl).
- *   - C_structure plain_decl_first: `new_var = arg0;` as first line → GCC's
- *     scheduler emits `move s2, a0` at insn idx 2 (early), not idx 12 in
- *     the lw's load-delay slot where target needs it.
- *   - C_structure late_decl: `new_var = arg0;` after the lw assignment →
- *     GCC eliminates the move entirely (mine is 48 insns vs target 49).
- *   - C_structure cached_intermediate: explicit `cached` aliasing var
- *     before reassignment — same 48/49 outcome (GCC sees through alias).
- *   - C_types ptr_signature: changed to `s32 *base` with explicit `*list`
- *     save var — same 12 diffs, allocator still picks s2 for list.
- *   - C_hints volatile: marking v0_tmp + lookup pointer volatile → WORSE
- *     (52 vs 49, 7 structural + 8 rename), adds memory roundtrips.
- *   - permuter_seed default: 1463 iter / 16 thread / 60s flat → score 30.
- *   - permuter_long: 3687 iter / 600s max / 180s flat → same score 30.
- *     3x more iterations didn't reduce — mutation space confirmed exhausted.
- *   - manual_steer empty_barrier: `__asm__("" ::: "memory")` between lw and
- *     new_var assignment → same as variant D (move folded away).
- *   - sibling_match func_800481E8 pattern: asm-pin cached=arg0 upfront
- *     then plain C chain → WORSE (25 diffs).
- * Per inline-move-aliasing.md, single-insn escape valve. Gate PASS
- * (≥4 categories, ≥6 attempts, ≥30 min — actual: 7/9/43).
- */
 void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 {
-    register s32 cached asm("$16") = arg0;
-    register s32 new_var asm("$20");
-    s32 *p;
+    s32 base;
     s32 count;
-    s32 v0_tmp;
-    arg1 = (((s32)(arg1 << 16)) >> 14) + cached;
-    v0_tmp = *(s32 *)arg1;
-    __asm__ volatile("move %0, %1" : "=r"(new_var) : "r"(cached));
-    cached = cached + v0_tmp;
-    p = (s32 *)cached;
-    count = *(p++);
+    s32 off;
+    arg1 = (((s32)(arg1 << 16)) >> 14) + arg0;
+    base = arg0;
+    off = *(s32 *)arg1;
+    arg0 += off;
+    count = *(s32 *)arg0;
+    arg0 += 4;
     if (count != 0) {
         s32 sx_arg2;
         s32 sx_arg3;
@@ -339,20 +314,20 @@ void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
         sx_arg2 = arg2;
         sx_arg3 = arg3;
         do {
-            s32 entry_off;
+            s32 entry;
             u32 dx_u;
             u32 dy_u;
             s32 dx;
             s32 dy;
-            entry_off = *p;
-            p = (s32 *)(((s32)p) + 8);
-            dx_u = *((u16 *)p);
-            p = (s32 *)(((s32)p) + 2);
-            dy_u = *((u16 *)p);
-            p = (s32 *)(((s32)p) + 2);
+            entry = base + *(s32 *)arg0;
+            arg0 += 8;
+            dx_u = *(u16 *)arg0;
+            arg0 += 2;
+            dy_u = *(u16 *)arg0;
+            arg0 += 2;
             dx = ((s32)(dx_u << 16)) >> 16;
             dy = ((s32)(dy_u << 16)) >> 16;
-            func_800484A0(new_var + entry_off, dx + sx_arg2, dy + sx_arg3);
+            func_800484A0(entry, dx + sx_arg2, dy + sx_arg3);
         } while ((count--) != 0);
     }
 }
