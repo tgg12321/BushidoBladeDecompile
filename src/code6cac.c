@@ -1904,12 +1904,13 @@ void func_8001EEB4(void) {
     u16 a1 = *(u16 *)(entry + 0x6A);
 
     if (a1 != 0xA && *(s16 *)(entry + 0x72) == 0 &&
-        (u32)((s32)a1 - 0x17) >= 2 && *(s16 *)(entry + 0x96) == 0) {
+        a1 != 0x17 && a1 != 0x18 && *(s16 *)(entry + 0x96) == 0) {
         func_800218C8(D_800A3748);
         {
             s32 ret = func_80021A3C(D_800A3748, *(s16 *)(entry + 0xA));
+            s32 idx2 = D_800A3748;
             *(s16 *)(entry + 0x5E) = 1;
-            func_80021A98(D_800A3748, ret, 1);
+            func_80021A98(idx2, ret, 1);
         }
         *(s16 *)(entry + 0x26C) = 1;
     }
