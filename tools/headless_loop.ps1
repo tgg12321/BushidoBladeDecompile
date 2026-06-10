@@ -37,6 +37,7 @@
 param(
     [int]    $MaxIterations  = 1,
     [string] $Model          = 'opus',
+    [double] $MaxBudgetUsd   = 10,   # per-iteration cap, passed to `claude --max-budget-usd`
     [ValidateSet('acceptEdits','bypassPermissions','default','dontAsk')]
     [string] $PermissionMode = 'bypassPermissions',
     [switch] $DryRun
@@ -221,6 +222,7 @@ try {
             '-p', $PROMPT,
             '--output-format', 'json',
             '--model', $Model,
+            '--max-budget-usd', $MaxBudgetUsd,
             '--permission-mode', $PermissionMode,
             '--session-id', $sid
         )
@@ -264,6 +266,7 @@ try {
             func           = $func
             file           = $top.file
             model          = $Model
+            max_budget_usd = $MaxBudgetUsd
             permission_mode= $PermissionMode
             session_id     = $sid
             cost_usd       = $res.total_cost_usd
