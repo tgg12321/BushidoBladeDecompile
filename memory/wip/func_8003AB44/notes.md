@@ -307,32 +307,135 @@ candidate-form source cleanup). The remaining un-tested lever class is
 **directed-permuter from candidate.c base** — the only systematic way to
 explore C variants outside the hand-derivable space.
 
-## Next-session priorities (session 6 onwards)
+## Session 6 (2026-06-10) addendum
 
-Per session 5's exhaustion of the hand-derivable structural lever space, the
-priority list reshapes:
+Applied candidate.c, reconfirmed clean floor 6 (build_insns=target_insns=93,
+rules_dropped=5, cheat_asm_stripped=6 from sibling functions; the function
+itself has 0 cheat-asm in candidate form). Executed PRIORITY 1 from session 5:
+**directed permuter from candidate.c base.**
 
-1. **Set up permuter/func_8003AB44/ workspace and run a directed-permuter
-   sweep from candidate.c.** This is the un-tried lever named in session 4
-   and not run there. Setup steps (reference: permuter/dbe4/ template):
-   - target.s = `tools/decomp-permuter/prelude.inc` (drop `.set gp=64`) +
-     `asm/funcs/func_8003AB44.s`. Assemble to target.o.
-   - base.c = preprocessed src/code6cac_c_ab.c with candidate.c body, then
-     `tools/decomp-permuter/strip_other_fns.py` IN-PLACE to keep only
-     func_8003AB44.
-   - compile.sh = full pipeline (cc1 -O2 -G0 -funsigned-char -mcpu=3000
-     -mips1 -mno-abicalls -fno-builtin -w | prologue_fix | maspsx
-     --aspsx-version=2.34 | as -march=r3000 -G0).
-   - Run with `--stop-on-zero` and PERM_GENERAL + PERM_INT_TYPE enabled.
-   - Base score expectation: ~30 (= 6 reg-diff × 5).
-2. **If permuter exhausts:** instrumented cc1 dump with BB2_FLOW_DEBUG hooks
-   (analogous to BB2_ALLOC_DEBUG, but reading
-   basic_block_live_at_start[.L8003AC74] directly to confirm WHICH
-   predecessor's live-out propagated $v0).
-3. **Sibling cross-reference:** examine code6cac_c_ab.c siblings'
-   LREG/GREG dumps for any 5/6-case-with-fall-through-from-4 shape that
-   allocated $v0 naturally — the sibling's C structure would be the
-   template.
+### Setup
+
+The `permuter/8003ab44/` workspace existed from an earlier run today
+(timestamps Jun 10 11:18); base.c was structurally equivalent to candidate.c
+but carried two `/* fall through */` C-comments that cc1 (which consumes
+preprocessed-style input — no comment-stripping pass in cc1 alone) rejected as
+parse errors. Removed the comments (no semantic change — fall-through is the
+absence of a `break;`, the comment is documentation only) and verified the
+base compiles cleanly through the full pipeline.
+
+target.o has func_8003AB44 at offset 0, length 0x174 (= 372 bytes = 93 insns),
+matching target's exact byte count.
+
+### Run
+
+```bash
+python3 tools/decomp-permuter/permuter.py permuter/8003ab44 -j8 \
+        --best-only --stop-on-zero
+```
+
+8 parallel workers, ~5 minutes wallclock, **33,307 iterations**. Cleared the
+pre-existing `output-*` directories from earlier runs first.
+
+### Result — permuter mutation space exhausted, no legitimate sub-base form
+
+| Metric | Value |
+|---|---|
+| Base score (no mutations) | 540 |
+| Min score over 33k iters | 320 |
+| Max score | 12,130 |
+| Score-0 hits | **0** |
+| Iterations | 33,307 |
+
+Best mutation-bearing form (saved at `permuter/8003ab44/output-320-1/source.c`,
+also copied to `memory/wip/func_8003AB44/rejected/session6-permuter-best-320.c`
+since `permuter/` is gitignored):
+
+```c
+case 1: ...
+    if (D_800A38A0 == 0) {
+        gpu_SetDispMask(1);
+        do { D_800A38AC = 2; } while (0);   /* CHEAT — do-while-zero out of sanctioned scope */
+        return 0;
+    }
+case 2: ...
+    if (func_8008C464(3, 1, 0) == 0) {
+        return 0;
+    }
+    D_800A37D8 = 0;                         /* CHEAT — dead-store coercion */
+    goto done;
+```
+
+### Cheat-reviewer verdict on the 320 candidate: FAIL (test #5, both mutations)
+
+**Mutation 1 — `do { D_800A38AC = 2; } while (0);`** wrap fails the
+[[do-while-zero-exception]] gate. That exception is sanctioned ONLY for the
+LABEL_OUTSIDE_LOOP_P / reorg.c invert-jump peephole interaction. Func_8003AB44's
+gap is (a) case 2 polarity (reorg.c eager-fill of `addiu $a0,3` vs target's
+`move v0,0` in the `bnez` delay slot) and (b) case 5/6 register choice ($v1 vs
+$v0 — flow.c live-set at the jtbl join). Neither is the LABEL_OUTSIDE_LOOP_P
+mechanism — using do-while-zero here bends a different GCC pass and reopens
+the slippery-slope the rule's narrow scoping closes.
+
+**Mutation 2 — `D_800A37D8 = 0;` before `goto done;`** in case 2 is a
+dead-store coercion in the family of forbidden Lever D /
+dead-conditional-store / goto-end-prologue-delay-slot / param-local-alias-
+prologue-pair-flip. The store emits a real `sw $zero, %gp_rel(D_800A37D8)` in
+the output (NOT DCE'd; would be a +1-insn regression in isolation) yet has no
+semantic justification — D_800A37D8 was reset to 0 in case 1 of a prior call
+(state machine reaches state 2 only after state 1 ran). A real programmer
+would not write the duplicate reset. Same intent / different spelling as the
+forbidden families.
+
+### Why permuter score 320 is NOT a real improvement
+
+The permuter's weighted score metric (regs × 5, reorderings × 60, ins/del ×
+100) ≠ the sandbox masked-Levenshtein metric ([[scoring-systems]]). The 320
+reflects mutation-induced noise reduction in the alignment-sensitive scoring
+layer; the sandbox masked floor stays at 6, and the 5 baseline regfix rules
+are NOT retireable from any 320-class form (the case 2 polarity flip + case
+5/6 register diff cluster remain). I did NOT measure each 320 variant's
+sandbox masked-Lev score against build/ because (a) the form is rejected on
+policy grounds regardless of measurement, and (b) sandbox measurement would
+require restoring src/ with the cheat-form, defeating the discipline that
+prevents inadvertent commits.
+
+### Genuine evidence-backed exhaustion is now achieved
+
+- **Manual lever space**: 12+ rejected forms across 5 sessions (1-5).
+- **Permuter mutation space**: 33,307 iters from candidate.c base, floor 320,
+  no legitimate sub-540 form (session 6).
+- **ALLOCDBG diagnostic**: case 5/6 issue isolated to flow.c $v0 live-in at
+  .L8003AC74 (session 4).
+- **scan_hand_coded**: tier LOW (session 2) — pure-C target per
+  [[canonical-gate-distance-not-evidence]].
+- **No cc1psx divergence**: toolchain is frozen [[no-compiler-divergence]].
+
+## Next-session priorities (session 7 onwards)
+
+Per session 6's exhaustion of the directed-permuter randomization space, the
+priority list reshapes — the next-tier diagnostic levers stand:
+
+1. **Instrumented cc1 with `BB2_FLOW_DEBUG`.** `tmp/gccdbg/cc1` already exists
+   (May 30 build with ALLOCDBG + SCHEDDBG + PRIODBG hooks from the
+   saEft00Add / csmd4 cluster sessions). Add a flow.c hook dumping
+   basic_block_live_at_start[N] for each BB after `update_life_info` for any
+   function whose name matches `$BB2_FLOW_FUNC`. Run on isolated
+   func_8003AB44 .i. Compare live-in[.L8003AC74] across (a) canonical
+   compile, (b) the same with case 5/6 syntactically before case 4 (session
+   5's case-order flip — though rejected, the dump value differs by source
+   order), (c) the same with case 4 split into a non-fall-through form. The
+   dump CONFIRMs which predecessor's live-out propagated $v0 — direct
+   empirical evidence beyond session 4's ALLOCDBG-via-ord=0 inference.
+2. **m2c-reconstruct func_8003AB44** from asm/funcs/func_8003AB44.s; compare
+   against candidate.c for ANY semantic difference. m2c's reconstruction
+   shape sometimes reveals an original-source feature the hand decompilation
+   missed.
+3. **Sibling LREG/GREG dumps** from code6cac_c_ab.c's matched switches.
+   Session 3's syntactic inspection ruled them out (siblings use
+   switch-with-break, not switch-with-early-return); actual greg dumps may
+   show a 5/6-case-with-fall-through-from-4 shape that allocated $v0
+   naturally, providing a structural template.
 
 ## Anti-priorities (carried across sessions)
 
