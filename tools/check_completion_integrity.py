@@ -4,11 +4,12 @@
 Every function in the codebase is one of three categories:
 
   INCOMPLETE                     — in engine/queue.json. Carries a regfix/asmfix
-                                   rule, a cheat-asm pin/__asm__, OR a non-zero
-                                   honest pure-C distance. Stays in the queue
-                                   until it reaches a COMPLETED state.
-  COMPLETED-C                    — zero rules, zero cheat-asm in source, byte-
-                                   matches as-built. NOT in queue.json. NOT
+                                   rule, a cheat construct (cheat-asm,
+                                   register hint, volatile coercion), OR a
+                                   non-zero honest pure-C distance. Stays in
+                                   the queue until it reaches a COMPLETED state.
+  COMPLETED-C                    — zero rules, zero cheat constructs in source,
+                                   byte-matches as-built. NOT in queue.json. NOT
                                    listed in inline_asm_canonical.txt.
   COMPLETED-INLINE-ASM-CANONICAL — zero rules, canonical inline asm (GTE/cop2/
                                    BIOS/HW) OR whole-body `__asm__("glabel...")`
@@ -16,13 +17,13 @@ Every function in the codebase is one of three categories:
                                    inline_asm_canonical.txt. NOT in queue.json.
 
 This tool audits that the invariant holds: every function with rules > 0 or
-cheat-asm > 0 is either in the queue (INCOMPLETE) or authorized in
+cheat constructs > 0 is either in the queue (INCOMPLETE) or authorized in
 inline_asm_canonical.txt (COMPLETED-INLINE-ASM-CANONICAL). Anything else is a
 cheated "completion" that snuck past the gate.
 
 The two PREVENTION mechanisms are:
   - engine.queue.mark_done() refuses to record a function as done if it carries
-    rules or non-canonical cheat-asm — and on success REMOVES it from the queue
+    rules or non-canonical cheat constructs — and on success REMOVES it from the queue
     (queue presence = INCOMPLETE);
   - engine.queue.generate() recomputes status from scratch (only `parked` is
     sticky), so a cheated state that landed via manual edit is re-opened.
@@ -73,7 +74,7 @@ def main() -> int:
             rules = (len(cheats.func_rule_lines(func, cheats.REGFIX))
                      + len(cheats.func_rule_lines(func, cheats.REGFIX2))
                      + len(cheats.func_rule_lines(func, cheats.ASMFIX)))
-            cheat_asm = inlineasm.file_func_cheat_asm_count(stem, func)
+            cheat_count = inlineasm.file_func_cheat_asm_count(stem, func)
             is_canon = func in canon
 
             if is_canon:
@@ -84,15 +85,15 @@ def main() -> int:
                         f"but carries {rules} regfix/asmfix rule(s)")
                 continue
 
-            # COMPLETED-C invariants: no rules, no cheat-asm.
+            # COMPLETED-C invariants: no rules, no cheat constructs.
             if rules > 0:
                 violations.append(
                     f"{func} ({stem}.c): NOT in queue and NOT canonical, but carries "
                     f"{rules} regfix/asmfix rule(s) — should be INCOMPLETE")
-            elif cheat_asm > 0:
+            elif cheat_count > 0:
                 violations.append(
                     f"{func} ({stem}.c): NOT in queue and NOT canonical, but has "
-                    f"{cheat_asm} cheat-asm block(s) in source — should be INCOMPLETE")
+                    f"{cheat_count} cheat construct(s) in source — should be INCOMPLETE")
             else:
                 total_completed_c += 1
 

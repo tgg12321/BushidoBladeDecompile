@@ -374,7 +374,7 @@ extern s32 bios_FileOpen_B(s32 *, s32);
 typedef void (*Func79A30_5)(s32 *, s32 *, s32, s32, s32);
 s32 func_80037B90(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 sp18[8];
-    register s32 temp_v0;
+    s32 temp_v0;
 
     ((Func79A30_5)func_80079A30)(sp18, &D_800109BC, arg0, arg1, arg2);
     temp_v0 = bios_FileOpen_B(sp18, 0x8001);

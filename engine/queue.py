@@ -1,17 +1,18 @@
 """Consolidated INCOMPLETE-work queue — ONE ordered list of every function still
-carrying a cheat (a regfix/asmfix rule OR a load-bearing cheat-asm pin/inline
-asm). Presence in the queue = INCOMPLETE. The agent never triages or hunts for
+carrying a cheat (a regfix/asmfix rule, a load-bearing cheat-asm pin/inline
+asm, or a plain `register` allocation hint). Presence in the queue =
+INCOMPLETE. The agent never triages or hunts for
 "easy" wins: it works the TOP item to completion, marks it done, and moves to
 the next. The order is fixed at generate time (easiest-first by honest pure-C
 distance), so cherry-picking is impossible.
 
 Outstanding = (function has >=1 regfix/asmfix rule) OR (honest pure-C distance
-> 0, i.e. it does NOT byte-match once its rules are off AND its cheat-asm pins/
-inline asm are stripped). A masked-0 function that still carries rules (e.g. a
-branch-retarget asmfix) is included — it sorts to the top as a likely free
-retire. A function with neither rules nor a pure-C gap is already COMPLETED-C
-(or COMPLETED-INLINE-ASM-CANONICAL if listed in inline_asm_canonical.txt) and
-is omitted.
+> 0, i.e. it does NOT byte-match once its rules are off AND its cheat-asm pins,
+plain register hints, and inline asm are stripped). A masked-0 function that
+still carries rules (e.g. a branch-retarget asmfix) is included — it sorts to
+the top as a likely free retire. A function with neither rules nor a pure-C gap
+is already COMPLETED-C (or COMPLETED-INLINE-ASM-CANONICAL if listed in
+inline_asm_canonical.txt) and is omitted.
 
 Routing (mirrors canonical._verdict's structural categories):
   C            distance <= SUSPECT (50)            -> active, pure-C target
@@ -92,8 +93,9 @@ def _counts(items: list[dict]) -> dict:
 
 def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
     """Rebuild the queue from scratch. One cheat-stripped build per file scores
-    every function in it (rules off + pins/inline-asm stripped == honest pure-C
-    distance). `parked` statuses are preserved from the existing queue.
+    every function in it (rules off + pins/plain-register-hints/inline-asm
+    stripped == honest pure-C distance). `parked` statuses are preserved from
+    the existing queue.
     `active`/`authorize` are recomputed. COMPLETED items are not in the queue."""
     prev = {}
     if preserve and Path(QUEUE_PATH).exists():
@@ -183,11 +185,12 @@ def next_item() -> dict | None:
 
 def mark_done(func: str) -> dict:
     """COMPLETED gate: a function is DONE only if (1) ZERO regfix/asmfix rules,
-    (2) NO cheat-asm in source UNLESS it is authorized canonical-asm
+    (2) NO cheat construct in source UNLESS it is authorized canonical-asm
     (inline_asm_canonical.txt), and (3) the current build/ still equals the
-    oracle. (2) is what stops a cheated 'match' (register pins / `move $N,$N`
-    injection / scheduling barriers) from being recorded as completed — SHA1
-    alone can't catch it, since cheat asm produces the right bytes.
+    oracle. (2) is what stops a cheated 'match' (register pins, plain
+    `register` allocator hints, `move $N,$N` injection, scheduling barriers)
+    from being recorded as completed — SHA1 alone can't catch it, since cheat
+    constructs can produce the right bytes.
 
     On success, the function is REMOVED from the queue (queue presence =
     INCOMPLETE; completed items don't live there)."""
@@ -204,12 +207,12 @@ def mark_done(func: str) -> dict:
         cheat_count = inlineasm.file_func_cheat_asm_count(item["file"], func)
         if cheat_count > 0:
             return {"ok": False, "func": func,
-                    "reason": (f"{cheat_count} cheat-asm block(s) in src/{item['file']}.c "
+                    "reason": (f"{cheat_count} cheat construct(s) in src/{item['file']}.c "
                                f"— NOT pure-C COMPLETED. Strip them (pure C), or, only "
                                f"if {func} is genuinely hand-written/canonical asm, "
                                f"authorize it in inline_asm_canonical.txt with evidence. "
-                               f"(register pins, hardcoded-$N asm, scheduling barriers "
-                               f"are cheats, not a match.)")}
+                               f"(register pins, plain register hints, hardcoded-$N asm, "
+                               f"scheduling barriers are cheats, not a match.)")}
     v = O.verify(rebuild=False)
     if not v.get("build_matches"):
         return {"ok": False, "func": func,

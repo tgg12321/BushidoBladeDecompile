@@ -67,7 +67,7 @@ Tools that try to find a match (or close part of one) automatically.
 
 | Subcommand | Purpose |
 |---|---|
-| `dc.sh smart <func>` | `smart_match.py`: 16 automated transformation strategies (declaration reorder, cast variations, do-while barriers, register hints, etc). Pure-C exploration before reaching for the permuter. |
+| `dc.sh smart <func>` | `smart_match.py`: 16 automated transformation strategies (declaration reorder, cast variations, do-while barriers, diagnostic register-hint probes, etc). Pure-C exploration before reaching for the permuter. |
 | `dc.sh permute <func> [--max-time N] [--max-flat N]` | `permute_capped.py`: bounded permuter run with flat-score early termination. |
 | `dc.sh permute-adaptive <func> [--dry-run]` | Permuter with budget scaled to penalty count: 0 ins/del → skip, 1-2 → 90s, 3-5 → 5min, 6-10 → 15min, >10 → 30min. |
 | `dc.sh near-miss <func> [--apply]` | Auto-detect `byte_arith_fix` / `drain_delay` / `plain_reg_substs` patterns and apply them with try-and-revert. |

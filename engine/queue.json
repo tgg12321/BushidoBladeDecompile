@@ -3228,6 +3228,15 @@
       "status": "active"
     },
     {
+      "func": "func_8003FE40",
+      "file": "config",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "SOTN-standard policy tightened 2026-06-10: plain `register` storage hints are allocator-steering cheats, not completed C. Function currently has no regfix/asmfix/hard register pins and sandbox score 0, but still contains load-bearing plain register hints. Needs a natural no-register C form or a canonical-asm decision before completion."
+    },
+    {
       "func": "func_8007DB20",
       "file": "display",
       "distance": 0,
@@ -4095,11 +4104,11 @@
     }
   ],
   "counts": {
-    "total": 498,
+    "total": 499,
     "active": 403,
     "by_status": {
       "active": 403,
-      "parked": 95
+      "parked": 96
     },
     "by_verdict": {
       "C": 212,

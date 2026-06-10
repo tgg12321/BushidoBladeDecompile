@@ -40,6 +40,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from engine import inlineasm as engine_inlineasm  # noqa: E402
+
 # Force UTF-8 on Windows so the report's arrows / box characters reach the
 # terminal intact (default cp1252 dies on U+2192 etc., the same bug that
 # bit llm_audit.sh — see commit 5f609c1).
@@ -1262,6 +1267,13 @@ def cmd_func(name):
                   f"variables) so GCC tracks the operation, or restructure the C to defeat "
                   f"the optimizer.", file=sys.stderr)
             return 1
+        cheat_count = engine_inlineasm.func_cheat_asm_count(text, name)
+        if cheat_count > 0:
+            print(f"UNAUTHORIZED: {name} has {cheat_count} cheat construct(s) in {src.name} "
+                  f"(register hint/pin, volatile coercion, or cheat-asm). Completed C must "
+                  f"have zero such constructs; strip them or keep the function in the queue.",
+                  file=sys.stderr)
+            return 1
     return 0
 
 
@@ -1271,9 +1283,10 @@ def cmd_check_new(commit_msg=None):
     Completion policy (2026-05-21, [[completion-standard]]): the only acceptable
     end states are COMPLETED-C (pure C) and COMPLETED-INLINE-ASM-CANONICAL
     (whole-function hand-asm / GTE / BIOS, evidence-gated). Any NET-NEW regfix
-    rule, register-asm pin, or cheat-asm (move-aliasing / barrier) is BLOCKED
-    outright -- these are diagnostic-only, never committed. The old "document
-    it / log 3 attempts and it's allowed" escape valves for G4/G5 are removed.
+    rule, register-asm pin, plain register hint, or cheat-asm (move-aliasing /
+    barrier) is BLOCKED outright -- these are diagnostic-only, never committed.
+    The old "document it / log 3 attempts and it's allowed" escape valves for
+    G4/G5 are removed.
 
     Gates, in order:
       G1.  Same-commit self-authorization detection (HEAD auth in both scans)
@@ -1282,6 +1295,7 @@ def cmd_check_new(commit_msg=None):
       G4.  New inline-move aliasing barrier (BLOCKED -- no doc escape valve)
       G5.  New regfix on a clean function OR churn on a rule-bearing one (BLOCKED)
       G5b. New register-asm pin (BLOCKED) -- except whole-function canonical bodies
+      G5c. New plain register storage hint (BLOCKED)
       G6.  Canonical authorization (G2) still requires a Pure-C attempts: log
     """
     head_auth = load_authorized_at_ref("HEAD")
@@ -1515,6 +1529,56 @@ def cmd_check_new(commit_msg=None):
             f"end state -- strip the pin and find the C structure that makes GCC choose "
             f"the register naturally."))
 
+    # === Completion gate: new plain register hints are BLOCKED (2026-06-10) ===
+    # `register T x` without an asm("$N") hard binding is still an allocator hint.
+    # It is legal C, but under the SOTN-standard gate it is diagnostic-only and
+    # must not be committed as completed C.
+    def plain_register_hints_by_func(text, source_name):
+        from collections import defaultdict
+        out = defaultdict(int)
+        for start, end in engine_inlineasm.register_hint_spans(text):
+            line_start = text.rfind("\n", 0, start) + 1
+            line_end = text.find("\n", end)
+            if line_end == -1:
+                line_end = len(text)
+            line = text[line_start:line_end]
+            if re.search(r'\basm\s*\(', line):
+                continue  # hard pin: reported by G5b
+            fname = _enclosing_func_name(text, start)
+            out[(source_name, fname)] += 1
+        return dict(out)
+
+    new_register_hints = []
+    if _pin_head_paths is not None:  # fail-open only if HEAD source listing unavailable
+        head_hints_by_func = {}
+        for path in _pin_head_paths:
+            if not path.endswith(".c"):
+                continue
+            try:
+                head_content = subprocess.run(
+                    ["git", "show", f"HEAD:{path}"],
+                    capture_output=True, text=True, check=True,
+                    encoding="utf-8", errors="replace").stdout
+            except subprocess.CalledProcessError:
+                continue
+            for key, n in plain_register_hints_by_func(head_content, path.split("/")[-1]).items():
+                head_hints_by_func[key] = head_hints_by_func.get(key, 0) + n
+        for src_path in sorted(Path("src").glob("*.c")):
+            content = src_path.read_text(encoding="utf-8", errors="replace")
+            for key, n in plain_register_hints_by_func(content, src_path.name).items():
+                sname, fname = key
+                if fname in cur_auth:
+                    continue
+                head_n = head_hints_by_func.get(key, 0)
+                if n > head_n:
+                    new_register_hints.append((sname, fname, head_n, n))
+    for sname, fname, head_n, n in sorted(new_register_hints):
+        violations.append(("new_plain_register_hint",
+            f"new plain `register` storage hint in `{fname}` ({sname}: HEAD={head_n}, "
+            f"now={n}). Per SOTN-standard completion policy, register hints are "
+            f"allocator steering, not completed C -- strip the hint and find the "
+            f"natural C structure, or park the function."))
+
     # === G6: any of the above triggers require attempt-log in commit msg ===
     needs_attempt_log = (
         bool(new_auth_with_comments)
@@ -1523,6 +1587,7 @@ def cmd_check_new(commit_msg=None):
         or bool(new_barriers)
         or bool(newly_cheating_via_regfix) or bool(churning_regfix)
         or bool(new_pins)
+        or bool(new_register_hints)
     )
     if needs_attempt_log:
         attempts = parse_attempt_log(commit_msg or "")
@@ -1566,9 +1631,9 @@ def cmd_check_new(commit_msg=None):
             print(f"    {line}", file=sys.stderr)
         print(file=sys.stderr)
     print("Per completion policy (completion-standard, 2026-05-21): the ONLY end", file=sys.stderr)
-    print("states are COMPLETED-C (0 regfix, 0 asmfix, 0 pins, 0 cheat-asm)", file=sys.stderr)
+    print("states are COMPLETED-C (0 regfix, 0 asmfix, 0 pins, 0 register hints, 0 cheat-asm)", file=sys.stderr)
     print("and COMPLETED-INLINE-ASM-CANONICAL (GTE/BIOS/whole-function hand-asm,", file=sys.stderr)
-    print("evidence-gated). New regfix / pins / inline-move are BLOCKED outright --", file=sys.stderr)
+    print("evidence-gated). New regfix / pins / register hints / inline-move are BLOCKED outright --", file=sys.stderr)
     print("they are diagnostic-only, never a committed match. Strip them and find the", file=sys.stderr)
     print("C structure, or use canonical-asm authorization for an un-compilable op.", file=sys.stderr)
     return 1

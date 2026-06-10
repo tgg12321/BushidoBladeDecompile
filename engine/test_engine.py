@@ -176,12 +176,31 @@ def test_inlineasm() -> None:
     outm, _ = inlineasm.strip_cheat_asm_file(srcm)
     check("strip: macro definition left intact", "#define BARRIER __asm__" in outm)
 
-    # register-pin qualifier neutralized, variable kept
+    # register-pin qualifier neutralized, storage-class hint removed
     srcp = 'void k(void){ register int v asm("$16"); v = 0; }'
     outp, np = inlineasm.strip_cheat_asm_file(srcp)
     check("strip: pin asm(\"$16\") qualifier removed", 'asm("$16")' not in outp)
-    check("strip: pinned variable declaration kept", "register int v" in outp)
-    check("strip: pin counted", np >= 1)
+    check("strip: register storage hint removed from pin", "register int v" not in outp)
+    check("strip: pinned variable declaration kept as ordinary C", "int v" in outp)
+    check("strip: pin + register hint counted", np >= 2)
+
+    # plain register hints are allocator steering and must not affect score
+    srcr = (
+        "s32 plain(void){\n"
+        "    register int v;\n"
+        "    const char *s = \"register stays in string\";\n"
+        "    // register stays in comment\n"
+        "    v = 1;\n"
+        "    return v;\n"
+        "}\n"
+    )
+    outr, nr = inlineasm.strip_cheat_asm_file(srcr)
+    check("strip: plain register hint removed", "register int v" not in outr)
+    check("strip: string register text preserved", "register stays in string" in outr)
+    check("strip: comment register text preserved", "register stays in comment" in outr)
+    eq("strip: plain register hint counted", nr, 1)
+    eq("func_cheat_asm_count: plain register hint counted",
+       inlineasm.func_cheat_asm_count(srcr, "plain"), 1)
 
     # _match_brace: string/comment-aware
     eq("_match_brace: simple", inlineasm._match_brace("{a{b}c}", 0), 7)
@@ -203,7 +222,7 @@ def test_inlineasm() -> None:
     eq("func_cheat_asm_count: counts only target's cheats", inlineasm.func_cheat_asm_count(fsrc, "target"), 1)
     eq("func_cheat_asm_count: counts only other's cheats", inlineasm.func_cheat_asm_count(fsrc, "other"), 1)
     eq("func_cheat_asm_count: unknown func -> -1", inlineasm.func_cheat_asm_count(fsrc, "nope"), -1)
-    # a pure-C function reports 0 (locatable, no cheat asm)
+    # a pure-C function reports 0 (locatable, no cheat constructs)
     psrc = "s32 pure(void){\n    return 1;\n}\n"
     eq("func_cheat_asm_count: pure-C func -> 0", inlineasm.func_cheat_asm_count(psrc, "pure"), 0)
 
