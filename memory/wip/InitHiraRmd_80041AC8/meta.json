@@ -24,6 +24,14 @@
       "lever_rule": "review-discipline-before-commit (FAIL recorded)",
       "floor_was": 2,
       "floor_now": 2
+    },
+    {
+      "date": "2026-06-10",
+      "git_head_at_measurement": "0de06396",
+      "lever": "none (session 3, headless): per notes.md resume instruction 1, no mechanical avenue remains — PARKED the queue item pending the user policy decision in next_hypotheses[0]. scan_hand_coded --single: tier LOW (score 0, no strong indicators), confirming this is a policy park, not canonical-asm. src untouched (stays at HEAD, 2 rules); candidate floor 2 preserved here.",
+      "lever_rule": "no-new-park-categories (park reason cites the specific RTL mechanism + this ledger)",
+      "floor_was": 2,
+      "floor_now": 2
     }
   ],
   "reviewer": {
