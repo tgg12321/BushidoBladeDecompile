@@ -86,6 +86,52 @@ All 4 added to `rejected_forms` in meta.json. Floor remains 3. Resume avenues
 from session 4 still untried (instrumented combine.c probe, directed permuter,
 sibling back-port).
 
+## Session-7 (2026-06-10, HEAD 5e973f53) — 3 NEW dual-pseudo / u32-storage / u32-truthy variants tested, floor stays 3
+
+Re-verified candidate floor at fresh HEAD 5e973f53: score=3, build_insns=58,
+target=59 — matches sessions 1+3+4+5+6. Tested 3 NEW variants beyond the now-22
+form rejected_forms catalog (none duplicates of prior rejections):
+
+1. **V-A — dual-pseudo widening** — `u16 a1 = *(u16*)X; s32 a1_w = a1;`
+   with `(u32)(a1_w - 0x17) >= 2` in the && chain — score 3 unchanged.
+   Hypothesis: two C-level locals (HImode + SImode) might force combine to
+   maintain two distinct pseudos through to the comparison block, producing
+   the andi as the SImode pseudo materialization. Empirically: combine treats
+   `s32 a1_w = a1` as a zero-extension and folds it into the load; no separate
+   SImode pseudo emerges. Identical RTL to the rejected_form `s32 a1 = *(u16*)…`
+   (session 4 V1).
+2. **V-B — u32 storage with cast-free subtract** — `u32 a1 = *(u16*)X;`
+   with `(a1 - 0x17) >= 2` (no `(s32)` cast on the subtract operand) —
+   score 8 REGRESSION. The canonical form's `(u32)((s32)cast - K) >= 2` is
+   structurally load-bearing for the && chain's scheduling; eliminating the
+   cast doesn't simplify, it perturbs.
+3. **V-C — explicit (u32) cast on truthy compare** — `if ((u32)a1 - 0xA && …)`
+   instead of `if (a1 != 0xA && …)` — score 8 REGRESSION. The (u32) cast is a
+   no-op for combine, but the truthy `expr - K` form emits via different
+   fold-const-prop paths than `expr != K`, producing the same regression as V-B.
+
+All 3 added to `rejected_forms` in meta.json (catalog now 22 forms). The
+strengthened empirical signal from session-7: even cast-elimination variants
+(V-B, V-C) regress, confirming the canonical form's `(u32)((s32)a1 - 0x17) >= 2`
++ `a1 != 0xA` shape is doing real structural work — not just no-op widening
+that combine folds. The 3-diff cluster remains structurally coupled to the
+(s16)-cast-on-local mechanism session-2 identified.
+
+### Resume avenues unchanged from session-6
+
+- (a) **Instrumented cc1 combine.c probe** — `tools/gcc-2.7.2/combine.c`
+  holds the simplify rule folding `(and:SI (lhu:HI) 0xFFFF) → (lhu:HI)`.
+  Identify a SImode-pseudo shape that escapes the fold without affecting
+  the load opcode. `tmp/gccdbg/cc1` exists (May 30 build, sched.c-hooked)
+  but needs combine.c DBG hooks added + rebuild.
+- (b) **Directed permuter** — `PERM_GENERAL` / `PERM_INT_TYPE` /
+  `PERM_TYPECAST` from candidate.c with `--stop-on-zero`. 7 sessions of
+  manual search have exhausted ~22 surface variants; the directed permuter
+  surface (untouched on this function) may surface a SImode-shape construct
+  manual enumeration misses.
+- (c) **Cross-reference matched siblings** — none new since session 4.
+- (d) **Wait for sibling resolution + back-port** — passive.
+
 ## Session-6 (2026-06-10, HEAD f15b6dfe) — 4 NEW mask/precompute/truthy/nested variants tested, floor stays 3
 
 Re-verified candidate floor at fresh HEAD f15b6dfe: score=3, build_insns=58,
