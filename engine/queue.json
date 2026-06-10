@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "hirahira_w_frie",
-      "file": "text1a_c",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
       "func": "func_800483DC",
       "file": "text1b",
       "distance": 6,
@@ -4072,14 +4064,14 @@
     }
   ],
   "counts": {
-    "total": 495,
-    "active": 399,
+    "total": 494,
+    "active": 398,
     "by_status": {
-      "active": 399,
+      "active": 398,
       "parked": 96
     },
     "by_verdict": {
-      "C": 209,
+      "C": 208,
       "ASM-PARTIAL": 72,
       "ASM-SUSPECT": 118
     }
