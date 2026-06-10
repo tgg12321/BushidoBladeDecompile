@@ -1094,6 +1094,7 @@ void InitHiraRmd_80041AC8(s16 *arg0)
   s32 var_s2;
   s32 var_s3;
   u16 v1_val;
+  s16 *id_ptr;
   if (arg0[2] != 1)
   {
     return;
@@ -1102,8 +1103,15 @@ void InitHiraRmd_80041AC8(s16 *arg0)
   {
     return;
   }
+  /* id_ptr spelling: target's store->reload order (sh D_800A9A20 BEFORE
+   * lh arg0[4]) is only producible when the reload is NOT spelled as plain
+   * pointer-indexing (GCC 2.7.2 MEM_IN_STRUCT_P /s flag + sched.c escape
+   * clause) — the original source provably used a non-indexed spelling.
+   * One representative spelling sanctioned by user policy 2026-06-10; see
+   * .claude/rules/proven-spelling-class-reconstruction.md. */
+  id_ptr = &arg0[4];
   D_800A9A20 = arg0[4];
-  var_s0 = (s16 *) D_80094DF0[D_80094E08[arg0[4]]];
+  var_s0 = (s16 *) D_80094DF0[D_80094E08[*id_ptr]];
   if (single_game_SetStageId() != 1)
   {
     goto else_lbl;
@@ -1120,14 +1128,16 @@ void InitHiraRmd_80041AC8(s16 *arg0)
 
   if ((*var_s0) >= 0)
   {
+    s32 w = 0x10;
+    s32 h = 1;
     var_s1 = &D_800A9A24;
     do
     {
       u16 v0_val;
       rect[0] = v1_val + var_s3;
       v0_val = (u16) var_s0[1];
-      rect[2] = 0x10;
-      rect[3] = 1;
+      rect[2] = w;
+      rect[3] = h;
       rect[1] = v0_val + var_s2;
       gpu_StoreImage(rect, var_s1);
       var_s0 += 2;

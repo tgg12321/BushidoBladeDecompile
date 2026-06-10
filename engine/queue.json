@@ -3720,15 +3720,6 @@
       "park_reason": "Stable RA tie: \result lands in , target wants . 5 regfix rules paper-over the cluster (result reg-rename + lhu/sh reg-rename + tail move elision). Tried: statement-order swap (no change), early-return (regresses +3 insns), bool-from-comparison (regresses +5), narrow type char result (no change), if/else explicit form (no change), \result=1 at start of if (no change), decl order swap (no change), block-local read of *(s32*)(p+0) (no change). Build_insns == target 48 across all variants; diff is purely the 5 RA decisions at the if-flag pattern. Lever A (block-local split) N/A \u2014 result IS the return value. No callers capture a return that could seed . No sibling matched function in text1b.c with same s32 result = 0; if (cond) {body; result = 1;} return result; shape to mimic. Resume avenues untried: directed permuter from clean single-fn target; instrumented cc1 .greg dump to identify allocno priority gap; lever for if-result-via-call seeding ([[call-return-if-result-reuse-v0]]) but no call exists here."
     },
     {
-      "func": "InitHiraRmd_80041AC8",
-      "file": "text1a",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 2,
-      "status": "parked",
-      "park_reason": "needs-user-policy: floor-2 residual (maspsx idx 21-23) = sched1 lh/sh hoist controlled solely by the MEM_IN_STRUCT_P flag pair (sched.c~816 true_dependence escape clause). All 3 sandbox-0 closing forms (load-side ptr-alias, load-side byte-cast, store-side s16[2] re-type) FAILED cheat review as same-bytes /s coercion \u2014 both axes exhausted, no 4th spelling class. Scanner tier LOW (not asm). User decision: does mechanism-level proof of the original /s spelling CLASS sanction one representative spelling? See memory/wip/InitHiraRmd_80041AC8/meta.json next_hypotheses[0]."
-    },
-    {
       "func": "func_8007B844",
       "file": "display",
       "distance": 7,
@@ -4081,11 +4072,11 @@
     }
   ],
   "counts": {
-    "total": 496,
+    "total": 495,
     "active": 399,
     "by_status": {
       "active": 399,
-      "parked": 97
+      "parked": 96
     },
     "by_verdict": {
       "C": 209,

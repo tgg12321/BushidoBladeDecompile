@@ -761,9 +761,7 @@ func_80045878: subst "sh\s+\$21,8\(\$17\)" "sh $18,16($2)" @ 93
 func_80045878: subst "sw\s+\$2,24\(\$17\)" "sw $3,24($2)" @ 94
 
 # InitHiraRmd_80041AC8: reorder lh/la-sh pair (move lh after la-sh)
-InitHiraRmd_80041AC8: reorder 22,21 @ 21-22
 # InitHiraRmd_80041AC8: reorder loop preheader (move la after li s5/s4)
-InitHiraRmd_80041AC8: reorder 44,45,43 @ 43-45
 
 # func_8001F938: same pattern as func_8001EEB4 - GCC split lhu+andi
 # Pre-fix: swap v1/a1 at lhu (1) and at the 3 addiu sub instructions
