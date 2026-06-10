@@ -194,26 +194,23 @@ s32 func_8003AB44(void) {
     switch (D_800A38AC) {
         case 0:
             D_800A38AC = 1;
-            __asm__ __volatile__ ("" ::: "memory");
-            return 0;
+            break;
         case 1:
             func_8003A308();
             D_800A37D8 = 0;
             if (D_800A38A0 == 0) {
                 gpu_SetDispMask(1);
                 D_800A38AC = 2;
-                __asm__ __volatile__ ("" ::: "memory");
-                return 0;
+                break;
             }
             D_800A38AC = 3;
-            __asm__ __volatile__ ("" ::: "memory");
-            return 0;
+            break;
         case 2:
             if (D_80102794 & 0x10) {
                 goto fail;
             }
             if (func_8008C464(3, 1, 0) == 0) {
-                return 0;
+                break;
             }
             goto done;
         case 3:
@@ -224,11 +221,11 @@ s32 func_8003AB44(void) {
         done:
             func_8008C464(3, 0, 0);
             D_800A38AC = 4;
-            return 0;
+            break;
         retry:
             D_800A37D8++;
             if (D_800A37D8 < 4) {
-                return 0;
+                break;
             }
             /* fall through */
         fail:
@@ -239,7 +236,7 @@ s32 func_8003AB44(void) {
         case 5:
         case 6:
             D_800A38AC++;
-            return 0;
+            break;
         case 7:
             D_800A3916 = 1;
             func_8003A360();
