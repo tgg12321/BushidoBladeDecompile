@@ -818,3 +818,43 @@ remaining priorities all require diagnostic-tooling work:
   declaration — out of scope for this function and affects 6 siblings.
 - DO NOT use function-pointer casts to bend GCC's analysis of $v0
   liveness — cheats-by-any-spelling family rejection.
+
+## Session 13 (2026-06-10) addendum
+
+Applied candidate.c, reconfirmed clean floor 6 (build_insns=target_insns=93,
+rules_dropped=5, cheat_asm_stripped=6). Tested TWO structural variants NOT in
+sessions 1-12's rejected_forms list; both negative.
+
+| FORM | Lever | Score | build_insns | Verdict |
+|------|-------|-------|-------------|---------|
+| #26 | Case 7 statement reorder (call before store) | 10 | 93 | REGRESSION +4 — call-first forces `li 1` AFTER call, shifts j-delay-slot pattern |
+| #27 | Case 7 hoisted OUT of switch as if-test | 21 | 95 | REGRESSION +15 — if-test adds 2 emitted insns; no flow.c benefit |
+
+FORM #26 closes the 'within-case statement order' lever family for case 7.
+FORM #27 closes the 'remove case N from jtbl' lever family for the case 5/6
+register gap. Combined with sessions 1-12, the entire manual structural lever
+space is now confirmed exhausted.
+
+### Next-session priorities (session 14 onwards, unchanged from sessions 10-12)
+
+All four remaining priorities require diagnostic-instrumentation work:
+
+1. **BB2_FLOW_DEBUG cc1 instrumentation** (PRIORITY 1) — flow.c patch to
+   dump `basic_block_live_at_start[.L8003AC74]`. ~30-50 line patch + cc1
+   rebuild. The only diagnostic that could directly identify which
+   predecessor's live-out propagates $v0.
+2. **BB2_REORG_DEBUG targeting case 2's invert-jump site** — partial hooks
+   exist; needs `relax_delay_slots`-specific instrumentation.
+3. **Sibling LREG/GREG dumps** — actual `.greg` allocno tables from matched
+   siblings (suDispMentalBar, func_8003AE5C) for priority-tiebreaker
+   reference.
+4. **Case-2-specific PERM_GENERAL permuter** — un-tried; would need a
+   permuter-base mutating only case 2's local structure.
+
+### Anti-priorities (added session 13)
+
+- DO NOT re-test case 7 statement reordering. FORM #26 shows the candidate's
+  store-then-call order is the natural minimum.
+- DO NOT re-test hoisting any case OUT of the switch as an if-test. The
+  jtbl-removal cost (≥+2 insns) exceeds any flow.c live-set benefit for
+  this function's coupling.
