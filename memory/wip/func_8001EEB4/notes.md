@@ -86,6 +86,61 @@ All 4 added to `rejected_forms` in meta.json. Floor remains 3. Resume avenues
 from session 4 still untried (instrumented combine.c probe, directed permuter,
 sibling back-port).
 
+## Session-10 (2026-06-10, HEAD 2406e680) — 3 NEW structural variants tested, floor stays 3
+
+Re-verified candidate.c floor at fresh HEAD 2406e680: score=3, build_insns=58,
+target=59 — matches sessions 1+3..9. Tested 3 NEW structural variants beyond
+the now-27-form rejected_forms catalog:
+
+1. **V1 — early-return-on-fail form** — replace the && chain with sequential
+   `if (cond) goto cleanup;` statements (a1==0xA, 0x72!=0, subtract<2,
+   0x96!=0), single shared `cleanup:` label at end (game_Cleanup + globals
+   are genuinely shared) — score 3 unchanged. GCC tree-ssa branch-merge
+   collapses this form back to the same && short-circuit RTL before
+   flow1/combine. Identical to the rejected nested-if form (session 6) —
+   distinct syntactic spelling, same RTL the andi-emission decision sees.
+   NOT the forbidden goto-end-prologue-delay-slot pattern (the cleanup
+   work is real shared logic, not a return-value accumulator).
+
+2. **V2 — 0x72-first && chain reorder** — putting
+   `*(s16 *)(entry + 0x72) == 0` first, then `a1 != 0xA`, then subtract,
+   then `*(s16 *)(entry + 0x96) == 0` — score 9 REGRESSION, build_insns 57.
+   The lh load of entry+0x72 hoists eagerly into prologue, removing target's
+   interleaved load+test scheduling. Same regression family as session-8 V-C
+   (hoist all entry-fields) and session-5 V2 (subtract-first).
+
+3. **V3 — call-arg hoist for func_80021A3C** — `s32 a_arg = *(s16 *)(entry +
+   0xA);` declared FIRST in the inner block (parallel to idx2 hoist, applied
+   to func_80021A3C's second arg) — score 3 unchanged. The a_arg hoist
+   doesn't disrupt the comparison block's RTL coupling — a1's load and the
+   && chain compare site are upstream of the inner block. The hoist's lever
+   effect (per [[hoist-call-arg-local-flips-jal-delay]]) is localized to the
+   inner block's delay-slot fill decisions, which were already correct under
+   the idx2 hoist; no additional codegen consequence.
+
+All 3 measured variants added to `rejected_forms` in meta.json (catalog now
+30 forms across 10 sessions). 10 sessions of cumulative surface-syntactic +
+structural enumeration continue to reinforce the structural finding: the
+3-diff cluster's coupling to the (s16)-cast-on-local mechanism is robust to
+ALL tested rephrasings.
+
+### Resume avenues unchanged from sessions 5-9
+
+- (a) **Instrumented cc1 combine.c probe** — `tools/gcc-2.7.2/combine.c`
+  holds the simplify rule folding `(and:SI (lhu:HI) 0xFFFF) → (lhu:HI)`.
+  Identify a SImode-pseudo shape that escapes the fold without affecting
+  the load opcode. The tmp/gccdbg/cc1 from saEft00Add session has reorg.c
+  hooks but needs combine.c DBG hooks added + rebuild.
+- (b) **PERM_*-directed permuter from candidate.c** — workspace READY at
+  `permuter/func_8001EEB4/`. Author `PERM_GENERAL`, `PERM_INT_TYPE`,
+  `PERM_TYPECAST` macros constraining mutations to semantically-equivalent
+  axes (random mode in session 9 surfaced only cheats so directed mode
+  requires careful macro authoring).
+- (c) **Cross-reference matched siblings** — none new at HEAD 2406e680
+  (`func_8001A820` still INCOMPLETE empty body; `func_8001F938` still
+  INCOMPLETE score 11; `calc_loc_mat_fw_80055B60` still parked).
+- (d) **Wait for sibling resolution + back-port** — passive.
+
 ## Session-9 (2026-06-10, HEAD 848bf32d) — directed permuter SETUP executed (primary documented avenue across 8 prior sessions); random run produced only semantic-cheat candidates
 
 Re-verified candidate.c floor at fresh HEAD 848bf32d: score=3, build_insns=58,
