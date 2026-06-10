@@ -504,6 +504,72 @@ The rejected_forms cluster:
   the gap is the return-pseudo allocation, not flow.c live-set propagation
   at .L8003AC74.
 
+## Session 9 (2026-06-10) addendum — SESSION 8's MECHANISM REFRAMING DISPROVEN
+
+Applied candidate.c, reconfirmed clean floor 6 (build_insns=target_insns=93,
+rules_dropped=5, cheat_asm_stripped=6).
+
+**Session 8's $s0-accumulator claim is empirically WRONG.** Re-ran
+index-aligned objdump diff (`tmp/ab44_diff.sh`) of canonical
+`build/src/code6cac_c_ab.o` vs cheat-free
+`tmp/sandbox/func_8003AB44/code6cac_c_ab.o`. Both builds:
+- Use a 24-byte frame with ONLY `sw $ra, 16(sp)` save.
+- Have NO `sw $s0` save, NO `move $s0, $zero` init, NO `lw $s0` restore.
+- Emit DIRECT `move $v0, zero` / `li $v0, IMM` per-case in j-delay slots
+  (never `move $v0, $s0`).
+- Have the SAME epilogue layout (`lw $ra, 16(sp); addiu $sp; jr $ra; nop`).
+
+Session 8 likely measured FORM #16's `s32 ret;` accumulator variant (which
+DID introduce $s0 and regressed +11 to score 17 as session 8 documented)
+and mistakenly attributed FORM #16's emission to the candidate baseline.
+
+**The actual gap is what sessions 2-7 documented all along:** case 2
+polarity (4 diffs at idx 46-49) + case 5/6 register choice (3 diffs at
+idx 76, 78, 79). Masked-Lev distance 6 = the 7-slot raw diff masked to 6
+due to one slot's adjacent-context overlap.
+
+### Levers tested this session (2 new rejections)
+
+| Variant | Score | build_insns | Notes |
+|---|---|---|---|
+| candidate baseline | 6 | 93 | reference floor (re-confirmed) |
+| narrow return: `s8 func_8003AB44(void)` | 6 | 93 | ABI promotes returns to SImode |
+| case 3 BEFORE case 2 + `done:` after case 2 (FT) | 15 | 93 | jump2 cross-jump-merge unfavorable; case-order direction matters |
+
+Lever (c) `return (volatile s32)0;` per-case NOT tested — volatile cast on
+literal rvalue is cheat-by-any-spelling per [[no-new-park-categories]] /
+[[inline-asm-policy]] expanded catalog (zero semantic content, exists
+purely to influence cc1's RTL emission of the return path).
+
+### Session-10 priorities (REVISED per session 9 correction)
+
+1. **BB2_FLOW_DEBUG re-promoted to PRIORITY 1**: instrument cc1's flow.c
+   to dump `basic_block_live_at_start[bb_for(.L8003AC74)]` after
+   `update_life_info`. This is the diagnostic sessions 6+7 named PRIORITY
+   1; session 8 demoted it based on its (wrong) $s0 reframing. Session 9
+   re-promotes it as the strongest remaining untried lever-finding map
+   for the case 5/6 pseudo 94 → $v1 issue.
+2. **BB2_REORG_DEBUG dump targeting case 2 invert-jump candidate site**.
+   The instrumented cc1 already has DBG_FILL / DBG_LA / DBG_BRK / DBG_WLK
+   / DBG_MTLR / DBG_BBLAS hooks from saEft00Add sessions. Run on
+   isolated func_8003AB44 .i and compare INSN_PRIORITY chains for the
+   case 2 branch vs sibling matched switches.
+3. **Permuter sweep targeting case 2 polarity specifically** (vs session
+   6's full-candidate sweep which mixed both clusters). PERM_GENERAL
+   macros restricted to case 2's local mutations may find a structural
+   variant that flips polarity without case 5/6 regression.
+
+### Anti-priorities (updated)
+
+- DO NOT trust session 8's $s0-accumulator framing. It's empirically false.
+- DO NOT re-test `s8` return type (session 9: no effect).
+- DO NOT re-test source-order flips at case-position level — sessions 5
+  (case 5/6 before case 4: no effect), 7 (case 7 before case 4/5/6:
+  regression), 9 (case 3 before case 2 + done FT: regression) collectively
+  cover the meaningful permutations; only specific directions matter and
+  most are unfavorable.
+- DO NOT reach for `(volatile s32)0;` return-cast — cheat-by-any-spelling.
+
 ## Related rules
 
 - [[switch-vs-ifchain-branch-sense]] — sibling pattern (rewrite as real
