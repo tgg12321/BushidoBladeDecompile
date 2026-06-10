@@ -169,7 +169,11 @@ try {
         }
         $func = $top.func
         $statusBefore = Invoke-Eng queue status
-        $doneBefore = [int]$statusBefore.counts.by_status.done
+        # `queue done` REMOVES the item from queue.json (per CLAUDE.md
+        # "queue presence = INCOMPLETE"), so completion shows as a `total`
+        # drop. `by_status.done` does not exist — it would always be 0.
+        # `total` drop is the honest completion signal.
+        $totalBefore = [int]$statusBefore.counts.total
 
         Write-Host "[headless] iter $i/$MaxIterations -> $func ($($top.file), verdict $($top.verdict), $($top.rules) rule(s))"
 
@@ -204,8 +208,12 @@ try {
         $oracleOk = [bool]$post.build_matches
 
         $statusAfter = Invoke-Eng queue status
-        $doneAfter = [int]$statusAfter.counts.by_status.done
-        $advanced = ($doneAfter -gt $doneBefore)
+        $totalAfter = [int]$statusAfter.counts.total
+        # completion = total dropped (the function left queue.json entirely
+        # via `queue done` -> COMPLETED-C or COMPLETED-INLINE-ASM-CANONICAL).
+        # A park leaves total unchanged (status flip only), so this cleanly
+        # separates "done" from "parked".
+        $advanced = ($totalAfter -lt $totalBefore)
         # parked counts as progress too (the func leaves 'active')
         $stillTop = (Invoke-Eng queue next).func -eq $func
         $progressed = $advanced -or (-not $stillTop)
@@ -227,8 +235,8 @@ try {
             oracle_ok      = $oracleOk
             advanced       = $advanced
             progressed     = $progressed
-            done_before    = $doneBefore
-            done_after     = $doneAfter
+            total_before   = $totalBefore
+            total_after    = $totalAfter
             head_before    = $headBefore
             head_after     = $headAfter
             # self-auditing efficiency signals (from tools/headless_audit.py)
