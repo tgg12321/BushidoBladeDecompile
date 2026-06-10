@@ -171,30 +171,115 @@ RTL-level:
   $v0 considered live-in across the merged case-5/6 entry — but the actual
   pseudo conflict graph hasn't been dumped via BB2_ALLOC_DEBUG yet.
 
-## Next-session priorities (session 4 onwards)
+## Next-session priorities (session 5 onwards)
 
-The manual structural lever exhaustion this session shifts the gradient.
-The genuine untried levers now are diagnostic-and-derive:
+Session 4 executed the BB2_ALLOC_DEBUG diagnostic. The result is decisive
+and reshapes the priority list.
 
-1. **`BB2_ALLOC_DEBUG` on tmp/gccdbg/cc1** for case 5/6 specifically — dump
-   the .greg/.lreg + the allocno priority table at the lbu emission point.
-   The hypothesis (jtbl-entry conservative live-set on $v0) is concrete
-   and testable from the dump. Without the dump, every lever is guess-driven.
-2. **`PERM_GENERAL`-directed permuter** from `candidate.c` base — explore
-   type-mutation + statement-reorder + non-obvious structural variants the
-   hand search missed. Set up `permuter/func_8003AB44/` with the canonical
-   target (per [[difficult-is-not-impossible]] § Metric gotchas — use a
-   clean single-function `target.o`).
-3. **Read `reorg.c` `relax_delay_slots`** to find what specifically triggers
-   the invert peephole on case 2's beqz, and what C-source structure could
-   change that trigger (e.g. delay-slot dependency chain length, branch
-   prediction heuristic). Currently the prediction is informational only —
-   no instrumented dump has run on the reorg pass for this function.
-4. **Permuter from a sub-optimally-scored base** (e.g. the score-15 form
-   from rejected[0]) — sometimes a +9 jump produces structural mutations
-   the from-floor-6 permuter can't reach. Untested.
+### Session 4 finding (2026-06-10) — ALLOCDBG isolated to single allocno
 
-Anti-priorities (the rejected_forms cluster):
+Used `tmp/gccdbg/cc1` (instrumented build SHA1 `a17fc6bbcb...` May 30;
+canonical `tools/gcc-2.7.2/build/cc1` SHA1 `045c9543d3...` May 18
+UNTOUCHED) on a single-function isolated preprocessed input (built via
+`tools/decomp-permuter/strip_other_fns.py tmp/8003ab44/iso.i
+func_8003AB44`, then `cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000
+-mips1 -mno-abicalls -fno-builtin -w`).
+
+The function has ONE non-trivial allocno (everything else uses scratch
+regs directly):
+
+```
+ALLOCDBG ord=0 pseudo=94 hardreg=3 nrefs=3 livelen=6 pri=5000
+```
+
+- pseudo=94 = the case 5/6 lbu/addiu/sb increment value
+- hardreg=3 = $v1 (the wrong register; target uses $v0)
+- ord=0 = allocated FIRST
+- nrefs=3, livelen=6, pri=5000 (= floor_log2(3)*3/6*10000)
+
+Because pseudo 94 is allocated FIRST (ord=0) and is the ONLY allocno
+yet picked $v1 over $v0 (where $v0 is at index 2, lower than $v1 at 3,
+preferred per natural ascending order), **$v0 must be excluded from the
+available register set when this allocno is processed**. Nothing else
+claims $v0, so the exclusion comes from `basic_block_live_at_start
+[.L8003AC74]` (the case 5/6 jtbl-entry block) containing $v0 in its
+live-in set.
+
+This confirms session 3's hypothesis explicitly: flow.c's conservative
+live-set computation at the multi-entry jtbl block keeps $v0 marked
+live-in.
+
+Target asm at offsets 2B474-2B488 (the case 5/6 cluster + j-delay slot):
+```
+.L8003AC74:
+   lbu   $v0, %gp_rel(D_800A38AC)($gp)
+   nop                                       # load-delay
+   addiu $v0, $v0, 0x1
+   sb    $v0, %gp_rel(D_800A38AC)($gp)
+   j     .L8003ACA8                          # to shared epilogue
+   addu  $v0, $zero, $zero                   # DELAY SLOT — return value 0
+```
+
+Target REUSES $v0 across the increment cluster AND the return-value
+setup (j-delay slot). The reuse is natural — pseudo dies at the sb,
+then `move v0, 0` writes $v0 fresh. Same byte count as ours; just
+different register.
+
+### What this means for next-session levers
+
+The lever class to explore: **defeat the flow.c $v0 live-in at
+.L8003AC74**. Predecessors:
+1. Case 5 via jtbl jr — should be clean ($v0 dead after jr)
+2. Case 6 via jtbl jr — should be clean
+3. Case 4 fall-through after `jal gpu_SetDispMask(0)` — call clobbers
+   $v0 semantically, BUT flow.c's call-clobber tracking at the
+   fall-through join may be insufficient (the conservative side
+   prevails when uncertain)
+
+Concrete next-session hypotheses (un-tried):
+
+1. **Explicit $v0-kill on case 4 path before fall-through.** Try a
+   structural construct that makes flow.c definitively see $v0 die
+   before the jtbl-entry. Candidates:
+   - Read-then-discard in case 4: `(void)D_800A38AC;` (likely DCE'd —
+     CHECK).
+   - Move the case 5/6 body into case 4 inline, with a tail-call style
+     `goto` at the end that prevents cross-jump merge from the jtbl
+     entries.
+2. **Defeat the multi-entry merge by giving each case 5/6 entry a
+   distinct successor.** Currently both case 5 and case 6 jtbl entries
+   land at .L8003AC74. If case 5 and case 6 each had their own (byte-
+   identical) increment block, jump2 cross_jump would merge them back
+   — same wall as the rejected `case 4/5/6 split` variants.
+3. **Restructure case 4 to OWN the increment**, leaving case 5/6 as
+   the separate path. If case 4's path doesn't fall through to .L8003AC74
+   anymore, the flow.c live-in only includes the jtbl-jr predecessors,
+   which should be clean. BUT this duplicates the increment AND
+   cross-jump merge will likely re-collapse.
+4. **PERM_GENERAL permuter from candidate.c** — un-tried; may surface a
+   structural mutation the hand search hasn't found.
+
+Notable un-helpful avenues now ruled out by ALLOCDBG:
+- ~~Block-local var split on the increment value~~ — Lever A from
+  [[register-alloc-pure-c]]; pseudo 94 already has tight livelen 6, no
+  room to shrink. The split would just create another allocno of
+  similar profile.
+- ~~Narrow integer type~~ — Lever B; the value is already u8 (byte).
+- ~~Loop-local precompute~~ — Lever C; no loop in the structure.
+- ~~Volatile-bump on D_800A38AC~~ — Lever family forbidden per
+  [[inline-asm-policy]] expanded catalog; would also bump nrefs into
+  cheat territory.
+
+### Case 2 polarity (the other 4-diff gap) — unchanged
+
+Session 4 did not investigate the case 2 polarity gap further. The
+reorg.c instrumented dump (BB2_REORG_DEBUG hooks present in
+tmp/gccdbg/cc1) remains un-run on this function. Session 5+ could
+run it for case 2 specifically (per session 3 priority 3).
+
+## Anti-priorities (carried across sessions)
+
+The rejected_forms cluster:
 - DO NOT re-test syntactic variants of case 2's test order (== 0 vs != 0,
   else-if vs flat if, named locals). All collapse to the same RTL.
 - DO NOT inline done in case 2 (loses the j-delay-slot pair).
