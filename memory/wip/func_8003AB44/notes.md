@@ -129,6 +129,79 @@ expected payoff order:
    loses cross-jump merge benefit. Or inline `func_8008C464(3,0,0)`
    differently so its setup doesn't dominate.
 
+## Session 3 (2026-06-10) addendum
+
+Re-confirmed candidate floor 6 from a clean apply of `candidate.c` to
+`src/code6cac_c_ab.c`. Re-disassembled `tmp/sandbox/func_8003AB44/code6cac_c_ab.o`
+and matched the exact same 7-slot diff cluster session 2 pinned (4 polarity
+diffs at byte offsets 0xb8-0xc4, 3 register diffs at 0x130/138/13c).
+
+4 more structural variants tested (all rejected — see meta.json
+rejected_forms). Summary:
+
+| Variant | Score | Notes |
+|---|---|---|
+| case 2 else-if cascade | 6 | syntactic — same RTL |
+| case 2 fully inline done (no goto) | 15 | cross-jump merge drops `j done; addiu $a0,3` pair |
+| case 4/5/6 merged with internal `if (D_800A38AC == 4)` check | 10 | +4 insns from the dispatch (97 vs 93) |
+| case 4 → case 5/6 goto-bump | 6 | goto-to-following-label folded; same RTL |
+
+Sibling matched switches in the same file (`suDispMentalBar`,
+`func_8003AE5C`) use switch-with-break (no per-case early-return), so their
+codegen doesn't transfer — they don't exercise the reorg.c invert-jump
+peephole or the case-5/6 RA conservativism this function hits.
+
+The manual structural lever search is now near-exhausted across 3 sessions
+(11 forms tested + the original candidate). The remaining gap is genuinely
+RTL-level:
+
+- **Case 2 polarity (4 diffs):** reorg.c's `relax_delay_slots` invert-jump
+  peephole. Target wants `beqz $v0, end / addu v0,0,0 / j done / addiu $a0,3`;
+  GCC's natural emission inverts to `bnez $v0, done / addiu $a0,3 / j end /
+  addu v0,0,0` because INSN_PRIORITY of the `addiu $a0,3` chain (long: feeds
+  done's jal which chains to the next state-store) outweighs `addu v0,0,0`
+  (short: only feeds jr ra). Inverting this without LICM regressions or
+  cross-jump merge collapse is the open problem.
+- **Case 5/6 register choice (3 diffs):** at the `.L8003AC74` jtbl entry
+  (case 5/6 fall-through from case 4 after `gpu_SetDispMask(0)`), GCC picks
+  $v1 for the `lbu/addiu/sb` chain. Target picks $v0 and reuses it for the
+  `j end / addu v0,0,0` return-value setup. The natural ascending preference
+  ($v0=2 < $v1=3) says target is following the preference; ours is the
+  anomaly. Cause hypothesized to be jtbl-entry conservative live-set keeping
+  $v0 considered live-in across the merged case-5/6 entry — but the actual
+  pseudo conflict graph hasn't been dumped via BB2_ALLOC_DEBUG yet.
+
+## Next-session priorities (session 4 onwards)
+
+The manual structural lever exhaustion this session shifts the gradient.
+The genuine untried levers now are diagnostic-and-derive:
+
+1. **`BB2_ALLOC_DEBUG` on tmp/gccdbg/cc1** for case 5/6 specifically — dump
+   the .greg/.lreg + the allocno priority table at the lbu emission point.
+   The hypothesis (jtbl-entry conservative live-set on $v0) is concrete
+   and testable from the dump. Without the dump, every lever is guess-driven.
+2. **`PERM_GENERAL`-directed permuter** from `candidate.c` base — explore
+   type-mutation + statement-reorder + non-obvious structural variants the
+   hand search missed. Set up `permuter/func_8003AB44/` with the canonical
+   target (per [[difficult-is-not-impossible]] § Metric gotchas — use a
+   clean single-function `target.o`).
+3. **Read `reorg.c` `relax_delay_slots`** to find what specifically triggers
+   the invert peephole on case 2's beqz, and what C-source structure could
+   change that trigger (e.g. delay-slot dependency chain length, branch
+   prediction heuristic). Currently the prediction is informational only —
+   no instrumented dump has run on the reorg pass for this function.
+4. **Permuter from a sub-optimally-scored base** (e.g. the score-15 form
+   from rejected[0]) — sometimes a +9 jump produces structural mutations
+   the from-floor-6 permuter can't reach. Untested.
+
+Anti-priorities (the rejected_forms cluster):
+- DO NOT re-test syntactic variants of case 2's test order (== 0 vs != 0,
+  else-if vs flat if, named locals). All collapse to the same RTL.
+- DO NOT inline done in case 2 (loses the j-delay-slot pair).
+- DO NOT collapse case 4/5/6 with internal dispatch (+4 insns).
+- DO NOT reach for `do { } while (0);` until BB2_ALLOC_DEBUG + permuter
+  exhausted, per [[do-while-zero-exception]]'s lever-exhaustion prerequisite.
+
 ## Related rules
 
 - [[switch-vs-ifchain-branch-sense]] — sibling pattern (rewrite as real
@@ -139,3 +212,10 @@ expected payoff order:
   particular delay-slot fills
 - [[inline-asm-policy]] — the rule classifying `__asm__("" ::: "memory")`
   as cheat-asm (the 3 barriers I removed are in this category)
+- [[cross-jump-store-tail-merge]] — explains why inlining done in case 2
+  drops the `j done; addiu $a0,3` delay-slot pair (jump2 cross_jump merges
+  the duplicated done-body suffix back into one block)
+- [[do-while-zero-exception]] — relevant FUTURE-LAST-RESORT lever for the
+  case 2 polarity; do not invoke until [[difficult-is-not-impossible]]'s
+  diagnostic playbook (BB2_ALLOC_DEBUG + reorg dump + permuter) has been
+  exhausted, per the rule's prerequisite
