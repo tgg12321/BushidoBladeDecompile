@@ -277,6 +277,63 @@ reorg.c instrumented dump (BB2_REORG_DEBUG hooks present in
 tmp/gccdbg/cc1) remains un-run on this function. Session 5+ could
 run it for case 2 specifically (per session 3 priority 3).
 
+## Session 5 (2026-06-10) addendum
+
+Applied candidate.c, confirmed clean floor 6 (build_insns=target_insns=93,
+rules_dropped=5, cheat_asm_stripped=6 from sibling functions; the function
+itself has 0 cheat-asm in candidate form).
+
+Tested **1 new structural variant** beyond session-4's documented
+rejected_forms — source-order flip (case 5/6 cases physically BEFORE case 4
+in source, with duplicate `D_800A38AC++; return 0;` in case 4 instead of
+fall-through):
+
+| Variant | Score | build_insns | Notes |
+|---|---|---|---|
+| candidate (canonical, case 4→5/6 fall-through) | 6 | 93 | Reference floor |
+| case 5/6 BEFORE case 4 in source + duplicate increment | 6 | 93 | NEW; rejected |
+
+cc1's jump2 cross-jump-merge consolidates the duplicate `D_800A38AC++; return
+0;` blocks regardless of source order; the merge target's predecessor
+structure remains case-4-fall-through + 2 jtbl entries. flow.c's
+basic_block_live_at_start computation at the jtbl-merge block is insensitive
+to syntactic case order — pseudo 94 still allocates to $v1.
+
+This confirms session 3-4's diagnosis: the case 5/6 register issue is a deep
+property of the **predecessor live-out / multi-entry jtbl join**, not a
+function of cc1's RTL block emission order. The manual structural lever
+space across 5 sessions now spans **12 rejected variants** (plus the
+candidate-form source cleanup). The remaining un-tested lever class is
+**directed-permuter from candidate.c base** — the only systematic way to
+explore C variants outside the hand-derivable space.
+
+## Next-session priorities (session 6 onwards)
+
+Per session 5's exhaustion of the hand-derivable structural lever space, the
+priority list reshapes:
+
+1. **Set up permuter/func_8003AB44/ workspace and run a directed-permuter
+   sweep from candidate.c.** This is the un-tried lever named in session 4
+   and not run there. Setup steps (reference: permuter/dbe4/ template):
+   - target.s = `tools/decomp-permuter/prelude.inc` (drop `.set gp=64`) +
+     `asm/funcs/func_8003AB44.s`. Assemble to target.o.
+   - base.c = preprocessed src/code6cac_c_ab.c with candidate.c body, then
+     `tools/decomp-permuter/strip_other_fns.py` IN-PLACE to keep only
+     func_8003AB44.
+   - compile.sh = full pipeline (cc1 -O2 -G0 -funsigned-char -mcpu=3000
+     -mips1 -mno-abicalls -fno-builtin -w | prologue_fix | maspsx
+     --aspsx-version=2.34 | as -march=r3000 -G0).
+   - Run with `--stop-on-zero` and PERM_GENERAL + PERM_INT_TYPE enabled.
+   - Base score expectation: ~30 (= 6 reg-diff × 5).
+2. **If permuter exhausts:** instrumented cc1 dump with BB2_FLOW_DEBUG hooks
+   (analogous to BB2_ALLOC_DEBUG, but reading
+   basic_block_live_at_start[.L8003AC74] directly to confirm WHICH
+   predecessor's live-out propagated $v0).
+3. **Sibling cross-reference:** examine code6cac_c_ab.c siblings'
+   LREG/GREG dumps for any 5/6-case-with-fall-through-from-4 shape that
+   allocated $v0 naturally — the sibling's C structure would be the
+   template.
+
 ## Anti-priorities (carried across sessions)
 
 The rejected_forms cluster:
