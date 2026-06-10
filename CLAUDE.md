@@ -100,7 +100,7 @@ The same single-agent loop can run **unattended**: `pwsh tools/headless_loop.ps1
 once per queue item to take the top function to COMPLETED (still one focused agent per function — it
 just launches the sessions for you). Guardrails: `verify-oracle --rebuild` baseline + authoritative
 post-check each iteration (stops on any oracle break), progress check (stops if the function neither
-completes nor parks), a `--max-budget-usd` cap, `-MaxIterations 1` default, and it **never pushes**.
+completes nor parks), `-MaxIterations 1` default, and it **never pushes**.
 Each run is logged to `metrics/headless_runs.jsonl` (func, model, session, cost, tokens, turns,
 oracle_ok). Full autonomy needs `-PermissionMode bypassPermissions` (the default); use `-DryRun` to
 preview and `-PermissionMode acceptEdits` to supervise. Metrics attribution: the runner sets a
@@ -139,8 +139,8 @@ after **each** worker finishes — it is what lets the loop run unattended for l
 4. **Continue or escalate** — per the **escalation boundary (maximal autonomy)**: keep going
    autonomously for clean completions and auto-confirmed parks; **STOP and surface to the user only
    for**: an oracle break, a worker error, a stuck/no-progress run, a park you can't mechanically
-   confirm, an architecture/policy decision (e.g. the global rodata reorder behind jtbl-infra), or
-   the budget cap. Everything else is logged (`headless_runs.jsonl`) for later review, not blocked on.
+   confirm, or an architecture/policy decision (e.g. the global rodata reorder behind jtbl-infra).
+   Everything else is logged (`headless_runs.jsonl`) for later review, not blocked on.
 
 **Orchestrator auto-authorize categories (NOT escalate triggers):**
 - **GTE leaf wrappers** (pure cop2 ops — `mtc2`/`avsz3`/`avsz4`/`mfc2` etc., no C form): the

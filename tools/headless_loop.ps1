@@ -11,33 +11,32 @@
     1. (pre-loop only) `eng verify-oracle --rebuild` to establish a clean baseline.
     2. Read the top active queue item (`eng queue next`).
     3. Invoke `claude -p <loop-prompt>` with a fresh session id (so engine
-       metrics attribute the run), a model, a permission mode, and a $ budget cap.
+       metrics attribute the run), a model, and a permission mode.
     4. Authoritative post-check: `eng verify-oracle --rebuild` MUST still match the
        oracle SHA1. If not, the agent committed a broken build -> STOP immediately.
     5. Confirm progress: the engine `done` count went up OR the function was parked.
        If neither -> stuck -> STOP.
     6. Append a run record to metrics/headless_runs.jsonl (func, model, session,
        cost, tokens, turns, oracle_ok, advanced).
-  Never pushes. Stops on first error / oracle break / no-progress / budget /
+  Never pushes. Stops on first error / oracle break / no-progress /
   MaxIterations / empty queue.
 
 .NOTES
   PERMISSION MODE: headless autonomy needs the agent to run eng.ps1 (PowerShell),
   edit src, run WSL builds and commit WITHOUT interactive prompts. In `-p` mode a
   prompt auto-denies, so only `bypassPermissions` actually runs unattended. That
-  is the default here, paired with the guardrails above (budget cap, 1 iteration
+  is the default here, paired with the guardrails above (1 iteration
   default, authoritative oracle re-check, never-push). Downgrade with
   -PermissionMode acceptEdits to supervise.
 
 .EXAMPLE
   pwsh tools/headless_loop.ps1 -DryRun
-  pwsh tools/headless_loop.ps1 -MaxIterations 1 -Model opus -MaxBudgetUsd 5
+  pwsh tools/headless_loop.ps1 -MaxIterations 1 -Model opus
 #>
 [CmdletBinding()]
 param(
     [int]    $MaxIterations  = 1,
     [string] $Model          = 'opus',
-    [double] $MaxBudgetUsd   = 10,   # per-iteration cap, passed to `claude --max-budget-usd`
     [ValidateSet('acceptEdits','bypassPermissions','default','dontAsk')]
     [string] $PermissionMode = 'bypassPermissions',
     [switch] $DryRun
@@ -108,20 +107,20 @@ Three valid session END STATES — each commits + STOPs immediately:
      session's terminal output — the runner accepts it as legitimate
      progress; the next session resumes from your candidate.c.
 
-After ANY of A/B/C lands, you are DONE. Do not look for more work. Leftover
-budget after a terminal commit is NOT a license to grab adjacent functions,
-do drive-by cleanups, or "complete parked" functions you happen to know
-about. Hit `git commit` then immediately end your turn.
+After ANY of A/B/C lands, you are DONE. Do not look for more work. A
+terminal commit is NOT a license to grab adjacent functions, do drive-by
+cleanups, or "complete parked" functions you happen to know about. Hit
+`git commit` then immediately end your turn.
 
-HARD RULES (ignoring these wastes the run — a mid-work budget cutoff leaves an
+HARD RULES (ignoring these wastes the run — ending mid-work leaves an
 uncommitted tree that forces an escalation):
   - Work ONLY the single top function. The instant it is finished — `git commit`
     after retire + queue done, OR `queue park` — STOP and end your turn.
   - Do NOT run `queue next` again, and do NOT start, edit, or even look at a
     second function. ONE function per session, no exceptions. If your assigned
     function turns out to be trivial (already in inline_asm_canonical.txt, or
-    already at distance 0), commit the queue-bookkeeping and STOP — leftover
-    budget is NOT a license to grab a second function. The orchestrator will
+    already at distance 0), commit the queue-bookkeeping and STOP — that is
+    NOT a license to grab a second function. The orchestrator will
     spawn a fresh agent for the next item.
   - **SCOPE DISCIPLINE.** Edits MUST be confined to your function (its body in
     src/<file>.c, its rules in regfix.txt / asmfix.txt, its entry in
@@ -173,8 +172,8 @@ mechanism the levers can't flip, with measurements), NOT "high distance" or
 to ASM-STRUCTURAL on distance alone (2026-06-09 gate fix) — large size IS
 NOT evidence of hand-asm, it's evidence of large pure-C work to do.
 
-If you cannot finish in budget BUT measurably lowered the floor, do NOT
-park. Write a WIP entry (memory/wip/<func>/candidate.c + meta.json + notes.md
+If you cannot close the function this session BUT measurably lowered the
+floor, do NOT park. Write a WIP entry (memory/wip/<func>/candidate.c + meta.json + notes.md
 per CLAUDE.md and memory/wip/README.md). Invoke the cheat-reviewer on the
 candidate first; record the verdict in meta.json. Revert src/ to HEAD (oracle
 stays green), commit under `wip: <func>`, stop. The next agent resumes from
@@ -222,7 +221,6 @@ try {
             '-p', $PROMPT,
             '--output-format', 'json',
             '--model', $Model,
-            '--max-budget-usd', $MaxBudgetUsd,
             '--permission-mode', $PermissionMode,
             '--session-id', $sid
         )
@@ -266,7 +264,6 @@ try {
             func           = $func
             file           = $top.file
             model          = $Model
-            max_budget_usd = $MaxBudgetUsd
             permission_mode= $PermissionMode
             session_id     = $sid
             cost_usd       = $res.total_cost_usd

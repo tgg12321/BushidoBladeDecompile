@@ -98,10 +98,10 @@ engine.cli…'`** — that nests three shells and the quoting eats awk/sed/hered
 ## 4. Autonomous operation — drive workers + review
 
 - **Run:** `pwsh tools/headless_loop.ps1 -MaxIterations N [-Model opus]
-  [-MaxBudgetUsd 5] [-DryRun]`. It invokes `claude -p` once per queue item
+  [-DryRun]`. It invokes `claude -p` once per queue item
   (one function each), self-reviews every cycle, and **stops on ESCALATE**.
   Guardrails: `verify-oracle --rebuild` baseline + authoritative post-check,
-  dirty-tree stop, budget cap, never pushes. Each run → `metrics/headless_runs.jsonl`.
+  dirty-tree stop, never pushes. Each run → `metrics/headless_runs.jsonl`.
 - **Review (per cycle / on completion):** `python3 tools/headless_review.py
   --latest` (or `--func`/`--session`). Outcome + audit signals + commit range +
   mechanical park-confirmation + ACCEPT/ESCALATE. Exit `0`=ACCEPT, `10`=ESCALATE.
@@ -126,7 +126,7 @@ Keep going autonomously; **STOP and surface to the user ONLY for:**
 - a **CHEATED match** (`headless_review` flags non-canonical cheat-asm in committed source),
 - a **NOVEL park** you can't mechanically confirm,
 - an **architecture / policy decision** (e.g. a global rodata reorder, a substrate
-  change), or the **budget cap**.
+  change).
 
 Everything else is logged and not blocked on. When you escalate, **confirm the
 finding yourself first** (verify the worker's rationale against the actual rules /
@@ -153,7 +153,7 @@ source / linker) — workers over-claim; your review is the integrity check.
 ## 7. Footguns learned (don't repeat them)
 
 - **`$?` inside `wsl bash -c` is unreliable** → `$LASTEXITCODE` via PowerShell.
-- **A budget cutoff leaves a dirty tree** mid-function → never continue on it;
+- **A mid-work cutoff leaves a dirty tree** (worker died/was killed mid-function) → never continue on it;
   if `oracle_ok` the leftover is verified-matching (commit it), else revert.
 - **Workers over-batch** (do 3–4 functions, get cut off) → the prompt enforces
   one-function-commit-then-stop; the dirty-tree gate is the backstop.
