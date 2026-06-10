@@ -1,0 +1,67 @@
+{
+  "function": "func_8003AB44",
+  "file": "code6cac_c_ab",
+  "scores": {
+    "head_floor": 6,
+    "candidate_floor": 6,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 93,
+    "target_insns": 93
+  },
+  "sessions": [
+    {
+      "date": "2026-06-10",
+      "git_head_at_measurement": "1823a53a",
+      "lever": "remove 3 score-inert cheat-asm scheduling barriers in cases 0/1",
+      "lever_rule": "inline-asm-policy",
+      "floor_was": 6,
+      "floor_now": 6,
+      "note": "Source cleanup only — barriers were verified score-inert. Multiple structural variants of case 2 (== 0 return / !=0 goto / inline done block) and case 4/5/6 (fall-through vs duplicate-and-merge) all produced floor 6. No structural lever found that lowers the floor."
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": null,
+    "evidence": "Not invoked this session — candidate is purely a SOURCE CLEANUP (removes 3 cheat-asm barriers), adds NO new cheats. Floor unchanged. Reviewer should be invoked before any future commit using this base."
+  },
+  "remaining_gap": {
+    "summary": "6-distance gap composed of (a) case 2 branch polarity (target wants `beqz $v0, end; move $v0,0 (delay); j done; addiu $a0,3 (delay)`; GCC naturally emits `bnez $v0, done; addiu $a0,3 (delay); j end; move $v0,0 (delay)` — opposite branch sense + delay-slot fill choice); (b) case 5/6 increment register ($v1 in our build, $v0 in target; the lbu/addiu/sb chain on D_800A38AC).",
+    "rule_count_at_head": 5,
+    "rules_required_for_full_match": "All 5 existing rules retained: regfix.txt has 4 substs at idx 42-45 (bne->beq + delay slot pair swap + j target swap) covering case 2 polarity, plus 1 $2<->$3 swap @ 72-75 covering case 5/6 register."
+  },
+  "next_hypotheses": [
+    "Try a SHARED-END-LABEL restructure on the function: combine all return-0 cases into a single `return ret;` at the end (per [[shared-end-label]]). This may shift case 2's branch polarity by changing what GCC sees as the warmer path.",
+    "Read sibling matched switch-dispatch functions in code6cac_c_ab.c (func_8003ACB8 onwards) to find ones with similar 8-way switch + jtbl + fall-through patterns. Diff their .greg dumps against this function.",
+    "Instrumented cc1 dump with BB2_ALLOC_DEBUG to see why case 5/6's lbu lands in $v1 — likely the case 4 fall-through interaction with the jtbl-label conservative allocation. The fix is likely to make $v0 'naturally chosen' via a structural change (not a pin).",
+    "Directed permuter from candidate.c base (sandbox-distance 6). Random mutations may discover a structural variant not derivable by hand. PERM_GENERAL with type-mutation enabled.",
+    "Read target asm idx 42-49 + maspsx output to confirm which delay-slot fills GCC's reorg pass evaluated and why ours picked differently. INSN_PRIORITY chain on `addiu $a0,3` (next jal arg) vs `move $v0,zero` (return value setup) — the former has a longer downstream chain in this function, biasing GCC to pick it."
+  ],
+  "rejected_forms": [
+    {
+      "form": "Inline done block in case 2 (no goto)",
+      "score": 15,
+      "reason": "Right polarity but -1 insn count (92 vs 93 target) — cross-jump merge consolidates case 3's done body into case 2's inline block, losing the j done + addiu $a0,3 delay slot pair. Not lower than HEAD's 6."
+    },
+    {
+      "form": "Swap case 2 test sense (`if (X) goto done; return 0;` vs `if (X == 0) return 0; goto done;`)",
+      "score": 6,
+      "reason": "Identical emission — GCC sees same RTL regardless of syntactic flip."
+    },
+    {
+      "form": "Split case 4 / case 5/6 with duplicate increment in each",
+      "score": 6,
+      "reason": "Cross-jump merge consolidated them back; register choice ($v1) unchanged."
+    },
+    {
+      "form": "Invert case 3 test (`!= 0 goto retry`) with inlined done as fall-through",
+      "score": 15,
+      "reason": "Same as inline form; GCC's cross-jump optimization still routes case 3 to case 2's done block."
+    }
+  ],
+  "memory_notes": [
+    ".claude/rules/switch-vs-ifchain-branch-sense.md",
+    ".claude/rules/register-alloc-pure-c.md",
+    ".claude/rules/store-before-jal.md",
+    ".claude/rules/inline-asm-policy.md"
+  ]
+}
