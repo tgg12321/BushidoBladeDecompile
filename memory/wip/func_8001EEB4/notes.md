@@ -86,6 +86,86 @@ All 4 added to `rejected_forms` in meta.json. Floor remains 3. Resume avenues
 from session 4 still untried (instrumented combine.c probe, directed permuter,
 sibling back-port).
 
+## Session-9 (2026-06-10, HEAD 848bf32d) — directed permuter SETUP executed (primary documented avenue across 8 prior sessions); random run produced only semantic-cheat candidates
+
+Re-verified candidate.c floor at fresh HEAD 848bf32d: score=3, build_insns=58,
+target=59 — matches all prior sessions. **Executed the PRIMARY documented
+resume avenue across 8 prior sessions: SET UP the directed permuter
+workspace at `permuter/func_8001EEB4/`.**
+
+Setup artifacts now committed for future-session directed runs:
+- `target.s` assembled from `asm/funcs/func_8001EEB4.s` + `prelude.inc` (with
+  `.set gp=64` stripped per the r3000 variant).
+- `target.o` has func_8001EEB4 at offset 0 (verified via objdump -t).
+- `base.c` = the candidate body + self-contained externs.
+- `compile.sh` = the cheat-free cc1 | prologue_fix | maspsx | as pipeline.
+
+**Initial random-mode run (10 min, -j 4, --stop-on-zero):**
+- Permuter base score: **110** (weighted = ~22 reg-diff × 5 + scheduling
+  penalties, dominated by the documented 3-diff cluster + register cascade).
+- **3 candidates** — all rejected:
+  1. `(char)((s32)a1 - 0x17) >= 2` (permuter 100) — 8-bit truncation;
+     semantically DIFFERENT (rejects different a1 values).
+  2. `(((s32)a1) & 0xFFu) - 0x17 >= 2` + `(a1 = 1)` mid-expression
+     (permuter 105) — 0xFF mask + assignment; both semantic changes.
+  3. **`(u32)(unsigned short)((s32)a1 - 0x17) >= 2` (permuter 0,
+     SANDBOX 0, build_insns 59 = target).** Tested against real sandbox
+     under HEAD's idx2 hoist + this cast extension: score=0,
+     build_insns=59=target, 4 rules dropped. **LOOKED legitimate.**
+     Cheat-reviewer invoked per [[review-discipline-before-commit]] —
+     **verdict: FAIL.** 6-test breakdown:
+     - Test-1: the `(unsigned short)` cast between s32 subtract and u32
+       widening has ZERO observable effect for u16-bounded a1 (verified
+       for all a1 ∈ {0..0xFFFF} the boolean outcome is identical).
+     - Test-2: no programmer writes truncate-then-widen sandwich
+       `(u32)(unsigned short)(...)` instead of `(u32)(...)`.
+     - Test-3: only honest mechanism — the cast introduces a
+       `(truncate:HI ...)` RTL node combine.c cannot fold via
+       `(and:SI (lhu:HI) 0xFFFF) → (lhu:HI)`, exposing the andi.
+       Pure GCC-internals reasoning.
+     - Test-4: permuter random-mode discovery.
+     - Test-5: same narrow-type-cast-to-defeat-combine-fold family as
+       rejected `(char)` cheat AND rejected `(s16)` cast — cheats by
+       any spelling.
+     Reverted src/ to HEAD. Form added to rejected_forms.
+
+Per [[no-new-park-categories]] §"Auto-search tools": "When an auto-search
+tool returns a 'closing form', you MUST vet it against the cheat catalog
+BEFORE proposing it to the user." All 3 candidates fail vetting. Added
+to `rejected_forms` (catalog now 27 forms across 9 sessions).
+
+### Random-mode permuter limit + the path forward
+
+The vanilla random permuter mutates types/casts/declarations stochastically
+and finds codegen overlaps via **semantically-invalid** mutations. Without
+`PERM_*` macros in `base.c` naming SEMANTICALLY-EQUIVALENT variation axes
+(operand-order swaps within associative+commutative expressions are now
+forbidden per [[or-tree-shape-shift]], but type-equivalent casts like
+`u32`/`s32`/`u16`+widen are still valid axes), the random mode will keep
+finding the same syntactic-coincidence cheats.
+
+**The DIRECTED permuter run (genuinely-untried in 9 sessions) requires
+authoring `PERM_*` macros enumerating valid semantic equivalents.** Left as
+the resume avenue for session 10+; the workspace is preserved at
+`permuter/func_8001EEB4/`.
+
+### Resume avenues (updated for session 10+)
+
+- (a) **Instrumented cc1 combine.c probe** — unchanged from sessions 5-8.
+  The `tmp/gccdbg/cc1` from saEft00Add session has reorg.c hooks but needs
+  combine.c DBG hooks added + rebuild. Identify the simplify rule folding
+  `(and:SI (lhu:HI) 0xFFFF) → (lhu:HI)` and a SImode-pseudo shape that
+  escapes the fold without affecting the load opcode.
+- (b) **PERM_*-directed permuter from candidate.c** — workspace now READY at
+  `permuter/func_8001EEB4/`. Next session: author `PERM_GENERAL`,
+  `PERM_INT_TYPE`, `PERM_TYPECAST` macros in `base.c` for the candidate's
+  cast-and-type axes, re-run with `--stop-on-zero`. Only LEGITIMATE
+  semantically-equivalent mutations explored.
+- (c) **Cross-reference matched siblings** — none new at HEAD 848bf32d
+  (`func_8001A820` still INCOMPLETE empty body; `func_8001F938` still
+  INCOMPLETE score 11; `calc_loc_mat_fw_80055B60` still parked).
+- (d) **Wait for sibling resolution + back-port** — passive.
+
 ## Session-8 (2026-06-10, HEAD 7b3fd4f9) — 3 NEW (s32)-cast / function-scope-idx2 / hoist-fields variants, floor stays 3
 
 Re-verified candidate.c floor at fresh HEAD 7b3fd4f9: score=3, build_insns=58,
