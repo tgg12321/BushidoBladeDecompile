@@ -858,3 +858,58 @@ All four remaining priorities require diagnostic-instrumentation work:
 - DO NOT re-test hoisting any case OUT of the switch as an if-test. The
   jtbl-removal cost (≥+2 insns) exceeds any flow.c live-set benefit for
   this function's coupling.
+
+## Session 14 (2026-06-10) addendum
+
+Applied candidate.c, reconfirmed clean floor 6 (build_insns=target_insns=93,
+rules_dropped=5, cheat_asm_stripped=6). Tested TWO structural variants NOT in
+sessions 1-13's rejected_forms list; both negative.
+
+| FORM | Lever | Score | build_insns | Verdict |
+|------|-------|-------|-------------|---------|
+| #28 | Case 2 nested switch `switch (call) { case 0: return 0; default: goto done; }` | 6 | 93 | NO-OP — cc1 expand_case lowers to identical RTL as if-test |
+| #29 | `default: return 0;` placed BEFORE `case 7:` in source (between case 6 and case 7) | 17 | 86 | REGRESSION −7 insns — cross-jump-merge consolidates default with case 0/1 paths |
+
+### FORM #28 closes the 'syntactic decision-tree spelling' family
+
+A 2-element switch (one numbered case + default) and an if-test are syntactically
+distinct C constructs but compile to IDENTICAL RTL in cc1 2.7.2 — expand_case
+detects the trivial decision tree (1 enumerated value) and lowers it to the
+same `beqz/bnez label; ...` form expand_cond_expr produces. The C-level
+distinction is erased at expand_case. Future agents should NOT re-test syntactic
+switch-vs-if variants at a 2-case dispatch as a polarity-flip lever.
+
+### FORM #29 closes the 'default-position-relative-to-case-7' subspace
+
+Combined with prior source-order tests (session 5 case 5/6 before case 4 — no
+effect; session 7 case 7 before case 4/5/6 — regression; session 9 case 3
+before case 2 — regression; session 13 case 7 reorder + case 7 hoist — both
+regression), this rounds out the source-position lever space. No further
+case/default position permutations remain meaningfully untested while
+preserving semantic invariance under the jtbl emission.
+
+### Next-session priorities (session 15 onwards, UNCHANGED from sessions 10-13)
+
+All four remaining priorities require diagnostic-instrumentation work:
+
+1. **BB2_FLOW_DEBUG cc1 instrumentation** (PRIORITY 1) — flow.c patch to
+   dump `basic_block_live_at_start[.L8003AC74]`. The ONLY remaining
+   diagnostic that could directly identify which predecessor's live-out
+   propagates $v0 into pseudo 94's exclusion set.
+2. **BB2_REORG_DEBUG targeting case 2's invert-jump site** — partial hooks
+   exist (DBG_FILL / DBG_LA / DBG_BRK / DBG_WLK / DBG_MTLR / DBG_BBLAS from
+   the saEft00Add cluster); needs `relax_delay_slots`-specific instrumentation
+   on this function's site.
+3. **Sibling LREG/GREG dumps** — actual `.greg` allocno tables from matched
+   siblings (suDispMentalBar, func_8003AE5C) for priority-tiebreaker
+   reference.
+4. **Case-2-specific PERM_GENERAL permuter** — un-tried; would require a
+   permuter-base mutating only case 2's local structure.
+
+### Anti-priorities (added session 14)
+
+- DO NOT re-test nested switch on a 2-element call result. FORM #28 confirms
+  cc1 2.7.2 collapses to identical RTL as the if-test.
+- DO NOT re-test `default:` placement variations relative to case 7. FORM #29
+  shows cross-jump-merge consolidates the default body with case 0/1 paths,
+  always regressing the function's insn count by ≥-7.
