@@ -3609,15 +3609,6 @@
       "park_reason": "register-rotation pin cluster (text1b transform-block siblings: t asm(), mask asm() + 1 regfix subst <-> @42-46). honest pure-C distance 4 - target wants arg0[0]/[1] in  + arg0[2] in  + mask in ; without pins GCC picks  for t throughout, mask in . Tested levers (all failed): drop register kw (still 4), drop register kw + inline mask literal (4), block-scoped t per stmt (10), preload arg0[2] into local before stores (8-10), inline all arg0[N] direct (10). The pin pattern is shared across ~10 sibling functions in text1b.c (func_800611A4, func_80061250, func_8006156C, func_80061658, func_80061710, func_800617C8, func_80061ACC, func_80061EC0, func_80061FAC, this one) - all carry the same register-rotation infrastructure. Per no-new-park-categories policy, this is NOT a new auto-park category; it stays INCOMPLETE pending a pure-C lever that cracks the cluster."
     },
     {
-      "func": "func_800274BC",
-      "file": "code6cac_b",
-      "distance": 5,
-      "verdict": "ASM-PARTIAL",
-      "rules": 2,
-      "status": "parked",
-      "park_reason": "ASM-PARTIAL: hand-coded GTE LZCS/LZCR pattern (mtc2 t4,gte30 / nop / nop / swc2 gte31,0(t4)) with redundant 'addu t4,a0,zero' and 'addu t4,sp,zero' copies reusing t4 for two unrelated purposes back-to-back, and 2 unfilled delay-slot nops between mtc2 and swc2 -- splat marks /* handwritten instruction */ on the mtc2/swc2 lines. Committed cheats: register t4 pin + 2 source __asm__('nop') barriers + do-while-0 wrap around v0_m = 0x13 - (v1_m>>1) + unused 'new_var = &D_8008D118' expression-assignment + 2 regfix rules (insert 'srl v1,v1,1' @ 33 and delete @ 36) scheduling srl into the srlv delay slot. Function is a GTE-USING WRAPPER (not a leaf), so the orchestrator GTE-leaf auto-authorize policy doesn't cover it -- needs user canonical-asm sign-off per hand-coded-asm-recognition / canonical-asm-retirement. Pure-C body around the GTE block (dist_sq squared-sum, lbu D_8008D118 table lookup, neg/sll/div/sh writeback) is reachable, but the hand-coded GTE block in the middle blocks COMPLETED-C without an authorized __asm__ block."
-    },
-    {
       "func": "func_8003B20C",
       "file": "code6cac_c_ab",
       "distance": 5,
@@ -4024,11 +4015,11 @@
     }
   ],
   "counts": {
-    "total": 489,
+    "total": 488,
     "active": 393,
     "by_status": {
       "active": 393,
-      "parked": 96
+      "parked": 95
     },
     "by_verdict": {
       "C": 205,

@@ -284,21 +284,32 @@ void func_800274BC(s32 *arg0, s16 *arg1) {
         log2_val = ((u32)(*((&D_8008D118) + dist_sq))) >> 3;
     } else {
         s32 sp_tmp;
-        register s32 t4_v asm("t4");
-        t4_v = (s32)dist_sq;
-        __asm__ volatile(".word 0x488CF000" : : "r"(t4_v));
-        __asm__ volatile("nop");
-        __asm__ volatile("nop");
-        t4_v = (s32)(&sp_tmp);
-        __asm__ volatile(".word 0xE99F0000" : : "r"(t4_v));
+        /* Hand-written GTE leading-zero-count block (LZCS in, LZCR out) —
+         * canonical inline asm, user-authorized 2026-06-10. Sibling of
+         * func_8001A67C (code6cac.c); same hand-asm evidence: $t4 reused
+         * back-to-back for two unrelated values, 2 unfilled GTE delay nops,
+         * splat tags the cop2 ops "handwritten instruction". */
+        __asm__ volatile(
+            "addu   $t4, %1, $zero\n"
+            "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
+            "nop\n"
+            "nop\n"
+            "addu   $t4, $sp, $zero\n" /* &sp_tmp (at 0($sp)) */
+            "swc2   $31, 0($t4)\n"     /* sp_tmp <- LZCR */
+            : "=m"(sp_tmp)
+            : "r"(dist_sq)
+            : "$12");
         {
-            u32 clz = sp_tmp;
-            u32 v0_m = clz & (-2);
-            u32 v1_m = 0x16 - v0_m;
-            u32 idx = dist_sq >> v1_m;
-            u32 hi = (u32)((u8)(*((new_var = &D_8008D118) + idx)));
-            do { v0_m = 0x13 - (v1_m >> 1); } while (0);
-            log2_val = (hi << 16) >> v0_m;
+            u32 v0_m = (u32)-2;
+            u32 v1_m;
+            u32 idx;
+            u32 hi;
+            v0_m &= sp_tmp;
+            v1_m = 0x16 - v0_m;
+            idx = dist_sq >> v1_m;
+            v1_m = v1_m >> 1;
+            hi = (u32)((u8)(*((new_var = &D_8008D118) + idx)));
+            log2_val = (hi << 16) >> (0x13 - v1_m);
         }
     }
     arg1[0] = (s16)(((-arg0[0]) << 12) / ((s32)log2_val));

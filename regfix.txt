@@ -716,8 +716,6 @@ Pad_Prs: subst "srl\s+\$4,\$4,\$3" "srl $4,$4,$2" @ 87
 
 # func_800274BC: move srl $3,$3,1 (half = v1_m>>1) before the lui/lbu
 # expansion, to fill the srlv delay slot and match target schedule
-func_800274BC: insert "srl $3,$3,1" @ 33
-func_800274BC: delete @ 36
 
 # func_8002BC68: same srl move (after GTE leading-zero count); reorder magic-mult
 # constant load before its subu; mfhi target $24 (t8) not $13; .L148 path uses $3 (v1) not $2 (v0)
