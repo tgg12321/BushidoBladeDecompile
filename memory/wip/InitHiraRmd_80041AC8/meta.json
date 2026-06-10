@@ -16,22 +16,30 @@
       "lever_rule": "narrow-byte-args-packed-call (named-intermediate declaration order family)",
       "floor_was": 6,
       "floor_now": 2
+    },
+    {
+      "date": "2026-06-10",
+      "git_head_at_measurement": "686f7a4b",
+      "lever": "next_hypotheses[2] EXECUTED: extern s16 D_800A9A20[2] re-type (ARRAY_REF store -> /s=1 on the STORE side, defeating the true_dependence escape clause). Candidate floor 2 re-confirmed first; array form measured sandbox 0 (75/75). Cheat-reviewer FAIL: same-bytes alias-analysis coercion, same family as the two load-side rejections (different axis only); the 0x800A9A22 gap merely PERMITS an array (equally consistent with scalar + alignment padding) and element [1] is unused everywhere; legitimate type reconstructions produce DIFFERENT bytes. Form preserved at rejected/array-retype-store.c; src reverted to HEAD.",
+      "lever_rule": "review-discipline-before-commit (FAIL recorded)",
+      "floor_was": 2,
+      "floor_now": 2
     }
   ],
   "reviewer": {
     "verdict": "PASS",
     "date": "2026-06-10",
-    "evidence": "w/h named constants PASS all 6 tests (semantic content: rect width/height stored every iteration; natural C idiom for loop constants; SOTN-accepted named-intermediate declaration order family). Two sandbox-0 closing forms for the residual lh/sh cluster FAILED review and are preserved under rejected/ — they are NOT usable."
+    "evidence": "Applies to candidate.c (the w/h named-constants form, floor 2): PASS all 6 tests (semantic content: rect width/height stored every iteration; natural C idiom for loop constants; SOTN-accepted named-intermediate declaration order family). THREE sandbox-0 closing forms for the residual lh/sh cluster have now FAILED review and are preserved under rejected/ — they are NOT usable: id-ptr-alias (load-side /s flip), byte-offset-cast (load-side /s flip), array-retype-store (store-side /s flip, session 2)."
   },
   "remaining_gap": {
-    "summary": "3-position cluster at maspsx idx 21-23: cc1 sched1 hoists the post-store reload `lh v0,8(a0)` above `sh a1,D_800A9A20`; target has store first. Mechanism fully characterized: the reload is genuine (value-cached forms CSE it away, 72 insns vs 75) and every natural spelling (arg0[4], struct field, named-local index) carries MEM_IN_STRUCT_P=1 (expr.c INDIRECT_REF: 'address computed by addition' => /s=1), which fires sched.c true_dependence's in-struct escape clause => no store->load dependence => sched1 hoists by chain priority (lh feeds lbu/sll/lw, depth ~5 vs sh's 2). The only /s=0 spellings (pointer-var deref, cast-wrapped deref) produce sandbox 0 + oracle SHA1 but FAILED cheat review as same-bytes alias-analysis coercion.",
+    "summary": "3-position cluster at maspsx idx 21-23: cc1 sched1 hoists the post-store reload `lh v0,8(a0)` above `sh a1,D_800A9A20`; target has store first. Mechanism fully characterized AND the closing-form space is now exhausted on both axes: the only sched1 edge that keeps target's order is the store->load true_dependence, which the escape clause (sched.c ~816) drops whenever (load /s=1 + varying) vs (store /s=0 + fixed). Flipping the LOAD to /s=0 (pointer-var deref, byte-offset cast) and flipping the STORE to /s=1 (s16[2] array re-type) all reach sandbox 0 with identical bytes and ALL THREE FAILED adversarial cheat review as same-bytes alias-analysis coercion. No non-/s-flag lever exists: the lh's chain priority (depth ~5 vs sh's 2) always wins absent the dependence edge, stores have no downstream chain to extend, both insns share one basic block, and neither mem is QImode.",
     "rule_count_at_head": 2,
     "rules_required_for_full_match": "HEAD carries `reorder 22,21 @ 21-22` (lh/sh swap, the open cluster) and `reorder 44,45,43 @ 43-45` (preheader, retired by the candidate's w/h lever). Committing the candidate alone would require rewriting the preheader rule for the shifted order — not a sanctioned end state; close both clusters or stay at HEAD."
   },
   "next_hypotheses": [
-    "Surface the policy question to the user: the emitted order (store-then-reload, one basic block, identical insn multiset) is only producible by GCC 2.7.2 when the reload's INDIRECT_REF operand is not a bare PLUS_EXPR (verified against expr.c:4568-4577 + sched.c:816-841 + RTL dumps). That is mechanical evidence the original 1998 source spelled this read as a pointer deref/cast, i.e. the /s=0 spelling IS arguably the source-faithful reconstruction. Reviewer held this proves 'some /s=0 spelling', not a specific one, and FAILed both spellings tried. User judgment call: does compiler-mechanism evidence of the original spelling class sanction the byte-offset-cast form here?",
-    "Search for a semantic-bearing reason for a pointer local: e.g. evidence (Kengo source naming, sibling InitHiraRmd_* functions in text1b.c) that the original walked a pointer through the arg0 packet — a multi-use pointer would carry real semantic weight, but naive multi-use forms materialize an extra addiu (76 insns, measured reasoning in notes.md); needs a form where all pre-store reads stay CSE-shareable.",
-    "Check whether D_800A9A20 is genuinely s16[2] (gap at 0x800A9A22 before D_800A9A24): an ARRAY_REF store would set /s=1 on the STORE, defeating the escape clause from the store side with zero byte change. Requires re-typing the shared extern + auditing the sibling saTan4FireDisp read site (scope beyond one function; sibling's load flags would change too — verify its scheduling is unaffected)."
+    "USER POLICY DECISION (now the SOLE remaining avenue; the 2026-06-10 session-2 reviewer's own next_action endorses surfacing it as NEEDS_USER): the emitted order (store-then-reload, one basic block, identical insn multiset) is only producible by GCC 2.7.2 when the store/load pair's MEM_IN_STRUCT_P flags differ from what the natural scalar-global + pointer-index spellings produce (verified against expr.c:4568-4577 + sched.c:816-841 + RTL dumps). That is mechanical evidence the original 1998 source spelled one side differently — a /s=0 read spelling (pointer deref / cast) or an aggregate-typed store target. The reviewer holds this proves 'SOME such spelling', not a specific one, and that any same-bytes respelling chosen for its /s effect is the forbidden coercion family. The user judgment call: does compiler-mechanism evidence of the original spelling CLASS sanction committing one representative spelling (and if so which: the byte-offset cast, the pointer local, or the s16[2] array)? Until answered, the function stays at HEAD (2 rules) with this candidate at floor 2.",
+    "CLOSED (session 1 measurement + session 2 family reasoning): the 'semantic-bearing multi-use pointer through the arg0 packet' avenue. Multi-use pointer forms materialize an extra addiu (76 insns vs target 75); single-use forms that fold back to 8(a0) addressing ARE the rejected id-ptr-alias form. Any pointer form passing byte-match must fold away, which strips its claimed semantic weight and lands it in the rejected family.",
+    "CLOSED (session 2, executed): the s16[2] array re-type. Sandbox 0, reviewer FAIL. See rejected/array-retype-store.c."
   ],
   "rejected_forms": [
     {
@@ -52,12 +60,17 @@
     {
       "form": "s16 *id_ptr = &arg0[4]; reload via *id_ptr",
       "score": 0,
-      "reason": "cheat-reviewer FAIL: alias-with-no-semantic-content; same-bytes MEM_IN_STRUCT_P coercion (rejected/id-ptr-alias.c)"
+      "reason": "cheat-reviewer FAIL: alias-with-no-semantic-content; same-bytes MEM_IN_STRUCT_P coercion on the LOAD side (rejected/id-ptr-alias.c)"
     },
     {
       "form": "reload via *(s16 *)((u8 *)arg0 + 8)",
       "score": 0,
       "reason": "cheat-reviewer FAIL: same-bytes respelling; sanctioned byte-cast rules require the cast to produce DIFFERENT bytes (rejected/byte-offset-cast.c)"
+    },
+    {
+      "form": "extern s16 D_800A9A20[2]; D_800A9A20[0] = arg0[4]; sibling read -> [0] (STORE-side /s flip)",
+      "score": 0,
+      "reason": "cheat-reviewer FAIL (session 2): same-bytes alias-analysis coercion on the STORE side; gap at 0x800A9A22 only permits, does not require, an array; [1] unused everywhere; identical emitted bytes = phantom type change (rejected/array-retype-store.c)"
     }
   ],
   "memory_notes": []

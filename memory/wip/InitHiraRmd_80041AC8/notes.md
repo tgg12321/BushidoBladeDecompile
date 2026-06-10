@@ -3,19 +3,30 @@
 ## TL;DR
 
 HEAD: 2 regfix reorder rules, honest distance 6, two independent diff clusters.
-This session closed cluster 2 cleanly (reviewer PASS) and **fully characterized**
-cluster 1 down to the exact compiler mechanism — but both byte-perfect closing
-forms for cluster 1 FAILED adversarial cheat review. Candidate floor 2.
+Session 1 closed cluster 2 cleanly (reviewer PASS) and fully characterized
+cluster 1 down to the exact compiler mechanism. Session 2 (2026-06-10) executed
+the last mechanical hypothesis — the `s16 D_800A9A20[2]` array re-type
+(store-side /s flip) — sandbox 0, but cheat-reviewer **FAIL** (same-bytes
+coercion family, store-side axis of the same mechanism as the two load-side
+rejections). **THREE sandbox-0 closing forms have now failed review.** The
+closing-form space is exhausted on both /s axes; the sole remaining avenue is
+the USER POLICY question in `meta.json.next_hypotheses[0]`. Candidate floor 2.
 
 ## Resume instructions
 
-1. Apply `candidate.c` to `src/text1a.c` (replace the function body).
-2. `& tools/eng.ps1 sandbox InitHiraRmd_80041AC8 --disable all` → expect **2**.
-3. Read `meta.json.rejected_forms` — do NOT re-derive the two FAIL forms or the
-   three measured-negative probes.
-4. The remaining work is cluster 1 only (see below). Start from
-   `meta.json.next_hypotheses` — the first is a user policy question, the
-   third is the most promising mechanical avenue (array-typed store).
+1. **Do not resume mechanically — the remaining item is a user decision.**
+   Surface `meta.json.next_hypotheses[0]` to the user/orchestrator: does the
+   compiler-mechanism proof that the original source used SOME non-default
+   /s spelling sanction committing one representative spelling? The session-2
+   reviewer's own next_action endorses raising it as NEEDS_USER.
+2. If the user sanctions a spelling: apply `candidate.c`, apply the sanctioned
+   spelling (all three byte-perfect variants are preserved under `rejected/`),
+   sandbox → 0, retire (drops BOTH rules), queue done, delete this WIP dir.
+3. If the user declines: the function stays at HEAD (2 rules, floor 6) or the
+   queue item gets parked citing this ledger.
+4. Read `meta.json.rejected_forms` — do NOT re-derive the three FAIL forms or
+   the three measured-negative probes; do NOT try struct/s16[1] respellings of
+   the array form (same family per the session-2 verdict).
 
 ## Cluster 2 — CLOSED by the candidate (reviewer PASS)
 
@@ -72,6 +83,27 @@ original source did, making a pointer/cast spelling the source-faithful
 reconstruction (and the regfix rule it replaces is pure paperwork).
 This is a policy call neither agent can settle — recorded as
 next_hypotheses[0].
+
+### Session 2 (2026-06-10) — store-side axis executed, FAILED review
+
+The array-re-type hypothesis (next_hypotheses[2] of session 1) was executed:
+`extern s16 D_800A9A20[2];` + `D_800A9A20[0] = arg0[4];` + the forced
+sibling-read collateral in saTan4FireDisp (`!= D_800A9A20[0]`). ARRAY_REF
+gives the STORE /s=1, the escape clause no longer fires, the dependence is
+kept, sched1 cannot hoist. Measured sandbox 0 (75/75, from the candidate's
+floor 2). Cheat-reviewer verdict: **FAIL** — identical emitted bytes, [1]
+never used anywhere, the 0x800A9A22 gap only PERMITS an array (equally
+consistent with scalar + alignment padding), justification purely
+GCC-internals ⇒ same family as the two load-side rejections, different axis.
+Form preserved at `rejected/array-retype-store.c`.
+
+The session-2 reviewer's next_action explicitly endorses surfacing the
+policy question as NEEDS_USER. With both /s axes (load-side respelling,
+store-side re-typing) now adjudicated FAIL, there is no fourth mechanical
+spelling class: the dependence edge is controlled solely by the /s flag
+pair, the lh always out-prioritizes the sh absent the edge (chain depth 5
+vs 2), stores have no downstream chain, both insns share one block, and
+neither mem is QImode. The cluster is closed by user policy or not at all.
 
 ### Tooling note
 
