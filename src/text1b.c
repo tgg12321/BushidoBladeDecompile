@@ -12580,27 +12580,34 @@ extern s32 func_80087F64(s32);
 extern s16 coli_CheckBukiPreHit_800880B8(s32, s32, s32);
 extern s16 tslCDFileRead(s16);
 s32 saFidLoad(s32 arg0, s16 arg1) {
+    s32 idx;
+    u8 *base;
     s32 **p;
     s32 *v;
     s32 *vv;
     s16 ret;
     title_mv_exec2(0);
-    p = (s32 **)((u8 *)&D_800EFC38 + arg1 * 4);
+    idx = arg1;
+    base = (u8 *)&D_800EFC38;
+    p = (s32 **)(base + idx * 4);
     v = *p;
     if (v != 0) {
         v = (s32 *)((u8 *)v + arg0);
         *p = v;
         *v = *v + arg0;
-        vv = *(volatile s32 **)p;
+        vv = *p;
         *(s32 *)((u8 *)vv + 4) = *(s32 *)((u8 *)vv + 4) + arg0;
-        func_80087F64(arg1);
-        ret = coli_CheckBukiPreHit_800880B8(*(s32 *)((u8 *)*p + 4), arg1, *(s32 *)((u8 *)&D_800EFB38 + arg1 * 4));
-        if (ret == arg1) {
-            return (s16)tslCDFileRead(ret);
+        func_80087F64(idx);
+        ret = coli_CheckBukiPreHit_800880B8(*(s32 *)((u8 *)*p + 4), idx, *(s32 *)((u8 *)&D_800EFB38 + idx * 4));
+        if (ret == idx) {
+            ret = tslCDFileRead(ret);
+            goto end;
         }
         return ret;
     }
-    return (s16)-1;
+    ret = -1;
+end:
+    return ret;
 }
 extern s32 D_800A3404;
 void func_80087F64(s32);
