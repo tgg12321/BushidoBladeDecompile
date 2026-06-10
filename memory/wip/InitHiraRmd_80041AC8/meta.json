@@ -1,0 +1,64 @@
+{
+  "function": "InitHiraRmd_80041AC8",
+  "file": "text1a",
+  "scores": {
+    "head_floor": 6,
+    "candidate_floor": 2,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 75,
+    "target_insns": 75
+  },
+  "sessions": [
+    {
+      "date": "2026-06-10",
+      "git_head_at_measurement": "1e73c66f",
+      "lever": "named loop-invariant locals w/h before dst-pointer init (preheader li,li,la order)",
+      "lever_rule": "narrow-byte-args-packed-call (named-intermediate declaration order family)",
+      "floor_was": 6,
+      "floor_now": 2
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-10",
+    "evidence": "w/h named constants PASS all 6 tests (semantic content: rect width/height stored every iteration; natural C idiom for loop constants; SOTN-accepted named-intermediate declaration order family). Two sandbox-0 closing forms for the residual lh/sh cluster FAILED review and are preserved under rejected/ — they are NOT usable."
+  },
+  "remaining_gap": {
+    "summary": "3-position cluster at maspsx idx 21-23: cc1 sched1 hoists the post-store reload `lh v0,8(a0)` above `sh a1,D_800A9A20`; target has store first. Mechanism fully characterized: the reload is genuine (value-cached forms CSE it away, 72 insns vs 75) and every natural spelling (arg0[4], struct field, named-local index) carries MEM_IN_STRUCT_P=1 (expr.c INDIRECT_REF: 'address computed by addition' => /s=1), which fires sched.c true_dependence's in-struct escape clause => no store->load dependence => sched1 hoists by chain priority (lh feeds lbu/sll/lw, depth ~5 vs sh's 2). The only /s=0 spellings (pointer-var deref, cast-wrapped deref) produce sandbox 0 + oracle SHA1 but FAILED cheat review as same-bytes alias-analysis coercion.",
+    "rule_count_at_head": 2,
+    "rules_required_for_full_match": "HEAD carries `reorder 22,21 @ 21-22` (lh/sh swap, the open cluster) and `reorder 44,45,43 @ 43-45` (preheader, retired by the candidate's w/h lever). Committing the candidate alone would require rewriting the preheader rule for the shifted order — not a sanctioned end state; close both clusters or stay at HEAD."
+  },
+  "next_hypotheses": [
+    "Surface the policy question to the user: the emitted order (store-then-reload, one basic block, identical insn multiset) is only producible by GCC 2.7.2 when the reload's INDIRECT_REF operand is not a bare PLUS_EXPR (verified against expr.c:4568-4577 + sched.c:816-841 + RTL dumps). That is mechanical evidence the original 1998 source spelled this read as a pointer deref/cast, i.e. the /s=0 spelling IS arguably the source-faithful reconstruction. Reviewer held this proves 'some /s=0 spelling', not a specific one, and FAILed both spellings tried. User judgment call: does compiler-mechanism evidence of the original spelling class sanction the byte-offset-cast form here?",
+    "Search for a semantic-bearing reason for a pointer local: e.g. evidence (Kengo source naming, sibling InitHiraRmd_* functions in text1b.c) that the original walked a pointer through the arg0 packet — a multi-use pointer would carry real semantic weight, but naive multi-use forms materialize an extra addiu (76 insns, measured reasoning in notes.md); needs a form where all pre-store reads stay CSE-shareable.",
+    "Check whether D_800A9A20 is genuinely s16[2] (gap at 0x800A9A22 before D_800A9A24): an ARRAY_REF store would set /s=1 on the STORE, defeating the escape clause from the store side with zero byte change. Requires re-typing the shared extern + auditing the sibling saTan4FireDisp read site (scope beyond one function; sibling's load flags would change too — verify its scheduling is unaffected)."
+  ],
+  "rejected_forms": [
+    {
+      "form": "s16 id = arg0[4]; D_800A9A20 = id; lookup via id (value-cache, reviewer's probe)",
+      "score": 9,
+      "reason": "not a cheat — byte-wrong: CSE keeps id in a1 and deletes the genuine post-store reload + second lbu (72 insns vs target 75)"
+    },
+    {
+      "form": "entry_id local for store + fresh arg0[4] lookup read (reviewer's probe)",
+      "score": 2,
+      "reason": "not a cheat — doesn't move the cluster: fresh read still /s=1, hoist remains (same 3-position diff)"
+    },
+    {
+      "form": "named s32 tbl_idx local splitting the lookup chain",
+      "score": 2,
+      "reason": "not a cheat — RTL chain identical, hoist remains"
+    },
+    {
+      "form": "s16 *id_ptr = &arg0[4]; reload via *id_ptr",
+      "score": 0,
+      "reason": "cheat-reviewer FAIL: alias-with-no-semantic-content; same-bytes MEM_IN_STRUCT_P coercion (rejected/id-ptr-alias.c)"
+    },
+    {
+      "form": "reload via *(s16 *)((u8 *)arg0 + 8)",
+      "score": 0,
+      "reason": "cheat-reviewer FAIL: same-bytes respelling; sanctioned byte-cast rules require the cast to produce DIFFERENT bytes (rejected/byte-offset-cast.c)"
+    }
+  ],
+  "memory_notes": []
+}
