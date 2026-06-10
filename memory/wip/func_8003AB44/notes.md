@@ -437,6 +437,56 @@ priority list reshapes — the next-tier diagnostic levers stand:
    show a 5/6-case-with-fall-through-from-4 shape that allocated $v0
    naturally, providing a structural template.
 
+## Session 8 (2026-06-10) addendum — MECHANISM REFRAMED
+
+Applied candidate.c, reconfirmed clean floor 6. Did an index-aligned
+objdump diff of `build/src/code6cac_c_ab.o` (canonical, with cheats) vs
+`tmp/sandbox/func_8003AB44/code6cac_c_ab.o` (cheat-free) and discovered
+the actual gap mechanism is NOT what sessions 2-7 documented:
+
+**The real diff is the `$s0` return-value accumulator.** Cheat-free
+sandbox build:
+  - Prologue: `sw $s0, 16(sp); sw $ra, 20(sp); ... move $s0, $zero`
+  - Every case-end j-delay slot: `move $v0, $s0`
+  - Fail / case 7: `li $s0, -1` / `li $s0, 1` (instead of `$v0`)
+  - Epilogue: `move $v0, $s0; lw $ra, 20; lw $s0, 16; addiu $sp; jr $ra`
+
+Target compilation: NEVER uses `$s0` for the return value. Each case's
+j-delay slot is `move $v0, IMMEDIATE` (direct constant). Frame saves
+ONLY `$ra` at offset 16, not 20.
+
+The case 5/6 $v0/$v1 swap and case 2 polarity diffs documented in
+sessions 2-7 are **secondary artifacts** of the $s0 accumulator's
+existence cascading through the RA. The 5 regfix rules patch the
+secondaries; the underlying mechanism (which all 5 rules indirectly
+serve) is the `expand_return` unified pseudo allocation.
+
+### 2 new rejected forms (this session)
+
+| Variant | Score | build_insns | Notes |
+|---|---|---|---|
+| switch-with-break + `s32 ret;` + shared `return ret;` | 17 | 94 | `ret` still lands in $s0; +1 insn at merged epilogue |
+| trailing post-switch `return 0;` removed entirely | 18 | 87 | cc1 drops the default-arm; -6 insns vs target; UB at C level |
+
+### Revised priorities for session 9
+
+Per session 8's mechanism reframing:
+
+1. **NEW PRIORITY 1**: Dump the FULL allocno table from cheat-free
+   compilation (session 4's ALLOCDBG only captured one allocno).
+   Identify which pseudo holds the return value, its livelen, refs,
+   and why global.c picked $s0. This is the direct empirical evidence
+   the prior priority list lacked.
+2. **NEW PRIORITY 2**: Try C-source restructures specifically targeting
+   the unified-return-pseudo problem:
+   - Narrow the function's return type (`s8` instead of `s32`).
+   - Move `D_800A37B8++` INTO each case body.
+   - Try `return (volatile s32)0;` per-case (vet against cheats lens).
+3. **DEMOTED**: BB2_FLOW_DEBUG (formerly priority 1) — flow.c live-set
+   isn't the actual bottleneck; the expand_return pseudo allocation is.
+4. **KEPT**: Sibling LREG/GREG dumps for calibration of allocno-priority
+   thresholds.
+
 ## Anti-priorities (carried across sessions)
 
 The rejected_forms cluster:
@@ -446,6 +496,13 @@ The rejected_forms cluster:
 - DO NOT collapse case 4/5/6 with internal dispatch (+4 insns).
 - DO NOT reach for `do { } while (0);` until BB2_ALLOC_DEBUG + permuter
   exhausted, per [[do-while-zero-exception]]'s lever-exhaustion prerequisite.
+- DO NOT re-test switch-with-break + accumulator forms (session 8: $s0
+  still wins, +1 insn merged epilogue, score 17).
+- DO NOT remove the trailing `return 0;` (session 8: UB at C, -6 insns,
+  score 18).
+- DO NOT prioritize BB2_FLOW_DEBUG over allocno-table investigation —
+  the gap is the return-pseudo allocation, not flow.c live-set propagation
+  at .L8003AC74.
 
 ## Related rules
 

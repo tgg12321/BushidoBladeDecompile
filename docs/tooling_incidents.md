@@ -98,3 +98,8 @@ real_fail = 'bash: line 1: /path/.venv/bin/python`
 - **Triggering command:** `Edit C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\text1a_a_gen.c`
 - **Why not a real failure:** tmp/ is gitignored scratch space; the file generated here is only piped into Read for cut-and-paste into src/ — it is not consumed by the build pipeline. CRLF here cannot corrupt build artifacts.
 - **Action:** tighten signature `crlf-build-file` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
+
+## 2026-06-10 12:01:58 — FALSE POSITIVE (crlf/crlf-build-file)
+- **Triggering command:** `Edit C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\src\code6cac_c_ab.c`
+- **Why not a real failure:** Existing CRLF guard already catches and signals the post-write normalization need; tools/normalize_lf.py exists and was run. No new signature/fix required — the existing guard worked as designed.
+- **Action:** tighten signature `crlf-build-file` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
