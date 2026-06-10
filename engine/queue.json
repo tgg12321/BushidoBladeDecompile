@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007F2AC",
-      "file": "display",
-      "distance": 6,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "InitHiraRmd_80041AC8",
       "file": "text1a",
       "distance": 6,
@@ -4088,15 +4080,15 @@
     }
   ],
   "counts": {
-    "total": 497,
-    "active": 401,
+    "total": 496,
+    "active": 400,
     "by_status": {
-      "active": 401,
+      "active": 400,
       "parked": 96
     },
     "by_verdict": {
-      "ASM-PARTIAL": 73,
       "C": 210,
+      "ASM-PARTIAL": 72,
       "ASM-SUSPECT": 118
     }
   }

@@ -2615,7 +2615,7 @@ s32 func_8007F24C(s16 *a0, s16 *a1, s16 *a2, s32 *a3, s32 *o0, s32 *o1, s32 *o2,
 }
 PAD_NOPS_3; /* 3 NOPs after func_8007F24C */
 void func_8007F2AC(s32 *a0, s32 *a1, s32 *a2) {
-    register s32 v0 asm("v0");
+    s32 v0;
     __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
     __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
     __asm__ volatile ("nop");
