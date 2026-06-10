@@ -53,6 +53,15 @@
       "floor_was": 3,
       "floor_now": 3,
       "notes": "Re-verified candidate.c floor (score=3, build_insns=58, target=59 at fresh HEAD 43b3ae26 — matches sessions 1+3+4 measurements). Tested 4 NEW variants beyond rejected_forms: (V1) intermediate pointer alias `u16 *p_a1 = (u16 *)(entry + 0x6A); u16 a1 = *p_a1;` — score 3 unchanged (combine folds the pointer indirection back to a direct memory access; alias adds no SImode pseudo). (V2) reordered && chain putting `(u32)((s32)a1 - 0x17) >= 2` FIRST before `a1 != 0xA` — score 9 REGRESSION (build_insns 59 = target, but registers wrong: $v1 still chosen, no andi materialized; the reorder changes scheduling but not the lhu allocation). (V3) `u32 a1 = (u32)*(u16 *)(entry + 0x6A)` explicit u32 widening at the load — score 3 unchanged (same as V1+V2 from prior session, confirms combine treats `(u32)*(u16*)` identically to `u16 a1`). (V4) dual-read separating u16 for comparison and `s32 a1_diff = (s32)*(s16*)(entry+0x6A) - 0x17` for the >= test (two separate loads at same address with different signedness) — score 15 REGRESSION (build_insns 59 matches target, but combine emits 2 loads as predicted: extra `lh` instruction for the s16 read + cascading RA differences; the dual-read costs more than the diffs it would close). The 3-diff cluster (lhu→$a1, andi $v1=$a1&0xFFFF, addiu sources $a1) remains structurally coupled. Confirmed disasm at this HEAD: target build/src/code6cac.o has `6f54: lhu a1,106(s1); 6f58: li v0,10; 6f5c: andi v1,a1,0xFFFF; 6f60: beq v1,v0; ...; 6f74: addiu v0,a1,-23`; sandbox tmp/sandbox/code6cac.o has `6eac: lhu v1,106(s1); 6eb0: li v0,10; 6eb4: beq v1,v0; ...; 6ec8: addiu v0,v1,-23` (3 diffs, no andi). Genuine resume avenues remain (per session-4 notes, all still untried this session due to scope): (a) instrumented cc1 combine.c probe (read tools/gcc-2.7.2/combine.c for the simplify rule folding the andi here — find what RTL shape escapes the fold without affecting the load opcode), (b) PERM_GENERAL / PERM_INT_TYPE directed permuter from candidate.c (random mode exhausted), (c) cross-reference matched siblings if any new ones land with the lhu/andi/beq shape, (d) wait for sibling resolution and back-port."
+    },
+    {
+      "date": "2026-06-10",
+      "git_head_at_measurement": "f15b6dfe",
+      "lever": "(no new lever) — verified reproducibility of floor 3; tested 4 NEW mask-widening / precompute / subtract-truthy / nested-if variants",
+      "lever_rule": "n/a",
+      "floor_was": 3,
+      "floor_now": 3,
+      "notes": "Re-verified candidate.c floor at fresh HEAD f15b6dfe (score=3, build_insns=58, target=59 — matches sessions 1+3+4+5). Tested 4 NEW variants beyond the 15-form rejected_forms catalog: (V1) split into raw load + explicit u32 mask: `u16 a1_raw = *(u16*)(entry + 0x6A); u32 a1 = (u32)a1_raw & 0xFFFFu;` — score 3 unchanged. Combine recognizes `(u32)(u16-load) & 0xFFFF` as the no-op cast it folds away; the explicit `& 0xFFFFu` on an already-zero-extended value produces zero RTL effect distinct from the baseline `u16 a1`. (V2) precomputed subtract: `s32 a1_sub = (s32)a1 - 0x17; ... if (... && (u32)a1_sub >= 2 && ...)` — score 5 REGRESSION, build_insns 57 (−1 vs target). Matches the existing rejected_forms entry for `s32 a1_diff = (s32)a1 - 0x17`. The precomputation hoists the subtract from the &&-chain's RTL block to the function prologue, regressing scheduling. (V3) subtract-truthy form `if (a1 - 0xA && ...)` instead of `if (a1 != 0xA && ...)` — score 3 unchanged. GCC's tree-to-RTL pass canonicalizes `(expr - const)` truthiness to `(expr != const)`; the != form and the - form share the same RTL post-fold-const-prop. No codegen change. (V4) nested-if form: split the outer `if (a1 != 0xA && ...)` into `if (a1 != 0xA) { if (rest...) {} }` — score 3 unchanged. GCC's tree-ssa branch-merge collapses the nested form back to the && short-circuit RTL before flow1, so the andi-emission decision sees the same RTL shape. Confirmed: every variant in the cheap-lever space (no new structural construct, no permuter, no instrumented compiler probe) preserves the 3-diff cluster. The structural coupling documented across sessions 2–5 is empirically robust to surface syntactic rephrasings. Genuine remaining resume avenues unchanged from session 5: (a) instrumented cc1 combine.c probe (tools/gcc-2.7.2/combine.c — find the simplify rule folding (and:SI (lhu:HI) 0xFFFF) → (lhu:HI); identify a SImode pseudo shape that escapes it without affecting the load opcode; tmp/gccdbg/cc1 exists from saEft00Add session but instrumented for sched.c hooks, not combine.c — needs fresh combine-pass DBG hooks added + rebuild), (b) PERM_GENERAL / PERM_INT_TYPE / PERM_TYPECAST directed permuter from candidate.c (each session's manual search exhausts ~4 variants; the directed permuter surface allows systematic exploration of the type/cast space and may surface a SImode-shape construct manual enumeration misses), (c) cross-reference matched siblings (none new yet; func_8001A820 still INCOMPLETE empty body; func_8001F938 still INCOMPLETE score 11; calc_loc_mat_fw_80055B60 still ASM-STRUCTURAL bucket), (d) wait for sibling resolution + back-port."
     }
   ],
   "reviewer": {
@@ -147,6 +156,21 @@
       "form": "dual-read with `s32 a1_diff = (s32)*(s16 *)(entry + 0x6A) - 0x17;` precomputed",
       "score": 15,
       "reason": "REGRESSION. build_insns 59 (matches target). Combine emits TWO loads at the same address (lhu for a1, lh for a1_diff) since they have different signedness types. The extra `lh` instruction plus cascading RA differences cost more than the 3 diffs it would close. Combine treats `*(u16*)X` and `*(s16*)X` as distinct expressions for CSE purposes."
+    },
+    {
+      "form": "split load + explicit u32 mask: `u16 a1_raw = *(u16*)(entry+0x6A); u32 a1 = (u32)a1_raw & 0xFFFFu;`",
+      "score": 3,
+      "reason": "Combine recognizes `(u32)(u16-load) & 0xFFFF` as the no-op cast it folds away; the explicit `& 0xFFFFu` on an already-zero-extended HImode load produces zero RTL effect distinct from baseline `u16 a1`. No andi materialization."
+    },
+    {
+      "form": "subtract-truthy form: `if (a1 - 0xA && ...)` instead of `if (a1 != 0xA && ...)`",
+      "score": 3,
+      "reason": "GCC tree-to-RTL canonicalizes `(expr - const)` truthiness to `(expr != const)` before fold-const-prop; the != form and the - form share the same RTL shape. No codegen change."
+    },
+    {
+      "form": "nested-if form: split outer `if (a1 != 0xA && rest...)` into `if (a1 != 0xA) { if (rest...) {} }`",
+      "score": 3,
+      "reason": "GCC tree-ssa branch-merge collapses the nested form back to && short-circuit RTL before flow1 / combine. The andi-emission decision sees the same RTL shape regardless of source-level if-nesting. No codegen change."
     }
   ],
   "next_hypotheses": [

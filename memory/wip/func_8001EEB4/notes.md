@@ -86,6 +86,59 @@ All 4 added to `rejected_forms` in meta.json. Floor remains 3. Resume avenues
 from session 4 still untried (instrumented combine.c probe, directed permuter,
 sibling back-port).
 
+## Session-6 (2026-06-10, HEAD f15b6dfe) — 4 NEW mask/precompute/truthy/nested variants tested, floor stays 3
+
+Re-verified candidate floor at fresh HEAD f15b6dfe: score=3, build_insns=58,
+target=59 — matches sessions 1+3+4+5. Tested 4 NEW variants beyond the now-15
+form rejected_forms catalog (none duplicates of prior rejections):
+
+1. **Split load + explicit u32 mask** — `u16 a1_raw = *(u16*)(entry+0x6A);
+   u32 a1 = (u32)a1_raw & 0xFFFFu;` — score 3 unchanged. Combine recognizes
+   `(u32)(u16-load) & 0xFFFF` as the no-op cast it folds away; explicit
+   `& 0xFFFFu` on an already-zero-extended HImode load adds no SImode pseudo.
+2. **Precomputed subtract** — `s32 a1_sub = (s32)a1 - 0x17; ...
+   (u32)a1_sub >= 2` — score 5 regression (build_insns 57). Hoists the
+   subtract from the &&-chain block into the prologue; documented as
+   regression in existing rejected_forms.
+3. **Subtract-truthy form** — `if (a1 - 0xA && ...)` replaces `if (a1 != 0xA
+   && ...)` — score 3 unchanged. GCC's tree-to-RTL canonicalizes
+   `(expr - const)` truthiness to `(expr != const)`; the != and - forms share
+   the same RTL post-canonicalization. No codegen change.
+4. **Nested-if form** — split outer `if (a1 != 0xA && rest...)` into
+   `if (a1 != 0xA) { if (rest...) {} }` — score 3 unchanged. GCC's tree-ssa
+   branch-merge collapses nested-if back to && short-circuit RTL before
+   flow1; the andi-emission decision sees the same RTL shape.
+
+All 4 added to `rejected_forms` in meta.json (catalog now 19 forms). The
+3-diff cluster (lhu→$v1 vs $a1; missing andi; addiu uses wrong reg) remains
+structurally coupled to the (s16)-cast-on-local mechanism that session-2
+identified — which costs lh-load + 8-byte stack inflation, exceeding the 3
+diffs it would close.
+
+The cheap-lever search space (no permuter, no instrumented compiler probe,
+no novel structural construct) is empirically exhausted. Across 6 sessions
+the floor is reproducibly 3 at the candidate.c form; every surface
+syntactic rephrasing either preserves the 3-diff cluster or regresses.
+
+### Resume avenues unchanged from session-5
+
+- (a) **Instrumented cc1 combine.c probe** — `tools/gcc-2.7.2/combine.c`
+  holds the simplify rule folding `(and:SI (lhu:HI) 0xFFFF) → (lhu:HI)`.
+  Identify a SImode-pseudo shape that escapes the fold without affecting
+  the load opcode. `tmp/gccdbg/cc1` exists (May 30 build, sched.c-hooked)
+  but needs combine.c DBG hooks added + rebuild.
+- (b) **Directed permuter** — `PERM_GENERAL` / `PERM_INT_TYPE` /
+  `PERM_TYPECAST` from candidate.c with `--stop-on-zero`. Each session's
+  manual search exhausts ~4 variants; directed permuter systematically
+  explores the type/cast space and may surface a SImode construct manual
+  enumeration misses.
+- (c) **Cross-reference matched siblings** — none new since session 4.
+  `func_8001A820` still INCOMPLETE empty body; `func_8001F938` still
+  INCOMPLETE score 11; `calc_loc_mat_fw_80055B60` still ASM-STRUCTURAL.
+- (d) **Wait for sibling resolution + back-port** — passive, but a
+  matched sibling with the same lhu/andi/beq shape would resolve the
+  irreducibility question definitively.
+
 ## Session-3 (2026-06-07, HEAD 23e0ff7c) — confirmed reproducible; no new lever
 
 Re-applied candidate.c to src/code6cac.c: sandbox `--disable all` reports
