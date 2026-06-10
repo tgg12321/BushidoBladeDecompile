@@ -3672,15 +3672,6 @@
       "park_reason": "Stable RA tie: \result lands in , target wants . 5 regfix rules paper-over the cluster (result reg-rename + lhu/sh reg-rename + tail move elision). Tried: statement-order swap (no change), early-return (regresses +3 insns), bool-from-comparison (regresses +5), narrow type char result (no change), if/else explicit form (no change), \result=1 at start of if (no change), decl order swap (no change), block-local read of *(s32*)(p+0) (no change). Build_insns == target 48 across all variants; diff is purely the 5 RA decisions at the if-flag pattern. Lever A (block-local split) N/A \u2014 result IS the return value. No callers capture a return that could seed . No sibling matched function in text1b.c with same s32 result = 0; if (cond) {body; result = 1;} return result; shape to mimic. Resume avenues untried: directed permuter from clean single-fn target; instrumented cc1 .greg dump to identify allocno priority gap; lever for if-result-via-call seeding ([[call-return-if-result-reuse-v0]]) but no call exists here."
     },
     {
-      "func": "func_8001A67C",
-      "file": "code6cac",
-      "distance": 7,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "parked",
-      "park_reason": "ASM-PARTIAL (2/101 canonical: mtc2@43, swc2@46): hand-coded GTE LZCS/LZCR block -- 'addu t4,a0,zero / mtc2 t4,gte30 / nop / nop / addiu v0,sp,16 / addu t4,v0,zero / swc2 gte31,0(t4)'. Same hand-coded register-reuse pattern as accepted park func_800274BC (caef8dee): $t4 reused back-to-back for two unrelated values (dist_sq then &sp_tmp), 2 unfilled delay-slot nops, splat tags both cop2 lines 'handwritten instruction'. Natural RA can never pick $t4 ($v0/$v1 free at that point, default ascending preference) so the feeder copies are unreachable from C without a forbidden register pin; the cop2 ops themselves have no C form. Index-aligned objdump (tmp/norm_diff.py): idx 0-41 and 47-100 byte-identical between canonical build and cheat-stripped sandbox object -- the ENTIRE distance-7 gap is the stripped GTE block + its scheduling shift; surrounding C already matches. scan_hand_coded: tier LOW whole-function (compiled-C body), consistent with ASM-PARTIAL hand-written region. Committed cheats: register t4 pin + empty-output asm barrier + 2 hardcoded .word cop2 + 2 bare nop blocks + 1 regfix reorder 44-49. GTE-USING WRAPPER (substantial C body), not a pure GTE leaf, so the GTE-leaf auto-authorize policy does NOT apply per gte-wrapper-misroute-park -- COMPLETED-INLINE-ASM-CANONICAL authorization needs user sign-off per hand-coded-asm-recognition / canonical-asm-retirement."
-    },
-    {
       "func": "func_8007B844",
       "file": "display",
       "distance": 7,
@@ -4033,11 +4024,11 @@
     }
   ],
   "counts": {
-    "total": 490,
+    "total": 489,
     "active": 393,
     "by_status": {
       "active": 393,
-      "parked": 97
+      "parked": 96
     },
     "by_verdict": {
       "C": 205,

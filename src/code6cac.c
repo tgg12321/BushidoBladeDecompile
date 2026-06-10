@@ -972,7 +972,6 @@ s32 func_8001A62C(s32 arg0) {
     return arg0 / 2000;
 }
 void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
-    s32 *new_var;
     s32 dx;
     s32 dz;
     u32 dist_sq;
@@ -990,18 +989,22 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
     } else {
         u32 shift_a;
         u32 shift_b;
-        register s32 t4_v asm("t4");
-        asm volatile("" : "=r"(t4_v));
-        t4_v = (s32)dist_sq;
-        new_var = &sp_tmp;
-        asm volatile(".word 0x488CF000" : : "r"(t4_v));
-        asm volatile("nop");
-        asm volatile("nop");
-        {
-            s32 addr_v0 = (s32)new_var;
-            t4_v = addr_v0;
-            asm volatile(".word 0xE99F0000" : : "r"(t4_v));
-        }
+        /* Hand-written GTE leading-zero-count block (LZCS in, LZCR out) —
+         * canonical inline asm, user-authorized 2026-06-10. The original is
+         * hand asm: $t4 reused back-to-back for two unrelated values (no
+         * compiler RA does this), 2 unfilled GTE delay nops, splat tags the
+         * cop2 ops "handwritten instruction". */
+        __asm__ volatile(
+            "addu   $t4, %1, $zero\n"
+            "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
+            "nop\n"
+            "nop\n"
+            "addiu  $v0, $sp, 0x10\n"  /* &sp_tmp */
+            "addu   $t4, $v0, $zero\n"
+            "swc2   $31, 0($t4)\n"     /* sp_tmp <- LZCR */
+            : "=m"(sp_tmp)
+            : "r"(dist_sq)
+            : "$2", "$12");
         {
             s32 lw_v1 = sp_tmp;
             s32 li_v0 = -2;

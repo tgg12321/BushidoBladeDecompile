@@ -735,8 +735,6 @@ func_8002BEA0: delete @ 62
 func_8002BEA0: insert_after "addiu\t$2,$zero,1000" @ 63
 func_8002BEA0: reorder 36,33,34,35 @ 33-36
 func_8002BEA0: reorder 44,45,43 @ 43-45
-# func_8001A67C: GCC places addiu v0,sp,16 before mtc2/nops; target places after
-func_8001A67C: reorder 44,46,47,45,48,49 @ 44-49
 
 # func_80086014: add missing -0x8 stack frame (prologue+epilogue addiu sp,sp)
 # RETIRED (targeted-permuter): func_80086014: insert "addiu $29,$29,-8" @ 0
