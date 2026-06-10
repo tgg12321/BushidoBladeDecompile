@@ -75,6 +75,60 @@ Not tried this session:
   The polarity is a delay-slot-fill priority issue, not a control-flow
   issue.
 
+## Session 2 (2026-06-10) addendum
+
+Confirmed floor 6 from the WIP candidate base (clean apply). Disassembled both
+build objects and pinned the exact diff locations:
+
+| Byte offset | OURS (stripped) | TARGET | Diff |
+|---|---|---|---|
+| 0xb8 | `bnez v0, e0`     | `beqz v0, 164`  | branch sense + target |
+| 0xbc | `li   a0, 3`      | `move v0, zero` | delay slot fill |
+| 0xc0 | `j    164`        | `j    e0`       | jump target |
+| 0xc4 | `move v0, zero`   | `li   a0, 3`    | delay slot fill |
+| 0x130 | `lbu  v1, gprel` | `lbu  v0, gprel` | register choice |
+| 0x138 | `addiu v1,v1,1`  | `addiu v0,v0,1` | register choice |
+| 0x13c | `sb   v1, gprel` | `sb   v0, gprel` | register choice |
+
+7 distinct insn-byte diffs; masked Levenshtein = 6 (one diff masks into
+adjacent context). Build_insns = target_insns = 93 ✓.
+
+`scan_hand_coded --single func_8003AB44 --json`: tier **LOW**, score 0, all
+five hand-coded signals (S1/S2/S6/S7/S8) report negative. So pure-C is the
+target per [[canonical-gate-distance-not-evidence]]; do NOT route to
+canonical-asm.
+
+New variants tested (all score 6, rejected) — see meta.json rejected_forms:
+1. Case 2 named local for call return — folded to same RTL.
+2. `return r` instead of `return 0` — GCC const-prop folded `r == 0` back to literal 0.
+3. Case 5/6 named local for increment value — GCC saw through the alias.
+
+## Next-session priorities (session 3 onwards)
+
+Per session-2's pinned diff locations, the gap is entirely RTL-level
+(reorg.c delay-slot priority + global RA tiebreaker). Untried levers, in
+expected payoff order:
+
+1. **Read sibling matched switch-dispatch functions in code6cac_c_ab.c**
+   (func_8003ACB8 — the immediate next function — is a do-while loop, not a
+   switch; look further). Find a function with similar 8-way switch + jtbl +
+   fall-through that DID match in pure C; diff its `.greg` and `.dbr` dumps
+   against ours.
+2. **`BB2_ALLOC_DEBUG` on tmp/gccdbg/cc1** to see why case 5/6's lbu pseudo
+   gets $v1 not $v0. The hypothesis (jtbl-entry conservative live-set
+   keeping $v0 alive) is testable — the dump shows allocno priority and
+   conflict-set membership for each pseudo. Without the dump we're guessing.
+3. **`PERM_GENERAL`-directed permuter** from the candidate base. Random
+   mutations from the session-1 permuter run were not done; only structural
+   variants by hand. Directed-permuter type-mutation + statement-reorder
+   passes may find a non-obvious form.
+4. **Shorten the `done` block's downstream chain** so reorg.c's delay-slot
+   priority gives `move v0,0` (the return path) a higher chain than
+   `addiu a0,3` (feeding done's jal). Concretely: see if `done:` can be
+   inlined in case 3 only (eliminating case 2's `goto done`) — though that
+   loses cross-jump merge benefit. Or inline `func_8008C464(3,0,0)`
+   differently so its setup doesn't dominate.
+
 ## Related rules
 
 - [[switch-vs-ifchain-branch-sense]] — sibling pattern (rewrite as real

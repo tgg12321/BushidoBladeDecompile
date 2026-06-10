@@ -17,12 +17,21 @@
       "floor_was": 6,
       "floor_now": 6,
       "note": "Source cleanup only — barriers were verified score-inert. Multiple structural variants of case 2 (== 0 return / !=0 goto / inline done block) and case 4/5/6 (fall-through vs duplicate-and-merge) all produced floor 6. No structural lever found that lowers the floor."
+    },
+    {
+      "date": "2026-06-10",
+      "git_head_at_measurement": "036224da",
+      "lever": "session 2 — 3 new variants tested at candidate floor; objdump diff cluster pinned exactly",
+      "lever_rule": null,
+      "floor_was": 6,
+      "floor_now": 6,
+      "note": "Confirmed candidate floor 6 from a clean apply. Disassembled both objects (build/src/code6cac_c_ab.o canonical vs tmp/sandbox/func_8003AB44/code6cac_c_ab.o stripped) and confirmed exactly 7 diff slots: 4 at byte offsets b8-c4 (case 2 polarity: target beqz/move/j/li vs ours bnez/li/j/move) and 3 at offsets 130/138/13c (case 5/6 register: target $v0, ours $v1). Masked Lev floor: 6. 3 new structural variants rejected (see rejected_forms). scan_hand_coded tier LOW (score 0, no S1-S8 signals) — confirmed pure-C target; canonical-asm authorization is NOT applicable per [[canonical-gate-distance-not-evidence]]."
     }
   ],
   "reviewer": {
     "verdict": null,
     "date": null,
-    "evidence": "Not invoked this session — candidate is purely a SOURCE CLEANUP (removes 3 cheat-asm barriers), adds NO new cheats. Floor unchanged. Reviewer should be invoked before any future commit using this base."
+    "evidence": "Not invoked across sessions 1 or 2 — candidate is purely a SOURCE CLEANUP (removes 3 cheat-asm barriers), adds NO new cheats. Floor unchanged across sessions. Reviewer should be invoked before any future commit using this base."
   },
   "remaining_gap": {
     "summary": "6-distance gap composed of (a) case 2 branch polarity (target wants `beqz $v0, end; move $v0,0 (delay); j done; addiu $a0,3 (delay)`; GCC naturally emits `bnez $v0, done; addiu $a0,3 (delay); j end; move $v0,0 (delay)` — opposite branch sense + delay-slot fill choice); (b) case 5/6 increment register ($v1 in our build, $v0 in target; the lbu/addiu/sb chain on D_800A38AC).",
@@ -56,6 +65,21 @@
       "form": "Invert case 3 test (`!= 0 goto retry`) with inlined done as fall-through",
       "score": 15,
       "reason": "Same as inline form; GCC's cross-jump optimization still routes case 3 to case 2's done block."
+    },
+    {
+      "form": "Case 2 named local for call return: `s32 r; r = func_8008C464(3, 1, 0); if (r == 0) return 0; goto done;`",
+      "score": 6,
+      "reason": "GCC sees the local as a single-use alias and folds back to the same RTL pattern. The named local extension from [[call-return-if-result-reuse-v0]] does NOT apply here because the construct is an early-return, not an if-else merge form. r's pseudo lives only across the test; doesn't displace $v0 from the post-call dispatch."
+    },
+    {
+      "form": "Case 2 `return r` (where r is the captured call return that we know is 0)",
+      "score": 6,
+      "reason": "GCC's constant propagation sees `r == 0` in the taken-branch context and folds `return r;` back to `return 0;`. Same RTL as baseline. Cannot defeat the constant fold without an opaque-arithmetic construct (which is a cheat per [[loop-rotation-two-shift]] discussion of forbidden opaque vars in non-loop contexts)."
+    },
+    {
+      "form": "Case 5/6 named local for increment: `{ s32 t = D_800A38AC; D_800A38AC = t + 1; return 0; }`",
+      "score": 6,
+      "reason": "GCC sees through the trivial alias — emits the same lbu/addiu/sb sequence. Register choice remains $v1. The named-local-bias works for call-return-flow ([[call-return-if-result-reuse-v0]]) but a load-then-store of a global is opaque to RA's live-range analysis here; the pseudo's life is fully contained within the 3-insn RMW, no way to extend it without semantic change."
     }
   ],
   "memory_notes": [
