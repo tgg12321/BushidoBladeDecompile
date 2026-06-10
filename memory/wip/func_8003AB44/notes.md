@@ -583,7 +583,49 @@ purely to influence cc1's RTL emission of the return path).
 - [[cross-jump-store-tail-merge]] — explains why inlining done in case 2
   drops the `j done; addiu $a0,3` delay-slot pair (jump2 cross_jump merges
   the duplicated done-body suffix back into one block)
-- [[do-while-zero-exception]] — relevant FUTURE-LAST-RESORT lever for the
-  case 2 polarity; do not invoke until [[difficult-is-not-impossible]]'s
-  diagnostic playbook (BB2_ALLOC_DEBUG + reorg dump + permuter) has been
-  exhausted, per the rule's prerequisite
+- [[do-while-zero-exception]] — TESTED session 10, NEGATIVE at two scopes
+  (entire case 2 body wrap, and tightest if-bnez wrap). The lever is now
+  closed for THIS function's case 2 polarity gap; the polarity is
+  INSN_PRIORITY-driven, not LABEL_OUTSIDE_LOOP_P-driven.
+
+## Session 10 (2026-06-10) addendum
+
+Per session 9's anti-priority "DO NOT reach for do-while-zero until
+BB2_ALLOC_DEBUG + permuter exhausted", BOTH prerequisites are now
+satisfied (session 4 + session 6). Tested 3 new structural variants:
+
+| Variant | Score | Notes |
+|---|---|---|
+| `do { ...case 2 body... } while (0);` (wide scope) | 6 | No effect — peephole still fires |
+| `do { if (call==0) return 0; } while (0);` (tight scope) | 6 | No effect — same |
+| `s32 state = D_800A38AC; switch(state); ... case 5/6: D_800A38AC = state + 1;` | 14 | Regression — state spills callee-save, increment still uses local reg |
+
+Closes the do-while-zero hypothesis for this function. The case 2
+polarity gap is rooted in INSN_PRIORITY chain depth (per session 9's
+mechanism note); the loop-note approach doesn't move it. The
+state-keep-alive lever for case 5/6 fails because state's live-range
+crossing func_8003A308's call forces callee-save promotion, and case
+5/6's increment is a memory RMW that doesn't naturally reuse the
+dispatch's register.
+
+### Session-11 priorities (RE-CONFIRMED from session 9, unchanged after session 10)
+
+1. **BB2_FLOW_DEBUG instrumented cc1** — still the highest-value
+   diagnostic. Needs flow.c modifications + rebuild. Out of session
+   10's budget; remains untried.
+2. **BB2_REORG_DEBUG with relax_delay_slots-specific instrumentation
+   targeting case 2's invert-jump site** — partially exists from the
+   saEft00Add session (DBG_FILL / DBG_LA / DBG_BRK / DBG_WLK / DBG_MTLR
+   / DBG_BBLAS hooks); needs targeted dump on func_8003AB44's case 2.
+3. **Sibling LREG/GREG dumps** — un-tried (session 3 ruled out by
+   syntactic inspection only).
+4. **Case-2-specific PERM_GENERAL permuter** — un-tried; would need a
+   permuter-base mutating only case 2's local structure.
+
+### Updated anti-priorities (session 10)
+
+- DO NOT re-test do-while-zero scopes at OTHER positions in case 2.
+  Two scopes tested negatively; the mechanism is not LABEL_OUTSIDE_LOOP_P.
+- DO NOT re-test state-keep-alive levers — the call in case 1 forces
+  callee-save spill that regresses far more than the case 5/6 register
+  flip could save.
