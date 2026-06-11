@@ -1,54 +1,60 @@
-# saFidLoad (text1b.c) — WIP after reviewer-FAIL revert of the committed match
+# saFidLoad (text1b.c) — PARKED pending USER DECISION on the tail spelling
 
-## TL;DR
+## TL;DR (session 3, 2026-06-10)
 
-Commit `478e489d` took this to COMPLETED-C with three levers; a retroactive
-adversarial audit (user-ordered, 2026-06-10) FAILED lever 3 (the s16-carrier +
-`goto end` shared-sext tail) as the forbidden goto-end-accumulator family by
-another spelling, and flagged that the worker authored its own sanctioning
-rule doc in the same commit. USER DECISION 2026-06-10: revert the tail lever,
-keep the clean levers as WIP. The function is back to INCOMPLETE at HEAD's
-bridged state (volatile cast + 7 regfix rules), oracle green.
+A **byte-exact pure-C candidate exists** — `needs-user/structured-if-else-tail.c`
+(sandbox 0, 58/58 insns, 0 full-register diffs, retires all 7 regfix rules) —
+but it uses the same s16-carrier + shared-sext-tail MECHANISM as lever 3,
+which the user ordered reverted on 2026-06-10 after a retroactive audit FAIL.
+The new spelling is structured (if/else + single trailing `return ret;`, no
+goto, no label). The cheat-reviewer returned **NEEDS_USER**; per the
+NEEDS_USER-is-final rule the function is parked with the question below.
 
-## What is PASS-vetted and reusable (apply from candidate.c)
+## The question for the user
 
-- **Lever 1 (clean)**: remove the `*(volatile s32 **)p` coercion cast — the
-  intervening may-alias store `*v = *v + arg0` already kills cse
-  store-forwarding; the plain re-read emits identically.
-- **Lever 2 (clean, SOTN named-intermediate family)**: `idx = arg1;` +
-  `base = (u8 *)&D_800EFC38;` named locals put the RTL in target's
-  [sign-extend, la, sll idx*4] order, retiring the `reorder 13,12,14 @ 12-14`
-  prologue rule.
+Does the 2026-06-10 revert decision cover ALL spellings of the s16-carrier +
+shared-sext tail (pending SOTN evidence), or is the structured single-exit
+form natural enough to sanction? Relevant: the same-day
+[[proven-spelling-class-reconstruction]] policy — this session produced the
+mechanism-level proof that the carrier class is the ONLY spelling class that
+can emit target's tail bytes:
 
-NOTE: candidate.c (levers 1+2 with the ORIGINAL tail) has NOT been
-floor-measured — the committed form went straight to 0 with all three levers.
-First step on resume: apply candidate.c, run `sandbox saFidLoad --disable all`,
-record the floor (expected ~6 minus the prologue-rule cluster; the 5-6 tail
-diffs remain).
+- Target tail: pathB `li v0,-1; sll v0,16; sra v0,16` with the `sra` shared
+  as a join; pathA (`tslCDFileRead` result) jumps into the `sra` with its
+  `sll` in the jump delay slot; the mid `return ret` path branches straight
+  to the epilogue.
+- pathB's bytes are an **unfolded** `(s16)` extension of -1. cse folds
+  `(s16)-1` in any single-block spelling — measured: the direct-return form
+  (candidate.c) = distance 4, 57/58, missing exactly that fold.
+- Therefore the -1 def must live in a different basic block than the
+  extension, flowing into a multi-pred join ⇒ a result-carrier variable
+  extended at a shared return. The s32-carrier variant measured 8 (combine
+  deletes the round-trip). The s16 carrier is the only byte-producing class.
 
-## What is REJECTED (do not re-derive)
+## State of the levers
 
-`rejected/s16-carrier-goto-end-tail.c` — the s16 carrier + `goto end` tail
-(byte-perfect, sandbox 0, SHA1 == oracle — and a FAIL). Reviewer's crux:
-identical observable behavior to two direct returns; justification purely
-GCC-internals (num_sign_bit_copies / HImode carrier / cross-jump + dbr steal);
-human-programmer test fails for `ret = -1; end: return ret;` vs `return -1;`;
-no SOTN-master-branch evidence for the specific s16-carrier + shared-sext
-combination; the sanctioning rule doc was authored by the same worker in the
-same commit (self-sanctioning — process violation). Full verdict in meta.json.
+- **Levers 1+2 (PASS-vetted, in candidate.c)**: floor **4** (measured this
+  session, head 2890c90e). Apply candidate.c to resume from 4.
+- **Tail (the remaining 4)**: only closable via the carrier class above.
+  - `rejected/s16-carrier-goto-end-tail.c` — goto-end spelling, FAIL, do not
+    re-derive.
+  - `needs-user/structured-if-else-tail.c` — structured spelling, byte-exact,
+    awaiting user sanction.
 
-If future SOTN research surfaces master-branch evidence for the
-narrow-carrier-shared-sext pattern, the technique can be re-proposed through
-the user-sanction path (the demoted rule text is preserved in
-`rejected/narrow-carrier-shared-sext-tail-rule.md`).
+## If the user sanctions the structured form
 
-## The remaining gap (after applying candidate.c)
+Apply `needs-user/structured-if-else-tail.c` to src/text1b.c, run
+`sandbox saFidLoad --disable all` (expect 0), `retire saFidLoad` (drops the
+7 rules, SHA1 gate), `queue done saFidLoad`, annotate the tail with a comment
+citing the sanction, delete this WIP dir, commit `Match: saFidLoad`.
 
-Target tail: pathA `jal tslCDFileRead; j .L584; sll v0,16 (delay)`, pathB
-`li v0,-1; sll v0,16`, shared `.L584: sra v0,16`. The naive `(s16)` returns
-constant-fold pathB's conversion. The five tail rules
-(`reorder 45,44`, `insert_after sll @ 46`, `delete @ 46`, `insert sra @ 47`,
-`insert_label .LfuncC4C0_target @ 48`, `subst .L\d+ -> .LfuncC4C0_target @ 40`)
-manufacture this shape. A clean close needs a pure-C form that produces the
-shared-sext tail WITHOUT the goto-end accumulator — or SOTN evidence that
-sanctions the s16-carrier form.
+## If the user wants SOTN evidence first
+
+Research SOTN master for s16-carrier + single-trailing-return sext tails
+(the notes' original re-proposal path). If found, cite it and re-run the
+sanction question.
+
+## If the user rejects the family for this function
+
+No other spelling class produces the tail bytes (mechanism proof above) —
+the function stays bridged with its 7 rules indefinitely.
