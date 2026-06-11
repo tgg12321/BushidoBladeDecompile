@@ -2632,6 +2632,7 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
     s32 dists[6];
     s16 *base;
     s16 *p;
+    s32 *d;
     s32 dx;
     s32 dz;
     s32 i;
@@ -2642,12 +2643,21 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
     base = (s16 *)(stage_GetDataPtr() + (D_800A36A4 * 3) * 0x10);
     i = 0;
     p = base;
+    d = dists;
     do {
         dx = p[3] - arg2[0];
         dz = p[5] - arg2[2];
-        dists[i] = dx * dx + dz * dz;
+        *d = dx * dx + dz * dz;
         i++;
-        p += 6;
+        d++;
+        /* FAKE: split increment — two s16-triplets per record (rot + pos);
+         * biv_count=2 stops loop.c reducing the p+6/p+10 address-givs
+         * (single p += 6 always reduces: benefit 4 - add_cost*1 > 0);
+         * combine re-merges the adds to one addiu. The two-increment class
+         * is mechanism-proven as the original spelling; user-sanctioned
+         * 2026-06-11 per proven-spelling-class-reconstruction.md. */
+        p += 3;
+        p += 3;
     } while (i < 4);
 
     best = 0;
@@ -2660,20 +2670,24 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
 
     best = 0;
     for (i = 1; i < 4; i++) {
-        if (dists[best] < dists[i]) {
+        if (dists[i] > dists[best]) {
             best = i;
         }
     }
     dists[best] = -1;
 
     r = dists;
-    w = dists;
-    for (i = 0; i < 4; i++) {
-        if (*r != -1) {
-            w[4] = i;
-            w++;
+    i = 0;
+    {
+        s32 stop = -1;
+        w = r;
+        for (; i < 4; i++) {
+            if (*r != stop) {
+                w[4] = i;
+                w++;
+            }
+            r++;
         }
-        r++;
     }
 
     base += dists[4 + (func_80079154() & 1)] * 6 + 3;

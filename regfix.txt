@@ -689,13 +689,8 @@ func_80085270: reorder 1,3,2,4 @ 1-4
 func_80085270: reorder 51,53,59,54,55,56,57,58,52 @ 51-59
 
 # func_80022224: LICM un-hoist (GCC hoists +0xa offset, target keeps offsets inline)
-func_80022224: subst "\$17,10" "$17,$zero" @ 15
-func_80022224: subst "-4\(\$4\)" "6($4)" @ 16
-func_80022224: subst "0\(\$4\)" "10($4)" @ 21
 # loop 3: swap load order of lw $2,0($2) and lw $3,0($6)
-func_80022224: reorder 63,62 @ 62-63
 # loop 4 init: reorder 3-way ($v1=$a0 / $a1=0 / $a2=-1) -> ($a1=0 / $a2=-1 / $v1=$a0)
-func_80022224: reorder 79,80,78 @ 78-80
 
 # Pad_Prs: regalloc fixup for multiply chain and log2 shift chain
 Pad_Prs: subst "addu\s+\$4,\$5,\$4" "addu $2,$5,$4" @ 57
