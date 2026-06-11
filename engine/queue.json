@@ -3399,24 +3399,6 @@
       "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
     },
     {
-      "func": "func_8003D7B4",
-      "file": "code6cac_c2",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/code6cac_c2.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_8003D9A0",
-      "file": "code6cac_c2",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Prologue-fix coupled cheat: register asm pin + asm barrier on s1 force EARLY materialization (move s1,a2 at insn 4 in prologue). Without them GCC defers to insn 12 (after early-exit check). prologue_config.json entry can't fix missing-early-mat. Need deeper rework per prologue-fix-redundant-reorder.md to retire both cheats together. Pure-C floor 2 (verified score=2 with pins removed)."
-    },
-    {
       "func": "D_800832F8",
       "file": "ings2",
       "distance": 2,
@@ -4068,11 +4050,11 @@
     }
   ],
   "counts": {
-    "total": 495,
+    "total": 493,
     "active": 403,
     "by_status": {
       "active": 403,
-      "parked": 92
+      "parked": 90
     },
     "by_verdict": {
       "C": 212,

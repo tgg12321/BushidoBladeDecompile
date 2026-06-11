@@ -1154,6 +1154,7 @@ s16 *func_8003D7B4(s32 arg0) {
     do {
         s32 nbits;
         s16 val;
+        s32 signed_val;
         s32 sign_bit;
         do {
             nbits = func_8003D888((s32 *)base, 4);
@@ -1163,11 +1164,10 @@ s16 *func_8003D7B4(s32 arg0) {
             new_var = p;
             val = (s16)func_8003D888((s32 *)base, nbits);
         } while (0);
-        if (!val) {
-        }
+        signed_val = val;
         sign_bit = nbits - 1;
         new_var2 = 1;
-        if ((val >> sign_bit) & new_var2) {
+        if ((signed_val >> sign_bit) & new_var2) {
             val = val | (0xFFFF << sign_bit);
         }
         *(u16 *)(p + 0xC) = (u16)(*(u16 *)(new_var + 0xC) + val);
@@ -1237,17 +1237,16 @@ void func_8003D91C(void) {
 }
 typedef struct { s32 w[6]; } Copy24;
 void func_8003D9A0(s16 *a0, s32 a1, u32 *a2) {
-    register s16 *s0 asm("s0") = a0;
-    register u32 *s1 asm("s1") = a2;
+    s16 *s0 = a0;
+    u32 *s1 = a2;
     s32 s4, s3;
     s32 s2;
 
-    asm("" : : "r"(s1));
     s4 = s0[0];
     s3 = s0[1];
+    s2 = a1 - 1;
 
     if (a1 != 0) {
-        s2 = a1 - 1;
         do {
             s16 v0;
             v0 = (u16)s0[1] + (u16)s0[3];
