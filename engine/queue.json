@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "stage_InitCollision",
-      "file": "config",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "func_8007D9C4",
       "file": "display",
       "distance": 7,
@@ -3999,14 +3991,14 @@
     }
   ],
   "counts": {
-    "total": 486,
-    "active": 391,
+    "total": 485,
+    "active": 390,
     "by_status": {
-      "active": 391,
+      "active": 390,
       "parked": 95
     },
     "by_verdict": {
-      "C": 203,
+      "C": 202,
       "ASM-PARTIAL": 70,
       "ASM-SUSPECT": 118
     }

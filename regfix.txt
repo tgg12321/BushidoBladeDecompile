@@ -28,8 +28,6 @@ cpu_get_dist: reorder 11,13,14,15,10,16,17,12 @ 10-17
 
 # stage_InitCollision: first loop ptr in v1($3) needs v0($2), count in v0($2) needs a2($6)
 # 3-way rotation via two sequential range-based swaps on the zeroing loop (TEXT 2-7)
-stage_InitCollision: $2 <-> $3 @ 2-7
-stage_InitCollision: $3 <-> $6 @ 2-7
 
 # sys_VSync: frame computation — swap addu/addiu around j (TEXT indices)
 sys_VSync: reorder 25,24,23 @ 23-25
