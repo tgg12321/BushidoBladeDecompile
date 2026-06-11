@@ -1768,20 +1768,37 @@ s32 *func_8007E74C(s32 *mat, s32 *vec_in, s32 *vec_out) {
     __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(vec_out));
     return v0;
 }
-s32 *func_8007E8AC(s32 *a0, s32 *a1, s32 *a2) {
-    register s32 *v0 asm("v0");
-    __asm__ volatile (".word 0x8C880000" :: "r"(a0));   /* lw $t0, 0($a0) */
-    __asm__ volatile (".word 0x8C890004" :: "r"(a0));   /* lw $t1, 4($a0) */
-    __asm__ volatile (".word 0x48880000");               /* mtc2 $t0, $0 */
-    __asm__ volatile (".word 0x48890800");               /* mtc2 $t1, $1 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");               /* mvmva 1,0,0,3,0 */
-    __asm__ volatile (".word 0xE8A90000" :: "r"(a1));   /* swc2 $9, 0($a1) */
-    __asm__ volatile (".word 0xE8AA0004" :: "r"(a1));   /* swc2 $10, 4($a1) */
-    __asm__ volatile (".word 0xE8AB0008" :: "r"(a1));   /* swc2 $11, 8($a1) */
-    __asm__ volatile ("addu %0, %1, $zero" : "=r"(v0) : "r"(a2));
-    return v0;
-}
+/* func_8007E8AC — hand-written GTE mvmva vector-transform wrapper
+ * (8007Exxx hand-asm cluster, sibling of calc_fc_frame_8007EC5C, ASM-WHOLE
+ * authorized 2026-05-31; this sibling user-authorized 2026-06-11 per
+ * gte-3x3 / canonical-asm-authorization-recipe). Hand-coded evidence: the
+ * lw encodings target $t0/$t1 (unreachable from compiled C without
+ * forbidden pins), hand-placed GTE load-delay nop, return-pinned-at-end
+ * addu $v0,$a2 pass-through, unfilled jr delay slot. cop2 ops splat-tagged
+ * "handwritten instruction". */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007E8AC\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t1, $1\n"
+    "    nop\n"
+    "    mvmva  1, 0, 0, 3, 0\n"
+    "    swc2   $9, 0($a1)\n"
+    "    swc2   $10, 4($a1)\n"
+    "    swc2   $11, 8($a1)\n"
+    "    addu   $v0, $a2, $zero\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 void *func_8007E8DC(s32 *arg0, s32 *arg1) {
     register s32 t0 asm("t0");
     register s32 t1 asm("t1");
