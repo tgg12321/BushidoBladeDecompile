@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80037F40",
-      "file": "code6cac_c_mid",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
       "func": "stage_InitCollision",
       "file": "config",
       "distance": 7,
@@ -4007,14 +3999,14 @@
     }
   ],
   "counts": {
-    "total": 487,
-    "active": 392,
+    "total": 486,
+    "active": 391,
     "by_status": {
-      "active": 392,
+      "active": 391,
       "parked": 95
     },
     "by_verdict": {
-      "C": 204,
+      "C": 203,
       "ASM-PARTIAL": 70,
       "ASM-SUSPECT": 118
     }

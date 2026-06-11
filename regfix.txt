@@ -40,10 +40,7 @@ sys_VSync: reorder 32,38,36,33,34,37,35 @ 32-38
 
 # s0(6)=a0 → s2(8)=a0, s1(7)=D_800A125C → s0(6), s2(8)=D_800A1494 → s1(7)
 # func_80037F40: addu operand order - GCC puts base(t1) first, target has offset(t2) first
-func_80037F40: $9 <-> $10 @ 14-14
 # func_80037F40: post-memcpy scheduling - insert nop for load delay, then reorder
-func_80037F40: insert "nop" @ 30
-func_80037F40: reorder 29,30,32,33,27,28,31 @ 27-33
 
 # RETIRED 2026-05-16 (cheat-cleanup): func_80086BFC matches in pure C via register pin
 # on col ($a3) + two single-instruction __asm__ blocks for (s16)col sign-extension.

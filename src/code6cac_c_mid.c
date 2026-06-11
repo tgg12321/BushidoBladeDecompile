@@ -214,14 +214,16 @@ void func_80037F40(u8 *a0) {
         u8 *base2 = base;
         s32 offset = 0;
         do {
-            Quad *dst = (Quad *)(offset + base);
+            Quad *dst = (Quad *)(offset + (s32)base);
             Quad *src = (Quad *)&g_file_disc_size;
-            do {
+            for (;;) {
                 *dst = *src;
                 src++;
                 dst++;
-            } while (src != end);
-            *(s32 *)dst = *(s32 *)src;
+                if (src != end) continue;
+                *(s32 *)dst = *(s32 *)src;
+                break;
+            }
             *(s32 *)(base2 + 0x6C) = checksum;
             {
                 s32 j = 0;
