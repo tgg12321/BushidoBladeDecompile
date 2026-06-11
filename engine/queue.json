@@ -1,8 +1,16 @@
 {
-  "generated_at": "2026-06-09T17:07:54",
+  "generated_at": "2026-06-10T20:59:07",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
+    {
+      "func": "saFidLoad",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 7,
+      "status": "active"
+    },
     {
       "func": "func_80022224",
       "file": "code6cac",
@@ -1516,14 +1524,6 @@
       "status": "active"
     },
     {
-      "func": "func_80017D84",
-      "file": "ings",
-      "distance": 28,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "saTan4GaugeInit",
       "file": "main",
       "distance": 28,
@@ -1785,6 +1785,14 @@
       "distance": 39,
       "verdict": "C",
       "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_80017D84",
+      "file": "ings",
+      "distance": 39,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -4015,14 +4023,14 @@
     }
   ],
   "counts": {
-    "total": 488,
-    "active": 393,
+    "total": 489,
+    "active": 394,
     "by_status": {
-      "active": 393,
+      "active": 394,
       "parked": 95
     },
     "by_verdict": {
-      "C": 205,
+      "C": 206,
       "ASM-PARTIAL": 70,
       "ASM-SUSPECT": 118
     }

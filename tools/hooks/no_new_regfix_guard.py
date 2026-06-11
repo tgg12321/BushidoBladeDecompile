@@ -65,6 +65,12 @@ SANCTIONED_CATEGORIES = {
     "maspsx-label-nop",
     "lwl-fix",
     "multu-pad",
+    # reviewer-fail-revert: restoring rule lines byte-identical to ones
+    # deleted by a commit now being reverted after a cheat-reviewer FAIL
+    # verdict. NOT a license for new rules — the commit body must name the
+    # reverted commit + the verdict. User decision 2026-06-10 (saFidLoad
+    # retroactive-audit revert).
+    "reviewer-fail-revert",
 }
 
 # Files under guard. The hook silently passes if neither is in the staged diff.

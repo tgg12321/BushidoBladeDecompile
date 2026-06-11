@@ -56,6 +56,20 @@ Two changes landed so this class no longer wastes a worker run:
    itself**, no escalation. (Contrast canonical-body *hand-coded* asm, which still needs a
    user judgment call.)
 
+   **Boundary clarification (2026-06-10, from the func_80052754 retro-audit):**
+   the auto-authorize scope covers cop2 ops + MECHANICAL packaging only --
+   loads/stores that exist solely to feed or drain the hardcoded GTE register
+   encodings (e.g. `lw $t0..$t2` before a `ctc2`, `swc2` to an out-pointer).
+   A leaf whose body includes **general-purpose COMPUTATION with a direct C
+   form** (e.g. `addu` sums of mfc2 outputs -- `return t0 + t1 + t2;`) is NOT
+   in the zero-ambiguity class: it needs explicit user sign-off. The
+   distinction is input/output PACKAGING (no C can target those registers)
+   vs output ARITHMETIC (C exists; whether the original was hand-written is
+   a judgment call). Workers must NOT re-adjudicate their own NEEDS_USER on
+   this boundary -- escalate it. (`func_80052754` itself was explicitly
+   user-approved 2026-06-10 after the retro-audit surfaced the pathway
+   violation.)
+
 ## Action — auto-authorize + convert to clean canonical inline asm
 
 The finished form is **pin-removed canonical inline asm GTE**, NOT a glabel block:

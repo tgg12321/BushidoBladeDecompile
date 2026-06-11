@@ -109,6 +109,28 @@ invokes mechanical detectors as backstop, and outputs the JSON verdict.
   requires user policy judgment. The orchestrator surfaces the
   reviewer's specific question to the user; commit is deferred.
 
+## Two hard process rules (added 2026-06-10, from the fable retro-audit)
+
+1. **No self-resolved NEEDS_USER.** If the reviewer returns NEEDS_USER, the
+   question goes to the user -- period. The worker/orchestrator may add
+   evidence and re-invoke the reviewer with NEW facts, but may not
+   re-adjudicate the same question against a counter-precedent of their own
+   choosing and proceed. (Violation case: `func_80052754`, commit `14d99d6e`
+   -- worker revised NEEDS_USER -> PASS against a factually-inapt precedent;
+   the retro-audit caught it; the user approved the authorization after the
+   fact, but the pathway was wrong.)
+
+2. **No self-sanctioning rule docs.** A `.claude/rules/` addition that
+   sanctions a technique used by the SAME commit must be reviewed
+   independently (cheat-reviewer on the rule doc itself, with the reviewer
+   told the doc author is the technique's author) -- and for genuinely new
+   technique families, held for user sign-off with SOTN evidence, NOT
+   committed alongside the match. (Violation case: `saFidLoad`, commit
+   `478e489d` -- the worker authored narrow-carrier-shared-sext-tail.md in
+   the match commit; the retro-audit FAILed the technique; the user ordered
+   the revert. The exact failure shape the 2026-06-02 techniques audit
+   documented.)
+
 ## The orchestrator's role
 
 The orchestrator does NOT perform the review. Per user directive

@@ -91,6 +91,7 @@ The category MUST be one of the sanctioned values below. Anything else
 | `maspsx-label-nop` | Load-delay-after-label gate; coordinates with `maspsx_label_nop_funcs.txt` ([[maspsx-label-nop-gate]]). |
 | `lwl-fix` | `lwl`/`lwr` handling per `FIX_LWL_FILES` in the Makefile. |
 | `multu-pad` | Canonical `multu`/`mflo` scheduling pad (PSX hardware requirement; not a codegen workaround). |
+| `reviewer-fail-revert` | Restoring rule lines **byte-identical** to ones deleted by a commit now being reverted after a cheat-reviewer FAIL verdict (retroactive audit or pre-commit). The commit body must name the reverted commit and the verdict. Not a license for new rules. User decision 2026-06-10 (saFidLoad retroactive-audit revert). |
 
 The categories are deliberately **narrow** — they correspond to documented
 infrastructure mechanisms with no pure-C equivalent. They are NOT general

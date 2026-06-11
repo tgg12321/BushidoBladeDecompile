@@ -133,6 +133,12 @@ uncommitted tree that forces an escalation):
     edits you can't justify keeping (exploratory greps that touched a file,
     half-finished refactors of a sibling), REVERT them with `git checkout --
     <path>` before stopping.
+  - **NEEDS_USER is final.** If the cheat-reviewer returns NEEDS_USER, do NOT
+    re-adjudicate it yourself against a precedent of your choosing — park the
+    function citing the reviewer's question and STOP. The user answers it.
+  - **No self-sanctioning rule docs.** Do NOT add a .claude/rules/ entry that
+    sanctions a technique YOUR commit uses. Register findings descriptively;
+    a NEW technique family needs user sign-off (park and surface it).
   - Do NOT push.
 PERSISTENCE BAR — every function MUST be decompiled eventually, so the bar for
 parking YOUR ASSIGNED FUNCTION is high. "Hard" is not enough; "I tried a few

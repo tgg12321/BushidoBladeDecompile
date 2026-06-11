@@ -1,0 +1,43 @@
+{
+  "function": "saFidLoad",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 6,
+    "candidate_floor": null,
+    "candidate_floor_note": "candidate.c (levers 1+2, original tail) NOT yet measured — committed form went straight to 0 with the rejected lever 3; measure on resume",
+    "metric": "sandbox --disable all (masked Levenshtein)"
+  },
+  "sessions": [
+    {
+      "date": "2026-06-10",
+      "git_head_at_measurement": "478e489d",
+      "lever": "fable-5 worker session: 3 levers -> COMPLETED-C (commit 478e489d)",
+      "note": "Lever 1 (volatile cast removal) + lever 2 (idx/base named locals) PASS-vetted. Lever 3 (s16 carrier + goto-end shared-sext tail) passed the in-session reviewer but FAILED the retroactive adversarial audit."
+    },
+    {
+      "date": "2026-06-10",
+      "git_head_at_measurement": "(revert commit)",
+      "lever": "USER-ORDERED REVERT of lever 3 after retroactive audit FAIL",
+      "note": "User decision 2026-06-10: revert tail lever, keep clean levers as WIP. src/text1b.c + the 7 regfix rules restored byte-identical to 478e489d^; oracle re-verified green. Rule doc narrow-carrier-shared-sext-tail.md demoted to rejected/ (self-sanctioning process violation: worker authored the rule sanctioning its own technique in the match commit)."
+    }
+  ],
+  "reviewer": {
+    "verdict": "FAIL (retroactive adversarial audit 2026-06-10)",
+    "crux": "s16 carrier + goto end tail = goto-end-prologue-delay-slot forbidden family by another spelling: observable behavior identical to two direct returns; justification purely GCC-internals (num_sign_bit_copies, HImode carrier, cross-jump + dbr steal); fails human-programmer test; no SOTN-master-branch evidence for the combination",
+    "in_session_verdict": "PASS (lenient; superseded by the retroactive audit + user decision)"
+  },
+  "remaining_gap": "the shared-sext tail (pathA j .L584 with sll in delay / pathB li -1; sll / shared sra) — covered by the 5-6 restored tail rules; naive (s16) returns constant-fold pathB's conversion",
+  "next_hypotheses": [
+    "Measure candidate.c floor first (expected: head 6 minus prologue-rule cluster).",
+    "Find a pure-C shared-sext-tail form WITHOUT the goto-end accumulator (the s32-carrier shared-end form was measured 8 — worse — because combine deletes the round-trip; the search space between those is unexplored).",
+    "SOTN research: does SOTN master ship an s16-carrier + goto-end sext tail anywhere? If yes, re-propose lever 3 through the user-sanction path with the citation."
+  ],
+  "rejected_forms": [
+    {
+      "slug": "s16-carrier-goto-end-tail",
+      "file": "rejected/s16-carrier-goto-end-tail.c",
+      "measured": "sandbox 0, 58/58 insns, 0 full-register diffs, SHA1 == oracle (commit 478e489d, reverted)",
+      "verdict": "FAIL — goto-end-accumulator family by another spelling + self-sanctioned rule doc"
+    }
+  ]
+}
