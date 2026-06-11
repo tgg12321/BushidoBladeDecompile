@@ -183,8 +183,31 @@ preserves the audit. Any one of them in isolation is insufficient.
 
 ## Confirmed cases
 
-(none yet — this rule was added 2026-06-08; the first sanctioned use
-will be appended here when it lands)
+- **D_8009BF7C** (display.c, granted 2026-06-11) — GPU packet ring
+  read-index. IRQ writer: `func_8007D6D8` (writes the symbol,
+  asm/funcs/func_8007D6D8.s:131) installed via
+  `irq_AcknowledgeVblank(2, func_8007D6D8)` (src/display.c:890).
+  Qualifying use-site: `func_8007DB20`'s
+  `while (D_8009BF78 != D_8009BF7C) { ... }` spin-wait (display.c:980).
+  Exact SOTN analog: `libcd/c_009.c`'s `extern volatile s32 D_80098894`
+  (CD-ROM ring buffer head advanced by `StCdInterrupt`). Bonus
+  mechanism evidence: target asm STORES zero to the symbol and
+  immediately RELOADS it (func_8007D9C4 head) — codegen only producible
+  from a volatile declaration. Granted via the user's standing
+  three-question test; unblocked func_8007D9C4 to COMPLETED-C with
+  HEAD's unchanged source.
+
+## Symbol-level grants (clarified 2026-06-11, func_8007D9C4 decision)
+
+A grant is PER SYMBOL, not per use-site — matching both C semantics
+(volatile is a declaration property; every consumer inherits it) and the
+SOTN evidence model (their volatile declarations are file/header-scope).
+The three-shape use-site catalog gates whether the SYMBOL qualifies: at
+least ONE consumer must exhibit a cataloged shape (with the IRQ-writer
+prong verified as always). Once granted, OTHER consumers of the same
+symbol (e.g. a store-then-readback at an init site) are collateral of the
+declaration and do NOT each need a cataloged shape. They DO inherit the
+audit trail: the allowlist comment names the qualifying consumer.
 
 ## How to use the exception when it applies
 

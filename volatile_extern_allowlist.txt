@@ -26,4 +26,4 @@
 # Convention: each entry is followed by a comment line of the form
 #   <SYMBOL>    # <consumer-func> — IRQ writer: <writer>:<file>:<line>
 #
-# Empty for now — the first sanctioned use lands here when audited.
+D_8009BF7C    # func_8007DB20 (spin-wait, display.c:980) + func_8007D9C4 (collateral store-then-readback) — IRQ writer: func_8007D6D8:asm/funcs/func_8007D6D8.s:131 installed via irq_AcknowledgeVblank(2, func_8007D6D8):src/display.c:890. Symbol-level grant, user-delegated three-question test 2026-06-11.
