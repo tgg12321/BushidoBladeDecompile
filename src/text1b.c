@@ -12579,29 +12579,42 @@ extern s32 D_800EFC38;
 extern s32 func_80087F64(s32);
 extern s16 coli_CheckBukiPreHit_800880B8(s32, s32, s32);
 extern s16 tslCDFileRead(s16);
+/* saFidLoad tail: s16 result-carrier + single trailing return — the target
+ * CFG (li -1 in its own block; shared sll/sra sext join) is only producible
+ * from this spelling class (direct-return floors at 4, s32 carrier at 8).
+ * Structured single-exit representative sanctioned by user 2026-06-10; the
+ * goto-end spelling remains REJECTED. See
+ * .claude/rules/proven-spelling-class-reconstruction.md. */
 s32 saFidLoad(s32 arg0, s16 arg1) {
+    s32 idx;
+    u8 *base;
     s32 **p;
     s32 *v;
     s32 *vv;
     s16 ret;
     title_mv_exec2(0);
-    p = (s32 **)((u8 *)&D_800EFC38 + arg1 * 4);
+    idx = arg1;
+    base = (u8 *)&D_800EFC38;
+    p = (s32 **)(base + idx * 4);
     v = *p;
     if (v != 0) {
         v = (s32 *)((u8 *)v + arg0);
         *p = v;
         *v = *v + arg0;
-        vv = *(volatile s32 **)p;
+        vv = *p;
         *(s32 *)((u8 *)vv + 4) = *(s32 *)((u8 *)vv + 4) + arg0;
-        func_80087F64(arg1);
-        ret = coli_CheckBukiPreHit_800880B8(*(s32 *)((u8 *)*p + 4), arg1, *(s32 *)((u8 *)&D_800EFB38 + arg1 * 4));
-        if (ret == arg1) {
-            return (s16)tslCDFileRead(ret);
+        func_80087F64(idx);
+        ret = coli_CheckBukiPreHit_800880B8(*(s32 *)((u8 *)*p + 4), idx, *(s32 *)((u8 *)&D_800EFB38 + idx * 4));
+        if (ret != idx) {
+            return ret;
         }
-        return ret;
+        ret = tslCDFileRead(ret);
+    } else {
+        ret = -1;
     }
-    return (s16)-1;
+    return ret;
 }
+
 extern s32 D_800A3404;
 void func_80087F64(s32);
 void coli_CheckBukiPreHit_80088088(s32, s16, s32);

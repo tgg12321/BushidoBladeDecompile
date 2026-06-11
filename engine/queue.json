@@ -3663,15 +3663,6 @@
       "park_reason": "Stable RA tie: \result lands in , target wants . 5 regfix rules paper-over the cluster (result reg-rename + lhu/sh reg-rename + tail move elision). Tried: statement-order swap (no change), early-return (regresses +3 insns), bool-from-comparison (regresses +5), narrow type char result (no change), if/else explicit form (no change), \result=1 at start of if (no change), decl order swap (no change), block-local read of *(s32*)(p+0) (no change). Build_insns == target 48 across all variants; diff is purely the 5 RA decisions at the if-flag pattern. Lever A (block-local split) N/A \u2014 result IS the return value. No callers capture a return that could seed . No sibling matched function in text1b.c with same s32 result = 0; if (cond) {body; result = 1;} return result; shape to mimic. Resume avenues untried: directed permuter from clean single-fn target; instrumented cc1 .greg dump to identify allocno priority gap; lever for if-result-via-call seeding ([[call-return-if-result-reuse-v0]]) but no call exists here."
     },
     {
-      "func": "saFidLoad",
-      "file": "text1b",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 7,
-      "status": "parked",
-      "park_reason": "reviewer NEEDS_USER: byte-exact structured if/else s16-carrier tail (sandbox 0, 58/58, retires all 7 rules; memory/wip/saFidLoad/needs-user/) is the same mechanism as the user-reverted lever 3 in a goto-free spelling; mechanism proof shows the carrier class is the ONLY byte-producing spelling class. User must decide: does the 2026-06-10 revert cover all spellings, or is the structured single-exit form sanctioned (cf. proven-spelling-class-reconstruction)?"
-    },
-    {
       "func": "func_8007B844",
       "file": "display",
       "distance": 7,
@@ -4024,11 +4015,11 @@
     }
   ],
   "counts": {
-    "total": 489,
+    "total": 488,
     "active": 393,
     "by_status": {
       "active": 393,
-      "parked": 96
+      "parked": 95
     },
     "by_verdict": {
       "C": 205,
