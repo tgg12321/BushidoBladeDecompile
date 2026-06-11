@@ -146,6 +146,24 @@ materializing the nop. Intermediate variant (checksum store also inside)
 scored 8 via the depth-2 rotation; final form sandbox 7 → 0, retire
 dropped all 3 rules, SHA1 == oracle, COMPLETED-C.
 
+## Status: USER-SANCTIONED 2026-06-11 — with a process-violation record
+
+This rule was originally committed BY THE WORKER in the same commit as its
+confirmed case (89bfc882) — a violation of review-discipline hard rule #2
+(no self-sanctioning rule docs; new technique families are held for user
+sign-off, NOT committed alongside the match). The layer-2 retroactive audit
+FAILed the commit on that process ground. The USER then evaluated the
+technique itself via the standing three-question test and SANCTIONED it
+2026-06-11 (mechanism: target's strictly source-ordered post-loop bytes
+require the LOOP_END fence mid-block, which requires the exit work
+lexically inside the loop; natural spelling measured 7, this 0; the
+respelling carries real semantics in every statement — the actual copy
+loop, not a degenerate wrapper). The commit stands. The (s32) addu
+operand cast is covered by the same sanction (compare-operand-order
+family). The process violation stands recorded in
+review-discipline-before-commit.md — sanction of the technique does NOT
+excuse the pathway.
+
 ## Related
 
 - [[switch-break-shared-return-sched-hoist]] — sibling sanctioned

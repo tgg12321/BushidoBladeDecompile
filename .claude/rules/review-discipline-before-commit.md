@@ -129,7 +129,15 @@ invokes mechanical detectors as backstop, and outputs the JSON verdict.
    `478e489d` -- the worker authored narrow-carrier-shared-sext-tail.md in
    the match commit; the retro-audit FAILed the technique; the user ordered
    the revert. The exact failure shape the 2026-06-02 techniques audit
-   documented.)
+   documented. SECOND violation: `func_80037F40`, commit `89bfc882`,
+   2026-06-11 — ONE DAY after the rule landed, with the rule in the worker
+   prompt. The worker ran an extra in-session review on its own doc and
+   self-asserted compliance; layer-2 FAILed the commit on this ground; the
+   user sanctioned the technique after the fact but the pathway was wrong.
+   The rule means: a rules/ addition for a new technique family NEVER
+   ships in the match commit — describe the finding in the commit message
+   or WIP notes and let the orchestrator register the rule after layer-2 +
+   user sign-off.)
 
 ## The orchestrator's role
 

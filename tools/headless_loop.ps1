@@ -136,9 +136,13 @@ uncommitted tree that forces an escalation):
   - **NEEDS_USER is final.** If the cheat-reviewer returns NEEDS_USER, do NOT
     re-adjudicate it yourself against a precedent of your choosing — park the
     function citing the reviewer's question and STOP. The user answers it.
-  - **No self-sanctioning rule docs.** Do NOT add a .claude/rules/ entry that
-    sanctions a technique YOUR commit uses. Register findings descriptively;
-    a NEW technique family needs user sign-off (park and surface it).
+  - **No self-sanctioning rule docs — NEVER, no exceptions.** Do NOT add a
+    .claude/rules/ entry in the same commit as a match, even if a reviewer
+    PASSed the doc, even for techniques you believe are sanctioned-family.
+    Describe the finding in the commit message and/or WIP notes; the
+    orchestrator registers rules AFTER layer-2 review + (for new families)
+    user sign-off. Violating this fails the commit at layer-2 regardless of
+    the technique's merits (precedent: 89bfc882, 2026-06-11).
   - Do NOT push.
 PERSISTENCE BAR — every function MUST be decompiled eventually, so the bar for
 parking YOUR ASSIGNED FUNCTION is high. "Hard" is not enough; "I tried a few
