@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "ot_Insert",
-      "file": "gpu",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "ot_Link",
       "file": "gpu",
       "distance": 7,
@@ -3959,14 +3951,14 @@
     }
   ],
   "counts": {
-    "total": 481,
-    "active": 386,
+    "total": 480,
+    "active": 385,
     "by_status": {
-      "active": 386,
+      "active": 385,
       "parked": 95
     },
     "by_verdict": {
-      "C": 201,
+      "C": 200,
       "ASM-PARTIAL": 67,
       "ASM-SUSPECT": 118
     }
