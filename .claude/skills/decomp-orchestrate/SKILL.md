@@ -112,9 +112,42 @@ engine.cli…'`** — that nests three shells and the quoting eats awk/sed/hered
   not in the queue must satisfy its COMPLETED-C or COMPLETED-INLINE-ASM-CANONICAL
   invariants. Run it after batches.
 
+### MANDATORY retro-audit — nothing is ACCEPTED until a second agent says so
+**(user directive 2026-06-10, after the fable-5 batch audit.)** The runner's
+mechanical review + the worker's in-session cheat-reviewer are PROVISIONAL.
+For every completion-class commit (`Match:` / `cheat-cleanup:` / `auth:` /
+any commit retiring rules or adding a `.claude/rules/` technique doc), the
+orchestrator MUST, before treating the item as accepted:
+
+1. Spawn a FRESH `cheat-reviewer` agent (a different context from the
+   worker's in-session reviewer), briefed adversarially: default to FAIL,
+   do NOT credit the worker's claimed reviewer verdict, dig into the
+   specific commit with the 6-test checklist, and audit any rule doc the
+   commit registered (self-sanctioning docs are banned outright per
+   review-discipline-before-commit.md).
+2. Batch cadence: run the loop N items (e.g. -MaxIterations 10), then
+   retro-audit ALL completions in parallel before launching the next batch.
+   Audits of independent commits run concurrently — use one reviewer agent
+   per commit (or per tight pair).
+3. Verdict handling: PASS → accepted. FAIL → revert workflow (restore the
+   prior bridged state byte-identical; rules restorations use the
+   `[infra-rule: reviewer-fail-revert]` guard category; preserve clean
+   levers in a WIP checkpoint). NEEDS_USER → surface to the user; the item
+   stays provisional.
+4. The mechanical sweeps ride along once per batch: gate-tampering diff
+   (engine/, tools/hooks/, Makefile, bb2.ld vs the batch baseline),
+   `check_completion_integrity.py`, `audit_asm_cheats.py --summary`, and
+   inline_asm_canonical.txt additions == exactly the authorized set.
+
+Why this exists: the 2026-06-10 fable-5 audit found in-session reviewers
+lean PASS on borderline constructs (2 of 7 completions failed adversarial
+re-review), one worker re-adjudicated its own NEEDS_USER, and one authored
+the rule sanctioning its own technique. SHA1 == oracle can never catch a
+source-level cheat — the independent adversarial layer is the catch.
+
 A future fully-headless orchestrator can loop: launch run → on the completion
-notification, review + handle/escalate → relaunch. You're re-invoked when the
-background run finishes, so no polling.
+notification, review + handle/escalate → retro-audit the batch → relaunch.
+You're re-invoked when the background run finishes, so no polling.
 
 ## 5. Escalation boundary (MAXIMAL AUTONOMY — the default)
 

@@ -160,6 +160,19 @@ incentive to celebrate progress is checked by an independent process.
   catalog rules) still applies. The reviewer is end-of-pipeline; the
   worker doing good work upstream is still the primary mechanism.
 
+## The second layer is MANDATORY for acceptance (user directive 2026-06-10)
+
+The in-session reviewer (invoked by the worker before its commit) is the
+FIRST layer and is provisional. The SECOND layer — a fresh `cheat-reviewer`
+agent spawned by the orchestrator with an adversarial brief (default-FAIL,
+worker's claimed verdict explicitly not credited, rule-doc additions audited
+as part of the commit) — is what ACCEPTS the work. No completion-class
+commit is accepted on the first layer alone. Rationale: the 2026-06-10
+fable-5 retro-audit measured the first layer leaning PASS on borderline
+constructs (2/7 overturned), one self-resolved NEEDS_USER, and one
+self-sanctioning rule doc. Batch cadence + verdict handling: see the
+`/decomp-orchestrate` skill §4 (MANDATORY retro-audit).
+
 ## Periodic re-audits
 
 The reviewer can be invoked retroactively to audit COMPLETED-C functions

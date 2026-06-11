@@ -132,6 +132,16 @@ after **each** worker finishes — it is what lets the loop run unattended for l
 2. **Confirm findings** — on PARK/STUCK, don't trust the worker's rationale. `headless_review`
    auto-confirms *known* park categories (e.g. jtbl-infra: verifies the rules really are
    jump-table asmfix, references `jtbl_*`, zero regfix). A novel/unconfirmable park ⇒ ESCALATE.
+2b. **MANDATORY retro-audit before acceptance (user directive 2026-06-10)** — the
+   worker's in-session cheat-reviewer is PROVISIONAL. Every completion-class commit
+   (`Match:` / `cheat-cleanup:` / `auth:` / rule-doc additions) must pass a FRESH,
+   adversarially-briefed `cheat-reviewer` agent (different context; default-FAIL; does
+   not credit the worker's claimed verdict) before the item counts as accepted. Batch
+   cadence: run N items, retro-audit all completions in parallel, then continue. FAIL ⇒
+   revert (byte-identical restoration; `[infra-rule: reviewer-fail-revert]` for rule
+   restorations; clean levers → WIP). NEEDS_USER ⇒ surface. Mechanical sweeps ride along
+   per batch (gate-tampering diff, `check_completion_integrity.py`, canonical-registry
+   delta). Full protocol: the `/decomp-orchestrate` skill §4.
 3. **Apply tooling/workflow fixes** — if the audit shows recurring friction an agent shouldn't have
    to fight (a too-tight guard, a crashing tool, a function class that should be auto-routed), fix
    it and commit so future workers don't hit it. (This pass produced the 500-char guard bump, the
