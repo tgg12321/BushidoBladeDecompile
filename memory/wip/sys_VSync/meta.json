@@ -3,30 +3,94 @@
   "file": "src/ings2.c",
   "scores": {
     "head_floor": 7,
-    "candidate_floor": 5
+    "candidate_floor": 7,
+    "honest_pure_c_floor": 7,
+    "honest_pure_c_floor_note": "Both head_floor and candidate_floor are now 7 because the cleaned candidate.c (Region A named-base lever applied, the inherited inner `do { } while (0);` REMOVED per session-2 cheat-reviewer FAIL) measures floor 7 (build_insns 81 vs target 82). The Region A lever DID measurably lower the true pure-C floor: HEAD's TRUE pure-C floor (no inner do-while + no Region A lever) is 9; candidate's TRUE pure-C floor (Region A lever + no inner do-while) is 7. The +2 improvement in candidate_floor=5 that the prior session reported reflected the as-written candidate including the inherited sched1-fence cheat; that floor depended on the cheat and is no longer the correct baseline."
   },
   "sessions": [
     {
       "date": "2026-06-12",
       "agent": "headless worker (opus), batch bfej90w2j iter 1; checkpoint authored by orchestrator after layer-2 reviewer FAIL revert of 4dd017d8",
+      "git_head_at_measurement": "01471d90",
       "lever": "Region A (named-base intermediate): split `frame = (D_800A151C + a0) - 1` into `s32 base = D_800A151C - 1; frame = base + a0;` — defeats combine's CSE of the shared `a0 - 1` subexpression with the sibling `count = a0 - 1`, so the addiu lands before the j and the addu in the delay slot, matching target. Retires the first regfix reorder rule (TEXT 23-25). SOTN-accepted named-intermediate family; layer-2 reviewer PASSed this construct.",
       "floor_before": 7,
-      "floor_after": 5
+      "floor_after": 5,
+      "note_on_floor": "floor_after of 5 was the as-written engine measurement WITH the inherited inner do-while in source. Session 2's cheat-reviewer FAILed that body; candidate.c was cleaned and the corrected floor is 7. See sessions[1]."
+    },
+    {
+      "date": "2026-06-12",
+      "agent": "headless worker (opus), follow-up session resuming from orchestrator's WIP",
+      "git_head_at_measurement": "66834e9b",
+      "lever": "Cleaned the candidate: removed the inherited inner `do { } while (0);` at candidate.c line 30 per cheat-reviewer FAIL (sched1-fence cheat, out of scope for do-while-zero-exception). Ruled out 2 hypotheses from the WIP's next_hypotheses with measurements (block-hoist arg, shared volatile pointer). New honest floor is 7 (build_insns 81 vs target 82). Region A lever still PASSes adversarial review.",
+      "floor_before": 5,
+      "floor_after": 7,
+      "floor_change_note": "The floor RISE (5 -> 7) reflects removing an inherited sched1-fence cheat from candidate.c, NOT a regression in the C structure. Region A lever's measurable benefit (9 -> 7 vs TRUE HEAD pure-C floor) is preserved. The +2 'improvement' the prior session reported (7 -> 5) was a tainted measurement that depended on the cheat.",
+      "hypotheses_tested": [
+        {
+          "name": "hypothesis 1 — hoist g_sys_dma_region+1 into a named local declared FIRST in a block surrounding the s0 reload + second call",
+          "form": "{ s32 dma_arg = g_sys_dma_region + 1; s0_val = *D_800A1510; func_80082A14(dma_arg, 1); }",
+          "rule_cited": "hoist-call-arg-local-flips-jal-delay (SOTN-accepted named-intermediate family)",
+          "measured_floor_with_cheat": 7,
+          "measured_build_insns": 81,
+          "result": "WORSE versus the WITH-cheat baseline 5 (now moot). Hoisting biased sched1 to schedule the arg load EARLY (low LUID for dma_arg), making `addiu a0,a0,1` land BEFORE `lw s0` and `li a1,1` end up in the jal delay slot. Target wants the OPPOSITE: s0 load FIRST, then arg setup, then jal with `addiu a0,a0,1` in delay slot. The rule's documented symptom (fill_delay + delete + reorder cluster around a pre-call STORE) does not match this function's gap (single 7-index reorder around a pre-call LOAD).",
+          "ruled_out": true,
+          "needs_remeasurement_vs_clean_baseline": "yes — measured against tainted baseline; should be re-tested against the new clean floor-7 baseline before final ruling. The CONCLUSION (sched1 priority points the wrong direction for this lever) is likely robust, but the score delta vs the new baseline has not been measured."
+        },
+        {
+          "name": "hypothesis 2 — shared volatile s32 *ptr declared before the s0 reload, used pre-call AND post-call",
+          "form": "{ volatile s32 *ptr = D_800A1510; s0_val = *ptr; func_80082A14(...); if (s0_val & 0x400000) { if ((s32)(s0_val ^ *ptr) >= 0) { ... } } }",
+          "measured_floor_with_cheat": 23,
+          "measured_build_insns": 79,
+          "result": "CATASTROPHICALLY WORSE — cc1 cached the pointer in a callee-save register across the call, eliminating the post-call lui+lw reload but breaking the entire region's structure. Target reloads D_800A1510 fresh both pre-call and post-call (lines 44-47 and 57-58 of asm/funcs/sys_VSync.s). Conclusion robust against baseline change: caching the pointer across the call is fundamentally wrong for matching target's reload pattern.",
+          "ruled_out": true
+        },
+        {
+          "name": "variant — scoped volatile s32 *p just for the pre-call s0 read (single-use, local block)",
+          "form": "{ volatile s32 *p = D_800A1510; s0_val = *p; } func_80082A14(...);",
+          "measured_floor": 7,
+          "build_insns": 81,
+          "result": "NO CHANGE versus the inner-do-while-removed baseline — cc1 inlines the local pointer. Same floor 7."
+        },
+        {
+          "name": "variant — function-scope `s32 dma` local, assignment at use site",
+          "form": "Declare `s32 dma;` at function top; `dma = g_sys_dma_region + 1;` just before the call",
+          "measured_floor_with_cheat": 5,
+          "build_insns_with_cheat": 82,
+          "result": "NO CHANGE versus tainted baseline — cc1 collapses the function-scope local to the same RTL as the inline expression. Score 5 preserved with the inherited cheat; now moot."
+        }
+      ],
+      "cheat_reviewer_verdict_on_prior_candidate": {
+        "decision": "FAIL",
+        "reviewed_at": "2026-06-12",
+        "summary": "Cheat-reviewer FAILed the as-written candidate body because the inherited inner `do { } while (0);` at candidate.c line 30 is a sched1-fence cheat, explicitly out of scope for the do-while-zero-exception rule (which sanctions only the LABEL_OUTSIDE_LOOP_P / reorg.c invert-jump peephole on NE conditions). The construct fails the exception's prerequisites on three independent grounds: (1) wrong GCC pass (sched1, not reorg.c); (2) no `/* FAKE: ... */` annotation; (3) no lever-exhaustion documentation (introduced commit d7c91eba 2026-04-09, pre-dating the rule). Same family as the outer do-while that was FAILed in commit 4dd017d8's retro-audit (rejected/do-while-sched1-fence.c). Region A named-base lever and the spin-wait `volatile s32 *ptr` block were independently judged PASS.",
+        "next_action_applied": "Removed the inner do-while from candidate.c line 30. New honest baseline: floor 7 (build_insns 81 vs target 82). meta.json and notes.md updated."
+      },
+      "discoveries": [
+        {
+          "name": "inner-do-while-at-line-69 confirmed as a sched1-fence cheat (RESOLVED by reviewer FAIL)",
+          "details": "Originally surfaced as a NEEDS_USER policy question. The session-2 cheat-reviewer explicitly FAILed the construct, noting the do-while-zero-exception rule's text excludes sched1 uses and lists three independent prerequisite failures. The reviewer's analysis: 'the policy answer is unambiguous: the construct fails the do-while-zero-exception prerequisites on three independent grounds and is forbidden.' Not a NEEDS_USER after all — a clear FAIL. The construct was introduced at commit d7c91eba (2026-04-09) and remained un-audited until session 2's pass. The layer-2 retro-audit of 4dd017d8 had focused on the OUTER do-while being added in that commit and did not separately evaluate the inherited inner one — confirming session 2's hypothesis that the prior reviewer's omission was an oversight, not implicit grandfathering."
+        }
+      ]
     }
   ],
   "reviewer": {
     "verdict": "PASS",
     "date": "2026-06-12",
-    "evidence": "Layer-2 retro-audit of commit 4dd017d8: the candidate's Region A named-base lever explicitly PASSed (SOTN named-intermediate family). The commit as a whole FAILed on a separate construct NOT in this candidate — an unannotated do{}while(0) sched1 fence (out of scope for do-while-zero-exception, reorg.c LABEL_OUTSIDE_LOOP_P only); preserved in rejected/do-while-sched1-fence.c."
+    "evidence": "Session 2 invoked the cheat-reviewer on the candidate body (subagent_type: cheat-reviewer). The reviewer FAILed the original (with inner do-while) and instructed removing the inner do-while. After applying that next_action, the candidate body contains: (1) Region A named-base lever — explicitly PASSed by both the prior layer-2 reviewer and this session's reviewer (SOTN named-intermediate family); (2) the Region B spin-wait `volatile s32 *ptr = D_800A1510;` block — explicitly PASSed by this session's reviewer as a standard pointer-to-volatile MMIO spin-wait, NOT in the forbidden volatile-coercion family (which targets `extern volatile T G;` and `*(volatile T *)&G` casts, not local pointer-to-volatile declarations); (3) no inner do-while. New verdict: PASS on the cleaned candidate body.",
+    "applies_to_candidate_at_session": "sessions[1]"
   },
-  "remaining_gap": "5 (masked) — Region B: second call's volatile-load + arg-setup scheduling. Target keeps the volatile lw of s0 (from D_800A1510) strictly source-ordered adjacent to its pointer load before the func_80082A14(g_sys_dma_region + 1, 1) call; natural cc1 sched1 interleaves it with the independent arg setup. HEAD bridges this with the second regfix reorder rule (TEXT 32-38).",
+  "remaining_gap": "7 (masked) — Region B: second call's volatile-load + arg-setup scheduling. Target keeps the volatile lw of s0 (from D_800A1510) strictly source-ordered adjacent to its pointer load before the func_80082A14(g_sys_dma_region + 1, 1) call; natural cc1 sched1 interleaves it with the independent arg setup. HEAD bridges this with the second regfix reorder rule (TEXT 32-38) PLUS the inner do-while (now removed). Removing the do-while costs 1 instruction (build 81 vs target 82) and adds 2 mismatch positions versus the prior tainted baseline. Session 2 confirmed `hoist-call-arg-local-flips-jal-delay` does NOT apply (documented symptom is a pre-call STORE; this function has a pre-call LOAD). Region B's sched1-priority root cause hypothesis: `lw a0, hi(D_800A2634)` has higher INSN_PRIORITY than `lw v0, hi(D_800A1510)` because its dependent chain reaches the jal (which has high `use` weight in sched.c's `priority()`); the lw v0 / lw s0 chain ends in s0 (callee-save not USEd until post-call). To match target without a sched1 fence, the lw v0 chain needs higher priority — derived from clean C structure rather than a no-semantic-purpose wrap.",
   "rejected_forms": [
-    "do { } while (0); between `s0_val = *D_800A1510;` and the second func_80082A14 call — sched1 fence, layer-2 FAIL (see rejected/do-while-sched1-fence.c)"
+    "Outer `do { } while (0);` between `s0_val = *D_800A1510;` and the second func_80082A14 call — sched1 fence, layer-2 FAIL on commit 4dd017d8 (see rejected/do-while-sched1-fence.c).",
+    "INHERITED inner `do { } while (0);` at src/ings2.c line 69 / candidate.c line 30 (commit d7c91eba 2026-04-09) — sched1 fence (same family as the outer one). Session-2 cheat-reviewer FAIL. Cannot be re-introduced in any form to defeat sched1.",
+    "Block-hoist of `s32 dma_arg = g_sys_dma_region + 1;` declared FIRST in a block surrounding the s0 reload + call — measured WORSE against the with-cheat baseline (5->7, lost 1 insn). hoist-call-arg-local-flips-jal-delay rule does not apply: it's documented for pre-call STORE fill, not pre-call LOAD scheduling.",
+    "Shared `volatile s32 *ptr = D_800A1510;` declared pre-call, reused post-call — catastrophic (5->23, lost 3 insns). Caches the pointer in a callee-save across the call, eliminating target's fresh post-call reload."
   ],
   "next_hypotheses": [
-    "Restructure the second-call arg so its setup is not independent of the s0 reload (e.g. a named local for `g_sys_dma_region + 1` declared/computed BEFORE the s0_val reload — hoist-call-arg-local-flips-jal-delay family — so sched1 has nothing to interleave).",
-    "Check whether the s0_val reload can be expressed through the existing `volatile s32 *ptr` access path used later (single pointer local established before the call) so the load is data-dependent on an adjacent instruction.",
-    "RTL diagnosis per register-alloc-pure-c: cc1 -da on the bridged form, read sched1 dump to see which dependence (or absence) lets the arg setup hoist; derive the lever from the dump rather than guessing.",
-    "Worker's measured negatives (all scored worse than baseline 7, BEFORE Region A landed — re-measure on top of Region A floor 5 before ruling out): operand reassociation, pre-computed dma arg, last-arg hoist, merged if/else, inverted branch, eager-flag pre-computation."
+    "RTL diagnosis per [[register-alloc-pure-c]]: tmp/gccdbg/cc1 with BB2_SCHED_DEBUG=1 on the CLEAN candidate.c (Region A lever, no inner do-while, no Region B lever). Read sched1 dump to see exactly why `lw $a0, %hi(D_800A2634)` is prioritized over `lw $v0, %hi(D_800A1510)`. The priority() function in tools/gcc-2.7.2/sched.c computes longest-path-to-end (`birthing_depth` walked through USE chains). Verify whether elevating lw v0's chain depth via additional CLEAN post-call USE of s0 (without introducing a cheat) would shift priority.",
+    "Read m2c output for sys_VSync (asm/funcs/sys_VSync.s) — what shape does the original C reconstruct as? The original may have had structural choices (branch ordering, variable scoping, intermediate naming) that incidentally elevate the s0 load chain's priority without a fence. Compare m2c output against the current candidate.c structure.",
+    "Re-examine matched siblings in src/ings2.c (sys_SetVsyncMode, sys_SetTimer, motion_make_table, func_80082C58) for an analogous volatile-read + call structure that DID match without a sched1 fence. None obvious on first reading, but a focused .greg dump comparison might reveal the differentiator — e.g., target's pre-call USE pattern for the loaded value.",
+    "Re-test the session-1 measured negatives (operand reassociation, pre-computed dma arg, last-arg hoist, merged if/else, inverted branch, eager-flag pre-computation) against the NEW floor-7 baseline. Their original measurements were against the tainted baseline, so the deltas may differ. Hypothesis 1 in session 2 already covered 'pre-computed dma arg / last-arg hoist'; the others remain un-tested at floor 7.",
+    "Consider an empirical search via decomp-permuter with a clean target.o (built from asm/funcs/sys_VSync.s + prelude.inc). The directed-PERM macros + a single-function target should be able to explore structural mutations the worker hasn't enumerated. Vet any found close-form against the cheat catalog before committing — auto-search output is PROPOSALS, not winners."
   ]
 }
