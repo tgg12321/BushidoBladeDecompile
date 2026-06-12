@@ -37,6 +37,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 
 ## Scheduling / delay-slot diffs
 
+- **fake-varargs-explicit-homing** — printf-wrapper arg-register homes are bulk pre-subu in your build but body-SCHEDULED in target (delay slot / copy-reg home) → the original was NOT `...`-variadic; write 4 named args + explicit stores through the va pointer (`ap[1]=a; ...`), pass `ap+1`.
 - **switch-break-shared-return-sched-hoist** — per-case `return 0;` lets sched1 hoist the v0-set into a load-delay slot → `break;` + shared trailing `return 0;`.
 - **loop-exit-work-inside-loop-sched-fence** — post-loop inits hoisted above a tail-store region → move the loop's exit work INSIDE the loop (`if (cond) continue; tail; break;`).
 - **loop-note-fixes-delay-slot-steal** — a memory-clobber barrier that only blocks a delay-slot steal → write the loop as a real `while`/`do`.
