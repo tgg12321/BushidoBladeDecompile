@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T20:59:07",
+  "generated_at": "2026-06-11T20:04:42",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -289,6 +289,14 @@
       "distance": 9,
       "verdict": "C",
       "rules": 8,
+      "status": "active"
+    },
+    {
+      "func": "func_8007DC9C",
+      "file": "display",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 4,
       "status": "active"
     },
     {
@@ -753,14 +761,6 @@
       "distance": 14,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007DC9C",
-      "file": "display",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 4,
       "status": "active"
     },
     {
@@ -3101,15 +3101,6 @@
       "park_reason": "SOTN-standard policy tightened 2026-06-10: plain `register` storage hints are allocator-steering cheats, not completed C. Function currently has no regfix/asmfix/hard register pins and sandbox score 0, but still contains load-bearing plain register hints. Needs a natural no-register C form or a canonical-asm decision before completion."
     },
     {
-      "func": "func_8007DB20",
-      "file": "display",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope cheat: extern volatile s32 D_8009BF7C; at display.c:934 forces D_8009BF7C reloads in this function (lines 981, 990). Body itself is clean pure-C, score 0. Unblocking requires removing the volatile decl (file-wide effect) which would change codegen for all D_8009BF7C-using functions in display.c. Multi-function refactor \u2014 not a quick win."
-    },
-    {
       "func": "func_800832A0",
       "file": "ings2",
       "distance": 0,
@@ -3959,11 +3950,11 @@
     }
   ],
   "counts": {
-    "total": 481,
+    "total": 480,
     "active": 386,
     "by_status": {
       "active": 386,
-      "parked": 95
+      "parked": 94
     },
     "by_verdict": {
       "C": 201,

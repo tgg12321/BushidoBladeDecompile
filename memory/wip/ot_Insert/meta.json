@@ -1,0 +1,44 @@
+{
+  "function": "ot_Insert",
+  "file": "gpu",
+  "scores": {
+    "head_floor": 7,
+    "candidate_floor": null,
+    "candidate_floor_note": "no PASS-vetted candidate; the only sandbox-0 form (rejected/otag-bitfield.c) was reverted on audit grounds",
+    "metric": "sandbox --disable all (masked Levenshtein)"
+  },
+  "sessions": [
+    {
+      "date": "2026-06-11",
+      "git_head_at_measurement": "0768f0b8",
+      "lever": "fable-5 worker: local OTag bitfield struct -> COMPLETED-C (commit 0768f0b8)",
+      "note": "sandbox 0, SHA1 == oracle. In-session reviewer PASS."
+    },
+    {
+      "date": "2026-06-11",
+      "git_head_at_measurement": "6f97a879",
+      "lever": "layer-2 retro-audit FAIL -> USER UPHELD -> reverted",
+      "note": "Audit: GCC-internals-led justification, file-local typedef, lever space not exhausted. Orchestrator contested 2 of 4 evidence items (scope-discipline explains sibling non-application; field order is probe-verified compiler fact) but user chose the strict line. Pinned mask-and-OR HEAD restored; oracle green."
+    }
+  ],
+  "reviewer": {
+    "verdict": "FAIL (layer-2 retroactive, 2026-06-11, upheld by user)",
+    "crux": "bitfield struct's primary stated rationale was sched1/RTL steering; typedef file-local; named-intermediate and other mask-spelling levers untried",
+    "in_session_verdict": "PASS (overturned)"
+  },
+  "remaining_gap": "distance 7 = sched1 hoisting OT_ADDR_MASK lui+ori chain in the mask-and-OR form; register pins currently bridge it",
+  "next_hypotheses": [
+    "Instrumented cc1 -da dump to pin the exact sched1 fill decision before levering",
+    "Named-intermediate decomposition (SOTN LUID family) of the mask-and-OR expressions",
+    "Header-level OTag/P_TAG re-proposal: project type in include/, applied to ALL OT functions, semantics-led justification, user sign-off (proven-spelling-class path)",
+    "If all measure negative: re-park with exhaustion ledger"
+  ],
+  "rejected_forms": [
+    {
+      "slug": "otag-bitfield",
+      "file": "rejected/otag-bitfield.c",
+      "measured": "sandbox 0, 15/15, SHA1 == oracle (commit 0768f0b8, reverted 6f97a879)",
+      "verdict": "FAIL \u2014 justification/process grounds, upheld by user; re-proposable only per notes.md conditions"
+    }
+  ]
+}
