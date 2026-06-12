@@ -110,3 +110,83 @@ LOW, score 0, "no strong hand-coded indicators". 82-insn function with
 3 spills and 6 distinct registers — standard cc1 codegen profile. The
 function is firmly in TIGHT_C / pure-C territory; no canonical-asm
 escape applies.
+
+## Session 4 measurements (2026-06-12) — primary unprobed lever executed
+
+Built the clean single-function permuter directory at `permuter/sys_VSync/`
+per the WIP's PRIMARY UNPROBED LEVER. Files:
+
+  - `base.c` — trimmed preprocessed source containing ONLY sys_VSync +
+    its decls/typedefs (2.4 KB; the full whole-file preprocess was
+    909 lines / 17 KB but caused 95% noise as warned in session 1's WIP).
+  - `target.s` — asm/funcs/sys_VSync.s + `prelude.inc` (`.set gp=64`
+    stripped for r3000).
+  - `target.o` / `base.o` — both have sys_VSync at offset 0.
+  - `compile.sh` — same pipeline as `engine sandbox` (cc1 + prologue_fix +
+    maspsx + as).
+
+Verified baseline permuter score = **495** (vs the prior tainted 15310
+on full-file base.o). The ~30× reduction confirms the offset-noise was
+indeed dominating the prior measurement.
+
+Ran random-mode permuter for ~5 min with `-j 6` (estimated several
+hundred iterations across workers). Best closing forms found:
+
+| Score | Form | Verdict |
+|---|---|---|
+| 40 | `do { func_80082A14(g_sys_dma_region + 1, 1); } while (0);` | FAIL — sched1-fence cheat, same family as session-2 FAIL |
+| 50 | do-while + dead-store-via-s0_val-reuse | FAIL — composite cheat |
+| 300 | do-while wrap around bigger statement range | FAIL — same family |
+| 355 | do-while wrap around first-call block | FAIL — same family |
+| 455 | semantic-breaking s0_val reuse | INCORRECT — not a closing form |
+
+Best non-cheat score = 495 (= baseline, no improvement). Permuter's
+random-mode mutation surface is exhausted of legitimate closing forms
+for this candidate.
+
+This is strong evidence that the structural lever IS in reorg.c
+(delay-slot fill), as the session-3 dump localised — and random C-level
+mutations don't reach reorg.c's decision surface. The mutations the
+permuter found were all sched1-fence cheats (because that IS what
+defeats the gap, but it's the forbidden answer).
+
+## Next session — what to try
+
+1. **Directed PERM_* macros** (the un-tried part of the permuter lever):
+   - `PERM_LINESWAP(...)` around Region B's 3 statements (s0_val read,
+     dma compute, call) — scripted ordering mutations.
+   - `PERM_VAR(...)` for local types — affects RTL pseudo allocation.
+   - `PERM_TYPECAST(...)` on the volatile-load expression.
+   - `PERM_FORCE_FORWARD_DECL(...)` on the call.
+   These target reorg.c's surface more directly than random-mode.
+
+2. **Re-test session-1's measured negatives at floor 7** (un-tested at
+   clean baseline per the WIP's next_hypothesis #5):
+   - operand reassociation in Region A
+   - last-arg hoist on the second call
+   - merged if/else for the `a0 > 0` two-check pattern
+   - inverted branch sense on the prologue checks
+   - eager-flag pre-computation
+   Each ruled-out variant should be measured against the clean floor-7
+   baseline; their original session-1 measurements were against the
+   tainted baseline.
+
+3. **Add `BB2_REORG_DEBUG` instrumentation to tools/gcc-2.7.2/reorg.c**
+   (diagnostic only per [[no-compiler-divergence]]): dump the
+   delay-slot-fill candidate list + chosen insn at the second jal. The
+   pick logic surfaces whether the lever is in dependence-cone analysis
+   or simple-fill heuristic.
+
+## Permuter directory layout (preserved for next session)
+
+`permuter/sys_VSync/` — ready to re-run. Useful commands:
+
+```
+python3 tools/decomp-permuter/permuter.py permuter/sys_VSync \
+    --stop-on-zero -j 6
+```
+
+To add directed PERM_* macros: edit `permuter/sys_VSync/base.c` around
+sys_VSync's body. The full `base.c.full` (whole-file preprocess) is
+preserved as a backup; the active `base.c` is the trimmed
+single-function version.

@@ -74,6 +74,56 @@
     },
     {
       "date": "2026-06-12",
+      "agent": "headless worker (opus), session 4 resuming from 2c779fb3",
+      "git_head_at_measurement": "2c779fb3",
+      "lever": "Executed the WIP's PRIMARY UNPROBED LEVER — built clean single-function permuter at permuter/sys_VSync/ (base.c trimmed to sys_VSync only, target.o assembled from asm/funcs/sys_VSync.s + r3000-stripped prelude.inc, sys_VSync at offset 0 in both base.o and target.o). Verified baseline permuter score = 495 (matches sandbox floor-7 character — 1 ins/del + ~6-7 reorderings). Ran random-mode permuter for ~5 minutes with -j 6 (estimated several hundred to ~1000 iterations). All non-zero-score improvements found were CHEAT-FAMILY (do-while sched1-fence wraps around call sites). No legitimate (non-cheat) form beat the 495 baseline.",
+      "floor_before": 7,
+      "floor_after": 7,
+      "permuter_findings": [
+        {
+          "score": 40,
+          "form": "do { func_80082A14(g_sys_dma_region + 1, 1); } while (0);",
+          "verdict": "FAIL — same sched1-fence family as the inherited inner do-while that session-2 cheat-reviewer FAILed. Out of scope for do-while-zero-exception (which sanctions only the LABEL_OUTSIDE_LOOP_P / reorg.c invert-jump peephole on NE conditions). Saved to rejected/permuter-do-while-around-call.c."
+        },
+        {
+          "score": 50,
+          "form": "do { func_80082A14(g_sys_dma_region + 1, 1); } while (0); + s0_val = base; frame = s0_val + a0; (dead-store-via-s0_val-reuse in Region A)",
+          "verdict": "FAIL — composite cheat (sched1-fence + dead-store coercion via callee-save-pinned local reuse). Same family."
+        },
+        {
+          "score": 300,
+          "form": "do { if (a0 == 1) return s1_val; { Region-A block } s0_val = *D_800A1510; } while (0); — wraps the multi-statement prologue + Region A + s0_val read in a do-while-zero, leaving only the second call outside",
+          "verdict": "FAIL — same sched1-fence family, just a different wrapping location."
+        },
+        {
+          "score": 355,
+          "form": "do { { Region-A block including the first call } } while (0);",
+          "verdict": "FAIL — wraps the first call's block. Same family."
+        },
+        {
+          "score": 455,
+          "form": "s0_val = g_sys_dma_region; return s0_val; (in the a0<0 early-return path) + func_80082A14(s0_val + 1, 1); + D_800A151C = s0_val; — uses s0_val for multiple unrelated values",
+          "verdict": "SEMANTICALLY BROKEN — the early-return path's s0_val assignment dies (return before s0_val is used elsewhere); the call's first arg uses s0_val (= *D_800A1510 from the volatile read) instead of g_sys_dma_region + 1; the tail store also writes the wrong value. Not a closing form, just incorrect."
+        }
+      ],
+      "directed_perm_macros_status": "NOT yet probed. The PERM_* macro surface in tools/decomp-permuter/USAGE.md (PERM_FORCE_FORWARD_DECL, PERM_LINESWAP, PERM_VAR, PERM_ONCE, PERM_TYPECAST, PERM_BREAK, PERM_RANDOMIZE, etc.) lets you script TARGETED mutations rather than the random-mode shotgun. A directed sweep over PERM_LINESWAP across Region B's 3 statements (s0_val read, dma_arg compute, call) + PERM_VAR over local types might surface a mutation that affects reorg.c's delay-slot fill decision rather than just sched1's LUID surface. This is the next reachable avenue.",
+      "discoveries": [
+        {
+          "name": "Random-permuter cheat-attraction confirms the cheat is the closing form's family",
+          "details": "Permuter's random mutations found the do-while-around-call cheat as the BEST score (40), with 4 other variants of the same family at scores 50, 300, 355. The permuter's mutation surface IS expressive enough to wrap arbitrary statement blocks in do-while-zero, but no legitimate (non-cheat) mutation gets close to even score 100. This is strong evidence that the sched1-fence IS what closes Region B; the random-permuter cannot find a non-fence form because the legitimate lever surface (reorg.c delay-slot fill) is not reached by random C-level mutations of this structure."
+        },
+        {
+          "name": "Single-function permuter setup works (sys_VSync at offset 0 in both base.o and target.o)",
+          "details": "permuter/sys_VSync/ contains: base.c (trimmed to sys_VSync + decls only, 2.4KB), target.s (asm/funcs/sys_VSync.s + prelude.inc with .set gp=64 stripped for r3000), target.o (assembled, sys_VSync at offset 0), compile.sh (same pipeline as src/ build), base.o (built from base.c, sys_VSync at offset 0). Verified baseline score = 495 = ~95% reduced from the prior whole-file noise (15310). Future sessions can re-run permuter without rebuilding the directory."
+        },
+        {
+          "name": "Session-1 measured negatives REMAIN un-tested at clean floor-7",
+          "details": "Per the prior WIP's next_hypothesis #5, session-1's measured negatives (operand reassociation, last-arg hoist, merged if/else, inverted branch, eager-flag pre-computation) should be re-tested against the new floor-7 baseline. Session 4 prioritised the PRIMARY UNPROBED LEVER (permuter) ahead of these. They remain on the worklist for the next session."
+        }
+      ]
+    },
+    {
+      "date": "2026-06-12",
       "agent": "headless worker (opus), session 3 resuming from 29132b4c",
       "git_head_at_measurement": "29132b4c",
       "lever": "No new lever closed; ran BB2_SCHED_DEBUG instrumented cc1 dump on the clean candidate (Region A applied, no inner do-while), and tested two additional named-intermediate variants against the clean floor-7 baseline. Both no-change. Confirmed scan_hand_coded tier=LOW score=0 — TIGHT_C territory, no canonical-asm escape.",
@@ -113,20 +163,22 @@
   "reviewer": {
     "verdict": "PASS",
     "date": "2026-06-12",
-    "evidence": "Session 2 invoked the cheat-reviewer on the candidate body (subagent_type: cheat-reviewer). The reviewer FAILed the original (with inner do-while) and instructed removing the inner do-while. After applying that next_action, the candidate body contains: (1) Region A named-base lever — explicitly PASSed by both the prior layer-2 reviewer and this session's reviewer (SOTN named-intermediate family); (2) the Region B spin-wait `volatile s32 *ptr = D_800A1510;` block — explicitly PASSed by this session's reviewer as a standard pointer-to-volatile MMIO spin-wait, NOT in the forbidden volatile-coercion family (which targets `extern volatile T G;` and `*(volatile T *)&G` casts, not local pointer-to-volatile declarations); (3) no inner do-while. New verdict: PASS on the cleaned candidate body.",
+    "evidence": "Session 2 invoked the cheat-reviewer on the candidate body (subagent_type: cheat-reviewer). The reviewer FAILed the original (with inner do-while) and instructed removing the inner do-while. After applying that next_action, the candidate body contains: (1) Region A named-base lever — explicitly PASSed by both the prior layer-2 reviewer and this session's reviewer (SOTN named-intermediate family); (2) the Region B spin-wait `volatile s32 *ptr = D_800A1510;` block — explicitly PASSed by this session's reviewer as a standard pointer-to-volatile MMIO spin-wait, NOT in the forbidden volatile-coercion family (which targets `extern volatile T G;` and `*(volatile T *)&G` casts, not local pointer-to-volatile declarations); (3) no inner do-while. New verdict: PASS on the cleaned candidate body. SESSION 4 (2026-06-12): candidate.c UNCHANGED from session 2; the session-2 cheat-reviewer PASS still applies. Session 4 added evidence (permuter findings, all rejected) but did not modify the candidate body.",
     "applies_to_candidate_at_session": "sessions[1]"
   },
-  "remaining_gap": "7 (masked) — Region B: second call's volatile-load + arg-setup scheduling. Target keeps the volatile lw of s0 (from D_800A1510) strictly source-ordered adjacent to its pointer load before the func_80082A14(g_sys_dma_region + 1, 1) call; natural cc1 sched1 interleaves it with the independent arg setup. HEAD bridges this with the second regfix reorder rule (TEXT 32-38) PLUS the inner do-while (now removed). Removing the do-while costs 1 instruction (build 81 vs target 82) and adds 2 mismatch positions versus the prior tainted baseline. Session 2 confirmed `hoist-call-arg-local-flips-jal-delay` does NOT apply (documented symptom is a pre-call STORE; this function has a pre-call LOAD). Region B's sched1-priority root cause hypothesis: `lw a0, hi(D_800A2634)` has higher INSN_PRIORITY than `lw v0, hi(D_800A1510)` because its dependent chain reaches the jal (which has high `use` weight in sched.c's `priority()`); the lw v0 / lw s0 chain ends in s0 (callee-save not USEd until post-call). To match target without a sched1 fence, the lw v0 chain needs higher priority — derived from clean C structure rather than a no-semantic-purpose wrap.",
+  "remaining_gap": "7 (masked) — Region B: second call's volatile-load + arg-setup scheduling. Target keeps the volatile lw of s0 (from D_800A1510) strictly source-ordered adjacent to its pointer load before the func_80082A14(g_sys_dma_region + 1, 1) call; natural cc1 sched1 interleaves it with the independent arg setup. HEAD bridges this with the second regfix reorder rule (TEXT 32-38) PLUS the inner do-while (now removed). Removing the do-while costs 1 instruction (build 81 vs target 82) and adds 2 mismatch positions versus the prior tainted baseline. Session 2 confirmed `hoist-call-arg-local-flips-jal-delay` does NOT apply (documented symptom is a pre-call STORE; this function has a pre-call LOAD). Region B's sched1-priority root cause hypothesis: `lw a0, hi(D_800A2634)` has higher INSN_PRIORITY than `lw v0, hi(D_800A1510)` because its dependent chain reaches the jal (which has high `use` weight in sched.c's `priority()`); the lw v0 / lw s0 chain ends in s0 (callee-save not USEd until post-call). To match target without a sched1 fence, the lw v0 chain needs higher priority — derived from clean C structure rather than a no-semantic-purpose wrap. SESSION 4 (2026-06-12): the WIP's PRIMARY UNPROBED LEVER (decomp-permuter with clean single-function target) was EXECUTED. Random-mode permuter found ONLY cheat-family closing forms (do-while sched1-fence wraps; best non-cheat score = 495 = baseline). Cheat-attraction is strong evidence the structural lever is in reorg.c (delay-slot fill), not at sched1's LUID surface, and random C-level mutations of this candidate don't reach the reorg.c decision point. Next reachable avenues: (a) directed PERM_* macros (PERM_LINESWAP / PERM_VAR / PERM_TYPECAST scripted into base.c) to explore mutations targeting reorg.c rather than random sched1-fence; (b) re-test session-1's measured negatives against the new floor-7 baseline (operand reassociation, last-arg hoist, merged if/else, inverted branch, eager-flag pre-computation — un-tested at clean baseline); (c) instrument reorg.c with BB2_REORG_DEBUG to dump the delay-slot fill candidate set + pick rationale (diagnostic only per [[no-compiler-divergence]]).",
   "rejected_forms": [
     "Outer `do { } while (0);` between `s0_val = *D_800A1510;` and the second func_80082A14 call — sched1 fence, layer-2 FAIL on commit 4dd017d8 (see rejected/do-while-sched1-fence.c).",
     "INHERITED inner `do { } while (0);` at src/ings2.c line 69 / candidate.c line 30 (commit d7c91eba 2026-04-09) — sched1 fence (same family as the outer one). Session-2 cheat-reviewer FAIL. Cannot be re-introduced in any form to defeat sched1.",
     "Block-hoist of `s32 dma_arg = g_sys_dma_region + 1;` declared FIRST in a block surrounding the s0 reload + call — measured WORSE against the with-cheat baseline (5->7, lost 1 insn). hoist-call-arg-local-flips-jal-delay rule does not apply: it's documented for pre-call STORE fill, not pre-call LOAD scheduling.",
     "Shared `volatile s32 *ptr = D_800A1510;` declared pre-call, reused post-call — catastrophic (5->23, lost 3 insns). Caches the pointer in a callee-save across the call, eliminating target's fresh post-call reload.",
     "Bare-load hoist `{ s32 dma = g_sys_dma_region; s0_val = *D_800A1510; func_80082A14(dma + 1, 1); }` (session 3) — no change at clean floor 7. The +1-at-callsite split doesn't shift sched1's interleave decision.",
-    "Pre-decl + late-assign `{ s32 dma_arg; s0_val = *D_800A1510; dma_arg = g_sys_dma_region + 1; func_80082A14(dma_arg, 1); }` (session 3) — no change at clean floor 7. cc1 collapses the trivial local back to the call-site expression; LUID bias doesn't reach the relevant tie-break."
+    "Pre-decl + late-assign `{ s32 dma_arg; s0_val = *D_800A1510; dma_arg = g_sys_dma_region + 1; func_80082A14(dma_arg, 1); }` (session 3) — no change at clean floor 7. cc1 collapses the trivial local back to the call-site expression; LUID bias doesn't reach the relevant tie-break.",
+    "PERMUTER session 4: `do { func_80082A14(g_sys_dma_region + 1, 1); } while (0);` — sched1 fence around the second call (permuter best score 40). Same family as the session-2 FAIL. See rejected/permuter-do-while-around-call.c.",
+    "PERMUTER session 4: 4 additional do-while-wrap variants at scores 50, 300, 355, 455 — all same sched1-fence family (wrapping different statement ranges) or semantically broken (455 reuses s0_val incorrectly). All FAIL."
   ],
   "next_hypotheses": [
-    "PRIMARY UNPROBED LEVER — decomp-permuter with a clean SINGLE-FUNCTION target.o built from asm/funcs/sys_VSync.s + tools/decomp-permuter/prelude.inc (drop `.set gp=64` for r3000) so the function sits at offset 0 like base.o. Use --stop-on-zero. The directed-PERM macros can explore structural mutations the worker hasn't enumerated (in particular, mutations that affect reorg.c's delay-slot pick, not just sched1's INSN_PRIORITY/LUID — which is where the session-3 dump localised the remaining decision point). Any closing form MUST be vetted against the cheat catalog per [[no-new-park-categories]] before commit — auto-search output is PROPOSALS, not winners.",
+    "SESSION-4 UPDATE — random permuter mode is EXHAUSTED on this candidate (~5 min, ~hundreds of iterations, only cheat-family closing forms found at scores 40/50/300/355). The permuter directory permuter/sys_VSync/ remains set up for the next session. Next reachable lever via permuter: DIRECTED PERM_* macros. Add PERM_LINESWAP() around Region B's 3 statements, PERM_VAR for the local types, PERM_TYPECAST on the volatile-load result, PERM_ONCE/PERM_FORCE_FORWARD_DECL on the call args. Then re-run permuter — directed mutations may reach the reorg.c delay-slot fill surface that random mutations don't. Any closing form MUST be vetted against the cheat catalog per [[no-new-park-categories]] before commit.",
     "RTL diagnosis per [[register-alloc-pure-c]]: session-3 ran BB2_SCHED_DEBUG=1 BB2_PRIO_DEBUG=1 and stored output at tmp/sched_dump.log (6994 lines). Key finding: sched1's claimed pick order DIFFERS from cc1's actual emit (lw v0 placed at pos 5 in sched1 but emits as pos 6). The decision point is in reorg.c's delay-slot fill, NOT sched1. A focused dump of reorg.c's choices (would need adding BB2_REORG_DEBUG instrumentation) would identify whether the lever surface is the dependence-cone analysis or the simple-fill heuristic.",
     "Read m2c output for sys_VSync (asm/funcs/sys_VSync.s) — session-3 confirmed m2c's reconstruction matches the candidate structure exactly (s0_val read between calls, dma_region + 1 inline call arg). No structural deviation to exploit there.",
     "Re-examine matched siblings in src/ings2.c (sys_SetVsyncMode, sys_SetTimer, motion_make_table, func_80082C58) for an analogous volatile-read + call structure that DID match without a sched1 fence. None obvious on first reading, but a focused .greg dump comparison might reveal the differentiator — e.g., target's pre-call USE pattern for the loaded value.",
