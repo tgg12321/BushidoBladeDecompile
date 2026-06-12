@@ -1,6 +1,7 @@
 ---
 name: sandbox-zero-retire-fails
-paths: ["src/*.c", "regfix.txt"]
+paths: ["regfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 description: "Engine gotcha: sandbox --disable all == 0 but retire FAILS the SHA1. Cause = a cheat-asm barrier still in the C source that the regfix rules compensated for. Strip the barrier AND the rules."
 metadata:
   type: reference

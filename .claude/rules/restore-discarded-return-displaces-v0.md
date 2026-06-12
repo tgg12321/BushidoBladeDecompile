@@ -1,7 +1,8 @@
 ---
 name: restore-discarded-return-displaces-v0
 description: Caller captures a return the void impl discards; restoring `return ret;` forces $v0 live across an intermediate global reload, displacing it to $v1 — retires a 2-rule `$v0`→`$v1` subst cluster
-paths: ["src/*.c"]
+paths: [".claude/rules/restore-discarded-return-displaces-v0.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 ---
 
 # Caller captures a return the void impl discards — restore it to displace $v0

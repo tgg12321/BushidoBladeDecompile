@@ -1,6 +1,7 @@
 ---
 name: do-while-zero-exception
-paths: ["src/*.c"]
+paths: [".claude/rules/do-while-zero-exception.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "NARROW SANCTIONED EXCEPTION (user policy 2026-06-04): `do { ... } while (0);` is the ONE no-semantic-purpose wrapper construct allowed in BB2 source. Allowed ONLY because SOTN ships it openly with `// FAKE` annotation. Strictly last-resort: requires demonstrated lever-exhaustion. Does NOT relax the 'cheats by any spelling' policy for ANY other construct."
 metadata:
   type: rule

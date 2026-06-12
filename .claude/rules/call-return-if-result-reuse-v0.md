@@ -1,7 +1,8 @@
 ---
 name: call-return-if-result-reuse-v0
 description: Initialize an if/else-result variable from the call return to keep it in `$v0` through GCC's bnez+delay-slot+overwrite merge form — retires the "branch-sense + 2 constant-load + downstream-subu" rename cluster
-paths: ["src/*.c"]
+paths: [".claude/rules/call-return-if-result-reuse-v0.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 ---
 
 # Initialize the if-else result var from the call return to land it in `$v0`

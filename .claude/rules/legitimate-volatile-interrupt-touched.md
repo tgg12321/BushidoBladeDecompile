@@ -1,6 +1,7 @@
 ---
 name: legitimate-volatile-interrupt-touched
-paths: ["src/*.c"]
+paths: [".claude/rules/legitimate-volatile-interrupt-touched.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "NARROW SANCTIONED CARVE-OUT (user policy 2026-06-08): `extern volatile T G;` is allowed ONLY for globals asynchronously mutated by an identifiable IRQ/MMIO writer AND read at a use-site shape that demonstrably requires CSE-defeat (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound). SOTN-grounded. Does NOT relax the broader `volatile`-coercion ban in [[inline-asm-policy]] for any other case."
 metadata:
   type: rule

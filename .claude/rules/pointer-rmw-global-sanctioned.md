@@ -1,7 +1,8 @@
 ---
 name: pointer-rmw-global-sanctioned
 description: User-sanctioned 2026-06-10 — the zero-displacement pointer-local RMW spelling (s32 *p = &G; cur = *p; ...; *p = cur;) in func_80077894; narrow precedent, retro-audit FAIL overridden by user decision
-paths: ["src/*.c"]
+paths: [".claude/rules/pointer-rmw-global-sanctioned.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 ---
 
 # The zero-displacement pointer-RMW spelling — user-sanctioned (narrow)

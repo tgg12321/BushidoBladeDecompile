@@ -1,6 +1,7 @@
 ---
 name: lost-codegen-insert-cheat
-paths: ["regfix.txt", "src/*.c"]
+paths: ["regfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 description: "`insert_after \\"addu $sN, $0, $zero\\" @ idx` rules are asm injection (restore what GCC's const-prop/dead-store ate). Score-inert under the engine sandbox; fix the C via [[shared-end-label]]."
 metadata:
   type: audit

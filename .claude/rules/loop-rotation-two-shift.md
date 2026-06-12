@@ -1,6 +1,7 @@
 ---
 name: loop-rotation-two-shift
-paths: ["src/*.c"]
+paths: [".claude/rules/loop-rotation-two-shift.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "A bit-search/shift loop with an inline-asm initial `sllv` + register pins: target has the shift twice (peeled before the loop + recomputed in the bottom delay slot), a GCC loop-rotation artifact you can't hand-write. Use a natural for-loop (peeled shift is NOT folded), an opaque `one` var to defeat the `(x>>i)&1` bit-test transform, and the original explicit-goto post-loop order + mask-var reuse for branch sense/register."
 metadata:
   type: recipe

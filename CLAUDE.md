@@ -295,9 +295,12 @@ The agent *is* the gap-closer — the engine measures, routes, and gates; you wr
 6. **Register findings.** Before committing, ask: did this match reveal a *reusable* codegen
    pattern or a non-obvious gotcha that the next agent would benefit from? If yes, record it where
    future agents will actually see it:
-   - **reusable pattern** ⇒ add/update a path-scoped doc in `.claude/rules/<slug>.md` (with a
-     `paths:` glob so it auto-loads when an agent reads a matching source file; the metrics layer
-     fingerprints it as a technique `slug`). Link related rules with `[[other-slug]]`.
+   - **reusable pattern** ⇒ add/update a doc in `.claude/rules/<slug>.md` with `paths:
+     [".claude/rules/<slug>.md"]` (ON-DEMAND — technique rules do NOT get a broad `src/*.c`
+     glob; that cost ~200k tokens/session pre-2026-06-11) **AND add a one-line symptom entry
+     to `.claude/rules/codegen-technique-index.md`** (the index is what auto-loads). The
+     metrics layer fingerprints the `slug`. Link related rules with `[[other-slug]]`. Only
+     enforcement-critical POLICY rules keep a broad glob.
    - **function-specific fact** ⇒ a `memory/` entry (per the memory rules in this file).
    - **routine / no-op match** ⇒ skip; don't manufacture a finding.
 

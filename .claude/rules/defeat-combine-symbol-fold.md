@@ -1,7 +1,8 @@
 ---
 name: defeat-combine-symbol-fold
 description: Pre-compute a displaced pointer into its own local across a call to defeat cc1 combine's `(plus symbol const)` address fold, retiring an identity-reload barrier
-paths: ["src/*.c"]
+paths: [".claude/rules/defeat-combine-symbol-fold.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 ---
 
 # Pre-compute a displaced pointer to defeat combine's `(plus symbol const)` address fold

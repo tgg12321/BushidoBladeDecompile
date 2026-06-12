@@ -1,6 +1,7 @@
 ---
 name: prologue-fix-redundant-reorder
-paths: ["regfix.txt", "src/*.c", "tools/prologue_config.json"]
+paths: ["regfix.txt", "tools/prologue_config.json"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 description: "A single regfix `reorder` on the prologue + a prologue_config.json entry can be a circular cheat — cc1's natural output already matches, prologue_fix mangles it, and the reorder rule undoes the mangle. Remove both; no C change."
 metadata:
   type: reference

@@ -1,6 +1,7 @@
 ---
 name: store-before-jal
-paths: ["src/*.c"]
+paths: [".claude/rules/store-before-jal.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "C structure that lets GCC schedule a sh into the jal's delay slot, avoiding a callee-save register for the stored value. The unlock for the calc_fc_frame_800203B4 match."
 metadata:
   type: reference

@@ -1,7 +1,8 @@
 ---
 name: bitfield-direction-divergence
 description: Measured toolchain fact (2026-06-11) — our decompals cc1 allocates the FIRST-declared bitfield at the HIGH bits; cc1psx (PsyQ original) at the LOW bits. SDK bitfield structs must be declared in FLIPPED field order to reproduce the original layout.
-paths: ["src/*.c", "include/*.h"]
+paths: [".claude/rules/bitfield-direction-divergence.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 ---
 
 # Bitfield allocation direction DIVERGES between our fork and cc1psx

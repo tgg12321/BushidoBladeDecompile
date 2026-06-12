@@ -1,6 +1,7 @@
 ---
 name: jtbl-rodata-split-infrastructure
-paths: ["asmfix.txt", "src/*.c"]
+paths: ["asmfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 description: "jtbl-rename + delete_between asmfix rules are canonical jump-table infra, not cheats: a switch whose table splat put in asm/data rodata can't reach zero-asmfix without a global rodata reorder — park it."
 metadata:
   type: reference

@@ -1,6 +1,7 @@
 ---
 name: dead-branch-scheduling
-paths: ["regfix.txt", "src/*.c"]
+paths: ["regfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 description: "ARCHIVED FORBIDDEN — `insert_after \"sra ...\"` regfix rule to manufacture a dead instruction the branch-likely scheduler emits is bytes-from-rule, not bytes-from-C-compilation. Same family as [[lost-codegen-insert-cheat]]. Score-inert under the cheat-invisible sandbox."
 metadata:
   type: archived

@@ -1,6 +1,7 @@
 ---
 name: store-const-reload-cse
-paths: ["src/*.c", "regfix.txt"]
+paths: ["regfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 description: "A single regfix `subst` swapping a load-immediate back to a global memory load (e.g. `addiu $3,$zero,2`→`lbu $3,D_800A36FA`). Cause: source saves a reload into a local (`G=N; v=G;`) after storing constant N, so GCC forward-props N into a `li`. Fix: drop the saved-local reload and re-read the GLOBAL directly at the later test — the store kills GCC's CSE entry so it reloads only in the store path. Do NOT use `volatile` (adds addiu+nop+andi)."
 metadata:
   type: reference

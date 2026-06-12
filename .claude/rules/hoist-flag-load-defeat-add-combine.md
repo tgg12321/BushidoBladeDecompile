@@ -1,7 +1,8 @@
 ---
 name: hoist-flag-load-defeat-add-combine
 description: Hoist the if-test's pointer-deref into a named local BEFORE the gated `p += K` so combine sees a use of p between two unconditional adds and doesn't merge them.
-paths: ["src/*.c"]
+paths: [".claude/rules/hoist-flag-load-defeat-add-combine.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 ---
 
 # Hoist a flag-word load BEFORE its `+=` to split a combine-folded address add

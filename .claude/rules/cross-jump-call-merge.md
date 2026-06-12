@@ -1,6 +1,7 @@
 ---
 name: cross-jump-call-merge
-paths: ["src/*.c"]
+paths: [".claude/rules/cross-jump-call-merge.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "target.s has more jalr call-sites than your build: GCC cross-jumping merged calls with equal CALL_INSN_FUNCTION_USAGE. FIX: give each fn-ptr its REAL arg COUNT (count differentiates the calls; arg modes do NOT)."
 metadata:
   type: reference

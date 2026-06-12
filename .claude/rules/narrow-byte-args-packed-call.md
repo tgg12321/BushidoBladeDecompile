@@ -1,6 +1,7 @@
 ---
 name: narrow-byte-args-packed-call
-paths: ["src/*.c", "regfix.txt"]
+paths: ["regfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 description: "GPU/SPU command-wrapper function with 4+ s32 args where 3 are byte-truncated (`arg & 0xFF`) and packed into one 32-bit slot for a function-pointer call, carrying a pin+regfix cluster (4 register-asm pins + 4 `$a3→$s0` regfix substs on the packing accumulator). Fix: declare the 3 byte-packed params as `u8` and drop the `& 0xFF` masks — the pins, regfix, AND masks all retire."
 metadata:
   type: reference

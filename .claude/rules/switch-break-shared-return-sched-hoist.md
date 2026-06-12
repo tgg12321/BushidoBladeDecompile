@@ -1,7 +1,8 @@
 ---
 name: switch-break-shared-return-sched-hoist
 description: Per-case `return 0;` in a switch makes sched1 hoist the v0-set into a load-delay slot (RA conflict → wrong RMW register) and flips a case's branch polarity; write `break;` + one shared trailing `return 0;` instead
-paths: ["src/*.c", "regfix.txt"]
+paths: ["regfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 ---
 
 # Per-case `return 0;` in a switch — sched1 hoists the v0-set into a load-delay slot; write `break;` + shared trailing `return 0;`

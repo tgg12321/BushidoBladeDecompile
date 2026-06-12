@@ -1,7 +1,8 @@
 ---
 name: canonical-asm-authorization-recipe
 description: How to author a whole-body __asm__("glabel ...") block for canonical-asm authorization — three lessons from the 2026-06-07 A-category pass (commit 6e0476f0 documents the retry after a failed first attempt at 8719adea)
-paths: ["src/*.c", "inline_asm_canonical.txt", "regfix.txt", "asmfix.txt"]
+paths: ["inline_asm_canonical.txt", "regfix.txt", "asmfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 ---
 
 # Writing a whole-body `__asm__("glabel ...")` block

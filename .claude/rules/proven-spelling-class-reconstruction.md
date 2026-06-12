@@ -1,7 +1,8 @@
 ---
 name: proven-spelling-class-reconstruction
 description: Narrow same-bytes respelling exception — sanctioned only with mechanism-level proof the original source used a different spelling class, plain-C form, most natural variant, last lever (user policy 2026-06-10)
-paths: ["src/*.c", "regfix.txt", "asmfix.txt"]
+paths: ["regfix.txt", "asmfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 ---
 
 # Proven-spelling-class reconstruction — the narrow same-bytes respelling exception

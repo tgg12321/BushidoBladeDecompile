@@ -1,7 +1,8 @@
 ---
 name: compare-operand-order-register
 description: Reversing a comparison's operand order (write `local > GLOBAL` instead of `GLOBAL < local`) can flip which register cc1 picks for the local; one source edit retires a `$X <-> $Y` regfix rule cluster
-paths: ["src/*.c"]
+paths: [".claude/rules/compare-operand-order-register.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 ---
 
 # Reversing a comparison's operand order can flip which register a value gets

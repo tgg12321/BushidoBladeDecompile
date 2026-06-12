@@ -1,6 +1,7 @@
 ---
 name: maspsx-noreorder-stripping
-paths: ["src/*.c", "tools/maspsx/**"]
+paths: ["tools/maspsx/**"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 description: "Maspsx silently strips TAB-form `.set noreorder` / `.set noat` / `.set reorder` / `.set at` directives from file-scope `__asm__()` blocks. The SPACE-form duplicate is required for the directive to survive to `as`. Without it: the asm body itself is in the wrong reorder mode (inserts unwanted nops in branch delay slots), AND subsequent functions in the same .c file inherit the wrong mode (their delay slots also get wrong handling). The symptom shows up as cascade drift in functions AFTER a newly-added canonical-asm block."
 metadata:
   type: reference

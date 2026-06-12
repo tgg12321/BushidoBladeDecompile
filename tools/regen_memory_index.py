@@ -242,11 +242,17 @@ def main() -> int:
     # short summary so the existence + trigger map is discoverable.
     if path_scoped_stems:
         out_lines.append("## .claude/rules/ — path-scoped rules (auto-load on matching file reads)")
-        out_lines.append("_These don't enter context every session; they load only when Claude reads a file matching their `paths:` glob._")
+        out_lines.append("_They load only when Claude reads a file matching their `paths:` glob. Technique rules are ON-DEMAND: the **codegen-technique-index** rule (auto-loads on `src/*.c`) maps symptoms to slugs; Read the rule file when a symptom matches._")
         out_lines.append("")
+        on_demand: list[str] = []
         for stem, paths in sorted(path_scoped_stems):
+            if paths == [f".claude/rules/{stem}.md"]:
+                on_demand.append(stem)
+                continue
             paths_str = ", ".join(f"`{p}`" for p in paths) if paths else "(no paths)"
             out_lines.append(f"- **{stem}** — {paths_str}")
+        if on_demand:
+            out_lines.append(f"- _on-demand (via codegen-technique-index):_ {', '.join(on_demand)}")
         out_lines.append("")
 
     content = "\n".join(out_lines).rstrip() + "\n"

@@ -1,6 +1,7 @@
 ---
 name: shared-end-label
-paths: ["src/*.c"]
+paths: [".claude/rules/shared-end-label.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "When a switch has multiple cases each ending with `return s2;` where s2 is a different constant per case, GCC constant-folds case 1's `return s2;` to `return 0;` and drops the `s2 = 0;` instruction. Restructure with `goto end; ... end: return s2;` — GCC sees s2 as potentially varying at end and keeps every `s2 = N;` assignment alive."
 metadata:
   type: recipe

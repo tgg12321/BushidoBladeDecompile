@@ -1,7 +1,8 @@
 ---
 name: global-label-drift-sibling-cheat
 description: A pure-C retire that changes cc1's global .L label count shifts every later function's label numbers, breaking a sibling's hardcoded-absolute-label regfix rule
-paths: ["src/*.c", "regfix.txt", "asmfix.txt"]
+paths: ["regfix.txt", "asmfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 ---
 
 # A pure-C retire that changes cc1's `.L` label count can break a LATER sibling's hardcoded-global-label rule

@@ -1,6 +1,7 @@
 ---
 name: compiler-flags-canonical
-paths: ["src/*.c", "regfix.txt", "asmfix.txt"]
+paths: ["regfix.txt", "asmfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 description: "Compiler FLAGS are a dead avenue for unmatched functions. -O2 (+ per-file GP_FILES and NO_SR_FILES exceptions) is PROVEN canonical for every file with remaining work. Don't flag-hunt; the walls are source-structure."
 metadata:
   type: reference

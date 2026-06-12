@@ -1,7 +1,8 @@
 ---
 name: param-reuse-base-copy-cse-canon
 description: Retire an INLINE_MOVE_ALIASING base-copy pin via param reuse (multi-set walker) + early-named call-arg local (flips cse.c make_regs_eqv's longest-lived canonical-reg choice)
-paths: ["src/*.c"]
+paths: [".claude/rules/param-reuse-base-copy-cse-canon.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 ---
 
 # Param-reuse walker + early-named call arg — retire an INLINE_MOVE_ALIASING copy pin

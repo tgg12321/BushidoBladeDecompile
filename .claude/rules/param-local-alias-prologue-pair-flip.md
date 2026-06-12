@@ -1,6 +1,7 @@
 ---
 name: param-local-alias-prologue-pair-flip
-paths: ["src/*.c"]
+paths: [".claude/rules/param-local-alias-prologue-pair-flip.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "ARCHIVED FORBIDDEN — `Rect *_r = r; s32 *_out = out;` literal-rename aliases declared in target's pair order have zero semantic purpose; exist solely to manipulate cc1's expand_function_start LUID assignment so save_restore_insns emits target's prologue save+def pair order."
 metadata:
   type: archived

@@ -1,7 +1,8 @@
 ---
 name: loop-exit-work-inside-loop-sched-fence
 description: Post-loop inits hoisted above a tail store region — move the loop's one-time exit work inside the loop (if (cond) continue; tail; break;) so the LOOP_END note lands mid-block and fences sched
-paths: ["src/*.c", "regfix.txt"]
+paths: ["regfix.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 ---
 
 # Post-loop inits hoisted above a tail store region — move the loop's exit work INSIDE the loop (`if (cond) continue; tail; break;`)

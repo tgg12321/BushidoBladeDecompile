@@ -1,6 +1,7 @@
 ---
 name: goto-end-prologue-delay-slot
-paths: ["src/*.c"]
+paths: [".claude/rules/goto-end-prologue-delay-slot.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "ARCHIVED FORBIDDEN — the `s32 ret_val; if (arg==NULL) {ret_val=0; goto end;} ... end: return ret_val;` accumulator+shared-label has zero semantic purpose; exists solely to make reorg.c fill the bnez/j delay slots with the prologue and zero-assignment. Same intent as the dead-goto label-pad / DImode chain / inline-asm-injection family."
 metadata:
   type: archived

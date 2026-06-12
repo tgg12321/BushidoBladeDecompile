@@ -1,6 +1,7 @@
 ---
 name: inline-asm-injection
-paths: ["src/*.c"]
+paths: [".claude/rules/inline-asm-injection.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "`__asm__ volatile(\\"addu $X, $Y, $0\\")` with hardcoded $N and no %N is the lost-codegen regfix cheat moved into C — same bytes, no GCC tracking. Score-inert under the sandbox; the audit flags it."
 metadata:
   type: audit

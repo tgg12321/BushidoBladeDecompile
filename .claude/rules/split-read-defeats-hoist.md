@@ -1,6 +1,7 @@
 ---
 name: split-read-defeats-hoist
-paths: ["src/*.c"]
+paths: [".claude/rules/split-read-defeats-hoist.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "Duplicate a post-branch read into each flag arm (direct symbol in the known arm) to stop GCC hoisting per-arg offsets across a switch; regs fall out pin-free. Meta: register-rename plateau = restructure, not pins."
 metadata:
   type: reference

@@ -1,6 +1,7 @@
 ---
 name: maspsx-label-nop-gate
-paths: ["src/*.c", "maspsx_label_nop_funcs.txt", "tools/maspsx/**"]
+paths: ["maspsx_label_nop_funcs.txt", "tools/maspsx/**"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 description: "The maspsx .L-label load-delay blind spot (load-consumer variant, incl. store-value consumers and if/else merge labels) is a pure-C RETIREMENT path, not a park: add the function to maspsx_label_nop_funcs.txt and remove the compensator (source __asm__(nop) OR a regfix insert-nop rule via retire). Per-function-scoped so it doesn't cascade. Don't broaden the gate globally."
 metadata:
   type: reference

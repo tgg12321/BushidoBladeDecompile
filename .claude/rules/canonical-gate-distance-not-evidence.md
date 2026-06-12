@@ -1,6 +1,7 @@
 ---
 name: canonical-gate-distance-not-evidence
-paths: ["src/*.c", "engine/canonical.py", "inline_asm_canonical.txt"]
+paths: ["engine/canonical.py", "inline_asm_canonical.txt"]
+# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
 description: "Large pure-C distance is NOT hand-asm evidence — it's just a large function with normal RA/scheduling drift to grind. A verdict of ASM-SUSPECT (or even ASM-STRUCTURAL) is the gate's BEST GUESS based on incomplete signal; keep pushing pure C. Don't give up and authorize canonical-asm without independent corroboration (scan_hand_coded >= POSSIBLE, S1/S2/S6/S7/S8 signals)."
 metadata:
   type: rule

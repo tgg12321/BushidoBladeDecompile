@@ -1,7 +1,8 @@
 ---
 name: drop-param-alias-local
 description: Removing an explicit T *local = paramN; alias can free the param register for reuse by another local — retires register-asm pin clusters
-paths: ["src/*.c"]
+paths: [".claude/rules/drop-param-alias-local.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 ---
 
 # Removing an explicit param→local alias frees the param register for reuse

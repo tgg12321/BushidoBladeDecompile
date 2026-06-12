@@ -1,7 +1,8 @@
 ---
 name: explicit-rejection-set-defeats-range-fold
 description: Replace a 2-element subtract-range exclusion `(u32)((s32)a - K) >= 2` with explicit `a != K && a != K+1` — extends the variable's && chain liveness, biases RA to keep it in the load-destination register, and materializes target's `andi $vN, $a, 0xFFFF` that combine folded away from the subtract form.
-paths: ["src/*.c"]
+paths: [".claude/rules/explicit-rejection-set-defeats-range-fold.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 ---
 
 # Replace a 2-element subtract-range exclusion with explicit `!= K1 && != K2`

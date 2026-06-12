@@ -1,6 +1,7 @@
 ---
 name: inline-move-aliasing
-paths: ["src/*.c"]
+paths: [".claude/rules/inline-move-aliasing.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "ARCHIVED FORBIDDEN — `__asm__ volatile(\"move %0, %1\" : \"=r\"(dst) : \"r\"(src))` paired with `register T x asm(\"$N\")` pins is cheat-asm per [[inline-asm-policy]]. Score-inert under the cheat-invisible sandbox; the engine refuses completion for affected functions. Use [[register-alloc-pure-c]] to find the C structure that gives target's RA naturally."
 metadata:
   type: archived

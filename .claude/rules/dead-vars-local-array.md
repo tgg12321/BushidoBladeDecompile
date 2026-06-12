@@ -1,6 +1,7 @@
 ---
 name: dead-vars-local-array
-paths: ["src/text1b.c", "src/*.c"]
+paths: [".claude/rules/dead-vars-local-array.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "FORBIDDEN as of 2026-05-31 (expanded 2026-06-01). Frame coercion via unused local arrays (`s32 buf[N];`) OR scalar address-of coercion (`s32 pad; (void)&pad;`) is a cheat. SOTN rejects both. The engine's volatile_cheats detector flags every such pattern and refuses completion."
 metadata:
   type: reference

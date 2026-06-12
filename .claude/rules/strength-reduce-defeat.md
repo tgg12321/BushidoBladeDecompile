@@ -1,6 +1,7 @@
 ---
 name: strength-reduce-defeat
-paths: ["src/*.c"]
+paths: [".claude/rules/strength-reduce-defeat.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "ARCHIVED FORBIDDEN — `__asm__ volatile (\"negu %0, %1\" : \"=r\"(t3) : \"r\"(t3))` to defeat GCC's mathematical simplification of `-((-t)<<N) ≡ t<<N` is general-purpose-opcode inline asm. The inline-asm-policy table explicitly lists `negu` as a forbidden cheat opcode. Score-inert under the cheat-invisible sandbox."
 metadata:
   type: archived

@@ -1,6 +1,7 @@
 ---
 name: or-tree-shape-shift
-paths: ["src/*.c"]
+paths: [".claude/rules/or-tree-shape-shift.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "Reordering operands or reparenthesizing an associative+commutative OR/AND expression solely to shift cc1's RTL OR-tree shape is a cheat-by-spelling. The same family as DImode chain and combine-foldable chain-extender."
 metadata:
   type: rule

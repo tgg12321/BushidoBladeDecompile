@@ -1,6 +1,7 @@
 ---
 name: register-asm-pins
-paths: ["src/*.c"]
+paths: [".claude/rules/register-asm-pins.md"]
+# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 description: "GCC 2.7.2 `register asm` pins are HINTS, not hard bindings. DIAGNOSTIC-ONLY: a pin/regfix is never a committed match -- strip it and find the C structure that makes GCC pick the register (see completion-standard)."
 metadata:
   type: reference
