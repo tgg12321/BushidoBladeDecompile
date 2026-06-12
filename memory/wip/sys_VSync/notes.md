@@ -61,15 +61,52 @@ reported required the inner do-while to be in source — a sched1-fence
 construct that current policy (do-while-zero-exception scope) classifies as
 a cheat.
 
-## Region B's root-cause hypothesis (un-verified, basis for next session's RTL diagnosis)
+## Region B's root-cause hypothesis (refined by session-3 instrumented dump)
 
 Target keeps `lw $s0, 0($v0)` (s0_val reload) BEFORE the second call's arg
 setup, with a load-delay nop between the lui/lw chain. cc1 with our clean
-source naturally interleaves the s0 load with the arg load. Hypothesis:
-sched1's `priority()` (longest-path-to-end) values `lw $a0, %hi(D_800A2634)`
-higher than `lw $v0, %hi(D_800A1510)` because the a0 chain reaches the jal
-(USE), while the v0 chain ends in s0 (a callee-save not USEd until post-call).
-To match target without a sched1 fence, the v0 chain needs higher priority —
-which requires either a clean C structural change that incidentally elevates
-its `priority()` weight, or evidence that the original cc1 used a different
-priority calculation (unlikely; we share the toolchain).
+source naturally interleaves the s0 load with the arg load. Session 2's
+hypothesis was that sched1's `priority()` (longest-path-to-end) values
+`lw $a0, %hi(D_800A2634)` higher than `lw $v0, %hi(D_800A1510)` because
+the a0 chain reaches the jal (USE), while the v0 chain ends in s0 (a
+callee-save not USEd until post-call).
+
+**Session-3 update:** The BB2_SCHED_DEBUG dump REFUTES the
+sched1-priority hypothesis at the layout level. sched1's recorded picks
+for block 9 place insn 102 (`lw $v0, D_800A1510`, LUID 6) at block
+position 5 and insn 97 (`lw $a0, g_sys_dma_region`, LUID 4) at position 6
+— i.e. lw v0 BEFORE lw a0 in sched1's claimed layout. But cc1's actual
+.s emission (tmp/ings2.s lines 121-130) has lw a0 BEFORE lw v0. The
+discrepancy implies a POST-sched1 pass (likely the delay-slot fill in
+reorg.c, or mips_reorg) is reshuffling.
+
+This shifts the lever surface: clean C variants that only target
+sched1's LUID tie-break (named-intermediate hoists, declaration-order
+variants — 6+ variants ruled out across sessions 1-3) will NOT close
+the gap because sched1 is ALREADY doing the right thing. The decision
+point is reorg.c choosing `li $a1, 1` over `addu $a0, $a0, 1` for the
+jal delay slot. The next session's first action should be either:
+  1. Add BB2_REORG_DEBUG instrumentation to tools/gcc-2.7.2/reorg.c and
+     dump the delay-slot fill candidate list at the jal in Region B.
+  2. Run decomp-permuter with a clean single-function target.o and let
+     directed-PERM macros explore the reorg-influencing mutations the
+     worker can't enumerate by inspection.
+
+## Session 3 measurements (2026-06-12)
+
+| Configuration                                                          | floor | build_insns |
+|------------------------------------------------------------------------|-------|-------------|
+| Clean candidate (sessions[1] state)                                    | 7     | 81          |
+| Variant — `{ s32 dma = g_sys_dma_region; s0_val = *D_800A1510; func_80082A14(dma + 1, 1); }` | 7 | 81 |
+| Variant — `{ s32 dma_arg; s0_val = *D_800A1510; dma_arg = g_sys_dma_region + 1; func_80082A14(dma_arg, 1); }` | 7 | 81 |
+
+candidate.c UNCHANGED in session 3 — the session-2 cheat-reviewer PASS
+still applies. Updates land in meta.json only.
+
+## scan_hand_coded confirms LOW tier (session 3)
+
+`python3 tools/scan_hand_coded.py --single sys_VSync --json` → tier
+LOW, score 0, "no strong hand-coded indicators". 82-insn function with
+3 spills and 6 distinct registers — standard cc1 codegen profile. The
+function is firmly in TIGHT_C / pure-C territory; no canonical-asm
+escape applies.

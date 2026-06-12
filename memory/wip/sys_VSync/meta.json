@@ -71,6 +71,43 @@
           "details": "Originally surfaced as a NEEDS_USER policy question. The session-2 cheat-reviewer explicitly FAILed the construct, noting the do-while-zero-exception rule's text excludes sched1 uses and lists three independent prerequisite failures. The reviewer's analysis: 'the policy answer is unambiguous: the construct fails the do-while-zero-exception prerequisites on three independent grounds and is forbidden.' Not a NEEDS_USER after all — a clear FAIL. The construct was introduced at commit d7c91eba (2026-04-09) and remained un-audited until session 2's pass. The layer-2 retro-audit of 4dd017d8 had focused on the OUTER do-while being added in that commit and did not separately evaluate the inherited inner one — confirming session 2's hypothesis that the prior reviewer's omission was an oversight, not implicit grandfathering."
         }
       ]
+    },
+    {
+      "date": "2026-06-12",
+      "agent": "headless worker (opus), session 3 resuming from 29132b4c",
+      "git_head_at_measurement": "29132b4c",
+      "lever": "No new lever closed; ran BB2_SCHED_DEBUG instrumented cc1 dump on the clean candidate (Region A applied, no inner do-while), and tested two additional named-intermediate variants against the clean floor-7 baseline. Both no-change. Confirmed scan_hand_coded tier=LOW score=0 — TIGHT_C territory, no canonical-asm escape.",
+      "floor_before": 7,
+      "floor_after": 7,
+      "floor_change_note": "No change. This session adds 2 more ruled-out hypotheses to the existing exhaustion ledger and surfaces a new observation from the instrumented cc1 dump: cc1's actual emission order DIFFERS from what sched1's pick log claims it placed. The dump shows sched1 places `lw $v0, D_800A1510` (insn 102, LUID 6) at block position 5 and `lw $a0, g_sys_dma_region` (insn 97, LUID 4) at position 6 — i.e. lw v0 BEFORE lw a0. But the cc1 .s emit order has lw a0 BEFORE lw v0. The discrepancy implies a post-sched1 pass (likely mips_reorg or the delay-slot fill in reorg.c) is reshuffling beyond what sched1 records. This means the lever has to bias not just sched1's INSN_PRIORITY (which the named-intermediate variants do test) but ALSO the downstream reorg pass — a smaller surface area for clean C levers.",
+      "hypotheses_tested": [
+        {
+          "name": "variant — `{ s32 dma = g_sys_dma_region; s0_val = *D_800A1510; func_80082A14(dma + 1, 1); }` (block-hoist of bare g_sys_dma_region declared BEFORE the s0 reload, +1 stays at call site)",
+          "form": "{ s32 dma = g_sys_dma_region; s0_val = *D_800A1510; func_80082A14(dma + 1, 1); }",
+          "measured_floor": 7,
+          "measured_build_insns": 81,
+          "result": "NO CHANGE versus the clean candidate baseline. Distinct from meta hypothesis 1 (which hoisted dma_arg = g_sys_dma_region + 1, including the +1 — that was WORSE). Bare-load hoist with +1-at-callsite doesn't shift sched1's decision: the addu still gets allocated to the same chain, and the load priority for $a0 chain stays equal to the $v0 chain.",
+          "ruled_out": true
+        },
+        {
+          "name": "variant — `{ s32 dma_arg; s0_val = *D_800A1510; dma_arg = g_sys_dma_region + 1; func_80082A14(dma_arg, 1); }` (pre-declared local, late-assigned AFTER s0 reload)",
+          "form": "{ s32 dma_arg; s0_val = *D_800A1510; dma_arg = g_sys_dma_region + 1; func_80082A14(dma_arg, 1); }",
+          "measured_floor": 7,
+          "measured_build_insns": 81,
+          "result": "NO CHANGE versus the clean candidate baseline. The pre-decl + late-assign form attempts to give the dma compute a HIGHER LUID than the s0 read (by assigning at use site), hoping sched1 schedules the s0 chain first. No effect — cc1 collapses the trivial local back into the call-site expression at the RTL level (same as the meta's 'function-scope `s32 dma` local' variant). Both named-intermediate forms ruled out; the LUID surface doesn't reach sched1's tie-break for this region.",
+          "ruled_out": true
+        }
+      ],
+      "discoveries": [
+        {
+          "name": "scan_hand_coded confirms LOW tier for sys_VSync",
+          "details": "`python3 tools/scan_hand_coded.py --single sys_VSync --json` returned tier=LOW, score=0, with reason 'no strong hand-coded indicators'. All 8 strong signals (s1 uniform multu, s2 empty branch, s3 no spills, s4 front loads, s5 cluster, s6 BIOS jumptable, s7 no save-callee-use, s8 redundant mask shift) returned false. 82-insn function with 3 spills and 6 distinct registers — standard cc1 codegen profile. This confirms TIGHT_C / pure-C territory: no canonical-asm escape applies; the gap must close via C structure."
+        },
+        {
+          "name": "sched1's reported layout vs cc1's actual emit DIFFER for Region B",
+          "details": "BB2_SCHED_DEBUG=1 BB2_PRIO_DEBUG=1 on the clean candidate (tmp/gccdbg/cc1, dump at tmp/sched_dump.log). For sys_VSync's main BB (block 9, 12 insns including both calls), sched1 picks (clock 8: insn 102 [lw v0, LUID 6], clock 7: insn 97 [lw a0, LUID 4]) — placing lw v0 at block position 5 and lw a0 at position 6. cc1's actual .s emit (tmp/ings2.s lines 121-130) has lw a0 BEFORE lw v0. The discrepancy implies the delay-slot fill in reorg.c (or mips_reorg) reshuffles after sched1. This explains why named-intermediate variants haven't moved the score: they target sched1's LUID/priority surface, but the reorg pass is the LATER decision point that determines the final emit. A C-level lever for reorg.c's choices would need to target which insn it picks for the jal delay slot — `addu $a0, $a0, 1` (target) vs `li $a1, 1` (build). Currently the build's reorg.c picks li a1 because it's reachable backwards from the jal without crossing a volatile MEM; addu a0+1 is also reachable but is skipped, possibly due to dep-ordering heuristics."
+        }
+      ]
     }
   ],
   "reviewer": {
@@ -84,13 +121,15 @@
     "Outer `do { } while (0);` between `s0_val = *D_800A1510;` and the second func_80082A14 call — sched1 fence, layer-2 FAIL on commit 4dd017d8 (see rejected/do-while-sched1-fence.c).",
     "INHERITED inner `do { } while (0);` at src/ings2.c line 69 / candidate.c line 30 (commit d7c91eba 2026-04-09) — sched1 fence (same family as the outer one). Session-2 cheat-reviewer FAIL. Cannot be re-introduced in any form to defeat sched1.",
     "Block-hoist of `s32 dma_arg = g_sys_dma_region + 1;` declared FIRST in a block surrounding the s0 reload + call — measured WORSE against the with-cheat baseline (5->7, lost 1 insn). hoist-call-arg-local-flips-jal-delay rule does not apply: it's documented for pre-call STORE fill, not pre-call LOAD scheduling.",
-    "Shared `volatile s32 *ptr = D_800A1510;` declared pre-call, reused post-call — catastrophic (5->23, lost 3 insns). Caches the pointer in a callee-save across the call, eliminating target's fresh post-call reload."
+    "Shared `volatile s32 *ptr = D_800A1510;` declared pre-call, reused post-call — catastrophic (5->23, lost 3 insns). Caches the pointer in a callee-save across the call, eliminating target's fresh post-call reload.",
+    "Bare-load hoist `{ s32 dma = g_sys_dma_region; s0_val = *D_800A1510; func_80082A14(dma + 1, 1); }` (session 3) — no change at clean floor 7. The +1-at-callsite split doesn't shift sched1's interleave decision.",
+    "Pre-decl + late-assign `{ s32 dma_arg; s0_val = *D_800A1510; dma_arg = g_sys_dma_region + 1; func_80082A14(dma_arg, 1); }` (session 3) — no change at clean floor 7. cc1 collapses the trivial local back to the call-site expression; LUID bias doesn't reach the relevant tie-break."
   ],
   "next_hypotheses": [
-    "RTL diagnosis per [[register-alloc-pure-c]]: tmp/gccdbg/cc1 with BB2_SCHED_DEBUG=1 on the CLEAN candidate.c (Region A lever, no inner do-while, no Region B lever). Read sched1 dump to see exactly why `lw $a0, %hi(D_800A2634)` is prioritized over `lw $v0, %hi(D_800A1510)`. The priority() function in tools/gcc-2.7.2/sched.c computes longest-path-to-end (`birthing_depth` walked through USE chains). Verify whether elevating lw v0's chain depth via additional CLEAN post-call USE of s0 (without introducing a cheat) would shift priority.",
-    "Read m2c output for sys_VSync (asm/funcs/sys_VSync.s) — what shape does the original C reconstruct as? The original may have had structural choices (branch ordering, variable scoping, intermediate naming) that incidentally elevate the s0 load chain's priority without a fence. Compare m2c output against the current candidate.c structure.",
+    "PRIMARY UNPROBED LEVER — decomp-permuter with a clean SINGLE-FUNCTION target.o built from asm/funcs/sys_VSync.s + tools/decomp-permuter/prelude.inc (drop `.set gp=64` for r3000) so the function sits at offset 0 like base.o. Use --stop-on-zero. The directed-PERM macros can explore structural mutations the worker hasn't enumerated (in particular, mutations that affect reorg.c's delay-slot pick, not just sched1's INSN_PRIORITY/LUID — which is where the session-3 dump localised the remaining decision point). Any closing form MUST be vetted against the cheat catalog per [[no-new-park-categories]] before commit — auto-search output is PROPOSALS, not winners.",
+    "RTL diagnosis per [[register-alloc-pure-c]]: session-3 ran BB2_SCHED_DEBUG=1 BB2_PRIO_DEBUG=1 and stored output at tmp/sched_dump.log (6994 lines). Key finding: sched1's claimed pick order DIFFERS from cc1's actual emit (lw v0 placed at pos 5 in sched1 but emits as pos 6). The decision point is in reorg.c's delay-slot fill, NOT sched1. A focused dump of reorg.c's choices (would need adding BB2_REORG_DEBUG instrumentation) would identify whether the lever surface is the dependence-cone analysis or the simple-fill heuristic.",
+    "Read m2c output for sys_VSync (asm/funcs/sys_VSync.s) — session-3 confirmed m2c's reconstruction matches the candidate structure exactly (s0_val read between calls, dma_region + 1 inline call arg). No structural deviation to exploit there.",
     "Re-examine matched siblings in src/ings2.c (sys_SetVsyncMode, sys_SetTimer, motion_make_table, func_80082C58) for an analogous volatile-read + call structure that DID match without a sched1 fence. None obvious on first reading, but a focused .greg dump comparison might reveal the differentiator — e.g., target's pre-call USE pattern for the loaded value.",
-    "Re-test the session-1 measured negatives (operand reassociation, pre-computed dma arg, last-arg hoist, merged if/else, inverted branch, eager-flag pre-computation) against the NEW floor-7 baseline. Their original measurements were against the tainted baseline, so the deltas may differ. Hypothesis 1 in session 2 already covered 'pre-computed dma arg / last-arg hoist'; the others remain un-tested at floor 7.",
-    "Consider an empirical search via decomp-permuter with a clean target.o (built from asm/funcs/sys_VSync.s + prelude.inc). The directed-PERM macros + a single-function target should be able to explore structural mutations the worker hasn't enumerated. Vet any found close-form against the cheat catalog before committing — auto-search output is PROPOSALS, not winners."
+    "Re-test the session-1 measured negatives (operand reassociation, last-arg hoist, merged if/else, inverted branch, eager-flag pre-computation) against the NEW floor-7 baseline. Their original measurements were against the tainted baseline, so the deltas may differ. Sessions 2-3 have covered 'pre-computed dma arg / last-arg hoist' variants; the others remain un-tested at floor 7."
   ]
 }
