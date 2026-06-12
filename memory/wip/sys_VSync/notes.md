@@ -1,5 +1,28 @@
 # sys_VSync (src/ings2.c) — WIP checkpoint
 
+**TL;DR (after session 6, 2026-06-12):** `candidate.c` is UNCHANGED from
+sessions 1-5 (Region A named-base lever applied, no inner do-while, floor
+7 = build_insns 81 vs target 82). Session 6 (a) re-tested ALL session-1
+measured negatives at the clean floor-7 baseline (operand reassociation,
+merged if/else, inverted prologue, last-arg hoist, eager-flag, tail-
+store reorder, single-call-block arg) — ALL ruled out, no improvement;
+(b) swept 30+ additional C89-valid Region B BB2 variants in
+`tmp/sweep_vsync2.py` + `tmp/sweep_vsync3.py` — ALL stuck at floor 7. The
+lever surface within C89-valid pure-C for Region B BB2 is comprehensively
+exhausted. NEW MECHANISTIC FINDING: B11
+(`func_80082A14(g_sys_dma_region+1, s0_val != 0xFFFFFFFF)`) reached
+build_insns=82 / floor 6 — confirming that an in-BB use of s0_val before
+the second jal IS the sched1 lever (it extends lw s0's path-to-end
+priority enough to make sched1 schedule the v0 chain FIRST, matching
+target's layout). HOWEVER every pure-C expression that USES s0_val and
+PRODUCES the constant 1 is either semantically wrong (B11) or
+cheat-by-spelling (no semantic purpose, only effect is sched1 priority
+shift). So the lever is mechanistically IDENTIFIED but pure-C
+INACCESSIBLE without finding the original source's mechanism. B6
+(decl-after-statement, C89-invalid) was a false positive — its score-5
+was an artifact of GCC 2.7.2 silently compiling broken code. Candidate.c
+floor unchanged at 7.
+
 **TL;DR (after session 5, 2026-06-12):** `candidate.c` is UNCHANGED from
 sessions 1-4 (Region A named-base lever applied, no inner do-while, floor
 7 = build_insns 81 vs target 82). Session 5 probed the dual-named-
@@ -271,9 +294,94 @@ surface for sys_VSync's Region B is correspondingly narrower:
 3. **Statement reordering** within Region B is exhausted (P1-P9 family).
 4. **Pointer-aliasing tricks** (volatile pointer alias) are exhausted.
 
+## Session 6 measurements (2026-06-12)
+
+Ran two sweeps over the clean candidate baseline (Region A lever, no
+inner do-while, floor 7 / build_insns 81):
+
+**Sweep 1 (`tmp/sweep_vsync.py`)** — re-tested session-1 measured
+negatives at clean floor-7:
+
+| Variant | Floor | Notes |
+|---|---|---|
+| E1_eager_mask_local (`s32 mask_val = s0_val & 0x400000;` before call) | 19 | catastrophic — extra `and` instruction |
+| M1_merged_a0pos (merged if/else for both a0>0 checks) | 14 | restructures Region A; worse |
+| I1_inverted_prologue (a0>=0 nest + a0!=1) | 20 | catastrophic |
+| L1_one_local_early (`s32 one_val = 1;` at function top) | 11 | worse |
+| OA1_reassoc_a0_minus_1 (`D_800A151C + (a0 - 1)`) | 7 | no change |
+| XOR1_pre_xor_hoist (named `first_diff` in spin-wait) | 7 | no change |
+| TS1_tail_reorder (1518 before 151C) | 13 | semantically dubious; worse |
+| S1_local_ptr_decl_top (volatile s32 *ptr_510 at top) | 7 | no change |
+| G1_a0_local_after_s0 (block-scoped a0_arg after s0 read) | 7 | no change |
+| H1_inline_volatile_use (scoped p+s0_val read same block) | 7 | no change |
+| H2_scope_arg_one_local (one local around call) | 7 | no change |
+
+**Sweep 2 (`tmp/sweep_vsync2.py`)** — Region B BB2 focused:
+
+| Variant | Floor | Notes |
+|---|---|---|
+| B1_paren_extra | 7 | no change |
+| B2_blocked | 7 | no change |
+| B3_cast `(s32)(*D_800A1510)` | 7 | no change |
+| B4_comma `(s0_val=*D_800A1510, dma+1)` | 7 | no change |
+| B5_increment_local `dma++` | 7 | no change |
+| B6_dma_local_post_read | 5 | **FALSE** — C89-invalid (decl-after-stmt); broken compile (a0=0 at jal) |
+| B7_inline_load (read AFTER call) | 23 | semantically wrong |
+| B8_a1_init_in_block `s32 a1_init=1;` | 7 | no change |
+| B9_double_read_used | 8 | **build_insns=82** but extra in-BB load mismatches target |
+| B10_addiu_stmt (named dma_arg) | 7 | no change |
+| B11_a1_uses_s0 `s0_val != 0xFFFFFFFF` | 6 | **build_insns=82** — MECHANISM CONFIRMED but semantically wrong + cheat-by-spelling |
+| B12_dma_then_read (dma before read) | 7 | no change |
+| B13_dma_arg_post_read | 7 | no change |
+| B14_one_plus_dma `1 + g_sys_dma_region` | 7 | no change |
+| B15_plus_via_local_named_dma_plus_one | 7 | no change |
+
+**Sweep 3 (`tmp/sweep_vsync3.py`)** — C89-corrected Region B variants:
+
+| Variant | Floor | Notes |
+|---|---|---|
+| C1-C18 (18 forms) | 7 | all stuck at 7, EXCEPT C11 (volatile-on-local-ptr-decl: 15 — cheat anyway) and C14 (ternary on a0: 29 — adds branch) |
+
+## Session 6 mechanistic finding
+
+**B11 confirms the missing lever IS an in-BB use of s0_val before the
+second jal.** With `s0_val != 0xFFFFFFFF` as arg2, build_insns rises
+from 81 to 82 (matching target) and floor drops from 7 to 6. The
+mechanism: extending lw s0's sched1 priority chain via an in-BB USE
+makes sched1 schedule the v0 chain FIRST (matching target's layout
+`lui v0/lw v0/[nop]/lw s0/lui a0/lw a0/li a1/addiu a0/jal`).
+
+**The lever is forbidden in pure C** because:
+  1. **Every constant-1-from-s0_val expression is either semantically
+     wrong or cheat-by-spelling.** Candidates surveyed: `s0_val | 1`
+     (not 1 in general), `s0_val != K` (depends on K), `s0_val ^ s0_val
+     + 1` (cheat — no semantic purpose), `(s0_val & 0) + 1` (cheat),
+     `((&s0_val) - (&s0_val)) + 1` (cheat).
+  2. Per [[no-new-park-categories]] cheat-by-any-spelling principle: an
+     expression whose only effect is GCC-internals coercion (sched1
+     priority shift) and whose value has no programmer-explainable
+     role IS a cheat regardless of syntactic form.
+
+**What this implies about the original source**: either (a) the original
+had a DIFFERENT mechanism we haven't found — e.g., a sibling call,
+struct field access, or larger arg expression that naturally uses
+s0_val without violating semantics; OR (b) the lever surface that
+mattered was at reorg.c's delay-slot fill (which session-3's
+BB2_SCHED_DEBUG implicated), not sched1's priority computation. The
+B11 finding doesn't distinguish (a) from (b).
+
 ## Next session — what to try (priority order)
 
-1. **Directed PERM_* macros** (the un-tried part of the permuter lever
+1. **Re-examine matched siblings with the session-6 mechanistic
+   finding.** Look specifically for sibs whose source has a USE of a
+   pre-call volatile-loaded value IN the second call's arg-compute
+   expression. session-5 reported "None obvious on first reading" but
+   with the session-6 finding (in-BB use of s0 IS the lever),
+   re-examination should target this SPECIFIC pattern, not generic
+   "volatile + call" pattern. Candidates in src/ings2.c:
+   `motion_make_table`, `func_80082C58`, `sys_SetVsyncMode`.
+
+2. **Directed PERM_* macros** (the un-tried part of the permuter lever
    from session 4 next_hypothesis). PERM_LINESWAP / PERM_VAR /
    PERM_TYPECAST scripted into base.c. Required setup: rebuild
    `permuter/sys_VSync/` per session 4's recipe (now ~1 hour of

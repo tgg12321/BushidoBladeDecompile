@@ -10,6 +10,72 @@
   "sessions": [
     {
       "date": "2026-06-12",
+      "agent": "headless worker (opus), session 6 resuming from fa2f37c7",
+      "git_head_at_measurement": "fa2f37c7",
+      "lever": "Re-tested the session-1 measured negatives at the clean floor-7 baseline (per session 4's un-executed next_hypothesis #3 and session 5's prioritised next-lever #6). Then exhaustively swept Region B BB2 with 30+ additional pure-C variants (subscript syntax, block-scoped decls in valid C89 order, bare-load hoist forms with various pre-decl vs at-use-site placements, alias-via-local-name forms, ternary/shift/u32-cast widths, comma-expr arg forms, init-pair forms). All session-1 negatives confirmed (no improvement) and all 30+ Region B BB2 variants stuck at floor 7 (build_insns 81). Two early apparent leverage hits were false: B6 (`{ s0_val = *D_800A1510; s32 dma = g_sys_dma_region; func(dma+1, 1); }`) showed floor 5 / build_insns 79 but was C89-INVALID (decl-after-statement) and produced a semantically broken build (a0=0 at second jal — the dma variable's value was undefined in the broken compilation). B11 (`func(g_sys_dma_region+1, s0_val != 0xFFFFFFFF)`) reached build_insns=82 with score 6 — confirming an in-BB use of s0_val DOES bias sched1 to schedule the v0 chain first (matching target's layout) — but it's semantically wrong (a1=0 if s0_val==-1) and is a cheat by spelling (no semantic purpose for naming `s0_val != 0xFFFFFFFF`).",
+      "floor_before": 7,
+      "floor_after": 7,
+      "floor_change_note": "No change. This session adds ~30 more ruled-out negative measurements to the exhaustion ledger and identifies ONE new mechanism: an in-BB use of s0_val before the second jal does shift sched1 to match target's layout (B11 confirmed build_insns=82). The mechanism is forbidden in clean C because there's no semantically-correct expression that produces 1 from s0_val.",
+      "hypotheses_tested": [
+        {
+          "name": "Session-1 negatives confirmed at clean floor-7 (re-measurement of WIP next_hypothesis #5 from session 4)",
+          "forms": [
+            "operand reassociation in Region A: `frame = D_800A151C + (a0 - 1)` — floor 7",
+            "merged if/else for the a0>0 two-check pattern: floor 14 (worse — sched1 changes Region A structure)",
+            "inverted prologue branch sense (a0>=0 + a0!=1 nest): floor 20 (catastrophic — entire prologue restructures)",
+            "last-arg literal as named local `s32 one_val = 1;` at function top: floor 11 (worse)",
+            "eager-flag pre-compute `mask_val = s0_val & 0x400000;` before second call: floor 19 (catastrophic — adds an in-BB use of s0 but adds extra and instruction)",
+            "tail-store reorder (1518 before 151C): floor 13 (worse — and likely semantically wrong)",
+            "spin-wait `volatile s32 *ptr_510` declared at function top: floor 7 (no change)",
+            "single-call-block arg `a0_arg = g_sys_dma_region + 1`: floor 7 (no change)",
+            "spin-wait pre-xor hoist into named local: floor 7 (no change)"
+          ],
+          "result": "ALL session-1 negatives ruled out at clean baseline. None of operand-reassociation / merged-if-else / inverted-prologue / last-arg-hoist / eager-flag / tail-reorder approaches improve the floor; most are catastrophically worse because they restructure code regions that DID match. Conclusion: session 1's measured negatives are robust across baseline change."
+        },
+        {
+          "name": "Region B BB2 pure-C sweep (30+ variants in tmp/sweep_vsync2.py + tmp/sweep_vsync3.py)",
+          "result": "ALL stuck at floor 7 / build_insns 81. Including: subscript syntax (D_800A1510[0]), paren placement (1 + g_sys_dma_region), separate-block layout, comma-expr forms, ternary, shift (1<<0), u32 cast on dma, local volatile-ptr alias, decl-at-top + late-assign in valid C89 order, double-block scoping, one_val precomputed, dma cached as local before/after the read, dma read into local int then aliased to s0_val. None close. The lever surface within C89-valid pure-C for Region B BB2 is exhausted."
+        },
+        {
+          "name": "FALSE LEVER 1 — B6 (decl-after-statement, C89-invalid)",
+          "form": "{ s0_val = *D_800A1510; s32 dma = g_sys_dma_region; func_80082A14(dma + 1, 1); }",
+          "measured_floor": 5,
+          "measured_build_insns": 79,
+          "result": "FALSE — C89 violation. The compiler emitted broken code: at the second jal, a0 was 0 instead of dma+1 (objdump showed `move a0, zero` in the delay slot, NO compute of g_sys_dma_region). The score-5 / build_insns-79 result is an artifact of the broken compilation, NOT a legitimate lever. The C89-corrected form (decl at start of block) is C5/C17 which both score 7.",
+          "ruled_out": true
+        },
+        {
+          "name": "FALSE LEVER 2 — B11 (semantically wrong, identified mechanism)",
+          "form": "s0_val = *D_800A1510; func_80082A14(g_sys_dma_region + 1, s0_val != 0xFFFFFFFF);",
+          "measured_floor": 6,
+          "measured_build_insns": 82,
+          "result": "FALSE for matching but mechanistically INFORMATIVE. build_insns=82 matches target's instruction count. Score 6 < 7. Why it works: `s0_val != 0xFFFFFFFF` is an in-BB use of s0_val (forces a comparison post-load), which extends lw s0's in-BB priority chain in sched1. With higher priority, sched1 schedules v0 chain first (matching target's lui v0/lw v0/nop/lw s0 layout). Why it's rejected: (a) semantically wrong — produces a1=0 when s0_val==-1, not a constant 1; (b) cheat by spelling per [[no-new-park-categories]] / [[inline-asm-policy]] cheat-by-any-spelling principle — the comparison has no semantic purpose (no human programmer would write `s0_val != 0xFFFFFFFF` as a way to express the constant 1), and its only effect is to bias sched1. The mechanism IS a real lever for the gap; the IMPLEMENTATION in pure-C is forbidden.",
+          "ruled_out": true,
+          "cheat_reviewer_decision_assumed": "FAIL (cheat-by-any-spelling: no semantic purpose, only effect is GCC-internals coercion)"
+        },
+        {
+          "name": "B9 — double volatile read",
+          "form": "{ s32 first_read = *D_800A1510; s0_val = *D_800A1510; (void)first_read; func(g_sys_dma_region+1, 1); }",
+          "measured_floor": 8,
+          "measured_build_insns": 82,
+          "result": "build_insns=82 (matches target count) but score 8 (worse). Reading D_800A1510 twice forces GCC to emit both volatile loads (correctly). But target only reads it ONCE in this BB. So the extra read adds an in-BB load that doesn't appear in target. Floor 8 reflects 8 mismatched positions vs target. NOT a closing form; also potentially a cheat-by-spelling (no semantic purpose for `(void)first_read;` discard).",
+          "ruled_out": true
+        }
+      ],
+      "discoveries": [
+        {
+          "name": "Mechanistic finding: in-BB use of s0_val IS the missing lever",
+          "details": "B11's build_insns=82 confirms that adding an in-BB use of s0_val (before the second jal) extends lw s0's sched1 priority chain enough to make sched1 schedule the v0 chain BEFORE the a0 chain — matching target's layout. The mechanism aligns with the session-3 BB2_SCHED_DEBUG analysis (sched1's priority depends on path-to-BB-end including USE chain length). However, in pure C with the function's actual semantics, there's no expression that USES s0_val and PRODUCES the constant 1: every candidate (s0_val | 1, s0_val != K, s0_val ^ s0_val, etc.) is either semantically wrong or cheat-by-spelling (the expression has no semantic role — its only effect is the sched1 priority shift). This is strong evidence that the matching C source did NOT have such an expression: either the original used a DIFFERENT mechanism we haven't found, OR the original lever was at the reorg.c delay-slot fill surface (which sched1's priority computation doesn't reach)."
+        },
+        {
+          "name": "C89-validity check: decl-after-statement in GCC 2.7.2 produces silent broken code",
+          "details": "B6's variant violated C89 (decl-after-statement) and compiled WITHOUT a hard error — but the emitted code was semantically broken (the declared variable's value was zero at use site, not its initializer). Future sweeps MUST validate generated C89 compliance. The brace-counter apply_variant() in tmp/sweep_vsync2.py emits whatever body the test specifies; the test author is responsible for keeping decls at the start of each block."
+        }
+      ],
+      "rejected_form_files": []
+    },
+    {
+      "date": "2026-06-12",
       "agent": "headless worker (opus), batch bfej90w2j iter 1; checkpoint authored by orchestrator after layer-2 reviewer FAIL revert of 4dd017d8",
       "git_head_at_measurement": "01471d90",
       "lever": "Region A (named-base intermediate): split `frame = (D_800A151C + a0) - 1` into `s32 base = D_800A151C - 1; frame = base + a0;` — defeats combine's CSE of the shared `a0 - 1` subexpression with the sibling `count = a0 - 1`, so the addiu lands before the j and the addu in the delay slot, matching target. Retires the first regfix reorder rule (TEXT 23-25). SOTN-accepted named-intermediate family; layer-2 reviewer PASSed this construct.",
@@ -226,6 +292,9 @@
   },
   "remaining_gap": "7 (masked) — Region B: second call's volatile-load + arg-setup scheduling. Target keeps the volatile lw of s0 (from D_800A1510) strictly source-ordered adjacent to its pointer load before the func_80082A14(g_sys_dma_region + 1, 1) call; natural cc1 sched1 interleaves it with the independent arg setup. HEAD bridges this with the second regfix reorder rule (TEXT 32-38) PLUS the inner do-while (now removed). Removing the do-while costs 1 instruction (build 81 vs target 82) and adds 2 mismatch positions versus the prior tainted baseline. Session 2 confirmed `hoist-call-arg-local-flips-jal-delay` does NOT apply (documented symptom is a pre-call STORE; this function has a pre-call LOAD). Region B's sched1-priority root cause hypothesis: `lw a0, hi(D_800A2634)` has higher INSN_PRIORITY than `lw v0, hi(D_800A1510)` because its dependent chain reaches the jal (which has high `use` weight in sched.c's `priority()`); the lw v0 / lw s0 chain ends in s0 (callee-save not USEd until post-call). To match target without a sched1 fence, the lw v0 chain needs higher priority — derived from clean C structure rather than a no-semantic-purpose wrap. SESSION 4 (2026-06-12): the WIP's PRIMARY UNPROBED LEVER (decomp-permuter with clean single-function target) was EXECUTED. Random-mode permuter found ONLY cheat-family closing forms (do-while sched1-fence wraps; best non-cheat score = 495 = baseline). Cheat-attraction is strong evidence the structural lever is in reorg.c (delay-slot fill), not at sched1's LUID surface, and random C-level mutations of this candidate don't reach the reorg.c decision point. Next reachable avenues: (a) directed PERM_* macros (PERM_LINESWAP / PERM_VAR / PERM_TYPECAST scripted into base.c) to explore mutations targeting reorg.c rather than random sched1-fence; (b) re-test session-1's measured negatives against the new floor-7 baseline (operand reassociation, last-arg hoist, merged if/else, inverted branch, eager-flag pre-computation — un-tested at clean baseline); (c) instrument reorg.c with BB2_REORG_DEBUG to dump the delay-slot fill candidate set + pick rationale (diagnostic only per [[no-compiler-divergence]]).",
   "rejected_forms": [
+    "SESSION 6 — `s0_val != 0xFFFFFFFF` as the second-arg value: reaches build_insns=82 / floor 6 but semantically wrong (a1=0 when s0_val==-1) AND cheat-by-spelling (expression has no semantic purpose, only effect is the sched1 priority shift). Mechanism IS the missing lever — see session 6's discoveries[0].",
+    "SESSION 6 — DOUBLE volatile read of D_800A1510 (read into local + read into s0_val): build_insns=82 (target count matched) but score 8 (worse). Extra in-BB load mismatches target's single-load BB layout.",
+    "SESSION 6 — All session-1 measured negatives confirmed at clean floor-7: operand reassociation in Region A, merged-if-else (a0>0 two-check), inverted prologue branch sense, last-arg literal as named local, eager-flag pre-compute (mask_val), tail-store reorder, single-call-block arg with pre-declared local. None close; most catastrophically worse because they restructure already-matching regions.",
     "Outer `do { } while (0);` between `s0_val = *D_800A1510;` and the second func_80082A14 call — sched1 fence, layer-2 FAIL on commit 4dd017d8 (see rejected/do-while-sched1-fence.c).",
     "INHERITED inner `do { } while (0);` at src/ings2.c line 69 / candidate.c line 30 (commit d7c91eba 2026-04-09) — sched1 fence (same family as the outer one). Session-2 cheat-reviewer FAIL. Cannot be re-introduced in any form to defeat sched1.",
     "Block-hoist of `s32 dma_arg = g_sys_dma_region + 1;` declared FIRST in a block surrounding the s0 reload + call — measured WORSE against the with-cheat baseline (5->7, lost 1 insn). hoist-call-arg-local-flips-jal-delay rule does not apply: it's documented for pre-call STORE fill, not pre-call LOAD scheduling.",
@@ -237,6 +306,8 @@
     "SESSION 5 (M5 + 9 isomorphs): dual named-intermediate `{ s32 vs = *D_800A1510; s32 arg = g_sys_dma_region + 1; s0_val = vs; func_80082A14(arg, 1); }` and variants R1/R2/R4/R7/R8/R9/Q5/Q6/Q7 — ALL reach floor 6 (build_insns 82 = target) but cheat-reviewer FAIL: vs is an identity-bounce (no sub-computation to name → NOT the SOTN named-intermediate family); declaration-order sensitivity (only vs-first works) is GCC-LUID-ordering coercion. See rejected/m5-vs-arg-identity-bounce.c for full reviewer reasoning. The whole 'dual-intermediate-with-vs-first' family is ruled out for sys_VSync."
   ],
   "next_hypotheses": [
+    "SESSION-6 UPDATE — session-1 measured negatives ALL ruled out at clean floor-7 (no improvement). 30+ Region B BB2 variants in tmp/sweep_vsync2.py + tmp/sweep_vsync3.py also ruled out. The lever surface within C89-valid pure-C Region B variants is comprehensively exhausted. NEW MECHANISTIC FINDING: an in-BB use of s0_val before the second jal IS the sched1 lever (B11 reached build_insns=82) — but every clean-C expression that USES s0_val and produces 1 is either semantically wrong or cheat-by-spelling.",
+    "SESSION-6 PRIMARY UN-PROBED LEVER — read m2c output for a sibling that DID match with a similar pre-call volatile-read + 2-arg-call pattern, and compare its source structure to ours. Specifically: func_80082C58 uses `volatile u16 *v0_ptr` for a similar volatile-write + multi-call pattern. If a sibling exists with a USE of the loaded value in arg-compute that's BOTH semantically correct AND matches target, that's the structural lever. Session-5 reported `None obvious on first reading` — re-examine with the session-6 mechanistic finding in mind (look specifically for sibs that use loaded value IN arg compute, not just for the volatile-load + call pattern).",
     "SESSION-5 UPDATE — the dual-intermediate-vs-arg lever family (M5 + 9 isomorphs) is RULED OUT (cheat-reviewer FAIL). Floor 6 IS reachable via this family but the reachability is itself cheat-evidence (the lever depends on LUID-ordering). The remaining lever surface is now narrower: any pure-C lever must EITHER come from outside the dual-intermediate family entirely, OR be a single intermediate whose semantic role names a real sub-computation (like Region A's `base = D_800A151C - 1`). Region B's only obvious sub-computation candidate is the +1 (g_sys_dma_region + 1), and a SINGLE-intermediate form `s32 arg = g_sys_dma_region + 1; func(arg, 1);` was measured at floor 7 (M3) — confirming no SOTN-style named-intermediate route exists in Region B without going dual.",
     "SESSION-5 UPDATE — random permuter mode is EXHAUSTED on this candidate (~5 min, ~hundreds of iterations, only cheat-family closing forms found at scores 40/50/300/355 in session 4). The permuter directory permuter/sys_VSync/ from session 4 was NOT preserved across sessions (gitignored); rebuild it for the next session if pursuing the directed-PERM macro route. Next reachable lever via permuter: DIRECTED PERM_* macros. Add PERM_LINESWAP() around Region B's 3 statements, PERM_VAR for the local types, PERM_TYPECAST on the volatile-load result, PERM_ONCE/PERM_FORCE_FORWARD_DECL on the call args. Then re-run permuter — directed mutations may reach the reorg.c delay-slot fill surface that random mutations don't. Any closing form MUST be vetted against the cheat catalog per [[no-new-park-categories]] before commit.",
     "RTL diagnosis per [[register-alloc-pure-c]]: session-3 ran BB2_SCHED_DEBUG=1 BB2_PRIO_DEBUG=1 and stored output at tmp/sched_dump.log (6994 lines). Key finding: sched1's claimed pick order DIFFERS from cc1's actual emit (lw v0 placed at pos 5 in sched1 but emits as pos 6). The decision point is in reorg.c's delay-slot fill, NOT sched1. A focused dump of reorg.c's choices (would need adding BB2_REORG_DEBUG instrumentation) would identify whether the lever surface is the dependence-cone analysis or the simple-fill heuristic.",
