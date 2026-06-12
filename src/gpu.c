@@ -371,17 +371,11 @@ void ot_Link(u32 *a0, u32 *a1) {
     *a1 = (*a1 & tag_mask) | (*a0 & mask);
     *a0 = (*a0 & tag_mask) | ((u32)a1 & mask);
 }
-/* OT entry tag word: packet size byte + 24-bit address (PsyQ P_TAG).
-   NB: this cc1 allocates the FIRST bitfield at the high bits, so len
-   is declared first to put addr in the low 24 bits. */
-typedef struct {
-    u32 len : 8;
-    u32 addr : 24;
-} OTag;
-
-void ot_Insert(OTag *a0, u32 a1, OTag *a2) {
-    a2->addr = a0->addr;
-    a0->addr = a1;
+void ot_Insert(u32 *a0, u32 a1, u32 *a2) {
+    register u32 mask asm("a3") = OT_ADDR_MASK;
+    register u32 tag_mask asm("t0") = OT_TAG_MASK;
+    *a2 = (*a2 & tag_mask) | (*a0 & mask);
+    *a0 = (*a0 & tag_mask) | (a1 & mask);
 }
 void ot_SetAddr(u32 *a0, u32 a1) {
     *a0 = (*a0 & OT_TAG_MASK) | (a1 & OT_ADDR_MASK);
