@@ -13,7 +13,7 @@ extern s32 g_sys_video_mode;
 extern u16 g_sys_vblank_count;
 extern u16 *g_sys_irq_counter;
 extern s32 *g_sys_irq_vtable;
-extern s32 g_sys_dma_region;
+extern volatile s32 g_sys_dma_region;
 extern void func_8008AF9C(s32 *);
 
 /* --- Functions 0x8008289C - 0x80083BE4 --- */
@@ -57,7 +57,8 @@ s32 sys_VSync(s32 a0) {
         s32 count;
 
         if (a0 > 0) {
-            frame = (D_800A151C + a0) - 1;
+            s32 base = D_800A151C - 1;
+            frame = base + a0;
         } else {
             frame = D_800A151C;
         }
@@ -66,7 +67,6 @@ s32 sys_VSync(s32 a0) {
             count = a0 - 1;
         }
         func_80082A14(frame, count);
-        do { } while (0);
     }
 
     s0_val = *D_800A1510;
