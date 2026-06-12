@@ -13,26 +13,15 @@ spine: route C-vs-asm → measure the honest cheat-free distance → triage → 
 match. By construction, cheating can't help and asm functions aren't pure-C-grinded. Full design:
 [memory/project/greenfield-engine-v2.md](memory).
 
-### Run engine commands via the PowerShell wrapper (`tools/eng.ps1`)
-The engine runs under WSL (Linux toolchain), but **do not hand-author
-`wsl bash -c 'cd … && source .venv && python3 -m engine.cli …'`** — through the harness that
-nests three shells (Git Bash → wsl → bash) and the quoting silently eats awk/sed/heredocs. Use
-the **PowerShell tool + `tools/eng.ps1`** (zero quoting; also stamps `CLAUDE_SESSION_ID` so the
-run is attributed in metrics):
-```
-& tools/eng.ps1 <cmd>     # e.g. queue next | canonical func_X | sandbox func_X --disable all | verify-oracle --rebuild
-```
-`tools/hooks/shell_footgun_guard.py` (PreToolUse) BLOCKS the hand-rolled `python3 -m engine.cli`
-form and the footguns below.
-
 ### PowerShell-first scripting (enforced by `shell_footgun_guard.py`)
-- **Engine/build commands → PowerShell tool + `tools/eng.ps1`.** No `cd`, no `source`, no quoting.
-- **Anything beyond ONE simple command** (awk/sed, multi-statement pipelines, shell functions,
-  heredocs) → **write a `.py`/`.sh`/`.ps1` file to `tmp/` and run that file.** Inline complex shell
-  through `wsl bash -c '…'` is the #1 time-waster here; a Python script is more robust *and* readable
-  (e.g. `tmp/norm_diff.py` — a disassembly normalizer — worked first try where inline `awk` failed thrice).
-- **Multi-line commit messages → `git commit -F tmp/msg.txt`** (Write the file, then commit). Never the
-  `<<'EOF'` heredoc or the `'"'"'` quote-escape dance.
+The engine runs under WSL, but hand-authored `wsl bash -c 'cd … && source .venv && python3 -m
+engine.cli …'` nests three shells and the quoting silently eats awk/sed/heredocs — the PreToolUse
+guard BLOCKS that form and the footguns below.
+- **Engine/build commands → PowerShell tool + `tools/eng.ps1 <cmd>`** (zero quoting; stamps
+  `CLAUDE_SESSION_ID` for metrics) — e.g. `& tools/eng.ps1 sandbox func_X --disable all`.
+- **Anything beyond ONE simple command** (awk/sed, multi-statement pipelines, heredocs) → **write
+  a `.py`/`.sh`/`.ps1` file to `tmp/` and run that file** (more robust AND readable than inline).
+- **Multi-line commit messages → `git commit -F tmp/msg.txt`.** Never heredocs or quote-escape dances.
 - Plain one-command WSL calls (git / grep / make) are fine via the Bash tool, or `bash tools/wsl.sh '<cmd>'`.
 
 ### CLI
@@ -216,10 +205,6 @@ The agent *is* the gap-closer — the engine measures, routes, and gates; you wr
      enforcement-critical POLICY rules keep a broad glob.
    - **function-specific fact** ⇒ a `memory/` entry (per the memory rules in this file).
    - **routine / no-op match** ⇒ skip; don't manufacture a finding.
-
-   This human-written record is the durable one — the old `capture-recipe` tool and the
-   `tools/recipes/` library were archived 2026-05-26 (`archive/dcsh_workflow_2026-05-26/recipes/`).
-   `retire` prints this reminder on success.
 7. **Commit** (`cheat-cleanup:` / `Match` / `engine:` prefix per docs/COMMIT_CONVENTIONS.md).
 
 **Reference gotcha:** the sandbox scores your edited, cheat-stripped `.o` against
@@ -230,15 +215,12 @@ edits — that refusal means you're misusing it as an iteration tool; `--allow-d
 legitimate cases (e.g. mid-revert restoration). The final SHA1 gate is always honest.
 
 ## Substrate — do NOT break
-The engine reuses proven stage tools as substrate; treat these as load-bearing:
-cc1, maspsx, `regfix.py`/`asmfix.py` (pipeline stages), `prologue_fix`, `multu_pad`, `fix_lwl`,
-`as`/`ld`/`objcopy`, `make_psexe`, splat, `classify_inline_asm.py`, decomp-permuter — plus the
-original EXE, `asm/`, `src/`, `include/`, `disc/`, and the `*.txt` configs. The Makefile remains
-until `engine build` fully supersedes it; the oracle (`engine verify-oracle`) guards every change.
-The engine's own logic (distance metric, canonical gate, cheat-stripping) is guarded by `engine
-test` — a regression suite that must stay green whenever you change `engine/` code. Its
-cheat-invisibility tests are the mechanical proof that cheats are score-inert, so there is **no
-commit-time cheat audit** (`audit_asm_cheats.py` remains only as a manual detector).
+Load-bearing stage tools: cc1, maspsx, `regfix.py`/`asmfix.py`, `prologue_fix`, `multu_pad`,
+`fix_lwl`, `as`/`ld`/`objcopy`, `make_psexe`, splat, decomp-permuter — plus the original EXE,
+`asm/`, `src/`, `include/`, `disc/`, the `*.txt` configs, and the Makefile. The oracle guards
+every change; the engine's own logic (distance metric, canonical gate, cheat-stripping) is pinned
+by `engine test` — keep it green whenever you touch `engine/` code. (`audit_asm_cheats.py` is a
+manual detector only; the sandbox's cheat-invisibility is the mechanical enforcement.)
 
 ## Guards (hooks)
 Active: root-write cleanliness, CRLF/tooling-error (WSL env-failure) detection, the cc1psx-footgun
