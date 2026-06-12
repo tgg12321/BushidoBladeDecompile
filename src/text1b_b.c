@@ -1876,8 +1876,12 @@ s32 func_800791D8(u8 *a0) {
     }
     return v1;
 }
-void debug_printf(s32 fmt, s32 a, ...) {
-    func_80079244(1, fmt, &a);
+void debug_printf(s32 fmt, s32 a, s32 b, s32 c) {
+    s32 *ap = &fmt;
+    ap[1] = a;
+    ap[2] = b;
+    ap[3] = c;
+    func_80079244(1, fmt, ap + 1);
 }
 void func_80079244(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80079244.s).
