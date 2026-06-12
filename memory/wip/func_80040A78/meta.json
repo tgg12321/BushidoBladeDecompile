@@ -1,0 +1,82 @@
+{
+  "function": "func_80040A78",
+  "file": "text1a",
+  "scores": {
+    "head_floor": 7,
+    "head_floor_note": "Engine's sandbox --disable all on HEAD reports 7 — strips the two `register asm(\"$N\")` cheat-asm pins from the source. HEAD with the pins present matches the oracle (the pins force the right $a1/$v1 allocation AND prevent GCC's check_dbra_loop count-down rewrite). The pins are forbidden cheat-asm per [[inline-asm-policy]] / [[register-asm-pins]]; HEAD is INCOMPLETE.",
+    "candidate_floor": 1,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 51,
+    "target_insns": 51
+  },
+  "sessions": [
+    {
+      "date": "2026-06-12",
+      "git_head_at_measurement": "4dd017d8",
+      "lever": "u32 var_a1 (signedness change s32→u32 on loop counter) — defeats GCC 2.7.2's check_dbra_loop count-down rewrite",
+      "lever_rule": null,
+      "floor_was": 7,
+      "floor_now": 1,
+      "session_id": null,
+      "session_notes": "GCC 2.7.2 loop.c:5849 — check_dbra_loop's `GET_CODE(comparison) == LT` test only matches signed less-than. With `s32 var_a1`, the comparison is LT (signed) and reversal fires: GCC emits `li v1,19; ... addiu v1,v1,-1; bgez v1,loop` and var_a1 is allocated to $v1 (renames swap target's $a1/$v1 assignment). With `u32 var_a1`, the comparison is LTU (unsigned), check_dbra_loop's LT test fails, no reversal — GCC emits the natural `addiu a1,a1,1; sltiu v0,a1,0x14; bnez v0,loop`. Registers and order now match target ($v1=var_v1, $a1=var_a1). The single remaining diff is `sltiu` vs target's `slti` — same 16-bit immediate, same operands, only the 6-bit opcode field differs (0x0B vs 0x0A). Empirical variant sweep this session: u32 var_a1 declared FIRST (before var_v1) → score 1; u32 var_a1 declared SECOND → score 6 (registers swap to $v1/$a1); `register s32` (hint, not pin) → score 7 (hint ignored); `signed char` / `short` → score 5/5 (sign-extension overhead); `char` (unsigned per -funsigned-char) → score 2 (andi+sltiu pattern); for-loop form vs do-while → no difference; `(s32)var_a1 < 0x14` cast on u32 → score 7 (cast forces LT, reversal fires)."
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-12",
+    "evidence": "Reviewer (independent cheat-reviewer agent, this session) walked the 6-test checklist: candidate is clean of forbidden constructs (no __asm__, no `register asm`, no volatile coercion, no dead store, no opaque var, no alias rename, no macro-hidden asm). The construct u32 var_a1 has independent semantic justification (natural unsigned type for a non-negative counter). NOTED CAVEAT: u32 is NOT a strict Lever B sibling (Lever B is width narrowing; signedness-only change is a sibling-of-Lever-B). Target's `slti` opcode evidences the original source had a SIGNED counter — so u32 lowers the floor but moves AWAY from the target's semantic intent. Reviewer affirmed the WIP save: candidate is a valid floor-lowering checkpoint, not a closing form. Next session needs a different structural approach to recover signed-compare semantics without a register-asm pin."
+  },
+  "remaining_gap": {
+    "summary": "ONE-bit opcode diff. sltiu (0x2C) vs target slti (0x28). Same operands ($v0, $a1, 20). Registers and loop structure are byte-identical to target. The diff is GCC's check_dbra_loop fires only on signed LT (loop.c:5849) — s32 → reversal (count-down) → score 7; u32 → no reversal but emits sltiu → score 1. The two requirements (signed LT compare AND no loop reversal) are mutually exclusive in the natural C — the HEAD cheat-asm pins force-resolve them: `register asm(\"a1\")` keeps signed s32 AND prevents reversal by anchoring var_a1 to a specific hard reg the SR pass can't easily replace. Without a pin, no known pure-C lever closes the gap.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "Zero rules. HEAD's match is via cheat-asm (two `register asm(\"$N\")` pins), not regfix/asmfix. The pins are forbidden per [[inline-asm-policy]]; the function is INCOMPLETE under the current pure-C bar."
+  },
+  "next_hypotheses": [
+    "INSTRUMENTED CC1 (BB2_LOOP_DEBUG) — instrument the GCC loop.c check_dbra_loop and strength_reduce paths to log the EXACT conditions causing/preventing reversal. Read loop.c around lines 5654-5934 (check_dbra_loop), 3689-4065 (strength_reduce final_value path), and any LT/LTU-conditional code. Find a condition OTHER than the LT/LTU comparison-code check that we can flip from C without coercion. Candidates already known false: initial_value≠0 (changes init insn, won't match target's `move a1,zero`), num_mem_sets>1 (changes body, won't match), multi-biv (we already have 3 bivs but no_use_except_counting still fires — verify why). The interesting check is at line 5827: `bl->giv_count + bl->biv_count + num_mem_sets + num_movables + 2 == insn_count` AND `bl == loop_iv_list && bl->next == 0`. This is the ALTERNATIVE to no_use_except_counting. If we can make no_use_except_counting=0 (var_a1 used in body) WHILE keeping bl->next == 0 (only one biv), reversal would fail. But we have 3 bivs in this loop, so bl->next != 0 anyway. So the check is currently passing only because no_use_except_counting=1 — i.e. var_a1 is NOT used in the body except for the increment+compare. If we can put var_a1 into a body use that GCC CANNOT optimize away while emitting NO extra instructions, reversal stops. The challenge: such a use is the cheats-by-spelling boundary. Read loop.c carefully for a fourth path.",
+    "DIRECTED PERMUTER (PERM_GENERAL) — random-mode permuter has not been run on this function yet. Run permuter from the u32 candidate base (score 1) with PERM_GENERAL annotations on (a) the loop body's statement order, (b) the loop counter init expression, (c) the comparison form (var_a1 < 0x14 vs var_a1 != 0x14 vs (s32)(var_a1 - 0x14) < 0 etc.). Random-mode is unlikely to find the closing form (the space is small and the diff is 1-bit), but it may surface an unexpected structural lever or confirm exhaustion. Cap at a few thousand iters since the search space is small.",
+    "SOTN / VAGRANT STORY CROSS-REFERENCE — search SOTN's master for pure-C loops with `slti v0,reg,N; bnez v0,loop` patterns (sanctioned), specifically count-up-with-signed-compare loops that survive GCC 2.7.2's check_dbra_loop without pins. The community standard ([[community-standard]]) is what's accepted; if SOTN ships such loops without pins, the C structure they used is the lever. Concrete searches: (a) `git grep -B2 -A8 'do {.*\\(\\(s32\\|int\\) [a-z_]+ < 0x' src/main/` in the SOTN tree; (b) look for sibling loops in BB2's COMPLETED-C functions that use count-up signed compare without pins — `grep -rE 'do \\{$' src/*.c` then check the corresponding asm for `slti+bnez`. If a sibling exists, the C structure that produces it is the lever to transplant.",
+    "RESTRUCTURE — POINTER WALK INSTEAD OF COUNTER — the loop body is filling 20 entries at `arg0+0x1994+i*4` with values `arg0+0x94+0x18+i*0x68`. The current C uses arg0 advancing by 4 AND var_v1 advancing by 0x68 AND var_a1 counting up. Three bivs. A different formulation: walk a destination pointer from `arg0+0x1994` to `arg0+0x1994+0x50`, with var_v1 derived from arg0+offset. Single-biv loops (destination pointer < end) avoid the check_dbra_loop trigger entirely (the SR pass treats the pointer biv differently). The cost: requires computing `arg0+0x1994+0x50` once before the loop, adding 1-2 instructions. The benefit: potentially closes without a register-asm pin. Concrete variant to try: `s32 *dst = (s32 *)(arg0 + 0x1994); s32 *end = dst + 0x14; var_v1 = arg0 + 0xAC; do { *dst++ = var_v1; var_v1 += 0x68; } while (dst < end);`. Score this — even if it produces extra prologue insns, the loop body itself may match. If close, hand-author the in-flight register pressure to allocate dst to $a1 and var_v1 to $v1.",
+    "READ SIBLING COMPLETED-C COUNTERS IN text1a.c (e.g. line 113 `do { ... } while (i < 5);`, line 158, 321, 340) — check their objdumps for slti vs sltiu and the GCC choice. A matched sibling whose loop counter survives as `slti` without a pin shows the pattern that works. The do-while at line 340 (`off < 0xD2`) is particularly relevant — it's a count-up by 0xA with constant bound, structurally similar. If that produces slti+bnez naturally without strength reduction, the difference between it and func_80040A78 is the lever."
+  ],
+  "rejected_forms": [
+    {
+      "form": "`(s32)var_a1 < 0x14` cast on u32 variable",
+      "score": 7,
+      "reason": "Cast forces signed LT comparison; check_dbra_loop fires; reversal occurs. Identical to s32 var_a1 in codegen."
+    },
+    {
+      "form": "`s32 limit = 0x14;` local + `var_a1 < limit`",
+      "score": 2,
+      "reason": "Opaque local with no semantic purpose other than defeating constant propagation in the compare. Forbidden per [[no-new-park-categories]] cheats-by-any-spelling — same family as the `s32 one = 1` opaque-var pattern (which is sanctioned ONLY for [[loop-rotation-two-shift]]'s narrow LABEL_OUTSIDE_LOOP_P interaction, not for general SR defeat)."
+    },
+    {
+      "form": "`s32 one = 1;` opaque + `var_a1 += one;`",
+      "score": 2,
+      "reason": "Opaque var used to defeat strength reduction. [[loop-rotation-two-shift]] sanctions this ONLY for the bit-test (x>>i)&1 → li one,1; sllv pattern with explicit SOTN evidence. Using it for general SR defeat is OUT OF SCOPE — the sanction does not generalize per [[no-new-park-categories]] standing posture."
+    },
+    {
+      "form": "`signed char var_a1` / `short var_a1` (narrowing)",
+      "score": 5,
+      "reason": "Lever B narrowing — would be legitimate, but produces extra sign-extension instructions (build_insns 54 vs target 51). Strictly worse floor than u32."
+    },
+    {
+      "form": "`char var_a1` (unsigned char per -funsigned-char)",
+      "score": 2,
+      "reason": "Narrows to 8 bits; emits `andi $v0,$a1,0xFF` before `sltiu`. Extra instruction. Worse than u32."
+    },
+    {
+      "form": "`register s32 var_a1` (hint, not pin)",
+      "score": 7,
+      "reason": "Register hint without `asm(\"$N\")` is ignored by GCC's allocator. Same as plain `s32 var_a1`. Identical codegen to s32. The strength reduction still fires."
+    },
+    {
+      "form": "`*(s32 *)(arg0 + 0x1994 + var_a1 * 0) = var_v1 + 0x18;` (sham use of var_a1 in addr)",
+      "score": 7,
+      "reason": "GCC's combine simplifies `var_a1 * 0` to 0; no use of var_a1 in the body remains; SR fires; same as plain s32. Even if the simplification hadn't fired, it's a cheat-by-spelling (zero semantic purpose, intent is to keep var_a1 'alive' for SR defeat)."
+    }
+  ],
+  "memory_notes": [
+    ".claude/rules/register-alloc-pure-c.md — Lever B (narrow integer type) precedent for type-driven codegen levers",
+    "tools/gcc-2.7.2/loop.c — check_dbra_loop at lines 5654-5934, the mechanism this candidate works around"
+  ]
+}
