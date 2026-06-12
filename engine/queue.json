@@ -1,8 +1,16 @@
 {
-  "generated_at": "2026-06-11T20:04:42",
+  "generated_at": "2026-06-12T01:44:52",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
+    {
+      "func": "sys_VSync",
+      "file": "ings2",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
     {
       "func": "func_80052BE4",
       "file": "text1b",
@@ -3919,15 +3927,15 @@
     }
   ],
   "counts": {
-    "total": 476,
-    "active": 381,
+    "total": 477,
+    "active": 382,
     "by_status": {
-      "active": 381,
+      "active": 382,
       "parked": 95
     },
     "by_verdict": {
+      "C": 198,
       "ASM-PARTIAL": 66,
-      "C": 197,
       "ASM-SUSPECT": 118
     }
   }

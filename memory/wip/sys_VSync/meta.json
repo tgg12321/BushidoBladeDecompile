@@ -1,0 +1,32 @@
+{
+  "func": "sys_VSync",
+  "file": "src/ings2.c",
+  "scores": {
+    "head_floor": 7,
+    "candidate_floor": 5
+  },
+  "sessions": [
+    {
+      "date": "2026-06-12",
+      "agent": "headless worker (opus), batch bfej90w2j iter 1; checkpoint authored by orchestrator after layer-2 reviewer FAIL revert of 4dd017d8",
+      "lever": "Region A (named-base intermediate): split `frame = (D_800A151C + a0) - 1` into `s32 base = D_800A151C - 1; frame = base + a0;` — defeats combine's CSE of the shared `a0 - 1` subexpression with the sibling `count = a0 - 1`, so the addiu lands before the j and the addu in the delay slot, matching target. Retires the first regfix reorder rule (TEXT 23-25). SOTN-accepted named-intermediate family; layer-2 reviewer PASSed this construct.",
+      "floor_before": 7,
+      "floor_after": 5
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-12",
+    "evidence": "Layer-2 retro-audit of commit 4dd017d8: the candidate's Region A named-base lever explicitly PASSed (SOTN named-intermediate family). The commit as a whole FAILed on a separate construct NOT in this candidate — an unannotated do{}while(0) sched1 fence (out of scope for do-while-zero-exception, reorg.c LABEL_OUTSIDE_LOOP_P only); preserved in rejected/do-while-sched1-fence.c."
+  },
+  "remaining_gap": "5 (masked) — Region B: second call's volatile-load + arg-setup scheduling. Target keeps the volatile lw of s0 (from D_800A1510) strictly source-ordered adjacent to its pointer load before the func_80082A14(g_sys_dma_region + 1, 1) call; natural cc1 sched1 interleaves it with the independent arg setup. HEAD bridges this with the second regfix reorder rule (TEXT 32-38).",
+  "rejected_forms": [
+    "do { } while (0); between `s0_val = *D_800A1510;` and the second func_80082A14 call — sched1 fence, layer-2 FAIL (see rejected/do-while-sched1-fence.c)"
+  ],
+  "next_hypotheses": [
+    "Restructure the second-call arg so its setup is not independent of the s0 reload (e.g. a named local for `g_sys_dma_region + 1` declared/computed BEFORE the s0_val reload — hoist-call-arg-local-flips-jal-delay family — so sched1 has nothing to interleave).",
+    "Check whether the s0_val reload can be expressed through the existing `volatile s32 *ptr` access path used later (single pointer local established before the call) so the load is data-dependent on an adjacent instruction.",
+    "RTL diagnosis per register-alloc-pure-c: cc1 -da on the bridged form, read sched1 dump to see which dependence (or absence) lets the arg setup hoist; derive the lever from the dump rather than guessing.",
+    "Worker's measured negatives (all scored worse than baseline 7, BEFORE Region A landed — re-measure on top of Region A floor 5 before ruling out): operand reassociation, pre-computed dma arg, last-arg hoist, merged if/else, inverted branch, eager-flag pre-computation."
+  ]
+}
