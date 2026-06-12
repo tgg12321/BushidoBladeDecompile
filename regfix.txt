@@ -4283,10 +4283,6 @@ DispSchoolBG: reorder 29,28 @ 28-29
 
 # Hoist 0x1000 load before first matrix sh
 DispSchoolBG: reorder 71,67,68,69,70 @ 67-71
-func_80052720: delete @ 11
-func_80052720: delete @ 13
-func_80052720: delete @ 14
-
 func_80048530: subst "addu\s+\$5,\$5,\$4" "addu $a1,$a1,$v1" @ 6
 func_80048530: subst "addu\s+\$3,\$4,\$2" "addu $v1,$v0,$v1" @ 9
 func_80048530: delete @ 8

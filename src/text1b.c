@@ -10639,25 +10639,38 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_2; /* padding after func_800526A0 */
-void func_80052720(s32 arg0, s32 arg1, s32 arg2) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-
-    __asm__ volatile ("mtc2 %0, $9" :: "r"(arg0));
-    __asm__ volatile ("mtc2 %0, $10" :: "r"(arg1));
-    __asm__ volatile ("mtc2 %0, $11" :: "r"(arg2));
-    __asm__ volatile ("nop");
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4AA00428");
-    __asm__ volatile ("nop");
-    __asm__ volatile ("mfc2 %0, $25" : "=r"(t0));
-    __asm__ volatile ("mfc2 %0, $26" : "=r"(t1));
-    __asm__ volatile ("mfc2 %0, $27" : "=r"(t2));
-    __asm__ volatile ("add $4, $8, $9");
-    __asm__ volatile ("j func_800526A0");
-    __asm__ volatile ("add $4, $4, $10");
-}
+/* func_80052720: GTE sqr tail-call wrapper — mtc2 IR1-3 -> sqr -> sum
+ * MAC1-3 into $a0 -> frameless `j func_800526A0` tail-call.
+ * Hand-written asm: trapping `add` ops (GCC 2.7.2 emits addu), mfc2
+ * results land in $t0/$t1/$t2 (natural cc1 allocation picks $v0/$v1/$a0),
+ * hand-scheduled GTE pipeline nops, and no sibling-call TCO exists in
+ * GCC 2.7.2 for the frameless j. Tail-call variant of the authorized
+ * sibling func_80052754 below. Canonical-asm; see inline_asm_canonical.txt.
+ * User-authorized 2026-06-12. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80052720\n"
+    "    mtc2   $a0, $9\n"
+    "    mtc2   $a1, $10\n"
+    "    mtc2   $a2, $11\n"
+    "    nop\n"
+    "    nop\n"
+    "    .word  0x4AA00428\n"
+    "    nop\n"
+    "    mfc2   $t0, $25\n"
+    "    mfc2   $t1, $26\n"
+    "    mfc2   $t2, $27\n"
+    "    add    $a0, $t0, $t1\n"
+    "    j      func_800526A0\n"
+    "    add    $a0, $a0, $t2\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 /* GTE sqr (squared-vector-length) leaf wrapper: mtc2 IR1-3 -> sqr -> sum MAC1-3.
  * Hand-written asm — mfc2 results land in $t0/$t1/$t2, which natural cc1
  * register allocation cannot pick (GCC chooses $v0/$v1/$a0). Canonical-asm;
