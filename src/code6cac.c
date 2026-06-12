@@ -1901,15 +1901,17 @@ void cpu_get_move_pattern_table_number(void) {
 void func_8001EEB4(void) {
     s8 idx = D_800A3748;
     u8 *entry = (u8 *)&D_80101EC8 + idx * 0x44C;
-    u16 a1 = *(u16 *)(entry + 0x6A);
+    s16 a1 = *(u16 *)(entry + 0x6A);
+    u16 v1 = a1;
 
-    if (a1 != 0xA && *(s16 *)(entry + 0x72) == 0 &&
-        (u32)((s32)a1 - 0x17) >= 2 && *(s16 *)(entry + 0x96) == 0) {
+    if (v1 != 0xA && *(s16 *)(entry + 0x72) == 0 &&
+        (u16)(a1 - 0x17) >= 2 && *(s16 *)(entry + 0x96) == 0) {
         func_800218C8(D_800A3748);
         {
             s32 ret = func_80021A3C(D_800A3748, *(s16 *)(entry + 0xA));
+            s32 idx2 = D_800A3748;
             *(s16 *)(entry + 0x5E) = 1;
-            func_80021A98(D_800A3748, ret, 1);
+            func_80021A98(idx2, ret, 1);
         }
         *(s16 *)(entry + 0x26C) = 1;
     }
