@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "sys_VSync",
-      "file": "ings2",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "func_80040A78",
       "file": "text1a",
       "distance": 7,
@@ -3934,14 +3926,14 @@
     }
   ],
   "counts": {
-    "total": 478,
-    "active": 384,
+    "total": 477,
+    "active": 383,
     "by_status": {
-      "active": 384,
+      "active": 383,
       "parked": 94
     },
     "by_verdict": {
-      "C": 199,
+      "C": 198,
       "ASM-PARTIAL": 67,
       "ASM-SUSPECT": 118
     }

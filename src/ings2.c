@@ -57,7 +57,8 @@ s32 sys_VSync(s32 a0) {
         s32 count;
 
         if (a0 > 0) {
-            frame = (D_800A151C + a0) - 1;
+            s32 base = D_800A151C - 1;
+            frame = base + a0;
         } else {
             frame = D_800A151C;
         }
@@ -70,6 +71,7 @@ s32 sys_VSync(s32 a0) {
     }
 
     s0_val = *D_800A1510;
+    do { } while (0);
     func_80082A14(g_sys_dma_region + 1, 1);
 
     if (s0_val & 0x400000) {
