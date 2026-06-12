@@ -19,6 +19,7 @@ levers from memory notes or git log.
 | **Authoritative?** | NO. The committed `src/` is the canonical source. WIP candidates are evidence, not active code. |
 | **Cheat-gated?** | YES at commit time. The cheat-reviewer verdict is recorded in `meta.json`. A WIP carrying a known cheat MUST be marked `reviewer.verdict = "FAIL"` with the evidence — preserved as a "do not re-derive this" warning, not as a usable candidate. |
 | **Lifecycle** | Created on first measured progress. Updated on subsequent sessions that lower the floor. Deleted when the function reaches COMPLETED-C (the entry's lessons migrate to a `rules/` doc if they generalize). |
+| **Compacted?** | YES — ENFORCED. WIP files are **current-state docs**, not session journals. `tools/hooks/wip_compaction_guard.py` (commit-msg chain) blocks commits where `notes.md` > 120 lines or `meta.json.sessions[]` > 3 entries. History lives in git. See "Compaction contract" below. |
 
 ## Layout per function
 
@@ -46,7 +47,7 @@ memory/wip/<func_name>/
     "build_insns": 50,                     // candidate's build_insns (optional)
     "target_insns": 51                     // target.s insn count (optional)
   },
-  "sessions": [                            // append per session, never overwrite
+  "sessions": [                            // the LAST <=3 sessions, newest last (cap ENFORCED — see Compaction contract)
     {
       "date": "YYYY-MM-DD",
       "lever": "short human-readable name",
@@ -55,6 +56,10 @@ memory/wip/<func_name>/
       "floor_now": 12,
       "session_id": "uuid"                  // optional CLAUDE_SESSION_ID for metrics
     }
+  ],
+  "prior_sessions_summary": [              // sessions folded out of sessions[] — ONE line each:
+    "2026-06-12 s1: Region A named-base lever, floor 7->5 (later re-measured 9->7 clean)",
+    "2026-06-12 s2: found inherited do-while cheat; honest baseline re-established at 7"
   ],
   "reviewer": {
     "verdict": "PASS" | "FAIL" | "NEEDS_USER" | null,  // null = not invoked yet
@@ -100,6 +105,27 @@ memory/wip/<func_name>/
    `retire` + `queue done`, then **delete `memory/wip/<func>/`** (the entry's
    purpose is served). If a lesson generalizes, lift it into a path-scoped
    rule under `.claude/rules/`.
+
+## Compaction contract (ENFORCED — token-usage audit 2026-06-12)
+
+WIP files describe the **current state**; git history is the journal. The
+sys_VSync pile-up showed why: `notes.md` grew to 300+ lines of stacked
+per-session TL;DRs and `sessions[]` grew unboundedly, so every later session
+paid an ever-growing read cost exactly on the functions that need
+checkpoints most. `tools/hooks/wip_compaction_guard.py` (commit-msg chain)
+BLOCKS commits violating the caps; override with `[skip-wip-compaction]` in
+the commit body only for genuinely exceptional checkpoints (justify why).
+
+| File | Cap | How to stay under it |
+|---|---|---|
+| `notes.md` | **120 lines** | ONE current TL;DR (replace, don't stack), resume steps, the LIVE hypothesis list, a compact ruled-out bullet list, pointers. When you update, REWRITE sections in place — the prior version is `git log -p memory/wip/<func>/notes.md`. |
+| `meta.json` `sessions[]` | **3 entries** | Keep the newest ≤3 verbatim. Fold older entries into `prior_sessions_summary` — ONE line each (date, lever, floor delta, outcome). Detail worth keeping verbatim belongs in the rule/memory note the session should have written anyway. |
+| `rejected/` | (uncapped) | One file per rejected FORM with a short header naming the violated rule — not per session. Merge duplicates. |
+
+Ruled-out negatives belong in notes.md's ruled-out list as ONE bullet each
+("operand reassociation — no change @floor 7"), not as preserved measurement
+tables. If a measurement table earns long-term value, it has outgrown the
+WIP entry — lift it to `memory/project/<func>-*.md` and point at it.
 
 ### Saving progress (no full match)
 

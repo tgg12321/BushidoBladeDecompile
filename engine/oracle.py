@@ -93,6 +93,30 @@ def lock(fixtures: list | None = None, git_commit: str | None = None) -> dict:
     return manifest
 
 
+def dirty_build_inputs() -> list[str]:
+    """Uncommitted (tracked) modifications to files that feed the build.
+
+    A `verify-oracle --rebuild` with these dirty is the documented
+    reference-corruption footgun (CLAUDE.md "Reference gotcha"): it rebuilds
+    build/ from half-finished source, and the sandbox then scores against
+    garbage. The CLI refuses --rebuild while this list is non-empty unless
+    --allow-dirty is passed (legitimate e.g. mid-revert, where the dirty
+    state IS the intended new reference).
+    """
+    out = _git(["status", "--porcelain", "--untracked-files=no"])
+    watch_prefixes = ("src/", "include/")
+    watch_files = set(CONFIG_FILES) | {"Makefile", "maspsx_label_nop_funcs.txt"}
+    dirty = []
+    for line in out.splitlines():
+        path = line[3:].strip().strip('"')
+        if " -> " in path:  # rename: report the new side
+            path = path.split(" -> ", 1)[1]
+        p = path.replace("\\", "/")
+        if p.startswith(watch_prefixes) or p in watch_files:
+            dirty.append(p)
+    return dirty
+
+
 def verify(rebuild: bool = False) -> dict:
     """Compare the current tree to the locked manifest and confirm a
     byte-identical build. `rebuild` forces a fresh full build first.

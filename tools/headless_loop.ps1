@@ -87,6 +87,11 @@ Steps for the single top function:
   3. & tools/eng.ps1 sandbox <func> --disable all   (honest pure-C distance)
   4. Edit src/<file>.c toward 0 in pure C (re-run step 3 as your gradient). If
      retire fails with a cheat-asm hint, strip the source __asm__ barrier it names.
+     Exploring MORE THAN ~3 candidate forms? Write each form to a file under
+     tmp/<func>_variants/ and sweep them ALL in one call:
+       python3 tools/sweep_variants.py --func <f> --file <stem> --variants tmp/<func>_variants/
+     (one tool call scores N forms and restores src; 10-20 per-edit sandbox
+     round-trips per session was the #1 measured turn sink).
   5. & tools/eng.ps1 retire <func>         (drops rules + full SHA1 gate)
   6. & tools/eng.ps1 queue done <func>
   7. Register a finding if reusable (.claude/rules/ or memory/), then commit with
@@ -144,6 +149,25 @@ uncommitted tree that forces an escalation):
     user sign-off. Violating this fails the commit at layer-2 regardless of
     the technique's merits (precedent: 89bfc882, 2026-06-11).
   - Do NOT push.
+EFFICIENCY CONTRACT (measured waste from the 2026-06-12 token audit — each
+of these burned real sessions):
+  - `verify-oracle --rebuild` is the SESSION-START baseline and the FINAL
+    gate ONLY — never an iteration tool. Mid-loop it now REFUSES on dirty
+    src (exit 3): that refusal means you are misusing it; go back to
+    `sandbox`. (Measured: 4-6 wasted multi-minute rebuilds per session.)
+  - NEVER re-run a command unchanged hoping for different output. If a
+    command fails, read the error, change something, THEN re-run.
+  - permuter/<func>/ workspaces are GITIGNORED but may persist ON DISK from
+    a prior session: `test -d permuter/<func>` FIRST. If present, reuse it;
+    if absent, rebuild from asm/funcs/<func>.s + tools/decomp-permuter/
+    prelude.inc (strip `.set gp=64`) and RECORD the rebuild recipe in
+    meta.json so the next session doesn't probe blind. (Measured: 8
+    file-not-found errors in one session from assuming.)
+  - WIP files are CURRENT-STATE docs with ENFORCED caps (notes.md <=120
+    lines, meta.json sessions[] <=3 — fold older into
+    prior_sessions_summary, one line each). The commit-msg hook BLOCKS
+    oversize checkpoints. Rewrite sections in place; git keeps the history.
+    See memory/wip/README.md "Compaction contract".
 PERSISTENCE BAR — every function MUST be decompiled eventually, so the bar for
 parking YOUR ASSIGNED FUNCTION is high. "Hard" is not enough; "I tried a few
 things" is not enough. Persistence is WITHIN your function (more levers, more

@@ -119,22 +119,29 @@ For every completion-class commit (`Match:` / `cheat-cleanup:` / `auth:` /
 any commit retiring rules or adding a `.claude/rules/` technique doc), the
 orchestrator MUST, before treating the item as accepted:
 
-1. Spawn a FRESH `cheat-reviewer` agent (a different context from the
+1. Run `python3 tools/reviewer_precheck.py --func <f> [--commit <sha>|--staged]
+   [--msg-file tmp/msg.txt]` FIRST and paste its output into the reviewer
+   brief — it mechanically settles the procedural facts (residual rules,
+   body cheat-asm constructs, allowlist coverage of new extern volatiles,
+   rule-docs riding along, carve-out commit fields) so reviewer tokens go
+   to the SEMANTIC 6-test judgment, not re-derivation (a layer-1 review
+   burned ~117k tokens re-deriving these before the tool existed).
+2. Spawn a FRESH `cheat-reviewer` agent (a different context from the
    worker's in-session reviewer), briefed adversarially: default to FAIL,
    do NOT credit the worker's claimed reviewer verdict, dig into the
    specific commit with the 6-test checklist, and audit any rule doc the
    commit registered (self-sanctioning docs are banned outright per
    review-discipline-before-commit.md).
-2. Batch cadence: run the loop N items (e.g. -MaxIterations 10), then
+3. Batch cadence: run the loop N items (e.g. -MaxIterations 10), then
    retro-audit ALL completions in parallel before launching the next batch.
    Audits of independent commits run concurrently — use one reviewer agent
    per commit (or per tight pair).
-3. Verdict handling: PASS → accepted. FAIL → revert workflow (restore the
+4. Verdict handling: PASS → accepted. FAIL → revert workflow (restore the
    prior bridged state byte-identical; rules restorations use the
    `[infra-rule: reviewer-fail-revert]` guard category; preserve clean
    levers in a WIP checkpoint). NEEDS_USER → surface to the user; the item
    stays provisional.
-4. The mechanical sweeps ride along once per batch: gate-tampering diff
+5. The mechanical sweeps ride along once per batch: gate-tampering diff
    (engine/, tools/hooks/, Makefile, bb2.ld vs the batch baseline),
    `check_completion_integrity.py`, `audit_asm_cheats.py --summary`, and
    inline_asm_canonical.txt additions == exactly the authorized set.
@@ -164,6 +171,13 @@ Keep going autonomously; **STOP and surface to the user ONLY for:**
 Everything else is logged and not blocked on. When you escalate, **confirm the
 finding yourself first** (verify the worker's rationale against the actual rules /
 source / linker) — workers over-claim; your review is the integrity check.
+
+**No deferral (user directive 2026-06-12):** a stuck top item is NEVER skipped,
+rotated, or deferred — everything gets decompiled eventually, so deferring buys
+nothing. The remedy for repeated no-floor-change sessions is to change MODALITY
+on the SAME function: an orchestrator deep-dive with sustained context (this is
+what closed sys_VSync after 7 cold-start worker sessions), bulk variant sweeps
+(`tools/sweep_variants.py`), or new diagnostics — never a different target.
 
 ## 6. Auto-handle categories (NOT escalate triggers)
 

@@ -57,6 +57,10 @@ def main() -> int:
                      help="record this git commit (WSL git can't read the worktree)")
     vp = sub.add_parser("verify-oracle", help="confirm byte-identical build + drift")
     vp.add_argument("--rebuild", action="store_true", help="force a fresh full build")
+    vp.add_argument("--allow-dirty", action="store_true",
+                    help="permit --rebuild with uncommitted build-input edits "
+                         "(default: refused — rebuilding from dirty src corrupts "
+                         "the canonical reference the sandbox scores against)")
     sub.add_parser("build", help="full clean-driver build -> SHA1 check")
     bp = sub.add_parser("build-c", help="build one C object")
     bp.add_argument("stem")
@@ -109,6 +113,24 @@ def main() -> int:
         return 0
 
     if a.cmd == "verify-oracle":
+        if a.rebuild and not a.allow_dirty:
+            dirty = O.dirty_build_inputs()
+            if dirty:
+                r = {
+                    "ok": False,
+                    "refused": "dirty-build-inputs",
+                    "dirty": dirty,
+                    "hint": "Uncommitted build-input edits present — a --rebuild now "
+                            "would corrupt the canonical reference (build/) that the "
+                            "sandbox scores against. During the edit loop use ONLY "
+                            "`sandbox <func> --disable all` (it builds into tmp/ and "
+                            "never touches build/). Commit or revert first, or pass "
+                            "--allow-dirty if the dirty state IS the intended new "
+                            "reference (e.g. mid-revert restoration).",
+                }
+                print(json.dumps(r, indent=2))
+                MET.record_event("verify-oracle", None, r, exit_code=3)
+                return 3
         r = O.verify(rebuild=a.rebuild)
         print(json.dumps(r, indent=2))
         MET.record_event("verify-oracle", None, r, exit_code=0 if r.get("ok") else 1)
