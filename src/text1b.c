@@ -17015,7 +17015,6 @@ extern s32 func_8007352C(s32 *);
 
 void func_80074220(s32 *arg0, s32 arg1) {
     s32 sp[12];
-    s32 *p;
     s32 i;
     s32 *temp_s2;
     s32 v;
@@ -17033,7 +17032,8 @@ void func_80074220(s32 *arg0, s32 arg1) {
     *(s16 *)(t + 0xE) = 0xB0;
     gpu_SetSemiTransp(t, 1);
     ot_Link(D_800A374C + 0x78, t);
-    arg0[5] = t + 0x10;
+    t += 0x10;
+    arg0[5] = t;
 skip_init:
     sp[5] = 0x1F;
     *(s8 *)((s32)&sp[0] + 0x28) = 0;
@@ -17041,10 +17041,9 @@ skip_init:
     temp_s2 = *(s32 **)((s32)arg0[0] + 0x38);
     sp[6] = 0;
     sp[7] = 0;
-    p = temp_s2;
     i = 0;
     do {
-        v = *p++;
+        v = temp_s2[i];
         sp[0] = v;
         sp[1] = v + 0xC;
         sp[2] = arg0[4];
@@ -17077,13 +17076,13 @@ skip_init:
 
     initPolyF4(q);
     func_80069A8C(q);
-    *(s16 *)(q + 0xC) = 0x27F;
-    *(s16 *)(q + 0x14) = 0x27F;
     *(s16 *)(q + 0x8) = 0x15E;
     *(s16 *)(q + 0xA) = 0;
+    *(s16 *)(q + 0xC) = 0x27F;
     *(s16 *)(q + 0xE) = 0;
     *(s16 *)(q + 0x10) = 0x15E;
     *(s16 *)(q + 0x12) = 0xEF;
+    *(s16 *)(q + 0x14) = 0x27F;
     *(s16 *)(q + 0x16) = 0x36;
     gpu_SetSemiTransp(q, 0);
     ot_Link(D_800A374C + 0x80, q);

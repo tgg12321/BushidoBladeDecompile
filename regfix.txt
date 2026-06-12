@@ -3301,12 +3301,7 @@ func_80060E38: subst "44\(\$sp\)" "40($sp)" @ 89
 func_80060E38: subst "52\(\$sp\)" "48($sp)" @ 92
 func_80060E38: subst "60\(\$sp\)" "56($sp)" @ 95
 func_80060E38: subst "68\(\$sp\)" "64($sp)" @ 98
-func_80074220: reorder 26,25,29,27,28,30 @ 25-30
 # func_80074220: loop label needs to attach to reordered first instruction
-func_80074220: insert_label ".Lloop4220:" @ 43
-func_80074220: subst "\.L\d+" ".Lloop4220" @ 54
-func_80074220: reorder 103,102 @ 102-103
-func_80074220: reorder 44,42,43,45,46,47,48,49 @ 42-49
 
 # func_80049C24 -- s7/$fp swap + nor reorder + slti + 4 use sites
 func_80049C24: subst "addu\s+\$fp,\$4,\$2" "addu	$23,$4,$2" @ 17
