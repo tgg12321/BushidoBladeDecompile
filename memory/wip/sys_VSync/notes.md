@@ -1,18 +1,35 @@
 # sys_VSync (src/ings2.c) — WIP checkpoint
 
-**TL;DR:** Region A named-base lever survives layer-2 review (commit `4dd017d8`
-reverted as `01471d90`; orchestrator preserved the lever in `candidate.c`).
-Session 2 (2026-06-12) discovered that the prior `candidate_floor: 5` baseline
-depended on an inherited inner `do { } while (0);` at HEAD `src/ings2.c` line
-69 (introduced 2026-04-09 in commit d7c91eba, pre-dating both the
-do-while-zero-exception rule and the cheat-catalog expansion). The session-2
-cheat-reviewer FAILed that body — the inner do-while is a sched1-fence cheat,
-explicitly out of scope for the do-while-zero-exception (which only sanctions
-LABEL_OUTSIDE_LOOP_P / reorg.c invert-jump peephole uses). Same family as the
-outer do-while that FAILed commit 4dd017d8. The inner do-while has been
-REMOVED from `candidate.c`; the new honest baseline is floor 7 (build_insns
-81 vs target 82). Region A lever's measurable benefit (HEAD's TRUE pure-C
-floor 9 -> candidate's TRUE pure-C floor 7) is preserved.
+**TL;DR (after session 5, 2026-06-12):** `candidate.c` is UNCHANGED from
+sessions 1-4 (Region A named-base lever applied, no inner do-while, floor
+7 = build_insns 81 vs target 82). Session 5 probed the dual-named-
+intermediate (vs + arg) family in Region B, found it reaches floor 6
+(build_insns 82 = target) via M5 + 9 isomorphs — but the cheat-reviewer
+FAILed the entire family as identity-bounce / LUID-coercion. The
+forbidden-family ruling NARROWS the lever surface: any future pure-C
+lever for Region B's residual gap must either come from outside
+the dual-intermediate family OR name a real sub-computation (Region A's
+`base = D_800A151C - 1` style — but Region B has no obvious analogous
+sub-computation candidate). See rejected/m5-vs-arg-identity-bounce.c
+for the cheat-reviewer's full reasoning. The session adds 1 ruled-out
+family + 1 rejected/ file + an updated next-session worklist; the
+candidate.c floor is unchanged at 7.
+
+**Earlier (session 1-4):** Region A named-base lever survives layer-2
+review (commit `4dd017d8` reverted as `01471d90`; orchestrator preserved
+the lever in `candidate.c`). Session 2 discovered that the prior
+`candidate_floor: 5` baseline depended on an inherited inner
+`do { } while (0);` at HEAD `src/ings2.c` line 69 (introduced 2026-04-09
+in commit d7c91eba, pre-dating both the do-while-zero-exception rule and
+the cheat-catalog expansion). The session-2 cheat-reviewer FAILed that
+body — the inner do-while is a sched1-fence cheat, explicitly out of
+scope for the do-while-zero-exception (which only sanctions
+LABEL_OUTSIDE_LOOP_P / reorg.c invert-jump peephole uses). Same family
+as the outer do-while that FAILed commit 4dd017d8. The inner do-while
+has been REMOVED from `candidate.c`; the honest baseline is floor 7
+(build_insns 81 vs target 82). Region A lever's measurable benefit
+(HEAD's TRUE pure-C floor 9 -> candidate's TRUE pure-C floor 7) is
+preserved.
 
 ## Resume instructions
 
@@ -190,3 +207,94 @@ To add directed PERM_* macros: edit `permuter/sys_VSync/base.c` around
 sys_VSync's body. The full `base.c.full` (whole-file preprocess) is
 preserved as a backup; the active `base.c` is the trimmed
 single-function version.
+
+**SESSION 5 (2026-06-12) update:** permuter directory was NOT preserved
+between sessions (gitignored). Rebuild from `asm/funcs/sys_VSync.s`
++ `tools/decomp-permuter/prelude.inc` (strip `.set gp=64`); the
+session-4 setup recipe is in `meta.json.sessions[2].discoveries[1]`.
+
+## Session 5 measurements (2026-06-12) — dual-intermediate family RULED OUT
+
+Tested 30+ Region-B variant shapes via `tmp/sys_vsync_variants*.py`.
+The dual named-intermediate family with vs-declared-first ALL hit
+floor 6 (build_insns 82 == target):
+
+| Form key | Form | Floor | bi | Verdict |
+|---|---|---|---|---|
+| M5 | `{ s32 vs = read; s32 arg = compute+1; s0_val = vs; func(arg, 1); }` | **6** | **82** | **FAIL** (identity bounce) |
+| R1 | M5 with +1 at call site | 6 | 82 | FAIL same family |
+| R2 | M5 with `arg += 1;` then call | 6 | 82 | FAIL same family |
+| R4 | uninit decls, vs assigned first, then arg, then s0_val=vs, then call (+1 at site) | 6 | 82 | FAIL same family |
+| R7 | vs init + arg init + `s0_val = vs, func(arg, 1)` comma | 6 | 82 | FAIL same family |
+| R8 | R7 with `(void)(s0_val = vs); func(arg, 1);` | 6 | 82 | FAIL same family |
+| R9 | M5 with cast-away-volatile `(s32 *)D_800A1510` | 6 | 82 | FAIL — separate cheat (cast away volatile) |
+| Q5 | M5 with `s0_val = vs + 0;` | 6 | 82 | FAIL same family |
+| Q6 | M5 with explicit `volatile s32 *p = D_800A1510;` | 6 | 82 | FAIL same family |
+| Q7 | uninit decls then assign vs first, arg second | 6 | 82 | FAIL same family |
+| M3 / P3 | `s0_val = direct; { s32 arg = ...; func(arg, 1); }` | 7 | 81 | (baseline — single intermediate, no lever) |
+| P1 | M5 with `s0_val = vs;` moved AFTER call | 7 | 81 | no lever (vs survives call, mechanism lost) |
+| Q1 | second-arg `s32 one = 1;` named | 7 | 81 | no lever |
+| Q2 | both args named (arg1, arg2), no vs | 7 | 81 | no lever |
+| Q4 | `s32 r; r += 1;` separate increment, no vs | 7 | 81 | no lever |
+| R3, R5, R6, R10 | various 1-intermediate / wrong-order forms | 7 | 81 | no lever |
+
+## Cheat-reviewer adjudication on M5 (verbatim summary, full text in rejected/)
+
+Decision: **FAIL** (default to FAIL when torn — and here the call wasn't
+borderline).
+
+Reviewer's reasoning:
+  - The `vs` two-step `s32 vs = *D_800A1510; s0_val = vs;` is an IDENTITY
+    BOUNCE. Semantically equivalent to `s0_val = *D_800A1510;`. No
+    sub-computation to name → NOT the SOTN named-intermediate family.
+    (Region A's `base = D_800A151C - 1` PASSes because `base` names a
+    real frame-offset sub-computation; identity bounces have no such
+    sub-computation.)
+  - The companion `arg` named intermediate has no semantic gain over
+    inline `g_sys_dma_region + 1` either.
+  - The declaration-order sensitivity (only `vs` first AND `arg` second
+    works; swap order → floor 7) is textbook LUID-ordering coercion —
+    a GCC-internals-justified construct, not program logic.
+  - The whole dual-intermediate-vs-first family is REJECTED across all
+    syntactic spellings.
+
+## What is now ruled out for Region B
+
+Floor 6 is REACHABLE via the dual-intermediate family but NOT via any
+cheat-policy-permitted form found this session. The remaining lever
+surface for sys_VSync's Region B is correspondingly narrower:
+
+1. **Single-intermediate forms** are exhausted (M3, R5, Q1, Q2, Q4 all
+   floor 7).
+2. **Dual-intermediate forms** are exhausted (and the lever family is
+   forbidden).
+3. **Statement reordering** within Region B is exhausted (P1-P9 family).
+4. **Pointer-aliasing tricks** (volatile pointer alias) are exhausted.
+
+## Next session — what to try (priority order)
+
+1. **Directed PERM_* macros** (the un-tried part of the permuter lever
+   from session 4 next_hypothesis). PERM_LINESWAP / PERM_VAR /
+   PERM_TYPECAST scripted into base.c. Required setup: rebuild
+   `permuter/sys_VSync/` per session 4's recipe (now ~1 hour of
+   setup; not preserved between sessions).
+
+2. **Look outside Region B**: the 6-instruction gap at M5 is in
+   Region B's delay-slot / register-allocation choices. The HEAD floor
+   of 7 might also have contributions from OTHER regions. Check Region C
+   (the post-call `s0_val & 0x400000` spin-wait) and the tail-stores
+   region (post-call writes to D_800A151C / D_800A1518) — session-1
+   measured-negatives never re-tested at the clean floor-7 baseline:
+   operand reassociation in Region A, last-arg hoist on the second
+   call, merged if/else for the `a0 > 0` two-check pattern, inverted
+   branch sense on prologue checks, eager-flag pre-computation. These
+   target REGIONS THE M5 FAMILY DID NOT TOUCH and may be closable
+   without dual-intermediate coercion.
+
+3. **BB2_REORG_DEBUG instrumentation to tools/gcc-2.7.2/reorg.c**:
+   diagnostic only (per [[no-compiler-divergence]] — instrumentation
+   is sanctioned alongside BB2_SCHED_DEBUG / BB2_PRIO_DEBUG /
+   BB2_ALLOC_DEBUG, but the gate is strict: instrumentation dumps WHY
+   reorg.c picks `li $a1, 1` over `addiu $a0, $a0, 1` for the jal
+   delay slot; the FIX must come from clean C, not from patching
+   reorg.c).

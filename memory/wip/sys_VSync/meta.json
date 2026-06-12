@@ -124,6 +124,64 @@
     },
     {
       "date": "2026-06-12",
+      "agent": "headless worker (opus), session 5 resuming from 0b59d43e",
+      "git_head_at_measurement": "0b59d43e",
+      "lever": "Probed dual-named-intermediate (vs + arg) family in Region B targeting reorg.c delay-slot fill. Measured 30+ near-isomorphic shapes via tmp/sys_vsync_variants*.py sweeps. The form `{ s32 vs = *D_800A1510; s32 arg = g_sys_dma_region + 1; s0_val = vs; func_80082A14(arg, 1); }` (M5) and 9 isomorphs (R1, R2, R4, R7, R8, R9, Q5, Q6, Q7) ALL hit floor 6 with build_insns 82 (== target). Variants with only `arg`, only `vs`, or with `arg` declared before `vs`, scored 7. The cheat-reviewer FAILed M5: `vs` is an identity-bounce (semantically equivalent to `s0_val = *D_800A1510;` HEAD form); NOT the SOTN named-intermediate-declaration-order family (that family names a real sub-computation; an identity bounce has no sub-computation to name). The declaration-order sensitivity is textbook GCC-LUID-ordering coercion. M5 saved to rejected/m5-vs-arg-identity-bounce.c.",
+      "floor_before": 7,
+      "floor_after": 7,
+      "floor_change_note": "candidate.c (and thus candidate_floor) UNCHANGED — the M5 family that reached floor 6 was rejected by cheat-reviewer as identity-bounce/codegen-coercion. The candidate stays at the session-2 cleaned form (floor 7). The new rejected family is recorded in rejected_forms[] and rejected/m5-vs-arg-identity-bounce.c.",
+      "hypotheses_tested": [
+        {
+          "name": "M5 — dual named-intermediate, vs initialized first, then arg, then s0_val=vs, then call",
+          "form": "{ s32 vs = *D_800A1510; s32 arg = g_sys_dma_region + 1; s0_val = vs; func_80082A14(arg, 1); }",
+          "measured_floor": 6,
+          "measured_build_insns": 82,
+          "result": "MEASURED IMPROVEMENT (7 → 6, build_insns matches target). Build's `move s0, v0` (from `s0_val = vs;`) lands in jal delay slot; `addiu a0, a0, 1` ends up before the jal at d8 instead of in delay slot like target. Cheat-reviewer FAIL — see rejected/m5-vs-arg-identity-bounce.c.",
+          "ruled_out": true,
+          "cheat_reviewer_decision": "FAIL",
+          "cheat_reviewer_reason": "Identity bounce `vs = read; s0_val = vs` has no sub-computation to name → not the SOTN named-intermediate family. `arg` named intermediate with no reuse / no clarity gain → no semantic purpose. Declaration-order sensitivity (only vs-first works) is textbook LUID-ordering manipulation. Compare Region A's `s32 base = D_800A151C - 1` which names a real frame-offset sub-computation (PASS) — M5's intermediates name nothing."
+        },
+        {
+          "name": "Sister forms in the same family (R1, R2, R4, R7, R8, R9, Q5, Q6, Q7)",
+          "all_measured_floor": 6,
+          "all_measured_build_insns": 82,
+          "result": "ALL same floor as M5, all same FAIL family (different syntactic spellings of the dual-intermediate-with-vs-first construct). R9 in particular uses `(s32 *)D_800A1510` (cast away volatile) as a separate cheat-family hit — flagged but not pursued.",
+          "ruled_out": true,
+          "cheat_reviewer_decision_assumed": "FAIL (same family as M5)"
+        },
+        {
+          "name": "P1 — move `s0_val = vs;` to AFTER the call",
+          "form": "{ s32 vs = *D_800A1510; s32 arg = g_sys_dma_region + 1; func_80082A14(arg, 1); s0_val = vs; }",
+          "measured_floor": 7,
+          "result": "NO CHANGE versus baseline. With `s0_val = vs;` post-call, `vs` must survive the call (allocated to a callee-save register) and the lever's mechanism — putting the `move s0, vs` in jal delay slot — is lost. Floor returns to 7. Confirms the M5 lever's mechanism IS the delay-slot-fill manipulation (and confirms FAIL: the construct's only effect is on the schedule)."
+        },
+        {
+          "name": "M3 / P3 — just `arg` intermediate, no `vs`, `s0_val = *D_800A1510;` direct",
+          "form": "s0_val = *D_800A1510; { s32 arg = g_sys_dma_region + 1; func_80082A14(arg, 1); }",
+          "measured_floor": 7,
+          "result": "NO CHANGE. The arg intermediate alone doesn't shift the schedule meaningfully — `addiu a0, a0, 1` ends up at d8 between the chains, NOT in delay slot. The lever requires the `vs` bounce (which IS the cheat construct)."
+        },
+        {
+          "name": "Variant sweep negative summary — un-tried session-1 negatives at clean floor-7 baseline",
+          "result": "NOT exhaustively executed this session. The 30+ variants tested were all in the dual-intermediate-vs-arg family. The session-3 / -4 next_hypotheses #4 — re-testing session-1's measured negatives (operand reassociation, last-arg hoist, merged if/else, inverted branch sense, eager-flag pre-computation) — remains un-executed at clean floor 7 and is the prioritised next-session lever."
+        }
+      ],
+      "discoveries": [
+        {
+          "name": "Dual-intermediate dec-order is the only mechanically-effective lever at floor 7 + reorg.c surface, but it's a cheat",
+          "details": "Across 30+ tested variants, ONLY the `{ s32 vs = ...; s32 arg = ...; s0_val = vs; func(arg, 1); }` family (vs-decl-first) moved the floor from 7 to 6. Every other intermediate placement variant stayed at 7. The cheat-reviewer's FAIL is structurally consistent: a lever whose effect depends entirely on LUID-ordering is a codegen-coercion construct, regardless of its outward shape. This NARROWS the lever surface: any pure-C lever for sys_VSync's Region B must either (a) come from outside the dual-intermediate family entirely, or (b) be a single intermediate whose semantic role is REAL (e.g., a sub-computation with a natural name)."
+        },
+        {
+          "name": "build_insns = 82 IS reachable via clean C only via the rejected family",
+          "details": "All measured ≤7-floor variants have build_insns 81 (one short of target's 82). Only the M5 family produced build_insns 82 — and that family is rejected. So matching the instruction COUNT (a precondition for floor 0) under the constraints of the cheat catalog requires a structurally different lever than M5. The implication: the residual count gap must close via a lever that adds an instruction to the build naturally (e.g., a missing load-delay nop, or making cc1 emit the same operation as two insns instead of one) — without introducing a no-semantic-purpose intermediate."
+        }
+      ],
+      "rejected_form_files": [
+        "rejected/m5-vs-arg-identity-bounce.c"
+      ]
+    },
+    {
+      "date": "2026-06-12",
       "agent": "headless worker (opus), session 3 resuming from 29132b4c",
       "git_head_at_measurement": "29132b4c",
       "lever": "No new lever closed; ran BB2_SCHED_DEBUG instrumented cc1 dump on the clean candidate (Region A applied, no inner do-while), and tested two additional named-intermediate variants against the clean floor-7 baseline. Both no-change. Confirmed scan_hand_coded tier=LOW score=0 — TIGHT_C territory, no canonical-asm escape.",
@@ -175,10 +233,12 @@
     "Bare-load hoist `{ s32 dma = g_sys_dma_region; s0_val = *D_800A1510; func_80082A14(dma + 1, 1); }` (session 3) — no change at clean floor 7. The +1-at-callsite split doesn't shift sched1's interleave decision.",
     "Pre-decl + late-assign `{ s32 dma_arg; s0_val = *D_800A1510; dma_arg = g_sys_dma_region + 1; func_80082A14(dma_arg, 1); }` (session 3) — no change at clean floor 7. cc1 collapses the trivial local back to the call-site expression; LUID bias doesn't reach the relevant tie-break.",
     "PERMUTER session 4: `do { func_80082A14(g_sys_dma_region + 1, 1); } while (0);` — sched1 fence around the second call (permuter best score 40). Same family as the session-2 FAIL. See rejected/permuter-do-while-around-call.c.",
-    "PERMUTER session 4: 4 additional do-while-wrap variants at scores 50, 300, 355, 455 — all same sched1-fence family (wrapping different statement ranges) or semantically broken (455 reuses s0_val incorrectly). All FAIL."
+    "PERMUTER session 4: 4 additional do-while-wrap variants at scores 50, 300, 355, 455 — all same sched1-fence family (wrapping different statement ranges) or semantically broken (455 reuses s0_val incorrectly). All FAIL.",
+    "SESSION 5 (M5 + 9 isomorphs): dual named-intermediate `{ s32 vs = *D_800A1510; s32 arg = g_sys_dma_region + 1; s0_val = vs; func_80082A14(arg, 1); }` and variants R1/R2/R4/R7/R8/R9/Q5/Q6/Q7 — ALL reach floor 6 (build_insns 82 = target) but cheat-reviewer FAIL: vs is an identity-bounce (no sub-computation to name → NOT the SOTN named-intermediate family); declaration-order sensitivity (only vs-first works) is GCC-LUID-ordering coercion. See rejected/m5-vs-arg-identity-bounce.c for full reviewer reasoning. The whole 'dual-intermediate-with-vs-first' family is ruled out for sys_VSync."
   ],
   "next_hypotheses": [
-    "SESSION-4 UPDATE — random permuter mode is EXHAUSTED on this candidate (~5 min, ~hundreds of iterations, only cheat-family closing forms found at scores 40/50/300/355). The permuter directory permuter/sys_VSync/ remains set up for the next session. Next reachable lever via permuter: DIRECTED PERM_* macros. Add PERM_LINESWAP() around Region B's 3 statements, PERM_VAR for the local types, PERM_TYPECAST on the volatile-load result, PERM_ONCE/PERM_FORCE_FORWARD_DECL on the call args. Then re-run permuter — directed mutations may reach the reorg.c delay-slot fill surface that random mutations don't. Any closing form MUST be vetted against the cheat catalog per [[no-new-park-categories]] before commit.",
+    "SESSION-5 UPDATE — the dual-intermediate-vs-arg lever family (M5 + 9 isomorphs) is RULED OUT (cheat-reviewer FAIL). Floor 6 IS reachable via this family but the reachability is itself cheat-evidence (the lever depends on LUID-ordering). The remaining lever surface is now narrower: any pure-C lever must EITHER come from outside the dual-intermediate family entirely, OR be a single intermediate whose semantic role names a real sub-computation (like Region A's `base = D_800A151C - 1`). Region B's only obvious sub-computation candidate is the +1 (g_sys_dma_region + 1), and a SINGLE-intermediate form `s32 arg = g_sys_dma_region + 1; func(arg, 1);` was measured at floor 7 (M3) — confirming no SOTN-style named-intermediate route exists in Region B without going dual.",
+    "SESSION-5 UPDATE — random permuter mode is EXHAUSTED on this candidate (~5 min, ~hundreds of iterations, only cheat-family closing forms found at scores 40/50/300/355 in session 4). The permuter directory permuter/sys_VSync/ from session 4 was NOT preserved across sessions (gitignored); rebuild it for the next session if pursuing the directed-PERM macro route. Next reachable lever via permuter: DIRECTED PERM_* macros. Add PERM_LINESWAP() around Region B's 3 statements, PERM_VAR for the local types, PERM_TYPECAST on the volatile-load result, PERM_ONCE/PERM_FORCE_FORWARD_DECL on the call args. Then re-run permuter — directed mutations may reach the reorg.c delay-slot fill surface that random mutations don't. Any closing form MUST be vetted against the cheat catalog per [[no-new-park-categories]] before commit.",
     "RTL diagnosis per [[register-alloc-pure-c]]: session-3 ran BB2_SCHED_DEBUG=1 BB2_PRIO_DEBUG=1 and stored output at tmp/sched_dump.log (6994 lines). Key finding: sched1's claimed pick order DIFFERS from cc1's actual emit (lw v0 placed at pos 5 in sched1 but emits as pos 6). The decision point is in reorg.c's delay-slot fill, NOT sched1. A focused dump of reorg.c's choices (would need adding BB2_REORG_DEBUG instrumentation) would identify whether the lever surface is the dependence-cone analysis or the simple-fill heuristic.",
     "Read m2c output for sys_VSync (asm/funcs/sys_VSync.s) — session-3 confirmed m2c's reconstruction matches the candidate structure exactly (s0_val read between calls, dma_region + 1 inline call arg). No structural deviation to exploit there.",
     "Re-examine matched siblings in src/ings2.c (sys_SetVsyncMode, sys_SetTimer, motion_make_table, func_80082C58) for an analogous volatile-read + call structure that DID match without a sched1 fence. None obvious on first reading, but a focused .greg dump comparison might reveal the differentiator — e.g., target's pre-call USE pattern for the loaded value.",
