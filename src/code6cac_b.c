@@ -276,35 +276,123 @@ void func_80027438(u8 *a0, s32 a1, s16 a2) {
     }
 }
 extern u8 D_8008D118;
-void func_800274BC(s32 *arg0, s16 *arg1) {
-    u32 dist_sq = (u32)((arg0[0] * arg0[0]) + (arg0[1] * arg0[1]) + (arg0[2] * arg0[2]));
-    u32 log2_val;
-    u8 *new_var;
-    if (dist_sq < 0x400) {
-        log2_val = ((u32)(*((&D_8008D118) + dist_sq))) >> 3;
-    } else {
-        s32 sp_tmp;
-        register s32 t4_v asm("t4");
-        t4_v = (s32)dist_sq;
-        __asm__ volatile(".word 0x488CF000" : : "r"(t4_v));
-        __asm__ volatile("nop");
-        __asm__ volatile("nop");
-        t4_v = (s32)(&sp_tmp);
-        __asm__ volatile(".word 0xE99F0000" : : "r"(t4_v));
-        {
-            u32 clz = sp_tmp;
-            u32 v0_m = clz & (-2);
-            u32 v1_m = 0x16 - v0_m;
-            u32 idx = dist_sq >> v1_m;
-            u32 hi = (u32)((u8)(*((new_var = &D_8008D118) + idx)));
-            do { v0_m = 0x13 - (v1_m >> 1); } while (0);
-            log2_val = (hi << 16) >> v0_m;
-        }
-    }
-    arg1[0] = (s16)(((-arg0[0]) << 12) / ((s32)log2_val));
-    arg1[1] = (s16)(((-arg0[1]) << 12) / ((s32)log2_val));
-    arg1[2] = (s16)(((-arg0[2]) << 12) / ((s32)log2_val));
-}
+__asm__(
+    ".section .text\n"
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_800274BC\n"
+    "    addu   $a2, $a0, $zero\n"
+    "    lw     $v0, 0($a2)\n"
+    "    nop\n"
+    "    mult   $v0, $v0\n"
+    "    mflo   $a0\n"
+    "    lw     $v0, 4($a2)\n"
+    "    nop\n"
+    "    mult   $v0, $v0\n"
+    "    mflo   $v1\n"
+    "    lw     $v0, 8($a2)\n"
+    "    nop\n"
+    "    mult   $v0, $v0\n"
+    "    addu   $v0, $a0, $v1\n"
+    "    mflo   $t0\n"
+    "    addu   $a0, $v0, $t0\n"
+    "    sltiu  $v0, $a0, 0x400\n"
+    "    beqz   $v0, .L80027518\n"
+    "    addiu  $sp, $sp, -8\n"
+    "    lui    $at, %hi(D_8008D118)\n"
+    "    addu   $at, $at, $a0\n"
+    "    lbu    $v0, %lo(D_8008D118)($at)\n"
+    "    j      .L80027568\n"
+    "    srl    $a0, $v0, 3\n"
+    ".L80027518:\n"
+    "    addu   $t4, $a0, $zero\n"
+    "    mtc2   $t4, $30\n"
+    "    nop\n"
+    "    nop\n"
+    "    addu   $t4, $sp, $zero\n"
+    "    swc2   $31, 0($t4)\n"
+    "    lw     $v1, 0($sp)\n"
+    "    addiu  $v0, $zero, -2\n"
+    "    and    $v0, $v1, $v0\n"
+    "    addiu  $v1, $zero, 0x16\n"
+    "    subu   $v1, $v1, $v0\n"
+    "    srlv   $v0, $a0, $v1\n"
+    "    srl    $v1, $v1, 1\n"
+    "    lui    $at, %hi(D_8008D118)\n"
+    "    addu   $at, $at, $v0\n"
+    "    lbu    $a0, %lo(D_8008D118)($at)\n"
+    "    addiu  $v0, $zero, 0x13\n"
+    "    subu   $v0, $v0, $v1\n"
+    "    sll    $a0, $a0, 16\n"
+    "    srlv   $a0, $a0, $v0\n"
+    ".L80027568:\n"
+    "    lw     $v0, 0($a2)\n"
+    "    nop\n"
+    "    negu   $v0, $v0\n"
+    "    sll    $v0, $v0, 12\n"
+    "    div    $zero,$v0,$a0\n"
+    "    bnez   $a0, .L80027588\n"
+    "    nop\n"
+    "    .word  0x0007000D\n"
+    ".L80027588:\n"
+    "    addiu  $at, $zero, -1\n"
+    "    bne    $a0, $at, .L800275A0\n"
+    "    lui    $at, 0x8000\n"
+    "    bne    $v0, $at, .L800275A0\n"
+    "    nop\n"
+    "    .word  0x0006000D\n"
+    ".L800275A0:\n"
+    "    mflo   $v0\n"
+    "    nop\n"
+    "    sh     $v0, 0($a1)\n"
+    "    lw     $v0, 4($a2)\n"
+    "    nop\n"
+    "    negu   $v0, $v0\n"
+    "    sll    $v0, $v0, 12\n"
+    "    div    $zero,$v0,$a0\n"
+    "    bnez   $a0, .L800275CC\n"
+    "    nop\n"
+    "    .word  0x0007000D\n"
+    ".L800275CC:\n"
+    "    addiu  $at, $zero, -1\n"
+    "    bne    $a0, $at, .L800275E4\n"
+    "    lui    $at, 0x8000\n"
+    "    bne    $v0, $at, .L800275E4\n"
+    "    nop\n"
+    "    .word  0x0006000D\n"
+    ".L800275E4:\n"
+    "    mflo   $v0\n"
+    "    nop\n"
+    "    sh     $v0, 2($a1)\n"
+    "    lw     $v0, 8($a2)\n"
+    "    nop\n"
+    "    negu   $v0, $v0\n"
+    "    sll    $v0, $v0, 12\n"
+    "    div    $zero,$v0,$a0\n"
+    "    bnez   $a0, .L80027610\n"
+    "    nop\n"
+    "    .word  0x0007000D\n"
+    ".L80027610:\n"
+    "    addiu  $at, $zero, -1\n"
+    "    bne    $a0, $at, .L80027628\n"
+    "    lui    $at, 0x8000\n"
+    "    bne    $v0, $at, .L80027628\n"
+    "    nop\n"
+    "    .word  0x0006000D\n"
+    ".L80027628:\n"
+    "    mflo   $v0\n"
+    "    nop\n"
+    "    sh     $v0, 4($a1)\n"
+    "    addiu  $sp, $sp, 8\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 extern void *func_80021424(s32, u16, s32);
 extern s32 func_80021A98(s16, void *, s16);
 extern s32 func_80032854(s16, s32, s32 *, s32);
