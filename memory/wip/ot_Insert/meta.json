@@ -19,6 +19,12 @@
       "git_head_at_measurement": "6f97a879",
       "lever": "layer-2 retro-audit FAIL -> USER UPHELD -> reverted",
       "note": "Audit: GCC-internals-led justification, file-local typedef, lever space not exhausted. Orchestrator contested 2 of 4 evidence items (scope-discipline explains sibling non-application; field order is probe-verified compiler fact) but user chose the strict line. Pinned mask-and-OR HEAD restored; oracle green."
+    },
+    {
+      "date": "2026-06-11",
+      "git_head_at_measurement": "46359c6d",
+      "lever": "instrumented sched1/lreg diagnosis -> mask-and-OR spelling space PROVEN closed; parked NEEDS_USER (header-level OTag re-proposal)",
+      "note": "9 structurally distinct mask-and-OR spellings (decl orders, no-locals, named intermediates addr=a1&mask / hi+lo, operand commute, a1&=mask param reuse, tag_mask=~mask, mask=~tag_mask) compile to BYTE-IDENTICAL cc1 output, all distance 7. Mechanism (sched trace + lreg, tmp/oti*): sched1 try_split makes ADDR lui+ori, backward scheduler places the pair at block head (depth +1 from ori); post-sched1 live lengths ADDR=13 TAG=9; local-alloc qty pri floor_log2(3)*3/span -> TAG 3333 > ADDR 2307 -> TAG takes $a3, ADDR $t0 (target wants the reverse). Deterministic: same RTL in -> same alloc out. Flip requires >=4 pre-combine refs on the ADDR-mask pseudo (flow counts refs BEFORE combine) or span<9 -- no natural mask-and-OR spelling provides either; redundant-use respellings are forbidden coercion. The PsyQ P_TAG bitfield expansion provides the extra refs NATURALLY (expmed insert+extract both use 0xFFFFFF; combine folds the redundancy to identical bytes) -- that is WHY the rejected bitfield form hit 0. Resume = notes.md direction 3 (header-level OTag type, all OT funcs, user sign-off) -- a user decision, hence park."
     }
   ],
   "reviewer": {
@@ -26,12 +32,10 @@
     "crux": "bitfield struct's primary stated rationale was sched1/RTL steering; typedef file-local; named-intermediate and other mask-spelling levers untried",
     "in_session_verdict": "PASS (overturned)"
   },
-  "remaining_gap": "distance 7 = sched1 hoisting OT_ADDR_MASK lui+ori chain in the mask-and-OR form; register pins currently bridge it",
+  "remaining_gap": "distance 7 = ADDR/TAG mask register swap ($a3<->$t0). PROVEN closed for the mask-and-OR family (2026-06-11 session 3): identical post-cse RTL across all 9 spellings -> deterministic local-alloc -> TAG wins $a3 (post-sched1 spans ADDR=13 TAG=9, qty pri 2307 vs 3333). Register pins currently bridge it.",
   "next_hypotheses": [
-    "Instrumented cc1 -da dump to pin the exact sched1 fill decision before levering",
-    "Named-intermediate decomposition (SOTN LUID family) of the mask-and-OR expressions",
-    "Header-level OTag/P_TAG re-proposal: project type in include/, applied to ALL OT functions, semantics-led justification, user sign-off (proven-spelling-class path)",
-    "If all measure negative: re-park with exhaustion ledger"
+    "ONLY remaining path: header-level OTag/P_TAG re-proposal per notes.md direction 3 -- project type in include/ (len:8 declared FIRST per probe-verified bitfield direction), applied consistently to ot_Link + ot_SetAddr family, semantics-led justification (PsyQ LIBGPU.H P_TAG is the documented original type), USER SIGN-OFF required (layer-2 FAIL upheld). Mechanism now understood: expmed bitfield insert+extract gives the ADDR-mask pseudo >=4 pre-combine flow refs, flipping local-alloc priority; combine folds the redundant masking so bytes are identical.",
+    "Do NOT re-derive: named intermediates, decl/operand orders, complement derivations (~mask / ~tag_mask), param-reuse -- all measured byte-identical (tmp/oti_sweep.py V1-V12). cse const-props complement forms before flow; sched1 normalizes all statement orders by priority."
   ],
   "rejected_forms": [
     {

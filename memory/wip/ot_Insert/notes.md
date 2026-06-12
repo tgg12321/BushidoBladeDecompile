@@ -53,6 +53,47 @@ Function is back to INCOMPLETE at the pinned mask-and-OR HEAD form
    only — and it goes through user sign-off (proven-spelling-class path).
 4. If all levers measure negative, re-park with the exhaustion ledger.
 
+## Session 3 (2026-06-11) — mechanism PROOF: mask-and-OR family cannot close
+
+Instrumented diagnosis (tmp/oti_dump.sh, tmp/oti_sweep.py, tmp/oti_chain.py,
+tmp/oti_blocks.py; dumps in tmp/oti/):
+
+1. **The lui+ori split is sched1's own** — `sched.c:4891 try_split`
+   ("split insns here to get max fine-grain parallelism", reload_completed==0).
+   Every compile, original included, sees ADDR as lui+ori at scheduling time.
+2. **sched1 schedules BACKWARD**; ADDR's lui+ori pair lands at the block
+   head in every spelling (the ori gives ADDR's lui +1 chain depth over
+   TAG's single li — priority, not LUID, decides; tie-breaks never engage).
+   Our sched1 output order ALREADY equals target's final byte order.
+3. **Post-sched1 live lengths** (printed by the sched trace): ADDR=13,
+   TAG=9. local-alloc `qty_compare` pri = floor_log2(3)*3/span → TAG 3333 >
+   ADDR 2307 → TAG allocates first, takes $a3; ADDR gets $t0. Target wants
+   the reverse. Deterministic — same RTL in, same allocation out.
+4. **9 spellings → byte-identical cc1 output** (all distance 7): pin-stripped
+   baseline, decl swap, no-locals, addr=a1&mask early intermediate, hi/lo
+   per-stmt intermediates, operand commute (changes load order = worse),
+   a1&=mask param reuse, tag_mask=~mask, mask=~tag_mask. The complement
+   derivations are const-propped by cse BEFORE flow counts refs.
+5. **What flips it**: ADDR-mask pseudo needs ≥4 flow refs (flow runs
+   BEFORE combine — a combine-folded extra use still counts) or span <9.
+   No natural mask-and-OR spelling provides either; redundant-use
+   respellings ((x&m)&m etc.) are forbidden coercion.
+6. **Why the bitfield form hit 0**: expmed's bitfield insert+extract
+   expansion BOTH materialize 0xFFFFFF uses (≥4 pre-combine refs on the
+   ADDR-mask pseudo); combine folds the redundancy so the emitted bytes
+   are identical. The PsyQ P_TAG type produces the target allocation as a
+   natural consequence — supporting evidence that it IS the original
+   spelling (P_TAG is documented in PsyQ LIBGPU.H).
+
+**Conclusion**: resume direction 3 (header-level OTag re-proposal with user
+sign-off) is the ONLY remaining path. Parked NEEDS_USER.
+
+Sibling-cluster note: ot_SetAddr (single-statement, matched, no pins) has
+TAG allocated first (lui $v1) — consistent with our toolchain's natural
+behavior, confirming the toolchain is not the variable. ot_Link shares
+ot_Insert's two-statement shape and the same proof applies (ADDR→$a2,
+TAG→$a3 there).
+
 ## Sibling
 
 ot_Link (distance 7, 0 rules, same pinned shape) is the next queue
