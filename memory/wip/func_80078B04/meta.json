@@ -1,0 +1,54 @@
+{
+  "function": "func_80078B04",
+  "file": "text1b_b",
+  "scores": {
+    "head_floor": 7,
+    "candidate_floor": 2,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 14,
+    "target_insns": 14
+  },
+  "sessions": [
+    {
+      "date": "2026-06-12",
+      "lever": "u16 *p named intermediate (split addr expr from deref)",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 7,
+      "floor_now": 2
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-12",
+    "evidence": "u16 *p is a live named intermediate (assigned + dereferenced); analogous to SOTN-sanctioned named-intermediate-declaration-order family (no-new-park-categories.md SOTN-accepted). Not a forbidden cheat family; passes all 6 checklist tests."
+  },
+  "remaining_gap": {
+    "summary": "addu+lhu register direction. Build: addu $v0,$v0,$v1; lhu $v0,0($v0) (in-place accumulate into ptr's reg, lhu reuses base==dest). Target: addu $v1,$v1,$v0; lhu $v0,0($v1) (accumulate into shifted-v's reg, lhu base distinct from dest). Coupled allocator tiebreak — the addu output pseudo's preference is $v0 (set 2) because the lhu can reuse base==dest when both are $v0, saving a reg. Flipping requires the lhu base to be DIFFERENT from result's reg, which our pure-C variants can't force without an unused use of p (would be a cheat).",
+    "rule_count_at_head": 5,
+    "rules_required_for_full_match": "HEAD has $2 <-> $3 @3-6 + subst $4->$3 @0,1,3 + lhu $2,0($2)->$2,0($3) @7 — 5 rules. Candidate would still need the lhu base rewrite and the addu direction swap (2 substs)."
+  },
+  "next_hypotheses": [
+    "Investigate whether the addu's first-operand ordering can be steered via a different ptr-arith spelling without going through forbidden constructs. Try u16 *p = (u16 *)D_8009BD6C; p = (u16 *)((u8 *)p + v*16); result = *p; -- the pointer-as-byte-offset addition may produce different RTL.",
+    "Cross-reference matched siblings in text1b_b.c (func_80078B3C has the same andi-to-$v0 pattern but returns the comparison, so its addu is in a different shape). Look at any matched fn in the file whose epilogue is addu+lhu through TWO distinct regs.",
+    "Probe an instrumented cc1 with BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG to dump the allocno priority table at the addu — see whether pseudo 75 (p_after_add) can be pushed to $v1 via the conflict graph rather than the preference list.",
+    "Try declaring D_8009BD6C-derived pointer with a different type that affects strict aliasing analysis (e.g. through a struct member) — may break the lhu-base=lhu-dest reuse optimization."
+  ],
+  "rejected_forms": [
+    {
+      "form": "v <<= 4; v += D_8009BD6C; result = *(u16 *)v; (v22)",
+      "score": 5,
+      "reason": "Improves direction (in-place addu) but mask still lives in $a0 because v is the accumulator and GCC keeps the original arg's register. Not a cheat — just doesn't reach 2."
+    },
+    {
+      "form": "u16 *p = (u16 *)D_8009BD6C; p += v*8; (v26/v27 outer p)",
+      "score": 7,
+      "reason": "Hoists the pointer load OUT of the if-true branch — target's lw is INSIDE the if. Structural mismatch raises distance."
+    },
+    {
+      "form": "register T x asm(\"$3\") pin or single-instruction __asm__ to force $v1",
+      "score": "unmeasured (forbidden)",
+      "reason": "register-asm pin + hardcoded-$N asm injection — forbidden by inline-asm-policy.md and inline-asm-injection.md."
+    }
+  ],
+  "memory_notes": []
+}
