@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "debug_printf",
-      "file": "text1b_b",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 7,
-      "status": "active"
-    },
-    {
       "func": "func_80078B04",
       "file": "text1b_b",
       "distance": 7,
@@ -3570,6 +3562,15 @@
       "park_reason": "Hand-coded GTE far-color read wrapper: cfc2 reads cop2 control regs 21/22/23 (RFC/GFC/BFC) into GPRs t0/t1/t2, srl 4, sb [0..2] to *a0, jr ra + trailing nop. Pure-C form (cfc2 %0,21 with =r, no pins) lands at distance 10: GCCs local-alloc picks v0/v1/a1 for the three cfc2 outputs (natural ascending choice for caller-saved temps); target uses t0/t1/t2 (hand-coded numerical sequence). GCC schedules the last sb into the jr delay slot; target leaves a canonical nop. target.s annotates Handwritten function. scan_hand_coded LOW (insn_count 11 < 40 disqualifies S3/S4/S7; not BIOS so S6 N/A; no multu so S1 N/A) -- tool limitation on tiny wrappers. Falls into gte-wrapper-misroute-park 2026-06-10 boundary: cop2 ops (canonical) + general-purpose computation (srl/sb beyond pure mtc2/swc2 packaging) needs user sign-off for canonical-asm-whole authorization (analogous to func_8007F0BC/F0E4 hand-pinned delay-slot return authorized 2026-06-11). Rule: must NOT re-adjudicate their own NEEDS_USER on this boundary -- escalate it."
     },
     {
+      "func": "debug_printf",
+      "file": "text1b_b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 7,
+      "status": "parked",
+      "park_reason": "GCC fork emits PRE-prologue varargs spills via setup_incoming_varargs; target asm requires POST-prologue interleaved schedule (cc1psx sched1 divergence on small frames). 16 variant forms tried this session; only cheat-by-spelling forms (4-named-args with dead b/c, struct-by-value sig, *p=&fmt coercion) closed the gap and were rejected by cheat-reviewer. Legit floor=7 unchanged from HEAD. Next-session levers: instrumented cc1 RTL dump, directed permuter, sibling cross-ref."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3904,13 +3905,13 @@
   ],
   "counts": {
     "total": 474,
-    "active": 379,
+    "active": 378,
     "by_status": {
-      "active": 379,
-      "parked": 95
+      "active": 378,
+      "parked": 96
     },
     "by_verdict": {
-      "C": 196,
+      "C": 195,
       "ASM-PARTIAL": 65,
       "ASM-SUSPECT": 118
     }
