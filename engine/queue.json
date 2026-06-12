@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "ot_Link",
-      "file": "gpu",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "sys_VSync",
       "file": "ings2",
       "distance": 7,
@@ -3600,15 +3592,6 @@
       "park_reason": "Session 3 (2026-06-02) re-park under SOTN-aligned policy (commit 161c6c3: defeat-licm var-reuse, opaque arithmetic, sub-word param read casts, mixed exit forms, duplicate-read into branch arms, named-intermediate declaration-order are all ALLOWED). Honest floor remains 6 via Lever B (named-intermediate u32 mask reuse). Tested 17 NEW structural variants this session applying the now-allowed levers: (v1) named mask + named addr -> 7 folded; (v3) u32 *p = ot pointer reuse -> 7 folded; (v4) goto end + mixed-exit on Lever B -> 6 same; (v5) opaque offset *(ot+zero) -> 6 (zero folded); (v6) duplicate-read into branch arms -> 22 regress (cross-jump-merge cost); (v7) u32 *ret_val = ot decl early -> 6 same; (v8) reuse single p for dev_table + return ptr -> 6 (CSE'd dead store); (v9) opaque arith 0xFFFFFF+1-1 -> 6 (constant folded); (v10) decl-order block-scoped result + mask -> 6 same; (v11) opaque addr arith (u32)&ot_end + (u32)zero -> 7 regress; (v12) hi|lo mask split -> 7 folded (lui+ori still single chain); (v13) opaque +1-1 on mask -> 6 folded; (v14) store inside dispatch block -> 20 regress; (v15) mask declared at top (pre-dispatch) -> 19 regress (mask spilled across call to callee-save); (v16) reuse n parameter for mask (defeat-licm var-reuse pattern) -> 17 regress (n lives in $s1 callee-save, mask cascades wrong); (v17) reuse v for (u32)dev_table + mask -> 10 regress BUT shows lever is real: move v0,s0 staged BEFORE store (target order!), but mask landed in $v1 not $a0 + addr in $v0 not $v1 (different cycle); (v18) keep vp scope + reuse v -> 6 (dead store DCE'd back to Lever B). Permuter ~12,845 iters from Lever B base (score 135), zero improvements (no candidate beat 135). MECHANISM CONFIRMED: target requires `move $v0, $s0` (return-staging) scheduled at idx 23 BEFORE the mask/addr chain (idx 24-26). cc1's sched.c gives return-staging priority 1 (chain depth to jr ra is 1); the mask/addr chain has priority 4 (lui->addiu->and->sw). Target's schedule requires return-staging priority >=4. The only way to extend the return-staging pseudo's chain depth in pure C is to make a later instruction (the store) consume the return-value register $v0 \u2014 which in turn requires GCC to keep `ret_val` as a separate pseudo from `ot` after copy-prop. No pure-C SOTN-allowed construct prevents this copy-prop (every tested `u32 *p = ot; *p = ...; return p;` form folds to ot). The previously-rejected closing forms (conditional dead-store, function-pointer return-type lie) both manipulate $v0 liveness differently and remain FORBIDDEN per the expanded cheat catalog. Function stays INCOMPLETE in queue; per [[no-new-park-categories]] no new park category requested. Honest floor 6 stable across 3 evidence-driven C-exhaustion sessions (50+ structural variants + ~50k permuter iters total)."
     },
     {
-      "func": "ot_Insert",
-      "file": "gpu",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "mask-and-OR family PROVEN closed (session-3 instrumented proof): sched1 try_split + backward scheduler fix post-sched1 spans ADDR=13/TAG=9; local-alloc qty pri floor_log2(3)*3/span -> TAG 3333 beats ADDR 2307 -> TAG takes a3 (target wants ADDR). 9 spellings byte-identical. Flip needs >=4 pre-combine flow refs on the ADDR-mask pseudo; only the PsyQ P_TAG bitfield expansion provides that naturally (layer-2 FAIL upheld by user). NEEDS_USER: header-level OTag re-proposal per memory/wip/ot_Insert/notes.md direction 3."
-    },
-    {
       "func": "cpu_side_move_dir_4",
       "file": "system",
       "distance": 7,
@@ -3951,14 +3934,14 @@
     }
   ],
   "counts": {
-    "total": 480,
-    "active": 385,
+    "total": 478,
+    "active": 384,
     "by_status": {
-      "active": 385,
-      "parked": 95
+      "active": 384,
+      "parked": 94
     },
     "by_verdict": {
-      "C": 200,
+      "C": 199,
       "ASM-PARTIAL": 67,
       "ASM-SUSPECT": 118
     }

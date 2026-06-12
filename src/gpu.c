@@ -365,17 +365,13 @@ u32 ot_GetTag(u32 *a0) {
 u32 ot_IsEnd(u32 *a0) {
     return (*a0 & OT_ADDR_MASK) == OT_ADDR_MASK;
 }
-void ot_Link(u32 *a0, u32 *a1) {
-    register u32 mask asm("a2") = OT_ADDR_MASK;
-    register u32 tag_mask asm("a3") = OT_TAG_MASK;
-    *a1 = (*a1 & tag_mask) | (*a0 & mask);
-    *a0 = (*a0 & tag_mask) | ((u32)a1 & mask);
+void ot_Link(OTag *a0, OTag *a1) {
+    a1->addr = a0->addr;
+    a0->addr = (u32)a1;
 }
-void ot_Insert(u32 *a0, u32 a1, u32 *a2) {
-    register u32 mask asm("a3") = OT_ADDR_MASK;
-    register u32 tag_mask asm("t0") = OT_TAG_MASK;
-    *a2 = (*a2 & tag_mask) | (*a0 & mask);
-    *a0 = (*a0 & tag_mask) | (a1 & mask);
+void ot_Insert(OTag *a0, u32 a1, OTag *a2) {
+    a2->addr = a0->addr;
+    a0->addr = a1;
 }
 void ot_SetAddr(u32 *a0, u32 a1) {
     *a0 = (*a0 & OT_TAG_MASK) | (a1 & OT_ADDR_MASK);
