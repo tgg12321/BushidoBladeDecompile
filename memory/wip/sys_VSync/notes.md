@@ -1,5 +1,26 @@
 # sys_VSync (src/ings2.c) — WIP checkpoint
 
+**TL;DR (after session 7, 2026-06-12):** `candidate.c` is UNCHANGED from
+sessions 1-6 (Region A named-base lever applied, no inner do-while, floor
+7 = build_insns 81 vs target 82). Session 7 executed session-6's
+next_hypotheses[0] (re-examine matched siblings in src/ings2.c for the
+in-BB-use-before-jal pattern) and RULED OUT all 4 in-TU siblings
+(`sys_SetTimer`, `sys_SetVsyncMode`, `motion_make_table`,
+`func_80082C58`) as analogous structural references. The closest
+(`func_80082C58`) uses the loaded value in a STORE, providing its
+in-BB sched1 anchor — sys_VSync's loaded value has no in-BB use at
+all. Session 7 ALSO confirmed Region C (post-spin-wait tail stores
+at build offsets 134-158) byte-matches target lines 73-83, narrowing
+the entire 7-floor gap to Region B (build offsets c8-e4, 8 insns).
+The 3 specific Region B mismatches: (1) missing load-delay nop
+between `lw v0` and `lw s0`, (2) chain ordering (target=v0-first,
+build=a0-first), (3) jal delay-slot fill (target=`addiu a0+1`,
+build=`li a1,1`). Session 7 read reorg.c fill_simple_delay_slots
+algorithm (backward scan from CALL_INSN with machine-specific
+eligibility) — confirming BB2_REORG_DEBUG instrumentation is the
+concrete diagnostic next-session lever. permuter/sys_VSync/ directory
+CONFIRMED PRESERVED from session 4 (still on-disk, gitignored).
+
 **TL;DR (after session 6, 2026-06-12):** `candidate.c` is UNCHANGED from
 sessions 1-5 (Region A named-base lever applied, no inner do-while, floor
 7 = build_insns 81 vs target 82). Session 6 (a) re-tested ALL session-1
