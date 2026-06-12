@@ -15,23 +15,32 @@
       "lever_rule": "register-alloc-pure-c",
       "floor_was": 7,
       "floor_now": 2
+    },
+    {
+      "date": "2026-06-12",
+      "git_head_at_measurement": "fe15e792",
+      "lever": "consolidation sweep: 38 additional variant forms across pointer-arithmetic spellings, named-intermediate placements, mutation styles, structural rearrangements",
+      "lever_rule": "register-alloc-pure-c (lever sweep, no new floor)",
+      "floor_was": 2,
+      "floor_now": 2,
+      "summary": "Read v11's i.lreg + i.greg explicitly: pseudo 74 (addu output, = p's value) is the addu's set-target in RTL `(set (reg 74) (plus (reg 79) (reg 78)))` with operand order lw-first sll-second. Pre-allocation: 79->v0 (lw dest), 78->v1 (sll dest), 74->v0. The plus's commutative operand order is what locks pseudo 74 to $v0 (it takes the first source's register family). Pre-RTL, that order is set by the C expression `D_8009BD6C + v*0x10` (load-then-shift). All structural variants that keep the load-then-shift expression order plateau at 2; variants that flip to shift-then-load order (v40/v45/v50/v51/v64/v65) regress to 5-12 because they push the addu out of the if-block or collapse the trampoline. No pure-C surface reverses the plus operand order while preserving the named-intermediate's pseudo 73->[3,4] preference that delivered floor 7->2."
     }
   ],
+  "prior_sessions_summary": [],
   "reviewer": {
     "verdict": "PASS",
     "date": "2026-06-12",
-    "evidence": "u16 *p is a live named intermediate (assigned + dereferenced); analogous to SOTN-sanctioned named-intermediate-declaration-order family (no-new-park-categories.md SOTN-accepted). Not a forbidden cheat family; passes all 6 checklist tests."
+    "evidence": "u16 *p is a live named intermediate (assigned + dereferenced); analogous to SOTN-sanctioned named-intermediate-declaration-order family (no-new-park-categories.md SOTN-accepted). Not a forbidden cheat family; passes all 6 checklist tests. Candidate unchanged from session 1, verdict carries forward."
   },
   "remaining_gap": {
-    "summary": "addu+lhu register direction. Build: addu $v0,$v0,$v1; lhu $v0,0($v0) (in-place accumulate into ptr's reg, lhu reuses base==dest). Target: addu $v1,$v1,$v0; lhu $v0,0($v1) (accumulate into shifted-v's reg, lhu base distinct from dest). Coupled allocator tiebreak — the addu output pseudo's preference is $v0 (set 2) because the lhu can reuse base==dest when both are $v0, saving a reg. Flipping requires the lhu base to be DIFFERENT from result's reg, which our pure-C variants can't force without an unused use of p (would be a cheat).",
+    "summary": "Coupled allocator tiebreak. Insn 22 in i.greg: `(set 74 (plus 79 78))` where 79=lw(D_8009BD6C)->$v0, 78=sll(v,4)->$v1. Output 74 takes $v0 because (a) it's the plus's first source's register and (b) downstream (lhu base, then result return) all want $v0. Target needs `(set 78 (plus 78 79))` so 78 (now also addu dest) stays in $v1, freeing the lhu's dest from base==dest collapse. Reversing the plus order requires reversing the C expression order, but every shift-first form (v40 ofs+D_..., v45 ofs+=, v50 sv+=, v64 m2c-form, v65 m2c-form-p) breaks either the named-intermediate's preference push OR the trampoline-shape (collapses to 11-13 build_insns).",
     "rule_count_at_head": 5,
-    "rules_required_for_full_match": "HEAD has $2 <-> $3 @3-6 + subst $4->$3 @0,1,3 + lhu $2,0($2)->$2,0($3) @7 — 5 rules. Candidate would still need the lhu base rewrite and the addu direction swap (2 substs)."
+    "rules_required_for_full_match": "HEAD has $2 <-> $3 @3-6 + subst $4->$3 @0,1,3 + lhu $2,0($2)->$2,0($3) @7 — 5 rules. Candidate would still need 2 substs: addu output rename (74->v1) + lhu base rewrite."
   },
   "next_hypotheses": [
-    "Investigate whether the addu's first-operand ordering can be steered via a different ptr-arith spelling without going through forbidden constructs. Try u16 *p = (u16 *)D_8009BD6C; p = (u16 *)((u8 *)p + v*16); result = *p; -- the pointer-as-byte-offset addition may produce different RTL.",
-    "Cross-reference matched siblings in text1b_b.c (func_80078B3C has the same andi-to-$v0 pattern but returns the comparison, so its addu is in a different shape). Look at any matched fn in the file whose epilogue is addu+lhu through TWO distinct regs.",
-    "Probe an instrumented cc1 with BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG to dump the allocno priority table at the addu — see whether pseudo 75 (p_after_add) can be pushed to $v1 via the conflict graph rather than the preference list.",
-    "Try declaring D_8009BD6C-derived pointer with a different type that affects strict aliasing analysis (e.g. through a struct member) — may break the lhu-base=lhu-dest reuse optimization."
+    "Set up directed permuter (PERM_* macros for randomized RTL exploration on the candidate body) — random C mutations may find a non-obvious form that flips the plus's operand order in RTL while preserving the named-intermediate's allocno preference push. Setup: permuter/func_80078B04/{base.c (candidate), target.s (from asm/funcs/func_80078B04.s with prelude.inc), settings.toml, compile.sh}; run with --stop-on-zero.",
+    "Read `tools/gcc-2.7.2/expr.c` and `combine.c` for the heuristic that swaps commutative operands during RTL expansion. If a specific C-shape pushes the SLL pseudo to lower-number than the LW pseudo, that may flip the canonical order.",
+    "Cross-reference text1b_b.c sibling func_80078A68 which uses `base = (t0 * 0x10) + D_8009BD6C` (mult-first); compile both side-by-side to see how the order propagates through to RTL. A68 is COMPLETED — its RTL may show the order is normalized regardless of C order, in which case the C lever doesn't exist and only permuter-found random rephrasings could trip a different normalization."
   ],
   "rejected_forms": [
     {
@@ -48,6 +57,21 @@
       "form": "register T x asm(\"$3\") pin or single-instruction __asm__ to force $v1",
       "score": "unmeasured (forbidden)",
       "reason": "register-asm pin + hardcoded-$N asm injection — forbidden by inline-asm-policy.md and inline-asm-injection.md."
+    },
+    {
+      "form": "shift-first expression order family (v40 ofs+D_..., v45 ofs+=, v50 sv+=, v46 ofs+D_cast, v64/v65 m2c early-return forms)",
+      "score": "7-12",
+      "reason": "Reversing the C operand to put the shift on the LEFT regresses the score. Either kills the named-intermediate preference (back to score 7) or breaks the if/else trampoline structure (collapses build_insns to 11-13, score 8-12)."
+    },
+    {
+      "form": "named-intermediate variants holding floor 2 (v37 ofs+p, v39 byteptr, v41 addr_arith, v42 sv_intermediate, v43 pluseq_byte, v44 struct_alias, v47 base_idx, v48 base_idx_inline, v49 sv_then_p, v52 u32 addr cast, v54 v_extends, v55 struct.w arrow, v57-60 various, v68 uint_p, v69-74 various)",
+      "score": 2,
+      "reason": "All preserve the candidate's named-intermediate allocno-preference push (mask->$v1) but cannot reverse the plus's RTL operand order. Confirms the floor-2 plateau is a real coupled tiebreak, not a lever-search shallowness issue. ~38 variants across this session, ~36 in prior session = ~74 explored forms."
+    },
+    {
+      "form": "u32 v = ... (v67)",
+      "score": 3,
+      "reason": "Mild regression vs s32 v — the unsigned mask interaction with slt nudges the comparison RTL. No closing path."
     }
   ],
   "memory_notes": []

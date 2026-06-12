@@ -1,13 +1,14 @@
-# func_80078B04 — WIP checkpoint (2026-06-12)
+# func_80078B04 — WIP checkpoint (2026-06-12, session 2)
 
 ## TL;DR
 
-Floor lowered **7 → 2** (5-insn improvement) by introducing a `u16 *p`
-named-intermediate that splits the address expression from the dereference.
-Cheat-reviewer PASS. Remaining 2 diffs are a coupled `addu`+`lhu` register-
-direction tiebreak that none of 36 explored variants flipped. Resume by
-applying `candidate.c`, confirming `sandbox --disable all == 2`, and
-attacking the addu direction.
+Floor 7 → 2 from session 1 (named `u16 *p` intermediate; reviewer PASS).
+Session 2 explored 38 more variant forms — all converge at 2 or regress.
+Remaining 2-insn diff is a coupled `addu`+`lhu` register-direction
+tiebreak driven by the plus's RTL operand order. The C expression
+`D_8009BD6C + v * 0x10` lowers to `(plus (reg lw) (reg sll))`; reversing
+to shift-first breaks either the named-intermediate's preference push
+or the if/else trampoline. Next lever: directed permuter (not yet set up).
 
 ## Target asm (14 insns)
 
@@ -30,53 +31,88 @@ jr $ra
  nop
 ```
 
-## Mechanism (from `cc1 -da` greg dumps)
+## Mechanism (from `cc1 -da` i.lreg + i.greg)
 
-HEAD body pseudo 73 (`v`): `preferences: [4]` — allocator pins to $a0,
-emits `andi $a0,$a0,0xFFFF` in-place. 7 masked diffs against target.
+Candidate body's pseudos at lreg:
+- 73 = `v` (zero_extend $a0)
+- 78 = sll(73, 4)         — pre-allocated to $v1
+- 79 = mem(D_8009BD6C)    — pre-allocated to $v0
+- 74 = plus(79, 78) = p   — pre-allocated to $v0 (FIRST source's reg)
+- 75 = zero_extend(mem(74)) = result — pre-allocated to $v0
 
-Candidate body adds `u16 *p;` declared in the function scope and assigned
-inside the if-true branch. Pseudo 73 (`v`): `preferences: [3 4]` — $v1
-takes priority; emits `andi $v1,$a0,0xFFFF` matching target.
+Allocno preferences for pseudo 73: `[3 4]` (named-intermediate push: $v1
+wins over $v0) — this gave us the andi-into-$v1 match in session 1.
 
-`p` (pseudos 75 + 76) gets `preferences: [2]` — both load (lw) and addu
-output land in $v0. The lhu reuses base==dest because the loaded value
-goes to result which is also $v0; allocator collapses to one reg. That
-collapse IS the remaining 2-insn diff: target keeps p's reg ($v1)
-distinct from the lhu dest ($v0).
+The remaining 2 diffs are:
+- insn 22: `(set 74 (plus 79 78))` — output pseudo 74 takes its FIRST
+  source's register ($v0). Target needs (plus 78 79) → output in $v1.
+- insn 26: `(set 75 (zero_extend (mem 74)))` — base and dest both end up
+  $v0 because 74 and 75 are coalesced through the return path.
+
+The plus's commutative operand order in RTL is locked by the C
+expression order. Reversing the C order (shift-first) regresses score
+by either pushing the addu out of the if-block (named-intermediate
+preference lost → back to 7) or collapsing the trampoline (build_insns
+falls 14→11-13, score 8-12).
+
+## Session 2 sweep summary (38 variants)
+
+Plateau at 2 (~22 of them): all preserve the candidate's
+named-intermediate shape (`u16 *p` declared outer, assigned inside if),
+varying the pointer-arith spelling: byte-ptr, s32-ptr, char-ptr,
+subscript, struct-typed, separate s32 intermediate, named offset,
+u32 cast — none flip the plus's RTL operand order.
+
+Regress to 5-12 (~6 of them): shift-first family (`v*0x10 + D_8009BD6C`,
+`ofs += D_8009BD6C`, `sv += D_8009BD6C`, m2c-form early-return) — break
+either the named-intermediate effect or the if/else trampoline structure.
 
 ## What's been ruled out (do NOT re-derive)
 
-- All `& 0xFFFF` order swaps, `(u16)arg0` casts, `u16 v` decls — score 7.
-- Early-return form `if (v >= 3) return 0;` — distance 12 (extra `j`).
-- `result = 0;` init outside if — distance 12.
-- `s32 ofs = v*16; ofs += D_8009BD6C; result = *(u16*)ofs;` (and ptr
-  variants) — score 7. The intermediate folds away post-combine.
-- `v <<= 4; v += D_8009BD6C; result = *(u16 *)v;` — score 5 (in-place
-  accumulate is right, but mask stays in $a0).
-- Hoisting `p = (u16 *)D_8009BD6C` outside the if — score 7 (lw moves
-  out of if-true branch, structural mismatch).
-- Register-asm pin / single-insn `__asm__` with hardcoded $N — would be
-  a forbidden cheat (inline-asm-policy.md, inline-asm-injection.md).
+- All `& 0xFFFF` order swaps, `(u16)arg0` casts, `u16 v` decls.
+- Early-return forms `if (cond) return *expr; return 0;` (build_insns 13,
+  score 12 — target's structure has explicit `j; nop` trampoline + else).
+- `result = 0;` init outside if — collapses to score 8-9.
+- Outer-scope `p` initialization (hoists lw out of if-true branch — 7-9).
+- Intermediate variables for the addition (`ofs`, `sv`, `addr`):
+  named-after-shift but added to D_... still gives 2; reversing to
+  D_... first regresses.
+- `register-asm` pin / single-insn `__asm__` with hardcoded $N —
+  forbidden cheat ([[inline-asm-policy]], [[inline-asm-injection]]).
+- Dead stores (`p = 0;` before if, etc.) — would be cheats and don't
+  even improve the score (verified v74).
 
-## What worked
+## What worked (session 1, unchanged)
 
 `u16 *p; ... p = (u16 *)(D_8009BD6C + v * 0x10); result = *p;` — score 2,
 build_insns = target_insns = 14, cheat-reviewer PASS.
 
 ## Next levers (in order of measured/plausibility)
 
-See `meta.json` → `next_hypotheses` (kept under the compaction cap).
-Short form: try byte-offset pointer arithmetic spellings; cross-reference
-the file's matched siblings for an addu+lhu shape using distinct regs;
-probe with instrumented cc1 (BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG); explore
-strict-aliasing breaks via struct-typed pointer.
+1. **Directed permuter** (NOT YET SET UP). Setup:
+   `permuter/func_80078B04/` with base.c (candidate), target.s (from
+   `asm/funcs/func_80078B04.s` + `tools/decomp-permuter/prelude.inc`
+   stripped of `.set gp=64`), settings.toml, compile.sh. Run
+   `tools/decomp-permuter/permuter.py -j N --stop-on-zero permuter/func_80078B04`.
+   The random RTL-mutating search may find a non-obvious shape that
+   flips the plus operand order while preserving the named-intermediate
+   preference push.
+2. **GCC source dive**: `tools/gcc-2.7.2/{expr,combine,fold-const}.c`
+   for the commutative-operand canonicalization heuristic. If pseudo
+   number ordering or operand "simpler" classification controls the
+   swap, we may find a C-shape that creates the sll-feeding pseudo at
+   a lower number than the lw-feeding pseudo.
+3. **Sibling cross-ref**: `func_80078A68` (matched, in same file)
+   uses `base = (t0 * 0x10) + D_8009BD6C` (mult-first) and works. Diff
+   its greg dump against this one — A68 is a STORE not a LOAD, so its
+   constraints are different, but the operand-order normalization
+   should be visible.
 
 ## Files
 
-- `tmp/func_80078B04_variants/` — 36 explored variants (v0–v36); winners
-  (score 2): v11, v25, v28, v29, v30, v31, v33, v36 — all share the
-  named-intermediate-`p` shape.
-- `tmp/func_80078B04_standalone.i.greg` — HEAD greg dump (pseudo 73 prefs `[4]`).
-- `tmp/v11_full.i.greg` — candidate greg dump (pseudo 73 prefs `[3 4]`).
-- `tmp/v11_full.s` — candidate cc1 output (showing the 2 residual diffs).
+- `tmp/func_80078B04_variants/` (session 1, v0–v36) and
+  `tmp/func_80078B04_variants2/` (session 2, v37–v74) — full variant
+  archive. Winners (score 2) all share the named-intermediate `p`
+  shape with `D_8009BD6C + v*0x10` ordering.
+- `tmp/func_80078B04_standalone.i.greg`, `tmp/v11_full.i.greg`,
+  `tmp/v11_full.i.lreg`, `tmp/v11_full.s` — RTL dumps from session 1.
