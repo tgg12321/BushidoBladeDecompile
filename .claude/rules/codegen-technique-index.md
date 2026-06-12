@@ -42,6 +42,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **loop-note-fixes-delay-slot-steal** — a memory-clobber barrier that only blocks a delay-slot steal → write the loop as a real `while`/`do`.
 - **hoist-call-arg-local-flips-jal-delay** — fill_delay regfix cluster around a call → hoist the late-loaded arg into a local declared FIRST in the block.
 - **store-before-jal** — arg saved into a callee-save between a table load and its call; ordering recipe.
+- **legitimate-volatile-interrupt-touched** (§Confirmed cases, sys_VSync 2026-06-12) — target block looks UNSCHEDULED (strictly source-ordered, genuine load-delay nop) around reads of an IRQ-touched counter while your build interleaves the chains → sched.c `read_dependence` needs BOTH reads volatile; check whether the second read's symbol qualifies for (or already has, under another C handle) a carve-out grant.
 - **goto-end-prologue-delay-slot** — ARCHIVED/FORBIDDEN tombstone.
 - **dead-branch-scheduling** — ARCHIVED/FORBIDDEN tombstone (manufactured dead-branch insns).
 

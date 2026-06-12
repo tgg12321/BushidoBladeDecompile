@@ -198,6 +198,23 @@ preserves the audit. Any one of them in isolation is insufficient.
   three-question test; unblocked func_8007D9C4 to COMPLETED-C with
   HEAD's unchanged source.
 
+- **g_sys_dma_region / D_800A2634** (ings2.c, granted 2026-06-12) — VSync
+  IRQ frame counter. IRQ writer: `D_800832F8()` does `++D_800A2634`
+  (src/ings2.c:338), installed via
+  `irq_EnableInterrupts(0, D_800832F8)` (src/ings2.c:330). Qualifying
+  use-site: `func_80082A14`'s `do { ... } while (g_sys_dma_region < a0);`
+  spin-wait (ings2.c:96-105). Closed sys_VSync to COMPLETED-C
+  (commit 1acf14cc) after 7 stuck sessions. **Mechanism note for future
+  diagnosis:** GCC 2.7.2 sched.c `read_dependence(mem,x) =
+  MEM_VOLATILE_P(x) && MEM_VOLATILE_P(mem)` — a read-read scheduling
+  edge exists only when BOTH reads are volatile. If a target block looks
+  UNSCHEDULED (strictly source-ordered, with a genuine load-delay nop)
+  around reads of an IRQ-touched counter while your build interleaves
+  the chains, check whether the SECOND read's symbol is a non-volatile
+  handle of memory that qualifies under this carve-out (here the same
+  address already had a volatile handle, D_800A2634 at ings2.c:320 — the
+  grant unified the second handle, g_sys_dma_region).
+
 ## Symbol-level grants (clarified 2026-06-11, func_8007D9C4 decision)
 
 A grant is PER SYMBOL, not per use-site — matching both C semantics
