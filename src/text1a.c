@@ -370,11 +370,13 @@ void rob_life_ctrl(s32 *a0) {
 }
 /* kengo:MED  |  my_rob/rob_life_ctrl  |  96i  |  x2 size collision */
 void func_80040A78(s32 arg0) {
-    register s32 var_a1 asm("a1");
-    register s32 var_v1 asm("v1");
+    s32 var_a1;
+    s32 var_v1;
+    s32 base_v1;
 
     var_a1 = 0;
-    var_v1 = arg0 + 0x94;
+    base_v1 = arg0 + 0x94;
+    var_v1 = base_v1;
     *(s32 *)(arg0 + 0x18F4) = arg0 + 0x2B4;
     *(s32 *)(arg0 + 0x18F8) = arg0 + 0x24C;
     *(s32 *)(arg0 + 0x18FC) = arg0 + 0x1E4;
@@ -397,8 +399,8 @@ void func_80040A78(s32 arg0) {
     *(s32 *)(arg0 + 0x1940) = arg0 + 0x864;
     do {
         *(s32 *)(arg0 + 0x1994) = var_v1 + 0x18;
-        var_v1 += 0x68;
         var_a1 += 1;
+        var_v1 = base_v1 + var_a1 * 0x68;
         arg0 += 4;
     } while (var_a1 < 0x14);
 }
