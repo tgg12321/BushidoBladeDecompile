@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80087D58",
-      "file": "main",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80041988",
       "file": "text1a",
       "distance": 8,
@@ -3508,6 +3500,15 @@
       "park_reason": "sched1 INSN_PRIORITY anti-dep shift (sched.c:2543 >>=3) on store-to-D_80102806 caused by a0-kill at a0&=0xFF00 demotes store to ready-list priority 1 vs siblings ~7f000001; sched1 picks store at T-14 (exec pos 1) and load at T-5 (exec pos 10); target needs load at pos 5, store at pos 7. 23 pure-C variants (Lever A block-local var splits, Lever B narrow int types, statement reorderings, pointer intermediates [copy-prop'd], u8* array reformulations, return-via-temp, inline-expression collapse, separate slot var, alternate slot bit extraction) all plateau at sandbox=8. Existing barrier __asm__ volatile('' ::: 'memory') is a BB-boundary sched fence; cc1psx produces byte-identical target without fence (different sched1 priority calc, no fork switch per no-compiler-divergence). do { D_80102806=a0; } while(0); ALSO produces byte-identical target via the BB-boundary mechanism but is OUT-OF-SCOPE for do-while-zero-exception (sanctioned only for LABEL_OUTSIDE_LOOP_P / reorg.c, NOT sched1 store/load ordering). Same wall applies to sibling func_80087D58 (identical structure). Resume avenues: (1) directed permuter targeted at store-priority levers; (2) SOTN-master-branch research for sched1-fence sanction precedent."
     },
     {
+      "func": "func_80087D58",
+      "file": "main",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "Structurally IDENTICAL twin of func_80087D10 (verified: same body, same __asm__ volatile('' ::: 'memory') sched-barrier, only the final return offset differs 0x5A vs 0x58). Same sched1 INSN_PRIORITY anti-dep wall (store-to-D_80102806 demoted; store-first schedule unfindable in pure C). func_80087D10's worker exhausted 23 pure-C variants on the identical structure 2026-06-13; parking this twin on that confirmed evidence to avoid a redundant cold-worker iteration. Same resume avenues: directed permuter targeting store-priority levers; the do-while(0) form matches but is out-of-scope for do-while-zero-exception (sched1, not LABEL_OUTSIDE_LOOP_P)."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3842,13 +3843,13 @@
   ],
   "counts": {
     "total": 466,
-    "active": 369,
+    "active": 368,
     "by_status": {
-      "active": 369,
-      "parked": 97
+      "active": 368,
+      "parked": 98
     },
     "by_verdict": {
-      "C": 186,
+      "C": 185,
       "ASM-PARTIAL": 65,
       "ASM-SUSPECT": 118
     }
