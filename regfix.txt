@@ -2912,11 +2912,6 @@ func_80078B3C: drain_delay @ 9
 func_80078B70: drain_delay @ 10
 # func_8007C748: 3-way reg cycle $v0/$v1/$a2 -- target uses $v1 for const, $a2 for mask
 # func_8007C748 idx 20: 3-cycle full-insn subst
-func_80078B04: $2 <-> $3 @ 3-6
-func_80078B04: subst "\$4" "$3" @ 0
-func_80078B04: subst "\$4" "$3" @ 1
-func_80078B04: subst "\$4" "$3" @ 3
-func_80078B04: subst "lhu\s+\$2,0\(\$2\)" "lhu\t$2,0($3)" @ 7
 func_80078BA8: $3 <-> $4 @ 1-6
 func_80078BA8: subst "\$4" "$3" @ 0
 func_80078BA8: subst "\$5" "$2" @ 3

@@ -1416,13 +1416,10 @@ s32 func_80078A68(s32 arg0, s32 arg1, s32 arg2) {
 }
 s32 func_80078B04(s32 arg0) {
     s32 v = arg0 & 0xFFFF;
-    s32 result;
-    if (v < 3) {
-        result = *(u16 *)(D_8009BD6C + v * 0x10);
-    } else {
-        result = 0;
+    if (v >= 3) {
+        return 0;
     }
-    return result;
+    return *(volatile u16 *)(D_8009BD6C + v * 0x10);
 }
 s32 func_80078B3C(s32 arg0) {
     s32 v;
