@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "saFidLoad",
-      "file": "text1b",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 7,
-      "status": "active"
-    },
-    {
       "func": "func_8001A67C",
       "file": "code6cac",
       "distance": 7,
@@ -3977,15 +3969,15 @@
     }
   ],
   "counts": {
-    "total": 484,
-    "active": 395,
+    "total": 483,
+    "active": 394,
     "by_status": {
-      "active": 395,
+      "active": 394,
       "parked": 89
     },
     "by_verdict": {
-      "C": 206,
       "ASM-PARTIAL": 71,
+      "C": 205,
       "ASM-SUSPECT": 118
     }
   }

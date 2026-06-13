@@ -12576,24 +12576,31 @@ s32 saFidLoad(s32 arg0, s16 arg1) {
     s32 **p;
     s32 *v;
     s32 *vv;
+    s32 *base;
+    s32 fid;
     s16 ret;
     title_mv_exec2(0);
-    p = (s32 **)((u8 *)&D_800EFC38 + arg1 * 4);
+    fid = arg1;
+    base = (s32 *)&D_800EFC38;
+    p = (s32 **)((u8 *)base + fid * 4);
     v = *p;
     if (v != 0) {
         v = (s32 *)((u8 *)v + arg0);
         *p = v;
         *v = *v + arg0;
-        vv = *(volatile s32 **)p;
+        vv = *p;
         *(s32 *)((u8 *)vv + 4) = *(s32 *)((u8 *)vv + 4) + arg0;
-        func_80087F64(arg1);
-        ret = coli_CheckBukiPreHit_800880B8(*(s32 *)((u8 *)*p + 4), arg1, *(s32 *)((u8 *)&D_800EFB38 + arg1 * 4));
-        if (ret == arg1) {
-            return (s16)tslCDFileRead(ret);
+        func_80087F64(fid);
+        ret = coli_CheckBukiPreHit_800880B8(*(s32 *)((u8 *)*p + 4), fid, *(s32 *)((u8 *)&D_800EFB38 + fid * 4));
+        if (ret != fid) {
+            return ret;
         }
-        return ret;
+        ret = tslCDFileRead(ret);
+        goto sign_return;
     }
-    return (s16)-1;
+    ret = -1;
+sign_return:
+    return (s16)ret;
 }
 extern s32 D_800A3404;
 void func_80087F64(s32);
