@@ -18,6 +18,16 @@
       "floor_was": 21,
       "floor_now": 21,
       "session_id": null
+    },
+    {
+      "date": "2026-06-12",
+      "git_head_at_measurement": "e08ef4ee",
+      "lever": "extended structural sweep (+10 forms) + sched.c rank_for_schedule read",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 21,
+      "floor_now": 21,
+      "session_id": null,
+      "evidence": "Read sched.c:2399 rank_for_schedule directly. Confirmed the class structure: tmp_class=3 when link==0 OR insn_cost==1; class=1 if data-dep with cost>1. Class tie wins on LUID. The wall is therefore EITHER (a) lh's insn_cost from addu==1 making lh class 3 but lw's lower LUID winning anyway (lw is declared after cos_val in source — wait, no, vx IS declared after cos_val so lw would have HIGHER LUID, meaning lh wins on LUID — contradiction); OR (b) lh is class 1 because insn_cost>1, lw is class 3 → lw wins. The notes' theory (b) implies sched1 picks lw; my read confirms it. No structural mutation in this session shifted the decision."
     }
   ],
   "reviewer": {
@@ -101,6 +111,56 @@
       "form": "v13_macro (u8 *base = (u8*)a0; reused)",
       "score": 21,
       "reason": "base alias folded by GCC; identical RTL"
+    },
+    {
+      "form": "v15_subtract_const (cos_idx = (angle - 0xC00) & 0xFFF; math-equivalent)",
+      "score": 22,
+      "reason": "addiu -0xC00 changes RTL constant; combine.c folds back to addiu +0x400 OR sched1 differs; either way regresses one insn"
+    },
+    {
+      "form": "v16_late_v48 (v48 in inner scope after both stores)",
+      "score": 21,
+      "reason": "scope wrap does not affect sched1 (no LOOP_BEG note generated)"
+    },
+    {
+      "form": "v17_cos_addr_local (s16 *cos_addr = ...; cos_val = *cos_addr;)",
+      "score": 21,
+      "reason": "explicit address-pointer materialization GCC-folded back into single combined load"
+    },
+    {
+      "form": "v18_cos_first_use (vx/vz declared at top but assigned later)",
+      "score": 21,
+      "reason": "decl-before-assign doesn't change LUID of assignments"
+    },
+    {
+      "form": "v19_judge_indexed (s16 *judge = &Judge; judge[idx])",
+      "score": 21,
+      "reason": "pointer alias folds back to global address; identical RTL to direct &Judge+idx"
+    },
+    {
+      "form": "v20_vx_byte_offset (u8 *base = (u8*)a0; reused for all offsets)",
+      "score": 21,
+      "reason": "duplicate of v13 essentially; base ptr folded"
+    },
+    {
+      "form": "v21_split_vx_rx (vx_cos/vz_sin/vz_cos/nvx_sin named locals)",
+      "score": 27,
+      "reason": "explicit named partial products force separate pseudos; regresses RA"
+    },
+    {
+      "form": "v22_call_inline (top-of-block decls, no init; assigned later)",
+      "score": 21,
+      "reason": "K&R top decls (no init) same as v5_struct_access"
+    },
+    {
+      "form": "v23_neg_vx_local (s32 nvx = -vx; used in rz comp)",
+      "score": 21,
+      "reason": "named -vx as separate local; combine.c folds negu into surrounding mult anyway"
+    },
+    {
+      "form": "v24_baseline (literal candidate.c, sanity check)",
+      "score": 21,
+      "reason": "baseline confirmation — no semantic change"
     }
   ]
 }

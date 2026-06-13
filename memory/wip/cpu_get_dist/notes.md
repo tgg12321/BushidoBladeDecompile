@@ -4,8 +4,8 @@
 
 - **HEAD's body uses two forbidden coercion cheats** (do-while(0) wrapper + dead `rx = ... uninit vz ... >> 12;` read-before-assignment). Both are
   [[no-new-park-categories]] cheats-by-spelling. With them, cheat-stripped sandbox = 8 (closed by 4 regfix rules). Without them, ALL pure-C variants = 21.
-- 14-variant sweep documents the rejected lever space (see `meta.json.rejected_forms`).
-- The wall is sched.c:2399 `rank_for_schedule`: at the choice point after `sll cos_idx`, sched1 picks `lw vx` (class 3, indep of last_scheduled) over `lh cos_val` (class 1, data-dep on sll). This places lw before lh, prevents vx from reusing the freshly-dead $v1, and shifts the entire downstream allocation by one register position.
+- **24-variant sweep total** (14 prior session + 10 this session) documents the rejected lever space (see `meta.json.rejected_forms`). Best non-baseline: v15_subtract_const = 22 (regression). All structural/decl-order/ptr-alias/named-product perturbations converge to 21.
+- The wall is sched.c:2399 `rank_for_schedule`: at the choice point after `sll cos_idx`, sched1 picks `lw vx` (class 3, indep of last_scheduled) over `lh cos_val` (class 1, data-dep on sll). This places lw before lh, prevents vx from reusing the freshly-dead $v1, and shifts the entire downstream allocation by one register position. Confirmed by direct read of sched.c:2399-2443 this session.
 - `scan_hand_coded.py --single cpu_get_dist` → tier=LOW (`no strong hand-coded indicators`). Function is NOT canonical-asm material; matching C must exist.
 - candidate.c is the honest pure-C baseline (score 21). Next session should resume from THIS, not from HEAD's cheated body.
 
@@ -39,21 +39,32 @@ Confirmed via `-da` greg dump (`tmp/cgd_iso.c.greg`): pseudos 88 → $a0 (vx), 9
 
 HEAD's `do {` between vx-load and sin_val splits the BB, isolating the lw-vs-lh choice inside the pre-loop BB. Combined with the dead `vz`-use forcing `vz` into the conflict graph EARLIER, greg lands the target's 4-out-of-5 critical-pseudo allocation (vx=$v1, cos_val=$a1, sin_val=$a0, vz=$v0) with only the cos_idx scratch misallocated (→$a0 vs target's $v1). The 4 regfix rules close that residual.
 
-## Lever exhaustion — what was tried (negative)
+## Lever exhaustion — what was tried (negative, 24 forms total)
 
-See `meta.json.rejected_forms` for the 14-variant sweep. Categories:
-- **Declaration order**: K&R-top decls, vx-first, cos+sin first, early-loads — all 21
-- **Type/precompute**: judge-pointer local, intermediate cross-products, pre-negated -vx, scratch idx locals — all 21
-- **Addressing style**: array indexing (a0[17]), base-pointer alias ((u8*)a0 once) — all 21
+See `meta.json.rejected_forms` for the full sweep. Categories:
+- **Declaration order**: K&R-top decls, vx-first, cos+sin first, early-loads, top-without-init — all 21
+- **Type/precompute**: judge-pointer local, intermediate cross-products, pre-negated -vx (variants v8/v23), scratch idx locals, named partial products (v21 = 27 regression) — all 21 or worse
+- **Addressing style**: array indexing (a0[17]), base-pointer alias ((u8*)a0 once, reused — v13/v20), explicit cos_addr ptr (v17), judge[] indexed (v19) — all 21
+- **Constant math**: `(angle - 0xC00) & 0xFFF` math-equivalent to `(angle + 0x400) & 0xFFF` (v15 = 22 regression)
+- **Scope wraps**: inner-block scope around v48 use (v16) — 21 (no LOOP_BEG generated; no sched fence)
 
-The wall is NOT in any of these dimensions. It's the rank_for_schedule class preference, which no decl-order or naming change perturbs.
+The wall is NOT in any of these dimensions. It's the rank_for_schedule class preference, which no decl-order/naming/scope/ptr-alias change perturbs. The LOOP_BEG note from HEAD's `do { } while (0)` IS the surface that flips it — and that's forbidden.
+
+## sched.c read confirms theory (this session)
+
+Direct read of `tools/gcc-2.7.2/sched.c:2399-2443`. `rank_for_schedule` uses:
+1. INSN_PRIORITY first (path length to BB end).
+2. If priorities tied, class via `find_insn_list (tmp, LOG_LINKS(last_scheduled))`: `link==0 || insn_cost==1 → class 3`; data-dep `cost>1 → class 1`; anti/output-dep `cost>1 → class 2`. Higher class wins.
+3. If class tied, LUID wins (stable sort).
+
+At post-`addu $at` choice point, `lw vx`'s LOG_LINK to addu is empty (independent) → class 3. `lh cos_val` has data-dep on addu with `insn_cost > 1` (load latency from arithmetic) → class 1. lw wins regardless of LUID. Target's bytes show lh BEFORE lw → target's RA/sched1 produced a different choice. The only differences in target's RTL stream (vs ours) come from the upstream structural shape; HEAD's do-while creates a NOTE_INSN_LOOP_BEG that splits the BB, removing the competition. No legitimate C surface flips this.
 
 ## Next-session hypotheses (highest-ROI first)
 
-1. **Permuter (vanilla, then directed PERM_*)** from this candidate as base. The manual sweep covered statement-level mutations; the permuter may surface a deeper structural mutation (e.g. function-level type change of a helper return).
-2. **Narrow `single_game_getEnemyCharId` return type** to `s16` — would emit `sll/sra` to extend, possibly biasing sched1 differently.
-3. **Investigate whether a maspsx-level adjustment** could let the natural sched1 order (lw vx → lh cos_val) match target bytes — but target's bytes have lh before lw, so this is unlikely to work without restructuring.
-4. **Deeper RTL reading**: check whether INSN_REF_COUNT (the per-pseudo use-count) feeds priority in a way I missed; if cos_val has higher REF_COUNT in some structural form, lh's priority would exceed lw vx's and win regardless of class.
+1. **Directed permuter (`PERM_*` macros) from candidate.c base.** Manual sweeps covered statement-level mutations across 24 forms. The permuter — especially directed mode — may surface deeper structural mutations (function-level type/signature, expression restructurings, randomization tricks) the manual sweep missed. Setup: build `target.o` from `asm/funcs/cpu_get_dist.s` + `tools/decomp-permuter/prelude.inc` (drop `.set gp=64`), `base.o` from preprocessed candidate.c using the compile.sh shape in `permuter/dbe4/`.
+2. **INSN_PRIORITY investigation.** Class-tie-break is downstream of priority. If priorities of lh and lw differ in any C form, the class decision is irrelevant. Try: nested-expression forms that change downstream fanout / chain depth of cos_val vs vx.
+3. **Instrumented cc1 dumps** (`tmp/gccdbg/cc1` with `BB2_SCHED_DEBUG`) to confirm sched1's actual choice trace on candidate.c, not just our model of it. Build instructions in [[register-alloc-pure-c]] Step 0.
+4. **Maspsx label-nop gate exploration.** Target has `lh $a1, %lo(Judge)($at)` / `lw $v1, 0x44($s0)` adjacent with no nop. Our build may interpose. Per [[maspsx-label-nop-gate]] this is a per-function opt-in surface.
 
 ## Related rules
 
