@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002BEA0",
-      "file": "code6cac_b",
-      "distance": 9,
-      "verdict": "ASM-PARTIAL",
-      "rules": 7,
-      "status": "active"
-    },
-    {
       "func": "func_8003AFFC",
       "file": "code6cac_c_ab",
       "distance": 9,
@@ -3515,6 +3507,15 @@
       "park_reason": "WIP floor 9->4 (worker 324bb63b, reviewer PASS; candidate in memory/wip/cpu_check_tubazeri_2/). 4 residual diffs = 2 coupled hard issues: (1) commutative addu operand swap idx25 (ours addu s2,s0,v0 vs target addu s2,v0,s0); (2) loop strength-reduction idx37/38/40 -- our GCC strength-reduces ptr+0x332/0x334 into BIVs (small disp 0/2 per iter), target keeps base v1=ptr with large disp 818/820. 9+ pure-C levers ruled out (meta.json). SR-defeat has no clean lever (old recipe is forbidden-cheat; -fno-strength-reduce is a frozen flag). Parked per 50-item-goal set-aside-walls; floor-4 WIP preserved. Resume: legitimate SR-defeat C structure + addu operand-order swap, or directed permuter from candidate.c."
     },
     {
+      "func": "func_8002BEA0",
+      "file": "code6cac_b",
+      "distance": 9,
+      "verdict": "ASM-PARTIAL",
+      "rules": 7,
+      "status": "parked",
+      "park_reason": "WIP floor 9->4 (worker 670a62bb, reviewer PASS; memory/wip/func_8002BEA0/). GTE-LZCS cluster sibling (func_8001A67C/func_800274BC authorized 2026-06-10); the GTE block is canonical inline asm and matches. Residual floor-4 is a pure-C RA/strength-reduce diff in the /100 division subtree (mfhi  vs target ; delay-slot li vs addiu) -- NOT in the GTE block, so this is compiled C that should match. Same wall class as cpu_check_tubazeri_2. Parked per 50-item-goal set-aside; floor-4 WIP preserved. Resume: pure-C lever for the /100 strength-reduce mfhi-reg + delay-slot, or directed permuter from candidate.c."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3849,14 +3850,14 @@
   ],
   "counts": {
     "total": 465,
-    "active": 353,
+    "active": 352,
     "by_status": {
-      "active": 353,
-      "parked": 112
+      "active": 352,
+      "parked": 113
     },
     "by_verdict": {
-      "ASM-PARTIAL": 65,
       "C": 170,
+      "ASM-PARTIAL": 64,
       "ASM-SUSPECT": 118
     }
   }
