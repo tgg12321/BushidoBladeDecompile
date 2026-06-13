@@ -98,10 +98,19 @@ engine.cli…'`** — that nests three shells and the quoting eats awk/sed/hered
 ## 4. Autonomous operation — drive workers + review
 
 - **Run:** `pwsh tools/headless_loop.ps1 -MaxIterations N [-Model opus]
-  [-DryRun]`. It invokes `claude -p` once per queue item
+  [-MaxSameFunc 2] [-DryRun]`. It invokes `claude -p` once per queue item
   (one function each), self-reviews every cycle, and **stops on ESCALATE**.
   Guardrails: `verify-oracle --rebuild` baseline + authoritative post-check,
   dirty-tree stop, never pushes. Each run → `metrics/headless_runs.jsonl`.
+- **Stuck-function cap (exit 11):** the loop STOPS if the same top function fails
+  to complete (WIP-checkpoint / no-progress) for `-MaxSameFunc` consecutive
+  iterations (default 2; `0` disables). This is NOT a user escalation — it means
+  cold-start re-attempts are thrashing (measured: func_80078B04 burned 7 cold
+  starts / ~$50 with the floor stuck at 2; sys_VSync ~$70, same shape). The
+  remedy is a **modality change on the SAME function** (orchestrator deep-dive,
+  `tools/sweep_variants.py`, instrumented cc1 dumps) — per the no-deferral
+  directive, never a different target. Handle it yourself; don't relaunch cold
+  workers at it.
 - **Review (per cycle / on completion):** `python3 tools/headless_review.py
   --latest` (or `--func`/`--session`). Outcome + audit signals + commit range +
   mechanical park-confirmation + ACCEPT/ESCALATE. Exit `0`=ACCEPT, `10`=ESCALATE.

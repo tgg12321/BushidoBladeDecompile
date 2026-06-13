@@ -18,8 +18,20 @@
        If neither -> stuck -> STOP.
     6. Append a run record to metrics/headless_runs.jsonl (func, model, session,
        cost, tokens, turns, oracle_ok, advanced).
-  Never pushes. Stops on first error / oracle break / no-progress /
+    7. Stuck-function cap: if the SAME top function fails to complete (WIP-checkpoint
+       or no-progress) for -MaxSameFunc consecutive iterations, STOP (exit 11).
+       Cold-start re-attempts at one stuck function just re-pay the context baseline
+       to re-derive the same plateau (measured: func_80078B04 = 7 cold starts / ~$50
+       with the floor stuck; sys_VSync the same). The remedy is a MODALITY change on
+       the SAME function (orchestrator deep-dive / variant sweep / instrumented cc1),
+       not another cold worker -- per the no-deferral directive.
+  Never pushes. Stops on first error / oracle break / no-progress / stuck-cap /
   MaxIterations / empty queue.
+
+  EXIT CODES: 0 = clean finish (MaxIterations or empty queue). 1 = baseline not at
+  oracle. 2 = ORACLE BROKEN by a committed build. 10 = orchestrator review ESCALATE
+  (surface to user). 11 = STUCK CAP (same function, switch modality -- orchestrator
+  handles, not necessarily the user).
 
 .NOTES
   PERMISSION MODE: headless autonomy needs the agent to run eng.ps1 (PowerShell),
@@ -32,10 +44,16 @@
 .EXAMPLE
   pwsh tools/headless_loop.ps1 -DryRun
   pwsh tools/headless_loop.ps1 -MaxIterations 1 -Model opus
+  pwsh tools/headless_loop.ps1 -MaxIterations 10              # stuck-cap on by default (2)
+  pwsh tools/headless_loop.ps1 -MaxIterations 10 -MaxSameFunc 3  # looser cap
+  pwsh tools/headless_loop.ps1 -MaxIterations 10 -MaxSameFunc 0  # disable the cap
 #>
 [CmdletBinding()]
 param(
     [int]    $MaxIterations  = 1,
+    # Consecutive non-completing iterations on ONE top function before the loop
+    # stops and defers to a modality change (exit 11). 0 disables the cap.
+    [int]    $MaxSameFunc    = 2,
     [string] $Model          = 'opus',
     [ValidateSet('acceptEdits','bypassPermissions','default','dontAsk')]
     [string] $PermissionMode = 'bypassPermissions',
@@ -234,6 +252,12 @@ try {
     }
     Write-Host "[headless] baseline OK (SHA1 == oracle)."
 
+    # Stuck-function cap state: count consecutive iterations where the SAME top
+    # function did not complete (WIP-checkpoint / no-progress). A completion or a
+    # park resets it; reaching $MaxSameFunc stops the loop (exit 11).
+    $stuckFunc  = $null
+    $stuckCount = 0
+
     for ($i = 1; $i -le $MaxIterations; $i++) {
         $top = Invoke-Eng queue next
         if (-not $top -or -not $top.func) {
@@ -339,6 +363,33 @@ try {
         if ($LASTEXITCODE -eq 10) {
             Write-Host "[headless] orchestrator review -> ESCALATE on $func. STOPPING for user review." -ForegroundColor Red
             exit 10
+        }
+
+        # Stuck-function cap. `advanced` = the function left the queue (COMPLETED).
+        # `stillTop` = it is still the top item -> the worker neither completed nor
+        # parked it (a WIP-checkpoint or a flat no-progress run). Counting those
+        # consecutively on ONE function catches the cold-start-thrash pattern that
+        # burned ~$50 on func_80078B04 and ~$70 on sys_VSync before an orchestrator
+        # deep-dive closed each. A park (func leaves 'active', no longer top) or a
+        # completion resets the streak.
+        if ($MaxSameFunc -gt 0) {
+            if ($advanced) {
+                $stuckFunc = $null; $stuckCount = 0
+            } elseif ($stillTop) {
+                if ($func -eq $stuckFunc) { $stuckCount++ } else { $stuckFunc = $func; $stuckCount = 1 }
+                if ($stuckCount -ge $MaxSameFunc) {
+                    Write-Host "[headless] STUCK CAP: $func did not complete in $stuckCount consecutive iteration(s) (still queue top)." -ForegroundColor Yellow
+                    Write-Host "[headless] Cold-start re-attempts re-derive the same plateau. Change MODALITY on THIS function (no-deferral directive):" -ForegroundColor Yellow
+                    Write-Host "[headless]   - orchestrator deep-dive with sustained context (closed sys_VSync, debug_printf, func_80078B04)" -ForegroundColor Yellow
+                    Write-Host "[headless]   - bulk variant sweep: python3 tools/sweep_variants.py --func $func --file $($top.file) --variants tmp/$($func)_variants/" -ForegroundColor Yellow
+                    Write-Host "[headless]   - instrumented cc1 dumps (BB2_ALLOC_DEBUG / BB2_SCHED_DEBUG via tmp/gccdbg/cc1)" -ForegroundColor Yellow
+                    Write-Host "[headless] STOPPING (exit 11) for orchestrator modality change -- NOT necessarily a user escalation." -ForegroundColor Yellow
+                    exit 11
+                }
+            } else {
+                # parked or otherwise no longer the top item -> streak resets
+                $stuckFunc = $null; $stuckCount = 0
+            }
         }
     }
     Write-Host "[headless] loop finished."
