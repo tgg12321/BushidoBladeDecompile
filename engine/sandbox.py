@@ -34,7 +34,22 @@ def sandbox_score(func: str, disable: str = "lost-codegen",
                   strip_cheat_asm: bool = False, workdir: str = "tmp/sandbox") -> dict:
     stem = func_file(func)
     wd = Path(workdir) / func
-    ov = cheats.make_overrides(func, disable, str(wd / "cfg"))
+    if disable == "all" and strip_cheat_asm:
+        # Honest pure-C distance: cheat-asm is stripped file-wide, which shifts
+        # maspsx indices for EVERY function — so any sibling's index-based regfix
+        # (reorder/subst/insert) misapplies on the shifted asm and can emit
+        # malformed text that crashes assembly (confirmed: text1a_c.c's
+        # efc_rob_set_type_flash positional prologue-swap produced `lh
+        # $sp,$sp,88`, failing the whole-file build before the scored function
+        # could be extracted). Per-function codegen is independent, so dropping
+        # ALL rules file-wide leaves the SCORED function's bytes identical while
+        # letting the file assemble. Mirrors build_stripped_object's empty-config
+        # recipe — the honest pure-C distance has no rules anywhere by definition.
+        ov = cheats.empty_overrides(str(wd / "cfg"))
+        ov["dropped"] = sum(len(cheats.func_rule_lines(func, c))
+                            for c in (cheats.REGFIX, cheats.REGFIX2, cheats.ASMFIX))
+    else:
+        ov = cheats.make_overrides(func, disable, str(wd / "cfg"))
     cheat_asm_stripped = 0
     if strip_cheat_asm:
         from . import inlineasm
