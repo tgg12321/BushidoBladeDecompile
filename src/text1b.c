@@ -478,10 +478,10 @@ void func_8004876C(u16 *arg0, s32 arg1, u16 *arg2) {
     }
 }
 s32 func_8004881C(s32 arg0, s32 arg1, s32 arg2) {
-    s32 a0_term = arg0 * 0x547;
-    s32 sum = a0_term + (arg1 << 11);
-    sum += arg2 * 0x2B8;
-    return sum >> 12;
+    arg0 = arg0 * 0x547;
+    arg1 = arg1 << 11;
+    arg2 = arg2 * 0x2B8;
+    return (arg0 + arg1 + arg2) >> 12;
 }
 
 void saTan4FireDisp_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 dx, s32 dy)
