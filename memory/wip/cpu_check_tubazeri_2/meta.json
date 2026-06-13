@@ -1,0 +1,76 @@
+{
+  "function": "cpu_check_tubazeri_2",
+  "file": "code6cac_b",
+  "scores": {
+    "head_floor": 9,
+    "candidate_floor": 4,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 76,
+    "target_insns": 76
+  },
+  "sessions": [
+    {
+      "date": "2026-06-13",
+      "lever": "v0/i split + xor intermediate + drop equal-branch sll + anti-cheat (0,...) comma removal",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 9,
+      "floor_now": 4,
+      "git_head_at_measurement": "dacee147"
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-13",
+    "evidence": "candidate is net anti-cheat (removes (0,...) comma; merges duplicate equal-branch v0=s1<<1 into the shared do_sll path); v0/i split + named-xor-intermediate covered by SOTN-allowed families; no register pins, __asm__, volatile coercions, alias renames, unused arrays, dead-store params, or non-sanctioned wrapper constructs."
+  },
+  "remaining_gap": {
+    "summary": "4 real diffs survive ~25 C-level variants: (1) idx 25 commutative addu operand swap — `addu s2, s0, v0` vs target `addu s2, v0, s0` (1 insn); (2) idx 37/38/40 GCC loop-strength-reduction cluster — our build precomputes `v1 = s2 + 0x332` once before the loop and uses small displacement (2/0); target keeps `v1 = s2` and uses large displacement (820/818) (3 insns coupled). Branch addresses (idx 9/11/13/17/35/45/53/59) are masked-out and don't count.",
+    "rule_count_at_head": 9,
+    "rules_required_for_full_match": "All 9 HEAD regfix rules can be retired ONCE the remaining 4 RTL-level diffs close — the rules are: 6 reg-renames in idx 18-25 (xor block: $4→$2 chain), and 3 strength-reduce offset-encodes in idx 37-40. Candidate already eliminates the need for the 6 reg-rename rules (sandbox-disable-all-clean for that cluster); only the 3 strength-reduce rules + the operand-swap remain (4 actual insn diffs)."
+  },
+  "next_hypotheses": [
+    "Strength-reduce cluster: investigate whether ANY function in src/code6cac_b.c currently matches with a multi-displacement loop on a step-2 BIV. If none, the file may be an -fno-strength-reduce candidate — but that requires user policy sign-off per [[compiler-flags-canonical]] / [[no-compiler-divergence]] (flags frozen).",
+    "Strength-reduce cluster: try instrumented cc1 dump with BB2_LOOP_DEBUG / loop.c trace to see WHY our build's strength_reduce() decides the s2+0x332 GIV is profitable. Examine the benefit calc; identify the specific RTL state to flip.",
+    "Operand-swap idx 25: investigate whether commute_machine_combine flipping the operand order is feasible via a C-level lever (declaration order, intervening computation, ptr-type-cast on v0). v23/v11 attempts ADDED instructions; the swap may require RTL-level operand-precedence manipulation that pure C can't easily reach.",
+    "Run the decomp-permuter starting from candidate.c base (sandbox 4, not 9). Setup: build target.o from asm/funcs/cpu_check_tubazeri_2.s + tools/decomp-permuter/prelude.inc (drop `.set gp=64` for r3000). Workspace at permuter/cpu_check_tubazeri_2/. The permuter's randomization can find structural levers not in the manual playbook.",
+    "Cross-reference m2c output for cpu_check_tubazeri_2 to see what control-flow shape m2c reconstructs from target's asm — may reveal a different loop or addressing structure to try."
+  ],
+  "rejected_forms": [
+    {
+      "form": "block-local v0 declaration (Lever A applied to v0)",
+      "score": 28,
+      "reason": "Breaks the equal-branch v0=s1<<1 dataflow; reordered the xor-block RA into a worse allocation."
+    },
+    {
+      "form": "for-loop with index-based access `s2 + 0x332 + i*2`",
+      "score": 16,
+      "reason": "GCC still strength-reduces. Worse than ptr-based by adding loop-prologue overhead."
+    },
+    {
+      "form": "do-while with no `if (count>1)` outer guard",
+      "score": 28,
+      "reason": "Changes the loop's entry shape; GCC emits the loop body unconditionally with worse scheduling."
+    },
+    {
+      "form": "u16 *ptr stride-1 (`ptr[0x199] = ptr[0x19A]; ptr++`)",
+      "score": 4,
+      "reason": "Same floor — GCC still strength-reduces with u16 ptr; only the GIV's stride constant changes (0x199*2=0x332)."
+    },
+    {
+      "form": "v0_first add via uintptr_t cast (`v0 + (uintptr_t)a0`)",
+      "score": 6,
+      "reason": "GCC adds explicit conversion instructions; raises bi from 76 to 74 (deletes) + 4 substs = worse total."
+    },
+    {
+      "form": "explicit s2_int intermediate before pointer cast",
+      "score": 6,
+      "reason": "Same as above — adds insns rather than swapping operand order."
+    },
+    {
+      "form": "for-loop with comma-init (`for (i=s1, ptr=s2; ...; i++, ptr=...)` )",
+      "score": 29,
+      "reason": "Comma-init shifts the entry edge; GCC schedules the prologue setup differently and many idx-aligned diffs cascade."
+    }
+  ],
+  "memory_notes": []
+}
