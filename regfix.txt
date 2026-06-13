@@ -307,13 +307,6 @@ calc_fc_frame: subst "\$16,\$2" "$16,$16" @ 50
 calc_fc_frame: delete @ 34
 calc_fc_frame: insert "addiu $4,$4,4" @ 28
 calc_fc_frame: reorder 9,8,1,2,5,6,3,4,7 @ 1-9
-# hirahira_w_frie: move addiu s5,s4,4 from after saves to between sw s5 and sw s6
-hirahira_w_frie: reorder 5,13,6,7,8,9,10,11,12 @ 5-13
-# hirahira_w_frie: swap li s7,-2 and move s1,s5
-hirahira_w_frie: reorder 22,21 @ 21-22
-# hirahira_w_frie: fix srl/sll register (v0 -> s0)
-hirahira_w_frie: subst "\$2,\$16" "$16,$16" @ 35
-hirahira_w_frie: subst "\$16,\$2" "$16,$16" @ 36
 
 # title_mv_exec2: GCC hoists 0x18 and 1 into s2/s3, target only hoists 0xFF into s1
 # Remove s2/s3 saves, change sign-ext reg $3->$5 in loop, fresh load 0x18 and 1<<a1

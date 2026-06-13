@@ -964,30 +964,30 @@ s32 hirahira_w_frie(s32 *base, s16 *offsets) {
 
     v1 = *s3;
     s3++;
-    if (v1 == -2) goto done;
-
-    ret++;
-    ret--;
-    s1 = s5;
-    do {
-        if (v1 >= 0) {
-            s0 = s1[1];
-            a0_val = s1[0];
-            *s5 = (s32)s2 - (s32)s4;
-            s5++;
-            s6++;
-            s0 = s0 - a0_val;
-            func_800520B8((s32)s4 + a0_val, (s32)s2, s0);
-            s0 = ((u32)s0 >> 2) << 2;
-            s2 = (s32 *)((s32)s2 + s0);
-        }
-        s1++;
-        v1 = *s3;
-        s3++;
-    } while (v1 != -2);
-
-done:
-    ret = (s32)s2;
+    if (v1 == -2) {
+        ret = (s32)s2;
+    } else {
+        s32 sentinel = -2;
+        s1 = s5;
+        do {
+            if (v1 >= 0) {
+                s0 = s1[1];
+                a0_val = s1[0];
+                *s5 = (s32)s2 - (s32)s4;
+                s5++;
+                s6++;
+                s0 = s0 - a0_val;
+                func_800520B8((s32)s4 + a0_val, (s32)s2, s0);
+                s0 = (u32)s0 >> 2;
+                s0 = s0 << 2;
+                s2 = (s32 *)((s32)s2 + s0);
+            }
+            s1++;
+            v1 = *s3;
+            s3++;
+        } while (v1 != sentinel);
+        ret = (s32)s2;
+    }
     v1 = ret - (s32)s4;
     *s4 = s6;
     *s5 = v1;

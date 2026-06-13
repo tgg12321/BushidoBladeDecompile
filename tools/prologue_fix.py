@@ -285,8 +285,15 @@ def action_matches(gcc_action, target_action):
 
     # ALU/shift operations
     if g_type == 'alu' and t_type == 'alu':
-        return (gcc_action[1] == target_action[1] and   # same mnemonic
-                gcc_action[2] == target_action[2])       # same dest register
+        if gcc_action[2] != target_action[2]:            # same dest register
+            return False
+        if gcc_action[1] == target_action[1]:            # same mnemonic
+            return True
+        # GCC 2.7.2 can print immediate adds as `addu $sN,$sM,4`; maspsx
+        # lowers that pseudo-op to the target `addiu`.
+        if gcc_action[1] == 'addu' and target_action[1] == 'addiu':
+            return bool(re.search(r',\s*-?(?:0x[0-9A-Fa-f]+|\d+)$', gcc_action[3]))
+        return False
 
     return False
 
