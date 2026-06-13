@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "ot_Link",
-      "file": "gpu",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "sys_VSync",
       "file": "ings2",
       "distance": 7,
@@ -3573,6 +3565,15 @@
       "park_reason": "fair-pass pure C floor: direct expression, local mask decl-order, explicit a1 mask, old-*a0 temp, derived tag_mask, signed mask locals, K&R parameters, and precomputed addr all compile to sandbox score 7/build_insns 15; natural GCC always puts OT_ADDR_MASK in $t0 and OT_TAG_MASK in $a3, while target wants $a3=OT_ADDR_MASK and $t0=OT_TAG_MASK. Existing matching source uses register asm pins, which are forbidden; no GTE/BIOS/canonical-asm signal."
     },
     {
+      "func": "ot_Link",
+      "file": "gpu",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "fair-pass pure C floor: direct expression, local mask/temp addr variant, and K&R parameter form all compile to sandbox score 7/build_insns 15; natural GCC puts OT_ADDR_MASK in $a3 and OT_TAG_MASK in $a2, while target wants $a2=OT_ADDR_MASK and $a3=OT_TAG_MASK. Existing matching source uses register asm pins, which are forbidden; no GTE/BIOS/canonical-asm signal."
+    },
+    {
       "func": "cpu_side_move_dir_4",
       "file": "system",
       "distance": 7,
@@ -3916,13 +3917,13 @@
   ],
   "counts": {
     "total": 476,
-    "active": 385,
+    "active": 384,
     "by_status": {
-      "active": 385,
-      "parked": 91
+      "active": 384,
+      "parked": 92
     },
     "by_verdict": {
-      "C": 200,
+      "C": 199,
       "ASM-PARTIAL": 67,
       "ASM-SUSPECT": 118
     }
