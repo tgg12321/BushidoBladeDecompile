@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80041988",
-      "file": "text1a",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "saSeMain_80045510",
       "file": "text1a_c",
       "distance": 8,
@@ -3509,6 +3501,15 @@
       "park_reason": "Structurally IDENTICAL twin of func_80087D10 (verified: same body, same __asm__ volatile('' ::: 'memory') sched-barrier, only the final return offset differs 0x5A vs 0x58). Same sched1 INSN_PRIORITY anti-dep wall (store-to-D_80102806 demoted; store-first schedule unfindable in pure C). func_80087D10's worker exhausted 23 pure-C variants on the identical structure 2026-06-13; parking this twin on that confirmed evidence to avoid a redundant cold-worker iteration. Same resume avenues: directed permuter targeting store-priority levers; the do-while(0) form matches but is out-of-scope for do-while-zero-exception (sched1, not LABEL_OUTSIDE_LOOP_P)."
     },
     {
+      "func": "func_80041988",
+      "file": "text1a",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 2,
+      "status": "parked",
+      "park_reason": "sched1 backward LUID-descending tiebreaker places id=1 EARLY of LICM-hoisted s5/s6 in prologue init block (3 insns); local-alloc spills v1 for const-1 in dispatch (2 insns); both cheat-reviewer FAILed score-lowering forms (s32 mask_table widening + ox/oy named locals). Resume: instrumented cc1 BB2_*_DEBUG + directed permuter; see commit body for RTL evidence."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3843,13 +3844,13 @@
   ],
   "counts": {
     "total": 466,
-    "active": 368,
+    "active": 367,
     "by_status": {
-      "active": 368,
-      "parked": 98
+      "active": 367,
+      "parked": 99
     },
     "by_verdict": {
-      "C": 185,
+      "C": 184,
       "ASM-PARTIAL": 65,
       "ASM-SUSPECT": 118
     }
