@@ -574,7 +574,7 @@ __asm__(
 extern s32 bios_FileReadRaw(s32, s32, s32, s32);
 
 s32 bios_FileRead(s32 addr, s32 dest, s32 len) {
-    register s32 total asm("s2");
+    s32 total;
     s32 chunk;
     s32 result;
 
@@ -593,7 +593,7 @@ s32 bios_FileRead(s32 addr, s32 dest, s32 len) {
             dest += result;
             len -= result;
             if (result < chunk) {
-                break;
+                return total;
             }
         } while (len != 0);
     }
