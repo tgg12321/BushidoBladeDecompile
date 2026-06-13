@@ -17025,8 +17025,12 @@ void func_80074220(s32 *arg0, s32 arg1) {
     *(s16 *)(t + 0xC) = 0x202;
     *(s16 *)(t + 0xE) = 0xB0;
     gpu_SetSemiTransp(t, 1);
-    ot_Link(D_800A374C + 0x78, t);
-    arg0[5] = t + 0x10;
+    {
+        s32 old_t = t;
+        t += 0x10;
+        ot_Link(D_800A374C + 0x78, old_t);
+    }
+    arg0[5] = t;
 skip_init:
     sp[5] = 0x1F;
     *(s8 *)((s32)&sp[0] + 0x28) = 0;
@@ -17070,9 +17074,9 @@ skip_init:
 
     initPolyF4(q);
     func_80069A8C(q);
+    *(s16 *)(q + 0x8) = 0x15E;
     *(s16 *)(q + 0xC) = 0x27F;
     *(s16 *)(q + 0x14) = 0x27F;
-    *(s16 *)(q + 0x8) = 0x15E;
     *(s16 *)(q + 0xA) = 0;
     *(s16 *)(q + 0xE) = 0;
     *(s16 *)(q + 0x10) = 0x15E;
