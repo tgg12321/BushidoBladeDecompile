@@ -57,7 +57,16 @@ param(
     [string] $Model          = 'opus',
     [ValidateSet('acceptEdits','bypassPermissions','default','dontAsk')]
     [string] $PermissionMode = 'bypassPermissions',
-    [switch] $DryRun
+    [switch] $DryRun,
+    # Batch-cadence mode (protocol-aligned): when the post-run review ESCALATEs
+    # solely because a worker made a NOVEL (non-mechanically-confirmable) park,
+    # log it and CONTINUE instead of stopping, so the loop grinds a wall-dense
+    # queue region in one launch and the orchestrator batch-reviews the parks
+    # afterward (from this run's output + queue.json park_reason fields). ALL
+    # other escalations still hard-stop: oracle break (exit 2), cheated match,
+    # dirty-tree leftover, unexpected outcome (exit 10), and the stuck cap
+    # (exit 11). Default OFF preserves the per-park stop-and-confirm behavior.
+    [switch] $ContinueOnNovelPark
 )
 
 $ErrorActionPreference = 'Stop'
@@ -359,10 +368,32 @@ try {
         # Orchestrator post-run review: confirm findings + apply the escalation
         # boundary. Exit 0 = ACCEPT (continue), 10 = ESCALATE (stop for the user).
         Write-Host "[headless] --- orchestrator review ---"
-        wsl bash -c "cd '$wsldir' && python3 tools/headless_review.py --session '$sid'"
-        if ($LASTEXITCODE -eq 10) {
-            Write-Host "[headless] orchestrator review -> ESCALATE on $func. STOPPING for user review." -ForegroundColor Red
-            exit 10
+        if ($ContinueOnNovelPark) {
+            # Capture machine-readable verdict so we can distinguish a benign
+            # novel-park escalation (continue) from a real one (stop).
+            $reviewJson = wsl bash -c "cd '$wsldir' && python3 tools/headless_review.py --session '$sid' --json 2>/dev/null"
+            Write-Host $reviewJson
+            if ($LASTEXITCODE -eq 10) {
+                $isNovelPark = $false
+                try {
+                    $rv = $reviewJson | ConvertFrom-Json
+                    if ($rv.outcome -eq 'PARKED' -and $rv.why -match 'park not mechanically confirmable') {
+                        $isNovelPark = $true
+                    }
+                } catch { $isNovelPark = $false }
+                if ($isNovelPark) {
+                    Write-Host "[headless] NOVEL PARK on $func -- collected for orchestrator BATCH review (--ContinueOnNovelPark). CONTINUING." -ForegroundColor Yellow
+                } else {
+                    Write-Host "[headless] orchestrator review -> ESCALATE on $func (not a novel park). STOPPING for user review." -ForegroundColor Red
+                    exit 10
+                }
+            }
+        } else {
+            wsl bash -c "cd '$wsldir' && python3 tools/headless_review.py --session '$sid'"
+            if ($LASTEXITCODE -eq 10) {
+                Write-Host "[headless] orchestrator review -> ESCALATE on $func. STOPPING for user review." -ForegroundColor Red
+                exit 10
+            }
         }
 
         # Stuck-function cap. `advanced` = the function left the queue (COMPLETED).
