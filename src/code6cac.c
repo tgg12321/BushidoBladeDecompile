@@ -993,14 +993,14 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
         register s32 t4_v asm("t4");
         asm volatile("" : "=r"(t4_v));
         t4_v = (s32)dist_sq;
-        new_var = &sp_tmp;
         asm volatile(".word 0x488CF000" : : "r"(t4_v));
         asm volatile("nop");
         asm volatile("nop");
+        new_var = &sp_tmp;
         {
-            s32 addr_v0 = (s32)new_var;
+            register s32 addr_v0 asm("v0") = (s32)new_var;
             t4_v = addr_v0;
-            asm volatile(".word 0xE99F0000" : : "r"(t4_v));
+            asm volatile(".word 0xE99F0000" : : "r"(t4_v), "r"(addr_v0));
         }
         {
             s32 lw_v1 = sp_tmp;
