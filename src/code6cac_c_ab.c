@@ -361,8 +361,8 @@ void func_8003AFFC(void) {
     gnd_close_8004939C();
 
     tbl = &D_8008E5CC;
-    edcp = &D_80101EDC;
     s2 = 0;
+    edcp = &D_80101EDC;
     s0 = 0;
 loop:
     func_800493E4(*(s16 *)((u8 *)&D_80101EDA + s0));

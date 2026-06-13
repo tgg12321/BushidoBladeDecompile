@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003AFFC",
-      "file": "code6cac_c_ab",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "damage_DebugDisp",
       "file": "code6cac_c_mid",
       "distance": 9,
@@ -3849,14 +3841,14 @@
     }
   ],
   "counts": {
-    "total": 465,
-    "active": 352,
+    "total": 464,
+    "active": 351,
     "by_status": {
-      "active": 352,
+      "active": 351,
       "parked": 113
     },
     "by_verdict": {
-      "C": 170,
+      "C": 169,
       "ASM-PARTIAL": 64,
       "ASM-SUSPECT": 118
     }

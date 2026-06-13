@@ -74,7 +74,6 @@ func_8003B10C: insert "addu $1,$1,$16" @ 34
 func_8003B10C: insert "lui $1,%hi(D_80101ED6)" @ 34
 
 # func_8003AFFC: swap s1/s2 in body only (prologue/epilogue already match)
-func_8003AFFC: $17 <-> $18 @ 10-58
 
 # func_80044CCC: 4-way s0-s3 rotation - angle from s0->s3, args shift down
 func_80044CCC: $16 <-> $17 @ 7-58
