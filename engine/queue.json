@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "cpu_check_tubazeri_2",
-      "file": "code6cac_b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active"
-    },
-    {
       "func": "func_8002BEA0",
       "file": "code6cac_b",
       "distance": 9,
@@ -3514,6 +3506,15 @@
       "park_reason": "addsi3 2-op merge wall: v pseudo dies at the addiu so RA collapses (v+0xC) to reg 2; target uses reg 3 (higher reg) for the +0xC result, requiring v alive past the addiu \u2014 achievable in pure C only by reversing source statement order [s.p0;s.p1], which reverses store order in asm and worsens distance (v7=10)."
     },
     {
+      "func": "cpu_check_tubazeri_2",
+      "file": "code6cac_b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 9,
+      "status": "parked",
+      "park_reason": "WIP floor 9->4 (worker 324bb63b, reviewer PASS; candidate in memory/wip/cpu_check_tubazeri_2/). 4 residual diffs = 2 coupled hard issues: (1) commutative addu operand swap idx25 (ours addu s2,s0,v0 vs target addu s2,v0,s0); (2) loop strength-reduction idx37/38/40 -- our GCC strength-reduces ptr+0x332/0x334 into BIVs (small disp 0/2 per iter), target keeps base v1=ptr with large disp 818/820. 9+ pure-C levers ruled out (meta.json). SR-defeat has no clean lever (old recipe is forbidden-cheat; -fno-strength-reduce is a frozen flag). Parked per 50-item-goal set-aside-walls; floor-4 WIP preserved. Resume: legitimate SR-defeat C structure + addu operand-order swap, or directed permuter from candidate.c."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3848,14 +3849,14 @@
   ],
   "counts": {
     "total": 465,
-    "active": 354,
+    "active": 353,
     "by_status": {
-      "active": 354,
-      "parked": 111
+      "active": 353,
+      "parked": 112
     },
     "by_verdict": {
-      "C": 171,
       "ASM-PARTIAL": 65,
+      "C": 170,
       "ASM-SUSPECT": 118
     }
   }
