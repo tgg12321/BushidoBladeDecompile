@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80077894",
-      "file": "text1b",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "saFidLoad",
       "file": "text1b",
       "distance": 6,
@@ -3985,14 +3977,14 @@
     }
   ],
   "counts": {
-    "total": 485,
-    "active": 396,
+    "total": 484,
+    "active": 395,
     "by_status": {
-      "active": 396,
+      "active": 395,
       "parked": 89
     },
     "by_verdict": {
-      "C": 207,
+      "C": 206,
       "ASM-PARTIAL": 71,
       "ASM-SUSPECT": 118
     }
