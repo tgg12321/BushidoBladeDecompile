@@ -13,6 +13,8 @@
 #define PAD_NOPS_2 __asm__(".section .text\n    nop\n    nop\n")
 #define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
 
+typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
+
 /* Extern data declarations */
 extern u8 D_8008D118;
 extern s32 D_800F33D8;
@@ -947,23 +949,22 @@ s32 func_8001A4F0(s32 arg0, s32 arg1) {
     return v / arg1;
 }
 void func_8001A538(s32 *arg0, s32 *arg1) {
-    s16 mat[9];
-    s32 pad[2];
-    mat[0] = 0x1000;
-    mat[1] = 0;
-    mat[2] = 0;
-    mat[3] = 0;
-    mat[4] = 0x1000;
-    mat[5] = 0;
-    mat[6] = 0;
-    mat[7] = 0;
-    mat[8] = 0x1000;
-    func_8007F87C(-*(s16 *)((u8 *)arg0 + 0x10), (s32)mat);
-    func_8007FA1C(-*(s16 *)((u8 *)arg0 + 0x12), (s32)mat);
-    func_8007FBBC(-*(s16 *)((u8 *)arg0 + 0x14), (s32)mat);
-    arg1[0] = arg0[0] - ((s32)(mat[2] * arg0[6]) >> 12);
-    arg1[1] = arg0[1] - ((s32)(mat[5] * arg0[6]) >> 12);
-    arg1[2] = arg0[2] - ((s32)(mat[8] * arg0[6]) >> 12);
+    MATRIX m;
+    m.m[0][0] = 0x1000;
+    m.m[0][1] = 0;
+    m.m[0][2] = 0;
+    m.m[1][0] = 0;
+    m.m[1][1] = 0x1000;
+    m.m[1][2] = 0;
+    m.m[2][0] = 0;
+    m.m[2][1] = 0;
+    m.m[2][2] = 0x1000;
+    func_8007F87C(-*(s16 *)((u8 *)arg0 + 0x10), (s32)&m);
+    func_8007FA1C(-*(s16 *)((u8 *)arg0 + 0x12), (s32)&m);
+    func_8007FBBC(-*(s16 *)((u8 *)arg0 + 0x14), (s32)&m);
+    arg1[0] = arg0[0] - ((s32)(m.m[0][2] * arg0[6]) >> 12);
+    arg1[1] = arg0[1] - ((s32)(m.m[1][2] * arg0[6]) >> 12);
+    arg1[2] = arg0[2] - ((s32)(m.m[2][2] * arg0[6]) >> 12);
 }
 s32 func_8001A62C(s32 arg0) {
     if (arg0 < 0) {
