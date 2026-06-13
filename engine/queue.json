@@ -2818,24 +2818,6 @@
       "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
     },
     {
-      "func": "func_80064F68",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80064FB4",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
       "func": "func_800652F4",
       "file": "text1b",
       "distance": 0,
@@ -3343,87 +3325,6 @@
       "park_reason": "vars=0 wall: function's only cheat is volatile s32 sp_pad which forces frame 32->40 via vars=8; diff is 100% stack-offset (3 saves + 8 frame-size mismatches, no insn-shape diffs). natural pure-C compile (cc1 -da on probe.c) reports vars=0,regs=3,args=16,frame=32. Tested variants via instrumented cc1: long long diff, long long sum-accumulator, union, struct local, address-taken local, 6-arg call signature - none produce vars=8 with matching codegen (6-arg adds visible move/sw arg-setup; long long stays in registers; struct/union folded; address-taken needs volatile/cheat to keep allocation). No semantic content in body (table search + 2-arg call + global store) justifies pure-C local-array or address-taken use. RTL mechanism: GCC compute_frame_size returns 32 because var_size=0; target needs var_size=8 from a stack-allocated local with no obvious source in this body. Scanner: LOW tier."
     },
     {
-      "func": "func_80064E90",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "D_800A347C state-init cluster (text1b.c), identical shape to head func_80064E90. A worker thoroughly explored the head: cleared the volatile-coercion cheat, swept 25+ pure-C forms, floor plateaus at 7. Remaining gap is a coupled RA+scheduling tiebreak (v0 allocated to the const 1 in our build vs the loaded values in target; store-after-load adjacency vs batch-then-sink) with no clean C lever found in any swept form. The only flips are refs-manipulation cheats (cf. func_80049C24 NEEDS_USER). Cluster-level park per the head WIP recommendation + 50-item-goal set-aside-walls directive. Resume lever (documented, unrun): directed permuter from memory/wip/func_80064E90/candidate.c (18-insn, fast convergence) -- vet any 0-form for refs-manipulation cheats before adopting."
-    },
-    {
-      "func": "func_80064ED8",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "D_800A347C state-init cluster (text1b.c), identical shape to head func_80064E90. A worker thoroughly explored the head: cleared the volatile-coercion cheat, swept 25+ pure-C forms, floor plateaus at 7. Remaining gap is a coupled RA+scheduling tiebreak (v0 allocated to the const 1 in our build vs the loaded values in target; store-after-load adjacency vs batch-then-sink) with no clean C lever found in any swept form. The only flips are refs-manipulation cheats (cf. func_80049C24 NEEDS_USER). Cluster-level park per the head WIP recommendation + 50-item-goal set-aside-walls directive. Resume lever (documented, unrun): directed permuter from memory/wip/func_80064E90/candidate.c (18-insn, fast convergence) -- vet any 0-form for refs-manipulation cheats before adopting."
-    },
-    {
-      "func": "func_80064F20",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "D_800A347C state-init cluster (text1b.c), identical shape to head func_80064E90. A worker thoroughly explored the head: cleared the volatile-coercion cheat, swept 25+ pure-C forms, floor plateaus at 7. Remaining gap is a coupled RA+scheduling tiebreak (v0 allocated to the const 1 in our build vs the loaded values in target; store-after-load adjacency vs batch-then-sink) with no clean C lever found in any swept form. The only flips are refs-manipulation cheats (cf. func_80049C24 NEEDS_USER). Cluster-level park per the head WIP recommendation + 50-item-goal set-aside-walls directive. Resume lever (documented, unrun): directed permuter from memory/wip/func_80064E90/candidate.c (18-insn, fast convergence) -- vet any 0-form for refs-manipulation cheats before adopting."
-    },
-    {
-      "func": "func_8006505C",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "D_800A347C state-init cluster (text1b.c), identical shape to head func_80064E90. A worker thoroughly explored the head: cleared the volatile-coercion cheat, swept 25+ pure-C forms, floor plateaus at 7. Remaining gap is a coupled RA+scheduling tiebreak (v0 allocated to the const 1 in our build vs the loaded values in target; store-after-load adjacency vs batch-then-sink) with no clean C lever found in any swept form. The only flips are refs-manipulation cheats (cf. func_80049C24 NEEDS_USER). Cluster-level park per the head WIP recommendation + 50-item-goal set-aside-walls directive. Resume lever (documented, unrun): directed permuter from memory/wip/func_80064E90/candidate.c (18-insn, fast convergence) -- vet any 0-form for refs-manipulation cheats before adopting."
-    },
-    {
-      "func": "func_800650A4",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "D_800A347C state-init cluster (text1b.c), identical shape to head func_80064E90. A worker thoroughly explored the head: cleared the volatile-coercion cheat, swept 25+ pure-C forms, floor plateaus at 7. Remaining gap is a coupled RA+scheduling tiebreak (v0 allocated to the const 1 in our build vs the loaded values in target; store-after-load adjacency vs batch-then-sink) with no clean C lever found in any swept form. The only flips are refs-manipulation cheats (cf. func_80049C24 NEEDS_USER). Cluster-level park per the head WIP recommendation + 50-item-goal set-aside-walls directive. Resume lever (documented, unrun): directed permuter from memory/wip/func_80064E90/candidate.c (18-insn, fast convergence) -- vet any 0-form for refs-manipulation cheats before adopting."
-    },
-    {
-      "func": "func_800650EC",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "D_800A347C state-init cluster (text1b.c), identical shape to head func_80064E90. A worker thoroughly explored the head: cleared the volatile-coercion cheat, swept 25+ pure-C forms, floor plateaus at 7. Remaining gap is a coupled RA+scheduling tiebreak (v0 allocated to the const 1 in our build vs the loaded values in target; store-after-load adjacency vs batch-then-sink) with no clean C lever found in any swept form. The only flips are refs-manipulation cheats (cf. func_80049C24 NEEDS_USER). Cluster-level park per the head WIP recommendation + 50-item-goal set-aside-walls directive. Resume lever (documented, unrun): directed permuter from memory/wip/func_80064E90/candidate.c (18-insn, fast convergence) -- vet any 0-form for refs-manipulation cheats before adopting."
-    },
-    {
-      "func": "func_80065134",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "D_800A347C state-init cluster (text1b.c), identical shape to head func_80064E90. A worker thoroughly explored the head: cleared the volatile-coercion cheat, swept 25+ pure-C forms, floor plateaus at 7. Remaining gap is a coupled RA+scheduling tiebreak (v0 allocated to the const 1 in our build vs the loaded values in target; store-after-load adjacency vs batch-then-sink) with no clean C lever found in any swept form. The only flips are refs-manipulation cheats (cf. func_80049C24 NEEDS_USER). Cluster-level park per the head WIP recommendation + 50-item-goal set-aside-walls directive. Resume lever (documented, unrun): directed permuter from memory/wip/func_80064E90/candidate.c (18-insn, fast convergence) -- vet any 0-form for refs-manipulation cheats before adopting."
-    },
-    {
-      "func": "func_80065264",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "D_800A347C state-init cluster (text1b.c), identical shape to head func_80064E90. A worker thoroughly explored the head: cleared the volatile-coercion cheat, swept 25+ pure-C forms, floor plateaus at 7. Remaining gap is a coupled RA+scheduling tiebreak (v0 allocated to the const 1 in our build vs the loaded values in target; store-after-load adjacency vs batch-then-sink) with no clean C lever found in any swept form. The only flips are refs-manipulation cheats (cf. func_80049C24 NEEDS_USER). Cluster-level park per the head WIP recommendation + 50-item-goal set-aside-walls directive. Resume lever (documented, unrun): directed permuter from memory/wip/func_80064E90/candidate.c (18-insn, fast convergence) -- vet any 0-form for refs-manipulation cheats before adopting."
-    },
-    {
-      "func": "func_800652AC",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "D_800A347C state-init cluster (text1b.c), identical shape to head func_80064E90. A worker thoroughly explored the head: cleared the volatile-coercion cheat, swept 25+ pure-C forms, floor plateaus at 7. Remaining gap is a coupled RA+scheduling tiebreak (v0 allocated to the const 1 in our build vs the loaded values in target; store-after-load adjacency vs batch-then-sink) with no clean C lever found in any swept form. The only flips are refs-manipulation cheats (cf. func_80049C24 NEEDS_USER). Cluster-level park per the head WIP recommendation + 50-item-goal set-aside-walls directive. Resume lever (documented, unrun): directed permuter from memory/wip/func_80064E90/candidate.c (18-insn, fast convergence) -- vet any 0-form for refs-manipulation cheats before adopting."
-    },
-    {
       "func": "func_80069E18",
       "file": "text1b",
       "distance": 8,
@@ -3811,11 +3712,11 @@
     }
   ],
   "counts": {
-    "total": 460,
+    "total": 449,
     "active": 345,
     "by_status": {
       "active": 345,
-      "parked": 115
+      "parked": 104
     },
     "by_verdict": {
       "C": 163,
