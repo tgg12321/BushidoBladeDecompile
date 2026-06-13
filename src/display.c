@@ -2503,17 +2503,30 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-s32 *func_8007F0E4(s32 *a0, s32 *a1) {
-    __asm__ (".word 0xC8890000" :: "r"(a0));  /* lwc2 $9, 0($a0) */
-    __asm__ (".word 0xC88A0004" :: "r"(a0));  /* lwc2 $10, 4($a0) */
-    __asm__ (".word 0xC88B0008" :: "r"(a0));  /* lwc2 $11, 8($a0) */
-    __asm__ ("nop");
-    __asm__ (".word 0x4AA00428");              /* sqr 0 */
-    __asm__ (".word 0xE8B90000" :: "r"(a1));  /* swc2 $25, 0($a1) */
-    __asm__ (".word 0xE8BA0004" :: "r"(a1));  /* swc2 $26, 4($a1) */
-    __asm__ (".word 0xE8BB0008" :: "r"(a1));  /* swc2 $27, 8($a1) */
-    return a1;
-}
+/* func_8007F0E4: canonical GTE sqr vector wrapper.
+ * Sibling of func_8007F0BC; the C wrapper needs the same delay-slot regfix,
+ * so this lives as the original leaf bytes. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007F0E4\n"
+    "    lwc2   $9, 0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    nop\n"
+    "    .word  0x4AA00428\n"
+    "    swc2   $25, 0($a1)\n"
+    "    swc2   $26, 4($a1)\n"
+    "    swc2   $27, 8($a1)\n"
+    "    jr     $ra\n"
+    "    addu   $v0, $a1, $zero\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 s32 func_8007F10C(s32 a0, s32 a1, s32 a2) {
     s32 v0;
     __asm__ volatile (".word 0x48848800" :: "r"(a0));  /* mtc2 $a0, $17 */

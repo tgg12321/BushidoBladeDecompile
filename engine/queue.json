@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007F0E4",
-      "file": "display",
-      "distance": 7,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "ot_Insert",
       "file": "gpu",
       "distance": 7,
@@ -3922,15 +3914,15 @@
     }
   ],
   "counts": {
-    "total": 477,
-    "active": 387,
+    "total": 476,
+    "active": 386,
     "by_status": {
-      "active": 387,
+      "active": 386,
       "parked": 90
     },
     "by_verdict": {
-      "ASM-PARTIAL": 68,
       "C": 201,
+      "ASM-PARTIAL": 67,
       "ASM-SUSPECT": 118
     }
   }

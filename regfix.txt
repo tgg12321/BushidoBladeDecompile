@@ -3913,7 +3913,6 @@ func_80056CB8: subst "sw\s+\$3,104\(\$sp\)" "sw	$11,104($sp)" @ 22
 func_80056CB8: subst "addu\s+\$3,\$sp,88" "addu	$11,$sp,88" @ 23
 func_80056CB8: subst "sw\s+\$3,112\(\$sp\)" "sw	$11,112($sp)" @ 25
 func_80056CB8: subst "sw\s+\$2,120\(\$sp\)" "sw	$11,120($sp)" @ 26
-func_8007F0E4: fill_delay @ 2 <- 0
 replay_camera_Init: fill_delay @ 26 <- 15
 
 # func_8007B844: register-alloc fix for final masking block
