@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "saSeMain_80045510",
-      "file": "text1a_c",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80049C24",
       "file": "text1b",
       "distance": 8,
@@ -3510,6 +3502,15 @@
       "park_reason": "sched1 backward LUID-descending tiebreaker places id=1 EARLY of LICM-hoisted s5/s6 in prologue init block (3 insns); local-alloc spills v1 for const-1 in dispatch (2 insns); both cheat-reviewer FAILed score-lowering forms (s32 mask_table widening + ox/oy named locals). Resume: instrumented cc1 BB2_*_DEBUG + directed permuter; see commit body for RTL evidence."
     },
     {
+      "func": "saSeMain_80045510",
+      "file": "text1a_c",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "vars=0 wall: function's only cheat is volatile s32 sp_pad which forces frame 32->40 via vars=8; diff is 100% stack-offset (3 saves + 8 frame-size mismatches, no insn-shape diffs). natural pure-C compile (cc1 -da on probe.c) reports vars=0,regs=3,args=16,frame=32. Tested variants via instrumented cc1: long long diff, long long sum-accumulator, union, struct local, address-taken local, 6-arg call signature - none produce vars=8 with matching codegen (6-arg adds visible move/sw arg-setup; long long stays in registers; struct/union folded; address-taken needs volatile/cheat to keep allocation). No semantic content in body (table search + 2-arg call + global store) justifies pure-C local-array or address-taken use. RTL mechanism: GCC compute_frame_size returns 32 because var_size=0; target needs var_size=8 from a stack-allocated local with no obvious source in this body. Scanner: LOW tier."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3844,13 +3845,13 @@
   ],
   "counts": {
     "total": 466,
-    "active": 367,
+    "active": 366,
     "by_status": {
-      "active": 367,
-      "parked": 99
+      "active": 366,
+      "parked": 100
     },
     "by_verdict": {
-      "C": 184,
+      "C": 183,
       "ASM-PARTIAL": 65,
       "ASM-SUSPECT": 118
     }
