@@ -11,35 +11,36 @@
   "sessions": [
     {
       "date": "2026-06-12",
-      "git_head_at_measurement": "f99cc056",
-      "lever": "directed permuter PERM_GENERAL on the address expression (4 alternatives: lw+sll, sll+lw, (v<<4)+lw, lw+(v<<4)) + bonus alternatives on the mask form and the comparison",
-      "lever_rule": "register-alloc-pure-c (directed-permuter surface exhausted)",
-      "floor_was": 2,
-      "floor_now": 2,
-      "summary": "Re-measured candidate floor at f99cc056: sandbox=2, build_insns=14, target_insns=14 (matches prior). Set up directed PERM_GENERAL macros covering: address-expr (`D_8009BD6C+v*0x10`, `v*0x10+D_8009BD6C`, `(v<<4)+D_8009BD6C`, `D_8009BD6C+(v<<4)`); mask form (`arg0 & 0xFFFF`, `(s32)(u16)arg0`); compare form (`v<3`, `(u32)v<3U`, `v<=2`). Ran 4-thread permuter 240s. Base score 25 (HIGHER than session-3's 20 because the comparison alternative `(u32)v<3U` adds a typing instruction in some paths). Best iter score: 25 (no improvement). Random surface re-confirmed exhausted; directed permutation across the explicit address-order axis still does NOT close the gap. Mechanism re-confirmed: every shift-first variant Random mutates toward regresses to 100-1200+ score because it breaks the named-intermediate's pseudo allocation preference (the `u16 *p` named intermediate is the floor-7->2 lever); reverting to non-named regresses to 7."
-    },
-    {
-      "date": "2026-06-12",
       "git_head_at_measurement": "ad52cf5c",
       "lever": "GCC source dive (expr.c PLUS_EXPR + combine.c commutative canonicalization) + 5 fresh structural variants probing the named-intermediate × address-order joint axis",
       "lever_rule": "register-alloc-pure-c (mechanism root-caused; remaining gap is a coupled expand_expr ordering invariant)",
       "floor_was": 2,
       "floor_now": 2,
       "summary": "Re-measured candidate floor at ad52cf5c: sandbox=2, build_insns=14, target_insns=14 (unchanged). GCC source dive located the ordering mechanism: tools/gcc-2.7.2/expr.c:5245-5246 evaluates LHS first (`op0 = expand_expr(TREE_OPERAND(exp,0),...)`), giving the left operand the LOWER pseudo and making it the first PLUS source. combine.c:2975-2986 only swaps when the first operand is RTX-class 'o' AND the second is non-'o' (e.g. ASHIFT); by the time PLUS reaches combine, both operands are already regs (set X=lw, set Y=sll, set Z=(plus X Y)), so the swap rule does NOT fire. Source order is therefore the sole knob — confirmed by 5 fresh variants swept under tmp/func_80078B04_s5_variants/: v01 (`v*0x10 + D_8009BD6C` inline with named intermediate) regresses to 7 (named-int pref killed — same regression as the rejected v40/v45/v50 family — but now explicitly tested with the named-int PRESENT in the same body to rule out interaction); v02 (`u16 *p = (u16 *)D_8009BD6C; p += v*8`) regresses to 7 bi=13 (hoists lw out of if-true); v03 (`p = &((u16 *)D_8009BD6C)[v*8]` subscript with explicit address-of) holds 2 (== candidate, no improvement, matches the rejected p[v*8] family); v04 (`s32 ofs=v<<4; p=(u16*)(ofs+D_8009BD6C)`) regresses to 7 (named-accumulator variant — same as rejected v40); v05 (`D_8009BD6C - (-(v*0x10))` negate-trick to force a unary insertion into the address) holds 2 (negate folds away, no codegen effect). The floor-2 plateau is now mechanism-explained at the RTL-expand level: the named intermediate (`u16 *p`) buys floor 7->2 because it forces a separate SET for the plus output with its allocno preference shaped by lhu+return; the remaining 2-insn gap requires reversing the plus's RTL operand order, which only `v*16` on the LHS of `+` can produce at expand time, but that form unavoidably kills the named-intermediate preference push (mask leaves $v1)."
+    },
+    {
+      "date": "2026-06-12",
+      "git_head_at_measurement": "bf0a466d",
+      "lever": "m2c reconstruction cross-ref + 8 fresh variants (inverted if/else sense, addr-then-p, u32-double-cast, p-init-with-add, u16-return-type, m2c-exact early-return shift-first, m2c-exact early-return load-first, shift-first p_named re-confirmation)",
+      "lever_rule": "register-alloc-pure-c (m2c cross-ref ruled out original-was-early-return; trampoline shape requires if/else with `result` variable)",
+      "floor_was": 2,
+      "floor_now": 2,
+      "summary": "Re-measured candidate at bf0a466d: sandbox=2, bi=14, ti=14 (unchanged). m2c on asm/funcs/func_80078B04.s reconstructs as early-return shift-first `if (v<3) return *(u16*)(v*0x10 + D_8009BD6C); return 0U;` — looks like original-source structure evidence, but reproducing the form (v05/v06) collapses build_insns to 13 (loses j-trampoline), scoring 12. So m2c's reconstruction is dataflow-correct but structurally lossy: the original WAS the if/else trampoline form (14 insns w/ unconditional `j` to shared `jr $ra`), NOT early-return. 8 fresh variants swept tmp/func_80078B04_s6_variants/: v01 inverted-sense (if v>=3 first) -> 8 bi=13 collapse; v02 `s32 addr; addr=D_…+v*0x10; p=(u16*)addr; *p` -> 2 (no improvement); v03 `(u32)D_… + (u32)(v*0x10)` double-cast -> 2 (no improvement, casts fold); v04 `u16 *p = (u16*)D_…; p = (u16*)((s32)p + v*0x10)` -> 7 bi=13 (collapse via outer-p hoist); v05 m2c early-return shift-first -> 12 bi=13 (collapse); v06 m2c early-return load-first -> 12 bi=13 (collapse); v07 `u16 result` (vs s32) -> 2 (zext-on-return is identical, type doesn't matter); v08 shift-first w/ p_named (re-confirm s5_v01) -> 7 bi=14 (NEW data: trampoline preserved but named-int pref still killed). Combined with sessions 1-5: ~87 manual variants + 7188 random permuter iter + directed PERM_GENERAL ~36 iter + GCC source dive + m2c cross-ref all converge on the same plateau. The floor-2 candidate IS the most likely original-source form (if/else with named u16 *p + load-first address arith). The remaining 2-insn gap is the documented coupled tiebreak."
     }
   ],
   "prior_sessions_summary": [
     "Session 1 (2026-06-12, head fe15e792): u16 *p named intermediate (split addr expr from deref). Floor 7->2. Reviewer PASS.",
     "Session 2 (2026-06-12, head fe15e792): consolidation sweep — 38 manual variants (pointer-arith spellings, named-intermediate placements, structural rearrangements). RTL analysis from i.lreg + i.greg dumps confirmed: pseudo 74 (addu output) takes $v0 because its FIRST source (pseudo 79, lw dest) is in $v0; reversing to (plus 78 79) requires reversing C operand order, which regresses by killing named-intermediate preference. Floor stayed 2.",
-    "Session 3 (2026-06-12, head 2a0ff297): random permuter (7188 iter, base score 20) + 1 additional structural variant (typed-ptr subscript `p[v*8]` w/ outer pointer assignment). Random-mutation surface exhausted around candidate. Floor stayed 2."
+    "Session 3 (2026-06-12, head 2a0ff297): random permuter (7188 iter, base score 20) + 1 additional structural variant (typed-ptr subscript `p[v*8]` w/ outer pointer assignment). Random-mutation surface exhausted around candidate. Floor stayed 2.",
+    "Session 4 (2026-06-12, head f99cc056): directed PERM_GENERAL on address-expr (lw+sll/sll+lw/(v<<4)+lw/lw+(v<<4)) × mask × compare axes. 4-thread permuter 240s. Base score 25; best iter 25; no break. Random + directed surfaces both exhausted. Floor stayed 2."
   ],
   "reviewer": {
     "verdict": "PASS",
     "date": "2026-06-12",
-    "evidence": "u16 *p is a live named intermediate (assigned + dereferenced); analogous to SOTN-sanctioned named-intermediate-declaration-order family (no-new-park-categories.md SOTN-accepted). Not a forbidden cheat family; passes all 6 checklist tests. Candidate unchanged across sessions 1-5 — verdict carries forward (session 5 added no new constructs; floor confirmed at 2 with the same body)."
+    "evidence": "u16 *p is a live named intermediate (assigned + dereferenced); analogous to SOTN-sanctioned named-intermediate-declaration-order family (no-new-park-categories.md SOTN-accepted). Not a forbidden cheat family; passes all 6 checklist tests. Candidate unchanged across sessions 1-6 — verdict carries forward (session 6 added 8 fresh probe variants but did NOT modify candidate.c; floor re-confirmed at 2 with the same body at HEAD bf0a466d)."
   },
   "remaining_gap": {
-    "summary": "Coupled allocator tiebreak rooted at expand_expr LHS-first evaluation (expr.c:5245). Insn 22 in i.greg: `(set 74 (plus 79 78))` where 79=lw(D_8009BD6C)->$v0, 78=sll(v,4)->$v1. Output 74 takes $v0 because (a) it's the plus's first source's register and (b) downstream (lhu base, then result return) all want $v0. Target needs `(set 78 (plus 78 79))` so 78 (now also addu dest) stays in $v1, freeing the lhu's dest from base==dest collapse. Reversing the plus order requires reversing the C expression order, but every shift-first form (sessions 1-5: v40 ofs+D_..., v45 ofs+=, v50 sv+=, v64/v65 m2c-form, typed-ptr-subscript, directed-PERM session-4 alternatives, session-5 v01/v02/v04) breaks either the named-intermediate's preference push OR the trampoline-shape (collapses to 11-13 build_insns). combine.c's commutative-swap rule (lines 2975-2986) does NOT fire because both plus operands are 'o' (REG) by combine time; the swap is gated on second operand being non-'o' (e.g. ASHIFT inline). Random + directed permuter + 79-form manual sweep + GCC source dive all confirm the floor-2 plateau is a real coupled tiebreak.",
+    "summary": "Coupled allocator tiebreak rooted at expand_expr LHS-first evaluation (expr.c:5245). Insn 22 in i.greg: `(set 74 (plus 79 78))` where 79=lw(D_8009BD6C)->$v0, 78=sll(v,4)->$v1. Output 74 takes $v0 because (a) it's the plus's first source's register and (b) downstream (lhu base, then result return) all want $v0. Target needs `(set 78 (plus 78 79))` so 78 (now also addu dest) stays in $v1, freeing the lhu's dest from base==dest collapse. Reversing the plus order requires reversing the C expression order, but every shift-first form (sessions 1-6: v40 ofs+D_..., v45 ofs+=, v50 sv+=, v64/v65 m2c-form, typed-ptr-subscript, directed-PERM session-4 alternatives, session-5 v01/v02/v04, session-6 v04/v08) breaks either the named-intermediate's preference push OR the trampoline-shape (collapses to 11-13 build_insns). combine.c's commutative-swap rule (lines 2975-2986) does NOT fire because both plus operands are 'o' (REG) by combine time; the swap is gated on second operand being non-'o' (e.g. ASHIFT inline). Random + directed permuter + ~87-form manual sweep + GCC source dive + m2c cross-ref all confirm the floor-2 plateau is a real coupled tiebreak.",
     "rule_count_at_head": 5,
     "rules_required_for_full_match": "HEAD has $2 <-> $3 @3-6 + subst $4->$3 @0,1,3 + lhu $2,0($2)->$2,0($3) @7 — 5 rules. Candidate would still need 2 substs: addu output rename (74->v1) + lhu base rewrite."
   },
@@ -88,6 +89,36 @@
       "form": "GCC source dive — expr.c:5245-5246 + combine.c:2975-2986 (session 5)",
       "score": "(not a variant)",
       "reason": "Mechanism root-caused: expand_expr evaluates LHS of `+` first, giving the LHS operand the LOWER pseudo and making it the first PLUS RTL operand; combine's commutative-swap only fires when one operand is non-'o' (ASHIFT inline), but the plus's operands are both REGs by combine time. So the C expression order determines RTL operand order — but the only candidate variant (shift-first) that would emit (plus sll lw) also kills the named-intermediate's allocno-preference push. This is the coupled tiebreak."
+    },
+    {
+      "form": "m2c reconstruction cross-ref (session 6): m2c emits early-return shift-first `if (v<3) return *(u16*)(v*0x10 + D_8009BD6C); return 0U;`",
+      "score": 12,
+      "reason": "Both spellings of the early-return form (s6 v05 shift-first / v06 load-first) collapse build_insns to 13 (drop the unconditional j-trampoline). m2c reconstructs dataflow, not source structure: original WAS the if/else trampoline form with shared `jr $ra`, not early-return. Cross-ref confirms candidate.c's if/else shape IS the most likely original-source structure."
+    },
+    {
+      "form": "Inverted-sense `if (v >= 3) {result=0;} else {...}` (session 6 v01)",
+      "score": 8,
+      "reason": "Branch-sense flip collapses to 13 build_insns; GCC reorders the small `result=0` branch first which loses the j-trampoline."
+    },
+    {
+      "form": "`s32 addr; addr=D_...+v*0x10; p=(u16*)addr; *p` two-step address compute (session 6 v02)",
+      "score": 2,
+      "reason": "Holds at candidate floor; the intermediate `addr` pseudo is folded back into the plus expression. No allocator divergence."
+    },
+    {
+      "form": "Double u32 cast `(u32)D_8009BD6C + (u32)(v*0x10)` (session 6 v03)",
+      "score": 2,
+      "reason": "Casts fold to noops at expand time; identical RTL to candidate."
+    },
+    {
+      "form": "`u16 *p = (u16*)D_8009BD6C; p = (u16*)((s32)p + v*0x10);` outer-init + reassign (session 6 v04)",
+      "score": 7,
+      "reason": "build_insns=13: outer p init hoists lw out of if-true (same regression as session-5 v02)."
+    },
+    {
+      "form": "`u16 result` (vs s32 result) return-type narrowing (session 6 v07)",
+      "score": 2,
+      "reason": "lhu zero-extends; return type doesn't affect emitted MIPS bytes. Equivalent."
     }
   ],
   "memory_notes": []
