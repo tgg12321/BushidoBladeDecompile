@@ -26,6 +26,15 @@
       "floor_was": 2,
       "floor_now": 2,
       "summary": "Re-measured candidate at bf0a466d: sandbox=2, bi=14, ti=14 (unchanged). m2c on asm/funcs/func_80078B04.s reconstructs as early-return shift-first `if (v<3) return *(u16*)(v*0x10 + D_8009BD6C); return 0U;` — looks like original-source structure evidence, but reproducing the form (v05/v06) collapses build_insns to 13 (loses j-trampoline), scoring 12. So m2c's reconstruction is dataflow-correct but structurally lossy: the original WAS the if/else trampoline form (14 insns w/ unconditional `j` to shared `jr $ra`), NOT early-return. 8 fresh variants swept tmp/func_80078B04_s6_variants/: v01 inverted-sense (if v>=3 first) -> 8 bi=13 collapse; v02 `s32 addr; addr=D_…+v*0x10; p=(u16*)addr; *p` -> 2 (no improvement); v03 `(u32)D_… + (u32)(v*0x10)` double-cast -> 2 (no improvement, casts fold); v04 `u16 *p = (u16*)D_…; p = (u16*)((s32)p + v*0x10)` -> 7 bi=13 (collapse via outer-p hoist); v05 m2c early-return shift-first -> 12 bi=13 (collapse); v06 m2c early-return load-first -> 12 bi=13 (collapse); v07 `u16 result` (vs s32) -> 2 (zext-on-return is identical, type doesn't matter); v08 shift-first w/ p_named (re-confirm s5_v01) -> 7 bi=14 (NEW data: trampoline preserved but named-int pref still killed). Combined with sessions 1-5: ~87 manual variants + 7188 random permuter iter + directed PERM_GENERAL ~36 iter + GCC source dive + m2c cross-ref all converge on the same plateau. The floor-2 candidate IS the most likely original-source form (if/else with named u16 *p + load-first address arith). The remaining 2-insn gap is the documented coupled tiebreak."
+    },
+    {
+      "date": "2026-06-12",
+      "git_head_at_measurement": "43ed946a",
+      "lever": "13 fresh probe variants spanning unexplored axes: ternary expression, switch dispatch, void*/char* pointer types, unsigned-literal mask, explicit paren grouping, inner-block-scope p, two-named-locals add chain",
+      "lever_rule": "register-alloc-pure-c (additional surface-area exhaustion across syntactic axes orthogonal to the rejected shift-first/outer-init/named-accumulator/early-return families)",
+      "floor_was": 2,
+      "floor_now": 2,
+      "summary": "Re-measured candidate at 43ed946a: sandbox=2, bi=14, ti=14 (unchanged). 13 fresh variants swept tmp/func_80078B04_s7_variants/: v01 ternary inline `(v<3)?(s32)*(u16*)(D_+v*0x10):0` -> 7 bi=14 (no named-int, regresses to HEAD-equivalent); v02 ternary w/ comma `(v<3)?(p=(u16*)..., *p):0` -> 2 (held); v03 `result = (p=..., *p)` comma in assignment -> 2 (held); v04 p declared FIRST among locals -> 2 (decl order doesn't affect LUID/RA); v05 `void *p` then cast at deref -> 2 (held); v06 `char *p` then cast -> 2 (held); v07 `arg0 & 0xFFFFu` unsigned-suffix literal -> 2 (mask sign-mode irrelevant); v08 explicit paren `((D_)+(v*0x10))` -> 2 (parser-level, no RTL effect); v09 switch(v) case 0/1/2 -> 4 bi=16 (jump-table dispatch regresses); v10 `if(v<3){ u16 *p = ...; ... }` inner-block w/ init -> 2 (held); v11 inner-block w/ separate p decl + assign -> 2 (held); v13 two-named-locals (base, ofs) then `p=(u16*)(base+ofs)` -> 2 (held, locals fold to same RTL); v14 mutate-base form `base=D_; ofs=v; ofs*=0x10; base+=ofs; p=(u16*)base` -> 2 (held, compound assigns fold). Net: 0 variants improved, 1 regressed via early-return-equivalent (v01), 1 regressed via dispatch shape (v09), 11 held at floor 2. Cumulative session 1-7: ~100 manual variants + 7188 random + 36 directed PERM + GCC source + m2c cross-ref + ternary/switch/void*/char*/inner-block/unsigned-mask/paren-group/two-locals axes. The plateau survives every orthogonal axis tried. Cheat-reviewer re-PASS on unchanged candidate."
     }
   ],
   "prior_sessions_summary": [
@@ -37,7 +46,7 @@
   "reviewer": {
     "verdict": "PASS",
     "date": "2026-06-12",
-    "evidence": "u16 *p is a live named intermediate (assigned + dereferenced); analogous to SOTN-sanctioned named-intermediate-declaration-order family (no-new-park-categories.md SOTN-accepted). Not a forbidden cheat family; passes all 6 checklist tests. Candidate unchanged across sessions 1-6 — verdict carries forward (session 6 added 8 fresh probe variants but did NOT modify candidate.c; floor re-confirmed at 2 with the same body at HEAD bf0a466d)."
+    "evidence": "u16 *p is a live named intermediate (assigned + dereferenced); analogous to SOTN-sanctioned named-intermediate-declaration-order family (no-new-park-categories.md SOTN-accepted). Not a forbidden cheat family; passes all 6 checklist tests. Candidate unchanged across sessions 1-7 — verdict carries forward (sessions 6+7 added 21 fresh probe variants but did NOT modify candidate.c; floor re-confirmed at 2 with the same body at HEAD 43ed946a). Session 7 cheat-reviewer re-invoked on unchanged candidate, PASS re-affirmed."
   },
   "remaining_gap": {
     "summary": "Coupled allocator tiebreak rooted at expand_expr LHS-first evaluation (expr.c:5245). Insn 22 in i.greg: `(set 74 (plus 79 78))` where 79=lw(D_8009BD6C)->$v0, 78=sll(v,4)->$v1. Output 74 takes $v0 because (a) it's the plus's first source's register and (b) downstream (lhu base, then result return) all want $v0. Target needs `(set 78 (plus 78 79))` so 78 (now also addu dest) stays in $v1, freeing the lhu's dest from base==dest collapse. Reversing the plus order requires reversing the C expression order, but every shift-first form (sessions 1-6: v40 ofs+D_..., v45 ofs+=, v50 sv+=, v64/v65 m2c-form, typed-ptr-subscript, directed-PERM session-4 alternatives, session-5 v01/v02/v04, session-6 v04/v08) breaks either the named-intermediate's preference push OR the trampoline-shape (collapses to 11-13 build_insns). combine.c's commutative-swap rule (lines 2975-2986) does NOT fire because both plus operands are 'o' (REG) by combine time; the swap is gated on second operand being non-'o' (e.g. ASHIFT inline). Random + directed permuter + ~87-form manual sweep + GCC source dive + m2c cross-ref all confirm the floor-2 plateau is a real coupled tiebreak.",
@@ -119,6 +128,21 @@
       "form": "`u16 result` (vs s32 result) return-type narrowing (session 6 v07)",
       "score": 2,
       "reason": "lhu zero-extends; return type doesn't affect emitted MIPS bytes. Equivalent."
+    },
+    {
+      "form": "Ternary inline `(v<3) ? (s32)*(u16*)(D_+v*0x10) : 0` (session 7 v01)",
+      "score": 7,
+      "reason": "Equivalent to HEAD's inline form — no named intermediate, allocno preference push is gone, regresses to floor 7."
+    },
+    {
+      "form": "Switch dispatch `switch(v) case 0/1/2: ... default: 0;` (session 7 v09)",
+      "score": "4 bi=16",
+      "reason": "GCC emits jump-table dispatch (2 extra insns); shape diverges from if/else trampoline."
+    },
+    {
+      "form": "Session 7 surface-area-exhaustion variants holding floor 2: ternary w/ comma (v02), comma in result assignment (v03), p-first declaration order (v04), `void *p` (v05), `char *p` (v06), unsigned literal mask `0xFFFFu` (v07), explicit paren grouping (v08), inner-block-scope p w/ init (v10), inner-block w/ separate decl+assign (v11), two-named-locals base+ofs (v13), mutate-base compound-assign chain (v14)",
+      "score": 2,
+      "reason": "11 orthogonal-axis variants (decl order, pointer type, literal sign, paren grouping, block scope, multi-local fold) all hold the candidate floor — confirms the plateau is invariant to every syntactic axis orthogonal to the rejected shift-first/outer-init/named-accumulator/early-return families."
     }
   ],
   "memory_notes": []

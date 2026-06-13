@@ -1,9 +1,9 @@
-# func_80078B04 — WIP checkpoint (sessions 1–6, 2026-06-12)
+# func_80078B04 — WIP checkpoint (sessions 1–7, 2026-06-12)
 
 ## TL;DR
 
 Floor 7 -> 2 in session 1 (`u16 *p` named intermediate; reviewer PASS).
-Sessions 2–6 have not broken floor 2 across ~87 manual variants + 7188
+Sessions 2–7 have not broken floor 2 across ~100 manual variants + 7188
 random permuter iter + directed PERM_GENERAL + GCC source dive + m2c
 cross-ref. Session 5 root-caused at `expr.c:5245-5246` (expand_expr
 LHS-first → first PLUS RTL operand fixed by C order). combine.c
@@ -12,9 +12,11 @@ swap rule does NOT fire (both operands 'o'=REG by combine time).
 first regresses (kills named-int allocno preference OR collapses the
 trampoline). Session 6 cross-checked m2c (reconstructs as early-return
 shift-first; reproducing collapses bi=13, so the original WAS the
-if/else trampoline form, not early-return). Next levers: instrumented
-cc1 dump diff vs sibling A68; PERM_RANDOMIZE+PERM_LINESWAP with
-typed-pointer family.
+if/else trampoline form, not early-return). Session 7 swept 13 fresh
+probes across orthogonal axes (ternary, switch, void*/char*, unsigned-
+mask, paren grouping, inner-block, two-locals) — 11 held at 2, ternary
+inline regressed to 7 (no named-int), switch regressed to 4 bi=16
+(jump-table). Cheat-reviewer re-PASS on unchanged candidate.
 
 ## Target asm (14 insns)
 
@@ -48,40 +50,35 @@ multi-store base-reuse anchors base's allocno toward $v1
 independently of plus operand order. Standalone-extract A68 stripped
 to just the addu to isolate.
 
-## m2c cross-ref (session 6)
+## m2c cross-ref
 
 m2c reconstructs as `if (v<3) return *((v*0x10)+D_8009BD6C); return 0U;`
 (early-return shift-first). Reproducing collapses bi=13 (loses
 j-trampoline), scoring 12. m2c is dataflow-correct but structurally
 lossy here; original WAS if/else trampoline.
 
-## Session 6 — 8 fresh variants
+## Session 7 — 13 fresh probe variants (tmp/func_80078B04_s7_variants/)
 
-Swept `tmp/func_80078B04_s6_variants/`:
-- v01 inverted-sense `if (v>=3) {0;} else {...}` → **8** bi=13
-- v02 `s32 addr; addr=D_…+v*0x10; p=(u16*)addr` → **2** (addr folds)
-- v03 `(u32)D_… + (u32)(v*0x10)` double-cast → **2** (casts fold)
-- v04 outer `p=(u16*)D_…` then `p=(u16*)((s32)p+v*0x10)` → **7** bi=13
-- v05 m2c early-return shift-first → **12** bi=13
-- v06 m2c early-return load-first → **12** bi=13
-- v07 `u16 result` (vs s32) → **2** (zext-equivalent)
-- v08 shift-first p_named (re-confirm s5_v01) → **7** bi=14 (NEW:
-  trampoline preserved, named-int pref still killed)
+- v01 ternary inline → **7** (no named-int, HEAD-equivalent)
+- v09 `switch(v)` → **4** bi=16 (jump-table)
+- v02-v08, v10-v11, v13-v14 (ternary+comma, comma-in-assign, p-first
+  decl, void*/char* recast, `0xFFFFu` mask, paren-group, inner-block
+  init/decl-assign, two-locals base+ofs, mutate-base chain) → **2**.
+
+11/13 hold; 1 regresses to HEAD-floor; 1 dispatch-shape regression.
 
 ## Ruled out (do NOT re-derive)
 
-- `& 0xFFFF` order swaps, `(u16)arg0`, `u16 v` decls.
-- Early-return forms (both spellings) — collapse 11-13 bi.
-- Inverted if/else sense — collapses.
+- `& 0xFFFF` order swaps, `(u16)arg0`, `u16 v` decls, `0xFFFFu` mask.
+- Early-return forms (both spellings), inverted if/else — collapse 11-13 bi.
+- Ternary inline (no named-int), switch dispatch (jump-table) — regress.
 - Outer `p` init — hoists lw out of if-true (7-9).
 - Shift-first inline (any spelling, w/ or w/o named-int) — 7.
-- Named accumulators (`ofs += / sv += D_…`) — 7.
-- Typed-ptr subscript `p[v*8]` outer base — 7.
-- Subscript w/ explicit address-of — 2 (no improvement).
-- Unary-negate fold tricks — 2 (no improvement).
-- Two-step `s32 addr; p=(u16*)addr` — 2 (addr folds back).
-- Double `(u32)` casts — 2 (casts fold).
-- Return type narrowing (`u16 result`) — 2 (zext-equivalent).
+- Named accumulators (`ofs += / sv += D_…`), typed-ptr `p[v*8]` outer — 7.
+- Subscript w/ explicit address-of, unary-negate fold, two-step
+  `s32 addr;`, two-named-locals add, mutate-base compound chain,
+  double `(u32)` casts, void*/char* recast, p-first decl, paren group,
+  inner-block scope, comma operator, `u16 result` — **all hold at 2**.
 - `register-asm` pin / hardcoded-$N `__asm__` — forbidden.
 - Dead stores — cheat + no improvement.
 - Random permuter (7188 iter), directed PERM_GENERAL — no break.
@@ -90,7 +87,7 @@ Swept `tmp/func_80078B04_s6_variants/`:
 
 ## What worked
 
-Session 1's candidate, unchanged through sessions 2–6:
+Session 1's candidate, unchanged through sessions 2–7:
 `u16 *p; ... p = (u16 *)(D_8009BD6C + v * 0x10); result = *p;`
 score 2, bi=ti=14, cheat-reviewer PASS.
 
@@ -105,11 +102,3 @@ score 2, bi=ti=14, cheat-reviewer PASS.
    (`u16 *p`, `s32 *p`, `u32 q`, `void *p`).
 3. **Read-only GCC mips.c** — `mips_legitimize_address` /
    `ADDRESS_COST` for plus-of-(load, shift) tiebreakers (informational).
-
-## Files
-
-- `tmp/func_80078B04_variants/` (v0–v36), `_variants2/` (v37–v74),
-  `_s5_variants/` (v01–v05), `_s6_variants/` (v01–v08).
-- `tmp/v11_full.{i.greg,i.lreg,s}` — session 1 RTL dumps.
-- `permuter/func_80078B04/` — directed-permuter workspace (base.c
-  at candidate; reuse on resume).
