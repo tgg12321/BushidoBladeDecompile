@@ -70,7 +70,7 @@ MASPSX_FLAGS_GP = (
 GP_FILES = set()
 EXPAND_LB_FILES = {"code6cac_b"}
 EXPAND_LH_FILES = set()
-FIX_LWL_FILES = {"code6cac", "text1b"}
+FIX_LWL_FILES = {"code6cac", "text1b", "ings"}
 RODATA_ALIGN2_FILES = {
     "code6cac", "code6cac_b", "code6cac_c", "code6cac_c0", "code6cac_c_ab",
     "code6cac_c_mid", "code6cac_c2", "text1a", "text1a_b", "text1a_c",
