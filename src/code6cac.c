@@ -2731,39 +2731,28 @@ loop:
     return best;
 }
 s32 func_800224E0(s32 *arg0) {
-    u8 *new_var2;
     u8 *p;
     u8 *end;
     u8 *base;
-    u32 pad;
+    s32 *ptr;
     s32 val;
     s32 i;
-    s32 *new_var;
-    s32 *ptr;
+    u8 *db1c;
 
     p = (&D_8008EB1C) + (D_800A384C * 2);
-    new_var2 = &D_8008DB1C;
-    new_var = (s32 *)(*arg0);
-    if ((!i) && (!i) && (!i)) {
-    }
     end = p + 2;
-    ptr = new_var;
-    base = new_var2 + (*(s16 *)((u8 *)ptr + 0xA) * 16);
+    ptr = (s32 *)(*arg0);
+    db1c = &D_8008DB1C;
+    base = db1c + (*(s16 *)((u8 *)ptr + 0xA) * 16);
     val = *(u16 *)(base + *(s16 *)((u8 *)ptr + 0xE) * 2);
-loop:
-    i = 0;
     do {
-        if (*p == ((val >> (i * 4)) & 0xF)) {
-            return i;
+        for (i = 0; i < 3; i++) {
+            if (*p == ((val >> (i * 4)) & 0xF)) {
+                return i;
+            }
         }
-        i++;
-        if ((val && val) && val) {
-        }
-    } while (i < 3);
-    p++;
-    if ((s32)p < (s32)end) {
-        goto loop;
-    }
+        p++;
+    } while ((s32)p < (s32)end);
     return 0;
 }
 void pad_button_info_clear(s16 *arg0) {
