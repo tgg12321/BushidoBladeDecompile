@@ -20,14 +20,14 @@
       "session_id": null
     },
     {
-      "date": "2026-06-12",
-      "git_head_at_measurement": "e08ef4ee",
-      "lever": "extended structural sweep (+10 forms) + sched.c rank_for_schedule read",
-      "lever_rule": "register-alloc-pure-c",
+      "date": "2026-06-13",
+      "git_head_at_measurement": "e8bab6f4",
+      "lever": "directed permuter campaign (orchestrator modality change, user-authorized) — ~43k iters, 4 workers, from clean candidate.c base",
+      "lever_rule": "difficult-is-not-impossible",
       "floor_was": 21,
       "floor_now": 21,
       "session_id": null,
-      "evidence": "Read sched.c:2399 rank_for_schedule directly. Confirmed the class structure: tmp_class=3 when link==0 OR insn_cost==1; class=1 if data-dep with cost>1. Class tie wins on LUID. The wall is therefore EITHER (a) lh's insn_cost from addu==1 making lh class 3 but lw's lower LUID winning anyway (lw is declared after cos_val in source — wait, no, vx IS declared after cos_val so lw would have HIGHER LUID, meaning lh wins on LUID — contradiction); OR (b) lh is class 1 because insn_cost>1, lw is class 3 → lw wins. The notes' theory (b) implies sched1 picks lw; my read confirms it. No structural mutation in this session shifted the decision."
+      "evidence": "permuter/cpu_get_dist workspace (base.c=cgd_iso.c, target.o at offset 0). Found a permuter-score-0 (byte-match) form BUT it is a CHEAT-FORM — REJECTED per cheats-by-any-spelling. The 0-form's closing constructs: (1) `rz++; rz--;` dead no-op pair inside the `if (v48<0)` block (extends rz live range — zero semantic purpose, same intent as HEAD's original liveness cheats); (2) `s32 vx;` declared but unused (load inlined); (3) `new_var=(u8*)a0;` alias used for ONLY the 2nd store (asymmetric drop-param-alias). Clean forms plateaued at permuter-~310 (output-310-1/), none reached 0. KEY: target's allocation IS reachable but only via rz-liveness coercion in the mutation space explored — no natural C use of rz exists in the v48 block. The clean sandbox floor stays 21."
     }
   ],
   "reviewer": {
