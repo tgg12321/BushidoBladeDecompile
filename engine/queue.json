@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "debug_printf",
-      "file": "text1b_b",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 7,
-      "status": "active"
-    },
-    {
       "func": "func_80078B04",
       "file": "text1b_b",
       "distance": 7,
@@ -3561,6 +3553,15 @@
       "park_reason": "Retired two rules with honest C: precompute tile next pointer before first ot_Link removes the 25-30 reorder; moving the 0x15E store before the 0x27F stores makes GCC materialize the reused constant early and removes reorder 103,102. Remaining pure-C floor is sandbox score 2/build_insns 154/rules_dropped 3: setup loop only. Target labels loop on addiu a0,sp,24 before the p load; GCC schedules the p load and p += 4 first, then materializes the stack argument before the stores, requiring the remaining label/subst plus 42-49 reorder. Tested neutral/regressing loop levers: sp_arg local passed to func_8007352C (neutral, removed), sp_arg used as store base (score 5), loop-invariant sp_arg (score 3), split p load/increment (neutral), explicit goto loop (neutral). No register hints, volatile coercion, asm barrier, or fake dependency used."
     },
     {
+      "func": "debug_printf",
+      "file": "text1b_b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 7,
+      "status": "parked",
+      "park_reason": "Fair pass: existing variadic C source is the honest form but GCC homes a1/a2/a3 at old sp+4/+8/+12 before subtracting the frame; target subtracts sp by 0x18 first, then homes fmt/a1/a2/a3 at sp+24/+28/+32/+36 and passes sp+28 to func_80079244. Sandbox floor remains score 7/build_insns 15/rules_dropped 7. Tested fixed four-arg wrapper: improves to score 4 but drops real homes for a2/a3, so it is not an honest variadic implementation. Tested __builtin_next_arg variadic form: regresses to score 9/build_insns 14. Completing this in C would require artificial manual homes, fake address-taken uses, or asm/regfix; no canonical asm signal beyond compiler prologue placement."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3895,13 +3896,13 @@
   ],
   "counts": {
     "total": 473,
-    "active": 379,
+    "active": 378,
     "by_status": {
-      "active": 379,
-      "parked": 94
+      "active": 378,
+      "parked": 95
     },
     "by_verdict": {
-      "C": 196,
+      "C": 195,
       "ASM-PARTIAL": 65,
       "ASM-SUSPECT": 118
     }
