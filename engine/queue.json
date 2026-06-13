@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80016A8C",
-      "file": "ings",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 8,
-      "status": "active"
-    },
-    {
       "func": "bios_FileRead",
       "file": "ings2",
       "distance": 8,
@@ -3514,6 +3506,15 @@
       "park_reason": "Hardest item in the queue; multi-session wall. 2026-06-13: NEW clean lever (algebraic factoring) lowered honest floor 21->15 (reviewer PASS), refuting the prior floor=21 conclusion \u2014 but still not 0. Residual is sched1 register allocation. Set aside per user 50-item-goal directive (set-aside-walls). Resume: directed permuter re-seeded from the score-15 candidate.c (memory/wip/cpu_get_dist/)."
     },
     {
+      "func": "func_80016A8C",
+      "file": "ings",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 8,
+      "status": "parked",
+      "park_reason": "ORACLE-BREAK RISK for cold workers (one broke the oracle 2026-06-13, reverted in 259777eb). C body is already PURE C; the only thing making it INCOMPLETE is 8 lwl-fix asmfix rules (XOR-3 offset swaps on the \rect = *(Rect *)&D_800A30D4 unaligned struct copy). The natural completion \u2014 retire the 8 rules by opting ings into FIX_LWL_FILES \u2014 DOES NOT WORK: fix_lwl.py skips instructions inside #APP blocks (line 15), and these struct-copy lwl/lwr/swl/swr land inside an #APP region, so the XOR-3 never applies (rebuilt ings.o came out at raw cc1 offsets 0/3 instead of target 3/0). asmfix reaches into #APP; fix_lwl does not. Closing to COMPLETED-C needs a substrate decision: either reshape the C so the unaligned access is emitted OUTSIDE #APP (so fix_lwl reaches it), or extend fix_lwl/maspsx handling (vet carefully \u2014 affects code6cac/text1b). Needs orchestrator/user investigation, not a cold worker."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3848,13 +3849,13 @@
   ],
   "counts": {
     "total": 467,
-    "active": 372,
+    "active": 371,
     "by_status": {
-      "active": 372,
-      "parked": 95
+      "active": 371,
+      "parked": 96
     },
     "by_verdict": {
-      "C": 189,
+      "C": 188,
       "ASM-PARTIAL": 65,
       "ASM-SUSPECT": 118
     }
