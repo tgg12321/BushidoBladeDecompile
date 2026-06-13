@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "cpu_get_dist",
-      "file": "code6cac_b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
       "func": "func_80016A8C",
       "file": "ings",
       "distance": 8,
@@ -3513,6 +3505,15 @@
       "park_reason": "Session-11 (2026-06-01): Tested 9 new structural variants from current-src baseline + permuter 2275 iters. All measured same or worse than baseline 11-aligned-diffs (sandbox 7 masked-Levenshtein). Permuter findings are all cheat-form (& 0xFFu / & 0xFFFFu masks, u16 type narrowing, variable repurposing via i/status aliases) \u2014 rejected per no-new-park-categories.md cheat-by-any-spelling policy. The byte chain register-allocation tie ( vs  for the arg4 chain temp) remains the gap \u2014 local-alloc qty_compare priority that no explored C-source structure flips without emitting bytes. C97C-class lever (m2c-shape + named intermediates) does NOT apply here (gap is not OR-association/sll-scheduling). Only un-tried avenue: PERM_*-directed permuter macros targeting the specific allocno slot \u2014 random-mode permuter exhausted. New rules loaded this session (goto-end-prologue-delay-slot, param-local-alias-prologue-pair-flip) do NOT apply \u2014 function has no early-exit + 4-insn-entry pattern and target uses natural ascending arg-save order (=a0, =a1 matches cc1 default). State unchanged: 5 regfix rules + chain lever + sandbox 7 distance. See [[register-alloc-pure-c]] for full session 5-10 evidence."
     },
     {
+      "func": "cpu_get_dist",
+      "file": "code6cac_b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 4,
+      "status": "parked",
+      "park_reason": "Hardest item in the queue; multi-session wall. 2026-06-13: NEW clean lever (algebraic factoring) lowered honest floor 21->15 (reviewer PASS), refuting the prior floor=21 conclusion \u2014 but still not 0. Residual is sched1 register allocation. Set aside per user 50-item-goal directive (set-aside-walls). Resume: directed permuter re-seeded from the score-15 candidate.c (memory/wip/cpu_get_dist/)."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3847,13 +3848,13 @@
   ],
   "counts": {
     "total": 467,
-    "active": 373,
+    "active": 372,
     "by_status": {
-      "active": 373,
-      "parked": 94
+      "active": 372,
+      "parked": 95
     },
     "by_verdict": {
-      "C": 190,
+      "C": 189,
       "ASM-PARTIAL": 65,
       "ASM-SUSPECT": 118
     }
