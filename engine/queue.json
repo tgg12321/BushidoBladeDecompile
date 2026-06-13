@@ -3343,15 +3343,6 @@
       "park_reason": "vars=0 wall: function's only cheat is volatile s32 sp_pad which forces frame 32->40 via vars=8; diff is 100% stack-offset (3 saves + 8 frame-size mismatches, no insn-shape diffs). natural pure-C compile (cc1 -da on probe.c) reports vars=0,regs=3,args=16,frame=32. Tested variants via instrumented cc1: long long diff, long long sum-accumulator, union, struct local, address-taken local, 6-arg call signature - none produce vars=8 with matching codegen (6-arg adds visible move/sw arg-setup; long long stays in registers; struct/union folded; address-taken needs volatile/cheat to keep allocation). No semantic content in body (table search + 2-arg call + global store) justifies pure-C local-array or address-taken use. RTL mechanism: GCC compute_frame_size returns 32 because var_size=0; target needs var_size=8 from a stack-allocated local with no obvious source in this body. Scanner: LOW tier."
     },
     {
-      "func": "func_80049C24",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 10,
-      "status": "parked",
-      "park_reason": "WIP closing form at sandbox=0 blocked by cheat-reviewer NEEDS_USER (verdict 2026-06-13, see memory/wip/func_80049C24/meta.json reviewer field). RTL mechanism: RA-priority tie at allocno priorities (global.c:611 formula log2(refs)*refs/livelen) where pseudo 79 (var_fp, refs=3 livelen=73 pri=410) wins $s7 over pseudo 77 (var_s7, refs=3 livelen=91 pri=329); target wants the reverse. Closing form candidate.c flips this via same-variable split-init accumulation (var_s7 = arg0; var_s7 += temp_v0; replacing var_s7 = arg0 + temp_v0;) -- inflates pseudo 77 refs 3->5, pri 329->1075. Combine folds back to one emitted insn. Reviewer judged BORDERLINE: intermediate IS live (not Lever D dead-store), adjacent to SOTN-sanctioned variable-reuse (randy = basePoint.x; baseX = randy;) but does not exactly match cited evidence; explicit purpose IS refs-count manipulation. Per HARD RULE NEEDS_USER is final -- user policy ruling required on whether same-variable split-init-accumulation for refs manipulation is sanctioned variable-reuse spelling. PASS path: apply candidate.c, retire 10 rules (7 reg-swap + 3 nor reorder), SHA1==oracle. FAIL path: investigate Lever A (block-local var split at var_fp use sites) or directed permuter from candidate baseline. Prior session tested 11 lever variants (v1-v11 in meta.json rejected_forms); v8 (current candidate) and v9 are the only closing forms found, both use the borderline split-init pattern."
-    },
-    {
       "func": "func_80064E90",
       "file": "text1b",
       "distance": 8,
@@ -3820,11 +3811,11 @@
     }
   ],
   "counts": {
-    "total": 461,
+    "total": 460,
     "active": 345,
     "by_status": {
       "active": 345,
-      "parked": 116
+      "parked": 115
     },
     "by_verdict": {
       "C": 163,

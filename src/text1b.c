@@ -1145,7 +1145,8 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
     var_s3 = arg1;
     temp_v0 = *(s32 *)(arg0 + (count * 4) + 4);
     temp_a2 = *(s32 *)(arg0 + 8);
-    var_s7 = arg0 + temp_v0;
+    var_s7 = arg0;
+    var_s7 += temp_v0;
     v0 = *(s32 *)(arg0 + 4);
     var_fp = arg0 + v0;
     var_s5 = temp_a2 - v0;
@@ -1183,9 +1184,10 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
         InitFadePanel();
     }
 
+    hdr = ~var_s0;
     v1 = var_s3;
     var_s3 += 4;
-    hdr = ((u32)~var_s0) >> 31;
+    hdr = (u32)hdr >> 31;
     if (var_s2 >= 0) {
         hdr += 1;
     }

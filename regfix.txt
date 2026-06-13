@@ -3281,17 +3281,7 @@ func_80060E38: subst "68\(\$sp\)" "64($sp)" @ 98
 # func_80074220: loop label needs to attach to reordered first instruction
 
 # func_80049C24 -- s7/$fp swap + nor reorder + slti + 4 use sites
-func_80049C24: subst "addu\s+\$fp,\$4,\$2" "addu	$23,$4,$2" @ 17
-func_80049C24: subst "slt\s+\$3,\$3,2" "slti	$3,$3,2" @ 19
-func_80049C24: subst "addu\s+\$23,\$4,\$2" "addu	$fp,$4,$2" @ 20
-func_80049C24: subst "addu\s+\$4,\$23,\$zero" "addu	$4,$fp,$zero" @ 72
-func_80049C24: subst "addu\s+\$6,\$fp,\$zero" "addu	$6,$23,$zero" @ 88
-func_80049C24: subst "addu\s+\$4,\$23,\$zero" "addu	$4,$fp,$zero" @ 94
-func_80049C24: subst "addu\s+\$6,\$fp,\$zero" "addu	$6,$23,$zero" @ 110
 # func_80049C24 -- 3-line swap to put nor at .L139 (label stays at idx 60)
-func_80049C24: subst "addu\s+\$3,\$19,\$zero" "nor	$2,$0,$16" @ 60
-func_80049C24: subst "addu\s+\$19,\$19,4" "addu	$3,$19,$zero" @ 61
-func_80049C24: subst "nor\s+\$2,\$0,\$16" "addu	$19,$19,4" @ 62
 # func_80072CD4: register-swap recipe to match target asm.
 # Base: 95-score with do-while barriers + new_var=FC + var_v0 pre-set in THEN.
 # Mine has var_v0 in $v1 and FC=0xFC in $v0; target has FC in $v1 and var_v0 in $v0.
