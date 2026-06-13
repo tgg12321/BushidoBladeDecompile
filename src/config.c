@@ -88,13 +88,12 @@ void stage_InitCollision(void) {
     s32 adj_i;
     s32 adj_j;
     s32 *ptr = (s32 *)g_stage_collision;
-    s32 count = 0xFF;
 
+    i = 0xFF;
     do {
-        *ptr = 0;
-        count--;
-        ptr++;
-    } while (count >= 0);
+        *ptr++ = 0;
+        i--;
+    } while (i >= 0);
 
     game_GetPlayerCount();
 
