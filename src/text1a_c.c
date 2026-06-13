@@ -1735,16 +1735,19 @@ void saSeMain_80045510(s32 a0, s32 a1) {
         } while (i < count);
     }
 }
-void func_800455AC(s32 a0) {
-    register s32 v1 asm("v1");
+s32 *func_800455AC(s32 a0) {
+    s32 idx;
+    s32 *ret;
     s16 (*new_var)[];
     func_800453E0(a0);
-    v1 = D_800A33AC;
+    idx = D_800A33AC;
     new_var = &D_800EED10;
-    D_800A33AC = v1 + 1;
-    *((s32 *)((u8 *)(*new_var) + v1 * 16 + 4)) = D_800A33A0;
-    *((s16 *)((u8 *)(*new_var) + v1 * 16)) = a0;
-    *((s32 *)((u8 *)(*new_var) + v1 * 16 + 0xC)) = 0;
+    D_800A33AC = idx + 1;
+    ret = (s32 *)D_800A33A0;
+    *((s32 *)((u8 *)(*new_var) + idx * 16 + 4)) = (s32)ret;
+    *((s16 *)((u8 *)(*new_var) + idx * 16)) = a0;
+    *((s32 *)((u8 *)(*new_var) + idx * 16 + 0xC)) = 0;
+    return ret;
 }
 void saSeMain_80045600(s32 a0, s32 a1) {
     volatile s32 sp_pad;

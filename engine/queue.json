@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800455AC",
-      "file": "text1a_c",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "videoDecCreate",
       "file": "text1a_c",
       "distance": 9,
@@ -3843,14 +3835,14 @@
     }
   ],
   "counts": {
-    "total": 464,
-    "active": 349,
+    "total": 463,
+    "active": 348,
     "by_status": {
-      "active": 349,
+      "active": 348,
       "parked": 115
     },
     "by_verdict": {
-      "C": 167,
+      "C": 166,
       "ASM-PARTIAL": 64,
       "ASM-SUSPECT": 118
     }
