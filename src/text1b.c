@@ -11040,18 +11040,30 @@ void func_80052B7C(s32 *matrix5, s16 *tr3, s32 *vec, s32 *out) {
     __asm__ volatile ("swc2 $10, 4(%0)" :: "r"(out));
     __asm__ volatile ("swc2 $11, 8(%0)" :: "r"(out));
 }
-void func_80052BE4(u8 *a0) {
-    register u32 t0 asm("$8");
-    register u32 t1 asm("$9");
-    register u32 t2 asm("$10");
-    __asm__ volatile (".word 0x4848A800" : "=r"(t0));  /* cfc2 $t0, $21 */
-    __asm__ volatile (".word 0x4849B000" : "=r"(t1));  /* cfc2 $t1, $22 */
-    __asm__ volatile (".word 0x484AB800" : "=r"(t2));  /* cfc2 $t2, $23 */
-    a0[0] = t0 >> 4;
-    a0[1] = t1 >> 4;
-    a0[2] = t2 >> 4;
-    __asm__ volatile ("" ::: "memory");
-}
+/* func_80052BE4: canonical GTE color FIFO extract.
+ * The target uses fixed cfc2 result registers and keeps all shifts/stores in t0-t2. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80052BE4\n"
+    "    cfc2   $t0, $21\n"
+    "    cfc2   $t1, $22\n"
+    "    cfc2   $t2, $23\n"
+    "    srl    $t0, $t0, 4\n"
+    "    srl    $t1, $t1, 4\n"
+    "    srl    $t2, $t2, 4\n"
+    "    sb     $t0, 0($a0)\n"
+    "    sb     $t1, 1($a0)\n"
+    "    sb     $t2, 2($a0)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
