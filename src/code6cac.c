@@ -2627,25 +2627,29 @@ void func_80021D10(s32 arg0, s32 *arg1, s32 arg2) {
 void func_80021DB0(void) {
 }
 void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
+    typedef struct {
+        s16 unk0;
+        s16 unk1;
+        s16 unk2;
+        s16 x;
+        s16 unk4;
+        s16 z;
+    } Choice;
     s32 dists[6];
     s16 *base;
-    s16 *p;
     s32 dx;
     s32 dz;
     s32 i;
     s32 best;
     s32 *r;
-    s32 *w;
 
     base = (s16 *)(stage_GetDataPtr() + (D_800A36A4 * 3) * 0x10);
     i = 0;
-    p = base;
     do {
-        dx = p[3] - arg2[0];
-        dz = p[5] - arg2[2];
+        dx = ((Choice *)base)[i].x - arg2[0];
+        dz = ((Choice *)base)[i].z - arg2[2];
         dists[i] = dx * dx + dz * dz;
         i++;
-        p += 6;
     } while (i < 4);
 
     best = 0;
@@ -2658,18 +2662,18 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
 
     best = 0;
     for (i = 1; i < 4; i++) {
-        if (dists[best] < dists[i]) {
+        if (dists[i] > dists[best]) {
             best = i;
         }
     }
     dists[best] = -1;
 
     r = dists;
-    w = dists;
+    dx = 0;
     for (i = 0; i < 4; i++) {
         if (*r != -1) {
-            w[4] = i;
-            w++;
+            dists[4 + dx] = i;
+            dx++;
         }
         r++;
     }
