@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80052C28",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80064E90",
       "file": "text1b",
       "distance": 8,
@@ -3512,6 +3504,15 @@
       "park_reason": "WIP closing form at sandbox=0 blocked by cheat-reviewer NEEDS_USER (verdict 2026-06-13, see memory/wip/func_80049C24/meta.json reviewer field). RTL mechanism: RA-priority tie at allocno priorities (global.c:611 formula log2(refs)*refs/livelen) where pseudo 79 (var_fp, refs=3 livelen=73 pri=410) wins $s7 over pseudo 77 (var_s7, refs=3 livelen=91 pri=329); target wants the reverse. Closing form candidate.c flips this via same-variable split-init accumulation (var_s7 = arg0; var_s7 += temp_v0; replacing var_s7 = arg0 + temp_v0;) -- inflates pseudo 77 refs 3->5, pri 329->1075. Combine folds back to one emitted insn. Reviewer judged BORDERLINE: intermediate IS live (not Lever D dead-store), adjacent to SOTN-sanctioned variable-reuse (randy = basePoint.x; baseX = randy;) but does not exactly match cited evidence; explicit purpose IS refs-count manipulation. Per HARD RULE NEEDS_USER is final -- user policy ruling required on whether same-variable split-init-accumulation for refs manipulation is sanctioned variable-reuse spelling. PASS path: apply candidate.c, retire 10 rules (7 reg-swap + 3 nor reorder), SHA1==oracle. FAIL path: investigate Lever A (block-local var split at var_fp use sites) or directed permuter from candidate baseline. Prior session tested 11 lever variants (v1-v11 in meta.json rejected_forms); v8 (current candidate) and v9 are the only closing forms found, both use the borderline split-init pattern."
     },
     {
+      "func": "func_80052C28",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "9-insn text1b.c math leaf with TWO trap-on-overflow opcodes the splat disassembler annotates /* handwritten instruction */: sub $a1,$t0,$a1 (R-type funct=0x22) at 0x80052C2C and addi $a0,$a0,-0x1000 (I-type opcode=8) at 0x80052C3C. GCC 2.7.2's mips.md emits only the no-trap variants (subu funct=0x23 / addiu opcode=9) for C arithmetic -- the trap variants emit only under -ftrapv, which is not in the build flags (and adding it is policy-forbidden per no-compiler-divergence). Confirmed by pure-C draft (arg1 = 3 - arg1; arg0 = (arg0 & 0x7FF) - 0x1000;): build_insns=9 == target_insns=9 but score=8 -- every working insn diffs (subu vs sub, addiu vs addi, plus full register reallocation cascade $v0/$v1 vs $a0/$t0). Scanner tier LOW because S3/S4 gate on >=40 insns; the trap-opcode signal is decisive but not encoded in scan_hand_coded.py for sub-40-insn leaves. STRONG cluster precedent in inline_asm_canonical.txt: IMMEDIATELY-adjacent sibling func_80052C4C (next function in text1b.c, also math lib helper) authorized 2026-05-16 with 'Trapping sub $a1,$a1,$t0. Sibling of func_800526A0 cluster. classify_func: permanently_blocked:handwritten_overflow_op.' Same evidence shape, same file, same idiom. Needs user canonical-asm authorization per hand-coded-asm-recognition (cluster-bulk sibling of func_800526A0 / func_80052C4C / func_80054440)."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3846,13 +3847,13 @@
   ],
   "counts": {
     "total": 466,
-    "active": 365,
+    "active": 364,
     "by_status": {
-      "active": 365,
-      "parked": 101
+      "active": 364,
+      "parked": 102
     },
     "by_verdict": {
-      "C": 182,
+      "C": 181,
       "ASM-PARTIAL": 65,
       "ASM-SUSPECT": 118
     }
