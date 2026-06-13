@@ -570,19 +570,23 @@ s32 func_80043278(s32 a0) {
 extern s32 *D_80103608[];
 extern u16 D_80103658[];
 extern void func_80043454(s32, s16, s16, s16);
-void videoDecCreate(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4) {
+void videoDecCreate(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
+    u16 arg4_lo = *(u16 *)&arg4;
+    s32 idx = arg0;
+    u16 *cnt_base = D_80103658;
     u16 *countPtr;
     s16 i;
 
-    countPtr = &D_80103658[arg0];
+    countPtr = &cnt_base[idx];
     i = 0;
     if (*countPtr == 0) goto done;
     {
-        s32 **basePtr = &D_80103608[arg0];
+        s32 **base_addr = D_80103608;
+        s32 **basePtr = &base_addr[idx];
         u16 *cntPtr = countPtr;
     loop:
         *(s32 *)0x1F800000 = (*basePtr)[(s16)i];
-        func_80043454((s16)arg1, (s16)arg2, (s16)arg3, (s16)arg4);
+        func_80043454((s16)arg1, (s16)arg2, (s16)arg3, (s16)arg4_lo);
         i++;
         if ((s16)i < *cntPtr) goto loop;
     }
