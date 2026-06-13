@@ -1,0 +1,53 @@
+{
+  "function": "func_80064E90",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 8,
+    "candidate_floor": 7,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 18,
+    "target_insns": 18
+  },
+  "sessions": [
+    {
+      "date": "2026-06-13",
+      "lever": "drop extern volatile coercion + named-intermediate s32 t",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 8,
+      "floor_now": 7,
+      "git_head_at_measurement": "8edb9ed1"
+    }
+  ],
+  "prior_sessions_summary": [],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-13",
+    "evidence": "6-test checklist passed; named-intermediate s32 t is within SOTN-sanctioned named-intermediate-declaration-order family; both uses are genuine data-path (not dead/discard); volatile coercion was the HEAD cheat — removed."
+  },
+  "remaining_gap": {
+    "summary": "GCC 2.7.2 RA tiebreaker: target uses $v0 for loaded p[0]/p[1]/const-1 (3 uses share $v0), build uses $a0 for the loads and $v0 for const-1 (2 reg-renames). Downstream scheduling: target keeps lui+sw(F0CA4) directly after lw $v0,4(v1); my build hoists lw $v1,8(v1) above it because the scheduler prefers issuing the long-chain load early when the value lands in $a0 (caller-saved, shorter implicit lifetime).",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "none — the function carries 0 regfix/asmfix at HEAD; closing the 7 reg/sched diffs requires source-level RA steering (the candidate gets $v0 for the constant 1 only)."
+  },
+  "next_hypotheses": [
+    "Directed permuter run from candidate.c (build target.o from asm/funcs/func_80064E90.s + tools/decomp-permuter/prelude.inc with .set gp=64 stripped; the function is small (18 insns) so permuter convergence should be fast). Use PERM_* macros for declaration-order and statement-rotation mutations.",
+    "Instrumented cc1 (BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG) on candidate.i to see which pseudo's priority blocks $v0 for the load values. The expected finding: $v0's allocno wants the constant-1 lifetime and the load-value lifetime simultaneously, but pseudo-priority ordering prevents the load value from coalescing into the same hardreg.",
+    "Sibling-cluster cross-ref: ~10+ functions in text1b.c have the EXACT same shape (func_80064ED8, func_80064F20, and the func_800650** / 8006XX** cluster) all carrying the same volatile-coercion cheat at HEAD. A single closing structure here unblocks the whole cluster — worth investigating before solo-grinding this one."
+  ],
+  "rejected_forms": [
+    {"form": "(volatile s32 *)D_800A347C with all globals extern volatile", "score": 8, "reason": "volatile-coercion on non-IRQ globals — [[inline-asm-policy]] 2026-05-31 expanded catalog forbids; D_800A347C/D_800F0CA0/A4/A8 are non-volatile elsewhere in same file"},
+    {"form": "direct D_800F0CA0 = p[0]; (no temp)", "score": 8, "reason": "no improvement — same RA result, no temp to bias LUID"},
+    {"form": "D_800F0CA8 = p[2]; (inline, no p reassignment)", "score": 10, "reason": "loses the lw v1,8(v1) → sw v1 register-reuse pattern"},
+    {"form": "struct {s32 a,b,c;} *p with p->a/b/c", "score": 12, "reason": "struct-member access compiles differently from array index"},
+    {"form": "D_800F10E0 = 1; D_800F0BA8 = 0; FIRST, then loads", "score": 8, "reason": "reorders source but GCC re-schedules to same shape"},
+    {"form": "post-increment *p++", "score": 10, "reason": "adds an extra addiu insn"},
+    {"form": "s32 t0, t1 (two distinct locals)", "score": 8, "reason": "same as reused t — RA still picks $a0"},
+    {"form": "s32 *q for the new pointer", "score": 9, "reason": "extra pseudo competes for $v1"},
+    {"form": "u32 type instead of s32", "score": 7, "reason": "type swap — no codegen change at floor 7"},
+    {"form": "void ** type with cast on store", "score": 8, "reason": "casts add no codegen value"},
+    {"form": "comma-expression (t = p[0]), (D_F0CA0 = t)", "score": 7, "reason": "syntactic — no codegen change at floor 7"},
+    {"form": "const s32 one = 1; D_F10E0 = one;", "score": 7, "reason": "GCC const-folds — no effect"},
+    {"form": "D_F0CA8 = (s32)p; before the const stores", "score": 7, "reason": "syntactic — same schedule emerges"}
+  ],
+  "memory_notes": []
+}
