@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "damage_DebugDisp",
-      "file": "code6cac_c_mid",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 8,
-      "status": "active"
-    },
-    {
       "func": "func_8007DC9C",
       "file": "display",
       "distance": 9,
@@ -3508,6 +3500,15 @@
       "park_reason": "WIP floor 9->4 (worker 670a62bb, reviewer PASS; memory/wip/func_8002BEA0/). GTE-LZCS cluster sibling (func_8001A67C/func_800274BC authorized 2026-06-10); the GTE block is canonical inline asm and matches. Residual floor-4 is a pure-C RA/strength-reduce diff in the /100 division subtree (mfhi  vs target ; delay-slot li vs addiu) -- NOT in the GTE block, so this is compiled C that should match. Same wall class as cpu_check_tubazeri_2. Parked per 50-item-goal set-aside; floor-4 WIP preserved. Resume: pure-C lever for the /100 strength-reduce mfhi-reg + delay-slot, or directed permuter from candidate.c."
     },
     {
+      "func": "damage_DebugDisp",
+      "file": "code6cac_c_mid",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 8,
+      "status": "parked",
+      "park_reason": "AUTO-PARK (batch-cadence): WIP-stuck 1 iter(s) at queue top; the worker lowered the floor but did not close, and cold re-attempts re-derive the same plateau. WIP checkpoint preserved in memory/wip/damage_DebugDisp/ (resume there). Parked per the 50-item-goal set-aside-walls directive; orchestrator batch-reviews auto-parks (unpark + deep-dive the closest floors). Resume: modality change per the WIP notes (orchestrator deep-dive / directed permuter / instrumented cc1)."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3842,13 +3843,13 @@
   ],
   "counts": {
     "total": 464,
-    "active": 351,
+    "active": 350,
     "by_status": {
-      "active": 351,
-      "parked": 113
+      "active": 350,
+      "parked": 114
     },
     "by_verdict": {
-      "C": 169,
+      "C": 168,
       "ASM-PARTIAL": 64,
       "ASM-SUSPECT": 118
     }
