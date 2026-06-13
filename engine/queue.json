@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007E8AC",
-      "file": "display",
-      "distance": 7,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8007F0BC",
       "file": "display",
       "distance": 7,
@@ -3938,14 +3930,14 @@
     }
   ],
   "counts": {
-    "total": 479,
-    "active": 389,
+    "total": 478,
+    "active": 388,
     "by_status": {
-      "active": 389,
+      "active": 388,
       "parked": 90
     },
     "by_verdict": {
-      "ASM-PARTIAL": 70,
+      "ASM-PARTIAL": 69,
       "C": 201,
       "ASM-SUSPECT": 118
     }

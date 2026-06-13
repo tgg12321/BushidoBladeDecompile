@@ -1768,20 +1768,33 @@ s32 *func_8007E74C(s32 *mat, s32 *vec_in, s32 *vec_out) {
     __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(vec_out));
     return v0;
 }
-s32 *func_8007E8AC(s32 *a0, s32 *a1, s32 *a2) {
-    register s32 *v0 asm("v0");
-    __asm__ volatile (".word 0x8C880000" :: "r"(a0));   /* lw $t0, 0($a0) */
-    __asm__ volatile (".word 0x8C890004" :: "r"(a0));   /* lw $t1, 4($a0) */
-    __asm__ volatile (".word 0x48880000");               /* mtc2 $t0, $0 */
-    __asm__ volatile (".word 0x48890800");               /* mtc2 $t1, $1 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");               /* mvmva 1,0,0,3,0 */
-    __asm__ volatile (".word 0xE8A90000" :: "r"(a1));   /* swc2 $9, 0($a1) */
-    __asm__ volatile (".word 0xE8AA0004" :: "r"(a1));   /* swc2 $10, 4($a1) */
-    __asm__ volatile (".word 0xE8AB0008" :: "r"(a1));   /* swc2 $11, 8($a1) */
-    __asm__ volatile ("addu %0, %1, $zero" : "=r"(v0) : "r"(a2));
-    return v0;
-}
+/* func_8007E8AC: canonical GTE mvmva leaf.
+ * GCC cannot express the cop2 operations or the hand-scheduled GTE/load-delay
+ * pipeline without register pins; keep the original bytes as an honest
+ * file-scope asm symbol. See inline_asm_canonical.txt. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007E8AC\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t1, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"
+    "    swc2   $9, 0($a1)\n"
+    "    swc2   $10, 4($a1)\n"
+    "    swc2   $11, 8($a1)\n"
+    "    addu   $v0, $a2, $zero\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 void *func_8007E8DC(s32 *arg0, s32 *arg1) {
     register s32 t0 asm("t0");
     register s32 t1 asm("t1");
