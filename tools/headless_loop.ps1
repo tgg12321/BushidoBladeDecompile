@@ -66,7 +66,15 @@ param(
     # other escalations still hard-stop: oracle break (exit 2), cheated match,
     # dirty-tree leftover, unexpected outcome (exit 10), and the stuck cap
     # (exit 11). Default OFF preserves the per-park stop-and-confirm behavior.
-    [switch] $ContinueOnNovelPark
+    [switch] $ContinueOnNovelPark,
+    # Companion to -ContinueOnNovelPark for full batch autonomy: when a function
+    # hits the stuck cap (WIP-checkpointed / no-progress, still queue top), AUTO-PARK
+    # it (the WIP checkpoint preserves the floor progress as a resume point) and
+    # CONTINUE + commit the park, instead of stopping (exit 11). Lets the loop grind
+    # a wall-dense region where most items WIP rather than park; the orchestrator
+    # batch-reviews the auto-parks afterward (unpark + deep-dive the closest floors).
+    # Default OFF.
+    [switch] $AutoParkStuckWip
 )
 
 $ErrorActionPreference = 'Stop'
@@ -409,13 +417,22 @@ try {
             } elseif ($stillTop) {
                 if ($func -eq $stuckFunc) { $stuckCount++ } else { $stuckFunc = $func; $stuckCount = 1 }
                 if ($stuckCount -ge $MaxSameFunc) {
-                    Write-Host "[headless] STUCK CAP: $func did not complete in $stuckCount consecutive iteration(s) (still queue top)." -ForegroundColor Yellow
-                    Write-Host "[headless] Cold-start re-attempts re-derive the same plateau. Change MODALITY on THIS function (no-deferral directive):" -ForegroundColor Yellow
-                    Write-Host "[headless]   - orchestrator deep-dive with sustained context (closed sys_VSync, debug_printf, func_80078B04)" -ForegroundColor Yellow
-                    Write-Host "[headless]   - bulk variant sweep: python3 tools/sweep_variants.py --func $func --file $($top.file) --variants tmp/$($func)_variants/" -ForegroundColor Yellow
-                    Write-Host "[headless]   - instrumented cc1 dumps (BB2_ALLOC_DEBUG / BB2_SCHED_DEBUG via tmp/gccdbg/cc1)" -ForegroundColor Yellow
-                    Write-Host "[headless] STOPPING (exit 11) for orchestrator modality change -- NOT necessarily a user escalation." -ForegroundColor Yellow
-                    exit 11
+                    if ($AutoParkStuckWip) {
+                        $wipReason = "AUTO-PARK (batch-cadence): WIP-stuck $stuckCount iter(s) at queue top; the worker lowered the floor but did not close, and cold re-attempts re-derive the same plateau. WIP checkpoint preserved in memory/wip/$func/ (resume there). Parked per the 50-item-goal set-aside-walls directive; orchestrator batch-reviews auto-parks (unpark + deep-dive the closest floors). Resume: modality change per the WIP notes (orchestrator deep-dive / directed permuter / instrumented cc1)."
+                        Write-Host "[headless] AUTO-PARK STUCK WIP: $func (stuck $stuckCount iter) -- parking + continuing (--AutoParkStuckWip)." -ForegroundColor Yellow
+                        & $engPs1 queue park $func --reason $wipReason 2>&1 | Out-Null
+                        git -C $root add engine/queue.json 2>&1 | Out-Null
+                        git -C $root commit -q -m "park: $func -- auto-park WIP-stuck (batch-cadence; floor lowered, WIP preserved)" 2>&1 | Out-Null
+                        $stuckFunc = $null; $stuckCount = 0
+                    } else {
+                        Write-Host "[headless] STUCK CAP: $func did not complete in $stuckCount consecutive iteration(s) (still queue top)." -ForegroundColor Yellow
+                        Write-Host "[headless] Cold-start re-attempts re-derive the same plateau. Change MODALITY on THIS function (no-deferral directive):" -ForegroundColor Yellow
+                        Write-Host "[headless]   - orchestrator deep-dive with sustained context (closed sys_VSync, debug_printf, func_80078B04)" -ForegroundColor Yellow
+                        Write-Host "[headless]   - bulk variant sweep: python3 tools/sweep_variants.py --func $func --file $($top.file) --variants tmp/$($func)_variants/" -ForegroundColor Yellow
+                        Write-Host "[headless]   - instrumented cc1 dumps (BB2_ALLOC_DEBUG / BB2_SCHED_DEBUG via tmp/gccdbg/cc1)" -ForegroundColor Yellow
+                        Write-Host "[headless] STOPPING (exit 11) for orchestrator modality change -- NOT necessarily a user escalation." -ForegroundColor Yellow
+                        exit 11
+                    }
                 }
             } else {
                 # parked or otherwise no longer the top item -> streak resets
