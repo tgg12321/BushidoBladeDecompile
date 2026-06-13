@@ -1663,13 +1663,45 @@ __asm__(
 );
 PAD_NOPS_1; /* padding after bios_SysDeqIntRP */
 extern void (*jtbl_800A3620)(void);
-void func_80078F60(void) {
-    jtbl_800A3620();
-}
 extern void (*jtbl_800A3624)(void);
-void func_80078F74(void) {
-    jtbl_800A3624();
-}
+/* func_80078F60 / func_80078F74: 5-insn bare tail-jump trampolines
+   (lui/lw/nop/jr/nop) through the jtbl_800A3620 / jtbl_800A3624 function
+   pointers that the Pad-init wrapper func_80078F88 installs at runtime. GCC
+   2.7.2 has no MIPS sibling-call optimization, so no pure-C `(*fp)()` form
+   emits a frameless `jr $t1` (it always builds a stack frame + jalr + jr $ra).
+   Hand-coded canonical asm; user-authorized 2026-06-12. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F60\n"
+    "    lui  $t1,%hi(jtbl_800A3620)\n"
+    "    lw  $t1,%lo(jtbl_800A3620)($t1)\n"
+    "    nop\n"
+    "    jr  $t1\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80078F74\n"
+    "    lui  $t1,%hi(jtbl_800A3624)\n"
+    "    lw  $t1,%lo(jtbl_800A3624)($t1)\n"
+    "    nop\n"
+    "    jr  $t1\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
