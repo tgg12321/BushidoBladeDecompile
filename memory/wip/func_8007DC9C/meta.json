@@ -1,0 +1,83 @@
+{
+  "function": "func_8007DC9C",
+  "file": "display",
+  "scores": {
+    "head_floor": 9,
+    "candidate_floor": 9,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 90,
+    "target_insns": 91
+  },
+  "sessions": [
+    {
+      "date": "2026-06-13",
+      "lever": "exhausted-structural-levers (cleanup only, no floor lowering)",
+      "lever_rule": "defeat-combine-symbol-fold",
+      "floor_was": 9,
+      "floor_now": 9,
+      "git_head_at_measurement": "bfdc89c3"
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-13",
+    "evidence": "Both flagged constructs are clean: dead volatile-read reproduces a genuine target double-MMIO-read; comma-operator if-condition is m2c's faithful sequencing reconstruction; no cheat families found."
+  },
+  "remaining_gap": {
+    "summary": "9-edit-distance: 1 insertion (la+addiu+lw 0 vs lui+lw($lo) for D_8009BF68[0] — combine.c folds offset-0 symbol access) + 8 reorder ops (GCC scheduler places fmt-LUI/ADDIU and BF78-LUI/LW and the early *g_gpu_stat_reg read in different order than target).",
+    "rule_count_at_head": 4,
+    "rules_required_for_full_match": "regfix's 4 rules close exactly these 9 ops: subst+insert_after @ 31 produce la+lw form for D_8009BF68; subst @ 20 fixes early-read register ($a0 -> $v0); reorder 21,20,19,18 @ 18-21 fixes the schedule cluster."
+  },
+  "next_hypotheses": [
+    "Run instrumented cc1 dumps (BB2_SCHED_DEBUG and BB2_PRIO_DEBUG) to identify the scheduler tie-breaker that places fmt-LUI before BF78-LUI in target vs after in current. The tie likely comes from instruction priority based on critical-path length — current's 5-insn chain to subu may dominate fmt's 3-insn chain. Look for a C structural lever that lengthens fmt's apparent critical path or shortens BF78's.",
+    "Read cc1's combine.c at the `simplify_set_pattern` / `combine_simplify_rtx` paths for the (mem (plus sym 0)) -> (mem (sym)) fold to confirm there is NO C-source-side way to defeat the offset-0 fold for a plain extern global. The [[defeat-combine-symbol-fold]] rule's pre-compute lever requires non-zero displacement; the rule explicitly does not cover offset 0.",
+    "Cross-reference func_8007D3F8 (the only OTHER user of D_8009BF68, currently UNMATCHED at queue distance 43). If it ships matched with `D_8009BF68 = arg0` semantics AND target there uses a la-form too, that's evidence the original C had a SPECIFIC type or declaration that breaks the fold globally; reverse-engineer it from that match."
+  ],
+  "rejected_forms": [
+    {
+      "form": "extern volatile s32 D_8009BF68[]",
+      "score": 9,
+      "reason": "permuter-derived (3-min -j4 run, base 630 -> 515). Volatile coercion is detected as cheat-asm by engine.volatile_cheats and stripped before scoring (cheat_asm_stripped 459 -> 460). Use-site is a single read in printf args — does NOT satisfy [[legitimate-volatile-interrupt-touched]] criterion #2 (not spin-wait, not double-read-across-sequence-point, not IRQ-mutated-loop-bound). IRQ writer cited: func_8007D6D8.s:103 `sw $v0, 0x0($s0)` where `$s0 = &D_8009BF68`. Carve-out criterion #1 (IRQ-mutated) holds, but #2 (use-site) does not."
+    },
+    {
+      "form": "s32 *bf68 = D_8009BF68; ... bf68[0]",
+      "score": 9,
+      "reason": "defeat-combine-symbol-fold pre-compute. Did not move floor because the rule explicitly requires NON-ZERO displacement (target reads `bf68[N]` for N != 0); at offset 0 the (mem (plus sym 0)) simplifies to (mem sym) before combine even runs the substitution. Tried both `bf68 = D_8009BF68` at start of if-body, before the first debug_printf call (an intervening call between def and use), and `bf68 = &D_8009BF68[0]` — same result."
+    },
+    {
+      "form": "extern s32 D_8009BF68[1]  (sized vs incomplete array)",
+      "score": 9,
+      "reason": "Array size doesn't change the combine fold behavior for offset-0 accesses."
+    },
+    {
+      "form": "extern s32 (*D_8009BF68)(...) + (s32)D_8009BF68 cast",
+      "score": 9,
+      "reason": "Function-pointer cast still produces a folded lui+lw($lo) (single scalar load from the symbol address). Same bytes as array fold form."
+    },
+    {
+      "form": "(D_8009BF78 - D_8009BF7C) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_madr, *g_gpu_dma_chcr  (swap last two args)",
+      "score": 8,
+      "reason": "Score-improvement APPARENT (1 less than baseline 9) but SEMANTICALLY WRONG. Target wants arg4=*chcr and arg5=*madr (D_8009BF54 loaded second, deref into $a3 = arg4); my analysis of the relocations confirms this. Swapping the args in C inverts which value lands in $a3 vs sp+0x10. The masked Levenshtein scores the WRONG-direction swap 1 better than the correct order purely by accident of the instruction-sequence search path — DO NOT commit this form."
+    },
+    {
+      "form": "status = *g_gpu_stat_reg; debug_printf(..., status, ...);  (single read, status used as arg3)",
+      "score": 19,
+      "reason": "Drops the second volatile read entirely — target has TWO reads of *g_gpu_stat_reg at offsets 6E4FC and 6E52C, both through $v1=stat_reg_ptr. Collapsing to one read produces a body 1 insn shorter than target's, scoring much worse."
+    },
+    {
+      "form": "const s32 *fmt_p = &g_str_gpu_timeout; debug_printf(fmt_p, ...)",
+      "score": 9,
+      "reason": "Local-fmt-precompute did not reorder the scheduler's fmt-LUI vs BF78-LUI tie-breaker."
+    },
+    {
+      "form": "(void)*g_gpu_stat_reg;  (explicit dead read in place of new_var = ...; (void)new_var;)",
+      "score": 9,
+      "reason": "Equivalent emit (one volatile load discarded); doesn't change the schedule."
+    },
+    {
+      "form": "block-scoped { s32 new_var = *g_gpu_stat_reg; ... (void)new_var; }",
+      "score": 9,
+      "reason": "Tighter scope for new_var did not change the RA's choice of $a0 vs $v0 for the dead load."
+    }
+  ]
+}
