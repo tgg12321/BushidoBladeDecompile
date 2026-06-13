@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "sys_VSync",
-      "file": "ings2",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "func_80040A78",
       "file": "text1a",
       "distance": 7,
@@ -3574,6 +3566,15 @@
       "park_reason": "fair-pass pure C floor: direct expression, local mask/temp addr variant, and K&R parameter form all compile to sandbox score 7/build_insns 15; natural GCC puts OT_ADDR_MASK in $a3 and OT_TAG_MASK in $a2, while target wants $a2=OT_ADDR_MASK and $a3=OT_TAG_MASK. Existing matching source uses register asm pins, which are forbidden; no GTE/BIOS/canonical-asm signal."
     },
     {
+      "func": "sys_VSync",
+      "file": "ings2",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 2,
+      "status": "parked",
+      "park_reason": "Retired frame-computation regfix via honest expression tree: frame = D_800A151C + (a0 - 1) now naturally emits addiu before j and addu in the delay slot. Remaining pure-C floor is sandbox score 5/build_insns 82/rules_dropped 1: second-call setup only. Target keeps nop+lw s0 immediately after D_800A1510 pointer load, then loads g_sys_dma_region and fills jal delay with addiu a0,1; GCC schedules the unrelated DMA-region setup into the load-delay slot, then emits addiu/lw s0 before jal with nop delay. Tested and rejected/neutral: named DMA local, split increment, volatile pointer local, snapshot temp, array-subscript volatile read, precomputed wait_flag (regressed to 83 insns and extra saved reg), pointer-to-DMA read, preincrement call arg, K&R signature, combined declaration block. No register hints, asm barrier, fake comma/dependency, or volatile global coercion used."
+    },
+    {
       "func": "cpu_side_move_dir_4",
       "file": "system",
       "distance": 7,
@@ -3917,13 +3918,13 @@
   ],
   "counts": {
     "total": 476,
-    "active": 384,
+    "active": 383,
     "by_status": {
-      "active": 384,
-      "parked": 92
+      "active": 383,
+      "parked": 93
     },
     "by_verdict": {
-      "C": 199,
+      "C": 198,
       "ASM-PARTIAL": 67,
       "ASM-SUSPECT": 118
     }

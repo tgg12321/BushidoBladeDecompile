@@ -57,7 +57,7 @@ s32 sys_VSync(s32 a0) {
         s32 count;
 
         if (a0 > 0) {
-            frame = (D_800A151C + a0) - 1;
+            frame = D_800A151C + (a0 - 1);
         } else {
             frame = D_800A151C;
         }
