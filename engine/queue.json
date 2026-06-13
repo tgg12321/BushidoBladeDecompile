@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007DC9C",
-      "file": "display",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
       "func": "func_800455AC",
       "file": "text1a_c",
       "distance": 9,
@@ -3509,6 +3501,15 @@
       "park_reason": "AUTO-PARK (batch-cadence): WIP-stuck 1 iter(s) at queue top; the worker lowered the floor but did not close, and cold re-attempts re-derive the same plateau. WIP checkpoint preserved in memory/wip/damage_DebugDisp/ (resume there). Parked per the 50-item-goal set-aside-walls directive; orchestrator batch-reviews auto-parks (unpark + deep-dive the closest floors). Resume: modality change per the WIP notes (orchestrator deep-dive / directed permuter / instrumented cc1)."
     },
     {
+      "func": "func_8007DC9C",
+      "file": "display",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 4,
+      "status": "parked",
+      "park_reason": "AUTO-PARK (batch-cadence): WIP-stuck 1 iter(s) at queue top; the worker lowered the floor but did not close, and cold re-attempts re-derive the same plateau. WIP checkpoint preserved in memory/wip/func_8007DC9C/ (resume there). Parked per the 50-item-goal set-aside-walls directive; orchestrator batch-reviews auto-parks (unpark + deep-dive the closest floors). Resume: modality change per the WIP notes (orchestrator deep-dive / directed permuter / instrumented cc1)."
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3843,13 +3844,13 @@
   ],
   "counts": {
     "total": 464,
-    "active": 350,
+    "active": 349,
     "by_status": {
-      "active": 350,
-      "parked": 114
+      "active": 349,
+      "parked": 115
     },
     "by_verdict": {
-      "C": 168,
+      "C": 167,
       "ASM-PARTIAL": 64,
       "ASM-SUSPECT": 118
     }
