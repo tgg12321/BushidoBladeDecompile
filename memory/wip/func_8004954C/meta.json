@@ -1,0 +1,65 @@
+{
+  "function": "func_8004954C",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 9,
+    "candidate_floor": 6,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 14,
+    "target_insns": 14
+  },
+  "sessions": [
+    {
+      "date": "2026-06-13",
+      "git_head_at_measurement": "f83084d3",
+      "lever": "for-loop emits 8-byte frame + nop delay slot; cleaned all source cheats",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 9,
+      "floor_now": 6
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-13",
+    "evidence": "all 6 tests pass: clean pure-C triangular-sum; every construct semantically load-bearing; `sum + (arg2 - arg1)` is the natural form (the FORBIDDEN reassoc is the opposite form `(sum + arg2) - arg1`, captured in rejected/paren_reassoc.c); no register-asm pins, no inline __asm__, no volatile, no dead-vars, no coercion-named locals."
+  },
+  "remaining_gap": {
+    "summary": "register-allocation priority swap: GCC assigns sum->$a3 and i->$v1, target uses sum->$v1 and i->$a3. 6 register diffs across the 6 sum/i references in loop+epilogue. All 14 insns, frame, and delay-slot nop match. The lever that flips RA priority (parenthesising as `(sum + arg2) - arg1`) shortens sum's live range — but the source-order parenthesisation is operand-axis reassociation for codegen control, sibling family to or-tree-shape-shift (FORBIDDEN). It also wrong-orders the epilogue: emits addu-then-subu vs target's subu-then-addu (target source form is `sum + (arg2 - arg1)`).",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "none — no regfix/asmfix; just the right C structure to flip GCC's pseudo allocation priority"
+  },
+  "next_hypotheses": [
+    "Permuter from candidate.c with --stop-on-zero; the RA gap is exactly the kind of 6-reg-rename diff permuter directed mode is designed for.",
+    "Instrumented cc1 (BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG via tmp/gccdbg/cc1, if available) to read the priority computation directly and look for a structural lever that raises sum's priority above i's WITHOUT shortening sum's live range.",
+    "Investigate why GCC emits the 8-byte frame (it appears in every `for` variant but not in if+do-while). Maybe the for-loop's NOTE_INSN_LOOP_VTOP triggers a reserved frame slot that's also tied to a different priority calculation. Reading cc1 stmt.c expand_start_loop + loop.c may reveal a structural co-effect.",
+    "Try m2c on the target asm to see what original-C structure m2c reconstructs; the natural reconstruction may suggest a non-obvious lever."
+  ],
+  "rejected_forms": [
+    {
+      "form": "`(sum + arg2) - arg1` parenthesisation (v26)",
+      "score": 2,
+      "reason": "sibling family to or-tree-shape-shift (FORBIDDEN: parenthesization-axis mutations in associative/commutative expressions). Score reaches 2 because the parens flip sum's live range — but the change is pure codegen-control reassociation: a programmer would naturally write `sum + (arg2 - arg1)` for this 'sum + offset' semantic. The mutation only exists to change GCC's allocno priority — a cheat by spelling per no-new-park-categories."
+    },
+    {
+      "form": "`sum = sum + arg2; return sum - arg1;` two-statement split (v20)",
+      "score": 2,
+      "reason": "same family as v26 — splitting the return into two statements is statement-axis reassociation. Same codegen-control intent. FORBIDDEN."
+    },
+    {
+      "form": "`volatile unsigned int pad;` (HEAD source carried this)",
+      "score": "did not close (HEAD floor 9 with the pad active)",
+      "reason": "dead-vars-local-array — unused fixed-size local declared only to force GCC to reserve frame bytes. Listed as cheat-spelling in inline-asm-policy.md expanded cheat catalog (2026-05-31). The HEAD source also carried register-asm pins on $7/$3 and a `(void) var_a3;` no-op extending live range — all source-level cheats."
+    },
+    {
+      "form": "`register s32 sum/i asm(...)` pins (v01-style)",
+      "score": 9,
+      "reason": "register-asm pins are cheat-asm per inline-asm-policy. They also DID NOT close — HEAD's score with pins was 9, worse than the clean-C floor of 6. Pins do not bind reliably here."
+    },
+    {
+      "form": "declaration-order swaps, `register` hint keyword, block-local i, register copy of arg0, `(arg2 - arg1) + sum` (commutative reorder)",
+      "score": 6,
+      "reason": "no effect on GCC's pseudo-priority computation; all stayed at the same 6-reg-swap floor. Documented as ruled-out so the next agent doesn't re-derive."
+    }
+  ],
+  "memory_notes": []
+}
