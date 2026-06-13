@@ -1,9 +1,12 @@
 # cpu_get_dist (code6cac_b.c) — pure-C wall analysis
 
-## TL;DR
+## TL;DR (updated 2026-06-13 — floor 21 -> 15, NEW clean lever)
 
+- **BREAKTHROUGH 2026-06-13: clean floor lowered 21 -> 15** via the "fundamentally different algebraic factoring" the prior notes flagged as the ONE untried clean direction. candidate.c is now the score-15 form: **rz computed BEFORE rx, with rz's inner sum written vz*cos-first `((vz*cos)+((-vx)*sin))`** (rx unchanged). Pure reassociation + statement order; cheat-reviewer PASS. So the prior "clean floor = 21 / matching C outside every structural dimension" conclusion was WRONG — statement-emission order of the products was the untested dimension.
+- **Decomposition** (tmp/cgd_alg + tmp/cgd2 sweeps): rz-first-with-vz*cos-lead = 15. Swapping rx's addends too regresses (24-28). Store-operand swaps regress (24-26). `(-vx)*sin -> -(vx*sin)` sub form = 61 insns / score 17. Best clean = 15 (== tmp/cgd2/r6_base15.c).
+- **Remaining gap (masked 15, build_insns 63 vs target 62):** unmasked diff (tmp/cgd_diff.py) shows target's mult order is **vx*cos, vz*sin, (-vx)*sin, vz*cos with vz loaded LATE**; my 15-form front-loads vz*cos. Residual is sched1 register allocation, NOT instruction set. **Next modality: directed permuter RE-SEEDED from this 15-floor candidate.c** (the prior 2 campaigns seeded from the 21 base and found only cheat-forms). PARKED 2026-06-13 for the 50-item-goal session (set-aside-walls directive); resume here.
 - **HEAD's body uses two forbidden coercion cheats** (do-while(0) wrapper + dead `rx = ... uninit vz ... >> 12;` read-before-assignment). Both are
-  [[no-new-park-categories]] cheats-by-spelling. With them, cheat-stripped sandbox = 8 (closed by 4 regfix rules). Without them, ALL pure-C variants = 21.
+  [[no-new-park-categories]] cheats-by-spelling. With them, cheat-stripped sandbox = 8 (closed by 4 regfix rules). The HONEST clean floor is now 15 (was 21).
 - **24-variant sweep total** (14 prior session + 10 this session) documents the rejected lever space (see `meta.json.rejected_forms`). Best non-baseline: v15_subtract_const = 22 (regression). All structural/decl-order/ptr-alias/named-product perturbations converge to 21.
 - The wall is sched.c:2399 `rank_for_schedule`: at the choice point after `sll cos_idx`, sched1 picks `lw vx` (class 3, indep of last_scheduled) over `lh cos_val` (class 1, data-dep on sll). This places lw before lh, prevents vx from reusing the freshly-dead $v1, and shifts the entire downstream allocation by one register position. Confirmed by direct read of sched.c:2399-2443 this session.
 - `scan_hand_coded.py --single cpu_get_dist` → tier=LOW (`no strong hand-coded indicators`). Function is NOT canonical-asm material; matching C must exist.

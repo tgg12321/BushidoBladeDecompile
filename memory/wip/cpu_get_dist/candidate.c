@@ -1,20 +1,23 @@
-/* HONEST BASELINE — pure-C form, NO cheats (scores 21 cheat-stripped).
+/* HONEST BASELINE v2 — pure-C form, NO cheats (scores 15 cheat-stripped,
+ * down from the prior candidate's 21). 2026-06-13 algebraic-factoring lever.
  *
- * HEAD's committed src for cpu_get_dist (code6cac_b.c) carries two
- * forbidden coercion cheats (see notes.md for evidence): a do-while(0)
- * wrapper around the sin/vz/rx/rz/v48 region, and a dead `rx = (vx*cos
- * + vz*sin) >> 12;` BEFORE `vz` is assigned (reads uninit vz). Both
- * are [[no-new-park-categories]] cheats-by-spelling — they have no
- * semantic purpose; the wrapper is a NOTE_INSN_LOOP_BEG scheduling
- * fence, and the dead store force-extends vz's live range upward to
- * bias register allocation. With those constructs HEAD's
- * cheat-stripped sandbox is 8 (closed by 4 regfix rules); without
- * them (this body) it's 21.
+ * The improvement over the score-21 candidate is PURE reassociation +
+ * statement order, no semantic change, no cheat construct:
+ *   - rz is computed BEFORE rx (statement order only).
+ *   - rz's inner sum is written vz*cos FIRST: ((vz*cos) + ((-vx)*sin)).
+ * Both are commutative-add / independent-statement reorderings a human could
+ * write; GCC's sched1 then emits an instruction stream 6 masked-edits closer
+ * to target than the rx-first/vx*cos-first natural form. This is the
+ * "fundamentally different algebraic factoring" the prior WIP notes flagged as
+ * the one remaining clean direction — it WORKS as a partial lever.
  *
- * This body is COMPLIANT C and is what the next session should resume
- * from when seeking a pure-C lever. The 13-point gap traces to a
- * single sched1 decision (see notes.md "RTL mechanism") that no
- * structural variant in the sweep flipped.
+ * HEAD's committed src still carries two forbidden coercion cheats (do-while(0)
+ * scheduling fence + dead `rx = (vx*cos + uninit-vz*sin) >> 12;`). This body is
+ * COMPLIANT C and is what the next session should resume from. Remaining gap
+ * (masked 15): target's mult order is vx*cos, vz*sin, (-vx)*sin, vz*cos with vz
+ * loaded LATE; the residual is sched1 register allocation. Next modality:
+ * directed permuter re-seeded from THIS base (the prior two campaigns seeded
+ * from the score-21 base and found only cheat-forms).
  */
 void cpu_get_dist(s32 *a0, s16 *a1) {
     s32 angle = single_game_getEnemyCharId(a1[0], a1[2]);
@@ -22,8 +25,8 @@ void cpu_get_dist(s32 *a0, s16 *a1) {
     s32 vx = *((s32 *)(((u8 *)a0) + 0x44));
     s16 sin_val = *((&Judge) + (angle & 0xFFF));
     s32 vz = *((s32 *)(((u8 *)a0) + 0x4C));
+    s32 rz = -(((vz * cos_val) + ((-vx) * sin_val)) >> 12);
     s32 rx = ((vx * cos_val) + (vz * sin_val)) >> 12;
-    s32 rz = -((((-vx) * sin_val) + (vz * cos_val)) >> 12);
     s32 v48 = *((s32 *)(((u8 *)a0) + 0x48));
     *((s32 *)(((u8 *)a0) + 0x44)) = ((rx * cos_val) - (rz * sin_val)) >> 15;
     *((s32 *)(((u8 *)a0) + 0x4C)) = ((rx * sin_val) + (rz * cos_val)) >> 15;

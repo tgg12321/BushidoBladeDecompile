@@ -3,11 +3,12 @@
   "file": "code6cac_b",
   "scores": {
     "head_floor": 8,
-    "candidate_floor": 21,
+    "candidate_floor": 15,
+    "prior_candidate_floor": 21,
     "metric": "sandbox --disable all (masked Levenshtein)",
-    "build_insns": 62,
+    "build_insns": 63,
     "target_insns": 62,
-    "note": "candidate_floor > head_floor because HEAD's body carries TWO forbidden coercion cheats (do-while(0) scheduling-fence wrapper + dead `rx = vx*cos + (uninit vz)*sin >> 12` reading vz before its proper assignment). Both are no-new-park-categories cheats-by-spelling. The clean candidate is the honest pure-C baseline; the next session should resume from it, not from HEAD."
+    "note": "2026-06-13: NEW clean lever lowered the floor 21->15 via PURE algebraic factoring (the 'fundamentally different factoring' the prior notes flagged as the one untried clean direction). candidate.c now = score-15 form: rz computed BEFORE rx + rz inner sum written vz*cos-first ((vz*cos)+((-vx)*sin)). Reviewer PASS (clean reassociation+stmt-order, no cheat). HEAD's body still carries TWO forbidden cheats (do-while(0) fence + uninit-vz dead read) so its cheat-stripped floor reads 8 only because 4 regfix rules compensate. Resume from candidate.c (15), not HEAD. Remaining gap: target mult order vx*cos,vz*sin,(-vx)*sin,vz*cos with vz loaded LATE; residual is sched1 RA. Next modality: directed permuter RE-SEEDED from this 15-floor base (prior 2 campaigns seeded from the 21 base and found only cheat-forms)."
   },
   "sessions": [
     {
@@ -28,12 +29,22 @@
       "floor_now": 21,
       "session_id": null,
       "evidence": "permuter/cpu_get_dist workspace (base.c=cgd_iso.c, target.o at offset 0). Found a permuter-score-0 (byte-match) form BUT it is a CHEAT-FORM — REJECTED per cheats-by-any-spelling. The 0-form's closing constructs: (1) `rz++; rz--;` dead no-op pair inside the `if (v48<0)` block (extends rz live range — zero semantic purpose, same intent as HEAD's original liveness cheats); (2) `s32 vx;` declared but unused (load inlined); (3) `new_var=(u8*)a0;` alias used for ONLY the 2nd store (asymmetric drop-param-alias). Clean forms plateaued at permuter-~310 (output-310-1/), none reached 0. KEY: target's allocation IS reachable but only via rz-liveness coercion in the mutation space explored — no natural C use of rz exists in the v48 block. The clean sandbox floor stays 21. FOLLOW-UP (same session): re-seeded the permuter from the clean permuter-310 base (= candidate + `long sin_val`, the one clean improving lever); it reached sandbox-0 fast (iter 385) but the 0-form is AGAIN a cheat (inline duplicate-read of a0+0x44 instead of caching vx + dead `s32 vx` + `long sin_val`) — cheat-reviewer FAIL (orchestrator-confirmed), saved to rejected/reseed-inline-reread-long-sinval-cheat.c. ALSO ran the INSN_PRIORITY deep-dive: lw vx (insn 42) and lh cos_val (insn 59) both priority=2 (shared nearest mult), so the lever is structurally blocked; operand-order sweep (cgd_v3) all 21. Net: TWO permuter campaigns + INSN_PRIORITY + operand-order all exhausted; every 0-form is a coercion. Clean floor = 21."
+    },
+    {
+      "date": "2026-06-13",
+      "git_head_at_measurement": "410a8714",
+      "lever": "algebraic-factoring sweep (orchestrator deep-dive, 50-item-goal session) — rz-before-rx statement order + vz*cos-first addend swap",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 21,
+      "floor_now": 15,
+      "session_id": null,
+      "evidence": "NEW CLEAN LEVER — refutes the prior 'clean floor = 21' conclusion. Sweep tmp/cgd_alg + tmp/cgd2 (sweep_variants). The score-21 natural form computes rx first (vx*cos lead). Computing rz FIRST with rz's inner sum written vz*cos-first ((vz*cos)+((-vx)*sin)) drops the masked floor to 15 (build_insns 63 vs target 62). Decomposed: rz-first ALONE (rx unchanged) = the lever; swapping rx's addends too regresses (24-28); store swaps regress (24-26); the (-vx)*sin -> -(vx*sin) sub form gives 61 insns/score 17. Best clean = 15 (tmp/cgd2/r6_base15.c, == candidate.c). cheat-reviewer PASS (pure reassociation+stmt-order, no dead/unused/uninit/asm/pin). Unmasked diff (tmp/cgd_diff.py) confirms target's mult order is vx*cos,vz*sin,(-vx)*sin,vz*cos with vz loaded LATE; my form front-loads vz*cos so the residual 15 is sched1 register-allocation, not instruction-set. GENUINELY UNTRIED next: directed permuter re-seeded from THIS 15-floor base (candidate.c) — the prior 2 campaigns seeded from the 21 base."
     }
   ],
   "reviewer": {
     "verdict": "PASS",
-    "date": "2026-06-12",
-    "evidence": "candidate.c is plain pure C — no asm, no pins, no dead stores, no degenerate wrappers, no volatile coercion. All 14 sweep variants scored 21 with the same clean-policy shape."
+    "date": "2026-06-13",
+    "evidence": "Score-15 candidate.c reviewed by fresh adversarial cheat-reviewer (50-item-goal session): PASS. All 6 tests clear — every var has semantic purpose, meaningful names, no forbidden family, no dead/unused/uninit/asm/pin/volatile. rz-before-rx statement order + commutative vz*cos-first addend swap are SOTN-accepted (statement-order/named-intermediate biasing). Pure reassociation of the same computation."
   },
   "remaining_gap": {
     "summary": "sched1 (sched.c:2399 rank_for_schedule) schedules `lw vx` BEFORE `lh cos_val` in the post-call basic block. The class-tie-break (class 3 'independent of last_scheduled' beats class 1 'data-dependent') picks lw vx after the sll(cos_idx). This delays the lh until after lw vx commits to $a0, so vx cannot reuse $v1 (the freshly-dead cos_idx scratch reg). The cascade shifts vx ($v1 -> $a0), cos_val ($a1 -> $a2), and downstream pseudos by one register position. Target's allocation requires lh BEFORE lw vx, which requires either (a) lh having strictly higher INSN_PRIORITY (longer chain to exit) — equal in all measured forms; or (b) lh being class 3 not class 1 — only possible if last_scheduled is NOT the sll(cos_idx) — would require restructuring so the addiu/andi/sll cos_idx chain is broken by an independent insn from outside the cos_idx chain that itself doesn't read $v1 (no natural-C structure produces this without a coercion).",
