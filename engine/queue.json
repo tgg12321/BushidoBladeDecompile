@@ -4,6 +4,14 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_80016A8C",
+      "file": "ings",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 8,
+      "status": "active"
+    },
+    {
       "func": "bios_FileRead",
       "file": "ings2",
       "distance": 8,
@@ -3839,14 +3847,14 @@
     }
   ],
   "counts": {
-    "total": 466,
-    "active": 371,
+    "total": 467,
+    "active": 372,
     "by_status": {
-      "active": 371,
+      "active": 372,
       "parked": 95
     },
     "by_verdict": {
-      "C": 188,
+      "C": 189,
       "ASM-PARTIAL": 65,
       "ASM-SUSPECT": 118
     }
