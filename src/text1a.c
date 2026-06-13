@@ -1103,7 +1103,7 @@ void InitHiraRmd_80041AC8(s16 *arg0)
     return;
   }
   D_800A9A20 = arg0[4];
-  var_s0 = (s16 *) D_80094DF0[D_80094E08[arg0[4]]];
+  var_s0 = (s16 *) D_80094DF0[D_80094E08[*(s16 *)((u8 *)arg0 + 8)]];
   if (single_game_SetStageId() != 1)
   {
     goto else_lbl;
@@ -1120,14 +1120,16 @@ void InitHiraRmd_80041AC8(s16 *arg0)
 
   if ((*var_s0) >= 0)
   {
+    s32 width = 0x10;
+    s32 height = 1;
     var_s1 = &D_800A9A24;
     do
     {
       u16 v0_val;
       rect[0] = v1_val + var_s3;
       v0_val = (u16) var_s0[1];
-      rect[2] = 0x10;
-      rect[3] = 1;
+      rect[2] = width;
+      rect[3] = height;
       rect[1] = v0_val + var_s2;
       gpu_StoreImage(rect, var_s1);
       var_s0 += 2;
