@@ -11097,17 +11097,26 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_1; /* padding after InitFadePanel */
-s32 func_80052C28(s32 arg0, s32 arg1) {
-    register s32 t0 asm("$8") = 3;
-
-    __asm__ volatile ("sub %0, %1, %2" : "=r"(arg1) : "r"(t0), "0"(arg1));
-    arg0 = (s32)((u32)arg0 >> arg1);
-    t0 = (s32)((u32)arg0 >> 11);
-    arg0 = arg0 & 0x7FF;
-    __asm__ volatile ("addi %0, %0, -4096" : "=r"(arg0) : "0"(arg0));
-    arg0 = arg0 >> t0;
-    return arg0 & 0xFFF;
-}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80052C28\n"
+    "    addiu  $t0, $zero, 3\n"
+    "    sub    $a1, $t0, $a1\n"
+    "    srlv   $a0, $a0, $a1\n"
+    "    srl    $t0, $a0, 0xb\n"
+    "    andi   $a0, $a0, 0x7ff\n"
+    "    addi   $a0, $a0, -4096\n"
+    "    srav   $a0, $a0, $t0\n"
+    "    jr     $ra\n"
+    "    andi   $v0, $a0, 0xfff\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
