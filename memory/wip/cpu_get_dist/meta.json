@@ -1,0 +1,106 @@
+{
+  "function": "cpu_get_dist",
+  "file": "code6cac_b",
+  "scores": {
+    "head_floor": 8,
+    "candidate_floor": 21,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 62,
+    "target_insns": 62,
+    "note": "candidate_floor > head_floor because HEAD's body carries TWO forbidden coercion cheats (do-while(0) scheduling-fence wrapper + dead `rx = vx*cos + (uninit vz)*sin >> 12` reading vz before its proper assignment). Both are no-new-park-categories cheats-by-spelling. The clean candidate is the honest pure-C baseline; the next session should resume from it, not from HEAD."
+  },
+  "sessions": [
+    {
+      "date": "2026-06-12",
+      "git_head_at_measurement": "fcbde9da",
+      "lever": "structural variant sweep (14 forms) + RTL diagnosis",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 21,
+      "floor_now": 21,
+      "session_id": null
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-12",
+    "evidence": "candidate.c is plain pure C — no asm, no pins, no dead stores, no degenerate wrappers, no volatile coercion. All 14 sweep variants scored 21 with the same clean-policy shape."
+  },
+  "remaining_gap": {
+    "summary": "sched1 (sched.c:2399 rank_for_schedule) schedules `lw vx` BEFORE `lh cos_val` in the post-call basic block. The class-tie-break (class 3 'independent of last_scheduled' beats class 1 'data-dependent') picks lw vx after the sll(cos_idx). This delays the lh until after lw vx commits to $a0, so vx cannot reuse $v1 (the freshly-dead cos_idx scratch reg). The cascade shifts vx ($v1 -> $a0), cos_val ($a1 -> $a2), and downstream pseudos by one register position. Target's allocation requires lh BEFORE lw vx, which requires either (a) lh having strictly higher INSN_PRIORITY (longer chain to exit) — equal in all measured forms; or (b) lh being class 3 not class 1 — only possible if last_scheduled is NOT the sll(cos_idx) — would require restructuring so the addiu/andi/sll cos_idx chain is broken by an independent insn from outside the cos_idx chain that itself doesn't read $v1 (no natural-C structure produces this without a coercion).",
+    "rule_count_at_head": 4,
+    "rules_required_for_full_match": "HEAD currently uses: cpu_get_dist: $4 <-> $3 @ 8-9, @ 11, @ 14 (three register-name swaps on cos_idx scratch) + reorder 11,13,14,15,10,16,17,12 @ 10-17. These post-process the sched1 output to look like target. A pure-C close would retire ALL four."
+  },
+  "next_hypotheses": [
+    "Permuter run with directed mode (PERM_REORDER, PERM_TYPECAST) from this candidate as base — vanilla permuter on a pin-free base might surface a structural mutation the manual sweep missed.",
+    "Try declaring single_game_getEnemyCharId return type as something narrower (s16 instead of s32) — would change angle's RTL shape and may bias sched1 differently.",
+    "Investigate whether maspsx is hiding a load-delay slot opportunity that target had: target's `lh $a1, %lo(Judge)($at)` followed by `lw $v1, ...` has the lw IN the lh's load-delay slot. Our build emits the same pair but maspsx inserts a nop. Check whether a maspsx-level adjustment (per-function maspsx_label_nop opt-out?) would let sched1's natural inverse ordering still match — though this would only matter if our sched1 PRODUCED the target ordering, which it doesn't.",
+    "Read sched.c rank_for_schedule's class definitions more carefully and check whether an additional REG_DEP_LINK between lh and lw (impossible naturally) is the only path, or whether the priority calculation has a tunable input (cos_val's REF_COUNT — 4 in target, 4 in mine — but priority may not match)."
+  ],
+  "rejected_forms": [
+    {
+      "form": "v1_clean (cos+vx+sin+vz+rx+rz+v48 single-statement decls in source order)",
+      "score": 21,
+      "reason": "baseline natural form; sched1 hoists lw vx into cos_val region"
+    },
+    {
+      "form": "v2_earlyloads (vx,vz,v48 loaded BEFORE cos/sin)",
+      "score": 21,
+      "reason": "LUID reordering doesn't change sched1's class-3 preference"
+    },
+    {
+      "form": "v3_inline_vx (precomputed cross-product locals p_vxc/p_vzs/...)",
+      "score": 21,
+      "reason": "intermediate naming doesn't restructure live ranges enough"
+    },
+    {
+      "form": "v4_vx_first (vx declared before cos_val)",
+      "score": 21,
+      "reason": "vx's lower LUID doesn't override class-tie-break"
+    },
+    {
+      "form": "v5_struct_access (K&R top-of-block decls, identical to HEAD layout minus the cheats)",
+      "score": 21,
+      "reason": "K&R-style decl alone gives no coercion effect"
+    },
+    {
+      "form": "v6_cross (named partial products before the rx/rz sums)",
+      "score": 21,
+      "reason": "explicit naming doesn't change combined-mult shape"
+    },
+    {
+      "form": "v7_callret_v0 (K&R + clean assignments)",
+      "score": 21,
+      "reason": "same as v5; no behavior change"
+    },
+    {
+      "form": "v8_pre_negate (s32 neg_vx = -vx; precomputed)",
+      "score": 21,
+      "reason": "neg_vx alias doesn't affect sched1's decision on lw vx"
+    },
+    {
+      "form": "v9_judge_local (s16 *judge = &Judge; precomputed)",
+      "score": 21,
+      "reason": "Judge pointer materialization is folded back by GCC; identical RTL"
+    },
+    {
+      "form": "v10_inline_call (separate cos_idx and sin_idx locals)",
+      "score": 21,
+      "reason": "split scratch locals don't affect the lh-vs-lw choice"
+    },
+    {
+      "form": "v11_cossin_first (cos+sin declared together, then vx, vz)",
+      "score": 21,
+      "reason": "later-LUID vx still wins class-3 over class-1 lh"
+    },
+    {
+      "form": "v12_array (a0[17] instead of (s32*)((u8*)a0+0x44))",
+      "score": 21,
+      "reason": "array-vs-cast emits identical RTL"
+    },
+    {
+      "form": "v13_macro (u8 *base = (u8*)a0; reused)",
+      "score": 21,
+      "reason": "base alias folded by GCC; identical RTL"
+    }
+  ]
+}
