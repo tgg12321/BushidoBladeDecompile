@@ -1,0 +1,76 @@
+{
+  "function": "func_8002BEA0",
+  "file": "code6cac_b",
+  "scores": {
+    "head_floor": 9,
+    "candidate_floor": 4,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 131,
+    "target_insns": 131
+  },
+  "sessions": [
+    {
+      "date": "2026-06-13",
+      "lever": "consolidated GTE LZCS/LZCR block + removed pin/barrier/standalone-nops + mirrored sibling post-LZ form",
+      "lever_rule": null,
+      "floor_was": 9,
+      "floor_now": 4,
+      "git_head_at_measurement": "a90ef483"
+    }
+  ],
+  "prior_sessions_summary": [],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-13",
+    "evidence": "GTE block matches user-authorized sibling pattern (func_800274BC / func_8001A67C) byte-for-byte in structure; inner post-GTE locals identical to sibling; trailing block-scope on temp_v0/temp_v1_3 has 4 genuine division uses (not dead, not padding). No register pins, no scheduling barriers, no standalone cheat-asm. One transparency note: block-scope replaces the HEAD scheduling barrier on temp_v0; document in notes that the motive is grouping the 4 divisions, not RA coercion."
+  },
+  "remaining_gap": {
+    "summary": "Two diffs in the /100 strength-reduce of the if-branch: (a) mfhi destination $t5 in our build vs $t8 in target (the diagnose-flagged 'mfhi/mflo synthetic intermediate' pattern), and (b) the delay-slot fill for the beqz picks addiu $v1, $zero, 0x44C first instead of target's lui $a0, hi(0x51EB851F). Both diffs live in the strength-reduce subtree where the magic constant 0x51EB851F is a GCC-synthetic temp with no source-level handle.",
+    "rule_count_at_head": 7,
+    "rules_required_for_full_match": "If candidate were committed today, regfix.txt would still need: subst mfhi $13->$24 @ 52, subst sra $3,$13,5 -> $24 @ 53, reorder 44,45,43 @ 43-45 (post-LZ srl order — but candidate's post-LZ already mirrors sibling so may not need this), and the lui/ori/addiu delay-slot reorder. The other 4 rules (GTE block reorder, /1000 scheduling) are no longer needed because the consolidated GTE asm and the temp_v0 block-scoping handle them naturally."
+  },
+  "next_hypotheses": [
+    "Try ALLOCDBG-instrumented cc1 (tmp/gccdbg/cc1 with BB2_ALLOC_DEBUG=1) to dump the RA decision at the strength-reduce mfhi point. Identify which pseudo got which hard reg and what conflicts forced $t5 over $t8.",
+    "Try BB2_SCHED_DEBUG on the if-branch BB to see why reorg.c picks addiu instead of lui as the first fill candidate. Likely an LUID ordering issue on the synthetic magic-constant pseudo.",
+    "Try variants that introduce an unused-but-loaded constant via a sibling expression (e.g. set t2_base/t3_base AFTER the divide instead of before, so t2/t3 are alive across the divide and consume the lower temps, pushing mfhi to $t8). Risk: alias-renames a previously hoisted pointer.",
+    "Try sibling func_8002BC68 as a parallel grind — its $2<->$3 swap rule suggests a related but distinct RA cluster; cross-comparing greg dumps may reveal a shared lever.",
+    "If all in-C levers measurably exhaust, surface to user for canonical-asm cluster authorization. The GTE LZCS/LZCR pattern (and the cluster's mfhi-synthetic-intermediate symptom) is identical to the two already-authorized siblings func_8001A67C / func_800274BC; this would be a 3rd sibling under the same evidence rationale. Per HARD RULES: orchestrator-escalate, do not self-authorize."
+  ],
+  "rejected_forms": [
+    {
+      "form": "precompute base_diff = 0x44C - var_t0 outside the if (v1_precompute_diff.c)",
+      "score": 34,
+      "why_rejected": "Changes the if-test from sltiu to a real compare on the precomputed diff, breaks the structure of the magic-mult subtree, and 30-distance regression — wrong shape entirely."
+    },
+    {
+      "form": "rewrite as ((var_t0 - 0x44C) * -0x50) / 100 (v2_factor_out_50.c)",
+      "score": 6,
+      "why_rejected": "GCC pulls the -1 into a separate negu, adding 2 insns. +2 distance regression."
+    },
+    {
+      "form": "intermediate s32 var_t0_s = (s32)var_t0 hoisted before the if (v3_intermediate_var.c)",
+      "score": 4,
+      "why_rejected": "No effect — same as baseline. The sign cast was already inline at the use sites; hoisting it doesn't change the LUID of the magic-constant pseudo."
+    },
+    {
+      "form": "distribute the 0x50 multiply: (0x15800 - var_t0*0x50) / 100 (v4_distribute_50.c)",
+      "score": 12,
+      "why_rejected": "GCC emits an extra constant load for 0x15800 and a different mult schedule. +8 distance."
+    },
+    {
+      "form": "intermediate s32 _scaled = (0x44C - var_t0) * 0x50; var_a0 = _scaled / 100; (v5_manual_strength.c)",
+      "score": 4,
+      "why_rejected": "Identical RTL to baseline — GCC inlines the local at the / 100 site."
+    },
+    {
+      "form": "((s32)var_t0 - 0x44C) * (-0x50) (v6_unsigned_div.c)",
+      "score": 6,
+      "why_rejected": "Same shape as v2; +2 from the explicit negation."
+    },
+    {
+      "form": "swap if-test sense: 0x44C > (s32)var_t0 (v7_swap_test.c)",
+      "score": 4,
+      "why_rejected": "GCC normalizes the comparison; identical RTL to baseline."
+    }
+  ]
+}
