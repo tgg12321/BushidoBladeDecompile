@@ -1439,13 +1439,11 @@ s32 func_80078B70(s32 arg0) {
 }
 s32 func_80078BA8(s32 arg0) {
     s32 v = arg0 & 0xFFFF;
-    s32 result = 1;
-    if (v < 3) {
-        *(volatile u16 *)(D_8009BD6C + v * 0x10) = 0;
-    } else {
-        result = 0;
+    if (v >= 3) {
+        return 0;
     }
-    return result;
+    *(volatile u16 *)(D_8009BD6C + v * 0x10) = 0;
+    return 1;
 }
 extern s32 D_8009BD80;
 void func_80078BE0(s32 a0) {

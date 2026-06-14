@@ -2906,15 +2906,6 @@ func_80078B3C: drain_delay @ 9
 func_80078B70: drain_delay @ 10
 # func_8007C748: 3-way reg cycle $v0/$v1/$a2 -- target uses $v1 for const, $a2 for mask
 # func_8007C748 idx 20: 3-cycle full-insn subst
-func_80078BA8: $3 <-> $4 @ 1-6
-func_80078BA8: subst "\$4" "$3" @ 0
-func_80078BA8: subst "\$5" "$2" @ 3
-func_80078BA8: subst "\$2" "$3" @ 5
-func_80078BA8: subst "\$2" "$3" @ 6
-func_80078BA8: subst "\$2" "$3" @ 6
-func_80078BA8: subst "\$2" "$3" @ 7
-func_80078BA8: subst "\$5" "$2" @ 10
-func_80078BA8: subst "addu\s+\$2,\$5,\$zero" "nop" @ 12
 # RETIRED (targeted-permuter): func_8004954C: drain_delay @ 9
 # RETIRED (targeted-permuter): func_8004954C: insert "addiu $sp,$sp,-0x8" @ 0
 # RETIRED (targeted-permuter): func_8004954C: insert_after "addiu $sp,$sp,0x8" @ 10
