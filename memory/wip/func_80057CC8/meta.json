@@ -1,0 +1,62 @@
+{
+  "function": "func_80057CC8",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 9,
+    "candidate_floor": 3,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 111,
+    "target_insns": 111
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "reassociate both p-pointer adds to (offset + table)",
+      "floor_was": 9,
+      "floor_now": 3
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-14",
+    "evidence": "Candidate only reassociates an integer add (A+B -> B+A), pure C, semantically identical. No regfix/asmfix rule added, no __asm__ injected; the candidate REMOVES the pre-existing asm(\"s3\") pin. audit_asm_cheats --check-new reports no new patterns. Self-reviewed against cheat catalog; no coercion construct introduced."
+  },
+  "remaining_gap": {
+    "summary": "First p's pointer addu does not coalesce its offset temp into the dest register (target reuses v0 -> `addu v0,v0,a2`; ours allocates v1 -> `addu v1,v0,a2`), cascading to the two `lh` base registers (3 masked-differing insns). The second p coalesces correctly. Asymmetry traced to the `if((s16)prev_idx<0)` reload giving prev_idx a two-def (phi) live range vs next_idx's single def. Additionally a0/a2 hold (prev_idx, table) swapped vs target (masked out, but a real byte diff) and the s3-for-next_idx choice must come naturally for a 0-rule match.",
+    "rule_count_at_head": 7,
+    "rules_required_for_full_match": "HEAD's 7 regfix-subst rules rename exactly these registers (a0<->a2, dest v0<->v1) plus the s3 pin. Removing all of them requires GCC to naturally produce the target allocation, which the explored C forms do not achieve."
+  },
+  "next_hypotheses": [
+    "Targeted permuter run from candidate.c base to find the coalescing form (caveat: text1b.c is the highest-cascade file; ~50% apply-failure rate per docs/PERMUTER_PIPELINE.md and permuter-closability-evaluated memory).",
+    "ALLOCDBG / -da dump probe to see why the first p's offset temp is not coalesced into the pointer dest while the second's is.",
+    "Try forcing prev_idx final value through a single def (e.g. compute reload result then a single assignment) so its live range matches next_idx's single-def shape."
+  ],
+  "rejected_forms": [
+    {
+      "form": "explicit s32 offset local reused for both p computations",
+      "score": 4,
+      "reason": "not a cheat, just worse — adds an insn vs the reassociated inline form"
+    },
+    {
+      "form": "ternary/single-def prev_idx with explicit sidx local",
+      "score": 5,
+      "reason": "not a cheat, worse than baseline-3"
+    },
+    {
+      "form": "pointer arithmetic `table + (sidx<<1)` instead of byte-offset cast",
+      "score": 9,
+      "reason": "not a cheat; the <<1 element-stride form changes codegen for the worse"
+    },
+    {
+      "form": "prev_idx declared s32 with (u16) casts",
+      "score": 8,
+      "reason": "not a cheat; worse"
+    },
+    {
+      "form": "second p left as (table + offset) [HEAD form]",
+      "score": 9,
+      "reason": "not a cheat; this is the un-reassociated baseline the candidate improves on"
+    }
+  ],
+  "memory_notes": []
+}
