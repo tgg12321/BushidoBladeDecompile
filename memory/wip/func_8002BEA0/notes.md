@@ -32,12 +32,21 @@ more of the region.
 - compute `diff = 0x44C - var_t0` once + reuse (so only magic materializes in
   the /100 block) == the rejected v1_precompute_diff (breaks the sltiu if-test → 34).
 
-## NEXT (unrun, for the next session)
-- Directed permuter from candidate.c (clean single-fn target). CAUTION: the sibling
-  cpu_get_dist permuter found ONLY cheat-forms — vet hard, reject coercion.
-- Find a C form where GCC RTL-gens the /100 magic at a LOWER LUID than the 0x44C
-  subtraction const, WITHOUT breaking the sltiu if-test or the `addiu $v0,$t0,-0x44C`
-  return. This is the precise unsolved lever.
+## PERMUTER EXHAUSTED (random mode) 2026-06-13
+Workspace `permuter/func_8002BEA0/` (base.c = the candidate, base score 70, target.o
+at offset 0, VALID setup). Ran ~24,000 iters / 4 workers / 15 min, `--stop-on-zero`:
+**lowest score ever reached = 70 (the base) — ZERO improvement, no output-* finds.**
+Unlike cpu_get_dist (which found score-0 CHEAT-forms), here the random statement/expr
+mutation space contains NO improvement at all — the magic-const-before-0x44C ordering
+is locked by the fixed RTL of `(a-b)*c/d`. Do NOT re-run vanilla random permuter.
+
+## NEXT (genuinely unrun)
+- DIRECTED permuter: annotate candidate.c with `PERM_*` macros around the /100
+  expression (the random space is exhausted; directed mutation is a different surface).
+- A fundamentally different C structure that makes GCC RTL-gen the /100 magic at a
+  LOWER LUID than the 0x44C subtraction const, WITHOUT breaking the sltiu if-test or
+  the `addiu $v0,$t0,-0x44C` return. The precise unsolved lever; none found across
+  manual (7 forms) + 24k random permuter iters.
 
 ## Changes vs HEAD
 
