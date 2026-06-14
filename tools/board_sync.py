@@ -220,7 +220,15 @@ def reconcile(desired, current):
     'unarchive'. NEVER 'delete' — a board item with no desired entry is treated
     as a completed function (Done + archive), only when it is currently in an
     active column. Items already in In-Progress / In-Review (Phase 2 columns)
-    are left untouched.
+    or Done/archived (terminal state) are left untouched.
+
+    Terminal cards (Done status or archived) are NEVER reverted by board_sync.
+    This protects worker-agent completions: a worker runs `board.py done` in its
+    own worktree (card → Done + archived), but main's queue.json may still list
+    the func as active until the branch merges. board_sync must not resurrect
+    the completed card back into Backlog. Trade-off: a genuinely re-opened
+    function (engine regressed, func active again) will NOT be auto-resurrected
+    from Done/archived; that rare case requires a manual un-archive.
     """
     actions = []
     # Skip board items with no title (e.g. a manually-cleared draft, or a content
@@ -230,6 +238,8 @@ def reconcile(desired, current):
     cur_by_title = {c["title"]: c for c in current}
 
     # Columns owned by the agent workflow — board_sync must not revert them.
+    # Done is also terminal: a completed card must never be resurrected by a
+    # stale queue read (the worker-completion race condition).
     _AGENT_COLUMNS = {"In-Progress", "In-Review"}
 
     for func, want in desired.items():
@@ -239,6 +249,13 @@ def reconcile(desired, current):
                             "fields": want["fields"], "archived": want["archived"]})
             continue
         cur_status = cur["fields"].get("Status")
+        cur_archived = cur["is_archived"]
+        # A Done or archived card is terminal — leave it entirely alone regardless
+        # of what the (possibly stale) queue says.  This is the multi-agent guard:
+        # a worker may have completed a func in its own worktree while main's
+        # queue.json hasn't merged yet.
+        if cur_status == "Done" or cur_archived:
+            continue
         for fname, dval in want["fields"].items():
             # Leave Status alone when the card is claimed by an agent — don't
             # revert In-Progress / In-Review back to Backlog/Blocked/Needs-Decision.
@@ -247,20 +264,25 @@ def reconcile(desired, current):
             if not _val_eq(fname, dval, cur["fields"].get(fname)):
                 actions.append({"op": "set", "item_id": cur["item_id"],
                                 "field": fname, "value": dval, "func": func})
-        if want["archived"] and not cur["is_archived"]:
+        if want["archived"] and not cur_archived:
             actions.append({"op": "archive", "item_id": cur["item_id"], "func": func})
-        elif not want["archived"] and cur["is_archived"]:
-            actions.append({"op": "unarchive", "item_id": cur["item_id"], "func": func})
+        # Never unarchive: an archived card is terminal (Done by a worker agent).
+        # The `cur_archived` early-continue above already skips this branch, but
+        # we explicitly omit the unarchive arm here for clarity and safety.
 
     # On the board but no longer in desired -> completed. Done + archive, but only
-    # if it's currently in an active column (don't disturb Phase 2 work-in-flight).
+    # if it's currently in an active column (don't disturb Phase 2 work-in-flight
+    # or already-terminal Done/archived cards).
     for func, cur in cur_by_title.items():
         if func in desired:
             continue
-        if cur["fields"].get("Status") in ACTIVE_COLUMNS:
-            if cur["fields"].get("Status") != "Done":
-                actions.append({"op": "set", "item_id": cur["item_id"],
-                                "field": "Status", "value": "Done", "func": func})
+        cur_status = cur["fields"].get("Status")
+        # Skip terminal cards (already Done or archived) — they're already correct.
+        if cur_status == "Done" or cur["is_archived"]:
+            continue
+        if cur_status in ACTIVE_COLUMNS:
+            actions.append({"op": "set", "item_id": cur["item_id"],
+                            "field": "Status", "value": "Done", "func": func})
             if not cur["is_archived"]:
                 actions.append({"op": "archive", "item_id": cur["item_id"], "func": func})
     return actions

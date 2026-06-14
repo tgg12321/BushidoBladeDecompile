@@ -145,13 +145,17 @@ def test_val_eq_edges():
     eq("string differ", board_sync._val_eq("Status", "Done", "Backlog"), False)
 
 def test_reconcile_recovers_partial_archive():
+    # An off-queue card that is already archived is terminal — board_sync leaves
+    # it alone even if its Status field isn't "Done" yet. (Previously this test
+    # expected board_sync to set Status=Done for a partial-archive; that behaviour
+    # was replaced by the Done/archived terminal guard to prevent worker-completion
+    # races. A genuinely partial-archived card is benign: it's archived, so it
+    # won't be re-circulated; Status cleanup can be done manually if desired.)
     desired = {}
     current = [{"item_id": "IID_0", "title": "func_old", "is_archived": True,
                 "fields": {"Status": "Backlog"}}]
     actions = board_sync.reconcile(desired, current)
-    ops = [(a["op"], a.get("field"), a.get("value")) for a in actions]
-    check("sets Status=Done", ("set", "Status", "Done") in ops)
-    check("does not re-archive", all(a["op"] != "archive" for a in actions))
+    eq("no actions for archived off-queue card (terminal)", actions, [])
 
 
 def test_reconcile_leaves_in_progress_untouched():
@@ -198,6 +202,91 @@ def test_reconcile_leaves_in_review_untouched():
     check("no archive for In-Review card", all(a["op"] != "archive" for a in actions))
     # Everything else is already in sync, so zero actions total
     eq("no other actions when fields match", actions, [])
+
+
+def test_reconcile_done_archived_card_left_alone():
+    # Regression guard for the multi-agent completion race:
+    # A worker completed a func (card: Status=Done, is_archived=True).
+    # main's queue.json still lists it as active (stale read).
+    # board_sync must NOT emit any Status change or unarchive.
+    desired = {
+        "func_completed": {
+            "fields": {"Status": "Backlog", "Distance": 5, "Rules": 2,
+                       "Verdict": "C", "WIP": "no", "File": "code6cac"},
+            "archived": False,
+        }
+    }
+    current = [{"item_id": "IID_0", "title": "func_completed", "is_archived": True,
+                "fields": {"Status": "Done", "Distance": 0.0, "Rules": 0.0,
+                           "Verdict": "C", "WIP": "no", "File": "code6cac"}}]
+    actions = board_sync.reconcile(desired, current)
+    eq("no actions at all for Done+archived card", actions, [])
+
+
+def test_reconcile_done_not_archived_card_left_alone():
+    # A card with Status=Done but not yet archived (e.g. board.py done ran but
+    # archive step is pending) must also be treated as terminal — no Status change,
+    # no other field updates.
+    desired = {
+        "func_done_unarchived": {
+            "fields": {"Status": "Backlog", "Distance": 7, "Rules": 1,
+                       "Verdict": "C", "WIP": "no", "File": "text1b"},
+            "archived": False,
+        }
+    }
+    current = [{"item_id": "IID_1", "title": "func_done_unarchived", "is_archived": False,
+                "fields": {"Status": "Done", "Distance": 7.0, "Rules": 1.0,
+                           "Verdict": "C", "WIP": "no", "File": "text1b"}}]
+    actions = board_sync.reconcile(desired, current)
+    eq("no actions for Done (not archived) card", actions, [])
+
+
+def test_reconcile_archived_only_card_left_alone():
+    # An archived card (regardless of Status field) must be treated as terminal.
+    desired = {
+        "func_archived_backlog": {
+            "fields": {"Status": "Backlog", "Distance": 3, "Rules": 0,
+                       "Verdict": "C", "WIP": "no", "File": "display"},
+            "archived": False,
+        }
+    }
+    current = [{"item_id": "IID_2", "title": "func_archived_backlog", "is_archived": True,
+                "fields": {"Status": "Backlog", "Distance": 3.0, "Rules": 0.0,
+                           "Verdict": "C", "WIP": "no", "File": "display"}}]
+    actions = board_sync.reconcile(desired, current)
+    eq("no actions for archived card (even if Status != Done)", actions, [])
+
+
+def test_reconcile_off_queue_done_card_not_re_archived():
+    # A func no longer in the queue whose card is already Done + archived should
+    # generate no actions — board_sync must not try to re-archive it.
+    desired = {}
+    current = [{"item_id": "IID_3", "title": "func_already_done", "is_archived": True,
+                "fields": {"Status": "Done"}}]
+    actions = board_sync.reconcile(desired, current)
+    eq("no actions for already-Done+archived off-queue card", actions, [])
+
+
+def test_reconcile_backlog_card_still_updated_non_status():
+    # A live Backlog card (not Done, not archived) must still have stale
+    # non-Status fields updated — board_sync manages active cards normally.
+    desired = {
+        "func_live": {
+            "fields": {"Status": "Backlog", "Distance": 3, "Rules": 0,
+                       "Verdict": "C", "WIP": "no", "File": "main"},
+            "archived": False,
+        }
+    }
+    current = [{"item_id": "IID_4", "title": "func_live", "is_archived": False,
+                "fields": {"Status": "Backlog", "Distance": 99.0, "Rules": 0.0,
+                           "Verdict": "C", "WIP": "no", "File": "main"}}]
+    actions = board_sync.reconcile(desired, current)
+    distance_actions = [a for a in actions if a.get("field") == "Distance"]
+    eq("stale Distance updated for live Backlog card", len(distance_actions), 1)
+    eq("Distance set to correct value", distance_actions[0]["value"], 3)
+    # Status is already Backlog and matches desired — no Status set
+    status_actions = [a for a in actions if a.get("field") == "Status"]
+    eq("no redundant Status set when already correct", status_actions, [])
 
 
 class FakeGh:
@@ -656,6 +745,11 @@ def main():
     test_reconcile_recovers_partial_archive()
     test_reconcile_leaves_in_progress_untouched()
     test_reconcile_leaves_in_review_untouched()
+    test_reconcile_done_archived_card_left_alone()
+    test_reconcile_done_not_archived_card_left_alone()
+    test_reconcile_archived_only_card_left_alone()
+    test_reconcile_off_queue_done_card_not_re_archived()
+    test_reconcile_backlog_card_still_updated_non_status()
     test_ensure_project_reuses_existing()
     test_ensure_project_creates_when_absent()
     test_ensure_project_reuse_second_page()
