@@ -343,13 +343,34 @@ def _create_field(project_id, name, dtype, options):
     return {"id": field["id"], "options": {}}
 
 
+def _update_field_options(field_id, options):
+    """Replace a single-select field's options with `options` (a label list) via
+    updateProjectV2Field. Returns the new {label: option_id} map. Used when an
+    existing single-select field (e.g. GitHub's built-in Status field) is missing
+    our required options."""
+    opts = [{"name": o, "color": OPTION_COLORS.get(o, "GRAY"), "description": ""} for o in options]
+    data = gh_graphql(
+        "mutation($f:ID!,$opts:[ProjectV2SingleSelectFieldOptionInput!]!){ "
+        "updateProjectV2Field(input:{fieldId:$f, singleSelectOptions:$opts}){ "
+        "projectV2Field{ ... on ProjectV2SingleSelectField{ id options{ id name } } } } }",
+        variables={"f": field_id, "opts": opts})
+    field = data["updateProjectV2Field"]["projectV2Field"]
+    return {o["name"]: o["id"] for o in field["options"]}
+
+
 def ensure_fields(project_id):
-    """Ensure every FIELD_SPEC field exists; return {name: {id, options}}."""
+    """Ensure every FIELD_SPEC field exists with the right options; return
+    {name: {id, options}}. An existing single-select field (e.g. the built-in
+    Status field) that lacks our options has them replaced."""
     existing = _list_fields(project_id)
     field_map = {}
     for name, dtype, options in FIELD_SPECS:
         if name in existing:
-            field_map[name] = existing[name]
+            entry = existing[name]
+            if dtype == "SINGLE_SELECT" and options and any(o not in entry["options"] for o in options):
+                new_opts = _update_field_options(entry["id"], options)
+                entry = {"id": entry["id"], "options": new_opts}
+            field_map[name] = entry
         else:
             field_map[name] = _create_field(project_id, name, dtype, options)
     return field_map

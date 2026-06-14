@@ -300,6 +300,34 @@ def test_ensure_fields_reuses_existing():
     eq("reused status option id", fmap["Status"]["options"]["Done"], "opt_Status_Done")
 
 
+def test_ensure_fields_updates_builtin_status_options():
+    # Board already has ALL our fields, but Status carries GitHub's default options.
+    nodes = [{"id": "F_title", "name": "Title"},
+             {"id": "F_Status", "name": "Status",
+              "options": [{"id": "o_todo", "name": "Todo"},
+                          {"id": "o_ip", "name": "In Progress"},
+                          {"id": "o_done", "name": "Done"}]}]
+    for fname, dtype, opts in board_sync.FIELD_SPECS:
+        if fname == "Status":
+            continue
+        if dtype == "SINGLE_SELECT":
+            nodes.append({"id": f"F_{fname}", "name": fname,
+                          "options": [{"id": f"opt_{fname}_{o}", "name": o} for o in opts]})
+        else:
+            nodes.append({"id": f"F_{fname}", "name": fname})
+    list_resp = {"node": {"fields": {"nodes": nodes,
+                 "pageInfo": {"hasNextPage": False, "endCursor": None}}}}
+    update_resp = {"updateProjectV2Field": {"projectV2Field": {
+        "id": "F_Status",
+        "options": [{"id": f"new_{o}", "name": o} for o in board_sync.STATUS_OPTIONS]}}}
+    fake = FakeGh([list_resp, update_resp])
+    fmap = _with_stub(fake, lambda: board_sync.ensure_fields("PVT_x"))
+    eq("two calls: list + update, no creates", len(fake.calls), 2)
+    check("update mutation issued", "updateProjectV2Field" in fake.calls[1]["query"])
+    eq("Status now has Backlog option", fmap["Status"]["options"]["Backlog"], "new_Backlog")
+    eq("Status has Needs-Decision", fmap["Status"]["options"]["Needs-Decision"], "new_Needs-Decision")
+
+
 def test_create_field_single_select_passes_option_list():
     fake = FakeGh([{"createProjectV2Field": {"projectV2Field": {
         "id": "F_S", "name": "Status", "options": [{"id": "o1", "name": "Backlog"}]}}}])
@@ -589,6 +617,7 @@ def main():
     test_gh_graphql_missing_binary_exits()
     test_ensure_fields_creates_missing()
     test_ensure_fields_reuses_existing()
+    test_ensure_fields_updates_builtin_status_options()
     test_create_field_single_select_passes_option_list()
     test_list_items_paginates_and_parses()
     test_reconcile_skips_titleless_items()
