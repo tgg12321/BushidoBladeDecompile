@@ -1,0 +1,37 @@
+{
+  "function": "func_80061EC0",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 9,
+    "candidate_floor": 9,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 56,
+    "target_insns": 56
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "confirmed same family plateau as func_80061658; tail-only v0/v1 rotation diff",
+      "floor_was": 9,
+      "floor_now": 9
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-14",
+    "evidence": "No candidate adopted. HEAD pins are the documented family cheat; no new cheat introduced."
+  },
+  "remaining_gap": {
+    "summary": "Tail-only v0/v1 register-rotation: loads->v1 / mask(0xFF00FF)->v0 unpinned vs target loads->v0 / mask->v1 with lui v1,0xff interleaved. Body (D_800F1160 offset-2/3 dispatch) matches. Masked floor 9.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "Two register pins (t->$2, mask->$3); no regfix rules. Pure-C reordering does not reproduce the rotation (see func_80061658)."
+  },
+  "next_hypotheses": [
+    "Resolve as a family with func_80061658/710/ACC/617C8/618B4/611A4/6133C — one lever covers all siblings."
+  ],
+  "rejected_forms": [],
+  "memory_notes": [
+    "memory/wip/func_80061658/notes.md",
+    "memory/project/register-alloc-deep-dive.md"
+  ]
+}
