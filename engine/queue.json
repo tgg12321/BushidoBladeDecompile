@@ -228,14 +228,6 @@
       "status": "active"
     },
     {
-      "func": "AllocRobRmd",
-      "file": "text1a",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
       "func": "func_80055948",
       "file": "text1b",
       "distance": 12,
@@ -3695,14 +3687,14 @@
     }
   ],
   "counts": {
-    "total": 447,
-    "active": 344,
+    "total": 446,
+    "active": 343,
     "by_status": {
-      "active": 344,
+      "active": 343,
       "parked": 103
     },
     "by_verdict": {
-      "C": 162,
+      "C": 161,
       "ASM-PARTIAL": 64,
       "ASM-SUSPECT": 118
     }

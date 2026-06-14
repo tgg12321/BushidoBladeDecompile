@@ -26,9 +26,7 @@ saTan4FireDisp: insert_before "^lh\t\$2,0\(\$16\)" "{lbl#6}:"
 
 # AllocRobRmd: fix .L61 label position (regfix reorder moved it with rmd[3] load)
 # 1. remove .L61: from its wrong position (after lh $5,20($18))
-AllocRobRmd: replace_first "{lbl#8}:\n" ""
 # 2. insert .L61: before rmd[1] load (the correct first instruction of texture block)
-AllocRobRmd: insert_before "^lw\t\$4,4\(\$17\)" "{lbl#8}:"
 
 mk_leaf_newpos: insert_before "^lh\\s+\\$2,0\\(\\$16\\)$" ".Lmk_leaf_newpos_hit:"
 mk_leaf_newpos: replace_first "^beq\\s+\\$3,\\$21,\\.L[0-9]+$" "beq\t$3,$21,.Lmk_leaf_newpos_hit"

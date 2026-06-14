@@ -1153,11 +1153,9 @@ decBs0: reorder 99,100,103,105,106,95,96,97,98,104,101,102,107,108 @ 95-108
 
 # AllocRobRmd: load-delay nop at .L52 merge point (maspsx skips nop after label)
 # insert BEFORE T019 (lw $16,0($17)) so nop lands AFTER .L52: label
-AllocRobRmd: insert "nop" @ 19
 # AllocRobRmd: texture block scheduling reorder (post-insert indices 88-102)
 # target loads rmd[1],h[10],rmd[3],rmd[4] first, then processes each in order
 # build interleaves loads/computes; this reorder matches target scheduling
-AllocRobRmd: reorder 90,89,88,97,94,95,98,91,92,93,99,100,102,101,96 @ 88-102
 
 # replay_camera_rob_back_loose3: rotation matrix function regfix
 # Fix sinAxsinB_12 register: GCC puts in $4 (a0), target has $2 (v0)
