@@ -69,3 +69,30 @@ def load_queue(path):
     if not path.exists():
         return []
     return json.loads(path.read_text(encoding="utf-8")).get("items", [])
+
+
+def wip_exists(func, wip_dir):
+    """True iff memory/wip/<func>/ exists (a checkpoint is present)."""
+    return (Path(wip_dir) / func).is_dir()
+
+
+def build_desired_from_queue(items, wip_dir):
+    """Turn queue items into desired board cards.
+
+    desired[func] = {"fields": {...}, "archived": bool}
+    """
+    desired = {}
+    for it in items:
+        col = ENGINE_STATUS_TO_COLUMN.get(it["status"], "Blocked")
+        desired[it["func"]] = {
+            "fields": {
+                "Status": col,
+                "Verdict": it["verdict"],
+                "WIP": "yes" if wip_exists(it["func"], wip_dir) else "no",
+                "File": it["file"],
+                "Distance": it["distance"],
+                "Rules": it["rules"],
+            },
+            "archived": False,
+        }
+    return desired

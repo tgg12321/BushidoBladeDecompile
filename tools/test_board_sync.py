@@ -45,9 +45,37 @@ def test_load_queue_missing():
     eq("missing queue -> empty list", items, [])
 
 
+def test_wip_exists():
+    with tempfile.TemporaryDirectory() as td:
+        wip = Path(td)
+        (wip / "func_has").mkdir()
+        eq("wip present", board_sync.wip_exists("func_has", wip), True)
+        eq("wip absent", board_sync.wip_exists("func_none", wip), False)
+
+def test_build_desired_status_mapping():
+    items = [
+        {"func": "func_a", "file": "x", "distance": 9, "verdict": "C", "rules": 3, "status": "active"},
+        {"func": "func_b", "file": "y", "distance": 4, "verdict": "ASM-STRUCTURAL", "rules": 1, "status": "authorize"},
+        {"func": "func_c", "file": "z", "distance": -1, "verdict": "ASM-SUSPECT", "rules": 2, "status": "parked"},
+    ]
+    with tempfile.TemporaryDirectory() as td:
+        desired = board_sync.build_desired_from_queue(items, Path(td))
+    eq("active -> Backlog", desired["func_a"]["fields"]["Status"], "Backlog")
+    eq("authorize -> Needs-Decision", desired["func_b"]["fields"]["Status"], "Needs-Decision")
+    eq("parked -> Blocked", desired["func_c"]["fields"]["Status"], "Blocked")
+    eq("verdict carried", desired["func_a"]["fields"]["Verdict"], "C")
+    eq("distance carried", desired["func_a"]["fields"]["Distance"], 9)
+    eq("rules carried", desired["func_a"]["fields"]["Rules"], 3)
+    eq("file carried", desired["func_a"]["fields"]["File"], "x")
+    eq("wip default no", desired["func_a"]["fields"]["WIP"], "no")
+    eq("active not archived", desired["func_a"]["archived"], False)
+
+
 def main():
     test_load_queue()
     test_load_queue_missing()
+    test_wip_exists()
+    test_build_desired_status_mapping()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 
