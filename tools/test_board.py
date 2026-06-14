@@ -318,6 +318,45 @@ def test_card_local_read():
         check("prints local card body", "CARD BODY MARKER" in out)
 
 
+def test_card_nonascii_body_does_not_crash():
+    print("test_card_nonascii_body_does_not_crash")
+    # A card body with the chars that crash a cp1252 console: `·`, `—`, and the
+    # `�` replacement char (errors="replace" emits these from non-UTF-8 source).
+    nonascii = "# func · COMPLETED — � marker\n"
+    with Tmp() as t:
+        t.write_card("func_CCCC0003", nonascii)
+        rc, out = run("card", "func_CCCC0003")
+        eq("rc", rc, 0)
+        check("non-ascii body printed intact", "—" in out and "·" in out)
+
+
+def test_main_reconfigures_stdout_utf8():
+    print("test_main_reconfigures_stdout_utf8")
+    # Reproduce the Windows failure directly: a real TextIOWrapper backed by a
+    # cp1252 codec raises UnicodeEncodeError on `·`/`—`/`�` unless main() has
+    # reconfigured it to UTF-8. Drive the card path through such a stream.
+    import io
+    raw = io.BytesIO()
+    cp1252_stream = io.TextIOWrapper(raw, encoding="cp1252")
+    nonascii = "# func · COMPLETED — �\n"
+    saved_stdout = sys.stdout
+    with Tmp() as t:
+        t.write_card("func_DDDD0004", nonascii)
+        sys.stdout = cp1252_stream
+        raised = None
+        try:
+            board.main(["card", "func_DDDD0004"])
+            sys.stdout.flush()
+        except Exception as e:  # noqa: BLE001 — we assert NO exception
+            raised = e
+        finally:
+            sys.stdout = saved_stdout
+        check("no exception writing non-ascii to cp1252 stream", raised is None)
+        decoded = raw.getvalue().decode("utf-8", errors="replace")
+        check("body written as UTF-8 (·/— survive)",
+              "—" in decoded and "·" in decoded)
+
+
 def test_card_missing_triggers_refresh():
     print("test_card_missing_triggers_refresh")
     with Tmp() as t:

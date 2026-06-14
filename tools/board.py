@@ -577,6 +577,14 @@ def build_parser():
 
 
 def main(argv=None):
+    # Force UTF-8 on stdout/stderr BEFORE any output. Card briefings contain
+    # `·`, `—`, and (via errors="replace") `�`, which crash on Windows' default
+    # cp1252 console codec. `card` is a core agent command and must not crash.
+    for _stream in (sys.stdout, sys.stderr):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass  # older Python / non-reconfigurable stream; best-effort
     ap = build_parser()
     args = ap.parse_args(argv)
     try:
