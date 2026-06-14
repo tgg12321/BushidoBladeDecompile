@@ -98,6 +98,40 @@ def build_desired_from_queue(items, wip_dir):
     return desired
 
 
+_MAP_OBJ_RE = re.compile(r"^ \.text\s+0x[0-9a-fA-F]+\s+0x[0-9a-fA-F]+\s+build/src/(\S+)\.o")
+_MAP_SYM_RE = re.compile(r"^\s+0x[0-9a-fA-F]{8,}\s+(\S+)\s*$")
+
+
+def load_inventory(map_path):
+    """Parse build/bb2.map -> {func_name: src_stem} for every .text symbol under
+    a build/src/<stem>.o object (excluding the known non-functions). Used only
+    for --seed-done."""
+    map_path = Path(map_path)
+    inv = {}
+    cur_stem = None
+    for line in map_path.read_text(encoding="utf-8", errors="replace").splitlines():
+        m = _MAP_OBJ_RE.match(line)
+        if m:
+            cur_stem = m.group(1)
+            continue
+        s = _MAP_SYM_RE.match(line)
+        if s and cur_stem is not None:
+            name = s.group(1)
+            if name not in _MAP_EXCLUDE:
+                inv[name] = cur_stem
+    return inv
+
+
+def build_desired_done(inventory, queue_funcs):
+    """completed = inventory - queue_funcs -> archived Done cards."""
+    desired = {}
+    for func, stem in inventory.items():
+        if func in queue_funcs:
+            continue
+        desired[func] = {"fields": {"Status": "Done", "File": stem}, "archived": True}
+    return desired
+
+
 # ---------------------------------------------------------------------------
 # reconciler (pure) — diff desired vs current; emit minimal actions; never delete
 # ---------------------------------------------------------------------------

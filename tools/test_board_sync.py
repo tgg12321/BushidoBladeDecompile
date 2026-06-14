@@ -459,6 +459,35 @@ def test_run_sync_dry_run_makes_no_mutations():
          board_sync.list_items, board_sync.apply) = saved
 
 
+def test_load_inventory_parses_map():
+    sample = (
+        " .text          0x00000000        0x0 build/src/empty.o\n"
+        " .text          0x80016400      0x100 build/src/text1b.o\n"
+        "                0x800164ac                func_800164AC\n"
+        "                0x800164f8                func_800164F8\n"
+        " .text          0x80020000      0x080 build/src/display.o\n"
+        "                0x80020010                func_80020010\n"
+        "                0x80020040                func_80037F08_ret\n"  # excluded
+    )
+    with tempfile.TemporaryDirectory() as td:
+        m = Path(td) / "bb2.map"
+        m.write_text(sample, encoding="utf-8")
+        inv = board_sync.load_inventory(m)
+    eq("three real funcs", len(inv), 3)
+    eq("func->stem text1b", inv["func_800164AC"], "text1b")
+    eq("func->stem display", inv["func_80020010"], "display")
+    check("excluded non-function dropped", "func_80037F08_ret" not in inv)
+
+def test_build_desired_done():
+    inv = {"func_done": "text1b", "func_active": "display"}
+    queue_funcs = {"func_active"}
+    done = board_sync.build_desired_done(inv, queue_funcs)
+    eq("only the completed func", list(done), ["func_done"])
+    eq("status Done", done["func_done"]["fields"]["Status"], "Done")
+    eq("file carried", done["func_done"]["fields"]["File"], "text1b")
+    eq("archived true", done["func_done"]["archived"], True)
+
+
 def test_main_wraps_gherror_cleanly():
     saved_argv = sys.argv
     saved_run = board_sync.run_sync
@@ -510,6 +539,8 @@ def main():
     test_mutate_reraises_non_rate_limit()
     test_run_sync_dry_run_makes_no_mutations()
     test_main_wraps_gherror_cleanly()
+    test_load_inventory_parses_map()
+    test_build_desired_done()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 
