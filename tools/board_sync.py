@@ -229,13 +229,21 @@ def reconcile(desired, current):
     current = [c for c in current if c.get("title")]
     cur_by_title = {c["title"]: c for c in current}
 
+    # Columns owned by the agent workflow — board_sync must not revert them.
+    _AGENT_COLUMNS = {"In-Progress", "In-Review"}
+
     for func, want in desired.items():
         cur = cur_by_title.get(func)
         if cur is None:
             actions.append({"op": "add", "func": func,
                             "fields": want["fields"], "archived": want["archived"]})
             continue
+        cur_status = cur["fields"].get("Status")
         for fname, dval in want["fields"].items():
+            # Leave Status alone when the card is claimed by an agent — don't
+            # revert In-Progress / In-Review back to Backlog/Blocked/Needs-Decision.
+            if fname == "Status" and cur_status in _AGENT_COLUMNS:
+                continue
             if not _val_eq(fname, dval, cur["fields"].get(fname)):
                 actions.append({"op": "set", "item_id": cur["item_id"],
                                 "field": fname, "value": dval, "func": func})

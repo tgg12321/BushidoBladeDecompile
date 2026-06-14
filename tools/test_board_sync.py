@@ -154,6 +154,52 @@ def test_reconcile_recovers_partial_archive():
     check("does not re-archive", all(a["op"] != "archive" for a in actions))
 
 
+def test_reconcile_leaves_in_progress_untouched():
+    # An active func whose card was moved to In-Progress by an agent must NOT
+    # have its Status reverted by board_sync. Other fields (Distance etc.) are
+    # still updated, but Status is frozen while the card is In-Progress.
+    desired = {
+        "func_wip": {
+            "fields": {"Status": "Backlog", "Distance": 5, "Rules": 2,
+                       "Verdict": "C", "WIP": "yes", "File": "code6cac"},
+            "archived": False,
+        }
+    }
+    current = [{"item_id": "IID_0", "title": "func_wip", "is_archived": False,
+                "fields": {"Status": "In-Progress", "Distance": 99.0, "Rules": 2.0,
+                           "Verdict": "C", "WIP": "yes", "File": "code6cac"}}]
+    actions = board_sync.reconcile(desired, current)
+    # Status must NOT be touched
+    status_actions = [a for a in actions if a.get("field") == "Status"]
+    eq("no Status set for In-Progress card", status_actions, [])
+    # Card must NOT be archived
+    check("no archive for In-Progress card", all(a["op"] != "archive" for a in actions))
+    # Other stale fields ARE updated (Distance changed from 99 to 5)
+    distance_actions = [a for a in actions if a.get("field") == "Distance"]
+    eq("stale Distance still updated", len(distance_actions), 1)
+    eq("Distance updated to new value", distance_actions[0]["value"], 5)
+
+
+def test_reconcile_leaves_in_review_untouched():
+    # Same guard applies to In-Review cards.
+    desired = {
+        "func_review": {
+            "fields": {"Status": "Blocked", "Distance": 3, "Rules": 1,
+                       "Verdict": "ASM-SUSPECT", "WIP": "no", "File": "text1b"},
+            "archived": False,
+        }
+    }
+    current = [{"item_id": "IID_1", "title": "func_review", "is_archived": False,
+                "fields": {"Status": "In-Review", "Distance": 3.0, "Rules": 1.0,
+                           "Verdict": "ASM-SUSPECT", "WIP": "no", "File": "text1b"}}]
+    actions = board_sync.reconcile(desired, current)
+    status_actions = [a for a in actions if a.get("field") == "Status"]
+    eq("no Status set for In-Review card", status_actions, [])
+    check("no archive for In-Review card", all(a["op"] != "archive" for a in actions))
+    # Everything else is already in sync, so zero actions total
+    eq("no other actions when fields match", actions, [])
+
+
 class FakeGh:
     """Records (query, variables) calls and returns scripted responses."""
     def __init__(self, responses):
@@ -608,6 +654,8 @@ def main():
     test_reconcile_never_deletes()
     test_val_eq_edges()
     test_reconcile_recovers_partial_archive()
+    test_reconcile_leaves_in_progress_untouched()
+    test_reconcile_leaves_in_review_untouched()
     test_ensure_project_reuses_existing()
     test_ensure_project_creates_when_absent()
     test_ensure_project_reuse_second_page()
