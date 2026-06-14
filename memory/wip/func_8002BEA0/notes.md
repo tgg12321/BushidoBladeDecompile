@@ -1,18 +1,43 @@
 # func_8002BEA0 WIP — floor 9 → 4
 
-**Status:** WIP checkpoint, 2026-06-13. Cheat-reviewer PASS on candidate.
+**Status:** WIP checkpoint. Cheat-reviewer PASS on candidate. RTL diagnosis
+pinned 2026-06-13 (park-revisit session, [[handoff-park-revisit-2026-06-13]]).
 
 ## TL;DR
 
-Cluster sibling of **func_8001A67C / func_800274BC** (both user-
-authorized 2026-06-10 for the GTE LZCS/LZCR block: $t4 reused for two
-unrelated values, 2 unfilled GTE delay nops, splat tags cop2 ops
-"handwritten instruction"). This session mirrored the sibling pattern in
-pure C + canonical inline asm and retired 5/7 cheat constructs, dropping
-honest cheat-free pure-C distance **9 → 4** (sandbox --disable all,
-build_insns 131 == target_insns 131, 0 regfix rules in effect on the
-candidate's build). Remaining 4 is a single coupled cluster in the
-`/100` strength-reduce subtree.
+Cluster sibling of **func_8001A67C / func_800274BC** (user-authorized
+2026-06-10, GTE LZCS/LZCR cop2 block). Candidate mirrors the sibling GTE
+form in canonical inline asm; honest pure-C distance **9 → 4**. scan_hand_coded
+= LOW (the /100 region is compiled C, NOT hand-scheduled) → pure-C-closable in
+principle; the GTE block is the only canonical part. To CLOSE: close the /100
+in pure C (zero rules), then authorize the GTE block (self-authorize, 3rd LZCS
+sibling, per [[self-authorize-within-parameters]]).
+
+## PRECISE RTL DIAGNOSIS of the residual (honest disassembly, rules-dropped + GTE-kept)
+
+The 4 diffs are ONE coupled issue: the magic-const (`lui/ori $a0` = 0x51EB851F,
+the /100 reciprocal) and the `0x44C` const (`li/addiu $v1`) materialize in
+SWAPPED ORDER. BUILD emits `li $v1,0x44C` FIRST (it fills the beqz delay slot),
+then `lui $a0`; TARGET emits `lui $a0,hi(magic)` FIRST (fills the delay slot),
+then `addiu $v1,0x44C`. Coupled to that, BUILD `mfhi $t5`+`sra $v1,$t5,5` vs
+TARGET `mfhi $t8`+`sra $v1,$t8,5`. Root: in `(0x44C - var_t0)*0x50/100` GCC
+RTL-gens the subtraction (0x44C, lower LUID) before the divide (magic), so reorg
+fills the delay with `li $v1`; target's RTL had the magic at lower LUID. The
+mfhi $t8 is the higher-register-pressure outcome of the magic being live across
+more of the region.
+
+## RULED OUT (do not re-derive)
+- meta.json rejected_forms v1-v7 (7 structural variants, prior session).
+- `t3_base = (u8*)&D_80101EC8 + 0x44C` distinct-base (no change; GCC folds it).
+- compute `diff = 0x44C - var_t0` once + reuse (so only magic materializes in
+  the /100 block) == the rejected v1_precompute_diff (breaks the sltiu if-test → 34).
+
+## NEXT (unrun, for the next session)
+- Directed permuter from candidate.c (clean single-fn target). CAUTION: the sibling
+  cpu_get_dist permuter found ONLY cheat-forms — vet hard, reject coercion.
+- Find a C form where GCC RTL-gens the /100 magic at a LOWER LUID than the 0x44C
+  subtraction const, WITHOUT breaking the sltiu if-test or the `addiu $v0,$t0,-0x44C`
+  return. This is the precise unsolved lever.
 
 ## Changes vs HEAD
 
@@ -30,43 +55,6 @@ candidate's build). Remaining 4 is a single coupled cluster in the
 barrier. The motive is grouping the 4 divisions that share both operands;
 the live-range narrowing is a side effect. Both variables are genuinely
 used in 4 active arithmetic operations.
-
-## Remaining 4 — the `/100` strength-reduce cluster
-
-Target at insns 54-64:
-
-```
-54:  lui   $a0, hi(0x51EB851F)   <-- delay slot
-55:  ori   $a0, $a0, lo(0x51EB851F)
-56:  addiu $v1, $zero, 0x44C
-... subu/sll/addu/sll/mult/sra ...
-63:  mfhi  $t8                    <-- target picks $t8
-64:  sra   $v1, $t8, 5
-```
-
-Candidate at the same positions:
-
-```
-48:  li    $v1, 1100              <-- delay slot picks addiu
-49:  lui   $a0, 0x51eb
-50:  ori   $a0, $a0, 0x851f
-... mfhi  $t5                      <-- our build picks $t5
-    sra   $v1, $t5, 5
-```
-
-Two separable diffs in the same RTL subtree:
-
-1. **Delay-slot fill order** (3 reordered). reorg.c picks the FIRST
-   candidate from the fall-through BB; build's first is `addiu $v1,
-   0x44C`, target's first is the synthetic magic-constant `lui $a0`.
-2. **mfhi destination RA** (1 reg diff). The synthetic intermediate
-   holding `mfhi`'s output has no C variable; local-alloc picks from
-   the free list. Build's $t0..$t4 live → $t5 free; target's $t0..$t7
-   live → $t8 free. Difference is one extra register live across the
-   strength-reduce.
-
-7 in-C variants tried this session (see meta.json `rejected_forms`);
-none shifted either diff.
 
 ## Why this isn't park material
 
