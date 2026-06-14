@@ -360,7 +360,8 @@ def _mutate(query, variables=None, delay=0.2, max_tries=5):
             return data
         except GhError as e:
             msg = str(e).lower()
-            if "rate limit" in msg or "secondary" in msg or "was submitted too quickly" in msg:
+            if ("rate limit" in msg or "secondary" in msg
+                    or "was submitted too quickly" in msg or "abuse" in msg):
                 back = 2 ** attempt
                 print(f"  rate-limited; backing off {back}s")
                 time.sleep(back)

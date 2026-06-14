@@ -397,6 +397,40 @@ def test_apply_archive():
     check("archive mutation issued", "archiveProjectV2Item" in fake.calls[0]["query"])
 
 
+def test_mutate_retries_on_rate_limit():
+    calls = {"n": 0}
+    def flaky(query, variables=None):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise board_sync.GhError("You have exceeded a secondary rate limit")
+        return {"ok": True}
+    saved_gh = board_sync.gh_graphql
+    saved_sleep = board_sync.time.sleep
+    try:
+        board_sync.gh_graphql = flaky
+        board_sync.time.sleep = lambda *a, **k: None
+        out = board_sync._mutate("Q", variables={}, delay=0)
+        eq("retried then succeeded", out, {"ok": True})
+        eq("two attempts", calls["n"], 2)
+    finally:
+        board_sync.gh_graphql = saved_gh
+        board_sync.time.sleep = saved_sleep
+
+def test_mutate_reraises_non_rate_limit():
+    def boom(query, variables=None):
+        raise board_sync.GhError("some other error")
+    saved_gh = board_sync.gh_graphql
+    try:
+        board_sync.gh_graphql = boom
+        try:
+            board_sync._mutate("Q", variables={}, delay=0)
+            check("should have raised", False)
+        except board_sync.GhError:
+            check("non-rate-limit re-raised", True)
+    finally:
+        board_sync.gh_graphql = saved_gh
+
+
 def main():
     test_load_queue()
     test_load_queue_missing()
@@ -426,6 +460,8 @@ def main():
     test_apply_single_select_uses_option_id()
     test_apply_number_passes_number()
     test_apply_archive()
+    test_mutate_retries_on_rate_limit()
+    test_mutate_reraises_non_rate_limit()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 
