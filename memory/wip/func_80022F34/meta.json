@@ -1,0 +1,44 @@
+{
+  "function": "func_80022F34",
+  "file": "code6cac",
+  "scores": {
+    "head_floor": 11,
+    "candidate_floor": 11,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 69,
+    "target_insns": 70
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "explored 3 structural forms to demote s3/s4/s5; none beat floor 11",
+      "floor_was": 11,
+      "floor_now": 11,
+      "lever_rule": "maspsx-label-nop-gate"
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-14",
+    "evidence": "No candidate adopted (no floor improvement). HEAD's 11 regfix rules (10 frame-offset substs + 1 insert nop) encode a register allocation GCC won't produce in pure C; no new cheat introduced."
+  },
+  "remaining_gap": {
+    "summary": "Pure-C GCC 2.7.2 allocates 7 callee-saved regs (s0-s5,ra) and a -48 frame; target uses 4 (s0,s1,s2,ra) and -32. GCC over-promotes 3 long-lived values (&D_801027BC base, val1, an index temp) to s3/s4/s5 where target keeps them caller-saved. The 10 frame-offset substs + register renames correct this; the lone insert-nop is the separate maspsx .L-label load-delay blind spot (legitimately retirable via maspsx_label_nop_funcs.txt). The callee-saved over-promotion is the real blocker.",
+    "rule_count_at_head": 11,
+    "rules_required_for_full_match": "10 frame-offset substs (prologue idx 0-7, epilogue idx 59-63) correcting the -48->-32 frame + register allocation, plus 1 insert-nop (maspsx blind spot, retirable on its own via the allowlist)."
+  },
+  "next_hypotheses": [
+    "Directed permuter from baseline targeting the s3/s4/s5 demotion (register allocation is the permuter's domain).",
+    "ALLOCDBG/-da RTL dump to identify which values GCC promotes to s3/s4/s5 and whether a lifetime-shortening restructure keeps them caller-saved.",
+    "If the promotion is immovable: canonical-asm authorization."
+  ],
+  "rejected_forms": [
+    { "form": "inline the call args (drop idx1/val1 intermediates)", "score": 11, "reason": "not a cheat; no change to the callee-saved promotion" },
+    { "form": "switch directly on D_800A38DC (drop val temp)", "score": 11, "reason": "not a cheat; no change" },
+    { "form": "do/while loop instead of goto", "score": 26, "reason": "not a cheat; worse" }
+  ],
+  "memory_notes": [
+    ".claude/rules/maspsx-label-nop-gate.md",
+    ".claude/rules/dead-vars-local-array.md"
+  ]
+}
