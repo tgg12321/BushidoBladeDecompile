@@ -41,8 +41,56 @@ anything by hand.
 
     python tools/test_board_sync.py          # exit 0 = pass (no network; gh is stubbed)
 
+## Rich card bodies (the per-function agent briefing)
+
+Every card body is a self-contained one-stop-shop for an agent working that
+function: status + next step, identified cheats/rules (with explanations), the
+WIP checkpoint (floor/gap/resume pointer), techniques, decomp history (commits),
+the current C source, and the target disassembly. Two tools build/push them:
+
+- **`tools/board_cards.py`** — assembles each function's body from repo data
+  (objdump of `build/bb2.elf` for the target asm; the engine brace-matcher for
+  the current C; `regfix.txt`/`asmfix.txt` for cheats; one `git log --all` pass
+  for history; `memory/wip/<func>/` for the checkpoint) and writes
+  `tmp/cards/<func>.md` for all ~1472 board functions. Local, fast, no network.
+  - `python tools/board_cards.py` — assemble all. `python tools/board_cards.py <func>` — print one.
+  - Bodies are budgeted to ≤65000 chars (GitHub's hard limit is 65536); the two
+    ~2900-instruction giants are asm-truncated with a note.
+- **`tools/board_enrich.py`** — pushes the `tmp/cards/<func>.md` bodies onto the
+  board: updates active cards' bodies, and creates the ~1024 completed functions
+  as archived Done cards **with their body in the create call**. Rate-limit-aware
+  and resumable.
+  - `python tools/board_enrich.py` — full run. `--dry-run` previews (read-only).
+    `--limit N` caps content-writes (chunked runs). `--only-active` / `--only-done`.
+
+### Regenerating cards
+When functions change (matched, parked, new WIP, new commits), refresh:
+`python tools/board_cards.py` then `python tools/board_enrich.py`. The enrich run
+only rewrites cards whose body actually changed (idempotent).
+
+### Why it's a multi-hour, resumable grind (rate limits)
+GitHub's secondary limit caps **content-creating writes at ~500/hour** (a draft
+body update / create each counts). The full population is ~1469 content-writes, so
+it spans several hours. `board_enrich` paces ~8s/write, and when the GraphQL budget
+runs low it **sleeps until the rate-limit reset** and continues — one unattended
+run grinds through multiple windows.
+
+### The Done-card ledger (load-bearing gotcha)
+GitHub's `items(first:N)` does **not** reliably return *archived* items, so once a
+Done card is archived it's invisible to the board read. `board_enrich` therefore
+records every created Done card in a **local ledger**
+`tmp/board_enrich_done_ledger.json` (gitignored) and uses *that* — not the API —
+to know which Done cards exist. This is what makes resume safe: without it, every
+restart would re-create all ~1024 Done cards as duplicates. The ledger is written
+*before* finalize (Status=Done + archive), so a crash mid-create still records the
+card and the next run finalizes it via the stored id instead of duplicating.
+**Keep `tmp/` between resume runs** on the same machine (the ledger lives there).
+
+`board_enrich` never deletes board items (only add / update body / archive).
+
 ## Phases 2-5
 
-This is Phase 1 (visibility). Claim/lease (git branches), worktree isolation,
-PR reintegration, and the multi-agent entry protocol land in later phases — see
+This is Phase 1 (visibility) + the rich-card enrichment above. Claim/lease (git
+branches), worktree isolation, PR reintegration, and the multi-agent entry
+protocol land in later phases — see
 `docs/superpowers/specs/2026-06-13-decomp-kanban-board-design.md`.
