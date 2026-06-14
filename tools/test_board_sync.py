@@ -459,6 +459,24 @@ def test_run_sync_dry_run_makes_no_mutations():
          board_sync.list_items, board_sync.apply) = saved
 
 
+def test_main_wraps_gherror_cleanly():
+    saved_argv = sys.argv
+    saved_run = board_sync.run_sync
+    def boom(*a, **k):
+        raise board_sync.GhError("api boom")
+    try:
+        board_sync.run_sync = boom
+        sys.argv = ["board_sync.py", "--dry-run"]
+        try:
+            board_sync.main()
+            check("main should exit on GhError", False)
+        except SystemExit:
+            check("main exits cleanly on GhError", True)
+    finally:
+        sys.argv = saved_argv
+        board_sync.run_sync = saved_run
+
+
 def main():
     test_load_queue()
     test_load_queue_missing()
@@ -491,6 +509,7 @@ def main():
     test_mutate_retries_on_rate_limit()
     test_mutate_reraises_non_rate_limit()
     test_run_sync_dry_run_makes_no_mutations()
+    test_main_wraps_gherror_cleanly()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 

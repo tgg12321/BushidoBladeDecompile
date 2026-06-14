@@ -450,8 +450,11 @@ def main():
     ap.add_argument("--seed-done", action="store_true",
                     help="backfill completed funcs as archived Done items (one-time)")
     a = ap.parse_args()
-    run_sync(Path(a.queue), Path(a.wip_dir), a.project, a.login,
-             dry_run=a.dry_run, seed_done=a.seed_done, map_path=Path(a.map))
+    try:
+        run_sync(Path(a.queue), Path(a.wip_dir), a.project, a.login,
+                 dry_run=a.dry_run, seed_done=a.seed_done, map_path=Path(a.map))
+    except GhError as e:
+        sys.exit(f"board sync failed (GitHub API error): {e}")
 
 
 if __name__ == "__main__":
