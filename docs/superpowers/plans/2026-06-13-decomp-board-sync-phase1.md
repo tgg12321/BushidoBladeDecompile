@@ -13,7 +13,7 @@
 ## Background facts the implementer needs (verified)
 
 - **`board_sync.py` is Windows-side** because `gh` auth (keyring, `project` scope) lives on Windows. It calls `gh` via `subprocess.run([...])` with **list args (no shell)**, so GraphQL queries are passed inline as `-f query=<string>` with **zero quoting hazard** — do NOT use `tmp/*.graphql` files or heredocs.
-- **`gh api graphql` variable passing:** string vars via `-f name=value`; numeric/raw-JSON vars via `-F name=value`. Always add header `-H "X-Github-Next-Global-ID: 1"`.
+- **`gh api graphql` variable passing:** send variables as a JSON request body — `json.dumps({"query": <str>, "variables": <dict>})` piped to `gh api graphql --input -` on stdin (real Python objects: strings, numbers, lists, dicts all serialize correctly). Do NOT use `-f`/`-F` flags: `-F` does NOT parse a JSON-array string into a GraphQL list (verified against gh 2.88.1 — `-F 'ids=["A","B"]'` is sent as one scalar string), so single-select option lists silently fail. Always add header `-H "X-Github-Next-Global-ID: 1"`.
 - **Single-select fields:** each option needs `name`, `color`, `description` (all required; `description` may be `""`). `color` ∈ `GRAY BLUE GREEN YELLOW ORANGE RED PINK PURPLE`. Setting an item's single-select value requires the **option id**, not the label — so the client must build and cache an option-label→id map per field.
 - **Engine status → board column (1:1, the spec's locked mapping):** `active`→`Backlog`, `authorize`→`Needs-Decision`, `parked`→`Blocked`; completed (not in queue)→`Done`+archived.
 - **`engine/queue.json` item schema:** `func` (str), `file` (str stem, no `.c`), `distance` (int; `-1`=unscored), `verdict` (str), `rules` (int), `status` (str), `park_reason` (only when parked), `scorable` (only when false). Read it with plain `json.load` (do NOT `import engine.queue` — that pulls the whole WSL engine).
@@ -469,12 +469,12 @@ Add to `tools/test_board_sync.py` a fake-`gh` recorder and tests:
 
 ```python
 class FakeGh:
-    """Records (query, fvars, Fvars) calls and returns scripted responses."""
+    """Records (query, variables) calls and returns scripted responses."""
     def __init__(self, responses):
         self.responses = list(responses)
         self.calls = []
-    def __call__(self, query, fvars=None, Fvars=None):
-        self.calls.append({"query": query, "fvars": fvars or {}, "Fvars": Fvars or {}})
+    def __call__(self, query, variables=None):
+        self.calls.append({"query": query, "variables": variables or {}})
         return self.responses.pop(0)
 
 def _with_stub(fake, fn):
@@ -530,18 +530,16 @@ class GhError(Exception):
     pass
 
 
-def gh_graphql(query, fvars=None, Fvars=None):
+def gh_graphql(query, variables=None):
     """Run a GraphQL query/mutation via `gh api graphql` and return the 'data'
-    object. String vars via -f, numeric/raw vars via -F. Raises GhError on
-    GraphQL errors; sys.exit on missing gh / auth failure (data is intact)."""
-    argv = ["gh", "api", "graphql", "-H", "X-Github-Next-Global-ID: 1",
-            "-f", "query=" + query]
-    for k, v in (fvars or {}).items():
-        argv += ["-f", f"{k}={v}"]
-    for k, v in (Fvars or {}).items():
-        argv += ["-F", f"{k}={v}"]
+    object. Variables (strings, numbers, lists, objects) are sent as a JSON
+    request body on stdin via `--input -` (gh's -f/-F flags do NOT parse JSON
+    arrays into GraphQL lists). sys.exit on missing gh / auth failure (data is
+    intact); raises GhError on GraphQL or other gh errors."""
+    body = json.dumps({"query": query, "variables": variables or {}})
+    argv = ["gh", "api", "graphql", "-H", "X-Github-Next-Global-ID: 1", "--input", "-"]
     try:
-        r = subprocess.run(argv, capture_output=True, text=True)
+        r = subprocess.run(argv, input=body, capture_output=True, text=True)
     except FileNotFoundError:
         sys.exit("FATAL: `gh` CLI not found on PATH. Install GitHub CLI and run `gh auth login`. "
                  "Engine state is untouched; rerun board_sync later.")
@@ -565,7 +563,7 @@ def ensure_project(title, login):
             "query($login:String!,$cursor:String){ user(login:$login){ "
             "projectsV2(first:100,after:$cursor){ nodes{ id number title } "
             "pageInfo{ hasNextPage endCursor } } } }",
-            fvars={"login": login} | ({"cursor": cursor} if cursor else {}),
+            variables={"login": login, "cursor": cursor},
         )
         pv = data["user"]["projectsV2"]
         for n in pv["nodes"]:
@@ -578,12 +576,12 @@ def ensure_project(title, login):
     created = gh_graphql(
         "mutation($ownerId:ID!,$title:String!){ createProjectV2(input:{ownerId:$ownerId,title:$title}){ "
         "projectV2{ id number title } } }",
-        fvars={"ownerId": owner, "title": title},
+        variables={"ownerId": owner, "title": title},
     )
     return created["createProjectV2"]["projectV2"]["id"]
 ```
 
-NOTE: `fvars={"login": login} | (...)` uses the dict-merge `|` operator (Python 3.9+). The Windows `python` is 3.9.5, so this is supported. If you prefer 3.8 safety, build the dict explicitly instead.
+NOTE: passing `cursor=None` for the first page serializes to JSON `null` → `after:null` (= from the start), so no dict-merge is needed.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -675,7 +673,7 @@ def _list_fields(project_id):
             "... on ProjectV2FieldCommon{ id name } "
             "... on ProjectV2SingleSelectField{ id name options{ id name } } } "
             "pageInfo{ hasNextPage endCursor } } } } }",
-            fvars={"id": project_id} | ({"cursor": cursor} if cursor else {}),
+            variables={"id": project_id, "cursor": cursor},
         )
         f = data["node"]["fields"]
         for n in f["nodes"]:
@@ -689,14 +687,12 @@ def _list_fields(project_id):
 
 def _create_field(project_id, name, dtype, options):
     if dtype == "SINGLE_SELECT":
-        opts_json = json.dumps([
-            {"name": o, "color": OPTION_COLORS.get(o, "GRAY"), "description": ""} for o in options
-        ])
         data = gh_graphql(
             "mutation($p:ID!,$name:String!,$opts:[ProjectV2SingleSelectFieldOptionInput!]!){ "
             "createProjectV2Field(input:{projectId:$p,dataType:SINGLE_SELECT,name:$name,singleSelectOptions:$opts}){ "
             "projectV2Field{ ... on ProjectV2SingleSelectField{ id name options{ id name } } } } }",
-            fvars={"p": project_id, "name": name}, Fvars={"opts": opts_json},
+            variables={"p": project_id, "name": name,
+                       "opts": [{"name": o, "color": OPTION_COLORS.get(o, "GRAY"), "description": ""} for o in options]},
         )
         field = data["createProjectV2Field"]["projectV2Field"]
         return {"id": field["id"], "options": {o["name"]: o["id"] for o in field["options"]}}
@@ -704,7 +700,7 @@ def _create_field(project_id, name, dtype, options):
         "mutation($p:ID!,$name:String!,$dt:ProjectV2CustomFieldType!){ "
         "createProjectV2Field(input:{projectId:$p,dataType:$dt,name:$name}){ "
         "projectV2Field{ ... on ProjectV2FieldCommon{ id name } } } }",
-        fvars={"p": project_id, "name": name, "dt": dtype},
+        variables={"p": project_id, "name": name, "dt": dtype},
     )
     field = data["createProjectV2Field"]["projectV2Field"]
     return {"id": field["id"], "options": {}}
@@ -764,7 +760,7 @@ def test_list_items_paginates_and_parses():
     ])
     items = _with_stub(fake, lambda: board_sync.list_items("PVT_x"))
     eq("two items across pages", len(items), 2)
-    eq("second page cursor passed", fake.calls[1]["fvars"].get("cursor"), "CUR1")
+    eq("second page cursor passed", fake.calls[1]["variables"].get("cursor"), "CUR1")
     eq("title parsed", items[0]["title"], "func_a")
     eq("archived parsed", items[1]["is_archived"], True)
     eq("single-select value parsed", items[0]["fields"]["Status"], "Backlog")
@@ -824,8 +820,7 @@ def list_items(project_id):
     items = []
     cursor = None
     while True:
-        data = gh_graphql(_ITEMS_QUERY,
-                          fvars={"id": project_id} | ({"cursor": cursor} if cursor else {}))
+        data = gh_graphql(_ITEMS_QUERY, variables={"id": project_id, "cursor": cursor})
         page = data["node"]["items"]
         for n in page["nodes"]:
             content = n.get("content") or {}
@@ -889,14 +884,14 @@ def test_apply_single_select_uses_option_id():
     actions = [{"op": "set", "item_id": "IID", "field": "Status", "value": "Done", "func": "f"}]
     fake = FakeGh([set_resp])
     _with_stub(fake, lambda: board_sync.apply("PVT_x", _full_field_map(), actions, delay=0))
-    eq("single-select set sends option id", fake.calls[0]["fvars"].get("opt"), "opt_Status_Done")
+    eq("single-select set sends option id", fake.calls[0]["variables"].get("opt"), "opt_Status_Done")
 
-def test_apply_number_uses_F_var():
+def test_apply_number_passes_number():
     set_resp = {"updateProjectV2ItemFieldValue": {"projectV2Item": {"id": "IID"}}}
     actions = [{"op": "set", "item_id": "IID", "field": "Distance", "value": 9, "func": "f"}]
     fake = FakeGh([set_resp])
     _with_stub(fake, lambda: board_sync.apply("PVT_x", _full_field_map(), actions, delay=0))
-    eq("number goes through Fvars", fake.calls[0]["Fvars"].get("v"), 9)
+    eq("number passed directly in variables", fake.calls[0]["variables"].get("v"), 9)
 
 def test_apply_archive():
     arch_resp = {"archiveProjectV2Item": {"item": {"id": "IID", "isArchived": True}}}
@@ -911,7 +906,7 @@ Register in `main()`:
 ```python
     test_apply_add_then_set_fields()
     test_apply_single_select_uses_option_id()
-    test_apply_number_uses_F_var()
+    test_apply_number_passes_number()
     test_apply_archive()
 ```
 
@@ -939,11 +934,11 @@ _UNARCHIVE = "mutation($p:ID!,$i:ID!){ unarchiveProjectV2Item(input:{projectId:$
 _NUMBER_FIELDS = {"Distance", "Rules"}
 
 
-def _mutate(query, fvars=None, Fvars=None, delay=0.2, max_tries=5):
+def _mutate(query, variables=None, delay=0.2, max_tries=5):
     """gh_graphql with rate-limit backoff + inter-mutation pacing."""
     for attempt in range(max_tries):
         try:
-            data = gh_graphql(query, fvars=fvars, Fvars=Fvars)
+            data = gh_graphql(query, variables=variables)
             if delay:
                 time.sleep(delay)
             return data
@@ -961,14 +956,14 @@ def _mutate(query, fvars=None, Fvars=None, delay=0.2, max_tries=5):
 def _set_field(project_id, field_map, item_id, field, value, delay):
     spec = field_map[field]
     if field in _NUMBER_FIELDS:
-        _mutate(_SET_NUM, fvars={"p": project_id, "i": item_id, "f": spec["id"]},
-                Fvars={"v": value}, delay=delay)
+        _mutate(_SET_NUM, variables={"p": project_id, "i": item_id, "f": spec["id"], "v": value},
+                delay=delay)
     elif spec["options"]:  # single-select
         opt_id = spec["options"][value]
-        _mutate(_SET_SEL, fvars={"p": project_id, "i": item_id, "f": spec["id"], "opt": opt_id},
+        _mutate(_SET_SEL, variables={"p": project_id, "i": item_id, "f": spec["id"], "opt": opt_id},
                 delay=delay)
     else:  # text
-        _mutate(_SET_TEXT, fvars={"p": project_id, "i": item_id, "f": spec["id"], "v": str(value)},
+        _mutate(_SET_TEXT, variables={"p": project_id, "i": item_id, "f": spec["id"], "v": str(value)},
                 delay=delay)
 
 
@@ -978,18 +973,18 @@ def apply(project_id, field_map, actions, delay=0.2):
         op = a["op"]
         if op == "add":
             body = f"file: {a['fields'].get('File', '')}"
-            res = _mutate(_ADD_DRAFT, fvars={"p": project_id, "t": a["func"], "b": body}, delay=delay)
+            res = _mutate(_ADD_DRAFT, variables={"p": project_id, "t": a["func"], "b": body}, delay=delay)
             item_id = res["addProjectV2DraftIssue"]["projectItem"]["id"]
             for field, value in a["fields"].items():
                 _set_field(project_id, field_map, item_id, field, value, delay)
             if a.get("archived"):
-                _mutate(_ARCHIVE, fvars={"p": project_id, "i": item_id}, delay=delay)
+                _mutate(_ARCHIVE, variables={"p": project_id, "i": item_id}, delay=delay)
         elif op == "set":
             _set_field(project_id, field_map, a["item_id"], a["field"], a["value"], delay)
         elif op == "archive":
-            _mutate(_ARCHIVE, fvars={"p": project_id, "i": a["item_id"]}, delay=delay)
+            _mutate(_ARCHIVE, variables={"p": project_id, "i": a["item_id"]}, delay=delay)
         elif op == "unarchive":
-            _mutate(_UNARCHIVE, fvars={"p": project_id, "i": a["item_id"]}, delay=delay)
+            _mutate(_UNARCHIVE, variables={"p": project_id, "i": a["item_id"]}, delay=delay)
         else:
             raise ValueError(f"unknown action op: {op!r}")
 ```
@@ -1338,7 +1333,7 @@ git commit -m "board: usage doc for board_sync.py (Phase 1)"
 
 **Placeholder scan:** none — every step has real code/commands/expected output.
 
-**Type/name consistency:** `desired[func] = {"fields", "archived"}`, `current` item = `{item_id, title, is_archived, fields}`, `field_map[name] = {id, options}`, action ops `add|set|archive|unarchive` — used consistently across Tasks 2-9. `gh_graphql(query, fvars, Fvars)` signature is stable across client funcs and the `FakeGh` stub.
+**Type/name consistency:** `desired[func] = {"fields", "archived"}`, `current` item = `{item_id, title, is_archived, fields}`, `field_map[name] = {id, options}`, action ops `add|set|archive|unarchive` — used consistently across Tasks 2-9. `gh_graphql(query, variables)` signature is stable across client funcs and the `FakeGh` stub (variables sent as a JSON `{"query","variables"}` body via `gh api graphql --input -`).
 
 **Open items for the user (surfaced, not silently decided):**
 1. `--seed-done` default-OFF (vs spec's default-on `--no-archive-seed`).
