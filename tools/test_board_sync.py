@@ -258,6 +258,42 @@ def test_gh_graphql_missing_binary_exits():
         check("missing gh -> SystemExit", True)
 
 
+def test_ensure_fields_creates_missing():
+    # First call: list existing fields -> only built-in Title (no custom fields).
+    # Then one createProjectV2Field response per FIELD_SPEC, in order.
+    list_resp = {"node": {"fields": {"nodes": [
+        {"id": "F_title", "name": "Title"},
+    ], "pageInfo": {"hasNextPage": False, "endCursor": None}}}}
+    create_resps = []
+    for name, dtype, opts in board_sync.FIELD_SPECS:
+        if dtype == "SINGLE_SELECT":
+            create_resps.append({"createProjectV2Field": {"projectV2Field": {
+                "id": f"F_{name}", "name": name,
+                "options": [{"id": f"opt_{name}_{o}", "name": o} for o in opts]}}})
+        else:
+            create_resps.append({"createProjectV2Field": {"projectV2Field": {
+                "id": f"F_{name}", "name": name}}})
+    fake = FakeGh([list_resp] + create_resps)
+    fmap = _with_stub(fake, lambda: board_sync.ensure_fields("PVT_x"))
+    eq("all specced fields present", sorted(fmap), sorted(n for n, _, _ in board_sync.FIELD_SPECS))
+    eq("status is single-select with options", fmap["Status"]["options"]["Backlog"], "opt_Status_Backlog")
+    eq("number field has no options", fmap["Distance"]["options"], {})
+
+def test_ensure_fields_reuses_existing():
+    nodes = [{"id": "F_title", "name": "Title"}]
+    for name, dtype, opts in board_sync.FIELD_SPECS:
+        if dtype == "SINGLE_SELECT":
+            nodes.append({"id": f"F_{name}", "name": name,
+                          "options": [{"id": f"opt_{name}_{o}", "name": o} for o in opts]})
+        else:
+            nodes.append({"id": f"F_{name}", "name": name})
+    fake = FakeGh([{"node": {"fields": {"nodes": nodes,
+                   "pageInfo": {"hasNextPage": False, "endCursor": None}}}}])
+    fmap = _with_stub(fake, lambda: board_sync.ensure_fields("PVT_x"))
+    eq("no create calls when all present", len(fake.calls), 1)
+    eq("reused status option id", fmap["Status"]["options"]["Done"], "opt_Status_Done")
+
+
 def main():
     test_load_queue()
     test_load_queue_missing()
@@ -277,6 +313,8 @@ def main():
     test_gh_graphql_raises_on_error()
     test_gh_graphql_auth_failure_exits()
     test_gh_graphql_missing_binary_exits()
+    test_ensure_fields_creates_missing()
+    test_ensure_fields_reuses_existing()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 

@@ -197,6 +197,65 @@ def _viewer_id():
     return gh_graphql("query{ viewer { id } }")["viewer"]["id"]
 
 
+def _list_fields(project_id):
+    """Return {name: {"id", "type", "options"}} for existing project fields."""
+    out = {}
+    cursor = None
+    while True:
+        data = gh_graphql(
+            "query($id:ID!,$cursor:String){ node(id:$id){ ... on ProjectV2{ "
+            "fields(first:50,after:$cursor){ nodes{ "
+            "__typename "
+            "... on ProjectV2FieldCommon{ id name } "
+            "... on ProjectV2SingleSelectField{ id name options{ id name } } } "
+            "pageInfo{ hasNextPage endCursor } } } } }",
+            fvars={"id": project_id} | ({"cursor": cursor} if cursor else {}),
+        )
+        f = data["node"]["fields"]
+        for n in f["nodes"]:
+            opts = {o["name"]: o["id"] for o in n.get("options", [])}
+            out[n["name"]] = {"id": n["id"], "options": opts}
+        if not f["pageInfo"]["hasNextPage"]:
+            break
+        cursor = f["pageInfo"]["endCursor"]
+    return out
+
+
+def _create_field(project_id, name, dtype, options):
+    if dtype == "SINGLE_SELECT":
+        opts_json = json.dumps([
+            {"name": o, "color": OPTION_COLORS.get(o, "GRAY"), "description": ""} for o in options
+        ])
+        data = gh_graphql(
+            "mutation($p:ID!,$name:String!,$opts:[ProjectV2SingleSelectFieldOptionInput!]!){ "
+            "createProjectV2Field(input:{projectId:$p,dataType:SINGLE_SELECT,name:$name,singleSelectOptions:$opts}){ "
+            "projectV2Field{ ... on ProjectV2SingleSelectField{ id name options{ id name } } } } }",
+            fvars={"p": project_id, "name": name}, Fvars={"opts": opts_json},
+        )
+        field = data["createProjectV2Field"]["projectV2Field"]
+        return {"id": field["id"], "options": {o["name"]: o["id"] for o in field["options"]}}
+    data = gh_graphql(
+        "mutation($p:ID!,$name:String!,$dt:ProjectV2CustomFieldType!){ "
+        "createProjectV2Field(input:{projectId:$p,dataType:$dt,name:$name}){ "
+        "projectV2Field{ ... on ProjectV2FieldCommon{ id name } } } }",
+        fvars={"p": project_id, "name": name, "dt": dtype},
+    )
+    field = data["createProjectV2Field"]["projectV2Field"]
+    return {"id": field["id"], "options": {}}
+
+
+def ensure_fields(project_id):
+    """Ensure every FIELD_SPEC field exists; return {name: {id, options}}."""
+    existing = _list_fields(project_id)
+    field_map = {}
+    for name, dtype, options in FIELD_SPECS:
+        if name in existing:
+            field_map[name] = existing[name]
+        else:
+            field_map[name] = _create_field(project_id, name, dtype, options)
+    return field_map
+
+
 def ensure_project(title, login):
     """Return the node id of the user's project named `title`, creating it if absent."""
     cursor = None
