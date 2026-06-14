@@ -12,7 +12,7 @@
 
 ## Background facts the implementer needs (verified)
 
-- **`board_sync.py` is Windows-side** because `gh` auth (keyring, `project` scope) lives on Windows. It calls `gh` via `subprocess.run([...])` with **list args (no shell)**, so GraphQL queries are passed inline as `-f query=<string>` with **zero quoting hazard** — do NOT use `tmp/*.graphql` files or heredocs.
+- **`board_sync.py` is Windows-side** because `gh` auth (keyring, `project` scope) lives on Windows. It calls `gh` via `subprocess.run([...])` with **list args (no shell)** and passes the query + variables as a JSON body on stdin (see next bullet), so there is **zero quoting hazard** — do NOT use `tmp/*.graphql` files or heredocs.
 - **`gh api graphql` variable passing:** send variables as a JSON request body — `json.dumps({"query": <str>, "variables": <dict>})` piped to `gh api graphql --input -` on stdin (real Python objects: strings, numbers, lists, dicts all serialize correctly). Do NOT use `-f`/`-F` flags: `-F` does NOT parse a JSON-array string into a GraphQL list (verified against gh 2.88.1 — `-F 'ids=["A","B"]'` is sent as one scalar string), so single-select option lists silently fail. Always add header `-H "X-Github-Next-Global-ID: 1"`.
 - **Single-select fields:** each option needs `name`, `color`, `description` (all required; `description` may be `""`). `color` ∈ `GRAY BLUE GREEN YELLOW ORANGE RED PINK PURPLE`. Setting an item's single-select value requires the **option id**, not the label — so the client must build and cache an option-label→id map per field.
 - **Engine status → board column (1:1, the spec's locked mapping):** `active`→`Backlog`, `authorize`→`Needs-Decision`, `parked`→`Blocked`; completed (not in queue)→`Done`+archived.
