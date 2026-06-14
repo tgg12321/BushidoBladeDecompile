@@ -1,0 +1,41 @@
+{
+  "function": "func_8001924C",
+  "file": "code6cac",
+  "scores": {
+    "head_floor": 12,
+    "candidate_floor": 12,
+    "metric": "sandbox --disable all (masked Levenshtein); pad cheat stripped",
+    "build_insns": 49,
+    "target_insns": 49,
+    "note": "HEAD byte-matches the full build ONLY via the forbidden s32 pad[2] frame-coercion cheat. Honest distance (pad stripped) = 12, all of it a single +8-byte frame-size delta."
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "removed pad[2] (confirmed inert to body; distance stays 12 = pure frame-size diff). No recoverable semantic local for the 8-byte sp+16..23 hole.",
+      "lever_rule": "dead-vars-local-array (FORBIDDEN)",
+      "floor_was": 12,
+      "floor_now": 12,
+      "git_head_at_measurement": "c3aa1ffc"
+    }
+  ],
+  "reviewer": {
+    "verdict": "N/A — block for forbidden-frame-cheat / unrecoverable local",
+    "date": "2026-06-14",
+    "evidence": "All 12 honest diffs are one +8-byte frame-size delta; body byte-identical. The only forms producing the 48-byte frame are forbidden dead-array/frame-coercion cheats (s32 pad[2] or a named guess). Target never accesses the 8-byte hole, so no semantic local is recoverable from the body."
+  },
+  "remaining_gap": {
+    "summary": "12 diffs = 6 prologue saves + 6 epilogue restores at offsets shifted by 8, + the two addiu-sp insns. Frame is 40 (ours, honest) vs 48 (target). The extra 8 bytes is an unused stack hole at sp+16..23 the target reserves but never touches — a phantom local whose uses were fully DCE'd.",
+    "rule_count_at_head": 0,
+    "cheat_at_head": "s32 pad[2]; unused local array (find_unused_local_arrays / dead-vars-local-array, FORBIDDEN) — HEAD's full-build match depends on it.",
+    "rules_required_for_full_match": "A genuine 8-byte local with recoverable semantic meaning AND real (even if folded) body use. None recoverable from the byte-identical body. Phantom pad / named-guess arrays are forbidden."
+  },
+  "next_hypotheses": [
+    "Caller/data-layout analysis: inspect callers of func_8001924C and the g_file_data_buf record format to see if the loop originally filled a stack struct/array passed to func_80019310 / single_game_setModeRequest — the body shows no such use, but a wider view might reveal a genuine local.",
+    "If no semantic local is recoverable, this is canonical-asm / park territory (unrecoverable phantom frame local) — surface for user authorization. It is on the dead-vars-local-array re-evaluation list (code6cac.c, 2026-05-31)."
+  ],
+  "rejected_forms": [
+    {"form": "s32 pad[2] (HEAD)", "score": "matches-via-cheat", "why": "FORBIDDEN frame-coercion dead array; sandbox strips it -> honest 12"},
+    {"form": "remove pad entirely", "score": 12, "why": "pure +8-byte frame gap remains; confirms pad is inert to the body"}
+  ]
+}
