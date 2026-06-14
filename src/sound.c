@@ -306,11 +306,13 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
 
         func_8007E74C(matrix_buf, trans, result);
 
-        D_80101E3C = result[0] + a0[0];
-        asm volatile("" ::: "memory");
-        D_80101E40 = result[1] + a0[1];
-        asm volatile("" ::: "memory");
-        D_80101E44 = result[2] + a0[2];
+        {
+            s32 *rp = result;
+            s32 *ap = a0;
+            D_80101E3C = *rp++ + *ap++;
+            D_80101E40 = *rp++ + *ap++;
+            D_80101E44 = *rp++ + *ap++;
+        }
 
         func_800418D0((s32 *)((char *)rot_base - 0x10));
         camera_InitBoneData();
