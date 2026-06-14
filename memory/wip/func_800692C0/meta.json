@@ -1,0 +1,46 @@
+{
+  "function": "func_800692C0",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 9,
+    "candidate_floor": 9,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 67,
+    "target_insns": 67
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "pin removal + reorder-rule strip; swept 6 decl/init-order variants (bitpos-first decl, bitpos-before-sum init, sum-last, bitpos-last). All >=9.",
+      "lever_rule": "register-alloc-pure-c + scheduling",
+      "floor_was": 9,
+      "floor_now": 9,
+      "git_head_at_measurement": "c3aa1ffc"
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-14",
+    "evidence": "candidate.c is plain pure C: removes both register asm pins; the regfix reorder rule is NOT in candidate (it lives in regfix.txt). Confirmed NOT byte-matching (score 9), so not applied to src/. No coercions of any kind."
+  },
+  "remaining_gap": {
+    "summary": "TWO coupled diffs (9 insns total via register-name propagation): (1) li t6,1 (hoisted loop-invariant constant 1) prologue position — target schedules it right after `sll a1,a1,0x4`; our build emits it after the `lui/addiu t4` pair for p=&D_800A32D0. (2) sum/bitpos register swap — target sum=$t2($10), bitpos=$t1($9); GCC gives us the reverse. The sum/bitpos swap propagates through every sllv/addu/move that touches them (~7 insns); the li-hoist is the remaining 2.",
+    "rule_count_at_head": 1,
+    "rules_at_head": ["func_800692C0: reorder 6,3,4,5 @ 3-6 (regfix-reorder, scheduling cheat)"],
+    "cheat_at_head": "2x register asm(\"$10\") (sum), asm(\"$9\") (bitpos) pins + the reorder rule",
+    "rules_required_for_full_match": "The reorder rule fixes diff (1) (li hoist position); the two pins fix diff (2) (sum/bitpos swap). Both are forbidden. No pure-C lever found that reaches either; they appear coupled (the scheduler's li placement and the allocator's t1/t2 choice)."
+  },
+  "next_hypotheses": [
+    "decomp-permuter from candidate.c (floor 9): this is exactly the scheduling+RA coupling the permuter's randomization targets. Setup is non-trivial (project maspsx/fix_lwl pipeline) — but it is the documented next step when manual decl/init-order levers plateau. NB project memory permuter-closability-evaluated rates the remaining cheat-carrying functions as largely NOT permuter-closable; treat as a genuine attempt, not a guarantee.",
+    "li-hoist (diff 1): investigate whether changing how p=&D_800A32D0 is materialized (e.g. compute its address via an index off a base, or defer it) lets the scheduler float li t6,1 up to right after the sll. The lui/addiu t4 pair currently occupies the slot target gives to li.",
+    "sum/bitpos swap (diff 2): the swap is in the $t1/$t2 ($9/$10) band, both vars live across the whole loop. sum is the return value (move v0,t2). Try whether returning via an explicit fresh var, or restructuring the accumulation, flips the allocator's t1<->t2 tie. Decl/init order alone does NOT (measured).",
+    "Instrumented-cc1 SCHED + PRIO dumps (BB2_SCHED_DEBUG / BB2_PRIO_DEBUG per register-alloc-deep-dive) to see WHY sched places li late and WHY the allocator ties sum to the lower reg."
+  ],
+  "rejected_forms": [
+    {"form": "bitpos declared first (DECL_BITPOS_FIRST), init base", "score": 9, "why": "no allocation change"},
+    {"form": "sum-first decl, bitpos initialized before sum", "score": 12, "why": "worse"},
+    {"form": "sum-first decl, sum=0 moved to last init", "score": 10, "why": "worse"},
+    {"form": "sum-first decl, bitpos=0 moved to last init", "score": 10, "why": "worse"},
+    {"form": "bitpos-first decl, bitpos=0 moved to last init", "score": 10, "why": "worse"}
+  ]
+}
