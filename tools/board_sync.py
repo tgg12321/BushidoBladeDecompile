@@ -163,18 +163,16 @@ class GhError(Exception):
     pass
 
 
-def gh_graphql(query, fvars=None, Fvars=None):
+def gh_graphql(query, variables=None):
     """Run a GraphQL query/mutation via `gh api graphql` and return the 'data'
-    object. String vars via -f, numeric/raw vars via -F. sys.exit on missing gh /
-    auth failure (data is intact); raises GhError on GraphQL or other gh errors."""
-    argv = ["gh", "api", "graphql", "-H", "X-Github-Next-Global-ID: 1",
-            "-f", "query=" + query]
-    for k, v in (fvars or {}).items():
-        argv += ["-f", f"{k}={v}"]
-    for k, v in (Fvars or {}).items():
-        argv += ["-F", f"{k}={v}"]
+    object. Variables (strings, numbers, lists, objects) are sent as a JSON
+    request body on stdin via `--input -` (gh's -f/-F flags do NOT parse JSON
+    arrays into GraphQL lists). sys.exit on missing gh / auth failure (data is
+    intact; rerun later); raises GhError on GraphQL or other gh errors."""
+    body = json.dumps({"query": query, "variables": variables or {}})
+    argv = ["gh", "api", "graphql", "-H", "X-Github-Next-Global-ID: 1", "--input", "-"]
     try:
-        r = subprocess.run(argv, capture_output=True, text=True)
+        r = subprocess.run(argv, input=body, capture_output=True, text=True)
     except FileNotFoundError:
         sys.exit("FATAL: `gh` CLI not found on PATH. Install GitHub CLI and run `gh auth login`. "
                  "Engine state is untouched; rerun board_sync later.")
@@ -209,7 +207,7 @@ def _list_fields(project_id):
             "... on ProjectV2FieldCommon{ id name } "
             "... on ProjectV2SingleSelectField{ id name options{ id name } } } "
             "pageInfo{ hasNextPage endCursor } } } } }",
-            fvars={"id": project_id} | ({"cursor": cursor} if cursor else {}),
+            variables={"id": project_id, "cursor": cursor},
         )
         f = data["node"]["fields"]
         for n in f["nodes"]:
@@ -223,14 +221,12 @@ def _list_fields(project_id):
 
 def _create_field(project_id, name, dtype, options):
     if dtype == "SINGLE_SELECT":
-        opts_json = json.dumps([
-            {"name": o, "color": OPTION_COLORS.get(o, "GRAY"), "description": ""} for o in options
-        ])
         data = gh_graphql(
             "mutation($p:ID!,$name:String!,$opts:[ProjectV2SingleSelectFieldOptionInput!]!){ "
             "createProjectV2Field(input:{projectId:$p,dataType:SINGLE_SELECT,name:$name,singleSelectOptions:$opts}){ "
             "projectV2Field{ ... on ProjectV2SingleSelectField{ id name options{ id name } } } } }",
-            fvars={"p": project_id, "name": name}, Fvars={"opts": opts_json},
+            variables={"p": project_id, "name": name,
+                       "opts": [{"name": o, "color": OPTION_COLORS.get(o, "GRAY"), "description": ""} for o in options]},
         )
         field = data["createProjectV2Field"]["projectV2Field"]
         return {"id": field["id"], "options": {o["name"]: o["id"] for o in field["options"]}}
@@ -238,7 +234,7 @@ def _create_field(project_id, name, dtype, options):
         "mutation($p:ID!,$name:String!,$dt:ProjectV2CustomFieldType!){ "
         "createProjectV2Field(input:{projectId:$p,dataType:$dt,name:$name}){ "
         "projectV2Field{ ... on ProjectV2FieldCommon{ id name } } } }",
-        fvars={"p": project_id, "name": name, "dt": dtype},
+        variables={"p": project_id, "name": name, "dt": dtype},
     )
     field = data["createProjectV2Field"]["projectV2Field"]
     return {"id": field["id"], "options": {}}
@@ -264,7 +260,7 @@ def ensure_project(title, login):
             "query($login:String!,$cursor:String){ user(login:$login){ "
             "projectsV2(first:100,after:$cursor){ nodes{ id number title } "
             "pageInfo{ hasNextPage endCursor } } } }",
-            fvars={"login": login} | ({"cursor": cursor} if cursor else {}),
+            variables={"login": login, "cursor": cursor},
         )
         pv = data["user"]["projectsV2"]
         for n in pv["nodes"]:
@@ -277,6 +273,6 @@ def ensure_project(title, login):
     created = gh_graphql(
         "mutation($ownerId:ID!,$title:String!){ createProjectV2(input:{ownerId:$ownerId,title:$title}){ "
         "projectV2{ id number title } } }",
-        fvars={"ownerId": owner, "title": title},
+        variables={"ownerId": owner, "title": title},
     )
     return created["createProjectV2"]["projectV2"]["id"]

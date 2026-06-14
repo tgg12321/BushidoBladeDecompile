@@ -152,12 +152,12 @@ def test_reconcile_recovers_partial_archive():
 
 
 class FakeGh:
-    """Records (query, fvars, Fvars) calls and returns scripted responses."""
+    """Records (query, variables) calls and returns scripted responses."""
     def __init__(self, responses):
         self.responses = list(responses)
         self.calls = []
-    def __call__(self, query, fvars=None, Fvars=None):
-        self.calls.append({"query": query, "fvars": fvars or {}, "Fvars": Fvars or {}})
+    def __call__(self, query, variables=None):
+        self.calls.append({"query": query, "variables": variables or {}})
         return self.responses.pop(0)
 
 def _with_stub(fake, fn):
@@ -197,7 +197,7 @@ def test_ensure_project_reuse_second_page():
     pid = _with_stub(fake, lambda: board_sync.ensure_project("BB2 Decomp", "tgg12321"))
     eq("found on page 2", pid, "PVT_b")
     eq("two list calls, no create", len(fake.calls), 2)
-    eq("second call passed cursor", fake.calls[1]["fvars"].get("cursor"), "C1")
+    eq("second call passed cursor", fake.calls[1]["variables"].get("cursor"), "C1")
 
 
 class FakeProc:
@@ -214,24 +214,27 @@ def _stub_subprocess(fn, run_impl):
     finally:
         board_sync.subprocess.run = saved
 
-def test_gh_graphql_builds_argv_and_returns_data():
+def test_gh_graphql_sends_body_and_returns_data():
     captured = {}
-    def fake_run(argv, capture_output=False, text=False):
+    def fake_run(argv, input=None, capture_output=False, text=False):
         captured["argv"] = argv
+        captured["body"] = json.loads(input)
         return FakeProc(0, json.dumps({"data": {"ok": 1}}), "")
-    out = _stub_subprocess(lambda: board_sync.gh_graphql("QUERY", fvars={"a": "x"}, Fvars={"n": 5}), fake_run)
+    out = _stub_subprocess(
+        lambda: board_sync.gh_graphql("QUERY", variables={"a": "x", "n": 5, "opts": [{"name": "X"}]}),
+        fake_run)
     eq("returns data", out, {"ok": 1})
     argv = captured["argv"]
     check("gh api graphql prefix", argv[:3] == ["gh", "api", "graphql"])
     check("has next-global-id header", "X-Github-Next-Global-ID: 1" in argv)
-    check("query via -f", "query=QUERY" in argv)
-    check("fvar present", "a=x" in argv)
-    check("Fvar present", "n=5" in argv)
-    i = argv.index("n=5")
-    eq("numeric uses -F flag", argv[i - 1], "-F")
+    check("uses --input stdin", "--input" in argv and "-" in argv)
+    eq("body query", captured["body"]["query"], "QUERY")
+    eq("body string var", captured["body"]["variables"]["a"], "x")
+    eq("body number var", captured["body"]["variables"]["n"], 5)
+    eq("body list var preserved", captured["body"]["variables"]["opts"], [{"name": "X"}])
 
 def test_gh_graphql_raises_on_error():
-    def fake_run(argv, capture_output=False, text=False):
+    def fake_run(argv, input=None, capture_output=False, text=False):
         return FakeProc(1, json.dumps({"errors": [{"message": "boom"}]}), "boom")
     try:
         _stub_subprocess(lambda: board_sync.gh_graphql("Q"), fake_run)
@@ -240,7 +243,7 @@ def test_gh_graphql_raises_on_error():
         check("raises GhError on gh error", True)
 
 def test_gh_graphql_auth_failure_exits():
-    def fake_run(argv, capture_output=False, text=False):
+    def fake_run(argv, input=None, capture_output=False, text=False):
         return FakeProc(1, "", "gh: Bad credentials (HTTP 401)")
     try:
         _stub_subprocess(lambda: board_sync.gh_graphql("Q"), fake_run)
@@ -249,7 +252,7 @@ def test_gh_graphql_auth_failure_exits():
         check("auth failure -> SystemExit", True)
 
 def test_gh_graphql_missing_binary_exits():
-    def fake_run(argv, capture_output=False, text=False):
+    def fake_run(argv, input=None, capture_output=False, text=False):
         raise FileNotFoundError("gh")
     try:
         _stub_subprocess(lambda: board_sync.gh_graphql("Q"), fake_run)
@@ -294,6 +297,19 @@ def test_ensure_fields_reuses_existing():
     eq("reused status option id", fmap["Status"]["options"]["Done"], "opt_Status_Done")
 
 
+def test_create_field_single_select_passes_option_list():
+    fake = FakeGh([{"createProjectV2Field": {"projectV2Field": {
+        "id": "F_S", "name": "Status", "options": [{"id": "o1", "name": "Backlog"}]}}}])
+    res = _with_stub(fake, lambda: board_sync._create_field("PVT_x", "Status", "SINGLE_SELECT", ["Backlog"]))
+    opts = fake.calls[0]["variables"]["opts"]
+    check("opts is a list", isinstance(opts, list))
+    eq("opt count", len(opts), 1)
+    eq("opt name", opts[0]["name"], "Backlog")
+    check("opt has color", "color" in opts[0])
+    check("opt has description key", "description" in opts[0])
+    eq("returns option map", res["options"]["Backlog"], "o1")
+
+
 def main():
     test_load_queue()
     test_load_queue_missing()
@@ -309,12 +325,13 @@ def main():
     test_ensure_project_reuses_existing()
     test_ensure_project_creates_when_absent()
     test_ensure_project_reuse_second_page()
-    test_gh_graphql_builds_argv_and_returns_data()
+    test_gh_graphql_sends_body_and_returns_data()
     test_gh_graphql_raises_on_error()
     test_gh_graphql_auth_failure_exits()
     test_gh_graphql_missing_binary_exits()
     test_ensure_fields_creates_missing()
     test_ensure_fields_reuses_existing()
+    test_create_field_single_select_passes_option_list()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 
