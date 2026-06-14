@@ -404,3 +404,55 @@ def apply(project_id, field_map, actions, delay=0.2):
             _mutate(_UNARCHIVE, variables={"p": project_id, "i": a["item_id"]}, delay=delay)
         else:
             raise ValueError(f"unknown action op: {op!r}")
+
+
+# ---------------------------------------------------------------------------
+# driver / main
+# ---------------------------------------------------------------------------
+
+def run_sync(queue_path, wip_dir, project_title, login,
+             dry_run=False, seed_done=False, map_path=None):
+    """Build desired state, reconcile against the live board, and apply (unless
+    dry_run). Returns the number of planned actions. Engine state is never written."""
+    items = load_queue(queue_path)
+    desired = build_desired_from_queue(items, wip_dir)
+    if seed_done:
+        desired.update(build_desired_done(load_inventory(map_path), {it["func"] for it in items}))
+    print(f"board sync -> {project_title} ({'DRY RUN' if dry_run else 'apply'})")
+    print(f"  desired cards: {len(desired)} (seed_done={seed_done})")
+
+    project_id = ensure_project(project_title, login)
+    field_map = ensure_fields(project_id)
+    current = list_items(project_id)
+    actions = reconcile(desired, current)
+    print(f"  current board items: {len(current)}; planned actions: {len(actions)}")
+    for a in actions:
+        if a["op"] == "add":
+            print(f"    + add {a['func']} ({a['fields'].get('Status')})")
+        elif a["op"] == "set":
+            print(f"    ~ set {a['func']}.{a['field']} = {a['value']}")
+        elif a["op"] in ("archive", "unarchive"):
+            print(f"    {'#' if a['op']=='archive' else '^'} {a['op']} {a['func']}")
+    if not dry_run and actions:
+        apply(project_id, field_map, actions)
+    print("board sync complete." if not dry_run else "dry run complete (no mutations).")
+    return len(actions)
+
+
+def main():
+    ap = argparse.ArgumentParser(description="project the BB2 decomp engine state onto a GitHub board")
+    ap.add_argument("--queue", default=str(DEFAULT_QUEUE))
+    ap.add_argument("--wip-dir", default=str(DEFAULT_WIP_DIR))
+    ap.add_argument("--map", default=str(DEFAULT_MAP), help="build/bb2.map for --seed-done")
+    ap.add_argument("--project", default=PROJECT_TITLE)
+    ap.add_argument("--login", default="tgg12321")
+    ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--seed-done", action="store_true",
+                    help="backfill completed funcs as archived Done items (one-time)")
+    a = ap.parse_args()
+    run_sync(Path(a.queue), Path(a.wip_dir), a.project, a.login,
+             dry_run=a.dry_run, seed_done=a.seed_done, map_path=Path(a.map))
+
+
+if __name__ == "__main__":
+    main()

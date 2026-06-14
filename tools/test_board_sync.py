@@ -431,6 +431,34 @@ def test_mutate_reraises_non_rate_limit():
         board_sync.gh_graphql = saved_gh
 
 
+def test_run_sync_dry_run_makes_no_mutations():
+    # Stub the client layer; only reconcile runs for real.
+    saved = (board_sync.ensure_project, board_sync.ensure_fields,
+             board_sync.list_items, board_sync.apply)
+    applied = {"called": False}
+    try:
+        board_sync.ensure_project = lambda title, login: "PVT_x"
+        board_sync.ensure_fields = lambda pid: _full_field_map()
+        board_sync.list_items = lambda pid: []   # empty board -> adds desired
+        board_sync.apply = lambda *a, **k: applied.__setitem__("called", True)
+        with tempfile.TemporaryDirectory() as td:
+            q = Path(td) / "queue.json"
+            q.write_text(json.dumps({"items": [
+                {"func": "func_a", "file": "x", "distance": 9, "verdict": "C", "rules": 3, "status": "active"}]}),
+                encoding="utf-8")
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                n = board_sync.run_sync(queue_path=q, wip_dir=Path(td), project_title="BB2 Decomp",
+                                        login="tgg12321", dry_run=True, seed_done=False, map_path=None)
+            out = buf.getvalue()
+        eq("reports 1 planned action", n, 1)
+        eq("dry-run never applies", applied["called"], False)
+        check("prints the add", "func_a" in out)
+    finally:
+        (board_sync.ensure_project, board_sync.ensure_fields,
+         board_sync.list_items, board_sync.apply) = saved
+
+
 def main():
     test_load_queue()
     test_load_queue_missing()
@@ -462,6 +490,7 @@ def main():
     test_apply_archive()
     test_mutate_retries_on_rate_limit()
     test_mutate_reraises_non_rate_limit()
+    test_run_sync_dry_run_makes_no_mutations()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 
