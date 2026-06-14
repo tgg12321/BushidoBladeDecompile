@@ -1,0 +1,43 @@
+{
+  "function": "special_camera_get_rot_dir",
+  "file": "code6cac_b2_post",
+  "scores": {
+    "head_floor": 12,
+    "candidate_floor": 12,
+    "metric": "sandbox --disable all (masked Levenshtein) — UNRELIABLE: masks reg names, so the 4-register rotation scores 12 with or without pins. Full SHA1 is the only truth.",
+    "build_insns": 72,
+    "target_insns": 72
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "removed the 5 register pins; confirmed the residual is a pure 4-register rotation (masked-invisible)",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 12,
+      "floor_now": 12
+    }
+  ],
+  "reviewer": {
+    "verdict": "NEEDS_USER",
+    "date": "2026-06-14",
+    "evidence": "HEAD matches only via 5 register pins (index s2, cam_base s3, constant_80 s4, copy_end s5). Removing them leaves a pure 4-register ROTATION vs target: mine index->s3, cam_base->s4, constant_80->s5, copy_end->s2; target index->s2, cam_base->s3, constant_80->s4, copy_end->s5. The masked sandbox can't see it (scores 12 either way); full SHA1 is the only signal. Same wall-class as marionation_Exec."
+  },
+  "remaining_gap": {
+    "summary": "Pure 4-register rotation of the loop-control callee-saves. Target allocates index/cam_base/constant_80/copy_end -> s2/s3/s4/s5 (declaration-order ascending). GCC's natural alloc rotates them differently (a ref-count/allocno-priority tiebreaker artifact). Instruction count + structure already match (72==72); ONLY the s2-s5 assignment differs.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "HEAD matches only via the 5 asm() pins (cheat-asm). No pure-C lever found to reproduce the target rotation."
+  },
+  "next_hypotheses": [
+    "register-alloc-pure-c Lever A: shrink/reshape the live ranges so GCC's allocno priority gives index->s2 (lowest). index is used most (index+cam_base twice in the retry loop). Try block-local splits or use-order nudges. VERIFY ONLY via full build (the masked sandbox is blind to the rotation; iterating against it is futile).",
+    "decomp-permuter from candidate.c — its RA mutation pass targets exactly this rotation. Verify finds with full SHA1.",
+    "This is the documented hard wall-class (cf. marionation_Exec / register-alloc-deep-dive: allocno-priority tiebreaker at global.c:624). If levers + permuter plateau, canonical-asm auth or documented plateau."
+  ],
+  "rejected_forms": [
+    {
+      "form": "reorder assignments (index/cam_base before constant_80)",
+      "score": "unmeasured (full-build only)",
+      "reason": "Breaks target's prologue order (target assigns constant_80 -> s4=128 FIRST). Keep constant_80=0x80 as the first assignment."
+    }
+  ],
+  "memory_notes": ["memory/project/register-alloc-deep-dive.md"]
+}
