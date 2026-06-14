@@ -153,3 +153,64 @@ def reconcile(desired, current):
             if not cur["is_archived"]:
                 actions.append({"op": "archive", "item_id": cur["item_id"], "func": func})
     return actions
+
+
+# ---------------------------------------------------------------------------
+# gh client — all network goes through gh_graphql() (the mockable chokepoint)
+# ---------------------------------------------------------------------------
+
+class GhError(Exception):
+    pass
+
+
+def gh_graphql(query, fvars=None, Fvars=None):
+    """Run a GraphQL query/mutation via `gh api graphql` and return the 'data'
+    object. String vars via -f, numeric/raw vars via -F. Raises GhError on
+    GraphQL errors; sys.exit on missing gh / auth failure (data is intact)."""
+    argv = ["gh", "api", "graphql", "-H", "X-Github-Next-Global-ID: 1",
+            "-f", "query=" + query]
+    for k, v in (fvars or {}).items():
+        argv += ["-f", f"{k}={v}"]
+    for k, v in (Fvars or {}).items():
+        argv += ["-F", f"{k}={v}"]
+    try:
+        r = subprocess.run(argv, capture_output=True, text=True)
+    except FileNotFoundError:
+        sys.exit("FATAL: `gh` CLI not found on PATH. Install GitHub CLI and run `gh auth login`. "
+                 "Engine state is untouched; rerun board_sync later.")
+    if r.returncode != 0:
+        raise GhError(r.stderr.strip() or f"gh exited {r.returncode}")
+    out = json.loads(r.stdout)
+    if out.get("errors"):
+        raise GhError(json.dumps(out["errors"]))
+    return out["data"]
+
+
+def _viewer_id():
+    return gh_graphql("query{ viewer { id } }")["viewer"]["id"]
+
+
+def ensure_project(title, login):
+    """Return the node id of the user's project named `title`, creating it if absent."""
+    cursor = None
+    while True:
+        data = gh_graphql(
+            "query($login:String!,$cursor:String){ user(login:$login){ "
+            "projectsV2(first:100,after:$cursor){ nodes{ id number title } "
+            "pageInfo{ hasNextPage endCursor } } } }",
+            fvars={"login": login} | ({"cursor": cursor} if cursor else {}),
+        )
+        pv = data["user"]["projectsV2"]
+        for n in pv["nodes"]:
+            if n["title"] == title:
+                return n["id"]
+        if not pv["pageInfo"]["hasNextPage"]:
+            break
+        cursor = pv["pageInfo"]["endCursor"]
+    owner = _viewer_id()
+    created = gh_graphql(
+        "mutation($ownerId:ID!,$title:String!){ createProjectV2(input:{ownerId:$ownerId,title:$title}){ "
+        "projectV2{ id number title } } }",
+        fvars={"ownerId": owner, "title": title},
+    )
+    return created["createProjectV2"]["projectV2"]["id"]

@@ -151,6 +151,43 @@ def test_reconcile_recovers_partial_archive():
     check("does not re-archive", all(a["op"] != "archive" for a in actions))
 
 
+class FakeGh:
+    """Records (query, fvars, Fvars) calls and returns scripted responses."""
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.calls = []
+    def __call__(self, query, fvars=None, Fvars=None):
+        self.calls.append({"query": query, "fvars": fvars or {}, "Fvars": Fvars or {}})
+        return self.responses.pop(0)
+
+def _with_stub(fake, fn):
+    saved = board_sync.gh_graphql
+    try:
+        board_sync.gh_graphql = fake
+        return fn()
+    finally:
+        board_sync.gh_graphql = saved
+
+def test_ensure_project_reuses_existing():
+    fake = FakeGh([
+        {"user": {"projectsV2": {"nodes": [{"id": "PVT_existing", "number": 3, "title": "BB2 Decomp"}],
+                                 "pageInfo": {"hasNextPage": False, "endCursor": None}}}},
+    ])
+    pid = _with_stub(fake, lambda: board_sync.ensure_project("BB2 Decomp", "tgg12321"))
+    eq("reuses existing project id", pid, "PVT_existing")
+    eq("only one call (no create)", len(fake.calls), 1)
+
+def test_ensure_project_creates_when_absent():
+    fake = FakeGh([
+        {"user": {"projectsV2": {"nodes": [], "pageInfo": {"hasNextPage": False, "endCursor": None}}}},
+        {"viewer": {"id": "U_me"}},
+        {"createProjectV2": {"projectV2": {"id": "PVT_new", "number": 9, "title": "BB2 Decomp"}}},
+    ])
+    pid = _with_stub(fake, lambda: board_sync.ensure_project("BB2 Decomp", "tgg12321"))
+    eq("creates and returns new id", pid, "PVT_new")
+    eq("three calls (list, viewer, create)", len(fake.calls), 3)
+
+
 def main():
     test_load_queue()
     test_load_queue_missing()
@@ -163,6 +200,8 @@ def main():
     test_reconcile_never_deletes()
     test_val_eq_edges()
     test_reconcile_recovers_partial_archive()
+    test_ensure_project_reuses_existing()
+    test_ensure_project_creates_when_absent()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 
