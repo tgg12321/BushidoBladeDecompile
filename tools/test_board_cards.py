@@ -350,6 +350,123 @@ def test_disasm_by_func_real():
     check("address-sliced has known func", "func_80016A8C" in d2)
 
 
+def test_build_one_card_fast_path_real_func():
+    """The single-func fast path produces a non-empty card with asm + C + the
+    standard sections for a real func. Guard: skip if build/bb2.elf is absent."""
+    if not bc.ELF.exists():
+        check("SKIP build_one_card fast path (build/bb2.elf absent)", True)
+        return
+    body = bc.build_one_card("func_80016A8C")
+    if body is None:
+        check("SKIP build_one_card (func not a board function)", True)
+        return
+    check("fast-path card non-empty", bool(body and body.strip()))
+    check("fast-path header names func", "# func_80016A8C" in body)
+    check("fast-path has metadata", "**File:**" in body)
+    check("fast-path has cheats section", "## Identified cheats / rules" in body)
+    check("fast-path has C details", "Current C source" in body)
+    check("fast-path has asm details", "Target disassembly" in body)
+    # asm block should carry the synthesized header for this func (not a placeholder)
+    check("fast-path asm has func header", "<func_80016A8C>:" in body)
+    check("fast-path asm not placeholder", "disassembly not available" not in body)
+
+
+def test_build_one_card_byte_identical_to_full_pass():
+    """The fast-path card body is identical to the full-pass card for the same
+    func (same asm lines, same sections). Guard: skip if build/bb2.elf absent."""
+    if not bc.ELF.exists():
+        check("SKIP fast-vs-full identity (build/bb2.elf absent)", True)
+        return
+    func = "func_80016A8C"
+    fast = bc.build_one_card(func)
+    full = _full_pass_body(func)
+    if fast is None or full is None:
+        check("SKIP fast-vs-full identity (func not buildable)", True)
+        return
+    eq("fast-path body byte-identical to full-pass", fast, full)
+
+
+def _full_pass_body(func):
+    """Reconstruct ONE func's card body via the FULL whole-ELF / whole-repo passes
+    (disasm_by_func + history_by_func), mirroring assemble_all's bulk builder, for
+    an apples-to-apples comparison against build_one_card."""
+    import board_sync
+    items = bc.load_queue_items()
+    if not (bc.MAP.exists() and bc.ELF.exists()):
+        return None
+    inventory = board_sync.load_inventory(bc.MAP, bc.ELF)
+    sym_by_addr = board_sync._elf_func_symbols(bc.ELF)
+    board = bc.build_board_set(items, inventory)
+    if func not in board:
+        return None
+    card = board[func]
+    addr_by_name = {n: a for a, n in sym_by_addr.items()}
+    if func in addr_by_name:
+        card["addr"] = f"{addr_by_name[func]:08x}"
+    disasm = bc.disasm_by_func(sym_by_addr=sym_by_addr)
+    history = bc.history_by_func()
+    stem = card.get("file")
+    c_body = bc.extract_c_body(bc.ROOT / "src" / f"{stem}.c", func) if stem else None
+    body, _ = bc.build_body(
+        card,
+        cheats=bc.collect_func_cheats(func, bc.load_rule_cache()),
+        wip=bc.read_wip(func),
+        history=history.get(func, []),
+        c_body=c_body,
+        disasm=disasm.get(func),
+        tech_index=bc.load_technique_index(),
+        rule_slugs=bc.known_rule_slugs(),
+        head_short=bc._git_head_short(),
+    )
+    return body
+
+
+def test_build_one_card_avoids_bulk_passes():
+    """The fast path must NOT call the whole-ELF disasm_by_func nor the whole-repo
+    history_by_func index passes — spy on both and assert zero calls."""
+    spied = {"disasm_by_func": 0, "history_by_func": 0}
+    real_disasm = bc.disasm_by_func
+    real_history = bc.history_by_func
+
+    def spy_disasm(*a, **k):
+        spied["disasm_by_func"] += 1
+        return real_disasm(*a, **k)
+
+    def spy_history(*a, **k):
+        spied["history_by_func"] += 1
+        return real_history(*a, **k)
+
+    bc.disasm_by_func = spy_disasm
+    bc.history_by_func = spy_history
+    try:
+        # Use a queue func so build_one_card resolves a board entry even without
+        # an ELF inventory (queue funcs are always in the board set).
+        items = bc.load_queue_items()
+        func = items[0]["func"] if items else "func_80016A8C"
+        body = bc.build_one_card(func)
+    finally:
+        bc.disasm_by_func = real_disasm
+        bc.history_by_func = real_history
+    check("fast path produced a body (or None gracefully)", body is None or bool(body))
+    eq("fast path did NOT call disasm_by_func", spied["disasm_by_func"], 0)
+    eq("fast path did NOT call history_by_func", spied["history_by_func"], 0)
+
+
+def test_history_one_func_shape():
+    """history_one_func returns the same record shape as history_by_func entries."""
+    recs = bc.history_one_func("func_80016A8C")
+    check("history_one_func returns a list", isinstance(recs, list))
+    if recs:
+        r = recs[0]
+        check("record has required keys",
+              set(r) >= {"sha", "date", "subject", "prefix", "techniques",
+                         "verdict", "scores"})
+        check("date-desc sorted",
+              all(recs[i]["date"] >= recs[i + 1]["date"] for i in range(len(recs) - 1)))
+    else:
+        check("SKIP history_one_func (no commits mention func / no git)", True)
+
+
 def test_collect_cheats_real_cache():
     cache = bc.load_rule_cache()
     # Find a queue func that actually has rules and assert we collect >=1.
@@ -396,6 +513,10 @@ def main():
     test_load_technique_index_real()
     test_disasm_by_address_slices_flat_stream()
     test_disasm_by_func_real()
+    test_build_one_card_fast_path_real_func()
+    test_build_one_card_byte_identical_to_full_pass()
+    test_build_one_card_avoids_bulk_passes()
+    test_history_one_func_shape()
     test_collect_cheats_real_cache()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0

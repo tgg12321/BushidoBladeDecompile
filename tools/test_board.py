@@ -213,6 +213,88 @@ def test_next_skips_parked():
         eq("skips parked -> first active", data["func"], active["func"])
 
 
+def test_next_claim_success_flags_held():
+    print("test_next_claim_success_flags_held")
+    _q.n = 0
+    a = _q()
+    with Tmp() as t:
+        import os
+        os.environ["CLAUDE_SESSION_ID"] = "me"
+        t.write_queue([a])
+        t.write_index({a["func"]: {"item_id": "I_a"}})  # unclaimed
+        with GhSpy() as spy:
+            rc, out = run("next", "--claim", "--json")
+        eq("rc", rc, 0)
+        data = json.loads(out)
+        eq("picks the func", data["func"], a["func"])
+        check("claimed flag true (we hold it)", data["claimed"] is True)
+        eq("claimed_by is us", data["claimed_by"], "me")
+        eq("one Status mutation issued", len(spy.set_field_calls), 1)
+
+
+def test_next_claim_loses_race_to_other_owner():
+    print("test_next_claim_loses_race_to_other_owner")
+    _q.n = 0
+    a = _q()
+    with Tmp() as t:
+        import os
+        os.environ["CLAUDE_SESSION_ID"] = "me"
+        t.write_queue([a])
+        # Selection sees the func FREE; then in the race window another owner
+        # claims it. Simulate by making load_index() return "free" the first time
+        # (selection) and "claimed by other" thereafter (the _do_claim re-read).
+        free = {a["func"]: {"item_id": "I_a"}}
+        taken = {a["func"]: {"item_id": "I_a", "claimed": {"by": "other", "at": 1}}}
+        calls = {"n": 0}
+        real_load = board.load_index
+
+        def racey_load(path=None):
+            calls["n"] += 1
+            return dict(free) if calls["n"] == 1 else dict(taken)
+
+        board.load_index = racey_load
+        try:
+            with GhSpy() as spy:
+                rc, out = run("next", "--claim", "--json")
+        finally:
+            board.load_index = real_load
+        eq("rc", rc, 0)
+        data = json.loads(out)
+        eq("still reports the func", data["func"], a["func"])
+        check("claim did NOT succeed", data["claimed"] is False)
+        eq("reports the other owner", data["claimed_by"], "other")
+        check("message names the other owner", "other" in (data.get("claim_message") or ""))
+        eq("NO Status mutation when claim lost", len(spy.set_field_calls), 0)
+
+
+def test_next_claim_loses_race_human_output():
+    print("test_next_claim_loses_race_human_output")
+    _q.n = 0
+    a = _q()
+    with Tmp() as t:
+        import os
+        os.environ["CLAUDE_SESSION_ID"] = "me"
+        t.write_queue([a])
+        free = {a["func"]: {"item_id": "I_a"}}
+        taken = {a["func"]: {"item_id": "I_a", "claimed": {"by": "other", "at": 1}}}
+        calls = {"n": 0}
+        real_load = board.load_index
+
+        def racey_load(path=None):
+            calls["n"] += 1
+            return dict(free) if calls["n"] == 1 else dict(taken)
+
+        board.load_index = racey_load
+        try:
+            with GhSpy():
+                rc, out = run("next", "--claim")
+        finally:
+            board.load_index = real_load
+        eq("rc", rc, 0)
+        check("human output flags FAILED claim", "FAILED" in out and "do NOT hold" in out)
+        check("human output names the other owner", "other" in out)
+
+
 def test_next_human_readable():
     print("test_next_human_readable")
     _q.n = 0

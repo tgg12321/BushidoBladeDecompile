@@ -461,6 +461,57 @@ def addr_from_disasm(disasm_text):
     return m.group(1) if m else None
 
 
+def _objdump_range(start, end, elf_path=None, repo=None):
+    """Disassemble ONLY [start, end) of the ELF (a single function's range) via
+    objdump --start-address/--stop-address. `end` may be None (no next symbol);
+    we then omit --stop-address and let the caller's range filter bound it.
+    Returns stdout or None on failure. Same WSL/cwd resolution as _run_objdump."""
+    repo = str(repo or ROOT)
+    elf_path = str(elf_path) if elf_path else "build/bb2.elf"
+    cmd = ["wsl", "mipsel-linux-gnu-objdump", "-d",
+           f"--start-address=0x{start:08x}"]
+    if end is not None:
+        cmd.append(f"--stop-address=0x{end:08x}")
+    cmd.append(elf_path)
+    try:
+        out = subprocess.run(cmd, cwd=repo, capture_output=True, text=True,
+                             encoding="utf-8", errors="replace")
+    except (FileNotFoundError, OSError):
+        return None
+    if out.returncode != 0:
+        return None
+    return out.stdout
+
+
+def disasm_one_func(name, start, end, elf_path=None, repo=None):
+    """Disassemble a SINGLE function (no whole-ELF pass) and return its body in
+    the EXACT format produced by _disasm_by_address for that func: a synthesized
+    `{start:08x} <{name}>:` header followed by every instruction line whose
+    address is in [start, end). Byte-identical to the full-pass slice for `name`.
+
+    `end` is the NEXT symbol's address (or None for the last function — in which
+    case the range runs to the text-section end via a generous objdump stop and
+    we bound it here). Returns the body string, or None if objdump failed."""
+    # For the no-next-symbol (last function) case, use a generous stop so objdump
+    # still bounds the read; the [start, end) filter below mirrors the full pass.
+    stop = end if end is not None else (start + 0x100000)
+    text = _objdump_range(start, stop, elf_path=elf_path, repo=repo)
+    if text is None:
+        return None
+    body = [f"{start:08x} <{name}>:"]
+    for line in text.splitlines():
+        m = _DISASM_INSN.match(line)
+        if not m:
+            continue
+        addr = int(m.group(1), 16)
+        if addr < start:
+            continue
+        if end is not None and addr >= end:
+            break
+        body.append(line)
+    return "\n".join(body)
+
+
 # ---------------------------------------------------------------------------
 # technique index (slug -> one-line description)
 # ---------------------------------------------------------------------------
@@ -914,8 +965,128 @@ def _git_head_short():
         return "?"
 
 
+def history_one_func(func):
+    """Single-func commit history (the same record shape as history_by_func()[func])
+    via ONE targeted `git log --all --grep=<func>` pass — NOT the whole-repo index
+    pass. func_XXXXXXXX keying is reliable; named funcs may be sparse (we grep the
+    literal name). Returns a date-desc list of {sha,date,subject,prefix,...}."""
+    fmt = SEP.join(["%H", "%cI", "%s", "%b"]) + REC
+    try:
+        out = subprocess.run(
+            ["git", "log", "--all", "--no-merges", f"--grep={func}",
+             f"--format={fmt}"],
+            cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8",
+            errors="replace").stdout
+    except (FileNotFoundError, OSError):
+        return []
+    kr = re.compile(rf"\b{re.escape(func)}\b")
+    recs = []
+    for rec in out.split(REC):
+        rec = rec.strip("\n")
+        if not rec:
+            continue
+        parts = rec.split(SEP)
+        if len(parts) < 4:
+            parts += [""] * (4 - len(parts))
+        sha, date, subject, body = parts[:4]
+        text = subject + "\n" + body
+        # --grep matches subject+body anywhere; keep only whole-word func hits so
+        # the result matches the full-pass index (which keys on \bfunc\b too).
+        if not kr.search(text):
+            continue
+        pm = PREFIX_RE.match(subject)
+        vm = VERDICT_RE.search(text)
+        recs.append({
+            "sha": sha[:8],
+            "date": date[:10],
+            "subject": subject,
+            "prefix": (pm.group(1).lower() if pm else None),
+            "techniques": sorted(set(TECH_RE.findall(text))),
+            "verdict": (vm.group(1).upper() if vm else None),
+            "scores": SCORE_RE.findall(text),
+        })
+    recs.sort(key=lambda r: r["date"], reverse=True)
+    return recs
+
+
+def build_one_card(func):
+    """FAST single-card path: assemble ONE func's card body WITHOUT the whole-ELF
+    objdump pass (disasm_by_func) or the whole-repo git-log pass (history_by_func).
+
+    - asm: disassemble ONLY this func's [addr, next_symbol) range (disasm_one_func),
+      yielding the same instruction lines as the full-pass slice for this func.
+    - history: a single-func `git log --all --grep=<func>` (history_one_func).
+    - cheats / C / wip / techniques: already per-func and cheap; reused as-is.
+
+    Returns the card-body string, or None if `func` is not a board function.
+    Card-body format is identical to the full-pass output for the same func."""
+    import board_sync  # reuse the authoritative inventory loader + symbol map
+
+    items = load_queue_items()
+    sym_by_addr = {}
+    if MAP.exists() and ELF.exists():
+        inventory = board_sync.load_inventory(MAP, ELF)
+        try:
+            sym_by_addr = board_sync._elf_func_symbols(ELF)
+        except Exception as e:
+            print(f"WARNING: could not read ELF symbols ({e}); asm will be a "
+                  "placeholder.", file=sys.stderr)
+    else:
+        inventory = {}
+        print("WARNING: build/bb2.map or build/bb2.elf missing — asm will be a "
+              "placeholder.", file=sys.stderr)
+    board = build_board_set(items, inventory)
+    if func not in board:
+        print(f"ERROR: {func} is not a board function (not in queue, not in "
+              "inventory).", file=sys.stderr)
+        return None
+
+    card = board[func]
+    addr_by_name = {n: a for a, n in sym_by_addr.items()}
+
+    # Resolve this func's address + the NEXT symbol address (the slice boundary
+    # used by the full pass's _disasm_by_address).
+    disasm = None
+    if func in addr_by_name:
+        start = addr_by_name[func]
+        card["addr"] = f"{start:08x}"
+        sorted_addrs = sorted(sym_by_addr)
+        i = sorted_addrs.index(start)
+        end = sorted_addrs[i + 1] if i + 1 < len(sorted_addrs) else None
+        disasm = disasm_one_func(func, start, end)
+
+    rule_cache = load_rule_cache()
+    tech_index = load_technique_index()
+    rule_slugs = known_rule_slugs()
+    head_short = _git_head_short()
+
+    stem = card.get("file")
+    c_body = extract_c_body(ROOT / "src" / f"{stem}.c", func) if stem else None
+    wip = read_wip(func)
+    body, _trunc = build_body(
+        card,
+        cheats=collect_func_cheats(func, rule_cache),
+        wip=wip,
+        history=history_one_func(func),
+        c_body=c_body,
+        disasm=disasm,
+        tech_index=tech_index,
+        rule_slugs=rule_slugs,
+        head_short=head_short,
+    )
+    return body
+
+
 def assemble_all(one_func=None):
-    """Assemble all board funcs (or one). Returns (cards_written_or_body, stats)."""
+    """Assemble all board funcs (or one). Returns (cards_written_or_body, stats).
+
+    When `one_func` is given, takes the FAST single-card path (build_one_card):
+    only that func's address range is disassembled and only its history is
+    queried — never the whole-ELF objdump / whole-repo git-log index passes."""
+    if one_func is not None:
+        body = build_one_card(one_func)
+        return body, {}
+
     import board_sync  # reuse the authoritative inventory loader
 
     items = load_queue_items()
@@ -975,14 +1146,6 @@ def assemble_all(one_func=None):
             head_short=head_short,
         )
         return body, trunc, (c_body is not None), (disasm.get(func) is not None), (wip is not None)
-
-    if one_func is not None:
-        if one_func not in board:
-            print(f"ERROR: {one_func} is not a board function (not in queue, not in inventory).",
-                  file=sys.stderr)
-            return None, {}
-        body, *_ = build_one(one_func)
-        return body, {}
 
     CARDS_DIR.mkdir(parents=True, exist_ok=True)
     stats = {"assembled": 0, "with_asm": 0, "with_c": 0, "with_wip": 0,

@@ -16,9 +16,16 @@ Design (load-bearing):
     per func. A LOCAL INDEX (tmp/board_index.json) caches
     {func: {"item_id", "draft_id", ...}} so a move is a single-card mutation,
     never a list read. The index is built ONCE (the only full read) and cached.
-  - Claims live in the index file under each func's entry (write-through). This is
-    per-repo claim state; cross-machine atomic claims are a Phase-2 git-branch
-    upgrade — out of scope here.
+  - Claims live in the index file under each func's entry (write-through). Claim
+    state in tmp/board_index.json is BEST-EFFORT and NON-ATOMIC even on a single
+    host: two concurrent claims can race (last-writer-wins), so it is a
+    coordination HINT, not a lock. `_do_claim` re-reads the index right before
+    deciding to narrow the window, and `next --claim` surfaces a failed claim
+    (held by someone else) rather than presenting the card as held. Cross-machine
+    / truly-atomic claims are a future git-branch upgrade — out of scope here.
+  - `done` is IDEMPOTENT: re-running it (re-setting Done / re-archiving / clearing
+    an already-cleared claim) is harmless, so a partially-completed `done` is safe
+    to repeat.
 
 board_sync.py is the stable gh client and is imported, never modified. We reuse:
   gh_graphql, find_project, ensure_fields, _set_field, _mutate, _ARCHIVE,
@@ -170,17 +177,25 @@ def cmd_next(args):
             print("No available active item (queue empty or all claimed).")
         return 0
 
+    func = top["func"]
+
+    # claim_changed: did THIS agent acquire the card on this invocation?
+    # claim_msg:     the human-readable claim result (race / held-by-other / ok).
+    claim_changed = None
+    claim_msg = None
     if args.claim:
-        # Claim mutates the board (single mutation) + the local index.
-        _do_claim(top["func"], index)
+        # Claim mutates the board (single mutation) + the local index. A failed
+        # claim (someone else grabbed it in the race window) must be SURFACED —
+        # the agent does NOT hold this card and must not treat it as claimed.
+        claim_changed, claim_msg = _do_claim(func, index)
         index = load_index()  # refresh claim metadata for output
 
-    func = top["func"]
     entry = index.get(func) or {}
     claimed = entry.get("claimed") if isinstance(entry, dict) else None
+    claimed_by = claimed.get("by") if isinstance(claimed, dict) else None
 
     if args.json:
-        print(json.dumps({
+        out = {
             "func": func,
             "file": top.get("file"),
             "verdict": top.get("verdict"),
@@ -190,7 +205,14 @@ def cmd_next(args):
             "claimed": claimed,
             "url": BOARD_URL,
             "hint": f"python tools/board.py card {func}",
-        }))
+        }
+        if args.claim:
+            # Whether WE now hold the card (true) or the claim failed because
+            # someone else holds it (false, with claimed_by = the other owner).
+            out["claimed"] = bool(claim_changed)
+            out["claimed_by"] = claimed_by
+            out["claim_message"] = claim_msg
+        print(json.dumps(out))
         return 0
 
     print(f"next: {func}")
@@ -199,7 +221,12 @@ def cmd_next(args):
     print(f"  distance: {top.get('distance')}")
     print(f"  rules:    {top.get('rules', 0)}")
     print(f"  status:   {top.get('status')}")
-    if claimed:
+    if args.claim:
+        if claim_changed:
+            print(f"  claim:    OK — YOU hold {func} (claimed by {claimed_by}).")
+        else:
+            print(f"  claim:    FAILED — you do NOT hold {func}. {claim_msg}")
+    elif claimed:
         print(f"  claimed:  by {claimed.get('by')} @ {claimed.get('at')}")
     print(f"  url:      {BOARD_URL}")
     print(f"  -> run `python tools/board.py card {func}` for the full briefing")
@@ -255,8 +282,19 @@ def _owner():
 
 def _do_claim(func, index):
     """Claim `func`: idempotent. Returns (changed, message). Writes through the
-    index and performs ONE Status mutation (no list read)."""
+    index and performs ONE Status mutation (no list read).
+
+    Re-reads the on-disk index immediately before deciding so a claim that landed
+    AFTER our caller selected `func` (the `next` race window) is still seen — the
+    in-memory `index` may be stale. This NARROWS but cannot eliminate the race:
+    the index is BEST-EFFORT, NON-ATOMIC even same-host (last-writer-wins); it's a
+    coordination hint, not a lock. A `False` return means we do NOT hold the card."""
     me = _owner()
+    # Pull the freshest claim state from disk (the passed `index` may predate a
+    # concurrent claim). Merge it back so write-through preserves other funcs.
+    disk = load_index()
+    if isinstance(disk, dict):
+        index.update(disk)
     entry = index.get(func)
     if not isinstance(entry, dict):
         entry = {}
@@ -496,7 +534,11 @@ def build_parser():
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p_next = sub.add_parser("next", help="print the TOP available function to work (LOCAL)")
-    p_next.add_argument("--claim", action="store_true", help="also claim it (-> In-Progress)")
+    p_next.add_argument("--claim", action="store_true",
+                        help="also claim it (-> In-Progress). Claim state is a "
+                             "best-effort, non-atomic HINT (last-writer-wins); a "
+                             "failed claim (held by another owner) is reported, "
+                             "NOT presented as held.")
     p_next.add_argument("--json", action="store_true")
     p_next.set_defaults(handler=cmd_next)
 
@@ -509,7 +551,8 @@ def build_parser():
     p_claim.add_argument("func")
     p_claim.set_defaults(handler=cmd_claim)
 
-    p_done = sub.add_parser("done", help="move card to Done + archive, clear claim")
+    p_done = sub.add_parser("done", help="move card to Done + archive, clear claim "
+                                         "(idempotent — safe to re-run)")
     p_done.add_argument("func")
     p_done.set_defaults(handler=cmd_done)
 
