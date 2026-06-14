@@ -132,14 +132,6 @@
       "status": "active"
     },
     {
-      "func": "func_80065000",
-      "file": "text1b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80078BA8",
       "file": "text1b_b",
       "distance": 10,
@@ -3695,14 +3687,14 @@
     }
   ],
   "counts": {
-    "total": 447,
-    "active": 344,
+    "total": 446,
+    "active": 343,
     "by_status": {
-      "active": 344,
+      "active": 343,
       "parked": 103
     },
     "by_verdict": {
-      "C": 163,
+      "C": 162,
       "ASM-PARTIAL": 63,
       "ASM-SUSPECT": 118
     }
