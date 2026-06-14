@@ -643,6 +643,215 @@ def test_next_lane_no_api():
         eq("zero list queries on next --lane", spy.list_queries, 0)
 
 
+# ---------------------------------------------------------------------------
+# _main_repo_root: worktree detection + main-path resolution (git stubbed)
+# ---------------------------------------------------------------------------
+
+class GitStub:
+    """Stub subprocess.run for `git -C <base> ...` calls inside board.py.
+
+    `responses` maps the git subcommand tuple (after `-C <base>`) to
+    (returncode, stdout). Anything not listed returns (1, "") so unexpected
+    git calls don't accidentally pass. `fail=True` makes every call raise
+    OSError (the git-unavailable path)."""
+
+    def __init__(self, responses=None, fail=False):
+        self.responses = responses or {}
+        self.fail = fail
+        self._saved = None
+        self.calls = []
+
+    def __enter__(self):
+        stub = self
+
+        class _R:
+            def __init__(self, rc, out):
+                self.returncode = rc
+                self.stdout = out
+                self.stderr = ""
+
+        def fake_run(cmd, *a, **kw):
+            stub.calls.append(cmd)
+            if stub.fail:
+                raise OSError("git not found")
+            # cmd = ["git", "-C", base, <subcmd...>]
+            key = tuple(cmd[3:])
+            rc, out = stub.responses.get(key, (1, ""))
+            return _R(rc, out)
+
+        self._saved = board.subprocess.run
+        board.subprocess.run = fake_run
+        return self
+
+    def __exit__(self, *exc):
+        board.subprocess.run = self._saved
+
+
+def test_main_repo_root_in_worktree_returns_main():
+    print("test_main_repo_root_in_worktree_returns_main")
+    main_path = "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile"
+    wt = main_path + "/.claude/worktrees/wf-1"
+    responses = {
+        # in a worktree: git-dir (worktree-private) != git-common-dir (main .git)
+        ("rev-parse", "--git-dir", "--git-common-dir"):
+            (0, f"{main_path}/.git/worktrees/wf-1\n{main_path}/.git\n"),
+        ("worktree", "list", "--porcelain"):
+            (0, f"worktree {main_path}\nHEAD abc\nbranch refs/heads/main\n\n"
+                f"worktree {wt}\nHEAD def\nbranch refs/heads/wf-1\n"),
+    }
+    with GitStub(responses):
+        got = board._main_repo_root(root=wt)
+    eq("worktree -> main path", str(got).replace("\\", "/"), main_path)
+
+
+def test_main_repo_root_in_main_returns_root():
+    print("test_main_repo_root_in_main_returns_root")
+    main_path = "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile"
+    responses = {
+        # in main: git-dir == git-common-dir (both ".git")
+        ("rev-parse", "--git-dir", "--git-common-dir"): (0, ".git\n.git\n"),
+        # if it ever asked, first entry is main; but it should NOT need to.
+        ("worktree", "list", "--porcelain"):
+            (0, f"worktree {main_path}\nHEAD abc\nbranch refs/heads/main\n"),
+    }
+    with GitStub(responses) as g:
+        got = board._main_repo_root(root=main_path)
+    eq("main -> ROOT (its own path)", str(got).replace("\\", "/"), main_path)
+    check("did not consult worktree list when in main",
+          ("worktree", "list", "--porcelain") not in [tuple(c[3:]) for c in g.calls])
+
+
+def test_main_repo_root_git_failure_falls_back():
+    print("test_main_repo_root_git_failure_falls_back")
+    base = "C:/some/where"
+    # (a) subprocess raises OSError (git missing) -> fall back, no crash
+    with GitStub(fail=True):
+        got = board._main_repo_root(root=base)
+    eq("git OSError -> ROOT", str(got).replace("\\", "/"), base)
+    # (b) rev-parse returns nonzero -> fall back, no crash
+    with GitStub({("rev-parse", "--git-dir", "--git-common-dir"): (128, "")}):
+        got2 = board._main_repo_root(root=base)
+    eq("git rev-parse failure -> ROOT", str(got2).replace("\\", "/"), base)
+
+
+def test_env_overrides_take_precedence():
+    print("test_env_overrides_take_precedence")
+    import os
+    import importlib
+    saved_env = {k: os.environ.get(k) for k in
+                 ("BB2_BOARD_QUEUE", "BB2_BOARD_CARDS", "BB2_BOARD_INDEX")}
+    os.environ["BB2_BOARD_QUEUE"] = "/env/queue.json"
+    os.environ["BB2_BOARD_CARDS"] = "/env/cards"
+    os.environ["BB2_BOARD_INDEX"] = "/env/index.json"
+    # Stub git for the module-level _main_repo_root() that runs on reload, so the
+    # reload is deterministic and doesn't depend on the real git/worktree state.
+    main_path = "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile"
+    git_resp = {
+        ("rev-parse", "--git-dir", "--git-common-dir"): (0, ".git\n.git\n"),
+        ("worktree", "list", "--porcelain"):
+            (0, f"worktree {main_path}\nHEAD abc\nbranch refs/heads/main\n"),
+    }
+    try:
+        # Re-import board with the env set so module-level path resolution runs
+        # with the overrides in place. (board is already imported; reload it.)
+        with GitStub(git_resp):
+            importlib.reload(board)
+        eq("queue from env", str(board.QUEUE).replace("\\", "/"), "/env/queue.json")
+        eq("cards from env", str(board.CARDS_DIR).replace("\\", "/"), "/env/cards")
+        eq("index from env", str(board.INDEX_PATH).replace("\\", "/"), "/env/index.json")
+    finally:
+        for k, v in saved_env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+        importlib.reload(board)  # restore real module-level paths for later tests
+
+
+# ---------------------------------------------------------------------------
+# next skips done / blocked in the shared index; done/block write the markers
+# ---------------------------------------------------------------------------
+
+def test_next_skips_done_in_shared_index():
+    print("test_next_skips_done_in_shared_index")
+    _q.n = 0
+    a, b = _q(), _q()
+    with Tmp() as t:
+        t.write_queue([a, b])
+        # a is DONE in the shared index (completed, not yet merged out of queue)
+        t.write_index({a["func"]: {"item_id": "I_a", "done": True}})
+        rc, out = run("next", "--json")
+        eq("rc", rc, 0)
+        data = json.loads(out)
+        eq("skips done -> second item", data["func"], b["func"])
+
+
+def test_next_skips_blocked_in_shared_index():
+    print("test_next_skips_blocked_in_shared_index")
+    _q.n = 0
+    a, b = _q(), _q()
+    with Tmp() as t:
+        t.write_queue([a, b])
+        t.write_index({a["func"]: {"item_id": "I_a", "blocked": True}})
+        rc, out = run("next", "--json")
+        eq("rc", rc, 0)
+        data = json.loads(out)
+        eq("skips blocked -> second item", data["func"], b["func"])
+
+
+def test_done_marks_done_in_shared_index():
+    print("test_done_marks_done_in_shared_index")
+    with Tmp() as t:
+        t.write_index({"F": {"item_id": "I_f", "claimed": {"by": "me", "at": 1}}})
+        with GhSpy():
+            rc, _out = run("done", "F")
+        eq("rc", rc, 0)
+        idx = t.read_index()
+        check("done marker written", idx["F"].get("done") is True)
+        check("claim cleared", "claimed" not in idx["F"])
+
+
+def test_block_marks_blocked_in_shared_index():
+    print("test_block_marks_blocked_in_shared_index")
+    with Tmp() as t:
+        t.write_index({"F": {"item_id": "I_f", "claimed": {"by": "me", "at": 1}}})
+        with GhSpy():
+            rc, _out = run("block", "F", "--reason", "needs auth")
+        eq("rc", rc, 0)
+        idx = t.read_index()
+        check("blocked marker written", idx["F"].get("blocked") is True)
+        eq("reason recorded", idx["F"].get("reason"), "needs auth")
+
+
+def test_release_keeps_done_marker():
+    print("test_release_keeps_done_marker")
+    # release clears the claim but must NOT clear a done marker.
+    with Tmp() as t:
+        t.write_index({"F": {"item_id": "I_f", "done": True,
+                             "claimed": {"by": "me", "at": 1}}})
+        with GhSpy():
+            rc, _out = run("release", "F")
+        eq("rc", rc, 0)
+        idx = t.read_index()
+        check("claim cleared", "claimed" not in idx["F"])
+        check("done marker preserved by release", idx["F"].get("done") is True)
+
+
+def test_next_still_zero_gh():
+    print("test_next_still_zero_gh")
+    _q.n = 0
+    a, b = _q(), _q()
+    with Tmp() as t:
+        t.write_queue([a, b])
+        t.write_index({a["func"]: {"item_id": "I_a", "done": True}})
+        with GhSpy() as spy:
+            rc, _out = run("next", "--json")
+        eq("rc", rc, 0)
+        eq("zero gh calls on next", len(spy.graphql_calls), 0)
+        eq("zero list queries on next", spy.list_queries, 0)
+        eq("zero set_field on next", len(spy.set_field_calls), 0)
+
+
 def main():
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for t in tests:

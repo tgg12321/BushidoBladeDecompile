@@ -9,6 +9,18 @@ archived cards = expensive in tokens AND API).
 Design (load-bearing):
   - The board is a QUEUE. Always pull the TOP item and work it; everything needs
     decompiling, so there is no prioritization logic.
+  - SHARED state, worktree-safe: worker agents each run in their own git
+    worktree (private src/build/queue/tmp) for file+build isolation, but the
+    board is ONE shared GitHub project. So board.py resolves its coordination
+    state (the claim index, card cache, and the queue read by `next`) to the
+    MAIN working tree (_main_repo_root) regardless of which worktree it is run
+    from — otherwise each worktree would keep a separate claim index and two
+    agents would claim the same func. Env overrides ($BB2_BOARD_QUEUE /
+    _CARDS / _INDEX) win over the computed main path. `done`/`block` mark the
+    func done/blocked in the SHARED index (write-through), and `next` skips
+    funcs that are claimed OR done OR blocked there — so a completed func that
+    has left this worktree's queue.json but is still in the shared queue.json
+    (until the branch merges) is not re-handed-out to another worker.
   - "next" and "card" and "status" are 100% LOCAL reads (no gh / no API):
       * the ordered worklist is engine/queue.json (already distance-sorted),
       * each card's rich briefing is tmp/cards/<func>.md (already generated).
@@ -68,10 +80,77 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 import board_sync  # noqa: E402
 
-QUEUE = ROOT / "engine" / "queue.json"
-CARDS_DIR = ROOT / "tmp" / "cards"
-INDEX_PATH = ROOT / "tmp" / "board_index.json"
-LEDGER_PATH = ROOT / "tmp" / "board_enrich_done_ledger.json"
+
+# ---------------------------------------------------------------------------
+# main-repo resolution — the board's coordination state is SHARED, not per-worktree
+# ---------------------------------------------------------------------------
+#
+# Worker agents each run in their own git worktree (private src/, build/,
+# engine/queue.json, tmp/) for file+build isolation. But the BOARD is a single
+# shared GitHub project, so board.py's coordination state (the claim index +
+# card cache + the queue it reads for `next`) must point at ONE shared location
+# — the MAIN working tree's — regardless of which worktree board.py is invoked
+# from. Otherwise two agents in two worktrees keep separate claim indices and
+# both hand out the same function.
+
+
+def _main_repo_root(root=None):
+    """Return the MAIN working tree's path.
+
+    If invoked from a linked git worktree, returns the main worktree (so all
+    shared board state resolves there). If invoked from the main worktree, or
+    git is unavailable / errors, falls back to `root` (this script's ROOT) —
+    never crashes.
+
+    Detection: a linked worktree's `--git-dir` differs from `--git-common-dir`
+    (or its `.git` is a FILE, not a directory). The main worktree is always the
+    FIRST entry of `git worktree list --porcelain`.
+    """
+    base = Path(root or ROOT)
+    try:
+        def _git(*args):
+            return subprocess.run(
+                ["git", "-C", str(base), *args],
+                capture_output=True, text=True, encoding="utf-8",
+                errors="replace", timeout=15)
+
+        # Are we in a linked worktree? git-dir != git-common-dir is the tell.
+        # (.git being a FILE rather than a dir is the same signal, but the
+        # rev-parse comparison covers it and works regardless of cwd.)
+        rp = _git("rev-parse", "--git-dir", "--git-common-dir")
+        if rp.returncode != 0:
+            return base
+        lines = rp.stdout.splitlines()
+        if len(lines) < 2:
+            return base
+        git_dir, common_dir = lines[0].strip(), lines[1].strip()
+        in_worktree = (git_dir != common_dir) or (base / ".git").is_file()
+        if not in_worktree:
+            return base
+
+        # First `git worktree list --porcelain` entry == the main worktree.
+        wl = _git("worktree", "list", "--porcelain")
+        if wl.returncode != 0:
+            return base
+        for line in wl.stdout.splitlines():
+            if line.startswith("worktree "):
+                main = line[len("worktree "):].strip()
+                if main:
+                    return Path(main)
+        return base
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return base
+
+
+MAIN_ROOT = _main_repo_root()
+
+# Shared board data paths resolve to the MAIN repo (so claims coordinate across
+# worktrees), with env-var overrides checked FIRST. When run from main itself,
+# MAIN_ROOT == ROOT, so these are unchanged from the historical defaults.
+QUEUE = Path(os.environ.get("BB2_BOARD_QUEUE") or (MAIN_ROOT / "engine" / "queue.json"))
+CARDS_DIR = Path(os.environ.get("BB2_BOARD_CARDS") or (MAIN_ROOT / "tmp" / "cards"))
+INDEX_PATH = Path(os.environ.get("BB2_BOARD_INDEX") or (MAIN_ROOT / "tmp" / "board_index.json"))
+LEDGER_PATH = MAIN_ROOT / "tmp" / "board_enrich_done_ledger.json"
 BOARD_URL = "https://github.com/users/tgg12321/projects/2"
 LOGIN = "tgg12321"
 
@@ -115,8 +194,23 @@ def save_index(index, path=None):
 
 
 def _claimed_funcs(index):
-    """Set of funcs currently claimed by anyone (per the local index)."""
+    """Set of funcs currently claimed by anyone (per the shared index)."""
     return {f for f, e in index.items() if isinstance(e, dict) and e.get("claimed")}
+
+
+def _unavailable_funcs(index):
+    """Funcs `next` must NOT hand out: claimed OR done OR blocked in the SHARED
+    index. `done`/`block` mark funcs write-through so a completed-but-not-yet-
+    merged func (still in this worktree's queue.json, gone from the shared one
+    only after the branch merges) is not re-handed-out to another worker in the
+    merge window. `release` clears the claim but NOT done/blocked."""
+    out = set()
+    for f, e in index.items():
+        if not isinstance(e, dict):
+            continue
+        if e.get("claimed") or e.get("done") or e.get("blocked"):
+            out.add(f)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -169,15 +263,15 @@ _LANE_STATUSES = {
 
 
 def _top_available(items, index, lane="backlog"):
-    """The first queue item in the given lane whose func is NOT claimed locally.
-    Lane controls which status values are accepted (see _LANE_STATUSES).
-    Returns the item dict, or None."""
+    """The first queue item in the given lane whose func is available: NOT
+    claimed, done, or blocked in the SHARED index. Lane controls which status
+    values are accepted (see _LANE_STATUSES). Returns the item dict, or None."""
     accept = _LANE_STATUSES.get(lane, {"active"})
-    claimed = _claimed_funcs(index)
+    unavailable = _unavailable_funcs(index)
     for it in items:
         if it.get("status") not in accept:
             continue
-        if it["func"] in claimed:
+        if it["func"] in unavailable:
             continue
         return it
     return None
@@ -352,6 +446,11 @@ def cmd_done(args):
     entry = index.get(func) or {}
     entry.pop("claimed", None)
     entry["finalized"] = True
+    # Mark DONE in the SHARED index so `next` won't re-hand-out this func to
+    # another worker during the completed-but-not-yet-merged window (this
+    # worktree's queue.json drops it on `queue done`; the shared queue.json
+    # still lists it until the branch merges).
+    entry["done"] = True
     index[func] = entry
     save_index(index)
     print(f"done {func} -> {STATUS_DONE} + archived; claim cleared.")
@@ -372,6 +471,10 @@ def cmd_block(args):
     entry = index.get(func) or {}
     entry.pop("claimed", None)
     entry["reason"] = args.reason
+    # Mark BLOCKED in the SHARED index so `next` won't re-hand-out this func to
+    # another worker during the completed-but-not-yet-merged window (same
+    # rationale as `done`).
+    entry["blocked"] = True
     index[func] = entry
     save_index(index)
     print(f"blocked {func} -> {STATUS_BLOCKED}; claim cleared. reason: {args.reason}")
@@ -455,11 +558,16 @@ def build_index(project_id, ledger, visible, existing=None):
         entry = {"item_id": ids.get("item_id"), "draft_id": ids.get("draft_id")}
         if finalized:
             entry["finalized"] = True
-        # preserve claim / reason across rebuilds
+        # preserve claim / reason / done / blocked across rebuilds (the
+        # done/blocked markers gate the merge-window dedupe in `next`).
         if prev.get("claimed"):
             entry["claimed"] = prev["claimed"]
         if prev.get("reason"):
             entry["reason"] = prev["reason"]
+        if prev.get("done"):
+            entry["done"] = True
+        if prev.get("blocked"):
+            entry["blocked"] = True
         index[func] = entry
 
     n_done = 0
