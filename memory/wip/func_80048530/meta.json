@@ -1,0 +1,53 @@
+{
+  "function": "func_80048530",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 11,
+    "candidate_floor": 12,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 43,
+    "target_insns": 47,
+    "note": "HEAD honest floor 11 is measured WITH the cheat-asm inline-move pins partially credited by the masked sandbox; candidate.c is the fully cheat-FREE form at 12. candidate is NOT below HEAD, so src/ left at HEAD (cheated but oracle-green)."
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "stripped 5 regfix (2 subst, 1 delete, 2 reorder) + 3 inline-move-aliasing __asm__ + 2 \"\" barriers + 3 register pins; wrote clean pure C; swept 4 structural variants (base-ptr, idx-temp, arg3-early-local, c/d-u16-hold).",
+      "lever_rule": "register-alloc-pure-c + scheduling + halfword-index-srl-sra",
+      "floor_was": 11,
+      "floor_now": 12,
+      "git_head_at_measurement": "c3aa1ffc"
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-14",
+    "evidence": "candidate.c is fully cheat-free pure C (zero pins, zero __asm__, zero barriers, zero regfix). It does NOT byte-match (12) and is NOT applied to src/; saved as the clean resume base only. HEAD remains the cheated form (its 5 regfix + cheat-asm are what this WIP exists to eventually retire)."
+  },
+  "remaining_gap": {
+    "summary": "Three coupled diffs at the clean floor (12, 43 vs 47 insns): (1) BASE-REGISTER ROUTING — target copies arg0->v1, does `move t0,v1` (2nd copy), reuses v1 as the walking pointer, keeps arg0 in t0 for the final `entry_off+arg0`; our build keeps arg0 in one register (t0) and never makes the 2nd copy (−1 move). (2) `move a1,a3` (arg3 into a1) is HOISTED before the bounds-check `beqz` in target (a1 freed after `lw v0,0(a1)`); our build emits it inside the taken branch. (3) c/d emitted as `lh` where target uses `lhu`+`sll`+`sra` — the (s16)(u16) double-cast folds to lh; a,b use lhu+sll+sra because they're passed `(s16)a` (re-cast of an s32). Fixing (3) by holding c/d as u16 and casting at the call DOES restore lhu+sll+sra but CASCADES the argument-register setup to score 22 — (3) is coupled to (1)/(2).",
+    "rule_count_at_head": 5,
+    "rules_at_head": [
+      "subst addu $5,$5,$4 -> addu $a1,$a1,$v1 @ 6",
+      "subst addu $3,$4,$2 -> addu $v1,$v0,$v1 @ 9",
+      "delete @ 8",
+      "reorder 3,5,6,4,1,2,7,9,8 @ 1-9 (prologue copy/sched)",
+      "reorder 28,29,30,31,32,33,27,34,35 @ 27-35 (the move a1,a3 / addu a0,a0,t0 region)"
+    ],
+    "cheat_at_head": "3x register asm(v1/t0/a1) pins + 3x __asm__ addu-move-aliasing + 2x \"\" barriers + the 5 regfix rules",
+    "rules_required_for_full_match": "All 5 regfix + the cheat-asm together force: the arg0 double-copy + v1-as-pointer routing (subst @6/@9, delete @8, reorder @1-9), and the move a1,a3 hoist + entry_off+arg0 placement (reorder @27-35). No pure-C lever found that reaches the routing; the c/d lhu fix is coupled to it."
+  },
+  "history_note": "Prior cheat-cleanup (commit 91189259, 'lost_codegen retired via single-insn __asm__ + reorder') was REVERTED (53a441c3) — the single-insn __asm__ was the inline-asm-injection cheat. The current HEAD (3ab2caec) re-introduced inline-move-aliasing + 5 regfix. This function has a documented history of failed pure-C closure.",
+  "next_hypotheses": [
+    "decomp-permuter from candidate.c (floor 12): the coupled base-register routing + scheduling is exactly its target. Setup via project maspsx pipeline.",
+    "Base-register routing (diff 1): try forcing GCC to make a 2nd copy of arg0 by structuring the pointer use so arg0's register is reused as the pointer — e.g. assign `u8 *p = (u8*)arg0;` first and walk p, keeping a SEPARATE `s32 base = arg0;` for the final add. Watch whether the `move t0,v1` appears.",
+    "c/d lhu (diff 3): the coupling to arg setup suggests fixing the base registers FIRST may let the u16-hold form land without cascading. Re-try vC_cd_u16hold AFTER a base-routing lever lands.",
+    "Cross-check the sibling family in text1b.c (func_800485EC right below also has register pins) — they may share the routing pattern; a lever could generalize."
+  ],
+  "rejected_forms": [
+    {"form": "explicit u8* base var, base reused", "score": 12, "why": "no routing change"},
+    {"form": "index load into s32 temp before add", "score": 12, "why": "no change"},
+    {"form": "arg3 read into a local first (a1v=arg3)", "score": 12, "why": "did not hoist the move a1,a3"},
+    {"form": "c/d held as u16, passed (s16)c/(s16)d at call", "score": 22, "why": "restores lhu+sll+sra but cascades the whole arg-register setup (coupled to base routing)"}
+  ]
+}
