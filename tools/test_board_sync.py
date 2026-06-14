@@ -134,6 +134,22 @@ def test_reconcile_never_deletes():
     actions = board_sync.reconcile(desired, current)
     check("never emits delete", all(a["op"] != "delete" for a in actions))
 
+def test_val_eq_edges():
+    eq("int vs float equal", board_sync._val_eq("Distance", 9, 9.0), True)
+    eq("number unset -> not equal", board_sync._val_eq("Distance", 9, None), False)
+    eq("both-None numbers equal", board_sync._val_eq("Rules", None, None), True)
+    eq("string equal", board_sync._val_eq("Status", "Done", "Done"), True)
+    eq("string differ", board_sync._val_eq("Status", "Done", "Backlog"), False)
+
+def test_reconcile_recovers_partial_archive():
+    desired = {}
+    current = [{"item_id": "IID_0", "title": "func_old", "is_archived": True,
+                "fields": {"Status": "Backlog"}}]
+    actions = board_sync.reconcile(desired, current)
+    ops = [(a["op"], a.get("field"), a.get("value")) for a in actions]
+    check("sets Status=Done", ("set", "Status", "Done") in ops)
+    check("does not re-archive", all(a["op"] != "archive" for a in actions))
+
 
 def main():
     test_load_queue()
@@ -145,6 +161,8 @@ def main():
     test_reconcile_update_changed_field()
     test_reconcile_completed_off_queue_archives()
     test_reconcile_never_deletes()
+    test_val_eq_edges()
+    test_reconcile_recovers_partial_archive()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 

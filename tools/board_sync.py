@@ -105,6 +105,8 @@ def build_desired_from_queue(items, wip_dir):
 def _val_eq(field, want, got):
     """Field-aware equality. Numbers compare numerically (API returns floats)."""
     if field in ("Distance", "Rules"):
+        if want is None:
+            return got is None
         if got is None:
             return False
         return float(want) == float(got)
