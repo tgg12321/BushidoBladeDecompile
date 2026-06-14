@@ -310,6 +310,28 @@ def test_create_field_single_select_passes_option_list():
     eq("returns option map", res["options"]["Backlog"], "o1")
 
 
+def test_reconcile_skips_titleless_items():
+    desired = {"func_a": {"fields": {"Status": "Backlog"}, "archived": False}}
+    current = [
+        {"item_id": "IID_0", "title": None, "is_archived": False, "fields": {"Status": "Backlog"}},
+        {"item_id": "IID_1", "title": None, "is_archived": False, "fields": {"Status": "Blocked"}},
+    ]
+    actions = board_sync.reconcile(desired, current)
+    eq("only the add for func_a", [a["op"] for a in actions], ["add"])
+    eq("add is func_a", actions[0]["func"], "func_a")
+
+
+def test_parse_field_values_skips_unnamed_and_unknown():
+    nodes = [
+        {"__typename": "ProjectV2ItemFieldTextValue", "text": "x", "field": {"name": "File"}},
+        {"__typename": "ProjectV2ItemFieldTextValue", "text": "y", "field": None},
+        {"__typename": "ProjectV2ItemFieldSingleSelectValue", "name": "Backlog", "field": {}},
+        {"__typename": "ProjectV2ItemFieldDateValue", "date": "2026-01-01", "field": {"name": "When"}},
+    ]
+    fields = board_sync._parse_field_values(nodes)
+    eq("only the named, handled field kept", fields, {"File": "x"})
+
+
 def _page(nodes, has_next, cursor):
     return {"node": {"items": {"nodes": nodes,
             "pageInfo": {"hasNextPage": has_next, "endCursor": cursor}}}}
@@ -358,6 +380,8 @@ def main():
     test_ensure_fields_reuses_existing()
     test_create_field_single_select_passes_option_list()
     test_list_items_paginates_and_parses()
+    test_reconcile_skips_titleless_items()
+    test_parse_field_values_skips_unnamed_and_unknown()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 

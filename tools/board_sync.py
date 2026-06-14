@@ -124,6 +124,10 @@ def reconcile(desired, current):
     are left untouched.
     """
     actions = []
+    # Skip board items with no title (e.g. a manually-cleared draft, or a content
+    # type outside our fragments): they have no func to match, and must not
+    # collapse together in cur_by_title or be mis-archived as "completed".
+    current = [c for c in current if c.get("title")]
     cur_by_title = {c["title"]: c for c in current}
 
     for func, want in desired.items():
