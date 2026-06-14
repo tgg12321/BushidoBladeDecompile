@@ -459,24 +459,45 @@ def test_run_sync_dry_run_makes_no_mutations():
          board_sync.list_items, board_sync.apply) = saved
 
 
-def test_load_inventory_parses_map():
-    sample = (
-        " .text          0x00000000        0x0 build/src/empty.o\n"
+def test_load_inventory_filters_and_maps():
+    sample_map = (
         " .text          0x80016400      0x100 build/src/text1b.o\n"
-        "                0x800164ac                func_800164AC\n"
-        "                0x800164f8                func_800164F8\n"
         " .text          0x80020000      0x080 build/src/display.o\n"
-        "                0x80020010                func_80020010\n"
-        "                0x80020040                func_80037F08_ret\n"  # excluded
     )
+    syms = {
+        0x80016410: "func_80016410",       # in text1b range -> kept
+        0x80020010: "func_80020010",       # in display range -> kept
+        0x80016420: "func_80037F08_ret",   # in range but EXCLUDED by name
+        0x80020020: "g_module_func_tbl",   # in range but EXCLUDED by name
+        0x70000000: "func_out_of_range",   # below TEXT_LO -> dropped
+        0x80016460: "func_no_range_x",     # in range
+    }
     with tempfile.TemporaryDirectory() as td:
         m = Path(td) / "bb2.map"
-        m.write_text(sample, encoding="utf-8")
-        inv = board_sync.load_inventory(m)
-    eq("three real funcs", len(inv), 3)
-    eq("func->stem text1b", inv["func_800164AC"], "text1b")
-    eq("func->stem display", inv["func_80020010"], "display")
-    check("excluded non-function dropped", "func_80037F08_ret" not in inv)
+        m.write_text(sample_map, encoding="utf-8")
+        saved = board_sync._elf_func_symbols
+        try:
+            board_sync._elf_func_symbols = lambda p: syms
+            inv = board_sync.load_inventory(m, "ignored.elf")
+        finally:
+            board_sync._elf_func_symbols = saved
+    eq("three real funcs kept", len(inv), 3)
+    eq("text1b mapping", inv["func_80016410"], "text1b")
+    eq("display mapping", inv["func_80020010"], "display")
+    check("excluded name dropped", "g_module_func_tbl" not in inv)
+    check("excluded ret-label dropped", "func_80037F08_ret" not in inv)
+    check("out-of-range dropped", "func_out_of_range" not in inv)
+
+
+def test_elf_func_symbols_real_file():
+    elf = _REPO / "build" / "bb2.elf"
+    if not elf.exists():
+        check("SKIP real-elf parse (build/bb2.elf absent)", True)
+        return
+    syms = board_sync._elf_func_symbols(elf)
+    intext = [a for a in syms if board_sync.TEXT_LO <= a < board_sync.TEXT_HI]
+    check("plausible function count 1200-1700", 1200 <= len(intext) <= 1700)
+    check("a known function is present", "func_80016A8C" in syms.values())
 
 def test_build_desired_done():
     inv = {"func_done": "text1b", "func_active": "display"}
@@ -539,7 +560,8 @@ def main():
     test_mutate_reraises_non_rate_limit()
     test_run_sync_dry_run_makes_no_mutations()
     test_main_wraps_gherror_cleanly()
-    test_load_inventory_parses_map()
+    test_load_inventory_filters_and_maps()
+    test_elf_func_symbols_real_file()
     test_build_desired_done()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0

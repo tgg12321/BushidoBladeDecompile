@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import struct
 import subprocess
 import sys
 import time
@@ -28,6 +29,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_QUEUE = ROOT / "engine" / "queue.json"
 DEFAULT_WIP_DIR = ROOT / "memory" / "wip"
 DEFAULT_MAP = ROOT / "build" / "bb2.map"
+DEFAULT_ELF = ROOT / "build" / "bb2.elf"
 PROJECT_TITLE = "BB2 Decomp"
 
 # Engine status -> board column (the spec's locked 1:1 mapping).
@@ -98,27 +100,90 @@ def build_desired_from_queue(items, wip_dir):
     return desired
 
 
-_MAP_OBJ_RE = re.compile(r"^ \.text\s+0x[0-9a-fA-F]+\s+0x[0-9a-fA-F]+\s+build/src/(\S+)\.o")
-_MAP_SYM_RE = re.compile(r"^\s+0x[0-9a-fA-F]{8,}\s+(\S+)\s*$")
+TEXT_LO, TEXT_HI = 0x80010000, 0x8008D080
+
+# Object-range line in bb2.map: " .text  0x<vma>  0x<size>  build/src/<stem>.o"
+_MAP_OBJ_RE = re.compile(r"^ \.text\s+0x([0-9a-fA-F]+)\s+0x([0-9a-fA-F]+)\s+build/src/(\S+)\.o")
 
 
-def load_inventory(map_path):
-    """Parse build/bb2.map -> {func_name: src_stem} for every .text symbol under
-    a build/src/<stem>.o object (excluding the known non-functions). Used only
-    for --seed-done."""
-    map_path = Path(map_path)
-    inv = {}
-    cur_stem = None
-    for line in map_path.read_text(encoding="utf-8", errors="replace").splitlines():
+def _load_text_object_ranges(map_path):
+    """Parse bb2.map -> sorted list of (lo, hi, stem) for each non-empty .text
+    input section from build/src/<stem>.o. Used to map a function address to its
+    source file. Pure-Python, cross-platform."""
+    ranges = []
+    for line in Path(map_path).read_text(encoding="utf-8", errors="replace").splitlines():
         m = _MAP_OBJ_RE.match(line)
         if m:
-            cur_stem = m.group(1)
+            lo = int(m.group(1), 16)
+            size = int(m.group(2), 16)
+            if size > 0:
+                ranges.append((lo, lo + size, m.group(3)))
+    ranges.sort()
+    return ranges
+
+
+def _stem_for_addr(addr, ranges):
+    for lo, hi, stem in ranges:
+        if lo <= addr < hi:
+            return stem
+    return None
+
+
+def _elf_func_symbols(elf_path):
+    """Pure-Python read of STT_FUNC symbols from a 32-bit little-endian ELF.
+    Returns {address: name}. Used only for --seed-done."""
+    data = Path(elf_path).read_bytes()
+    if data[:4] != b"\x7fELF":
+        raise ValueError(f"not an ELF file: {elf_path}")
+    if data[4] != 1 or data[5] != 1:
+        raise ValueError(f"expected 32-bit little-endian ELF: {elf_path}")
+    e_shoff = struct.unpack_from("<I", data, 0x20)[0]
+    e_shentsize = struct.unpack_from("<H", data, 0x2E)[0]
+    e_shnum = struct.unpack_from("<H", data, 0x30)[0]
+    sections = []
+    for i in range(e_shnum):
+        off = e_shoff + i * e_shentsize
+        sh_type = struct.unpack_from("<I", data, off + 0x04)[0]
+        sh_offset, sh_size = struct.unpack_from("<II", data, off + 0x10)
+        sh_link = struct.unpack_from("<I", data, off + 0x18)[0]
+        sh_entsize = struct.unpack_from("<I", data, off + 0x24)[0]
+        sections.append({"type": sh_type, "offset": sh_offset, "size": sh_size,
+                         "link": sh_link, "entsize": sh_entsize})
+    syms = {}
+    SHT_SYMTAB, STT_FUNC = 2, 2
+    for s in sections:
+        if s["type"] != SHT_SYMTAB:
             continue
-        s = _MAP_SYM_RE.match(line)
-        if s and cur_stem is not None:
-            name = s.group(1)
-            if name not in _MAP_EXCLUDE:
-                inv[name] = cur_stem
+        strtab = sections[s["link"]]
+        str_off, str_size = strtab["offset"], strtab["size"]
+        ent = s["entsize"] or 16
+        for j in range(s["size"] // ent):
+            o = s["offset"] + j * ent
+            st_name, st_value = struct.unpack_from("<II", data, o)
+            st_info = data[o + 12]
+            if (st_info & 0xF) != STT_FUNC:
+                continue
+            ns = str_off + st_name
+            ne = data.index(b"\x00", ns, str_off + str_size)
+            syms[st_value] = data[ns:ne].decode("ascii", "replace")
+    return syms
+
+
+def load_inventory(map_path, elf_path):
+    """Authoritative completed-function inventory: every STT_FUNC symbol in the
+    EXE text range (from build/bb2.elf), mapped to its src stem via bb2.map's
+    .text object ranges. Returns {func: stem}. --seed-done only. Pure-Python."""
+    syms = _elf_func_symbols(elf_path)
+    ranges = _load_text_object_ranges(map_path)
+    inv = {}
+    for addr, name in syms.items():
+        if not (TEXT_LO <= addr < TEXT_HI):
+            continue
+        if name in _MAP_EXCLUDE:
+            continue
+        stem = _stem_for_addr(addr, ranges)
+        if stem:
+            inv[name] = stem
     return inv
 
 
@@ -445,13 +510,13 @@ def apply(project_id, field_map, actions, delay=0.2):
 # ---------------------------------------------------------------------------
 
 def run_sync(queue_path, wip_dir, project_title, login,
-             dry_run=False, seed_done=False, map_path=None):
+             dry_run=False, seed_done=False, map_path=None, elf_path=None):
     """Build desired state, reconcile against the live board, and apply (unless
     dry_run). Returns the number of planned actions. Engine state is never written."""
     items = load_queue(queue_path)
     desired = build_desired_from_queue(items, wip_dir)
     if seed_done:
-        desired.update(build_desired_done(load_inventory(map_path), {it["func"] for it in items}))
+        desired.update(build_desired_done(load_inventory(map_path, elf_path), {it["func"] for it in items}))
     print(f"board sync -> {project_title} ({'DRY RUN' if dry_run else 'apply'})")
     print(f"  desired cards: {len(desired)} (seed_done={seed_done})")
 
@@ -478,6 +543,7 @@ def main():
     ap.add_argument("--queue", default=str(DEFAULT_QUEUE))
     ap.add_argument("--wip-dir", default=str(DEFAULT_WIP_DIR))
     ap.add_argument("--map", default=str(DEFAULT_MAP), help="build/bb2.map for --seed-done")
+    ap.add_argument("--elf", default=str(DEFAULT_ELF), help="build/bb2.elf for --seed-done")
     ap.add_argument("--project", default=PROJECT_TITLE)
     ap.add_argument("--login", default="tgg12321")
     ap.add_argument("--dry-run", action="store_true")
@@ -486,7 +552,8 @@ def main():
     a = ap.parse_args()
     try:
         run_sync(Path(a.queue), Path(a.wip_dir), a.project, a.login,
-                 dry_run=a.dry_run, seed_done=a.seed_done, map_path=Path(a.map))
+                 dry_run=a.dry_run, seed_done=a.seed_done, map_path=Path(a.map),
+                 elf_path=Path(a.elf))
     except GhError as e:
         sys.exit(f"board sync failed (GitHub API error): {e}")
 
