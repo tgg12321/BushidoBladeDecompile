@@ -1,0 +1,50 @@
+{
+  "function": "func_800611A4",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 9,
+    "candidate_floor": 9,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 43,
+    "target_insns": 43
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "pin removal + ~12 RA levers (3-temp split, block-local split, split-const mask, mask-live-across-call, pointer-deref loads, mask early/late). cc1psx calibration cross-check.",
+      "lever_rule": "register-alloc-pure-c / restore-discarded-return-displaces-v0 (N/A: callee is void)",
+      "floor_was": 9,
+      "floor_now": 9,
+      "git_head_at_measurement": "c3aa1ffc"
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-14",
+    "evidence": "candidate.c is net anti-cheat: removes the two register asm(\"$2\")/asm(\"$3\") pins from HEAD and is plain pure C (no pins, no __asm__, no volatile/alias coercion, no dead stores, no regfix). It does NOT byte-match (scores 9 = pure v0/v1 swap) so it is NOT applied to src/; saved as the documented cheat-free floor only."
+  },
+  "remaining_gap": {
+    "summary": "All 9 surviving diffs are a single v0<->v1 register-NAME swap on the post-call cluster. Build is structurally identical to target (same insns, same order, same interleave): mine = {load-temp in $v1, mask 0xFFFFEF in $v0}; target = {load-temp in $v0, mask in $v1}. No instruction add/del/reorder. GCC 2.7.2 assigns the CSE'd constant mask the lower register ($v0) and displaces the 3x-reused load temp to $v1; target is the reverse.",
+    "rule_count_at_head": 0,
+    "cheat_at_head": "2x register asm(\"$2\"), asm(\"$3\") pins in src/text1b.c body (cheat-asm, score-inert under sandbox)",
+    "rules_required_for_full_match": "Zero regfix rules; HEAD relies on inline register-asm pins. The swap is reachable ONLY by pinning $2/$3 (forbidden cheat-asm) or a regfix subst $2<->$3 (forbidden). No pure-C lever flips it."
+  },
+  "calibration": {
+    "cc1psx_check": "Ran original PsyQ cc1psx.exe on the pin-free standalone (preprocessed). cc1psx produces the SAME allocation as our port: load-temp in $3 ($v1), mask in $2 ($v0). Target's swapped allocation is NOT produced by EITHER compiler from the semantically-correct pure C. This is strong evidence the target's v0/v1 assignment came from a structurally-different original source we have not reconstructed, OR is a genuine RA wall for this construct.",
+    "greg_dump": "tmp/standalone611.c.greg confirmed pseudo->hardreg: constant-mask pseudo -> v0 (reg 2), load-temp pseudo -> v1 (reg 3). Allocno-priority tie won by the short-live-range CSE constant over the fragmented (3-web) load temp."
+  },
+  "next_hypotheses": [
+    "Sibling family: func_800618B4 (PARKED 2026-06-07 'register-rotation pin cluster floor 4') and func_80061250 / func_80061658 share the same $2/$3 pin + post-call mask/load cluster. A lever that flips this swap likely retires the whole family. Investigate as a group, not one-off.",
+    "Run decomp-permuter from candidate.c base (floor 9) — its RTL operand/type randomization may find a structural lever the manual playbook missed (e.g. a type change on the mask or load that flips allocno priority).",
+    "Examine whether the mask 0xFFFFEF could legitimately be derived from a non-constant source in the real game logic (it is a flag/clear mask written to D_800A3464, read by func_80041E10). If the original computed it from a global rather than a literal, that non-constant value would not CSE to a high-priority constant pseudo and might naturally take $v1.",
+    "Instrumented-cc1 allocno-priority dump (BB2_PRIO_DEBUG per register-alloc-deep-dive) to see the exact priority numbers for the mask pseudo vs load-temp pseudo and what minimal C change would invert them."
+  ],
+  "rejected_forms": [
+    {"form": "3 separate per-load temps (s32 t0,t1,t2)", "score": 11, "why": "loads hoist together, breaks the interleave"},
+    {"form": "3 block-local temps { s32 tN = arg0[N]; ... }", "score": 11, "why": "same hoisting; live-range split made it worse"},
+    {"form": "split constant mask = 0xFF0000; mask |= 0xFFEF", "score": 9, "why": "GCC combine re-merges to single li in v0; swap persists"},
+    {"form": "mask declared/assigned before the call (live across)", "score": 9, "why": "no allocation change"},
+    {"form": "mask assigned after 3rd load / mask block-scoped", "score": 9, "why": "no allocation change"},
+    {"form": "pointer-deref loads (*arg0, *(arg0+1)...)", "score": 9, "why": "identical codegen to array index"}
+  ]
+}
