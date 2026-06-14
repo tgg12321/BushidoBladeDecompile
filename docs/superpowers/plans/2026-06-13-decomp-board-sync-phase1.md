@@ -19,7 +19,7 @@
 - **`engine/queue.json` item schema:** `func` (str), `file` (str stem, no `.c`), `distance` (int; `-1`=unscored), `verdict` (str), `rules` (int), `status` (str), `park_reason` (only when parked), `scorable` (only when false). Read it with plain `json.load` (do NOT `import engine.queue` — that pulls the whole WSL engine).
 - **Status enum:** `active`, `authorize`, `parked`. **Verdict enum:** `C`, `ASM-PARTIAL`, `ASM-SUSPECT`, `ASM-STRUCTURAL`, `ASM-WHOLE`, `JTBL-INFRA`.
 - **WIP check:** `memory/wip/<func>/` directory existence (skip `README.md`).
-- **Completed inventory (for `--seed-done` only):** parse `build/bb2.map`. Object lines look like `` .text          0x00000000        0x0 build/src/<stem>.o`` and symbol lines look like `                0x800164ac                func_800164AC``. Track the current object stem; assign each following symbol to it. Exclude the 4 known non-functions: `g_module_func_tbl`, `g_module_type_tbl`, `func_80037F08_ret`, `cdrom_IrqHandler`. `completed = inventory_names − queue_funcs` (≈1024).
+- **Completed inventory (for `--seed-done` only):** read `STT_FUNC` symbols from `build/bb2.elf` (pure-Python ELF parse) for the function set; use `bb2.map`'s `.text` object ranges only for func→stem; map-symbol parsing over-collects rodata/labels and must not be used. A linker map has no symbol types, so the old map-symbol parse pulled in `D_*` rodata, `.L` local labels, and `jtbl_*` tables (3363 entries vs ~1472 real functions). The ELF symbol table carries `STT_FUNC`, so keeping only FUNC symbols in the EXE text range (`0x80010000`–`0x8008D080`) yields the authoritative set. Object-range lines in `bb2.map` look like `` .text          0x80016400      0x100 build/src/<stem>.o``; map each function address into the matching `[lo, lo+size)` range to recover its src stem. Exclude the 4 known non-functions: `g_module_func_tbl`, `g_module_type_tbl`, `func_80037F08_ret`, `cdrom_IrqHandler`. `completed = inventory_names − queue_funcs` (≈1024). Note: a handful of FUNC-typed symbols carry a `D_*` name (real code regions; 3 of them are tracked as functions in `queue.json` itself) — these are legitimately kept, unlike the `D_*` rodata the old parser over-collected.
 - **Test harness:** no pytest. New test file `tools/test_board_sync.py`, self-contained, importing the module via `sys.path.insert(0, str(_REPO / "tools")); import board_sync`. Run: `python tools/test_board_sync.py` (exit 0 = pass). Works cross-platform (no real `gh` needed — the client is stubbed).
 - **Commits:** prefix `board:`. Append the repo's `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>` trailer per convention. Multi-line messages via `git commit -F tmp/<file>.txt`.
 
@@ -141,6 +141,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_QUEUE = ROOT / "engine" / "queue.json"
 DEFAULT_WIP_DIR = ROOT / "memory" / "wip"
 DEFAULT_MAP = ROOT / "build" / "bb2.map"
+DEFAULT_ELF = ROOT / "build" / "bb2.elf"
 PROJECT_TITLE = "BB2 Decomp"
 
 # Engine status -> board column (the spec's locked 1:1 mapping).
@@ -1063,13 +1064,13 @@ Append a "driver / main" section to `tools/board_sync.py`:
 # ---------------------------------------------------------------------------
 
 def run_sync(queue_path, wip_dir, project_title, login,
-             dry_run=False, seed_done=False, map_path=None):
+             dry_run=False, seed_done=False, map_path=None, elf_path=None):
     """Build desired state, reconcile against the live board, and apply (unless
     dry_run). Returns the number of planned actions. Engine state is never written."""
     items = load_queue(queue_path)
     desired = build_desired_from_queue(items, wip_dir)
     if seed_done:
-        desired.update(build_desired_done(load_inventory(map_path), {it["func"] for it in items}))
+        desired.update(build_desired_done(load_inventory(map_path, elf_path), {it["func"] for it in items}))
     print(f"board sync -> {project_title} ({'DRY RUN' if dry_run else 'apply'})")
     print(f"  desired cards: {len(desired)} (seed_done={seed_done})")
 
@@ -1096,6 +1097,7 @@ def main():
     ap.add_argument("--queue", default=str(DEFAULT_QUEUE))
     ap.add_argument("--wip-dir", default=str(DEFAULT_WIP_DIR))
     ap.add_argument("--map", default=str(DEFAULT_MAP), help="build/bb2.map for --seed-done")
+    ap.add_argument("--elf", default=str(DEFAULT_ELF), help="build/bb2.elf for --seed-done")
     ap.add_argument("--project", default=PROJECT_TITLE)
     ap.add_argument("--login", default="tgg12321")
     ap.add_argument("--dry-run", action="store_true")
@@ -1103,7 +1105,8 @@ def main():
                     help="backfill completed funcs as archived Done items (one-time)")
     a = ap.parse_args()
     run_sync(Path(a.queue), Path(a.wip_dir), a.project, a.login,
-             dry_run=a.dry_run, seed_done=a.seed_done, map_path=Path(a.map))
+             dry_run=a.dry_run, seed_done=a.seed_done, map_path=Path(a.map),
+             elf_path=Path(a.elf))
 
 
 if __name__ == "__main__":
@@ -1126,33 +1129,56 @@ git commit -m "board: run_sync + CLI (--dry-run/--project/--login)"
 
 ---
 
-## Task 9: `--seed-done` — completed-function inventory from `build/bb2.map`
+## Task 9: `--seed-done` — completed-function inventory from `build/bb2.elf` (STT_FUNC) + `build/bb2.map` ranges
 
 **Files:**
-- Modify: `tools/board_sync.py` (add to "state collector" section)
+- Modify: `tools/board_sync.py` (add to "state collector" section; add `import struct` to the imports)
 - Test: `tools/test_board_sync.py`
+
+**CRITICAL correctness note:** a linker map has no symbol types, so parsing `bb2.map` for `.text` symbols over-collects `D_*` rodata, `.L` local labels, and `jtbl_*` tables (verified 3363 entries vs ~1472 real functions — `--seed-done` would create ~1900 bogus archived cards). The authoritative function set is the `STT_FUNC` symbols in the linked ELF (`build/bb2.elf`), read in **pure Python** (no WSL, no readelf — 32-bit little-endian / mipsel). The map is used ONLY to map a function address to its `build/src/<stem>.o` range (func→stem).
 
 - [ ] **Step 1: Write the failing test**
 
 ```python
-def test_load_inventory_parses_map():
-    sample = (
-        " .text          0x00000000        0x0 build/src/empty.o\n"
+def test_load_inventory_filters_and_maps():
+    sample_map = (
         " .text          0x80016400      0x100 build/src/text1b.o\n"
-        "                0x800164ac                func_800164AC\n"
-        "                0x800164f8                func_800164F8\n"
         " .text          0x80020000      0x080 build/src/display.o\n"
-        "                0x80020010                func_80020010\n"
-        "                0x80020040                func_80037F08_ret\n"  # excluded
     )
+    syms = {
+        0x80016410: "func_80016410",       # in text1b range -> kept
+        0x80020010: "func_80020010",       # in display range -> kept
+        0x80016420: "func_80037F08_ret",   # in range but EXCLUDED by name
+        0x80020020: "g_module_func_tbl",   # in range but EXCLUDED by name
+        0x70000000: "func_out_of_range",   # below TEXT_LO -> dropped
+        0x80016460: "func_no_range_x",     # in range
+    }
     with tempfile.TemporaryDirectory() as td:
         m = Path(td) / "bb2.map"
-        m.write_text(sample, encoding="utf-8")
-        inv = board_sync.load_inventory(m)
-    eq("three real funcs", len(inv), 3)
-    eq("func->stem text1b", inv["func_800164AC"], "text1b")
-    eq("func->stem display", inv["func_80020010"], "display")
-    check("excluded non-function dropped", "func_80037F08_ret" not in inv, True)
+        m.write_text(sample_map, encoding="utf-8")
+        saved = board_sync._elf_func_symbols
+        try:
+            board_sync._elf_func_symbols = lambda p: syms
+            inv = board_sync.load_inventory(m, "ignored.elf")
+        finally:
+            board_sync._elf_func_symbols = saved
+    eq("three real funcs kept", len(inv), 3)
+    eq("text1b mapping", inv["func_80016410"], "text1b")
+    eq("display mapping", inv["func_80020010"], "display")
+    check("excluded name dropped", "g_module_func_tbl" not in inv)
+    check("excluded ret-label dropped", "func_80037F08_ret" not in inv)
+    check("out-of-range dropped", "func_out_of_range" not in inv)
+
+
+def test_elf_func_symbols_real_file():
+    elf = _REPO / "build" / "bb2.elf"
+    if not elf.exists():
+        check("SKIP real-elf parse (build/bb2.elf absent)", True)
+        return
+    syms = board_sync._elf_func_symbols(elf)
+    intext = [a for a in syms if board_sync.TEXT_LO <= a < board_sync.TEXT_HI]
+    check("plausible function count 1200-1700", 1200 <= len(intext) <= 1700)
+    check("a known function is present", "func_80016A8C" in syms.values())
 
 def test_build_desired_done():
     inv = {"func_done": "text1b", "func_active": "display"}
@@ -1167,41 +1193,105 @@ def test_build_desired_done():
 Register in `main()`:
 
 ```python
-    test_load_inventory_parses_map()
+    test_load_inventory_filters_and_maps()
+    test_elf_func_symbols_real_file()
     test_build_desired_done()
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `python tools/test_board_sync.py`
-Expected: FAIL — `AttributeError: ... 'load_inventory'`.
+Expected: FAIL — `AttributeError: ... '_elf_func_symbols'` / `'load_inventory'`.
 
 - [ ] **Step 3: Write minimal implementation**
 
-Append to the "state collector" section:
+Add `import struct` to the imports, then append to the "state collector" section:
 
 ```python
-_MAP_OBJ_RE = re.compile(r"^ \.text\s+0x[0-9a-fA-F]+\s+0x[0-9a-fA-F]+\s+build/src/(\S+)\.o")
-_MAP_SYM_RE = re.compile(r"^\s+0x[0-9a-fA-F]{8,}\s+(\S+)\s*$")
+TEXT_LO, TEXT_HI = 0x80010000, 0x8008D080
+
+# Object-range line in bb2.map: " .text  0x<vma>  0x<size>  build/src/<stem>.o"
+_MAP_OBJ_RE = re.compile(r"^ \.text\s+0x([0-9a-fA-F]+)\s+0x([0-9a-fA-F]+)\s+build/src/(\S+)\.o")
 
 
-def load_inventory(map_path):
-    """Parse build/bb2.map -> {func_name: src_stem} for every .text symbol under
-    a build/src/<stem>.o object (excluding the known non-functions). Used only
-    for --seed-done."""
-    map_path = Path(map_path)
-    inv = {}
-    cur_stem = None
-    for line in map_path.read_text(encoding="utf-8", errors="replace").splitlines():
+def _load_text_object_ranges(map_path):
+    """Parse bb2.map -> sorted list of (lo, hi, stem) for each non-empty .text
+    input section from build/src/<stem>.o. Used to map a function address to its
+    source file. Pure-Python, cross-platform."""
+    ranges = []
+    for line in Path(map_path).read_text(encoding="utf-8", errors="replace").splitlines():
         m = _MAP_OBJ_RE.match(line)
         if m:
-            cur_stem = m.group(1)
+            lo = int(m.group(1), 16)
+            size = int(m.group(2), 16)
+            if size > 0:
+                ranges.append((lo, lo + size, m.group(3)))
+    ranges.sort()
+    return ranges
+
+
+def _stem_for_addr(addr, ranges):
+    for lo, hi, stem in ranges:
+        if lo <= addr < hi:
+            return stem
+    return None
+
+
+def _elf_func_symbols(elf_path):
+    """Pure-Python read of STT_FUNC symbols from a 32-bit little-endian ELF.
+    Returns {address: name}. Used only for --seed-done."""
+    data = Path(elf_path).read_bytes()
+    if data[:4] != b"\x7fELF":
+        raise ValueError(f"not an ELF file: {elf_path}")
+    if data[4] != 1 or data[5] != 1:
+        raise ValueError(f"expected 32-bit little-endian ELF: {elf_path}")
+    e_shoff = struct.unpack_from("<I", data, 0x20)[0]
+    e_shentsize = struct.unpack_from("<H", data, 0x2E)[0]
+    e_shnum = struct.unpack_from("<H", data, 0x30)[0]
+    sections = []
+    for i in range(e_shnum):
+        off = e_shoff + i * e_shentsize
+        sh_type = struct.unpack_from("<I", data, off + 0x04)[0]
+        sh_offset, sh_size = struct.unpack_from("<II", data, off + 0x10)
+        sh_link = struct.unpack_from("<I", data, off + 0x18)[0]
+        sh_entsize = struct.unpack_from("<I", data, off + 0x24)[0]
+        sections.append({"type": sh_type, "offset": sh_offset, "size": sh_size,
+                         "link": sh_link, "entsize": sh_entsize})
+    syms = {}
+    SHT_SYMTAB, STT_FUNC = 2, 2
+    for s in sections:
+        if s["type"] != SHT_SYMTAB:
             continue
-        s = _MAP_SYM_RE.match(line)
-        if s and cur_stem is not None:
-            name = s.group(1)
-            if name not in _MAP_EXCLUDE:
-                inv[name] = cur_stem
+        strtab = sections[s["link"]]
+        str_off, str_size = strtab["offset"], strtab["size"]
+        ent = s["entsize"] or 16
+        for j in range(s["size"] // ent):
+            o = s["offset"] + j * ent
+            st_name, st_value = struct.unpack_from("<II", data, o)
+            st_info = data[o + 12]
+            if (st_info & 0xF) != STT_FUNC:
+                continue
+            ns = str_off + st_name
+            ne = data.index(b"\x00", ns, str_off + str_size)
+            syms[st_value] = data[ns:ne].decode("ascii", "replace")
+    return syms
+
+
+def load_inventory(map_path, elf_path):
+    """Authoritative completed-function inventory: every STT_FUNC symbol in the
+    EXE text range (from build/bb2.elf), mapped to its src stem via bb2.map's
+    .text object ranges. Returns {func: stem}. --seed-done only. Pure-Python."""
+    syms = _elf_func_symbols(elf_path)
+    ranges = _load_text_object_ranges(map_path)
+    inv = {}
+    for addr, name in syms.items():
+        if not (TEXT_LO <= addr < TEXT_HI):
+            continue
+        if name in _MAP_EXCLUDE:
+            continue
+        stem = _stem_for_addr(addr, ranges)
+        if stem:
+            inv[name] = stem
     return inv
 
 
@@ -1218,13 +1308,15 @@ def build_desired_done(inventory, queue_funcs):
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `python tools/test_board_sync.py`
-Expected: PASS — `21 passed, 0 failed`.
+Expected: PASS — `0 failed`.
+
+**Real-file validation (run from repo root):** `load_inventory("build/bb2.map", "build/bb2.elf")` → inventory ≈ 1472, completed (inventory − queue) ≈ 1024, queue funcs missing from inventory = 0, zero `.L`/`jtbl_` leakage. (17 FUNC-typed `D_*` code symbols remain — legitimate; 3 are tracked as functions in `queue.json` itself.)
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add tools/board_sync.py tools/test_board_sync.py
-git commit -m "board: --seed-done inventory (build/bb2.map parse) + Done cards"
+git commit -m "board: authoritative --seed-done inventory via pure-Python ELF FUNC parse (fix map over-collection)"
 ```
 
 ---
