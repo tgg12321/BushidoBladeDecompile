@@ -32,3 +32,9 @@ expand_lb_funcs.txt  text eol=lf
 symbol_addrs.txt     text eol=lf
 inline_asm_canonical.txt text eol=lf
 sdata*.txt           text eol=lf
+
+# Append-only event log: union-merge so concurrent decomp-work worker branches
+# don't collide on reintegration (each appends unique JSONL lines; a merge keeps
+# both sides' lines). Not eol-normalized here — it's already LF (Python-written),
+# per this file's "add only confirmed-LF patterns" rule.
+metrics/events.jsonl merge=union

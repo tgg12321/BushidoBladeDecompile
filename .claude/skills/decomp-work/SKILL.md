@@ -70,6 +70,15 @@ When you've done N items, report:
   `work/<id>` and get merged to `main` afterward (by the user or `decomp-orchestrate`).
   Merging to `main` mid-run is what would cause cross-worker git races — so don't.
 
+**Reintegration order (for whoever merges, e.g. `decomp-orchestrate`):** merge the
+`work/<id>` branches → run `engine queue regen` (rebuild `engine/queue.json` from
+truth; don't hand-merge it) → only THEN run `board_sync.py` (the mirror). `metrics/
+events.jsonl` auto-merges (`merge=union`). `board_sync` now treats Done/archived
+cards as terminal (won't revert a worker's completion even against a stale queue),
+but regen-then-sync keeps the mirror accurate. (A genuinely RE-OPENED function —
+rare engine regression — needs a manual un-archive, since board_sync won't resurrect
+a Done card.)
+
 Once your branch is merged, clean up safely:
 ```
 pwsh tools/safe_remove_worktree.ps1 ../bb2-work-<id> -Force   # NEVER `git worktree remove` directly
