@@ -165,8 +165,8 @@ class GhError(Exception):
 
 def gh_graphql(query, fvars=None, Fvars=None):
     """Run a GraphQL query/mutation via `gh api graphql` and return the 'data'
-    object. String vars via -f, numeric/raw vars via -F. Raises GhError on
-    GraphQL errors; sys.exit on missing gh / auth failure (data is intact)."""
+    object. String vars via -f, numeric/raw vars via -F. sys.exit on missing gh /
+    auth failure (data is intact); raises GhError on GraphQL or other gh errors."""
     argv = ["gh", "api", "graphql", "-H", "X-Github-Next-Global-ID: 1",
             "-f", "query=" + query]
     for k, v in (fvars or {}).items():
@@ -179,7 +179,14 @@ def gh_graphql(query, fvars=None, Fvars=None):
         sys.exit("FATAL: `gh` CLI not found on PATH. Install GitHub CLI and run `gh auth login`. "
                  "Engine state is untouched; rerun board_sync later.")
     if r.returncode != 0:
-        raise GhError(r.stderr.strip() or f"gh exited {r.returncode}")
+        err = r.stderr.strip()
+        low = err.lower()
+        if ("401" in err or "bad credentials" in low or "gh auth login" in low
+                or "not logged in" in low or "authentication" in low):
+            sys.exit("FATAL: gh is not authenticated (" + (err or "auth error") + ").\n"
+                     "  Run `gh auth login` (needs the 'project' scope). "
+                     "Engine state is untouched; rerun board_sync later.")
+        raise GhError(err or f"gh exited {r.returncode}")
     out = json.loads(r.stdout)
     if out.get("errors"):
         raise GhError(json.dumps(out["errors"]))

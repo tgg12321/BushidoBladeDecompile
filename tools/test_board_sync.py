@@ -187,6 +187,76 @@ def test_ensure_project_creates_when_absent():
     eq("creates and returns new id", pid, "PVT_new")
     eq("three calls (list, viewer, create)", len(fake.calls), 3)
 
+def test_ensure_project_reuse_second_page():
+    fake = FakeGh([
+        {"user": {"projectsV2": {"nodes": [{"id": "PVT_a", "number": 1, "title": "Other"}],
+                                 "pageInfo": {"hasNextPage": True, "endCursor": "C1"}}}},
+        {"user": {"projectsV2": {"nodes": [{"id": "PVT_b", "number": 2, "title": "BB2 Decomp"}],
+                                 "pageInfo": {"hasNextPage": False, "endCursor": None}}}},
+    ])
+    pid = _with_stub(fake, lambda: board_sync.ensure_project("BB2 Decomp", "tgg12321"))
+    eq("found on page 2", pid, "PVT_b")
+    eq("two list calls, no create", len(fake.calls), 2)
+    eq("second call passed cursor", fake.calls[1]["fvars"].get("cursor"), "C1")
+
+
+class FakeProc:
+    def __init__(self, returncode=0, stdout="", stderr=""):
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+
+def _stub_subprocess(fn, run_impl):
+    saved = board_sync.subprocess.run
+    try:
+        board_sync.subprocess.run = run_impl
+        return fn()
+    finally:
+        board_sync.subprocess.run = saved
+
+def test_gh_graphql_builds_argv_and_returns_data():
+    captured = {}
+    def fake_run(argv, capture_output=False, text=False):
+        captured["argv"] = argv
+        return FakeProc(0, json.dumps({"data": {"ok": 1}}), "")
+    out = _stub_subprocess(lambda: board_sync.gh_graphql("QUERY", fvars={"a": "x"}, Fvars={"n": 5}), fake_run)
+    eq("returns data", out, {"ok": 1})
+    argv = captured["argv"]
+    check("gh api graphql prefix", argv[:3] == ["gh", "api", "graphql"])
+    check("has next-global-id header", "X-Github-Next-Global-ID: 1" in argv)
+    check("query via -f", "query=QUERY" in argv)
+    check("fvar present", "a=x" in argv)
+    check("Fvar present", "n=5" in argv)
+    i = argv.index("n=5")
+    eq("numeric uses -F flag", argv[i - 1], "-F")
+
+def test_gh_graphql_raises_on_error():
+    def fake_run(argv, capture_output=False, text=False):
+        return FakeProc(1, json.dumps({"errors": [{"message": "boom"}]}), "boom")
+    try:
+        _stub_subprocess(lambda: board_sync.gh_graphql("Q"), fake_run)
+        check("should have raised", False)
+    except board_sync.GhError:
+        check("raises GhError on gh error", True)
+
+def test_gh_graphql_auth_failure_exits():
+    def fake_run(argv, capture_output=False, text=False):
+        return FakeProc(1, "", "gh: Bad credentials (HTTP 401)")
+    try:
+        _stub_subprocess(lambda: board_sync.gh_graphql("Q"), fake_run)
+        check("should have exited", False)
+    except SystemExit:
+        check("auth failure -> SystemExit", True)
+
+def test_gh_graphql_missing_binary_exits():
+    def fake_run(argv, capture_output=False, text=False):
+        raise FileNotFoundError("gh")
+    try:
+        _stub_subprocess(lambda: board_sync.gh_graphql("Q"), fake_run)
+        check("should have exited", False)
+    except SystemExit:
+        check("missing gh -> SystemExit", True)
+
 
 def main():
     test_load_queue()
@@ -202,6 +272,11 @@ def main():
     test_reconcile_recovers_partial_archive()
     test_ensure_project_reuses_existing()
     test_ensure_project_creates_when_absent()
+    test_ensure_project_reuse_second_page()
+    test_gh_graphql_builds_argv_and_returns_data()
+    test_gh_graphql_raises_on_error()
+    test_gh_graphql_auth_failure_exits()
+    test_gh_graphql_missing_binary_exits()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 
