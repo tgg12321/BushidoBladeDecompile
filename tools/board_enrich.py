@@ -34,6 +34,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 import time
@@ -47,6 +48,12 @@ DEFAULT_QUEUE = ROOT / "engine" / "queue.json"
 DEFAULT_MAP = ROOT / "build" / "bb2.map"
 DEFAULT_ELF = ROOT / "build" / "bb2.elf"
 DEFAULT_CARDS = ROOT / "tmp" / "cards"
+# Local resume state for the Done-card grind. GitHub's items(first:N) does NOT
+# reliably return ARCHIVED items, so once a Done card is created+archived it
+# becomes invisible to the board read. The ledger is therefore the ONLY reliable
+# "this Done card exists" signal — without it every resume would RE-CREATE all
+# ~1024 Done cards as duplicates. tmp/ is gitignored (correct: local state).
+DEFAULT_LEDGER = ROOT / "tmp" / "board_enrich_done_ledger.json"
 
 # Pacing / safety knobs (seconds / counts).
 CONTENT_WRITE_DELAY = 8.0     # between addDraft / updateDraftBody (≈450/hr)
@@ -152,6 +159,31 @@ def read_card_body(cards_dir, func):
     return truncate_body(p.read_text(encoding="utf-8"))
 
 
+# ---------------------------------------------------------------------------
+# Done-card ledger — the authoritative "this archived Done card exists" signal
+# (archived items are invisible to items(first:N), so the board read can't see
+# them; the ledger is what makes the Done-card grind resumable without dupes).
+# ---------------------------------------------------------------------------
+
+def load_ledger(path):
+    """Load the Done-card ledger
+    {func: {"draft_id", "item_id", "finalized"}}. Missing/corrupt file -> {}."""
+    p = Path(path)
+    if not p.exists():
+        return {}
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def save_ledger(path, ledger):
+    """Write-through the ledger (utf-8) after each change, for crash-safety."""
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    Path(path).write_text(json.dumps(ledger, indent=2, sort_keys=True), encoding="utf-8")
+
+
 def build_desired_bodies(queue_funcs, inventory, cards_dir,
                          only_active=False, only_done=False):
     """Compute the desired {func: {"body": <str>, "done": <bool>}} map.
@@ -183,38 +215,70 @@ def build_desired_bodies(queue_funcs, inventory, cards_dir,
 # reconciler (pure) — never deletes; only update-differing / create-absent
 # ---------------------------------------------------------------------------
 
-def reconcile_bodies(desired, by_title):
+def reconcile_bodies(desired, by_title, done_ledger=None):
     """Diff desired {func:{"body","done"}} against the current board snapshot
-    `by_title` (from list_draft_items). Return a list of action dicts:
+    `by_title` (from list_draft_items) AND the local Done-card ledger
+    `done_ledger` ({func: {"draft_id","item_id","finalized"}}). Return a list of
+    action dicts:
 
-        {"op":"create","func","body","done","bytes"}       — card absent
-        {"op":"update","func","draft_id","body","bytes"}    — body differs
-        {"op":"finalize","func","item_id"}                  — Done card whose body
-            matched but whose Status/archive never completed (partial-create
-            recovery; resumability hole C1). Independent of the body match.
-        (skip when body matches AND the card is already in its target state)
+        {"op":"create","func","body","done","bytes"}        — card absent
+        {"op":"update","func","draft_id","body","bytes"}     — body differs
+        {"op":"finalize","func","item_id"}                   — set Status=Done +
+            archive an existing (created-but-not-finalized) Done card. No
+            content-write.
+
+    Done-card resume logic (done=True), driven by the ledger because archived
+    cards are invisible to items():
+      - in ledger, finalized==True            -> SKIP (exists, fully done).
+      - in ledger, finalized==False           -> FINALIZE via stored item_id
+                                                 (create landed, finalize didn't).
+      - NOT in ledger but PRESENT in by_title  -> visible stray (pre-ledger):
+                                                 UPDATE body if it differs, then
+                                                 FINALIZE via snapshot item_id.
+      - NOT in ledger and NOT in by_title      -> CREATE.
+
+    Active funcs (done=False) NEVER consult/append the ledger and are NEVER
+    finalized/archived by this tool — board_sync owns their Status. They are
+    visible in items(); body-update via the API read only.
 
     NEVER deletes; a board card with no desired entry is simply left alone.
-    Active funcs (done=False) never get a finalize/archive from this tool —
-    board_sync owns their Status. A finalize is emitted ONLY for done targets
-    that are not yet Status=Done + archived.
     """
+    done_ledger = done_ledger or {}
     actions = []
     for func, want in desired.items():
         body = want["body"]
         done = want["done"]
+
+        if done:
+            led = done_ledger.get(func)
+            if led is not None:
+                if led.get("finalized"):
+                    continue  # exists + fully done + invisible -> skip
+                # created but not finalized -> finalize via stored item_id
+                actions.append({"op": "finalize", "func": func,
+                                "item_id": led.get("item_id")})
+                continue
+            cur = by_title.get(func)
+            if cur is None:
+                actions.append({"op": "create", "func": func, "body": body,
+                                "done": True, "bytes": len(body)})
+                continue
+            # visible stray not in ledger: fix body if needed, then finalize.
+            if cur["body"] != body:
+                actions.append({"op": "update", "func": func, "draft_id": cur["draft_id"],
+                                "body": body, "bytes": len(body)})
+            actions.append({"op": "finalize", "func": func, "item_id": cur["item_id"]})
+            continue
+
+        # Active func (done=False): API-visible; ledger is never consulted.
         cur = by_title.get(func)
         if cur is None:
             actions.append({"op": "create", "func": func, "body": body,
-                            "done": done, "bytes": len(body)})
+                            "done": False, "bytes": len(body)})
             continue
         if cur["body"] != body:
             actions.append({"op": "update", "func": func, "draft_id": cur["draft_id"],
                             "body": body, "bytes": len(body)})
-        # Resumability (C1): a Done target whose card exists (body may match) but
-        # whose Status/archive never landed — finalize independently of the body.
-        if done and (cur.get("status") != "Done" or not cur.get("is_archived")):
-            actions.append({"op": "finalize", "func": func, "item_id": cur["item_id"]})
     return actions
 
 
@@ -233,7 +297,6 @@ def read_rate_budget():
     if r.returncode != 0:
         return (None, None)
     try:
-        import json
         data = json.loads(r.stdout)
         gql = data.get("resources", {}).get("graphql", {})
         return (gql.get("remaining"), gql.get("reset"))
@@ -349,11 +412,12 @@ def _finalize_done(project_id, field_map, item_id, delay=FIELD_DELAY):
 # ---------------------------------------------------------------------------
 
 def run_enrich(queue_path=DEFAULT_QUEUE, map_path=DEFAULT_MAP, elf_path=DEFAULT_ELF,
-               cards_dir=DEFAULT_CARDS, project_title=board_sync.PROJECT_TITLE,
+               cards_dir=DEFAULT_CARDS, ledger_path=DEFAULT_LEDGER,
+               project_title=board_sync.PROJECT_TITLE,
                login="tgg12321", dry_run=False, limit=None,
                only_active=False, only_done=False):
-    """Read the board, compute the desired bodies, and reconcile (unless
-    dry_run). Returns a result dict
+    """Read the board + Done-card ledger, compute the desired bodies, and
+    reconcile (unless dry_run). Returns a result dict
     {updated, created, finalized, skipped, remaining}."""
     print(f"board enrich -> {project_title} ({'DRY RUN' if dry_run else 'apply'})")
 
@@ -386,8 +450,9 @@ def run_enrich(queue_path=DEFAULT_QUEUE, map_path=DEFAULT_MAP, elf_path=DEFAULT_
         print(f"  WARN: {len(missing)} func(s) have no tmp/cards/<func>.md (skipped); "
               f"e.g. {', '.join(missing[:5])}")
 
+    ledger = load_ledger(ledger_path)
     by_title = list_draft_items(project_id)
-    actions = reconcile_bodies(desired, by_title)
+    actions = reconcile_bodies(desired, by_title, ledger)
     n_update = sum(1 for a in actions if a["op"] == "update")
     n_create = sum(1 for a in actions if a["op"] == "create")
     n_finalize = sum(1 for a in actions if a["op"] == "finalize")
@@ -395,7 +460,7 @@ def run_enrich(queue_path=DEFAULT_QUEUE, map_path=DEFAULT_MAP, elf_path=DEFAULT_
     n_writes = n_update + n_create
     skipped = len(desired) - len({a["func"] for a in actions})
     print(f"  desired cards: {len(desired)} (active+done, with card files); "
-          f"on board: {len(by_title)}")
+          f"on board: {len(by_title)}; ledger Done cards: {len(ledger)}")
     print(f"  planned content-writes: {n_writes} ({n_update} update, {n_create} create); "
           f"finalize-only: {n_finalize}; already-correct (skipped): {skipped}")
 
@@ -424,6 +489,13 @@ def run_enrich(queue_path=DEFAULT_QUEUE, map_path=DEFAULT_MAP, elf_path=DEFAULT_
         if a["op"] == "finalize":
             print(f"[{i}/{total}] finalize {a['func']} (Status=Done+archive)")
             _finalize_done(project_id, field_map, a["item_id"])
+            # ledger: record (visible-stray case adds a new entry; pending case
+            # flips finalized) — archived cards are invisible to the next read.
+            entry = ledger.setdefault(a["func"],
+                                      {"draft_id": None, "item_id": a["item_id"]})
+            entry["item_id"] = a["item_id"]
+            entry["finalized"] = True
+            save_ledger(ledger_path, ledger)
             finalized += 1
             continue
         # content-write: gate on the (periodically-polled) rate budget first.
@@ -434,9 +506,17 @@ def run_enrich(queue_path=DEFAULT_QUEUE, map_path=DEFAULT_MAP, elf_path=DEFAULT_
             updated += 1
         else:  # create
             print(f"[{i}/{total}] create {a['func']} ({a['bytes']}b)")
-            item_id, _draft_id = create_card(project_id, a["func"], a["body"])
+            item_id, draft_id = create_card(project_id, a["func"], a["body"])
             if a.get("done"):  # seed Done cards as Status=Done + archived
+                # Record the card IMMEDIATELY (before finalize) so a crash in the
+                # finalize window still leaves a ledger entry -> resume finalizes
+                # it instead of re-creating a duplicate.
+                ledger[a["func"]] = {"draft_id": draft_id, "item_id": item_id,
+                                     "finalized": False}
+                save_ledger(ledger_path, ledger)
                 _finalize_done(project_id, field_map, item_id)
+                ledger[a["func"]]["finalized"] = True
+                save_ledger(ledger_path, ledger)
             created += 1
         budget.tick()
         if (updated + created) % 25 == 0:
@@ -456,6 +536,8 @@ def main():
     ap.add_argument("--map", default=str(DEFAULT_MAP))
     ap.add_argument("--elf", default=str(DEFAULT_ELF))
     ap.add_argument("--cards", default=str(DEFAULT_CARDS), help="dir of <func>.md bodies (board_cards output)")
+    ap.add_argument("--ledger", default=str(DEFAULT_LEDGER),
+                    help="local Done-card resume ledger (gitignored tmp/ state)")
     ap.add_argument("--project", default=board_sync.PROJECT_TITLE)
     ap.add_argument("--login", default="tgg12321")
     ap.add_argument("--dry-run", action="store_true")
@@ -467,7 +549,8 @@ def main():
         sys.exit("--only-active and --only-done are mutually exclusive")
     try:
         run_enrich(queue_path=Path(a.queue), map_path=Path(a.map), elf_path=Path(a.elf),
-                   cards_dir=Path(a.cards), project_title=a.project, login=a.login,
+                   cards_dir=Path(a.cards), ledger_path=Path(a.ledger),
+                   project_title=a.project, login=a.login,
                    dry_run=a.dry_run, limit=a.limit,
                    only_active=a.only_active, only_done=a.only_done)
     except board_sync.GhError as e:

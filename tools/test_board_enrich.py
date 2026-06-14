@@ -72,41 +72,61 @@ def test_reconcile_skip_when_identical():
     eq("no action when identical active", actions, [])
 
 
-def test_reconcile_done_card_fully_settled_skipped():
-    # done func, body matches, already Status=Done + archived -> skip.
+def test_reconcile_done_ledger_finalized_skipped():
+    # done func recorded in the ledger as finalized -> SKIP (exists, invisible).
     desired = {"func_done": _d("same", True)}
-    by_title = {"func_done": {"item_id": "I0", "draft_id": "D0", "body": "same",
-                              "is_archived": True, "status": "Done"}}
-    actions = board_enrich.reconcile_bodies(desired, by_title)
-    eq("settled Done card skipped", actions, [])
+    ledger = {"func_done": {"draft_id": "D0", "item_id": "I0", "finalized": True}}
+    actions = board_enrich.reconcile_bodies(desired, {}, ledger)
+    eq("finalized ledger entry skipped (no re-create)", actions, [])
 
 
-def test_reconcile_finalize_when_body_matches_but_not_done():
-    # C1: prior run created the draft + body but died before Status/archive.
+def test_reconcile_done_ledger_pending_finalizes_by_stored_id():
+    # in ledger, finalized==False (create landed, finalize didn't) -> finalize
+    # using the STORED item_id; NO create, NO content-write.
+    desired = {"func_done": _d("same", True)}
+    ledger = {"func_done": {"draft_id": "D0", "item_id": "I0", "finalized": False}}
+    actions = board_enrich.reconcile_bodies(desired, {}, ledger)
+    eq("only a finalize (no create)", [a["op"] for a in actions], ["finalize"])
+    eq("finalize uses STORED item id", actions[0]["item_id"], "I0")
+
+
+def test_reconcile_done_not_in_ledger_on_board_finalizes():
+    # NOT in ledger but visible on the board (pre-ledger stray) -> finalize via
+    # the snapshot item_id (no create). Body matches -> no update.
     desired = {"func_done": _d("same", True)}
     by_title = {"func_done": {"item_id": "I0", "draft_id": "D0", "body": "same",
                               "is_archived": False, "status": "Backlog"}}
-    actions = board_enrich.reconcile_bodies(desired, by_title)
-    eq("only a finalize (no duplicate create/update)", [a["op"] for a in actions], ["finalize"])
-    eq("finalize uses item id", actions[0]["item_id"], "I0")
+    actions = board_enrich.reconcile_bodies(desired, by_title, {})
+    eq("visible stray finalized (no create)", [a["op"] for a in actions], ["finalize"])
+    eq("finalize uses snapshot item id", actions[0]["item_id"], "I0")
 
 
-def test_reconcile_finalize_when_archived_but_status_wrong():
-    # archived but Status never set to Done -> still finalize.
-    desired = {"func_done": _d("same", True)}
-    by_title = {"func_done": {"item_id": "I0", "draft_id": "D0", "body": "same",
-                              "is_archived": True, "status": "Backlog"}}
-    actions = board_enrich.reconcile_bodies(desired, by_title)
-    eq("finalize emitted (status wrong)", [a["op"] for a in actions], ["finalize"])
+def test_reconcile_done_not_in_ledger_off_board_creates():
+    # NOT in ledger AND NOT on board -> create.
+    desired = {"func_done": _d("body", True)}
+    actions = board_enrich.reconcile_bodies(desired, {}, {})
+    eq("create when truly absent", [a["op"] for a in actions], ["create"])
+    eq("create done flag", actions[0]["done"], True)
 
 
-def test_reconcile_update_and_finalize_together():
-    # body differs AND not settled -> both an update and a finalize.
+def test_reconcile_done_stray_update_and_finalize_together():
+    # visible stray, body differs -> both an update and a finalize.
     desired = {"func_done": _d("new", True)}
     by_title = {"func_done": {"item_id": "I0", "draft_id": "D0", "body": "old",
                               "is_archived": False, "status": "Backlog"}}
-    actions = board_enrich.reconcile_bodies(desired, by_title)
+    actions = board_enrich.reconcile_bodies(desired, by_title, {})
     eq("update + finalize", sorted(a["op"] for a in actions), ["finalize", "update"])
+
+
+def test_reconcile_done_ledger_overrides_board_visibility():
+    # Even if a done func somehow appears in by_title, a finalized ledger entry
+    # wins -> skip (the ledger is authoritative for done cards).
+    desired = {"func_done": _d("same", True)}
+    by_title = {"func_done": {"item_id": "I0", "draft_id": "D0", "body": "same",
+                              "is_archived": False, "status": "Backlog"}}
+    ledger = {"func_done": {"draft_id": "D0", "item_id": "I0", "finalized": True}}
+    actions = board_enrich.reconcile_bodies(desired, by_title, ledger)
+    eq("ledger-finalized wins over board presence", actions, [])
 
 
 def test_reconcile_active_body_match_no_finalize():
@@ -204,6 +224,38 @@ def test_build_desired_only_done():
         desired = board_enrich.build_desired_bodies(
             {"func_active"}, {"func_active": "a", "func_done": "d"}, td, only_done=True)
     check("only done included", set(desired) == {"func_done"})
+
+
+# ---------------------------------------------------------------------------
+# Done-card ledger — load/save round-trip
+# ---------------------------------------------------------------------------
+
+def test_ledger_missing_file_is_empty():
+    eq("missing ledger -> {}", board_enrich.load_ledger(Path("does/not/exist.json")), {})
+
+
+def test_ledger_round_trip():
+    with tempfile.TemporaryDirectory() as td:
+        p = Path(td) / "ledger.json"
+        led = {"func_a": {"draft_id": "D0", "item_id": "I0", "finalized": True},
+               "func_b": {"draft_id": "D1", "item_id": "I1", "finalized": False}}
+        board_enrich.save_ledger(p, led)
+        check("file written", p.exists())
+        eq("round-trips", board_enrich.load_ledger(p), led)
+
+
+def test_ledger_corrupt_file_is_empty():
+    with tempfile.TemporaryDirectory() as td:
+        p = Path(td) / "ledger.json"
+        p.write_text("{ not json", encoding="utf-8")
+        eq("corrupt ledger -> {}", board_enrich.load_ledger(p), {})
+
+
+def test_ledger_save_creates_parent_dir():
+    with tempfile.TemporaryDirectory() as td:
+        p = Path(td) / "nested" / "deep" / "ledger.json"
+        board_enrich.save_ledger(p, {"f": {"finalized": True}})
+        check("nested ledger written", p.exists())
 
 
 # ---------------------------------------------------------------------------
@@ -443,8 +495,11 @@ def test_dry_run_no_writes_correct_counts():
             with contextlib.redirect_stdout(buf):
                 res = board_enrich.run_enrich(
                     queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
-                    cards_dir=Path(td), dry_run=True)
+                    cards_dir=Path(td), ledger_path=Path(td) / "ledger.json",
+                    dry_run=True)
             out = buf.getvalue()
+            # Dry-run must NOT write the ledger either.
+            check("dry-run leaves ledger absent", not (Path(td) / "ledger.json").exists())
         eq("1 update + 1 create remaining", res["remaining"], 2)
         eq("zero updated", res["updated"], 0)
         eq("zero created", res["created"], 0)
@@ -498,17 +553,24 @@ def test_apply_update_and_create_with_limit():
         with tempfile.TemporaryDirectory() as td:
             for f in ("func_active", "func_done"):
                 (Path(td) / f"{f}.md").write_text("fresh", encoding="utf-8")
+            ledger_p = Path(td) / "ledger.json"
             buf = io.StringIO()
             with contextlib.redirect_stdout(buf):
                 res = board_enrich.run_enrich(
                     queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
-                    cards_dir=Path(td), dry_run=False)
+                    cards_dir=Path(td), ledger_path=ledger_p, dry_run=False)
+            final_ledger = board_enrich.load_ledger(ledger_p)
         eq("one update done", res["updated"], 1)
         eq("one create done", res["created"], 1)
         eq("update used draft id", log["updates"], [("D0", "fresh")])
         eq("create made func_done", [c[0] for c in log["creates"]], ["func_done"])
         eq("created card set Done", log["status_sets"], [("NEWITEM", "Status", "Done")])
         eq("created card archived", log["archives"], ["NEWITEM"])
+        # ledger written through for the created Done card; active func absent.
+        eq("ledger records created Done card finalized",
+           final_ledger.get("func_done"),
+           {"draft_id": "NEWDRAFT", "item_id": "NEWITEM", "finalized": True})
+        check("active func never in ledger", "func_active" not in final_ledger)
     finally:
         (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
          board_sync.load_inventory, board_enrich.list_draft_items,
@@ -540,13 +602,16 @@ def test_apply_limit_stops_early():
         with tempfile.TemporaryDirectory() as td:
             for f in ("func_d1", "func_d2", "func_d3"):
                 (Path(td) / f"{f}.md").write_text("b", encoding="utf-8")
+            ledger_p = Path(td) / "ledger.json"
             with contextlib.redirect_stdout(io.StringIO()):
                 res = board_enrich.run_enrich(
                     queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
-                    cards_dir=Path(td), dry_run=False, limit=2)
+                    cards_dir=Path(td), ledger_path=ledger_p, dry_run=False, limit=2)
+            final_ledger = board_enrich.load_ledger(ledger_p)
         eq("only 2 creates done", len(log["creates"]), 2)
         eq("created count 2", res["created"], 2)
         check("one remaining after limit", res["remaining"] == 1)
+        eq("ledger recorded exactly the 2 created cards", len(final_ledger), 2)
     finally:
         (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
          board_sync.load_inventory, board_enrich.list_draft_items,
@@ -555,58 +620,167 @@ def test_apply_limit_stops_early():
          board_enrich.maybe_wait_for_budget, board_enrich.read_rate_budget) = saved
 
 
-def test_apply_finalize_recovery_path():
-    # C1 end-to-end: a Done card exists with the correct body but Status≠Done /
-    # not archived (prior run died mid-create). Re-run must finalize ONLY (no
-    # duplicate create / content-write).
+def _stub_driver():
+    """Save+install a set of driver stubs; returns (saved_tuple, log).
+    Caller must restore saved_tuple in a finally."""
     saved = (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
              board_sync.load_inventory, board_enrich.list_draft_items,
              board_enrich.update_body, board_enrich.create_card,
              board_sync._set_field, board_sync._mutate,
              board_enrich.maybe_wait_for_budget, board_enrich.read_rate_budget)
     log = {"creates": [], "updates": [], "status_sets": [], "archives": []}
+    board_sync.find_project = lambda title, login: "PVT_x"
+    board_sync.ensure_fields = lambda pid: {"Status": {"id": "F_S", "options": {"Done": "o_done"}}}
+    board_enrich.create_card = lambda pid, func, body, **k: (
+        log["creates"].append(func) or ("IT_" + func, "DR_" + func))
+    board_enrich.update_body = lambda *a, **k: log["updates"].append(a)
+    board_sync._set_field = lambda pid, fm, iid, field, value, delay: log["status_sets"].append((iid, value))
+    board_sync._mutate = lambda q, variables=None, delay=0: log["archives"].append(variables["i"])
+    board_enrich.maybe_wait_for_budget = lambda *a, **k: False
+    board_enrich.read_rate_budget = lambda: (5000, 0)
+    return saved, log
+
+
+def _restore_driver(saved):
+    (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
+     board_sync.load_inventory, board_enrich.list_draft_items,
+     board_enrich.update_body, board_enrich.create_card,
+     board_sync._set_field, board_sync._mutate,
+     board_enrich.maybe_wait_for_budget, board_enrich.read_rate_budget) = saved
+
+
+def test_apply_visible_stray_finalize_path():
+    # NOT in ledger but visible on board, body matches -> finalize ONLY (no
+    # create, no content-write) AND append to the ledger finalized=True.
+    saved, log = _stub_driver()
     try:
-        board_sync.find_project = lambda title, login: "PVT_x"
-        board_sync.ensure_fields = lambda pid: {"Status": {"id": "F_S", "options": {"Done": "o_done"}}}
         board_sync.load_queue = lambda p: []
         board_sync.load_inventory = lambda m, e: {"func_done": "d"}
-        # Card present, body matches, but NOT finalized.
         board_enrich.list_draft_items = lambda pid: {
             "func_done": {"item_id": "I9", "draft_id": "D9", "body": "fresh",
                           "is_archived": False, "status": "Backlog"}}
-        board_enrich.create_card = lambda *a, **k: log["creates"].append(a) or ("X", "Y")
-        board_enrich.update_body = lambda *a, **k: log["updates"].append(a)
-        board_sync._set_field = lambda pid, fm, iid, field, value, delay: log["status_sets"].append((iid, value))
-        board_sync._mutate = lambda q, variables=None, delay=0: log["archives"].append(variables["i"])
-        board_enrich.maybe_wait_for_budget = lambda *a, **k: False
-        board_enrich.read_rate_budget = lambda: (5000, 0)
         with tempfile.TemporaryDirectory() as td:
             (Path(td) / "func_done.md").write_text("fresh", encoding="utf-8")
+            ledger_p = Path(td) / "ledger.json"
             with contextlib.redirect_stdout(io.StringIO()):
                 res = board_enrich.run_enrich(
                     queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
-                    cards_dir=Path(td), dry_run=False)
-        eq("no create on recovery", log["creates"], [])
+                    cards_dir=Path(td), ledger_path=ledger_p, dry_run=False)
+            final_ledger = board_enrich.load_ledger(ledger_p)
+        eq("no create on stray finalize", log["creates"], [])
         eq("no body content-write (body matched)", log["updates"], [])
         eq("finalized once", res["finalized"], 1)
         eq("Status set Done on existing item", log["status_sets"], [("I9", "Done")])
         eq("archived the existing item", log["archives"], ["I9"])
+        eq("ledger now records the stray as finalized",
+           final_ledger.get("func_done", {}).get("finalized"), True)
     finally:
-        (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
-         board_sync.load_inventory, board_enrich.list_draft_items,
-         board_enrich.update_body, board_enrich.create_card,
-         board_sync._set_field, board_sync._mutate,
-         board_enrich.maybe_wait_for_budget, board_enrich.read_rate_budget) = saved
+        _restore_driver(saved)
+
+
+def test_apply_ledger_pending_finalize_no_create():
+    # Ledger has the card as finalized=False (create landed, finalize didn't on a
+    # prior run). by_title can't see it (archived/invisible). Re-run must finalize
+    # via the STORED item_id — NO duplicate create.
+    saved, log = _stub_driver()
+    try:
+        board_sync.load_queue = lambda p: []
+        board_sync.load_inventory = lambda m, e: {"func_done": "d"}
+        board_enrich.list_draft_items = lambda pid: {}   # archived -> invisible
+        with tempfile.TemporaryDirectory() as td:
+            (Path(td) / "func_done.md").write_text("fresh", encoding="utf-8")
+            ledger_p = Path(td) / "ledger.json"
+            board_enrich.save_ledger(ledger_p, {
+                "func_done": {"draft_id": "Dpend", "item_id": "Ipend", "finalized": False}})
+            with contextlib.redirect_stdout(io.StringIO()):
+                res = board_enrich.run_enrich(
+                    queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
+                    cards_dir=Path(td), ledger_path=ledger_p, dry_run=False)
+            final_ledger = board_enrich.load_ledger(ledger_p)
+        eq("NO create (avoids duplicate)", log["creates"], [])
+        eq("finalized once", res["finalized"], 1)
+        eq("finalize used the STORED item id", log["status_sets"], [("Ipend", "Done")])
+        eq("archived the stored item", log["archives"], ["Ipend"])
+        eq("ledger flipped to finalized", final_ledger["func_done"]["finalized"], True)
+    finally:
+        _restore_driver(saved)
+
+
+def test_apply_resume_with_ledger_zero_creates():
+    # THE fatal-bug guard: a ledger already marking the Done cards finalized must
+    # cause a re-run to make ZERO creates (archived cards are invisible to the
+    # board read, so without the ledger they'd be re-created as duplicates).
+    saved, log = _stub_driver()
+    try:
+        board_sync.load_queue = lambda p: []
+        board_sync.load_inventory = lambda m, e: {"func_d1": "a", "func_d2": "b"}
+        board_enrich.list_draft_items = lambda pid: {}   # archived -> invisible
+        with tempfile.TemporaryDirectory() as td:
+            for f in ("func_d1", "func_d2"):
+                (Path(td) / f"{f}.md").write_text("b", encoding="utf-8")
+            ledger_p = Path(td) / "ledger.json"
+            board_enrich.save_ledger(ledger_p, {
+                "func_d1": {"draft_id": "D1", "item_id": "I1", "finalized": True},
+                "func_d2": {"draft_id": "D2", "item_id": "I2", "finalized": True}})
+            with contextlib.redirect_stdout(io.StringIO()):
+                res = board_enrich.run_enrich(
+                    queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
+                    cards_dir=Path(td), ledger_path=ledger_p, dry_run=False)
+        eq("zero creates on resume", log["creates"], [])
+        eq("zero finalizes (already done)", res["finalized"], 0)
+        eq("both skipped via ledger", res["skipped"], 2)
+    finally:
+        _restore_driver(saved)
+
+
+def test_apply_crash_window_leaves_pending_ledger_entry():
+    # Crash AFTER addDraft + ledger(finalized=False) but BEFORE finalize lands.
+    # The ledger must already carry the card (finalized=False) so a resume
+    # finalizes instead of re-creating a duplicate.
+    saved, log = _stub_driver()
+    saved_fin = board_enrich._finalize_done
+    try:
+        board_sync.load_queue = lambda p: []
+        board_sync.load_inventory = lambda m, e: {"func_done": "d"}
+        board_enrich.list_draft_items = lambda pid: {}
+
+        def boom(*a, **k):
+            raise RuntimeError("simulated crash during finalize")
+        board_enrich._finalize_done = boom
+        with tempfile.TemporaryDirectory() as td:
+            (Path(td) / "func_done.md").write_text("fresh", encoding="utf-8")
+            ledger_p = Path(td) / "ledger.json"
+            crashed = False
+            try:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    board_enrich.run_enrich(
+                        queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
+                        cards_dir=Path(td), ledger_path=ledger_p, dry_run=False)
+            except RuntimeError:
+                crashed = True
+            mid_ledger = board_enrich.load_ledger(ledger_p)
+        check("crash propagated", crashed)
+        eq("card was created once", log["creates"], ["func_done"])
+        check("ledger recorded the card despite the crash", "func_done" in mid_ledger)
+        eq("recorded as NOT yet finalized (resume will finalize)",
+           mid_ledger["func_done"]["finalized"], False)
+        eq("ledger stored the created item id",
+           mid_ledger["func_done"]["item_id"], "IT_func_done")
+    finally:
+        board_enrich._finalize_done = saved_fin
+        _restore_driver(saved)
 
 
 def main():
     test_reconcile_update_when_body_differs()
     test_reconcile_create_when_absent()
     test_reconcile_skip_when_identical()
-    test_reconcile_done_card_fully_settled_skipped()
-    test_reconcile_finalize_when_body_matches_but_not_done()
-    test_reconcile_finalize_when_archived_but_status_wrong()
-    test_reconcile_update_and_finalize_together()
+    test_reconcile_done_ledger_finalized_skipped()
+    test_reconcile_done_ledger_pending_finalizes_by_stored_id()
+    test_reconcile_done_not_in_ledger_on_board_finalizes()
+    test_reconcile_done_not_in_ledger_off_board_creates()
+    test_reconcile_done_stray_update_and_finalize_together()
+    test_reconcile_done_ledger_overrides_board_visibility()
     test_reconcile_active_body_match_no_finalize()
     test_reconcile_never_deletes()
     test_reconcile_mixed()
@@ -616,6 +790,10 @@ def main():
     test_build_desired_bodies_split()
     test_build_desired_only_active()
     test_build_desired_only_done()
+    test_ledger_missing_file_is_empty()
+    test_ledger_round_trip()
+    test_ledger_corrupt_file_is_empty()
+    test_ledger_save_creates_parent_dir()
     test_maybe_wait_below_floor_sleeps()
     test_maybe_wait_above_floor_no_sleep()
     test_maybe_wait_unknown_budget_no_sleep()
@@ -629,7 +807,10 @@ def main():
     test_dry_run_no_writes_correct_counts()
     test_run_enrich_exits_when_project_absent()
     test_apply_update_and_create_with_limit()
-    test_apply_finalize_recovery_path()
+    test_apply_visible_stray_finalize_path()
+    test_apply_ledger_pending_finalize_no_create()
+    test_apply_resume_with_ledger_zero_creates()
+    test_apply_crash_window_leaves_pending_ledger_entry()
     test_apply_limit_stops_early()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
