@@ -3552,9 +3552,6 @@ func_80074B18: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LC846" @ 22
 
 # func_80053304: pure-C body (D_800A33F4 cache + ptr cast) -- regfix recipe
 # from prior worker f561e61: new_var=field_1c sched + reorder@45-46 + a2/a3 swap@48-60
-func_80053304: subst "lw\s+\$7,8\(\$4\)" "lw	$3,24($4)" @ 45
-func_80053304: subst "lw\s+\$3,24\(\$4\)" "lw	$6,8($4)" @ 46
-func_80053304: $6 <-> $7 @ 48-60
 
 # (maspsx idx) v1 destination at idx 40 (mine has a0)
 # (maspsx idx) v0 destination at idx 43 (mine has v1)
