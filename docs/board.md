@@ -7,6 +7,9 @@
   It never writes back to engine state and never deletes items.
 - Columns map 1:1 to engine status: `active`→Backlog, `authorize`→Needs-Decision,
   `parked`→Blocked, completed→archived Done.
+- On the current queue the live run produces Backlog + Blocked cards only;
+  Needs-Decision (and the Phase-2 In-Progress/In-Review) columns will be empty for
+  now — that's expected, not a bug.
 
 ## Usage (Windows-side; needs `gh` authed with the `project` scope)
 
@@ -14,10 +17,9 @@
     python tools/board_sync.py               # sync the active cards
     python tools/board_sync.py --seed-done   # one-time: backfill completed funcs as archived Done
 
-`--dry-run` skips all item mutations (no cards are added/updated/archived), but it
-**does** create the "BB2 Decomp" project and its custom fields if they don't exist
-yet, because that setup is idempotent. So the very first `--dry-run` materializes
-an empty project + fields, then reports the planned (un-applied) actions.
+`--dry-run` is fully read-only — it looks up the project without creating it, makes
+no item mutations, and if the project doesn't exist yet it reports what it would
+create. Nothing is written to GitHub on a dry run.
 
 `--seed-done` reads `build/bb2.elf` + `build/bb2.map` to enumerate completed
 functions via the ELF symbol table; a fresh build must be present before running it.

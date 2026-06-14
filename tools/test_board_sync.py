@@ -18,9 +18,12 @@ import board_sync  # noqa: E402
 
 _passed = _failed = 0
 
-def check(desc, cond):
+_SENTINEL = object()
+
+def check(desc, cond, expected=_SENTINEL):
     global _passed, _failed
-    if cond:
+    ok = (cond == expected) if expected is not _SENTINEL else bool(cond)
+    if ok:
         _passed += 1
     else:
         _failed += 1
@@ -409,7 +412,8 @@ def test_mutate_retries_on_rate_limit():
     try:
         board_sync.gh_graphql = flaky
         board_sync.time.sleep = lambda *a, **k: None
-        out = board_sync._mutate("Q", variables={}, delay=0)
+        with contextlib.redirect_stdout(io.StringIO()):
+            out = board_sync._mutate("Q", variables={}, delay=0)
         eq("retried then succeeded", out, {"ok": True})
         eq("two attempts", calls["n"], 2)
     finally:
@@ -431,15 +435,17 @@ def test_mutate_reraises_non_rate_limit():
         board_sync.gh_graphql = saved_gh
 
 
-def test_run_sync_dry_run_makes_no_mutations():
-    # Stub the client layer; only reconcile runs for real.
-    saved = (board_sync.ensure_project, board_sync.ensure_fields,
+def test_run_sync_dry_run_is_read_only():
+    saved = (board_sync.find_project, board_sync.ensure_project, board_sync.ensure_fields,
              board_sync.list_items, board_sync.apply)
     applied = {"called": False}
+    def must_not_call(*a, **k):
+        raise AssertionError("dry-run must not create/mutate")
     try:
-        board_sync.ensure_project = lambda title, login: "PVT_x"
-        board_sync.ensure_fields = lambda pid: _full_field_map()
-        board_sync.list_items = lambda pid: []   # empty board -> adds desired
+        board_sync.find_project = lambda title, login: "PVT_x"
+        board_sync.ensure_project = must_not_call
+        board_sync.ensure_fields = must_not_call
+        board_sync.list_items = lambda pid: []
         board_sync.apply = lambda *a, **k: applied.__setitem__("called", True)
         with tempfile.TemporaryDirectory() as td:
             q = Path(td) / "queue.json"
@@ -453,10 +459,45 @@ def test_run_sync_dry_run_makes_no_mutations():
             out = buf.getvalue()
         eq("reports 1 planned action", n, 1)
         eq("dry-run never applies", applied["called"], False)
-        check("prints the add", "func_a" in out)
+        check("prints the add", "func_a" in out, True)
     finally:
-        (board_sync.ensure_project, board_sync.ensure_fields,
+        (board_sync.find_project, board_sync.ensure_project, board_sync.ensure_fields,
          board_sync.list_items, board_sync.apply) = saved
+
+
+def test_run_sync_dry_run_project_absent():
+    saved = (board_sync.find_project, board_sync.ensure_project, board_sync.apply)
+    applied = {"called": False}
+    try:
+        board_sync.find_project = lambda title, login: None
+        board_sync.ensure_project = lambda *a, **k: (_ for _ in ()).throw(AssertionError("no create in dry-run"))
+        board_sync.apply = lambda *a, **k: applied.__setitem__("called", True)
+        with tempfile.TemporaryDirectory() as td:
+            q = Path(td) / "queue.json"
+            q.write_text(json.dumps({"items": [
+                {"func": "func_a", "file": "x", "distance": 9, "verdict": "C", "rules": 3, "status": "active"}]}),
+                encoding="utf-8")
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                n = board_sync.run_sync(queue_path=q, wip_dir=Path(td), project_title="BB2 Decomp",
+                                        login="tgg12321", dry_run=True, seed_done=False, map_path=None)
+            out = buf.getvalue()
+        eq("one planned add", n, 1)
+        eq("no apply", applied["called"], False)
+        check("notes project would be created", "does not exist" in out, True)
+    finally:
+        (board_sync.find_project, board_sync.ensure_project, board_sync.apply) = saved
+
+
+def test_find_project_reuse_and_absent():
+    fake_found = FakeGh([{"user": {"projectsV2": {"nodes": [{"id": "PVT_x", "title": "BB2 Decomp"}],
+                          "pageInfo": {"hasNextPage": False, "endCursor": None}}}}])
+    pid = _with_stub(fake_found, lambda: board_sync.find_project("BB2 Decomp", "tgg12321"))
+    eq("finds existing", pid, "PVT_x")
+    fake_absent = FakeGh([{"user": {"projectsV2": {"nodes": [],
+                           "pageInfo": {"hasNextPage": False, "endCursor": None}}}}])
+    pid2 = _with_stub(fake_absent, lambda: board_sync.find_project("BB2 Decomp", "tgg12321"))
+    eq("absent -> None", pid2, None)
 
 
 def test_load_inventory_filters_and_maps():
@@ -558,7 +599,9 @@ def main():
     test_apply_archive()
     test_mutate_retries_on_rate_limit()
     test_mutate_reraises_non_rate_limit()
-    test_run_sync_dry_run_makes_no_mutations()
+    test_run_sync_dry_run_is_read_only()
+    test_run_sync_dry_run_project_absent()
+    test_find_project_reuse_and_absent()
     test_main_wraps_gherror_cleanly()
     test_load_inventory_filters_and_maps()
     test_elf_func_symbols_real_file()

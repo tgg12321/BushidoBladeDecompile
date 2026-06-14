@@ -355,29 +355,34 @@ def ensure_fields(project_id):
     return field_map
 
 
-def ensure_project(title, login):
-    """Return the node id of the user's project named `title`, creating it if absent."""
+def find_project(title, login):
+    """Return the user's ProjectV2 id for `title`, or None if absent. Read-only (no create)."""
     cursor = None
     while True:
         data = gh_graphql(
             "query($login:String!,$cursor:String){ user(login:$login){ "
-            "projectsV2(first:100,after:$cursor){ nodes{ id number title } "
+            "projectsV2(first:100,after:$cursor){ nodes{ id title } "
             "pageInfo{ hasNextPage endCursor } } } }",
-            variables={"login": login, "cursor": cursor},
-        )
+            variables={"login": login, "cursor": cursor})
         pv = data["user"]["projectsV2"]
         for n in pv["nodes"]:
             if n["title"] == title:
                 return n["id"]
         if not pv["pageInfo"]["hasNextPage"]:
-            break
+            return None
         cursor = pv["pageInfo"]["endCursor"]
+
+
+def ensure_project(title, login):
+    """Return the id of the user's project named `title`, creating it if absent."""
+    pid = find_project(title, login)
+    if pid is not None:
+        return pid
     owner = _viewer_id()
     created = gh_graphql(
         "mutation($ownerId:ID!,$title:String!){ createProjectV2(input:{ownerId:$ownerId,title:$title}){ "
         "projectV2{ id number title } } }",
-        variables={"ownerId": owner, "title": title},
-    )
+        variables={"ownerId": owner, "title": title})
     return created["createProjectV2"]["projectV2"]["id"]
 
 
@@ -520,11 +525,25 @@ def run_sync(queue_path, wip_dir, project_title, login,
     print(f"board sync -> {project_title} ({'DRY RUN' if dry_run else 'apply'})")
     print(f"  desired cards: {len(desired)} (seed_done={seed_done})")
 
-    project_id = ensure_project(project_title, login)
-    field_map = ensure_fields(project_id)
-    current = list_items(project_id)
+    field_map = None
+    if dry_run:
+        project_id = find_project(project_title, login)
+        if project_id is None:
+            print(f"  project '{project_title}' does not exist yet; would create it + fields")
+            current = []
+        else:
+            current = list_items(project_id)
+    else:
+        project_id = ensure_project(project_title, login)
+        field_map = ensure_fields(project_id)
+        current = list_items(project_id)
+
     actions = reconcile(desired, current)
-    print(f"  current board items: {len(current)}; planned actions: {len(actions)}")
+    n_add = sum(1 for a in actions if a["op"] == "add")
+    n_set = sum(1 for a in actions if a["op"] == "set")
+    n_arch = sum(1 for a in actions if a["op"] in ("archive", "unarchive"))
+    print(f"  current board items: {len(current)}; planned actions: {len(actions)} "
+          f"({n_add} add, {n_set} set, {n_arch} archive/unarchive)")
     for a in actions:
         if a["op"] == "add":
             print(f"    + add {a['func']} ({a['fields'].get('Status')})")
