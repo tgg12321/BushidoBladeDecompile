@@ -55,6 +55,7 @@ RATE_FLOOR = 200            # GraphQL points remaining before we wait for reset
 RATE_SLACK = 5              # extra seconds past reset before resuming
 SECONDARY_BACKOFF = 60      # patient backoff on a secondary-limit error
 MAX_BODY = 65000            # GitHub body hard cap is 65536; stay defensive
+BUDGET_POLL_EVERY = 25      # re-poll `gh api rate_limit` every N content-writes (I1)
 
 # ---------------------------------------------------------------------------
 # GraphQL fragments
@@ -153,26 +154,28 @@ def read_card_body(cards_dir, func):
 
 def build_desired_bodies(queue_funcs, inventory, cards_dir,
                          only_active=False, only_done=False):
-    """Compute the desired {func: (body, is_done)} map.
+    """Compute the desired {func: {"body": <str>, "done": <bool>}} map.
 
-    active funcs  = the queue funcs (board_sync.load_queue).
-    completed     = inventory - queue funcs (the Done cards to seed).
+    active funcs  = the queue funcs (board_sync.load_queue) -> done=False.
+    completed     = inventory - queue funcs (the Done cards to seed) -> done=True.
     Bodies come from tmp/cards/<func>.md; funcs with no card file are dropped
-    (the caller warns). `is_done` drives create-as-Done-archived vs body-update.
+    (the caller warns). `done` drives create-as-Done-archived + the finalize
+    recovery path (a Done card whose body matched but whose Status/archive never
+    completed on a prior, interrupted run).
     """
     desired = {}
     if not only_done:
         for func in queue_funcs:
             body = read_card_body(cards_dir, func)
             if body is not None:
-                desired[func] = (body, False)
+                desired[func] = {"body": body, "done": False}
     if not only_active:
         for func in inventory:
             if func in queue_funcs:
                 continue
             body = read_card_body(cards_dir, func)
             if body is not None:
-                desired[func] = (body, True)
+                desired[func] = {"body": body, "done": True}
     return desired
 
 
@@ -181,26 +184,37 @@ def build_desired_bodies(queue_funcs, inventory, cards_dir,
 # ---------------------------------------------------------------------------
 
 def reconcile_bodies(desired, by_title):
-    """Diff desired {func:(body,is_done)} against the current board snapshot
+    """Diff desired {func:{"body","done"}} against the current board snapshot
     `by_title` (from list_draft_items). Return a list of action dicts:
 
-        {"op":"update","func","draft_id","body","bytes"}        — body differs
-        {"op":"create","func","body","is_done","bytes"}          — card absent
-        (skip when body identical — idempotent)
+        {"op":"create","func","body","done","bytes"}       — card absent
+        {"op":"update","func","draft_id","body","bytes"}    — body differs
+        {"op":"finalize","func","item_id"}                  — Done card whose body
+            matched but whose Status/archive never completed (partial-create
+            recovery; resumability hole C1). Independent of the body match.
+        (skip when body matches AND the card is already in its target state)
 
     NEVER deletes; a board card with no desired entry is simply left alone.
+    Active funcs (done=False) never get a finalize/archive from this tool —
+    board_sync owns their Status. A finalize is emitted ONLY for done targets
+    that are not yet Status=Done + archived.
     """
     actions = []
-    for func, (body, is_done) in desired.items():
+    for func, want in desired.items():
+        body = want["body"]
+        done = want["done"]
         cur = by_title.get(func)
         if cur is None:
             actions.append({"op": "create", "func": func, "body": body,
-                            "is_done": is_done, "bytes": len(body)})
+                            "done": done, "bytes": len(body)})
             continue
         if cur["body"] != body:
             actions.append({"op": "update", "func": func, "draft_id": cur["draft_id"],
                             "body": body, "bytes": len(body)})
-        # identical body -> skip (idempotent)
+        # Resumability (C1): a Done target whose card exists (body may match) but
+        # whose Status/archive never landed — finalize independently of the body.
+        if done and (cur.get("status") != "Done" or not cur.get("is_archived")):
+            actions.append({"op": "finalize", "func": func, "item_id": cur["item_id"]})
     return actions
 
 
@@ -240,6 +254,45 @@ def maybe_wait_for_budget(floor=RATE_FLOOR, slack=RATE_SLACK,
     print(f"  rate budget low ({remaining}); sleeping until reset (~{mins:.1f}m)")
     sleep(wait)
     return True
+
+
+class _BudgetPoller:
+    """Periodic rate-budget gate (I1): instead of spawning `gh api rate_limit`
+    before EVERY content-write (~2,500 subprocesses for the full grind), poll
+    once and then only every `poll_every` content-writes. On each fresh poll
+    (and on the first call) it reads the budget ONCE and hands that same
+    (remaining, reset) snapshot to `wait`; if remaining < floor, `wait` sleeps
+    until reset. Between poll boundaries `maybe_wait()` is a cheap no-op (no
+    subprocess). `poll_every`/`floor`/`wait`/`read` are injectable for tests.
+    Graceful degradation on an unparseable rate_limit is inherited from
+    maybe_wait_for_budget (unknown budget -> proceed)."""
+
+    def __init__(self, poll_every=BUDGET_POLL_EVERY, floor=RATE_FLOOR,
+                 wait=maybe_wait_for_budget, read=read_rate_budget):
+        self.poll_every = poll_every
+        self.floor = floor
+        self._wait = wait
+        self._read = read
+        self._since_poll = None   # None => never polled (force a poll on first call)
+        self.polls = 0            # test-visible: how many times we actually polled
+        self.remaining = None     # last-seen budget (for progress prints)
+
+    def maybe_wait(self):
+        """Call before a content-write. On a poll boundary: re-poll the budget
+        once and possibly sleep; otherwise a cheap no-op."""
+        if self._since_poll is not None and self._since_poll < self.poll_every:
+            return
+        self.polls += 1
+        snapshot = self._read()           # (remaining, reset) — ONE subprocess
+        self.remaining = snapshot[0]
+        self._wait(floor=self.floor, read=lambda: snapshot)
+        self._since_poll = 0
+
+    def tick(self):
+        """Count a completed content-write toward the next poll boundary."""
+        if self._since_poll is None:
+            self._since_poll = 0
+        self._since_poll += 1
 
 
 # ---------------------------------------------------------------------------
@@ -282,6 +335,15 @@ def create_card(project_id, func, body, delay=CONTENT_WRITE_DELAY):
     return item_id, draft_id
 
 
+def _finalize_done(project_id, field_map, item_id, delay=FIELD_DELAY):
+    """Set Status=Done + archive a Done card. Cheap field ops (NOT content-writes)
+    and idempotent: re-setting Done / re-archiving an archived item is harmless,
+    so this is safe to re-run on the partial-create recovery path (C1)."""
+    board_sync._set_field(project_id, field_map, item_id, "Status", "Done", delay)
+    board_sync._mutate(board_sync._ARCHIVE,
+                       variables={"p": project_id, "i": item_id}, delay=delay)
+
+
 # ---------------------------------------------------------------------------
 # driver
 # ---------------------------------------------------------------------------
@@ -291,7 +353,8 @@ def run_enrich(queue_path=DEFAULT_QUEUE, map_path=DEFAULT_MAP, elf_path=DEFAULT_
                login="tgg12321", dry_run=False, limit=None,
                only_active=False, only_done=False):
     """Read the board, compute the desired bodies, and reconcile (unless
-    dry_run). Returns a result dict {updated, created, skipped, remaining}."""
+    dry_run). Returns a result dict
+    {updated, created, finalized, skipped, remaining}."""
     print(f"board enrich -> {project_title} ({'DRY RUN' if dry_run else 'apply'})")
 
     project_id = board_sync.find_project(project_title, login)
@@ -327,46 +390,64 @@ def run_enrich(queue_path=DEFAULT_QUEUE, map_path=DEFAULT_MAP, elf_path=DEFAULT_
     actions = reconcile_bodies(desired, by_title)
     n_update = sum(1 for a in actions if a["op"] == "update")
     n_create = sum(1 for a in actions if a["op"] == "create")
-    skipped = len(desired) - len(actions)
+    n_finalize = sum(1 for a in actions if a["op"] == "finalize")
+    # content-writes are the rate-limited ops; finalize is cheap field ops only.
+    n_writes = n_update + n_create
+    skipped = len(desired) - len({a["func"] for a in actions})
     print(f"  desired cards: {len(desired)} (active+done, with card files); "
           f"on board: {len(by_title)}")
-    print(f"  planned content-writes: {len(actions)} ({n_update} update, {n_create} create); "
-          f"already-correct (skipped): {skipped}")
+    print(f"  planned content-writes: {n_writes} ({n_update} update, {n_create} create); "
+          f"finalize-only: {n_finalize}; already-correct (skipped): {skipped}")
 
     if dry_run:
         for a in actions[:20]:
-            print(f"    {a['op']} {a['func']} ({a['bytes']}b)")
+            if a["op"] == "finalize":
+                print(f"    finalize {a['func']} (Status=Done+archive)")
+            else:
+                print(f"    {a['op']} {a['func']} ({a['bytes']}b)")
         if len(actions) > 20:
             print(f"    ... and {len(actions) - 20} more")
         print("dry run complete (no writes).")
-        return {"updated": 0, "created": 0, "skipped": skipped, "remaining": len(actions)}
+        return {"updated": 0, "created": 0, "finalized": 0,
+                "skipped": skipped, "remaining": len(actions)}
 
-    updated = created = 0
+    updated = created = finalized = 0
     total = len(actions)
+    # Resolve wait/read from the module at call time so tests that patch
+    # board_enrich.maybe_wait_for_budget / read_rate_budget take effect.
+    budget = _BudgetPoller(wait=maybe_wait_for_budget, read=read_rate_budget)
     for i, a in enumerate(actions, start=1):
-        if limit is not None and (updated + created) >= limit:
+        # --limit caps content-writes (create/update); finalize is cheap.
+        if limit is not None and a["op"] in ("create", "update") and (updated + created) >= limit:
             print(f"  --limit {limit} reached; stopping (resumable on re-run).")
             break
-        maybe_wait_for_budget()
+        if a["op"] == "finalize":
+            print(f"[{i}/{total}] finalize {a['func']} (Status=Done+archive)")
+            _finalize_done(project_id, field_map, a["item_id"])
+            finalized += 1
+            continue
+        # content-write: gate on the (periodically-polled) rate budget first.
+        budget.maybe_wait()
         if a["op"] == "update":
             print(f"[{i}/{total}] update {a['func']} ({a['bytes']}b)")
             update_body(a["draft_id"], a["body"])
             updated += 1
-        else:  # create (+ Status=Done + archive)
+        else:  # create
             print(f"[{i}/{total}] create {a['func']} ({a['bytes']}b)")
             item_id, _draft_id = create_card(project_id, a["func"], a["body"])
-            board_sync._set_field(project_id, field_map, item_id, "Status", "Done", FIELD_DELAY)
-            board_sync._mutate(board_sync._ARCHIVE,
-                               variables={"p": project_id, "i": item_id}, delay=FIELD_DELAY)
+            if a.get("done"):  # seed Done cards as Status=Done + archived
+                _finalize_done(project_id, field_map, item_id)
             created += 1
+        budget.tick()
         if (updated + created) % 25 == 0:
-            rem, _ = read_rate_budget()
-            print(f"  progress: {updated} updated, {created} created; budget remaining={rem}")
+            print(f"  progress: {updated} updated, {created} created, "
+                  f"{finalized} finalized; budget remaining={budget.remaining}")
 
-    remaining = total - (updated + created)
+    remaining = total - (updated + created + finalized)
     print(f"board enrich complete: {updated} updated, {created} created, "
-          f"{skipped} skipped, {remaining} remaining-to-do.")
-    return {"updated": updated, "created": created, "skipped": skipped, "remaining": remaining}
+          f"{finalized} finalized, {skipped} skipped, {remaining} remaining-to-do.")
+    return {"updated": updated, "created": created, "finalized": finalized,
+            "skipped": skipped, "remaining": remaining}
 
 
 def main():
