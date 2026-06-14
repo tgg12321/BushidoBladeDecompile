@@ -34,6 +34,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
@@ -160,14 +161,29 @@ def read_card_body(cards_dir, func):
 
 
 # ---------------------------------------------------------------------------
-# Done-card ledger — the authoritative "this archived Done card exists" signal
-# (archived items are invisible to items(first:N), so the board read can't see
-# them; the ledger is what makes the Done-card grind resumable without dupes).
+# Local ledger — two jobs:
+#  1. The authoritative "this archived Done card exists" signal (archived items
+#     are invisible to items(first:N), so the board read can't see them).
+#  2. Body idempotency for ALL cards (active + done): GitHub NORMALIZES a draft
+#     body on storage (the remote read-back is longer than what we sent), so
+#     "remote_body != local_body" is ALWAYS true and would re-update every card
+#     on every run. Instead we record body_sha = sha256(the body we SENT) and
+#     skip when it still matches the local desired body. This is API-independent.
+#
+# Entry shape: {func: {"draft_id", "item_id", "finalized": <bool>, "body_sha"}}.
+# Active funcs get an entry too (carrying body_sha + ids; finalized stays False
+# and they are never archived).
 # ---------------------------------------------------------------------------
 
+def body_sha(text):
+    """sha256 hex of the EXACT body we send (local card content), so idempotency
+    never depends on GitHub's normalized read-back."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def load_ledger(path):
-    """Load the Done-card ledger
-    {func: {"draft_id", "item_id", "finalized"}}. Missing/corrupt file -> {}."""
+    """Load the ledger {func: {"draft_id","item_id","finalized","body_sha"}}.
+    Missing/corrupt file -> {}."""
     p = Path(path)
     if not p.exists():
         return {}
@@ -215,70 +231,98 @@ def build_desired_bodies(queue_funcs, inventory, cards_dir,
 # reconciler (pure) — never deletes; only update-differing / create-absent
 # ---------------------------------------------------------------------------
 
-def reconcile_bodies(desired, by_title, done_ledger=None):
-    """Diff desired {func:{"body","done"}} against the current board snapshot
-    `by_title` (from list_draft_items) AND the local Done-card ledger
-    `done_ledger` ({func: {"draft_id","item_id","finalized"}}). Return a list of
-    action dicts:
+def reconcile_bodies(desired, by_title, ledger=None):
+    """Diff desired {func:{"body","done"}} against the board snapshot `by_title`
+    (from list_draft_items) AND the local ledger
+    `ledger` ({func: {"draft_id","item_id","finalized","body_sha"}}). Return a
+    list of action dicts:
 
-        {"op":"create","func","body","done","bytes"}        — card absent
-        {"op":"update","func","draft_id","body","bytes"}     — body differs
-        {"op":"finalize","func","item_id"}                   — set Status=Done +
-            archive an existing (created-but-not-finalized) Done card. No
-            content-write.
+        {"op":"create","func","body","done","bytes","body_sha"}        — absent
+        {"op":"update","func","draft_id","item_id","body","bytes","body_sha"}
+                                                                 — body changed
+        {"op":"finalize","func","item_id"}   — set Status=Done + archive an
+            existing (created-but-not-finalized) Done card. No content-write.
 
-    Done-card resume logic (done=True), driven by the ledger because archived
-    cards are invisible to items():
-      - in ledger, finalized==True            -> SKIP (exists, fully done).
-      - in ledger, finalized==False           -> FINALIZE via stored item_id
-                                                 (create landed, finalize didn't).
-      - NOT in ledger but PRESENT in by_title  -> visible stray (pre-ledger):
-                                                 UPDATE body if it differs, then
-                                                 FINALIZE via snapshot item_id.
-      - NOT in ledger and NOT in by_title      -> CREATE.
+    IDEMPOTENCY is hash-based, never via GitHub's read-back (it normalizes the
+    stored body, so remote != local is always true). For every desired func we
+    compute want_sha = body_sha(local body) and SKIP the body write when the
+    ledger already records that exact want_sha.
 
-    Active funcs (done=False) NEVER consult/append the ledger and are NEVER
-    finalized/archived by this tool — board_sync owns their Status. They are
-    visible in items(); body-update via the API read only.
+    Done cards (done=True) — existence is ledger-authoritative (archived =
+    invisible to items()):
+      - in ledger, finalized==True : skip if body_sha matches; else UPDATE body
+        (via stored draft_id), no re-finalize.
+      - in ledger, finalized==False: UPDATE body if hash differs, then FINALIZE
+        via stored item_id.
+      - NOT in ledger, PRESENT in by_title (pre-ledger visible stray): UPDATE
+        body if hash differs, then FINALIZE via snapshot item_id.
+      - NOT in ledger, NOT in by_title: CREATE.
+
+    Active cards (done=False) — existence via the board snapshot (they're
+    visible); "needs update?" via the hash:
+      - in ledger with matching body_sha: skip.
+      - on board (stale/missing hash): UPDATE (records hash on send).
+      - absent from board: CREATE.
+      Active cards are NEVER finalized/archived (board_sync owns their Status).
 
     NEVER deletes; a board card with no desired entry is simply left alone.
     """
-    done_ledger = done_ledger or {}
+    ledger = ledger or {}
     actions = []
     for func, want in desired.items():
         body = want["body"]
         done = want["done"]
+        want_sha = body_sha(body)
+        led = ledger.get(func)
+        sha_ok = led is not None and led.get("body_sha") == want_sha
 
         if done:
-            led = done_ledger.get(func)
             if led is not None:
                 if led.get("finalized"):
-                    continue  # exists + fully done + invisible -> skip
-                # created but not finalized -> finalize via stored item_id
+                    # Exists + fully done. Skip unless the local body changed.
+                    if not sha_ok and led.get("draft_id"):
+                        actions.append({"op": "update", "func": func,
+                                        "draft_id": led["draft_id"],
+                                        "item_id": led.get("item_id"),
+                                        "body": body, "bytes": len(body),
+                                        "body_sha": want_sha})
+                    continue
+                # created but not finalized -> update body if changed, finalize.
+                if not sha_ok and led.get("draft_id"):
+                    actions.append({"op": "update", "func": func,
+                                    "draft_id": led["draft_id"],
+                                    "item_id": led.get("item_id"),
+                                    "body": body, "bytes": len(body),
+                                    "body_sha": want_sha})
                 actions.append({"op": "finalize", "func": func,
                                 "item_id": led.get("item_id")})
                 continue
             cur = by_title.get(func)
             if cur is None:
                 actions.append({"op": "create", "func": func, "body": body,
-                                "done": True, "bytes": len(body)})
+                                "done": True, "bytes": len(body),
+                                "body_sha": want_sha})
                 continue
-            # visible stray not in ledger: fix body if needed, then finalize.
-            if cur["body"] != body:
-                actions.append({"op": "update", "func": func, "draft_id": cur["draft_id"],
-                                "body": body, "bytes": len(body)})
+            # visible stray not in ledger: fix body (no trustworthy hash yet),
+            # then finalize.
+            actions.append({"op": "update", "func": func, "draft_id": cur["draft_id"],
+                            "item_id": cur["item_id"], "body": body,
+                            "bytes": len(body), "body_sha": want_sha})
             actions.append({"op": "finalize", "func": func, "item_id": cur["item_id"]})
             continue
 
-        # Active func (done=False): API-visible; ledger is never consulted.
+        # Active func (done=False): hash-based idempotency; never finalized.
+        if sha_ok:
+            continue  # we already sent this exact body
         cur = by_title.get(func)
         if cur is None:
             actions.append({"op": "create", "func": func, "body": body,
-                            "done": False, "bytes": len(body)})
+                            "done": False, "bytes": len(body),
+                            "body_sha": want_sha})
             continue
-        if cur["body"] != body:
-            actions.append({"op": "update", "func": func, "draft_id": cur["draft_id"],
-                            "body": body, "bytes": len(body)})
+        actions.append({"op": "update", "func": func, "draft_id": cur["draft_id"],
+                        "item_id": cur["item_id"], "body": body,
+                        "bytes": len(body), "body_sha": want_sha})
     return actions
 
 
@@ -491,8 +535,7 @@ def run_enrich(queue_path=DEFAULT_QUEUE, map_path=DEFAULT_MAP, elf_path=DEFAULT_
             _finalize_done(project_id, field_map, a["item_id"])
             # ledger: record (visible-stray case adds a new entry; pending case
             # flips finalized) — archived cards are invisible to the next read.
-            entry = ledger.setdefault(a["func"],
-                                      {"draft_id": None, "item_id": a["item_id"]})
+            entry = ledger.setdefault(a["func"], {"draft_id": None})
             entry["item_id"] = a["item_id"]
             entry["finalized"] = True
             save_ledger(ledger_path, ledger)
@@ -503,6 +546,13 @@ def run_enrich(queue_path=DEFAULT_QUEUE, map_path=DEFAULT_MAP, elf_path=DEFAULT_
         if a["op"] == "update":
             print(f"[{i}/{total}] update {a['func']} ({a['bytes']}b)")
             update_body(a["draft_id"], a["body"])
+            # Record body_sha + ids so the next run skips this exact body
+            # (GitHub normalizes the stored body; only our hash is trustworthy).
+            entry = ledger.setdefault(a["func"], {"finalized": False})
+            entry["draft_id"] = a["draft_id"]
+            entry["item_id"] = a.get("item_id")
+            entry["body_sha"] = a["body_sha"]
+            save_ledger(ledger_path, ledger)
             updated += 1
         else:  # create
             print(f"[{i}/{total}] create {a['func']} ({a['bytes']}b)")
@@ -512,10 +562,14 @@ def run_enrich(queue_path=DEFAULT_QUEUE, map_path=DEFAULT_MAP, elf_path=DEFAULT_
                 # finalize window still leaves a ledger entry -> resume finalizes
                 # it instead of re-creating a duplicate.
                 ledger[a["func"]] = {"draft_id": draft_id, "item_id": item_id,
-                                     "finalized": False}
+                                     "finalized": False, "body_sha": a["body_sha"]}
                 save_ledger(ledger_path, ledger)
                 _finalize_done(project_id, field_map, item_id)
                 ledger[a["func"]]["finalized"] = True
+                save_ledger(ledger_path, ledger)
+            else:  # active card created -> record hash + ids (never finalized)
+                ledger[a["func"]] = {"draft_id": draft_id, "item_id": item_id,
+                                     "finalized": False, "body_sha": a["body_sha"]}
                 save_ledger(ledger_path, ledger)
             created += 1
         budget.tick()

@@ -43,7 +43,31 @@ def _d(body, done):
     return {"body": body, "done": done}
 
 
+def _sha(body):
+    return board_enrich.body_sha(body)
+
+
+def _led(body=None, *, draft_id="D0", item_id="I0", finalized=False):
+    """A ledger entry; body (if given) sets body_sha to the matching hash."""
+    e = {"draft_id": draft_id, "item_id": item_id, "finalized": finalized}
+    if body is not None:
+        e["body_sha"] = _sha(body)
+    return e
+
+
+# ---------------------------------------------------------------------------
+# body_sha — the API-independent idempotency primitive
+# ---------------------------------------------------------------------------
+
+def test_body_sha_stable_and_distinct():
+    eq("stable for same text", _sha("hello"), _sha("hello"))
+    check("differs for different text", _sha("hello") != _sha("hellp"))
+    eq("matches hashlib", _sha("hi"),
+       __import__("hashlib").sha256(b"hi").hexdigest())
+
+
 def test_reconcile_update_when_body_differs():
+    # active func, no ledger -> update (and carries the new body's hash).
     desired = {"func_a": _d("NEW body", False)}
     by_title = {"func_a": {"item_id": "I0", "draft_id": "D0", "body": "OLD body",
                            "is_archived": False, "status": "Backlog"}}
@@ -52,6 +76,7 @@ def test_reconcile_update_when_body_differs():
     eq("op update", actions[0]["op"], "update")
     eq("uses draft id", actions[0]["draft_id"], "D0")
     eq("carries new body", actions[0]["body"], "NEW body")
+    eq("carries body_sha", actions[0]["body_sha"], _sha("NEW body"))
 
 
 def test_reconcile_create_when_absent():
@@ -61,82 +86,103 @@ def test_reconcile_create_when_absent():
     eq("op create", actions[0]["op"], "create")
     eq("create done flag", actions[0]["done"], True)
     eq("carries body", actions[0]["body"], "done body")
+    eq("create carries body_sha", actions[0]["body_sha"], _sha("done body"))
 
 
-def test_reconcile_skip_when_identical():
-    # active func, body matches -> no action (active never finalized here).
+def test_reconcile_active_skip_when_hash_matches():
+    # active func, ledger records the SAME body's hash -> skip (no write), even
+    # though GitHub's normalized remote body would never byte-equal the local one.
     desired = {"func_a": _d("same", False)}
-    by_title = {"func_a": {"item_id": "I0", "draft_id": "D0", "body": "same",
+    by_title = {"func_a": {"item_id": "I0", "draft_id": "D0",
+                           "body": "same\n\n[normalized by github]",  # != local
                            "is_archived": False, "status": "Backlog"}}
-    actions = board_enrich.reconcile_bodies(desired, by_title)
-    eq("no action when identical active", actions, [])
+    ledger = {"func_a": _led("same")}
+    actions = board_enrich.reconcile_bodies(desired, by_title, ledger)
+    eq("hash match -> skip despite remote body mismatch", actions, [])
 
 
-def test_reconcile_done_ledger_finalized_skipped():
-    # done func recorded in the ledger as finalized -> SKIP (exists, invisible).
+def test_reconcile_active_update_when_hash_stale_or_missing():
+    desired = {"func_a": _d("fresh", False)}
+    by_title = {"func_a": {"item_id": "I0", "draft_id": "D0", "body": "x",
+                           "is_archived": False, "status": "Backlog"}}
+    # stale hash (recorded an OLD body) -> update.
+    stale = {"func_a": _led("old")}
+    eq("stale hash -> update", [a["op"] for a in board_enrich.reconcile_bodies(desired, by_title, stale)], ["update"])
+    # no ledger entry at all -> update.
+    eq("missing hash -> update", [a["op"] for a in board_enrich.reconcile_bodies(desired, by_title, {})], ["update"])
+
+
+def test_reconcile_done_ledger_finalized_hash_match_skipped():
+    # done func, finalized + matching hash -> SKIP.
     desired = {"func_done": _d("same", True)}
-    ledger = {"func_done": {"draft_id": "D0", "item_id": "I0", "finalized": True}}
+    ledger = {"func_done": _led("same", finalized=True)}
     actions = board_enrich.reconcile_bodies(desired, {}, ledger)
-    eq("finalized ledger entry skipped (no re-create)", actions, [])
+    eq("finalized + hash match skipped", actions, [])
 
 
-def test_reconcile_done_ledger_pending_finalizes_by_stored_id():
-    # in ledger, finalized==False (create landed, finalize didn't) -> finalize
-    # using the STORED item_id; NO create, NO content-write.
+def test_reconcile_done_finalized_stale_hash_updates_body_only():
+    # done func, finalized but body changed -> UPDATE body (via stored draft_id),
+    # no re-finalize.
+    desired = {"func_done": _d("new body", True)}
+    ledger = {"func_done": _led("old body", draft_id="Dx", item_id="Ix", finalized=True)}
+    actions = board_enrich.reconcile_bodies(desired, {}, ledger)
+    eq("only an update (no re-finalize)", [a["op"] for a in actions], ["update"])
+    eq("update uses stored draft_id", actions[0]["draft_id"], "Dx")
+    eq("update carries new hash", actions[0]["body_sha"], _sha("new body"))
+
+
+def test_reconcile_done_ledger_pending_hash_match_finalize_only():
+    # in ledger, finalized==False, hash MATCHES -> finalize only (no body write).
     desired = {"func_done": _d("same", True)}
-    ledger = {"func_done": {"draft_id": "D0", "item_id": "I0", "finalized": False}}
+    ledger = {"func_done": _led("same", item_id="I0", finalized=False)}
     actions = board_enrich.reconcile_bodies(desired, {}, ledger)
-    eq("only a finalize (no create)", [a["op"] for a in actions], ["finalize"])
+    eq("only a finalize (no create/update)", [a["op"] for a in actions], ["finalize"])
     eq("finalize uses STORED item id", actions[0]["item_id"], "I0")
 
 
-def test_reconcile_done_not_in_ledger_on_board_finalizes():
-    # NOT in ledger but visible on the board (pre-ledger stray) -> finalize via
-    # the snapshot item_id (no create). Body matches -> no update.
+def test_reconcile_done_pending_stale_hash_update_then_finalize():
+    # finalized==False AND body changed -> update body, then finalize.
+    desired = {"func_done": _d("new", True)}
+    ledger = {"func_done": _led("old", draft_id="D0", item_id="I0", finalized=False)}
+    actions = board_enrich.reconcile_bodies(desired, {}, ledger)
+    eq("update then finalize", [a["op"] for a in actions], ["update", "finalize"])
+
+
+def test_reconcile_done_not_in_ledger_on_board_updates_and_finalizes():
+    # NOT in ledger but visible (pre-ledger stray): no trustworthy hash yet, so
+    # send the body once then finalize.
     desired = {"func_done": _d("same", True)}
     by_title = {"func_done": {"item_id": "I0", "draft_id": "D0", "body": "same",
                               "is_archived": False, "status": "Backlog"}}
     actions = board_enrich.reconcile_bodies(desired, by_title, {})
-    eq("visible stray finalized (no create)", [a["op"] for a in actions], ["finalize"])
-    eq("finalize uses snapshot item id", actions[0]["item_id"], "I0")
+    eq("stray -> update + finalize", [a["op"] for a in actions], ["update", "finalize"])
+    eq("finalize uses snapshot item id", actions[1]["item_id"], "I0")
 
 
 def test_reconcile_done_not_in_ledger_off_board_creates():
-    # NOT in ledger AND NOT on board -> create.
     desired = {"func_done": _d("body", True)}
     actions = board_enrich.reconcile_bodies(desired, {}, {})
     eq("create when truly absent", [a["op"] for a in actions], ["create"])
     eq("create done flag", actions[0]["done"], True)
 
 
-def test_reconcile_done_stray_update_and_finalize_together():
-    # visible stray, body differs -> both an update and a finalize.
-    desired = {"func_done": _d("new", True)}
-    by_title = {"func_done": {"item_id": "I0", "draft_id": "D0", "body": "old",
-                              "is_archived": False, "status": "Backlog"}}
-    actions = board_enrich.reconcile_bodies(desired, by_title, {})
-    eq("update + finalize", sorted(a["op"] for a in actions), ["finalize", "update"])
-
-
-def test_reconcile_done_ledger_overrides_board_visibility():
-    # Even if a done func somehow appears in by_title, a finalized ledger entry
-    # wins -> skip (the ledger is authoritative for done cards).
+def test_reconcile_done_ledger_finalized_overrides_board_visibility():
+    # finalized + hash match wins even if the func appears in by_title.
     desired = {"func_done": _d("same", True)}
     by_title = {"func_done": {"item_id": "I0", "draft_id": "D0", "body": "same",
                               "is_archived": False, "status": "Backlog"}}
-    ledger = {"func_done": {"draft_id": "D0", "item_id": "I0", "finalized": True}}
+    ledger = {"func_done": _led("same", finalized=True)}
     actions = board_enrich.reconcile_bodies(desired, by_title, ledger)
-    eq("ledger-finalized wins over board presence", actions, [])
+    eq("ledger-finalized + hash wins -> skip", actions, [])
 
 
-def test_reconcile_active_body_match_no_finalize():
-    # active func (done=False) with matching body -> NO finalize, NO action.
+def test_reconcile_active_never_finalized():
+    # active func is never finalized/archived, regardless of ledger state.
     desired = {"func_a": _d("same", False)}
     by_title = {"func_a": {"item_id": "I0", "draft_id": "D0", "body": "same",
                            "is_archived": False, "status": "Backlog"}}
-    actions = board_enrich.reconcile_bodies(desired, by_title)
+    actions = board_enrich.reconcile_bodies(desired, by_title, {})
     check("active never finalized by this tool", all(a["op"] != "finalize" for a in actions))
-    eq("no action", actions, [])
 
 
 def test_reconcile_never_deletes():
@@ -146,24 +192,50 @@ def test_reconcile_never_deletes():
         "func_a": {"item_id": "I0", "draft_id": "D0", "body": "b", "is_archived": False, "status": "Backlog"},
         "func_stale": {"item_id": "I1", "draft_id": "D1", "body": "x", "is_archived": True, "status": "Done"},
     }
-    actions = board_enrich.reconcile_bodies(desired, by_title)
-    eq("only the (none) for func_a, stale untouched", actions, [])
+    ledger = {"func_a": _led("b")}  # func_a already sent -> skipped
+    actions = board_enrich.reconcile_bodies(desired, by_title, ledger)
+    eq("func_a skipped, stale untouched", actions, [])
     check("no delete op ever", all(a["op"] != "delete" for a in actions))
+
+
+def test_reconcile_full_rerun_all_hashes_match_zero_writes():
+    # THE idempotency/verification property: a desired set whose hashes all match
+    # the ledger -> ZERO content-writes (no update, no create), zero finalize.
+    desired = {
+        "act1": _d("a1", False), "act2": _d("a2", False),
+        "done1": _d("d1", True), "done2": _d("d2", True),
+    }
+    by_title = {
+        "act1": {"item_id": "Ia1", "draft_id": "Da1", "body": "remote-norm", "is_archived": False, "status": "Backlog"},
+        "act2": {"item_id": "Ia2", "draft_id": "Da2", "body": "remote-norm", "is_archived": False, "status": "Backlog"},
+    }
+    ledger = {
+        "act1": _led("a1", draft_id="Da1", item_id="Ia1"),
+        "act2": _led("a2", draft_id="Da2", item_id="Ia2"),
+        "done1": _led("d1", finalized=True),
+        "done2": _led("d2", finalized=True),
+    }
+    actions = board_enrich.reconcile_bodies(desired, by_title, ledger)
+    eq("idempotent re-run -> zero actions", actions, [])
 
 
 def test_reconcile_mixed():
     desired = {
-        "func_upd": _d("new", False),     # update
-        "func_new": _d("seed", True),     # create
-        "func_ok": _d("ok", False),       # skip
+        "func_upd": _d("new", False),     # update (hash stale)
+        "func_new": _d("seed", True),     # create (absent)
+        "func_ok": _d("ok", False),       # skip (hash match)
     }
     by_title = {
         "func_upd": {"item_id": "I0", "draft_id": "D0", "body": "old", "is_archived": False, "status": "Backlog"},
-        "func_ok": {"item_id": "I2", "draft_id": "D2", "body": "ok", "is_archived": False, "status": "Backlog"},
+        "func_ok": {"item_id": "I2", "draft_id": "D2", "body": "ok-remote", "is_archived": False, "status": "Backlog"},
     }
-    actions = board_enrich.reconcile_bodies(desired, by_title)
+    ledger = {
+        "func_upd": _led("stale-old", draft_id="D0", item_id="I0"),
+        "func_ok": _led("ok", draft_id="D2", item_id="I2"),
+    }
+    actions = board_enrich.reconcile_bodies(desired, by_title, ledger)
     ops = sorted(a["op"] for a in actions)
-    eq("one update + one create", ops, ["create", "update"])
+    eq("one update + one create (func_ok skipped)", ops, ["create", "update"])
 
 
 # ---------------------------------------------------------------------------
@@ -566,11 +638,16 @@ def test_apply_update_and_create_with_limit():
         eq("create made func_done", [c[0] for c in log["creates"]], ["func_done"])
         eq("created card set Done", log["status_sets"], [("NEWITEM", "Status", "Done")])
         eq("created card archived", log["archives"], ["NEWITEM"])
-        # ledger written through for the created Done card; active func absent.
+        # ledger written through for the created Done card (now carries body_sha).
         eq("ledger records created Done card finalized",
            final_ledger.get("func_done"),
-           {"draft_id": "NEWDRAFT", "item_id": "NEWITEM", "finalized": True})
-        check("active func never in ledger", "func_active" not in final_ledger)
+           {"draft_id": "NEWDRAFT", "item_id": "NEWITEM", "finalized": True,
+            "body_sha": _sha("fresh")})
+        # active card now ALSO gets a ledger entry (hash + ids), never finalized.
+        eq("active card ledger hash recorded",
+           final_ledger.get("func_active"),
+           {"draft_id": "D0", "item_id": "I0", "finalized": False,
+            "body_sha": _sha("fresh")})
     finally:
         (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
          board_sync.load_inventory, board_enrich.list_draft_items,
@@ -649,9 +726,10 @@ def _restore_driver(saved):
      board_enrich.maybe_wait_for_budget, board_enrich.read_rate_budget) = saved
 
 
-def test_apply_visible_stray_finalize_path():
-    # NOT in ledger but visible on board, body matches -> finalize ONLY (no
-    # create, no content-write) AND append to the ledger finalized=True.
+def test_apply_visible_stray_update_then_finalize_path():
+    # NOT in ledger but visible on board: no trustworthy hash, so send the body
+    # once (GitHub normalizes its read-back), then finalize. Ledger ends with the
+    # hash recorded + finalized True.
     saved, log = _stub_driver()
     try:
         board_sync.load_queue = lambda p: []
@@ -667,21 +745,35 @@ def test_apply_visible_stray_finalize_path():
                     queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
                     cards_dir=Path(td), ledger_path=ledger_p, dry_run=False)
             final_ledger = board_enrich.load_ledger(ledger_p)
-        eq("no create on stray finalize", log["creates"], [])
-        eq("no body content-write (body matched)", log["updates"], [])
+        eq("no create on stray", log["creates"], [])
+        eq("body sent once via stored draft id", log["updates"], [("D9", "fresh")])
         eq("finalized once", res["finalized"], 1)
         eq("Status set Done on existing item", log["status_sets"], [("I9", "Done")])
         eq("archived the existing item", log["archives"], ["I9"])
-        eq("ledger now records the stray as finalized",
-           final_ledger.get("func_done", {}).get("finalized"), True)
+        eq("ledger records stray finalized", final_ledger["func_done"]["finalized"], True)
+        eq("ledger records the sent body hash",
+           final_ledger["func_done"]["body_sha"], _sha("fresh"))
+        # A SECOND run with that ledger -> zero writes, zero finalize (idempotent).
+        log["updates"].clear(); log["status_sets"].clear(); log["archives"].clear()
+        board_enrich.list_draft_items = lambda pid: {}  # now archived/invisible
+        with tempfile.TemporaryDirectory() as td2:
+            (Path(td2) / "func_done.md").write_text("fresh", encoding="utf-8")
+            board_enrich.save_ledger(Path(td2) / "ledger.json", final_ledger)
+            with contextlib.redirect_stdout(io.StringIO()):
+                res2 = board_enrich.run_enrich(
+                    queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
+                    cards_dir=Path(td2), ledger_path=Path(td2) / "ledger.json", dry_run=False)
+        eq("idempotent re-run: zero updates", log["updates"], [])
+        eq("idempotent re-run: zero finalizes", res2["finalized"], 0)
+        eq("idempotent re-run: skipped", res2["skipped"], 1)
     finally:
         _restore_driver(saved)
 
 
 def test_apply_ledger_pending_finalize_no_create():
-    # Ledger has the card as finalized=False (create landed, finalize didn't on a
-    # prior run). by_title can't see it (archived/invisible). Re-run must finalize
-    # via the STORED item_id — NO duplicate create.
+    # Ledger has the card finalized=False with a MATCHING body hash (create+body
+    # landed, finalize didn't). by_title can't see it (archived/invisible). Re-run
+    # must finalize via the STORED item_id — NO create, NO body content-write.
     saved, log = _stub_driver()
     try:
         board_sync.load_queue = lambda p: []
@@ -691,13 +783,15 @@ def test_apply_ledger_pending_finalize_no_create():
             (Path(td) / "func_done.md").write_text("fresh", encoding="utf-8")
             ledger_p = Path(td) / "ledger.json"
             board_enrich.save_ledger(ledger_p, {
-                "func_done": {"draft_id": "Dpend", "item_id": "Ipend", "finalized": False}})
+                "func_done": {"draft_id": "Dpend", "item_id": "Ipend",
+                              "finalized": False, "body_sha": _sha("fresh")}})
             with contextlib.redirect_stdout(io.StringIO()):
                 res = board_enrich.run_enrich(
                     queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
                     cards_dir=Path(td), ledger_path=ledger_p, dry_run=False)
             final_ledger = board_enrich.load_ledger(ledger_p)
         eq("NO create (avoids duplicate)", log["creates"], [])
+        eq("NO body write (hash matched)", log["updates"], [])
         eq("finalized once", res["finalized"], 1)
         eq("finalize used the STORED item id", log["status_sets"], [("Ipend", "Done")])
         eq("archived the stored item", log["archives"], ["Ipend"])
@@ -706,10 +800,11 @@ def test_apply_ledger_pending_finalize_no_create():
         _restore_driver(saved)
 
 
-def test_apply_resume_with_ledger_zero_creates():
-    # THE fatal-bug guard: a ledger already marking the Done cards finalized must
-    # cause a re-run to make ZERO creates (archived cards are invisible to the
-    # board read, so without the ledger they'd be re-created as duplicates).
+def test_apply_resume_with_ledger_zero_creates_and_zero_writes():
+    # THE fatal-bug guard, now hash-aware: a ledger marking the Done cards
+    # finalized WITH matching hashes must cause a re-run to make ZERO creates AND
+    # ZERO body writes (archived cards invisible; without the ledger they'd be
+    # re-created as duplicates, and without the hash they'd be re-updated).
     saved, log = _stub_driver()
     try:
         board_sync.load_queue = lambda p: []
@@ -720,15 +815,16 @@ def test_apply_resume_with_ledger_zero_creates():
                 (Path(td) / f"{f}.md").write_text("b", encoding="utf-8")
             ledger_p = Path(td) / "ledger.json"
             board_enrich.save_ledger(ledger_p, {
-                "func_d1": {"draft_id": "D1", "item_id": "I1", "finalized": True},
-                "func_d2": {"draft_id": "D2", "item_id": "I2", "finalized": True}})
+                "func_d1": {"draft_id": "D1", "item_id": "I1", "finalized": True, "body_sha": _sha("b")},
+                "func_d2": {"draft_id": "D2", "item_id": "I2", "finalized": True, "body_sha": _sha("b")}})
             with contextlib.redirect_stdout(io.StringIO()):
                 res = board_enrich.run_enrich(
                     queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
                     cards_dir=Path(td), ledger_path=ledger_p, dry_run=False)
         eq("zero creates on resume", log["creates"], [])
+        eq("zero body writes on resume", log["updates"], [])
         eq("zero finalizes (already done)", res["finalized"], 0)
-        eq("both skipped via ledger", res["skipped"], 2)
+        eq("both skipped via ledger hash", res["skipped"], 2)
     finally:
         _restore_driver(saved)
 
@@ -766,23 +862,29 @@ def test_apply_crash_window_leaves_pending_ledger_entry():
            mid_ledger["func_done"]["finalized"], False)
         eq("ledger stored the created item id",
            mid_ledger["func_done"]["item_id"], "IT_func_done")
+        eq("ledger stored body hash at create",
+           mid_ledger["func_done"]["body_sha"], _sha("fresh"))
     finally:
         board_enrich._finalize_done = saved_fin
         _restore_driver(saved)
 
 
 def main():
+    test_body_sha_stable_and_distinct()
     test_reconcile_update_when_body_differs()
     test_reconcile_create_when_absent()
-    test_reconcile_skip_when_identical()
-    test_reconcile_done_ledger_finalized_skipped()
-    test_reconcile_done_ledger_pending_finalizes_by_stored_id()
-    test_reconcile_done_not_in_ledger_on_board_finalizes()
+    test_reconcile_active_skip_when_hash_matches()
+    test_reconcile_active_update_when_hash_stale_or_missing()
+    test_reconcile_done_ledger_finalized_hash_match_skipped()
+    test_reconcile_done_finalized_stale_hash_updates_body_only()
+    test_reconcile_done_ledger_pending_hash_match_finalize_only()
+    test_reconcile_done_pending_stale_hash_update_then_finalize()
+    test_reconcile_done_not_in_ledger_on_board_updates_and_finalizes()
     test_reconcile_done_not_in_ledger_off_board_creates()
-    test_reconcile_done_stray_update_and_finalize_together()
-    test_reconcile_done_ledger_overrides_board_visibility()
-    test_reconcile_active_body_match_no_finalize()
+    test_reconcile_done_ledger_finalized_overrides_board_visibility()
+    test_reconcile_active_never_finalized()
     test_reconcile_never_deletes()
+    test_reconcile_full_rerun_all_hashes_match_zero_writes()
     test_reconcile_mixed()
     test_truncate_under_limit_untouched()
     test_truncate_over_limit()
@@ -807,9 +909,9 @@ def main():
     test_dry_run_no_writes_correct_counts()
     test_run_enrich_exits_when_project_absent()
     test_apply_update_and_create_with_limit()
-    test_apply_visible_stray_finalize_path()
+    test_apply_visible_stray_update_then_finalize_path()
     test_apply_ledger_pending_finalize_no_create()
-    test_apply_resume_with_ledger_zero_creates()
+    test_apply_resume_with_ledger_zero_creates_and_zero_writes()
     test_apply_crash_window_leaves_pending_ledger_entry()
     test_apply_limit_stops_early()
     print(f"\n{_passed} passed, {_failed} failed")
