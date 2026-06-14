@@ -1,0 +1,36 @@
+{
+  "function": "func_8001F938",
+  "file": "code6cac",
+  "scores": {
+    "head_floor": 11,
+    "candidate_floor": 11,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 107,
+    "target_insns": 107
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "triage only — identified the branch-generation + $3/$5 swap coupling; no edit attempted (complex, 27-commit history)",
+      "floor_was": 11,
+      "floor_now": 11
+    }
+  ],
+  "reviewer": {
+    "verdict": "NEEDS_USER",
+    "date": "2026-06-14",
+    "evidence": "13 regfix rules: $3<->$5 reg-swap x4 + a folded andi mask insert + a 7-rule subst/delete/insert_label cluster that rewrites the saturating-ternary branch generation (synthesizes slt;bne .LfuncF938_join;sll + join label). Pure-C distance 11. A hard branch-sense + RA coupling; no edit attempted this session."
+  },
+  "remaining_gap": {
+    "summary": "Two saturating ternaries — `raw_or_3=(probe<4)?(u16)*p:3; idx=((raw_or_3<<16)>>15)` and `sum_or_3=(sum<4)?sum:3; idx=sum_or_3*2` — compile to a different compare/branch shape than target (target: slt;bne to a shared join label; sll for the sign-extend). Coupled with a $3<->$5 register-pair swap across idx 1-15. The regfix delete+insert_label synthesizes target's join.",
+    "rule_count_at_head": 13,
+    "rules_required_for_full_match": "All 13 rules are the cheat; HEAD matches only with them. No pure-C form attempted."
+  },
+  "next_hypotheses": [
+    "Branch generation: rewrite the `(probe < 4) ? (u16)*p : 3` ternary so GCC emits target's `slt $2,$2,4; bne $2,$0,join; sll` shape (it currently emits a different compare/branch). See switch-vs-ifchain-branch-sense + compare-operand-order-register. Try an explicit `if (probe < 4) raw = (u16)*p; else raw = 3;` and operand-order variants.",
+    "The $3<->$5 swap is likely a CONSEQUENCE of the branch shape (the idx-pseudo lands in the other reg). Fix the branch first, then re-check the swap.",
+    "If pure-C plateaus, escalate. 27-commit history; was 'retired' 2026-05-14 leaving these rules (a stabilizer, not COMPLETED-C)."
+  ],
+  "rejected_forms": [],
+  "memory_notes": []
+}
