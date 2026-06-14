@@ -77,11 +77,74 @@ def test_build_desired_status_mapping():
     eq("parked not archived", desired["func_c"]["archived"], False)
 
 
+def _board_from_desired(desired):
+    """Helper: synthesize a 'current' board snapshot that already matches desired
+    (used to prove idempotency: reconcile against it must yield no actions)."""
+    current = []
+    for i, (func, want) in enumerate(desired.items()):
+        fields = dict(want["fields"])
+        # numbers come back from the API as floats:
+        for k in ("Distance", "Rules"):
+            if k in fields:
+                fields[k] = float(fields[k])
+        current.append({"item_id": f"IID_{i}", "title": func,
+                        "is_archived": want["archived"], "fields": fields})
+    return current
+
+def test_reconcile_add_new():
+    desired = {"func_a": {"fields": {"Status": "Backlog", "Distance": 9}, "archived": False}}
+    actions = board_sync.reconcile(desired, [])
+    eq("one add action", len(actions), 1)
+    eq("op is add", actions[0]["op"], "add")
+    eq("add carries func", actions[0]["func"], "func_a")
+
+def test_reconcile_idempotent():
+    desired = {
+        "func_a": {"fields": {"Status": "Backlog", "Verdict": "C", "WIP": "no",
+                              "File": "x", "Distance": 9, "Rules": 3}, "archived": False},
+    }
+    current = _board_from_desired(desired)
+    actions = board_sync.reconcile(desired, current)
+    eq("no actions when in sync", actions, [])
+
+def test_reconcile_update_changed_field():
+    desired = {"func_a": {"fields": {"Status": "Blocked", "Distance": 9}, "archived": False}}
+    current = [{"item_id": "IID_0", "title": "func_a", "is_archived": False,
+               "fields": {"Status": "Backlog", "Distance": 9.0}}]
+    actions = board_sync.reconcile(desired, current)
+    eq("one set action", len(actions), 1)
+    eq("op is set", actions[0]["op"], "set")
+    eq("sets Status", actions[0]["field"], "Status")
+    eq("to Blocked", actions[0]["value"], "Blocked")
+
+def test_reconcile_completed_off_queue_archives():
+    # func_old is on the board (Backlog) but no longer in the queue -> completed.
+    desired = {}
+    current = [{"item_id": "IID_0", "title": "func_old", "is_archived": False,
+               "fields": {"Status": "Backlog"}}]
+    actions = board_sync.reconcile(desired, current)
+    ops = {(a["op"], a.get("field"), a.get("value")) for a in actions}
+    check("sets Status=Done", ("set", "Status", "Done") in ops)
+    check("archives it", any(a["op"] == "archive" for a in actions))
+
+def test_reconcile_never_deletes():
+    desired = {"func_a": {"fields": {"Status": "Backlog"}, "archived": False}}
+    current = [{"item_id": "IID_0", "title": "func_stale", "is_archived": False,
+               "fields": {"Status": "In-Progress"}}]  # In-Progress = not auto-touched in P1
+    actions = board_sync.reconcile(desired, current)
+    check("never emits delete", all(a["op"] != "delete" for a in actions))
+
+
 def main():
     test_load_queue()
     test_load_queue_missing()
     test_wip_exists()
     test_build_desired_status_mapping()
+    test_reconcile_add_new()
+    test_reconcile_idempotent()
+    test_reconcile_update_changed_field()
+    test_reconcile_completed_off_queue_archives()
+    test_reconcile_never_deletes()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 
