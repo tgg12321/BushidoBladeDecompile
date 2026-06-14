@@ -522,6 +522,127 @@ def test_status_counts():
         eq("top is first active", data["top"], items[0]["func"])
 
 
+def test_next_lane_backlog():
+    print("test_next_lane_backlog")
+    _q.n = 0
+    items = [
+        _q(status="parked"),
+        _q(status="active"),
+        _q(status="authorize"),
+        _q(status="active"),
+    ]
+    with Tmp() as t:
+        t.write_queue(items)
+        t.write_index({})
+        rc, out = run("next", "--lane", "backlog", "--json")
+        eq("rc", rc, 0)
+        data = json.loads(out)
+        # first active item is items[1]
+        eq("backlog returns first active", data["func"], items[1]["func"])
+
+
+def test_next_lane_blocked():
+    print("test_next_lane_blocked")
+    _q.n = 0
+    items = [
+        _q(status="active"),
+        _q(status="parked"),
+        _q(status="active"),
+        _q(status="parked"),
+    ]
+    with Tmp() as t:
+        t.write_queue(items)
+        t.write_index({})
+        rc, out = run("next", "--lane", "blocked", "--json")
+        eq("rc", rc, 0)
+        data = json.loads(out)
+        # first parked item is items[1]
+        eq("blocked returns first parked", data["func"], items[1]["func"])
+
+
+def test_next_lane_decision():
+    print("test_next_lane_decision")
+    _q.n = 0
+    items = [
+        _q(status="active"),
+        _q(status="parked"),
+        _q(status="authorize"),
+        _q(status="authorize"),
+    ]
+    with Tmp() as t:
+        t.write_queue(items)
+        t.write_index({})
+        rc, out = run("next", "--lane", "decision", "--json")
+        eq("rc", rc, 0)
+        data = json.loads(out)
+        # first authorize item is items[2]
+        eq("decision returns first authorize", data["func"], items[2]["func"])
+
+
+def test_next_lane_all():
+    print("test_next_lane_all")
+    _q.n = 0
+    items = [
+        _q(status="parked"),
+        _q(status="active"),
+        _q(status="authorize"),
+    ]
+    with Tmp() as t:
+        t.write_queue(items)
+        t.write_index({})
+        rc, out = run("next", "--lane", "all", "--json")
+        eq("rc", rc, 0)
+        data = json.loads(out)
+        # all lane returns the very first item regardless of status
+        eq("all returns first item", data["func"], items[0]["func"])
+
+
+def test_next_lane_skips_claimed():
+    print("test_next_lane_skips_claimed")
+    _q.n = 0
+    items = [
+        _q(status="parked"),
+        _q(status="parked"),
+    ]
+    with Tmp() as t:
+        t.write_queue(items)
+        # claim the first parked item
+        t.write_index({items[0]["func"]: {"item_id": "I_0", "claimed": {"by": "x", "at": 1}}})
+        rc, out = run("next", "--lane", "blocked", "--json")
+        eq("rc", rc, 0)
+        data = json.loads(out)
+        eq("skips claimed in lane -> second parked", data["func"], items[1]["func"])
+
+
+def test_next_lane_empty():
+    print("test_next_lane_empty")
+    _q.n = 0
+    items = [_q(status="active"), _q(status="active")]
+    with Tmp() as t:
+        t.write_queue(items)
+        t.write_index({})
+        # blocked lane has no parked items
+        rc, out = run("next", "--lane", "blocked", "--json")
+        eq("rc", rc, 0)
+        data = json.loads(out)
+        check("func is None on empty lane", data["func"] is None)
+        check("reason mentions lane name", "blocked" in (data.get("reason") or ""))
+
+
+def test_next_lane_no_api():
+    print("test_next_lane_no_api")
+    _q.n = 0
+    items = [_q(status="parked"), _q(status="active")]
+    with Tmp() as t:
+        t.write_queue(items)
+        t.write_index({})
+        with GhSpy() as spy:
+            rc, _out = run("next", "--lane", "blocked", "--json")
+        eq("rc", rc, 0)
+        eq("zero gh calls on next --lane", len(spy.graphql_calls), 0)
+        eq("zero list queries on next --lane", spy.list_queries, 0)
+
+
 def main():
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for t in tests:

@@ -32,7 +32,7 @@ board_sync.py is the stable gh client and is imported, never modified. We reuse:
   load_queue, PROJECT_TITLE, GhError.
 
 Usage:
-    python tools/board.py next [--claim] [--json]
+    python tools/board.py next [--lane {backlog,blocked,decision,all}] [--claim] [--json]
     python tools/board.py card <func> [--refresh]
     python tools/board.py claim <func>
     python tools/board.py done <func>
@@ -40,6 +40,12 @@ Usage:
     python tools/board.py release <func>
     python tools/board.py index [--rebuild]
     python tools/board.py status
+
+Lane mapping (--lane, default backlog):
+    backlog  -> status == "active"   (the Backlog column; default)
+    blocked  -> status == "parked"   (the Blocked column)
+    decision -> status == "authorize" (the Needs-Decision column)
+    all      -> any of active / parked / authorize (queue order)
 
 Pure stdlib + subprocess. Repo text read with encoding="utf-8". LF line endings.
 
@@ -153,12 +159,23 @@ def _require_item_id(index, func):
 # subcommand: next  (LOCAL, no API on the no-claim path)
 # ---------------------------------------------------------------------------
 
-def _top_available(items, index):
-    """The first status=='active' queue item whose func is NOT claimed locally.
+# Maps --lane choice to the engine/queue.json status value(s) to accept.
+_LANE_STATUSES = {
+    "backlog":  {"active"},
+    "blocked":  {"parked"},
+    "decision": {"authorize"},
+    "all":      {"active", "parked", "authorize"},
+}
+
+
+def _top_available(items, index, lane="backlog"):
+    """The first queue item in the given lane whose func is NOT claimed locally.
+    Lane controls which status values are accepted (see _LANE_STATUSES).
     Returns the item dict, or None."""
+    accept = _LANE_STATUSES.get(lane, {"active"})
     claimed = _claimed_funcs(index)
     for it in items:
-        if it.get("status") != "active":
+        if it.get("status") not in accept:
             continue
         if it["func"] in claimed:
             continue
@@ -167,14 +184,15 @@ def _top_available(items, index):
 
 
 def cmd_next(args):
+    lane = getattr(args, "lane", "backlog") or "backlog"
     items = load_queue_items()
     index = load_index()
-    top = _top_available(items, index)
+    top = _top_available(items, index, lane=lane)
     if top is None:
         if args.json:
-            print(json.dumps({"func": None, "reason": "no available active item"}))
+            print(json.dumps({"func": None, "reason": f"no available {lane} item"}))
         else:
-            print("No available active item (queue empty or all claimed).")
+            print(f"No available {lane} item (lane empty or all claimed).")
         return 0
 
     func = top["func"]
@@ -534,6 +552,11 @@ def build_parser():
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p_next = sub.add_parser("next", help="print the TOP available function to work (LOCAL)")
+    p_next.add_argument("--lane", choices=["backlog", "blocked", "decision", "all"],
+                        default="backlog",
+                        help="which board lane to pull from: "
+                             "backlog (active, default), blocked (parked), "
+                             "decision (authorize), or all (any status, queue order).")
     p_next.add_argument("--claim", action="store_true",
                         help="also claim it (-> In-Progress). Claim state is a "
                              "best-effort, non-atomic HINT (last-writer-wins); a "
