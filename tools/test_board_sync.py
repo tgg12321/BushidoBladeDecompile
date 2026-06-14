@@ -310,6 +310,31 @@ def test_create_field_single_select_passes_option_list():
     eq("returns option map", res["options"]["Backlog"], "o1")
 
 
+def _page(nodes, has_next, cursor):
+    return {"node": {"items": {"nodes": nodes,
+            "pageInfo": {"hasNextPage": has_next, "endCursor": cursor}}}}
+
+def _item_node(iid, func, archived, status):
+    return {"id": iid, "isArchived": archived,
+            "content": {"title": func},
+            "fieldValues": {"nodes": [
+                {"__typename": "ProjectV2ItemFieldSingleSelectValue", "name": status,
+                 "optionId": "x", "field": {"name": "Status"}},
+            ]}}
+
+def test_list_items_paginates_and_parses():
+    fake = FakeGh([
+        _page([_item_node("IID_0", "func_a", False, "Backlog")], True, "CUR1"),
+        _page([_item_node("IID_1", "func_b", True, "Done")], False, None),
+    ])
+    items = _with_stub(fake, lambda: board_sync.list_items("PVT_x"))
+    eq("two items across pages", len(items), 2)
+    eq("second page cursor passed", fake.calls[1]["variables"].get("cursor"), "CUR1")
+    eq("title parsed", items[0]["title"], "func_a")
+    eq("archived parsed", items[1]["is_archived"], True)
+    eq("single-select value parsed", items[0]["fields"]["Status"], "Backlog")
+
+
 def main():
     test_load_queue()
     test_load_queue_missing()
@@ -332,6 +357,7 @@ def main():
     test_ensure_fields_creates_missing()
     test_ensure_fields_reuses_existing()
     test_create_field_single_select_passes_option_list()
+    test_list_items_paginates_and_parses()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 

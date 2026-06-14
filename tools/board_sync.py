@@ -276,3 +276,57 @@ def ensure_project(title, login):
         variables={"ownerId": owner, "title": title},
     )
     return created["createProjectV2"]["projectV2"]["id"]
+
+
+_ITEMS_QUERY = (
+    "query($id:ID!,$cursor:String){ node(id:$id){ ... on ProjectV2{ "
+    "items(first:100,after:$cursor){ "
+    "pageInfo{ hasNextPage endCursor } "
+    "nodes{ id isArchived "
+    "content{ ... on DraftIssue{ title } ... on Issue{ title } ... on PullRequest{ title } } "
+    "fieldValues(first:20){ nodes{ "
+    "__typename "
+    "... on ProjectV2ItemFieldTextValue{ text field{ ... on ProjectV2FieldCommon{ name } } } "
+    "... on ProjectV2ItemFieldNumberValue{ number field{ ... on ProjectV2FieldCommon{ name } } } "
+    "... on ProjectV2ItemFieldSingleSelectValue{ name optionId field{ ... on ProjectV2FieldCommon{ name } } } "
+    "} } } } } } }"
+)
+
+
+def _parse_field_values(fv_nodes):
+    fields = {}
+    for n in fv_nodes:
+        fld = n.get("field") or {}
+        name = fld.get("name")
+        if not name:
+            continue
+        t = n.get("__typename")
+        if t == "ProjectV2ItemFieldTextValue":
+            fields[name] = n.get("text")
+        elif t == "ProjectV2ItemFieldNumberValue":
+            fields[name] = n.get("number")
+        elif t == "ProjectV2ItemFieldSingleSelectValue":
+            fields[name] = n.get("name")
+    return fields
+
+
+def list_items(project_id):
+    """Return the full board snapshot (including archived items):
+    [{item_id, title, is_archived, fields}]."""
+    items = []
+    cursor = None
+    while True:
+        data = gh_graphql(_ITEMS_QUERY, variables={"id": project_id, "cursor": cursor})
+        page = data["node"]["items"]
+        for n in page["nodes"]:
+            content = n.get("content") or {}
+            items.append({
+                "item_id": n["id"],
+                "title": content.get("title"),
+                "is_archived": n.get("isArchived", False),
+                "fields": _parse_field_values(n.get("fieldValues", {}).get("nodes", [])),
+            })
+        if not page["pageInfo"]["hasNextPage"]:
+            break
+        cursor = page["pageInfo"]["endCursor"]
+    return items
