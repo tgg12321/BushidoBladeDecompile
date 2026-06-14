@@ -1,0 +1,465 @@
+#!/usr/bin/env python3
+"""Unit tests for tools/board_enrich.py — no network.
+
+Stubs board_sync.gh_graphql / the board-read + write functions; nothing here
+touches gh or the live board.
+
+Run: python tools/test_board_enrich.py   (exit 0 = pass)
+"""
+from __future__ import annotations
+
+import contextlib
+import io
+import sys
+import tempfile
+from pathlib import Path
+
+_REPO = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_REPO / "tools"))
+import board_sync  # noqa: E402
+import board_enrich  # noqa: E402
+
+_passed = _failed = 0
+
+
+def check(desc, cond):
+    global _passed, _failed
+    if cond:
+        _passed += 1
+    else:
+        _failed += 1
+        print(f"  FAIL: {desc}", file=sys.stderr)
+
+
+def eq(desc, got, want):
+    check(f"{desc} (got {got!r}, want {want!r})", got == want)
+
+
+# ---------------------------------------------------------------------------
+# reconcile_bodies — the pure core
+# ---------------------------------------------------------------------------
+
+def test_reconcile_update_when_body_differs():
+    desired = {"func_a": ("NEW body", False)}
+    by_title = {"func_a": {"item_id": "I0", "draft_id": "D0", "body": "OLD body",
+                           "is_archived": False, "status": "Backlog"}}
+    actions = board_enrich.reconcile_bodies(desired, by_title)
+    eq("one action", len(actions), 1)
+    eq("op update", actions[0]["op"], "update")
+    eq("uses draft id", actions[0]["draft_id"], "D0")
+    eq("carries new body", actions[0]["body"], "NEW body")
+
+
+def test_reconcile_create_when_absent():
+    desired = {"func_done": ("done body", True)}
+    actions = board_enrich.reconcile_bodies(desired, {})
+    eq("one action", len(actions), 1)
+    eq("op create", actions[0]["op"], "create")
+    eq("create is_done", actions[0]["is_done"], True)
+    eq("carries body", actions[0]["body"], "done body")
+
+
+def test_reconcile_skip_when_identical():
+    desired = {"func_a": ("same", False)}
+    by_title = {"func_a": {"item_id": "I0", "draft_id": "D0", "body": "same",
+                           "is_archived": False, "status": "Backlog"}}
+    actions = board_enrich.reconcile_bodies(desired, by_title)
+    eq("no action when identical", actions, [])
+
+
+def test_reconcile_never_deletes():
+    # board has a card not in desired -> must be left alone (no delete op).
+    desired = {"func_a": ("b", False)}
+    by_title = {
+        "func_a": {"item_id": "I0", "draft_id": "D0", "body": "b", "is_archived": False, "status": "Backlog"},
+        "func_stale": {"item_id": "I1", "draft_id": "D1", "body": "x", "is_archived": True, "status": "Done"},
+    }
+    actions = board_enrich.reconcile_bodies(desired, by_title)
+    eq("only the (none) for func_a, stale untouched", actions, [])
+    check("no delete op ever", all(a["op"] != "delete" for a in actions))
+
+
+def test_reconcile_mixed():
+    desired = {
+        "func_upd": ("new", False),     # update
+        "func_new": ("seed", True),     # create
+        "func_ok": ("ok", False),       # skip
+    }
+    by_title = {
+        "func_upd": {"item_id": "I0", "draft_id": "D0", "body": "old", "is_archived": False, "status": "Backlog"},
+        "func_ok": {"item_id": "I2", "draft_id": "D2", "body": "ok", "is_archived": False, "status": "Backlog"},
+    }
+    actions = board_enrich.reconcile_bodies(desired, by_title)
+    ops = sorted(a["op"] for a in actions)
+    eq("one update + one create", ops, ["create", "update"])
+
+
+# ---------------------------------------------------------------------------
+# body-truncation guard
+# ---------------------------------------------------------------------------
+
+def test_truncate_under_limit_untouched():
+    body = "x" * 100
+    eq("short body untouched", board_enrich.truncate_body(body, limit=200), body)
+
+
+def test_truncate_over_limit():
+    body = "x" * 70000
+    out = board_enrich.truncate_body(body, limit=65000)
+    check("truncated to <= limit", len(out) <= 65000)
+    check("carries truncation note", "truncated by board_enrich" in out)
+
+
+def test_read_card_body_truncates(tmpcards=None):
+    with tempfile.TemporaryDirectory() as td:
+        (Path(td) / "func_big.md").write_text("y" * 70000, encoding="utf-8")
+        out = board_enrich.read_card_body(td, "func_big")
+        check("read+truncated <= MAX_BODY", len(out) <= board_enrich.MAX_BODY)
+        eq("absent card -> None", board_enrich.read_card_body(td, "nope"), None)
+
+
+# ---------------------------------------------------------------------------
+# build_desired_bodies — active/done split + missing-card drop
+# ---------------------------------------------------------------------------
+
+def test_build_desired_bodies_split():
+    with tempfile.TemporaryDirectory() as td:
+        for f in ("func_active", "func_done"):
+            (Path(td) / f"{f}.md").write_text(f"body of {f}", encoding="utf-8")
+        # func_nocard intentionally has no file.
+        queue_funcs = {"func_active"}
+        inventory = {"func_active": "text1b", "func_done": "display", "func_nocard": "display"}
+        desired = board_enrich.build_desired_bodies(queue_funcs, inventory, td)
+    eq("active not done", desired["func_active"][1], False)
+    eq("completed is done", desired["func_done"][1], True)
+    check("func_nocard dropped (no card file)", "func_nocard" not in desired)
+
+
+def test_build_desired_only_active():
+    with tempfile.TemporaryDirectory() as td:
+        for f in ("func_active", "func_done"):
+            (Path(td) / f"{f}.md").write_text("b", encoding="utf-8")
+        desired = board_enrich.build_desired_bodies(
+            {"func_active"}, {"func_active": "a", "func_done": "d"}, td, only_active=True)
+    check("only active included", set(desired) == {"func_active"})
+
+
+def test_build_desired_only_done():
+    with tempfile.TemporaryDirectory() as td:
+        for f in ("func_active", "func_done"):
+            (Path(td) / f"{f}.md").write_text("b", encoding="utf-8")
+        desired = board_enrich.build_desired_bodies(
+            {"func_active"}, {"func_active": "a", "func_done": "d"}, td, only_done=True)
+    check("only done included", set(desired) == {"func_done"})
+
+
+# ---------------------------------------------------------------------------
+# rate-limit-wait helper
+# ---------------------------------------------------------------------------
+
+def test_maybe_wait_below_floor_sleeps():
+    slept = {"secs": None}
+    # remaining 10 < floor 200; reset 1000s in the future from now=0.
+    waited = board_enrich.maybe_wait_for_budget(
+        floor=200, slack=5,
+        read=lambda: (10, 1000),
+        sleep=lambda s: slept.__setitem__("secs", s),
+        now=lambda: 0.0)
+    with contextlib.redirect_stdout(io.StringIO()):
+        pass
+    eq("decides to wait", waited, True)
+    eq("sleeps until reset + slack", slept["secs"], 1005)
+
+
+def test_maybe_wait_above_floor_no_sleep():
+    slept = {"called": False}
+    waited = board_enrich.maybe_wait_for_budget(
+        floor=200, slack=5,
+        read=lambda: (5000, 9999),
+        sleep=lambda s: slept.__setitem__("called", True),
+        now=lambda: 0.0)
+    eq("no wait when budget healthy", waited, False)
+    eq("never slept", slept["called"], False)
+
+
+def test_maybe_wait_unknown_budget_no_sleep():
+    slept = {"called": False}
+    waited = board_enrich.maybe_wait_for_budget(
+        floor=200,
+        read=lambda: (None, None),
+        sleep=lambda s: slept.__setitem__("called", True))
+    eq("unknown budget -> proceed", waited, False)
+    eq("never slept", slept["called"], False)
+
+
+# ---------------------------------------------------------------------------
+# list_draft_items — parses + paginates + filters non-drafts/titleless
+# ---------------------------------------------------------------------------
+
+class FakeGh:
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.calls = []
+
+    def __call__(self, query, variables=None):
+        self.calls.append({"query": query, "variables": variables or {}})
+        return self.responses.pop(0)
+
+
+def _with_gh(fake, fn):
+    saved = board_sync.gh_graphql
+    try:
+        board_sync.gh_graphql = fake
+        return fn()
+    finally:
+        board_sync.gh_graphql = saved
+
+
+def _page(nodes, has_next, cursor):
+    return {"node": {"items": {"nodes": nodes,
+            "pageInfo": {"hasNextPage": has_next, "endCursor": cursor}}}}
+
+
+def _draft_node(iid, did, title, body, archived, status):
+    return {"id": iid, "isArchived": archived,
+            "content": {"__typename": "DraftIssue", "id": did, "title": title, "body": body},
+            "fieldValues": {"nodes": [
+                {"__typename": "ProjectV2ItemFieldSingleSelectValue", "name": status,
+                 "field": {"name": "Status"}}]}}
+
+
+def test_list_draft_items_parses_and_paginates():
+    fake = FakeGh([
+        _page([_draft_node("I0", "D0", "func_a", "body a", False, "Backlog")], True, "C1"),
+        _page([
+            _draft_node("I1", "D1", "func_b", "body b", True, "Done"),
+            # non-draft (Issue) -> skipped
+            {"id": "I2", "isArchived": False, "content": {"__typename": "Issue", "title": "issue_x"},
+             "fieldValues": {"nodes": []}},
+            # titleless draft -> skipped
+            _draft_node("I3", "D3", None, "x", False, None),
+        ], False, None),
+    ])
+    by_title = _with_gh(fake, lambda: board_enrich.list_draft_items("PVT_x"))
+    eq("two drafts kept", len(by_title), 2)
+    eq("second page cursor passed", fake.calls[1]["variables"].get("cursor"), "C1")
+    eq("draft id captured", by_title["func_a"]["draft_id"], "D0")
+    eq("body captured", by_title["func_a"]["body"], "body a")
+    eq("archived captured", by_title["func_b"]["is_archived"], True)
+    eq("status captured", by_title["func_a"]["status"], "Backlog")
+    check("non-draft issue skipped", "issue_x" not in by_title)
+
+
+# ---------------------------------------------------------------------------
+# content-write secondary-limit backoff
+# ---------------------------------------------------------------------------
+
+def test_content_write_backoff_then_success():
+    calls = {"n": 0}
+
+    def flaky(query, variables=None):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise board_sync.GhError("You have exceeded a secondary rate limit")
+        return {"ok": True}
+
+    saved_gh, saved_sleep = board_sync.gh_graphql, board_enrich.time.sleep
+    try:
+        board_sync.gh_graphql = flaky
+        board_enrich.time.sleep = lambda *a, **k: None
+        with contextlib.redirect_stdout(io.StringIO()):
+            out = board_enrich._content_write("Q", {}, delay=0)
+        eq("retried then succeeded", out, {"ok": True})
+        eq("two attempts", calls["n"], 2)
+    finally:
+        board_sync.gh_graphql = saved_gh
+        board_enrich.time.sleep = saved_sleep
+
+
+def test_content_write_reraises_other_error():
+    def boom(query, variables=None):
+        raise board_sync.GhError("validation: something else")
+    saved_gh = board_sync.gh_graphql
+    try:
+        board_sync.gh_graphql = boom
+        try:
+            board_enrich._content_write("Q", {}, delay=0)
+            check("should have raised", False)
+        except board_sync.GhError:
+            check("non-rate-limit re-raised", True)
+    finally:
+        board_sync.gh_graphql = saved_gh
+
+
+# ---------------------------------------------------------------------------
+# end-to-end dry-run: zero writes, correct counts
+# ---------------------------------------------------------------------------
+
+def test_dry_run_no_writes_correct_counts():
+    saved = (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
+             board_sync.load_inventory, board_enrich.list_draft_items,
+             board_enrich.update_body, board_enrich.create_card)
+
+    def must_not_write(*a, **k):
+        raise AssertionError("dry-run must not write")
+
+    try:
+        board_sync.find_project = lambda title, login: "PVT_x"
+        board_sync.ensure_fields = lambda pid: (_ for _ in ()).throw(
+            AssertionError("dry-run must not ensure_fields"))
+        board_sync.load_queue = lambda p: [{"func": "func_active"}]
+        board_sync.load_inventory = lambda m, e: {"func_active": "a", "func_done": "d"}
+        board_enrich.update_body = must_not_write
+        board_enrich.create_card = must_not_write
+        # Board already has func_active with a STALE body (-> 1 update planned),
+        # and func_done is absent (-> 1 create planned).
+        board_enrich.list_draft_items = lambda pid: {
+            "func_active": {"item_id": "I0", "draft_id": "D0", "body": "stale",
+                            "is_archived": False, "status": "Backlog"}}
+        with tempfile.TemporaryDirectory() as td:
+            for f in ("func_active", "func_done"):
+                (Path(td) / f"{f}.md").write_text("fresh body", encoding="utf-8")
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                res = board_enrich.run_enrich(
+                    queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
+                    cards_dir=Path(td), dry_run=True)
+            out = buf.getvalue()
+        eq("1 update + 1 create remaining", res["remaining"], 2)
+        eq("zero updated", res["updated"], 0)
+        eq("zero created", res["created"], 0)
+        check("dry run mentions both funcs", "func_active" in out and "func_done" in out)
+    finally:
+        (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
+         board_sync.load_inventory, board_enrich.list_draft_items,
+         board_enrich.update_body, board_enrich.create_card) = saved
+
+
+def test_run_enrich_exits_when_project_absent():
+    saved = board_sync.find_project
+    try:
+        board_sync.find_project = lambda title, login: None
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                board_enrich.run_enrich(dry_run=True)
+            check("should have exited", False)
+        except SystemExit:
+            check("absent project -> SystemExit", True)
+    finally:
+        board_sync.find_project = saved
+
+
+# ---------------------------------------------------------------------------
+# apply path: update + create-then-Done-archive, with --limit + idempotent skip
+# ---------------------------------------------------------------------------
+
+def test_apply_update_and_create_with_limit():
+    saved = (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
+             board_sync.load_inventory, board_enrich.list_draft_items,
+             board_enrich.update_body, board_enrich.create_card,
+             board_sync._set_field, board_sync._mutate,
+             board_enrich.maybe_wait_for_budget, board_enrich.read_rate_budget)
+    log = {"updates": [], "creates": [], "status_sets": [], "archives": []}
+    try:
+        board_sync.find_project = lambda title, login: "PVT_x"
+        board_sync.ensure_fields = lambda pid: {"Status": {"id": "F_S", "options": {"Done": "o_done"}}}
+        board_sync.load_queue = lambda p: [{"func": "func_active"}]
+        board_sync.load_inventory = lambda m, e: {"func_active": "a", "func_done": "d"}
+        board_enrich.list_draft_items = lambda pid: {
+            "func_active": {"item_id": "I0", "draft_id": "D0", "body": "stale",
+                            "is_archived": False, "status": "Backlog"}}
+        board_enrich.update_body = lambda did, body, **k: log["updates"].append((did, body))
+        board_enrich.create_card = lambda pid, func, body, **k: (
+            log["creates"].append((func, body)) or ("NEWITEM", "NEWDRAFT"))
+        board_sync._set_field = lambda pid, fm, iid, field, value, delay: log["status_sets"].append((iid, field, value))
+        board_sync._mutate = lambda q, variables=None, delay=0: log["archives"].append(variables["i"])
+        board_enrich.maybe_wait_for_budget = lambda *a, **k: False
+        board_enrich.read_rate_budget = lambda: (5000, 0)
+        with tempfile.TemporaryDirectory() as td:
+            for f in ("func_active", "func_done"):
+                (Path(td) / f"{f}.md").write_text("fresh", encoding="utf-8")
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                res = board_enrich.run_enrich(
+                    queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
+                    cards_dir=Path(td), dry_run=False)
+        eq("one update done", res["updated"], 1)
+        eq("one create done", res["created"], 1)
+        eq("update used draft id", log["updates"], [("D0", "fresh")])
+        eq("create made func_done", [c[0] for c in log["creates"]], ["func_done"])
+        eq("created card set Done", log["status_sets"], [("NEWITEM", "Status", "Done")])
+        eq("created card archived", log["archives"], ["NEWITEM"])
+    finally:
+        (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
+         board_sync.load_inventory, board_enrich.list_draft_items,
+         board_enrich.update_body, board_enrich.create_card,
+         board_sync._set_field, board_sync._mutate,
+         board_enrich.maybe_wait_for_budget, board_enrich.read_rate_budget) = saved
+
+
+def test_apply_limit_stops_early():
+    saved = (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
+             board_sync.load_inventory, board_enrich.list_draft_items,
+             board_enrich.update_body, board_enrich.create_card,
+             board_sync._set_field, board_sync._mutate,
+             board_enrich.maybe_wait_for_budget, board_enrich.read_rate_budget)
+    log = {"updates": [], "creates": []}
+    try:
+        board_sync.find_project = lambda title, login: "PVT_x"
+        board_sync.ensure_fields = lambda pid: {"Status": {"id": "F_S", "options": {"Done": "o_done"}}}
+        board_sync.load_queue = lambda p: []
+        board_sync.load_inventory = lambda m, e: {"func_d1": "a", "func_d2": "b", "func_d3": "c"}
+        board_enrich.list_draft_items = lambda pid: {}
+        board_enrich.update_body = lambda did, body, **k: log["updates"].append(did)
+        board_enrich.create_card = lambda pid, func, body, **k: (
+            log["creates"].append(func) or ("IT_" + func, "DR_" + func))
+        board_sync._set_field = lambda *a, **k: None
+        board_sync._mutate = lambda *a, **k: None
+        board_enrich.maybe_wait_for_budget = lambda *a, **k: False
+        board_enrich.read_rate_budget = lambda: (5000, 0)
+        with tempfile.TemporaryDirectory() as td:
+            for f in ("func_d1", "func_d2", "func_d3"):
+                (Path(td) / f"{f}.md").write_text("b", encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()):
+                res = board_enrich.run_enrich(
+                    queue_path=Path("q"), map_path=Path("m"), elf_path=Path("e"),
+                    cards_dir=Path(td), dry_run=False, limit=2)
+        eq("only 2 creates done", len(log["creates"]), 2)
+        eq("created count 2", res["created"], 2)
+        check("one remaining after limit", res["remaining"] == 1)
+    finally:
+        (board_sync.find_project, board_sync.ensure_fields, board_sync.load_queue,
+         board_sync.load_inventory, board_enrich.list_draft_items,
+         board_enrich.update_body, board_enrich.create_card,
+         board_sync._set_field, board_sync._mutate,
+         board_enrich.maybe_wait_for_budget, board_enrich.read_rate_budget) = saved
+
+
+def main():
+    test_reconcile_update_when_body_differs()
+    test_reconcile_create_when_absent()
+    test_reconcile_skip_when_identical()
+    test_reconcile_never_deletes()
+    test_reconcile_mixed()
+    test_truncate_under_limit_untouched()
+    test_truncate_over_limit()
+    test_read_card_body_truncates()
+    test_build_desired_bodies_split()
+    test_build_desired_only_active()
+    test_build_desired_only_done()
+    test_maybe_wait_below_floor_sleeps()
+    test_maybe_wait_above_floor_no_sleep()
+    test_maybe_wait_unknown_budget_no_sleep()
+    test_list_draft_items_parses_and_paginates()
+    test_content_write_backoff_then_success()
+    test_content_write_reraises_other_error()
+    test_dry_run_no_writes_correct_counts()
+    test_run_enrich_exits_when_project_absent()
+    test_apply_update_and_create_with_limit()
+    test_apply_limit_stops_early()
+    print(f"\n{_passed} passed, {_failed} failed")
+    return 1 if _failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
