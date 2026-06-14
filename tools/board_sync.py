@@ -334,3 +334,72 @@ def list_items(project_id):
             break
         cursor = page["pageInfo"]["endCursor"]
     return items
+
+
+_ADD_DRAFT = ("mutation($p:ID!,$t:String!,$b:String!){ "
+              "addProjectV2DraftIssue(input:{projectId:$p,title:$t,body:$b}){ projectItem{ id } } }")
+_SET_TEXT = ("mutation($p:ID!,$i:ID!,$f:ID!,$v:String!){ "
+             "updateProjectV2ItemFieldValue(input:{projectId:$p,itemId:$i,fieldId:$f,value:{text:$v}}){ projectV2Item{ id } } }")
+_SET_NUM = ("mutation($p:ID!,$i:ID!,$f:ID!,$v:Float!){ "
+            "updateProjectV2ItemFieldValue(input:{projectId:$p,itemId:$i,fieldId:$f,value:{number:$v}}){ projectV2Item{ id } } }")
+_SET_SEL = ("mutation($p:ID!,$i:ID!,$f:ID!,$opt:String!){ "
+            "updateProjectV2ItemFieldValue(input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$opt}}){ projectV2Item{ id } } }")
+_ARCHIVE = "mutation($p:ID!,$i:ID!){ archiveProjectV2Item(input:{projectId:$p,itemId:$i}){ item{ id isArchived } } }"
+_UNARCHIVE = "mutation($p:ID!,$i:ID!){ unarchiveProjectV2Item(input:{projectId:$p,itemId:$i}){ item{ id isArchived } } }"
+
+_NUMBER_FIELDS = {"Distance", "Rules"}
+
+
+def _mutate(query, variables=None, delay=0.2, max_tries=5):
+    """gh_graphql with rate-limit backoff + inter-mutation pacing."""
+    for attempt in range(max_tries):
+        try:
+            data = gh_graphql(query, variables=variables)
+            if delay:
+                time.sleep(delay)
+            return data
+        except GhError as e:
+            msg = str(e).lower()
+            if "rate limit" in msg or "secondary" in msg or "was submitted too quickly" in msg:
+                back = 2 ** attempt
+                print(f"  rate-limited; backing off {back}s")
+                time.sleep(back)
+                continue
+            raise
+    raise GhError("rate-limit backoff exhausted")
+
+
+def _set_field(project_id, field_map, item_id, field, value, delay):
+    spec = field_map[field]
+    if field in _NUMBER_FIELDS:
+        _mutate(_SET_NUM, variables={"p": project_id, "i": item_id, "f": spec["id"], "v": value},
+                delay=delay)
+    elif spec["options"]:  # single-select
+        opt_id = spec["options"][value]
+        _mutate(_SET_SEL, variables={"p": project_id, "i": item_id, "f": spec["id"], "opt": opt_id},
+                delay=delay)
+    else:  # text
+        _mutate(_SET_TEXT, variables={"p": project_id, "i": item_id, "f": spec["id"], "v": str(value)},
+                delay=delay)
+
+
+def apply(project_id, field_map, actions, delay=0.2):
+    """Execute reconciler actions as gh mutations. Never deletes."""
+    for a in actions:
+        op = a["op"]
+        if op == "add":
+            body = f"file: {a['fields'].get('File', '')}"
+            res = _mutate(_ADD_DRAFT, variables={"p": project_id, "t": a["func"], "b": body}, delay=delay)
+            item_id = res["addProjectV2DraftIssue"]["projectItem"]["id"]
+            for field, value in a["fields"].items():
+                _set_field(project_id, field_map, item_id, field, value, delay)
+            if a.get("archived"):
+                _mutate(_ARCHIVE, variables={"p": project_id, "i": item_id}, delay=delay)
+        elif op == "set":
+            _set_field(project_id, field_map, a["item_id"], a["field"], a["value"], delay)
+        elif op == "archive":
+            _mutate(_ARCHIVE, variables={"p": project_id, "i": a["item_id"]}, delay=delay)
+        elif op == "unarchive":
+            _mutate(_UNARCHIVE, variables={"p": project_id, "i": a["item_id"]}, delay=delay)
+        else:
+            raise ValueError(f"unknown action op: {op!r}")

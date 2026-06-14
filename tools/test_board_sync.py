@@ -357,6 +357,46 @@ def test_list_items_paginates_and_parses():
     eq("single-select value parsed", items[0]["fields"]["Status"], "Backlog")
 
 
+def _full_field_map():
+    fmap = {}
+    for name, dtype, opts in board_sync.FIELD_SPECS:
+        fmap[name] = {"id": f"F_{name}",
+                      "options": {o: f"opt_{name}_{o}" for o in (opts or [])}}
+    return fmap
+
+def test_apply_add_then_set_fields():
+    # add returns a new item id; then one set per field; field order = insertion order.
+    add_resp = {"addProjectV2DraftIssue": {"projectItem": {"id": "PVTI_new"}}}
+    set_resp = {"updateProjectV2ItemFieldValue": {"projectV2Item": {"id": "PVTI_new"}}}
+    fields = {"Status": "Backlog", "Distance": 9}
+    actions = [{"op": "add", "func": "func_a", "fields": fields, "archived": False}]
+    fake = FakeGh([add_resp, set_resp, set_resp])
+    _with_stub(fake, lambda: board_sync.apply("PVT_x", _full_field_map(), actions, delay=0))
+    eq("add + 2 field sets = 3 calls", len(fake.calls), 3)
+    check("first call is the draft add", "addProjectV2DraftIssue" in fake.calls[0]["query"])
+
+def test_apply_single_select_uses_option_id():
+    set_resp = {"updateProjectV2ItemFieldValue": {"projectV2Item": {"id": "IID"}}}
+    actions = [{"op": "set", "item_id": "IID", "field": "Status", "value": "Done", "func": "f"}]
+    fake = FakeGh([set_resp])
+    _with_stub(fake, lambda: board_sync.apply("PVT_x", _full_field_map(), actions, delay=0))
+    eq("single-select set sends option id", fake.calls[0]["variables"].get("opt"), "opt_Status_Done")
+
+def test_apply_number_passes_number():
+    set_resp = {"updateProjectV2ItemFieldValue": {"projectV2Item": {"id": "IID"}}}
+    actions = [{"op": "set", "item_id": "IID", "field": "Distance", "value": 9, "func": "f"}]
+    fake = FakeGh([set_resp])
+    _with_stub(fake, lambda: board_sync.apply("PVT_x", _full_field_map(), actions, delay=0))
+    eq("number passed directly in variables", fake.calls[0]["variables"].get("v"), 9)
+
+def test_apply_archive():
+    arch_resp = {"archiveProjectV2Item": {"item": {"id": "IID", "isArchived": True}}}
+    actions = [{"op": "archive", "item_id": "IID", "func": "f"}]
+    fake = FakeGh([arch_resp])
+    _with_stub(fake, lambda: board_sync.apply("PVT_x", _full_field_map(), actions, delay=0))
+    check("archive mutation issued", "archiveProjectV2Item" in fake.calls[0]["query"])
+
+
 def main():
     test_load_queue()
     test_load_queue_missing()
@@ -382,6 +422,10 @@ def main():
     test_list_items_paginates_and_parses()
     test_reconcile_skips_titleless_items()
     test_parse_field_values_skips_unnamed_and_unknown()
+    test_apply_add_then_set_fields()
+    test_apply_single_select_uses_option_id()
+    test_apply_number_passes_number()
+    test_apply_archive()
     print(f"\n{_passed} passed, {_failed} failed")
     return 1 if _failed else 0
 
