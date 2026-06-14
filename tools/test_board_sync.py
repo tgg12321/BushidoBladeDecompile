@@ -52,13 +52,16 @@ def test_wip_exists():
         eq("wip present", board_sync.wip_exists("func_has", wip), True)
         eq("wip absent", board_sync.wip_exists("func_none", wip), False)
 
+
 def test_build_desired_status_mapping():
     items = [
         {"func": "func_a", "file": "x", "distance": 9, "verdict": "C", "rules": 3, "status": "active"},
         {"func": "func_b", "file": "y", "distance": 4, "verdict": "ASM-STRUCTURAL", "rules": 1, "status": "authorize"},
         {"func": "func_c", "file": "z", "distance": -1, "verdict": "ASM-SUSPECT", "rules": 2, "status": "parked"},
+        {"func": "func_w", "file": "w", "distance": 1, "verdict": "C", "rules": 0, "status": "active"},
     ]
     with tempfile.TemporaryDirectory() as td:
+        (Path(td) / "func_w").mkdir()
         desired = board_sync.build_desired_from_queue(items, Path(td))
     eq("active -> Backlog", desired["func_a"]["fields"]["Status"], "Backlog")
     eq("authorize -> Needs-Decision", desired["func_b"]["fields"]["Status"], "Needs-Decision")
@@ -68,7 +71,10 @@ def test_build_desired_status_mapping():
     eq("rules carried", desired["func_a"]["fields"]["Rules"], 3)
     eq("file carried", desired["func_a"]["fields"]["File"], "x")
     eq("wip default no", desired["func_a"]["fields"]["WIP"], "no")
+    eq("wip yes integration", desired["func_w"]["fields"]["WIP"], "yes")
     eq("active not archived", desired["func_a"]["archived"], False)
+    eq("authorize not archived", desired["func_b"]["archived"], False)
+    eq("parked not archived", desired["func_c"]["archived"], False)
 
 
 def main():
