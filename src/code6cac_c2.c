@@ -1155,6 +1155,7 @@ s16 *func_8003D7B4(s32 arg0) {
         s32 nbits;
         s16 val;
         s32 sign_bit;
+        s32 sval;
         do {
             nbits = func_8003D888((s32 *)base, 4);
             if (nbits == 0) {
@@ -1163,11 +1164,10 @@ s16 *func_8003D7B4(s32 arg0) {
             new_var = p;
             val = (s16)func_8003D888((s32 *)base, nbits);
         } while (0);
-        if (!val) {
-        }
+        sval = val;
         sign_bit = nbits - 1;
         new_var2 = 1;
-        if ((val >> sign_bit) & new_var2) {
+        if ((sval >> sign_bit) & new_var2) {
             val = val | (0xFFFF << sign_bit);
         }
         *(u16 *)(p + 0xC) = (u16)(*(u16 *)(new_var + 0xC) + val);

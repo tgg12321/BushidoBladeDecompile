@@ -2749,15 +2749,6 @@
       "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
     },
     {
-      "func": "func_8003D7B4",
-      "file": "code6cac_c2",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/code6cac_c2.c. Speed-parked during batch grind."
-    },
-    {
       "func": "func_8003D9A0",
       "file": "code6cac_c2",
       "distance": 2,
@@ -3490,11 +3481,11 @@
     }
   ],
   "counts": {
-    "total": 423,
+    "total": 422,
     "active": 333,
     "by_status": {
       "active": 333,
-      "parked": 90
+      "parked": 89
     },
     "by_verdict": {
       "C": 158,
