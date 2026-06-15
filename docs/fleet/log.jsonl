@@ -44,3 +44,17 @@
 {"ts":"2026-06-15T11:40:35.4483739Z","kind":"reaudit-clean","func":"camera_get_rot_normal_rad"}
 {"ts":"2026-06-15T11:42:01.3492123Z","kind":"lane-cycle","outcome":"needs-owner","func":"func_8003B10C","lane":"fleet-adj","role":"adjudicator"}
 {"ts":"2026-06-15T11:46:06.1637907Z","kind":"reaudit-clean","func":"cdrom_BcdToFrames"}
+{"ts":"2026-06-15T11:48:12.9297323Z","kind":"reaudit-clean","func":"cdrom_CheckReady"}
+{"ts":"2026-06-15T11:50:51.1790846Z","kind":"lane-cycle","outcome":"blocked","lane":"fleet-bw2","func":"motion_SetMotion","role":"backlog-worker"}
+{"ts":"2026-06-15T11:53:51.8080290Z","kind":"auditor-throw","func":"cdrom_ClearIrq","err":"submit: function 'cdrom_ClearIrq' not tracked"}
+{"ts":"2026-06-15T11:59:53.3061437Z","kind":"auditor-throw","func":"cdrom_ConfigSPU","err":"submit: function 'cdrom_ConfigSPU' not tracked"}
+{"ts":"2026-06-15T12:04:32.5909317Z","kind":"reaudit-clean","func":"cdrom_DmaChain"}
+{"ts":"2026-06-15T12:06:30.3191459Z","kind":"reaudit-clean","func":"cdrom_DmaToRam"}
+{"ts":"2026-06-15T12:08:10.2946185Z","kind":"reaudit-clean","func":"cdrom_GetCmdName"}
+{"ts":"2026-06-15T12:09:22.0674010Z","kind":"lane-cycle","outcome":"needs-decision","lane":"fleet-bw2","func":"func_80078EC0","role":"backlog-worker"}
+{"ts":"2026-06-15T12:09:28.9610258Z","kind":"reaudit-clean","func":"cdrom_GetMode"}
+{"ts":"2026-06-15T12:10:21.3461550Z","kind":"reaudit-clean","func":"cdrom_GetReadyFlag"}
+{"ts":"2026-06-15T12:11:15.3898648Z","kind":"reaudit-clean","func":"cdrom_GetReadyFlag2"}
+{"ts":"2026-06-15T12:15:19.8193819Z","kind":"lane-cycle","func":"func_8007C4B8","lane":"fleet-blk","role":"blocked-worker","outcome":"blocked"}
+{"ts":"2026-06-15T12:16:42.0050522Z","kind":"reaudit-clean","func":"cdrom_GetResultName"}
+{"ts":"2026-06-15T12:20:40.3947183Z","kind":"reaudit-clean","func":"cdrom_Initialize"}
