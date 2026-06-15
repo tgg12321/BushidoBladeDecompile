@@ -59,3 +59,4 @@
 {"ts":"2026-06-15T12:16:42.0050522Z","kind":"reaudit-clean","func":"cdrom_GetResultName"}
 {"ts":"2026-06-15T12:20:40.3947183Z","kind":"reaudit-clean","func":"cdrom_Initialize"}
 {"ts":"2026-06-15T12:26:57.8685608Z","kind":"lane-cycle","outcome":"needs-owner","func":"func_80078EC0","lane":"fleet-adj","role":"adjudicator"}
+{"ts":"2026-06-15T19:30:28.7540389Z","kind":"merge-gate-failed","func":"func_80045294","reason":"oracle-gate-failed"}
