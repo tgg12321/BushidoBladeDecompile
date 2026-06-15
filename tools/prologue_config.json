@@ -4733,13 +4733,5 @@
     "sw\t$ra, 0x20($sp)",
     "jal\tfunc_800790C0",
     "addu\t$s3, $a3, $zero"
-  ],
-  "func_8007C4B8": [
-    "addiu\t$sp, $sp, -0x40",
-    "sw\t$s0, 0x30($sp)",
-    "addu\t$s0, $a1, $zero",
-    "sw\t$s1, 0x34($sp)",
-    "addu\t$s1, $a0, $zero",
-    "sw\t$ra, 0x38($sp)"
   ]
 }

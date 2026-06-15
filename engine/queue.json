@@ -1,8 +1,16 @@
 {
-  "generated_at": "2026-06-14T22:51:49",
+  "generated_at": "2026-06-15T01:10:26",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
+    {
+      "func": "func_8007C4B8",
+      "file": "display",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
     {
       "func": "func_80057CC8",
       "file": "text1b",
@@ -3353,14 +3361,14 @@
     }
   ],
   "counts": {
-    "total": 407,
-    "active": 325,
+    "total": 408,
+    "active": 326,
     "by_status": {
-      "active": 325,
+      "active": 326,
       "parked": 82
     },
     "by_verdict": {
-      "C": 150,
+      "C": 151,
       "ASM-PARTIAL": 57,
       "ASM-SUSPECT": 118
     }
