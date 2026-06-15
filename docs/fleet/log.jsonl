@@ -75,3 +75,6 @@
 {"ts":"2026-06-15T22:20:40.2625507Z","kind":"reaudit-clean","func":"ReturnVSMode"}
 {"ts":"2026-06-15T22:26:39.2191044Z","kind":"reaudit-clean","func":"SetBloodSpot"}
 {"ts":"2026-06-15T22:28:03.9721366Z","kind":"reaudit-clean","func":"Vu0SetLightColMatrix_800801E8"}
+{"ts":"2026-06-15T23:27:46.5795733Z","kind":"main-contamination-cleaned","detail":[" M tools/fleet/README.md"," M tools/fleet/fleet.ps1"," M tools/fleet/launch.ps1"]}
+{"ts":"2026-06-15T23:27:46.5879256Z","kind":"reaudit-clean","func":"cdrom_BcdToFrames"}
+{"ts":"2026-06-15T23:29:00.2912986Z","kind":"reaudit-clean","func":"cdrom_CheckReady"}
