@@ -1,0 +1,37 @@
+{
+  "function": "func_80061710",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 9,
+    "candidate_floor": 9,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 46,
+    "target_insns": 46
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "confirmed identical to sibling func_80061658; no separate grind",
+      "floor_was": 9,
+      "floor_now": 9
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-14",
+    "evidence": "No candidate adopted. HEAD pins are the documented family cheat; no new cheat introduced."
+  },
+  "remaining_gap": {
+    "summary": "Identical to func_80061658: v0/v1 register-rotation with the mask's lui interleaved between the arg0[] loads. Unpinned GCC swaps the registers and de-interleaves the mask. Masked floor 9.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "Two register pins (t->$2, mask->$3); no regfix rules. Pure-C reordering does not reproduce the rotation (see func_80061658 ruled-out forms)."
+  },
+  "next_hypotheses": [
+    "Resolve as a family with func_80061658/617C8/618B4/611A4/6133C — one lever (permuter or canonical/plateau decision) covers all siblings."
+  ],
+  "rejected_forms": [],
+  "memory_notes": [
+    "memory/wip/func_80061658/notes.md",
+    "memory/project/register-alloc-deep-dive.md"
+  ]
+}

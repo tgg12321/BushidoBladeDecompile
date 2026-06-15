@@ -4,6 +4,14 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_80053304",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
       "func": "func_80057CC8",
       "file": "text1b",
       "distance": 9,
@@ -92,14 +100,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007F150",
-      "file": "display",
-      "distance": 10,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8007F1A8",
       "file": "display",
       "distance": 10,
@@ -129,22 +129,6 @@
       "distance": 10,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80065000",
-      "file": "text1b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80078BA8",
-      "file": "text1b_b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 9,
       "status": "active"
     },
     {
@@ -3695,15 +3679,15 @@
     }
   ],
   "counts": {
-    "total": 447,
-    "active": 344,
+    "total": 445,
+    "active": 342,
     "by_status": {
-      "active": 344,
+      "active": 342,
       "parked": 103
     },
     "by_verdict": {
-      "C": 162,
-      "ASM-PARTIAL": 64,
+      "C": 161,
+      "ASM-PARTIAL": 63,
       "ASM-SUSPECT": 118
     }
   }

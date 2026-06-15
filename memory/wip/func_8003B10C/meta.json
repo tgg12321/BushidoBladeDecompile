@@ -1,0 +1,43 @@
+{
+  "function": "func_8003B10C",
+  "file": "code6cac_c_ab",
+  "scores": {
+    "head_floor": 10,
+    "candidate_floor": 10,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 61,
+    "target_insns": 64
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "explored 4 dup-read forms to defeat CSE on the D_80101ED6 read; none beat floor 10",
+      "floor_was": 10,
+      "floor_now": 10,
+      "lever_rule": "split-read-defeats-hoist"
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-14",
+    "evidence": "No candidate adopted (no floor improvement). HEAD's 12 regfix rules inject the duplicated reads; no new cheat introduced. The only pure-C path to the duplication is the FORBIDDEN volatile coercion."
+  },
+  "remaining_gap": {
+    "summary": "Target duplicates the identical-symbol read *(s16*)(&D_80101ED6 + s0) into each if/else arm (result in v1) with a shared 'addu v0,v0,a0; addu v0,v0,v1; lbu' tail. Pure-C GCC CSE-hoists that identical memory read to ONE shared load after the merge, changing both branch shapes + the tail (10 masked diffs incl. a 1-insn operand-order diff). The split-read-defeats-hoist dup lever does not apply: both arms read the SAME global, so there is no symbol-known arm to index directly; CSE re-merges regardless. Only volatile (forbidden) would force the re-read.",
+    "rule_count_at_head": 12,
+    "rules_required_for_full_match": "12 regfix rules (4 delete + 6 insert + 1 subst) that delete the shared hoisted load and inject duplicated lui/addu/lh %hi/%lo(D_80101ED6) loads into each branch arm."
+  },
+  "next_hypotheses": [
+    "Canonical-asm authorization: the 6 insert rules reconstruct duplicated absolute loads that GCC's CSE provably removes — a no-pure-C-form construct for this branch shape.",
+    "Permuter from baseline (low expected value: CSE on an identical read is a fixed control-flow artifact the permuter cannot restructure)."
+  ],
+  "rejected_forms": [
+    { "form": "per-branch ed6 variable (separate read each arm)", "score": 32, "reason": "not a cheat; GCC promotes ed6 to callee-saved, frame grows -32->-40" },
+    { "form": "per-branch full pointer p = &TBL + idx*N + ed6read", "score": 26, "reason": "not a cheat; worse" },
+    { "form": "per-branch p = &TBL + idx*N, ed6 read in shared tail", "score": 19, "reason": "not a cheat; still hoists + spill" },
+    { "form": "fold ed6 into v0 per branch (v0 = idx*N + ed6read)", "score": 26, "reason": "not a cheat; worse" }
+  ],
+  "memory_notes": [
+    ".claude/rules/split-read-defeats-hoist.md"
+  ]
+}

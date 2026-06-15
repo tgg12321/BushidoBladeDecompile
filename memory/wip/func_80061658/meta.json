@@ -1,0 +1,43 @@
+{
+  "function": "func_80061658",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 9,
+    "candidate_floor": 9,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 46,
+    "target_insns": 46
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "explored 4 reorderings to break the v0/v1 rotation; none beat floor 9",
+      "floor_was": 9,
+      "floor_now": 9
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-14",
+    "evidence": "No candidate adopted (no floor improvement); nothing to review. HEAD pins are the documented cheat; no new cheat introduced."
+  },
+  "remaining_gap": {
+    "summary": "Register-rotation + scheduling: target puts the arg0[] loads in v0 and mask(0x10FFFF) in v1 with `lui v1,0x10` interleaved between loads; unpinned GCC swaps (loads->v1, mask->v0) and emits the mask as a separate non-interleaved block. Masking normalizes register names but not the interleaving, so the masked diff is a genuine 9.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "Two register pins (t->$2, mask->$3) are load-bearing; no regfix rules. Pure-C reordering does not reproduce the rotation."
+  },
+  "next_hypotheses": [
+    "Directed permuter from a clean single-function target (text1b.c is high-cascade; register-rotation campaigns elsewhere plateaued large).",
+    "-da RTL dump to expose the v0/v1 cycle and the force behind the swap.",
+    "Family-level canonical/plateau decision: the whole sibling set (func_80061658/710/617C8/618B4/611A4/6133C) shares the t=$2 / mask=$3 pin pattern; func_800618B4 already parked as a register-rotation pin cluster."
+  ],
+  "rejected_forms": [
+    { "form": "split t into t0/t1/t2 single-def temps", "score": 11, "reason": "not a cheat; worse" },
+    { "form": "move mask= after the 3rd load", "score": 9, "reason": "not a cheat; no change" },
+    { "form": "compute mask= early (after call, before loads)", "score": 9, "reason": "not a cheat; no change" },
+    { "form": "inline loads directly into global stores (no t temp)", "score": 11, "reason": "not a cheat; worse" }
+  ],
+  "memory_notes": [
+    "memory/project/register-alloc-deep-dive.md"
+  ]
+}

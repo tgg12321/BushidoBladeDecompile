@@ -14477,23 +14477,24 @@ s32 func_80064FB4(void) {
     return 1;
 }
 extern void *D_800A347C;
-extern s32 D_800A3468;
-extern volatile s32 D_800F0CDC;
-extern volatile s32 D_800F0CE0;
-extern volatile s32 D_800F0CE4;
-extern volatile s32 D_800F10FC;
-extern volatile s16 D_800F0BB2;
-extern volatile s16 D_800A3440;
+extern void *D_800A3468;
+extern s32 D_800F0CDC;
+extern s32 D_800F0CE0;
+extern s32 D_800F0CE4;
+extern s32 D_800F10FC;
+extern s16 D_800F0BB2;
+extern s16 D_800A3440;
 s32 func_80065000(void) {
-    volatile s32 *p = (volatile s32 *)D_800A347C;
-    volatile s32 *q = (volatile s32 *)D_800A3468;
-    D_800F0CDC = p[0];
-    D_800F0CE0 = p[1];
-    p = (volatile s32 *)p[2];
+    void *p = D_800A347C;
+    void *q = D_800A3468;
+    s32 last;
+    D_800F0CDC = *(s32 *)((s32)p + 0);
+    D_800F0CE0 = *(s32 *)((s32)p + 4);
+    last = *(s32 *)((s32)p + 8);
     D_800F10FC = 1;
     D_800F0BB2 = 0;
-    D_800F0CE4 = (s32)p;
-    D_800A3440 = (q[0] >> 19) & 3;
+    D_800F0CE4 = last;
+    D_800A3440 = (*(s32 *)q >> 19) & 3;
     return 1;
 }
 extern void *D_800A347C;
