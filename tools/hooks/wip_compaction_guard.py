@@ -41,9 +41,14 @@ def staged_files() -> list[str]:
 
 
 def staged_content(path: str) -> str:
-    return subprocess.run(
-        ["git", "show", f":{path}"], capture_output=True, text=True,
+    # Decode git's bytes as UTF-8 explicitly. WIP notes/meta routinely contain
+    # UTF-8 (em-dashes, arrows in ASCII-art diffs); relying on text=True uses the
+    # platform locale (cp1252 on Windows), which raises UnicodeDecodeError and
+    # left .stdout None -> AttributeError. Bytes + explicit utf-8 is portable.
+    out = subprocess.run(
+        ["git", "show", f":{path}"], capture_output=True,
     ).stdout
+    return out.decode("utf-8", errors="replace")
 
 
 def main() -> int:
