@@ -1,0 +1,41 @@
+{
+  "function": "AddTbpOfst_80047EE8",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 15,
+    "candidate_floor": 15,
+    "metric": "sandbox --disable all on the CLEAN (cheat-free) body = 15. The committed src matches only via 3 cheats. Loop body byte-identical; diffs are frame-size + prologue + 1 move.",
+    "build_insns": 52,
+    "target_insns": 53
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "blocked-lane triage — measured clean pure-C floor (15, cheat_count 0), confirmed all-frame-gap",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 15,
+      "floor_now": 15,
+      "session_id": "orch0614b-1"
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-14",
+    "evidence": "candidate.c is the CLEAN pure-C body: cheat_asm_count = 0 (no register pins, no asm barrier, no unused_slack array, no volatile). Self-reviewed against the cheat catalog — all natural pointer-walk C. It is the honest floor, not a cheated match."
+  },
+  "remaining_gap": {
+    "summary": "POLICY-GRADE, not a pure-C grind. Target reserves a 0x48 (72-byte) frame; the clean pure-C body needs only 0x28 (40 bytes). The 0x20 (32-byte) difference is UNUSED frame slack — nothing in the function semantics writes there. The committed src fabricates it with `s32 unused_slack[8]; (void)unused_slack;` (dead-vars-local-array, FORBIDDEN since 2026-05-31) + register pins + an INLINE_MOVE_ALIASING asm barrier (preserves a redundant `move s2,s0`). With those cheats the build matches; without them, sandbox-distance 15 (loop byte-identical, all diffs = frame size + prologue scheduling cascade + 1 move).",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "0 regfix/asmfix, but the committed src body carries 3 IN-SOURCE cheats (unused_slack dead array, $16/$18 pins, move asm barrier). No legitimate pure-C construct produces 32 bytes of unused frame."
+  },
+  "next_hypotheses": [
+    "PROJECT-WIDE POLICY DECISION (the real path forward, per the park): either (1) re-sanction a NARROW dead-vars/frame-slack idiom for the specific case of a verified UNUSED-frame gap that no pure-C content fills (SOTN-grounded research like the volatile carve-out), OR (2) canonical-asm-authorize this cluster. Cluster sibling InitHiraRmd_80047FBC is in the IDENTICAL situation (dead-vars-local-array re-evaluation note).",
+    "Investigate WHY the original reserved 72 bytes: was there a local array/struct in the original Marionation source that the game uses but our reconstruction dropped? Check callers / the .data layout / Kengo (PS2 reuse) for a struct that AddTbpOfst writes to a stack temp. If a GENUINE local buffer exists, declaring it (used) legitimately produces the frame — that would be the clean close.",
+    "If neither: this stays INCOMPLETE pending the user's policy call — it is NOT closable by single-function grind and is NOT a GTE-leaf."
+  ],
+  "rejected_forms": [
+    {"form": "committed src: unused_slack[8] + $16/$18 pins + move asm barrier", "score": "0 (matches)", "reason": "ALL THREE are catalogued cheats (dead-vars-local-array FORBIDDEN 2026-05-31; register pins; inline-move-aliasing asm injection). Not COMPLETED-C."},
+    {"form": "clean pure-C body (candidate.c)", "score": 15, "reason": "HONEST floor — 0 cheats, loop byte-identical, but 32-byte frame gap + prologue cascade remain. Cannot be lowered by pure-C (no legit way to make unused frame)."}
+  ],
+  "memory_notes": [".claude/rules/register-alloc-pure-c.md", "memory/wip/InitHiraRmd_80047FBC", ".claude/rules/inline-asm-injection.md"]
+}

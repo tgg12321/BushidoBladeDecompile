@@ -1,0 +1,42 @@
+{
+  "function": "func_800618B4",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 4,
+    "candidate_floor": 4,
+    "metric": "sandbox --disable all (masked). honest pure-C distance 4 (pins+swap stripped). Full-build SHA1 is the real gate.",
+    "build_insns": 71,
+    "target_insns": 71
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "blocked-lane triage — 2 more rules+pins-removed full-build variants (distinct-vars, t+c split), both DIFF and FURTHER from target",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 4,
+      "floor_now": 4,
+      "session_id": "orch0614b-1"
+    }
+  ],
+  "reviewer": {"verdict": "FAIL", "date": "2026-06-14", "evidence": "candidate.c is HEAD's body which CARRIES the cheats (2 register pins + the regfix swap). Preserved as current-state reference, NOT a clean candidate. The pure-C variants tried this pass are in rejected_forms."},
+  "remaining_gap": {
+    "summary": "Tail register-rotation. Target: arg0[0]/[1] -> v0($2), arg0[2] -> v1($3) (loaded early, before mask), mask=0xFF0000 -> v0($2), stores in near-source order. Without pins GCC picks v0 for all three loads + reorders the schedule (loads hoisted, stores reordered) — FURTHER from target, not closer. The 2 pins (t=$2, mask=$3) + the `$2<->$3 @42-46` regfix swap reproduce the exact target allocation. Shared infrastructure across ~10 text1b transform-block siblings (func_800611A4, func_80061250, func_8006156C, func_80061658, func_80061710, func_800617C8, func_80061ACC, func_80061EC0, func_80061FAC, this one).",
+    "rule_count_at_head": 1,
+    "rules_required_for_full_match": "1 regfix swap (regfix.txt:3118 `$2 <-> $3 @42-46`) PLUS 2 in-body register pins (cheat-asm). All three must go for COMPLETED-C. No pure-C form found that reaches the target tail allocation; variable-splitting makes it WORSE (extra scheduling)."
+  },
+  "next_hypotheses": [
+    "CLUSTER approach: solve ONE sibling first whose tail is the simplest instance of this register-rotation, then transfer. func_800611A4 / func_8006156C etc. all share the pattern; a lever that cracks one likely cracks all. Pick the smallest sibling.",
+    "Instrumented allocator dump (cc1 -da .greg + ALLOCDBG, register-alloc-deep-dive.md) on the tail: target wants the LAST-loaded value (arg0[2]) in v1 while the mask reuses v0 — determine the liveness shape that yields {arg0[2]=v1, mask=v0} without pins. The crux: arg0[2]'s load must be schedulable to overlap the mask's lui while NOT taking v0.",
+    "Source-order tweak: keep arg0[2]'s load textually LAST (as target) but make mask a longer-lived value materialized so GCC keeps it in v0 and spills arg0[2] to v1. The naive distinct-var split instead hoists arg0[2] and reorders stores — find a form that preserves target's near-sequential schedule."
+  ],
+  "rejected_forms": [
+    {"form": "HEAD body, pins+swap removed (control)", "score": 4, "reason": "DIFF (sha 025e1a1e) — proves the pins+swap load-bearing."},
+    {"form": "distinct vars a,b,c,mask (no pins)", "score": 4, "reason": "DIFF (sha 49920b9d) — different regs + reordered schedule."},
+    {"form": "single t for arg0[0]/[1], distinct c for arg0[2], no pins", "score": 4, "reason": "DIFF (sha 974f75f1) — tail uses a0 for loads, v1 for arg0[2], v0 for mask, with loads hoisted + stores reordered; FURTHER from target's near-sequential v0/v1 form."},
+    {"form": "drop register kw / drop kw + inline mask literal", "score": 4, "reason": "still 4 (prior card)."},
+    {"form": "block-scoped t per stmt", "score": 10, "reason": "REGRESSED (prior card)."},
+    {"form": "preload arg0[2] into local before stores", "score": "8-10", "reason": "REGRESSED (prior card)."},
+    {"form": "inline all arg0[N] direct", "score": 10, "reason": "REGRESSED (prior card)."}
+  ],
+  "memory_notes": [".claude/rules/register-alloc-pure-c.md", "memory/project/register-alloc-deep-dive.md"]
+}
