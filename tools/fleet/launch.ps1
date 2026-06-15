@@ -36,7 +36,7 @@ if (Test-Path $pidf) {
 Write-Host "Launching fleet supervisor (detached) ..."
 $p = Start-Process pwsh -PassThru -WindowStyle Hidden `
     -RedirectStandardOutput $out -RedirectStandardError $err `
-    -ArgumentList @('-NoProfile','-File',$fleet,'-Model',$Model)
+    -ArgumentList @('-NoProfile','-File',"`"$fleet`"",'-Model',$Model)
 $p.Id | Set-Content -Path $pidf -Encoding ascii
 Write-Host "  supervisor pid: $($p.Id)  (written to tmp/fleet/supervisor.pid)"
 Write-Host "  log: tmp/fleet/logs/supervisor.out.log"

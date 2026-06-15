@@ -339,7 +339,7 @@ function Start-Lane($lane) {
     $logErr = Join-Path $LogDir "$($lane.id).err.log"
     $laneScript = Join-Path $PSScriptRoot 'lane.ps1'
     $p = Start-Process pwsh -PassThru -WindowStyle Hidden -RedirectStandardOutput $logOut -RedirectStandardError $logErr `
-        -ArgumentList @('-NoProfile','-File',$laneScript,'-Role',$lane.role,'-Lane',$lane.id,'-Model',$Model)
+        -ArgumentList @('-NoProfile','-File',"`"$laneScript`"",'-Role',$lane.role,'-Lane',$lane.id,'-Model',$Model)
     $lane.proc = $p
     $lane.started = (Get-Date)
     Write-Host "[supervisor] launched lane $($lane.id) ($($lane.role)) pid=$($p.Id)"
