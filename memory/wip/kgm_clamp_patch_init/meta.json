@@ -1,0 +1,32 @@
+{
+  "func": "kgm_clamp_patch_init",
+  "file": "ings",
+  "scores": {
+    "head_floor": 5,
+    "candidate_floor": 5,
+    "note": "Masked sandbox shows candidate=0 but FULL-BUILD SHA1 mismatches (register-alloc + induction-base diff). head_floor 5 = HEAD pins stripped (build 28). Candidate is a CLEANER form (0 cheats, target insn count 31, correct sb-store shape) but not byte-matching."
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "agent": "worker orch0614b-3",
+      "summary": "Established the clean pure-C structural form: removed all 4 register-asm pins (i/c/tmp/p) + the addu asm-move + 3 volatile casts. FINDING: GCC 2.7.2 does NOT combine p[8]=0;p[9]=0; into sh (emits separate sb naturally) -> the volatile casts were unnecessary; the asm-move was unnecessary. Clean form reaches target insn count (31) and correct separate-sb shape. RESIDUAL (full-build mismatch): pure RA + induction base -- target keeps c in $a1, i in $a0, p in $v1, loop based at p (offsets 8,9,0xC); mine puts c in $a2, i in $a1, GCC hoists induction var to p+0xC (offsets -4,-3,0). Declaration order (c before i) only moved the MASKED score to 0, not the real codegen. Source reverted to HEAD; oracle green.",
+      "delta_floor": 0
+    }
+  ],
+  "rejected_forms": [
+    "clean.c (i=0 first decl): full-build register diff (c->$a2, induction hoisted to p+0xC)",
+    "c_first_decl.c (c before i): masked sandbox 0 but SAME full-build register diff -- decl order does not fix RA",
+    "word_first.c (sw before sb;sb): masked 4, worse",
+    "idx_loop.c (i++ before p+=8): masked 2, same residual"
+  ],
+  "remaining_gap": "RA + induction-base: need c in $a1 (not $a2) AND loop induction based at p with offsets 8,9,0xC (not hoisted to p+0xC with offsets -4,-3,0). The 4 HEAD pins + addu-move were doing exactly this; find a legitimate Lever A/B/C equivalent.",
+  "next_hypotheses": [
+    "Lever C: precompute/structure so GCC keeps p as the loop base (offsets 8,9,0xC) instead of strength-reducing the induction var to p+0xC -- e.g. make a byte store the loop anchor, or express the word store as p[12..15] without a +0xC pointer add.",
+    "Instrumented-cc1 -da .greg on the standalone to see why c lands in $a2 not $a1 and why the induction var is based at p+0xC.",
+    "Try array/struct indexing forms: struct S{...} *sp; sp->b8=0; sp->b9=0; sp->w=c; sp++; -- may keep the base at p."
+  ],
+  "reviewer": {
+    "verdict": "n/a -- candidate is clean pure C (0 cheats: no pins, no asm, no volatile, no dead stores). It is a structural-progress checkpoint, not a byte-match; nothing to adversarially review for cheats. Do NOT restore the volatile/asm/pin cheats."
+  }
+}
