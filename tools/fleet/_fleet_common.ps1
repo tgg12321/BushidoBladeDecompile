@@ -45,20 +45,26 @@ function Test-OracleRebuild {
     return $false   # repeated infra failure -> treat as not-green (safe)
 }
 
-# Files the fleet itself writes to main constantly and which must therefore NEVER
-# count as "dirty"/"contamination" for merge gating, or no merge could pass the
-# post-commit clean assertion:
+# Paths that are fleet-operational scratch / records, NOT source contamination, and
+# must therefore be ignored by every dirty/clean check (otherwise no merge could pass
+# the post-commit clean assertion, and Assert-MainClean would thrash on them):
 #   - metrics/events.jsonl : append-only engine telemetry (best-effort, every command)
 #   - docs/fleet/*         : the fleet's own logs/ledgers (committed periodically)
+#   - memory/wip/*         : the shared WIP-checkpoint scratch (cwd=main on purpose, so
+#                            checkpoints persist across worktree resets — by design)
 $script:TelemetryPaths = @('metrics/events.jsonl')
+$script:IgnorePrefixes = @('docs/fleet/', 'memory/wip/')
 
 function Get-MainDirtyLines {
-    # porcelain lines for main, EXCLUDING the fleet's own continuously-written outputs.
+    # porcelain lines for main, EXCLUDING fleet-operational scratch/records. What
+    # remains is genuine source/config contamination worth acting on.
     $main = Get-MainRoot
     $lines = @(git -C "$main" status --porcelain | Where-Object { $_ })
     return @($lines | Where-Object {
         $p = $_.Substring(3).Trim().Trim('"')
-        -not (($script:TelemetryPaths -contains $p) -or $p.StartsWith('docs/fleet/'))
+        $ignore = ($script:TelemetryPaths -contains $p)
+        foreach ($pre in $script:IgnorePrefixes) { if ($p.StartsWith($pre)) { $ignore = $true } }
+        -not $ignore
     })
 }
 

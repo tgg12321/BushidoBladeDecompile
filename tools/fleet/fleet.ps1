@@ -83,9 +83,13 @@ function Merge-Candidate([string]$Func, [string]$Sha) {
             git -C "$main" checkout -- . 2>&1 | Out-Null
             return @{ ok = $false; reason = 'merge-conflict' }
         }
-        # drop any candidate change to the shared append-only telemetry log (both main
-        # and worktrees write it; merging the two append-streams is meaningless)
-        git -C "$main" checkout HEAD -- metrics/events.jsonl 2>$null
+        # Drop fleet-operational paths the candidate may have swept in via `git add -A`
+        # (telemetry, the fleet's own logs/ledgers, WIP scratch). These are NEVER part of
+        # a function's source match — unstage them so they don't trip the anti-tamper
+        # check or land in the Match commit. (Their working-tree copies are ignored by
+        # Get-MainDirtyLines.) Restore telemetry to main's version.
+        git -C "$main" reset -q -- metrics/events.jsonl docs/fleet memory/wip 2>$null
+        git -C "$main" checkout -- metrics/events.jsonl 2>$null
 
         # 1b) ANTI-TAMPER: a candidate may only touch source + its own build-input
         #     config. Reject anything that edits engine/, .claude/, tools/ (except the

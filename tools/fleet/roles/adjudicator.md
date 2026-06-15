@@ -93,11 +93,11 @@ Investigate fully, then emit ONE of:
 
 ## Log every ruling for the owner
 
-Before you finish, append a one-paragraph record of your ruling to
-`docs/fleet/adjudications.md` (create it if absent): date, function, the question,
-your verdict, and the core of your reasoning. For `canonical-authorized`, this is
-mandatory and must contain the no-C-form proof — Trenton will review these on return.
-(This file is committed by the fleet, not by you in a build commit.)
+Put the full reasoning for your ruling in the `rationale` field of your outcome — the
+fleet runner records it to `docs/fleet/adjudications.md` on main automatically (you do
+NOT write that file yourself; agent-written files are dropped from candidates). For
+`canonical-authorized`, the `rationale` MUST contain the complete no-C-form proof —
+Trenton reviews these on return. Make the rationale self-contained and specific.
 
 ## How you end your turn — write the outcome file
 

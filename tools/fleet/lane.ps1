@@ -103,6 +103,13 @@ function Run-Cycle {
             Coord submit -Lane $Lane -Outcome no-op -Func $func | Out-Null
         }
     }
+    # Durable adjudication record on MAIN (the runner writes it, not the agent — agent
+    # writes are dropped from candidates, and this guarantees it lands in main's records).
+    if ($Role -eq 'adjudicator') {
+        $adj = Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..\..')) 'docs\fleet\adjudications.md'
+        $ts = (Get-Date).ToUniversalTime().ToString('o')
+        Add-Content -Path $adj -Value "- $ts  **$func** -> $o (verdict: $([string]$outcome.verdict)). $([string]$outcome.rationale)" -Encoding utf8
+    }
     Append-FleetLog 'lane-cycle' @{ lane = $Lane; role = $Role; func = $func; outcome = $o }
     return $true
 }
