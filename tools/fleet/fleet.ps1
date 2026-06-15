@@ -58,6 +58,14 @@ if (-not $NoAdjudicator) { $ProducerLanes += @{ id = 'fleet-adj'; role = 'adjudi
 
 $script:LastGreen = $null
 
+function Invoke-BoardAudit {
+    # Best-effort board tracking for the historical cheat-audit campaign. NEVER throws
+    # (board updates must not stall or fail an audit). Calls tools/fleet/board_audit.py
+    # (Windows python + gh). clean <func> -> stamp + archive; flag <func> -> keep in Done.
+    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$A)
+    try { & python (Join-Path $PSScriptRoot 'board_audit.py') @A 2>&1 | Out-Null } catch { }
+}
+
 # ───────────────────────────── privileged merge ──────────────────────────────
 function Merge-Candidate([string]$Func, [string]$Sha) {
     # Promote a candidate to main. Apply the worker's WHOLE candidate diff (src +
@@ -156,15 +164,31 @@ function Get-ReviewerPrecheck([string]$Func, [string]$Sha) {
 function Build-AuditorTask($pkt, [string]$Layer = 'first', [string]$Precheck = '') {
     if ([string]$pkt.mode -eq 'reaudit') {
 @"
-You are the fleet AUDITOR. MODE: REAUDIT (no candidate is in review).
-Re-audit the already-COMPLETED function $($pkt.func) against the current cheat lens.
-FIRST read .claude/agents/cheat-reviewer.md in full — its checklist + carve-out
-prerequisites are authoritative; do not reason about them from memory.
-Locate its current source in main (e.g. grep -rl '$($pkt.func)' src/) and read the
-function body as it stands in main. Apply the 6-test checklist. This is the standing
-patrol that keeps everything already committed at the SOTN standard.
-Emit reaudit-clean (still meets the bar) or reaudit-regressed (you found a cheat —
-include evidence + reason so a worker can redo it cleanly).
+You are the fleet AUDITOR. MODE: REAUDIT — the HISTORICAL CHEAT HUNT (owner's #1 priority).
+You are re-auditing an already-COMPLETED, already-committed function: $($pkt.func).
+These passed the gates at the time, but the cheat lens has evolved and some cheats were
+NEVER caught. Your job is to find them now. Assume nothing — a prior PASS is not evidence.
+
+FIRST read .claude/agents/cheat-reviewer.md in full (its 6-test checklist + the exact
+carve-out prerequisites are authoritative — do not reason from memory). Also recall the
+historical cheat FAMILIES to hunt specifically:
+  - alias-rename externs: `extern T name_v asm("OtherSym")` / `_ret`/`_u16` synonyms for an
+    existing symbol (defeats CSE / coerces a width). See .claude/rules/inline-asm-injection.md.
+  - volatile-coercion: extern volatile on non-IRQ globals, `*(volatile T*)&g` casts.
+  - dead-store / unused-padding / frame-coercion locals (`pad`,`buf`,`dummy`,`_unused`,`&x` discards).
+  - lost-codegen regfix inserts; hardcoded-`$N` `__asm__`; scheduling barriers.
+  - prologue_fix entries (reorder cc1's own prologue — a cheat); do-while(0) outside its
+    narrow sanctioned use; opaque `s32 one=1;` only where it isn't SOTN-sanctioned.
+  - register pins (`register T x asm("`$N")`) used as coercion.
+
+Locate the current source in main (grep -rl '$($pkt.func)' src/), read the FULL function
+body + any regfix/asmfix/prologue entries keyed to it, and apply the 6-test checklist to
+EVERY construct. Default to FLAGGING when suspicious — a false flag costs the owner a quick
+look; a missed cheat is the thing we're here to eliminate.
+
+Emit reaudit-clean (genuinely meets the SOTN standard) or reaudit-regressed (you found a
+construct below SOTN — put the specific construct + which test it fails + why in `reason`,
+so the owner can confirm and a worker can redo it cleanly).
 "@
     } else {
         $ruling = ''
@@ -262,7 +286,10 @@ function Auditor-Cycle-Body($pkt, $func, $mode) {
         }
         'fail'               { Coord submit -Lane fleet-aud -Outcome rejected -Func $func -Reason ([string]$outcome.reason) | Out-Null }
         'needs-adjudication' { Coord submit -Lane fleet-aud -Outcome to-adjudicator -Func $func | Out-Null }
-        'reaudit-clean'      { Append-FleetLog 'reaudit-clean' @{ func = $func } }
+        'reaudit-clean'      {
+            Append-FleetLog 'reaudit-clean' @{ func = $func }
+            Invoke-BoardAudit clean $func    # stamp "Last Audited" + archive the card (Done -> archived)
+        }
         'reaudit-regressed'  {
             # Record FIRST (so the finding persists even if the coord call has an issue),
             # then tell the coordinator (which records it for status + stops re-flagging).
@@ -272,7 +299,8 @@ function Auditor-Cycle-Body($pkt, $func, $mode) {
             Add-Content -Path $reg -Value $line -Encoding utf8
             Append-FleetLog 'reaudit-regressed' @{ func = $func; reason = ([string]$outcome.reason) }
             Coord submit -Lane fleet-aud -Outcome regressed -Func $func -Sha ([string]$script:LastGreen) -Reason ([string]$outcome.reason) | Out-Null
-            Write-Host "[auditor] REGRESSION flagged on committed $func — logged to docs/fleet/regressions.md for your review." -ForegroundColor Red
+            Invoke-BoardAudit flag $func --reason ([string]$outcome.reason)   # keep card in Done, stamp REGRESSED
+            Write-Host "[auditor] REGRESSION flagged on committed $func — logged to docs/fleet/regressions.md + board for your review." -ForegroundColor Red
         }
         default { Write-Host "[auditor] unknown outcome '$o'." -ForegroundColor Yellow }
     }
