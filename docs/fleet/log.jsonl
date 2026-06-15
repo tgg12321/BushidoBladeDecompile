@@ -1,0 +1,32 @@
+{"ts":"2026-06-15T10:12:44.4878832Z","kind":"overseer-decision","incident":"drill: simulated incident (main is actually green)","report":"DRILL — no real incident. main is at d1109cd4 (= last-known-green) and verify-oracle confirms build_matches:true against the locked oracle SHA 62efab4f73f992798c43e8c730aa43baa10bb4fa. Working tree clean except for the expected append-only metrics/events.jsonl drift. Decision is `resume` — supervisor re-arms the fleet; no main mutation, no worktree rebuild, no quarantine. Incident logged to docs/fleet/incidents.md for the drill record.","decision":"resume"}
+{"ts":"2026-06-15T10:20:03.9167078Z","kind":"reaudit-clean","func":"AllocRobRmd"}
+{"ts":"2026-06-15T10:24:26.9072146Z","kind":"main-contamination-cleaned","detail":" M tools/fleet/fleet.ps1"}
+{"ts":"2026-06-15T10:24:26.9100227Z","kind":"reaudit-clean","func":"DispSamnailWindow"}
+{"ts":"2026-06-15T10:25:38.1548760Z","kind":"reaudit-clean","func":"EndADRSound"}
+{"ts":"2026-06-15T10:26:58.1130814Z","kind":"reaudit-clean","func":"FadeOut_8003FFA8"}
+{"ts":"2026-06-15T10:28:12.2292020Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:28:12.2308107Z","kind":"reaudit-clean","func":"FadeOut_8003FFC4"}
+{"ts":"2026-06-15T10:28:41.2754416Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:28:41.3300937Z","kind":"lane-cycle","role":"backlog-worker","func":"func_8007C4B8","lane":"fleet-bw2","outcome":"blocked"}
+{"ts":"2026-06-15T10:30:38.4167201Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:30:38.4183451Z","kind":"reaudit-clean","func":"GetAllocPacketSize"}
+{"ts":"2026-06-15T10:32:45.9409163Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:32:45.9428782Z","kind":"reaudit-clean","func":"InitHiraRmd_80041AC8"}
+{"ts":"2026-06-15T10:33:50.4450657Z","kind":"main-contamination-cleaned","detail":[" M src/text1a_c.c","?? memory/wip/func_8007C4B8/"]}
+{"ts":"2026-06-15T10:33:50.4501175Z","kind":"reaudit-clean","func":"LWCard_SetAccessData"}
+{"ts":"2026-06-15T10:35:12.1048832Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:35:12.1065836Z","kind":"reaudit-clean","func":"ReturnVSMode"}
+{"ts":"2026-06-15T10:35:25.2150688Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:35:25.2695002Z","kind":"lane-cycle","role":"blocked-worker","outcome":"needs-decision","func":"func_80082A14","lane":"fleet-blk"}
+{"ts":"2026-06-15T10:37:30.1331476Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:37:30.1348778Z","kind":"reaudit-clean","func":"SetBloodSpot"}
+{"ts":"2026-06-15T10:38:58.9614831Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:38:58.9631347Z","kind":"reaudit-clean","func":"Vu0SetLightColMatrix_800801E8"}
+{"ts":"2026-06-15T10:40:07.5208055Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:40:07.5224046Z","kind":"reaudit-clean","func":"Vu0SetLightColMatrix_80080208"}
+{"ts":"2026-06-15T10:41:02.5853891Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:41:02.5871929Z","kind":"reaudit-clean","func":"Vu0SetLightColMatrix_80080640"}
+{"ts":"2026-06-15T10:42:29.4762395Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:42:29.4777157Z","kind":"reaudit-clean","func":"Vu0SetLightColMatrix_80080684"}
+{"ts":"2026-06-15T10:46:43.5666954Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T10:46:43.5685744Z","kind":"reaudit-clean","func":"ang_hosei_8003F62C"}
