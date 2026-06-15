@@ -22,6 +22,10 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/shell_footgun_guard.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/worktree_contamination_guard.py\""
           }
         ]
       },

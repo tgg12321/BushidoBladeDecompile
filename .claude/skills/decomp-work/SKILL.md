@@ -38,6 +38,28 @@ pwsh tools/setup_worker_worktree.ps1     # junctions read-only deps; COPIES buil
 **main** repo even when you run it here — so claims coordinate across all workers
 while your file edits stay private.
 
+## 2b. ⚠ RUN THE ENGINE VIA `tools/wteng.ps1 <id>` — NEVER relative `tools/eng.ps1`
+**This is load-bearing for isolation (2026-06-14 contamination incident).** Your
+PowerShell tool's cwd is ALWAYS the MAIN repo — the `cd ../bb2-work-<id>` above does
+NOT persist across tool calls. So a RELATIVE `& tools/eng.ps1 ...` resolves to MAIN
+and silently builds / scores / **mutates main's `src`**, corrupting BOTH your own
+results (you read main, not your edits) AND other agents' work (stray edits land on
+shared main). A `PreToolUse` guard now BLOCKS relative `tools/eng.ps1` / bare `make`.
+
+**Every engine and build command goes through the worktree-pinned wrapper**, passing
+YOUR worktree id (the `<id>` you chose above) so it targets your worktree regardless
+of cwd:
+```
+& tools/wteng.ps1 <id> canonical <func>
+& tools/wteng.ps1 <id> sandbox <func> --disable all
+& tools/wteng.ps1 <id> retire <func>
+& tools/wteng.ps1 <id> verify-oracle            # NOT --rebuild while iterating
+& tools/wteng.ps1 <id> queue done <func>
+& tools/wteng.ps1 <id> make                     # raw full-build SHA1 gate (the authoritative check)
+```
+`board.py` / `git` / `Read`/`Edit` (absolute worktree paths) are unaffected — only the
+ENGINE/build wrapper needs pinning. (`board.py` is intentionally main-shared.)
+
 ## 3. The loop — repeat until you have done N items
 ```
 python tools/board.py next --lane <lane> --claim
@@ -50,11 +72,15 @@ python tools/board.py next --lane <lane> --claim
 python tools/board.py card <func>
 ```
 - Drive the **engine match loop IN YOUR WORKTREE** (the canonical loop — see
-  `CLAUDE.md`): `canonical <func>` → `sandbox <func> --disable all` (edit `src`
-  toward distance 0) → `retire` / `verify-oracle` → `queue done <func>`. Reach
+  `CLAUDE.md`), **always via `& tools/wteng.ps1 <id> …`** (per §2b — relative
+  `tools/eng.ps1` is BLOCKED and would hit main): `wteng <id> canonical <func>` →
+  `wteng <id> sandbox <func> --disable all` (edit `src` toward distance 0) →
+  `wteng <id> retire` / `wteng <id> make` → `wteng <id> queue done <func>`. Reach
   **COMPLETED-C**: zero regfix/asmfix rules, zero cheat-asm, full build SHA1 == oracle.
-  (Engine commands run under WSL per `AGENTS.md`. If the top item has a WIP checkpoint,
-  resume from `memory/wip/<func>/candidate.c` as the card says.)
+  The authoritative gate is **`wteng <id> make`** (`OK: bb2 matches!`) — do NOT use
+  `verify-oracle --rebuild` to check an edit (it reverts your `src` to rebuild the
+  reference). If the top item has a WIP checkpoint, resume from
+  `memory/wip/<func>/candidate.c` as the card says.)
 - Then record the outcome on the board:
   - **Matched (COMPLETED-C):** `python tools/board.py done <func>` and commit in your
     worktree.

@@ -261,3 +261,17 @@ if (Test-Path $verifyPath) {
         Write-Output "setup_worker_worktree.ps1: WARNING engine smoke test errored — worker should investigate ($_)"
     }
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CRITICAL: how to run the engine from this worktree (2026-06-14 contamination fix)
+# Your shell cwd is the MAIN repo; a relative `& tools/eng.ps1` runs against MAIN
+# and corrupts it. ALWAYS use the worktree-pinned wrapper with THIS worktree's id.
+$leaf = Split-Path $worktreeRoot -Leaf            # e.g. bb2-work-<id>
+$wid  = $leaf -replace '^bb2-work-', ''
+Write-Output ""
+Write-Output "═══════════════════════════════════════════════════════════════════════"
+Write-Output " ENGINE/BUILD COMMANDS — use the worktree-pinned wrapper (NOT tools/eng.ps1):"
+Write-Output "     & tools/wteng.ps1 $wid <subcmd>      e.g.  & tools/wteng.ps1 $wid sandbox <func> --disable all"
+Write-Output "     & tools/wteng.ps1 $wid make          (authoritative full-build SHA1 gate)"
+Write-Output " A PreToolUse guard BLOCKS relative tools/eng.ps1 / bare make (they hit MAIN)."
+Write-Output "═══════════════════════════════════════════════════════════════════════"
