@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-14T19:15:18",
+  "generated_at": "2026-06-14T22:51:49",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -2713,15 +2713,6 @@
       "park_reason": "Same file-scope-volatile-extern pattern: function body is clean pure-C but blocked by 2 file-scope cheats in text1b.c. Needs coordinated file-wide volatile-decl cleanup."
     },
     {
-      "func": "func_80072BC4",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
       "func": "mario_getMarioVoiceData_8005BE84",
       "file": "text1b",
       "distance": 0,
@@ -2740,15 +2731,6 @@
       "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
     },
     {
-      "func": "func_8003D7B4",
-      "file": "code6cac_c2",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/code6cac_c2.c. Speed-parked during batch grind."
-    },
-    {
       "func": "func_8003D9A0",
       "file": "code6cac_c2",
       "distance": 2,
@@ -2765,15 +2747,6 @@
       "rules": 3,
       "status": "parked",
       "park_reason": "FALSE-branch lbu schedule diff at 3 independent loads (idx 68/69/70). Registers + OR-tree match; only cc1's load order differs (r/g/b vs target b/r/g). Mechanism: b's INSN_PRIORITY < r/g's (chain depth 1 vs 2), so sched.c picks r/g first. All clean pure-C levers tried (source reorder, inline, bit-descending, named intermediate) either no-op or regress. Remaining levers (OR-operand permute, chain-extender, dead store) forbidden by no-new-park-categories. Standing search avenue: directed permuter targeting idx 68-70."
-    },
-    {
-      "func": "func_80045294",
-      "file": "text1a_c",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "Pure-C floor distance 2 (1 nop in first loop load-delay slot). 3 regfix rules move addu i++ between lw and addu sum to fill the slot. cc1's MIPS sched.c places addiu i++ at loop top regardless of source form (4 forms tried). See memory/wip/func_80045294/ for the form-sweep negative + resume hypotheses (instrumented-cc1 INSN_PRIORITY probe, pointer-iter form, sibling RTL diff)."
     },
     {
       "func": "rob_life_ctrl_2",
@@ -2828,15 +2801,6 @@
       "rules": 1,
       "status": "parked",
       "park_reason": "Delay-slot fill choice: cc1 reorg.c::fill_simple_delay_slots moves sh \u00071,8(v1) into the outer beqz delay slot; target instead fills with andi v0,a2,0x10 (eager-fill from THEN block's first insn). cc1 raw output already places sh in the slot, so the choice is in cc1 itself not maspsx. Tested store-order swap, array-index form ((s16*)base)[2]/[4], and narrow s16 arg1 \u2014 all still score 2. Permuter from clean single-function target is the named untried avenue. Single regfix: reorder 12,11 @ 11-12."
-    },
-    {
-      "func": "func_80078B70",
-      "file": "text1b_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "park_reason": "drain_delay jr-slot fill, mirrors func_80078A68/B3C parked yesterday (882c8c05/e29303d9). Honest pure-C distance 2, one asmfix rule (drain_delay @ 10). Same root cause: cc1 reorg's fill_simple_delay_slots picks the final 'sw v1, 4(a1)' to fill the 'jr ra' delay slot; target keeps a nop there and emits the sw before the jr. The sandbox-stripped objdump confirms identical instructions, only the sw/nop order differs. Levers inherited as exhausted from B3C session (precompute return local: folded; *(base+1) deref form: same codegen; split mask local: regressed to 4) plus this session: compound assignment '&=' form: identical RTL, score 2. Forbidden alternatives per expanded cheat catalog: volatile coercion on D_8009BD68/D_8009BD70, asm barrier, register pin, dead self-assign. Resume avenues (inherited): directed permuter from clean single-function target; read cc1 reorg.c::fill_simple_delay_slots eligibility predicates for a pure-C disqualifier on the single-insn sw."
     },
     {
       "func": "func_80078E58",
@@ -3453,11 +3417,11 @@
     }
   ],
   "counts": {
-    "total": 419,
+    "total": 415,
     "active": 333,
     "by_status": {
       "active": 333,
-      "parked": 86
+      "parked": 82
     },
     "by_verdict": {
       "C": 158,
