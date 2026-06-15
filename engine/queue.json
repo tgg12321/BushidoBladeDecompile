@@ -2758,15 +2758,6 @@
       "park_reason": "Prologue-fix coupled cheat: register asm pin + asm barrier on s1 force EARLY materialization (move s1,a2 at insn 4 in prologue). Without them GCC defers to insn 12 (after early-exit check). prologue_config.json entry can't fix missing-early-mat. Need deeper rework per prologue-fix-redundant-reorder.md to retire both cheats together. Pure-C floor 2 (verified score=2 with pins removed)."
     },
     {
-      "func": "tslPolyF4Init",
-      "file": "system",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 4,
-      "status": "parked",
-      "park_reason": "Re-derivation 2026-06-02: pure-C without forbidden DImode chain bottoms at sandbox distance 9 (build_insns 81 matches target, but 9 register-rotation+scheduling diffs persist). HEAD's source uses 'unsigned long long new_var2; new_var2 = new_var; count = new_var2;' DImode chain which is FORBIDDEN per the 2026-06-02 policy (same family as combine-foldable chain-extender in register-alloc-pure-c.md, classified cheat-by-spelling \u2014 zero semantic purpose, exists solely to bump count's RTL refs and shift cc1's allocno priority). The 4 regfix substs at @50/@56 (\u0007ddiu->addu, zero,-1->0,zero, \beq->bne, s0,v0->v0,zero) themselves manufacture the FORBIDDEN goto-end+ret_val accumulator pattern (per goto-end-prologue-delay-slot.md archive): the cheat-free source's natural 'if (count == -1) return 0' is semantically equivalent to target's accumulator-based 'v0=0; goto check; v0=-1; check: if (v0!=0) return 0' but produces different bytes (li v0,-1 in the beqz delay slot + beq s0,v0 post-loop). Tried levers (all measured negative from baseline 9): decl order swaps (idx/saved/elem/count permutations: 9-18), init-line ordering (count first vs last: 9), for-loop form (24, build_insns 85), inline success path (28), removing prologue_config entry (11), register-asm pins on idx/saved as diagnostic (still 9 \u2014 pins ignored, confirming strong RA preference). The target allocation needs idx@s3+arg0@s4 but cc1 naturally produces saved@s3+idx@s4+arg0@s5 \u2014 flipping requires either (a) a cheat-class lever to bump idx's RTL ref count without emitting bytes, (b) the FORBIDDEN DImode chain, or (c) source-level changes that all measured worse. Sibling func_80080258 and func_80080390 in same file have the IDENTICAL DImode chain + register-asm pin \u2014 they're also committed cheats under the new policy and need their own re-derivation. Resume avenues: (1) directed permuter from clean target (similar to cpu_side_move_dir_4 session 10) \u2014 high effort, low expected yield given the prior allocation-tie evidence on cpu_side_move_dir_4/marionation_Exec; (2) project-wide rodata layout change if the function's data adjacency suggests TU re-attribution (per jtbl-rodata-split-infrastructure evidence checklist); (3) instrumented cc1 (tmp/gccdbg with ALLOCDBG) probe to identify the SPECIFIC priority-flip C lever needed \u2014 same approach as cpu_side_move_dir_4 sessions 5-9 with the chain-extender finding (legitimate-form unclear). For now, function stays INCOMPLETE with the 4 regfix rules + DImode chain that build to oracle-matching SHA1; user/orchestrator policy call on whether/when to clean up the sibling cluster (func_80080258, func_80080390, tslPolyF4Init) together via canonical-asm authorization or further pure-C derivation."
-    },
-    {
       "func": "gnd_init_80041688",
       "file": "text1a",
       "distance": 2,
@@ -3481,11 +3472,11 @@
     }
   ],
   "counts": {
-    "total": 422,
+    "total": 421,
     "active": 333,
     "by_status": {
       "active": 333,
-      "parked": 89
+      "parked": 88
     },
     "by_verdict": {
       "C": 158,

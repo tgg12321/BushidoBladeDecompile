@@ -231,18 +231,17 @@ done:
 }
 s32 tslPolyF4Init(s32 a0, s32 a1, s32 a2) {
     s32 count;
-    unsigned long long new_var2;
     s32 idx;
     s32 saved;
-    int new_var;
     s32 *elem;
+    s32 *base;
+    s32 status;
 
     idx = a0 & 0xFF;
     saved = g_cd_callback_a;
-    elem = &g_cd_sector_buf[idx];
-    new_var = 3;
-    new_var2 = new_var;
-    count = new_var2;
+    base = g_cd_sector_buf;
+    elem = base + idx;
+    count = 3;
 
 loop:
     g_cd_callback_a = 0;
@@ -261,16 +260,18 @@ loop:
     }
     g_cd_callback_a = saved;
     if (tslTm2LoadImage(a0 & 0xFF, a1, a2, 0) == 0) {
+        status = 0;
         goto done;
     }
 next:
     count--;
+    status = -1;
     if (count != (-1)) {
         goto loop;
     }
     g_cd_callback_a = saved;
 done:
-    if (count == (-1)) {
+    if (status != 0) {
         return 0;
     }
     {

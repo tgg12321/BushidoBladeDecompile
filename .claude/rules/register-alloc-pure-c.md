@@ -161,6 +161,35 @@ The dead-vars-local-array cluster has the same dependency — see
    (saTan0Main's matching version scored 200 in isolation, while a
    non-matching variant scored 85) — always confirm in the full build.
 
+## Confirmed CLOSURES — levers that retired a wall in this family
+
+- **`tslPolyF4Init`** (system.c, 2026-06-14): retired a 4-regfix + forbidden
+  DImode-chain cheat to **COMPLETED-C** (clean floor was sandbox-9). The wall
+  was a register rotation (cc1 produced saved@s3/idx@s4/arg0@s5; target wants
+  idx@s3/arg0@s4/saved@s5) PLUS a loop-exit accumulator the regfix rules faked.
+  TWO pure-C levers closed it, in this order:
+  1. **Explicit status flag for the exit accumulator.** The natural
+     `if (count == -1) return 0` compiles to `li v0,-1; beq count,v0` —
+     but the target carries a flag in `$v0` (0 on success path, -1 when
+     retries exhaust) and tests `bnez $v0`. Introduce `s32 status; status=0`
+     on the success branch, `status=-1` on the exhaust branch, then
+     `if (status != 0)`. This reproduces the `move v0,zero` (delay slot) +
+     `li v0,-1` + `bnez v0` accumulator exactly. (Floor 9→7. Sibling of
+     [[exit-path-return-set-cse-join]].) NOT a cheat-by-spelling — `status`
+     carries real success/exhausted meaning.
+  2. **Explicit base-pointer variable for `&arr[idx]`.** `elem = &g_cd_sector_buf[idx]`
+     made cc1 emit `sll idx*4 → $v1; lui/addiu base → $v0; addu s6,$v1,$v0`
+     (shift first). Target wants `sll → $v0; base → $v1; addu s6,$v0,$v1`
+     (base materialized first). Splitting to `s32 *base = g_cd_sector_buf;
+     elem = base + idx;` evaluates the base address before the shift, flipping
+     the operand order to match. (Floor 7→0.) Ordinary pointer arithmetic.
+  The prologue save-ORDER is then handled by the existing `prologue_config.json`
+  entry (prologue_fix reorders GCC's natural save sequence to the target's —
+  a general build pass, not a per-function cheat; verify it still maps your new
+  source's actions: a clean `make` SHA1 is the proof). **Siblings
+  `func_80080258` / `func_80080390` (system.c) carry the IDENTICAL DImode-chain
+  cheat — try these same two levers on them.**
+
 ## Confirmed limits — do NOT re-derive (full logs in [[register-alloc-deep-dive]])
 
 Two functions hit a measured wall behind GCC 2.7.2's `global.c:624`
