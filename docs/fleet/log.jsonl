@@ -60,3 +60,6 @@
 {"ts":"2026-06-15T12:20:40.3947183Z","kind":"reaudit-clean","func":"cdrom_Initialize"}
 {"ts":"2026-06-15T12:26:57.8685608Z","kind":"lane-cycle","outcome":"needs-owner","func":"func_80078EC0","lane":"fleet-adj","role":"adjudicator"}
 {"ts":"2026-06-15T19:30:28.7540389Z","kind":"merge-gate-failed","func":"func_80045294","reason":"oracle-gate-failed"}
+{"ts":"2026-06-15T20:12:39.6323085Z","kind":"main-contamination-cleaned","detail":[" M docs/tooling_incidents.md"," M tools/hooks/main_reintegration_lock.py"]}
+{"ts":"2026-06-15T20:12:39.6875812Z","kind":"lane-cycle","outcome":"blocked","func":"func_80045294","role":"backlog-worker","lane":"fleet-bw1"}
+{"ts":"2026-06-15T20:20:31.9850869Z","kind":"lane-cycle","outcome":"blocked","func":"func_8007C4B8","role":"backlog-worker","lane":"fleet-bw1"}
