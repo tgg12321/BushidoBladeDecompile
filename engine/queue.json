@@ -92,14 +92,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007F1A8",
-      "file": "display",
-      "distance": 10,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80045878",
       "file": "text1a_c",
       "distance": 10,
@@ -133,14 +125,6 @@
     },
     {
       "func": "func_8007E35C",
-      "file": "display",
-      "distance": 11,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007F05C",
       "file": "display",
       "distance": 11,
       "verdict": "ASM-PARTIAL",
@@ -3538,15 +3522,15 @@
     }
   ],
   "counts": {
-    "total": 429,
-    "active": 339,
+    "total": 427,
+    "active": 337,
     "by_status": {
-      "active": 339,
+      "active": 337,
       "parked": 90
     },
     "by_verdict": {
       "C": 158,
-      "ASM-PARTIAL": 63,
+      "ASM-PARTIAL": 61,
       "ASM-SUSPECT": 118
     }
   }
