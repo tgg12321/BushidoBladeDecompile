@@ -1,0 +1,35 @@
+{
+  "function": "func_80062020",
+  "file": "text1b",
+  "scores": {
+    "head_floor": "4 register-asm pins (INCOMPLETE at main HEAD)",
+    "candidate_floor": "loop body solved in pure C (pins retired); 3-store epilogue UNSOLVED legitimately",
+    "metric": "the rejected cheat form scored 0 / SHA1==oracle but the epilogue was a codegen steer, not a match"
+  },
+  "category": "INCOMPLETE — rejected match (cheat epilogue); sound loop-fix preserved",
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "loop body: offset-indexed source reads *(s32*)((u8*)arg0+ofs) + split-init i12 -> retired 4 register-asm pins (pure C). Epilogue zero-stores REJECTED.",
+      "lever_rule": "walking-pointer/split-init (loop, sound); dual-spelling addressing steer (epilogue, FORBIDDEN)",
+      "git_ref_cheat_form": "dfb9e9ac on work/orch3a (do NOT reuse the epilogue)"
+    }
+  ],
+  "reviewer": {
+    "verdict": "FAIL (audit-orch3a fresh adversarial retro-audit, 2026-06-14)",
+    "date": "2026-06-14",
+    "evidence": "Epilogue writes p[0] two ways (p-indexed AND the full *(s32*)((u8*)&D_800F1198+i12) expression) to force two different MIPS addressing modes for the same lvalue. No semantic purpose -> codegen steer; fails 6-test 1/2/3."
+  },
+  "remaining_gap": {
+    "summary": "Loop body sound + pins retired. Only the 3 trailing zero-stores to &D_800F1198+i12{,+4,+8} are unsolved: target mixes a %hi/%lo-split store (+0) with full-address stores (+4/+8) - a GCC addressing-mode artifact the rejected cheat forced via dual-spelling.",
+    "needs": "a CONSISTENT pure-C epilogue (no same-lvalue-two-spellings) that GCC compiles to the target's addressing-mode mix; else document as a genuine plateau."
+  },
+  "next_hypotheses": [
+    "Keep dfb9e9ac's loop-body fix; replace ONLY the epilogue with a consistent form; re-measure honest distance.",
+    "Zero the 3 words via the array base symbols (D_800F1198/9C/A0 + i12) in index order to see GCC's natural addressing.",
+    "If no consistent C reaches the split/full mix, plateau (NOT a cheat-epilogue)."
+  ],
+  "rejected_forms": [
+    "epilogue dual-spelling: p[0] written as *(s32*)((u8*)&D_800F1198+i12)=0 alongside p[1]/p[2] - codegen steer, FAILed retro-audit"
+  ]
+}
