@@ -45,17 +45,21 @@ function Test-OracleRebuild {
     return $false   # repeated infra failure -> treat as not-green (safe)
 }
 
-# metrics/events.jsonl is append-only telemetry the engine writes on EVERY command
-# (best-effort, never load-bearing). The supervisor runs engine commands constantly,
-# so main's tree is perpetually "dirty" with it — it must be ignored by every
-# dirty/clean check, or no merge could ever pass the post-commit clean assertion.
+# Files the fleet itself writes to main constantly and which must therefore NEVER
+# count as "dirty"/"contamination" for merge gating, or no merge could pass the
+# post-commit clean assertion:
+#   - metrics/events.jsonl : append-only engine telemetry (best-effort, every command)
+#   - docs/fleet/*         : the fleet's own logs/ledgers (committed periodically)
 $script:TelemetryPaths = @('metrics/events.jsonl')
 
 function Get-MainDirtyLines {
-    # porcelain lines for main, EXCLUDING append-only telemetry.
+    # porcelain lines for main, EXCLUDING the fleet's own continuously-written outputs.
     $main = Get-MainRoot
     $lines = @(git -C "$main" status --porcelain | Where-Object { $_ })
-    return @($lines | Where-Object { $p = $_.Substring(3).Trim(); -not ($script:TelemetryPaths -contains $p) })
+    return @($lines | Where-Object {
+        $p = $_.Substring(3).Trim().Trim('"')
+        -not (($script:TelemetryPaths -contains $p) -or $p.StartsWith('docs/fleet/'))
+    })
 }
 
 function Assert-MainClean {
