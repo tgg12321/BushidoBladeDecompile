@@ -208,6 +208,14 @@ what closed sys_VSync after 7 cold-start worker sessions), bulk variant sweeps
 
 ## 7. Footguns learned (don't repeat them)
 
+- **TWO orchestrators clobbering main** (the 2026-06-14 orch3↔orch0614b incident) → before
+  you reintegrate worker branches, **`& tools/reintegrate_lock.ps1 acquire`** and hold it for
+  the whole apply→build→commit→queue-done window, then `… release`. The `main_reintegration_lock`
+  PreToolUse hook enforces it (blocks a concurrent session's `git merge`/`reset`/edit on main).
+  Keep the reintegration ATOMIC (apply→build-verify→commit fast); never leave main's working
+  tree dirty across many tool calls — a concurrent merge will wipe it. Engine/build on main → ALWAYS
+  `& tools/wteng.ps1 main <cmd>` (a relative `eng.ps1`/`make` is cwd-resolved and the contamination
+  guard blocks it).
 - **`$?` inside `wsl bash -c` is unreliable** → `$LASTEXITCODE` via PowerShell.
 - **A mid-work cutoff leaves a dirty tree** (worker died/was killed mid-function) → never continue on it;
   if `oracle_ok` the leftover is verified-matching (commit it), else revert.

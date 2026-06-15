@@ -26,6 +26,10 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/worktree_contamination_guard.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/main_reintegration_lock.py\""
           }
         ]
       },
@@ -35,6 +39,10 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/worktree_contamination_guard.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/main_reintegration_lock.py\""
           }
         ]
       },

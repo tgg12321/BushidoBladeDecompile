@@ -236,6 +236,21 @@ files; `[skip-park-src-guard]` override), **no_new_regfix_guard** (net rule addi
 `[infra-rule: <category>]` escape), **wip_compaction_guard** (WIP current-state caps;
 `[skip-wip-compaction]` override). Legacy decomp-loop hooks are removed.
 
+**PreToolUse parallel-orchestrator guards** (cwd-independent; both fail-open):
+- **worktree_contamination_guard** — blocks a WORKER's relative `eng.ps1`/`make`/build-input
+  edit that would hit MAIN instead of its worktree (a subagent's shell cwd is ALWAYS main).
+  Pin engine/build via `& tools/wteng.ps1 <id|main> <cmd>`; the orchestrator drops
+  `tmp/.allow_main_edits` to edit main's build inputs during a batch.
+- **main_reintegration_lock** — the REINTEGRATION MUTEX. While worker worktrees are live, a
+  main-mutating git op (merge / reset / rebase / cherry-pick / apply(write) / commit /
+  checkout / stash) or a build-input edit requires THIS session to hold the lock
+  (`tmp/.main_reintegration.lock`). Prevents the 2026-06-14 orch3↔orch0614b collision — one
+  orchestrator's `git merge` on main clobbering another's still-uncommitted reintegration.
+  **Protocol:** `& tools/reintegrate_lock.ps1 acquire` BEFORE you start merging worker
+  branches → hold it for the whole apply/build/commit/queue-done window → `… release` after.
+  `… status` shows the holder; `… steal -Reason "…"` reclaims only a STALE lock (>90 min) from
+  a dead session. Read-only git (show/log/diff/status) and worktree-pinned ops are never gated.
+
 ## Metrics (`metrics/` + `tools/metrics/`)
 Capture is silent and best-effort: `engine/cli.py` appends to `metrics/events.jsonl` (committed
 source of truth) and can never raise or perturb output (contract pinned by `engine test`). The
