@@ -30,3 +30,17 @@
 {"ts":"2026-06-15T10:42:29.4777157Z","kind":"reaudit-clean","func":"Vu0SetLightColMatrix_80080684"}
 {"ts":"2026-06-15T10:46:43.5666954Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
 {"ts":"2026-06-15T10:46:43.5685744Z","kind":"reaudit-clean","func":"ang_hosei_8003F62C"}
+{"ts":"2026-06-15T11:09:08.8683516Z","kind":"main-contamination-cleaned","detail":"?? memory/wip/func_8007C4B8/"}
+{"ts":"2026-06-15T11:09:08.8862025Z","kind":"auditor-throw","err":"submit: function 'camera_InitBoneData' not tracked","func":"camera_InitBoneData"}
+{"ts":"2026-06-15T11:21:55.6058371Z","kind":"reaudit-clean","func":"camera_InitMatrix"}
+{"ts":"2026-06-15T11:24:50.1261178Z","kind":"auditor-throw","func":"camera_InitRotation","err":"submit: function 'camera_InitRotation' not tracked"}
+{"ts":"2026-06-15T11:25:48.7947981Z","kind":"reaudit-clean","func":"camera_SetMatrix_8001DA8C"}
+{"ts":"2026-06-15T11:28:17.5842069Z","kind":"reaudit-clean","func":"camera_SetMatrix_8001DBE4"}
+{"ts":"2026-06-15T11:30:37.6783088Z","kind":"lane-cycle","role":"backlog-worker","func":"func_8003B10C","lane":"fleet-bw1","outcome":"needs-decision"}
+{"ts":"2026-06-15T11:30:46.9980636Z","kind":"reaudit-clean","func":"camera_SetMatrix_8003E164"}
+{"ts":"2026-06-15T11:33:26.6723621Z","kind":"lane-cycle","func":"func_8007C4B8","lane":"fleet-blk","role":"blocked-worker","outcome":"blocked"}
+{"ts":"2026-06-15T11:35:32.5205096Z","kind":"reaudit-clean","func":"camera_Transform"}
+{"ts":"2026-06-15T11:39:01.6918832Z","kind":"reaudit-clean","func":"camera_check_inside_screen_rob_dpos"}
+{"ts":"2026-06-15T11:40:35.4483739Z","kind":"reaudit-clean","func":"camera_get_rot_normal_rad"}
+{"ts":"2026-06-15T11:42:01.3492123Z","kind":"lane-cycle","outcome":"needs-owner","func":"func_8003B10C","lane":"fleet-adj","role":"adjudicator"}
+{"ts":"2026-06-15T11:46:06.1637907Z","kind":"reaudit-clean","func":"cdrom_BcdToFrames"}
