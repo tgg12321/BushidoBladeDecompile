@@ -2830,15 +2830,6 @@
       "park_reason": "Delay-slot fill choice: cc1 reorg.c::fill_simple_delay_slots moves sh \u00071,8(v1) into the outer beqz delay slot; target instead fills with andi v0,a2,0x10 (eager-fill from THEN block's first insn). cc1 raw output already places sh in the slot, so the choice is in cc1 itself not maspsx. Tested store-order swap, array-index form ((s16*)base)[2]/[4], and narrow s16 arg1 \u2014 all still score 2. Permuter from clean single-function target is the named untried avenue. Single regfix: reorder 12,11 @ 11-12."
     },
     {
-      "func": "func_80078B3C",
-      "file": "text1b_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "park_reason": "Same mechanism as func_80078A68 (parked 2026-06-05 in 882c8c05) \u2014 cc1 reorg's fill_simple_delay_slots picks the sw (sw v1,4(a1)) to fill the jr ra delay slot; target keeps nop and emits the sw before jr (the single regfix is drain_delay @ 9). Pure-C distance 2. Levers tried this session: precompute return into a local (return-value var folded by GCC, score 2); *(base+1) instead of base[1] (same codegen, score 2); split via mask local (regressed to 4). The dbr fill choice is made inside cc1 before maspsx; no known pure-C lever flips it without forbidden coercion (volatile cast on game-state global, __asm__ memory barrier, dead self-assign, register pin) per the expanded cheat catalog. File has 8 drain_delay regfix rules following the same pattern \u2014 this is a recurring cc1 reorg behavior in text1b_b.c. Resume avenues (inherited from func_80078A68 park): directed permuter on a clean single-function target; reorg.c::fill_simple_delay_slots eligibility predicates (look for a C construct that disqualifies the sw via macro-form addressing without volatile)."
-    },
-    {
       "func": "func_80078B70",
       "file": "text1b_b",
       "distance": 2,
@@ -3472,11 +3463,11 @@
     }
   ],
   "counts": {
-    "total": 421,
+    "total": 420,
     "active": 333,
     "by_status": {
       "active": 333,
-      "parked": 88
+      "parked": 87
     },
     "by_verdict": {
       "C": 158,

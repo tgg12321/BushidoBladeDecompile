@@ -215,6 +215,24 @@ preserves the audit. Any one of them in isolation is insufficient.
   address already had a volatile handle, D_800A2634 at ings2.c:320 — the
   grant unified the second handle, g_sys_dma_region).
 
+- **func_80078B3C / func_80078B70** (text1b_b.c, B3C closed 2026-06-14;
+  B70 is the same-pattern sibling) — `*(volatile s32 *)(D_8009BD68 + ...)`
+  RMW of the PS1 interrupt-controller I_MASK register. D_8009BD68 = .word
+  `0x1F801070` (asm/data/7D920.data.s:23913 — the I_STAT/I_MASK MMIO base;
+  +4 = I_MASK). This is the **computed-MMIO-address** category (a pointer
+  cast on a hardware-register address), NOT an `extern volatile T D_xxx`
+  game-state coercion — `reviewer_precheck` reports `new_extern_volatile:
+  []`. **Diagnostic symptom:** a `drain_delay` regfix rule pulling a `sw`
+  out of the `jr ra` delay slot on an MMIO-base `base[k] = base[k] | ...`
+  RMW — cc1's `fill_simple_delay_slots` fills the slot with the store on a
+  NON-volatile pointer, but the target keeps the nop because the original
+  access was volatile. Closing form: `volatile s32 *base =
+  (volatile s32 *)D_8009BD68; base[1] = base[1] | (&table)[v];`
+  (the bit-table `D_8009BD70` stays NON-volatile — plain data, not MMIO).
+  Same API family as the COMPLETED siblings func_80078B04 / func_80078BA8
+  (root-counter MMIO at D_8009BD6C = 0x1F801100). retire dropped the 1
+  drain_delay rule; SHA1 == oracle.
+
 ## Symbol-level grants (clarified 2026-06-11, func_8007D9C4 decision)
 
 A grant is PER SYMBOL, not per use-site — matching both C semantics
