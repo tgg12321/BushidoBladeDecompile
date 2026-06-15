@@ -1,16 +1,8 @@
 {
-  "generated_at": "2026-06-12T01:44:52",
+  "generated_at": "2026-06-14T19:15:18",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
-    {
-      "func": "func_80053304",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
     {
       "func": "func_80057CC8",
       "file": "text1b",
@@ -100,14 +92,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007F150",
-      "file": "display",
-      "distance": 10,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8007F1A8",
       "file": "display",
       "distance": 10,
@@ -129,22 +113,6 @@
       "distance": 10,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80065000",
-      "file": "text1b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80078BA8",
-      "file": "text1b_b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 9,
       "status": "active"
     },
     {
@@ -2757,13 +2725,13 @@
       "park_reason": "SOTN-standard policy tightened 2026-06-10: plain `register` storage hints are allocator-steering cheats, not completed C. Function currently has no regfix/asmfix/hard register pins and sandbox score 0, but still contains load-bearing plain register hints. Needs a natural no-register C form or a canonical-asm decision before completion."
     },
     {
-      "func": "func_800832A0",
+      "func": "func_80082A14",
       "file": "ings2",
       "distance": 0,
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "File-scope cheat: extern volatile s32 D_800A2634; at ings2.c:321. D_800A2634 is incremented by interrupt-callback D_800832F8 and read here \u2014 semantically REQUIRES volatile for interrupt-safety, but project policy classifies volatile-on-game-state as a cheat regardless. Function body is otherwise clean. Resolution needs a project-wide policy carve-out for genuine ISR-shared variables, or file-scope coordinated cleanup."
+      "park_reason": "sched.c-priority prologue ordering gap: target schedules volatile counter init store (sll+sw) BEFORE global g_sys_dma_region read (lui+lw), with load-delay nop; GCC 2.7.2 sched.c picks opposite order because the lui/lw->slt->beqz chain has higher INSN_PRIORITY than the terminal volatile sw. Honest pure-C distance with cheat-asm barrier stripped = 4 (1 missing nop + 4 reordered insns). Forbidden levers tested: (a) extern volatile s32 g_sys_dma_region (declaration-level volatile-coercion per inline-asm-policy catalog; also regressed sys_VSync by 34 byte diffs); (b) alias-rename via D_800A2634 volatile name (same intent, different spelling); (c) do-while-zero wrap between counter init and if-check (mechanically achieves score 0 but per do-while-zero-exception only sanctioned for LABEL_OUTSIDE_LOOP_P / reorg.c, not sched.c priority \u2014 explicitly the slippery-slope the rule forbids). The existing asm volatile memory barrier is cheat-asm. No documented pure-C lever closes a sched.c INSN_PRIORITY gap on a volatile-local-init vs unrelated-global-load ordering without emitting extra instructions or being cheat-by-spelling."
     },
     {
       "func": "spu_InitEx",
@@ -2791,105 +2759,6 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "Same file-scope-volatile-extern pattern: function body is clean pure-C but blocked by 2 file-scope cheats in text1b.c. Needs coordinated file-wide volatile-decl cleanup."
-    },
-    {
-      "func": "func_80062FEC",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_800652F4",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80065344",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80065394",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80065484",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "file-wide volatile-extern cluster (D_800F0BB2 / D_800A3440) blocks COMPLETED-C \u2014 same blocker as func_80061C00"
-    },
-    {
-      "func": "func_80065540",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80065590",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_800655E0",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80065630",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_80065760",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_800657B0",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
     },
     {
       "func": "func_80072BC4",
@@ -2944,15 +2813,6 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "Prologue-fix coupled cheat: register asm pin + asm barrier on s1 force EARLY materialization (move s1,a2 at insn 4 in prologue). Without them GCC defers to insn 12 (after early-exit check). prologue_config.json entry can't fix missing-early-mat. Need deeper rework per prologue-fix-redundant-reorder.md to retire both cheats together. Pure-C floor 2 (verified score=2 with pins removed)."
-    },
-    {
-      "func": "D_800832F8",
-      "file": "ings2",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/ings2.c. Speed-parked during batch grind."
     },
     {
       "func": "tslPolyF4Init",
@@ -3135,15 +2995,6 @@
       "status": "parked",
       "scorable": false,
       "park_reason": "prologue save-order structural \u2014 twin of just-parked func_8007C2A0 (2b3ccfe). Single 4-insn regfix reorder 3,4,1,2 @ 1-4 swaps cc1's natural [sw s1,52; move s1,a0; sw s0,48; move s0,a1] to target's [sw s0,48; move s0,a1; sw s1,52; move s1,a0]. Same identical mips.c save_restore_insns iteration-order wall, same identical C signature (s32 *out, Rect *r), same identical body shape. Honest sandbox=4 verified fixed across the 9 levers tested on the sibling + 1 additional probe (s16 rx,ry locals + tmp_v0 call-result temp) this session: same 4-distance floor. Path to COMPLETED-C identical to sibling: requires either function-scope canonical-asm wrapping of the prologue 4-insn block, treating regfix reorder as canonical infrastructure (like prologue_config.json's AddTbpOfst_80047EE8 family), or a novel C lever spanning the mips.c scheduling space the explored levers don't cover."
-    },
-    {
-      "func": "func_80082A14",
-      "file": "ings2",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "sched.c-priority prologue ordering gap: target schedules volatile counter init store (sll+sw) BEFORE global g_sys_dma_region read (lui+lw), with load-delay nop; GCC 2.7.2 sched.c picks opposite order because the lui/lw->slt->beqz chain has higher INSN_PRIORITY than the terminal volatile sw. Honest pure-C distance with cheat-asm barrier stripped = 4 (1 missing nop + 4 reordered insns). Forbidden levers tested: (a) extern volatile s32 g_sys_dma_region (declaration-level volatile-coercion per inline-asm-policy catalog; also regressed sys_VSync by 34 byte diffs); (b) alias-rename via D_800A2634 volatile name (same intent, different spelling); (c) do-while-zero wrap between counter init and if-check (mechanically achieves score 0 but per do-while-zero-exception only sanctioned for LABEL_OUTSIDE_LOOP_P / reorg.c, not sched.c priority \u2014 explicitly the slippery-slope the rule forbids). The existing asm volatile memory barrier is cheat-asm. No documented pure-C lever closes a sched.c INSN_PRIORITY gap on a volatile-local-init vs unrelated-global-load ordering without emitting extra instructions or being cheat-by-spelling."
     },
     {
       "func": "spu_DmaTransfer",
@@ -3687,15 +3538,15 @@
     }
   ],
   "counts": {
-    "total": 446,
-    "active": 343,
+    "total": 429,
+    "active": 339,
     "by_status": {
-      "active": 343,
-      "parked": 103
+      "active": 339,
+      "parked": 90
     },
     "by_verdict": {
-      "C": 161,
-      "ASM-PARTIAL": 64,
+      "C": 158,
+      "ASM-PARTIAL": 63,
       "ASM-SUSPECT": 118
     }
   }
