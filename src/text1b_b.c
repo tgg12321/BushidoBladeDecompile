@@ -1431,9 +1431,9 @@ s32 func_80078B3C(s32 arg0) {
 }
 s32 func_80078B70(s32 arg0) {
     s32 v;
-    s32 *base;
+    volatile s32 *base;
     v = arg0 & 0xFFFF;
-    base = D_8009BD68;
+    base = (volatile s32 *)D_8009BD68;
     base[1] = base[1] & ~(&D_8009BD70)[v];
     return 1;
 }

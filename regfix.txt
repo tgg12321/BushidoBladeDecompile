@@ -2901,7 +2901,6 @@ func_800550E8: subst "sb\s+\$2,0\(\$3\)" "sb	$2,1045($3)" @ 13
 # func_80078B3C: GCC scheduled sw into jr delay slot; target keeps nop there. drain_delay reverses it.
 func_80078B3C: drain_delay @ 9
 # func_80078B70: same as func_80078B3C clear-flag form
-func_80078B70: drain_delay @ 10
 # func_8007C748: 3-way reg cycle $v0/$v1/$a2 -- target uses $v1 for const, $a2 for mask
 # func_8007C748 idx 20: 3-cycle full-insn subst
 # RETIRED (targeted-permuter): func_8004954C: drain_delay @ 9
