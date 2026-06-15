@@ -1,0 +1,40 @@
+{
+  "function": "func_800617C8",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 9,
+    "candidate_floor": 9,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 51,
+    "target_insns": 51
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "pin removal -> confirmed same v0/v1 post-call mask/load swap as the func_800611A4 family wall (see memory/wip/func_800611A4 for full cc1psx calibration + 12-lever sweep).",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 9,
+      "floor_now": 9,
+      "git_head_at_measurement": "c3aa1ffc"
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-14",
+    "evidence": "Pin-free body is plain pure C (no pins/__asm__/coercion). Confirmed NOT byte-matching (score 9 = v0/v1 swap), so not applied to src/."
+  },
+  "remaining_gap": {
+    "summary": "Identical wall to func_800611A4: all 9 diffs are a v0<->v1 register-name swap on the post-call mask(0xC06013)/load cluster. Build structurally byte-identical to target otherwise. Load-temp wants $v0 (target) but GCC gives it $v1 and the CSE'd mask constant $v0.",
+    "rule_count_at_head": 0,
+    "cheat_at_head": "2x register asm(\"$2\"), asm(\"$3\") pins (cheat-asm)",
+    "rules_required_for_full_match": "Reachable only via the $2/$3 pins (forbidden) or a regfix subst (forbidden). cc1psx calibration in the func_800611A4 WIP proves the swap is unreachable from correct pure C."
+  },
+  "family_ref": "memory/wip/func_800611A4/ — same post-call mask/load cluster; cc1psx-confirmed RA wall. func_800618B4 (parked), func_80061250, func_80061454, func_800614E0, func_8006156C, func_80061658 are siblings. A family-wide lever retires all.",
+  "next_hypotheses": [
+    "Solve as a FAMILY via the func_800611A4 next_hypotheses (permuter from floor-9 base; check if the mask constants are legitimately non-constant in the original; instrumented-cc1 PRIO dump).",
+    "If the $2/$3 pins are the canonical finished form for this whole render-state family, USER canonical-asm authorization would close all of them at once."
+  ],
+  "rejected_forms": [
+    {"form": "pin removal (plain s32 t, s32 mask)", "score": 9, "why": "v0/v1 swap on post-call cluster (same as func_800611A4)"}
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "function": "func_8007E35C",
+  "file": "display",
+  "scores": {
+    "head_floor": 0,
+    "candidate_floor": 0,
+    "metric": "already byte-matches (canonical GTE asm body); canonical gate = ASM-PARTIAL 11/24 cop2",
+    "build_insns": 24,
+    "target_insns": 24
+  },
+  "category": "COMPLETED-INLINE-ASM-CANONICAL (pending registry authorization)",
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "canonical gate route -> ASM-PARTIAL (11/24 cop2: gpf/gpl/mtc2/mfc2). Pure GTE gpf/gpl byte-pair lerp wrapper, no C form. Already matched via __asm__(.word) body + v0 pin for the mfc2 flag return.",
+      "lever_rule": "inline-asm-allowed / gte-wrapper-misroute-park",
+      "floor_was": 0,
+      "floor_now": 0,
+      "git_head_at_measurement": "c3aa1ffc"
+    }
+  ],
+  "reviewer": {
+    "verdict": "N/A — canonical-asm authorization request, not a pure-C match claim",
+    "date": "2026-06-14",
+    "evidence": "Body is entirely GTE cop2 ops with hardcoded GTE register numbers + mechanical byte packaging; canonical gate confirms ASM-PARTIAL 11/24. No pure-C form. The v0 pin captures the mfc2 $31 flag for the return (standard for GTE-flag wrappers). Needs registry entry, not a C grind."
+  },
+  "remaining_gap": {
+    "summary": "Zero distance — already byte-matches. The only 'gap' is administrative: func_8007E35C is a canonical-asm GTE gpf/gpl wrapper not yet listed in inline_asm_canonical.txt. Worker cannot self-authorize. Ready-to-paste registry line in notes.md.",
+    "rule_count_at_head": 0,
+    "needs": "user/orchestrator canonical-asm authorization (auto-handle per CLAUDE.md GTE-leaf-wrapper policy)"
+  },
+  "next_hypotheses": [
+    "Orchestrator: add the notes.md registry line, optionally convert .word body to whole-body __asm__(\"glabel ...\"), verify-oracle, queue done.",
+    "Cluster: func_8007E2D4, func_8007E24C, func_8007E3BC (same gpf/gpl family) need the same authorization — handle together."
+  ],
+  "rejected_forms": []
+}

@@ -1,0 +1,42 @@
+{
+  "function": "func_80038170",
+  "file": "code6cac_c_mid",
+  "scores": {
+    "head_floor": 12,
+    "candidate_floor": 12,
+    "metric": "sandbox --disable all (masked Levenshtein); pins+dummy+reorder stripped",
+    "build_insns": 141,
+    "target_insns": 141,
+    "note": "HEAD byte-matches the full build ONLY via the dummy0/dummy1 + \"m\" frame-coercion cheat. Honest distance (cheats stripped) = 12, all of it a single +8-byte frame-size delta."
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "stripped register asm(a3/a1) pins + dummy0/dummy1 \"m\" frame cheat + regfix reorder; clean body byte-identical except a single +8-byte frame-size delta. No recoverable semantic local for the unused 16-byte (target) vs 8-byte (ours) sp local hole.",
+      "lever_rule": "dead-vars-local-array (FORBIDDEN)",
+      "floor_was": 12,
+      "floor_now": 12,
+      "git_head_at_measurement": "c3aa1ffc"
+    }
+  ],
+  "reviewer": {
+    "verdict": "N/A — block for forbidden-frame-cheat / unrecoverable local",
+    "date": "2026-06-14",
+    "evidence": "All 12 honest diffs are one +8-byte frame-size delta; 141-insn body byte-identical. Target reserves a 16-byte sp local hole it never touches. The only forms producing the 56-byte frame are forbidden frame-coercion cheats (dummy + \"m\", or pad/named-guess arrays). No semantic local recoverable from the body."
+  },
+  "remaining_gap": {
+    "summary": "12 diffs = 5 prologue saves + 5 epilogue restores at offsets shifted by 8, + the two addiu-sp insns. Frame 48 (ours, honest) vs 56 (target). Target's 8 extra local bytes are an unused stack hole the body never accesses — a phantom local fully DCE'd.",
+    "rule_count_at_head": 1,
+    "rules_at_head": ["reorder 10,11,13,12,9 @ 9-13 (prologue save order)"],
+    "cheat_at_head": "register asm(a3)=i, asm(a1)=mask pins + dummy0/dummy1 with __asm__(\"\" :: \"m\"(dummy0),\"m\"(dummy1)) frame-coercion + the reorder rule. HEAD's full-build match depends on the dummy \"m\" slots.",
+    "rules_required_for_full_match": "A genuine 8-byte local with recoverable semantic meaning. None recoverable from the body. Phantom dummy/pad arrays are forbidden."
+  },
+  "next_hypotheses": [
+    "Data-layout / caller analysis: the function fills a structured `out` buffer from D_8008F1A8/1C0/204 etc.; check whether the original used a stack scratch struct/array fully optimized away. Body shows none.",
+    "If no semantic local is recoverable, canonical-asm / park (unrecoverable phantom frame local) — surface for user authorization. On the dead-vars-local-array re-evaluation list (code6cac.c family)."
+  ],
+  "rejected_forms": [
+    {"form": "dummy0/dummy1 + __asm__ \"m\" (HEAD)", "score": "matches-via-cheat", "why": "FORBIDDEN frame-coercion; sandbox strips it -> honest 12"},
+    {"form": "strip all cheats (clean pure C)", "score": 12, "why": "pure +8-byte frame gap; body byte-identical"}
+  ]
+}
